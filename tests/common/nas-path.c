@@ -110,3 +110,107 @@ void testgmm_send_to_gsm(test_sess_t *sess,
 
     testgsm_recv(sess, gsmbuf);
 }
+
+void testemm_recv(test_ue_t *test_ue, ogs_pkbuf_t *pkbuf)
+{
+    int rv;
+    ogs_nas_eps_message_t message;
+
+    ogs_assert(test_ue);
+    ogs_assert(pkbuf);
+
+    rv = ogs_nas_emm_decode(&message, pkbuf);
+    ogs_assert(rv == OGS_OK);
+
+    test_ue->emm_message_type = message.emm.h.message_type;
+    switch (message.emm.h.message_type) {
+    case OGS_NAS_EPS_IDENTITY_REQUEST:
+        testemm_handle_identity_request(test_ue, &message.emm.identity_request);
+        break;
+    case OGS_NAS_EPS_AUTHENTICATION_REQUEST:
+        testemm_handle_authentication_request(test_ue,
+                &message.emm.authentication_request);
+        break;
+    case OGS_NAS_EPS_AUTHENTICATION_REJECT:
+        break;
+    case OGS_NAS_EPS_SECURITY_MODE_COMMAND:
+        break;
+    case OGS_NAS_EPS_ATTACH_ACCEPT:
+        testemm_handle_attach_accept(test_ue, &message.emm.attach_accept);
+        break;
+    case OGS_NAS_EPS_ATTACH_REJECT:
+        break;
+    case OGS_NAS_EPS_SERVICE_REJECT:
+        break;
+    case OGS_NAS_EPS_TRACKING_AREA_UPDATE_ACCEPT:
+        break;
+    case OGS_NAS_EPS_EMM_INFORMATION:
+        break;
+    case OGS_NAS_EPS_CS_SERVICE_NOTIFICATION:
+        break;
+    case OGS_NAS_EPS_DOWNLINK_NAS_TRANSPORT:
+        break;
+    default:
+        ogs_error("Unknown message[%d]", message.emm.h.message_type);
+        break;
+    }
+
+    ogs_pkbuf_free(pkbuf);
+}
+
+void testesm_recv(test_ue_t *test_ue, ogs_pkbuf_t *pkbuf)
+{
+    int rv;
+    test_bearer_t *bearer = NULL;
+    ogs_nas_eps_message_t message;
+
+    ogs_assert(test_ue);
+    ogs_assert(pkbuf);
+
+    rv = ogs_nas_esm_decode(&message, pkbuf);
+    ogs_assert(rv == OGS_OK);
+
+    switch (message.esm.h.message_type) {
+    case OGS_NAS_EPS_ESM_INFORMATION_REQUEST:
+        break;
+    case OGS_NAS_EPS_PDN_CONNECTIVITY_REJECT:
+        break;
+    case OGS_NAS_EPS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST:
+        testesm_handle_activate_default_eps_bearer_context_request(
+                test_ue, &message);
+        break;
+    case OGS_NAS_EPS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST:
+        testesm_handle_activate_dedicated_eps_bearer_context_request(
+                test_ue, &message);
+        break;
+    case OGS_NAS_EPS_MODIFY_EPS_BEARER_CONTEXT_REQUEST:
+        break;
+    case OGS_NAS_EPS_DEACTIVATE_EPS_BEARER_CONTEXT_REQUEST:
+        break;
+    case OGS_NAS_EPS_BEARER_RESOURCE_ALLOCATION_REJECT:
+        break;
+    case OGS_NAS_EPS_BEARER_RESOURCE_MODIFICATION_REJECT:
+        break;
+    default:
+        ogs_error("Unknown message[%d]", message.esm.h.message_type);
+        break;
+    }
+
+    ogs_pkbuf_free(pkbuf);
+}
+
+void testemm_send_to_esm(test_ue_t *test_ue,
+    ogs_nas_esm_message_container_t *esm_message_container)
+{
+    ogs_pkbuf_t *esmbuf = NULL;
+
+    ogs_assert(test_ue);
+    ogs_assert(esm_message_container);
+    ogs_assert(esm_message_container->buffer);
+
+    esmbuf = ogs_pkbuf_alloc(NULL, esm_message_container->length);
+    ogs_pkbuf_put_data(esmbuf,
+            esm_message_container->buffer, esm_message_container->length);
+
+    testesm_recv(test_ue, esmbuf);
+}

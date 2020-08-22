@@ -19,7 +19,6 @@
 
 #include "ogs-crypt.h"
 
-#include "hss/hss-auc.h"
 #include "mme/nas-security.h"
 
 #include "core/abts.h"
@@ -114,7 +113,7 @@ static void security_test3(abts_case *tc, void *data)
     uint8_t kasme[32];
     uint8_t tmp[32];
 
-    hss_auc_kasme(
+    ogs_auc_kasme(
         OGS_HEX(_ck, strlen(_ck), ck),
         OGS_HEX(_ik, strlen(_ik), ik),
         OGS_HEX(_plmn_id, strlen(_plmn_id), plmn_id),

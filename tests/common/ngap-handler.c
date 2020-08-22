@@ -17,7 +17,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "test-ngap.h"
+#include "test-common.h"
 
 void testngap_handle_ng_setup_response(
         test_ue_t *test_ue, ogs_ngap_message_t *message)
@@ -72,9 +72,9 @@ void testngap_handle_downlink_nas_transport(
 
     NGAP_NGAP_PDU_t pdu;
     NGAP_InitiatingMessage_t *initiatingMessage = NULL;
-    NGAP_InitialContextSetupRequest_t *InitialContextSetupRequest = NULL;
+    NGAP_DownlinkNASTransport_t *DownlinkNASTransport = NULL;
 
-    NGAP_InitialContextSetupRequestIEs_t *ie = NULL;
+    NGAP_DownlinkNASTransport_IEs_t *ie = NULL;
     NGAP_AMF_UE_NGAP_ID_t *AMF_UE_NGAP_ID = NULL;
     NGAP_NAS_PDU_t *NAS_PDU = NULL;
 
@@ -83,12 +83,12 @@ void testngap_handle_downlink_nas_transport(
 
     initiatingMessage = message->choice.initiatingMessage;
     ogs_assert(initiatingMessage);
-    InitialContextSetupRequest =
-        &initiatingMessage->value.choice.InitialContextSetupRequest;
-    ogs_assert(InitialContextSetupRequest);
+    DownlinkNASTransport =
+        &initiatingMessage->value.choice.DownlinkNASTransport;
+    ogs_assert(DownlinkNASTransport);
 
-    for (i = 0; i < InitialContextSetupRequest->protocolIEs.list.count; i++) {
-        ie = InitialContextSetupRequest->protocolIEs.list.array[i];
+    for (i = 0; i < DownlinkNASTransport->protocolIEs.list.count; i++) {
+        ie = DownlinkNASTransport->protocolIEs.list.array[i];
         switch (ie->id) {
         case NGAP_ProtocolIE_ID_id_AMF_UE_NGAP_ID:
             AMF_UE_NGAP_ID = &ie->value.choice.AMF_UE_NGAP_ID;
@@ -101,6 +101,7 @@ void testngap_handle_downlink_nas_transport(
         }
     }
 
+    ogs_assert(AMF_UE_NGAP_ID);
     asn_INTEGER2ulong(AMF_UE_NGAP_ID, &test_ue->amf_ue_ngap_id);
 
     if (NAS_PDU)
@@ -154,10 +155,55 @@ void testngap_handle_initial_context_setup_request(
         testngap_send_to_nas(test_ue, NAS_PDU);
 }
 
+void testngap_handle_ue_release_context_command(
+        test_ue_t *test_ue, ogs_ngap_message_t *message)
+{
+    int i, rv;
+    test_bearer_t *bearer = NULL;
+
+    NGAP_NGAP_PDU_t pdu;
+    NGAP_InitiatingMessage_t *initiatingMessage = NULL;
+    NGAP_UEContextReleaseCommand_t *UEContextReleaseCommand = NULL;
+
+    NGAP_UEContextReleaseCommand_IEs_t *ie = NULL;
+    NGAP_UE_NGAP_IDs_t *UE_NGAP_IDs = NULL;
+
+    ogs_assert(test_ue);
+    ogs_assert(message);
+
+    initiatingMessage = message->choice.initiatingMessage;
+    ogs_assert(initiatingMessage);
+    UEContextReleaseCommand =
+        &initiatingMessage->value.choice.UEContextReleaseCommand;
+    ogs_assert(UEContextReleaseCommand);
+
+    for (i = 0; i < UEContextReleaseCommand->protocolIEs.list.count; i++) {
+        ie = UEContextReleaseCommand->protocolIEs.list.array[i];
+        switch (ie->id) {
+        case NGAP_ProtocolIE_ID_id_UE_NGAP_IDs:
+            UE_NGAP_IDs = &ie->value.choice.UE_NGAP_IDs;
+            break;
+        default:
+            break;
+        }
+    }
+
+    if (UE_NGAP_IDs) {
+        if (UE_NGAP_IDs->present == NGAP_UE_NGAP_IDs_PR_uE_NGAP_ID_pair) {
+            uint64_t amf_ue_ngap_id;
+            asn_INTEGER2ulong(
+                &UE_NGAP_IDs->choice.uE_NGAP_ID_pair->aMF_UE_NGAP_ID,
+                (unsigned long *)&amf_ue_ngap_id);
+            test_ue->amf_ue_ngap_id = (uint64_t)amf_ue_ngap_id;
+        }
+    }
+}
+
 void testngap_handle_pdu_session_resource_setup_request(
         test_ue_t *test_ue, ogs_ngap_message_t *message)
 {
     test_sess_t *sess = NULL;
+    test_bearer_t *qos_flow = NULL;
     int rv, i, j, k, l;
     char buf[OGS_ADDRSTRLEN];
 
@@ -182,8 +228,6 @@ void testngap_handle_pdu_session_resource_setup_request(
     ogs_pkbuf_t *n2smbuf = NULL;
 
     ogs_assert(test_ue);
-    sess = test_ue->sess;
-    ogs_assert(sess);
     ogs_assert(message);
 
     initiatingMessage = message->choice.initiatingMessage;
@@ -203,6 +247,11 @@ void testngap_handle_pdu_session_resource_setup_request(
                 PDUSessionItem = (NGAP_PDUSessionResourceSetupItemSUReq_t *)
                     PDUSessionList->list.array[j];
                 ogs_assert(PDUSessionItem);
+
+                sess = test_sess_find_by_psi(
+                            test_ue, PDUSessionItem->pDUSessionID);
+                ogs_assert(sess);
+
                 if (PDUSessionItem->pDUSessionNAS_PDU)
                     testngap_send_to_nas(
                             test_ue, PDUSessionItem->pDUSessionNAS_PDU);
@@ -231,8 +280,13 @@ void testngap_handle_pdu_session_resource_setup_request(
                                 (struct NGAP_QosFlowSetupRequestItem *)
                                 QosFlowSetupRequestList->list.array[l];
                             ogs_assert(QosFlowSetupRequestItem);
-                            sess->qfi =
-                                    QosFlowSetupRequestItem->qosFlowIdentifier;
+                            qos_flow = test_qos_flow_find_by_sess_qfi(sess,
+                                    QosFlowSetupRequestItem->qosFlowIdentifier);
+                            if (!qos_flow)
+                                qos_flow = test_qos_flow_add(sess);
+
+                            qos_flow->qfi =
+                                QosFlowSetupRequestItem->qosFlowIdentifier;
                         }
                         break;
                     case NGAP_ProtocolIE_ID_id_UL_NGU_UP_TNLInformation:
@@ -269,7 +323,6 @@ void testngap_handle_pdu_session_resource_setup_request(
 void testngap_handle_pdu_session_resource_release_command(
         test_ue_t *test_ue, ogs_ngap_message_t *message)
 {
-    test_sess_t *sess = NULL;
     int rv, i, j, k;
     char buf[OGS_ADDRSTRLEN];
 
@@ -281,8 +334,6 @@ void testngap_handle_pdu_session_resource_release_command(
     NGAP_NAS_PDU_t *NAS_PDU = NULL;
 
     ogs_assert(test_ue);
-    sess = test_ue->sess;
-    ogs_assert(sess);
     ogs_assert(message);
 
     initiatingMessage = message->choice.initiatingMessage;

@@ -3,14 +3,18 @@ db_uri: mongodb://localhost/open5gs
 logger:
 
 parameter:
-    no_ipv6: true
-
-nrf:
-    sbi:
-      addr:
-        - 127.0.0.1
-        - ::1
-      port: 7777
+#    no_nrf: true
+#    no_amf: true
+#    no_smf: true
+#    no_upf: true
+#    no_ausf: true
+#    no_udm: true
+#    no_udr: true
+#    no_mme: true
+#    no_sgwc: true
+#    no_sgwu: true
+#    no_pcrf: true
+#    no_hss: true
 
 mme:
     freeDiameter:
@@ -28,13 +32,13 @@ mme:
         - module: @freediameter_extensions_builddir@/dict_dcca_3gpp.fdx
       connect:
         - identity: hss.localdomain
-          addr: 127.0.0.4
+          addr: 127.0.0.8
 
     s1ap:
       addr: 127.0.1.100
     gtpc:
       addr: 127.0.1.100
-    gummei: 
+    gummei:
       plmn_id:
         mcc: 901
         mnc: 70
@@ -54,25 +58,19 @@ mme:
 
 sgwc:
     gtpc:
-      addr: 127.0.0.6
+      addr: 127.0.0.3
     pfcp:
-      addr: 127.0.0.6
-
-sgwu:
-    gtpu:
-      addr: 127.0.0.7
-    pfcp:
-      addr: 127.0.0.7
+      addr: 127.0.0.3
 
 smf:
     sbi:
-      - addr: 127.0.0.3
+      - addr: 127.0.0.4
         port: 7777
     gtpc:
-      - addr: 127.0.0.3
+      - addr: 127.0.0.4
       - addr: ::1
     pfcp:
-      - addr: 127.0.0.3
+      - addr: 127.0.0.4
     pdn:
       - addr: 10.45.0.1/16
       - addr: cafe::1/64
@@ -85,7 +83,7 @@ smf:
     freeDiameter:
       identity: smf.localdomain
       realm: localdomain
-      listen_on: 127.0.0.3
+      listen_on: 127.0.0.4
       load_extension:
         - module: @freediameter_extensions_builddir@/dbg_msg_dumps.fdx
           conf: 0x8888
@@ -97,24 +95,60 @@ smf:
         - module: @freediameter_extensions_builddir@/dict_dcca_3gpp.fdx
       connect:
         - identity: pcrf.localdomain
-          addr: 127.0.0.5
+          addr: 127.0.0.9
+amf:
+    sbi:
+      - addr: 127.0.0.5
+        port: 7777
+    ngap:
+      - addr: 127.0.0.5
+    guami:
+      - plmn_id:
+          mcc: 901
+          mnc: 70
+        amf_id:
+          region: 2
+          set: 1
+    tai:
+      - plmn_id:
+          mcc: 901
+          mnc: 70
+        tac: 1
+    plmn:
+      - plmn_id:
+          mcc: 901
+          mnc: 70
+        s_nssai:
+          - sst: 1
+    security:
+        integrity_order : [ NIA1, NIA2, NIA0 ]
+        ciphering_order : [ NEA0, NEA1, NEA2 ]
+    network_name:
+        full: Open5GS
+    amf_name: open5gs-amf0
+
+sgwu:
+    gtpu:
+      addr: 127.0.0.6
+    pfcp:
+      addr: 127.0.0.6
+
 upf:
     pfcp:
-      - addr: 127.0.0.4
+      - addr: 127.0.0.7
     gtpu:
       - addr:
-        - 127.0.0.4
+        - 127.0.0.7
         - ::1
     pdn:
       - addr: 10.45.0.1/16
       - addr: cafe::1/64
 
-
 hss:
     freeDiameter:
       identity: hss.localdomain
       realm: localdomain
-      listen_on: 127.0.0.4
+      listen_on: 127.0.0.8
       load_extension:
         - module: @freediameter_extensions_builddir@/dbg_msg_dumps.fdx
           conf: 0x8888
@@ -127,12 +161,11 @@ hss:
       connect:
         - identity: mme.localdomain
           addr: 127.0.0.2
-
 pcrf:
     freeDiameter:
       identity: pcrf.localdomain
       realm: localdomain
-      listen_on: 127.0.0.5
+      listen_on: 127.0.0.9
       load_extension:
         - module: @freediameter_extensions_builddir@/dbg_msg_dumps.fdx
           conf: 0x8888
@@ -144,4 +177,26 @@ pcrf:
         - module: @freediameter_extensions_builddir@/dict_dcca_3gpp.fdx
       connect:
         - identity: smf.localdomain
-          addr: 127.0.0.3
+          addr: 127.0.0.4
+
+nrf:
+    sbi:
+      addr:
+        - 127.0.0.10
+        - ::1
+      port: 7777
+
+ausf:
+    sbi:
+      - addr: 127.0.0.11
+        port: 7777
+
+udm:
+    sbi:
+      - addr: 127.0.0.12
+        port: 7777
+
+udr:
+    sbi:
+      - addr: 127.0.0.13
+        port: 7777

@@ -25,4 +25,4 @@ testsystem_sctp_exe = executable('sctp',
     c_args : testunit_core_cc_flags,
     dependencies : libsctp_dep)
 
-test('sctp', testsystem_sctp_exe, is_parallel : false, suite: 'system')
+test('sctp', testsystem_sctp_exe, is_parallel : false, suite: 'app')

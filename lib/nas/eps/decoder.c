@@ -28,7 +28,7 @@
 /*******************************************************************************
  * This file had been created by nas-message.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2020-06-30 16:47:16.506642 by acetcom
+ * Created on: 2020-08-16 17:47:29.429097 by acetcom
  * from 24301-g40.docx
  ******************************************************************************/
 
@@ -153,6 +153,8 @@ int ogs_nas_eps_decode_attach_request(ogs_nas_eps_message_t *message, ogs_pkbuf_
             decoded += size;
             break;
         case OGS_NAS_EPS_ATTACH_REQUEST_TMSI_STATUS_TYPE:
+            decoded--;
+            ogs_assert(ogs_pkbuf_push(pkbuf, 1));
             size = ogs_nas_eps_decode_tmsi_status(&attach_request->tmsi_status, pkbuf);
             ogs_assert(size >= 0);
             attach_request->presencemask |= OGS_NAS_EPS_ATTACH_REQUEST_TMSI_STATUS_PRESENT;
@@ -177,6 +179,8 @@ int ogs_nas_eps_decode_attach_request(ogs_nas_eps_message_t *message, ogs_pkbuf_
             decoded += size;
             break;
         case OGS_NAS_EPS_ATTACH_REQUEST_ADDITIONAL_UPDATE_TYPE_TYPE:
+            decoded--;
+            ogs_assert(ogs_pkbuf_push(pkbuf, 1));
             size = ogs_nas_eps_decode_additional_update_type(&attach_request->additional_update_type, pkbuf);
             ogs_assert(size >= 0);
             attach_request->presencemask |= OGS_NAS_EPS_ATTACH_REQUEST_ADDITIONAL_UPDATE_TYPE_PRESENT;
@@ -189,18 +193,24 @@ int ogs_nas_eps_decode_attach_request(ogs_nas_eps_message_t *message, ogs_pkbuf_
             decoded += size;
             break;
         case OGS_NAS_EPS_ATTACH_REQUEST_DEVICE_PROPERTIES_TYPE:
+            decoded--;
+            ogs_assert(ogs_pkbuf_push(pkbuf, 1));
             size = ogs_nas_eps_decode_device_properties(&attach_request->device_properties, pkbuf);
             ogs_assert(size >= 0);
             attach_request->presencemask |= OGS_NAS_EPS_ATTACH_REQUEST_DEVICE_PROPERTIES_PRESENT;
             decoded += size;
             break;
         case OGS_NAS_EPS_ATTACH_REQUEST_OLD_GUTI_TYPE_TYPE:
+            decoded--;
+            ogs_assert(ogs_pkbuf_push(pkbuf, 1));
             size = ogs_nas_eps_decode_guti_type(&attach_request->old_guti_type, pkbuf);
             ogs_assert(size >= 0);
             attach_request->presencemask |= OGS_NAS_EPS_ATTACH_REQUEST_OLD_GUTI_TYPE_PRESENT;
             decoded += size;
             break;
         case OGS_NAS_EPS_ATTACH_REQUEST_MS_NETWORK_FEATURE_SUPPORT_TYPE:
+            decoded--;
+            ogs_assert(ogs_pkbuf_push(pkbuf, 1));
             size = ogs_nas_eps_decode_ms_network_feature_support(&attach_request->ms_network_feature_support, pkbuf);
             ogs_assert(size >= 0);
             attach_request->presencemask |= OGS_NAS_EPS_ATTACH_REQUEST_MS_NETWORK_FEATURE_SUPPORT_PRESENT;
@@ -351,6 +361,8 @@ int ogs_nas_eps_decode_attach_accept(ogs_nas_eps_message_t *message, ogs_pkbuf_t
             decoded += size;
             break;
         case OGS_NAS_EPS_ATTACH_ACCEPT_ADDITIONAL_UPDATE_RESULT_TYPE:
+            decoded--;
+            ogs_assert(ogs_pkbuf_push(pkbuf, 1));
             size = ogs_nas_eps_decode_additional_update_result(&attach_accept->additional_update_result, pkbuf);
             ogs_assert(size >= 0);
             attach_accept->presencemask |= OGS_NAS_EPS_ATTACH_ACCEPT_ADDITIONAL_UPDATE_RESULT_PRESENT;
@@ -381,12 +393,16 @@ int ogs_nas_eps_decode_attach_accept(ogs_nas_eps_message_t *message, ogs_pkbuf_t
             decoded += size;
             break;
         case OGS_NAS_EPS_ATTACH_ACCEPT_SMS_SERVICES_STATUS_TYPE:
+            decoded--;
+            ogs_assert(ogs_pkbuf_push(pkbuf, 1));
             size = ogs_nas_eps_decode_sms_services_status(&attach_accept->sms_services_status, pkbuf);
             ogs_assert(size >= 0);
             attach_accept->presencemask |= OGS_NAS_EPS_ATTACH_ACCEPT_SMS_SERVICES_STATUS_PRESENT;
             decoded += size;
             break;
         case OGS_NAS_EPS_ATTACH_ACCEPT_NON__NW_PROVIDED_POLICIES_TYPE:
+            decoded--;
+            ogs_assert(ogs_pkbuf_push(pkbuf, 1));
             size = ogs_nas_eps_decode_non__nw_provided_policies(&attach_accept->non__nw_provided_policies, pkbuf);
             ogs_assert(size >= 0);
             attach_accept->presencemask |= OGS_NAS_EPS_ATTACH_ACCEPT_NON__NW_PROVIDED_POLICIES_PRESENT;
@@ -399,6 +415,8 @@ int ogs_nas_eps_decode_attach_accept(ogs_nas_eps_message_t *message, ogs_pkbuf_t
             decoded += size;
             break;
         case OGS_NAS_EPS_ATTACH_ACCEPT_NETWORK_POLICY_TYPE:
+            decoded--;
+            ogs_assert(ogs_pkbuf_push(pkbuf, 1));
             size = ogs_nas_eps_decode_network_policy(&attach_accept->network_policy, pkbuf);
             ogs_assert(size >= 0);
             attach_accept->presencemask |= OGS_NAS_EPS_ATTACH_ACCEPT_NETWORK_POLICY_PRESENT;
@@ -429,6 +447,8 @@ int ogs_nas_eps_decode_attach_accept(ogs_nas_eps_message_t *message, ogs_pkbuf_t
             decoded += size;
             break;
         case OGS_NAS_EPS_ATTACH_ACCEPT_UE_RADIO_CAPABILITY_ID_DELETION_INDICATION_TYPE:
+            decoded--;
+            ogs_assert(ogs_pkbuf_push(pkbuf, 1));
             size = ogs_nas_eps_decode_ue_radio_capability_id_deletion_indication(&attach_accept->ue_radio_capability_id_deletion_indication, pkbuf);
             ogs_assert(size >= 0);
             attach_accept->presencemask |= OGS_NAS_EPS_ATTACH_ACCEPT_UE_RADIO_CAPABILITY_ID_DELETION_INDICATION_PRESENT;
@@ -498,6 +518,8 @@ int ogs_nas_eps_decode_attach_reject(ogs_nas_eps_message_t *message, ogs_pkbuf_t
             decoded += size;
             break;
         case OGS_NAS_EPS_ATTACH_REJECT_EXTENDED_EMM_CAUSE_TYPE:
+            decoded--;
+            ogs_assert(ogs_pkbuf_push(pkbuf, 1));
             size = ogs_nas_eps_decode_extended_emm_cause(&attach_reject->extended_emm_cause, pkbuf);
             ogs_assert(size >= 0);
             attach_reject->presencemask |= OGS_NAS_EPS_ATTACH_REJECT_EXTENDED_EMM_CAUSE_PRESENT;
@@ -593,12 +615,16 @@ int ogs_nas_eps_decode_tracking_area_update_request(ogs_nas_eps_message_t *messa
 
         switch (type) {
         case OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_NON_CURRENT_NATIVE_NAS_KEY_SET_IDENTIFIER_TYPE:
+            decoded--;
+            ogs_assert(ogs_pkbuf_push(pkbuf, 1));
             size = ogs_nas_eps_decode_key_set_identifier(&tracking_area_update_request->non_current_native_nas_key_set_identifier, pkbuf);
             ogs_assert(size >= 0);
             tracking_area_update_request->presencemask |= OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_NON_CURRENT_NATIVE_NAS_KEY_SET_IDENTIFIER_PRESENT;
             decoded += size;
             break;
         case OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_GPRS_CIPHERING_KEY_SEQUENCE_NUMBER_TYPE:
+            decoded--;
+            ogs_assert(ogs_pkbuf_push(pkbuf, 1));
             size = ogs_nas_eps_decode_ciphering_key_sequence_number(&tracking_area_update_request->gprs_ciphering_key_sequence_number, pkbuf);
             ogs_assert(size >= 0);
             tracking_area_update_request->presencemask |= OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_GPRS_CIPHERING_KEY_SEQUENCE_NUMBER_PRESENT;
@@ -641,6 +667,8 @@ int ogs_nas_eps_decode_tracking_area_update_request(ogs_nas_eps_message_t *messa
             decoded += size;
             break;
         case OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_UE_RADIO_CAPABILITY_INFORMATION_UPDATE_NEEDED_TYPE:
+            decoded--;
+            ogs_assert(ogs_pkbuf_push(pkbuf, 1));
             size = ogs_nas_eps_decode_ue_radio_capability_information_update_needed(&tracking_area_update_request->ue_radio_capability_information_update_needed, pkbuf);
             ogs_assert(size >= 0);
             tracking_area_update_request->presencemask |= OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_UE_RADIO_CAPABILITY_INFORMATION_UPDATE_NEEDED_PRESENT;
@@ -665,6 +693,8 @@ int ogs_nas_eps_decode_tracking_area_update_request(ogs_nas_eps_message_t *messa
             decoded += size;
             break;
         case OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_TMSI_STATUS_TYPE:
+            decoded--;
+            ogs_assert(ogs_pkbuf_push(pkbuf, 1));
             size = ogs_nas_eps_decode_tmsi_status(&tracking_area_update_request->tmsi_status, pkbuf);
             ogs_assert(size >= 0);
             tracking_area_update_request->presencemask |= OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_TMSI_STATUS_PRESENT;
@@ -689,6 +719,8 @@ int ogs_nas_eps_decode_tracking_area_update_request(ogs_nas_eps_message_t *messa
             decoded += size;
             break;
         case OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_ADDITIONAL_UPDATE_TYPE_TYPE:
+            decoded--;
+            ogs_assert(ogs_pkbuf_push(pkbuf, 1));
             size = ogs_nas_eps_decode_additional_update_type(&tracking_area_update_request->additional_update_type, pkbuf);
             ogs_assert(size >= 0);
             tracking_area_update_request->presencemask |= OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_ADDITIONAL_UPDATE_TYPE_PRESENT;
@@ -701,18 +733,24 @@ int ogs_nas_eps_decode_tracking_area_update_request(ogs_nas_eps_message_t *messa
             decoded += size;
             break;
         case OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_OLD_GUTI_TYPE_TYPE:
+            decoded--;
+            ogs_assert(ogs_pkbuf_push(pkbuf, 1));
             size = ogs_nas_eps_decode_guti_type(&tracking_area_update_request->old_guti_type, pkbuf);
             ogs_assert(size >= 0);
             tracking_area_update_request->presencemask |= OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_OLD_GUTI_TYPE_PRESENT;
             decoded += size;
             break;
         case OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_DEVICE_PROPERTIES_TYPE:
+            decoded--;
+            ogs_assert(ogs_pkbuf_push(pkbuf, 1));
             size = ogs_nas_eps_decode_device_properties(&tracking_area_update_request->device_properties, pkbuf);
             ogs_assert(size >= 0);
             tracking_area_update_request->presencemask |= OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_DEVICE_PROPERTIES_PRESENT;
             decoded += size;
             break;
         case OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_MS_NETWORK_FEATURE_SUPPORT_TYPE:
+            decoded--;
+            ogs_assert(ogs_pkbuf_push(pkbuf, 1));
             size = ogs_nas_eps_decode_ms_network_feature_support(&tracking_area_update_request->ms_network_feature_support, pkbuf);
             ogs_assert(size >= 0);
             tracking_area_update_request->presencemask |= OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_MS_NETWORK_FEATURE_SUPPORT_PRESENT;
@@ -869,6 +907,8 @@ int ogs_nas_eps_decode_tracking_area_update_accept(ogs_nas_eps_message_t *messag
             decoded += size;
             break;
         case OGS_NAS_EPS_TRACKING_AREA_UPDATE_ACCEPT_ADDITIONAL_UPDATE_RESULT_TYPE:
+            decoded--;
+            ogs_assert(ogs_pkbuf_push(pkbuf, 1));
             size = ogs_nas_eps_decode_additional_update_result(&tracking_area_update_accept->additional_update_result, pkbuf);
             ogs_assert(size >= 0);
             tracking_area_update_accept->presencemask |= OGS_NAS_EPS_TRACKING_AREA_UPDATE_ACCEPT_ADDITIONAL_UPDATE_RESULT_PRESENT;
@@ -905,12 +945,16 @@ int ogs_nas_eps_decode_tracking_area_update_accept(ogs_nas_eps_message_t *messag
             decoded += size;
             break;
         case OGS_NAS_EPS_TRACKING_AREA_UPDATE_ACCEPT_SMS_SERVICES_STATUS_TYPE:
+            decoded--;
+            ogs_assert(ogs_pkbuf_push(pkbuf, 1));
             size = ogs_nas_eps_decode_sms_services_status(&tracking_area_update_accept->sms_services_status, pkbuf);
             ogs_assert(size >= 0);
             tracking_area_update_accept->presencemask |= OGS_NAS_EPS_TRACKING_AREA_UPDATE_ACCEPT_SMS_SERVICES_STATUS_PRESENT;
             decoded += size;
             break;
         case OGS_NAS_EPS_TRACKING_AREA_UPDATE_ACCEPT_NON__NW_POLICIES_TYPE:
+            decoded--;
+            ogs_assert(ogs_pkbuf_push(pkbuf, 1));
             size = ogs_nas_eps_decode_non__nw_provided_policies(&tracking_area_update_accept->non__nw_policies, pkbuf);
             ogs_assert(size >= 0);
             tracking_area_update_accept->presencemask |= OGS_NAS_EPS_TRACKING_AREA_UPDATE_ACCEPT_NON__NW_POLICIES_PRESENT;
@@ -923,6 +967,8 @@ int ogs_nas_eps_decode_tracking_area_update_accept(ogs_nas_eps_message_t *messag
             decoded += size;
             break;
         case OGS_NAS_EPS_TRACKING_AREA_UPDATE_ACCEPT_NETWORK_POLICY_TYPE:
+            decoded--;
+            ogs_assert(ogs_pkbuf_push(pkbuf, 1));
             size = ogs_nas_eps_decode_network_policy(&tracking_area_update_accept->network_policy, pkbuf);
             ogs_assert(size >= 0);
             tracking_area_update_accept->presencemask |= OGS_NAS_EPS_TRACKING_AREA_UPDATE_ACCEPT_NETWORK_POLICY_PRESENT;
@@ -953,6 +999,8 @@ int ogs_nas_eps_decode_tracking_area_update_accept(ogs_nas_eps_message_t *messag
             decoded += size;
             break;
         case OGS_NAS_EPS_TRACKING_AREA_UPDATE_ACCEPT_UE_RADIO_CAPABILITY_ID_DELETION_INDICATION_TYPE:
+            decoded--;
+            ogs_assert(ogs_pkbuf_push(pkbuf, 1));
             size = ogs_nas_eps_decode_ue_radio_capability_id_deletion_indication(&tracking_area_update_accept->ue_radio_capability_id_deletion_indication, pkbuf);
             ogs_assert(size >= 0);
             tracking_area_update_accept->presencemask |= OGS_NAS_EPS_TRACKING_AREA_UPDATE_ACCEPT_UE_RADIO_CAPABILITY_ID_DELETION_INDICATION_PRESENT;
@@ -995,6 +1043,8 @@ int ogs_nas_eps_decode_tracking_area_update_reject(ogs_nas_eps_message_t *messag
             decoded += size;
             break;
         case OGS_NAS_EPS_TRACKING_AREA_UPDATE_REJECT_EXTENDED_EMM_CAUSE_TYPE:
+            decoded--;
+            ogs_assert(ogs_pkbuf_push(pkbuf, 1));
             size = ogs_nas_eps_decode_extended_emm_cause(&tracking_area_update_reject->extended_emm_cause, pkbuf);
             ogs_assert(size >= 0);
             tracking_area_update_reject->presencemask |= OGS_NAS_EPS_TRACKING_AREA_UPDATE_REJECT_EXTENDED_EMM_CAUSE_PRESENT;
@@ -1035,6 +1085,8 @@ int ogs_nas_eps_decode_extended_service_request(ogs_nas_eps_message_t *message, 
 
         switch (type) {
         case OGS_NAS_EPS_EXTENDED_SERVICE_REQUEST_CSFB_RESPONSE_TYPE:
+            decoded--;
+            ogs_assert(ogs_pkbuf_push(pkbuf, 1));
             size = ogs_nas_eps_decode_csfb_response(&extended_service_request->csfb_response, pkbuf);
             ogs_assert(size >= 0);
             extended_service_request->presencemask |= OGS_NAS_EPS_EXTENDED_SERVICE_REQUEST_CSFB_RESPONSE_PRESENT;
@@ -1047,6 +1099,8 @@ int ogs_nas_eps_decode_extended_service_request(ogs_nas_eps_message_t *message, 
             decoded += size;
             break;
         case OGS_NAS_EPS_EXTENDED_SERVICE_REQUEST_DEVICE_PROPERTIES_TYPE:
+            decoded--;
+            ogs_assert(ogs_pkbuf_push(pkbuf, 1));
             size = ogs_nas_eps_decode_device_properties(&extended_service_request->device_properties, pkbuf);
             ogs_assert(size >= 0);
             extended_service_request->presencemask |= OGS_NAS_EPS_EXTENDED_SERVICE_REQUEST_DEVICE_PROPERTIES_PRESENT;
@@ -1162,6 +1216,8 @@ int ogs_nas_eps_decode_guti_reallocation_command(ogs_nas_eps_message_t *message,
             decoded += size;
             break;
         case OGS_NAS_EPS_GUTI_REALLOCATION_COMMAND_UE_RADIO_CAPABILITY_ID_DELETION_INDICATION_TYPE:
+            decoded--;
+            ogs_assert(ogs_pkbuf_push(pkbuf, 1));
             size = ogs_nas_eps_decode_ue_radio_capability_id_deletion_indication(&guti_reallocation_command->ue_radio_capability_id_deletion_indication, pkbuf);
             ogs_assert(size >= 0);
             guti_reallocation_command->presencemask |= OGS_NAS_EPS_GUTI_REALLOCATION_COMMAND_UE_RADIO_CAPABILITY_ID_DELETION_INDICATION_PRESENT;
@@ -1310,6 +1366,8 @@ int ogs_nas_eps_decode_security_mode_command(ogs_nas_eps_message_t *message, ogs
 
         switch (type) {
         case OGS_NAS_EPS_SECURITY_MODE_COMMAND_IMEISV_REQUEST_TYPE:
+            decoded--;
+            ogs_assert(ogs_pkbuf_push(pkbuf, 1));
             size = ogs_nas_eps_decode_imeisv_request(&security_mode_command->imeisv_request, pkbuf);
             ogs_assert(size >= 0);
             security_mode_command->presencemask |= OGS_NAS_EPS_SECURITY_MODE_COMMAND_IMEISV_REQUEST_PRESENT;
@@ -1340,6 +1398,8 @@ int ogs_nas_eps_decode_security_mode_command(ogs_nas_eps_message_t *message, ogs
             decoded += size;
             break;
         case OGS_NAS_EPS_SECURITY_MODE_COMMAND_UE_RADIO_CAPABILITY_ID_REQUEST_TYPE:
+            decoded--;
+            ogs_assert(ogs_pkbuf_push(pkbuf, 1));
             size = ogs_nas_eps_decode_ue_radio_capability_id_request(&security_mode_command->ue_radio_capability_id_request, pkbuf);
             ogs_assert(size >= 0);
             security_mode_command->presencemask |= OGS_NAS_EPS_SECURITY_MODE_COMMAND_UE_RADIO_CAPABILITY_ID_REQUEST_PRESENT;
@@ -1696,6 +1756,8 @@ int ogs_nas_eps_decode_activate_default_eps_bearer_context_request(ogs_nas_eps_m
             decoded += size;
             break;
         case OGS_NAS_EPS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_RADIO_PRIORITY_TYPE:
+            decoded--;
+            ogs_assert(ogs_pkbuf_push(pkbuf, 1));
             size = ogs_nas_eps_decode_radio_priority(&activate_default_eps_bearer_context_request->radio_priority, pkbuf);
             ogs_assert(size >= 0);
             activate_default_eps_bearer_context_request->presencemask |= OGS_NAS_EPS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_RADIO_PRIORITY_PRESENT;
@@ -1726,12 +1788,16 @@ int ogs_nas_eps_decode_activate_default_eps_bearer_context_request(ogs_nas_eps_m
             decoded += size;
             break;
         case OGS_NAS_EPS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_CONNECTIVITY_TYPE_TYPE:
+            decoded--;
+            ogs_assert(ogs_pkbuf_push(pkbuf, 1));
             size = ogs_nas_eps_decode_connectivity_type(&activate_default_eps_bearer_context_request->connectivity_type, pkbuf);
             ogs_assert(size >= 0);
             activate_default_eps_bearer_context_request->presencemask |= OGS_NAS_EPS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_CONNECTIVITY_TYPE_PRESENT;
             decoded += size;
             break;
         case OGS_NAS_EPS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_WLAN_OFFLOAD_INDICATION_TYPE:
+            decoded--;
+            ogs_assert(ogs_pkbuf_push(pkbuf, 1));
             size = ogs_nas_eps_decode_wlan_offload_acceptability(&activate_default_eps_bearer_context_request->wlan_offload_indication, pkbuf);
             ogs_assert(size >= 0);
             activate_default_eps_bearer_context_request->presencemask |= OGS_NAS_EPS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_WLAN_OFFLOAD_INDICATION_PRESENT;
@@ -1750,6 +1816,8 @@ int ogs_nas_eps_decode_activate_default_eps_bearer_context_request(ogs_nas_eps_m
             decoded += size;
             break;
         case OGS_NAS_EPS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_CONTROL_PLANE_ONLY_INDICATION_TYPE:
+            decoded--;
+            ogs_assert(ogs_pkbuf_push(pkbuf, 1));
             size = ogs_nas_eps_decode_control_plane_only_indication(&activate_default_eps_bearer_context_request->control_plane_only_indication, pkbuf);
             ogs_assert(size >= 0);
             activate_default_eps_bearer_context_request->presencemask |= OGS_NAS_EPS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_CONTROL_PLANE_ONLY_INDICATION_PRESENT;
@@ -1910,6 +1978,8 @@ int ogs_nas_eps_decode_activate_dedicated_eps_bearer_context_request(ogs_nas_eps
             decoded += size;
             break;
         case OGS_NAS_EPS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST_RADIO_PRIORITY_TYPE:
+            decoded--;
+            ogs_assert(ogs_pkbuf_push(pkbuf, 1));
             size = ogs_nas_eps_decode_radio_priority(&activate_dedicated_eps_bearer_context_request->radio_priority, pkbuf);
             ogs_assert(size >= 0);
             activate_dedicated_eps_bearer_context_request->presencemask |= OGS_NAS_EPS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST_RADIO_PRIORITY_PRESENT;
@@ -1928,6 +1998,8 @@ int ogs_nas_eps_decode_activate_dedicated_eps_bearer_context_request(ogs_nas_eps
             decoded += size;
             break;
         case OGS_NAS_EPS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST_WLAN_OFFLOAD_INDICATION_TYPE:
+            decoded--;
+            ogs_assert(ogs_pkbuf_push(pkbuf, 1));
             size = ogs_nas_eps_decode_wlan_offload_acceptability(&activate_dedicated_eps_bearer_context_request->wlan_offload_indication, pkbuf);
             ogs_assert(size >= 0);
             activate_dedicated_eps_bearer_context_request->presencemask |= OGS_NAS_EPS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST_WLAN_OFFLOAD_INDICATION_PRESENT;
@@ -2094,6 +2166,8 @@ int ogs_nas_eps_decode_modify_eps_bearer_context_request(ogs_nas_eps_message_t *
             decoded += size;
             break;
         case OGS_NAS_EPS_MODIFY_EPS_BEARER_CONTEXT_REQUEST_RADIO_PRIORITY_TYPE:
+            decoded--;
+            ogs_assert(ogs_pkbuf_push(pkbuf, 1));
             size = ogs_nas_eps_decode_radio_priority(&modify_eps_bearer_context_request->radio_priority, pkbuf);
             ogs_assert(size >= 0);
             modify_eps_bearer_context_request->presencemask |= OGS_NAS_EPS_MODIFY_EPS_BEARER_CONTEXT_REQUEST_RADIO_PRIORITY_PRESENT;
@@ -2118,6 +2192,8 @@ int ogs_nas_eps_decode_modify_eps_bearer_context_request(ogs_nas_eps_message_t *
             decoded += size;
             break;
         case OGS_NAS_EPS_MODIFY_EPS_BEARER_CONTEXT_REQUEST_WLAN_OFFLOAD_INDICATION_TYPE:
+            decoded--;
+            ogs_assert(ogs_pkbuf_push(pkbuf, 1));
             size = ogs_nas_eps_decode_wlan_offload_acceptability(&modify_eps_bearer_context_request->wlan_offload_indication, pkbuf);
             ogs_assert(size >= 0);
             modify_eps_bearer_context_request->presencemask |= OGS_NAS_EPS_MODIFY_EPS_BEARER_CONTEXT_REQUEST_WLAN_OFFLOAD_INDICATION_PRESENT;
@@ -2288,6 +2364,8 @@ int ogs_nas_eps_decode_deactivate_eps_bearer_context_request(ogs_nas_eps_message
             decoded += size;
             break;
         case OGS_NAS_EPS_DEACTIVATE_EPS_BEARER_CONTEXT_REQUEST_WLAN_OFFLOAD_INDICATION_TYPE:
+            decoded--;
+            ogs_assert(ogs_pkbuf_push(pkbuf, 1));
             size = ogs_nas_eps_decode_wlan_offload_acceptability(&deactivate_eps_bearer_context_request->wlan_offload_indication, pkbuf);
             ogs_assert(size >= 0);
             deactivate_eps_bearer_context_request->presencemask |= OGS_NAS_EPS_DEACTIVATE_EPS_BEARER_CONTEXT_REQUEST_WLAN_OFFLOAD_INDICATION_PRESENT;
@@ -2374,6 +2452,8 @@ int ogs_nas_eps_decode_pdn_connectivity_request(ogs_nas_eps_message_t *message, 
 
         switch (type) {
         case OGS_NAS_EPS_PDN_CONNECTIVITY_REQUEST_ESM_INFORMATION_TRANSFER_FLAG_TYPE:
+            decoded--;
+            ogs_assert(ogs_pkbuf_push(pkbuf, 1));
             size = ogs_nas_eps_decode_esm_information_transfer_flag(&pdn_connectivity_request->esm_information_transfer_flag, pkbuf);
             ogs_assert(size >= 0);
             pdn_connectivity_request->presencemask |= OGS_NAS_EPS_PDN_CONNECTIVITY_REQUEST_ESM_INFORMATION_TRANSFER_FLAG_PRESENT;
@@ -2392,6 +2472,8 @@ int ogs_nas_eps_decode_pdn_connectivity_request(ogs_nas_eps_message_t *message, 
             decoded += size;
             break;
         case OGS_NAS_EPS_PDN_CONNECTIVITY_REQUEST_DEVICE_PROPERTIES_TYPE:
+            decoded--;
+            ogs_assert(ogs_pkbuf_push(pkbuf, 1));
             size = ogs_nas_eps_decode_device_properties(&pdn_connectivity_request->device_properties, pkbuf);
             ogs_assert(size >= 0);
             pdn_connectivity_request->presencemask |= OGS_NAS_EPS_PDN_CONNECTIVITY_REQUEST_DEVICE_PROPERTIES_PRESENT;
@@ -2604,6 +2686,8 @@ int ogs_nas_eps_decode_bearer_resource_allocation_request(ogs_nas_eps_message_t 
             decoded += size;
             break;
         case OGS_NAS_EPS_BEARER_RESOURCE_ALLOCATION_REQUEST_DEVICE_PROPERTIES_TYPE:
+            decoded--;
+            ogs_assert(ogs_pkbuf_push(pkbuf, 1));
             size = ogs_nas_eps_decode_device_properties(&bearer_resource_allocation_request->device_properties, pkbuf);
             ogs_assert(size >= 0);
             bearer_resource_allocation_request->presencemask |= OGS_NAS_EPS_BEARER_RESOURCE_ALLOCATION_REQUEST_DEVICE_PROPERTIES_PRESENT;
@@ -2740,6 +2824,8 @@ int ogs_nas_eps_decode_bearer_resource_modification_request(ogs_nas_eps_message_
             decoded += size;
             break;
         case OGS_NAS_EPS_BEARER_RESOURCE_MODIFICATION_REQUEST_DEVICE_PROPERTIES_TYPE:
+            decoded--;
+            ogs_assert(ogs_pkbuf_push(pkbuf, 1));
             size = ogs_nas_eps_decode_device_properties(&bearer_resource_modification_request->device_properties, pkbuf);
             ogs_assert(size >= 0);
             bearer_resource_modification_request->presencemask |= OGS_NAS_EPS_BEARER_RESOURCE_MODIFICATION_REQUEST_DEVICE_PROPERTIES_PRESENT;

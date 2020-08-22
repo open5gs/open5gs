@@ -62,7 +62,7 @@ Check whether the compilation is correct.
 $ ninja -C build test
 ```
 
-**Tip:** You can also check the result of `ninja -C build test` with a tool that captures packets. If you are running `wireshark`, select the `loopback` interface and set FILTER to `s1ap || gtpv2 || diameter || gtp`.  You can see the virtually created packets. [[testsimple.pcapng]]({{ site.url }}{{ site.baseurl }}/assets/pcapng/testsimple.pcapng)
+**Tip:** You can also check the result of `ninja -C build test` with a tool that captures packets. If you are running `wireshark`, select the `loopback` interface and set FILTER to `s1ap || gtpv2 || pfcp || diameter || gtp`.  You can see the virtually created packets. [[testsimple.pcapng]]({{ site.url }}{{ site.baseurl }}/assets/pcapng/testsimple.pcapng)
 {: .notice--info}
 
 You need to perform the **installation process**.
@@ -75,25 +75,96 @@ $ cd ../
 ### Configure Open5GS
 ---
 
-Modify [install/etc/open5gs/mme.yaml](https://github.com/{{ site.github_username }}/open5gs/blob/master/configs/open5gs/mme.yaml.in) to set the S1AP/GTP-C IP address, PLMN ID, and TAC. 
+#### 5G Core
+
+Modify [install/etc/open5gs/amf.yaml](https://github.com/{{ site.github_username }}/open5gs/blob/master/configs/open5gs/amf.yaml.in) to set the NGAP IP address, PLMN ID, TAC and NSSAI. 
 
 In the below example we
 
 - use MCC-MNC of 901-70, as this is the home network of the default IMSIs of the sysmoUSIM-SJS1 cards.
-- use 192.168.0.100 for the S1AP +GTP-U connection of MME/SGW to the eNB
+- use 10.10.0.5 for the NGAP connection of AMF to the gNB
+- use 10.11.0.7 for the GTP-U connection of UPF to the gNB
+
+```diff
+diff -u amf.yaml.old amf.yaml
+--- amf.yaml.old	2020-06-21 23:34:14.643114779 -0400
++++ amf.yaml	2020-06-21 23:34:28.718482095 -0400
+@@ -67,25 +67,25 @@
+       - addr: 127.0.0.5
+         port: 7777
+     ngap:
+-      - addr: 127.0.0.5
++      - addr: 10.10.0.5
+     guami:
+       - plmn_id:
+-          mcc: 001
+-          mnc: 01
++          mcc: 901
++          mnc: 70
+         amf_id:
+           region: 2
+           set: 1
+     tai:
+       - plmn_id:
+-          mcc: 001
+-          mnc: 01
+-        tac: 7
++          mcc: 901
++          mnc: 70
++        tac: 1
+     plmn:
+       - plmn_id:
+-          mcc: 001
+-          mnc: 01
++          mcc: 901
++          mnc: 70
+         s_nssai:
+           - sst: 1
+-          - sd: 2
+     security:
+         integrity_order : [ NIA1, NIA2, NIA0 ]
+         ciphering_order : [ NEA0, NEA1, NEA2 ]
+```
+
+Modify [install/etc/open5gs/upf.yaml](https://github.com/{{ site.github_username }}/open5gs/blob/master/configs/open5gs/upf.yaml.in) to set the GTP-U IP address.  
+```diff
+diff -u upf.yaml.old upf.yaml
+--- upf.yaml.old	2020-06-21 23:35:54.378631781 -0400
++++ upf.yaml	2020-06-21 23:36:02.978245251 -0400
+@@ -61,6 +61,7 @@
+     pfcp:
+       - addr: 127.0.0.7
+     gtpu:
+-      - addr: 127.0.0.7
++      - addr: 10.11.0.7
+     pdn:
+```
+
+If you modify the config files while Open5GS daemons are running, please restart them
+
+#### EPC
+
+Modify [install/etc/open5gs/mme.yaml](https://github.com/{{ site.github_username }}/open5gs/blob/master/configs/open5gs/mme.yaml.in) to set the S1AP IP address, PLMN ID, and TAC. 
+
+In the below example we
+
+- use MCC-MNC of 901-70, as this is the home network of the default IMSIs of the sysmoUSIM-SJS1 cards.
+- use 10.10.0.2 for the S1AP connection of MME to the eNB
+- use 10.11.0.6 for the GTP-U connection of SGW-U to the eNB
 
 ```diff
 diff -u /etc/open5gs/mme.yaml.old /etc/open5gs/mme.yaml
 --- mme.yaml.old	2018-04-15 18:28:31.000000000 +0900
 +++ mme.yaml	2018-04-15 19:53:10.000000000 +0900
-@@ -8,18 +8,20 @@ parameter:
+@@ -204,20 +204,20 @@ logger:
  mme:
-     freeDiameter: /etc/freeDiameter/mme.conf
+     freeDiameter: @sysconfdir@/freeDiameter/mme.conf
      s1ap:
-+      addr: 192.168.0.100
+-      addr: 127.0.0.2
++      addr: 10.10.0.2
      gtpc:
-+      addr: 192.168.0.100
-     gummei:
+       addr: 127.0.0.2
+     gummei: 
        plmn_id:
 -        mcc: 001
 -        mnc: 01
@@ -105,25 +176,29 @@ diff -u /etc/open5gs/mme.yaml.old /etc/open5gs/mme.yaml
        plmn_id:
 -        mcc: 001
 -        mnc: 01
--      tac: 12345
+-      tac: 7
 +        mcc: 901
 +        mnc: 70
-+      tac: 7
++      tac: 1
      security:
          integrity_order : [ EIA1, EIA2, EIA0 ]
          ciphering_order : [ EEA0, EEA1, EEA2 ]
+
 ```
 
-Modify [install/etc/open5gs/sgw.yaml](https://github.com/{{ site.github_username }}/open5gs/blob/master/configs/open5gs/sgw.yaml.in) to set the GTP-U IP address.  
+Modify [install/etc/open5gs/sgwu.yaml](https://github.com/{{ site.github_username }}/open5gs/blob/master/configs/open5gs/sgwu.yaml.in) to set the GTP-U IP address.  
 ```diff
-diff -u /etc/open5gs/sgw.yaml.old /etc/open5gs/sgw.yaml
---- sgw.yaml.old	2018-04-15 18:30:25.000000000 +0900
-+++ sgw.yaml	2018-04-15 18:30:30.000000000 +0900
-@@ -14,3 +14,4 @@
-     gtpc:
-       addr: 127.0.0.2
+diff -u /etc/open5gs/sgwu.yaml.old /etc/open5gs/sgwu.yaml
+--- sgwu.yaml.old	2018-04-15 18:30:25.000000000 +0900
++++ sgwu.yaml	2018-04-15 18:30:30.000000000 +0900
+@@ -51,7 +51,7 @@ logger:
+ #
+ sgwu:
      gtpu:
-+      addr: 192.168.0.100
+-      addr: 127.0.0.6
++      addr: 10.11.0.6
+     pfcp:
+       addr: 127.0.0.6
 ```
 
 If you modify the config files while Open5GS daemons are running, please restart them
@@ -138,7 +213,7 @@ Specify the absolute path to the sharead library as follows.
 $ echo $(cd $(dirname ./install/lib/x86_64-linux-gnu/) && pwd -P)/$(basename ./install/lib/x86_64-linux-gnu/)
 /home/acetcom/Documents/git/open5gs/install/lib/x86_64-linux-gnu
 $ export LD_LIBRARY_PATH=/home/acetcom/Documents/git/open5gs/install/lib/x86_64-linux-gnu
-$ ldd ./install/bin/open5gs-mmed
+$ ldd ./install/bin/open5gs-amfd
 ...
 	libogsapp.so.1 => /home/acetcom/Documents/git/open5gs/install/lib/x86_64-linux-gnu/libogsapp.so.1 (0x00007f161ab51000)
 	libogscore.so.1 => /home/acetcom/Documents/git/open5gs/install/lib/x86_64-linux-gnu/libogscore.so.1 (0x00007f161a922000)
@@ -157,58 +232,123 @@ Now let's get started.
 
 ```bash
 $ cd install/bin/
-$ ./open5gs-pcrfd
-Open5GS daemon v1.0.0
+$ ./install/bin/open5gs-mmed 
+Open5GS daemon v1.3.0-213-gd190548+
 
-10/27 15:47:55.821: [app] INFO: Configuration: '/Users/acetcom/Documents/git/open5gs/install/etc/open5gs/pcrf.yaml' (../src/main.c:54)
-10/27 15:47:55.822: [app] INFO: File Logging: '/Users/acetcom/Documents/git/open5gs/install/var/log/open5gs/pcrf.log' (../src/main.c:57)
-10/27 15:47:55.868: [dbi] INFO: MongoDB URI: 'mongodb://localhost/open5gs' (../lib/dbi/ogs-mongoc.c:99)
-10/27 15:47:55.965: [app] INFO: PCRF initialize...done (../src/pcrf/app-init.c:31)
+08/21 22:53:47.328: [app] INFO: Configuration: '/home/acetcom/Documents/git/open5gs/install/etc/open5gs/mme.yaml' (../src/main.c:54)
+08/21 22:53:47.328: [app] INFO: File Logging: '/home/acetcom/Documents/git/open5gs/install/var/log/open5gs/mme.log' (../src/main.c:57)
+08/21 22:53:47.365: [app] INFO: MME initialize...done (../src/mme/app-init.c:33)
+08/21 22:53:47.365: [gtp] INFO: gtp_server() [127.0.0.2]:2123 (../lib/gtp/path.c:32)
+08/21 22:53:47.365: [gtp] INFO: gtp_connect() [127.0.0.3]:2123 (../lib/gtp/path.c:59)
+08/21 22:53:47.366: [mme] INFO: s1ap_server() [127.0.0.2]:36412 (../src/mme/s1ap-sctp.c:57)
 
-$ ./open5gs-pgwd
-Open5GS daemon v1.0.0
+$ ./install/bin/open5gs-sgwcd 
+Open5GS daemon v1.3.0-213-gd190548+
 
-10/27 15:48:11.198: [app] INFO: Configuration: '/Users/acetcom/Documents/git/open5gs/install/etc/open5gs/pgw.yaml' (../src/main.c:54)
-10/27 15:48:11.199: [app] INFO: File Logging: '/Users/acetcom/Documents/git/open5gs/install/var/log/open5gs/pgw.log' (../src/main.c:57)
-10/27 15:48:11.292: [app] INFO: PGW initialize...done (../src/pgw/app-init.c:31)
-10/27 15:48:11.293: [gtp] INFO: gtp_server() [127.0.0.3]:2123 (../lib/gtp/path.c:32)
-10/27 15:48:11.293: [gtp] INFO: gtp_server() [::1]:2123 (../lib/gtp/path.c:32)
-10/27 15:48:11.293: [gtp] INFO: gtp_server() [127.0.0.3]:2152 (../lib/gtp/path.c:32)
-10/27 15:48:11.293: [gtp] INFO: gtp_server() [::1]:2152 (../lib/gtp/path.c:32)
+08/21 22:54:43.059: [app] INFO: Configuration: '/home/acetcom/Documents/git/open5gs/install/etc/open5gs/sgwc.yaml' (../src/main.c:54)
+08/21 22:54:43.059: [app] INFO: File Logging: '/home/acetcom/Documents/git/open5gs/install/var/log/open5gs/sgwc.log' (../src/main.c:57)
+08/21 22:54:43.065: [app] INFO: SGW-C initialize...done (../src/sgwc/app.c:31)
+08/21 22:54:43.066: [gtp] INFO: gtp_server() [127.0.0.3]:2123 (../lib/gtp/path.c:32)
+08/21 22:54:43.066: [pfcp] INFO: pfcp_server() [127.0.0.3]:8805 (../lib/pfcp/path.c:32)
+08/21 22:54:43.066: [pfcp] INFO: ogs_pfcp_connect() [127.0.0.6]:8805 (../lib/pfcp/path.c:60)
 
-$ ./open5gs-sgwd
-Open5GS daemon v1.0.0
+$ ./install/bin/open5gs-smfd
+Open5GS daemon v1.3.0-213-gd190548+
 
-10/27 15:48:21.526: [app] INFO: Configuration: '/Users/acetcom/Documents/git/open5gs/install/etc/open5gs/sgw.yaml' (../src/main.c:54)
-10/27 15:48:21.527: [app] INFO: File Logging: '/Users/acetcom/Documents/git/open5gs/install/var/log/open5gs/sgw.log' (../src/main.c:57)
-10/27 15:48:21.533: [app] INFO: SGW initialize...done (../src/sgw/app-init.c:31)
-10/27 15:48:21.537: [gtp] INFO: gtp_server() [127.0.0.2]:2123 (../lib/gtp/path.c:32)
-10/27 15:48:21.537: [gtp] INFO: gtp_server() [192.168.0.3]:2152 (../lib/gtp/path.c:32)
+08/21 22:54:56.000: [app] INFO: Configuration: '/home/acetcom/Documents/git/open5gs/install/etc/open5gs/smf.yaml' (../src/main.c:54)
+08/21 22:54:56.000: [app] INFO: File Logging: '/home/acetcom/Documents/git/open5gs/install/var/log/open5gs/smf.log' (../src/main.c:57)
+08/21 22:54:56.050: [gtp] INFO: gtp_server() [127.0.0.4]:2123 (../lib/gtp/path.c:32)
+08/21 22:54:56.050: [app] INFO: SMF initialize...done (../src/smf/app.c:31)
+08/21 22:54:56.050: [gtp] INFO: gtp_server() [::1]:2123 (../lib/gtp/path.c:32)
+08/21 22:54:56.050: [pfcp] INFO: pfcp_server() [127.0.0.4]:8805 (../lib/pfcp/path.c:32)
+08/21 22:54:56.050: [pfcp] INFO: pfcp_server() [::1]:8805 (../lib/pfcp/path.c:32)
+08/21 22:54:56.050: [pfcp] INFO: ogs_pfcp_connect() [127.0.0.7]:8805 (../lib/pfcp/path.c:60)
+08/21 22:54:56.051: [sbi] INFO: sbi_server() [127.0.0.4]:7777 (../lib/sbi/server.c:298)
 
-$ ./open5gs-hssd
-Open5GS daemon v1.0.0
+$ ./install/bin/open5gs-amfd
+Open5GS daemon v1.3.0-213-gd190548+
 
-10/27 15:48:32.802: [app] INFO: Configuration: '/Users/acetcom/Documents/git/open5gs/install/etc/open5gs/hss.yaml' (../src/main.c:54)
-10/27 15:48:32.803: [app] INFO: File Logging: '/Users/acetcom/Documents/git/open5gs/install/var/log/open5gs/hss.log' (../src/main.c:57)
-10/27 15:48:32.815: [dbi] INFO: MongoDB URI: 'mongodb://localhost/open5gs' (../lib/dbi/ogs-mongoc.c:99)
-10/27 15:48:32.861: [app] INFO: HSS initialize...done (../src/hss/app-init.c:31)
+08/21 22:55:14.015: [app] INFO: Configuration: '/home/acetcom/Documents/git/open5gs/install/etc/open5gs/amf.yaml' (../src/main.c:54)
+08/21 22:55:14.015: [app] INFO: File Logging: '/home/acetcom/Documents/git/open5gs/install/var/log/open5gs/amf.log' (../src/main.c:57)
+08/21 22:55:14.039: [app] INFO: AMF initialize...done (../src/amf/app.c:33)
+08/21 22:55:14.040: [sbi] INFO: sbi_server() [127.0.0.5]:7777 (../lib/sbi/server.c:298)
+08/21 22:55:14.040: [amf] INFO: ngap_server() [127.0.0.5]:38412 (../src/amf/ngap-sctp.c:56)
 
-$ ./open5gs-mmed
-Open5GS daemon v1.0.0
+$ ./install/bin/open5gs-sgwud 
+Open5GS daemon v1.3.0-213-gd190548+
 
-10/27 15:46:23.539: [app] INFO: Configuration: '/Users/acetcom/Documents/git/open5gs/install/etc/open5gs/mme.yaml' (../src/main.c:54)
-10/27 15:46:23.540: [app] INFO: File Logging: '/Users/acetcom/Documents/git/open5gs/install/var/log/open5gs/mme.log' (../src/main.c:57)
-10/27 15:46:23.682: [app] INFO: MME initialize...done (../src/mme/app-init.c:33)
-10/27 15:46:23.682: [gtp] INFO: gtp_server() [192.168.0.3]:2123 (../lib/gtp/path.c:32)
-10/27 15:46:23.683: [gtp] INFO: gtp_connect() [127.0.0.2]:2123 (../lib/gtp/path.c:57)
-10/27 15:46:23.683: [mme] INFO: s1ap_server() [192.168.0.3]:36412 (../src/mme/s1ap-usrpath.c:46)
+08/21 22:54:10.357: [app] INFO: Configuration: '/home/acetcom/Documents/git/open5gs/install/etc/open5gs/sgwu.yaml' (../src/main.c:54)
+08/21 22:54:10.357: [app] INFO: File Logging: '/home/acetcom/Documents/git/open5gs/install/var/log/open5gs/sgwu.log' (../src/main.c:57)
+08/21 22:54:10.360: [pfcp] INFO: pfcp_server() [127.0.0.6]:8805 (../lib/pfcp/path.c:32)
+08/21 22:54:10.360: [app] INFO: SGW-U initialize...done (../src/sgwu/app.c:31)
+08/21 22:54:10.361: [gtp] INFO: gtp_server() [127.0.0.6]:2152 (../lib/gtp/path.c:32)
+
+$ ./install/bin/open5gs-upfd 
+Open5GS daemon v1.3.0-213-gd190548+
+
+08/21 22:54:21.596: [app] INFO: Configuration: '/home/acetcom/Documents/git/open5gs/install/etc/open5gs/upf.yaml' (../src/main.c:54)
+08/21 22:54:21.596: [app] INFO: File Logging: '/home/acetcom/Documents/git/open5gs/install/var/log/open5gs/upf.log' (../src/main.c:57)
+08/21 22:54:21.601: [pfcp] INFO: pfcp_server() [127.0.0.7]:8805 (../lib/pfcp/path.c:32)
+08/21 22:54:21.601: [app] INFO: UPF initialize...done (../src/upf/app.c:31)
+08/21 22:54:21.601: [gtp] INFO: gtp_server() [127.0.0.7]:2152 (../lib/gtp/path.c:32)
+08/21 22:54:21.601: [gtp] INFO: gtp_server() [::1]:2152 (../lib/gtp/path.c:32)
+
+$ ./install/bin/open5gs-hssd
+Open5GS daemon v1.3.0-213-gd190548+
+
+08/21 22:57:17.450: [app] INFO: Configuration: '/home/acetcom/Documents/git/open5gs/install/etc/open5gs/hss.yaml' (../src/main.c:54)
+08/21 22:57:17.450: [app] INFO: File Logging: '/home/acetcom/Documents/git/open5gs/install/var/log/open5gs/hss.log' (../src/main.c:57)
+08/21 22:57:17.451: [dbi] INFO: MongoDB URI: 'mongodb://localhost/open5gs' (../lib/dbi/ogs-mongoc.c:99)
+08/21 22:57:17.519: [app] INFO: HSS initialize...done (../src/hss/app-init.c:31)
+
+$ ./install/bin/open5gs-pcrfd 
+Open5GS daemon v1.3.0-213-gd190548+
+
+08/21 22:57:45.894: [app] INFO: Configuration: '/home/acetcom/Documents/git/open5gs/install/etc/open5gs/pcrf.yaml' (../src/main.c:54)
+08/21 22:57:45.894: [app] INFO: File Logging: '/home/acetcom/Documents/git/open5gs/install/var/log/open5gs/pcrf.log' (../src/main.c:57)
+08/21 22:57:45.896: [dbi] INFO: MongoDB URI: 'mongodb://localhost/open5gs' (../lib/dbi/ogs-mongoc.c:99)
+08/21 22:57:45.997: [app] INFO: PCRF initialize...done (../src/pcrf/app-init.c:31)
+
+$ ./install/bin/open5gs-nrfd
+Open5GS daemon v1.3.0-213-gd190548+
+
+08/21 22:56:35.472: [app] INFO: Configuration: '/home/acetcom/Documents/git/open5gs/install/etc/open5gs/nrf.yaml' (../src/main.c:54)
+08/21 22:56:35.472: [app] INFO: File Logging: '/home/acetcom/Documents/git/open5gs/install/var/log/open5gs/nrf.log' (../src/main.c:57)
+08/21 22:56:35.472: [app] INFO: NRF initialize...done (../src/nrf/app.c:31)
+08/21 22:56:35.473: [sbi] INFO: sbi_server() [127.0.0.10]:7777 (../lib/sbi/server.c:298)
+08/21 22:56:35.473: [sbi] INFO: sbi_server() [::1]:7777 (../lib/sbi/server.c:298
+
+$ ./install/bin/open5gs-ausfd
+Open5GS daemon v1.3.0-213-gd190548+
+
+08/21 22:55:41.899: [app] INFO: Configuration: '/home/acetcom/Documents/git/open5gs/install/etc/open5gs/ausf.yaml' (../src/main.c:54)
+08/21 22:55:41.899: [app] INFO: File Logging: '/home/acetcom/Documents/git/open5gs/install/var/log/open5gs/ausf.log' (../src/main.c:57)
+08/21 22:55:41.900: [app] INFO: AUSF initialize...done (../src/ausf/app.c:31)
+08/21 22:55:41.900: [sbi] INFO: sbi_server() [127.0.0.11]:7777 (../lib/sbi/server.c:298)
+
+$ ./install/bin/open5gs-udmd 
+Open5GS daemon v1.3.0-213-gd190548+
+
+08/21 22:56:02.154: [app] INFO: Configuration: '/home/acetcom/Documents/git/open5gs/install/etc/open5gs/udm.yaml' (../src/main.c:54)
+08/21 22:56:02.154: [app] INFO: File Logging: '/home/acetcom/Documents/git/open5gs/install/var/log/open5gs/udm.log' (../src/main.c:57)
+08/21 22:56:02.155: [app] INFO: UDM initialize...done (../src/udm/app.c:31)
+08/21 22:56:02.155: [sbi] INFO: sbi_server() [127.0.0.12]:7777 (../lib/sbi/server.c:298)
+
+$ ./install/bin/open5gs-udrd 
+Open5GS daemon v1.3.0-213-gd190548+
+
+08/21 22:56:15.810: [app] INFO: Configuration: '/home/acetcom/Documents/git/open5gs/install/etc/open5gs/udr.yaml' (../src/main.c:54)
+08/21 22:56:15.810: [app] INFO: File Logging: '/home/acetcom/Documents/git/open5gs/install/var/log/open5gs/udr.log' (../src/main.c:57)
+08/21 22:56:15.813: [dbi] INFO: MongoDB URI: 'mongodb://localhost/open5gs' (../lib/dbi/ogs-mongoc.c:99)
+08/21 22:56:15.813: [app] INFO: UDR initialize...done (../src/udr/app.c:31)
+08/21 22:56:15.813: [sbi] INFO: sbi_server() [127.0.0.13]:7777 (../lib/sbi/server.c:298)
 ```
 
 Several command line options are provided.
 
 ```bash
-$ ./open5gs-mmed -h
-Usage: ./open5gs-mmed [options]
+$ ./install/bin/open5gs-amfd -h
+Usage: ./install/bin/open5gs-amfd [options]
 Options:
    -c filename    : set configuration file
    -l filename    : set logging file
@@ -224,6 +364,18 @@ Options:
 You can also copy the binaries to /usr/bin to be able to run them from anywhere on the system.
 ```bash
 $ cp open5gs* /usr/bin/
+```
+
+For convenience, you can execute all NFs at once by using the following command.
+```bash
+$ cd build
+$ cat configs/sample.yaml ## check the configuration
+
+$ ./test/app/5gc ## 5G Core Only with sample.yaml
+OR
+$ ./test/app/epc -c ./config/srslte.yaml ## EPC Only with srslte.yaml
+OR
+$ ./test/app/app ## Both 5G Core and EPC with sample.yaml
 ```
 
 ### Building the WebUI of Open5GS
@@ -327,38 +479,45 @@ Debugging tools can help you troubleshoot problems.
 - [GDB](https://www.gnu.org/software/gdb/) can be used as below:
 
   ```bash
-  $ gdb ./open5gs-mmed
+  $ gdb ./open5gs-amfd
   ```
 
 - On *Mac OS X*, you can use the [LLDB](https://lldb.llvm.org/).
 
   ```bash
-  $ lldb ./open5gs-mmed
+  $ lldb ./open5gs-amfd
   ```
 
 You can use the command line option[`-d`] to record more logs.
 
 ```bash
-Open5GS daemon v1.0.0
+$ ./test/app/app -d
+Open5GS daemon v1.3.0-213-gd190548+
 
-10/27 15:50:45.170: [app] INFO: Configuration: '/Users/acetcom/Documents/git/open5gs/install/etc/open5gs/mme.yaml' (../src/main.c:54)
-10/27 15:50:45.171: [app] INFO: File Logging: '/Users/acetcom/Documents/git/open5gs/install/var/log/open5gs/mme.log' (../src/main.c:57)
-10/27 15:50:45.171: [app] INFO: LOG-LEVEL: 'debug' (../src/main.c:60)
-10/27 15:50:45.267: [thread] DEBUG: [0x10b52ed08] thread started (../lib/core/ogs-thread.c:101)
-10/27 15:50:45.267: [thread] DEBUG: [0x10b52ed08] worker signal (../lib/core/ogs-thread.c:66)
-10/27 15:50:45.268: [app] INFO: MME initialize...done (../src/mme/app-init.c:33)
-10/27 15:50:45.268: [mme] DEBUG: mme_state_initial(): INIT
- (../src/mme/mme-sm.c:38)
-10/27 15:50:45.268: [mme] DEBUG: mme_state_operational(): ENTRY
- (../src/mme/mme-sm.c:83)
-10/27 15:50:45.269: [sock] DEBUG: socket create(2:2:17) (../lib/core/ogs-socket.c:92)
-10/27 15:50:45.269: [sock] DEBUG: udp_socket() family:2 (../lib/core/ogs-udp.c:31)
-10/27 15:50:45.269: [sock] DEBUG: socket bind 192.168.0.3:2123 (../lib/core/ogs-socket.c:117)
-10/27 15:50:45.269: [sock] DEBUG: udp_server() [192.168.0.3]:2123 (../lib/core/ogs-udp.c:55)
-10/27 15:50:45.269: [gtp] INFO: gtp_server() [192.168.0.3]:2123 (../lib/gtp/path.c:32)
-10/27 15:50:45.269: [gtp] INFO: gtp_connect() [127.0.0.2]:2123 (../lib/gtp/path.c:57)
-10/27 15:50:45.270: [sctp] DEBUG: Old INITMSG (numout:10 maxin:2048 maxattempt:8 maxinit_to:60000) (../lib/sctp/ogs-usrsctp.c:132)
-10/27 15:50:45.271: [sctp] DEBUG: New INITMSG (numout:30 maxin:65535 maxattempt:4 maxinit_to:8000) (../lib/sctp/ogs-usrsctp.c:152)
-10/27 15:50:45.271: [sctp] DEBUG: sctp_bind() [192.168.0.3]:36412 (../lib/sctp/ogs-usrsctp.c:261)
-10/27 15:50:45.271: [mme] INFO: s1ap_server() [192.168.0.3]:36412 (../src/mme/s1ap-usrpath.c:46)
+08/21 23:01:54.246: [app] INFO: Configuration: '/home/acetcom/Documents/git/open5gs/build/configs/sample.yaml' (../src/main.c:54)
+08/21 23:01:54.246: [thread] DEBUG: [0x7f8de4d25018] worker signal (../lib/core/ogs-thread.c:66)
+08/21 23:01:54.246: [thread] DEBUG: [0x7f8de4d25018] thread started (../lib/core/ogs-thread.c:101)
+Open5GS daemon v1.3.0-213-gd190548+
+
+08/21 23:01:54.254: [app] INFO: Configuration: '/home/acetcom/Documents/git/open5gs/build/configs/sample.yaml' (../src/main.c:54)
+08/21 23:01:54.254: [thread] DEBUG: [0x7ff8d13be818] worker signal (../lib/core/ogs-thread.c:66)
+08/21 23:01:54.254: [nrf] DEBUG: nrf_state_initial(): INIT (../src/nrf/nrf-sm.c:25)
+08/21 23:01:54.254: [nrf] DEBUG: nrf_state_operational(): ENTRY (../src/nrf/nrf-sm.c:50)
+08/21 23:01:54.254: [thread] DEBUG: [0x7ff8d13be818] thread started (../lib/core/ogs-thread.c:101)
+08/21 23:01:54.254: [app] INFO: NRF initialize...done (../src/nrf/app.c:31)
+08/21 23:01:54.255: [sbi] INFO: sbi_server() [127.0.0.10]:7777 (../lib/sbi/server.c:298)
+08/21 23:01:54.255: [sbi] INFO: sbi_server() [::1]:7777 (../lib/sbi/server.c:298)
+08/21 23:01:54.296: [thread] DEBUG: [0x7f8de4d25098] worker signal (../lib/core/ogs-thread.c:66)
+08/21 23:01:54.296: [thread] DEBUG: [0x7f8de4d25098] thread started (../lib/core/ogs-thread.c:101)
+Open5GS daemon v1.3.0-213-gd190548+
+
+08/21 23:01:54.315: [app] INFO: Configuration: '/home/acetcom/Documents/git/open5gs/build/configs/sample.yaml' (../src/main.c:54)
+08/21 23:01:54.319: [dbi] INFO: MongoDB URI: 'mongodb://localhost/open5gs' (../lib/dbi/ogs-mongoc.c:99)
+08/21 23:01:54.332: [app] INFO: PCRF initialize...done (../src/pcrf/app-init.c:31)
+08/21 23:01:54.347: [thread] DEBUG: [0x7f8de4d25118] worker signal (../lib/core/ogs-thread.c:66)
+08/21 23:01:54.347: [thread] DEBUG: [0x7f8de4d25118] thread started (../lib/core/ogs-thread.c:101)
+Open5GS daemon v1.3.0-213-gd190548+
+
+...
+
 ```

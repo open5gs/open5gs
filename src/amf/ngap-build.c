@@ -157,7 +157,7 @@ ogs_pkbuf_t *ngap_build_ng_setup_response(void)
         ASN_SEQUENCE_ADD(&PLMNSupportList->list, NGAP_PLMNSupportItem);
     }
 
-    return nga_ngap_encode(&pdu);
+    return ogs_ngap_encode(&pdu);
 }
 
 ogs_pkbuf_t *ngap_build_ng_setup_failure(
@@ -212,7 +212,7 @@ ogs_pkbuf_t *ngap_build_ng_setup_failure(
     if (TimeToWait)
         *TimeToWait = time_to_wait;
 
-    return nga_ngap_encode(&pdu);
+    return ogs_ngap_encode(&pdu);
 }
 
 ogs_pkbuf_t *ngap_build_downlink_nas_transport(
@@ -285,7 +285,7 @@ ogs_pkbuf_t *ngap_build_downlink_nas_transport(
     memcpy(NAS_PDU->buf, gmmbuf->data, NAS_PDU->size);
     ogs_pkbuf_free(gmmbuf);
 
-    return nga_ngap_encode(&pdu);
+    return ogs_ngap_encode(&pdu);
 }
 
 ogs_pkbuf_t *ngap_build_initial_context_setup_request(
@@ -589,7 +589,7 @@ ogs_pkbuf_t *ngap_build_initial_context_setup_request(
         ogs_pkbuf_free(gmmbuf);
     }
 
-    return nga_ngap_encode(&pdu);
+    return ogs_ngap_encode(&pdu);
 }
 
 #if 0
@@ -732,7 +732,7 @@ ogs_pkbuf_t *ngap_build_ue_context_modification_request(amf_ue_t *amf_ue)
         memcpy(SecurityKey->buf, amf_ue->kgnb, SecurityKey->size);
     }
 
-    return nga_ngap_encode(&pdu);
+    return ogs_ngap_encode(&pdu);
 }
 #endif
 
@@ -799,7 +799,7 @@ ogs_pkbuf_t *ngap_build_ue_context_release_command(
     Cause->present = group;
     Cause->choice.radioNetwork = cause;
 
-    return nga_ngap_encode(&pdu);
+    return ogs_ngap_encode(&pdu);
 }
 
 ogs_pkbuf_t *ngap_build_pdu_session_resource_setup_request(
@@ -908,7 +908,7 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_setup_request(
     memcpy(transfer->buf, n2smbuf->data, transfer->size);
     ogs_pkbuf_free(n2smbuf);
 
-    return nga_ngap_encode(&pdu);
+    return ogs_ngap_encode(&pdu);
 }
 
 ogs_pkbuf_t *ngap_build_pdu_session_resource_release_command(
@@ -1015,7 +1015,7 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_release_command(
     memcpy(transfer->buf, n2smbuf->data, transfer->size);
     ogs_pkbuf_free(n2smbuf);
 
-    return nga_ngap_encode(&pdu);
+    return ogs_ngap_encode(&pdu);
 }
 
 #if 0
@@ -1139,7 +1139,7 @@ ogs_pkbuf_t *ngap_build_paging(
             &tai_item->tAI.pLMNidentity);
     ogs_asn_uint16_to_OCTET_STRING(amf_ue->tai.tac, &tai_item->tAI.tAC);
 
-    return nga_ngap_encode(&pdu);
+    return ogs_ngap_encode(&pdu);
 }
 
 ogs_pkbuf_t *ngap_build_amf_configuration_transfer(
@@ -1187,7 +1187,7 @@ ogs_pkbuf_t *ngap_build_amf_configuration_transfer(
             son_configuration_transfer, SONConfigurationTransfer);
     ogs_assert(rv == OGS_OK);
 
-    return nga_ngap_encode(&pdu);
+    return ogs_ngap_encode(&pdu);
 }
 
 ogs_pkbuf_t *ngap_build_path_switch_ack(amf_ue_t *amf_ue)
@@ -1268,7 +1268,7 @@ ogs_pkbuf_t *ngap_build_path_switch_ack(amf_ue_t *amf_ue)
     memcpy(SecurityContext->nextHopParameter.buf,
             amf_ue->nh, SecurityContext->nextHopParameter.size);
 
-    return nga_ngap_encode(&pdu);
+    return ogs_ngap_encode(&pdu);
 }
 
 ogs_pkbuf_t *ngap_build_path_switch_failure(
@@ -1339,7 +1339,7 @@ ogs_pkbuf_t *ngap_build_path_switch_failure(
     Cause->present = group;
     Cause->choice.radioNetwork = cause;
 
-    return nga_ngap_encode(&pdu);
+    return ogs_ngap_encode(&pdu);
 }
 
 ogs_pkbuf_t *ngap_build_handover_command(ran_ue_t *source_ue)
@@ -1510,7 +1510,7 @@ ogs_pkbuf_t *ngap_build_handover_command(ran_ue_t *source_ue)
     ogs_asn_buffer_to_OCTET_STRING(amf_ue->container.buf,
             amf_ue->container.size, Target_ToSource_TransparentContainer);
 
-    return nga_ngap_encode(&pdu);
+    return ogs_ngap_encode(&pdu);
 }
 
 ogs_pkbuf_t *ngap_build_handover_preparation_failure(
@@ -1584,7 +1584,7 @@ ogs_pkbuf_t *ngap_build_handover_preparation_failure(
     Cause->present = cause->present;
     Cause->choice.radioNetwork = cause->choice.radioNetwork;
 
-    return nga_ngap_encode(&pdu);
+    return ogs_ngap_encode(&pdu);
 }
 
 ogs_pkbuf_t *ngap_build_handover_request(
@@ -1829,7 +1829,7 @@ ogs_pkbuf_t *ngap_build_handover_request(
     memcpy(SecurityContext->nextHopParameter.buf,
             amf_ue->nh, SecurityContext->nextHopParameter.size);
 
-    return nga_ngap_encode(&pdu);
+    return ogs_ngap_encode(&pdu);
 }
 
 ogs_pkbuf_t *ngap_build_handover_cancel_ack(ran_ue_t *source_ue)
@@ -1886,7 +1886,7 @@ ogs_pkbuf_t *ngap_build_handover_cancel_ack(ran_ue_t *source_ue)
     ogs_debug("    Source : RAN_UE_NGAP_ID[%d] AMF_UE_NGAP_ID[%d]",
             source_ue->ran_ue_ngap_id, source_ue->amf_ue_ngap_id);
 
-    return nga_ngap_encode(&pdu);
+    return ogs_ngap_encode(&pdu);
 }
 
 ogs_pkbuf_t *ngap_build_amf_status_transfer(
@@ -1965,7 +1965,7 @@ ogs_pkbuf_t *ngap_build_amf_status_transfer(
             RAN_StatusTransfer_TransparentContainer);
     ogs_assert(rv == OGS_OK);
 
-    return nga_ngap_encode(&pdu);
+    return ogs_ngap_encode(&pdu);
 }
 #endif
 
@@ -2041,7 +2041,7 @@ ogs_pkbuf_t *ngap_build_error_indication(
     ogs_debug("    Group[%d] Cause[%d]",
             Cause->present, (int)Cause->choice.radioNetwork);
 
-    return nga_ngap_encode(&pdu);
+    return ogs_ngap_encode(&pdu);
 }
 
 #if 0
@@ -2104,7 +2104,7 @@ ogs_pkbuf_t *ngap_build_s1_reset(
         ResetType->choice.s1_Interface = NGAP_ResetAll_reset_all;
     }
 
-    return nga_ngap_encode(&pdu);
+    return ogs_ngap_encode(&pdu);
 }
 
 ogs_pkbuf_t *ngap_build_s1_reset_partial(
@@ -2226,6 +2226,6 @@ ogs_pkbuf_t *ngap_build_s1_reset_ack(
         }
     }
 
-    return nga_ngap_encode(&pdu);
+    return ogs_ngap_encode(&pdu);
 }
 #endif

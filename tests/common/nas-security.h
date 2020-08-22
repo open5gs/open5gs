@@ -26,7 +26,12 @@ extern "C" {
 
 ogs_pkbuf_t *test_nas_5gs_security_encode(
     test_ue_t *test_ue, ogs_nas_5gs_message_t *message);
-int test_nas_5gs_security_decode(test_ue_t *test_ue, 
+int test_nas_5gs_security_decode(test_ue_t *test_ue,
+    ogs_nas_security_header_type_t security_header_type, ogs_pkbuf_t *pkbuf);
+
+ogs_pkbuf_t *test_nas_eps_security_encode(
+    test_ue_t *test_ue, ogs_nas_eps_message_t *message);
+int test_nas_eps_security_decode(test_ue_t *test_ue,
     ogs_nas_security_header_type_t security_header_type, ogs_pkbuf_t *pkbuf);
 
 #ifdef __cplusplus

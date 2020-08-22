@@ -20,9 +20,11 @@ libs1ap_sources = files('''
 
     conv.h
     message.h 
+    build.h
 
     conv.c 
     message.c
+    build.c
 '''.split())
 
 libs1ap_inc = include_directories('.')

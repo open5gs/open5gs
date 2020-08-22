@@ -17,7 +17,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "test-packet.h"
+#include "test-common.h"
 
 static void test1_func(abts_case *tc, void *data)
 {

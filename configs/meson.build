@@ -34,20 +34,13 @@ else
 endif
 
 example_conf = '''
-    5gc.yaml
-    5gc-sample.yaml
-    00101.yaml
-    23504.yaml
-    minimal.yaml
-    epc.yaml
-    epc-fdconf.yaml
-    epc-custom.yaml
-    mnc3.yaml
+    sample.yaml
+    310014.yaml
     csfb.yaml
     volte.yaml
+    minimal.yaml
     srslte.yaml
-    cups.yaml
-    app.yaml
+    sample.yaml
 '''.split()
 
 foreach file : example_conf

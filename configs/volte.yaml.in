@@ -10,19 +10,16 @@ parameter:
 #    no_ausf: true
 #    no_udm: true
 #    no_udr: true
+#    no_mme: true
+#    no_sgwc: true
+#    no_sgwu: true
+#    no_pcrf: true
+#    no_hss: true
 
-nrf:
-    sbi:
-      addr:
-        - 127.0.0.1
-        - ::1
-      port: 7777
 mme:
     freeDiameter:
-      identity: mme.open-ims.test
-      realm: open-ims.test
-#      port: 3868
-#      sec_port: 5868
+      identity: mme.localdomain
+      realm: localdomain
       listen_on: 127.0.0.2
       load_extension:
         - module: @freediameter_extensions_builddir@/dbg_msg_dumps.fdx
@@ -34,15 +31,14 @@ mme:
         - module: @freediameter_extensions_builddir@/dict_dcca.fdx
         - module: @freediameter_extensions_builddir@/dict_dcca_3gpp.fdx
       connect:
-        - identity: hss.open-ims.test
-          addr: 127.0.0.4
-#          port: 3868
+        - identity: hss.localdomain
+          addr: 127.0.0.8
 
     s1ap:
-      addr: 127.0.0.1
+      addr: 127.0.0.2
     gtpc:
-      addr: 127.0.0.1
-    gummei: 
+      addr: 127.0.0.2
+    gummei:
       plmn_id:
         mcc: 001
         mnc: 01
@@ -57,27 +53,24 @@ mme:
         integrity_order : [ EIA1, EIA2, EIA0 ]
         ciphering_order : [ EEA0, EEA1, EEA2 ]
 
+    network_name:
+        full: Open5GS
+
 sgwc:
     gtpc:
-      addr: 127.0.0.6
+      addr: 127.0.0.3
     pfcp:
-      addr: 127.0.0.6
-
-sgwu:
-    gtpu:
-      addr: 127.0.0.7
-    pfcp:
-      addr: 127.0.0.7
+      addr: 127.0.0.3
 
 smf:
     sbi:
-      - addr: 127.0.0.3
+      - addr: 127.0.0.4
         port: 7777
     gtpc:
-      - addr: 127.0.0.3
+      - addr: 127.0.0.4
       - addr: ::1
     pfcp:
-      - addr: 127.0.0.3
+      - addr: 127.0.0.4
     pdn:
       - addr: 10.45.0.1/16
       - addr: cafe::1/64
@@ -88,42 +81,8 @@ smf:
       - 2001:4860:4860::8844
     mtu: 1400
     freeDiameter:
-      identity: smf.open-ims.test
-      realm: open-ims.test
-#      port: 3868
-#      sec_port: 5868
-      listen_on: 127.0.0.3
-      load_extension:
-        - module: @freediameter_extensions_builddir@/dbg_msg_dumps.fdx
-          conf: 0x8888
-        - module: @freediameter_extensions_builddir@/dict_rfc5777.fdx
-        - module: @freediameter_extensions_builddir@/dict_mip6i.fdx
-        - module: @freediameter_extensions_builddir@/dict_nasreq.fdx
-        - module: @freediameter_extensions_builddir@/dict_nas_mipv6.fdx
-        - module: @freediameter_extensions_builddir@/dict_dcca.fdx
-        - module: @freediameter_extensions_builddir@/dict_dcca_3gpp.fdx
-      connect:
-        - identity: pcrf.open-ims.test
-          addr: 127.0.0.5
-#          port: 3868
-
-upf:
-    pfcp:
-      - addr: 127.0.0.4
-    gtpu:
-      - addr:
-        - 127.0.0.4
-        - ::1
-    pdn:
-      - addr: 10.45.0.1/16
-      - addr: cafe::1/64
-
-hss:
-    freeDiameter:
-      identity: hss.open-ims.test
-      realm: open-ims.test
-#      port: 3868
-#      sec_port: 5868
+      identity: smf.localdomain
+      realm: localdomain
       listen_on: 127.0.0.4
       load_extension:
         - module: @freediameter_extensions_builddir@/dbg_msg_dumps.fdx
@@ -135,17 +94,61 @@ hss:
         - module: @freediameter_extensions_builddir@/dict_dcca.fdx
         - module: @freediameter_extensions_builddir@/dict_dcca_3gpp.fdx
       connect:
-        - identity: mme.open-ims.test
-          addr: 127.0.0.2
-#          port: 3868
+        - identity: pcrf.localdomain
+          addr: 127.0.0.9
+amf:
+    sbi:
+      - addr: 127.0.0.5
+        port: 7777
+    ngap:
+      - addr: 127.0.0.5
+    guami:
+      - plmn_id:
+          mcc: 001
+          mnc: 01
+        amf_id:
+          region: 2
+          set: 1
+    tai:
+      - plmn_id:
+          mcc: 001
+          mnc: 01
+        tac: 1
+    plmn:
+      - plmn_id:
+          mcc: 001
+          mnc: 01
+        s_nssai:
+          - sst: 1
+    security:
+        integrity_order : [ NIA1, NIA2, NIA0 ]
+        ciphering_order : [ NEA0, NEA1, NEA2 ]
+    network_name:
+        full: Open5GS
+    amf_name: open5gs-amf0
 
-pcrf:
+sgwu:
+    gtpu:
+      addr: 127.0.0.6
+    pfcp:
+      addr: 127.0.0.6
+
+upf:
+    pfcp:
+      - addr: 127.0.0.7
+    gtpu:
+      - addr:
+        - 127.0.0.7
+        - ::1
+    pdn:
+      - addr: 10.45.0.1/16
+      - addr: cafe::1/64
+
+hss:
     freeDiameter:
-      identity: pcrf.open-ims.test
-      realm: open-ims.test
-#      port: 3868
-#      sec_port: 5868
-      listen_on: 127.0.0.5
+      identity: hss.localdomain
+      realm: localdomain
+      listen_on: 127.0.0.8
       load_extension:
         - module: @freediameter_extensions_builddir@/dbg_msg_dumps.fdx
           conf: 0x8888
@@ -156,7 +159,46 @@ pcrf:
         - module: @freediameter_extensions_builddir@/dict_dcca.fdx
         - module: @freediameter_extensions_builddir@/dict_dcca_3gpp.fdx
       connect:
-        - identity: smf.open-ims.test
-          addr: 127.0.0.3
-        - identity: pcscf.open-ims.test
+        - identity: mme.localdomain
+          addr: 127.0.0.2
+pcrf:
+    freeDiameter:
+      identity: pcrf.localdomain
+      realm: localdomain
+      listen_on: 127.0.0.9
+      load_extension:
+        - module: @freediameter_extensions_builddir@/dbg_msg_dumps.fdx
+          conf: 0x8888
+        - module: @freediameter_extensions_builddir@/dict_rfc5777.fdx
+        - module: @freediameter_extensions_builddir@/dict_mip6i.fdx
+        - module: @freediameter_extensions_builddir@/dict_nasreq.fdx
+        - module: @freediameter_extensions_builddir@/dict_nas_mipv6.fdx
+        - module: @freediameter_extensions_builddir@/dict_dcca.fdx
+        - module: @freediameter_extensions_builddir@/dict_dcca_3gpp.fdx
+      connect:
+        - identity: smf.localdomain
+          addr: 127.0.0.4
+        - identity: pcscf.localdomain
           addr: 127.0.0.1
+
+nrf:
+    sbi:
+      addr:
+        - 127.0.0.10
+        - ::1
+      port: 7777
+
+ausf:
+    sbi:
+      - addr: 127.0.0.11
+        port: 7777
+
+udm:
+    sbi:
+      - addr: 127.0.0.12
+        port: 7777
+
+udr:
+    sbi:
+      - addr: 127.0.0.13
+        port: 7777

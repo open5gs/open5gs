@@ -1,0 +1,3 @@
+usr/bin/open5gs-ausfd
+configs/open5gs/ausf.yaml etc/open5gs
+configs/systemd/open5gs-ausfd.service lib/systemd/system

@@ -28,9 +28,7 @@
 extern "C" {
 #endif
 
-void test_epc_run(int argc, const char *const argv[],
-        const char *name, void (*init)(const char * const argv[]));
-void test_5gc_run(int argc, const char *const argv[],
+void test_app_run(int argc, const char *const argv[],
         const char *name, void (*init)(const char * const argv[]));
 void test_child_terminate(void);
 ogs_thread_t *test_child_create(const char *name, const char *const argv[]);

@@ -17,7 +17,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "test-ngap.h"
+#include "test-common.h"
 
 void testngap_recv(test_ue_t *test_ue, ogs_pkbuf_t *pkbuf)
 {
@@ -32,7 +32,7 @@ void testngap_recv(test_ue_t *test_ue, ogs_pkbuf_t *pkbuf)
     ogs_assert(test_ue);
     ogs_assert(pkbuf);
 
-    rv = nga_ngap_decode(&message, pkbuf);
+    rv = ogs_ngap_decode(&message, pkbuf);
     ogs_assert(rv == OGS_OK);
 
     pdu = &message;
@@ -50,14 +50,14 @@ void testngap_recv(test_ue_t *test_ue, ogs_pkbuf_t *pkbuf)
         case NGAP_ProcedureCode_id_InitialContextSetup:
             testngap_handle_initial_context_setup_request(test_ue, pdu);
             break;
+        case NGAP_ProcedureCode_id_UEContextRelease:
+            testngap_handle_ue_release_context_command(test_ue, pdu);
+            break;
         case NGAP_ProcedureCode_id_PDUSessionResourceSetup:
             testngap_handle_pdu_session_resource_setup_request(test_ue, pdu);
             break;
         case NGAP_ProcedureCode_id_PDUSessionResourceRelease:
             testngap_handle_pdu_session_resource_release_command(test_ue, pdu);
-            break;
-        case NGAP_ProcedureCode_id_UEContextRelease:
-            /* Nothing */
             break;
         case NGAP_ProcedureCode_id_ErrorIndication:
             /* Nothing */
@@ -100,7 +100,7 @@ void testngap_recv(test_ue_t *test_ue, ogs_pkbuf_t *pkbuf)
         break;
     }
 
-    nga_ngap_free(&message);
+    ogs_ngap_free(&message);
     ogs_pkbuf_free(pkbuf);
 }
 

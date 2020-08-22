@@ -30,9 +30,9 @@ extern "C" {
 
 typedef struct NGAP_NGAP_PDU ogs_ngap_message_t;
 
-int nga_ngap_decode(ogs_ngap_message_t *message, ogs_pkbuf_t *pkbuf);
-ogs_pkbuf_t *nga_ngap_encode(ogs_ngap_message_t *message);
-void nga_ngap_free(ogs_ngap_message_t *message);
+int ogs_ngap_decode(ogs_ngap_message_t *message, ogs_pkbuf_t *pkbuf);
+ogs_pkbuf_t *ogs_ngap_encode(ogs_ngap_message_t *message);
+void ogs_ngap_free(ogs_ngap_message_t *message);
 
 #ifdef __cplusplus
 }

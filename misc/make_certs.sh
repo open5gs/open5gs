@@ -25,10 +25,10 @@ openssl genrsa -out $1/hss.key.pem 1024
 openssl req -new -batch -out hss.csr.pem -key $1/hss.key.pem -subj /CN=hss.localdomain/C=KO/ST=Seoul/L=Nowon/O=Open5GS/OU=Tests
 openssl ca -cert $1/cacert.pem -days 3650 -keyfile cakey.pem -in hss.csr.pem -out $1/hss.cert.pem -outdir . -batch
 
-#pgw
-openssl genrsa -out $1/pgw.key.pem 1024
-openssl req -new -batch -out pgw.csr.pem -key $1/pgw.key.pem -subj /CN=pgw.localdomain/C=KO/ST=Seoul/L=Nowon/O=Open5GS/OU=Tests
-openssl ca -cert $1/cacert.pem -days 3650 -keyfile cakey.pem -in pgw.csr.pem -out $1/pgw.cert.pem -outdir . -batch
+#smf
+openssl genrsa -out $1/smf.key.pem 1024
+openssl req -new -batch -out smf.csr.pem -key $1/smf.key.pem -subj /CN=smf.localdomain/C=KO/ST=Seoul/L=Nowon/O=Open5GS/OU=Tests
+openssl ca -cert $1/cacert.pem -days 3650 -keyfile cakey.pem -in smf.csr.pem -out $1/smf.cert.pem -outdir . -batch
 
 #pcrf
 openssl genrsa -out $1/pcrf.key.pem 1024
@@ -38,4 +38,4 @@ openssl ca -cert $1/cacert.pem -days 3650 -keyfile cakey.pem -in pcrf.csr.pem -o
 rm -rf demoCA
 rm -f 01.pem 02.pem 03.pem 04.pem
 rm -f cakey.pem
-rm -f mme.csr.pem hss.csr.pem pgw.csr.pem pcrf.csr.pem
+rm -f mme.csr.pem hss.csr.pem smf.csr.pem pcrf.csr.pem

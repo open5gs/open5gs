@@ -17,7 +17,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "test-5gc.h"
+#include "test-app.h"
 
 static ogs_thread_t *nrf_thread = NULL;
 static ogs_thread_t *ausf_thread = NULL;
@@ -91,4 +91,6 @@ void test_5gc_final(void)
 {
     ogs_dbi_final();
     ogs_sctp_final();
+
+    test_context_final();
 }

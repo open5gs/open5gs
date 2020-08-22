@@ -96,6 +96,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
     mme_ue_t *mme_ue = NULL;
     enb_ue_t *enb_ue = NULL;
     ogs_nas_eps_message_t *message = NULL;
+    ogs_nas_security_header_type_t h;
     
     ogs_assert(e);
         
@@ -113,6 +114,8 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
 
         enb_ue = mme_ue->enb_ue;
         ogs_assert(enb_ue);
+
+        h.type = e->nas_type;
 
         if (message->emm.h.security_header_type
                 == OGS_NAS_SECURITY_HEADER_FOR_SERVICE_REQUEST_MESSAGE) {
@@ -198,7 +201,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
                 break;
             }
 
-            if (SECURITY_CONTEXT_IS_VALID(mme_ue)) {
+            if (h.integrity_protected && SECURITY_CONTEXT_IS_VALID(mme_ue)) {
                 rv = nas_eps_send_emm_to_esm(mme_ue,
                         &mme_ue->pdn_connectivity_request);
                 if (rv != OGS_OK) {

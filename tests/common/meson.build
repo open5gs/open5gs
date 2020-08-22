@@ -34,9 +34,21 @@ libtestcommon_sources = files('''
     gmm-handler.c
     gsm-build.c
     gsm-handler.c
+
+    s1ap-build.c
+    s1ap-handler.c
+    s1ap-path.c
+
+    emm-build.c
+    emm-handler.c
+    esm-build.c
+    esm-handler.c
+
     nas-path.c
     nas-encoder.c
     nas-security.c
+
+    sgsap-build.c
 '''.split())
 
 libtestcommon_inc = include_directories('.')
@@ -50,6 +62,7 @@ libtestcommon = static_library('testcomon',
                     libdbi_dep,
                     libsctp_dep,
                     libgtp_dep,
+                    libs1ap_dep,
                     libngap_dep,
                     libnas_eps_dep,
                     libnas_5gs_dep,
@@ -64,6 +77,7 @@ libtestcommon_dep = declare_dependency(
                     libdbi_dep,
                     libsctp_dep,
                     libgtp_dep,
+                    libs1ap_dep,
                     libngap_dep,
                     libnas_eps_dep,
                     libnas_5gs_dep,

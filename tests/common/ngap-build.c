@@ -17,10 +17,10 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "test-ngap.h"
+#include "test-common.h"
 
 static ogs_pkbuf_t *testngap_build_pdu_session_resource_setup_response_trasfer(
-        test_sess_t *sess);
+        test_bearer_t *qos_flow);
 
 ogs_pkbuf_t *testngap_build_ng_setup_request(uint32_t gnb_id, uint8_t bitsize)
 {
@@ -108,13 +108,13 @@ ogs_pkbuf_t *testngap_build_ng_setup_request(uint32_t gnb_id, uint8_t bitsize)
             strlen(ran_node_name), RANNodeName);
 
     SupportedTAItem = CALLOC(1, sizeof(NGAP_SupportedTAItem_t));
-    if (test_self()->served_tai[0].list2.num)
+    if (test_self()->nr_served_tai[0].list2.num)
         ogs_asn_uint24_to_OCTET_STRING(
-            test_self()->served_tai[0].list2.tai[0].tac,
+            test_self()->nr_served_tai[0].list2.tai[0].tac,
             &SupportedTAItem->tAC);
-    else if (test_self()->served_tai[0].list0.tai[0].num)
+    else if (test_self()->nr_served_tai[0].list0.tai[0].num)
         ogs_asn_uint24_to_OCTET_STRING(
-            test_self()->served_tai[0].list0.tai[0].tac[0],
+            test_self()->nr_served_tai[0].list0.tai[0].tac[0],
                 &SupportedTAItem->tAC);
     else
         ogs_assert_if_reached();
@@ -152,7 +152,7 @@ ogs_pkbuf_t *testngap_build_ng_setup_request(uint32_t gnb_id, uint8_t bitsize)
 
     *PagingDRX = NGAP_PagingDRX_v32;
 
-    return nga_ngap_encode(&pdu);
+    return ogs_ngap_encode(&pdu);
 }
 
 ogs_pkbuf_t *testngap_build_initial_ue_message(
@@ -245,7 +245,7 @@ ogs_pkbuf_t *testngap_build_initial_ue_message(
     ogs_ngap_nr_cgi_to_ASN(&test_self()->nr_cgi, nR_CGI);
 
     tAI = &userLocationInformationNR->tAI;
-    ogs_ngap_5gs_tai_to_ASN(&test_self()->tai, tAI);
+    ogs_ngap_5gs_tai_to_ASN(&test_self()->nr_tai, tAI);
 
     UserLocationInformation->present =
         NGAP_UserLocationInformation_PR_userLocationInformationNR;
@@ -274,10 +274,11 @@ ogs_pkbuf_t *testngap_build_initial_ue_message(
         fiveG_TMSI = &FiveG_S_TMSI->fiveG_TMSI;
 
         ogs_ngap_uint16_to_AMFSetID(
-                ogs_amf_set_id(&test_ue->nas_guti.amf_id), aMFSetID);
+                ogs_amf_set_id(&test_ue->nas_5gs_guti.amf_id), aMFSetID);
         ogs_ngap_uint8_to_AMFPointer(
-                ogs_amf_pointer(&test_ue->nas_guti.amf_id), aMFPointer);
-        ogs_asn_uint32_to_OCTET_STRING(test_ue->nas_guti.m_tmsi, fiveG_TMSI);
+                ogs_amf_pointer(&test_ue->nas_5gs_guti.amf_id), aMFPointer);
+        ogs_asn_uint32_to_OCTET_STRING(
+                test_ue->nas_5gs_guti.m_tmsi, fiveG_TMSI);
     }
 
     ie = CALLOC(1, sizeof(NGAP_InitialUEMessage_IEs_t));
@@ -292,7 +293,7 @@ ogs_pkbuf_t *testngap_build_initial_ue_message(
 
     *UEContextRequest = NGAP_UEContextRequest_requested;
 
-    return nga_ngap_encode(&pdu);
+    return ogs_ngap_encode(&pdu);
 }
 
 ogs_pkbuf_t *testngap_build_uplink_nas_transport(
@@ -381,14 +382,14 @@ ogs_pkbuf_t *testngap_build_uplink_nas_transport(
     ogs_ngap_nr_cgi_to_ASN(&test_self()->nr_cgi, nR_CGI);
 
     tAI = &userLocationInformationNR->tAI;
-    ogs_ngap_5gs_tai_to_ASN(&test_self()->tai, tAI);
+    ogs_ngap_5gs_tai_to_ASN(&test_self()->nr_tai, tAI);
 
     UserLocationInformation->present =
         NGAP_UserLocationInformation_PR_userLocationInformationNR;
     UserLocationInformation->choice.userLocationInformationNR =
         userLocationInformationNR;
 
-    return nga_ngap_encode(&pdu);
+    return ogs_ngap_encode(&pdu);
 }
 
 ogs_pkbuf_t *testngap_build_initial_context_setup_response(
@@ -447,6 +448,8 @@ ogs_pkbuf_t *testngap_build_initial_context_setup_response(
         OCTET_STRING_t *transfer = NULL;
         ogs_pkbuf_t *n2smbuf = NULL;
 
+        test_bearer_t *bearer = NULL;
+
         ie = CALLOC(1, sizeof(NGAP_InitialContextSetupResponseIEs_t));
         ASN_SEQUENCE_ADD(&InitialContextSetupResponse->protocolIEs, ie);
 
@@ -462,8 +465,11 @@ ogs_pkbuf_t *testngap_build_initial_context_setup_response(
 
         PDUSessionItem->pDUSessionID = sess->psi;
 
+        bearer = ogs_list_first(&sess->bearer_list);
+        ogs_assert(bearer);
+
         n2smbuf = testngap_build_pdu_session_resource_setup_response_trasfer(
-                sess);
+                bearer);
         ogs_assert(n2smbuf);
         transfer = &PDUSessionItem->pDUSessionResourceSetupResponseTransfer;
 
@@ -473,7 +479,7 @@ ogs_pkbuf_t *testngap_build_initial_context_setup_response(
         ogs_pkbuf_free(n2smbuf);
     }
 
-    return nga_ngap_encode(&pdu);
+    return ogs_ngap_encode(&pdu);
 }
 
 ogs_pkbuf_t *testngap_build_initial_context_setup_failure(test_ue_t *test_ue,
@@ -530,8 +536,7 @@ ogs_pkbuf_t *testngap_build_initial_context_setup_failure(test_ue_t *test_ue,
 
     ie->id = NGAP_ProtocolIE_ID_id_Cause;
     ie->criticality = NGAP_Criticality_ignore;
-    ie->value.present =
-        NGAP_InitialContextSetupFailureIEs__value_PR_Cause;
+    ie->value.present = NGAP_InitialContextSetupFailureIEs__value_PR_Cause;
 
     Cause = &ie->value.choice.Cause;
 
@@ -541,7 +546,7 @@ ogs_pkbuf_t *testngap_build_initial_context_setup_failure(test_ue_t *test_ue,
     Cause->present = group;
     Cause->choice.radioNetwork = cause;
 
-    return nga_ngap_encode(&pdu);
+    return ogs_ngap_encode(&pdu);
 }
 
 ogs_pkbuf_t *testngap_build_ue_radio_capability_info_indication(
@@ -629,7 +634,7 @@ ogs_pkbuf_t *testngap_build_ue_radio_capability_info_indication(
     UERadioCapability->buf = CALLOC(UERadioCapability->size, sizeof(uint8_t));
     memcpy(UERadioCapability->buf, tmp, UERadioCapability->size);
 
-    return nga_ngap_encode(&pdu);
+    return ogs_ngap_encode(&pdu);
 }
 
 ogs_pkbuf_t *testngap_build_ue_context_release_request(test_ue_t *test_ue,
@@ -700,7 +705,7 @@ ogs_pkbuf_t *testngap_build_ue_context_release_request(test_ue_t *test_ue,
             CALLOC(1, sizeof(struct NGAP_PDUSessionResourceItemCxtRelReq));
         ASN_SEQUENCE_ADD(&PDUSessionList->list, PDUSessionItem);
 
-        sess = test_ue->sess;
+        sess = ogs_list_first(&test_ue->sess_list);
         ogs_assert(sess);
 
         PDUSessionItem->pDUSessionID = sess->psi;
@@ -718,7 +723,7 @@ ogs_pkbuf_t *testngap_build_ue_context_release_request(test_ue_t *test_ue,
     Cause->present = group;
     Cause->choice.radioNetwork = cause;
 
-    return nga_ngap_encode(&pdu);
+    return ogs_ngap_encode(&pdu);
 }
 
 ogs_pkbuf_t *testngap_build_ue_context_release_complete(test_ue_t *test_ue)
@@ -770,14 +775,17 @@ ogs_pkbuf_t *testngap_build_ue_context_release_complete(test_ue_t *test_ue)
     asn_uint642INTEGER(AMF_UE_NGAP_ID, test_ue->amf_ue_ngap_id);
     *RAN_UE_NGAP_ID = test_ue->ran_ue_ngap_id;
 
-    return nga_ngap_encode(&pdu);
+    return ogs_ngap_encode(&pdu);
 }
 
 ogs_pkbuf_t *testngap_build_pdu_session_resource_setup_response(
         test_sess_t *sess)
 {
     int rv;
-    test_ue_t *test_ue;
+
+    test_ue_t *test_ue = NULL;
+    test_bearer_t *qos_flow = NULL;
+
     ogs_pkbuf_t *n2smbuf = NULL;
     ogs_pkbuf_t *ngapbuf = NULL;
 
@@ -848,7 +856,11 @@ ogs_pkbuf_t *testngap_build_pdu_session_resource_setup_response(
 
     PDUSessionItem->pDUSessionID = sess->psi;
 
-    n2smbuf = testngap_build_pdu_session_resource_setup_response_trasfer(sess);
+    qos_flow = ogs_list_first(&sess->bearer_list);
+    ogs_assert(qos_flow);
+
+    n2smbuf = testngap_build_pdu_session_resource_setup_response_trasfer(
+            qos_flow);
     ogs_assert(n2smbuf);
     transfer = &PDUSessionItem->pDUSessionResourceSetupResponseTransfer;
 
@@ -857,7 +869,7 @@ ogs_pkbuf_t *testngap_build_pdu_session_resource_setup_response(
     memcpy(transfer->buf, n2smbuf->data, transfer->size);
     ogs_pkbuf_free(n2smbuf);
 
-    return nga_ngap_encode(&pdu);
+    return ogs_ngap_encode(&pdu);
 }
 
 ogs_pkbuf_t *testngap_build_pdu_session_resource_release_response(
@@ -939,13 +951,23 @@ ogs_pkbuf_t *testngap_build_pdu_session_resource_release_response(
     transfer->size = 1;
     transfer->buf = CALLOC(transfer->size, sizeof(uint8_t));
 
-    return nga_ngap_encode(&pdu);
+    return ogs_ngap_encode(&pdu);
 }
 
 static ogs_pkbuf_t *testngap_build_pdu_session_resource_setup_response_trasfer(
-        test_sess_t *sess)
+        test_bearer_t *qos_flow)
 {
-    ogs_ip_t gnb_n3_ip;
+    int rv;
+
+    test_sess_t *sess = NULL;
+
+    ogs_gtp_f_teid_t f_teid;
+    ogs_ip_t ip;
+    int len;
+
+    ogs_assert(qos_flow);
+    sess = qos_flow->sess;
+    ogs_assert(sess);
 
     NGAP_PDUSessionResourceSetupResponseTransfer_t message;
 
@@ -968,8 +990,15 @@ static ogs_pkbuf_t *testngap_build_pdu_session_resource_setup_response_trasfer(
         NGAP_UPTransportLayerInformation_PR_gTPTunnel;
     uPTransportLayerInformation->choice.gTPTunnel = gTPTunnel;
 
-    ogs_asn_ip_to_BIT_STRING(&sess->gnb_n3_ip,
-            &gTPTunnel->transportLayerAddress);
+    ogs_assert(sess->gnb_n3_addr || sess->gnb_n3_addr6);
+    rv = ogs_gtp_sockaddr_to_f_teid(
+            sess->gnb_n3_addr, sess->gnb_n3_addr6, &f_teid, &len);
+    ogs_assert(rv == OGS_OK);
+
+    rv = ogs_gtp_f_teid_to_ip(&f_teid, &ip);
+    ogs_assert(rv == OGS_OK);
+
+    ogs_asn_ip_to_BIT_STRING(&ip, &gTPTunnel->transportLayerAddress);
     ogs_asn_uint32_to_OCTET_STRING(sess->gnb_n3_teid, &gTPTunnel->gTP_TEID);
 
     associatedQosFlowList = &dLQosFlowPerTNLInformation->associatedQosFlowList;
@@ -977,7 +1006,7 @@ static ogs_pkbuf_t *testngap_build_pdu_session_resource_setup_response_trasfer(
         CALLOC(1, sizeof(struct NGAP_AssociatedQosFlowItem));
     ASN_SEQUENCE_ADD(&associatedQosFlowList->list, associatedQosFlowItem);
 
-    associatedQosFlowItem->qosFlowIdentifier = sess->qfi;
+    associatedQosFlowItem->qosFlowIdentifier = qos_flow->qfi;
 
     return ogs_asn_encode(
             &asn_DEF_NGAP_PDUSessionResourceSetupResponseTransfer, &message);

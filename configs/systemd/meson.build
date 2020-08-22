@@ -16,11 +16,18 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 systemd_conf_in = '''
-    open5gs-hssd.service
-    open5gs-pgwd.service
     open5gs-mmed.service
-    open5gs-sgwd.service
+    open5gs-sgwcd.service
+    open5gs-smfd.service
+    open5gs-amfd.service
+    open5gs-sgwud.service
+    open5gs-upfd.service
+    open5gs-hssd.service
     open5gs-pcrfd.service
+    open5gs-nrfd.service
+    open5gs-ausfd.service
+    open5gs-udmd.service
+    open5gs-udrd.service
 '''.split()
 
 foreach file : systemd_conf_in

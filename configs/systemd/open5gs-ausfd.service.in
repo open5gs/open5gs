@@ -1,0 +1,18 @@
+[Unit]
+Description=Open5GS AUSF Daemon
+After=networking.service
+
+[Service]
+Type=simple
+
+User=open5gs
+Group=open5gs
+
+Restart=always
+ExecStart=@bindir@/open5gs-ausfd -c @sysconfdir@/open5gs/ausf.yaml
+RestartSec=2
+RestartPreventExitStatus=1
+ExecReload=/bin/kill -HUP $MAINPID
+
+[Install]
+WantedBy=multi-user.target

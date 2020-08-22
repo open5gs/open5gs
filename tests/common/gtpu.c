@@ -19,15 +19,25 @@
 
 #include "test-common.h"
 
-ogs_socknode_t *test_gtpu_server(const char *ipstr, int port)
+ogs_socknode_t *test_gtpu_server(int index, int family)
 {
     int rv;
     ogs_sockaddr_t *addr = NULL;
     ogs_socknode_t *node = NULL;
     ogs_sock_t *sock = NULL;
 
-    rv = ogs_getaddrinfo(&addr, AF_UNSPEC, ipstr, port, 0);
-    ogs_assert(rv == OGS_OK);
+    if (index == 1) {
+        if (family == AF_INET6)
+            ogs_copyaddrinfo(&addr, test_self()->gnb1_addr6);
+        else
+            ogs_copyaddrinfo(&addr, test_self()->gnb1_addr);
+    } else if (index == 2) {
+        if (family == AF_INET6)
+            ogs_copyaddrinfo(&addr, test_self()->gnb2_addr6);
+        else
+            ogs_copyaddrinfo(&addr, test_self()->gnb2_addr);
+    } else
+        ogs_assert_if_reached();
 
     node = ogs_socknode_new(addr);
     ogs_assert(node);
@@ -63,56 +73,6 @@ ogs_pkbuf_t *test_gtpu_read(ogs_socknode_t *node)
     return recvbuf;
 }
 
-int testgnb_gtpu_send(ogs_socknode_t *node, ogs_pkbuf_t *sendbuf)
-{
-    int rv;
-
-    ogs_sockaddr_t upf;
-    ssize_t sent;
-
-    ogs_assert(node);
-    ogs_assert(node->sock);
-
-    memset(&upf, 0, sizeof(ogs_sockaddr_t));
-    upf.ogs_sin_port = htons(OGS_GTPV1_U_UDP_PORT);
-    upf.ogs_sa_family = AF_INET;
-    upf.sin.sin_addr.s_addr = inet_addr("127.0.0.4");
-
-    sent = ogs_sendto(node->sock->fd, sendbuf->data, sendbuf->len, 0, &upf);
-    ogs_pkbuf_free(sendbuf);
-    if (sent < 0 || sent != sendbuf->len)
-        return OGS_ERROR;
-
-    return OGS_OK;
-}
-
-int testgnb_gtpu_sendto(
-        ogs_socknode_t *node, ogs_pkbuf_t *sendbuf, const char *ipstr)
-{
-    int rv;
-
-    ogs_sockaddr_t *addr;
-    int port = OGS_GTPV1_U_UDP_PORT;
-    ssize_t sent;
-
-    ogs_assert(node);
-    ogs_assert(node->sock);
-    ogs_assert(ipstr);
-
-    rv = ogs_getaddrinfo(&addr, AF_UNSPEC, ipstr, port, 0);
-    ogs_assert(rv == OGS_OK);
-
-    sent = ogs_sendto(node->sock->fd, sendbuf->data, sendbuf->len, 0, addr);
-
-    ogs_pkbuf_free(sendbuf);
-    ogs_freeaddrinfo(addr);
-
-    if (sent < 0 || sent != sendbuf->len)
-        return OGS_ERROR;
-
-    return OGS_OK;
-}
-
 void test_gtpu_close(ogs_socknode_t *node)
 {
     ogs_socknode_free(node);
@@ -136,41 +96,77 @@ void test_gtpu_close(ogs_socknode_t *node)
 #include <netinet/icmp6.h>
 #endif
 
-int test_gtpu_build_ping(ogs_pkbuf_t **sendbuf,
-        test_sess_t *sess, const char *dst_ip)
+int test_gtpu_send_ping(
+        ogs_socknode_t *node, test_bearer_t *bearer, const char *dst_ip)
 {
     int rv;
+    ssize_t sent;
+
+    test_sess_t *sess = NULL;
+    ogs_sockaddr_t upf;
+
     ogs_pkbuf_t *pkbuf = NULL;
     ogs_gtp_header_t *gtp_h = NULL;
     ogs_gtp_extension_header_t *ext_h = NULL;
     ogs_ipsubnet_t dst_ipsub;
 
+    ogs_assert(bearer);
+    sess = bearer->sess;
     ogs_assert(sess);
     ogs_assert(dst_ip);
+
     rv = ogs_ipsubnet(&dst_ipsub, dst_ip, NULL);
     ogs_assert(rv == OGS_OK);
 
-    pkbuf = ogs_pkbuf_alloc(NULL,
-            200 /* enough for ICMP; use smaller buffer */);
+    memset(&upf, 0, sizeof(ogs_sockaddr_t));
+    upf.ogs_sin_port = htobe16(OGS_GTPV1_U_UDP_PORT);
+
+    pkbuf = ogs_pkbuf_alloc(
+            NULL, 200 /* enough for ICMP; use smaller buffer */);
     ogs_pkbuf_put(pkbuf, 200);
     memset(pkbuf->data, 0, pkbuf->len);
 
     gtp_h = (ogs_gtp_header_t *)pkbuf->data;
-    if (sess->qfi)
+    if (bearer->qfi) {
+        /* 5G Core */
         gtp_h->flags = 0x34;
-    else
-        gtp_h->flags = 0x30;
-    gtp_h->type = OGS_GTPU_MSGTYPE_GPDU;
-    gtp_h->teid = htobe32(sess->upf_n3_teid);
+        gtp_h->teid = htobe32(sess->upf_n3_teid);
 
-    if (sess->qfi) {
+        if (sess->upf_n3_ip.ipv4) {
+            upf.ogs_sa_family = AF_INET;
+            upf.sin.sin_addr.s_addr = sess->upf_n3_ip.addr;
+        } else {
+            ogs_fatal("Not implemented");
+            ogs_assert_if_reached();
+        }
+
+    } else if (bearer->ebi) {
+        /* EPC */
+        gtp_h->flags = 0x30;
+        gtp_h->teid = htobe32(bearer->sgw_s1u_teid);
+
+        if (bearer->sgw_s1u_ip.ipv4) {
+            upf.ogs_sa_family = AF_INET;
+            upf.sin.sin_addr.s_addr = bearer->sgw_s1u_ip.addr;
+        } else {
+            ogs_fatal("Not implemented");
+            ogs_assert_if_reached();
+        }
+    } else {
+        ogs_fatal("No QFI[%d] and EBI[%d]", bearer->qfi, bearer->ebi);
+        ogs_assert_if_reached();
+    }
+
+    gtp_h->type = OGS_GTPU_MSGTYPE_GPDU;
+
+    if (bearer->qfi) {
         ext_h = (ogs_gtp_extension_header_t *)
             (pkbuf->data + OGS_GTPV1U_HEADER_LEN);
         ext_h->type = OGS_GTP_EXTENSION_HEADER_TYPE_PDU_SESSION_CONTAINER;
         ext_h->len = 1;
         ext_h->pdu_type =
             OGS_GTP_EXTENSION_HEADER_PDU_TYPE_UL_PDU_SESSION_INFORMATION;
-        ext_h->qos_flow_identifier = sess->qfi;
+        ext_h->qos_flow_identifier = bearer->qfi;
         ext_h->next_type =
             OGS_GTP_EXTENSION_HEADER_TYPE_NO_MORE_EXTENSION_HEADERS;
     }
@@ -179,7 +175,7 @@ int test_gtpu_build_ping(ogs_pkbuf_t **sendbuf,
         struct ip *ip_h = NULL;
         struct icmp *icmp_h = NULL;
 
-        if (sess->qfi) {
+        if (bearer->qfi) {
             gtp_h->length = htobe16(
                     sizeof *ip_h + ICMP_MINLEN +
                     OGS_GTPV1U_EXTENSION_HEADER_LEN + ext_h->len * 4);
@@ -211,24 +207,31 @@ int test_gtpu_build_ping(ogs_pkbuf_t **sendbuf,
         icmp_h->icmp_seq = rand();
         icmp_h->icmp_id = rand();
         icmp_h->icmp_cksum = ogs_in_cksum((uint16_t *)icmp_h, ICMP_MINLEN);
+
     } else if (dst_ipsub.family == AF_INET6) {
-#if 0
         struct ip6_hdr *ip6_h = NULL;
         struct icmp6_hdr *icmp6_h = NULL;
         uint16_t plen = 0;
         uint8_t nxt = 0;
         uint8_t *p = NULL;
 
-        gtp_h->length = htons(sizeof *ip6_h + sizeof *icmp6_h);
-        plen =  htons(sizeof *icmp6_h);
+        if (bearer->qfi) {
+            gtp_h->length = htobe16(sizeof *ip6_h + sizeof *icmp6_h) +
+                    OGS_GTPV1U_EXTENSION_HEADER_LEN + ext_h->len * 4;
+            p = (uint8_t *)pkbuf->data + OGS_GTPV1U_HEADER_LEN +
+                    OGS_GTPV1U_EXTENSION_HEADER_LEN + ext_h->len * 4;
+        } else {
+            gtp_h->length = htobe16(sizeof *ip6_h + sizeof *icmp6_h);
+            p = (uint8_t *)pkbuf->data + OGS_GTPV1U_HEADER_LEN;
+        }
+        plen =  htobe16(sizeof *icmp6_h);
         nxt = IPPROTO_ICMPV6;
 
-        p = (uint8_t *)pkbuf->data + OGS_5GS_GTP_HEADER_LEN;
         ip6_h = (struct ip6_hdr *)p;
         icmp6_h = (struct icmp6_hdr *)((uint8_t *)ip6_h + sizeof *ip6_h);
 
-        memcpy(p, src_ipsub.sub, sizeof src_ipsub.sub);
-        p += sizeof src_ipsub.sub;
+        memcpy(p, sess->ue_ip.addr6, sizeof sess->ue_ip.addr6);
+        p += sizeof sess->ue_ip.addr6;
         memcpy(p, dst_ipsub.sub, sizeof dst_ipsub.sub);
         p += sizeof dst_ipsub.sub;
         p += 2; memcpy(p, &plen, 2); p += 2;
@@ -245,13 +248,124 @@ int test_gtpu_build_ping(ogs_pkbuf_t **sendbuf,
         ip6_h->ip6_plen = plen;
         ip6_h->ip6_nxt = nxt;;
         ip6_h->ip6_hlim = 0xff;
-        memcpy(ip6_h->ip6_src.s6_addr, src_ipsub.sub, sizeof src_ipsub.sub);
+        memcpy(ip6_h->ip6_src.s6_addr,
+                sess->ue_ip.addr6, sizeof sess->ue_ip.addr6);
         memcpy(ip6_h->ip6_dst.s6_addr, dst_ipsub.sub, sizeof dst_ipsub.sub);
-#endif
-    } else
+    } else {
+        ogs_fatal("Invalid family[%d]", dst_ipsub.family);
         ogs_assert_if_reached();
+    }
 
-    *sendbuf = pkbuf;
+    ogs_assert(node);
+    ogs_assert(node->sock);
+
+    sent = ogs_sendto(node->sock->fd, pkbuf->data, pkbuf->len, 0, &upf);
+    ogs_pkbuf_free(pkbuf);
+    if (sent < 0 || sent != pkbuf->len)
+        return OGS_ERROR;
+
+    return OGS_OK;
+}
+
+int test_gtpu_send_slacc_rs(ogs_socknode_t *node, test_bearer_t *bearer)
+{
+    int rv;
+    ssize_t sent;
+
+    test_sess_t *sess = NULL;
+    ogs_sockaddr_t upf;
+
+    ogs_pkbuf_t *pkbuf = NULL;
+    ogs_gtp_header_t *gtp_h = NULL;
+    ogs_gtp_extension_header_t *ext_h = NULL;
+
+    unsigned char *ip_h = NULL;
+
+    const char *payload =
+        "6000000000083aff fe80000000000000 0000000000000002"
+        "ff02000000000000 0000000000000002 85007d3500000000";
+    unsigned char tmp[OGS_MAX_SDU_LEN];
+
+    ogs_assert(bearer);
+    sess = bearer->sess;
+    ogs_assert(sess);
+
+    memset(&upf, 0, sizeof(ogs_sockaddr_t));
+    upf.ogs_sin_port = htobe16(OGS_GTPV1_U_UDP_PORT);
+
+    pkbuf = ogs_pkbuf_alloc(
+            NULL, 200 /* enough for ICMP; use smaller buffer */);
+    ogs_pkbuf_put(pkbuf, 200);
+    memset(pkbuf->data, 0, pkbuf->len);
+
+    gtp_h = (ogs_gtp_header_t *)pkbuf->data;
+    if (bearer->qfi) {
+        /* 5G Core */
+        gtp_h->flags = 0x36;
+        gtp_h->teid = htobe32(sess->upf_n3_teid);
+
+        if (sess->upf_n3_ip.ipv4) {
+            upf.ogs_sa_family = AF_INET;
+            upf.sin.sin_addr.s_addr = sess->upf_n3_ip.addr;
+        } else {
+            ogs_fatal("Not implemented");
+            ogs_assert_if_reached();
+        }
+
+    } else if (bearer->ebi) {
+        /* EPC */
+        gtp_h->flags = 0x32;
+        gtp_h->teid = htobe32(bearer->sgw_s1u_teid);
+
+        if (bearer->sgw_s1u_ip.ipv4) {
+            upf.ogs_sa_family = AF_INET;
+            upf.sin.sin_addr.s_addr = bearer->sgw_s1u_ip.addr;
+        } else {
+            ogs_fatal("Not implemented");
+            ogs_assert_if_reached();
+        }
+    } else {
+        ogs_fatal("No QFI[%d] and EBI[%d]", bearer->qfi, bearer->ebi);
+        ogs_assert_if_reached();
+    }
+
+    gtp_h->type = OGS_GTPU_MSGTYPE_GPDU;
+
+    if (bearer->qfi) {
+        ext_h = (ogs_gtp_extension_header_t *)
+            (pkbuf->data + OGS_GTPV1U_HEADER_LEN);
+        ext_h->type = OGS_GTP_EXTENSION_HEADER_TYPE_PDU_SESSION_CONTAINER;
+        ext_h->len = 1;
+        ext_h->pdu_type =
+            OGS_GTP_EXTENSION_HEADER_PDU_TYPE_UL_PDU_SESSION_INFORMATION;
+        ext_h->qos_flow_identifier = bearer->qfi;
+        ext_h->next_type =
+            OGS_GTP_EXTENSION_HEADER_TYPE_NO_MORE_EXTENSION_HEADERS;
+    }
+
+    if (bearer->qfi) {
+        gtp_h->length = htobe16(52 +
+                OGS_GTPV1U_EXTENSION_HEADER_LEN + ext_h->len * 4);
+
+        ip_h = (pkbuf->data +
+                OGS_GTPV1U_HEADER_LEN + 4 +
+                OGS_GTPV1U_EXTENSION_HEADER_LEN + ext_h->len * 4);
+    } else {
+        gtp_h->length = htobe16(52);
+
+        ip_h = (pkbuf->data + OGS_GTPV1U_HEADER_LEN + 4);
+    }
+
+    ogs_assert(node);
+    ogs_assert(node->sock);
+
+    OGS_HEX(payload, strlen(payload), tmp);
+    memcpy(ip_h, tmp, 48);
+
+    sent = ogs_sendto(node->sock->fd, pkbuf->data, pkbuf->len, 0, &upf);
+    ogs_pkbuf_free(pkbuf);
+    if (sent < 0 || sent != pkbuf->len)
+        return OGS_ERROR;
 
     return OGS_OK;
 }

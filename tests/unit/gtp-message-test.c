@@ -17,7 +17,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "test-epc.h"
+#include "test-common.h"
 
 static void gtp_message_test1(abts_case *tc, void *data)
 {

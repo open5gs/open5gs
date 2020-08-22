@@ -20,17 +20,7 @@
 #include "test-config-private.h"
 #include "test-common.h"
 
-static int connected_count = 0;
-static void test_diam_logger_handler(enum fd_hook_type type, struct msg * msg, 
-    struct peer_hdr * peer, void * other, struct fd_hook_permsgdata *pmd, 
-    void * regdata)
-{
-    if (type == HOOK_PEER_CONNECT_SUCCESS) {
-        connected_count++;
-    }
-}
-
-static void test_app_run(int argc, const char *const argv[],
+static void run(int argc, const char *const argv[],
         const char *name, void (*init)(const char * const argv[]))
 {
     int rv;
@@ -71,29 +61,12 @@ static void test_app_run(int argc, const char *const argv[],
     (*init)(new_argv);
 }
 
-void test_epc_run(int argc, const char *const argv[],
-        const char *name, void (*init)(const char * const argv[]))
-{
-    ogs_diam_logger_register(test_diam_logger_handler);
-
-    test_app_run(argc, argv, name, init);
-
-#if 0 /* We will not use this */
-    while(1) {
-        if (connected_count == 1) break;
-        ogs_msleep(50);
-    }
-#endif
-
-    ogs_msleep(500); /* Wait for listening all sockets */
-}
-
-void test_5gc_run(int argc, const char *const argv[],
+void test_app_run(int argc, const char *const argv[],
         const char *name, void (*init)(const char * const argv[]))
 {
     int rv;
 
-    test_app_run(argc, argv, name, init);
+    run(argc, argv, name, init);
 
     test_context_init();
 
@@ -103,7 +76,7 @@ void test_5gc_run(int argc, const char *const argv[],
     ogs_msleep(500); /* Wait for listening all sockets */
 }
 
-#define MAX_CHILD_PROCESS               8
+#define MAX_CHILD_PROCESS               16
 #define OGS_ARG_MAX                     256
 
 static ogs_proc_t process[MAX_CHILD_PROCESS];

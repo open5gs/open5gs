@@ -36,25 +36,29 @@ extern "C" {
 #define TEST_SGWU_IPV4          "127.0.0.7"
 
 #define TEST_PING_IPV4          "10.45.0.1"
+#define TEST_PING_IPV6          "cafe::1"
 
 #define MAX_NUM_OF_SERVED_GUAMI     8
 
 typedef struct test_context_s {
-    /* Served GUMME */
-    uint8_t num_of_served_guami;
-    struct {
-        ogs_plmn_id_t plmn_id;
-        ogs_amf_id_t amf_id;
-    } served_guami[MAX_NUM_OF_SERVED_GUAMI];
+    uint16_t        ngap_port;      /* Default NGAP Port */
+    ogs_list_t      ngap_list;      /* AMF NGAP IPv4 Server List */
+    ogs_list_t      ngap_list6;     /* AMF NGAP IPv6 Server List */
+    ogs_sockaddr_t  *ngap_addr;     /* AMF NGAP IPv4 Address */
+    ogs_sockaddr_t  *ngap_addr6;    /* AMF NGAP IPv6 Address */
 
-    /* Served TAI */
-    uint8_t num_of_served_tai;
-    struct {
-        ogs_5gs_tai0_list_t list0;
-        ogs_5gs_tai2_list_t list2;
-    } served_tai[OGS_MAX_NUM_OF_SERVED_TAI];
+    uint16_t        s1ap_port;      /* Default S1AP Port */
+    ogs_list_t      s1ap_list;      /* MME S1AP IPv4 Server List */
+    ogs_list_t      s1ap_list6;     /* MME S1AP IPv6 Server List */
+    ogs_sockaddr_t  *s1ap_addr;     /* MME GTPC IPv4 Address */
+    ogs_sockaddr_t  *s1ap_addr6;    /* MME GTPC IPv6 Address */
 
-    /* PLMN Support */
+    ogs_sockaddr_t  *gnb1_addr;
+    ogs_sockaddr_t  *gnb1_addr6;
+    ogs_sockaddr_t  *gnb2_addr;
+    ogs_sockaddr_t  *gnb2_addr6;
+
+    /* 5G PLMN Support */
     uint8_t num_of_plmn_support;
     struct {
         ogs_plmn_id_t plmn_id;
@@ -62,11 +66,47 @@ typedef struct test_context_s {
         ogs_s_nssai_t s_nssai[OGS_MAX_NUM_OF_S_NSSAI];
     } plmn_support[OGS_MAX_NUM_OF_PLMN];
 
-    ogs_5gs_tai_t tai;
+    /* Served EPC TAI */
+    uint8_t num_of_e_served_tai;
+    struct {
+        ogs_eps_tai0_list_t list0;
+        ogs_eps_tai2_list_t list2;
+    } e_served_tai[OGS_MAX_NUM_OF_SERVED_TAI];
+
+    ogs_eps_tai_t e_tai;
+
+    /* Served 5GC TAI */
+    uint8_t num_of_nr_served_tai;
+    struct {
+        ogs_5gs_tai0_list_t list0;
+        ogs_5gs_tai2_list_t list2;
+    } nr_served_tai[OGS_MAX_NUM_OF_SERVED_TAI];
+
+    ogs_5gs_tai_t nr_tai;
     ogs_nr_cgi_t nr_cgi;
+
+    ogs_list_t      test_ue_list;
 } test_context_t;
 
 typedef struct test_sess_s test_sess_t;
+
+typedef struct test_initial_ue_param_s {
+    struct {
+    ED8(uint8_t gummei_id:1;,
+        uint8_t gummei_type:1;,
+        uint8_t spare1:1;,
+        uint8_t spare2:1;,
+        uint8_t spare3:1;,
+        uint8_t spare4:1;,
+        uint8_t spare5:1;,
+        uint8_t spare6:1;)
+    };
+    struct {
+        uint16_t mme_gid;
+        uint8_t mme_code;
+        uint8_t type;
+    } gummei;
+} __attribute__ ((packed)) test_initial_ue_param_t;
 
 typedef struct test_registration_request_param_s {
     struct {
@@ -92,6 +132,72 @@ typedef struct test_registration_request_param_s {
     } psimask;
 } __attribute__ ((packed)) test_registration_request_param_t;
 
+typedef struct test_attach_request_param_s {
+    struct {
+    ED8(uint8_t integrity_protected:1;,
+        uint8_t ciphered:1;,
+        uint8_t guti:1;,
+        uint8_t last_visited_registered_tai:1;,
+        uint8_t drx_parameter:1;,
+        uint8_t location_area_identication:1;,
+        uint8_t mobile_station_classmark_2:1;,
+        uint8_t ue_usage_setting:1;)
+    };
+    struct {
+    ED8(uint8_t old_guti_type:1;,
+        uint8_t nri_container:1;,
+        uint8_t ue_additional_security_capability:1;,
+        uint8_t tmsi_status:1;,
+        uint8_t ms_network_feature_support:1;,
+        uint8_t ms_network_capability:1;,
+        uint8_t mobile_station_classmark_3:1;,
+        uint8_t supported_codecs:1;)
+    };
+    struct {
+    ED8(uint8_t additional_update_type:1;,
+        uint8_t spare2:1;,
+        uint8_t spare3:1;,
+        uint8_t spare4:1;,
+        uint8_t spare5:1;,
+        uint8_t spare6:1;,
+        uint8_t spare7:1;,
+        uint8_t spare8:1;)
+    };
+} __attribute__ ((packed)) test_attach_request_param_t;
+
+typedef struct test_tau_request_param_s {
+    struct {
+    ED8(uint8_t ue_network_capability:1;,
+        uint8_t eps_bearer_context_status:1;,
+        uint8_t guti:1;,
+        uint8_t last_visited_registered_tai:1;,
+        uint8_t drx_parameter:1;,
+        uint8_t location_area_identication:1;,
+        uint8_t mobile_station_classmark_2:1;,
+        uint8_t ue_usage_setting:1;)
+    };
+    struct {
+    ED8(uint8_t old_guti_type:1;,
+        uint8_t nri_container:1;,
+        uint8_t ue_additional_security_capability:1;,
+        uint8_t tmsi_status:1;,
+        uint8_t ms_network_feature_support:1;,
+        uint8_t ms_network_capability:1;,
+        uint8_t mobile_station_classmark_3:1;,
+        uint8_t supported_codecs:1;)
+    };
+    struct {
+    ED8(uint8_t additional_update_type:1;,
+        uint8_t device_properties:1;,
+        uint8_t ciphered:1;,
+        uint8_t spare4:1;,
+        uint8_t spare5:1;,
+        uint8_t spare6:1;,
+        uint8_t spare7:1;,
+        uint8_t spare8:1;)
+    };
+} __attribute__ ((packed)) test_tau_request_param_t;
+
 typedef struct test_service_request_param_s {
     union {
         struct {
@@ -112,6 +218,23 @@ typedef struct test_service_request_param_s {
     } psimask;
 } __attribute__ ((packed)) test_service_request_param_t;
 
+typedef struct test_extended_service_request_param_s {
+    union {
+        struct {
+        ED6(uint8_t ciphered:1;,
+            uint8_t csfb_response:1;,
+            uint8_t eps_bearer_context_status:1;,
+            uint8_t spare1:1;,
+            uint8_t spare2:1;,
+            uint8_t spare3:3;)
+        };
+        uint8_t value;
+    };
+    struct {
+        uint8_t response;
+    } csfb;
+} __attribute__ ((packed)) test_extended_service_request_param_t;
+
 typedef struct test_ul_nas_transport_param_s {
     union {
         struct {
@@ -124,9 +247,45 @@ typedef struct test_ul_nas_transport_param_s {
     };
 } __attribute__ ((packed)) test_ul_nas_transport_param_t;
 
+typedef struct test_pdn_connectivity_param_s {
+    union {
+        struct {
+        ED8(uint8_t eit:1;,
+            uint8_t eit_no_required:1;,
+            uint8_t apn:1;,
+            uint8_t pco:1;,
+            uint8_t integrity_protected:1;,
+            uint8_t ciphered:1;,
+            uint8_t spare6:1;,
+            uint8_t spare7:1;)
+        };
+        uint8_t value;
+    };
+} __attribute__ ((packed)) test_pdn_connectivity_param_t;
+
+typedef struct test_esm_information_param_s {
+    union {
+        struct {
+        ED8(uint8_t pco:1;,
+            uint8_t spare1:1;,
+            uint8_t spare2:1;,
+            uint8_t spare3:1;,
+            uint8_t spare4:1;,
+            uint8_t spare5:1;,
+            uint8_t spare6:1;,
+            uint8_t spare7:1;)
+        };
+        uint8_t value;
+    };
+} __attribute__ ((packed)) test_esm_information_param_t;
+
 typedef struct test_ue_s {
-    uint32_t ran_ue_ngap_id; /* eNB-UE-NGAP-ID received from eNB */
+    ogs_lnode_t     lnode;          /**< A node of list_t */
+
+    uint32_t ran_ue_ngap_id; /* gNB-UE-NGAP-ID received from gNB */
     uint64_t amf_ue_ngap_id; /* AMF-UE-NGAP-ID received from AMF */
+    uint32_t enb_ue_s1ap_id; /* eNB-UE-S1AP-ID received from eNB */
+    uint32_t mme_ue_s1ap_id; /* MME-UE-S1AP-ID received from MME */
 
     char *imsi;
     char *suci; /* TS33.501 : SUCI */
@@ -134,8 +293,16 @@ typedef struct test_ue_s {
 
     ogs_nas_5gs_mobile_identity_suci_t mobile_identity_suci;
     ogs_nas_mobile_identity_imeisv_t mobile_identity_imeisv;
+    bool mobile_identity_imeisv_presence;
     uint16_t mobile_identity_suci_length;
-    ogs_nas_5gs_guti_t nas_guti;
+    ogs_nas_5gs_guti_t nas_5gs_guti;
+    ogs_nas_eps_guti_t nas_eps_guti;
+    ogs_nas_mobile_identity_imsi_t mobile_identity_imsi;
+
+    ogs_eps_tai_t e_tai;
+    ogs_e_cgi_t e_cgi;
+    ogs_5gs_tai_t nr_tai;
+    ogs_nr_cgi_t nr_cgi;
 
     uint8_t k[OGS_KEY_LEN];
     uint8_t opc[OGS_KEY_LEN];
@@ -145,6 +312,7 @@ typedef struct test_ue_s {
     uint8_t abba[OGS_NAS_MAX_ABBA_LEN];
     uint8_t abba_len;
     uint8_t kamf[OGS_SHA256_DIGEST_SIZE];
+    uint8_t kasme[OGS_SHA256_DIGEST_SIZE];
 
     struct {
         int access_type; /* 3GPP or Non-3GPP */
@@ -157,6 +325,7 @@ typedef struct test_ue_s {
             };
             ogs_nas_5gs_registration_type_t registration;
             ogs_nas_de_registration_type_t de_registration;
+            ogs_nas_eps_attach_type_t attach;
 
             uint8_t data;
         };
@@ -194,35 +363,72 @@ typedef struct test_ue_s {
     int             security_context_available;
     int             mac_failed;
 
+    test_initial_ue_param_t initial_ue_param;
+
     test_registration_request_param_t registration_request_param;
     test_service_request_param_t service_request_param;
+    test_extended_service_request_param_t extended_service_request_param;
     uint8_t         gmm_message_type; /* Last received 5GMM message type */
 
     uint16_t pdu_session_status;
     uint16_t pdu_session_reactivation_result;
 
+    test_attach_request_param_t attach_request_param;
+    test_tau_request_param_t tau_request_param;
+    uint8_t         emm_message_type; /* Last received EMM message type */
+
     test_sess_t *sess;
+
+    ogs_list_t sess_list;
 } test_ue_t;
 
 typedef struct test_sess_s {
+    ogs_lnode_t     lnode;          /**< A node of list_t */
+    uint32_t        index;
+
     uint8_t psi;
 
     uint8_t pti;
     uint8_t pdu_session_type;
-    char *dnn;
+    union {
+        char *dnn;
+        char *apn;
+    };
 
     ogs_ip_t ue_ip;
-    ogs_ip_t upf_n3_ip;
-    uint32_t upf_n3_teid;
-    ogs_ip_t gnb_n3_ip;
-    uint32_t gnb_n3_teid;
 
-    uint8_t qfi;
+    ogs_ip_t upf_n3_ip;             /* UPF-N3 IPv4/IPv6 */
+    uint32_t upf_n3_teid;           /* UPF-N3 TEID */
+
+    uint32_t gnb_n3_teid;           /* gNB-N3 TEID */
+    ogs_sockaddr_t *gnb_n3_addr;    /* gNB-N3 IPv4 */
+    ogs_sockaddr_t *gnb_n3_addr6;   /* gNB-N3 IPv6 */
 
     test_ul_nas_transport_param_t ul_nas_transport_param;
+    test_pdn_connectivity_param_t pdn_connectivity_param;
+    test_esm_information_param_t esm_information_param;
+
+    ogs_list_t bearer_list;
 
     test_ue_t *test_ue;
 } test_sess_t;
+
+typedef struct test_bearer_s {
+    ogs_lnode_t     lnode;          /**< A node of list_t */
+    uint32_t        index;
+
+    uint8_t         qfi;            /* 5GC */
+    uint8_t         ebi;            /* EPC */
+
+    uint32_t        sgw_s1u_teid;   /* SGW-S1U TEID */
+    ogs_ip_t        sgw_s1u_ip;     /* SGW-S1U IPv4/IPv6 */
+
+    uint32_t        enb_s1u_teid;   /* eNB-S1U TEID */
+    ogs_sockaddr_t  *enb_s1u_addr;  /* eNB-S1U IPv4 */
+    ogs_sockaddr_t  *enb_s1u_addr6; /* eNB-S1U IPv6 */
+
+    test_sess_t     *sess;
+} test_bearer_t;
 
 void test_context_init(void);
 void test_context_final(void);
@@ -230,12 +436,35 @@ test_context_t *test_self(void);
 
 int test_context_parse_config(void);
 
-void test_ue_set_mobile_identity(test_ue_t *test_ue,
-        ogs_nas_5gs_mobile_identity_t *mobile_identity);
 void test_ue_set_mobile_identity_suci(test_ue_t *test_ue,
     ogs_nas_5gs_mobile_identity_suci_t *mobile_identity_suci,
     uint16_t mobile_identity_suci_length);
+
+test_ue_t *test_ue_add_by_suci(
+    ogs_nas_5gs_mobile_identity_suci_t *mobile_identity_suci,
+    uint16_t mobile_identity_suci_length);
 void test_ue_remove(test_ue_t *test_ue);
+void test_ue_remove_all(void);
+
+test_sess_t *test_sess_add_by_dnn_and_psi(
+        test_ue_t *test_ue, char *dnn, uint8_t psi);
+test_sess_t *test_sess_add_by_apn(test_ue_t *test_ue, char *apn);
+void test_sess_remove(test_sess_t *sess);
+void test_sess_remove_all(test_ue_t *test_ue);
+
+test_sess_t *test_sess_find_by_apn(test_ue_t *test_ue, char *apn);
+test_sess_t *test_sess_find_by_psi(test_ue_t *test_ue, uint8_t psi);
+
+test_bearer_t *test_bearer_add(test_sess_t *sess, uint8_t ebi);
+test_bearer_t *test_qos_flow_add(test_sess_t *sess);
+void test_bearer_remove(test_bearer_t *bearer);
+void test_bearer_remove_all(test_sess_t *sess);
+
+test_bearer_t *test_bearer_find_by_sess_ebi(test_sess_t *sess, uint8_t ebi);
+test_bearer_t *test_bearer_find_by_ue_ebi(test_ue_t *test_ue, uint8_t ebi);
+
+test_bearer_t *test_qos_flow_find_by_sess_qfi(test_sess_t *sess, uint8_t qfi);
+test_bearer_t *test_qos_flow_find_by_ue_qfi(test_ue_t *test_ue, uint8_t qfi);
 
 #ifdef __cplusplus
 }

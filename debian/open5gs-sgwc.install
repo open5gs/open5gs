@@ -1,0 +1,3 @@
+usr/bin/open5gs-sgwcd
+configs/open5gs/sgwc.yaml etc/open5gs
+configs/systemd/open5gs-sgwcd.service lib/systemd/system

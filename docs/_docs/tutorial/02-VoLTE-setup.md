@@ -1204,7 +1204,7 @@ Assuming IMSI of the user1 as 001010123456791 and MSISDN is 0198765432100 and IM
 Debug using wireshark at Open5GS machine and following wireshark display filter
 
 ```
-s1ap || gtpv2 || diameter || diameter.3gpp || sip
+s1ap || gtpv2 || pfcp || diameter || diameter.3gpp || sip
 ```
 
 Also,

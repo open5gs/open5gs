@@ -21,7 +21,7 @@
 
 int __ogs_ngap_domain;
 
-ogs_pkbuf_t *nga_ngap_encode(ogs_ngap_message_t *message)
+ogs_pkbuf_t *ogs_ngap_encode(ogs_ngap_message_t *message)
 {
     ogs_pkbuf_t *pkbuf = NULL;
 
@@ -39,7 +39,7 @@ ogs_pkbuf_t *nga_ngap_encode(ogs_ngap_message_t *message)
     return pkbuf;
 }
 
-int nga_ngap_decode(ogs_ngap_message_t *message, ogs_pkbuf_t *pkbuf)
+int ogs_ngap_decode(ogs_ngap_message_t *message, ogs_pkbuf_t *pkbuf)
 {
     int rv;
     ogs_assert(message);
@@ -60,7 +60,7 @@ int nga_ngap_decode(ogs_ngap_message_t *message, ogs_pkbuf_t *pkbuf)
     return OGS_OK;
 }
 
-void nga_ngap_free(ogs_ngap_message_t *message)
+void ogs_ngap_free(ogs_ngap_message_t *message)
 {
     ogs_assert(message);
     ogs_asn_free(&asn_DEF_NGAP_NGAP_PDU, message);

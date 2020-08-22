@@ -16,10 +16,10 @@
 #
 #  o Set OGS_LOG_TRACE to all domain level
 #    level: trace
-#    domain: core,gtp,sgw,event,tlv,mem,sock
+#    domain: core,pfcp,gtp,sgwu,event,tlv,mem,sock
 #
 logger:
-    file: @localstatedir@/log/open5gs/sgwc.log
+    file: @localstatedir@/log/open5gs/sgwu.log
 
 #
 # sgwu:
@@ -44,16 +44,16 @@ logger:
 #
 #  <PFCP Server>
 #
-#  o PFCP Server(127.0.0.7:8805, ::1:8805)
+#  o PFCP Server(127.0.0.6:8805, ::1:8805)
 #    pfcp:
-#      - addr: 127.0.0.7
+#      - addr: 127.0.0.6
 #      - addr: ::1
 #
 sgwu:
     gtpu:
-      addr: 127.0.0.7
+      addr: 127.0.0.6
     pfcp:
-      addr: 127.0.0.7
+      addr: 127.0.0.6
 
 #
 # sgwc:
@@ -89,7 +89,6 @@ sgwc:
 #      no_slaac: true
 #
 parameter:
-    no_ipv6: true
 
 #
 # max:

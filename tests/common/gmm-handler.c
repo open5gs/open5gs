@@ -40,11 +40,11 @@ void testgmm_handle_registration_accept(test_ue_t *test_ue,
         mobile_identity = &registration_accept->guti;
         mobile_identity_guti = mobile_identity->buffer;
 
-        memcpy(&test_ue->nas_guti.nas_plmn_id,
+        memcpy(&test_ue->nas_5gs_guti.nas_plmn_id,
                 &mobile_identity_guti->nas_plmn_id, OGS_PLMN_ID_LEN);
-        memcpy(&test_ue->nas_guti.amf_id,
+        memcpy(&test_ue->nas_5gs_guti.amf_id,
                 &mobile_identity_guti->amf_id, sizeof(ogs_amf_id_t));
-        test_ue->nas_guti.m_tmsi = be32toh(mobile_identity_guti->m_tmsi);
+        test_ue->nas_5gs_guti.m_tmsi = be32toh(mobile_identity_guti->m_tmsi);
     }
 
     test_ue->pdu_session_status = 0;
@@ -174,7 +174,7 @@ void testgmm_handle_dl_nas_transport(test_ue_t *test_ue,
     ogs_assert(test_ue);
     ogs_assert(dl_nas_transport);
 
-    sess = test_ue->sess;
+    sess = test_sess_find_by_psi(test_ue, dl_nas_transport->pdu_session_id);
     ogs_assert(sess);
 
     testgmm_send_to_gsm(sess, &dl_nas_transport->payload_container);

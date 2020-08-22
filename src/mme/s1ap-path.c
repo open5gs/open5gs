@@ -521,7 +521,7 @@ void s1ap_send_error_indication(
 
     ogs_assert(enb);
 
-    s1apbuf = s1ap_build_error_indication(
+    s1apbuf = ogs_s1ap_build_error_indication(
             mme_ue_s1ap_id, enb_ue_s1ap_id, group, cause);
     ogs_expect_or_return(s1apbuf);
 
@@ -538,7 +538,7 @@ void s1ap_send_s1_reset_ack(
 
     ogs_assert(enb);
 
-    s1apbuf = s1ap_build_s1_reset_ack(partOfS1_Interface);
+    s1apbuf = ogs_s1ap_build_s1_reset_ack(partOfS1_Interface);
     ogs_expect_or_return(s1apbuf);
 
     rv = s1ap_send_to_enb(enb, s1apbuf, S1AP_NON_UE_SIGNALLING);

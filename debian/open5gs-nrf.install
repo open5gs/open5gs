@@ -1,0 +1,3 @@
+usr/bin/open5gs-nrfd
+configs/open5gs/nrf.yaml etc/open5gs
+configs/systemd/open5gs-nrfd.service lib/systemd/system

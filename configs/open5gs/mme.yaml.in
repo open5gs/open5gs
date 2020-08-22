@@ -33,14 +33,14 @@ logger:
 #    s1ap:
 #      addr: 0.0.0.0
 #
-#  o S1AP Server(127.0.0.1:36412, [::1]:36412)
+#  o S1AP Server(127.0.0.2:36412, [::1]:36412)
 #    s1ap:
-#      - addr: 127.0.0.1
+#      - addr: 127.0.0.2
 #      - addr: ::1
 #
 #  o S1AP Server(different port)
 #    s1ap:
-#      - addr: 127.0.0.1
+#      - addr: 127.0.0.2
 #        port: 36413
 #
 #  o S1AP Server(address avaiable in `eth0` interface)
@@ -52,9 +52,9 @@ logger:
 #  o GTP-C Server(all address avaiable)
 #    gtpc:
 #
-#  o GTP-C Server(127.0.0.1:2123, [::1]:2123)
+#  o GTP-C Server(127.0.0.2:2123, [::1]:2123)
 #    gtpc:
-#      - addr: 127.0.0.1
+#      - addr: 127.0.0.2
 #      - addr: ::1
 #
 #  <SGsAP>
@@ -112,7 +112,7 @@ logger:
 #              mnc: 02
 #            lac: 43692
 #      - addr
-#         - 127.0.0.3
+#         - 127.0.0.4
 #         - fe80::2%@loopback_devname@
 #        map:
 #          tai:
@@ -204,9 +204,9 @@ logger:
 mme:
     freeDiameter: @sysconfdir@/freeDiameter/mme.conf
     s1ap:
-      addr: 127.0.0.1
+      addr: 127.0.0.2
     gtpc:
-      addr: 127.0.0.1
+      addr: 127.0.0.2
     gummei: 
       plmn_id:
         mcc: 901
@@ -236,21 +236,21 @@ mme:
 #    If prefer_ipv4 is not true, [fe80::2%@loopback_devname@] is selected.
 #    gtpc:
 #      addr:
-#        - 127.0.0.6
+#        - 127.0.0.3
 #        - fe80::2%@loopback_devname@
 #
 #  o Two SGW are defined. MME selects SGW with round-robin manner per UE
 #    gtpc:
-#      - addr: 127.0.0.6
+#      - addr: 127.0.0.3
 #      - addr: fe80::2%@loopback_devname@
 #
 #  o Three SGW are defined. MME selects SGW with round-robin manner per UE
 #    gtpc:
 #      - addr
-#        - 127.0.0.6
+#        - 127.0.0.3
 #        - fe80::2%@loopback_devname@
 #      - addr
-#        - 127.0.0.12
+#        - 127.0.0.22
 #        - fe80::12%@loopback_devname@
 #      - name: sgw3.open5gs.org
 #
@@ -259,7 +259,7 @@ mme:
 # o Round-Robin
 #
 #   gtpc:
-#     addr: 127.0.0.6
+#     addr: 127.0.0.3
 #     addr: 127.0.2.2
 #     addr: 127.0.4.2
 #
@@ -267,7 +267,7 @@ mme:
 #   (either single TAC or multiple TACs, DECIMAL representation)
 #
 #   gtpc:
-#     - addr: 127.0.0.6
+#     - addr: 127.0.0.3
 #       tac: 26000
 #     - addr: 127.0.2.2
 #       tac: [25000, 27000, 28000]
@@ -276,14 +276,14 @@ mme:
 #   (either single or multiple e_cell_id, HEX representation)
 #
 #   gtpc:
-#     - addr: 127.0.0.6
+#     - addr: 127.0.0.3
 #       e_cell_id: abcde01
 #     - addr: 127.0.2.2
 #       e_cell_id: [12345, a9413, 98765]
 #
 sgwc:
     gtpc:
-      addr: 127.0.0.6
+      addr: 127.0.0.3
 
 #
 # smf:
@@ -295,37 +295,37 @@ sgwc:
 #    - If the HSS uses WebUI to set the SMF IP for each UE,
 #      you can use a specific SMF node for each UE.
 #
-#  o Two SMF are defined. 127.0.0.3:2123 is used.
+#  o Two SMF are defined. 127.0.0.4:2123 is used.
 #    [fe80::3%@loopback_devname@]:2123 is ignored.
 #    gtpc:
-#      - addr: 127.0.0.3
+#      - addr: 127.0.0.4
 #      - addr: fe80::3%@loopback_devname@
 #
 #  o One SMF is defined. if prefer_ipv4 is not true,
 #    [fe80::3%@loopback_devname@] is selected.
 #    gtpc:
 #      - addr:
-#        - 127.0.0.3
+#        - 127.0.0.4
 #        - fe80::3%@loopback_devname@
 #
 #  o Two SMF are defined with a different APN.
 #    - Note that if SMF IP for UE is configured in HSS,
 #      the following configurion for this UE is ignored.
 #    gtpc:
-#      - addr: 127.0.0.3
+#      - addr: 127.0.0.4
 #        apn: internet
 #      - addr: 127.0.0.5
 #        apn: volte
 #
 #  o If APN is omitted, the default APN uses the first SMF node.
 #    gtpc:
-#      - addr: 127.0.0.3
+#      - addr: 127.0.0.4
 #      - addr: 127.0.0.5
 #        apn: volte
 smf:
     gtpc:
       addr:
-        - 127.0.0.3
+        - 127.0.0.4
         - ::1
 
 #

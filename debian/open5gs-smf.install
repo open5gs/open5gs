@@ -1,0 +1,4 @@
+usr/bin/open5gs-smfd
+configs/freeDiameter/smf.* etc/freeDiameter
+configs/open5gs/smf.yaml etc/open5gs
+configs/systemd/open5gs-smfd.service lib/systemd/system

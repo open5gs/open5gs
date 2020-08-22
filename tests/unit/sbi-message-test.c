@@ -17,7 +17,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "test-epc.h"
+#include "test-common.h"
 
 #include "ogs-sbi.h"
 

@@ -403,10 +403,12 @@ for (k, v) in sorted_type_list:
     if (type_list[k]["format"] == "TV" or type_list[k]["format"] == "T") and type_list[k]["length"] == "1":
         f.write("int ogs_nas_eps_decode_%s(ogs_nas_%s_t *%s, ogs_pkbuf_t *pkbuf)\n" % (v_lower(k), v_lower(k), v_lower(k)))
         f.write("{\n")
-        f.write("    memcpy(%s, pkbuf->data - 1, 1);\n\n" % v_lower(k))
+        f.write("    uint16_t size = sizeof(ogs_nas_%s_t);\n\n" % v_lower(k))
+        f.write("    ogs_assert(ogs_pkbuf_pull(pkbuf, size));\n")
+        f.write("    memcpy(%s, pkbuf->data - size, size);\n\n" % v_lower(k))
         f.write("    ogs_trace(\"  %s - \");\n" % v_upper(k))
-        f.write("    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - 1, 1);\n\n");
-        f.write("    return 0;\n")
+        f.write("    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);\n\n");
+        f.write("    return size;\n")
         f.write("}\n\n")
         f.write("int ogs_nas_eps_encode_%s(ogs_pkbuf_t *pkbuf, ogs_nas_%s_t *%s)\n" % (v_lower(k), v_lower(k), v_lower(k)))
         f.write("{\n")
@@ -693,6 +695,9 @@ for (k, v) in sorted_msg_list:
             optional_fields = True;
 
         f.write("        case OGS_NAS_EPS_%s_%s_TYPE:\n" % (v_upper(k), v_upper(ie["value"])))
+        if (ie["format"] == "TV" or ie["format"] == "T") and ie["length"] == "1":
+            f.write("            decoded--;\n")
+            f.write("            ogs_assert(ogs_pkbuf_push(pkbuf, 1));\n")
         f.write("            size = ogs_nas_eps_decode_%s(&%s->%s, pkbuf);\n" % (v_lower(ie["type"]), v_lower(k), v_lower(ie["value"])))
         f.write("            ogs_assert(size >= 0);\n")
         f.write("            %s->presencemask |= OGS_NAS_EPS_%s_%s_PRESENT;\n" % (v_lower(k), v_upper(k), v_upper(ie["value"])))

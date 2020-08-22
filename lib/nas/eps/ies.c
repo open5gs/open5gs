@@ -28,7 +28,7 @@
 /*******************************************************************************
  * This file had been created by nas-message.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2020-06-30 16:47:16.490433 by acetcom
+ * Created on: 2020-08-16 17:47:29.412678 by acetcom
  * from 24301-g40.docx
  ******************************************************************************/
 
@@ -81,12 +81,15 @@ int ogs_nas_eps_encode_additional_information(ogs_pkbuf_t *pkbuf, ogs_nas_additi
  * O TV 1 */
 int ogs_nas_eps_decode_device_properties(ogs_nas_device_properties_t *device_properties, ogs_pkbuf_t *pkbuf)
 {
-    memcpy(device_properties, pkbuf->data - 1, 1);
+    uint16_t size = sizeof(ogs_nas_device_properties_t);
+
+    ogs_assert(ogs_pkbuf_pull(pkbuf, size));
+    memcpy(device_properties, pkbuf->data - size, size);
 
     ogs_trace("  DEVICE_PROPERTIES - ");
-    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - 1, 1);
+    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
 
-    return 0;
+    return size;
 }
 
 int ogs_nas_eps_encode_device_properties(ogs_pkbuf_t *pkbuf, ogs_nas_device_properties_t *device_properties)
@@ -353,12 +356,15 @@ int ogs_nas_eps_encode_plmn_list(ogs_pkbuf_t *pkbuf, ogs_nas_plmn_list_t *plmn_l
  * O TV 1 */
 int ogs_nas_eps_decode_additional_update_result(ogs_nas_additional_update_result_t *additional_update_result, ogs_pkbuf_t *pkbuf)
 {
-    memcpy(additional_update_result, pkbuf->data - 1, 1);
+    uint16_t size = sizeof(ogs_nas_additional_update_result_t);
+
+    ogs_assert(ogs_pkbuf_pull(pkbuf, size));
+    memcpy(additional_update_result, pkbuf->data - size, size);
 
     ogs_trace("  ADDITIONAL_UPDATE_RESULT - ");
-    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - 1, 1);
+    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
 
-    return 0;
+    return size;
 }
 
 int ogs_nas_eps_encode_additional_update_result(ogs_pkbuf_t *pkbuf, ogs_nas_additional_update_result_t *additional_update_result)
@@ -378,12 +384,15 @@ int ogs_nas_eps_encode_additional_update_result(ogs_pkbuf_t *pkbuf, ogs_nas_addi
  * O TV 1 */
 int ogs_nas_eps_decode_additional_update_type(ogs_nas_additional_update_type_t *additional_update_type, ogs_pkbuf_t *pkbuf)
 {
-    memcpy(additional_update_type, pkbuf->data - 1, 1);
+    uint16_t size = sizeof(ogs_nas_additional_update_type_t);
+
+    ogs_assert(ogs_pkbuf_pull(pkbuf, size));
+    memcpy(additional_update_type, pkbuf->data - size, size);
 
     ogs_trace("  ADDITIONAL_UPDATE_TYPE - ");
-    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - 1, 1);
+    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
 
-    return 0;
+    return size;
 }
 
 int ogs_nas_eps_encode_additional_update_type(ogs_pkbuf_t *pkbuf, ogs_nas_additional_update_type_t *additional_update_type)
@@ -806,12 +815,15 @@ int ogs_nas_eps_encode_identity_type_2(ogs_pkbuf_t *pkbuf, ogs_nas_identity_type
  * O TV 1 */
 int ogs_nas_eps_decode_imeisv_request(ogs_nas_imeisv_request_t *imeisv_request, ogs_pkbuf_t *pkbuf)
 {
-    memcpy(imeisv_request, pkbuf->data - 1, 1);
+    uint16_t size = sizeof(ogs_nas_imeisv_request_t);
+
+    ogs_assert(ogs_pkbuf_pull(pkbuf, size));
+    memcpy(imeisv_request, pkbuf->data - size, size);
 
     ogs_trace("  IMEISV_REQUEST - ");
-    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - 1, 1);
+    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
 
-    return 0;
+    return size;
 }
 
 int ogs_nas_eps_encode_imeisv_request(ogs_pkbuf_t *pkbuf, ogs_nas_imeisv_request_t *imeisv_request)
@@ -929,12 +941,15 @@ int ogs_nas_eps_encode_ms_network_capability(ogs_pkbuf_t *pkbuf, ogs_nas_ms_netw
  * O TV 1 */
 int ogs_nas_eps_decode_ms_network_feature_support(ogs_nas_ms_network_feature_support_t *ms_network_feature_support, ogs_pkbuf_t *pkbuf)
 {
-    memcpy(ms_network_feature_support, pkbuf->data - 1, 1);
+    uint16_t size = sizeof(ogs_nas_ms_network_feature_support_t);
+
+    ogs_assert(ogs_pkbuf_pull(pkbuf, size));
+    memcpy(ms_network_feature_support, pkbuf->data - size, size);
 
     ogs_trace("  MS_NETWORK_FEATURE_SUPPORT - ");
-    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - 1, 1);
+    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
 
-    return 0;
+    return size;
 }
 
 int ogs_nas_eps_encode_ms_network_feature_support(ogs_pkbuf_t *pkbuf, ogs_nas_ms_network_feature_support_t *ms_network_feature_support)
@@ -954,12 +969,15 @@ int ogs_nas_eps_encode_ms_network_feature_support(ogs_pkbuf_t *pkbuf, ogs_nas_ms
  * O TV 1 */
 int ogs_nas_eps_decode_key_set_identifier(ogs_nas_key_set_identifier_t *key_set_identifier, ogs_pkbuf_t *pkbuf)
 {
-    memcpy(key_set_identifier, pkbuf->data - 1, 1);
+    uint16_t size = sizeof(ogs_nas_key_set_identifier_t);
+
+    ogs_assert(ogs_pkbuf_pull(pkbuf, size));
+    memcpy(key_set_identifier, pkbuf->data - size, size);
 
     ogs_trace("  KEY_SET_IDENTIFIER - ");
-    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - 1, 1);
+    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
 
-    return 0;
+    return size;
 }
 
 int ogs_nas_eps_encode_key_set_identifier(ogs_pkbuf_t *pkbuf, ogs_nas_key_set_identifier_t *key_set_identifier)
@@ -1209,12 +1227,15 @@ int ogs_nas_eps_encode_p_tmsi_signature(ogs_pkbuf_t *pkbuf, ogs_nas_p_tmsi_signa
  * O TV 1 */
 int ogs_nas_eps_decode_extended_emm_cause(ogs_nas_extended_emm_cause_t *extended_emm_cause, ogs_pkbuf_t *pkbuf)
 {
-    memcpy(extended_emm_cause, pkbuf->data - 1, 1);
+    uint16_t size = sizeof(ogs_nas_extended_emm_cause_t);
+
+    ogs_assert(ogs_pkbuf_pull(pkbuf, size));
+    memcpy(extended_emm_cause, pkbuf->data - size, size);
 
     ogs_trace("  EXTENDED_EMM_CAUSE - ");
-    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - 1, 1);
+    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
 
-    return 0;
+    return size;
 }
 
 int ogs_nas_eps_encode_extended_emm_cause(ogs_pkbuf_t *pkbuf, ogs_nas_extended_emm_cause_t *extended_emm_cause)
@@ -1388,12 +1409,15 @@ int ogs_nas_eps_encode_time_zone_and_time(ogs_pkbuf_t *pkbuf, ogs_nas_time_zone_
  * O TV 1 */
 int ogs_nas_eps_decode_tmsi_status(ogs_nas_tmsi_status_t *tmsi_status, ogs_pkbuf_t *pkbuf)
 {
-    memcpy(tmsi_status, pkbuf->data - 1, 1);
+    uint16_t size = sizeof(ogs_nas_tmsi_status_t);
+
+    ogs_assert(ogs_pkbuf_pull(pkbuf, size));
+    memcpy(tmsi_status, pkbuf->data - size, size);
 
     ogs_trace("  TMSI_STATUS - ");
-    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - 1, 1);
+    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
 
-    return 0;
+    return size;
 }
 
 int ogs_nas_eps_encode_tmsi_status(ogs_pkbuf_t *pkbuf, ogs_nas_tmsi_status_t *tmsi_status)
@@ -1515,12 +1539,15 @@ int ogs_nas_eps_encode_ue_network_capability(ogs_pkbuf_t *pkbuf, ogs_nas_ue_netw
  * O TV 1 */
 int ogs_nas_eps_decode_ue_radio_capability_information_update_needed(ogs_nas_ue_radio_capability_information_update_needed_t *ue_radio_capability_information_update_needed, ogs_pkbuf_t *pkbuf)
 {
-    memcpy(ue_radio_capability_information_update_needed, pkbuf->data - 1, 1);
+    uint16_t size = sizeof(ogs_nas_ue_radio_capability_information_update_needed_t);
+
+    ogs_assert(ogs_pkbuf_pull(pkbuf, size));
+    memcpy(ue_radio_capability_information_update_needed, pkbuf->data - size, size);
 
     ogs_trace("  UE_RADIO_CAPABILITY_INFORMATION_UPDATE_NEEDED - ");
-    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - 1, 1);
+    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
 
-    return 0;
+    return size;
 }
 
 int ogs_nas_eps_encode_ue_radio_capability_information_update_needed(ogs_pkbuf_t *pkbuf, ogs_nas_ue_radio_capability_information_update_needed_t *ue_radio_capability_information_update_needed)
@@ -1918,12 +1945,15 @@ int ogs_nas_eps_encode_voice_domain_preference_and_ue_usage_setting(ogs_pkbuf_t 
  * O TV 1 */
 int ogs_nas_eps_decode_guti_type(ogs_nas_guti_type_t *guti_type, ogs_pkbuf_t *pkbuf)
 {
-    memcpy(guti_type, pkbuf->data - 1, 1);
+    uint16_t size = sizeof(ogs_nas_guti_type_t);
+
+    ogs_assert(ogs_pkbuf_pull(pkbuf, size));
+    memcpy(guti_type, pkbuf->data - size, size);
 
     ogs_trace("  GUTI_TYPE - ");
-    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - 1, 1);
+    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
 
-    return 0;
+    return size;
 }
 
 int ogs_nas_eps_encode_guti_type(ogs_pkbuf_t *pkbuf, ogs_nas_guti_type_t *guti_type)
@@ -2011,12 +2041,15 @@ int ogs_nas_eps_encode_dcn_id(ogs_pkbuf_t *pkbuf, ogs_nas_dcn_id_t *dcn_id)
  * O TV 1 */
 int ogs_nas_eps_decode_non__nw_provided_policies(ogs_nas_non__nw_provided_policies_t *non__nw_provided_policies, ogs_pkbuf_t *pkbuf)
 {
-    memcpy(non__nw_provided_policies, pkbuf->data - 1, 1);
+    uint16_t size = sizeof(ogs_nas_non__nw_provided_policies_t);
+
+    ogs_assert(ogs_pkbuf_pull(pkbuf, size));
+    memcpy(non__nw_provided_policies, pkbuf->data - size, size);
 
     ogs_trace("  NON__NW_PROVIDED_POLICIES - ");
-    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - 1, 1);
+    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
 
-    return 0;
+    return size;
 }
 
 int ogs_nas_eps_encode_non__nw_provided_policies(ogs_pkbuf_t *pkbuf, ogs_nas_non__nw_provided_policies_t *non__nw_provided_policies)
@@ -2036,12 +2069,15 @@ int ogs_nas_eps_encode_non__nw_provided_policies(ogs_pkbuf_t *pkbuf, ogs_nas_non
  * O TV 1 */
 int ogs_nas_eps_decode_sms_services_status(ogs_nas_sms_services_status_t *sms_services_status, ogs_pkbuf_t *pkbuf)
 {
-    memcpy(sms_services_status, pkbuf->data - 1, 1);
+    uint16_t size = sizeof(ogs_nas_sms_services_status_t);
+
+    ogs_assert(ogs_pkbuf_pull(pkbuf, size));
+    memcpy(sms_services_status, pkbuf->data - size, size);
 
     ogs_trace("  SMS_SERVICES_STATUS - ");
-    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - 1, 1);
+    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
 
-    return 0;
+    return size;
 }
 
 int ogs_nas_eps_encode_sms_services_status(ogs_pkbuf_t *pkbuf, ogs_nas_sms_services_status_t *sms_services_status)
@@ -2061,12 +2097,15 @@ int ogs_nas_eps_encode_sms_services_status(ogs_pkbuf_t *pkbuf, ogs_nas_sms_servi
  * O TV 1 */
 int ogs_nas_eps_decode_ciphering_key_sequence_number(ogs_nas_ciphering_key_sequence_number_t *ciphering_key_sequence_number, ogs_pkbuf_t *pkbuf)
 {
-    memcpy(ciphering_key_sequence_number, pkbuf->data - 1, 1);
+    uint16_t size = sizeof(ogs_nas_ciphering_key_sequence_number_t);
+
+    ogs_assert(ogs_pkbuf_pull(pkbuf, size));
+    memcpy(ciphering_key_sequence_number, pkbuf->data - size, size);
 
     ogs_trace("  CIPHERING_KEY_SEQUENCE_NUMBER - ");
-    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - 1, 1);
+    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
 
-    return 0;
+    return size;
 }
 
 int ogs_nas_eps_encode_ciphering_key_sequence_number(ogs_pkbuf_t *pkbuf, ogs_nas_ciphering_key_sequence_number_t *ciphering_key_sequence_number)
@@ -2086,12 +2125,15 @@ int ogs_nas_eps_encode_ciphering_key_sequence_number(ogs_pkbuf_t *pkbuf, ogs_nas
  * O TV 1 */
 int ogs_nas_eps_decode_csfb_response(ogs_nas_csfb_response_t *csfb_response, ogs_pkbuf_t *pkbuf)
 {
-    memcpy(csfb_response, pkbuf->data - 1, 1);
+    uint16_t size = sizeof(ogs_nas_csfb_response_t);
+
+    ogs_assert(ogs_pkbuf_pull(pkbuf, size));
+    memcpy(csfb_response, pkbuf->data - size, size);
 
     ogs_trace("  CSFB_RESPONSE - ");
-    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - 1, 1);
+    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
 
-    return 0;
+    return size;
 }
 
 int ogs_nas_eps_encode_csfb_response(ogs_pkbuf_t *pkbuf, ogs_nas_csfb_response_t *csfb_response)
@@ -2187,12 +2229,15 @@ int ogs_nas_eps_encode_replayed_nas_message_container(ogs_pkbuf_t *pkbuf, ogs_na
  * O TV 1 */
 int ogs_nas_eps_decode_network_policy(ogs_nas_network_policy_t *network_policy, ogs_pkbuf_t *pkbuf)
 {
-    memcpy(network_policy, pkbuf->data - 1, 1);
+    uint16_t size = sizeof(ogs_nas_network_policy_t);
+
+    ogs_assert(ogs_pkbuf_pull(pkbuf, size));
+    memcpy(network_policy, pkbuf->data - size, size);
 
     ogs_trace("  NETWORK_POLICY - ");
-    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - 1, 1);
+    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
 
-    return 0;
+    return size;
 }
 
 int ogs_nas_eps_encode_network_policy(ogs_pkbuf_t *pkbuf, ogs_nas_network_policy_t *network_policy)
@@ -2386,12 +2431,15 @@ int ogs_nas_eps_encode_n1_ue_network_capability(ogs_pkbuf_t *pkbuf, ogs_nas_n1_u
  * O TV 1 */
 int ogs_nas_eps_decode_ue_radio_capability_id_request(ogs_nas_ue_radio_capability_id_request_t *ue_radio_capability_id_request, ogs_pkbuf_t *pkbuf)
 {
-    memcpy(ue_radio_capability_id_request, pkbuf->data - 1, 1);
+    uint16_t size = sizeof(ogs_nas_ue_radio_capability_id_request_t);
+
+    ogs_assert(ogs_pkbuf_pull(pkbuf, size));
+    memcpy(ue_radio_capability_id_request, pkbuf->data - size, size);
 
     ogs_trace("  UE_RADIO_CAPABILITY_ID_REQUEST - ");
-    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - 1, 1);
+    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
 
-    return 0;
+    return size;
 }
 
 int ogs_nas_eps_encode_ue_radio_capability_id_request(ogs_pkbuf_t *pkbuf, ogs_nas_ue_radio_capability_id_request_t *ue_radio_capability_id_request)
@@ -2479,12 +2527,15 @@ int ogs_nas_eps_encode_ue_radio_capability_id(ogs_pkbuf_t *pkbuf, ogs_nas_ue_rad
  * O TV 1 */
 int ogs_nas_eps_decode_ue_radio_capability_id_deletion_indication(ogs_nas_ue_radio_capability_id_deletion_indication_t *ue_radio_capability_id_deletion_indication, ogs_pkbuf_t *pkbuf)
 {
-    memcpy(ue_radio_capability_id_deletion_indication, pkbuf->data - 1, 1);
+    uint16_t size = sizeof(ogs_nas_ue_radio_capability_id_deletion_indication_t);
+
+    ogs_assert(ogs_pkbuf_pull(pkbuf, size));
+    memcpy(ue_radio_capability_id_deletion_indication, pkbuf->data - size, size);
 
     ogs_trace("  UE_RADIO_CAPABILITY_ID_DELETION_INDICATION - ");
-    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - 1, 1);
+    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
 
-    return 0;
+    return size;
 }
 
 int ogs_nas_eps_encode_ue_radio_capability_id_deletion_indication(ogs_pkbuf_t *pkbuf, ogs_nas_ue_radio_capability_id_deletion_indication_t *ue_radio_capability_id_deletion_indication)
@@ -2705,12 +2756,15 @@ int ogs_nas_eps_encode_quality_of_service(ogs_pkbuf_t *pkbuf, ogs_nas_quality_of
  * O TV 1 */
 int ogs_nas_eps_decode_radio_priority(ogs_nas_radio_priority_t *radio_priority, ogs_pkbuf_t *pkbuf)
 {
-    memcpy(radio_priority, pkbuf->data - 1, 1);
+    uint16_t size = sizeof(ogs_nas_radio_priority_t);
+
+    ogs_assert(ogs_pkbuf_pull(pkbuf, size));
+    memcpy(radio_priority, pkbuf->data - size, size);
 
     ogs_trace("  RADIO_PRIORITY - ");
-    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - 1, 1);
+    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
 
-    return 0;
+    return size;
 }
 
 int ogs_nas_eps_encode_radio_priority(ogs_pkbuf_t *pkbuf, ogs_nas_radio_priority_t *radio_priority)
@@ -2896,12 +2950,15 @@ int ogs_nas_eps_encode_transaction_identifier(ogs_pkbuf_t *pkbuf, ogs_nas_transa
  * O TV 1 */
 int ogs_nas_eps_decode_wlan_offload_acceptability(ogs_nas_wlan_offload_acceptability_t *wlan_offload_acceptability, ogs_pkbuf_t *pkbuf)
 {
-    memcpy(wlan_offload_acceptability, pkbuf->data - 1, 1);
+    uint16_t size = sizeof(ogs_nas_wlan_offload_acceptability_t);
+
+    ogs_assert(ogs_pkbuf_pull(pkbuf, size));
+    memcpy(wlan_offload_acceptability, pkbuf->data - size, size);
 
     ogs_trace("  WLAN_OFFLOAD_ACCEPTABILITY - ");
-    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - 1, 1);
+    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
 
-    return 0;
+    return size;
 }
 
 int ogs_nas_eps_encode_wlan_offload_acceptability(ogs_pkbuf_t *pkbuf, ogs_nas_wlan_offload_acceptability_t *wlan_offload_acceptability)
@@ -3027,12 +3084,15 @@ int ogs_nas_eps_encode_header_compression_configuration(ogs_pkbuf_t *pkbuf, ogs_
  * O TV 1 */
 int ogs_nas_eps_decode_control_plane_only_indication(ogs_nas_control_plane_only_indication_t *control_plane_only_indication, ogs_pkbuf_t *pkbuf)
 {
-    memcpy(control_plane_only_indication, pkbuf->data - 1, 1);
+    uint16_t size = sizeof(ogs_nas_control_plane_only_indication_t);
+
+    ogs_assert(ogs_pkbuf_pull(pkbuf, size));
+    memcpy(control_plane_only_indication, pkbuf->data - size, size);
 
     ogs_trace("  CONTROL_PLANE_ONLY_INDICATION - ");
-    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - 1, 1);
+    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
 
-    return 0;
+    return size;
 }
 
 int ogs_nas_eps_encode_control_plane_only_indication(ogs_pkbuf_t *pkbuf, ogs_nas_control_plane_only_indication_t *control_plane_only_indication)
@@ -3196,12 +3256,15 @@ int ogs_nas_eps_encode_extended_apn_aggregate_maximum_bit_rate(ogs_pkbuf_t *pkbu
  * O TV 1 */
 int ogs_nas_eps_decode_connectivity_type(ogs_nas_connectivity_type_t *connectivity_type, ogs_pkbuf_t *pkbuf)
 {
-    memcpy(connectivity_type, pkbuf->data - 1, 1);
+    uint16_t size = sizeof(ogs_nas_connectivity_type_t);
+
+    ogs_assert(ogs_pkbuf_pull(pkbuf, size));
+    memcpy(connectivity_type, pkbuf->data - size, size);
 
     ogs_trace("  CONNECTIVITY_TYPE - ");
-    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - 1, 1);
+    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
 
-    return 0;
+    return size;
 }
 
 int ogs_nas_eps_encode_connectivity_type(ogs_pkbuf_t *pkbuf, ogs_nas_connectivity_type_t *connectivity_type)
@@ -3319,12 +3382,15 @@ int ogs_nas_eps_encode_esm_cause(ogs_pkbuf_t *pkbuf, ogs_nas_esm_cause_t *esm_ca
  * O TV 1 */
 int ogs_nas_eps_decode_esm_information_transfer_flag(ogs_nas_esm_information_transfer_flag_t *esm_information_transfer_flag, ogs_pkbuf_t *pkbuf)
 {
-    memcpy(esm_information_transfer_flag, pkbuf->data - 1, 1);
+    uint16_t size = sizeof(ogs_nas_esm_information_transfer_flag_t);
+
+    ogs_assert(ogs_pkbuf_pull(pkbuf, size));
+    memcpy(esm_information_transfer_flag, pkbuf->data - size, size);
 
     ogs_trace("  ESM_INFORMATION_TRANSFER_FLAG - ");
-    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - 1, 1);
+    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
 
-    return 0;
+    return size;
 }
 
 int ogs_nas_eps_encode_esm_information_transfer_flag(ogs_pkbuf_t *pkbuf, ogs_nas_esm_information_transfer_flag_t *esm_information_transfer_flag)

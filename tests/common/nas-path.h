@@ -30,6 +30,12 @@ void testgsm_recv(test_sess_t *sess, ogs_pkbuf_t *pkbuf);
 void testgmm_send_to_gsm(test_sess_t *sess,
         ogs_nas_payload_container_t *payload_container);
 
+void testemm_recv(test_ue_t *test_ue, ogs_pkbuf_t *pkbuf);
+void testesm_recv(test_ue_t *test_ue, ogs_pkbuf_t *pkbuf);
+
+void testemm_send_to_esm(test_ue_t *test_ue,
+    ogs_nas_esm_message_container_t *esm_message_container);
+
 #ifdef __cplusplus
 }
 #endif

@@ -32,6 +32,12 @@ extern "C" {
 #include "ogs-nas-eps.h"
 #include "ogs-nas-5gs.h"
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wredundant-decls"
+#include "ogs-ngap.h"
+#include "ogs-s1ap.h"
+#pragma GCC diagnostic pop
+
 #include "core/abts.h"
 
 #define OGS_TEST_INSIDE
@@ -47,6 +53,24 @@ extern "C" {
 #include "common/nas-path.h"
 #include "common/nas-encoder.h"
 #include "common/nas-security.h"
+
+#include "common/ngap-build.h"
+#include "common/ngap-handler.h"
+#include "common/ngap-path.h"
+
+#include "common/s1ap-build.h"
+#include "common/s1ap-handler.h"
+#include "common/s1ap-path.h"
+
+#include "common/emm-build.h"
+#include "common/emm-handler.h"
+#include "common/esm-build.h"
+#include "common/esm-handler.h"
+
+#include "common/sgsap-build.h"
+
+#undef OGS_LOG_DOMAIN
+#define OGS_LOG_DOMAIN 1
 
 #undef OGS_TEST_INSIDE
 

@@ -1,0 +1,4 @@
+usr/bin/open5gs-upfd
+configs/open5gs/upf.yaml etc/open5gs
+configs/systemd/99-open5gs.net* etc/systemd/network
+configs/systemd/open5gs-upfd.service lib/systemd/system

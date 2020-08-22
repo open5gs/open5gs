@@ -851,8 +851,8 @@ void pcscf_diam_config(void)
 {
     memset(&diam_config, 0, sizeof(ogs_diam_config_t));
 
-    diam_config.cnf_diamid = "pcscf.open-ims.test";
-    diam_config.cnf_diamrlm = "open-ims.test";
+    diam_config.cnf_diamid = "pcscf.localdomain";
+    diam_config.cnf_diamrlm = "localdomain";
     diam_config.cnf_port = DIAMETER_PORT;
     diam_config.cnf_port_tls = DIAMETER_SECURE_PORT;
     diam_config.cnf_flags.no_sctp = 1;
@@ -881,8 +881,8 @@ void pcscf_diam_config(void)
         FD_EXT_DIR OGS_DIR_SEPARATOR_S "dict_dcca_3gpp.fdx";
     diam_config.num_of_ext++;
 
-    diam_config.conn[diam_config.num_of_conn].identity = "pcrf.open-ims.test";
-    diam_config.conn[diam_config.num_of_conn].addr = "127.0.0.5";
+    diam_config.conn[diam_config.num_of_conn].identity = "pcrf.localdomain";
+    diam_config.conn[diam_config.num_of_conn].addr = "127.0.0.9";
     diam_config.num_of_conn++;
 }
 

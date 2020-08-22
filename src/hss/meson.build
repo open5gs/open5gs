@@ -16,10 +16,8 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 libhss_sources = files('''
-    hss-auc.h
     hss-context.h
     hss-fd-path.h
-    hss-auc.c
     hss-init.c
     hss-context.c
     hss-fd-path.c

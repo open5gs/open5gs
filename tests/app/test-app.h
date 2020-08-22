@@ -20,9 +20,7 @@
 #ifndef TEST_APP_H
 #define TEST_APP_H
 
-#include "test-packet.h"
-
-#include "mme/mme-context.h"
+#include "test-common.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -30,6 +28,12 @@ extern "C" {
 
 void test_app_init(void);
 void test_app_final(void);
+
+void test_5gc_init(void);
+void test_5gc_final(void);
+
+void test_epc_init(void);
+void test_epc_final(void);
 
 #ifdef __cplusplus
 }

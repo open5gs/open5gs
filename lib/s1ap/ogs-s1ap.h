@@ -549,6 +549,7 @@
 
 #include "s1ap/conv.h"
 #include "s1ap/message.h"
+#include "s1ap/build.h"
 
 #undef OGS_S1AP_INSIDE
 

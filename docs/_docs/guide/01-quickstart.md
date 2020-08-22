@@ -76,20 +76,101 @@ $ sudo zypper install open5gs
 ### Configure Open5GS
 ---
 
-Modify [/etc/open5gs/mme.yaml](https://github.com/{{ site.github_username }}/open5gs/blob/master/configs/open5gs/mme.yaml.in) to set the S1AP/GTP-C IP address, PLMN ID, and TAC
+#### 5G Core
+
+Modify [install/etc/open5gs/amf.yaml](https://github.com/{{ site.github_username }}/open5gs/blob/master/configs/open5gs/amf.yaml.in) to set the NGAP IP address, PLMN ID, TAC and NSSAI. 
+
+In the below example we
+
+- use MCC-MNC of 901-70, as this is the home network of the default IMSIs of the sysmoUSIM-SJS1 cards.
+- use 10.10.0.5 for the NGAP connection of AMF to the gNB
+- use 10.11.0.7 for the GTP-U connection of UPF to the gNB
+
+```diff
+diff -u amf.yaml.old amf.yaml
+--- amf.yaml.old	2020-06-21 23:34:14.643114779 -0400
++++ amf.yaml	2020-06-21 23:34:28.718482095 -0400
+@@ -67,25 +67,25 @@
+       - addr: 127.0.0.5
+         port: 7777
+     ngap:
+-      - addr: 127.0.0.5
++      - addr: 10.10.0.5
+     guami:
+       - plmn_id:
+-          mcc: 001
+-          mnc: 01
++          mcc: 901
++          mnc: 70
+         amf_id:
+           region: 2
+           set: 1
+     tai:
+       - plmn_id:
+-          mcc: 001
+-          mnc: 01
+-        tac: 7
++          mcc: 901
++          mnc: 70
++        tac: 1
+     plmn:
+       - plmn_id:
+-          mcc: 001
+-          mnc: 01
++          mcc: 901
++          mnc: 70
+         s_nssai:
+           - sst: 1
+-          - sd: 2
+     security:
+         integrity_order : [ NIA1, NIA2, NIA0 ]
+         ciphering_order : [ NEA0, NEA1, NEA2 ]
+```
+
+Modify [install/etc/open5gs/upf.yaml](https://github.com/{{ site.github_username }}/open5gs/blob/master/configs/open5gs/upf.yaml.in) to set the GTP-U IP address.  
+```diff
+diff -u upf.yaml.old upf.yaml
+--- upf.yaml.old	2020-06-21 23:35:54.378631781 -0400
++++ upf.yaml	2020-06-21 23:36:02.978245251 -0400
+@@ -61,6 +61,7 @@
+     pfcp:
+       - addr: 127.0.0.7
+     gtpu:
+-      - addr: 127.0.0.7
++      - addr: 10.11.0.7
+     pdn:
+```
+
+After changing conf files, please restart Open5GS daemons.
+
+```bash
+$ sudo systemctl restart open5gs-amfd
+$ sudo systemctl restart open5gs-upfd
+```
+
+#### EPC
+
+Modify [install/etc/open5gs/mme.yaml](https://github.com/{{ site.github_username }}/open5gs/blob/master/configs/open5gs/mme.yaml.in) to set the S1AP IP address, PLMN ID, and TAC. 
+
+In the below example we
+
+- use MCC-MNC of 901-70, as this is the home network of the default IMSIs of the sysmoUSIM-SJS1 cards.
+- use 10.10.0.2 for the S1AP connection of MME to the eNB
+- use 10.11.0.6 for the GTP-U connection of SGW-U to the eNB
 
 ```diff
 diff -u /etc/open5gs/mme.yaml.old /etc/open5gs/mme.yaml
 --- mme.yaml.old	2018-04-15 18:28:31.000000000 +0900
 +++ mme.yaml	2018-04-15 19:53:10.000000000 +0900
-@@ -8,18 +8,20 @@ parameter:
+@@ -204,20 +204,20 @@ logger:
  mme:
-     freeDiameter: /etc/freeDiameter/mme.conf
+     freeDiameter: @sysconfdir@/freeDiameter/mme.conf
      s1ap:
-+      addr: 192.168.0.100
+-      addr: 127.0.0.2
++      addr: 10.10.0.2
      gtpc:
-+      addr: 192.168.0.100
-     gummei:
+       addr: 127.0.0.2
+     gummei: 
        plmn_id:
 -        mcc: 001
 -        mnc: 01
@@ -101,32 +182,37 @@ diff -u /etc/open5gs/mme.yaml.old /etc/open5gs/mme.yaml
        plmn_id:
 -        mcc: 001
 -        mnc: 01
--      tac: 12345
+-      tac: 7
 +        mcc: 901
 +        mnc: 70
-+      tac: 7
++      tac: 1
      security:
          integrity_order : [ EIA1, EIA2, EIA0 ]
          ciphering_order : [ EEA0, EEA1, EEA2 ]
+
 ```
 
-Modify [/etc/open5gs/sgw.yaml](https://github.com/{{ site.github_username }}/open5gs/blob/master/configs/open5gs/sgw.yaml.in) to set the GTP-U IP address.  
+Modify [install/etc/open5gs/sgwu.yaml](https://github.com/{{ site.github_username }}/open5gs/blob/master/configs/open5gs/sgwu.yaml.in) to set the GTP-U IP address.  
 ```diff
-diff -u /etc/open5gs/sgw.yaml.old /etc/open5gs/sgw.yaml
---- sgw.yaml.old	2018-04-15 18:30:25.000000000 +0900
-+++ sgw.yaml	2018-04-15 18:30:30.000000000 +0900
-@@ -14,3 +14,4 @@
-     gtpc:
-       addr: 127.0.0.2
+diff -u /etc/open5gs/sgwu.yaml.old /etc/open5gs/sgwu.yaml
+--- sgwu.yaml.old	2018-04-15 18:30:25.000000000 +0900
++++ sgwu.yaml	2018-04-15 18:30:30.000000000 +0900
+@@ -51,7 +51,7 @@ logger:
+ #
+ sgwu:
      gtpu:
-+      addr: 192.168.0.100
+-      addr: 127.0.0.6
++      addr: 10.11.0.6
+     pfcp:
+       addr: 127.0.0.6
 ```
+
 
 After changing conf files, please restart Open5GS daemons.
 
 ```bash
 $ sudo systemctl restart open5gs-mmed
-$ sudo systemctl restart open5gs-sgwd
+$ sudo systemctl restart open5gs-sgwud
 ```
 
 ### Install WebUI of Open5GS

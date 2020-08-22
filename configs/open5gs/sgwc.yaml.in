@@ -16,7 +16,7 @@
 #
 #  o Set OGS_LOG_TRACE to all domain level
 #    level: trace
-#    domain: core,gtp,sgw,event,tlv,mem,sock
+#    domain: core,pfcp,gtp,sgwc,event,tlv,mem,sock
 #
 logger:
     file: @localstatedir@/log/open5gs/sgwc.log
@@ -26,47 +26,47 @@ logger:
 #
 #  <GTP-C Server>
 #
-#  o GTP-C Server(127.0.0.6:2123, [fe80::2%@loopback_devname@]:2123)
+#  o GTP-C Server(127.0.0.3:2123, [fe80::2%@loopback_devname@]:2123)
 #    gtpc:
 #      addr:
-#        - 127.0.0.6
+#        - 127.0.0.3
 #        - fe80::2%@loopback_devname@
 #
-#  o On SGW, Same Configuration(127.0.0.6:2123,
+#  o On SGW, Same Configuration(127.0.0.3:2123,
 #  [fe80::2%@loopback_devname@]:2123) as below.
 #    gtpc:
-#      - addr: 127.0.0.6
+#      - addr: 127.0.0.3
 #      - addr: fe80::2%@loopback_devname@
 #
 #  <PFCP Server>
 #
-#  o PFCP Server(127.0.0.6:8805, ::1:8805)
+#  o PFCP Server(127.0.0.3:8805, ::1:8805)
 #    pfcp:
-#      - addr: 127.0.0.6
+#      - addr: 127.0.0.3
 #      - addr: ::1
 #
 sgwc:
     gtpc:
-      addr: 127.0.0.6
+      addr: 127.0.0.3
     pfcp:
-      addr: 127.0.0.6
+      addr: 127.0.0.3
 
 #
 # sgwu:
 #
 #  <PFCP Client>>
 #
-#  o PFCP Client(127.0.0.7:8805)
+#  o PFCP Client(127.0.0.6:8805)
 #
 #    pfcp:
-#      addr: 127.0.0.7
+#      addr: 127.0.0.6
 #
 #  <UPF_SELECTION_MODE - EPC only>
 #
 # o Round-Robin
 #  sgwu:
 #    pfcp:
-#      - addr: 127.0.0.7
+#      - addr: 127.0.0.6
 #      - addr: 127.0.0.12
 #
 # o UPF selection by eNodeB TAC
@@ -74,7 +74,7 @@ sgwc:
 #
 #  sgwu:
 #    pfcp:
-#      - addr: 127.0.0.7
+#      - addr: 127.0.0.6
 #        tac: 1
 #      - addr: 127.0.0.12
 #        tac: [3,5,8]
@@ -83,7 +83,7 @@ sgwc:
 #
 #  sgwu:
 #    pfcp:
-#      - addr: 127.0.0.7
+#      - addr: 127.0.0.6
 #        dnn: ims
 #      - addr: 127.0.0.12
 #        apn: [internet, web]
@@ -93,14 +93,14 @@ sgwc:
 #
 #  sgwu:
 #    pfcp:
-#      - addr: 127.0.0.7
+#      - addr: 127.0.0.6
 #        e_cell_id: 463
 #      - addr: 127.0.0.12
 #        nr_cell_id: [123456789, 9413]
 #
 sgwu:
     pfcp:
-      addr: 127.0.0.7
+      addr: 127.0.0.6
 
 #
 # parameter:
@@ -124,7 +124,6 @@ sgwu:
 #      no_slaac: true
 #
 parameter:
-    no_ipv6: true
 
 #
 # max:

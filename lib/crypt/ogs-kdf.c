@@ -30,6 +30,7 @@
 #define FC_FOR_KGNB_KN3IWF_DERIVATION           0x6E
 #define FC_FOR_NH_GNB_DERIVATION                0x6F
 
+#define FC_FOR_KASME                            0x10
 #define FC_FOR_KENB_DERIVATION                  0x11
 #define FC_FOR_NH_ENB_DERIVATION                0x12
 #define FC_FOR_EPS_ALGORITHM_KEY_DERIVATION     0x15
@@ -259,6 +260,39 @@ void ogs_kdf_nh_gnb(uint8_t *kamf, uint8_t *sync_input, uint8_t *kgnb)
 
     ogs_kdf_common(kamf, OGS_SHA256_DIGEST_SIZE,
             FC_FOR_NH_GNB_DERIVATION, param, kgnb);
+}
+
+/* TS33.401 Annex A.2 KASME derivation function */
+void ogs_auc_kasme(const uint8_t *ck, const uint8_t *ik,
+        const uint8_t *plmn_id, const uint8_t *sqn,  const uint8_t *ak,
+        uint8_t *kasme)
+{
+    kdf_param_t param;
+    int i;
+
+    uint8_t key[OGS_KEY_LEN*2];
+    uint8_t sqn_xor_ak[OGS_SQN_XOR_AK_LEN];
+
+    ogs_assert(ck);
+    ogs_assert(ik);
+    ogs_assert(plmn_id);
+    ogs_assert(sqn);
+    ogs_assert(ak);
+
+    memcpy(key, ck, OGS_KEY_LEN);
+    memcpy(key + OGS_KEY_LEN, ik, OGS_KEY_LEN);
+
+    memset(param, 0, sizeof(param));
+    param[0].buf = (uint8_t *)plmn_id;
+    param[0].len = OGS_PLMN_ID_LEN;
+
+    for (i = 0; i < 6; i++)
+        sqn_xor_ak[i] = sqn[i] ^ ak[i];
+
+    param[1].buf = sqn_xor_ak;
+    param[1].len = OGS_SQN_XOR_AK_LEN;
+
+    ogs_kdf_common(key, OGS_SHA256_DIGEST_SIZE, FC_FOR_KASME, param, kasme);
 }
 
 /* TS33.401 Annex A.3 KeNB derivation function */

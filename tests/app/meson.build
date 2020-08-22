@@ -18,10 +18,9 @@
 
 libtestapp_inc = include_directories('.')
 
-libtestepc_cc_args = '-DDEFAULT_CONFIG_FILENAME="@0@/configs/epc.yaml"'.format(meson.build_root())
+libtestepc_cc_args = '-DDEFAULT_CONFIG_FILENAME="@0@/configs/sample.yaml"'.format(meson.build_root())
 
 libtestepc_sources = files('''
-    test-packet.c
     epc-init.c
 '''.split())
 
@@ -58,7 +57,7 @@ executable('epc',
     include_directories : srcinc,
     dependencies : libtestepc_dep)
 
-libtest5gc_cc_args = '-DDEFAULT_CONFIG_FILENAME="@0@/configs/5gc.yaml"'.format(meson.build_root())
+libtest5gc_cc_args = '-DDEFAULT_CONFIG_FILENAME="@0@/configs/sample.yaml"'.format(meson.build_root())
 
 libtest5gc_sources = files('''
     5gc-init.c
@@ -87,10 +86,9 @@ executable('5gc',
     include_directories : srcinc,
     dependencies : libtest5gc_dep)
 
-libtestapp_cc_args = '-DDEFAULT_CONFIG_FILENAME="@0@/configs/app.yaml"'.format(meson.build_root())
+libtestapp_cc_args = '-DDEFAULT_CONFIG_FILENAME="@0@/configs/sample.yaml"'.format(meson.build_root())
 
 libtestapp_sources = files('''
-    test-packet.c
     app-init.c
 '''.split())
 

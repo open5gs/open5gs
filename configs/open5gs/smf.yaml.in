@@ -16,7 +16,7 @@
 #
 #  o Set OGS_LOG_TRACE to all domain level
 #    level: trace
-#    domain: core,pfcp,fd,gtp,smf,event,tlv,mem,sock
+#    domain: core,pfcp,fd,pfcp,gtp,smf,event,tlv,mem,sock
 #
 logger:
     file: @localstatedir@/log/open5gs/smf.log
@@ -41,9 +41,9 @@ logger:
 #          key: smf.key
 #          pem: smf.pem
 #
-#  o SBI Server(https://127.0.0.3:443, http://[::1]:80)
+#  o SBI Server(https://127.0.0.4:443, http://[::1]:80)
 #    sbi:
-#      - addr: 127.0.0.3
+#      - addr: 127.0.0.4
 #        tls:
 #          key: smf.key
 #          pem: smf.pem
@@ -53,9 +53,9 @@ logger:
 #    sbi:
 #      name: smf.open5gs.org
 #
-#  o SBI Server(http://127.0.0.3:7777)
+#  o SBI Server(http://127.0.0.4:7777)
 #    sbi:
-#      - addr: 127.0.0.3
+#      - addr: 127.0.0.4
 #        port: 7777
 #
 #  o SBI Server(http://<eth0 IP address>:80)
@@ -64,23 +64,23 @@ logger:
 #
 #  <PFCP Server>
 #
-#  o PFCP Server(127.0.0.3:8805, ::1:8805)
+#  o PFCP Server(127.0.0.4:8805, ::1:8805)
 #    pfcp:
-#      - addr: 127.0.0.3
+#      - addr: 127.0.0.4
 #      - addr: ::1
 #
 #  <GTP-C Server>
 #
-#  o GTP-C Server(127.0.0.3:2123, [fe80::3%@loopback_devname@]:2123)
+#  o GTP-C Server(127.0.0.4:2123, [fe80::3%@loopback_devname@]:2123)
 #    gtpc:
 #      addr:
-#        - 127.0.0.3
+#        - 127.0.0.4
 #        - fe80::3%@loopback_devname@
 #
 #  o On SMF, Same configuration
-#    (127.0.0.3:2123, [fe80::3%@loopback_devname@]:2123).
+#    (127.0.0.4:2123, [fe80::3%@loopback_devname@]:2123).
 #    gtpc:
-#      - addr: 127.0.0.3
+#      - addr: 127.0.0.4
 #      - addr: fe80::3%@loopback_devname@
 #
 #  <PDN Configuration with UE Pool>
@@ -181,13 +181,13 @@ logger:
 #
 smf:
     sbi:
-      - addr: 127.0.0.3
+      - addr: 127.0.0.4
         port: 7777
     gtpc:
-      - addr: 127.0.0.3
+      - addr: 127.0.0.4
       - addr: ::1
     pfcp:
-      - addr: 127.0.0.3
+      - addr: 127.0.0.4
       - addr: ::1
     pdn:
       - addr: 10.45.0.1/16
@@ -198,7 +198,7 @@ smf:
       - 2001:4860:4860::8888
       - 2001:4860:4860::8844
     mtu: 1400
-    freeDiameter: @sysconfdir@/freeDiameter/pgw.conf
+    freeDiameter: @sysconfdir@/freeDiameter/smf.conf
 
 #
 # nrf:
@@ -207,29 +207,29 @@ smf:
 #
 #  o SBI Client(http://127.0.0.1:7777)
 #    sbi:
-#      addr: 127.0.0.1
+#      addr: 127.0.0.10
 #      port: 7777
 #
-#  o SBI Client(https://127.0.0.1:443, http://nrf.open5gs.org:80)
+#  o SBI Client(https://127.0.0.10:443, http://nrf.open5gs.org:80)
 #    sbi:
-#      - addr: 127.0.0.1
+#      - addr: 127.0.0.10
 #        tls:
 #          key: nrf.key
 #          pem: nrf.pem
 #      - name: nrf.open5gs.org
 #
 #  o SBI Client(http://[fe80::1%@loopback_devname@]:80)
-#    If prefer_ipv4 is true, http://127.0.0.1:80 is selected.
+#    If prefer_ipv4 is true, http://127.0.0.10:80 is selected.
 #
 #    sbi:
 #      addr:
-#        - 127.0.0.1
+#        - 127.0.0.10
 #        - fe80::1%@loopback_devname@
 #
 nrf:
     sbi:
       - addr:
-          - 127.0.0.1
+          - 127.0.0.10
           - ::1
         port: 7777
 
@@ -238,17 +238,17 @@ nrf:
 #
 #  <PFCP Client>>
 #
-#  o PFCP Client(127.0.0.4:8805)
+#  o PFCP Client(127.0.0.7:8805)
 # 
 #    pfcp:
-#      addr: 127.0.0.4
+#      addr: 127.0.0.7
 #
 #  <UPF_SELECTION_MODE - EPC only>
 #
 # o Round-Robin
 #  upf:
 #    pfcp:
-#      - addr: 127.0.0.4
+#      - addr: 127.0.0.7
 #      - addr: 127.0.0.12
 #
 # o UPF selection by eNodeB TAC
@@ -256,7 +256,7 @@ nrf:
 #
 #  upf:
 #    pfcp:
-#      - addr: 127.0.0.4
+#      - addr: 127.0.0.7
 #        tac: 1
 #      - addr: 127.0.0.12
 #        tac: [3,5,8]
@@ -265,7 +265,7 @@ nrf:
 #
 #  upf:
 #    pfcp:
-#      - addr: 127.0.0.4
+#      - addr: 127.0.0.7
 #        dnn: ims
 #      - addr: 127.0.0.12
 #        apn: [internet, web]
@@ -275,14 +275,14 @@ nrf:
 #
 #  upf:
 #    pfcp:
-#      - addr: 127.0.0.4
+#      - addr: 127.0.0.7
 #        e_cell_id: 463
 #      - addr: 127.0.0.12
 #        nr_cell_id: [123456789, 9413]
 #
 upf:
     pfcp:
-      - addr: 127.0.0.4
+      - addr: 127.0.0.7
 
 #
 # parameter:

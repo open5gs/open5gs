@@ -21,12 +21,16 @@
 
 #include "pcscf-fd-path.h"
 
-abts_suite *test_volte(abts_suite *suite);
+abts_suite *test_bearer(abts_suite *suite);
+abts_suite *test_session(abts_suite *suite);
+abts_suite *test_rx(abts_suite *suite);
 
 const struct testlist {
     abts_suite *(*func)(abts_suite *suite);
 } alltests[] = {
-    {test_volte},
+    {test_bearer},
+    {test_session},
+    {test_rx},
     {NULL},
 };
 
@@ -39,7 +43,7 @@ static void terminate(void)
 
     pcscf_fd_final();
 
-    test_app_final();
+    test_epc_final();
     ogs_app_terminate();
 }
 
@@ -49,7 +53,7 @@ static void initialize(const char *const argv[])
 
     rv = ogs_app_initialize(NULL, argv);
     ogs_assert(rv == OGS_OK);
-    test_app_init();
+    test_epc_init();
 
     rv = app_initialize(argv);
     ogs_assert(rv == OGS_OK);
@@ -72,7 +76,7 @@ int main(int argc, const char *const argv[])
     abts_suite *suite = NULL;
 
     atexit(terminate);
-    test_5gc_run(argc, argv, "volte.yaml", initialize);
+    test_app_run(argc, argv, "volte.yaml", initialize);
 
     for (i = 0; alltests[i].func; i++)
         suite = alltests[i].func(suite);

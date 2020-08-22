@@ -1287,8 +1287,8 @@ void s1ap_handle_enb_configuration_transfer(
 
         target_enb = mme_enb_find_by_enb_id(target_enb_id);
         if (target_enb == NULL) {
-            ogs_warn("eNB configuration transfer : cannot find target eNB-id[%d]",
-                    target_enb_id);
+            ogs_warn("eNB configuration transfer : "
+		    "cannot find target eNB-id[0x%x]", target_enb_id);
             return;
         }
 

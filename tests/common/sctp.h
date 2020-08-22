@@ -32,6 +32,9 @@ int testsctp_send(ogs_socknode_t *node, ogs_pkbuf_t *pkbuf,
         int ppid, uint16_t stream_no, int type);
 ogs_pkbuf_t *testsctp_read(ogs_socknode_t *node, int type);
 
+ogs_socknode_t *tests1ap_client(int family);
+ogs_socknode_t *testngap_client(int family);
+
 #define testenb_s1ap_client(x) testsctp_client(x, OGS_S1AP_SCTP_PORT)
 #define testenb_s1ap_read(x) testsctp_read(x, 0);
 #define testenb_s1ap_send(x, y) \
@@ -44,7 +47,6 @@ ogs_pkbuf_t *testsctp_read(ogs_socknode_t *node, int type);
     testsctp_send(x, y, OGS_SCTP_SGSAP_PPID, 0, 1)
 #define testvlr_sgsap_close ogs_socknode_free
 
-#define testgnb_ngap_client(x) testsctp_client(x, OGS_NGAP_SCTP_PORT)
 #define testgnb_ngap_read(x) testsctp_read(x, 0);
 #define testgnb_ngap_send(x, y) \
     testsctp_send(x, y, OGS_SCTP_NGAP_PPID, 0, 0)

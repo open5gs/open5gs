@@ -17,7 +17,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "test-5gc.h"
+#include "test-app.h"
 
 abts_suite *test_minimal(abts_suite *suite);
 
@@ -57,7 +57,7 @@ int main(int argc, const char *const argv[])
     abts_suite *suite = NULL;
 
     atexit(terminate);
-    test_5gc_run(argc, argv, "minimal.yaml", initialize);
+    test_app_run(argc, argv, "minimal.yaml", initialize);
 
     for (i = 0; alltests[i].func; i++)
         suite = alltests[i].func(suite);

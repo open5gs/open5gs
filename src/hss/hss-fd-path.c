@@ -20,7 +20,6 @@
 #include "ogs-crypt.h"
 
 #include "hss-context.h"
-#include "hss-auc.h"
 #include "hss-fd-path.h"
 
 /* handler for fallback cb */
@@ -163,7 +162,7 @@ static int hss_ogs_diam_s6a_air_cb( struct msg **msg, struct avp *avp,
     milenage_generate(opc, auth_info.amf, auth_info.k,
         ogs_uint64_to_buffer(auth_info.sqn, OGS_SQN_LEN, sqn), auth_info.rand,
         autn, ik, ck, ak, xres, &xres_len);
-    hss_auc_kasme(ck, ik, hdr->avp_value->os.data, sqn, ak, kasme);
+    ogs_auc_kasme(ck, ik, hdr->avp_value->os.data, sqn, ak, kasme);
 
     /* Set the Authentication-Info */
     ret = fd_msg_avp_new(ogs_diam_s6a_authentication_info, 0, &avp);

@@ -23,7 +23,6 @@ ogs_pkbuf_t *testgmm_build_registration_request(
         test_ue_t *test_ue, ogs_pkbuf_t *nasbuf)
 {
     int i;
-    test_sess_t *sess = NULL;
     uint16_t psimask = 0;
     ogs_s_nssai_t *s_nssai = NULL;
 
@@ -59,8 +58,6 @@ ogs_pkbuf_t *testgmm_build_registration_request(
     ogs_nas_5gs_mobile_identity_guti_t mobile_identity_guti;
 
     ogs_assert(test_ue);
-    sess = test_ue->sess;
-    ogs_assert(sess);
 
     memset(&message, 0, sizeof(message));
     if (test_ue->registration_request_param.integrity_protected) {
@@ -81,7 +78,7 @@ ogs_pkbuf_t *testgmm_build_registration_request(
 
     if (test_ue->registration_request_param.guti) {
         ogs_nas_5gs_nas_guti_to_mobilty_identity_guti(
-                &test_ue->nas_guti, &mobile_identity_guti);
+                &test_ue->nas_5gs_guti, &mobile_identity_guti);
         registration_request->mobile_identity.length =
             sizeof(ogs_nas_5gs_mobile_identity_guti_t);
         registration_request->mobile_identity.buffer =
@@ -169,8 +166,8 @@ ogs_pkbuf_t *testgmm_build_registration_request(
         registration_request->presencemask |=
         OGS_NAS_5GS_REGISTRATION_REQUEST_LAST_VISITED_REGISTERED_TAI_PRESENT;
         ogs_nas_from_plmn_id(&last_visited_registered_tai->nas_plmn_id,
-                &test_self()->tai.plmn_id);
-        last_visited_registered_tai->tac.v = test_self()->tai.tac.v;
+                &test_self()->nr_tai.plmn_id);
+        last_visited_registered_tai->tac.v = test_self()->nr_tai.tac.v;
     }
 
     if (test_ue->registration_request_param.ue_usage_setting) {
@@ -267,7 +264,7 @@ ogs_pkbuf_t *testgmm_build_service_request(
     service_request->ngksi.tsc = test_ue->nas.tsc;
     service_request->ngksi.value = test_ue->nas.ksi;
 
-    ogs_assert(test_ue->nas_guti.m_tmsi);
+    ogs_assert(test_ue->nas_5gs_guti.m_tmsi);
     memset(&mobile_identity_s_tmsi, 0, sizeof(mobile_identity_s_tmsi));
 
     /*
@@ -286,10 +283,10 @@ ogs_pkbuf_t *testgmm_build_service_request(
      */
     mobile_identity_s_tmsi.h.supi_format = 0xf;
     mobile_identity_s_tmsi.h.type = OGS_NAS_5GS_MOBILE_IDENTITY_S_TMSI;
-    mobile_identity_s_tmsi.m_tmsi = htobe32(test_ue->nas_guti.m_tmsi);
-    mobile_identity_s_tmsi.set1 = test_ue->nas_guti.amf_id.set1;
-    mobile_identity_s_tmsi.set2 = test_ue->nas_guti.amf_id.set2;
-    mobile_identity_s_tmsi.pointer = test_ue->nas_guti.amf_id.pointer;
+    mobile_identity_s_tmsi.m_tmsi = htobe32(test_ue->nas_5gs_guti.m_tmsi);
+    mobile_identity_s_tmsi.set1 = test_ue->nas_5gs_guti.amf_id.set1;
+    mobile_identity_s_tmsi.set2 = test_ue->nas_5gs_guti.amf_id.set2;
+    mobile_identity_s_tmsi.pointer = test_ue->nas_5gs_guti.amf_id.pointer;
     service_request->s_tmsi.length = sizeof(mobile_identity_s_tmsi);
     service_request->s_tmsi.buffer = &mobile_identity_s_tmsi;
 
@@ -365,9 +362,9 @@ ogs_pkbuf_t *testgmm_build_de_registration_request(
     de_registration_type->switch_off = switch_off;
     de_registration_type->access_type = test_ue->nas.access_type;
 
-    if (test_ue->nas_guti.m_tmsi) {
+    if (test_ue->nas_5gs_guti.m_tmsi) {
         ogs_nas_5gs_nas_guti_to_mobilty_identity_guti(
-                &test_ue->nas_guti, &mobile_identity_guti);
+                &test_ue->nas_5gs_guti, &mobile_identity_guti);
         deregistration_request_from_ue->mobile_identity.length =
             sizeof(ogs_nas_5gs_mobile_identity_guti_t);
         deregistration_request_from_ue->mobile_identity.buffer =
@@ -436,7 +433,7 @@ ogs_pkbuf_t *testgmm_build_authentication_response(test_ue_t *test_ue)
     milenage_f2345(test_ue->opc, test_ue->k, test_ue->rand,
             res, ck, ik, ak, NULL);
     serving_network_name =
-        ogs_serving_network_name_from_plmn_id(&test_self()->tai.plmn_id);
+        ogs_serving_network_name_from_plmn_id(&test_self()->nr_tai.plmn_id);
     ogs_kdf_xres_star(
             ck, ik,
             serving_network_name, test_ue->rand, res, 8,

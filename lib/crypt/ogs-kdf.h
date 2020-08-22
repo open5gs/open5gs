@@ -77,6 +77,11 @@ void ogs_kdf_kgnb_and_kn3iwf(uint8_t *kamf, uint32_t ul_count,
 /* TS33.501 Annex A.10 NH derivation function */
 void ogs_kdf_nh_gnb(uint8_t *kamf, uint8_t *sync_input, uint8_t *kgnb);
 
+/* TS33.401 Annex A.2 KASME derivation function */
+void ogs_auc_kasme(const uint8_t *ck, const uint8_t *ik, 
+        const uint8_t *plmn_id, const uint8_t *sqn,  const uint8_t *ak,
+        uint8_t *kasme);
+
 /* TS33.401 Annex A.3 KeNB derivation function */
 void ogs_kdf_kenb(uint8_t *kasme, uint32_t ul_count, uint8_t *kenb);
 

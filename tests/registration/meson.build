@@ -30,3 +30,8 @@ test5gc_registration_exe = executable('registration',
     sources : test5gc_registration_sources,
     c_args : testunit_core_cc_flags,
     dependencies : libtest5gc_dep)
+
+test('registration',
+    test5gc_registration_exe,
+    is_parallel : false,
+    suite: '5gc')

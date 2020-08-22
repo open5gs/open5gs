@@ -1,5 +1,0 @@
-usr/bin/open5gs-pgwd
-configs/freeDiameter/pgw.* etc/freeDiameter
-configs/open5gs/pgw.yaml etc/open5gs
-configs/systemd/99-open5gs.net* etc/systemd/network
-configs/systemd/open5gs-pgwd.service lib/systemd/system

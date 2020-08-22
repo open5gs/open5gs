@@ -27,6 +27,9 @@ extern "C" {
 ogs_pkbuf_t *test_nas_5gmm_encode(ogs_nas_5gs_message_t *message);
 ogs_pkbuf_t *test_nas_5gs_plain_encode(ogs_nas_5gs_message_t *message);
 
+ogs_pkbuf_t *test_nas_emm_encode(ogs_nas_eps_message_t *message);
+ogs_pkbuf_t *test_nas_eps_plain_encode(ogs_nas_eps_message_t *message);
+
 #ifdef __cplusplus
 }
 #endif

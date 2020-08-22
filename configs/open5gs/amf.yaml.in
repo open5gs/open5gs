@@ -16,7 +16,7 @@
 #
 #  o Set OGS_LOG_TRACE to all domain level
 #    level: trace
-#    domain: core,pfcp,fd,gtp,amf,event,tlv,mem,sock
+#    domain: core,ngap,nas,gmm,sbi,amf,event,tlv,mem,sock
 #
 logger:
     file: @localstatedir@/log/open5gs/amf.log
@@ -41,9 +41,9 @@ logger:
 #          key: amf.key
 #          pem: amf.pem
 #
-#  o SBI Server(https://127.0.0.2:443, http://[::1]:80)
+#  o SBI Server(https://127.0.0.5:443, http://[::1]:80)
 #    sbi:
-#      - addr: 127.0.0.2
+#      - addr: 127.0.0.5
 #        tls:
 #          key: amf.key
 #          pem: amf.pem
@@ -53,9 +53,9 @@ logger:
 #    sbi:
 #      name: amf.open5gs.org
 #
-#  o SBI Server(http://127.0.0.2:7777)
+#  o SBI Server(http://127.0.0.5:7777)
 #    sbi:
-#      - addr: 127.0.0.2
+#      - addr: 127.0.0.5
 #        port: 7777
 #
 #  o SBI Server(http://<eth0 IP address>:80)
@@ -71,14 +71,14 @@ logger:
 #    ngap:
 #      addr: 0.0.0.0
 #
-#  o NGAP Server(127.0.0.1:38412, [::1]:38412)
+#  o NGAP Server(127.0.0.5:38412, [::1]:38412)
 #    ngap:
-#      - addr: 127.0.0.1
+#      - addr: 127.0.0.5
 #      - addr: ::1
 #
 #  o NGAP Server(different port)
 #    ngap:
-#      - addr: 127.0.0.1
+#      - addr: 127.0.0.5
 #        port: 38413
 #
 #  o NGAP Server(address avaiable in `eth0` interface)
@@ -162,10 +162,10 @@ logger:
 #
 amf:
     sbi:
-      - addr: 127.0.0.2
+      - addr: 127.0.0.5
         port: 7777
     ngap:
-      - addr: 127.0.0.2
+      - addr: 127.0.0.5
     guami:
       - plmn_id:
           mcc: 901
@@ -196,31 +196,31 @@ amf:
 #
 #  <SBI Client>>
 #
-#  o SBI Client(http://127.0.0.1:7777)
+#  o SBI Client(http://127.0.0.10:7777)
 #    sbi:
-#      addr: 127.0.0.1
+#      addr: 127.0.0.10
 #      port: 7777
 #
-#  o SBI Client(https://127.0.0.1:443, http://nrf.open5gs.org:80)
+#  o SBI Client(https://127.0.0.10:443, http://nrf.open5gs.org:80)
 #    sbi:
-#      - addr: 127.0.0.1
+#      - addr: 127.0.0.10
 #        tls:
 #          key: nrf.key
 #          pem: nrf.pem
 #      - name: nrf.open5gs.org
 #
 #  o SBI Client(http://[fe80::1%@loopback_devname@]:80)
-#    If prefer_ipv4 is true, http://127.0.0.1:80 is selected.
+#    If prefer_ipv4 is true, http://127.0.0.10:80 is selected.
 #
 #    sbi:
 #      addr:
-#        - 127.0.0.1
+#        - 127.0.0.10
 #        - fe80::1%@loopback_devname@
 #
 nrf:
     sbi:
       - addr:
-          - 127.0.0.1
+          - 127.0.0.10
           - ::1
         port: 7777
 

@@ -16,7 +16,7 @@
 #
 #  o Set OGS_LOG_TRACE to all domain level
 #    level: trace
-#    domain: core,pfcp,fd,gtp,ausf,event,tlv,mem,sock
+#    domain: core,sbi,ausf,event,tlv,mem,sock
 #
 logger:
     file: @localstatedir@/log/open5gs/ausf.log
@@ -41,9 +41,9 @@ logger:
 #          key: ausf.key
 #          pem: ausf.pem
 #
-#  o SBI Server(https://127.0.0.5:443, http://[::1]:80)
+#  o SBI Server(https://127.0.0.11:443, http://[::1]:80)
 #    sbi:
-#      - addr: 127.0.0.5
+#      - addr: 127.0.0.11
 #        tls:
 #          key: ausf.key
 #          pem: ausf.pem
@@ -53,9 +53,9 @@ logger:
 #    sbi:
 #      name: ausf.open5gs.org
 #
-#  o SBI Server(http://127.0.0.5:7777)
+#  o SBI Server(http://127.0.0.11:7777)
 #    sbi:
-#      - addr: 127.0.0.5
+#      - addr: 127.0.0.11
 #        port: 7777
 #
 #  o SBI Server(http://<eth0 IP address>:80)
@@ -64,7 +64,7 @@ logger:
 #
 ausf:
     sbi:
-      - addr: 127.0.0.5
+      - addr: 127.0.0.11
         port: 7777
 
 #
@@ -72,31 +72,31 @@ ausf:
 #
 #  <SBI Client>>
 #
-#  o SBI Client(http://127.0.0.1:7777)
+#  o SBI Client(http://127.0.0.10:7777)
 #    sbi:
-#      addr: 127.0.0.1
+#      addr: 127.0.0.10
 #      port: 7777
 #
-#  o SBI Client(https://127.0.0.1:443, http://nrf.open5gs.org:80)
+#  o SBI Client(https://127.0.0.10:443, http://nrf.open5gs.org:80)
 #    sbi:
-#      - addr: 127.0.0.1
+#      - addr: 127.0.0.10
 #        tls:
 #          key: nrf.key
 #          pem: nrf.pem
 #      - name: nrf.open5gs.org
 #
 #  o SBI Client(http://[fe80::1%@loopback_devname@]:80)
-#    If prefer_ipv4 is true, http://127.0.0.1:80 is selected.
+#    If prefer_ipv4 is true, http://127.0.0.10:80 is selected.
 #
 #    sbi:
 #      addr:
-#        - 127.0.0.1
+#        - 127.0.0.10
 #        - fe80::1%@loopback_devname@
 #
 nrf:
     sbi:
       - addr:
-          - 127.0.0.1
+          - 127.0.0.10
           - ::1
         port: 7777
 

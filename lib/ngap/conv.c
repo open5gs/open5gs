@@ -124,7 +124,7 @@ void ogs_ngap_nr_cgi_to_ASN(ogs_nr_cgi_t *nr_cgi, NGAP_NR_CGI_t *nR_CGI)
 
     /* CellIdentity : 36bit */
     ogs_uint64_to_buffer((nr_cgi->cell_id << 4), 5, buf);
-    ogs_asn_buffer_to_BIT_STRING(buf, 5, 4, &nR_CGI->nRCellIdentity); 
+    ogs_asn_buffer_to_BIT_STRING(buf, 5, 4, &nR_CGI->nRCellIdentity);
 }
 
 void ogs_ngap_ASN_to_nr_cgi(NGAP_NR_CGI_t *nR_CGI, ogs_nr_cgi_t *nr_cgi)

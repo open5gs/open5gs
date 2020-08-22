@@ -222,68 +222,73 @@ Then proceed as follows:
   3. Fill the IMSI, security context(K, OPc, AMF), and APN of the subscriber.
   4. Click `SAVE` Button
 
-Modify [/etc/open5gs/mme.yaml](https://github.com/{{ site.github_username }}/open5gs/blob/master/configs/open5gs/mme.yaml.in) to set the S1AP/GTP-C IP address, PLMN ID, and TAC
+Modify [/etc/open5gs/mme.yaml](https://github.com/{{ site.github_username }}/open5gs/blob/master/configs/open5gs/mme.yaml.in) to set the S1AP IP address, PLMN ID, and TAC
 
 ```diff
-diff -u mme.yaml.old mme.yaml
+diff -u /etc/open5gs/mme.yaml.old /etc/open5gs/mme.yaml
 --- mme.yaml.old	2018-04-15 18:28:31.000000000 +0900
 +++ mme.yaml	2018-04-15 19:53:10.000000000 +0900
-@@ -14,18 +14,20 @@
+@@ -204,20 +204,20 @@ logger:
  mme:
-     freeDiameter: mme.conf
+     freeDiameter: @sysconfdir@/freeDiameter/mme.conf
      s1ap:
+-      addr: 127.0.0.2
 +      addr: 127.0.1.100
      gtpc:
-+      addr: 127.0.1.100
-     gummei:
+       addr: 127.0.0.2
+     gummei: 
        plmn_id:
--        mcc: 001
--        mnc: 01
+-        mcc: 901
+-        mnc: 70
 +        mcc: 310
 +        mnc: 789
        mme_gid: 2
        mme_code: 1
      tai:
        plmn_id:
--        mcc: 001
--        mnc: 01
--      tac: 12345
+-        mcc: 901
+-        mnc: 70
+-      tac: 1
 +        mcc: 310
 +        mnc: 789
 +      tac: 7
      security:
          integrity_order : [ EIA1, EIA2, EIA0 ]
          ciphering_order : [ EEA0, EEA1, EEA2 ]
+
 ```
 
 S1AP/GTP-C IP address, PLMN ID, TAC are changed as follows.
 
 ```
 S1AP address : 127.0.1.100 - srsENB default value
-GTP-C address : 127.0.1.100 - Use loopback interface
 PLMN ID : MNC(310), MCC(789) - Programmed USIM with a card reader
 TAC : 7 - srsENB default value
 ```
 
 
-The GTP-U IP address will be set to 127.0.0.2. To do this, modify [/etc/open5gs/sgw.yaml](https://github.com/{{ site.github_username }}/open5gs/blob/master/configs/open5gs/sgw.yaml.in) to set the GTP-U IP address.  
+The GTP-U IP address will be set to 127.0.0.6. To do this, modify [/etc/open5gs/sgwu.yaml](https://github.com/{{ site.github_username }}/open5gs/blob/master/configs/open5gs/sgwu.yaml.in) to set the GTP-U IP address.
 
 ```diff
-diff -u /etc/open5gs/sgw.yaml.old /etc/open5gs/sgw.yaml
---- sgw.yaml.old	2018-04-15 18:30:25.000000000 +0900
-+++ sgw.yaml	2018-04-15 18:30:30.000000000 +0900
-@@ -14,3 +14,4 @@
-     gtpc:
-       addr: 127.0.0.2
+diff -u /etc/open5gs/sgwu.yaml.old /etc/open5gs/sgwu.yaml
+--- sgwu.yaml.old	2018-04-15 18:30:25.000000000 +0900
++++ sgwu.yaml	2018-04-15 18:30:30.000000000 +0900
+@@ -51,7 +51,7 @@ logger:
+ #
+ sgwu:
      gtpu:
-+      addr: 127.0.0.2
+-      addr: 10.11.0.6
++      addr: 127.0.0.6
+     pfcp:
+       addr: 127.0.0.6
 ```
+
 
 After changing conf files, please restart Open5GS daemons.
 
 ```bash
 $ sudo systemctl restart open5gs-mmed
-$ sudo systemctl restart open5gs-sgwd
+$ sudo systemctl restart open5gs-sgwud
 ```
 
 If your phone can connect to internet, you must run the following command in Open5GS-PGW installed host. 

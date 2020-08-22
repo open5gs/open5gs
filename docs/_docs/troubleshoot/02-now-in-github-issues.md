@@ -107,11 +107,18 @@ switched to db open5gs
 Kill all processes.
 ```bash
 $ ps -ef | grep open5gs
+$ sudo pkill -9 open5gs-mmed
+$ sudo pkill -9 open5gs-sgwcd
+$ sudo pkill -9 open5gs-smfd
+$ sudo pkill -9 open5gs-amfd
+$ sudo pkill -9 open5gs-sgwud
+$ sudo pkill -9 open5gs-upfd
 $ sudo pkill -9 open5gs-hssd
 $ sudo pkill -9 open5gs-pcrfd
-$ sudo pkill -9 open5gs-pgwd
-$ sudo pkill -9 open5gs-sgwd
-$ sudo pkill -9 open5gs-mmed
+$ sudo pkill -9 open5gs-nrfd
+$ sudo pkill -9 open5gs-ausfd
+$ sudo pkill -9 open5gs-udmd
+$ sudo pkill -9 open5gs-udrd
 ```
 
 Run `meson test` again
@@ -385,9 +392,9 @@ You can start MongoDB using systemctl.
 $ sudo systemctl start mongodb
 ```
 
-#### I have some error when running `./build/test/epc/simple`
+#### I have some error when running `./build/test/attach/attach`
 
-Did you see the following error after executing `./build/test/epc/simple`?
+Did you see the following error after executing `./build/test/attach/attach`?
 ```bash
 $ ./build/test/epc/simple
 s1setup_test        : SUCCESS  
@@ -420,18 +427,18 @@ Execute `./build/test/epc/simple`
 $ ./build/test/epc/simple
 ```
 
-#### My eNB does not support IPv6.
+#### My gNB/eNB does not support IPv6.
 
 Your eNodeB don't have to support IPv6.
 
-If the sgw.gtpu configuration does not have an IPv6 address, the eNodeB can use IPv4 to connect to the MME and SGW. If the sgw.gtpu setting has an IPv6 address, you can disable the IPv6 address as shown below.
+If the sgwu.gtpu configuration does not have an IPv6 address, the gNB/eNB can use IPv4 to connect to the MME and SGW-U. If the sgwu.gtpu setting has an IPv6 address, you can disable the IPv6 address as shown below.
 
 ```yaml
 parameter:
     no_ipv6: true
 ```
 
-**Note:** This parameter `no_ipv6` is only applied to EPC Elements such as MME, SGW, and so on. The parameter `no_ipv6` does not affect to UE. So, IPv6-enabled UE can connect to Open5GS LTE network.
+**Note:** This parameter `no_ipv6` is only applied to NFs such as AMF, MME, SGW-C, and so on. The parameter `no_ipv6` does not affect to UE. So, IPv6-enabled UE can connect to Open5GS LTE network.
 {: .notice--warning}
 
 #### Unable to add new user by WebUI 
@@ -470,45 +477,55 @@ Currently, the number of UE is limited to `128*128`.
 - Network
 
 ```
-* MME
-  S1AP: listen on all address avaiable in system
-  GTP-C: listen on the first IP address in system
-  DIAMETER: 127.0.0.2 (No TLS)
+* MongoDB : 127.0.0.1
+* MME : 127.0.0.2
+* SGW-C : 127.0.0.3
+* SMF : 127.0.0.4
+* AMF : 127.0.0.5
+* SGW-U : 127.0.0.6
+* UPF : 127.0.0.7
+* HSS : 127.0.0.8
+* PCRF : 127.0.0.9
+* NRF : 127.0.0.10
+* AUSF : 127.0.0.11
+* UDM : 127.0.0.12
+* UDR : 127.0.0.13
+```
 
-* SGW
-  GTP-C: 127.0.0.2
-  GTP-U: listen on the first IP address in system
+- AMF_ID, TAC and S_NSSAI
 
-* PGW
-  GTP-C: Both 127.0.0.3 and [::1]
-  GTP-U: Both 127.0.0.3 and [::1]
-  DIAMETER: 127.0.0.3 (No TLS)
+```
+* AMF_ID
+  PLMN ID - MNC: 901, MCC: 70
+  Region : 2
+  Set : 1
 
-* HSS
-  DIAMETER: 127.0.0.4 (No TLS)
+* TAI
+  PLMN ID - MNC: 901, MCC: 70
+  TAC : 1
 
-* PCRF
-  DIAMETER: 127.0.0.5 (No TLS)
+* S_NSSASI
+  SST : 1
 ```
 
 - GUMMEI, PLMN and TAC
 
 ```
 * GUMMEI
-  PLMN ID - MNC: 001, MCC: 01
+  PLMN ID - MNC: 901, MCC: 70
   MME Group : 2
   MME Code : 1
 
 * TAI
-  PLMN ID - MNC: 001, MCC: 01
-  TAC : 12345
+  PLMN ID - MNC: 901, MCC: 70
+  TAC : 1
 ```
 
 - Security
 
 ```
-* Integrity : EIA1 - Snow 3G
-* Ciphering : EEA0 - Nothing
+* Integrity : NIA1/EIA1 - Snow 3G
+* Ciphering : NEA0/EEA0 - Nothing
 ```
 
 - UE Network
@@ -547,7 +564,7 @@ By default, Open5GS is designed to support the Embedding System. To do so, we in
 - We'll use Debian Docker Environment.
 
 ```bash
-$ git clone https://github.com/acetcom/open5gs
+$ git clone https://github.com/open5gs/open5gs
 $ cd open5gs/docker
 $ DIST=debian TAG=stretch docker-compose run dev
 ```

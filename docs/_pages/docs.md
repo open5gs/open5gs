@@ -5,10 +5,6 @@ permalink: /docs/
 head_inline: "<style> ul { padding-bottom: 1em; } </style>"
 ---
 
-- What's New?
-  - [Installing 5G Core](new/02-installing-5g-core)
-  - [Moving 4G EPC to the CUPS](new/03-moving-4g-epc-to-cups)
-
 - User's Guide
   - [Quickstart](guide/01-quickstart)
   - [Building Open5GS from Sources](guide/02-building-open5gs-from-sources)
