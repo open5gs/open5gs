@@ -75,6 +75,8 @@ $ cd ../
 ### Configure Open5GS
 ---
 
+**Note:** The IP address will be configured by referring to [this diagram](https://open5gs.org/open5gs/assets/Open5GS-Diagram.pdf) provided by [@kbarlee](https://github.com/kbarlee) in issue [#528](https://github.com/open5gs/open5gs/issues/528).
+
 #### 5G Core
 
 Modify [install/etc/open5gs/amf.yaml](https://github.com/{{ site.github_username }}/open5gs/blob/master/configs/open5gs/amf.yaml.in) to set the NGAP IP address, PLMN ID, TAC and NSSAI. 
