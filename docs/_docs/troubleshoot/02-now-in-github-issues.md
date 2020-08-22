@@ -3,33 +3,34 @@ title: Now in the Github Issue
 head_inline: "<style> .blue { color: blue; } </style>"
 ---
 
-#### Test failed (e.g. `meson test`)
+#### Test failed (e.g. `meson test -v`)
 
 Sometimes you may get a message like the one below due to a problem with the freeDiameter library.
 
 ```
-$ meson test
+$ meson test -v
 
 ...
-5/8 open5gs:epc / simple                    OK       7.69 s
-
---- command ---
-08:06:23 /home/parallels/open5gs/build/tests/epc/simple
---- stdout ---
-s1setup-test        :  SUCCESS
-attach-test         :  SUCCESS
-volte-test          :  SUCCESS
-handover-test       :  SUCCESS
-crash-test          :  SUCCESS
+ 5/10 open5gs:5gc / registration              OK       4.98 s
+s1setup-test        : SUCCESS
+guti-test           : SUCCESS
+auth-test           : SUCCESS
+idle-test           : SUCCESS
+emm-status-test     : SUCCESS
+reset-test          : SUCCESS
+ue-context-test     : SUCCESS
 All tests passed.
--------
-
-6/8 open5gs:system / mnc3                   FAIL    12.80 s (exit status 1)
+ 6/10 open5gs:epc / attach                    OK       4.68 s
+bearer-test         : SUCCESS
+session-test        : SUCCESS
+rx-test             : SUCCESS
+All tests passed.
+ 7/10 open5gs:epc / volte                     OK       4.33 s
 
 --- command ---
-08:06:31 /home/parallels/open5gs/build/tests/mnc3/mnc3
+08:06:31 /home/parallels/open5gs/build/tests/csfb/csfb
 --- stdout ---
-mnc3-test           :  ERROR: ../subprojects/freeDiameter/extensions/dbg_msg_dumps/dbg_msg_dumps.c:112 ROUTING ERROR 'No remaining suitable candidate to route the message to' for:  (../lib/diameter/common/init.c:116)
+csfb-test           :  ERROR: ../subprojects/freeDiameter/extensions/dbg_msg_dumps/dbg_msg_dumps.c:112 ROUTING ERROR 'No remaining suitable candidate to route the message to' for:  (../lib/diameter/common/init.c:116)
 : ../subprojects/freeDiameter/extensions/dbg_msg_dumps/dbg_msg_dumps.c:113      'Credit-Control-Request' (../lib/diameter/common/init.c:116)
 : ../subprojects/freeDiameter/extensions/dbg_msg_dumps/dbg_msg_dumps.c:113        Version: 0x01 (../lib/diameter/common/init.c:116)
 : ../subprojects/freeDiameter/extensions/dbg_msg_dumps/dbg_msg_dumps.c:113        Length: 20 (../lib/diameter/common/init.c:116)
@@ -80,14 +81,13 @@ mnc3-test           :  ERROR: ../subprojects/freeDiameter/extensions/dbg_msg_dum
 FAILED 1 of 1
 Failed Tests   		Total	Fail	Failed %
 ===================================================
-mnc3-test      		    1	   1	100.00%
+csfb-test      		    1	   1	100.00%
 --- stderr ---
 03/26 16:06:43.681: [ERROR: GTP Timeout : IMSI[310014987654004] Message-Type[32] (../src/mme/mme-gtp-path.c:110)
 Line 202: Condition is false, but expected true
 -------
 
-7/8 open5gs:system / volte                  FAIL    10.57 s (killed by signal 6 SIGABRT)
-
+ 8/10 open5gs:epc / csfb                    FAIL    10.57 s (killed by signal 6 SIGABRT)
 ...
 ```
 
@@ -121,28 +121,93 @@ $ sudo pkill -9 open5gs-udmd
 $ sudo pkill -9 open5gs-udrd
 ```
 
-Run `meson test` again
+Run `meson test -v` again
 ```
-$ meson test
-ninja: Entering directory `/Users/acetcom/Documents/git/open5gs/build'
+$ meson test -v
+ninja: Entering directory `/home/acetcom/Documents/git/open5gs/build'
 ninja: no work to do.
-1/8 open5gs:unit / core                     OK       6.93 s
-2/8 open5gs:unit / crypt                    OK       0.08 s
-3/8 open5gs:system / sctp                   OK       1.09 s
-4/8 open5gs:unit / unit                     OK       0.04 s
-5/8 open5gs:epc / simple                    OK       5.07 s
-6/8 open5gs:epc / mnc3                      OK       1.18 s
-7/8 open5gs:epc / volte                     OK       2.99 s
-8/8 open5gs:epc / csfb                      OK       6.53 s
+list-test           : SUCCESS
+pool-test           : SUCCESS
+strings-test        : SUCCESS
+time-test           : SUCCESS
+conv-test           : SUCCESS
+log-test            : SUCCESS
+pkbuf-test          : SUCCESS
+memory-test         : SUCCESS
+rbtree-test         : SUCCESS
+timer-test          : SUCCESS
+thread-test         : SUCCESS
+socket-test         : SUCCESS
+queue-test          : SUCCESS
+poll-test           : SUCCESS
+tlv-test            : SUCCESS
+fsm-test            : SUCCESS
+hash-test           : SUCCESS
+uuid-test           : SUCCESS
+All tests passed.
+ 1/10 open5gs:unit / core                     OK       6.89 s
+aes-test            : SUCCESS
+sha-test            : SUCCESS
+base64-test         : SUCCESS
+All tests passed.
+ 2/10 open5gs:unit / crypt                    OK       0.12 s
+sctp-test           : SUCCESS
+All tests passed.
+ 3/10 open5gs:app / sctp                      OK       0.02 s
+s1ap-message-test   : SUCCESS
+nas-message-test    : SUCCESS
+gtp-message-test    : SUCCESS
+sbi-message-test    : SUCCESS
+security-test       : SUCCESS
+crash-test          : SUCCESS
+All tests passed.
+ 4/10 open5gs:unit / unit                     OK       0.03 s
+guti-test           : SUCCESS
+auth-test           : SUCCESS
+idle-test           : SUCCESS
+dereg-test          : SUCCESS
+identity-test       : SUCCESS
+gmm-status-test     : SUCCESS
+ue-context-test     : SUCCESS
+All tests passed.
+ 5/10 open5gs:5gc / registration              OK       4.98 s
+s1setup-test        : SUCCESS
+guti-test           : SUCCESS
+auth-test           : SUCCESS
+idle-test           : SUCCESS
+emm-status-test     : SUCCESS
+reset-test          : SUCCESS
+ue-context-test     : SUCCESS
+All tests passed.
+ 6/10 open5gs:epc / attach                    OK       4.68 s
+bearer-test         : SUCCESS
+session-test        : SUCCESS
+rx-test             : SUCCESS
+All tests passed.
+ 7/10 open5gs:epc / volte                     OK       4.33 s
+mo-idle-test        : SUCCESS
+mt-idle-test        : SUCCESS
+mo-active-test      : SUCCESS
+mt-active-test      : SUCCESS
+mo-sms-test         : SUCCESS
+mt-sms-test         : SUCCESS
+crash-test          : SUCCESS
+All tests passed.
+ 8/10 open5gs:epc / csfb                      OK       4.08 s
+epc-test            : SUCCESS
+All tests passed.
+ 9/10 open5gs:app / 310014                    OK       2.37 s
+epc-x2-test         : SUCCESS
+epc-s1-test         : SUCCESS
+All tests passed.
+10/10 open5gs:app / handover                  OK       4.78 s
 
-Ok:                    8
+Ok:                   10
 Expected Fail:         0
 Fail:                  0
 Unexpected Pass:       0
 Skipped:               0
 Timeout:               0
-
-Full log written to /Users/acetcom/Documents/git/open5gs/build/meson-logs/testlog.txt
 ```
 
 **Note:** If your test result more than once is same as above, there should be no problem with code you modified.
@@ -262,64 +327,70 @@ $ sudo sh -c "echo 1 > /proc/sys/net/ipv4/ip_forward"
 $ sudo iptables -t nat -A POSTROUTING -s 10.45.0.0/16 ! -o ogstun -j MASQUERADE
 ```
 
-#### How to use a different APN for each PGW
+#### How to use a different APN for each SMF
 
-By default, MME selects the PGW as the first PGW node. To use a different APN for each PGW, specify gtpc.apn as the APN name. If the HSS uses WebUI to set the PGW IP for each UE, you can use a specific PGW node for each UE.
+By default, MME selects the SMF as the first SMF node. To use a different APN for each SMF, specify gtpc.apn as the APN name. If the HSS uses WebUI to set the SMF IP for each UE, you can use a specific SMF node for each UE.
 
 See the following example.
 
 ```
-### For reference, see `pgw.yaml`
-#------------------------ MME --------------------------
+### For reference, see `smf.yaml`
 #
-#  o Two PGW are defined. 127.0.0.3:2123 is used.
-#    [fe80::3%lo]:2123 is ignored.
+# smf:
+#
+#  <GTP-C Client>
+#
+#  o By default, the SMF uses the first SMF node.
+#    - To use a different APN for each SMF, specify gtpc.apn as the APN name.
+#    - If the HSS uses WebUI to set the SMF IP for each UE,
+#      you can use a specific SMF node for each UE.
+#
+#  o Two SMF are defined. 127.0.0.4:2123 is used.
+#    [fe80::3%@loopback_devname@]:2123 is ignored.
 #    gtpc:
-#      - addr: 127.0.0.3
-#      - addr: fe80::3%lo
+#      - addr: 127.0.0.4
+#      - addr: fe80::3%@loopback_devname@
 #
-#  o One PGW is defined. if prefer_ipv4 is not true,
-#    [fe80::3%lo] is selected.
+#  o One SMF is defined. if prefer_ipv4 is not true,
+#    [fe80::3%@loopback_devname@] is selected.
 #    gtpc:
 #      - addr:
-#        - 127.0.0.3
-#        - fe80::3%lo
+#        - 127.0.0.4
+#        - fe80::3%@loopback_devname@
 #
-#  o Two PGW are defined with a different APN.
-#    - Note that if PGW IP for UE is configured in HSS,
+#  o Two SMF are defined with a different APN.
+#    - Note that if SMF IP for UE is configured in HSS,
 #      the following configurion for this UE is ignored.
 #    gtpc:
-#      - addr: 127.0.0.3
+#      - addr: 127.0.0.4
 #        apn: internet
 #      - addr: 127.0.0.5
 #        apn: volte
 #
-#  o If APN is omitted, the default APN uses the first PGW node.
+#  o If APN is omitted, the default APN uses the first SMF node.
 #    gtpc:
-#      - addr: 127.0.0.3
+#      - addr: 127.0.0.4
 #      - addr: 127.0.0.5
 #        apn: volte
-#
 ```
 
 The IP address of the UE can also use a different UE pool depending on the APN.
 
 ```
-### For reference, see `pgw.yaml`
-#
-#  <UE Pool>
+### For reference, see `smf.yaml`
+#  <PDN Configuration with UE Pool>
 #
 #  o IPv4 Pool
 #    $ sudo ip addr add 10.45.0.1/16 dev ogstun
 #
-#    ue_pool:
+#    pdn:
 #      addr: 10.45.0.1/16
 #
 #  o IPv4/IPv6 Pool
 #    $ sudo ip addr add 10.45.0.1/16 dev ogstun
 #    $ sudo ip addr add cafe:1::1/64 dev ogstun
 #
-#    ue_pool:
+#    pdn:
 #      - addr: 10.45.0.1/16
 #      - addr: cafe:1::1/64
 #
@@ -331,7 +402,7 @@ The IP address of the UE can also use a different UE pool depending on the APN.
 #    $ sudo ip addr add cafe:1::1/64 dev ogstun
 #    $ sudo ip addr add cafe:2::1/64 dev ogstun
 #
-#    ue_pool:
+#    pdn:
 #      - addr: 10.45.0.1/16
 #      - addr: cafe:1::1/64
 #      - addr: 10.46.0.1/16
@@ -345,7 +416,7 @@ The IP address of the UE can also use a different UE pool depending on the APN.
 #    $ sudo ip addr add 10.46.0.1/16 dev ogstun3
 #    $ sudo ip addr add cafe:2::1/64 dev ogstun3
 #
-#    ue_pool:
+#    pdn:
 #      - addr: 10.45.0.1/16
 #      - addr: cafe:1::1/64
 #        dev: ogstun2
@@ -355,6 +426,33 @@ The IP address of the UE can also use a different UE pool depending on the APN.
 #      - addr: cafe:2::1/64
 #        apn: volte
 #        dev: ogstun3
+#
+#  o Pool Range Sample
+#    pdn:
+#      - addr: 10.45.0.1/24
+#        range: 10.45.0.100-10.45.0.200
+#
+#    pdn:
+#      - addr: 10.45.0.1/24
+#        range:
+#          - 10.45.0.5-10.45.0.50
+#          - 10.45.0.100-
+#
+#    pdn:
+#      - addr: 10.45.0.1/24
+#        range:
+#          - -10.45.0.200
+#          - 10.45.0.210-10.45.0.220
+#
+#    pdn:
+#      - addr: 10.45.0.1/16
+#        range:
+#          - 10.45.0.100-10.45.0.200
+#          - 10.45.1.100-10.45.1.200
+#      - addr: cafe::1/64
+#        range:
+#          - cafe::a0-cafe:b0
+#          - cafe::c0-cafe:d0
 #
 ```
 
@@ -416,15 +514,15 @@ $ mongo
 
 Kill all processes.
 ```bash
-$ ps -ef | grep simple
+$ ps -ef | grep attach
 $ ps -ef | grep open5gs
-$ sudo pkill -9 simple
+$ sudo pkill -9 attach
 $ sudo pkill -9 open5gs-mmed ...
 ```
 
-Execute `./build/test/epc/simple`
+Execute `./build/test/attach/attach`
 ```bash
-$ ./build/test/epc/simple
+$ ./build/test/attach/attach
 ```
 
 #### My gNB/eNB does not support IPv6.

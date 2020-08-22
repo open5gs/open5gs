@@ -55,7 +55,7 @@ Update ConnectPeer to connect to the PCRF on it's IP.
 ### Restart Services
 Restart Open5GS SMF Daemon:
 
-``` $ sudo systemctl restart open5gs-smfd ```
+``` $ sudo systemctl restart open5gs-smfd.service ```
 
 
 # External SGW-C
@@ -75,7 +75,7 @@ sgwc:
  
  Restart Open5GS SGW-C Daemon:
 
-``` $ sudo systemctl restart open5gs-sgwcd ```
+``` $ sudo systemctl restart open5gs-sgwcd.service ```
 
 
 # External PCRF
@@ -98,7 +98,7 @@ Edit the ```db_uri:``` to point at the Open5GS: ```db_uri: mongodb://10.0.1.118/
 
 Restart Open5GS PCRF Daemon:
 
-``` $ sudo systemctl restart open5gs-pcrfd ```
+``` $ sudo systemctl restart open5gs-pcrfd.service ```
 
 # External HSS
 In it's simplest form the HSS has 1 network interface:
@@ -117,7 +117,7 @@ Update ConnectPeer to connect to the MME.
 
 Restart Open5GS HSS Daemon:
 
-``` $ sudo systemctl restart open5gs-hssd ```
+``` $ sudo systemctl restart open5gs-hssd.service ```
 
 ### MongoDB Interface Configuration (Open5GS specific)
 If you are using Open5GS's HSS you may need to enable MongoDB access from the PCRF. This is done by editing ''/etc/mongodb.conf'' and changing the bind IP to:
@@ -161,5 +161,5 @@ Update ConnectPeer to connect to the PCRF on it's IP.
 ### Restart Services
 Restart Open5GS MME Daemon:
 
-``` $ sudo systemctl restart open5gs-mmed ```
+``` $ sudo systemctl restart open5gs-mmed.service ```
  

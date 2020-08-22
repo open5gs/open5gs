@@ -91,16 +91,24 @@ $ ninja -C build
 
 Check whether the compilation is correct.
 ```bash
-$ ninja -C build test
+$ ./build/test/attach/attach ## EPC Only
+$ ./build/test/registration/registration ## 5G Core Only
 ```
 
-**Tip:** You can also check the result of `ninja -C build test` with a tool that captures packets. If you are running `wireshark`, select the `loopback` interface and set FILTER to `s1ap || gtpv2 || diameter || gtp`.  You can see the virtually created packets. [[testsimple.pcapng]]({{ site.url }}{{ site.baseurl }}/assets/pcapng/testsimple.pcapng)
+Run all test programs as below.
+```bash
+$ cd build
+$ meson test -v
+```
+
+**Tip:** You can also check the result of `ninja -C build test` with a tool that captures packets. If you are running `wireshark`, select the `loopback` interface and set FILTER to `s1ap || gtpv2 || pfcp || diameter || gtp || ngap || http`.  You can see the virtually created packets. [testattach.pcapng]({{ site.url }}{{ site.baseurl }}/assets/pcapng/testattach.pcapng)/[testregistration.pcapng]({{ site.url }}{{ site.baseurl }}/assets/pcapng/testregistration.pcapng)
 {: .notice--info}
 
-You need to perform **the installation process**.
+You need to perform the **installation process**.
 ```bash
 $ cd build
 $ ninja install
+$ cd ../
 ```
 
 ### Building WebUI of Open5GS

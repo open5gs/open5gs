@@ -60,7 +60,7 @@ Git clone.
 $ git clone https://github.com/{{ site.github_username }}/open5gs
 ```
 
-To compile with autotools:
+To compile with meson:
 
 ```bash
 $ cd open5gs
@@ -72,17 +72,30 @@ Check whether the compilation is correct.
 
 **Note:** This should require *sudo* due to access `/dev/tun0`.
 {: .notice--danger}
+
 ```bash
-$ sudo ninja -C build test
+$ sudo ./build/test/attach/attach ## EPC Only
+$ sudo ./build/test/registration/registration ## 5G Core Only
 ```
 
-**Tip:** You can also check the result of `sudo ninja -C build test` with a tool that captures packets. If you are running `wireshark`, select the `loopback` interface and set FILTER to `s1ap || gtpv2 || diameter || gtp`.  You can see the virtually created packets. [[testsimple.pcapng]]({{ site.url }}{{ site.baseurl }}/assets/pcapng/testsimple.pcapng)
+Run all test programs as below.
+
+**Note:** This should require *sudo* due to access `/dev/tun0`.
+{: .notice--danger}
+
+```bash
+$ cd build
+$ sudo meson test -v
+```
+
+**Tip:** You can also check the result of `ninja -C build test` with a tool that captures packets. If you are running `wireshark`, select the `loopback` interface and set FILTER to `s1ap || gtpv2 || pfcp || diameter || gtp || ngap || http`.  You can see the virtually created packets. [testattach.pcapng]({{ site.url }}{{ site.baseurl }}/assets/pcapng/testattach.pcapng)/[testregistration.pcapng]({{ site.url }}{{ site.baseurl }}/assets/pcapng/testregistration.pcapng)
 {: .notice--info}
 
-You need to perform **the installation process**.
+You need to perform the **installation process**.
 ```bash
 $ cd build
 $ ninja install
+$ cd ../
 ```
 
 ### Building WebUI of Open5GS
