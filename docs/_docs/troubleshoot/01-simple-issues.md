@@ -26,7 +26,7 @@ open5gs  27600  0.0  0.0 222328  9668 ?        Ssl  12:13   0:00 /usr/bin/open5g
 open5gs  27697  0.0  0.0 243976 13716 ?        Ssl  12:13   0:00 /usr/bin/open5gs-udrd -c /etc/open5gs/udr.yaml
 ```
 
-You should see each of the services above, MME, SGW-C, SMF, AMF, SGW-U, UPF, HSS, PCRF, NRF, AUSF, UDM & UDR all running. 
+You should see each of the above services, MME, SGW-C, SMF, AMF, SGW-U, UPF, HSS, PCRF, NRF, AUSF, UDM & UDR are all running.
 
 If your instance doesn't show this make sure you're started each service:
 ```bash
@@ -96,7 +96,7 @@ Typically NGAP/S1AP connections are rejected due to one of these reasons:
 
 Each of these can be addressed by editing the relevant section in the AMF/MME config in */etc/open5gs/amf.yaml* OR */etc/open5gs/mme.yaml*
 
-__Example of sucesful eNB connection to MME:__
+__Example of successful eNB connection to MME:__
 ```
 $ tail -f /var/log/open5gs/mme.log
 [mme] INFO: eNB-S1 accepted[10.0.1.14]:3223 in s1_path module (s1ap-lkpath.c:70)
@@ -115,7 +115,7 @@ If while scanning for the networks on your UE / Phone you're not seeing your net
 * Check UE is within range of gNB/eNB
 * Check PLMN is not forbidden on USIM (F-PLMN List)
 
-#### UE Fails to Attach to the Network
+#### UE Fails to Register/Attach to the Network
 Assuming while scanning for networks the UE can see the network, but not connect, the most common issues stem from Authentication.
 
 NR/LTE employs *Mutual Authentication* of both the network and the subscriber. This means the credentials in the UDM/HSS must match the credentials on the USIM and the credentials in the USIM must match those in the UDM/HSS. This means unlike GSM, you cannot use just any SIM and disable crypto, you have to know the details on the USIM or be able to program this yourself in order to authenticate.

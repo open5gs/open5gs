@@ -37,7 +37,7 @@ mme:
     s1ap:
       addr: 127.0.1.100
     gtpc:
-      addr: 127.0.1.100
+      addr: 127.0.0.2
     gummei:
       plmn_id:
         mcc: 901
