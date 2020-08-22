@@ -22,7 +22,6 @@ meson.add_install_script(python3_exe, '-c',
 freediameter_conf = '''
     mme.conf
     hss.conf
-    pgw.conf
     smf.conf
     pcrf.conf
 '''.split()
@@ -42,8 +41,6 @@ freediameter_pem = '''
     mme.key.pem
     hss.cert.pem
     hss.key.pem
-    pgw.cert.pem
-    pgw.key.pem
     smf.cert.pem
     smf.key.pem
     pcrf.cert.pem

@@ -21,20 +21,17 @@ meson.add_install_script(python3_exe, '-c',
 
 open5gs_conf = '''
     mme.yaml
-    hss.yaml
-    sgw.yaml
     sgwc.yaml
     sgwu.yaml
-    pgw.yaml
-    pcrf.yaml
-
-    nrf.yaml
-    udr.yaml
-    udm.yaml
-    ausf.yaml
-    upf.yaml
     smf.yaml
     amf.yaml
+    upf.yaml
+    hss.yaml
+    pcrf.yaml
+    nrf.yaml
+    ausf.yaml
+    udm.yaml
+    udr.yaml
 '''.split()
 
 foreach file : open5gs_conf
