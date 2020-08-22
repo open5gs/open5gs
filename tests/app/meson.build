@@ -28,24 +28,13 @@ libtestepc = static_library('testepc',
     sources : [libtestepc_sources],
     c_args : libtestepc_cc_args,
     include_directories : [libtestapp_inc, srcinc],
-    link_with : [libmme, libhss, libsgw, libpgw, libpcrf],
-    dependencies : [libtestcommon_dep,
-                    libmme_dep,
-                    libhss_dep,
-                    libsgw_dep,
-                    libpgw_dep,
-                    libpcrf_dep],
+    dependencies : libtestcommon_dep,
     install : false)
 
 libtestepc_dep = declare_dependency(
     link_with : libtestepc,
     include_directories : [libtestapp_inc, srcinc],
-    dependencies : [libtestcommon_dep,
-                    libmme_dep,
-                    libhss_dep,
-                    libsgw_dep,
-                    libpgw_dep,
-                    libpcrf_dep])
+    dependencies : libtestcommon_dep)
 
 testepc_sources = files('''
     ../../src/main.c
@@ -67,7 +56,6 @@ libtest5gc = static_library('test5gc',
     sources : [libtest5gc_sources],
     c_args : libtest5gc_cc_args,
     include_directories : [libtestapp_inc, srcinc],
-    link_with : libamf,
     dependencies : libtestcommon_dep,
     install : false)
 
@@ -96,24 +84,13 @@ libtestapp = static_library('testapp',
     sources : [libtestapp_sources],
     c_args : libtestapp_cc_args,
     include_directories : [libtestapp_inc, srcinc],
-    link_with : [libmme, libhss, libsgw, libpgw, libpcrf],
-    dependencies : [libtestcommon_dep,
-                    libmme_dep,
-                    libhss_dep,
-                    libsgw_dep,
-                    libpgw_dep,
-                    libpcrf_dep],
+    dependencies : libtestcommon_dep,
     install : false)
 
 libtestapp_dep = declare_dependency(
     link_with : libtestapp,
     include_directories : [libtestapp_inc, srcinc],
-    dependencies : [libtestcommon_dep,
-                    libmme_dep,
-                    libhss_dep,
-                    libsgw_dep,
-                    libpgw_dep,
-                    libpcrf_dep])
+    dependencies : libtestcommon_dep)
 
 testapp_sources = files('''
     ../../src/main.c

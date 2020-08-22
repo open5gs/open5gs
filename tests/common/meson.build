@@ -66,7 +66,7 @@ libtestcommon = static_library('testcomon',
                     libngap_dep,
                     libnas_eps_dep,
                     libnas_5gs_dep,
-                    libdiameter_common_dep],
+                    libdiameter_rx_dep],
     install : false)
 
 libtestcommon_dep = declare_dependency(
@@ -81,4 +81,4 @@ libtestcommon_dep = declare_dependency(
                     libngap_dep,
                     libnas_eps_dep,
                     libnas_5gs_dep,
-                    libdiameter_common_dep])
+                    libdiameter_rx_dep])
