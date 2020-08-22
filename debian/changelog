@@ -1,3 +1,21 @@
+open5gs (2.0.0~eoan) eoan; urgency=medium
+
+  * 5G Core and EPC (Hybrid)
+
+ -- Sukchan Lee <acetcom@gmail.com>  Fri, 21 Aug 2020 23:41:47 -0400
+
+open5gs (2.0.0~focal) focal; urgency=medium
+
+  * 5G Core and EPC (Hybrid)
+
+ -- Sukchan Lee <acetcom@gmail.com>  Fri, 21 Aug 2020 23:40:12 -0400
+
+open5gs (2.0.0~bionic) bionic; urgency=medium
+
+  * 5G Core and EPC (Hybrid)
+
+ -- Sukchan Lee <acetcom@gmail.com>  Fri, 21 Aug 2020 23:38:44 -0400
+
 open5gs (2.0.0) unstable; urgency=medium
 
   * 5G Core and EPC (Hybrid)
