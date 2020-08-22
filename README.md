@@ -1,3 +1,9 @@
+## Release Notes
+
+- v2.0.0 (2020-08-21) - 5G Core and EPC
+- v1.3.0 (2020-07-10) - EPC only
+- v0.1.0 (2017-10-09) - First version released
+
 ## Documentation
 
 If you don't understand something about Open5GS, the [https://open5gs.org/open5gs/docs/](https://open5gs.org/open5gs/docs/) is a great place to look for answers.
