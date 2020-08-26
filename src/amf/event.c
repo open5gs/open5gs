@@ -128,7 +128,7 @@ void amf_sctp_event_push(amf_event_e id,
     }
 #if HAVE_USRSCTP
     else {
-        ogs_pollset_notify(amf_self()->pollset);
+        ogs_pollset_notify(ogs_app()->pollset);
     }
 #endif
 }

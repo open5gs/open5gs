@@ -44,7 +44,13 @@ void upf_event_init(void)
     ogs_pool_init(&pool, ogs_app()->pool.event);
 
 #if defined(HAVE_KQUEUE)
+    ogs_assert(ogs_app()->pollset);
+    ogs_pollset_destroy(ogs_app()->pollset);
+
     pollset_action_setup();
+
+    ogs_app()->pollset = ogs_pollset_create(ogs_app()->pool.socket);
+    ogs_assert(ogs_app()->pollset);
 #endif
 }
 
