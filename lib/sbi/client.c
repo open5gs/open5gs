@@ -72,7 +72,7 @@ void ogs_sbi_client_init(int num_of_sockinfo_pool, int num_of_connection_pool)
     curl_global_init(CURL_GLOBAL_DEFAULT);
 
     ogs_list_init(&ogs_sbi_self()->client_list);
-    ogs_pool_init(&client_pool, ogs_config()->max.nf);
+    ogs_pool_init(&client_pool, ogs_app()->pool.nf);
 
     ogs_pool_init(&sockinfo_pool, num_of_sockinfo_pool);
     ogs_pool_init(&connection_pool, num_of_connection_pool);
@@ -105,7 +105,7 @@ ogs_sbi_client_t *ogs_sbi_client_add(ogs_sockaddr_t *addr)
     ogs_list_init(&client->connection_list);
 
     client->t_curl = ogs_timer_add(
-            ogs_sbi_self()->timer_mgr, multi_timer_expired, client);
+            ogs_app()->timer_mgr, multi_timer_expired, client);
 
     multi = client->multi = curl_multi_init();
     ogs_assert(multi);
@@ -273,7 +273,7 @@ static connection_t *connection_add(
     }
 
     conn->timer = ogs_timer_add(
-            ogs_sbi_self()->timer_mgr, connection_timer_expired, conn);
+            ogs_app()->timer_mgr, connection_timer_expired, conn);
     ogs_assert(conn->timer);
 
     ogs_list_add(&client->connection_list, conn);
@@ -281,7 +281,7 @@ static connection_t *connection_add(
     /* If http response is not received within deadline,
      * Open5GS will discard this request. */
     ogs_timer_start(conn->timer,
-            ogs_config()->time.message.sbi.connection_deadline);
+            ogs_app()->time.message.sbi.connection_deadline);
 
     conn->easy = curl_easy_init();
     ogs_assert(conn->easy);
@@ -569,7 +569,7 @@ static void sock_set(sockinfo_t *sockinfo, curl_socket_t s,
     sockinfo->easy = e;
 
     sockinfo->poll = ogs_pollset_add(
-            ogs_sbi_self()->pollset, kind, s, event_cb, sockinfo);
+            ogs_app()->pollset, kind, s, event_cb, sockinfo);
 }
 
 /* Initialize a new sockinfo_t structure */

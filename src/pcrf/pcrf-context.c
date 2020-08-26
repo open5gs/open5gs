@@ -82,7 +82,7 @@ static int pcrf_context_validation(void)
         self.diam_config->cnf_diamrlm == NULL ||
         self.diam_config->cnf_addr == NULL)) {
         ogs_error("No pcrf.freeDiameter in '%s'",
-                ogs_config()->file);
+                ogs_app()->file);
         return OGS_ERROR;
     }
 
@@ -95,7 +95,7 @@ int pcrf_context_parse_config(void)
     yaml_document_t *document = NULL;
     ogs_yaml_iter_t root_iter;
 
-    document = ogs_config()->document;
+    document = ogs_app()->document;
     ogs_assert(document);
 
     rv = pcrf_context_prepare();
@@ -266,7 +266,7 @@ int pcrf_db_init()
 {
     int rv;
 
-    rv = ogs_mongoc_init(ogs_config()->db_uri);
+    rv = ogs_mongoc_init(ogs_app()->db_uri);
     if (rv != OGS_OK) return rv;
 
     if (ogs_mongoc()->client && ogs_mongoc()->name) {
@@ -601,11 +601,9 @@ int pcrf_db_qos_data(char *imsi_bcd, char *apn,
                                         "been defined");
                                 ogs_free(pcc_rule->name);
                             }
-                            pcc_rule->name = ogs_calloc(
-                                    1, OGS_MAX_PCC_RULE_NAME_LEN);
-                            ogs_assert(pcc_rule->name);
-                            snprintf(pcc_rule->name, OGS_MAX_PCC_RULE_NAME_LEN,
+                            pcc_rule->name = ogs_msprintf(
                                     "%s%d", apn, pcc_rule_index+1);
+                            ogs_assert(pcc_rule->name);
                             pcc_rule->precedence = pcc_rule_index+1;
                             pcc_rule->flow_status = OGS_FLOW_STATUS_ENABLED;
                             pcc_rule_index++;

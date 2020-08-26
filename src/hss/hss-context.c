@@ -75,7 +75,7 @@ static int hss_context_validation(void)
         (self.diam_config->cnf_diamid == NULL ||
         self.diam_config->cnf_diamrlm == NULL ||
         self.diam_config->cnf_addr == NULL)) {
-        ogs_error("No hss.freeDiameter in '%s'", ogs_config()->file);
+        ogs_error("No hss.freeDiameter in '%s'", ogs_app()->file);
         return OGS_ERROR;
     }
 
@@ -88,7 +88,7 @@ int hss_context_parse_config(void)
     yaml_document_t *document = NULL;
     ogs_yaml_iter_t root_iter;
 
-    document = ogs_config()->document;
+    document = ogs_app()->document;
     ogs_assert(document);
 
     rv = hss_context_prepare();

@@ -150,11 +150,6 @@ typedef struct mme_context_s {
     ogs_hash_t      *imsi_ue_hash;          /* hash table (IMSI : MME_UE) */
     ogs_hash_t      *guti_ue_hash;          /* hash table (GUTI : MME_UE) */
 
-    /* System */
-    ogs_queue_t     *queue;         /* Queue for processing MME control */
-    ogs_timer_mgr_t *timer_mgr;     /* Timer Manager */
-    ogs_pollset_t   *pollset;       /* Poll Set for I/O Multiplexing */
-    
 } mme_context_t;
 
 typedef struct mme_sgw_s {

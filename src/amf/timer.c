@@ -105,7 +105,7 @@ void amf_timer_ng_delayed_send(void *data)
 
     e->timer_id = AMF_TIMER_NG_DELAYED_SEND;
 
-    rv = ogs_queue_push(amf_self()->queue, e);
+    rv = ogs_queue_push(ogs_app()->queue, e);
     if (rv != OGS_OK) {
         ogs_warn("ogs_queue_push() failed:%d", (int)rv);
         ogs_timer_delete(e->timer);
@@ -142,7 +142,7 @@ static void sbi_timer_send_event(int timer_id, void *data)
         break;
     }
 
-    rv = ogs_queue_push(amf_self()->queue, e);
+    rv = ogs_queue_push(ogs_app()->queue, e);
     if (rv != OGS_OK) {
         ogs_warn("ogs_queue_push() failed [%d] in %s",
                 (int)rv, amf_timer_get_name(e->timer_id));
@@ -191,7 +191,7 @@ static void gmm_timer_event_send(
     e->timer_id = timer_id;
     e->amf_ue = amf_ue;
 
-    rv = ogs_queue_push(amf_self()->queue, e);
+    rv = ogs_queue_push(ogs_app()->queue, e);
     if (rv != OGS_OK) {
         ogs_warn("ogs_queue_push() failed:%d", (int)rv);
         amf_event_free(e);

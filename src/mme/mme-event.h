@@ -94,9 +94,7 @@ typedef struct mme_event_s {
     ogs_timer_t *timer;
 } mme_event_t;
 
-void mme_event_init(void);
 void mme_event_term(void);
-void mme_event_final(void);
 
 mme_event_t *mme_event_new(mme_event_e id);
 void mme_event_free(mme_event_t *e);

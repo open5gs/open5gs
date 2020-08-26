@@ -68,7 +68,7 @@ ogs_pkbuf_t *ogs_pfcp_cp_build_association_setup_request(uint8_t type)
 
     ogs_pfcp_sockaddr_to_node_id(
             ogs_pfcp_self()->pfcp_addr, ogs_pfcp_self()->pfcp_addr6,
-            ogs_config()->parameter.prefer_ipv4,
+            ogs_app()->parameter.prefer_ipv4,
             &node_id, &node_id_len);
     req->node_id.presence = 1;
     req->node_id.data = &node_id;
@@ -100,7 +100,7 @@ ogs_pkbuf_t *ogs_pfcp_cp_build_association_setup_response(uint8_t type,
 
     ogs_pfcp_sockaddr_to_node_id(
             ogs_pfcp_self()->pfcp_addr, ogs_pfcp_self()->pfcp_addr6,
-            ogs_config()->parameter.prefer_ipv4,
+            ogs_app()->parameter.prefer_ipv4,
             &node_id, &node_id_len);
     rsp->node_id.presence = 1;
     rsp->node_id.data = &node_id;
@@ -139,7 +139,7 @@ ogs_pkbuf_t *ogs_pfcp_up_build_association_setup_request(uint8_t type)
 
     ogs_pfcp_sockaddr_to_node_id(
             ogs_pfcp_self()->pfcp_addr, ogs_pfcp_self()->pfcp_addr6,
-            ogs_config()->parameter.prefer_ipv4,
+            ogs_app()->parameter.prefer_ipv4,
             &node_id, &node_id_len);
     req->node_id.presence = 1;
     req->node_id.data = &node_id;
@@ -192,7 +192,7 @@ ogs_pkbuf_t *ogs_pfcp_up_build_association_setup_response(uint8_t type,
 
     ogs_pfcp_sockaddr_to_node_id(
             ogs_pfcp_self()->pfcp_addr, ogs_pfcp_self()->pfcp_addr6,
-            ogs_config()->parameter.prefer_ipv4,
+            ogs_app()->parameter.prefer_ipv4,
             &node_id, &node_id_len);
     rsp->node_id.presence = 1;
     rsp->node_id.data = &node_id;

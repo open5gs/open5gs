@@ -88,14 +88,6 @@ typedef struct {
 
     struct {
         int pool;
-    } socket;
-
-    struct {
-        int pool;
-    } timer;
-
-    struct {
-        int pool;
     } tlv;
 
 } ogs_core_context_t;

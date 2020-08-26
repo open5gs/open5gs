@@ -107,7 +107,7 @@ void amf_nf_state_will_register(ogs_fsm_t *s, amf_event_t *e)
     case OGS_FSM_ENTRY_SIG:
         if (NF_INSTANCE_IS_SELF(nf_instance->id))
             ogs_timer_start(nf_instance->t_registration_interval,
-                ogs_config()->time.message.sbi.nf_register_interval);
+                ogs_app()->time.message.sbi.nf_register_interval);
 
         ogs_nnrf_nfm_send_nf_register(nf_instance);
         break;
@@ -162,7 +162,7 @@ void amf_nf_state_will_register(ogs_fsm_t *s, amf_event_t *e)
 
             if (NF_INSTANCE_IS_SELF(nf_instance->id))
                 ogs_timer_start(nf_instance->t_registration_interval,
-                    ogs_config()->time.message.sbi.nf_register_interval);
+                    ogs_app()->time.message.sbi.nf_register_interval);
 
             ogs_nnrf_nfm_send_nf_register(nf_instance);
             break;
@@ -206,7 +206,7 @@ void amf_nf_state_registered(ogs_fsm_t *s, amf_event_t *e)
                 ogs_timer_start(nf_instance->t_no_heartbeat,
                     ogs_time_from_sec(
                         nf_instance->time.heartbeat_interval +
-                        ogs_config()->time.nf_instance.no_heartbeat_margin));
+                        ogs_app()->time.nf_instance.no_heartbeat_margin));
             }
 
             ogs_nnrf_nfm_send_nf_status_subscribe(client,
@@ -246,7 +246,7 @@ void amf_nf_state_registered(ogs_fsm_t *s, amf_event_t *e)
                         ogs_timer_start(nf_instance->t_no_heartbeat,
                             ogs_time_from_sec(
                                 nf_instance->time.heartbeat_interval +
-                                ogs_config()->time.nf_instance.
+                                ogs_app()->time.nf_instance.
                                     no_heartbeat_margin));
                 } else {
                     ogs_warn("[%s] HTTP response error [%d]",
@@ -348,7 +348,7 @@ void amf_nf_state_exception(ogs_fsm_t *s, amf_event_t *e)
     case OGS_FSM_ENTRY_SIG:
         if (NF_INSTANCE_IS_SELF(nf_instance->id))
             ogs_timer_start(nf_instance->t_registration_interval,
-                ogs_config()->time.message.sbi.
+                ogs_app()->time.message.sbi.
                     nf_register_interval_in_exception);
         break;
 

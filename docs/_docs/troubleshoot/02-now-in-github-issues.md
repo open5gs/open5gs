@@ -3,6 +3,20 @@ title: Now in the Github Issue
 head_inline: "<style> .blue { color: blue; } </style>"
 ---
 
+#### Wireshark cannot decode NAS-5GS
+
+By default, wireshark cannot decode NAS-5GS message when the security header type is "Integrity protected and ciphered".
+
+![Wireshark cannot decode]({{ site.url }}{{ site.baseurl }}/assets/images/wireshark_cannot_decode_nas_5gs.png){: height="480" width="640"}
+
+You need to turn on "Try to detect and decode 5G-EA0 ciphered messages" in the wireshark perference menu.
+
+![Wireshark perference]({{ site.url }}{{ site.baseurl }}/assets/images/wireshark_preference.png){: height="480" width="640"}
+
+Now, you can see the NAS-5GS message in the wireshark.
+
+![Wireshark can decode]({{ site.url }}{{ site.baseurl }}/assets/images/wireshark_can_decode_nas_5gs.png){: height="480" width="640"}
+
 #### Test failed (e.g. `meson test -v`)
 
 Sometimes you may get a message like the one below due to a problem with the freeDiameter library.
@@ -662,7 +676,7 @@ By default, Open5GS is designed to support the Embedding System. To do so, we in
 - We'll use Debian Docker Environment.
 
 ```bash
-$ git clone https://github.com/open5gs/open5gs
+$ git clone https://github.com/{{ site.github_username }}/open5gs
 $ cd open5gs/docker
 $ DIST=debian TAG=stretch docker-compose run dev
 ```
@@ -675,7 +689,7 @@ $ sudo apt update
 $ sudo apt install libsctp-dev:armel libyaml-dev:armel libgnutls28-dev:armel libgcrypt-dev:armel libidn11-dev:armel libssl-dev:armel libmongoc-dev:armel libbson-dev:armel
 $ sudo apt install crossbuild-essential-armel
 $ sudo apt install qemu
-$ git clone https://github.com/acetcom/open5gs
+$ git clone https://github.com/{{ site.github_username }}/open5gs
 $ cd open5gs/
 
 $ cat << EOF > cross_file.txt

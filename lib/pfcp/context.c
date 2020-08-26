@@ -64,26 +64,26 @@ void ogs_pfcp_context_init(int num_of_gtpu_resource)
 
     ogs_log_install_domain(&__ogs_pfcp_domain, "pfcp", ogs_core()->log.level);
 
-    ogs_pool_init(&ogs_pfcp_node_pool, ogs_config()->pool.pfcp);
+    ogs_pool_init(&ogs_pfcp_node_pool, ogs_app()->pool.pfcp_node);
     ogs_pool_init(&ogs_pfcp_gtpu_resource_pool, num_of_gtpu_resource);
 
     ogs_list_init(&self.peer_list);
     ogs_list_init(&self.gtpu_resource_list);
 
-    ogs_pool_init(&ogs_pfcp_sess_pool, ogs_config()->pool.sess);
+    ogs_pool_init(&ogs_pfcp_sess_pool, ogs_app()->pool.sess);
 
     ogs_pool_init(&ogs_pfcp_pdr_pool,
-            ogs_config()->pool.sess * OGS_MAX_NUM_OF_PDR);
+            ogs_app()->pool.sess * OGS_MAX_NUM_OF_PDR);
     ogs_pool_init(&ogs_pfcp_far_pool,
-            ogs_config()->pool.sess * OGS_MAX_NUM_OF_FAR);
+            ogs_app()->pool.sess * OGS_MAX_NUM_OF_FAR);
     ogs_pool_init(&ogs_pfcp_urr_pool,
-            ogs_config()->pool.sess * OGS_MAX_NUM_OF_URR);
+            ogs_app()->pool.sess * OGS_MAX_NUM_OF_URR);
     ogs_pool_init(&ogs_pfcp_qer_pool,
-            ogs_config()->pool.sess * OGS_MAX_NUM_OF_QER);
+            ogs_app()->pool.sess * OGS_MAX_NUM_OF_QER);
     ogs_pool_init(&ogs_pfcp_bar_pool,
-            ogs_config()->pool.sess * OGS_MAX_NUM_OF_BAR);
+            ogs_app()->pool.sess * OGS_MAX_NUM_OF_BAR);
     ogs_pool_init(&ogs_pfcp_rule_pool,
-            ogs_config()->pool.sess * OGS_MAX_NUM_OF_RULE);
+            ogs_app()->pool.sess * OGS_MAX_NUM_OF_RULE);
 
     ogs_list_init(&self.dev_list);
     ogs_pool_init(&ogs_pfcp_dev_pool, OGS_MAX_NUM_OF_DEV);
@@ -142,7 +142,7 @@ static int ogs_pfcp_context_validation(const char *local)
 {
     if (ogs_list_first(&self.pfcp_list) == NULL &&
         ogs_list_first(&self.pfcp_list6) == NULL) {
-        ogs_error("No %s.pfcp: in '%s'", local, ogs_config()->file);
+        ogs_error("No %s.pfcp: in '%s'", local, ogs_app()->file);
         return OGS_ERROR;
     }
     return OGS_OK;
@@ -154,7 +154,7 @@ int ogs_pfcp_context_parse_config(const char *local, const char *remote)
     yaml_document_t *document = NULL;
     ogs_yaml_iter_t root_iter;
 
-    document = ogs_config()->document;
+    document = ogs_app()->document;
     ogs_assert(document);
 
     rv = ogs_pfcp_context_prepare();
@@ -255,10 +255,10 @@ int ogs_pfcp_context_parse_config(const char *local, const char *remote)
                         }
 
                         if (addr) {
-                            if (ogs_config()->parameter.no_ipv4 == 0)
+                            if (ogs_app()->parameter.no_ipv4 == 0)
                                 ogs_socknode_add(
                                         &self.pfcp_list, AF_INET, addr);
-                            if (ogs_config()->parameter.no_ipv6 == 0)
+                            if (ogs_app()->parameter.no_ipv6 == 0)
                                 ogs_socknode_add(
                                         &self.pfcp_list6, AF_INET6, addr);
                             ogs_freeaddrinfo(addr);
@@ -266,9 +266,9 @@ int ogs_pfcp_context_parse_config(const char *local, const char *remote)
 
                         if (dev) {
                             rv = ogs_socknode_probe(
-                                    ogs_config()->parameter.no_ipv4 ?
+                                    ogs_app()->parameter.no_ipv4 ?
                                         NULL : &self.pfcp_list,
-                                    ogs_config()->parameter.no_ipv6 ?
+                                    ogs_app()->parameter.no_ipv6 ?
                                         NULL : &self.pfcp_list6,
                                     dev, self.pfcp_port);
                             ogs_assert(rv == OGS_OK);
@@ -280,9 +280,9 @@ int ogs_pfcp_context_parse_config(const char *local, const char *remote)
                     if (ogs_list_first(&self.pfcp_list) == NULL &&
                         ogs_list_first(&self.pfcp_list6) == NULL) {
                         rv = ogs_socknode_probe(
-                                ogs_config()->parameter.no_ipv4 ?
+                                ogs_app()->parameter.no_ipv4 ?
                                     NULL : &self.pfcp_list,
-                                ogs_config()->parameter.no_ipv6 ?
+                                ogs_app()->parameter.no_ipv6 ?
                                     NULL : &self.pfcp_list6,
                                 NULL, self.pfcp_port);
                         ogs_assert(rv == OGS_OK);
@@ -618,9 +618,9 @@ int ogs_pfcp_context_parse_config(const char *local, const char *remote)
                         }
 
                         ogs_filter_ip_version(&addr,
-                                ogs_config()->parameter.no_ipv4,
-                                ogs_config()->parameter.no_ipv6,
-                                ogs_config()->parameter.prefer_ipv4);
+                                ogs_app()->parameter.no_ipv4,
+                                ogs_app()->parameter.no_ipv6,
+                                ogs_app()->parameter.prefer_ipv4);
 
                         if (addr == NULL) continue;
 
@@ -1315,7 +1315,7 @@ int ogs_pfcp_ue_pool_generate(void)
             }
 
             inc = 0;
-            while(poolindex < ogs_config()->pool.sess) {
+            while(poolindex < ogs_app()->pool.sess) {
                 ogs_pfcp_ue_ip_t *ue_ip = NULL;
 
                 ue_ip = &subnet->pool.array[poolindex];
@@ -1522,7 +1522,7 @@ ogs_pfcp_subnet_t *ogs_pfcp_subnet_add(
     if (apn)
         strcpy(subnet->apn, apn);
 
-    ogs_pool_init(&subnet->pool, ogs_config()->pool.sess);
+    ogs_pool_init(&subnet->pool, ogs_app()->pool.sess);
 
     ogs_list_add(&self.subnet_list, subnet);
 

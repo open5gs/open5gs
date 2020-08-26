@@ -29,6 +29,15 @@ $ sudo ifconfig lo0 alias 127.0.0.2 netmask 255.255.255.255
 $ sudo ifconfig lo0 alias 127.0.0.3 netmask 255.255.255.255
 $ sudo ifconfig lo0 alias 127.0.0.4 netmask 255.255.255.255
 $ sudo ifconfig lo0 alias 127.0.0.5 netmask 255.255.255.255
+$ sudo ifconfig lo0 alias 127.0.0.5 netmask 255.255.255.255
+$ sudo ifconfig lo0 alias 127.0.0.6 netmask 255.255.255.255
+$ sudo ifconfig lo0 alias 127.0.0.7 netmask 255.255.255.255
+$ sudo ifconfig lo0 alias 127.0.0.8 netmask 255.255.255.255
+$ sudo ifconfig lo0 alias 127.0.0.9 netmask 255.255.255.255
+$ sudo ifconfig lo0 alias 127.0.0.10 netmask 255.255.255.255
+$ sudo ifconfig lo0 alias 127.0.0.11 netmask 255.255.255.255
+$ sudo ifconfig lo0 alias 127.0.0.12 netmask 255.255.255.255
+$ sudo ifconfig lo0 alias 127.0.0.13 netmask 255.255.255.255
 ```
 
 Enable IP forwarding

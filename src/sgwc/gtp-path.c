@@ -93,7 +93,7 @@ static void _gtpv2_c_recv_cb(short when, ogs_socket_t fd, void *data)
 
     e->pkbuf = pkbuf;
 
-    rv = ogs_queue_push(sgwc_self()->queue, e);
+    rv = ogs_queue_push(ogs_app()->queue, e);
     if (rv != OGS_OK) {
         ogs_error("ogs_queue_push() failed:%d", (int)rv);
         ogs_pkbuf_free(e->pkbuf);
@@ -109,7 +109,7 @@ int sgwc_gtp_open(void)
     ogs_pkbuf_config_t config;
     memset(&config, 0, sizeof config);
 
-    config.cluster_8192_pool = ogs_config()->pool.packet;
+    config.cluster_8192_pool = ogs_app()->pool.packet;
 
     packet_pool = ogs_pkbuf_pool_create(&config);
 
@@ -117,14 +117,14 @@ int sgwc_gtp_open(void)
         sock = ogs_gtp_server(node);
         ogs_assert(sock);
 
-        node->poll = ogs_pollset_add(sgwc_self()->pollset,
+        node->poll = ogs_pollset_add(ogs_app()->pollset,
                 OGS_POLLIN, sock->fd, _gtpv2_c_recv_cb, sock);
     }
     ogs_list_for_each(&sgwc_self()->gtpc_list6, node) {
         sock = ogs_gtp_server(node);
         ogs_assert(sock);
 
-        node->poll = ogs_pollset_add(sgwc_self()->pollset,
+        node->poll = ogs_pollset_add(ogs_app()->pollset,
                 OGS_POLLIN, sock->fd, _gtpv2_c_recv_cb, sock);
     }
 

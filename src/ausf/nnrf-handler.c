@@ -77,7 +77,7 @@ void ausf_nnrf_handle_nf_status_subscribe(
                 ogs_warn("[%s] Forced to %lld seconds", subscription->id,
                         (long long)ogs_time_sec(VALIDITY_MINIMUM));
             }
-            subscription->t_validity = ogs_timer_add(ausf_self()->timer_mgr,
+            subscription->t_validity = ogs_timer_add(ogs_app()->timer_mgr,
                 ausf_timer_subscription_validity, subscription);
             ogs_assert(subscription->t_validity);
             ogs_timer_start(subscription->t_validity, duration);

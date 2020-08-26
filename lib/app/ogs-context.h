@@ -21,8 +21,8 @@
 #error "This header cannot be included directly."
 #endif
 
-#ifndef OGS_APP_CONFIG_H
-#define OGS_APP_CONFIG_H
+#ifndef OGS_APP_CONTEXT_H
+#define OGS_APP_CONTEXT_H
 
 #include "ogs-app.h"
 
@@ -30,7 +30,7 @@
 extern "C" {
 #endif
 
-typedef struct ogs_config_s {
+typedef struct ogs_app_context_s {
     const char *file;
     void *document;
 
@@ -40,6 +40,10 @@ typedef struct ogs_config_s {
         const char *level;
         const char *domain;
     } logger;
+
+    ogs_queue_t *queue;
+    ogs_timer_mgr_t *timer_mgr;
+    ogs_pollset_t *pollset;
 
     struct {
         /* Element */
@@ -73,32 +77,33 @@ typedef struct ogs_config_s {
     } usrsctp;
 
     struct {
-        int sgw;
-        int pgw;
-        int vlr;
-        int csmap;
-
-        int ue;
-        int smf;
-        int upf;
-        int gnb;
-        int nf;
+        uint64_t ue;
+        uint64_t gnb;
     } max;
 
     struct {
         ogs_pkbuf_config_t defconfig;
-        int packet;
+        uint64_t packet;
 
-        int ue;
-        int auth;
-        int pfcp;
-        int sess;
-        int bearer;
-        int tunnel;
-        int pf;
-        int nf_service;
-        int nf_subscription;
-        int sbi_message;
+        uint64_t nf;
+
+        uint64_t sess;
+        uint64_t bearer;
+        uint64_t tunnel;
+        uint64_t pf;
+        uint64_t nf_service;
+        uint64_t nf_subscription;
+        uint64_t sbi_message;
+
+        uint64_t csmap;
+
+        uint64_t event;
+        uint64_t timer;
+        uint64_t socket;
+        uint64_t gtp_xact;
+        uint64_t gtp_node;
+        uint64_t pfcp_xact;
+        uint64_t pfcp_node;
     } pool;
 
     struct {
@@ -137,17 +142,16 @@ typedef struct ogs_config_s {
             } pfcp;
         } message;
     } time;
-} ogs_config_t;
+} ogs_app_context_t;
 
-int ogs_config_init(void);
-int ogs_config_final(void);
-ogs_config_t *ogs_config(void);
+int ogs_app_context_init(void);
+void ogs_app_context_final(void);
+ogs_app_context_t *ogs_app(void);
 
-int ogs_config_read(void);
-int ogs_config_parse(void);
+int ogs_app_context_parse_config(void);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* OGS_APP_CONFIG_H */
+#endif /* OGS_APP_CONTEXT_H */

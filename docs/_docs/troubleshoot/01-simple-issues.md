@@ -160,7 +160,7 @@ If your device shows as connected (Includes 5G/LTE symbol) there are a few simpl
 ## Further Debugging
 ---
 
-Problem with Open5GS can be filed as [GitHub Issues](https://github.com/open5gs/open5gs/issues). Please include the following to get help:
+Problem with Open5GS can be filed as [GitHub Issues](https://github.com/{{ site.github_username }}/open5gs/issues). Please include the following to get help:
 
 - Attach `*.pcapng` file created by wireskark.
 - Attach configuration files at `/etc/open5gs/*.yaml`.

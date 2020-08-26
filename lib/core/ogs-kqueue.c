@@ -67,12 +67,12 @@ static void kqueue_init(ogs_pollset_t *pollset)
     pollset->context = context;
 
 	context->change_list = ogs_calloc(
-        ogs_core()->socket.pool, sizeof(struct kevent));
+        pollset->capacity, sizeof(struct kevent));
 	context->event_list = ogs_calloc(
-        ogs_core()->socket.pool, sizeof(struct kevent));
+        pollset->capacity, sizeof(struct kevent));
 	ogs_assert(context->change_list);
     context->nchanges = 0;
-    context->nevents = ogs_core()->socket.pool;
+    context->nevents = pollset->capacity;
 
     context->kqueue = kqueue();
     ogs_assert(context->kqueue != -1);
@@ -108,7 +108,7 @@ static int kqueue_set(ogs_poll_t *poll, int filter, int flags)
     context = pollset->context;
     ogs_assert(context);
 
-    ogs_assert(context->nchanges < ogs_core()->socket.pool);
+    ogs_assert(context->nchanges < pollset->capacity);
 
     kev = &context->change_list[context->nchanges];
     memset(kev, 0, sizeof *kev);

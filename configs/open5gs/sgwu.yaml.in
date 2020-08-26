@@ -93,16 +93,10 @@ parameter:
 #
 # max:
 #
-# o Maximum Number of SGW per MME
-#    sgw: 32
-# o Maximum Number of PGW per MME
-#    pgw: 32
-# o Maximum Number of VLR per MME
-#    vlr: 32
-# o Maximum Number of eNodeB per MME
-#    enb: 32
-# o Maximum Number of UE per eNodeB
-#    ue: 128
+# o Maximum Number of UE per AMF/MME
+#    ue: 4,096
+# o Maximum Number of gNB/eNB per AMF/MME
+#    gnb: 32
 #
 max:
 

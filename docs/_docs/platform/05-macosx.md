@@ -24,8 +24,7 @@ $ brew install mongodb-community
 
 Run MongoDB server.
 ```bash
-$ mkdir -p ./data/db
-$ mongod --dbpath ./data/db
+$ mongod --config /usr/local/etc/mongod.conf
 ```
 
 **Tip:** MongoDB is persistent after rebooting with the following commands:
@@ -38,6 +37,7 @@ $ mongod --dbpath ./data/db
 
 Install TUN/TAP driver
 - You can download it from [http://tuntaposx.sourceforge.net/](http://tuntaposx.sourceforge.net/)
+- And then, run tuntap_20150118.pkg to install TUN/TAP driver.
 
 Configure the TUN device.
 ```bash
@@ -45,6 +45,15 @@ $ sudo ifconfig lo0 alias 127.0.0.2 netmask 255.255.255.255
 $ sudo ifconfig lo0 alias 127.0.0.3 netmask 255.255.255.255
 $ sudo ifconfig lo0 alias 127.0.0.4 netmask 255.255.255.255
 $ sudo ifconfig lo0 alias 127.0.0.5 netmask 255.255.255.255
+$ sudo ifconfig lo0 alias 127.0.0.5 netmask 255.255.255.255
+$ sudo ifconfig lo0 alias 127.0.0.6 netmask 255.255.255.255
+$ sudo ifconfig lo0 alias 127.0.0.7 netmask 255.255.255.255
+$ sudo ifconfig lo0 alias 127.0.0.8 netmask 255.255.255.255
+$ sudo ifconfig lo0 alias 127.0.0.9 netmask 255.255.255.255
+$ sudo ifconfig lo0 alias 127.0.0.10 netmask 255.255.255.255
+$ sudo ifconfig lo0 alias 127.0.0.11 netmask 255.255.255.255
+$ sudo ifconfig lo0 alias 127.0.0.12 netmask 255.255.255.255
+$ sudo ifconfig lo0 alias 127.0.0.13 netmask 255.255.255.255
 ```
 
 Enable IP forwarding & Masquerading
@@ -81,7 +90,7 @@ To compile with meson:
 
 ```bash
 $ cd open5gs
-$ meson build --prefix=`pwd`/install
+$ meson build --prefix=`pwd`/install -D c_std=c99
 $ ninja -C build
 ```
 

@@ -68,7 +68,7 @@ int udr_context_parse_config(void)
     yaml_document_t *document = NULL;
     ogs_yaml_iter_t root_iter;
 
-    document = ogs_config()->document;
+    document = ogs_app()->document;
     ogs_assert(document);
 
     rv = udr_context_prepare();

@@ -41,13 +41,13 @@ void sgwu_context_init(void)
     ogs_pfcp_self()->up_function_features.empu = 1;
     ogs_pfcp_self()->up_function_features_len = 2;
 
-    ogs_gtp_node_init(512);
+    ogs_gtp_node_init();
 
     ogs_list_init(&self.sess_list);
     ogs_list_init(&self.gtpu_list);
     ogs_list_init(&self.peer_list);
 
-    ogs_pool_init(&sgwu_sess_pool, ogs_config()->pool.sess);
+    ogs_pool_init(&sgwu_sess_pool, ogs_app()->pool.sess);
 
     self.sess_hash = ogs_hash_make();
 
@@ -87,7 +87,7 @@ static int sgwu_context_prepare(void)
 static int sgwu_context_validation(void)
 {
     if (ogs_list_first(&self.gtpu_list) == NULL) {
-        ogs_error("No sgwu.gtpu in '%s'", ogs_config()->file);
+        ogs_error("No sgwu.gtpu in '%s'", ogs_app()->file);
         return OGS_ERROR;
     }
     return OGS_OK;
@@ -99,7 +99,7 @@ int sgwu_context_parse_config(void)
     yaml_document_t *document = NULL;
     ogs_yaml_iter_t root_iter;
 
-    document = ogs_config()->document;
+    document = ogs_app()->document;
     ogs_assert(document);
 
     rv = sgwu_context_prepare();
@@ -231,17 +231,17 @@ int sgwu_context_parse_config(void)
                         ogs_list_init(&list6);
 
                         if (addr) {
-                            if (ogs_config()->parameter.no_ipv4 == 0)
+                            if (ogs_app()->parameter.no_ipv4 == 0)
                                 ogs_socknode_add(&list, AF_INET, addr);
-                            if (ogs_config()->parameter.no_ipv6 == 0)
+                            if (ogs_app()->parameter.no_ipv6 == 0)
                                 ogs_socknode_add(&list6, AF_INET6, addr);
                             ogs_freeaddrinfo(addr);
                         }
 
                         if (dev) {
                             rv = ogs_socknode_probe(
-                                ogs_config()->parameter.no_ipv4 ? NULL : &list,
-                                ogs_config()->parameter.no_ipv6 ? NULL : &list6,
+                                ogs_app()->parameter.no_ipv4 ? NULL : &list,
+                                ogs_app()->parameter.no_ipv6 ? NULL : &list6,
                                 dev, port);
                             ogs_assert(rv == OGS_OK);
                         }
@@ -317,8 +317,8 @@ int sgwu_context_parse_config(void)
                         ogs_list_init(&list6);
 
                         rv = ogs_socknode_probe(
-                            ogs_config()->parameter.no_ipv4 ? NULL : &list,
-                            ogs_config()->parameter.no_ipv6 ? NULL : &list6,
+                            ogs_app()->parameter.no_ipv4 ? NULL : &list,
+                            ogs_app()->parameter.no_ipv6 ? NULL : &list6,
                             NULL, self.gtpu_port);
                         ogs_assert(rv == OGS_OK);
 
@@ -375,7 +375,7 @@ sgwu_sess_t *sgwu_sess_add(ogs_pfcp_f_seid_t *cp_f_seid,
     memset(sess, 0, sizeof *sess);
 
     sess->index = ogs_pool_index(&sgwu_sess_pool, sess);
-    ogs_assert(sess->index > 0 && sess->index <= ogs_config()->pool.sess);
+    ogs_assert(sess->index > 0 && sess->index <= ogs_app()->pool.sess);
 
     sess->sgwu_sxa_seid = sess->index;
     sess->sgwc_sxa_seid = cp_f_seid->seid;

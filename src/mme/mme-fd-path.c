@@ -373,13 +373,13 @@ out:
         ogs_assert(e);
         e->mme_ue = mme_ue;
         e->pkbuf = s6abuf;
-        rv = ogs_queue_push(mme_self()->queue, e);
+        rv = ogs_queue_push(ogs_app()->queue, e);
         if (rv != OGS_OK) {
             ogs_error("ogs_queue_push() failed:%d", (int)rv);
             ogs_pkbuf_free(e->pkbuf);
             mme_event_free(e);
         } else {
-            ogs_pollset_notify(mme_self()->pollset);
+            ogs_pollset_notify(ogs_app()->pollset);
         }
     }
 
@@ -1069,13 +1069,13 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
         ogs_assert(e);
         e->mme_ue = mme_ue;
         e->pkbuf = s6abuf;
-        rv = ogs_queue_push(mme_self()->queue, e);
+        rv = ogs_queue_push(ogs_app()->queue, e);
         if (rv != OGS_OK) {
             ogs_error("ogs_queue_push() failed:%d", (int)rv);
             ogs_pkbuf_free(e->pkbuf);
             mme_event_free(e);
         } else {
-            ogs_pollset_notify(mme_self()->pollset);
+            ogs_pollset_notify(ogs_app()->pollset);
         }
     }
 

@@ -34,7 +34,7 @@ int upf_initialize()
     upf_context_init();
     upf_event_init();
 
-    rv = ogs_pfcp_xact_init(upf_self()->timer_mgr, 512);
+    rv = ogs_pfcp_xact_init();
     if (rv != OGS_OK) return rv;
 
     rv = ogs_pfcp_context_parse_config("upf", "smf");
@@ -44,7 +44,7 @@ int upf_initialize()
     if (rv != OGS_OK) return rv;
 
     rv = ogs_log_config_domain(
-            ogs_config()->logger.domain, ogs_config()->logger.level);
+            ogs_app()->logger.domain, ogs_app()->logger.level);
     if (rv != OGS_OK) return rv;
 
     rv = ogs_pfcp_ue_pool_generate();
@@ -83,8 +83,8 @@ static void upf_main(void *data)
     ogs_fsm_init(&upf_sm, 0);
 
     for ( ;; ) {
-        ogs_pollset_poll(upf_self()->pollset,
-                ogs_timer_mgr_next(upf_self()->timer_mgr));
+        ogs_pollset_poll(ogs_app()->pollset,
+                ogs_timer_mgr_next(ogs_app()->timer_mgr));
 
         /*
          * After ogs_pollset_poll(), ogs_timer_mgr_expire() must be called.
@@ -97,12 +97,12 @@ static void upf_main(void *data)
          * because 'if rv == OGS_DONE' statement is exiting and
          * not calling ogs_timer_mgr_expire().
          */
-        ogs_timer_mgr_expire(upf_self()->timer_mgr);
+        ogs_timer_mgr_expire(ogs_app()->timer_mgr);
 
         for ( ;; ) {
             upf_event_t *e = NULL;
 
-            rv = ogs_queue_trypop(upf_self()->queue, (void**)&e);
+            rv = ogs_queue_trypop(ogs_app()->queue, (void**)&e);
             ogs_assert(rv != OGS_ERROR);
 
             if (rv == OGS_DONE)

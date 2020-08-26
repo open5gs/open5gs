@@ -114,7 +114,7 @@ int ngap_delayed_send_to_ran_ue(
         e = amf_event_new(AMF_EVT_NGAP_TIMER);
         ogs_assert(e);
         e->timer = ogs_timer_add(
-                amf_self()->timer_mgr, amf_timer_ng_delayed_send, e);
+                ogs_app()->timer_mgr, amf_timer_ng_delayed_send, e);
         ogs_assert(e->timer);
         e->pkbuf = pkbuf;
         e->ran_ue = ran_ue;
@@ -143,7 +143,7 @@ int ngap_send_to_5gsm(amf_ue_t *amf_ue, ogs_pkbuf_t *esmbuf)
     ogs_assert(e);
     e->amf_ue = amf_ue;
     e->pkbuf = esmbuf;
-    rv = ogs_queue_push(amf_self()->queue, e);
+    rv = ogs_queue_push(ogs_app()->queue, e);
     if (rv != OGS_OK) {
         ogs_warn("ogs_queue_push() failed:%d", (int)rv);
         ogs_pkbuf_free(e->pkbuf);
@@ -224,7 +224,7 @@ int ngap_send_to_nas(ran_ue_t *ran_ue,
         e->ngap.code = procedureCode;
         e->nas.type = security_header_type.type;
         e->pkbuf = nasbuf;
-        rv = ogs_queue_push(amf_self()->queue, e);
+        rv = ogs_queue_push(ogs_app()->queue, e);
         if (rv != OGS_OK) {
             ogs_warn("ogs_queue_push() failed:%d", (int)rv);
             ogs_pkbuf_free(e->pkbuf);

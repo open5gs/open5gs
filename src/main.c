@@ -51,16 +51,16 @@ static void show_running_config(void)
 {
     ogs_log_print(OGS_LOG_INFO, "%s\n\n", version);
 
-    ogs_info("Configuration: '%s'", ogs_config()->file);
+    ogs_info("Configuration: '%s'", ogs_app()->file);
 
-    if (ogs_config()->logger.file) {
-        ogs_info("File Logging: '%s'", ogs_config()->logger.file);
+    if (ogs_app()->logger.file) {
+        ogs_info("File Logging: '%s'", ogs_app()->logger.file);
 
-        if (ogs_config()->logger.level)
-            ogs_info("LOG-LEVEL: '%s'", ogs_config()->logger.level);
+        if (ogs_app()->logger.level)
+            ogs_info("LOG-LEVEL: '%s'", ogs_app()->logger.level);
 
-        if (ogs_config()->logger.domain)
-            ogs_info("LOG-DOMAIN: '%s'", ogs_config()->logger.domain);
+        if (ogs_app()->logger.domain)
+            ogs_info("LOG-DOMAIN: '%s'", ogs_app()->logger.domain);
     }
 }
 

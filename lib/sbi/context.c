@@ -31,33 +31,28 @@ static ogs_sbi_context_t self;
 
 static int context_initialized = 0;
 
-void ogs_sbi_context_init(ogs_pollset_t *pollset, ogs_timer_mgr_t *timer_mgr)
+void ogs_sbi_context_init(void)
 {
     ogs_assert(context_initialized == 0);
 
     /* Initialize SMF context */
     memset(&self, 0, sizeof(ogs_sbi_context_t));
 
-    ogs_assert(pollset);
-    self.pollset = pollset;
-    ogs_assert(timer_mgr);
-    self.timer_mgr = timer_mgr;
-
     ogs_log_install_domain(&__ogs_sbi_domain, "sbi", ogs_core()->log.level);
 
     ogs_sbi_message_init(
-        ogs_config()->pool.sbi_message, ogs_config()->pool.sbi_message);
-    ogs_sbi_server_init(ogs_config()->max.nf);
-    ogs_sbi_client_init(ogs_config()->max.nf, ogs_config()->max.nf);
+        ogs_app()->pool.sbi_message, ogs_app()->pool.sbi_message);
+    ogs_sbi_server_init(ogs_app()->pool.nf);
+    ogs_sbi_client_init(ogs_app()->pool.nf, ogs_app()->pool.nf);
 
     ogs_list_init(&self.nf_instance_list);
-    ogs_pool_init(&nf_instance_pool, ogs_config()->max.nf);
-    ogs_pool_init(&nf_service_pool, ogs_config()->pool.nf_service);
+    ogs_pool_init(&nf_instance_pool, ogs_app()->pool.nf);
+    ogs_pool_init(&nf_service_pool, ogs_app()->pool.nf_service);
 
-    ogs_pool_init(&xact_pool, ogs_config()->pool.sbi_message);
+    ogs_pool_init(&xact_pool, ogs_app()->pool.sbi_message);
 
     ogs_list_init(&self.subscription_list);
-    ogs_pool_init(&subscription_pool, ogs_config()->pool.nf_subscription);
+    ogs_pool_init(&subscription_pool, ogs_app()->pool.nf_subscription);
 
     ogs_uuid_get(&self.uuid);
     ogs_uuid_format(self.nf_instance_id, &self.uuid);
@@ -103,7 +98,7 @@ static int ogs_sbi_context_prepare(void)
 static int ogs_sbi_context_validation(const char *local)
 {
     if (ogs_list_first(&self.server_list) == NULL) {
-        ogs_error("No %s.sbi: in '%s'", local, ogs_config()->file);
+        ogs_error("No %s.sbi: in '%s'", local, ogs_app()->file);
         return OGS_ERROR;
     }
 
@@ -116,7 +111,7 @@ int ogs_sbi_context_parse_config(const char *local, const char *remote)
     yaml_document_t *document = NULL;
     ogs_yaml_iter_t root_iter;
 
-    document = ogs_config()->document;
+    document = ogs_app()->document;
     ogs_assert(document);
 
     rv = ogs_sbi_context_prepare();
@@ -239,17 +234,17 @@ int ogs_sbi_context_parse_config(const char *local, const char *remote)
                         ogs_list_init(&list6);
 
                         if (addr) {
-                            if (ogs_config()->parameter.no_ipv4 == 0)
+                            if (ogs_app()->parameter.no_ipv4 == 0)
                                 ogs_socknode_add(&list, AF_INET, addr);
-                            if (ogs_config()->parameter.no_ipv6 == 0)
+                            if (ogs_app()->parameter.no_ipv6 == 0)
                                 ogs_socknode_add(&list6, AF_INET6, addr);
                             ogs_freeaddrinfo(addr);
                         }
 
                         if (dev) {
                             rv = ogs_socknode_probe(
-                                ogs_config()->parameter.no_ipv4 ? NULL : &list,
-                                ogs_config()->parameter.no_ipv6 ? NULL : &list6,
+                                ogs_app()->parameter.no_ipv4 ? NULL : &list,
+                                ogs_app()->parameter.no_ipv6 ? NULL : &list6,
                                 dev, port);
                             ogs_assert(rv == OGS_OK);
                         }
@@ -283,8 +278,8 @@ int ogs_sbi_context_parse_config(const char *local, const char *remote)
                         ogs_list_init(&list6);
 
                         rv = ogs_socknode_probe(
-                            ogs_config()->parameter.no_ipv4 ? NULL : &list,
-                            ogs_config()->parameter.no_ipv6 ? NULL : &list6,
+                            ogs_app()->parameter.no_ipv4 ? NULL : &list,
+                            ogs_app()->parameter.no_ipv6 ? NULL : &list6,
                             NULL, self.http_port);
                         ogs_assert(rv == OGS_OK);
 
@@ -400,9 +395,9 @@ int ogs_sbi_context_parse_config(const char *local, const char *remote)
                         }
 
                         ogs_filter_ip_version(&addr,
-                                ogs_config()->parameter.no_ipv4,
-                                ogs_config()->parameter.no_ipv6,
-                                ogs_config()->parameter.prefer_ipv4);
+                                ogs_app()->parameter.no_ipv4,
+                                ogs_app()->parameter.no_ipv6,
+                                ogs_app()->parameter.prefer_ipv4);
 
                         if (addr == NULL) continue;
 
@@ -450,19 +445,19 @@ ogs_sbi_nf_instance_t *ogs_sbi_nf_instance_add(char *id)
     ogs_assert(nf_instance->id);
 
     nf_instance->time.heartbeat_interval =
-            ogs_config()->time.nf_instance.heartbeat_interval;
+            ogs_app()->time.nf_instance.heartbeat_interval;
 
     nf_instance->t_registration_interval = ogs_timer_add(
-            ogs_sbi_self()->timer_mgr, NULL, nf_instance);
+            ogs_app()->timer_mgr, NULL, nf_instance);
     ogs_assert(nf_instance->t_registration_interval);
     nf_instance->t_heartbeat_interval = ogs_timer_add(
-            ogs_sbi_self()->timer_mgr, NULL, nf_instance);
+            ogs_app()->timer_mgr, NULL, nf_instance);
     ogs_assert(nf_instance->t_heartbeat_interval);
     nf_instance->t_no_heartbeat = ogs_timer_add(
-            ogs_sbi_self()->timer_mgr, NULL, nf_instance);
+            ogs_app()->timer_mgr, NULL, nf_instance);
     ogs_assert(nf_instance->t_no_heartbeat);
     nf_instance->t_validity = ogs_timer_add(
-            ogs_sbi_self()->timer_mgr, NULL, nf_instance);
+            ogs_app()->timer_mgr, NULL, nf_instance);
     ogs_assert(nf_instance->t_validity);
 
     ogs_list_add(&ogs_sbi_self()->nf_instance_list, nf_instance);
@@ -1015,11 +1010,11 @@ ogs_sbi_xact_t *ogs_sbi_xact_add(OpenAPI_nf_type_e target_nf_type,
     ogs_assert(xact->request);
 
     xact->t_response = ogs_timer_add(
-            ogs_sbi_self()->timer_mgr, timer_cb, xact);
+            ogs_app()->timer_mgr, timer_cb, xact);
     ogs_assert(xact->t_response);
 
     ogs_timer_start(xact->t_response,
-            ogs_config()->time.message.sbi.client_wait_duration);
+            ogs_app()->time.message.sbi.client_wait_duration);
 
     ogs_list_add(&sbi_object->xact_list, xact);
 
@@ -1064,7 +1059,7 @@ ogs_sbi_subscription_t *ogs_sbi_subscription_add(void)
     memset(subscription, 0, sizeof(ogs_sbi_subscription_t));
 
     subscription->time.validity_duration =
-            ogs_config()->time.subscription.validity_duration;
+            ogs_app()->time.subscription.validity_duration;
 
     ogs_list_add(&ogs_sbi_self()->subscription_list, subscription);
 

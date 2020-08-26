@@ -107,12 +107,10 @@ parameter:
 #
 # max:
 #
-# o Maximum Number of gNB per AMF
+# o Maximum Number of UE per AMF/MME
+#    ue: 4,096
+# o Maximum Number of gNB/eNB per AMF/MME
 #    gnb: 32
-# o Maximum Number of UE per gNB
-#    ue: 128
-# o Maximum Number of NF Instance
-#    nf: 512
 #
 max:
 

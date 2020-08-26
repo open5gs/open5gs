@@ -28,14 +28,14 @@ int sgwc_initialize()
 {
     int rv;
 
-    ogs_pfcp_context_init(ogs_config()->max.upf * OGS_MAX_NUM_OF_GTPU_RESOURCE);
+    ogs_pfcp_context_init(ogs_app()->pool.nf * OGS_MAX_NUM_OF_GTPU_RESOURCE);
     sgwc_context_init();
     sgwc_event_init();
 
-    rv = ogs_gtp_xact_init(sgwc_self()->timer_mgr, 512);
+    rv = ogs_gtp_xact_init();
     if (rv != OGS_OK) return rv;
 
-    rv = ogs_pfcp_xact_init(sgwc_self()->timer_mgr, 512);
+    rv = ogs_pfcp_xact_init();
     if (rv != OGS_OK) return rv;
 
     rv = ogs_pfcp_context_parse_config("sgwc", "sgwu");
@@ -45,7 +45,7 @@ int sgwc_initialize()
     if (rv != OGS_OK) return rv;
 
     rv = ogs_log_config_domain(
-            ogs_config()->logger.domain, ogs_config()->logger.level);
+            ogs_app()->logger.domain, ogs_app()->logger.level);
     if (rv != OGS_OK) return rv;
 
     thread = ogs_thread_create(sgwc_main, NULL);
@@ -82,8 +82,8 @@ static void sgwc_main(void *data)
     ogs_fsm_init(&sgwc_sm, 0);
 
     for ( ;; ) {
-        ogs_pollset_poll(sgwc_self()->pollset,
-                ogs_timer_mgr_next(sgwc_self()->timer_mgr));
+        ogs_pollset_poll(ogs_app()->pollset,
+                ogs_timer_mgr_next(ogs_app()->timer_mgr));
 
         /*
          * After ogs_pollset_poll(), ogs_timer_mgr_expire() must be called.
@@ -96,12 +96,12 @@ static void sgwc_main(void *data)
          * because 'if rv == OGS_DONE' statement is exiting and
          * not calling ogs_timer_mgr_expire().
          */
-        ogs_timer_mgr_expire(sgwc_self()->timer_mgr);
+        ogs_timer_mgr_expire(ogs_app()->timer_mgr);
 
         for ( ;; ) {
             sgwc_event_t *e = NULL;
 
-            rv = ogs_queue_trypop(sgwc_self()->queue, (void**)&e);
+            rv = ogs_queue_trypop(ogs_app()->queue, (void**)&e);
             ogs_assert(rv != OGS_ERROR);
 
             if (rv == OGS_DONE)

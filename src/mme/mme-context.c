@@ -112,26 +112,26 @@ void mme_context_init()
     ogs_list_init(&self.gtpc_list);
     ogs_list_init(&self.gtpc_list6);
 
-    ogs_gtp_node_init(512);
+    ogs_gtp_node_init();
     ogs_list_init(&self.sgw_list);
     ogs_list_init(&self.pgw_list);
     ogs_list_init(&self.enb_list);
     ogs_list_init(&self.vlr_list);
     ogs_list_init(&self.csmap_list);
 
-    ogs_pool_init(&mme_sgw_pool, ogs_config()->max.sgw);
-    ogs_pool_init(&mme_pgw_pool, ogs_config()->max.pgw);
-    ogs_pool_init(&mme_vlr_pool, ogs_config()->max.vlr);
-    ogs_pool_init(&mme_csmap_pool, ogs_config()->max.csmap);
+    ogs_pool_init(&mme_sgw_pool, ogs_app()->pool.nf);
+    ogs_pool_init(&mme_pgw_pool, ogs_app()->pool.nf);
+    ogs_pool_init(&mme_vlr_pool, ogs_app()->pool.nf);
+    ogs_pool_init(&mme_csmap_pool, ogs_app()->pool.csmap);
 
     /* Allocate TWICE the pool to check if maximum number of eNBs is reached */
-    ogs_pool_init(&mme_enb_pool, ogs_config()->max.gnb*2);
+    ogs_pool_init(&mme_enb_pool, ogs_app()->max.gnb*2);
 
-    ogs_pool_init(&mme_ue_pool, ogs_config()->pool.ue);
-    ogs_pool_init(&enb_ue_pool, ogs_config()->pool.ue);
-    ogs_pool_init(&mme_sess_pool, ogs_config()->pool.sess);
-    ogs_pool_init(&mme_bearer_pool, ogs_config()->pool.bearer);
-    ogs_pool_init(&self.m_tmsi, ogs_config()->pool.ue);
+    ogs_pool_init(&mme_ue_pool, ogs_app()->max.ue);
+    ogs_pool_init(&enb_ue_pool, ogs_app()->max.ue);
+    ogs_pool_init(&mme_sess_pool, ogs_app()->pool.sess);
+    ogs_pool_init(&mme_bearer_pool, ogs_app()->pool.bearer);
+    ogs_pool_init(&self.m_tmsi, ogs_app()->max.ue);
 
     self.enb_addr_hash = ogs_hash_make();
     self.enb_id_hash = ogs_hash_make();
@@ -210,71 +210,71 @@ static int mme_context_validation(void)
         (self.diam_config->cnf_diamid == NULL ||
         self.diam_config->cnf_diamrlm == NULL ||
         self.diam_config->cnf_addr == NULL)) {
-        ogs_error("No mme.freeDiameter in '%s'", ogs_config()->file);
+        ogs_error("No mme.freeDiameter in '%s'", ogs_app()->file);
         return OGS_ERROR;
     }
 
     if (ogs_list_first(&self.s1ap_list) == NULL &&
         ogs_list_first(&self.s1ap_list6) == NULL) {
-        ogs_error("No mme.s1ap in '%s'", ogs_config()->file);
+        ogs_error("No mme.s1ap in '%s'", ogs_app()->file);
         return OGS_RETRY;
     }
 
     if (ogs_list_first(&self.gtpc_list) == NULL &&
         ogs_list_first(&self.gtpc_list6) == NULL) {
-        ogs_error("No mme.gtpc in '%s'", ogs_config()->file);
+        ogs_error("No mme.gtpc in '%s'", ogs_app()->file);
         return OGS_RETRY;
     }
 
     if (ogs_list_first(&self.sgw_list) == NULL) {
-        ogs_error("No sgw.gtpc in '%s'", ogs_config()->file);
+        ogs_error("No sgw.gtpc in '%s'", ogs_app()->file);
         return OGS_ERROR;
     }
 
     if (ogs_list_first(&self.pgw_list) == NULL) {
-        ogs_error("No pgw.gtpc in '%s'", ogs_config()->file);
+        ogs_error("No pgw.gtpc in '%s'", ogs_app()->file);
         return OGS_ERROR;
     }
 
     if (self.max_num_of_served_gummei == 0) {
-        ogs_error("No mme.gummei in '%s'", ogs_config()->file);
+        ogs_error("No mme.gummei in '%s'", ogs_app()->file);
         return OGS_ERROR;
     }
 
     if (self.served_gummei[0].num_of_plmn_id == 0) {
-        ogs_error("No mme.gummei.plmn_id in '%s'", ogs_config()->file);
+        ogs_error("No mme.gummei.plmn_id in '%s'", ogs_app()->file);
         return OGS_ERROR;
     }
 
     if (self.served_gummei[0].num_of_mme_gid == 0) {
-        ogs_error("No mme.gummei.mme_gid in '%s'", ogs_config()->file);
+        ogs_error("No mme.gummei.mme_gid in '%s'", ogs_app()->file);
         return OGS_ERROR;
     }
 
     if (self.served_gummei[0].num_of_mme_code == 0) {
-        ogs_error("No mme.gummei.mme_code in '%s'", ogs_config()->file);
+        ogs_error("No mme.gummei.mme_code in '%s'", ogs_app()->file);
         return OGS_ERROR;
     }
 
     if (self.num_of_served_tai == 0) {
-        ogs_error("No mme.tai in '%s'", ogs_config()->file);
+        ogs_error("No mme.tai in '%s'", ogs_app()->file);
         return OGS_ERROR;
     }
 
     if (self.served_tai[0].list0.tai[0].num == 0 &&
         self.served_tai[0].list2.num == 0) {
-        ogs_error("No mme.tai.plmn_id|tac in '%s'", ogs_config()->file);
+        ogs_error("No mme.tai.plmn_id|tac in '%s'", ogs_app()->file);
         return OGS_ERROR;
     }
 
     if (self.num_of_integrity_order == 0) {
         ogs_error("No mme.security.integrity_order in '%s'",
-                ogs_config()->file);
+                ogs_app()->file);
         return OGS_ERROR;
     }
     if (self.num_of_ciphering_order == 0) {
         ogs_error("no mme.security.ciphering_order in '%s'",
-                ogs_config()->file);
+                ogs_app()->file);
         return OGS_ERROR;
     }
 
@@ -287,7 +287,7 @@ int mme_context_parse_config()
     yaml_document_t *document = NULL;
     ogs_yaml_iter_t root_iter;
 
-    document = ogs_config()->document;
+    document = ogs_app()->document;
     ogs_assert(document);
 
     rv = mme_context_prepare();
@@ -523,10 +523,10 @@ int mme_context_parse_config()
                         }
 
                         if (addr) {
-                            if (ogs_config()->parameter.no_ipv4 == 0)
+                            if (ogs_app()->parameter.no_ipv4 == 0)
                                 ogs_socknode_add(
                                         &self.s1ap_list, AF_INET, addr);
-                            if (ogs_config()->parameter.no_ipv6 == 0)
+                            if (ogs_app()->parameter.no_ipv6 == 0)
                                 ogs_socknode_add(
                                         &self.s1ap_list6, AF_INET6, addr);
                             ogs_freeaddrinfo(addr);
@@ -534,9 +534,9 @@ int mme_context_parse_config()
 
                         if (dev) {
                             rv = ogs_socknode_probe(
-                                    ogs_config()->parameter.no_ipv4 ?
+                                    ogs_app()->parameter.no_ipv4 ?
                                         NULL : &self.s1ap_list,
-                                    ogs_config()->parameter.no_ipv6 ?
+                                    ogs_app()->parameter.no_ipv6 ?
                                         NULL : &self.s1ap_list6,
                                     dev, port);
                             ogs_assert(rv == OGS_OK);
@@ -548,9 +548,9 @@ int mme_context_parse_config()
                     if (ogs_list_first(&self.s1ap_list) == NULL &&
                         ogs_list_first(&self.s1ap_list6) == NULL) {
                         rv = ogs_socknode_probe(
-                                ogs_config()->parameter.no_ipv4 ?
+                                ogs_app()->parameter.no_ipv4 ?
                                     NULL : &self.s1ap_list,
-                                ogs_config()->parameter.no_ipv6 ?
+                                ogs_app()->parameter.no_ipv6 ?
                                     NULL : &self.s1ap_list6,
                                 NULL, self.s1ap_port);
                         ogs_assert(rv == OGS_OK);
@@ -634,10 +634,10 @@ int mme_context_parse_config()
                         }
 
                         if (addr) {
-                            if (ogs_config()->parameter.no_ipv4 == 0)
+                            if (ogs_app()->parameter.no_ipv4 == 0)
                                 ogs_socknode_add(
                                         &self.gtpc_list, AF_INET, addr);
-                            if (ogs_config()->parameter.no_ipv6 == 0)
+                            if (ogs_app()->parameter.no_ipv6 == 0)
                                 ogs_socknode_add(
                                         &self.gtpc_list6, AF_INET6, addr);
                             ogs_freeaddrinfo(addr);
@@ -645,9 +645,9 @@ int mme_context_parse_config()
 
                         if (dev) {
                             rv = ogs_socknode_probe(
-                                    ogs_config()->parameter.no_ipv4 ?
+                                    ogs_app()->parameter.no_ipv4 ?
                                         NULL : &self.gtpc_list,
-                                    ogs_config()->parameter.no_ipv6 ?
+                                    ogs_app()->parameter.no_ipv6 ?
                                         NULL : &self.gtpc_list6,
                                     dev, port);
                             ogs_assert(rv == OGS_OK);
@@ -658,9 +658,9 @@ int mme_context_parse_config()
                     if (ogs_list_first(&self.gtpc_list) == NULL &&
                         ogs_list_first(&self.gtpc_list6) == NULL) {
                         rv = ogs_socknode_probe(
-                                ogs_config()->parameter.no_ipv4 ?
+                                ogs_app()->parameter.no_ipv4 ?
                                     NULL : &self.gtpc_list,
-                                ogs_config()->parameter.no_ipv6 ?
+                                ogs_app()->parameter.no_ipv6 ?
                                     NULL : &self.gtpc_list6,
                                 NULL, self.gtpc_port);
                         ogs_assert(rv == OGS_OK);
@@ -1361,9 +1361,9 @@ int mme_context_parse_config()
                         }
 
                         ogs_filter_ip_version(&addr,
-                                ogs_config()->parameter.no_ipv4,
-                                ogs_config()->parameter.no_ipv6,
-                                ogs_config()->parameter.prefer_ipv4);
+                                ogs_app()->parameter.no_ipv4,
+                                ogs_app()->parameter.no_ipv6,
+                                ogs_app()->parameter.prefer_ipv4);
 
                         if (addr == NULL) continue;
 
@@ -1531,9 +1531,9 @@ int mme_context_parse_config()
                         }
 
                         ogs_filter_ip_version(&addr,
-                                ogs_config()->parameter.no_ipv4,
-                                ogs_config()->parameter.no_ipv6,
-                                ogs_config()->parameter.prefer_ipv4);
+                                ogs_app()->parameter.no_ipv4,
+                                ogs_app()->parameter.no_ipv6,
+                                ogs_app()->parameter.prefer_ipv4);
 
                         if (addr == NULL) continue;
 
@@ -1639,9 +1639,9 @@ int mme_context_parse_config()
                         }
 
                         ogs_filter_ip_version(&addr,
-                                ogs_config()->parameter.no_ipv4,
-                                ogs_config()->parameter.no_ipv6,
-                                ogs_config()->parameter.prefer_ipv4);
+                                ogs_app()->parameter.no_ipv4,
+                                ogs_app()->parameter.no_ipv6,
+                                ogs_app()->parameter.prefer_ipv4);
 
                         if (addr == NULL) continue;
 
@@ -1917,16 +1917,16 @@ mme_enb_t *mme_enb_add(ogs_sock_t *sock, ogs_sockaddr_t *addr)
 
     enb->max_num_of_ostreams = DEFAULT_SCTP_MAX_NUM_OF_OSTREAMS;
     enb->ostream_id = 0;
-    if (ogs_config()->sockopt.sctp.max_num_of_ostreams) {
+    if (ogs_app()->sockopt.sctp.max_num_of_ostreams) {
         enb->max_num_of_ostreams =
-            ogs_config()->sockopt.sctp.max_num_of_ostreams;
+            ogs_app()->sockopt.sctp.max_num_of_ostreams;
         ogs_info("[ENB] max_num_of_ostreams : %d", enb->max_num_of_ostreams);
     }
 
     ogs_list_init(&enb->enb_ue_list);
 
     if (enb->sock_type == SOCK_STREAM) {
-        enb->poll = ogs_pollset_add(mme_self()->pollset,
+        enb->poll = ogs_pollset_add(ogs_app()->pollset,
             OGS_POLLIN, sock->fd, s1ap_recv_upcall, sock);
         ogs_assert(enb->poll);
     }
@@ -2044,7 +2044,7 @@ enb_ue_t *enb_ue_add(mme_enb_t *enb, uint32_t enb_ue_s1ap_id)
 
     /*
      * SCTP output stream identification
-     * Default ogs_config()->parameter.sctp_streams : 30
+     * Default ogs_app()->parameter.sctp_streams : 30
      *   0 : Non UE signalling
      *   1-29 : UE specific association 
      */
@@ -2242,7 +2242,7 @@ mme_ue_t *mme_ue_add(enb_ue_t *enb_ue)
 
     mme_ue->mme_s11_teid = ogs_pool_index(&mme_ue_pool, mme_ue);
     ogs_assert(mme_ue->mme_s11_teid > 0 &&
-            mme_ue->mme_s11_teid <= ogs_config()->pool.ue);
+            mme_ue->mme_s11_teid <= ogs_app()->max.ue);
 
     /* Create New GUTI */
     mme_ue_new_guti(mme_ue);
@@ -2266,19 +2266,19 @@ mme_ue_t *mme_ue_add(enb_ue_t *enb_ue)
 
     /* Add All Timers */
     mme_ue->t3413.timer = ogs_timer_add(
-            self.timer_mgr, mme_timer_t3413_expire, mme_ue);
+            ogs_app()->timer_mgr, mme_timer_t3413_expire, mme_ue);
     mme_ue->t3413.pkbuf = NULL;
     mme_ue->t3422.timer = ogs_timer_add(
-            self.timer_mgr, mme_timer_t3422_expire, mme_ue);
+            ogs_app()->timer_mgr, mme_timer_t3422_expire, mme_ue);
     mme_ue->t3422.pkbuf = NULL;
     mme_ue->t3450.timer = ogs_timer_add(
-            self.timer_mgr, mme_timer_t3450_expire, mme_ue);
+            ogs_app()->timer_mgr, mme_timer_t3450_expire, mme_ue);
     mme_ue->t3450.pkbuf = NULL;
     mme_ue->t3460.timer = ogs_timer_add(
-            self.timer_mgr, mme_timer_t3460_expire, mme_ue);
+            ogs_app()->timer_mgr, mme_timer_t3460_expire, mme_ue);
     mme_ue->t3460.pkbuf = NULL;
     mme_ue->t3470.timer = ogs_timer_add(
-            self.timer_mgr, mme_timer_t3470_expire, mme_ue);
+            ogs_app()->timer_mgr, mme_timer_t3470_expire, mme_ue);
     mme_ue->t3470.pkbuf = NULL;
 
     /* Create FSM */
@@ -2795,7 +2795,7 @@ mme_bearer_t *mme_bearer_add(mme_sess_t *sess)
     ogs_list_add(&sess->bearer_list, bearer);
 
     bearer->t3489.timer = ogs_timer_add(
-            self.timer_mgr, mme_timer_t3489_expire, bearer);
+            ogs_app()->timer_mgr, mme_timer_t3489_expire, bearer);
     bearer->t3489.pkbuf = NULL;
     
     memset(&e, 0, sizeof(e));
@@ -3179,7 +3179,7 @@ int mme_m_tmsi_pool_generate()
     int index = 0;
 
     ogs_trace("M-TMSI Pool try to generate...");
-    for (i = 0; index < ogs_config()->pool.ue; i++) {
+    for (i = 0; index < ogs_app()->max.ue; i++) {
         mme_m_tmsi_t *m_tmsi = NULL;
         int conflict = 0;
 

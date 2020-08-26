@@ -52,12 +52,12 @@ static void add_timer_node(
     ogs_rbtree_insert_color(tree, timer);
 }
 
-ogs_timer_mgr_t *ogs_timer_mgr_create(void)
+ogs_timer_mgr_t *ogs_timer_mgr_create(unsigned int capacity)
 {
     ogs_timer_mgr_t *manager = ogs_calloc(1, sizeof *manager);
     ogs_assert(manager);
 
-    ogs_pool_init(&manager->pool, ogs_core()->timer.pool);
+    ogs_pool_init(&manager->pool, capacity);
 
     return manager;
 }

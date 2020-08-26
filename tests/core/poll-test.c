@@ -54,7 +54,7 @@ static void test1_func(abts_case *tc, void *data)
     ogs_poll_t *poll[NUM];
     ogs_sockaddr_t *addr;
     ogs_socknode_t *server[NUM], *client[NUM];
-    ogs_pollset_t *pollset = ogs_pollset_create();
+    ogs_pollset_t *pollset = ogs_pollset_create(512);
     ABTS_PTR_NOTNULL(tc, pollset);
 
     for (i = 0; i < NUM; i++) {
@@ -158,7 +158,7 @@ static void test2_func(abts_case *tc, void *data)
     int rv;
     ogs_poll_t *poll;
     ogs_sockaddr_t *addr;
-    ogs_pollset_t *pollset = ogs_pollset_create();
+    ogs_pollset_t *pollset = ogs_pollset_create(512);
     ABTS_PTR_NOTNULL(tc, pollset);
 
     rv = ogs_getaddrinfo(&addr, AF_INET, "127.0.0.1", PORT, AI_PASSIVE);
@@ -218,7 +218,7 @@ static void test3_func(abts_case *tc, void *data)
 {
     int rv;
     ogs_poll_t *poll = NULL;
-    ogs_pollset_t *pollset = ogs_pollset_create();
+    ogs_pollset_t *pollset = ogs_pollset_create(512);
     ABTS_PTR_NOTNULL(tc, pollset);
 
     rv = ogs_socketpair(AF_SOCKPAIR, SOCK_STREAM, 0, test3_fd);
@@ -286,7 +286,7 @@ static void test4_func(abts_case *tc, void *data)
     ogs_sockaddr_t *addr;
     ogs_socknode_t *node;
     ogs_poll_t *poll;
-    ogs_pollset_t *pollset = ogs_pollset_create();
+    ogs_pollset_t *pollset = ogs_pollset_create(512);
     ABTS_PTR_NOTNULL(tc, pollset);
 
     rv = ogs_getaddrinfo(&addr, AF_INET, NULL, PORT, AI_PASSIVE);
@@ -314,7 +314,7 @@ static void test4_func(abts_case *tc, void *data)
 static void test5_func(abts_case *tc, void *data)
 {
     int rv;
-    ogs_pollset_t *pollset = ogs_pollset_create();
+    ogs_pollset_t *pollset = ogs_pollset_create(512);
     ABTS_PTR_NOTNULL(tc, pollset);
 
     rv = ogs_pollset_poll(pollset, ogs_time_from_msec(100));
@@ -353,7 +353,7 @@ static void test6_func(abts_case *tc, void *data)
     int rv;
     ogs_socket_t fd[2];
     ogs_poll_t *poll = NULL;
-    ogs_pollset_t *pollset = ogs_pollset_create();
+    ogs_pollset_t *pollset = ogs_pollset_create(512);
     ABTS_PTR_NOTNULL(tc, pollset);
 
     rv = ogs_socketpair(AF_SOCKPAIR, SOCK_STREAM, 0, fd);
@@ -403,7 +403,7 @@ static void test7_func(abts_case *tc, void *data)
 {
     /*
     int rv;
-    ogs_pollset_t *pollset = ogs_pollset_create();
+    ogs_pollset_t *pollset = ogs_pollset_create(512);
 
     ogs_poll_t *poll = NULL;
     poll = ogs_poll_new(pollset, test7_handler, tc);

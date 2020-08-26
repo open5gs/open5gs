@@ -48,11 +48,11 @@ void amf_context_init(void)
     ogs_list_init(&self.ngap_list6);
 
     /* Allocate TWICE the pool to check if maximum number of gNBs is reached */
-    ogs_pool_init(&amf_gnb_pool, ogs_config()->max.gnb*2);
-    ogs_pool_init(&amf_ue_pool, ogs_config()->pool.ue);
-    ogs_pool_init(&ran_ue_pool, ogs_config()->pool.ue);
-    ogs_pool_init(&amf_sess_pool, ogs_config()->pool.sess);
-    ogs_pool_init(&self.m_tmsi, ogs_config()->pool.ue);
+    ogs_pool_init(&amf_gnb_pool, ogs_app()->max.gnb*2);
+    ogs_pool_init(&amf_ue_pool, ogs_app()->max.ue);
+    ogs_pool_init(&ran_ue_pool, ogs_app()->max.ue);
+    ogs_pool_init(&amf_sess_pool, ogs_app()->pool.sess);
+    ogs_pool_init(&self.m_tmsi, ogs_app()->max.ue);
 
     ogs_list_init(&self.gnb_list);
     ogs_list_init(&self.amf_ue_list);
@@ -117,50 +117,50 @@ static int amf_context_validation(void)
 {
     if (ogs_list_first(&self.ngap_list) == NULL &&
         ogs_list_first(&self.ngap_list6) == NULL) {
-        ogs_error("No amf.ngap in '%s'", ogs_config()->file);
+        ogs_error("No amf.ngap in '%s'", ogs_app()->file);
         return OGS_RETRY;
     }
 
     if (self.num_of_served_guami == 0) {
-        ogs_error("No amf.guami in '%s'", ogs_config()->file);
+        ogs_error("No amf.guami in '%s'", ogs_app()->file);
         return OGS_ERROR;
     }
 
     if (self.num_of_served_tai == 0) {
-        ogs_error("No amf.tai in '%s'", ogs_config()->file);
+        ogs_error("No amf.tai in '%s'", ogs_app()->file);
         return OGS_ERROR;
     }
 
     if (self.num_of_plmn_support == 0) {
-        ogs_error("No amf.plmn in '%s'", ogs_config()->file);
+        ogs_error("No amf.plmn in '%s'", ogs_app()->file);
         return OGS_ERROR;
     }
 
     if (self.plmn_support[0].num_of_s_nssai == 0) {
-        ogs_error("No amf.plmn.s_nssai in '%s'", ogs_config()->file);
+        ogs_error("No amf.plmn.s_nssai in '%s'", ogs_app()->file);
         return OGS_ERROR;
     }
 
     if (self.served_tai[0].list0.tai[0].num == 0 &&
         self.served_tai[0].list2.num == 0) {
-        ogs_error("No amf.tai.plmn_id|tac in '%s'", ogs_config()->file);
+        ogs_error("No amf.tai.plmn_id|tac in '%s'", ogs_app()->file);
         return OGS_ERROR;
     }
 
     if (self.amf_name == NULL) {
-        ogs_error("No amf.amf_name in '%s'", ogs_config()->file);
+        ogs_error("No amf.amf_name in '%s'", ogs_app()->file);
         return OGS_ERROR;
     }
 
     if (self.num_of_integrity_order == 0) {
         ogs_error("No amf.security.integrity_order in '%s'",
-                ogs_config()->file);
+                ogs_app()->file);
         return OGS_ERROR;
     }
 
     if (self.num_of_ciphering_order == 0) {
         ogs_error("no amf.security.ciphering_order in '%s'",
-                ogs_config()->file);
+                ogs_app()->file);
         return OGS_ERROR;
     }
 
@@ -173,7 +173,7 @@ int amf_context_parse_config(void)
     yaml_document_t *document = NULL;
     ogs_yaml_iter_t root_iter;
 
-    document = ogs_config()->document;
+    document = ogs_app()->document;
     ogs_assert(document);
 
     rv = amf_context_prepare();
@@ -271,10 +271,10 @@ int amf_context_parse_config(void)
                         }
 
                         if (addr) {
-                            if (ogs_config()->parameter.no_ipv4 == 0)
+                            if (ogs_app()->parameter.no_ipv4 == 0)
                                 ogs_socknode_add(
                                         &self.ngap_list, AF_INET, addr);
-                            if (ogs_config()->parameter.no_ipv6 == 0)
+                            if (ogs_app()->parameter.no_ipv6 == 0)
                                 ogs_socknode_add(
                                         &self.ngap_list6, AF_INET6, addr);
                             ogs_freeaddrinfo(addr);
@@ -282,9 +282,9 @@ int amf_context_parse_config(void)
 
                         if (dev) {
                             rv = ogs_socknode_probe(
-                                    ogs_config()->parameter.no_ipv4 ?
+                                    ogs_app()->parameter.no_ipv4 ?
                                         NULL : &self.ngap_list,
-                                    ogs_config()->parameter.no_ipv6 ?
+                                    ogs_app()->parameter.no_ipv6 ?
                                         NULL : &self.ngap_list6,
                                     dev, port);
                             ogs_assert(rv == OGS_OK);
@@ -296,9 +296,9 @@ int amf_context_parse_config(void)
                     if (ogs_list_first(&self.ngap_list) == NULL &&
                         ogs_list_first(&self.ngap_list6) == NULL) {
                         rv = ogs_socknode_probe(
-                                ogs_config()->parameter.no_ipv4 ?
+                                ogs_app()->parameter.no_ipv4 ?
                                     NULL : &self.ngap_list,
-                                ogs_config()->parameter.no_ipv6 ?
+                                ogs_app()->parameter.no_ipv6 ?
                                     NULL : &self.ngap_list6,
                                 NULL, self.ngap_port);
                         ogs_assert(rv == OGS_OK);
@@ -834,16 +834,16 @@ amf_gnb_t *amf_gnb_add(ogs_sock_t *sock, ogs_sockaddr_t *addr)
 
     gnb->max_num_of_ostreams = DEFAULT_SCTP_MAX_NUM_OF_OSTREAMS;
     gnb->ostream_id = 0;
-    if (ogs_config()->sockopt.sctp.max_num_of_ostreams) {
+    if (ogs_app()->sockopt.sctp.max_num_of_ostreams) {
         gnb->max_num_of_ostreams =
-            ogs_config()->sockopt.sctp.max_num_of_ostreams;
+            ogs_app()->sockopt.sctp.max_num_of_ostreams;
         ogs_info("[GNB] max_num_of_ostreams : %d", gnb->max_num_of_ostreams);
     }
 
     ogs_list_init(&gnb->ran_ue_list);
 
     if (gnb->sock_type == SOCK_STREAM) {
-        gnb->poll = ogs_pollset_add(amf_self()->pollset,
+        gnb->poll = ogs_pollset_add(ogs_app()->pollset,
             OGS_POLLIN, sock->fd, ngap_recv_upcall, sock);
         ogs_assert(gnb->poll);
     }
@@ -957,7 +957,7 @@ ran_ue_t *ran_ue_add(amf_gnb_t *gnb, uint32_t ran_ue_ngap_id)
 
     /*
      * SCTP output stream identification
-     * Default ogs_config()->parameter.sctp_streams : 30
+     * Default ogs_app()->parameter.sctp_streams : 30
      *   0 : Non UE signalling
      *   1-29 : UE specific association 
      */
@@ -1109,22 +1109,22 @@ amf_ue_t *amf_ue_add(ran_ue_t *ran_ue)
 
     /* Add All Timers */
     amf_ue->t3513.timer = ogs_timer_add(
-            self.timer_mgr, amf_timer_t3513_expire, amf_ue);
+            ogs_app()->timer_mgr, amf_timer_t3513_expire, amf_ue);
     amf_ue->t3513.pkbuf = NULL;
     amf_ue->t3522.timer = ogs_timer_add(
-            self.timer_mgr, amf_timer_t3522_expire, amf_ue);
+            ogs_app()->timer_mgr, amf_timer_t3522_expire, amf_ue);
     amf_ue->t3522.pkbuf = NULL;
     amf_ue->t3550.timer = ogs_timer_add(
-            self.timer_mgr, amf_timer_t3550_expire, amf_ue);
+            ogs_app()->timer_mgr, amf_timer_t3550_expire, amf_ue);
     amf_ue->t3550.pkbuf = NULL;
     amf_ue->t3555.timer = ogs_timer_add(
-            self.timer_mgr, amf_timer_t3555_expire, amf_ue);
+            ogs_app()->timer_mgr, amf_timer_t3555_expire, amf_ue);
     amf_ue->t3555.pkbuf = NULL;
     amf_ue->t3560.timer = ogs_timer_add(
-            self.timer_mgr, amf_timer_t3560_expire, amf_ue);
+            ogs_app()->timer_mgr, amf_timer_t3560_expire, amf_ue);
     amf_ue->t3560.pkbuf = NULL;
     amf_ue->t3570.timer = ogs_timer_add(
-            self.timer_mgr, amf_timer_t3570_expire, amf_ue);
+            ogs_app()->timer_mgr, amf_timer_t3570_expire, amf_ue);
     amf_ue->t3570.pkbuf = NULL;
 
     /* Create FSM */
@@ -1635,7 +1635,7 @@ int amf_m_tmsi_pool_generate()
     int index = 0;
 
     ogs_trace("M-TMSI Pool try to generate...");
-    for (i = 0; index < ogs_config()->pool.ue; i++) {
+    for (i = 0; index < ogs_app()->max.ue; i++) {
         amf_m_tmsi_t *m_tmsi = NULL;
         int conflict = 0;
 

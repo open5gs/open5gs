@@ -22,10 +22,6 @@
 
 #include "smf-config.h"
 
-#if HAVE_NET_IF_H
-#include <net/if.h>
-#endif
-
 #include "ogs-gtp.h"
 #include "ogs-diameter-gx.h"
 #include "ogs-pfcp.h"
@@ -37,6 +33,10 @@
 
 #include "timer.h"
 #include "smf-sm.h"
+
+#if HAVE_NET_IF_H
+#include <net/if.h>
+#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -62,10 +62,6 @@ typedef struct smf_context_s {
     ogs_sock_t      *gtpc_sock6;    /* SMF GTPC IPv6 Socket */
     ogs_sockaddr_t  *gtpc_addr;     /* SMF GTPC IPv4 Address */
     ogs_sockaddr_t  *gtpc_addr6;    /* SMF GTPC IPv6 Address */
-
-    ogs_queue_t     *queue;         /* Queue for processing SMF control */
-    ogs_timer_mgr_t *timer_mgr;     /* Timer Manager */
-    ogs_pollset_t   *pollset;       /* Poll Set for I/O Multiplexing */
 
 #define MAX_NUM_OF_DNS              2
     const char      *dns[MAX_NUM_OF_DNS];

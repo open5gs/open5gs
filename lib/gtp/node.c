@@ -21,17 +21,16 @@
 
 static OGS_POOL(pool, ogs_gtp_node_t);
 
-int ogs_gtp_node_init(int size)
+int ogs_gtp_node_init(void)
 {
-    ogs_pool_init(&pool, size);
+    ogs_pool_init(&pool, ogs_app()->pool.gtp_node);
 
     return OGS_OK;
 }
-int ogs_gtp_node_final(void)
+
+void ogs_gtp_node_final(void)
 {
     ogs_pool_final(&pool);
-
-    return OGS_OK;
 }
 
 ogs_gtp_node_t *ogs_gtp_node_new(ogs_sockaddr_t *sa_list)

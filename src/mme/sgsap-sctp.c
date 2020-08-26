@@ -43,7 +43,7 @@ ogs_sock_t *sgsap_client(mme_vlr_t *vlr)
     memset(&node, 0, sizeof node);
     node.addr = vlr->sa_list;
 
-    ogs_socknode_sctp_option(&node, &ogs_config()->sockopt);
+    ogs_socknode_sctp_option(&node, &ogs_app()->sockopt);
     ogs_socknode_nodelay(&node, true);
 #if 0 /* Try to remove LINGER in usrsctp */
 #if HAVE_USRSCTP
@@ -60,7 +60,7 @@ ogs_sock_t *sgsap_client(mme_vlr_t *vlr)
         usrsctp_set_upcall((struct socket *)sock, usrsctp_recv_handler, NULL);
 #else
         vlr->addr = &sock->remote_addr;
-        vlr->poll = ogs_pollset_add(mme_self()->pollset,
+        vlr->poll = ogs_pollset_add(ogs_app()->pollset,
                 OGS_POLLIN, sock->fd, lksctp_recv_handler, sock);
 #endif
         ogs_info("sgsap client() [%s]:%d",

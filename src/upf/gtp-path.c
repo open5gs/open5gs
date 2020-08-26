@@ -72,7 +72,7 @@ static void _gtpv1_tun_recv_cb(short when, ogs_socket_t fd, void *data)
         /* Unicast */
         ogs_pfcp_up_handle_pdr(pdr, recvbuf, &report);
     } else {
-        if (ogs_config()->parameter.multicast) {
+        if (ogs_app()->parameter.multicast) {
             upf_gtp_handle_multicast(recvbuf);
         }
     }
@@ -225,7 +225,7 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
     }
 
     /* Check IPv6 */
-    if (ogs_config()->parameter.no_slaac == 0 && ip_h->ip_v == 6) {
+    if (ogs_app()->parameter.no_slaac == 0 && ip_h->ip_v == 6) {
         rv = upf_gtp_handle_slaac(sess, pkbuf);
         if (rv == UPF_GTP_HANDLED) {
             goto cleanup;
@@ -259,7 +259,7 @@ int upf_gtp_open(void)
         else if (sock->family == AF_INET6)
             upf_self()->gtpu_sock6 = sock;
 
-        node->poll = ogs_pollset_add(upf_self()->pollset,
+        node->poll = ogs_pollset_add(ogs_app()->pollset,
                 OGS_POLLIN, sock->fd, _gtpv1_u_recv_cb, sock);
     }
 
@@ -284,7 +284,7 @@ int upf_gtp_open(void)
             return OGS_ERROR;
         }
 
-        dev->poll = ogs_pollset_add(upf_self()->pollset,
+        dev->poll = ogs_pollset_add(ogs_app()->pollset,
                 OGS_POLLIN, dev->fd, _gtpv1_tun_recv_cb, NULL);
         ogs_assert(dev->poll);
     }

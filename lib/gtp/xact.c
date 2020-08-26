@@ -28,7 +28,6 @@ typedef enum {
 } ogs_gtp_xact_stage_t;
 
 static int ogs_gtp_xact_initialized = 0;
-static ogs_timer_mgr_t *g_timer_mgr = NULL;
 static uint32_t g_xact_id = 0;
 
 static OGS_POOL(pool, ogs_gtp_xact_t);
@@ -39,29 +38,26 @@ static int ogs_gtp_xact_delete(ogs_gtp_xact_t *xact);
 static void response_timeout(void *data);
 static void holding_timeout(void *data);
 
-int ogs_gtp_xact_init(ogs_timer_mgr_t *timer_mgr, int size)
+int ogs_gtp_xact_init(void)
 {
     ogs_assert(ogs_gtp_xact_initialized == 0);
 
-    ogs_pool_init(&pool, size);
+    ogs_pool_init(&pool, ogs_app()->pool.gtp_xact);
 
     g_xact_id = 0;
-    g_timer_mgr = timer_mgr;
 
     ogs_gtp_xact_initialized = 1;
 
     return OGS_OK;
 }
 
-int ogs_gtp_xact_final(void)
+void ogs_gtp_xact_final(void)
 {
     ogs_assert(ogs_gtp_xact_initialized == 1);
 
     ogs_pool_final(&pool);
 
     ogs_gtp_xact_initialized = 0;
-
-    return OGS_OK;
 }
 
 ogs_gtp_xact_t *ogs_gtp_xact_local_create(ogs_gtp_node_t *gnode,
@@ -92,13 +88,15 @@ ogs_gtp_xact_t *ogs_gtp_xact_local_create(ogs_gtp_node_t *gnode,
     xact->cb = cb;
     xact->data = data;
 
-    xact->tm_response = ogs_timer_add(g_timer_mgr, response_timeout, xact);
+    xact->tm_response = ogs_timer_add(
+            ogs_app()->timer_mgr, response_timeout, xact);
     ogs_assert(xact->tm_response);
-    xact->response_rcount = ogs_config()->time.message.gtp.n3_response_rcount,
+    xact->response_rcount = ogs_app()->time.message.gtp.n3_response_rcount,
 
-    xact->tm_holding = ogs_timer_add(g_timer_mgr, holding_timeout, xact);
+    xact->tm_holding = ogs_timer_add(
+            ogs_app()->timer_mgr, holding_timeout, xact);
     ogs_assert(xact->tm_holding);
-    xact->holding_rcount = ogs_config()->time.message.gtp.n3_holding_rcount,
+    xact->holding_rcount = ogs_app()->time.message.gtp.n3_holding_rcount,
 
     ogs_list_add(xact->org == OGS_GTP_LOCAL_ORIGINATOR ?  
             &xact->gnode->local_list : &xact->gnode->remote_list, xact);
@@ -135,13 +133,15 @@ ogs_gtp_xact_t *ogs_gtp_xact_remote_create(ogs_gtp_node_t *gnode, uint32_t sqn)
     xact->xid = OGS_GTP_SQN_TO_XID(sqn);
     xact->gnode = gnode;
 
-    xact->tm_response = ogs_timer_add(g_timer_mgr, response_timeout, xact);
+    xact->tm_response = ogs_timer_add(
+            ogs_app()->timer_mgr, response_timeout, xact);
     ogs_assert(xact->tm_response);
-    xact->response_rcount = ogs_config()->time.message.gtp.n3_response_rcount,
+    xact->response_rcount = ogs_app()->time.message.gtp.n3_response_rcount,
 
-    xact->tm_holding = ogs_timer_add(g_timer_mgr, holding_timeout, xact);
+    xact->tm_holding = ogs_timer_add(
+            ogs_app()->timer_mgr, holding_timeout, xact);
     ogs_assert(xact->tm_holding);
-    xact->holding_rcount = ogs_config()->time.message.gtp.n3_holding_rcount,
+    xact->holding_rcount = ogs_app()->time.message.gtp.n3_holding_rcount,
 
     ogs_list_add(xact->org == OGS_GTP_LOCAL_ORIGINATOR ?  
             &xact->gnode->local_list : &xact->gnode->remote_list, xact);
@@ -307,7 +307,7 @@ int ogs_gtp_xact_update_rx(ogs_gtp_xact_t *xact, uint8_t type)
                 if (pkbuf) {
                     if (xact->tm_holding)
                         ogs_timer_start(xact->tm_holding,
-                                ogs_config()->time.message.
+                                ogs_app()->time.message.
                                     gtp.t3_holding_duration);
 
                     ogs_warn("[%d] %s Request Duplicated. Retransmit!"
@@ -343,7 +343,7 @@ int ogs_gtp_xact_update_rx(ogs_gtp_xact_t *xact, uint8_t type)
 
             if (xact->tm_holding)
                 ogs_timer_start(xact->tm_holding,
-                        ogs_config()->time.message.gtp.t3_holding_duration);
+                        ogs_app()->time.message.gtp.t3_holding_duration);
 
             break;
 
@@ -373,7 +373,7 @@ int ogs_gtp_xact_update_rx(ogs_gtp_xact_t *xact, uint8_t type)
                 if (pkbuf) {
                     if (xact->tm_holding)
                         ogs_timer_start(xact->tm_holding,
-                                ogs_config()->time.message.
+                                ogs_app()->time.message.
                                     gtp.t3_holding_duration);
 
                     ogs_warn("[%d] %s Request Duplicated. Retransmit!"
@@ -408,7 +408,7 @@ int ogs_gtp_xact_update_rx(ogs_gtp_xact_t *xact, uint8_t type)
             }
             if (xact->tm_holding)
                 ogs_timer_start(xact->tm_holding,
-                        ogs_config()->time.message.gtp.t3_holding_duration);
+                        ogs_app()->time.message.gtp.t3_holding_duration);
 
             break;
 
@@ -479,7 +479,7 @@ int ogs_gtp_xact_commit(ogs_gtp_xact_t *xact)
 
             if (xact->tm_response)
                 ogs_timer_start(xact->tm_response,
-                        ogs_config()->time.message.gtp.t3_response_duration);
+                        ogs_app()->time.message.gtp.t3_response_duration);
 
             break;
 
@@ -521,7 +521,7 @@ int ogs_gtp_xact_commit(ogs_gtp_xact_t *xact)
             }
             if (xact->tm_response)
                 ogs_timer_start(xact->tm_response,
-                        ogs_config()->time.message.gtp.t3_response_duration);
+                        ogs_app()->time.message.gtp.t3_response_duration);
 
             break;
 
@@ -579,7 +579,7 @@ static void response_timeout(void *data)
 
         if (xact->tm_response)
             ogs_timer_start(xact->tm_response,
-                    ogs_config()->time.message.gtp.t3_response_duration);
+                    ogs_app()->time.message.gtp.t3_response_duration);
 
         pkbuf = xact->seq[xact->step-1].pkbuf;
         ogs_assert(pkbuf);
@@ -628,7 +628,7 @@ static void holding_timeout(void *data)
     if (--xact->holding_rcount > 0) {
         if (xact->tm_holding)
             ogs_timer_start(xact->tm_holding,
-                    ogs_config()->time.message.gtp.t3_holding_duration);
+                    ogs_app()->time.message.gtp.t3_holding_duration);
     } else {
         ogs_debug("[%d] %s Delete Transaction "
                 "for step %d type %d peer [%s]:%d",

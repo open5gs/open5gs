@@ -28,8 +28,8 @@ int nrf_initialize()
     int rv;
 
     nrf_context_init();
-    nrf_event_init(); /* Create event with poll, timer */
-    ogs_sbi_context_init(nrf_self()->pollset, nrf_self()->timer_mgr); 
+    nrf_event_init();
+    ogs_sbi_context_init();
 
     rv = ogs_sbi_context_parse_config("nrf", NULL);
     if (rv != OGS_OK) return rv;
@@ -38,7 +38,7 @@ int nrf_initialize()
     if (rv != OGS_OK) return rv;
 
     rv = ogs_log_config_domain(
-            ogs_config()->logger.domain, ogs_config()->logger.level);
+            ogs_app()->logger.domain, ogs_app()->logger.level);
     if (rv != OGS_OK) return rv;
 
     thread = ogs_thread_create(nrf_main, NULL);
@@ -58,14 +58,14 @@ static void event_termination(void)
      */
 
     /* Start holding timer */
-    t_termination_holding = ogs_timer_add(nrf_self()->timer_mgr, NULL, NULL);
+    t_termination_holding = ogs_timer_add(ogs_app()->timer_mgr, NULL, NULL);
     ogs_assert(t_termination_holding);
 #define TERMINATION_HOLDING_TIME ogs_time_from_msec(300)
     ogs_timer_start(t_termination_holding, TERMINATION_HOLDING_TIME);
 
     /* Sending termination event to the queue */
-    ogs_queue_term(nrf_self()->queue);
-    ogs_pollset_notify(nrf_self()->pollset);
+    ogs_queue_term(ogs_app()->queue);
+    ogs_pollset_notify(ogs_app()->pollset);
 }
 
 void nrf_terminate(void)
@@ -92,8 +92,8 @@ static void nrf_main(void *data)
     ogs_fsm_init(&nrf_sm, 0);
 
     for ( ;; ) {
-        ogs_pollset_poll(nrf_self()->pollset,
-                ogs_timer_mgr_next(nrf_self()->timer_mgr));
+        ogs_pollset_poll(ogs_app()->pollset,
+                ogs_timer_mgr_next(ogs_app()->timer_mgr));
 
         /*
          * After ogs_pollset_poll(), ogs_timer_mgr_expire() must be called.
@@ -106,12 +106,12 @@ static void nrf_main(void *data)
          * because 'if rv == OGS_DONE' statement is exiting and
          * not calling ogs_timer_mgr_expire().
          */
-        ogs_timer_mgr_expire(nrf_self()->timer_mgr);
+        ogs_timer_mgr_expire(ogs_app()->timer_mgr);
 
         for ( ;; ) {
             nrf_event_t *e = NULL;
 
-            rv = ogs_queue_trypop(nrf_self()->queue, (void**)&e);
+            rv = ogs_queue_trypop(ogs_app()->queue, (void**)&e);
             ogs_assert(rv != OGS_ERROR);
 
             if (rv == OGS_DONE)

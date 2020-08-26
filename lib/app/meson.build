@@ -19,11 +19,11 @@ libapp_sources = files('''
     ogs-app.h
 
     ogs-yaml.h
-    ogs-config.h
+    ogs-context.h
     ogs-init.h
 
     ogs-yaml.c
-    ogs-config.c
+    ogs-context.c
     ogs-init.c
 '''.split())
 

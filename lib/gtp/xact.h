@@ -88,8 +88,8 @@ typedef struct ogs_gtp_xact_s {
     uint64_t        update_flags;
 } ogs_gtp_xact_t;
 
-int ogs_gtp_xact_init(ogs_timer_mgr_t *timer_mgr, int size);
-int ogs_gtp_xact_final(void);
+int ogs_gtp_xact_init(void);
+void ogs_gtp_xact_final(void);
 
 ogs_gtp_xact_t *ogs_gtp_xact_local_create(ogs_gtp_node_t *gnode,
         ogs_gtp_header_t *hdesc, ogs_pkbuf_t *pkbuf,

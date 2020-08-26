@@ -31,7 +31,7 @@ static void pfcp_node_fsm_init(ogs_pfcp_node_t *node, bool try_to_assoicate)
     e.pfcp_node = node;
 
     if (try_to_assoicate == true) {
-        node->t_association = ogs_timer_add(smf_self()->timer_mgr,
+        node->t_association = ogs_timer_add(ogs_app()->timer_mgr,
                 smf_timer_pfcp_association, node);
         ogs_assert(node->t_association);
     }
@@ -113,7 +113,7 @@ static void pfcp_recv_cb(short when, ogs_socket_t fd, void *data)
     e->pfcp_node = node;
     e->pkbuf = pkbuf;
 
-    rv = ogs_queue_push(smf_self()->queue, e);
+    rv = ogs_queue_push(ogs_app()->queue, e);
     if (rv != OGS_OK) {
         ogs_warn("ogs_queue_push() failed:%d", (int)rv);
         ogs_pkbuf_free(e->pkbuf);
@@ -132,14 +132,14 @@ int smf_pfcp_open(void)
         sock = ogs_pfcp_server(node);
         ogs_assert(sock);
         
-        node->poll = ogs_pollset_add(smf_self()->pollset,
+        node->poll = ogs_pollset_add(ogs_app()->pollset,
                 OGS_POLLIN, sock->fd, pfcp_recv_cb, sock);
     }
     ogs_list_for_each(&ogs_pfcp_self()->pfcp_list6, node) {
         sock = ogs_pfcp_server(node);
         ogs_assert(sock);
 
-        node->poll = ogs_pollset_add(smf_self()->pollset,
+        node->poll = ogs_pollset_add(ogs_app()->pollset,
                 OGS_POLLIN, sock->fd, pfcp_recv_cb, sock);
     }
 

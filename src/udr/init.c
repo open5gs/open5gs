@@ -28,8 +28,8 @@ int udr_initialize()
     int rv;
 
     udr_context_init();
-    udr_event_init(); /* Create event with poll, timer */
-    ogs_sbi_context_init(udr_self()->pollset, udr_self()->timer_mgr); 
+    udr_event_init();
+    ogs_sbi_context_init();
 
     rv = ogs_sbi_context_parse_config("udr", "nrf");
     if (rv != OGS_OK) return rv;
@@ -38,10 +38,10 @@ int udr_initialize()
     if (rv != OGS_OK) return rv;
 
     rv = ogs_log_config_domain(
-            ogs_config()->logger.domain, ogs_config()->logger.level);
+            ogs_app()->logger.domain, ogs_app()->logger.level);
     if (rv != OGS_OK) return rv;
 
-    rv = ogs_dbi_init(ogs_config()->db_uri);
+    rv = ogs_dbi_init(ogs_app()->db_uri);
     if (rv != OGS_OK) return rv;
 
     thread = ogs_thread_create(udr_main, NULL);
@@ -63,14 +63,14 @@ static void event_termination(void)
         udr_nf_fsm_fini(nf_instance);
 
     /* Starting holding timer */
-    t_termination_holding = ogs_timer_add(udr_self()->timer_mgr, NULL, NULL);
+    t_termination_holding = ogs_timer_add(ogs_app()->timer_mgr, NULL, NULL);
     ogs_assert(t_termination_holding);
 #define TERMINATION_HOLDING_TIME ogs_time_from_msec(300)
     ogs_timer_start(t_termination_holding, TERMINATION_HOLDING_TIME);
 
     /* Sending termination event to the queue */
-    ogs_queue_term(udr_self()->queue);
-    ogs_pollset_notify(udr_self()->pollset);
+    ogs_queue_term(ogs_app()->queue);
+    ogs_pollset_notify(ogs_app()->pollset);
 }
 
 void udr_terminate(void)
@@ -99,8 +99,8 @@ static void udr_main(void *data)
     ogs_fsm_init(&udr_sm, 0);
 
     for ( ;; ) {
-        ogs_pollset_poll(udr_self()->pollset,
-                ogs_timer_mgr_next(udr_self()->timer_mgr));
+        ogs_pollset_poll(ogs_app()->pollset,
+                ogs_timer_mgr_next(ogs_app()->timer_mgr));
 
         /*
          * After ogs_pollset_poll(), ogs_timer_mgr_expire() must be called.
@@ -113,12 +113,12 @@ static void udr_main(void *data)
          * because 'if rv == OGS_DONE' statement is exiting and
          * not calling ogs_timer_mgr_expire().
          */
-        ogs_timer_mgr_expire(udr_self()->timer_mgr);
+        ogs_timer_mgr_expire(ogs_app()->timer_mgr);
 
         for ( ;; ) {
             udr_event_t *e = NULL;
 
-            rv = ogs_queue_trypop(udr_self()->queue, (void**)&e);
+            rv = ogs_queue_trypop(ogs_app()->queue, (void**)&e);
             ogs_assert(rv != OGS_ERROR);
 
             if (rv == OGS_DONE)

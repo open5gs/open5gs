@@ -33,9 +33,6 @@ static ogs_core_context_t self = {
     .pkbuf.pool = 8,
     .pkbuf.config_pool = 8,
 
-    .socket.pool = 128,
-    .timer.pool = 512,
-
     .tlv.pool = 512,
 };
 

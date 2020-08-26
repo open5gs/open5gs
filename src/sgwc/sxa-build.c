@@ -47,7 +47,7 @@ ogs_pkbuf_t *sgwc_sxa_build_session_establishment_request(
     /* Node ID */
     ogs_pfcp_sockaddr_to_node_id(
             ogs_pfcp_self()->pfcp_addr, ogs_pfcp_self()->pfcp_addr6,
-            ogs_config()->parameter.prefer_ipv4,
+            ogs_app()->parameter.prefer_ipv4,
             &node_id, &len);
     req->node_id.presence = 1;
     req->node_id.data = &node_id;

@@ -88,7 +88,7 @@ int main(int argc, const char *const argv[])
     ogs_pkbuf_default_init(&config);
     ogs_pkbuf_default_create(&config);
 
-    ogs_config_init();
+    ogs_app_context_init();
     mme_context_init();
 
     atexit(terminate);

@@ -44,16 +44,16 @@ void sgwc_context_init(void)
     ogs_list_init(&self.gtpc_list);
     ogs_list_init(&self.gtpc_list6);
 
-    ogs_gtp_node_init(512);
+    ogs_gtp_node_init();
     ogs_list_init(&self.mme_s11_list);
     ogs_list_init(&self.pgw_s5c_list);
     ogs_list_init(&self.enb_s1u_list);
     ogs_list_init(&self.pgw_s5u_list);
 
-    ogs_pool_init(&sgwc_ue_pool, ogs_config()->pool.ue);
-    ogs_pool_init(&sgwc_sess_pool, ogs_config()->pool.sess);
-    ogs_pool_init(&sgwc_bearer_pool, ogs_config()->pool.bearer);
-    ogs_pool_init(&sgwc_tunnel_pool, ogs_config()->pool.tunnel);
+    ogs_pool_init(&sgwc_ue_pool, ogs_app()->max.ue);
+    ogs_pool_init(&sgwc_sess_pool, ogs_app()->pool.sess);
+    ogs_pool_init(&sgwc_bearer_pool, ogs_app()->pool.bearer);
+    ogs_pool_init(&sgwc_tunnel_pool, ogs_app()->pool.tunnel);
 
     self.imsi_ue_hash = ogs_hash_make();
 
@@ -101,7 +101,7 @@ static int sgwc_context_validation(void)
 {
     if (ogs_list_empty(&self.gtpc_list) &&
         ogs_list_empty(&self.gtpc_list6)) {
-        ogs_error("No sgwc.gtpc in '%s'", ogs_config()->file);
+        ogs_error("No sgwc.gtpc in '%s'", ogs_app()->file);
         return OGS_ERROR;
     }
     return OGS_OK;
@@ -113,7 +113,7 @@ int sgwc_context_parse_config(void)
     yaml_document_t *document = NULL;
     ogs_yaml_iter_t root_iter;
 
-    document = ogs_config()->document;
+    document = ogs_app()->document;
     ogs_assert(document);
 
     rv = sgwc_context_prepare();
@@ -208,10 +208,10 @@ int sgwc_context_parse_config(void)
                         }
 
                         if (addr) {
-                            if (ogs_config()->parameter.no_ipv4 == 0)
+                            if (ogs_app()->parameter.no_ipv4 == 0)
                                 ogs_socknode_add(
                                         &self.gtpc_list, AF_INET, addr);
-                            if (ogs_config()->parameter.no_ipv6 == 0)
+                            if (ogs_app()->parameter.no_ipv6 == 0)
                                 ogs_socknode_add(
                                         &self.gtpc_list6, AF_INET6, addr);
                             ogs_freeaddrinfo(addr);
@@ -219,9 +219,9 @@ int sgwc_context_parse_config(void)
 
                         if (dev) {
                             rv = ogs_socknode_probe(
-                                    ogs_config()->parameter.no_ipv4 ?
+                                    ogs_app()->parameter.no_ipv4 ?
                                         NULL : &self.gtpc_list,
-                                    ogs_config()->parameter.no_ipv6 ?
+                                    ogs_app()->parameter.no_ipv6 ?
                                         NULL : &self.gtpc_list6,
                                     dev, port);
                             ogs_assert(rv == OGS_OK);
@@ -233,9 +233,9 @@ int sgwc_context_parse_config(void)
                     if (ogs_list_empty(&self.gtpc_list) &&
                         ogs_list_empty(&self.gtpc_list6)) {
                         rv = ogs_socknode_probe(
-                                ogs_config()->parameter.no_ipv4 ?
+                                ogs_app()->parameter.no_ipv4 ?
                                     NULL : &self.gtpc_list,
-                                ogs_config()->parameter.no_ipv6 ?
+                                ogs_app()->parameter.no_ipv6 ?
                                     NULL : &self.gtpc_list6,
                                 NULL, self.gtpc_port);
                         ogs_assert(rv == OGS_OK);
@@ -312,7 +312,7 @@ sgwc_ue_t *sgwc_ue_add(uint8_t *imsi, int imsi_len)
 
     sgwc_ue->sgw_s11_teid = ogs_pool_index(&sgwc_ue_pool, sgwc_ue);
     ogs_assert(sgwc_ue->sgw_s11_teid > 0 &&
-                sgwc_ue->sgw_s11_teid <= ogs_config()->pool.ue);
+                sgwc_ue->sgw_s11_teid <= ogs_app()->max.ue);
 
     /* Set IMSI */
     sgwc_ue->imsi_len = imsi_len;
@@ -383,14 +383,14 @@ sgwc_sess_t *sgwc_sess_add(sgwc_ue_t *sgwc_ue, char *apn)
 
     ogs_pool_alloc(&sgwc_sess_pool, &sess);
     if (!sess) {
-        ogs_error("Maximum number of session[%d] reached",
-                    ogs_config()->pool.sess);
+        ogs_error("Maximum number of session[%lld] reached",
+                    (long long)ogs_app()->pool.sess);
         return NULL;
     }
     memset(sess, 0, sizeof *sess);
 
     sess->index = ogs_pool_index(&sgwc_sess_pool, sess);
-    ogs_assert(sess->index > 0 && sess->index <= ogs_config()->pool.sess);
+    ogs_assert(sess->index > 0 && sess->index <= ogs_app()->pool.sess);
 
     /* Set TEID & SEID */
     sess->sgw_s5c_teid = sess->index;
@@ -691,7 +691,7 @@ sgwc_tunnel_t *sgwc_tunnel_add(
 
     tunnel->interface_type = interface_type;
     tunnel->index = ogs_pool_index(&sgwc_tunnel_pool, tunnel);
-    ogs_assert(tunnel->index > 0 && tunnel->index <= ogs_config()->pool.tunnel);
+    ogs_assert(tunnel->index > 0 && tunnel->index <= ogs_app()->pool.tunnel);
 
     pdr = ogs_pfcp_pdr_add(&bearer->pfcp);
     ogs_assert(pdr);

@@ -729,7 +729,7 @@ int pcrf_rx_init(void)
 	struct disp_when data;
 
     ogs_thread_mutex_init(&sess_state_mutex);
-    ogs_pool_init(&sess_state_pool, ogs_config()->pool.sess);
+    ogs_pool_init(&sess_state_pool, ogs_app()->pool.sess);
 
 	/* Install objects definitions for this application */
 	ret = ogs_diam_rx_init();

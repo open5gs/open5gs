@@ -32,7 +32,7 @@ int sgwu_initialize()
     sgwu_context_init();
     sgwu_event_init();
 
-    rv = ogs_pfcp_xact_init(sgwu_self()->timer_mgr, 512);
+    rv = ogs_pfcp_xact_init();
     if (rv != OGS_OK) return rv;
 
     rv = ogs_pfcp_context_parse_config("sgwu", "sgwc");
@@ -42,7 +42,7 @@ int sgwu_initialize()
     if (rv != OGS_OK) return rv;
 
     rv = ogs_log_config_domain(
-            ogs_config()->logger.domain, ogs_config()->logger.level);
+            ogs_app()->logger.domain, ogs_app()->logger.level);
     if (rv != OGS_OK) return rv;
 
     thread = ogs_thread_create(sgwu_main, NULL);
@@ -78,8 +78,8 @@ static void sgwu_main(void *data)
     ogs_fsm_init(&sgwu_sm, 0);
 
     for ( ;; ) {
-        ogs_pollset_poll(sgwu_self()->pollset,
-                ogs_timer_mgr_next(sgwu_self()->timer_mgr));
+        ogs_pollset_poll(ogs_app()->pollset,
+                ogs_timer_mgr_next(ogs_app()->timer_mgr));
 
         /*
          * After ogs_pollset_poll(), ogs_timer_mgr_expire() must be called.
@@ -92,12 +92,12 @@ static void sgwu_main(void *data)
          * because 'if rv == OGS_DONE' statement is exiting and
          * not calling ogs_timer_mgr_expire().
          */
-        ogs_timer_mgr_expire(sgwu_self()->timer_mgr);
+        ogs_timer_mgr_expire(ogs_app()->timer_mgr);
 
         for ( ;; ) {
             sgwu_event_t *e = NULL;
 
-            rv = ogs_queue_trypop(sgwu_self()->queue, (void**)&e);
+            rv = ogs_queue_trypop(ogs_app()->queue, (void**)&e);
             ogs_assert(rv != OGS_ERROR);
 
             if (rv == OGS_DONE)

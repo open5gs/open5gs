@@ -52,10 +52,6 @@ typedef struct upf_context_s {
     ogs_sock_t      *gtpu_sock;     /* UPF GTPU IPv4 Socket */
     ogs_sock_t      *gtpu_sock6;    /* UPF GTPU IPv6 Socket */
 
-    ogs_queue_t     *queue;         /* Queue for processing UPF control */
-    ogs_timer_mgr_t *timer_mgr;     /* Timer Manager */
-    ogs_pollset_t   *pollset;       /* Poll Set for I/O Multiplexing */
-
     ogs_list_t      peer_list;    /* gNB N3 Node List */
 
     ogs_hash_t      *sess_hash;     /* hash table (F-SEID) */

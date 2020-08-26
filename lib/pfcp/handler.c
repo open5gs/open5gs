@@ -35,7 +35,7 @@ void ogs_pfcp_handle_heartbeat_response(
     ogs_pfcp_xact_commit(xact);
 
     ogs_timer_start(node->t_no_heartbeat,
-            ogs_config()->time.message.pfcp.no_heartbeat_duration);
+            ogs_app()->time.message.pfcp.no_heartbeat_duration);
 }
 
 void ogs_pfcp_cp_handle_association_setup_request(

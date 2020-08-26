@@ -38,7 +38,7 @@ int ogs_app_initialize(const char *default_config, const char *const argv[])
     ogs_core_initialize();
     ogs_app_setup_log();
 
-    ogs_config_init();
+    ogs_app_context_init();
 
     /**************************************************************************
      * Stage 1 : Command Line Options
@@ -71,61 +71,149 @@ int ogs_app_initialize(const char *default_config, const char *const argv[])
      * Stage 2 : Load Configuration File
      */
     if (optarg.config_file)
-        ogs_config()->file = optarg.config_file;
+        ogs_app()->file = optarg.config_file;
     else
-        ogs_config()->file = default_config;
+        ogs_app()->file = default_config;
 
-    rv = ogs_config_read();
+    rv = ogs_app_config_read();
     if (rv != OGS_OK) return rv;
 
-    rv = ogs_config_parse();
+    rv = ogs_app_context_parse_config();
     if (rv != OGS_OK) return rv;
 
     /**************************************************************************
      * Stage 3 : Initialize Default Memory Pool
      */
-    ogs_pkbuf_default_create(&ogs_config()->pool.defconfig);
+    ogs_pkbuf_default_create(&ogs_app()->pool.defconfig);
 
     /**************************************************************************
      * Stage 4 : Setup LOG Module
      */
     if (optarg.log_file)
-        ogs_config()->logger.file = optarg.log_file;
+        ogs_app()->logger.file = optarg.log_file;
 
-    if (ogs_config()->logger.file) {
-        if (ogs_log_add_file(ogs_config()->logger.file) == NULL) {
+    if (ogs_app()->logger.file) {
+        if (ogs_log_add_file(ogs_app()->logger.file) == NULL) {
             ogs_fatal("cannot open log file : %s", 
-                    ogs_config()->logger.file);
+                    ogs_app()->logger.file);
             return OGS_ERROR;
         }
     }
 
     if (optarg.domain_mask)
-        ogs_config()->logger.domain = optarg.domain_mask;
+        ogs_app()->logger.domain = optarg.domain_mask;
 
     if (optarg.log_level) 
-        ogs_config()->logger.level = optarg.log_level;
+        ogs_app()->logger.level = optarg.log_level;
 
     rv = ogs_log_config_domain(
-            ogs_config()->logger.domain, ogs_config()->logger.level);
+            ogs_app()->logger.domain, ogs_app()->logger.level);
     if (rv != OGS_OK) return rv;
 
     /**************************************************************************
      * Stage 5 : Setup Database Module
      */
     if (ogs_env_get("DB_URI"))
-        ogs_config()->db_uri = ogs_env_get("DB_URI");
+        ogs_app()->db_uri = ogs_env_get("DB_URI");
+
+    /**************************************************************************
+     * Stage 6 : Queue, Timer and Poll
+     */
+    ogs_app()->queue = ogs_queue_create(ogs_app()->pool.event);
+    ogs_assert(ogs_app()->queue);
+    ogs_app()->timer_mgr = ogs_timer_mgr_create(ogs_app()->pool.timer);
+    ogs_assert(ogs_app()->timer_mgr);
+    ogs_app()->pollset = ogs_pollset_create(ogs_app()->pool.socket);
+    ogs_assert(ogs_app()->pollset);
 
     return rv;
 }
 
 void ogs_app_terminate(void)
 {
-    ogs_config_final();
+    ogs_app_context_final();
 
     ogs_pkbuf_default_destroy();
 
     ogs_core_terminate();
+}
+
+int ogs_app_config_read(void)
+{
+    FILE *file;
+    yaml_parser_t parser;
+    yaml_document_t *document = NULL;
+
+    ogs_assert(ogs_app()->file);
+
+    file = fopen(ogs_app()->file, "rb");
+    if (!file) {
+        ogs_fatal("cannot open file `%s`", ogs_app()->file);
+        return OGS_ERROR;
+    }
+
+    ogs_assert(yaml_parser_initialize(&parser));
+    yaml_parser_set_input_file(&parser, file);
+
+    document = calloc(1, sizeof(yaml_document_t));
+    if (!yaml_parser_load(&parser, document)) {
+        ogs_fatal("Failed to parse configuration file '%s'", ogs_app()->file);
+        switch (parser.error) {
+        case YAML_MEMORY_ERROR:
+            ogs_error("Memory error: Not enough memory for parsing");
+            break;
+        case YAML_READER_ERROR:
+            if (parser.problem_value != -1)
+                ogs_error("Reader error - %s: #%X at %zd", parser.problem,
+                    parser.problem_value, parser.problem_offset);
+            else
+                ogs_error("Reader error - %s at %zd", parser.problem,
+                    parser.problem_offset);
+            break;
+        case YAML_SCANNER_ERROR:
+            if (parser.context)
+                ogs_error("Scanner error - %s at line %zu, column %zu"
+                        "%s at line %zu, column %zu", parser.context,
+                        parser.context_mark.line+1,
+                        parser.context_mark.column+1,
+                        parser.problem, parser.problem_mark.line+1,
+                        parser.problem_mark.column+1);
+            else
+                ogs_error("Scanner error - %s at line %zu, column %zu",
+                        parser.problem, parser.problem_mark.line+1,
+                        parser.problem_mark.column+1);
+            break;
+        case YAML_PARSER_ERROR:
+            if (parser.context)
+                ogs_error("Parser error - %s at line %zu, column %zu"
+                        "%s at line %zu, column %zu", parser.context,
+                        parser.context_mark.line+1,
+                        parser.context_mark.column+1,
+                        parser.problem, parser.problem_mark.line+1,
+                        parser.problem_mark.column+1);
+            else
+                ogs_error("Parser error - %s at line %zu, column %zu",
+                        parser.problem, parser.problem_mark.line+1,
+                        parser.problem_mark.column+1);
+            break;
+        default:
+            /* Couldn't happen. */
+            ogs_assert_if_reached();
+            break;
+        }
+
+        free(document);
+        yaml_parser_delete(&parser);
+        ogs_assert(!fclose(file));
+        return OGS_ERROR;
+    }
+
+    ogs_app()->document = document;
+
+    yaml_parser_delete(&parser);
+    ogs_assert(!fclose(file));
+
+    return OGS_OK;
 }
 
 void ogs_app_setup_log(void)

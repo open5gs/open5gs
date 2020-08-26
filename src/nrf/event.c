@@ -20,30 +20,15 @@
 #include "event.h"
 #include "context.h"
 
-#define EVENT_POOL 32 /* FIXME : 32 */
 static OGS_POOL(pool, nrf_event_t);
 
 void nrf_event_init(void)
 {
-    ogs_pool_init(&pool, EVENT_POOL);
-
-    nrf_self()->queue = ogs_queue_create(EVENT_POOL);
-    ogs_assert(nrf_self()->queue);
-    nrf_self()->timer_mgr = ogs_timer_mgr_create();
-    ogs_assert(nrf_self()->timer_mgr);
-    nrf_self()->pollset = ogs_pollset_create();
-    ogs_assert(nrf_self()->pollset);
+    ogs_pool_init(&pool, ogs_app()->pool.event);
 }
 
 void nrf_event_final(void)
 {
-    if (nrf_self()->pollset)
-        ogs_pollset_destroy(nrf_self()->pollset);
-    if (nrf_self()->timer_mgr)
-        ogs_timer_mgr_destroy(nrf_self()->timer_mgr);
-    if (nrf_self()->queue)
-        ogs_queue_destroy(nrf_self()->queue);
-
     ogs_pool_final(&pool);
 }
 

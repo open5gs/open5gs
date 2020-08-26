@@ -115,7 +115,7 @@ int s1ap_delayed_send_to_enb_ue(
         e = mme_event_new(MME_EVT_S1AP_TIMER);
         ogs_assert(e);
         e->timer = ogs_timer_add(
-                mme_self()->timer_mgr, mme_timer_s1_delayed_send, e);
+                ogs_app()->timer_mgr, mme_timer_s1_delayed_send, e);
         ogs_assert(e->timer);
         e->pkbuf = pkbuf;
         e->enb_ue = enb_ue;
@@ -144,7 +144,7 @@ int s1ap_send_to_esm(mme_ue_t *mme_ue, ogs_pkbuf_t *esmbuf)
     ogs_assert(e);
     e->mme_ue = mme_ue;
     e->pkbuf = esmbuf;
-    rv = ogs_queue_push(mme_self()->queue, e);
+    rv = ogs_queue_push(ogs_app()->queue, e);
     if (rv != OGS_OK) {
         ogs_warn("ogs_queue_push() failed:%d", (int)rv);
         ogs_pkbuf_free(e->pkbuf);
@@ -227,7 +227,7 @@ int s1ap_send_to_nas(enb_ue_t *enb_ue,
         e->s1ap_code = procedureCode;
         e->nas_type = security_header_type.type;
         e->pkbuf = nasbuf;
-        rv = ogs_queue_push(mme_self()->queue, e);
+        rv = ogs_queue_push(ogs_app()->queue, e);
         if (rv != OGS_OK) {
             ogs_warn("ogs_queue_push() failed:%d", (int)rv);
             ogs_pkbuf_free(e->pkbuf);

@@ -93,7 +93,7 @@ static bool maximum_number_of_gnbs_is_reached(void)
         }
     }
 
-    return number_of_gnbs_online >= ogs_config()->max.gnb;
+    return number_of_gnbs_online >= ogs_app()->max.gnb;
 }
 
 void ngap_handle_ng_setup_request(amf_gnb_t *gnb, ogs_ngap_message_t *message)

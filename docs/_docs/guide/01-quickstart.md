@@ -110,7 +110,8 @@ UPF-pfcp  = 10.10.0.7 :8805 (authVPN) for N4
 UPF-gtpu  = 10.11.0.7 :2152 (userplaneVPN) for S5/8u, N3
 ```
 
-You can refer to the network settings at [https://open5gs.org/open5gs/assets/Open5GS-Diagram.pdf](https://open5gs.org/open5gs/assets/Open5GS-Diagram.pdf) provided by [@kbarlee](https://github.com/kbarlee) in issue [#528](https://github.com/open5gs/open5gs/issues/528)
+You can refer to the network settings at
+[{{ site.url }}{{ site.baseurl }}/assets/Open5GS-Diagram.pdf]({{ site.url }}{{ site.baseurl }}/assets/Open5GS-Diagram.pdf) provided by [@kbarlee](https://github.com/kbarlee) in issue [#528](https://github.com/{{ site.github_username }}/open5gs/issues/528)
 {: .notice--danger}
 
 Modify [install/etc/open5gs/mme.yaml](https://github.com/{{ site.github_username }}/open5gs/blob/master/configs/open5gs/mme.yaml.in) to set the S1AP IP address, PLMN ID, and TAC. 

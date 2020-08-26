@@ -67,13 +67,13 @@ static void epoll_init(ogs_pollset_t *pollset)
     pollset->context = context;
 
 	context->event_list = ogs_calloc(
-        ogs_core()->socket.pool, sizeof(struct epoll_event));
+            pollset->capacity, sizeof(struct epoll_event));
 	ogs_assert(context->event_list);
 
     context->map_hash = ogs_hash_make();
     ogs_assert(context->map_hash);
 
-    context->epfd = epoll_create(ogs_core()->socket.pool);
+    context->epfd = epoll_create(pollset->capacity);
     ogs_assert(context->epfd >= 0);
 
     ogs_notify_init(pollset);
@@ -202,7 +202,7 @@ static int epoll_process(ogs_pollset_t *pollset, ogs_time_t timeout)
     ogs_assert(context);
 
 	num_of_poll = epoll_wait(context->epfd, context->event_list,
-            ogs_core()->socket.pool,
+            pollset->capacity,
             timeout == OGS_INFINITE_TIME ? OGS_INFINITE_TIME :
                 ogs_time_to_msec(timeout));
     if (num_of_poll < 0) {

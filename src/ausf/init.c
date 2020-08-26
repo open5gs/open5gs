@@ -28,8 +28,8 @@ int ausf_initialize()
     int rv;
 
     ausf_context_init();
-    ausf_event_init(); /* Create event with poll, timer */
-    ogs_sbi_context_init(ausf_self()->pollset, ausf_self()->timer_mgr); 
+    ausf_event_init();
+    ogs_sbi_context_init();
 
     rv = ogs_sbi_context_parse_config("ausf", "nrf");
     if (rv != OGS_OK) return rv;
@@ -38,7 +38,7 @@ int ausf_initialize()
     if (rv != OGS_OK) return rv;
 
     rv = ogs_log_config_domain(
-            ogs_config()->logger.domain, ogs_config()->logger.level);
+            ogs_app()->logger.domain, ogs_app()->logger.level);
     if (rv != OGS_OK) return rv;
 
     thread = ogs_thread_create(ausf_main, NULL);
@@ -60,14 +60,14 @@ static void event_termination(void)
         ausf_nf_fsm_fini(nf_instance);
 
     /* Starting holding timer */
-    t_termination_holding = ogs_timer_add(ausf_self()->timer_mgr, NULL, NULL);
+    t_termination_holding = ogs_timer_add(ogs_app()->timer_mgr, NULL, NULL);
     ogs_assert(t_termination_holding);
 #define TERMINATION_HOLDING_TIME ogs_time_from_msec(300)
     ogs_timer_start(t_termination_holding, TERMINATION_HOLDING_TIME);
 
     /* Sending termination event to the queue */
-    ogs_queue_term(ausf_self()->queue);
-    ogs_pollset_notify(ausf_self()->pollset);
+    ogs_queue_term(ogs_app()->queue);
+    ogs_pollset_notify(ogs_app()->pollset);
 }
 
 void ausf_terminate(void)
@@ -94,8 +94,8 @@ static void ausf_main(void *data)
     ogs_fsm_init(&ausf_sm, 0);
 
     for ( ;; ) {
-        ogs_pollset_poll(ausf_self()->pollset,
-                ogs_timer_mgr_next(ausf_self()->timer_mgr));
+        ogs_pollset_poll(ogs_app()->pollset,
+                ogs_timer_mgr_next(ogs_app()->timer_mgr));
 
         /*
          * After ogs_pollset_poll(), ogs_timer_mgr_expire() must be called.
@@ -108,12 +108,12 @@ static void ausf_main(void *data)
          * because 'if rv == OGS_DONE' statement is exiting and
          * not calling ogs_timer_mgr_expire().
          */
-        ogs_timer_mgr_expire(ausf_self()->timer_mgr);
+        ogs_timer_mgr_expire(ogs_app()->timer_mgr);
 
         for ( ;; ) {
             ausf_event_t *e = NULL;
 
-            rv = ogs_queue_trypop(ausf_self()->queue, (void**)&e);
+            rv = ogs_queue_trypop(ogs_app()->queue, (void**)&e);
             ogs_assert(rv != OGS_ERROR);
 
             if (rv == OGS_DONE)

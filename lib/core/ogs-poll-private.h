@@ -48,6 +48,8 @@ typedef struct ogs_pollset_s {
         ogs_socket_t fd[2];
         ogs_poll_t *poll;
     } notify;
+
+    unsigned int capacity;
 } ogs_pollset_t;
 
 #ifdef __cplusplus

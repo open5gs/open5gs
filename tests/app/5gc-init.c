@@ -47,19 +47,19 @@ int app_initialize(const char *const argv[])
         argv_out[i] = NULL;
     }
 
-    if (ogs_config()->parameter.no_nrf == 0)
+    if (ogs_app()->parameter.no_nrf == 0)
         nrf_thread = test_child_create("nrf", argv_out);
-    if (ogs_config()->parameter.no_amf == 0)
+    if (ogs_app()->parameter.no_amf == 0)
         amf_thread = test_child_create("amf", argv_out);
-    if (ogs_config()->parameter.no_ausf == 0)
+    if (ogs_app()->parameter.no_ausf == 0)
         ausf_thread = test_child_create("ausf", argv_out);
-    if (ogs_config()->parameter.no_udm == 0)
+    if (ogs_app()->parameter.no_udm == 0)
         udm_thread = test_child_create("udm", argv_out);
-    if (ogs_config()->parameter.no_smf == 0)
+    if (ogs_app()->parameter.no_smf == 0)
         smf_thread = test_child_create("smf", argv_out);
-    if (ogs_config()->parameter.no_upf == 0)
+    if (ogs_app()->parameter.no_upf == 0)
         upf_thread = test_child_create("upf", argv_out);
-    if (ogs_config()->parameter.no_udr == 0)
+    if (ogs_app()->parameter.no_udr == 0)
         udr_thread = test_child_create("udr", argv_out);
 
     return OGS_OK;;
@@ -83,8 +83,8 @@ void test_5gc_init(void)
     ogs_log_install_domain(&__ogs_dbi_domain, "dbi", OGS_LOG_ERROR);
     ogs_log_install_domain(&__ogs_nas_domain, "nas", OGS_LOG_ERROR);
 
-    ogs_sctp_init(ogs_config()->usrsctp.udp_port);
-    ogs_assert(ogs_dbi_init(ogs_config()->db_uri) == OGS_OK);
+    ogs_sctp_init(ogs_app()->usrsctp.udp_port);
+    ogs_assert(ogs_dbi_init(ogs_app()->db_uri) == OGS_OK);
 }
 
 void test_5gc_final(void)

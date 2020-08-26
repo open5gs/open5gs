@@ -39,9 +39,9 @@ static void setup_gtp_node(ogs_pfcp_far_t *far)
     if (!gnode) {
         gnode = ogs_gtp_node_add_by_ip(
             &upf_self()->peer_list, &ip, upf_self()->gtpu_port,
-            ogs_config()->parameter.no_ipv4,
-            ogs_config()->parameter.no_ipv6,
-            ogs_config()->parameter.prefer_ipv4);
+            ogs_app()->parameter.no_ipv4,
+            ogs_app()->parameter.no_ipv6,
+            ogs_app()->parameter.prefer_ipv4);
         ogs_assert(gnode);
 
         rv = ogs_gtp_connect(

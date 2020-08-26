@@ -33,7 +33,7 @@ void nas_5gs_send_to_gsm(
     e->sess = sess;
     e->sbi.session = session;
     e->pkbuf = pkbuf;
-    rv = ogs_queue_push(smf_self()->queue, e);
+    rv = ogs_queue_push(ogs_app()->queue, e);
     if (rv != OGS_OK) {
         ogs_error("ogs_queue_push() failed:%d", (int)rv);
         ogs_pkbuf_free(e->pkbuf);

@@ -19,22 +19,22 @@
 
 #include "ogs-app.h"
 
-static ogs_config_t self;
+static ogs_app_context_t self;
 
 static int initialized = 0;
 
-int ogs_config_init()
+int ogs_app_context_init(void)
 {
     ogs_assert(initialized == 0);
 
-    memset(&self, 0, sizeof(ogs_config_t));
+    memset(&self, 0, sizeof(ogs_app_context_t));
 
     initialized = 1;
 
     return OGS_OK;
 }
 
-int ogs_config_final()
+void ogs_app_context_final(void)
 {
     ogs_assert(initialized == 1);
 
@@ -43,115 +43,59 @@ int ogs_config_final()
         free(self.document);
     }
 
-    initialized = 0;
+    if (self.pollset)
+        ogs_pollset_destroy(self.pollset);
+    if (self.timer_mgr)
+        ogs_timer_mgr_destroy(self.timer_mgr);
+    if (self.queue)
+        ogs_queue_destroy(self.queue);
 
-    return OGS_OK;
+    initialized = 0;
 }
 
-ogs_config_t *ogs_config()
+ogs_app_context_t *ogs_app()
 {
     return &self;
 }
 
-int ogs_config_read()
-{
-    ogs_config_t *config = &self;
-    FILE *file;
-    yaml_parser_t parser;
-    yaml_document_t *document = NULL;
-
-    ogs_assert(config->file);
-
-    file = fopen(config->file, "rb");
-    if (!file) {
-        ogs_fatal("cannot open file `%s`", config->file);
-        return OGS_ERROR;
-    }
-
-    ogs_assert(yaml_parser_initialize(&parser));
-    yaml_parser_set_input_file(&parser, file);
-
-    document = calloc(1, sizeof(yaml_document_t));
-    if (!yaml_parser_load(&parser, document)) {
-        ogs_fatal("Failed to parse configuration file '%s'", config->file);
-        switch (parser.error) {
-        case YAML_MEMORY_ERROR:
-            ogs_error("Memory error: Not enough memory for parsing");
-            break;
-        case YAML_READER_ERROR:
-            if (parser.problem_value != -1)
-                ogs_error("Reader error - %s: #%X at %zd", parser.problem,
-                    parser.problem_value, parser.problem_offset);
-            else
-                ogs_error("Reader error - %s at %zd", parser.problem,
-                    parser.problem_offset);
-            break;
-        case YAML_SCANNER_ERROR:
-            if (parser.context)
-                ogs_error("Scanner error - %s at line %zu, column %zu"
-                        "%s at line %zu, column %zu", parser.context,
-                        parser.context_mark.line+1,
-                        parser.context_mark.column+1,
-                        parser.problem, parser.problem_mark.line+1,
-                        parser.problem_mark.column+1);
-            else
-                ogs_error("Scanner error - %s at line %zu, column %zu",
-                        parser.problem, parser.problem_mark.line+1,
-                        parser.problem_mark.column+1);
-            break;
-        case YAML_PARSER_ERROR:
-            if (parser.context)
-                ogs_error("Parser error - %s at line %zu, column %zu"
-                        "%s at line %zu, column %zu", parser.context,
-                        parser.context_mark.line+1,
-                        parser.context_mark.column+1,
-                        parser.problem, parser.problem_mark.line+1,
-                        parser.problem_mark.column+1);
-            else
-                ogs_error("Parser error - %s at line %zu, column %zu",
-                        parser.problem, parser.problem_mark.line+1,
-                        parser.problem_mark.column+1);
-            break;
-        default:
-            /* Couldn't happen. */
-            ogs_assert_if_reached();
-            break;
-        }
-
-        free(document);
-        yaml_parser_delete(&parser);
-        ogs_assert(!fclose(file));
-        return OGS_ERROR;
-    }
-
-    config->document = document;
-
-    yaml_parser_delete(&parser);
-    ogs_assert(!fclose(file));
-
-    return OGS_OK;
-}
-
 static void recalculate_pool_size(void)
 {
-#define MAX_NUM_OF_BEARER       4   /* Num of Bearer per APN(Session) */
+#define MAX_NUM_OF_BEARER       4   /* Num of Bearer per Session */
 #define MAX_NUM_OF_TUNNEL       3   /* Num of Tunnel per Bearer */
 #define MAX_NUM_OF_PF           16  /* Num of PacketFilter per Bearer */
-#define MAX_NUM_OF_NF_SERVICE   16  /* Num of NF Service per NF Instance */
-#define MAX_NUM_OF_SBI_MESSAGE  8   /* Num of HTTP(s) Request/Response per NF */
-#define MAX_NUM_OF_NF_SUBSCRIPTION  4 /* Num of Subscription per NF */
-#define MAX_NUM_OF_AUTH         4   /* Num of Subscription per UE */
-
-    self.pool.ue = self.max.ue * self.max.gnb;
-    self.pool.auth = self.pool.ue * MAX_NUM_OF_AUTH;
-    self.pool.pfcp = ogs_max(self.max.smf, self.max.upf);
-    self.pool.sess = self.pool.ue * OGS_MAX_NUM_OF_SESS;
+    self.pool.sess = self.max.ue * OGS_MAX_NUM_OF_SESS;
     self.pool.bearer = self.pool.sess * MAX_NUM_OF_BEARER;
     self.pool.tunnel = self.pool.bearer * MAX_NUM_OF_TUNNEL;
     self.pool.pf = self.pool.bearer * MAX_NUM_OF_PF;
-    self.pool.nf_service = self.max.nf * MAX_NUM_OF_NF_SERVICE;
-    self.pool.sbi_message = self.max.nf * MAX_NUM_OF_SBI_MESSAGE;
-    self.pool.nf_subscription = self.max.nf * MAX_NUM_OF_NF_SUBSCRIPTION;
+
+#define MAX_NUM_OF_TIMER        16
+    self.pool.timer = self.max.ue * MAX_NUM_OF_TIMER;
+
+    self.pool.nf = self.max.gnb;
+
+#define MAX_NUM_OF_SOCKET       4   /* Num of socket per NF */
+    self.pool.socket = self.pool.nf * MAX_NUM_OF_SOCKET;
+
+#define MAX_GTP_XACT_POOL       512
+    self.pool.gtp_xact = MAX_GTP_XACT_POOL;
+    self.pool.gtp_node = self.pool.nf;
+
+#define MAX_PFCP_XACT_POOL      512
+    self.pool.pfcp_xact = MAX_PFCP_XACT_POOL;
+    self.pool.pfcp_node = self.pool.nf;
+
+#define MAX_NUM_OF_NF_SERVICE   16  /* Num of NF Service per NF Instance */
+#define MAX_NUM_OF_SBI_MESSAGE  8   /* Num of HTTP(s) Request/Response per NF */
+#define MAX_NUM_OF_NF_SUBSCRIPTION  4 /* Num of Subscription per NF */
+    self.pool.nf_service = self.pool.nf * MAX_NUM_OF_NF_SERVICE;
+    self.pool.sbi_message = self.pool.nf * MAX_NUM_OF_SBI_MESSAGE;
+    self.pool.nf_subscription = self.pool.nf * MAX_NUM_OF_NF_SUBSCRIPTION;
+
+#define MAX_EVENT_POOL          32
+    self.pool.event = MAX_EVENT_POOL;
+
+#define MAX_CSMAP_POOL          128
+    self.pool.csmap = MAX_CSMAP_POOL;   /* Num of TAI-LAI Mapping Table */
 }
 
 static void regenerate_all_timer_duration(void)
@@ -223,31 +167,16 @@ static void regenerate_all_timer_duration(void)
 #endif
 }
 
-static int config_prepare(void)
+static int app_context_prepare(void)
 {
 #define USRSCTP_LOCAL_UDP_PORT      9899
     self.usrsctp.udp_port = USRSCTP_LOCAL_UDP_PORT;
 
-#define MAX_NUM_OF_SGW              32  /* Num of SGW per MME */
-#define MAX_NUM_OF_PGW              32  /* Num of PGW per MME */
-#define MAX_NUM_OF_VLR              32  /* Num of VLR per MME */
-#define MAX_NUM_OF_CSMAP            128 /* Num of TAI-LAI MAP per MME */
-
-#define MAX_NUM_OF_UE               128 /* Num of UE per gNB */
-#define MAX_NUM_OF_SMF              32  /* Num of SMF per AMF */
-#define MAX_NUM_OF_UPF              32  /* Num of PGW per AMF */
-#define MAX_NUM_OF_GNB              32  /* Num of gNB per AMF */
-#define MAX_NUM_OF_NF               512 /* Num of NF Instance */
-    self.max.sgw = MAX_NUM_OF_SGW;
-    self.max.pgw = MAX_NUM_OF_PGW;
-    self.max.vlr = MAX_NUM_OF_VLR;
-    self.max.csmap = MAX_NUM_OF_CSMAP;
+#define MAX_NUM_OF_UE               4096    /* Num of UE per AMF/MME */
+#define MAX_NUM_OF_GNB              32      /* Num of gNB per AMF/MME */
 
     self.max.gnb = MAX_NUM_OF_GNB;
     self.max.ue = MAX_NUM_OF_UE;
-    self.max.smf = MAX_NUM_OF_SMF;
-    self.max.upf = MAX_NUM_OF_UPF;
-    self.max.nf = MAX_NUM_OF_NF;
 
 #define MAX_NUM_OF_PACKET_POOL      65536
     self.pool.packet = MAX_NUM_OF_PACKET_POOL;
@@ -274,7 +203,7 @@ static int config_prepare(void)
     return OGS_OK;
 }
  
-static int ogs_app_ctx_validation(void)
+static int app_context_validation(void)
 {
     if (self.parameter.no_ipv4 == 1 &&
         self.parameter.no_ipv6 == 1) {
@@ -294,18 +223,17 @@ static int ogs_app_ctx_validation(void)
 
     return OGS_OK;
 }
-int ogs_config_parse()
+
+int ogs_app_context_parse_config(void)
 {
     int rv;
-    ogs_config_t *config = &self;
     yaml_document_t *document = NULL;
     ogs_yaml_iter_t root_iter;
 
-    ogs_assert(config);
-    document = config->document;
+    document = self.document;
     ogs_assert(document);
 
-    rv = config_prepare();
+    rv = app_context_prepare();
     if (rv != OGS_OK) return rv;
 
     ogs_yaml_iter_init(&root_iter, document);
@@ -448,9 +376,6 @@ int ogs_config_parse()
                             !strcmp(max_key, "enb")) {
                     const char *v = ogs_yaml_iter_value(&max_iter);
                     if (v) self.max.gnb = atoi(v);
-                } else if (!strcmp(max_key, "nf")) {
-                    const char *v = ogs_yaml_iter_value(&max_iter);
-                    if (v) self.max.nf = atoi(v);
                 } else
                     ogs_warn("unknown key `%s`", max_key);
             }
@@ -564,7 +489,7 @@ int ogs_config_parse()
         }
     }
 
-    rv = ogs_app_ctx_validation();
+    rv = app_context_validation();
     if (rv != OGS_OK) return rv;
 
     return OGS_OK;

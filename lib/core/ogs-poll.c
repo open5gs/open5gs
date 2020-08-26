@@ -30,12 +30,14 @@ extern const ogs_pollset_actions_t ogs_select_actions;
 ogs_pollset_actions_t ogs_pollset_actions;
 bool ogs_pollset_actions_initialized = false;
 
-ogs_pollset_t *ogs_pollset_create(void)
+ogs_pollset_t *ogs_pollset_create(unsigned int capacity)
 {
     ogs_pollset_t *pollset = ogs_calloc(1, sizeof *pollset);
     ogs_assert(pollset);
 
-    ogs_pool_init(&pollset->pool, ogs_core()->socket.pool);
+    pollset->capacity = capacity;
+
+    ogs_pool_init(&pollset->pool, capacity);
 
     if (ogs_pollset_actions_initialized == false) {
 #if defined(HAVE_KQUEUE)

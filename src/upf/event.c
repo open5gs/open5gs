@@ -37,40 +37,25 @@ static void pollset_action_setup(void)
 }
 #endif
 
-#define EVENT_POOL 32 /* FIXME : 32 */
 static OGS_POOL(pool, upf_event_t);
 
 void upf_event_init(void)
 {
-    ogs_pool_init(&pool, EVENT_POOL);
+    ogs_pool_init(&pool, ogs_app()->pool.event);
 
 #if defined(HAVE_KQUEUE)
     pollset_action_setup();
 #endif
-
-    upf_self()->queue = ogs_queue_create(EVENT_POOL);
-    ogs_assert(upf_self()->queue);
-    upf_self()->timer_mgr = ogs_timer_mgr_create();
-    ogs_assert(upf_self()->timer_mgr);
-    upf_self()->pollset = ogs_pollset_create();
-    ogs_assert(upf_self()->pollset);
 }
 
 void upf_event_term(void)
 {
-    ogs_queue_term(upf_self()->queue);
-    ogs_pollset_notify(upf_self()->pollset);
+    ogs_queue_term(ogs_app()->queue);
+    ogs_pollset_notify(ogs_app()->pollset);
 }
 
 void upf_event_final(void)
 {
-    if (upf_self()->pollset)
-        ogs_pollset_destroy(upf_self()->pollset);
-    if (upf_self()->timer_mgr)
-        ogs_timer_mgr_destroy(upf_self()->timer_mgr);
-    if (upf_self()->queue)
-        ogs_queue_destroy(upf_self()->queue);
-
     ogs_pool_final(&pool);
 }
 

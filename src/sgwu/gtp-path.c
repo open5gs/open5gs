@@ -178,7 +178,7 @@ int sgwu_gtp_open(void)
     ogs_pkbuf_config_t config;
     memset(&config, 0, sizeof config);
 
-    config.cluster_8192_pool = ogs_config()->pool.packet;
+    config.cluster_8192_pool = ogs_app()->pool.packet;
 
     packet_pool = ogs_pkbuf_pool_create(&config);
 
@@ -191,7 +191,7 @@ int sgwu_gtp_open(void)
         else if (sock->family == AF_INET6)
             sgwu_self()->gtpu_sock6 = sock;
 
-        node->poll = ogs_pollset_add(sgwu_self()->pollset,
+        node->poll = ogs_pollset_add(ogs_app()->pollset,
                 OGS_POLLIN, sock->fd, _gtpv1_u_recv_cb, sock);
     }
 

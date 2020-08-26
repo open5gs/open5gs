@@ -82,7 +82,7 @@ static void session_timer_expired(void *data);
 void ogs_sbi_server_init(int num_of_session_pool)
 {
     ogs_list_init(&ogs_sbi_self()->server_list);
-    ogs_pool_init(&server_pool, ogs_config()->max.nf);
+    ogs_pool_init(&server_pool, ogs_app()->pool.nf);
 
     ogs_pool_init(&session_pool, num_of_session_pool);
 }
@@ -112,13 +112,13 @@ static ogs_sbi_session_t *session_add(ogs_sbi_server_t *server,
     session->connection = connection;
 
     session->timer = ogs_timer_add(
-            ogs_sbi_self()->timer_mgr, session_timer_expired, session);
+            ogs_app()->timer_mgr, session_timer_expired, session);
     ogs_assert(session->timer);
 
     /* If User does not send http response within deadline,
      * Open5GS will assert this program. */
     ogs_timer_start(session->timer,
-            ogs_config()->time.message.sbi.connection_deadline);
+            ogs_app()->time.message.sbi.connection_deadline);
 
     ogs_list_add(&server->suspended_session_list, session);
 
@@ -284,7 +284,7 @@ void ogs_sbi_server_start(ogs_sbi_server_t *server, int (*cb)(
     mhd_info = MHD_get_daemon_info(server->mhd, MHD_DAEMON_INFO_LISTEN_FD);
     ogs_assert(mhd_info);
 
-    server->poll = ogs_pollset_add(ogs_sbi_self()->pollset,
+    server->poll = ogs_pollset_add(ogs_app()->pollset,
             OGS_POLLIN, mhd_info->listen_fd, run, server->mhd);
     ogs_assert(server->poll);
 
@@ -393,7 +393,7 @@ void ogs_sbi_server_send_response(
     ogs_sbi_response_free(response);
     session_remove(session);
 
-    request->poll = ogs_pollset_add(ogs_sbi_self()->pollset,
+    request->poll = ogs_pollset_add(ogs_app()->pollset,
                     OGS_POLLOUT, mhd_socket, run, mhd_daemon);
     ogs_assert(request->poll);
 
@@ -491,7 +491,7 @@ static void notify_connection(void *cls,
             mhd_socket = mhd_info->connect_fd;
             ogs_assert(mhd_socket != INVALID_SOCKET);
 
-            poll = ogs_pollset_add(ogs_sbi_self()->pollset,
+            poll = ogs_pollset_add(ogs_app()->pollset,
                     OGS_POLLIN, mhd_socket, run, mhd_daemon);
             ogs_assert(poll);
             *socket_context = poll;

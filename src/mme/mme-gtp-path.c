@@ -65,7 +65,7 @@ static void _gtpv2_c_recv_cb(short when, ogs_socket_t fd, void *data)
     e->gnode = sgw->gnode;
     e->pkbuf = pkbuf;
 
-    rv = ogs_queue_push(mme_self()->queue, e);
+    rv = ogs_queue_push(ogs_app()->queue, e);
     if (rv != OGS_OK) {
         ogs_error("ogs_queue_push() failed:%d", (int)rv);
         ogs_pkbuf_free(e->pkbuf);
@@ -121,14 +121,14 @@ int mme_gtp_open(void)
         sock = ogs_gtp_server(node);
         ogs_assert(sock);
 
-        node->poll = ogs_pollset_add(mme_self()->pollset,
+        node->poll = ogs_pollset_add(ogs_app()->pollset,
                 OGS_POLLIN, sock->fd, _gtpv2_c_recv_cb, sock);
     }
     ogs_list_for_each(&mme_self()->gtpc_list6, node) {
         sock = ogs_gtp_server(node);
         ogs_assert(sock);
 
-        node->poll = ogs_pollset_add(mme_self()->pollset,
+        node->poll = ogs_pollset_add(ogs_app()->pollset,
                 OGS_POLLIN, sock->fd, _gtpv2_c_recv_cb, sock);
     }
 

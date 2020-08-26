@@ -60,7 +60,7 @@ static bool maximum_number_of_enbs_is_reached(void)
         }
     }
 
-    return number_of_enbs_online >= ogs_config()->max.gnb;
+    return number_of_enbs_online >= ogs_app()->max.gnb;
 }
 
 void s1ap_handle_s1_setup_request(mme_enb_t *enb, ogs_s1ap_message_t *message)

@@ -51,8 +51,8 @@ static void test1_func(abts_case *tc, void *data)
 
     memset(expire_check, 0, TEST_DURATION/TEST_TIMER_PRECISION);
 
-    timer = ogs_timer_mgr_create();
-    pollset = ogs_pollset_create();
+    timer = ogs_timer_mgr_create(512);
+    pollset = ogs_pollset_create(512);
     ogs_assert(timer);
     for(n = 0; n < sizeof(timer_duration)/sizeof(ogs_time_t); n++) {
         timer_array[n] = ogs_timer_add(
@@ -126,7 +126,7 @@ static void test2_func(abts_case *tc, void *data)
     memset(expire_check, 0, TEST_DURATION/TEST_TIMER_PRECISION);
     memset(tm_num, 0, sizeof(int)*(TEST_DURATION/TEST_TIMER_PRECISION));
 
-    timer = ogs_timer_mgr_create();
+    timer = ogs_timer_mgr_create(512);
     ogs_assert(timer);
 
     for(n = 0; n < TEST_TIMER_NUM; n++) {
@@ -168,7 +168,7 @@ static void test3_func(abts_case *tc, void *data)
     memset(expire_check, 0, TEST_DURATION/TEST_TIMER_PRECISION);
     memset(tm_num, 0, sizeof(int)*(TEST_DURATION/TEST_TIMER_PRECISION));
 
-    timer = ogs_timer_mgr_create();
+    timer = ogs_timer_mgr_create(512);
     ogs_assert(timer);
 
     for(n = 0; n < TEST_TIMER_NUM; n++) {

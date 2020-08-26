@@ -25,25 +25,11 @@ static OGS_POOL(pool, amf_event_t);
 
 void amf_event_init(void)
 {
-    ogs_pool_init(&pool, EVENT_POOL);
-
-    amf_self()->queue = ogs_queue_create(EVENT_POOL);
-    ogs_assert(amf_self()->queue);
-    amf_self()->timer_mgr = ogs_timer_mgr_create();
-    ogs_assert(amf_self()->timer_mgr);
-    amf_self()->pollset = ogs_pollset_create();
-    ogs_assert(amf_self()->pollset);
+    ogs_pool_init(&pool, ogs_app()->pool.event);
 }
 
 void amf_event_final(void)
 {
-    if (amf_self()->pollset)
-        ogs_pollset_destroy(amf_self()->pollset);
-    if (amf_self()->timer_mgr)
-        ogs_timer_mgr_destroy(amf_self()->timer_mgr);
-    if (amf_self()->queue)
-        ogs_queue_destroy(amf_self()->queue);
-
     ogs_pool_final(&pool);
 }
 
@@ -132,7 +118,7 @@ void amf_sctp_event_push(amf_event_e id,
     e->ngap.max_num_of_istreams = max_num_of_istreams;
     e->ngap.max_num_of_ostreams = max_num_of_ostreams;
 
-    rv = ogs_queue_push(amf_self()->queue, e);
+    rv = ogs_queue_push(ogs_app()->queue, e);
     if (rv != OGS_OK) {
         ogs_warn("ogs_queue_push() failed:%d", (int)rv);
         ogs_free(e->ngap.addr);

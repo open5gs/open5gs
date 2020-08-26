@@ -38,7 +38,7 @@ void sgsap_state_initial(ogs_fsm_t *s, mme_event_t *e)
     vlr = e->vlr;
     ogs_assert(vlr);
 
-    vlr->t_conn = ogs_timer_add(mme_self()->timer_mgr,
+    vlr->t_conn = ogs_timer_add(ogs_app()->timer_mgr,
             mme_timer_sgs_cli_conn_to_srv, vlr);
     ogs_expect_or_return(vlr->t_conn);
 

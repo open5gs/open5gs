@@ -51,7 +51,7 @@ void smf_context_init(void)
     ogs_log_install_domain(&__smf_log_domain, "smf", ogs_core()->log.level);
     ogs_log_install_domain(&__gsm_log_domain, "gsm", ogs_core()->log.level);
 
-    ogs_gtp_node_init(512);
+    ogs_gtp_node_init();
 
     ogs_list_init(&self.smf_ue_list);
 
@@ -60,11 +60,11 @@ void smf_context_init(void)
 
     ogs_list_init(&self.sgw_s5c_list);
 
-    ogs_pool_init(&smf_ue_pool, ogs_config()->pool.ue);
-    ogs_pool_init(&smf_sess_pool, ogs_config()->pool.sess);
-    ogs_pool_init(&smf_bearer_pool, ogs_config()->pool.bearer);
+    ogs_pool_init(&smf_ue_pool, ogs_app()->max.ue);
+    ogs_pool_init(&smf_sess_pool, ogs_app()->pool.sess);
+    ogs_pool_init(&smf_bearer_pool, ogs_app()->pool.bearer);
 
-    ogs_pool_init(&smf_pf_pool, ogs_config()->pool.pf);
+    ogs_pool_init(&smf_pf_pool, ogs_app()->pool.pf);
 
     self.supi_hash = ogs_hash_make();
     self.imsi_hash = ogs_hash_make();
@@ -123,20 +123,20 @@ static int smf_context_validation(void)
         (self.diam_config->cnf_diamid == NULL ||
         self.diam_config->cnf_diamrlm == NULL ||
         self.diam_config->cnf_addr == NULL)) {
-        ogs_error("No smf.freeDiameter in '%s'", ogs_config()->file);
+        ogs_error("No smf.freeDiameter in '%s'", ogs_app()->file);
         return OGS_ERROR;
     }
     if (ogs_list_first(&self.gtpc_list) == NULL &&
         ogs_list_first(&self.gtpc_list6) == NULL) {
-        ogs_error("No smf.gtpc in '%s'", ogs_config()->file);
+        ogs_error("No smf.gtpc in '%s'", ogs_app()->file);
         return OGS_ERROR;
     }
     if (self.dns[0] == NULL && self.dns6[0] == NULL) {
-        ogs_error("No smf.dns in '%s'", ogs_config()->file);
+        ogs_error("No smf.dns in '%s'", ogs_app()->file);
         return OGS_ERROR;
     }
     if (ogs_list_first(&ogs_pfcp_self()->subnet_list) == NULL) {
-        ogs_error("No smf.pdn: in '%s'", ogs_config()->file);
+        ogs_error("No smf.pdn: in '%s'", ogs_app()->file);
         return OGS_ERROR;
     }
     return OGS_OK;
@@ -148,7 +148,7 @@ int smf_context_parse_config(void)
     yaml_document_t *document = NULL;
     ogs_yaml_iter_t root_iter;
 
-    document = ogs_config()->document;
+    document = ogs_app()->document;
     ogs_assert(document);
 
     rv = smf_context_prepare();
@@ -384,10 +384,10 @@ int smf_context_parse_config(void)
                         }
 
                         if (addr) {
-                            if (ogs_config()->parameter.no_ipv4 == 0)
+                            if (ogs_app()->parameter.no_ipv4 == 0)
                                 ogs_socknode_add(
                                         &self.gtpc_list, AF_INET, addr);
-                            if (ogs_config()->parameter.no_ipv6 == 0)
+                            if (ogs_app()->parameter.no_ipv6 == 0)
                                 ogs_socknode_add(
                                         &self.gtpc_list6, AF_INET6, addr);
                             ogs_freeaddrinfo(addr);
@@ -395,9 +395,9 @@ int smf_context_parse_config(void)
 
                         if (dev) {
                             rv = ogs_socknode_probe(
-                                    ogs_config()->parameter.no_ipv4 ?
+                                    ogs_app()->parameter.no_ipv4 ?
                                         NULL : &self.gtpc_list,
-                                    ogs_config()->parameter.no_ipv6 ?
+                                    ogs_app()->parameter.no_ipv6 ?
                                         NULL : &self.gtpc_list6,
                                     dev, port);
                             ogs_assert(rv == OGS_OK);
@@ -409,9 +409,9 @@ int smf_context_parse_config(void)
                     if (ogs_list_first(&self.gtpc_list) == NULL &&
                         ogs_list_first(&self.gtpc_list6) == NULL) {
                         rv = ogs_socknode_probe(
-                                ogs_config()->parameter.no_ipv4 ?
+                                ogs_app()->parameter.no_ipv4 ?
                                     NULL : &self.gtpc_list,
-                                ogs_config()->parameter.no_ipv6 ?
+                                ogs_app()->parameter.no_ipv6 ?
                                     NULL : &self.gtpc_list6,
                                 NULL, self.gtpc_port);
                         ogs_assert(rv == OGS_OK);
@@ -683,14 +683,14 @@ smf_sess_t *smf_sess_add_by_apn(smf_ue_t *smf_ue, char *apn)
 
     ogs_pool_alloc(&smf_sess_pool, &sess);
     if (!sess) {
-        ogs_error("Maximum number of session[%d] reached",
-                    ogs_config()->pool.sess);
+        ogs_error("Maximum number of session[%lld] reached",
+                    (long long)ogs_app()->pool.sess);
         return NULL;
     }
     memset(sess, 0, sizeof *sess);
 
     sess->index = ogs_pool_index(&smf_sess_pool, sess);
-    ogs_assert(sess->index > 0 && sess->index <= ogs_config()->pool.sess);
+    ogs_assert(sess->index > 0 && sess->index <= ogs_app()->pool.sess);
 
     /* Set TEID & SEID */
     sess->smf_n4_teid = sess->index;
@@ -701,7 +701,7 @@ smf_sess_t *smf_sess_add_by_apn(smf_ue_t *smf_ue, char *apn)
 
     /* Setup Timer */
     sess->t_release_holding = ogs_timer_add(
-            self.timer_mgr, smf_timer_release_holding_expire, sess);
+            ogs_app()->timer_mgr, smf_timer_release_holding_expire, sess);
 
     memset(&e, 0, sizeof(e));
     e.sess = sess;
@@ -784,14 +784,14 @@ smf_sess_t *smf_sess_add_by_psi(smf_ue_t *smf_ue, uint8_t psi)
 
     ogs_pool_alloc(&smf_sess_pool, &sess);
     if (!sess) {
-        ogs_error("Maximum number of session[%d] reached",
-        ogs_config()->pool.sess);
+        ogs_error("Maximum number of session[%lld] reached",
+            (long long)ogs_app()->pool.sess);
         return NULL;
     }
     memset(sess, 0, sizeof *sess);
 
     sess->index = ogs_pool_index(&smf_sess_pool, sess);
-    ogs_assert(sess->index > 0 && sess->index <= ogs_config()->pool.sess);
+    ogs_assert(sess->index > 0 && sess->index <= ogs_app()->pool.sess);
 
     sess->sm_context_ref = ogs_msprintf("%d",
             (int)ogs_pool_index(&smf_sess_pool, sess));
@@ -812,7 +812,7 @@ smf_sess_t *smf_sess_add_by_psi(smf_ue_t *smf_ue, uint8_t psi)
 
     /* Setup Timer */
     sess->t_release_holding = ogs_timer_add(
-            self.timer_mgr, smf_timer_release_holding_expire, sess);
+            ogs_app()->timer_mgr, smf_timer_release_holding_expire, sess);
 
     memset(&e, 0, sizeof(e));
     e.sess = sess;
@@ -1095,7 +1095,7 @@ smf_bearer_t *smf_qos_flow_add(smf_sess_t *sess)
 
     qos_flow->index = ogs_pool_index(&smf_bearer_pool, qos_flow);
     ogs_assert(qos_flow->index > 0 && qos_flow->index <=
-            ogs_config()->pool.bearer);
+            ogs_app()->pool.bearer);
 
     ogs_list_init(&qos_flow->pf_list);
 
@@ -1189,7 +1189,7 @@ smf_bearer_t *smf_bearer_add(smf_sess_t *sess)
 
     bearer->index = ogs_pool_index(&smf_bearer_pool, bearer);
     ogs_assert(bearer->index > 0 && bearer->index <=
-            ogs_config()->pool.bearer);
+            ogs_app()->pool.bearer);
 
     ogs_list_init(&bearer->pf_list);
 

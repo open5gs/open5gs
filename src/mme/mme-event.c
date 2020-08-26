@@ -24,31 +24,10 @@
 
 #include "s1ap-path.h"
 
-#define EVENT_POOL 32 /* FIXME : 32 */
-void mme_event_init(void)
-{
-    mme_self()->queue = ogs_queue_create(EVENT_POOL);
-    ogs_assert(mme_self()->queue);
-    mme_self()->timer_mgr = ogs_timer_mgr_create();
-    ogs_assert(mme_self()->timer_mgr);
-    mme_self()->pollset = ogs_pollset_create();
-    ogs_assert(mme_self()->pollset);
-}
-
 void mme_event_term(void)
 {
-    ogs_queue_term(mme_self()->queue);
-    ogs_pollset_notify(mme_self()->pollset);
-}
-
-void mme_event_final(void)
-{
-    if (mme_self()->pollset)
-        ogs_pollset_destroy(mme_self()->pollset);
-    if (mme_self()->timer_mgr)
-        ogs_timer_mgr_destroy(mme_self()->timer_mgr);
-    if (mme_self()->queue)
-        ogs_queue_destroy(mme_self()->queue);
+    ogs_queue_term(ogs_app()->queue);
+    ogs_pollset_notify(ogs_app()->pollset);
 }
 
 mme_event_t *mme_event_new(mme_event_e id)
@@ -144,7 +123,7 @@ void mme_sctp_event_push(mme_event_e id,
     e->max_num_of_istreams = max_num_of_istreams;
     e->max_num_of_ostreams = max_num_of_ostreams;
 
-    rv = ogs_queue_push(mme_self()->queue, e);
+    rv = ogs_queue_push(ogs_app()->queue, e);
     if (rv != OGS_OK) {
         ogs_warn("ogs_queue_push() failed:%d", (int)rv);
         ogs_free(e->addr);
@@ -154,7 +133,7 @@ void mme_sctp_event_push(mme_event_e id,
     }
 #if HAVE_USRSCTP
     else {
-        ogs_pollset_notify(mme_self()->pollset);
+        ogs_pollset_notify(ogs_app()->pollset);
     }
 #endif
 }

@@ -183,7 +183,7 @@ bool nrf_nnrf_handle_nf_status_subscribe(
             ogs_time_now() + ogs_time_from_sec(
                 subscription->time.validity_duration));
 
-        subscription->t_validity = ogs_timer_add(nrf_self()->timer_mgr,
+        subscription->t_validity = ogs_timer_add(ogs_app()->timer_mgr,
             nrf_timer_subscription_validity, subscription);
         ogs_assert(subscription->t_validity);
         ogs_timer_start(subscription->t_validity,
@@ -359,7 +359,7 @@ bool nrf_nnrf_handle_nf_discover(
     ogs_assert(SearchResult);
 
     SearchResult->validity_period =
-        ogs_config()->time.nf_instance.validity_duration;
+        ogs_app()->time.nf_instance.validity_duration;
     ogs_assert(SearchResult->validity_period);
 
     SearchResult->nf_instances = OpenAPI_list_create();

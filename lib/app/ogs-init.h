@@ -31,6 +31,7 @@ extern "C" {
 int ogs_app_initialize(const char *default_config, const char *const argv[]);
 void ogs_app_terminate(void);
 
+int ogs_app_config_read(void);
 void ogs_app_setup_log(void);
 
 #ifdef __cplusplus

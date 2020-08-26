@@ -90,8 +90,8 @@ typedef struct ogs_pfcp_xact_s {
     int             delete_trigger;
 } ogs_pfcp_xact_t;
 
-int ogs_pfcp_xact_init(ogs_timer_mgr_t *timer_mgr, int size);
-int ogs_pfcp_xact_final(void);
+int ogs_pfcp_xact_init(void);
+void ogs_pfcp_xact_final(void);
 
 ogs_pfcp_xact_t *ogs_pfcp_xact_local_create(ogs_pfcp_node_t *node,
         ogs_pfcp_header_t *hdesc, ogs_pkbuf_t *pkbuf,

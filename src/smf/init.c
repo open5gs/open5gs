@@ -29,15 +29,15 @@ int smf_initialize()
 {
     int rv;
 
-    ogs_pfcp_context_init(ogs_config()->max.upf * OGS_MAX_NUM_OF_GTPU_RESOURCE);
+    ogs_pfcp_context_init(ogs_app()->pool.nf * OGS_MAX_NUM_OF_GTPU_RESOURCE);
     smf_context_init();
-    smf_event_init(); /* Create event with poll, timer */
-    ogs_sbi_context_init(smf_self()->pollset, smf_self()->timer_mgr); 
+    smf_event_init();
+    ogs_sbi_context_init();
 
-    rv = ogs_gtp_xact_init(smf_self()->timer_mgr, 512);
+    rv = ogs_gtp_xact_init();
     if (rv != OGS_OK) return rv;
 
-    rv = ogs_pfcp_xact_init(smf_self()->timer_mgr, 512);
+    rv = ogs_pfcp_xact_init();
     if (rv != OGS_OK) return rv;
 
     rv = ogs_pfcp_context_parse_config("smf", "upf");
@@ -50,7 +50,7 @@ int smf_initialize()
     if (rv != OGS_OK) return rv;
 
     rv = ogs_log_config_domain(
-            ogs_config()->logger.domain, ogs_config()->logger.level);
+            ogs_app()->logger.domain, ogs_app()->logger.level);
     if (rv != OGS_OK) return rv;
 
     rv = ogs_pfcp_ue_pool_generate();
@@ -78,14 +78,14 @@ static void event_termination(void)
         smf_nf_fsm_fini(nf_instance);
 
     /* Starting holding timer */
-    t_termination_holding = ogs_timer_add(smf_self()->timer_mgr, NULL, NULL);
+    t_termination_holding = ogs_timer_add(ogs_app()->timer_mgr, NULL, NULL);
     ogs_assert(t_termination_holding);
 #define TERMINATION_HOLDING_TIME ogs_time_from_msec(300)
     ogs_timer_start(t_termination_holding, TERMINATION_HOLDING_TIME);
 
     /* Sending termination event to the queue */
-    ogs_queue_term(smf_self()->queue);
-    ogs_pollset_notify(smf_self()->pollset);
+    ogs_queue_term(ogs_app()->queue);
+    ogs_pollset_notify(ogs_app()->pollset);
 }
 
 void smf_terminate(void)
@@ -118,8 +118,8 @@ static void smf_main(void *data)
     ogs_fsm_init(&smf_sm, 0);
 
     for ( ;; ) {
-        ogs_pollset_poll(smf_self()->pollset,
-                ogs_timer_mgr_next(smf_self()->timer_mgr));
+        ogs_pollset_poll(ogs_app()->pollset,
+                ogs_timer_mgr_next(ogs_app()->timer_mgr));
 
         /*
          * After ogs_pollset_poll(), ogs_timer_mgr_expire() must be called.
@@ -132,12 +132,12 @@ static void smf_main(void *data)
          * because 'if rv == OGS_DONE' statement is exiting and
          * not calling ogs_timer_mgr_expire().
          */
-        ogs_timer_mgr_expire(smf_self()->timer_mgr);
+        ogs_timer_mgr_expire(ogs_app()->timer_mgr);
 
         for ( ;; ) {
             smf_event_t *e = NULL;
 
-            rv = ogs_queue_trypop(smf_self()->queue, (void**)&e);
+            rv = ogs_queue_trypop(ogs_app()->queue, (void**)&e);
             ogs_assert(rv != OGS_ERROR);
 
             if (rv == OGS_DONE)

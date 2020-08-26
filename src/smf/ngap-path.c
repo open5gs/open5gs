@@ -34,7 +34,7 @@ void ngap_send_to_n2sm(smf_sess_t *sess,
     e->sbi.session = session;
     e->pkbuf = pkbuf;
     e->ngap.type = type;
-    rv = ogs_queue_push(smf_self()->queue, e);
+    rv = ogs_queue_push(ogs_app()->queue, e);
     if (rv != OGS_OK) {
         ogs_error("ogs_queue_push() failed:%d", (int)rv);
         ogs_pkbuf_free(e->pkbuf);

@@ -47,10 +47,6 @@ typedef struct amf_ue_s amf_ue_t;
 typedef uint32_t amf_m_tmsi_t;
 
 typedef struct amf_context_s {
-    ogs_queue_t     *queue;         /* Queue for processing UPF control */
-    ogs_timer_mgr_t *timer_mgr;     /* Timer Manager */
-    ogs_pollset_t   *pollset;       /* Poll Set for I/O Multiplexing */
-
     OpenAPI_nf_type_e   nf_type;
 
     /* Served GUAMI */

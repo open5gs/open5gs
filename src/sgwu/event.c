@@ -22,34 +22,19 @@
 
 static OGS_POOL(pool, sgwu_event_t);
 
-#define EVENT_POOL 32 /* FIXME : 32 */
 void sgwu_event_init(void)
 {
-    ogs_pool_init(&pool, EVENT_POOL);
-
-    sgwu_self()->queue = ogs_queue_create(EVENT_POOL);
-    ogs_assert(sgwu_self()->queue);
-    sgwu_self()->timer_mgr = ogs_timer_mgr_create();
-    ogs_assert(sgwu_self()->timer_mgr);
-    sgwu_self()->pollset = ogs_pollset_create();
-    ogs_assert(sgwu_self()->pollset);
+    ogs_pool_init(&pool, ogs_app()->pool.event);
 }
 
 void sgwu_event_term(void)
 {
-    ogs_queue_term(sgwu_self()->queue);
-    ogs_pollset_notify(sgwu_self()->pollset);
+    ogs_queue_term(ogs_app()->queue);
+    ogs_pollset_notify(ogs_app()->pollset);
 }
 
 void sgwu_event_final(void)
 {
-    if (sgwu_self()->pollset)
-        ogs_pollset_destroy(sgwu_self()->pollset);
-    if (sgwu_self()->timer_mgr)
-        ogs_timer_mgr_destroy(sgwu_self()->timer_mgr);
-    if (sgwu_self()->queue)
-        ogs_queue_destroy(sgwu_self()->queue);
-
     ogs_pool_final(&pool);
 }
 

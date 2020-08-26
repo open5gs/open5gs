@@ -99,7 +99,7 @@ void mme_timer_s1_delayed_send(void *data)
 
     e->timer_id = MME_TIMER_S1_DELAYED_SEND;
 
-    rv = ogs_queue_push(mme_self()->queue, e);
+    rv = ogs_queue_push(ogs_app()->queue, e);
     if (rv != OGS_OK) {
         ogs_warn("ogs_queue_push() failed:%d", (int)rv);
         ogs_timer_delete(e->timer);
@@ -119,7 +119,7 @@ static void emm_timer_event_send(
     e->timer_id = timer_id;
     e->mme_ue = mme_ue;
 
-    rv = ogs_queue_push(mme_self()->queue, e);
+    rv = ogs_queue_push(ogs_app()->queue, e);
     if (rv != OGS_OK) {
         ogs_warn("ogs_queue_push() failed:%d", (int)rv);
         mme_event_free(e);
@@ -162,7 +162,7 @@ static void esm_timer_event_send(
     e->mme_ue = mme_ue;
     e->bearer = bearer;
 
-    rv = ogs_queue_push(mme_self()->queue, e);
+    rv = ogs_queue_push(ogs_app()->queue, e);
     if (rv != OGS_OK) {
         ogs_warn("ogs_queue_push() failed:%d", (int)rv);
         mme_event_free(e);
@@ -184,7 +184,7 @@ void mme_timer_sgs_cli_conn_to_srv(void *data)
     e->timer_id = MME_TIMER_SGS_CLI_CONN_TO_SRV;
     e->vlr = data;
 
-    rv = ogs_queue_push(mme_self()->queue, e);
+    rv = ogs_queue_push(ogs_app()->queue, e);
     if (rv != OGS_OK) {
         ogs_warn("ogs_queue_push() failed:%d", (int)rv);
         mme_event_free(e);

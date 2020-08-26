@@ -52,8 +52,8 @@ typedef struct ogs_gtp_node_s {
     ogs_list_t      remote_list;   
 } ogs_gtp_node_t;
 
-int ogs_gtp_node_init(int size);
-int ogs_gtp_node_final(void);
+int ogs_gtp_node_init(void);
+void ogs_gtp_node_final(void);
 
 ogs_gtp_node_t *ogs_gtp_node_new(ogs_sockaddr_t *sa_list);
 void ogs_gtp_node_free(ogs_gtp_node_t *node);

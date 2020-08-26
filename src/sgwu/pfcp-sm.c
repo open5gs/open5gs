@@ -39,7 +39,7 @@ void sgwu_pfcp_state_initial(ogs_fsm_t *s, sgwu_event_t *e)
             ogs_pfcp_self()->pfcp_sock, ogs_pfcp_self()->pfcp_sock6, node);
     ogs_assert(rv == OGS_OK);
 
-    node->t_no_heartbeat = ogs_timer_add(sgwu_self()->timer_mgr,
+    node->t_no_heartbeat = ogs_timer_add(ogs_app()->timer_mgr,
             sgwu_timer_no_heartbeat, node);
     ogs_assert(node->t_no_heartbeat);
 
@@ -80,7 +80,7 @@ void sgwu_pfcp_state_will_associate(ogs_fsm_t *s, sgwu_event_t *e)
     case OGS_FSM_ENTRY_SIG:
         if (node->t_association) {
             ogs_timer_start(node->t_association,
-                ogs_config()->time.message.pfcp.association_interval);
+                ogs_app()->time.message.pfcp.association_interval);
 
             ogs_pfcp_up_send_association_setup_request(node, node_timeout);
         }
@@ -103,7 +103,7 @@ void sgwu_pfcp_state_will_associate(ogs_fsm_t *s, sgwu_event_t *e)
 
             ogs_assert(node->t_association);
             ogs_timer_start(node->t_association,
-                ogs_config()->time.message.pfcp.association_interval);
+                ogs_app()->time.message.pfcp.association_interval);
 
             ogs_pfcp_up_send_association_setup_request(node, node_timeout);
             break;
@@ -167,7 +167,7 @@ void sgwu_pfcp_state_associated(ogs_fsm_t *s, sgwu_event_t *e)
     case OGS_FSM_ENTRY_SIG:
         ogs_info("PFCP associated");
         ogs_timer_start(node->t_no_heartbeat,
-                ogs_config()->time.message.pfcp.no_heartbeat_duration);
+                ogs_app()->time.message.pfcp.no_heartbeat_duration);
         break;
     case OGS_FSM_EXIT_SIG:
         ogs_info("PFCP de-associated");
@@ -290,7 +290,7 @@ static void node_timeout(ogs_pfcp_xact_t *xact, void *data)
         e = sgwu_event_new(SGWU_EVT_SXA_NO_HEARTBEAT);
         e->pfcp_node = data;
 
-        rv = ogs_queue_push(sgwu_self()->queue, e);
+        rv = ogs_queue_push(ogs_app()->queue, e);
         if (rv != OGS_OK) {
             ogs_warn("ogs_queue_push() failed:%d", (int)rv);
             sgwu_event_free(e);

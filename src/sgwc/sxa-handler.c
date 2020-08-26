@@ -176,9 +176,9 @@ void sgwc_sxa_handle_session_establishment_response(
     if (!pgw) {
         pgw = ogs_gtp_node_add_by_f_teid(
             &sgwc_self()->pgw_s5c_list, pgw_s5c_teid, sgwc_self()->gtpc_port,
-            ogs_config()->parameter.no_ipv4,
-            ogs_config()->parameter.no_ipv6,
-            ogs_config()->parameter.prefer_ipv4);
+            ogs_app()->parameter.no_ipv4,
+            ogs_app()->parameter.no_ipv6,
+            ogs_app()->parameter.prefer_ipv4);
         ogs_assert(pgw);
 
         rv = ogs_gtp_connect(

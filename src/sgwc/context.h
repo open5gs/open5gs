@@ -48,10 +48,6 @@ typedef struct sgwc_context_s {
     ogs_sockaddr_t  *gtpc_addr;     /* SGW GTPC IPv4 Address */
     ogs_sockaddr_t  *gtpc_addr6;    /* SGW GTPC IPv6 Address */
 
-    ogs_queue_t     *queue;         /* Queue for processing SGW control */
-    ogs_timer_mgr_t *timer_mgr;     /* Timer Manager */
-    ogs_pollset_t   *pollset;       /* Poll Set for I/O Multiplexing */
-
     ogs_list_t      mme_s11_list;   /* MME GTPC Node List */
     ogs_list_t      pgw_s5c_list;   /* PGW GTPC Node List */
     ogs_list_t      enb_s1u_list;   /* eNB GTPU Node List */

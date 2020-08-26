@@ -30,7 +30,7 @@ extern "C" {
 
 typedef void (*ogs_poll_handler_f)(short when, ogs_socket_t fd, void *data);
 
-ogs_pollset_t *ogs_pollset_create(void);
+ogs_pollset_t *ogs_pollset_create(unsigned int capacity);
 void ogs_pollset_destroy(ogs_pollset_t *pollset);
 
 #define OGS_POLLIN      0x01

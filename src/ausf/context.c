@@ -37,7 +37,7 @@ void ausf_context_init(void)
     ogs_log_install_domain(&__ausf_log_domain, "ausf", ogs_core()->log.level);
 
     /* Allocate TWICE the pool to check if maximum number of gNBs is reached */
-    ogs_pool_init(&ausf_ue_pool, ogs_config()->pool.ue);
+    ogs_pool_init(&ausf_ue_pool, ogs_app()->max.ue);
 
     ogs_list_init(&self.ausf_ue_list);
     self.suci_hash = ogs_hash_make();
@@ -85,7 +85,7 @@ int ausf_context_parse_config(void)
     yaml_document_t *document = NULL;
     ogs_yaml_iter_t root_iter;
 
-    document = ogs_config()->document;
+    document = ogs_app()->document;
     ogs_assert(document);
 
     rv = ausf_context_prepare();

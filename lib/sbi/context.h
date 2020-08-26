@@ -32,9 +32,6 @@ extern "C" {
 
 typedef struct ogs_sbi_client_s ogs_sbi_client_t;
 typedef struct ogs_sbi_context_s {
-    ogs_pollset_t       *pollset;       /* Poll Set for I/O Multiplexing */
-    ogs_timer_mgr_t     *timer_mgr;     /* Timer Manager */
-
     uint32_t            http_port;      /* SBI HTTP local port */
     uint32_t            https_port;     /* SBI HTTPS local port */
 
@@ -179,7 +176,7 @@ typedef struct ogs_sbi_subscription_s {
     void *client;                       /* only used in SERVER */
 } ogs_sbi_subscription_t;
 
-void ogs_sbi_context_init(ogs_pollset_t *pollset, ogs_timer_mgr_t *timer_mgr);
+void ogs_sbi_context_init(void);
 void ogs_sbi_context_final(void);
 ogs_sbi_context_t *ogs_sbi_self(void);
 int ogs_sbi_context_parse_config(const char *local, const char *remote);

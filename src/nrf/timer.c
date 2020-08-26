@@ -66,7 +66,7 @@ static void timer_send_event(int timer_id, void *data)
         break;
     }
 
-    rv = ogs_queue_push(nrf_self()->queue, e);
+    rv = ogs_queue_push(ogs_app()->queue, e);
     if (rv != OGS_OK) {
         ogs_warn("ogs_queue_push() failed:%d", (int)rv);
         nrf_event_free(e);

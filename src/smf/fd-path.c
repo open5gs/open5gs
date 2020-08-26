@@ -747,14 +747,14 @@ out:
         e->sess = sess;
         e->pkbuf = gxbuf;
         e->gtp_xact = xact;
-        rv = ogs_queue_push(smf_self()->queue, e);
+        rv = ogs_queue_push(ogs_app()->queue, e);
         if (rv != OGS_OK) {
             ogs_warn("ogs_queue_push() failed:%d", (int)rv);
             ogs_diam_gx_message_free(gx_message);
             ogs_pkbuf_free(e->pkbuf);
             smf_event_free(e);
         } else {
-            ogs_pollset_notify(smf_self()->pollset);
+            ogs_pollset_notify(ogs_app()->pollset);
         }
     } else {
         ogs_diam_gx_message_free(gx_message);
@@ -972,14 +972,14 @@ static int smf_gx_rar_cb( struct msg **msg, struct avp *avp,
 
     e->sess = sess;
     e->pkbuf = gxbuf;
-    rv = ogs_queue_push(smf_self()->queue, e);
+    rv = ogs_queue_push(ogs_app()->queue, e);
     if (rv != OGS_OK) {
         ogs_warn("ogs_queue_push() failed:%d", (int)rv);
         ogs_diam_gx_message_free(gx_message);
         ogs_pkbuf_free(e->pkbuf);
         smf_event_free(e);
     } else {
-        ogs_pollset_notify(smf_self()->pollset);
+        ogs_pollset_notify(ogs_app()->pollset);
     }
 
     /* Set the Auth-Application-Id AVP */
@@ -1043,7 +1043,7 @@ int smf_fd_init(void)
 	struct disp_when data;
 
     ogs_thread_mutex_init(&sess_state_mutex);
-    ogs_pool_init(&sess_state_pool, ogs_config()->pool.sess);
+    ogs_pool_init(&sess_state_pool, ogs_app()->pool.sess);
 
     ret = ogs_diam_init(FD_MODE_CLIENT|FD_MODE_SERVER,
                 smf_self()->diam_conf_path, smf_self()->diam_config);

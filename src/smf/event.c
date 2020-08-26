@@ -20,30 +20,15 @@
 #include "event.h"
 #include "context.h"
 
-#define EVENT_POOL 32 /* FIXME : 32 */
 static OGS_POOL(pool, smf_event_t);
 
 void smf_event_init(void)
 {
-    ogs_pool_init(&pool, EVENT_POOL);
-
-    smf_self()->queue = ogs_queue_create(EVENT_POOL);
-    ogs_assert(smf_self()->queue);
-    smf_self()->timer_mgr = ogs_timer_mgr_create();
-    ogs_assert(smf_self()->timer_mgr);
-    smf_self()->pollset = ogs_pollset_create();
-    ogs_assert(smf_self()->pollset);
+    ogs_pool_init(&pool, ogs_app()->pool.event);
 }
 
 void smf_event_final(void)
 {
-    if (smf_self()->pollset)
-        ogs_pollset_destroy(smf_self()->pollset);
-    if (smf_self()->timer_mgr)
-        ogs_timer_mgr_destroy(smf_self()->timer_mgr);
-    if (smf_self()->queue)
-        ogs_queue_destroy(smf_self()->queue);
-
     ogs_pool_final(&pool);
 }
 

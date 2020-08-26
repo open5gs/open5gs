@@ -20,30 +20,15 @@
 #include "event.h"
 #include "context.h"
 
-#define EVENT_POOL 32 /* FIXME : 32 */
 static OGS_POOL(pool, udm_event_t);
 
 void udm_event_init(void)
 {
-    ogs_pool_init(&pool, EVENT_POOL);
-
-    udm_self()->queue = ogs_queue_create(EVENT_POOL);
-    ogs_assert(udm_self()->queue);
-    udm_self()->timer_mgr = ogs_timer_mgr_create();
-    ogs_assert(udm_self()->timer_mgr);
-    udm_self()->pollset = ogs_pollset_create();
-    ogs_assert(udm_self()->pollset);
+    ogs_pool_init(&pool, ogs_app()->pool.event);
 }
 
 void udm_event_final(void)
 {
-    if (udm_self()->pollset)
-        ogs_pollset_destroy(udm_self()->pollset);
-    if (udm_self()->timer_mgr)
-        ogs_timer_mgr_destroy(udm_self()->timer_mgr);
-    if (udm_self()->queue)
-        ogs_queue_destroy(udm_self()->queue);
-
     ogs_pool_final(&pool);
 }
 
