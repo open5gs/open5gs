@@ -1042,6 +1042,14 @@ int smf_fd_init(void)
     int ret;
 	struct disp_when data;
 
+    if (smf_self()->diam_conf_path == NULL &&
+        (smf_self()->diam_config->cnf_diamid == NULL ||
+        smf_self()->diam_config->cnf_diamrlm == NULL ||
+        smf_self()->diam_config->cnf_addr == NULL)) {
+        ogs_warn("No diameter configuration");
+        return OGS_OK;
+    }
+
     ogs_thread_mutex_init(&sess_state_mutex);
     ogs_pool_init(&sess_state_pool, ogs_app()->pool.sess);
 
@@ -1078,6 +1086,13 @@ int smf_fd_init(void)
 void smf_fd_final(void)
 {
     int ret;
+
+    if (smf_self()->diam_conf_path == NULL &&
+        (smf_self()->diam_config->cnf_diamid == NULL ||
+        smf_self()->diam_config->cnf_diamrlm == NULL ||
+        smf_self()->diam_config->cnf_addr == NULL)) {
+        return;
+    }
 
 	ret = fd_sess_handler_destroy(&smf_gx_reg, NULL);
     ogs_assert(ret == 0);

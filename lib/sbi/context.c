@@ -97,7 +97,9 @@ static int ogs_sbi_context_prepare(void)
 
 static int ogs_sbi_context_validation(const char *local)
 {
-    if (ogs_list_first(&self.server_list) == NULL) {
+    /* If SMF is only used in 4G EPC, no SBI interface is required.  */
+    if (strcmp(local, "smf") != 0 &&
+        ogs_list_first(&self.server_list) == NULL) {
         ogs_error("No %s.sbi: in '%s'", local, ogs_app()->file);
         return OGS_ERROR;
     }

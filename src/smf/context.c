@@ -119,18 +119,6 @@ static int smf_context_prepare(void)
 
 static int smf_context_validation(void)
 {
-    if (self.diam_conf_path == NULL &&
-        (self.diam_config->cnf_diamid == NULL ||
-        self.diam_config->cnf_diamrlm == NULL ||
-        self.diam_config->cnf_addr == NULL)) {
-        ogs_error("No smf.freeDiameter in '%s'", ogs_app()->file);
-        return OGS_ERROR;
-    }
-    if (ogs_list_first(&self.gtpc_list) == NULL &&
-        ogs_list_first(&self.gtpc_list6) == NULL) {
-        ogs_error("No smf.gtpc in '%s'", ogs_app()->file);
-        return OGS_ERROR;
-    }
     if (self.dns[0] == NULL && self.dns6[0] == NULL) {
         ogs_error("No smf.dns in '%s'", ogs_app()->file);
         return OGS_ERROR;
@@ -667,9 +655,6 @@ void smf_sess_select_upf(smf_sess_t *sess)
     OGS_SETUP_PFCP_NODE(sess, ogs_pfcp_self()->node);
     ogs_debug("UE using UPF on IP[%s]",
             OGS_ADDR(&ogs_pfcp_self()->node->addr, buf));
-
-    /* iterate to next UPF in list for next UE attach */
-    ogs_pfcp_self()->node = ogs_list_next(ogs_pfcp_self()->node);
 }
 
 smf_sess_t *smf_sess_add_by_apn(smf_ue_t *smf_ue, char *apn)

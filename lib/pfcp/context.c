@@ -381,43 +381,6 @@ int ogs_pfcp_context_parse_config(const char *local, const char *remote)
 
                     } while (ogs_yaml_iter_type(&pdn_array) ==
                             YAML_SEQUENCE_NODE);
-
-                    if (ogs_list_first(&self.subnet_list) == NULL) {
-                        /* The followings are default configuration
-                         * if no PDN configration */
-                        ogs_pfcp_subnet_t *subnet = NULL;
-
-#if defined(__linux)
-                        /*
-                         * On Linux, we can use a persitent tun/tap interface
-                         * which has already been setup. As such,
-                         * we do not need to get the IP address
-                         * from configuration.
-                         *
-                         * If there is no APN and TUN mapping,
-                         * the default subnet is added with `ogstun` name
-                         */
-                        subnet = ogs_pfcp_subnet_add(
-                                NULL, NULL, NULL, self.tun_ifname);
-                        ogs_assert(subnet);
-#else
-                        /*
-                         * On MacOSX/FreeBSD, There is no persitent tun/tap
-                         * interface, TUN IP address is required.
-                         * The default configuration is same as below.
-                         *
-                         *   pdn:
-                         *     - addr: 10.45.0.1/16
-                         *     - addr: cafe::1/64
-                         */
-                        subnet = ogs_pfcp_subnet_add(
-                                "10.45.0.1", "16", NULL, self.tun_ifname);
-                        ogs_assert(subnet);
-                        subnet = ogs_pfcp_subnet_add(
-                                "cafe::1", "64", NULL, self.tun_ifname);
-                        ogs_assert(subnet);
-#endif
-                    }
                 }
             }
         } else if (!strcmp(root_key, remote)) {

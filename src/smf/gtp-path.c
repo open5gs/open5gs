@@ -96,8 +96,6 @@ int smf_gtp_open(void)
     if (smf_self()->gtpc_sock6)
         smf_self()->gtpc_addr6 = &smf_self()->gtpc_sock6->local_addr;
 
-    ogs_assert(smf_self()->gtpc_addr || smf_self()->gtpc_addr6);
-
     return OGS_OK;
 }
 

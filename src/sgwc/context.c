@@ -474,9 +474,6 @@ void sgwc_sess_select_sgwu(sgwc_sess_t *sess)
     OGS_SETUP_PFCP_NODE(sess, ogs_pfcp_self()->node);
     ogs_debug("UE using SGW-U on IP[%s]",
             OGS_ADDR(&ogs_pfcp_self()->node->addr, buf));
-
-    /* iterate to next SGW-U in list for next UE attach */
-    ogs_pfcp_self()->node = ogs_list_next(ogs_pfcp_self()->node);
 }
 
 int sgwc_sess_remove(sgwc_sess_t *sess)
