@@ -292,8 +292,7 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
     /* Check Session */
     if (!sess_data &&
         (cc_request_type == OGS_DIAM_GX_CC_REQUEST_TYPE_UPDATE_REQUEST ||
-        cc_request_type == OGS_DIAM_GX_CC_REQUEST_TYPE_TERMINATION_REQUEST))
-    {
+        cc_request_type == OGS_DIAM_GX_CC_REQUEST_TYPE_TERMINATION_REQUEST)) {
         ogs_error("No Session for CC-Request-Type: [%d]", cc_request_type);
         result_code = OGS_DIAM_UNKNOWN_SESSION_ID;
         goto out;

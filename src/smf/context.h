@@ -131,10 +131,63 @@ typedef struct smf_ue_s {
             smf_sess_remove(__sESS); \
     } while(0)
 
+typedef struct smf_bearer_s smf_bearer_t;
+typedef struct smf_sess_s smf_sess_t;
+
+typedef struct smf_pf_s {
+    ogs_lnode_t     lnode;
+    uint32_t        index;
+
+ED3(uint8_t spare:2;,
+    uint8_t direction:2;,
+    uint8_t identifier:4;)
+
+    ogs_ipfw_rule_t ipfw_rule;
+    char *flow_description;
+
+    smf_bearer_t    *bearer;
+} smf_pf_t;
+
+typedef struct smf_bearer_s {
+    ogs_lnode_t     lnode;          /**< A node of list_t */
+    uint32_t        index;
+
+    ogs_pfcp_pdr_t  *dl_pdr;
+    ogs_pfcp_pdr_t  *ul_pdr;
+    ogs_pfcp_far_t  *dl_far;
+    ogs_pfcp_far_t  *ul_far;
+    ogs_pfcp_qer_t  *qer;
+
+    uint8_t         qfi;            /* 5GC */
+    uint8_t         ebi;            /* EPC */
+
+    uint32_t        pgw_s5u_teid;   /* PGW-S5U TEID */
+    ogs_sockaddr_t  *pgw_s5u_addr;  /* PGW-S5U IPv4 */
+    ogs_sockaddr_t  *pgw_s5u_addr6; /* PGW-S5U IPv6 */
+
+    uint32_t        sgw_s5u_teid;   /* SGW-S5U TEID */
+    ogs_ip_t        sgw_s5u_ip;     /* SGW-S5U IPv4/IPv6 */
+
+    char            *name;          /* PCC Rule Name */
+    ogs_qos_t       qos;            /* QoS Infomration */
+
+    OGS_POOL(pf_pool, smf_pf_t);
+
+    /* Packet Filter Identifier Generator(1~15) */
+    uint8_t         pf_identifier;
+    /* Packet Filter List */
+    ogs_list_t      pf_list;
+
+    smf_sess_t      *sess;
+} smf_bearer_t;
+
+#define SMF_SESS(pfcp_sess) ogs_container_of(pfcp_sess, smf_sess_t, pfcp)
 typedef struct smf_sess_s {
     ogs_sbi_object_t sbi;
     uint32_t        index;          /**< An index of this node */
     ogs_fsm_t       sm;             /* A state machine */
+
+    ogs_pfcp_sess_t pfcp;           /* PFCP session context */
 
     uint32_t        smf_n4_teid;    /* SMF-N4-TEID is derived from INDEX */
     uint32_t        sgw_s5c_teid;   /* SGW-S5C-TEID is received from SGW */
@@ -150,12 +203,6 @@ typedef struct smf_sess_s {
     ogs_ip_t        gnb_n3_ip;      /* gNB-N3 IPv4/IPv6 */
 
     char            *gx_sid;        /* Gx Session ID */
-
-    ogs_pfcp_pdr_id_t   pdr_id;     /* ID Generator(1~OGS_MAX_NUM_OF_PDR) */
-    ogs_pfcp_far_id_t   far_id;     /* ID Generator(1~OGS_MAX_NUM_OF_FAR) */
-    ogs_pfcp_urr_id_t   urr_id;     /* ID Generator(1~OGS_MAX_NUM_OF_URR) */
-    ogs_pfcp_qer_id_t   qer_id;     /* ID Generator(1~OGS_MAX_NUM_OF_URR) */
-    ogs_pfcp_bar_id_t   bar_id;     /* ID Generator(1~OGS_MAX_NUM_OF_BAR) */
 
     uint8_t qos_flow_identifier;    /* ID Generator(1~OGS_MAX_QOS_FLOW_ID) */
 
@@ -227,47 +274,6 @@ typedef struct smf_sess_s {
     smf_ue_t *smf_ue;
 } smf_sess_t;
 
-#define SMF_BEARER(pfcp_sess) ogs_container_of(pfcp_sess, smf_bearer_t, pfcp)
-typedef struct smf_bearer_s {
-    ogs_lnode_t     lnode;          /**< A node of list_t */
-    uint32_t        index;
-
-    ogs_pfcp_sess_t pfcp;           /* PFCP session context */
-
-    uint8_t         qfi;            /* 5GC */
-    uint8_t         ebi;            /* EPC */
-
-    uint32_t        upf_s5u_teid;   /* UPF-S5U TEID */
-    ogs_sockaddr_t  *upf_s5u_addr;  /* UPF-S5U IPv4 */
-    ogs_sockaddr_t  *upf_s5u_addr6; /* UPF-S5U IPv6 */
-
-    uint32_t        sgw_s5u_teid;   /* SGW-S5U TEID */
-    ogs_ip_t        sgw_s5u_ip;     /* SGW-S5U IPv4/IPv6 */
-
-    char            *name;          /* PCC Rule Name */
-    ogs_qos_t       qos;            /* QoS Infomration */
-
-    /* Packet Filter Identifier Generator(1~15) */
-    uint8_t         pf_identifier;
-    /* Packet Filter List */
-    ogs_list_t      pf_list;
-
-    smf_sess_t      *sess;
-} smf_bearer_t;
-
-typedef struct smf_pf_s {
-    ogs_lnode_t     lnode;
-
-ED3(uint8_t spare:2;,
-    uint8_t direction:2;,
-    uint8_t identifier:4;)
-
-    ogs_ipfw_rule_t ipfw_rule;
-    char *flow_description;
-
-    smf_bearer_t    *bearer;
-} smf_pf_t;
-
 void smf_context_init(void);
 void smf_context_final(void);
 smf_context_t *smf_self(void);
@@ -312,7 +318,7 @@ smf_bearer_t *smf_bearer_add(smf_sess_t *sess);
 int smf_bearer_remove(smf_bearer_t *bearer);
 void smf_bearer_remove_all(smf_sess_t *sess);
 smf_bearer_t *smf_bearer_find(uint32_t index);
-smf_bearer_t *smf_bearer_find_by_upf_s5u_teid(uint32_t upf_s5u_teid);
+smf_bearer_t *smf_bearer_find_by_pgw_s5u_teid(uint32_t pgw_s5u_teid);
 smf_bearer_t *smf_bearer_find_by_ebi(smf_sess_t *sess, uint8_t ebi);
 smf_bearer_t *smf_bearer_find_by_name(smf_sess_t *sess, char *name);
 smf_bearer_t *smf_bearer_find_by_qci_arp(smf_sess_t *sess, 

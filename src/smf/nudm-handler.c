@@ -30,7 +30,8 @@ bool smf_nudm_sdm_handle_get(smf_sess_t *sess, ogs_sbi_session_t *session,
 
     smf_bearer_t *qos_flow = NULL;
     ogs_pfcp_gtpu_resource_t *resource = NULL;
-    ogs_pfcp_pdr_t *pdr = NULL;
+    ogs_pfcp_pdr_t *dl_pdr = NULL;
+    ogs_pfcp_pdr_t *ul_pdr = NULL;
     ogs_pfcp_qer_t *qer = NULL;
 
     ogs_sbi_server_t *server = NULL;
@@ -311,30 +312,30 @@ bool smf_nudm_sdm_handle_get(smf_sess_t *sess, ogs_sbi_session_t *session,
     ogs_assert(qos_flow);
 
     /* Setup QER */
-    ogs_list_for_each(&qos_flow->pfcp.qer_list, qer) {
-        qer->mbr.uplink = sess->pdn.ambr.uplink;
-        qer->mbr.downlink = sess->pdn.ambr.downlink;
-    }
+    qer = qos_flow->qer;
+    ogs_assert(qer);
+    qer->mbr.uplink = sess->pdn.ambr.uplink;
+    qer->mbr.downlink = sess->pdn.ambr.downlink;
 
     /* Setup PDR */
-    ogs_list_for_each(&qos_flow->pfcp.pdr_list, pdr) {
+    dl_pdr = qos_flow->dl_pdr;
+    ogs_assert(dl_pdr);
+    ul_pdr = qos_flow->ul_pdr;
+    ogs_assert(ul_pdr);
 
-        /* Set UE IP Address to the Default DL PDR */
-        if (pdr->src_if == OGS_PFCP_INTERFACE_CORE) {
-            ogs_pfcp_paa_to_ue_ip_addr(&sess->pdn.paa,
-                    &pdr->ue_ip_addr, &pdr->ue_ip_addr_len);
-            pdr->ue_ip_addr.sd = OGS_PFCP_UE_IP_DST;
+    /* Set UE IP Address to the Default DL PDR */
+    ogs_pfcp_paa_to_ue_ip_addr(&sess->pdn.paa,
+            &dl_pdr->ue_ip_addr, &dl_pdr->ue_ip_addr_len);
+    dl_pdr->ue_ip_addr.sd = OGS_PFCP_UE_IP_DST;
 
-        /* Set UPF-N3 TEID & ADDR to the Default UL PDR */
-        } else if (pdr->src_if == OGS_PFCP_INTERFACE_ACCESS) {
-            ogs_pfcp_sockaddr_to_f_teid(sess->upf_n3_addr, sess->upf_n3_addr6,
-                    &pdr->f_teid, &pdr->f_teid_len);
-            pdr->f_teid.teid = sess->upf_n3_teid;
-        }
+    /* Set UPF-N3 TEID & ADDR to the Default UL PDR */
+    ogs_pfcp_sockaddr_to_f_teid(sess->upf_n3_addr, sess->upf_n3_addr6,
+            &ul_pdr->f_teid, &ul_pdr->f_teid_len);
+    ul_pdr->f_teid.teid = sess->upf_n3_teid;
 
-        /* Default PDRs is set to lowest precedence(highest precedence value) */
-        pdr->precedence = 0xffffffff;
-    }
+    /* Default PDRs is set to lowest precedence(highest precedence value) */
+    dl_pdr->precedence = 0xffffffff;
+    ul_pdr->precedence = 0xffffffff;
 
     smf_5gc_pfcp_send_session_establishment_request(sess, session);
 

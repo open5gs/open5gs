@@ -45,7 +45,6 @@ static OGS_POOL(mme_enb_pool, mme_enb_t);
 static OGS_POOL(mme_ue_pool, mme_ue_t);
 static OGS_POOL(enb_ue_pool, enb_ue_t);
 static OGS_POOL(mme_sess_pool, mme_sess_t);
-static OGS_POOL(mme_bearer_pool, mme_bearer_t);
 
 static int context_initialized = 0;
 
@@ -130,7 +129,6 @@ void mme_context_init()
     ogs_pool_init(&mme_ue_pool, ogs_app()->max.ue);
     ogs_pool_init(&enb_ue_pool, ogs_app()->max.ue);
     ogs_pool_init(&mme_sess_pool, ogs_app()->pool.sess);
-    ogs_pool_init(&mme_bearer_pool, ogs_app()->pool.bearer);
     ogs_pool_init(&self.m_tmsi, ogs_app()->max.ue);
 
     self.enb_addr_hash = ogs_hash_make();
@@ -169,7 +167,6 @@ void mme_context_final()
     ogs_hash_destroy(self.guti_ue_hash);
 
     ogs_pool_final(&self.m_tmsi);
-    ogs_pool_final(&mme_bearer_pool);
     ogs_pool_final(&mme_sess_pool);
     ogs_pool_final(&mme_ue_pool);
     ogs_pool_final(&enb_ue_pool);
@@ -2238,6 +2235,8 @@ mme_ue_t *mme_ue_add(enb_ue_t *enb_ue)
     ogs_assert(mme_ue);
     memset(mme_ue, 0, sizeof *mme_ue);
 
+    ogs_pool_init(&mme_ue->bearer_pool,
+            MAX_EPS_BEARER_ID - MIN_EPS_BEARER_ID + 1);
     ogs_list_init(&mme_ue->sess_list);
 
     mme_ue->mme_s11_teid = ogs_pool_index(&mme_ue_pool, mme_ue);
@@ -2338,6 +2337,8 @@ void mme_ue_remove(mme_ue_t *mme_ue)
 
     mme_sess_remove_all(mme_ue);
     mme_pdn_remove_all(mme_ue);
+
+    ogs_pool_final(&mme_ue->bearer_pool);
 
     ogs_pool_free(&mme_ue_pool, mme_ue);
 }
@@ -2782,12 +2783,14 @@ mme_bearer_t *mme_bearer_add(mme_sess_t *sess)
     mme_ue = sess->mme_ue;
     ogs_assert(mme_ue);
 
-    ogs_pool_alloc(&mme_bearer_pool, &bearer);
+    ogs_pool_alloc(&mme_ue->bearer_pool, &bearer);
     ogs_assert(bearer);
     memset(bearer, 0, sizeof *bearer);
 
-    bearer->ebi = OGS_NEXT_ID(mme_ue->ebi,
-            MIN_EPS_BEARER_ID, MAX_EPS_BEARER_ID);
+    bearer->index = ogs_pool_index(&mme_ue->bearer_pool, bearer);
+    bearer->ebi = bearer->index + MIN_EPS_BEARER_ID - 1;
+    ogs_assert(bearer->ebi >= MIN_EPS_BEARER_ID &&
+                bearer->ebi <= MAX_EPS_BEARER_ID);
 
     bearer->mme_ue = mme_ue;
     bearer->sess = sess;
@@ -2811,6 +2814,7 @@ void mme_bearer_remove(mme_bearer_t *bearer)
     mme_event_t e;
 
     ogs_assert(bearer);
+    ogs_assert(bearer->mme_ue);
     ogs_assert(bearer->sess);
 
     memset(&e, 0, sizeof(e));
@@ -2825,7 +2829,14 @@ void mme_bearer_remove(mme_bearer_t *bearer)
 
     OGS_TLV_CLEAR_DATA(&bearer->tft);
     
-    ogs_pool_free(&mme_bearer_pool, bearer);
+    ogs_pool_free(&bearer->mme_ue->bearer_pool, bearer);
+
+    if (ogs_pool_size(&bearer->mme_ue->bearer_pool) ==
+            ogs_pool_avail(&bearer->mme_ue->bearer_pool)) {
+        ogs_pool_final(&bearer->mme_ue->bearer_pool);
+        ogs_pool_init(&bearer->mme_ue->bearer_pool,
+                MAX_EPS_BEARER_ID - MIN_EPS_BEARER_ID + 1);
+    }
 }
 
 void mme_bearer_remove_all(mme_sess_t *sess)

@@ -90,15 +90,15 @@ static void diam_gnutls_log_func(int level, const char *str)
 static void diam_log_func(int printlevel,
         const char *fname, int line, const char *format, va_list ap)
 {
-    char buffer[OGS_HUGE_LEN];
+    char buffer[OGS_HUGE_LEN*2];
     int  ret = 0;
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wformat-nonliteral"
-    ret = vsnprintf(buffer, OGS_HUGE_LEN, format, ap);
+    ret = ogs_vsnprintf(buffer, OGS_HUGE_LEN*2, format, ap);
 #pragma GCC diagnostic pop
-    if (ret < 0 || ret > OGS_HUGE_LEN) {
-        ogs_error("vsnprintf() failed");
+    if (ret < 0 || ret > OGS_HUGE_LEN*2) {
+        ogs_error("vsnprintf() failed[ret=%d]", ret);
         return;
     }
 

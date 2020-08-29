@@ -27,10 +27,10 @@
 
 #define OGS_PFCP_UDP_PORT               8805
 
-#define OGS_MAX_NUM_OF_PDR              8
-#define OGS_MAX_NUM_OF_FAR              8
+#define OGS_MAX_NUM_OF_PDR              16
+#define OGS_MAX_NUM_OF_FAR              16
 #define OGS_MAX_NUM_OF_URR              2
-#define OGS_MAX_NUM_OF_QER              2
+#define OGS_MAX_NUM_OF_QER              4
 #define OGS_MAX_NUM_OF_BAR              1
 #define OGS_MAX_NUM_OF_GTPU_RESOURCE    4
 

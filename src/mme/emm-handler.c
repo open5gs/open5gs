@@ -73,21 +73,13 @@ int emm_handle_attach_request(mme_ue_t *mme_ue,
             mme_ue->nas_eps.type, mme_ue->nas_eps.ksi, mme_ue->nas_eps.data);
     /*
      * ATTACH_REQUEST
-     *   Clear EBI generator
-     *   Clear Timer and Message
-     *
      * TAU_REQUEST
-     *   Clear Timer and Message
-     *
      * SERVICE_REQUEST
-     *   Clear Timer and Message
-     *
      * EXTENDED_SERVICE_REQUEST
      *   Clear Timer and Message
      */
     CLEAR_MME_UE_ALL_TIMERS(mme_ue);
 
-    CLEAR_EPS_BEARER_ID(mme_ue);
     CLEAR_SERVICE_INDICATOR(mme_ue);
     if (SECURITY_CONTEXT_IS_VALID(mme_ue)) {
         ogs_kdf_kenb(mme_ue->kasme, mme_ue->ul_count.i32, mme_ue->kenb);
@@ -403,15 +395,8 @@ int emm_handle_service_request(
 
     /*
      * ATTACH_REQUEST
-     *   Clear EBI generator
-     *   Clear Timer and Message
-     *
      * TAU_REQUEST
-     *   Clear Timer and Message
-     *
      * SERVICE_REQUEST
-     *   Clear Timer and Message
-     *
      * EXTENDED_SERVICE_REQUEST
      *   Clear Timer and Message
      */
@@ -468,15 +453,8 @@ int emm_handle_tau_request(mme_ue_t *mme_ue,
     
     /*
      * ATTACH_REQUEST
-     *   Clear EBI generator
-     *   Clear Timer and Message
-     *
      * TAU_REQUEST
-     *   Clear Timer and Message
-     *
      * SERVICE_REQUEST
-     *   Clear Timer and Message
-     *
      * EXTENDED_SERVICE_REQUEST
      *   Clear Timer and Message
      */
@@ -602,15 +580,8 @@ int emm_handle_extended_service_request(mme_ue_t *mme_ue,
     
     /*
      * ATTACH_REQUEST
-     *   Clear EBI generator
-     *   Clear Timer and Message
-     *
      * TAU_REQUEST
-     *   Clear Timer and Message
-     *
      * SERVICE_REQUEST
-     *   Clear Timer and Message
-     *
      * EXTENDED_SERVICE_REQUEST
      *   Clear Timer and Message
      */

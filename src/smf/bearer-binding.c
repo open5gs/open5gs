@@ -170,7 +170,7 @@ void smf_bearer_binding(smf_sess_t *sess)
         }
 
         if (pcc_rule->type == OGS_PCC_RULE_TYPE_INSTALL) {
-            ogs_pfcp_pdr_t *pdr = NULL;
+            ogs_pfcp_pdr_t *dl_pdr = NULL, *ul_pdr = NULL;
 
             bearer = smf_bearer_find_by_qci_arp(sess,
                         pcc_rule->qos.qci,
@@ -189,8 +189,10 @@ void smf_bearer_binding(smf_sess_t *sess)
                 ogs_assert(bearer);
 
                 /* Precedence is set to the order in which it was created */
-                ogs_list_for_each(&bearer->pfcp.pdr_list, pdr)
-                    pdr->precedence = pdr->id;
+                ogs_assert(bearer->dl_pdr);
+                ogs_assert(bearer->ul_pdr);
+                bearer->dl_pdr->precedence = bearer->dl_pdr->id;
+                bearer->ul_pdr->precedence = bearer->ul_pdr->id;
 
                 bearer->name = ogs_strdup(pcc_rule->name);
                 ogs_assert(bearer->name);
@@ -231,8 +233,13 @@ void smf_bearer_binding(smf_sess_t *sess)
                 }
             }
 
-            ogs_list_for_each(&bearer->pfcp.pdr_list, pdr)
-                pdr->num_of_flow = 0;
+            dl_pdr = bearer->dl_pdr;
+            ogs_assert(dl_pdr);
+            ul_pdr = bearer->ul_pdr;
+            ogs_assert(ul_pdr);
+
+            dl_pdr->num_of_flow = 0;
+            ul_pdr->num_of_flow = 0;
 
             for (j = 0; j < pcc_rule->num_of_flow; j++) {
                 ogs_flow_t *flow = &pcc_rule->flow[j];
@@ -241,25 +248,15 @@ void smf_bearer_binding(smf_sess_t *sess)
                 ogs_expect_or_return(flow);
                 ogs_expect_or_return(flow->description);
 
-                ogs_list_for_each(&bearer->pfcp.pdr_list, pdr) {
-                    if (flow->direction == OGS_FLOW_DOWNLINK_ONLY) {
-                        if (pdr->src_if == OGS_PFCP_INTERFACE_CORE) {
-                            pdr->flow_description[pdr->num_of_flow++] =
-                                flow->description;
-                            break;
-                        }
-
-                    } else if (flow->direction == OGS_FLOW_UPLINK_ONLY) {
-                        if (pdr->src_if == OGS_PFCP_INTERFACE_ACCESS) {
-                            pdr->flow_description[pdr->num_of_flow++] =
-                                flow->description;
-                            break;
-                        }
-                    } else {
-                        ogs_error("Flow Bidirectional is not supported[%d]",
-                                flow->direction);
-                        break;
-                    }
+                if (flow->direction == OGS_FLOW_DOWNLINK_ONLY) {
+                    dl_pdr->flow_description[dl_pdr->num_of_flow++] =
+                        flow->description;
+                } else if (flow->direction == OGS_FLOW_UPLINK_ONLY) {
+                    ul_pdr->flow_description[ul_pdr->num_of_flow++] =
+                        flow->description;
+                } else {
+                    ogs_error("Flow Bidirectional is not supported[%d]",
+                            flow->direction);
                 }
 
                 pf = smf_pf_add(bearer, pcc_rule->precedence);
@@ -323,13 +320,12 @@ void smf_bearer_binding(smf_sess_t *sess)
 
         } else if (pcc_rule->type == OGS_PCC_RULE_TYPE_REMOVE) {
             bearer = smf_bearer_find_by_name(sess, pcc_rule->name);
-            ogs_assert(bearer);
 
             if (!bearer) {
                 ogs_warn("No need to send 'Delete Bearer Request'");
                 ogs_warn("  - Bearer[Name:%s] has already been removed.",
                         pcc_rule->name);
-                return;
+                continue;
             }
 
             memset(&h, 0, sizeof(ogs_gtp_header_t));

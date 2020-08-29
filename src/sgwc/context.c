@@ -389,16 +389,18 @@ sgwc_sess_t *sgwc_sess_add(sgwc_ue_t *sgwc_ue, char *apn)
     }
     memset(sess, 0, sizeof *sess);
 
+    ogs_pool_init(&sess->pfcp.pdr_pool, OGS_MAX_NUM_OF_PDR);
+    ogs_pool_init(&sess->pfcp.far_pool, OGS_MAX_NUM_OF_FAR);
+    ogs_pool_init(&sess->pfcp.urr_pool, OGS_MAX_NUM_OF_URR);
+    ogs_pool_init(&sess->pfcp.qer_pool, OGS_MAX_NUM_OF_QER);
+    ogs_pool_init(&sess->pfcp.bar_pool, OGS_MAX_NUM_OF_BAR);
+
     sess->index = ogs_pool_index(&sgwc_sess_pool, sess);
     ogs_assert(sess->index > 0 && sess->index <= ogs_app()->pool.sess);
 
     /* Set TEID & SEID */
     sess->sgw_s5c_teid = sess->index;
     sess->sgwc_sxa_seid = sess->index;
-
-    /* Indirect tunnel ID generator */
-    sess->indirect_pdr_id = OGS_MAX_NUM_OF_PDR;
-    sess->indirect_far_id = OGS_MAX_NUM_OF_FAR;
 
     /* Set APN */
     ogs_cpystrn(sess->pdn.apn, apn, OGS_MAX_APN_LEN+1);
@@ -487,6 +489,12 @@ int sgwc_sess_remove(sgwc_sess_t *sess)
     ogs_list_remove(&sgwc_ue->sess_list, sess);
 
     sgwc_bearer_remove_all(sess);
+
+    ogs_pool_final(&sess->pfcp.pdr_pool);
+    ogs_pool_final(&sess->pfcp.far_pool);
+    ogs_pool_final(&sess->pfcp.urr_pool);
+    ogs_pool_final(&sess->pfcp.qer_pool);
+    ogs_pool_final(&sess->pfcp.bar_pool);
 
     ogs_pool_free(&sgwc_sess_pool, sess);
 
@@ -585,8 +593,6 @@ int sgwc_bearer_remove(sgwc_bearer_t *bearer)
     ogs_list_remove(&bearer->sess->bearer_list, bearer);
 
     sgwc_tunnel_remove_all(bearer);
-
-    ogs_pfcp_sess_clear(&bearer->pfcp);
 
     /* Free the buffered packets */
     for (i = 0; i < bearer->num_buffered_pkt; i++)
@@ -690,9 +696,9 @@ sgwc_tunnel_t *sgwc_tunnel_add(
     tunnel->index = ogs_pool_index(&sgwc_tunnel_pool, tunnel);
     ogs_assert(tunnel->index > 0 && tunnel->index <= ogs_app()->pool.tunnel);
 
-    pdr = ogs_pfcp_pdr_add(&bearer->pfcp);
+    pdr = ogs_pfcp_pdr_add(&sess->pfcp);
     ogs_assert(pdr);
-    pdr->id = OGS_NEXT_ID(sess->pdr_id, 1, OGS_MAX_NUM_OF_PDR+1);
+    pdr->id = pdr->index;
     pdr->src_if = src_if;
 
     if (strlen(sess->pdn.apn))
@@ -711,25 +717,11 @@ sgwc_tunnel_t *sgwc_tunnel_add(
     } else
         ogs_assert_if_reached();
 
-    far = ogs_pfcp_far_add(&bearer->pfcp);
+    far = ogs_pfcp_far_add(&sess->pfcp);
     ogs_assert(far);
-    far->id = OGS_NEXT_ID(sess->far_id, 1, OGS_MAX_NUM_OF_FAR+1);
+    far->id = far->index;
     far->dst_if = dst_if;
     ogs_pfcp_pdr_associate_far(pdr, far);
-
-    if (interface_type == OGS_GTP_F_TEID_SGW_GTP_U_FOR_DL_DATA_FORWARDING ||
-        interface_type == OGS_GTP_F_TEID_SGW_GTP_U_FOR_UL_DATA_FORWARDING) {
-
-        /*
-         * If it is an indirect tunnel,
-         * it will use a different ID space
-         * to avoid collisions with normal tunnels.
-         */
-        pdr->id = OGS_NEXT_ID(sess->indirect_pdr_id,
-                OGS_MAX_NUM_OF_PDR, OGS_MAX_NUM_OF_PDR*2);
-        far->id = OGS_NEXT_ID(sess->indirect_far_id,
-                OGS_MAX_NUM_OF_FAR, OGS_MAX_NUM_OF_FAR*2);
-    }
 
     ogs_assert(sess->pfcp_node);
     resource = ogs_pfcp_gtpu_resource_find(
@@ -777,6 +769,9 @@ int sgwc_tunnel_remove(sgwc_tunnel_t *tunnel)
     ogs_assert(tunnel->bearer);
 
     ogs_list_remove(&tunnel->bearer->tunnel_list, tunnel);
+
+    ogs_pfcp_pdr_remove(tunnel->pdr);
+    ogs_pfcp_far_remove(tunnel->far);
 
     if (tunnel->local_addr)
         ogs_freeaddrinfo(tunnel->local_addr);

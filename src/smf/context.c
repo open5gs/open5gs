@@ -29,8 +29,6 @@ static OGS_POOL(smf_ue_pool, smf_ue_t);
 static OGS_POOL(smf_sess_pool, smf_sess_t);
 static OGS_POOL(smf_bearer_pool, smf_bearer_t);
 
-static OGS_POOL(smf_pf_pool, smf_pf_t);
-
 static int context_initialized = 0;
 
 void smf_context_init(void)
@@ -64,8 +62,6 @@ void smf_context_init(void)
     ogs_pool_init(&smf_sess_pool, ogs_app()->pool.sess);
     ogs_pool_init(&smf_bearer_pool, ogs_app()->pool.bearer);
 
-    ogs_pool_init(&smf_pf_pool, ogs_app()->pool.pf);
-
     self.supi_hash = ogs_hash_make();
     self.imsi_hash = ogs_hash_make();
     self.ipv4_hash = ogs_hash_make();
@@ -92,8 +88,6 @@ void smf_context_final(void)
     ogs_pool_final(&smf_ue_pool);
     ogs_pool_final(&smf_bearer_pool);
     ogs_pool_final(&smf_sess_pool);
-
-    ogs_pool_final(&smf_pf_pool);
 
     ogs_gtp_node_remove_all(&self.sgw_s5c_list);
 
@@ -674,6 +668,12 @@ smf_sess_t *smf_sess_add_by_apn(smf_ue_t *smf_ue, char *apn)
     }
     memset(sess, 0, sizeof *sess);
 
+    ogs_pool_init(&sess->pfcp.pdr_pool, OGS_MAX_NUM_OF_PDR);
+    ogs_pool_init(&sess->pfcp.far_pool, OGS_MAX_NUM_OF_FAR);
+    ogs_pool_init(&sess->pfcp.urr_pool, OGS_MAX_NUM_OF_URR);
+    ogs_pool_init(&sess->pfcp.qer_pool, OGS_MAX_NUM_OF_QER);
+    ogs_pool_init(&sess->pfcp.bar_pool, OGS_MAX_NUM_OF_BAR);
+
     sess->index = ogs_pool_index(&smf_sess_pool, sess);
     ogs_assert(sess->index > 0 && sess->index <= ogs_app()->pool.sess);
 
@@ -774,6 +774,12 @@ smf_sess_t *smf_sess_add_by_psi(smf_ue_t *smf_ue, uint8_t psi)
         return NULL;
     }
     memset(sess, 0, sizeof *sess);
+
+    ogs_pool_init(&sess->pfcp.pdr_pool, OGS_MAX_NUM_OF_PDR);
+    ogs_pool_init(&sess->pfcp.far_pool, OGS_MAX_NUM_OF_FAR);
+    ogs_pool_init(&sess->pfcp.urr_pool, OGS_MAX_NUM_OF_URR);
+    ogs_pool_init(&sess->pfcp.qer_pool, OGS_MAX_NUM_OF_QER);
+    ogs_pool_init(&sess->pfcp.bar_pool, OGS_MAX_NUM_OF_BAR);
 
     sess->index = ogs_pool_index(&smf_sess_pool, sess);
     ogs_assert(sess->index > 0 && sess->index <= ogs_app()->pool.sess);
@@ -974,6 +980,12 @@ void smf_sess_remove(smf_sess_t *sess)
 
     smf_bearer_remove_all(sess);
 
+    ogs_pool_final(&sess->pfcp.pdr_pool);
+    ogs_pool_final(&sess->pfcp.far_pool);
+    ogs_pool_final(&sess->pfcp.urr_pool);
+    ogs_pool_final(&sess->pfcp.qer_pool);
+    ogs_pool_final(&sess->pfcp.bar_pool);
+
     ogs_pool_free(&smf_sess_pool, sess);
 }
 
@@ -1084,17 +1096,21 @@ smf_bearer_t *smf_qos_flow_add(smf_sess_t *sess)
 
     ogs_list_init(&qos_flow->pf_list);
 
-    dl_pdr = ogs_pfcp_pdr_add(&qos_flow->pfcp);
+    dl_pdr = ogs_pfcp_pdr_add(&sess->pfcp);
     ogs_assert(dl_pdr);
-    dl_pdr->id = OGS_NEXT_ID(sess->pdr_id, 1, OGS_MAX_NUM_OF_PDR+1);
+    dl_pdr->id = dl_pdr->index;
+    qos_flow->dl_pdr = dl_pdr;
+
     dl_pdr->src_if = OGS_PFCP_INTERFACE_CORE;
 
     if (strlen(sess->pdn.apn))
         dl_pdr->apn = ogs_strdup(sess->pdn.apn);
 
-    ul_pdr = ogs_pfcp_pdr_add(&qos_flow->pfcp);
+    ul_pdr = ogs_pfcp_pdr_add(&sess->pfcp);
     ogs_assert(ul_pdr);
-    ul_pdr->id = OGS_NEXT_ID(sess->pdr_id, 1, OGS_MAX_NUM_OF_PDR+1);
+    ul_pdr->id = ul_pdr->index;
+    qos_flow->ul_pdr = ul_pdr;
+
     ul_pdr->src_if = OGS_PFCP_INTERFACE_ACCESS;
 
     if (strlen(sess->pdn.apn))
@@ -1113,21 +1129,27 @@ smf_bearer_t *smf_qos_flow_add(smf_sess_t *sess)
     } else
         ogs_assert_if_reached();
 
-    dl_far = ogs_pfcp_far_add(&qos_flow->pfcp);
+    dl_far = ogs_pfcp_far_add(&sess->pfcp);
     ogs_assert(dl_far);
-    dl_far->id = OGS_NEXT_ID(sess->far_id, 1, OGS_MAX_NUM_OF_FAR+1);
+    dl_far->id = dl_far->index;
+    qos_flow->dl_far = dl_far;
+
     dl_far->dst_if = OGS_PFCP_INTERFACE_ACCESS;
     ogs_pfcp_pdr_associate_far(dl_pdr, dl_far);
 
-    ul_far = ogs_pfcp_far_add(&qos_flow->pfcp);
+    ul_far = ogs_pfcp_far_add(&sess->pfcp);
     ogs_assert(ul_far);
-    ul_far->id = OGS_NEXT_ID(sess->far_id, 1, OGS_MAX_NUM_OF_FAR+1);
+    ul_far->id = ul_far->index;
+    qos_flow->ul_far = ul_far;
+
     ul_far->dst_if = OGS_PFCP_INTERFACE_CORE;
     ogs_pfcp_pdr_associate_far(ul_pdr, ul_far);
 
-    qer = ogs_pfcp_qer_add(&qos_flow->pfcp);
+    qer = ogs_pfcp_qer_add(&sess->pfcp);
     ogs_assert(qer);
-    qer->id = OGS_NEXT_ID(sess->qer_id, 1, OGS_MAX_NUM_OF_QER+1);
+    qer->id = qer->index;
+    qos_flow->qer = qer;
+
     ogs_pfcp_pdr_associate_qer(dl_pdr, qer);
     ogs_pfcp_pdr_associate_qer(ul_pdr, qer);
 
@@ -1172,23 +1194,29 @@ smf_bearer_t *smf_bearer_add(smf_sess_t *sess)
     ogs_assert(bearer);
     memset(bearer, 0, sizeof *bearer);
 
+    ogs_pool_init(&bearer->pf_pool, OGS_MAX_NUM_OF_PF);
+
     bearer->index = ogs_pool_index(&smf_bearer_pool, bearer);
     ogs_assert(bearer->index > 0 && bearer->index <=
             ogs_app()->pool.bearer);
 
     ogs_list_init(&bearer->pf_list);
 
-    dl_pdr = ogs_pfcp_pdr_add(&bearer->pfcp);
+    dl_pdr = ogs_pfcp_pdr_add(&sess->pfcp);
     ogs_assert(dl_pdr);
-    dl_pdr->id = OGS_NEXT_ID(sess->pdr_id, 1, OGS_MAX_NUM_OF_PDR+1);
+    dl_pdr->id = dl_pdr->index;
+    bearer->dl_pdr = dl_pdr;
+
     dl_pdr->src_if = OGS_PFCP_INTERFACE_CORE;
 
     if (strlen(sess->pdn.apn))
         dl_pdr->apn = ogs_strdup(sess->pdn.apn);
 
-    ul_pdr = ogs_pfcp_pdr_add(&bearer->pfcp);
+    ul_pdr = ogs_pfcp_pdr_add(&sess->pfcp);
     ogs_assert(ul_pdr);
-    ul_pdr->id = OGS_NEXT_ID(sess->pdr_id, 1, OGS_MAX_NUM_OF_PDR+1);
+    ul_pdr->id = ul_pdr->index;
+    bearer->ul_pdr = ul_pdr;
+
     ul_pdr->src_if = OGS_PFCP_INTERFACE_ACCESS;
 
     if (strlen(sess->pdn.apn))
@@ -1207,15 +1235,19 @@ smf_bearer_t *smf_bearer_add(smf_sess_t *sess)
     } else
         ogs_assert_if_reached();
 
-    dl_far = ogs_pfcp_far_add(&bearer->pfcp);
+    dl_far = ogs_pfcp_far_add(&sess->pfcp);
     ogs_assert(dl_far);
-    dl_far->id = OGS_NEXT_ID(sess->far_id, 1, OGS_MAX_NUM_OF_FAR+1);
+    dl_far->id = dl_far->index;
+    bearer->dl_far = dl_far;
+
     dl_far->dst_if = OGS_PFCP_INTERFACE_ACCESS;
     ogs_pfcp_pdr_associate_far(dl_pdr, dl_far);
 
-    ul_far = ogs_pfcp_far_add(&bearer->pfcp);
+    ul_far = ogs_pfcp_far_add(&sess->pfcp);
     ogs_assert(ul_far);
-    ul_far->id = OGS_NEXT_ID(sess->far_id, 1, OGS_MAX_NUM_OF_FAR+1);
+    ul_far->id = ul_far->index;
+    bearer->ul_far = ul_far;
+
     ul_far->dst_if = OGS_PFCP_INTERFACE_CORE;
     ogs_pfcp_pdr_associate_far(ul_pdr, ul_far);
 
@@ -1225,29 +1257,29 @@ smf_bearer_t *smf_bearer_add(smf_sess_t *sess)
             sess->pdn.apn, OGS_PFCP_INTERFACE_ACCESS);
     if (resource) {
         ogs_pfcp_user_plane_ip_resource_info_to_sockaddr(&resource->info,
-            &bearer->upf_s5u_addr, &bearer->upf_s5u_addr6);
-        ogs_assert(bearer->upf_s5u_addr || bearer->upf_s5u_addr6);
+            &bearer->pgw_s5u_addr, &bearer->pgw_s5u_addr6);
+        ogs_assert(bearer->pgw_s5u_addr || bearer->pgw_s5u_addr6);
         if (resource->info.teidri)
-            bearer->upf_s5u_teid = OGS_PFCP_GTPU_INDEX_TO_TEID(
+            bearer->pgw_s5u_teid = OGS_PFCP_GTPU_INDEX_TO_TEID(
                     bearer->index, resource->info.teidri,
                     resource->info.teid_range);
         else
-            bearer->upf_s5u_teid = bearer->index;
+            bearer->pgw_s5u_teid = bearer->index;
     } else {
         if (sess->pfcp_node->addr.ogs_sa_family == AF_INET)
-            ogs_copyaddrinfo(&bearer->upf_s5u_addr, &sess->pfcp_node->addr);
+            ogs_copyaddrinfo(&bearer->pgw_s5u_addr, &sess->pfcp_node->addr);
         else if (sess->pfcp_node->addr.ogs_sa_family == AF_INET6)
-            ogs_copyaddrinfo(&bearer->upf_s5u_addr6, &sess->pfcp_node->addr);
+            ogs_copyaddrinfo(&bearer->pgw_s5u_addr6, &sess->pfcp_node->addr);
         else
             ogs_assert_if_reached();
-        ogs_assert(bearer->upf_s5u_addr || bearer->upf_s5u_addr6);
+        ogs_assert(bearer->pgw_s5u_addr || bearer->pgw_s5u_addr6);
 
-        bearer->upf_s5u_teid = bearer->index;
+        bearer->pgw_s5u_teid = bearer->index;
     }
 
-    ogs_pfcp_sockaddr_to_f_teid(bearer->upf_s5u_addr, bearer->upf_s5u_addr6,
+    ogs_pfcp_sockaddr_to_f_teid(bearer->pgw_s5u_addr, bearer->pgw_s5u_addr6,
             &ul_pdr->f_teid, &ul_pdr->f_teid_len);
-    ul_pdr->f_teid.teid = bearer->upf_s5u_teid;
+    ul_pdr->f_teid.teid = bearer->pgw_s5u_teid;
 
     bearer->sess = sess;
 
@@ -1262,16 +1294,24 @@ int smf_bearer_remove(smf_bearer_t *bearer)
     ogs_assert(bearer->sess);
 
     ogs_list_remove(&bearer->sess->bearer_list, bearer);
-    ogs_pfcp_sess_clear(&bearer->pfcp);
+
+    ogs_pfcp_pdr_remove(bearer->dl_pdr);
+    ogs_pfcp_pdr_remove(bearer->ul_pdr);
+    ogs_pfcp_far_remove(bearer->dl_far);
+    ogs_pfcp_far_remove(bearer->ul_far);
+    if (bearer->qer)
+        ogs_pfcp_qer_remove(bearer->qer);
 
     if (bearer->name)
         ogs_free(bearer->name);
-    if (bearer->upf_s5u_addr)
-        ogs_freeaddrinfo(bearer->upf_s5u_addr);
-    if (bearer->upf_s5u_addr6)
-        ogs_freeaddrinfo(bearer->upf_s5u_addr6);
+    if (bearer->pgw_s5u_addr)
+        ogs_freeaddrinfo(bearer->pgw_s5u_addr);
+    if (bearer->pgw_s5u_addr6)
+        ogs_freeaddrinfo(bearer->pgw_s5u_addr6);
 
     smf_pf_remove_all(bearer);
+
+    ogs_pool_final(&bearer->pf_pool);
 
     ogs_pool_free(&smf_bearer_pool, bearer);
 
@@ -1293,9 +1333,9 @@ smf_bearer_t *smf_bearer_find(uint32_t index)
     return ogs_pool_find(&smf_bearer_pool, index);
 }
 
-smf_bearer_t *smf_bearer_find_by_upf_s5u_teid(uint32_t upf_s5u_teid)
+smf_bearer_t *smf_bearer_find_by_pgw_s5u_teid(uint32_t pgw_s5u_teid)
 {
-    return smf_bearer_find(upf_s5u_teid);
+    return smf_bearer_find(pgw_s5u_teid);
 }
 
 smf_bearer_t *smf_bearer_find_by_ebi(smf_sess_t *sess, uint8_t ebi)
@@ -1407,11 +1447,14 @@ smf_pf_t *smf_pf_add(smf_bearer_t *bearer, uint32_t precedence)
 
     ogs_assert(bearer);
 
-    ogs_pool_alloc(&smf_pf_pool, &pf);
+    ogs_pool_alloc(&bearer->pf_pool, &pf);
     ogs_assert(pf);
     memset(pf, 0, sizeof *pf);
 
-    pf->identifier = OGS_NEXT_ID(bearer->pf_identifier, 1, 15);
+    pf->index = ogs_pool_index(&bearer->pf_pool, pf);
+    ogs_assert(pf->index > 0 && pf->index <= OGS_MAX_NUM_OF_PF);
+
+    pf->identifier = pf->index;
     pf->bearer = bearer;
 
     ogs_list_add(&bearer->pf_list, pf);
@@ -1428,7 +1471,7 @@ int smf_pf_remove(smf_pf_t *pf)
     if (pf->flow_description)
         ogs_free(pf->flow_description);
 
-    ogs_pool_free(&smf_pf_pool, pf);
+    ogs_pool_free(&pf->bearer->pf_pool, pf);
 
     return OGS_OK;
 }

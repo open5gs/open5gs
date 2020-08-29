@@ -388,6 +388,12 @@ upf_sess_t *upf_sess_add(ogs_pfcp_f_seid_t *cp_f_seid,
     ogs_assert(sess);
     memset(sess, 0, sizeof *sess);
 
+    ogs_pool_init(&sess->pfcp.pdr_pool, OGS_MAX_NUM_OF_PDR);
+    ogs_pool_init(&sess->pfcp.far_pool, OGS_MAX_NUM_OF_FAR);
+    ogs_pool_init(&sess->pfcp.urr_pool, OGS_MAX_NUM_OF_URR);
+    ogs_pool_init(&sess->pfcp.qer_pool, OGS_MAX_NUM_OF_QER);
+    ogs_pool_init(&sess->pfcp.bar_pool, OGS_MAX_NUM_OF_BAR);
+
     sess->index = ogs_pool_index(&upf_sess_pool, sess);
     ogs_assert(sess->index > 0 && sess->index <= ogs_app()->pool.sess);
 
@@ -482,6 +488,12 @@ int upf_sess_remove(upf_sess_t *sess)
         ogs_hash_set(self.ipv6_hash, sess->ipv6->addr, OGS_IPV6_LEN, NULL);
         ogs_pfcp_ue_ip_free(sess->ipv6);
     }
+
+    ogs_pool_final(&sess->pfcp.pdr_pool);
+    ogs_pool_final(&sess->pfcp.far_pool);
+    ogs_pool_final(&sess->pfcp.urr_pool);
+    ogs_pool_final(&sess->pfcp.qer_pool);
+    ogs_pool_final(&sess->pfcp.bar_pool);
 
     ogs_pool_free(&upf_sess_pool, sess);
 

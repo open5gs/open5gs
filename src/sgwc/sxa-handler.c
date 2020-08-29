@@ -858,6 +858,7 @@ void sgwc_sxa_handle_session_report_request(
         ogs_pfcp_session_report_request_t *pfcp_req)
 {
     sgwc_bearer_t *bearer = NULL;
+    sgwc_tunnel_t *tunnel = NULL;
 
     ogs_pfcp_report_type_t report_type;
     uint8_t cause_value = 0;
@@ -895,18 +896,20 @@ void sgwc_sxa_handle_session_report_request(
             pdr_id = pfcp_req->downlink_data_report.pdr_id.u16;
 
             ogs_list_for_each(&sess->bearer_list, bearer) {
-                if (ogs_pfcp_pdr_find(&bearer->pfcp, pdr_id)) break;
+                ogs_list_for_each(&bearer->tunnel_list, tunnel) {
+                    ogs_assert(tunnel->pdr);
+                    if (tunnel->pdr->id == pdr_id) {
+                        sgwc_gtp_send_downlink_data_notification(bearer, pfcp_xact);
+                        return;
+                    }
+                }
             }
         }
     }
 
-    if (!bearer) {
-        ogs_error("No Bearer");
-        ogs_pfcp_send_error_message(pfcp_xact, 0,
-                OGS_PFCP_SESSION_REPORT_RESPONSE_TYPE,
-                OGS_PFCP_CAUSE_SESSION_CONTEXT_NOT_FOUND, 0);
-        return;
-    }
+    ogs_error("No Bearer");
+    ogs_pfcp_send_error_message(pfcp_xact, 0,
+            OGS_PFCP_SESSION_REPORT_RESPONSE_TYPE,
+            OGS_PFCP_CAUSE_SESSION_CONTEXT_NOT_FOUND, 0);
 
-    sgwc_gtp_send_downlink_data_notification(bearer, pfcp_xact);
 }

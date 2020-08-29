@@ -666,7 +666,8 @@ static int pcrf_rx_str_cb( struct msg **msg, struct avp *avp,
 
     if (sess_data->state != SESSION_ABORTED) {
         /* Send Re-Auth Request if Abort-Session-Request is not initaited */
-        rv = pcrf_gx_send_rar(sess_data->gx_sid, sess_data->rx_sid, &rx_message);
+        rv = pcrf_gx_send_rar(
+                sess_data->gx_sid, sess_data->rx_sid, &rx_message);
         if (rv != OGS_OK) {
             result_code = rx_message.result_code;
             ogs_error("pcrf_gx_send_rar() failed");

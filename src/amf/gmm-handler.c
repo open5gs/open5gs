@@ -103,16 +103,7 @@ int gmm_handle_registration_request(amf_ue_t *amf_ue,
             amf_ue->nas.tsc, amf_ue->nas.ksi, amf_ue->nas.data);
     /*
      * REGISTRATION_REQUEST
-     *   Clear EBI generator
-     *   Clear Timer and Message
-     *
-     * TAU_REQUEST
-     *   Clear Timer and Message
-     *
      * SERVICE_REQUEST
-     *   Clear Timer and Message
-     *
-     * EXTENDED_SERVICE_REQUEST
      *   Clear Timer and Message
      */
     CLEAR_AMF_UE_ALL_TIMERS(amf_ue);
@@ -337,16 +328,7 @@ int gmm_handle_service_request(amf_ue_t *amf_ue,
 
     /*
      * REGISTRATION_REQUEST
-     *   Clear EBI generator
-     *   Clear Timer and Message
-     *
-     * TAU_REQUEST
-     *   Clear Timer and Message
-     *
      * SERVICE_REQUEST
-     *   Clear Timer and Message
-     *
-     * EXTENDED_SERVICE_REQUEST
      *   Clear Timer and Message
      */
     CLEAR_AMF_UE_ALL_TIMERS(amf_ue);
@@ -648,16 +630,7 @@ int gmm_handle_tau_request(amf_ue_t *amf_ue,
     
     /*
      * REGISTRATION_REQUEST
-     *   Clear EBI generator
-     *   Clear Timer and Message
-     *
-     * TAU_REQUEST
-     *   Clear Timer and Message
-     *
      * SERVICE_REQUEST
-     *   Clear Timer and Message
-     *
-     * EXTENDED_SERVICE_REQUEST
      *   Clear Timer and Message
      */
     CLEAR_AMF_UE_ALL_TIMERS(amf_ue);

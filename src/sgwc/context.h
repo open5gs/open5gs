@@ -78,9 +78,12 @@ typedef struct sgwc_ue_s {
     ogs_gtp_node_t  *gnode;
 } sgwc_ue_t;
 
+#define SGWC_SESS(pfcp_sess) ogs_container_of(pfcp_sess, sgwc_sess_t, pfcp)
 typedef struct sgwc_sess_s {
     ogs_lnode_t     lnode;          /* A node of list_t */
     uint32_t        index;          /**< An index of this node */
+
+    ogs_pfcp_sess_t pfcp;           /* PFCP session context */
 
     uint32_t        sgw_s5c_teid;   /* SGW-S5C-TEID is derived from INDEX */
     uint32_t        pgw_s5c_teid;   /* PGW-S5C-TEID is received from PGW */
@@ -101,17 +104,6 @@ typedef struct sgwc_sess_s {
         bool            delete_indirect_tunnel;
     } state;
 
-    ogs_pfcp_pdr_id_t   pdr_id;     /* ID Generator(1~OGS_MAX_NUM_OF_PDR) */
-    ogs_pfcp_far_id_t   far_id;     /* ID Generator(1~OGS_MAX_NUM_OF_FAR) */
-    ogs_pfcp_urr_id_t   urr_id;     /* ID Generator(1~OGS_MAX_NUM_OF_URR) */
-    ogs_pfcp_qer_id_t   qer_id;     /* ID Generator(1~OGS_MAX_NUM_OF_URR) */
-    ogs_pfcp_bar_id_t   bar_id;     /* ID Generator(1~OGS_MAX_NUM_OF_BAR) */
-
-    /* ID Generator(OGS_MAX_NUM_OF_PDR~OGS_MAX_NUM_OF_PDR*2) */
-    ogs_pfcp_pdr_id_t   indirect_pdr_id;
-    /* ID Generator(OGS_MAX_NUM_OF_FAR~OGS_MAX_NUM_OF_FAR*2) */
-    ogs_pfcp_far_id_t   indirect_far_id;
-
     /* APN Configuration */
     ogs_pdn_t       pdn;
 
@@ -124,11 +116,8 @@ typedef struct sgwc_sess_s {
     sgwc_ue_t       *sgwc_ue;
 } sgwc_sess_t;
 
-#define SGWC_BEARER(pfcp_sess) ogs_container_of(pfcp_sess, sgwc_bearer_t, pfcp)
 typedef struct sgwc_bearer_s {
     ogs_lnode_t     lnode;
-
-    ogs_pfcp_sess_t pfcp;           /* PFCP session context */
 
     uint8_t         ebi;
 

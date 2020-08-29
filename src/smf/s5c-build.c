@@ -32,7 +32,7 @@ ogs_pkbuf_t *smf_s5c_build_create_session_response(
     ogs_gtp_create_session_response_t *rsp = NULL;
 
     ogs_gtp_cause_t cause;
-    ogs_gtp_f_teid_t smf_s5c_teid, upf_s5u_teid;
+    ogs_gtp_f_teid_t smf_s5c_teid, pgw_s5u_teid;
     ogs_gtp_ambr_t ambr;
     ogs_gtp_bearer_qos_t bearer_qos;
     char bearer_qos_buf[GTP_BEARER_QOS_LEN];
@@ -48,8 +48,8 @@ ogs_pkbuf_t *smf_s5c_build_create_session_response(
 
     ogs_debug("    SGW_S5C_TEID[0x%x] SMF_N4_TEID[0x%x]",
             sess->sgw_s5c_teid, sess->smf_n4_teid);
-    ogs_debug("    SGW_S5U_TEID[0x%x] UPF_S5U_TEID[0x%x]",
-            bearer->sgw_s5u_teid, bearer->upf_s5u_teid);
+    ogs_debug("    SGW_S5U_TEID[0x%x] PGW_S5U_TEID[0x%x]",
+            bearer->sgw_s5u_teid, bearer->pgw_s5u_teid);
 
     rsp = &gtp_message.create_session_response;
     memset(&gtp_message, 0, sizeof(ogs_gtp_message_t));
@@ -140,14 +140,14 @@ ogs_pkbuf_t *smf_s5c_build_create_session_response(
     }
 
     /* Data Plane(UL) : SMF-S5U */
-    memset(&upf_s5u_teid, 0, sizeof(ogs_gtp_f_teid_t));
-    upf_s5u_teid.interface_type = OGS_GTP_F_TEID_S5_S8_PGW_GTP_U;
-    upf_s5u_teid.teid = htobe32(bearer->upf_s5u_teid);
+    memset(&pgw_s5u_teid, 0, sizeof(ogs_gtp_f_teid_t));
+    pgw_s5u_teid.interface_type = OGS_GTP_F_TEID_S5_S8_PGW_GTP_U;
+    pgw_s5u_teid.teid = htobe32(bearer->pgw_s5u_teid);
     rv = ogs_gtp_sockaddr_to_f_teid(
-        bearer->upf_s5u_addr, bearer->upf_s5u_addr6, &upf_s5u_teid, &len);
+        bearer->pgw_s5u_addr, bearer->pgw_s5u_addr6, &pgw_s5u_teid, &len);
     ogs_assert(rv == OGS_OK);
     rsp->bearer_contexts_created.s5_s8_u_sgw_f_teid.presence = 1;
-    rsp->bearer_contexts_created.s5_s8_u_sgw_f_teid.data = &upf_s5u_teid;
+    rsp->bearer_contexts_created.s5_s8_u_sgw_f_teid.data = &pgw_s5u_teid;
     rsp->bearer_contexts_created.s5_s8_u_sgw_f_teid.len = len;
 
     gtp_message.h.type = type;
@@ -206,7 +206,7 @@ ogs_pkbuf_t *smf_s5c_build_create_bearer_request(
     ogs_gtp_message_t gtp_message;
     ogs_gtp_create_bearer_request_t *req = NULL;
 
-    ogs_gtp_f_teid_t upf_s5u_teid;
+    ogs_gtp_f_teid_t pgw_s5u_teid;
     ogs_gtp_bearer_qos_t bearer_qos;
     char bearer_qos_buf[GTP_BEARER_QOS_LEN];
     int len;
@@ -234,15 +234,15 @@ ogs_pkbuf_t *smf_s5c_build_create_bearer_request(
     req->bearer_contexts.eps_bearer_id.presence = 1;
     req->bearer_contexts.eps_bearer_id.u8 = bearer->ebi;
 
-    /* Data Plane(UL) : UPF-S5U */
-    memset(&upf_s5u_teid, 0, sizeof(ogs_gtp_f_teid_t));
-    upf_s5u_teid.interface_type = OGS_GTP_F_TEID_S5_S8_PGW_GTP_U;
-    upf_s5u_teid.teid = htobe32(bearer->upf_s5u_teid);
+    /* Data Plane(UL) : PGW-S5U */
+    memset(&pgw_s5u_teid, 0, sizeof(ogs_gtp_f_teid_t));
+    pgw_s5u_teid.interface_type = OGS_GTP_F_TEID_S5_S8_PGW_GTP_U;
+    pgw_s5u_teid.teid = htobe32(bearer->pgw_s5u_teid);
     rv = ogs_gtp_sockaddr_to_f_teid(
-        bearer->upf_s5u_addr, bearer->upf_s5u_addr6, &upf_s5u_teid, &len);
+        bearer->pgw_s5u_addr, bearer->pgw_s5u_addr6, &pgw_s5u_teid, &len);
     ogs_assert(rv == OGS_OK);
     req->bearer_contexts.s5_s8_u_sgw_f_teid.presence = 1;
-    req->bearer_contexts.s5_s8_u_sgw_f_teid.data = &upf_s5u_teid;
+    req->bearer_contexts.s5_s8_u_sgw_f_teid.data = &pgw_s5u_teid;
     req->bearer_contexts.s5_s8_u_sgw_f_teid.len = len;
 
     /* Bearer QoS */

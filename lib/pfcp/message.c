@@ -20,7 +20,7 @@
 /*******************************************************************************
  * This file had been created by pfcp-tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2020-08-12 20:18:49.875450 by acetcom
+ * Created on: 2020-08-28 21:50:38.885547 by acetcom
  * from 29244-g10.docx
  ******************************************************************************/
 
@@ -2579,7 +2579,7 @@ ogs_tlv_desc_t ogs_pfcp_msg_desc_pfcp_session_establishment_request =
         &ogs_pfcp_tlv_desc_create_urr,
         &ogs_tlv_desc_more2,
         &ogs_pfcp_tlv_desc_create_qer,
-        &ogs_tlv_desc_more2,
+        &ogs_tlv_desc_more4,
         &ogs_pfcp_tlv_desc_create_bar,
         &ogs_pfcp_tlv_desc_create_traffic_endpoint,
         &ogs_pfcp_tlv_desc_pdn_type,
@@ -2629,7 +2629,7 @@ ogs_tlv_desc_t ogs_pfcp_msg_desc_pfcp_session_modification_request =
         &ogs_pfcp_tlv_desc_remove_urr,
         &ogs_tlv_desc_more2,
         &ogs_pfcp_tlv_desc_remove_qer,
-        &ogs_tlv_desc_more2,
+        &ogs_tlv_desc_more4,
         &ogs_pfcp_tlv_desc_remove_bar,
         &ogs_pfcp_tlv_desc_remove_traffic_endpoint,
         &ogs_pfcp_tlv_desc_create_pdr,
@@ -2639,7 +2639,7 @@ ogs_tlv_desc_t ogs_pfcp_msg_desc_pfcp_session_modification_request =
         &ogs_pfcp_tlv_desc_create_urr,
         &ogs_tlv_desc_more2,
         &ogs_pfcp_tlv_desc_create_qer,
-        &ogs_tlv_desc_more2,
+        &ogs_tlv_desc_more4,
         &ogs_pfcp_tlv_desc_create_bar,
         &ogs_pfcp_tlv_desc_create_traffic_endpoint,
         &ogs_pfcp_tlv_desc_update_pdr,
@@ -2649,7 +2649,7 @@ ogs_tlv_desc_t ogs_pfcp_msg_desc_pfcp_session_modification_request =
         &ogs_pfcp_tlv_desc_update_urr,
         &ogs_tlv_desc_more2,
         &ogs_pfcp_tlv_desc_update_qer,
-        &ogs_tlv_desc_more2,
+        &ogs_tlv_desc_more4,
         &ogs_pfcp_tlv_desc_update_bar_session_modification_request,
         &ogs_pfcp_tlv_desc_update_traffic_endpoint,
         &ogs_pfcp_tlv_desc_pfcpsmreq_flags,

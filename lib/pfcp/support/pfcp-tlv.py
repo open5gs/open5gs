@@ -149,7 +149,7 @@ def get_cells(cells):
     if ie_type == 'Create URR' or ie_type == 'Update URR' or ie_type == "Remove URR":
         tlv_more = "1"
     if ie_type == 'Create QER' or ie_type == 'Update QER' or ie_type == "Remove QER":
-        tlv_more = "1"
+        tlv_more = "3"
     if ie_type == 'User Plane IP Resource Information':
         tlv_more = "3"
     if ie_type == 'SDF Filter':

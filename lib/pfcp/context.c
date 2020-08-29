@@ -26,11 +26,6 @@ static OGS_POOL(ogs_pfcp_node_pool, ogs_pfcp_node_t);
 static OGS_POOL(ogs_pfcp_gtpu_resource_pool, ogs_pfcp_gtpu_resource_t);
 
 static OGS_POOL(ogs_pfcp_sess_pool, ogs_pfcp_sess_t);
-static OGS_POOL(ogs_pfcp_pdr_pool, ogs_pfcp_pdr_t);
-static OGS_POOL(ogs_pfcp_far_pool, ogs_pfcp_far_t);
-static OGS_POOL(ogs_pfcp_urr_pool, ogs_pfcp_urr_t);
-static OGS_POOL(ogs_pfcp_qer_pool, ogs_pfcp_qer_t);
-static OGS_POOL(ogs_pfcp_bar_pool, ogs_pfcp_bar_t);
 
 static OGS_POOL(ogs_pfcp_dev_pool, ogs_pfcp_dev_t);
 static OGS_POOL(ogs_pfcp_subnet_pool, ogs_pfcp_subnet_t);
@@ -72,16 +67,6 @@ void ogs_pfcp_context_init(int num_of_gtpu_resource)
 
     ogs_pool_init(&ogs_pfcp_sess_pool, ogs_app()->pool.sess);
 
-    ogs_pool_init(&ogs_pfcp_pdr_pool,
-            ogs_app()->pool.sess * OGS_MAX_NUM_OF_PDR);
-    ogs_pool_init(&ogs_pfcp_far_pool,
-            ogs_app()->pool.sess * OGS_MAX_NUM_OF_FAR);
-    ogs_pool_init(&ogs_pfcp_urr_pool,
-            ogs_app()->pool.sess * OGS_MAX_NUM_OF_URR);
-    ogs_pool_init(&ogs_pfcp_qer_pool,
-            ogs_app()->pool.sess * OGS_MAX_NUM_OF_QER);
-    ogs_pool_init(&ogs_pfcp_bar_pool,
-            ogs_app()->pool.sess * OGS_MAX_NUM_OF_BAR);
     ogs_pool_init(&ogs_pfcp_rule_pool,
             ogs_app()->pool.sess * OGS_MAX_NUM_OF_RULE);
 
@@ -110,11 +95,6 @@ void ogs_pfcp_context_final(void)
     ogs_pool_final(&ogs_pfcp_rule_pool);
 
     ogs_pool_final(&ogs_pfcp_sess_pool);
-    ogs_pool_final(&ogs_pfcp_pdr_pool);
-    ogs_pool_final(&ogs_pfcp_far_pool);
-    ogs_pool_final(&ogs_pfcp_urr_pool);
-    ogs_pool_final(&ogs_pfcp_qer_pool);
-    ogs_pool_final(&ogs_pfcp_bar_pool);
 
     ogs_pfcp_node_remove_all(&self.peer_list);
     ogs_pfcp_gtpu_resource_remove_all(&self.gtpu_resource_list);
@@ -811,9 +791,12 @@ ogs_pfcp_pdr_t *ogs_pfcp_pdr_add(ogs_pfcp_sess_t *sess)
 
     ogs_assert(sess);
 
-    ogs_pool_alloc(&ogs_pfcp_pdr_pool, &pdr);
+    ogs_pool_alloc(&sess->pdr_pool, &pdr);
     ogs_assert(pdr);
     memset(pdr, 0, sizeof *pdr);
+
+    pdr->index = ogs_pool_index(&sess->pdr_pool, pdr);
+    ogs_assert(pdr->index > 0 && pdr->index <= OGS_MAX_NUM_OF_PDR);
 
     pdr->sess = sess;
     ogs_list_add(&sess->pdr_list, pdr);
@@ -929,7 +912,7 @@ void ogs_pfcp_pdr_remove(ogs_pfcp_pdr_t *pdr)
     if (pdr->dnn)
         ogs_free(pdr->dnn);
 
-    ogs_pool_free(&ogs_pfcp_pdr_pool, pdr);
+    ogs_pool_free(&pdr->sess->pdr_pool, pdr);
 }
 
 void ogs_pfcp_pdr_remove_all(ogs_pfcp_sess_t *sess)
@@ -947,9 +930,12 @@ ogs_pfcp_far_t *ogs_pfcp_far_add(ogs_pfcp_sess_t *sess)
 
     ogs_assert(sess);
 
-    ogs_pool_alloc(&ogs_pfcp_far_pool, &far);
+    ogs_pool_alloc(&sess->far_pool, &far);
     ogs_assert(far);
     memset(far, 0, sizeof *far);
+
+    far->index = ogs_pool_index(&sess->far_pool, far);
+    ogs_assert(far->index > 0 && far->index <= OGS_MAX_NUM_OF_FAR);
 
     far->apply_action = OGS_PFCP_APPLY_ACTION_FORW;
 
@@ -1002,7 +988,7 @@ void ogs_pfcp_far_remove(ogs_pfcp_far_t *far)
         ogs_pkbuf_free(far->buffered_packet[i]);
 
     ogs_list_remove(&sess->far_list, far);
-    ogs_pool_free(&ogs_pfcp_far_pool, far);
+    ogs_pool_free(&sess->far_pool, far);
 }
 
 void ogs_pfcp_far_remove_all(ogs_pfcp_sess_t *sess)
@@ -1021,9 +1007,12 @@ ogs_pfcp_urr_t *ogs_pfcp_urr_add(ogs_pfcp_sess_t *sess)
 
     ogs_assert(sess);
 
-    ogs_pool_alloc(&ogs_pfcp_urr_pool, &urr);
+    ogs_pool_alloc(&sess->urr_pool, &urr);
     ogs_assert(urr);
     memset(urr, 0, sizeof *urr);
+
+    urr->index = ogs_pool_index(&sess->urr_pool, urr);
+    ogs_assert(urr->index > 0 && urr->index <= OGS_MAX_NUM_OF_URR);
 
     urr->sess = sess;
     ogs_list_add(&sess->urr_list, urr);
@@ -1070,7 +1059,7 @@ void ogs_pfcp_urr_remove(ogs_pfcp_urr_t *urr)
     ogs_assert(sess);
 
     ogs_list_remove(&sess->urr_list, urr);
-    ogs_pool_free(&ogs_pfcp_urr_pool, urr);
+    ogs_pool_free(&sess->urr_pool, urr);
 }
 
 void ogs_pfcp_urr_remove_all(ogs_pfcp_sess_t *sess)
@@ -1089,9 +1078,12 @@ ogs_pfcp_qer_t *ogs_pfcp_qer_add(ogs_pfcp_sess_t *sess)
 
     ogs_assert(sess);
 
-    ogs_pool_alloc(&ogs_pfcp_qer_pool, &qer);
+    ogs_pool_alloc(&sess->qer_pool, &qer);
     ogs_assert(qer);
     memset(qer, 0, sizeof *qer);
+
+    qer->index = ogs_pool_index(&sess->qer_pool, qer);
+    ogs_assert(qer->index > 0 && qer->index <= OGS_MAX_NUM_OF_QER);
 
     qer->sess = sess;
     ogs_list_add(&sess->qer_list, qer);
@@ -1138,7 +1130,7 @@ void ogs_pfcp_qer_remove(ogs_pfcp_qer_t *qer)
     ogs_assert(sess);
 
     ogs_list_remove(&sess->qer_list, qer);
-    ogs_pool_free(&ogs_pfcp_qer_pool, qer);
+    ogs_pool_free(&sess->qer_pool, qer);
 }
 
 void ogs_pfcp_qer_remove_all(ogs_pfcp_sess_t *sess)
@@ -1158,7 +1150,7 @@ ogs_pfcp_bar_t *ogs_pfcp_bar_new(ogs_pfcp_sess_t *sess)
     ogs_assert(sess);
     ogs_assert(sess->bar == NULL); /* Only One BAR is supported */
 
-    ogs_pool_alloc(&ogs_pfcp_bar_pool, &bar);
+    ogs_pool_alloc(&sess->bar_pool, &bar);
     ogs_assert(bar);
     memset(bar, 0, sizeof *bar);
 
@@ -1179,7 +1171,7 @@ void ogs_pfcp_bar_delete(ogs_pfcp_bar_t *bar)
     bar->sess = NULL;
     sess->bar = NULL;
 
-    ogs_pool_free(&ogs_pfcp_bar_pool, bar);
+    ogs_pool_free(&sess->bar_pool, bar);
 }
 
 ogs_pfcp_rule_t *ogs_pfcp_rule_add(ogs_pfcp_pdr_t *pdr)

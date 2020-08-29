@@ -29,7 +29,9 @@ extern "C" {
 #endif /* __cplusplus */
 
 #define OGS_MAX_NUM_OF_SESS             4   /* Num of APN(Session) per UE */
+#define OGS_MAX_NUM_OF_BEARER           4   /* Num of Bearer per Session */
 #define OGS_MAX_NUM_OF_RULE             4   /* Num of Rule per Session */
+#define OGS_MAX_NUM_OF_PF               16  /* Num of PacketFilter per Bearer */
 
 /* Num of PacketFilter per Bearer(GTP) or QoS(NAS-5GS) */
 #define OGS_MAX_NUM_OF_PACKET_FILTER    16

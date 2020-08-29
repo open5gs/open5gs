@@ -134,10 +134,10 @@ void smf_s5c_handle_create_session_request(
     memcpy(&sess->e_tai, &uli.tai, sizeof(sess->e_tai));
     memcpy(&sess->e_cgi, &uli.e_cgi, sizeof(sess->e_cgi));
 
-    /* Select UPF based on UE Location Information */
+    /* Select PGW based on UE Location Information */
     smf_sess_select_upf(sess);
 
-    /* Check if selected UPF is associated with SMF */
+    /* Check if selected PGW is associated with SMF */
     ogs_assert(sess->pfcp_node);
     if (!OGS_FSM_CHECK(&sess->pfcp_node->sm, smf_pfcp_state_associated)) {
         ogs_gtp_send_error_message(xact, sess ? sess->sgw_s5c_teid : 0,
@@ -183,8 +183,8 @@ void smf_s5c_handle_create_session_request(
 
     ogs_debug("    SGW_S5C_TEID[0x%x] SMF_N4_TEID[0x%x]",
             sess->sgw_s5c_teid, sess->smf_n4_teid);
-    ogs_debug("    SGW_S5U_TEID[0x%x] UPF_S5U_TEID[0x%x]",
-            bearer->sgw_s5u_teid, bearer->upf_s5u_teid);
+    ogs_debug("    SGW_S5U_TEID[0x%x] PGW_S5U_TEID[0x%x]",
+            bearer->sgw_s5u_teid, bearer->pgw_s5u_teid);
 
     decoded = ogs_gtp_parse_bearer_qos(&bearer_qos,
         &req->bearer_contexts_to_be_created.bearer_level_qos);
@@ -273,9 +273,9 @@ void smf_s5c_handle_create_bearer_response(
         ogs_gtp_create_bearer_response_t *rsp)
 {
     int rv;
-    ogs_gtp_f_teid_t *sgw_s5u_teid, *upf_s5u_teid;
+    ogs_gtp_f_teid_t *sgw_s5u_teid, *pgw_s5u_teid;
     smf_bearer_t *bearer = NULL;
-    ogs_pfcp_far_t *far = NULL;
+    ogs_pfcp_far_t *dl_far = NULL;
 
     ogs_assert(xact);
     ogs_assert(rsp);
@@ -320,12 +320,12 @@ void smf_s5c_handle_create_bearer_response(
         return;
     }
 
-    /* Correlate with UPF-S5U-TEID */
-    upf_s5u_teid = rsp->bearer_contexts.s5_s8_u_pgw_f_teid.data;
-    ogs_assert(upf_s5u_teid);
+    /* Correlate with PGW-S5U-TEID */
+    pgw_s5u_teid = rsp->bearer_contexts.s5_s8_u_pgw_f_teid.data;
+    ogs_assert(pgw_s5u_teid);
 
-    /* Find the Bearer by UPF-S5U-TEID */
-    bearer = smf_bearer_find_by_upf_s5u_teid(be32toh(upf_s5u_teid->teid));
+    /* Find the Bearer by PGW-S5U-TEID */
+    bearer = smf_bearer_find_by_pgw_s5u_teid(be32toh(pgw_s5u_teid->teid));
     ogs_assert(bearer);
 
     /* Set EBI */
@@ -342,30 +342,29 @@ void smf_s5c_handle_create_bearer_response(
             sess->sgw_s5c_teid, sess->smf_n4_teid);
 
     /* Setup FAR */
-    ogs_list_for_each(&bearer->pfcp.far_list, far) {
-        if (far->dst_if == OGS_PFCP_INTERFACE_ACCESS) {
-            ogs_pfcp_ip_to_outer_header_creation(&bearer->sgw_s5u_ip,
-                &far->outer_header_creation, &far->outer_header_creation_len);
-            far->outer_header_creation.teid = bearer->sgw_s5u_teid;
-        }
-    }
+    dl_far = bearer->dl_far;
+    ogs_assert(dl_far);
+
+    ogs_pfcp_ip_to_outer_header_creation(&bearer->sgw_s5u_ip,
+        &dl_far->outer_header_creation, &dl_far->outer_header_creation_len);
+    dl_far->outer_header_creation.teid = bearer->sgw_s5u_teid;
 
     /* Setup QER */
     if (bearer->qos.mbr.downlink || bearer->qos.mbr.uplink ||
         bearer->qos.gbr.downlink || bearer->qos.gbr.uplink) {
-        ogs_pfcp_pdr_t *pdr = NULL;
         ogs_pfcp_qer_t *qer = NULL;
 
         /* Only 1 QER is used per bearer */
-        qer = ogs_list_first(&bearer->pfcp.qer_list);
+        qer = bearer->qer;
         if (!qer) {
-            qer = ogs_pfcp_qer_add(&bearer->pfcp);
+            qer = ogs_pfcp_qer_add(&sess->pfcp);
             ogs_assert(qer);
-            qer->id = OGS_NEXT_ID(sess->qer_id, 1, OGS_MAX_NUM_OF_QER+1);
+            qer->id = qer->index;
+            bearer->qer = qer;
         }
 
-        ogs_list_for_each(&bearer->pfcp.pdr_list, pdr)
-            ogs_pfcp_pdr_associate_qer(pdr, qer);
+        ogs_pfcp_pdr_associate_qer(bearer->dl_pdr, qer);
+        ogs_pfcp_pdr_associate_qer(bearer->ul_pdr, qer);
 
         qer->mbr.uplink = bearer->qos.mbr.uplink;
         qer->mbr.downlink = bearer->qos.mbr.downlink;
@@ -432,31 +431,27 @@ void smf_s5c_handle_update_bearer_response(
 
     if (gtp_flags & OGS_GTP_MODIFY_TFT_UPDATE) {
         smf_pf_t *pf = NULL;
-        ogs_pfcp_pdr_t *pdr = NULL;
+        ogs_pfcp_pdr_t *dl_pdr = NULL, *ul_pdr = NULL;
 
-        ogs_list_for_each(&bearer->pfcp.pdr_list, pdr)
-            pdr->num_of_flow = 0;
+        dl_pdr = bearer->dl_pdr;
+        ogs_assert(dl_pdr);
+        ul_pdr = bearer->ul_pdr;
+        ogs_assert(ul_pdr);
+
+        dl_pdr->num_of_flow = 0;
+        ul_pdr->num_of_flow = 0;
 
         ogs_list_for_each(&bearer->pf_list, pf) {
-            ogs_list_for_each(&bearer->pfcp.pdr_list, pdr) {
-                if (pf->direction == OGS_FLOW_DOWNLINK_ONLY) {
-                    if (pdr->src_if == OGS_PFCP_INTERFACE_CORE) {
-                        pdr->flow_description[pdr->num_of_flow++] =
-                            pf->flow_description;
-                        break;
-                    }
+            if (pf->direction == OGS_FLOW_DOWNLINK_ONLY) {
+                dl_pdr->flow_description[dl_pdr->num_of_flow++] =
+                    pf->flow_description;
 
-                } else if (pf->direction == OGS_FLOW_UPLINK_ONLY) {
-                    if (pdr->src_if == OGS_PFCP_INTERFACE_ACCESS) {
-                        pdr->flow_description[pdr->num_of_flow++] =
-                            pf->flow_description;
-                        break;
-                    }
-                } else {
-                    ogs_error("Flow Bidirectional is not supported[%d]",
-                            pf->direction);
-                    break;
-                }
+            } else if (pf->direction == OGS_FLOW_UPLINK_ONLY) {
+                ul_pdr->flow_description[ul_pdr->num_of_flow++] =
+                    pf->flow_description;
+            } else {
+                ogs_error("Flow Bidirectional is not supported[%d]",
+                        pf->direction);
             }
         }
 
@@ -467,7 +462,7 @@ void smf_s5c_handle_update_bearer_response(
         ogs_pfcp_qer_t *qer = NULL;
 
         /* Only 1 QER is used per bearer */
-        qer = ogs_list_first(&bearer->pfcp.qer_list);
+        qer = bearer->qer;
         if (qer) {
             qer->mbr.uplink = bearer->qos.mbr.uplink;
             qer->mbr.downlink = bearer->qos.mbr.downlink;

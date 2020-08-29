@@ -48,8 +48,9 @@ void smf_gx_handle_cca_initial_request(
     int i;
 
     smf_bearer_t *bearer = NULL;
-    ogs_pfcp_pdr_t *pdr = NULL;
-    ogs_pfcp_far_t *far = NULL;
+    ogs_pfcp_pdr_t *dl_pdr = NULL;
+    ogs_pfcp_pdr_t *ul_pdr = NULL;
+    ogs_pfcp_far_t *dl_far = NULL;
     ogs_pfcp_qer_t *qer = NULL;
 
     ogs_assert(sess);
@@ -119,11 +120,12 @@ void smf_gx_handle_cca_initial_request(
     /* Setup QER */
     if (sess->pdn.ambr.downlink || sess->pdn.ambr.uplink) {
         /* Only 1 QER is used per bearer */
-        qer = ogs_list_first(&bearer->pfcp.qer_list);
+        qer = bearer->qer;
         if (!qer) {
-            qer = ogs_pfcp_qer_add(&bearer->pfcp);
+            qer = ogs_pfcp_qer_add(&sess->pfcp);
             ogs_assert(qer);
-            qer->id = OGS_NEXT_ID(sess->qer_id, 1, OGS_MAX_NUM_OF_QER+1);
+            qer->id = qer->index;
+            bearer->qer = qer;
         }
 
         qer->mbr.uplink = sess->pdn.ambr.uplink;
@@ -131,31 +133,32 @@ void smf_gx_handle_cca_initial_request(
     }
 
     /* Setup FAR */
-    ogs_list_for_each(&bearer->pfcp.far_list, far) {
+    dl_far = bearer->dl_far;
+    ogs_assert(dl_far);
 
-        /* Set Outer Header Creation to the Default DL FAR */
-        if (far->dst_if == OGS_PFCP_INTERFACE_ACCESS) {
-            ogs_pfcp_ip_to_outer_header_creation(&bearer->sgw_s5u_ip,
-                &far->outer_header_creation, &far->outer_header_creation_len);
-            far->outer_header_creation.teid = bearer->sgw_s5u_teid;
-        }
-    }
+    /* Set Outer Header Creation to the Default DL FAR */
+    ogs_pfcp_ip_to_outer_header_creation(&bearer->sgw_s5u_ip,
+        &dl_far->outer_header_creation, &dl_far->outer_header_creation_len);
+    dl_far->outer_header_creation.teid = bearer->sgw_s5u_teid;
 
     /* Setup PDR */
-    ogs_list_for_each(&bearer->pfcp.pdr_list, pdr) {
+    dl_pdr = bearer->dl_pdr;
+    ogs_assert(dl_pdr);
+    ul_pdr = bearer->ul_pdr;
+    ogs_assert(ul_pdr);
 
-        /* Set UE IP Address to the Default DL PDR */
-        if (pdr->src_if == OGS_PFCP_INTERFACE_CORE) {
-            ogs_pfcp_paa_to_ue_ip_addr(&sess->pdn.paa,
-                    &pdr->ue_ip_addr, &pdr->ue_ip_addr_len);
-            pdr->ue_ip_addr.sd = OGS_PFCP_UE_IP_DST;
-        }
+    /* Set UE IP Address to the Default DL PDR */
+    ogs_pfcp_paa_to_ue_ip_addr(&sess->pdn.paa,
+            &dl_pdr->ue_ip_addr, &dl_pdr->ue_ip_addr_len);
+    dl_pdr->ue_ip_addr.sd = OGS_PFCP_UE_IP_DST;
 
-        /* Default PDRs is set to lowest precedence(highest precedence value) */
-        pdr->precedence = 0xffffffff;
+    /* Default PDRs is set to lowest precedence(highest precedence value) */
+    dl_pdr->precedence = 0xffffffff;
+    ul_pdr->precedence = 0xffffffff;
 
-        if (qer)
-            ogs_pfcp_pdr_associate_qer(pdr, qer);
+    if (qer) {
+        ogs_pfcp_pdr_associate_qer(dl_pdr, qer);
+        ogs_pfcp_pdr_associate_qer(ul_pdr, qer);
     }
 
     smf_epc_pfcp_send_session_establishment_request(sess, gtp_xact);

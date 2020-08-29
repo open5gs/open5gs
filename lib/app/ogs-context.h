@@ -90,7 +90,6 @@ typedef struct ogs_app_context_s {
         uint64_t sess;
         uint64_t bearer;
         uint64_t tunnel;
-        uint64_t pf;
         uint64_t nf_service;
         uint64_t nf_subscription;
         uint64_t sbi_message;

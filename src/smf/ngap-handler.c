@@ -31,7 +31,7 @@ int ngap_handle_pdu_session_resource_setup_response_transfer(
     uint32_t upf_n3_teid;
     ogs_ip_t upf_n3_ip;
 
-    ogs_pfcp_far_t *far = NULL;
+    ogs_pfcp_far_t *dl_far = NULL;
     bool far_update = false;
 
     NGAP_PDUSessionResourceSetupResponseTransfer_t message;
@@ -118,25 +118,19 @@ int ngap_handle_pdu_session_resource_setup_response_transfer(
         sess->gnb_n3_teid != upf_n3_teid)
         far_update = true;
 
-    ogs_list_for_each(&qos_flow->pfcp.far_list, far) {
-        if (far->dst_if == OGS_PFCP_INTERFACE_ACCESS) {
-            if (far->apply_action != OGS_PFCP_APPLY_ACTION_FORW) {
-                far_update = true;
-            }
-        }
+    dl_far = qos_flow->dl_far;
+    ogs_assert(dl_far);
+    if (dl_far->apply_action != OGS_PFCP_APPLY_ACTION_FORW) {
+        far_update = true;
     }
 
     /* Setup FAR */
     memcpy(&sess->gnb_n3_ip, &upf_n3_ip, sizeof(sess->gnb_n3_ip));
     sess->gnb_n3_teid = upf_n3_teid;
 
-    ogs_list_for_each(&qos_flow->pfcp.far_list, far) {
-        if (far->dst_if == OGS_PFCP_INTERFACE_ACCESS) {
-            ogs_pfcp_ip_to_outer_header_creation(&sess->gnb_n3_ip,
-                &far->outer_header_creation, &far->outer_header_creation_len);
-            far->outer_header_creation.teid = sess->gnb_n3_teid;
-        }
-    }
+    ogs_pfcp_ip_to_outer_header_creation(&sess->gnb_n3_ip,
+        &dl_far->outer_header_creation, &dl_far->outer_header_creation_len);
+    dl_far->outer_header_creation.teid = sess->gnb_n3_teid;
 
     if (far_update) {
         smf_5gc_pfcp_send_qos_flow_modification_request(

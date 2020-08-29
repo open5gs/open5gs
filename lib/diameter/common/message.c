@@ -40,6 +40,9 @@ struct dict_object *ogs_diam_experimental_result_code = NULL;
 struct dict_object *ogs_diam_vendor_specific_application_id = NULL;
 struct dict_object *ogs_diam_mip6_agent_info = NULL;
 struct dict_object *ogs_diam_mip_home_agent_address = NULL;
+struct dict_object *ogs_diam_authorization_lifetime = NULL;
+struct dict_object *ogs_diam_auth_grace_period = NULL;
+struct dict_object *ogs_diam_session_timeout = NULL;
 
 struct dict_object *ogs_diam_vendor = NULL;
 struct dict_object *ogs_diam_vendor_id = NULL;
@@ -71,6 +74,9 @@ int ogs_diam_message_init()
     CHECK_dict_search( DICT_AVP, AVP_BY_NAME, "Vendor-Specific-Application-Id", &ogs_diam_vendor_specific_application_id);
     CHECK_dict_search( DICT_AVP, AVP_BY_NAME, "MIP6-Agent-Info", &ogs_diam_mip6_agent_info);
     CHECK_dict_search( DICT_AVP, AVP_BY_NAME, "MIP-Home-Agent-Address", &ogs_diam_mip_home_agent_address);
+    CHECK_dict_search( DICT_AVP, AVP_BY_NAME, "Authorization-Lifetime", &ogs_diam_authorization_lifetime);
+    CHECK_dict_search( DICT_AVP, AVP_BY_NAME, "Auth-Grace-Period", &ogs_diam_auth_grace_period);
+    CHECK_dict_search( DICT_AVP, AVP_BY_NAME, "Session-Timeout", &ogs_diam_session_timeout);
 
     return 0;
 }

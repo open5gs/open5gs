@@ -31,6 +31,7 @@ struct dict_object *ogs_diam_rx_cmd_asa = NULL;
 struct dict_object *ogs_diam_rx_cmd_str = NULL;
 struct dict_object *ogs_diam_rx_cmd_sta = NULL;
 
+struct dict_object *ogs_diam_rx_af_application_identifier = NULL;
 struct dict_object *ogs_diam_rx_media_component_description = NULL;
 struct dict_object *ogs_diam_rx_media_component_number = NULL;
 struct dict_object *ogs_diam_rx_media_type = NULL;
@@ -49,6 +50,7 @@ struct dict_object *ogs_diam_rx_flow_description = NULL;
 struct dict_object *ogs_diam_rx_subscription_id = NULL;
 struct dict_object *ogs_diam_rx_subscription_id_type = NULL;
 struct dict_object *ogs_diam_rx_subscription_id_data = NULL;
+struct dict_object *ogs_diam_rx_reservation_priority = NULL;
 struct dict_object *ogs_diam_rx_specific_action = NULL;
 struct dict_object *ogs_diam_rx_framed_ip_address = NULL;
 struct dict_object *ogs_diam_rx_framed_ipv6_prefix = NULL;
@@ -74,6 +76,7 @@ int ogs_diam_rx_init(void)
     CHECK_dict_search(DICT_COMMAND, CMD_BY_NAME, "Session-Termination-Request", &ogs_diam_rx_cmd_str);
     CHECK_dict_search(DICT_COMMAND, CMD_BY_NAME, "Session-Termination-Answer", &ogs_diam_rx_cmd_sta);
 
+    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "AF-Application-Identifier", &ogs_diam_rx_af_application_identifier);
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Media-Component-Description", &ogs_diam_rx_media_component_description);
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Media-Component-Number", &ogs_diam_rx_media_component_number);
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Media-Type", &ogs_diam_rx_media_type);
@@ -92,6 +95,7 @@ int ogs_diam_rx_init(void)
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Subscription-Id", &ogs_diam_rx_subscription_id);
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Subscription-Id-Type", &ogs_diam_rx_subscription_id_type);
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Subscription-Id-Data", &ogs_diam_rx_subscription_id_data);
+    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Reservation-Priority", &ogs_diam_rx_reservation_priority);
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Specific-Action", &ogs_diam_rx_specific_action);
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Framed-IP-Address", &ogs_diam_rx_framed_ip_address);
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Framed-IPv6-Prefix", &ogs_diam_rx_framed_ipv6_prefix);

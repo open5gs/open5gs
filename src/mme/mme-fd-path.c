@@ -157,7 +157,8 @@ void mme_s6a_send_air(mme_ue_t *mme_ue,
     ogs_assert(ret == 0);
 
     /* Set Vendor-Specific-Application-Id AVP */
-    ret = ogs_diam_message_vendor_specific_appid_set(req, OGS_DIAM_S6A_APPLICATION_ID);
+    ret = ogs_diam_message_vendor_specific_appid_set(
+            req, OGS_DIAM_S6A_APPLICATION_ID);
     ogs_assert(ret == 0);
     
     ret = clock_gettime(CLOCK_REALTIME, &sess_data->ts);

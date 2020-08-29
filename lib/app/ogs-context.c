@@ -60,13 +60,10 @@ ogs_app_context_t *ogs_app()
 
 static void recalculate_pool_size(void)
 {
-#define MAX_NUM_OF_BEARER       4   /* Num of Bearer per Session */
 #define MAX_NUM_OF_TUNNEL       3   /* Num of Tunnel per Bearer */
-#define MAX_NUM_OF_PF           16  /* Num of PacketFilter per Bearer */
     self.pool.sess = self.max.ue * OGS_MAX_NUM_OF_SESS;
-    self.pool.bearer = self.pool.sess * MAX_NUM_OF_BEARER;
+    self.pool.bearer = self.pool.sess * OGS_MAX_NUM_OF_BEARER;
     self.pool.tunnel = self.pool.bearer * MAX_NUM_OF_TUNNEL;
-    self.pool.pf = self.pool.bearer * MAX_NUM_OF_PF;
 
 #define MAX_NUM_OF_TIMER        16
     self.pool.timer = self.max.ue * MAX_NUM_OF_TIMER;
