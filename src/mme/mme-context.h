@@ -148,7 +148,6 @@ typedef struct mme_context_s {
 
     ogs_hash_t      *enb_addr_hash;         /* hash table for ENB Address */
     ogs_hash_t      *enb_id_hash;           /* hash table for ENB-ID */
-    ogs_hash_t      *mme_ue_s1ap_id_hash;   /* hash table for MME-UE-S1AP-ID */
     ogs_hash_t      *imsi_ue_hash;          /* hash table (IMSI : MME_UE) */
     ogs_hash_t      *guti_ue_hash;          /* hash table (GUTI : MME_UE) */
 
@@ -232,6 +231,7 @@ typedef struct mme_enb_s {
 
 struct enb_ue_s {
     ogs_lnode_t     lnode;
+    uint32_t        index;
 
     /* UE identity */
 #define INVALID_UE_S1AP_ID      0xffffffff /* Initial value of enb_ue_s1ap_id */
@@ -267,89 +267,6 @@ struct enb_ue_s {
     mme_enb_t       *enb;
     mme_ue_t        *mme_ue;
 }; 
-
-#define BEARER_CONTEXT_IS_ACTIVE(__mME)  \
-    (mme_bearer_is_inactive(__mME) == 0)
-#define CLEAR_BEARER_CONTEXT(__mME)   \
-    mme_bearer_set_inactive(__mME)
-
-#define MME_HAVE_ENB_S1U_PATH(__bEARER) \
-    ((__bEARER) && ((__bEARER)->enb_s1u_teid))
-#define CLEAR_ENB_S1U_PATH(__bEARER) \
-    do { \
-        ogs_assert((__bEARER)); \
-        (__bEARER)->enb_s1u_teid = 0; \
-    } while(0)
-
-#define MME_HAVE_ENB_DL_INDIRECT_TUNNEL(__bEARER) \
-    ((__bEARER) && ((__bEARER)->enb_dl_teid))
-#define MME_HAVE_ENB_UL_INDIRECT_TUNNEL(__bEARER) \
-    ((__bEARER) && ((__bEARER)->enb_ul_teid))
-#define MME_HAVE_SGW_DL_INDIRECT_TUNNEL(__bEARER) \
-    ((__bEARER) && ((__bEARER)->sgw_dl_teid))
-#define MME_HAVE_SGW_UL_INDIRECT_TUNNEL(__bEARER) \
-    ((__bEARER) && ((__bEARER)->sgw_ul_teid))
-#define CLEAR_INDIRECT_TUNNEL(__bEARER) \
-    do { \
-        ogs_assert((__bEARER)); \
-        (__bEARER)->enb_dl_teid = 0; \
-        (__bEARER)->enb_ul_teid = 0; \
-        (__bEARER)->sgw_dl_teid = 0; \
-        (__bEARER)->sgw_ul_teid = 0; \
-    } while(0)
-typedef struct mme_bearer_s {
-    ogs_lnode_t     lnode;
-    uint32_t        index;
-    ogs_fsm_t       sm;             /* State Machine */
-
-    uint8_t         ebi;            /* EPS Bearer ID */
-
-    uint32_t        enb_s1u_teid;
-    ogs_ip_t        enb_s1u_ip;
-    uint32_t        sgw_s1u_teid;
-    ogs_ip_t        sgw_s1u_ip;
-
-    uint32_t        target_s1u_teid;    /* Target S1U TEID from HO-Req-Ack */
-    ogs_ip_t        target_s1u_ip;      /* Target S1U ADDR from HO-Req-Ack */
-
-    uint32_t        enb_dl_teid;
-    ogs_ip_t        enb_dl_ip;
-    uint32_t        enb_ul_teid;
-    ogs_ip_t        enb_ul_ip;
-
-    uint32_t        sgw_dl_teid;
-    ogs_ip_t        sgw_dl_ip;
-    uint32_t        sgw_ul_teid;
-    ogs_ip_t        sgw_ul_ip;
-
-    ogs_qos_t       qos;
-    ogs_tlv_octet_t tft;   /* Saved TFT */
-
-#define CLEAR_BEARER_ALL_TIMERS(__bEARER) \
-    do { \
-        CLEAR_BEARER_TIMER((__bEARER)->t3489); \
-    } while(0);
-#define CLEAR_BEARER_TIMER(__bEARER_TIMER) \
-    do { \
-        ogs_timer_stop((__bEARER_TIMER).timer); \
-        if ((__bEARER_TIMER).pkbuf) \
-        { \
-            ogs_pkbuf_free((__bEARER_TIMER).pkbuf); \
-            (__bEARER_TIMER).pkbuf = NULL; \
-        } \
-        (__bEARER_TIMER).retry_count = 0; \
-    } while(0);
-    struct {
-        ogs_pkbuf_t     *pkbuf;
-        ogs_timer_t     *timer;
-        uint32_t        retry_count;;
-    } t3489;
-
-    /* Related Context */
-    mme_ue_t        *mme_ue;
-    mme_sess_t      *sess;
-    ogs_gtp_xact_t  *xact;
-} mme_bearer_t;
 
 struct mme_ue_s {
     ogs_lnode_t     lnode;
@@ -476,7 +393,14 @@ struct mme_ue_s {
 
 #define MIN_EPS_BEARER_ID           5
 #define MAX_EPS_BEARER_ID           15
-    OGS_POOL(bearer_pool, mme_bearer_t);
+
+#define CLEAR_EPS_BEARER_ID(__mME) \
+    do { \
+        ogs_assert((__mME)); \
+        mme_ebi_pool_final(__mME); \
+        mme_ebi_pool_init(__mME); \
+    } while(0)
+    OGS_POOL(ebi_pool, uint8_t);
 
 #define ECM_CONNECTED(__mME) \
     ((__mME) && ((__mME)->enb_ue != NULL))
@@ -599,6 +523,7 @@ struct mme_ue_s {
         ogs_assert((__mME)); \
         (__mME)->sgw_s11_teid = 0; \
         (__mME)->session_context_will_deleted = 0; \
+        CLEAR_EPS_BEARER_ID((__mME)); \
     } while(0)
 typedef struct mme_sess_s {
     ogs_lnode_t     lnode;
@@ -625,6 +550,89 @@ typedef struct mme_sess_s {
     /* Save Protocol Configuration Options from PGW */
     ogs_tlv_octet_t pgw_pco;
 } mme_sess_t;
+
+#define BEARER_CONTEXT_IS_ACTIVE(__mME)  \
+    (mme_bearer_is_inactive(__mME) == 0)
+#define CLEAR_BEARER_CONTEXT(__mME)   \
+    mme_bearer_set_inactive(__mME)
+
+#define MME_HAVE_ENB_S1U_PATH(__bEARER) \
+    ((__bEARER) && ((__bEARER)->enb_s1u_teid))
+#define CLEAR_ENB_S1U_PATH(__bEARER) \
+    do { \
+        ogs_assert((__bEARER)); \
+        (__bEARER)->enb_s1u_teid = 0; \
+    } while(0)
+
+#define MME_HAVE_ENB_DL_INDIRECT_TUNNEL(__bEARER) \
+    ((__bEARER) && ((__bEARER)->enb_dl_teid))
+#define MME_HAVE_ENB_UL_INDIRECT_TUNNEL(__bEARER) \
+    ((__bEARER) && ((__bEARER)->enb_ul_teid))
+#define MME_HAVE_SGW_DL_INDIRECT_TUNNEL(__bEARER) \
+    ((__bEARER) && ((__bEARER)->sgw_dl_teid))
+#define MME_HAVE_SGW_UL_INDIRECT_TUNNEL(__bEARER) \
+    ((__bEARER) && ((__bEARER)->sgw_ul_teid))
+#define CLEAR_INDIRECT_TUNNEL(__bEARER) \
+    do { \
+        ogs_assert((__bEARER)); \
+        (__bEARER)->enb_dl_teid = 0; \
+        (__bEARER)->enb_ul_teid = 0; \
+        (__bEARER)->sgw_dl_teid = 0; \
+        (__bEARER)->sgw_ul_teid = 0; \
+    } while(0)
+typedef struct mme_bearer_s {
+    ogs_lnode_t     lnode;
+    uint32_t        index;
+    ogs_fsm_t       sm;             /* State Machine */
+
+    uint8_t         *ebi;           /* EPS Bearer ID */
+
+    uint32_t        enb_s1u_teid;
+    ogs_ip_t        enb_s1u_ip;
+    uint32_t        sgw_s1u_teid;
+    ogs_ip_t        sgw_s1u_ip;
+
+    uint32_t        target_s1u_teid;    /* Target S1U TEID from HO-Req-Ack */
+    ogs_ip_t        target_s1u_ip;      /* Target S1U ADDR from HO-Req-Ack */
+
+    uint32_t        enb_dl_teid;
+    ogs_ip_t        enb_dl_ip;
+    uint32_t        enb_ul_teid;
+    ogs_ip_t        enb_ul_ip;
+
+    uint32_t        sgw_dl_teid;
+    ogs_ip_t        sgw_dl_ip;
+    uint32_t        sgw_ul_teid;
+    ogs_ip_t        sgw_ul_ip;
+
+    ogs_qos_t       qos;
+    ogs_tlv_octet_t tft;   /* Saved TFT */
+
+#define CLEAR_BEARER_ALL_TIMERS(__bEARER) \
+    do { \
+        CLEAR_BEARER_TIMER((__bEARER)->t3489); \
+    } while(0);
+#define CLEAR_BEARER_TIMER(__bEARER_TIMER) \
+    do { \
+        ogs_timer_stop((__bEARER_TIMER).timer); \
+        if ((__bEARER_TIMER).pkbuf) \
+        { \
+            ogs_pkbuf_free((__bEARER_TIMER).pkbuf); \
+            (__bEARER_TIMER).pkbuf = NULL; \
+        } \
+        (__bEARER_TIMER).retry_count = 0; \
+    } while(0);
+    struct {
+        ogs_pkbuf_t     *pkbuf;
+        ogs_timer_t     *timer;
+        uint32_t        retry_count;;
+    } t3489;
+
+    /* Related Context */
+    mme_ue_t        *mme_ue;
+    mme_sess_t      *sess;
+    ogs_gtp_xact_t  *xact;
+} mme_bearer_t;
 
 void mme_context_init(void);
 void mme_context_final(void);
@@ -665,12 +673,12 @@ int mme_enb_set_enb_id(mme_enb_t *enb, uint32_t enb_id);
 int mme_enb_sock_type(ogs_sock_t *sock);
 
 enb_ue_t *enb_ue_add(mme_enb_t *enb, uint32_t enb_ue_s1ap_id);
-unsigned int enb_ue_count(void);
 void enb_ue_remove(enb_ue_t *enb_ue);
 void enb_ue_remove_in_enb(mme_enb_t *enb);
 void enb_ue_switch_to_enb(enb_ue_t *enb_ue, mme_enb_t *new_enb);
 enb_ue_t *enb_ue_find_by_enb_ue_s1ap_id(
         mme_enb_t *enb, uint32_t enb_ue_s1ap_id);
+enb_ue_t *enb_ue_find(uint32_t index);
 enb_ue_t *enb_ue_find_by_mme_ue_s1ap_id(uint32_t mme_ue_s1ap_id);
 enb_ue_t *enb_ue_first_in_enb(mme_enb_t *enb);
 enb_ue_t *enb_ue_next_in_enb(enb_ue_t *enb_ue);
@@ -778,6 +786,9 @@ int mme_find_served_tai(ogs_eps_tai_t *tai);
 int mme_m_tmsi_pool_generate(void);
 mme_m_tmsi_t *mme_m_tmsi_alloc(void);
 int mme_m_tmsi_free(mme_m_tmsi_t *tmsi);
+
+void mme_ebi_pool_init(mme_ue_t *mme_ue);
+void mme_ebi_pool_final(mme_ue_t *mme_ue);
 
 uint8_t mme_selected_int_algorithm(mme_ue_t *mme_ue);
 uint8_t mme_selected_enc_algorithm(mme_ue_t *mme_ue);

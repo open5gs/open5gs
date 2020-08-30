@@ -364,7 +364,7 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
 
         ogs_fsm_dispatch(&bearer->sm, e);
         if (OGS_FSM_CHECK(&bearer->sm, esm_state_bearer_deactivated)) {
-            if (default_bearer->ebi == bearer->ebi) {
+            if (*(default_bearer->ebi) == *(bearer->ebi)) {
                 /* if the bearer is a default bearer,
                  * remove all session context linked the default bearer */
                 mme_sess_remove(sess);
@@ -375,7 +375,7 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
             }
 
         } else if (OGS_FSM_CHECK(&bearer->sm, esm_state_pdn_did_disconnect)) {
-            ogs_assert(default_bearer->ebi == bearer->ebi);
+            ogs_assert(*(default_bearer->ebi) == *(bearer->ebi));
             mme_sess_remove(sess);
 
         } else if (OGS_FSM_CHECK(&bearer->sm, esm_state_exception)) {

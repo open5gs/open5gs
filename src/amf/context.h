@@ -101,7 +101,6 @@ typedef struct amf_context_s {
 
     ogs_hash_t      *gnb_addr_hash; /* hash table for GNB Address */
     ogs_hash_t      *gnb_id_hash;   /* hash table for GNB-ID */
-    ogs_hash_t      *amf_ue_ngap_id_hash;   /* hash table for AMF-UE-NGAP-ID */
     ogs_hash_t      *guti_ue_hash;          /* hash table (GUTI : AMF_UE) */
     ogs_hash_t      *suci_hash;     /* hash table (SUCI) */
     ogs_hash_t      *supi_hash;     /* hash table (SUPI) */
@@ -151,6 +150,7 @@ typedef struct amf_gnb_s {
 
 struct ran_ue_s {
     ogs_lnode_t     lnode;
+    uint32_t        index;
 
     /* UE identity */
 #define INVALID_UE_NGAP_ID      0xffffffff /* Initial value of ran_ue_ngap_id */
@@ -471,12 +471,12 @@ int amf_gnb_set_gnb_id(amf_gnb_t *gnb, uint32_t gnb_id);
 int amf_gnb_sock_type(ogs_sock_t *sock);
 
 ran_ue_t *ran_ue_add(amf_gnb_t *gnb, uint32_t ran_ue_ngap_id);
-unsigned int ran_ue_count(void);
 void ran_ue_remove(ran_ue_t *ran_ue);
 void ran_ue_remove_in_gnb(amf_gnb_t *gnb);
 void ran_ue_switch_to_gnb(ran_ue_t *ran_ue, amf_gnb_t *new_gnb);
 ran_ue_t *ran_ue_find_by_ran_ue_ngap_id(
         amf_gnb_t *gnb, uint32_t ran_ue_ngap_id);
+ran_ue_t *ran_ue_find(uint32_t index);
 ran_ue_t *ran_ue_find_by_amf_ue_ngap_id(uint64_t amf_ue_ngap_id);
 ran_ue_t *ran_ue_first_in_gnb(amf_gnb_t *gnb);
 ran_ue_t *ran_ue_next_in_gnb(ran_ue_t *ran_ue);

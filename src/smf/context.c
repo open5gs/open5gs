@@ -674,6 +674,8 @@ smf_sess_t *smf_sess_add_by_apn(smf_ue_t *smf_ue, char *apn)
     ogs_pool_init(&sess->pfcp.qer_pool, OGS_MAX_NUM_OF_QER);
     ogs_pool_init(&sess->pfcp.bar_pool, OGS_MAX_NUM_OF_BAR);
 
+    smf_qfi_pool_init(sess);
+
     sess->index = ogs_pool_index(&smf_sess_pool, sess);
     ogs_assert(sess->index > 0 && sess->index <= ogs_app()->pool.sess);
 
@@ -780,6 +782,8 @@ smf_sess_t *smf_sess_add_by_psi(smf_ue_t *smf_ue, uint8_t psi)
     ogs_pool_init(&sess->pfcp.urr_pool, OGS_MAX_NUM_OF_URR);
     ogs_pool_init(&sess->pfcp.qer_pool, OGS_MAX_NUM_OF_QER);
     ogs_pool_init(&sess->pfcp.bar_pool, OGS_MAX_NUM_OF_BAR);
+
+    smf_qfi_pool_init(sess);
 
     sess->index = ogs_pool_index(&smf_sess_pool, sess);
     ogs_assert(sess->index > 0 && sess->index <= ogs_app()->pool.sess);
@@ -986,6 +990,8 @@ void smf_sess_remove(smf_sess_t *sess)
     ogs_pool_final(&sess->pfcp.qer_pool);
     ogs_pool_final(&sess->pfcp.bar_pool);
 
+    ogs_pool_final(&sess->qfi_pool);
+
     ogs_pool_free(&smf_sess_pool, sess);
 }
 
@@ -1154,9 +1160,10 @@ smf_bearer_t *smf_qos_flow_add(smf_sess_t *sess)
     ogs_pfcp_pdr_associate_qer(ul_pdr, qer);
 
     /* Allocate QFI */
-    qer->qfi = OGS_NEXT_ID(sess->qos_flow_identifier, 1, OGS_MAX_QOS_FLOW_ID+1);
+    ogs_pool_alloc(&sess->qfi_pool, &qos_flow->qfi);
+    ogs_assert(qos_flow->qfi);
 
-    qos_flow->qfi = ul_pdr->qfi = qer->qfi;
+    ul_pdr->qfi = qer->qfi = *(qos_flow->qfi);
 
     qos_flow->sess = sess;
 
@@ -1171,7 +1178,7 @@ smf_bearer_t *smf_qos_flow_find_by_qfi(smf_sess_t *sess, uint8_t qfi)
 
     ogs_assert(sess);
     ogs_list_for_each(&sess->bearer_list, qos_flow) {
-        if (qos_flow->qfi == qfi)
+        if (*(qos_flow->qfi) == qfi)
             return qos_flow;
     }
 
@@ -1312,6 +1319,9 @@ int smf_bearer_remove(smf_bearer_t *bearer)
     smf_pf_remove_all(bearer);
 
     ogs_pool_final(&bearer->pf_pool);
+
+    if (bearer->qfi)
+        ogs_pool_free(&bearer->sess->qfi_pool, bearer->qfi);
 
     ogs_pool_free(&smf_bearer_pool, bearer);
 
@@ -1671,4 +1681,22 @@ int smf_pco_build(uint8_t *pco_buf, uint8_t *buffer, int length)
 
     size = ogs_pco_build(pco_buf, OGS_MAX_PCO_LEN, &smf);
     return size;
+}
+
+void smf_qfi_pool_init(smf_sess_t *sess)
+{
+    int i;
+
+    ogs_assert(sess);
+
+    ogs_pool_init(&sess->qfi_pool, OGS_MAX_QOS_FLOW_ID);
+
+    for (i = 1; i <= OGS_MAX_QOS_FLOW_ID; i++) {
+        sess->qfi_pool.array[i-1] = i;
+    }
+}
+
+void smf_qfi_pool_final(smf_sess_t *sess)
+{
+    ogs_pool_final_skip_mem_checks(&sess->qfi_pool);
 }

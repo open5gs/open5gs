@@ -59,7 +59,6 @@ void amf_context_init(void)
 
     self.gnb_addr_hash = ogs_hash_make();
     self.gnb_id_hash = ogs_hash_make();
-    self.amf_ue_ngap_id_hash = ogs_hash_make();
     self.guti_ue_hash = ogs_hash_make();
     self.suci_hash = ogs_hash_make();
     self.supi_hash = ogs_hash_make();
@@ -79,8 +78,6 @@ void amf_context_final(void)
     ogs_assert(self.gnb_id_hash);
     ogs_hash_destroy(self.gnb_id_hash);
 
-    ogs_assert(self.amf_ue_ngap_id_hash);
-    ogs_hash_destroy(self.amf_ue_ngap_id_hash);
     ogs_assert(self.guti_ue_hash);
     ogs_hash_destroy(self.guti_ue_hash);
     ogs_assert(self.suci_hash);
@@ -945,15 +942,17 @@ ran_ue_t *ran_ue_add(amf_gnb_t *gnb, uint32_t ran_ue_ngap_id)
 {
     ran_ue_t *ran_ue = NULL;
 
-    ogs_assert(self.amf_ue_ngap_id_hash);
     ogs_assert(gnb);
 
     ogs_pool_alloc(&ran_ue_pool, &ran_ue);
     ogs_assert(ran_ue);
     memset(ran_ue, 0, sizeof *ran_ue);
 
+    ran_ue->index = ogs_pool_index(&ran_ue_pool, ran_ue);
+    ogs_assert(ran_ue->index > 0 && ran_ue->index <= ogs_app()->max.ue);
+
     ran_ue->ran_ue_ngap_id = ran_ue_ngap_id;
-    ran_ue->amf_ue_ngap_id = OGS_NEXT_ID(self.amf_ue_ngap_id, 1, 0xffffffff);
+    ran_ue->amf_ue_ngap_id = ran_ue->index;
 
     /*
      * SCTP output stream identification
@@ -966,22 +965,13 @@ ran_ue_t *ran_ue_add(amf_gnb_t *gnb, uint32_t ran_ue_ngap_id)
 
     ran_ue->gnb = gnb;
 
-    ogs_hash_set(self.amf_ue_ngap_id_hash, &ran_ue->amf_ue_ngap_id,
-            sizeof(ran_ue->amf_ue_ngap_id), ran_ue);
     ogs_list_add(&gnb->ran_ue_list, ran_ue);
 
     return ran_ue;
 }
 
-unsigned int ran_ue_count()
-{
-    ogs_assert(self.amf_ue_ngap_id_hash);
-    return ogs_hash_count(self.amf_ue_ngap_id_hash);
-}
-
 void ran_ue_remove(ran_ue_t *ran_ue)
 {
-    ogs_assert(self.amf_ue_ngap_id_hash);
     ogs_assert(ran_ue);
     ogs_assert(ran_ue->gnb);
 
@@ -989,8 +979,6 @@ void ran_ue_remove(ran_ue_t *ran_ue)
     ran_ue_deassociate(ran_ue);
 
     ogs_list_remove(&ran_ue->gnb->ran_ue_list, ran_ue);
-    ogs_hash_set(self.amf_ue_ngap_id_hash, &ran_ue->amf_ue_ngap_id,
-            sizeof(ran_ue->amf_ue_ngap_id), NULL);
 
     ogs_pool_free(&ran_ue_pool, ran_ue);
 }
@@ -1041,11 +1029,15 @@ ran_ue_t *ran_ue_find_by_ran_ue_ngap_id(
     return ran_ue;
 }
 
+ran_ue_t *ran_ue_find(uint32_t index)
+{
+    ogs_assert(index);
+    return ogs_pool_find(&ran_ue_pool, index);
+}
+
 ran_ue_t *ran_ue_find_by_amf_ue_ngap_id(uint64_t amf_ue_ngap_id)
 {
-    ogs_assert(self.amf_ue_ngap_id_hash);
-    return ogs_hash_get(self.amf_ue_ngap_id_hash, 
-            &amf_ue_ngap_id, sizeof(amf_ue_ngap_id));
+    return ran_ue_find(amf_ue_ngap_id);
 }
 
 ran_ue_t *ran_ue_first_in_gnb(amf_gnb_t *gnb)

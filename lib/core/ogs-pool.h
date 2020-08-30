@@ -55,13 +55,17 @@ typedef unsigned int ogs_index_t;
     } \
 } while (0)
 
+#define ogs_pool_final_skip_mem_checks(pool) do { \
+    free((pool)->free); \
+    free((pool)->array); \
+    free((pool)->index); \
+} while (0)
+
 #define ogs_pool_final(pool) do { \
     if (((pool)->size != (pool)->avail)) \
         ogs_error("%d in '%s[%d]' were not released.", \
                 (pool)->size - (pool)->avail, (pool)->name, (pool)->size); \
-    free((pool)->free); \
-    free((pool)->array); \
-    free((pool)->index); \
+    ogs_pool_final_skip_mem_checks(pool); \
 } while (0)
 
 #define ogs_pool_index(pool, node) (((node) - (pool)->array)+1)

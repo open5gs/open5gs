@@ -45,6 +45,7 @@ static OGS_POOL(mme_enb_pool, mme_enb_t);
 static OGS_POOL(mme_ue_pool, mme_ue_t);
 static OGS_POOL(enb_ue_pool, enb_ue_t);
 static OGS_POOL(mme_sess_pool, mme_sess_t);
+static OGS_POOL(mme_bearer_pool, mme_bearer_t);
 
 static int context_initialized = 0;
 
@@ -129,11 +130,11 @@ void mme_context_init()
     ogs_pool_init(&mme_ue_pool, ogs_app()->max.ue);
     ogs_pool_init(&enb_ue_pool, ogs_app()->max.ue);
     ogs_pool_init(&mme_sess_pool, ogs_app()->pool.sess);
+    ogs_pool_init(&mme_bearer_pool, ogs_app()->pool.bearer);
     ogs_pool_init(&self.m_tmsi, ogs_app()->max.ue);
 
     self.enb_addr_hash = ogs_hash_make();
     self.enb_id_hash = ogs_hash_make();
-    self.mme_ue_s1ap_id_hash = ogs_hash_make();
     self.imsi_ue_hash = ogs_hash_make();
     self.guti_ue_hash = ogs_hash_make();
 
@@ -159,14 +160,13 @@ void mme_context_final()
     ogs_assert(self.enb_id_hash);
     ogs_hash_destroy(self.enb_id_hash);
 
-    ogs_assert(self.mme_ue_s1ap_id_hash);
-    ogs_hash_destroy(self.mme_ue_s1ap_id_hash);
     ogs_assert(self.imsi_ue_hash);
     ogs_hash_destroy(self.imsi_ue_hash);
     ogs_assert(self.guti_ue_hash);
     ogs_hash_destroy(self.guti_ue_hash);
 
     ogs_pool_final(&self.m_tmsi);
+    ogs_pool_final(&mme_bearer_pool);
     ogs_pool_final(&mme_sess_pool);
     ogs_pool_final(&mme_ue_pool);
     ogs_pool_final(&enb_ue_pool);
@@ -2029,15 +2029,17 @@ enb_ue_t *enb_ue_add(mme_enb_t *enb, uint32_t enb_ue_s1ap_id)
 {
     enb_ue_t *enb_ue = NULL;
 
-    ogs_assert(self.mme_ue_s1ap_id_hash);
     ogs_assert(enb);
 
     ogs_pool_alloc(&enb_ue_pool, &enb_ue);
     ogs_assert(enb_ue);
     memset(enb_ue, 0, sizeof *enb_ue);
 
+    enb_ue->index = ogs_pool_index(&enb_ue_pool, enb_ue);
+    ogs_assert(enb_ue->index > 0 && enb_ue->index <= ogs_app()->max.ue);
+
     enb_ue->enb_ue_s1ap_id = enb_ue_s1ap_id;
-    enb_ue->mme_ue_s1ap_id = OGS_NEXT_ID(self.mme_ue_s1ap_id, 1, 0xffffffff);
+    enb_ue->mme_ue_s1ap_id = enb_ue->index;
 
     /*
      * SCTP output stream identification
@@ -2050,8 +2052,6 @@ enb_ue_t *enb_ue_add(mme_enb_t *enb, uint32_t enb_ue_s1ap_id)
 
     enb_ue->enb = enb;
 
-    ogs_hash_set(self.mme_ue_s1ap_id_hash, &enb_ue->mme_ue_s1ap_id, 
-            sizeof(enb_ue->mme_ue_s1ap_id), enb_ue);
     ogs_list_add(&enb->enb_ue_list, enb_ue);
 
     stats_add_ue();
@@ -2059,15 +2059,8 @@ enb_ue_t *enb_ue_add(mme_enb_t *enb, uint32_t enb_ue_s1ap_id)
     return enb_ue;
 }
 
-unsigned int enb_ue_count()
-{
-    ogs_assert(self.mme_ue_s1ap_id_hash);
-    return ogs_hash_count(self.mme_ue_s1ap_id_hash);
-}
-
 void enb_ue_remove(enb_ue_t *enb_ue)
 {
-    ogs_assert(self.mme_ue_s1ap_id_hash);
     ogs_assert(enb_ue);
     ogs_assert(enb_ue->enb);
 
@@ -2075,8 +2068,6 @@ void enb_ue_remove(enb_ue_t *enb_ue)
     enb_ue_deassociate(enb_ue);
 
     ogs_list_remove(&enb_ue->enb->enb_ue_list, enb_ue);
-    ogs_hash_set(self.mme_ue_s1ap_id_hash, &enb_ue->mme_ue_s1ap_id, 
-            sizeof(enb_ue->mme_ue_s1ap_id), NULL);
 
     stats_remove_ue();
 
@@ -2129,11 +2120,15 @@ enb_ue_t *enb_ue_find_by_enb_ue_s1ap_id(
     return enb_ue;
 }
 
+enb_ue_t *enb_ue_find(uint32_t index)
+{
+    ogs_assert(index);
+    return ogs_pool_find(&enb_ue_pool, index);
+}
+
 enb_ue_t *enb_ue_find_by_mme_ue_s1ap_id(uint32_t mme_ue_s1ap_id)
 {
-    ogs_assert(self.mme_ue_s1ap_id_hash);
-    return ogs_hash_get(self.mme_ue_s1ap_id_hash, 
-            &mme_ue_s1ap_id, sizeof(mme_ue_s1ap_id));
+    return enb_ue_find(mme_ue_s1ap_id);
 }
 
 enb_ue_t *enb_ue_first_in_enb(mme_enb_t *enb)
@@ -2235,8 +2230,8 @@ mme_ue_t *mme_ue_add(enb_ue_t *enb_ue)
     ogs_assert(mme_ue);
     memset(mme_ue, 0, sizeof *mme_ue);
 
-    ogs_pool_init(&mme_ue->bearer_pool,
-            MAX_EPS_BEARER_ID - MIN_EPS_BEARER_ID + 1);
+    mme_ebi_pool_init(mme_ue);
+
     ogs_list_init(&mme_ue->sess_list);
 
     mme_ue->mme_s11_teid = ogs_pool_index(&mme_ue_pool, mme_ue);
@@ -2338,7 +2333,7 @@ void mme_ue_remove(mme_ue_t *mme_ue)
     mme_sess_remove_all(mme_ue);
     mme_pdn_remove_all(mme_ue);
 
-    ogs_pool_final(&mme_ue->bearer_pool);
+    ogs_pool_final(&mme_ue->ebi_pool);
 
     ogs_pool_free(&mme_ue_pool, mme_ue);
 }
@@ -2783,14 +2778,15 @@ mme_bearer_t *mme_bearer_add(mme_sess_t *sess)
     mme_ue = sess->mme_ue;
     ogs_assert(mme_ue);
 
-    ogs_pool_alloc(&mme_ue->bearer_pool, &bearer);
+    ogs_pool_alloc(&mme_bearer_pool, &bearer);
     ogs_assert(bearer);
     memset(bearer, 0, sizeof *bearer);
 
-    bearer->index = ogs_pool_index(&mme_ue->bearer_pool, bearer);
-    bearer->ebi = bearer->index + MIN_EPS_BEARER_ID - 1;
-    ogs_assert(bearer->ebi >= MIN_EPS_BEARER_ID &&
-                bearer->ebi <= MAX_EPS_BEARER_ID);
+    ogs_pool_alloc(&mme_ue->ebi_pool, &bearer->ebi);
+    ogs_assert(bearer->ebi);
+
+    ogs_assert(*(bearer->ebi) >= MIN_EPS_BEARER_ID &&
+                *(bearer->ebi) <= MAX_EPS_BEARER_ID);
 
     bearer->mme_ue = mme_ue;
     bearer->sess = sess;
@@ -2828,15 +2824,11 @@ void mme_bearer_remove(mme_bearer_t *bearer)
     ogs_list_remove(&bearer->sess->bearer_list, bearer);
 
     OGS_TLV_CLEAR_DATA(&bearer->tft);
-    
-    ogs_pool_free(&bearer->mme_ue->bearer_pool, bearer);
 
-    if (ogs_pool_size(&bearer->mme_ue->bearer_pool) ==
-            ogs_pool_avail(&bearer->mme_ue->bearer_pool)) {
-        ogs_pool_final(&bearer->mme_ue->bearer_pool);
-        ogs_pool_init(&bearer->mme_ue->bearer_pool,
-                MAX_EPS_BEARER_ID - MIN_EPS_BEARER_ID + 1);
-    }
+    ogs_assert(bearer->ebi);
+    ogs_pool_free(&bearer->mme_ue->ebi_pool, bearer->ebi);
+    
+    ogs_pool_free(&mme_bearer_pool, bearer);
 }
 
 void mme_bearer_remove_all(mme_sess_t *sess)
@@ -2863,7 +2855,7 @@ mme_bearer_t *mme_bearer_find_by_sess_ebi(mme_sess_t *sess, uint8_t ebi)
 
     bearer = mme_bearer_first(sess);
     while (bearer) {
-        if (ebi == bearer->ebi)
+        if (ebi == *(bearer->ebi))
             return bearer;
 
         bearer = mme_bearer_next(bearer);
@@ -3238,6 +3230,25 @@ int mme_m_tmsi_free(mme_m_tmsi_t *m_tmsi)
     ogs_pool_free(&self.m_tmsi, m_tmsi);
 
     return OGS_OK;
+}
+
+void mme_ebi_pool_init(mme_ue_t *mme_ue)
+{
+    int i, index;
+
+    ogs_assert(mme_ue);
+
+    ogs_pool_init(&mme_ue->ebi_pool, MAX_EPS_BEARER_ID - MIN_EPS_BEARER_ID + 1);
+
+    for (i = MIN_EPS_BEARER_ID, index = 0;
+            i <= MAX_EPS_BEARER_ID; i++, index++) {
+        mme_ue->ebi_pool.array[index] = i;
+    }
+}
+
+void mme_ebi_pool_final(mme_ue_t *mme_ue)
+{
+    ogs_pool_final_skip_mem_checks(&mme_ue->ebi_pool);
 }
 
 uint8_t mme_selected_int_algorithm(mme_ue_t *mme_ue)

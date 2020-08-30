@@ -158,7 +158,7 @@ typedef struct smf_bearer_s {
     ogs_pfcp_far_t  *ul_far;
     ogs_pfcp_qer_t  *qer;
 
-    uint8_t         qfi;            /* 5GC */
+    uint8_t         *qfi;           /* 5GC */
     uint8_t         ebi;            /* EPC */
 
     uint32_t        pgw_s5u_teid;   /* PGW-S5U TEID */
@@ -204,7 +204,13 @@ typedef struct smf_sess_s {
 
     char            *gx_sid;        /* Gx Session ID */
 
-    uint8_t qos_flow_identifier;    /* ID Generator(1~OGS_MAX_QOS_FLOW_ID) */
+#define CLEAR_QOS_FLOW_ID(__sESS) \
+    do { \
+        ogs_assert((__sESS)); \
+        smf_qfi_pool_final(__sESS); \
+        smf_qfi_pool_init(__sESS); \
+    } while(0)
+    OGS_POOL(qfi_pool, uint8_t);
 
     char            *sm_context_ref; /* smContextRef */
     uint8_t         psi; /* PDU session identity */
@@ -339,6 +345,9 @@ smf_pf_t *smf_pf_first(smf_bearer_t *bearer);
 smf_pf_t *smf_pf_next(smf_pf_t *pf);
 
 int smf_pco_build(uint8_t *pco_buf, uint8_t *buffer, int length);
+
+void smf_qfi_pool_init(smf_sess_t *sess);
+void smf_qfi_pool_final(smf_sess_t *sess);
 
 #ifdef __cplusplus
 }
