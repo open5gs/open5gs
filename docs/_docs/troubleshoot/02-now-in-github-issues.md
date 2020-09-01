@@ -504,11 +504,11 @@ You can start MongoDB using systemctl.
 $ sudo systemctl start mongodb
 ```
 
-#### I have some error when running `./build/test/attach/attach`
+#### I have some error when running `./build/tests/attach/attach`
 
-Did you see the following error after executing `./build/test/attach/attach`?
+Did you see the following error after executing `./build/tests/attach/attach`?
 ```bash
-$ ./build/test/epc/simple
+$ ./build/tests/attach/attach
 s1setup_test        : SUCCESS  
 attach_test         : -Line 134: Condition is false, but expected true  
 \04/09 15:49:09.285: [esm] FATAL: esm_handle_pdn_connectivity_request: Assertion `SECURITY_CONTEXT_IS_VALID(mme_ue)' failed. (esm_handler.c:29)  
@@ -534,9 +534,9 @@ $ sudo pkill -9 attach
 $ sudo pkill -9 open5gs-mmed ...
 ```
 
-Execute `./build/test/attach/attach`
+Execute `./build/tests/attach/attach`
 ```bash
-$ ./build/test/attach/attach
+$ ./build/tests/attach/attach
 ```
 
 #### My gNB/eNB does not support IPv6.

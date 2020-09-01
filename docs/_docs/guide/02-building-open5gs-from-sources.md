@@ -59,8 +59,8 @@ $ ninja -C build
 
 Check whether the compilation is correct.
 ```bash
-$ ./build/test/attach/attach ## EPC Only
-$ ./build/test/registration/registration ## 5G Core Only
+$ ./build/tests/attach/attach ## EPC Only
+$ ./build/tests/registration/registration ## 5G Core Only
 ```
 
 Run all test programs as below.
@@ -294,7 +294,7 @@ If you modify the config files while Open5GS daemons are running, please restart
 ### Running Open5GS
 ---
 
-Specify the absolute path to the sharead library as follows.
+Specify the absolute path to the shared library as follows.
 
 ```bash
 $ echo $(cd $(dirname ./install/lib/x86_64-linux-gnu/) && pwd -P)/$(basename ./install/lib/x86_64-linux-gnu/)
@@ -455,9 +455,9 @@ $ cp open5gs* /usr/bin/
 
 For convenience, you can execute all NFs at once by using the following command.
 ```bash
-$ ./build/test/app/5gc ## 5G Core Only with ./build/config/sample.yaml
-$ ./build/test/app/epc -c ./build/config/srslte.yaml ## EPC Only with ./build/config/srslte.yaml
-$ ./build/test/app/app ## Both 5G Core and EPC with ./build/config/sample.yaml
+$ ./build/tests/app/5gc ## 5G Core Only with ./build/config/sample.yaml
+$ ./build/tests/app/epc -c ./build/config/srslte.yaml ## EPC Only with ./build/config/srslte.yaml
+$ ./build/tests/app/app ## Both 5G Core and EPC with ./build/config/sample.yaml
 ```
 
 ### Building the WebUI of Open5GS
@@ -573,7 +573,7 @@ Debugging tools can help you troubleshoot problems.
 You can use the command line option[`-d`] to record more logs.
 
 ```bash
-$ ./test/app/app -d
+$ ./tests/app/app -d
 Open5GS daemon v1.3.0-213-gd190548+
 
 08/21 23:01:54.246: [app] INFO: Configuration: '/home/acetcom/Documents/git/open5gs/build/configs/sample.yaml' (../src/main.c:54)

@@ -123,8 +123,8 @@ $ ninja -C build
 
 Check whether the compilation is correct.
 ```bash
-$ ./build/test/attach/attach ## EPC Only
-$ ./build/test/registration/registration ## 5G Core Only
+$ ./build/tests/attach/attach ## EPC Only
+$ ./build/tests/registration/registration ## 5G Core Only
 ```
 
 Run all test programs as below.
