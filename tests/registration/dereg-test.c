@@ -1278,7 +1278,16 @@ static void test4_func(abts_case *tc, void *data)
         rv = testgnb_ngap_send(ngap, sendbuf);
         ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-        ogs_msleep(100);
+        /* Send GTP-U ICMP Packet */
+        qos_flow = test_qos_flow_find_by_ue_qfi(test_ue, 1);
+        ogs_assert(qos_flow);
+        rv = test_gtpu_send_ping(gtpu, qos_flow, TEST_PING_IPV4);
+        ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+        /* Receive GTP-U ICMP Packet */
+        recvbuf = testgnb_gtpu_read(gtpu);
+        ABTS_PTR_NOTNULL(tc, recvbuf);
+        ogs_pkbuf_free(recvbuf);
 
         /* Send PDU Session release request */
         sess->ul_nas_transport_param.request_type = 0;

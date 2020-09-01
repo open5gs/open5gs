@@ -51,16 +51,23 @@ int app_initialize(const char *const argv[])
         nrf_thread = test_child_create("nrf", argv_out);
     if (ogs_app()->parameter.no_amf == 0)
         amf_thread = test_child_create("amf", argv_out);
-    if (ogs_app()->parameter.no_ausf == 0)
-        ausf_thread = test_child_create("ausf", argv_out);
-    if (ogs_app()->parameter.no_udm == 0)
-        udm_thread = test_child_create("udm", argv_out);
     if (ogs_app()->parameter.no_smf == 0)
         smf_thread = test_child_create("smf", argv_out);
     if (ogs_app()->parameter.no_upf == 0)
         upf_thread = test_child_create("upf", argv_out);
+    if (ogs_app()->parameter.no_ausf == 0)
+        ausf_thread = test_child_create("ausf", argv_out);
+    if (ogs_app()->parameter.no_udm == 0)
+        udm_thread = test_child_create("udm", argv_out);
     if (ogs_app()->parameter.no_udr == 0)
         udr_thread = test_child_create("udr", argv_out);
+
+    /*
+     * Wait for all sockets listening
+     * 
+     * If freeDiameter is not used, we can use a delay of less than 1 second.
+     */
+    ogs_msleep(500);
 
     return OGS_OK;;
 }

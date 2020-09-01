@@ -1502,3 +1502,20 @@ void ogs_pfcp_subnet_remove_all(void)
     ogs_list_for_each_safe(&self.subnet_list, next_subnet, subnet)
         ogs_pfcp_subnet_remove(subnet);
 }
+
+void ogs_pfcp_pool_init(ogs_pfcp_sess_t *sess)
+{
+    ogs_pool_init(&sess->pdr_pool, OGS_MAX_NUM_OF_PDR);
+    ogs_pool_init(&sess->far_pool, OGS_MAX_NUM_OF_FAR);
+    ogs_pool_init(&sess->urr_pool, OGS_MAX_NUM_OF_URR);
+    ogs_pool_init(&sess->qer_pool, OGS_MAX_NUM_OF_QER);
+    ogs_pool_init(&sess->bar_pool, OGS_MAX_NUM_OF_BAR);
+}
+void ogs_pfcp_pool_final(ogs_pfcp_sess_t *sess)
+{
+    ogs_pool_final(&sess->pdr_pool);
+    ogs_pool_final(&sess->far_pool);
+    ogs_pool_final(&sess->urr_pool);
+    ogs_pool_final(&sess->qer_pool);
+    ogs_pool_final(&sess->bar_pool);
+}

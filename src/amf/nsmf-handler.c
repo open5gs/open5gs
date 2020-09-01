@@ -427,71 +427,88 @@ int amf_nsmf_pdu_session_handle_release_sm_context(amf_sess_t *sess, int state)
     /* Check last session */
     if (ogs_list_count(&amf_ue->sess_list) == 0) {
 
-        if (OGS_FSM_CHECK(&amf_ue->sm, gmm_state_authentication)) {
-
-            amf_ue_sbi_discover_and_send(OpenAPI_nf_type_AUSF, amf_ue, NULL,
-                    amf_nausf_auth_build_authenticate);
-
-        } else if (OGS_FSM_CHECK(&amf_ue->sm, gmm_state_de_registered)) {
-
-            nas_5gs_send_de_registration_accept(amf_ue);
-
-        } else if (OGS_FSM_CHECK(&amf_ue->sm, gmm_state_exception)) {
-
+        if (state == AMF_RELEASE_SM_CONTEXT_NG_CONTEXT_REMOVE) {
             /*
-             * 1. GMM Exception
+             * 1. Initial context setup failure
              * 2. Release All SM contexts
              * 3. UE Context release command
              * 4. UE Context release complete
              */
             ngap_send_amf_ue_context_release_command(amf_ue,
                     NGAP_Cause_PR_nas, NGAP_CauseNas_normal_release,
-                    NGAP_UE_CTX_REL_UE_CONTEXT_REMOVE, 0);
+                    NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE, 0);
+
+        } else if (state == AMF_RELEASE_SM_CONTEXT_REGISTRATION_ACCEPT) {
+            /*
+             * 1. Registration request
+             * 2. Release All SM contexts
+             * 3. Registration accept
+             */
+            nas_5gs_send_registration_accept(amf_ue);
+
+        } else if (state == AMF_RELEASE_SM_CONTEXT_SERVICE_ACCEPT) {
+            /*
+             * 1. Service request
+             * 2. Release All SM contexts
+             * 3. Service accept
+             */
+            nas_5gs_send_service_accept(amf_ue);
 
         } else {
-            if (state == AMF_RELEASE_SM_CONTEXT_NG_CONTEXT_REMOVE) {
+            /* NO_STATE */
+
+            if (OGS_FSM_CHECK(&amf_ue->sm, gmm_state_authentication)) {
+
+                amf_ue_sbi_discover_and_send(OpenAPI_nf_type_AUSF, amf_ue, NULL,
+                        amf_nausf_auth_build_authenticate);
+
+            } else if (OGS_FSM_CHECK(&amf_ue->sm, gmm_state_de_registered)) {
                 /*
-                 * 1. Initial context setup failure
+                 * 1. PDU session release request
+                 * 2. PDUSessionResourceReleaseCommand +
+                 *    PDU session release command
+                 * 3. PDUSessionResourceReleaseREsponse
+                 * 4. PDU session release complete
+                 * 5. Deregistration request
+                 * 6. UEContextReleaseCommand
+                 * 7. UEContextReleaseComplete
+                 */
+
+                nas_5gs_send_de_registration_accept(amf_ue);
+
+            } else if (OGS_FSM_CHECK(&amf_ue->sm, gmm_state_registered)) {
+                /*
+                 * 1. PDU session release request
+                 * 2. PDUSessionResourceReleaseCommand +
+                 *    PDU session release command
+                 * 3. PDUSessionResourceReleaseREsponse
+                 * 4. PDU session release complete
+                 *
+                 * No Deregistration request in the above step
+                 *
+                 * So, Nothing to do!
+                 */
+            } else if (OGS_FSM_CHECK(&amf_ue->sm, gmm_state_exception)) {
+                /*
+                 * 1. GMM Exception
                  * 2. Release All SM contexts
                  * 3. UE Context release command
                  * 4. UE Context release complete
                  */
                 ngap_send_amf_ue_context_release_command(amf_ue,
                         NGAP_Cause_PR_nas, NGAP_CauseNas_normal_release,
-                        NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE, 0);
+                        NGAP_UE_CTX_REL_UE_CONTEXT_REMOVE, 0);
 
-            } else if (state == AMF_RELEASE_SM_CONTEXT_REGISTRATION_ACCEPT) {
-                /*
-                 * 1. Registration request
-                 * 2. Release All SM contexts
-                 * 3. Registration accept
-                 */
-                nas_5gs_send_registration_accept(amf_ue);
-
-            } else if (state == AMF_RELEASE_SM_CONTEXT_SERVICE_ACCEPT) {
-                /*
-                 * 1. Service request
-                 * 2. Release All SM contexts
-                 * 3. Service accept
-                 */
-                nas_5gs_send_service_accept(amf_ue);
-
-            } else {
-                ogs_fatal("Unknown state[%d]", state);
-                if (OGS_FSM_CHECK(&amf_ue->sm,
+            } else if (OGS_FSM_CHECK(&amf_ue->sm,
                             gmm_state_initial_context_setup)) {
-                    ogs_fatal("Release SM Context in initial-context-setup");
-                } else if (OGS_FSM_CHECK(&amf_ue->sm, gmm_state_registered)) {
-
-                    ogs_fatal("Release SM Context in registered");
-
-                } else if (OGS_FSM_CHECK(
-                            &amf_ue->sm, gmm_state_security_mode)) {
-                    ogs_fatal("Release SM Context in security-mode");
-                } else {
-                    ogs_fatal("Release SM Context : INVALID STATE");
-
-                }
+                ogs_fatal("Release SM Context in initial-context-setup");
+                ogs_assert_if_reached();
+            } else if (OGS_FSM_CHECK(
+                        &amf_ue->sm, gmm_state_security_mode)) {
+                ogs_fatal("Release SM Context in security-mode");
+                ogs_assert_if_reached();
+            } else {
+                ogs_fatal("Release SM Context : INVALID STATE");
                 ogs_assert_if_reached();
             }
         }

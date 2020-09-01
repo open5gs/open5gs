@@ -387,6 +387,9 @@ static void test1_func(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, recvbuf);
     tests1ap_recv(test_ue, recvbuf);
 
+    /* DELAY is needed in dedicated EPS bearer */
+    ogs_msleep(100);
+
     /* Send GTP-U ICMP Packet */
     bearer = test_bearer_find_by_ue_ebi(test_ue, 5);
     ogs_assert(bearer);

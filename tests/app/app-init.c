@@ -30,6 +30,7 @@ static ogs_thread_t *sgwc_thread = NULL;
 static ogs_thread_t *sgwu_thread = NULL;
 static ogs_thread_t *smf_thread = NULL;
 static ogs_thread_t *mme_thread = NULL;
+static ogs_thread_t *amf_thread = NULL;
 
 int app_initialize(const char *const argv[])
 {
@@ -53,45 +54,35 @@ int app_initialize(const char *const argv[])
 
     if (ogs_app()->parameter.no_nrf == 0)
         nrf_thread = test_child_create("nrf", argv_out);
-    if (ogs_app()->parameter.no_pcrf == 0)
-        pcrf_thread = test_child_create("pcrf", argv_out);
-    if (ogs_app()->parameter.no_hss == 0)
-        hss_thread = test_child_create("hss", argv_out);
-
-    /*
-     * To avoid freeDiameter error
-     *
-     * ROUTING ERROR
-     * 'No remaining suitable candidate to route the message to' for:
-     */
-    ogs_msleep(500);
-
-    if (ogs_app()->parameter.no_upf == 0)
-        upf_thread = test_child_create("upf", argv_out);
-    if (ogs_app()->parameter.no_sgwu == 0)
-        sgwu_thread = test_child_create("sgwu", argv_out);
-    if (ogs_app()->parameter.no_sgwc == 0)
-        sgwc_thread = test_child_create("sgwc", argv_out);
-
-    /*
-     * To avoid freeDiameter error
-     *
-     * ROUTING ERROR
-     * 'No remaining suitable candidate to route the message to' for:
-     */
-    ogs_msleep(500);
-
-    if (ogs_app()->parameter.no_smf == 0)
-        smf_thread = test_child_create("smf", argv_out);
     if (ogs_app()->parameter.no_mme == 0)
         mme_thread = test_child_create("mme", argv_out);
-
+    if (ogs_app()->parameter.no_sgwc == 0)
+        sgwc_thread = test_child_create("sgwc", argv_out);
+    if (ogs_app()->parameter.no_smf == 0)
+        smf_thread = test_child_create("smf", argv_out);
+    if (ogs_app()->parameter.no_amf == 0)
+        amf_thread = test_child_create("amf", argv_out);
+    if (ogs_app()->parameter.no_sgwu == 0)
+        sgwu_thread = test_child_create("sgwu", argv_out);
+    if (ogs_app()->parameter.no_upf == 0)
+        upf_thread = test_child_create("upf", argv_out);
+    if (ogs_app()->parameter.no_hss == 0)
+        hss_thread = test_child_create("hss", argv_out);
+    if (ogs_app()->parameter.no_pcrf == 0)
+        pcrf_thread = test_child_create("pcrf", argv_out);
     if (ogs_app()->parameter.no_ausf == 0)
         ausf_thread = test_child_create("ausf", argv_out);
     if (ogs_app()->parameter.no_udm == 0)
         udm_thread = test_child_create("udm", argv_out);
     if (ogs_app()->parameter.no_udr == 0)
         udr_thread = test_child_create("udr", argv_out);
+
+    /*
+     * Wait for all sockets listening
+     *
+     * Note that at least 1 second is needed if freeDiameter is running.
+     */
+    ogs_msleep(1200);
 
     return OGS_OK;;
 }
@@ -102,6 +93,7 @@ void app_terminate(void)
     if (udm_thread) ogs_thread_destroy(udm_thread);
     if (ausf_thread) ogs_thread_destroy(ausf_thread);
 
+    if (amf_thread) ogs_thread_destroy(amf_thread);
     if (mme_thread) ogs_thread_destroy(mme_thread);
     if (smf_thread) ogs_thread_destroy(smf_thread);
 

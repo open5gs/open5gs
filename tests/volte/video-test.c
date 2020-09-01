@@ -524,6 +524,9 @@ static void test1_func(abts_case *tc, void *data)
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
+    /* DELAY is needed before AA-Request */
+    ogs_msleep(100);
+
     /* Send AA-Request */
     rx_sid = NULL;
     pcscf_rx_send_aar2(&rx_sid, sess,
@@ -664,6 +667,9 @@ static void test1_func(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* DELAY is needed before AA-Request */
+    ogs_msleep(100);
 
     /* Send AA-Request */
     rx_sid = NULL;
@@ -806,6 +812,9 @@ static void test1_func(abts_case *tc, void *data)
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
+    /* DELAY is needed before AA-Request */
+    ogs_msleep(100);
+
     /* Send AA-Request */
     rx_sid = NULL;
     pcscf_rx_send_aar2(&rx_sid, sess,
@@ -947,6 +956,9 @@ static void test1_func(abts_case *tc, void *data)
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
+    /* DELAY is needed before AA-Request */
+    ogs_msleep(100);
+
     /* Send AA-Request */
     rx_sid = NULL;
     pcscf_rx_send_aar2(&rx_sid, sess,
@@ -1087,6 +1099,9 @@ static void test1_func(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* DELAY is needed before AA-Request */
+    ogs_msleep(100);
 
     /* Send AA-Request */
     rx_sid = NULL;

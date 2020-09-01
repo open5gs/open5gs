@@ -777,12 +777,7 @@ smf_sess_t *smf_sess_add_by_psi(smf_ue_t *smf_ue, uint8_t psi)
     }
     memset(sess, 0, sizeof *sess);
 
-    ogs_pool_init(&sess->pfcp.pdr_pool, OGS_MAX_NUM_OF_PDR);
-    ogs_pool_init(&sess->pfcp.far_pool, OGS_MAX_NUM_OF_FAR);
-    ogs_pool_init(&sess->pfcp.urr_pool, OGS_MAX_NUM_OF_URR);
-    ogs_pool_init(&sess->pfcp.qer_pool, OGS_MAX_NUM_OF_QER);
-    ogs_pool_init(&sess->pfcp.bar_pool, OGS_MAX_NUM_OF_BAR);
-
+    ogs_pfcp_pool_init(&sess->pfcp);
     smf_qfi_pool_init(sess);
 
     sess->index = ogs_pool_index(&smf_sess_pool, sess);
@@ -984,12 +979,7 @@ void smf_sess_remove(smf_sess_t *sess)
 
     smf_bearer_remove_all(sess);
 
-    ogs_pool_final(&sess->pfcp.pdr_pool);
-    ogs_pool_final(&sess->pfcp.far_pool);
-    ogs_pool_final(&sess->pfcp.urr_pool);
-    ogs_pool_final(&sess->pfcp.qer_pool);
-    ogs_pool_final(&sess->pfcp.bar_pool);
-
+    ogs_pfcp_pool_final(&sess->pfcp);
     ogs_pool_final(&sess->qfi_pool);
 
     ogs_pool_free(&smf_sess_pool, sess);

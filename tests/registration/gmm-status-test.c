@@ -253,6 +253,19 @@ static void test1_func(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, recvbuf);
     testngap_recv(test_ue, recvbuf);
 
+    /*
+     * Related to issue #536. When running with VirtualBox 1 Core,
+     * AMF sends namf-callback response very late. In SMF,
+     * the Session context has already been removed, so an assertion occurs.
+     *
+     * It seems to be related to the response part of MHD. We will check
+     * if the same situation occurs after upgrading to nghttp2.
+     *
+     * If this issue still occurs on nghttp2,
+     * I will remove the assertion from SMF.
+     */
+    ogs_msleep(100);
+
     /* Send GMM Status */
     gmmbuf = testgmm_build_gmm_status(test_ue,
             OGS_5GMM_CAUSE_MESSAGE_NOT_COMPATIBLE_WITH_THE_PROTOCOL_STATE);

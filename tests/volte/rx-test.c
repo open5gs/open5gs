@@ -971,6 +971,9 @@ static void test2_func(abts_case *tc, void *data)
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
+    /* DELAY is needed in dedicated EPS bearer */
+    ogs_msleep(100);
+
     /* Send AA-Request */
     pcscf_rx_send_aar(&rx_sid, sess,
             OGS_DIAM_RX_SUBSCRIPTION_ID_TYPE_END_USER_IMSI, 0, 1);
