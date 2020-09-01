@@ -89,17 +89,20 @@ int app_initialize(const char *const argv[])
 
 void app_terminate(void)
 {
-    if (amf_thread) ogs_thread_destroy(amf_thread);
-    if (mme_thread) ogs_thread_destroy(mme_thread);
-    if (sgwc_thread) ogs_thread_destroy(sgwc_thread);
-    if (smf_thread) ogs_thread_destroy(smf_thread);
-    if (sgwu_thread) ogs_thread_destroy(sgwu_thread);
-    if (upf_thread) ogs_thread_destroy(upf_thread);
-    if (hss_thread) ogs_thread_destroy(hss_thread);
-    if (pcrf_thread) ogs_thread_destroy(pcrf_thread);
     if (udr_thread) ogs_thread_destroy(udr_thread);
     if (udm_thread) ogs_thread_destroy(udm_thread);
     if (ausf_thread) ogs_thread_destroy(ausf_thread);
+
+    if (amf_thread) ogs_thread_destroy(amf_thread);
+    if (mme_thread) ogs_thread_destroy(mme_thread);
+    if (smf_thread) ogs_thread_destroy(smf_thread);
+
+    if (sgwc_thread) ogs_thread_destroy(sgwc_thread);
+    if (sgwu_thread) ogs_thread_destroy(sgwu_thread);
+    if (upf_thread) ogs_thread_destroy(upf_thread);
+
+    if (hss_thread) ogs_thread_destroy(hss_thread);
+    if (pcrf_thread) ogs_thread_destroy(pcrf_thread);
     if (nrf_thread) ogs_thread_destroy(nrf_thread);
 }
 
