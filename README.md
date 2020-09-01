@@ -1,8 +1,9 @@
-## Release Notes
+## Sponsors
 
-- v2.0.0 (2020-08-21) - 5G Core and EPC
-- v1.3.0 (2020-07-10) - EPC only
-- v0.1.0 (2017-10-09) - First version released
+If you find Open5GS useful for work, please consider asking your company to support this Open Source project by [Becoming a sponsor](https://github.com/sponsors/acetcom). If you want to manage your funding transactions transparently, you can donate through [OpenCollective](https://opencollective.com/open5gs).
+
+#### Thank you to our sponsors!
+[<img src="https://open5gs.org/open5gs/assets/images/asLogonew.png">](https://www.auctionsoftware.com/)
 
 ## Documentation
 
