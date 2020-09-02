@@ -1,6 +1,6 @@
 ## Sponsors
 
-If you find Open5GS useful for work, please consider supporting this Open Source project by [Becoming a sponsor](https://github.com/sponsors/acetcom). To manage the funding transactions transparently, you can donate it through [OpenCollective](https://opencollective.com/open5gs).
+If you find Open5GS useful for work, please consider supporting this Open Source project by [Becoming a sponsor](https://github.com/sponsors/acetcom). To manage the funding transactions transparently, you can donate through [OpenCollective](https://opencollective.com/open5gs).
 
 #### Thank you to our sponsors!
 [<img src="https://open5gs.org/open5gs/assets/images/asLogonew.png">](https://www.auctionsoftware.com/)
