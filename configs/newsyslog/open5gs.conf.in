@@ -1,8 +1,15 @@
 # truncate rails logs every day at midnight, keep 14 previous logs, compress previous logs
 #
 # logfilename                         [owner:group] mode count size  when  flags [/pid_file]        [sig_num]
-@localstatedir@/log/open5gs/pcrf.log              644  14    *     $D0   GZ    @localstatedir@/run/open5gs-pcrfd/pid`
-@localstatedir@/log/open5gs/pgw.log               644  14    *     $D0   GZ    @localstatedir@/run/open5gs-pgwd/pid`
-@localstatedir@/log/open5gs/sgw.log               644  14    *     $D0   GZ    @localstatedir@/run/open5gs-sgwd/pid`
+@localstatedir@/log/open5gs/nrf.log               644  14    *     $D0   GZ    @localstatedir@/run/open5gs-nrfd/pid`
+@localstatedir@/log/open5gs/pcrf.log               644  14    *     $D0   GZ    @localstatedir@/run/open5gs-pcrfd/pid`
 @localstatedir@/log/open5gs/hss.log               644  14    *     $D0   GZ    @localstatedir@/run/open5gs-hssd/pid`
+@localstatedir@/log/open5gs/ausf.log               644  14    *     $D0   GZ    @localstatedir@/run/open5gs-ausfd/pid`
+@localstatedir@/log/open5gs/udm.log               644  14    *     $D0   GZ    @localstatedir@/run/open5gs-udmd/pid`
+@localstatedir@/log/open5gs/udr.log               644  14    *     $D0   GZ    @localstatedir@/run/open5gs-udrd/pid`
+@localstatedir@/log/open5gs/upf.log               644  14    *     $D0   GZ    @localstatedir@/run/open5gs-upfd/pid`
+@localstatedir@/log/open5gs/sgwc.log               644  14    *     $D0   GZ    @localstatedir@/run/open5gs-sgwcd/pid`
+@localstatedir@/log/open5gs/sgwu.log               644  14    *     $D0   GZ    @localstatedir@/run/open5gs-sgwud/pid`
+@localstatedir@/log/open5gs/smf.log               644  14    *     $D0   GZ    @localstatedir@/run/open5gs-smfd/pid`
 @localstatedir@/log/open5gs/mme.log               644  14    *     $D0   GZ    @localstatedir@/run/open5gs-mmed/pid`
+@localstatedir@/log/open5gs/amf.log               644  14    *     $D0   GZ    @localstatedir@/run/open5gs-amfd/pid`
