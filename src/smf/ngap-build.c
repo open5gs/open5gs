@@ -132,7 +132,7 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_setup_request_transfer(
     qosCharacteristics->choice.nonDynamic5QI = nonDynamic5QI;
     qosCharacteristics->present = NGAP_QosCharacteristics_PR_nonDynamic5QI;
 
-    *qosFlowIdentifier = *(qos_flow->qfi);
+    *qosFlowIdentifier = qos_flow->qfi;
 
     nonDynamic5QI->fiveQI = sess->pdn.qos.qci;
 

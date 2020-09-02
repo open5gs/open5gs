@@ -74,7 +74,7 @@ ogs_pkbuf_t *esm_build_information_request(mme_bearer_t *bearer)
 
     ogs_debug("[ESM] ESM information request");
     ogs_debug("    IMSI[%s] PTI[%d] EBI[%d]",
-            mme_ue->imsi_bcd, sess->pti, *(bearer->ebi));
+            mme_ue->imsi_bcd, sess->pti, bearer->ebi);
 
     memset(&message, 0, sizeof(message));
     message.h.security_header_type =
@@ -130,7 +130,7 @@ ogs_pkbuf_t *esm_build_activate_default_bearer_context_request(
 
     ogs_debug("[ESM] Activate default bearer context request");
     ogs_debug("    IMSI[%s] PTI[%d] EBI[%d]",
-            mme_ue->imsi_bcd, sess->pti, *(bearer->ebi));
+            mme_ue->imsi_bcd, sess->pti, bearer->ebi);
 
     memset(&message, 0, sizeof(message));
     if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_registered)) {
@@ -138,7 +138,7 @@ ogs_pkbuf_t *esm_build_activate_default_bearer_context_request(
            OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
         message.h.protocol_discriminator = OGS_NAS_PROTOCOL_DISCRIMINATOR_EMM;
     }
-    message.esm.h.eps_bearer_identity = *(bearer->ebi);
+    message.esm.h.eps_bearer_identity = bearer->ebi;
     message.esm.h.protocol_discriminator = OGS_NAS_PROTOCOL_DISCRIMINATOR_ESM;
     message.esm.h.procedure_transaction_identity = sess->pti;
     message.esm.h.message_type =
@@ -278,19 +278,19 @@ ogs_pkbuf_t *esm_build_activate_dedicated_bearer_context_request(
 
     ogs_debug("[ESM] Activate dedicated bearer context request");
     ogs_debug("    IMSI[%s] EBI[%d] Linked-EBI[%d]",
-            mme_ue->imsi_bcd, *(bearer->ebi), *(linked_bearer->ebi));
+            mme_ue->imsi_bcd, bearer->ebi, linked_bearer->ebi);
 
     memset(&message, 0, sizeof(message));
     message.h.security_header_type =
        OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
     message.h.protocol_discriminator = OGS_NAS_PROTOCOL_DISCRIMINATOR_EMM;
-    message.esm.h.eps_bearer_identity = *(bearer->ebi);
+    message.esm.h.eps_bearer_identity = bearer->ebi;
     message.esm.h.protocol_discriminator = OGS_NAS_PROTOCOL_DISCRIMINATOR_ESM;
     message.esm.h.procedure_transaction_identity = 0;
     message.esm.h.message_type =
         OGS_NAS_EPS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST;
 
-    linked_ebi->eps_bearer_identity = *(linked_bearer->ebi);
+    linked_ebi->eps_bearer_identity = linked_bearer->ebi;
     eps_qos_build(eps_qos, bearer->qos.qci,
             bearer->qos.mbr.downlink, bearer->qos.mbr.uplink,
             bearer->qos.gbr.downlink, bearer->qos.gbr.uplink);
@@ -326,13 +326,13 @@ ogs_pkbuf_t *esm_build_modify_bearer_context_request(
 
     ogs_debug("[ESM] Modify bearer context request");
     ogs_debug("    IMSI[%s] PTI[%d] EBI[%d]",
-            mme_ue->imsi_bcd, sess->pti, *(bearer->ebi));
+            mme_ue->imsi_bcd, sess->pti, bearer->ebi);
 
     memset(&message, 0, sizeof(message));
     message.h.security_header_type =
        OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
     message.h.protocol_discriminator = OGS_NAS_PROTOCOL_DISCRIMINATOR_EMM;
-    message.esm.h.eps_bearer_identity = *(bearer->ebi);
+    message.esm.h.eps_bearer_identity = bearer->ebi;
     message.esm.h.protocol_discriminator = OGS_NAS_PROTOCOL_DISCRIMINATOR_ESM;
     message.esm.h.procedure_transaction_identity = sess->pti;
     message.esm.h.message_type = OGS_NAS_EPS_MODIFY_EPS_BEARER_CONTEXT_REQUEST;
@@ -376,14 +376,14 @@ ogs_pkbuf_t *esm_build_deactivate_bearer_context_request(
 
     ogs_debug("[ESM] Deactivate bearer context request");
     ogs_debug("    IMSI[%s] PTI[%d] EBI[%d]",
-            mme_ue->imsi_bcd, sess->pti, *(bearer->ebi));
+            mme_ue->imsi_bcd, sess->pti, bearer->ebi);
     ogs_debug("    Cause[%d]", esm_cause);
 
     memset(&message, 0, sizeof(message));
     message.h.security_header_type =
        OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
     message.h.protocol_discriminator = OGS_NAS_PROTOCOL_DISCRIMINATOR_EMM;
-    message.esm.h.eps_bearer_identity = *(bearer->ebi);
+    message.esm.h.eps_bearer_identity = bearer->ebi;
     message.esm.h.protocol_discriminator = OGS_NAS_PROTOCOL_DISCRIMINATOR_ESM;
     message.esm.h.procedure_transaction_identity = sess->pti;
     message.esm.h.message_type =

@@ -127,7 +127,7 @@ ogs_pkbuf_t *gsm_build_pdu_session_establishment_accept(smf_sess_t *sess)
      */
     qos_rule[0].precedence = 255; /* lowest precedence */
     qos_rule[0].flow.segregation = 0;
-    qos_rule[0].flow.identifier = *(qos_flow->qfi);
+    qos_rule[0].flow.identifier = qos_flow->qfi;
 
     ogs_nas_build_qos_rules(authorized_qos_rules, qos_rule, 1);
 
@@ -180,7 +180,7 @@ ogs_pkbuf_t *gsm_build_pdu_session_establishment_accept(smf_sess_t *sess)
 
     /* QoS flow descriptions */
     memset(&qos_flow_description, 0, sizeof(qos_flow_description));
-    qos_flow_description.identifier = *(qos_flow->qfi);
+    qos_flow_description.identifier = qos_flow->qfi;
     qos_flow_description.code = OGS_NAS_CREATE_NEW_QOS_FLOW_DESCRIPTION;
     qos_flow_description.E = 1;
     qos_flow_description.num_of_parameter = 1;

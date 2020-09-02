@@ -50,20 +50,22 @@ int app_initialize(const char *const argv[])
 
     if (ogs_app()->parameter.no_nrf == 0)
         nrf_thread = test_child_create("nrf", argv_out);
-    if (ogs_app()->parameter.no_mme == 0)
-        mme_thread = test_child_create("mme", argv_out);
-    if (ogs_app()->parameter.no_sgwc == 0)
-        sgwc_thread = test_child_create("sgwc", argv_out);
-    if (ogs_app()->parameter.no_smf == 0)
-        smf_thread = test_child_create("smf", argv_out);
-    if (ogs_app()->parameter.no_sgwu == 0)
-        sgwu_thread = test_child_create("sgwu", argv_out);
-    if (ogs_app()->parameter.no_upf == 0)
-        upf_thread = test_child_create("upf", argv_out);
     if (ogs_app()->parameter.no_hss == 0)
         hss_thread = test_child_create("hss", argv_out);
     if (ogs_app()->parameter.no_pcrf == 0)
         pcrf_thread = test_child_create("pcrf", argv_out);
+
+    if (ogs_app()->parameter.no_upf == 0)
+        upf_thread = test_child_create("upf", argv_out);
+    if (ogs_app()->parameter.no_sgwu == 0)
+        sgwu_thread = test_child_create("sgwu", argv_out);
+
+    if (ogs_app()->parameter.no_smf == 0)
+        smf_thread = test_child_create("smf", argv_out);
+    if (ogs_app()->parameter.no_sgwc == 0)
+        sgwc_thread = test_child_create("sgwc", argv_out);
+    if (ogs_app()->parameter.no_mme == 0)
+        mme_thread = test_child_create("mme", argv_out);
 
     /*
      * Wait for all sockets listening
@@ -77,6 +79,8 @@ int app_initialize(const char *const argv[])
 
 void app_terminate(void)
 {
+    ogs_msleep(300);
+
     if (mme_thread) ogs_thread_destroy(mme_thread);
     if (sgwc_thread) ogs_thread_destroy(sgwc_thread);
     if (smf_thread) ogs_thread_destroy(smf_thread);

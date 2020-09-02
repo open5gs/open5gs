@@ -23,11 +23,15 @@ static ogs_app_context_t self;
 
 static int initialized = 0;
 
+static void app_context_prepare(void);
+
 int ogs_app_context_init(void)
 {
     ogs_assert(initialized == 0);
 
     memset(&self, 0, sizeof(ogs_app_context_t));
+
+    app_context_prepare();
 
     initialized = 1;
 
@@ -164,7 +168,7 @@ static void regenerate_all_timer_duration(void)
 #endif
 }
 
-static int app_context_prepare(void)
+static void app_context_prepare(void)
 {
 #define USRSCTP_LOCAL_UDP_PORT      9899
     self.usrsctp.udp_port = USRSCTP_LOCAL_UDP_PORT;
@@ -196,8 +200,6 @@ static int app_context_prepare(void)
     self.time.message.duration = ogs_time_from_sec(2);
 
     regenerate_all_timer_duration();
-
-    return OGS_OK;
 }
  
 static int app_context_validation(void)
@@ -229,9 +231,6 @@ int ogs_app_context_parse_config(void)
 
     document = self.document;
     ogs_assert(document);
-
-    rv = app_context_prepare();
-    if (rv != OGS_OK) return rv;
 
     ogs_yaml_iter_init(&root_iter, document);
     while (ogs_yaml_iter_next(&root_iter)) {

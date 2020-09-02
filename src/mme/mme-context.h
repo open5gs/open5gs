@@ -397,8 +397,7 @@ struct mme_ue_s {
 #define CLEAR_EPS_BEARER_ID(__mME) \
     do { \
         ogs_assert((__mME)); \
-        mme_ebi_pool_final(__mME); \
-        mme_ebi_pool_init(__mME); \
+        mme_ebi_pool_clear(__mME); \
     } while(0)
     OGS_POOL(ebi_pool, uint8_t);
 
@@ -523,7 +522,6 @@ struct mme_ue_s {
         ogs_assert((__mME)); \
         (__mME)->sgw_s11_teid = 0; \
         (__mME)->session_context_will_deleted = 0; \
-        CLEAR_EPS_BEARER_ID((__mME)); \
     } while(0)
 typedef struct mme_sess_s {
     ogs_lnode_t     lnode;
@@ -585,7 +583,8 @@ typedef struct mme_bearer_s {
     uint32_t        index;
     ogs_fsm_t       sm;             /* State Machine */
 
-    uint8_t         *ebi;           /* EPS Bearer ID */
+    uint8_t         *ebi_node;      /* Pool-Node for EPS Bearer ID */
+    uint8_t         ebi;            /* EPS Bearer ID */
 
     uint32_t        enb_s1u_teid;
     ogs_ip_t        enb_s1u_ip;
@@ -789,6 +788,7 @@ int mme_m_tmsi_free(mme_m_tmsi_t *tmsi);
 
 void mme_ebi_pool_init(mme_ue_t *mme_ue);
 void mme_ebi_pool_final(mme_ue_t *mme_ue);
+void mme_ebi_pool_clear(mme_ue_t *mme_ue);
 
 uint8_t mme_selected_int_algorithm(mme_ue_t *mme_ue);
 uint8_t mme_selected_enc_algorithm(mme_ue_t *mme_ue);

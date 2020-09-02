@@ -377,11 +377,11 @@ ogs_pkbuf_t *s1ap_build_initial_context_setup_request(
 
             e_rab = &item->value.choice.E_RABToBeSetupItemCtxtSUReq;
 
-            e_rab->e_RAB_ID = *(bearer->ebi);
+            e_rab->e_RAB_ID = bearer->ebi;
             e_rab->e_RABlevelQoSParameters.qCI = bearer->qos.qci;
 
             ogs_debug("    EBI[%d] QCI[%d] SGW-S1U-TEID[%d]",
-                    *(bearer->ebi), bearer->qos.qci, bearer->sgw_s1u_teid);
+                    bearer->ebi, bearer->qos.qci, bearer->sgw_s1u_teid);
 
             e_rab->e_RABlevelQoSParameters.allocationRetentionPriority.
                 priorityLevel = bearer->qos.arp.priority_level;
@@ -887,10 +887,10 @@ ogs_pkbuf_t *s1ap_build_e_rab_setup_request(
 
     e_rab = &item->value.choice.E_RABToBeSetupItemBearerSUReq;
 
-    e_rab->e_RAB_ID = *(bearer->ebi);
+    e_rab->e_RAB_ID = bearer->ebi;
     e_rab->e_RABlevelQoSParameters.qCI = bearer->qos.qci;
 
-    ogs_debug("    EBI[%d] QCI[%d]", *(bearer->ebi), bearer->qos.qci);
+    ogs_debug("    EBI[%d] QCI[%d]", bearer->ebi, bearer->qos.qci);
 
     e_rab->e_RABlevelQoSParameters.allocationRetentionPriority.
         priorityLevel = bearer->qos.arp.priority_level;
@@ -1024,10 +1024,10 @@ ogs_pkbuf_t *s1ap_build_e_rab_modify_request(
 
     e_rab = &item->value.choice.E_RABToBeModifiedItemBearerModReq;
 
-    e_rab->e_RAB_ID = *(bearer->ebi);
+    e_rab->e_RAB_ID = bearer->ebi;
     e_rab->e_RABLevelQoSParameters.qCI = bearer->qos.qci;
 
-    ogs_debug("    EBI[%d] QCI[%d]", *(bearer->ebi), bearer->qos.qci);
+    ogs_debug("    EBI[%d] QCI[%d]", bearer->ebi, bearer->qos.qci);
 
     e_rab->e_RABLevelQoSParameters.allocationRetentionPriority.
         priorityLevel = bearer->qos.arp.priority_level;
@@ -1184,12 +1184,12 @@ ogs_pkbuf_t *s1ap_build_e_rab_release_command(
 
     e_rab = &item->value.choice.E_RABItem;
 
-    e_rab->e_RAB_ID = *(bearer->ebi);
+    e_rab->e_RAB_ID = bearer->ebi;
     e_rab->cause.present = group;
     e_rab->cause.choice.radioNetwork = cause;
 
     ogs_debug("    EBI[%d] Gruop[%d] Cause[%d]",
-            *(bearer->ebi), group, (int)cause);
+            bearer->ebi, group, (int)cause);
 
     nasPdu->size = esmbuf->len;
     nasPdu->buf = CALLOC(nasPdu->size, sizeof(uint8_t));
@@ -1636,7 +1636,7 @@ ogs_pkbuf_t *s1ap_build_handover_command(enb_ue_t *source_ue)
                 e_rab = &item->value.choice.E_RABDataForwardingItem;
                 ogs_assert(e_rab);
 
-                e_rab->e_RAB_ID = *(bearer->ebi);
+                e_rab->e_RAB_ID = bearer->ebi;
             }
 
             if (MME_HAVE_SGW_DL_INDIRECT_TUNNEL(bearer)) {
@@ -1930,7 +1930,7 @@ ogs_pkbuf_t *s1ap_build_handover_request(
 
             e_rab = &item->value.choice.E_RABToBeSetupItemHOReq;
 
-            e_rab->e_RAB_ID = *(bearer->ebi);
+            e_rab->e_RAB_ID = bearer->ebi;
             e_rab->e_RABlevelQosParameters.qCI = bearer->qos.qci;
 
             e_rab->e_RABlevelQosParameters.allocationRetentionPriority.

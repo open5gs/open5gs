@@ -230,7 +230,7 @@ ogs_pkbuf_t *mme_s11_build_create_session_request(
 
     req->bearer_contexts_to_be_created.presence = 1;
     req->bearer_contexts_to_be_created.eps_bearer_id.presence = 1;
-    req->bearer_contexts_to_be_created.eps_bearer_id.u8 = *(bearer->ebi);
+    req->bearer_contexts_to_be_created.eps_bearer_id.u8 = bearer->ebi;
 
     memset(&bearer_qos, 0, sizeof(bearer_qos));
     bearer_qos.qci = pdn->qos.qci;
@@ -297,7 +297,7 @@ ogs_pkbuf_t *mme_s11_build_modify_bearer_request(
     /* Bearer Context : EBI */
     req->bearer_contexts_to_be_modified.presence = 1;
     req->bearer_contexts_to_be_modified.eps_bearer_id.presence = 1;
-    req->bearer_contexts_to_be_modified.eps_bearer_id.u8 = *(bearer->ebi);
+    req->bearer_contexts_to_be_modified.eps_bearer_id.u8 = bearer->ebi;
 
     /* Data Plane(DL) : ENB-S1U */
     memset(&enb_s1u_teid, 0, sizeof(ogs_gtp_f_teid_t));
@@ -354,7 +354,7 @@ ogs_pkbuf_t *mme_s11_build_delete_session_request(
     memset(&gtp_message, 0, sizeof(ogs_gtp_message_t));
 
     req->linked_eps_bearer_id.presence = 1;
-    req->linked_eps_bearer_id.u8 = *(bearer->ebi);
+    req->linked_eps_bearer_id.u8 = bearer->ebi;
 
     /* User Location Information(ULI) */
     memset(&uli, 0, sizeof(ogs_gtp_uli_t));
@@ -416,7 +416,7 @@ ogs_pkbuf_t *mme_s11_build_create_bearer_response(
     /* Bearer Context : EBI */
     rsp->bearer_contexts.presence = 1;
     rsp->bearer_contexts.eps_bearer_id.presence = 1;
-    rsp->bearer_contexts.eps_bearer_id.u8 = *(bearer->ebi);
+    rsp->bearer_contexts.eps_bearer_id.u8 = bearer->ebi;
 
     /* Data Plane(DL) : ENB-S1U */
     memset(&enb_s1u_teid, 0, sizeof(ogs_gtp_f_teid_t));
@@ -511,7 +511,7 @@ ogs_pkbuf_t *mme_s11_build_update_bearer_response(
     /* Bearer Context : EBI */
     rsp->bearer_contexts.presence = 1;
     rsp->bearer_contexts.eps_bearer_id.presence = 1;
-    rsp->bearer_contexts.eps_bearer_id.u8 = *(bearer->ebi);
+    rsp->bearer_contexts.eps_bearer_id.u8 = bearer->ebi;
 
     /* Bearer Context : Cause */
     rsp->bearer_contexts.cause.presence = 1;
@@ -586,7 +586,7 @@ ogs_pkbuf_t *mme_s11_build_delete_bearer_response(
     /* Bearer Context : EBI */
     rsp->bearer_contexts.presence = 1;
     rsp->bearer_contexts.eps_bearer_id.presence = 1;
-    rsp->bearer_contexts.eps_bearer_id.u8 = *(bearer->ebi);
+    rsp->bearer_contexts.eps_bearer_id.u8 = bearer->ebi;
 
     /* Bearer Context : Cause */
     rsp->bearer_contexts.cause.presence = 1;
@@ -725,7 +725,7 @@ ogs_pkbuf_t *mme_s11_build_create_indirect_data_forwarding_tunnel_request(
                 MME_HAVE_ENB_UL_INDIRECT_TUNNEL(bearer)) {
                 req->bearer_contexts[i].presence = 1;
                 req->bearer_contexts[i].eps_bearer_id.presence = 1;
-                req->bearer_contexts[i].eps_bearer_id.u8 = *(bearer->ebi);
+                req->bearer_contexts[i].eps_bearer_id.u8 = bearer->ebi;
                 i++;
             }
 
@@ -795,7 +795,7 @@ ogs_pkbuf_t *mme_s11_build_bearer_resource_command(
 
     /* Linked Bearer Context : EBI */
     cmd->linked_eps_bearer_id.presence = 1;
-    cmd->linked_eps_bearer_id.u8 = *(bearer->ebi);
+    cmd->linked_eps_bearer_id.u8 = bearer->ebi;
 
     /* Procedure Transaction ID(PTI) */
     cmd->procedure_transaction_id.presence = 1;

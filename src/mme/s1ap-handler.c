@@ -520,7 +520,7 @@ void s1ap_handle_initial_context_setup_response(
         ogs_assert(rv == OGS_OK);
 
         ogs_debug("    EBI[%d] ENB-S1U-TEID[%d]",
-                *(bearer->ebi), bearer->enb_s1u_teid);
+                bearer->ebi, bearer->enb_s1u_teid);
 
         if (OGS_FSM_CHECK(&bearer->sm, esm_state_active)) {
             ogs_debug("    NAS_EPS Type[%d]", mme_ue->nas_eps.type);
@@ -815,14 +815,14 @@ void s1ap_handle_e_rab_setup_response(
                 &e_rab->transportLayerAddress, &bearer->enb_s1u_ip);
         ogs_assert(rv == OGS_OK);
 
-        ogs_debug("    EBI[%d]", *(bearer->ebi));
+        ogs_debug("    EBI[%d]", bearer->ebi);
 
         if (OGS_FSM_CHECK(&bearer->sm, esm_state_active)) {
             mme_bearer_t *linked_bearer = mme_linked_bearer(bearer);
             ogs_assert(linked_bearer);
-            ogs_debug("    Linked-EBI[%d]", *(linked_bearer->ebi));
+            ogs_debug("    Linked-EBI[%d]", linked_bearer->ebi);
 
-            if (*(bearer->ebi) == *(linked_bearer->ebi)) {
+            if (bearer->ebi == linked_bearer->ebi) {
                 mme_gtp_send_modify_bearer_request(bearer, 0);
             } else {
                 mme_gtp_send_create_bearer_response(bearer);

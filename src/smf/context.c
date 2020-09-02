@@ -668,12 +668,7 @@ smf_sess_t *smf_sess_add_by_apn(smf_ue_t *smf_ue, char *apn)
     }
     memset(sess, 0, sizeof *sess);
 
-    ogs_pool_init(&sess->pfcp.pdr_pool, OGS_MAX_NUM_OF_PDR);
-    ogs_pool_init(&sess->pfcp.far_pool, OGS_MAX_NUM_OF_FAR);
-    ogs_pool_init(&sess->pfcp.urr_pool, OGS_MAX_NUM_OF_URR);
-    ogs_pool_init(&sess->pfcp.qer_pool, OGS_MAX_NUM_OF_QER);
-    ogs_pool_init(&sess->pfcp.bar_pool, OGS_MAX_NUM_OF_BAR);
-
+    ogs_pfcp_pool_init(&sess->pfcp);
     smf_qfi_pool_init(sess);
 
     sess->index = ogs_pool_index(&smf_sess_pool, sess);
@@ -980,7 +975,7 @@ void smf_sess_remove(smf_sess_t *sess)
     smf_bearer_remove_all(sess);
 
     ogs_pfcp_pool_final(&sess->pfcp);
-    ogs_pool_final(&sess->qfi_pool);
+    smf_qfi_pool_final(sess);
 
     ogs_pool_free(&smf_sess_pool, sess);
 }
@@ -1150,10 +1145,10 @@ smf_bearer_t *smf_qos_flow_add(smf_sess_t *sess)
     ogs_pfcp_pdr_associate_qer(ul_pdr, qer);
 
     /* Allocate QFI */
-    ogs_pool_alloc(&sess->qfi_pool, &qos_flow->qfi);
-    ogs_assert(qos_flow->qfi);
+    ogs_pool_alloc(&sess->qfi_pool, &qos_flow->qfi_node);
+    ogs_assert(qos_flow->qfi_node);
 
-    ul_pdr->qfi = qer->qfi = *(qos_flow->qfi);
+    qos_flow->qfi = ul_pdr->qfi = qer->qfi = *(qos_flow->qfi_node);
 
     qos_flow->sess = sess;
 
@@ -1168,7 +1163,7 @@ smf_bearer_t *smf_qos_flow_find_by_qfi(smf_sess_t *sess, uint8_t qfi)
 
     ogs_assert(sess);
     ogs_list_for_each(&sess->bearer_list, qos_flow) {
-        if (*(qos_flow->qfi) == qfi)
+        if (qos_flow->qfi == qfi)
             return qos_flow;
     }
 
@@ -1191,7 +1186,7 @@ smf_bearer_t *smf_bearer_add(smf_sess_t *sess)
     ogs_assert(bearer);
     memset(bearer, 0, sizeof *bearer);
 
-    ogs_pool_init(&bearer->pf_pool, OGS_MAX_NUM_OF_PF);
+    ogs_index_init(&bearer->pf_pool, OGS_MAX_NUM_OF_PF);
 
     bearer->index = ogs_pool_index(&smf_bearer_pool, bearer);
     ogs_assert(bearer->index > 0 && bearer->index <=
@@ -1308,10 +1303,10 @@ int smf_bearer_remove(smf_bearer_t *bearer)
 
     smf_pf_remove_all(bearer);
 
-    ogs_pool_final(&bearer->pf_pool);
+    ogs_index_final(&bearer->pf_pool);
 
-    if (bearer->qfi)
-        ogs_pool_free(&bearer->sess->qfi_pool, bearer->qfi);
+    if (bearer->qfi_node)
+        ogs_pool_free(&bearer->sess->qfi_pool, bearer->qfi_node);
 
     ogs_pool_free(&smf_bearer_pool, bearer);
 
@@ -1679,7 +1674,7 @@ void smf_qfi_pool_init(smf_sess_t *sess)
 
     ogs_assert(sess);
 
-    ogs_pool_init(&sess->qfi_pool, OGS_MAX_QOS_FLOW_ID);
+    ogs_index_init(&sess->qfi_pool, OGS_MAX_QOS_FLOW_ID);
 
     for (i = 1; i <= OGS_MAX_QOS_FLOW_ID; i++) {
         sess->qfi_pool.array[i-1] = i;
@@ -1688,5 +1683,5 @@ void smf_qfi_pool_init(smf_sess_t *sess)
 
 void smf_qfi_pool_final(smf_sess_t *sess)
 {
-    ogs_pool_final_skip_mem_checks(&sess->qfi_pool);
+    ogs_index_final(&sess->qfi_pool);
 }

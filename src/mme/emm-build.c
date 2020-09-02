@@ -404,7 +404,7 @@ ogs_pkbuf_t *emm_build_tau_accept(mme_ue_t *mme_ue)
     while (sess) {
         mme_bearer_t *bearer = mme_bearer_first(sess);
         while (bearer) {
-            switch (*(bearer->ebi)) {
+            switch (bearer->ebi) {
             case 5: tau_accept->eps_bearer_context_status.ebi5 = 1; break;
             case 6: tau_accept->eps_bearer_context_status.ebi6 = 1; break;
             case 7: tau_accept->eps_bearer_context_status.ebi7 = 1; break;

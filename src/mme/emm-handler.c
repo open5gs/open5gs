@@ -80,6 +80,7 @@ int emm_handle_attach_request(mme_ue_t *mme_ue,
      */
     CLEAR_MME_UE_ALL_TIMERS(mme_ue);
 
+    CLEAR_EPS_BEARER_ID(mme_ue);
     CLEAR_SERVICE_INDICATOR(mme_ue);
     if (SECURITY_CONTEXT_IS_VALID(mme_ue)) {
         ogs_kdf_kenb(mme_ue->kasme, mme_ue->ul_count.i32, mme_ue->kenb);

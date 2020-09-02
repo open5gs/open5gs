@@ -158,8 +158,9 @@ typedef struct smf_bearer_s {
     ogs_pfcp_far_t  *ul_far;
     ogs_pfcp_qer_t  *qer;
 
-    uint8_t         *qfi;           /* 5GC */
-    uint8_t         ebi;            /* EPC */
+    uint8_t         *qfi_node;      /* Pool-Node for 5GC-QFI */
+    uint8_t         qfi;            /* 5G Core QFI */
+    uint8_t         ebi;            /* EPC EBI */
 
     uint32_t        pgw_s5u_teid;   /* PGW-S5U TEID */
     ogs_sockaddr_t  *pgw_s5u_addr;  /* PGW-S5U IPv4 */

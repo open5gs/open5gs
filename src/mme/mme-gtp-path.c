@@ -267,7 +267,7 @@ void mme_gtp_send_delete_all_sessions(mme_ue_t *mme_ue)
 
             if (bearer &&
                 OGS_FSM_CHECK(&bearer->sm, esm_state_pdn_will_disconnect)) {
-                ogs_warn("PDN will disconnect[EBI:%d]", *(bearer->ebi));
+                ogs_warn("PDN will disconnect[EBI:%d]", bearer->ebi);
             } else {
                 mme_gtp_send_delete_session_request(sess);
             }

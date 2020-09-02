@@ -2333,7 +2333,7 @@ void mme_ue_remove(mme_ue_t *mme_ue)
     mme_sess_remove_all(mme_ue);
     mme_pdn_remove_all(mme_ue);
 
-    ogs_pool_final(&mme_ue->ebi_pool);
+    mme_ebi_pool_final(mme_ue);
 
     ogs_pool_free(&mme_ue_pool, mme_ue);
 }
@@ -2782,11 +2782,13 @@ mme_bearer_t *mme_bearer_add(mme_sess_t *sess)
     ogs_assert(bearer);
     memset(bearer, 0, sizeof *bearer);
 
-    ogs_pool_alloc(&mme_ue->ebi_pool, &bearer->ebi);
-    ogs_assert(bearer->ebi);
+    ogs_pool_alloc(&mme_ue->ebi_pool, &bearer->ebi_node);
+    ogs_assert(bearer->ebi_node);
 
-    ogs_assert(*(bearer->ebi) >= MIN_EPS_BEARER_ID &&
-                *(bearer->ebi) <= MAX_EPS_BEARER_ID);
+    bearer->ebi = *(bearer->ebi_node);
+
+    ogs_assert(bearer->ebi >= MIN_EPS_BEARER_ID &&
+                bearer->ebi <= MAX_EPS_BEARER_ID);
 
     bearer->mme_ue = mme_ue;
     bearer->sess = sess;
@@ -2825,8 +2827,8 @@ void mme_bearer_remove(mme_bearer_t *bearer)
 
     OGS_TLV_CLEAR_DATA(&bearer->tft);
 
-    ogs_assert(bearer->ebi);
-    ogs_pool_free(&bearer->mme_ue->ebi_pool, bearer->ebi);
+    ogs_assert(bearer->ebi_node);
+    ogs_pool_free(&bearer->mme_ue->ebi_pool, bearer->ebi_node);
     
     ogs_pool_free(&mme_bearer_pool, bearer);
 }
@@ -2855,7 +2857,7 @@ mme_bearer_t *mme_bearer_find_by_sess_ebi(mme_sess_t *sess, uint8_t ebi)
 
     bearer = mme_bearer_first(sess);
     while (bearer) {
-        if (ebi == *(bearer->ebi))
+        if (ebi == bearer->ebi)
             return bearer;
 
         bearer = mme_bearer_next(bearer);
@@ -3238,7 +3240,7 @@ void mme_ebi_pool_init(mme_ue_t *mme_ue)
 
     ogs_assert(mme_ue);
 
-    ogs_pool_init(&mme_ue->ebi_pool, MAX_EPS_BEARER_ID - MIN_EPS_BEARER_ID + 1);
+    ogs_index_init(&mme_ue->ebi_pool, MAX_EPS_BEARER_ID-MIN_EPS_BEARER_ID+1);
 
     for (i = MIN_EPS_BEARER_ID, index = 0;
             i <= MAX_EPS_BEARER_ID; i++, index++) {
@@ -3248,7 +3250,20 @@ void mme_ebi_pool_init(mme_ue_t *mme_ue)
 
 void mme_ebi_pool_final(mme_ue_t *mme_ue)
 {
-    ogs_pool_final_skip_mem_checks(&mme_ue->ebi_pool);
+    ogs_assert(mme_ue);
+
+    ogs_index_final(&mme_ue->ebi_pool);
+}
+
+void mme_ebi_pool_clear(mme_ue_t *mme_ue)
+{
+    ogs_assert(mme_ue);
+
+    ogs_free(mme_ue->ebi_pool.free);
+    ogs_free(mme_ue->ebi_pool.array);
+    ogs_free(mme_ue->ebi_pool.index);
+
+    mme_ebi_pool_init(mme_ue);
 }
 
 uint8_t mme_selected_int_algorithm(mme_ue_t *mme_ue)

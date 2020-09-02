@@ -1505,17 +1505,17 @@ void ogs_pfcp_subnet_remove_all(void)
 
 void ogs_pfcp_pool_init(ogs_pfcp_sess_t *sess)
 {
-    ogs_pool_init(&sess->pdr_pool, OGS_MAX_NUM_OF_PDR);
-    ogs_pool_init(&sess->far_pool, OGS_MAX_NUM_OF_FAR);
-    ogs_pool_init(&sess->urr_pool, OGS_MAX_NUM_OF_URR);
-    ogs_pool_init(&sess->qer_pool, OGS_MAX_NUM_OF_QER);
-    ogs_pool_init(&sess->bar_pool, OGS_MAX_NUM_OF_BAR);
+    ogs_index_init(&sess->pdr_pool, OGS_MAX_NUM_OF_PDR);
+    ogs_index_init(&sess->far_pool, OGS_MAX_NUM_OF_FAR);
+    ogs_index_init(&sess->urr_pool, OGS_MAX_NUM_OF_URR);
+    ogs_index_init(&sess->qer_pool, OGS_MAX_NUM_OF_QER);
+    ogs_index_init(&sess->bar_pool, OGS_MAX_NUM_OF_BAR);
 }
 void ogs_pfcp_pool_final(ogs_pfcp_sess_t *sess)
 {
-    ogs_pool_final(&sess->pdr_pool);
-    ogs_pool_final(&sess->far_pool);
-    ogs_pool_final(&sess->urr_pool);
-    ogs_pool_final(&sess->qer_pool);
-    ogs_pool_final(&sess->bar_pool);
+    ogs_index_final(&sess->pdr_pool);
+    ogs_index_final(&sess->far_pool);
+    ogs_index_final(&sess->urr_pool);
+    ogs_index_final(&sess->qer_pool);
+    ogs_index_final(&sess->bar_pool);
 }
