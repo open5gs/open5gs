@@ -254,6 +254,9 @@ struct enb_ue_s {
         ogs_e_cgi_t     e_cgi;
     } saved;
 
+    /* S1 Holding timer for removing this context */
+    ogs_timer_t     *t_s1_holding;
+
     /* Store by UE Context Release Command
      * Retrieve by UE Context Release Complete */
 #define S1AP_UE_CTX_REL_INVALID_ACTION                      0

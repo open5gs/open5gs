@@ -2050,6 +2050,9 @@ enb_ue_t *enb_ue_add(mme_enb_t *enb, uint32_t enb_ue_s1ap_id)
     enb_ue->enb_ostream_id = 
         OGS_NEXT_ID(enb->ostream_id, 1, enb->max_num_of_ostreams-1);
 
+    enb_ue->t_s1_holding = ogs_timer_add(
+            ogs_app()->timer_mgr, mme_timer_s1_holding_timer_expire, enb_ue);
+
     enb_ue->enb = enb;
 
     ogs_list_add(&enb->enb_ue_list, enb_ue);
@@ -2068,6 +2071,8 @@ void enb_ue_remove(enb_ue_t *enb_ue)
     enb_ue_deassociate(enb_ue);
 
     ogs_list_remove(&enb_ue->enb->enb_ue_list, enb_ue);
+
+    ogs_timer_delete(enb_ue->t_s1_holding);
 
     stats_remove_ue();
 

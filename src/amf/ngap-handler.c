@@ -1267,7 +1267,7 @@ void ngap_handle_ue_context_release_complete(
 
     switch (ran_ue->ue_ctx_rel_action) {
     case NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE:
-        ogs_debug("    No Action");
+        ogs_debug("    Action: NG context remove");
         ran_ue_remove(ran_ue);
         break;
     case NGAP_UE_CTX_REL_NG_REMOVE_AND_UNLINK:
@@ -1276,7 +1276,7 @@ void ngap_handle_ue_context_release_complete(
         amf_ue_deassociate(amf_ue);
         break;
     case NGAP_UE_CTX_REL_UE_CONTEXT_REMOVE:
-        ogs_debug("    Action: UE context remove()");
+        ogs_debug("    Action: UE context remove");
         ran_ue_remove(ran_ue);
         amf_ue_remove(amf_ue);
         break;

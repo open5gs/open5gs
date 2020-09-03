@@ -18,6 +18,7 @@
  */
 
 #include "mme-event.h"
+#include "mme-timer.h"
 
 #include "s1ap-path.h"
 #include "nas-path.h"
@@ -287,12 +288,21 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, ogs_s1ap_message_t *message)
                 /* If NAS(mme_ue_t) has already been associated with
                  * older S1(enb_ue_t) context */
                 if (ECM_CONNECTED(mme_ue)) {
-                   /* Implcit S1 release */
-                    ogs_debug("Implicit S1 release");
-                    ogs_debug("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
-                          mme_ue->enb_ue->enb_ue_s1ap_id,
-                          mme_ue->enb_ue->mme_ue_s1ap_id);
-                    enb_ue_remove(mme_ue->enb_ue);
+                    /* Previous S1(enb_ue_t) context the holding timer(30secs)
+                     * is started.
+                     * Newly associated S1(enb_ue_t) context holding timer
+                     * is stopped. */
+                    ogs_debug("Start S1 Holding Timer\n");
+                    ogs_debug("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
+                            mme_ue->enb_ue->enb_ue_s1ap_id,
+                            mme_ue->enb_ue->mme_ue_s1ap_id);
+
+                    /* De-associate S1 with NAS/EMM */
+                    enb_ue_deassociate(mme_ue->enb_ue);
+
+                    s1ap_send_ue_context_release_command(mme_ue->enb_ue,
+                            S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
+                            S1AP_UE_CTX_REL_S1_CONTEXT_REMOVE, 0);
                 }
                 mme_ue_associate_enb_ue(mme_ue, enb_ue);
             }
@@ -918,7 +928,6 @@ void s1ap_handle_ue_context_release_request(
 void s1ap_handle_ue_context_release_complete(
         mme_enb_t *enb, ogs_s1ap_message_t *message)
 {
-    int rv;
     char buf[OGS_ADDRSTRLEN];
     int i;
 
@@ -928,7 +937,6 @@ void s1ap_handle_ue_context_release_complete(
     S1AP_UEContextReleaseComplete_IEs_t *ie = NULL;
     S1AP_MME_UE_S1AP_ID_t *MME_UE_S1AP_ID = NULL;
 
-    mme_ue_t *mme_ue = NULL;
     enb_ue_t *enb_ue = NULL;
 
     ogs_assert(enb);
@@ -969,6 +977,16 @@ void s1ap_handle_ue_context_release_complete(
         return;
     }
 
+    s1ap_handle_ue_context_release_action(enb_ue);
+}
+
+void s1ap_handle_ue_context_release_action(enb_ue_t *enb_ue)
+{
+    int rv;
+    mme_ue_t *mme_ue = NULL;
+
+    ogs_assert(enb_ue);
+
     mme_ue = enb_ue->mme_ue;
 
     ogs_debug("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
@@ -976,7 +994,7 @@ void s1ap_handle_ue_context_release_complete(
 
     switch (enb_ue->ue_ctx_rel_action) {
     case S1AP_UE_CTX_REL_S1_CONTEXT_REMOVE:
-        ogs_debug("    No Action");
+        ogs_debug("    Action: S1 context remove");
         enb_ue_remove(enb_ue);
         break;
     case S1AP_UE_CTX_REL_S1_REMOVE_AND_UNLINK:
@@ -985,7 +1003,7 @@ void s1ap_handle_ue_context_release_complete(
         mme_ue_deassociate(mme_ue);
         break;
     case S1AP_UE_CTX_REL_UE_CONTEXT_REMOVE:
-        ogs_debug("    Action: UE context remove()");
+        ogs_debug("    Action: UE context remove");
         enb_ue_remove(enb_ue);
         mme_ue_remove(mme_ue);
         break;

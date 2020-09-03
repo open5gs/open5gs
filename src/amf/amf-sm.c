@@ -691,6 +691,20 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
                 }
             }
 
+            /* 
+             * TS23.502
+             * 4.2.3.2 UE Triggered Service Request
+             *
+             * 4. [Conditional]
+             * AMF to SMF: Nsmf_PDUSession_UpdateSMContext Request
+             *
+             * The AMF may receive a Service Request to establish another
+             * NAS signalling connection via a NG-RAN while it has maintained
+             * an old NAS signalling connection for UE still via NG-RAN.
+             * In this case, AMF shall trigger the AN release procedure toward
+             * the old NG-RAN to release the old NAS signalling connection
+             * as defined in clause 4.2.6 with following logic: */
+
             /* If NAS(amf_ue_t) has already been associated with
              * older NG(ran_ue_t) context */
             if (CM_CONNECTED(amf_ue)) {

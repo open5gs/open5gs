@@ -31,6 +31,7 @@ typedef enum {
     MME_TIMER_BASE = 0,
 
     MME_TIMER_S1_DELAYED_SEND,
+    MME_TIMER_S1_HOLDING,
 
     MME_TIMER_T3413,
     MME_TIMER_T3422,
@@ -64,6 +65,7 @@ void mme_timer_t3470_expire(void *data);
 void mme_timer_t3489_expire(void *data);
 
 void mme_timer_sgs_cli_conn_to_srv(void *data);
+void mme_timer_s1_holding_timer_expire(void *data);
 
 #ifdef __cplusplus
 }

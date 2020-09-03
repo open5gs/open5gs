@@ -311,31 +311,20 @@ void s1ap_send_ue_context_release_command(
     ogs_debug("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
             enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
 
-    if (delay) {
-        ogs_assert(action != S1AP_UE_CTX_REL_INVALID_ACTION);
-        enb_ue->ue_ctx_rel_action = action;
+    ogs_assert(action != S1AP_UE_CTX_REL_INVALID_ACTION);
+    enb_ue->ue_ctx_rel_action = action;
 
-        ogs_debug("    Group[%d] Cause[%d] Action[%d] Delay[%d]",
-                group, (int)cause, action, delay);
+    ogs_debug("    Group[%d] Cause[%d] Action[%d] Delay[%d]",
+            group, (int)cause, action, delay);
 
-        s1apbuf = s1ap_build_ue_context_release_command(enb_ue, group, cause);
-        ogs_expect_or_return(s1apbuf);
+    s1apbuf = s1ap_build_ue_context_release_command(enb_ue, group, cause);
+    ogs_expect_or_return(s1apbuf);
 
-        rv = s1ap_delayed_send_to_enb_ue(enb_ue, s1apbuf, delay);
-        ogs_expect(rv == OGS_OK);
-    } else {
-        ogs_assert(action != S1AP_UE_CTX_REL_INVALID_ACTION);
-        enb_ue->ue_ctx_rel_action = action;
+    rv = s1ap_delayed_send_to_enb_ue(enb_ue, s1apbuf, delay);
+    ogs_expect(rv == OGS_OK);
 
-        ogs_debug("    Group[%d] Cause[%d] Action[%d] Delay[%d]",
-                group, (int)cause, action, delay);
-
-        s1apbuf = s1ap_build_ue_context_release_command(enb_ue, group, cause);
-        ogs_expect_or_return(s1apbuf);
-
-        rv = s1ap_delayed_send_to_enb_ue(enb_ue, s1apbuf, 0);
-        ogs_expect(rv == OGS_OK);
-    }
+    ogs_timer_start(enb_ue->t_s1_holding,
+            mme_timer_cfg(MME_TIMER_S1_HOLDING)->duration);
 }
 
 void s1ap_send_paging(mme_ue_t *mme_ue, S1AP_CNDomain_t cn_domain)

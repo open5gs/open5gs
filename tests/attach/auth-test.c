@@ -35,6 +35,9 @@ static void test1_func(abts_case *tc, void *data)
     test_sess_t *sess = NULL;
     test_bearer_t *bearer = NULL;
 
+    uint32_t enb_ue_s1ap_id;
+    uint64_t mme_ue_s1ap_id;
+
     const char *_k_string = "465b5ce8b199b49faa5f0a2ee238a6bc";
     uint8_t k[OGS_KEY_LEN];
     const char *_opc_string = "e8ed289deba952e4283b54e88e6183ca";
@@ -289,6 +292,21 @@ static void test1_func(abts_case *tc, void *data)
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
+    /* Receive OLD UE Context Release Command */
+    enb_ue_s1ap_id = test_ue->enb_ue_s1ap_id;
+
+    recvbuf = testenb_s1ap_read(s1ap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    tests1ap_recv(test_ue, recvbuf);
+
+    /* Send OLD UE Context Release Complete */
+    sendbuf = test_s1ap_build_ue_context_release_complete(test_ue);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testenb_s1ap_send(s1ap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    test_ue->enb_ue_s1ap_id = enb_ue_s1ap_id;
+
     /* Receive ESM Information Request */
     recvbuf = testenb_s1ap_read(s1ap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
@@ -344,6 +362,21 @@ static void test1_func(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive OLD UE Context Release Command */
+    enb_ue_s1ap_id = test_ue->enb_ue_s1ap_id;
+
+    recvbuf = testenb_s1ap_read(s1ap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    tests1ap_recv(test_ue, recvbuf);
+
+    /* Send OLD UE Context Release Complete */
+    sendbuf = test_s1ap_build_ue_context_release_complete(test_ue);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testenb_s1ap_send(s1ap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    test_ue->enb_ue_s1ap_id = enb_ue_s1ap_id;
 
     /* Receive Authentication request */
     recvbuf = testenb_s1ap_read(s1ap);

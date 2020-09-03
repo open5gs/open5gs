@@ -312,31 +312,17 @@ void ngap_send_ran_ue_context_release_command(
     ogs_debug("    RAN_UE_NGAP_ID[%d] AMF_UE_NGAP_ID[%lld]",
             ran_ue->ran_ue_ngap_id, (long long)ran_ue->amf_ue_ngap_id);
 
-    if (delay) {
-        ogs_assert(action != NGAP_UE_CTX_REL_INVALID_ACTION);
-        ran_ue->ue_ctx_rel_action = action;
+    ogs_assert(action != NGAP_UE_CTX_REL_INVALID_ACTION);
+    ran_ue->ue_ctx_rel_action = action;
 
-        ogs_debug("    Group[%d] Cause[%d] Action[%d] Delay[%d]",
-                group, (int)cause, action, delay);
+    ogs_debug("    Group[%d] Cause[%d] Action[%d] Delay[%d]",
+            group, (int)cause, action, delay);
 
-        ngapbuf = ngap_build_ue_context_release_command(ran_ue, group, cause);
-        ogs_expect_or_return(ngapbuf);
+    ngapbuf = ngap_build_ue_context_release_command(ran_ue, group, cause);
+    ogs_expect_or_return(ngapbuf);
 
-        rv = ngap_delayed_send_to_ran_ue(ran_ue, ngapbuf, delay);
-        ogs_expect(rv == OGS_OK);
-    } else {
-        ogs_assert(action != NGAP_UE_CTX_REL_INVALID_ACTION);
-        ran_ue->ue_ctx_rel_action = action;
-
-        ogs_debug("    Group[%d] Cause[%d] Action[%d] Delay[%d]",
-                group, (int)cause, action, delay);
-
-        ngapbuf = ngap_build_ue_context_release_command(ran_ue, group, cause);
-        ogs_expect_or_return(ngapbuf);
-
-        rv = ngap_delayed_send_to_ran_ue(ran_ue, ngapbuf, 0);
-        ogs_expect(rv == OGS_OK);
-    }
+    rv = ngap_delayed_send_to_ran_ue(ran_ue, ngapbuf, delay);
+    ogs_expect(rv == OGS_OK);
 }
 
 void ngap_send_amf_ue_context_release_command(

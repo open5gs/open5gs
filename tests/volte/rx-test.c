@@ -38,6 +38,9 @@ static void test1_func(abts_case *tc, void *data)
     test_sess_t *sess = NULL;
     test_bearer_t *bearer = NULL;
 
+    uint32_t enb_ue_s1ap_id;
+    uint64_t mme_ue_s1ap_id;
+
     const char *_k_string = "465b5ce8b199b49faa5f0a2ee238a6bc";
     uint8_t k[OGS_KEY_LEN];
     const char *_opc_string = "e8ed289deba952e4283b54e88e6183ca";
@@ -578,6 +581,21 @@ static void test1_func(abts_case *tc, void *data)
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
+    /* Receive OLD UE Context Release Command */
+    enb_ue_s1ap_id = test_ue->enb_ue_s1ap_id;
+
+    recvbuf = testenb_s1ap_read(s1ap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    tests1ap_recv(test_ue, recvbuf);
+
+    /* Send OLD UE Context Release Complete */
+    sendbuf = test_s1ap_build_ue_context_release_complete(test_ue);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testenb_s1ap_send(s1ap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    test_ue->enb_ue_s1ap_id = enb_ue_s1ap_id;
+
     /* Receive UE Context Release Command */
     recvbuf = testenb_s1ap_read(s1ap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
@@ -1025,6 +1043,24 @@ static void test2_func(abts_case *tc, void *data)
     esmbuf = testesm_build_deactivate_eps_bearer_context_accept(bearer);
     ABTS_PTR_NOTNULL(tc, esmbuf);
     sendbuf = test_s1ap_build_uplink_nas_transport(test_ue, esmbuf);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testenb_s1ap_send(s1ap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Send UE Context Release Request */
+    sendbuf = test_s1ap_build_ue_context_release_request(test_ue,
+            S1AP_Cause_PR_radioNetwork, S1AP_CauseRadioNetwork_user_inactivity);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testenb_s1ap_send(s1ap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive UE Context Release Command */
+    recvbuf = testenb_s1ap_read(s1ap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    tests1ap_recv(test_ue, recvbuf);
+
+    /* Send UE Context Release Complete */
+    sendbuf = test_s1ap_build_ue_context_release_complete(test_ue);
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);

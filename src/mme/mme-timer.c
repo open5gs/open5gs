@@ -52,6 +52,9 @@ static mme_timer_cfg_t g_mme_timer_cfg[MAX_NUM_OF_MME_TIMER] = {
 
     [MME_TIMER_SGS_CLI_CONN_TO_SRV] = 
         { .duration = ogs_time_from_sec(3) },
+
+    [MME_TIMER_S1_HOLDING] =
+        { .duration = ogs_time_from_sec(30) },
 };
 
 static void emm_timer_event_send(
@@ -84,6 +87,8 @@ const char *mme_timer_get_name(mme_timer_e id)
         return "MME_TIMER_T3489";
     case MME_TIMER_SGS_CLI_CONN_TO_SRV:
         return "MME_TIMER_SGS_CLI_CONN_TO_SRV";
+    case MME_TIMER_S1_HOLDING:
+        return "MME_TIMER_S1_HOLDING";
     default: 
        break;
     }
@@ -183,6 +188,27 @@ void mme_timer_sgs_cli_conn_to_srv(void *data)
     e = mme_event_new(MME_EVT_SGSAP_TIMER);
     e->timer_id = MME_TIMER_SGS_CLI_CONN_TO_SRV;
     e->vlr = data;
+
+    rv = ogs_queue_push(ogs_app()->queue, e);
+    if (rv != OGS_OK) {
+        ogs_warn("ogs_queue_push() failed:%d", (int)rv);
+        mme_event_free(e);
+    }
+}
+
+void mme_timer_s1_holding_timer_expire(void *data)
+{
+    int rv;
+    mme_event_t *e = NULL;
+    enb_ue_t *enb_ue = NULL;
+
+    ogs_assert(data);
+    enb_ue = data;
+
+    e = mme_event_new(MME_EVT_S1AP_TIMER);
+
+    e->timer_id = MME_TIMER_S1_HOLDING;
+    e->enb_ue = enb_ue;
 
     rv = ogs_queue_push(ogs_app()->queue, e);
     if (rv != OGS_OK) {
