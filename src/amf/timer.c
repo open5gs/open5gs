@@ -52,7 +52,7 @@ static amf_timer_cfg_t g_amf_timer_cfg[MAX_NUM_OF_AMF_TIMER] = {
         { .max_count = 4, .duration = ogs_time_from_sec(3) },
 
     [AMF_TIMER_NG_HOLDING] =
-        { .duration = ogs_time_from_sec(3) },
+        { .duration = ogs_time_from_sec(30) },
 };
 
 static void gmm_timer_event_send(
