@@ -79,6 +79,9 @@ smf:
       - 8.8.4.4
       - 2001:4860:4860::8888
       - 2001:4860:4860::8844
+    p-cscf:
+      - 127.0.0.1
+      - ::1
     mtu: 1400
     freeDiameter:
       identity: smf.localdomain

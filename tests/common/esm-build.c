@@ -33,11 +33,16 @@ ogs_pkbuf_t *testesm_build_pdn_connectivity_request(test_sess_t *sess)
         &pdn_connectivity_request->esm_information_transfer_flag;
     ogs_nas_protocol_configuration_options_t *protocol_configuration_options =
         &pdn_connectivity_request->protocol_configuration_options;
+#if 0
     uint8_t ue_pco[29] =
             "\x80\x80\x21\x10\x01\x01\x00\x10\x81\x06\x00\x00\x00\x00"
             "\x83\x06\x00\x00\x00\x00\x00\x03\x00\x00\x0a\x00\x00\x0d\x00";
-#if 0
     uint8_t ue_pco[7] = "\x80\x00\x0a\x00\x00\x0d\x00";
+#else
+    uint8_t ue_pco[35] =
+        "\x80\x80\x21\x10\x01\x00\x00\x10\x81\x06\x00\x00\x00\x00"
+        "\x83\x06\x00\x00\x00\x00\x00\x0c\x00\x00\x0d\x00\x00\x02\x00\x00"
+        "\x0a\x00\x00\x10\x00";
 #endif
 
     test_ue_t *test_ue = NULL;
@@ -138,9 +143,16 @@ ogs_pkbuf_t *testesm_build_esm_information_response(test_sess_t *sess)
     ogs_nas_protocol_configuration_options_t *protocol_configuration_options =
         &esm_information_response->protocol_configuration_options;
 
+#if 0
     uint8_t ue_pco[29] =
             "\x80\x80\x21\x10\x01\x01\x00\x10\x81\x06\x00\x00\x00\x00"
             "\x83\x06\x00\x00\x00\x00\x00\x03\x00\x00\x0a\x00\x00\x0d\x00";
+#else
+    uint8_t ue_pco[35] =
+        "\x80\x80\x21\x10\x01\x00\x00\x10\x81\x06\x00\x00\x00\x00"
+        "\x83\x06\x00\x00\x00\x00\x00\x0c\x00\x00\x0d\x00\x00\x02\x00\x00"
+        "\x0a\x00\x00\x10\x00";
+#endif
 
     test_ue_t *test_ue = NULL;
     ogs_pkbuf_t *pkbuf = NULL;
