@@ -288,7 +288,7 @@ int amf_nsmf_pdu_session_handle_update_sm_context(
                 if (SESSION_SYNC_DONE(amf_ue)) {
                     ngap_send_amf_ue_context_release_command(amf_ue,
                             NGAP_Cause_PR_nas, NGAP_CauseNas_normal_release,
-                            NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE, 0);
+                            NGAP_UE_CTX_REL_NG_REMOVE_AND_UNLINK, 0);
                 }
 
             } else if (state == AMF_UPDATE_SM_CONTEXT_ACTIVATING) {

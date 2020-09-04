@@ -965,6 +965,9 @@ ran_ue_t *ran_ue_add(amf_gnb_t *gnb, uint32_t ran_ue_ngap_id)
 
     ran_ue->gnb = gnb;
 
+    ran_ue->t_ng_holding = ogs_timer_add(
+            ogs_app()->timer_mgr, amf_timer_ng_holding_timer_expire, ran_ue);
+
     ogs_list_add(&gnb->ran_ue_list, ran_ue);
 
     return ran_ue;
@@ -979,6 +982,8 @@ void ran_ue_remove(ran_ue_t *ran_ue)
     ran_ue_deassociate(ran_ue);
 
     ogs_list_remove(&ran_ue->gnb->ran_ue_list, ran_ue);
+
+    ogs_timer_delete(ran_ue->t_ng_holding);
 
     ogs_pool_free(&ran_ue_pool, ran_ue);
 }

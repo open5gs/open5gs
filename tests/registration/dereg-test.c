@@ -318,6 +318,8 @@ static void test1_func(abts_case *tc, void *data)
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
+    ogs_msleep(300);
+
     /********** Remove Subscriber in Database */
     doc = BCON_NEW("imsi", BCON_UTF8(test_ue->imsi));
     ABTS_PTR_NOTNULL(tc, doc);
@@ -578,6 +580,8 @@ static void test2_func(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    ogs_msleep(300);
 
     /********** Remove Subscriber in Database */
     doc = BCON_NEW("imsi", BCON_UTF8(test_ue->imsi));
@@ -1010,6 +1014,27 @@ static void test3_func(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
+    /* Send De-registration request */
+    gmmbuf = testgmm_build_de_registration_request(test_ue, 1);
+    ABTS_PTR_NOTNULL(tc, gmmbuf);
+    sendbuf = testngap_build_uplink_nas_transport(test_ue, gmmbuf);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive UE context release command */
+    recvbuf = testgnb_ngap_read(ngap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    testngap_recv(test_ue, recvbuf);
+
+    /* Send UE context release complete */
+    sendbuf = testngap_build_ue_context_release_complete(test_ue);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    ogs_msleep(300);
+
     /********** Remove Subscriber in Database */
     doc = BCON_NEW("imsi", BCON_UTF8(test_ue->imsi));
     ABTS_PTR_NOTNULL(tc, doc);
@@ -1350,6 +1375,8 @@ static void test4_func(abts_case *tc, void *data)
         rv = testgnb_ngap_send(ngap, sendbuf);
         ABTS_INT_EQUAL(tc, OGS_OK, rv);
     }
+
+    ogs_msleep(300);
 
     /********** Remove Subscriber in Database */
     doc = BCON_NEW("imsi", BCON_UTF8(test_ue->imsi));

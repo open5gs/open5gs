@@ -76,6 +76,7 @@ void testngap_handle_downlink_nas_transport(
 
     NGAP_DownlinkNASTransport_IEs_t *ie = NULL;
     NGAP_AMF_UE_NGAP_ID_t *AMF_UE_NGAP_ID = NULL;
+    NGAP_RAN_UE_NGAP_ID_t *RAN_UE_NGAP_ID = NULL;
     NGAP_NAS_PDU_t *NAS_PDU = NULL;
 
     ogs_assert(test_ue);
@@ -93,6 +94,9 @@ void testngap_handle_downlink_nas_transport(
         case NGAP_ProtocolIE_ID_id_AMF_UE_NGAP_ID:
             AMF_UE_NGAP_ID = &ie->value.choice.AMF_UE_NGAP_ID;
             break;
+        case NGAP_ProtocolIE_ID_id_RAN_UE_NGAP_ID:
+            RAN_UE_NGAP_ID = &ie->value.choice.RAN_UE_NGAP_ID;
+            break;
         case NGAP_ProtocolIE_ID_id_NAS_PDU:
             NAS_PDU = &ie->value.choice.NAS_PDU;
             break;
@@ -101,8 +105,14 @@ void testngap_handle_downlink_nas_transport(
         }
     }
 
-    ogs_assert(AMF_UE_NGAP_ID);
-    asn_INTEGER2ulong(AMF_UE_NGAP_ID, &test_ue->amf_ue_ngap_id);
+    if (AMF_UE_NGAP_ID) {
+        uint64_t amf_ue_ngap_id;
+        asn_INTEGER2ulong(AMF_UE_NGAP_ID, (unsigned long *)&amf_ue_ngap_id);
+        test_ue->amf_ue_ngap_id = (uint64_t)amf_ue_ngap_id;
+    }
+    if (RAN_UE_NGAP_ID) {
+        test_ue->ran_ue_ngap_id = *RAN_UE_NGAP_ID;
+    }
 
     if (NAS_PDU)
         testngap_send_to_nas(test_ue, NAS_PDU);
@@ -120,6 +130,7 @@ void testngap_handle_initial_context_setup_request(
 
     NGAP_InitialContextSetupRequestIEs_t *ie = NULL;
     NGAP_AMF_UE_NGAP_ID_t *AMF_UE_NGAP_ID = NULL;
+    NGAP_RAN_UE_NGAP_ID_t *RAN_UE_NGAP_ID = NULL;
     NGAP_NAS_PDU_t *NAS_PDU = NULL;
 
     ogs_assert(test_ue);
@@ -137,6 +148,9 @@ void testngap_handle_initial_context_setup_request(
         case NGAP_ProtocolIE_ID_id_AMF_UE_NGAP_ID:
             AMF_UE_NGAP_ID = &ie->value.choice.AMF_UE_NGAP_ID;
             break;
+        case NGAP_ProtocolIE_ID_id_RAN_UE_NGAP_ID:
+            RAN_UE_NGAP_ID = &ie->value.choice.RAN_UE_NGAP_ID;
+            break;
         case NGAP_ProtocolIE_ID_id_NAS_PDU:
             NAS_PDU = &ie->value.choice.NAS_PDU;
             break;
@@ -149,6 +163,9 @@ void testngap_handle_initial_context_setup_request(
         uint64_t amf_ue_ngap_id;
         asn_INTEGER2ulong(AMF_UE_NGAP_ID, (unsigned long *)&amf_ue_ngap_id);
         test_ue->amf_ue_ngap_id = (uint64_t)amf_ue_ngap_id;
+    }
+    if (RAN_UE_NGAP_ID) {
+        test_ue->ran_ue_ngap_id = *RAN_UE_NGAP_ID;
     }
 
     if (NAS_PDU)
@@ -191,10 +208,14 @@ void testngap_handle_ue_release_context_command(
     if (UE_NGAP_IDs) {
         if (UE_NGAP_IDs->present == NGAP_UE_NGAP_IDs_PR_uE_NGAP_ID_pair) {
             uint64_t amf_ue_ngap_id;
+            uint64_t ran_ue_ngap_id;
             asn_INTEGER2ulong(
                 &UE_NGAP_IDs->choice.uE_NGAP_ID_pair->aMF_UE_NGAP_ID,
                 (unsigned long *)&amf_ue_ngap_id);
             test_ue->amf_ue_ngap_id = (uint64_t)amf_ue_ngap_id;
+
+            test_ue->ran_ue_ngap_id =
+                UE_NGAP_IDs->choice.uE_NGAP_ID_pair->rAN_UE_NGAP_ID;
         }
     }
 }

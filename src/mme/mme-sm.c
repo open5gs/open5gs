@@ -327,8 +327,8 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
                  * is started.
                  * Newly associated S1(enb_ue_t) context holding timer
                  * is stopped. */
-                ogs_debug("Start S1 Holding Timer\n");
-                ogs_debug("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
+                ogs_debug("Start S1 Holding Timer");
+                ogs_debug("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
                         mme_ue->enb_ue->enb_ue_s1ap_id,
                         mme_ue->enb_ue->mme_ue_s1ap_id);
 

@@ -419,12 +419,21 @@ void ngap_handle_initial_ue_message(amf_gnb_t *gnb, ogs_ngap_message_t *message)
                 /* If NAS(amf_ue_t) has already been associated with
                  * older NG(ran_ue_t) context */
                 if (CM_CONNECTED(amf_ue)) {
-                   /* Implcit NG release */
-                    ogs_debug("Implicit NG release");
-                    ogs_debug("    RAN_UE_NGAP_ID[%d] AMF_UE_NGAP_ID[%lld]",
-                          amf_ue->ran_ue->ran_ue_ngap_id,
-                          (long long)amf_ue->ran_ue->amf_ue_ngap_id);
-                    ran_ue_remove(amf_ue->ran_ue);
+                    /* Previous NG(ran_ue_t) context the holding timer(30secs)
+                     * is started.
+                     * Newly associated NG(ran_ue_t) context holding timer
+                     * is stopped. */
+                    ogs_debug("[%s] Start NG Holding Timer", amf_ue->suci);
+                    ogs_debug("[%s]    RAN_UE_NGAP_ID[%d] AMF_UE_NGAP_ID[%lld]",
+                            amf_ue->suci, amf_ue->ran_ue->ran_ue_ngap_id,
+                            (long long)amf_ue->ran_ue->amf_ue_ngap_id);
+
+                    /* De-associate NG with NAS/EMM */
+                    ran_ue_deassociate(amf_ue->ran_ue);
+
+                    ngap_send_ran_ue_context_release_command(amf_ue->ran_ue,
+                            NGAP_Cause_PR_nas, NGAP_CauseNas_normal_release,
+                            NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE, 0);
                 }
                 amf_ue_associate_ran_ue(amf_ue, ran_ue);
             }
@@ -1185,7 +1194,7 @@ void ngap_handle_ue_context_release_request(
         if (amf_sess_xact_count(amf_ue) == xact_count)
             ngap_send_amf_ue_context_release_command(amf_ue,
                     NGAP_Cause_PR_nas, NGAP_CauseNas_normal_release,
-                    NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE, 0);
+                    NGAP_UE_CTX_REL_NG_REMOVE_AND_UNLINK, 0);
     }
 }
 
@@ -1196,7 +1205,6 @@ void ngap_handle_ue_context_release_complete(
     char buf[OGS_ADDRSTRLEN];
     uint64_t amf_ue_ngap_id;
 
-    amf_ue_t *amf_ue = NULL;
     ran_ue_t *ran_ue = NULL;
 
     NGAP_SuccessfulOutcome_t *successfulOutcome = NULL;
@@ -1260,10 +1268,19 @@ void ngap_handle_ue_context_release_complete(
         return;
     }
 
-    ogs_debug("    RAN_UE_NGAP_ID[%d] AMF_UE_NGAP_ID[%lld]",
-            ran_ue->ran_ue_ngap_id, (long long)ran_ue->amf_ue_ngap_id);
+    ngap_handle_ue_context_release_action(ran_ue);
+}
+
+void ngap_handle_ue_context_release_action(ran_ue_t *ran_ue)
+{
+    amf_ue_t *amf_ue = NULL;
+
+    ogs_assert(ran_ue);
 
     amf_ue = ran_ue->amf_ue;
+
+    ogs_debug("    RAN_UE_NGAP_ID[%d] AMF_UE_NGAP_ID[%lld]",
+            ran_ue->ran_ue_ngap_id, (long long)ran_ue->amf_ue_ngap_id);
 
     switch (ran_ue->ue_ctx_rel_action) {
     case NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE:

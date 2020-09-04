@@ -53,6 +53,7 @@ void ngap_handle_ue_context_release_request(
         amf_gnb_t *gnb, ogs_ngap_message_t *message);
 void ngap_handle_ue_context_release_complete(
         amf_gnb_t *gnb, ogs_ngap_message_t *message);
+void ngap_handle_ue_context_release_action(ran_ue_t *ran_ue);
 
 void ngap_handle_path_switch_request(
         amf_gnb_t *gnb, ogs_ngap_message_t *message);

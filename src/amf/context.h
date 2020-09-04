@@ -173,6 +173,9 @@ struct ran_ue_s {
         ogs_nr_cgi_t    nr_cgi;
     } saved;
 
+    /* NG Holding timer for removing this context */
+    ogs_timer_t     *t_ng_holding;
+
     /* Store by UE Context Release Command
      * Retrieve by UE Context Release Complete */
 #define NGAP_UE_CTX_REL_INVALID_ACTION                      0

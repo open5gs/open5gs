@@ -292,8 +292,8 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, ogs_s1ap_message_t *message)
                      * is started.
                      * Newly associated S1(enb_ue_t) context holding timer
                      * is stopped. */
-                    ogs_debug("Start S1 Holding Timer\n");
-                    ogs_debug("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
+                    ogs_debug("Start S1 Holding Timer");
+                    ogs_debug("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
                             mme_ue->enb_ue->enb_ue_s1ap_id,
                             mme_ue->enb_ue->mme_ue_s1ap_id);
 

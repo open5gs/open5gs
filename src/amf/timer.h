@@ -38,6 +38,7 @@ typedef enum {
     AMF_TIMER_SBI_CLIENT_WAIT,
 
     AMF_TIMER_NG_DELAYED_SEND,
+    AMF_TIMER_NG_HOLDING,
 
     AMF_TIMER_T3513,
     AMF_TIMER_T3522,
@@ -74,6 +75,8 @@ void amf_timer_t3550_expire(void *data);
 void amf_timer_t3555_expire(void *data);
 void amf_timer_t3560_expire(void *data);
 void amf_timer_t3570_expire(void *data);
+
+void amf_timer_ng_holding_timer_expire(void *data);
 
 #ifdef __cplusplus
 }
