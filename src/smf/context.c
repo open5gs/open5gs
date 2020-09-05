@@ -31,6 +31,11 @@ static OGS_POOL(smf_bearer_pool, smf_bearer_t);
 
 static int context_initialized = 0;
 
+static int num_of_smf_sess = 0;
+
+static void stats_add_smf_session(void);
+static void stats_remove_smf_session(void);
+
 void smf_context_init(void)
 {
     ogs_assert(context_initialized == 0);
@@ -517,6 +522,9 @@ smf_ue_t *smf_ue_add_by_supi(char *supi)
 
     ogs_list_add(&self.smf_ue_list, smf_ue);
 
+    ogs_info("[Added] Number of SMF-UEs is now %d",
+            ogs_list_count(&self.smf_ue_list));
+
     return smf_ue;
 }
 
@@ -540,6 +548,9 @@ smf_ue_t *smf_ue_add_by_imsi(uint8_t *imsi, int imsi_len)
 
     ogs_list_add(&self.smf_ue_list, smf_ue);
 
+    ogs_info("[Added] Number of SMF-UEs is now %d",
+            ogs_list_count(&self.smf_ue_list));
+
     return smf_ue;
 }
 
@@ -561,6 +572,9 @@ void smf_ue_remove(smf_ue_t *smf_ue)
     smf_sess_remove_all(smf_ue);
 
     ogs_pool_free(&smf_ue_pool, smf_ue);
+
+    ogs_info("[Removed] Number of SMF-UEs is now %d",
+            ogs_list_count(&self.smf_ue_list));
 }
 
 void smf_ue_remove_all(void)
@@ -694,6 +708,8 @@ smf_sess_t *smf_sess_add_by_apn(smf_ue_t *smf_ue, char *apn)
 
     ogs_list_add(&smf_ue->sess_list, sess);
 
+    stats_add_smf_session();
+
     return sess;
 }
 
@@ -808,6 +824,8 @@ smf_sess_t *smf_sess_add_by_psi(smf_ue_t *smf_ue, uint8_t psi)
 
     ogs_list_add(&smf_ue->sess_list, sess);
 
+    stats_add_smf_session();
+
     return sess;
 }
 
@@ -860,6 +878,32 @@ void smf_sess_set_ue_ip(smf_sess_t *sess)
     smf_ue = sess->smf_ue;
     ogs_assert(smf_ue);
 
+    if (sess->pdn.pdn_type == OGS_PDU_SESSION_TYPE_IPV4V6) {
+
+        /*
+         * This is the case when the HSS is set to IPv4v6 and
+         * the UE requests IPv4v6.
+         *
+         * At this time, it was changed to operate normally
+         * even when SMF has no IPv4 or IPv6 subnet.
+         *
+         * If there is no IPv6 subnet, only IPv4 IP address is assigned.
+         * If there is no IPv4 subnet, only IPv6 IP address is assigned.
+         * If there are IPv4/IPv6 subnet, IPv4/IPv6 IP address are assigned.
+         */
+
+        ogs_pfcp_subnet_t *subnet = NULL;
+        ogs_pfcp_subnet_t *subnet6 = NULL;
+
+        subnet = ogs_pfcp_find_subnet(AF_INET, sess->pdn.apn);
+        subnet6 = ogs_pfcp_find_subnet(AF_INET6, sess->pdn.apn);
+
+        if (subnet != NULL && subnet6 == NULL)
+            sess->pdn.pdn_type = OGS_PDU_SESSION_TYPE_IPV4;
+        else if (subnet == NULL && subnet6 != NULL)
+            sess->pdn.pdn_type = OGS_PDU_SESSION_TYPE_IPV6;
+    }
+
     sess->pdn.paa.pdn_type = sess->pdn.pdn_type;
     ogs_assert(sess->pdn.pdn_type);
 
@@ -911,8 +955,10 @@ void smf_sess_set_ue_ip(smf_sess_t *sess)
                 sess->ipv4->addr, OGS_IPV4_LEN, sess);
         ogs_hash_set(smf_self()->ipv6_hash,
                 sess->ipv6->addr, OGS_IPV6_LEN, sess);
-    } else
+    } else {
+        ogs_fatal("Invalid sess->pdn.pdn_type[%d]", sess->pdn.pdn_type);
         ogs_assert_if_reached();
+    }
 }
 
 void smf_sess_remove(smf_sess_t *sess)
@@ -978,6 +1024,8 @@ void smf_sess_remove(smf_sess_t *sess)
     smf_qfi_pool_final(sess);
 
     ogs_pool_free(&smf_sess_pool, sess);
+
+    stats_remove_smf_session();
 }
 
 void smf_sess_remove_all(smf_ue_t *smf_ue)
@@ -1684,4 +1732,16 @@ void smf_qfi_pool_init(smf_sess_t *sess)
 void smf_qfi_pool_final(smf_sess_t *sess)
 {
     ogs_index_final(&sess->qfi_pool);
+}
+
+static void stats_add_smf_session(void)
+{
+    num_of_smf_sess = num_of_smf_sess + 1;
+    ogs_info("[Added] Number of SMF-Sessions is now %d", num_of_smf_sess);
+}
+
+static void stats_remove_smf_session(void)
+{
+    num_of_smf_sess = num_of_smf_sess - 1;
+    ogs_info("[Removed] Number of SMF-Sessions is now %d", num_of_smf_sess);
 }

@@ -31,6 +31,14 @@ static OGS_POOL(amf_sess_pool, amf_sess_t);
 
 static int context_initialized = 0;
 
+static int num_of_ran_ue = 0;
+static int num_of_amf_sess = 0;
+
+static void stats_add_ran_ue(void);
+static void stats_remove_ran_ue(void);
+static void stats_add_amf_session(void);
+static void stats_remove_amf_session(void);
+
 void amf_context_init(void)
 {
     ogs_assert(context_initialized == 0);
@@ -854,6 +862,9 @@ amf_gnb_t *amf_gnb_add(ogs_sock_t *sock, ogs_sockaddr_t *addr)
 
     ogs_list_add(&self.gnb_list, gnb);
 
+    ogs_info("[Added] Number of gNBs is now %d",
+            ogs_list_count(&self.gnb_list));
+
     return gnb;
 }
 
@@ -884,6 +895,9 @@ int amf_gnb_remove(amf_gnb_t *gnb)
     ogs_free(gnb->addr);
 
     ogs_pool_free(&amf_gnb_pool, gnb);
+
+    ogs_info("[Removed] Number of gNBs is now %d",
+            ogs_list_count(&self.gnb_list));
 
     return OGS_OK;
 }
@@ -970,6 +984,8 @@ ran_ue_t *ran_ue_add(amf_gnb_t *gnb, uint32_t ran_ue_ngap_id)
 
     ogs_list_add(&gnb->ran_ue_list, ran_ue);
 
+    stats_add_ran_ue();
+
     return ran_ue;
 }
 
@@ -986,6 +1002,8 @@ void ran_ue_remove(ran_ue_t *ran_ue)
     ogs_timer_delete(ran_ue->t_ng_holding);
 
     ogs_pool_free(&ran_ue_pool, ran_ue);
+
+    stats_remove_ran_ue();
 }
 
 void ran_ue_remove_in_gnb(amf_gnb_t *gnb)
@@ -1132,6 +1150,9 @@ amf_ue_t *amf_ue_add(ran_ue_t *ran_ue)
 
     ogs_list_add(&self.amf_ue_list, amf_ue);
 
+    ogs_info("[Added] Number of AMF-UEs is now %d",
+            ogs_list_count(&self.amf_ue_list));
+
     return amf_ue;
 }
 
@@ -1198,6 +1219,9 @@ void amf_ue_remove(amf_ue_t *amf_ue)
     amf_sess_remove_all(amf_ue);
 
     ogs_pool_free(&amf_ue_pool, amf_ue);
+
+    ogs_info("[Removed] Number of AMF-UEs is now %d",
+            ogs_list_count(&self.amf_ue_list));
 }
 
 void amf_ue_remove_all()
@@ -1478,6 +1502,8 @@ amf_sess_t *amf_sess_add(amf_ue_t *amf_ue, uint8_t psi)
 
     ogs_list_add(&amf_ue->sess_list, sess);
 
+    stats_add_amf_session();
+
     return sess;
 }
 
@@ -1506,6 +1532,8 @@ void amf_sess_remove(amf_sess_t *sess)
     OGS_TLV_CLEAR_DATA(&sess->pgw_pco);
 
     ogs_pool_free(&amf_sess_pool, sess);
+
+    stats_remove_amf_session();
 }
 
 void amf_sess_remove_all(amf_ue_t *amf_ue)
@@ -1712,4 +1740,28 @@ uint8_t amf_selected_enc_algorithm(amf_ue_t *amf_ue)
     }
 
     return 0;
+}
+
+static void stats_add_ran_ue(void)
+{
+    num_of_ran_ue = num_of_ran_ue + 1;
+    ogs_info("[Added] Number of gNB-UEs is now %d", num_of_ran_ue);
+}
+
+static void stats_remove_ran_ue(void)
+{
+    num_of_ran_ue = num_of_ran_ue - 1;
+    ogs_info("[Removed] Number of gNB-UEs is now %d", num_of_ran_ue);
+}
+
+static void stats_add_amf_session(void)
+{
+    num_of_amf_sess = num_of_amf_sess + 1;
+    ogs_info("[Added] Number of AMF-Sessions is now %d", num_of_amf_sess);
+}
+
+static void stats_remove_amf_session(void)
+{
+    num_of_amf_sess = num_of_amf_sess - 1;
+    ogs_info("[Removed] Number of AMF-Sessions is now %d", num_of_amf_sess);
 }

@@ -1307,35 +1307,6 @@ int ogs_pfcp_ue_pool_generate(void)
     return OGS_OK;
 }
 
-static ogs_pfcp_subnet_t *find_subnet(int family, const char *apn)
-{
-    ogs_pfcp_subnet_t *subnet = NULL;
-
-    ogs_assert(apn);
-    ogs_assert(family == AF_INET || family == AF_INET6);
-
-    ogs_list_for_each(&self.subnet_list, subnet) {
-        if ((subnet->family == AF_UNSPEC || subnet->family == family) &&
-            (strlen(subnet->apn) == 0 ||
-                (strlen(subnet->apn) && strcmp(subnet->apn, apn) == 0))) {
-            return subnet;
-        }
-    }
-
-    if (subnet == NULL) {
-        ogs_error("CHECK CONFIGURATION: Cannot find subnet [family:%d, apn:%s]",
-                family, apn);
-        ogs_error("smf");
-        ogs_error("    pdn:");
-        if (family == AF_INET)
-            ogs_error("     - addr: 10.45.0.1/16");
-        else if (family == AF_INET6)
-            ogs_error("     - addr: cafe:1::1/64");
-    }
-
-    return subnet;
-}
-
 ogs_pfcp_ue_ip_t *ogs_pfcp_ue_ip_alloc(
         int family, const char *apn, uint8_t *addr)
 {
@@ -1346,8 +1317,20 @@ ogs_pfcp_ue_ip_t *ogs_pfcp_ue_ip_alloc(
     size_t maxbytes = 0;
 
     ogs_assert(apn);
-    subnet = find_subnet(family, apn);
-    ogs_assert(subnet);
+    subnet = ogs_pfcp_find_subnet(family, apn);
+    if (subnet == NULL) {
+        ogs_error("CHECK CONFIGURATION: Cannot find subnet [family:%d, apn:%s]",
+                    family, apn);
+        ogs_error("smf");
+        ogs_error("    pdn:");
+        if (family == AF_INET)
+            ogs_error("     - addr: 10.45.0.1/16");
+        else if (family == AF_INET6)
+            ogs_error("     - addr: cafe::1/64");
+
+        ogs_assert_if_reached();
+        return NULL;
+    }
 
     memset(zero, 0, sizeof zero);
     if (family == AF_INET) {
@@ -1501,6 +1484,23 @@ void ogs_pfcp_subnet_remove_all(void)
 
     ogs_list_for_each_safe(&self.subnet_list, next_subnet, subnet)
         ogs_pfcp_subnet_remove(subnet);
+}
+
+ogs_pfcp_subnet_t *ogs_pfcp_find_subnet(int family, const char *apn)
+{
+    ogs_pfcp_subnet_t *subnet = NULL;
+
+    ogs_assert(apn);
+    ogs_assert(family == AF_INET || family == AF_INET6);
+
+    ogs_list_for_each(&self.subnet_list, subnet) {
+        if ((subnet->family == AF_UNSPEC || subnet->family == family) &&
+            (strlen(subnet->apn) == 0 ||
+                (strlen(subnet->apn) && strcmp(subnet->apn, apn) == 0)))
+            break;
+    }
+
+    return subnet;
 }
 
 void ogs_pfcp_pool_init(ogs_pfcp_sess_t *sess)

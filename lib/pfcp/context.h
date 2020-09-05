@@ -361,6 +361,7 @@ ogs_pfcp_subnet_t *ogs_pfcp_subnet_add(
 ogs_pfcp_subnet_t *ogs_pfcp_subnet_next(ogs_pfcp_subnet_t *subnet);
 void ogs_pfcp_subnet_remove(ogs_pfcp_subnet_t *subnet);
 void ogs_pfcp_subnet_remove_all(void);
+ogs_pfcp_subnet_t *ogs_pfcp_find_subnet(int family, const char *apn);
 
 void ogs_pfcp_pool_init(ogs_pfcp_sess_t *sess);
 void ogs_pfcp_pool_final(ogs_pfcp_sess_t *sess);

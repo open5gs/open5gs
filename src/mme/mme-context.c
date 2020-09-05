@@ -49,42 +49,13 @@ static OGS_POOL(mme_bearer_pool, mme_bearer_t);
 
 static int context_initialized = 0;
 
-int num_ues = 0;
-int num_enbs = 0;
-int num_mme_sessions = 0;
+static int num_of_enb_ue = 0;
+static int num_of_mme_sess = 0;
 
-void stats_add_ue(void) {
-    num_ues = num_ues + 1;
-    ogs_info("Added a UE. Number of UEs is now %d", num_ues);
-}
-
-void stats_remove_ue(void) {
-    num_ues = num_ues - 1;
-    ogs_info("Removed a UE. Number of UEs is now %d", num_ues);
-}
-
-void stats_add_enb(void) {
-    num_enbs = num_enbs + 1;
-    ogs_info("Added a eNB. Number of eNBs is now %d", num_enbs);
-}
-
-void stats_remove_enb(void) {
-    num_enbs = num_enbs - 1;
-    ogs_info("Removed a eNB. Number of eNBs is now %d", num_enbs);
-}
-
-void stats_add_mme_session(void) {
-    num_mme_sessions = num_mme_sessions + 1;
-    ogs_info("Added a session. Number of sessions is now %d",
-            num_mme_sessions);
-}
-
-void stats_remove_mme_session(void) {
-    num_mme_sessions = num_mme_sessions - 1;
-    ogs_info("Removed a session. Number of sessions is now %d",
-            num_mme_sessions);
-}
-
+static void stats_add_enb_ue(void);
+static void stats_remove_enb_ue(void);
+static void stats_add_mme_session(void);
+static void stats_remove_mme_session(void);
 
 void mme_context_init()
 {
@@ -1937,7 +1908,8 @@ mme_enb_t *mme_enb_add(ogs_sock_t *sock, ogs_sockaddr_t *addr)
 
     ogs_list_add(&self.enb_list, enb);
 
-    stats_add_enb();
+    ogs_info("[Added] Number of eNBs is now %d",
+            ogs_list_count(&self.enb_list));
 
     return enb;
 }
@@ -1970,7 +1942,8 @@ int mme_enb_remove(mme_enb_t *enb)
 
     ogs_pool_free(&mme_enb_pool, enb);
 
-    stats_remove_enb();
+    ogs_info("[Removed] Number of eNBs is now %d",
+            ogs_list_count(&self.enb_list));
 
     return OGS_OK;
 }
@@ -2057,26 +2030,29 @@ enb_ue_t *enb_ue_add(mme_enb_t *enb, uint32_t enb_ue_s1ap_id)
 
     ogs_list_add(&enb->enb_ue_list, enb_ue);
 
-    stats_add_ue();
+    stats_add_enb_ue();
 
     return enb_ue;
 }
 
 void enb_ue_remove(enb_ue_t *enb_ue)
 {
+    mme_enb_t *enb = NULL;
+
     ogs_assert(enb_ue);
-    ogs_assert(enb_ue->enb);
+    enb = enb_ue->enb;
+    ogs_assert(enb);
 
     /* De-associate S1 with NAS/EMM */
     enb_ue_deassociate(enb_ue);
 
-    ogs_list_remove(&enb_ue->enb->enb_ue_list, enb_ue);
+    ogs_list_remove(&enb->enb_ue_list, enb_ue);
 
     ogs_timer_delete(enb_ue->t_s1_holding);
 
-    stats_remove_ue();
-
     ogs_pool_free(&enb_ue_pool, enb_ue);
+
+    stats_remove_enb_ue();
 }
 
 void enb_ue_remove_in_enb(mme_enb_t *enb)
@@ -2288,6 +2264,9 @@ mme_ue_t *mme_ue_add(enb_ue_t *enb_ue)
 
     ogs_list_add(&self.mme_ue_list, mme_ue);
 
+    ogs_info("[Added] Number of MME-UEs is now %d",
+            ogs_list_count(&self.mme_ue_list));
+
     return mme_ue;
 }
 
@@ -2341,6 +2320,9 @@ void mme_ue_remove(mme_ue_t *mme_ue)
     mme_ebi_pool_final(mme_ue);
 
     ogs_pool_free(&mme_ue_pool, mme_ue);
+
+    ogs_info("[Removed] Number of MME-UEs is now %d",
+            ogs_list_count(&self.mme_ue_list));
 }
 
 void mme_ue_remove_all()
@@ -2678,10 +2660,13 @@ mme_sess_t *mme_sess_add(mme_ue_t *mme_ue, uint8_t pti)
 
 void mme_sess_remove(mme_sess_t *sess)
 {
+    mme_ue_t *mme_ue = NULL;
+
     ogs_assert(sess);
-    ogs_assert(sess->mme_ue);
+    mme_ue = sess->mme_ue;
+    ogs_assert(mme_ue);
     
-    ogs_list_remove(&sess->mme_ue->sess_list, sess);
+    ogs_list_remove(&mme_ue->sess_list, sess);
 
     mme_bearer_remove_all(sess);
 
@@ -3301,4 +3286,28 @@ uint8_t mme_selected_enc_algorithm(mme_ue_t *mme_ue)
     }
 
     return 0;
+}
+
+static void stats_add_enb_ue(void)
+{
+    num_of_enb_ue = num_of_enb_ue + 1;
+    ogs_info("[Added] Number of eNB-UEs is now %d", num_of_enb_ue);
+}
+
+static void stats_remove_enb_ue(void)
+{
+    num_of_enb_ue = num_of_enb_ue - 1;
+    ogs_info("[Removed] Number of eNB-UEs is now %d", num_of_enb_ue);
+}
+
+static void stats_add_mme_session(void)
+{
+    num_of_mme_sess = num_of_mme_sess + 1;
+    ogs_info("[Added] Number of MME-Sessions is now %d", num_of_mme_sess);
+}
+
+static void stats_remove_mme_session(void)
+{
+    num_of_mme_sess = num_of_mme_sess - 1;
+    ogs_info("[Removed] Number of MME-Sessions is now %d", num_of_mme_sess);
 }

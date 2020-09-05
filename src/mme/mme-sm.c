@@ -37,11 +37,14 @@
 /* 3GPP TS 29.272 Annex A; Table !.a:
  * Mapping from S6a error codes to NAS Cause Codes */
 static uint8_t emm_cause_from_diameter(
-        const uint32_t *dia_err, const uint32_t *dia_exp_err)
+        mme_ue_t *mme_ue, const uint32_t *dia_err, const uint32_t *dia_exp_err)
 {
+    ogs_assert(mme_ue);
+
     if (dia_exp_err) {
         switch (*dia_exp_err) {
         case OGS_DIAM_S6A_ERROR_USER_UNKNOWN:                   /* 5001 */
+            ogs_warn("[%s] User Unknown in HSS DB", mme_ue->imsi_bcd);
             return EMM_CAUSE_EPS_SERVICES_AND_NON_EPS_SERVICES_NOT_ALLOWED;
         case OGS_DIAM_S6A_ERROR_UNKNOWN_EPS_SUBSCRIPTION:       /* 5420 */
             /* FIXME: Error diagnostic? */
@@ -443,11 +446,12 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
              * However, e.g. 5004 has different meaning
              * if used in result-code than in experimental-result-code */
             uint8_t emm_cause = emm_cause_from_diameter(
-                    s6a_message->err, s6a_message->exp_err);
+                    mme_ue, s6a_message->err, s6a_message->exp_err);
 
+            ogs_warn("[%s] Attach reject [EMM_CAUSE:%d]",
+                    mme_ue->imsi_bcd, emm_cause);
             nas_eps_send_attach_reject(mme_ue,
                 emm_cause, ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
-            ogs_warn("EMM_CAUSE : %d", emm_cause);
 
             enb_ue = mme_ue->enb_ue;
             ogs_assert(enb_ue);
@@ -598,6 +602,12 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
                 xact, mme_ue, &gtp_message.release_access_bearers_response);
             break;
         case OGS_GTP_DOWNLINK_DATA_NOTIFICATION_TYPE:
+            if (!mme_ue) {
+                if (gtp_message.h.teid_presence)
+                    ogs_warn("TEID[%d]", gtp_message.h.teid);
+                else
+                    ogs_warn("No TEID presence");
+            }
             mme_s11_handle_downlink_data_notification(
                 xact, mme_ue, &gtp_message.downlink_data_notification);
 

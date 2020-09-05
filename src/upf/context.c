@@ -456,7 +456,7 @@ upf_sess_t *upf_sess_add(ogs_pfcp_f_seid_t *cp_f_seid,
 
     ogs_list_add(&self.sess_list, sess);
 
-    ogs_info("Added a session. Number of active sessions is now %d",
+    ogs_info("[Added] Number of UPF-Sessions is now %d",
             ogs_list_count(&self.sess_list));
 
     return sess;
@@ -489,7 +489,7 @@ int upf_sess_remove(upf_sess_t *sess)
 
     ogs_pool_free(&upf_sess_pool, sess);
 
-    ogs_info("Removed a session. Number of active sessions is now %d",
+    ogs_info("[Removed] Number of UPF-sessions is now %d",
             ogs_list_count(&self.sess_list));
 
     return OGS_OK;
