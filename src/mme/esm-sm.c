@@ -259,6 +259,7 @@ void esm_state_active(ogs_fsm_t *s, mme_event_t *e)
 
 void esm_state_pdn_will_disconnect(ogs_fsm_t *s, mme_event_t *e)
 {
+    int rv;
     mme_ue_t *mme_ue = NULL;
     mme_sess_t *sess = NULL;
     mme_bearer_t *bearer = NULL;
@@ -292,6 +293,19 @@ void esm_state_pdn_will_disconnect(ogs_fsm_t *s, mme_event_t *e)
             ogs_debug("    IMSI[%s] PTI[%d] EBI[%d]",
                     mme_ue->imsi_bcd, sess->pti, bearer->ebi);
             OGS_FSM_TRAN(s, esm_state_pdn_did_disconnect);
+            break;
+        case OGS_NAS_EPS_PDN_CONNECTIVITY_REQUEST:
+            ogs_debug("[ESM] PDN Connectivity request");
+            ogs_debug("    IMSI[%s] PTI[%d] EBI[%d]",
+                    mme_ue->imsi_bcd, sess->pti, bearer->ebi);
+            rv = esm_handle_pdn_connectivity_request(
+                    bearer, &message->esm.pdn_connectivity_request);
+            if (rv != OGS_OK) {
+                OGS_FSM_TRAN(s, esm_state_exception);
+                break;
+            }
+
+            OGS_FSM_TRAN(s, esm_state_inactive);
             break;
         default:
             ogs_error("Unknown message(type:%d)", 
