@@ -1,3 +1,21 @@
+open5gs (2.0.1~bionic) bionic; urgency=medium
+
+  * Bug Fixed
+
+ -- Sukchan Lee <acetcom@gmail.com>  Sat, 05 Sep 2020 19:39:51 -0400
+
+open5gs (2.0.1~focal) focal; urgency=medium
+
+  * Bug Fixed
+
+ -- Sukchan Lee <acetcom@gmail.com>  Sat, 05 Sep 2020 19:36:22 -0400
+
+open5gs (2.0.1) unstable; urgency=medium
+
+  * Bug Fixed
+
+ -- Sukchan Lee <acetcom@gmail.com>  Sat, 05 Sep 2020 16:43:24 -0400
+
 open5gs (2.0.0~focal) focal; urgency=medium
 
   * 5G Core and EPC (Hybrid)
