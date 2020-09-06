@@ -1,5 +1,5 @@
 ---
-title: Open5GS Splitting Network Elements
+title: Open5GS Splitting Network Functions
 head_inline: "<style> .blue { color: blue; } </style>"
 ---
 
@@ -11,7 +11,7 @@ To demonstrate this, we will cover how to isolate each network function and conn
 
 In this example, we are connecting the Open5GS NF together, but instead of the Open5GS network function, you can easily connect them like other vendors' NFs.
 
-## 1. Configuring Open5GS (No other vendors' NFs)
+## 1. Configuring Open5GS (Without other vendors' NFs)
 
 _Cloud Authentication and Session Management Server_
 
