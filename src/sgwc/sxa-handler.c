@@ -857,6 +857,7 @@ void sgwc_sxa_handle_session_report_request(
         sgwc_sess_t *sess, ogs_pfcp_xact_t *pfcp_xact,
         ogs_pfcp_session_report_request_t *pfcp_req)
 {
+    sgwc_ue_t *sgwc_ue = NULL;
     sgwc_bearer_t *bearer = NULL;
     sgwc_tunnel_t *tunnel = NULL;
 
@@ -887,20 +888,25 @@ void sgwc_sxa_handle_session_report_request(
     }
 
     ogs_assert(sess);
+    sgwc_ue = sess->sgwc_ue;
+    ogs_assert(sgwc_ue);
 
-    report_type.value = pfcp_req->report_type.u8;
-    if (report_type.downlink_data_report) {
-        if (pfcp_req->downlink_data_report.presence &&
-            pfcp_req->downlink_data_report.pdr_id.presence) {
+    if (sgwc_ue->gnode) {
+        report_type.value = pfcp_req->report_type.u8;
+        if (report_type.downlink_data_report) {
+            if (pfcp_req->downlink_data_report.presence &&
+                pfcp_req->downlink_data_report.pdr_id.presence) {
 
-            pdr_id = pfcp_req->downlink_data_report.pdr_id.u16;
+                pdr_id = pfcp_req->downlink_data_report.pdr_id.u16;
 
-            ogs_list_for_each(&sess->bearer_list, bearer) {
-                ogs_list_for_each(&bearer->tunnel_list, tunnel) {
-                    ogs_assert(tunnel->pdr);
-                    if (tunnel->pdr->id == pdr_id) {
-                        sgwc_gtp_send_downlink_data_notification(bearer, pfcp_xact);
-                        return;
+                ogs_list_for_each(&sess->bearer_list, bearer) {
+                    ogs_list_for_each(&bearer->tunnel_list, tunnel) {
+                        ogs_assert(tunnel->pdr);
+                        if (tunnel->pdr->id == pdr_id) {
+                            sgwc_gtp_send_downlink_data_notification(
+                                    bearer, pfcp_xact);
+                            return;
+                        }
                     }
                 }
             }

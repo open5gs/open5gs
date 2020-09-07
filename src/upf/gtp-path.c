@@ -218,9 +218,11 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
         subnet = sess->ipv6->subnet;
 
     if (!subnet) {
+#if 0 /* It's redundant log message */
         ogs_error("[DROP] Cannot find subnet V:%d, IPv4:%p, IPv6:%p",
                 ip_h->ip_v, sess->ipv4, sess->ipv6);
         ogs_log_hexdump(OGS_LOG_ERROR, pkbuf->data, pkbuf->len);
+#endif
         goto cleanup;
     }
 

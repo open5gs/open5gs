@@ -169,6 +169,7 @@ void sgwc_gtp_send_downlink_data_notification(
     ogs_assert(sess);
     sgwc_ue = bearer->sgwc_ue;
     ogs_assert(sgwc_ue);
+    ogs_assert(sgwc_ue->gnode);
 
     ogs_debug("Downlink Data Notification");
     ogs_debug("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
