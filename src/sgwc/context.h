@@ -121,12 +121,6 @@ typedef struct sgwc_bearer_s {
 
     uint8_t         ebi;
 
-    /* Pkts which will be buffered in case of UE-IDLE */
-    uint32_t        num_buffered_pkt;
-
-#define MAX_NUM_OF_PACKET_BUFFER      512 
-    ogs_pkbuf_t*    buffered_pkts[MAX_NUM_OF_PACKET_BUFFER];
-
     ogs_list_t      tunnel_list;
     sgwc_sess_t     *sess;
     sgwc_ue_t       *sgwc_ue;

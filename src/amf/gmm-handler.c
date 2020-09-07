@@ -975,6 +975,7 @@ static int gmm_handle_nas_message_container(amf_ue_t *amf_ue,
     }
 
     nasbuf = ogs_pkbuf_alloc(NULL, nas_message_container->length);
+    ogs_assert(nasbuf);
     ogs_pkbuf_put_data(nasbuf,
             nas_message_container->buffer, nas_message_container->length);
 

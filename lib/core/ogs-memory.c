@@ -31,6 +31,7 @@ void *ogs_malloc(size_t size)
 
     headroom = sizeof(ogs_pkbuf_t *);
     pkbuf = ogs_pkbuf_alloc(NULL, headroom + size);
+    ogs_assert(pkbuf);
     ogs_pkbuf_reserve(pkbuf, headroom);
     memcpy(pkbuf->head, &pkbuf, headroom);
     ogs_pkbuf_put(pkbuf, size);

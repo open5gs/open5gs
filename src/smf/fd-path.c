@@ -535,6 +535,7 @@ static void smf_gx_cca_cb(void *data, struct msg **msg)
     gxbuf_len = sizeof(ogs_diam_gx_message_t);
     ogs_assert(gxbuf_len < 8192);
     gxbuf = ogs_pkbuf_alloc(NULL, gxbuf_len);
+    ogs_assert(gxbuf);
     ogs_pkbuf_put(gxbuf, gxbuf_len);
     gx_message = (ogs_diam_gx_message_t *)gxbuf->data;
     ogs_assert(gx_message);
@@ -855,6 +856,7 @@ static int smf_gx_rar_cb( struct msg **msg, struct avp *avp,
     gxbuf_len = sizeof(ogs_diam_gx_message_t);
     ogs_assert(gxbuf_len < 8192);
     gxbuf = ogs_pkbuf_alloc(NULL, gxbuf_len);
+    ogs_assert(gxbuf);
     ogs_pkbuf_put(gxbuf, gxbuf_len);
     gx_message = (ogs_diam_gx_message_t *)gxbuf->data;
     ogs_assert(gx_message);

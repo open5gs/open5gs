@@ -68,6 +68,7 @@ ogs_pkbuf_t *testsctp_read(ogs_socknode_t *node, int type)
     ogs_assert(node->sock);
 
     recvbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
+    ogs_assert(recvbuf);
     ogs_pkbuf_put(recvbuf, OGS_MAX_SDU_LEN);
 
     size = ogs_sctp_recvdata(node->sock, recvbuf->data, OGS_MAX_SDU_LEN,

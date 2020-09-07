@@ -281,6 +281,7 @@ void testngap_handle_pdu_session_resource_setup_request(
                 ogs_assert(transfer);
 
                 n2smbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
+                ogs_assert(n2smbuf);
                 ogs_pkbuf_put_data(n2smbuf, transfer->buf, transfer->size);
 
                 rv = ogs_asn_decode(

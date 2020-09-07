@@ -51,6 +51,7 @@ int nas_eps_send_emm_to_esm(mme_ue_t *mme_ue,
      * When calculating AES_CMAC, we need to use the headroom of the packet. */
     esmbuf = ogs_pkbuf_alloc(NULL,
             OGS_NAS_HEADROOM+esm_message_container->length);
+    ogs_assert(esmbuf);
     ogs_pkbuf_reserve(esmbuf, OGS_NAS_HEADROOM);
     ogs_pkbuf_put_data(esmbuf,
             esm_message_container->buffer, esm_message_container->length);

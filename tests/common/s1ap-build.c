@@ -1832,6 +1832,7 @@ ogs_pkbuf_t *test_s1ap_build_invalid_packet(int i)
     char hexbuf[OGS_MAX_SDU_LEN];
 
     pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
+    ogs_assert(pkbuf);
     ogs_pkbuf_put_data(pkbuf,
         OGS_HEX(payload[i], strlen(payload[i]), hexbuf), len[i]);
 
@@ -1875,6 +1876,7 @@ ogs_pkbuf_t *test_s1ap_build_enb_configuration_transfer(int i)
     char hexbuf[OGS_MAX_SDU_LEN];
 
     pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
+    ogs_assert(pkbuf);
     ogs_pkbuf_put_data(pkbuf,
         OGS_HEX(payload[i], strlen(payload[i]), hexbuf), len[i]);
 

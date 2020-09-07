@@ -1506,6 +1506,7 @@ static int parse_multipart(
                 data.part[i].content_type;
             http->part[http->num_of_part].pkbuf =
                 ogs_pkbuf_alloc(NULL, data.part[i].content_length);
+            ogs_assert(http->part[http->num_of_part].pkbuf);
             ogs_pkbuf_put_data(http->part[http->num_of_part].pkbuf,
                 data.part[i].content, data.part[i].content_length);
 

@@ -54,6 +54,7 @@ static void _gtpv1_tun_recv_cb(short when, ogs_socket_t fd, void *data)
     ogs_pfcp_user_plane_report_t report;
 
     recvbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
+    ogs_assert(recvbuf);
     ogs_pkbuf_reserve(recvbuf, OGS_GTPV1U_5GC_HEADER_LEN);
     ogs_pkbuf_put(recvbuf, OGS_MAX_SDU_LEN-OGS_GTPV1U_5GC_HEADER_LEN);
 
@@ -102,6 +103,7 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
     ogs_assert(fd != INVALID_SOCKET);
 
     pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
+    ogs_assert(pkbuf);
     ogs_pkbuf_put(pkbuf, OGS_MAX_SDU_LEN);
 
     size = ogs_recvfrom(fd, pkbuf->data, pkbuf->len, 0, &from);
@@ -433,6 +435,7 @@ static int upf_gtp_send_router_advertisement(
     ogs_assert(dev);
 
     pkbuf = ogs_pkbuf_alloc(NULL, OGS_GTPV1U_5GC_HEADER_LEN+200);
+    ogs_assert(pkbuf);
     ogs_pkbuf_reserve(pkbuf, OGS_GTPV1U_5GC_HEADER_LEN);
     ogs_pkbuf_put(pkbuf, 200);
     pkbuf->len = sizeof *ip6_h + sizeof *advert_h + sizeof *prefix;

@@ -592,18 +592,12 @@ sgwc_bearer_t *sgwc_bearer_add(sgwc_sess_t *sess)
 
 int sgwc_bearer_remove(sgwc_bearer_t *bearer)
 {
-    int i;
-
     ogs_assert(bearer);
     ogs_assert(bearer->sess);
 
     ogs_list_remove(&bearer->sess->bearer_list, bearer);
 
     sgwc_tunnel_remove_all(bearer);
-
-    /* Free the buffered packets */
-    for (i = 0; i < bearer->num_buffered_pkt; i++)
-        ogs_pkbuf_free(bearer->buffered_pkts[i]);
 
     ogs_pool_free(&sgwc_bearer_pool, bearer);
 

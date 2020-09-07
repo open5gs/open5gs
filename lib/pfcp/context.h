@@ -160,7 +160,7 @@ typedef struct ogs_pfcp_far_s {
 
     ogs_pfcp_smreq_flags_t  smreq_flags;
 
-#define MAX_NUM_OF_PACKET_BUFFER 512
+#define MAX_NUM_OF_PACKET_BUFFER 48
     uint32_t                num_of_buffered_packet;
     ogs_pkbuf_t*            buffered_packet[MAX_NUM_OF_PACKET_BUFFER];
 
@@ -168,6 +168,15 @@ typedef struct ogs_pfcp_far_s {
     ogs_pfcp_sess_t         *sess;
     void                    *gnode;
 } ogs_pfcp_far_t;
+
+/*
+ * Note that buffer size 48 should not be modified. To modify this value,
+ * we need to consider the overflow of the FAR memory pool.
+ *
+ * 8192 memory pool is currently being used.
+ * If you want to, you need to add big memory pool for FAR memory.
+ */
+OGS_STATIC_ASSERT((sizeof(ogs_pfcp_far_t) * OGS_MAX_NUM_OF_FAR) < 8192);
 
 typedef struct ogs_pfcp_urr_s {
     ogs_lnode_t             lnode;

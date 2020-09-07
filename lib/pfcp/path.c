@@ -362,6 +362,7 @@ void ogs_pfcp_send_end_marker(ogs_pfcp_pdr_t *pdr)
 
     sendbuf = ogs_pkbuf_alloc(NULL,
             100 /* enough for END_MARKER; use smaller buffer */);
+    ogs_assert(sendbuf);
     ogs_pkbuf_put(sendbuf, 100);
     memset(sendbuf->data, 0, sendbuf->len);
 

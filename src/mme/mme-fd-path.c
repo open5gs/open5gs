@@ -227,6 +227,7 @@ static void mme_s6a_aia_cb(void *data, struct msg **msg)
     s6abuf_len = sizeof(ogs_diam_s6a_message_t);
     ogs_assert(s6abuf_len < 8192);
     s6abuf = ogs_pkbuf_alloc(NULL, s6abuf_len);
+    ogs_assert(s6abuf);
     ogs_pkbuf_put(s6abuf, s6abuf_len);
     s6a_message = (ogs_diam_s6a_message_t *)s6abuf->data;
     ogs_assert(s6a_message);
@@ -638,6 +639,7 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
     s6abuf_len = sizeof(ogs_diam_s6a_message_t);
     ogs_assert(s6abuf_len < 8192);
     s6abuf = ogs_pkbuf_alloc(NULL, s6abuf_len);
+    ogs_assert(s6abuf);
     ogs_pkbuf_put(s6abuf, s6abuf_len);
     s6a_message = (ogs_diam_s6a_message_t *)s6abuf->data;
     ogs_assert(s6a_message);

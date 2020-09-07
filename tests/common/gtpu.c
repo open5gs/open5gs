@@ -52,6 +52,7 @@ ogs_pkbuf_t *test_gtpu_read(ogs_socknode_t *node)
 {
     int rc = 0;
     ogs_pkbuf_t *recvbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
+    ogs_assert(recvbuf);
     ogs_pkbuf_put(recvbuf, OGS_MAX_SDU_LEN);
 
     ogs_assert(node);
@@ -123,6 +124,7 @@ int test_gtpu_send_ping(
 
     pkbuf = ogs_pkbuf_alloc(
             NULL, 200 /* enough for ICMP; use smaller buffer */);
+    ogs_assert(pkbuf);
     ogs_pkbuf_put(pkbuf, 200);
     memset(pkbuf->data, 0, pkbuf->len);
 
@@ -295,6 +297,7 @@ int test_gtpu_send_slacc_rs(ogs_socknode_t *node, test_bearer_t *bearer)
 
     pkbuf = ogs_pkbuf_alloc(
             NULL, 200 /* enough for ICMP; use smaller buffer */);
+    ogs_assert(pkbuf);
     ogs_pkbuf_put(pkbuf, 200);
     memset(pkbuf->data, 0, pkbuf->len);
 

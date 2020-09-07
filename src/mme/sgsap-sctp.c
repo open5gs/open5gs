@@ -105,6 +105,7 @@ static void recv_handler(ogs_sock_t *sock)
     ogs_assert(sock);
 
     pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
+    ogs_assert(pkbuf);
     ogs_pkbuf_put(pkbuf, OGS_MAX_SDU_LEN);
     size = ogs_sctp_recvmsg(
             sock, pkbuf->data, pkbuf->len, &from, &sinfo, &flags);

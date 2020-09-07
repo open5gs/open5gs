@@ -791,6 +791,7 @@ void ngap_handle_initial_context_setup_response(
 
         memset(&param, 0, sizeof(param));
         param.n2smbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
+        ogs_assert(param.n2smbuf);
         param.n2SmInfoType = OpenAPI_n2_sm_info_type_PDU_RES_SETUP_RSP;
         ogs_pkbuf_put_data(param.n2smbuf, transfer->buf, transfer->size);
 
@@ -1473,6 +1474,7 @@ void ngap_handle_pdu_session_resource_setup_response(
 
         memset(&param, 0, sizeof(param));
         param.n2smbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
+        ogs_assert(param.n2smbuf);
         param.n2SmInfoType = OpenAPI_n2_sm_info_type_PDU_RES_SETUP_RSP;
         ogs_pkbuf_put_data(param.n2smbuf, transfer->buf, transfer->size);
 
@@ -1636,6 +1638,7 @@ void ngap_handle_pdu_session_resource_release_response(
 
         memset(&param, 0, sizeof(param));
         param.n2smbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
+        ogs_assert(param.n2smbuf);
         param.n2SmInfoType = OpenAPI_n2_sm_info_type_PDU_RES_REL_RSP;
         ogs_pkbuf_put_data(param.n2smbuf, transfer->buf, transfer->size);
 

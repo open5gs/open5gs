@@ -105,6 +105,7 @@ void testgmm_send_to_gsm(test_sess_t *sess,
     ogs_assert(payload_container->length);
 
     gsmbuf = ogs_pkbuf_alloc(NULL, payload_container->length);
+    ogs_assert(gsmbuf);
     ogs_pkbuf_put_data(gsmbuf,
             payload_container->buffer, payload_container->length);
 
@@ -209,6 +210,7 @@ void testemm_send_to_esm(test_ue_t *test_ue,
     ogs_assert(esm_message_container->buffer);
 
     esmbuf = ogs_pkbuf_alloc(NULL, esm_message_container->length);
+    ogs_assert(esmbuf);
     ogs_pkbuf_put_data(esmbuf,
             esm_message_container->buffer, esm_message_container->length);
 

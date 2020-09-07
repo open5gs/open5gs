@@ -35,6 +35,7 @@ static void ogs_nas_eps_message_test1(abts_case *tc, void *data)
     char hexbuf[OGS_MAX_SDU_LEN];
 
     pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
+    ogs_assert(pkbuf);
     ogs_pkbuf_put(pkbuf, OGS_MAX_SDU_LEN);
     ogs_pkbuf_trim(pkbuf, 53);
     memcpy(pkbuf->data, 
@@ -147,6 +148,7 @@ static void ogs_nas_eps_message_test3(abts_case *tc, void *data)
     char hexbuf[OGS_MAX_SDU_LEN];
 
     pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
+    ogs_assert(pkbuf);
     ogs_pkbuf_put(pkbuf, OGS_MAX_SDU_LEN);
     ogs_pkbuf_trim(pkbuf, 7);
     memcpy(pkbuf->data, 
@@ -210,6 +212,7 @@ static void ogs_nas_eps_message_test6(abts_case *tc, void *data)
     int rv;
 
     pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
+    ogs_assert(pkbuf);
     ogs_pkbuf_put(pkbuf, OGS_MAX_SDU_LEN);
     ogs_pkbuf_trim(pkbuf, 3);
     memcpy(pkbuf->data, 
@@ -289,6 +292,7 @@ static void ogs_nas_eps_message_test8(abts_case *tc, void *data)
         &service_request->ksi_and_sequence_number;
 
     pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
+    ogs_assert(pkbuf);
     ogs_pkbuf_put(pkbuf, OGS_MAX_SDU_LEN);
     ogs_pkbuf_trim(pkbuf, 4);
     memcpy(pkbuf->data, 
