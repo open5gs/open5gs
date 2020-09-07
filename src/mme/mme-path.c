@@ -84,6 +84,6 @@ void mme_send_release_access_bearer_or_ue_context_release(enb_ue_t *enb_ue)
         ogs_debug("No UE Context");
         s1ap_send_ue_context_release_command(enb_ue, 
                 S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
-                S1AP_UE_CTX_REL_S1_REMOVE_AND_UNLINK, 0);
+                S1AP_UE_CTX_REL_S1_CONTEXT_REMOVE, 0);
     }
 }
