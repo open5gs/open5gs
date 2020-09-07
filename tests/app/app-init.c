@@ -71,6 +71,9 @@ int app_initialize(const char *const argv[])
     if (ogs_app()->parameter.no_sgwu == 0)
         sgwu_thread = test_child_create("sgwu", argv_out);
 
+    /* Wait for PFCP association */
+    ogs_msleep(300);
+
     if (ogs_app()->parameter.no_smf == 0)
         smf_thread = test_child_create("smf", argv_out);
     if (ogs_app()->parameter.no_sgwc == 0)
@@ -85,7 +88,7 @@ int app_initialize(const char *const argv[])
      *
      * Note that at least 1 second is needed if freeDiameter is running.
      */
-    ogs_msleep(1200);
+    ogs_msleep(5000);
 
     return OGS_OK;;
 }
