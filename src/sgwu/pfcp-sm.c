@@ -131,7 +131,7 @@ void sgwu_pfcp_state_will_associate(ogs_fsm_t *s, sgwu_event_t *e)
             OGS_FSM_TRAN(s, sgwu_pfcp_state_associated);
             break;
         default:
-            ogs_error("cannot handle PFCP message type[%d]",
+            ogs_warn("cannot handle PFCP message type[%d]",
                     message->h.type);
             break;
         }

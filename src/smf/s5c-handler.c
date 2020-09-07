@@ -115,7 +115,7 @@ void smf_s5c_handle_create_session_request(
     }
 
     if (!ogs_diam_peer_connected()) {
-        ogs_error("No Diameter Peer");
+        ogs_warn("No Diameter Peer");
         cause_value = OGS_GTP_CAUSE_REMOTE_PEER_NOT_RESPONDING;
     }
 
