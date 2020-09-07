@@ -2995,7 +2995,14 @@ mme_bearer_t *mme_bearer_find_or_add_by_message(
         ogs_assert(sess);
     } else {
         sess = mme_sess_find_by_pti(mme_ue, pti);
-        ogs_assert(sess);
+        if (!sess) {
+            ogs_error("No Session : ESM message type[%d], PTI[%d]",
+                    message->esm.h.message_type, pti);
+            nas_eps_send_attach_reject(mme_ue,
+                EMM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED,
+                ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
+            return NULL;
+        }
     }
 
     bearer = mme_default_bearer_in_sess(sess);
