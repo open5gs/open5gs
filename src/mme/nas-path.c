@@ -111,7 +111,10 @@ void nas_eps_send_attach_accept(mme_ue_t *mme_ue)
     ogs_assert(mme_bearer_next(bearer) == NULL);
 
     esmbuf = esm_build_activate_default_bearer_context_request(sess);
-    ogs_expect_or_return(esmbuf);
+    if (!esmbuf) {
+        ogs_error("esm_build_activate_default_bearer_context_request() failed");
+        return;
+    }
 
     emmbuf = emm_build_attach_accept(mme_ue, esmbuf);
     ogs_expect_or_return(emmbuf);

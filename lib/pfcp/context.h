@@ -116,6 +116,7 @@ typedef struct ogs_pfcp_pdr_s {
 
     uint64_t                hashkey;
 
+    uint8_t                 *id_node;      /* Pool-Node for ID */
     ogs_pfcp_pdr_id_t       id;
     ogs_pfcp_precedence_t   precedence;
     ogs_pfcp_interface_t    src_if;
@@ -152,6 +153,7 @@ typedef struct ogs_pfcp_far_s {
     ogs_lnode_t             lnode;
     uint32_t                index;
 
+    uint8_t                 *id_node;      /* Pool-Node for ID */
     ogs_pfcp_far_id_t       id;
     ogs_pfcp_apply_action_t apply_action;
     ogs_pfcp_interface_t    dst_if;
@@ -182,6 +184,7 @@ typedef struct ogs_pfcp_urr_s {
     ogs_lnode_t             lnode;
     uint32_t                index;
 
+    uint8_t                 *id_node;      /* Pool-Node for ID */
     ogs_pfcp_urr_id_t       id;
 
     ogs_pfcp_sess_t         *sess;
@@ -191,6 +194,7 @@ typedef struct ogs_pfcp_qer_s {
     ogs_lnode_t             lnode;
     uint32_t                index;
 
+    uint8_t                 *id_node;      /* Pool-Node for ID */
     ogs_pfcp_qer_id_t       id;
 
     ogs_pfcp_gate_status_t  gate_status;
@@ -203,6 +207,10 @@ typedef struct ogs_pfcp_qer_s {
 } ogs_pfcp_qer_t;
 
 typedef struct ogs_pfcp_bar_s {
+    ogs_lnode_t             lnode;
+    uint32_t                index;
+
+    uint8_t                 *id_node;      /* Pool-Node for ID */
     ogs_pfcp_bar_id_t       id;
 
     ogs_pfcp_sess_t         *sess;
@@ -215,11 +223,11 @@ typedef struct ogs_pfcp_sess_s {
     ogs_list_t          qer_list;       /* QER List */
     ogs_pfcp_bar_t      *bar;           /* BAR Item */
 
-    OGS_POOL(pdr_pool, ogs_pfcp_pdr_t);
-    OGS_POOL(far_pool, ogs_pfcp_far_t);
-    OGS_POOL(urr_pool, ogs_pfcp_urr_t);
-    OGS_POOL(qer_pool, ogs_pfcp_qer_t);
-    OGS_POOL(bar_pool, ogs_pfcp_bar_t);
+    OGS_POOL(pdr_id_pool, uint8_t);
+    OGS_POOL(far_id_pool, uint8_t);
+    OGS_POOL(urr_id_pool, uint8_t);
+    OGS_POOL(qer_id_pool, uint8_t);
+    OGS_POOL(bar_id_pool, uint8_t);
 
     /* Related Context */
     ogs_pfcp_pdr_t      *default_pdr;   /* Used by UPF */

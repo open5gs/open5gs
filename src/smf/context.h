@@ -142,6 +142,8 @@ ED3(uint8_t spare:2;,
     uint8_t direction:2;,
     uint8_t identifier:4;)
 
+    uint8_t *identifier_node;      /* Pool-Node for Identifier */
+
     ogs_ipfw_rule_t ipfw_rule;
     char *flow_description;
 
@@ -172,7 +174,7 @@ typedef struct smf_bearer_s {
     char            *name;          /* PCC Rule Name */
     ogs_qos_t       qos;            /* QoS Infomration */
 
-    OGS_POOL(pf_pool, smf_pf_t);
+    OGS_POOL(pf_identifier_pool, uint8_t);
 
     /* Packet Filter Identifier Generator(1~15) */
     uint8_t         pf_identifier;
@@ -349,6 +351,9 @@ int smf_pco_build(uint8_t *pco_buf, uint8_t *buffer, int length);
 
 void smf_qfi_pool_init(smf_sess_t *sess);
 void smf_qfi_pool_final(smf_sess_t *sess);
+
+void smf_pf_identifier_pool_init(smf_bearer_t *bearer);
+void smf_pf_identifier_pool_final(smf_bearer_t *bearer);
 
 #ifdef __cplusplus
 }

@@ -29,6 +29,8 @@ static OGS_POOL(smf_ue_pool, smf_ue_t);
 static OGS_POOL(smf_sess_pool, smf_sess_t);
 static OGS_POOL(smf_bearer_pool, smf_bearer_t);
 
+static OGS_POOL(smf_pf_pool, smf_pf_t);
+
 static int context_initialized = 0;
 
 static int num_of_smf_sess = 0;
@@ -67,6 +69,8 @@ void smf_context_init(void)
     ogs_pool_init(&smf_sess_pool, ogs_app()->pool.sess);
     ogs_pool_init(&smf_bearer_pool, ogs_app()->pool.bearer);
 
+    ogs_pool_init(&smf_pf_pool, ogs_app()->pool.bearer * OGS_MAX_NUM_OF_PF);
+
     self.supi_hash = ogs_hash_make();
     self.imsi_hash = ogs_hash_make();
     self.ipv4_hash = ogs_hash_make();
@@ -93,6 +97,8 @@ void smf_context_final(void)
     ogs_pool_final(&smf_ue_pool);
     ogs_pool_final(&smf_bearer_pool);
     ogs_pool_final(&smf_sess_pool);
+
+    ogs_pool_final(&smf_pf_pool);
 
     ogs_gtp_node_remove_all(&self.sgw_s5c_list);
 
@@ -1234,7 +1240,7 @@ smf_bearer_t *smf_bearer_add(smf_sess_t *sess)
     ogs_assert(bearer);
     memset(bearer, 0, sizeof *bearer);
 
-    ogs_index_init(&bearer->pf_pool, OGS_MAX_NUM_OF_PF);
+    smf_pf_identifier_pool_init(bearer);
 
     bearer->index = ogs_pool_index(&smf_bearer_pool, bearer);
     ogs_assert(bearer->index > 0 && bearer->index <=
@@ -1351,7 +1357,7 @@ int smf_bearer_remove(smf_bearer_t *bearer)
 
     smf_pf_remove_all(bearer);
 
-    ogs_index_final(&bearer->pf_pool);
+    smf_pf_identifier_pool_final(bearer);
 
     if (bearer->qfi_node)
         ogs_pool_free(&bearer->sess->qfi_pool, bearer->qfi_node);
@@ -1490,11 +1496,14 @@ smf_pf_t *smf_pf_add(smf_bearer_t *bearer, uint32_t precedence)
 
     ogs_assert(bearer);
 
-    ogs_pool_alloc(&bearer->pf_pool, &pf);
+    ogs_pool_alloc(&smf_pf_pool, &pf);
     ogs_assert(pf);
     memset(pf, 0, sizeof *pf);
 
-    pf->index = ogs_pool_index(&bearer->pf_pool, pf);
+    ogs_pool_alloc(&bearer->pf_identifier_pool, &pf->identifier_node);
+    ogs_assert(pf->identifier_node);
+
+    pf->index = *(pf->identifier_node);
     ogs_assert(pf->index > 0 && pf->index <= OGS_MAX_NUM_OF_PF);
 
     pf->identifier = pf->index;
@@ -1514,7 +1523,10 @@ int smf_pf_remove(smf_pf_t *pf)
     if (pf->flow_description)
         ogs_free(pf->flow_description);
 
-    ogs_pool_free(&pf->bearer->pf_pool, pf);
+    if (pf->identifier_node)
+        ogs_pool_free(&pf->bearer->pf_identifier_pool, pf->identifier_node);
+
+    ogs_pool_free(&smf_pf_pool, pf);
 
     return OGS_OK;
 }
@@ -1731,7 +1743,29 @@ void smf_qfi_pool_init(smf_sess_t *sess)
 
 void smf_qfi_pool_final(smf_sess_t *sess)
 {
+    ogs_assert(sess);
+
     ogs_index_final(&sess->qfi_pool);
+}
+
+void smf_pf_identifier_pool_init(smf_bearer_t *bearer)
+{
+    int i;
+
+    ogs_assert(bearer);
+
+    ogs_index_init(&bearer->pf_identifier_pool, OGS_MAX_NUM_OF_PF);
+
+    for (i = 1; i <= OGS_MAX_NUM_OF_PF; i++) {
+        bearer->pf_identifier_pool.array[i-1] = i;
+    }
+}
+
+void smf_pf_identifier_pool_final(smf_bearer_t *bearer)
+{
+    ogs_assert(bearer);
+
+    ogs_index_final(&bearer->pf_identifier_pool);
 }
 
 static void stats_add_smf_session(void)

@@ -723,7 +723,7 @@ void mme_s11_handle_downlink_data_notification(
     cause.value = OGS_GTP_CAUSE_REQUEST_ACCEPTED;
 
     if (!mme_ue) {
-        ogs_warn("No Context");
+        ogs_warn("OGS_GTP_CAUSE_CONTEXT_NOT_FOUND");
         cause.value = OGS_GTP_CAUSE_CONTEXT_NOT_FOUND;
     }
 

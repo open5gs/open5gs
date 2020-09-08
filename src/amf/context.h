@@ -343,7 +343,8 @@ struct amf_ue_s {
 
 #define CM_CONNECTED(__aMF) \
     ((__aMF) && ((__aMF)->ran_ue != NULL))
-#define CM_IDLE(__aMF) (!ECM_CONNECTED(__aMF))
+#define CM_IDLE(__aMF) \
+    ((__aMF) && ((__aMF)->ran_ue == NULL))
     /* NG UE context */
     ran_ue_t        *ran_ue;
 

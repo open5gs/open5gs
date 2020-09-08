@@ -2,7 +2,7 @@
 
 If you find Open5GS useful for work, please consider supporting this Open Source project by [Becoming a sponsor](https://github.com/sponsors/acetcom). To manage the funding transactions transparently, you can donate through [OpenCollective](https://opencollective.com/open5gs).
 
-#### Thank you to our sponsors!
+#### Thanks to sponsors!
 <table>
   <tbody>
     <tr>

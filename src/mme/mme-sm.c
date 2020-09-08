@@ -604,9 +604,9 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
         case OGS_GTP_DOWNLINK_DATA_NOTIFICATION_TYPE:
             if (!mme_ue) {
                 if (gtp_message.h.teid_presence)
-                    ogs_warn("TEID[%d]", gtp_message.h.teid);
+                    ogs_warn("No Context : TEID[%d]", gtp_message.h.teid);
                 else
-                    ogs_warn("No TEID presence");
+                    ogs_warn("No Context : No TEID");
             }
             mme_s11_handle_downlink_data_notification(
                 xact, mme_ue, &gtp_message.downlink_data_notification);

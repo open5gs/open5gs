@@ -406,7 +406,8 @@ struct mme_ue_s {
 
 #define ECM_CONNECTED(__mME) \
     ((__mME) && ((__mME)->enb_ue != NULL))
-#define ECM_IDLE(__mME) (!ECM_CONNECTED(__mME))
+#define ECM_IDLE(__mME) \
+    ((__mME) && ((__mME)->enb_ue == NULL))
     /* S1 UE context */
     enb_ue_t        *enb_ue;
 
