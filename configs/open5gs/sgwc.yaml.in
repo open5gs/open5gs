@@ -64,11 +64,15 @@ sgwc:
 #  <SGWU_SELECTION_MODE - EPC only>
 #
 # o Round-Robin
+#   (note that round robin can be disabled for a particular node
+#     by setting flag 'rr' to 0)
 #
 #  sgwu:
 #    pfcp:
 #      - addr: 127.0.0.6
 #      - addr: 127.0.0.12
+#        rr: 0
+#      - addr: 127.0.0.18
 #
 # o SGWU selection by eNodeB TAC
 #   (either single TAC or multiple TACs, DECIMAL representation)

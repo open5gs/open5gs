@@ -461,8 +461,12 @@ static ogs_pfcp_node_t *selected_sgwu_node(
                 if (OGS_FSM_CHECK(&node->sm, sgwc_pfcp_state_associated) &&
                     compare_ue_info(node, sess) == true) return node;
             } else {
-                if (OGS_FSM_CHECK(&node->sm, sgwc_pfcp_state_associated))
-                    return node;
+                /*
+                 * we are in RR mode - use next PFCP associated
+                 * node that is suited for full list RR
+                 */
+                if (OGS_FSM_CHECK(&node->sm, sgwc_pfcp_state_associated) &&
+                    node->rr_enable == 1) return node;
             }
         }
         /* cyclic search from top to current position */
@@ -472,8 +476,12 @@ static ogs_pfcp_node_t *selected_sgwu_node(
                 if (OGS_FSM_CHECK(&node->sm, sgwc_pfcp_state_associated) &&
                     compare_ue_info(node, sess) == true) return node;
             } else {
-                if (OGS_FSM_CHECK(&node->sm, sgwc_pfcp_state_associated))
-                    return node;
+                /*
+                 * we are in RR mode - use next PFCP associated
+                 * node that is suited for full list RR
+                 */
+                if (OGS_FSM_CHECK(&node->sm, sgwc_pfcp_state_associated) &&
+                    node->rr_enable == 1) return node;
             }
         }
 
@@ -487,7 +495,7 @@ static ogs_pfcp_node_t *selected_sgwu_node(
         RR = 1;
     }
 
-    ogs_error("No SGWUs are PFCP associated");
+    ogs_error("No SGWUs are PFCP associated that are suited to RR");
     return ogs_list_first(&ogs_pfcp_self()->peer_list);
 }
 
