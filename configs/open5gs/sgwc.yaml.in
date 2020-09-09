@@ -61,15 +61,16 @@ sgwc:
 #    pfcp:
 #      addr: 127.0.0.6
 #
-#  <UPF_SELECTION_MODE - EPC only>
+#  <SGWU_SELECTION_MODE - EPC only>
 #
 # o Round-Robin
+#
 #  sgwu:
 #    pfcp:
 #      - addr: 127.0.0.6
 #      - addr: 127.0.0.12
 #
-# o UPF selection by eNodeB TAC
+# o SGWU selection by eNodeB TAC
 #   (either single TAC or multiple TACs, DECIMAL representation)
 #
 #  sgwu:
@@ -79,24 +80,24 @@ sgwc:
 #      - addr: 127.0.0.12
 #        tac: [3,5,8]
 #
-# o UPF selection by UE's DNN/APN (either single DNN/APN or multiple DNNs/APNs)
+# o SGWU selection by UE's APN (either single APN or multiple APNs)
 #
 #  sgwu:
 #    pfcp:
 #      - addr: 127.0.0.6
-#        dnn: ims
+#        apn: ims
 #      - addr: 127.0.0.12
 #        apn: [internet, web]
 #
-# o UPF selection by CellID(e_cell_id: 28bit, nr_cell_id: 36bit)
-#   (either single enb_id or multiple enb_ids, HEX representation)
+# o SGWU selection by CellID(e_cell_id: 28bit)
+#   (either single e_cell_id or multiple e_cell_id, HEX representation)
 #
 #  sgwu:
 #    pfcp:
 #      - addr: 127.0.0.6
 #        e_cell_id: 463
 #      - addr: 127.0.0.12
-#        nr_cell_id: [123456789, 9413]
+#        e_cell_id: [123456789, 9413]
 #
 sgwu:
     pfcp:
