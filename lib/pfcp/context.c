@@ -408,6 +408,7 @@ int ogs_pfcp_context_parse_config(const char *local, const char *remote)
                         uint8_t num_of_e_cell_id = 0;
                         uint32_t nr_cell_id[OGS_MAX_NUM_OF_CELL_ID] = {0,};
                         uint8_t num_of_nr_cell_id = 0;
+                        uint8_t rr_enable = 1; /* full list RR enabled by default */
 
                         if (ogs_yaml_iter_type(&pfcp_array) ==
                                 YAML_MAPPING_NODE) {
@@ -570,6 +571,9 @@ int ogs_pfcp_context_parse_config(const char *local, const char *remote)
                                 } while (
                                     ogs_yaml_iter_type(&nr_cell_id_iter) ==
                                         YAML_SEQUENCE_NODE);
+                            } else if (!strcmp(pfcp_key, "rr")) {
+                                const char *v = ogs_yaml_iter_value(&pfcp_iter);
+                                if (v) rr_enable = atoi(v);
                             } else
                                 ogs_warn("unknown key `%s`", pfcp_key);
                         }
@@ -609,6 +613,8 @@ int ogs_pfcp_context_parse_config(const char *local, const char *remote)
                         if (num_of_nr_cell_id != 0)
                             memcpy(node->nr_cell_id, nr_cell_id,
                                     sizeof(node->nr_cell_id));
+
+                        node->rr_enable = rr_enable;
                     } while (ogs_yaml_iter_type(&pfcp_array) ==
                             YAML_SEQUENCE_NODE);
                 }
