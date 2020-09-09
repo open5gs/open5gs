@@ -408,7 +408,9 @@ int ogs_pfcp_context_parse_config(const char *local, const char *remote)
                         uint8_t num_of_e_cell_id = 0;
                         uint32_t nr_cell_id[OGS_MAX_NUM_OF_CELL_ID] = {0,};
                         uint8_t num_of_nr_cell_id = 0;
-                        uint8_t rr_enable = 1; /* full list RR enabled by default */
+
+                        /* full list RR enabled by default */
+                        uint8_t rr_enable = 1;
 
                         if (ogs_yaml_iter_type(&pfcp_array) ==
                                 YAML_MAPPING_NODE) {
