@@ -451,19 +451,37 @@ static ogs_pfcp_node_t *selected_sgwu_node(
     ogs_assert(current);
     ogs_assert(sess);
 
-    next = ogs_list_next(current);
-    for (node = next; node; node = ogs_list_next(node)) {
-        if (OGS_FSM_CHECK(&node->sm, sgwc_pfcp_state_associated) &&
-            compare_ue_info(node, sess) == true) return node;
+    int RR=0, selected=0;
+
+    while(!selected){
+        // continue search from current position
+        next = ogs_list_next(current);
+        for (node = next; node; node = ogs_list_next(node)) {
+            if (!RR){
+                if (OGS_FSM_CHECK(&node->sm, sgwc_pfcp_state_associated) &&
+                    compare_ue_info(node, sess) == true) return node;
+            }else{
+                if (OGS_FSM_CHECK(&node->sm, sgwc_pfcp_state_associated)) return node;
+            }
+        }
+        // cyclic search from top to current position
+        for (node = ogs_list_first(&ogs_pfcp_self()->peer_list);
+                node != next; node = ogs_list_next(node)) {
+            if (!RR){
+                if (OGS_FSM_CHECK(&node->sm, sgwc_pfcp_state_associated) &&
+                    compare_ue_info(node, sess) == true) return node;
+            }else{
+                if (OGS_FSM_CHECK(&node->sm, sgwc_pfcp_state_associated)) return node;
+            }
+        }
+        // if a round robin search has already been carried out
+        if(RR) break;
+        // re-run search in round robin mode, find and use next PFCP associated node
+        RR = 1;
     }
 
-    for (node = ogs_list_first(&ogs_pfcp_self()->peer_list);
-            node != next; node = ogs_list_next(node)) {
-        if (OGS_FSM_CHECK(&node->sm, sgwc_pfcp_state_associated) &&
-            compare_ue_info(node, sess) == true) return node;
-    }
-
-    return next ? next : ogs_list_first(&ogs_pfcp_self()->peer_list);
+    ogs_error("No SGWUs are PFCP associated");
+    return ogs_list_first(&ogs_pfcp_self()->peer_list);
 }
 
 void sgwc_sess_select_sgwu(sgwc_sess_t *sess)
