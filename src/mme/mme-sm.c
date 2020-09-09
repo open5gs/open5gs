@@ -44,7 +44,7 @@ static uint8_t emm_cause_from_diameter(
     if (dia_exp_err) {
         switch (*dia_exp_err) {
         case OGS_DIAM_S6A_ERROR_USER_UNKNOWN:                   /* 5001 */
-            ogs_warn("[%s] User Unknown in HSS DB", mme_ue->imsi_bcd);
+            ogs_info("[%s] User Unknown in HSS DB", mme_ue->imsi_bcd);
             return EMM_CAUSE_EPS_SERVICES_AND_NON_EPS_SERVICES_NOT_ALLOWED;
         case OGS_DIAM_S6A_ERROR_UNKNOWN_EPS_SUBSCRIPTION:       /* 5420 */
             /* FIXME: Error diagnostic? */
@@ -448,7 +448,7 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
             uint8_t emm_cause = emm_cause_from_diameter(
                     mme_ue, s6a_message->err, s6a_message->exp_err);
 
-            ogs_warn("[%s] Attach reject [EMM_CAUSE:%d]",
+            ogs_info("[%s] Attach reject [EMM_CAUSE:%d]",
                     mme_ue->imsi_bcd, emm_cause);
             nas_eps_send_attach_reject(mme_ue,
                 emm_cause, ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);

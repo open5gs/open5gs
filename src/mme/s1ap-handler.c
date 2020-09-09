@@ -275,7 +275,7 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, ogs_s1ap_message_t *message)
 
             mme_ue = mme_ue_find_by_guti(&nas_guti);
             if (!mme_ue) {
-                ogs_warn("Unknown UE by S_TMSI[G:%d,C:%d,M_TMSI:0x%x]",
+                ogs_info("Unknown UE by S_TMSI[G:%d,C:%d,M_TMSI:0x%x]",
                         nas_guti.mme_gid, nas_guti.mme_code, nas_guti.m_tmsi);
             } else {
                 ogs_debug("    S_TMSI[G:%d,C:%d,M_TMSI:0x%x] IMSI:[%s]",

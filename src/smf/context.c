@@ -1707,9 +1707,6 @@ int smf_pco_build(uint8_t *pco_buf, uint8_t *buffer, int length)
                 smf_self()->p_cscf6_index %= smf_self()->num_of_p_cscf6;
             }
             break;
-        case OGS_PCO_ID_IP_ADDRESS_ALLOCATION_VIA_NAS_SIGNALLING:
-            /* TODO */
-            break;
         case OGS_PCO_ID_IPV4_LINK_MTU_REQUEST:
             if (smf_self()->mtu) {
                 mtu = htons(smf_self()->mtu);
@@ -1718,6 +1715,15 @@ int smf_pco_build(uint8_t *pco_buf, uint8_t *buffer, int length)
                 smf.ids[smf.num_of_id].data = &mtu;
                 smf.num_of_id++;
             }
+            break;
+        case OGS_PCO_ID_IP_ADDRESS_ALLOCATION_VIA_NAS_SIGNALLING:
+            /* TODO */
+            break;
+        case OGS_PCO_ID_MS_SUPPORTS_BCM:
+            /* TODO */
+            break;
+        case OGS_PCO_ID_MS_SUPPORT_LOCAL_ADDR_TFT_INDICATOR:
+            /* TODO */
             break;
         default:
             ogs_warn("Unknown PCO ID:(0x%x)", ue.ids[i].id);

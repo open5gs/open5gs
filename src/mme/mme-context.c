@@ -2447,7 +2447,7 @@ mme_ue_t *mme_ue_find_by_message(ogs_nas_eps_message_t *message)
                         ogs_nas_guti.mme_code,
                         ogs_nas_guti.m_tmsi);
             } else {
-                ogs_warn("Unknown UE by GUTI[G:%d,C:%d,M_TMSI:0x%x]",
+                ogs_info("Unknown UE by GUTI[G:%d,C:%d,M_TMSI:0x%x]",
                         ogs_nas_guti.mme_gid,
                         ogs_nas_guti.mme_code,
                         ogs_nas_guti.m_tmsi);

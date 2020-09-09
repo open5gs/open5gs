@@ -129,7 +129,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
             }
 
             if (!MME_UE_HAVE_IMSI(mme_ue)) {
-                ogs_warn("[EMM] Service request : Unknown UE");
+                ogs_info("[EMM] Service request : Unknown UE");
                 nas_eps_send_service_reject(mme_ue,
                     EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
                 OGS_FSM_TRAN(s, &emm_state_exception);
@@ -234,7 +234,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
             }
 
             if (!MME_UE_HAVE_IMSI(mme_ue)) {
-                ogs_warn("[EMM] TAU request : Unknown UE");
+                ogs_info("[EMM] TAU request : Unknown UE");
                 nas_eps_send_tau_reject(mme_ue,
                     EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
                 OGS_FSM_TRAN(s, &emm_state_exception);
@@ -565,7 +565,7 @@ void emm_state_authentication(ogs_fsm_t *s, mme_event_t *e)
                         "(Non-EPS authentication unacceptable)");
                 break;
             case EMM_CAUSE_SYNCH_FAILURE:
-                ogs_warn("Authentication failure(Synch failure)");
+                ogs_info("Authentication failure(Synch failure)");
                 mme_s6a_send_air(mme_ue,
                         authentication_failure_parameter);
                 return;
@@ -884,6 +884,10 @@ void emm_state_initial_context_setup(ogs_fsm_t *s, mme_event_t *e)
 
             mme_send_delete_session_or_detach(mme_ue);
             OGS_FSM_TRAN(s, &emm_state_de_registered);
+            break;
+        case OGS_NAS_EPS_SECURITY_MODE_COMPLETE:
+            ogs_warn("[%s] Duplicated : Security mode complete",
+                    mme_ue->imsi_bcd);
             break;
         default:
             ogs_warn("Unknown message[%d]", 

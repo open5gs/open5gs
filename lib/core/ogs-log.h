@@ -122,7 +122,6 @@ void ogs_log_hexdump_func(ogs_log_level_e level, int domain_id,
         if (ogs_likely(expr)) ; \
         else { \
             ogs_error("%s: Expectation `%s' failed.", OGS_FUNC, #expr); \
-            ogs_abort(); \
         } \
     } while (0)
 
@@ -131,7 +130,6 @@ void ogs_log_hexdump_func(ogs_log_level_e level, int domain_id,
         if (ogs_likely(expr)) ; \
         else { \
             ogs_error("%s: Expectation `%s' failed.", OGS_FUNC, #expr); \
-            ogs_abort(); \
             return; \
         } \
     } while (0)

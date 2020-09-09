@@ -147,8 +147,10 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
 
     pdr = ogs_pfcp_pdr_find_by_teid_and_qfi(teid, qfi);
     if (!pdr) {
+#if 0 /* It's redundant log message */
         ogs_warn("[DROP] Cannot find PDR : TEID[0x%x] QFI[%d]",
                 teid, qfi);
+#endif
         goto cleanup;
     }
 
