@@ -41,7 +41,7 @@ ogs_pkbuf_t *esm_build_pdn_connectivity_reject(
             mme_ue->imsi_bcd, sess->pti, esm_cause);
 
     memset(&message, 0, sizeof(message));
-    if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_registered)) {
+    if (!SESSION_CONTEXT_IN_ATTACH(sess)) {
         message.h.security_header_type =
            OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
         message.h.protocol_discriminator = OGS_NAS_PROTOCOL_DISCRIMINATOR_EMM;
@@ -53,11 +53,10 @@ ogs_pkbuf_t *esm_build_pdn_connectivity_reject(
 
     pdn_connectivity_reject->esm_cause = esm_cause;
 
-    if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_registered)) {
-        return nas_eps_security_encode(mme_ue, &message);
-    } else {
+    if (SESSION_CONTEXT_IN_ATTACH(sess))
         return ogs_nas_eps_plain_encode(&message);
-    }
+    else
+        return nas_eps_security_encode(mme_ue, &message);
 }
 
 ogs_pkbuf_t *esm_build_information_request(mme_bearer_t *bearer)
@@ -133,7 +132,7 @@ ogs_pkbuf_t *esm_build_activate_default_bearer_context_request(
             mme_ue->imsi_bcd, sess->pti, bearer->ebi);
 
     memset(&message, 0, sizeof(message));
-    if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_registered)) {
+    if (!SESSION_CONTEXT_IN_ATTACH(sess)) {
         message.h.security_header_type =
            OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
         message.h.protocol_discriminator = OGS_NAS_PROTOCOL_DISCRIMINATOR_EMM;
@@ -245,11 +244,10 @@ ogs_pkbuf_t *esm_build_activate_default_bearer_context_request(
         }
     }
 
-    if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_registered)) {
-        return nas_eps_security_encode(mme_ue, &message);
-    } else {
+    if (SESSION_CONTEXT_IN_ATTACH(sess))
         return ogs_nas_eps_plain_encode(&message);
-    }
+    else
+        return nas_eps_security_encode(mme_ue, &message);
 }
 
 ogs_pkbuf_t *esm_build_activate_dedicated_bearer_context_request(
@@ -416,7 +414,7 @@ ogs_pkbuf_t *esm_build_bearer_resource_allocation_reject(
             mme_ue->imsi_bcd, sess->pti, esm_cause);
 
     memset(&message, 0, sizeof(message));
-    if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_registered)) {
+    if (!SESSION_CONTEXT_IN_ATTACH(sess)) {
         message.h.security_header_type =
            OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
         message.h.protocol_discriminator = OGS_NAS_PROTOCOL_DISCRIMINATOR_EMM;
@@ -429,11 +427,10 @@ ogs_pkbuf_t *esm_build_bearer_resource_allocation_reject(
 
     bearer_resource_allocation_reject->esm_cause = esm_cause;
 
-    if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_registered)) {
-        return nas_eps_security_encode(mme_ue, &message);
-    } else {
+    if (SESSION_CONTEXT_IN_ATTACH(sess))
         return ogs_nas_eps_plain_encode(&message);
-    }
+    else
+        return nas_eps_security_encode(mme_ue, &message);
 }
 
 ogs_pkbuf_t *esm_build_bearer_resource_modification_reject(
@@ -458,7 +455,7 @@ ogs_pkbuf_t *esm_build_bearer_resource_modification_reject(
             mme_ue->imsi_bcd, sess->pti, esm_cause);
 
     memset(&message, 0, sizeof(message));
-    if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_registered)) {
+    if (!SESSION_CONTEXT_IN_ATTACH(sess)) {
         message.h.security_header_type =
            OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
         message.h.protocol_discriminator = OGS_NAS_PROTOCOL_DISCRIMINATOR_EMM;
@@ -472,9 +469,8 @@ ogs_pkbuf_t *esm_build_bearer_resource_modification_reject(
 
     bearer_resource_modification_reject->esm_cause = esm_cause;
 
-    if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_registered)) {
-        return nas_eps_security_encode(mme_ue, &message);
-    } else {
+    if (SESSION_CONTEXT_IN_ATTACH(sess))
         return ogs_nas_eps_plain_encode(&message);
-    }
+    else
+        return nas_eps_security_encode(mme_ue, &message);
 }

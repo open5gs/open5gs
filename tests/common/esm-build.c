@@ -213,7 +213,6 @@ ogs_pkbuf_t *testesm_build_activate_default_eps_bearer_context_accept(
         message.h.protocol_discriminator = OGS_NAS_PROTOCOL_DISCRIMINATOR_EMM;
     }
 
-
     message.esm.h.eps_bearer_identity = bearer->ebi;
     message.esm.h.protocol_discriminator = OGS_NAS_PROTOCOL_DISCRIMINATOR_ESM;
     message.esm.h.message_type =

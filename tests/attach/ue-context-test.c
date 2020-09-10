@@ -594,24 +594,9 @@ static void test2_func(abts_case *tc, void *data)
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    /* Send Attach Complete + Activate default EPS bearer cotext accept */
-    test_ue->nr_cgi.cell_id = 0x1234502;
-    bearer = test_bearer_find_by_ue_ebi(test_ue, 5);
-    ogs_assert(bearer);
-    esmbuf = testesm_build_activate_default_eps_bearer_context_accept(
-            bearer, false);
-    ABTS_PTR_NOTNULL(tc, esmbuf);
-    emmbuf = testemm_build_attach_complete(test_ue, esmbuf);
-    ABTS_PTR_NOTNULL(tc, emmbuf);
-    sendbuf = test_s1ap_build_uplink_nas_transport(test_ue, emmbuf);
-    ABTS_PTR_NOTNULL(tc, sendbuf);
-    rv = testenb_s1ap_send(s1ap, sendbuf);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
-
-    /* Receive EMM information */
-    recvbuf = testenb_s1ap_read(s1ap);
-    ABTS_PTR_NOTNULL(tc, recvbuf);
-    tests1ap_recv(test_ue, recvbuf);
+    /* GUTI Not Present
+     * SKIP Send Attach Complete + Activate default EPS bearer cotext accept
+     * SKIP Receive EMM information */
 
     /* Send Initial context setup failure */
     sendbuf = test_s1ap_build_initial_context_setup_failure(test_ue,
@@ -974,24 +959,9 @@ static void test3_func(abts_case *tc, void *data)
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    /* Send Attach Complete + Activate default EPS bearer cotext accept */
-    test_ue->nr_cgi.cell_id = 0x1234502;
-    bearer = test_bearer_find_by_ue_ebi(test_ue, 5);
-    ogs_assert(bearer);
-    esmbuf = testesm_build_activate_default_eps_bearer_context_accept(
-            bearer, false);
-    ABTS_PTR_NOTNULL(tc, esmbuf);
-    emmbuf = testemm_build_attach_complete(test_ue, esmbuf);
-    ABTS_PTR_NOTNULL(tc, emmbuf);
-    sendbuf = test_s1ap_build_uplink_nas_transport(test_ue, emmbuf);
-    ABTS_PTR_NOTNULL(tc, sendbuf);
-    rv = testenb_s1ap_send(s1ap, sendbuf);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
-
-    /* Receive EMM information */
-    recvbuf = testenb_s1ap_read(s1ap);
-    ABTS_PTR_NOTNULL(tc, recvbuf);
-    tests1ap_recv(test_ue, recvbuf);
+    /* GUTI Not Present
+     * SKIP Send Attach Complete + Activate default EPS bearer cotext accept
+     * SKIP Receive EMM information */
 
     /* Send UE Context Release Request */
     sendbuf = test_s1ap_build_ue_context_release_request(test_ue,
@@ -1084,7 +1054,7 @@ static void test3_func(abts_case *tc, void *data)
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    ogs_msleep(100);
+    ogs_msleep(300);
 
     /********** Remove Subscriber in Database */
     doc = BCON_NEW("imsi", BCON_UTF8(test_ue->imsi));

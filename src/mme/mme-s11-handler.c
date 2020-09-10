@@ -187,7 +187,7 @@ void mme_s11_handle_create_session_response(
     rv = ogs_gtp_f_teid_to_ip(sgw_s1u_teid, &bearer->sgw_s1u_ip);
     ogs_assert(rv == OGS_OK);
 
-    if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_initial_context_setup)) {
+    if (SESSION_CONTEXT_IN_ATTACH(sess)) {
         mme_csmap_t *csmap = mme_csmap_find_by_tai(&mme_ue->tai);
         mme_ue->csmap = csmap;
 
@@ -197,10 +197,9 @@ void mme_s11_handle_create_session_response(
             nas_eps_send_attach_accept(mme_ue);
         }
 
-    } else if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_registered)) {
+    } else {
         nas_eps_send_activate_default_bearer_context_request(bearer);
-    } else
-        ogs_assert_if_reached();
+    }
 }
 
 void mme_s11_handle_modify_bearer_response(

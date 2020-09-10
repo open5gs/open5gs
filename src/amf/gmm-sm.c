@@ -847,7 +847,6 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
             SWITCH(sbi_message->h.resource.component[1])
             CASE(OGS_SBI_RESOURCE_NAME_AM_DATA)
             CASE(OGS_SBI_RESOURCE_NAME_SMF_SELECT_DATA)
-            CASE(OGS_SBI_RESOURCE_NAME_UE_CONTEXT_IN_SMF_DATA)
                 if (sbi_message->res_status != OGS_SBI_HTTP_STATUS_OK) {
                     ogs_error("[%s] HTTP response error [%d]",
                             amf_ue->supi, sbi_message->res_status);
@@ -858,6 +857,29 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
                 }
 
                 amf_nudm_sdm_handle_provisioned(amf_ue, sbi_message);
+                break;
+            CASE(OGS_SBI_RESOURCE_NAME_UE_CONTEXT_IN_SMF_DATA)
+                /*
+                 * Issues #553
+                 *
+                 * o Tester
+                 * 1. UE registered to 5GS and can connect to internet.
+                 * 2. Turn off the UE and turn on the UE immediately
+                 * 3. UE send PDU session request message
+                 *    without sending registration complete
+                 *
+                 * o Analysis Result
+                 * 1. UE sends registration request with unknown GUTI
+                 * 2. AMF send registration accept without GUTI
+                 * 3. UE skips the registration complete
+                 *
+                 * So, if GUTI is not present,
+                 * we need to move REGISTERED state.
+                 */
+                if (amf_ue->guti_present == 0)
+                    OGS_FSM_TRAN(&amf_ue->sm, &gmm_state_registered);
+
+                nas_5gs_send_registration_accept(amf_ue);
                 break;
 
             DEFAULT
@@ -910,28 +932,6 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
             param.nitz = 1;
             nas_5gs_send_configuration_update_command(amf_ue, &param);
 
-            OGS_FSM_TRAN(s, &gmm_state_registered);
-            break;
-
-        case OGS_NAS_5GS_UL_NAS_TRANSPORT:
-            /*
-             * Issues #553
-             *
-             * o Tester
-             * 1. UE registered to 5GS and can connect to internet.
-             * 2. Turn off the UE and turn on the UE immediately
-             * 3. UE send PDU session request message
-             *    without sending registration complete
-             *
-             * o Analysis Result
-             * 1. UE sends registration request with unknown GUTI
-             * 2. AMF send registration accept without GUTI
-             * 3. UE skips the registration complete
-             *
-             * So, we need the handler UL NAS Transport in this state.
-             */
-            gmm_handle_ul_nas_transport(
-                    amf_ue, &nas_message->gmm.ul_nas_transport);
             OGS_FSM_TRAN(s, &gmm_state_registered);
             break;
 

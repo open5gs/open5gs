@@ -721,7 +721,10 @@ void emm_state_security_mode(ogs_fsm_t *s, mme_event_t *e)
 
             mme_s6a_send_ulr(mme_ue);
             if (mme_ue->nas_eps.type == MME_EPS_TYPE_ATTACH_REQUEST) {
-                OGS_FSM_TRAN(s, &emm_state_initial_context_setup);
+                if (mme_ue->guti_present)
+                    OGS_FSM_TRAN(s, &emm_state_initial_context_setup);
+                else
+                    OGS_FSM_TRAN(s, &emm_state_registered);
             } else if (mme_ue->nas_eps.type ==
                     MME_EPS_TYPE_SERVICE_REQUEST ||
                     mme_ue->nas_eps.type == MME_EPS_TYPE_TAU_REQUEST) {

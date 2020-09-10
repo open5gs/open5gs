@@ -471,34 +471,24 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
         case OGS_DIAM_S6A_CMD_CODE_UPDATE_LOCATION:
             mme_s6a_handle_ula(mme_ue, &s6a_message->ula_message);
 
-            if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_initial_context_setup)) {
-                if (mme_ue->nas_eps.type == MME_EPS_TYPE_ATTACH_REQUEST) {
-                    rv = nas_eps_send_emm_to_esm(mme_ue,
-                            &mme_ue->pdn_connectivity_request);
-                    if (rv != OGS_OK) {
-                        ogs_error("nas_eps_send_emm_to_esm() failed");
-                        nas_eps_send_attach_reject(mme_ue,
-                            EMM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED,
-                            ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
-                    }
-                } else {
-                    ogs_fatal("Invalid Type[%d]", mme_ue->nas_eps.type);
-                    ogs_assert_if_reached();
+            if (mme_ue->nas_eps.type == MME_EPS_TYPE_ATTACH_REQUEST) {
+                rv = nas_eps_send_emm_to_esm(mme_ue,
+                        &mme_ue->pdn_connectivity_request);
+                if (rv != OGS_OK) {
+                    ogs_error("nas_eps_send_emm_to_esm() failed");
+                    nas_eps_send_attach_reject(mme_ue,
+                        EMM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED,
+                        ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
                 }
-            }
-            else if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_registered)) {
-                if (mme_ue->nas_eps.type == MME_EPS_TYPE_TAU_REQUEST) {
-                    nas_eps_send_tau_accept(mme_ue,
-                            S1AP_ProcedureCode_id_InitialContextSetup);
-                } else if (mme_ue->nas_eps.type ==
-                    MME_EPS_TYPE_SERVICE_REQUEST) {
-                    s1ap_send_initial_context_setup_request(mme_ue);
-                } else {
-                    ogs_fatal("Invalid Type[%d]", mme_ue->nas_eps.type);
-                    ogs_assert_if_reached();
-                }
-            } else
+            } else if (mme_ue->nas_eps.type == MME_EPS_TYPE_TAU_REQUEST) {
+                nas_eps_send_tau_accept(mme_ue,
+                        S1AP_ProcedureCode_id_InitialContextSetup);
+            } else if (mme_ue->nas_eps.type == MME_EPS_TYPE_SERVICE_REQUEST) {
+                s1ap_send_initial_context_setup_request(mme_ue);
+            } else {
+                ogs_fatal("Invalid Type[%d]", mme_ue->nas_eps.type);
                 ogs_assert_if_reached();
+            }
             break;
         default:
             ogs_error("Invalid Type[%d]", s6a_message->cmd_code);
