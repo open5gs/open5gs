@@ -913,6 +913,28 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
             OGS_FSM_TRAN(s, &gmm_state_registered);
             break;
 
+        case OGS_NAS_5GS_UL_NAS_TRANSPORT:
+            /*
+             * Issues #553
+             *
+             * o Tester
+             * 1. UE registered to 5GS and can connect to internet.
+             * 2. Turn off the UE and turn on the UE immediately
+             * 3. UE send PDU session request message
+             *    without sending registration complete
+             *
+             * o Analysis Result
+             * 1. UE sends registration request with unknown GUTI
+             * 2. AMF send registration accept without GUTI
+             * 3. UE skips the registration complete
+             *
+             * So, we need the handler UL NAS Transport in this state.
+             */
+            gmm_handle_ul_nas_transport(
+                    amf_ue, &nas_message->gmm.ul_nas_transport);
+            OGS_FSM_TRAN(s, &gmm_state_registered);
+            break;
+
         case OGS_NAS_5GS_REGISTRATION_REQUEST:
             ogs_warn("Registration request");
             rv = gmm_handle_registration_request(

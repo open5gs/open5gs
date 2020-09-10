@@ -143,22 +143,6 @@ void nas_5gs_send_service_reject(
     ogs_expect(rv == OGS_OK);
 }
 
-void nas_5gs_send_accept(amf_ue_t *amf_ue)
-{
-    ogs_assert(amf_ue);
-
-    switch(amf_ue->nas.message_type) {
-    case OGS_NAS_5GS_REGISTRATION_REQUEST:
-        nas_5gs_send_registration_accept(amf_ue);
-        break;
-    case OGS_NAS_5GS_SERVICE_REQUEST:
-        nas_5gs_send_service_accept(amf_ue);
-        break;
-    default:
-        ogs_error("Unknown message type [%d]", amf_ue->nas.message_type);
-    }
-}
-
 void nas_5gs_send_de_registration_accept(amf_ue_t *amf_ue)
 {
     ran_ue_t *ran_ue = NULL;

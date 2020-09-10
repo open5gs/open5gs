@@ -86,7 +86,7 @@ int amf_nudm_sdm_handle_provisioned(
         break;
 
     CASE(OGS_SBI_RESOURCE_NAME_UE_CONTEXT_IN_SMF_DATA)
-        nas_5gs_send_accept(amf_ue);
+        nas_5gs_send_registration_accept(amf_ue);
         break;
 
     DEFAULT

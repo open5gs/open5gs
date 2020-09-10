@@ -213,7 +213,20 @@ int amf_nsmf_pdu_session_handle_update_sm_context(
                 ogs_assert(sess->pdu_session_resource_setup_request_transfer);
 
                 if (SESSION_SYNC_DONE(amf_ue)) {
-                    nas_5gs_send_accept(amf_ue);
+                    switch(amf_ue->nas.message_type) {
+                    case OGS_NAS_5GS_REGISTRATION_REQUEST:
+                        /* Registration Request
+                         * with mobility or periodic updating */
+                        nas_5gs_send_registration_accept(amf_ue);
+                        break;
+                    case OGS_NAS_5GS_SERVICE_REQUEST:
+                        /* Service Request */
+                        nas_5gs_send_service_accept(amf_ue);
+                        break;
+                    default:
+                        ogs_error("Unknown message type [%d]",
+                                amf_ue->nas.message_type);
+                    }
 
                 /*
                  * After sending accept message, N2 SM context is freed
