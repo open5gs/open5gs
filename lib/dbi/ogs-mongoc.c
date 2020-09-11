@@ -88,7 +88,7 @@ int ogs_mongoc_init(const char *db_uri)
 
     if (!ogs_mongoc_mongoc_client_get_server_status(
                 self.client, NULL, &reply, &error)) {
-        ogs_error("Failed to connect to server [%s]", db_uri);
+        ogs_warn("Failed to connect to server [%s]", db_uri);
         return OGS_RETRY;
     }
 

@@ -1758,6 +1758,9 @@ int smf_pco_build(uint8_t *pco_buf, uint8_t *buffer, int length)
         case OGS_PCO_ID_MS_SUPPORT_LOCAL_ADDR_TFT_INDICATOR:
             /* TODO */
             break;
+        case OGS_PCO_ID_P_CSCF_RE_SELECTION_SUPPORT:
+            /* TODO */
+            break;
         default:
             ogs_warn("Unknown PCO ID:(0x%x)", ue.ids[i].id);
         }

@@ -146,6 +146,31 @@ void sgwc_s5c_handle_create_session_response(
         cause_value = OGS_GTP_CAUSE_MANDATORY_IE_MISSING;
     }
 
+    if (rsp->pdn_address_allocation.presence) {
+        ogs_paa_t paa;
+
+        memcpy(&paa, rsp->pdn_address_allocation.data,
+                ogs_min(sizeof(paa), rsp->pdn_address_allocation.len));
+        if (paa.pdn_type == OGS_GTP_PDN_TYPE_IPV4) {
+            /* Nothing */
+        } else if (paa.pdn_type == OGS_GTP_PDN_TYPE_IPV6) {
+            /* Nothing */
+        } else if (paa.pdn_type == OGS_GTP_PDN_TYPE_IPV4V6) {
+            /* Nothing */
+        } else {
+            ogs_error("Unknown PDN Type %u", paa.pdn_type);
+#if 0 /* MME will handle this error */
+            cause_value = OGS_GTP_CAUSE_MANDATORY_IE_INCORRECT;
+#endif
+        }
+
+    } else {
+        ogs_error("No PDN Address Allocation");
+#if 0 /* MME will handle this error */
+        cause_value = OGS_GTP_CAUSE_MANDATORY_IE_MISSING;
+#endif
+    }
+
     if (cause_value != OGS_GTP_CAUSE_REQUEST_ACCEPTED) {
         ogs_gtp_send_error_message(
                 s11_xact, sgwc_ue ? sgwc_ue->mme_s11_teid : 0,

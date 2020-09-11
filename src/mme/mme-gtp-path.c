@@ -251,8 +251,8 @@ void mme_gtp_send_delete_all_sessions(mme_ue_t *mme_ue)
     ogs_assert(mme_ue);
 
     if (SESSION_CONTEXT_WILL_DELETED(mme_ue)) {
-        ogs_warn("The MME has already sent a Delete-Session-Request to the SGW"
-                " for all sessions.");
+        ogs_warn("[%s] Delete-Session-Request has already sent",
+                mme_ue->imsi_bcd);
         return;
     }
 
