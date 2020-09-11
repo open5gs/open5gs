@@ -823,6 +823,8 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_setup_request(
     NGAP_SST_t *sST = NULL;
     OCTET_STRING_t *transfer = NULL;
 
+    NGAP_UEAggregateMaximumBitRate_t *UEAggregateMaximumBitRate = NULL;
+
     ogs_assert(gmmbuf);
     ogs_assert(n2smbuf);
     ogs_assert(sess);
@@ -907,6 +909,27 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_setup_request(
     transfer->buf = CALLOC(transfer->size, sizeof(uint8_t));
     memcpy(transfer->buf, n2smbuf->data, transfer->size);
     ogs_pkbuf_free(n2smbuf);
+
+    if (amf_ue->subscribed_ue_ambr.downlink ||
+            amf_ue->subscribed_ue_ambr.uplink) {
+
+        ie = CALLOC(1, sizeof(NGAP_PDUSessionResourceSetupRequestIEs_t));
+        ASN_SEQUENCE_ADD(&PDUSessionResourceSetupRequest->protocolIEs, ie);
+
+        ie->id = NGAP_ProtocolIE_ID_id_UEAggregateMaximumBitRate;
+        ie->criticality = NGAP_Criticality_ignore;
+        ie->value.present =
+            NGAP_PDUSessionResourceSetupRequestIEs__value_PR_UEAggregateMaximumBitRate;
+
+        UEAggregateMaximumBitRate = &ie->value.choice.UEAggregateMaximumBitRate;
+
+        asn_uint642INTEGER(
+                &UEAggregateMaximumBitRate->uEAggregateMaximumBitRateUL,
+                amf_ue->subscribed_ue_ambr.uplink);
+        asn_uint642INTEGER(
+                &UEAggregateMaximumBitRate->uEAggregateMaximumBitRateDL,
+                amf_ue->subscribed_ue_ambr.downlink);
+    }
 
     return ogs_ngap_encode(&pdu);
 }
