@@ -879,7 +879,16 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
                 if (amf_ue->guti_present == 0)
                     OGS_FSM_TRAN(&amf_ue->sm, &gmm_state_registered);
 
-                nas_5gs_send_registration_accept(amf_ue);
+                /*
+                 * Do not use nas_5gs_send_registration_accept()
+                 * instead of nas_5gs_send_accept() here.
+                 *
+                 * nas_5gs_send_service_accept() could be used later.
+                 * The reason is why the design could be changed to handle this.
+                 *
+                 * So we'll use nas_5gs_send_accept() at this point.
+                 */
+                nas_5gs_send_accept(amf_ue);
                 break;
 
             DEFAULT
