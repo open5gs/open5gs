@@ -137,12 +137,12 @@ static int amf_context_validation(void)
     }
 
     if (self.num_of_plmn_support == 0) {
-        ogs_error("No amf.plmn in '%s'", ogs_app()->file);
+        ogs_error("No amf.plmn_support in '%s'", ogs_app()->file);
         return OGS_ERROR;
     }
 
     if (self.plmn_support[0].num_of_s_nssai == 0) {
-        ogs_error("No amf.plmn.s_nssai in '%s'", ogs_app()->file);
+        ogs_error("No amf.plmn_support.s_nssai in '%s'", ogs_app()->file);
         return OGS_ERROR;
     }
 
