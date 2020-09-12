@@ -659,8 +659,15 @@ void gmm_state_security_mode(ogs_fsm_t *s, amf_event_t *e)
                 break;
             }
 
-            gmm_handle_security_mode_complete(
+            rv = gmm_handle_security_mode_complete(
                     amf_ue, &nas_message->gmm.security_mode_complete);
+            if (rv != OGS_OK) {
+                ogs_error("[%s] Cannot handle NAS message", amf_ue->suci);
+                nas_5gs_send_gmm_reject(amf_ue,
+                    OGS_5GMM_CAUSE_5GS_SERVICES_NOT_ALLOWED);
+                OGS_FSM_TRAN(s, gmm_state_exception);
+                break;
+            }
 
             ogs_kdf_kgnb_and_kn3iwf(
                     amf_ue->kamf, amf_ue->ul_count.i32,

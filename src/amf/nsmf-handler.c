@@ -235,7 +235,7 @@ int amf_nsmf_pdu_session_handle_update_sm_context(
                     ogs_error("[%s:%d] No N1 SM Content [%s]",
                             amf_ue->supi, sess->psi, n1SmMsg->content_id);
                     nas_5gs_send_back_5gsm_message(sess,
-                            OGS_5GSM_CAUSE_SEMANTICALLY_INCORRECT_MESSAGE);
+                            OGS_5GMM_CAUSE_SEMANTICALLY_INCORRECT_MESSAGE);
                     return OGS_ERROR;
                 }
 

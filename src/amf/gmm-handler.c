@@ -197,6 +197,7 @@ int gmm_handle_registration_update(amf_ue_t *amf_ue,
 {
     amf_sess_t *sess = NULL;
     uint16_t psimask;
+    int i = 0;
 
     ogs_nas_5gs_tracking_area_identity_t *last_visited_registered_tai = NULL;
     ogs_nas_uplink_data_status_t *uplink_data_status = NULL;
@@ -225,6 +226,25 @@ int gmm_handle_registration_update(amf_ue_t *amf_ue,
 
         amf_ue->num_of_requested_nssai = ogs_nas_parse_nssai(
             amf_ue->requested_nssai, &registration_request->requested_nssai);
+
+        for (i = 0; i < amf_ue->num_of_requested_nssai; i++) {
+            if (amf_find_s_nssai(
+                    &amf_ue->tai.plmn_id, &amf_ue->requested_nssai[i]))
+                break;
+        }
+
+        if (i == amf_ue->num_of_requested_nssai) {
+            ogs_error("CHECK CONFIGURATION: Cannot find Requested NSSAI");
+            for (i = 0; i < amf_ue->num_of_requested_nssai; i++) {
+                ogs_error("    PLMN_ID[MCC:%d MNC:%d]",
+                        ogs_plmn_id_mcc(&amf_ue->tai.plmn_id),
+                        ogs_plmn_id_mnc(&amf_ue->tai.plmn_id));
+                ogs_error("    S_NSSAI[SST:%d SD:0x%x]",
+                        amf_ue->requested_nssai[i].sst,
+                        amf_ue->requested_nssai[i].sd.v);
+            }
+            return OGS_ERROR;
+        }
     }
 
     if (registration_request->presencemask &
@@ -243,7 +263,8 @@ int gmm_handle_registration_update(amf_ue_t *amf_ue,
     }
 
     if ((registration_request->presencemask &
-    OGS_NAS_5GS_REGISTRATION_REQUEST_ALLOWED_PDU_SESSION_STATUS_PRESENT) == 0) {
+        OGS_NAS_5GS_REGISTRATION_REQUEST_ALLOWED_PDU_SESSION_STATUS_PRESENT)
+            == 0) {
         amf_ue->nas.present.allowed_pdu_session_status = 0;
     } else {
         amf_ue->nas.present.allowed_pdu_session_status = 1;
@@ -251,7 +272,7 @@ int gmm_handle_registration_update(amf_ue_t *amf_ue,
     }
 
     if ((registration_request->presencemask &
-            OGS_NAS_5GS_REGISTRATION_REQUEST_UPLINK_DATA_STATUS_PRESENT) == 0) {
+        OGS_NAS_5GS_REGISTRATION_REQUEST_UPLINK_DATA_STATUS_PRESENT) == 0) {
         amf_ue->nas.present.uplink_data_status = 0;
     } else {
         amf_ue->nas.present.uplink_data_status = 1;
