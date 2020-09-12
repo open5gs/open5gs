@@ -47,9 +47,9 @@ logger:
 #
 sgwc:
     gtpc:
-      addr: 127.0.0.3
+      - addr: 127.0.0.3
     pfcp:
-      addr: 127.0.0.3
+      - addr: 127.0.0.3
 
 #
 # sgwu:
@@ -105,7 +105,7 @@ sgwc:
 #
 sgwu:
     pfcp:
-      addr: 127.0.0.6
+      - addr: 127.0.0.6
 
 #
 # parameter:

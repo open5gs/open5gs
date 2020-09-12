@@ -137,9 +137,7 @@ upf:
     pfcp:
       - addr: 127.0.0.7
     gtpu:
-      - addr:
-        - 127.0.0.7
-        - ::1
+      - addr: 127.0.0.7
     pdn:
       - addr: 10.45.0.1/16
       - addr: cafe::1/64

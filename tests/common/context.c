@@ -383,38 +383,38 @@ int test_context_parse_config(void)
                     if (list2->num || num_of_list0) {
                         self.num_of_nr_served_tai++;
                     }
-                } else if (!strcmp(amf_key, "plmn")) {
-                    ogs_yaml_iter_t plmn_array, plmn_iter;
-                    ogs_yaml_iter_recurse(&amf_iter, &plmn_array);
+                } else if (!strcmp(amf_key, "plmn_support")) {
+                    ogs_yaml_iter_t plmn_support_array, plmn_support_iter;
+                    ogs_yaml_iter_recurse(&amf_iter, &plmn_support_array);
                     do {
                         const char *mnc = NULL, *mcc = NULL;
                         ogs_assert(self.num_of_plmn_support <=
                                 OGS_MAX_NUM_OF_PLMN);
 
-                        if (ogs_yaml_iter_type(&plmn_array) ==
+                        if (ogs_yaml_iter_type(&plmn_support_array) ==
                                 YAML_MAPPING_NODE) {
-                            memcpy(&plmn_iter, &plmn_array,
+                            memcpy(&plmn_support_iter, &plmn_support_array,
                                     sizeof(ogs_yaml_iter_t));
-                        } else if (ogs_yaml_iter_type(&plmn_array) ==
+                        } else if (ogs_yaml_iter_type(&plmn_support_array) ==
                             YAML_SEQUENCE_NODE) {
-                            if (!ogs_yaml_iter_next(&plmn_array))
+                            if (!ogs_yaml_iter_next(&plmn_support_array))
                                 break;
-                            ogs_yaml_iter_recurse(&plmn_array,
-                                    &plmn_iter);
-                        } else if (ogs_yaml_iter_type(&plmn_array) ==
+                            ogs_yaml_iter_recurse(&plmn_support_array,
+                                    &plmn_support_iter);
+                        } else if (ogs_yaml_iter_type(&plmn_support_array) ==
                             YAML_SCALAR_NODE) {
                             break;
                         } else
                             ogs_assert_if_reached();
 
-                        while (ogs_yaml_iter_next(&plmn_iter)) {
-                            const char *plmn_key =
-                                ogs_yaml_iter_key(&plmn_iter);
-                            ogs_assert(plmn_key);
-                            if (!strcmp(plmn_key, "plmn_id")) {
+                        while (ogs_yaml_iter_next(&plmn_support_iter)) {
+                            const char *plmn_support_key =
+                                ogs_yaml_iter_key(&plmn_support_iter);
+                            ogs_assert(plmn_support_key);
+                            if (!strcmp(plmn_support_key, "plmn_id")) {
                                 ogs_yaml_iter_t plmn_id_iter;
 
-                                ogs_yaml_iter_recurse(&plmn_iter,
+                                ogs_yaml_iter_recurse(&plmn_support_iter,
                                         &plmn_id_iter);
                                 while (ogs_yaml_iter_next(&plmn_id_iter)) {
                                     const char *plmn_id_key =
@@ -436,9 +436,9 @@ int test_context_parse_config(void)
                                                 plmn_id,
                                         atoi(mcc), atoi(mnc), strlen(mnc));
                                 }
-                            } else if (!strcmp(plmn_key, "s_nssai")) {
+                            } else if (!strcmp(plmn_support_key, "s_nssai")) {
                                 ogs_yaml_iter_t s_nssai_array, s_nssai_iter;
-                                ogs_yaml_iter_recurse(&plmn_iter,
+                                ogs_yaml_iter_recurse(&plmn_support_iter,
                                         &s_nssai_array);
                                 do {
                                     ogs_s_nssai_t *s_nssai = NULL;
@@ -509,7 +509,7 @@ int test_context_parse_config(void)
                                 } while (ogs_yaml_iter_type(&s_nssai_array) ==
                                         YAML_SEQUENCE_NODE);
                             } else
-                                ogs_warn("unknown key `%s`", plmn_key);
+                                ogs_warn("unknown key `%s`", plmn_support_key);
                         }
 
                         if (self.plmn_support[
@@ -525,7 +525,7 @@ int test_context_parse_config(void)
                             self.plmn_support[
                                 self.num_of_plmn_support].num_of_s_nssai = 0;
                         }
-                    } while (ogs_yaml_iter_type(&plmn_array) ==
+                    } while (ogs_yaml_iter_type(&plmn_support_array) ==
                             YAML_SEQUENCE_NODE);
                 } else if (!strcmp(amf_key, "sbi")) {
                     /* handle config in sbi library */

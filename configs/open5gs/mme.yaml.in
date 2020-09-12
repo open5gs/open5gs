@@ -204,9 +204,9 @@ logger:
 mme:
     freeDiameter: @sysconfdir@/freeDiameter/mme.conf
     s1ap:
-      addr: 127.0.0.2
+      - addr: 127.0.0.2
     gtpc:
-      addr: 127.0.0.2
+      - addr: 127.0.0.2
     gummei: 
       plmn_id:
         mcc: 901
@@ -219,7 +219,7 @@ mme:
         mnc: 70
       tac: 1
     security:
-        integrity_order : [ EIA1, EIA2, EIA0 ]
+        integrity_order : [ EIA2, EIA1, EIA0 ]
         ciphering_order : [ EEA0, EEA1, EEA2 ]
     network_name:
         full: Open5GS
@@ -283,7 +283,7 @@ mme:
 #
 sgwc:
     gtpc:
-      addr: 127.0.0.3
+      - addr: 127.0.0.3
 
 #
 # smf:
@@ -324,7 +324,7 @@ sgwc:
 #        apn: volte
 smf:
     gtpc:
-      addr:
+      - addr:
         - 127.0.0.4
         - ::1
 

@@ -35,9 +35,9 @@ mme:
           addr: 127.0.0.8
 
     s1ap:
-      addr: 127.0.0.2
+      - addr: 127.0.0.2
     gtpc:
-      addr: 127.0.0.2
+      - addr: 127.0.0.2
     gummei:
       plmn_id:
         mcc: 901
@@ -50,7 +50,7 @@ mme:
         mnc: 70
       tac: 1
     security:
-        integrity_order : [ EIA1, EIA2, EIA0 ]
+        integrity_order : [ EIA2, EIA1, EIA0 ]
         ciphering_order : [ EEA0, EEA1, EEA2 ]
 
     network_name:
@@ -58,9 +58,9 @@ mme:
 
 sgwc:
     gtpc:
-      addr: 127.0.0.3
+      - addr: 127.0.0.3
     pfcp:
-      addr: 127.0.0.3
+      - addr: 127.0.0.3
 
 smf:
     sbi:
@@ -114,14 +114,14 @@ amf:
           mcc: 901
           mnc: 70
         tac: 1
-    plmn:
+    plmn_support:
       - plmn_id:
           mcc: 901
           mnc: 70
         s_nssai:
           - sst: 1
     security:
-        integrity_order : [ NIA1, NIA2, NIA0 ]
+        integrity_order : [ NIA2, NIA1, NIA0 ]
         ciphering_order : [ NEA0, NEA1, NEA2 ]
     network_name:
         full: Open5GS
@@ -129,17 +129,15 @@ amf:
 
 sgwu:
     gtpu:
-      addr: 127.0.0.6
+      - addr: 127.0.0.6
     pfcp:
-      addr: 127.0.0.6
+      - addr: 127.0.0.6
 
 upf:
     pfcp:
       - addr: 127.0.0.7
     gtpu:
-      - addr:
-        - 127.0.0.7
-        - ::1
+      - addr: 127.0.0.7
     pdn:
       - addr: 10.45.0.1/16
       - addr: cafe::1/64
@@ -181,10 +179,10 @@ pcrf:
 
 nrf:
     sbi:
-      addr:
+      - addr:
         - 127.0.0.10
         - ::1
-      port: 7777
+        port: 7777
 
 ausf:
     sbi:

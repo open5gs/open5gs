@@ -142,7 +142,7 @@ ogs_pkbuf_t *testgmm_build_registration_request(
     s1_ue_network_capability->eea = 0xf0;
     s1_ue_network_capability->eia = 0xf0;
     s1_ue_network_capability->uea = 0xc0;
-    s1_ue_network_capability->uia = 0x40;
+    s1_ue_network_capability->uia = 0xc0;
     s1_ue_network_capability->notification_procedure = 1;
     s1_ue_network_capability->extended_protocol_configuration_options = 1;
     s1_ue_network_capability->n1_mode = 1;
