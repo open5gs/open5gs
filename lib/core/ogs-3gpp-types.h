@@ -37,6 +37,7 @@ extern "C" {
 #define OGS_MAX_NUM_OF_PACKET_FILTER    16
 
 #define OGS_MAX_SDU_LEN                 8192
+#define OGS_MAX_PKT_LEN                 2048
 #define OGS_PLMN_ID_LEN                 3
 #define OGS_MAX_PLMN_ID_BCD_LEN         6
 

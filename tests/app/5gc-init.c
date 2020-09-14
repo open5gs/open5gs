@@ -49,27 +49,26 @@ int app_initialize(const char *const argv[])
 
     if (ogs_app()->parameter.no_nrf == 0)
         nrf_thread = test_child_create("nrf", argv_out);
+
     if (ogs_app()->parameter.no_udr == 0)
         udr_thread = test_child_create("udr", argv_out);
     if (ogs_app()->parameter.no_udm == 0)
         udm_thread = test_child_create("udm", argv_out);
     if (ogs_app()->parameter.no_ausf == 0)
         ausf_thread = test_child_create("ausf", argv_out);
+
     if (ogs_app()->parameter.no_upf == 0)
         upf_thread = test_child_create("upf", argv_out);
-
-    /* Wait for PFCP association */
-    ogs_msleep(300);
-
     if (ogs_app()->parameter.no_smf == 0)
         smf_thread = test_child_create("smf", argv_out);
+
     if (ogs_app()->parameter.no_amf == 0)
         amf_thread = test_child_create("amf", argv_out);
 
     /*
      * Wait for all sockets listening
      * 
-     * If freeDiameter is not used, it uses a delay of less than 1 second.
+     * If freeDiameter is not used, it uses a delay of less than 4 seconds.
      */
     ogs_msleep(1500);
 
@@ -78,14 +77,15 @@ int app_initialize(const char *const argv[])
 
 void app_terminate(void)
 {
-    ogs_msleep(300);
-
     if (amf_thread) ogs_thread_destroy(amf_thread);
+
     if (smf_thread) ogs_thread_destroy(smf_thread);
     if (upf_thread) ogs_thread_destroy(upf_thread);
+
     if (ausf_thread) ogs_thread_destroy(ausf_thread);
     if (udm_thread) ogs_thread_destroy(udm_thread);
     if (udr_thread) ogs_thread_destroy(udr_thread);
+
     if (nrf_thread) ogs_thread_destroy(nrf_thread);
 }
 

@@ -35,8 +35,6 @@ typedef struct sgwu_bearer_s sgwu_bearer_t;
 typedef enum {
     SGWU_EVT_BASE = OGS_FSM_USER_SIG,
 
-    SGWU_EVT_LO_DLDATA_NOTI,
-
     SGWU_EVT_SXA_MESSAGE,
     SGWU_EVT_SXA_TIMER,
     SGWU_EVT_SXA_NO_HEARTBEAT,

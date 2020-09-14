@@ -188,7 +188,7 @@ int ogs_pfcp_xact_update_tx(ogs_pfcp_xact_t *xact,
         switch (stage) {
         case PFCP_XACT_INITIAL_STAGE:
             if (xact->step != 0) {
-                ogs_error("invalid step[%d]", xact->step);
+                ogs_error("invalid step[%d] type[%d]", xact->step, hdesc->type);
                 ogs_pkbuf_free(pkbuf);
                 return OGS_ERROR;
             }
@@ -201,7 +201,7 @@ int ogs_pfcp_xact_update_tx(ogs_pfcp_xact_t *xact,
 
         case PFCP_XACT_FINAL_STAGE:
             if (xact->step != 2) {
-                ogs_error("invalid step[%d]", xact->step);
+                ogs_error("invalid step[%d] type[%d]", xact->step, hdesc->type);
                 ogs_pkbuf_free(pkbuf);
                 return OGS_ERROR;
             }
@@ -221,19 +221,19 @@ int ogs_pfcp_xact_update_tx(ogs_pfcp_xact_t *xact,
         case PFCP_XACT_INTERMEDIATE_STAGE:
         case PFCP_XACT_FINAL_STAGE:
             if (xact->step != 1) {
-                ogs_error("invalid step[%d]", xact->step);
+                ogs_error("invalid step[%d] type[%d]", xact->step, hdesc->type);
                 ogs_pkbuf_free(pkbuf);
                 return OGS_ERROR;
             }
             break;
 
         default:
-            ogs_error("invalid stage[%d]", stage);
+            ogs_error("invalid stage[%d] type[%d]", stage, hdesc->type);
             ogs_pkbuf_free(pkbuf);
             return OGS_ERROR;
         }
     } else {
-        ogs_error("invalid org[%d]", xact->org);
+        ogs_error("invalid org[%d] type[%d]", xact->org, hdesc->type);
         ogs_pkbuf_free(pkbuf);
         return OGS_ERROR;
     }
@@ -296,7 +296,7 @@ int ogs_pfcp_xact_update_rx(ogs_pfcp_xact_t *xact, uint8_t type)
                 ogs_pkbuf_t *pkbuf = NULL;
 
                 if (xact->step != 2 && xact->step != 3) {
-                    ogs_error("invalid step[%d]", xact->step);
+                    ogs_error("invalid step[%d] type[%d]", xact->step, type);
                     ogs_pkbuf_free(pkbuf);
                     return OGS_ERROR;
                 }
@@ -335,7 +335,7 @@ int ogs_pfcp_xact_update_rx(ogs_pfcp_xact_t *xact, uint8_t type)
             }
 
             if (xact->step != 1) {
-                ogs_error("invalid step[%d]", xact->step);
+                ogs_error("invalid step[%d] type[%d]", xact->step, type);
                 return OGS_ERROR;
             }
 
@@ -347,7 +347,7 @@ int ogs_pfcp_xact_update_rx(ogs_pfcp_xact_t *xact, uint8_t type)
 
         case PFCP_XACT_FINAL_STAGE:
             if (xact->step != 1) {
-                ogs_error("invalid step[%d]", xact->step);
+                ogs_error("invalid step[%d] type[%d]", xact->step, type);
                 return OGS_ERROR;
             }
             break;
@@ -363,7 +363,7 @@ int ogs_pfcp_xact_update_rx(ogs_pfcp_xact_t *xact, uint8_t type)
                 ogs_pkbuf_t *pkbuf = NULL;
 
                 if (xact->step != 1 && xact->step != 2) {
-                    ogs_error("invalid step[%d]", xact->step);
+                    ogs_error("invalid step[%d] type[%d]", xact->step, type);
                     return OGS_ERROR;
                 }
 
@@ -401,7 +401,7 @@ int ogs_pfcp_xact_update_rx(ogs_pfcp_xact_t *xact, uint8_t type)
             }
 
             if (xact->step != 0) {
-                ogs_error("invalid step[%d]", xact->step);
+                ogs_error("invalid step[%d] type[%d]", xact->step, type);
                 return OGS_ERROR;
             }
             if (xact->tm_holding)
@@ -416,7 +416,7 @@ int ogs_pfcp_xact_update_rx(ogs_pfcp_xact_t *xact, uint8_t type)
 
         case PFCP_XACT_FINAL_STAGE:
             if (xact->step != 2) {
-                ogs_error("invalid step[%d]", xact->step);
+                ogs_error("invalid step[%d] type[%d]", xact->step, type);
                 return OGS_ERROR;
             }
 
@@ -470,7 +470,7 @@ int ogs_pfcp_xact_commit(ogs_pfcp_xact_t *xact)
         switch (stage) {
         case PFCP_XACT_INITIAL_STAGE:
             if (xact->step != 1) {
-                ogs_error("invalid step[%d]", xact->step);
+                ogs_error("invalid step[%d] type[%d]", xact->step, type);
                 ogs_pfcp_xact_delete(xact);
                 return OGS_ERROR;
             }
@@ -488,7 +488,7 @@ int ogs_pfcp_xact_commit(ogs_pfcp_xact_t *xact)
 
         case PFCP_XACT_FINAL_STAGE:
             if (xact->step != 2 && xact->step != 3) {
-                ogs_error("invalid step[%d]", xact->step);
+                ogs_error("invalid step[%d] type[%d]", xact->step, type);
                 ogs_pfcp_xact_delete(xact);
                 return OGS_ERROR;
             }
@@ -500,7 +500,7 @@ int ogs_pfcp_xact_commit(ogs_pfcp_xact_t *xact)
             break;
 
         default:
-            ogs_error("invalid stage[%d]", stage);
+            ogs_error("invalid stage[%d] type[%d]", stage, type);
             ogs_pfcp_xact_delete(xact);
             return OGS_ERROR;
         }
@@ -513,7 +513,7 @@ int ogs_pfcp_xact_commit(ogs_pfcp_xact_t *xact)
 
         case PFCP_XACT_INTERMEDIATE_STAGE:
             if (xact->step != 2) {
-                ogs_error("invalid step[%d]", xact->step);
+                ogs_error("invalid step[%d] type[%d]", xact->step, type);
                 ogs_pfcp_xact_delete(xact);
                 return OGS_ERROR;
             }
@@ -525,7 +525,7 @@ int ogs_pfcp_xact_commit(ogs_pfcp_xact_t *xact)
 
         case PFCP_XACT_FINAL_STAGE:
             if (xact->step != 2 && xact->step != 3) {
-                ogs_error("invalid step[%d]", xact->step);
+                ogs_error("invalid step[%d] type[%d]", xact->step, type);
                 ogs_pfcp_xact_delete(xact);
                 return OGS_ERROR;
             }
@@ -537,12 +537,12 @@ int ogs_pfcp_xact_commit(ogs_pfcp_xact_t *xact)
             break;
 
         default:
-            ogs_error("invalid stage[%d]", stage);
+            ogs_error("invalid stage[%d] type[%d]", stage, type);
             ogs_pfcp_xact_delete(xact);
             return OGS_ERROR;
         }
     } else {
-        ogs_error("invalid org[%d]", xact->org);
+        ogs_error("invalid org[%d] type[%d]", xact->org, type);
         ogs_pfcp_xact_delete(xact);
         return OGS_ERROR;
     }

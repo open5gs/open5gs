@@ -41,6 +41,8 @@
 
 #define UPF_GTP_HANDLED     1
 
+static ogs_pkbuf_pool_t *packet_pool = NULL;
+
 static void upf_gtp_handle_multicast(ogs_pkbuf_t *recvbuf);
 static int upf_gtp_handle_slaac(upf_sess_t *sess, ogs_pkbuf_t *recvbuf);
 static int upf_gtp_send_router_advertisement(
@@ -53,10 +55,10 @@ static void _gtpv1_tun_recv_cb(short when, ogs_socket_t fd, void *data)
     ogs_pfcp_pdr_t *pdr = NULL;
     ogs_pfcp_user_plane_report_t report;
 
-    recvbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
+    recvbuf = ogs_pkbuf_alloc(packet_pool, OGS_MAX_PKT_LEN);
     ogs_assert(recvbuf);
     ogs_pkbuf_reserve(recvbuf, OGS_GTPV1U_5GC_HEADER_LEN);
-    ogs_pkbuf_put(recvbuf, OGS_MAX_SDU_LEN-OGS_GTPV1U_5GC_HEADER_LEN);
+    ogs_pkbuf_put(recvbuf, OGS_MAX_PKT_LEN-OGS_GTPV1U_5GC_HEADER_LEN);
 
     n = ogs_read(fd, recvbuf->data, recvbuf->len);
     if (n <= 0) {
@@ -102,9 +104,9 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
 
     ogs_assert(fd != INVALID_SOCKET);
 
-    pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
+    pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_PKT_LEN);
     ogs_assert(pkbuf);
-    ogs_pkbuf_put(pkbuf, OGS_MAX_SDU_LEN);
+    ogs_pkbuf_put(pkbuf, OGS_MAX_PKT_LEN);
 
     size = ogs_recvfrom(fd, pkbuf->data, pkbuf->len, 0, &from);
     if (size <= 0) {
@@ -256,6 +258,13 @@ int upf_gtp_open(void)
     ogs_sock_t *sock = NULL;
     int rc;
 
+    ogs_pkbuf_config_t config;
+    memset(&config, 0, sizeof config);
+
+    config.cluster_2048_pool = ogs_app()->pool.packet;
+
+    packet_pool = ogs_pkbuf_pool_create(&config);
+
     ogs_list_for_each(&upf_self()->gtpu_list, node) {
         sock = ogs_gtp_server(node);
         ogs_assert(sock);
@@ -333,6 +342,8 @@ void upf_gtp_close(void)
             ogs_pollset_remove(dev->poll);
         ogs_closesocket(dev->fd);
     }
+
+    ogs_pkbuf_pool_destroy(packet_pool);
 }
 
 static void upf_gtp_handle_multicast(ogs_pkbuf_t *recvbuf)

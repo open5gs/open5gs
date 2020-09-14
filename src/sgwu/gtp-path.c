@@ -43,9 +43,9 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
 
     ogs_assert(fd != INVALID_SOCKET);
 
-    pkbuf = ogs_pkbuf_alloc(packet_pool, OGS_MAX_SDU_LEN);
+    pkbuf = ogs_pkbuf_alloc(packet_pool, OGS_MAX_PKT_LEN);
     ogs_assert(pkbuf);
-    ogs_pkbuf_put(pkbuf, OGS_MAX_SDU_LEN);
+    ogs_pkbuf_put(pkbuf, OGS_MAX_PKT_LEN);
 
     size = ogs_recvfrom(fd, pkbuf->data, pkbuf->len, 0, &from);
     if (size <= 0) {
@@ -181,7 +181,7 @@ int sgwu_gtp_open(void)
     ogs_pkbuf_config_t config;
     memset(&config, 0, sizeof config);
 
-    config.cluster_8192_pool = ogs_app()->pool.packet;
+    config.cluster_2048_pool = ogs_app()->pool.packet;
 
     packet_pool = ogs_pkbuf_pool_create(&config);
 

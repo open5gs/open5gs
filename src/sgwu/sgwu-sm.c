@@ -45,8 +45,6 @@ void sgwu_state_operational(ogs_fsm_t *s, sgwu_event_t *e)
     ogs_pfcp_node_t *node = NULL;
     ogs_pfcp_xact_t *xact = NULL;
 
-    sgwu_bearer_t *bearer = NULL;
-
     sgwu_sm_debug(e);
 
     ogs_assert(s);
@@ -66,16 +64,6 @@ void sgwu_state_operational(ogs_fsm_t *s, sgwu_event_t *e)
     case OGS_FSM_EXIT_SIG:
         sgwu_pfcp_close();
         sgwu_gtp_close();
-        break;
-    case SGWU_EVT_LO_DLDATA_NOTI:
-        ogs_assert(e);
-
-        bearer = e->bearer;
-        ogs_assert(bearer);
-
-#if 0
-        sgwu_s11_handle_lo_dldata_notification(bearer);
-#endif
         break;
     case SGWU_EVT_SXA_MESSAGE:
         ogs_assert(e);

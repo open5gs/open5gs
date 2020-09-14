@@ -20,9 +20,15 @@ RUN apt-get update && \
         vim \
         sudo \
         iputils-ping \
-        wireshark \
         net-tools && \
     apt-get clean
+
+RUN apt-get update && \
+    apt-get install -y software-properties-common && \
+    sudo add-apt-repository ppa:wireshark-dev/stable -y && \
+    apt-get update && \
+    DEBIAN_FRONTEND=noninteractive \
+    apt-get install -y wireshark
 
 COPY setup.sh /root
 

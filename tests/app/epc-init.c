@@ -60,20 +60,18 @@ int app_initialize(const char *const argv[])
     if (ogs_app()->parameter.no_sgwu == 0)
         sgwu_thread = test_child_create("sgwu", argv_out);
 
-    /* Wait for PFCP association */
-    ogs_msleep(300);
-
     if (ogs_app()->parameter.no_smf == 0)
         smf_thread = test_child_create("smf", argv_out);
     if (ogs_app()->parameter.no_sgwc == 0)
         sgwc_thread = test_child_create("sgwc", argv_out);
+
     if (ogs_app()->parameter.no_mme == 0)
         mme_thread = test_child_create("mme", argv_out);
 
     /*
      * Wait for all sockets listening
      *
-     * Note that at least 1 second is needed if freeDiameter is running.
+     * Note that at least 4 seconds are needed if freeDiameter is running.
      */
     ogs_msleep(5000);
 
@@ -82,13 +80,14 @@ int app_initialize(const char *const argv[])
 
 void app_terminate(void)
 {
-    ogs_msleep(300);
-
     if (mme_thread) ogs_thread_destroy(mme_thread);
+
     if (sgwc_thread) ogs_thread_destroy(sgwc_thread);
     if (smf_thread) ogs_thread_destroy(smf_thread);
+
     if (sgwu_thread) ogs_thread_destroy(sgwu_thread);
     if (upf_thread) ogs_thread_destroy(upf_thread);
+
     if (hss_thread) ogs_thread_destroy(hss_thread);
     if (pcrf_thread) ogs_thread_destroy(pcrf_thread);
     if (nrf_thread) ogs_thread_destroy(nrf_thread);

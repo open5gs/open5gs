@@ -210,8 +210,8 @@ max:
 #    big:  8
 #
 # o Memory of Packet Buffering in UPF/SGW
-#   - Maximum Number of packet(SDU size = 8Kbytes) pool in UPF/SGW
-#   - UPF/SGW Memory Usage : 65536 * 8Kbytes = 512Mbytes
+#   - Maximum Number of packet(SDU size = 2Kbytes) pool in UPF/SGW
+#   - UPF/SGW Memory Usage : 32768 * 2Kbytes = 64Mbytes
 #
-#   packet: 65536
+#   packet: 32768
 pool:

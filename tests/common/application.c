@@ -72,8 +72,6 @@ void test_app_run(int argc, const char *const argv[],
 
     rv = test_context_parse_config();
     ogs_assert(rv == OGS_OK);
-
-    ogs_msleep(500); /* Wait for listening all sockets */
 }
 
 #define MAX_CHILD_PROCESS               16

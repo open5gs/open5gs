@@ -57,6 +57,11 @@ $ meson build --prefix=`pwd`/install
 $ ninja -C build
 ```
 
+Please free up enough memory space on the VM and run the test program.
+
+The test program has been run on [VirtualBox - CPU: 1, Memory: 4.00 GB] and [Docker for Mac - CPU: 2, Memory: 2.00 GB] with default setting (max.ue: 4,096, pool.packet: 32,768).
+{: .notice--danger}
+
 Check whether the compilation is correct.
 ```bash
 $ ./build/tests/attach/attach ## EPC Only

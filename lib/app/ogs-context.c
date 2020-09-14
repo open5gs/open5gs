@@ -179,7 +179,7 @@ static void app_context_prepare(void)
     self.max.gnb = MAX_NUM_OF_GNB;
     self.max.ue = MAX_NUM_OF_UE;
 
-#define MAX_NUM_OF_PACKET_POOL      65536
+#define MAX_NUM_OF_PACKET_POOL      32768
     self.pool.packet = MAX_NUM_OF_PACKET_POOL;
 
     ogs_pkbuf_default_init(&self.pool.defconfig);
