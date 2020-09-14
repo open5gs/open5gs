@@ -306,6 +306,12 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e)
             break;
 
         case OGS_NAS_5GS_UL_NAS_TRANSPORT:
+            if (!h.integrity_protected || !SECURITY_CONTEXT_IS_VALID(amf_ue)) {
+                ogs_error("No Security Context");
+                OGS_FSM_TRAN(s, gmm_state_exception);
+                break;
+            }
+
             gmm_handle_ul_nas_transport(
                     amf_ue, &nas_message->gmm.ul_nas_transport);
             break;
