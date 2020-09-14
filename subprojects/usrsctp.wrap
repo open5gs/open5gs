@@ -1,4 +1,4 @@
 [wrap-git]
 directory = usrsctp
 url = https://github.com/sctplab/usrsctp.git
-revision = 09768bfcf22f91f6e43f0e692fc612564621d02f
+revision = 995c0b84414466d77d52011e5b572cbe213b770a
