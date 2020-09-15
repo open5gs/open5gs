@@ -91,7 +91,7 @@ ogs_pkbuf_t *smf_n4_build_session_establishment_request(
         i++;
     }
 
-    /* DEBUG : PDN-TYPE */
+#if ENABLE_PDN_TYPE_DEBUG
     if (sess->pdn.paa.pdn_type == OGS_GTP_PDN_TYPE_IPV4) {
         /* Nothing */
     } else if (sess->pdn.paa.pdn_type == OGS_GTP_PDN_TYPE_IPV6) {
@@ -112,6 +112,7 @@ ogs_pkbuf_t *smf_n4_build_session_establishment_request(
             sess->ipv4 ? OGS_INET_NTOP(&sess->ipv4->addr, buf1) : "",
             sess->ipv6 ? OGS_INET6_NTOP(&sess->ipv6->addr, buf2) : "");
     }
+#endif
 
     /* PDN Type */
     req->pdn_type.presence = 1;
@@ -122,7 +123,7 @@ ogs_pkbuf_t *smf_n4_build_session_establishment_request(
 
     ogs_pfcp_pdrbuf_clear();
 
-    /* DEBUG : PDN-TYPE */
+#if ENABLE_PDN_TYPE_DEBUG
     if (sess->pdn.paa.pdn_type == OGS_GTP_PDN_TYPE_IPV4) {
         /* Nothing */
     } else if (sess->pdn.paa.pdn_type == OGS_GTP_PDN_TYPE_IPV6) {
@@ -143,6 +144,7 @@ ogs_pkbuf_t *smf_n4_build_session_establishment_request(
             sess->ipv4 ? OGS_INET_NTOP(&sess->ipv4->addr, buf1) : "",
             sess->ipv6 ? OGS_INET6_NTOP(&sess->ipv6->addr, buf2) : "");
     }
+#endif
 
     return pkbuf;
 }

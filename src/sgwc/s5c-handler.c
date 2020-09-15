@@ -159,16 +159,12 @@ void sgwc_s5c_handle_create_session_response(
             /* Nothing */
         } else {
             ogs_error("Unknown PDN Type %u", paa.pdn_type);
-#if 0 /* MME will handle this error */
             cause_value = OGS_GTP_CAUSE_MANDATORY_IE_INCORRECT;
-#endif
         }
 
     } else {
         ogs_error("No PDN Address Allocation");
-#if 0 /* MME will handle this error */
         cause_value = OGS_GTP_CAUSE_MANDATORY_IE_MISSING;
-#endif
     }
 
     if (cause_value != OGS_GTP_CAUSE_REQUEST_ACCEPTED) {

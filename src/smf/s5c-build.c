@@ -75,7 +75,7 @@ ogs_pkbuf_t *smf_s5c_build_create_session_response(
     rsp->pgw_s5_s8__s2a_s2b_f_teid_for_pmip_based_interface_or_for_gtp_based_control_plane_interface.
         len = len;
 
-    /* DEBUG : PDN-TYPE */
+#if ENABLE_PDN_TYPE_DEBUG
     if (sess->pdn.paa.pdn_type == OGS_GTP_PDN_TYPE_IPV4) {
         /* Nothing */
     } else if (sess->pdn.paa.pdn_type == OGS_GTP_PDN_TYPE_IPV6) {
@@ -96,6 +96,7 @@ ogs_pkbuf_t *smf_s5c_build_create_session_response(
             sess->ipv4 ? OGS_INET_NTOP(&sess->ipv4->addr, buf1) : "",
             sess->ipv6 ? OGS_INET6_NTOP(&sess->ipv6->addr, buf2) : "");
     }
+#endif
 
     /* PDN Address Allocation */
     rsp->pdn_address_allocation.data = &sess->pdn.paa;

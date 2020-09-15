@@ -163,7 +163,7 @@ void smf_gx_handle_cca_initial_request(
 
     smf_epc_pfcp_send_session_establishment_request(sess, gtp_xact);
 
-    /* DEBUG : PDN-TYPE */
+#if ENABLE_PDN_TYPE_DEBUG
     if (sess->pdn.paa.pdn_type == OGS_GTP_PDN_TYPE_IPV4) {
         /* Nothing */
     } else if (sess->pdn.paa.pdn_type == OGS_GTP_PDN_TYPE_IPV6) {
@@ -184,6 +184,7 @@ void smf_gx_handle_cca_initial_request(
             sess->ipv4 ? OGS_INET_NTOP(&sess->ipv4->addr, buf1) : "",
             sess->ipv6 ? OGS_INET6_NTOP(&sess->ipv6->addr, buf2) : "");
     }
+#endif
 }
 
 void smf_gx_handle_cca_termination_request(
