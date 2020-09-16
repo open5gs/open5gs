@@ -740,7 +740,7 @@ Please refer to instructions at [https://open5gs.org/open5gs/docs/guide/02-build
 If you are using OpenStack, installing Open5GS and Kamailio IMS on the same machine is very important because the **Framed-IP-Address** in the AAR request via Rx interface takes received IP address and port in ims_qos module, hence, if the Open5GS is on a separate VM/machine, the IP and port received in received_ip and received_port values seen by Kamailio IMS will be the NATed IP of the Open5GS machine resulting in failing of AAR request.
 {: .notice--danger}
 
-Modify below mentioned parts of configuration files in addition to **Configure Open5GS** section. For reference, look at the configuration files at [https://github.com/herlesupreeth/Open5gs_Config](https://github.com/herlesupreeth/Open5gs_Config)
+Modify below mentioned parts of configuration files in addition to **Configure Open5GS** section. For reference, look at the configuration files at [https://github.com/herlesupreeth/Open5gs_Config](https://github.com/herlesupreeth/Open5gs_Config). These configuration only holds for open5gs tag v1.3.0, please tweak configuration files based on the open5gs tag you use.
 {: .notice--warning}
 
 - Change realm of components to `epc.mnc001.mcc001.3gppnetwork.org`
@@ -772,8 +772,6 @@ ip addr add 192.168.101.1/24 dev ogstun2
 ip addr add fd1f:76f3:da9b:0101::/64 dev ogstun2
 ip link set ogstun2 mtu 1400
 ip link set ogstun2 up
-iptables -t nat -A POSTROUTING -s 192.168.101.0/24 ! -o ogstun2 -j MASQUERADE
-ip6tables -t nat -A POSTROUTING -s fd1f:76f3:da9b:0101::/64 ! -o ogstun2 -j MASQUERADE
 iptables -I INPUT -i ogstun2 -j ACCEPT
 ip6tables -I INPUT -i ogstun2 -j ACCEPT
 ```
@@ -782,14 +780,14 @@ Add users with following APN settings in Open5GS:
 
 <pre>
 APN Configuration:
--------------------------------------------------------------------------------------------------------------------------
-| APN      | QCI | ARP | Capability | Vulnerablility | MBR DL/UL(Kbps)     | GBR DL/UL(Kbps) | PGW IP        |
--------------------------------------------------------------------------------------------------------------------------
-| internet | 9   | 8   | Disabled   | Disabled       | unlimited/unlimited |                 |               |           
--------------------------------------------------------------------------------------------------------------------------
-| ims      | 5   | 1   | Disabled   | Disabled       | 3850/1530           |                 |               |           
-|          | 1   | 2   | Enabled    | Enabled        | 128/128             | 128/128         |               |
--------------------------------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------------------------
+| APN      | Type | QCI | ARP | Capability | Vulnerablility | MBR DL/UL(Kbps)     | GBR DL/UL(Kbps) | PGW IP        |
+---------------------------------------------------------------------------------------------------------------------
+| internet | IPv4 | 9   | 8   | Disabled   | Disabled       | unlimited/unlimited |                 |               |
+---------------------------------------------------------------------------------------------------------------------
+| ims      | IPv4 | 5   | 1   | Disabled   | Disabled       | 3850/1530           |                 |               |
+|          |      | 1   | 2   | Enabled    | Enabled        | 128/128             | 128/128         |               |
+---------------------------------------------------------------------------------------------------------------------
 </pre>
 
 Finally, make sure of the following in Open5GS
@@ -873,8 +871,7 @@ $ cd /opt/OpenIMSCore
 Download:
 
 ```
-$ svn checkout svn://svn.code.sf.net/p/openimscore/code/FHoSS/trunk
-$ mv trunk FHoSS
+$ git clone https://github.com/herlesupreeth/FHoSS
 ```
 
 Compile:
