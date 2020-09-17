@@ -3,6 +3,66 @@ title: Now in the Github Issue
 head_inline: "<style> .blue { color: blue; } </style>"
 ---
 
+#### How to change UE IP Pool
+
+The Open5GS package contains a systemd-networkd configuration file for `ogstun`. Therefore, you must first modify the configuration file as follows.
+
+```diff
+$ diff -u /etc/systemd/network/99-open5gs.network /etc/systemd/network/99-open5gs.network.new
+--- /etc/systemd/network/99-open5gs.network	2020-09-17 09:29:09.137392040 -0400
++++ /etc/systemd/network/99-open5gs.network.new	2020-09-17 09:29:03.375719620 -0400
+@@ -2,5 +2,5 @@
+ Name=ogstun
+
+ [Network]
+-Address=10.45.0.1/16
++Address=10.46.0.1/16
+ Address=cafe::1/64
+```
+
+Restart systemd-networkd
+```
+$ sudo systemctl restart systemd-networkd
+```
+
+Now, you need to modify the configuration file of Open5GS to adjust the UE IP Pool. UE IP Pool can be allocated by SMF or UPF, but in this tutorial, we will modify both configuration files.
+
+```diff
+$ diff -u smf.yaml smf.yaml.new
+--- smf.yaml	2020-09-17 09:31:16.547882093 -0400
++++ smf.yaml.new	2020-09-17 09:32:18.267726844 -0400
+@@ -190,7 +190,7 @@
+       - addr: 127.0.0.4
+       - addr: ::1
+     pdn:
+-      - addr: 10.45.0.1/16
++      - addr: 10.46.0.1/16
+       - addr: cafe::1/64
+     dns:
+       - 8.8.8.8
+```
+
+```diff
+$ diff -u upf.yaml upf.yaml.new
+--- upf.yaml	2020-09-17 09:31:16.547882093 -0400
++++ upf.yaml.new	2020-09-17 09:32:25.199619989 -0400
+@@ -139,7 +139,7 @@
+     gtpu:
+       - addr: 127.0.0.7
+     pdn:
+-      - addr: 10.45.0.1/16
++      - addr: 10.46.0.1/16
+       - addr: cafe::1/64
+
+ #
+```
+
+Restart SMF/UPF
+```
+$ sudo systemctl restart open5gs-smfd.service
+$ sudo systemctl restart open5gs-upfd.service
+```
+
 #### Wireshark cannot decode NAS-5GS
 
 By default, wireshark cannot decode NAS-5GS message when the security header type is "Integrity protected and ciphered".

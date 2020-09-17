@@ -87,7 +87,7 @@ $ cd ../
 ### Configure Open5GS
 ---
 
-##### 5G Core(5GC)
+##### 5G Core
 
 Modify [install/etc/open5gs/amf.yaml](https://github.com/{{ site.github_username }}/open5gs/blob/master/configs/open5gs/amf.yaml.in) to set the NGAP IP address, PLMN ID, TAC and NSSAI.
 
@@ -146,7 +146,7 @@ $ diff -u /etc/open5gs/upf.yaml.old /etc/open5gs/upf.yaml
        - addr: 10.45.0.1/16
        - addr: cafe::1/64
 ```
-##### 4G/EPC
+##### 4G EPC
 
 Modify [install/etc/open5gs/mme.yaml](https://github.com/{{ site.github_username }}/open5gs/blob/master/configs/open5gs/mme.yaml.in) to set the S1AP IP address, PLMN ID, and TAC.
 
