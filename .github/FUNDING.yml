@@ -1,6 +1,7 @@
 # These are supported funding model platforms
 
-github: [acetcom, open5gs]
+#github: [acetcom, open5gs]
+github: acetcom
 #patreon: # Replace with a single Patreon username
 open_collective: open5gs
 #ko_fi: # Replace with a single Ko-fi username
