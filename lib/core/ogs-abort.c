@@ -28,11 +28,21 @@
 OGS_GNUC_NORETURN void ogs_abort(void)
 {
 #if HAVE_BACKTRACE
+    int i;
     int nptrs;
     void *buffer[100];
+    char **strings;
 
     nptrs = backtrace(buffer, OGS_ARRAY_SIZE(buffer));
-    backtrace_symbols_fd(buffer, nptrs, 2);
+    ogs_fatal("backtrace() returned %d addresses", nptrs);
+
+    strings = backtrace_symbols(buffer, nptrs);
+    if (strings) {
+        for (i = 1; i < nptrs; i++)
+            ogs_log_print(OGS_LOG_FATAL, "%s\n", strings[i]);
+
+        free(strings);
+    }
 
     abort();
 #elif defined(_WIN32)

@@ -177,6 +177,7 @@ ogs_pkbuf_t *ogs_pkbuf_alloc(ogs_pkbuf_pool_t *pool, unsigned int size)
     cluster = cluster_alloc(pool, size);
     if (!cluster) {
         ogs_error("ogs_pkbuf_alloc() failed [size=%d]", size);
+        ogs_thread_mutex_unlock(&pool->mutex);
         return NULL;
     }
     ogs_assert(cluster);
@@ -238,6 +239,11 @@ ogs_pkbuf_t *ogs_pkbuf_copy(ogs_pkbuf_t *pkbuf)
     ogs_thread_mutex_lock(&pool->mutex);
 
     ogs_pool_alloc(&pool->pkbuf, &newbuf);
+    if (!newbuf) {
+        ogs_error("ogs_pkbuf_copy() failed");
+        ogs_thread_mutex_unlock(&pool->mutex);
+        return NULL;
+    }
     ogs_assert(newbuf);
     memcpy(newbuf, pkbuf, sizeof *pkbuf);
 

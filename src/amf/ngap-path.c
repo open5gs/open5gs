@@ -367,6 +367,7 @@ void ngap_send_paging(amf_ue_t *amf_ue, NGAP_CNDomain_t cn_domain)
                 }
 
                 amf_ue->t3413.pkbuf = ogs_pkbuf_copy(ngapbuf);
+                ogs_assert(amf_ue->t3413.pkbuf);
 
                 rv = ngap_send_to_gnb(gnb, ngapbuf, NGAP_NON_UE_SIGNALLING);
                 ogs_expect(rv == OGS_OK);

@@ -128,7 +128,13 @@ void ogs_pfcp_up_handle_pdr(
     memset(report, 0, sizeof(*report));
 
     sendbuf = ogs_pkbuf_copy(recvbuf);
-    ogs_assert(sendbuf);
+    if (!sendbuf) {
+        ogs_error("CHECK CONFIGURATION : Not enough packet buffer");
+        ogs_error("pool");
+        ogs_error("    packet: 32768");
+
+        return;
+    }
 
     buffering = false;
 
