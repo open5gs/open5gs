@@ -164,6 +164,7 @@ void nas_eps_send_identity_request(mme_ue_t *mme_ue)
     }
 
     mme_ue->t3470.pkbuf = ogs_pkbuf_copy(emmbuf);
+    ogs_assert(mme_ue->t3470.pkbuf);
     ogs_timer_start(mme_ue->t3470.timer, 
             mme_timer_cfg(MME_TIMER_T3470)->duration);
 
@@ -191,6 +192,7 @@ void nas_eps_send_authentication_request(
     }
 
     mme_ue->t3460.pkbuf = ogs_pkbuf_copy(emmbuf);
+    ogs_assert(mme_ue->t3460.pkbuf);
     ogs_timer_start(mme_ue->t3460.timer, 
             mme_timer_cfg(MME_TIMER_T3460)->duration);
 
@@ -217,6 +219,7 @@ void nas_eps_send_security_mode_command(mme_ue_t *mme_ue)
     }
 
     mme_ue->t3460.pkbuf = ogs_pkbuf_copy(emmbuf);
+    ogs_assert(mme_ue->t3460.pkbuf);
     ogs_timer_start(mme_ue->t3460.timer, 
             mme_timer_cfg(MME_TIMER_T3460)->duration);
 
@@ -310,6 +313,7 @@ void nas_eps_send_esm_information_request(mme_bearer_t *bearer)
     }
 
     bearer->t3489.pkbuf = ogs_pkbuf_copy(esmbuf);
+    ogs_assert(bearer->t3489.pkbuf);
     ogs_timer_start(bearer->t3489.timer, 
             mme_timer_cfg(MME_TIMER_T3489)->duration);
 

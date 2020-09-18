@@ -350,6 +350,7 @@ void s1ap_send_paging(mme_ue_t *mme_ue, S1AP_CNDomain_t cn_domain)
                 }
 
                 mme_ue->t3413.pkbuf = ogs_pkbuf_copy(s1apbuf);
+                ogs_assert(mme_ue->t3413.pkbuf);
 
                 rv = s1ap_send_to_enb(enb, s1apbuf, S1AP_NON_UE_SIGNALLING);
                 ogs_expect(rv == OGS_OK);

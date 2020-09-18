@@ -1516,6 +1516,7 @@ static int parse_multipart(
                 http->part[http->num_of_part].content_type;
             message->part[message->num_of_part].pkbuf =
                 ogs_pkbuf_copy(http->part[http->num_of_part].pkbuf);
+            ogs_assert(message->part[message->num_of_part].pkbuf);
 
             http->num_of_part++;
             message->num_of_part++;
