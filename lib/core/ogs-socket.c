@@ -220,23 +220,14 @@ ssize_t ogs_read(ogs_socket_t fd, void *buf, size_t len)
 
 ssize_t ogs_send(ogs_socket_t fd, const void *buf, size_t len, int flags)
 {
-    ssize_t size;
-
     ogs_assert(fd != INVALID_SOCKET);
 
-    size = send(fd, buf, len, flags);
-    if (size < 0) {
-        ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,
-                "send(len:%d) failed", (int)len);
-    }
-
-    return size;
+    return send(fd, buf, len, flags);
 }
 
 ssize_t ogs_sendto(ogs_socket_t fd,
         const void *buf, size_t len, int flags, const ogs_sockaddr_t *to)
 {
-    ssize_t size;
     socklen_t addrlen;
 
     ogs_assert(fd != INVALID_SOCKET);
@@ -245,13 +236,7 @@ ssize_t ogs_sendto(ogs_socket_t fd,
     addrlen = ogs_sockaddr_len(to);
     ogs_assert(addrlen);
 
-    size = sendto(fd, buf, len, flags, &to->sa, addrlen);
-    if (size < 0) {
-        ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,
-                "sendto(len:%d) failed", (int)len);
-    }
-
-    return size;
+    return sendto(fd, buf, len, flags, &to->sa, addrlen);
 }
 
 ssize_t ogs_recv(ogs_socket_t fd, void *buf, size_t len, int flags)

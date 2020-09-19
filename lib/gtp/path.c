@@ -88,7 +88,10 @@ int ogs_gtp_send(ogs_gtp_node_t *gnode, ogs_pkbuf_t *pkbuf)
 
     sent = ogs_send(sock->fd, pkbuf->data, pkbuf->len, 0);
     if (sent < 0 || sent != pkbuf->len) {
-        ogs_error("ogs_send() failed");
+        if (ogs_socket_errno != OGS_EAGAIN) {
+            ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,
+                    "ogs_gtp_send() failed");
+        }
         return OGS_ERROR;
     }
 
@@ -110,7 +113,10 @@ int ogs_gtp_sendto(ogs_gtp_node_t *gnode, ogs_pkbuf_t *pkbuf)
 
     sent = ogs_sendto(sock->fd, pkbuf->data, pkbuf->len, 0, addr);
     if (sent < 0 || sent != pkbuf->len) {
-        ogs_error("ogs_send() failed");
+        if (ogs_socket_errno != OGS_EAGAIN) {
+            ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,
+                    "ogs_gtp_sendto() failed");
+        }
         return OGS_ERROR;
     }
 

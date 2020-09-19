@@ -89,7 +89,8 @@ int ogs_pfcp_send(ogs_pfcp_node_t *node, ogs_pkbuf_t *pkbuf)
 
     sent = ogs_send(sock->fd, pkbuf->data, pkbuf->len, 0);
     if (sent < 0 || sent != pkbuf->len) {
-        ogs_error("ogs_send() failed");
+        ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,
+                "ogs_pfcp_send() failed");
         return OGS_ERROR;
     }
 
@@ -111,7 +112,8 @@ int ogs_pfcp_sendto(ogs_pfcp_node_t *node, ogs_pkbuf_t *pkbuf)
 
     sent = ogs_sendto(sock->fd, pkbuf->data, pkbuf->len, 0, addr);
     if (sent < 0 || sent != pkbuf->len) {
-        ogs_error("ogs_sendto() failed");
+        ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,
+                "ogs_pfcp_sendto() failed");
         return OGS_ERROR;
     }
 
@@ -327,8 +329,12 @@ void ogs_pfcp_send_g_pdu(ogs_pfcp_pdr_t *pdr, ogs_pkbuf_t *sendbuf)
     ogs_debug("SEND G-PDU to Peer[%s] : TEID[0x%x]",
         OGS_ADDR(&gnode->addr, buf), far->outer_header_creation.teid);
     rv = ogs_gtp_sendto(gnode, sendbuf);
-    if (rv != OGS_OK)
-        ogs_error("ogs_gtp_sendto() failed");
+    if (rv != OGS_OK) {
+        if (ogs_socket_errno != OGS_EAGAIN) {
+            ogs_error("SEND G-PDU to Peer[%s] : TEID[0x%x]",
+                OGS_ADDR(&gnode->addr, buf), far->outer_header_creation.teid);
+        }
+    }
 
     ogs_pkbuf_free(sendbuf);
 }
@@ -407,8 +413,12 @@ void ogs_pfcp_send_end_marker(ogs_pfcp_pdr_t *pdr)
     ogs_debug("SEND End Marker to Peer[%s] : TEID[0x%x]",
         OGS_ADDR(&gnode->addr, buf), far->outer_header_creation.teid);
     rv = ogs_gtp_sendto(gnode, sendbuf);
-    if (rv != OGS_OK)
-        ogs_error("ogs_gtp_sendto() failed");
+    if (rv != OGS_OK) {
+        if (ogs_socket_errno != OGS_EAGAIN) {
+            ogs_error("SEND End Marker to Peer[%s] : TEID[0x%x]",
+                OGS_ADDR(&gnode->addr, buf), far->outer_header_creation.teid);
+        }
+    }
 
     ogs_pkbuf_free(sendbuf);
 }
