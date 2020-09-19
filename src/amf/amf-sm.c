@@ -742,6 +742,9 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
                 ngap_send_ran_ue_context_release_command(amf_ue->ran_ue,
                         NGAP_Cause_PR_nas, NGAP_CauseNas_normal_release,
                         NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE, 0);
+                
+                /* gmm is invalid in the old ng context, so the gmm state tran to gmm_state_de_registered */
+                OGS_FSM_TRAN(amf_ue->sm, &gmm_state_de_registered);
             }
             amf_ue_associate_ran_ue(amf_ue, ran_ue);
         }
