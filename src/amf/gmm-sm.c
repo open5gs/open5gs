@@ -199,6 +199,8 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e)
                 ogs_error("gmm_handle_service_update() failed");
                 OGS_FSM_TRAN(s, gmm_state_exception);
             }
+
+            OGS_FSM_TRAN(s, gmm_state_registered);
             break;
 
         case OGS_NAS_5GS_IDENTITY_RESPONSE:

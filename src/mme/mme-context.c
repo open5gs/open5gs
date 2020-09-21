@@ -2199,7 +2199,6 @@ mme_ue_t *mme_ue_add(enb_ue_t *enb_ue)
 {
     mme_enb_t *enb = NULL;
     mme_ue_t *mme_ue = NULL;
-    mme_event_t e;
 
     char buf[OGS_ADDRSTRLEN];
 
@@ -2256,11 +2255,7 @@ mme_ue_t *mme_ue_add(enb_ue_t *enb_ue)
             ogs_app()->timer_mgr, mme_timer_t3470_expire, mme_ue);
     mme_ue->t3470.pkbuf = NULL;
 
-    /* Create FSM */
-    memset(&e, 0, sizeof(e));
-    e.mme_ue = mme_ue;
-    ogs_fsm_create(&mme_ue->sm, emm_state_initial, emm_state_final);
-    ogs_fsm_init(&mme_ue->sm, &e);
+    mme_ue_fsm_init(mme_ue);
 
     ogs_list_add(&self.mme_ue_list, mme_ue);
 
@@ -2272,16 +2267,11 @@ mme_ue_t *mme_ue_add(enb_ue_t *enb_ue)
 
 void mme_ue_remove(mme_ue_t *mme_ue)
 {
-    mme_event_t e;
-
     ogs_assert(mme_ue);
 
     ogs_list_remove(&self.mme_ue_list, mme_ue);
 
-    memset(&e, 0, sizeof(e));
-    e.mme_ue = mme_ue;
-    ogs_fsm_fini(&mme_ue->sm, &e);
-    ogs_fsm_delete(&mme_ue->sm);
+    mme_ue_fsm_fini(mme_ue);
 
     /* Clear hash table */
     if (mme_ue->m_tmsi) {
@@ -2325,12 +2315,36 @@ void mme_ue_remove(mme_ue_t *mme_ue)
             ogs_list_count(&self.mme_ue_list));
 }
 
-void mme_ue_remove_all()
+void mme_ue_remove_all(void)
 {
     mme_ue_t *mme_ue = NULL, *next = NULL;;
 
     ogs_list_for_each_safe(&self.mme_ue_list, next, mme_ue)
         mme_ue_remove(mme_ue);
+}
+
+void mme_ue_fsm_init(mme_ue_t *mme_ue)
+{
+    mme_event_t e;
+
+    ogs_assert(mme_ue);
+
+    memset(&e, 0, sizeof(e));
+    e.mme_ue = mme_ue;
+    ogs_fsm_create(&mme_ue->sm, emm_state_initial, emm_state_final);
+    ogs_fsm_init(&mme_ue->sm, &e);
+}
+
+void mme_ue_fsm_fini(mme_ue_t *mme_ue)
+{
+    mme_event_t e;
+
+    ogs_assert(mme_ue);
+
+    memset(&e, 0, sizeof(e));
+    e.mme_ue = mme_ue;
+    ogs_fsm_fini(&mme_ue->sm, &e);
+    ogs_fsm_delete(&mme_ue->sm);
 }
 
 mme_ue_t *mme_ue_find_by_imsi_bcd(char *imsi_bcd)

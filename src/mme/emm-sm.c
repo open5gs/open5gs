@@ -153,6 +153,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
             }
 
             s1ap_send_initial_context_setup_request(mme_ue);
+            OGS_FSM_TRAN(s, &emm_state_registered);
             break;
         }
 
@@ -274,6 +275,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
             } else {
                 ogs_fatal("Invalid Procedure Code[%d]", (int)e->s1ap_code);
             }
+            OGS_FSM_TRAN(s, &emm_state_registered);
 
             break;
 

@@ -690,6 +690,9 @@ mme_ue_t *mme_ue_add(enb_ue_t *enb_ue);
 void mme_ue_remove(mme_ue_t *mme_ue);
 void mme_ue_remove_all(void);
 
+void mme_ue_fsm_init(mme_ue_t *mme_ue);
+void mme_ue_fsm_fini(mme_ue_t *mme_ue);
+
 mme_ue_t *mme_ue_find_by_imsi(uint8_t *imsi, int imsi_len);
 mme_ue_t *mme_ue_find_by_imsi_bcd(char *imsi_bcd);
 mme_ue_t *mme_ue_find_by_guti(ogs_nas_eps_guti_t *nas_guti);

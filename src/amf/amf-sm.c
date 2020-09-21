@@ -742,6 +742,26 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
                 ngap_send_ran_ue_context_release_command(amf_ue->ran_ue,
                         NGAP_Cause_PR_nas, NGAP_CauseNas_normal_release,
                         NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE, 0);
+
+/*
+ * Pull #569 : State should be initialized again.
+ *
+ * However, we cannot initialize the state in all cases.
+ *
+ * In TS24.501 Ch 5.5.1.3.8 Abnormal cases on the network side
+ *
+ * d) REGISTRATION REQUEST with 5GS registration type IE set to
+ * "mobility registration updating" or "periodic registration updating"
+ * received after the REGISTRATION ACCEPT message has been sent and
+ * before the REGISTRATION COMPLETE message is received.
+ *
+ * Since, we have to do this special case, it is desirable
+ * to handle it directly inside the state(gmm-sm.c).
+ */
+#if 0
+                amf_ue_fsm_fini(amf_ue);
+                amf_ue_fsm_init(amf_ue);
+#endif
             }
             amf_ue_associate_ran_ue(amf_ue, ran_ue);
         }

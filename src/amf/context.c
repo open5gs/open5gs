@@ -1102,7 +1102,6 @@ amf_ue_t *amf_ue_add(ran_ue_t *ran_ue)
 {
     amf_gnb_t *gnb = NULL;
     amf_ue_t *amf_ue = NULL;
-    amf_event_t e;
 
     ogs_assert(ran_ue);
     gnb = ran_ue->gnb;
@@ -1142,11 +1141,7 @@ amf_ue_t *amf_ue_add(ran_ue_t *ran_ue)
             ogs_app()->timer_mgr, amf_timer_t3570_expire, amf_ue);
     amf_ue->t3570.pkbuf = NULL;
 
-    /* Create FSM */
-    memset(&e, 0, sizeof(e));
-    e.amf_ue = amf_ue;
-    ogs_fsm_create(&amf_ue->sm, gmm_state_initial, gmm_state_final);
-    ogs_fsm_init(&amf_ue->sm, &e);
+    amf_ue_fsm_init(amf_ue);
 
     ogs_list_add(&self.amf_ue_list, amf_ue);
 
@@ -1159,16 +1154,12 @@ amf_ue_t *amf_ue_add(ran_ue_t *ran_ue)
 void amf_ue_remove(amf_ue_t *amf_ue)
 {
     int i;
-    amf_event_t e;
 
     ogs_assert(amf_ue);
 
     ogs_list_remove(&self.amf_ue_list, amf_ue);
 
-    memset(&e, 0, sizeof(e));
-    e.amf_ue = amf_ue;
-    ogs_fsm_fini(&amf_ue->sm, &e);
-    ogs_fsm_delete(&amf_ue->sm);
+    amf_ue_fsm_fini(amf_ue);
 
     /* Clear hash table */
     if (amf_ue->m_tmsi) {
@@ -1230,6 +1221,30 @@ void amf_ue_remove_all()
 
     ogs_list_for_each_safe(&self.amf_ue_list, next, amf_ue)
         amf_ue_remove(amf_ue);
+}
+
+void amf_ue_fsm_init(amf_ue_t *amf_ue)
+{
+    amf_event_t e;
+
+    ogs_assert(amf_ue);
+
+    memset(&e, 0, sizeof(e));
+    e.amf_ue = amf_ue;
+    ogs_fsm_create(&amf_ue->sm, gmm_state_initial, gmm_state_final);
+    ogs_fsm_init(&amf_ue->sm, &e);
+}
+
+void amf_ue_fsm_fini(amf_ue_t *amf_ue)
+{
+    amf_event_t e;
+
+    ogs_assert(amf_ue);
+
+    memset(&e, 0, sizeof(e));
+    e.amf_ue = amf_ue;
+    ogs_fsm_fini(&amf_ue->sm, &e);
+    ogs_fsm_delete(&amf_ue->sm);
 }
 
 amf_ue_t *amf_ue_find_by_guti(ogs_nas_5gs_guti_t *guti)

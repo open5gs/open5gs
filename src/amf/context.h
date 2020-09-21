@@ -489,6 +489,9 @@ amf_ue_t *amf_ue_add(ran_ue_t *ran_ue);
 void amf_ue_remove(amf_ue_t *amf_ue);
 void amf_ue_remove_all(void);
 
+void amf_ue_fsm_init(amf_ue_t *amf_ue);
+void amf_ue_fsm_fini(amf_ue_t *amf_ue);
+
 amf_ue_t *amf_ue_find_by_guti(ogs_nas_5gs_guti_t *nas_guti);
 amf_ue_t *amf_ue_find_by_teid(uint32_t teid);
 amf_ue_t *amf_ue_find_by_suci(char *suci);
