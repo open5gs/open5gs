@@ -324,6 +324,9 @@ void ngap_send_ran_ue_context_release_command(
 
     rv = ngap_delayed_send_to_ran_ue(ran_ue, ngapbuf, delay);
     ogs_expect(rv == OGS_OK);
+
+    ogs_timer_start(ran_ue->t_ng_holding,
+            amf_timer_cfg(AMF_TIMER_NG_HOLDING)->duration);
 }
 
 void ngap_send_amf_ue_context_release_command(
