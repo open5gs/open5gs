@@ -231,9 +231,6 @@ typedef struct ogs_pfcp_sess_s {
     OGS_POOL(urr_id_pool, uint8_t);
     OGS_POOL(qer_id_pool, uint8_t);
     OGS_POOL(bar_id_pool, uint8_t);
-
-    /* Related Context */
-    ogs_pfcp_pdr_t      *default_pdr;   /* Used by UPF */
 } ogs_pfcp_sess_t;
 
 typedef struct ogs_pfcp_subnet_s ogs_pfcp_subnet_t;
@@ -308,14 +305,12 @@ void ogs_pfcp_gtpu_resource_remove(ogs_list_t *list,
         ogs_pfcp_gtpu_resource_t *resource);
 void ogs_pfcp_gtpu_resource_remove_all(ogs_list_t *list);
 
-#define OGS_SETUP_DEFAULT_PDR(__sESS, __pDR) \
-    do { \
-        ogs_assert((__sESS)); \
-        ogs_assert((__pDR)); \
-        (__sESS)->default_pdr = __pDR; \
-        ogs_assert((__sESS)->default_pdr); \
-    } while(0)
-ogs_pfcp_pdr_t *ogs_pfcp_sess_default_pdr(ogs_pfcp_sess_t *sess);
+#define OGS_DEFAULT_DL_PDR(__sESS) \
+    ogs_pfcp_sess_default_pdr(__sESS, OGS_PFCP_INTERFACE_CORE)
+#define OGS_DEFAULT_UL_PDR(__sESS) \
+    ogs_pfcp_sess_default_pdr(__sESS, OGS_PFCP_INTERFACE_ACCESS)
+ogs_pfcp_pdr_t *ogs_pfcp_sess_default_pdr(
+        ogs_pfcp_sess_t *sess, ogs_pfcp_interface_t src_if);
 void ogs_pfcp_sess_clear(ogs_pfcp_sess_t *sess);
 
 ogs_pfcp_pdr_t *ogs_pfcp_pdr_add(ogs_pfcp_sess_t *sess);

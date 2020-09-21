@@ -362,8 +362,8 @@ int sgwu_context_parse_config(void)
     return OGS_OK;
 }
 
-sgwu_sess_t *sgwu_sess_add(ogs_pfcp_f_seid_t *cp_f_seid,
-        const char *apn, uint8_t pdn_type, ogs_pfcp_pdr_id_t default_pdr_id)
+sgwu_sess_t *sgwu_sess_add(
+        ogs_pfcp_f_seid_t *cp_f_seid, const char *apn, uint8_t pdn_type)
 {
     sgwu_sess_t *sess = NULL;
 
@@ -449,7 +449,6 @@ sgwu_sess_t *sgwu_sess_add_by_message(ogs_pfcp_message_t *message)
 
     ogs_pfcp_f_seid_t *f_seid = NULL;
     char apn[OGS_MAX_APN_LEN];
-    ogs_pfcp_pdr_id_t default_pdr_id = 0;
 
     ogs_pfcp_session_establishment_request_t *req =
         &message->pfcp_session_establishment_request;;
@@ -497,8 +496,7 @@ sgwu_sess_t *sgwu_sess_add_by_message(ogs_pfcp_message_t *message)
 
     sess = sgwu_sess_find_by_cp_seid(f_seid->seid);
     if (!sess) {
-        sess = sgwu_sess_add(
-                f_seid, apn, req->pdn_type.u8, default_pdr_id);
+        sess = sgwu_sess_add(f_seid, apn, req->pdn_type.u8);
         if (!sess) return NULL;
     }
     ogs_assert(sess);

@@ -106,52 +106,52 @@ int ogs_ipfw_compile_rule(ogs_ipfw_rule_t *ipfw_rule, char *flow_description)
         case O_IP_SRC:
         case O_IP_SRC_MASK:
             a = ((ipfw_insn_u32 *)cmd)->d;
-            ipfw_rule->ipv4_local = 1;
-            ipfw_rule->ip.local.addr[0] = a[0];
+            ipfw_rule->ipv4_src = 1;
+            ipfw_rule->ip.src.addr[0] = a[0];
             if (cmd->opcode == O_IP_SRC_MASK)
-                ipfw_rule->ip.local.mask[0] = a[1];
+                ipfw_rule->ip.src.mask[0] = a[1];
             else
-                ipfw_rule->ip.local.mask[0] = 0xffffffff;
+                ipfw_rule->ip.src.mask[0] = 0xffffffff;
             break;
         case O_IP_DST:
         case O_IP_DST_MASK:
             a = ((ipfw_insn_u32 *)cmd)->d;
-            ipfw_rule->ipv4_remote = 1;
-            ipfw_rule->ip.remote.addr[0] = a[0];
+            ipfw_rule->ipv4_dst = 1;
+            ipfw_rule->ip.dst.addr[0] = a[0];
             if (cmd->opcode == O_IP_DST_MASK)
-                ipfw_rule->ip.remote.mask[0] = a[1];
+                ipfw_rule->ip.dst.mask[0] = a[1];
             else
-                ipfw_rule->ip.remote.mask[0] = 0xffffffff;
+                ipfw_rule->ip.dst.mask[0] = 0xffffffff;
             break;
         case O_IP6_SRC:
         case O_IP6_SRC_MASK:
             a = ((ipfw_insn_u32 *)cmd)->d;
-            ipfw_rule->ipv6_local = 1;
-            memcpy(ipfw_rule->ip.local.addr, a, OGS_IPV6_LEN);
+            ipfw_rule->ipv6_src = 1;
+            memcpy(ipfw_rule->ip.src.addr, a, OGS_IPV6_LEN);
             if (cmd->opcode == O_IP6_SRC_MASK)
-                memcpy(ipfw_rule->ip.local.mask, a+4, OGS_IPV6_LEN);
+                memcpy(ipfw_rule->ip.src.mask, a+4, OGS_IPV6_LEN);
             else
-                n2mask((struct in6_addr *)ipfw_rule->ip.local.mask, 128);
+                n2mask((struct in6_addr *)ipfw_rule->ip.src.mask, 128);
             break;
         case O_IP6_DST:
         case O_IP6_DST_MASK:
             a = ((ipfw_insn_u32 *)cmd)->d;
-            ipfw_rule->ipv6_remote = 1;
-            memcpy(ipfw_rule->ip.remote.addr, a, OGS_IPV6_LEN);
+            ipfw_rule->ipv6_dst = 1;
+            memcpy(ipfw_rule->ip.dst.addr, a, OGS_IPV6_LEN);
             if (cmd->opcode == O_IP6_DST_MASK)
-                memcpy(ipfw_rule->ip.remote.mask, a+4, OGS_IPV6_LEN);
+                memcpy(ipfw_rule->ip.dst.mask, a+4, OGS_IPV6_LEN);
             else
-                n2mask((struct in6_addr *)ipfw_rule->ip.remote.mask, 128);
+                n2mask((struct in6_addr *)ipfw_rule->ip.dst.mask, 128);
             break;
         case O_IP_SRCPORT:
             p = ((ipfw_insn_u16 *)cmd)->ports;
-            ipfw_rule->port.local.low = p[0];
-            ipfw_rule->port.local.high = p[1];
+            ipfw_rule->port.src.low = p[0];
+            ipfw_rule->port.src.high = p[1];
             break;
         case O_IP_DSTPORT:
             p = ((ipfw_insn_u16 *)cmd)->ports;
-            ipfw_rule->port.remote.low = p[0];
-            ipfw_rule->port.remote.high = p[1];
+            ipfw_rule->port.dst.low = p[0];
+            ipfw_rule->port.dst.high = p[1];
             break;
         }
 	}
@@ -174,15 +174,34 @@ char *ogs_ipfw_encode_flow_description(ogs_ipfw_rule_t *ipfw_rule)
     char buf[OGS_ADDRSTRLEN];
     ogs_sockaddr_t sa;
     int prefixlen = 0;
+    ogs_ipfw_rule_t permit_out_rule;
 
     p = flow_description;
     last = flow_description + OGS_HUGE_LEN;
 
     ogs_assert(ipfw_rule);
+
+/*
+ * Issue #338
+ *
+ * <DOWNLINK>
+ * RULE : Source <P-CSCF_RTP_IP> <P-CSCF_RTP_PORT> Destination <UE_IP> <UE_PORT>
+ * -->
+ * GX : permit out from <P-CSCF_RTP_IP> <P-CSCF_RTP_PORT> to <UE_IP> <UE_PORT>
+ * PFCP : permit out from <P-CSCF_RTP_IP> <P-CSCF_RTP_PORT> to <UE_IP> <UE_PORT>
+ *
+ * <UPLINK>
+ * RULE : Source <UE_IP> <UE_PORT> Destination <P-CSCF_RTP_IP> <P-CSCF_RTP_PORT>
+ * -->
+ * GX : permit out from <P-CSCF_RTP_IP> <P-CSCF_RTP_PORT> to <UE_IP> <UE_PORT>
+ * PFCP : permit out from <P-CSCF_RTP_IP> <P-CSCF_RTP_PORT> to <UE_IP> <UE_PORT>
+ */
+    ogs_ipfw_copy_and_swap(&permit_out_rule, ipfw_rule);
+
     p = ogs_slprintf(p, last, "permit out");
 
-    if (ipfw_rule->proto) {
-        p = ogs_slprintf(p, last, " %d", ipfw_rule->proto);
+    if (permit_out_rule.proto) {
+        p = ogs_slprintf(p, last, " %d", permit_out_rule.proto);
     } else {
         p = ogs_slprintf(p, last, " ip");
     }
@@ -193,21 +212,21 @@ char *ogs_ipfw_encode_flow_description(ogs_ipfw_rule_t *ipfw_rule)
     p = ogs_slprintf(p, last, " from");
     memset(&sa, 0, sizeof(sa));
 
-    if (ipfw_rule->ipv4_local) {
+    if (permit_out_rule.ipv4_src) {
         sa.ogs_sa_family = AF_INET;
         memcpy(&sa.sin.sin_addr,
-                ipfw_rule->ip.local.addr, sizeof(struct in_addr));
+                permit_out_rule.ip.src.addr, sizeof(struct in_addr));
 
         OGS_ADDR(&sa, buf);
         prefixlen = contigmask(
-                (uint8_t *)ipfw_rule->ip.local.mask, IPV4_BITLEN);
+                (uint8_t *)permit_out_rule.ip.src.mask, IPV4_BITLEN);
 
         if (prefixlen < 0) {
             ogs_error("Invalid mask[%x:%x:%x:%x]",
-                    ipfw_rule->ip.local.mask[0],
-                    ipfw_rule->ip.local.mask[1],
-                    ipfw_rule->ip.local.mask[2],
-                    ipfw_rule->ip.local.mask[3]);
+                    permit_out_rule.ip.src.mask[0],
+                    permit_out_rule.ip.src.mask[1],
+                    permit_out_rule.ip.src.mask[2],
+                    permit_out_rule.ip.src.mask[3]);
             return NULL;
         } else if (prefixlen == 0) {
             p = ogs_slprintf(p, last, " any");
@@ -220,21 +239,21 @@ char *ogs_ipfw_encode_flow_description(ogs_ipfw_rule_t *ipfw_rule)
             ogs_assert_if_reached();
         }
 
-    } else if (ipfw_rule->ipv6_local) {
+    } else if (permit_out_rule.ipv6_src) {
         sa.ogs_sa_family = AF_INET6;
         memcpy(&sa.sin6.sin6_addr,
-                ipfw_rule->ip.local.addr, sizeof(struct in6_addr));
+                permit_out_rule.ip.src.addr, sizeof(struct in6_addr));
 
         OGS_ADDR(&sa, buf);
         prefixlen = contigmask(
-                (uint8_t *)ipfw_rule->ip.local.mask, IPV6_BITLEN);
+                (uint8_t *)permit_out_rule.ip.src.mask, IPV6_BITLEN);
 
         if (prefixlen < 0) {
             ogs_error("Invalid mask[%x:%x:%x:%x]",
-                    ipfw_rule->ip.local.mask[0],
-                    ipfw_rule->ip.local.mask[1],
-                    ipfw_rule->ip.local.mask[2],
-                    ipfw_rule->ip.local.mask[3]);
+                    permit_out_rule.ip.src.mask[0],
+                    permit_out_rule.ip.src.mask[1],
+                    permit_out_rule.ip.src.mask[2],
+                    permit_out_rule.ip.src.mask[3]);
             return NULL;
         } else if (prefixlen == 0) {
             p = ogs_slprintf(p, last, " any");
@@ -249,35 +268,35 @@ char *ogs_ipfw_encode_flow_description(ogs_ipfw_rule_t *ipfw_rule)
     } else
         p = ogs_slprintf(p, last, " any");
 
-    if (ipfw_rule->port.local.low == ipfw_rule->port.local.high) {
-        if (ipfw_rule->port.local.low == 0) {
+    if (permit_out_rule.port.src.low == permit_out_rule.port.src.high) {
+        if (permit_out_rule.port.src.low == 0) {
             /* Nothing */
         } else {
-            p = ogs_slprintf(p, last, " %d", ipfw_rule->port.local.low);
+            p = ogs_slprintf(p, last, " %d", permit_out_rule.port.src.low);
         }
     } else {
         p = ogs_slprintf(p, last, " %d-%d",
-                ipfw_rule->port.local.low, ipfw_rule->port.local.high);
+                permit_out_rule.port.src.low, permit_out_rule.port.src.high);
     }
 
     p = ogs_slprintf(p, last, " to");
     memset(&sa, 0, sizeof(sa));
 
-    if (ipfw_rule->ipv4_remote) {
+    if (permit_out_rule.ipv4_dst) {
         sa.ogs_sa_family = AF_INET;
         memcpy(&sa.sin.sin_addr,
-                ipfw_rule->ip.remote.addr, sizeof(struct in_addr));
+                permit_out_rule.ip.dst.addr, sizeof(struct in_addr));
 
         OGS_ADDR(&sa, buf);
         prefixlen = contigmask(
-                (uint8_t *)ipfw_rule->ip.remote.mask, IPV4_BITLEN);
+                (uint8_t *)permit_out_rule.ip.dst.mask, IPV4_BITLEN);
 
         if (prefixlen < 0) {
             ogs_error("Invalid mask[%x:%x:%x:%x]",
-                    ipfw_rule->ip.remote.mask[0],
-                    ipfw_rule->ip.remote.mask[1],
-                    ipfw_rule->ip.remote.mask[2],
-                    ipfw_rule->ip.remote.mask[3]);
+                    permit_out_rule.ip.dst.mask[0],
+                    permit_out_rule.ip.dst.mask[1],
+                    permit_out_rule.ip.dst.mask[2],
+                    permit_out_rule.ip.dst.mask[3]);
             return NULL;
         } else if (prefixlen == 0) {
             p = ogs_slprintf(p, last, " any");
@@ -290,21 +309,21 @@ char *ogs_ipfw_encode_flow_description(ogs_ipfw_rule_t *ipfw_rule)
             ogs_assert_if_reached();
         }
 
-    } else if (ipfw_rule->ipv6_remote) {
+    } else if (permit_out_rule.ipv6_dst) {
         sa.ogs_sa_family = AF_INET6;
         memcpy(&sa.sin6.sin6_addr,
-                ipfw_rule->ip.remote.addr, sizeof(struct in6_addr));
+                permit_out_rule.ip.dst.addr, sizeof(struct in6_addr));
 
         OGS_ADDR(&sa, buf);
         prefixlen = contigmask(
-                (uint8_t *)ipfw_rule->ip.remote.mask, IPV6_BITLEN);
+                (uint8_t *)permit_out_rule.ip.dst.mask, IPV6_BITLEN);
 
         if (prefixlen < 0) {
             ogs_error("Invalid mask[%x:%x:%x:%x]",
-                    ipfw_rule->ip.remote.mask[0],
-                    ipfw_rule->ip.remote.mask[1],
-                    ipfw_rule->ip.remote.mask[2],
-                    ipfw_rule->ip.remote.mask[3]);
+                    permit_out_rule.ip.dst.mask[0],
+                    permit_out_rule.ip.dst.mask[1],
+                    permit_out_rule.ip.dst.mask[2],
+                    permit_out_rule.ip.dst.mask[3]);
             return NULL;
         } else if (prefixlen == 0) {
             p = ogs_slprintf(p, last, " any");
@@ -319,16 +338,48 @@ char *ogs_ipfw_encode_flow_description(ogs_ipfw_rule_t *ipfw_rule)
     } else
         p = ogs_slprintf(p, last, " any");
 
-    if (ipfw_rule->port.remote.low == ipfw_rule->port.remote.high) {
-        if (ipfw_rule->port.remote.low == 0) {
+    if (permit_out_rule.port.dst.low == permit_out_rule.port.dst.high) {
+        if (permit_out_rule.port.dst.low == 0) {
             /* Nothing */
         } else {
-            p = ogs_slprintf(p, last, " %d", ipfw_rule->port.remote.low);
+            p = ogs_slprintf(p, last, " %d", permit_out_rule.port.dst.low);
         }
     } else {
         p = ogs_slprintf(p, last, " %d-%d",
-                ipfw_rule->port.remote.low, ipfw_rule->port.remote.high);
+                permit_out_rule.port.dst.low, permit_out_rule.port.dst.high);
     }
 
     return ogs_strdup(flow_description);
+}
+
+ogs_ipfw_rule_t *ogs_ipfw_copy_and_swap(
+        ogs_ipfw_rule_t *dst, ogs_ipfw_rule_t *src)
+{
+    ogs_assert(src);
+    ogs_assert(dst);
+    ogs_assert(src != dst);
+
+    memcpy(dst, src, sizeof(ogs_ipfw_rule_t));
+
+    dst->ipv4_src = src->ipv4_dst;
+    dst->ipv4_dst = src->ipv4_src;
+    dst->ipv6_src = src->ipv6_dst;
+    dst->ipv6_dst = src->ipv6_src;
+
+    memcpy(&dst->ip.src, &src->ip.dst, sizeof(dst->ip.src));
+    memcpy(&dst->ip.dst, &src->ip.src, sizeof(dst->ip.dst));
+    memcpy(&dst->port.src, &src->port.dst, sizeof(dst->port.src));
+    memcpy(&dst->port.dst, &src->port.src, sizeof(dst->port.dst));
+
+    return dst;
+}
+
+void ogs_ipfw_rule_swap(ogs_ipfw_rule_t *ipfw_rule)
+{
+    ogs_ipfw_rule_t dst;
+
+    ogs_assert(ipfw_rule);
+
+    ogs_ipfw_copy_and_swap(&dst, ipfw_rule);
+    memcpy(ipfw_rule, &dst, sizeof(ogs_ipfw_rule_t));
 }

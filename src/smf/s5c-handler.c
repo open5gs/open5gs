@@ -535,71 +535,75 @@ static int reconfigure_packet_filter(smf_pf_t *pf, ogs_gtp_tft_t *tft, int i)
 {
     int j;
 
+    ogs_assert(pf);
+    ogs_assert(tft);
+
     memset(&pf->ipfw_rule, 0, sizeof(ogs_ipfw_rule_t));
+    pf->direction = tft->pf[i].direction;
     for (j = 0; j < tft->pf[i].num_of_component; j++) {
         switch(tft->pf[i].component[j].type) {
         case GTP_PACKET_FILTER_PROTOCOL_IDENTIFIER_NEXT_HEADER_TYPE:
             pf->ipfw_rule.proto = tft->pf[i].component[j].proto;
             break;
         case GTP_PACKET_FILTER_IPV4_REMOTE_ADDRESS_TYPE:
-            pf->ipfw_rule.ipv4_remote = 1;
-            pf->ipfw_rule.ip.remote.addr[0] = tft->pf[i].component[j].ipv4.addr;
-            pf->ipfw_rule.ip.remote.mask[0] = tft->pf[i].component[j].ipv4.mask;
+            pf->ipfw_rule.ipv4_dst = 1;
+            pf->ipfw_rule.ip.dst.addr[0] = tft->pf[i].component[j].ipv4.addr;
+            pf->ipfw_rule.ip.dst.mask[0] = tft->pf[i].component[j].ipv4.mask;
             break;
         case GTP_PACKET_FILTER_IPV4_LOCAL_ADDRESS_TYPE:
-            pf->ipfw_rule.ipv4_local = 1;
-            pf->ipfw_rule.ip.local.addr[0] = tft->pf[i].component[j].ipv4.addr;
-            pf->ipfw_rule.ip.local.mask[0] = tft->pf[i].component[j].ipv4.mask;
+            pf->ipfw_rule.ipv4_src = 1;
+            pf->ipfw_rule.ip.src.addr[0] = tft->pf[i].component[j].ipv4.addr;
+            pf->ipfw_rule.ip.src.mask[0] = tft->pf[i].component[j].ipv4.mask;
             break;
         case GTP_PACKET_FILTER_IPV6_REMOTE_ADDRESS_TYPE:
-            pf->ipfw_rule.ipv6_remote = 1;
-            memcpy(pf->ipfw_rule.ip.remote.addr,
+            pf->ipfw_rule.ipv6_dst = 1;
+            memcpy(pf->ipfw_rule.ip.dst.addr,
                 tft->pf[i].component[j].ipv6_mask.addr,
-                sizeof(pf->ipfw_rule.ip.remote.addr));
-            memcpy(pf->ipfw_rule.ip.remote.mask,
+                sizeof(pf->ipfw_rule.ip.dst.addr));
+            memcpy(pf->ipfw_rule.ip.dst.mask,
                 tft->pf[i].component[j].ipv6_mask.mask,
-                sizeof(pf->ipfw_rule.ip.remote.mask));
+                sizeof(pf->ipfw_rule.ip.dst.mask));
             break;
         case GTP_PACKET_FILTER_IPV6_REMOTE_ADDRESS_PREFIX_LENGTH_TYPE:
-            pf->ipfw_rule.ipv6_remote = 1;
-            memcpy(pf->ipfw_rule.ip.remote.addr,
+            pf->ipfw_rule.ipv6_dst = 1;
+            memcpy(pf->ipfw_rule.ip.dst.addr,
                 tft->pf[i].component[j].ipv6_mask.addr,
-                sizeof(pf->ipfw_rule.ip.remote.addr));
-            n2mask((struct in6_addr *)pf->ipfw_rule.ip.remote.mask,
+                sizeof(pf->ipfw_rule.ip.dst.addr));
+            n2mask((struct in6_addr *)pf->ipfw_rule.ip.dst.mask,
                 tft->pf[i].component[j].ipv6.prefixlen);
             break;
         case GTP_PACKET_FILTER_IPV6_LOCAL_ADDRESS_TYPE:
-            pf->ipfw_rule.ipv6_local = 1;
-            memcpy(pf->ipfw_rule.ip.local.addr,
+            pf->ipfw_rule.ipv6_src = 1;
+            memcpy(pf->ipfw_rule.ip.src.addr,
                 tft->pf[i].component[j].ipv6_mask.addr,
-                sizeof(pf->ipfw_rule.ip.local.addr));
-            memcpy(pf->ipfw_rule.ip.local.mask,
+                sizeof(pf->ipfw_rule.ip.src.addr));
+            memcpy(pf->ipfw_rule.ip.src.mask,
                 tft->pf[i].component[j].ipv6_mask.mask,
-                sizeof(pf->ipfw_rule.ip.local.mask));
+                sizeof(pf->ipfw_rule.ip.src.mask));
             break;
         case GTP_PACKET_FILTER_IPV6_LOCAL_ADDRESS_PREFIX_LENGTH_TYPE:
-            pf->ipfw_rule.ipv6_local = 1;
-            memcpy(pf->ipfw_rule.ip.local.addr,
+            pf->ipfw_rule.ipv6_src = 1;
+            memcpy(pf->ipfw_rule.ip.src.addr,
                 tft->pf[i].component[j].ipv6_mask.addr,
-                sizeof(pf->ipfw_rule.ip.local.addr));
-            n2mask((struct in6_addr *)pf->ipfw_rule.ip.local.mask,
+                sizeof(pf->ipfw_rule.ip.src.addr));
+            n2mask((struct in6_addr *)pf->ipfw_rule.ip.src.mask,
                 tft->pf[i].component[j].ipv6.prefixlen);
             break;
         case GTP_PACKET_FILTER_SINGLE_LOCAL_PORT_TYPE:
-            pf->ipfw_rule.port.local.low = pf->ipfw_rule.port.local.high =
+            pf->ipfw_rule.port.src.low = pf->ipfw_rule.port.src.high =
                     tft->pf[i].component[j].port.low;
             break;
         case GTP_PACKET_FILTER_SINGLE_REMOTE_PORT_TYPE:
-            pf->ipfw_rule.port.remote.low = pf->ipfw_rule.port.remote.high =
+            pf->ipfw_rule.port.dst.low = pf->ipfw_rule.port.dst.high =
                     tft->pf[i].component[j].port.low;
             break;
         case GTP_PACKET_FILTER_LOCAL_PORT_RANGE_TYPE:
-            pf->ipfw_rule.port.local.low = tft->pf[i].component[j].port.low;
-            pf->ipfw_rule.port.local.high = tft->pf[i].component[j].port.high;
+            pf->ipfw_rule.port.src.low = tft->pf[i].component[j].port.low;
+            pf->ipfw_rule.port.src.high = tft->pf[i].component[j].port.high;
             break;
         case GTP_PACKET_FILTER_REMOTE_PORT_RANGE_TYPE:
-            pf->ipfw_rule.port.remote.low = tft->pf[i].component[j].port.low;
-            pf->ipfw_rule.port.remote.high = tft->pf[i].component[j].port.high;
+            pf->ipfw_rule.port.dst.low = tft->pf[i].component[j].port.low;
+            pf->ipfw_rule.port.dst.high = tft->pf[i].component[j].port.high;
             break;
         default:
             ogs_error("Unknown Packet Filter Type(%d)",
@@ -692,12 +696,27 @@ void smf_s5c_handle_bearer_resource_command(
                         OGS_GTP_CAUSE_SEMANTIC_ERROR_IN_THE_TAD_OPERATION);
                     return;
                 }
+/*
+ * Refer to lib/ipfw/ogs-ipfw.h
+ * Issue #338
+ *
+ * <DOWNLINK>
+ * TFT : Local <UE_IP> <UE_PORT> REMOTE <P-CSCF_RTP_IP> <P-CSCF_RTP_PORT>
+ * -->
+ * RULE : Source <P-CSCF_RTP_IP> <P-CSCF_RTP_PORT> Destination <UE_IP> <UE_PORT>
+ *
+ * <UPLINK>
+ * TFT : Local <UE_IP> <UE_PORT> REMOTE <P-CSCF_RTP_IP> <P-CSCF_RTP_PORT>
+ * -->
+ * RULE : Source <UE_IP> <UE_PORT> Destination <P-CSCF_RTP_IP> <P-CSCF_RTP_PORT>
+ */
+                if (pf->direction == OGS_FLOW_DOWNLINK_ONLY)
+                    ogs_ipfw_rule_swap(&pf->ipfw_rule);
 
                 if (pf->flow_description)
                     ogs_free(pf->flow_description);
                 pf->flow_description =
                     ogs_ipfw_encode_flow_description(&pf->ipfw_rule);
-                pf->direction = tft.pf[i].direction;
             }
 
             tft_update = 1;
@@ -721,12 +740,27 @@ void smf_s5c_handle_bearer_resource_command(
                     OGS_GTP_CAUSE_SEMANTIC_ERROR_IN_THE_TAD_OPERATION);
                 return;
             }
+/*
+ * Refer to lib/ipfw/ogs-ipfw.h
+ * Issue #338
+ *
+ * <DOWNLINK>
+ * TFT : Local <UE_IP> <UE_PORT> REMOTE <P-CSCF_RTP_IP> <P-CSCF_RTP_PORT>
+ * -->
+ * RULE : Source <P-CSCF_RTP_IP> <P-CSCF_RTP_PORT> Destination <UE_IP> <UE_PORT>
+ *
+ * <UPLINK>
+ * TFT : Local <UE_IP> <UE_PORT> REMOTE <P-CSCF_RTP_IP> <P-CSCF_RTP_PORT>
+ * -->
+ * RULE : Source <UE_IP> <UE_PORT> Destination <P-CSCF_RTP_IP> <P-CSCF_RTP_PORT>
+ */
+            if (pf->direction == OGS_FLOW_DOWNLINK_ONLY)
+                ogs_ipfw_rule_swap(&pf->ipfw_rule);
 
             if (pf->flow_description)
                 ogs_free(pf->flow_description);
             pf->flow_description =
                 ogs_ipfw_encode_flow_description(&pf->ipfw_rule);
-            pf->direction = tft.pf[i].direction;
 
             tft_update = 1;
         }

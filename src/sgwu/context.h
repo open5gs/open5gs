@@ -72,8 +72,8 @@ int sgwu_context_parse_config(void);
 
 sgwu_sess_t *sgwu_sess_add_by_message(ogs_pfcp_message_t *message);
 
-sgwu_sess_t *sgwu_sess_add(ogs_pfcp_f_seid_t *f_seid,
-        const char *apn, uint8_t pdn_type, ogs_pfcp_pdr_id_t default_pdr_id);
+sgwu_sess_t *sgwu_sess_add(
+        ogs_pfcp_f_seid_t *f_seid, const char *apn, uint8_t pdn_type);
 int sgwu_sess_remove(sgwu_sess_t *sess);
 void sgwu_sess_remove_all(void);
 sgwu_sess_t *sgwu_sess_find(uint32_t index);

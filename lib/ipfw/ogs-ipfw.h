@@ -29,30 +29,30 @@ extern "C" {
 typedef struct ogs_ipfw_rule_s {
     uint8_t proto;
 
-    uint8_t ipv4_local;
-    uint8_t ipv4_remote;
-    uint8_t ipv6_local;
-    uint8_t ipv6_remote;
+    uint8_t ipv4_src;
+    uint8_t ipv4_dst;
+    uint8_t ipv6_src;
+    uint8_t ipv6_dst;
 
     struct {
         struct {
             uint32_t addr[4];
             uint32_t mask[4];
-        } local;
+        } src;
         struct {
             uint32_t addr[4];
             uint32_t mask[4];
-        } remote;
+        } dst;
     } ip;
     struct {
         struct {
             uint16_t low;
             uint16_t high;
-        } local;
+        } src;
         struct {
             uint16_t low;
             uint16_t high;
-        } remote;
+        } dst;
     } port;
 
     uint16_t tos_traffic_class;
@@ -63,6 +63,28 @@ typedef struct ogs_ipfw_rule_s {
 
 int ogs_ipfw_compile_rule(ogs_ipfw_rule_t *ipfw_rule, char *flow_description);
 char *ogs_ipfw_encode_flow_description(ogs_ipfw_rule_t *ipfw_rule);
+
+/*
+ * Refer to lib/ipfw/ogs-ipfw.h
+ * Issue #338
+ *
+ * <DOWNLINK>
+ * RX : permit out from <P-CSCF_RTP_IP> <P-CSCF_RTP_PORT> to <UE_IP> <UE_PORT>
+ * GX : permit out from <P-CSCF_RTP_IP> <P-CSCF_RTP_PORT> to <UE_IP> <UE_PORT>
+ * PFCP : permit out from <P-CSCF_RTP_IP> <P-CSCF_RTP_PORT> to <UE_IP> <UE_PORT>
+ * RULE : Source <P-CSCF_RTP_IP> <P-CSCF_RTP_PORT> Destination <UE_IP> <UE_PORT>
+ * TFT : Local <UE_IP> <UE_PORT> REMOTE <P-CSCF_RTP_IP> <P-CSCF_RTP_PORT>
+ *
+ * <UPLINK>
+ * RX : permit in from <UE_IP> <UE_PORT> to <P-CSCF_RTP_IP> <P-CSCF_RTP_PORT>
+ * GX : permit out from <P-CSCF_RTP_IP> <P-CSCF_RTP_PORT> to <UE_IP> <UE_PORT>
+ * PFCP : permit out from <P-CSCF_RTP_IP> <P-CSCF_RTP_PORT> to <UE_IP> <UE_PORT>
+ * RULE : Source <UE_IP> <UE_PORT> Destination <P-CSCF_RTP_IP> <P-CSCF_RTP_PORT>
+ * TFT : Local <UE_IP> <UE_PORT> REMOTE <P-CSCF_RTP_IP> <P-CSCF_RTP_PORT>
+ */
+ogs_ipfw_rule_t *ogs_ipfw_copy_and_swap(
+        ogs_ipfw_rule_t *dst, ogs_ipfw_rule_t *src);
+void ogs_ipfw_rule_swap(ogs_ipfw_rule_t *ipfw_rule);
 
 #ifdef __cplusplus
 }

@@ -241,8 +241,44 @@ ogs_pfcp_pdr_t *ogs_pfcp_handle_create_pdr(ogs_pfcp_sess_t *sess,
 
             rule = ogs_pfcp_rule_add(pdr);
             ogs_assert(rule);
+
             rv = ogs_ipfw_compile_rule(&rule->ipfw, flow_description);
             ogs_assert(rv == OGS_OK);
+
+/*
+ *
+ * TS29.244 Ch 5.2.1A.2A
+ *
+ * The UP function shall apply the SDF filter based on the Source Interface
+ * of the PDR as follows (see also clause 8.2.5):
+ *
+ * - when the Source Interface is CORE, this indicates that the filter is
+ *   for downlink data flow, so the UP function shall apply
+ *   the Flow Description as is;
+ *
+ * - when the Source Interface is ACCESS, this indicates that the filter is
+ *   for uplink data flow, so the UP function shall swap the source and
+ *   destination address/port in the Flow Description;
+ *
+ * - when the Source Interface is CP-function or SGi-LAN,
+ *   the UP function shall use the Flow Description as is.
+ *
+ *
+ * Refer to lib/ipfw/ogs-ipfw.h
+ * Issue #338
+ *
+ * <DOWNLINK>
+ * GX : permit out from <P-CSCF_RTP_IP> <P-CSCF_RTP_PORT> to <UE_IP> <UE_PORT>
+ * RULE : Source <P-CSCF_RTP_IP> <P-CSCF_RTP_PORT> Destination <UE_IP> <UE_PORT>
+ *
+ * <UPLINK>
+ * GX : permit out from <P-CSCF_RTP_IP> <P-CSCF_RTP_PORT> to <UE_IP> <UE_PORT>
+ * RULE : Source <UE_IP> <UE_PORT> Destination <P-CSCF_RTP_IP> <P-CSCF_RTP_PORT>
+ */
+
+            /* Uplink data flow */
+            if (pdr->src_if == OGS_PFCP_INTERFACE_ACCESS)
+                ogs_ipfw_rule_swap(&rule->ipfw);
 
             ogs_free(flow_description);
         }
@@ -367,6 +403,41 @@ ogs_pfcp_pdr_t *ogs_pfcp_handle_update_pdr(ogs_pfcp_sess_t *sess,
                 ogs_assert(rule);
                 rv = ogs_ipfw_compile_rule(&rule->ipfw, flow_description);
                 ogs_assert(rv == OGS_OK);
+
+/*
+ *
+ * TS29.244 Ch 5.2.1A.2A
+ *
+ * The UP function shall apply the SDF filter based on the Source Interface
+ * of the PDR as follows (see also clause 8.2.5):
+ *
+ * - when the Source Interface is CORE, this indicates that the filter is
+ *   for downlink data flow, so the UP function shall apply
+ *   the Flow Description as is;
+ *
+ * - when the Source Interface is ACCESS, this indicates that the filter is
+ *   for uplink data flow, so the UP function shall swap the source and
+ *   destination address/port in the Flow Description;
+ *
+ * - when the Source Interface is CP-function or SGi-LAN,
+ *   the UP function shall use the Flow Description as is.
+ *
+ *
+ * Refer to lib/ipfw/ogs-ipfw.h
+ * Issue #338
+ *
+ * <DOWNLINK>
+ * GX : permit out from <P-CSCF_RTP_IP> <P-CSCF_RTP_PORT> to <UE_IP> <UE_PORT>
+ * RULE : Source <P-CSCF_RTP_IP> <P-CSCF_RTP_PORT> Destination <UE_IP> <UE_PORT>
+ *
+ * <UPLINK>
+ * GX : permit out from <P-CSCF_RTP_IP> <P-CSCF_RTP_PORT> to <UE_IP> <UE_PORT>
+ * RULE : Source <UE_IP> <UE_PORT> Destination <P-CSCF_RTP_IP> <P-CSCF_RTP_PORT>
+ */
+
+                /* Uplink data flow */
+                if (pdr->src_if == OGS_PFCP_INTERFACE_ACCESS)
+                    ogs_ipfw_rule_swap(&rule->ipfw);
 
                 ogs_free(flow_description);
             }

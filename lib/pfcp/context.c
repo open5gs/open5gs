@@ -789,10 +789,17 @@ void ogs_pfcp_gtpu_resource_remove_all(ogs_list_t *list)
         ogs_pfcp_gtpu_resource_remove(list, resource);
 }
 
-ogs_pfcp_pdr_t *ogs_pfcp_sess_default_pdr(ogs_pfcp_sess_t *sess)
+ogs_pfcp_pdr_t *ogs_pfcp_sess_default_pdr(
+        ogs_pfcp_sess_t *sess, ogs_pfcp_interface_t src_if)
 {
+    ogs_pfcp_pdr_t *pdr = NULL;
+
     ogs_assert(sess);
-    return sess->default_pdr;
+
+    for (pdr = ogs_list_last(&sess->pdr_list); pdr; pdr = ogs_list_prev(pdr))
+        if (pdr->src_if == src_if) return pdr;
+
+    return NULL;
 }
 
 void ogs_pfcp_sess_clear(ogs_pfcp_sess_t *sess)

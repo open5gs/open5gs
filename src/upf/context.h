@@ -89,8 +89,7 @@ int upf_context_parse_config(void);
 upf_sess_t *upf_sess_add_by_message(ogs_pfcp_message_t *message);
 
 upf_sess_t *upf_sess_add(ogs_pfcp_f_seid_t *f_seid,
-        const char *apn, uint8_t pdn_type, ogs_pfcp_ue_ip_addr_t *ue_ip,
-        ogs_pfcp_pdr_id_t default_pdr_id);
+        const char *apn, uint8_t pdn_type, ogs_pfcp_ue_ip_addr_t *ue_ip);
 int upf_sess_remove(upf_sess_t *sess);
 void upf_sess_remove_all(void);
 upf_sess_t *upf_sess_find(uint32_t index);

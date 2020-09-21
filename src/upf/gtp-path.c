@@ -372,7 +372,7 @@ static void upf_gtp_handle_multicast(ogs_pkbuf_t *recvbuf)
                     /* PDN IPv6 is avaiable */
                     ogs_pfcp_pdr_t *pdr = NULL;
 
-                    pdr = ogs_pfcp_sess_default_pdr(&sess->pfcp);
+                    pdr = OGS_DEFAULT_DL_PDR(&sess->pfcp);
                     ogs_assert(pdr);
 
                     ogs_pfcp_up_handle_pdr(pdr, recvbuf, &report);
@@ -434,7 +434,7 @@ static int upf_gtp_send_router_advertisement(
     struct nd_opt_prefix_info *prefix = NULL;
 
     ogs_assert(sess);
-    pdr = ogs_pfcp_sess_default_pdr(&sess->pfcp);
+    pdr = OGS_DEFAULT_DL_PDR(&sess->pfcp);
     ogs_assert(pdr);
     far = pdr->far;
     ogs_assert(far);
