@@ -424,7 +424,7 @@ ogs_pkbuf_t *testesm_build_bearer_resource_modification_request(
     } else if (tft.code ==
             OGS_GTP_TFT_CODE_ADD_PACKET_FILTERS_TO_EXISTING_TFT) {
         tft.num_of_packet_filter = 1;
-        tft.pf[0].direction = 1;
+        tft.pf[0].direction = 2;
         tft.pf[0].identifier = 4;
         tft.pf[0].precedence = 0x0f;
 
@@ -433,14 +433,14 @@ ogs_pkbuf_t *testesm_build_bearer_resource_modification_request(
 #if 1
         tft.pf[0].length = 18;
         tft.pf[0].component[0].type =
-            GTP_PACKET_FILTER_IPV6_REMOTE_ADDRESS_PREFIX_LENGTH_TYPE;
+            GTP_PACKET_FILTER_IPV6_LOCAL_ADDRESS_PREFIX_LENGTH_TYPE;
         memcpy(tft.pf[0].component[0].ipv6.addr, ipsubnet.sub,
                 sizeof(tft.pf[0].component[0].ipv6.addr));
         tft.pf[0].component[0].ipv6.prefixlen = 120;
 #else
         tft.pf[0].length = 33;
         tft.pf[0].component[0].type =
-            GTP_PACKET_FILTER_IPV6_REMOTE_ADDRESS_TYPE;
+            GTP_PACKET_FILTER_IPV6_LOCAL_ADDRESS_TYPE;
         memcpy(tft.pf[0].component[0].ipv6_mask.addr, ipsubnet.sub,
                 sizeof(tft.pf[0].component[0].ipv6_mask.addr));
         memcpy(tft.pf[0].component[0].ipv6_mask.mask, ipsubnet.mask,

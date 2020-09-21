@@ -715,8 +715,30 @@ void smf_s5c_handle_bearer_resource_command(
 
                 if (pf->flow_description)
                     ogs_free(pf->flow_description);
-                pf->flow_description =
-                    ogs_ipfw_encode_flow_description(&pf->ipfw_rule);
+/*
+ * Issue #338
+ *
+ * <DOWNLINK>
+ * RULE : Source <P-CSCF_RTP_IP> <P-CSCF_RTP_PORT> Destination <UE_IP> <UE_PORT>
+ * -->
+ * GX : permit out from <P-CSCF_RTP_IP> <P-CSCF_RTP_PORT> to <UE_IP> <UE_PORT>
+ * PFCP : permit out from <P-CSCF_RTP_IP> <P-CSCF_RTP_PORT> to <UE_IP> <UE_PORT>
+ *
+ * <UPLINK>
+ * RULE : Source <UE_IP> <UE_PORT> Destination <P-CSCF_RTP_IP> <P-CSCF_RTP_PORT>
+ * -->
+ * GX : permit out from <P-CSCF_RTP_IP> <P-CSCF_RTP_PORT> to <UE_IP> <UE_PORT>
+ * PFCP : permit out from <P-CSCF_RTP_IP> <P-CSCF_RTP_PORT> to <UE_IP> <UE_PORT>
+ */
+                if (pf->direction == OGS_FLOW_UPLINK_ONLY) {
+                    ogs_ipfw_rule_t tmp;
+                    ogs_ipfw_copy_and_swap(&tmp, &pf->ipfw_rule);
+                    pf->flow_description =
+                        ogs_ipfw_encode_flow_description(&tmp);
+                } else {
+                    pf->flow_description =
+                        ogs_ipfw_encode_flow_description(&pf->ipfw_rule);
+                }
             }
 
             tft_update = 1;
@@ -759,8 +781,31 @@ void smf_s5c_handle_bearer_resource_command(
 
             if (pf->flow_description)
                 ogs_free(pf->flow_description);
-            pf->flow_description =
-                ogs_ipfw_encode_flow_description(&pf->ipfw_rule);
+
+/*
+ * Issue #338
+ *
+ * <DOWNLINK>
+ * RULE : Source <P-CSCF_RTP_IP> <P-CSCF_RTP_PORT> Destination <UE_IP> <UE_PORT>
+ * -->
+ * GX : permit out from <P-CSCF_RTP_IP> <P-CSCF_RTP_PORT> to <UE_IP> <UE_PORT>
+ * PFCP : permit out from <P-CSCF_RTP_IP> <P-CSCF_RTP_PORT> to <UE_IP> <UE_PORT>
+ *
+ * <UPLINK>
+ * RULE : Source <UE_IP> <UE_PORT> Destination <P-CSCF_RTP_IP> <P-CSCF_RTP_PORT>
+ * -->
+ * GX : permit out from <P-CSCF_RTP_IP> <P-CSCF_RTP_PORT> to <UE_IP> <UE_PORT>
+ * PFCP : permit out from <P-CSCF_RTP_IP> <P-CSCF_RTP_PORT> to <UE_IP> <UE_PORT>
+ */
+            if (pf->direction == OGS_FLOW_UPLINK_ONLY) {
+                ogs_ipfw_rule_t tmp;
+                ogs_ipfw_copy_and_swap(&tmp, &pf->ipfw_rule);
+                pf->flow_description =
+                    ogs_ipfw_encode_flow_description(&tmp);
+            } else {
+                pf->flow_description =
+                    ogs_ipfw_encode_flow_description(&pf->ipfw_rule);
+            }
 
             tft_update = 1;
         }
