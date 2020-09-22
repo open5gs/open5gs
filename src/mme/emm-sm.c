@@ -105,9 +105,10 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
 
     switch (e->id) {
     case OGS_FSM_ENTRY_SIG:
-        return;
+        break;
     case OGS_FSM_EXIT_SIG:
-        return;
+        break;
+
     case MME_EVT_EMM_MESSAGE:
         message = e->nas_message;
         ogs_assert(message);
@@ -590,7 +591,7 @@ void emm_state_authentication(ogs_fsm_t *s, mme_event_t *e)
             if (rv != OGS_OK) {
                 ogs_error("emm_handle_attach_request() failed");
                 OGS_FSM_TRAN(s, emm_state_exception);
-                return;
+                break;
             }
 
             mme_s6a_send_air(mme_ue, NULL);
@@ -610,7 +611,7 @@ void emm_state_authentication(ogs_fsm_t *s, mme_event_t *e)
             if (rv != OGS_OK) {
                 ogs_error("emm_handle_detach_request() failed");
                 OGS_FSM_TRAN(s, emm_state_exception);
-                return;
+                break;
             }
 
             mme_send_delete_session_or_detach(mme_ue);
@@ -681,7 +682,7 @@ void emm_state_security_mode(ogs_fsm_t *s, mme_event_t *e)
             nas_eps_send_service_reject(mme_ue,
                     EMM_CAUSE_SECURITY_MODE_REJECTED_UNSPECIFIED);
             OGS_FSM_TRAN(s, &emm_state_exception);
-            return;
+            break;
         }
 
         switch (message->emm.h.message_type) {
@@ -864,7 +865,7 @@ void emm_state_initial_context_setup(ogs_fsm_t *s, mme_event_t *e)
             if (rv != OGS_OK) {
                 ogs_error("emm_handle_attach_request() failed");
                 OGS_FSM_TRAN(s, emm_state_exception);
-                return;
+                break;
             }
 
             mme_gtp_send_delete_all_sessions(mme_ue);
@@ -884,7 +885,7 @@ void emm_state_initial_context_setup(ogs_fsm_t *s, mme_event_t *e)
             if (rv != OGS_OK) {
                 ogs_error("emm_handle_detach_request() failed");
                 OGS_FSM_TRAN(s, emm_state_exception);
-                return;
+                break;
             }
 
             mme_send_delete_session_or_detach(mme_ue);
@@ -916,7 +917,12 @@ void emm_state_initial_context_setup(ogs_fsm_t *s, mme_event_t *e)
 
 void emm_state_exception(ogs_fsm_t *s, mme_event_t *e)
 {
+    int rv;
+
     mme_ue_t *mme_ue = NULL;
+    enb_ue_t *enb_ue = NULL;
+    ogs_nas_eps_message_t *message = NULL;
+    ogs_nas_security_header_type_t h;
 
     ogs_assert(e);
     mme_sm_debug(e);
@@ -931,8 +937,61 @@ void emm_state_exception(ogs_fsm_t *s, mme_event_t *e)
         break;
     case OGS_FSM_EXIT_SIG:
         break;
+
+    case MME_EVT_EMM_MESSAGE:
+        message = e->nas_message;
+        ogs_assert(message);
+
+        enb_ue = mme_ue->enb_ue;
+        ogs_assert(enb_ue);
+
+        h.type = e->nas_type;
+
+        switch (message->emm.h.message_type) {
+        case OGS_NAS_EPS_ATTACH_REQUEST:
+            ogs_debug("[EMM] Attach request[%s]", mme_ue->imsi_bcd);
+            rv = emm_handle_attach_request(
+                    mme_ue, &message->emm.attach_request, e->pkbuf);
+            if (rv != OGS_OK) {
+                ogs_error("emm_handle_attach_request() failed");
+                OGS_FSM_TRAN(s, emm_state_exception);
+                break;
+            }
+
+            if (!MME_UE_HAVE_IMSI(mme_ue)) {
+                CLEAR_MME_UE_TIMER(mme_ue->t3470);
+                nas_eps_send_identity_request(mme_ue);
+                break;
+            }
+
+            if (h.integrity_protected && SECURITY_CONTEXT_IS_VALID(mme_ue)) {
+                rv = nas_eps_send_emm_to_esm(mme_ue,
+                        &mme_ue->pdn_connectivity_request);
+                if (rv != OGS_OK) {
+                    ogs_error("nas_eps_send_emm_to_esm() failed");
+                    nas_eps_send_attach_reject(mme_ue,
+                        EMM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED,
+                        ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
+                    OGS_FSM_TRAN(s, &emm_state_exception);
+                } else {
+                    OGS_FSM_TRAN(s, &emm_state_initial_context_setup);
+                }
+            } else {
+                if (SESSION_CONTEXT_IS_AVAILABLE(mme_ue)) {
+                    mme_gtp_send_delete_all_sessions(mme_ue);
+                } else {
+                    mme_s6a_send_air(mme_ue, NULL);
+                }
+                OGS_FSM_TRAN(s, &emm_state_authentication);
+            }
+            break;
+
+        default:
+            ogs_warn("Unknown message[%d]", message->emm.h.message_type);
+        }
+        break;
+
     default:
         ogs_error("Unknown event[%s]", mme_event_get_name(e));
-        break;
     }
 }
