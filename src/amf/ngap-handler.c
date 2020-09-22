@@ -760,7 +760,7 @@ void ngap_handle_initial_context_setup_response(
         return;
 
     amf_ue = ran_ue->amf_ue;
-    ogs_expect(amf_ue);
+    ogs_expect_or_return(amf_ue);
 
     for (i = 0; i < PDUSessionList->list.count; i++) {
         amf_sess_t *sess = NULL;
@@ -985,7 +985,7 @@ void ngap_handle_ue_context_modification_response(
     ran_ue = ran_ue_find_by_ran_ue_ngap_id(gnb, *RAN_UE_NGAP_ID);
     ogs_assert(ran_ue);
     amf_ue = ran_ue->amf_ue;
-    ogs_expect(amf_ue);
+    ogs_expect_or_return(amf_ue);
 
     ogs_debug("    RAN_UE_NGAP_ID[%d] AMF_UE_NGAP_ID[%d]",
             ran_ue->ran_ue_ngap_id, ran_ue->amf_ue_ngap_id);
@@ -1054,7 +1054,7 @@ void ngap_handle_ue_context_modification_failure(
 
 cleanup:
     amf_ue = ran_ue->amf_ue;
-    ogs_expect(amf_ue);
+    ogs_expect_or_return(amf_ue);
     CLEAR_SERVICE_INDICATOR(amf_ue);
 }
 #endif
@@ -1781,7 +1781,7 @@ void ngap_handle_path_switch_request(
             ran_ue->ran_ue_ngap_id, ran_ue->amf_ue_ngap_id);
 
     amf_ue = ran_ue->amf_ue;
-    ogs_expect(amf_ue);
+    ogs_expect_or_return(amf_ue);
 
     if (SECURITY_CONTEXT_IS_VALID(amf_ue)) {
         amf_ue->nhcc++;
@@ -2047,7 +2047,7 @@ void ngap_handle_handover_required(amf_gnb_t *gnb, ogs_ngap_message_t *message)
             source_ue->ran_ue_ngap_id, source_ue->amf_ue_ngap_id);
 
     amf_ue = source_ue->amf_ue;
-    ogs_expect(amf_ue);
+    ogs_expect_or_return(amf_ue);
 
     if (SECURITY_CONTEXT_IS_VALID(amf_ue)) {
         amf_ue->nhcc++;
@@ -2136,7 +2136,7 @@ void ngap_handle_handover_request_ack(amf_gnb_t *gnb, ogs_ngap_message_t *messag
     source_ue = target_ue->source_ue;
     ogs_assert(source_ue);
     amf_ue = source_ue->amf_ue;
-    ogs_expect(amf_ue);
+    ogs_expect_or_return(amf_ue);
 
     ogs_debug("    Source : RAN_UE_NGAP_ID[%d] AMF_UE_NGAP_ID[%d]",
             source_ue->ran_ue_ngap_id, source_ue->amf_ue_ngap_id);
@@ -2481,7 +2481,7 @@ void ngap_handle_handover_notification(amf_gnb_t *gnb, ogs_ngap_message_t *messa
     source_ue = target_ue->source_ue;
     ogs_assert(source_ue);
     amf_ue = source_ue->amf_ue;
-    ogs_expect(amf_ue);
+    ogs_expect_or_return(amf_ue);
 
     ogs_debug("    Source : RAN_UE_NGAP_ID[%d] AMF_UE_NGAP_ID[%d]",
             source_ue->ran_ue_ngap_id, source_ue->amf_ue_ngap_id);
