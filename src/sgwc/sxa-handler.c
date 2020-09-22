@@ -248,8 +248,6 @@ void sgwc_sxa_handle_session_modification_response(
     flags = pfcp_xact->modify_flags;
     ogs_assert(flags);
 
-    ogs_pfcp_xact_commit(pfcp_xact);
-
     cause_value = OGS_GTP_CAUSE_REQUEST_ACCEPTED;
 
     if (!sess) {
@@ -314,6 +312,7 @@ void sgwc_sxa_handle_session_modification_response(
                     OGS_GTP_RELEASE_ACCESS_BEARERS_RESPONSE_TYPE, cause_value);
         }
 
+        ogs_pfcp_xact_commit(pfcp_xact);
         return;
     }
 
@@ -786,6 +785,8 @@ void sgwc_sxa_handle_session_modification_response(
         ogs_fatal("Invalid modify_flags[0x%llx]", (long long)flags);
         ogs_assert_if_reached();
     }
+
+    ogs_pfcp_xact_commit(pfcp_xact);
 }
 
 void sgwc_sxa_handle_session_deletion_response(

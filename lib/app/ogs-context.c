@@ -77,12 +77,11 @@ static void recalculate_pool_size(void)
 #define MAX_NUM_OF_SOCKET       4   /* Num of socket per NF */
     self.pool.socket = self.pool.nf * MAX_NUM_OF_SOCKET;
 
-#define MAX_GTP_XACT_POOL       512
-    self.pool.gtp_xact = MAX_GTP_XACT_POOL;
+#define MAX_NUM_OF_XACT         8
+    self.pool.gtp_xact = self.max.ue * MAX_NUM_OF_XACT;
     self.pool.gtp_node = self.pool.nf;
 
-#define MAX_PFCP_XACT_POOL      512
-    self.pool.pfcp_xact = MAX_PFCP_XACT_POOL;
+    self.pool.pfcp_xact = self.max.ue * MAX_NUM_OF_XACT;
     self.pool.pfcp_node = self.pool.nf;
 
 #define MAX_NUM_OF_NF_SERVICE   16  /* Num of NF Service per NF Instance */
