@@ -235,9 +235,13 @@ int s1ap_send_to_nas(enb_ue_t *enb_ue,
             mme_event_free(e);
         }
         return rv;
-    } else if (h->protocol_discriminator == OGS_NAS_PROTOCOL_DISCRIMINATOR_ESM) {
+    } else if (h->protocol_discriminator ==
+            OGS_NAS_PROTOCOL_DISCRIMINATOR_ESM) {
         mme_ue_t *mme_ue = enb_ue->mme_ue;
-        ogs_assert(mme_ue);
+        if (!mme_ue) {
+            ogs_error("No UE Context");
+            return OGS_ERROR;
+        }
         return s1ap_send_to_esm(mme_ue, nasbuf);
     } else {
         ogs_error("Unknown/Unimplemented NAS Protocol discriminator 0x%02x",

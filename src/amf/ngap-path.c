@@ -235,7 +235,10 @@ int ngap_send_to_nas(ran_ue_t *ran_ue,
     } else if (h->extended_protocol_discriminator ==
             OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GSM) {
         amf_ue_t *amf_ue = ran_ue->amf_ue;
-        ogs_assert(amf_ue);
+        if (!amf_ue) {
+            ogs_error("No UE Context");
+            return OGS_ERROR;
+        }
         return ngap_send_to_5gsm(amf_ue, nasbuf);
     } else {
         ogs_error("Unknown NAS Protocol discriminator 0x%02x",
