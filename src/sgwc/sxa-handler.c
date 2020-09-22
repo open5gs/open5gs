@@ -248,6 +248,8 @@ void sgwc_sxa_handle_session_modification_response(
     flags = pfcp_xact->modify_flags;
     ogs_assert(flags);
 
+    ogs_pfcp_xact_commit(pfcp_xact);
+
     cause_value = OGS_GTP_CAUSE_REQUEST_ACCEPTED;
 
     if (!sess) {
@@ -332,8 +334,6 @@ void sgwc_sxa_handle_session_modification_response(
         ul_tunnel = sgwc_ul_tunnel_in_bearer(bearer);
         ogs_assert(ul_tunnel);
     }
-
-    ogs_pfcp_xact_commit(pfcp_xact);
 
     if (flags & OGS_PFCP_MODIFY_CREATE) {
         if (flags & OGS_PFCP_MODIFY_UL_ONLY) {

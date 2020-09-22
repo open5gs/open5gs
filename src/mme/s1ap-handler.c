@@ -536,7 +536,7 @@ void s1ap_handle_initial_context_setup_response(
             enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
 
     mme_ue = enb_ue->mme_ue;
-    ogs_assert(mme_ue);
+    ogs_expect(mme_ue);
 
     if (E_RABSetupListCtxtSURes) {
         for (i = 0; i < E_RABSetupListCtxtSURes->list.count; i++) {
@@ -730,8 +730,9 @@ void s1ap_handle_ue_context_modification_response(
     ogs_assert(ENB_UE_S1AP_ID);
     enb_ue = enb_ue_find_by_enb_ue_s1ap_id(enb, *ENB_UE_S1AP_ID);
     ogs_assert(enb_ue);
+
     mme_ue = enb_ue->mme_ue;
-    ogs_assert(mme_ue);
+    ogs_expect(mme_ue);
 
     ogs_debug("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
             enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
@@ -801,7 +802,7 @@ void s1ap_handle_ue_context_modification_failure(
 
 cleanup:
     mme_ue = enb_ue->mme_ue;
-    ogs_assert(mme_ue);
+    ogs_expect(mme_ue);
     CLEAR_SERVICE_INDICATOR(mme_ue);
 }
 
@@ -873,7 +874,7 @@ void s1ap_handle_e_rab_setup_response(
             enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
 
     mme_ue = enb_ue->mme_ue;
-    ogs_assert(mme_ue);
+    ogs_expect(mme_ue);
 
     if (E_RABSetupListBearerSURes) {
         for (i = 0; i < E_RABSetupListBearerSURes->list.count; i++) {
@@ -1232,7 +1233,7 @@ void s1ap_handle_path_switch_request(
             enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
 
     mme_ue = enb_ue->mme_ue;
-    ogs_assert(mme_ue);
+    ogs_expect(mme_ue);
 
     if (SECURITY_CONTEXT_IS_VALID(mme_ue)) {
         mme_ue->nhcc++;
@@ -1497,7 +1498,7 @@ void s1ap_handle_handover_required(mme_enb_t *enb, ogs_s1ap_message_t *message)
             source_ue->enb_ue_s1ap_id, source_ue->mme_ue_s1ap_id);
 
     mme_ue = source_ue->mme_ue;
-    ogs_assert(mme_ue);
+    ogs_expect(mme_ue);
 
     if (SECURITY_CONTEXT_IS_VALID(mme_ue)) {
         mme_ue->nhcc++;
@@ -1587,7 +1588,7 @@ void s1ap_handle_handover_request_ack(
     source_ue = target_ue->source_ue;
     ogs_assert(source_ue);
     mme_ue = source_ue->mme_ue;
-    ogs_assert(mme_ue);
+    ogs_expect(mme_ue);
 
     ogs_debug("    Source : ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
             source_ue->enb_ue_s1ap_id, source_ue->mme_ue_s1ap_id);
@@ -1855,7 +1856,8 @@ void s1ap_handle_enb_status_transfer(mme_enb_t *enb, ogs_s1ap_message_t *message
             ENB_StatusTransfer_TransparentContainer);
 }
 
-void s1ap_handle_handover_notification(mme_enb_t *enb, ogs_s1ap_message_t *message)
+void s1ap_handle_handover_notification(
+        mme_enb_t *enb, ogs_s1ap_message_t *message)
 {
     char buf[OGS_ADDRSTRLEN];
     int i;
@@ -1932,7 +1934,7 @@ void s1ap_handle_handover_notification(mme_enb_t *enb, ogs_s1ap_message_t *messa
     source_ue = target_ue->source_ue;
     ogs_assert(source_ue);
     mme_ue = source_ue->mme_ue;
-    ogs_assert(mme_ue);
+    ogs_expect(mme_ue);
 
     ogs_debug("    Source : ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
             source_ue->enb_ue_s1ap_id, source_ue->mme_ue_s1ap_id);
