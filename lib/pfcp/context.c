@@ -406,7 +406,7 @@ int ogs_pfcp_context_parse_config(const char *local, const char *remote)
                         uint8_t num_of_apn = 0;
                         uint32_t e_cell_id[OGS_MAX_NUM_OF_CELL_ID] = {0,};
                         uint8_t num_of_e_cell_id = 0;
-                        uint32_t nr_cell_id[OGS_MAX_NUM_OF_CELL_ID] = {0,};
+                        uint64_t nr_cell_id[OGS_MAX_NUM_OF_CELL_ID] = {0,};
                         uint8_t num_of_nr_cell_id = 0;
 
                         /* full list RR enabled by default */
@@ -567,7 +567,7 @@ int ogs_pfcp_context_parse_config(const char *local, const char *remote)
                                     v = ogs_yaml_iter_value(&nr_cell_id_iter);
                                     if (v) {
                                         nr_cell_id[num_of_nr_cell_id]
-                                            = ogs_uint28_from_string((char*)v);
+                                            = ogs_uint36_from_string((char*)v);
                                         num_of_nr_cell_id++;
                                     }
                                 } while (
