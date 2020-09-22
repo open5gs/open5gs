@@ -91,7 +91,7 @@ typedef struct ogs_pfcp_node_s {
     uint8_t         num_of_apn;
     uint32_t        e_cell_id[OGS_MAX_NUM_OF_CELL_ID];
     uint8_t         num_of_e_cell_id;
-    uint32_t        nr_cell_id[OGS_MAX_NUM_OF_CELL_ID];
+    uint64_t        nr_cell_id[OGS_MAX_NUM_OF_CELL_ID];
     uint8_t         num_of_nr_cell_id;
 
     /* flag to enable/ disable full list RR for this node */
