@@ -405,6 +405,7 @@ void sgwc_s5c_handle_update_bearer_request(
 
     sgwc_ue = sess->sgwc_ue;
     ogs_assert(sgwc_ue);
+    ogs_assert(sgwc_ue->gnode);
 
     ogs_debug("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
         sgwc_ue->mme_s11_teid, sgwc_ue->sgw_s11_teid);
@@ -474,6 +475,7 @@ void sgwc_s5c_handle_delete_bearer_request(
 
     sgwc_ue = sess->sgwc_ue;
     ogs_assert(sgwc_ue);
+    ogs_assert(sgwc_ue->gnode);
 
     ogs_debug("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
         sgwc_ue->mme_s11_teid, sgwc_ue->sgw_s11_teid);

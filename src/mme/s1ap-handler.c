@@ -245,10 +245,15 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, ogs_s1ap_message_t *message)
         }
     }
 
-    ogs_debug("    IP[%s] ENB_ID[%d]",
-            OGS_ADDR(enb->addr, buf), enb->enb_id);
+    ogs_debug("    IP[%s] ENB_ID[%d]", OGS_ADDR(enb->addr, buf), enb->enb_id);
 
-    ogs_assert(ENB_UE_S1AP_ID);
+    if (!ENB_UE_S1AP_ID) {
+        ogs_error("No ENB_UE_S1AP_ID");
+        s1ap_send_error_indication(enb,
+                NULL, ENB_UE_S1AP_ID,
+                S1AP_Cause_PR_protocol, S1AP_CauseProtocol_semantic_error);
+        return;
+    }
     enb_ue = enb_ue_find_by_enb_ue_s1ap_id(enb, *ENB_UE_S1AP_ID);
     if (!enb_ue) {
         enb_ue = enb_ue_add(enb, *ENB_UE_S1AP_ID);
@@ -303,24 +308,6 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, ogs_s1ap_message_t *message)
                     s1ap_send_ue_context_release_command(mme_ue->enb_ue,
                             S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
                             S1AP_UE_CTX_REL_S1_CONTEXT_REMOVE, 0);
-
-/*
- * Pull #569 : State should be initialized again.
- *
- * However, we cannot initialize the state in all cases.
- *
- * In TS24.301 Ch 5.5.1.2.7 Abnormal cases on the network side
- *
- * d) ATTACH REQUEST received after the ATTACH ACCEPT message has been sent
- * and before the ATTACH COMPLETE message is received
- *
- * Since, we have to do this special case, it is desirable
- * to handle it directly inside the state(emm-sm.c).
- */
-#if 0
-                    mme_ue_fsm_fini(mme_ue);
-                    mme_ue_fsm_init(mme_ue);
-#endif
                 }
                 mme_ue_associate_enb_ue(mme_ue, enb_ue);
             }
@@ -396,12 +383,25 @@ void s1ap_handle_uplink_nas_transport(
         }
     }
 
-    ogs_debug("    IP[%s] ENB_ID[%d]",
-            OGS_ADDR(enb->addr, buf), enb->enb_id);
+    ogs_debug("    IP[%s] ENB_ID[%d]", OGS_ADDR(enb->addr, buf), enb->enb_id);
 
-    ogs_assert(ENB_UE_S1AP_ID);
+    if (!ENB_UE_S1AP_ID) {
+        ogs_error("No ENB_UE_S1AP_ID");
+        s1ap_send_error_indication(enb,
+                NULL, ENB_UE_S1AP_ID,
+                S1AP_Cause_PR_protocol, S1AP_CauseProtocol_semantic_error);
+        return;
+    }
     enb_ue = enb_ue_find_by_enb_ue_s1ap_id(enb, *ENB_UE_S1AP_ID);
-    ogs_expect_or_return(enb_ue);
+    if (!enb_ue) {
+        ogs_error("No eNB UE Context : ENB_UE_S1AP_ID[%lld]",
+                (long long)*ENB_UE_S1AP_ID);
+        s1ap_send_error_indication(enb,
+                NULL, ENB_UE_S1AP_ID,
+                S1AP_Cause_PR_radioNetwork,
+                S1AP_CauseRadioNetwork_unknown_enb_ue_s1ap_id);
+        return;
+    }
 
     ogs_debug("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
             enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
@@ -724,18 +724,31 @@ void s1ap_handle_ue_context_modification_response(
         }
     }
 
-    ogs_debug("    IP[%s] ENB_ID[%d]",
-            OGS_ADDR(enb->addr, buf), enb->enb_id);
+    ogs_debug("    IP[%s] ENB_ID[%d]", OGS_ADDR(enb->addr, buf), enb->enb_id);
 
-    ogs_assert(ENB_UE_S1AP_ID);
+    if (!ENB_UE_S1AP_ID) {
+        ogs_error("No ENB_UE_S1AP_ID");
+        s1ap_send_error_indication(enb,
+                NULL, ENB_UE_S1AP_ID,
+                S1AP_Cause_PR_protocol, S1AP_CauseProtocol_semantic_error);
+        return;
+    }
     enb_ue = enb_ue_find_by_enb_ue_s1ap_id(enb, *ENB_UE_S1AP_ID);
-    ogs_assert(enb_ue);
-
-    mme_ue = enb_ue->mme_ue;
-    ogs_expect_or_return(mme_ue);
+    if (!enb_ue) {
+        ogs_error("No eNB UE Context : ENB_UE_S1AP_ID[%lld]",
+                (long long)*ENB_UE_S1AP_ID);
+        s1ap_send_error_indication(enb,
+                NULL, ENB_UE_S1AP_ID,
+                S1AP_Cause_PR_radioNetwork,
+                S1AP_CauseRadioNetwork_unknown_enb_ue_s1ap_id);
+        return;
+    }
 
     ogs_debug("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
             enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
+
+    mme_ue = enb_ue->mme_ue;
+    ogs_expect_or_return(mme_ue);
 
     CLEAR_SERVICE_INDICATOR(mme_ue);
 }
@@ -782,25 +795,34 @@ void s1ap_handle_ue_context_modification_failure(
         }
     }
 
-    ogs_debug("    IP[%s] ENB_ID[%d]",
-            OGS_ADDR(enb->addr, buf), enb->enb_id);
+    ogs_debug("    IP[%s] ENB_ID[%d]", OGS_ADDR(enb->addr, buf), enb->enb_id);
 
-    ogs_assert(ENB_UE_S1AP_ID);
-    ogs_assert(Cause);
-
+    if (!ENB_UE_S1AP_ID) {
+        ogs_error("No ENB_UE_S1AP_ID");
+        s1ap_send_error_indication(enb,
+                NULL, ENB_UE_S1AP_ID,
+                S1AP_Cause_PR_protocol, S1AP_CauseProtocol_semantic_error);
+        return;
+    }
     enb_ue = enb_ue_find_by_enb_ue_s1ap_id(enb, *ENB_UE_S1AP_ID);
-    if (enb_ue == NULL) {
-        ogs_warn("Initial context setup failure : "
-                "cannot find eNB-UE-S1AP-ID[%d]", (int)*ENB_UE_S1AP_ID);
-        goto cleanup;
+    if (!enb_ue) {
+        ogs_error("No eNB UE Context : ENB_UE_S1AP_ID[%lld]",
+                (long long)*ENB_UE_S1AP_ID);
+        s1ap_send_error_indication(enb,
+                NULL, ENB_UE_S1AP_ID,
+                S1AP_Cause_PR_radioNetwork,
+                S1AP_CauseRadioNetwork_unknown_enb_ue_s1ap_id);
+        return;
     }
 
     ogs_debug("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
             enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
+
+    ogs_expect_or_return(Cause);
+
     ogs_debug("    Cause[Group:%d Cause:%d]",
             Cause->present, (int)Cause->choice.radioNetwork);
 
-cleanup:
     mme_ue = enb_ue->mme_ue;
     ogs_expect_or_return(mme_ue);
     CLEAR_SERVICE_INDICATOR(mme_ue);
@@ -978,10 +1000,15 @@ void s1ap_handle_ue_context_release_request(
         }
     }
 
-    ogs_debug("    IP[%s] ENB_ID[%d]",
-            OGS_ADDR(enb->addr, buf), enb->enb_id);
+    ogs_debug("    IP[%s] ENB_ID[%d]", OGS_ADDR(enb->addr, buf), enb->enb_id);
 
-    ogs_assert(MME_UE_S1AP_ID);
+    if (!MME_UE_S1AP_ID) {
+        ogs_error("No MME_UE_S1AP_ID");
+        s1ap_send_error_indication(enb,
+                MME_UE_S1AP_ID, NULL,
+                S1AP_Cause_PR_protocol, S1AP_CauseProtocol_semantic_error);
+        return;
+    }
     enb_ue = enb_ue_find_by_mme_ue_s1ap_id(*MME_UE_S1AP_ID);
     if (!enb_ue) {
         ogs_warn("No ENB UE Context : MME_UE_S1AP_ID[%d]",
@@ -996,7 +1023,7 @@ void s1ap_handle_ue_context_release_request(
     ogs_debug("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
             enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
 
-    ogs_assert(Cause);
+    ogs_expect_or_return(Cause);
     ogs_debug("    Cause[Group:%d Cause:%d]",
             Cause->present, (int)Cause->choice.radioNetwork);
 
@@ -1054,10 +1081,15 @@ void s1ap_handle_ue_context_release_complete(
         }
     }
 
-    ogs_debug("    IP[%s] ENB_ID[%d]",
-            OGS_ADDR(enb->addr, buf), enb->enb_id);
+    ogs_debug("    IP[%s] ENB_ID[%d]", OGS_ADDR(enb->addr, buf), enb->enb_id);
 
-    ogs_assert(MME_UE_S1AP_ID);
+    if (!MME_UE_S1AP_ID) {
+        ogs_error("No MME_UE_S1AP_ID");
+        s1ap_send_error_indication(enb,
+                MME_UE_S1AP_ID, NULL,
+                S1AP_Cause_PR_protocol, S1AP_CauseProtocol_semantic_error);
+        return;
+    }
     enb_ue = enb_ue_find_by_mme_ue_s1ap_id(*MME_UE_S1AP_ID);
     if (!enb_ue) {
         ogs_warn("No ENB UE Context : MME_UE_S1AP_ID[%d]",
@@ -1092,11 +1124,13 @@ void s1ap_handle_ue_context_release_action(enb_ue_t *enb_ue)
     case S1AP_UE_CTX_REL_S1_REMOVE_AND_UNLINK:
         ogs_debug("    Action: S1 normal release");
         enb_ue_remove(enb_ue);
+        ogs_expect_or_return(mme_ue);
         mme_ue_deassociate(mme_ue);
         break;
     case S1AP_UE_CTX_REL_UE_CONTEXT_REMOVE:
         ogs_debug("    Action: UE context remove");
         enb_ue_remove(enb_ue);
+        ogs_expect_or_return(mme_ue);
         mme_ue_remove(mme_ue);
         break;
     case S1AP_UE_CTX_REL_DELETE_INDIRECT_TUNNEL:
@@ -1105,7 +1139,7 @@ void s1ap_handle_ue_context_release_action(enb_ue_t *enb_ue)
         source_ue_deassociate_target_ue(enb_ue);
         enb_ue_remove(enb_ue);
 
-        ogs_assert(mme_ue);
+        ogs_expect_or_return(mme_ue);
         if (mme_ue_have_indirect_tunnel(mme_ue)) {
             mme_gtp_send_delete_indirect_data_forwarding_tunnel_request(
                     mme_ue);

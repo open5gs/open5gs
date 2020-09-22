@@ -386,6 +386,7 @@ void sgwc_s11_handle_delete_session_request(
     }
 
     ogs_assert(sess);
+    ogs_assert(sess->gnode);
     ogs_debug("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
         sgwc_ue->mme_s11_teid, sgwc_ue->sgw_s11_teid);
     ogs_debug("    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]",
@@ -1070,6 +1071,7 @@ void sgwc_s11_handle_bearer_resource_command(
     }
 
     ogs_assert(sess);
+    ogs_assert(sess->gnode);
     ogs_debug("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
         sgwc_ue->mme_s11_teid, sgwc_ue->sgw_s11_teid);
     ogs_debug("    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]",

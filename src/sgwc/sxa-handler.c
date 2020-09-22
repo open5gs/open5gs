@@ -209,6 +209,7 @@ void sgwc_sxa_handle_session_establishment_response(
     pkbuf = ogs_gtp_build_msg(gtp_message);
     ogs_expect_or_return(pkbuf);
 
+    ogs_assert(sess->gnode);
     s5c_xact = ogs_gtp_xact_local_create(
             sess->gnode, &gtp_message->h, pkbuf, timeout, sess);
     ogs_expect_or_return(s5c_xact);
@@ -366,6 +367,7 @@ void sgwc_sxa_handle_session_modification_response(
             pkbuf = ogs_gtp_build_msg(recv_message);
             ogs_expect_or_return(pkbuf);
 
+            ogs_assert(sgwc_ue->gnode);
             s11_xact = ogs_gtp_xact_local_create(
                     sgwc_ue->gnode, &recv_message->h, pkbuf, timeout, sess);
             ogs_expect_or_return(s11_xact);

@@ -100,6 +100,7 @@ void mme_s11_handle_create_session_response(
         cause_value = OGS_GTP_CAUSE_MANDATORY_IE_MISSING;
     }
 
+    /* CHECK PDN_TYPE */
     if (rsp->pdn_address_allocation.presence) {
         ogs_paa_t paa;
 
@@ -159,12 +160,36 @@ void mme_s11_handle_create_session_response(
     pdn = sess->pdn;
     ogs_assert(pdn);
 
+    /* CHECK PDN_TYPE */
+    if (pdn->paa.pdn_type == OGS_GTP_PDN_TYPE_IPV4) {
+        /* Nothing */
+    } else if (pdn->paa.pdn_type == OGS_GTP_PDN_TYPE_IPV6) {
+        /* Nothing */
+    } else if (pdn->paa.pdn_type == OGS_GTP_PDN_TYPE_IPV4V6) {
+        /* Nothing */
+    } else {
+        ogs_error("Unknown PDN Type %u", pdn->paa.pdn_type);
+    }
+
     /* Control Plane(UL) : SGW-S11 */
     sgw_s11_teid = rsp->sender_f_teid_for_control_plane.data;
     mme_ue->sgw_s11_teid = ntohl(sgw_s11_teid->teid);
 
     memcpy(&pdn->paa, rsp->pdn_address_allocation.data,
             rsp->pdn_address_allocation.len);
+
+    /* CHECK PDN_TYPE */
+    if (pdn->paa.pdn_type == OGS_GTP_PDN_TYPE_IPV4) {
+        /* Nothing */
+    } else if (pdn->paa.pdn_type == OGS_GTP_PDN_TYPE_IPV6) {
+        /* Nothing */
+    } else if (pdn->paa.pdn_type == OGS_GTP_PDN_TYPE_IPV4V6) {
+        /* Nothing */
+    } else {
+        ogs_error("Unknown PDN Type %u", pdn->paa.pdn_type);
+        ogs_log_hexdump(OGS_LOG_ERROR,
+            rsp->pdn_address_allocation.data, rsp->pdn_address_allocation.len);
+    }
 
     /* PCO */
     if (rsp->protocol_configuration_options.presence) {
@@ -204,6 +229,19 @@ void mme_s11_handle_create_session_response(
 
     rv = ogs_gtp_f_teid_to_ip(sgw_s1u_teid, &bearer->sgw_s1u_ip);
     ogs_assert(rv == OGS_OK);
+
+    /* CHECK PDN_TYPE */
+    if (pdn->paa.pdn_type == OGS_GTP_PDN_TYPE_IPV4) {
+        /* Nothing */
+    } else if (pdn->paa.pdn_type == OGS_GTP_PDN_TYPE_IPV6) {
+        /* Nothing */
+    } else if (pdn->paa.pdn_type == OGS_GTP_PDN_TYPE_IPV4V6) {
+        /* Nothing */
+    } else {
+        ogs_error("Unknown PDN Type %u", pdn->paa.pdn_type);
+        ogs_log_hexdump(OGS_LOG_ERROR,
+            rsp->pdn_address_allocation.data, rsp->pdn_address_allocation.len);
+    }
 
     if (SESSION_CONTEXT_IN_ATTACH(sess)) {
         mme_csmap_t *csmap = mme_csmap_find_by_tai(&mme_ue->tai);

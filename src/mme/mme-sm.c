@@ -341,25 +341,6 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
                 s1ap_send_ue_context_release_command(mme_ue->enb_ue,
                         S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
                         S1AP_UE_CTX_REL_S1_CONTEXT_REMOVE, 0);
-
-/*
- * Pull #569 : State should be initialized again.
- *
- * However, we cannot initialize the state in all cases.
- *
- * In TS24.301 Ch 5.5.1.2.7 Abnormal cases on the network side
- *
- * d) ATTACH REQUEST received after the ATTACH ACCEPT message has been sent
- * and before the ATTACH COMPLETE message is received
- *
- * Since, we have to do this special case, it is desirable
- * to handle it directly inside the state(emm-sm.c).
- */
-#if 0
-                mme_ue_fsm_fini(mme_ue);
-                mme_ue_fsm_init(mme_ue);
-#endif
-
             }
             mme_ue_associate_enb_ue(mme_ue, enb_ue);
         }
