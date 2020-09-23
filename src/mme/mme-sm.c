@@ -167,7 +167,7 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
         ogs_assert(addr);
 
         ogs_info("eNB-S1 accepted[%s] in master_sm module",
-        OGS_ADDR(addr, buf));
+            OGS_ADDR(addr, buf));
 
         enb = mme_enb_find_by_addr(addr);
         if (!enb) {
@@ -177,6 +177,7 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
             ogs_warn("eNB context duplicated with IP-address [%s]!!!",
                     OGS_ADDR(addr, buf));
             ogs_sock_destroy(sock);
+            ogs_free(addr);
             ogs_warn("S1 Socket Closed");
         }
 
@@ -202,7 +203,7 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
                 ogs_min(max_num_of_ostreams, enb->max_num_of_ostreams);
 
         ogs_debug("eNB-S1 SCTP_COMM_UP[%s] Max Num of Outbound Streams[%d]", 
-            OGS_ADDR(addr, buf), enb->max_num_of_ostreams);
+            OGS_ADDR(enb->addr, buf), enb->max_num_of_ostreams);
 
         break;
 
@@ -213,16 +214,14 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
         ogs_assert(addr);
 
         enb = mme_enb_find_by_addr(addr);
-        ogs_free(addr);
-
         if (enb) {
-            ogs_info("eNB-S1[%s] connection refused!!!", 
-                    OGS_ADDR(addr, buf));
+            ogs_info("eNB-S1[%s] connection refused!!!", OGS_ADDR(addr, buf));
             mme_enb_remove(enb);
         } else {
             ogs_warn("eNB-S1[%s] connection refused, Already Removed!",
                     OGS_ADDR(addr, buf));
         }
+        ogs_free(addr);
 
         break;
     case MME_EVT_S1AP_MESSAGE:
@@ -657,7 +656,7 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
                 ogs_min(max_num_of_ostreams, vlr->max_num_of_ostreams);
 
         ogs_debug("VLR-SGs SCTP_COMM_UP[%s] Max Num of Outbound Streams[%d]", 
-            OGS_ADDR(addr, buf), vlr->max_num_of_ostreams);
+            OGS_ADDR(vlr->addr, buf), vlr->max_num_of_ostreams);
 
         e->vlr = vlr;
         ogs_fsm_dispatch(&vlr->sm, e);
@@ -680,11 +679,11 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
             ogs_fsm_dispatch(&vlr->sm, e);
 
             ogs_info("VLR-SGs[%s] connection refused!!!", 
-                    OGS_ADDR(addr, buf));
+                    OGS_ADDR(vlr->addr, buf));
 
         } else {
             ogs_warn("VLR-SGs[%s] connection refused, Already Removed!",
-                    OGS_ADDR(addr, buf));
+                    OGS_ADDR(vlr->addr, buf));
         }
 
         break;

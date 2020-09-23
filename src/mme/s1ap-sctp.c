@@ -108,8 +108,7 @@ void s1ap_accept_handler(ogs_sock_t *sock)
         ogs_info("eNB-S1 accepted[%s]:%d in s1_path module", 
             OGS_ADDR(addr, buf), OGS_PORT(addr));
 
-        s1ap_event_push(MME_EVT_S1AP_LO_ACCEPT,
-                new, addr, NULL, 0, 0);
+        s1ap_event_push(MME_EVT_S1AP_LO_ACCEPT, new, addr, NULL, 0, 0);
     } else {
         ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno, "accept() failed");
     }

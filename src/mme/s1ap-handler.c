@@ -451,8 +451,7 @@ void s1ap_handle_ue_capability_info_indication(
         }
     }
 
-    ogs_debug("    IP[%s] ENB_ID[%d]",
-            OGS_ADDR(enb->addr, buf), enb->enb_id);
+    ogs_debug("    IP[%s] ENB_ID[%d]", OGS_ADDR(enb->addr, buf), enb->enb_id);
 
     ogs_assert(ENB_UE_S1AP_ID);
     enb_ue = enb_ue_find_by_enb_ue_s1ap_id(enb, *ENB_UE_S1AP_ID);
@@ -1224,8 +1223,7 @@ void s1ap_handle_path_switch_request(
         }
     }
 
-    ogs_debug("    IP[%s] ENB_ID[%d]",
-            OGS_ADDR(enb->addr, buf), enb->enb_id);
+    ogs_debug("    IP[%s] ENB_ID[%d]", OGS_ADDR(enb->addr, buf), enb->enb_id);
 
     ogs_assert(EUTRAN_CGI);
     pLMNidentity = &EUTRAN_CGI->pLMNidentity;
@@ -1391,8 +1389,7 @@ void s1ap_handle_enb_configuration_transfer(
         }
     }
 
-    ogs_debug("    IP[%s] ENB_ID[%d]",
-            OGS_ADDR(enb->addr, buf), enb->enb_id);
+    ogs_debug("    IP[%s] ENB_ID[%d]", OGS_ADDR(enb->addr, buf), enb->enb_id);
 
     if (SONConfigurationTransfer) {
         S1AP_TargeteNB_ID_t *targeteNB_ID =
@@ -1500,8 +1497,7 @@ void s1ap_handle_handover_required(mme_enb_t *enb, ogs_s1ap_message_t *message)
         }
     }
 
-    ogs_debug("    IP[%s] ENB_ID[%d]",
-            OGS_ADDR(enb->addr, buf), enb->enb_id);
+    ogs_debug("    IP[%s] ENB_ID[%d]", OGS_ADDR(enb->addr, buf), enb->enb_id);
 
     ogs_assert(TargetID);
     switch (TargetID->present) {
@@ -1606,8 +1602,7 @@ void s1ap_handle_handover_request_ack(
             break;
         }
     }
-    ogs_debug("    IP[%s] ENB_ID[%d]",
-            OGS_ADDR(enb->addr, buf), enb->enb_id);
+    ogs_debug("    IP[%s] ENB_ID[%d]", OGS_ADDR(enb->addr, buf), enb->enb_id);
 
     ogs_assert(MME_UE_S1AP_ID);
     ogs_assert(ENB_UE_S1AP_ID);
@@ -1724,8 +1719,7 @@ void s1ap_handle_handover_failure(mme_enb_t *enb, ogs_s1ap_message_t *message)
         }
     }
 
-    ogs_debug("    IP[%s] ENB_ID[%d]",
-            OGS_ADDR(enb->addr, buf), enb->enb_id);
+    ogs_debug("    IP[%s] ENB_ID[%d]", OGS_ADDR(enb->addr, buf), enb->enb_id);
 
     ogs_assert(MME_UE_S1AP_ID);
     ogs_assert(Cause);
@@ -1791,8 +1785,7 @@ void s1ap_handle_handover_cancel(mme_enb_t *enb, ogs_s1ap_message_t *message)
             break;
         }
     }
-    ogs_debug("    IP[%s] ENB_ID[%d]",
-            OGS_ADDR(enb->addr, buf), enb->enb_id);
+    ogs_debug("    IP[%s] ENB_ID[%d]", OGS_ADDR(enb->addr, buf), enb->enb_id);
 
     ogs_assert(MME_UE_S1AP_ID);
     ogs_assert(ENB_UE_S1AP_ID);
@@ -1867,8 +1860,7 @@ void s1ap_handle_enb_status_transfer(mme_enb_t *enb, ogs_s1ap_message_t *message
             break;
         }
     }
-    ogs_debug("    IP[%s] ENB_ID[%d]",
-            OGS_ADDR(enb->addr, buf), enb->enb_id);
+    ogs_debug("    IP[%s] ENB_ID[%d]", OGS_ADDR(enb->addr, buf), enb->enb_id);
 
     ogs_assert(MME_UE_S1AP_ID);
     ogs_assert(ENB_UE_S1AP_ID);
@@ -1944,8 +1936,7 @@ void s1ap_handle_handover_notification(
             break;
         }
     }
-    ogs_debug("    IP[%s] ENB_ID[%d]",
-            OGS_ADDR(enb->addr, buf), enb->enb_id);
+    ogs_debug("    IP[%s] ENB_ID[%d]", OGS_ADDR(enb->addr, buf), enb->enb_id);
 
     ogs_assert(EUTRAN_CGI);
     pLMNidentity = &EUTRAN_CGI->pLMNidentity;
@@ -2065,8 +2056,7 @@ void s1ap_handle_s1_reset(
         }
     }
 
-    ogs_debug("    IP[%s] ENB_ID[%d]",
-            OGS_ADDR(enb->addr, buf), enb->enb_id);
+    ogs_debug("    IP[%s] ENB_ID[%d]", OGS_ADDR(enb->addr, buf), enb->enb_id);
 
     ogs_assert(Cause);
     ogs_debug("    Cause[Group:%d Cause:%d]",
@@ -2161,8 +2151,7 @@ void s1ap_handle_write_replace_warning_response(
 
     ogs_debug("[MME] Write replace warning response");
 
-    ogs_debug("    IP[%s] ENB_ID[%d]",
-            OGS_ADDR(enb->addr, buf), enb->enb_id);
+    ogs_debug("    IP[%s] ENB_ID[%d]", OGS_ADDR(enb->addr, buf), enb->enb_id);
 
 }
 
@@ -2186,6 +2175,5 @@ void s1ap_handle_kill_response(
 
     ogs_debug("[MME] Kill response");
 
-    ogs_debug("    IP[%s] ENB_ID[%d]",
-            OGS_ADDR(enb->addr, buf), enb->enb_id);
+    ogs_debug("    IP[%s] ENB_ID[%d]", OGS_ADDR(enb->addr, buf), enb->enb_id);
 }

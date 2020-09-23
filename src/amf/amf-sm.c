@@ -553,7 +553,7 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
         ogs_assert(addr);
 
         ogs_info("gNB-N1 accepted[%s] in master_sm module",
-        OGS_ADDR(addr, buf));
+            OGS_ADDR(addr, buf));
 
         gnb = amf_gnb_find_by_addr(addr);
         if (!gnb) {
@@ -563,6 +563,7 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
             ogs_warn("gNB context duplicated with IP-address [%s]!!!",
                     OGS_ADDR(addr, buf));
             ogs_sock_destroy(sock);
+            ogs_free(addr);
             ogs_warn("N1 Socket Closed");
         }
 
@@ -588,7 +589,7 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
                 ogs_min(max_num_of_ostreams, gnb->max_num_of_ostreams);
 
         ogs_debug("gNB-N1 SCTP_COMM_UP[%s] Max Num of Outbound Streams[%d]", 
-            OGS_ADDR(addr, buf), gnb->max_num_of_ostreams);
+            OGS_ADDR(gnb->addr, buf), gnb->max_num_of_ostreams);
 
         break;
 
@@ -599,8 +600,6 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
         ogs_assert(addr);
 
         gnb = amf_gnb_find_by_addr(addr);
-        ogs_free(addr);
-
         if (gnb) {
             ogs_info("gNB-N1[%s] connection refused!!!", 
                     OGS_ADDR(addr, buf));
@@ -609,6 +608,7 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
             ogs_warn("gNB-N1[%s] connection refused, Already Removed!",
                     OGS_ADDR(addr, buf));
         }
+        ogs_free(addr);
 
         break;
     case AMF_EVT_NGAP_MESSAGE:

@@ -75,8 +75,7 @@ int s1ap_send_to_enb(mme_enb_t *enb, ogs_pkbuf_t *pkbuf, uint16_t stream_no)
     ogs_assert(pkbuf);
     ogs_assert(enb->sock);
 
-    ogs_debug("    IP[%s] ENB_ID[%d]",
-            OGS_ADDR(enb->addr, buf), enb->enb_id);
+    ogs_debug("    IP[%s] ENB_ID[%d]", OGS_ADDR(enb->addr, buf), enb->enb_id);
 
     rv = s1ap_send(enb->sock, pkbuf,
             enb->sock_type == SOCK_STREAM ? NULL : enb->addr,
