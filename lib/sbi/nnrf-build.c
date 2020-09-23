@@ -78,7 +78,7 @@ OpenAPI_nf_profile_t *ogs_nnrf_nfm_build_nf_profile(
             ogs_trace("IPv6 [family:%d, port:%d]",
                     nf_instance->ipv6[i]->ogs_sa_family,
                     nf_instance->ipv6[i]->ogs_sin_port);
-            ogs_assert(nf_instance->ipv4[i]->ogs_sa_family == AF_INET6);
+            ogs_assert(nf_instance->ipv6[i]->ogs_sa_family == AF_INET6);
             OpenAPI_list_add(Ipv6AddrList, ogs_ipstrdup(nf_instance->ipv6[i]));
         }
     }
