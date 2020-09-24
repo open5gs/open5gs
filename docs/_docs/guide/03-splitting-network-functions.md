@@ -18,7 +18,7 @@ _Cloud Authentication and Session Management Server_
 ```
 MongoDB   = 127.0.0.1 (subscriber data) - http://localhost:3000
 MME-s1ap  = 10.10.0.2 :36412 (authVPN) for S1-MME
-MME-gtpc  = 127.0.0.2 :any for S11
+MME-gtpc  = 127.0.0.2 :2123 for S11
 MME-frDi  = 127.0.0.2 :3868 for S6a auth
 SGWC-gtpc = 127.0.0.3 :2123 for S11
 SGWC-pfcp = 10.10.0.3 :8805 (authVPN) for Sxa
