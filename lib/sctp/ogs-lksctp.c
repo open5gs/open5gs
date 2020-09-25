@@ -190,7 +190,6 @@ int ogs_sctp_connect(ogs_sock_t *sock, ogs_sockaddr_t *sa_list)
 int ogs_sctp_sendmsg(ogs_sock_t *sock, const void *msg, size_t len,
         ogs_sockaddr_t *to, uint32_t ppid, uint16_t stream_no)
 {
-    int size;
     socklen_t addrlen = 0;
 
     ogs_assert(sock);
@@ -198,19 +197,13 @@ int ogs_sctp_sendmsg(ogs_sock_t *sock, const void *msg, size_t len,
     if (to)
         addrlen = ogs_sockaddr_len(to);
     
-    size = sctp_sendmsg(sock->fd, msg, len,
+    return sctp_sendmsg(sock->fd, msg, len,
             to ? &to->sa : NULL, addrlen,
             htobe32(ppid),
             0,  /* flags */
             stream_no,
             0,  /* timetolive */
             0); /* context */
-    if (size < 0) {
-        ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,
-                "sctp_sendmsg(len:%d) failed", (int)len);
-    }
-
-    return size;
 }
 
 int ogs_sctp_recvmsg(ogs_sock_t *sock, void *msg, size_t len,

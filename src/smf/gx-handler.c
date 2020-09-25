@@ -162,29 +162,6 @@ void smf_gx_handle_cca_initial_request(
     }
 
     smf_epc_pfcp_send_session_establishment_request(sess, gtp_xact);
-
-#if ENABLE_PDN_TYPE_DEBUG
-    if (sess->pdn.paa.pdn_type == OGS_GTP_PDN_TYPE_IPV4) {
-        /* Nothing */
-    } else if (sess->pdn.paa.pdn_type == OGS_GTP_PDN_TYPE_IPV6) {
-        /* Nothing */
-    } else if (sess->pdn.paa.pdn_type == OGS_GTP_PDN_TYPE_IPV4V6) {
-        /* Nothing */
-    } else {
-        smf_ue_t *smf_ue = NULL;
-        char buf1[OGS_ADDRSTRLEN];
-        char buf2[OGS_ADDRSTRLEN];
-
-        ogs_error("Unknown PDN Type %u", sess->pdn.paa.pdn_type);
-
-        smf_ue = sess->smf_ue;
-        ogs_assert(smf_ue);
-        ogs_error("    UE IMSI:[%s] IPv4:[%s] IPv6:[%s]",
-            smf_ue->imsi_bcd,
-            sess->ipv4 ? OGS_INET_NTOP(&sess->ipv4->addr, buf1) : "",
-            sess->ipv6 ? OGS_INET6_NTOP(&sess->ipv6->addr, buf2) : "");
-    }
-#endif
 }
 
 void smf_gx_handle_cca_termination_request(

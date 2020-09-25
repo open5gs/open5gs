@@ -129,6 +129,7 @@ int esm_handle_information_response(mme_sess_t *sess,
 
     if (sess->pdn) {
         ogs_debug("    APN[%s]", sess->pdn->apn);
+
         if (SESSION_CONTEXT_IS_AVAILABLE(mme_ue)) {
             mme_csmap_t *csmap = mme_csmap_find_by_tai(&mme_ue->tai);
             mme_ue->csmap = csmap;
@@ -136,6 +137,20 @@ int esm_handle_information_response(mme_sess_t *sess,
             if (csmap) {
                 sgsap_send_location_update_request(mme_ue);
             } else {
+
+                if (sess->pdn->paa.pdn_type == OGS_GTP_PDN_TYPE_IPV4) {
+                    /* Nothing */
+                } else if (sess->pdn->paa.pdn_type == OGS_GTP_PDN_TYPE_IPV6) {
+                    /* Nothing */
+                } else if (sess->pdn->paa.pdn_type == OGS_GTP_PDN_TYPE_IPV4V6) {
+                    /* Nothing */
+                } else {
+                    ogs_error("Unknown PDN Type %u", sess->pdn->paa.pdn_type);
+                    nas_eps_send_pdn_connectivity_reject(
+                            sess, ESM_CAUSE_UNKNOWN_PDN_TYPE);
+                    return OGS_ERROR;
+                }
+
                 nas_eps_send_attach_accept(mme_ue);
             }
         } else {

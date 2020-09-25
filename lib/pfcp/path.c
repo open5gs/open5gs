@@ -272,17 +272,18 @@ void ogs_pfcp_send_g_pdu(ogs_pfcp_pdr_t *pdr, ogs_pkbuf_t *sendbuf)
     ogs_pfcp_qer_t *qer = NULL;
 
     ogs_assert(pdr);
+    ogs_assert(sendbuf);
 
     far = pdr->far;
     if (!far) {
         ogs_error("No FAR");
+        ogs_pkbuf_free(sendbuf);
         return;
     }
 
     gnode = far->gnode;
     ogs_assert(gnode);
     ogs_assert(gnode->sock);
-    ogs_assert(sendbuf);
 
     qer = pdr->qer;
 

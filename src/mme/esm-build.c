@@ -127,17 +127,6 @@ ogs_pkbuf_t *esm_build_activate_default_bearer_context_request(
         return NULL;
     }
 
-    /* CHECK PDN_TYPE */
-    if (pdn->paa.pdn_type == OGS_GTP_PDN_TYPE_IPV4) {
-        /* Nothing */
-    } else if (pdn->paa.pdn_type == OGS_GTP_PDN_TYPE_IPV6) {
-        /* Nothing */
-    } else if (pdn->paa.pdn_type == OGS_GTP_PDN_TYPE_IPV4V6) {
-        /* Nothing */
-    } else {
-        ogs_error("Unknown PDN Type %u", pdn->paa.pdn_type);
-    }
-
     ogs_debug("[ESM] Activate default bearer context request");
     ogs_debug("    IMSI[%s] PTI[%d] EBI[%d]",
             mme_ue->imsi_bcd, sess->pti, bearer->ebi);
@@ -178,17 +167,6 @@ ogs_pkbuf_t *esm_build_activate_default_bearer_context_request(
      * #52 "single address bearers only allowed", respectively, shall be
      * included in the ACTIVATE DEFAULT EPS BEARER CONTEXT REQUEST message.
      */
-
-    /* CHECK PDN_TYPE */
-    if (pdn->paa.pdn_type == OGS_GTP_PDN_TYPE_IPV4) {
-        /* Nothing */
-    } else if (pdn->paa.pdn_type == OGS_GTP_PDN_TYPE_IPV6) {
-        /* Nothing */
-    } else if (pdn->paa.pdn_type == OGS_GTP_PDN_TYPE_IPV4V6) {
-        /* Nothing */
-    } else {
-        ogs_error("Unknown PDN Type %u", pdn->paa.pdn_type);
-    }
 
     pdn_address->pdn_type = pdn->paa.pdn_type;
     if (sess->request_type.type == OGS_NAS_EPS_PDN_TYPE_IPV4V6) {

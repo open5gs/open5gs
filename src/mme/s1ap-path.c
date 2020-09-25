@@ -58,18 +58,19 @@ int s1ap_send(ogs_sock_t *sock, ogs_pkbuf_t *pkbuf,
     sent = ogs_sctp_sendmsg(sock, pkbuf->data, pkbuf->len,
             addr, OGS_SCTP_S1AP_PPID, stream_no);
     if (sent < 0 || sent != pkbuf->len) {
-        ogs_error("ogs_sctp_sendmsg error (%d:%s)", errno, strerror(errno));
+        ogs_error("ogs_sctp_sendmsg(len:%d,ssn:%d) error (%d:%s)",
+                pkbuf->len, stream_no, errno, strerror(errno));
+        ogs_pkbuf_free(pkbuf);
         return OGS_ERROR;
     }
-    ogs_pkbuf_free(pkbuf);
 
+    ogs_pkbuf_free(pkbuf);
     return OGS_OK;
 }
 
 int s1ap_send_to_enb(mme_enb_t *enb, ogs_pkbuf_t *pkbuf, uint16_t stream_no)
 {
     char buf[OGS_ADDRSTRLEN];
-    int rv;
 
     ogs_assert(enb);
     ogs_assert(pkbuf);
@@ -77,18 +78,9 @@ int s1ap_send_to_enb(mme_enb_t *enb, ogs_pkbuf_t *pkbuf, uint16_t stream_no)
 
     ogs_debug("    IP[%s] ENB_ID[%d]", OGS_ADDR(enb->addr, buf), enb->enb_id);
 
-    rv = s1ap_send(enb->sock, pkbuf,
+    return s1ap_send(enb->sock, pkbuf,
             enb->sock_type == SOCK_STREAM ? NULL : enb->addr,
             stream_no);
-    if (rv != OGS_OK) {
-        ogs_error("s1ap_send() failed");
-
-        ogs_pkbuf_free(pkbuf);
-        s1ap_event_push(MME_EVT_S1AP_LO_CONNREFUSED,
-                enb->sock, enb->addr, NULL, 0, 0);
-    }
-
-    return rv;
 }
 
 int s1ap_send_to_enb_ue(enb_ue_t *enb_ue, ogs_pkbuf_t *pkbuf)

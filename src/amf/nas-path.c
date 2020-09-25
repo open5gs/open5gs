@@ -55,7 +55,6 @@ int nas_5gs_send_to_downlink_nas_transport(amf_ue_t *amf_ue, ogs_pkbuf_t *pkbuf)
 
         rv = nas_5gs_send_to_gnb(amf_ue, ngapbuf);
         if (rv != OGS_OK) {
-            ogs_error("nas_5gs_send_to_gnb() failed");
             return OGS_ERROR;
         }
     }
@@ -93,7 +92,7 @@ void nas_5gs_send_registration_reject(
     ogs_expect_or_return(gmmbuf);
 
     rv = nas_5gs_send_to_downlink_nas_transport(amf_ue, gmmbuf);
-    ogs_expect_or_return(rv == OGS_OK);
+    ogs_expect(rv == OGS_OK);
 }
 
 void nas_5gs_send_service_accept(amf_ue_t *amf_ue)
@@ -185,6 +184,7 @@ void nas_5gs_send_de_registration_accept(amf_ue_t *amf_ue)
 
 void nas_5gs_send_identity_request(amf_ue_t *amf_ue)
 {
+    int rv;
     ogs_pkbuf_t *gmmbuf = NULL;
 
     ogs_assert(amf_ue);
@@ -204,7 +204,8 @@ void nas_5gs_send_identity_request(amf_ue_t *amf_ue)
     ogs_timer_start(amf_ue->t3570.timer,
             amf_timer_cfg(AMF_TIMER_T3570)->duration);
 
-    nas_5gs_send_to_downlink_nas_transport(amf_ue, gmmbuf);
+    rv = nas_5gs_send_to_downlink_nas_transport(amf_ue, gmmbuf);
+    ogs_expect(rv == OGS_OK);
 }
 
 void nas_5gs_send_authentication_request(amf_ue_t *amf_ue)
@@ -460,85 +461,3 @@ void nas_5gs_send_back_5gsm_message_from_sbi(amf_sess_t *sess, int status)
     ogs_assert(sess);
     nas_5gs_send_back_5gsm_message(sess, gmm_cause_from_sbi(status));
 }
-
-#if 0
-void nas_5gs_send_tau_accept(
-        amf_ue_t *amf_ue, NGAP_ProcedureCode_t procedureCode)
-{
-    int rv;
-    ogs_pkbuf_t *gmmbuf = NULL;
-
-    ogs_assert(amf_ue);
-
-    ogs_debug("Tracking area update accept");
-    ogs_debug("    IMSI[%s]", amf_ue->imsi_bcd);
-
-    gmmbuf = gmm_build_tau_accept(amf_ue);
-    ogs_expect_or_return(gmmbuf);
-
-    if (procedureCode == NGAP_ProcedureCode_id_InitialContextSetup) {
-        ogs_pkbuf_t *ngapbuf = NULL;
-        ngapbuf = ngap_build_initial_context_setup_request(amf_ue, gmmbuf);
-        ogs_expect_or_return(ngapbuf);
-
-        rv = nas_5gs_send_to_gnb(amf_ue, ngapbuf);
-        ogs_expect(rv == OGS_OK);
-    } else if (procedureCode == NGAP_ProcedureCode_id_downlinkNASTransport) {
-        rv = nas_5gs_send_to_downlink_nas_transport(amf_ue, gmmbuf);
-        ogs_expect(rv == OGS_OK);
-    } else
-        ogs_assert_if_reached();
-}
-
-void nas_5gs_send_tau_reject(amf_ue_t *amf_ue, ogs_nas_5gmm_cause_t gmm_cause)
-{
-    int rv;
-    ogs_pkbuf_t *gmmbuf = NULL;
-
-    ogs_assert(amf_ue);
-
-    /* Build TAU reject */
-    gmmbuf = gmm_build_tau_reject(gmm_cause, amf_ue);
-    ogs_expect_or_return(gmmbuf);
-
-    rv = nas_5gs_send_to_downlink_nas_transport(amf_ue, gmmbuf);
-    ogs_expect(rv == OGS_OK);
-}
-
-void nas_5gs_send_cs_service_notification(amf_ue_t *amf_ue)
-{
-    int rv;
-    ogs_pkbuf_t *gmmbuf = NULL;
-
-    ogs_assert(amf_ue);
-
-    ogs_debug("CS Service Notification");
-    ogs_debug("    IMSI[%s]", amf_ue->imsi_bcd);
-
-    gmmbuf = gmm_build_cs_service_notification(amf_ue);
-    ogs_expect_or_return(gmmbuf);
-
-    rv = nas_5gs_send_to_downlink_nas_transport(amf_ue, gmmbuf);
-    ogs_expect(rv == OGS_OK);
-}
-
-void nas_5gs_send_downlink_nas_transport(
-        amf_ue_t *amf_ue, uint8_t *buffer, uint8_t length)
-{
-    int rv;
-    ogs_pkbuf_t *gmmbuf = NULL;
-
-    ogs_assert(amf_ue);
-    ogs_assert(buffer);
-    ogs_assert(length);
-
-    ogs_debug("Downlink NAS transport");
-    ogs_debug("    IMSI[%s]", amf_ue->imsi_bcd);
-
-    gmmbuf = gmm_build_downlink_nas_transport(amf_ue, buffer, length);
-    ogs_expect_or_return(gmmbuf);
-
-    rv = nas_5gs_send_to_downlink_nas_transport(amf_ue, gmmbuf);
-    ogs_expect(rv == OGS_OK);
-}
-#endif

@@ -288,8 +288,10 @@ int emm_handle_attach_complete(
     }                
 
     emmbuf = nas_eps_security_encode(mme_ue, &message);
-    if (emmbuf) 
-        nas_eps_send_to_downlink_nas_transport(mme_ue, emmbuf);
+    if (emmbuf)  {
+        rv = nas_eps_send_to_downlink_nas_transport(mme_ue, emmbuf);
+        ogs_expect(rv == OGS_OK);
+    }
 
     ogs_debug("[EMM] EMM information");
     ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);

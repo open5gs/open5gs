@@ -68,11 +68,13 @@ int sgsap_send(ogs_sock_t *sock, ogs_pkbuf_t *pkbuf,
     sent = ogs_sctp_sendmsg(sock, pkbuf->data, pkbuf->len,
             addr, OGS_SCTP_SGSAP_PPID, stream_no);
     if (sent < 0 || sent != pkbuf->len) {
-        ogs_error("ogs_sctp_sendmsg error (%d:%s)", errno, strerror(errno));
+        ogs_error("ogs_sctp_sendmsg(len:%d,ssn:%d) error (%d:%s)",
+                pkbuf->len, stream_no, errno, strerror(errno));
+        ogs_pkbuf_free(pkbuf);
         return OGS_ERROR;
     }
-    ogs_pkbuf_free(pkbuf);
 
+    ogs_pkbuf_free(pkbuf);
     return OGS_OK;
 }
 
@@ -80,9 +82,7 @@ int sgsap_send_to_vlr_with_sid(
         mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf, uint16_t stream_no)
 {
     char buf[OGS_ADDRSTRLEN];
-    ogs_socknode_t *node = NULL;;
     ogs_sock_t *sock = NULL;;
-    int rv;
 
     ogs_assert(vlr);
     ogs_assert(pkbuf);
@@ -90,16 +90,7 @@ int sgsap_send_to_vlr_with_sid(
     ogs_assert(sock);
 
     ogs_debug("    VLR-IP[%s]", OGS_ADDR(vlr->addr, buf));
-    rv = sgsap_send(sock, pkbuf, vlr->addr, stream_no);
-    if (rv != OGS_OK) {
-        ogs_error("sgsap_send() failed");
-
-        ogs_pkbuf_free(pkbuf);
-        sgsap_event_push(MME_EVT_SGSAP_LO_CONNREFUSED,
-                node->sock, node->addr, NULL, 0, 0);
-    }
-
-    return rv;
+    return sgsap_send(sock, pkbuf, vlr->addr, stream_no);
 }
 
 int sgsap_send_to_vlr(mme_ue_t *mme_ue, ogs_pkbuf_t *pkbuf)

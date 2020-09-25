@@ -86,7 +86,6 @@ int nas_eps_send_to_downlink_nas_transport(mme_ue_t *mme_ue, ogs_pkbuf_t *pkbuf)
 
         rv = nas_eps_send_to_enb(mme_ue, s1apbuf);
         if (rv != OGS_OK) {
-            ogs_error("nas_eps_send_to_enb() failed");
             return OGS_ERROR;
         }
     }
@@ -144,11 +143,12 @@ void nas_eps_send_attach_reject(mme_ue_t *mme_ue,
     emmbuf = emm_build_attach_reject(emm_cause, esmbuf);
     ogs_expect_or_return(emmbuf);
     rv = nas_eps_send_to_downlink_nas_transport(mme_ue, emmbuf);
-    ogs_expect_or_return(rv == OGS_OK);
+    ogs_expect(rv == OGS_OK);
 }
 
 void nas_eps_send_identity_request(mme_ue_t *mme_ue)
 {
+    int rv;
     ogs_pkbuf_t *emmbuf = NULL;
 
     ogs_assert(mme_ue);
@@ -168,7 +168,8 @@ void nas_eps_send_identity_request(mme_ue_t *mme_ue)
     ogs_timer_start(mme_ue->t3470.timer, 
             mme_timer_cfg(MME_TIMER_T3470)->duration);
 
-    nas_eps_send_to_downlink_nas_transport(mme_ue, emmbuf);
+    rv = nas_eps_send_to_downlink_nas_transport(mme_ue, emmbuf);
+    ogs_expect(rv == OGS_OK);
 }
 
 void nas_eps_send_authentication_request(

@@ -165,7 +165,7 @@ typedef struct ogs_pfcp_far_s {
 
     ogs_pfcp_smreq_flags_t  smreq_flags;
 
-#define MAX_NUM_OF_PACKET_BUFFER 48
+#define MAX_NUM_OF_PACKET_BUFFER 256
     uint32_t                num_of_buffered_packet;
     ogs_pkbuf_t*            buffered_packet[MAX_NUM_OF_PACKET_BUFFER];
 

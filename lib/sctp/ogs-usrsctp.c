@@ -329,24 +329,16 @@ int ogs_sctp_sendmsg(ogs_sock_t *sock, const void *msg, size_t len,
 {
     struct socket *socket = (struct socket *)sock;
     struct sctp_sndinfo sndinfo;
-    ssize_t sent;
 
     ogs_assert(socket);
 
     memset((void *)&sndinfo, 0, sizeof(struct sctp_sndinfo));
     sndinfo.snd_ppid = htobe32(ppid);
     sndinfo.snd_sid = stream_no;
-    sent = usrsctp_sendv(socket, msg, len,
+    return usrsctp_sendv(socket, msg, len,
             to ? &to->sa : NULL, to ? 1 : 0,
             (void *)&sndinfo, (socklen_t)sizeof(struct sctp_sndinfo),
             SCTP_SENDV_SNDINFO, 0);
-
-    if (sent < 0 || sent != len) {
-        ogs_error("sent : %d, len : %d", (int)sent, (int)len);
-        return OGS_ERROR;
-    }
-    
-    return sent;
 }
 
 int ogs_sctp_recvmsg(ogs_sock_t *sock, void *msg, size_t len,
