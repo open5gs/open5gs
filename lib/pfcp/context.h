@@ -174,15 +174,6 @@ typedef struct ogs_pfcp_far_s {
     void                    *gnode;
 } ogs_pfcp_far_t;
 
-/*
- * Note that buffer size 48 should not be modified. To modify this value,
- * we need to consider the overflow of the FAR memory pool.
- *
- * 8192 memory pool is currently being used.
- * If you want to, you need to add big memory pool for FAR memory.
- */
-OGS_STATIC_ASSERT((sizeof(ogs_pfcp_far_t) * OGS_MAX_NUM_OF_FAR) < 8192);
-
 typedef struct ogs_pfcp_urr_s {
     ogs_lnode_t             lnode;
     uint32_t                index;
