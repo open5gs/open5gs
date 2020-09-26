@@ -7,7 +7,7 @@ If you find Open5GS useful for work, please consider supporting this Open Source
 
 <p align="center">
   <a href="https://nextepc.com/" target="_blank">
-    <img src="https://open5gs.org/assets/img/nextepc_logo.jpg" style="width: 260px" alt="NextEPC Logo">
+    <img width="260px" src="https://open5gs.org/assets/img/nextepc_logo.jpg">
   </a>
 </p>
 
