@@ -1,8 +1,17 @@
-## Sponsors
+<h2 align="center">Supporting Open5GS</h2>
 
 If you find Open5GS useful for work, please consider supporting this Open Source project by [Becoming a sponsor](https://github.com/sponsors/acetcom). To manage the funding transactions transparently, you can donate through [OpenCollective](https://opencollective.com/open5gs).
 
-#### Thanks to sponsors!
+<h3 align="center">Special Sponsors</h3>
+<!--special start-->
+
+<p align="center">
+  <a href="https://nextepc.com/" target="_blank">
+    <img src="https://open5gs.org/assets/img/nextepc_logo.jpg" style="width: 260px" alt="NextEPC Logo">
+  </a>
+</p>
+
+<h3 align="center">Sponsors</h3>
 <table>
   <tbody>
     <tr>
