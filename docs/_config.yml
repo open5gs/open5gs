@@ -58,7 +58,7 @@ footer_icons:
 
 header_pages:
   - _pages/docs.md
-  - _pages/faq.md
+  - _pages/support.md
   - _pages/about.md
   - _pages/github.md
 
