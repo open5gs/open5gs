@@ -1139,21 +1139,20 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
 int mme_fd_init(void)
 {
     int ret;
-    struct dict_object * s6a_app, * vnd;
+    struct dict_object *s6a_app, *vnd;
+    struct dict_vendor_data vnd_data;
+    struct dict_application_data s6a_app_data;
 
     ret = ogs_diam_init(FD_MODE_CLIENT,
                 mme_self()->diam_conf_path, mme_self()->diam_config);
     ogs_assert(ret == OGS_OK);
 
-    struct dict_vendor_data vnd_data;
     vnd_data.vendor_id = 10415;
     vnd_data.vendor_name = (char *) "3GPP";
 
     ret = fd_dict_new(fd_g_config->cnf_dict,
             DICT_VENDOR, &vnd_data, NULL, &vnd);
     ogs_assert(ret == 0);
-
-    struct dict_application_data s6a_app_data;
 
     s6a_app_data.application_id = 16777251;
     s6a_app_data.application_name = (char *) "S6A";
