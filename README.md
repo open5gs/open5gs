@@ -42,3 +42,8 @@ Voice and text chat available in Open5GS's [Discord](https://discordapp.com/) wo
 ## Contributing
 
 If you're contributing through a pull request to Open5GS project on GitHub, please read the [Contributor License Agreement](https://open5gs.org/open5gs/cla/) in advance.
+
+## Licensing
+
+- Free Software Foundation's [GNU AGPL v3.0](https://www.gnu.org/licenses/agpl-3.0.html)
+- [Commercial licenses](https://open5gs.org/open5gs/support/) are also available from [NextEPC, Inc.](https://nextepc.com)
