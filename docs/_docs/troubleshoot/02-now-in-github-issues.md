@@ -79,96 +79,50 @@ Now, you can see the NAS-5GS message in the wireshark.
 
 #### Test failed (e.g. `meson test -v`)
 
-Sometimes you may get a message like the one below due to a problem with the freeDiameter library.
+If MongoDB server is not started, you may get a message like this:
 
 ```
 $ meson test -v
 
 ...
- 5/10 open5gs:5gc / registration              OK       4.98 s
-s1setup-test        : SUCCESS
-guti-test           : SUCCESS
-auth-test           : SUCCESS
-idle-test           : SUCCESS
-emm-status-test     : SUCCESS
-reset-test          : SUCCESS
-ue-context-test     : SUCCESS
-All tests passed.
- 6/10 open5gs:epc / attach                    OK       4.68 s
-bearer-test         : SUCCESS
-session-test        : SUCCESS
-rx-test             : SUCCESS
-All tests passed.
- 7/10 open5gs:epc / volte                     OK       4.33 s
-
---- command ---
-08:06:31 /home/parallels/open5gs/build/tests/csfb/csfb
---- stdout ---
-csfb-test           :  ERROR: ../subprojects/freeDiameter/extensions/dbg_msg_dumps/dbg_msg_dumps.c:112 ROUTING ERROR 'No remaining suitable candidate to route the message to' for:  (../lib/diameter/common/init.c:116)
-: ../subprojects/freeDiameter/extensions/dbg_msg_dumps/dbg_msg_dumps.c:113      'Credit-Control-Request' (../lib/diameter/common/init.c:116)
-: ../subprojects/freeDiameter/extensions/dbg_msg_dumps/dbg_msg_dumps.c:113        Version: 0x01 (../lib/diameter/common/init.c:116)
-: ../subprojects/freeDiameter/extensions/dbg_msg_dumps/dbg_msg_dumps.c:113        Length: 20 (../lib/diameter/common/init.c:116)
-: ../subprojects/freeDiameter/extensions/dbg_msg_dumps/dbg_msg_dumps.c:113        Flags: 0xC0 (RP--) (../lib/diameter/common/init.c:116)
-: ../subprojects/freeDiameter/extensions/dbg_msg_dumps/dbg_msg_dumps.c:113        Command Code: 272 (../lib/diameter/common/init.c:116)
-: ../subprojects/freeDiameter/extensions/dbg_msg_dumps/dbg_msg_dumps.c:113        ApplicationId: 16777238 (../lib/diameter/common/init.c:116)
-: ../subprojects/freeDiameter/extensions/dbg_msg_dumps/dbg_msg_dumps.c:113        Hop-by-Hop Identifier: 0x00000000 (../lib/diameter/common/init.c:116)
-: ../subprojects/freeDiameter/extensions/dbg_msg_dumps/dbg_msg_dumps.c:113        End-to-End Identifier: 0x2875502B (../lib/diameter/common/init.c:116)
-: ../subprojects/freeDiameter/extensions/dbg_msg_dumps/dbg_msg_dumps.c:113         {internal data}: src:(nil)(0) rwb:(nil) rt:0 cb:0x564527642502,(nil)(0x7f71a86df418) qry:(nil) asso:0 sess:0x7f7158001140 (../lib/diameter/common/init.c:116)
-: ../subprojects/freeDiameter/extensions/dbg_msg_dumps/dbg_msg_dumps.c:113         AVP: 'Session-Id'(263) l=8 f=-M val="pgw.localdomain;1585209991;1;app_gx" (../lib/diameter/common/init.c:116)
-: ../subprojects/freeDiameter/extensions/dbg_msg_dumps/dbg_msg_dumps.c:113         AVP: 'Origin-Host'(264) l=8 f=-M val="pgw.localdomain" (../lib/diameter/common/init.c:116)
-: ../subprojects/freeDiameter/extensions/dbg_msg_dumps/dbg_msg_dumps.c:113         AVP: 'Origin-Realm'(296) l=8 f=-M val="localdomain" (../lib/diameter/common/init.c:116)
-: ../subprojects/freeDiameter/extensions/dbg_msg_dumps/dbg_msg_dumps.c:113         AVP: 'Destination-Realm'(283) l=8 f=-M val="localdomain" (../lib/diameter/common/init.c:116)
-: ../subprojects/freeDiameter/extensions/dbg_msg_dumps/dbg_msg_dumps.c:113         AVP: 'Auth-Application-Id'(258) l=12 f=-M val=16777238 (0x1000016) (../lib/diameter/common/init.c:116)
-: ../subprojects/freeDiameter/extensions/dbg_msg_dumps/dbg_msg_dumps.c:113         AVP: 'CC-Request-Type'(416) l=12 f=-M val='INITIAL_REQUEST' (1 (0x1)) (../lib/diameter/common/init.c:116)
-: ../subprojects/freeDiameter/extensions/dbg_msg_dumps/dbg_msg_dumps.c:113         AVP: 'CC-Request-Number'(415) l=12 f=-M val=0 (0x0) (../lib/diameter/common/init.c:116)
-: ../subprojects/freeDiameter/extensions/dbg_msg_dumps/dbg_msg_dumps.c:113         AVP: 'Subscription-Id'(443) l=8 f=-M val=(grouped) (../lib/diameter/common/init.c:116)
-: ../subprojects/freeDiameter/extensions/dbg_msg_dumps/dbg_msg_dumps.c:113            AVP: 'Subscription-Id-Type'(450) l=12 f=-M val='END_USER_IMSI' (1 (0x1)) (../lib/diameter/common/init.c:116)
-: ../subprojects/freeDiameter/extensions/dbg_msg_dumps/dbg_msg_dumps.c:113            AVP: 'Subscription-Id-Data'(444) l=8 f=-M val="310014987654004" (../lib/diameter/common/init.c:116)
-: ../subprojects/freeDiameter/extensions/dbg_msg_dumps/dbg_msg_dumps.c:113         AVP: 'Supported-Features'(628) vend='3GPP'(10415) l=12 f=V- val=(grouped) (../lib/diameter/common/init.c:116)
-: ../subprojects/freeDiameter/extensions/dbg_msg_dumps/dbg_msg_dumps.c:113            AVP: 'Feature-List-ID'(629) vend='3GPP'(10415) l=16 f=V- val=1 (0x1) (../lib/diameter/common/init.c:116)
-: ../subprojects/freeDiameter/extensions/dbg_msg_dumps/dbg_msg_dumps.c:113            AVP: 'Feature-List'(630) vend='3GPP'(10415) l=16 f=V- val=11 (0xb) (../lib/diameter/common/init.c:116)
-: ../subprojects/freeDiameter/extensions/dbg_msg_dumps/dbg_msg_dumps.c:113         AVP: 'Network-Request-Support'(1024) vend='3GPP'(10415) l=16 f=VM val=1 (0x1) (../lib/diameter/common/init.c:116)
-: ../subprojects/freeDiameter/extensions/dbg_msg_dumps/dbg_msg_dumps.c:113         AVP: 'Framed-IP-Address'(8) l=8 f=-M val=<0A 2D 00 02> (../lib/diameter/common/init.c:116)
-: ../subprojects/freeDiameter/extensions/dbg_msg_dumps/dbg_msg_dumps.c:113         AVP: 'IP-CAN-Type'(1027) vend='3GPP'(10415) l=16 f=VM val=5 (0x5) (../lib/diameter/common/init.c:116)
-: ../subprojects/freeDiameter/extensions/dbg_msg_dumps/dbg_msg_dumps.c:113         AVP: 'RAT-Type'(1032) vend='3GPP'(10415) l=16 f=V- val=1004 (0x3ec) (../lib/diameter/common/init.c:116)
-: ../subprojects/freeDiameter/extensions/dbg_msg_dumps/dbg_msg_dumps.c:113         AVP: 'QoS-Information'(1016) vend='3GPP'(10415) l=12 f=VM val=(grouped) (../lib/diameter/common/init.c:116)
-: ../subprojects/freeDiameter/extensions/dbg_msg_dumps/dbg_msg_dumps.c:113            AVP: 'APN-Aggregate-Max-Bitrate-UL'(1041) vend='3GPP'(10415) l=16 f=V- val=1024000000 (0x3d090000) (../lib/diameter/common/init.c:116)
-: ../subprojects/freeDiameter/extensions/dbg_msg_dumps/dbg_msg_dumps.c:113            AVP: 'APN-Aggregate-Max-Bitrate-DL'(1040) vend='3GPP'(10415) l=16 f=V- val=1024000000 (0x3d090000) (../lib/diameter/common/init.c:116)
-: ../subprojects/freeDiameter/extensions/dbg_msg_dumps/dbg_msg_dumps.c:113         AVP: 'Default-EPS-Bearer-QoS'(1049) vend='3GPP'(10415) l=12 f=V- val=(grouped) (../lib/diameter/common/init.c:116)
-: ../subprojects/freeDiameter/extensions/dbg_msg_dumps/dbg_msg_dumps.c:113            AVP: 'QoS-Class-Identifier'(1028) vend='3GPP'(10415) l=16 f=VM val=9 (0x9) (../lib/diameter/common/init.c:116)
-: ../subprojects/freeDiameter/extensions/dbg_msg_dumps/dbg_msg_dumps.c:113            AVP: 'Allocation-Retention-Priority'(1034) vend='3GPP'(10415) l=12 f=V- val=(grouped) (../lib/diameter/common/init.c:116)
-: ../subprojects/freeDiameter/extensions/dbg_msg_dumps/dbg_msg_dumps.c:113               AVP: 'Priority-Level'(1046) vend='3GPP'(10415) l=16 f=V- val=15 (0xf) (../lib/diameter/common/init.c:116)
-: ../subprojects/freeDiameter/extensions/dbg_msg_dumps/dbg_msg_dumps.c:113               AVP: 'Pre-emption-Capability'(1047) vend='3GPP'(10415) l=16 f=V- val=1 (0x1) (../lib/diameter/common/init.c:116)
-: ../subprojects/freeDiameter/extensions/dbg_msg_dumps/dbg_msg_dumps.c:113               AVP: 'Pre-emption-Vulnerability'(1048) vend='3GPP'(10415) l=16 f=V- val=0 (0x0) (../lib/diameter/common/init.c:116)
-: ../subprojects/freeDiameter/extensions/dbg_msg_dumps/dbg_msg_dumps.c:113         AVP: '3GPP-User-Location-Info'(22) vend='3GPP'(10415) l=12 f=VM val=<82 13 00 41 00 33 13 00 41 08 D0 1B 78> (../lib/diameter/common/init.c:116)
-: ../subprojects/freeDiameter/extensions/dbg_msg_dumps/dbg_msg_dumps.c:113         AVP: '3GPP-MS-TimeZone'(23) vend='3GPP'(10415) l=12 f=VM val=<23 00> (../lib/diameter/common/init.c:116)
-: ../subprojects/freeDiameter/extensions/dbg_msg_dumps/dbg_msg_dumps.c:113         AVP: 'Called-Station-Id'(30) l=8 f=-M val=<73 74 61 72 65 6E 74 2E 63 6F 6D> (../lib/diameter/common/init.c:116)
-: no_CC-Request-Number (../src/pgw/pgw-fd-path.c:505)
-/home/parallels/open5gs/build/src/pgw/../../lib/core/libogscore.so.1(ogs_abort+0x2e)[0x7f71abdbdbf8]
-/home/parallels/open5gs/build/src/pgw/open5gs-pgwd(+0x1cb8f)[0x564527642b8f]
-/home/parallels/open5gs/build/src/pgw/../../subprojects/freeDiameter/libfdcore/libfdcore.so.7(+0x492d7)[0x7f71ab7702d7]
-/home/parallels/open5gs/build/src/pgw/../../subprojects/freeDiameter/libfdcore/libfdcore.so.7(+0x4cb63)[0x7f71ab773b63]
-/home/parallels/open5gs/build/src/pgw/../../subprojects/freeDiameter/libfdcore/libfdcore.so.7(+0x4ccef)[0x7f71ab773cef]
-/lib/x86_64-linux-gnu/libpthread.so.0(+0x76db)[0x7f71aae686db]
-/lib/x86_64-linux-gnu/libc.so.6(clone+0x3f)[0x7f71aab9188f]
-03/26 16:06:43.674ERROR: GTP Timeout : IMSI[310014987654004] Message-Type[32] (../src/sgw/sgw-s11-handler.c:39)
-FAILED 1 of 1
-Failed Tests   		Total	Fail	Failed %
-===================================================
-csfb-test      		    1	   1	100.00%
---- stderr ---
-03/26 16:06:43.681: [ERROR: GTP Timeout : IMSI[310014987654004] Message-Type[32] (../src/mme/mme-gtp-path.c:110)
-Line 202: Condition is false, but expected true
--------
-
- 8/10 open5gs:epc / csfb                    FAIL    10.57 s (killed by signal 6 SIGABRT)
+4/10 open5gs:unit / unit OK 0.06 s
+09/30 01:12:37.829: [core] FATAL: test_5gc_init: Assertion ogs_dbi_init(ogs_app()->db_uri) == OGS_OK' failed. (../tests/app/5gc-init.c:100)
+09/30 01:12:37.830: [core] FATAL: backtrace() returned 8 addresses (../lib/core/ogs-abort.c:37)
+/home/open5gs/build/tests/registration/registration(+0x1bfd0) [0x55af96a05fd0]
+/home/open5gs/build/tests/registration/registration(+0x3c2e) [0x55af969edc2e]
+/home/open5gs/build/tests/registration/registration(+0x25151) [0x55af96a0f151]
+/home/open5gs/build/tests/registration/registration(+0x251a5) [0x55af96a0f1a5]
+/home/open5gs/build/tests/registration/registration(+0x3cde) [0x55af969edcde]
+/lib/x86_64-linux-gnu/libc.so.6(__libc_start_main+0xe7) [0x7f3c2bb97b97]
+/home/open5gs/build/tests/registration/registration(+0x39aa) [0x55af969ed9aa]
+5/10 open5gs:5gc / registration FAIL 0.27 s
+09/30 01:12:38.073: [core] FATAL: test_epc_init: Assertion ogs_dbi_init(ogs_app()->db_uri) == OGS_OK' failed. (../tests/app/epc-init.c:105)
+09/30 01:12:38.073: [core] FATAL: backtrace() returned 8 addresses (../lib/core/ogs-abort.c:37)
+/home/open5gs/build/tests/attach/attach(+0x12362) [0x55ef42081362]
+/home/open5gs/build/tests/attach/attach(+0x367e) [0x55ef4207267e]
+/home/open5gs/build/tests/attach/attach(+0x1b4e3) [0x55ef4208a4e3]
+/home/open5gs/build/tests/attach/attach(+0x1b537) [0x55ef4208a537]
+/home/open5gs/build/tests/attach/attach(+0x372e) [0x55ef4207272e]
+/lib/x86_64-linux-gnu/libc.so.6(__libc_start_main+0xe7) [0x7f10b2e30b97]
+/home/open5gs/build/tests/attach/attach(+0x33fa) [0x55ef420723fa]
+6/10 open5gs:epc / attach FAIL 0.17 s
+09/30 01:12:38.239: [core] FATAL: test_epc_init: Assertion `ogs_dbi_init(ogs_app()->db_uri) == OGS_OK' failed. (../tests/app/epc-init.c:105)
+09/30 01:12:38.239: [core] FATAL: backtrace() returned 8 addresses (../lib/core/ogs-abort.c:37)
+/home/open5gs/build/tests/volte/volte(+0x22272) [0x555df9643272]
+/home/open5gs/build/tests/volte/volte(+0x1210a) [0x555df963310a]
+/home/open5gs/build/tests/volte/volte(+0x2b3f3) [0x555df964c3f3]
+/home/open5gs/build/tests/volte/volte(+0x2b447) [0x555df964c447]
+/home/open5gs/build/tests/volte/volte(+0x12221) [0x555df9633221]
+/lib/x86_64-linux-gnu/libc.so.6(__libc_start_main+0xe7) [0x7fd1df6b6b97]
+/home/open5gs/build/tests/volte/volte(+0x4daa) [0x555df9625daa]
+7/10 open5gs:epc / volte FAIL 0.17 s
 ...
 ```
 
-I cannot solve the problem exactly at this point.
+Please make sure that MongoDB server daemon is running.
 {: .blue}
 
-Remove all subscriber information using MongoDB Client
+Then, remove all subscriber information using MongoDB Client
 ```
 $ mongo
 > use open5gs
@@ -283,9 +237,6 @@ Unexpected Pass:       0
 Skipped:               0
 Timeout:               0
 ```
-
-**Note:** If your test result more than once is same as above, there should be no problem with code you modified.
-{: .notice--danger}
 
 #### Is it possible to setup IP/NAT table along with Docker?
 
