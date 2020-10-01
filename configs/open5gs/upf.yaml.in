@@ -182,7 +182,7 @@ parameter:
 # max:
 #
 # o Maximum Number of UE per AMF/MME
-#    ue: 4,096
+#    ue: 1024
 # o Maximum Number of gNB/eNB per AMF/MME
 #    gnb: 32
 #
@@ -209,9 +209,4 @@ max:
 #    8192: 128
 #    big:  8
 #
-# o Memory of Packet Buffering in UPF/SGW
-#   - Maximum Number of packet(SDU size = 2Kbytes) pool in UPF/SGW
-#   - UPF/SGW Memory Usage : 32768 * 2Kbytes = 64Mbytes
-#
-#   packet: 32768
 pool:

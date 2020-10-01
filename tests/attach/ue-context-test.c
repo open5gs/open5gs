@@ -232,14 +232,6 @@ static void test1_func(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testenb_s1ap_send(s1ap, sendbuf);
 
-    /* Send UE Context Release Request */
-    sendbuf = test_s1ap_build_ue_context_release_request(test_ue,
-            S1AP_Cause_PR_radioNetwork,
-            S1AP_CauseRadioNetwork_radio_connection_with_ue_lost);
-    ABTS_PTR_NOTNULL(tc, sendbuf);
-    rv = testenb_s1ap_send(s1ap, sendbuf);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
-
     /* Receive UE Context Release Command */
     recvbuf = testenb_s1ap_read(s1ap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
@@ -1002,21 +994,19 @@ static void test3_func(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testenb_s1ap_send(s1ap, sendbuf);
 
-    /* Send UE Context Release Request */
-    sendbuf = test_s1ap_build_ue_context_release_request(test_ue,
-            S1AP_Cause_PR_radioNetwork, S1AP_CauseRadioNetwork_user_inactivity);
-    ABTS_PTR_NOTNULL(tc, sendbuf);
-    rv = testenb_s1ap_send(s1ap, sendbuf);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
-
     /* Receive UE Context Release Command */
     recvbuf = testenb_s1ap_read(s1ap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     tests1ap_recv(test_ue, recvbuf);
 
-    /* Send Service Request */
+    /* Send Service Request - INVALID Security MAC */
     emmbuf = testemm_build_service_request(test_ue);
     ABTS_PTR_NOTNULL(tc, emmbuf);
+    {
+        unsigned char *data = emmbuf->data;
+        ogs_assert(data);
+        data[3]++;
+    }
     sendbuf = test_s1ap_build_initial_ue_message(
             test_ue, emmbuf, S1AP_RRC_Establishment_Cause_mo_Data, true);
     ABTS_PTR_NOTNULL(tc, sendbuf);

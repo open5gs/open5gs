@@ -73,6 +73,7 @@ static void recalculate_pool_size(void)
     self.pool.timer = self.max.ue * MAX_NUM_OF_TIMER;
 
     self.pool.nf = self.max.gnb;
+    self.pool.packet = self.max.ue * OGS_MAX_NUM_OF_PACKET_BUFFER;
 
 #define MAX_NUM_OF_SOCKET       4   /* Num of socket per NF */
     self.pool.socket = self.pool.nf * MAX_NUM_OF_SOCKET;
@@ -146,25 +147,6 @@ static void regenerate_all_timer_duration(void)
         self.time.message.gtp.n3_response_rcount *
         self.time.message.gtp.t3_response_duration;
     ogs_assert(self.time.message.gtp.t3_holding_duration);
-
-#if 0
-    ogs_trace("%lld, %lld, %lld, %d, %lld, %d %lld, %d, %lld, %d, %lld",
-        (long long)self.time.message.duration,
-        (long long)self.time.message.sbi.client_wait_duration,
-        (long long)self.time.message.sbi.connection_deadline,
-        self.time.message.pfcp.n1_response_rcount,
-        (long long)self.time.message.pfcp.t1_response_duration,
-        self.time.message.pfcp.n1_holding_rcount,
-        (long long)self.time.message.pfcp.t1_holding_duration,
-        self.time.message.gtp.n3_response_rcount,
-        (long long)self.time.message.gtp.t3_response_duration,
-        self.time.message.gtp.n3_holding_rcount,
-        (long long)self.time.message.gtp.t3_holding_duration);
-    ogs_trace("%lld, %lld, %lld",
-        (long long)self.time.message.sbi.nf_register_interval,
-        (long long)self.time.message.pfcp.association_interval,
-        (long long)self.time.message.pfcp.no_heartbeat_duration);
-#endif
 }
 
 static void app_context_prepare(void)
@@ -172,14 +154,11 @@ static void app_context_prepare(void)
 #define USRSCTP_LOCAL_UDP_PORT      9899
     self.usrsctp.udp_port = USRSCTP_LOCAL_UDP_PORT;
 
-#define MAX_NUM_OF_UE               4096    /* Num of UE per AMF/MME */
+#define MAX_NUM_OF_UE               1024    /* Num of UE per AMF/MME */
 #define MAX_NUM_OF_GNB              32      /* Num of gNB per AMF/MME */
 
     self.max.gnb = MAX_NUM_OF_GNB;
     self.max.ue = MAX_NUM_OF_UE;
-
-#define MAX_NUM_OF_PACKET_POOL      32768
-    self.pool.packet = MAX_NUM_OF_PACKET_POOL;
 
     ogs_pkbuf_default_init(&self.pool.defconfig);
 
@@ -410,10 +389,6 @@ int ogs_app_context_parse_config(void)
                     const char *v = ogs_yaml_iter_value(&pool_iter);
                     if (v)
                         self.pool.defconfig.cluster_big_pool = atoi(v);
-                } else if (!strcmp(pool_key, "packet")) {
-                    const char *v = ogs_yaml_iter_value(&pool_iter);
-                    if (v)
-                        self.pool.packet = atoi(v);
                 } else
                     ogs_warn("unknown key `%s`", pool_key);
             }

@@ -91,6 +91,7 @@ void sgwc_s11_handle_create_session_request(
     uint16_t decoded;
     ogs_gtp_f_teid_t *mme_s11_teid = NULL;
     ogs_gtp_uli_t uli;
+    ogs_gtp_bearer_qos_t bearer_qos;
     char apn[OGS_MAX_APN_LEN];
 
     ogs_assert(s11_xact);
@@ -118,6 +119,10 @@ void sgwc_s11_handle_create_session_request(
     }
     if (req->bearer_contexts_to_be_created.eps_bearer_id.presence == 0) {
         ogs_error("No EPS Bearer ID");
+        cause_value = OGS_GTP_CAUSE_MANDATORY_IE_MISSING;
+    }
+    if (req->bearer_contexts_to_be_created.bearer_level_qos.presence == 0) {
+        ogs_error("No Bearer QoS");
         cause_value = OGS_GTP_CAUSE_MANDATORY_IE_MISSING;
     }
     if (req->access_point_name.presence == 0) {
@@ -182,6 +187,18 @@ void sgwc_s11_handle_create_session_request(
                 OGS_GTP_CAUSE_REMOTE_PEER_NOT_RESPONDING);
         return;
     }
+
+    /* Set Bearer QoS */
+    decoded = ogs_gtp_parse_bearer_qos(&bearer_qos,
+        &req->bearer_contexts_to_be_created.bearer_level_qos);
+    ogs_assert(req->bearer_contexts_to_be_created.bearer_level_qos.len ==
+            decoded);
+    sess->pdn.qos.qci = bearer_qos.qci;
+    sess->pdn.qos.arp.priority_level = bearer_qos.priority_level;
+    sess->pdn.qos.arp.pre_emption_capability =
+                    bearer_qos.pre_emption_capability;
+    sess->pdn.qos.arp.pre_emption_vulnerability =
+                    bearer_qos.pre_emption_vulnerability;
 
     /* Set PDN Type */
     sess->pdn.pdn_type = req->pdn_type.u8;

@@ -293,7 +293,7 @@ int emm_handle_attach_complete(
         ogs_expect(rv == OGS_OK);
     }
 
-    ogs_debug("[EMM] EMM information");
+    ogs_debug("EMM information");
     ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
 
     return OGS_OK;

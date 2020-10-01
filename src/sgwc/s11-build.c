@@ -23,11 +23,12 @@ ogs_pkbuf_t *sgwc_s11_build_downlink_data_notification(sgwc_bearer_t *bearer)
 {
     ogs_gtp_message_t message;
     ogs_gtp_downlink_data_notification_t *noti = NULL;
-
-    /* FIXME : ARP should be retrieved from ? */
-    uint8_t arp = 0x61;
+    ogs_gtp_arp_t arp;
+    sgwc_sess_t *sess = NULL;
 
     ogs_assert(bearer);
+    sess = bearer->sess;
+    ogs_assert(sess);
 
     /* Build downlink notification message */
     noti = &message.downlink_data_notification;
@@ -36,7 +37,11 @@ ogs_pkbuf_t *sgwc_s11_build_downlink_data_notification(sgwc_bearer_t *bearer)
     noti->eps_bearer_id.presence = 1;
     noti->eps_bearer_id.u8 = bearer->ebi;
 
-    /* FIXME : ARP should be retrieved from ? */
+    memset(&arp, 0, sizeof(arp));
+    arp.pre_emption_vulnerability = sess->pdn.qos.arp.pre_emption_vulnerability;
+    arp.priority_level = sess->pdn.qos.arp.priority_level;
+    arp.pre_emption_capability = sess->pdn.qos.arp.pre_emption_capability;
+
     noti->allocation_retention_priority.presence = 1;
     noti->allocation_retention_priority.data = &arp;
     noti->allocation_retention_priority.len = sizeof(arp);

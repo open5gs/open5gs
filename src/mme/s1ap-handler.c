@@ -141,7 +141,7 @@ void s1ap_handle_s1_setup_request(mme_enb_t *enb, ogs_s1ap_message_t *message)
             memcpy(&enb->supported_ta_list[enb->num_of_supported_ta_list].tac,
                     tAC->buf, sizeof(uint16_t));
             enb->supported_ta_list[enb->num_of_supported_ta_list].tac = 
-                ntohs(enb->supported_ta_list
+                be16toh(enb->supported_ta_list
                         [enb->num_of_supported_ta_list].tac);
             memcpy(&enb->supported_ta_list
                         [enb->num_of_supported_ta_list].plmn_id,
@@ -276,7 +276,7 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, ogs_s1ap_message_t *message)
             memcpy(&nas_guti.mme_code, S_TMSI->mMEC.buf, S_TMSI->mMEC.size);
             /* size must be 4 */
             memcpy(&nas_guti.m_tmsi, S_TMSI->m_TMSI.buf, S_TMSI->m_TMSI.size);
-            nas_guti.m_tmsi = ntohl(nas_guti.m_tmsi);
+            nas_guti.m_tmsi = be32toh(nas_guti.m_tmsi);
 
             mme_ue = mme_ue_find_by_guti(&nas_guti);
             if (!mme_ue) {
@@ -323,7 +323,7 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, ogs_s1ap_message_t *message)
     memcpy(&enb_ue->saved.tai.plmn_id, pLMNidentity->buf, 
             sizeof(enb_ue->saved.tai.plmn_id));
     memcpy(&enb_ue->saved.tai.tac, tAC->buf, sizeof(enb_ue->saved.tai.tac));
-    enb_ue->saved.tai.tac = ntohs(enb_ue->saved.tai.tac);
+    enb_ue->saved.tai.tac = be16toh(enb_ue->saved.tai.tac);
     
     ogs_assert(EUTRAN_CGI);
     pLMNidentity = &EUTRAN_CGI->pLMNidentity;
@@ -334,7 +334,7 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, ogs_s1ap_message_t *message)
             sizeof(enb_ue->saved.e_cgi.plmn_id));
     memcpy(&enb_ue->saved.e_cgi.cell_id, cell_ID->buf,
             sizeof(enb_ue->saved.e_cgi.cell_id));
-    enb_ue->saved.e_cgi.cell_id = (ntohl(enb_ue->saved.e_cgi.cell_id) >> 4);
+    enb_ue->saved.e_cgi.cell_id = (be32toh(enb_ue->saved.e_cgi.cell_id) >> 4);
 
     ogs_debug("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d] TAC[%d]",
         enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id, enb_ue->saved.tai.tac);
@@ -572,7 +572,7 @@ void s1ap_handle_initial_context_setup_response(
 
             memcpy(&bearer->enb_s1u_teid, e_rab->gTP_TEID.buf,
                     sizeof(bearer->enb_s1u_teid));
-            bearer->enb_s1u_teid = ntohl(bearer->enb_s1u_teid);
+            bearer->enb_s1u_teid = be32toh(bearer->enb_s1u_teid);
             rv = ogs_asn_BIT_STRING_to_ip(
                     &e_rab->transportLayerAddress, &bearer->enb_s1u_ip);
             ogs_assert(rv == OGS_OK);
@@ -682,7 +682,7 @@ void s1ap_handle_initial_context_setup_failure(
      * may in principle be adopted. The eNB should ensure
      * that no hanging resources remain at the eNB.
      */
-    mme_send_delete_session_or_enb_ue_context_release(enb_ue);
+    mme_send_release_access_bearer_or_ue_context_release(enb_ue);
 }
 
 void s1ap_handle_ue_context_modification_response(
@@ -932,7 +932,7 @@ void s1ap_handle_e_rab_setup_response(
 
             memcpy(&bearer->enb_s1u_teid, e_rab->gTP_TEID.buf,
                     sizeof(bearer->enb_s1u_teid));
-            bearer->enb_s1u_teid = ntohl(bearer->enb_s1u_teid);
+            bearer->enb_s1u_teid = be32toh(bearer->enb_s1u_teid);
             rv = ogs_asn_BIT_STRING_to_ip(
                     &e_rab->transportLayerAddress, &bearer->enb_s1u_ip);
             ogs_assert(rv == OGS_OK);
@@ -1285,13 +1285,13 @@ void s1ap_handle_path_switch_request(
     memcpy(&enb_ue->saved.tai.plmn_id, pLMNidentity->buf, 
             sizeof(enb_ue->saved.tai.plmn_id));
     memcpy(&enb_ue->saved.tai.tac, tAC->buf, sizeof(enb_ue->saved.tai.tac));
-    enb_ue->saved.tai.tac = ntohs(enb_ue->saved.tai.tac);
+    enb_ue->saved.tai.tac = be16toh(enb_ue->saved.tai.tac);
 
     memcpy(&enb_ue->saved.e_cgi.plmn_id, pLMNidentity->buf, 
             sizeof(enb_ue->saved.e_cgi.plmn_id));
     memcpy(&enb_ue->saved.e_cgi.cell_id, cell_ID->buf,
             sizeof(enb_ue->saved.e_cgi.cell_id));
-    enb_ue->saved.e_cgi.cell_id = (ntohl(enb_ue->saved.e_cgi.cell_id) >> 4);
+    enb_ue->saved.e_cgi.cell_id = (be32toh(enb_ue->saved.e_cgi.cell_id) >> 4);
 
     ogs_debug("    OLD TAI[PLMN_ID:%06x,TAC:%d]",
             ogs_plmn_id_hexdump(&mme_ue->tai.plmn_id),
@@ -1311,12 +1311,12 @@ void s1ap_handle_path_switch_request(
     memcpy(&mme_ue->e_cgi, &enb_ue->saved.e_cgi, sizeof(ogs_e_cgi_t));
 
     memcpy(&eea, encryptionAlgorithms->buf, sizeof(eea));
-    eea = ntohs(eea);
+    eea = be16toh(eea);
     mme_ue->ue_network_capability.eea = eea >> 9;
     mme_ue->ue_network_capability.eea0 = 1;
 
     memcpy(&eia, integrityProtectionAlgorithms->buf, sizeof(eia));
-    eia = ntohs(eia);
+    eia = be16toh(eia);
     mme_ue->ue_network_capability.eia = eia >> 9;
     mme_ue->ue_network_capability.eia0 = 0;
 
@@ -1339,7 +1339,7 @@ void s1ap_handle_path_switch_request(
 
         memcpy(&bearer->enb_s1u_teid, e_rab->gTP_TEID.buf, 
                 sizeof(bearer->enb_s1u_teid));
-        bearer->enb_s1u_teid = ntohl(bearer->enb_s1u_teid);
+        bearer->enb_s1u_teid = be32toh(bearer->enb_s1u_teid);
         rv = ogs_asn_BIT_STRING_to_ip(
                 &e_rab->transportLayerAddress, &bearer->enb_s1u_ip);
         ogs_expect(rv == OGS_OK);
@@ -1408,10 +1408,10 @@ void s1ap_handle_enb_configuration_transfer(
 
         memcpy(&source_tac, sourceeNB_ID->selected_TAI.tAC.buf,
                 sizeof(source_tac));
-        source_tac = ntohs(source_tac);
+        source_tac = be16toh(source_tac);
         memcpy(&target_tac, targeteNB_ID->selected_TAI.tAC.buf,
                 sizeof(target_tac));
-        target_tac = ntohs(target_tac);
+        target_tac = be16toh(target_tac);
 
         ogs_debug("    Source : ENB_ID[%s:%d], TAC[%d]",
                 sourceeNB_ID->global_ENB_ID.eNB_ID.present == 
@@ -1641,7 +1641,7 @@ void s1ap_handle_handover_request_ack(
 
         memcpy(&bearer->target_s1u_teid, e_rab->gTP_TEID.buf, 
                 sizeof(bearer->target_s1u_teid));
-        bearer->target_s1u_teid = ntohl(bearer->target_s1u_teid);
+        bearer->target_s1u_teid = be32toh(bearer->target_s1u_teid);
         rv = ogs_asn_BIT_STRING_to_ip(
                 &e_rab->transportLayerAddress, &bearer->target_s1u_ip);
         ogs_assert(rv == OGS_OK);
@@ -1651,7 +1651,7 @@ void s1ap_handle_handover_request_ack(
             ogs_assert(e_rab->dL_transportLayerAddress->buf);
             memcpy(&bearer->enb_dl_teid, e_rab->dL_gTP_TEID->buf, 
                     sizeof(bearer->enb_dl_teid));
-            bearer->enb_dl_teid = ntohl(bearer->enb_dl_teid);
+            bearer->enb_dl_teid = be32toh(bearer->enb_dl_teid);
             rv = ogs_asn_BIT_STRING_to_ip(
                     e_rab->dL_transportLayerAddress, &bearer->enb_dl_ip);
             ogs_assert(rv == OGS_OK);
@@ -1662,7 +1662,7 @@ void s1ap_handle_handover_request_ack(
             ogs_assert(e_rab->uL_TransportLayerAddress->buf);
             memcpy(&bearer->enb_ul_teid, e_rab->uL_GTP_TEID->buf, 
                     sizeof(bearer->enb_ul_teid));
-            bearer->enb_ul_teid = ntohl(bearer->enb_ul_teid);
+            bearer->enb_ul_teid = be32toh(bearer->enb_ul_teid);
             rv = ogs_asn_BIT_STRING_to_ip(
                     e_rab->uL_TransportLayerAddress, &bearer->enb_ul_ip);
             ogs_assert(rv == OGS_OK);
@@ -1972,14 +1972,14 @@ void s1ap_handle_handover_notification(
             sizeof(target_ue->saved.tai.plmn_id));
     memcpy(&target_ue->saved.tai.tac,
             tAC->buf, sizeof(target_ue->saved.tai.tac));
-    target_ue->saved.tai.tac = ntohs(target_ue->saved.tai.tac);
+    target_ue->saved.tai.tac = be16toh(target_ue->saved.tai.tac);
 
     memcpy(&target_ue->saved.e_cgi.plmn_id, pLMNidentity->buf, 
             sizeof(target_ue->saved.e_cgi.plmn_id));
     memcpy(&target_ue->saved.e_cgi.cell_id, cell_ID->buf,
             sizeof(target_ue->saved.e_cgi.cell_id));
     target_ue->saved.e_cgi.cell_id =
-        (ntohl(target_ue->saved.e_cgi.cell_id) >> 4);
+        (be32toh(target_ue->saved.e_cgi.cell_id) >> 4);
 
     ogs_debug("    OLD TAI[PLMN_ID:%06x,TAC:%d]",
             ogs_plmn_id_hexdump(&mme_ue->tai.plmn_id),

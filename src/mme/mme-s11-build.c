@@ -94,7 +94,7 @@ ogs_pkbuf_t *mme_s11_build_create_session_request(
 
     memset(&mme_s11_teid, 0, sizeof(ogs_gtp_f_teid_t));
     mme_s11_teid.interface_type = OGS_GTP_F_TEID_S11_MME_GTP_C;
-    mme_s11_teid.teid = htonl(mme_ue->mme_s11_teid);
+    mme_s11_teid.teid = htobe32(mme_ue->mme_s11_teid);
     rv = ogs_gtp_sockaddr_to_f_teid(
             mme_self()->gtpc_addr, mme_self()->gtpc_addr6, &mme_s11_teid, &len);
     ogs_assert(rv == OGS_OK);
@@ -302,7 +302,7 @@ ogs_pkbuf_t *mme_s11_build_modify_bearer_request(
     /* Data Plane(DL) : ENB-S1U */
     memset(&enb_s1u_teid, 0, sizeof(ogs_gtp_f_teid_t));
     enb_s1u_teid.interface_type = OGS_GTP_F_TEID_S1_U_ENODEB_GTP_U;
-    enb_s1u_teid.teid = htonl(bearer->enb_s1u_teid);
+    enb_s1u_teid.teid = htobe32(bearer->enb_s1u_teid);
     rv = ogs_gtp_ip_to_f_teid(&bearer->enb_s1u_ip, &enb_s1u_teid, &len);
     ogs_assert(rv == OGS_OK);
     req->bearer_contexts_to_be_modified.s1_u_enodeb_f_teid.presence = 1;
@@ -421,7 +421,7 @@ ogs_pkbuf_t *mme_s11_build_create_bearer_response(
     /* Data Plane(DL) : ENB-S1U */
     memset(&enb_s1u_teid, 0, sizeof(ogs_gtp_f_teid_t));
     enb_s1u_teid.interface_type = OGS_GTP_F_TEID_S1_U_ENODEB_GTP_U;
-    enb_s1u_teid.teid = htonl(bearer->enb_s1u_teid);
+    enb_s1u_teid.teid = htobe32(bearer->enb_s1u_teid);
     rv = ogs_gtp_ip_to_f_teid(&bearer->enb_s1u_ip, &enb_s1u_teid, &len);
     ogs_assert(rv == OGS_OK);
     rsp->bearer_contexts.s1_u_enodeb_f_teid.presence = 1;
@@ -431,7 +431,7 @@ ogs_pkbuf_t *mme_s11_build_create_bearer_response(
     /* Data Plane(UL) : SGW-S1U */
     memset(&sgw_s1u_teid, 0, sizeof(ogs_gtp_f_teid_t));
     sgw_s1u_teid.interface_type = OGS_GTP_F_TEID_S1_U_SGW_GTP_U;
-    sgw_s1u_teid.teid = htonl(bearer->sgw_s1u_teid);
+    sgw_s1u_teid.teid = htobe32(bearer->sgw_s1u_teid);
     rv = ogs_gtp_ip_to_f_teid(&bearer->sgw_s1u_ip, &sgw_s1u_teid, &len);
     ogs_assert(rv == OGS_OK);
     rsp->bearer_contexts.s4_u_sgsn_f_teid.presence = 1;
@@ -699,7 +699,7 @@ ogs_pkbuf_t *mme_s11_build_create_indirect_data_forwarding_tunnel_request(
                 memset(&dl_teid[i], 0, sizeof(ogs_gtp_f_teid_t));
                 dl_teid[i].interface_type =
                     OGS_GTP_F_TEID_ENODEB_GTP_U_FOR_DL_DATA_FORWARDING;
-                dl_teid[i].teid = htonl(bearer->enb_dl_teid);
+                dl_teid[i].teid = htobe32(bearer->enb_dl_teid);
                 rv = ogs_gtp_ip_to_f_teid(
                         &bearer->enb_dl_ip, &dl_teid[i], &len);
                 ogs_assert(rv == OGS_OK);
@@ -712,7 +712,7 @@ ogs_pkbuf_t *mme_s11_build_create_indirect_data_forwarding_tunnel_request(
                 memset(&ul_teid[i], 0, sizeof(ogs_gtp_f_teid_t));
                 ul_teid[i].interface_type =
                     OGS_GTP_F_TEID_ENODEB_GTP_U_FOR_UL_DATA_FORWARDING;
-                ul_teid[i].teid = htonl(bearer->enb_ul_teid);
+                ul_teid[i].teid = htobe32(bearer->enb_ul_teid);
                 rv = ogs_gtp_ip_to_f_teid(
                         &bearer->enb_ul_ip, &ul_teid[i], &len);
                 ogs_assert(rv == OGS_OK);

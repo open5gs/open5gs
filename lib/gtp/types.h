@@ -494,6 +494,16 @@ ED2(uint8_t spare:6;,
 #define OGS_GTP_NODE_TYPE_MME                                   0
 #define OGS_GTP_NODE_TYPE_SGSN                                  1
 
+/* 8.86 Allocation/Retention Priority (ARP) */
+typedef struct ogs_gtp_arp_s {
+#define OGS_GTP_TIME_TO_BCD(x) OGS_TIME_TO_BCD(x)
+ED5(uint8_t spare1:1;,
+    uint8_t pre_emption_vulnerability:1;,
+    uint8_t priority_level:4;,
+    uint8_t spare2:1;,
+    uint8_t pre_emption_capability:1;)
+} __attribute__ ((packed)) ogs_gtp_arp_t;
+
 #ifdef __cplusplus
 }
 #endif

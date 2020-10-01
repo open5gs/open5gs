@@ -168,8 +168,10 @@ void ogs_pfcp_up_handle_pdr(
             report->type.downlink_data_report = 1;
         }
 
-        if (far->num_of_buffered_packet < MAX_NUM_OF_PACKET_BUFFER) {
+        if (far->num_of_buffered_packet < OGS_MAX_NUM_OF_PACKET_BUFFER) {
             far->buffered_packet[far->num_of_buffered_packet++] = sendbuf;
+        } else {
+            ogs_pkbuf_free(sendbuf);
         }
     }
 }

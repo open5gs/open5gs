@@ -54,7 +54,7 @@ ogs_pkbuf_t *sgsap_build_location_update_request(mme_ue_t *mme_ue)
     ogs_tlv_add(root, SGSAP_IE_EPS_UPDATE_TYPE, SGSAP_IE_EPS_UPDATE_LEN, 0,
             &eps_update_type);
     memcpy(&lai, &csmap->lai, sizeof(ogs_nas_lai_t));
-    lai.lac = htons(lai.lac);
+    lai.lac = htobe16(lai.lac);
     ogs_tlv_add(root, SGSAP_IE_LAI_TYPE, SGSAP_IE_LAI_LEN, 0, &lai);
 
     pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);

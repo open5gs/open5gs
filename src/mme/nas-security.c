@@ -216,7 +216,7 @@ int nas_eps_security_decode(mme_ue_t *mme_ue,
             memcpy(&mac32, mac, NAS_SECURITY_MAC_SIZE);
             if (h->message_authentication_code != mac32) {
                 ogs_warn("NAS MAC verification failed(0x%x != 0x%x)",
-                        ntohl(h->message_authentication_code), ntohl(mac32));
+                    be32toh(h->message_authentication_code), be32toh(mac32));
                 mme_ue->mac_failed = 1;
             }
         }

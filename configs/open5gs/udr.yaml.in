@@ -129,7 +129,7 @@ parameter:
 # max:
 #
 # o Maximum Number of UE per AMF/MME
-#    ue: 4,096
+#    ue: 1024
 # o Maximum Number of gNB/eNB per AMF/MME
 #    gnb: 32
 #

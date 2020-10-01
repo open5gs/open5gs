@@ -45,7 +45,7 @@ ogs_pkbuf_t *emm_build_attach_accept(
     ogs_assert(mme_ue);
     ogs_assert(esmbuf);
 
-    ogs_debug("[EMM] Attach accept");
+    ogs_debug("Attach accept");
 
     memset(&message, 0, sizeof(message));
     message.h.security_header_type = 
@@ -342,7 +342,7 @@ ogs_pkbuf_t *emm_build_detach_accept(mme_ue_t *mme_ue)
         OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
     message.h.protocol_discriminator = OGS_NAS_PROTOCOL_DISCRIMINATOR_EMM;
 
-    ogs_debug("[EMM] Detach accept");
+    ogs_debug("Detach accept");
     ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
 
     message.emm.h.protocol_discriminator = OGS_NAS_PROTOCOL_DISCRIMINATOR_EMM;
@@ -459,7 +459,7 @@ ogs_pkbuf_t *emm_build_tau_reject(
 
     ogs_assert(mme_ue);
 
-    ogs_debug("[EMM] Tracking area update reject");
+    ogs_debug("Tracking area update reject");
     ogs_debug("    IMSI[%s] Cause[%d]",
             MME_UE_HAVE_IMSI(mme_ue) ? mme_ue->imsi_bcd : "Unknown", emm_cause);
 
@@ -480,7 +480,7 @@ ogs_pkbuf_t *emm_build_service_reject(
 
     ogs_assert(mme_ue);
 
-    ogs_debug("[EMM] Service reject");
+    ogs_debug("Service reject");
     ogs_debug("    Cause[%d]", emm_cause);
 
     memset(&message, 0, sizeof(message));

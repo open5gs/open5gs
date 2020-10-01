@@ -36,7 +36,7 @@ ogs_pkbuf_t *esm_build_pdn_connectivity_reject(
     mme_ue = sess->mme_ue;
     ogs_assert(mme_ue);
 
-    ogs_debug("[ESM] PDN connectivity reject");
+    ogs_debug("PDN connectivity reject");
     ogs_debug("    IMSI[%s] PTI[%d] Cause[%d]",
             mme_ue->imsi_bcd, sess->pti, esm_cause);
 
@@ -71,7 +71,7 @@ ogs_pkbuf_t *esm_build_information_request(mme_bearer_t *bearer)
     mme_ue = bearer->mme_ue;
     ogs_assert(mme_ue);
 
-    ogs_debug("[ESM] ESM information request");
+    ogs_debug("ESM information request");
     ogs_debug("    IMSI[%s] PTI[%d] EBI[%d]",
             mme_ue->imsi_bcd, sess->pti, bearer->ebi);
 
@@ -127,7 +127,7 @@ ogs_pkbuf_t *esm_build_activate_default_bearer_context_request(
         return NULL;
     }
 
-    ogs_debug("[ESM] Activate default bearer context request");
+    ogs_debug("Activate default bearer context request");
     ogs_debug("    IMSI[%s] PTI[%d] EBI[%d]",
             mme_ue->imsi_bcd, sess->pti, bearer->ebi);
 
@@ -274,7 +274,7 @@ ogs_pkbuf_t *esm_build_activate_dedicated_bearer_context_request(
     linked_bearer = mme_linked_bearer(bearer); 
     ogs_assert(linked_bearer);
 
-    ogs_debug("[ESM] Activate dedicated bearer context request");
+    ogs_debug("Activate dedicated bearer context request");
     ogs_debug("    IMSI[%s] EBI[%d] Linked-EBI[%d]",
             mme_ue->imsi_bcd, bearer->ebi, linked_bearer->ebi);
 
@@ -322,7 +322,7 @@ ogs_pkbuf_t *esm_build_modify_bearer_context_request(
     mme_ue = bearer->mme_ue;
     ogs_assert(mme_ue);
 
-    ogs_debug("[ESM] Modify bearer context request");
+    ogs_debug("Modify bearer context request");
     ogs_debug("    IMSI[%s] PTI[%d] EBI[%d]",
             mme_ue->imsi_bcd, sess->pti, bearer->ebi);
 
@@ -372,7 +372,7 @@ ogs_pkbuf_t *esm_build_deactivate_bearer_context_request(
     mme_ue = bearer->mme_ue;
     ogs_assert(mme_ue);
 
-    ogs_debug("[ESM] Deactivate bearer context request");
+    ogs_debug("Deactivate bearer context request");
     ogs_debug("    IMSI[%s] PTI[%d] EBI[%d]",
             mme_ue->imsi_bcd, sess->pti, bearer->ebi);
     ogs_debug("    Cause[%d]", esm_cause);
@@ -409,7 +409,7 @@ ogs_pkbuf_t *esm_build_bearer_resource_allocation_reject(
     mme_ue = sess->mme_ue;
     ogs_assert(mme_ue);
 
-    ogs_debug("[ESM] Bearer resource allocation reject");
+    ogs_debug("Bearer resource allocation reject");
     ogs_debug("    IMSI[%s] PTI[%d] Cause[%d]",
             mme_ue->imsi_bcd, sess->pti, esm_cause);
 
@@ -450,7 +450,7 @@ ogs_pkbuf_t *esm_build_bearer_resource_modification_reject(
     mme_ue = sess->mme_ue;
     ogs_assert(mme_ue);
 
-    ogs_debug("[ESM] Bearer resource modification reject");
+    ogs_debug("Bearer resource modification reject");
     ogs_debug("    IMSI[%s] PTI[%d] Cause[%d]",
             mme_ue->imsi_bcd, sess->pti, esm_cause);
 

@@ -79,7 +79,7 @@ void esm_state_inactive(ogs_fsm_t *s, mme_event_t *e)
 
         switch (message->esm.h.message_type) {
         case OGS_NAS_EPS_PDN_CONNECTIVITY_REQUEST:
-            ogs_debug("[ESM] PDN Connectivity request");
+            ogs_debug("PDN Connectivity request");
             ogs_debug("    IMSI[%s] PTI[%d] EBI[%d]",
                     mme_ue->imsi_bcd, sess->pti, bearer->ebi);
             rv = esm_handle_pdn_connectivity_request(
@@ -90,7 +90,7 @@ void esm_state_inactive(ogs_fsm_t *s, mme_event_t *e)
             }
             break;
         case OGS_NAS_EPS_ESM_INFORMATION_RESPONSE:
-            ogs_debug("[ESM] ESM information response");
+            ogs_debug("ESM information response");
             ogs_debug("    IMSI[%s] PTI[%d] EBI[%d]",
                     mme_ue->imsi_bcd, sess->pti, bearer->ebi);
 
@@ -103,7 +103,7 @@ void esm_state_inactive(ogs_fsm_t *s, mme_event_t *e)
             }
             break;
         case OGS_NAS_EPS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_ACCEPT:
-            ogs_debug("[ESM] Activate default EPS bearer "
+            ogs_debug("Activate default EPS bearer "
                     "context accept");
             ogs_debug("    IMSI[%s] PTI[%d] EBI[%d]",
                     mme_ue->imsi_bcd, sess->pti, bearer->ebi);
@@ -117,7 +117,7 @@ void esm_state_inactive(ogs_fsm_t *s, mme_event_t *e)
             OGS_FSM_TRAN(s, esm_state_active);
             break;
         case OGS_NAS_EPS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_ACCEPT:
-            ogs_debug("[ESM] Activate dedicated EPS bearer "
+            ogs_debug("Activate dedicated EPS bearer "
                     "context accept");
             ogs_debug("    IMSI[%s] PTI[%d] EBI[%d]",
                     mme_ue->imsi_bcd, sess->pti, bearer->ebi);
@@ -140,7 +140,7 @@ void esm_state_inactive(ogs_fsm_t *s, mme_event_t *e)
         case MME_TIMER_T3489:
             if (bearer->t3489.retry_count >=
                     mme_timer_cfg(MME_TIMER_T3489)->max_count) {
-                ogs_warn("[EMM] Retransmission of IMSI[%s] failed. "
+                ogs_warn("Retransmission of IMSI[%s] failed. "
                         "Stop retransmission",
                         mme_ue->imsi_bcd);
                 OGS_FSM_TRAN(&bearer->sm, &esm_state_exception);
@@ -195,7 +195,7 @@ void esm_state_active(ogs_fsm_t *s, mme_event_t *e)
 
         switch (message->esm.h.message_type) {
         case OGS_NAS_EPS_PDN_CONNECTIVITY_REQUEST:
-            ogs_debug("[ESM] PDN Connectivity request");
+            ogs_debug("PDN Connectivity request");
             ogs_debug("    IMSI[%s] PTI[%d] EBI[%d]",
                     mme_ue->imsi_bcd, sess->pti, bearer->ebi);
             rv = esm_handle_pdn_connectivity_request(
@@ -208,7 +208,7 @@ void esm_state_active(ogs_fsm_t *s, mme_event_t *e)
             OGS_FSM_TRAN(s, esm_state_inactive);
             break;
         case OGS_NAS_EPS_PDN_DISCONNECT_REQUEST:
-            ogs_debug("[ESM] PDN disconnect request");
+            ogs_debug("PDN disconnect request");
             ogs_debug("    IMSI[%s] PTI[%d] EBI[%d]",
                     mme_ue->imsi_bcd, sess->pti, bearer->ebi);
             if (MME_HAVE_SGW_S1U_PATH(sess)) {
@@ -219,14 +219,14 @@ void esm_state_active(ogs_fsm_t *s, mme_event_t *e)
             OGS_FSM_TRAN(s, esm_state_pdn_will_disconnect);
             break;
         case OGS_NAS_EPS_MODIFY_EPS_BEARER_CONTEXT_ACCEPT:
-            ogs_debug("[ESM] Modify EPS bearer context accept");
+            ogs_debug("Modify EPS bearer context accept");
             ogs_debug("    IMSI[%s] PTI[%d] EBI[%d]",
                     mme_ue->imsi_bcd, sess->pti, bearer->ebi);
 
             mme_gtp_send_update_bearer_response(bearer);
             break;
         case OGS_NAS_EPS_DEACTIVATE_EPS_BEARER_CONTEXT_ACCEPT:
-            ogs_debug("[ESM] Deactivate EPS bearer "
+            ogs_debug("Deactivate EPS bearer "
                     "context accept");
             ogs_debug("    IMSI[%s] PTI[%d] EBI[%d]",
                     mme_ue->imsi_bcd, sess->pti, bearer->ebi);
@@ -234,13 +234,13 @@ void esm_state_active(ogs_fsm_t *s, mme_event_t *e)
             OGS_FSM_TRAN(s, esm_state_bearer_deactivated);
             break;
         case OGS_NAS_EPS_BEARER_RESOURCE_ALLOCATION_REQUEST:
-            ogs_debug("[ESM] Bearer resource allocation request");
+            ogs_debug("Bearer resource allocation request");
             ogs_debug("    IMSI[%s] PTI[%d] EBI[%d]",
                     mme_ue->imsi_bcd, sess->pti, bearer->ebi);
             esm_handle_bearer_resource_allocation_request(bearer, message);
             break;
         case OGS_NAS_EPS_BEARER_RESOURCE_MODIFICATION_REQUEST:
-            ogs_debug("[ESM] Bearer resource modification request");
+            ogs_debug("Bearer resource modification request");
             ogs_debug("    IMSI[%s] PTI[%d] EBI[%d]",
                     mme_ue->imsi_bcd, sess->pti, bearer->ebi);
             esm_handle_bearer_resource_modification_request(bearer, message);
@@ -288,14 +288,14 @@ void esm_state_pdn_will_disconnect(ogs_fsm_t *s, mme_event_t *e)
 
         switch (message->esm.h.message_type) {
         case OGS_NAS_EPS_DEACTIVATE_EPS_BEARER_CONTEXT_ACCEPT:
-            ogs_debug("[ESM] [D] Deactivate EPS bearer "
+            ogs_debug("[D] Deactivate EPS bearer "
                     "context accept");
             ogs_debug("    IMSI[%s] PTI[%d] EBI[%d]",
                     mme_ue->imsi_bcd, sess->pti, bearer->ebi);
             OGS_FSM_TRAN(s, esm_state_pdn_did_disconnect);
             break;
         case OGS_NAS_EPS_PDN_CONNECTIVITY_REQUEST:
-            ogs_debug("[ESM] PDN Connectivity request");
+            ogs_debug("PDN Connectivity request");
             ogs_debug("    IMSI[%s] PTI[%d] EBI[%d]",
                     mme_ue->imsi_bcd, sess->pti, bearer->ebi);
             rv = esm_handle_pdn_connectivity_request(

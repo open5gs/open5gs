@@ -96,7 +96,7 @@ void sgsap_handle_location_update_accept(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
 
     if (nas_mobile_identity_tmsi) {
         if (nas_mobile_identity_tmsi->type == OGS_NAS_MOBILE_IDENTITY_TMSI) {
-            mme_ue->p_tmsi = ntohl(nas_mobile_identity_tmsi->tmsi);
+            mme_ue->p_tmsi = be32toh(nas_mobile_identity_tmsi->tmsi);
         } else {
             ogs_error("Not supported Identity type[%d]",
                     nas_mobile_identity_tmsi->type);

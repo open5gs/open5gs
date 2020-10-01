@@ -162,7 +162,7 @@ void mme_s11_handle_create_session_response(
 
     /* Control Plane(UL) : SGW-S11 */
     sgw_s11_teid = rsp->sender_f_teid_for_control_plane.data;
-    mme_ue->sgw_s11_teid = ntohl(sgw_s11_teid->teid);
+    mme_ue->sgw_s11_teid = be32toh(sgw_s11_teid->teid);
 
     memcpy(&pdn->paa, rsp->pdn_address_allocation.data,
             rsp->pdn_address_allocation.len);
@@ -196,7 +196,7 @@ void mme_s11_handle_create_session_response(
 
     /* Data Plane(UL) : SGW-S1U */
     sgw_s1u_teid = rsp->bearer_contexts_created.s1_u_enodeb_f_teid.data;
-    bearer->sgw_s1u_teid = ntohl(sgw_s1u_teid->teid);
+    bearer->sgw_s1u_teid = be32toh(sgw_s1u_teid->teid);
 
     ogs_debug("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
             mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
@@ -459,7 +459,7 @@ void mme_s11_handle_create_bearer_request(
 
     /* Data Plane(UL) : SGW-S1U */
     sgw_s1u_teid = req->bearer_contexts.s1_u_enodeb_f_teid.data;
-    bearer->sgw_s1u_teid = ntohl(sgw_s1u_teid->teid);
+    bearer->sgw_s1u_teid = be32toh(sgw_s1u_teid->teid);
     rv = ogs_gtp_f_teid_to_ip(sgw_s1u_teid, &bearer->sgw_s1u_ip);
     ogs_assert(rv == OGS_OK);
 
@@ -827,7 +827,7 @@ void mme_s11_handle_create_indirect_data_forwarding_tunnel_response(
             teid = rsp->bearer_contexts[i].s4_u_sgsn_f_teid.data;
             ogs_assert(teid);
 
-            bearer->sgw_dl_teid = ntohl(teid->teid);
+            bearer->sgw_dl_teid = be32toh(teid->teid);
             rv = ogs_gtp_f_teid_to_ip(teid, &bearer->sgw_dl_ip);
             ogs_expect_or_return(rv == OGS_OK);
         }
@@ -835,7 +835,7 @@ void mme_s11_handle_create_indirect_data_forwarding_tunnel_response(
             teid = rsp->bearer_contexts[i].s2b_u_epdg_f_teid_5.data;
             ogs_assert(teid);
 
-            bearer->sgw_ul_teid = ntohl(teid->teid);
+            bearer->sgw_ul_teid = be32toh(teid->teid);
             rv = ogs_gtp_f_teid_to_ip(teid, &bearer->sgw_ul_ip);
             ogs_expect_or_return(rv == OGS_OK);
         }

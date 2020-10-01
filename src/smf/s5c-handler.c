@@ -186,6 +186,7 @@ void smf_s5c_handle_create_session_request(
     ogs_debug("    SGW_S5U_TEID[0x%x] PGW_S5U_TEID[0x%x]",
             bearer->sgw_s5u_teid, bearer->pgw_s5u_teid);
 
+    /* Set Bearer QoS */
     decoded = ogs_gtp_parse_bearer_qos(&bearer_qos,
         &req->bearer_contexts_to_be_created.bearer_level_qos);
     ogs_assert(req->bearer_contexts_to_be_created.bearer_level_qos.len ==
