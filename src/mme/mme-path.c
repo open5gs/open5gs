@@ -46,8 +46,7 @@ void mme_send_delete_session_or_mme_ue_context_release(mme_ue_t *mme_ue)
                     S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
                     S1AP_UE_CTX_REL_UE_CONTEXT_REMOVE, 0);
         } else {
-            ogs_warn("[%s] No S1 Context",
-                mme_ue->imsi_bcd ? mme_ue->imsi_bcd : "Unknown");
+            ogs_warn("[%s] No S1 Context", mme_ue->imsi_bcd);
         }
     }
 }
@@ -59,12 +58,10 @@ void mme_send_release_access_bearer_or_ue_context_release(enb_ue_t *enb_ue)
 
     mme_ue = enb_ue->mme_ue;
     if (mme_ue && BEARER_CONTEXT_IS_ACTIVE(mme_ue)) {
-        ogs_debug("[%s] Release access bearer request",
-                mme_ue->imsi_bcd ? mme_ue->imsi_bcd : "Unknown");
+        ogs_debug("[%s] Release access bearer request", mme_ue->imsi_bcd);
         mme_gtp_send_release_access_bearers_request(mme_ue);
     } else {
-        ogs_debug("[%s] No UE Context",
-                mme_ue->imsi_bcd ? mme_ue->imsi_bcd : "Unknown");
+        ogs_debug("[%s] No UE Context", mme_ue->imsi_bcd);
         s1ap_send_ue_context_release_command(enb_ue,
                 S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
                 S1AP_UE_CTX_REL_S1_CONTEXT_REMOVE, 0);
