@@ -434,7 +434,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
         case OGS_NAS_EPS_ATTACH_COMPLETE:
             ogs_warn("[%s] should not send Attach-Complete"
                     " if GUTI is not present in Attach-Accept",
-                    mme_ue->imsi_bcd ? mme_ue->imsi_bcd : "Unknown");
+                    mme_ue->imsi_bcd);
             break;
 
         default:
