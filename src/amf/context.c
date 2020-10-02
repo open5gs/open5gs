@@ -1304,6 +1304,8 @@ amf_ue_t *amf_ue_find_by_message(ogs_nas_5gs_message_t *message)
         switch (mobile_identity_header->type) {
         case OGS_NAS_5GS_MOBILE_IDENTITY_SUCI:
             suci = ogs_nas_5gs_suci_from_mobile_identity(mobile_identity);
+            ogs_assert(suci);
+
             amf_ue = amf_ue_find_by_suci(suci);
             if (amf_ue) {
                 ogs_trace("[%s] known UE by SUCI", suci);

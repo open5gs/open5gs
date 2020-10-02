@@ -66,6 +66,11 @@ char *ogs_nas_5gs_suci_from_mobile_identity(
         (ogs_nas_5gs_mobile_identity_suci_t *)mobile_identity->buffer;
     ogs_assert(mobile_identity_suci);
 
+    ogs_assert(mobile_identity_suci->h.supi_format ==
+            OGS_NAS_5GS_SUPI_FORMAT_IMSI);
+    ogs_assert(mobile_identity_suci->protection_scheme_id ==
+            OGS_NAS_5GS_NULL_SCHEME);
+
     suci = ogs_msprintf("suci-%d-", mobile_identity_suci->h.supi_format);
     ogs_assert(suci);
 
