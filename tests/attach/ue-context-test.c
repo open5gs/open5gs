@@ -999,14 +999,20 @@ static void test3_func(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, recvbuf);
     tests1ap_recv(test_ue, recvbuf);
 
-    /* Send Service Request - INVALID Security MAC */
+    /* Send Service Request */
     emmbuf = testemm_build_service_request(test_ue);
     ABTS_PTR_NOTNULL(tc, emmbuf);
+#if 0
+    /*
+     * In s1ap_handle_initial_context_setup_failure(),
+     * Use mme_send_release_access_bearer_or_ue_context_release(enb_ue);
+     */
     {
         unsigned char *data = emmbuf->data;
         ogs_assert(data);
         data[3]++;
     }
+#endif
     sendbuf = test_s1ap_build_initial_ue_message(
             test_ue, emmbuf, S1AP_RRC_Establishment_Cause_mo_Data, true);
     ABTS_PTR_NOTNULL(tc, sendbuf);
@@ -1063,6 +1069,7 @@ static void test3_func(abts_case *tc, void *data)
 
     test_ue_remove(test_ue);
 }
+
 abts_suite *test_ue_context(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)

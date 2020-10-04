@@ -669,6 +669,8 @@ void s1ap_handle_initial_context_setup_failure(
                 Cause->present, (int)Cause->choice.radioNetwork);
     }
 
+    mme_ue = enb_ue->mme_ue;
+
     if (mme_ue)
         CLEAR_SERVICE_INDICATOR(mme_ue);
 
@@ -682,7 +684,18 @@ void s1ap_handle_initial_context_setup_failure(
      * may in principle be adopted. The eNB should ensure
      * that no hanging resources remain at the eNB.
      */
+#if 1
+    if (mme_ue && SESSION_CONTEXT_IS_AVAILABLE(mme_ue)) {
+        mme_gtp_send_delete_all_sessions(mme_ue);
+    } else {
+        s1ap_send_ue_context_release_command(enb_ue,
+                S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
+                S1AP_UE_CTX_REL_S1_CONTEXT_REMOVE, 0);
+    }
+#else
+    /* In Issues #568, v2.0.12 is not working. */
     mme_send_release_access_bearer_or_ue_context_release(enb_ue);
+#endif
 }
 
 void s1ap_handle_ue_context_modification_response(
