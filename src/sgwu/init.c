@@ -18,6 +18,7 @@
  */
 
 #include "context.h"
+#include "gtp-path.h"
 
 static ogs_thread_t *thread;
 static void sgwu_main(void *data);
@@ -31,6 +32,7 @@ int sgwu_initialize()
     ogs_pfcp_context_init(OGS_MAX_NUM_OF_GTPU_RESOURCE);
     sgwu_context_init();
     sgwu_event_init();
+    sgwu_gtp_init();
 
     rv = ogs_pfcp_xact_init();
     if (rv != OGS_OK) return rv;
@@ -62,10 +64,11 @@ void sgwu_terminate(void)
     ogs_thread_destroy(thread);
 
     sgwu_context_final();
-    ogs_pfcp_context_final();
 
+    ogs_pfcp_context_final();
     ogs_pfcp_xact_final();
 
+    sgwu_gtp_final();
     sgwu_event_final();
 }
 

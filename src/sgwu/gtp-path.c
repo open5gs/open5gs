@@ -173,17 +173,27 @@ cleanup:
     ogs_pkbuf_free(pkbuf);
 }
 
-int sgwu_gtp_open(void)
+int sgwu_gtp_init(void)
 {
-    ogs_socknode_t *node = NULL;
-    ogs_sock_t *sock = NULL;
-
     ogs_pkbuf_config_t config;
     memset(&config, 0, sizeof config);
 
     config.cluster_2048_pool = ogs_app()->pool.packet;
 
     packet_pool = ogs_pkbuf_pool_create(&config);
+
+    return OGS_OK;
+}
+
+void sgwu_gtp_final(void)
+{
+    ogs_pkbuf_pool_destroy(packet_pool);
+}
+
+int sgwu_gtp_open(void)
+{
+    ogs_socknode_t *node = NULL;
+    ogs_sock_t *sock = NULL;
 
     ogs_list_for_each(&sgwu_self()->gtpu_list, node) {
         sock = ogs_gtp_server(node);
@@ -206,6 +216,4 @@ int sgwu_gtp_open(void)
 void sgwu_gtp_close(void)
 {
     ogs_socknode_remove_all(&sgwu_self()->gtpu_list);
-
-    ogs_pkbuf_pool_destroy(packet_pool);
 }

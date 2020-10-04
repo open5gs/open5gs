@@ -26,6 +26,9 @@
 extern "C" {
 #endif
 
+int sgwu_gtp_init(void);
+void sgwu_gtp_final(void);
+
 int sgwu_gtp_open(void);
 void sgwu_gtp_close(void);
 

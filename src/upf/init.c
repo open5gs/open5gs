@@ -18,8 +18,7 @@
  */
 
 #include "context.h"
-#include "event.h"
-#include "upf-sm.h"
+#include "gtp-path.h"
 
 static ogs_thread_t *thread;
 static void upf_main(void *data);
@@ -33,6 +32,7 @@ int upf_initialize()
     ogs_pfcp_context_init(OGS_MAX_NUM_OF_GTPU_RESOURCE);
     upf_context_init();
     upf_event_init();
+    upf_gtp_init();
 
     rv = ogs_pfcp_xact_init();
     if (rv != OGS_OK) return rv;
@@ -67,10 +67,11 @@ void upf_terminate(void)
     ogs_thread_destroy(thread);
 
     upf_context_final();
-    ogs_pfcp_context_final();
 
+    ogs_pfcp_context_final();
     ogs_pfcp_xact_final();
 
+    upf_gtp_final();
     upf_event_final();
 }
 

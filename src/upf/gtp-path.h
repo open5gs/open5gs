@@ -27,6 +27,9 @@
 extern "C" {
 #endif
 
+int upf_gtp_init(void);
+void upf_gtp_final(void);
+
 int upf_gtp_open(void);
 void upf_gtp_close(void);
 
