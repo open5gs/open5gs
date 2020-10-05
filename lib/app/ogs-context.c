@@ -147,6 +147,25 @@ static void regenerate_all_timer_duration(void)
         self.time.message.gtp.n3_response_rcount *
         self.time.message.gtp.t3_response_duration;
     ogs_assert(self.time.message.gtp.t3_holding_duration);
+
+#if 0
+    ogs_trace("%lld, %lld, %lld, %d, %lld, %d %lld, %d, %lld, %d, %lld",
+        (long long)self.time.message.duration,
+        (long long)self.time.message.sbi.client_wait_duration,
+        (long long)self.time.message.sbi.connection_deadline,
+        self.time.message.pfcp.n1_response_rcount,
+        (long long)self.time.message.pfcp.t1_response_duration,
+        self.time.message.pfcp.n1_holding_rcount,
+        (long long)self.time.message.pfcp.t1_holding_duration,
+        self.time.message.gtp.n3_response_rcount,
+        (long long)self.time.message.gtp.t3_response_duration,
+        self.time.message.gtp.n3_holding_rcount,
+        (long long)self.time.message.gtp.t3_holding_duration);
+    ogs_trace("%lld, %lld, %lld",
+        (long long)self.time.message.sbi.nf_register_interval,
+        (long long)self.time.message.pfcp.association_interval,
+        (long long)self.time.message.pfcp.no_heartbeat_duration);
+#endif
 }
 
 static void app_context_prepare(void)
