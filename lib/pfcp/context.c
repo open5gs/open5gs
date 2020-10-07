@@ -329,7 +329,8 @@ int ogs_pfcp_context_parse_config(const char *local, const char *remote)
                                         mask_or_numbits = (const char *)v;
                                     }
                                 }
-                            } else if (!strcmp(pdn_key, "apn")) {
+                            } else if (!strcmp(pdn_key, "apn") ||
+                                        !strcmp(pdn_key, "dnn")) {
                                 apn = ogs_yaml_iter_value(&pdn_iter);
                             } else if (!strcmp(pdn_key, "dev")) {
                                 dev = ogs_yaml_iter_value(&pdn_iter);

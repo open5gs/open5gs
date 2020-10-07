@@ -74,7 +74,7 @@ logger:
 #      - addr: cafe:1::1/64
 #
 #
-#  o Specific APN(e.g 'ims') uses 10.46.0.1/16, cafe:2::1/64
+#  o Specific DNN/APN(e.g 'ims') uses 10.46.0.1/16, cafe:2::1/64
 #    All other APNs use 10.45.0.1/16, cafe:1::1/64
 #    $ sudo ip addr add 10.45.0.1/16 dev ogstun
 #    $ sudo ip addr add 10.46.0.1/16 dev ogstun
@@ -83,7 +83,9 @@ logger:
 #
 #    pdn:
 #      - addr: 10.45.0.1/16
+#        apn: internet
 #      - addr: cafe:1::1/64
+#        apn: internet
 #      - addr: 10.46.0.1/16
 #        apn: ims
 #      - addr: cafe:2::1/64
@@ -97,7 +99,9 @@ logger:
 #
 #    pdn:
 #      - addr: 10.45.0.1/16
+#        apn: internet
 #      - addr: cafe:1::1/64
+#        apn: internet
 #        dev: ogstun2
 #      - addr: 10.46.0.1/16
 #        apn: ims

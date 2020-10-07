@@ -86,44 +86,32 @@ logger:
 #  <PDN Configuration with UE Pool>
 #
 #  o IPv4 Pool
-#    $ sudo ip addr add 10.45.0.1/16 dev ogstun
-#
 #    pdn:
 #      addr: 10.45.0.1/16
 #
 #  o IPv4/IPv6 Pool
-#    $ sudo ip addr add 10.45.0.1/16 dev ogstun
-#    $ sudo ip addr add cafe:1::1/64 dev ogstun
-#
 #    pdn:
 #      - addr: 10.45.0.1/16
 #      - addr: cafe:1::1/64
 #
 #
-#  o Specific APN(e.g 'ims') uses 10.46.0.1/16, cafe:2::1/64
-#    All other APNs use 10.45.0.1/16, cafe:1::1/64
-#    $ sudo ip addr add 10.45.0.1/16 dev ogstun
-#    $ sudo ip addr add 10.46.0.1/16 dev ogstun
-#    $ sudo ip addr add cafe:1::1/64 dev ogstun
-#    $ sudo ip addr add cafe:2::1/64 dev ogstun
-#
+#  o Specific DNN/APN(e.g 'ims') uses 10.46.0.1/16, cafe:2::1/64
 #    pdn:
 #      - addr: 10.45.0.1/16
+#        apn: internet
 #      - addr: cafe:1::1/64
+#        apn: internet
 #      - addr: 10.46.0.1/16
 #        apn: ims
 #      - addr: cafe:2::1/64
 #        apn: ims
 #
 #  o Multiple Devices (default: ogstun)
-#    $ sudo ip addr add 10.45.0.1/16 dev ogstun
-#    $ sudo ip addr add cafe:1::1/64 dev ogstun2
-#    $ sudo ip addr add 10.46.0.1/16 dev ogstun3
-#    $ sudo ip addr add cafe:2::1/64 dev ogstun3
-#
 #    pdn:
 #      - addr: 10.45.0.1/16
+#        apn: internet
 #      - addr: cafe:1::1/64
+#        apn: internet
 #        dev: ogstun2
 #      - addr: 10.46.0.1/16
 #        apn: ims
