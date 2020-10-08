@@ -38,8 +38,7 @@ void nas_eps_send_attach_reject(mme_ue_t *mme_ue,
 
 void nas_eps_send_identity_request(mme_ue_t *mme_ue);
 
-void nas_eps_send_authentication_request(
-        mme_ue_t *mme_ue, ogs_diam_e_utran_vector_t *e_utran_vector);
+void nas_eps_send_authentication_request(mme_ue_t *mme_ue);
 void nas_eps_send_authentication_reject(mme_ue_t *mme_ue);
 
 void nas_eps_send_security_mode_command(mme_ue_t *mme_ue);

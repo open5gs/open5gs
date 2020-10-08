@@ -172,8 +172,7 @@ void nas_eps_send_identity_request(mme_ue_t *mme_ue)
     ogs_expect(rv == OGS_OK);
 }
 
-void nas_eps_send_authentication_request(
-        mme_ue_t *mme_ue, ogs_diam_e_utran_vector_t *e_utran_vector)
+void nas_eps_send_authentication_request(mme_ue_t *mme_ue)
 {
     int rv;
     ogs_pkbuf_t *emmbuf = NULL;
@@ -187,8 +186,7 @@ void nas_eps_send_authentication_request(
         emmbuf = mme_ue->t3460.pkbuf;
         ogs_expect_or_return(emmbuf);
     } else {
-        ogs_assert(e_utran_vector);
-        emmbuf = emm_build_authentication_request(mme_ue, e_utran_vector);
+        emmbuf = emm_build_authentication_request(mme_ue);
         ogs_expect_or_return(emmbuf);
     }
 

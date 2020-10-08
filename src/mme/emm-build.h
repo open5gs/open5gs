@@ -34,8 +34,7 @@ ogs_pkbuf_t *emm_build_attach_reject(
 ogs_pkbuf_t *emm_build_identity_request(mme_ue_t *mme_ue);
 ogs_pkbuf_t *emm_build_security_mode_command(mme_ue_t *mme_ue);
 
-ogs_pkbuf_t *emm_build_authentication_request(mme_ue_t *mme_ue,
-        ogs_diam_e_utran_vector_t *e_utran_vector);
+ogs_pkbuf_t *emm_build_authentication_request(mme_ue_t *mme_ue);
 ogs_pkbuf_t *emm_build_authentication_reject(void);
 
 ogs_pkbuf_t *emm_build_detach_accept(mme_ue_t *mme_ue);

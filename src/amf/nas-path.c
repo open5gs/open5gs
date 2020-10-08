@@ -296,6 +296,7 @@ void nas_5gs_send_configuration_update_command(
                 amf_timer_cfg(AMF_TIMER_T3555)->duration);
 
     } else {
+        ogs_expect_or_return(param);
         gmmbuf = gmm_build_configuration_update_command(amf_ue, param);
         ogs_expect_or_return(gmmbuf);
 

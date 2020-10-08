@@ -51,14 +51,14 @@ void mme_send_delete_session_or_mme_ue_context_release(mme_ue_t *mme_ue)
     }
 }
 
-#if 0
+#if 1
 void mme_send_release_access_bearer_or_ue_context_release(enb_ue_t *enb_ue)
 {
     mme_ue_t *mme_ue = NULL;
     ogs_assert(enb_ue);
 
     mme_ue = enb_ue->mme_ue;
-    if (mme_ue && BEARER_CONTEXT_IS_ACTIVE(mme_ue)) {
+    if (mme_ue) {
         ogs_debug("[%s] Release access bearer request", mme_ue->imsi_bcd);
         mme_gtp_send_release_access_bearers_request(mme_ue);
     } else {

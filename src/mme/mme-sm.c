@@ -166,6 +166,9 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
         addr = e->addr;
         ogs_assert(addr);
 
+        ogs_assert(addr->ogs_sa_family == AF_INET ||
+                addr->ogs_sa_family == AF_INET6);
+
         ogs_info("eNB-S1 accepted[%s] in master_sm module",
             OGS_ADDR(addr, buf));
 
@@ -188,6 +191,9 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
         ogs_assert(sock);
         addr = e->addr;
         ogs_assert(addr);
+
+        ogs_assert(addr->ogs_sa_family == AF_INET ||
+                addr->ogs_sa_family == AF_INET6);
 
         max_num_of_ostreams = e->max_num_of_ostreams;
 
@@ -213,6 +219,9 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
         addr = e->addr;
         ogs_assert(addr);
 
+        ogs_assert(addr->ogs_sa_family == AF_INET ||
+                addr->ogs_sa_family == AF_INET6);
+
         enb = mme_enb_find_by_addr(addr);
         if (enb) {
             ogs_info("eNB-S1[%s] connection refused!!!", OGS_ADDR(addr, buf));
@@ -231,6 +240,9 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
         ogs_assert(addr);
         pkbuf = e->pkbuf;
         ogs_assert(pkbuf);
+
+        ogs_assert(addr->ogs_sa_family == AF_INET ||
+                addr->ogs_sa_family == AF_INET6);
 
         enb = mme_enb_find_by_addr(addr);
         ogs_free(addr);
@@ -644,6 +656,9 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
         addr = e->addr;
         ogs_assert(addr);
 
+        ogs_assert(addr->ogs_sa_family == AF_INET ||
+                addr->ogs_sa_family == AF_INET6);
+
         max_num_of_ostreams = e->max_num_of_ostreams;
 
         vlr = mme_vlr_find_by_addr(addr);
@@ -667,6 +682,9 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
         ogs_assert(sock);
         addr = e->addr;
         ogs_assert(addr);
+
+        ogs_assert(addr->ogs_sa_family == AF_INET ||
+                addr->ogs_sa_family == AF_INET6);
 
         vlr = mme_vlr_find_by_addr(addr);
         ogs_free(addr);
@@ -694,6 +712,9 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
         ogs_assert(addr);
         pkbuf = e->pkbuf;
         ogs_assert(pkbuf);
+
+        ogs_assert(addr->ogs_sa_family == AF_INET ||
+                addr->ogs_sa_family == AF_INET6);
 
         vlr = mme_vlr_find_by_addr(addr);
         ogs_free(addr);

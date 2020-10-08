@@ -355,6 +355,7 @@ struct mme_ue_s {
     uint8_t         xres_len;
     uint8_t         kasme[OGS_SHA256_DIGEST_SIZE];
     uint8_t         rand[OGS_RAND_LEN];
+    uint8_t         autn[OGS_AUTN_LEN];
     uint8_t         knas_int[OGS_SHA256_DIGEST_SIZE/2]; 
     uint8_t         knas_enc[OGS_SHA256_DIGEST_SIZE/2];
     uint32_t        dl_count;

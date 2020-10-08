@@ -253,7 +253,8 @@ static void mme_s6a_aia_cb(void *data, struct msg **msg)
         ret = fd_msg_search_avp(*msg, ogs_diam_experimental_result, &avp);
         ogs_assert(ret == 0);
         if (avp) {
-            ret = fd_avp_search_avp(avp, ogs_diam_experimental_result_code, &avpch);
+            ret = fd_avp_search_avp(
+                    avp, ogs_diam_experimental_result_code, &avpch);
             ogs_assert(ret == 0);
             if (avpch) {
                 ret = fd_msg_avp_hdr(avpch, &hdr);
@@ -319,7 +320,8 @@ static void mme_s6a_aia_cb(void *data, struct msg **msg)
         error++;
     }
 
-    ret = fd_avp_search_avp(avp, ogs_diam_s6a_e_utran_vector, &avp_e_utran_vector); 
+    ret = fd_avp_search_avp(
+            avp, ogs_diam_s6a_e_utran_vector, &avp_e_utran_vector);
     ogs_assert(ret == 0);
     if (avp) {
         ret = fd_msg_avp_hdr(avp_e_utran_vector, &hdr);

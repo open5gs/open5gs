@@ -641,7 +641,7 @@ void emm_state_authentication(ogs_fsm_t *s, mme_event_t *e)
                 nas_eps_send_authentication_reject(mme_ue);
             } else {
                 mme_ue->t3460.retry_count++;
-                nas_eps_send_authentication_request(mme_ue, NULL);
+                nas_eps_send_authentication_request(mme_ue);
             }
             break;
         default:

@@ -37,13 +37,14 @@ void mme_s6a_handle_aia(mme_ue_t *mme_ue,
     memcpy(mme_ue->xres, e_utran_vector->xres, mme_ue->xres_len);
     memcpy(mme_ue->kasme, e_utran_vector->kasme, OGS_SHA256_DIGEST_SIZE);
     memcpy(mme_ue->rand, e_utran_vector->rand, OGS_RAND_LEN);
+    memcpy(mme_ue->autn, e_utran_vector->autn, OGS_AUTN_LEN);
 
     CLEAR_MME_UE_TIMER(mme_ue->t3460);
 
     if (mme_ue->nas_eps.ksi == OGS_NAS_KSI_NO_KEY_IS_AVAILABLE)
         mme_ue->nas_eps.ksi = 0;
 
-    nas_eps_send_authentication_request(mme_ue, e_utran_vector);
+    nas_eps_send_authentication_request(mme_ue);
 }
 
 void mme_s6a_handle_ula(mme_ue_t *mme_ue,

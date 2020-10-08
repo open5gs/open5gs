@@ -183,15 +183,13 @@ ogs_pkbuf_t *emm_build_identity_request(mme_ue_t *mme_ue)
     return ogs_nas_eps_plain_encode(&message);
 }
 
-ogs_pkbuf_t *emm_build_authentication_request(mme_ue_t *mme_ue,
-        ogs_diam_e_utran_vector_t *e_utran_vector)
+ogs_pkbuf_t *emm_build_authentication_request(mme_ue_t *mme_ue)
 {
     ogs_nas_eps_message_t message;
     ogs_nas_eps_authentication_request_t *authentication_request = 
         &message.emm.authentication_request;
 
     ogs_assert(mme_ue);
-    ogs_assert(e_utran_vector);
 
     memset(&message, 0, sizeof(message));
     message.emm.h.protocol_discriminator = OGS_NAS_PROTOCOL_DISCRIMINATOR_EMM;
@@ -201,9 +199,9 @@ ogs_pkbuf_t *emm_build_authentication_request(mme_ue_t *mme_ue,
     authentication_request->nas_key_set_identifierasme.value =
         mme_ue->nas_eps.ksi;
     memcpy(authentication_request->authentication_parameter_rand.rand,
-            e_utran_vector->rand, OGS_RAND_LEN);
+            mme_ue->rand, OGS_RAND_LEN);
     memcpy(authentication_request->authentication_parameter_autn.autn,
-            e_utran_vector->autn, OGS_AUTN_LEN);
+            mme_ue->autn, OGS_AUTN_LEN);
     authentication_request->authentication_parameter_autn.length = 
             OGS_AUTN_LEN;
 
