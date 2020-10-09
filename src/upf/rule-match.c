@@ -306,7 +306,7 @@ ogs_pfcp_pdr_t *upf_pdr_find_by_packet(ogs_pkbuf_t *pkt)
 
 found:
         if (rule) {
-            ogs_fatal("Found Dedicated PDR : PDR ID[%d]", pdr->id);
+            ogs_debug("Found Dedicated PDR : PDR ID[%d]", pdr->id);
             return pdr;
         }
 
