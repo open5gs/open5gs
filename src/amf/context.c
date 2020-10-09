@@ -1308,9 +1308,9 @@ amf_ue_t *amf_ue_find_by_message(ogs_nas_5gs_message_t *message)
 
             amf_ue = amf_ue_find_by_suci(suci);
             if (amf_ue) {
-                ogs_trace("[%s] known UE by SUCI", suci);
+                ogs_info("[%s] known UE by SUCI", suci);
             } else {
-                ogs_trace("[%s] Unknown UE by SUCI", suci);
+                ogs_info("[%s] Unknown UE by SUCI", suci);
             }
             ogs_free(suci);
             break;
@@ -1329,7 +1329,8 @@ amf_ue_t *amf_ue_find_by_message(ogs_nas_5gs_message_t *message)
 
             amf_ue = amf_ue_find_by_guti(&nas_guti);
             if (amf_ue) {
-                ogs_debug("Known UE by 5G-S_TMSI[AMF_ID:0x%x,M_TMSI:0x%x]",
+                ogs_info("[%s] Known UE by 5G-S_TMSI[AMF_ID:0x%x,M_TMSI:0x%x]",
+                    amf_ue->suci ? amf_ue->suci : "Unknown",
                     ogs_amf_id_hexdump(&nas_guti.amf_id), nas_guti.m_tmsi);
             } else {
                 ogs_warn("Unknown UE by 5G-S_TMSI[AMF_ID:0x%x,M_TMSI:0x%x]",
@@ -1341,40 +1342,6 @@ amf_ue_t *amf_ue_find_by_message(ogs_nas_5gs_message_t *message)
 
         }
         break;
-#if 0
-    case OGS_NAS_5GS_TRACKING_AREA_UPDATE_REQUEST:
-        tau_request = &message->gmm.tracking_area_update_request;
-        eps_mobile_identity = &tau_request->old_guti;
-
-        switch(eps_mobile_identity->imsi.type) {
-        case OGS_NAS_5GS_MOBILE_IDENTITY_GUTI:
-            eps_mobile_identity_guti = &eps_mobile_identity->guti;
-
-            ogs_nas_guti.nas_plmn_id = eps_mobile_identity_guti->nas_plmn_id;
-            ogs_nas_guti.amf_gid = eps_mobile_identity_guti->amf_gid;
-            ogs_nas_guti.amf_code = eps_mobile_identity_guti->amf_code;
-            ogs_nas_guti.m_tmsi = eps_mobile_identity_guti->m_tmsi;
-
-            amf_ue = amf_ue_find_by_guti(&ogs_nas_guti);
-            if (amf_ue) {
-                ogs_trace("Known UE by GUTI[G:%d,C:%d,M_TMSI:0x%x]",
-                        ogs_nas_guti.amf_gid,
-                        ogs_nas_guti.amf_code,
-                        ogs_nas_guti.m_tmsi);
-            } else {
-                ogs_warn("Unknown UE by GUTI[G:%d,C:%d,M_TMSI:0x%x]",
-                        ogs_nas_guti.amf_gid,
-                        ogs_nas_guti.amf_code,
-                        ogs_nas_guti.m_tmsi);
-            }
-            break;
-        default:
-            ogs_error("Unknown IMSI type [%d]", eps_mobile_identity->imsi.type);
-            break;
-        }
-        break;
-
-#endif
     default:
         break;
     }
@@ -1400,12 +1367,11 @@ void amf_ue_set_suci(amf_ue_t *amf_ue,
         /* Check if OLD amf_ue_t is different with NEW amf_ue_t */
         if (ogs_pool_index(&amf_ue_pool, amf_ue) !=
             ogs_pool_index(&amf_ue_pool, old_amf_ue)) {
-
             ogs_warn("[%s] OLD UE Context Release", suci);
             if (CM_CONNECTED(old_amf_ue)) {
-               /* Implcit NG release */
-                ogs_debug("[%s] Implicit NG release", suci);
-                ogs_debug("[%s]    RAN_UE_NGAP_ID[%d] AMF_UE_NGAP_ID[%lld]",
+                /* Implcit NG release */
+                ogs_warn("[%s] Implicit NG release", suci);
+                ogs_warn("[%s]    RAN_UE_NGAP_ID[%d] AMF_UE_NGAP_ID[%lld]",
                         old_amf_ue->suci, old_amf_ue->ran_ue->ran_ue_ngap_id,
                         (long long)old_amf_ue->ran_ue->amf_ue_ngap_id);
                 ran_ue_remove(old_amf_ue->ran_ue);

@@ -1002,7 +1002,7 @@ static void test3_func(abts_case *tc, void *data)
     /* Send Service Request */
     emmbuf = testemm_build_service_request(test_ue);
     ABTS_PTR_NOTNULL(tc, emmbuf);
-#if 0
+#if 1
     /*
      * In s1ap_handle_initial_context_setup_failure(),
      * Use mme_send_release_access_bearer_or_ue_context_release(enb_ue);

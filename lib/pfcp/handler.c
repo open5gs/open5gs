@@ -631,12 +631,13 @@ ogs_pfcp_far_t *ogs_pfcp_handle_update_far(ogs_pfcp_sess_t *sess,
     if (message->apply_action.presence)
         far->apply_action = message->apply_action.u8;
 
-    if (message->update_forwarding_parameters.destination_interface.presence) {
-        far->dst_if = message->update_forwarding_parameters.
-            destination_interface.u8;
-    }
-
     if (message->update_forwarding_parameters.presence) {
+        if (message->update_forwarding_parameters.
+                destination_interface.presence) {
+            far->dst_if = message->update_forwarding_parameters.
+                destination_interface.u8;
+        }
+
         if (message->update_forwarding_parameters.
                 outer_header_creation.presence) {
             ogs_pfcp_tlv_outer_header_creation_t *outer_header_creation =

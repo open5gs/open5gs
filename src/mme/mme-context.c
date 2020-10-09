@@ -2407,9 +2407,9 @@ mme_ue_t *mme_ue_find_by_message(ogs_nas_eps_message_t *message)
 
             mme_ue = mme_ue_find_by_imsi_bcd(imsi_bcd);
             if (mme_ue) {
-                ogs_trace("known UE by IMSI[%s]", imsi_bcd);
+                ogs_info("[%s] known UE by IMSI", imsi_bcd);
             } else {
-                ogs_trace("Unknown UE by IMSI[%s]", imsi_bcd);
+                ogs_info("[%s] Unknown UE by IMSI", imsi_bcd);
             }
             break;
         case OGS_NAS_EPS_MOBILE_IDENTITY_GUTI:
@@ -2422,7 +2422,8 @@ mme_ue_t *mme_ue_find_by_message(ogs_nas_eps_message_t *message)
 
             mme_ue = mme_ue_find_by_guti(&ogs_nas_guti);
             if (mme_ue) {
-                ogs_trace("Known UE by GUTI[G:%d,C:%d,M_TMSI:0x%x]",
+                ogs_info("[%s] Known UE by GUTI[G:%d,C:%d,M_TMSI:0x%x]",
+                        mme_ue->imsi_bcd,
                         ogs_nas_guti.mme_gid,
                         ogs_nas_guti.mme_code,
                         ogs_nas_guti.m_tmsi);
@@ -2456,7 +2457,8 @@ mme_ue_t *mme_ue_find_by_message(ogs_nas_eps_message_t *message)
 
             mme_ue = mme_ue_find_by_guti(&ogs_nas_guti);
             if (mme_ue) {
-                ogs_trace("Known UE by GUTI[G:%d,C:%d,M_TMSI:0x%x]",
+                ogs_info("[%s] Known UE by GUTI[G:%d,C:%d,M_TMSI:0x%x]",
+                        mme_ue->imsi_bcd,
                         ogs_nas_guti.mme_gid,
                         ogs_nas_guti.mme_code,
                         ogs_nas_guti.m_tmsi);
@@ -2490,12 +2492,13 @@ mme_ue_t *mme_ue_find_by_message(ogs_nas_eps_message_t *message)
 
             mme_ue = mme_ue_find_by_guti(&ogs_nas_guti);
             if (mme_ue) {
-                ogs_trace("Known UE by GUTI[G:%d,C:%d,M_TMSI:0x%x]",
+                ogs_info("[%s] Known UE by GUTI[G:%d,C:%d,M_TMSI:0x%x]",
+                        mme_ue->imsi_bcd,
                         ogs_nas_guti.mme_gid,
                         ogs_nas_guti.mme_code,
                         ogs_nas_guti.m_tmsi);
             } else {
-                ogs_warn("Unknown UE by GUTI[G:%d,C:%d,M_TMSI:0x%x]",
+                ogs_info("Unknown UE by GUTI[G:%d,C:%d,M_TMSI:0x%x]",
                         ogs_nas_guti.mme_gid,
                         ogs_nas_guti.mme_code,
                         ogs_nas_guti.m_tmsi);
@@ -2527,9 +2530,16 @@ int mme_ue_set_imsi(mme_ue_t *mme_ue, char *imsi_bcd)
         /* Check if OLD mme_ue_t is different with NEW mme_ue_t */
         if (ogs_pool_index(&mme_ue_pool, mme_ue) !=
             ogs_pool_index(&mme_ue_pool, old_mme_ue)) {
-            ogs_warn("OLD UE Context Release [IMSI:%s]", mme_ue->imsi_bcd);
-            if (old_mme_ue->enb_ue)
-                enb_ue_deassociate(old_mme_ue->enb_ue);
+            ogs_warn("[%s] OLD UE Context Release", mme_ue->imsi_bcd);
+            if (ECM_CONNECTED(old_mme_ue)) {
+                /* Implcit S1 release */
+                ogs_warn("[%s] Implicit S1 release", mme_ue->imsi_bcd);
+                ogs_warn("[%s]    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
+                        old_mme_ue->imsi_bcd,
+                        old_mme_ue->enb_ue->enb_ue_s1ap_id,
+                        old_mme_ue->enb_ue->mme_ue_s1ap_id);
+                enb_ue_remove(old_mme_ue->enb_ue);
+            }
             mme_ue_remove(old_mme_ue);
         }
     }
@@ -3064,27 +3074,6 @@ mme_bearer_t *mme_bearer_next(mme_bearer_t *bearer)
 {
     ogs_assert(bearer);
     return ogs_list_next(bearer);
-}
-
-int mme_bearer_is_inactive(mme_ue_t *mme_ue)
-{
-    mme_sess_t *sess = NULL;
-    ogs_assert(mme_ue);
-
-    sess = mme_sess_first(mme_ue);
-    while (sess) {
-        mme_bearer_t *bearer = mme_bearer_first(sess);
-        while (bearer) {
-            if (MME_HAVE_ENB_S1U_PATH(bearer)) {
-                return 0;
-            }
-
-            bearer = mme_bearer_next(bearer);
-        }
-        sess = mme_sess_next(sess);
-    }
-
-    return 1;
 }
 
 int mme_bearer_set_inactive(mme_ue_t *mme_ue)

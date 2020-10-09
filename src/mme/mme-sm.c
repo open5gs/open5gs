@@ -283,8 +283,7 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
         case MME_TIMER_S1_HOLDING:
             ogs_warn("Implicit S1 release");
             ogs_warn("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
-                  enb_ue->enb_ue_s1ap_id,
-                  enb_ue->mme_ue_s1ap_id);
+                  enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
             s1ap_handle_ue_context_release_action(enb_ue);
             break;
         default:

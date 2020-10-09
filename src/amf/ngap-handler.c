@@ -907,8 +907,13 @@ void ngap_handle_initial_context_setup_failure(
     if (amf_ue) {
         old_xact_count = amf_sess_xact_count(amf_ue);
 
+#if 0 /* change buffering instead of deletion */
         amf_sbi_send_release_all_sessions(amf_ue,
                 AMF_RELEASE_SM_CONTEXT_NG_CONTEXT_REMOVE);
+#else
+        amf_sbi_send_deactivate_all_sessions(
+                amf_ue, Cause->present, (int)Cause->choice.radioNetwork);
+#endif
 
         new_xact_count = amf_sess_xact_count(amf_ue);
     }
@@ -1161,8 +1166,11 @@ void ngap_handle_ue_context_release_action(ran_ue_t *ran_ue)
 
     amf_ue = ran_ue->amf_ue;
 
-    ogs_debug("    RAN_UE_NGAP_ID[%d] AMF_UE_NGAP_ID[%lld]",
+    ogs_info("UE Context Release [Action:%d]", ran_ue->ue_ctx_rel_action);
+    ogs_info("    RAN_UE_NGAP_ID[%d] AMF_UE_NGAP_ID[%lld]",
             ran_ue->ran_ue_ngap_id, (long long)ran_ue->amf_ue_ngap_id);
+    if (amf_ue)
+        ogs_info("    SUCI[%s]", amf_ue->suci ? amf_ue->suci : "Unknown");
 
     switch (ran_ue->ue_ctx_rel_action) {
     case NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE:

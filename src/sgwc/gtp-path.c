@@ -19,8 +19,6 @@
 
 #include "gtp-path.h"
 
-static ogs_pkbuf_pool_t *packet_pool = NULL;
-
 static void _gtpv2_c_recv_cb(short when, ogs_socket_t fd, void *data)
 {
     sgwc_event_t *e = NULL;
@@ -107,13 +105,6 @@ int sgwc_gtp_open(void)
     ogs_socknode_t *node = NULL;
     ogs_sock_t *sock = NULL;
 
-    ogs_pkbuf_config_t config;
-    memset(&config, 0, sizeof config);
-
-    config.cluster_8192_pool = ogs_app()->pool.packet;
-
-    packet_pool = ogs_pkbuf_pool_create(&config);
-
     ogs_list_for_each(&sgwc_self()->gtpc_list, node) {
         sock = ogs_gtp_server(node);
         ogs_assert(sock);
@@ -146,8 +137,6 @@ void sgwc_gtp_close(void)
 {
     ogs_socknode_remove_all(&sgwc_self()->gtpc_list);
     ogs_socknode_remove_all(&sgwc_self()->gtpc_list6);
-
-    ogs_pkbuf_pool_destroy(packet_pool);
 }
 
 void sgwc_gtp_send_downlink_data_notification(

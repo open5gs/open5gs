@@ -554,9 +554,7 @@ typedef struct mme_sess_s {
     ogs_tlv_octet_t pgw_pco;
 } mme_sess_t;
 
-#define BEARER_CONTEXT_IS_ACTIVE(__mME)  \
-    (mme_bearer_is_inactive(__mME) == 0)
-#define CLEAR_BEARER_CONTEXT(__mME)   \
+#define CLEAR_BEARER_CONTEXT(__mME) \
     mme_bearer_set_inactive(__mME)
 
 #define MME_HAVE_ENB_S1U_PATH(__bEARER) \

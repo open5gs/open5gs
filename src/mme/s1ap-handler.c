@@ -684,7 +684,7 @@ void s1ap_handle_initial_context_setup_failure(
      * may in principle be adopted. The eNB should ensure
      * that no hanging resources remain at the eNB.
      */
-#if 1
+#if 0
     if (mme_ue && SESSION_CONTEXT_IS_AVAILABLE(mme_ue)) {
         mme_gtp_send_delete_all_sessions(mme_ue);
     } else {
@@ -1125,8 +1125,11 @@ void s1ap_handle_ue_context_release_action(enb_ue_t *enb_ue)
 
     mme_ue = enb_ue->mme_ue;
 
-    ogs_debug("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
+    ogs_info("UE Context Release [Action:%d]", enb_ue->ue_ctx_rel_action);
+    ogs_info("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
             enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
+    if (mme_ue)
+        ogs_info("    IMSI[%s]", mme_ue->imsi_bcd);
 
     switch (enb_ue->ue_ctx_rel_action) {
     case S1AP_UE_CTX_REL_S1_CONTEXT_REMOVE:
@@ -2053,7 +2056,7 @@ void s1ap_handle_s1_reset(
     Reset = &initiatingMessage->value.choice.Reset;
     ogs_assert(Reset);
 
-    ogs_debug("[MME] Reset");
+    ogs_warn("[MME] Reset");
 
     for (i = 0; i < Reset->protocolIEs.list.count; i++) {
         ie = Reset->protocolIEs.list.array[i];
@@ -2092,12 +2095,12 @@ void s1ap_handle_s1_reset(
     ogs_assert(ResetType);
     switch (ResetType->present) {
     case S1AP_ResetType_PR_s1_Interface:
-        ogs_debug("    S1AP_ResetType_PR_s1_Interface");
+        ogs_warn("    S1AP_ResetType_PR_s1_Interface");
 
         enb_ue_remove_in_enb(enb);
         break;
     case S1AP_ResetType_PR_partOfS1_Interface:
-        ogs_debug("    S1AP_ResetType_PR_partOfS1_Interface");
+        ogs_warn("    S1AP_ResetType_PR_partOfS1_Interface");
 
         partOfS1_Interface = ResetType->choice.partOfS1_Interface;
         ogs_assert(partOfS1_Interface);
@@ -2114,7 +2117,7 @@ void s1ap_handle_s1_reset(
             item = &ie2->value.choice.UE_associatedLogicalS1_ConnectionItem;
             ogs_assert(item);
             
-            ogs_debug("    MME_UE_S1AP_ID[%d] ENB_UE_S1AP_ID[%d]",
+            ogs_warn("    MME_UE_S1AP_ID[%d] ENB_UE_S1AP_ID[%d]",
                     item->mME_UE_S1AP_ID ? (int)*item->mME_UE_S1AP_ID : -1,
                     item->eNB_UE_S1AP_ID ? (int)*item->eNB_UE_S1AP_ID : -1);
 

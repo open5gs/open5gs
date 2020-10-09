@@ -464,11 +464,6 @@ int emm_handle_tau_request(mme_ue_t *mme_ue,
     CLEAR_MME_UE_ALL_TIMERS(mme_ue);
 
     CLEAR_SERVICE_INDICATOR(mme_ue);
-    if (BEARER_CONTEXT_IS_ACTIVE(mme_ue))
-        ogs_debug("    Bearer-Active");
-    else
-        ogs_debug("    Bearer-Inactive");
-
     if (mme_ue->nas_eps.update.active_flag)
         ogs_debug("    Active flag");
     else
