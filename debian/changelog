@@ -1,3 +1,21 @@
+open5gs (2.0.18) unstable; urgency=medium
+
+  * Bug Fixed
+
+ -- Sukchan Lee <acetcom@gmail.com>  Fri, 09 Oct 2020 07:51:09 -0400
+
+open5gs (2.0.18~focal) focal; urgency=medium
+
+  * Bug Fixed
+
+ -- Sukchan Lee <acetcom@gmail.com>  Fri, 09 Oct 2020 07:48:43 -0400
+
+open5gs (2.0.18~bionic) bionic; urgency=medium
+
+  * Bug Fixed
+
+ -- Sukchan Lee <acetcom@gmail.com>  Fri, 09 Oct 2020 07:47:23 -0400
+
 open5gs (2.0.17) unstable; urgency=medium
 
   * Bug Fixed
