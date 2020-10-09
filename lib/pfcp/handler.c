@@ -129,11 +129,7 @@ void ogs_pfcp_up_handle_pdr(
 
     sendbuf = ogs_pkbuf_copy(recvbuf);
     if (!sendbuf) {
-        ogs_fatal("CHECK CONFIGURATION : Not enough packet buffer");
-        ogs_fatal("For example, edit sgwu.yaml in EPC or "
-                    "upf.yaml in 5GC like the following");
-        ogs_fatal("pool");
-        ogs_fatal("    packet: 327680");
+        ogs_fatal("Not enough packet buffer");
         ogs_assert_if_reached();
 
         return;
