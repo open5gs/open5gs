@@ -1,5 +1,8 @@
 process.env.DB_URI = process.env.DB_URI || 'mongodb://localhost/open5gs';
 
+const _hostname = process.env.HOSTNAME || '0.0.0.0';
+const port = process.env.PORT || 3000;
+
 const co = require('co');
 const next = require('next');
 
@@ -101,9 +104,9 @@ co(function* () {
     server.use(morgan('tiny'));
   }
 
-  server.listen(3000, "0.0.0.0", err => {
+  server.listen(port, _hostname, err => {
     if (err) throw err;
-    console.log('> Ready on http://0.0.0.0:3000');
+    console.log('> Ready on http://' + _hostname + ':' + port);
   });
 })
 .catch(error => console.error(error.stack));
