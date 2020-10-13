@@ -395,10 +395,17 @@ The WebUI runs as an [npm](https://www.npmjs.com/) script.
 $ npm run dev
 ```
 
+Server listening can be changed by setting the environment variable HOSTNAME or PORT as below.
+
+```bash
+$ HOSTNAME=192.168.0.11 npm run dev
+$ PORT=7777 npm run dev
+```
+
 ### Register Subscriber Information
 ---
 
-Connect to `http://localhost:3000` and login with **admin** account.
+Connect to `http://127.0.0.1:3000` and login with **admin** account.
 
 > Username : admin  
 > Password : 1423
