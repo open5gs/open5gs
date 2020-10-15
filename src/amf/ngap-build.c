@@ -1253,10 +1253,10 @@ ogs_pkbuf_t *ngap_build_path_switch_ack(amf_ue_t *amf_ue)
 
     SecurityContext = &ie->value.choice.SecurityContext;
 
-    ogs_debug("    RAN_UE_NGAP_ID[%d] AMF_UE_NGAP_ID[%d]",
-            ran_ue->ran_ue_ngap_id, ran_ue->amf_ue_ngap_id);
+    ogs_debug("    RAN_UE_NGAP_ID[%d] AMF_UE_NGAP_ID[%lld]",
+            ran_ue->ran_ue_ngap_id, (long long)ran_ue->amf_ue_ngap_id);
 
-    *AMF_UE_NGAP_ID = ran_ue->amf_ue_ngap_id;
+    asn_uint642INTEGER(AMF_UE_NGAP_ID, ran_ue->amf_ue_ngap_id);
     *RAN_UE_NGAP_ID = ran_ue->ran_ue_ngap_id;
 
     SecurityContext->nextHopChainingCount = amf_ue->nhcc;
@@ -1272,7 +1272,7 @@ ogs_pkbuf_t *ngap_build_path_switch_ack(amf_ue_t *amf_ue)
 }
 
 ogs_pkbuf_t *ngap_build_path_switch_failure(
-    uint32_t ran_ue_ngap_id, uint32_t amf_ue_ngap_id,
+    uint32_t ran_ue_ngap_id, uint64_t amf_ue_ngap_id,
     NGAP_Cause_PR group, long cause)
 {
     NGAP_NGAP_PDU_t pdu;
@@ -1330,11 +1330,11 @@ ogs_pkbuf_t *ngap_build_path_switch_failure(
 
     Cause = &ie->value.choice.Cause;
 
-    ogs_debug("    RAN_UE_NGAP_ID[%d] AMF_UE_NGAP_ID[%d]",
-            ran_ue_ngap_id, amf_ue_ngap_id);
+    ogs_debug("    RAN_UE_NGAP_ID[%d] AMF_UE_NGAP_ID[%lld]",
+            ran_ue_ngap_id, (long long)amf_ue_ngap_id);
     ogs_debug("    Group[%d] Cause[%d]", group, (int)cause);
 
-    *AMF_UE_NGAP_ID = amf_ue_ngap_id;
+    asn_uint642INTEGER(AMF_UE_NGAP_ID, ran_ue->amf_ue_ngap_id);
     *RAN_UE_NGAP_ID = ran_ue_ngap_id;
     Cause->present = group;
     Cause->choice.radioNetwork = cause;

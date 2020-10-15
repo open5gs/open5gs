@@ -1558,14 +1558,17 @@ void ngap_handle_path_switch_request(
     NGAP_PathSwitchRequestIEs_t *ie = NULL;
     NGAP_RAN_UE_NGAP_ID_t *RAN_UE_NGAP_ID = NULL;
     NGAP_AMF_UE_NGAP_ID_t *AMF_UE_NGAP_ID = NULL;
-    NGAP_UserLocationInformation_t   *UserLocationInformation = NULL;
-    NGAP_UESecurityCapabilities_t    *UESecurityCapabilities = NULL;
-    NGAP_PDUSessionResourceToBeSwitchedDLList_t  *PDUSessionResourceToBeSwitchedDLList = NULL;
+    NGAP_UserLocationInformation_t *UserLocationInformation = NULL;
+    NGAP_UESecurityCapabilities_t *UESecurityCapabilities = NULL;
+    NGAP_PDUSessionResourceToBeSwitchedDLList_t
+        *PDUSessionResourceToBeSwitchedDLList = NULL;
 
-    NGAP_NRencryptionAlgorithms_t    *nRencryptionAlgorithms = NULL;
-    NGAP_NRintegrityProtectionAlgorithms_t   *nRintegrityProtectionAlgorithms = NULL;
-    NGAP_EUTRAencryptionAlgorithms_t     *eUTRAencryptionAlgorithms = NULL;
-    NGAP_EUTRAintegrityProtectionAlgorithms_t    *eUTRAintegrityProtectionAlgorithms = NULL;
+    NGAP_NRencryptionAlgorithms_t *nRencryptionAlgorithms = NULL;
+    NGAP_NRintegrityProtectionAlgorithms_t
+        *nRintegrityProtectionAlgorithms = NULL;
+    NGAP_EUTRAencryptionAlgorithms_t *eUTRAencryptionAlgorithms = NULL;
+    NGAP_EUTRAintegrityProtectionAlgorithms_t
+        *eUTRAintegrityProtectionAlgorithms = NULL;
 
     NGAP_PDUSessionResourceToBeSwitchedDLItem_t *PDUSessionItem = NULL;
     OCTET_STRING_t *transfer = NULL;
@@ -1583,8 +1586,7 @@ void ngap_handle_path_switch_request(
 
     ogs_debug("Path switch request");
     
-    for (i = 0; i < PathSwitchRequest->protocolIEs.list.count;
-            i++) {
+    for (i = 0; i < PathSwitchRequest->protocolIEs.list.count; i++) {
         ie = PathSwitchRequest->protocolIEs.list.array[i];
         switch (ie->id) {
         case NGAP_ProtocolIE_ID_id_RAN_UE_NGAP_ID:
@@ -1600,7 +1602,8 @@ void ngap_handle_path_switch_request(
             UESecurityCapabilities = &ie->value.choice.UESecurityCapabilities;
             break;
         case NGAP_ProtocolIE_ID_id_PDUSessionResourceToBeSwitchedDLList:
-            PDUSessionResourceToBeSwitchedDLList = &ie->value.choice.PDUSessionResourceToBeSwitchedDLList;
+            PDUSessionResourceToBeSwitchedDLList =
+                &ie->value.choice.PDUSessionResourceToBeSwitchedDLList;
             break;
         default:
             break;
@@ -1687,9 +1690,11 @@ void ngap_handle_path_switch_request(
         &UESecurityCapabilities->eUTRAintegrityProtectionAlgorithms;
 
     amf_ue->ue_security_capability.nea = nRencryptionAlgorithms->buf[0];
-    amf_ue->ue_security_capability.nia = nRintegrityProtectionAlgorithms->buf[0];
+    amf_ue->ue_security_capability.nia =
+        nRintegrityProtectionAlgorithms->buf[0];
     amf_ue->ue_security_capability.eea = eUTRAencryptionAlgorithms->buf[0];
-    amf_ue->ue_security_capability.eia = eUTRAintegrityProtectionAlgorithms->buf[0];
+    amf_ue->ue_security_capability.eia =
+        eUTRAintegrityProtectionAlgorithms->buf[0];
     
     if (!PDUSessionResourceToBeSwitchedDLList) {
         ogs_error("No PDUSessionResourceToBeSwitchedDLList");
