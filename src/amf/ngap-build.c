@@ -2044,6 +2044,131 @@ ogs_pkbuf_t *ngap_build_error_indication(
     return ogs_ngap_encode(&pdu);
 }
 
+
+
+ogs_pkbuf_t *ngap_build_path_switch_ack(amf_ue_t *amf_ue)
+{
+    ran_ue_t *ran_ue = NULL;
+    amf_sess_t *sess = NULL;
+	
+    NGAP_NGAP_PDU_t pdu;
+    NGAP_SuccessfulOutcome_t *successfulOutcome = NULL;	
+	NGAP_PathSwitchRequestAcknowledge_t	 *PathSwitchRequestAcknowledge = NULL;
+	
+    NGAP_PathSwitchRequestAcknowledgeIEs_t *ie = NULL;
+    NGAP_AMF_UE_NGAP_ID_t *AMF_UE_NGAP_ID = NULL;
+    NGAP_RAN_UE_NGAP_ID_t *RAN_UE_NGAP_ID = NULL;
+	NGAP_SecurityContext_t	*SecurityContext = NULL;
+	NGAP_PDUSessionResourceSwitchedList_t *PDUSessionResourceSwitchedList = NULL;
+	
+    ogs_assert(amf_ue);
+    ran_ue = amf_ue->ran_ue;
+    ogs_assert(ran_ue);
+	
+    memset(&pdu, 0, sizeof (NGAP_NGAP_PDU_t));
+    pdu.present = NGAP_NGAP_PDU_PR_successfulOutcome;
+    pdu.choice.successfulOutcome =
+        CALLOC(1, sizeof(NGAP_SuccessfulOutcome_t));
+
+    successfulOutcome = pdu.choice.successfulOutcome;
+    successfulOutcome->procedureCode = NGAP_ProcedureCode_id_PathSwitchRequest;
+    successfulOutcome->criticality = NGAP_Criticality_reject;
+    successfulOutcome->value.present =
+        NGAP_SuccessfulOutcome__value_PR_PathSwitchRequestAcknowledge;
+
+    PathSwitchRequestAcknowledge = &successfulOutcome->value.choice.PathSwitchRequestAcknowledge;
+
+    ie = CALLOC(1, sizeof(NGAP_PathSwitchRequestAcknowledgeIEs_t));
+    ASN_SEQUENCE_ADD(&PathSwitchRequestAcknowledge->protocolIEs, ie);
+
+    ie->id = NGAP_ProtocolIE_ID_id_AMF_UE_NGAP_ID;
+    ie->criticality = NGAP_Criticality_reject;
+    ie->value.present =
+        NGAP_PathSwitchRequestAcknowledgeIEs__value_PR_AMF_UE_NGAP_ID;
+
+    AMF_UE_NGAP_ID = &ie->value.choice.AMF_UE_NGAP_ID;
+
+    ie = CALLOC(1, sizeof(NGAP_PathSwitchRequestAcknowledgeIEs_t));
+    ASN_SEQUENCE_ADD(&PathSwitchRequestAcknowledge->protocolIEs, ie);
+
+    ie->id = NGAP_ProtocolIE_ID_id_RAN_UE_NGAP_ID;
+    ie->criticality = NGAP_Criticality_reject;
+    ie->value.present =
+        NGAP_PathSwitchRequestAcknowledgeIEs__value_PR_RAN_UE_NGAP_ID;
+	
+    RAN_UE_NGAP_ID = &ie->value.choice.RAN_UE_NGAP_ID;
+
+    ie = CALLOC(1, sizeof(NGAP_PathSwitchRequestAcknowledgeIEs_t));
+    ASN_SEQUENCE_ADD(&PathSwitchRequestAcknowledge->protocolIEs, ie);
+
+    ie->id = NGAP_ProtocolIE_ID_id_SecurityContext;
+    ie->criticality = NGAP_Criticality_reject;
+    ie->value.present =
+        NGAP_PathSwitchRequestAcknowledgeIEs__value_PR_SecurityContext;
+
+    SecurityContext = &ie->value.choice.SecurityContext;
+
+    ie = CALLOC(1, sizeof(NGAP_PathSwitchRequestAcknowledgeIEs_t));
+    ASN_SEQUENCE_ADD(&PathSwitchRequestAcknowledge->protocolIEs, ie);
+
+    ie->id = NGAP_ProtocolIE_ID_id_PDUSessionResourceSwitchedList;
+    ie->criticality = NGAP_Criticality_ignore;
+    ie->value.present =
+        NGAP_PathSwitchRequestAcknowledgeIEs__value_PR_PDUSessionResourceSwitchedList;
+
+    PDUSessionResourceSwitchedList = &ie->value.choice.PDUSessionResourceSwitchedList;
+	
+    ogs_list_for_each(&amf_ue->sess_list, sess) {
+        OCTET_STRING_t *transfer = NULL;
+		NGAP_PDUSessionResourceSwitchedItem_t *PDUSessionItem = NULL;
+
+        if (!sess->pdu_session_resource_setup_request_transfer) continue;
+
+        if (!PDUSessionResourceSwitchedList) {
+		    ie = CALLOC(1, sizeof(NGAP_PathSwitchRequestAcknowledgeIEs_t));
+		    ASN_SEQUENCE_ADD(&PathSwitchRequestAcknowledge->protocolIEs, ie);
+
+		    ie->id = NGAP_ProtocolIE_ID_id_PDUSessionResourceSwitchedList;
+		    ie->criticality = NGAP_Criticality_ignore;
+		    ie->value.present =
+		        NGAP_PathSwitchRequestAcknowledgeIEs__value_PR_PDUSessionResourceSwitchedList;
+
+		    PDUSessionResourceSwitchedList = &ie->value.choice.PDUSessionResourceSwitchedList;
+        }
+
+        PDUSessionItem = CALLOC(1,
+                sizeof(NGAP_PDUSessionResourceSwitchedItem_t));
+        ASN_SEQUENCE_ADD(&PDUSessionResourceSwitchedList->list, PDUSessionItem);
+
+        PDUSessionItem->pDUSessionID = sess->psi;
+
+        transfer = &PDUSessionItem->pathSwitchRequestAcknowledgeTransfer;
+        transfer->size = sess->pdu_session_resource_setup_request_transfer->len;
+        transfer->buf = CALLOC(transfer->size, sizeof(uint8_t));
+        memcpy(transfer->buf,
+                sess->pdu_session_resource_setup_request_transfer->data,
+                transfer->size);
+    }
+	
+    ogs_debug("    RAN_UE_NGAP_ID[%d] AMF_UE_NGAP_ID[%lld]",
+            ran_ue->ran_ue_ngap_id, (long long)ran_ue->amf_ue_ngap_id);
+
+    asn_uint642INTEGER(AMF_UE_NGAP_ID, ran_ue->amf_ue_ngap_id);
+    *RAN_UE_NGAP_ID = ran_ue->ran_ue_ngap_id;
+	
+    SecurityContext->nextHopChainingCount = amf_ue->nhcc;
+    SecurityContext->nextHopNH.size = OGS_SHA256_DIGEST_SIZE;
+    SecurityContext->nextHopNH.buf = 
+        CALLOC(SecurityContext->nextHopNH.size,
+        sizeof(uint8_t));
+    SecurityContext->nextHopNH.bits_unused = 0;
+    memcpy(SecurityContext->nextHopNH.buf,
+            amf_ue->nh, SecurityContext->nextHopNH.size);
+	
+    return ogs_ngap_encode(&pdu);
+}
+
+
 #if 0
 ogs_pkbuf_t *ngap_build_s1_reset(
         NGAP_Cause_PR group, long cause,
