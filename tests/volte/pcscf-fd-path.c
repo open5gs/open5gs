@@ -67,7 +67,7 @@ static int pcscf_rx_fb_cb(struct msg **msg, struct avp *avp,
 	return ENOTSUP;
 }
 
-void pcscf_rx_send_aar(uint8_t **rx_sid,
+void pcscf_rx_send_aar_audio(uint8_t **rx_sid,
         test_sess_t *sess, int id_type, int qos_type, int flow_type)
 {
     int rv;
@@ -475,7 +475,7 @@ void pcscf_rx_send_aar(uint8_t **rx_sid,
     ogs_free(sip_uri);
 }
 
-void pcscf_rx_send_aar2(uint8_t **rx_sid, test_sess_t *sess, int id_type)
+void pcscf_rx_send_aar_video(uint8_t **rx_sid, test_sess_t *sess, int id_type)
 {
     int rv;
     int ret;

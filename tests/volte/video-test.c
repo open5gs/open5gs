@@ -385,7 +385,7 @@ static void test1_func(abts_case *tc, void *data)
 
     /* Send AA-Request */
     rx_sid = NULL;
-    pcscf_rx_send_aar2(&rx_sid, sess,
+    pcscf_rx_send_aar_video(&rx_sid, sess,
             OGS_DIAM_RX_SUBSCRIPTION_ID_TYPE_END_USER_SIP_URI);
 
     /* Receive E-RAB Setup Request +
@@ -529,7 +529,7 @@ static void test1_func(abts_case *tc, void *data)
 
     /* Send AA-Request */
     rx_sid = NULL;
-    pcscf_rx_send_aar2(&rx_sid, sess,
+    pcscf_rx_send_aar_video(&rx_sid, sess,
             OGS_DIAM_RX_SUBSCRIPTION_ID_TYPE_END_USER_SIP_URI);
 
     /* Receive E-RAB Setup Request +
@@ -673,7 +673,7 @@ static void test1_func(abts_case *tc, void *data)
 
     /* Send AA-Request */
     rx_sid = NULL;
-    pcscf_rx_send_aar2(&rx_sid, sess,
+    pcscf_rx_send_aar_video(&rx_sid, sess,
             OGS_DIAM_RX_SUBSCRIPTION_ID_TYPE_END_USER_SIP_URI);
 
     /* Receive E-RAB Setup Request +
@@ -817,7 +817,7 @@ static void test1_func(abts_case *tc, void *data)
 
     /* Send AA-Request */
     rx_sid = NULL;
-    pcscf_rx_send_aar2(&rx_sid, sess,
+    pcscf_rx_send_aar_video(&rx_sid, sess,
             OGS_DIAM_RX_SUBSCRIPTION_ID_TYPE_END_USER_SIP_URI);
 
     /* Receive E-RAB Setup Request +
@@ -961,7 +961,7 @@ static void test1_func(abts_case *tc, void *data)
 
     /* Send AA-Request */
     rx_sid = NULL;
-    pcscf_rx_send_aar2(&rx_sid, sess,
+    pcscf_rx_send_aar_video(&rx_sid, sess,
             OGS_DIAM_RX_SUBSCRIPTION_ID_TYPE_END_USER_SIP_URI);
 
     /* Receive E-RAB Setup Request +
@@ -1105,7 +1105,7 @@ static void test1_func(abts_case *tc, void *data)
 
     /* Send AA-Request */
     rx_sid = NULL;
-    pcscf_rx_send_aar2(&rx_sid, sess,
+    pcscf_rx_send_aar_video(&rx_sid, sess,
             OGS_DIAM_RX_SUBSCRIPTION_ID_TYPE_END_USER_SIP_URI);
 
     /* Receive E-RAB Setup Request +

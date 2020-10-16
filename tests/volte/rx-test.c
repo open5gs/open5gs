@@ -368,7 +368,7 @@ static void test1_func(abts_case *tc, void *data)
     ogs_pkbuf_free(recvbuf);
 
     /* Send AA-Request */
-    pcscf_rx_send_aar(&rx_sid, sess,
+    pcscf_rx_send_aar_audio(&rx_sid, sess,
             OGS_DIAM_RX_SUBSCRIPTION_ID_TYPE_END_USER_IMSI, 1, 1);
 
     /* Receive E-RAB Setup Request +
@@ -406,7 +406,7 @@ static void test1_func(abts_case *tc, void *data)
     ogs_pkbuf_free(recvbuf);
 
     /* Send AA-Request without Flow */
-    pcscf_rx_send_aar(&rx_sid, sess,
+    pcscf_rx_send_aar_audio(&rx_sid, sess,
             OGS_DIAM_RX_SUBSCRIPTION_ID_TYPE_END_USER_IMSI, 2, 1);
 
     /* Receive E-RAB Modify Request +
@@ -993,7 +993,7 @@ static void test2_func(abts_case *tc, void *data)
     ogs_msleep(100);
 
     /* Send AA-Request */
-    pcscf_rx_send_aar(&rx_sid, sess,
+    pcscf_rx_send_aar_audio(&rx_sid, sess,
             OGS_DIAM_RX_SUBSCRIPTION_ID_TYPE_END_USER_IMSI, 0, 1);
 
     /* Receive downlink NAS transport +
