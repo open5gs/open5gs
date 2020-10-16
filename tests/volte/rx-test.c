@@ -1161,9 +1161,9 @@ static void test3_func(abts_case *tc, void *data)
               "\"downlink\" : { \"$numberLong\" : \"1000000\" } "
             "},"
             "\"qos\" : { "
-              "\"qci\" : 6, "
+              "\"qci\" : 5, "
               "\"arp\" : { "
-                "\"priority_level\" : 6,"
+                "\"priority_level\" : 1,"
                 "\"pre_emption_vulnerability\" : 1, "
                 "\"pre_emption_capability\" : 1"
               "} "
@@ -1424,6 +1424,18 @@ static void test3_func(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* DELAY is needed in default EPS bearer */
+    ogs_msleep(100);
+
+    /* Send AA-Request */
+    pcscf_rx_send_aar_ctrl(&rx_sid, sess,
+            OGS_DIAM_RX_SUBSCRIPTION_ID_TYPE_END_USER_SIP_URI);
+
+    /* DELAY is needed for receiving AA-Answer */
+    ogs_msleep(100);
+
+    pcscf_rx_send_str(rx_sid);
+
+    /* DELAY is needed for receiving Session-Termination-Answer */
     ogs_msleep(100);
 
     /* Send GTP-U ICMP Packet */

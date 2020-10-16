@@ -766,8 +766,10 @@ int pcrf_gx_send_rar(
                  */
                 if (gx_message.pdn.qos.qci != OGS_PDN_QCI_5 ||
                     gx_message.pdn.qos.arp.priority_level != 1) {
-                    ogs_error("CHECK WEBUI : No APN in DB with [QCI:%d]", qci);
-                    ogs_error("Please add APN using WEBUI");
+                    ogs_error("CHECK WEBUI : Even the Default "
+                        "Bearer(QCI:%d,ARP:%d) cannot support IMS signalling.",
+                        gx_message.pdn.qos.qci,
+                        gx_message.pdn.qos.arp.priority_level);
                     rx_message->result_code =
                         OGS_DIAM_RX_DIAMETER_REQUESTED_SERVICE_NOT_AUTHORIZED;
                     goto out;

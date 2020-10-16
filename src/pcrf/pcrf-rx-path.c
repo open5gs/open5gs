@@ -670,8 +670,10 @@ static int pcrf_rx_str_cb( struct msg **msg, struct avp *avp,
                 sess_data->gx_sid, sess_data->rx_sid, &rx_message);
         if (rv != OGS_OK) {
             result_code = rx_message.result_code;
-            ogs_error("pcrf_gx_send_rar() failed");
-            goto out;
+            if (result_code != ER_DIAMETER_SUCCESS) {
+                ogs_error("pcrf_gx_send_rar() failed");
+                goto out;
+            }
         }
     }
 
