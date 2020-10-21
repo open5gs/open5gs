@@ -122,11 +122,6 @@ ogs_pkbuf_t *esm_build_activate_default_bearer_context_request(
     bearer = mme_default_bearer_in_sess(sess);
     ogs_assert(bearer);
 
-    if (mme_bearer_next(bearer) != NULL) {
-        ogs_error("PDN connectivity duplicated");
-        return NULL;
-    }
-
     ogs_debug("Activate default bearer context request");
     ogs_debug("    IMSI[%s] PTI[%d] EBI[%d]",
             mme_ue->imsi_bcd, sess->pti, bearer->ebi);
