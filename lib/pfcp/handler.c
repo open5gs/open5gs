@@ -172,6 +172,38 @@ void ogs_pfcp_up_handle_pdr(
     }
 }
 
+void ogs_pfcp_up_handle_error_indication(
+        ogs_pfcp_far_t *far, ogs_pfcp_user_plane_report_t *report)
+{
+    uint16_t len;
+
+    ogs_assert(far);
+    ogs_assert(far->hashkey_len);
+
+    ogs_assert(report);
+
+    memset(report, 0, sizeof(*report));
+
+    len = far->hashkey_len - 4; /* Remove TEID size, Only use ADDR size */
+
+    report->error_indication.remote_f_teid_len = 5 + len;
+    report->error_indication.remote_f_teid.teid = htobe32(far->hashkey.teid);
+    if (len == OGS_IPV4_LEN) {
+        report->error_indication.remote_f_teid.ipv4 = 1;
+        memcpy(&report->error_indication.remote_f_teid.addr,
+                far->hashkey.addr, len);
+    } else if (len == OGS_IPV6_LEN) {
+        report->error_indication.remote_f_teid.ipv6 = 1;
+        memcpy(report->error_indication.remote_f_teid.addr6,
+                far->hashkey.addr, len);
+    } else {
+        ogs_error("Invalid Length [%d]", len);
+        return;
+    }
+
+    report->type.error_indication_report = 1;
+}
+
 ogs_pfcp_pdr_t *ogs_pfcp_handle_create_pdr(ogs_pfcp_sess_t *sess,
         ogs_pfcp_tlv_create_pdr_t *message,
         uint8_t *cause_value, uint8_t *offending_ie_value)

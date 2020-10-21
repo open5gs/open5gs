@@ -684,18 +684,7 @@ void s1ap_handle_initial_context_setup_failure(
      * may in principle be adopted. The eNB should ensure
      * that no hanging resources remain at the eNB.
      */
-#if 0
-    if (mme_ue && SESSION_CONTEXT_IS_AVAILABLE(mme_ue)) {
-        mme_gtp_send_delete_all_sessions(mme_ue);
-    } else {
-        s1ap_send_ue_context_release_command(enb_ue,
-                S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
-                S1AP_UE_CTX_REL_S1_CONTEXT_REMOVE, 0);
-    }
-#else
-    /* In Issues #568, v2.0.12 is not working. */
     mme_send_release_access_bearer_or_ue_context_release(enb_ue);
-#endif
 }
 
 void s1ap_handle_ue_context_modification_response(
@@ -1165,6 +1154,14 @@ void s1ap_handle_ue_context_release_action(enb_ue_t *enb_ue)
             rv = mme_ue_clear_indirect_tunnel(mme_ue);
             ogs_expect(rv == OGS_OK);
         }
+        break;
+    case S1AP_UE_CTX_REL_S1_PAGING:
+        ogs_debug("    Action: S1 paging");
+        enb_ue_remove(enb_ue);
+        ogs_expect_or_return(mme_ue);
+        mme_ue_deassociate(mme_ue);
+
+        s1ap_send_paging(mme_ue, S1AP_CNDomain_ps);
         break;
     default:
         ogs_error("Invalid Action[%d]", enb_ue->ue_ctx_rel_action);

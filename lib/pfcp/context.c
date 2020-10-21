@@ -92,6 +92,7 @@ void ogs_pfcp_context_init(int num_of_gtpu_resource)
     ogs_pool_init(&ogs_pfcp_subnet_pool, OGS_MAX_NUM_OF_SUBNET);
 
     self.pdr_hash = ogs_hash_make();
+    self.far_hash = ogs_hash_make();
 
     context_initialized = 1;
 }
@@ -102,6 +103,8 @@ void ogs_pfcp_context_final(void)
 
     ogs_assert(self.pdr_hash);
     ogs_hash_destroy(self.pdr_hash);
+    ogs_assert(self.far_hash);
+    ogs_hash_destroy(self.far_hash);
 
     ogs_pfcp_dev_remove_all();
     ogs_pfcp_subnet_remove_all();
@@ -857,32 +860,6 @@ ogs_pfcp_pdr_t *ogs_pfcp_pdr_find(
     return NULL;
 }
 
-static uint64_t pdr_hash_keygen(uint32_t teid, uint8_t qfi)
-{
-    uint64_t hashkey = (teid << 8) + qfi;
-    return hashkey;
-}
-
-void ogs_pfcp_pdr_hash_set(ogs_pfcp_pdr_t *pdr)
-{
-    ogs_assert(pdr);
-
-    if (pdr->hashkey)
-        ogs_hash_set(ogs_pfcp_self()->pdr_hash, &pdr->hashkey,
-                sizeof(pdr->hashkey), NULL);
-
-    pdr->hashkey = pdr_hash_keygen(pdr->f_teid.teid, pdr->qfi);
-    ogs_hash_set(ogs_pfcp_self()->pdr_hash, &pdr->hashkey,
-            sizeof(pdr->hashkey), pdr);
-}
-
-ogs_pfcp_pdr_t *ogs_pfcp_pdr_find_by_teid_and_qfi(uint32_t teid, uint8_t qfi)
-{
-    uint64_t hashkey = pdr_hash_keygen(teid, qfi);
-    return (ogs_pfcp_pdr_t *)ogs_hash_get(self.pdr_hash,
-            &hashkey, sizeof(hashkey));
-}
-
 ogs_pfcp_pdr_t *ogs_pfcp_pdr_find_or_add(
         ogs_pfcp_sess_t *sess, ogs_pfcp_pdr_id_t id)
 {
@@ -898,6 +875,32 @@ ogs_pfcp_pdr_t *ogs_pfcp_pdr_find_or_add(
     }
 
     return pdr;
+}
+
+static uint64_t pdr_hash_keygen(uint32_t teid, uint8_t qfi)
+{
+    uint64_t hashkey = (teid << 8) + qfi;
+    return hashkey;
+}
+
+void ogs_pfcp_pdr_hash_set(ogs_pfcp_pdr_t *pdr)
+{
+    ogs_assert(pdr);
+
+    if (pdr->hashkey)
+        ogs_hash_set(ogs_pfcp_self()->pdr_hash,
+                &pdr->hashkey, sizeof(pdr->hashkey), NULL);
+
+    pdr->hashkey = pdr_hash_keygen(pdr->f_teid.teid, pdr->qfi);
+    ogs_hash_set(ogs_pfcp_self()->pdr_hash,
+            &pdr->hashkey, sizeof(pdr->hashkey), pdr);
+}
+
+ogs_pfcp_pdr_t *ogs_pfcp_pdr_find_by_teid_and_qfi(uint32_t teid, uint8_t qfi)
+{
+    uint64_t hashkey = pdr_hash_keygen(teid, qfi);
+    return (ogs_pfcp_pdr_t *)ogs_hash_get(self.pdr_hash,
+            &hashkey, sizeof(hashkey));
 }
 
 void ogs_pfcp_pdr_reorder_by_precedence(
@@ -947,8 +950,8 @@ void ogs_pfcp_pdr_remove(ogs_pfcp_pdr_t *pdr)
     ogs_pfcp_rule_remove_all(pdr);
 
     if (pdr->hashkey)
-        ogs_hash_set(ogs_pfcp_self()->pdr_hash, &pdr->hashkey,
-                sizeof(pdr->hashkey), NULL);
+        ogs_hash_set(ogs_pfcp_self()->pdr_hash,
+                &pdr->hashkey, sizeof(pdr->hashkey), NULL);
     if (pdr->dnn)
         ogs_free(pdr->dnn);
 
@@ -1021,6 +1024,107 @@ ogs_pfcp_far_t *ogs_pfcp_far_find_or_add(
     return far;
 }
 
+void ogs_pfcp_far_hash_set(ogs_pfcp_far_t *far)
+{
+    int family;
+
+    ogs_gtp_node_t *gnode = NULL;
+    ogs_sockaddr_t *addr = NULL;
+
+    ogs_assert(far);
+    gnode = far->gnode;
+    ogs_assert(gnode);
+    addr = &gnode->addr;
+    ogs_assert(addr);
+
+    if (far->hashkey_len)
+        ogs_hash_set(ogs_pfcp_self()->far_hash,
+                &far->hashkey, far->hashkey_len, NULL);
+
+    far->hashkey.teid = far->outer_header_creation.teid;
+    far->hashkey_len = sizeof(far->hashkey.teid);
+
+    family = addr->ogs_sa_family;
+    switch (family) {
+    case AF_INET:
+        memcpy(far->hashkey.addr, &addr->sin.sin_addr, OGS_IPV4_LEN);
+        far->hashkey_len += OGS_IPV4_LEN;
+        break;
+    case AF_INET6:
+        memcpy(far->hashkey.addr, &addr->sin6.sin6_addr, OGS_IPV6_LEN);
+        far->hashkey_len += OGS_IPV6_LEN;
+        break;
+    default:
+        ogs_fatal("Unknown family(%d)", family);
+        ogs_abort();
+        return;
+    }
+
+    ogs_hash_set(ogs_pfcp_self()->far_hash,
+            &far->hashkey, far->hashkey_len, far);
+}
+
+ogs_pfcp_far_t *ogs_pfcp_far_find_by_error_indication(ogs_pkbuf_t *pkbuf)
+{
+    ogs_pfcp_far_hashkey_t hashkey;
+    int hashkey_len;
+
+    uint32_t teid;
+    uint16_t len;
+    unsigned char *p = NULL;
+
+    ogs_assert(pkbuf);
+
+    p = pkbuf->data;
+    ogs_assert(p);
+
+    /*
+     * 8.3 Tunnel Endpoint Identifier Data I
+     *
+     * Octet 1 : Type = 16 (Decimal)
+     * Octet 2-5 : Tunnel Endpoint Identitifer Data I
+     */
+    if (*p != 16) {
+        ogs_error("Unknown Type [%d]", *p);
+        return NULL;
+    }
+    p += 1;
+
+    memcpy(&teid, p, 4);
+    teid = be32toh(teid);
+    p += 4;
+
+    /*
+     * 8.4 GTP-U Peer Address
+     *
+     * Octet 1 : Type = 133 (Decimal)
+     * Octet 2-3 : Length
+     * Octet 4-n : IPv4 or IPv6 Address
+     */
+    if (*p != 133) {
+        ogs_error("Unknown Type [%d]", *p);
+        return NULL;
+    }
+    p += 1;
+
+    memcpy(&len, p, 2);
+    len = be16toh(len);
+    p += 2;
+
+    if (len == OGS_IPV4_LEN) {
+    } else if (len == OGS_IPV6_LEN) {
+    } else {
+        ogs_error("Invalid Length [%d]", len);
+        return NULL;
+    }
+
+    hashkey.teid = teid;
+    memcpy(hashkey.addr, p, len);
+    hashkey_len = 4 + len;
+
+    return (ogs_pfcp_far_t *)ogs_hash_get(self.far_hash, &hashkey, hashkey_len);
+}
+
 void ogs_pfcp_far_remove(ogs_pfcp_far_t *far)
 {
     int i;
@@ -1030,10 +1134,14 @@ void ogs_pfcp_far_remove(ogs_pfcp_far_t *far)
     sess = far->sess;
     ogs_assert(sess);
 
+    ogs_list_remove(&sess->far_list, far);
+
+    if (far->hashkey_len)
+        ogs_hash_set(ogs_pfcp_self()->far_hash,
+                &far->hashkey, far->hashkey_len, NULL);
+
     for (i = 0; i < far->num_of_buffered_packet; i++)
         ogs_pkbuf_free(far->buffered_packet[i]);
-
-    ogs_list_remove(&sess->far_list, far);
 
     if (far->id_node)
         ogs_pool_free(&far->sess->far_id_pool, far->id_node);

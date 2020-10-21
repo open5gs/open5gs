@@ -56,3 +56,56 @@ ogs_pkbuf_t *ogs_gtp_build_echo_response(
     gtp_message.h.type = type;
     return ogs_gtp_build_msg(&gtp_message);
 }
+
+ogs_pkbuf_t *ogs_gtp_build_error_indication(
+        uint32_t teid, ogs_sockaddr_t *addr)
+{
+    ogs_pkbuf_t *pkbuf = NULL;
+    unsigned char *p = NULL;
+    int family;
+
+    ogs_assert(addr);
+
+    pkbuf = ogs_pkbuf_alloc(
+            NULL, 100 /* enough for Error Indiciation; use smaller buffer */);
+    ogs_assert(pkbuf);
+    ogs_pkbuf_reserve(pkbuf, OGS_GTPV1U_5GC_HEADER_LEN);
+
+    /*
+     * 8.3 Tunnel Endpoint Identifier Data I
+     *
+     * Octet 1 : Type = 16 (Decimal)
+     * Octet 2-5 : Tunnel Endpoint Identitifer Data I
+     */
+    ogs_pkbuf_put_u8(pkbuf, 16);
+    ogs_pkbuf_put_u32(pkbuf, teid);
+
+    /*
+     * 8.4 GTP-U Peer Address
+     *
+     * Octet 1 : Type = 133 (Decimal)
+     * Octet 2-3 : Length
+     * Octet 4-n : IPv4 or IPv6 Address
+     */
+    ogs_pkbuf_put_u8(pkbuf, 133);
+
+    family = addr->ogs_sa_family;
+    switch(family) {
+    case AF_INET:
+        ogs_pkbuf_put_u16(pkbuf, OGS_IPV4_LEN);
+        p = ogs_pkbuf_put(pkbuf, OGS_IPV4_LEN);
+        memcpy(p, &addr->sin.sin_addr, OGS_IPV4_LEN);
+        break;
+    case AF_INET6:
+        ogs_pkbuf_put_u16(pkbuf, OGS_IPV6_LEN);
+        p = ogs_pkbuf_put(pkbuf, OGS_IPV6_LEN);
+        memcpy(p, &addr->sin6.sin6_addr, OGS_IPV6_LEN);
+        break;
+    default:
+        ogs_fatal("Unknown family(%d)", family);
+        ogs_abort();
+        return NULL;
+    }
+
+    return pkbuf;
+}

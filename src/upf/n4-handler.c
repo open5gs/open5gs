@@ -48,7 +48,10 @@ static void setup_gtp_node(ogs_pfcp_far_t *far)
                 upf_self()->gtpu_sock, upf_self()->gtpu_sock6, gnode);
         ogs_assert(rv == OGS_OK);
     }
+
     OGS_SETUP_GTP_NODE(far, gnode);
+
+    ogs_pfcp_far_hash_set(far);
 }
 
 void upf_n4_handle_session_establishment_request(

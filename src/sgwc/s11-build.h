@@ -26,7 +26,8 @@
 extern "C" {
 #endif
 
-ogs_pkbuf_t *sgwc_s11_build_downlink_data_notification(sgwc_bearer_t *bearer);
+ogs_pkbuf_t *sgwc_s11_build_downlink_data_notification(
+        uint8_t cause_value, sgwc_bearer_t *bearer);
 
 #ifdef __cplusplus
 }

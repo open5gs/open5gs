@@ -145,7 +145,10 @@ int esm_handle_information_response(mme_sess_t *sess,
                 } else if (sess->pdn->paa.pdn_type == OGS_GTP_PDN_TYPE_IPV4V6) {
                     /* Nothing */
                 } else {
-                    ogs_error("Unknown PDN Type %u", sess->pdn->paa.pdn_type);
+                    ogs_error("Unknown PDN[%s] Type %u:%u",
+                            sess->pdn->apn,
+                            sess->pdn->pdn_type,
+                            sess->pdn->paa.pdn_type);
                     nas_eps_send_pdn_connectivity_reject(
                             sess, ESM_CAUSE_UNKNOWN_PDN_TYPE);
                     return OGS_ERROR;

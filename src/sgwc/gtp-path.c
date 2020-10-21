@@ -140,7 +140,7 @@ void sgwc_gtp_close(void)
 }
 
 void sgwc_gtp_send_downlink_data_notification(
-        sgwc_bearer_t *bearer, ogs_pfcp_xact_t *pfcp_xact)
+    uint8_t cause_value, sgwc_bearer_t *bearer)
 {
     int rv;
 
@@ -153,7 +153,6 @@ void sgwc_gtp_send_downlink_data_notification(
     ogs_gtp_header_t h;
 
     ogs_assert(bearer);
-    ogs_assert(pfcp_xact);
 
     sess = bearer->sess;
     ogs_assert(sess);
@@ -169,13 +168,11 @@ void sgwc_gtp_send_downlink_data_notification(
     h.type = OGS_GTP_DOWNLINK_DATA_NOTIFICATION_TYPE;
     h.teid = sgwc_ue->mme_s11_teid;
 
-    pkbuf = sgwc_s11_build_downlink_data_notification(bearer);
+    pkbuf = sgwc_s11_build_downlink_data_notification(cause_value, bearer);
     ogs_expect_or_return(pkbuf);
 
-    gtp_xact = ogs_gtp_xact_local_create(
-            sgwc_ue->gnode, &h, pkbuf, NULL, sess);
+    gtp_xact = ogs_gtp_xact_local_create(sgwc_ue->gnode, &h, pkbuf, NULL, sess);
     ogs_expect_or_return(gtp_xact);
-    gtp_xact->pfcp_xact = pfcp_xact;
 
     rv = ogs_gtp_xact_commit(gtp_xact);
     ogs_expect(rv == OGS_OK);

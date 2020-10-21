@@ -123,6 +123,114 @@ int ogs_gtp_sendto(ogs_gtp_node_t *gnode, ogs_pkbuf_t *pkbuf)
     return OGS_OK;
 }
 
+int ogs_gtp_send_user_plane(
+        ogs_gtp_node_t *gnode,
+        ogs_gtp_header_t *gtp_hdesc, ogs_gtp_extension_header_t *ext_hdesc,
+        ogs_pkbuf_t *pkbuf)
+{
+    char buf[OGS_ADDRSTRLEN];
+    int rv;
+
+    ogs_gtp_header_t *gtp_h = NULL;
+    ogs_gtp_extension_header_t *ext_h = NULL;
+    uint8_t flags;
+    uint8_t gtp_hlen = 0;
+
+    ogs_assert(gnode);
+    ogs_assert(gtp_hdesc);
+    ogs_assert(ext_hdesc);
+    ogs_assert(pkbuf);
+
+    /* Processing GTP Flags */
+    flags = gtp_hdesc->flags;
+    flags |= OGS_GTPU_FLAGS_V | OGS_GTPU_FLAGS_PT;
+    if (ext_hdesc->qos_flow_identifier) flags |= OGS_GTPU_FLAGS_E;
+
+    /* Define GTP Header Size */
+    if (flags & OGS_GTPU_FLAGS_E)
+        gtp_hlen = OGS_GTPV1U_HEADER_LEN+8;
+    else if (flags & (OGS_GTPU_FLAGS_S|OGS_GTPU_FLAGS_PN))
+        gtp_hlen = OGS_GTPV1U_HEADER_LEN+4;
+    else
+        gtp_hlen = OGS_GTPV1U_HEADER_LEN;
+
+    ogs_pkbuf_push(pkbuf, gtp_hlen);
+
+    /* Fill GTP Header */
+    gtp_h = (ogs_gtp_header_t *)pkbuf->data;
+    ogs_assert(gtp_h);
+    memset(gtp_h, 0, gtp_hlen);
+
+    gtp_h->flags = flags;
+    gtp_h->type = gtp_hdesc->type;
+
+    if (gtp_h->type == OGS_GTPU_MSGTYPE_ECHO_REQ ||
+        gtp_h->type == OGS_GTPU_MSGTYPE_ECHO_RSP ||
+        gtp_h->type == OGS_GTPU_MSGTYPE_ERR_IND) {
+        /*
+         * TS29.281 5.1 General format in GTP-U header
+         *
+         * - The Echo Request/Response and Supported Extension Headers
+         *   notification messages, where the Tunnel Endpoint Identifier
+         *   shall be set to all zeroes.
+         * - The Error Indication message where the Tunnel Endpoint Identifier
+         *   shall be set to all zeros.
+         */
+        ogs_assert(gtp_hdesc->teid == 0);
+    }
+
+    gtp_h->teid = htobe32(gtp_hdesc->teid);
+
+    /*
+     * TS29.281 5.1 General format in GTP-U header
+     *
+     * Length: This field indicates the length in octets of the payload,
+     * i.e. the rest of the packet following the mandatory part of
+     * the GTP header (that is the first 8 octets). The Sequence Number,
+     * the N-PDU Number or any Extension headers shall be considered
+     * to be part of the payload, i.e. included in the length count.
+     */
+    gtp_h->length = htobe16(pkbuf->len - OGS_GTPV1U_HEADER_LEN);
+
+    /* Fill Extention Header */
+    if (gtp_h->flags & OGS_GTPU_FLAGS_E) {
+        ext_h = (ogs_gtp_extension_header_t *)
+            (pkbuf->data + OGS_GTPV1U_HEADER_LEN);
+        ogs_assert(ext_h);
+
+        if (ext_hdesc->qos_flow_identifier) {
+            /* 5G Core */
+            ext_h->type = OGS_GTP_EXTENSION_HEADER_TYPE_PDU_SESSION_CONTAINER;
+            ext_h->len = 1;
+            ext_h->pdu_type =
+                OGS_GTP_EXTENSION_HEADER_PDU_TYPE_UL_PDU_SESSION_INFORMATION;
+            ext_h->qos_flow_identifier = ext_hdesc->qos_flow_identifier;
+            ext_h->next_type =
+                OGS_GTP_EXTENSION_HEADER_TYPE_NO_MORE_EXTENSION_HEADERS;
+        } else {
+            /* EPC */
+            ext_h->type = ext_hdesc->type;
+            ext_h->len = 1;
+            ext_h->next_type =
+                OGS_GTP_EXTENSION_HEADER_TYPE_NO_MORE_EXTENSION_HEADERS;
+        }
+    }
+
+    ogs_debug("SEND GTP-U[%d] to Peer[%s] : TEID[0x%x]",
+            gtp_hdesc->type, OGS_ADDR(&gnode->addr, buf), gtp_hdesc->teid);
+    rv = ogs_gtp_sendto(gnode, pkbuf);
+    if (rv != OGS_OK) {
+        if (ogs_socket_errno != OGS_EAGAIN) {
+            ogs_error("SEND GTP-U[%d] to Peer[%s] : TEID[0x%x]",
+                gtp_hdesc->type, OGS_ADDR(&gnode->addr, buf), gtp_hdesc->teid);
+        }
+    }
+
+    ogs_pkbuf_free(pkbuf);
+
+    return rv;
+}
+
 ogs_pkbuf_t *ogs_gtp_handle_echo_req(ogs_pkbuf_t *pkb)
 {
     ogs_gtp_header_t *gtph = NULL;

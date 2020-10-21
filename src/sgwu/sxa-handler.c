@@ -47,7 +47,10 @@ static void setup_gtp_node(ogs_pfcp_far_t *far)
                 sgwu_self()->gtpu_sock, sgwu_self()->gtpu_sock6, gnode);
         ogs_assert(rv == OGS_OK);
     }
+
     OGS_SETUP_GTP_NODE(far, gnode);
+
+    ogs_pfcp_far_hash_set(far);
 }
 
 void sgwu_sxa_handle_session_establishment_request(

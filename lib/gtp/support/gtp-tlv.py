@@ -411,9 +411,11 @@ typedef struct ogs_gtp_header_s {
             uint8_t spare1:3;)
         };
 /* GTU-U flags */
-#define OGS_GTPU_FLAGS_PN                       0x1
-#define OGS_GTPU_FLAGS_S                        0x2
-#define OGS_GTPU_FLAGS_E                        0x4
+#define OGS_GTPU_FLAGS_V                        0x20
+#define OGS_GTPU_FLAGS_PT                       0x10
+#define OGS_GTPU_FLAGS_E                        0x04
+#define OGS_GTPU_FLAGS_S                        0x02
+#define OGS_GTPU_FLAGS_PN                       0x01
         uint8_t flags;
     };
 /* GTP-U message type, defined in 3GPP TS 29.281 Release 11 */

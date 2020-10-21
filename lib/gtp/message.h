@@ -20,7 +20,7 @@
 /*******************************************************************************
  * This file had been created by gtp-tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2020-08-11 20:17:53.511069 by acetcom
+ * Created on: 2020-10-14 13:48:14.468022 by acetcom
  * from 29274-g30.docx
  ******************************************************************************/
 
@@ -50,9 +50,11 @@ typedef struct ogs_gtp_header_s {
             uint8_t spare1:3;)
         };
 /* GTU-U flags */
-#define OGS_GTPU_FLAGS_PN                       0x1
-#define OGS_GTPU_FLAGS_S                        0x2
-#define OGS_GTPU_FLAGS_E                        0x4
+#define OGS_GTPU_FLAGS_V                        0x20
+#define OGS_GTPU_FLAGS_PT                       0x10
+#define OGS_GTPU_FLAGS_E                        0x04
+#define OGS_GTPU_FLAGS_S                        0x02
+#define OGS_GTPU_FLAGS_PN                       0x01
         uint8_t flags;
     };
 /* GTP-U message type, defined in 3GPP TS 29.281 Release 11 */

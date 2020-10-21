@@ -85,7 +85,7 @@ static void _gtpv1_tun_recv_cb(short when, ogs_socket_t fd, void *data)
 
 static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
 {
-    int rv, len;
+    int len;
     ssize_t size;
     char buf[OGS_ADDRSTRLEN];
 
@@ -93,14 +93,12 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
     ogs_sockaddr_t from;
 
     ogs_gtp_header_t *gtp_h = NULL;
-    struct ip *ip_h = NULL;
+#if 0
+    ogs_pfcp_user_plane_report_t report;
+#endif
 
     uint32_t teid;
     uint8_t qfi;
-    ogs_pfcp_pdr_t *pdr = NULL;
-    upf_sess_t *sess = NULL;
-    ogs_pfcp_subnet_t *subnet = NULL;
-    ogs_pfcp_dev_t *dev = NULL;
 
     ogs_assert(fd != INVALID_SOCKET);
 
@@ -150,25 +148,8 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
 
     teid = be32toh(gtp_h->teid);
 
-    if (gtp_h->type == OGS_GTPU_MSGTYPE_END_MARKER) {
-        ogs_debug("[RECV] End Marker from [%s] : TEID[0x%x]",
-                OGS_ADDR(&from, buf), teid);
-        goto cleanup;
-    }
-
-    if (gtp_h->type == OGS_GTPU_MSGTYPE_ERR_IND) {
-        ogs_warn("[RECV] Error Indication from [%s]", OGS_ADDR(&from, buf));
-        goto cleanup;
-    }
-
-    if (gtp_h->type != OGS_GTPU_MSGTYPE_GPDU) {
-        ogs_error("[DROP] Invalid GTPU Type [%d]", gtp_h->type);
-        ogs_log_hexdump(OGS_LOG_ERROR, pkbuf->data, pkbuf->len);
-        goto cleanup;
-    }
-
-    ogs_debug("[RECV] GPU-U from [%s] : TEID[0x%x]",
-            OGS_ADDR(&from, buf), teid);
+    ogs_debug("[RECV] GPU-U Type [%d] from [%s] : TEID[0x%x]",
+            gtp_h->type, OGS_ADDR(&from, buf), teid);
 
     qfi = 0;
     if (gtp_h->flags & OGS_GTPU_FLAGS_E) {
@@ -203,48 +184,65 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
     }
     ogs_assert(ogs_pkbuf_pull(pkbuf, len));
 
-    ip_h = (struct ip *)pkbuf->data;
-    ogs_assert(ip_h);
+    if (gtp_h->type == OGS_GTPU_MSGTYPE_END_MARKER) {
+        /* Nothing */
 
-    pdr = ogs_pfcp_pdr_find_by_teid_and_qfi(teid, qfi);
-    if (!pdr) {
-#if 0 /* It's redundant log message */
-        ogs_warn("[DROP] Cannot find PDR : UPF-N3-TEID[0x%x] QFI[%d]",
-                teid, qfi);
-#endif
-        goto cleanup;
-    }
-    ogs_assert(pdr->sess);
-    sess = UPF_SESS(pdr->sess);
-    ogs_assert(sess);
+    } else if (gtp_h->type == OGS_GTPU_MSGTYPE_ERR_IND) {
+        /* TODO */
 
-    if (ip_h->ip_v == 4 && sess->ipv4)
-        subnet = sess->ipv4->subnet;
-    else if (ip_h->ip_v == 6 && sess->ipv6)
-        subnet = sess->ipv6->subnet;
+    } else if (gtp_h->type == OGS_GTPU_MSGTYPE_GPDU) {
+        int rv;
 
-    if (!subnet) {
-#if 0 /* It's redundant log message */
-        ogs_error("[DROP] Cannot find subnet V:%d, IPv4:%p, IPv6:%p",
-                ip_h->ip_v, sess->ipv4, sess->ipv6);
-        ogs_log_hexdump(OGS_LOG_ERROR, pkbuf->data, pkbuf->len);
-#endif
-        goto cleanup;
-    }
+        struct ip *ip_h = NULL;
+        ogs_pfcp_pdr_t *pdr = NULL;
 
-    /* Check IPv6 */
-    if (ogs_app()->parameter.no_slaac == 0 && ip_h->ip_v == 6) {
-        rv = upf_gtp_handle_slaac(sess, pkbuf);
-        if (rv == UPF_GTP_HANDLED) {
+        upf_sess_t *sess = NULL;
+        ogs_pfcp_subnet_t *subnet = NULL;
+        ogs_pfcp_dev_t *dev = NULL;
+
+        ip_h = (struct ip *)pkbuf->data;
+        ogs_assert(ip_h);
+
+        pdr = ogs_pfcp_pdr_find_by_teid_and_qfi(teid, qfi);
+        if (!pdr) {
+            /* TODO : Send Error Indication */
             goto cleanup;
         }
-        ogs_assert(rv == OGS_OK);
-    }
+        ogs_assert(pdr->sess);
+        sess = UPF_SESS(pdr->sess);
+        ogs_assert(sess);
 
-    dev = subnet->dev;
-    ogs_assert(dev);
-    if (ogs_write(dev->fd, pkbuf->data, pkbuf->len) <= 0)
-        ogs_error("ogs_write() failed");
+        if (ip_h->ip_v == 4 && sess->ipv4)
+            subnet = sess->ipv4->subnet;
+        else if (ip_h->ip_v == 6 && sess->ipv6)
+            subnet = sess->ipv6->subnet;
+
+        if (!subnet) {
+#if 0 /* It's redundant log message */
+            ogs_error("[DROP] Cannot find subnet V:%d, IPv4:%p, IPv6:%p",
+                    ip_h->ip_v, sess->ipv4, sess->ipv6);
+            ogs_log_hexdump(OGS_LOG_ERROR, pkbuf->data, pkbuf->len);
+#endif
+            goto cleanup;
+        }
+
+        /* Check IPv6 */
+        if (ogs_app()->parameter.no_slaac == 0 && ip_h->ip_v == 6) {
+            rv = upf_gtp_handle_slaac(sess, pkbuf);
+            if (rv == UPF_GTP_HANDLED) {
+                goto cleanup;
+            }
+            ogs_assert(rv == OGS_OK);
+        }
+
+        dev = subnet->dev;
+        ogs_assert(dev);
+        if (ogs_write(dev->fd, pkbuf->data, pkbuf->len) <= 0)
+            ogs_error("ogs_write() failed");
+    } else {
+        ogs_error("[DROP] Invalid GTPU Type [%d]", gtp_h->type);
+        ogs_log_hexdump(OGS_LOG_ERROR, pkbuf->data, pkbuf->len);
+    }
 
 cleanup:
     ogs_pkbuf_free(pkbuf);

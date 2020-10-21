@@ -253,7 +253,6 @@ void ogs_pfcp_build_create_pdr(
     ogs_pfcp_tlv_create_pdr_t *message, int i, ogs_pfcp_pdr_t *pdr)
 {
     ogs_pfcp_far_t *far = NULL;
-    ogs_pfcp_sess_t *pfcp_sess = NULL;
     ogs_pfcp_sdf_filter_t pfcp_sdf_filter[OGS_MAX_NUM_OF_RULE];
     int j = 0;
     int len = 0;
@@ -261,8 +260,6 @@ void ogs_pfcp_build_create_pdr(
     ogs_assert(message);
 
     ogs_assert(pdr);
-    pfcp_sess = pdr->sess;
-    ogs_assert(pfcp_sess);
 
     far = pdr->far;
     ogs_assert(far);
@@ -412,12 +409,8 @@ static struct {
 void ogs_pfcp_build_create_far(
     ogs_pfcp_tlv_create_far_t *message, int i, ogs_pfcp_far_t *far)
 {
-    ogs_pfcp_sess_t *pfcp_sess = NULL;
-
     ogs_assert(message);
     ogs_assert(far);
-    pfcp_sess = far->sess;
-    ogs_assert(pfcp_sess);
 
     message->presence = 1;
     message->far_id.presence = 1;
@@ -635,6 +628,15 @@ ogs_pkbuf_t *ogs_pfcp_build_session_report_request(
             req->downlink_data_report.
                 downlink_data_service_information.len = info_len;
         }
+    }
+
+    if (report->error_indication.remote_f_teid_len) {
+        req->error_indication_report.presence = 1;
+        req->error_indication_report.remote_f_teid.presence = 1;
+        req->error_indication_report.remote_f_teid.data =
+            &report->error_indication.remote_f_teid;
+        req->error_indication_report.remote_f_teid.len =
+            report->error_indication.remote_f_teid_len;
     }
 
     pfcp_message.h.type = type;

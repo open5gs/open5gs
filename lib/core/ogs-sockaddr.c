@@ -300,7 +300,7 @@ const char *ogs_inet_ntop(void *sa, char *buf, int buflen)
     ogs_assert(buflen >= OGS_ADDRSTRLEN);
 
     family = sockaddr->ogs_sa_family;
-    switch(family) {
+    switch (family) {
     case AF_INET:
         return inet_ntop(family, &sockaddr->sin.sin_addr, buf,
                 INET_ADDRSTRLEN);

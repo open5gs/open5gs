@@ -30,7 +30,7 @@ int sgwc_gtp_open(void);
 void sgwc_gtp_close(void);
 
 void sgwc_gtp_send_downlink_data_notification(
-        sgwc_bearer_t *bearer, ogs_pfcp_xact_t *pfcp_xact);
+    uint8_t cause_value, sgwc_bearer_t *bearer);
 
 #ifdef __cplusplus
 }

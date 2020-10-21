@@ -609,23 +609,6 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
             }
             mme_s11_handle_downlink_data_notification(
                 xact, mme_ue, &gtp_message.downlink_data_notification);
-
-/*
-* 5.3.4.2 in Spec 23.401
-* Under certain conditions, the current UE triggered Service Request 
-* procedure can cause unnecessary Downlink Packet Notification messages 
-* which increase the load of the MME.
-*
-* This can occur when uplink data sent in step 6 causes a response 
-* on the downlink which arrives at the Serving GW before the Modify Bearer 
-* Request message, step 8. This data cannot be forwarded from the Serving GW 
-* to the eNodeB and hence it triggers a Downlink Data Notification message.
-*
-* If the MME receives a Downlink Data Notification after step 2 and 
-* before step 9, the MME shall not send S1 interface paging messages
-*/
-            if (ECM_IDLE(mme_ue))
-                s1ap_send_paging(mme_ue, S1AP_CNDomain_ps);
             break;
         case OGS_GTP_CREATE_INDIRECT_DATA_FORWARDING_TUNNEL_RESPONSE_TYPE:
             mme_s11_handle_create_indirect_data_forwarding_tunnel_response(

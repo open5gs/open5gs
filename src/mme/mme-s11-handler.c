@@ -100,30 +100,13 @@ void mme_s11_handle_create_session_response(
         cause_value = OGS_GTP_CAUSE_MANDATORY_IE_MISSING;
     }
 
-    /* CHECK PDN_TYPE */
-    if (rsp->pdn_address_allocation.presence) {
-        ogs_paa_t paa;
+    if (cause_value != OGS_GTP_CAUSE_REQUEST_ACCEPTED)
+        ogs_warn("Cause[%d] : No Accepted", cause_value);
 
-        memcpy(&paa, rsp->pdn_address_allocation.data,
-                ogs_min(sizeof(paa), rsp->pdn_address_allocation.len));
-        if (paa.pdn_type == OGS_GTP_PDN_TYPE_IPV4) {
-            /* Nothing */
-        } else if (paa.pdn_type == OGS_GTP_PDN_TYPE_IPV6) {
-            /* Nothing */
-        } else if (paa.pdn_type == OGS_GTP_PDN_TYPE_IPV4V6) {
-            /* Nothing */
-        } else {
-            ogs_error("Unknown PDN Type %u", paa.pdn_type);
-            cause_value = OGS_GTP_CAUSE_MANDATORY_IE_INCORRECT;
-        }
-
-    } else {
+    if (rsp->pdn_address_allocation.presence == 0) {
         ogs_error("No PDN Address Allocation");
         cause_value = OGS_GTP_CAUSE_MANDATORY_IE_MISSING;
     }
-
-    if (cause_value != OGS_GTP_CAUSE_REQUEST_ACCEPTED)
-        ogs_warn("Cause[%d] : No Accepted", cause_value);
 
     if (rsp->sender_f_teid_for_control_plane.presence == 0) {
         ogs_error("No S11 TEID");
@@ -728,7 +711,7 @@ void mme_s11_handle_downlink_data_notification(
         ogs_gtp_downlink_data_notification_t *noti)
 {
     int rv;
-    ogs_gtp_cause_t cause;
+    uint8_t cause_value = 0;
     ogs_gtp_header_t h;
     ogs_pkbuf_t *s11buf = NULL;
 
@@ -737,21 +720,15 @@ void mme_s11_handle_downlink_data_notification(
 
     ogs_debug("[MME] Downlink Data Notification");
 
-    memset(&cause, 0, sizeof(cause));
-    cause.value = OGS_GTP_CAUSE_REQUEST_ACCEPTED;
-
     if (!mme_ue) {
         ogs_warn("OGS_GTP_CAUSE_CONTEXT_NOT_FOUND");
-        cause.value = OGS_GTP_CAUSE_CONTEXT_NOT_FOUND;
-    }
-
-    if (cause.value != OGS_GTP_CAUSE_REQUEST_ACCEPTED) {
         ogs_gtp_send_error_message(xact, mme_ue ? mme_ue->sgw_s11_teid : 0,
                 OGS_GTP_DOWNLINK_DATA_NOTIFICATION_ACKNOWLEDGE_TYPE,
-                cause.value);
+                OGS_GTP_CAUSE_CONTEXT_NOT_FOUND);
         return;
     }
 
+    ogs_assert(mme_ue);
     ogs_debug("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
             mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
 
@@ -768,6 +745,69 @@ void mme_s11_handle_downlink_data_notification(
 
     rv = ogs_gtp_xact_commit(xact);
     ogs_expect(rv == OGS_OK);
+
+    if (noti->cause.presence) {
+        ogs_gtp_cause_t *cause = noti->cause.data;
+        ogs_assert(cause);
+
+        cause_value = cause->value;
+    }
+/*
+ * 5.3.4.2 in Spec 23.401
+ * Under certain conditions, the current UE triggered Service Request
+ * procedure can cause unnecessary Downlink Packet Notification messages
+ * which increase the load of the MME.
+ *
+ * This can occur when uplink data sent in step 6 causes a response
+ * on the downlink which arrives at the Serving GW before the Modify Bearer
+ * Request message, step 8. This data cannot be forwarded from the Serving GW
+ * to the eNodeB and hence it triggers a Downlink Data Notification message.
+ *
+ * If the MME receives a Downlink Data Notification after step 2 and
+ * before step 9, the MME shall not send S1 interface paging messages
+ */
+    if (ECM_IDLE(mme_ue)) {
+        s1ap_send_paging(mme_ue, S1AP_CNDomain_ps);
+
+    } else if (ECM_CONNECTED(mme_ue)) {
+        if (cause_value == OGS_GTP_CAUSE_ERROR_INDICATION_RECEIVED) {
+
+/*
+ * TS23.007 22. Downlink Data Notification Handling at MME/S4 SGSN
+ *
+ * If the MME/S4 SGSN receives a Downlink Data Notification message from
+ * the SGW as a result of the SGW having received an Error Indication message
+ * from the eNodeB/RNC or S4-SGSN over S4 User Plane, the MME/S4 SGSN should
+ * perform the following:
+ *
+ * - If the UE is in IDLE state, upon receipt of the Downlink Data
+ *   Notification message, the MME/S4 SGSN shall perform the Network
+ *   Triggered Service Request procedure as specified in 3GPP TS 23.060[5]
+ *   and 3GPP TS 23.401 [15].
+ * - If the UE is in CONNECTED state, upon receipt of the Downlink Data
+ *   Notification message, the MME shall perform S1 Release procedure and
+ *   perform Network Triggered Service Request procedure as specified
+ *   in 3GPP TS 23.401 [15].
+ * - If the UE is in CONNECTED state, upon receipt of the Downlink Data
+ *   Notification message and Direct Tunnel is used, the S4-SGSN shall
+ *   perform Iu Release procedure and perform Network Triggered Service
+ *   Request procedure as specified in 3GPP TS 23.060 [5]
+ *   if the cause value included in Downlink Data Notification is
+ *   "Error Indication received from RNC/eNodeB/S4-SGSN",
+ * - If the UE is in CONNECTED state, upon receipt of the Downlink Data
+ *   Notification message and Direct Tunnel is not used, the S4-SGSN should
+ *   re-establish all of the S4-U bearers of this UE if the cause value
+ *   included in Downlink Data Notification is "Error Indication received
+ *   from RNC/eNodeB/S4-SGSN"
+ */
+            enb_ue_t *enb_ue = mme_ue->enb_ue;
+            ogs_assert(enb_ue);
+
+            s1ap_send_ue_context_release_command(enb_ue,
+                    S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
+                    S1AP_UE_CTX_REL_S1_PAGING, 0);
+        }
+    }
 }
 
 void mme_s11_handle_create_indirect_data_forwarding_tunnel_response(

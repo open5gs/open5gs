@@ -34,11 +34,11 @@ libsctp_sources = files('''
     ogs-sctp.c
 '''.split())
 
-libsctp_dep = cc.find_library('sctp', required : false)
-if libsctp_dep.found()
+sctp_dep = cc.find_library('sctp', required : false)
+if sctp_dep.found()
     libsctp_sources += files('ogs-lksctp.c')
 else
-    libsctp_dep = dependency('usrsctp',
+    sctp_dep = dependency('usrsctp',
         version: ['>=1.0.0', '<2'],
         fallback: ['usrsctp', 'usrsctp_dep'],
         default_options: [
@@ -59,10 +59,10 @@ libsctp = library('ogssctp',
     version : libogslib_version,
     c_args : '-DOGS_SCTP_COMPILATION',
     include_directories : [libsctp_inc, libinc],
-    dependencies : [libcore_dep, libsctp_dep],
+    dependencies : [libcore_dep, sctp_dep],
     install : true)
 
 libsctp_dep = declare_dependency(
     link_with : libsctp,
     include_directories : [libsctp_inc, libinc],
-    dependencies : [libcore_dep, libsctp_dep])
+    dependencies : [libcore_dep, sctp_dep])

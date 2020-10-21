@@ -262,14 +262,11 @@ void ogs_pfcp_up_send_association_setup_response(ogs_pfcp_xact_t *xact,
 
 void ogs_pfcp_send_g_pdu(ogs_pfcp_pdr_t *pdr, ogs_pkbuf_t *sendbuf)
 {
-    char buf[OGS_ADDRSTRLEN];
-    int rv;
-    ogs_gtp_header_t *gtp_h = NULL;
-    ogs_gtp_extension_header_t *ext_h = NULL;
     ogs_gtp_node_t *gnode = NULL;
-
     ogs_pfcp_far_t *far = NULL;
-    ogs_pfcp_qer_t *qer = NULL;
+
+    ogs_gtp_header_t gtp_hdesc;
+    ogs_gtp_extension_header_t ext_hdesc;
 
     ogs_assert(pdr);
     ogs_assert(sendbuf);
@@ -285,73 +282,26 @@ void ogs_pfcp_send_g_pdu(ogs_pfcp_pdr_t *pdr, ogs_pkbuf_t *sendbuf)
     ogs_assert(gnode);
     ogs_assert(gnode->sock);
 
-    qer = pdr->qer;
+    memset(&gtp_hdesc, 0, sizeof(gtp_hdesc));
+    memset(&ext_hdesc, 0, sizeof(ext_hdesc));
 
-    /* Add GTP-U header */
-    if (qer && qer->qfi) {
-        ogs_assert(ogs_pkbuf_push(sendbuf, OGS_GTPV1U_5GC_HEADER_LEN));
-        gtp_h = (ogs_gtp_header_t *)sendbuf->data;
-        /* Bits    8  7  6  5  4  3  2  1
-         *        +--+--+--+--+--+--+--+--+
-         *        |version |PT| 1| E| S|PN|
-         *        +--+--+--+--+--+--+--+--+
-         *         0  0  1   1  0  1  0  0
-         */
-        gtp_h->flags = 0x34;
-        gtp_h->type = OGS_GTPU_MSGTYPE_GPDU;
-        gtp_h->length = htobe16(sendbuf->len - OGS_GTPV1U_HEADER_LEN);
-        gtp_h->teid = htobe32(far->outer_header_creation.teid);
+    gtp_hdesc.type = OGS_GTPU_MSGTYPE_GPDU;
+    gtp_hdesc.teid = far->outer_header_creation.teid;
+    if (pdr->qer && pdr->qer->qfi)
+        ext_hdesc.qos_flow_identifier = pdr->qer->qfi;
 
-        ext_h = (ogs_gtp_extension_header_t *)(
-                sendbuf->data + OGS_GTPV1U_HEADER_LEN);
-        ext_h->type = OGS_GTP_EXTENSION_HEADER_TYPE_PDU_SESSION_CONTAINER;
-        ext_h->len = 1;
-        ext_h->pdu_type =
-            OGS_GTP_EXTENSION_HEADER_PDU_TYPE_DL_PDU_SESSION_INFORMATION;
-        ext_h->qos_flow_identifier = qer->qfi;
-        ext_h->next_type =
-            OGS_GTP_EXTENSION_HEADER_TYPE_NO_MORE_EXTENSION_HEADERS;
-    } else {
-        ogs_assert(ogs_pkbuf_push(sendbuf, OGS_GTPV1U_HEADER_LEN));
-        gtp_h = (ogs_gtp_header_t *)sendbuf->data;
-        /* Bits    8  7  6  5  4  3  2  1
-         *        +--+--+--+--+--+--+--+--+
-         *        |version |PT| 1| E| S|PN|
-         *        +--+--+--+--+--+--+--+--+
-         *         0  0  1   1  0  0  0  0
-         */
-        gtp_h->flags = 0x30;
-        gtp_h->type = OGS_GTPU_MSGTYPE_GPDU;
-        gtp_h->length = htobe16(sendbuf->len - OGS_GTPV1U_HEADER_LEN);
-        gtp_h->teid = htobe32(far->outer_header_creation.teid);
-    }
-
-    /* Send G-PDU */
-    ogs_debug("SEND G-PDU to Peer[%s] : TEID[0x%x]",
-        OGS_ADDR(&gnode->addr, buf), far->outer_header_creation.teid);
-    rv = ogs_gtp_sendto(gnode, sendbuf);
-    if (rv != OGS_OK) {
-        if (ogs_socket_errno != OGS_EAGAIN) {
-            ogs_error("SEND G-PDU to Peer[%s] : TEID[0x%x]",
-                OGS_ADDR(&gnode->addr, buf), far->outer_header_creation.teid);
-        }
-    }
-
-    ogs_pkbuf_free(sendbuf);
+    ogs_gtp_send_user_plane(gnode, &gtp_hdesc, &ext_hdesc, sendbuf);
 }
 
 void ogs_pfcp_send_end_marker(ogs_pfcp_pdr_t *pdr)
 {
-    char buf[OGS_ADDRSTRLEN];
-    int rv;
+    ogs_gtp_node_t *gnode = NULL;
+    ogs_pfcp_far_t *far = NULL;
+
     ogs_pkbuf_t *sendbuf = NULL;
 
-    ogs_gtp_header_t *gtp_h = NULL;
-    ogs_gtp_extension_header_t *ext_h = NULL;
-    ogs_gtp_node_t *gnode = NULL;
-
-    ogs_pfcp_far_t *far = NULL;
-    ogs_pfcp_qer_t *qer = NULL;
+    ogs_gtp_header_t gtp_hdesc;
+    ogs_gtp_extension_header_t ext_hdesc;
 
     ogs_assert(pdr);
     far = pdr->far;
@@ -367,61 +317,19 @@ void ogs_pfcp_send_end_marker(ogs_pfcp_pdr_t *pdr)
         return;
     }
 
-    sendbuf = ogs_pkbuf_alloc(NULL,
-            100 /* enough for END_MARKER; use smaller buffer */);
+    sendbuf = ogs_pkbuf_alloc(NULL, OGS_GTPV1U_5GC_HEADER_LEN);
     ogs_assert(sendbuf);
-    ogs_pkbuf_put(sendbuf, 100);
-    memset(sendbuf->data, 0, sendbuf->len);
+    ogs_pkbuf_reserve(sendbuf, OGS_GTPV1U_5GC_HEADER_LEN);
 
-    gtp_h = (ogs_gtp_header_t *)sendbuf->data;
+    memset(&gtp_hdesc, 0, sizeof(gtp_hdesc));
+    memset(&ext_hdesc, 0, sizeof(ext_hdesc));
 
-    qer = pdr->qer;
+    gtp_hdesc.type = OGS_GTPU_MSGTYPE_END_MARKER;
+    gtp_hdesc.teid = far->outer_header_creation.teid;
+    if (pdr->qer && pdr->qer->qfi)
+        ext_hdesc.qos_flow_identifier = pdr->qer->qfi;
 
-    /* Add GTP-U header */
-    if (qer && qer->qfi) {
-        /* Bits    8  7  6  5  4  3  2  1
-         *        +--+--+--+--+--+--+--+--+
-         *        |version |PT| 1| E| S|PN|
-         *        +--+--+--+--+--+--+--+--+
-         *         0  0  1   1  0  1  0  0
-         */
-        gtp_h->flags = 0x34;
-        gtp_h->type = OGS_GTPU_MSGTYPE_END_MARKER;
-        gtp_h->teid = htobe32(far->outer_header_creation.teid);
-
-        ext_h = (ogs_gtp_extension_header_t *)(
-                sendbuf->data + OGS_GTPV1U_HEADER_LEN);
-        ext_h->type = OGS_GTP_EXTENSION_HEADER_TYPE_PDU_SESSION_CONTAINER;
-        ext_h->len = 1;
-        ext_h->pdu_type =
-            OGS_GTP_EXTENSION_HEADER_PDU_TYPE_DL_PDU_SESSION_INFORMATION;
-        ext_h->qos_flow_identifier = qer->qfi;
-        ext_h->next_type =
-            OGS_GTP_EXTENSION_HEADER_TYPE_NO_MORE_EXTENSION_HEADERS;
-    } else {
-        /* Bits    8  7  6  5  4  3  2  1
-         *        +--+--+--+--+--+--+--+--+
-         *        |version |PT| 1| E| S|PN|
-         *        +--+--+--+--+--+--+--+--+
-         *         0  0  1   1  0  0  0  0
-         */
-        gtp_h->flags = 0x30;
-        gtp_h->type = OGS_GTPU_MSGTYPE_END_MARKER;
-        gtp_h->teid = htobe32(far->outer_header_creation.teid);
-    }
-
-    /* Send End Marker */
-    ogs_debug("SEND End Marker to Peer[%s] : TEID[0x%x]",
-        OGS_ADDR(&gnode->addr, buf), far->outer_header_creation.teid);
-    rv = ogs_gtp_sendto(gnode, sendbuf);
-    if (rv != OGS_OK) {
-        if (ogs_socket_errno != OGS_EAGAIN) {
-            ogs_error("SEND End Marker to Peer[%s] : TEID[0x%x]",
-                OGS_ADDR(&gnode->addr, buf), far->outer_header_creation.teid);
-        }
-    }
-
-    ogs_pkbuf_free(sendbuf);
+    ogs_gtp_send_user_plane(gnode, &gtp_hdesc, &ext_hdesc, sendbuf);
 }
 
 void ogs_pfcp_send_buffered_packet(ogs_pfcp_pdr_t *pdr)

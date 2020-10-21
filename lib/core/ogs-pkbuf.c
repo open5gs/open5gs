@@ -339,13 +339,16 @@ static void cluster_free(ogs_pkbuf_pool_t *pool, ogs_cluster_t *cluster)
         ogs_pool_free(&pool->cluster_512, (ogs_cluster_512_t*)cluster->buffer);
         break;
     case OGS_CLUSTER_1024_SIZE:
-        ogs_pool_free(&pool->cluster_1024, (ogs_cluster_1024_t*)cluster->buffer);
+        ogs_pool_free(
+                &pool->cluster_1024, (ogs_cluster_1024_t*)cluster->buffer);
         break;
     case OGS_CLUSTER_2048_SIZE:
-        ogs_pool_free(&pool->cluster_2048, (ogs_cluster_2048_t*)cluster->buffer);
+        ogs_pool_free(
+                &pool->cluster_2048, (ogs_cluster_2048_t*)cluster->buffer);
         break;
     case OGS_CLUSTER_8192_SIZE:
-        ogs_pool_free(&pool->cluster_8192, (ogs_cluster_8192_t*)cluster->buffer);
+        ogs_pool_free(
+                &pool->cluster_8192, (ogs_cluster_8192_t*)cluster->buffer);
         break;
     case OGS_CLUSTER_BIG_SIZE:
         ogs_pool_free(&pool->cluster_big, (ogs_cluster_big_t*)cluster->buffer);
@@ -356,4 +359,3 @@ static void cluster_free(ogs_pkbuf_pool_t *pool, ogs_cluster_t *cluster)
 
     ogs_pool_free(&pool->cluster, cluster);
 }
-

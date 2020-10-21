@@ -33,6 +33,9 @@ ogs_pkbuf_t *ogs_gtp_build_echo_request(
 ogs_pkbuf_t *ogs_gtp_build_echo_response(
         uint8_t type, uint8_t recovery, uint8_t features);
 
+ogs_pkbuf_t *ogs_gtp_build_error_indication(
+        uint32_t teid, ogs_sockaddr_t *addr);
+
 #ifdef __cplusplus
 }
 #endif

@@ -39,6 +39,8 @@ static void timeout(ogs_gtp_xact_t *xact, void *data)
             sgwc_ue->imsi_bcd, type);
 }
 
+/* This code was created in case it will be used later,
+ * and is currently not being used.  */
 static uint8_t pfcp_cause_from_gtp(uint8_t gtp_cause)
 {
     switch (gtp_cause) {
@@ -820,7 +822,6 @@ void sgwc_s11_handle_downlink_data_notification_ack(
     uint8_t cause_value;
 
     sgwc_sess_t *sess = NULL;
-    ogs_pfcp_xact_t *pfcp_xact;
 
     ogs_gtp_downlink_data_notification_acknowledge_t *ack = NULL;
 
@@ -829,8 +830,6 @@ void sgwc_s11_handle_downlink_data_notification_ack(
     ack = &message->downlink_data_notification_acknowledge;
     ogs_assert(ack);
 
-    pfcp_xact = s11_xact->pfcp_xact;
-    ogs_assert(pfcp_xact);
     sess = s11_xact->data;
     ogs_assert(sess);
     sgwc_ue = sess->sgwc_ue;
@@ -844,24 +843,16 @@ void sgwc_s11_handle_downlink_data_notification_ack(
         ogs_assert(cause);
 
         cause_value = cause->value;
+        if (cause_value != OGS_GTP_CAUSE_REQUEST_ACCEPTED)
+            ogs_warn("GTP Failed [CAUSE:%d] - PFCP_CAUSE[%d]",
+                    cause_value, pfcp_cause_from_gtp(cause_value));
     } else {
         ogs_error("No Cause");
-        cause_value = OGS_GTP_CAUSE_MANDATORY_IE_MISSING;
-    }
-
-    if (cause_value != OGS_GTP_CAUSE_REQUEST_ACCEPTED) {
-        ogs_pfcp_send_error_message(pfcp_xact, sess ? sess->sgwu_sxa_seid : 0,
-                OGS_PFCP_SESSION_REPORT_RESPONSE_TYPE,
-                pfcp_cause_from_gtp(cause_value), 0);
-        return;
     }
 
     ogs_debug("Downlink Data Notification Acknowledge");
     ogs_debug("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
         sgwc_ue->mme_s11_teid, sgwc_ue->sgw_s11_teid);
-
-    sgwc_pfcp_send_session_report_response(
-            pfcp_xact, sess, pfcp_cause_from_gtp(cause_value));
 }
 
 void sgwc_s11_handle_create_indirect_data_forwarding_tunnel_request(

@@ -110,6 +110,20 @@ static ogs_inline void ogs_pkbuf_put_u8(ogs_pkbuf_t *pkbuf, uint8_t val)
     *(uint8_t *)ogs_pkbuf_put(pkbuf, 1) = val;
 }
 
+static ogs_inline void ogs_pkbuf_put_u16(ogs_pkbuf_t *pkbuf, uint16_t val)
+{
+    uint8_t *p = ogs_pkbuf_put(pkbuf, 2);
+    uint16_t tmp = htobe16(val);
+    memcpy(p, &tmp, 2);
+}
+
+static ogs_inline void ogs_pkbuf_put_u32(ogs_pkbuf_t *pkbuf, uint32_t val)
+{
+    uint8_t *p = ogs_pkbuf_put(pkbuf, 4);
+    uint32_t tmp = htobe32(val);
+    memcpy(p, &tmp, 4);
+}
+
 static ogs_inline void *ogs_pkbuf_push(ogs_pkbuf_t *pkbuf, unsigned int len)
 {
     pkbuf->data -= len;

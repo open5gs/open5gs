@@ -185,6 +185,9 @@ sgwc_bearer_t *sgwc_bearer_find_by_sess_ebi(
                                 sgwc_sess_t *sess, uint8_t ebi);
 sgwc_bearer_t *sgwc_bearer_find_by_ue_ebi(
                                 sgwc_ue_t *sgwc_ue, uint8_t ebi);
+sgwc_bearer_t *sgwc_bearer_find_by_error_indication_report(
+        sgwc_sess_t *sess,
+        ogs_pfcp_tlv_error_indication_report_t *error_indication_report);
 sgwc_bearer_t *sgwc_default_bearer_in_sess(sgwc_sess_t *sess);
 
 sgwc_tunnel_t *sgwc_tunnel_add(

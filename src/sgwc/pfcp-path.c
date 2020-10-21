@@ -18,9 +18,6 @@
  */
 
 #include "pfcp-path.h"
-#if 0
-#include "n4-build.h"
-#endif
 
 static void pfcp_node_fsm_init(ogs_pfcp_node_t *node, bool try_to_assoicate)
 {

@@ -60,7 +60,8 @@ typedef struct ogs_pfcp_context_s {
     ogs_list_t      dev_list;       /* Tun Device List */
     ogs_list_t      subnet_list;    /* UE Subnet List */
 
-    ogs_hash_t      *pdr_hash;      /* hash table (UPF-N3-TEID) */
+    ogs_hash_t      *pdr_hash;      /* hash table for PDR(TEID+QFI) */
+    ogs_hash_t      *far_hash;      /* hash table for FAR(TEID+ADDR) */
 } ogs_pfcp_context_t;
 
 #define OGS_SETUP_PFCP_NODE(__cTX, __pNODE) \
@@ -152,9 +153,17 @@ typedef struct ogs_pfcp_pdr_s {
     ogs_pfcp_sess_t         *sess;
 } ogs_pfcp_pdr_t;
 
+typedef struct ogs_pfcp_far_hashkey_s {
+    uint32_t teid;
+    uint32_t addr[4];
+} ogs_pfcp_far_hashkey_t;
+
 typedef struct ogs_pfcp_far_s {
     ogs_lnode_t             lnode;
     uint32_t                index;
+
+    int                     hashkey_len;
+    ogs_pfcp_far_hashkey_t  hashkey;
 
     uint8_t                 *id_node;      /* Pool-Node for ID */
     ogs_pfcp_far_id_t       id;
@@ -166,7 +175,7 @@ typedef struct ogs_pfcp_far_s {
     ogs_pfcp_smreq_flags_t  smreq_flags;
 
     uint32_t                num_of_buffered_packet;
-    ogs_pkbuf_t*            buffered_packet[OGS_MAX_NUM_OF_PACKET_BUFFER];
+    ogs_pkbuf_t             *buffered_packet[OGS_MAX_NUM_OF_PACKET_BUFFER];
 
     /* Related Context */
     ogs_pfcp_sess_t         *sess;
@@ -304,13 +313,14 @@ ogs_pfcp_pdr_t *ogs_pfcp_sess_default_pdr(
 void ogs_pfcp_sess_clear(ogs_pfcp_sess_t *sess);
 
 ogs_pfcp_pdr_t *ogs_pfcp_pdr_add(ogs_pfcp_sess_t *sess);
-void ogs_pfcp_pdr_hash_set(ogs_pfcp_pdr_t *pdr);
-
 ogs_pfcp_pdr_t *ogs_pfcp_pdr_find(
         ogs_pfcp_sess_t *sess, ogs_pfcp_pdr_id_t id);
-ogs_pfcp_pdr_t *ogs_pfcp_pdr_find_by_teid_and_qfi(uint32_t teid, uint8_t qfi);
 ogs_pfcp_pdr_t *ogs_pfcp_pdr_find_or_add(
         ogs_pfcp_sess_t *sess, ogs_pfcp_pdr_id_t id);
+
+void ogs_pfcp_pdr_hash_set(ogs_pfcp_pdr_t *pdr);
+ogs_pfcp_pdr_t *ogs_pfcp_pdr_find_by_teid_and_qfi(uint32_t teid, uint8_t qfi);
+
 void ogs_pfcp_pdr_reorder_by_precedence(
         ogs_pfcp_pdr_t *pdr, ogs_pfcp_precedence_t precedence);
 void ogs_pfcp_pdr_associate_far(ogs_pfcp_pdr_t *pdr, ogs_pfcp_far_t *far);
@@ -324,6 +334,10 @@ ogs_pfcp_far_t *ogs_pfcp_far_find(
         ogs_pfcp_sess_t *sess, ogs_pfcp_far_id_t id);
 ogs_pfcp_far_t *ogs_pfcp_far_find_or_add(
         ogs_pfcp_sess_t *sess, ogs_pfcp_far_id_t id);
+
+void ogs_pfcp_far_hash_set(ogs_pfcp_far_t *far);
+ogs_pfcp_far_t *ogs_pfcp_far_find_by_error_indication(ogs_pkbuf_t *pkbuf);
+
 void ogs_pfcp_far_remove(ogs_pfcp_far_t *far);
 void ogs_pfcp_far_remove_all(ogs_pfcp_sess_t *sess);
 
