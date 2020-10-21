@@ -146,3 +146,125 @@ cleanup:
             &asn_DEF_NGAP_PDUSessionResourceSetupResponseTransfer, &message);
     return rv;
 }
+
+int ngap_handle_pdu_session_resource_to_be_switched_dl_transfer(
+        smf_sess_t *sess, ogs_sbi_session_t *session, ogs_pkbuf_t *pkbuf)
+{
+    smf_ue_t *smf_ue = NULL;
+    smf_bearer_t *qos_flow = NULL;
+    int rv, i;
+
+    uint32_t gnb_n3_teid;
+    ogs_ip_t gnb_n3_ip;
+
+    ogs_pfcp_far_t *dl_far = NULL;
+    bool far_update = false;
+
+    NGAP_PathSwitchRequestTransfer_t message;
+
+    NGAP_UPTransportLayerInformation_t   *dL_NGU_UP_TNLInformation = NULL;
+    NGAP_GTPTunnel_t *gTPTunnel = NULL;
+
+    NGAP_QosFlowAcceptedList_t   *qosFlowAcceptedList = NULL;
+
+    ogs_assert(pkbuf);
+    ogs_assert(session);
+
+    ogs_assert(sess);
+    smf_ue = sess->smf_ue;
+    ogs_assert(smf_ue);
+
+    rv = ogs_asn_decode(
+            &asn_DEF_NGAP_PathSwitchRequestTransfer,
+            &message, sizeof(message), pkbuf);
+    if (rv != OGS_OK) {
+        ogs_error("[%s:%d] Cannot decode NGAP message",
+                smf_ue->supi, sess->psi);
+        smf_sbi_send_sm_context_update_error(session,
+                OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                "No N2 SM Info Type", smf_ue->supi, NULL, NULL);
+        goto cleanup;
+    }
+
+    rv = OGS_ERROR;
+
+    dL_NGU_UP_TNLInformation = &message.dL_NGU_UP_TNLInformation;
+    if (dL_NGU_UP_TNLInformation->present !=
+        NGAP_UPTransportLayerInformation_PR_gTPTunnel) {
+        ogs_error(
+            "[%s:%d] Unknown NGAP_UPTransportLayerInformation.present [%d]",
+            smf_ue->supi, sess->psi,
+            dL_NGU_UP_TNLInformation->present);
+        smf_sbi_send_sm_context_update_error(session,
+                OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                "Unknown NGAP_UPTransportLayerInformation.present",
+                smf_ue->supi, NULL, NULL);
+        goto cleanup;
+    }
+
+    qosFlowAcceptedList = &message.qosFlowAcceptedList;
+    for (i = 0; i < qosFlowAcceptedList->list.count; i++) {
+        NGAP_QosFlowAcceptedItem_t *acceptedQosFlowItem = NULL;
+        acceptedQosFlowItem = (NGAP_QosFlowAcceptedItem_t *)
+                qosFlowAcceptedList->list.array[i];
+        if (acceptedQosFlowItem) {
+            qos_flow = smf_qos_flow_find_by_qfi(sess,
+                    acceptedQosFlowItem->qosFlowIdentifier);
+        }
+    }
+
+    if (!qos_flow) {
+        ogs_error("[%s:%d] No QoS flow", smf_ue->supi, sess->psi);
+        smf_sbi_send_sm_context_update_error(session,
+                OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                "No QoS flow", smf_ue->supi, NULL, NULL);
+        goto cleanup;
+    }
+
+    gTPTunnel = dL_NGU_UP_TNLInformation->choice.gTPTunnel;
+    if (!gTPTunnel) {
+        ogs_error("[%s:%d] No GTPTunnel", smf_ue->supi, sess->psi);
+        smf_sbi_send_sm_context_update_error(session,
+                OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                "No GTPTunnel", smf_ue->supi, NULL, NULL);
+        goto cleanup;
+    }
+
+    ogs_asn_BIT_STRING_to_ip(
+            &gTPTunnel->transportLayerAddress, &gnb_n3_ip);
+    ogs_asn_OCTET_STRING_to_uint32(&gTPTunnel->gTP_TEID, &gnb_n3_teid);
+
+    /* Need to Update? */
+    if (memcmp(&sess->gnb_n3_ip, &gnb_n3_ip, sizeof(sess->gnb_n3_ip)) != 0 ||
+        sess->gnb_n3_teid != gnb_n3_teid)
+        far_update = true;
+
+    dl_far = qos_flow->dl_far;
+    ogs_assert(dl_far);
+    if (dl_far->apply_action != OGS_PFCP_APPLY_ACTION_FORW) {
+        far_update = true;
+    }
+
+    /* Setup FAR */
+    memcpy(&sess->gnb_n3_ip, &gnb_n3_ip, sizeof(sess->gnb_n3_ip));
+    sess->gnb_n3_teid = gnb_n3_teid;
+
+    ogs_pfcp_ip_to_outer_header_creation(&sess->gnb_n3_ip,
+        &dl_far->outer_header_creation, &dl_far->outer_header_creation_len);
+    dl_far->outer_header_creation.teid = sess->gnb_n3_teid;
+
+    if (far_update) {
+        smf_5gc_pfcp_send_qos_flow_modification_request(
+                qos_flow, session, OGS_PFCP_MODIFY_UL_ONLY);
+    } else {
+        /* ACTIVATED Is NOT Inlcuded in RESPONSE */
+        smf_sbi_send_sm_context_updated_data(sess, session, 0);
+    }
+
+    rv = OGS_OK;
+cleanup:
+    ogs_asn_free(
+            &asn_DEF_NGAP_PathSwitchRequestTransfer, &message);
+    return rv;
+}
+

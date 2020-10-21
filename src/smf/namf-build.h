@@ -30,7 +30,8 @@ ogs_sbi_request_t *smf_namf_comm_build_n1_n2_message_transfer(
         smf_sess_t *sess, void *data);
 ogs_sbi_request_t *smf_namf_callback_build_sm_context_status(
         smf_sess_t *sess, void *data);
-
+ogs_sbi_request_t *smf_namf_comm_build_patch_switch_ack_transfer(
+        smf_sess_t *sess, void *data);
 
 #ifdef __cplusplus
 }

@@ -144,3 +144,77 @@ ogs_sbi_request_t *smf_namf_callback_build_sm_context_status(
 
     return request;
 }
+
+
+ogs_sbi_request_t *smf_namf_comm_build_patch_switch_ack_transfer(
+        smf_sess_t *sess, void *data)
+{
+    int i;
+    smf_ue_t *smf_ue = NULL;
+
+    ogs_sbi_message_t message;
+    ogs_sbi_request_t *request = NULL;
+
+    OpenAPI_n1_n2_message_transfer_req_data_t N1N2MessageTransferReqData;
+
+    OpenAPI_n2_info_container_t n2InfoContainer;
+    OpenAPI_n2_sm_information_t smInfo;
+    OpenAPI_n2_info_content_t n2InfoContent;
+    OpenAPI_ref_to_binary_data_t ngapData;
+
+    ogs_assert(sess);
+    smf_ue = sess->smf_ue;
+    ogs_assert(smf_ue);
+    ogs_assert(smf_ue->supi);
+
+    memset(&message, 0, sizeof(message));
+    message.h.method = (char *)OGS_SBI_HTTP_METHOD_POST;
+    message.h.service.name = (char *)OGS_SBI_SERVICE_NAME_NAMF_COMM;
+    message.h.api.version = (char *)OGS_SBI_API_V1;
+    message.h.resource.component[0] = (char *)OGS_SBI_RESOURCE_NAME_UE_CONTEXTS;
+    message.h.resource.component[1] = smf_ue->supi;
+    message.h.resource.component[2] =
+        (char *)OGS_SBI_RESOURCE_NAME_N1_N2_MESSAGES;
+    message.N1N2MessageTransferReqData = &N1N2MessageTransferReqData;
+
+    memset(&N1N2MessageTransferReqData, 0, sizeof(N1N2MessageTransferReqData));
+    N1N2MessageTransferReqData.pdu_session_id = sess->psi;
+    N1N2MessageTransferReqData.n1_message_container = NULL;
+    N1N2MessageTransferReqData.n2_info_container = &n2InfoContainer;
+
+    memset(&n2InfoContainer, 0, sizeof(n2InfoContainer));
+    n2InfoContainer.n2_information_class = OpenAPI_n2_information_class_SM;
+    n2InfoContainer.sm_info = &smInfo;
+
+    memset(&smInfo, 0, sizeof(smInfo));
+    smInfo.pdu_session_id = sess->psi;
+    smInfo.n2_info_content = &n2InfoContent;
+
+    memset(&n2InfoContent, 0, sizeof(n2InfoContent));
+    n2InfoContent.ngap_ie_type = OpenAPI_ngap_ie_type_PATH_SWITCH_ACK;
+    n2InfoContent.ngap_data = &ngapData;
+
+    memset(&ngapData, 0, sizeof(ngapData));
+    ngapData.content_id = (char *)OGS_SBI_CONTENT_NGAP_SM_ID;
+
+    message.num_of_part = 0;
+
+    message.part[message.num_of_part].pkbuf =
+        ngap_build_path_switch_request_ack_transfer(sess);
+    if (message.part[message.num_of_part].pkbuf) {
+        message.part[message.num_of_part].content_id =
+            (char *)OGS_SBI_CONTENT_NGAP_SM_ID;
+        message.part[message.num_of_part].content_type =
+            (char *)OGS_SBI_CONTENT_NGAP_TYPE;
+        message.num_of_part++;
+    }
+
+    request = ogs_sbi_build_request(&message);
+    ogs_assert(request);
+
+    for (i = 0; i < message.num_of_part; i++)
+        if (message.part[i].pkbuf)
+            ogs_pkbuf_free(message.part[i].pkbuf);
+
+    return request;
+}

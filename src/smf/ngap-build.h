@@ -31,6 +31,8 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_setup_request_transfer(
 ogs_pkbuf_t *ngap_build_pdu_session_resource_release_command_transfer(
         NGAP_Cause_PR group, long cause);
 
+ogs_pkbuf_t *ngap_build_path_switch_request_ack_transfer(
+        smf_sess_t *sess);
 #ifdef __cplusplus
 }
 #endif
