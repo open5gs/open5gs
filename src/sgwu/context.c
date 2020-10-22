@@ -38,6 +38,7 @@ void sgwu_context_init(void)
     ogs_log_install_domain(&__sgwu_log_domain, "sgwu", ogs_core()->log.level);
 
     /* Setup UP Function Features */
+    ogs_pfcp_self()->up_function_features.ftup = 1;
     ogs_pfcp_self()->up_function_features.empu = 1;
     ogs_pfcp_self()->up_function_features_len = 2;
 

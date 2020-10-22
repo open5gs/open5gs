@@ -64,6 +64,16 @@ void ogs_pfcp_cp_handle_association_setup_request(
         ogs_pfcp_parse_user_plane_ip_resource_info(&info, message);
         ogs_pfcp_gtpu_resource_add(&node->gtpu_resource_list, &info);
     }
+
+    if (req->up_function_features.presence) {
+        if (req->up_function_features.data && req->up_function_features.len) {
+            ogs_pfcp_self()->up_function_features_len =
+                req->up_function_features.len;
+            memcpy(&ogs_pfcp_self()->up_function_features,
+                req->up_function_features.data,
+                ogs_pfcp_self()->up_function_features_len);
+        }
+    }
 }
 
 void ogs_pfcp_cp_handle_association_setup_response(
@@ -91,6 +101,16 @@ void ogs_pfcp_cp_handle_association_setup_response(
         ogs_pfcp_parse_user_plane_ip_resource_info(&info, message);
         ogs_pfcp_gtpu_resource_add(&node->gtpu_resource_list, &info);
     }
+
+    if (rsp->up_function_features.presence) {
+        if (rsp->up_function_features.data && rsp->up_function_features.len) {
+            ogs_pfcp_self()->up_function_features_len =
+                rsp->up_function_features.len;
+            memcpy(&ogs_pfcp_self()->up_function_features,
+                rsp->up_function_features.data,
+                ogs_pfcp_self()->up_function_features_len);
+        }
+    }
 }
 
 void ogs_pfcp_up_handle_association_setup_request(
@@ -100,6 +120,11 @@ void ogs_pfcp_up_handle_association_setup_request(
     ogs_assert(xact);
     ogs_pfcp_up_send_association_setup_response(
             xact, OGS_PFCP_CAUSE_REQUEST_ACCEPTED);
+
+    if (req->cp_function_features.presence) {
+        ogs_pfcp_self()->cp_function_features.octet5 =
+            req->cp_function_features.u8;
+    }
 }
 
 void ogs_pfcp_up_handle_association_setup_response(
@@ -108,6 +133,11 @@ void ogs_pfcp_up_handle_association_setup_response(
 {
     ogs_assert(xact);
     ogs_pfcp_xact_commit(xact);
+
+    if (rsp->cp_function_features.presence) {
+        ogs_pfcp_self()->cp_function_features.octet5 =
+            rsp->cp_function_features.u8;
+    }
 }
 
 void ogs_pfcp_up_handle_pdr(

@@ -308,7 +308,6 @@ void sgwc_s11_handle_modify_bearer_request(
     }
 
     if (req->user_location_information.presence == 1) {
-        /* if GTP Node changes, End Marker is sent out or not */
         decoded = ogs_gtp_parse_uli(
                 &uli, &req->user_location_information);
         ogs_assert(req->user_location_information.len == decoded);
@@ -334,7 +333,11 @@ void sgwc_s11_handle_modify_bearer_request(
         memcmp(&dl_tunnel->remote_ip, &remote_ip, sizeof(ogs_ip_t)) != 0) {
 
         /* eNB IP is changed during handover */
-        flags |= OGS_PFCP_MODIFY_END_MARKER;
+        if (ogs_pfcp_self()->up_function_features.empu) {
+            flags |= OGS_PFCP_MODIFY_END_MARKER;
+        } else {
+            ogs_error("SGW-U does not support End Marker");
+        }
     }
 
     memcpy(&dl_tunnel->remote_ip, &remote_ip, sizeof(ogs_ip_t));

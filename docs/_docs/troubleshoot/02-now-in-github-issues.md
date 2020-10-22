@@ -3,6 +3,84 @@ title: Now in the Github Issue
 head_inline: "<style> .blue { color: blue; } </style>"
 ---
 
+#### Can I disable specific services if 5G functionally is not needed?
+
+
+From v2.0.x, SGW was divided into SGW-C and SGW-U, and PGW function was seperated into SMF and UPF.
+
+In order to use 4G only, you need to run the process below.
+```bash
+$ open5gs-mmed
+$ open5gs-sgwcd
+$ open5gs-smfd
+$ open5gs-sgwud
+$ open5gs-upfd
+$ open5gs-hssd
+$ open5gs-pcrfd
+```
+
+And the process below is only used in 5G, so there is no need to run it.
+
+```bash
+$ open5gs-nrfd
+$ open5gs-amfd
+$ open5gs-ausfd
+$ open5gs-udmd
+$ open5gs-udrd
+```
+
+However, among these, SMF and UPF are used by both 4G EPC and 5G Core. And SMF has a protocol stack to interact with 5G NRF. Therefore, if you run SMF without running 5G NRF, the following WARNING occurs in SMF.
+
+```
+10/08 14:44:03.045: [sbi] WARNING: [7] Failed to connect to ::1 port 7777: Connection refused (../lib/sbi/client.c:450)
+10/08 14:44:03.045: [smf] INFO: PFCP associated (../src/smf/pfcp-sm.c:174)
+10/08 14:44:03.046: [diam] INFO: CONNECTED TO 'pcrf.localdomain' (SCTP,soc#16): (../lib/diameter/common/logger.c:108)
+10/08 14:44:06.046: [smf] WARNING: [3c85dd06-0996-41eb-a985-476fa905aefc] Retry to registration with NRF (../src/smf/nf-sm.c:161)
+10/08 14:44:06.047: [sbi] WARNING: [7] Failed to connect to ::1 port 7777: Connection refused (../lib/sbi/client.c:450)
+```
+
+To prevent SMF from attempting to access the 5G NRF, you need to modify the SMF configuration file as below.
+
+```diff
+$ diff -u ./install/etc/open5gs/smf.yaml.old ./install/etc/open5gs/smf.yaml
+--- ./install/etc/open5gs/smf.yaml.old 2020-10-08 14:43:20.599734045 -0400
++++ ./install/etc/open5gs/smf.yaml 2020-10-08 14:44:21.864952687 -0400
+@@ -168,9 +168,9 @@
+ #      - ::1
+ #
+ smf:
+-    sbi:
+-      - addr: 127.0.0.4
+-        port: 7777
++#    sbi:
++#      - addr: 127.0.0.4
++#        port: 7777
+     gtpc:
+       - addr: 127.0.0.4
+       - addr: ::1
+@@ -214,12 +214,12 @@
+ #        - 127.0.0.10
+ #        - fe80::1%lo
+ #
+-nrf:
+-    sbi:
+-      - addr:
+-          - 127.0.0.10
+-          - ::1
+-        port: 7777
++#nrf:
++#    sbi:
++#      - addr:
++#          - 127.0.0.10
++#          - ::1
++#        port: 7777
+
+ #
+ # upf:
+```
+
+If you set as above and run SMF, you do not need to run NRF. Seven daemons operate in 4G only state.
+
 #### How to change UE IP Pool
 
 The Open5GS package contains a systemd-networkd configuration file for `ogstun`. Therefore, you must first modify the configuration file as follows.
