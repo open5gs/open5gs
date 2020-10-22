@@ -180,7 +180,8 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
             ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
 
             if (SESSION_CONTEXT_IS_AVAILABLE(mme_ue)) {
-                mme_gtp_send_delete_all_sessions(mme_ue);
+                mme_gtp_send_delete_all_sessions(mme_ue,
+                        OGS_GTP_DELETE_SEND_AUTHENTICATION_REUQEST);
             } else {
                 mme_s6a_send_air(mme_ue, NULL);
             }
@@ -204,20 +205,26 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
             }
 
             if (h.integrity_protected && SECURITY_CONTEXT_IS_VALID(mme_ue)) {
-                rv = nas_eps_send_emm_to_esm(mme_ue,
-                        &mme_ue->pdn_connectivity_request);
-                if (rv != OGS_OK) {
-                    ogs_error("nas_eps_send_emm_to_esm() failed");
-                    nas_eps_send_attach_reject(mme_ue,
-                        EMM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED,
-                        ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
-                    OGS_FSM_TRAN(s, &emm_state_exception);
+                if (SESSION_CONTEXT_IS_AVAILABLE(mme_ue)) {
+                    mme_gtp_send_delete_all_sessions(mme_ue,
+                        OGS_GTP_DELETE_HANDLE_PDN_CONNECTIVITY_REQUEST);
                 } else {
-                    OGS_FSM_TRAN(s, &emm_state_initial_context_setup);
+                    rv = nas_eps_send_emm_to_esm(mme_ue,
+                            &mme_ue->pdn_connectivity_request);
+                    if (rv != OGS_OK) {
+                        ogs_error("nas_eps_send_emm_to_esm() failed");
+                        nas_eps_send_attach_reject(mme_ue,
+                            EMM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED,
+                            ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
+                        OGS_FSM_TRAN(s, &emm_state_exception);
+                        break;
+                    }
                 }
+                OGS_FSM_TRAN(s, &emm_state_initial_context_setup);
             } else {
                 if (SESSION_CONTEXT_IS_AVAILABLE(mme_ue)) {
-                    mme_gtp_send_delete_all_sessions(mme_ue);
+                    mme_gtp_send_delete_all_sessions(mme_ue,
+                        OGS_GTP_DELETE_SEND_AUTHENTICATION_REUQEST);
                 } else {
                     mme_s6a_send_air(mme_ue, NULL);
                 }
@@ -874,7 +881,8 @@ void emm_state_initial_context_setup(ogs_fsm_t *s, mme_event_t *e)
                 break;
             }
 
-            mme_gtp_send_delete_all_sessions(mme_ue);
+            mme_gtp_send_delete_all_sessions(mme_ue,
+                OGS_GTP_DELETE_SEND_AUTHENTICATION_REUQEST);
             OGS_FSM_TRAN(s, &emm_state_authentication);
             break;
         case OGS_NAS_EPS_EMM_STATUS:
@@ -971,20 +979,26 @@ void emm_state_exception(ogs_fsm_t *s, mme_event_t *e)
             }
 
             if (h.integrity_protected && SECURITY_CONTEXT_IS_VALID(mme_ue)) {
-                rv = nas_eps_send_emm_to_esm(mme_ue,
-                        &mme_ue->pdn_connectivity_request);
-                if (rv != OGS_OK) {
-                    ogs_error("nas_eps_send_emm_to_esm() failed");
-                    nas_eps_send_attach_reject(mme_ue,
-                        EMM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED,
-                        ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
-                    OGS_FSM_TRAN(s, &emm_state_exception);
+                if (SESSION_CONTEXT_IS_AVAILABLE(mme_ue)) {
+                    mme_gtp_send_delete_all_sessions(mme_ue,
+                        OGS_GTP_DELETE_HANDLE_PDN_CONNECTIVITY_REQUEST);
                 } else {
-                    OGS_FSM_TRAN(s, &emm_state_initial_context_setup);
+                    rv = nas_eps_send_emm_to_esm(mme_ue,
+                            &mme_ue->pdn_connectivity_request);
+                    if (rv != OGS_OK) {
+                        ogs_error("nas_eps_send_emm_to_esm() failed");
+                        nas_eps_send_attach_reject(mme_ue,
+                            EMM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED,
+                            ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
+                        OGS_FSM_TRAN(s, &emm_state_exception);
+                        break;
+                    }
                 }
+                OGS_FSM_TRAN(s, &emm_state_initial_context_setup);
             } else {
                 if (SESSION_CONTEXT_IS_AVAILABLE(mme_ue)) {
-                    mme_gtp_send_delete_all_sessions(mme_ue);
+                    mme_gtp_send_delete_all_sessions(mme_ue,
+                        OGS_GTP_DELETE_SEND_AUTHENTICATION_REUQEST);
                 } else {
                     mme_s6a_send_air(mme_ue, NULL);
                 }

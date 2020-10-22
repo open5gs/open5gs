@@ -212,7 +212,8 @@ void esm_state_active(ogs_fsm_t *s, mme_event_t *e)
             ogs_debug("    IMSI[%s] PTI[%d] EBI[%d]",
                     mme_ue->imsi_bcd, sess->pti, bearer->ebi);
             if (MME_HAVE_SGW_S1U_PATH(sess)) {
-                mme_gtp_send_delete_session_request(sess);
+                mme_gtp_send_delete_session_request(sess,
+                    OGS_GTP_DELETE_SEND_DEACTIVATE_BEARER_CONTEXT_REQUEST);
             } else {
                 nas_eps_send_deactivate_bearer_context_request(bearer);
             }

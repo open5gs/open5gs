@@ -104,8 +104,10 @@ void nas_eps_send_attach_accept(mme_ue_t *mme_ue)
     ogs_assert(mme_ue);
     sess = mme_sess_first(mme_ue);
     ogs_assert(sess);
+    ogs_assert(mme_sess_next(sess) == NULL);
     bearer = mme_default_bearer_in_sess(sess);
     ogs_assert(bearer);
+    ogs_assert(mme_bearer_next(bearer) == NULL);
 
     esmbuf = esm_build_activate_default_bearer_context_request(sess);
     ogs_expect_or_return(esmbuf);

@@ -27,7 +27,8 @@ void mme_send_delete_session_or_detach(mme_ue_t *mme_ue)
     ogs_assert(mme_ue);
 
     if (SESSION_CONTEXT_IS_AVAILABLE(mme_ue)) {
-        mme_gtp_send_delete_all_sessions(mme_ue);
+        mme_gtp_send_delete_all_sessions(mme_ue,
+                OGS_GTP_DELETE_SEND_DETACH_ACCEPT);
     } else {
         nas_eps_send_detach_accept(mme_ue);
     }
@@ -38,7 +39,8 @@ void mme_send_delete_session_or_mme_ue_context_release(mme_ue_t *mme_ue)
     ogs_assert(mme_ue);
 
     if (SESSION_CONTEXT_IS_AVAILABLE(mme_ue)) {
-        mme_gtp_send_delete_all_sessions(mme_ue);
+        mme_gtp_send_delete_all_sessions(mme_ue,
+                OGS_GTP_DELETE_SEND_UE_CONTEXT_RELEASE_COMMAND);
     } else {
         enb_ue_t *enb_ue = mme_ue->enb_ue;
         if (enb_ue) {

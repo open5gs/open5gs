@@ -218,7 +218,7 @@ void mme_gtp_send_modify_bearer_request(
     ogs_expect(rv == OGS_OK);
 }
 
-void mme_gtp_send_delete_session_request(mme_sess_t *sess)
+void mme_gtp_send_delete_session_request(mme_sess_t *sess, int action)
 {
     int rv;
     ogs_pkbuf_t *s11buf = NULL;
@@ -226,6 +226,7 @@ void mme_gtp_send_delete_session_request(mme_sess_t *sess)
     ogs_gtp_xact_t *xact = NULL;
     mme_ue_t *mme_ue = NULL;
 
+    ogs_assert(action);
     ogs_assert(sess);
     mme_ue = sess->mme_ue;
     ogs_assert(mme_ue);
@@ -239,16 +240,18 @@ void mme_gtp_send_delete_session_request(mme_sess_t *sess)
 
     xact = ogs_gtp_xact_local_create(mme_ue->gnode, &h, s11buf, timeout, sess);
     ogs_expect_or_return(xact);
+    xact->delete_action = action;
 
     rv = ogs_gtp_xact_commit(xact);
     ogs_expect(rv == OGS_OK);
 }
 
-void mme_gtp_send_delete_all_sessions(mme_ue_t *mme_ue)
+void mme_gtp_send_delete_all_sessions(mme_ue_t *mme_ue, int action)
 {
     mme_sess_t *sess = NULL, *next_sess = NULL;
 
     ogs_assert(mme_ue);
+    ogs_assert(action);
 
     if (SESSION_CONTEXT_WILL_DELETED(mme_ue)) {
         ogs_warn("[%s] Delete-Session-Request has already sent",
@@ -270,7 +273,7 @@ void mme_gtp_send_delete_all_sessions(mme_ue_t *mme_ue)
                 OGS_FSM_CHECK(&bearer->sm, esm_state_pdn_will_disconnect)) {
                 ogs_warn("PDN will disconnect[EBI:%d]", bearer->ebi);
             } else {
-                mme_gtp_send_delete_session_request(sess);
+                mme_gtp_send_delete_session_request(sess, action);
             }
         } else {
             mme_sess_remove(sess);

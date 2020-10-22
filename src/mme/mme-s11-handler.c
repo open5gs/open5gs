@@ -267,10 +267,13 @@ void mme_s11_handle_delete_session_response(
 {
     int rv;
     uint8_t cause_value = 0;
+    int action = 0;
     mme_sess_t *sess = NULL;
 
     ogs_assert(xact);
     ogs_assert(rsp);
+    action = xact->delete_action;
+    ogs_assert(action);
 
     ogs_debug("[MME] Delete Session Response");
 
@@ -294,56 +297,32 @@ void mme_s11_handle_delete_session_response(
     ogs_debug("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
             mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
 
-    if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_authentication)) {
+    if (action == OGS_GTP_DELETE_SEND_AUTHENTICATION_REUQEST) {
         if (mme_sess_count(mme_ue) == 1) /* Last Session */ {
             mme_s6a_send_air(mme_ue, NULL);
         }
-    } else if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_de_registered)) {
+
+    } else if (action == OGS_GTP_DELETE_SEND_DETACH_ACCEPT) {
         if (mme_sess_count(mme_ue) == 1) /* Last Session */ {
             nas_eps_send_detach_accept(mme_ue);
         }
-    } else if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_registered)) {
+
+    } else if (action ==
+            OGS_GTP_DELETE_SEND_DEACTIVATE_BEARER_CONTEXT_REQUEST) {
         mme_bearer_t *bearer = mme_default_bearer_in_sess(sess);
         ogs_expect_or_return(bearer);
 
-        if (OGS_FSM_CHECK(&bearer->sm, esm_state_pdn_will_disconnect)) {
-            nas_eps_send_deactivate_bearer_context_request(bearer);
-            
-            /*
-             * mme_sess_remove() should not be called here.
-             *
-             * Session will be removed if Deactivate bearer context 
-             * accept is received */
-            CLEAR_SGW_S1U_PATH(sess);
-            return;
-        } else if (OGS_FSM_CHECK(&bearer->sm, esm_state_active) ||
-            /*
-             * MME sends InitialContextSetupRequest to eNB.
-             * eNB sends InitialContextSetupFailure to MME.
-             *
-             * In this case, ESM state is INACTIVE.
-             *
-             * So, if Delete-Session-Response is received,
-             * MME needs to send UEContextReleaseCommand to eNB. 
-             */
-                OGS_FSM_CHECK(&bearer->sm, esm_state_inactive)) {
+        nas_eps_send_deactivate_bearer_context_request(bearer);
 
-            if (mme_sess_count(mme_ue) == 1) /* Last Session */ {
-                enb_ue_t *enb_ue = NULL;
+        /*
+         * mme_sess_remove() should not be called here.
+         *
+         * if Deactivate bearer context accept is received,
+         * Session will be removed */
+        CLEAR_SGW_S1U_PATH(sess);
+        return;
 
-                enb_ue = mme_ue->enb_ue;
-                if (enb_ue) {
-                    s1ap_send_ue_context_release_command(enb_ue,
-                        S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
-                        S1AP_UE_CTX_REL_UE_CONTEXT_REMOVE, 0);
-                } else
-                    ogs_warn("ENB-S1 Context has already been removed");
-            }
-        } else
-            ogs_assert_if_reached();
-
-    } else if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_initial_context_setup) ||
-             OGS_FSM_CHECK(&mme_ue->sm, emm_state_exception)) {
+    } else if (action == OGS_GTP_DELETE_SEND_UE_CONTEXT_RELEASE_COMMAND) {
         if (mme_sess_count(mme_ue) == 1) /* Last Session */ {
             enb_ue_t *enb_ue = NULL;
 
@@ -355,8 +334,23 @@ void mme_s11_handle_delete_session_response(
             } else
                 ogs_warn("ENB-S1 Context has already been removed");
         }
-    } else
+
+    } else if (action == OGS_GTP_DELETE_HANDLE_PDN_CONNECTIVITY_REQUEST) {
+        if (mme_sess_count(mme_ue) == 1) /* Last Session */ {
+            rv = nas_eps_send_emm_to_esm(mme_ue,
+                    &mme_ue->pdn_connectivity_request);
+            if (rv != OGS_OK) {
+                ogs_error("nas_eps_send_emm_to_esm() failed");
+                nas_eps_send_attach_reject(mme_ue,
+                    EMM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED,
+                    ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
+            }
+        }
+
+    } else {
+        ogs_fatal("Invalid action = %d", action);
         ogs_assert_if_reached();
+    }
 
     if (mme_sess_count(mme_ue) == 1) /* Last Session */
         CLEAR_SESSION_CONTEXT(mme_ue);
