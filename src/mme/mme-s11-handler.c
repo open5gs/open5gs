@@ -126,7 +126,7 @@ void mme_s11_handle_create_session_response(
     }
 
     if (cause_value != OGS_GTP_CAUSE_REQUEST_ACCEPTED) {
-        if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_initial_context_setup)) {
+        if (SESSION_CONTEXT_IN_ATTACH(sess)) {
             ogs_error("[%s] Attach reject", mme_ue->imsi_bcd);
             nas_eps_send_attach_reject(mme_ue,
                 EMM_CAUSE_NETWORK_FAILURE, ESM_CAUSE_NETWORK_FAILURE);
@@ -384,10 +384,7 @@ void mme_s11_handle_create_bearer_request(
 
     if (mme_ue && cause_value == OGS_GTP_CAUSE_REQUEST_ACCEPTED) {
         sess = mme_sess_find_by_ebi(mme_ue, req->linked_eps_bearer_id.u8);
-        ogs_assert(sess);
-
-        bearer = mme_bearer_add(sess);
-        ogs_assert(bearer);
+        if (sess) bearer = mme_bearer_add(sess);
     }
 
     if (!bearer) {
@@ -426,6 +423,7 @@ void mme_s11_handle_create_bearer_request(
             mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
 
     /* Set PTI */
+    ogs_assert(bearer);
     sess = bearer->sess;
     ogs_assert(sess);
     sess->pti = OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED;
@@ -502,7 +500,6 @@ void mme_s11_handle_update_bearer_request(
     if (mme_ue && cause_value == OGS_GTP_CAUSE_REQUEST_ACCEPTED) {
         bearer = mme_bearer_find_by_ue_ebi(mme_ue,
                 req->bearer_contexts.eps_bearer_id.u8);
-        ogs_expect_or_return(bearer);
     }
 
     if (!bearer) {
@@ -520,6 +517,7 @@ void mme_s11_handle_update_bearer_request(
             mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
 
     /* Set PTI */
+    ogs_assert(bearer);
     sess = bearer->sess;
     ogs_assert(sess);
     sess->pti = OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED;
@@ -600,13 +598,19 @@ void mme_s11_handle_delete_bearer_request(
     if (mme_ue && req->linked_eps_bearer_id.presence == 1) {
         bearer = mme_bearer_find_by_ue_ebi(
                 mme_ue, req->linked_eps_bearer_id.u8);
-        ogs_expect_or_return(bearer);
+        if (!bearer)
+            ogs_error("Cannot find Bearer [%d]", req->linked_eps_bearer_id.u8);
     } else if (mme_ue && req->eps_bearer_ids.presence == 1) {
         bearer = mme_bearer_find_by_ue_ebi(
                 mme_ue, req->eps_bearer_ids.u8);
-        ogs_expect_or_return(bearer);
+        if (!bearer)
+            ogs_error("Cannot find Bearer [%d]", req->eps_bearer_ids.u8);
     } else {
         ogs_error("No Linked EBI or EPS Bearer ID");
+    }
+
+    if (!bearer) {
+        ogs_error("No Context");
         ogs_gtp_send_error_message(xact, mme_ue ? mme_ue->sgw_s11_teid : 0,
                 OGS_GTP_DELETE_BEARER_RESPONSE_TYPE,
                 OGS_GTP_CAUSE_CONTEXT_NOT_FOUND);
@@ -619,6 +623,7 @@ void mme_s11_handle_delete_bearer_request(
             mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
 
     /* Set PTI */
+    ogs_assert(bearer);
     sess = bearer->sess;
     ogs_assert(sess);
     sess->pti = OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED;

@@ -1868,7 +1868,7 @@ static void test4_func(abts_case *tc, void *data)
     /* Send PDN Connectivity Request */
     sess = test_sess_add_by_apn(test_ue, "ims");
     ogs_assert(sess);
-    sess->pti = 9;
+    sess->pti = 7;
 
     sess->pdn_connectivity_param.integrity_protected = 1;
     sess->pdn_connectivity_param.ciphered = 1;
@@ -1907,6 +1907,80 @@ static void test4_func(abts_case *tc, void *data)
     /* DELAY is needed in default EPS bearer */
     ogs_msleep(100);
 
+    /* Send PDN disconnectivity request */
+    sess = test_sess_find_by_apn(test_ue, "internet");
+    sess->pti = 8;
+    esmbuf = testesm_build_pdn_disconnect_request(sess);
+    ABTS_PTR_NOTNULL(tc, esmbuf);
+    sendbuf = test_s1ap_build_uplink_nas_transport(test_ue, esmbuf);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testenb_s1ap_send(s1ap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive E-RAB Release Command +
+     * Deactivate EPS bearer context request */
+    recvbuf = testenb_s1ap_read(s1ap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    tests1ap_recv(test_ue, recvbuf);
+
+    /* Send E-RAB Release Response */
+    bearer = test_bearer_find_by_ue_ebi(test_ue, 5);
+    ogs_assert(bearer);
+    sendbuf = test_s1ap_build_e_rab_release_response(bearer);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testenb_s1ap_send(s1ap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Send Deactivate EPS bearer context accept */
+    esmbuf = testesm_build_deactivate_eps_bearer_context_accept(bearer);
+    ABTS_PTR_NOTNULL(tc, esmbuf);
+    sendbuf = test_s1ap_build_uplink_nas_transport(test_ue, esmbuf);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testenb_s1ap_send(s1ap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Send PDN Connectivity Request */
+    sess = test_sess_add_by_apn(test_ue, "internet");
+    ogs_assert(sess);
+    sess->pti = 9;
+
+    sess->pdn_connectivity_param.integrity_protected = 1;
+    sess->pdn_connectivity_param.ciphered = 1;
+    sess->pdn_connectivity_param.apn = 1;
+    sess->pdn_connectivity_param.pco = 1;
+    esmbuf = testesm_build_pdn_connectivity_request(sess);
+    ABTS_PTR_NOTNULL(tc, esmbuf);
+    sendbuf = test_s1ap_build_uplink_nas_transport(test_ue, esmbuf);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testenb_s1ap_send(s1ap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive E-RAB Setup Request +
+     * Activate default EPS bearer context request */
+    recvbuf = testenb_s1ap_read(s1ap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    tests1ap_recv(test_ue, recvbuf);
+
+    /* Send E-RAB Setup Response */
+    bearer = test_bearer_find_by_ue_ebi(test_ue, 7);
+    ogs_assert(bearer);
+    sendbuf = test_s1ap_build_e_rab_setup_response(bearer);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testenb_s1ap_send(s1ap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Send Activate default EPS bearer context accept */
+    esmbuf = testesm_build_activate_default_eps_bearer_context_accept(
+            bearer, true);
+    ABTS_PTR_NOTNULL(tc, esmbuf);
+    sendbuf = test_s1ap_build_uplink_nas_transport(test_ue, esmbuf);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testenb_s1ap_send(s1ap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* DELAY is needed in default EPS bearer */
+    ogs_msleep(100);
+
     /* Send AA-Request */
     sess = test_sess_find_by_apn(test_ue, "ims");
     ogs_assert(sess);
@@ -1920,7 +1994,7 @@ static void test4_func(abts_case *tc, void *data)
     tests1ap_recv(test_ue, recvbuf);
 
     /* Send E-RAB Setup Response */
-    bearer = test_bearer_find_by_ue_ebi(test_ue, 7);
+    bearer = test_bearer_find_by_ue_ebi(test_ue, 8);
     ogs_assert(bearer);
     sendbuf = test_s1ap_build_e_rab_setup_response(bearer);
     ABTS_PTR_NOTNULL(tc, sendbuf);

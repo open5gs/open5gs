@@ -89,6 +89,18 @@ void esm_state_inactive(ogs_fsm_t *s, mme_event_t *e)
                 break;
             }
             break;
+        case OGS_NAS_EPS_PDN_DISCONNECT_REQUEST:
+            ogs_fatal("PDN disconnect request");
+            ogs_fatal("    IMSI[%s] PTI[%d] EBI[%d]",
+                    mme_ue->imsi_bcd, sess->pti, bearer->ebi);
+            if (MME_HAVE_SGW_S1U_PATH(sess)) {
+                mme_gtp_send_delete_session_request(sess,
+                    OGS_GTP_DELETE_SEND_DEACTIVATE_BEARER_CONTEXT_REQUEST);
+            } else {
+                nas_eps_send_deactivate_bearer_context_request(bearer);
+            }
+            OGS_FSM_TRAN(s, esm_state_pdn_will_disconnect);
+            break;
         case OGS_NAS_EPS_ESM_INFORMATION_RESPONSE:
             ogs_debug("ESM information response");
             ogs_debug("    IMSI[%s] PTI[%d] EBI[%d]",
@@ -130,8 +142,7 @@ void esm_state_inactive(ogs_fsm_t *s, mme_event_t *e)
             OGS_FSM_TRAN(s, esm_state_active);
             break;
         default:
-            ogs_error("Unknown message(type:%d)", 
-                    message->esm.h.message_type);
+            ogs_error("Unknown message(type:%d)", message->esm.h.message_type);
             break;
         }
         break;

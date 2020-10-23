@@ -2775,7 +2775,7 @@ bool mme_sess_in_attach(mme_sess_t *sess)
     mme_ue = sess->mme_ue;
     ogs_assert(mme_ue);
 
-    return ogs_list_first(&mme_ue->sess_list) == sess;
+    return (ogs_list_count(&mme_ue->sess_list) <= 1);
 }
 
 unsigned int mme_sess_count(mme_ue_t *mme_ue)
