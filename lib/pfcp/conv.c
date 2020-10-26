@@ -206,6 +206,43 @@ int ogs_pfcp_sockaddr_to_f_teid(
     return OGS_OK;
 }
 
+int ogs_pfcp_f_teid_to_sockaddr(
+    ogs_pfcp_f_teid_t *f_teid, int f_teid_len,
+    ogs_sockaddr_t **addr, ogs_sockaddr_t **addr6)
+{
+    ogs_assert(addr && addr6);
+    ogs_assert(f_teid);
+    ogs_assert(f_teid_len);
+
+    *addr = NULL;
+    *addr6 = NULL;
+
+    if (f_teid->ipv4 && f_teid->ipv6) {
+        *addr = ogs_calloc(1, sizeof(**addr));
+        ogs_assert(*addr);
+        (*addr)->sin.sin_addr.s_addr = f_teid->both.addr;
+        (*addr)->ogs_sa_family = AF_INET;
+
+        *addr6 = ogs_calloc(1, sizeof(**addr6));
+        ogs_assert(*addr6);
+        memcpy((*addr6)->sin6.sin6_addr.s6_addr,
+                f_teid->both.addr6, OGS_IPV6_LEN);
+        (*addr6)->ogs_sa_family = AF_INET6;
+    } else if (f_teid->ipv4) {
+        *addr = ogs_calloc(1, sizeof(**addr));
+        ogs_assert(*addr);
+        (*addr)->sin.sin_addr.s_addr = f_teid->addr;
+        (*addr)->ogs_sa_family = AF_INET;
+    } else if (f_teid->ipv6) {
+        *addr6 = ogs_calloc(1, sizeof(**addr6));
+        ogs_assert(*addr6);
+        memcpy((*addr6)->sin6.sin6_addr.s6_addr, f_teid->addr6, OGS_IPV6_LEN);
+        (*addr6)->ogs_sa_family = AF_INET6;
+    }
+
+    return OGS_OK;
+}
+
 int ogs_pfcp_sockaddr_to_user_plane_ip_resource_info(
     ogs_sockaddr_t *addr, ogs_sockaddr_t *addr6,
     ogs_pfcp_user_plane_ip_resource_info_t *info)
@@ -237,12 +274,14 @@ int ogs_pfcp_user_plane_ip_resource_info_to_sockaddr(
 
     if (info->v4) {
         *addr = ogs_calloc(1, sizeof(**addr));
+        ogs_assert(*addr);
         (*addr)->sin.sin_addr.s_addr = info->addr;
         (*addr)->ogs_sa_family = AF_INET;
     }
 
     if (info->v6) {
         *addr6 = ogs_calloc(1, sizeof(**addr6));
+        ogs_assert(*addr6);
         memcpy((*addr6)->sin6.sin6_addr.s6_addr, info->addr6, OGS_IPV6_LEN);
         (*addr6)->ogs_sa_family = AF_INET6;
     }

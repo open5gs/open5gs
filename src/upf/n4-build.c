@@ -25,6 +25,7 @@ ogs_pkbuf_t *upf_n4_build_session_establishment_response(uint8_t type,
 {
     ogs_pfcp_message_t pfcp_message;
     ogs_pfcp_session_establishment_response_t *rsp = NULL;
+    ogs_pkbuf_t *pkbuf = NULL;
 
     int i = 0;
 
@@ -59,18 +60,19 @@ ogs_pkbuf_t *upf_n4_build_session_establishment_response(uint8_t type,
     rsp->up_f_seid.data = &f_seid;
     rsp->up_f_seid.len = len;
 
+    ogs_pfcp_pdrbuf_init();
+
     /* Created PDR */
     for (i = 0; i < num_of_created_pdr; i++) {
-        ogs_pfcp_tlv_created_pdr_t *message = &rsp->created_pdr[i];
-        ogs_assert(message);
-
-        message->presence = 1;
-        message->pdr_id.presence = 1;
-        message->pdr_id.u16 = created_pdr[i]->id;
+        ogs_pfcp_build_created_pdr(&rsp->created_pdr[i], i, created_pdr[i]);
     }
 
     pfcp_message.h.type = type;
-    return ogs_pfcp_build_msg(&pfcp_message);
+    pkbuf = ogs_pfcp_build_msg(&pfcp_message);
+
+    ogs_pfcp_pdrbuf_clear();
+
+    return pkbuf;
 }
 
 ogs_pkbuf_t *upf_n4_build_session_modification_response(uint8_t type,
@@ -78,6 +80,7 @@ ogs_pkbuf_t *upf_n4_build_session_modification_response(uint8_t type,
 {
     ogs_pfcp_message_t pfcp_message;
     ogs_pfcp_session_modification_response_t *rsp = NULL;
+    ogs_pkbuf_t *pkbuf = NULL;
 
     int i = 0;
 
@@ -90,18 +93,19 @@ ogs_pkbuf_t *upf_n4_build_session_modification_response(uint8_t type,
     rsp->cause.presence = 1;
     rsp->cause.u8 = OGS_PFCP_CAUSE_REQUEST_ACCEPTED;
 
+    ogs_pfcp_pdrbuf_init();
+
     /* Created PDR */
     for (i = 0; i < num_of_created_pdr; i++) {
-        ogs_pfcp_tlv_created_pdr_t *message = &rsp->created_pdr[i];
-        ogs_assert(message);
-
-        message->presence = 1;
-        message->pdr_id.presence = 1;
-        message->pdr_id.u16 = created_pdr[i]->id;
+        ogs_pfcp_build_created_pdr(&rsp->created_pdr[i], i, created_pdr[i]);
     }
 
     pfcp_message.h.type = type;
-    return ogs_pfcp_build_msg(&pfcp_message);
+    pkbuf = ogs_pfcp_build_msg(&pfcp_message);
+
+    ogs_pfcp_pdrbuf_clear();
+
+    return pkbuf;
 }
 
 ogs_pkbuf_t *upf_n4_build_session_deletion_response(uint8_t type,

@@ -143,6 +143,7 @@ ogs_pkbuf_t *smf_s5c_build_create_session_response(
     memset(&pgw_s5u_teid, 0, sizeof(ogs_gtp_f_teid_t));
     pgw_s5u_teid.interface_type = OGS_GTP_F_TEID_S5_S8_PGW_GTP_U;
     pgw_s5u_teid.teid = htobe32(bearer->pgw_s5u_teid);
+    ogs_assert(bearer->pgw_s5u_addr || bearer->pgw_s5u_addr6);
     rv = ogs_gtp_sockaddr_to_f_teid(
         bearer->pgw_s5u_addr, bearer->pgw_s5u_addr6, &pgw_s5u_teid, &len);
     ogs_assert(rv == OGS_OK);
@@ -238,6 +239,7 @@ ogs_pkbuf_t *smf_s5c_build_create_bearer_request(
     memset(&pgw_s5u_teid, 0, sizeof(ogs_gtp_f_teid_t));
     pgw_s5u_teid.interface_type = OGS_GTP_F_TEID_S5_S8_PGW_GTP_U;
     pgw_s5u_teid.teid = htobe32(bearer->pgw_s5u_teid);
+    ogs_assert(bearer->pgw_s5u_addr || bearer->pgw_s5u_addr6);
     rv = ogs_gtp_sockaddr_to_f_teid(
         bearer->pgw_s5u_addr, bearer->pgw_s5u_addr6, &pgw_s5u_teid, &len);
     ogs_assert(rv == OGS_OK);

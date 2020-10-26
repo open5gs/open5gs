@@ -67,11 +67,9 @@ void ogs_pfcp_cp_handle_association_setup_request(
 
     if (req->up_function_features.presence) {
         if (req->up_function_features.data && req->up_function_features.len) {
-            ogs_pfcp_self()->up_function_features_len =
-                req->up_function_features.len;
-            memcpy(&ogs_pfcp_self()->up_function_features,
-                req->up_function_features.data,
-                ogs_pfcp_self()->up_function_features_len);
+            node->up_function_features_len = req->up_function_features.len;
+            memcpy(&node->up_function_features, req->up_function_features.data,
+                node->up_function_features_len);
         }
     }
 }
@@ -104,11 +102,9 @@ void ogs_pfcp_cp_handle_association_setup_response(
 
     if (rsp->up_function_features.presence) {
         if (rsp->up_function_features.data && rsp->up_function_features.len) {
-            ogs_pfcp_self()->up_function_features_len =
-                rsp->up_function_features.len;
-            memcpy(&ogs_pfcp_self()->up_function_features,
-                rsp->up_function_features.data,
-                ogs_pfcp_self()->up_function_features_len);
+            node->up_function_features_len = rsp->up_function_features.len;
+            memcpy(&node->up_function_features, rsp->up_function_features.data,
+                node->up_function_features_len);
         }
     }
 }
@@ -396,6 +392,42 @@ ogs_pfcp_pdr_t *ogs_pfcp_handle_create_pdr(ogs_pfcp_sess_t *sess,
         qer = ogs_pfcp_qer_find_or_add(sess, message->qer_id.u32);
         ogs_assert(qer);
         ogs_pfcp_pdr_associate_qer(pdr, qer);
+    }
+
+    return pdr;
+}
+
+ogs_pfcp_pdr_t *ogs_pfcp_handle_created_pdr(ogs_pfcp_sess_t *sess,
+        ogs_pfcp_tlv_created_pdr_t *message,
+        uint8_t *cause_value, uint8_t *offending_ie_value)
+{
+    ogs_pfcp_pdr_t *pdr = NULL;
+
+    ogs_assert(sess);
+    ogs_assert(message);
+
+    if (message->presence == 0)
+        return NULL;
+
+    if (message->pdr_id.presence == 0) {
+        ogs_error("No PDR-ID");
+        *cause_value = OGS_PFCP_CAUSE_MANDATORY_IE_MISSING;
+        *offending_ie_value = OGS_PFCP_PDR_ID_TYPE;
+        return NULL;
+    }
+
+    pdr = ogs_pfcp_pdr_find(sess, message->pdr_id.u16);
+    if (!pdr) {
+        ogs_error("Cannot find PDR-ID[%d] in PDR", message->pdr_id.u16);
+        *cause_value = OGS_PFCP_CAUSE_MANDATORY_IE_INCORRECT;
+        *offending_ie_value = OGS_PFCP_PDR_ID_TYPE;
+        return NULL;
+    }
+
+    if (message->local_f_teid.presence) {
+        pdr->f_teid_len = message->local_f_teid.len;
+        memcpy(&pdr->f_teid, message->local_f_teid.data, pdr->f_teid_len);
+        pdr->f_teid.teid = be32toh(pdr->f_teid.teid);
     }
 
     return pdr;

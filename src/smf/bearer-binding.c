@@ -19,6 +19,7 @@
 
 #include "bearer-binding.h"
 #include "s5c-build.h"
+#include "pfcp-path.h"
 
 #include "ipfw/ipfw2.h"
 
@@ -203,7 +204,6 @@ void smf_bearer_binding(smf_sess_t *sess)
         ogs_pcc_rule_t *pcc_rule = &sess->pcc_rule[i];
         int bearer_created = 0;
         int qos_presence = 0;
-        ogs_gtp_tft_t tft;
 
         ogs_assert(pcc_rule);
         if (pcc_rule->name == NULL) {
@@ -334,28 +334,40 @@ void smf_bearer_binding(smf_sess_t *sess)
                 }
             }
 
-            memset(&tft, 0, sizeof tft);
-            if (pcc_rule->num_of_flow)
-                encode_traffic_flow_template(&tft, bearer);
-
-            memset(&h, 0, sizeof(ogs_gtp_header_t));
             if (bearer_created == 1) {
-                h.type = OGS_GTP_CREATE_BEARER_REQUEST_TYPE;
-                h.teid = sess->sgw_s5c_teid;
+                /* Setup QER */
+                if (bearer->qos.mbr.downlink || bearer->qos.mbr.uplink ||
+                    bearer->qos.gbr.downlink || bearer->qos.gbr.uplink) {
+                    ogs_pfcp_qer_t *qer = NULL;
 
-                /* TFT is mandatory in
-                 * activate dedicated EPS bearer context request */
-                ogs_assert(pcc_rule->num_of_flow);
+                    /* Only 1 QER is used per bearer */
+                    qer = bearer->qer;
+                    if (!qer) {
+                        qer = ogs_pfcp_qer_add(&sess->pfcp);
+                        ogs_assert(qer);
+                        bearer->qer = qer;
+                    }
 
-                pkbuf = smf_s5c_build_create_bearer_request(
-                        h.type, bearer, pcc_rule->num_of_flow ? &tft : NULL);
-                ogs_expect_or_return(pkbuf);
+                    ogs_pfcp_pdr_associate_qer(bearer->dl_pdr, qer);
+                    ogs_pfcp_pdr_associate_qer(bearer->ul_pdr, qer);
 
-                xact = ogs_gtp_xact_local_create(
-                        sess->gnode, &h, pkbuf, timeout, sess);
-                ogs_expect_or_return(xact);
+                    qer->mbr.uplink = bearer->qos.mbr.uplink;
+                    qer->mbr.downlink = bearer->qos.mbr.downlink;
+                    qer->gbr.uplink = bearer->qos.gbr.uplink;
+                    qer->gbr.downlink = bearer->qos.gbr.downlink;
+                }
+
+                smf_epc_pfcp_send_bearer_modification_request(
+                        bearer, OGS_PFCP_MODIFY_CREATE);
 
             } else {
+                ogs_gtp_tft_t tft;
+
+                memset(&tft, 0, sizeof tft);
+                if (pcc_rule->num_of_flow)
+                    encode_traffic_flow_template(&tft, bearer);
+
+                memset(&h, 0, sizeof(ogs_gtp_header_t));
                 h.type = OGS_GTP_UPDATE_BEARER_REQUEST_TYPE;
                 h.teid = sess->sgw_s5c_teid;
 
@@ -373,10 +385,10 @@ void smf_bearer_binding(smf_sess_t *sess)
                     xact->update_flags |= OGS_GTP_MODIFY_TFT_UPDATE;
                 if (qos_presence)
                     xact->update_flags |= OGS_GTP_MODIFY_QOS_UPDATE;
-            }
 
-            rv = ogs_gtp_xact_commit(xact);
-            ogs_expect(rv == OGS_OK);
+                rv = ogs_gtp_xact_commit(xact);
+                ogs_expect(rv == OGS_OK);
+            }
 
         } else if (pcc_rule->type == OGS_PCC_RULE_TYPE_REMOVE) {
             bearer = smf_bearer_find_by_name(sess, pcc_rule->name);
@@ -406,4 +418,35 @@ void smf_bearer_binding(smf_sess_t *sess)
             ogs_error("Invalid Type[%d]", pcc_rule->type);
         }
     }
+}
+
+void smf_gtp_send_create_bearer_request(smf_bearer_t *bearer)
+{
+    int rv;
+
+    smf_sess_t *sess = NULL;
+    ogs_gtp_xact_t *xact = NULL;
+
+    ogs_gtp_header_t h;
+    ogs_pkbuf_t *pkbuf = NULL;
+    ogs_gtp_tft_t tft;
+
+    ogs_assert(bearer);
+    sess = bearer->sess;
+    ogs_assert(sess);
+
+    h.type = OGS_GTP_CREATE_BEARER_REQUEST_TYPE;
+    h.teid = sess->sgw_s5c_teid;
+
+    memset(&tft, 0, sizeof tft);
+    encode_traffic_flow_template(&tft, bearer);
+
+    pkbuf = smf_s5c_build_create_bearer_request(h.type, bearer, &tft);
+    ogs_expect_or_return(pkbuf);
+
+    xact = ogs_gtp_xact_local_create(sess->gnode, &h, pkbuf, timeout, sess);
+    ogs_expect_or_return(xact);
+
+    rv = ogs_gtp_xact_commit(xact);
+    ogs_expect(rv == OGS_OK);
 }

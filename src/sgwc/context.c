@@ -646,11 +646,6 @@ void sgwc_bearer_remove_all(sgwc_sess_t *sess)
         sgwc_bearer_remove(bearer);
 }
 
-sgwc_bearer_t *sgwc_bearer_find_by_sgwc_s5u_teid(uint32_t sgwc_s5u_teid)
-{
-    return ogs_pool_find(&sgwc_bearer_pool, sgwc_s5u_teid);
-}
-
 sgwc_bearer_t *sgwc_bearer_find_by_sess_ebi(sgwc_sess_t *sess, uint8_t ebi)
 {
     sgwc_bearer_t *bearer = NULL;
@@ -797,7 +792,6 @@ sgwc_tunnel_t *sgwc_tunnel_add(
 
     pdr = ogs_pfcp_pdr_add(&sess->pfcp);
     ogs_assert(pdr);
-    pdr->id = pdr->index;
     pdr->src_if = src_if;
 
     if (strlen(sess->pdn.apn))
@@ -818,39 +812,42 @@ sgwc_tunnel_t *sgwc_tunnel_add(
 
     far = ogs_pfcp_far_add(&sess->pfcp);
     ogs_assert(far);
-    far->id = far->index;
     far->dst_if = dst_if;
     ogs_pfcp_pdr_associate_far(pdr, far);
 
     ogs_assert(sess->pfcp_node);
-    resource = ogs_pfcp_gtpu_resource_find(
-            &sess->pfcp_node->gtpu_resource_list,
-            sess->pdn.apn, OGS_PFCP_INTERFACE_ACCESS);
-    if (resource) {
-        ogs_pfcp_user_plane_ip_resource_info_to_sockaddr(&resource->info,
-            &tunnel->local_addr, &tunnel->local_addr6);
-        ogs_assert(tunnel->local_addr || tunnel->local_addr6);
-        if (resource->info.teidri)
-            tunnel->local_teid = OGS_PFCP_GTPU_INDEX_TO_TEID(
-                    tunnel->index, resource->info.teidri,
-                    resource->info.teid_range);
-        else
-            tunnel->local_teid = tunnel->index;
+    if (sess->pfcp_node->up_function_features.ftup) {
+        pdr->f_teid.ch = 1;
+        pdr->f_teid_len = 1;
     } else {
-        if (sess->pfcp_node->addr.ogs_sa_family == AF_INET)
-            ogs_copyaddrinfo(&tunnel->local_addr, &sess->pfcp_node->addr);
-        else if (sess->pfcp_node->addr.ogs_sa_family == AF_INET6)
-            ogs_copyaddrinfo(&tunnel->local_addr6, &sess->pfcp_node->addr);
-        else
-            ogs_assert_if_reached();
+        resource = ogs_pfcp_gtpu_resource_find(
+                &sess->pfcp_node->gtpu_resource_list,
+                sess->pdn.apn, OGS_PFCP_INTERFACE_ACCESS);
+        if (resource) {
+            ogs_pfcp_user_plane_ip_resource_info_to_sockaddr(&resource->info,
+                &tunnel->local_addr, &tunnel->local_addr6);
+            if (resource->info.teidri)
+                tunnel->local_teid = OGS_PFCP_GTPU_INDEX_TO_TEID(
+                        tunnel->index, resource->info.teidri,
+                        resource->info.teid_range);
+            else
+                tunnel->local_teid = tunnel->index;
+        } else {
+            if (sess->pfcp_node->addr.ogs_sa_family == AF_INET)
+                ogs_copyaddrinfo(&tunnel->local_addr, &sess->pfcp_node->addr);
+            else if (sess->pfcp_node->addr.ogs_sa_family == AF_INET6)
+                ogs_copyaddrinfo(&tunnel->local_addr6, &sess->pfcp_node->addr);
+            else
+                ogs_assert_if_reached();
+
+            tunnel->local_teid = tunnel->index;
+        }
+
         ogs_assert(tunnel->local_addr || tunnel->local_addr6);
-
-        tunnel->local_teid = tunnel->index;
+        ogs_pfcp_sockaddr_to_f_teid(tunnel->local_addr, tunnel->local_addr6,
+                &pdr->f_teid, &pdr->f_teid_len);
+        pdr->f_teid.teid = tunnel->local_teid;
     }
-
-    ogs_pfcp_sockaddr_to_f_teid(tunnel->local_addr, tunnel->local_addr6,
-            &pdr->f_teid, &pdr->f_teid_len);
-    pdr->f_teid.teid = tunnel->local_teid;
 
     tunnel->pdr = pdr;
     tunnel->far = far;
@@ -891,9 +888,23 @@ void sgwc_tunnel_remove_all(sgwc_bearer_t *bearer)
         sgwc_tunnel_remove(tunnel);
 }
 
-sgwc_tunnel_t *sgwc_tunnel_find_by_teid(uint32_t teid)
+sgwc_tunnel_t *sgwc_tunnel_find_by_teid(sgwc_ue_t *sgwc_ue, uint32_t teid)
 {
-    return ogs_pool_find(&sgwc_tunnel_pool, teid);
+    sgwc_sess_t *sess = NULL;
+    sgwc_bearer_t *bearer = NULL;
+    sgwc_tunnel_t *tunnel = NULL;
+
+    ogs_assert(sgwc_ue);
+
+    ogs_list_for_each(&sgwc_ue->sess_list, sess) {
+        ogs_list_for_each(&sess->bearer_list, bearer) {
+            ogs_list_for_each(&bearer->tunnel_list, tunnel) {
+                if (tunnel->local_teid == teid) return tunnel;
+            }
+        }
+    }
+
+    return NULL;
 }
 
 sgwc_tunnel_t *sgwc_tunnel_find_by_interface_type(
@@ -905,6 +916,28 @@ sgwc_tunnel_t *sgwc_tunnel_find_by_interface_type(
 
     ogs_list_for_each(&bearer->tunnel_list, tunnel)
         if (tunnel->interface_type == interface_type) return tunnel;
+
+    return NULL;
+}
+
+sgwc_tunnel_t *sgwc_tunnel_find_by_pdr_id(
+        sgwc_sess_t *sess, ogs_pfcp_pdr_id_t pdr_id)
+{
+    sgwc_bearer_t *bearer = NULL;
+    sgwc_tunnel_t *tunnel = NULL;
+
+    ogs_pfcp_pdr_t *pdr = NULL;
+
+    ogs_assert(sess);
+
+    ogs_list_for_each(&sess->bearer_list, bearer) {
+        ogs_list_for_each(&bearer->tunnel_list, tunnel) {
+            pdr = tunnel->pdr;
+            ogs_assert(pdr);
+
+            if (pdr->id == pdr_id) return tunnel;
+        }
+    }
 
     return NULL;
 }

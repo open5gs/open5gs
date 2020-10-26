@@ -99,6 +99,9 @@ typedef struct ogs_pfcp_node_s {
     uint8_t         rr_enable;
 
     ogs_list_t      gtpu_resource_list; /* User Plane IP Resource Information */
+
+    ogs_pfcp_up_function_features_t up_function_features;
+    int up_function_features_len;
 } ogs_pfcp_node_t;
 
 typedef struct ogs_pfcp_gtpu_resource_s {
@@ -160,7 +163,6 @@ typedef struct ogs_pfcp_far_hashkey_s {
 
 typedef struct ogs_pfcp_far_s {
     ogs_lnode_t             lnode;
-    uint32_t                index;
 
     int                     hashkey_len;
     ogs_pfcp_far_hashkey_t  hashkey;
@@ -184,7 +186,6 @@ typedef struct ogs_pfcp_far_s {
 
 typedef struct ogs_pfcp_urr_s {
     ogs_lnode_t             lnode;
-    uint32_t                index;
 
     uint8_t                 *id_node;      /* Pool-Node for ID */
     ogs_pfcp_urr_id_t       id;
@@ -194,7 +195,6 @@ typedef struct ogs_pfcp_urr_s {
 
 typedef struct ogs_pfcp_qer_s {
     ogs_lnode_t             lnode;
-    uint32_t                index;
 
     uint8_t                 *id_node;      /* Pool-Node for ID */
     ogs_pfcp_qer_id_t       id;
@@ -210,7 +210,6 @@ typedef struct ogs_pfcp_qer_s {
 
 typedef struct ogs_pfcp_bar_s {
     ogs_lnode_t             lnode;
-    uint32_t                index;
 
     uint8_t                 *id_node;      /* Pool-Node for ID */
     ogs_pfcp_bar_id_t       id;

@@ -235,45 +235,6 @@ bool smf_nudm_sdm_handle_get(smf_sess_t *sess, ogs_sbi_session_t *session,
         return false;
     }
 
-    /* Setup GTP-U Tunnel */
-    resource = ogs_pfcp_gtpu_resource_find(
-            &sess->pfcp_node->gtpu_resource_list,
-            sess->pdn.dnn, OGS_PFCP_INTERFACE_ACCESS);
-    if (resource) {
-        ogs_pfcp_user_plane_ip_resource_info_to_sockaddr(&resource->info,
-            &sess->upf_n3_addr, &sess->upf_n3_addr6);
-        ogs_assert(sess->upf_n3_addr || sess->upf_n3_addr6);
-        if (resource->info.teidri)
-            sess->upf_n3_teid = OGS_PFCP_GTPU_INDEX_TO_TEID(
-                    sess->index, resource->info.teidri,
-                    resource->info.teid_range);
-        else
-            sess->upf_n3_teid = sess->index;
-    } else {
-        if (sess->pfcp_node->addr.ogs_sa_family == AF_INET)
-            ogs_copyaddrinfo(&sess->upf_n3_addr, &sess->pfcp_node->addr);
-        else if (sess->pfcp_node->addr.ogs_sa_family == AF_INET6)
-            ogs_copyaddrinfo(&sess->upf_n3_addr6, &sess->pfcp_node->addr);
-        else
-            ogs_assert_if_reached();
-        ogs_assert(sess->upf_n3_addr || sess->upf_n3_addr6);
-
-        sess->upf_n3_teid = sess->index;
-    }
-
-    ogs_debug("UPF TEID:[0x%x], IPv4:[%s] IPv6:[%s]",
-            sess->upf_n3_teid,
-            sess->upf_n3_addr ? OGS_ADDR(sess->upf_n3_addr, buf1) : "",
-            sess->upf_n3_addr6 ? OGS_ADDR(sess->upf_n3_addr6, buf2) : "");
-
-    /* UE IP Address */
-    smf_sess_set_ue_ip(sess);
-
-    ogs_info("UE SUPI:[%s] DNN:[%s] IPv4:[%s] IPv6:[%s]",
-	    smf_ue->supi, sess->pdn.dnn,
-        sess->ipv4 ? OGS_INET_NTOP(&sess->ipv4->addr, buf1) : "",
-        sess->ipv6 ? OGS_INET6_NTOP(&sess->ipv6->addr, buf2) : "");
-
     /*********************************************************************
      * Send HTTP_STATUS_CREATED(/nsmf-pdusession/v1/sm-context) to the AMF
      *********************************************************************/
@@ -299,7 +260,6 @@ bool smf_nudm_sdm_handle_get(smf_sess_t *sess, ogs_sbi_session_t *session,
 
     ogs_free(sendmsg.http.location);
 
-
     /*********************************************************************
      * Send PFCP Session Establiashment Request to the UPF
      *********************************************************************/
@@ -324,14 +284,50 @@ bool smf_nudm_sdm_handle_get(smf_sess_t *sess, ogs_sbi_session_t *session,
     ogs_assert(ul_pdr);
 
     /* Set UE IP Address to the Default DL PDR */
+    smf_sess_set_ue_ip(sess);
+
     ogs_pfcp_paa_to_ue_ip_addr(&sess->pdn.paa,
             &dl_pdr->ue_ip_addr, &dl_pdr->ue_ip_addr_len);
     dl_pdr->ue_ip_addr.sd = OGS_PFCP_UE_IP_DST;
 
+    ogs_info("UE SUPI:[%s] DNN:[%s] IPv4:[%s] IPv6:[%s]",
+	    smf_ue->supi, sess->pdn.dnn,
+        sess->ipv4 ? OGS_INET_NTOP(&sess->ipv4->addr, buf1) : "",
+        sess->ipv6 ? OGS_INET6_NTOP(&sess->ipv6->addr, buf2) : "");
+
     /* Set UPF-N3 TEID & ADDR to the Default UL PDR */
-    ogs_pfcp_sockaddr_to_f_teid(sess->upf_n3_addr, sess->upf_n3_addr6,
-            &ul_pdr->f_teid, &ul_pdr->f_teid_len);
-    ul_pdr->f_teid.teid = sess->upf_n3_teid;
+    if (sess->pfcp_node->up_function_features.ftup) {
+        ul_pdr->f_teid.ch = 1;
+        ul_pdr->f_teid_len = 1;
+    } else {
+        resource = ogs_pfcp_gtpu_resource_find(
+                &sess->pfcp_node->gtpu_resource_list,
+                sess->pdn.dnn, OGS_PFCP_INTERFACE_ACCESS);
+        if (resource) {
+            ogs_pfcp_user_plane_ip_resource_info_to_sockaddr(&resource->info,
+                &sess->upf_n3_addr, &sess->upf_n3_addr6);
+            if (resource->info.teidri)
+                sess->upf_n3_teid = OGS_PFCP_GTPU_INDEX_TO_TEID(
+                        sess->index, resource->info.teidri,
+                        resource->info.teid_range);
+            else
+                sess->upf_n3_teid = sess->index;
+        } else {
+            if (sess->pfcp_node->addr.ogs_sa_family == AF_INET)
+                ogs_copyaddrinfo(&sess->upf_n3_addr, &sess->pfcp_node->addr);
+            else if (sess->pfcp_node->addr.ogs_sa_family == AF_INET6)
+                ogs_copyaddrinfo(&sess->upf_n3_addr6, &sess->pfcp_node->addr);
+            else
+                ogs_assert_if_reached();
+
+            sess->upf_n3_teid = sess->index;
+        }
+
+        ogs_assert(sess->upf_n3_addr || sess->upf_n3_addr6);
+        ogs_pfcp_sockaddr_to_f_teid(sess->upf_n3_addr, sess->upf_n3_addr6,
+                &ul_pdr->f_teid, &ul_pdr->f_teid_len);
+        ul_pdr->f_teid.teid = sess->upf_n3_teid;
+    }
 
     /* Default PDRs is set to lowest precedence(highest precedence value) */
     dl_pdr->precedence = 0xffffffff;

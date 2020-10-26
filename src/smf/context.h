@@ -327,7 +327,8 @@ smf_bearer_t *smf_bearer_add(smf_sess_t *sess);
 int smf_bearer_remove(smf_bearer_t *bearer);
 void smf_bearer_remove_all(smf_sess_t *sess);
 smf_bearer_t *smf_bearer_find(uint32_t index);
-smf_bearer_t *smf_bearer_find_by_pgw_s5u_teid(uint32_t pgw_s5u_teid);
+smf_bearer_t *smf_bearer_find_by_pgw_s5u_teid(
+        smf_sess_t *sess, uint32_t pgw_s5u_teid);
 smf_bearer_t *smf_bearer_find_by_ebi(smf_sess_t *sess, uint8_t ebi);
 smf_bearer_t *smf_bearer_find_by_name(smf_sess_t *sess, char *name);
 smf_bearer_t *smf_bearer_find_by_qci_arp(smf_sess_t *sess, 
@@ -335,6 +336,8 @@ smf_bearer_t *smf_bearer_find_by_qci_arp(smf_sess_t *sess,
                                 uint8_t priority_level,
                                 uint8_t pre_emption_capability,
                                 uint8_t pre_emption_vulnerability);
+smf_bearer_t *smf_bearer_find_by_pdr_id(
+        smf_sess_t *sess, ogs_pfcp_pdr_id_t pdr_id);
 smf_bearer_t *smf_default_bearer_in_sess(smf_sess_t *sess);
 bool smf_bearer_is_default(smf_bearer_t *bearer);
 smf_bearer_t *smf_bearer_first(smf_sess_t *sess);

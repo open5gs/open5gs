@@ -40,6 +40,8 @@ void ogs_pfcp_pdrbuf_clear(void);
 
 void ogs_pfcp_build_create_pdr(
     ogs_pfcp_tlv_create_pdr_t *message, int i, ogs_pfcp_pdr_t *pdr);
+void ogs_pfcp_build_created_pdr(
+    ogs_pfcp_tlv_created_pdr_t *message, int i, ogs_pfcp_pdr_t *pdr);
 void ogs_pfcp_build_update_pdr(
     ogs_pfcp_tlv_update_pdr_t *message, int i, ogs_pfcp_pdr_t *pdr);
 

@@ -835,11 +835,15 @@ ogs_pfcp_pdr_t *ogs_pfcp_pdr_add(ogs_pfcp_sess_t *sess)
     ogs_assert(pdr);
     memset(pdr, 0, sizeof *pdr);
 
+    pdr->index = ogs_pool_index(&ogs_pfcp_pdr_pool, pdr);
+    ogs_assert(pdr->index > 0 &&
+            pdr->index <= ogs_app()->pool.sess * OGS_MAX_NUM_OF_PDR);
+
     ogs_pool_alloc(&sess->pdr_id_pool, &pdr->id_node);
     ogs_assert(pdr->id_node);
 
-    pdr->index = *(pdr->id_node);
-    ogs_assert(pdr->index > 0 && pdr->index <= OGS_MAX_NUM_OF_PDR);
+    pdr->id = *(pdr->id_node);
+    ogs_assert(pdr->id > 0 && pdr->id <= OGS_MAX_NUM_OF_PDR);
 
     pdr->sess = sess;
     ogs_list_add(&sess->pdr_list, pdr);
@@ -983,8 +987,8 @@ ogs_pfcp_far_t *ogs_pfcp_far_add(ogs_pfcp_sess_t *sess)
     ogs_pool_alloc(&sess->far_id_pool, &far->id_node);
     ogs_assert(far->id_node);
 
-    far->index = *(far->id_node);
-    ogs_assert(far->index > 0 && far->index <= OGS_MAX_NUM_OF_FAR);
+    far->id = *(far->id_node);
+    ogs_assert(far->id > 0 && far->id <= OGS_MAX_NUM_OF_FAR);
 
     far->apply_action = OGS_PFCP_APPLY_ACTION_FORW;
 
@@ -1172,8 +1176,8 @@ ogs_pfcp_urr_t *ogs_pfcp_urr_add(ogs_pfcp_sess_t *sess)
     ogs_pool_alloc(&sess->urr_id_pool, &urr->id_node);
     ogs_assert(urr->id_node);
 
-    urr->index = *(urr->id_node);
-    ogs_assert(urr->index > 0 && urr->index <= OGS_MAX_NUM_OF_URR);
+    urr->id = *(urr->id_node);
+    ogs_assert(urr->id > 0 && urr->id <= OGS_MAX_NUM_OF_URR);
 
     urr->sess = sess;
     ogs_list_add(&sess->urr_list, urr);
@@ -1250,8 +1254,8 @@ ogs_pfcp_qer_t *ogs_pfcp_qer_add(ogs_pfcp_sess_t *sess)
     ogs_pool_alloc(&sess->qer_id_pool, &qer->id_node);
     ogs_assert(qer->id_node);
 
-    qer->index = *(qer->id_node);
-    ogs_assert(qer->index > 0 && qer->index <= OGS_MAX_NUM_OF_QER);
+    qer->id = *(qer->id_node);
+    ogs_assert(qer->id > 0 && qer->id <= OGS_MAX_NUM_OF_QER);
 
     qer->sess = sess;
     ogs_list_add(&sess->qer_list, qer);

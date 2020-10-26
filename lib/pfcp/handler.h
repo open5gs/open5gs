@@ -54,6 +54,9 @@ void ogs_pfcp_up_handle_error_indication(
 ogs_pfcp_pdr_t *ogs_pfcp_handle_create_pdr(ogs_pfcp_sess_t *sess,
         ogs_pfcp_tlv_create_pdr_t *message,
         uint8_t *cause_value, uint8_t *offending_ie_value);
+ogs_pfcp_pdr_t *ogs_pfcp_handle_created_pdr(ogs_pfcp_sess_t *sess,
+        ogs_pfcp_tlv_created_pdr_t *message,
+        uint8_t *cause_value, uint8_t *offending_ie_value);
 ogs_pfcp_pdr_t *ogs_pfcp_handle_update_pdr(ogs_pfcp_sess_t *sess,
         ogs_pfcp_tlv_update_pdr_t *message,
         uint8_t *cause_value, uint8_t *offending_ie_value);

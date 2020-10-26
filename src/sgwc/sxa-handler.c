@@ -84,6 +84,7 @@ void sgwc_sxa_handle_session_establishment_response(
 {
     int rv, len = 0;
     uint8_t cause_value = 0;
+
     ogs_pfcp_f_seid_t *up_f_seid = NULL;
 
     ogs_gtp_f_teid_t sgw_s5c_teid, sgw_s5u_teid;
@@ -123,6 +124,11 @@ void sgwc_sxa_handle_session_establishment_response(
         cause_value = OGS_GTP_CAUSE_MANDATORY_IE_MISSING;
     }
 
+    if (pfcp_rsp->created_pdr[0].presence == 0) {
+        ogs_error("No Created PDR");
+        cause_value = OGS_GTP_CAUSE_MANDATORY_IE_MISSING;
+    }
+
     if (pfcp_rsp->cause.presence) {
         if (pfcp_rsp->cause.u8 != OGS_PFCP_CAUSE_REQUEST_ACCEPTED) {
             ogs_warn("PFCP Cause [%d] : Not Accepted", pfcp_rsp->cause.u8);
@@ -131,6 +137,48 @@ void sgwc_sxa_handle_session_establishment_response(
     } else {
         ogs_error("No Cause");
         cause_value = OGS_GTP_CAUSE_MANDATORY_IE_MISSING;
+    }
+
+    if (cause_value == OGS_GTP_CAUSE_REQUEST_ACCEPTED) {
+        int i;
+
+        uint8_t pfcp_cause_value = OGS_PFCP_CAUSE_REQUEST_ACCEPTED;
+        uint8_t offending_ie_value = 0;
+
+        ogs_assert(sess);
+        for (i = 0; i < OGS_MAX_NUM_OF_PDR; i++) {
+            sgwc_tunnel_t *tunnel = NULL;
+            ogs_pfcp_pdr_t *pdr = NULL;
+
+            pdr = ogs_pfcp_handle_created_pdr(
+                    &sess->pfcp, &pfcp_rsp->created_pdr[i],
+                    &pfcp_cause_value, &offending_ie_value);
+
+            if (!pdr)
+                break;
+
+            tunnel = sgwc_tunnel_find_by_pdr_id(sess, pdr->id);
+            if (!tunnel) {
+                pfcp_cause_value = OGS_PFCP_CAUSE_SESSION_CONTEXT_NOT_FOUND;
+                break;
+            }
+
+            ogs_assert(sess->pfcp_node);
+            if (sess->pfcp_node->up_function_features.ftup &&
+                pdr->f_teid_len) {
+                if (tunnel->local_addr)
+                    ogs_freeaddrinfo(tunnel->local_addr);
+                if (tunnel->local_addr6)
+                    ogs_freeaddrinfo(tunnel->local_addr6);
+
+                ogs_pfcp_f_teid_to_sockaddr(
+                        &pdr->f_teid, pdr->f_teid_len,
+                        &tunnel->local_addr, &tunnel->local_addr6);
+                tunnel->local_teid = pdr->f_teid.teid;
+            }
+        }
+
+        cause_value = gtp_cause_from_pfcp(pfcp_cause_value);
     }
 
     if (cause_value != OGS_GTP_CAUSE_REQUEST_ACCEPTED) {
@@ -147,6 +195,15 @@ void sgwc_sxa_handle_session_establishment_response(
     ogs_assert(bearer);
     dl_tunnel = sgwc_dl_tunnel_in_bearer(bearer);
     ogs_assert(dl_tunnel);
+
+    if (dl_tunnel->local_addr == NULL && dl_tunnel->local_addr6 == NULL) {
+        ogs_error("No UP F-TEID");
+        ogs_gtp_send_error_message(
+                s11_xact, sgwc_ue ? sgwc_ue->mme_s11_teid : 0,
+                OGS_GTP_CREATE_SESSION_RESPONSE_TYPE,
+                OGS_GTP_CAUSE_GRE_KEY_NOT_FOUND);
+        return;
+    }
 
     /* UP F-SEID */
     up_f_seid = pfcp_rsp->up_f_seid.data;
@@ -195,6 +252,7 @@ void sgwc_sxa_handle_session_establishment_response(
     memset(&sgw_s5u_teid, 0, sizeof(ogs_gtp_f_teid_t));
     sgw_s5u_teid.teid = htobe32(dl_tunnel->local_teid);
     sgw_s5u_teid.interface_type = dl_tunnel->interface_type;
+    ogs_assert(dl_tunnel->local_addr || dl_tunnel->local_addr6);
     rv = ogs_gtp_sockaddr_to_f_teid(
         dl_tunnel->local_addr, dl_tunnel->local_addr6, &sgw_s5u_teid, &len);
     ogs_assert(rv == OGS_OK);
@@ -263,6 +321,46 @@ void sgwc_sxa_handle_session_modification_response(
     } else {
         ogs_error("No Cause");
         cause_value = OGS_GTP_CAUSE_MANDATORY_IE_MISSING;
+    }
+
+    if (cause_value == OGS_GTP_CAUSE_REQUEST_ACCEPTED) {
+        uint8_t pfcp_cause_value = OGS_PFCP_CAUSE_REQUEST_ACCEPTED;
+        uint8_t offending_ie_value = 0;
+
+        ogs_assert(sess);
+        for (i = 0; i < OGS_MAX_NUM_OF_PDR; i++) {
+            sgwc_tunnel_t *tunnel = NULL;
+            ogs_pfcp_pdr_t *pdr = NULL;
+
+            pdr = ogs_pfcp_handle_created_pdr(
+                    &sess->pfcp, &pfcp_rsp->created_pdr[i],
+                    &pfcp_cause_value, &offending_ie_value);
+
+            if (!pdr)
+                break;
+
+            tunnel = sgwc_tunnel_find_by_pdr_id(sess, pdr->id);
+            if (!tunnel) {
+                pfcp_cause_value = OGS_PFCP_CAUSE_SESSION_CONTEXT_NOT_FOUND;
+                break;
+            }
+
+            ogs_assert(sess->pfcp_node);
+            if (sess->pfcp_node->up_function_features.ftup &&
+                pdr->f_teid_len) {
+                if (tunnel->local_addr)
+                    ogs_freeaddrinfo(tunnel->local_addr);
+                if (tunnel->local_addr6)
+                    ogs_freeaddrinfo(tunnel->local_addr6);
+
+                ogs_pfcp_f_teid_to_sockaddr(
+                        &pdr->f_teid, pdr->f_teid_len,
+                        &tunnel->local_addr, &tunnel->local_addr6);
+                tunnel->local_teid = pdr->f_teid.teid;
+            }
+        }
+
+        cause_value = gtp_cause_from_pfcp(pfcp_cause_value);
     }
 
     if (cause_value != OGS_GTP_CAUSE_REQUEST_ACCEPTED) {
@@ -353,6 +451,7 @@ void sgwc_sxa_handle_session_modification_response(
             memset(&sgw_s1u_teid, 0, sizeof(ogs_gtp_f_teid_t));
             sgw_s1u_teid.interface_type = ul_tunnel->interface_type;
             sgw_s1u_teid.teid = htobe32(ul_tunnel->local_teid);
+            ogs_assert(ul_tunnel->local_addr || ul_tunnel->local_addr6);
             rv = ogs_gtp_sockaddr_to_f_teid(
                     ul_tunnel->local_addr, ul_tunnel->local_addr6,
                     &sgw_s1u_teid, &len);
@@ -398,6 +497,7 @@ void sgwc_sxa_handle_session_modification_response(
             memset(&sgw_s5u_teid, 0, sizeof(ogs_gtp_f_teid_t));
             sgw_s5u_teid.interface_type = OGS_GTP_F_TEID_S5_S8_SGW_GTP_U;
             sgw_s5u_teid.teid = htobe32(dl_tunnel->local_teid);
+            ogs_assert(dl_tunnel->local_addr || dl_tunnel->local_addr6);
             rv = ogs_gtp_sockaddr_to_f_teid(
                     dl_tunnel->local_addr, dl_tunnel->local_addr6,
                     &sgw_s5u_teid, &len);
@@ -485,6 +585,8 @@ void sgwc_sxa_handle_session_modification_response(
                             rsp_dl_teid[i].interface_type =
                                 tunnel->interface_type;
                             rsp_dl_teid[i].teid = htobe32(tunnel->local_teid);
+                            ogs_assert(
+                                    tunnel->local_addr || tunnel->local_addr6);
                             rv = ogs_gtp_sockaddr_to_f_teid(
                                 tunnel->local_addr, tunnel->local_addr6,
                                 &rsp_dl_teid[i], &len);
@@ -504,6 +606,8 @@ void sgwc_sxa_handle_session_modification_response(
                             rsp_ul_teid[i].teid = htobe32(tunnel->local_teid);
                             rsp_ul_teid[i].interface_type =
                                 tunnel->interface_type;
+                            ogs_assert(
+                                    tunnel->local_addr || tunnel->local_addr6);
                             rv = ogs_gtp_sockaddr_to_f_teid(
                                 tunnel->local_addr, tunnel->local_addr6,
                                 &rsp_ul_teid[i], &len);
@@ -663,6 +767,7 @@ void sgwc_sxa_handle_session_modification_response(
             memset(&sgw_s1u_teid, 0, sizeof(ogs_gtp_f_teid_t));
             sgw_s1u_teid.interface_type = ul_tunnel->interface_type;
             sgw_s1u_teid.teid = htobe32(ul_tunnel->local_teid);
+            ogs_assert(ul_tunnel->local_addr || ul_tunnel->local_addr6);
             rv = ogs_gtp_sockaddr_to_f_teid(
                 ul_tunnel->local_addr, ul_tunnel->local_addr6,
                 &sgw_s1u_teid, &len);

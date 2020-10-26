@@ -435,13 +435,60 @@ ED3(uint8_t     spare:6;,
     };
 } __attribute__ ((packed)) ogs_pfcp_f_seid_t;
 
+/*
+ * 8.2.3 F-TEID
+ *
+ * The following flags are coded within Octet 5:
+ *
+ * - Bit 1 – V4: If this bit is set to "1" and the CH bit is not set,
+ *   then the IPv4 address field shall be present,
+ *   otherwise the IPv4 address field shall not be present.
+ * - Bit 2 – V6: If this bit is set to "1" and the CH bit is not set,
+ *   then the IPv6 address field shall be present,
+ *   otherwise the IPv6 address field shall not be present.
+ * - Bit 3 – CH (CHOOSE): If this bit is set to "1", then the TEID,
+ *   IPv4 address and IPv6 address fields shall not be present and
+ *   the UP function shall assign an F-TEID with an IP4 or an IPv6 address
+ *   if the V4 or V6 bit is set respectively. This bit shall only be set
+ *   by the CP function.
+ * - Bit 4 – CHID (CHOOSE ID): If this bit is set to "1",
+ *   then the UP function shall assign the same F-TEID to the PDRs requested
+ *   to be created in a PFCP Session Establishment Request or
+ *   PFCP Session Modification Request with the same CHOOSE ID value.
+ *   This bit may only be set to "1" if the CH bit it set to "1".
+ *   This bit shall only be set by the CP function.
+ * - Bit 5 to 8: Spare, for future use and set to 0.
+ *
+ * At least one of the V4 and V6 flags shall be set to "1", and
+ * both may be set to "1" for both scenarios:
+ *
+ * - when the CP function is allocating F-TEID, i.e. both IPv4 address field
+ *   and IPv6 address field may be present;
+ * - or when the UP function is requested to allocate the F-TEID,
+ *   i.e. when CHOOSE bit is set to "1", and the IPv4 address and
+ *   IPv6 address fields are not present.
+ *
+ * Octet 6 to 9 (TEID) shall be present and shall contain a GTP-U TEID,
+ * if the CH bit in octet 5 is not set. When the TEID is present,
+ * if both IPv4 and IPv6 addresses are present in the F-TEID IE,
+ * then the TEID value shall be shared by both addresses.
+ *
+ * Octets "m to (m+3)" and/or "p to (p+15)"(IPv4 address / IPv6 address fields),
+ * if present, it shall contain the respective IP address values.
+ *
+ * Octet q shall be present and shall contain a binary integer value
+ * if the CHID bit in octet 5 is set to "1".
+ */
 typedef struct ogs_pfcp_f_teid_s {
 ED5(uint8_t     spare:4;,
     uint8_t     chid:1;,
     uint8_t     ch:1;,
     uint8_t     ipv6:1;,
     uint8_t     ipv4:1;)
-    uint32_t    teid;
+    union {
+        uint32_t teid;
+        uint8_t choose_id;
+    };
     union {
         union {
             uint32_t addr;
@@ -451,7 +498,6 @@ ED5(uint8_t     spare:4;,
                 uint8_t addr6[OGS_IPV6_LEN];
             } both;
         };
-        uint8_t choose_id;
     };
 } __attribute__ ((packed)) ogs_pfcp_f_teid_t;
 

@@ -126,7 +126,7 @@ void mme_s11_handle_create_session_response(
     }
 
     if (cause_value != OGS_GTP_CAUSE_REQUEST_ACCEPTED) {
-        if (SESSION_CONTEXT_IN_ATTACH(sess)) {
+        if (sess && SESSION_CONTEXT_IN_ATTACH(sess)) {
             ogs_error("[%s] Attach reject", mme_ue->imsi_bcd);
             nas_eps_send_attach_reject(mme_ue,
                 EMM_CAUSE_NETWORK_FAILURE, ESM_CAUSE_NETWORK_FAILURE);

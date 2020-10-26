@@ -323,11 +323,11 @@ void smf_s5c_handle_create_bearer_response(
 
     /* Correlate with PGW-S5U-TEID */
     pgw_s5u_teid = rsp->bearer_contexts.s5_s8_u_pgw_f_teid.data;
-    ogs_assert(pgw_s5u_teid);
+    ogs_expect_or_return(pgw_s5u_teid);
 
     /* Find the Bearer by PGW-S5U-TEID */
-    bearer = smf_bearer_find_by_pgw_s5u_teid(be32toh(pgw_s5u_teid->teid));
-    ogs_assert(bearer);
+    bearer = smf_bearer_find_by_pgw_s5u_teid(sess, be32toh(pgw_s5u_teid->teid));
+    ogs_expect_or_return(bearer);
 
     /* Set EBI */
     bearer->ebi = rsp->bearer_contexts.eps_bearer_id.u8;
@@ -350,31 +350,8 @@ void smf_s5c_handle_create_bearer_response(
         &dl_far->outer_header_creation, &dl_far->outer_header_creation_len);
     dl_far->outer_header_creation.teid = bearer->sgw_s5u_teid;
 
-    /* Setup QER */
-    if (bearer->qos.mbr.downlink || bearer->qos.mbr.uplink ||
-        bearer->qos.gbr.downlink || bearer->qos.gbr.uplink) {
-        ogs_pfcp_qer_t *qer = NULL;
-
-        /* Only 1 QER is used per bearer */
-        qer = bearer->qer;
-        if (!qer) {
-            qer = ogs_pfcp_qer_add(&sess->pfcp);
-            ogs_assert(qer);
-            qer->id = qer->index;
-            bearer->qer = qer;
-        }
-
-        ogs_pfcp_pdr_associate_qer(bearer->dl_pdr, qer);
-        ogs_pfcp_pdr_associate_qer(bearer->ul_pdr, qer);
-
-        qer->mbr.uplink = bearer->qos.mbr.uplink;
-        qer->mbr.downlink = bearer->qos.mbr.downlink;
-        qer->gbr.uplink = bearer->qos.gbr.uplink;
-        qer->gbr.downlink = bearer->qos.gbr.downlink;
-    }
-
     smf_epc_pfcp_send_bearer_modification_request(
-            bearer, OGS_PFCP_MODIFY_CREATE);
+            bearer, OGS_PFCP_MODIFY_ACTIVATE);
 }
 
 void smf_s5c_handle_update_bearer_response(
@@ -425,7 +402,7 @@ void smf_s5c_handle_update_bearer_response(
 
     bearer = smf_bearer_find_by_ebi(
             sess, rsp->bearer_contexts.eps_bearer_id.u8);
-    ogs_assert(bearer);
+    ogs_expect_or_return(bearer);
 
     ogs_debug("[SMF] Update Bearer Response : SGW[0x%x] --> SMF[0x%x]",
             sess->sgw_s5c_teid, sess->smf_n4_teid);
@@ -523,7 +500,7 @@ void smf_s5c_handle_delete_bearer_response(
 
     bearer = smf_bearer_find_by_ebi(
             sess, rsp->bearer_contexts.eps_bearer_id.u8);
-    ogs_assert(bearer);
+    ogs_expect_or_return(bearer);
 
     ogs_debug("[SMF] Delete Bearer Response : SGW[0x%x] --> SMF[0x%x]",
             sess->sgw_s5c_teid, sess->smf_n4_teid);

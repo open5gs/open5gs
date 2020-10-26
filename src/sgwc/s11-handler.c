@@ -235,6 +235,7 @@ void sgwc_s11_handle_modify_bearer_request(
     uint16_t decoded;
     uint64_t flags = 0;
 
+    sgwc_sess_t *sess = NULL;
     sgwc_bearer_t *bearer = NULL;
     sgwc_tunnel_t *dl_tunnel = NULL;
     ogs_pfcp_far_t *far = NULL;
@@ -291,6 +292,10 @@ void sgwc_s11_handle_modify_bearer_request(
         return;
     }
 
+    ogs_assert(bearer);
+    sess = bearer->sess;
+    ogs_assert(sess);
+
     dl_tunnel = sgwc_dl_tunnel_in_bearer(bearer);
     ogs_assert(dl_tunnel);
 
@@ -332,8 +337,10 @@ void sgwc_s11_handle_modify_bearer_request(
     if (memcmp(&dl_tunnel->remote_ip, &zero_ip, sizeof(ogs_ip_t)) != 0 &&
         memcmp(&dl_tunnel->remote_ip, &remote_ip, sizeof(ogs_ip_t)) != 0) {
 
+        ogs_assert(sess->pfcp_node);
+
         /* eNB IP is changed during handover */
-        if (ogs_pfcp_self()->up_function_features.empu) {
+        if (sess->pfcp_node->up_function_features.empu) {
             flags |= OGS_PFCP_MODIFY_END_MARKER;
         } else {
             ogs_error("SGW-U does not support End Marker");
@@ -519,12 +526,14 @@ void sgwc_s11_handle_create_bearer_response(
         return;
     }
 
+    ogs_assert(sgwc_ue);
+
     /* Correlate with SGW-S1U-TEID */
     sgw_s1u_teid = rsp->bearer_contexts.s4_u_sgsn_f_teid.data;
     ogs_assert(sgw_s1u_teid);
 
     /* Find the Tunnel by SGW-S1U-TEID */
-    ul_tunnel = sgwc_tunnel_find_by_teid(be32toh(sgw_s1u_teid->teid));
+    ul_tunnel = sgwc_tunnel_find_by_teid(sgwc_ue, be32toh(sgw_s1u_teid->teid));
     ogs_assert(ul_tunnel);
     bearer = ul_tunnel->bearer;
     ogs_assert(bearer);
