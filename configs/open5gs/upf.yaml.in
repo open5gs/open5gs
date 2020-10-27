@@ -26,11 +26,15 @@ logger:
 #
 #  <PFCP Server>
 #
-#  o PFCP Server(127.0.0.7:8805)
+#  o PFCP Server(127.0.0.7:8805, ::1:8805)
 #    pfcp:
-#      addr: 127.0.0.7
+#      - addr: 127.0.0.7
+#      - addr: ::1
 #
 #  <GTP-U Server>>
+#
+#  o GTP-U Server(all address available)
+#    gtpu:
 #
 #  o GTP-U Server(127.0.0.7:2152, [::1]:2152)
 #    gtpu:
@@ -38,7 +42,7 @@ logger:
 #        - 127.0.0.7
 #        - ::1
 #
-#  o Same configuration(127.0.0.7:2152, [::1]:2152) as below.
+#  o GTP-U Server(127.0.0.1:2152, [::1]:2152)
 #    gtpu:
 #      name: localhost
 #
@@ -56,6 +60,26 @@ logger:
 #        teid_range: 5
 #        network_instance: ims
 #        source_interface: 1
+#
+#  o Provide custom UPF GTP-U address to be advertised inside NGAP messages
+#    gtpu:
+#      - addr: 10.4.128.21
+#        advertise_addr: 172.24.15.30
+#
+#    gtpu:
+#      - addr: 10.4.128.21
+#        advertise_addr:
+#        - 127.0.0.1
+#        - ::1
+#
+#    gtpu:
+#      - addr: 10.4.128.21
+#        advertise_name: upf1.5gc.mnc001.mcc001.3gppnetwork.org
+#
+#    gtpu:
+#      - dev: ens3
+#        advertise_name: upf1.5gc.mnc001.mcc001.3gppnetwork.org
+#
 #
 #  <PDN Configuration with UE Pool>
 #

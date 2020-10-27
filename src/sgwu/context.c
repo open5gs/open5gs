@@ -127,10 +127,14 @@ int sgwu_context_parse_config(void)
                     do {
                         int family = AF_UNSPEC;
                         int i, num = 0;
+                        int adv_num = 0;
                         const char *hostname[OGS_MAX_NUM_OF_HOSTNAME];
+                        const char *adv_hostname[OGS_MAX_NUM_OF_HOSTNAME];
                         uint16_t port = self.gtpu_port;
                         const char *dev = NULL;
                         ogs_sockaddr_t *addr = NULL;
+                        ogs_sockaddr_t *adv_addr = NULL;
+                        ogs_sockaddr_t *adv_addr6 = NULL;
                         const char *teid_range_indication = NULL;
                         const char *teid_range = NULL;
                         const char *network_instance = NULL;
@@ -192,10 +196,34 @@ int sgwu_context_parse_config(void)
                                     }
 
                                     ogs_assert(num <= OGS_MAX_NUM_OF_HOSTNAME);
-                                    hostname[num++] = 
+                                    hostname[num++] =
                                         ogs_yaml_iter_value(&hostname_iter);
                                 } while (
                                     ogs_yaml_iter_type(&hostname_iter) ==
+                                        YAML_SEQUENCE_NODE);
+                            } else if (!strcmp(gtpu_key, "advertise_addr") ||
+                                    !strcmp(gtpu_key, "advertise_name")) {
+                                ogs_yaml_iter_t adv_hostname_iter;
+                                ogs_yaml_iter_recurse(
+                                        &gtpu_iter, &adv_hostname_iter);
+                                ogs_assert(ogs_yaml_iter_type(
+                                    &adv_hostname_iter) != YAML_MAPPING_NODE);
+
+                                do {
+                                    if (ogs_yaml_iter_type(
+                                        &adv_hostname_iter) ==
+                                            YAML_SEQUENCE_NODE) {
+                                        if (!ogs_yaml_iter_next(
+                                            &adv_hostname_iter))
+                                            break;
+                                    }
+
+                                    ogs_assert(adv_num <=
+                                            OGS_MAX_NUM_OF_HOSTNAME);
+                                    adv_hostname[adv_num++] =
+                                        ogs_yaml_iter_value(&adv_hostname_iter);
+                                } while (
+                                    ogs_yaml_iter_type(&adv_hostname_iter) ==
                                         YAML_SEQUENCE_NODE);
                             } else if (!strcmp(gtpu_key, "port")) {
                                 const char *v = ogs_yaml_iter_value(&gtpu_iter);
@@ -247,6 +275,20 @@ int sgwu_context_parse_config(void)
                             ogs_assert(rv == OGS_OK);
                         }
 
+                        adv_addr = NULL;
+                        for (i = 0; i < adv_num; i++) {
+                            rv = ogs_addaddrinfo(&adv_addr,
+                                    family, adv_hostname[i], port, 0);
+                            ogs_assert(rv == OGS_OK);
+                        }
+                        rv = ogs_copyaddrinfo(&adv_addr6, adv_addr);
+                        ogs_assert(rv == OGS_OK);
+
+                        rv = ogs_filteraddrinfo(&adv_addr, AF_INET);
+                        ogs_assert(rv == OGS_OK);
+                        rv = ogs_filteraddrinfo(&adv_addr6, AF_INET6);
+                        ogs_assert(rv == OGS_OK);
+
                         /* Find first IPv4/IPv6 address in the list.
                          *
                          * In the following configuration,
@@ -281,8 +323,10 @@ int sgwu_context_parse_config(void)
 
                             memset(&info, 0, sizeof(info));
                             ogs_pfcp_sockaddr_to_user_plane_ip_resource_info(
-                                    node ? node->addr : NULL,
-                                    node6 ? node6->addr : NULL,
+                                    adv_addr ? adv_addr :
+                                        node ? node->addr : NULL,
+                                    adv_addr6 ? adv_addr6 :
+                                        node6 ? node6->addr : NULL,
                                     &info);
 
                             if (teid_range_indication) {
@@ -309,6 +353,9 @@ int sgwu_context_parse_config(void)
                             ogs_list_add(&self.gtpu_list, iter);
                         ogs_list_for_each_safe(&list6, next_iter, iter)
                             ogs_list_add(&self.gtpu_list, iter);
+
+                        ogs_freeaddrinfo(adv_addr);
+                        ogs_freeaddrinfo(adv_addr6);
 
                     } while (ogs_yaml_iter_type(&gtpu_array) ==
                             YAML_SEQUENCE_NODE);

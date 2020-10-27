@@ -29,18 +29,49 @@ logger:
 #  o GTP-U Server(all address available)
 #    gtpu:
 #
-#  o Provide custom SGW GTP-U address to be advertised inside S1AP messages
+#  o GTP-U Server(127.0.0.6:2152, [::1]:2152)
 #    gtpu:
-#      addr: 10.4.128.21
-#      advertise_addr: 172.24.15.30
+#      - addr:
+#        - 127.0.0.6
+#        - ::1
+#
+#  o GTP-U Server(127.0.0.1:2152, [::1]:2152)
+#    gtpu:
+#      - name: localhost
+#
+#  o User Plane IP Resource information
+#    gtpu:
+#      - addr:
+#        - 127.0.0.6
+#        - ::1
+#        teid_range_indication: 4
+#        teid_range: 10
+#        network_instance: internet
+#        source_interface: 0
+#      - addr: 127.0.10.4
+#        teid_range_indication: 4
+#        teid_range: 5
+#        network_instance: ims
+#        source_interface: 1
+#
+#  o Provide custom SGW-U GTP-U address to be advertised inside S1AP messages
+#    gtpu:
+#      - addr: 10.4.128.21
+#        advertise_addr: 172.24.15.30
 #
 #    gtpu:
-#      addr: 10.4.128.21
-#      advertise_name: sgw1.epc.mnc001.mcc001.3gppnetwork.org
+#      - addr: 10.4.128.21
+#        advertise_addr:
+#        - 127.0.0.1
+#        - ::1
 #
 #    gtpu:
-#      dev: ens3
-#      advertise_name: sgw1.epc.mnc001.mcc001.3gppnetwork.org
+#      - addr: 10.4.128.21
+#        advertise_name: sgw1.epc.mnc001.mcc001.3gppnetwork.org
+#
+#    gtpu:
+#      - dev: ens3
+#        advertise_name: sgw1.epc.mnc001.mcc001.3gppnetwork.org
 #
 #  <PFCP Server>
 #
