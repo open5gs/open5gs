@@ -314,7 +314,7 @@ ogs_pkbuf_t *ngap_build_initial_context_setup_request(
     NGAP_NAS_PDU_t *NAS_PDU = NULL;
 
     ogs_assert(amf_ue);
-    ran_ue = amf_ue->ran_ue;
+    ran_ue = ran_ue_cycle(amf_ue->ran_ue);
     ogs_assert(ran_ue);
 
     ogs_debug("Initial context setup request");
@@ -611,7 +611,7 @@ ogs_pkbuf_t *ngap_build_ue_context_modification_request(amf_ue_t *amf_ue)
     ran_ue_t *ran_ue = NULL;
 
     ogs_assert(amf_ue);
-    ran_ue = amf_ue->ran_ue;
+    ran_ue = ran_ue_cycle(amf_ue->ran_ue);
     ogs_assert(ran_ue);
 
     ogs_debug("UE context modification request");
@@ -829,7 +829,7 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_setup_request(
 
     amf_ue = sess->amf_ue;
     ogs_assert(amf_ue);
-    ran_ue = amf_ue->ran_ue;
+    ran_ue = ran_ue_cycle(amf_ue->ran_ue);
     ogs_assert(ran_ue);
 
     memset(&pdu, 0, sizeof (NGAP_NGAP_PDU_t));
@@ -936,7 +936,7 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_release_command(
 
     amf_ue = sess->amf_ue;
     ogs_assert(amf_ue);
-    ran_ue = amf_ue->ran_ue;
+    ran_ue = ran_ue_cycle(amf_ue->ran_ue);
     ogs_assert(ran_ue);
 
     memset(&pdu, 0, sizeof (NGAP_NGAP_PDU_t));
@@ -1204,7 +1204,7 @@ ogs_pkbuf_t *ngap_build_path_switch_ack(amf_ue_t *amf_ue)
     ran_ue_t *ran_ue = NULL;
 
     ogs_assert(amf_ue);
-    ran_ue = amf_ue->ran_ue;
+    ran_ue = ran_ue_cycle(amf_ue->ran_ue);
     ogs_assert(ran_ue);
 
     ogs_debug("Path switch acknowledge");
@@ -2059,10 +2059,10 @@ ogs_pkbuf_t *ngap_build_path_switch_ack(amf_ue_t *amf_ue)
     NGAP_AMF_UE_NGAP_ID_t *AMF_UE_NGAP_ID = NULL;
     NGAP_RAN_UE_NGAP_ID_t *RAN_UE_NGAP_ID = NULL;
 	NGAP_SecurityContext_t	*SecurityContext = NULL;
-	NGAP_PDUSessionResourceSwitchedList_t *PDUSessionResourceSwitchedList = NULL;
+	NGAP_PDUSessionResourceSwitchedList_t *PDUSessionResourceSwitchedList;
 	
     ogs_assert(amf_ue);
-    ran_ue = amf_ue->ran_ue;
+    ran_ue = ran_ue_cycle(amf_ue->ran_ue);
     ogs_assert(ran_ue);
 	
     memset(&pdu, 0, sizeof (NGAP_NGAP_PDU_t));

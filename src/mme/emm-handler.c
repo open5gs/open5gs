@@ -51,7 +51,7 @@ int emm_handle_attach_request(mme_ue_t *mme_ue,
     char imsi_bcd[OGS_MAX_IMSI_BCD_LEN+1];
 
     ogs_assert(mme_ue);
-    enb_ue = mme_ue->enb_ue;
+    enb_ue = enb_ue_cycle(mme_ue->enb_ue);
     ogs_assert(enb_ue);
 
     ogs_assert(esm_message_container);
@@ -308,7 +308,7 @@ int emm_handle_identity_response(
     ogs_assert(identity_response);
 
     ogs_assert(mme_ue);
-    enb_ue = mme_ue->enb_ue;
+    enb_ue = enb_ue_cycle(mme_ue->enb_ue);
     ogs_assert(enb_ue);
 
     mobile_identity = &identity_response->mobile_identity;
@@ -435,7 +435,7 @@ int emm_handle_tau_request(mme_ue_t *mme_ue,
     enb_ue_t *enb_ue = NULL;
 
     ogs_assert(mme_ue);
-    enb_ue = mme_ue->enb_ue;
+    enb_ue = enb_ue_cycle(mme_ue->enb_ue);
     ogs_assert(enb_ue);
 
     ogs_assert(pkbuf);
@@ -564,7 +564,7 @@ int emm_handle_extended_service_request(mme_ue_t *mme_ue,
     enb_ue_t *enb_ue = NULL;
 
     ogs_assert(mme_ue);
-    enb_ue = mme_ue->enb_ue;
+    enb_ue = enb_ue_cycle(mme_ue->enb_ue);
     ogs_assert(enb_ue);
 
     /* Set Service Type */

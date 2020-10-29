@@ -27,7 +27,7 @@ int nas_5gs_send_to_gnb(amf_ue_t *amf_ue, ogs_pkbuf_t *pkbuf)
     ran_ue_t *ran_ue = NULL;
 
     ogs_assert(amf_ue);
-    ran_ue = amf_ue->ran_ue;
+    ran_ue = ran_ue_cycle(amf_ue->ran_ue);
     ogs_assert(ran_ue);
 
     return ngap_send_to_ran_ue(ran_ue, pkbuf);
@@ -41,7 +41,7 @@ int nas_5gs_send_to_downlink_nas_transport(amf_ue_t *amf_ue, ogs_pkbuf_t *pkbuf)
 
     ogs_assert(pkbuf);
     ogs_assert(amf_ue);
-    ran_ue = amf_ue->ran_ue;
+    ran_ue = ran_ue_cycle(amf_ue->ran_ue);
     if (!ran_ue) {
         ogs_warn("NG context has already been removed");
         ogs_pkbuf_free(pkbuf);
@@ -164,7 +164,7 @@ void nas_5gs_send_de_registration_accept(amf_ue_t *amf_ue)
     ogs_pkbuf_t *gmmbuf = NULL;
 
     ogs_assert(amf_ue);
-    ran_ue = amf_ue->ran_ue;
+    ran_ue = ran_ue_cycle(amf_ue->ran_ue);
     ogs_assert(ran_ue);
 
     if (amf_ue->nas.de_registration.switch_off == 0) {

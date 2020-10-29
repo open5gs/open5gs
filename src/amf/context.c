@@ -979,9 +979,6 @@ ran_ue_t *ran_ue_add(amf_gnb_t *gnb, uint32_t ran_ue_ngap_id)
 
     ran_ue->gnb = gnb;
 
-    ran_ue->t_ng_holding = ogs_timer_add(
-            ogs_app()->timer_mgr, amf_timer_ng_holding_timer_expire, ran_ue);
-
     ogs_list_add(&gnb->ran_ue_list, ran_ue);
 
     stats_add_ran_ue();
@@ -994,12 +991,10 @@ void ran_ue_remove(ran_ue_t *ran_ue)
     ogs_assert(ran_ue);
     ogs_assert(ran_ue->gnb);
 
-    /* De-associate S1 with NAS/EMM */
-    ran_ue_deassociate(ran_ue);
-
     ogs_list_remove(&ran_ue->gnb->ran_ue_list, ran_ue);
 
-    ogs_timer_delete(ran_ue->t_ng_holding);
+    if (ran_ue->t_ng_holding)
+        ogs_timer_delete(ran_ue->t_ng_holding);
 
     ogs_pool_free(&ran_ue_pool, ran_ue);
 
@@ -1071,6 +1066,11 @@ ran_ue_t *ran_ue_first_in_gnb(amf_gnb_t *gnb)
 ran_ue_t *ran_ue_next_in_gnb(ran_ue_t *ran_ue)
 {
     return ogs_list_next(ran_ue);
+}
+
+ran_ue_t *ran_ue_cycle(ran_ue_t *ran_ue)
+{
+    return ogs_pool_cycle(&ran_ue_pool, ran_ue);
 }
 
 static int amf_ue_new_guti(amf_ue_t *amf_ue)

@@ -2023,9 +2023,6 @@ enb_ue_t *enb_ue_add(mme_enb_t *enb, uint32_t enb_ue_s1ap_id)
     enb_ue->enb_ostream_id = 
         OGS_NEXT_ID(enb->ostream_id, 1, enb->max_num_of_ostreams-1);
 
-    enb_ue->t_s1_holding = ogs_timer_add(
-            ogs_app()->timer_mgr, mme_timer_s1_holding_timer_expire, enb_ue);
-
     enb_ue->enb = enb;
 
     ogs_list_add(&enb->enb_ue_list, enb_ue);
@@ -2043,12 +2040,10 @@ void enb_ue_remove(enb_ue_t *enb_ue)
     enb = enb_ue->enb;
     ogs_assert(enb);
 
-    /* De-associate S1 with NAS/EMM */
-    enb_ue_deassociate(enb_ue);
-
     ogs_list_remove(&enb->enb_ue_list, enb_ue);
 
-    ogs_timer_delete(enb_ue->t_s1_holding);
+    if (enb_ue->t_s1_holding)
+        ogs_timer_delete(enb_ue->t_s1_holding);
 
     ogs_pool_free(&enb_ue_pool, enb_ue);
 
@@ -2120,6 +2115,11 @@ enb_ue_t *enb_ue_first_in_enb(mme_enb_t *enb)
 enb_ue_t *enb_ue_next_in_enb(enb_ue_t *enb_ue)
 {
     return ogs_list_next(enb_ue);
+}
+
+enb_ue_t *enb_ue_cycle(enb_ue_t *enb_ue)
+{
+    return ogs_pool_cycle(&enb_ue_pool, enb_ue);
 }
 
 static int mme_ue_new_guti(mme_ue_t *mme_ue)

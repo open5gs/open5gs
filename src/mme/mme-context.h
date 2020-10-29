@@ -407,9 +407,10 @@ struct mme_ue_s {
     OGS_POOL(ebi_pool, uint8_t);
 
 #define ECM_CONNECTED(__mME) \
-    ((__mME) && ((__mME)->enb_ue != NULL))
+    ((__mME) && ((__mME)->enb_ue != NULL) && enb_ue_cycle((__mME)->enb_ue))
 #define ECM_IDLE(__mME) \
-    ((__mME) && ((__mME)->enb_ue == NULL))
+    ((__mME) && \
+     (((__mME)->enb_ue == NULL) || (enb_ue_cycle((__mME)->enb_ue) == NULL)))
     /* S1 UE context */
     enb_ue_t        *enb_ue;
 
@@ -685,6 +686,7 @@ enb_ue_t *enb_ue_find(uint32_t index);
 enb_ue_t *enb_ue_find_by_mme_ue_s1ap_id(uint32_t mme_ue_s1ap_id);
 enb_ue_t *enb_ue_first_in_enb(mme_enb_t *enb);
 enb_ue_t *enb_ue_next_in_enb(enb_ue_t *enb_ue);
+enb_ue_t *enb_ue_cycle(enb_ue_t *enb_ue);
 
 mme_ue_t *mme_ue_add(enb_ue_t *enb_ue);
 void mme_ue_remove(mme_ue_t *mme_ue);

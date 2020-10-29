@@ -31,7 +31,7 @@ int nas_eps_send_to_enb(mme_ue_t *mme_ue, ogs_pkbuf_t *pkbuf)
     enb_ue_t *enb_ue = NULL;
 
     ogs_assert(mme_ue);
-    enb_ue = mme_ue->enb_ue;
+    enb_ue = enb_ue_cycle(mme_ue->enb_ue);
     ogs_assert(enb_ue);
 
     return s1ap_send_to_enb_ue(enb_ue, pkbuf);
@@ -72,7 +72,7 @@ int nas_eps_send_to_downlink_nas_transport(mme_ue_t *mme_ue, ogs_pkbuf_t *pkbuf)
 
     ogs_assert(pkbuf);
     ogs_assert(mme_ue);
-    enb_ue = mme_ue->enb_ue;
+    enb_ue = enb_ue_cycle(mme_ue->enb_ue);
     if (!enb_ue) {
         ogs_warn("S1 context has already been removed");
         ogs_pkbuf_free(pkbuf);
@@ -249,7 +249,7 @@ void nas_eps_send_detach_accept(mme_ue_t *mme_ue)
     ogs_pkbuf_t *emmbuf = NULL;
 
     ogs_assert(mme_ue);
-    enb_ue = mme_ue->enb_ue;
+    enb_ue = enb_ue_cycle(mme_ue->enb_ue);
     ogs_assert(enb_ue);
 
     /* reply with detach accept */

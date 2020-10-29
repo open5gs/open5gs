@@ -462,7 +462,7 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
             nas_eps_send_attach_reject(mme_ue,
                 emm_cause, ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
 
-            enb_ue = mme_ue->enb_ue;
+            enb_ue = enb_ue_cycle(mme_ue->enb_ue);
             ogs_assert(enb_ue);
 
             s1ap_send_ue_context_release_command(enb_ue,

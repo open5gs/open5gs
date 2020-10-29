@@ -283,7 +283,7 @@ ogs_pkbuf_t *s1ap_build_initial_context_setup_request(
     ogs_subscription_data_t *subscription_data = NULL;
 
     ogs_assert(mme_ue);
-    enb_ue = mme_ue->enb_ue;
+    enb_ue = enb_ue_cycle(mme_ue->enb_ue);
     ogs_assert(enb_ue);
     subscription_data = &mme_ue->subscription_data;
     ogs_assert(subscription_data);
@@ -606,7 +606,7 @@ ogs_pkbuf_t *s1ap_build_ue_context_modification_request(mme_ue_t *mme_ue)
     enb_ue_t *enb_ue = NULL;
 
     ogs_assert(mme_ue);
-    enb_ue = mme_ue->enb_ue;
+    enb_ue = enb_ue_cycle(mme_ue->enb_ue);
     ogs_assert(enb_ue);
 
     ogs_debug("[MME] UE context modification request");
@@ -827,7 +827,7 @@ ogs_pkbuf_t *s1ap_build_e_rab_setup_request(
 
     mme_ue = bearer->mme_ue;
     ogs_assert(mme_ue);
-    enb_ue = mme_ue->enb_ue;
+    enb_ue = enb_ue_cycle(mme_ue->enb_ue);
     ogs_assert(enb_ue);
 
     memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
@@ -963,7 +963,7 @@ ogs_pkbuf_t *s1ap_build_e_rab_modify_request(
 
     mme_ue = bearer->mme_ue;
     ogs_assert(mme_ue);
-    enb_ue = mme_ue->enb_ue;
+    enb_ue = enb_ue_cycle(mme_ue->enb_ue);
     ogs_assert(enb_ue);
 
     ogs_debug("[MME] E-RAB modify request");
@@ -1096,7 +1096,7 @@ ogs_pkbuf_t *s1ap_build_e_rab_release_command(
 
     mme_ue = bearer->mme_ue;
     ogs_assert(mme_ue);
-    enb_ue = mme_ue->enb_ue;
+    enb_ue = enb_ue_cycle(mme_ue->enb_ue);
     ogs_assert(enb_ue);
     subscription_data = &mme_ue->subscription_data;
     ogs_assert(subscription_data);
@@ -1384,7 +1384,7 @@ ogs_pkbuf_t *s1ap_build_path_switch_ack(mme_ue_t *mme_ue)
     enb_ue_t *enb_ue = NULL;
 
     ogs_assert(mme_ue);
-    enb_ue = mme_ue->enb_ue;
+    enb_ue = enb_ue_cycle(mme_ue->enb_ue);
     ogs_assert(enb_ue);
 
     ogs_debug("[MME] Path switch acknowledge");

@@ -91,7 +91,7 @@ static void timeout(ogs_gtp_xact_t *xact, void *data)
         mme_ue = sess->mme_ue;
         ogs_assert(mme_ue);
 
-        enb_ue = mme_ue->enb_ue;
+        enb_ue = enb_ue_cycle(mme_ue->enb_ue);
         if (enb_ue) {
             s1ap_send_ue_context_release_command(enb_ue,
                     S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,

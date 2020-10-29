@@ -113,7 +113,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
         message = e->nas_message;
         ogs_assert(message);
 
-        enb_ue = mme_ue->enb_ue;
+        enb_ue = enb_ue_cycle(mme_ue->enb_ue);
         ogs_assert(enb_ue);
 
         h.type = e->nas_type;
@@ -956,7 +956,7 @@ void emm_state_exception(ogs_fsm_t *s, mme_event_t *e)
         message = e->nas_message;
         ogs_assert(message);
 
-        enb_ue = mme_ue->enb_ue;
+        enb_ue = enb_ue_cycle(mme_ue->enb_ue);
         ogs_assert(enb_ue);
 
         h.type = e->nas_type;

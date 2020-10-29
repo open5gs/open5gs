@@ -319,6 +319,13 @@ void ngap_send_ran_ue_context_release_command(
     rv = ngap_delayed_send_to_ran_ue(ran_ue, ngapbuf, delay);
     ogs_expect(rv == OGS_OK);
 
+    if (ran_ue->t_ng_holding)
+        ogs_timer_delete(ran_ue->t_ng_holding);
+
+    ran_ue->t_ng_holding = ogs_timer_add(
+            ogs_app()->timer_mgr, amf_timer_ng_holding_timer_expire, ran_ue);
+    ogs_assert(ran_ue->t_ng_holding);
+
     ogs_timer_start(ran_ue->t_ng_holding,
             amf_timer_cfg(AMF_TIMER_NG_HOLDING)->duration);
 }
@@ -329,7 +336,7 @@ void ngap_send_amf_ue_context_release_command(
 {
     ogs_assert(amf_ue);
 
-    ran_ue_t *ran_ue = amf_ue->ran_ue;
+    ran_ue_t *ran_ue = ran_ue_cycle(amf_ue->ran_ue);
     if (ran_ue) {
         ngap_send_ran_ue_context_release_command(ran_ue,
                 group, cause, action, delay);
@@ -473,7 +480,7 @@ void ngap_send_handover_request(
     ogs_assert(target_gnb);
 
     ogs_assert(amf_ue);
-    source_ue = amf_ue->ran_ue;
+    source_ue = ran_ue_cycle(amf_ue->ran_ue);
     ogs_assert(source_ue);
     ogs_assert(source_ue->target_ue == NULL);
 
@@ -542,7 +549,7 @@ void ngap_send_error_indication2(
     ran_ue_t *ran_ue;
 
     ogs_assert(amf_ue);
-    ran_ue = amf_ue->ran_ue;
+    ran_ue = ran_ue_cycle(amf_ue->ran_ue);
     ogs_expect_or_return(ran_ue);
     gnb = ran_ue->gnb;
     ogs_expect_or_return(gnb);

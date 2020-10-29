@@ -326,7 +326,7 @@ void mme_s11_handle_delete_session_response(
         if (mme_sess_count(mme_ue) == 1) /* Last Session */ {
             enb_ue_t *enb_ue = NULL;
 
-            enb_ue = mme_ue->enb_ue;
+            enb_ue = enb_ue_cycle(mme_ue->enb_ue);
             if (enb_ue) {
                 s1ap_send_ue_context_release_command(enb_ue,
                     S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
@@ -695,7 +695,7 @@ void mme_s11_handle_release_access_bearers_response(
     rv = CLEAR_BEARER_CONTEXT(mme_ue);
     ogs_expect(rv == OGS_OK);
 
-    enb_ue = mme_ue->enb_ue;
+    enb_ue = enb_ue_cycle(mme_ue->enb_ue);
     if (enb_ue) {
         s1ap_send_ue_context_release_command(enb_ue,
                 S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
@@ -799,7 +799,7 @@ void mme_s11_handle_downlink_data_notification(
  *   included in Downlink Data Notification is "Error Indication received
  *   from RNC/eNodeB/S4-SGSN"
  */
-            enb_ue_t *enb_ue = mme_ue->enb_ue;
+            enb_ue_t *enb_ue = enb_ue_cycle(mme_ue->enb_ue);
             ogs_assert(enb_ue);
 
             s1ap_send_ue_context_release_command(enb_ue,
@@ -880,7 +880,7 @@ void mme_s11_handle_create_indirect_data_forwarding_tunnel_response(
         }
     }
 
-    source_ue = mme_ue->enb_ue;
+    source_ue = enb_ue_cycle(mme_ue->enb_ue);
     ogs_assert(source_ue);
 
     s1ap_send_handover_command(source_ue);

@@ -342,9 +342,10 @@ struct amf_ue_s {
     ogs_bitrate_t   subscribed_ue_ambr; /* UE-AMBR */
 
 #define CM_CONNECTED(__aMF) \
-    ((__aMF) && ((__aMF)->ran_ue != NULL))
+    ((__aMF) && ((__aMF)->ran_ue != NULL) && ran_ue_cycle((__aMF)->ran_ue))
 #define CM_IDLE(__aMF) \
-    ((__aMF) && ((__aMF)->ran_ue == NULL))
+    ((__aMF) && \
+     (((__aMF)->ran_ue == NULL) || (ran_ue_cycle((__aMF)->ran_ue) == NULL)))
     /* NG UE context */
     ran_ue_t        *ran_ue;
 
@@ -484,6 +485,7 @@ ran_ue_t *ran_ue_find(uint32_t index);
 ran_ue_t *ran_ue_find_by_amf_ue_ngap_id(uint64_t amf_ue_ngap_id);
 ran_ue_t *ran_ue_first_in_gnb(amf_gnb_t *gnb);
 ran_ue_t *ran_ue_next_in_gnb(ran_ue_t *ran_ue);
+ran_ue_t *ran_ue_cycle(ran_ue_t *ran_ue);
 
 amf_ue_t *amf_ue_add(ran_ue_t *ran_ue);
 void amf_ue_remove(amf_ue_t *amf_ue);

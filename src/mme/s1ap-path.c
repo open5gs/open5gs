@@ -319,6 +319,13 @@ void s1ap_send_ue_context_release_command(
     rv = s1ap_delayed_send_to_enb_ue(enb_ue, s1apbuf, delay);
     ogs_expect(rv == OGS_OK);
 
+    if (enb_ue->t_s1_holding)
+        ogs_timer_delete(enb_ue->t_s1_holding);
+
+    enb_ue->t_s1_holding = ogs_timer_add(
+            ogs_app()->timer_mgr, mme_timer_s1_holding_timer_expire, enb_ue);
+    ogs_assert(enb_ue->t_s1_holding);
+
     ogs_timer_start(enb_ue->t_s1_holding,
             mme_timer_cfg(MME_TIMER_S1_HOLDING)->duration);
 }
@@ -454,7 +461,7 @@ void s1ap_send_handover_request(
     ogs_assert(target_enb);
 
     ogs_assert(mme_ue);
-    source_ue = mme_ue->enb_ue;
+    source_ue = enb_ue_cycle(mme_ue->enb_ue);
     ogs_assert(source_ue);
     ogs_assert(source_ue->target_ue == NULL);
 
@@ -525,7 +532,7 @@ void s1ap_send_error_indication2(
     S1AP_ENB_UE_S1AP_ID_t enb_ue_s1ap_id;
 
     ogs_assert(mme_ue);
-    enb_ue = mme_ue->enb_ue;
+    enb_ue = enb_ue_cycle(mme_ue->enb_ue);
     ogs_expect_or_return(enb_ue);
     enb = enb_ue->enb;
     ogs_expect_or_return(enb);

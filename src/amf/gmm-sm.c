@@ -115,7 +115,7 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e)
         nas_message = e->nas.message;
         ogs_assert(nas_message);
 
-        ran_ue = amf_ue->ran_ue;
+        ran_ue = ran_ue_cycle(amf_ue->ran_ue);
         ogs_assert(ran_ue);
 
         h.type = e->nas.type;
@@ -1050,7 +1050,7 @@ void gmm_state_exception(ogs_fsm_t *s, amf_event_t *e)
         nas_message = e->nas.message;
         ogs_assert(nas_message);
 
-        ran_ue = amf_ue->ran_ue;
+        ran_ue = ran_ue_cycle(amf_ue->ran_ue);
         ogs_assert(ran_ue);
 
         h.type = e->nas.type;
