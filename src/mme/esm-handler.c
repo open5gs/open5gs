@@ -92,7 +92,25 @@ int esm_handle_pdn_connectivity_request(mme_bearer_t *bearer,
     }
 
     if (sess->pdn) {
+        mme_bearer_t *default_bearer = NULL;
+        mme_bearer_t *dedicated_bearer = NULL, *next_dedicated_bearer = NULL;
+
         ogs_debug("    APN[%s]", sess->pdn->apn);
+
+        default_bearer = mme_default_bearer_in_sess(sess);
+        if (default_bearer) {
+            dedicated_bearer = mme_bearer_next(default_bearer);
+            while (dedicated_bearer) {
+                next_dedicated_bearer = mme_bearer_next(dedicated_bearer);
+
+                ogs_warn("Dedicated-Bearer[%d] removed forcely",
+                        dedicated_bearer->ebi);
+                mme_bearer_remove(dedicated_bearer);
+
+                dedicated_bearer = next_dedicated_bearer;
+            }
+        }
+
         mme_gtp_send_create_session_request(sess);
     } else {
         nas_eps_send_pdn_connectivity_reject(
