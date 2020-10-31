@@ -244,6 +244,113 @@ int ogs_sctp_recvmsg(ogs_sock_t *sock, void *msg, size_t len,
     return size;
 }
 
+/* is any of the bytes from offset .. u8_size in 'u8' non-zero? return offset
+ * or -1 if all zero */
+static int byte_nonzero(
+        const uint8_t *u8, unsigned int offset, unsigned int u8_size)
+{
+    int j;
+
+    for (j = offset; j < u8_size; j++) {
+        if (u8[j] != 0)
+            return j;
+    }
+
+    return OGS_ERROR;
+}
+
+static int sctp_sockopt_event_subscribe_size = 0;
+
+static int determine_sctp_sockopt_event_subscribe_size(void)
+{
+    uint8_t buf[256];
+    socklen_t buf_len = sizeof(buf);
+    int sd, rc;
+
+    /* only do this once */
+    if (sctp_sockopt_event_subscribe_size != 0)
+        return 0;
+
+    sd = socket(AF_INET, SOCK_STREAM, IPPROTO_SCTP);
+    if (sd < 0)
+        return sd;
+
+    rc = getsockopt(sd, IPPROTO_SCTP, SCTP_EVENTS, buf, &buf_len);
+    ogs_closesocket(sd);
+    if (rc < 0)
+        return rc;
+
+    sctp_sockopt_event_subscribe_size = buf_len;
+
+    ogs_debug("sizes of 'struct sctp_event_subscribe': "
+            "compile-time %zu, kernel: %u",
+            sizeof(struct sctp_event_subscribe),
+            sctp_sockopt_event_subscribe_size);
+    return 0;
+}
+
+/*
+ * The workaround is stolen from libosmo-netif.
+ * - http://osmocom.org/projects/libosmo-netif/repository/revisions/master/entry/src/stream.c
+ *
+ * Attempt to work around Linux kernel ABI breakage
+ *
+ * The Linux kernel ABI for the SCTP_EVENTS socket option has been broken
+ * repeatedly.
+ *  - until commit 35ea82d611da59f8bea44a37996b3b11bb1d3fd7 ( kernel < 4.11),
+ *    the size is 10 bytes
+ *  - in 4.11 it is 11 bytes
+ *  - in 4.12 .. 5.4 it is 13 bytes
+ *  - in kernels >= 5.5 it is 14 bytes
+ *
+ * This wouldn't be a problem if the kernel didn't have a "stupid" assumption
+ * that the structure size passed by userspace will match 1:1 the length
+ * of the structure at kernel compile time. In an ideal world, it would just
+ * use the known first bytes and assume the remainder is all zero.
+ * But as it doesn't do that, let's try to work around this */
+static int sctp_setsockopt_events_linux_workaround(
+        int fd, const struct sctp_event_subscribe *event)
+{
+    const unsigned int compiletime_size = sizeof(*event);
+    int rc;
+
+    if (determine_sctp_sockopt_event_subscribe_size() < 0) {
+        ogs_error("Cannot determine SCTP_EVENTS socket option size");
+        return OGS_ERROR;
+    }
+
+    if (compiletime_size == sctp_sockopt_event_subscribe_size) {
+        /* no kernel workaround needed */
+        return setsockopt(fd, IPPROTO_SCTP, SCTP_EVENTS,
+                event, compiletime_size);
+    } else if (compiletime_size < sctp_sockopt_event_subscribe_size) {
+        /* we are using an older userspace with a more modern kernel
+         * and hence need to pad the data */
+        uint8_t buf[sctp_sockopt_event_subscribe_size];
+
+        memcpy(buf, event, compiletime_size);
+        memset(buf + sizeof(*event),
+                0, sctp_sockopt_event_subscribe_size - compiletime_size);
+        return setsockopt(fd, IPPROTO_SCTP, SCTP_EVENTS,
+                buf, sctp_sockopt_event_subscribe_size);
+    } else /* if (compiletime_size > sctp_sockopt_event_subscribe_size) */ {
+        /* we are using a newer userspace with an older kernel and hence
+         * need to truncate the data - but only if the caller didn't try
+         * to enable any of the events of the truncated portion */
+        rc = byte_nonzero((const uint8_t *)event,
+                sctp_sockopt_event_subscribe_size, compiletime_size);
+        if (rc >= 0) {
+            ogs_error("Kernel only supports sctp_event_subscribe of %u bytes, "
+                "but caller tried to enable more modern event at offset %u",
+                sctp_sockopt_event_subscribe_size, rc);
+            return OGS_ERROR;
+        }
+
+        return setsockopt(fd, IPPROTO_SCTP, SCTP_EVENTS, event,
+                sctp_sockopt_event_subscribe_size);
+    }
+}
+
 static int subscribe_to_events(ogs_sock_t *sock)
 {
     struct sctp_event_subscribe event;
@@ -256,12 +363,19 @@ static int subscribe_to_events(ogs_sock_t *sock)
     event.sctp_send_failure_event = 1;
     event.sctp_shutdown_event = 1;
 
+#ifdef DISABLE_SCTP_EVENT_WORKAROUND
     if (setsockopt(sock->fd, IPPROTO_SCTP, SCTP_EVENTS,
                             &event, sizeof(event)) != 0) {
         ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,
                 "Unable to subscribe to SCTP events");
         return OGS_ERROR;
     }
+#else
+    if (sctp_setsockopt_events_linux_workaround(sock->fd, &event) < 0) {
+        ogs_error("couldn't activate SCTP events on FD %u", sock->fd);
+        return OGS_ERROR;
+    }
+#endif
 
     return OGS_OK;
 }

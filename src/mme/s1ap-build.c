@@ -424,13 +424,16 @@ ogs_pkbuf_t *s1ap_build_initial_context_setup_request(
                     bearer->sgw_s1u_teid, &e_rab->gTP_TEID);
 
             if (emmbuf && emmbuf->len) {
-                nasPdu = (S1AP_NAS_PDU_t *)CALLOC(
-                        1, sizeof(S1AP_NAS_PDU_t));
+                nasPdu = (S1AP_NAS_PDU_t *)CALLOC(1, sizeof(S1AP_NAS_PDU_t));
                 nasPdu->size = emmbuf->len;
                 nasPdu->buf = CALLOC(nasPdu->size, sizeof(uint8_t));
                 memcpy(nasPdu->buf, emmbuf->data, nasPdu->size);
                 e_rab->nAS_PDU = nasPdu;
                 ogs_pkbuf_free(emmbuf);
+
+                /* Since Tracking area update accept is used only once,
+                 * set emmbuf to NULL as shown below */
+                emmbuf = NULL;
             }
 
             bearer = mme_bearer_next(bearer);
