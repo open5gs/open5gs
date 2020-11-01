@@ -443,6 +443,13 @@ static void test1_func(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, recvbuf);
     tests1ap_recv(test_ue, recvbuf);
 
+    /* Send UE Context Release Request */
+    sendbuf = test_s1ap_build_ue_context_release_request(test_ue,
+            S1AP_Cause_PR_radioNetwork, S1AP_CauseRadioNetwork_user_inactivity);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testenb_s1ap_send(s1ap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
     /* Receive UE Context Release Command */
     recvbuf = testenb_s1ap_read(s1ap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
