@@ -420,11 +420,25 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
             mme_sess_remove(sess);
 
         } else if (OGS_FSM_CHECK(&bearer->sm, esm_state_exception)) {
+
+            /* Remove Session Context */
+            mme_sess_remove(sess);
+
             /* 
-             * [Enhancement] - Probably Invalid APN 
-             * At this point, we'll forcely release UE context
+             * The UE requested the wrong APN.
+             *
+             * From the Issues #568, MME need to accept further service request.
+             * To do this, we are not going to release UE context.
              */
-            mme_send_delete_session_or_mme_ue_context_release(mme_ue);
+
+            enb_ue_t *enb_ue = enb_ue_cycle(mme_ue->enb_ue);
+            if (enb_ue) {
+                s1ap_send_ue_context_release_command(enb_ue,
+                        S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
+                        S1AP_UE_CTX_REL_S1_REMOVE_AND_UNLINK, 0);
+            } else {
+                ogs_warn("[%s] No S1 Context", mme_ue->imsi_bcd);
+            }
         }
 
         ogs_pkbuf_free(pkbuf);
