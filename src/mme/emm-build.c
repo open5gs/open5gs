@@ -368,7 +368,16 @@ ogs_pkbuf_t *emm_build_tau_accept(mme_ue_t *mme_ue)
     message.emm.h.protocol_discriminator = OGS_NAS_PROTOCOL_DISCRIMINATOR_EMM;
     message.emm.h.message_type = OGS_NAS_EPS_TRACKING_AREA_UPDATE_ACCEPT;
 
-    tau_accept->eps_update_result.result = mme_ue->nas_eps.update.value;
+    if (mme_ue->nas_eps.update.value ==
+            OGS_NAS_EPS_UPDATE_TYPE_COMBINED_TA_LA_UPDATING ||
+        mme_ue->nas_eps.update.value ==
+            OGS_NAS_EPS_UPDATE_TYPE_COMBINED_TA_LA_UPDATING_WITH_IMSI_ATTACH) {
+        tau_accept->eps_update_result.result =
+            OGS_NAS_EPS_UPDATE_RESULT_COMBINED_TA_LA_UPDATED;
+    } else {
+        tau_accept->eps_update_result.result =
+            OGS_NAS_EPS_UPDATE_RESULT_TA_UPDATED;
+    }
 
     /* Set T3412 */
     tau_accept->presencemask |=

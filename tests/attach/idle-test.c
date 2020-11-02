@@ -325,7 +325,8 @@ static void test1_func(abts_case *tc, void *data)
     test_ue->tau_request_param.mobile_station_classmark_2 = 1;
     test_ue->tau_request_param.ue_usage_setting = 1;
     test_ue->tau_request_param.device_properties = 1;
-    emmbuf = testemm_build_tau_request(test_ue, true);
+    emmbuf = testemm_build_tau_request(
+            test_ue, true, OGS_NAS_EPS_UPDATE_TYPE_TA_UPDATING);
     ABTS_PTR_NOTNULL(tc, emmbuf);
     sendbuf = test_s1ap_build_initial_ue_message(
             test_ue, emmbuf, S1AP_RRC_Establishment_Cause_mo_Signalling, true);
@@ -371,7 +372,9 @@ static void test1_func(abts_case *tc, void *data)
     test_ue->tau_request_param.mobile_station_classmark_2 = 1;
     test_ue->tau_request_param.ue_usage_setting = 1;
     test_ue->tau_request_param.device_properties = 1;
-    emmbuf = testemm_build_tau_request(test_ue, false);
+    emmbuf = testemm_build_tau_request(
+            test_ue, false,
+            OGS_NAS_EPS_UPDATE_TYPE_COMBINED_TA_LA_UPDATING_WITH_IMSI_ATTACH);
     ABTS_PTR_NOTNULL(tc, emmbuf);
     sendbuf = test_s1ap_build_initial_ue_message(
             test_ue, emmbuf, S1AP_RRC_Establishment_Cause_mo_Signalling, true);
@@ -695,7 +698,8 @@ static void test2_func(abts_case *tc, void *data)
     test_ue->tau_request_param.ue_usage_setting = 1;
     test_ue->tau_request_param.old_guti_type = 1;
     test_ue->tau_request_param.ms_network_feature_support = 1;
-    emmbuf = testemm_build_tau_request(test_ue, false);
+    emmbuf = testemm_build_tau_request(
+            test_ue, false, OGS_NAS_EPS_UPDATE_TYPE_PERIODIC_UPDATING);
     ABTS_PTR_NOTNULL(tc, emmbuf);
     sendbuf = test_s1ap_build_initial_ue_message(
             test_ue, emmbuf, S1AP_RRC_Establishment_Cause_mo_Signalling, true);

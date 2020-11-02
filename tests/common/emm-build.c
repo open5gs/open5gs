@@ -503,7 +503,8 @@ ogs_pkbuf_t *testemm_build_service_request(test_ue_t *test_ue)
     return pkbuf;
 }
 
-ogs_pkbuf_t *testemm_build_tau_request(test_ue_t *test_ue, bool active_flag)
+ogs_pkbuf_t *testemm_build_tau_request(
+        test_ue_t *test_ue, bool active_flag, uint8_t update_type)
 {
     ogs_nas_eps_message_t message;
     ogs_nas_eps_tracking_area_update_request_t *tau_request =
@@ -563,7 +564,7 @@ ogs_pkbuf_t *testemm_build_tau_request(test_ue_t *test_ue, bool active_flag)
 
     eps_update_type->nas_key_set_identifier = test_ue->nas.ksi;
     eps_update_type->active_flag = active_flag;
-    eps_update_type->value = OGS_NAS_EPS_UPDATE_TYPE_COMBINED_TA_LA_UPDATING;
+    eps_update_type->value = update_type;
 
     old_guti->length = sizeof(ogs_nas_eps_mobile_identity_guti_t);
     old_guti->guti.odd_even = OGS_NAS_MOBILE_IDENTITY_EVEN;

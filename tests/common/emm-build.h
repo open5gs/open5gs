@@ -37,7 +37,8 @@ ogs_pkbuf_t *testemm_build_attach_complete(
 ogs_pkbuf_t *testemm_build_detach_request(test_ue_t *test_ue, bool switch_off);
 
 ogs_pkbuf_t *testemm_build_service_request(test_ue_t *test_ue);
-ogs_pkbuf_t *testemm_build_tau_request(test_ue_t *test_ue, bool active_flag);
+ogs_pkbuf_t *testemm_build_tau_request(
+        test_ue_t *test_ue, bool active_flag, uint8_t update_type);
 ogs_pkbuf_t *testemm_build_emm_status(
         test_ue_t *test_ue, ogs_nas_emm_cause_t emm_cause);
 
