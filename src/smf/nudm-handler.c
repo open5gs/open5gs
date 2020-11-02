@@ -103,7 +103,8 @@ bool smf_nudm_sdm_handle_get(smf_sess_t *sess, ogs_sbi_session_t *session,
                 continue;
             }
 
-            if (sess->dnn && strcmp(sess->dnn, dnnConfigurationMap->key) != 0)
+            if (sess->dnn &&
+                ogs_strcasecmp(sess->dnn, dnnConfigurationMap->key) != 0)
                 continue;
 
             if (sess->ue_pdu_session_type) {

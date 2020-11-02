@@ -1014,7 +1014,7 @@ test_sess_t *test_sess_find_by_apn(test_ue_t *test_ue, char *apn)
     ogs_assert(apn);
 
     ogs_list_for_each(&test_ue->sess_list, sess)
-        if (strcmp(sess->apn, apn) == 0) return sess;
+        if (ogs_strcasecmp(sess->apn, apn) == 0) return sess;
 
     return NULL;
 }

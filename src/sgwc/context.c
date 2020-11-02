@@ -432,7 +432,7 @@ static bool compare_ue_info(ogs_pfcp_node_t *node, sgwc_sess_t *sess)
     ogs_assert(sgwc_ue);
 
     for (i = 0; i < node->num_of_apn; i++)
-        if (strcmp(node->apn[i], sess->pdn.apn) == 0) return true;
+        if (ogs_strcasecmp(node->apn[i], sess->pdn.apn) == 0) return true;
 
     for (i = 0; i < node->num_of_e_cell_id; i++)
         if (node->e_cell_id[i] == sgwc_ue->e_cgi.cell_id) return true;
@@ -574,7 +574,7 @@ sgwc_sess_t* sgwc_sess_find_by_apn(sgwc_ue_t *sgwc_ue, char *apn)
     ogs_assert(apn);
 
     ogs_list_for_each(&sgwc_ue->sess_list, sess) {
-        if (!strcmp(sess->pdn.apn, apn))
+        if (!ogs_strcasecmp(sess->pdn.apn, apn))
             return sess;
     }
 

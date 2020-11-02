@@ -118,7 +118,7 @@ static void test1_func(abts_case *tc, void *data)
     OGS_HEX(_k_string, strlen(_k_string), test_ue->k);
     OGS_HEX(_opc_string, strlen(_opc_string), test_ue->opc);
 
-    sess = test_sess_add_by_apn(test_ue, "internet");
+    sess = test_sess_add_by_apn(test_ue, "INTERNET");
     ogs_assert(sess);
 
     /* eNB connects to MME */

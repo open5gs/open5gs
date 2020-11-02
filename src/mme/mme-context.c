@@ -1730,7 +1730,7 @@ ogs_sockaddr_t *mme_pgw_addr_find_by_apn(
 
         while (addr) {
             if (addr->ogs_sa_family == family &&
-                (!apn || (pgw->apn && !strcmp(apn, pgw->apn)))) {
+                (!apn || (pgw->apn && !ogs_strcasecmp(apn, pgw->apn)))) {
                 return addr;
             }
             addr = addr->next;
@@ -2748,7 +2748,7 @@ mme_sess_t *mme_sess_find_by_apn(mme_ue_t *mme_ue, char *apn)
 
     sess = mme_sess_first(mme_ue);
     while (sess) {
-        if (sess->pdn && strcmp(sess->pdn->apn, apn) == 0)
+        if (sess->pdn && ogs_strcasecmp(sess->pdn->apn, apn) == 0)
             return sess;
 
         sess = mme_sess_next(sess);
@@ -3120,7 +3120,7 @@ ogs_pdn_t *mme_pdn_find_by_apn(mme_ue_t *mme_ue, char *apn)
 
     for (i = 0; i < subscription_data->num_of_pdn; i++) {
         pdn = &subscription_data->pdn[i];
-        if (strcmp(pdn->apn, apn) == 0)
+        if (ogs_strcasecmp(pdn->apn, apn) == 0)
             return pdn;
     }
 

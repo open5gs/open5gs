@@ -441,7 +441,7 @@ bool udr_nudr_dr_handle_subscription_provisioned(
             ogs_assert(pdn);
 
             if (recvmsg->param.dnn &&
-                    strcmp(recvmsg->param.dnn, pdn->apn) != 0) continue;
+                ogs_strcasecmp(recvmsg->param.dnn, pdn->apn) != 0) continue;
 
             if (!pdn->qos.qci) {
                 ogs_error("No QCI");

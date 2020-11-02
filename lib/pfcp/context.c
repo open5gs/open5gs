@@ -755,7 +755,7 @@ ogs_pfcp_gtpu_resource_t *ogs_pfcp_gtpu_resource_find(ogs_list_t *list,
         if (resource->info.assoni &&
             strlen(resource->info.network_instance) &&
             apn && strlen(apn) &&
-            strcmp(apn, resource->info.network_instance) != 0) {
+            ogs_strcasecmp(apn, resource->info.network_instance) != 0) {
             match = false;
         }
 
@@ -1599,7 +1599,7 @@ ogs_pfcp_dev_t *ogs_pfcp_dev_find_by_ifname(const char *ifname)
     ogs_assert(ifname);
 
     ogs_list_for_each(&ogs_pfcp_self()->dev_list, dev) {
-        if (strcmp(dev->ifname, ifname) == 0)
+        if (ogs_strcasecmp(dev->ifname, ifname) == 0)
             return dev;
     }
 
@@ -1678,7 +1678,7 @@ ogs_pfcp_subnet_t *ogs_pfcp_find_subnet(int family, const char *apn)
     ogs_list_for_each(&self.subnet_list, subnet) {
         if ((subnet->family == AF_UNSPEC || subnet->family == family) &&
             (strlen(subnet->apn) == 0 ||
-                (strlen(subnet->apn) && strcmp(subnet->apn, apn) == 0)))
+                (strlen(subnet->apn) && ogs_strcasecmp(subnet->apn, apn) == 0)))
             break;
     }
 
