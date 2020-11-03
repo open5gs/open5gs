@@ -310,14 +310,6 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
                 break;
             }
 
-            if (!MME_P_TMSI_IS_AVAILABLE(mme_ue)) {
-                ogs_warn("No P-TMSI : UE[%s]", mme_ue->imsi_bcd);
-                nas_eps_send_service_reject(mme_ue,
-                    EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
-                OGS_FSM_TRAN(s, emm_state_exception);
-                break;
-            }
-
             if (!SESSION_CONTEXT_IS_AVAILABLE(mme_ue)) {
                 ogs_warn("No PDN Connection : UE[%s]", mme_ue->imsi_bcd);
                 nas_eps_send_service_reject(mme_ue,
@@ -336,6 +328,16 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
 
             if (e->s1ap_code == S1AP_ProcedureCode_id_initialUEMessage) {
                 ogs_debug("    Initial UE Message");
+
+                if (!MME_P_TMSI_IS_AVAILABLE(mme_ue)) {
+                    ogs_warn("No P-TMSI : UE[%s]", mme_ue->imsi_bcd);
+                    nas_eps_send_service_reject(mme_ue,
+                        EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
+                    mme_send_release_access_bearer_or_ue_context_release(
+                            enb_ue);
+                    break;
+                }
+
                 if (mme_ue->nas_eps.service.value ==
                         OGS_NAS_SERVICE_TYPE_CS_FALLBACK_FROM_UE ||
                     mme_ue->nas_eps.service.value ==
@@ -362,6 +364,14 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
             } else if (e->s1ap_code ==
                     S1AP_ProcedureCode_id_uplinkNASTransport) {
                 ogs_debug("    Uplink NAS Transport");
+
+                if (!MME_P_TMSI_IS_AVAILABLE(mme_ue)) {
+                    ogs_warn("No P-TMSI : UE[%s]", mme_ue->imsi_bcd);
+                    nas_eps_send_service_reject(mme_ue,
+                        EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
+                    break;
+                }
+
                 if (mme_ue->nas_eps.service.value ==
                         OGS_NAS_SERVICE_TYPE_CS_FALLBACK_FROM_UE ||
                     mme_ue->nas_eps.service.value ==
