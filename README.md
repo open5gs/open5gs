@@ -21,8 +21,8 @@ If you find Open5GS useful for work, please consider supporting this Open Source
         </a>
       </td>
       <td align="center" valign="middle">
-        <a href="https://www.accessparks.com/" target="_blank">
-          <img width="222px" src="https://open5gs.org/assets/img/AccessParks.png">
+        <a href="https://www.wearetriple.com/" target="_blank">
+          <img width="222px" src="https://open5gs.org/assets/img/triple_logo.png">
         </a>
       </td>
     </tr>
