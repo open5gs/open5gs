@@ -28,6 +28,7 @@ libngap = library('ogsngap',
     c_args : '-DOGS_NGAP_COMPILATION',
     include_directories : [libngap_inc, libinc],
     dependencies : libasn1c_ngap_dep,
+    install_rpath : libdir,
     install : true)
 
 libngap_dep = declare_dependency(

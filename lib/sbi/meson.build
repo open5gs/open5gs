@@ -55,6 +55,7 @@ libsbi = library('ogssbi',
                     libgnutls_dep,
                     libmicrohttpd_dep,
                     libcurl_dep],
+    install_rpath : libdir,
     install : true)
 
 libsbi_dep = declare_dependency(
