@@ -89,7 +89,7 @@ void sgsap_state_will_connect(ogs_fsm_t *s, mme_event_t *e)
         case MME_TIMER_SGS_CLI_CONN_TO_SRV:
             vlr = e->vlr;
             ogs_assert(vlr);
-            addr = vlr->addr;
+            addr = vlr->sa_list;
             ogs_assert(addr);
 
             ogs_warn("[SGsAP] Connect to VLR [%s]:%d failed",
