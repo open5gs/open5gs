@@ -3,6 +3,36 @@ title: Now in the Github Issue
 head_inline: "<style> .blue { color: blue; } </style>"
 ---
 
+#### Cannot open shared object file when running daemon
+
+An error occurred when running as follows.
+
+```
+$ ./install/bin/open5gs-nrfd
+./install/bin/open5gs-nrfd: error while loading shared libraries: libogscrypt.so.2: cannot open shared object file: No such file or directory
+```
+
+You need to specify the absolute path to the shared library as follows.
+
+```bash
+$ echo $(cd $(dirname ./install/lib/x86_64-linux-gnu/) && pwd -P)/$(basename ./install/lib/x86_64-linux-gnu/)
+/home/acetcom/Documents/git/open5gs/install/lib/x86_64-linux-gnu
+$ export LD_LIBRARY_PATH=/home/acetcom/Documents/git/open5gs/install/lib/x86_64-linux-gnu
+$ ldd ./install/bin/open5gs-amfd
+...
+	libogsapp.so.1 => /home/acetcom/Documents/git/open5gs/install/lib/x86_64-linux-gnu/libogsapp.so.1 (0x00007f161ab51000)
+	libogscore.so.1 => /home/acetcom/Documents/git/open5gs/install/lib/x86_64-linux-gnu/libogscore.so.1 (0x00007f161a922000)
+	libogssctp.so.1 => /home/acetcom/Documents/git/open5gs/install/lib/x86_64-linux-gnu/libogssctp.so.1 (0x00007f161a71d000)
+	libogss1ap.so.1 => /home/acetcom/Documents/git/open5gs/install/lib/x86_64-linux-gnu/libogss1ap.so.1 (0x00007f161a519000)
+...
+```
+
+If you want to set the shared library path permanently, you can use ldconfig.
+```bash
+$ sudo sh -c "echo /home/acetcom/Documents/git/open5gs/install/lib/x86_64-linux-gnu > /etc/ld.so.conf.d/open5gs.conf"
+$ sudo ldconfig
+```
+
 #### Can I disable specific services if 5G functionally is not needed?
 
 
