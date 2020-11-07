@@ -136,7 +136,8 @@ void esm_state_inactive(ogs_fsm_t *s, mme_event_t *e)
             /* Check if Initial Context Setup Response or 
              *          E-RAB Setup Response is received */
             if (MME_HAVE_ENB_S1U_PATH(bearer)) {
-                mme_gtp_send_create_bearer_response(bearer);
+                mme_gtp_send_create_bearer_response(
+                        bearer, OGS_GTP_CAUSE_REQUEST_ACCEPTED);
             }
 
             OGS_FSM_TRAN(s, esm_state_active);
@@ -235,14 +236,16 @@ void esm_state_active(ogs_fsm_t *s, mme_event_t *e)
             ogs_debug("    IMSI[%s] PTI[%d] EBI[%d]",
                     mme_ue->imsi_bcd, sess->pti, bearer->ebi);
 
-            mme_gtp_send_update_bearer_response(bearer);
+            mme_gtp_send_update_bearer_response(
+                    bearer, OGS_GTP_CAUSE_REQUEST_ACCEPTED);
             break;
         case OGS_NAS_EPS_DEACTIVATE_EPS_BEARER_CONTEXT_ACCEPT:
             ogs_debug("Deactivate EPS bearer "
                     "context accept");
             ogs_debug("    IMSI[%s] PTI[%d] EBI[%d]",
                     mme_ue->imsi_bcd, sess->pti, bearer->ebi);
-            mme_gtp_send_delete_bearer_response(bearer);
+            mme_gtp_send_delete_bearer_response(
+                    bearer, OGS_GTP_CAUSE_REQUEST_ACCEPTED);
             OGS_FSM_TRAN(s, esm_state_bearer_deactivated);
             break;
         case OGS_NAS_EPS_BEARER_RESOURCE_ALLOCATION_REQUEST:

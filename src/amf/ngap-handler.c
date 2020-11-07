@@ -907,13 +907,9 @@ void ngap_handle_initial_context_setup_failure(
     if (amf_ue) {
         old_xact_count = amf_sess_xact_count(amf_ue);
 
-#if 0 /* change buffering instead of deletion */
-        amf_sbi_send_release_all_sessions(amf_ue,
-                AMF_RELEASE_SM_CONTEXT_NG_CONTEXT_REMOVE);
-#else
         amf_sbi_send_deactivate_all_sessions(
-                amf_ue, Cause->present, (int)Cause->choice.radioNetwork);
-#endif
+                amf_ue, AMF_UPDATE_SM_CONTEXT_DEACTIVATED,
+                Cause->present, (int)Cause->choice.radioNetwork);
 
         new_xact_count = amf_sess_xact_count(amf_ue);
     }
@@ -1045,7 +1041,8 @@ void ngap_handle_ue_context_release_request(
 
         if (!PDUSessionList) {
             amf_sbi_send_deactivate_all_sessions(
-                    amf_ue, Cause->present, (int)Cause->choice.radioNetwork);
+                    amf_ue, AMF_UPDATE_SM_CONTEXT_DEACTIVATED,
+                    Cause->present, (int)Cause->choice.radioNetwork);
         } else {
             for (i = 0; i < PDUSessionList->list.count; i++) {
                 PDUSessionItem = (NGAP_PDUSessionResourceItemCxtRelReq_t *)
@@ -1072,8 +1069,8 @@ void ngap_handle_ue_context_release_request(
                         PDUSessionItem->pDUSessionID);
                 if (SESSION_CONTEXT_IN_SMF(sess)) {
                     amf_sbi_send_deactivate_session(
-                            sess, Cause->present,
-                            (int)Cause->choice.radioNetwork);
+                            sess, AMF_UPDATE_SM_CONTEXT_DEACTIVATED,
+                            Cause->present, (int)Cause->choice.radioNetwork);
                 }
             }
         }

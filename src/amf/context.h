@@ -477,14 +477,11 @@ int amf_gnb_sock_type(ogs_sock_t *sock);
 
 ran_ue_t *ran_ue_add(amf_gnb_t *gnb, uint32_t ran_ue_ngap_id);
 void ran_ue_remove(ran_ue_t *ran_ue);
-void ran_ue_remove_in_gnb(amf_gnb_t *gnb);
 void ran_ue_switch_to_gnb(ran_ue_t *ran_ue, amf_gnb_t *new_gnb);
 ran_ue_t *ran_ue_find_by_ran_ue_ngap_id(
         amf_gnb_t *gnb, uint32_t ran_ue_ngap_id);
 ran_ue_t *ran_ue_find(uint32_t index);
 ran_ue_t *ran_ue_find_by_amf_ue_ngap_id(uint64_t amf_ue_ngap_id);
-ran_ue_t *ran_ue_first_in_gnb(amf_gnb_t *gnb);
-ran_ue_t *ran_ue_next_in_gnb(ran_ue_t *ran_ue);
 ran_ue_t *ran_ue_cycle(ran_ue_t *ran_ue);
 
 amf_ue_t *amf_ue_add(ran_ue_t *ran_ue);

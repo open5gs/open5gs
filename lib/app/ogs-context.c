@@ -193,8 +193,15 @@ static void app_context_prepare(void)
     /* 86400 seconds = 1 day */
     self.time.subscription.validity_duration = 86400;
 
-    /* Message Wait Duration : 2 seconds */
-    self.time.message.duration = ogs_time_from_sec(2);
+    /*
+     * Message Wait Duration : 10 seconds (Default)
+     *
+     * The paging retry timer is 2 seconds and the retry count is 3.
+     *
+     * It is recomended to set at least 9 seconds to reflect
+     * the paging failure result to GTPv2-C or HTTP2(SBI).
+     */
+    self.time.message.duration = ogs_time_from_sec(10);
 
     regenerate_all_timer_duration();
 }

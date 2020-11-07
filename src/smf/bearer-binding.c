@@ -23,17 +23,40 @@
 
 #include "ipfw/ipfw2.h"
 
-static void timeout(ogs_gtp_xact_t *xact, void *data)
+static void bearer_timeout(ogs_gtp_xact_t *xact, void *data)
 {
-    smf_sess_t *sess = data;
+    smf_bearer_t *bearer = data;
+    smf_sess_t *sess = NULL;
+    smf_ue_t *smf_ue = NULL;
     uint8_t type = 0;
 
+    ogs_assert(bearer);
+    sess = bearer->sess;
     ogs_assert(sess);
+    smf_ue = sess->smf_ue;
+    ogs_assert(smf_ue);
 
     type = xact->seq[0].type;
 
-    ogs_debug("GTP Timeout : SGW_S5C_TEID[0x%x] SMF_N4_TEID[0x%x] "
-            "Message-Type[%d]", sess->sgw_s5c_teid, sess->smf_n4_teid, type);
+    switch (type) {
+    case OGS_GTP_CREATE_BEARER_REQUEST_TYPE:
+        ogs_error("[%s] No Create Bearer Response", smf_ue->imsi_bcd);
+        smf_epc_pfcp_send_bearer_modification_request(
+                bearer, OGS_PFCP_MODIFY_REMOVE);
+        break;
+    case OGS_GTP_UPDATE_BEARER_REQUEST_TYPE:
+        ogs_error("[%s] No Update Bearer Response", smf_ue->imsi_bcd);
+        break;
+    case OGS_GTP_DELETE_BEARER_REQUEST_TYPE:
+        ogs_error("[%s] No Delete Bearer Response", smf_ue->imsi_bcd);
+        smf_epc_pfcp_send_bearer_modification_request(
+                bearer, OGS_PFCP_MODIFY_REMOVE);
+        break;
+    default:
+        ogs_error("GTP Timeout : IMSI[%s] Message-Type[%d]",
+                smf_ue->imsi_bcd, type);
+        break;
+    }
 }
 
 /*
@@ -378,7 +401,7 @@ void smf_bearer_binding(smf_sess_t *sess)
                 ogs_expect_or_return(pkbuf);
 
                 xact = ogs_gtp_xact_local_create(
-                        sess->gnode, &h, pkbuf, timeout, sess);
+                        sess->gnode, &h, pkbuf, bearer_timeout, bearer);
                 ogs_expect_or_return(xact);
 
                 if (pcc_rule->num_of_flow)
@@ -409,7 +432,7 @@ void smf_bearer_binding(smf_sess_t *sess)
             ogs_expect_or_return(pkbuf);
 
             xact = ogs_gtp_xact_local_create(
-                    sess->gnode, &h, pkbuf, timeout, sess);
+                    sess->gnode, &h, pkbuf, bearer_timeout, bearer);
             ogs_expect_or_return(xact);
 
             rv = ogs_gtp_xact_commit(xact);
@@ -444,7 +467,8 @@ void smf_gtp_send_create_bearer_request(smf_bearer_t *bearer)
     pkbuf = smf_s5c_build_create_bearer_request(h.type, bearer, &tft);
     ogs_expect_or_return(pkbuf);
 
-    xact = ogs_gtp_xact_local_create(sess->gnode, &h, pkbuf, timeout, sess);
+    xact = ogs_gtp_xact_local_create(
+            sess->gnode, &h, pkbuf, bearer_timeout, bearer);
     ogs_expect_or_return(xact);
 
     rv = ogs_gtp_xact_commit(xact);

@@ -139,6 +139,32 @@ void sgwc_gtp_close(void)
     ogs_socknode_remove_all(&sgwc_self()->gtpc_list6);
 }
 
+static void bearer_timeout(ogs_gtp_xact_t *xact, void *data)
+{
+    sgwc_bearer_t *bearer = data;
+    sgwc_sess_t *sess = NULL;
+    sgwc_ue_t *sgwc_ue = NULL;
+    uint8_t type = 0;
+
+    ogs_assert(xact);
+    ogs_assert(bearer);
+    sess = bearer->sess;
+    ogs_assert(sess);
+    sgwc_ue = sess->sgwc_ue;
+    ogs_assert(sgwc_ue);
+
+    type = xact->seq[0].type;
+
+    switch (type) {
+    case OGS_GTP_DOWNLINK_DATA_NOTIFICATION_TYPE:
+        ogs_error("[%s] No Downlink Data Notification ACK", sgwc_ue->imsi_bcd);
+        break;
+    default:
+        ogs_error("GTP Timeout : IMSI[%s] Message-Type[%d]",
+                sgwc_ue->imsi_bcd, type);
+    }
+}
+
 void sgwc_gtp_send_downlink_data_notification(
     uint8_t cause_value, sgwc_bearer_t *bearer)
 {
@@ -171,7 +197,8 @@ void sgwc_gtp_send_downlink_data_notification(
     pkbuf = sgwc_s11_build_downlink_data_notification(cause_value, bearer);
     ogs_expect_or_return(pkbuf);
 
-    gtp_xact = ogs_gtp_xact_local_create(sgwc_ue->gnode, &h, pkbuf, NULL, sess);
+    gtp_xact = ogs_gtp_xact_local_create(
+            sgwc_ue->gnode, &h, pkbuf, bearer_timeout, bearer);
     ogs_expect_or_return(gtp_xact);
 
     rv = ogs_gtp_xact_commit(gtp_xact);

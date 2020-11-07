@@ -406,13 +406,13 @@ struct mme_ue_s {
     } while(0)
     OGS_POOL(ebi_pool, uint8_t);
 
+    /* Paging Info */
 #define ECM_CONNECTED(__mME) \
     ((__mME) && ((__mME)->enb_ue != NULL) && enb_ue_cycle((__mME)->enb_ue))
 #define ECM_IDLE(__mME) \
     ((__mME) && \
      (((__mME)->enb_ue == NULL) || (enb_ue_cycle((__mME)->enb_ue) == NULL)))
-    /* S1 UE context */
-    enb_ue_t        *enb_ue;
+    enb_ue_t        *enb_ue;    /* S1 UE context */
 
     /* Save PDN Connectivity Request */
     ogs_nas_esm_message_container_t pdn_connectivity_request;
@@ -507,17 +507,6 @@ struct mme_ue_s {
     mme_csmap_t     *csmap;
 };
 
-#define MME_HAVE_SGW_S1U_PATH(__sESS) \
-    ((__sESS) && (mme_bearer_first(__sESS)) && \
-     ((mme_default_bearer_in_sess(__sESS)->sgw_s1u_teid)))
-#define CLEAR_SGW_S1U_PATH(__sESS) \
-    do { \
-        mme_bearer_t *__bEARER = NULL; \
-        ogs_assert((__sESS)); \
-        __bEARER = mme_default_bearer_in_sess(__sESS); \
-        __bEARER->sgw_s1u_teid = 0; \
-    } while(0)
-
 #define SESSION_CONTEXT_IS_AVAILABLE(__mME) \
      ((__mME) && ((__mME)->sgw_s11_teid))
 
@@ -530,6 +519,9 @@ struct mme_ue_s {
         (__mME)->sgw_s11_teid = 0; \
         (__mME)->session_context_will_deleted = 0; \
     } while(0)
+
+#define ACTIVE_EPS_BEARERS_IS_AVAIABLE(__mME) \
+    (mme_ue_have_active_eps_bearers(__mME))
 typedef struct mme_sess_s {
     ogs_lnode_t     lnode;
 
@@ -556,15 +548,23 @@ typedef struct mme_sess_s {
     ogs_tlv_octet_t pgw_pco;
 } mme_sess_t;
 
-#define CLEAR_BEARER_CONTEXT(__mME) \
-    mme_bearer_set_inactive(__mME)
-
 #define MME_HAVE_ENB_S1U_PATH(__bEARER) \
     ((__bEARER) && ((__bEARER)->enb_s1u_teid))
 #define CLEAR_ENB_S1U_PATH(__bEARER) \
     do { \
         ogs_assert((__bEARER)); \
         (__bEARER)->enb_s1u_teid = 0; \
+    } while(0)
+
+#define MME_HAVE_SGW_S1U_PATH(__sESS) \
+    ((__sESS) && (mme_bearer_first(__sESS)) && \
+     ((mme_default_bearer_in_sess(__sESS)->sgw_s1u_teid)))
+#define CLEAR_SGW_S1U_PATH(__sESS) \
+    do { \
+        mme_bearer_t *__bEARER = NULL; \
+        ogs_assert((__sESS)); \
+        __bEARER = mme_default_bearer_in_sess(__sESS); \
+        __bEARER->sgw_s1u_teid = 0; \
     } while(0)
 
 #define MME_HAVE_ENB_DL_INDIRECT_TUNNEL(__bEARER) \
@@ -678,14 +678,11 @@ int mme_enb_sock_type(ogs_sock_t *sock);
 
 enb_ue_t *enb_ue_add(mme_enb_t *enb, uint32_t enb_ue_s1ap_id);
 void enb_ue_remove(enb_ue_t *enb_ue);
-void enb_ue_remove_in_enb(mme_enb_t *enb);
 void enb_ue_switch_to_enb(enb_ue_t *enb_ue, mme_enb_t *new_enb);
 enb_ue_t *enb_ue_find_by_enb_ue_s1ap_id(
         mme_enb_t *enb, uint32_t enb_ue_s1ap_id);
 enb_ue_t *enb_ue_find(uint32_t index);
 enb_ue_t *enb_ue_find_by_mme_ue_s1ap_id(uint32_t mme_ue_s1ap_id);
-enb_ue_t *enb_ue_first_in_enb(mme_enb_t *enb);
-enb_ue_t *enb_ue_next_in_enb(enb_ue_t *enb_ue);
 enb_ue_t *enb_ue_cycle(enb_ue_t *enb_ue);
 
 mme_ue_t *mme_ue_add(enb_ue_t *enb_ue);
@@ -703,8 +700,10 @@ mme_ue_t *mme_ue_find_by_teid(uint32_t teid);
 mme_ue_t *mme_ue_find_by_message(ogs_nas_eps_message_t *message);
 int mme_ue_set_imsi(mme_ue_t *mme_ue, char *imsi_bcd);
 
-int mme_ue_have_indirect_tunnel(mme_ue_t *mme_ue);
-int mme_ue_clear_indirect_tunnel(mme_ue_t *mme_ue);
+bool mme_ue_have_indirect_tunnel(mme_ue_t *mme_ue);
+void mme_ue_clear_indirect_tunnel(mme_ue_t *mme_ue);
+
+bool mme_ue_have_active_eps_bearers(mme_ue_t *mme_ue);
 
 /* 
  * o RECV Initial UE-Message : S-TMSI
@@ -785,9 +784,7 @@ mme_bearer_t *mme_default_bearer_in_sess(mme_sess_t *sess);
 mme_bearer_t *mme_linked_bearer(mme_bearer_t *bearer);
 mme_bearer_t *mme_bearer_first(mme_sess_t *sess);
 mme_bearer_t *mme_bearer_next(mme_bearer_t *bearer);
-
-int mme_bearer_is_inactive(mme_ue_t *mme_ue);
-int mme_bearer_set_inactive(mme_ue_t *mme_ue);
+mme_bearer_t *mme_bearer_cycle(mme_bearer_t *bearer);
 
 void mme_pdn_remove_all(mme_ue_t *mme_ue);
 ogs_pdn_t *mme_pdn_find_by_apn(mme_ue_t *mme_ue, char *apn);

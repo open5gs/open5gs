@@ -79,18 +79,45 @@ static void timeout(ogs_gtp_xact_t *xact, void *data)
     mme_ue_t *mme_ue = NULL;
     enb_ue_t *enb_ue = NULL;
     mme_sess_t *sess = NULL;
+    mme_bearer_t *bearer = NULL;
     uint8_t type = 0;
 
     ogs_assert(xact);
     type = xact->seq[0].type;
 
     switch (type) {
+    case OGS_GTP_RELEASE_ACCESS_BEARERS_REQUEST_TYPE:
+    case OGS_GTP_CREATE_INDIRECT_DATA_FORWARDING_TUNNEL_REQUEST_TYPE:
+    case OGS_GTP_DELETE_INDIRECT_DATA_FORWARDING_TUNNEL_REQUEST_TYPE:
+        mme_ue = data;
+        ogs_assert(mme_ue);
+        break;
+    case OGS_GTP_CREATE_SESSION_REQUEST_TYPE:
     case OGS_GTP_DELETE_SESSION_REQUEST_TYPE:
         sess = data;
         ogs_assert(sess);
         mme_ue = sess->mme_ue;
         ogs_assert(mme_ue);
+        break;
+    case OGS_GTP_MODIFY_BEARER_REQUEST_TYPE:
+    case OGS_GTP_BEARER_RESOURCE_COMMAND_TYPE:
+        bearer = data;
+        ogs_assert(bearer);
+        sess = bearer->sess;
+        ogs_assert(sess);
+        mme_ue = sess->mme_ue;
+        ogs_assert(mme_ue);
+        break;
+    default:
+        ogs_fatal("Invalid type [%d]", type);
+        ogs_assert_if_reached();
+        break;
+    }
 
+    ogs_assert(mme_ue);
+
+    switch (type) {
+    case OGS_GTP_DELETE_SESSION_REQUEST_TYPE:
         enb_ue = enb_ue_cycle(mme_ue->enb_ue);
         if (enb_ue) {
             s1ap_send_ue_context_release_command(enb_ue,
@@ -100,9 +127,10 @@ static void timeout(ogs_gtp_xact_t *xact, void *data)
             ogs_warn("No S1 Context");
         }
         break;
+    case OGS_GTP_BEARER_RESOURCE_COMMAND_TYPE:
+        /* Nothing to do */
+        break;
     default:
-        mme_ue = data;
-        ogs_assert(mme_ue);
         mme_send_delete_session_or_mme_ue_context_release(mme_ue);
         break;
     }
@@ -182,7 +210,7 @@ void mme_gtp_send_create_session_request(mme_sess_t *sess)
     pkbuf = mme_s11_build_create_session_request(h.type, sess);
     ogs_expect_or_return(pkbuf);
 
-    xact = ogs_gtp_xact_local_create(mme_ue->gnode, &h, pkbuf, timeout, mme_ue);
+    xact = ogs_gtp_xact_local_create(mme_ue->gnode, &h, pkbuf, timeout, sess);
     ogs_expect_or_return(xact);
 
     rv = ogs_gtp_xact_commit(xact);
@@ -211,7 +239,7 @@ void mme_gtp_send_modify_bearer_request(
     pkbuf = mme_s11_build_modify_bearer_request(h.type, bearer, uli_presence);
     ogs_expect_or_return(pkbuf);
 
-    xact = ogs_gtp_xact_local_create(mme_ue->gnode, &h, pkbuf, timeout, mme_ue);
+    xact = ogs_gtp_xact_local_create(mme_ue->gnode, &h, pkbuf, timeout, bearer);
     ogs_expect_or_return(xact);
 
     rv = ogs_gtp_xact_commit(xact);
@@ -283,7 +311,8 @@ void mme_gtp_send_delete_all_sessions(mme_ue_t *mme_ue, int action)
     }
 }
 
-void mme_gtp_send_create_bearer_response(mme_bearer_t *bearer)
+void mme_gtp_send_create_bearer_response(
+        mme_bearer_t *bearer, uint8_t cause_value)
 {
     int rv;
 
@@ -296,14 +325,14 @@ void mme_gtp_send_create_bearer_response(mme_bearer_t *bearer)
     ogs_assert(bearer);
     mme_ue = bearer->mme_ue;
     ogs_assert(mme_ue);
-    xact = bearer->xact;
+    xact = ogs_gtp_xact_cycle(bearer->xact);
     ogs_assert(xact);
 
     memset(&h, 0, sizeof(ogs_gtp_header_t));
     h.type = OGS_GTP_CREATE_BEARER_RESPONSE_TYPE;
     h.teid = mme_ue->sgw_s11_teid;
 
-    pkbuf = mme_s11_build_create_bearer_response(h.type, bearer);
+    pkbuf = mme_s11_build_create_bearer_response(h.type, bearer, cause_value);
     ogs_expect_or_return(pkbuf);
 
     rv = ogs_gtp_xact_update_tx(xact, &h, pkbuf);
@@ -313,7 +342,8 @@ void mme_gtp_send_create_bearer_response(mme_bearer_t *bearer)
     ogs_expect(rv == OGS_OK);
 }
 
-void mme_gtp_send_update_bearer_response(mme_bearer_t *bearer)
+void mme_gtp_send_update_bearer_response(
+        mme_bearer_t *bearer, uint8_t cause_value)
 {
     int rv;
 
@@ -326,14 +356,14 @@ void mme_gtp_send_update_bearer_response(mme_bearer_t *bearer)
     ogs_assert(bearer);
     mme_ue = bearer->mme_ue;
     ogs_assert(mme_ue);
-    xact = bearer->xact;
+    xact = ogs_gtp_xact_cycle(bearer->xact);
     ogs_assert(xact);
 
     memset(&h, 0, sizeof(ogs_gtp_header_t));
     h.type = OGS_GTP_UPDATE_BEARER_RESPONSE_TYPE;
     h.teid = mme_ue->sgw_s11_teid;
 
-    pkbuf = mme_s11_build_update_bearer_response(h.type, bearer);
+    pkbuf = mme_s11_build_update_bearer_response(h.type, bearer, cause_value);
     ogs_expect_or_return(pkbuf);
 
     rv = ogs_gtp_xact_update_tx(xact, &h, pkbuf);
@@ -343,7 +373,8 @@ void mme_gtp_send_update_bearer_response(mme_bearer_t *bearer)
     ogs_expect(rv == OGS_OK);
 }
 
-void mme_gtp_send_delete_bearer_response(mme_bearer_t *bearer)
+void mme_gtp_send_delete_bearer_response(
+        mme_bearer_t *bearer, uint8_t cause_value)
 {
     int rv;
 
@@ -356,14 +387,14 @@ void mme_gtp_send_delete_bearer_response(mme_bearer_t *bearer)
     ogs_assert(bearer);
     mme_ue = bearer->mme_ue;
     ogs_assert(mme_ue);
-    xact = bearer->xact;
+    xact = ogs_gtp_xact_cycle(bearer->xact);
     ogs_assert(xact);
 
     memset(&h, 0, sizeof(ogs_gtp_header_t));
     h.type = OGS_GTP_DELETE_BEARER_RESPONSE_TYPE;
     h.teid = mme_ue->sgw_s11_teid;
 
-    pkbuf = mme_s11_build_delete_bearer_response(h.type, bearer);
+    pkbuf = mme_s11_build_delete_bearer_response(h.type, bearer, cause_value);
     ogs_expect_or_return(pkbuf);
 
     rv = ogs_gtp_xact_update_tx(xact, &h, pkbuf);
@@ -373,13 +404,14 @@ void mme_gtp_send_delete_bearer_response(mme_bearer_t *bearer)
     ogs_expect(rv == OGS_OK);
 }
 
-void mme_gtp_send_release_access_bearers_request(mme_ue_t *mme_ue)
+void mme_gtp_send_release_access_bearers_request(mme_ue_t *mme_ue, int action)
 {
     int rv;
     ogs_gtp_header_t h;
     ogs_pkbuf_t *pkbuf = NULL;
     ogs_gtp_xact_t *xact = NULL;
 
+    ogs_assert(action);
     ogs_assert(mme_ue);
 
     memset(&h, 0, sizeof(ogs_gtp_header_t));
@@ -391,9 +423,55 @@ void mme_gtp_send_release_access_bearers_request(mme_ue_t *mme_ue)
 
     xact = ogs_gtp_xact_local_create(mme_ue->gnode, &h, pkbuf, timeout, mme_ue);
     ogs_expect_or_return(xact);
+    xact->release_action = action;
 
     rv = ogs_gtp_xact_commit(xact);
     ogs_expect(rv == OGS_OK);
+}
+
+void mme_gtp_send_release_all_ue_in_enb(mme_enb_t *enb, int action)
+{
+    mme_ue_t *mme_ue = NULL;
+    enb_ue_t *enb_ue = NULL;
+
+    ogs_list_for_each(&enb->enb_ue_list, enb_ue) {
+        mme_ue = enb_ue->mme_ue;
+        ogs_assert(mme_ue);
+
+        mme_gtp_send_release_access_bearers_request(mme_ue, action);
+    }
+}
+
+void mme_gtp_send_downlink_data_notification_ack(
+        mme_bearer_t *bearer, uint8_t cause_value)
+{
+    int rv;
+    mme_ue_t *mme_ue = NULL;
+    ogs_gtp_xact_t *xact = NULL;
+
+    ogs_gtp_header_t h;
+    ogs_pkbuf_t *s11buf = NULL;
+
+    ogs_assert(bearer);
+    xact = ogs_gtp_xact_cycle(bearer->xact);
+    ogs_assert(xact);
+    mme_ue = bearer->mme_ue;
+    ogs_assert(mme_ue);
+
+    /* Build Downlink data notification ack */
+    memset(&h, 0, sizeof(ogs_gtp_header_t));
+    h.type = OGS_GTP_DOWNLINK_DATA_NOTIFICATION_ACKNOWLEDGE_TYPE;
+    h.teid = mme_ue->sgw_s11_teid;
+
+    s11buf = mme_s11_build_downlink_data_notification_ack(h.type, cause_value);
+    ogs_expect_or_return(s11buf);
+
+    rv = ogs_gtp_xact_update_tx(xact, &h, s11buf);
+    ogs_expect_or_return(rv == OGS_OK);
+
+    rv = ogs_gtp_xact_commit(xact);
+    ogs_expect(rv == OGS_OK);
+
 }
 
 void mme_gtp_send_create_indirect_data_forwarding_tunnel_request(

@@ -225,6 +225,8 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
         enb = mme_enb_find_by_addr(addr);
         if (enb) {
             ogs_info("eNB-S1[%s] connection refused!!!", OGS_ADDR(addr, buf));
+            mme_gtp_send_release_all_ue_in_enb(
+                    enb, OGS_GTP_RELEASE_S1_CONTEXT_REMOVE);
             mme_enb_remove(enb);
         } else {
             ogs_warn("eNB-S1[%s] connection refused, Already Removed!",

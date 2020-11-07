@@ -358,17 +358,52 @@ ogs_pkbuf_t *s1ap_build_initial_context_setup_request(
             &UEAggregateMaximumBitrate->uEaggregateMaximumBitRateDL, 
             subscription_data->ambr.downlink);
 
-    sess = mme_sess_first(mme_ue);
-    while (sess) {
-        bearer = mme_bearer_first(sess);
-        while (bearer) {
+    ogs_list_for_each(&mme_ue->sess_list, sess) {
+        ogs_list_for_each(&sess->bearer_list, bearer) {
+
             S1AP_E_RABToBeSetupItemCtxtSUReqIEs_t *item = NULL;
             S1AP_E_RABToBeSetupItemCtxtSUReq_t *e_rab = NULL;
             S1AP_GBR_QosInformation_t *gbrQosInformation = NULL;
             S1AP_NAS_PDU_t *nasPdu = NULL;
 
-            item = CALLOC(
-                    1, sizeof(S1AP_E_RABToBeSetupItemCtxtSUReqIEs_t));
+            if (mme_ue->nas_eps.type == MME_EPS_TYPE_ATTACH_REQUEST) {
+                /*
+                 * For Attach Request,
+                 * Delete Session Request/Response removes ALL session/bearers.
+                 *
+                 * Since all bearers are INACTIVE,
+                 * we should not check the bearer activation.
+                 */
+            } else if (OGS_FSM_CHECK(&bearer->sm, esm_state_active)) {
+                /*
+                 * For Service Request/TAU Request/Extended Service Request,
+                 * Only the active EPS bearer can be included.
+                 *
+                 * If MME received Create Bearer Request and
+                 * if MME does not receive Activate EPS Bearer Context Accept,
+                 * We should not include the INACTIVE bearer.
+                 *
+                 * For example,
+                 * 1. SGW->MME : Create Bearer Request
+                 * 2. MME->UE : S1 Paging
+                 * 3. UE->MME : Service Request
+                 * 4. MME->UE : Initial Context Setup Request
+                 *              (We should not include INACTIVE BEARER)
+                 * 5. UE->MME : Initial Context Setup Response
+                 * 6. MME->UE : Activate dedicated EPS Bearer Context Request
+                 * 7. UE->MME : Activate dedicated EPS Bearer Context Accept
+                 * 8. MME->SGW : Create Bearer Response
+                 */
+            } else {
+                ogs_warn("No active EPS bearer [%d]", bearer->ebi);
+                ogs_warn("    IMSI[%s] NAS-EPS Type[%d] "
+                        "ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
+                        mme_ue->imsi_bcd, mme_ue->nas_eps.type,
+                        enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
+                continue;
+            }
+
+            item = CALLOC(1, sizeof(S1AP_E_RABToBeSetupItemCtxtSUReqIEs_t));
             ASN_SEQUENCE_ADD(&E_RABToBeSetupListCtxtSUReq->list, item);
 
             item->id = S1AP_ProtocolIE_ID_id_E_RABToBeSetupItemCtxtSUReq;
@@ -435,11 +470,10 @@ ogs_pkbuf_t *s1ap_build_initial_context_setup_request(
                  * set emmbuf to NULL as shown below */
                 emmbuf = NULL;
             }
-
-            bearer = mme_bearer_next(bearer);
         }
-        sess = mme_sess_next(sess);
     }
+
+    ogs_assert(E_RABToBeSetupListCtxtSUReq->list.count);
 
     ie = CALLOC(1, sizeof(S1AP_InitialContextSetupRequestIEs_t));
     ASN_SEQUENCE_ADD(&InitialContextSetupRequest->protocolIEs, ie);
@@ -1600,10 +1634,9 @@ ogs_pkbuf_t *s1ap_build_handover_command(enb_ue_t *source_ue)
     ogs_debug("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
             source_ue->enb_ue_s1ap_id, source_ue->mme_ue_s1ap_id);
 
-    sess = mme_sess_first(mme_ue);
-    while (sess) {
-        bearer = mme_bearer_first(sess);
-        while (bearer) {
+    ogs_list_for_each(&mme_ue->sess_list, sess) {
+        ogs_list_for_each(&sess->bearer_list, bearer) {
+
             S1AP_E_RABDataForwardingItem_t *e_rab = NULL;
 
             if (MME_HAVE_SGW_DL_INDIRECT_TUNNEL(bearer) ||
@@ -1673,10 +1706,7 @@ ogs_pkbuf_t *s1ap_build_handover_command(enb_ue_t *source_ue)
                         bearer->sgw_ul_teid, e_rab->uL_GTP_TEID);
                 ogs_debug("    SGW-UL-TEID[%d]", bearer->sgw_dl_teid);
             }
-
-            bearer = mme_bearer_next(bearer);
         }
-        sess = mme_sess_next(sess);
     }
 
     ie = CALLOC(1, sizeof(S1AP_HandoverCommandIEs_t));
@@ -1915,10 +1945,9 @@ ogs_pkbuf_t *s1ap_build_handover_request(
             &UEAggregateMaximumBitrate->uEaggregateMaximumBitRateDL, 
             subscription_data->ambr.downlink);
 
-    sess = mme_sess_first(mme_ue);
-    while (sess) {
-        bearer = mme_bearer_first(sess);
-        while (bearer) {
+    ogs_list_for_each(&mme_ue->sess_list, sess) {
+        ogs_list_for_each(&sess->bearer_list, bearer) {
+
             S1AP_E_RABToBeSetupItemHOReqIEs_t *item = NULL;
             S1AP_E_RABToBeSetupItemHOReq_t *e_rab = NULL;
             S1AP_GBR_QosInformation_t *gbrQosInformation = NULL;
@@ -1976,10 +2005,7 @@ ogs_pkbuf_t *s1ap_build_handover_request(
             ogs_asn_uint32_to_OCTET_STRING(
                     bearer->sgw_s1u_teid, &e_rab->gTP_TEID);
             ogs_debug("    SGW-S1U-TEID[%d]", bearer->sgw_s1u_teid);
-
-            bearer = mme_bearer_next(bearer);
         }
-        sess = mme_sess_next(sess);
     }
 
     ogs_s1ap_buffer_to_OCTET_STRING(

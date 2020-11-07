@@ -318,6 +318,27 @@ int amf_nsmf_pdu_session_handle_update_sm_context(
 
                 sess->n1_released = true;
 
+            } else if (state == AMF_UPDATE_SM_CONTEXT_NG_RESET) {
+                /*
+                 * 1. NG RESET
+                 * 2. /nsmf-pdusession/v1/sm-contexts/{smContextRef}/modify
+                 * 3. PFCP Session Modifcation Request (Apply:Buff & NOCP)
+                 * 4. PFCP Session Modifcation Response
+                 * 5. NG RESET ACKNOWLEDGE
+                 */
+
+                /* Nothing to do */
+                if (SESSION_SYNC_DONE(amf_ue)) {
+                    ran_ue_t *ran_ue = ran_ue_cycle(amf_ue->ran_ue);
+                    if (ran_ue) {
+                        ogs_debug("    SUPI[%s]", amf_ue->supi);
+                        ran_ue_remove(ran_ue);
+                    } else {
+                        ogs_warn("[%s] RAN-NG Context has already been removed",
+                                amf_ue->supi);
+                    }
+                }
+
             } else {
                 ogs_error("Invalid STATE[%d]", state);
             }
@@ -336,7 +357,6 @@ int amf_nsmf_pdu_session_handle_update_sm_context(
                 amf_nsmf_pdu_session_handle_release_sm_context(
                         sess, AMF_RELEASE_SM_CONTEXT_NO_STATE);
             }
-
         }
     } else {
         amf_ue_t *amf_ue = NULL;

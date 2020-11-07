@@ -413,7 +413,7 @@ static void test1_func(abts_case *tc, void *data)
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    ogs_msleep(100);
+    ogs_msleep(300);
 
     /********** Remove Subscriber in Database */
     doc = BCON_NEW("imsi", BCON_UTF8(test_ue->imsi));

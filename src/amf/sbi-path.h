@@ -43,6 +43,7 @@ void amf_ue_sbi_discover_and_send(OpenAPI_nf_type_e target_nf_type,
 #define AMF_UPDATE_SM_CONTEXT_SUSPENDED         4
 #define AMF_UPDATE_SM_CONTEXT_N2_RELEASED       5
 #define AMF_UPDATE_SM_CONTEXT_N1_RELEASED       6
+#define AMF_UPDATE_SM_CONTEXT_NG_RESET          7
 void amf_sess_sbi_discover_and_send(OpenAPI_nf_type_e target_nf_type,
         amf_sess_t *sess, int state, void *data,
         ogs_sbi_request_t *(*build)(amf_sess_t *sess, void *data));
@@ -50,9 +51,10 @@ void amf_sess_sbi_discover_and_send(OpenAPI_nf_type_e target_nf_type,
 void amf_sbi_send_activating_session(amf_sess_t *sess);
 
 void amf_sbi_send_deactivate_session(
-        amf_sess_t *sess, int group, int cause);
+        amf_sess_t *sess, int state, int group, int cause);
 void amf_sbi_send_deactivate_all_sessions(
-        amf_ue_t *amf_ue, int group, int cause);
+        amf_ue_t *amf_ue, int state, int group, int cause);
+void amf_sbi_send_deactivate_all_ue_in_gnb(amf_gnb_t *gnb, int state);
 
 #define AMF_RELEASE_SM_CONTEXT_NO_STATE             0
 #define AMF_RELEASE_SM_CONTEXT_NG_CONTEXT_REMOVE    1

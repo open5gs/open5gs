@@ -87,12 +87,16 @@ typedef struct ogs_gtp_xact_s {
 #define OGS_GTP_MODIFY_QOS_UPDATE ((uint64_t)1<<1)
     uint64_t        update_flags;
 
-#define OGS_GTP_DELETE_SEND_AUTHENTICATION_REUQEST 1
+#define OGS_GTP_DELETE_SEND_AUTHENTICATION_REQUEST 1
 #define OGS_GTP_DELETE_SEND_DETACH_ACCEPT 2
 #define OGS_GTP_DELETE_SEND_DEACTIVATE_BEARER_CONTEXT_REQUEST 3
 #define OGS_GTP_DELETE_SEND_UE_CONTEXT_RELEASE_COMMAND 4
 #define OGS_GTP_DELETE_HANDLE_PDN_CONNECTIVITY_REQUEST 5
     int             delete_action;
+
+#define OGS_GTP_RELEASE_SEND_UE_CONTEXT_RELEASE_COMMAND 1
+#define OGS_GTP_RELEASE_S1_CONTEXT_REMOVE 2
+    int             release_action;
 } ogs_gtp_xact_t;
 
 int ogs_gtp_xact_init(void);
@@ -103,6 +107,7 @@ ogs_gtp_xact_t *ogs_gtp_xact_local_create(ogs_gtp_node_t *gnode,
         void (*cb)(ogs_gtp_xact_t *xact, void *data), void *data);
 ogs_gtp_xact_t *ogs_gtp_xact_remote_create(
         ogs_gtp_node_t *gnode, uint32_t sqn);
+ogs_gtp_xact_t *ogs_gtp_xact_cycle(ogs_gtp_xact_t *xact);
 void ogs_gtp_xact_delete_all(ogs_gtp_node_t *gnode);
 
 int ogs_gtp_xact_update_tx(ogs_gtp_xact_t *xact,

@@ -101,3 +101,19 @@ void testesm_handle_activate_dedicated_eps_bearer_context_request(
         bearer = test_bearer_add(sess, message->esm.h.eps_bearer_identity);
     ogs_assert(bearer);
 }
+
+void testesm_handle_deactivate_eps_bearer_context_request(
+        test_ue_t *test_ue, ogs_nas_eps_message_t *message)
+{
+    test_sess_t *sess = NULL;
+    test_bearer_t *bearer = NULL;
+    uint8_t ebi;
+
+    ogs_assert(message);
+
+    ebi = message->esm.h.eps_bearer_identity;
+    ogs_assert(ebi);
+
+    bearer = test_bearer_find_by_ue_ebi(test_ue, ebi);
+    ogs_assert(bearer);
+}

@@ -494,6 +494,9 @@ static void test1_func(abts_case *tc, void *data)
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
+    /* Test Bearer Remove */
+    test_bearer_remove(bearer);
+
     /* DELAY is needed before Session-Termination-Request */
     ogs_msleep(100);
 
@@ -523,6 +526,9 @@ static void test1_func(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Test Bearer Remove */
+    test_bearer_remove(bearer);
 
     /* DELAY is needed before AA-Request */
     ogs_msleep(100);
@@ -638,6 +644,9 @@ static void test1_func(abts_case *tc, void *data)
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
+    /* Test Bearer Remove */
+    test_bearer_remove(bearer);
+
     /* DELAY is needed before Session-Termination-Request */
     ogs_msleep(100);
 
@@ -667,6 +676,9 @@ static void test1_func(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Test Bearer Remove */
+    test_bearer_remove(bearer);
 
     /* DELAY is needed before AA-Request */
     ogs_msleep(100);
@@ -782,6 +794,9 @@ static void test1_func(abts_case *tc, void *data)
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
+    /* Test Bearer Remove */
+    test_bearer_remove(bearer);
+
     /* DELAY is needed before Session-Termination-Request */
     ogs_msleep(100);
 
@@ -811,6 +826,9 @@ static void test1_func(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Test Bearer Remove */
+    test_bearer_remove(bearer);
 
     /* DELAY is needed before AA-Request */
     ogs_msleep(100);
@@ -926,6 +944,9 @@ static void test1_func(abts_case *tc, void *data)
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
+    /* Test Bearer Remove */
+    test_bearer_remove(bearer);
+
     /* DELAY is needed before Session-Termination-Request */
     ogs_msleep(100);
 
@@ -955,6 +976,9 @@ static void test1_func(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Test Bearer Remove */
+    test_bearer_remove(bearer);
 
     /* DELAY is needed before AA-Request */
     ogs_msleep(100);
@@ -1070,6 +1094,9 @@ static void test1_func(abts_case *tc, void *data)
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
+    /* Test Bearer Remove */
+    test_bearer_remove(bearer);
+
     /* DELAY is needed before Session-Termination-Request */
     ogs_msleep(100);
 
@@ -1099,6 +1126,9 @@ static void test1_func(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Test Bearer Remove */
+    test_bearer_remove(bearer);
 
     /* DELAY is needed before AA-Request */
     ogs_msleep(100);
@@ -1214,6 +1244,9 @@ static void test1_func(abts_case *tc, void *data)
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
+    /* Test Bearer Remove */
+    test_bearer_remove(bearer);
+
     /* DELAY is needed before Session-Termination-Request */
     ogs_msleep(100);
 
@@ -1243,6 +1276,9 @@ static void test1_func(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Test Bearer Remove */
+    test_bearer_remove(bearer);
 
     ogs_msleep(300);
 

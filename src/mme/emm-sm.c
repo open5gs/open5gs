@@ -153,6 +153,14 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
                 break;
             }
 
+            if (!ACTIVE_EPS_BEARERS_IS_AVAIABLE(mme_ue)) {
+                ogs_warn("No active EPS bearers : IMSI[%s]", mme_ue->imsi_bcd);
+                nas_eps_send_service_reject(mme_ue,
+                    EMM_CAUSE_NO_EPS_BEARER_CONTEXT_ACTIVATED);
+                OGS_FSM_TRAN(s, &emm_state_exception);
+                break;
+            }
+
             s1ap_send_initial_context_setup_request(mme_ue);
             OGS_FSM_TRAN(s, &emm_state_registered);
             break;
@@ -181,7 +189,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
 
             if (SESSION_CONTEXT_IS_AVAILABLE(mme_ue)) {
                 mme_gtp_send_delete_all_sessions(mme_ue,
-                        OGS_GTP_DELETE_SEND_AUTHENTICATION_REUQEST);
+                        OGS_GTP_DELETE_SEND_AUTHENTICATION_REQUEST);
             } else {
                 mme_s6a_send_air(mme_ue, NULL);
             }
@@ -224,7 +232,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
             } else {
                 if (SESSION_CONTEXT_IS_AVAILABLE(mme_ue)) {
                     mme_gtp_send_delete_all_sessions(mme_ue,
-                        OGS_GTP_DELETE_SEND_AUTHENTICATION_REUQEST);
+                        OGS_GTP_DELETE_SEND_AUTHENTICATION_REQUEST);
                 } else {
                     mme_s6a_send_air(mme_ue, NULL);
                 }
@@ -255,6 +263,14 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
                 nas_eps_send_tau_reject(mme_ue,
                     EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
                 OGS_FSM_TRAN(s, emm_state_exception);
+                break;
+            }
+
+            if (!ACTIVE_EPS_BEARERS_IS_AVAIABLE(mme_ue)) {
+                ogs_warn("No active EPS bearers : IMSI[%s]", mme_ue->imsi_bcd);
+                nas_eps_send_service_reject(mme_ue,
+                    EMM_CAUSE_NO_EPS_BEARER_CONTEXT_ACTIVATED);
+                OGS_FSM_TRAN(s, &emm_state_exception);
                 break;
             }
 
@@ -469,10 +485,13 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
                         mme_ue->imsi_bcd);
                 CLEAR_MME_UE_TIMER(mme_ue->t3413);
 
+                mme_send_after_paging(mme_ue, OGS_GTP_CAUSE_UNABLE_TO_PAGE_UE);
+
                 if (CS_CALL_SERVICE_INDICATOR(mme_ue) ||
                     SMS_SERVICE_INDICATOR(mme_ue)) {
                     sgsap_send_ue_unreachable(mme_ue,
                             SGSAP_SGS_CAUSE_UE_UNREACHABLE);
+
                 }
     
                 CLEAR_SERVICE_INDICATOR(mme_ue);
@@ -892,7 +911,7 @@ void emm_state_initial_context_setup(ogs_fsm_t *s, mme_event_t *e)
             }
 
             mme_gtp_send_delete_all_sessions(mme_ue,
-                OGS_GTP_DELETE_SEND_AUTHENTICATION_REUQEST);
+                OGS_GTP_DELETE_SEND_AUTHENTICATION_REQUEST);
             OGS_FSM_TRAN(s, &emm_state_authentication);
             break;
         case OGS_NAS_EPS_EMM_STATUS:
@@ -1008,7 +1027,7 @@ void emm_state_exception(ogs_fsm_t *s, mme_event_t *e)
             } else {
                 if (SESSION_CONTEXT_IS_AVAILABLE(mme_ue)) {
                     mme_gtp_send_delete_all_sessions(mme_ue,
-                        OGS_GTP_DELETE_SEND_AUTHENTICATION_REUQEST);
+                        OGS_GTP_DELETE_SEND_AUTHENTICATION_REQUEST);
                 } else {
                     mme_s6a_send_air(mme_ue, NULL);
                 }

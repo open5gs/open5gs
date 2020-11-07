@@ -34,10 +34,17 @@ void mme_gtp_send_modify_bearer_request(
         mme_bearer_t *bearer, int uli_presence);
 void mme_gtp_send_delete_session_request(mme_sess_t *sess, int action);
 void mme_gtp_send_delete_all_sessions(mme_ue_t *mme_ue, int action);
-void mme_gtp_send_create_bearer_response(mme_bearer_t *bearer);
-void mme_gtp_send_update_bearer_response(mme_bearer_t *bearer);
-void mme_gtp_send_delete_bearer_response(mme_bearer_t *bearer);
-void mme_gtp_send_release_access_bearers_request(mme_ue_t *mme_ue);
+void mme_gtp_send_create_bearer_response(
+        mme_bearer_t *bearer, uint8_t cause_value);
+void mme_gtp_send_update_bearer_response(
+        mme_bearer_t *bearer, uint8_t cause_value);
+void mme_gtp_send_delete_bearer_response(
+        mme_bearer_t *bearer, uint8_t cause_value);
+void mme_gtp_send_release_access_bearers_request(mme_ue_t *mme_ue, int action);
+void mme_gtp_send_release_all_ue_in_enb(mme_enb_t *enb, int action);
+
+void mme_gtp_send_downlink_data_notification_ack(
+        mme_bearer_t *bearer, uint8_t cause_value);
 
 void mme_gtp_send_create_indirect_data_forwarding_tunnel_request(
         mme_ue_t *mme_ue);

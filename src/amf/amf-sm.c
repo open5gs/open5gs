@@ -601,8 +601,9 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
 
         gnb = amf_gnb_find_by_addr(addr);
         if (gnb) {
-            ogs_info("gNB-N1[%s] connection refused!!!", 
-                    OGS_ADDR(addr, buf));
+            ogs_info("gNB-N1[%s] connection refused!!!", OGS_ADDR(addr, buf));
+            amf_sbi_send_deactivate_all_ue_in_gnb(
+                    gnb, AMF_UPDATE_SM_CONTEXT_NG_RESET);
             amf_gnb_remove(gnb);
         } else {
             ogs_warn("gNB-N1[%s] connection refused, Already Removed!",

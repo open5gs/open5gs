@@ -61,11 +61,75 @@ void mme_send_release_access_bearer_or_ue_context_release(enb_ue_t *enb_ue)
     mme_ue = enb_ue->mme_ue;
     if (mme_ue) {
         ogs_debug("[%s] Release access bearer request", mme_ue->imsi_bcd);
-        mme_gtp_send_release_access_bearers_request(mme_ue);
+        mme_gtp_send_release_access_bearers_request(
+                mme_ue, OGS_GTP_RELEASE_SEND_UE_CONTEXT_RELEASE_COMMAND);
     } else {
         ogs_debug("[%s] No UE Context", mme_ue->imsi_bcd);
         s1ap_send_ue_context_release_command(enb_ue,
                 S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
                 S1AP_UE_CTX_REL_S1_CONTEXT_REMOVE, 0);
+    }
+}
+
+void mme_send_after_paging(mme_ue_t *mme_ue, uint8_t cause_value)
+{
+    mme_sess_t *sess = NULL;
+    mme_bearer_t *bearer = NULL;
+
+    ogs_assert(mme_ue);
+
+    ogs_list_for_each(&mme_ue->sess_list, sess) {
+        ogs_list_for_each(&sess->bearer_list, bearer) {
+            ogs_gtp_xact_t *xact = NULL;
+            uint8_t type;
+
+            xact = ogs_gtp_xact_cycle(bearer->xact);
+            if (xact) {
+                /*
+                 * It may conflict with GTP transaction already used.
+                 * To avoid this, check `xact->step` to see if
+                 * the transaction has already been committed.
+                 */
+                type = xact->seq[xact->step-1].type;
+
+                switch (type) {
+                case OGS_GTP_DOWNLINK_DATA_NOTIFICATION_TYPE:
+                    mme_gtp_send_downlink_data_notification_ack(
+                            bearer, cause_value);
+                    break;
+                case OGS_GTP_CREATE_BEARER_REQUEST_TYPE:
+                    if (cause_value == OGS_GTP_CAUSE_REQUEST_ACCEPTED) {
+                        nas_eps_send_activate_dedicated_bearer_context_request(
+                                bearer);
+                    } else {
+                        mme_gtp_send_create_bearer_response(
+                                bearer, cause_value);
+                    }
+                    break;
+                case OGS_GTP_UPDATE_BEARER_REQUEST_TYPE:
+                    if (cause_value == OGS_GTP_CAUSE_REQUEST_ACCEPTED) {
+                        nas_eps_send_modify_bearer_context_request(bearer,
+                            (xact->update_flags &
+                                 OGS_GTP_MODIFY_QOS_UPDATE) ? 1 : 0,
+                            (xact->update_flags &
+                                 OGS_GTP_MODIFY_TFT_UPDATE) ? 1 : 0);
+                    } else {
+                        mme_gtp_send_update_bearer_response(
+                                bearer, cause_value);
+                    }
+                    break;
+                case OGS_GTP_DELETE_BEARER_REQUEST_TYPE:
+                    if (cause_value == OGS_GTP_CAUSE_REQUEST_ACCEPTED) {
+                        nas_eps_send_deactivate_bearer_context_request(bearer);
+                    } else {
+                        mme_gtp_send_delete_bearer_response(
+                                bearer, cause_value);
+                    }
+                    break;
+                default:
+                    break;
+                }
+            }
+        }
     }
 }

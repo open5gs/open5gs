@@ -183,7 +183,7 @@ void amf_sbi_send_activating_session(amf_sess_t *sess)
 }
 
 void amf_sbi_send_deactivate_session(
-        amf_sess_t *sess, int group, int cause)
+        amf_sess_t *sess, int state, int group, int cause)
 {
     amf_nsmf_pdu_session_update_sm_context_param_t param;
 
@@ -198,12 +198,11 @@ void amf_sbi_send_deactivate_session(
 
     /* UPDATE_UpCnxState - DEACTIVATED */
     amf_sess_sbi_discover_and_send(OpenAPI_nf_type_SMF,
-            sess, AMF_UPDATE_SM_CONTEXT_DEACTIVATED, &param,
-            amf_nsmf_pdu_session_build_update_sm_context);
+            sess, state, &param, amf_nsmf_pdu_session_build_update_sm_context);
 }
 
 void amf_sbi_send_deactivate_all_sessions(
-        amf_ue_t *amf_ue, int group, int cause)
+        amf_ue_t *amf_ue, int state, int group, int cause)
 {
     amf_sess_t *sess = NULL;
 
@@ -211,7 +210,32 @@ void amf_sbi_send_deactivate_all_sessions(
 
     ogs_list_for_each(&amf_ue->sess_list, sess) {
         if (SESSION_CONTEXT_IN_SMF(sess))
-            amf_sbi_send_deactivate_session(sess, group, cause);
+            amf_sbi_send_deactivate_session(sess, state, group, cause);
+    }
+}
+
+void amf_sbi_send_deactivate_all_ue_in_gnb(amf_gnb_t *gnb, int state)
+{
+    amf_ue_t *amf_ue = NULL;
+    ran_ue_t *ran_ue = NULL, *ran_ue_next;
+
+    ogs_list_for_each_safe(&gnb->ran_ue_list, ran_ue_next, ran_ue) {
+        int old_xact_count = 0, new_xact_count = 0;
+
+        amf_ue = ran_ue->amf_ue;
+        ogs_assert(amf_ue);
+
+        old_xact_count = amf_sess_xact_count(amf_ue);
+
+        amf_sbi_send_deactivate_all_sessions(
+                amf_ue, state, NGAP_Cause_PR_radioNetwork,
+                NGAP_CauseRadioNetwork_failure_in_radio_interface_procedure);
+
+        new_xact_count = amf_sess_xact_count(amf_ue);
+
+        if (old_xact_count == new_xact_count) {
+            ran_ue_remove(ran_ue);
+        }
     }
 }
 

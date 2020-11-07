@@ -155,6 +155,11 @@ ogs_gtp_xact_t *ogs_gtp_xact_remote_create(ogs_gtp_node_t *gnode, uint32_t sqn)
     return xact;
 }
 
+ogs_gtp_xact_t *ogs_gtp_xact_cycle(ogs_gtp_xact_t *xact)
+{
+    return ogs_pool_cycle(&pool, xact);
+}
+
 void ogs_gtp_xact_delete_all(ogs_gtp_node_t *gnode)
 {
     ogs_gtp_xact_t *xact = NULL, *next_xact = NULL;

@@ -187,6 +187,7 @@ void testesm_recv(test_ue_t *test_ue, ogs_pkbuf_t *pkbuf)
     case OGS_NAS_EPS_MODIFY_EPS_BEARER_CONTEXT_REQUEST:
         break;
     case OGS_NAS_EPS_DEACTIVATE_EPS_BEARER_CONTEXT_REQUEST:
+        testesm_handle_deactivate_eps_bearer_context_request(test_ue, &message);
         break;
     case OGS_NAS_EPS_BEARER_RESOURCE_ALLOCATION_REJECT:
         break;

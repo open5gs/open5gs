@@ -885,8 +885,6 @@ int amf_gnb_remove(amf_gnb_t *gnb)
     ogs_hash_set(self.gnb_addr_hash, gnb->addr, sizeof(ogs_sockaddr_t), NULL);
     ogs_hash_set(self.gnb_id_hash, &gnb->gnb_id, sizeof(gnb->gnb_id), NULL);
 
-    ran_ue_remove_in_gnb(gnb);
-
     if (gnb->sock_type == SOCK_STREAM) {
         ogs_pollset_remove(gnb->poll);
         ogs_sctp_destroy(gnb->sock);
@@ -1001,20 +999,6 @@ void ran_ue_remove(ran_ue_t *ran_ue)
     stats_remove_ran_ue();
 }
 
-void ran_ue_remove_in_gnb(amf_gnb_t *gnb)
-{
-    ran_ue_t *ran_ue = NULL, *next_ran_ue = NULL;
-    
-    ran_ue = ran_ue_first_in_gnb(gnb);
-    while (ran_ue) {
-        next_ran_ue = ran_ue_next_in_gnb(ran_ue);
-
-        ran_ue_remove(ran_ue);
-
-        ran_ue = next_ran_ue;
-    }
-}
-
 void ran_ue_switch_to_gnb(ran_ue_t *ran_ue, amf_gnb_t *new_gnb)
 {
     ogs_assert(ran_ue);
@@ -1036,12 +1020,9 @@ ran_ue_t *ran_ue_find_by_ran_ue_ngap_id(
 {
     ran_ue_t *ran_ue = NULL;
     
-    ran_ue = ran_ue_first_in_gnb(gnb);
-    while (ran_ue) {
+    ogs_list_for_each(&gnb->ran_ue_list, ran_ue) {
         if (ran_ue_ngap_id == ran_ue->ran_ue_ngap_id)
             break;
-
-        ran_ue = ran_ue_next_in_gnb(ran_ue);
     }
 
     return ran_ue;
@@ -1056,16 +1037,6 @@ ran_ue_t *ran_ue_find(uint32_t index)
 ran_ue_t *ran_ue_find_by_amf_ue_ngap_id(uint64_t amf_ue_ngap_id)
 {
     return ran_ue_find(amf_ue_ngap_id);
-}
-
-ran_ue_t *ran_ue_first_in_gnb(amf_gnb_t *gnb)
-{
-    return ogs_list_first(&gnb->ran_ue_list);
-}
-
-ran_ue_t *ran_ue_next_in_gnb(ran_ue_t *ran_ue)
-{
-    return ogs_list_next(ran_ue);
 }
 
 ran_ue_t *ran_ue_cycle(ran_ue_t *ran_ue)

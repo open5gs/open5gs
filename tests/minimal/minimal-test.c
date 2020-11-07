@@ -283,6 +283,8 @@ static void test1_func(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
+    ogs_msleep(300);
+
     /********** Remove Subscriber in Database */
     doc = BCON_NEW("imsi", BCON_UTF8(test_ue->imsi));
     ABTS_PTR_NOTNULL(tc, doc);

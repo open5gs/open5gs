@@ -580,17 +580,23 @@ void s1ap_handle_initial_context_setup_response(
             ogs_debug("    EBI[%d] ENB-S1U-TEID[%d]",
                     bearer->ebi, bearer->enb_s1u_teid);
 
-            if (OGS_FSM_CHECK(&bearer->sm, esm_state_active)) {
-                ogs_debug("    NAS_EPS Type[%d]", mme_ue->nas_eps.type);
-                int uli_presence = 0;
-                if (mme_ue->nas_eps.type != MME_EPS_TYPE_ATTACH_REQUEST) {
-                    ogs_debug("    ### ULI PRESENT ###");
-                    uli_presence = 1;
-                }
+            if (mme_ue->nas_eps.type == MME_EPS_TYPE_ATTACH_REQUEST) {
+                /* For Attach Request, Nothing to do */
+            } else if (OGS_FSM_CHECK(&bearer->sm, esm_state_active)) {
+                int uli_presence = 1;
+                /*
+                 * For Service Request/TAU Request/Extended Service Request,
+                 * ULI is present if it's the active EPS bearer.
+                 *
+                 */
+                ogs_debug("    ### ULI PRESENT ###");
                 mme_gtp_send_modify_bearer_request(bearer, uli_presence);
             }
         }
     }
+
+    if (mme_ue->nas_eps.type != MME_EPS_TYPE_ATTACH_REQUEST)
+        mme_send_after_paging(mme_ue, OGS_GTP_CAUSE_REQUEST_ACCEPTED);
 
     if (SMS_SERVICE_INDICATOR(mme_ue)) {
         sgsap_send_service_request(mme_ue, SGSAP_EMM_CONNECTED_MODE);
@@ -949,7 +955,8 @@ void s1ap_handle_e_rab_setup_response(
                 if (bearer->ebi == linked_bearer->ebi) {
                     mme_gtp_send_modify_bearer_request(bearer, 0);
                 } else {
-                    mme_gtp_send_create_bearer_response(bearer);
+                    mme_gtp_send_create_bearer_response(
+                        bearer, OGS_GTP_CAUSE_REQUEST_ACCEPTED);
                 }
             }
         }
@@ -1107,7 +1114,6 @@ void s1ap_handle_ue_context_release_complete(
 
 void s1ap_handle_ue_context_release_action(enb_ue_t *enb_ue)
 {
-    int rv;
     mme_ue_t *mme_ue = NULL;
 
     ogs_assert(enb_ue);
@@ -1144,15 +1150,14 @@ void s1ap_handle_ue_context_release_action(enb_ue_t *enb_ue)
         enb_ue_remove(enb_ue);
 
         ogs_expect_or_return(mme_ue);
-        if (mme_ue_have_indirect_tunnel(mme_ue)) {
+        if (mme_ue_have_indirect_tunnel(mme_ue) == true) {
             mme_gtp_send_delete_indirect_data_forwarding_tunnel_request(
                     mme_ue);
         } else {
             ogs_warn("Check your eNodeB");
             ogs_warn("  There is no INDIRECT TUNNEL");
             ogs_warn("  Packet could be dropped during S1-Handover");
-            rv = mme_ue_clear_indirect_tunnel(mme_ue);
-            ogs_expect(rv == OGS_OK);
+            mme_ue_clear_indirect_tunnel(mme_ue);
         }
         break;
     case S1AP_UE_CTX_REL_S1_PAGING:
@@ -1685,7 +1690,7 @@ void s1ap_handle_handover_request_ack(
     OGS_ASN_STORE_DATA(&mme_ue->container,
             Target_ToSource_TransparentContainer);
 
-    if (mme_ue_have_indirect_tunnel(mme_ue) == 1) {
+    if (mme_ue_have_indirect_tunnel(mme_ue) == true) {
         mme_gtp_send_create_indirect_data_forwarding_tunnel_request(
                 mme_ue);
     } else {
@@ -2094,7 +2099,8 @@ void s1ap_handle_s1_reset(
     case S1AP_ResetType_PR_s1_Interface:
         ogs_warn("    S1AP_ResetType_PR_s1_Interface");
 
-        enb_ue_remove_in_enb(enb);
+        mme_gtp_send_release_all_ue_in_enb(
+                enb, OGS_GTP_RELEASE_S1_CONTEXT_REMOVE);
         break;
     case S1AP_ResetType_PR_partOfS1_Interface:
         ogs_warn("    S1AP_ResetType_PR_partOfS1_Interface");
@@ -2106,6 +2112,7 @@ void s1ap_handle_s1_reset(
             S1AP_UE_associatedLogicalS1_ConnectionItem_t *item = NULL;
 
             enb_ue_t *enb_ue = NULL;
+            mme_ue_t *mme_ue = NULL;
 
             ie2 = (S1AP_UE_associatedLogicalS1_ConnectionItemRes_t *)
                 partOfS1_Interface->list.array[i];
@@ -2119,8 +2126,7 @@ void s1ap_handle_s1_reset(
                     item->eNB_UE_S1AP_ID ? (int)*item->eNB_UE_S1AP_ID : -1);
 
             if (item->mME_UE_S1AP_ID)
-                enb_ue = enb_ue_find_by_mme_ue_s1ap_id(
-                        *item->mME_UE_S1AP_ID);
+                enb_ue = enb_ue_find_by_mme_ue_s1ap_id( *item->mME_UE_S1AP_ID);
             else if (item->eNB_UE_S1AP_ID)
                 enb_ue = enb_ue_find_by_enb_ue_s1ap_id(enb,
                         *item->eNB_UE_S1AP_ID);
@@ -2133,7 +2139,11 @@ void s1ap_handle_s1_reset(
                 continue;
             }
 
-            enb_ue_remove(enb_ue);
+            mme_ue = enb_ue->mme_ue;
+            ogs_assert(mme_ue);
+
+            mme_gtp_send_release_access_bearers_request(
+                    mme_ue, OGS_GTP_RELEASE_S1_CONTEXT_REMOVE);
         }
         break;
     default:
@@ -2141,6 +2151,26 @@ void s1ap_handle_s1_reset(
         break;
     }
 
+    /*
+     * In the specification, eNB can send RESET ACK without waiting
+     * for resource release, but MME must send after releasing all resources.
+     *
+     * Why? Huh.. At this point, I implemented MME to send RESET ACK
+     * without waiting for resource release. If problems are found,
+     * I will fix them later.
+     *
+     * TS36.413
+     * 8.7.1.2.1 Reset Procedure Initiated from the MME
+     *
+     * The eNB does not need to wait for the release of radio resources
+     * to be completed before returning the RESET ACKNOWLEDGE message.
+     *
+     * 8.7.1.2.2 Reset Procedure Initiated from the E-UTRAN
+     * After the MME has released all assigned S1 resources and
+     * the UE S1AP IDs for all indicated UE associations which can be used
+     * for new UE-associated logical S1-connections over the S1 interface,
+     * the MME shall respond with the RESET ACKNOWLEDGE message.
+     */
     s1ap_send_s1_reset_ack(enb, partOfS1_Interface);
 }
 

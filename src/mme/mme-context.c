@@ -1931,8 +1931,6 @@ int mme_enb_remove(mme_enb_t *enb)
     ogs_hash_set(self.enb_addr_hash, enb->addr, sizeof(ogs_sockaddr_t), NULL);
     ogs_hash_set(self.enb_id_hash, &enb->enb_id, sizeof(enb->enb_id), NULL);
 
-    enb_ue_remove_in_enb(enb);
-
     if (enb->sock_type == SOCK_STREAM) {
         ogs_pollset_remove(enb->poll);
         ogs_sctp_destroy(enb->sock);
@@ -2050,20 +2048,6 @@ void enb_ue_remove(enb_ue_t *enb_ue)
     stats_remove_enb_ue();
 }
 
-void enb_ue_remove_in_enb(mme_enb_t *enb)
-{
-    enb_ue_t *enb_ue = NULL, *next_enb_ue = NULL;
-    
-    enb_ue = enb_ue_first_in_enb(enb);
-    while (enb_ue) {
-        next_enb_ue = enb_ue_next_in_enb(enb_ue);
-
-        enb_ue_remove(enb_ue);
-
-        enb_ue = next_enb_ue;
-    }
-}
-
 void enb_ue_switch_to_enb(enb_ue_t *enb_ue, mme_enb_t *new_enb)
 {
     ogs_assert(enb_ue);
@@ -2085,12 +2069,9 @@ enb_ue_t *enb_ue_find_by_enb_ue_s1ap_id(
 {
     enb_ue_t *enb_ue = NULL;
     
-    enb_ue = enb_ue_first_in_enb(enb);
-    while (enb_ue) {
+    ogs_list_for_each(&enb->enb_ue_list, enb_ue) {
         if (enb_ue_s1ap_id == enb_ue->enb_ue_s1ap_id)
             break;
-
-        enb_ue = enb_ue_next_in_enb(enb_ue);
     }
 
     return enb_ue;
@@ -2105,16 +2086,6 @@ enb_ue_t *enb_ue_find(uint32_t index)
 enb_ue_t *enb_ue_find_by_mme_ue_s1ap_id(uint32_t mme_ue_s1ap_id)
 {
     return enb_ue_find(mme_ue_s1ap_id);
-}
-
-enb_ue_t *enb_ue_first_in_enb(mme_enb_t *enb)
-{
-    return ogs_list_first(&enb->enb_ue_list);
-}
-
-enb_ue_t *enb_ue_next_in_enb(enb_ue_t *enb_ue)
-{
-    return ogs_list_next(enb_ue);
 }
 
 enb_ue_t *enb_ue_cycle(enb_ue_t *enb_ue)
@@ -2551,47 +2522,56 @@ int mme_ue_set_imsi(mme_ue_t *mme_ue, char *imsi_bcd)
     return OGS_OK;
 }
 
-int mme_ue_have_indirect_tunnel(mme_ue_t *mme_ue)
+bool mme_ue_have_indirect_tunnel(mme_ue_t *mme_ue)
 {
     mme_sess_t *sess = NULL;
+    mme_bearer_t *bearer = NULL;
 
-    sess = mme_sess_first(mme_ue);
-    while (sess) {
-        mme_bearer_t *bearer = mme_bearer_first(sess);
-        while (bearer) {
+    ogs_assert(mme_ue);
+
+    ogs_list_for_each(&mme_ue->sess_list, sess) {
+        ogs_list_for_each(&sess->bearer_list, bearer) {
             if (MME_HAVE_ENB_DL_INDIRECT_TUNNEL(bearer) ||
                 MME_HAVE_ENB_UL_INDIRECT_TUNNEL(bearer) ||
                 MME_HAVE_SGW_DL_INDIRECT_TUNNEL(bearer) ||
                 MME_HAVE_SGW_UL_INDIRECT_TUNNEL(bearer)) {
-                return 1;
+                return true;
             }
-
-            bearer = mme_bearer_next(bearer);
         }
-        sess = mme_sess_next(sess);
     }
 
-    return 0;
+    return false;
 }
 
-int mme_ue_clear_indirect_tunnel(mme_ue_t *mme_ue)
+void mme_ue_clear_indirect_tunnel(mme_ue_t *mme_ue)
 {
     mme_sess_t *sess = NULL;
+    mme_bearer_t *bearer = NULL;
 
     ogs_assert(mme_ue);
 
-    sess = mme_sess_first(mme_ue);
-    while (sess) {
-        mme_bearer_t *bearer = mme_bearer_first(sess);
-        while (bearer) {
+    ogs_list_for_each(&mme_ue->sess_list, sess) {
+        ogs_list_for_each(&sess->bearer_list, bearer) {
             CLEAR_INDIRECT_TUNNEL(bearer);
-
-            bearer = mme_bearer_next(bearer);
         }
-        sess = mme_sess_next(sess);
+    }
+}
+
+bool mme_ue_have_active_eps_bearers(mme_ue_t *mme_ue)
+{
+    mme_sess_t *sess = NULL;
+    mme_bearer_t *bearer = NULL;
+
+    ogs_assert(mme_ue);
+
+    ogs_list_for_each(&mme_ue->sess_list, sess) {
+        ogs_list_for_each(&sess->bearer_list, bearer) {
+            if (OGS_FSM_CHECK(&bearer->sm, esm_state_active))
+                return true;
+        }
     }
 
-    return OGS_OK;
+    return false;
 }
 
 void mme_ue_associate_enb_ue(mme_ue_t *mme_ue, enb_ue_t *enb_ue)
@@ -3076,23 +3056,9 @@ mme_bearer_t *mme_bearer_next(mme_bearer_t *bearer)
     return ogs_list_next(bearer);
 }
 
-int mme_bearer_set_inactive(mme_ue_t *mme_ue)
+mme_bearer_t *mme_bearer_cycle(mme_bearer_t *bearer)
 {
-    mme_sess_t *sess = NULL;
-
-    ogs_assert(mme_ue);
-    sess = mme_sess_first(mme_ue);
-    while (sess) {
-        mme_bearer_t *bearer = mme_bearer_first(sess);
-        while (bearer) {
-            CLEAR_ENB_S1U_PATH(bearer);
-
-            bearer = mme_bearer_next(bearer);
-        }
-        sess = mme_sess_next(sess);
-    }
-
-    return OGS_OK;
+    return ogs_pool_cycle(&mme_bearer_pool, bearer);
 }
 
 void mme_pdn_remove_all(mme_ue_t *mme_ue)

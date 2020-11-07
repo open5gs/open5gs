@@ -489,10 +489,6 @@ ogs_pkbuf_t *test_s1ap_build_initial_context_setup_response(test_ue_t *test_ue)
     S1AP_E_RABSetupItemCtxtSURes_t *e_rab = NULL;
 
     ogs_assert(test_ue);
-    sess = ogs_list_first(&test_ue->sess_list);
-    ogs_assert(sess);
-    bearer = ogs_list_first(&sess->bearer_list);
-    ogs_assert(bearer);
 
     memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
     pdu.present = S1AP_S1AP_PDU_PR_successfulOutcome;
@@ -543,28 +539,32 @@ ogs_pkbuf_t *test_s1ap_build_initial_context_setup_response(test_ue_t *test_ue)
 
     E_RABSetupListCtxtSURes = &ie->value.choice.E_RABSetupListCtxtSURes;
 
-    item = CALLOC(1, sizeof(S1AP_E_RABSetupItemCtxtSUResIEs_t));
-    ASN_SEQUENCE_ADD(&E_RABSetupListCtxtSURes->list, item);
+    ogs_list_for_each(&test_ue->sess_list, sess) {
+        ogs_list_for_each(&sess->bearer_list, bearer) {
+        item = CALLOC(1, sizeof(S1AP_E_RABSetupItemCtxtSUResIEs_t));
+        ASN_SEQUENCE_ADD(&E_RABSetupListCtxtSURes->list, item);
 
-    item->id = S1AP_ProtocolIE_ID_id_E_RABSetupItemCtxtSURes;
-    item->criticality = S1AP_Criticality_ignore;
-    item->value.present =
-        S1AP_E_RABSetupItemCtxtSUResIEs__value_PR_E_RABSetupItemCtxtSURes;
+        item->id = S1AP_ProtocolIE_ID_id_E_RABSetupItemCtxtSURes;
+        item->criticality = S1AP_Criticality_ignore;
+        item->value.present =
+            S1AP_E_RABSetupItemCtxtSUResIEs__value_PR_E_RABSetupItemCtxtSURes;
 
-    e_rab = &item->value.choice.E_RABSetupItemCtxtSURes;
+        e_rab = &item->value.choice.E_RABSetupItemCtxtSURes;
 
-    e_rab->e_RAB_ID = bearer->ebi;
+        e_rab->e_RAB_ID = bearer->ebi;
 
-    rv = ogs_gtp_sockaddr_to_f_teid(
-            bearer->enb_s1u_addr, bearer->enb_s1u_addr6, &f_teid, &len);
-    ogs_assert(rv == OGS_OK);
+        rv = ogs_gtp_sockaddr_to_f_teid(
+                bearer->enb_s1u_addr, bearer->enb_s1u_addr6, &f_teid, &len);
+        ogs_assert(rv == OGS_OK);
 
-    rv = ogs_gtp_f_teid_to_ip(&f_teid, &ip);
-    ogs_assert(rv == OGS_OK);
+        rv = ogs_gtp_f_teid_to_ip(&f_teid, &ip);
+        ogs_assert(rv == OGS_OK);
 
-    rv = ogs_asn_ip_to_BIT_STRING(&ip, &e_rab->transportLayerAddress);
-    ogs_assert(rv == OGS_OK);
-    ogs_asn_uint32_to_OCTET_STRING(bearer->enb_s1u_teid, &e_rab->gTP_TEID);
+        rv = ogs_asn_ip_to_BIT_STRING(&ip, &e_rab->transportLayerAddress);
+        ogs_assert(rv == OGS_OK);
+        ogs_asn_uint32_to_OCTET_STRING(bearer->enb_s1u_teid, &e_rab->gTP_TEID);
+        }
+    }
 
     return ogs_s1ap_encode(&pdu);
 }

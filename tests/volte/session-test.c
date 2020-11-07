@@ -422,6 +422,9 @@ static void test1_func(abts_case *tc, void *data)
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
+    /* Test Session Remove */
+    test_sess_remove(sess);
+
     /* Send INVALID PDN Connectivity Request */
     sess = test_sess_add_by_apn(test_ue, "ims2");
     ogs_assert(sess);

@@ -37,7 +37,7 @@ void mme_s11_handle_echo_request(
     ogs_assert(xact);
     ogs_assert(req);
 
-    ogs_debug("[MME] Receiving Echo Request");
+    ogs_debug("Receiving Echo Request");
     /* FIXME : Before implementing recovery counter correctly,
      *         I'll re-use the recovery value in request message */
     ogs_gtp_send_echo_response(xact, req->recovery.u8, 0);
@@ -68,40 +68,12 @@ void mme_s11_handle_create_session_response(
     ogs_assert(xact);
     ogs_assert(rsp);
 
-    ogs_debug("[MME] Create Session Response");
+    ogs_debug("Create Session Response");
 
-    if (!mme_ue) {
-        ogs_warn("No Context in TEID");
-        mme_ue = xact->data;
-        ogs_assert(mme_ue);
-    }
+    cause_value = OGS_GTP_CAUSE_REQUEST_ACCEPTED;
 
     rv = ogs_gtp_xact_commit(xact);
     ogs_expect_or_return(rv == OGS_OK);
-
-    if (rsp->cause.presence) {
-        ogs_gtp_cause_t *cause = rsp->cause.data;
-        ogs_assert(cause);
-
-        cause_value = cause->value;
-        if (cause_value == OGS_GTP_CAUSE_REQUEST_ACCEPTED) {
-            if (rsp->bearer_contexts_created.cause.presence) {
-                cause = rsp->bearer_contexts_created.cause.data;
-                ogs_assert(cause);
-
-                cause_value = cause->value;
-            } else {
-                ogs_error("No Cause");
-                cause_value = OGS_GTP_CAUSE_MANDATORY_IE_MISSING;
-            }
-        }
-    } else {
-        ogs_error("No Cause");
-        cause_value = OGS_GTP_CAUSE_MANDATORY_IE_MISSING;
-    }
-
-    if (cause_value != OGS_GTP_CAUSE_REQUEST_ACCEPTED)
-        ogs_warn("Cause[%d] : No Accepted", cause_value);
 
     if (rsp->pdn_address_allocation.presence == 0) {
         ogs_error("No PDN Address Allocation");
@@ -122,6 +94,35 @@ void mme_s11_handle_create_session_response(
     }
     if (rsp->bearer_contexts_created.eps_bearer_id.presence == 0) {
         ogs_error("No EPS Bearer ID");
+        cause_value = OGS_GTP_CAUSE_MANDATORY_IE_MISSING;
+    }
+
+    if (!mme_ue) {
+        ogs_warn("No Context in TEID");
+        mme_ue = xact->data;
+        ogs_assert(mme_ue);
+    }
+
+    if (rsp->cause.presence) {
+        ogs_gtp_cause_t *cause = rsp->cause.data;
+        ogs_assert(cause);
+
+        cause_value = cause->value;
+        if (cause_value == OGS_GTP_CAUSE_REQUEST_ACCEPTED) {
+            if (rsp->bearer_contexts_created.cause.presence) {
+                cause = rsp->bearer_contexts_created.cause.data;
+                ogs_assert(cause);
+
+                cause_value = cause->value;
+            } else {
+                ogs_error("No Cause");
+                cause_value = OGS_GTP_CAUSE_MANDATORY_IE_MISSING;
+            }
+        } else {
+            ogs_warn("GTP Failed [CAUSE:%d]", cause_value);
+        }
+    } else {
+        ogs_error("No Cause");
         cause_value = OGS_GTP_CAUSE_MANDATORY_IE_MISSING;
     }
 
@@ -215,16 +216,18 @@ void mme_s11_handle_modify_bearer_response(
     ogs_assert(xact);
     ogs_assert(rsp);
 
-    ogs_debug("[MME] Modify Bearer Response");
+    ogs_debug("Modify Bearer Response");
+
+    cause_value = OGS_GTP_CAUSE_REQUEST_ACCEPTED;
+
+    rv = ogs_gtp_xact_commit(xact);
+    ogs_expect_or_return(rv == OGS_OK);
 
     if (!mme_ue) {
         ogs_warn("No Context in TEID");
         mme_ue = xact->data;
         ogs_assert(mme_ue);
     }
-
-    rv = ogs_gtp_xact_commit(xact);
-    ogs_expect_or_return(rv == OGS_OK);
 
     if (rsp->cause.presence) {
         ogs_gtp_cause_t *cause = rsp->cause.data;
@@ -233,15 +236,18 @@ void mme_s11_handle_modify_bearer_response(
         cause_value = cause->value;
         if (cause_value != OGS_GTP_CAUSE_REQUEST_ACCEPTED)
             ogs_warn("GTP Failed [CAUSE:%d]", cause_value);
+    } else {
+        ogs_error("No Cause");
+        cause_value = OGS_GTP_CAUSE_MANDATORY_IE_MISSING;
     }
-
-    ogs_debug("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
-            mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
 
     if (cause_value != OGS_GTP_CAUSE_REQUEST_ACCEPTED) {
         mme_send_delete_session_or_mme_ue_context_release(mme_ue);
         return;
     }
+
+    ogs_debug("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
+            mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
 
     GTP_COUNTER_CHECK(mme_ue, GTP_COUNTER_MODIFY_BEARER_BY_PATH_SWITCH,
         s1ap_send_path_switch_ack(mme_ue);
@@ -275,15 +281,15 @@ void mme_s11_handle_delete_session_response(
     action = xact->delete_action;
     ogs_assert(action);
 
-    ogs_debug("[MME] Delete Session Response");
+    ogs_debug("Delete Session Response");
+
+    rv = ogs_gtp_xact_commit(xact);
+    ogs_expect_or_return(rv == OGS_OK);
 
     sess = xact->data;
     ogs_assert(sess);
     mme_ue = sess->mme_ue;
     ogs_assert(mme_ue);
-
-    rv = ogs_gtp_xact_commit(xact);
-    ogs_expect_or_return(rv == OGS_OK);
 
     if (rsp->cause.presence) {
         ogs_gtp_cause_t *cause = rsp->cause.data;
@@ -297,7 +303,7 @@ void mme_s11_handle_delete_session_response(
     ogs_debug("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
             mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
 
-    if (action == OGS_GTP_DELETE_SEND_AUTHENTICATION_REUQEST) {
+    if (action == OGS_GTP_DELETE_SEND_AUTHENTICATION_REQUEST) {
         if (mme_sess_count(mme_ue) == 1) /* Last Session */ {
             mme_s6a_send_air(mme_ue, NULL);
         }
@@ -373,7 +379,7 @@ void mme_s11_handle_create_bearer_request(
     ogs_assert(xact);
     ogs_assert(req);
 
-    ogs_debug("[MME] Create Bearer Response");
+    ogs_debug("Create Bearer Response");
 
     cause_value = OGS_GTP_CAUSE_REQUEST_ACCEPTED;
 
@@ -381,17 +387,6 @@ void mme_s11_handle_create_bearer_request(
         ogs_error("No Linked EBI");
         cause_value = OGS_GTP_CAUSE_MANDATORY_IE_MISSING;
     }
-
-    if (mme_ue && cause_value == OGS_GTP_CAUSE_REQUEST_ACCEPTED) {
-        sess = mme_sess_find_by_ebi(mme_ue, req->linked_eps_bearer_id.u8);
-        if (sess) bearer = mme_bearer_add(sess);
-    }
-
-    if (!bearer) {
-        ogs_warn("No Context");
-        cause_value = OGS_GTP_CAUSE_CONTEXT_NOT_FOUND;
-    }
-
     if (req->bearer_contexts.presence == 0) {
         ogs_error("No Bearer");
         cause_value = OGS_GTP_CAUSE_MANDATORY_IE_MISSING;
@@ -411,6 +406,16 @@ void mme_s11_handle_create_bearer_request(
     if (req->bearer_contexts.tft.presence == 0) {
         ogs_error("No TFT");
         cause_value = OGS_GTP_CAUSE_MANDATORY_IE_MISSING;
+    }
+
+    if (mme_ue && cause_value == OGS_GTP_CAUSE_REQUEST_ACCEPTED) {
+        sess = mme_sess_find_by_ebi(mme_ue, req->linked_eps_bearer_id.u8);
+        if (sess) bearer = mme_bearer_add(sess);
+    }
+
+    if (!bearer) {
+        ogs_warn("No Context");
+        cause_value = OGS_GTP_CAUSE_CONTEXT_NOT_FOUND;
     }
 
     if (cause_value != OGS_GTP_CAUSE_REQUEST_ACCEPTED) {
@@ -456,19 +461,30 @@ void mme_s11_handle_create_bearer_request(
     /* Save Bearer TFT */
     OGS_TLV_STORE_DATA(&bearer->tft, &req->bearer_contexts.tft);
 
-    /* Save Transaction. will be handled after EMM-attached */
+    /*
+     * Save Transaction. It will be handled after EMM-attached
+     *
+     * You should not remove OLD bearer->xact.
+     * If GTP-xact Holding timer is expired,
+     * OLD bearer->xact memory will be automatically removed.
+     */
     bearer->xact = xact;
 
-    /* Before Activate DEDICATED bearer, we'll check DEFAULT bearer status */
+    /* Before Activate DEDICATED bearer, check DEFAULT bearer status */
     default_bearer = mme_default_bearer_in_sess(sess);
     ogs_expect_or_return(default_bearer);
 
-    if (/* Check if Activate Default Bearer Accept is received */
-        OGS_FSM_CHECK(&default_bearer->sm, esm_state_active) &&
-        /* Check if Initial Context Setup Response or 
-         *          E-RAB Setup Response is received */
-        MME_HAVE_ENB_S1U_PATH(default_bearer)) {
-        nas_eps_send_activate_dedicated_bearer_context_request(bearer);
+    if (OGS_FSM_CHECK(&default_bearer->sm, esm_state_active)) {
+        if (ECM_IDLE(mme_ue)) {
+            s1ap_send_paging(mme_ue, S1AP_CNDomain_ps);
+        } else {
+            nas_eps_send_activate_dedicated_bearer_context_request(bearer);
+        }
+    } else {
+        /*
+         * After received Activate EPS default bearer context accept
+         * Invoke nas_eps_send_activate_all_dedicated_bearers()
+         */
     }
 }
 
@@ -484,7 +500,7 @@ void mme_s11_handle_update_bearer_request(
     ogs_assert(xact);
     ogs_assert(req);
 
-    ogs_debug("[MME] Update Bearer Request");
+    ogs_debug("Update Bearer Request");
 
     cause_value = OGS_GTP_CAUSE_REQUEST_ACCEPTED;
 
@@ -526,60 +542,62 @@ void mme_s11_handle_update_bearer_request(
         ogs_debug("    PTI[%d]", sess->pti);
     }
 
-    /* Save Transaction. will be handled after EMM-attached */
+    /*
+     * Save Transaction. It will be handled after EMM-attached
+     *
+     * You should not remove OLD bearer->xact.
+     * If GTP-xact Holding timer is expired,
+     * OLD bearer->xact memory will be automatically removed.
+     */
     bearer->xact = xact;
 
-    if (/* Check if Activate Default/Dedicated Bearer Accept is received */
-        OGS_FSM_CHECK(&bearer->sm, esm_state_active) &&
-        /* Check if Initial Context Setup Response or 
-         *          E-RAB Setup Response is received */
-        MME_HAVE_ENB_S1U_PATH(bearer)) {
-        if (req->bearer_contexts.bearer_level_qos.presence == 1) {
-            /* Bearer QoS */
-            ogs_expect_or_return(ogs_gtp_parse_bearer_qos(&bearer_qos,
-                &req->bearer_contexts.bearer_level_qos) ==
-                req->bearer_contexts.bearer_level_qos.len);
-            bearer->qos.qci = bearer_qos.qci;
-            bearer->qos.arp.priority_level = bearer_qos.priority_level;
-            bearer->qos.arp.pre_emption_capability =
-                            bearer_qos.pre_emption_capability;
-            bearer->qos.arp.pre_emption_vulnerability =
-                            bearer_qos.pre_emption_vulnerability;
-            bearer->qos.mbr.downlink = bearer_qos.dl_mbr;
-            bearer->qos.mbr.uplink = bearer_qos.ul_mbr;
-            bearer->qos.gbr.downlink = bearer_qos.dl_gbr;
-            bearer->qos.gbr.uplink = bearer_qos.ul_gbr;
-        }
+    if (req->bearer_contexts.bearer_level_qos.presence == 1) {
+        /* Bearer QoS */
+        ogs_expect_or_return(ogs_gtp_parse_bearer_qos(&bearer_qos,
+            &req->bearer_contexts.bearer_level_qos) ==
+            req->bearer_contexts.bearer_level_qos.len);
+        bearer->qos.qci = bearer_qos.qci;
+        bearer->qos.arp.priority_level = bearer_qos.priority_level;
+        bearer->qos.arp.pre_emption_capability =
+                        bearer_qos.pre_emption_capability;
+        bearer->qos.arp.pre_emption_vulnerability =
+                        bearer_qos.pre_emption_vulnerability;
+        bearer->qos.mbr.downlink = bearer_qos.dl_mbr;
+        bearer->qos.mbr.uplink = bearer_qos.ul_mbr;
+        bearer->qos.gbr.downlink = bearer_qos.dl_gbr;
+        bearer->qos.gbr.uplink = bearer_qos.ul_gbr;
 
-        if (req->bearer_contexts.tft.presence == 1) {
-            /* Save Bearer TFT */
-            OGS_TLV_STORE_DATA(&bearer->tft, &req->bearer_contexts.tft);
-        }
+        xact->update_flags |=  OGS_GTP_MODIFY_QOS_UPDATE;
+    }
 
-        if (req->bearer_contexts.bearer_level_qos.presence == 1 ||
-            req->bearer_contexts.tft.presence == 1) {
-            nas_eps_send_modify_bearer_context_request(bearer, 
+    if (req->bearer_contexts.tft.presence == 1) {
+        /* Save Bearer TFT */
+        OGS_TLV_STORE_DATA(&bearer->tft, &req->bearer_contexts.tft);
+
+        xact->update_flags |=  OGS_GTP_MODIFY_TFT_UPDATE;
+    }
+
+    if (req->bearer_contexts.bearer_level_qos.presence == 1 ||
+        req->bearer_contexts.tft.presence == 1) {
+        if (ECM_IDLE(mme_ue)) {
+            s1ap_send_paging(mme_ue, S1AP_CNDomain_ps);
+        } else {
+            nas_eps_send_modify_bearer_context_request(bearer,
                     req->bearer_contexts.bearer_level_qos.presence,
                     req->bearer_contexts.tft.presence);
-        } else {
-            ogs_warn("[IGNORE] Update Bearer Request : "
-                    "Both QoS and TFT is NULL");
-
-            if (xact->xid & OGS_GTP_CMD_XACT_ID) {
-                /* MME recieved Bearer resource modification request */
-                nas_eps_send_bearer_resource_modification_reject(
-                        bearer, ESM_CAUSE_SERVICE_OPTION_NOT_SUPPORTED);
-            }
-
-            mme_gtp_send_update_bearer_response(bearer);
         }
     } else {
-        if (!OGS_FSM_CHECK(&bearer->sm, esm_state_active)) {
-            ogs_assert_if_reached();
-        } else if (!MME_HAVE_ENB_S1U_PATH(bearer)) {
-            ogs_assert_if_reached();
-        } else
-            ogs_assert_if_reached();
+        ogs_warn("[IGNORE] Update Bearer Request : "
+                "Both QoS and TFT is NULL");
+
+        if (xact->xid & OGS_GTP_CMD_XACT_ID) {
+            /* MME received Bearer Resource Modification Request */
+            nas_eps_send_bearer_resource_modification_reject(
+                    bearer, ESM_CAUSE_SERVICE_OPTION_NOT_SUPPORTED);
+        }
+
+        mme_gtp_send_update_bearer_response(
+                bearer, OGS_GTP_CAUSE_REQUEST_ACCEPTED);
     }
 }
 
@@ -593,7 +611,7 @@ void mme_s11_handle_delete_bearer_request(
     ogs_assert(xact);
     ogs_assert(req);
 
-    ogs_debug("[MME] Delete Bearer Request");
+    ogs_debug("Delete Bearer Request");
 
     if (mme_ue && req->linked_eps_bearer_id.presence == 1) {
         bearer = mme_bearer_find_by_ue_ebi(
@@ -632,25 +650,21 @@ void mme_s11_handle_delete_bearer_request(
         ogs_debug("    PTI[%d]", sess->pti);
     }
 
-    /* Save Transaction. will be handled after EMM-attached */
     ogs_assert(bearer);
+    /*
+     * Save Transaction. It will be handled after EMM-attached
+     *
+     * You should not remove OLD bearer->xact.
+     * If GTP-xact Holding timer is expired,
+     * OLD bearer->xact memory will be automatically removed.
+     */
     bearer->xact = xact;
 
-    if (/* Check if Activate Default/Dedicated Bearer Accept is received */
-        OGS_FSM_CHECK(&bearer->sm, esm_state_active) &&
-        /* Check if Initial Context Setup Response or 
-         *          E-RAB Setup Response is received */
-        MME_HAVE_ENB_S1U_PATH(bearer)) {
-        nas_eps_send_deactivate_bearer_context_request(bearer);
+    if (ECM_IDLE(mme_ue)) {
+        s1ap_send_paging(mme_ue, S1AP_CNDomain_ps);
     } else {
-        if (!OGS_FSM_CHECK(&bearer->sm, esm_state_active)) {
-            ogs_assert_if_reached();
-        } else if (!MME_HAVE_ENB_S1U_PATH(bearer)) {
-            ogs_assert_if_reached();
-        } else
-            ogs_assert_if_reached();
+        nas_eps_send_deactivate_bearer_context_request(bearer);
     }
-
 }
 
 void mme_s11_handle_release_access_bearers_response(
@@ -659,12 +673,18 @@ void mme_s11_handle_release_access_bearers_response(
 {
     int rv;
     uint8_t cause_value = 0;
+    int action = 0;
     enb_ue_t *enb_ue = NULL;
+
+    mme_sess_t *sess = NULL;
+    mme_bearer_t *bearer = NULL;
 
     ogs_assert(xact);
     ogs_assert(rsp);
+    action = xact->release_action;
+    ogs_assert(action);
 
-    ogs_debug("[MME] Release Access Bearers Response");
+    ogs_debug("Release Access Bearers Response");
 
     if (!mme_ue) {
         ogs_warn("No Context in TEID");
@@ -687,21 +707,31 @@ void mme_s11_handle_release_access_bearers_response(
     ogs_debug("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
             mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
 
-    if (cause_value != OGS_GTP_CAUSE_REQUEST_ACCEPTED) {
-        mme_send_delete_session_or_mme_ue_context_release(mme_ue);
-        return;
+    ogs_list_for_each(&mme_ue->sess_list, sess) {
+        ogs_list_for_each(&sess->bearer_list, bearer) {
+            CLEAR_ENB_S1U_PATH(bearer);
+        }
     }
 
-    rv = CLEAR_BEARER_CONTEXT(mme_ue);
-    ogs_expect(rv == OGS_OK);
-
-    enb_ue = enb_ue_cycle(mme_ue->enb_ue);
-    if (enb_ue) {
-        s1ap_send_ue_context_release_command(enb_ue,
-                S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
-                S1AP_UE_CTX_REL_S1_REMOVE_AND_UNLINK, 0);
+    if (action == OGS_GTP_RELEASE_SEND_UE_CONTEXT_RELEASE_COMMAND) {
+        enb_ue = enb_ue_cycle(mme_ue->enb_ue);
+        if (enb_ue) {
+            s1ap_send_ue_context_release_command(enb_ue,
+                    S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
+                    S1AP_UE_CTX_REL_S1_REMOVE_AND_UNLINK, 0);
+        } else {
+            ogs_warn("ENB-S1 Context has already been removed");
+        }
+    } else if (action == OGS_GTP_RELEASE_S1_CONTEXT_REMOVE) {
+        enb_ue = enb_ue_cycle(mme_ue->enb_ue);
+        if (enb_ue) {
+            enb_ue_remove(enb_ue);
+        } else {
+            ogs_warn("ENB-S1 Context has already been removed");
+        }
     } else {
-        ogs_warn("ENB-S1 Context has already been removed");
+        ogs_fatal("Invalid action = %d", action);
+        ogs_assert_if_reached();
     }
 }
 
@@ -709,18 +739,40 @@ void mme_s11_handle_downlink_data_notification(
         ogs_gtp_xact_t *xact, mme_ue_t *mme_ue,
         ogs_gtp_downlink_data_notification_t *noti)
 {
-    int rv;
     uint8_t cause_value = 0;
-    ogs_gtp_header_t h;
-    ogs_pkbuf_t *s11buf = NULL;
+
+    mme_bearer_t *bearer = NULL;
 
     ogs_assert(xact);
     ogs_assert(noti);
 
-    ogs_debug("[MME] Downlink Data Notification");
+    ogs_debug("Downlink Data Notification");
+
+    cause_value = OGS_GTP_CAUSE_REQUEST_ACCEPTED;
+
+    if (noti->eps_bearer_id.presence == 0) {
+        ogs_error("No Bearer ID");
+        cause_value = OGS_GTP_CAUSE_MANDATORY_IE_MISSING;
+    }
 
     if (!mme_ue) {
-        ogs_warn("OGS_GTP_CAUSE_CONTEXT_NOT_FOUND");
+        ogs_error("No Context");
+        cause_value = OGS_GTP_CAUSE_CONTEXT_NOT_FOUND;
+    }
+
+    if (cause_value == OGS_GTP_CAUSE_REQUEST_ACCEPTED) {
+        bearer = mme_bearer_find_by_ue_ebi(mme_ue, noti->eps_bearer_id.u8);
+        if (!bearer)
+            ogs_error("No Context for EPS Bearer ID[%d]",
+                    noti->eps_bearer_id.u8);
+    }
+
+    if (!bearer) {
+        ogs_error("No context");
+        cause_value = OGS_GTP_CAUSE_CONTEXT_NOT_FOUND;
+    }
+
+    if (cause_value != OGS_GTP_CAUSE_REQUEST_ACCEPTED) {
         ogs_gtp_send_error_message(xact, mme_ue ? mme_ue->sgw_s11_teid : 0,
                 OGS_GTP_DOWNLINK_DATA_NOTIFICATION_ACKNOWLEDGE_TYPE,
                 OGS_GTP_CAUSE_CONTEXT_NOT_FOUND);
@@ -728,22 +780,18 @@ void mme_s11_handle_downlink_data_notification(
     }
 
     ogs_assert(mme_ue);
+    ogs_assert(bearer);
     ogs_debug("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
             mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
 
-    /* Build Downlink data notification ack */
-    memset(&h, 0, sizeof(ogs_gtp_header_t));
-    h.type = OGS_GTP_DOWNLINK_DATA_NOTIFICATION_ACKNOWLEDGE_TYPE;
-    h.teid = mme_ue->sgw_s11_teid;
-
-    s11buf = mme_s11_build_downlink_data_notification_ack(h.type);
-    ogs_expect_or_return(s11buf);
-
-    rv = ogs_gtp_xact_update_tx(xact, &h, s11buf);
-    ogs_expect_or_return(rv == OGS_OK);
-
-    rv = ogs_gtp_xact_commit(xact);
-    ogs_expect(rv == OGS_OK);
+    /*
+     * Save Transaction. It will be handled after ECM-Connected
+     *
+     * You should not remove OLD bearer->xact.
+     * If GTP-xact Holding timer is expired,
+     * OLD bearer->xact memory will be automatically removed.
+     */
+    bearer->xact = xact;
 
     if (noti->cause.presence) {
         ogs_gtp_cause_t *cause = noti->cause.data;
@@ -805,6 +853,9 @@ void mme_s11_handle_downlink_data_notification(
             s1ap_send_ue_context_release_command(enb_ue,
                     S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
                     S1AP_UE_CTX_REL_S1_PAGING, 0);
+        } else {
+            mme_gtp_send_downlink_data_notification_ack(
+                    bearer, OGS_GTP_CAUSE_UE_ALREADY_RE_ATTACHED);
         }
     }
 }
@@ -824,7 +875,7 @@ void mme_s11_handle_create_indirect_data_forwarding_tunnel_response(
     ogs_assert(xact);
     ogs_assert(rsp);
 
-    ogs_debug("[MME] Create Indirect Data Forwarding Tunnel Response");
+    ogs_debug("Create Indirect Data Forwarding Tunnel Response");
 
     if (!mme_ue) {
         ogs_warn("No Context in TEID");
@@ -896,7 +947,7 @@ void mme_s11_handle_delete_indirect_data_forwarding_tunnel_response(
     ogs_assert(xact);
     ogs_assert(rsp);
 
-    ogs_debug("[MME] Delete Indirect Data Forwarding Tunnel Response");
+    ogs_debug("Delete Indirect Data Forwarding Tunnel Response");
 
     if (!mme_ue) {
         ogs_warn("No Context in TEID");
@@ -924,8 +975,7 @@ void mme_s11_handle_delete_indirect_data_forwarding_tunnel_response(
     ogs_debug("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
             mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
 
-    rv = mme_ue_clear_indirect_tunnel(mme_ue);
-    ogs_expect(rv == OGS_OK);
+    mme_ue_clear_indirect_tunnel(mme_ue);
 }
 
 void mme_s11_handle_bearer_resource_failure_indication(
@@ -941,7 +991,7 @@ void mme_s11_handle_bearer_resource_failure_indication(
     bearer = xact->data;
     ogs_assert(ind);
 
-    ogs_debug("[MME] Bearer Resource Failure Indication");
+    ogs_debug("Bearer Resource Failure Indication");
 
     rv = ogs_gtp_xact_commit(xact);
     ogs_expect_or_return(rv == OGS_OK);
