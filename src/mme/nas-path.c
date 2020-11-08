@@ -56,7 +56,7 @@ int nas_eps_send_emm_to_esm(mme_ue_t *mme_ue,
     ogs_pkbuf_put_data(esmbuf,
             esm_message_container->buffer, esm_message_container->length);
 
-    rv = s1ap_send_to_esm(mme_ue, esmbuf);
+    rv = s1ap_send_to_esm(mme_ue, esmbuf, 0);
     if (rv != OGS_OK) {
         ogs_error("s1ap_send_to_esm() failed");
     }

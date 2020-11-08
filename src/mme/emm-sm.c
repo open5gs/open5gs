@@ -737,8 +737,7 @@ void emm_state_security_mode(ogs_fsm_t *s, mme_event_t *e)
             /* Now, We will check the MAC in the NAS message*/
             h.type = e->nas_type;
             if (h.integrity_protected == 0) {
-                ogs_error("Security-mode : No Integrity Protected in IMSI[%s]",
-                        mme_ue->imsi_bcd);
+                ogs_error("[%s] No Integrity Protected", mme_ue->imsi_bcd);
 
                 nas_eps_send_attach_reject(mme_ue,
                     EMM_CAUSE_SECURITY_MODE_REJECTED_UNSPECIFIED,
@@ -748,7 +747,7 @@ void emm_state_security_mode(ogs_fsm_t *s, mme_event_t *e)
             }
 
             if (!SECURITY_CONTEXT_IS_VALID(mme_ue)) {
-                ogs_warn("No Security Context : IMSI[%s]", mme_ue->imsi_bcd);
+                ogs_warn("[%s] No Security Context", mme_ue->imsi_bcd);
                 nas_eps_send_attach_reject(mme_ue,
                     EMM_CAUSE_SECURITY_MODE_REJECTED_UNSPECIFIED,
                     ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
@@ -864,6 +863,7 @@ void emm_state_initial_context_setup(ogs_fsm_t *s, mme_event_t *e)
     int rv;
     mme_ue_t *mme_ue = NULL;
     ogs_nas_eps_message_t *message = NULL;
+    ogs_nas_security_header_type_t h;
 
     ogs_assert(s);
     ogs_assert(e);
@@ -886,6 +886,26 @@ void emm_state_initial_context_setup(ogs_fsm_t *s, mme_event_t *e)
         case OGS_NAS_EPS_ATTACH_COMPLETE:
             ogs_debug("Attach complete");
             ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
+
+            h.type = e->nas_type;
+            if (h.integrity_protected == 0) {
+                ogs_error("[%s] No Integrity Protected", mme_ue->imsi_bcd);
+
+                nas_eps_send_attach_reject(mme_ue,
+                    EMM_CAUSE_SECURITY_MODE_REJECTED_UNSPECIFIED,
+                    ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
+                OGS_FSM_TRAN(s, &emm_state_exception);
+                break;
+            }
+
+            if (!SECURITY_CONTEXT_IS_VALID(mme_ue)) {
+                ogs_warn("[%s] No Security Context", mme_ue->imsi_bcd);
+                nas_eps_send_attach_reject(mme_ue,
+                    EMM_CAUSE_SECURITY_MODE_REJECTED_UNSPECIFIED,
+                    ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
+                OGS_FSM_TRAN(s, &emm_state_exception);
+                break;
+            }
 
             rv = emm_handle_attach_complete(
                     mme_ue, &message->emm.attach_complete);

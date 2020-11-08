@@ -123,7 +123,7 @@ int s1ap_delayed_send_to_enb_ue(
     }
 }
 
-int s1ap_send_to_esm(mme_ue_t *mme_ue, ogs_pkbuf_t *esmbuf)
+int s1ap_send_to_esm(mme_ue_t *mme_ue, ogs_pkbuf_t *esmbuf, uint8_t nas_type)
 {
     int rv;
     mme_event_t *e = NULL;
@@ -135,6 +135,7 @@ int s1ap_send_to_esm(mme_ue_t *mme_ue, ogs_pkbuf_t *esmbuf)
     ogs_assert(e);
     e->mme_ue = mme_ue;
     e->pkbuf = esmbuf;
+    e->nas_type = nas_type;
     rv = ogs_queue_push(ogs_app()->queue, e);
     if (rv != OGS_OK) {
         ogs_warn("ogs_queue_push() failed:%d", (int)rv);
@@ -233,7 +234,7 @@ int s1ap_send_to_nas(enb_ue_t *enb_ue,
             ogs_error("No UE Context");
             return OGS_ERROR;
         }
-        return s1ap_send_to_esm(mme_ue, nasbuf);
+        return s1ap_send_to_esm(mme_ue, nasbuf, security_header_type.type);
     } else {
         ogs_error("Unknown/Unimplemented NAS Protocol discriminator 0x%02x",
                   h->protocol_discriminator);

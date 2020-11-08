@@ -25,6 +25,7 @@
 #include "esm-build.h"
 #include "esm-handler.h"
 #include "mme-s11-handler.h"
+#include "s1ap-path.h"
 #include "nas-path.h"
 #include "mme-gtp-path.h"
 
@@ -54,6 +55,7 @@ void esm_state_inactive(ogs_fsm_t *s, mme_event_t *e)
     mme_sess_t *sess = NULL;
     mme_bearer_t *bearer = NULL;
     ogs_nas_eps_message_t *message = NULL;
+    ogs_nas_security_header_type_t h;
 
     ogs_assert(s);
     ogs_assert(e);
@@ -90,8 +92,8 @@ void esm_state_inactive(ogs_fsm_t *s, mme_event_t *e)
             }
             break;
         case OGS_NAS_EPS_PDN_DISCONNECT_REQUEST:
-            ogs_fatal("PDN disconnect request");
-            ogs_fatal("    IMSI[%s] PTI[%d] EBI[%d]",
+            ogs_debug("PDN disconnect request");
+            ogs_debug("    IMSI[%s] PTI[%d] EBI[%d]",
                     mme_ue->imsi_bcd, sess->pti, bearer->ebi);
             if (MME_HAVE_SGW_S1U_PATH(sess)) {
                 mme_gtp_send_delete_session_request(sess,
@@ -107,6 +109,34 @@ void esm_state_inactive(ogs_fsm_t *s, mme_event_t *e)
                     mme_ue->imsi_bcd, sess->pti, bearer->ebi);
 
             CLEAR_BEARER_TIMER(bearer->t3489);
+
+            h.type = e->nas_type;
+            if (h.integrity_protected == 0) {
+                ogs_error("[%s] No Integrity Protected", mme_ue->imsi_bcd);
+                nas_eps_send_attach_reject(mme_ue,
+                    EMM_CAUSE_SECURITY_MODE_REJECTED_UNSPECIFIED,
+                    ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
+                ogs_assert(mme_ue->enb_ue);
+                s1ap_send_ue_context_release_command(mme_ue->enb_ue,
+                        S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
+                        S1AP_UE_CTX_REL_UE_CONTEXT_REMOVE, 0);
+                OGS_FSM_TRAN(s, &esm_state_exception);
+                break;
+            }
+
+            if (!SECURITY_CONTEXT_IS_VALID(mme_ue)) {
+                ogs_warn("[%s] No Security Context", mme_ue->imsi_bcd);
+                nas_eps_send_attach_reject(mme_ue,
+                    EMM_CAUSE_SECURITY_MODE_REJECTED_UNSPECIFIED,
+                    ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
+                ogs_assert(mme_ue->enb_ue);
+                s1ap_send_ue_context_release_command(mme_ue->enb_ue,
+                        S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
+                        S1AP_UE_CTX_REL_UE_CONTEXT_REMOVE, 0);
+                OGS_FSM_TRAN(s, &esm_state_exception);
+                break;
+            }
+
             rv = esm_handle_information_response(
                     sess, &message->esm.esm_information_response);
             if (rv != OGS_OK) {
