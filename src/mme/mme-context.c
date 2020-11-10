@@ -3086,7 +3086,8 @@ ogs_pdn_t *mme_pdn_find_by_apn(mme_ue_t *mme_ue, char *apn)
 
     for (i = 0; i < subscription_data->num_of_pdn; i++) {
         pdn = &subscription_data->pdn[i];
-        if (ogs_strcasecmp(pdn->apn, apn) == 0)
+        if ((ogs_strcasecmp(pdn->apn, apn) == 0) ||
+            (ogs_strcasecmp(pdn->apn, "*")))
             return pdn;
     }
 
