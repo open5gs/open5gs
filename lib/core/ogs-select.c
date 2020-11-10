@@ -139,7 +139,7 @@ static int select_remove(ogs_poll_t *poll)
 static int select_process(ogs_pollset_t *pollset, ogs_time_t timeout)
 {
     struct select_context_s *context = NULL;
-    ogs_poll_t *poll = NULL;
+    ogs_poll_t *poll = NULL, *next_poll = NULL;
     int rc;
     struct timeval tv, *tp;
 
@@ -181,13 +181,15 @@ static int select_process(ogs_pollset_t *pollset, ogs_time_t timeout)
         return OGS_TIMEUP;
     }
 
-    ogs_list_for_each(&context->list, poll) {
+    ogs_list_for_each_safe(&context->list, next_poll, poll) {
         short when = 0;
-        if (FD_ISSET(poll->fd, &context->work_read_fd_set)) {
+        if ((poll->when & OGS_POLLIN) &&
+            FD_ISSET(poll->fd, &context->work_read_fd_set)) {
             when |= OGS_POLLIN;
         }
 
-        if (FD_ISSET(poll->fd, &context->work_write_fd_set)) {
+        if ((poll->when & OGS_POLLOUT) &&
+            FD_ISSET(poll->fd, &context->work_write_fd_set)) {
             when |= OGS_POLLOUT;
         }
 

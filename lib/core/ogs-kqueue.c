@@ -137,6 +137,7 @@ static int kqueue_add(ogs_poll_t *poll)
     return kqueue_set(poll, filter, EV_ADD|EV_ENABLE);
 }
 
+#if 0 /* ogs_pollset_remove() is not working, SHOULD remove the below code */
 static int kqueue_remove(ogs_poll_t *poll)
 {
     ogs_pollset_t *pollset = NULL;
@@ -165,6 +166,22 @@ static int kqueue_remove(ogs_poll_t *poll)
 
     return OGS_OK;
 }
+#else /* New approach : ogs_pollset_remove() is properly working. */
+
+static int kqueue_remove(ogs_poll_t *poll)
+{
+    int filter = 0;
+
+    if (poll->when & OGS_POLLIN) {
+        filter = EVFILT_READ;
+    }
+    if (poll->when & OGS_POLLOUT) {
+        filter = EVFILT_WRITE;
+    }
+
+    return kqueue_set(poll, filter, EV_DELETE);
+}
+#endif
 
 static int kqueue_process(ogs_pollset_t *pollset, ogs_time_t timeout)
 {
@@ -187,6 +204,9 @@ static int kqueue_process(ogs_pollset_t *pollset, ogs_time_t timeout)
     n = kevent(context->kqueue,
             context->change_list, context->nchanges,
             context->event_list, context->nevents, tp);
+
+    context->nchanges = 0;
+
     if (n < 0) {
         ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno, "kqueue failed");
         return OGS_ERROR;

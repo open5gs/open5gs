@@ -27,6 +27,8 @@ extern const ogs_pollset_actions_t ogs_kqueue_actions;
 extern const ogs_pollset_actions_t ogs_epoll_actions;
 extern const ogs_pollset_actions_t ogs_select_actions;
 
+static void *self_handler_data = NULL;
+
 ogs_pollset_actions_t ogs_pollset_actions;
 bool ogs_pollset_actions_initialized = false;
 
@@ -87,7 +89,11 @@ ogs_poll_t *ogs_pollset_add(ogs_pollset_t *pollset, short when,
     poll->when = when;
     poll->fd = fd;
     poll->handler = handler;
-    poll->data = data;
+
+    if (data == &self_handler_data)
+        poll->data = poll;
+    else
+        poll->data = data;
 
     poll->pollset = pollset;
 
@@ -116,4 +122,9 @@ void ogs_pollset_remove(ogs_poll_t *poll)
     }
 
     ogs_pool_free(&pollset->pool, poll);
+}
+
+void *ogs_pollset_self_handler_data(void)
+{
+    return &self_handler_data;
 }

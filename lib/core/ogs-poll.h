@@ -40,6 +40,8 @@ ogs_poll_t *ogs_pollset_add(ogs_pollset_t *pollset, short when,
         ogs_socket_t fd, ogs_poll_handler_f handler, void *data);
 void ogs_pollset_remove(ogs_poll_t *poll);
 
+void *ogs_pollset_self_handler_data(void);
+
 typedef struct ogs_pollset_actions_s {
     void (*init)(ogs_pollset_t *pollset);
     void (*cleanup)(ogs_pollset_t *pollset);
