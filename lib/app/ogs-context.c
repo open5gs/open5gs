@@ -321,6 +321,9 @@ int ogs_app_context_parse_config(void)
                 } else if (!strcmp(parameter_key, "no_slaac")) {
                     self.parameter.no_slaac =
                         ogs_yaml_iter_bool(&parameter_iter);
+                } else if (!strcmp(parameter_key, "use_openair")) {
+                    self.parameter.use_openair =
+                        ogs_yaml_iter_bool(&parameter_iter);
                 } else
                     ogs_warn("unknown key `%s`", parameter_key);
             }

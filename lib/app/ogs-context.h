@@ -69,6 +69,8 @@ typedef struct ogs_app_context_s {
         int prefer_ipv4;
         int multicast;
         int no_slaac;
+
+        int use_openair;
     } parameter;
 
     ogs_sockopt_t sockopt;

@@ -301,10 +301,30 @@ ogs_pkbuf_t *emm_build_security_mode_command(mme_ue_t *mme_ue)
     imeisv_request->type = OGS_NAS_IMEISV_TYPE;
     imeisv_request->value = OGS_NAS_IMEISV_REQUESTED;
 
-    security_mode_command->presencemask |=
-        OGS_NAS_EPS_SECURITY_MODE_COMMAND_HASHMME_PRESENT;
-    hashmme->length = OGS_HASH_MME_LEN;
-    memcpy(hashmme->value, mme_ue->hash_mme, hashmme->length);
+    /*
+     * TS24.301
+     * 5.4.3.2 NAS security mode control initiation by the network
+     *
+     * If, during an ongoing attach or tracking area updating procedure,
+     * the MME is initiating a SECURITY MODE COMMAND (i.e. after receiving
+     * the ATTACH REQUEST or TRACKING AREA UPDATE REQUEST message,
+     * but before sending a response to that message) and the ATTACH REQUEST
+     * or TRACKING AREA UPDATE REQUEST message is received without integrity
+     * protection or does not successfully pass the integrity check at the MME,
+     * the MME shall calculate the HASH MME of the entire plain ATTACH REQUEST
+     * or TRACKING AREA UPDATE REQUEST message as described
+     * in 3GPP TS 33.401 [19] and shall include the HASH MME
+     * in the SECURITY MODE COMMAND message
+     *
+     * However, Openair UE does not support HashMME. For user convenience,
+     * we added a way not to include HashMME through the configuration file.
+     */
+    if (ogs_app()->parameter.use_openair == false) {
+        security_mode_command->presencemask |=
+            OGS_NAS_EPS_SECURITY_MODE_COMMAND_HASHMME_PRESENT;
+        hashmme->length = OGS_HASH_MME_LEN;
+        memcpy(hashmme->value, mme_ue->hash_mme, hashmme->length);
+    }
 
     if (mme_ue->ue_additional_security_capability.length) {
         security_mode_command->presencemask |=
