@@ -589,7 +589,7 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
                 ogs_min(max_num_of_ostreams, gnb->max_num_of_ostreams);
 
         ogs_debug("gNB-N1 SCTP_COMM_UP[%s] Max Num of Outbound Streams[%d]", 
-            OGS_ADDR(gnb->addr, buf), gnb->max_num_of_ostreams);
+            OGS_ADDR(gnb->sctp.addr, buf), gnb->max_num_of_ostreams);
 
         break;
 

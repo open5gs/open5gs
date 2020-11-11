@@ -48,6 +48,9 @@ extern int __ogs_sctp_domain;
 #define OGS_SCTP_SGSAP_PPID             0
 #define OGS_SCTP_NGAP_PPID              60
 
+#define ogs_sctp_ppid_in_pkbuf(__pkBUF)         (__pkBUF)->param[0]
+#define ogs_sctp_stream_no_in_pkbuf(__pkBUF)    (__pkBUF)->param[1]
+
 #if HAVE_USRSCTP
 
 #undef MSG_NOTIFICATION
@@ -79,6 +82,20 @@ ogs_sock_t *ogs_sctp_accept(ogs_sock_t *sock);
 
 #define DEFAULT_SCTP_MAX_NUM_OF_OSTREAMS 30
 
+typedef struct ogs_sctp_sock_s {
+    int             type;           /* SOCK_STREAM or SOCK_SEQPACKET */
+
+    ogs_sock_t      *sock;          /* Socket */
+    ogs_sockaddr_t  *addr;          /* Address */
+
+    struct {
+        ogs_poll_t  *read;          /* Read Poll */
+        ogs_poll_t  *write;         /* Write Poll */
+    } poll;
+
+    ogs_list_t      write_queue;    /* Write Queue for Sending S1AP message */
+} ogs_sctp_sock_t;
+
 typedef struct ogs_sctp_info_s {
     uint32_t ppid;
     uint16_t stream_no;
@@ -106,6 +123,11 @@ int ogs_sctp_recvmsg(ogs_sock_t *sock, void *msg, size_t len,
         ogs_sockaddr_t *from, ogs_sctp_info_t *sinfo, int *msg_flags);
 int ogs_sctp_recvdata(ogs_sock_t *sock, void *msg, size_t len,
         ogs_sockaddr_t *from, ogs_sctp_info_t *sinfo);
+
+int ogs_sctp_senddata(ogs_sock_t *sock,
+        ogs_pkbuf_t *pkbuf, ogs_sockaddr_t *addr);
+void ogs_sctp_write_to_buffer(ogs_sctp_sock_t *sctp, ogs_pkbuf_t *pkbuf);
+void ogs_sctp_flush_and_destroy(ogs_sctp_sock_t *sctp);
 
 #ifdef __cplusplus
 }

@@ -833,9 +833,15 @@ amf_gnb_t *amf_gnb_add(ogs_sock_t *sock, ogs_sockaddr_t *addr)
     ogs_assert(gnb);
     memset(gnb, 0, sizeof *gnb);
 
-    gnb->sock = sock;
-    gnb->addr = addr;
-    gnb->sock_type = amf_gnb_sock_type(gnb->sock);
+    gnb->sctp.sock = sock;
+    gnb->sctp.addr = addr;
+    gnb->sctp.type = amf_gnb_sock_type(gnb->sctp.sock);
+
+    if (gnb->sctp.type == SOCK_STREAM) {
+        gnb->sctp.poll.read = ogs_pollset_add(ogs_app()->pollset,
+            OGS_POLLIN, sock->fd, ngap_recv_upcall, sock);
+        ogs_assert(gnb->sctp.poll.read);
+    }
 
     gnb->max_num_of_ostreams = DEFAULT_SCTP_MAX_NUM_OF_OSTREAMS;
     gnb->ostream_id = 0;
@@ -847,13 +853,8 @@ amf_gnb_t *amf_gnb_add(ogs_sock_t *sock, ogs_sockaddr_t *addr)
 
     ogs_list_init(&gnb->ran_ue_list);
 
-    if (gnb->sock_type == SOCK_STREAM) {
-        gnb->poll = ogs_pollset_add(ogs_app()->pollset,
-            OGS_POLLIN, sock->fd, ngap_recv_upcall, sock);
-        ogs_assert(gnb->poll);
-    }
-
-    ogs_hash_set(self.gnb_addr_hash, gnb->addr, sizeof(ogs_sockaddr_t), gnb);
+    ogs_hash_set(self.gnb_addr_hash,
+            gnb->sctp.addr, sizeof(ogs_sockaddr_t), gnb);
 
     memset(&e, 0, sizeof(e));
     e.gnb = gnb;
@@ -873,7 +874,7 @@ int amf_gnb_remove(amf_gnb_t *gnb)
     amf_event_t e;
 
     ogs_assert(gnb);
-    ogs_assert(gnb->sock);
+    ogs_assert(gnb->sctp.sock);
 
     ogs_list_remove(&self.gnb_list, gnb);
 
@@ -882,15 +883,11 @@ int amf_gnb_remove(amf_gnb_t *gnb)
     ogs_fsm_fini(&gnb->sm, &e);
     ogs_fsm_delete(&gnb->sm);
 
-    ogs_hash_set(self.gnb_addr_hash, gnb->addr, sizeof(ogs_sockaddr_t), NULL);
+    ogs_hash_set(self.gnb_addr_hash,
+            gnb->sctp.addr, sizeof(ogs_sockaddr_t), NULL);
     ogs_hash_set(self.gnb_id_hash, &gnb->gnb_id, sizeof(gnb->gnb_id), NULL);
 
-    if (gnb->sock_type == SOCK_STREAM) {
-        ogs_pollset_remove(gnb->poll);
-        ogs_sctp_destroy(gnb->sock);
-    }
-
-    ogs_free(gnb->addr);
+    ogs_sctp_flush_and_destroy(&gnb->sctp);
 
     ogs_pool_free(&amf_gnb_pool, gnb);
 

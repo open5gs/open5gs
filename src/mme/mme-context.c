@@ -1879,9 +1879,17 @@ mme_enb_t *mme_enb_add(ogs_sock_t *sock, ogs_sockaddr_t *addr)
     ogs_assert(enb);
     memset(enb, 0, sizeof *enb);
 
-    enb->sock = sock;
-    enb->addr = addr;
-    enb->sock_type = mme_enb_sock_type(enb->sock);
+    enb->sctp.sock = sock;
+    enb->sctp.addr = addr;
+    enb->sctp.type = mme_enb_sock_type(enb->sctp.sock);
+
+    if (enb->sctp.type == SOCK_STREAM) {
+        enb->sctp.poll.read = ogs_pollset_add(ogs_app()->pollset,
+            OGS_POLLIN, sock->fd, s1ap_recv_upcall, sock);
+        ogs_assert(enb->sctp.poll.read);
+
+        ogs_list_init(&enb->sctp.write_queue);
+    }
 
     enb->max_num_of_ostreams = DEFAULT_SCTP_MAX_NUM_OF_OSTREAMS;
     enb->ostream_id = 0;
@@ -1893,13 +1901,8 @@ mme_enb_t *mme_enb_add(ogs_sock_t *sock, ogs_sockaddr_t *addr)
 
     ogs_list_init(&enb->enb_ue_list);
 
-    if (enb->sock_type == SOCK_STREAM) {
-        enb->poll = ogs_pollset_add(ogs_app()->pollset,
-            OGS_POLLIN, sock->fd, s1ap_recv_upcall, sock);
-        ogs_assert(enb->poll);
-    }
-
-    ogs_hash_set(self.enb_addr_hash, enb->addr, sizeof(ogs_sockaddr_t), enb);
+    ogs_hash_set(self.enb_addr_hash,
+            enb->sctp.addr, sizeof(ogs_sockaddr_t), enb);
 
     memset(&e, 0, sizeof(e));
     e.enb = enb;
@@ -1919,7 +1922,7 @@ int mme_enb_remove(mme_enb_t *enb)
     mme_event_t e;
 
     ogs_assert(enb);
-    ogs_assert(enb->sock);
+    ogs_assert(enb->sctp.sock);
 
     ogs_list_remove(&self.enb_list, enb);
 
@@ -1928,15 +1931,11 @@ int mme_enb_remove(mme_enb_t *enb)
     ogs_fsm_fini(&enb->sm, &e);
     ogs_fsm_delete(&enb->sm);
 
-    ogs_hash_set(self.enb_addr_hash, enb->addr, sizeof(ogs_sockaddr_t), NULL);
+    ogs_hash_set(self.enb_addr_hash,
+            enb->sctp.addr, sizeof(ogs_sockaddr_t), NULL);
     ogs_hash_set(self.enb_id_hash, &enb->enb_id, sizeof(enb->enb_id), NULL);
 
-    if (enb->sock_type == SOCK_STREAM) {
-        ogs_pollset_remove(enb->poll);
-        ogs_sctp_destroy(enb->sock);
-    }
-
-    ogs_free(enb->addr);
+    ogs_sctp_flush_and_destroy(&enb->sctp);
 
     ogs_pool_free(&mme_enb_pool, enb);
 

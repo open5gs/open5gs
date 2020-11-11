@@ -37,6 +37,11 @@ typedef struct ogs_cluster_s {
 
 typedef struct ogs_pkbuf_pool_s ogs_pkbuf_pool_t;
 typedef struct ogs_pkbuf_s {
+    ogs_lnode_t lnode;
+
+    /* Currently it is used in SCTP stream number and PPID. */
+    uint64_t param[2];
+
     ogs_cluster_t *cluster;
 
     unsigned int len;

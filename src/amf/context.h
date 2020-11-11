@@ -120,10 +120,7 @@ typedef struct amf_gnb_s {
     ogs_fsm_t       sm;         /* A state machine */
 
     uint32_t        gnb_id;     /* gNB_ID received from gNB */
-    int             sock_type;  /* SOCK_STREAM or SOCK_SEQPACKET */
-    ogs_sock_t      *sock;      /* gNB NGAP Socket */
-    ogs_sockaddr_t  *addr;      /* gNB NGAP Address */
-    ogs_poll_t      *poll;      /* gNB NGAP Poll */
+    ogs_sctp_sock_t sctp;       /* SCTP socket */
 
     struct {
         bool ng_setup_success;  /* gNB NGAP Setup complete successfuly */
@@ -131,7 +128,6 @@ typedef struct amf_gnb_s {
 
     uint16_t        max_num_of_ostreams;/* SCTP Max num of outbound streams */
     uint16_t        ostream_id;         /* gnb_ostream_id generator */
-
 
     uint8_t         num_of_supported_ta_list;
     struct {

@@ -82,7 +82,7 @@ void s1ap_handle_s1_setup_request(mme_enb_t *enb, ogs_s1ap_message_t *message)
     long cause = 0;
 
     ogs_assert(enb);
-    ogs_assert(enb->sock);
+    ogs_assert(enb->sctp.sock);
 
     ogs_assert(message);
     initiatingMessage = message->choice.initiatingMessage;
@@ -112,7 +112,7 @@ void s1ap_handle_s1_setup_request(mme_enb_t *enb, ogs_s1ap_message_t *message)
     ogs_assert(Global_ENB_ID);
 
     ogs_s1ap_ENB_ID_to_uint32(&Global_ENB_ID->eNB_ID, &enb_id);
-    ogs_debug("    IP[%s] ENB_ID[%d]", OGS_ADDR(enb->addr, buf), enb_id);
+    ogs_debug("    IP[%s] ENB_ID[%d]", OGS_ADDR(enb->sctp.addr, buf), enb_id);
 
     if (PagingDRX)
         ogs_debug("    PagingDRX[%ld]", *PagingDRX);
@@ -212,7 +212,7 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, ogs_s1ap_message_t *message)
     enb_ue_t *enb_ue = NULL;
 
     ogs_assert(enb);
-    ogs_assert(enb->sock);
+    ogs_assert(enb->sctp.sock);
 
     ogs_assert(message);
     initiatingMessage = message->choice.initiatingMessage;
@@ -245,7 +245,8 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, ogs_s1ap_message_t *message)
         }
     }
 
-    ogs_debug("    IP[%s] ENB_ID[%d]", OGS_ADDR(enb->addr, buf), enb->enb_id);
+    ogs_debug("    IP[%s] ENB_ID[%d]",
+            OGS_ADDR(enb->sctp.addr, buf), enb->enb_id);
 
     if (!ENB_UE_S1AP_ID) {
         ogs_error("No ENB_UE_S1AP_ID");
@@ -359,7 +360,7 @@ void s1ap_handle_uplink_nas_transport(
     enb_ue_t *enb_ue = NULL;
 
     ogs_assert(enb);
-    ogs_assert(enb->sock);
+    ogs_assert(enb->sctp.sock);
 
     ogs_assert(message);
     initiatingMessage = message->choice.initiatingMessage;
@@ -383,7 +384,8 @@ void s1ap_handle_uplink_nas_transport(
         }
     }
 
-    ogs_debug("    IP[%s] ENB_ID[%d]", OGS_ADDR(enb->addr, buf), enb->enb_id);
+    ogs_debug("    IP[%s] ENB_ID[%d]",
+            OGS_ADDR(enb->sctp.addr, buf), enb->enb_id);
 
     if (!ENB_UE_S1AP_ID) {
         ogs_error("No ENB_UE_S1AP_ID");
@@ -426,7 +428,7 @@ void s1ap_handle_ue_capability_info_indication(
     enb_ue_t *enb_ue = NULL;
 
     ogs_assert(enb);
-    ogs_assert(enb->sock);
+    ogs_assert(enb->sctp.sock);
 
     ogs_assert(message);
     initiatingMessage = message->choice.initiatingMessage;
@@ -451,7 +453,8 @@ void s1ap_handle_ue_capability_info_indication(
         }
     }
 
-    ogs_debug("    IP[%s] ENB_ID[%d]", OGS_ADDR(enb->addr, buf), enb->enb_id);
+    ogs_debug("    IP[%s] ENB_ID[%d]",
+            OGS_ADDR(enb->sctp.addr, buf), enb->enb_id);
 
     ogs_assert(ENB_UE_S1AP_ID);
     enb_ue = enb_ue_find_by_enb_ue_s1ap_id(enb, *ENB_UE_S1AP_ID);
@@ -485,7 +488,7 @@ void s1ap_handle_initial_context_setup_response(
     enb_ue_t *enb_ue = NULL;
 
     ogs_assert(enb);
-    ogs_assert(enb->sock);
+    ogs_assert(enb->sctp.sock);
 
     ogs_assert(message);
     successfulOutcome = message->choice.successfulOutcome;
@@ -511,7 +514,8 @@ void s1ap_handle_initial_context_setup_response(
         }
     }
 
-    ogs_debug("    IP[%s] ENB_ID[%d]", OGS_ADDR(enb->addr, buf), enb->enb_id);
+    ogs_debug("    IP[%s] ENB_ID[%d]",
+            OGS_ADDR(enb->sctp.addr, buf), enb->enb_id);
 
     if (!ENB_UE_S1AP_ID) {
         ogs_error("No ENB_UE_S1AP_ID");
@@ -622,7 +626,7 @@ void s1ap_handle_initial_context_setup_failure(
     enb_ue_t *enb_ue = NULL;
 
     ogs_assert(enb);
-    ogs_assert(enb->sock);
+    ogs_assert(enb->sctp.sock);
 
     ogs_assert(message);
     unsuccessfulOutcome = message->choice.unsuccessfulOutcome;
@@ -647,7 +651,8 @@ void s1ap_handle_initial_context_setup_failure(
         }
     }
 
-    ogs_debug("    IP[%s] ENB_ID[%d]", OGS_ADDR(enb->addr, buf), enb->enb_id);
+    ogs_debug("    IP[%s] ENB_ID[%d]",
+            OGS_ADDR(enb->sctp.addr, buf), enb->enb_id);
 
     if (!ENB_UE_S1AP_ID) {
         ogs_error("No ENB_UE_S1AP_ID");
@@ -709,7 +714,7 @@ void s1ap_handle_ue_context_modification_response(
     enb_ue_t *enb_ue = NULL;
 
     ogs_assert(enb);
-    ogs_assert(enb->sock);
+    ogs_assert(enb->sctp.sock);
 
     ogs_assert(message);
     successfulOutcome = message->choice.successfulOutcome;
@@ -731,7 +736,8 @@ void s1ap_handle_ue_context_modification_response(
         }
     }
 
-    ogs_debug("    IP[%s] ENB_ID[%d]", OGS_ADDR(enb->addr, buf), enb->enb_id);
+    ogs_debug("    IP[%s] ENB_ID[%d]",
+            OGS_ADDR(enb->sctp.addr, buf), enb->enb_id);
 
     if (!ENB_UE_S1AP_ID) {
         ogs_error("No ENB_UE_S1AP_ID");
@@ -777,7 +783,7 @@ void s1ap_handle_ue_context_modification_failure(
     mme_ue_t *mme_ue = NULL;
 
     ogs_assert(enb);
-    ogs_assert(enb->sock);
+    ogs_assert(enb->sctp.sock);
 
     ogs_assert(message);
     unsuccessfulOutcome = message->choice.unsuccessfulOutcome;
@@ -802,7 +808,8 @@ void s1ap_handle_ue_context_modification_failure(
         }
     }
 
-    ogs_debug("    IP[%s] ENB_ID[%d]", OGS_ADDR(enb->addr, buf), enb->enb_id);
+    ogs_debug("    IP[%s] ENB_ID[%d]",
+            OGS_ADDR(enb->sctp.addr, buf), enb->enb_id);
 
     if (!ENB_UE_S1AP_ID) {
         ogs_error("No ENB_UE_S1AP_ID");
@@ -854,7 +861,7 @@ void s1ap_handle_e_rab_setup_response(
     mme_ue_t *mme_ue = NULL;
 
     ogs_assert(enb);
-    ogs_assert(enb->sock);
+    ogs_assert(enb->sctp.sock);
 
     ogs_assert(message);
     successfulOutcome = message->choice.successfulOutcome;
@@ -879,7 +886,8 @@ void s1ap_handle_e_rab_setup_response(
         }
     }
 
-    ogs_debug("    IP[%s] ENB_ID[%d]", OGS_ADDR(enb->addr, buf), enb->enb_id);
+    ogs_debug("    IP[%s] ENB_ID[%d]",
+            OGS_ADDR(enb->sctp.addr, buf), enb->enb_id);
 
     if (!ENB_UE_S1AP_ID) {
         ogs_error("No ENB_UE_S1AP_ID");
@@ -980,7 +988,7 @@ void s1ap_handle_ue_context_release_request(
     enb_ue_t *enb_ue = NULL;
 
     ogs_assert(enb);
-    ogs_assert(enb->sock);
+    ogs_assert(enb->sctp.sock);
 
     ogs_assert(message);
     initiatingMessage = message->choice.initiatingMessage;
@@ -1008,7 +1016,8 @@ void s1ap_handle_ue_context_release_request(
         }
     }
 
-    ogs_debug("    IP[%s] ENB_ID[%d]", OGS_ADDR(enb->addr, buf), enb->enb_id);
+    ogs_debug("    IP[%s] ENB_ID[%d]",
+            OGS_ADDR(enb->sctp.addr, buf), enb->enb_id);
 
     if (!MME_UE_S1AP_ID) {
         ogs_error("No MME_UE_S1AP_ID");
@@ -1067,7 +1076,7 @@ void s1ap_handle_ue_context_release_complete(
     enb_ue_t *enb_ue = NULL;
 
     ogs_assert(enb);
-    ogs_assert(enb->sock);
+    ogs_assert(enb->sctp.sock);
 
     ogs_assert(message);
     successfulOutcome = message->choice.successfulOutcome;
@@ -1089,7 +1098,8 @@ void s1ap_handle_ue_context_release_complete(
         }
     }
 
-    ogs_debug("    IP[%s] ENB_ID[%d]", OGS_ADDR(enb->addr, buf), enb->enb_id);
+    ogs_debug("    IP[%s] ENB_ID[%d]",
+            OGS_ADDR(enb->sctp.addr, buf), enb->enb_id);
 
     if (!MME_UE_S1AP_ID) {
         ogs_error("No MME_UE_S1AP_ID");
@@ -1204,7 +1214,7 @@ void s1ap_handle_path_switch_request(
     ogs_pkbuf_t *s1apbuf = NULL;
 
     ogs_assert(enb);
-    ogs_assert(enb->sock);
+    ogs_assert(enb->sctp.sock);
 
     ogs_assert(message);
     initiatingMessage = message->choice.initiatingMessage;
@@ -1241,7 +1251,8 @@ void s1ap_handle_path_switch_request(
         }
     }
 
-    ogs_debug("    IP[%s] ENB_ID[%d]", OGS_ADDR(enb->addr, buf), enb->enb_id);
+    ogs_debug("    IP[%s] ENB_ID[%d]",
+            OGS_ADDR(enb->sctp.addr, buf), enb->enb_id);
 
     ogs_assert(EUTRAN_CGI);
     pLMNidentity = &EUTRAN_CGI->pLMNidentity;
@@ -1266,7 +1277,8 @@ void s1ap_handle_path_switch_request(
     enb_ue = enb_ue_find_by_mme_ue_s1ap_id(*MME_UE_S1AP_ID);
     if (!enb_ue) {
         ogs_error("Cannot find UE from sourceMME-UE-S1AP-ID[%d] and eNB[%s:%d]",
-                (int)*MME_UE_S1AP_ID, OGS_ADDR(enb->addr, buf), enb->enb_id);
+                (int)*MME_UE_S1AP_ID,
+                OGS_ADDR(enb->sctp.addr, buf), enb->enb_id);
 
         s1apbuf = s1ap_build_path_switch_failure(
                 *ENB_UE_S1AP_ID, *MME_UE_S1AP_ID,
@@ -1385,7 +1397,7 @@ void s1ap_handle_enb_configuration_transfer(
     S1AP_SONConfigurationTransfer_t *SONConfigurationTransfer = NULL;
 
     ogs_assert(enb);
-    ogs_assert(enb->sock);
+    ogs_assert(enb->sctp.sock);
 
     ogs_assert(message);
     initiatingMessage = message->choice.initiatingMessage;
@@ -1407,7 +1419,8 @@ void s1ap_handle_enb_configuration_transfer(
         }
     }
 
-    ogs_debug("    IP[%s] ENB_ID[%d]", OGS_ADDR(enb->addr, buf), enb->enb_id);
+    ogs_debug("    IP[%s] ENB_ID[%d]",
+            OGS_ADDR(enb->sctp.addr, buf), enb->enb_id);
 
     if (SONConfigurationTransfer) {
         S1AP_TargeteNB_ID_t *targeteNB_ID =
@@ -1474,7 +1487,7 @@ void s1ap_handle_handover_required(mme_enb_t *enb, ogs_s1ap_message_t *message)
         *Source_ToTarget_TransparentContainer = NULL;
 
     ogs_assert(enb);
-    ogs_assert(enb->sock);
+    ogs_assert(enb->sctp.sock);
 
     ogs_assert(message);
     initiatingMessage = message->choice.initiatingMessage;
@@ -1515,7 +1528,8 @@ void s1ap_handle_handover_required(mme_enb_t *enb, ogs_s1ap_message_t *message)
         }
     }
 
-    ogs_debug("    IP[%s] ENB_ID[%d]", OGS_ADDR(enb->addr, buf), enb->enb_id);
+    ogs_debug("    IP[%s] ENB_ID[%d]",
+            OGS_ADDR(enb->sctp.addr, buf), enb->enb_id);
 
     ogs_assert(TargetID);
     switch (TargetID->present) {
@@ -1590,7 +1604,7 @@ void s1ap_handle_handover_request_ack(
     mme_ue_t *mme_ue = NULL;
 
     ogs_assert(enb);
-    ogs_assert(enb->sock);
+    ogs_assert(enb->sctp.sock);
 
     ogs_assert(message);
     successfulOutcome = message->choice.successfulOutcome;
@@ -1620,7 +1634,8 @@ void s1ap_handle_handover_request_ack(
             break;
         }
     }
-    ogs_debug("    IP[%s] ENB_ID[%d]", OGS_ADDR(enb->addr, buf), enb->enb_id);
+    ogs_debug("    IP[%s] ENB_ID[%d]",
+            OGS_ADDR(enb->sctp.addr, buf), enb->enb_id);
 
     ogs_assert(MME_UE_S1AP_ID);
     ogs_assert(ENB_UE_S1AP_ID);
@@ -1714,7 +1729,7 @@ void s1ap_handle_handover_failure(mme_enb_t *enb, ogs_s1ap_message_t *message)
     enb_ue_t *source_ue = NULL;
 
     ogs_assert(enb);
-    ogs_assert(enb->sock);
+    ogs_assert(enb->sctp.sock);
 
     ogs_assert(message);
     unsuccessfulOutcome = message->choice.unsuccessfulOutcome;
@@ -1737,7 +1752,8 @@ void s1ap_handle_handover_failure(mme_enb_t *enb, ogs_s1ap_message_t *message)
         }
     }
 
-    ogs_debug("    IP[%s] ENB_ID[%d]", OGS_ADDR(enb->addr, buf), enb->enb_id);
+    ogs_debug("    IP[%s] ENB_ID[%d]",
+            OGS_ADDR(enb->sctp.addr, buf), enb->enb_id);
 
     ogs_assert(MME_UE_S1AP_ID);
     ogs_assert(Cause);
@@ -1778,7 +1794,7 @@ void s1ap_handle_handover_cancel(mme_enb_t *enb, ogs_s1ap_message_t *message)
     enb_ue_t *target_ue = NULL;
 
     ogs_assert(enb);
-    ogs_assert(enb->sock);
+    ogs_assert(enb->sctp.sock);
 
     ogs_assert(message);
     initiatingMessage = message->choice.initiatingMessage;
@@ -1803,7 +1819,8 @@ void s1ap_handle_handover_cancel(mme_enb_t *enb, ogs_s1ap_message_t *message)
             break;
         }
     }
-    ogs_debug("    IP[%s] ENB_ID[%d]", OGS_ADDR(enb->addr, buf), enb->enb_id);
+    ogs_debug("    IP[%s] ENB_ID[%d]",
+            OGS_ADDR(enb->sctp.addr, buf), enb->enb_id);
 
     ogs_assert(MME_UE_S1AP_ID);
     ogs_assert(ENB_UE_S1AP_ID);
@@ -1832,7 +1849,7 @@ void s1ap_handle_handover_cancel(mme_enb_t *enb, ogs_s1ap_message_t *message)
     ogs_debug("[MME] Handover Cancel : "
             "UE[eNB-UE-S1AP-ID(%d)] --> eNB[%s:%d]",
             source_ue->enb_ue_s1ap_id,
-            OGS_ADDR(enb->addr, buf), enb->enb_id);
+            OGS_ADDR(enb->sctp.addr, buf), enb->enb_id);
 }
 
 void s1ap_handle_enb_status_transfer(mme_enb_t *enb, ogs_s1ap_message_t *message)
@@ -1852,7 +1869,7 @@ void s1ap_handle_enb_status_transfer(mme_enb_t *enb, ogs_s1ap_message_t *message
     enb_ue_t *source_ue = NULL, *target_ue = NULL;
 
     ogs_assert(enb);
-    ogs_assert(enb->sock);
+    ogs_assert(enb->sctp.sock);
 
     ogs_assert(message);
     initiatingMessage = message->choice.initiatingMessage;
@@ -1878,7 +1895,8 @@ void s1ap_handle_enb_status_transfer(mme_enb_t *enb, ogs_s1ap_message_t *message
             break;
         }
     }
-    ogs_debug("    IP[%s] ENB_ID[%d]", OGS_ADDR(enb->addr, buf), enb->enb_id);
+    ogs_debug("    IP[%s] ENB_ID[%d]",
+            OGS_ADDR(enb->sctp.addr, buf), enb->enb_id);
 
     ogs_assert(MME_UE_S1AP_ID);
     ogs_assert(ENB_UE_S1AP_ID);
@@ -1926,7 +1944,7 @@ void s1ap_handle_handover_notification(
     mme_bearer_t *bearer = NULL;
 
     ogs_assert(enb);
-    ogs_assert(enb->sock);
+    ogs_assert(enb->sctp.sock);
 
     ogs_assert(message);
     initiatingMessage = message->choice.initiatingMessage;
@@ -1954,7 +1972,8 @@ void s1ap_handle_handover_notification(
             break;
         }
     }
-    ogs_debug("    IP[%s] ENB_ID[%d]", OGS_ADDR(enb->addr, buf), enb->enb_id);
+    ogs_debug("    IP[%s] ENB_ID[%d]",
+            OGS_ADDR(enb->sctp.addr, buf), enb->enb_id);
 
     ogs_assert(EUTRAN_CGI);
     pLMNidentity = &EUTRAN_CGI->pLMNidentity;
@@ -2050,7 +2069,7 @@ void s1ap_handle_s1_reset(
     S1AP_UE_associatedLogicalS1_ConnectionListRes_t *partOfS1_Interface = NULL;
 
     ogs_assert(enb);
-    ogs_assert(enb->sock);
+    ogs_assert(enb->sctp.sock);
 
     ogs_assert(message);
     initiatingMessage = message->choice.initiatingMessage;
@@ -2074,7 +2093,8 @@ void s1ap_handle_s1_reset(
         }
     }
 
-    ogs_debug("    IP[%s] ENB_ID[%d]", OGS_ADDR(enb->addr, buf), enb->enb_id);
+    ogs_debug("    IP[%s] ENB_ID[%d]",
+            OGS_ADDR(enb->sctp.addr, buf), enb->enb_id);
 
     ogs_assert(Cause);
     ogs_debug("    Cause[Group:%d Cause:%d]",
@@ -2183,7 +2203,7 @@ void s1ap_handle_write_replace_warning_response(
     S1AP_WriteReplaceWarningResponse_t *WriteReplaceWarningResponse = NULL;
 
     ogs_assert(enb);
-    ogs_assert(enb->sock);
+    ogs_assert(enb->sctp.sock);
 
     ogs_assert(message);
     successfulOutcome = message->choice.successfulOutcome;
@@ -2194,7 +2214,8 @@ void s1ap_handle_write_replace_warning_response(
 
     ogs_debug("[MME] Write replace warning response");
 
-    ogs_debug("    IP[%s] ENB_ID[%d]", OGS_ADDR(enb->addr, buf), enb->enb_id);
+    ogs_debug("    IP[%s] ENB_ID[%d]",
+            OGS_ADDR(enb->sctp.addr, buf), enb->enb_id);
 
 }
 
@@ -2207,7 +2228,7 @@ void s1ap_handle_kill_response(
     S1AP_KillResponse_t *KillResponse = NULL;
 
     ogs_assert(enb);
-    ogs_assert(enb->sock);
+    ogs_assert(enb->sctp.sock);
 
     ogs_assert(message);
     successfulOutcome = message->choice.successfulOutcome;
@@ -2218,5 +2239,6 @@ void s1ap_handle_kill_response(
 
     ogs_debug("[MME] Kill response");
 
-    ogs_debug("    IP[%s] ENB_ID[%d]", OGS_ADDR(enb->addr, buf), enb->enb_id);
+    ogs_debug("    IP[%s] ENB_ID[%d]",
+            OGS_ADDR(enb->sctp.addr, buf), enb->enb_id);
 }

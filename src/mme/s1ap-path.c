@@ -47,40 +47,26 @@ void s1ap_close()
     ogs_socknode_remove_all(&mme_self()->s1ap_list6);
 }
 
-int s1ap_send(ogs_sock_t *sock, ogs_pkbuf_t *pkbuf,
-        ogs_sockaddr_t *addr, uint16_t stream_no)
-{
-    int sent;
-
-    ogs_assert(sock);
-    ogs_assert(pkbuf);
-
-    sent = ogs_sctp_sendmsg(sock, pkbuf->data, pkbuf->len,
-            addr, OGS_SCTP_S1AP_PPID, stream_no);
-    if (sent < 0 || sent != pkbuf->len) {
-        ogs_error("ogs_sctp_sendmsg(len:%d,ssn:%d) error (%d:%s)",
-                pkbuf->len, stream_no, errno, strerror(errno));
-        ogs_pkbuf_free(pkbuf);
-        return OGS_ERROR;
-    }
-
-    ogs_pkbuf_free(pkbuf);
-    return OGS_OK;
-}
-
 int s1ap_send_to_enb(mme_enb_t *enb, ogs_pkbuf_t *pkbuf, uint16_t stream_no)
 {
     char buf[OGS_ADDRSTRLEN];
 
     ogs_assert(enb);
     ogs_assert(pkbuf);
-    ogs_assert(enb->sock);
+    ogs_assert(enb->sctp.sock);
 
-    ogs_debug("    IP[%s] ENB_ID[%d]", OGS_ADDR(enb->addr, buf), enb->enb_id);
+    ogs_debug("    IP[%s] ENB_ID[%d]",
+            OGS_ADDR(enb->sctp.addr, buf), enb->enb_id);
 
-    return s1ap_send(enb->sock, pkbuf,
-            enb->sock_type == SOCK_STREAM ? NULL : enb->addr,
-            stream_no);
+    ogs_sctp_ppid_in_pkbuf(pkbuf) = OGS_SCTP_S1AP_PPID;
+    ogs_sctp_stream_no_in_pkbuf(pkbuf) = stream_no;
+
+    if (enb->sctp.type == SOCK_STREAM) {
+        ogs_sctp_write_to_buffer(&enb->sctp, pkbuf);
+        return OGS_OK;
+    } else {
+        return ogs_sctp_senddata(enb->sctp.sock, pkbuf, enb->sctp.addr);
+    }
 }
 
 int s1ap_send_to_enb_ue(enb_ue_t *enb_ue, ogs_pkbuf_t *pkbuf)

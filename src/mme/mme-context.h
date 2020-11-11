@@ -27,6 +27,7 @@
 #include "ogs-gtp.h"
 #include "ogs-nas-eps.h"
 #include "ogs-app.h"
+#include "ogs-sctp.h"
 
 /* S1AP */
 #include "S1AP_Cause.h"
@@ -209,10 +210,7 @@ typedef struct mme_enb_s {
     ogs_fsm_t       sm;         /* A state machine */
 
     uint32_t        enb_id;     /* eNB_ID received from eNB */
-    int             sock_type;  /* SOCK_STREAM or SOCK_SEQPACKET */
-    ogs_sock_t      *sock;      /* eNB S1AP Socket */
-    ogs_sockaddr_t  *addr;      /* eNB S1AP Address */
-    ogs_poll_t      *poll;      /* eNB S1AP Poll */
+    ogs_sctp_sock_t sctp;       /* SCTP socket */
 
     struct {
         bool s1_setup_success;  /* eNB S1AP Setup complete successfuly */
@@ -220,7 +218,6 @@ typedef struct mme_enb_s {
 
     uint16_t        max_num_of_ostreams;/* SCTP Max num of outbound streams */
     uint16_t        ostream_id;         /* enb_ostream_id generator */
-
 
     uint8_t         num_of_supported_ta_list;
     ogs_eps_tai_t   supported_ta_list[OGS_MAX_NUM_OF_TAI*OGS_MAX_NUM_OF_BPLMN];

@@ -116,7 +116,7 @@ void ngap_handle_ng_setup_request(amf_gnb_t *gnb, ogs_ngap_message_t *message)
     uint32_t gnb_id;
 
     ogs_assert(gnb);
-    ogs_assert(gnb->sock);
+    ogs_assert(gnb->sctp.sock);
 
     ogs_assert(message);
     initiatingMessage = message->choice.initiatingMessage;
@@ -169,7 +169,7 @@ void ngap_handle_ng_setup_request(amf_gnb_t *gnb, ogs_ngap_message_t *message)
     }
 
     ogs_ngap_GNB_ID_to_uint32(&globalGNB_ID->gNB_ID, &gnb_id);
-    ogs_debug("    IP[%s] GNB_ID[0x%x]", OGS_ADDR(gnb->addr, buf), gnb_id);
+    ogs_debug("    IP[%s] GNB_ID[0x%x]", OGS_ADDR(gnb->sctp.addr, buf), gnb_id);
 
     if (PagingDRX)
         ogs_debug("    PagingDRX[%ld]", *PagingDRX);
@@ -336,7 +336,7 @@ void ngap_handle_initial_ue_message(amf_gnb_t *gnb, ogs_ngap_message_t *message)
     NGAP_FiveG_S_TMSI_t *FiveG_S_TMSI = NULL;
 
     ogs_assert(gnb);
-    ogs_assert(gnb->sock);
+    ogs_assert(gnb->sctp.sock);
 
     ogs_assert(message);
     initiatingMessage = message->choice.initiatingMessage;
@@ -367,7 +367,8 @@ void ngap_handle_initial_ue_message(amf_gnb_t *gnb, ogs_ngap_message_t *message)
         }
     }
 
-    ogs_debug("    IP[%s] RAN_ID[%d]", OGS_ADDR(gnb->addr, buf), gnb->gnb_id);
+    ogs_debug("    IP[%s] RAN_ID[%d]",
+            OGS_ADDR(gnb->sctp.addr, buf), gnb->gnb_id);
 
     if (!RAN_UE_NGAP_ID) {
         ogs_error("No RAN_UE_NGAP_ID");
@@ -495,7 +496,7 @@ void ngap_handle_uplink_nas_transport(
     NGAP_NAS_PDU_t *NAS_PDU = NULL;
 
     ogs_assert(gnb);
-    ogs_assert(gnb->sock);
+    ogs_assert(gnb->sctp.sock);
 
     ogs_assert(message);
     initiatingMessage = message->choice.initiatingMessage;
@@ -522,7 +523,8 @@ void ngap_handle_uplink_nas_transport(
         }
     }
 
-    ogs_debug("    IP[%s] RAN_ID[%d]", OGS_ADDR(gnb->addr, buf), gnb->gnb_id);
+    ogs_debug("    IP[%s] RAN_ID[%d]",
+            OGS_ADDR(gnb->sctp.addr, buf), gnb->gnb_id);
 
     if (!AMF_UE_NGAP_ID) {
         ogs_error("No AMF_UE_NGAP_ID");
@@ -581,7 +583,7 @@ void ngap_handle_ue_radio_capability_info_indication(
     NGAP_UERadioCapability_t *UERadioCapability = NULL;
 
     ogs_assert(gnb);
-    ogs_assert(gnb->sock);
+    ogs_assert(gnb->sctp.sock);
 
     ogs_assert(message);
     initiatingMessage = message->choice.initiatingMessage;
@@ -610,7 +612,8 @@ void ngap_handle_ue_radio_capability_info_indication(
         }
     }
 
-    ogs_debug("    IP[%s] RAN_ID[%d]", OGS_ADDR(gnb->addr, buf), gnb->gnb_id);
+    ogs_debug("    IP[%s] RAN_ID[%d]",
+            OGS_ADDR(gnb->sctp.addr, buf), gnb->gnb_id);
 
     if (!AMF_UE_NGAP_ID) {
         ogs_error("No AMF_UE_NGAP_ID");
@@ -676,7 +679,7 @@ void ngap_handle_initial_context_setup_response(
     OCTET_STRING_t *transfer = NULL;
 
     ogs_assert(gnb);
-    ogs_assert(gnb->sock);
+    ogs_assert(gnb->sctp.sock);
 
     ogs_assert(message);
     successfulOutcome = message->choice.successfulOutcome;
@@ -705,7 +708,8 @@ void ngap_handle_initial_context_setup_response(
         }
     }
 
-    ogs_debug("    IP[%s] RAN_ID[%d]", OGS_ADDR(gnb->addr, buf), gnb->gnb_id);
+    ogs_debug("    IP[%s] RAN_ID[%d]",
+            OGS_ADDR(gnb->sctp.addr, buf), gnb->gnb_id);
 
     if (!AMF_UE_NGAP_ID) {
         ogs_error("No AMF_UE_NGAP_ID");
@@ -823,7 +827,7 @@ void ngap_handle_initial_context_setup_failure(
     NGAP_Cause_t *Cause = NULL;
 
     ogs_assert(gnb);
-    ogs_assert(gnb->sock);
+    ogs_assert(gnb->sctp.sock);
 
     ogs_assert(message);
     unsuccessfulOutcome = message->choice.unsuccessfulOutcome;
@@ -851,7 +855,8 @@ void ngap_handle_initial_context_setup_failure(
         }
     }
 
-    ogs_debug("    IP[%s] RAN_ID[%d]", OGS_ADDR(gnb->addr, buf), gnb->gnb_id);
+    ogs_debug("    IP[%s] RAN_ID[%d]",
+            OGS_ADDR(gnb->sctp.addr, buf), gnb->gnb_id);
 
     if (!AMF_UE_NGAP_ID) {
         ogs_error("No AMF_UE_NGAP_ID");
@@ -943,7 +948,7 @@ void ngap_handle_ue_context_release_request(
     NGAP_Cause_t *Cause = NULL;
 
     ogs_assert(gnb);
-    ogs_assert(gnb->sock);
+    ogs_assert(gnb->sctp.sock);
 
     ogs_assert(message);
     initiatingMessage = message->choice.initiatingMessage;
@@ -974,7 +979,8 @@ void ngap_handle_ue_context_release_request(
         }
     }
 
-    ogs_debug("    IP[%s] RAN_ID[%d]", OGS_ADDR(gnb->addr, buf), gnb->gnb_id);
+    ogs_debug("    IP[%s] RAN_ID[%d]",
+            OGS_ADDR(gnb->sctp.addr, buf), gnb->gnb_id);
 
     if (!AMF_UE_NGAP_ID) {
         ogs_error("No AMF_UE_NGAP_ID");
@@ -1099,7 +1105,7 @@ void ngap_handle_ue_context_release_complete(
     NGAP_AMF_UE_NGAP_ID_t *AMF_UE_NGAP_ID = NULL;
 
     ogs_assert(gnb);
-    ogs_assert(gnb->sock);
+    ogs_assert(gnb->sctp.sock);
 
     ogs_assert(message);
     successfulOutcome = message->choice.successfulOutcome;
@@ -1124,7 +1130,8 @@ void ngap_handle_ue_context_release_complete(
         }
     }
 
-    ogs_debug("    IP[%s] RAN_ID[%d]", OGS_ADDR(gnb->addr, buf), gnb->gnb_id);
+    ogs_debug("    IP[%s] RAN_ID[%d]",
+            OGS_ADDR(gnb->sctp.addr, buf), gnb->gnb_id);
 
     if (!AMF_UE_NGAP_ID) {
         ogs_error("No AMF_UE_NGAP_ID");
@@ -1234,7 +1241,7 @@ void ngap_handle_pdu_session_resource_setup_response(
     OCTET_STRING_t *transfer = NULL;
 
     ogs_assert(gnb);
-    ogs_assert(gnb->sock);
+    ogs_assert(gnb->sctp.sock);
 
     ogs_assert(message);
     successfulOutcome = message->choice.successfulOutcome;
@@ -1264,7 +1271,8 @@ void ngap_handle_pdu_session_resource_setup_response(
         }
     }
 
-    ogs_debug("    IP[%s] RAN_ID[%d]", OGS_ADDR(gnb->addr, buf), gnb->gnb_id);
+    ogs_debug("    IP[%s] RAN_ID[%d]",
+            OGS_ADDR(gnb->sctp.addr, buf), gnb->gnb_id);
 
     if (!AMF_UE_NGAP_ID) {
         ogs_error("No AMF_UE_NGAP_ID");
@@ -1398,7 +1406,7 @@ void ngap_handle_pdu_session_resource_release_response(
     OCTET_STRING_t *transfer = NULL;
 
     ogs_assert(gnb);
-    ogs_assert(gnb->sock);
+    ogs_assert(gnb->sctp.sock);
 
     ogs_assert(message);
     successfulOutcome = message->choice.successfulOutcome;
@@ -1428,7 +1436,8 @@ void ngap_handle_pdu_session_resource_release_response(
         }
     }
 
-    ogs_debug("    IP[%s] RAN_ID[%d]", OGS_ADDR(gnb->addr, buf), gnb->gnb_id);
+    ogs_debug("    IP[%s] RAN_ID[%d]",
+            OGS_ADDR(gnb->sctp.addr, buf), gnb->gnb_id);
 
     if (!AMF_UE_NGAP_ID) {
         ogs_error("No AMF_UE_NGAP_ID");
@@ -1573,7 +1582,7 @@ void ngap_handle_path_switch_request(
     amf_nsmf_pdu_session_update_sm_context_param_t param;
 
     ogs_assert(gnb);
-    ogs_assert(gnb->sock);
+    ogs_assert(gnb->sctp.sock);
 
     ogs_assert(message);
     initiatingMessage = message->choice.initiatingMessage;
@@ -1607,7 +1616,8 @@ void ngap_handle_path_switch_request(
         }
     }
 
-    ogs_debug("    IP[%s] RAN_ID[%d]", OGS_ADDR(gnb->addr, buf), gnb->gnb_id);
+    ogs_debug("    IP[%s] RAN_ID[%d]",
+            OGS_ADDR(gnb->sctp.addr, buf), gnb->gnb_id);
 
     if (!AMF_UE_NGAP_ID) {
         ogs_error("No AMF_UE_NGAP_ID");

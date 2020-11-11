@@ -209,7 +209,7 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
                 ogs_min(max_num_of_ostreams, enb->max_num_of_ostreams);
 
         ogs_debug("eNB-S1 SCTP_COMM_UP[%s] Max Num of Outbound Streams[%d]", 
-            OGS_ADDR(enb->addr, buf), enb->max_num_of_ostreams);
+            OGS_ADDR(enb->sctp.addr, buf), enb->max_num_of_ostreams);
 
         break;
 

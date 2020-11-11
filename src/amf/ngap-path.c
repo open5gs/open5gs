@@ -46,40 +46,23 @@ void ngap_close()
     ogs_socknode_remove_all(&amf_self()->ngap_list6);
 }
 
-int ngap_send(ogs_sock_t *sock, ogs_pkbuf_t *pkbuf,
-        ogs_sockaddr_t *addr, uint16_t stream_no)
-{
-    int sent;
-
-    ogs_assert(sock);
-    ogs_assert(pkbuf);
-
-    sent = ogs_sctp_sendmsg(sock, pkbuf->data, pkbuf->len,
-            addr, OGS_SCTP_NGAP_PPID, stream_no);
-    if (sent < 0 || sent != pkbuf->len) {
-        ogs_error("ogs_sctp_sendmsg(len:%d,ssn:%d) error (%d:%s)",
-                pkbuf->len, stream_no, errno, strerror(errno));
-        ogs_pkbuf_free(pkbuf);
-        return OGS_ERROR;
-    }
-
-    ogs_pkbuf_free(pkbuf);
-    return OGS_OK;
-}
-
 int ngap_send_to_gnb(amf_gnb_t *gnb, ogs_pkbuf_t *pkbuf, uint16_t stream_no)
 {
     char buf[OGS_ADDRSTRLEN];
 
     ogs_assert(gnb);
     ogs_assert(pkbuf);
-    ogs_assert(gnb->sock);
+    ogs_assert(gnb->sctp.sock);
 
-    ogs_debug("    IP[%s] RAN_ID[%d]", OGS_ADDR(gnb->addr, buf), gnb->gnb_id);
+    ogs_debug("    IP[%s] RAN_ID[%d]",
+            OGS_ADDR(gnb->sctp.addr, buf), gnb->gnb_id);
 
-    return ngap_send(gnb->sock, pkbuf,
-            gnb->sock_type == SOCK_STREAM ? NULL : gnb->addr,
-            stream_no);
+    if (gnb->sctp.type == SOCK_STREAM) {
+        ogs_sctp_write_to_buffer(&gnb->sctp, pkbuf);
+        return OGS_OK;
+    } else {
+        return ogs_sctp_senddata(gnb->sctp.sock, pkbuf, gnb->sctp.addr);
+    }
 }
 
 int ngap_send_to_ran_ue(ran_ue_t *ran_ue, ogs_pkbuf_t *pkbuf)
