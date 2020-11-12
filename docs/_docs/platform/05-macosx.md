@@ -75,6 +75,13 @@ Install the depedencies for building the source code.
 $ brew install mongo-c-driver gnutls libgcrypt libidn libyaml libmicrohttpd curl pkg-config
 ```
 
+Install Bison and Create soft link.
+```bash
+$ brew install bison
+$ cd /usr/local/bin
+$ ln -s ../Cellar/bison/3.7.3/bin/bison bison
+```
+
 Install Meson using Homebrew.
 ```bash
 $ brew install meson

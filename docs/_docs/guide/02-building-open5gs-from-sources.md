@@ -6,6 +6,10 @@ head_inline: "<style> .blue { color: blue; } </style>"
 This post explains how to compile and install the source code on **Debian/Ubuntu** based Linux Distribution.
 {: .blue}
 
+**Note:** Ubuntu 16.04(xenial) and earlier versions, and Debian 9(stretch) and earlier versions are not supported.
+{: .notice--danger}
+
+
 ### Getting MongoDB
 ---
 

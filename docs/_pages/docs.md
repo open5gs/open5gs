@@ -24,5 +24,4 @@ head_inline: "<style> ul { padding-bottom: 1em; } </style>"
   - [Debian/Ubuntu](platform/01-debian-ubuntu)
   - [CentOS](platform/02-centos)
   - [Fedora](platform/03-fedora)
-  - [FreeBSD](platform/04-freebsd)
   - [MacOSX](platform/05-macosx)

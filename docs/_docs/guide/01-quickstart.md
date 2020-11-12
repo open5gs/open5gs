@@ -2,7 +2,7 @@
 title: Quickstart
 ---
 
-**Note:** Open5GS supports installation of packages in *Debian/Ubuntu and openSUSE* environments. *CentOS, Fedora, FreeBSD, and Mac OSX* require you to [build with source code]({{ site.url }}{{ site.baseurl }}/docs/guide/02-building-open5gs-from-sources)
+**Note:** Open5GS supports installation of packages in *Debian/Ubuntu and openSUSE* environments. *CentOS, Fedora, and Mac OSX* require you to [build with source code]({{ site.url }}{{ site.baseurl }}/docs/guide/02-building-open5gs-from-sources)
 {: .notice--warning}
 
 ### Install Open5GS with a Package Manager
