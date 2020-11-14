@@ -66,8 +66,10 @@ void ngap_state_operational(ogs_fsm_t *s, amf_event_t *e)
         pdu = e->ngap.message;
         ogs_assert(pdu);
             
-        if (!(pdu->present == NGAP_NGAP_PDU_PR_initiatingMessage && pdu->choice.initiatingMessage->procedureCode == NGAP_ProcedureCode_id_NGSetup) && !gnb->state.ng_setup_success)
-        {
+        if (!gnb->state.ng_setup_success &&
+            !(pdu->present == NGAP_NGAP_PDU_PR_initiatingMessage &&
+                pdu->choice.initiatingMessage->procedureCode ==
+                    NGAP_ProcedureCode_id_NGSetup)) {
             break;
         }
 
