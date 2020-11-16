@@ -15,6 +15,8 @@ head_inline: "<style> ul { padding-bottom: 1em; } </style>"
   - [VoLTE Setup with Kamailio IMS and Open5GS](tutorial/02-VoLTE-setup)
   - [Dockerized VoLTE Setup](tutorial/03-VoLTE-dockerized)
   - [Kubernetes Open5GS Deployment](https://dev.to/infinitydon/virtual-4g-simulation-using-kubernetes-and-gns3-3b7k?fbclid=IwAR1p99h13a-mCfejanbBQe0H0-jp5grXkn5mWf1WrTHf47UtegB2-UHGGZQ)
+  - [Static IPs for UEs](http://nickvsnetworking.com/open5gs-epc-static-ip-addresses-for-ues-apns-subscribers/)
+  - [My first 5G Core: Open5Gs and UERANSIM](http://nickvsnetworking.com/my-first-5g-core-open5gs-and-ueransim/)
 
 - Troubleshooting
   - [Simple Issues](troubleshoot/01-simple-issues)
