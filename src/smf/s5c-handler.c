@@ -154,8 +154,9 @@ void smf_s5c_handle_create_session_request(
 
     smf_sess_set_ue_ip(sess);
 
-    ogs_info("UE IMSI:[%s] IPv4:[%s] IPv6:[%s]",
+    ogs_info("UE IMSI:[%s] APN:[%s] IPv4:[%s] IPv6:[%s]",
 	    smf_ue->imsi_bcd,
+	    sess->pdn.apn,
         sess->ipv4 ? OGS_INET_NTOP(&sess->ipv4->addr, buf1) : "",
         sess->ipv6 ? OGS_INET6_NTOP(&sess->ipv6->addr, buf2) : "");
 
