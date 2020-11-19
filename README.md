@@ -2,7 +2,7 @@
 
 If you find Open5GS useful for work, please consider supporting this Open Source project by [Becoming a sponsor](https://github.com/sponsors/acetcom). To manage the funding transactions transparently, you can donate through [OpenCollective](https://opencollective.com/open5gs).
 
-<h3 align="center">Special Sponsors</h3>
+<h3 align="center">Special Sponsor</h3>
 <!--special start-->
 
 <p align="center">
@@ -40,7 +40,7 @@ If you don't understand something about Open5GS, the [https://open5gs.org/open5g
 
 ## Technical Discussion
 
-Problem with Open5GS can be filed as [issues](https://github.com/open5gs/open5gs/issues) in this repository. Voice and text chat available in Open5GS's [Discord](https://discordapp.com/) workspace. Use [this link](https://discord.gg/GreNkuc) to get started.
+Problem with Open5GS can be filed as [issues](https://github.com/open5gs/open5gs/issues) in this repository. Voice and text chat are available in Open5GS's [Discord](https://discordapp.com/) workspace. Use [this link](https://discord.gg/GreNkuc) to get started.
 
 ## Contributing
 
