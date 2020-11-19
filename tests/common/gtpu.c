@@ -140,6 +140,9 @@ int test_gtpu_send(
         ogs_assert_if_reached();
     }
 
+    ext_hdesc->pdu_type =
+        OGS_GTP_EXTENSION_HEADER_PDU_TYPE_UL_PDU_SESSION_INFORMATION;
+
     return ogs_gtp_send_user_plane(&gnode, gtp_hdesc, ext_hdesc, pkbuf);
 }
 

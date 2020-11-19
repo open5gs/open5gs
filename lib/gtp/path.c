@@ -202,8 +202,7 @@ int ogs_gtp_send_user_plane(
             /* 5G Core */
             ext_h->type = OGS_GTP_EXTENSION_HEADER_TYPE_PDU_SESSION_CONTAINER;
             ext_h->len = 1;
-            ext_h->pdu_type =
-                OGS_GTP_EXTENSION_HEADER_PDU_TYPE_UL_PDU_SESSION_INFORMATION;
+            ext_h->pdu_type = ext_hdesc->pdu_type;
             ext_h->qos_flow_identifier = ext_hdesc->qos_flow_identifier;
             ext_h->next_type =
                 OGS_GTP_EXTENSION_HEADER_TYPE_NO_MORE_EXTENSION_HEADERS;
