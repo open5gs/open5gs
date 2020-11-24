@@ -30,7 +30,7 @@ Note that this Vagrantfile is identical to the base CentOS 8 box, with
 the exception that the amount of virtual memory has been increased to 1GB:
 
 ```bash
-cd vagrant
+cd vagrant/centos
 vagrant up --provider virtualbox
 ```
 
