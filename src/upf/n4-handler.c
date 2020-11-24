@@ -74,10 +74,10 @@ void upf_n4_handle_session_establishment_request(
     cause_value = OGS_PFCP_CAUSE_REQUEST_ACCEPTED;
 
     if (!sess) {
-        ogs_error("No Context");
+        ogs_error("Invalid Message Format");
         ogs_pfcp_send_error_message(xact, 0,
                 OGS_PFCP_SESSION_ESTABLISHMENT_RESPONSE_TYPE,
-                OGS_PFCP_CAUSE_SESSION_CONTEXT_NOT_FOUND, 0);
+                OGS_GTP_CAUSE_INVALID_MESSAGE_FORMAT, 0);
         return;
     }
 
