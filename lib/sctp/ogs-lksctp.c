@@ -389,6 +389,10 @@ static int set_paddrparams(ogs_sock_t *sock, ogs_sockopt_t *option)
     ogs_assert(sock);
     ogs_assert(option);
 
+    // sbryden: FPOC LXC Debian 10 doesn't support this
+    // and it's not needed, so just return ok
+    return OGS_OK;
+
     memset(&heartbeat, 0, sizeof(heartbeat));
     socklen = sizeof(heartbeat);
     if (getsockopt(sock->fd, IPPROTO_SCTP, SCTP_PEER_ADDR_PARAMS,
