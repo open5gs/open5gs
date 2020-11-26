@@ -349,6 +349,11 @@ smf:
 #  o Disable Stateless Address Autoconfiguration for IPv6
 #      no_slaac: true
 #
+#  o Use OAI UE
+#    - Remove HashMME in Security-mode command message
+#    - Use the length 1 of EPS network feature support in Attach accept message
+#      use_openair: true
+#
 parameter:
 
 #
