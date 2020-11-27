@@ -3,7 +3,7 @@ title: Fedora
 head_inline: "<style> .blue { color: blue; } </style>"
 ---
 
-This guide is based on **Fedora 32** Distribution.
+This guide is based on **Fedora 33** Distribution.
 {: .blue}
 
 **Note:** Fedora 33 is not working

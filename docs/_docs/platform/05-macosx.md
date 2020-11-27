@@ -3,7 +3,7 @@ title: Mac OS X
 head_inline: "<style> .blue { color: blue; } </style>"
 ---
 
-This guide is based on **macOS Catalina 10.15**.
+This guide is based on **macOS Big Sur 11.0.1**.
 {: .blue}
 
 ### Installing Homebrew
