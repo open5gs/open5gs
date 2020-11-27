@@ -122,7 +122,7 @@ typedef struct ogs_sbi_xact_s {
     ogs_sbi_request_t *request;
     ogs_timer_t *t_response;
 
-    ogs_sbi_session_t *assoc_session;
+    ogs_sbi_stream_t *assoc_stream;
     uint8_t state;
 
     ogs_sbi_object_t *sbi_object;

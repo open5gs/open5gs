@@ -20,7 +20,7 @@
 #include "nudr-handler.h"
 
 bool udm_nudr_dr_handle_subscription_authentication(
-    udm_ue_t *udm_ue, ogs_sbi_session_t *session, ogs_sbi_message_t *recvmsg)
+    udm_ue_t *udm_ue, ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg)
 {
     ogs_sbi_server_t *server = NULL;
 
@@ -59,8 +59,8 @@ bool udm_nudr_dr_handle_subscription_authentication(
     OpenAPI_authentication_vector_t AuthenticationVector;
 
     ogs_assert(udm_ue);
-    ogs_assert(session);
-    server = ogs_sbi_session_get_server(session);
+    ogs_assert(stream);
+    server = ogs_sbi_server_from_stream(stream);
     ogs_assert(server);
 
     ogs_assert(recvmsg);
@@ -73,7 +73,7 @@ bool udm_nudr_dr_handle_subscription_authentication(
             AuthenticationSubscription = recvmsg->AuthenticationSubscription;
             if (!AuthenticationSubscription) {
                 ogs_error("[%s] No AuthenticationSubscription", udm_ue->suci);
-                ogs_sbi_server_send_error(session,
+                ogs_sbi_server_send_error(stream,
                         OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR,
                         recvmsg, "No AuthenticationSubscription", udm_ue->suci);
                 return false;
@@ -84,7 +84,7 @@ bool udm_nudr_dr_handle_subscription_authentication(
                 ogs_error("[%s] Not supported Auth Method [%d]",
                         udm_ue->suci,
                         AuthenticationSubscription->authentication_method);
-                ogs_sbi_server_send_error(session,
+                ogs_sbi_server_send_error(stream,
                         OGS_SBI_HTTP_STATUS_FORBIDDEN,
                         recvmsg, "Not supported Auth Method", udm_ue->suci);
                 return false;
@@ -93,14 +93,14 @@ bool udm_nudr_dr_handle_subscription_authentication(
 
             if (!AuthenticationSubscription->enc_permanent_key) {
                 ogs_error("[%s] No encPermanentKey", udm_ue->suci);
-                ogs_sbi_server_send_error(session,
+                ogs_sbi_server_send_error(stream,
                         OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR,
                         recvmsg, "No encPermanentKey", udm_ue->suci);
                 return false;
             }
             if (!AuthenticationSubscription->enc_opc_key) {
                 ogs_error("[%s] No encPermanentKey", udm_ue->suci);
-                ogs_sbi_server_send_error(session,
+                ogs_sbi_server_send_error(stream,
                     OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR,
                     recvmsg, "No encPermanentKey", udm_ue->suci);
                 return false;
@@ -108,21 +108,21 @@ bool udm_nudr_dr_handle_subscription_authentication(
             if (!AuthenticationSubscription->authentication_management_field) {
                 ogs_error("[%s] No authenticationManagementField",
                         udm_ue->suci);
-                ogs_sbi_server_send_error(session,
+                ogs_sbi_server_send_error(stream,
                     OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR,
                     recvmsg, "No authenticationManagementField", udm_ue->suci);
                 return false;
             }
             if (!AuthenticationSubscription->sequence_number) {
                 ogs_error("[%s] No SequenceNumber", udm_ue->suci);
-                ogs_sbi_server_send_error(session,
+                ogs_sbi_server_send_error(stream,
                     OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR,
                     recvmsg, "No SequenceNumber", udm_ue->suci);
                 return false;
             }
             if (!AuthenticationSubscription->sequence_number->sqn) {
                 ogs_error("[%s] No SequenceNumber.sqn", udm_ue->suci);
-                ogs_sbi_server_send_error(session,
+                ogs_sbi_server_send_error(stream,
                     OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR,
                     recvmsg, "No SequenceNumber.sqn", udm_ue->suci);
                 return false;
@@ -205,13 +205,13 @@ bool udm_nudr_dr_handle_subscription_authentication(
 
             response = ogs_sbi_build_response(&sendmsg, OGS_SBI_HTTP_STATUS_OK);
             ogs_assert(response);
-            ogs_sbi_server_send_response(session, response);
+            ogs_sbi_server_send_response(stream, response);
 
             return true;
 
         DEFAULT
             ogs_error("Invalid HTTP method [%s]", recvmsg->h.method);
-            ogs_sbi_server_send_error(session,
+            ogs_sbi_server_send_error(stream,
                     OGS_SBI_HTTP_STATUS_FORBIDDEN, recvmsg,
                     "Invalid HTTP method", recvmsg->h.method);
         END
@@ -235,7 +235,7 @@ bool udm_nudr_dr_handle_subscription_authentication(
         response = ogs_sbi_build_response(&sendmsg,
                 OGS_SBI_HTTP_STATUS_CREATED);
         ogs_assert(response);
-        ogs_sbi_server_send_response(session, response);
+        ogs_sbi_server_send_response(stream, response);
 
         ogs_free(sendmsg.http.location);
         OpenAPI_auth_event_free(sendmsg.AuthEvent);
@@ -251,7 +251,7 @@ bool udm_nudr_dr_handle_subscription_authentication(
 }
 
 bool udm_nudr_dr_handle_subscription_context(
-    udm_ue_t *udm_ue, ogs_sbi_session_t *session, ogs_sbi_message_t *recvmsg)
+    udm_ue_t *udm_ue, ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg)
 {
     ogs_sbi_server_t *server = NULL;
 
@@ -264,8 +264,8 @@ bool udm_nudr_dr_handle_subscription_context(
     OpenAPI_amf3_gpp_access_registration_t *Amf3GppAccessRegistration = NULL;
 
     ogs_assert(udm_ue);
-    ogs_assert(session);
-    server = ogs_sbi_session_get_server(session);
+    ogs_assert(stream);
+    server = ogs_sbi_server_from_stream(stream);
     ogs_assert(server);
 
     ogs_assert(recvmsg);
@@ -275,14 +275,14 @@ bool udm_nudr_dr_handle_subscription_context(
         Amf3GppAccessRegistration = udm_ue->amf_3gpp_access_registration;
         if (!Amf3GppAccessRegistration) {
             ogs_error("[%s] No Amf3GppAccessRegistration", udm_ue->supi);
-            ogs_sbi_server_send_error(session, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+            ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
                     recvmsg, "No Amf3GppAccessRegistration", udm_ue->supi);
             return false;
         }
 
         if (!Amf3GppAccessRegistration->amf_instance_id) {
             ogs_error("[%s] No amfInstanceId", udm_ue->supi);
-            ogs_sbi_server_send_error(session, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+            ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
                     recvmsg, "No amfInstanceId", udm_ue->supi);
             return false;
         }
@@ -315,7 +315,7 @@ bool udm_nudr_dr_handle_subscription_context(
 
         response = ogs_sbi_build_response(&sendmsg, status);
         ogs_assert(response);
-        ogs_sbi_server_send_response(session, response);
+        ogs_sbi_server_send_response(stream, response);
 
         ogs_free(sendmsg.http.location);
         OpenAPI_amf3_gpp_access_registration_free(
@@ -331,7 +331,7 @@ bool udm_nudr_dr_handle_subscription_context(
 }
 
 bool udm_nudr_dr_handle_subscription_provisioned(
-    udm_ue_t *udm_ue, ogs_sbi_session_t *session, ogs_sbi_message_t *recvmsg)
+    udm_ue_t *udm_ue, ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg)
 {
     ogs_sbi_server_t *server = NULL;
 
@@ -339,8 +339,8 @@ bool udm_nudr_dr_handle_subscription_provisioned(
     ogs_sbi_response_t *response = NULL;
 
     ogs_assert(udm_ue);
-    ogs_assert(session);
-    server = ogs_sbi_session_get_server(session);
+    ogs_assert(stream);
+    server = ogs_sbi_server_from_stream(stream);
     ogs_assert(server);
 
     ogs_assert(recvmsg);
@@ -357,7 +357,7 @@ bool udm_nudr_dr_handle_subscription_provisioned(
 
         response = ogs_sbi_build_response(&sendmsg, recvmsg->res_status);
         ogs_assert(response);
-        ogs_sbi_server_send_response(session, response);
+        ogs_sbi_server_send_response(stream, response);
 
         OpenAPI_access_and_mobility_subscription_data_free(
                 sendmsg.AccessAndMobilitySubscriptionData);
@@ -368,7 +368,7 @@ bool udm_nudr_dr_handle_subscription_provisioned(
 
         response = ogs_sbi_build_response(&sendmsg, recvmsg->res_status);
         ogs_assert(response);
-        ogs_sbi_server_send_response(session, response);
+        ogs_sbi_server_send_response(stream, response);
 
         break;
 
@@ -383,7 +383,7 @@ bool udm_nudr_dr_handle_subscription_provisioned(
 
         response = ogs_sbi_build_response(&sendmsg, recvmsg->res_status);
         ogs_assert(response);
-        ogs_sbi_server_send_response(session, response);
+        ogs_sbi_server_send_response(stream, response);
 
         OpenAPI_session_management_subscription_data_free(
                 sendmsg.SessionManagementSubscriptionData);

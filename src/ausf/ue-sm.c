@@ -55,8 +55,7 @@ void ausf_ue_state_operational(ogs_fsm_t *s, ausf_event_t *e)
     bool handled;
     ausf_ue_t *ausf_ue = NULL;
 
-    ogs_sbi_server_t *server = NULL;
-    ogs_sbi_session_t *session = NULL;
+    ogs_sbi_stream_t *stream = NULL;
     ogs_sbi_message_t *message = NULL;
 
     ogs_assert(s);
@@ -77,15 +76,13 @@ void ausf_ue_state_operational(ogs_fsm_t *s, ausf_event_t *e)
     case AUSF_EVT_SBI_SERVER:
         message = e->sbi.message;
         ogs_assert(message);
-        session = e->sbi.session;
-        ogs_assert(session);
-        server = e->sbi.server;
-        ogs_assert(server);
+        stream = e->sbi.data;
+        ogs_assert(stream);
 
         SWITCH(message->h.method)
         CASE(OGS_SBI_HTTP_METHOD_POST)
             handled = ausf_nausf_auth_handle_authenticate(
-                    ausf_ue, session, message);
+                    ausf_ue, stream, message);
             if (!handled) {
                 ogs_error("[%s] Cannot handle SBI message",
                         ausf_ue->suci);
@@ -94,7 +91,7 @@ void ausf_ue_state_operational(ogs_fsm_t *s, ausf_event_t *e)
             break;
         CASE(OGS_SBI_HTTP_METHOD_PUT)
             handled = ausf_nausf_auth_handle_authenticate_confirmation(
-                    ausf_ue, session, message);
+                    ausf_ue, stream, message);
             if (!handled) {
                 ogs_error("[%s] Cannot handle SBI message",
                         ausf_ue->suci);
@@ -104,7 +101,7 @@ void ausf_ue_state_operational(ogs_fsm_t *s, ausf_event_t *e)
         DEFAULT
             ogs_error("[%s] Invalid HTTP method [%s]",
                     ausf_ue->suci, message->h.method);
-            ogs_sbi_server_send_error(session,
+            ogs_sbi_server_send_error(stream,
                     OGS_SBI_HTTP_STATUS_FORBIDDEN, message,
                     "Invalid HTTP method", message->h.method);
         END
@@ -117,8 +114,8 @@ void ausf_ue_state_operational(ogs_fsm_t *s, ausf_event_t *e)
 
         ausf_ue = e->ausf_ue;
         ogs_assert(ausf_ue);
-        session = e->sbi.session;
-        ogs_assert(session);
+        stream = e->sbi.data;
+        ogs_assert(stream);
 
         SWITCH(message->h.service.name)
         CASE(OGS_SBI_SERVICE_NAME_NUDM_UEAU)
@@ -132,19 +129,19 @@ void ausf_ue_state_operational(ogs_fsm_t *s, ausf_event_t *e)
                         ausf_ue->suci, message->res_status);
                 }
                 ogs_sbi_server_send_error(
-                    session, message->res_status,
+                    stream, message->res_status,
                     NULL, "HTTP response error", ausf_ue->suci);
                 break;
             }
 
             SWITCH(message->h.resource.component[1])
             CASE(OGS_SBI_RESOURCE_NAME_SECURITY_INFORMATION)
-                ausf_nudm_ueau_handle_get(ausf_ue, session, message);
+                ausf_nudm_ueau_handle_get(ausf_ue, stream, message);
                 break;
 
             CASE(OGS_SBI_RESOURCE_NAME_AUTH_EVENTS)
                 ausf_nudm_ueau_handle_result_confirmation_inform(
-                        ausf_ue, session, message);
+                        ausf_ue, stream, message);
                 break;
 
             DEFAULT

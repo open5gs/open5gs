@@ -51,6 +51,7 @@ ogs_socknode_t *test_gtpu_server(int index, int family)
 ogs_pkbuf_t *test_gtpu_read(ogs_socknode_t *node)
 {
     int rc = 0;
+    ogs_sockaddr_t from;
     ogs_pkbuf_t *recvbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
     ogs_assert(recvbuf);
     ogs_pkbuf_put(recvbuf, OGS_MAX_SDU_LEN);
@@ -59,15 +60,13 @@ ogs_pkbuf_t *test_gtpu_read(ogs_socknode_t *node)
     ogs_assert(node->sock);
 
     while (1) {
-        rc = ogs_recv(node->sock->fd, recvbuf->data, recvbuf->len, 0);
+        rc = ogs_recvfrom(
+                node->sock->fd, recvbuf->data, recvbuf->len, 0, &from);
         if (rc <= 0) {
-            if (errno == EAGAIN) {
-                continue;
-            }
-            break;
-        } else {
-            break;
+            ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,
+                    "ogs_recvfrom() failed");
         }
+        break;
     }
     recvbuf->len = rc;
 

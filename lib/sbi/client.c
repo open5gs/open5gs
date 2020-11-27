@@ -100,7 +100,7 @@ ogs_sbi_client_t *ogs_sbi_client_add(ogs_sockaddr_t *addr)
 
     ogs_trace("ogs_sbi_client_add()");
 
-    ogs_copyaddrinfo(&client->addr, addr);
+    ogs_copyaddrinfo(&client->node.addr, addr);
 
     ogs_list_init(&client->connection_list);
 
@@ -143,8 +143,8 @@ void ogs_sbi_client_remove(ogs_sbi_client_t *client)
     ogs_assert(client->multi);
     curl_multi_cleanup(client->multi);
 
-    ogs_assert(client->addr);
-    ogs_freeaddrinfo(client->addr);
+    ogs_assert(client->node.addr);
+    ogs_freeaddrinfo(client->node.addr);
 
     ogs_pool_free(&client_pool, client);
 }
@@ -156,8 +156,8 @@ ogs_sbi_client_t *ogs_sbi_client_find(ogs_sockaddr_t *addr)
     ogs_assert(addr);
 
     ogs_list_for_each(&ogs_sbi_self()->client_list, client) {
-        if (ogs_sockaddr_is_equal(client->addr, addr) == true &&
-            OGS_PORT(client->addr) == OGS_PORT(addr))
+        if (ogs_sockaddr_is_equal(client->node.addr, addr) == true &&
+            OGS_PORT(client->node.addr) == OGS_PORT(addr))
             break;
     }
 
@@ -309,6 +309,11 @@ static connection_t *connection_add(
     }
 
     curl_easy_setopt(conn->easy, CURLOPT_HTTPHEADER, conn->header_list);
+
+#if 1 /* Use HTTP2 */
+    curl_easy_setopt(conn->easy,
+            CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_2_PRIOR_KNOWLEDGE);
+#endif
 
     if (ogs_hash_count(request->http.params)) {
         request->h.uri = add_params_to_uri(conn->easy,
@@ -509,7 +514,7 @@ static size_t header_cb(void *ptr, size_t size, size_t nmemb, void *data)
     conn = data;
     ogs_assert(conn);
 
-    if (strncmp(ptr, OGS_SBI_LOCATION, strlen(OGS_SBI_LOCATION)) == 0) {
+    if (ogs_strncasecmp(ptr, OGS_SBI_LOCATION, strlen(OGS_SBI_LOCATION)) == 0) {
         /* ptr : "Location: http://xxx/xxx/xxx\r\n"
            We need to truncate "Location" + ": " + "\r\n" in 'ptr' string */
         int len = strlen(ptr) - strlen(OGS_SBI_LOCATION) - 2 - 2;

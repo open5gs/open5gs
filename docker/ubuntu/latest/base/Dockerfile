@@ -27,6 +27,7 @@ RUN apt-get update && \
         libyaml-dev \
         libmicrohttpd-dev \
         libcurl4-gnutls-dev \
+        libnghttp2-dev \
         iproute2 \
         ca-certificates \
         netbase \

@@ -21,6 +21,7 @@ RUN dnf -y install \
         mongo-c-driver-devel \
         libmicrohttpd-devel \
         libcurl-devel \
+        libnghttp2-devel \
         iproute
 
 RUN dnf -y install meson

@@ -139,6 +139,7 @@ extern "C" {
 #define OGS_SBI_ACCEPT_ENCODING                     "Accept-Encoding"
 #define OGS_SBI_CONTENT_TYPE                        "Content-Type"
 #define OGS_SBI_LOCATION                            "Location"
+#define OGS_SBI_EXPECT                              "Expect"
 #define OGS_SBI_APPLICATION_TYPE                    "application"
 #define OGS_SBI_APPLICATION_JSON_TYPE               "json"
 #define OGS_SBI_APPLICATION_PROBLEM_TYPE            "problem+json"
@@ -273,12 +274,16 @@ typedef struct ogs_sbi_http_message_s {
 } ogs_sbi_http_message_t;
 
 typedef struct ogs_sbi_request_s {
+    ogs_lnode_t lnode;
+
     ogs_sbi_header_t h;
     ogs_sbi_http_message_t http;
 
     /* Used in microhttpd */
     bool suspended;
-    ogs_poll_t *poll;
+    struct {
+        ogs_poll_t *write;
+    } poll;
 } ogs_sbi_request_t;
 
 typedef struct ogs_sbi_response_s {

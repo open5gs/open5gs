@@ -36,6 +36,7 @@ typedef DWORD ogs_err_t;
 #define OGS_EACCES                  ERROR_ACCESS_DENIED
 #define OGS_EEXIST                  ERROR_ALREADY_EXISTS
 #define OGS_EEXIST_FILE             ERROR_FILE_EXISTS
+#define OGS_ECONNRESET              WSAECONNRESET
 #define OGS_ETIMEDOUT               WSAETIMEDOUT
 #define OGS_ECONNREFUSED            WSAECONNREFUSED
 #define OGS_EBADF                   WSAEBADF
@@ -54,6 +55,7 @@ typedef int ogs_err_t;
 #define OGS_EACCES                  EACCES
 #define OGS_EEXIST                  EEXIST
 #define OGS_EEXIST_FILE             EEXIST
+#define OGS_ECONNRESET              ECONNRESET
 #define OGS_ETIMEDOUT               ETIMEDOUT
 #define OGS_ECONNREFUSED            ECONNREFUSED
 #define OGS_EBADF                   EBADF

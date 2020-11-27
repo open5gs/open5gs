@@ -20,7 +20,7 @@
 #include "nudm-handler.h"
 #include "pfcp-path.h"
 
-bool smf_nudm_sdm_handle_get(smf_sess_t *sess, ogs_sbi_session_t *session,
+bool smf_nudm_sdm_handle_get(smf_sess_t *sess, ogs_sbi_stream_t *stream,
         ogs_sbi_message_t *recvmsg)
 {
     char buf1[OGS_ADDRSTRLEN];
@@ -55,10 +55,10 @@ bool smf_nudm_sdm_handle_get(smf_sess_t *sess, ogs_sbi_session_t *session,
     OpenAPI_lnode_t *node = NULL, *node2 = NULL;
 
     ogs_assert(sess);
-    ogs_assert(session);
+    ogs_assert(stream);
     smf_ue = sess->smf_ue;
     ogs_assert(smf_ue);
-    server = ogs_sbi_session_get_server(session);
+    server = ogs_sbi_server_from_stream(stream);
     ogs_assert(server);
 
     ogs_assert(recvmsg);
@@ -257,7 +257,7 @@ bool smf_nudm_sdm_handle_get(smf_sess_t *sess, ogs_sbi_session_t *session,
 
     response = ogs_sbi_build_response(&sendmsg, OGS_SBI_HTTP_STATUS_CREATED);
     ogs_assert(response);
-    ogs_sbi_server_send_response(session, response);
+    ogs_sbi_server_send_response(stream, response);
 
     ogs_free(sendmsg.http.location);
 
@@ -334,7 +334,7 @@ bool smf_nudm_sdm_handle_get(smf_sess_t *sess, ogs_sbi_session_t *session,
     dl_pdr->precedence = 0xffffffff;
     ul_pdr->precedence = 0xffffffff;
 
-    smf_5gc_pfcp_send_session_establishment_request(sess, session);
+    smf_5gc_pfcp_send_session_establishment_request(sess, stream);
 
     return true;
 }

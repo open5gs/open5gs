@@ -21,7 +21,9 @@
 
 int __ogs_app_domain;
 
-int ogs_app_initialize(const char *default_config, const char *const argv[])
+int ogs_app_initialize(
+        const char *version, const char *default_config,
+        const char *const argv[])
 {
     int rv, opt;
     ogs_getopt_t options;
@@ -39,6 +41,7 @@ int ogs_app_initialize(const char *default_config, const char *const argv[])
     ogs_app_setup_log();
 
     ogs_app_context_init();
+    ogs_app()->version = version;
 
     /**************************************************************************
      * Stage 1 : Command Line Options
@@ -117,7 +120,27 @@ int ogs_app_initialize(const char *default_config, const char *const argv[])
         ogs_app()->db_uri = ogs_env_get("DB_URI");
 
     /**************************************************************************
-     * Stage 6 : Queue, Timer and Poll
+     * Stage 6 : Print Banner
+     */
+    if (ogs_app()->version) {
+        ogs_log_print(OGS_LOG_INFO,
+                "Open5GS daemon %s\n\n", ogs_app()->version);
+
+        ogs_info("Configuration: '%s'", ogs_app()->file);
+
+        if (ogs_app()->logger.file) {
+            ogs_info("File Logging: '%s'", ogs_app()->logger.file);
+
+            if (ogs_app()->logger.level)
+                ogs_info("LOG-LEVEL: '%s'", ogs_app()->logger.level);
+
+            if (ogs_app()->logger.domain)
+                ogs_info("LOG-DOMAIN: '%s'", ogs_app()->logger.domain);
+        }
+    }
+
+    /**************************************************************************
+     * Stage 7 : Queue, Timer and Poll
      */
     ogs_app()->queue = ogs_queue_create(ogs_app()->pool.event);
     ogs_assert(ogs_app()->queue);

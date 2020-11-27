@@ -26,7 +26,7 @@ extern "C" {
 
 bool ogs_sbi_nnrf_handle_nf_profile(ogs_sbi_nf_instance_t *nf_instance,
         OpenAPI_nf_profile_t *NFProfile,
-        ogs_sbi_session_t *session, ogs_sbi_message_t *message);
+        ogs_sbi_stream_t *stream, ogs_sbi_message_t *message);
 
 #ifdef __cplusplus
 }

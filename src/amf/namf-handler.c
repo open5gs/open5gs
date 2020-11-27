@@ -25,7 +25,7 @@
 #include "sbi-path.h"
 
 int amf_namf_comm_handle_n1_n2_message_transfer(
-        ogs_sbi_session_t *session, ogs_sbi_message_t *recvmsg)
+        ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg)
 {
     int status;
 
@@ -53,7 +53,7 @@ int amf_namf_comm_handle_n1_n2_message_transfer(
     OpenAPI_n2_info_content_t *n2InfoContent = NULL;
     OpenAPI_ref_to_binary_data_t *ngapData = NULL;
 
-    ogs_assert(session);
+    ogs_assert(stream);
     ogs_assert(recvmsg);
 
     N1N2MessageTransferReqData = recvmsg->N1N2MessageTransferReqData;
@@ -186,13 +186,13 @@ int amf_namf_comm_handle_n1_n2_message_transfer(
 
     response = ogs_sbi_build_response(&sendmsg, status);
     ogs_assert(response);
-    ogs_sbi_server_send_response(session, response);
+    ogs_sbi_server_send_response(stream, response);
 
     return OGS_OK;
 }
 
 int amf_namf_callback_handle_sm_context_status(
-        ogs_sbi_session_t *session, ogs_sbi_message_t *recvmsg)
+        ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg)
 {
     int status = OGS_SBI_HTTP_STATUS_NO_CONTENT;
 
@@ -207,7 +207,7 @@ int amf_namf_callback_handle_sm_context_status(
     OpenAPI_sm_context_status_notification_t *SmContextStatusNotification;
     OpenAPI_status_info_t *StatusInfo;
 
-    ogs_assert(session);
+    ogs_assert(stream);
     ogs_assert(recvmsg);
 
     if (!recvmsg->h.resource.component[0]) {
@@ -286,7 +286,7 @@ cleanup:
 
     response = ogs_sbi_build_response(&sendmsg, status);
     ogs_assert(response);
-    ogs_sbi_server_send_response(session, response);
+    ogs_sbi_server_send_response(stream, response);
 
     return OGS_OK;
 }

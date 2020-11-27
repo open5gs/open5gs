@@ -155,7 +155,7 @@ void udr_nf_state_will_register(ogs_fsm_t *s, udr_event_t *e)
         case UDR_TIMER_NF_INSTANCE_REGISTRATION_INTERVAL:
             client = nf_instance->client;
             ogs_assert(client);
-            addr = client->addr;
+            addr = client->node.addr;
             ogs_assert(addr);
 
             ogs_warn("[%s] Retry to registration with NRF", nf_instance->id);
@@ -364,7 +364,7 @@ void udr_nf_state_exception(ogs_fsm_t *s, udr_event_t *e)
         case UDR_TIMER_NF_INSTANCE_REGISTRATION_INTERVAL:
             client = nf_instance->client;
             ogs_assert(client);
-            addr = client->addr;
+            addr = client->node.addr;
             ogs_assert(addr);
 
             ogs_warn("[%s] Retry to registration with NRF", nf_instance->id);

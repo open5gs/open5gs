@@ -24,11 +24,9 @@
 #include "ogs-app.h"
 #include "version.h"
 
-static const char *version = "Open5GS daemon " OPEN5GS_VERSION;
-
 static void show_version(void)
 {
-    printf("%s\n\n", version);
+    printf("Open5GS %s\n\n", OPEN5GS_VERSION);
 }
 
 static void show_help(const char *name)
@@ -45,23 +43,6 @@ static void show_help(const char *name)
        "   -v             : show version number and exit\n"
        "   -h             : show this message and exit\n"
        "\n", name);
-}
-
-static void show_running_config(void)
-{
-    ogs_log_print(OGS_LOG_INFO, "%s\n\n", version);
-
-    ogs_info("Configuration: '%s'", ogs_app()->file);
-
-    if (ogs_app()->logger.file) {
-        ogs_info("File Logging: '%s'", ogs_app()->logger.file);
-
-        if (ogs_app()->logger.level)
-            ogs_info("LOG-LEVEL: '%s'", ogs_app()->logger.level);
-
-        if (ogs_app()->logger.domain)
-            ogs_info("LOG-DOMAIN: '%s'", ogs_app()->logger.domain);
-    }
 }
 
 static int check_signal(int signum)
@@ -203,7 +184,7 @@ int main(int argc, const char *const argv[])
     ogs_signal_init();
     ogs_setup_signal_thread();
 
-    rv = ogs_app_initialize(DEFAULT_CONFIG_FILENAME, argv_out);
+    rv = ogs_app_initialize(OPEN5GS_VERSION, DEFAULT_CONFIG_FILENAME, argv_out);
     if (rv != OGS_OK) {
         if (rv == OGS_RETRY)
             return EXIT_SUCCESS;
@@ -211,8 +192,6 @@ int main(int argc, const char *const argv[])
         ogs_fatal("Open5GS initialization failed. Aborted");
         return OGS_ERROR;
     }
-
-    show_running_config();
 
     rv = app_initialize(argv_out);
     if (rv != OGS_OK) {

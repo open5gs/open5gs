@@ -46,7 +46,7 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
 
     ogs_nas_5gs_message_t *nas_message = NULL;
 
-    ogs_sbi_session_t *session = NULL;
+    ogs_sbi_stream_t *stream = NULL;
     ogs_sbi_message_t *sbi_message = NULL;
 
     ogs_assert(s);
@@ -67,27 +67,27 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
     case SMF_EVT_SBI_SERVER:
         sbi_message = e->sbi.message;
         ogs_assert(sbi_message);
-        session = e->sbi.session;
-        ogs_assert(session);
+        stream = e->sbi.data;
+        ogs_assert(stream);
 
         SWITCH(sbi_message->h.service.name)
         CASE(OGS_SBI_SERVICE_NAME_NSMF_PDUSESSION)
             SWITCH(sbi_message->h.resource.component[2])
             CASE(OGS_SBI_RESOURCE_NAME_MODIFY)
-                smf_nsmf_handle_update_sm_context(sess, session, sbi_message);
+                smf_nsmf_handle_update_sm_context(sess, stream, sbi_message);
                 break;
             CASE(OGS_SBI_RESOURCE_NAME_RELEASE)
-                smf_nsmf_handle_release_sm_context(sess, session, sbi_message);
+                smf_nsmf_handle_release_sm_context(sess, stream, sbi_message);
                 break;
             DEFAULT
-                smf_nsmf_handle_create_sm_context(sess, session, sbi_message);
+                smf_nsmf_handle_create_sm_context(sess, stream, sbi_message);
                 break;
             END
             break;
 
         DEFAULT
             ogs_error("Invalid API name [%s]", sbi_message->h.service.name);
-            ogs_sbi_server_send_error(session,
+            ogs_sbi_server_send_error(stream,
                     OGS_SBI_HTTP_STATUS_BAD_REQUEST, sbi_message,
                     "Invalid API name", sbi_message->h.service.name);
         END
@@ -102,8 +102,8 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
         smf_ue = sess->smf_ue;
         ogs_assert(smf_ue);
 
-        session = e->sbi.session;
-        ogs_assert(session);
+        stream = e->sbi.data;
+        ogs_assert(stream);
 
         SWITCH(sbi_message->h.service.name)
         CASE(OGS_SBI_SERVICE_NAME_NUDM_SDM)
@@ -113,14 +113,14 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                     ogs_error("[%s] HTTP response error [%d]",
                         smf_ue->supi, sbi_message->res_status);
                     ogs_sbi_server_send_error(
-                        session, sbi_message->res_status,
+                        stream, sbi_message->res_status,
                         NULL, "HTTP response error", smf_ue->supi);
                     break;
                 }
 
                 if (smf_nudm_sdm_handle_get(
-                            sess, session, sbi_message) != true) {
-                    ogs_sbi_server_send_error(session,
+                            sess, stream, sbi_message) != true) {
+                    ogs_sbi_server_send_error(stream,
                             OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR,
                             sbi_message, "HTTP response error", smf_ue->supi);
                 }
@@ -129,7 +129,7 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
             DEFAULT
                 ogs_error("Invalid resource name [%s]",
                         sbi_message->h.resource.component[1]);
-                ogs_sbi_server_send_error(session,
+                ogs_sbi_server_send_error(stream,
                         OGS_SBI_HTTP_STATUS_BAD_REQUEST, sbi_message,
                         "Invalid resource name",
                         sbi_message->h.resource.component[1]);
@@ -166,14 +166,14 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
         ogs_assert(nas_message);
         sess = e->sess;
         ogs_assert(sess);
-        session = e->sbi.session;
-        ogs_assert(session);
+        stream = e->sbi.data;
+        ogs_assert(stream);
         smf_ue = sess->smf_ue;
         ogs_assert(smf_ue);
 
         switch (nas_message->gsm.h.message_type) {
         case OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REQUEST:
-            rv = gsm_handle_pdu_session_establishment_request(sess, session,
+            rv = gsm_handle_pdu_session_establishment_request(sess, stream,
                     &nas_message->gsm.pdu_session_establishment_request);
             if (rv != OGS_OK) {
                 ogs_error("[%s:%d] Cannot handle NAS message",
@@ -184,18 +184,18 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
 
         case OGS_NAS_5GS_PDU_SESSION_RELEASE_REQUEST:
             smf_5gc_pfcp_send_session_deletion_request(
-                    sess, session, OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED);
+                    sess, stream, OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED);
             break;
 
         case OGS_NAS_5GS_PDU_SESSION_RELEASE_COMPLETE:
-            smf_sbi_send_response(session, OGS_SBI_HTTP_STATUS_NO_CONTENT);
+            smf_sbi_send_response(stream, OGS_SBI_HTTP_STATUS_NO_CONTENT);
 
             /*
              * Race condition for PDU session release complete
              *  - CLIENT : /nsmf-pdusession/v1/sm-contexts/{smContextRef}/modify
              *  - SERVER : /namf-callback/v1/{supi}/sm-context-status/{psi})
              *
-             * smf_sbi_send_response(session, OGS_SBI_HTTP_STATUS_NO_CONTENT);
+             * smf_sbi_send_response(stream, OGS_SBI_HTTP_STATUS_NO_CONTENT);
              * smf_sbi_send_sm_context_status_notify(sess);
              *
              * When executed as above,
@@ -212,7 +212,7 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                     nas_message->gsm.h.message_type);
             ogs_assert(strerror);
             ogs_error("%s", strerror);
-            ogs_sbi_server_send_error(session,
+            ogs_sbi_server_send_error(stream,
                     OGS_SBI_HTTP_STATUS_BAD_REQUEST, NULL, strerror, NULL);
             ogs_free(strerror);
             break;
@@ -223,8 +223,8 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
     case SMF_EVT_NGAP_MESSAGE:
         sess = e->sess;
         ogs_assert(sess);
-        session = e->sbi.session;
-        ogs_assert(session);
+        stream = e->sbi.data;
+        ogs_assert(stream);
         smf_ue = sess->smf_ue;
         ogs_assert(smf_ue);
         pkbuf = e->pkbuf;
@@ -234,7 +234,7 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
         switch (e->ngap.type) {
         case OpenAPI_n2_sm_info_type_PDU_RES_SETUP_RSP:
             rv = ngap_handle_pdu_session_resource_setup_response_transfer(
-                    sess, session, pkbuf);
+                    sess, stream, pkbuf);
             if (rv != OGS_OK) {
                 ogs_error("[%s:%d] Cannot handle NGAP message",
                         smf_ue->supi, sess->psi);
@@ -243,7 +243,7 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
             break;
 
         case OpenAPI_n2_sm_info_type_PDU_RES_REL_RSP:
-            smf_sbi_send_response(session, OGS_SBI_HTTP_STATUS_NO_CONTENT);
+            smf_sbi_send_response(stream, OGS_SBI_HTTP_STATUS_NO_CONTENT);
             break;
 
         default:

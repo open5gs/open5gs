@@ -43,7 +43,7 @@ static void initialize(const char *const argv[])
 {
     int rv;
 
-    rv = ogs_app_initialize(NULL, argv);
+    rv = ogs_app_initialize(NULL, NULL, argv);
     ogs_assert(rv == OGS_OK);
     test_5gc_init();
 

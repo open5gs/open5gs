@@ -180,7 +180,7 @@ static void sess_5gc_timeout(ogs_pfcp_xact_t *xact, void *data)
 {
     smf_ue_t *smf_ue = NULL;
     smf_sess_t *sess = NULL;
-    ogs_sbi_session_t *session = NULL;
+    ogs_sbi_stream_t *stream = NULL;
     uint8_t type;
     char *strerror = NULL;
 
@@ -189,8 +189,8 @@ static void sess_5gc_timeout(ogs_pfcp_xact_t *xact, void *data)
 
     sess = data;
     ogs_assert(sess);
-    session = xact->assoc_session;
-    ogs_assert(session);
+    stream = xact->assoc_stream;
+    ogs_assert(stream);
     smf_ue = sess->smf_ue;
     ogs_assert(smf_ue);
 
@@ -202,14 +202,14 @@ static void sess_5gc_timeout(ogs_pfcp_xact_t *xact, void *data)
     case OGS_PFCP_SESSION_MODIFICATION_REQUEST_TYPE:
         strerror = ogs_msprintf("[%s:%d] No PFCP session modification response",
                 smf_ue->supi, sess->psi);
-        smf_sbi_send_sm_context_update_error(session,
+        smf_sbi_send_sm_context_update_error(stream,
                 OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT,
                 strerror, NULL, NULL, NULL);
         break;
     case OGS_PFCP_SESSION_DELETION_REQUEST_TYPE:
         strerror = ogs_msprintf("[%s:%d] No PFCP session deletion response",
                 smf_ue->supi, sess->psi);
-        ogs_sbi_server_send_error(session,
+        ogs_sbi_server_send_error(stream,
                 OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT, NULL, strerror, NULL);
         ogs_free(strerror);
         break;
@@ -243,7 +243,7 @@ static void sess_epc_timeout(ogs_pfcp_xact_t *xact, void *data)
 }
 
 void smf_5gc_pfcp_send_session_establishment_request(
-        smf_sess_t *sess, ogs_sbi_session_t *session)
+        smf_sess_t *sess, ogs_sbi_stream_t *stream)
 {
     int rv;
     ogs_pkbuf_t *n4buf = NULL;
@@ -251,7 +251,7 @@ void smf_5gc_pfcp_send_session_establishment_request(
     ogs_pfcp_xact_t *xact = NULL;
 
     ogs_assert(sess);
-    ogs_assert(session);
+    ogs_assert(stream);
 
     memset(&h, 0, sizeof(ogs_pfcp_header_t));
     h.type = OGS_PFCP_SESSION_ESTABLISHMENT_REQUEST_TYPE;
@@ -263,14 +263,14 @@ void smf_5gc_pfcp_send_session_establishment_request(
     xact = ogs_pfcp_xact_local_create(
             sess->pfcp_node, &h, n4buf, sess_5gc_timeout, sess);
     ogs_expect_or_return(xact);
-    xact->assoc_session = session;
+    xact->assoc_stream = stream;
 
     rv = ogs_pfcp_xact_commit(xact);
     ogs_expect(rv == OGS_OK);
 }
 
 void smf_5gc_pfcp_send_session_modification_request(
-        smf_sess_t *sess, ogs_sbi_session_t *session, uint64_t flags)
+        smf_sess_t *sess, ogs_sbi_stream_t *stream, uint64_t flags)
 {
     int rv;
     ogs_pkbuf_t *n4buf = NULL;
@@ -278,7 +278,7 @@ void smf_5gc_pfcp_send_session_modification_request(
     ogs_pfcp_xact_t *xact = NULL;
 
     ogs_assert(sess);
-    ogs_assert(session);
+    ogs_assert(stream);
 
     memset(&h, 0, sizeof(ogs_pfcp_header_t));
     h.type = OGS_PFCP_SESSION_MODIFICATION_REQUEST_TYPE;
@@ -290,7 +290,7 @@ void smf_5gc_pfcp_send_session_modification_request(
     xact = ogs_pfcp_xact_local_create(
             sess->pfcp_node, &h, n4buf, sess_5gc_timeout, sess);
     ogs_expect_or_return(xact);
-    xact->assoc_session = session;
+    xact->assoc_stream = stream;
     xact->modify_flags = flags | OGS_PFCP_MODIFY_SESSION;
 
     rv = ogs_pfcp_xact_commit(xact);
@@ -298,7 +298,7 @@ void smf_5gc_pfcp_send_session_modification_request(
 }
 
 void smf_5gc_pfcp_send_qos_flow_modification_request(smf_bearer_t *qos_flow,
-        ogs_sbi_session_t *session, uint64_t flags)
+        ogs_sbi_stream_t *stream, uint64_t flags)
 {
     int rv;
     ogs_pkbuf_t *n4buf = NULL;
@@ -310,7 +310,7 @@ void smf_5gc_pfcp_send_qos_flow_modification_request(smf_bearer_t *qos_flow,
     sess = qos_flow->sess;
     ogs_assert(sess);
 
-    ogs_assert(session);
+    ogs_assert(stream);
 
     memset(&h, 0, sizeof(ogs_pfcp_header_t));
     h.type = OGS_PFCP_SESSION_MODIFICATION_REQUEST_TYPE;
@@ -323,7 +323,7 @@ void smf_5gc_pfcp_send_qos_flow_modification_request(smf_bearer_t *qos_flow,
             sess->pfcp_node, &h, n4buf, sess_5gc_timeout, qos_flow);
     ogs_expect_or_return(xact);
 
-    xact->assoc_session = session;
+    xact->assoc_stream = stream;
     xact->modify_flags = flags;
 
     rv = ogs_pfcp_xact_commit(xact);
@@ -331,7 +331,7 @@ void smf_5gc_pfcp_send_qos_flow_modification_request(smf_bearer_t *qos_flow,
 }
 
 void smf_5gc_pfcp_send_session_deletion_request(
-        smf_sess_t *sess, ogs_sbi_session_t *session, int trigger)
+        smf_sess_t *sess, ogs_sbi_stream_t *stream, int trigger)
 {
     int rv;
     ogs_pkbuf_t *n4buf = NULL;
@@ -339,7 +339,7 @@ void smf_5gc_pfcp_send_session_deletion_request(
     ogs_pfcp_xact_t *xact = NULL;
 
     ogs_assert(sess);
-    ogs_assert(session);
+    ogs_assert(stream);
     ogs_assert(trigger);
 
     memset(&h, 0, sizeof(ogs_pfcp_header_t));
@@ -352,7 +352,7 @@ void smf_5gc_pfcp_send_session_deletion_request(
     xact = ogs_pfcp_xact_local_create(
             sess->pfcp_node, &h, n4buf, sess_5gc_timeout, sess);
     ogs_expect_or_return(xact);
-    xact->assoc_session = session;
+    xact->assoc_stream = stream;
     xact->delete_trigger = trigger;
 
     rv = ogs_pfcp_xact_commit(xact);

@@ -173,7 +173,6 @@ ogs_sock_t *ogs_sock_accept(ogs_sock_t *sock)
 
     new_fd = accept(sock->fd, &addr.sa, &addrlen);
     if (new_fd < 0) {
-        ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno, "accept failed");
         return NULL;
     }
 
@@ -185,7 +184,7 @@ ogs_sock_t *ogs_sock_accept(ogs_sock_t *sock)
 
     memcpy(&new_sock->remote_addr, &addr, sizeof(new_sock->remote_addr));
 
-    return new_sock;;
+    return new_sock;
 }
 
 ssize_t ogs_write(ogs_socket_t fd, const void *buf, size_t len)
@@ -241,36 +240,20 @@ ssize_t ogs_sendto(ogs_socket_t fd,
 
 ssize_t ogs_recv(ogs_socket_t fd, void *buf, size_t len, int flags)
 {
-    ssize_t size;
-
     ogs_assert(fd != INVALID_SOCKET);
-
-    size = recv(fd, buf, len, flags);
-    if (size < 0) {
-        ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,
-                "recv(len:%d) failed", (int)len);
-    }
-
-    return size;
+    return recv(fd, buf, len, flags);
 }
 
 ssize_t ogs_recvfrom(ogs_socket_t fd,
         void *buf, size_t len, int flags, ogs_sockaddr_t *from)
 {
-    ssize_t size;
     socklen_t addrlen = sizeof(struct sockaddr_storage);
 
     ogs_assert(fd != INVALID_SOCKET);
     ogs_assert(from);
 
     memset(from, 0, sizeof *from);
-    size = recvfrom(fd, buf, len, flags, &from->sa, &addrlen);
-    if (size < 0) {
-        ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,
-                "recvfrom(len:%d) failed", (int)len);
-    }
-
-    return size;
+    return recvfrom(fd, buf, len, flags, &from->sa, &addrlen);
 }
 
 int ogs_closesocket(ogs_socket_t fd)
@@ -330,15 +313,15 @@ int ogs_closeonexec(ogs_socket_t fd)
     int flags;
 
     ogs_assert(fd != INVALID_SOCKET);
-    flags = fcntl(fd, F_GETFL, NULL);
+    flags = fcntl(fd, F_GETFD, NULL);
     if (flags < 0) {
-        ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno, "F_GETFL failed");
+        ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno, "F_GETFD failed");
         return OGS_ERROR;
     }
     if (!(flags & FD_CLOEXEC)) {
-        rc = fcntl(fd, F_SETFL, (flags | FD_CLOEXEC));
+        rc = fcntl(fd, F_SETFD, (flags | FD_CLOEXEC));
         if (rc != OGS_OK) {
-            ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno, "F_SETFL failed");
+            ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno, "F_SETFD failed");
             return OGS_ERROR;
         }
     }

@@ -39,7 +39,7 @@ void udm_state_operational(ogs_fsm_t *s, udm_event_t *e)
     int rv;
     const char *api_version = NULL;
 
-    ogs_sbi_session_t *session = NULL;
+    ogs_sbi_stream_t *stream = NULL;
     ogs_sbi_request_t *request = NULL;
 
     ogs_sbi_nf_instance_t *nf_instance = NULL;
@@ -70,14 +70,14 @@ void udm_state_operational(ogs_fsm_t *s, udm_event_t *e)
     case UDM_EVT_SBI_SERVER:
         request = e->sbi.request;
         ogs_assert(request);
-        session = e->sbi.session;
-        ogs_assert(session);
+        stream = e->sbi.data;
+        ogs_assert(stream);
 
         rv = ogs_sbi_parse_request(&message, request);
         if (rv != OGS_OK) {
             /* 'message' buffer is released in ogs_sbi_parse_request() */
             ogs_error("cannot parse HTTP message");
-            ogs_sbi_server_send_error(session, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+            ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
                     NULL, "cannot parse HTTP message", NULL);
             break;
         }
@@ -92,7 +92,7 @@ void udm_state_operational(ogs_fsm_t *s, udm_event_t *e)
 
         if (strcmp(message.h.api.version, api_version) != 0) {
             ogs_error("Not supported version [%s]", message.h.api.version);
-            ogs_sbi_server_send_error(session, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+            ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
                     &message, "Not supported version", NULL);
             ogs_sbi_message_free(&message);
             break;
@@ -105,13 +105,13 @@ void udm_state_operational(ogs_fsm_t *s, udm_event_t *e)
             CASE(OGS_SBI_RESOURCE_NAME_NF_STATUS_NOTIFY)
                 SWITCH(message.h.method)
                 CASE(OGS_SBI_HTTP_METHOD_POST)
-                    udm_nnrf_handle_nf_status_notify(session, &message);
+                    udm_nnrf_handle_nf_status_notify(stream, &message);
                     break;
 
                 DEFAULT
                     ogs_error("Invalid HTTP method [%s]",
                             message.h.method);
-                    ogs_sbi_server_send_error(session,
+                    ogs_sbi_server_send_error(stream,
                             OGS_SBI_HTTP_STATUS_FORBIDDEN, &message,
                             "Invalid HTTP method", message.h.method);
                 END
@@ -120,7 +120,7 @@ void udm_state_operational(ogs_fsm_t *s, udm_event_t *e)
             DEFAULT
                 ogs_error("Invalid resource name [%s]",
                         message.h.resource.component[0]);
-                ogs_sbi_server_send_error(session,
+                ogs_sbi_server_send_error(stream,
                         OGS_SBI_HTTP_STATUS_BAD_REQUEST, &message,
                         "Unknown resource name",
                         message.h.resource.component[0]);
@@ -132,7 +132,7 @@ void udm_state_operational(ogs_fsm_t *s, udm_event_t *e)
         CASE(OGS_SBI_SERVICE_NAME_NUDM_SDM)
             if (!message.h.resource.component[0]) {
                 ogs_error("Not found [%s]", message.h.method);
-                ogs_sbi_server_send_error(session,
+                ogs_sbi_server_send_error(stream,
                     OGS_SBI_HTTP_STATUS_NOT_FOUND,
                     &message, "Not found", message.h.method);
                 break;
@@ -140,7 +140,7 @@ void udm_state_operational(ogs_fsm_t *s, udm_event_t *e)
 
             if (!message.h.resource.component[1]) {
                 ogs_error("Invalid resource name [%s]", message.h.method);
-                ogs_sbi_server_send_error(session,
+                ogs_sbi_server_send_error(stream,
                     OGS_SBI_HTTP_STATUS_BAD_REQUEST,
                     &message, "Invalid resource name", message.h.method);
                 break;
@@ -163,7 +163,7 @@ void udm_state_operational(ogs_fsm_t *s, udm_event_t *e)
 
             if (!udm_ue) {
                 ogs_error("Not found [%s]", message.h.method);
-                ogs_sbi_server_send_error(session,
+                ogs_sbi_server_send_error(stream,
                     OGS_SBI_HTTP_STATUS_NOT_FOUND,
                     &message, "Not found", message.h.method);
                 break;
@@ -182,7 +182,7 @@ void udm_state_operational(ogs_fsm_t *s, udm_event_t *e)
 
         DEFAULT
             ogs_error("Invalid API name [%s]", message.h.service.name);
-            ogs_sbi_server_send_error(session,
+            ogs_sbi_server_send_error(stream,
                     OGS_SBI_HTTP_STATUS_BAD_REQUEST, &message,
                     "Invalid API name", message.h.service.name);
         END
@@ -313,7 +313,7 @@ void udm_state_operational(ogs_fsm_t *s, udm_event_t *e)
 
                 e->udm_ue = udm_ue;
                 e->sbi.message = &message;
-                e->sbi.session = sbi_xact->assoc_session;
+                e->sbi.data = sbi_xact->assoc_stream;
 
                 ogs_sbi_xact_remove(sbi_xact);
 
@@ -374,13 +374,13 @@ void udm_state_operational(ogs_fsm_t *s, udm_event_t *e)
             sbi_xact = e->sbi.data;
             ogs_assert(sbi_xact);
 
-            session = sbi_xact->assoc_session;
-            ogs_assert(session);
+            stream = sbi_xact->assoc_stream;
+            ogs_assert(stream);
 
             ogs_sbi_xact_remove(sbi_xact);
 
             ogs_error("Cannot receive SBI message");
-            ogs_sbi_server_send_error(session,
+            ogs_sbi_server_send_error(stream,
                     OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT, NULL,
                     "Cannot receive SBI message", NULL);
             break;

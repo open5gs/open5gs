@@ -684,18 +684,18 @@ void ogs_sbi_nf_instance_build_default(
 
     hostname = NULL;
     ogs_list_for_each(&ogs_sbi_self()->server_list, server) {
-        ogs_assert(server->addr);
+        ogs_assert(server->node.addr);
 
         /* First FQDN is selected */
         if (!hostname) {
-            hostname = ogs_gethostname(server->addr);
+            hostname = ogs_gethostname(server->node.addr);
             if (hostname)
                 continue;
         }
 
         if (nf_instance->num_of_ipv4 < OGS_SBI_MAX_NUM_OF_IP_ADDRESS) {
             ogs_sockaddr_t *addr = NULL;
-            ogs_copyaddrinfo(&addr, server->addr);
+            ogs_copyaddrinfo(&addr, server->node.addr);
             ogs_assert(addr);
 
             if (addr->ogs_sa_family == AF_INET) {
@@ -740,11 +740,11 @@ ogs_sbi_nf_service_t *ogs_sbi_nf_service_build_default(
 
     hostname = NULL;
     ogs_list_for_each(&ogs_sbi_self()->server_list, server) {
-        ogs_assert(server->addr);
+        ogs_assert(server->node.addr);
 
         /* First FQDN is selected */
         if (!hostname) {
-            hostname = ogs_gethostname(server->addr);
+            hostname = ogs_gethostname(server->node.addr);
             if (hostname)
                 continue;
         }
@@ -752,7 +752,7 @@ ogs_sbi_nf_service_t *ogs_sbi_nf_service_build_default(
         if (nf_service->num_of_addr < OGS_SBI_MAX_NUM_OF_IP_ADDRESS) {
             int port = 0;
             ogs_sockaddr_t *addr = NULL;
-            ogs_copyaddrinfo(&addr, server->addr);
+            ogs_copyaddrinfo(&addr, server->node.addr);
             ogs_assert(addr);
 
             port = OGS_PORT(addr);

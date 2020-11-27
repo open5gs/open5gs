@@ -41,9 +41,7 @@ extern "C" {
 typedef int (*ogs_sbi_client_cb_f)(ogs_sbi_response_t *response, void *data);
 
 typedef struct ogs_sbi_client_s {
-    ogs_lnode_t     lnode;
-
-    ogs_sockaddr_t  *addr;
+    ogs_socknode_t  node;
 
     struct {
         const char  *key;

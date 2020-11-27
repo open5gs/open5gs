@@ -89,7 +89,7 @@ void udm_nnrf_handle_nf_status_subscribe(
 }
 
 bool udm_nnrf_handle_nf_status_notify(
-        ogs_sbi_session_t *session, ogs_sbi_message_t *message)
+        ogs_sbi_stream_t *stream, ogs_sbi_message_t *message)
 {
     ogs_sbi_response_t *response = NULL;
     OpenAPI_notification_data_t *NotificationData = NULL;
@@ -97,13 +97,13 @@ bool udm_nnrf_handle_nf_status_notify(
     ogs_sbi_nf_instance_t *nf_instance = NULL;
     bool handled;
 
-    ogs_assert(session);
+    ogs_assert(stream);
     ogs_assert(message);
 
     NotificationData = message->NotificationData;
     if (!NotificationData) {
         ogs_error("No NotificationData");
-        ogs_sbi_server_send_error(session, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+        ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
                 message, "No NotificationData", NULL);
         return false;
     }
@@ -111,21 +111,21 @@ bool udm_nnrf_handle_nf_status_notify(
     NFProfile = NotificationData->nf_profile;
     if (!NFProfile) {
         ogs_error("No NFProfile");
-        ogs_sbi_server_send_error(session, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+        ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
                 message, "No NFProfile", NULL);
         return false;
     }
 
     if (!NFProfile->nf_instance_id) {
         ogs_error("No NFProfile.NFInstanceId");
-        ogs_sbi_server_send_error(session, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+        ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
                 message, "No NFProfile", "NFInstanceId");
         return false;
     }
 
     if (!NFProfile->nf_instance_id) {
         ogs_error("No NFProfile.NFInstanceId");
-        ogs_sbi_server_send_error(session, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+        ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
                 message, "No NFProfile", "NFInstanceId");
         return false;
     }
@@ -133,7 +133,7 @@ bool udm_nnrf_handle_nf_status_notify(
     if (NF_INSTANCE_IS_SELF(NFProfile->nf_instance_id)) {
         ogs_warn("The notification is not allowed [%s]",
                 NFProfile->nf_instance_id);
-        ogs_sbi_server_send_error(session, OGS_SBI_HTTP_STATUS_FORBIDDEN,
+        ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_FORBIDDEN,
                 message, "The notification is not allowed",
                 NFProfile->nf_instance_id);
         return false;
@@ -159,7 +159,7 @@ bool udm_nnrf_handle_nf_status_notify(
         }
 
         handled = ogs_sbi_nnrf_handle_nf_profile(
-                    nf_instance, NFProfile, session, message);
+                    nf_instance, NFProfile, stream, message);
         if (!handled) {
             UDM_NF_INSTANCE_CLEAR("NRF-notify", nf_instance);
             return false;
@@ -170,7 +170,7 @@ bool udm_nnrf_handle_nf_status_notify(
         handled = ogs_sbi_client_associate(nf_instance);
         if (!handled) {
             ogs_error("[%s] Cannot associate NF EndPoint", nf_instance->id);
-            ogs_sbi_server_send_error(session,
+            ogs_sbi_server_send_error(stream,
                     OGS_SBI_HTTP_STATUS_BAD_REQUEST,
                     message, "Cannot find NF EndPoint", nf_instance->id);
             UDM_NF_INSTANCE_CLEAR("NRF-notify", nf_instance);
@@ -184,7 +184,7 @@ bool udm_nnrf_handle_nf_status_notify(
             UDM_NF_INSTANCE_CLEAR("NRF-notify", nf_instance);
         } else {
             ogs_warn("[%s] (NRF-notify) Not found", NFProfile->nf_instance_id);
-            ogs_sbi_server_send_error(session,
+            ogs_sbi_server_send_error(stream,
                 OGS_SBI_HTTP_STATUS_NOT_FOUND,
                 message, "Not found", message->h.resource.component[1]);
             return false;
@@ -194,7 +194,7 @@ bool udm_nnrf_handle_nf_status_notify(
                             NotificationData->event);
         ogs_error("Not supported event [%d:%s]",
                 NotificationData->event, eventstr ? eventstr : "Unknown");
-        ogs_sbi_server_send_error(session, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+        ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
                 message, "Not supported event",
                 eventstr ? eventstr : "Unknown");
         return false;
@@ -202,7 +202,7 @@ bool udm_nnrf_handle_nf_status_notify(
 
     response = ogs_sbi_build_response(message, OGS_SBI_HTTP_STATUS_NO_CONTENT);
     ogs_assert(response);
-    ogs_sbi_server_send_response(session, response);
+    ogs_sbi_server_send_response(stream, response);
 
     return true;
 }
@@ -212,7 +212,7 @@ void udm_nnrf_handle_nf_discover(
 {
     ogs_sbi_object_t *sbi_object = NULL;
     ogs_sbi_nf_instance_t *nf_instance = NULL;
-    ogs_sbi_session_t *session = NULL;
+    ogs_sbi_stream_t *stream = NULL;
 
     OpenAPI_search_result_t *SearchResult = NULL;
     OpenAPI_lnode_t *node = NULL;
@@ -221,8 +221,8 @@ void udm_nnrf_handle_nf_discover(
     ogs_assert(xact);
     sbi_object = xact->sbi_object;
     ogs_assert(sbi_object);
-    session = xact->assoc_session;
-    ogs_assert(session);
+    stream = xact->assoc_stream;
+    ogs_assert(stream);
     ogs_assert(message);
 
     SearchResult = message->SearchResult;

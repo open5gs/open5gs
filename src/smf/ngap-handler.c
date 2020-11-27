@@ -22,7 +22,7 @@
 #include "pfcp-path.h"
 
 int ngap_handle_pdu_session_resource_setup_response_transfer(
-        smf_sess_t *sess, ogs_sbi_session_t *session, ogs_pkbuf_t *pkbuf)
+        smf_sess_t *sess, ogs_sbi_stream_t *stream, ogs_pkbuf_t *pkbuf)
 {
     smf_ue_t *smf_ue = NULL;
     smf_bearer_t *qos_flow = NULL;
@@ -44,7 +44,7 @@ int ngap_handle_pdu_session_resource_setup_response_transfer(
     NGAP_AssociatedQosFlowList_t *associatedQosFlowList = NULL;
 
     ogs_assert(pkbuf);
-    ogs_assert(session);
+    ogs_assert(stream);
 
     ogs_assert(sess);
     smf_ue = sess->smf_ue;
@@ -56,7 +56,7 @@ int ngap_handle_pdu_session_resource_setup_response_transfer(
     if (rv != OGS_OK) {
         ogs_error("[%s:%d] Cannot decode NGAP message",
                 smf_ue->supi, sess->psi);
-        smf_sbi_send_sm_context_update_error(session,
+        smf_sbi_send_sm_context_update_error(stream,
                 OGS_SBI_HTTP_STATUS_BAD_REQUEST,
                 "No N2 SM Info Type", smf_ue->supi, NULL, NULL);
         goto cleanup;
@@ -74,7 +74,7 @@ int ngap_handle_pdu_session_resource_setup_response_transfer(
             "[%s:%d] Unknown NGAP_UPTransportLayerInformation.present [%d]",
             smf_ue->supi, sess->psi,
             uPTransportLayerInformation->present);
-        smf_sbi_send_sm_context_update_error(session,
+        smf_sbi_send_sm_context_update_error(stream,
                 OGS_SBI_HTTP_STATUS_BAD_REQUEST,
                 "Unknown NGAP_UPTransportLayerInformation.present",
                 smf_ue->supi, NULL, NULL);
@@ -94,7 +94,7 @@ int ngap_handle_pdu_session_resource_setup_response_transfer(
 
     if (!qos_flow) {
         ogs_error("[%s:%d] No QoS flow", smf_ue->supi, sess->psi);
-        smf_sbi_send_sm_context_update_error(session,
+        smf_sbi_send_sm_context_update_error(stream,
                 OGS_SBI_HTTP_STATUS_BAD_REQUEST,
                 "No QoS flow", smf_ue->supi, NULL, NULL);
         goto cleanup;
@@ -103,7 +103,7 @@ int ngap_handle_pdu_session_resource_setup_response_transfer(
     gTPTunnel = uPTransportLayerInformation->choice.gTPTunnel;
     if (!gTPTunnel) {
         ogs_error("[%s:%d] No GTPTunnel", smf_ue->supi, sess->psi);
-        smf_sbi_send_sm_context_update_error(session,
+        smf_sbi_send_sm_context_update_error(stream,
                 OGS_SBI_HTTP_STATUS_BAD_REQUEST,
                 "No GTPTunnel", smf_ue->supi, NULL, NULL);
         goto cleanup;
@@ -134,10 +134,10 @@ int ngap_handle_pdu_session_resource_setup_response_transfer(
 
     if (far_update) {
         smf_5gc_pfcp_send_qos_flow_modification_request(
-                qos_flow, session, OGS_PFCP_MODIFY_ACTIVATE);
+                qos_flow, stream, OGS_PFCP_MODIFY_ACTIVATE);
     } else {
         /* ACTIVATED Is NOT Inlcuded in RESPONSE */
-        smf_sbi_send_sm_context_updated_data(sess, session, 0);
+        smf_sbi_send_sm_context_updated_data(sess, stream, 0);
     }
 
     rv = OGS_OK;

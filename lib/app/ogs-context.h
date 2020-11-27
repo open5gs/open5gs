@@ -31,6 +31,8 @@ extern "C" {
 #endif
 
 typedef struct ogs_app_context_s {
+    const char *version;
+
     const char *file;
     void *document;
 

@@ -101,7 +101,7 @@ void smf_5gc_n4_handle_session_establishment_response(
 {
     int i;
 
-    ogs_sbi_session_t *session = NULL;
+    ogs_sbi_stream_t *stream = NULL;
 
     uint8_t pfcp_cause_value = OGS_PFCP_CAUSE_REQUEST_ACCEPTED;
     uint8_t offending_ie_value = 0;
@@ -111,8 +111,8 @@ void smf_5gc_n4_handle_session_establishment_response(
     ogs_assert(xact);
     ogs_assert(rsp);
 
-    session = xact->assoc_session;
-    ogs_assert(session);
+    stream = xact->assoc_stream;
+    ogs_assert(stream);
 
     ogs_pfcp_xact_commit(xact);
 
@@ -184,7 +184,7 @@ void smf_5gc_n4_handle_session_establishment_response(
     ogs_assert(up_f_seid);
     sess->upf_n4_seid = be64toh(up_f_seid->seid);
 
-    smf_sbi_discover_and_send(OpenAPI_nf_type_AMF, sess, session, NULL,
+    smf_sbi_discover_and_send(OpenAPI_nf_type_AMF, sess, stream, NULL,
             smf_namf_comm_build_n1_n2_message_transfer);
 
 #if 0
@@ -198,13 +198,13 @@ void smf_5gc_n4_handle_session_modification_response(
 {
     int status = 0;
     uint64_t flags = 0;
-    ogs_sbi_session_t *session = NULL;
+    ogs_sbi_stream_t *stream = NULL;
 
     ogs_assert(xact);
     ogs_assert(rsp);
 
-    session = xact->assoc_session;
-    ogs_assert(session);
+    stream = xact->assoc_stream;
+    ogs_assert(stream);
     flags = xact->modify_flags;
     ogs_assert(flags);
 
@@ -265,7 +265,7 @@ void smf_5gc_n4_handle_session_modification_response(
     if (status != OGS_SBI_HTTP_STATUS_OK) {
         char *strerror = ogs_msprintf(
                 "PFCP Cause [%d] : Not Accepted", rsp->cause.u8);
-        smf_sbi_send_sm_context_update_error(session, status, strerror,
+        smf_sbi_send_sm_context_update_error(stream, status, strerror,
                 NULL, NULL, NULL);
         ogs_free(strerror);
         return;
@@ -274,19 +274,19 @@ void smf_5gc_n4_handle_session_modification_response(
     ogs_assert(sess);
 
     if (sess->upf_n3_addr == NULL && sess->upf_n3_addr6 == NULL) {
-        smf_sbi_send_sm_context_update_error(session, status, "No UP F_TEID",
+        smf_sbi_send_sm_context_update_error(stream, status, "No UP F_TEID",
                 NULL, NULL, NULL);
         return;
     }
 
     if (flags & OGS_PFCP_MODIFY_ACTIVATE) {
         /* ACTIVATED Is NOT Inlcuded in RESPONSE */
-        smf_sbi_send_sm_context_updated_data(sess, session, 0);
+        smf_sbi_send_sm_context_updated_data(sess, stream, 0);
 
     } else if (flags & OGS_PFCP_MODIFY_DEACTIVATE) {
         /* Only ACTIVING & DEACTIVATED is Included */
         smf_sbi_send_sm_context_updated_data(
-                sess, session, OpenAPI_up_cnx_state_DEACTIVATED);
+                sess, stream, OpenAPI_up_cnx_state_DEACTIVATED);
     }
 }
 
@@ -297,7 +297,7 @@ void smf_5gc_n4_handle_session_deletion_response(
     int status = 0;
     int trigger;
 
-    ogs_sbi_session_t *session = NULL;
+    ogs_sbi_stream_t *stream = NULL;
 
     ogs_sbi_message_t sendmsg;
     ogs_sbi_response_t *response = NULL;
@@ -305,8 +305,8 @@ void smf_5gc_n4_handle_session_deletion_response(
     ogs_assert(xact);
     ogs_assert(rsp);
 
-    session = xact->assoc_session;
-    ogs_assert(session);
+    stream = xact->assoc_stream;
+    ogs_assert(stream);
     trigger = xact->delete_trigger;
     ogs_assert(trigger);
 
@@ -332,7 +332,7 @@ void smf_5gc_n4_handle_session_deletion_response(
     if (status != OGS_SBI_HTTP_STATUS_OK) {
         char *strerror = ogs_msprintf(
                 "PFCP Cause [%d] : Not Accepted", rsp->cause.u8);
-        ogs_sbi_server_send_error(session, status, NULL, NULL, NULL);
+        ogs_sbi_server_send_error(stream, status, NULL, NULL, NULL);
         ogs_free(strerror);
         return;
     }
@@ -341,7 +341,7 @@ void smf_5gc_n4_handle_session_deletion_response(
 
     if (trigger == OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED) {
 
-        smf_sbi_send_sm_context_updated_data_in_session_deletion(sess, session);
+        smf_sbi_send_sm_context_updated_data_in_session_deletion(sess, stream);
 
     } else {
 
@@ -350,7 +350,7 @@ void smf_5gc_n4_handle_session_deletion_response(
         response = ogs_sbi_build_response(
                 &sendmsg, OGS_SBI_HTTP_STATUS_NO_CONTENT);
         ogs_assert(response);
-        ogs_sbi_server_send_response(session, response);
+        ogs_sbi_server_send_response(stream, response);
 
         SMF_SESS_CLEAR(sess);
     }

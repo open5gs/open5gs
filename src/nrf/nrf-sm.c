@@ -39,7 +39,7 @@ void nrf_state_final(ogs_fsm_t *s, nrf_event_t *e)
 void nrf_state_operational(ogs_fsm_t *s, nrf_event_t *e)
 {
     int rv;
-    ogs_sbi_session_t *session = NULL;
+    ogs_sbi_stream_t *stream = NULL;
     ogs_sbi_request_t *request = NULL;
     ogs_sbi_message_t message;
     ogs_sbi_nf_instance_t *nf_instance = NULL;
@@ -66,21 +66,21 @@ void nrf_state_operational(ogs_fsm_t *s, nrf_event_t *e)
     case NRF_EVT_SBI_SERVER:
         request = e->sbi.request;
         ogs_assert(request);
-        session = e->sbi.session;
-        ogs_assert(session);
+        stream = e->sbi.data;
+        ogs_assert(stream);
 
         rv = ogs_sbi_parse_request(&message, request);
         if (rv != OGS_OK) {
             /* 'message' buffer is released in ogs_sbi_parse_request() */
             ogs_error("cannot parse HTTP message");
-            ogs_sbi_server_send_error(session, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+            ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
                     NULL, "cannot parse HTTP message", NULL);
             break;
         }
 
         if (strcmp(message.h.api.version, OGS_SBI_API_V1) != 0) {
             ogs_error("Not supported version [%s]", message.h.api.version);
-            ogs_sbi_server_send_error(session, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+            ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
                     &message, "Not supported version", NULL);
             ogs_sbi_message_free(&message);
             break;
@@ -94,9 +94,9 @@ void nrf_state_operational(ogs_fsm_t *s, nrf_event_t *e)
                 SWITCH(message.h.method)
                 CASE(OGS_SBI_HTTP_METHOD_GET)
                     if (message.h.resource.component[1]) {
-                        nrf_nnrf_handle_nf_profile_retrieval(session, &message);
+                        nrf_nnrf_handle_nf_profile_retrieval(stream, &message);
                     } else {
-                        nrf_nnrf_handle_nf_list_retrieval(session, &message);
+                        nrf_nnrf_handle_nf_list_retrieval(stream, &message);
                     }
                     break;
 
@@ -114,7 +114,7 @@ void nrf_state_operational(ogs_fsm_t *s, nrf_event_t *e)
                         DEFAULT
                             ogs_warn("Not found [%s]",
                                     message.h.resource.component[1]);
-                            ogs_sbi_server_send_error(session,
+                            ogs_sbi_server_send_error(stream,
                                 OGS_SBI_HTTP_STATUS_NOT_FOUND,
                                 &message, "Not found",
                                 message.h.resource.component[1]);
@@ -147,17 +147,17 @@ void nrf_state_operational(ogs_fsm_t *s, nrf_event_t *e)
             CASE(OGS_SBI_RESOURCE_NAME_SUBSCRIPTIONS)
                 SWITCH(message.h.method)
                 CASE(OGS_SBI_HTTP_METHOD_POST)
-                    nrf_nnrf_handle_nf_status_subscribe(session, &message);
+                    nrf_nnrf_handle_nf_status_subscribe(stream, &message);
                     break;
 
                 CASE(OGS_SBI_HTTP_METHOD_DELETE)
-                    nrf_nnrf_handle_nf_status_unsubscribe(session, &message);
+                    nrf_nnrf_handle_nf_status_unsubscribe(stream, &message);
                     break;
 
                 DEFAULT
                     ogs_error("Invalid HTTP method [%s]",
                             message.h.method);
-                    ogs_sbi_server_send_error(session,
+                    ogs_sbi_server_send_error(stream,
                             OGS_SBI_HTTP_STATUS_FORBIDDEN, &message,
                             "Invalid HTTP method", message.h.method);
                 END
@@ -166,7 +166,7 @@ void nrf_state_operational(ogs_fsm_t *s, nrf_event_t *e)
             DEFAULT
                 ogs_error("Invalid resource name [%s]",
                         message.h.resource.component[0]);
-                ogs_sbi_server_send_error(session,
+                ogs_sbi_server_send_error(stream,
                         OGS_SBI_HTTP_STATUS_BAD_REQUEST, &message,
                         "Invalid resource name",
                         message.h.resource.component[0]);
@@ -180,13 +180,13 @@ void nrf_state_operational(ogs_fsm_t *s, nrf_event_t *e)
 
                 SWITCH(message.h.method)
                 CASE(OGS_SBI_HTTP_METHOD_GET)
-                    nrf_nnrf_handle_nf_discover(session, &message);
+                    nrf_nnrf_handle_nf_discover(stream, &message);
                     break;
 
                 DEFAULT
                     ogs_error("Invalid HTTP method [%s]",
                             message.h.method);
-                    ogs_sbi_server_send_error(session,
+                    ogs_sbi_server_send_error(stream,
                             OGS_SBI_HTTP_STATUS_FORBIDDEN, &message,
                             "Invalid HTTP method", message.h.method);
                 END
@@ -196,7 +196,7 @@ void nrf_state_operational(ogs_fsm_t *s, nrf_event_t *e)
             DEFAULT
                 ogs_error("Invalid resource name [%s]",
                         message.h.resource.component[0]);
-                ogs_sbi_server_send_error(session,
+                ogs_sbi_server_send_error(stream,
                         OGS_SBI_HTTP_STATUS_BAD_REQUEST, &message,
                         "Invalid resource name",
                         message.h.resource.component[0]);
@@ -205,7 +205,7 @@ void nrf_state_operational(ogs_fsm_t *s, nrf_event_t *e)
 
         DEFAULT
             ogs_error("Invalid API name [%s]", message.h.service.name);
-            ogs_sbi_server_send_error(session,
+            ogs_sbi_server_send_error(stream,
                     OGS_SBI_HTTP_STATUS_BAD_REQUEST, &message,
                     "Invalid API name", message.h.resource.component[0]);
         END

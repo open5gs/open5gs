@@ -19,21 +19,19 @@
 
 #include "sbi-path.h"
 
-static int server_cb(ogs_sbi_server_t *server,
-        ogs_sbi_session_t *session, ogs_sbi_request_t *request)
+static int server_cb(ogs_sbi_request_t *request, void *data)
 {
     nrf_event_t *e = NULL;
     int rv;
 
-    ogs_assert(session);
     ogs_assert(request);
+    ogs_assert(data);
 
     e = nrf_event_new(NRF_EVT_SBI_SERVER);
     ogs_assert(e);
 
-    e->sbi.server = server;
-    e->sbi.session = session;
     e->sbi.request = request;
+    e->sbi.data = data;
 
     rv = ogs_queue_push(ogs_app()->queue, e);
     if (rv != OGS_OK) {

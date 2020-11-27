@@ -20,7 +20,7 @@
 #include "nas-path.h"
 
 void nas_5gs_send_to_gsm(
-        smf_sess_t *sess, ogs_sbi_session_t *session, ogs_pkbuf_t *pkbuf)
+        smf_sess_t *sess, ogs_sbi_stream_t *stream, ogs_pkbuf_t *pkbuf)
 {
     int rv;
     smf_event_t *e = NULL;
@@ -31,7 +31,7 @@ void nas_5gs_send_to_gsm(
     e = smf_event_new(SMF_EVT_5GSM_MESSAGE);
     ogs_assert(e);
     e->sess = sess;
-    e->sbi.session = session;
+    e->sbi.data = stream;
     e->pkbuf = pkbuf;
     rv = ogs_queue_push(ogs_app()->queue, e);
     if (rv != OGS_OK) {

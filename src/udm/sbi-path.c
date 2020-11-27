@@ -19,21 +19,19 @@
 
 #include "sbi-path.h"
 
-static int server_cb(ogs_sbi_server_t *server,
-        ogs_sbi_session_t *session, ogs_sbi_request_t *request)
+static int server_cb(ogs_sbi_request_t *request, void *data)
 {
     udm_event_t *e = NULL;
     int rv;
 
-    ogs_assert(session);
     ogs_assert(request);
+    ogs_assert(data);
 
     e = udm_event_new(UDM_EVT_SBI_SERVER);
     ogs_assert(e);
 
-    e->sbi.server = server;
-    e->sbi.session = session;
     e->sbi.request = request;
+    e->sbi.data = data;
 
     rv = ogs_queue_push(ogs_app()->queue, e);
     if (rv != OGS_OK) {
@@ -130,26 +128,26 @@ void udm_sbi_send(ogs_sbi_nf_instance_t *nf_instance, ogs_sbi_xact_t *xact)
 }
 
 void udm_sbi_discover_and_send(OpenAPI_nf_type_e target_nf_type,
-        udm_ue_t *udm_ue, ogs_sbi_session_t *session, void *data,
+        udm_ue_t *udm_ue, ogs_sbi_stream_t *stream, void *data,
         ogs_sbi_request_t *(*build)(udm_ue_t *udm_ue, void *data))
 {
     ogs_sbi_xact_t *xact = NULL;
 
     ogs_assert(target_nf_type);
     ogs_assert(udm_ue);
-    ogs_assert(session);
+    ogs_assert(stream);
     ogs_assert(build);
 
     xact = ogs_sbi_xact_add(target_nf_type, &udm_ue->sbi, data,
             (ogs_sbi_build_f)build, udm_timer_sbi_client_wait_expire);
     ogs_assert(xact);
 
-    xact->assoc_session = session;
+    xact->assoc_stream = stream;
 
     if (ogs_sbi_discover_and_send(xact,
             (ogs_fsm_handler_t)udm_nf_state_registered, client_cb) != true) {
 
-        ogs_sbi_server_send_error(session,
+        ogs_sbi_server_send_error(stream,
                 OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT, NULL,
                 "Cannot discover", udm_ue->suci);
     }

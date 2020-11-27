@@ -43,9 +43,9 @@ ogs_pollset_t *ogs_pollset_create(unsigned int capacity)
 
     if (ogs_pollset_actions_initialized == false) {
 #if defined(HAVE_KQUEUE)
-        ogs_pollset_actions = ogs_kqueue_actions;;
+        ogs_pollset_actions = ogs_kqueue_actions;
 #elif defined(HAVE_EPOLL)
-        ogs_pollset_actions = ogs_epoll_actions;;
+        ogs_pollset_actions = ogs_epoll_actions;
 #else
         ogs_pollset_actions = ogs_select_actions;
 #endif

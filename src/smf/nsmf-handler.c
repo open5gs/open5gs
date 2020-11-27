@@ -24,7 +24,7 @@
 #include "nsmf-handler.h"
 
 bool smf_nsmf_handle_create_sm_context(
-    smf_sess_t *sess, ogs_sbi_session_t *session, ogs_sbi_message_t *message)
+    smf_sess_t *sess, ogs_sbi_stream_t *stream, ogs_sbi_message_t *message)
 {
     smf_ue_t *smf_ue = NULL;
 
@@ -39,7 +39,7 @@ bool smf_nsmf_handle_create_sm_context(
     OpenAPI_plmn_id_nid_t *servingNetwork = NULL;
     OpenAPI_ref_to_binary_data_t *n1SmMsg = NULL;
 
-    ogs_assert(session);
+    ogs_assert(stream);
     ogs_assert(message);
 
     ogs_assert(sess);
@@ -52,7 +52,7 @@ bool smf_nsmf_handle_create_sm_context(
                 smf_ue->supi, sess->psi);
         n1smbuf = gsm_build_pdu_session_establishment_reject(sess,
             OGS_5GSM_CAUSE_INVALID_MANDATORY_INFORMATION);
-        smf_sbi_send_sm_context_create_error(session,
+        smf_sbi_send_sm_context_create_error(stream,
                 OGS_SBI_HTTP_STATUS_BAD_REQUEST,
                 "No SmContextCreateData", smf_ue->supi, n1smbuf);
         return false;
@@ -63,7 +63,7 @@ bool smf_nsmf_handle_create_sm_context(
         ogs_error("[%s:%d] No sNssai", smf_ue->supi, sess->psi);
         n1smbuf = gsm_build_pdu_session_establishment_reject(sess,
             OGS_5GSM_CAUSE_INVALID_MANDATORY_INFORMATION);
-        smf_sbi_send_sm_context_create_error(session,
+        smf_sbi_send_sm_context_create_error(stream,
                 OGS_SBI_HTTP_STATUS_BAD_REQUEST,
                 "No sNssai", smf_ue->supi, n1smbuf);
         return false;
@@ -75,7 +75,7 @@ bool smf_nsmf_handle_create_sm_context(
                 smf_ue->supi, sess->psi);
         n1smbuf = gsm_build_pdu_session_establishment_reject(sess,
             OGS_5GSM_CAUSE_INVALID_MANDATORY_INFORMATION);
-        smf_sbi_send_sm_context_create_error(session,
+        smf_sbi_send_sm_context_create_error(stream,
                 OGS_SBI_HTTP_STATUS_BAD_REQUEST,
                 "No servingNetwork", smf_ue->supi, n1smbuf);
         return false;
@@ -86,7 +86,7 @@ bool smf_nsmf_handle_create_sm_context(
         ogs_error("[%s:%d] No UeLocation", smf_ue->supi, sess->psi);
         n1smbuf = gsm_build_pdu_session_establishment_reject(sess,
             OGS_5GSM_CAUSE_INVALID_MANDATORY_INFORMATION);
-        smf_sbi_send_sm_context_create_error(session,
+        smf_sbi_send_sm_context_create_error(stream,
                 OGS_SBI_HTTP_STATUS_BAD_REQUEST,
                 "No UeLocation", smf_ue->supi, n1smbuf);
         return false;
@@ -100,7 +100,7 @@ bool smf_nsmf_handle_create_sm_context(
         ogs_error("[%s:%d] No NrLocation", smf_ue->supi, sess->psi);
         n1smbuf = gsm_build_pdu_session_establishment_reject(sess,
             OGS_5GSM_CAUSE_INVALID_MANDATORY_INFORMATION);
-        smf_sbi_send_sm_context_create_error(session,
+        smf_sbi_send_sm_context_create_error(stream,
                 OGS_SBI_HTTP_STATUS_BAD_REQUEST,
                 "No UeLocation", smf_ue->supi, n1smbuf);
         return false;
@@ -111,7 +111,7 @@ bool smf_nsmf_handle_create_sm_context(
         ogs_error("[%s:%d] No n1SmMsg", smf_ue->supi, sess->psi);
         n1smbuf = gsm_build_pdu_session_establishment_reject(sess,
             OGS_5GSM_CAUSE_INVALID_MANDATORY_INFORMATION);
-        smf_sbi_send_sm_context_create_error(session,
+        smf_sbi_send_sm_context_create_error(stream,
                 OGS_SBI_HTTP_STATUS_BAD_REQUEST,
                 "No n1SmMsg", smf_ue->supi, n1smbuf);
         return false;
@@ -123,7 +123,7 @@ bool smf_nsmf_handle_create_sm_context(
                 smf_ue->supi, sess->psi, n1SmMsg->content_id);
         n1smbuf = gsm_build_pdu_session_establishment_reject(sess,
             OGS_5GSM_CAUSE_INVALID_MANDATORY_INFORMATION);
-        smf_sbi_send_sm_context_create_error(session,
+        smf_sbi_send_sm_context_create_error(stream,
                 OGS_SBI_HTTP_STATUS_BAD_REQUEST,
                 "No N1 SM Content", smf_ue->supi, n1smbuf);
         return false;
@@ -134,7 +134,7 @@ bool smf_nsmf_handle_create_sm_context(
                 smf_ue->supi, sess->psi);
         n1smbuf = gsm_build_pdu_session_establishment_reject(sess,
             OGS_5GSM_CAUSE_INVALID_MANDATORY_INFORMATION);
-        smf_sbi_send_sm_context_create_error(session,
+        smf_sbi_send_sm_context_create_error(stream,
                 OGS_SBI_HTTP_STATUS_BAD_REQUEST,
                 "No SmContextStatusNotification", smf_ue->supi, n1smbuf);
         return false;
@@ -147,7 +147,7 @@ bool smf_nsmf_handle_create_sm_context(
                 SmContextCreateData->sm_context_status_uri);
         n1smbuf = gsm_build_pdu_session_establishment_reject(sess,
             OGS_5GSM_CAUSE_INVALID_MANDATORY_INFORMATION);
-        smf_sbi_send_sm_context_create_error(session,
+        smf_sbi_send_sm_context_create_error(stream,
                 OGS_SBI_HTTP_STATUS_BAD_REQUEST, "Invalid URI",
                 SmContextCreateData->sm_context_status_uri, n1smbuf);
         return false;
@@ -195,13 +195,13 @@ bool smf_nsmf_handle_create_sm_context(
      */
     n1smbuf = ogs_pkbuf_copy(n1smbuf);
     ogs_assert(n1smbuf);
-    nas_5gs_send_to_gsm(sess, session, n1smbuf);
+    nas_5gs_send_to_gsm(sess, stream, n1smbuf);
 
     return true;
 }
 
 bool smf_nsmf_handle_update_sm_context(
-    smf_sess_t *sess, ogs_sbi_session_t *session, ogs_sbi_message_t *message)
+    smf_sess_t *sess, ogs_sbi_stream_t *stream, ogs_sbi_message_t *message)
 {
     int i;
     smf_ue_t *smf_ue = NULL;
@@ -216,7 +216,7 @@ bool smf_nsmf_handle_update_sm_context(
     ogs_pkbuf_t *n1smbuf = NULL;
     ogs_pkbuf_t *n2smbuf = NULL;
 
-    ogs_assert(session);
+    ogs_assert(stream);
     ogs_assert(message);
 
     ogs_assert(sess);
@@ -227,7 +227,7 @@ bool smf_nsmf_handle_update_sm_context(
     if (!SmContextUpdateData) {
         ogs_error("[%s:%d] No SmContextUpdateData",
                 smf_ue->supi, sess->psi);
-        smf_sbi_send_sm_context_update_error(session,
+        smf_sbi_send_sm_context_update_error(stream,
                 OGS_SBI_HTTP_STATUS_BAD_REQUEST,
                 "No SmContextUpdateData", smf_ue->supi, NULL, NULL);
         return false;
@@ -261,7 +261,7 @@ bool smf_nsmf_handle_update_sm_context(
             ogs_error("[%s:%d] No n1SmMsg", smf_ue->supi, sess->psi);
             n1smbuf = gsm_build_pdu_session_release_reject(sess,
                 OGS_5GSM_CAUSE_INVALID_MANDATORY_INFORMATION);
-            smf_sbi_send_sm_context_update_error(session,
+            smf_sbi_send_sm_context_update_error(stream,
                     OGS_SBI_HTTP_STATUS_BAD_REQUEST,
                     "No n1SmMsg", smf_ue->supi, n1smbuf, NULL);
             return false;
@@ -273,7 +273,7 @@ bool smf_nsmf_handle_update_sm_context(
                     smf_ue->supi, sess->psi, n1SmMsg->content_id);
             n1smbuf = gsm_build_pdu_session_release_reject(sess,
                 OGS_5GSM_CAUSE_INVALID_MANDATORY_INFORMATION);
-            smf_sbi_send_sm_context_update_error(session,
+            smf_sbi_send_sm_context_update_error(stream,
                     OGS_SBI_HTTP_STATUS_BAD_REQUEST,
                     "No N1 SM Content", smf_ue->supi, n1smbuf, NULL);
             return false;
@@ -286,7 +286,7 @@ bool smf_nsmf_handle_update_sm_context(
          */
         n1smbuf = ogs_pkbuf_copy(n1smbuf);
         ogs_assert(n1smbuf);
-        nas_5gs_send_to_gsm(sess, session, n1smbuf);
+        nas_5gs_send_to_gsm(sess, stream, n1smbuf);
 
         return true;
     
@@ -298,7 +298,7 @@ bool smf_nsmf_handle_update_sm_context(
 
         if (!SmContextUpdateData->n2_sm_info_type) {
             ogs_error("[%s:%d] No n2SmInfoType", smf_ue->supi, sess->psi);
-            smf_sbi_send_sm_context_update_error(session,
+            smf_sbi_send_sm_context_update_error(stream,
                     OGS_SBI_HTTP_STATUS_BAD_REQUEST,
                     "No n2SmInfoType", smf_ue->supi, NULL, NULL);
             return false;
@@ -308,7 +308,7 @@ bool smf_nsmf_handle_update_sm_context(
         if (!n2SmMsg || !n2SmMsg->content_id) {
             ogs_error("[%s:%d] No N2SmInfo.content_id",
                     smf_ue->supi, sess->psi);
-            smf_sbi_send_sm_context_update_error(session,
+            smf_sbi_send_sm_context_update_error(stream,
                     OGS_SBI_HTTP_STATUS_BAD_REQUEST,
                     "No n2SmInfo.content_id", smf_ue->supi, NULL, NULL);
             return false;
@@ -317,7 +317,7 @@ bool smf_nsmf_handle_update_sm_context(
         n2smbuf = ogs_sbi_find_part_by_content_id(message, n2SmMsg->content_id);
         if (!n2smbuf) {
             ogs_error("[%s:%d] No N2 SM Content", smf_ue->supi, sess->psi);
-            smf_sbi_send_sm_context_update_error(session,
+            smf_sbi_send_sm_context_update_error(stream,
                     OGS_SBI_HTTP_STATUS_BAD_REQUEST,
                     "No N2 SM Content", smf_ue->supi, NULL, NULL);
             return false;
@@ -331,12 +331,12 @@ bool smf_nsmf_handle_update_sm_context(
         n2smbuf = ogs_pkbuf_copy(n2smbuf);
         ogs_assert(n2smbuf);
         ngap_send_to_n2sm(
-                sess, session, SmContextUpdateData->n2_sm_info_type, n2smbuf);
+                sess, stream, SmContextUpdateData->n2_sm_info_type, n2smbuf);
 
     } else {
         if (!SmContextUpdateData->up_cnx_state) {
             ogs_error("[%s:%d] No upCnxState", smf_ue->supi, sess->psi);
-            smf_sbi_send_sm_context_update_error(session,
+            smf_sbi_send_sm_context_update_error(stream,
                     OGS_SBI_HTTP_STATUS_BAD_REQUEST,
                     "No upCnxState", smf_ue->supi, NULL, NULL);
             return false;
@@ -349,7 +349,7 @@ bool smf_nsmf_handle_update_sm_context(
          * Handle DEACTIVATED
          ********************************************************/
             smf_5gc_pfcp_send_session_modification_request(
-                    sess, session, OGS_PFCP_MODIFY_DEACTIVATE);
+                    sess, stream, OGS_PFCP_MODIFY_DEACTIVATE);
 
         } else if (SmContextUpdateData->up_cnx_state ==
                 OpenAPI_up_cnx_state_ACTIVATING) {
@@ -424,7 +424,7 @@ bool smf_nsmf_handle_update_sm_context(
 
             response = ogs_sbi_build_response(&sendmsg, OGS_SBI_HTTP_STATUS_OK);
             ogs_assert(response);
-            ogs_sbi_server_send_response(session, response);
+            ogs_sbi_server_send_response(stream, response);
 
             for (i = 0; i < sendmsg.num_of_part; i++)
                 if (sendmsg.part[i].pkbuf)
@@ -435,7 +435,7 @@ bool smf_nsmf_handle_update_sm_context(
                 smf_ue->supi, sess->psi,
                 SmContextUpdateData->up_cnx_state);
             ogs_error("%s", strerror);
-            smf_sbi_send_sm_context_update_error(session,
+            smf_sbi_send_sm_context_update_error(stream,
                     OGS_SBI_HTTP_STATUS_BAD_REQUEST, strerror,
                     NULL, NULL, NULL);
             ogs_free(strerror);
@@ -447,11 +447,11 @@ bool smf_nsmf_handle_update_sm_context(
 }
 
 bool smf_nsmf_handle_release_sm_context(
-    smf_sess_t *sess, ogs_sbi_session_t *session, ogs_sbi_message_t *message)
+    smf_sess_t *sess, ogs_sbi_stream_t *stream, ogs_sbi_message_t *message)
 {
     OpenAPI_sm_context_release_data_t *SmContextReleaseData = NULL;
 
-    ogs_assert(session);
+    ogs_assert(stream);
     ogs_assert(message);
     ogs_assert(sess);
 
@@ -482,7 +482,7 @@ bool smf_nsmf_handle_release_sm_context(
         }
     }
 
-    smf_5gc_pfcp_send_session_deletion_request(sess, session,
+    smf_5gc_pfcp_send_session_deletion_request(sess, stream,
             OGS_PFCP_DELETE_TRIGGER_AMF_RELEASE_SM_CONTEXT);
 
     return true;

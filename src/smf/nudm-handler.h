@@ -26,7 +26,7 @@
 extern "C" {
 #endif
 
-bool smf_nudm_sdm_handle_get(smf_sess_t *sess, ogs_sbi_session_t *session,
+bool smf_nudm_sdm_handle_get(smf_sess_t *sess, ogs_sbi_stream_t *stream,
         ogs_sbi_message_t *recvmsg);
 
 #ifdef __cplusplus

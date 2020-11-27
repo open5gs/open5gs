@@ -219,7 +219,70 @@ static int kqueue_process(ogs_pollset_t *pollset, ogs_time_t timeout)
         short when = 0;
 
         if (context->event_list[i].flags & EV_ERROR) {
-            ogs_warn("kevent() error = 0x%x", context->event_list[i].flags);
+			switch (context->event_list[i].data) {
+
+			/* Can occur on delete if we are not currently
+			 * watching any events on this fd.  That can
+			 * happen when the fd was closed and another
+			 * file was opened with that fd. */
+			case ENOENT:
+			/* Can occur for reasons not fully understood
+			 * on FreeBSD. */
+			case EINVAL:
+				continue;
+#if defined(__FreeBSD__)
+			/*
+			 * This currently occurs if an FD is closed
+			 * before the EV_DELETE makes it out via kevent().
+			 * The FreeBSD capabilities code sees the blank
+			 * capability set and rejects the request to
+			 * modify an event.
+			 *
+			 * To be strictly correct - when an FD is closed,
+			 * all the registered events are also removed.
+			 * Queuing EV_DELETE to a closed FD is wrong.
+			 * The event(s) should just be deleted from
+			 * the pending changelist.
+			 */
+			case ENOTCAPABLE:
+				continue;
+#endif
+
+			/* Can occur on a delete if the fd is closed. */
+			case EBADF:
+				/* XXXX On NetBSD, we can also get EBADF if we
+				 * try to add the write side of a pipe, but
+				 * the read side has already been closed.
+				 * Other BSDs call this situation 'EPIPE'. It
+				 * would be good if we had a way to report
+				 * this situation. */
+				continue;
+			/* These two can occur on an add if the fd was one side
+			 * of a pipe, and the other side was closed. */
+			case EPERM:
+			case EPIPE:
+				/* Report read events, if we're listening for
+				 * them, so that the user can learn about any
+				 * add errors.  (If the operation was a
+				 * delete, then udata should be cleared.) */
+				if (context->event_list[i].udata) {
+					/* The operation was an add:
+					 * report the error as a read. */
+					when |= OGS_POLLIN;
+					break;
+				} else {
+					/* The operation was a del:
+					 * report nothing. */
+					continue;
+				}
+
+			/* Other errors shouldn't occur. */
+			default:
+                ogs_error("kevent() error : flags = 0x%x, errno = %d",
+                        context->event_list[i].flags,
+                        (int)context->event_list[i].data);
+				return OGS_ERROR;
+			}
         } else if (context->event_list[i].filter == EVFILT_READ) {
             when |= OGS_POLLIN;
         } else if (context->event_list[i].filter == EVFILT_WRITE) {

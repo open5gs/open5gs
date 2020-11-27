@@ -19,6 +19,7 @@ Build-Depends: debhelper (>= 11),
                libyaml-dev,
                libmicrohttpd-dev,
                libcurl4-gnutls-dev,
+               libnghttp2-dev,
 Standards-Version: 4.3.0
 Rules-Requires-Root: no
 Homepage: https://open5gs.org

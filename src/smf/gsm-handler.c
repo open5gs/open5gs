@@ -25,7 +25,7 @@
 #define OGS_LOG_DOMAIN __gsm_log_domain
 
 int gsm_handle_pdu_session_establishment_request(
-        smf_sess_t *sess, ogs_sbi_session_t *session,
+        smf_sess_t *sess, ogs_sbi_stream_t *stream,
         ogs_nas_5gs_pdu_session_establishment_request_t *
             pdu_session_establishment_request)
 {
@@ -37,7 +37,7 @@ int gsm_handle_pdu_session_establishment_request(
     ogs_nas_ssc_mode_t *ssc_mode = NULL;
 
     ogs_assert(sess);
-    ogs_assert(session);
+    ogs_assert(stream);
     ogs_assert(pdu_session_establishment_request);
 
     pdu_session_type = &pdu_session_establishment_request->pdu_session_type;
@@ -64,7 +64,7 @@ int gsm_handle_pdu_session_establishment_request(
                 extended_protocol_configuration_options);
     }
 
-    smf_sbi_discover_and_send(OpenAPI_nf_type_UDM, sess, session,
+    smf_sbi_discover_and_send(OpenAPI_nf_type_UDM, sess, stream,
             (char *)OGS_SBI_RESOURCE_NAME_SM_DATA, smf_nudm_sdm_build_get);
 
     return OGS_OK;

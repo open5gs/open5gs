@@ -64,7 +64,7 @@ typedef struct ogs_pfcp_xact_s {
     void            *assoc_xact;    /**< Associated GTP transaction */
     ogs_pkbuf_t     *gtpbuf;        /**< GTP packet buffer */
 
-    void            *assoc_session; /**< Associated SBI session */
+    void            *assoc_stream;  /**< Associated SBI session */
 
     bool            epc;            /**< EPC or 5GC */
 
