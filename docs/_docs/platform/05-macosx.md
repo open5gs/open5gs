@@ -78,8 +78,7 @@ $ brew install mongo-c-driver gnutls libgcrypt libidn libyaml libmicrohttpd nght
 Install Bison and Create soft link.
 ```bash
 $ brew install bison
-$ cd /usr/local/bin
-$ ln -s ../Cellar/bison/3.7.3/bin/bison bison
+$ export PATH="/usr/local/opt/bison/bin:$PATH"
 ```
 
 Install Meson using Homebrew.
