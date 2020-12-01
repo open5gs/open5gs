@@ -27,3 +27,7 @@ head_inline: "<style> ul { padding-bottom: 1em; } </style>"
   - [CentOS](platform/02-centos)
   - [Fedora](platform/03-fedora)
   - [MacOSX](platform/05-macosx)
+  
+- Hardware Specific Notes
+  - [Tested e/gNodeBs](hardware/01-genodebs)
+  
