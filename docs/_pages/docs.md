@@ -17,6 +17,8 @@ head_inline: "<style> ul { padding-bottom: 1em; } </style>"
   - [Kubernetes Open5GS Deployment](https://dev.to/infinitydon/virtual-4g-simulation-using-kubernetes-and-gns3-3b7k?fbclid=IwAR1p99h13a-mCfejanbBQe0H0-jp5grXkn5mWf1WrTHf47UtegB2-UHGGZQ)
   - [Static IPs for UEs](http://nickvsnetworking.com/open5gs-epc-static-ip-addresses-for-ues-apns-subscribers/)
   - [My first 5G Core: Open5Gs and UERANSIM](http://nickvsnetworking.com/my-first-5g-core-open5gs-and-ueransim/)
+  - [Sending SMS in Open5GS LTE Networks using the SGs Interface and OsmoMSC](https://nickvsnetworking.com/sending-sms-in-open5gs-lte-networks-using-the-sgs-interface-and-osmomsc-with-smsos/)
+  - [OsmoMSC and Open5GS MME – SGs Interface for CSCF / InterRAT Handover](https://nickvsnetworking.com/osmomsc-and-open5gs-mme-sgs-interface-for-cscf-interran-handover/)
 
 - Troubleshooting
   - [Simple Issues](troubleshoot/01-simple-issues)
