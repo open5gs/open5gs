@@ -39,7 +39,8 @@ If you have tested radio hardware from a vendor not listed with Open5GS, please 
  * [srsLTE / SRSenb](https://github.com/srsLTE/srsLTE) LimeSDR
  * [srsLTE / SRSenb](https://github.com/srsLTE/srsLTE) BladeRF x40 (Not stable)
 
-### Other Radio Hardware
+### Misc Radio Hardware
 ---
-
  * [OsmoBTS](https://osmocom.org/projects/osmobts/wiki) controlled ip.access NanoBTS (Used for CSFB with Osmocom)
+ * [UERANSIM](https://github.com/aligungr/UERANSIM) 5G RAN Simulator
+ 
