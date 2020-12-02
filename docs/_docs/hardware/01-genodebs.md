@@ -34,11 +34,11 @@ If you have tested radio hardware from a vendor not listed with Open5GS, please 
 ---
 
 
-### SDR Hardware
+### 4G/5G Software Stacks + SDRs
 ---
 
- * [srsLTE / SRSenb](https://github.com/srsLTE/srsLTE) LimeSDR
- * [srsLTE / SRSenb](https://github.com/srsLTE/srsLTE) BladeRF x40 (Not stable)
+ * [srsLTE / srsENB](https://github.com/srsLTE/srsLTE) + LimeSDR, USRP, BladeRF x40 (BladeRF Not stable)
+ * [Amarisoft](https://www.amarisoft.com/) + LimeSDR, USRP, Amarisoft PCI Express Card
 
 ### Misc Radio Hardware
 ---
