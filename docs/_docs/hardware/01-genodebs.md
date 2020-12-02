@@ -28,6 +28,7 @@ If you have tested radio hardware from a vendor not listed with Open5GS, please 
  * AirHarmony 4000
  * AirHarmony 4200
  * AirHarmony 4400
+ * Gemtek WLTGFC-101 (S/W version 2.1.1746.1116)
 
 ### OpenRAN Hardware
 ---
