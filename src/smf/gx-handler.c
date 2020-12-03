@@ -135,6 +135,8 @@ void smf_gx_handle_cca_initial_request(
     dl_far = bearer->dl_far;
     ogs_assert(dl_far);
 
+    dl_far->apply_action = OGS_PFCP_APPLY_ACTION_FORW;
+
     /* Set Outer Header Creation to the Default DL FAR */
     ogs_pfcp_ip_to_outer_header_creation(&bearer->sgw_s5u_ip,
         &dl_far->outer_header_creation, &dl_far->outer_header_creation_len);

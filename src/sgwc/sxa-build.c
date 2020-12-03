@@ -90,6 +90,11 @@ ogs_pkbuf_t *sgwc_sxa_build_session_establishment_request(
         i++;
     }
 
+    /* Create BAR */
+    if (sess->pfcp.bar) {
+        ogs_pfcp_build_create_bar(&req->create_bar, sess->pfcp.bar);
+    }
+
     /* PDN Type */
     req->pdn_type.presence = 1;
     req->pdn_type.u8 = sess->pdn.paa.pdn_type;

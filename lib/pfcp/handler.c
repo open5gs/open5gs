@@ -177,7 +177,7 @@ void ogs_pfcp_up_handle_pdr(
             buffering = true;
 
         } else {
-            ogs_error("Not implemented");
+            ogs_error("Not implemented = %d", far->apply_action);
             ogs_pkbuf_free(sendbuf);
         }
     }
@@ -280,29 +280,64 @@ ogs_pfcp_pdr_t *ogs_pfcp_handle_create_pdr(ogs_pfcp_sess_t *sess,
     ogs_pfcp_rule_remove_all(pdr);
 
     for (i = 0; i < OGS_MAX_NUM_OF_RULE; i++) {
-        ogs_pfcp_sdf_filter_t sdf_filter_in_message;
+        ogs_pfcp_sdf_filter_t sdf_filter;
+        ogs_pfcp_rule_t *rule = NULL;
+        ogs_pfcp_rule_t *oppsite_direction_rule = NULL;
+
         if (message->pdi.sdf_filter[i].presence == 0)
             break;
 
         len = ogs_pfcp_parse_sdf_filter(
-                &sdf_filter_in_message, &message->pdi.sdf_filter[i]);
+                &sdf_filter, &message->pdi.sdf_filter[i]);
         ogs_assert(message->pdi.sdf_filter[i].len == len);
-        if (sdf_filter_in_message.fd) {
-            ogs_pfcp_rule_t *rule = NULL;
+
+        /* Check Previous SDF Filter ID */
+        if (sdf_filter.bid) {
+            oppsite_direction_rule = ogs_pfcp_rule_find_by_sdf_filter_id(
+                        sess, sdf_filter.sdf_filter_id);
+
+        }
+
+        if (!oppsite_direction_rule && !sdf_filter.fd) {
+            ogs_error("Not Supported SDF Filter [Flags:0x%x, Len:%d]",
+                    sdf_filter.flags, message->pdi.sdf_filter[i].len);
+            ogs_log_hexdump(OGS_LOG_ERROR,
+                    message->pdi.sdf_filter[i].data,
+                    message->pdi.sdf_filter[i].len);
+            continue;
+        }
+
+        rule = ogs_pfcp_rule_add(pdr);
+        ogs_assert(rule);
+
+        /* Set All Flags (BID, FL, SPI, TTC, FD) */
+        rule->flags = sdf_filter.flags;
+
+        if (oppsite_direction_rule) {
+            /* Copy oppsite direction rule and Swap */
+            memcpy(&rule->ipfw,
+                    &oppsite_direction_rule->ipfw, sizeof(rule->ipfw));
+            ogs_ipfw_rule_swap(&rule->ipfw);
+        }
+
+        /* If BID, Store SDF Filter ID */
+        if (rule->bid)
+            rule->sdf_filter_id = sdf_filter.sdf_filter_id;
+
+        /* If FD, Apply Flow-Description to the RULE */
+        if (rule->fd) {
             char *flow_description = NULL;
 
             flow_description = ogs_malloc(
-                    sdf_filter_in_message.flow_description_len+1);
+                    sdf_filter.flow_description_len+1);
             ogs_cpystrn(flow_description,
-                    sdf_filter_in_message.flow_description,
-                    sdf_filter_in_message.flow_description_len+1);
-
-            rule = ogs_pfcp_rule_add(pdr);
-            ogs_assert(rule);
+                    sdf_filter.flow_description,
+                    sdf_filter.flow_description_len+1);
 
             rv = ogs_ipfw_compile_rule(&rule->ipfw, flow_description);
             ogs_assert(rv == OGS_OK);
 
+            ogs_free(flow_description);
 /*
  *
  * TS29.244 Ch 5.2.1A.2A
@@ -337,8 +372,6 @@ ogs_pfcp_pdr_t *ogs_pfcp_handle_create_pdr(ogs_pfcp_sess_t *sess,
             /* Uplink data flow */
             if (pdr->src_if == OGS_PFCP_INTERFACE_ACCESS)
                 ogs_ipfw_rule_swap(&rule->ipfw);
-
-            ogs_free(flow_description);
         }
     }
 
@@ -364,6 +397,12 @@ ogs_pfcp_pdr_t *ogs_pfcp_handle_create_pdr(ogs_pfcp_sess_t *sess,
         pdr->qfi = message->pdi.qfi.u8;
     }
 
+    if (message->pdi.ue_ip_address.presence) {
+        pdr->ue_ip_addr_len = message->pdi.ue_ip_address.len;
+        memcpy(&pdr->ue_ip_addr,
+                message->pdi.ue_ip_address.data, pdr->ue_ip_addr_len);
+    }
+
     if (message->outer_header_removal.presence) {
         pdr->outer_header_removal_len = message->outer_header_removal.len;
         memcpy(&pdr->outer_header_removal, message->outer_header_removal.data,
@@ -380,12 +419,6 @@ ogs_pfcp_pdr_t *ogs_pfcp_handle_create_pdr(ogs_pfcp_sess_t *sess,
         qer = ogs_pfcp_qer_find_or_add(sess, message->qer_id.u32);
         ogs_assert(qer);
         ogs_pfcp_pdr_associate_qer(pdr, qer);
-    }
-
-    if (message->far_id.presence) {
-        far = ogs_pfcp_far_find_or_add(sess, message->far_id.u32);
-        ogs_assert(far);
-        ogs_pfcp_pdr_associate_far(pdr, far);
     }
 
     if (message->qer_id.presence) {
@@ -475,67 +508,99 @@ ogs_pfcp_pdr_t *ogs_pfcp_handle_update_pdr(ogs_pfcp_sess_t *sess,
         ogs_pfcp_rule_remove_all(pdr);
 
         for (i = 0; i < OGS_MAX_NUM_OF_RULE; i++) {
-            ogs_pfcp_sdf_filter_t sdf_filter_in_message;
+            ogs_pfcp_sdf_filter_t sdf_filter;
+            ogs_pfcp_rule_t *rule = NULL;
+            ogs_pfcp_rule_t *oppsite_direction_rule = NULL;
 
             if (message->pdi.sdf_filter[i].presence == 0)
                 break;
 
             len = ogs_pfcp_parse_sdf_filter(
-                    &sdf_filter_in_message, &message->pdi.sdf_filter[i]);
+                    &sdf_filter, &message->pdi.sdf_filter[i]);
             ogs_assert(message->pdi.sdf_filter[i].len == len);
-            if (sdf_filter_in_message.fd) {
-                ogs_pfcp_rule_t *rule = NULL;
+
+            /* Check Previous SDF Filter ID */
+            if (sdf_filter.bid) {
+                oppsite_direction_rule = ogs_pfcp_rule_find_by_sdf_filter_id(
+                            sess, sdf_filter.sdf_filter_id);
+
+            }
+
+            if (!oppsite_direction_rule && !sdf_filter.fd) {
+                ogs_error("Not Supported SDF Filter [Flags:0x%x, Len:%d]",
+                        sdf_filter.flags, message->pdi.sdf_filter[i].len);
+                ogs_log_hexdump(OGS_LOG_ERROR,
+                        message->pdi.sdf_filter[i].data,
+                        message->pdi.sdf_filter[i].len);
+                continue;
+            }
+
+            rule = ogs_pfcp_rule_add(pdr);
+            ogs_assert(rule);
+
+            /* Set All Flags (BID, FL, SPI, TTC, FD) */
+            rule->flags = sdf_filter.flags;
+
+            if (oppsite_direction_rule) {
+                /* Copy oppsite direction rule and Swap */
+                memcpy(&rule->ipfw,
+                        &oppsite_direction_rule->ipfw, sizeof(rule->ipfw));
+                ogs_ipfw_rule_swap(&rule->ipfw);
+            }
+
+            /* If BID, Store SDF Filter ID */
+            if (rule->bid)
+                rule->sdf_filter_id = sdf_filter.sdf_filter_id;
+
+            /* If FD, Apply Flow-Description to the RULE */
+            if (rule->fd) {
                 char *flow_description = NULL;
 
                 flow_description = ogs_malloc(
-                        sdf_filter_in_message.flow_description_len+1);
+                        sdf_filter.flow_description_len+1);
                 ogs_cpystrn(flow_description,
-                        sdf_filter_in_message.flow_description,
-                        sdf_filter_in_message.flow_description_len+1);
+                        sdf_filter.flow_description,
+                        sdf_filter.flow_description_len+1);
 
-                rule = ogs_pfcp_rule_add(pdr);
-                ogs_assert(rule);
                 rv = ogs_ipfw_compile_rule(&rule->ipfw, flow_description);
                 ogs_assert(rv == OGS_OK);
 
-/*
- *
- * TS29.244 Ch 5.2.1A.2A
- *
- * The UP function shall apply the SDF filter based on the Source Interface
- * of the PDR as follows (see also clause 8.2.5):
- *
- * - when the Source Interface is CORE, this indicates that the filter is
- *   for downlink data flow, so the UP function shall apply
- *   the Flow Description as is;
- *
- * - when the Source Interface is ACCESS, this indicates that the filter is
- *   for uplink data flow, so the UP function shall swap the source and
- *   destination address/port in the Flow Description;
- *
- * - when the Source Interface is CP-function or SGi-LAN,
- *   the UP function shall use the Flow Description as is.
- *
- *
- * Refer to lib/ipfw/ogs-ipfw.h
- * Issue #338
- *
- * <DOWNLINK>
- * GX : permit out from <P-CSCF_RTP_IP> <P-CSCF_RTP_PORT> to <UE_IP> <UE_PORT>
- * RULE : Source <P-CSCF_RTP_IP> <P-CSCF_RTP_PORT> Destination <UE_IP> <UE_PORT>
- *
- * <UPLINK>
- * GX : permit out from <P-CSCF_RTP_IP> <P-CSCF_RTP_PORT> to <UE_IP> <UE_PORT>
- * RULE : Source <UE_IP> <UE_PORT> Destination <P-CSCF_RTP_IP> <P-CSCF_RTP_PORT>
- */
+                ogs_free(flow_description);
+    /*
+     *
+     * TS29.244 Ch 5.2.1A.2A
+     *
+     * The UP function shall apply the SDF filter based on the Source Interface
+     * of the PDR as follows (see also clause 8.2.5):
+     *
+     * - when the Source Interface is CORE, this indicates that the filter is
+     *   for downlink data flow, so the UP function shall apply
+     *   the Flow Description as is;
+     *
+     * - when the Source Interface is ACCESS, this indicates that the filter is
+     *   for uplink data flow, so the UP function shall swap the source and
+     *   destination address/port in the Flow Description;
+     *
+     * - when the Source Interface is CP-function or SGi-LAN,
+     *   the UP function shall use the Flow Description as is.
+     *
+     *
+     * Refer to lib/ipfw/ogs-ipfw.h
+     * Issue #338
+     *
+     * <DOWNLINK>
+     * GX : permit out from <P-CSCF_RTP_IP> <P-CSCF_RTP_PORT> to <UE_IP> <UE_PORT>
+     * RULE : Source <P-CSCF_RTP_IP> <P-CSCF_RTP_PORT> Destination <UE_IP> <UE_PORT>
+     *
+     * <UPLINK>
+     * GX : permit out from <P-CSCF_RTP_IP> <P-CSCF_RTP_PORT> to <UE_IP> <UE_PORT>
+     * RULE : Source <UE_IP> <UE_PORT> Destination <P-CSCF_RTP_IP> <P-CSCF_RTP_PORT>
+     */
 
                 /* Uplink data flow */
                 if (pdr->src_if == OGS_PFCP_INTERFACE_ACCESS)
                     ogs_ipfw_rule_swap(&rule->ipfw);
-
-                ogs_free(flow_description);
             }
-
         }
 
         if (message->pdi.network_instance.presence) {
@@ -629,25 +694,28 @@ ogs_pfcp_far_t *ogs_pfcp_handle_create_far(ogs_pfcp_sess_t *sess,
         *offending_ie_value = OGS_PFCP_APPLY_ACTION_TYPE;
         return NULL;
     }
-    if (message->forwarding_parameters.
-            destination_interface.presence == 0) {
-        return far;
-    }
 
     far->apply_action = message->apply_action.u8;
-    far->dst_if = message->forwarding_parameters.destination_interface.u8;
 
-    if (message->forwarding_parameters.outer_header_creation.presence) {
-        ogs_pfcp_tlv_outer_header_creation_t *outer_header_creation =
-            &message->forwarding_parameters.outer_header_creation;
+    if (message->forwarding_parameters.presence) {
+        if (message->forwarding_parameters.destination_interface.presence) {
+            far->dst_if =
+                message->forwarding_parameters.destination_interface.u8;
+        }
 
-        ogs_assert(outer_header_creation->data);
-        ogs_assert(outer_header_creation->len);
+        if (message->forwarding_parameters.outer_header_creation.presence) {
+            ogs_pfcp_tlv_outer_header_creation_t *outer_header_creation =
+                &message->forwarding_parameters.outer_header_creation;
 
-        memcpy(&far->outer_header_creation,
-                outer_header_creation->data, outer_header_creation->len);
-        far->outer_header_creation.teid =
-                be32toh(far->outer_header_creation.teid);
+            ogs_assert(outer_header_creation->data);
+            ogs_assert(outer_header_creation->len);
+
+            memcpy(&far->outer_header_creation,
+                    outer_header_creation->data, outer_header_creation->len);
+            far->outer_header_creation.teid =
+                    be32toh(far->outer_header_creation.teid);
+        }
+
     }
 
     return far;
@@ -724,8 +792,8 @@ ogs_pfcp_far_t *ogs_pfcp_handle_update_far(ogs_pfcp_sess_t *sess,
     if (message->update_forwarding_parameters.presence) {
         if (message->update_forwarding_parameters.
                 destination_interface.presence) {
-            far->dst_if = message->update_forwarding_parameters.
-                destination_interface.u8;
+            far->dst_if =
+                message->update_forwarding_parameters.destination_interface.u8;
         }
 
         if (message->update_forwarding_parameters.
@@ -888,4 +956,59 @@ bool ogs_pfcp_handle_remove_qer(ogs_pfcp_sess_t *sess,
     ogs_pfcp_qer_remove(qer);
 
     return true;
+}
+
+ogs_pfcp_bar_t *ogs_pfcp_handle_create_bar(ogs_pfcp_sess_t *sess,
+        ogs_pfcp_tlv_create_bar_t *message,
+        uint8_t *cause_value, uint8_t *offending_ie_value)
+{
+    ogs_assert(message);
+    ogs_assert(sess);
+
+    if (message->presence == 0)
+        return NULL;
+
+    if (message->bar_id.presence == 0) {
+        ogs_error("No BAR-ID");
+        *cause_value = OGS_PFCP_CAUSE_MANDATORY_IE_MISSING;
+        *offending_ie_value = OGS_PFCP_BAR_ID_TYPE;
+        return NULL;
+    }
+
+    if (sess->bar)
+        ogs_pfcp_bar_delete(sess->bar);
+
+    ogs_pfcp_bar_new(sess);
+    ogs_assert(sess->bar);
+
+    sess->bar->id = message->bar_id.u8;
+
+    return sess->bar;
+}
+
+bool ogs_pfcp_handle_remove_bar(ogs_pfcp_sess_t *sess,
+        ogs_pfcp_tlv_remove_bar_t *message,
+        uint8_t *cause_value, uint8_t *offending_ie_value)
+{
+    ogs_assert(sess);
+    ogs_assert(message);
+
+    if (message->presence == 0)
+        return false;
+
+    if (message->bar_id.presence == 0) {
+        ogs_error("No BAR-ID");
+        *cause_value = OGS_PFCP_CAUSE_MANDATORY_IE_MISSING;
+        *offending_ie_value = OGS_PFCP_BAR_ID_TYPE;
+        return false;
+    }
+
+    if (sess->bar && sess->bar->id == message->bar_id.u8) {
+        ogs_pfcp_bar_delete(sess->bar);
+        return true;
+    }
+
+    ogs_error("[%p] Unknown BAR-ID[%d]", sess->bar, message->bar_id.u8);
+    *cause_value = OGS_PFCP_CAUSE_SESSION_CONTEXT_NOT_FOUND;
+    return false;
 }

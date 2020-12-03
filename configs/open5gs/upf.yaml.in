@@ -107,13 +107,13 @@ logger:
 #
 #    pdn:
 #      - addr: 10.45.0.1/16
-#        apn: internet
+#        dnn: internet
 #      - addr: cafe:1::1/64
-#        apn: internet
+#        dnn: internet
 #      - addr: 10.46.0.1/16
-#        apn: ims
+#        dnn: ims
 #      - addr: cafe:2::1/64
-#        apn: ims
+#        dnn: ims
 #
 #  o Multiple Devices (default: ogstun)
 #    $ sudo ip addr add 10.45.0.1/16 dev ogstun
@@ -123,15 +123,15 @@ logger:
 #
 #    pdn:
 #      - addr: 10.45.0.1/16
-#        apn: internet
+#        dnn: internet
 #      - addr: cafe:1::1/64
-#        apn: internet
+#        dnn: internet
 #        dev: ogstun2
 #      - addr: 10.46.0.1/16
-#        apn: ims
+#        dnn: ims
 #        dev: ogstun3
 #      - addr: cafe:2::1/64
-#        apn: ims
+#        dnn: ims
 #        dev: ogstun3
 #
 #  o Pool Range Sample

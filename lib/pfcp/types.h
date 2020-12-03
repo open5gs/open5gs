@@ -480,23 +480,28 @@ ED3(uint8_t     spare:6;,
  * if the CHID bit in octet 5 is set to "1".
  */
 typedef struct ogs_pfcp_f_teid_s {
-ED5(uint8_t     spare:4;,
+ED5(uint8_t     spare1:4;,
     uint8_t     chid:1;,
     uint8_t     ch:1;,
     uint8_t     ipv6:1;,
     uint8_t     ipv4:1;)
     union {
-        uint32_t teid;
-        uint8_t choose_id;
-    };
-    union {
-        union {
-            uint32_t addr;
-            uint8_t addr6[OGS_IPV6_LEN];
-            struct {
+        struct {
+        ED4(uint8_t choose_id;,
+            uint8_t spare2;,
+            uint8_t spare3;,
+            uint8_t spare4;)
+        };
+        struct {
+            uint32_t teid;
+            union {
                 uint32_t addr;
                 uint8_t addr6[OGS_IPV6_LEN];
-            } both;
+                struct {
+                    uint32_t addr;
+                    uint8_t addr6[OGS_IPV6_LEN];
+                } both;
+            };
         };
     };
 } __attribute__ ((packed)) ogs_pfcp_f_teid_t;
@@ -797,7 +802,6 @@ int16_t ogs_pfcp_parse_user_plane_ip_resource_info(
  * the UP function shall apply the SDF filter as specified in clause 5.2.1A.2A.
  */
 
-#define OGS_PFCP_MAX_SDF_FILTER_LEN     256
 typedef struct ogs_pfcp_sdf_filter_s {
     union {
         struct {

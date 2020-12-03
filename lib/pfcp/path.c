@@ -278,6 +278,12 @@ void ogs_pfcp_send_g_pdu(ogs_pfcp_pdr_t *pdr, ogs_pkbuf_t *sendbuf)
         return;
     }
 
+    if (far->dst_if == OGS_PFCP_INTERFACE_UNKNOWN) {
+        ogs_error("No Destination Interface");
+        ogs_pkbuf_free(sendbuf);
+        return;
+    }
+
     gnode = far->gnode;
     ogs_assert(gnode);
     ogs_assert(gnode->sock);

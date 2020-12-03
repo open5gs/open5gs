@@ -36,10 +36,9 @@ void compile_rule(char *av[], uint32_t *rbuf, int *rbufsize, void *tstate);
 
 int ogs_ipfw_compile_rule(ogs_ipfw_rule_t *ipfw_rule, char *flow_description)
 {
-    ogs_ipfw_rule_t zero_rule;
     char *token, *dir;
     char *saveptr;
-    int i = 2;
+    int i;
 
     char *av[MAX_NUM_OF_TOKEN];
 	uint32_t rulebuf[MAX_NUM_OF_RULE_BUFFER];
@@ -60,7 +59,6 @@ int ogs_ipfw_compile_rule(ogs_ipfw_rule_t *ipfw_rule, char *flow_description)
     av[0] = NULL;
 
     /* ACTION */
-
     description = ogs_strdup(flow_description);
     ogs_assert(description);
 
@@ -81,6 +79,7 @@ int ogs_ipfw_compile_rule(ogs_ipfw_rule_t *ipfw_rule, char *flow_description)
     }
 
     /* ADDR */
+    i = 2;
     token = ogs_strtok_r(NULL, " ", &saveptr);
     while (token != NULL) {
         av[i++] = token;
@@ -91,6 +90,14 @@ int ogs_ipfw_compile_rule(ogs_ipfw_rule_t *ipfw_rule, char *flow_description)
     av[i++] = dir;
 
     av[i] = NULL;
+
+    /* "to assigned" --> "to any" */
+    for (i = 2; av[i] != NULL; i++) {
+        if (strcmp(av[i], "assigned") == 0 && strcmp(av[i-1], "to") == 0) {
+            av[i] = "any";
+            break;
+        }
+    }
 
 	compile_rule(av, (uint32_t *)rule, &rbufsize, NULL);
 
@@ -155,13 +162,6 @@ int ogs_ipfw_compile_rule(ogs_ipfw_rule_t *ipfw_rule, char *flow_description)
             break;
         }
 	}
-
-    memset(&zero_rule, 0, sizeof(ogs_ipfw_rule_t));
-    if (memcmp(ipfw_rule, &zero_rule, sizeof(ogs_ipfw_rule_t)) == 0) {
-        ogs_error("Cannot find Flow-Description");
-        ogs_free(description);
-        return OGS_ERROR;
-    }
 
     ogs_free(description);
     return OGS_OK;
@@ -281,7 +281,7 @@ char *ogs_ipfw_encode_flow_description(ogs_ipfw_rule_t *ipfw_rule)
                     ipfw_rule->ip.dst.mask[3]);
             return NULL;
         } else if (prefixlen == 0) {
-            p = ogs_slprintf(p, last, " any");
+            p = ogs_slprintf(p, last, " assigned");
         } else if (prefixlen > 0 && prefixlen < IPV4_BITLEN) {
             p = ogs_slprintf(p, last, " %s/%d", buf, prefixlen);
         } else if (prefixlen == IPV4_BITLEN) {
@@ -308,7 +308,7 @@ char *ogs_ipfw_encode_flow_description(ogs_ipfw_rule_t *ipfw_rule)
                     ipfw_rule->ip.dst.mask[3]);
             return NULL;
         } else if (prefixlen == 0) {
-            p = ogs_slprintf(p, last, " any");
+            p = ogs_slprintf(p, last, " assigned");
         } else if (prefixlen > 0 && prefixlen < IPV6_BITLEN) {
             p = ogs_slprintf(p, last, " %s/%d", buf, prefixlen);
         } else if (prefixlen == IPV6_BITLEN) {
@@ -318,7 +318,7 @@ char *ogs_ipfw_encode_flow_description(ogs_ipfw_rule_t *ipfw_rule)
             ogs_assert_if_reached();
         }
     } else
-        p = ogs_slprintf(p, last, " any");
+        p = ogs_slprintf(p, last, " assigned");
 
     if (ipfw_rule->port.dst.low == ipfw_rule->port.dst.high) {
         if (ipfw_rule->port.dst.low == 0) {

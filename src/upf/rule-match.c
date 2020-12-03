@@ -172,12 +172,12 @@ ogs_pfcp_pdr_t *upf_pdr_find_by_packet(ogs_pkbuf_t *pkt)
             if (pdr->src_if != OGS_PFCP_INTERFACE_CORE)
                 continue;
 
+            /* Save the Fallback PDR : Lowest precedence downlink PDR */
+            fallback_pdr = pdr;
+
             /* Check if FAR is Downlink */
             if (far->dst_if != OGS_PFCP_INTERFACE_ACCESS)
                 continue;
-
-            /* Save the Fallback PDR : Lowest precedence downlink PDR */
-            fallback_pdr = pdr;
 
             /* Check if Outer header creation */
             if (far->outer_header_creation.teid == 0)
@@ -310,10 +310,12 @@ found:
             return pdr;
         }
 
-        ogs_assert(fallback_pdr);
-        ogs_debug("Found Session : Fallback PDR-ID[%d]", fallback_pdr->id);
-        return fallback_pdr;
+        if (fallback_pdr) {
+            ogs_debug("Found Session : Fallback PDR-ID[%d]", fallback_pdr->id);
+            return fallback_pdr;
+        }
 
+        ogs_error("No PDR in Session");
     } else {
         ogs_debug("No Session");
     }

@@ -420,16 +420,11 @@ int upf_context_parse_config(void)
     return OGS_OK;
 }
 
-upf_sess_t *upf_sess_add(ogs_pfcp_f_seid_t *cp_f_seid,
-        const char *apn, uint8_t pdn_type, ogs_pfcp_ue_ip_addr_t *ue_ip)
+upf_sess_t *upf_sess_add(ogs_pfcp_f_seid_t *cp_f_seid)
 {
-    char buf1[OGS_ADDRSTRLEN];
-    char buf2[OGS_ADDRSTRLEN];
     upf_sess_t *sess = NULL;
 
     ogs_assert(cp_f_seid);
-    ogs_assert(apn);
-    ogs_assert(ue_ip);
 
     ogs_pool_alloc(&upf_sess_pool, &sess);
     ogs_assert(sess);
@@ -445,67 +440,12 @@ upf_sess_t *upf_sess_add(ogs_pfcp_f_seid_t *cp_f_seid,
     ogs_hash_set(self.sess_hash, &sess->smf_n4_seid,
             sizeof(sess->smf_n4_seid), sess);
 
-    /* Set APN */
-    ogs_cpystrn(sess->pdn.apn, apn, OGS_MAX_APN_LEN+1);
-
-    /* Set PDN-Type and UE IP Address */
-    sess->pdn.pdn_type = pdn_type;
-    if (pdn_type == OGS_GTP_PDN_TYPE_IPV4) {
-        if (ue_ip->ipv4 == 0) {
-            ogs_error("Cannot support PDN-Type[%d] != [IPv4:%d, IPv6:%d]",
-                    pdn_type, ue_ip->ipv4, ue_ip->ipv6);
-            goto cleanup;
-        }
-        sess->ipv4 = ogs_pfcp_ue_ip_alloc(
-                AF_INET, apn, (uint8_t *)&(ue_ip->addr));
-        ogs_assert(sess->ipv4);
-        ogs_hash_set(self.ipv4_hash, sess->ipv4->addr, OGS_IPV4_LEN, sess);
-    } else if (pdn_type == OGS_GTP_PDN_TYPE_IPV6) {
-        if (ue_ip->ipv6 == 0) {
-            ogs_error("Cannot support PDN-Type[%d] != [IPv4:%d, IPv6:%d]",
-                    pdn_type, ue_ip->ipv4, ue_ip->ipv6);
-            goto cleanup;
-        }
-        sess->ipv6 = ogs_pfcp_ue_ip_alloc(AF_INET6, apn, ue_ip->addr6);
-        ogs_assert(sess->ipv6);
-        ogs_hash_set(self.ipv6_hash, sess->ipv6->addr, OGS_IPV6_LEN, sess);
-    } else if (pdn_type == OGS_GTP_PDN_TYPE_IPV4V6) {
-        if (ue_ip->ipv4 == 0 || ue_ip->ipv6 == 0) {
-            ogs_error("Cannot support PDN-Type[%d] != [IPv4:%d, IPv6:%d]",
-                    pdn_type, ue_ip->ipv4, ue_ip->ipv6);
-            goto cleanup;
-        }
-        sess->ipv4 = ogs_pfcp_ue_ip_alloc(
-                AF_INET, apn, (uint8_t *)&(ue_ip->both.addr));
-        ogs_assert(sess->ipv4);
-        ogs_hash_set(self.ipv4_hash, sess->ipv4->addr, OGS_IPV4_LEN, sess);
-
-        sess->ipv6 = ogs_pfcp_ue_ip_alloc(AF_INET6, apn, ue_ip->both.addr6);
-        ogs_assert(sess->ipv6);
-        ogs_hash_set(self.ipv6_hash, sess->ipv6->addr, OGS_IPV6_LEN, sess);
-    } else {
-        ogs_error("Cannot support PDN-Type[%d] != [IPv4:%d, IPv6:%d]",
-                pdn_type, ue_ip->ipv4, ue_ip->ipv6);
-        goto cleanup;
-    }
-
-    ogs_info("UE F-SEID[CP:0x%lx,UP:0x%lx] "
-             "APN[%s] PDN-Type[%d] IPv4[%s] IPv6[%s]",
-        (long)sess->upf_n4_seid, (long)sess->smf_n4_seid,
-        apn, pdn_type,
-        sess->ipv4 ? OGS_INET_NTOP(&sess->ipv4->addr, buf1) : "",
-        sess->ipv6 ? OGS_INET6_NTOP(&sess->ipv6->addr, buf2) : "");
-
     ogs_list_add(&self.sess_list, sess);
 
     ogs_info("[Added] Number of UPF-Sessions is now %d",
             ogs_list_count(&self.sess_list));
 
     return sess;
-
-cleanup:
-    ogs_pool_free(&upf_sess_pool, sess);
-    return NULL;
 }
 
 int upf_sess_remove(upf_sess_t *sess)
@@ -578,15 +518,10 @@ upf_sess_t *upf_sess_find_by_ipv6(uint32_t *addr6)
 upf_sess_t *upf_sess_add_by_message(ogs_pfcp_message_t *message)
 {
     upf_sess_t *sess = NULL;
-
     ogs_pfcp_f_seid_t *f_seid = NULL;
-    char apn[OGS_MAX_APN_LEN];
-    ogs_pfcp_ue_ip_addr_t *addr = NULL;
-    bool default_pdr_found = false;
 
     ogs_pfcp_session_establishment_request_t *req =
         &message->pfcp_session_establishment_request;;
-    int i;
 
     f_seid = req->cp_f_seid.data;
     if (req->cp_f_seid.presence == 0 || f_seid == NULL) {
@@ -595,69 +530,80 @@ upf_sess_t *upf_sess_add_by_message(ogs_pfcp_message_t *message)
     }
     f_seid->seid = be64toh(f_seid->seid);
 
-    if (req->pdn_type.presence == 0) {
-        ogs_error("No PDN Type");
-        return NULL;
-    }
-
-    /* Find the Default PDR :
-     * - PDR ID is existed
-     * - SDF Filter is NOT existed
-     * - APN(Network Instance) is existed
-     * - UE IP Address is existed
-     * - Downlink PDR
-     */
-    memset(apn, 0, sizeof(apn));
-    for (i = 0; i < OGS_MAX_NUM_OF_PDR; i++) {
-        ogs_pfcp_tlv_create_pdr_t *message = &req->create_pdr[i];
-        ogs_assert(message);
-        if (message->presence == 0)
-            continue;
-        if (message->pdr_id.presence == 0)
-            continue;
-        if (message->pdi.presence == 0)
-            continue;
-        if (message->pdi.sdf_filter[0].presence) /* No SDF Filter */
-            continue;
-        if (message->pdi.network_instance.presence == 0)
-            continue;
-        if (message->pdi.ue_ip_address.presence == 0)
-            continue;
-        if (message->pdi.source_interface.presence == 0)
-            continue;
-        if (message->pdi.source_interface.u8 != OGS_PFCP_INTERFACE_CORE)
-            continue;
-
-        ogs_fqdn_parse(apn,
-            message->pdi.network_instance.data,
-            message->pdi.network_instance.len);
-        addr = message->pdi.ue_ip_address.data;
-
-        default_pdr_found = true;
-        break;
-    }
-
-    if (!default_pdr_found) {
-        ogs_error("Cannot find Default PDR");
-        return NULL;
-    }
-
-    if (strlen(apn) == 0) {
-        ogs_error("No APN in PDR");
-        return NULL;
-    }
-
-    if (!addr) {
-        ogs_error("No UE IP Address in PDR");
-        return NULL;
-    }
-
     sess = upf_sess_find_by_cp_seid(f_seid->seid);
     if (!sess) {
-        sess = upf_sess_add(f_seid, apn, req->pdn_type.u8, addr);
+        sess = upf_sess_add(f_seid);
         if (!sess) return NULL;
     }
     ogs_assert(sess);
 
     return sess;
+}
+
+void upf_sess_set_ue_ip(upf_sess_t *sess,
+        uint8_t pdn_type, ogs_pfcp_pdr_t *pdr)
+{
+    ogs_pfcp_ue_ip_addr_t *ue_ip = NULL;
+    char buf1[OGS_ADDRSTRLEN];
+    char buf2[OGS_ADDRSTRLEN];
+
+    ogs_assert(sess);
+    ogs_assert(pdn_type);
+    ogs_assert(pdr);
+    ogs_assert(pdr->ue_ip_addr_len);
+    ue_ip = &pdr->ue_ip_addr;
+    ogs_assert(ue_ip);
+
+    /* Set PDN-Type and UE IP Address */
+    sess->pdn.pdn_type = pdn_type;
+    if (pdn_type == OGS_GTP_PDN_TYPE_IPV4) {
+        if (ue_ip->ipv4 || pdr->dnn) {
+            sess->ipv4 = ogs_pfcp_ue_ip_alloc(
+                    AF_INET, pdr->dnn, (uint8_t *)&(ue_ip->addr));
+            ogs_assert(sess->ipv4);
+            ogs_hash_set(self.ipv4_hash, sess->ipv4->addr, OGS_IPV4_LEN, sess);
+        } else {
+            ogs_warn("Cannot support PDN-Type[%d], [IPv4:%d IPv6:%d DNN:%s]",
+                pdn_type, ue_ip->ipv4, ue_ip->ipv6, pdr->dnn ? pdr->dnn : "");
+        }
+    } else if (pdn_type == OGS_GTP_PDN_TYPE_IPV6) {
+        if (ue_ip->ipv6 || pdr->dnn) {
+            sess->ipv6 = ogs_pfcp_ue_ip_alloc(AF_INET6, pdr->dnn, ue_ip->addr6);
+            ogs_assert(sess->ipv6);
+            ogs_hash_set(self.ipv6_hash, sess->ipv6->addr, OGS_IPV6_LEN, sess);
+        } else {
+            ogs_warn("Cannot support PDN-Type[%d], [IPv4:%d IPv6:%d DNN:%s]",
+                pdn_type, ue_ip->ipv4, ue_ip->ipv6, pdr->dnn ? pdr->dnn : "");
+        }
+    } else if (pdn_type == OGS_GTP_PDN_TYPE_IPV4V6) {
+        if (ue_ip->ipv4 || pdr->dnn) {
+            sess->ipv4 = ogs_pfcp_ue_ip_alloc(
+                    AF_INET, pdr->dnn, (uint8_t *)&(ue_ip->both.addr));
+            ogs_assert(sess->ipv4);
+            ogs_hash_set(self.ipv4_hash, sess->ipv4->addr, OGS_IPV4_LEN, sess);
+        } else {
+            ogs_warn("Cannot support PDN-Type[%d], [IPv4:%d IPv6:%d DNN:%s]",
+                pdn_type, ue_ip->ipv4, ue_ip->ipv6, pdr->dnn ? pdr->dnn : "");
+        }
+
+        if (ue_ip->ipv6 || pdr->dnn) {
+            sess->ipv6 = ogs_pfcp_ue_ip_alloc(
+                    AF_INET6, pdr->dnn, ue_ip->both.addr6);
+            ogs_assert(sess->ipv6);
+            ogs_hash_set(self.ipv6_hash, sess->ipv6->addr, OGS_IPV6_LEN, sess);
+        } else {
+            ogs_warn("Cannot support PDN-Type[%d], [IPv4:%d IPv6:%d DNN:%s]",
+                pdn_type, ue_ip->ipv4, ue_ip->ipv6, pdr->dnn ? pdr->dnn : "");
+        }
+    } else {
+        ogs_warn("Cannot support PDN-Type[%d], [IPv4:%d IPv6:%d DNN:%s]",
+                pdn_type, ue_ip->ipv4, ue_ip->ipv6, pdr->dnn ? pdr->dnn : "");
+    }
+
+    ogs_info("UE F-SEID[CP:0x%lx,UP:0x%lx] "
+             "APN[%s] PDN-Type[%d] IPv4[%s] IPv6[%s]",
+        (long)sess->upf_n4_seid, (long)sess->smf_n4_seid,
+        pdr->dnn, pdn_type,
+        sess->ipv4 ? OGS_INET_NTOP(&sess->ipv4->addr, buf1) : "",
+        sess->ipv6 ? OGS_INET6_NTOP(&sess->ipv6->addr, buf2) : "");
 }

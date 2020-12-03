@@ -128,6 +128,8 @@ int ngap_handle_pdu_session_resource_setup_response_transfer(
     memcpy(&sess->gnb_n3_ip, &upf_n3_ip, sizeof(sess->gnb_n3_ip));
     sess->gnb_n3_teid = upf_n3_teid;
 
+    dl_far->apply_action = OGS_PFCP_APPLY_ACTION_FORW;
+
     ogs_pfcp_ip_to_outer_header_creation(&sess->gnb_n3_ip,
         &dl_far->outer_header_creation, &dl_far->outer_header_creation_len);
     dl_far->outer_header_creation.teid = sess->gnb_n3_teid;

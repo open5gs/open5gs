@@ -91,6 +91,11 @@ ogs_pkbuf_t *smf_n4_build_session_establishment_request(
         i++;
     }
 
+    /* Create BAR */
+    if (sess->pfcp.bar) {
+        ogs_pfcp_build_create_bar(&req->create_bar, sess->pfcp.bar);
+    }
+
     /* PDN Type */
     req->pdn_type.presence = 1;
     req->pdn_type.u8 = sess->pdn.paa.pdn_type;
@@ -171,6 +176,7 @@ ogs_pkbuf_t *smf_n4_build_qos_flow_modification_request(
             message->qer_id.u32 = qos_flow->qer->id;
             i++;
         }
+
     } else {
         if (modify_flags & OGS_PFCP_MODIFY_CREATE) {
             ogs_pfcp_pdrbuf_init();

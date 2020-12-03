@@ -281,10 +281,10 @@ void ogs_pfcp_build_create_pdr(
     message->pdi.source_interface.presence = 1;
     message->pdi.source_interface.u8 = pdr->src_if;
 
-    if (pdr->apn) {
+    if (pdr->dnn) {
         message->pdi.network_instance.presence = 1;
         message->pdi.network_instance.len = ogs_fqdn_build(
-            pdrbuf[i].dnn, pdr->apn, strlen(pdr->apn));
+            pdrbuf[i].dnn, pdr->dnn, strlen(pdr->dnn));
         message->pdi.network_instance.data = pdrbuf[i].dnn;
     }
 
@@ -386,10 +386,10 @@ void ogs_pfcp_build_update_pdr(
     message->pdi.source_interface.presence = 1;
     message->pdi.source_interface.u8 = pdr->src_if;
 
-    if (pdr->apn) {
+    if (pdr->dnn) {
         message->pdi.network_instance.presence = 1;
         message->pdi.network_instance.len = ogs_fqdn_build(
-            pdrbuf[i].dnn, pdr->apn, strlen(pdr->apn));
+            pdrbuf[i].dnn, pdr->dnn, strlen(pdr->dnn));
         message->pdi.network_instance.data = pdrbuf[i].dnn;
     }
 
@@ -436,8 +436,12 @@ static struct {
 void ogs_pfcp_build_create_far(
     ogs_pfcp_tlv_create_far_t *message, int i, ogs_pfcp_far_t *far)
 {
+    ogs_pfcp_sess_t *sess = NULL;
+
     ogs_assert(message);
     ogs_assert(far);
+    sess = far->sess;
+    ogs_assert(sess);
 
     message->presence = 1;
     message->far_id.presence = 1;
@@ -446,30 +450,40 @@ void ogs_pfcp_build_create_far(
     message->apply_action.presence = 1;
     message->apply_action.u8 = far->apply_action;
 
-    message->forwarding_parameters.presence = 1;
-    message->forwarding_parameters.destination_interface.presence = 1;
-    message->forwarding_parameters.destination_interface.u8 =
-        far->dst_if;
+    if (far->apply_action & OGS_PFCP_APPLY_ACTION_FORW) {
+        message->forwarding_parameters.presence = 1;
+        message->forwarding_parameters.destination_interface.presence = 1;
+        message->forwarding_parameters.destination_interface.u8 =
+            far->dst_if;
 
-    if (far->outer_header_creation_len) {
-        memcpy(&farbuf[i].outer_header_creation,
-            &far->outer_header_creation, far->outer_header_creation_len);
-        farbuf[i].outer_header_creation.teid =
-                htobe32(far->outer_header_creation.teid);
+        if (far->outer_header_creation_len) {
+            memcpy(&farbuf[i].outer_header_creation,
+                &far->outer_header_creation, far->outer_header_creation_len);
+            farbuf[i].outer_header_creation.teid =
+                    htobe32(far->outer_header_creation.teid);
 
-        message->forwarding_parameters.outer_header_creation.presence = 1;
-        message->forwarding_parameters.outer_header_creation.data =
-                &farbuf[i].outer_header_creation;
-        message->forwarding_parameters.outer_header_creation.len =
-                far->outer_header_creation_len;
+            message->forwarding_parameters.outer_header_creation.presence = 1;
+            message->forwarding_parameters.outer_header_creation.data =
+                    &farbuf[i].outer_header_creation;
+            message->forwarding_parameters.outer_header_creation.len =
+                    far->outer_header_creation_len;
+        }
+    } else if (far->apply_action & OGS_PFCP_APPLY_ACTION_BUFF) {
+        ogs_assert(sess->bar);
+        message->bar_id.presence = 1;
+        message->bar_id.u8 = sess->bar->id;
     }
 }
 
 void ogs_pfcp_build_update_far_deactivate(
         ogs_pfcp_tlv_update_far_t *message, int i, ogs_pfcp_far_t *far)
 {
+    ogs_pfcp_sess_t *sess = NULL;
+
     ogs_assert(message);
     ogs_assert(far);
+    sess = far->sess;
+    ogs_assert(sess);
 
     message->presence = 1;
     message->far_id.presence = 1;
@@ -479,6 +493,10 @@ void ogs_pfcp_build_update_far_deactivate(
         OGS_PFCP_APPLY_ACTION_BUFF | OGS_PFCP_APPLY_ACTION_NOCP;
     message->apply_action.presence = 1;
     message->apply_action.u8 = far->apply_action;
+
+    ogs_assert(sess->bar);
+    message->bar_id.presence = 1;
+    message->bar_id.u8 = sess->bar->id;
 }
 
 void ogs_pfcp_build_update_far_activate(
@@ -491,15 +509,17 @@ void ogs_pfcp_build_update_far_activate(
     message->far_id.presence = 1;
     message->far_id.u32 = far->id;
 
-    if (far->apply_action != OGS_PFCP_APPLY_ACTION_FORW) {
-        far->apply_action = OGS_PFCP_APPLY_ACTION_FORW;
+    ogs_assert(far->apply_action == OGS_PFCP_APPLY_ACTION_FORW);
 
-        message->apply_action.presence = 1;
-        message->apply_action.u8 = far->apply_action;
-    }
+    message->apply_action.presence = 1;
+    message->apply_action.u8 = far->apply_action;
+
+    message->update_forwarding_parameters.presence = 1;
+    message->update_forwarding_parameters.destination_interface.presence = 1;
+    message->update_forwarding_parameters.
+        destination_interface.u8 = far->dst_if;
 
     if (far->outer_header_creation_len || far->smreq_flags.value) {
-        message->update_forwarding_parameters.presence = 1;
 
         if (far->outer_header_creation_len) {
             memcpy(&farbuf[i].outer_header_creation,
@@ -594,6 +614,17 @@ void ogs_pfcp_build_create_urr(
     message->presence = 1;
     message->urr_id.presence = 1;
     message->urr_id.u32 = urr->id;
+}
+
+void ogs_pfcp_build_create_bar(
+    ogs_pfcp_tlv_create_bar_t *message, ogs_pfcp_bar_t *bar)
+{
+    ogs_assert(message);
+    ogs_assert(bar);
+
+    message->presence = 1;
+    message->bar_id.presence = 1;
+    message->bar_id.u8 = bar->id;
 }
 
 ogs_pkbuf_t *ogs_pfcp_build_session_report_request(

@@ -410,13 +410,11 @@ int sgwu_context_parse_config(void)
     return OGS_OK;
 }
 
-sgwu_sess_t *sgwu_sess_add(
-        ogs_pfcp_f_seid_t *cp_f_seid, const char *apn, uint8_t pdn_type)
+sgwu_sess_t *sgwu_sess_add(ogs_pfcp_f_seid_t *cp_f_seid)
 {
     sgwu_sess_t *sess = NULL;
 
     ogs_assert(cp_f_seid);
-    ogs_assert(apn);
 
     ogs_pool_alloc(&sgwu_sess_pool, &sess);
     ogs_assert(sess);
@@ -432,11 +430,8 @@ sgwu_sess_t *sgwu_sess_add(
     ogs_hash_set(self.sess_hash, &sess->sgwc_sxa_seid,
             sizeof(sess->sgwc_sxa_seid), sess);
 
-    /* Set APN */
-    ogs_cpystrn(sess->pdn.apn, apn, OGS_MAX_APN_LEN+1);
-
-    ogs_info("UE F-SEID[CP:0x%lx,UP:0x%lx] APN[%s] PDN-Type[%d]",
-        (long)sess->sgwu_sxa_seid, (long)sess->sgwc_sxa_seid, apn, pdn_type);
+    ogs_info("UE F-SEID[CP:0x%lx,UP:0x%lx]",
+        (long)sess->sgwu_sxa_seid, (long)sess->sgwc_sxa_seid);
 
     ogs_list_add(&self.sess_list, sess);
 
@@ -496,11 +491,9 @@ sgwu_sess_t *sgwu_sess_add_by_message(ogs_pfcp_message_t *message)
     sgwu_sess_t *sess = NULL;
 
     ogs_pfcp_f_seid_t *f_seid = NULL;
-    char apn[OGS_MAX_APN_LEN];
 
     ogs_pfcp_session_establishment_request_t *req =
         &message->pfcp_session_establishment_request;;
-    int i;
 
     f_seid = req->cp_f_seid.data;
     if (req->cp_f_seid.presence == 0 || f_seid == NULL) {
@@ -509,42 +502,9 @@ sgwu_sess_t *sgwu_sess_add_by_message(ogs_pfcp_message_t *message)
     }
     f_seid->seid = be64toh(f_seid->seid);
 
-    if (req->pdn_type.presence == 0) {
-        ogs_error("No PDN Type");
-        return NULL;
-    }
-
-    /* Find APN
-     * - PDR ID is existed
-     * - APN(Network Instance) is existed
-     */
-    memset(apn, 0, sizeof(apn));
-    for (i = 0; i < OGS_MAX_NUM_OF_PDR; i++) {
-        ogs_pfcp_tlv_create_pdr_t *message = &req->create_pdr[i];
-        ogs_assert(message);
-        if (message->presence == 0)
-            continue;
-        if (message->pdr_id.presence == 0)
-            continue;
-        if (message->pdi.presence == 0)
-            continue;
-        if (message->pdi.network_instance.presence == 0)
-            continue;
-
-        ogs_fqdn_parse(apn,
-            message->pdi.network_instance.data,
-            message->pdi.network_instance.len);
-        break;
-    }
-
-    if (strlen(apn) == 0) {
-        ogs_error("No APN in PDR");
-        return NULL;
-    }
-
     sess = sgwu_sess_find_by_cp_seid(f_seid->seid);
     if (!sess) {
-        sess = sgwu_sess_add(f_seid, apn, req->pdn_type.u8);
+        sess = sgwu_sess_add(f_seid);
         if (!sess) return NULL;
     }
     ogs_assert(sess);

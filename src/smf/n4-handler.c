@@ -154,6 +154,9 @@ void smf_5gc_n4_handle_session_establishment_response(
         if (!pdr)
             break;
 
+        if (pdr->src_if != OGS_PFCP_INTERFACE_ACCESS)
+            continue;
+
         ogs_assert(sess->pfcp_node);
         if (sess->pfcp_node->up_function_features.ftup &&
             pdr->f_teid_len) {
@@ -243,6 +246,9 @@ void smf_5gc_n4_handle_session_modification_response(
 
             if (!pdr)
                 break;
+
+            if (pdr->src_if != OGS_PFCP_INTERFACE_ACCESS)
+                continue;
 
             ogs_assert(sess->pfcp_node);
             if (sess->pfcp_node->up_function_features.ftup &&
@@ -419,6 +425,9 @@ void smf_epc_n4_handle_session_establishment_response(
             if (!pdr)
                 break;
 
+            if (pdr->src_if != OGS_PFCP_INTERFACE_ACCESS)
+                continue;
+
             bearer = smf_bearer_find_by_pdr_id(sess, pdr->id);
             if (!bearer) {
                 pfcp_cause_value = OGS_PFCP_CAUSE_SESSION_CONTEXT_NOT_FOUND;
@@ -520,6 +529,9 @@ void smf_epc_n4_handle_session_modification_response(
 
         if (!pdr)
             break;
+
+        if (pdr->src_if != OGS_PFCP_INTERFACE_ACCESS)
+            continue;
 
         ogs_assert(sess->pfcp_node);
         if (sess->pfcp_node->up_function_features.ftup &&

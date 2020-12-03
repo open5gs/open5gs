@@ -1348,10 +1348,8 @@ static int flow_rx_to_gx(ogs_flow_t *rx_flow, ogs_flow_t *gx_flow)
     if (!strncmp(rx_flow->description,
                 "permit out", strlen("permit out"))) {
         gx_flow->direction = OGS_FLOW_DOWNLINK_ONLY;
+        gx_flow->description = ogs_strdup(rx_flow->description);
 
-        len = strlen(rx_flow->description)+1;
-        gx_flow->description = ogs_malloc(len);
-        ogs_cpystrn(gx_flow->description, rx_flow->description, len);
     } else if (!strncmp(rx_flow->description,
                 "permit in", strlen("permit in"))) {
         gx_flow->direction = OGS_FLOW_UPLINK_ONLY;

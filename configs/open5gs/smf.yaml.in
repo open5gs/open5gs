@@ -98,26 +98,26 @@ logger:
 #  o Specific DNN/APN(e.g 'ims') uses 10.46.0.1/16, cafe:2::1/64
 #    pdn:
 #      - addr: 10.45.0.1/16
-#        apn: internet
+#        dnn: internet
 #      - addr: cafe:1::1/64
-#        apn: internet
+#        dnn: internet
 #      - addr: 10.46.0.1/16
-#        apn: ims
+#        dnn: ims
 #      - addr: cafe:2::1/64
-#        apn: ims
+#        dnn: ims
 #
 #  o Multiple Devices (default: ogstun)
 #    pdn:
 #      - addr: 10.45.0.1/16
-#        apn: internet
+#        dnn: internet
 #      - addr: cafe:1::1/64
-#        apn: internet
+#        dnn: internet
 #        dev: ogstun2
 #      - addr: 10.46.0.1/16
-#        apn: ims
+#        dnn: ims
 #        dev: ogstun3
 #      - addr: cafe:2::1/64
-#        apn: ims
+#        dnn: ims
 #        dev: ogstun3
 #
 #  o Pool Range Sample
@@ -261,7 +261,7 @@ nrf:
 #      - addr: 127.0.0.7
 #        dnn: ims
 #      - addr: 127.0.0.12
-#        apn: [internet, web]
+#        dnn: [internet, web]
 #
 # o UPF selection by CellID(e_cell_id: 28bit, nr_cell_id: 36bit)
 #   (either single enb_id or multiple enb_ids, HEX representation)

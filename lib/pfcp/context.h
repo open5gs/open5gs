@@ -88,8 +88,8 @@ typedef struct ogs_pfcp_node_s {
 
     uint16_t        tac[OGS_MAX_NUM_OF_TAI];
     uint8_t         num_of_tac;
-    const char*     apn[OGS_MAX_APN_LEN];
-    uint8_t         num_of_apn;
+    const char*     dnn[OGS_MAX_DNN_LEN];
+    uint8_t         num_of_dnn;
     uint32_t        e_cell_id[OGS_MAX_NUM_OF_CELL_ID];
     uint8_t         num_of_e_cell_id;
     uint64_t        nr_cell_id[OGS_MAX_NUM_OF_CELL_ID];
@@ -138,6 +138,10 @@ typedef struct ogs_pfcp_pdr_s {
 
     ogs_pfcp_f_teid_t       f_teid;
     int                     f_teid_len;
+
+    bool                    chid;
+    uint8_t                 choose_id;
+
     ogs_pfcp_outer_header_removal_t outer_header_removal;
     int                     outer_header_removal_len;
 
@@ -255,7 +259,7 @@ typedef struct ogs_pfcp_subnet_s {
 
     ogs_ipsubnet_t  sub;                /* Subnet : cafe::0/64 */
     ogs_ipsubnet_t  gw;                 /* Gateway : cafe::1 */
-    char            apn[OGS_MAX_APN_LEN];   /* APN : "internet", "volte", .. */
+    char            dnn[OGS_MAX_DNN_LEN];   /* DNN : "internet", "volte", .. */
 
 #define MAX_NUM_OF_SUBNET_RANGE         16
     struct {
@@ -274,7 +278,20 @@ typedef struct ogs_pfcp_subnet_s {
 typedef struct ogs_pfcp_rule_s {
     ogs_lnode_t lnode;
 
+    union {
+        struct {
+ED6(uint8_t     spare1:3;,
+    uint8_t     bid:1;,
+    uint8_t     fl:1;,
+    uint8_t     spi:1;,
+    uint8_t     ttc:1;,
+    uint8_t     fd:1;)
+        };
+        uint8_t flags;
+    };
+
     ogs_ipfw_rule_t ipfw;
+    uint32_t sdf_filter_id;
 
     /* Related Context */
     ogs_pfcp_pdr_t  *pdr;
@@ -298,7 +315,7 @@ void ogs_pfcp_node_remove_all(ogs_list_t *list);
 ogs_pfcp_gtpu_resource_t *ogs_pfcp_gtpu_resource_add(ogs_list_t *list,
         ogs_pfcp_user_plane_ip_resource_info_t *info);
 ogs_pfcp_gtpu_resource_t *ogs_pfcp_gtpu_resource_find(ogs_list_t *list,
-        char *apn, ogs_pfcp_interface_t source_interface);
+        char *dnn, ogs_pfcp_interface_t source_interface);
 void ogs_pfcp_gtpu_resource_remove(ogs_list_t *list,
         ogs_pfcp_gtpu_resource_t *resource);
 void ogs_pfcp_gtpu_resource_remove_all(ogs_list_t *list);
@@ -319,6 +336,9 @@ ogs_pfcp_pdr_t *ogs_pfcp_pdr_find_or_add(
 
 void ogs_pfcp_pdr_hash_set(ogs_pfcp_pdr_t *pdr);
 ogs_pfcp_pdr_t *ogs_pfcp_pdr_find_by_teid_and_qfi(uint32_t teid, uint8_t qfi);
+
+ogs_pfcp_pdr_t *ogs_pfcp_pdr_find_by_choose_id(
+        ogs_pfcp_sess_t *sess, uint8_t choose_id);
 
 void ogs_pfcp_pdr_reorder_by_precedence(
         ogs_pfcp_pdr_t *pdr, ogs_pfcp_precedence_t precedence);
@@ -360,12 +380,14 @@ ogs_pfcp_bar_t *ogs_pfcp_bar_new(ogs_pfcp_sess_t *sess);
 void ogs_pfcp_bar_delete(ogs_pfcp_bar_t *bar);
 
 ogs_pfcp_rule_t *ogs_pfcp_rule_add(ogs_pfcp_pdr_t *pdr);
+ogs_pfcp_rule_t *ogs_pfcp_rule_find_by_sdf_filter_id(
+        ogs_pfcp_sess_t *sess, uint32_t sdf_filter_id);
 void ogs_pfcp_rule_remove(ogs_pfcp_rule_t *rule);
 void ogs_pfcp_rule_remove_all(ogs_pfcp_pdr_t *pdr);
 
 int ogs_pfcp_ue_pool_generate(void);
 ogs_pfcp_ue_ip_t *ogs_pfcp_ue_ip_alloc(
-        int family, const char *apn, uint8_t *addr);
+        int family, const char *dnn, uint8_t *addr);
 void ogs_pfcp_ue_ip_free(ogs_pfcp_ue_ip_t *ip);
 
 ogs_pfcp_dev_t *ogs_pfcp_dev_add(const char *ifname);
@@ -375,11 +397,12 @@ ogs_pfcp_dev_t *ogs_pfcp_dev_find_by_ifname(const char *ifname);
 
 ogs_pfcp_subnet_t *ogs_pfcp_subnet_add(
         const char *ipstr, const char *mask_or_numbits,
-        const char *apn, const char *ifname);
+        const char *dnn, const char *ifname);
 ogs_pfcp_subnet_t *ogs_pfcp_subnet_next(ogs_pfcp_subnet_t *subnet);
 void ogs_pfcp_subnet_remove(ogs_pfcp_subnet_t *subnet);
 void ogs_pfcp_subnet_remove_all(void);
-ogs_pfcp_subnet_t *ogs_pfcp_find_subnet(int family, const char *apn);
+ogs_pfcp_subnet_t *ogs_pfcp_find_subnet(int family);
+ogs_pfcp_subnet_t *ogs_pfcp_find_subnet_by_dnn(int family, const char *dnn);
 
 void ogs_pfcp_pool_init(ogs_pfcp_sess_t *sess);
 void ogs_pfcp_pool_final(ogs_pfcp_sess_t *sess);

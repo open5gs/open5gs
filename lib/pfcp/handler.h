@@ -87,6 +87,13 @@ bool ogs_pfcp_handle_remove_qer(ogs_pfcp_sess_t *sess,
         ogs_pfcp_tlv_remove_qer_t *message,
         uint8_t *cause_value, uint8_t *offending_ie_value);
 
+ogs_pfcp_bar_t *ogs_pfcp_handle_create_bar(ogs_pfcp_sess_t *sess,
+        ogs_pfcp_tlv_create_bar_t *message,
+        uint8_t *cause_value, uint8_t *offending_ie_value);
+bool ogs_pfcp_handle_remove_bar(ogs_pfcp_sess_t *sess,
+        ogs_pfcp_tlv_remove_bar_t *message,
+        uint8_t *cause_value, uint8_t *offending_ie_value);
+
 #ifdef __cplusplus
 }
 #endif

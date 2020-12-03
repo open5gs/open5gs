@@ -373,6 +373,8 @@ void smf_s5c_handle_create_bearer_response(
     dl_far = bearer->dl_far;
     ogs_assert(dl_far);
 
+    dl_far->apply_action = OGS_PFCP_APPLY_ACTION_FORW;
+
     ogs_pfcp_ip_to_outer_header_creation(&bearer->sgw_s5u_ip,
         &dl_far->outer_header_creation, &dl_far->outer_header_creation_len);
     dl_far->outer_header_creation.teid = bearer->sgw_s5u_teid;

@@ -383,6 +383,8 @@ void sgwc_s11_handle_modify_bearer_request(
     far = dl_tunnel->far;
     ogs_assert(far);
 
+    far->apply_action = OGS_PFCP_APPLY_ACTION_FORW;
+
     ogs_pfcp_ip_to_outer_header_creation(&dl_tunnel->remote_ip,
         &far->outer_header_creation, &far->outer_header_creation_len);
     far->outer_header_creation.teid = dl_tunnel->remote_teid;
@@ -604,6 +606,8 @@ void sgwc_s11_handle_create_bearer_response(
 
     far = dl_tunnel->far;
     ogs_assert(far);
+
+    far->apply_action = OGS_PFCP_APPLY_ACTION_FORW;
 
     ogs_pfcp_ip_to_outer_header_creation(&dl_tunnel->remote_ip,
         &far->outer_header_creation, &far->outer_header_creation_len);
@@ -984,6 +988,8 @@ void sgwc_s11_handle_create_indirect_data_forwarding_tunnel_request(
             far = tunnel->far;
             ogs_assert(far);
 
+            far->apply_action = OGS_PFCP_APPLY_ACTION_FORW;
+
             ogs_pfcp_ip_to_outer_header_creation(&tunnel->remote_ip,
                 &far->outer_header_creation, &far->outer_header_creation_len);
             far->outer_header_creation.teid = tunnel->remote_teid;
@@ -1013,6 +1019,8 @@ void sgwc_s11_handle_create_indirect_data_forwarding_tunnel_request(
 
             far = tunnel->far;
             ogs_assert(far);
+
+            far->apply_action = OGS_PFCP_APPLY_ACTION_FORW;
 
             ogs_pfcp_ip_to_outer_header_creation(&tunnel->remote_ip,
                 &far->outer_header_creation, &far->outer_header_creation_len);

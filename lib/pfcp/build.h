@@ -60,6 +60,9 @@ void ogs_pfcp_build_update_qer(
 void ogs_pfcp_build_create_urr(
     ogs_pfcp_tlv_create_urr_t *message, int i, ogs_pfcp_urr_t *urr);
 
+void ogs_pfcp_build_create_bar(
+    ogs_pfcp_tlv_create_bar_t *message, ogs_pfcp_bar_t *bar);
+
 ogs_pkbuf_t *ogs_pfcp_build_session_report_request(
         uint8_t type, ogs_pfcp_user_plane_report_t *report);
 ogs_pkbuf_t *ogs_pfcp_build_session_report_response(
