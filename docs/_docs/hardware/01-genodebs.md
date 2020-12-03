@@ -44,4 +44,5 @@ If you have tested radio hardware from a vendor not listed with Open5GS, please 
 ---
  * [OsmoBTS](https://osmocom.org/projects/osmobts/wiki) controlled ip.access NanoBTS (Used for CSFB with Osmocom)
  * [UERANSIM](https://github.com/aligungr/UERANSIM) 5G RAN Simulator
+ * [OpenAirInterface v1.0.3](https://gitlab.eurecom.fr/oai/openairinterface5g/-/tree/v1.0.3) 4G RAN Simulator
  
