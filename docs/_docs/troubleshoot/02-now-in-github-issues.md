@@ -460,9 +460,9 @@ $ sudo sh -c "echo 1 > /proc/sys/net/ipv4/ip_forward"
 $ sudo iptables -t nat -A POSTROUTING -s 10.45.0.0/16 ! -o ogstun -j MASQUERADE
 ```
 
-#### How to use a different APN for each SMF
+#### How to use a different DNN/APN for each SMF
 
-By default, MME selects the SMF as the first SMF node. To use a different APN for each SMF, specify gtpc.apn as the APN name. If the HSS uses WebUI to set the SMF IP for each UE, you can use a specific SMF node for each UE.
+By default, MME selects the SMF as the first SMF node. To use a different DNN/APN for each SMF, specify gtpc.dnn as the DNN/APN name. If the HSS uses WebUI to set the SMF IP for each UE, you can use a specific SMF node for each UE.
 
 See the following example.
 
@@ -474,40 +474,41 @@ See the following example.
 #  <GTP-C Client>
 #
 #  o By default, the SMF uses the first SMF node.
-#    - To use a different APN for each SMF, specify gtpc.apn as the APN name.
+#    - To use a different DNN/APN for each SMF, specify gtpc.dnn
+#      as the DNN/APN name.
 #    - If the HSS uses WebUI to set the SMF IP for each UE,
 #      you can use a specific SMF node for each UE.
 #
 #  o Two SMF are defined. 127.0.0.4:2123 is used.
-#    [fe80::3%@loopback_devname@]:2123 is ignored.
+#    [fe80::3%lo]:2123 is ignored.
 #    gtpc:
 #      - addr: 127.0.0.4
-#      - addr: fe80::3%@loopback_devname@
+#      - addr: fe80::3%lo
 #
 #  o One SMF is defined. if prefer_ipv4 is not true,
-#    [fe80::3%@loopback_devname@] is selected.
+#    [fe80::3%lo] is selected.
 #    gtpc:
 #      - addr:
 #        - 127.0.0.4
-#        - fe80::3%@loopback_devname@
+#        - fe80::3%lo
 #
-#  o Two SMF are defined with a different APN.
+#  o Two SMF are defined with a different DNN/APN.
 #    - Note that if SMF IP for UE is configured in HSS,
 #      the following configurion for this UE is ignored.
 #    gtpc:
 #      - addr: 127.0.0.4
-#        apn: internet
+#        dnn: internet
 #      - addr: 127.0.0.5
-#        apn: volte
+#        dnn: volte
 #
-#  o If APN is omitted, the default APN uses the first SMF node.
+#  o If DNN/APN is omitted, the default DNN/APN uses the first SMF node.
 #    gtpc:
 #      - addr: 127.0.0.4
 #      - addr: 127.0.0.5
-#        apn: volte
+#        dnn: volte
 ```
 
-The IP address of the UE can also use a different UE pool depending on the APN.
+The IP address of the UE can also use a different UE pool depending on the DNN/APN.
 
 ```
 ### For reference, see `smf.yaml`
@@ -528,8 +529,8 @@ The IP address of the UE can also use a different UE pool depending on the APN.
 #      - addr: cafe:1::1/64
 #
 #
-#  o Specific APN(e.g 'volte') uses 10.46.0.1/16, cafe:2::1/64
-#    All other APNs use 10.45.0.1/16, cafe:1::1/64
+#  o Specific DNN/APN(e.g 'volte') uses 10.46.0.1/16, cafe:2::1/64
+#    All other DNNs/APNs use 10.45.0.1/16, cafe:1::1/64
 #    $ sudo ip addr add 10.45.0.1/16 dev ogstun
 #    $ sudo ip addr add 10.46.0.1/16 dev ogstun
 #    $ sudo ip addr add cafe:1::1/64 dev ogstun
@@ -539,9 +540,9 @@ The IP address of the UE can also use a different UE pool depending on the APN.
 #      - addr: 10.45.0.1/16
 #      - addr: cafe:1::1/64
 #      - addr: 10.46.0.1/16
-#        apn: volte
+#        dnn: volte
 #      - addr: cafe:2::1/64
-#        apn: volte
+#        dnn: volte
 #
 #  o Multiple Devices (default: ogstun)
 #    $ sudo ip addr add 10.45.0.1/16 dev ogstun
@@ -554,10 +555,10 @@ The IP address of the UE can also use a different UE pool depending on the APN.
 #      - addr: cafe:1::1/64
 #        dev: ogstun2
 #      - addr: 10.46.0.1/16
-#        apn: volte
+#        dnn: volte
 #        dev: ogstun3
 #      - addr: cafe:2::1/64
-#        apn: volte
+#        dnn: volte
 #        dev: ogstun3
 #
 #  o Pool Range Sample

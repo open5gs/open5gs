@@ -48,9 +48,23 @@ https://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/xUbunt
 https://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/xUbuntu_19.04/
 https://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/xUbuntu_19.10/
 https://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/xUbuntu_20.04/
+https://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/xUbuntu_20.10/
 ```
 
-Nightly package build are provided by [Osmocom](https://osmocom.org) on [OBS](https://build.opensuse.org/package/show/network:osmocom:nightly/open5gs).
+#### Nightly Builds
+
+Nightly bulit package are provided by [Osmocom](https://osmocom.org) on [OBS](https://build.opensuse.org/package/show/network:osmocom:nightly/open5gs). On *Ubuntu 20.04* you can install it like this:
+
+```
+$ sudo apt update
+$ sudo apt install wget gnupg
+$ wget -qO - https://download.opensuse.org/repositories/network:/osmocom:/nightly/xUbuntu_20.04/Release.key | sudo apt-key add -
+$ sudo sh -c "echo 'deb http://download.opensuse.org/repositories/network:/osmocom:/nightly/xUbuntu_20.04/ ./' > /etc/apt/sources.list.d/open5gs.list"
+$ sudo apt update
+$ sudo apt install open5gs
+```
+
+Other distributions can be installed by changing the path.
 
 ```
 https://download.opensuse.org/repositories/network:/osmocom:/nightly/Debian_10/
@@ -58,9 +72,10 @@ https://download.opensuse.org/repositories/network:/osmocom:/nightly/Debian_Test
 https://download.opensuse.org/repositories/network:/osmocom:/nightly/Debian_Unstable/
 https://download.opensuse.org/repositories/network:/osmocom:/nightly/Raspbian_10/
 https://download.opensuse.org/repositories/network:/osmocom:/nightly/xUbuntu_18.04/
-https://download.opensuse.org/repositories/network:/osmocom:/nightly/xUbuntu_18.10/
 https://download.opensuse.org/repositories/network:/osmocom:/nightly/xUbuntu_19.04/
 https://download.opensuse.org/repositories/network:/osmocom:/nightly/xUbuntu_19.10/
+https://download.opensuse.org/repositories/network:/osmocom:/nightly/xUbuntu_20.04/
+https://download.opensuse.org/repositories/network:/osmocom:/nightly/xUbuntu_20.10/
 ```
 
 #### openSUSE
