@@ -275,10 +275,14 @@ static int determine_sctp_sockopt_event_subscribe_size(void)
     if (sd < 0)
         return sd;
 
+    memset(buf, 0, sizeof(buf));
     rc = getsockopt(sd, IPPROTO_SCTP, SCTP_EVENTS, buf, &buf_len);
     ogs_closesocket(sd);
-    if (rc < 0)
+    if (rc < 0) {
+        ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,
+                "getsockopt(SCTP_PEER_ADDR_PARAMS) failed [%d]", rc);
         return rc;
+    }
 
     sctp_sockopt_event_subscribe_size = buf_len;
 
@@ -308,10 +312,10 @@ static int determine_sctp_sockopt_event_subscribe_size(void)
  * of the structure at kernel compile time. In an ideal world, it would just
  * use the known first bytes and assume the remainder is all zero.
  * But as it doesn't do that, let's try to work around this */
-static int sctp_setsockopt_events_linux_workaround(
-        int fd, const struct sctp_event_subscribe *event)
+static int sctp_setsockopt_event_subscribe_workaround(
+        int fd, const struct sctp_event_subscribe *event_subscribe)
 {
-    const unsigned int compiletime_size = sizeof(*event);
+    const unsigned int compiletime_size = sizeof(*event_subscribe);
     int rc;
 
     if (determine_sctp_sockopt_event_subscribe_size() < 0) {
@@ -322,15 +326,15 @@ static int sctp_setsockopt_events_linux_workaround(
     if (compiletime_size == sctp_sockopt_event_subscribe_size) {
         /* no kernel workaround needed */
         return setsockopt(fd, IPPROTO_SCTP, SCTP_EVENTS,
-                event, compiletime_size);
+                event_subscribe, compiletime_size);
     } else if (compiletime_size < sctp_sockopt_event_subscribe_size) {
         /* we are using an older userspace with a more modern kernel
          * and hence need to pad the data */
         uint8_t buf[256];
         ogs_assert(sctp_sockopt_event_subscribe_size <= sizeof(buf));
 
-        memcpy(buf, event, compiletime_size);
-        memset(buf + sizeof(*event),
+        memcpy(buf, event_subscribe, compiletime_size);
+        memset(buf + sizeof(*event_subscribe),
                 0, sctp_sockopt_event_subscribe_size - compiletime_size);
         return setsockopt(fd, IPPROTO_SCTP, SCTP_EVENTS,
                 buf, sctp_sockopt_event_subscribe_size);
@@ -338,7 +342,7 @@ static int sctp_setsockopt_events_linux_workaround(
         /* we are using a newer userspace with an older kernel and hence
          * need to truncate the data - but only if the caller didn't try
          * to enable any of the events of the truncated portion */
-        rc = byte_nonzero((const uint8_t *)event,
+        rc = byte_nonzero((const uint8_t *)event_subscribe,
                 sctp_sockopt_event_subscribe_size, compiletime_size);
         if (rc >= 0) {
             ogs_error("Kernel only supports sctp_event_subscribe of %u bytes, "
@@ -347,33 +351,34 @@ static int sctp_setsockopt_events_linux_workaround(
             return OGS_ERROR;
         }
 
-        return setsockopt(fd, IPPROTO_SCTP, SCTP_EVENTS, event,
+        return setsockopt(fd, IPPROTO_SCTP, SCTP_EVENTS, event_subscribe,
                 sctp_sockopt_event_subscribe_size);
     }
 }
 
 static int subscribe_to_events(ogs_sock_t *sock)
 {
-    struct sctp_event_subscribe event;
+    struct sctp_event_subscribe event_subscribe;
 
     ogs_assert(sock);
 
-    memset(&event, 0, sizeof(event));
-    event.sctp_data_io_event = 1;
-    event.sctp_association_event = 1;
-    event.sctp_send_failure_event = 1;
-    event.sctp_shutdown_event = 1;
+    memset(&event_subscribe, 0, sizeof(event_subscribe));
+    event_subscribe.sctp_data_io_event = 1;
+    event_subscribe.sctp_association_event = 1;
+    event_subscribe.sctp_send_failure_event = 1;
+    event_subscribe.sctp_shutdown_event = 1;
 
 #ifdef DISABLE_SCTP_EVENT_WORKAROUND
     if (setsockopt(sock->fd, IPPROTO_SCTP, SCTP_EVENTS,
-                            &event, sizeof(event)) != 0) {
+                    &event_subscribe, sizeof(event_subscribe)) != 0) {
         ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,
-                "Unable to subscribe to SCTP events");
+                "setsockopt(SCTP_EVENTS) failed");
         return OGS_ERROR;
     }
 #else
-    if (sctp_setsockopt_events_linux_workaround(sock->fd, &event) < 0) {
-        ogs_error("couldn't activate SCTP events on FD %u", sock->fd);
+    if (sctp_setsockopt_event_subscribe_workaround(
+                sock->fd, &event_subscribe) < 0) {
+        ogs_error("sctp_setsockopt_events_linux_workaround() failed");
         return OGS_ERROR;
     }
 #endif
@@ -381,41 +386,126 @@ static int subscribe_to_events(ogs_sock_t *sock)
     return OGS_OK;
 }
 
+static int sctp_sockopt_paddrparams_size = 0;
+
+static int determine_sctp_sockopt_paddrparams_size(void)
+{
+    uint8_t buf[256];
+    socklen_t buf_len = sizeof(buf);
+    int sd, rc;
+
+    /* only do this once */
+    if (sctp_sockopt_paddrparams_size != 0)
+        return 0;
+
+    sd = socket(AF_INET, SOCK_STREAM, IPPROTO_SCTP);
+    if (sd < 0)
+        return sd;
+
+    memset(buf, 0, sizeof(buf));
+    rc = getsockopt(sd, IPPROTO_SCTP, SCTP_PEER_ADDR_PARAMS, buf, &buf_len);
+    ogs_closesocket(sd);
+    if (rc < 0) {
+        ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,
+                "getsockopt(SCTP_PEER_ADDR_PARAMS) failed [%d]", rc);
+        return rc;
+    }
+
+    sctp_sockopt_paddrparams_size = buf_len;
+
+    ogs_debug("sizes of 'struct sctp_paddrparams': "
+            "compile-time %zu, kernel: %u",
+            sizeof(struct sctp_paddrparams),
+            sctp_sockopt_paddrparams_size);
+    return 0;
+}
+
+static int sctp_setsockopt_paddrparams_workaround(
+        int fd, const struct sctp_paddrparams *paddrparams)
+{
+    const unsigned int compiletime_size = sizeof(*paddrparams);
+    int rc;
+
+    if (determine_sctp_sockopt_paddrparams_size() < 0) {
+        ogs_error("Cannot determine SCTP_PEER_ADDR_PARAMS socket option size");
+        return OGS_ERROR;
+    }
+
+    if (compiletime_size == sctp_sockopt_paddrparams_size) {
+        /* no kernel workaround needed */
+        return setsockopt(fd, IPPROTO_SCTP, SCTP_PEER_ADDR_PARAMS,
+                paddrparams, compiletime_size);
+    } else if (compiletime_size < sctp_sockopt_paddrparams_size) {
+        /* we are using an older userspace with a more modern kernel
+         * and hence need to pad the data */
+        uint8_t buf[256];
+        ogs_assert(sctp_sockopt_paddrparams_size <= sizeof(buf));
+
+        memcpy(buf, paddrparams, compiletime_size);
+        memset(buf + sizeof(*paddrparams),
+                0, sctp_sockopt_paddrparams_size - compiletime_size);
+        return setsockopt(fd, IPPROTO_SCTP, SCTP_PEER_ADDR_PARAMS,
+                buf, sctp_sockopt_paddrparams_size);
+    } else /* if (compiletime_size > sctp_sockopt_paddrparams_size) */ {
+        /* we are using a newer userspace with an older kernel and hence
+         * need to truncate the data - but only if the caller didn't try
+         * to enable any of the events of the truncated portion */
+        rc = byte_nonzero((const uint8_t *)paddrparams,
+                sctp_sockopt_paddrparams_size, compiletime_size);
+        if (rc >= 0) {
+            ogs_error("Kernel only supports sctp_paddrparams of %u bytes, "
+                "but caller tried to enable more modern event at offset %u",
+                sctp_sockopt_paddrparams_size, rc);
+            return OGS_ERROR;
+        }
+
+        return setsockopt(fd, IPPROTO_SCTP, SCTP_PEER_ADDR_PARAMS, paddrparams,
+                sctp_sockopt_paddrparams_size);
+    }
+}
+
 static int set_paddrparams(ogs_sock_t *sock, ogs_sockopt_t *option)
 {
-    struct sctp_paddrparams heartbeat;
+    struct sctp_paddrparams paddrparams;
     socklen_t socklen;
 
     ogs_assert(sock);
     ogs_assert(option);
 
-    memset(&heartbeat, 0, sizeof(heartbeat));
-    socklen = sizeof(heartbeat);
+    memset(&paddrparams, 0, sizeof(paddrparams));
+    socklen = sizeof(paddrparams);
     if (getsockopt(sock->fd, IPPROTO_SCTP, SCTP_PEER_ADDR_PARAMS,
-                            &heartbeat, &socklen) != 0 ) {
+                            &paddrparams, &socklen) != 0) {
         ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,
-                "getsockopt for SCTP_PEER_ADDR failed");
+                "getsockopt(SCTP_PEER_ADDR) failed");
         return OGS_ERROR;
     }
 
     ogs_trace("OLD spp_flags = 0x%x hbinter = %d pathmax = %d",
-            heartbeat.spp_flags,
-            heartbeat.spp_hbinterval,
-            heartbeat.spp_pathmaxrxt);
+            paddrparams.spp_flags,
+            paddrparams.spp_hbinterval,
+            paddrparams.spp_pathmaxrxt);
 
-    heartbeat.spp_hbinterval = option->sctp.heartbit_interval;
+    paddrparams.spp_hbinterval = option->sctp.heartbit_interval;
 
+#ifdef DISABLE_SCTP_EVENT_WORKAROUND
     if (setsockopt(sock->fd, IPPROTO_SCTP, SCTP_PEER_ADDR_PARAMS,
-                            &heartbeat, sizeof( heartbeat)) != 0) {
+                            &paddrparams, sizeof(paddrparams)) != 0) {
         ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,
-                "setsockopt for SCTP_PEER_ADDR_PARAMS failed");
+                "setsockopt(SCTP_PEER_ADDR_PARAMS) failed");
         return OGS_ERROR;
     }
+#else
+    if (sctp_setsockopt_paddrparams_workaround(sock->fd, &paddrparams) < 0) {
+        ogs_error("sctp_setsockopt_paddrparams_workaround() failed");
+        return OGS_ERROR;
+    }
+#endif
 
     ogs_trace("NEW spp_flags = 0x%x hbinter = %d pathmax = %d",
-            heartbeat.spp_flags,
-            heartbeat.spp_hbinterval,
-            heartbeat.spp_pathmaxrxt);
+            paddrparams.spp_flags,
+            paddrparams.spp_hbinterval,
+            paddrparams.spp_pathmaxrxt);
 
     return OGS_OK;
 }
