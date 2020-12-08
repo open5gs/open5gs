@@ -29,6 +29,8 @@ If you have tested radio hardware from a vendor not listed with Open5GS, please 
  * AirHarmony 4200
  * AirHarmony 4400
  * Gemtek WLTGFC-101 (S/W version 2.1.1746.1116)
+ * NOKIA FW2PC BC28 Flexi Zone G2 Outdoor Micro FDD LTE 700 MHz High Power
+ * NOKIA FWH1 B38 Flexi Zone Outdoor Micro TD LTE 2600 MHz
 
 ### OpenRAN Hardware
 ---
