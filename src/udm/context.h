@@ -73,6 +73,7 @@ struct udm_ue_s {
     ogs_guami_t guami;
 
     OpenAPI_auth_type_e auth_type;
+    OpenAPI_rat_type_e rat_type;
 
 #define UDM_NF_INSTANCE_CLEAR(_cAUSE, _nFInstance) \
     do { \

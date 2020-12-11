@@ -20,13 +20,11 @@
 #ifndef UDM_SBI_PATH_H
 #define UDM_SBI_PATH_H
 
-#include "context.h"
+#include "nudr-build.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#include "nudr-build.h"
 
 int udm_sbi_open(void);
 void udm_sbi_close(void);

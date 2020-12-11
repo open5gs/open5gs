@@ -85,6 +85,11 @@ int amf_nudm_sdm_handle_provisioned(
             amf_nudm_sdm_build_get);
         break;
 
+    CASE(OGS_SBI_RESOURCE_NAME_UE_CONTEXT_IN_SMF_DATA)
+        amf_ue_sbi_discover_and_send(OpenAPI_nf_type_PCF, amf_ue,
+            NULL, amf_npcf_am_policy_control_build_create);
+        break;
+
     DEFAULT
     END
 

@@ -5,12 +5,12 @@
 #include "cn_assisted_ran_para.h"
 
 OpenAPI_cn_assisted_ran_para_t *OpenAPI_cn_assisted_ran_para_create(
-    OpenAPI_stationary_indication_t *stationary_indication,
+    OpenAPI_stationary_indication_e stationary_indication,
     int communication_duration_time,
     int periodic_time,
     OpenAPI_scheduled_communication_time_t *scheduled_communication_time,
-    OpenAPI_scheduled_communication_type_t *scheduled_communication_type,
-    OpenAPI_traffic_profile_t *traffic_profile,
+    OpenAPI_scheduled_communication_type_e scheduled_communication_type,
+    OpenAPI_traffic_profile_e traffic_profile,
     OpenAPI_battery_indication_t *battery_indication
     )
 {
@@ -35,10 +35,7 @@ void OpenAPI_cn_assisted_ran_para_free(OpenAPI_cn_assisted_ran_para_t *cn_assist
         return;
     }
     OpenAPI_lnode_t *node;
-    OpenAPI_stationary_indication_free(cn_assisted_ran_para->stationary_indication);
     OpenAPI_scheduled_communication_time_free(cn_assisted_ran_para->scheduled_communication_time);
-    OpenAPI_scheduled_communication_type_free(cn_assisted_ran_para->scheduled_communication_type);
-    OpenAPI_traffic_profile_free(cn_assisted_ran_para->traffic_profile);
     OpenAPI_battery_indication_free(cn_assisted_ran_para->battery_indication);
     ogs_free(cn_assisted_ran_para);
 }
@@ -54,13 +51,7 @@ cJSON *OpenAPI_cn_assisted_ran_para_convertToJSON(OpenAPI_cn_assisted_ran_para_t
 
     item = cJSON_CreateObject();
     if (cn_assisted_ran_para->stationary_indication) {
-        cJSON *stationary_indication_local_JSON = OpenAPI_stationary_indication_convertToJSON(cn_assisted_ran_para->stationary_indication);
-        if (stationary_indication_local_JSON == NULL) {
-            ogs_error("OpenAPI_cn_assisted_ran_para_convertToJSON() failed [stationary_indication]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "stationaryIndication", stationary_indication_local_JSON);
-        if (item->child == NULL) {
+        if (cJSON_AddStringToObject(item, "stationaryIndication", OpenAPI_stationary_indication_ToString(cn_assisted_ran_para->stationary_indication)) == NULL) {
             ogs_error("OpenAPI_cn_assisted_ran_para_convertToJSON() failed [stationary_indication]");
             goto end;
         }
@@ -94,26 +85,14 @@ cJSON *OpenAPI_cn_assisted_ran_para_convertToJSON(OpenAPI_cn_assisted_ran_para_t
     }
 
     if (cn_assisted_ran_para->scheduled_communication_type) {
-        cJSON *scheduled_communication_type_local_JSON = OpenAPI_scheduled_communication_type_convertToJSON(cn_assisted_ran_para->scheduled_communication_type);
-        if (scheduled_communication_type_local_JSON == NULL) {
-            ogs_error("OpenAPI_cn_assisted_ran_para_convertToJSON() failed [scheduled_communication_type]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "scheduledCommunicationType", scheduled_communication_type_local_JSON);
-        if (item->child == NULL) {
+        if (cJSON_AddStringToObject(item, "scheduledCommunicationType", OpenAPI_scheduled_communication_type_ToString(cn_assisted_ran_para->scheduled_communication_type)) == NULL) {
             ogs_error("OpenAPI_cn_assisted_ran_para_convertToJSON() failed [scheduled_communication_type]");
             goto end;
         }
     }
 
     if (cn_assisted_ran_para->traffic_profile) {
-        cJSON *traffic_profile_local_JSON = OpenAPI_traffic_profile_convertToJSON(cn_assisted_ran_para->traffic_profile);
-        if (traffic_profile_local_JSON == NULL) {
-            ogs_error("OpenAPI_cn_assisted_ran_para_convertToJSON() failed [traffic_profile]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "trafficProfile", traffic_profile_local_JSON);
-        if (item->child == NULL) {
+        if (cJSON_AddStringToObject(item, "trafficProfile", OpenAPI_traffic_profile_ToString(cn_assisted_ran_para->traffic_profile)) == NULL) {
             ogs_error("OpenAPI_cn_assisted_ran_para_convertToJSON() failed [traffic_profile]");
             goto end;
         }
@@ -141,9 +120,13 @@ OpenAPI_cn_assisted_ran_para_t *OpenAPI_cn_assisted_ran_para_parseFromJSON(cJSON
     OpenAPI_cn_assisted_ran_para_t *cn_assisted_ran_para_local_var = NULL;
     cJSON *stationary_indication = cJSON_GetObjectItemCaseSensitive(cn_assisted_ran_paraJSON, "stationaryIndication");
 
-    OpenAPI_stationary_indication_t *stationary_indication_local_nonprim = NULL;
+    OpenAPI_stationary_indication_e stationary_indicationVariable;
     if (stationary_indication) {
-        stationary_indication_local_nonprim = OpenAPI_stationary_indication_parseFromJSON(stationary_indication);
+        if (!cJSON_IsString(stationary_indication)) {
+            ogs_error("OpenAPI_cn_assisted_ran_para_parseFromJSON() failed [stationary_indication]");
+            goto end;
+        }
+        stationary_indicationVariable = OpenAPI_stationary_indication_FromString(stationary_indication->valuestring);
     }
 
     cJSON *communication_duration_time = cJSON_GetObjectItemCaseSensitive(cn_assisted_ran_paraJSON, "communicationDurationTime");
@@ -173,16 +156,24 @@ OpenAPI_cn_assisted_ran_para_t *OpenAPI_cn_assisted_ran_para_parseFromJSON(cJSON
 
     cJSON *scheduled_communication_type = cJSON_GetObjectItemCaseSensitive(cn_assisted_ran_paraJSON, "scheduledCommunicationType");
 
-    OpenAPI_scheduled_communication_type_t *scheduled_communication_type_local_nonprim = NULL;
+    OpenAPI_scheduled_communication_type_e scheduled_communication_typeVariable;
     if (scheduled_communication_type) {
-        scheduled_communication_type_local_nonprim = OpenAPI_scheduled_communication_type_parseFromJSON(scheduled_communication_type);
+        if (!cJSON_IsString(scheduled_communication_type)) {
+            ogs_error("OpenAPI_cn_assisted_ran_para_parseFromJSON() failed [scheduled_communication_type]");
+            goto end;
+        }
+        scheduled_communication_typeVariable = OpenAPI_scheduled_communication_type_FromString(scheduled_communication_type->valuestring);
     }
 
     cJSON *traffic_profile = cJSON_GetObjectItemCaseSensitive(cn_assisted_ran_paraJSON, "trafficProfile");
 
-    OpenAPI_traffic_profile_t *traffic_profile_local_nonprim = NULL;
+    OpenAPI_traffic_profile_e traffic_profileVariable;
     if (traffic_profile) {
-        traffic_profile_local_nonprim = OpenAPI_traffic_profile_parseFromJSON(traffic_profile);
+        if (!cJSON_IsString(traffic_profile)) {
+            ogs_error("OpenAPI_cn_assisted_ran_para_parseFromJSON() failed [traffic_profile]");
+            goto end;
+        }
+        traffic_profileVariable = OpenAPI_traffic_profile_FromString(traffic_profile->valuestring);
     }
 
     cJSON *battery_indication = cJSON_GetObjectItemCaseSensitive(cn_assisted_ran_paraJSON, "batteryIndication");
@@ -193,12 +184,12 @@ OpenAPI_cn_assisted_ran_para_t *OpenAPI_cn_assisted_ran_para_parseFromJSON(cJSON
     }
 
     cn_assisted_ran_para_local_var = OpenAPI_cn_assisted_ran_para_create (
-        stationary_indication ? stationary_indication_local_nonprim : NULL,
+        stationary_indication ? stationary_indicationVariable : 0,
         communication_duration_time ? communication_duration_time->valuedouble : 0,
         periodic_time ? periodic_time->valuedouble : 0,
         scheduled_communication_time ? scheduled_communication_time_local_nonprim : NULL,
-        scheduled_communication_type ? scheduled_communication_type_local_nonprim : NULL,
-        traffic_profile ? traffic_profile_local_nonprim : NULL,
+        scheduled_communication_type ? scheduled_communication_typeVariable : 0,
+        traffic_profile ? traffic_profileVariable : 0,
         battery_indication ? battery_indication_local_nonprim : NULL
         );
 

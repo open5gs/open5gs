@@ -197,7 +197,12 @@ udm:
       - addr: 127.0.0.12
         port: 7777
 
-udr:
+pcf:
     sbi:
       - addr: 127.0.0.13
+        port: 7777
+
+udr:
+    sbi:
+      - addr: 127.0.0.20
         port: 7777

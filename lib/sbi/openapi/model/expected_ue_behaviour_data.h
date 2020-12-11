@@ -25,25 +25,25 @@ extern "C" {
 
 typedef struct OpenAPI_expected_ue_behaviour_data_s OpenAPI_expected_ue_behaviour_data_t;
 typedef struct OpenAPI_expected_ue_behaviour_data_s {
-    struct OpenAPI_stationary_indication_s *stationary_indication;
+    OpenAPI_stationary_indication_e stationary_indication;
     int communication_duration_time;
     int periodic_time;
     struct OpenAPI_scheduled_communication_time_s *scheduled_communication_time;
-    struct OpenAPI_scheduled_communication_type_s *scheduled_communication_type;
+    OpenAPI_scheduled_communication_type_e scheduled_communication_type;
     OpenAPI_list_t *expected_umts;
-    struct OpenAPI_traffic_profile_s *traffic_profile;
+    OpenAPI_traffic_profile_e traffic_profile;
     struct OpenAPI_battery_indication_s *battery_indication;
     char *validity_time;
 } OpenAPI_expected_ue_behaviour_data_t;
 
 OpenAPI_expected_ue_behaviour_data_t *OpenAPI_expected_ue_behaviour_data_create(
-    OpenAPI_stationary_indication_t *stationary_indication,
+    OpenAPI_stationary_indication_e stationary_indication,
     int communication_duration_time,
     int periodic_time,
     OpenAPI_scheduled_communication_time_t *scheduled_communication_time,
-    OpenAPI_scheduled_communication_type_t *scheduled_communication_type,
+    OpenAPI_scheduled_communication_type_e scheduled_communication_type,
     OpenAPI_list_t *expected_umts,
-    OpenAPI_traffic_profile_t *traffic_profile,
+    OpenAPI_traffic_profile_e traffic_profile,
     OpenAPI_battery_indication_t *battery_indication,
     char *validity_time
     );

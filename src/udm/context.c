@@ -36,7 +36,6 @@ void udm_context_init(void)
 
     ogs_log_install_domain(&__udm_log_domain, "udm", ogs_core()->log.level);
 
-    /* Allocate TWICE the pool to check if maximum number of gNBs is reached */
     ogs_pool_init(&udm_ue_pool, ogs_app()->max.ue);
 
     ogs_list_init(&self.udm_ue_list);

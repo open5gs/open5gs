@@ -807,87 +807,87 @@ components:
         - $ref: '#/components/schemas/DnaiChangeType'
         - $ref: '#/components/schemas/NullValue'
     RestrictionType:
-      anyOf:
-        - type: string
+#      anyOf:
+#        - type: string
           enum:
             - ALLOWED_AREAS
             - NOT_ALLOWED_AREAS
-        - type: string
+          type: string
     RestrictionTypeRm:
       anyOf:
         - $ref: '#/components/schemas/RestrictionType'
         - $ref: '#/components/schemas/NullValue'
     CoreNetworkType:
-      anyOf:
-        - type: string
+#      anyOf:
+#        - type: string
           enum:
             - 5GC
             - EPC
-        - type: string
+          type: string
     CoreNetworkTypeRm:
       anyOf:
         - $ref: '#/components/schemas/CoreNetworkType'
         - $ref: '#/components/schemas/NullValue'
     PresenceState:
-      anyOf:
-        - type: string
+#      anyOf:
+#        - type: string
           enum:
             - IN_AREA
             - OUT_OF_AREA
             - UNKNOWN
             - INACTIVE
-        - type: string
+          type: string
     StationaryIndication:
-      anyOf:
-      - type: string
+#      anyOf:
+#      - type: string
         enum:
           - STATIONARY
           - MOBILE
-      - type: string
-        description: >
-          This string provides forward-compatibility with future
-          extensions to the enumeration but is not used to encode
-          content defined in the present version of this API.
-      description: >
-        Possible values are
-        - STATIONARY: Identifies the UE is stationary
-        - MOBILE: Identifies the UE is mobile
+        type: string
+#        description: >
+#          This string provides forward-compatibility with future
+#          extensions to the enumeration but is not used to encode
+#          content defined in the present version of this API.
+#      description: >
+#        Possible values are
+#        - STATIONARY: Identifies the UE is stationary
+#        - MOBILE: Identifies the UE is mobile
     StationaryIndicationRm:
       anyOf:
         - $ref: '#/components/schemas/StationaryIndication'
         - $ref: '#/components/schemas/NullValue'
     ScheduledCommunicationType:
-      anyOf:
-        - type: string
+#      anyOf:
+#        - type: string
           enum:
             - DOWNLINK_ONLY
             - UPLINK_ONLY
             - BIDIRECTIONAL
-        - type: string
+          type: string
     ScheduledCommunicationTypeRm:
       anyOf:
         - $ref: '#/components/schemas/ScheduledCommunicationType'
         - $ref: '#/components/schemas/NullValue'
     TrafficProfile:
-      anyOf:
-      - type: string
+#      anyOf:
+#      - type: string
         enum:
           - SINGLE_TRANS_UL
           - SINGLE_TRANS_DL
           - DUAL_TRANS_UL_FIRST
           - DUAL_TRANS_DL_FIRST
           - MULTI_TRANS
-      - type: string
-        description: >
-          This string provides forward-compatibility with future
-          extensions to the enumeration but is not used to encode
-          content defined in the present version of this API.
-      description: >
-        Possible values are
-        - SINGLE_TRANS_UL: Uplink single packet transmission.
-        - SINGLE_TRANS_DL: Downlink single packet transmission.
-        - DUAL_TRANS_UL_FIRST: Dual packet transmission, firstly uplink packet transmission with subsequent downlink packet transmission.
-        - DUAL_TRANS_DL_FIRST: Dual packet transmission, firstly downlink packet transmission with subsequent uplink packet transmission.
+        type: string
+#        description: >
+#          This string provides forward-compatibility with future
+#          extensions to the enumeration but is not used to encode
+#          content defined in the present version of this API.
+#      description: >
+#        Possible values are
+#        - SINGLE_TRANS_UL: Uplink single packet transmission.
+#        - SINGLE_TRANS_DL: Downlink single packet transmission.
+#        - DUAL_TRANS_UL_FIRST: Dual packet transmission, firstly uplink packet transmission with subsequent downlink packet transmission.
+#        - DUAL_TRANS_DL_FIRST: Dual packet transmission, firstly downlink packet transmission with subsequent uplink packet transmission.
     TrafficProfileRm:
       anyOf:
         - $ref: '#/components/schemas/TrafficProfile'

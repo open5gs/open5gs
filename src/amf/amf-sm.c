@@ -140,39 +140,9 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
                     break;
 
                 DEFAULT
-                    ogs_error("Invalid HTTP method [%s]",
-                            sbi_message.h.method);
+                    ogs_error("Invalid HTTP method [%s]", sbi_message.h.method);
                     ogs_sbi_server_send_error(stream,
-                            OGS_SBI_HTTP_STATUS_FORBIDDEN,
-                            &sbi_message,
-                            "Invalid HTTP method", sbi_message.h.method);
-                END
-                break;
-
-            DEFAULT
-                ogs_error("Invalid resource name [%s]",
-                        sbi_message.h.resource.component[0]);
-                ogs_sbi_server_send_error(stream,
-                        OGS_SBI_HTTP_STATUS_BAD_REQUEST, &sbi_message,
-                        "Invalid resource name",
-                        sbi_message.h.resource.component[0]);
-            END
-            break;
-
-        CASE(OGS_SBI_SERVICE_NAME_NUDM_UECM)
-            SWITCH(sbi_message.h.resource.component[1])
-            CASE(OGS_SBI_RESOURCE_NAME_DEREG_NOTIFY)
-                SWITCH(sbi_message.h.method)
-                CASE(OGS_SBI_HTTP_METHOD_POST)
-                    ogs_error("Dereg-notify Not implemented");
-                    break;
-
-                DEFAULT
-                    ogs_error("Invalid HTTP method [%s]",
-                            sbi_message.h.method);
-                    ogs_sbi_server_send_error(stream,
-                            OGS_SBI_HTTP_STATUS_FORBIDDEN,
-                            &sbi_message,
+                            OGS_SBI_HTTP_STATUS_FORBIDDEN, &sbi_message,
                             "Invalid HTTP method", sbi_message.h.method);
                 END
                 break;
@@ -238,6 +208,14 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
                 amf_namf_callback_handle_sm_context_status(
                         stream, &sbi_message);
                 break;
+
+            /* TODO */
+#if 0
+            CASE(OGS_SBI_RESOURCE_NAME_DEREG_NOTIFY)
+                break;
+            CASE(OGS_SBI_RESOURCE_NAME_AM_POLICY_NOTIFY)
+                break;
+#endif
 
             DEFAULT
                 ogs_error("Invalid resource name [%s]",
@@ -372,6 +350,7 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
         CASE(OGS_SBI_SERVICE_NAME_NAUSF_AUTH)
         CASE(OGS_SBI_SERVICE_NAME_NUDM_UECM)
         CASE(OGS_SBI_SERVICE_NAME_NUDM_SDM)
+        CASE(OGS_SBI_SERVICE_NAME_NPCF_AM_POLICY_CONTROL)
             sbi_xact = e->sbi.data;
             ogs_assert(sbi_xact);
 
@@ -507,9 +486,11 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
             sbi_object = sbi_xact->sbi_object;
             ogs_assert(sbi_object);
 
-            switch(sbi_xact->target_nf_type) {
-            case OpenAPI_nf_type_AUSF:
-            case OpenAPI_nf_type_UDM:
+            ogs_assert(sbi_object->type > OGS_SBI_OBJ_BASE &&
+                        sbi_object->type < OGS_SBI_OBJ_TOP);
+
+            switch(sbi_object->type) {
+            case OGS_SBI_OBJ_UE_TYPE:
                 amf_ue = (amf_ue_t *)sbi_object;
                 ogs_assert(amf_ue);
                 ogs_error("[%s] Cannot receive SBI message", amf_ue->suci);
@@ -517,7 +498,7 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
                         OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT);
                 break;
 
-            case OpenAPI_nf_type_SMF:
+            case OGS_SBI_OBJ_SESS_TYPE:
                 sess = (amf_sess_t *)sbi_object;
                 ogs_assert(sess);
                 ogs_error("[%d:%d] Cannot receive SBI message",
@@ -533,8 +514,10 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
                 break;
 
             default:
-                ogs_fatal("Not implemented [%s]",
-                    OpenAPI_nf_type_ToString(sbi_xact->target_nf_type));
+                ogs_fatal("Not implemented [%s:%d]",
+                    OpenAPI_nf_type_ToString(sbi_xact->target_nf_type),
+                    sbi_object->type);
+                ogs_assert_if_reached();
             }
 
             ogs_sbi_xact_remove(sbi_xact);

@@ -51,7 +51,7 @@ typedef struct OpenAPI_sm_context_update_data_s {
     OpenAPI_access_type_e an_type;
     OpenAPI_access_type_e additional_an_type;
     OpenAPI_rat_type_e rat_type;
-    struct OpenAPI_presence_state_s *presence_in_ladn;
+    OpenAPI_presence_state_e presence_in_ladn;
     struct OpenAPI_user_location_s *ue_location;
     char *ue_time_zone;
     struct OpenAPI_user_location_s *add_ue_location;
@@ -103,7 +103,7 @@ OpenAPI_sm_context_update_data_t *OpenAPI_sm_context_update_data_create(
     OpenAPI_access_type_e an_type,
     OpenAPI_access_type_e additional_an_type,
     OpenAPI_rat_type_e rat_type,
-    OpenAPI_presence_state_t *presence_in_ladn,
+    OpenAPI_presence_state_e presence_in_ladn,
     OpenAPI_user_location_t *ue_location,
     char *ue_time_zone,
     OpenAPI_user_location_t *add_ue_location,

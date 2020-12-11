@@ -88,7 +88,7 @@ typedef struct OpenAPI_pdu_session_create_data_s {
     int ma_request_ind;
     int ma_nw_upgrade_ind;
     OpenAPI_list_t *dnai_list;
-    struct OpenAPI_presence_state_s *presence_in_ladn;
+    OpenAPI_presence_state_e presence_in_ladn;
     OpenAPI_list_t *secondary_rat_usage_info;
     struct OpenAPI_small_data_rate_status_s *small_data_rate_status;
     struct OpenAPI_apn_rate_status_s *apn_rate_status;
@@ -149,7 +149,7 @@ OpenAPI_pdu_session_create_data_t *OpenAPI_pdu_session_create_data_create(
     int ma_request_ind,
     int ma_nw_upgrade_ind,
     OpenAPI_list_t *dnai_list,
-    OpenAPI_presence_state_t *presence_in_ladn,
+    OpenAPI_presence_state_e presence_in_ladn,
     OpenAPI_list_t *secondary_rat_usage_info,
     OpenAPI_small_data_rate_status_t *small_data_rate_status,
     OpenAPI_apn_rate_status_t *apn_rate_status,

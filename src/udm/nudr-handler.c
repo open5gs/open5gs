@@ -22,6 +22,7 @@
 bool udm_nudr_dr_handle_subscription_authentication(
     udm_ue_t *udm_ue, ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg)
 {
+    char *strerror = NULL;
     ogs_sbi_server_t *server = NULL;
 
     ogs_sbi_message_t sendmsg;
@@ -69,6 +70,20 @@ bool udm_nudr_dr_handle_subscription_authentication(
     CASE(OGS_SBI_RESOURCE_NAME_AUTHENTICATION_SUBSCRIPTION)
         SWITCH(recvmsg->h.method)
         CASE(OGS_SBI_HTTP_METHOD_GET)
+            if (recvmsg->res_status != OGS_SBI_HTTP_STATUS_OK) {
+                strerror = ogs_msprintf("[%s] HTTP response error [%d]",
+                        udm_ue->suci, recvmsg->res_status);
+                ogs_assert(strerror);
+
+                if (recvmsg->res_status == OGS_SBI_HTTP_STATUS_NOT_FOUND)
+                    ogs_warn("%s", strerror);
+                else
+                    ogs_error("%s", strerror);
+                ogs_sbi_server_send_error(
+                        stream, recvmsg->res_status, recvmsg, strerror, NULL);
+                ogs_free(strerror);
+                return false;
+            }
 
             AuthenticationSubscription = recvmsg->AuthenticationSubscription;
             if (!AuthenticationSubscription) {
@@ -149,6 +164,18 @@ bool udm_nudr_dr_handle_subscription_authentication(
                 udm_ue->sqn, sizeof(udm_ue->sqn));
 
         CASE(OGS_SBI_HTTP_METHOD_PATCH)
+            if (recvmsg->res_status != OGS_SBI_HTTP_STATUS_OK &&
+                recvmsg->res_status != OGS_SBI_HTTP_STATUS_NO_CONTENT) {
+                strerror = ogs_msprintf("[%s] HTTP response error [%d]",
+                        udm_ue->suci, recvmsg->res_status);
+                ogs_assert(strerror);
+
+                ogs_error("%s", strerror);
+                ogs_sbi_server_send_error(
+                        stream, recvmsg->res_status, recvmsg, strerror, NULL);
+                ogs_free(strerror);
+                return false;
+            }
 
             memset(&AuthenticationInfoResult,
                     0, sizeof(AuthenticationInfoResult));
@@ -207,17 +234,75 @@ bool udm_nudr_dr_handle_subscription_authentication(
             ogs_assert(response);
             ogs_sbi_server_send_response(stream, response);
 
-            return true;
+            break;
 
         DEFAULT
             ogs_error("Invalid HTTP method [%s]", recvmsg->h.method);
             ogs_sbi_server_send_error(stream,
                     OGS_SBI_HTTP_STATUS_FORBIDDEN, recvmsg,
                     "Invalid HTTP method", recvmsg->h.method);
+            return false;
         END
         break;
 
     CASE(OGS_SBI_RESOURCE_NAME_AUTHENTICATION_STATUS)
+        OpenAPI_auth_event_t *AuthEvent = NULL;
+
+        if (recvmsg->res_status != OGS_SBI_HTTP_STATUS_NO_CONTENT) {
+            strerror = ogs_msprintf("[%s] HTTP response error [%d]",
+                    udm_ue->suci, recvmsg->res_status);
+            ogs_assert(strerror);
+
+            ogs_error("%s", strerror);
+            ogs_sbi_server_send_error(
+                    stream, recvmsg->res_status, recvmsg, strerror, NULL);
+            ogs_free(strerror);
+            return false;
+        }
+
+        AuthEvent = udm_ue->auth_event;
+        if (!AuthEvent) {
+            ogs_error("[%s] No AuthEvent", udm_ue->suci);
+            ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                    recvmsg, "No AuthEvent", udm_ue->suci);
+            return false;
+        }
+
+        if (!AuthEvent->nf_instance_id) {
+            ogs_error("[%s] No nfInstanceId", udm_ue->suci);
+            ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                    recvmsg, "No nfInstanceId", udm_ue->suci);
+            return false;
+        }
+
+        if (!AuthEvent->success) {
+            ogs_error("[%s] No success", udm_ue->suci);
+            ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                    recvmsg, "No success", udm_ue->suci);
+            return false;
+        }
+
+        if (!AuthEvent->time_stamp) {
+            ogs_error("[%s] No timeStamp", udm_ue->suci);
+            ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                    recvmsg, "No timeStamp", udm_ue->suci);
+            return false;
+        }
+
+        if (!AuthEvent->auth_type) {
+            ogs_error("[%s] No authType", udm_ue->suci);
+            ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                    recvmsg, "No authType", udm_ue->suci);
+            return false;
+        }
+
+        if (!AuthEvent->serving_network_name) {
+            ogs_error("[%s] No servingNetworkName", udm_ue->suci);
+            ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                    recvmsg, "No servingNetworkName", udm_ue->suci);
+            return false;
+        }
+
         memset(&sendmsg, 0, sizeof(sendmsg));
 
         memset(&header, 0, sizeof(header));
@@ -239,20 +324,27 @@ bool udm_nudr_dr_handle_subscription_authentication(
 
         ogs_free(sendmsg.http.location);
         OpenAPI_auth_event_free(sendmsg.AuthEvent);
-
-        return true;
+        break;
 
     DEFAULT
-        ogs_error("Invalid resource name [%s]",
-                recvmsg->h.resource.component[3]);
+        strerror = ogs_msprintf("[%s] Invalid resource name [%s]",
+                udm_ue->supi, recvmsg->h.resource.component[3]);
+        ogs_assert(strerror);
+
+        ogs_error("%s", strerror);
+        ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                recvmsg, strerror, NULL);
+        ogs_free(strerror);
+        return false;
     END
 
-    return false;
+    return true;
 }
 
 bool udm_nudr_dr_handle_subscription_context(
     udm_ue_t *udm_ue, ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg)
 {
+    char *strerror = NULL;
     ogs_sbi_server_t *server = NULL;
 
     ogs_sbi_message_t sendmsg;
@@ -270,9 +362,19 @@ bool udm_nudr_dr_handle_subscription_context(
 
     ogs_assert(recvmsg);
 
+    if (recvmsg->res_status != OGS_SBI_HTTP_STATUS_NO_CONTENT) {
+        ogs_error("[%s] HTTP response error [%d]",
+            udm_ue->supi, recvmsg->res_status);
+        ogs_sbi_server_send_error(stream, recvmsg->res_status,
+            NULL, "HTTP response error", udm_ue->supi);
+        return false;
+    }
+
     SWITCH(recvmsg->h.resource.component[3])
     CASE(OGS_SBI_RESOURCE_NAME_AMF_3GPP_ACCESS)
         Amf3GppAccessRegistration = udm_ue->amf_3gpp_access_registration;
+        OpenAPI_guami_t *Guami = NULL;
+
         if (!Amf3GppAccessRegistration) {
             ogs_error("[%s] No Amf3GppAccessRegistration", udm_ue->supi);
             ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
@@ -284,6 +386,56 @@ bool udm_nudr_dr_handle_subscription_context(
             ogs_error("[%s] No amfInstanceId", udm_ue->supi);
             ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
                     recvmsg, "No amfInstanceId", udm_ue->supi);
+            return false;
+        }
+
+        if (!Amf3GppAccessRegistration->dereg_callback_uri) {
+            ogs_error("[%s] No dregCallbackUri", udm_ue->supi);
+            ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                    recvmsg, "No dregCallbackUri", udm_ue->supi);
+            return false;
+        }
+
+        Guami = Amf3GppAccessRegistration->guami;
+        if (!Guami) {
+            ogs_error("[%s] No Guami", udm_ue->supi);
+            ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                    recvmsg, "No Guami", udm_ue->supi);
+            return false;
+        }
+
+        if (!Guami->amf_id) {
+            ogs_error("[%s] No Guami.AmfId", udm_ue->supi);
+            ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                    recvmsg, "No Guami.AmfId", udm_ue->supi);
+            return false;
+        }
+
+        if (!Guami->plmn_id) {
+            ogs_error("[%s] No PlmnId", udm_ue->supi);
+            ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                    recvmsg, "No PlmnId", udm_ue->supi);
+            return false;
+        }
+
+        if (!Guami->plmn_id->mnc) {
+            ogs_error("[%s] No PlmnId.Mnc", udm_ue->supi);
+            ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                    recvmsg, "No PlmnId.Mnc", udm_ue->supi);
+            return false;
+        }
+
+        if (!Guami->plmn_id->mcc) {
+            ogs_error("[%s] No PlmnId.Mcc", udm_ue->supi);
+            ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                    recvmsg, "No PlmnId.Mcc", udm_ue->supi);
+            return false;
+        }
+
+        if (!Amf3GppAccessRegistration->rat_type) {
+            ogs_error("[%s] No RatType", udm_ue->supi);
+            ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                    recvmsg, "No RatType", udm_ue->supi);
             return false;
         }
 
@@ -320,19 +472,27 @@ bool udm_nudr_dr_handle_subscription_context(
         ogs_free(sendmsg.http.location);
         OpenAPI_amf3_gpp_access_registration_free(
                 sendmsg.Amf3GppAccessRegistration);
-        return true;
+        break;
 
     DEFAULT
-        ogs_error("Invalid resource name [%s]",
-                recvmsg->h.resource.component[3]);
+        strerror = ogs_msprintf("[%s] Invalid resource name [%s]",
+                udm_ue->supi, recvmsg->h.resource.component[3]);
+        ogs_assert(strerror);
+
+        ogs_error("%s", strerror);
+        ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                recvmsg, strerror, NULL);
+        ogs_free(strerror);
+        return false;
     END
 
-    return false;
+    return true;
 }
 
 bool udm_nudr_dr_handle_subscription_provisioned(
     udm_ue_t *udm_ue, ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg)
 {
+    char *strerror = NULL;
     ogs_sbi_server_t *server = NULL;
 
     ogs_sbi_message_t sendmsg;
@@ -347,13 +507,26 @@ bool udm_nudr_dr_handle_subscription_provisioned(
 
     SWITCH(recvmsg->h.resource.component[4])
     CASE(OGS_SBI_RESOURCE_NAME_AM_DATA)
+        OpenAPI_access_and_mobility_subscription_data_t
+            *AccessAndMobilitySubscriptionData = NULL;
+
+        AccessAndMobilitySubscriptionData =
+            recvmsg->AccessAndMobilitySubscriptionData;
+        if (!AccessAndMobilitySubscriptionData) {
+            ogs_error("[%s] No AccessAndMobilitySubscriptionData",
+                    udm_ue->supi);
+            ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                    recvmsg, "No AccessAndMobilitySubscriptionData",
+                    udm_ue->supi);
+            return false;
+        }
+
         memset(&sendmsg, 0, sizeof(sendmsg));
 
-        if (recvmsg->AccessAndMobilitySubscriptionData)
-            sendmsg.AccessAndMobilitySubscriptionData =
-                OpenAPI_access_and_mobility_subscription_data_copy(
-                    sendmsg.AccessAndMobilitySubscriptionData,
-                        recvmsg->AccessAndMobilitySubscriptionData);
+        sendmsg.AccessAndMobilitySubscriptionData =
+            OpenAPI_access_and_mobility_subscription_data_copy(
+                sendmsg.AccessAndMobilitySubscriptionData,
+                    recvmsg->AccessAndMobilitySubscriptionData);
 
         response = ogs_sbi_build_response(&sendmsg, recvmsg->res_status);
         ogs_assert(response);
@@ -364,22 +537,56 @@ bool udm_nudr_dr_handle_subscription_provisioned(
         break;
 
     CASE(OGS_SBI_RESOURCE_NAME_SMF_SELECT_DATA)
+        OpenAPI_smf_selection_subscription_data_t *SmfSelectionSubscriptionData;
+
+        SmfSelectionSubscriptionData = recvmsg->SmfSelectionSubscriptionData;
+        if (!SmfSelectionSubscriptionData) {
+            ogs_error("[%s] No SmfSelectionSubscriptionData", udm_ue->supi);
+            ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                    recvmsg, "No SmfSelectionSubscriptionData",
+                    udm_ue->supi);
+            return false;
+        }
+
+        memset(&SmfSelectionSubscriptionData, 0,
+                sizeof(SmfSelectionSubscriptionData));
+
         memset(&sendmsg, 0, sizeof(sendmsg));
+
+        sendmsg.SmfSelectionSubscriptionData =
+            OpenAPI_smf_selection_subscription_data_copy(
+                sendmsg.SmfSelectionSubscriptionData,
+                    recvmsg->SmfSelectionSubscriptionData);
 
         response = ogs_sbi_build_response(&sendmsg, recvmsg->res_status);
         ogs_assert(response);
         ogs_sbi_server_send_response(stream, response);
 
+        OpenAPI_smf_selection_subscription_data_free(
+                sendmsg.SmfSelectionSubscriptionData);
         break;
 
     CASE(OGS_SBI_RESOURCE_NAME_SM_DATA)
+        OpenAPI_session_management_subscription_data_t *
+                SessionManagementSubscriptionData = NULL;
+
+        SessionManagementSubscriptionData =
+            recvmsg->SessionManagementSubscriptionData;
+        if (!SessionManagementSubscriptionData) {
+            ogs_error("[%s] No SessionManagementSubscriptionData",
+                    udm_ue->supi);
+            ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                    recvmsg, "No SessionManagementSubscriptionData",
+                    udm_ue->supi);
+            return false;
+        }
+
         memset(&sendmsg, 0, sizeof(sendmsg));
 
-        if (recvmsg->SessionManagementSubscriptionData)
-            sendmsg.SessionManagementSubscriptionData =
-                OpenAPI_session_management_subscription_data_copy(
-                    sendmsg.SessionManagementSubscriptionData,
-                        recvmsg->SessionManagementSubscriptionData);
+        sendmsg.SessionManagementSubscriptionData =
+            OpenAPI_session_management_subscription_data_copy(
+                sendmsg.SessionManagementSubscriptionData,
+                    recvmsg->SessionManagementSubscriptionData);
 
         response = ogs_sbi_build_response(&sendmsg, recvmsg->res_status);
         ogs_assert(response);
@@ -391,8 +598,14 @@ bool udm_nudr_dr_handle_subscription_provisioned(
         break;
 
     DEFAULT
-        ogs_error("Invalid resource name [%s]",
-                recvmsg->h.resource.component[3]);
+        strerror = ogs_msprintf("[%s] Invalid resource name [%s]",
+                udm_ue->supi, recvmsg->h.resource.component[3]);
+        ogs_assert(strerror);
+
+        ogs_error("%s", strerror);
+        ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                recvmsg, strerror, NULL);
+        ogs_free(strerror);
         return false;
     END
 

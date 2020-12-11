@@ -44,7 +44,7 @@ OpenAPI_hsmf_update_data_t *OpenAPI_hsmf_update_data_create(
     OpenAPI_n4_information_t *n4_info,
     OpenAPI_n4_information_t *n4_info_ext1,
     OpenAPI_n4_information_t *n4_info_ext2,
-    OpenAPI_presence_state_t *presence_in_ladn,
+    OpenAPI_presence_state_e presence_in_ladn,
     char *vsmf_pdu_session_uri,
     char *vsmf_id,
     char *v_smf_service_instance_id,
@@ -174,7 +174,6 @@ void OpenAPI_hsmf_update_data_free(OpenAPI_hsmf_update_data_t *hsmf_update_data)
     OpenAPI_n4_information_free(hsmf_update_data->n4_info);
     OpenAPI_n4_information_free(hsmf_update_data->n4_info_ext1);
     OpenAPI_n4_information_free(hsmf_update_data->n4_info_ext2);
-    OpenAPI_presence_state_free(hsmf_update_data->presence_in_ladn);
     ogs_free(hsmf_update_data->vsmf_pdu_session_uri);
     ogs_free(hsmf_update_data->vsmf_id);
     ogs_free(hsmf_update_data->v_smf_service_instance_id);
@@ -653,13 +652,7 @@ cJSON *OpenAPI_hsmf_update_data_convertToJSON(OpenAPI_hsmf_update_data_t *hsmf_u
     }
 
     if (hsmf_update_data->presence_in_ladn) {
-        cJSON *presence_in_ladn_local_JSON = OpenAPI_presence_state_convertToJSON(hsmf_update_data->presence_in_ladn);
-        if (presence_in_ladn_local_JSON == NULL) {
-            ogs_error("OpenAPI_hsmf_update_data_convertToJSON() failed [presence_in_ladn]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "presenceInLadn", presence_in_ladn_local_JSON);
-        if (item->child == NULL) {
+        if (cJSON_AddStringToObject(item, "presenceInLadn", OpenAPI_presence_state_ToString(hsmf_update_data->presence_in_ladn)) == NULL) {
             ogs_error("OpenAPI_hsmf_update_data_convertToJSON() failed [presence_in_ladn]");
             goto end;
         }
@@ -1248,9 +1241,13 @@ OpenAPI_hsmf_update_data_t *OpenAPI_hsmf_update_data_parseFromJSON(cJSON *hsmf_u
 
     cJSON *presence_in_ladn = cJSON_GetObjectItemCaseSensitive(hsmf_update_dataJSON, "presenceInLadn");
 
-    OpenAPI_presence_state_t *presence_in_ladn_local_nonprim = NULL;
+    OpenAPI_presence_state_e presence_in_ladnVariable;
     if (presence_in_ladn) {
-        presence_in_ladn_local_nonprim = OpenAPI_presence_state_parseFromJSON(presence_in_ladn);
+        if (!cJSON_IsString(presence_in_ladn)) {
+            ogs_error("OpenAPI_hsmf_update_data_parseFromJSON() failed [presence_in_ladn]");
+            goto end;
+        }
+        presence_in_ladnVariable = OpenAPI_presence_state_FromString(presence_in_ladn->valuestring);
     }
 
     cJSON *vsmf_pdu_session_uri = cJSON_GetObjectItemCaseSensitive(hsmf_update_dataJSON, "vsmfPduSessionUri");
@@ -1413,7 +1410,7 @@ OpenAPI_hsmf_update_data_t *OpenAPI_hsmf_update_data_parseFromJSON(cJSON *hsmf_u
         n4_info ? n4_info_local_nonprim : NULL,
         n4_info_ext1 ? n4_info_ext1_local_nonprim : NULL,
         n4_info_ext2 ? n4_info_ext2_local_nonprim : NULL,
-        presence_in_ladn ? presence_in_ladn_local_nonprim : NULL,
+        presence_in_ladn ? presence_in_ladnVariable : 0,
         vsmf_pdu_session_uri ? ogs_strdup(vsmf_pdu_session_uri->valuestring) : NULL,
         vsmf_id ? ogs_strdup(vsmf_id->valuestring) : NULL,
         v_smf_service_instance_id ? ogs_strdup(v_smf_service_instance_id->valuestring) : NULL,

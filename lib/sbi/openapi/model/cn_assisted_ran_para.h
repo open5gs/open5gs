@@ -24,22 +24,22 @@ extern "C" {
 
 typedef struct OpenAPI_cn_assisted_ran_para_s OpenAPI_cn_assisted_ran_para_t;
 typedef struct OpenAPI_cn_assisted_ran_para_s {
-    struct OpenAPI_stationary_indication_s *stationary_indication;
+    OpenAPI_stationary_indication_e stationary_indication;
     int communication_duration_time;
     int periodic_time;
     struct OpenAPI_scheduled_communication_time_s *scheduled_communication_time;
-    struct OpenAPI_scheduled_communication_type_s *scheduled_communication_type;
-    struct OpenAPI_traffic_profile_s *traffic_profile;
+    OpenAPI_scheduled_communication_type_e scheduled_communication_type;
+    OpenAPI_traffic_profile_e traffic_profile;
     struct OpenAPI_battery_indication_s *battery_indication;
 } OpenAPI_cn_assisted_ran_para_t;
 
 OpenAPI_cn_assisted_ran_para_t *OpenAPI_cn_assisted_ran_para_create(
-    OpenAPI_stationary_indication_t *stationary_indication,
+    OpenAPI_stationary_indication_e stationary_indication,
     int communication_duration_time,
     int periodic_time,
     OpenAPI_scheduled_communication_time_t *scheduled_communication_time,
-    OpenAPI_scheduled_communication_type_t *scheduled_communication_type,
-    OpenAPI_traffic_profile_t *traffic_profile,
+    OpenAPI_scheduled_communication_type_e scheduled_communication_type,
+    OpenAPI_traffic_profile_e traffic_profile,
     OpenAPI_battery_indication_t *battery_indication
     );
 void OpenAPI_cn_assisted_ran_para_free(OpenAPI_cn_assisted_ran_para_t *cn_assisted_ran_para);

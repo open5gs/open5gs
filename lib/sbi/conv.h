@@ -51,6 +51,9 @@ char *ogs_sbi_gmtime_string(ogs_time_t time);
 char *ogs_sbi_timezone_string(int tm_offset);
 bool ogs_sbi_time_from_string(ogs_time_t *time, char *str);
 
+char *ogs_sbi_s_nssai_to_string(ogs_s_nssai_t *s_nssai);
+bool ogs_sbi_s_nssai_from_string(ogs_s_nssai_t *s_nssai, char *str);
+
 OpenAPI_plmn_id_t *ogs_sbi_build_plmn_id(ogs_plmn_id_t *plmn_id);
 bool ogs_sbi_parse_plmn_id(
         ogs_plmn_id_t *plmn_id, OpenAPI_plmn_id_t *PlmnId);

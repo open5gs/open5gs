@@ -1,3 +1,5 @@
+db_uri: mongodb://localhost/open5gs
+
 #
 # logger:
 #

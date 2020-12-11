@@ -50,17 +50,17 @@ ogs_sbi_request_t *amf_nudm_uecm_build_registration(
     ogs_assert(server);
 
     memset(&header, 0, sizeof(header));
-    header.service.name = (char *)OGS_SBI_SERVICE_NAME_NUDM_UECM;
+    header.service.name = (char *)OGS_SBI_SERVICE_NAME_NAMF_CALLBACK;
     header.api.version = (char *)OGS_SBI_API_V1;
     header.resource.component[0] = amf_ue->supi;
-    header.resource.component[1] =
-            (char *)OGS_SBI_RESOURCE_NAME_DEREG_NOTIFY;
+    header.resource.component[1] = (char *)OGS_SBI_RESOURCE_NAME_DEREG_NOTIFY;
     Amf3GppAccessRegistration.dereg_callback_uri =
                         ogs_sbi_server_uri(server, &header);
     ogs_assert(Amf3GppAccessRegistration.dereg_callback_uri);
 
     Amf3GppAccessRegistration.guami = ogs_sbi_build_guami(amf_ue->guami);
-    Amf3GppAccessRegistration.rat_type = OpenAPI_rat_type_NR;
+    Amf3GppAccessRegistration.rat_type = amf_ue_rat_type(amf_ue);
+    ogs_assert(Amf3GppAccessRegistration.rat_type != OpenAPI_rat_type_NULL);
 
     message.Amf3GppAccessRegistration = &Amf3GppAccessRegistration;
 

@@ -316,6 +316,54 @@ bool ogs_sbi_time_from_string(ogs_time_t *timestamp, char *str)
     return true;
 }
 
+char *ogs_sbi_s_nssai_to_string(ogs_s_nssai_t *s_nssai)
+{
+    cJSON *item = NULL;
+    OpenAPI_snssai_t sNSSAI;
+
+    char *v = NULL;
+
+    ogs_assert(s_nssai);
+
+    sNSSAI.sst = s_nssai->sst;
+    sNSSAI.sd = ogs_s_nssai_sd_to_string(s_nssai->sd);
+
+    item = OpenAPI_snssai_convertToJSON(&sNSSAI);
+    ogs_assert(item);
+    if (sNSSAI.sd) ogs_free(sNSSAI.sd);
+
+    v = cJSON_Print(item);
+    ogs_assert(v);
+    cJSON_Delete(item);
+
+    return v;
+}
+
+bool ogs_sbi_s_nssai_from_string(ogs_s_nssai_t *s_nssai, char *str)
+{
+    bool rc = false;
+
+    cJSON *item = NULL;
+    OpenAPI_snssai_t *sNSSAI = NULL;
+
+    ogs_assert(s_nssai);
+    ogs_assert(str);
+
+    item = cJSON_Parse(str);
+    if (item) {
+        sNSSAI = OpenAPI_snssai_parseFromJSON(item);
+        if (sNSSAI) {
+            s_nssai->sst = sNSSAI->sst;
+            s_nssai->sd = ogs_s_nssai_sd_from_string(sNSSAI->sd);
+            OpenAPI_snssai_free(sNSSAI);
+            rc = true;
+        }
+        cJSON_Delete(item);
+    }
+
+    return rc;
+}
+
 OpenAPI_plmn_id_t *ogs_sbi_build_plmn_id(ogs_plmn_id_t *plmn_id)
 {
     OpenAPI_plmn_id_t *PlmnId = NULL;

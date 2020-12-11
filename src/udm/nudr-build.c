@@ -171,10 +171,10 @@ ogs_sbi_request_t *udm_nudr_dr_build_query_subscription_provisioned(
     CASE(OGS_SBI_RESOURCE_NAME_SM_DATA)
         if (recvmsg->param.dnn)
             sendmsg.param.dnn = recvmsg->param.dnn;
-        if (recvmsg->param.s_nssai_presence) {
-            sendmsg.param.s_nssai_presence = true;
-            memcpy(&sendmsg.param.s_nssai,
-                    &recvmsg->param.s_nssai, sizeof(recvmsg->param.s_nssai));
+        if (recvmsg->param.single_nssai_presence) {
+            sendmsg.param.single_nssai_presence = true;
+            memcpy(&sendmsg.param.single_nssai, &recvmsg->param.single_nssai,
+                    sizeof(sendmsg.param.single_nssai));
         }
     DEFAULT
     END

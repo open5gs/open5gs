@@ -27,6 +27,7 @@ systemd_conf_in = '''
     open5gs-nrfd.service
     open5gs-ausfd.service
     open5gs-udmd.service
+    open5gs-pcfd.service
     open5gs-udrd.service
 '''.split()
 

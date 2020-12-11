@@ -299,9 +299,10 @@ void amf_nnrf_handle_nf_discover(
     nf_instance = OGS_SBI_NF_INSTANCE_GET(
             sbi_object->nf_type_array, xact->target_nf_type);
     if (!nf_instance) {
-        switch(xact->target_nf_type) {
-        case OpenAPI_nf_type_AUSF:
-        case OpenAPI_nf_type_UDM:
+        ogs_assert(sbi_object->type > OGS_SBI_OBJ_BASE &&
+                    sbi_object->type < OGS_SBI_OBJ_TOP);
+        switch(sbi_object->type) {
+        case OGS_SBI_OBJ_UE_TYPE:
             amf_ue = (amf_ue_t *)sbi_object;
             ogs_assert(amf_ue);
             ogs_error("[%s] (NF discover) No [%s]", amf_ue->suci,
@@ -309,7 +310,7 @@ void amf_nnrf_handle_nf_discover(
             nas_5gs_send_gmm_reject_from_sbi(amf_ue,
                     OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT);
             break;
-        case OpenAPI_nf_type_SMF:
+        case OGS_SBI_OBJ_SESS_TYPE:
             sess = (amf_sess_t *)sbi_object;
             ogs_assert(sess);
             ogs_error("[%d:%d] (NF discover) No [%s]", sess->psi, sess->pti,
@@ -324,8 +325,10 @@ void amf_nnrf_handle_nf_discover(
             }
             break;
         default:
-            ogs_fatal("(NF discover) Not implemented [%s]",
-                OpenAPI_nf_type_ToString(xact->target_nf_type));
+            ogs_fatal("(NF discover) Not implemented [%s:%d]",
+                OpenAPI_nf_type_ToString(xact->target_nf_type),
+                sbi_object->type);
+            ogs_assert_if_reached();
         }
     } else {
         amf_sbi_send(nf_instance, xact);

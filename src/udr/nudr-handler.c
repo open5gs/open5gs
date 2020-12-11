@@ -40,7 +40,6 @@ bool udr_nudr_dr_handle_subscription_authentication(
 
     OpenAPI_authentication_subscription_t AuthenticationSubscription;
     OpenAPI_sequence_number_t SequenceNumber;
-    OpenAPI_auth_event_t *AuthEvent = NULL;
     OpenAPI_list_t *PatchItemList = NULL;
     OpenAPI_lnode_t *node = NULL;
 
@@ -186,6 +185,8 @@ bool udr_nudr_dr_handle_subscription_authentication(
     CASE(OGS_SBI_RESOURCE_NAME_AUTHENTICATION_STATUS)
         SWITCH(recvmsg->h.method)
         CASE(OGS_SBI_HTTP_METHOD_PUT)
+            OpenAPI_auth_event_t *AuthEvent = NULL;
+
             AuthEvent = recvmsg->AuthEvent;
             if (!AuthEvent) {
                 ogs_error("[%s] No AuthEvent", supi);
@@ -263,6 +264,17 @@ bool udr_nudr_dr_handle_subscription_context(
     CASE(OGS_SBI_RESOURCE_NAME_AMF_3GPP_ACCESS)
         SWITCH(recvmsg->h.method)
         CASE(OGS_SBI_HTTP_METHOD_PUT)
+            OpenAPI_amf3_gpp_access_registration_t *Amf3GppAccessRegistration;
+
+            Amf3GppAccessRegistration = recvmsg->Amf3GppAccessRegistration;
+            if (!Amf3GppAccessRegistration) {
+                ogs_error("[%s] No Amf3GppAccessRegistration", supi);
+                ogs_sbi_server_send_error(
+                        stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                        recvmsg, "No Amf3GppAccessRegistration", supi);
+                return false;
+            }
+
             memset(&sendmsg, 0, sizeof(sendmsg));
 
             response = ogs_sbi_build_response(
@@ -400,7 +412,13 @@ bool udr_nudr_dr_handle_subscription_provisioned(
         break;
 
     CASE(OGS_SBI_RESOURCE_NAME_SMF_SELECT_DATA)
+        OpenAPI_smf_selection_subscription_data_t SmfSelectionSubscriptionData;
+
+        memset(&SmfSelectionSubscriptionData, 0,
+                sizeof(SmfSelectionSubscriptionData));
+
         memset(&sendmsg, 0, sizeof(sendmsg));
+        sendmsg.SmfSelectionSubscriptionData = &SmfSelectionSubscriptionData;
 
         response = ogs_sbi_build_response(&sendmsg, OGS_SBI_HTTP_STATUS_OK);
         ogs_assert(response);
@@ -423,16 +441,17 @@ bool udr_nudr_dr_handle_subscription_provisioned(
         OpenAPI_ip_address_t *ipAddress = NULL;
         OpenAPI_lnode_t *node = NULL, *node2 = NULL;
 
-        if (!recvmsg->param.s_nssai_presence) {
+        if (!recvmsg->param.single_nssai_presence) {
             ogs_error("[%s] Cannot find S_NSSAI", supi);
             ogs_sbi_server_send_error(stream,
-                    OGS_SBI_HTTP_STATUS_NOT_FOUND,
+                    OGS_SBI_HTTP_STATUS_BAD_REQUEST,
                     recvmsg, "Cannot find S_NSSAI", supi);
             return false;
         }
 
-        singleNSSAI.sst = recvmsg->param.s_nssai.sst;
-        singleNSSAI.sd = ogs_s_nssai_sd_to_string(recvmsg->param.s_nssai.sd);
+        singleNSSAI.sst = recvmsg->param.single_nssai.sst;
+        singleNSSAI.sd = ogs_s_nssai_sd_to_string(
+                            recvmsg->param.single_nssai.sd);
 
         dnnConfigurationList = OpenAPI_list_create();
 
@@ -670,4 +689,216 @@ bool udr_nudr_dr_handle_subscription_provisioned(
     END
 
     return true;
+}
+
+bool udr_nudr_dr_handle_policy_data(
+        ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg)
+{
+    int rv, i;
+
+    ogs_sbi_message_t sendmsg;
+    ogs_sbi_response_t *response = NULL;
+
+    ogs_assert(stream);
+    ogs_assert(recvmsg);
+
+    SWITCH(recvmsg->h.resource.component[1])
+    CASE(OGS_SBI_RESOURCE_NAME_UES)
+        ogs_subscription_data_t subscription_data;
+        char *supi = recvmsg->h.resource.component[2];
+
+        if (!supi) {
+            ogs_error("No SUPI");
+            ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                    recvmsg, "No SUPI", NULL);
+            return false;
+        }
+
+        if (strncmp(supi,
+                OGS_ID_SUPI_TYPE_IMSI, strlen(OGS_ID_SUPI_TYPE_IMSI)) != 0) {
+            ogs_error("[%s] Unknown SUPI Type", supi);
+            ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_FORBIDDEN,
+                    recvmsg, "Unknwon SUPI Type", supi);
+            return false;
+        }
+
+        SWITCH(recvmsg->h.method)
+        CASE(OGS_SBI_HTTP_METHOD_GET)
+            OpenAPI_lnode_t *node = NULL, *node2 = NULL;
+
+            rv = ogs_dbi_subscription_data(supi, &subscription_data);
+            if (rv != OGS_OK) {
+                ogs_error("[%s] Cannot find SUPI in DB", supi);
+                ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_NOT_FOUND,
+                        recvmsg, "Cannot find SUPI Type", supi);
+                return false;
+            }
+
+            SWITCH(recvmsg->h.resource.component[3])
+            CASE(OGS_SBI_RESOURCE_NAME_AM_DATA)
+                OpenAPI_am_policy_data_t AmPolicyData;
+
+                memset(&AmPolicyData, 0, sizeof(AmPolicyData));
+
+                memset(&sendmsg, 0, sizeof(sendmsg));
+                sendmsg.AmPolicyData = &AmPolicyData;
+
+                response = ogs_sbi_build_response(
+                        &sendmsg, OGS_SBI_HTTP_STATUS_OK);
+                ogs_assert(response);
+                ogs_sbi_server_send_response(stream, response);
+
+                return true;
+
+            CASE(OGS_SBI_RESOURCE_NAME_SM_DATA)
+                OpenAPI_sm_policy_data_t SmPolicyData;
+
+                OpenAPI_list_t *SmPolicySnssaiDataList = NULL;
+                OpenAPI_map_t *SmPolicySnssaiDataMap = NULL;
+                OpenAPI_sm_policy_snssai_data_t *SmPolicySnssaiData = NULL;
+
+                OpenAPI_snssai_t *sNSSAI = NULL;
+
+                OpenAPI_list_t *SmPolicyDnnDataList = NULL;
+                OpenAPI_map_t *SmPolicyDnnDataMap = NULL;
+                OpenAPI_sm_policy_dnn_data_t *SmPolicyDnnData = NULL;
+
+                if (!recvmsg->param.snssai_presence) {
+                    ogs_error("[%s] Cannot find S_NSSAI", supi);
+                    ogs_sbi_server_send_error(stream,
+                            OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                            recvmsg, "Cannot find S_NSSAI", supi);
+                    return false;
+                }
+
+                sNSSAI = ogs_calloc(1, sizeof(*sNSSAI));
+                ogs_assert(sNSSAI);
+                sNSSAI->sst = recvmsg->param.snssai.sst;
+                sNSSAI->sd = ogs_s_nssai_sd_to_string(recvmsg->param.snssai.sd);
+
+                SmPolicyDnnDataList = OpenAPI_list_create();
+                ogs_assert(SmPolicyDnnDataList);
+
+                for (i = 0; i < subscription_data.num_of_pdn; i++) {
+                    ogs_pdn_t *pdn = &subscription_data.pdn[i];
+                    ogs_assert(pdn);
+
+                    if (recvmsg->param.dnn &&
+                        ogs_strcasecmp(recvmsg->param.dnn, pdn->apn) != 0)
+                        continue;
+
+                    SmPolicyDnnData = ogs_calloc(1, sizeof(*SmPolicyDnnData));
+                    ogs_assert(SmPolicyDnnData);
+
+                    SmPolicyDnnData->dnn = pdn->apn;
+
+                    SmPolicyDnnDataMap = OpenAPI_map_create(
+                            pdn->apn, SmPolicyDnnData);
+                    ogs_assert(SmPolicyDnnDataMap);
+
+                    OpenAPI_list_add(SmPolicyDnnDataList, SmPolicyDnnDataMap);
+                }
+
+                SmPolicySnssaiData = ogs_calloc(1, sizeof(*SmPolicySnssaiData));
+                ogs_assert(SmPolicySnssaiData);
+
+                SmPolicySnssaiData->snssai = sNSSAI;
+                if (SmPolicyDnnDataList->count)
+                    SmPolicySnssaiData->sm_policy_dnn_data =
+                        SmPolicyDnnDataList;
+                else
+                    OpenAPI_list_free(SmPolicyDnnDataList);
+
+                SmPolicySnssaiDataMap = OpenAPI_map_create(
+                        ogs_sbi_s_nssai_to_string(&recvmsg->param.snssai),
+                        SmPolicySnssaiData);
+                ogs_assert(SmPolicySnssaiDataMap);
+
+                SmPolicySnssaiDataList = OpenAPI_list_create();
+                ogs_assert(SmPolicySnssaiDataList);
+
+                OpenAPI_list_add(SmPolicySnssaiDataList, SmPolicySnssaiDataMap);
+
+                memset(&SmPolicyData, 0, sizeof(SmPolicyData));
+
+                if (SmPolicySnssaiDataList->count)
+                    SmPolicyData.sm_policy_snssai_data = SmPolicySnssaiDataList;
+                else
+                    OpenAPI_list_free(SmPolicySnssaiDataList);
+
+                memset(&sendmsg, 0, sizeof(sendmsg));
+                sendmsg.SmPolicyData = &SmPolicyData;
+
+                response = ogs_sbi_build_response(
+                        &sendmsg, OGS_SBI_HTTP_STATUS_OK);
+                ogs_assert(response);
+                ogs_sbi_server_send_response(stream, response);
+
+                SmPolicySnssaiDataList = SmPolicyData.sm_policy_snssai_data;
+                OpenAPI_list_for_each(SmPolicySnssaiDataList, node) {
+                    SmPolicySnssaiDataMap = node->data;
+                    if (SmPolicySnssaiDataMap) {
+                        SmPolicySnssaiData = SmPolicySnssaiDataMap->value;
+                        if (SmPolicySnssaiData) {
+                            sNSSAI = SmPolicySnssaiData->snssai;
+                            if (sNSSAI) {
+                                if (sNSSAI->sd) ogs_free(sNSSAI->sd);
+                                ogs_free(sNSSAI);
+                            }
+                            SmPolicyDnnDataList =
+                                SmPolicySnssaiData->sm_policy_dnn_data;
+                            if (SmPolicyDnnDataList) {
+                                OpenAPI_list_for_each(
+                                        SmPolicyDnnDataList, node2) {
+                                    SmPolicyDnnDataMap = node2->data;
+                                    if (SmPolicyDnnDataMap) {
+                                        SmPolicyDnnData =
+                                            SmPolicyDnnDataMap->value;
+                                        if (SmPolicyDnnData) {
+                                            ogs_free(SmPolicyDnnData);
+                                        }
+                                        ogs_free(SmPolicyDnnDataMap);
+                                    }
+                                }
+                                OpenAPI_list_free(SmPolicyDnnDataList);
+                            }
+                            ogs_free(SmPolicySnssaiData);
+                        }
+                        if (SmPolicySnssaiDataMap->key)
+                            ogs_free(SmPolicySnssaiDataMap->key);
+                        ogs_free(SmPolicySnssaiDataMap);
+                    }
+                }
+                OpenAPI_list_free(SmPolicySnssaiDataList);
+
+                return true;
+
+            DEFAULT
+                ogs_error("Invalid resource name [%s]",
+                        recvmsg->h.resource.component[3]);
+                ogs_sbi_server_send_error(stream,
+                        OGS_SBI_HTTP_STATUS_MEHTOD_NOT_ALLOWED,
+                        recvmsg, "Unknown resource name",
+                        recvmsg->h.resource.component[3]);
+            END
+            break;
+
+        DEFAULT
+            ogs_error("Invalid HTTP method [%s]", recvmsg->h.method);
+            ogs_sbi_server_send_error(stream,
+                    OGS_SBI_HTTP_STATUS_MEHTOD_NOT_ALLOWED,
+                    recvmsg, "Invalid HTTP method", recvmsg->h.method);
+        END
+        break;
+
+    DEFAULT
+        ogs_error("Invalid resource name [%s]",
+                recvmsg->h.resource.component[1]);
+        ogs_sbi_server_send_error(stream,
+                OGS_SBI_HTTP_STATUS_MEHTOD_NOT_ALLOWED,
+                recvmsg, "Unknown resource name",
+                recvmsg->h.resource.component[1]);
+    END
+
+    return false;
 }

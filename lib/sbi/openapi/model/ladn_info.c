@@ -6,7 +6,7 @@
 
 OpenAPI_ladn_info_t *OpenAPI_ladn_info_create(
     char *ladn,
-    OpenAPI_presence_state_t *presence
+    OpenAPI_presence_state_e presence
     )
 {
     OpenAPI_ladn_info_t *ladn_info_local_var = OpenAPI_malloc(sizeof(OpenAPI_ladn_info_t));
@@ -26,7 +26,6 @@ void OpenAPI_ladn_info_free(OpenAPI_ladn_info_t *ladn_info)
     }
     OpenAPI_lnode_t *node;
     ogs_free(ladn_info->ladn);
-    OpenAPI_presence_state_free(ladn_info->presence);
     ogs_free(ladn_info);
 }
 
@@ -50,13 +49,7 @@ cJSON *OpenAPI_ladn_info_convertToJSON(OpenAPI_ladn_info_t *ladn_info)
     }
 
     if (ladn_info->presence) {
-        cJSON *presence_local_JSON = OpenAPI_presence_state_convertToJSON(ladn_info->presence);
-        if (presence_local_JSON == NULL) {
-            ogs_error("OpenAPI_ladn_info_convertToJSON() failed [presence]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "presence", presence_local_JSON);
-        if (item->child == NULL) {
+        if (cJSON_AddStringToObject(item, "presence", OpenAPI_presence_state_ToString(ladn_info->presence)) == NULL) {
             ogs_error("OpenAPI_ladn_info_convertToJSON() failed [presence]");
             goto end;
         }
@@ -83,14 +76,18 @@ OpenAPI_ladn_info_t *OpenAPI_ladn_info_parseFromJSON(cJSON *ladn_infoJSON)
 
     cJSON *presence = cJSON_GetObjectItemCaseSensitive(ladn_infoJSON, "presence");
 
-    OpenAPI_presence_state_t *presence_local_nonprim = NULL;
+    OpenAPI_presence_state_e presenceVariable;
     if (presence) {
-        presence_local_nonprim = OpenAPI_presence_state_parseFromJSON(presence);
+        if (!cJSON_IsString(presence)) {
+            ogs_error("OpenAPI_ladn_info_parseFromJSON() failed [presence]");
+            goto end;
+        }
+        presenceVariable = OpenAPI_presence_state_FromString(presence->valuestring);
     }
 
     ladn_info_local_var = OpenAPI_ladn_info_create (
         ogs_strdup(ladn->valuestring),
-        presence ? presence_local_nonprim : NULL
+        presence ? presenceVariable : 0
         );
 
     return ladn_info_local_var;

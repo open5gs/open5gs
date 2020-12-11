@@ -83,7 +83,7 @@ typedef struct OpenAPI_hsmf_update_data_s {
     struct OpenAPI_n4_information_s *n4_info;
     struct OpenAPI_n4_information_s *n4_info_ext1;
     struct OpenAPI_n4_information_s *n4_info_ext2;
-    struct OpenAPI_presence_state_s *presence_in_ladn;
+    OpenAPI_presence_state_e presence_in_ladn;
     char *vsmf_pdu_session_uri;
     char *vsmf_id;
     char *v_smf_service_instance_id;
@@ -139,7 +139,7 @@ OpenAPI_hsmf_update_data_t *OpenAPI_hsmf_update_data_create(
     OpenAPI_n4_information_t *n4_info,
     OpenAPI_n4_information_t *n4_info_ext1,
     OpenAPI_n4_information_t *n4_info_ext2,
-    OpenAPI_presence_state_t *presence_in_ladn,
+    OpenAPI_presence_state_e presence_in_ladn,
     char *vsmf_pdu_session_uri,
     char *vsmf_id,
     char *v_smf_service_instance_id,

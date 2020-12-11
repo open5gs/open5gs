@@ -13,7 +13,7 @@ This post explains how to compile and install the source code on **Debian/Ubuntu
 ### Getting MongoDB
 ---
 
-Install MongoDB with package manager.  It is used as database for the HSS and PCRF.
+Install MongoDB with package manager. It is used as database for NRF/PCF/UDR and PCRF/HSS.
 
 ```bash
 $ sudo apt update
@@ -212,7 +212,7 @@ If you modify the config files while Open5GS daemons are running, please restart
 ```bash
 $ cd install/bin/
 $ ./install/bin/open5gs-mmed 
-Open5GS daemon v1.3.0-213-gd190548+
+Open5GS daemon v2.1.0
 
 08/21 22:53:47.328: [app] INFO: Configuration: '/home/acetcom/Documents/git/open5gs/install/etc/open5gs/mme.yaml' (../src/main.c:54)
 08/21 22:53:47.328: [app] INFO: File Logging: '/home/acetcom/Documents/git/open5gs/install/var/log/open5gs/mme.log' (../src/main.c:57)
@@ -222,7 +222,7 @@ Open5GS daemon v1.3.0-213-gd190548+
 08/21 22:53:47.366: [mme] INFO: s1ap_server() [127.0.0.2]:36412 (../src/mme/s1ap-sctp.c:57)
 
 $ ./install/bin/open5gs-sgwcd 
-Open5GS daemon v1.3.0-213-gd190548+
+Open5GS daemon v2.1.0
 
 08/21 22:54:43.059: [app] INFO: Configuration: '/home/acetcom/Documents/git/open5gs/install/etc/open5gs/sgwc.yaml' (../src/main.c:54)
 08/21 22:54:43.059: [app] INFO: File Logging: '/home/acetcom/Documents/git/open5gs/install/var/log/open5gs/sgwc.log' (../src/main.c:57)
@@ -232,7 +232,7 @@ Open5GS daemon v1.3.0-213-gd190548+
 08/21 22:54:43.066: [pfcp] INFO: ogs_pfcp_connect() [127.0.0.6]:8805 (../lib/pfcp/path.c:60)
 
 $ ./install/bin/open5gs-smfd
-Open5GS daemon v1.3.0-213-gd190548+
+Open5GS daemon v2.1.0
 
 08/21 22:54:56.000: [app] INFO: Configuration: '/home/acetcom/Documents/git/open5gs/install/etc/open5gs/smf.yaml' (../src/main.c:54)
 08/21 22:54:56.000: [app] INFO: File Logging: '/home/acetcom/Documents/git/open5gs/install/var/log/open5gs/smf.log' (../src/main.c:57)
@@ -245,7 +245,7 @@ Open5GS daemon v1.3.0-213-gd190548+
 08/21 22:54:56.051: [sbi] INFO: sbi_server() [127.0.0.4]:7777 (../lib/sbi/server.c:298)
 
 $ ./install/bin/open5gs-amfd
-Open5GS daemon v1.3.0-213-gd190548+
+Open5GS daemon v2.1.0
 
 08/21 22:55:14.015: [app] INFO: Configuration: '/home/acetcom/Documents/git/open5gs/install/etc/open5gs/amf.yaml' (../src/main.c:54)
 08/21 22:55:14.015: [app] INFO: File Logging: '/home/acetcom/Documents/git/open5gs/install/var/log/open5gs/amf.log' (../src/main.c:57)
@@ -254,7 +254,7 @@ Open5GS daemon v1.3.0-213-gd190548+
 08/21 22:55:14.040: [amf] INFO: ngap_server() [127.0.0.5]:38412 (../src/amf/ngap-sctp.c:56)
 
 $ ./install/bin/open5gs-sgwud 
-Open5GS daemon v1.3.0-213-gd190548+
+Open5GS daemon v2.1.0
 
 08/21 22:54:10.357: [app] INFO: Configuration: '/home/acetcom/Documents/git/open5gs/install/etc/open5gs/sgwu.yaml' (../src/main.c:54)
 08/21 22:54:10.357: [app] INFO: File Logging: '/home/acetcom/Documents/git/open5gs/install/var/log/open5gs/sgwu.log' (../src/main.c:57)
@@ -263,7 +263,7 @@ Open5GS daemon v1.3.0-213-gd190548+
 08/21 22:54:10.361: [gtp] INFO: gtp_server() [127.0.0.6]:2152 (../lib/gtp/path.c:32)
 
 $ ./install/bin/open5gs-upfd 
-Open5GS daemon v1.3.0-213-gd190548+
+Open5GS daemon v2.1.0
 
 08/21 22:54:21.596: [app] INFO: Configuration: '/home/acetcom/Documents/git/open5gs/install/etc/open5gs/upf.yaml' (../src/main.c:54)
 08/21 22:54:21.596: [app] INFO: File Logging: '/home/acetcom/Documents/git/open5gs/install/var/log/open5gs/upf.log' (../src/main.c:57)
@@ -273,7 +273,7 @@ Open5GS daemon v1.3.0-213-gd190548+
 08/21 22:54:21.601: [gtp] INFO: gtp_server() [::1]:2152 (../lib/gtp/path.c:32)
 
 $ ./install/bin/open5gs-hssd
-Open5GS daemon v1.3.0-213-gd190548+
+Open5GS daemon v2.1.0
 
 08/21 22:57:17.450: [app] INFO: Configuration: '/home/acetcom/Documents/git/open5gs/install/etc/open5gs/hss.yaml' (../src/main.c:54)
 08/21 22:57:17.450: [app] INFO: File Logging: '/home/acetcom/Documents/git/open5gs/install/var/log/open5gs/hss.log' (../src/main.c:57)
@@ -281,7 +281,7 @@ Open5GS daemon v1.3.0-213-gd190548+
 08/21 22:57:17.519: [app] INFO: HSS initialize...done (../src/hss/app-init.c:31)
 
 $ ./install/bin/open5gs-pcrfd 
-Open5GS daemon v1.3.0-213-gd190548+
+Open5GS daemon v2.1.0
 
 08/21 22:57:45.894: [app] INFO: Configuration: '/home/acetcom/Documents/git/open5gs/install/etc/open5gs/pcrf.yaml' (../src/main.c:54)
 08/21 22:57:45.894: [app] INFO: File Logging: '/home/acetcom/Documents/git/open5gs/install/var/log/open5gs/pcrf.log' (../src/main.c:57)
@@ -289,7 +289,7 @@ Open5GS daemon v1.3.0-213-gd190548+
 08/21 22:57:45.997: [app] INFO: PCRF initialize...done (../src/pcrf/app-init.c:31)
 
 $ ./install/bin/open5gs-nrfd
-Open5GS daemon v1.3.0-213-gd190548+
+Open5GS daemon v2.1.0
 
 08/21 22:56:35.472: [app] INFO: Configuration: '/home/acetcom/Documents/git/open5gs/install/etc/open5gs/nrf.yaml' (../src/main.c:54)
 08/21 22:56:35.472: [app] INFO: File Logging: '/home/acetcom/Documents/git/open5gs/install/var/log/open5gs/nrf.log' (../src/main.c:57)
@@ -298,7 +298,7 @@ Open5GS daemon v1.3.0-213-gd190548+
 08/21 22:56:35.473: [sbi] INFO: sbi_server() [::1]:7777 (../lib/sbi/server.c:298
 
 $ ./install/bin/open5gs-ausfd
-Open5GS daemon v1.3.0-213-gd190548+
+Open5GS daemon v2.1.0
 
 08/21 22:55:41.899: [app] INFO: Configuration: '/home/acetcom/Documents/git/open5gs/install/etc/open5gs/ausf.yaml' (../src/main.c:54)
 08/21 22:55:41.899: [app] INFO: File Logging: '/home/acetcom/Documents/git/open5gs/install/var/log/open5gs/ausf.log' (../src/main.c:57)
@@ -306,15 +306,23 @@ Open5GS daemon v1.3.0-213-gd190548+
 08/21 22:55:41.900: [sbi] INFO: sbi_server() [127.0.0.11]:7777 (../lib/sbi/server.c:298)
 
 $ ./install/bin/open5gs-udmd 
-Open5GS daemon v1.3.0-213-gd190548+
+Open5GS daemon v2.1.0
 
 08/21 22:56:02.154: [app] INFO: Configuration: '/home/acetcom/Documents/git/open5gs/install/etc/open5gs/udm.yaml' (../src/main.c:54)
 08/21 22:56:02.154: [app] INFO: File Logging: '/home/acetcom/Documents/git/open5gs/install/var/log/open5gs/udm.log' (../src/main.c:57)
 08/21 22:56:02.155: [app] INFO: UDM initialize...done (../src/udm/app.c:31)
 08/21 22:56:02.155: [sbi] INFO: sbi_server() [127.0.0.12]:7777 (../lib/sbi/server.c:298)
 
+$ ./install/bin/open5gs-pcfd 
+Open5GS daemon v2.1.0
+
+08/21 22:56:02.154: [app] INFO: Configuration: '/home/acetcom/Documents/git/open5gs/install/etc/open5gs/pcf.yaml' (../src/main.c:54)
+08/21 22:56:02.154: [app] INFO: File Logging: '/home/acetcom/Documents/git/open5gs/install/var/log/open5gs/pcf.log' (../src/main.c:57)
+08/21 22:56:02.155: [app] INFO: PCF initialize...done (../src/pcf/app.c:31)
+08/21 22:56:02.155: [sbi] INFO: sbi_server() [127.0.0.12]:7777 (../lib/sbi/server.c:298)
+
 $ ./install/bin/open5gs-udrd 
-Open5GS daemon v1.3.0-213-gd190548+
+Open5GS daemon v2.1.0
 
 08/21 22:56:15.810: [app] INFO: Configuration: '/home/acetcom/Documents/git/open5gs/install/etc/open5gs/udr.yaml' (../src/main.c:54)
 08/21 22:56:15.810: [app] INFO: File Logging: '/home/acetcom/Documents/git/open5gs/install/var/log/open5gs/udr.log' (../src/main.c:57)

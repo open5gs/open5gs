@@ -1060,6 +1060,9 @@ void smf_sess_remove(smf_sess_t *sess)
     if (sess->namf.client)
         ogs_sbi_client_remove(sess->namf.client);
 
+    if (sess->policy_association_id)
+        ogs_free(sess->policy_association_id);
+
     if (sess->dnn)
         ogs_free(sess->dnn);
 

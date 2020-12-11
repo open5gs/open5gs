@@ -21,6 +21,7 @@
 #include "nnrf-handler.h"
 #include "nsmf-handler.h"
 #include "nudm-handler.h"
+#include "npcf-handler.h"
 #include "gsm-handler.h"
 #include "ngap-handler.h"
 #include "pfcp-path.h"
@@ -110,11 +111,14 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
             SWITCH(sbi_message->h.resource.component[1])
             CASE(OGS_SBI_RESOURCE_NAME_SM_DATA)
                 if (sbi_message->res_status != OGS_SBI_HTTP_STATUS_OK) {
-                    ogs_error("[%s] HTTP response error [%d]",
-                        smf_ue->supi, sbi_message->res_status);
-                    ogs_sbi_server_send_error(
-                        stream, sbi_message->res_status,
-                        NULL, "HTTP response error", smf_ue->supi);
+                    strerror = ogs_msprintf("[%s:%d] HTTP response error [%d]",
+                            smf_ue->supi, sess->psi, sbi_message->res_status);
+                    ogs_assert(strerror);
+
+                    ogs_error("%s", strerror);
+                    ogs_sbi_server_send_error(stream, sbi_message->res_status,
+                        sbi_message, strerror, NULL);
+                    ogs_free(strerror);
                     break;
                 }
 
@@ -127,12 +131,49 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                 break;
 
             DEFAULT
-                ogs_error("Invalid resource name [%s]",
+                strerror = ogs_msprintf("[%s:%d] Invalid resource name [%s]",
+                        smf_ue->supi, sess->psi,
                         sbi_message->h.resource.component[1]);
+                ogs_assert(strerror);
+
+                ogs_error("%s", strerror);
                 ogs_sbi_server_send_error(stream,
-                        OGS_SBI_HTTP_STATUS_BAD_REQUEST, sbi_message,
-                        "Invalid resource name",
-                        sbi_message->h.resource.component[1]);
+                        OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                        sbi_message, strerror, NULL);
+                ogs_free(strerror);
+            END
+            break;
+
+        CASE(OGS_SBI_SERVICE_NAME_NPCF_SMPOLICYCONTROL)
+            SWITCH(sbi_message->h.resource.component[0])
+            CASE(OGS_SBI_RESOURCE_NAME_SM_POLICIES)
+                if (sbi_message->res_status != OGS_SBI_HTTP_STATUS_CREATED) {
+                    strerror = ogs_msprintf("[%s:%d] HTTP response error [%d]",
+                            smf_ue->supi, sess->psi, sbi_message->res_status);
+                    ogs_assert(strerror);
+
+                    ogs_error("%s", strerror);
+                    ogs_sbi_server_send_error(stream, sbi_message->res_status,
+                            sbi_message, strerror, NULL);
+                    ogs_free(strerror);
+                    break;
+                }
+
+                smf_npcf_smpolicycontrol_handle_create(
+                        sess, stream, sbi_message);
+                break;
+
+            DEFAULT
+                strerror = ogs_msprintf("[%s:%d] Invalid resource name [%s]",
+                        smf_ue->supi, sess->psi,
+                        sbi_message->h.resource.component[0]);
+                ogs_assert(strerror);
+
+                ogs_error("%s", strerror);
+                ogs_sbi_server_send_error(stream,
+                        OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                        sbi_message, strerror, NULL);
+                ogs_free(strerror);
             END
             break;
 
@@ -141,22 +182,23 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
             CASE(OGS_SBI_RESOURCE_NAME_UE_CONTEXTS)
                 if (sbi_message->res_status != OGS_SBI_HTTP_STATUS_OK &&
                     sbi_message->res_status != OGS_SBI_HTTP_STATUS_ACCEPTED) {
-                    ogs_error("[%s] HTTP response error [%d]",
-                        smf_ue->supi, sbi_message->res_status);
+                    ogs_error("[%s:%d] HTTP response error [%d]",
+                        smf_ue->supi, sess->psi, sbi_message->res_status);
                     break;
                 }
-
                 break;
 
             DEFAULT
-                ogs_error("Invalid resource name [%s]",
+                ogs_error("[%s:%d] Invalid resource name [%s]",
+                        smf_ue->supi, sess->psi,
                         sbi_message->h.resource.component[0]);
                 ogs_assert_if_reached();
             END
             break;
 
         DEFAULT
-            ogs_error("Invalid API name [%s]", sbi_message->h.service.name);
+            ogs_error("[%s:%d] Invalid API name [%s]",
+                    smf_ue->supi, sess->psi, sbi_message->h.service.name);
 
         END
         break;
@@ -211,6 +253,7 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
             strerror = ogs_msprintf("Unknown message [%d]",
                     nas_message->gsm.h.message_type);
             ogs_assert(strerror);
+
             ogs_error("%s", strerror);
             ogs_sbi_server_send_error(stream,
                     OGS_SBI_HTTP_STATUS_BAD_REQUEST, NULL, strerror, NULL);

@@ -17,16 +17,11 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_presence_state_s OpenAPI_presence_state_t;
-typedef struct OpenAPI_presence_state_s {
-} OpenAPI_presence_state_t;
+typedef enum { OpenAPI_presence_state_NULL = 0, OpenAPI_presence_state_IN_AREA, OpenAPI_presence_state_OUT_OF_AREA, OpenAPI_presence_state_UNKNOWN, OpenAPI_presence_state_INACTIVE } OpenAPI_presence_state_e;
 
-OpenAPI_presence_state_t *OpenAPI_presence_state_create(
-    );
-void OpenAPI_presence_state_free(OpenAPI_presence_state_t *presence_state);
-OpenAPI_presence_state_t *OpenAPI_presence_state_parseFromJSON(cJSON *presence_stateJSON);
-cJSON *OpenAPI_presence_state_convertToJSON(OpenAPI_presence_state_t *presence_state);
-OpenAPI_presence_state_t *OpenAPI_presence_state_copy(OpenAPI_presence_state_t *dst, OpenAPI_presence_state_t *src);
+char* OpenAPI_presence_state_ToString(OpenAPI_presence_state_e presence_state);
+
+OpenAPI_presence_state_e OpenAPI_presence_state_FromString(char* presence_state);
 
 #ifdef __cplusplus
 }

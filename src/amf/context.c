@@ -833,6 +833,9 @@ amf_gnb_t *amf_gnb_add(ogs_sock_t *sock, ogs_sockaddr_t *addr)
     ogs_assert(gnb);
     memset(gnb, 0, sizeof *gnb);
 
+    /* Defaut RAT-Type */
+    gnb->rat_type = OpenAPI_rat_type_NR;
+
     gnb->sctp.sock = sock;
     gnb->sctp.addr = addr;
     gnb->sctp.type = amf_gnb_sock_type(gnb->sctp.sock);
@@ -1079,6 +1082,8 @@ amf_ue_t *amf_ue_add(ran_ue_t *ran_ue)
     ogs_assert(amf_ue);
     memset(amf_ue, 0, sizeof *amf_ue);
 
+    amf_ue->sbi.type = OGS_SBI_OBJ_UE_TYPE;
+
     ogs_list_init(&amf_ue->sess_list);
 
     /* TODO : Hard-coded */
@@ -1151,6 +1156,9 @@ void amf_ue_remove(amf_ue_t *amf_ue)
         ogs_assert(amf_ue->msisdn[i]);
         ogs_free(amf_ue->msisdn[i]);
     }
+
+    if (amf_ue->policy_association_id)
+        ogs_free(amf_ue->policy_association_id);
 
     if (amf_ue->confirmation_url_for_5g_aka)
         ogs_free(amf_ue->confirmation_url_for_5g_aka);
@@ -1371,6 +1379,19 @@ void amf_ue_set_supi(amf_ue_t *amf_ue, char *supi)
     ogs_hash_set(self.supi_hash, amf_ue->supi, strlen(amf_ue->supi), amf_ue);
 }
 
+OpenAPI_rat_type_e amf_ue_rat_type(amf_ue_t *amf_ue)
+{
+    amf_gnb_t *gnb = NULL;
+    ran_ue_t *ran_ue = NULL;
+
+    ran_ue = amf_ue->ran_ue;
+    ogs_assert(ran_ue);
+    gnb = ran_ue->gnb;
+    ogs_assert(gnb);
+
+    return gnb->rat_type;
+}
+
 void amf_ue_associate_ran_ue(amf_ue_t *amf_ue, ran_ue_t *ran_ue)
 {
     ogs_assert(amf_ue);
@@ -1443,6 +1464,8 @@ amf_sess_t *amf_sess_add(amf_ue_t *amf_ue, uint8_t psi)
     ogs_assert(sess);
     memset(sess, 0, sizeof *sess);
 
+    sess->sbi.type = OGS_SBI_OBJ_SESS_TYPE;
+
     sess->amf_ue = amf_ue;
     sess->psi = psi;
 
@@ -1462,7 +1485,7 @@ void amf_sess_remove(amf_sess_t *sess)
 {
     ogs_assert(sess);
     ogs_assert(sess->amf_ue);
-    
+
     ogs_list_remove(&sess->amf_ue->sess_list, sess);
 
     /* Free SBI object memory */

@@ -140,9 +140,6 @@ void OpenAPI_ue_context_free(OpenAPI_ue_context_t *ue_context)
     }
     OpenAPI_list_free(ue_context->forbidden_area_list);
     OpenAPI_service_area_restriction_free(ue_context->service_area_restriction);
-    OpenAPI_list_for_each(ue_context->restricted_core_nw_type_list, node) {
-        OpenAPI_core_network_type_free(node->data);
-    }
     OpenAPI_list_free(ue_context->restricted_core_nw_type_list);
     OpenAPI_list_for_each(ue_context->event_subscription_list, node) {
         OpenAPI_amf_event_subscription_free(node->data);
@@ -458,21 +455,16 @@ cJSON *OpenAPI_ue_context_convertToJSON(OpenAPI_ue_context_t *ue_context)
     }
 
     if (ue_context->restricted_core_nw_type_list) {
-        cJSON *restricted_core_nw_type_listList = cJSON_AddArrayToObject(item, "restrictedCoreNwTypeList");
-        if (restricted_core_nw_type_listList == NULL) {
+        cJSON *restricted_core_nw_type_list = cJSON_AddArrayToObject(item, "restrictedCoreNwTypeList");
+        if (restricted_core_nw_type_list == NULL) {
             ogs_error("OpenAPI_ue_context_convertToJSON() failed [restricted_core_nw_type_list]");
             goto end;
         }
-
         OpenAPI_lnode_t *restricted_core_nw_type_list_node;
-        if (ue_context->restricted_core_nw_type_list) {
-            OpenAPI_list_for_each(ue_context->restricted_core_nw_type_list, restricted_core_nw_type_list_node) {
-                cJSON *itemLocal = OpenAPI_core_network_type_convertToJSON(restricted_core_nw_type_list_node->data);
-                if (itemLocal == NULL) {
-                    ogs_error("OpenAPI_ue_context_convertToJSON() failed [restricted_core_nw_type_list]");
-                    goto end;
-                }
-                cJSON_AddItemToArray(restricted_core_nw_type_listList, itemLocal);
+        OpenAPI_list_for_each(ue_context->restricted_core_nw_type_list, restricted_core_nw_type_list_node) {
+            if (cJSON_AddStringToObject(restricted_core_nw_type_list, "", OpenAPI_core_network_type_ToString((OpenAPI_core_network_type_e)restricted_core_nw_type_list_node->data)) == NULL) {
+                ogs_error("OpenAPI_ue_context_convertToJSON() failed [restricted_core_nw_type_list]");
+                goto end;
             }
         }
     }
@@ -1023,13 +1015,12 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
         restricted_core_nw_type_listList = OpenAPI_list_create();
 
         cJSON_ArrayForEach(restricted_core_nw_type_list_local_nonprimitive, restricted_core_nw_type_list ) {
-            if (!cJSON_IsObject(restricted_core_nw_type_list_local_nonprimitive)) {
+            if (!cJSON_IsString(restricted_core_nw_type_list_local_nonprimitive)) {
                 ogs_error("OpenAPI_ue_context_parseFromJSON() failed [restricted_core_nw_type_list]");
                 goto end;
             }
-            OpenAPI_core_network_type_t *restricted_core_nw_type_listItem = OpenAPI_core_network_type_parseFromJSON(restricted_core_nw_type_list_local_nonprimitive);
 
-            OpenAPI_list_add(restricted_core_nw_type_listList, restricted_core_nw_type_listItem);
+            OpenAPI_list_add(restricted_core_nw_type_listList, (void *)OpenAPI_core_network_type_FromString(restricted_core_nw_type_list_local_nonprimitive->valuestring));
         }
     }
 

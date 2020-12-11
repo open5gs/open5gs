@@ -18,29 +18,21 @@
  */
 
 #include "nudm-handler.h"
-#include "pfcp-path.h"
+#include "sbi-path.h"
 
 bool smf_nudm_sdm_handle_get(smf_sess_t *sess, ogs_sbi_stream_t *stream,
         ogs_sbi_message_t *recvmsg)
 {
-    char buf1[OGS_ADDRSTRLEN];
-    char buf2[OGS_ADDRSTRLEN];
-
+    char *strerror = NULL;
     smf_ue_t *smf_ue = NULL;
 
-    smf_bearer_t *qos_flow = NULL;
-    ogs_pfcp_gtpu_resource_t *resource = NULL;
-    ogs_pfcp_pdr_t *dl_pdr = NULL;
-    ogs_pfcp_pdr_t *ul_pdr = NULL;
-    ogs_pfcp_qer_t *qer = NULL;
+    OpenAPI_sm_context_created_data_t SmContextCreatedData;
 
     ogs_sbi_server_t *server = NULL;
-
-    ogs_sbi_message_t sendmsg;
     ogs_sbi_header_t header;
+    ogs_sbi_message_t sendmsg;
     ogs_sbi_response_t *response = NULL;
 
-    OpenAPI_sm_context_created_data_t SmContextCreatedData;
     OpenAPI_session_management_subscription_data_t
         *SessionManagementSubscriptionData = NULL;
     OpenAPI_list_t *dnnConfigurationList = NULL;
@@ -66,15 +58,17 @@ bool smf_nudm_sdm_handle_get(smf_sess_t *sess, ogs_sbi_stream_t *stream,
     SessionManagementSubscriptionData =
         recvmsg->SessionManagementSubscriptionData;
     if (!SessionManagementSubscriptionData) {
-        ogs_error("[%s] No SessionManagementSubscriptionData", smf_ue->supi);
-        return false;
+        strerror = ogs_msprintf("[%s:%d] No SessionManagementSubscriptionData",
+                smf_ue->supi, sess->psi);
+        goto cleanup;
     }
 
     dnnConfigurationList =
         SessionManagementSubscriptionData->dnn_configurations;
     if (!dnnConfigurationList) {
-        ogs_error("[%s] No dnnConfigurations", smf_ue->supi);
-        return false;
+        strerror = ogs_msprintf("[%s:%d] No dnnConfigurations",
+                smf_ue->supi, sess->psi);
+        goto cleanup;
     }
 
     OpenAPI_list_for_each(dnnConfigurationList, node) {
@@ -222,17 +216,8 @@ bool smf_nudm_sdm_handle_get(smf_sess_t *sess, ogs_sbi_stream_t *stream,
     }
 
     if (!strlen(sess->pdn.dnn)) {
-        ogs_error("[%s] No dnnConfiguration", smf_ue->supi);
-        return false;
-    }
-
-    /* Select UPF based on UE Location Information */
-    smf_sess_select_upf(sess);
-
-    /* Check if selected UPF is associated with SMF */
-    ogs_assert(sess->pfcp_node);
-    if (!OGS_FSM_CHECK(&sess->pfcp_node->sm, smf_pfcp_state_associated)) {
-        ogs_error("[%s] No associated UPF", smf_ue->supi);
+        strerror = ogs_msprintf("[%s:%d] No dnnConfiguration",
+                smf_ue->supi, sess->psi);
         return false;
     }
 
@@ -261,80 +246,18 @@ bool smf_nudm_sdm_handle_get(smf_sess_t *sess, ogs_sbi_stream_t *stream,
 
     ogs_free(sendmsg.http.location);
 
-    /*********************************************************************
-     * Send PFCP Session Establiashment Request to the UPF
-     *********************************************************************/
-
-    /* Remove all previous QoS flow */
-    smf_bearer_remove_all(sess);
-
-    /* Setup Default QoS flow */
-    qos_flow = smf_qos_flow_add(sess);
-    ogs_assert(qos_flow);
-
-    /* Setup QER */
-    qer = qos_flow->qer;
-    ogs_assert(qer);
-    qer->mbr.uplink = sess->pdn.ambr.uplink;
-    qer->mbr.downlink = sess->pdn.ambr.downlink;
-
-    /* Setup PDR */
-    dl_pdr = qos_flow->dl_pdr;
-    ogs_assert(dl_pdr);
-    ul_pdr = qos_flow->ul_pdr;
-    ogs_assert(ul_pdr);
-
-    /* Set UE IP Address to the Default DL PDR */
-    smf_sess_set_ue_ip(sess);
-
-    ogs_pfcp_paa_to_ue_ip_addr(&sess->pdn.paa,
-            &dl_pdr->ue_ip_addr, &dl_pdr->ue_ip_addr_len);
-    dl_pdr->ue_ip_addr.sd = OGS_PFCP_UE_IP_DST;
-
-    ogs_info("UE SUPI:[%s] DNN:[%s] IPv4:[%s] IPv6:[%s]",
-	    smf_ue->supi, sess->pdn.dnn,
-        sess->ipv4 ? OGS_INET_NTOP(&sess->ipv4->addr, buf1) : "",
-        sess->ipv6 ? OGS_INET6_NTOP(&sess->ipv6->addr, buf2) : "");
-
-    /* Set UPF-N3 TEID & ADDR to the Default UL PDR */
-    if (sess->pfcp_node->up_function_features.ftup) {
-        ul_pdr->f_teid.ch = 1;
-        ul_pdr->f_teid_len = 1;
-    } else {
-        resource = ogs_pfcp_gtpu_resource_find(
-                &sess->pfcp_node->gtpu_resource_list,
-                sess->pdn.dnn, OGS_PFCP_INTERFACE_ACCESS);
-        if (resource) {
-            ogs_pfcp_user_plane_ip_resource_info_to_sockaddr(&resource->info,
-                &sess->upf_n3_addr, &sess->upf_n3_addr6);
-            if (resource->info.teidri)
-                sess->upf_n3_teid = OGS_PFCP_GTPU_INDEX_TO_TEID(
-                        sess->index, resource->info.teidri,
-                        resource->info.teid_range);
-            else
-                sess->upf_n3_teid = sess->index;
-        } else {
-            if (sess->pfcp_node->addr.ogs_sa_family == AF_INET)
-                ogs_copyaddrinfo(&sess->upf_n3_addr, &sess->pfcp_node->addr);
-            else if (sess->pfcp_node->addr.ogs_sa_family == AF_INET6)
-                ogs_copyaddrinfo(&sess->upf_n3_addr6, &sess->pfcp_node->addr);
-            else
-                ogs_assert_if_reached();
-
-            sess->upf_n3_teid = sess->index;
-        }
-
-        ogs_assert(sess->upf_n3_addr || sess->upf_n3_addr6);
-        ogs_pfcp_sockaddr_to_f_teid(sess->upf_n3_addr, sess->upf_n3_addr6,
-                &ul_pdr->f_teid, &ul_pdr->f_teid_len);
-        ul_pdr->f_teid.teid = sess->upf_n3_teid;
-    }
-
-    /* Default PDRs is set to lowest precedence(highest precedence value) */
-    dl_pdr->precedence = 0xffffffff;
-    ul_pdr->precedence = 0xffffffff;
-
-    smf_5gc_pfcp_send_session_establishment_request(sess, stream);
+    smf_sbi_discover_and_send(OpenAPI_nf_type_PCF, sess, stream, NULL,
+            smf_npcf_smpolicycontrol_build_create);
 
     return true;
+
+cleanup:
+    ogs_assert(strerror);
+
+    ogs_error("%s", strerror);
+    ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+            recvmsg, strerror, NULL);
+    ogs_free(strerror);
+
+    return false;
 }

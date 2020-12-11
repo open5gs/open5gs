@@ -148,9 +148,6 @@ void OpenAPI_access_and_mobility_subscription_data_free(OpenAPI_access_and_mobil
     }
     OpenAPI_list_free(access_and_mobility_subscription_data->forbidden_areas);
     OpenAPI_service_area_restriction_free(access_and_mobility_subscription_data->service_area_restriction);
-    OpenAPI_list_for_each(access_and_mobility_subscription_data->core_network_type_restrictions, node) {
-        OpenAPI_core_network_type_free(node->data);
-    }
     OpenAPI_list_free(access_and_mobility_subscription_data->core_network_type_restrictions);
     OpenAPI_sor_info_free(access_and_mobility_subscription_data->sor_info);
     OpenAPI_list_free(access_and_mobility_subscription_data->sor_update_indicator_list);
@@ -356,21 +353,16 @@ cJSON *OpenAPI_access_and_mobility_subscription_data_convertToJSON(OpenAPI_acces
     }
 
     if (access_and_mobility_subscription_data->core_network_type_restrictions) {
-        cJSON *core_network_type_restrictionsList = cJSON_AddArrayToObject(item, "coreNetworkTypeRestrictions");
-        if (core_network_type_restrictionsList == NULL) {
+        cJSON *core_network_type_restrictions = cJSON_AddArrayToObject(item, "coreNetworkTypeRestrictions");
+        if (core_network_type_restrictions == NULL) {
             ogs_error("OpenAPI_access_and_mobility_subscription_data_convertToJSON() failed [core_network_type_restrictions]");
             goto end;
         }
-
         OpenAPI_lnode_t *core_network_type_restrictions_node;
-        if (access_and_mobility_subscription_data->core_network_type_restrictions) {
-            OpenAPI_list_for_each(access_and_mobility_subscription_data->core_network_type_restrictions, core_network_type_restrictions_node) {
-                cJSON *itemLocal = OpenAPI_core_network_type_convertToJSON(core_network_type_restrictions_node->data);
-                if (itemLocal == NULL) {
-                    ogs_error("OpenAPI_access_and_mobility_subscription_data_convertToJSON() failed [core_network_type_restrictions]");
-                    goto end;
-                }
-                cJSON_AddItemToArray(core_network_type_restrictionsList, itemLocal);
+        OpenAPI_list_for_each(access_and_mobility_subscription_data->core_network_type_restrictions, core_network_type_restrictions_node) {
+            if (cJSON_AddStringToObject(core_network_type_restrictions, "", OpenAPI_core_network_type_ToString((OpenAPI_core_network_type_e)core_network_type_restrictions_node->data)) == NULL) {
+                ogs_error("OpenAPI_access_and_mobility_subscription_data_convertToJSON() failed [core_network_type_restrictions]");
+                goto end;
             }
         }
     }
@@ -970,13 +962,12 @@ OpenAPI_access_and_mobility_subscription_data_t *OpenAPI_access_and_mobility_sub
         core_network_type_restrictionsList = OpenAPI_list_create();
 
         cJSON_ArrayForEach(core_network_type_restrictions_local_nonprimitive, core_network_type_restrictions ) {
-            if (!cJSON_IsObject(core_network_type_restrictions_local_nonprimitive)) {
+            if (!cJSON_IsString(core_network_type_restrictions_local_nonprimitive)) {
                 ogs_error("OpenAPI_access_and_mobility_subscription_data_parseFromJSON() failed [core_network_type_restrictions]");
                 goto end;
             }
-            OpenAPI_core_network_type_t *core_network_type_restrictionsItem = OpenAPI_core_network_type_parseFromJSON(core_network_type_restrictions_local_nonprimitive);
 
-            OpenAPI_list_add(core_network_type_restrictionsList, core_network_type_restrictionsItem);
+            OpenAPI_list_add(core_network_type_restrictionsList, (void *)OpenAPI_core_network_type_FromString(core_network_type_restrictions_local_nonprimitive->valuestring));
         }
     }
 

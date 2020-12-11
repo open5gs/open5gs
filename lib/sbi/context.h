@@ -102,8 +102,19 @@ typedef struct ogs_sbi_nf_type_array_s {
     ogs_sbi_nf_instance_t *nf_instance;
 } ogs_sbi_nf_type_array_t[OGS_SBI_MAX_NF_TYPE];
 
+typedef enum {
+    OGS_SBI_OBJ_BASE = 0,
+
+    OGS_SBI_OBJ_UE_TYPE,
+    OGS_SBI_OBJ_SESS_TYPE,
+
+    OGS_SBI_OBJ_TOP,
+} ogs_sbi_obj_type_e;
+
 typedef struct ogs_sbi_object_s {
     ogs_lnode_t lnode;
+
+    ogs_sbi_obj_type_e type;
 
     ogs_sbi_nf_type_array_t nf_type_array;
 

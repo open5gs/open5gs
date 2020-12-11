@@ -303,6 +303,9 @@ int ogs_app_context_parse_config(void)
                 } else if (!strcmp(parameter_key, "no_udm")) {
                     self.parameter.no_udm =
                         ogs_yaml_iter_bool(&parameter_iter);
+                } else if (!strcmp(parameter_key, "no_pcf")) {
+                    self.parameter.no_pcf =
+                        ogs_yaml_iter_bool(&parameter_iter);
                 } else if (!strcmp(parameter_key, "no_udr")) {
                     self.parameter.no_udr =
                         ogs_yaml_iter_bool(&parameter_iter);

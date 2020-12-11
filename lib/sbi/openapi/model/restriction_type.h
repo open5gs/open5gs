@@ -17,16 +17,11 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_restriction_type_s OpenAPI_restriction_type_t;
-typedef struct OpenAPI_restriction_type_s {
-} OpenAPI_restriction_type_t;
+typedef enum { OpenAPI_restriction_type_NULL = 0, OpenAPI_restriction_type_ALLOWED_AREAS, OpenAPI_restriction_type_NOT_ALLOWED_AREAS } OpenAPI_restriction_type_e;
 
-OpenAPI_restriction_type_t *OpenAPI_restriction_type_create(
-    );
-void OpenAPI_restriction_type_free(OpenAPI_restriction_type_t *restriction_type);
-OpenAPI_restriction_type_t *OpenAPI_restriction_type_parseFromJSON(cJSON *restriction_typeJSON);
-cJSON *OpenAPI_restriction_type_convertToJSON(OpenAPI_restriction_type_t *restriction_type);
-OpenAPI_restriction_type_t *OpenAPI_restriction_type_copy(OpenAPI_restriction_type_t *dst, OpenAPI_restriction_type_t *src);
+char* OpenAPI_restriction_type_ToString(OpenAPI_restriction_type_e restriction_type);
+
+OpenAPI_restriction_type_e OpenAPI_restriction_type_FromString(char* restriction_type);
 
 #ifdef __cplusplus
 }

@@ -104,7 +104,6 @@ extern "C" {
 #define OGS_SBI_SERVICE_NAME_NUDM_UECM              "nudm-uecm"
 #define OGS_SBI_RESOURCE_NAME_REGISTRATIONS         "registrations"
 #define OGS_SBI_RESOURCE_NAME_AMF_3GPP_ACCESS       "amf-3gpp-access"
-#define OGS_SBI_RESOURCE_NAME_DEREG_NOTIFY          "dereg-notify"
 
 #define OGS_SBI_SERVICE_NAME_NUDR_DR                "nudr-dr"
 #define OGS_SBI_RESOURCE_NAME_SUBSCRIPTION_DATA     "subscription-data"
@@ -114,6 +113,9 @@ extern "C" {
 #define OGS_SBI_RESOURCE_NAME_AUTHENTICATION_STATUS "authentication-status"
 #define OGS_SBI_RESOURCE_NAME_CONTEXT_DATA          "context-data"
 #define OGS_SBI_RESOURCE_NAME_PROVISIONED_DATA      "provisioned-data"
+#define OGS_SBI_RESOURCE_NAME_POLICY_DATA           "policy-data"
+#define OGS_SBI_RESOURCE_NAME_UES                   "ues"
+#define OGS_SBI_RESOURCE_NAME_AM_DATA               "am-data"
 
 #define OGS_SBI_SERVICE_NAME_NSMF_PDUSESSION        "nsmf-pdusession"
 #define OGS_SBI_RESOURCE_NAME_SM_CONTEXTS           "sm-contexts"
@@ -121,11 +123,22 @@ extern "C" {
 #define OGS_SBI_RESOURCE_NAME_MODIFY                "modify"
 #define OGS_SBI_RESOURCE_NAME_RELEASE               "release"
 
+#define OGS_SBI_SERVICE_NAME_NSMF_CALLBACK          "nsmf-callback"
+#define OGS_SBI_RESOURCE_NAME_SM_POLICY_NOTIFY      "sm-policy-notify"
+
 #define OGS_SBI_SERVICE_NAME_NAMF_COMM              "namf-comm"
-#define OGS_SBI_SERVICE_NAME_NAMF_CALLBACK          "namf-callback"
 #define OGS_SBI_RESOURCE_NAME_UE_CONTEXTS           "ue-contexts"
 #define OGS_SBI_RESOURCE_NAME_N1_N2_MESSAGES        "n1-n2-messages"
+
+#define OGS_SBI_SERVICE_NAME_NAMF_CALLBACK          "namf-callback"
 #define OGS_SBI_RESOURCE_NAME_SM_CONTEXT_STATUS     "sm-context-status"
+#define OGS_SBI_RESOURCE_NAME_AM_POLICY_NOTIFY      "am-policy-notify"
+#define OGS_SBI_RESOURCE_NAME_DEREG_NOTIFY          "dereg-notify"
+
+#define OGS_SBI_SERVICE_NAME_NPCF_AM_POLICY_CONTROL "npcf-am-policy-control"
+#define OGS_SBI_RESOURCE_NAME_POLICIES              "policies"
+#define OGS_SBI_SERVICE_NAME_NPCF_SMPOLICYCONTROL   "npcf-smpolicycontrol"
+#define OGS_SBI_RESOURCE_NAME_SM_POLICIES           "sm-policies"
 
 #define OGS_SBI_PARAM_NF_TYPE                       "nf-type"
 #define OGS_SBI_PARAM_TARGET_NF_TYPE                "target-nf-type"
@@ -133,7 +146,8 @@ extern "C" {
 #define OGS_SBI_PARAM_LIMIT                         "limit"
 #define OGS_SBI_PARAM_DNN                           "dnn"
 #define OGS_SBI_PARAM_PLMN_ID                       "plmn-id"
-#define OGS_SBI_PARAM_S_NSSAI                       "single-nssai"
+#define OGS_SBI_PARAM_SINGLE_NSSAI                  "single-nssai"
+#define OGS_SBI_PARAM_SNSSAI                        "snssai"
 
 #define OGS_SBI_ACCEPT                              "Accept"
 #define OGS_SBI_ACCEPT_ENCODING                     "Accept-Encoding"
@@ -215,8 +229,11 @@ typedef struct ogs_sbi_message_s {
         char *dnn;
         bool plmn_id_presence;
         ogs_plmn_id_t plmn_id;
-        bool s_nssai_presence;
-        ogs_s_nssai_t s_nssai;
+
+        bool single_nssai_presence;
+        ogs_s_nssai_t single_nssai;
+        bool snssai_presence;
+        ogs_s_nssai_t snssai;
     } param;
 
     int res_status;
@@ -254,6 +271,12 @@ typedef struct ogs_sbi_message_s {
     OpenAPI_n1_n2_message_transfer_req_data_t *N1N2MessageTransferReqData;
     OpenAPI_n1_n2_message_transfer_rsp_data_t *N1N2MessageTransferRspData;
     OpenAPI_sm_context_status_notification_t *SmContextStatusNotification;
+    OpenAPI_policy_association_request_t *PolicyAssociationRequest;
+    OpenAPI_policy_association_t *PolicyAssociation;
+    OpenAPI_am_policy_data_t *AmPolicyData;
+    OpenAPI_sm_policy_context_data_t *SmPolicyContextData;
+    OpenAPI_sm_policy_decision_t *SmPolicyDecision;
+    OpenAPI_sm_policy_data_t *SmPolicyData;
 
     ogs_sbi_links_t *links;
 

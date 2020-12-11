@@ -21,12 +21,12 @@ extern "C" {
 typedef struct OpenAPI_ladn_info_s OpenAPI_ladn_info_t;
 typedef struct OpenAPI_ladn_info_s {
     char *ladn;
-    struct OpenAPI_presence_state_s *presence;
+    OpenAPI_presence_state_e presence;
 } OpenAPI_ladn_info_t;
 
 OpenAPI_ladn_info_t *OpenAPI_ladn_info_create(
     char *ladn,
-    OpenAPI_presence_state_t *presence
+    OpenAPI_presence_state_e presence
     );
 void OpenAPI_ladn_info_free(OpenAPI_ladn_info_t *ladn_info);
 OpenAPI_ladn_info_t *OpenAPI_ladn_info_parseFromJSON(cJSON *ladn_infoJSON);

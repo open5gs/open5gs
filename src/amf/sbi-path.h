@@ -23,6 +23,7 @@
 #include "nausf-build.h"
 #include "nudm-build.h"
 #include "nsmf-build.h"
+#include "npcf-build.h"
 
 #ifdef __cplusplus
 extern "C" {

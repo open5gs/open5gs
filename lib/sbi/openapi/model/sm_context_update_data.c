@@ -13,7 +13,7 @@ OpenAPI_sm_context_update_data_t *OpenAPI_sm_context_update_data_create(
     OpenAPI_access_type_e an_type,
     OpenAPI_access_type_e additional_an_type,
     OpenAPI_rat_type_e rat_type,
-    OpenAPI_presence_state_t *presence_in_ladn,
+    OpenAPI_presence_state_e presence_in_ladn,
     OpenAPI_user_location_t *ue_location,
     char *ue_time_zone,
     OpenAPI_user_location_t *add_ue_location,
@@ -127,7 +127,6 @@ void OpenAPI_sm_context_update_data_free(OpenAPI_sm_context_update_data_t *sm_co
         OpenAPI_backup_amf_info_free(node->data);
     }
     OpenAPI_list_free(sm_context_update_data->backup_amf_info);
-    OpenAPI_presence_state_free(sm_context_update_data->presence_in_ladn);
     OpenAPI_user_location_free(sm_context_update_data->ue_location);
     ogs_free(sm_context_update_data->ue_time_zone);
     OpenAPI_user_location_free(sm_context_update_data->add_ue_location);
@@ -261,13 +260,7 @@ cJSON *OpenAPI_sm_context_update_data_convertToJSON(OpenAPI_sm_context_update_da
     }
 
     if (sm_context_update_data->presence_in_ladn) {
-        cJSON *presence_in_ladn_local_JSON = OpenAPI_presence_state_convertToJSON(sm_context_update_data->presence_in_ladn);
-        if (presence_in_ladn_local_JSON == NULL) {
-            ogs_error("OpenAPI_sm_context_update_data_convertToJSON() failed [presence_in_ladn]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "presenceInLadn", presence_in_ladn_local_JSON);
-        if (item->child == NULL) {
+        if (cJSON_AddStringToObject(item, "presenceInLadn", OpenAPI_presence_state_ToString(sm_context_update_data->presence_in_ladn)) == NULL) {
             ogs_error("OpenAPI_sm_context_update_data_convertToJSON() failed [presence_in_ladn]");
             goto end;
         }
@@ -787,9 +780,13 @@ OpenAPI_sm_context_update_data_t *OpenAPI_sm_context_update_data_parseFromJSON(c
 
     cJSON *presence_in_ladn = cJSON_GetObjectItemCaseSensitive(sm_context_update_dataJSON, "presenceInLadn");
 
-    OpenAPI_presence_state_t *presence_in_ladn_local_nonprim = NULL;
+    OpenAPI_presence_state_e presence_in_ladnVariable;
     if (presence_in_ladn) {
-        presence_in_ladn_local_nonprim = OpenAPI_presence_state_parseFromJSON(presence_in_ladn);
+        if (!cJSON_IsString(presence_in_ladn)) {
+            ogs_error("OpenAPI_sm_context_update_data_parseFromJSON() failed [presence_in_ladn]");
+            goto end;
+        }
+        presence_in_ladnVariable = OpenAPI_presence_state_FromString(presence_in_ladn->valuestring);
     }
 
     cJSON *ue_location = cJSON_GetObjectItemCaseSensitive(sm_context_update_dataJSON, "ueLocation");
@@ -1208,7 +1205,7 @@ OpenAPI_sm_context_update_data_t *OpenAPI_sm_context_update_data_parseFromJSON(c
         an_type ? an_typeVariable : 0,
         additional_an_type ? additional_an_typeVariable : 0,
         rat_type ? rat_typeVariable : 0,
-        presence_in_ladn ? presence_in_ladn_local_nonprim : NULL,
+        presence_in_ladn ? presence_in_ladnVariable : 0,
         ue_location ? ue_location_local_nonprim : NULL,
         ue_time_zone ? ogs_strdup(ue_time_zone->valuestring) : NULL,
         add_ue_location ? add_ue_location_local_nonprim : NULL,

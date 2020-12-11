@@ -37,8 +37,9 @@ ogs_sbi_request_t *smf_nudm_sdm_build_get(smf_sess_t *sess, void *data)
     message.h.resource.component[0] = smf_ue->supi;
     message.h.resource.component[1] = data;
 
-    message.param.s_nssai_presence = true;
-    memcpy(&message.param.s_nssai, &sess->s_nssai, sizeof(sess->s_nssai));
+    message.param.single_nssai_presence = true;
+    memcpy(&message.param.single_nssai, &sess->s_nssai,
+            sizeof(message.param.single_nssai));
 
     if (sess->dnn)
         message.param.dnn = sess->dnn;

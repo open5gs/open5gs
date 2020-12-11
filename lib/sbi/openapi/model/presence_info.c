@@ -6,7 +6,7 @@
 
 OpenAPI_presence_info_t *OpenAPI_presence_info_create(
     char *pra_id,
-    OpenAPI_presence_state_t *presence_state,
+    OpenAPI_presence_state_e presence_state,
     OpenAPI_list_t *tracking_area_list,
     OpenAPI_list_t *ecgi_list,
     OpenAPI_list_t *ncgi_list,
@@ -36,7 +36,6 @@ void OpenAPI_presence_info_free(OpenAPI_presence_info_t *presence_info)
     }
     OpenAPI_lnode_t *node;
     ogs_free(presence_info->pra_id);
-    OpenAPI_presence_state_free(presence_info->presence_state);
     OpenAPI_list_for_each(presence_info->tracking_area_list, node) {
         OpenAPI_tai_free(node->data);
     }
@@ -78,13 +77,7 @@ cJSON *OpenAPI_presence_info_convertToJSON(OpenAPI_presence_info_t *presence_inf
     }
 
     if (presence_info->presence_state) {
-        cJSON *presence_state_local_JSON = OpenAPI_presence_state_convertToJSON(presence_info->presence_state);
-        if (presence_state_local_JSON == NULL) {
-            ogs_error("OpenAPI_presence_info_convertToJSON() failed [presence_state]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "presenceState", presence_state_local_JSON);
-        if (item->child == NULL) {
+        if (cJSON_AddStringToObject(item, "presenceState", OpenAPI_presence_state_ToString(presence_info->presence_state)) == NULL) {
             ogs_error("OpenAPI_presence_info_convertToJSON() failed [presence_state]");
             goto end;
         }
@@ -208,9 +201,13 @@ OpenAPI_presence_info_t *OpenAPI_presence_info_parseFromJSON(cJSON *presence_inf
 
     cJSON *presence_state = cJSON_GetObjectItemCaseSensitive(presence_infoJSON, "presenceState");
 
-    OpenAPI_presence_state_t *presence_state_local_nonprim = NULL;
+    OpenAPI_presence_state_e presence_stateVariable;
     if (presence_state) {
-        presence_state_local_nonprim = OpenAPI_presence_state_parseFromJSON(presence_state);
+        if (!cJSON_IsString(presence_state)) {
+            ogs_error("OpenAPI_presence_info_parseFromJSON() failed [presence_state]");
+            goto end;
+        }
+        presence_stateVariable = OpenAPI_presence_state_FromString(presence_state->valuestring);
     }
 
     cJSON *tracking_area_list = cJSON_GetObjectItemCaseSensitive(presence_infoJSON, "trackingAreaList");
@@ -330,7 +327,7 @@ OpenAPI_presence_info_t *OpenAPI_presence_info_parseFromJSON(cJSON *presence_inf
 
     presence_info_local_var = OpenAPI_presence_info_create (
         pra_id ? ogs_strdup(pra_id->valuestring) : NULL,
-        presence_state ? presence_state_local_nonprim : NULL,
+        presence_state ? presence_stateVariable : 0,
         tracking_area_list ? tracking_area_listList : NULL,
         ecgi_list ? ecgi_listList : NULL,
         ncgi_list ? ncgi_listList : NULL,

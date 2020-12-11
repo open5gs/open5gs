@@ -75,6 +75,9 @@ void udm_terminate(void);
 int ausf_initialize(void);
 void ausf_terminate(void);
 
+int pcf_initialize(void);
+void pcf_terminate(void);
+
 int upf_initialize(void);
 void upf_terminate(void);
 

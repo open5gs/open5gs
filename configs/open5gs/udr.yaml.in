@@ -43,9 +43,9 @@ logger:
 #          key: udr.key
 #          pem: udr.pem
 #
-#  o SBI Server(https://127.0.0.13:443, http://[::1]:80)
+#  o SBI Server(https://127.0.0.20:443, http://[::1]:80)
 #    sbi:
-#      - addr: 127.0.0.13
+#      - addr: 127.0.0.20
 #        tls:
 #          key: udr.key
 #          pem: udr.pem
@@ -55,9 +55,9 @@ logger:
 #    sbi:
 #      name: udr.open5gs.org
 #
-#  o SBI Server(http://127.0.0.13:7777)
+#  o SBI Server(http://127.0.0.20:7777)
 #    sbi:
-#      - addr: 127.0.0.13
+#      - addr: 127.0.0.20
 #        port: 7777
 #
 #  o SBI Server(http://<eth0 IP address>:80)
@@ -66,7 +66,7 @@ logger:
 #
 udr:
     sbi:
-      - addr: 127.0.0.13
+      - addr: 127.0.0.20
         port: 7777
 
 #

@@ -5,7 +5,7 @@
 #include "service_area_restriction.h"
 
 OpenAPI_service_area_restriction_t *OpenAPI_service_area_restriction_create(
-    OpenAPI_restriction_type_t *restriction_type,
+    OpenAPI_restriction_type_e restriction_type,
     OpenAPI_list_t *areas,
     int max_num_of_t_as,
     int max_num_of_t_as_for_not_allowed_areas
@@ -29,7 +29,6 @@ void OpenAPI_service_area_restriction_free(OpenAPI_service_area_restriction_t *s
         return;
     }
     OpenAPI_lnode_t *node;
-    OpenAPI_restriction_type_free(service_area_restriction->restriction_type);
     OpenAPI_list_for_each(service_area_restriction->areas, node) {
         OpenAPI_area_free(node->data);
     }
@@ -48,13 +47,7 @@ cJSON *OpenAPI_service_area_restriction_convertToJSON(OpenAPI_service_area_restr
 
     item = cJSON_CreateObject();
     if (service_area_restriction->restriction_type) {
-        cJSON *restriction_type_local_JSON = OpenAPI_restriction_type_convertToJSON(service_area_restriction->restriction_type);
-        if (restriction_type_local_JSON == NULL) {
-            ogs_error("OpenAPI_service_area_restriction_convertToJSON() failed [restriction_type]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "restrictionType", restriction_type_local_JSON);
-        if (item->child == NULL) {
+        if (cJSON_AddStringToObject(item, "restrictionType", OpenAPI_restriction_type_ToString(service_area_restriction->restriction_type)) == NULL) {
             ogs_error("OpenAPI_service_area_restriction_convertToJSON() failed [restriction_type]");
             goto end;
         }
@@ -103,9 +96,13 @@ OpenAPI_service_area_restriction_t *OpenAPI_service_area_restriction_parseFromJS
     OpenAPI_service_area_restriction_t *service_area_restriction_local_var = NULL;
     cJSON *restriction_type = cJSON_GetObjectItemCaseSensitive(service_area_restrictionJSON, "restrictionType");
 
-    OpenAPI_restriction_type_t *restriction_type_local_nonprim = NULL;
+    OpenAPI_restriction_type_e restriction_typeVariable;
     if (restriction_type) {
-        restriction_type_local_nonprim = OpenAPI_restriction_type_parseFromJSON(restriction_type);
+        if (!cJSON_IsString(restriction_type)) {
+            ogs_error("OpenAPI_service_area_restriction_parseFromJSON() failed [restriction_type]");
+            goto end;
+        }
+        restriction_typeVariable = OpenAPI_restriction_type_FromString(restriction_type->valuestring);
     }
 
     cJSON *areas = cJSON_GetObjectItemCaseSensitive(service_area_restrictionJSON, "areas");
@@ -150,7 +147,7 @@ OpenAPI_service_area_restriction_t *OpenAPI_service_area_restriction_parseFromJS
     }
 
     service_area_restriction_local_var = OpenAPI_service_area_restriction_create (
-        restriction_type ? restriction_type_local_nonprim : NULL,
+        restriction_type ? restriction_typeVariable : 0,
         areas ? areasList : NULL,
         max_num_of_t_as ? max_num_of_t_as->valuedouble : 0,
         max_num_of_t_as_for_not_allowed_areas ? max_num_of_t_as_for_not_allowed_areas->valuedouble : 0

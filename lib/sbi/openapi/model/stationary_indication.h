@@ -1,7 +1,7 @@
 /*
  * stationary_indication.h
  *
- * Possible values are - STATIONARY: Identifies the UE is stationary - MOBILE: Identifies the UE is mobile
+ *
  */
 
 #ifndef _OpenAPI_stationary_indication_H_
@@ -17,16 +17,11 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_stationary_indication_s OpenAPI_stationary_indication_t;
-typedef struct OpenAPI_stationary_indication_s {
-} OpenAPI_stationary_indication_t;
+typedef enum { OpenAPI_stationary_indication_NULL = 0, OpenAPI_stationary_indication_STATIONARY, OpenAPI_stationary_indication_MOBILE } OpenAPI_stationary_indication_e;
 
-OpenAPI_stationary_indication_t *OpenAPI_stationary_indication_create(
-    );
-void OpenAPI_stationary_indication_free(OpenAPI_stationary_indication_t *stationary_indication);
-OpenAPI_stationary_indication_t *OpenAPI_stationary_indication_parseFromJSON(cJSON *stationary_indicationJSON);
-cJSON *OpenAPI_stationary_indication_convertToJSON(OpenAPI_stationary_indication_t *stationary_indication);
-OpenAPI_stationary_indication_t *OpenAPI_stationary_indication_copy(OpenAPI_stationary_indication_t *dst, OpenAPI_stationary_indication_t *src);
+char* OpenAPI_stationary_indication_ToString(OpenAPI_stationary_indication_e stationary_indication);
+
+OpenAPI_stationary_indication_e OpenAPI_stationary_indication_FromString(char* stationary_indication);
 
 #ifdef __cplusplus
 }

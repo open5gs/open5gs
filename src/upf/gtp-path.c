@@ -237,8 +237,10 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
 
         dev = subnet->dev;
         ogs_assert(dev);
-        if (ogs_write(dev->fd, pkbuf->data, pkbuf->len) <= 0)
-            ogs_error("ogs_write() failed");
+        if (ogs_write(dev->fd, pkbuf->data, pkbuf->len) <= 0) {
+            ogs_log_message(OGS_LOG_ERROR,
+                    ogs_socket_errno, "ogs_write() failed");
+        }
     } else {
         ogs_error("[DROP] Invalid GTPU Type [%d]", gtp_h->type);
         ogs_log_hexdump(OGS_LOG_ERROR, pkbuf->data, pkbuf->len);

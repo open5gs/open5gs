@@ -21,14 +21,14 @@ extern "C" {
 
 typedef struct OpenAPI_service_area_restriction_s OpenAPI_service_area_restriction_t;
 typedef struct OpenAPI_service_area_restriction_s {
-    struct OpenAPI_restriction_type_s *restriction_type;
+    OpenAPI_restriction_type_e restriction_type;
     OpenAPI_list_t *areas;
     int max_num_of_t_as;
     int max_num_of_t_as_for_not_allowed_areas;
 } OpenAPI_service_area_restriction_t;
 
 OpenAPI_service_area_restriction_t *OpenAPI_service_area_restriction_create(
-    OpenAPI_restriction_type_t *restriction_type,
+    OpenAPI_restriction_type_e restriction_type,
     OpenAPI_list_t *areas,
     int max_num_of_t_as,
     int max_num_of_t_as_for_not_allowed_areas

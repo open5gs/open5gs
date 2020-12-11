@@ -32,6 +32,7 @@ open5gs_conf = '''
     ausf.yaml
     udm.yaml
     udr.yaml
+    pcf.yaml
 '''.split()
 
 foreach file : open5gs_conf

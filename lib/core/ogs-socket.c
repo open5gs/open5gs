@@ -189,32 +189,16 @@ ogs_sock_t *ogs_sock_accept(ogs_sock_t *sock)
 
 ssize_t ogs_write(ogs_socket_t fd, const void *buf, size_t len)
 {
-    ssize_t size;
-
     ogs_assert(fd != INVALID_SOCKET);
 
-    size = write(fd, buf, len);
-    if (size < 0) {
-        ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,
-                "ogs_write(len:%d) failed", (int)size);
-    }
-
-    return size;
+    return write(fd, buf, len);
 }
 
 ssize_t ogs_read(ogs_socket_t fd, void *buf, size_t len)
 {
-    ssize_t size;
-
     ogs_assert(fd != INVALID_SOCKET);
 
-    size = read(fd, buf, len);
-    if (size < 0) {
-        ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,
-                "ogs_read(len:%d) failed", (int)size);
-    }
-
-    return size;
+    return read(fd, buf, len);
 }
 
 ssize_t ogs_send(ogs_socket_t fd, const void *buf, size_t len, int flags)

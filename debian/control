@@ -187,6 +187,18 @@ Description: UDM (Unified Data Management)
  .
  This package provides the UDM (Unified Data Managemement)
 
+Package: open5gs-pcf
+Architecture: any
+Multi-Arch: same
+Depends: ${shlibs:Depends},
+         ${misc:Depends},
+         open5gs-common (= ${binary:Version})
+Description: PCF (Policy Control Function)
+ Open5GS is a C-language implementation of 5G Core and EPC
+ Packet Core, i.e. the core network of an NR/LTE network (Release-16)
+ .
+ This package provides the PCF (Policy Control Function)
+
 Package: open5gs-udr
 Architecture: any
 Multi-Arch: same
@@ -215,6 +227,7 @@ Depends: ${misc:Depends},
          open5gs-nrf (= ${binary:Version}),
          open5gs-ausf (= ${binary:Version}),
          open5gs-udm (= ${binary:Version}),
+         open5gs-pcf (= ${binary:Version}),
          open5gs-udr (= ${binary:Version})
 Description: 5G Core and EPC (metapackage)
  Open5GS is a C-language implementation of 5G Core and EPC

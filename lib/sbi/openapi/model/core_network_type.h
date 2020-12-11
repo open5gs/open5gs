@@ -17,16 +17,11 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_core_network_type_s OpenAPI_core_network_type_t;
-typedef struct OpenAPI_core_network_type_s {
-} OpenAPI_core_network_type_t;
+typedef enum { OpenAPI_core_network_type_NULL = 0, OpenAPI_core_network_type__5GC, OpenAPI_core_network_type_EPC } OpenAPI_core_network_type_e;
 
-OpenAPI_core_network_type_t *OpenAPI_core_network_type_create(
-    );
-void OpenAPI_core_network_type_free(OpenAPI_core_network_type_t *core_network_type);
-OpenAPI_core_network_type_t *OpenAPI_core_network_type_parseFromJSON(cJSON *core_network_typeJSON);
-cJSON *OpenAPI_core_network_type_convertToJSON(OpenAPI_core_network_type_t *core_network_type);
-OpenAPI_core_network_type_t *OpenAPI_core_network_type_copy(OpenAPI_core_network_type_t *dst, OpenAPI_core_network_type_t *src);
+char* OpenAPI_core_network_type_ToString(OpenAPI_core_network_type_e core_network_type);
+
+OpenAPI_core_network_type_e OpenAPI_core_network_type_FromString(char* core_network_type);
 
 #ifdef __cplusplus
 }

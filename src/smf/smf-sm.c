@@ -387,6 +387,21 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
             END
             break;
 
+        CASE(OGS_SBI_SERVICE_NAME_NSMF_CALLBACK)
+            SWITCH(sbi_message.h.resource.component[1])
+            CASE(OGS_SBI_RESOURCE_NAME_SM_POLICY_NOTIFY)
+                /* TODO */
+
+            DEFAULT
+                ogs_error("Invalid resource name [%s]",
+                        sbi_message.h.resource.component[1]);
+                ogs_sbi_server_send_error(stream,
+                        OGS_SBI_HTTP_STATUS_BAD_REQUEST, &sbi_message,
+                        "Invalid resource name",
+                        sbi_message.h.resource.component[1]);
+            END
+            break;
+
         DEFAULT
             ogs_error("Invalid API name [%s]", sbi_message.h.service.name);
             ogs_sbi_server_send_error(stream,
@@ -508,6 +523,7 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
             break;
 
         CASE(OGS_SBI_SERVICE_NAME_NUDM_SDM)
+        CASE(OGS_SBI_SERVICE_NAME_NPCF_SMPOLICYCONTROL)
         CASE(OGS_SBI_SERVICE_NAME_NAMF_COMM)
             sbi_xact = e->sbi.data;
             ogs_assert(sbi_xact);

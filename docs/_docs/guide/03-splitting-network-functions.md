@@ -33,7 +33,8 @@ PCRF-frDi = 127.0.0.9 :3868 for Gx auth
 NRF-sbi   = 127.0.0.10:7777 for 5G SBI
 AUSF-sbi  = 127.0.0.11:7777 for 5G SBI
 UDM-sbi   = 127.0.0.12:7777 for 5G SBI
-UDR-sbi   = 127.0.0.13:7777 for 5G SBI
+PCF-sbi   = 127.0.0.12:7777 for 5G SBI
+UDR-sbi   = 127.0.0.20:7777 for 5G SBI
 ```
 
 _Cloud Userplane Server (to host IMS etc)_

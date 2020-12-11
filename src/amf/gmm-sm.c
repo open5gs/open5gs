@@ -26,6 +26,7 @@
 #include "nausf-handler.h"
 #include "nsmf-handler.h"
 #include "nudm-handler.h"
+#include "npcf-handler.h"
 #include "sbi-path.h"
 #include "amf-sm.h"
 
@@ -700,6 +701,7 @@ void gmm_state_security_mode(ogs_fsm_t *s, amf_event_t *e)
 #endif
             } else {
                 ogs_fatal("Invalid OGS_NAS_5GS[%d]", amf_ue->nas.message_type);
+                ogs_assert_if_reached();
             }
             break;
         case OGS_NAS_5GS_SECURITY_MODE_REJECT:
@@ -862,6 +864,7 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
             SWITCH(sbi_message->h.resource.component[1])
             CASE(OGS_SBI_RESOURCE_NAME_AM_DATA)
             CASE(OGS_SBI_RESOURCE_NAME_SMF_SELECT_DATA)
+            CASE(OGS_SBI_RESOURCE_NAME_UE_CONTEXT_IN_SMF_DATA)
                 if (sbi_message->res_status != OGS_SBI_HTTP_STATUS_OK) {
                     ogs_error("[%s] HTTP response error [%d]",
                             amf_ue->supi, sbi_message->res_status);
@@ -873,7 +876,26 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
 
                 amf_nudm_sdm_handle_provisioned(amf_ue, sbi_message);
                 break;
-            CASE(OGS_SBI_RESOURCE_NAME_UE_CONTEXT_IN_SMF_DATA)
+
+            DEFAULT
+                ogs_error("Invalid resource name [%s]",
+                        sbi_message->h.resource.component[1]);
+                ogs_assert_if_reached();
+            END
+            break;
+
+        CASE(OGS_SBI_SERVICE_NAME_NPCF_AM_POLICY_CONTROL)
+            SWITCH(sbi_message->h.resource.component[0])
+            CASE(OGS_SBI_RESOURCE_NAME_POLICIES)
+                rv = amf_npcf_am_policy_control_handle_create(
+                        amf_ue, sbi_message);
+                if (rv != OGS_OK) {
+                    ogs_error("amf_npcf_am_policy_control_handle_create() "
+                            "failed");
+                    OGS_FSM_TRAN(&amf_ue->sm, &gmm_state_exception);
+                    break;
+                }
+
                 /*
                  * Issues #553
                  *
@@ -908,7 +930,7 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
 
             DEFAULT
                 ogs_error("Invalid resource name [%s]",
-                        sbi_message->h.resource.component[1]);
+                        sbi_message->h.resource.component[0]);
                 ogs_assert_if_reached();
             END
             break;
@@ -916,7 +938,6 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
         DEFAULT
             ogs_error("Invalid service name [%s]", sbi_message->h.service.name);
             ogs_assert_if_reached();
-
         END
         break;
 

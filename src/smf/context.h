@@ -224,6 +224,10 @@ typedef struct smf_sess_s {
         ogs_sbi_client_t *client;
     } namf;
 
+    /* PCF sends the RESPONSE
+     * of [POST] /npcf-smpolocycontrol/v1/policies */
+    char *policy_association_id;
+
     /* PLMN ID & NID */
     ogs_plmn_id_t   plmn_id;
 

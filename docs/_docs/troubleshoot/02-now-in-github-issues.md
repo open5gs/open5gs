@@ -56,6 +56,7 @@ $ open5gs-nrfd
 $ open5gs-amfd
 $ open5gs-ausfd
 $ open5gs-udmd
+$ open5gs-pcfd
 $ open5gs-udrd
 ```
 
@@ -254,6 +255,7 @@ $ sudo pkill -9 open5gs-pcrfd
 $ sudo pkill -9 open5gs-nrfd
 $ sudo pkill -9 open5gs-ausfd
 $ sudo pkill -9 open5gs-udmd
+$ sudo pkill -9 open5gs-pcfd
 $ sudo pkill -9 open5gs-udrd
 ```
 
@@ -721,7 +723,8 @@ Currently, the number of UE is limited to `128*128`.
 * NRF : 127.0.0.10
 * AUSF : 127.0.0.11
 * UDM : 127.0.0.12
-* UDR : 127.0.0.13
+* PCF : 127.0.0.13
+* UDR : 127.0.0.20
 ```
 
 - AMF_ID, TAC and S_NSSAI

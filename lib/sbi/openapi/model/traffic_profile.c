@@ -4,82 +4,27 @@
 #include <stdio.h>
 #include "traffic_profile.h"
 
-OpenAPI_traffic_profile_t *OpenAPI_traffic_profile_create(
-    )
+char* OpenAPI_traffic_profile_ToString(OpenAPI_traffic_profile_e traffic_profile)
 {
-    OpenAPI_traffic_profile_t *traffic_profile_local_var = OpenAPI_malloc(sizeof(OpenAPI_traffic_profile_t));
-    if (!traffic_profile_local_var) {
-        return NULL;
-    }
-
-    return traffic_profile_local_var;
+    const char *traffic_profileArray[] =  { "NULL", "SINGLE_TRANS_UL", "SINGLE_TRANS_DL", "DUAL_TRANS_UL_FIRST", "DUAL_TRANS_DL_FIRST", "MULTI_TRANS" };
+    size_t sizeofArray = sizeof(traffic_profileArray) / sizeof(traffic_profileArray[0]);
+    if (traffic_profile < sizeofArray)
+        return (char *)traffic_profileArray[traffic_profile];
+    else
+        return (char *)"Unknown";
 }
 
-void OpenAPI_traffic_profile_free(OpenAPI_traffic_profile_t *traffic_profile)
+OpenAPI_traffic_profile_e OpenAPI_traffic_profile_FromString(char* traffic_profile)
 {
-    if (NULL == traffic_profile) {
-        return;
+    int stringToReturn = 0;
+    const char *traffic_profileArray[] =  { "NULL", "SINGLE_TRANS_UL", "SINGLE_TRANS_DL", "DUAL_TRANS_UL_FIRST", "DUAL_TRANS_DL_FIRST", "MULTI_TRANS" };
+    size_t sizeofArray = sizeof(traffic_profileArray) / sizeof(traffic_profileArray[0]);
+    while (stringToReturn < sizeofArray) {
+        if (strcmp(traffic_profile, traffic_profileArray[stringToReturn]) == 0) {
+            return stringToReturn;
+        }
+        stringToReturn++;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(traffic_profile);
-}
-
-cJSON *OpenAPI_traffic_profile_convertToJSON(OpenAPI_traffic_profile_t *traffic_profile)
-{
-    cJSON *item = NULL;
-
-    if (traffic_profile == NULL) {
-        ogs_error("OpenAPI_traffic_profile_convertToJSON() failed [TrafficProfile]");
-        return NULL;
-    }
-
-    item = cJSON_CreateObject();
-end:
-    return item;
-}
-
-OpenAPI_traffic_profile_t *OpenAPI_traffic_profile_parseFromJSON(cJSON *traffic_profileJSON)
-{
-    OpenAPI_traffic_profile_t *traffic_profile_local_var = NULL;
-    traffic_profile_local_var = OpenAPI_traffic_profile_create (
-        );
-
-    return traffic_profile_local_var;
-end:
-    return NULL;
-}
-
-OpenAPI_traffic_profile_t *OpenAPI_traffic_profile_copy(OpenAPI_traffic_profile_t *dst, OpenAPI_traffic_profile_t *src)
-{
-    cJSON *item = NULL;
-    char *content = NULL;
-
-    ogs_assert(src);
-    item = OpenAPI_traffic_profile_convertToJSON(src);
-    if (!item) {
-        ogs_error("OpenAPI_traffic_profile_convertToJSON() failed");
-        return NULL;
-    }
-
-    content = cJSON_Print(item);
-    cJSON_Delete(item);
-
-    if (!content) {
-        ogs_error("cJSON_Print() failed");
-        return NULL;
-    }
-
-    item = cJSON_Parse(content);
-    ogs_free(content);
-    if (!item) {
-        ogs_error("cJSON_Parse() failed");
-        return NULL;
-    }
-
-    OpenAPI_traffic_profile_free(dst);
-    dst = OpenAPI_traffic_profile_parseFromJSON(item);
-    cJSON_Delete(item);
-
-    return dst;
+    return 0;
 }
 

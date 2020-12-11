@@ -162,14 +162,52 @@ bool udm_nudm_ueau_handle_get(
 bool udm_nudm_ueau_handle_result_confirmation_inform(
     udm_ue_t *udm_ue, ogs_sbi_stream_t *stream, ogs_sbi_message_t *message)
 {
+    OpenAPI_auth_event_t *AuthEvent = NULL;
+
     ogs_assert(udm_ue);
     ogs_assert(stream);
     ogs_assert(message);
 
-    if (!message->AuthEvent) {
+    AuthEvent = message->AuthEvent;
+    if (!AuthEvent) {
         ogs_error("[%s] No AuthEvent", udm_ue->suci);
         ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
                 message, "No AuthEvent", udm_ue->suci);
+        return false;
+    }
+
+    if (!AuthEvent->nf_instance_id) {
+        ogs_error("[%s] No nfInstanceId", udm_ue->suci);
+        ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                message, "No nfInstanceId", udm_ue->suci);
+        return false;
+    }
+
+    if (!AuthEvent->success) {
+        ogs_error("[%s] No success", udm_ue->suci);
+        ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                message, "No success", udm_ue->suci);
+        return false;
+    }
+
+    if (!AuthEvent->time_stamp) {
+        ogs_error("[%s] No timeStamp", udm_ue->suci);
+        ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                message, "No timeStamp", udm_ue->suci);
+        return false;
+    }
+
+    if (!AuthEvent->auth_type) {
+        ogs_error("[%s] No authType", udm_ue->suci);
+        ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                message, "No authType", udm_ue->suci);
+        return false;
+    }
+
+    if (!AuthEvent->serving_network_name) {
+        ogs_error("[%s] No servingNetworkName", udm_ue->suci);
+        ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                message, "No servingNetworkName", udm_ue->suci);
         return false;
     }
 
@@ -243,12 +281,21 @@ bool udm_nudm_uecm_handle_registration(
         return false;
     }
 
+    if (!Amf3GppAccessRegistration->rat_type) {
+        ogs_error("[%s] No RatType", udm_ue->supi);
+        ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                message, "No RatType", udm_ue->supi);
+        return false;
+    }
+
     if (udm_ue->dereg_callback_uri)
         ogs_free(udm_ue->dereg_callback_uri);
     udm_ue->dereg_callback_uri = ogs_strdup(
             Amf3GppAccessRegistration->dereg_callback_uri);
 
     ogs_sbi_parse_guami(&udm_ue->guami, Guami);
+
+    udm_ue->rat_type = Amf3GppAccessRegistration->rat_type;
 
     udm_ue->amf_3gpp_access_registration =
         OpenAPI_amf3_gpp_access_registration_copy(
@@ -273,7 +320,12 @@ bool udm_nudm_sdm_handle_subscription_provisioned(
 
     SWITCH(recvmsg->h.resource.component[1])
     CASE(OGS_SBI_RESOURCE_NAME_UE_CONTEXT_IN_SMF_DATA)
+        OpenAPI_ue_context_in_smf_data_t UeContextInSmfData;
+
+        memset(&UeContextInSmfData, 0, sizeof(UeContextInSmfData));
+
         memset(&sendmsg, 0, sizeof(sendmsg));
+        sendmsg.UeContextInSmfData = &UeContextInSmfData;
 
         response = ogs_sbi_build_response(&sendmsg, OGS_SBI_HTTP_STATUS_OK);
         ogs_assert(response);

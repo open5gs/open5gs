@@ -140,6 +140,8 @@ typedef struct amf_gnb_s {
         } bplmn_list[OGS_MAX_NUM_OF_BPLMN];
     } supported_ta_list[OGS_MAX_NUM_OF_TAI];
 
+    OpenAPI_rat_type_e rat_type;
+
     ogs_list_t      ran_ue_list;
 
 } amf_gnb_t;
@@ -264,6 +266,10 @@ struct amf_ue_s {
 
     int num_of_requested_nssai;
     ogs_s_nssai_t   requested_nssai[OGS_MAX_NUM_OF_S_NSSAI];
+
+    /* PCF sends the RESPONSE
+     * of [POST] /npcf-am-polocy-control/v1/policies */
+    char *policy_association_id;
 
     /* 5GMM Capability */
     struct {
@@ -497,8 +503,7 @@ void amf_ue_set_suci(amf_ue_t *amf_ue,
         ogs_nas_5gs_mobile_identity_t *mobile_identity);
 void amf_ue_set_supi(amf_ue_t *amf_ue, char *supi);
 
-int amf_ue_have_indirect_tunnel(amf_ue_t *amf_ue);
-int amf_ue_clear_indirect_tunnel(amf_ue_t *amf_ue);
+OpenAPI_rat_type_e amf_ue_rat_type(amf_ue_t *amf_ue);
 
 /* 
  * o RECV Initial UE-Message : S-TMSI

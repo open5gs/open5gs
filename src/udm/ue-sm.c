@@ -35,7 +35,6 @@ void udm_ue_state_final(ogs_fsm_t *s, udm_event_t *e)
 
 void udm_ue_state_operational(ogs_fsm_t *s, udm_event_t *e)
 {
-    bool handled;
     udm_ue_t *udm_ue = NULL;
 
     ogs_sbi_stream_t *stream = NULL;
@@ -174,36 +173,11 @@ void udm_ue_state_operational(ogs_fsm_t *s, udm_event_t *e)
             CASE(OGS_SBI_RESOURCE_NAME_SUBSCRIPTION_DATA)
                 SWITCH(message->h.resource.component[2])
                 CASE(OGS_SBI_RESOURCE_NAME_AUTHENTICATION_DATA)
-                    if (message->res_status != OGS_SBI_HTTP_STATUS_OK &&
-                        message->res_status != OGS_SBI_HTTP_STATUS_NO_CONTENT) {
-                        if (message->res_status ==
-                                OGS_SBI_HTTP_STATUS_NOT_FOUND) {
-                            ogs_warn("[%s] Cannot find SUPI [%d]",
-                                udm_ue->suci, message->res_status);
-                        } else {
-                            ogs_error("[%s] HTTP response error [%d]",
-                                udm_ue->suci, message->res_status);
-                        }
-                        ogs_sbi_server_send_error(
-                            stream, message->res_status,
-                            NULL, "HTTP response error", udm_ue->suci);
-                        break;
-                    }
-
                     udm_nudr_dr_handle_subscription_authentication(
                             udm_ue, stream, message);
                     break;
 
                 CASE(OGS_SBI_RESOURCE_NAME_CONTEXT_DATA)
-                    if (message->res_status != OGS_SBI_HTTP_STATUS_NO_CONTENT) {
-                        ogs_error("[%s] HTTP response error [%d]",
-                            udm_ue->suci, message->res_status);
-                        ogs_sbi_server_send_error(
-                            stream, message->res_status,
-                            NULL, "HTTP response error", udm_ue->suci);
-                        break;
-                    }
-
                     udm_nudr_dr_handle_subscription_context(
                             udm_ue, stream, message);
                     break;
@@ -211,13 +185,8 @@ void udm_ue_state_operational(ogs_fsm_t *s, udm_event_t *e)
                 DEFAULT
                     SWITCH(message->h.resource.component[3])
                     CASE(OGS_SBI_RESOURCE_NAME_PROVISIONED_DATA)
-                        handled = udm_nudr_dr_handle_subscription_provisioned(
+                        udm_nudr_dr_handle_subscription_provisioned(
                                 udm_ue, stream, message);
-                        if (!handled) {
-                            ogs_sbi_server_send_error(
-                                stream, message->res_status,
-                                NULL, "HTTP response error", udm_ue->suci);
-                        }
                         break;
 
                     DEFAULT

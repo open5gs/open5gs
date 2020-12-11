@@ -58,7 +58,7 @@ OpenAPI_pdu_session_create_data_t *OpenAPI_pdu_session_create_data_create(
     int ma_request_ind,
     int ma_nw_upgrade_ind,
     OpenAPI_list_t *dnai_list,
-    OpenAPI_presence_state_t *presence_in_ladn,
+    OpenAPI_presence_state_e presence_in_ladn,
     OpenAPI_list_t *secondary_rat_usage_info,
     OpenAPI_small_data_rate_status_t *small_data_rate_status,
     OpenAPI_apn_rate_status_t *apn_rate_status,
@@ -179,7 +179,6 @@ void OpenAPI_pdu_session_create_data_free(OpenAPI_pdu_session_create_data_t *pdu
         ogs_free(node->data);
     }
     OpenAPI_list_free(pdu_session_create_data->dnai_list);
-    OpenAPI_presence_state_free(pdu_session_create_data->presence_in_ladn);
     OpenAPI_list_for_each(pdu_session_create_data->secondary_rat_usage_info, node) {
         OpenAPI_secondary_rat_usage_info_free(node->data);
     }
@@ -667,13 +666,7 @@ cJSON *OpenAPI_pdu_session_create_data_convertToJSON(OpenAPI_pdu_session_create_
     }
 
     if (pdu_session_create_data->presence_in_ladn) {
-        cJSON *presence_in_ladn_local_JSON = OpenAPI_presence_state_convertToJSON(pdu_session_create_data->presence_in_ladn);
-        if (presence_in_ladn_local_JSON == NULL) {
-            ogs_error("OpenAPI_pdu_session_create_data_convertToJSON() failed [presence_in_ladn]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "presenceInLadn", presence_in_ladn_local_JSON);
-        if (item->child == NULL) {
+        if (cJSON_AddStringToObject(item, "presenceInLadn", OpenAPI_presence_state_ToString(pdu_session_create_data->presence_in_ladn)) == NULL) {
             ogs_error("OpenAPI_pdu_session_create_data_convertToJSON() failed [presence_in_ladn]");
             goto end;
         }
@@ -1237,9 +1230,13 @@ OpenAPI_pdu_session_create_data_t *OpenAPI_pdu_session_create_data_parseFromJSON
 
     cJSON *presence_in_ladn = cJSON_GetObjectItemCaseSensitive(pdu_session_create_dataJSON, "presenceInLadn");
 
-    OpenAPI_presence_state_t *presence_in_ladn_local_nonprim = NULL;
+    OpenAPI_presence_state_e presence_in_ladnVariable;
     if (presence_in_ladn) {
-        presence_in_ladn_local_nonprim = OpenAPI_presence_state_parseFromJSON(presence_in_ladn);
+        if (!cJSON_IsString(presence_in_ladn)) {
+            ogs_error("OpenAPI_pdu_session_create_data_parseFromJSON() failed [presence_in_ladn]");
+            goto end;
+        }
+        presence_in_ladnVariable = OpenAPI_presence_state_FromString(presence_in_ladn->valuestring);
     }
 
     cJSON *secondary_rat_usage_info = cJSON_GetObjectItemCaseSensitive(pdu_session_create_dataJSON, "secondaryRatUsageInfo");
@@ -1342,7 +1339,7 @@ OpenAPI_pdu_session_create_data_t *OpenAPI_pdu_session_create_data_parseFromJSON
         ma_request_ind ? ma_request_ind->valueint : 0,
         ma_nw_upgrade_ind ? ma_nw_upgrade_ind->valueint : 0,
         dnai_list ? dnai_listList : NULL,
-        presence_in_ladn ? presence_in_ladn_local_nonprim : NULL,
+        presence_in_ladn ? presence_in_ladnVariable : 0,
         secondary_rat_usage_info ? secondary_rat_usage_infoList : NULL,
         small_data_rate_status ? small_data_rate_status_local_nonprim : NULL,
         apn_rate_status ? apn_rate_status_local_nonprim : NULL,

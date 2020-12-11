@@ -202,13 +202,20 @@ static void sess_5gc_timeout(ogs_pfcp_xact_t *xact, void *data)
     case OGS_PFCP_SESSION_MODIFICATION_REQUEST_TYPE:
         strerror = ogs_msprintf("[%s:%d] No PFCP session modification response",
                 smf_ue->supi, sess->psi);
+        ogs_assert(strerror);
+
+        ogs_error("%s", strerror);
         smf_sbi_send_sm_context_update_error(stream,
                 OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT,
                 strerror, NULL, NULL, NULL);
+        ogs_free(strerror);
         break;
     case OGS_PFCP_SESSION_DELETION_REQUEST_TYPE:
         strerror = ogs_msprintf("[%s:%d] No PFCP session deletion response",
                 smf_ue->supi, sess->psi);
+        ogs_assert(strerror);
+
+        ogs_error("%s", strerror);
         ogs_sbi_server_send_error(stream,
                 OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT, NULL, strerror, NULL);
         ogs_free(strerror);
