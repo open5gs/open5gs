@@ -228,6 +228,12 @@ ED2(uint8_t spare:5;,
 #define OGS_PFCP_PDN_TYPE_IPV6                  OGS_PDU_SESSION_TYPE_IPV6
 #define OGS_PFCP_PDN_TYPE_IPV4V6                OGS_PDU_SESSION_TYPE_IPV4V6
 #define OGS_PFCP_PDN_TYPE_NONIP                 OGS_PDU_SESSION_TYPE_NONIP
+
+#define OGS_GTP_PDN_TYPE_IS_VALID(x) \
+        ((x) == OGS_GTP_PDN_TYPE_IPV4 || \
+         (x) == OGS_GTP_PDN_TYPE_IPV6 || \
+         (x) == OGS_GTP_PDN_TYPE_IPV4V6) \
+
     uint8_t pdn_type:3;)
     union {
         /* GTP_PDN_TYPE_IPV4 */

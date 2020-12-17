@@ -213,8 +213,8 @@ ogs_pkbuf_t *esm_build_activate_default_bearer_context_request(
         pdn_address->length = OGS_NAS_PDU_ADDRESS_IPV4V6_LEN;
         ogs_debug("    IPv4v6");
     } else {
-        ogs_error("Unexpected PDN Type %u", pdn_address->pdn_type);
-        return NULL;
+        ogs_fatal("Unexpected PDN Type %u", pdn_address->pdn_type);
+        ogs_assert_if_reached();
     }
 
     if (pdn->ambr.downlink || pdn->ambr.uplink) {

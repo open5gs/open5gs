@@ -126,6 +126,18 @@ void mme_s11_handle_create_session_response(
         cause_value = OGS_GTP_CAUSE_MANDATORY_IE_MISSING;
     }
 
+    if (rsp->pdn_address_allocation.presence) {
+        ogs_paa_t paa;
+
+        memcpy(&paa, rsp->pdn_address_allocation.data,
+                rsp->pdn_address_allocation.len);
+
+        if (!OGS_GTP_PDN_TYPE_IS_VALID(paa.pdn_type)) {
+            ogs_error("Unknown PDN Type[%u]", paa.pdn_type);
+            cause_value = OGS_GTP_CAUSE_MANDATORY_IE_INCORRECT;
+        }
+    }
+
     if (cause_value != OGS_GTP_CAUSE_REQUEST_ACCEPTED) {
         if (sess && SESSION_CONTEXT_IN_ATTACH(sess)) {
             ogs_error("[%s] Attach reject", mme_ue->imsi_bcd);
@@ -195,12 +207,15 @@ void mme_s11_handle_create_session_response(
         mme_ue->csmap = csmap;
 
         if (csmap) {
+            ogs_assert(OGS_GTP_PDN_TYPE_IS_VALID(pdn->paa.pdn_type));
             sgsap_send_location_update_request(mme_ue);
         } else {
+            ogs_assert(OGS_GTP_PDN_TYPE_IS_VALID(pdn->paa.pdn_type));
             nas_eps_send_attach_accept(mme_ue);
         }
 
     } else {
+        ogs_assert(OGS_GTP_PDN_TYPE_IS_VALID(pdn->paa.pdn_type));
         nas_eps_send_activate_default_bearer_context_request(bearer);
     }
 }
