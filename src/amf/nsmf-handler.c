@@ -252,6 +252,10 @@ int amf_nsmf_pdu_session_handle_update_sm_context(
                 nas_send_pdu_session_release_command(sess, n1smbuf, n2smbuf);
                 break;
 
+            case OpenAPI_n2_sm_info_type_PATH_SWITCH_REQ_ACK:
+                break;
+            case OpenAPI_n2_sm_info_type_PATH_SWITCH_REQ_FAIL:
+                break;
             default:
                 ogs_error("Not implemented [%d]",
                         SmContextUpdatedData->n2_sm_info_type);

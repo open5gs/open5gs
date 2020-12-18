@@ -293,6 +293,14 @@ void smf_5gc_n4_handle_session_modification_response(
         /* Only ACTIVING & DEACTIVATED is Included */
         smf_sbi_send_sm_context_updated_data(
                 sess, stream, OpenAPI_up_cnx_state_DEACTIVATED);
+    } else if (flags & OGS_PFCP_MODIFY_UL_ONLY) {    
+        ogs_pkbuf_t *n2smbuf = ngap_build_path_switch_request_ack_transfer(sess);
+        if (n2smbuf) {
+            smf_sbi_send_sm_context_updated_data_with_n1n2buf(sess, stream, NULL, n2smbuf);
+        } else if {
+            smf_sbi_send_sm_context_update_error(stream, status, "No n2 sm buf",
+                    NULL, NULL, NULL);
+        }
     }
 }
 
