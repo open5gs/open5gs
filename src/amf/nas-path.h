@@ -73,6 +73,8 @@ void nas_5gs_send_back_5gsm_message(
         amf_sess_t *sess, ogs_nas_5gmm_cause_t gmm_cause);
 void nas_5gs_send_back_5gsm_message_from_sbi(amf_sess_t *sess, int status);
 
+void nas_send_path_switch_request_ack(amf_sess_t *sess,
+        ogs_pkbuf_t *n2smbuf);
 #if 0
 void nas_5gs_send_tau_accept(
         amf_ue_t *amf_ue, S1AP_ProcedureCode_t procedureCode);

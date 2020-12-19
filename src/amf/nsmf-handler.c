@@ -253,6 +253,10 @@ int amf_nsmf_pdu_session_handle_update_sm_context(
                 break;
 
             case OpenAPI_n2_sm_info_type_PATH_SWITCH_REQ_ACK:
+                n2smbuf = ogs_pkbuf_copy(n2smbuf);
+                ogs_assert(n2smbuf);
+
+                nas_send_path_switch_request_ack(sess, n2smbuf);
                 break;
             case OpenAPI_n2_sm_info_type_PATH_SWITCH_REQ_FAIL:
                 break;

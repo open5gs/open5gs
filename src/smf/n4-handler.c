@@ -24,6 +24,7 @@
 #include "n4-handler.h"
 #include "bearer-binding.h"
 #include "sbi-path.h"
+#include "ngap-build.h"
 
 static uint8_t gtp_cause_from_pfcp(uint8_t pfcp_cause)
 {
@@ -296,10 +297,13 @@ void smf_5gc_n4_handle_session_modification_response(
     } else if (flags & OGS_PFCP_MODIFY_UL_ONLY) {    
         ogs_pkbuf_t *n2smbuf = ngap_build_path_switch_request_ack_transfer(sess);
         if (n2smbuf) {
-            smf_sbi_send_sm_context_updated_data_with_n1n2buf(sess, stream, NULL, n2smbuf);
-        } else if {
-            smf_sbi_send_sm_context_update_error(stream, status, "No n2 sm buf",
-                    NULL, NULL, NULL);
+            smf_sbi_send_sm_context_updated_data_with_n2buf(sess, stream, 
+                OpenAPI_n2_sm_info_type_PATH_SWITCH_REQ_ACK, n2smbuf);
+        } else {
+            n2smbuf = ngap_build_pdu_session_resource_release_command_transfer(
+                NGAP_Cause_PR_radioNetwork, NGAP_CauseRadioNetwork_unspecified);
+            smf_sbi_send_sm_context_updated_data_with_n2buf(sess, stream, 
+                OpenAPI_n2_sm_info_type_PATH_SWITCH_REQ_FAIL, n2smbuf);
         }
     }
 }

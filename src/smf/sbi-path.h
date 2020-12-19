@@ -52,9 +52,9 @@ void smf_sbi_send_sm_context_update_error(
         ogs_sbi_stream_t *stream,
         int status, const char *title, const char *detail,
         ogs_pkbuf_t *n1smbuf, ogs_pkbuf_t *n2smbuf);
-void smf_sbi_send_sm_context_updated_data_with_n1n2buf(
+void smf_sbi_send_sm_context_updated_data_with_n2buf(
         smf_sess_t *sess, ogs_sbi_stream_t *stream,
-        ogs_pkbuf_t *n1smbuf, ogs_pkbuf_t *n2smbuf);
+        OpenAPI_n2_sm_info_type_e n2_sm_info_type, ogs_pkbuf_t *n2smbuf);
 
 void smf_sbi_send_sm_context_status_notify(smf_sess_t *sess);
 

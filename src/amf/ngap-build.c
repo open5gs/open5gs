@@ -2046,7 +2046,7 @@ ogs_pkbuf_t *ngap_build_error_indication(
 
 
 
-ogs_pkbuf_t *ngap_build_path_switch_ack(amf_ue_t *amf_ue)
+ogs_pkbuf_t *ngap_build_path_switch_ack(amf_ue_t *amf_ue, ogs_pkbuf_t *n2smbuf)
 {
     ran_ue_t *ran_ue = NULL;
     amf_sess_t *sess = NULL;
@@ -2122,8 +2122,6 @@ ogs_pkbuf_t *ngap_build_path_switch_ack(amf_ue_t *amf_ue)
         OCTET_STRING_t *transfer = NULL;
 		NGAP_PDUSessionResourceSwitchedItem_t *PDUSessionItem = NULL;
 
-        if (!sess->pdu_session_resource_setup_request_transfer) continue;
-
         if (!PDUSessionResourceSwitchedList) {
 		    ie = CALLOC(1, sizeof(NGAP_PathSwitchRequestAcknowledgeIEs_t));
 		    ASN_SEQUENCE_ADD(&PathSwitchRequestAcknowledge->protocolIEs, ie);
@@ -2143,11 +2141,12 @@ ogs_pkbuf_t *ngap_build_path_switch_ack(amf_ue_t *amf_ue)
         PDUSessionItem->pDUSessionID = sess->psi;
 
         transfer = &PDUSessionItem->pathSwitchRequestAcknowledgeTransfer;
-        transfer->size = sess->pdu_session_resource_setup_request_transfer->len;
+        transfer->size = n2smbuf->len;
         transfer->buf = CALLOC(transfer->size, sizeof(uint8_t));
         memcpy(transfer->buf,
-                sess->pdu_session_resource_setup_request_transfer->data,
+                n2smbuf->data,
                 transfer->size);
+        ogs_pkbuf_free(n2smbuf);
     }
 	
     ogs_debug("    RAN_UE_NGAP_ID[%d] AMF_UE_NGAP_ID[%lld]",
