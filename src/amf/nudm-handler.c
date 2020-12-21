@@ -31,25 +31,17 @@ int amf_nudm_sdm_handle_provisioned(
     SWITCH(recvmsg->h.resource.component[1])
     CASE(OGS_SBI_RESOURCE_NAME_AM_DATA)
         if (recvmsg->AccessAndMobilitySubscriptionData) {
-            OpenAPI_ambr_rm_t *subscribed_ue_ambr =
-                recvmsg->AccessAndMobilitySubscriptionData->
-                    subscribed_ue_ambr;
-            OpenAPI_list_t *gpsiList =
+            OpenAPI_list_t *GpsiList =
                 recvmsg->AccessAndMobilitySubscriptionData->gpsis;
+            OpenAPI_ambr_rm_t *SubscribedUeAmbr =
+                recvmsg->AccessAndMobilitySubscriptionData->subscribed_ue_ambr;
+            OpenAPI_list_t *SubscribedDnnList =
+                recvmsg->AccessAndMobilitySubscriptionData->subscribed_dnn_list;
             OpenAPI_lnode_t *node = NULL;
 
-            if (subscribed_ue_ambr) {
-                amf_ue->subscribed_ue_ambr.uplink =
-                    ogs_sbi_bitrate_from_string(
-                            subscribed_ue_ambr->uplink);
-                amf_ue->subscribed_ue_ambr.downlink =
-                    ogs_sbi_bitrate_from_string(
-                            subscribed_ue_ambr->downlink);
-            }
-
-            if (gpsiList) {
+            if (GpsiList) {
                 amf_ue->num_of_msisdn = 0;
-                OpenAPI_list_for_each(gpsiList, node) {
+                OpenAPI_list_for_each(GpsiList, node) {
                     if (node->data) {
                         char *gpsi = NULL;
 
@@ -69,6 +61,23 @@ int amf_nudm_sdm_handle_provisioned(
                         }
 
                         ogs_free(gpsi);
+                    }
+                }
+            }
+
+            if (SubscribedUeAmbr) {
+                amf_ue->subscribed_ue_ambr.uplink =
+                    ogs_sbi_bitrate_from_string(SubscribedUeAmbr->uplink);
+                amf_ue->subscribed_ue_ambr.downlink =
+                    ogs_sbi_bitrate_from_string(SubscribedUeAmbr->downlink);
+            }
+
+            if (SubscribedDnnList) {
+                OpenAPI_list_for_each(SubscribedDnnList, node) {
+                    if (node->data) {
+                        amf_ue->subscribed_dnn[amf_ue->num_of_subscribed_dnn] =
+                            ogs_strdup(node->data);
+                        amf_ue->num_of_subscribed_dnn++;
                     }
                 }
             }

@@ -255,7 +255,7 @@ static void test1_func(abts_case *tc, void *data)
     /* Send PDU session establishment request */
     sess->ul_nas_transport_param.request_type =
         OGS_NAS_5GS_REQUEST_TYPE_INITIAL;
-    sess->ul_nas_transport_param.dnn = 1;
+    sess->ul_nas_transport_param.dnn = 0;
     sess->ul_nas_transport_param.s_nssai = 1;
 
     gsmbuf = testgsm_build_pdu_session_establishment_request(sess);

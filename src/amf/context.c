@@ -1157,6 +1157,11 @@ void amf_ue_remove(amf_ue_t *amf_ue)
         ogs_free(amf_ue->msisdn[i]);
     }
 
+    for (i = 0; i < amf_ue->num_of_subscribed_dnn; i++) {
+        ogs_assert(amf_ue->subscribed_dnn[i]);
+        ogs_free(amf_ue->subscribed_dnn[i]);
+    }
+
     if (amf_ue->policy_association_id)
         ogs_free(amf_ue->policy_association_id);
 

@@ -342,6 +342,8 @@ struct amf_ue_s {
     uint8_t         selected_int_algorithm;
 
     ogs_bitrate_t   subscribed_ue_ambr; /* UE-AMBR */
+    int             num_of_subscribed_dnn;
+    char            *subscribed_dnn[OGS_MAX_NUM_OF_DNN];
 
 #define CM_CONNECTED(__aMF) \
     ((__aMF) && ((__aMF)->ran_ue != NULL) && ran_ue_cycle((__aMF)->ran_ue))

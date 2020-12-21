@@ -368,46 +368,58 @@ bool udr_nudr_dr_handle_subscription_provisioned(
     CASE(OGS_SBI_RESOURCE_NAME_AM_DATA)
         OpenAPI_access_and_mobility_subscription_data_t
             AccessAndMobilitySubscriptionData;
-        OpenAPI_ambr_rm_t subscribed_ue_ambr;
-        OpenAPI_list_t *gpsiList = NULL;
+        OpenAPI_list_t *GpsiList = NULL;
+        OpenAPI_ambr_rm_t SubscribedUeAmbr;
+        OpenAPI_list_t *SubscribedDnnList = NULL;
         OpenAPI_lnode_t *node = NULL;
 
-        subscribed_ue_ambr.uplink = ogs_sbi_bitrate_to_string(
-                subscription_data.ambr.uplink, OGS_SBI_BITRATE_KBPS);
-        subscribed_ue_ambr.downlink = ogs_sbi_bitrate_to_string(
-                subscription_data.ambr.downlink, OGS_SBI_BITRATE_KBPS);
-
-        gpsiList = OpenAPI_list_create();
+        GpsiList = OpenAPI_list_create();
 
         for (i = 0; i < subscription_data.num_of_msisdn; i++) {
             char *gpsi = ogs_msprintf("%s-%s",
                     OGS_ID_GPSI_TYPE_MSISDN, subscription_data.msisdn[i].bcd);
             ogs_assert(gpsi);
-            OpenAPI_list_add(gpsiList, gpsi);
+            OpenAPI_list_add(GpsiList, gpsi);
+        }
+
+        SubscribedUeAmbr.uplink = ogs_sbi_bitrate_to_string(
+                subscription_data.ambr.uplink, OGS_SBI_BITRATE_KBPS);
+        SubscribedUeAmbr.downlink = ogs_sbi_bitrate_to_string(
+                subscription_data.ambr.downlink, OGS_SBI_BITRATE_KBPS);
+
+        SubscribedDnnList = OpenAPI_list_create();
+        for (i = 0; i < subscription_data.num_of_pdn; i++) {
+            OpenAPI_list_add(SubscribedDnnList, subscription_data.pdn[i].dnn);
         }
 
         memset(&AccessAndMobilitySubscriptionData, 0,
                 sizeof(AccessAndMobilitySubscriptionData));
         AccessAndMobilitySubscriptionData.subscribed_ue_ambr =
-            &subscribed_ue_ambr;
+            &SubscribedUeAmbr;
 
         memset(&sendmsg, 0, sizeof(sendmsg));
         sendmsg.AccessAndMobilitySubscriptionData =
             &AccessAndMobilitySubscriptionData;
 
-        if (gpsiList->count)
-            AccessAndMobilitySubscriptionData.gpsis = gpsiList;
+        if (GpsiList->count)
+            AccessAndMobilitySubscriptionData.gpsis = GpsiList;
+        if (SubscribedDnnList->count)
+            AccessAndMobilitySubscriptionData.subscribed_dnn_list =
+                SubscribedDnnList;
 
         response = ogs_sbi_build_response(&sendmsg, OGS_SBI_HTTP_STATUS_OK);
         ogs_assert(response);
         ogs_sbi_server_send_response(stream, response);
 
-        ogs_free(subscribed_ue_ambr.uplink);
-        ogs_free(subscribed_ue_ambr.downlink);
-        OpenAPI_list_for_each(gpsiList, node) {
+        OpenAPI_list_for_each(GpsiList, node) {
             if (node->data) ogs_free(node->data);
         }
-        OpenAPI_list_free(gpsiList);
+        OpenAPI_list_free(GpsiList);
+
+        ogs_free(SubscribedUeAmbr.uplink);
+        ogs_free(SubscribedUeAmbr.downlink);
+
+        OpenAPI_list_free(SubscribedDnnList);
 
         break;
 

@@ -802,6 +802,17 @@ int gmm_handle_ul_nas_transport(amf_ue_t *amf_ue,
                 sess->dnn = ogs_strdup(dnn->value);
             }
 
+            if (!sess->dnn) {
+                if (amf_ue->num_of_subscribed_dnn) {
+                    sess->dnn = ogs_strdup(amf_ue->subscribed_dnn[0]);
+                }
+            }
+
+            if (!sess->dnn) {
+                ogs_fatal("No DNN : Set default DNN using WebUI");
+                ogs_assert_if_reached();
+            }
+
             amf_sess_sbi_discover_and_send(OpenAPI_nf_type_SMF,
                     sess, AMF_UPDATE_SM_CONTEXT_NO_STATE, NULL,
                     amf_nsmf_pdu_session_build_create_sm_context);
