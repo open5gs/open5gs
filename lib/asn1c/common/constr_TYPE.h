@@ -138,7 +138,7 @@ typedef asn_type_selector_result_t(asn_type_selector_f)(
     const void *parent_structure_ptr);
 
 /*
- * Generalized functions for dealing with the specific type.
+ * Generalized functions for dealing with the speciic type.
  * May be directly invoked by applications.
  */
 typedef struct asn_TYPE_operation_s {
