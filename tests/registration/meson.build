@@ -24,6 +24,7 @@ test5gc_registration_sources = files('''
     identity-test.c
     gmm-status-test.c
     ue-context-test.c
+    amf-xn-test.c
 '''.split())
 
 test5gc_registration_exe = executable('registration',

@@ -399,3 +399,45 @@ void smf_sbi_send_sm_context_status_notify(smf_sess_t *sess)
     ogs_assert(request);
     ogs_sbi_client_send_request(client, client_notify_cb, request, NULL);
 }
+
+void smf_sbi_send_sm_context_updated_data_with_n2buf(
+        smf_sess_t *sess, ogs_sbi_stream_t *stream,
+        OpenAPI_n2_sm_info_type_e n2_sm_info_type, ogs_pkbuf_t *n2smbuf)
+{
+    ogs_sbi_message_t sendmsg;
+    ogs_sbi_response_t *response = NULL;
+    
+    OpenAPI_sm_context_updated_data_t SmContextUpdatedData;
+    OpenAPI_ref_to_binary_data_t n2SmInfo;
+
+    ogs_assert(sess);
+    ogs_assert(stream);
+
+    memset(&sendmsg, 0, sizeof(sendmsg));
+
+    memset(&SmContextUpdatedData, 0, sizeof(SmContextUpdatedData));
+
+    sendmsg.num_of_part = 0;
+
+    sendmsg.SmContextUpdatedData = &SmContextUpdatedData;
+
+    if (n2smbuf) {
+        SmContextUpdatedData.n2_sm_info_type = n2_sm_info_type;
+        SmContextUpdatedData.n2_sm_info = &n2SmInfo;
+        n2SmInfo.content_id = (char *)OGS_SBI_CONTENT_NGAP_SM_ID;
+        sendmsg.part[sendmsg.num_of_part].content_id =
+            (char *)OGS_SBI_CONTENT_NGAP_SM_ID;
+        sendmsg.part[sendmsg.num_of_part].content_type =
+            (char *)OGS_SBI_CONTENT_NGAP_TYPE;
+        sendmsg.part[sendmsg.num_of_part].pkbuf = n2smbuf;
+        sendmsg.num_of_part++;
+    }
+
+    response = ogs_sbi_build_response(&sendmsg, OGS_SBI_HTTP_STATUS_OK);
+    ogs_assert(response);
+
+    ogs_sbi_server_send_response(stream, response);
+
+    if (n2smbuf)
+        ogs_pkbuf_free(n2smbuf);    
+}

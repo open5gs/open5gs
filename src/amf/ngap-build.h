@@ -52,9 +52,8 @@ ogs_pkbuf_t *ngap_build_paging(
 ogs_pkbuf_t *ngap_build_amf_configuration_transfer(
     NGAP_SONConfigurationTransfer_t *son_configuration_transfer);
 
-ogs_pkbuf_t *ngap_build_path_switch_ack(amf_ue_t *amf_ue);
-ogs_pkbuf_t *ngap_build_path_switch_failure(
-    uint32_t ran_ue_ngap_id, uint64_t amf_ue_ngap_id,
+ogs_pkbuf_t *ngap_build_path_switch_ack(amf_ue_t *amf_ue, ogs_pkbuf_t *n2smbuf);
+ogs_pkbuf_t *ngap_build_path_switch_failure(amf_ue_t *amf_ue,
     NGAP_Cause_PR group, long cause);
 
 ogs_pkbuf_t *ngap_build_handover_command(ran_ue_t *source_ue);

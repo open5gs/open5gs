@@ -178,3 +178,37 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_release_command_transfer(
     return ogs_asn_encode(
             &asn_DEF_NGAP_PDUSessionResourceReleaseCommandTransfer, &message);
 }
+
+ogs_pkbuf_t *ngap_build_path_switch_request_ack_transfer(
+        smf_sess_t *sess)
+{
+    smf_bearer_t *qos_flow = NULL;
+    ogs_ip_t upf_n3_ip;
+
+    NGAP_PathSwitchRequestAcknowledgeTransfer_t message;
+
+    NGAP_UPTransportLayerInformation_t *UPTransportLayerInformation = NULL;
+    NGAP_GTPTunnel_t *gTPTunnel = NULL;
+
+    ogs_assert(sess);
+    qos_flow = smf_default_bearer_in_sess(sess);
+    ogs_assert(qos_flow);
+
+    ogs_debug("PathSwitchRequestAcknowledgeTransfer");
+    memset(&message, 0, sizeof(NGAP_PathSwitchRequestAcknowledgeTransfer_t));
+
+    message.uL_NGU_UP_TNLInformation = CALLOC(1, sizeof(NGAP_UPTransportLayerInformation_t));
+    UPTransportLayerInformation = message.uL_NGU_UP_TNLInformation;
+
+    gTPTunnel = CALLOC(1, sizeof(struct NGAP_GTPTunnel));
+    UPTransportLayerInformation->present =
+        NGAP_UPTransportLayerInformation_PR_gTPTunnel;
+    UPTransportLayerInformation->choice.gTPTunnel = gTPTunnel;
+
+    ogs_sockaddr_to_ip(sess->upf_n3_addr, sess->upf_n3_addr6, &upf_n3_ip);
+    ogs_asn_ip_to_BIT_STRING(&upf_n3_ip, &gTPTunnel->transportLayerAddress);
+    ogs_asn_uint32_to_OCTET_STRING(sess->upf_n3_teid, &gTPTunnel->gTP_TEID);
+
+    return ogs_asn_encode(
+            &asn_DEF_NGAP_PathSwitchRequestAcknowledgeTransfer, &message);
+}

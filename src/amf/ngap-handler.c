@@ -1687,6 +1687,26 @@ void ngap_handle_path_switch_request(
         return;
     }
 
+    if (SECURITY_CONTEXT_IS_VALID(amf_ue)) {
+        amf_ue->nhcc++;
+        ogs_kdf_nh_gnb(amf_ue->kamf, amf_ue->kgnb, amf_ue->nh);
+    } else {
+        int rv;
+        ogs_pkbuf_t *ngapbuf = NULL;
+        ogs_assert(gnb);
+
+        ngapbuf = ngap_build_path_switch_failure(amf_ue, 
+                NGAP_Cause_PR_radioNetwork,
+                NGAP_CauseRadioNetwork_handover_cancelled);
+        ogs_expect_or_return(ngapbuf);
+
+        rv = ngap_send_to_ran_ue(ran_ue, ngapbuf);
+        ogs_expect(rv == OGS_OK);
+        return;
+    }
+
+    ran_ue->ran_ue_ngap_id = *RAN_UE_NGAP_ID;
+
     nRencryptionAlgorithms =
         &UESecurityCapabilities->nRencryptionAlgorithms;
     nRintegrityProtectionAlgorithms =
@@ -1770,4 +1790,6 @@ void ngap_handle_path_switch_request(
 
         ogs_pkbuf_free(param.n2smbuf);
     }
+
+    ran_ue_switch_to_gnb(ran_ue, gnb);
 }
