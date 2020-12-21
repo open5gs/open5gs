@@ -343,6 +343,35 @@ static void test1_func(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
+    test_ue->nr_cgi.cell_id = 0x40001;
+    sess->gnb_n3_addr = test_self()->gnb1_addr;
+    sendbuf = testngap_build_path_switch_request(sess);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive path switch request ack */
+    recvbuf = testgnb_ngap_read(ngap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    testngap_recv(test_ue, recvbuf);
+
+    rv = test_gtpu_send_ping(gtpu, qos_flow, TEST_PING_IPV4);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+    
+    /* Receive GTP-U ICMP Packet */
+    recvbuf = testgnb_gtpu_read(gtpu);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    ogs_pkbuf_free(recvbuf);
+
+    /* Send GTP-U ICMP Packet */
+    rv = test_gtpu_send_ping(gtpu, qos_flow, TEST_PING_IPV4);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive GTP-U ICMP Packet */
+    recvbuf = testgnb_gtpu_read(gtpu);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    ogs_pkbuf_free(recvbuf);
+
     /* Send PDU Session release request */
     sess->ul_nas_transport_param.request_type = 0;
     sess->ul_nas_transport_param.dnn = 0;
@@ -355,11 +384,11 @@ static void test1_func(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, gmmbuf);
     sendbuf = testngap_build_uplink_nas_transport(test_ue, gmmbuf);
     ABTS_PTR_NOTNULL(tc, sendbuf);
-    rv = testgnb_ngap_send(tngap, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* Receive PDU session release command */
-    recvbuf = testgnb_ngap_read(tngap);
+    recvbuf = testgnb_ngap_read(ngap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     testngap_recv(test_ue, recvbuf);
 
@@ -367,7 +396,7 @@ static void test1_func(abts_case *tc, void *data)
     sendbuf =
         testngap_build_pdu_session_resource_release_response(sess);
     ABTS_PTR_NOTNULL(tc, sendbuf);
-    rv = testgnb_ngap_send(tngap, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* Send PDU session resource release complete */
@@ -382,7 +411,7 @@ static void test1_func(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, gmmbuf);
     sendbuf = testngap_build_uplink_nas_transport(test_ue, gmmbuf);
     ABTS_PTR_NOTNULL(tc, sendbuf);
-    rv = testgnb_ngap_send(tngap, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* Send De-registration request */
@@ -390,17 +419,17 @@ static void test1_func(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, gmmbuf);
     sendbuf = testngap_build_uplink_nas_transport(test_ue, gmmbuf);
     ABTS_PTR_NOTNULL(tc, sendbuf);
-    rv = testgnb_ngap_send(tngap, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
     /* Receive UE context release command */
-    recvbuf = testgnb_ngap_read(tngap);
+    recvbuf = testgnb_ngap_read(ngap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     testngap_recv(test_ue, recvbuf);
 
     /* Send UE context release complete */
     sendbuf = testngap_build_ue_context_release_complete(test_ue);
     ABTS_PTR_NOTNULL(tc, sendbuf);
-    rv = testgnb_ngap_send(tngap, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /********** Remove Subscriber in Database */

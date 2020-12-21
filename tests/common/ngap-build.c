@@ -1105,6 +1105,13 @@ ogs_pkbuf_t *testngap_build_path_switch_request(test_sess_t *sess)
     test_ue = sess->test_ue;
     ogs_assert(test_ue);
 
+    uint8_t *ip_gtp = NULL;
+    ip_gtp = (uint8_t *)&sess->gnb_n3_addr->sin.sin_addr.s_addr;
+    bits[2] = ip_gtp[0];
+    bits[3] = ip_gtp[1];
+    bits[4] = ip_gtp[2];
+    bits[5] = ip_gtp[3];
+
     memset(&pdu, 0, sizeof (NGAP_NGAP_PDU_t));
     pdu.present = NGAP_NGAP_PDU_PR_initiatingMessage;
     pdu.choice.initiatingMessage = CALLOC(1, sizeof(NGAP_InitiatingMessage_t));
