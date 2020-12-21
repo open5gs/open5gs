@@ -1100,17 +1100,10 @@ ogs_pkbuf_t *testngap_build_path_switch_request(test_sess_t *sess)
     OCTET_STRING_t *transfer = NULL;
     // patch switch reqeust transfer buffer
     uint8_t bits[12] = {0x00, 0x1f, 0x7f, 0x00, 0x00, 0x02, 0x00, 0x00,
-        0x00, 0x01, 0x00, 0x02};
+        0x00, 0x03, 0x00, 0x02};
     ogs_assert(sess);
     test_ue = sess->test_ue;
     ogs_assert(test_ue);
-
-    uint8_t *ip_gtp = NULL;
-    ip_gtp = (uint8_t *)&sess->gnb_n3_addr->sin.sin_addr.s_addr;
-    bits[2] = ip_gtp[0];
-    bits[3] = ip_gtp[1];
-    bits[4] = ip_gtp[2];
-    bits[5] = ip_gtp[3];
 
     memset(&pdu, 0, sizeof (NGAP_NGAP_PDU_t));
     pdu.present = NGAP_NGAP_PDU_PR_initiatingMessage;
