@@ -256,7 +256,10 @@ int ngap_handle_pdu_session_resource_to_be_switched_dl_transfer(
 
     if (far_update) {
         smf_5gc_pfcp_send_qos_flow_modification_request(
-                qos_flow, stream, OGS_PFCP_MODIFY_UL_ONLY | OGS_PFCP_MODIFY_END_MARKER);
+                qos_flow, stream, 
+                OGS_PFCP_MODIFY_ACTIVATE
+                | OGS_PFCP_MODIFY_PATH_SWITCH 
+                | OGS_PFCP_MODIFY_END_MARKER);
     } else {
         /* ACTIVATED Is NOT Inlcuded in RESPONSE */
         smf_sbi_send_sm_context_updated_data(sess, stream, 0);
