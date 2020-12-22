@@ -321,6 +321,11 @@ static void test1_func(abts_case *tc, void *data)
     rv = testgnb_ngap_send(tngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
+    /* Receive End Mark */
+    recvbuf = test_gtpu_read(gtpu);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    ogs_pkbuf_free(recvbuf);
+
     /* Receive path switch request ack */
     recvbuf = testgnb_ngap_read(tngap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
@@ -349,6 +354,11 @@ static void test1_func(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive End Mark */
+    recvbuf = test_gtpu_read(tgtpu);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    ogs_pkbuf_free(recvbuf);
 
     /* Receive path switch request ack */
     recvbuf = testgnb_ngap_read(ngap);

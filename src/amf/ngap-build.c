@@ -2185,7 +2185,7 @@ ogs_pkbuf_t *ngap_build_path_switch_failure(amf_ue_t *amf_ue,
     NGAP_Cause_t *Cause = NULL;
 
     NGAP_PDUSessionResourceReleasedListPSFail_t  *PDUSessionResourceReleasedListPSFail = NULL;
-    NGAP_PathSwitchRequestUnsuccessfulTransfer message;
+    NGAP_PathSwitchRequestUnsuccessfulTransfer_t message;
 
     ogs_assert(amf_ue);
     ran_ue = ran_ue_cycle(amf_ue->ran_ue);
@@ -2248,7 +2248,6 @@ ogs_pkbuf_t *ngap_build_path_switch_failure(amf_ue_t *amf_ue,
     ogs_assert(ngapbuf);
 
     ogs_list_for_each(&amf_ue->sess_list, sess) {
-        OCTET_STRING_t *transfer = NULL;
         NGAP_PDUSessionResourceReleasedItemPSFail_t *PDUSessionItem = NULL;
 
         PDUSessionItem = CALLOC(1,
