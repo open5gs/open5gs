@@ -8,12 +8,13 @@ title: Quickstart
 Welcome! If you want to set up your first Open5GS core you have come to the right place. Before we get started, we'll spend a moment to understand the basic architecture of the software.
 
 **TL;DR:** Open5GS contains a series of software components and network functions that implement the 4G/ 5G NSA and 5G SA core functions. If you know what each of these do already and how they interface with each other, skip to section 2.
-{: .notice--warning}
+{: .notice--info}
 
+![Open5GS Diagram]({{ site.url }}{{ site.baseurl }}/assets/images/Open5GS_CUPS-01.jpg)
+
+[[Higher quality PDF diagram available HERE]]({{ site.url }}{{ site.baseurl }}/assets/images/Open5GS_CUPS-01.pdf)
 
 #### 4G/ 5G NSA Core
-
-<<IMAGE 4G CORE>>
 
 The Open5GS 4G/ 5G NSA Core contains the following components:
 * MME - Mobility Management Entity
@@ -34,8 +35,6 @@ All of these Open5GS components have config files. Each config file contains the
 
 
 #### 5G SA Core
-
-<<IMAGE 5G CORE>>
 
 The Open5GS 5G SA Core contains the following functions:
 * AMF - Access and Mobility Management Function
@@ -150,7 +149,7 @@ https://download.opensuse.org/repositories/network:/osmocom:/nightly/xUbuntu_20.
 The WebUI allows you to interactively edit subscriber data. While it is not essential to use this, it makes things easier when you are just starting out on your Open5GS adventure. (A [command line tool](https://github.com/{{ site.github_username }}/open5gs/blob/master/misc/db/open5gs-dbctl) is available for advanced users).
 
 
-[Node.js](https://nodejs.org/) is required to install WebUI of Open5GS
+[Node.js](https://nodejs.org/) is required to install the WebUI of Open5GS
 
 1. *Debian and Ubuntu* based Linux distributions can install [Node.js](https://nodejs.org/) as follows:
 
@@ -176,7 +175,7 @@ $ curl -sL {{ site.url }}{{ site.baseurl }}/assets/webui/install | sudo -E bash 
 ## 4. Configure Open5GS
 ---
 
-Okay - you have installed the software, now what to do with it? Well, there are some tweaks you will need to make to the config files, and you will need to enter subscriber data into your HSS/ UDR. You will need to set some IP Table rules to bridge the PGWU/UPF to the WAN.
+Okay - you have installed the software, now what to do with it? Well, there are some tweaks you will need to make to the config files, and you will need to enter subscriber data into your HSS/ UDR. You will also need to set some IP Table rules to bridge the PGWU/UPF to the WAN.
 
 Out of the box, the default configurations see all of the Open5GS components fully configured for use on a single computer. They are set to communicate with each other using the local loopback address space (`127.0.0.X`). The default addresses for each of the bind interfaces for these components and functions are as follows:
 
@@ -217,12 +216,12 @@ UDR-sbi   = 127.0.0.20:7777 for 5G SBI
 
 #### Setup a 4G/ 5G NSA Core
 
-You will need to modify your 4G MME to support your PLMN and TAC. The international test PLMN is 001/01, and the international private network PLMN is 999/99. You should stick to using either of these PLMNs unless you have been issued a PLMN by your national regulator. (This PLMN will need to be configured in your eNB).
+You will need to modify your 4G MME config to support your PLMN and TAC. The international test PLMN is 001/01, and the international private network PLMN is 999/99. You should stick to using either of these PLMNs unless you have been issued a PLMN by your national regulator. (This PLMN will need to be configured in your eNB).
 
 If you are aiming to connect an external eNB to your core, you will also need to change the S1AP bind address of the MME **and** the GTP-U bind address of the SGWU. If you are running an eNB stack locally, you will not need to make these changes.
 
 
-Modify [install/etc/open5gs/mme.yaml](https://github.com/{{ site.github_username }}/open5gs/blob/master/configs/open5gs/mme.yaml.in) to set the S1AP IP address, PLMN ID, and TAC.
+Modify [/etc/open5gs/mme.yaml](https://github.com/{{ site.github_username }}/open5gs/blob/master/configs/open5gs/mme.yaml.in) to set the S1AP IP address, PLMN ID, and TAC.
 
 ```diff
 $ diff -u /etc/open5gs/mme.yaml.old /etc/open5gs/mme.yaml
@@ -238,8 +237,8 @@ $ diff -u /etc/open5gs/mme.yaml.old /etc/open5gs/mme.yaml
        plmn_id:
 -        mcc: 901
 -        mnc: 70
-+        mcc: 001
-+        mnc: 01
++        mcc: 001 # set your PLMN-MCC
++        mnc: 01  # set your PLMN-MNC
        mme_gid: 2
        mme_code: 1
      tai:
@@ -247,14 +246,14 @@ $ diff -u /etc/open5gs/mme.yaml.old /etc/open5gs/mme.yaml
 -        mcc: 901
 -        mnc: 70
 -      tac: 1
-+        mcc: 001
-+        mnc: 01
++        mcc: 001 # set your PLMN-MCC
++        mnc: 01  # set your PLMN-MNC
 +      tac: 2 # should match the TAC used by your eNB
      security:
 
 ```
 
-Modify [install/etc/open5gs/sgwu.yaml](https://github.com/{{ site.github_username }}/open5gs/blob/master/configs/open5gs/sgwu.yaml.in) to set the GTP-U IP address.
+Modify [/etc/open5gs/sgwu.yaml](https://github.com/{{ site.github_username }}/open5gs/blob/master/configs/open5gs/sgwu.yaml.in) to set the GTP-U IP address.
 ```diff
 $ diff -u /etc/open5gs/sgwu.yaml.old /etc/open5gs/sgwu.yaml
 
@@ -270,18 +269,18 @@ $ diff -u /etc/open5gs/sgwu.yaml.old /etc/open5gs/sgwu.yaml
 After changing config files, please restart Open5GS daemons.
 
 ```bash
-$ sudo systemctl restart open5gs-mmed.service
-$ sudo systemctl restart open5gs-sgwud.service
+$ sudo systemctl restart open5gs-mmed
+$ sudo systemctl restart open5gs-sgwud
 ```
 
 #### Setup a 5G Core
 
-You will need to modify your 5G AMF to support your PLMN and TAC. The international test PLMN is 001/01, and the international private network PLMN is 999/99. You should stick to using either of these PLMNs unless you have been issued a PLMN by your national regulator. (This PLMN will need to be configured in your gNB).
+You will need to modify your 5G AMF config to support your PLMN and TAC. The international test PLMN is 001/01, and the international private network PLMN is 999/99. You should stick to using either of these PLMNs unless you have been issued a PLMN by your national regulator. (This PLMN will need to be configured in your gNB).
 
 If you are aiming to connect an external gNB to your core, you will also need to change the NGAP bind address of the AMF **and** the GTPU bind address of the UPF. If you are running an gNB stack locally, you will not need to make these changes.
 
 
-Modify [install/etc/open5gs/amf.yaml](https://github.com/{{ site.github_username }}/open5gs/blob/master/configs/open5gs/amf.yaml.in) to set the NGAP IP address, PLMN ID, TAC and NSSAI.
+Modify [/etc/open5gs/amf.yaml](https://github.com/{{ site.github_username }}/open5gs/blob/master/configs/open5gs/amf.yaml.in) to set the NGAP IP address, PLMN ID, TAC and NSSAI.
 
 ```diff
 $ diff -u /etc/open5gs/amf.yaml.old /etc/open5gs/amf.yaml
@@ -297,8 +296,8 @@ amf:
        - plmn_id:
 -          mcc: 901
 -          mnc: 70
-+          mcc: 001
-+          mnc: 01
++          mcc: 001 # set your PLMN-MCC
++          mnc: 01  # set your PLMN-MNC
          amf_id:
            region: 2
            set: 1
@@ -307,22 +306,22 @@ amf:
 -          mcc: 901
 -          mnc: 70
 -        tac: 1
-+          mcc: 001
-+          mnc: 01
++          mcc: 001 # set your PLMN-MCC
++          mnc: 01  # set your PLMN-MNC
 +        tac: 2 # should match the TAC used by your gNB
      plmn:
        - plmn_id:
 -          mcc: 901
 -          mnc: 70
-+          mcc: 001
-+          mnc: 01
++          mcc: 001 # set your PLMN-MCC
++          mnc: 01  # set your PLMN-MNC
          s_nssai:
            - sst: 1
      security:
 
 ```
 
-Modify [install/etc/open5gs/upf.yaml](https://github.com/{{ site.github_username }}/open5gs/blob/master/configs/open5gs/upf.yaml.in) to set the GTP-U address.
+Modify [/etc/open5gs/upf.yaml](https://github.com/{{ site.github_username }}/open5gs/blob/master/configs/open5gs/upf.yaml.in) to set the GTP-U address.
 ```diff
 $ diff -u /etc/open5gs/upf.yaml.old /etc/open5gs/upf.yaml
 
@@ -341,8 +340,8 @@ upf:
 After changing config files, please restart Open5GS daemons.
 
 ```bash
-$ sudo systemctl restart open5gs-amfd.service
-$ sudo systemctl restart open5gs-upfd.service
+$ sudo systemctl restart open5gs-amfd
+$ sudo systemctl restart open5gs-upfd
 ```
 
 
@@ -366,16 +365,16 @@ To add subscriber information, you can do WebUI operations in the following orde
 
 Enter the subscriber details of your SIM cards using this tool, to save the subscriber profile in the HSS and UDR MongoDB database backend. If you are using test SIMs, the details are normally printed on the card.
 
-**Tip:** This addition immediately affects Open5GS without restaring any daemon.
+**Tip:** Subscribers added with this tool immediately register in the Open5GS HSS/ UDR without the need to restart any daemon.
 {: .notice--info}
 
 
-#### Adding a route for the UE to have Internet connectivity {#UEInternet}
+#### Adding a route for the UE to have WAN connectivity {#UEInternet}
 ---
 
-In order to bridge between the PGWU/UPF and WAN, you must enable IP forwarding and add a NAT rule to your IP Tables.
+In order to bridge between the PGWU/UPF and WAN (Internet), you must enable IP forwarding and add a NAT rule to your IP Tables.  
 
-**Note:** For the first time, it is a good condition if you do not have any rules in the IP/NAT tables. If a program such as docker has already set up a rule, you will need to add a rule differently.
+**Note:** For the first run, it makes things simpler if you do not have any rules in the IP/NAT tables. If a program such as docker has already set up a rule, you will need to add rules differently.
 {: .notice--danger}
 
 You can check your current IP Table rules with the following commands (these tables are empty):
@@ -416,14 +415,13 @@ $ sudo iptables -t nat -A POSTROUTING -s 10.45.0.0/16 ! -o ogstun -j MASQUERADE
 ```
 
 
-
-## 5. Turn on your eNB/gNB and Phone
+## 5. Turn on your eNB/gNB and UE
 ---
 
 First, connect your eNB/gNB to the Open5GS core:
 * Make sure the PLMN and TAC of the eNB/gNB matches the settings in your MME/AMF
-* Connect your eNB/gNB to the IP of your server via the standard S1AP/NGAP port of SCTP 36412/38412 (for MME/AMF)
-* Your eNB/gNB should report a successful S1/NG connection
+* Connect your eNB/gNB to the IP of your server via the standard S1AP/NGAP SCTP port 36412/38412 (for MME/AMF)
+* Your eNB/gNB should report a successful S1/NG connection - congrats, your core is fully working!
 * You can see actual traffic through wireshark -- [[srsenb.pcapng]]({{ site.url }}{{ site.baseurl }}/assets/pcapng/srsenb.pcapng).
 * You can view the log at `/var/log/open5gs/*.log`, eg:
 ```bash
@@ -431,14 +429,54 @@ First, connect your eNB/gNB to the Open5GS core:
 tail -f /var/log/open5gs/mme.log
 ```
 
-Next, try to attach a UE:
+Next, try to attach a UE to the basestation:
 * Insert your SIM card to the UE
 * Set the UE's APN to match the APN you configured in the Open5GS WebUI
 * Toggle the UE in and out of flight mode
 * If it doesn't automatically connect, try manually searching for a network
-* If the PLMN set on the SIM card does not match the PLMN being used by the radio, you will need to ensure 'data roaming' is switched on
+* If the PLMN set on the SIM card does not match the PLMN being used by the radio, you will need to ensure 'data roaming' on the UE is switched on
 
-## 6. Uninstall Open5GS and WebUI
+## 6. Starting and Stopping Open5GS
+---
+
+When you install the software using the package manager, it is setup to run as a systemd service. You can stop and restart the components and network functions as follows:
+
+```bash
+$ sudo systemctl stop open5gs-mmed
+$ sudo systemctl stop open5gs-sgwcd
+$ sudo systemctl stop open5gs-smfd
+$ sudo systemctl stop open5gs-amfd
+$ sudo systemctl stop open5gs-sgwud
+$ sudo systemctl stop open5gs-upfd
+$ sudo systemctl stop open5gs-hssd
+$ sudo systemctl stop open5gs-pcrfd
+$ sudo systemctl stop open5gs-nrfd
+$ sudo systemctl stop open5gs-ausfd
+$ sudo systemctl stop open5gs-udmd
+$ sudo systemctl stop open5gs-pcfd
+$ sudo systemctl stop open5gs-udrd
+$ sudo systemctl stop open5gs-webui
+```
+
+```bash
+$ sudo systemctl restart open5gs-mmed
+$ sudo systemctl restart open5gs-sgwcd
+$ sudo systemctl restart open5gs-smfd
+$ sudo systemctl restart open5gs-amfd
+$ sudo systemctl restart open5gs-sgwud
+$ sudo systemctl restart open5gs-upfd
+$ sudo systemctl restart open5gs-hssd
+$ sudo systemctl restart open5gs-pcrfd
+$ sudo systemctl restart open5gs-nrfd
+$ sudo systemctl restart open5gs-ausfd
+$ sudo systemctl restart open5gs-udmd
+$ sudo systemctl restart open5gs-pcfd
+$ sudo systemctl restart open5gs-udrd
+$ sudo systemctl restart open5gs-webui
+```
+
+
+## 7. Uninstall Open5GS and WebUI
 
 To remove the Open5GS packages:
 
