@@ -210,7 +210,7 @@ void pcf_nf_state_registered(ogs_fsm_t *s, pcf_event_t *e)
             }
 
             ogs_nnrf_nfm_send_nf_status_subscribe(client,
-                    pcf_self()->nf_type, nf_instance->id);
+                    pcf_self()->nf_type, nf_instance->id, OpenAPI_nf_type_UDR);
         }
 
         break;

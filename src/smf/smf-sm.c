@@ -581,11 +581,12 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
             subscription = e->sbi.data;
             ogs_assert(subscription);
 
+            ogs_nnrf_nfm_send_nf_status_subscribe(subscription->client,
+                    smf_self()->nf_type, subscription->req_nf_instance_id,
+                    subscription->subscr_cond.nf_type);
+
             ogs_info("Subscription validity expired [%s]", subscription->id);
             ogs_sbi_subscription_remove(subscription);
-
-            ogs_nnrf_nfm_send_nf_status_subscribe(subscription->client,
-                    smf_self()->nf_type, subscription->nf_instance_id);
             break;
 
         case SMF_TIMER_SBI_CLIENT_WAIT:

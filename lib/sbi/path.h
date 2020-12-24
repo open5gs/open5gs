@@ -36,7 +36,8 @@ void ogs_nnrf_nfm_send_nf_update(ogs_sbi_nf_instance_t *nf_instance);
 void ogs_nnrf_nfm_send_nf_de_register(ogs_sbi_nf_instance_t *nf_instance);
 
 void ogs_nnrf_nfm_send_nf_status_subscribe(ogs_sbi_client_t *client,
-        OpenAPI_nf_type_e nf_type, char *nf_instance_id);
+        OpenAPI_nf_type_e req_nf_type, char *req_nf_instance_id,
+        OpenAPI_nf_type_e subscr_cond_nf_type);
 void ogs_nnrf_nfm_send_nf_status_unsubscribe(
         ogs_sbi_subscription_t *subscription);
 

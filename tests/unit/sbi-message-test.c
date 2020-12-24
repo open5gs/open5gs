@@ -344,6 +344,146 @@ static void sbi_message_test3(abts_case *tc, void *data)
     OpenAPI_nrf_info_free(nrf_info2);
 }
 
+static void sbi_message_test4(abts_case *tc, void *data)
+{
+    ogs_time_t t;
+    struct tm tm;
+    bool rc;
+
+    rc = ogs_sbi_time_from_string(&t, "1985-04-12T23:20:50.52");
+    ABTS_INT_EQUAL(tc, 1, rc);
+
+    ogs_gmtime(ogs_time_sec(t), &tm);
+    ABTS_INT_EQUAL(tc, 85, tm.tm_year);
+    ABTS_INT_EQUAL(tc, 3, tm.tm_mon);
+    ABTS_INT_EQUAL(tc, 12, tm.tm_mday);
+    ABTS_INT_EQUAL(tc, 23, tm.tm_hour);
+    ABTS_INT_EQUAL(tc, 20, tm.tm_min);
+    ABTS_INT_EQUAL(tc, 50, tm.tm_sec);
+    ABTS_INT_EQUAL(tc, 0, tm.tm_isdst);
+    ABTS_INT_EQUAL(tc, 0, tm.tm_gmtoff);
+    ABTS_TRUE(tc, t == 482196050520000);
+
+    rc = ogs_sbi_time_from_string(&t, "1996-12-19T16:39:57-0800");
+    ABTS_INT_EQUAL(tc, 1, rc);
+
+    ogs_gmtime(ogs_time_sec(t), &tm);
+    ABTS_INT_EQUAL(tc, 96, tm.tm_year);
+    ABTS_INT_EQUAL(tc, 11, tm.tm_mon);
+    ABTS_INT_EQUAL(tc, 20, tm.tm_mday);
+    ABTS_INT_EQUAL(tc, 0, tm.tm_hour);
+    ABTS_INT_EQUAL(tc, 39, tm.tm_min);
+    ABTS_INT_EQUAL(tc, 57, tm.tm_sec);
+    ABTS_INT_EQUAL(tc, 0, tm.tm_isdst);
+    ABTS_INT_EQUAL(tc, 0, tm.tm_gmtoff);
+    ABTS_TRUE(tc, t == 851042397000000);
+
+    tm.tm_mday = 19;
+    tm.tm_hour = 16;
+    tm.tm_gmtoff = -28800;
+
+    rc = ogs_sbi_time_from_string(&t, "1996-12-19T16:39:57-08:00");
+    ABTS_INT_EQUAL(tc, 1, rc);
+
+    ogs_gmtime(ogs_time_sec(t), &tm);
+    ABTS_INT_EQUAL(tc, 96, tm.tm_year);
+    ABTS_INT_EQUAL(tc, 11, tm.tm_mon);
+    ABTS_INT_EQUAL(tc, 20, tm.tm_mday);
+    ABTS_INT_EQUAL(tc, 0, tm.tm_hour);
+    ABTS_INT_EQUAL(tc, 39, tm.tm_min);
+    ABTS_INT_EQUAL(tc, 57, tm.tm_sec);
+    ABTS_INT_EQUAL(tc, 0, tm.tm_isdst);
+    ABTS_INT_EQUAL(tc, 0, tm.tm_gmtoff);
+    ABTS_TRUE(tc, t == 851042397000000);
+
+    rc = ogs_sbi_time_from_string(&t, "1990-12-31T23:59:60Z");
+    ABTS_INT_EQUAL(tc, 1, rc);
+
+    ogs_gmtime(ogs_time_sec(t), &tm);
+    ABTS_INT_EQUAL(tc, 91, tm.tm_year);
+    ABTS_INT_EQUAL(tc, 0, tm.tm_mon);
+    ABTS_INT_EQUAL(tc, 1, tm.tm_mday);
+    ABTS_INT_EQUAL(tc, 0, tm.tm_hour);
+    ABTS_INT_EQUAL(tc, 0, tm.tm_min);
+    ABTS_INT_EQUAL(tc, 0, tm.tm_sec);
+    ABTS_INT_EQUAL(tc, 0, tm.tm_isdst);
+    ABTS_INT_EQUAL(tc, 0, tm.tm_gmtoff);
+    ABTS_TRUE(tc, t == 662688000000000);
+
+    rc = ogs_sbi_time_from_string(&t, "1990-12-31T15:59:60-0800");
+    ABTS_INT_EQUAL(tc, 1, rc);
+
+    ogs_gmtime(ogs_time_sec(t), &tm);
+    ABTS_INT_EQUAL(tc, 91, tm.tm_year);
+    ABTS_INT_EQUAL(tc, 0, tm.tm_mon);
+    ABTS_INT_EQUAL(tc, 1, tm.tm_mday);
+    ABTS_INT_EQUAL(tc, 0, tm.tm_hour);
+    ABTS_INT_EQUAL(tc, 0, tm.tm_min);
+    ABTS_INT_EQUAL(tc, 0, tm.tm_sec);
+    ABTS_INT_EQUAL(tc, 0, tm.tm_isdst);
+    ABTS_INT_EQUAL(tc, 0, tm.tm_gmtoff);
+    ABTS_TRUE(tc, t == 662688000000000);
+
+    rc = ogs_sbi_time_from_string(&t, "1990-12-31T15:59:60-08:00");
+    ABTS_INT_EQUAL(tc, 1, rc);
+
+    ogs_gmtime(ogs_time_sec(t), &tm);
+    ABTS_INT_EQUAL(tc, 91, tm.tm_year);
+    ABTS_INT_EQUAL(tc, 0, tm.tm_mon);
+    ABTS_INT_EQUAL(tc, 1, tm.tm_mday);
+    ABTS_INT_EQUAL(tc, 0, tm.tm_hour);
+    ABTS_INT_EQUAL(tc, 0, tm.tm_min);
+    ABTS_INT_EQUAL(tc, 0, tm.tm_sec);
+    ABTS_INT_EQUAL(tc, 0, tm.tm_isdst);
+    ABTS_INT_EQUAL(tc, 0, tm.tm_gmtoff);
+    ABTS_TRUE(tc, t == 662688000000000);
+
+    rc = ogs_sbi_time_from_string(&t, "1987-01-01T12:00:27.87+0020");
+    ABTS_INT_EQUAL(tc, 1, rc);
+
+    ogs_gmtime(ogs_time_sec(t), &tm);
+    ABTS_INT_EQUAL(tc, 87, tm.tm_year);
+    ABTS_INT_EQUAL(tc, 0, tm.tm_mon);
+    ABTS_INT_EQUAL(tc, 1, tm.tm_mday);
+    ABTS_INT_EQUAL(tc, 11, tm.tm_hour);
+    ABTS_INT_EQUAL(tc, 40, tm.tm_min);
+    ABTS_INT_EQUAL(tc, 27, tm.tm_sec);
+    ABTS_INT_EQUAL(tc, 0, tm.tm_isdst);
+    ABTS_INT_EQUAL(tc, 0, tm.tm_gmtoff);
+    ABTS_TRUE(tc, t == 536499627870000);
+
+    rc = ogs_sbi_time_from_string(&t, "1987-01-01T12:00:27.87+0020");
+    ABTS_INT_EQUAL(tc, 1, rc);
+
+    ogs_gmtime(ogs_time_sec(t), &tm);
+    ABTS_INT_EQUAL(tc, 87, tm.tm_year);
+    ABTS_INT_EQUAL(tc, 0, tm.tm_mon);
+    ABTS_INT_EQUAL(tc, 1, tm.tm_mday);
+    ABTS_INT_EQUAL(tc, 11, tm.tm_hour);
+    ABTS_INT_EQUAL(tc, 40, tm.tm_min);
+    ABTS_INT_EQUAL(tc, 27, tm.tm_sec);
+    ABTS_INT_EQUAL(tc, 0, tm.tm_isdst);
+    ABTS_INT_EQUAL(tc, 0, tm.tm_gmtoff);
+    ABTS_TRUE(tc, t == 536499627870000);
+}
+
+static void sbi_message_test5(abts_case *tc, void *data)
+{
+    char *str = NULL;
+
+    str = ogs_sbi_timezone_string(-18000);
+    ABTS_STR_EQUAL(tc, "-05:00", str);
+    ogs_free(str);
+
+    str = ogs_sbi_timezone_string(28800);
+    ABTS_STR_EQUAL(tc, "+08:00", str);
+    ogs_free(str);
+
+    str = ogs_sbi_timezone_string(0);
+    ABTS_STR_EQUAL(tc, "+00:00", str);
+    ogs_free(str);
+}
+
 abts_suite *test_sbi_message(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
@@ -351,6 +491,8 @@ abts_suite *test_sbi_message(abts_suite *suite)
     abts_run_test(suite, sbi_message_test1, NULL);
     abts_run_test(suite, sbi_message_test2, NULL);
     abts_run_test(suite, sbi_message_test3, NULL);
+    abts_run_test(suite, sbi_message_test4, NULL);
+    abts_run_test(suite, sbi_message_test5, NULL);
 
     return suite;
 }

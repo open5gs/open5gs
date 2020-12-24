@@ -507,8 +507,7 @@ ogs_pkbuf_t *ogs_sbi_find_part_by_content_id(
     return NULL;
 }
 
-int ogs_sbi_parse_header(
-        ogs_sbi_message_t *message, ogs_sbi_header_t *header)
+int ogs_sbi_parse_header(ogs_sbi_message_t *message, ogs_sbi_header_t *header)
 {
     struct yuarel yuarel;
     char *saveptr = NULL;

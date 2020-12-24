@@ -233,16 +233,38 @@ uint64_t ogs_sbi_bitrate_from_string(char *str)
 
 #define MAX_TIMESTR_LEN 128
 
+static int ogs_strftimezone(char *str, size_t size, int tm_gmtoff)
+{
+    uint8_t off_sign;
+    int off;
+
+    ogs_assert(str);
+    ogs_assert(size);
+
+    off_sign = '+';
+    off = tm_gmtoff;
+    if (tm_gmtoff < 0) {
+        off_sign = '-';
+        off = -off;
+    }
+
+    return ogs_snprintf(str, size, "%c%02d:%02d",
+            off_sign, off / 3600, off % 3600);
+}
+
 char *ogs_sbi_localtime_string(ogs_time_t timestamp)
 {
     struct tm tm;
 
     char datetime[MAX_TIMESTR_LEN];
     char timezone[MAX_TIMESTR_LEN];
+    int len;
 
     ogs_localtime(ogs_time_sec(timestamp), &tm);
     ogs_strftime(datetime, sizeof datetime, "%Y-%m-%dT%H:%M:%S", &tm);
-    ogs_strftime(timezone, sizeof timezone, "%z", &tm);
+
+    len = ogs_strftimezone(timezone, MAX_TIMESTR_LEN, tm.tm_gmtoff);
+    ogs_assert(len == 6);
 
     return ogs_msprintf("%s.%06lld%s",
             datetime, (long long)ogs_time_usec(timestamp), timezone);
@@ -263,13 +285,11 @@ char *ogs_sbi_gmtime_string(ogs_time_t timestamp)
 
 char *ogs_sbi_timezone_string(int tm_gmtoff)
 {
-    struct tm tm;
-
     char timezone[MAX_TIMESTR_LEN];
+    int len;
 
-    ogs_localtime(ogs_time_now(), &tm);
-    tm.tm_gmtoff = tm_gmtoff;
-    ogs_strftime(timezone, sizeof timezone, "%z", &tm);
+    len = ogs_strftimezone(timezone, MAX_TIMESTR_LEN, tm_gmtoff);
+    ogs_assert(len == 6);
 
     return ogs_msprintf("%s", timezone);
 }
@@ -297,8 +317,16 @@ bool ogs_sbi_time_from_string(ogs_time_t *timestamp, char *str)
         else if (is_seconds == false && (str[i] < '0' || str[i] > '9'))
             is_seconds = true;
 
-        if (is_seconds == true) seconds[j++] = str[i];
-        else subsecs[k++] = str[i];
+        if (is_seconds == true) {
+            if (str[i] == ':' && i >= 3 &&
+                    (str[i-3] == '+' || str[i-3] == '-')) {
+                /* skip timezone ':' character */
+            } else {
+                seconds[j++] = str[i];
+            }
+        } else {
+            subsecs[k++] = str[i];
+        }
 
         i++;
     }

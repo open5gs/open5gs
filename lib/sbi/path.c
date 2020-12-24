@@ -181,7 +181,8 @@ void ogs_nnrf_nfm_send_nf_de_register(ogs_sbi_nf_instance_t *nf_instance)
 }
 
 void ogs_nnrf_nfm_send_nf_status_subscribe(ogs_sbi_client_t *client,
-        OpenAPI_nf_type_e nf_type, char *nf_instance_id)
+        OpenAPI_nf_type_e req_nf_type, char *req_nf_instance_id,
+        OpenAPI_nf_type_e subscr_cond_nf_type)
 {
     ogs_sbi_request_t *request = NULL;
     ogs_sbi_subscription_t *subscription = NULL;
@@ -192,9 +193,10 @@ void ogs_nnrf_nfm_send_nf_status_subscribe(ogs_sbi_client_t *client,
     ogs_assert(subscription);
 
     OGS_SETUP_SBI_CLIENT(subscription, client);
-    subscription->nf_type = nf_type;
-    if (nf_instance_id)
-        subscription->nf_instance_id = ogs_strdup(nf_instance_id);
+    subscription->req_nf_type = req_nf_type;
+    if (req_nf_instance_id)
+        subscription->req_nf_instance_id = ogs_strdup(req_nf_instance_id);
+    subscription->subscr_cond.nf_type = subscr_cond_nf_type;
 
     request = ogs_nnrf_nfm_build_status_subscribe(subscription);
     ogs_assert(request);

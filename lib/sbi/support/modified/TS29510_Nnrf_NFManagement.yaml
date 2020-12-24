@@ -1015,7 +1015,47 @@ components:
           type: string
         reqNfInstanceId:
           $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
-#        subscrCond:
+        subscrCond:
+          type: object
+          properties:
+            nfInstanceId:
+              $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+            nfType:
+              $ref: '#/components/schemas/NFType'
+            serviceName:
+              $ref: '#/components/schemas/ServiceName'
+            amfSetId:
+              $ref: 'TS29571_CommonData.yaml#/components/schemas/AmfSetId'
+            amfRegionId:
+              $ref: 'TS29571_CommonData.yaml#/components/schemas/AmfRegionId'
+            guamiList:
+              type: array
+              items:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/Guami'
+            snssaiList:
+              type: array
+              items:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+            nsiList:
+              type: array
+              items:
+                type: string
+            nfGroupId:
+              $ref: 'TS29571_CommonData.yaml#/components/schemas/NfGroupId'
+            nfSetId:
+              $ref: 'TS29571_CommonData.yaml#/components/schemas/NfSetId'
+            nfServiceSetId:
+              $ref: 'TS29571_CommonData.yaml#/components/schemas/NfServiceSetId'
+            smfServingArea:
+              type: array
+              items:
+                type: string
+              minItems: 1
+            taiList:
+              type: array
+              items:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/Tai'
+              minItems: 1
 #          oneOf:
 #            - $ref: '#/components/schemas/NfInstanceIdCond'
 #            - $ref: '#/components/schemas/NfTypeCond'

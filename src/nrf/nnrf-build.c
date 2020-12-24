@@ -27,6 +27,9 @@ ogs_sbi_request_t *nrf_nnrf_nfm_build_nf_status_notify(
     ogs_sbi_message_t message;
     ogs_sbi_request_t *request = NULL;
 
+    ogs_sbi_header_t header;
+    ogs_sbi_server_t *server = NULL;
+
     OpenAPI_notification_data_t *NotificationData = NULL;
     OpenAPI_nf_profile_t *NFProfile = NULL;
 
@@ -34,8 +37,6 @@ ogs_sbi_request_t *nrf_nnrf_nfm_build_nf_status_notify(
     ogs_assert(subscription);
     ogs_assert(event);
     ogs_assert(nf_instance);
-
-    /* TODO : filter NFType */
 
     memset(&message, 0, sizeof(message));
     message.h.method = (char *)OGS_SBI_HTTP_METHOD_POST;
@@ -47,20 +48,35 @@ ogs_sbi_request_t *nrf_nnrf_nfm_build_nf_status_notify(
     ogs_assert(NotificationData);
 
     NotificationData->event = event;
-    NotificationData->nf_instance_uri = message.h.uri;
 
-    NFProfile = ogs_nnrf_nfm_build_nf_profile(nf_instance);
-    ogs_assert(NFProfile);
+    server = ogs_list_first(&ogs_sbi_self()->server_list);
+    ogs_assert(server);
 
-    NotificationData->nf_profile = NFProfile;
+    memset(&header, 0, sizeof(header));
+    header.service.name = (char *)OGS_SBI_SERVICE_NAME_NNRF_NFM;
+    header.api.version = (char *)OGS_SBI_API_V1;
+    header.resource.component[0] = (char *)OGS_SBI_SERVICE_NAME_NNRF_NFM;
+    header.resource.component[1] = nf_instance->id;
+
+    NotificationData->nf_instance_uri = ogs_sbi_server_uri(server, &header);
+    ogs_assert(NotificationData->nf_instance_uri);
+
+    if (event != OpenAPI_notification_event_type_NF_DEREGISTERED) {
+        NFProfile = ogs_nnrf_nfm_build_nf_profile(nf_instance);
+        ogs_assert(NFProfile);
+
+        NotificationData->nf_profile = NFProfile;
+    }
 
     message.NotificationData = NotificationData;
 
     request = ogs_sbi_build_request(&message);
     ogs_assert(request);
 
-    ogs_sbi_nnrf_free_nf_profile(NFProfile);
+    if (NotificationData->nf_profile)
+        ogs_sbi_nnrf_free_nf_profile(NotificationData->nf_profile);
 
+    ogs_free(NotificationData->nf_instance_uri);
     ogs_free(NotificationData);
 
     return request;

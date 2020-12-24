@@ -211,7 +211,13 @@ void smf_nf_state_registered(ogs_fsm_t *s, smf_event_t *e)
             }
 
             ogs_nnrf_nfm_send_nf_status_subscribe(client,
-                    smf_self()->nf_type, nf_instance->id);
+                    smf_self()->nf_type, nf_instance->id, OpenAPI_nf_type_AMF);
+            ogs_nnrf_nfm_send_nf_status_subscribe(client,
+                    smf_self()->nf_type, nf_instance->id, OpenAPI_nf_type_UDM);
+            ogs_nnrf_nfm_send_nf_status_subscribe(client,
+                    smf_self()->nf_type, nf_instance->id, OpenAPI_nf_type_PCF);
+            ogs_nnrf_nfm_send_nf_status_subscribe(client,
+                    smf_self()->nf_type, nf_instance->id, OpenAPI_nf_type_UPF);
         }
 
         break;

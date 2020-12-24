@@ -7,6 +7,7 @@
 OpenAPI_subscription_data_t *OpenAPI_subscription_data_create(
     char *nf_status_notification_uri,
     char *req_nf_instance_id,
+    OpenAPI_subscription_data_subscr_cond_t *subscr_cond,
     char *subscription_id,
     char *validity_time,
     OpenAPI_list_t *req_notif_events,
@@ -25,6 +26,7 @@ OpenAPI_subscription_data_t *OpenAPI_subscription_data_create(
     }
     subscription_data_local_var->nf_status_notification_uri = nf_status_notification_uri;
     subscription_data_local_var->req_nf_instance_id = req_nf_instance_id;
+    subscription_data_local_var->subscr_cond = subscr_cond;
     subscription_data_local_var->subscription_id = subscription_id;
     subscription_data_local_var->validity_time = validity_time;
     subscription_data_local_var->req_notif_events = req_notif_events;
@@ -47,6 +49,7 @@ void OpenAPI_subscription_data_free(OpenAPI_subscription_data_t *subscription_da
     OpenAPI_lnode_t *node;
     ogs_free(subscription_data->nf_status_notification_uri);
     ogs_free(subscription_data->req_nf_instance_id);
+    OpenAPI_subscription_data_subscr_cond_free(subscription_data->subscr_cond);
     ogs_free(subscription_data->subscription_id);
     ogs_free(subscription_data->validity_time);
     OpenAPI_list_free(subscription_data->req_notif_events);
@@ -87,6 +90,19 @@ cJSON *OpenAPI_subscription_data_convertToJSON(OpenAPI_subscription_data_t *subs
     if (subscription_data->req_nf_instance_id) {
         if (cJSON_AddStringToObject(item, "reqNfInstanceId", subscription_data->req_nf_instance_id) == NULL) {
             ogs_error("OpenAPI_subscription_data_convertToJSON() failed [req_nf_instance_id]");
+            goto end;
+        }
+    }
+
+    if (subscription_data->subscr_cond) {
+        cJSON *subscr_cond_local_JSON = OpenAPI_subscription_data_subscr_cond_convertToJSON(subscription_data->subscr_cond);
+        if (subscr_cond_local_JSON == NULL) {
+            ogs_error("OpenAPI_subscription_data_convertToJSON() failed [subscr_cond]");
+            goto end;
+        }
+        cJSON_AddItemToObject(item, "subscrCond", subscr_cond_local_JSON);
+        if (item->child == NULL) {
+            ogs_error("OpenAPI_subscription_data_convertToJSON() failed [subscr_cond]");
             goto end;
         }
     }
@@ -235,6 +251,13 @@ OpenAPI_subscription_data_t *OpenAPI_subscription_data_parseFromJSON(cJSON *subs
         }
     }
 
+    cJSON *subscr_cond = cJSON_GetObjectItemCaseSensitive(subscription_dataJSON, "subscrCond");
+
+    OpenAPI_subscription_data_subscr_cond_t *subscr_cond_local_nonprim = NULL;
+    if (subscr_cond) {
+        subscr_cond_local_nonprim = OpenAPI_subscription_data_subscr_cond_parseFromJSON(subscr_cond);
+    }
+
     cJSON *subscription_id = cJSON_GetObjectItemCaseSensitive(subscription_dataJSON, "subscriptionId");
 
     if (subscription_id) {
@@ -367,6 +390,7 @@ OpenAPI_subscription_data_t *OpenAPI_subscription_data_parseFromJSON(cJSON *subs
     subscription_data_local_var = OpenAPI_subscription_data_create (
         ogs_strdup(nf_status_notification_uri->valuestring),
         req_nf_instance_id ? ogs_strdup(req_nf_instance_id->valuestring) : NULL,
+        subscr_cond ? subscr_cond_local_nonprim : NULL,
         subscription_id ? ogs_strdup(subscription_id->valuestring) : NULL,
         validity_time ? ogs_strdup(validity_time->valuestring) : NULL,
         req_notif_events ? req_notif_eventsList : NULL,

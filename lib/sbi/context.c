@@ -1089,8 +1089,8 @@ void ogs_sbi_subscription_remove(ogs_sbi_subscription_t *subscription)
     if (subscription->notification_uri)
         ogs_free(subscription->notification_uri);
 
-    if (subscription->nf_instance_id)
-        ogs_free(subscription->nf_instance_id);
+    if (subscription->req_nf_instance_id)
+        ogs_free(subscription->req_nf_instance_id);
 
     if (subscription->t_validity)
         ogs_timer_delete(subscription->t_validity);
@@ -1109,8 +1109,8 @@ void ogs_sbi_subscription_remove_all_by_nf_instance_id(char *nf_instance_id)
 
     ogs_list_for_each_safe(&ogs_sbi_self()->subscription_list,
             next_subscription, subscription) {
-        if (subscription->nf_instance_id &&
-            strcmp(subscription->nf_instance_id, nf_instance_id) == 0) {
+        if (subscription->req_nf_instance_id &&
+            strcmp(subscription->req_nf_instance_id, nf_instance_id) == 0) {
             ogs_sbi_subscription_remove(subscription);
         }
     }

@@ -17,6 +17,7 @@
 #include "notification_event_type.h"
 #include "plmn_id.h"
 #include "snssai.h"
+#include "subscription_data_subscr_cond.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -26,6 +27,7 @@ typedef struct OpenAPI_subscription_data_s OpenAPI_subscription_data_t;
 typedef struct OpenAPI_subscription_data_s {
     char *nf_status_notification_uri;
     char *req_nf_instance_id;
+    struct OpenAPI_subscription_data_subscr_cond_s *subscr_cond;
     char *subscription_id;
     char *validity_time;
     OpenAPI_list_t *req_notif_events;
@@ -41,6 +43,7 @@ typedef struct OpenAPI_subscription_data_s {
 OpenAPI_subscription_data_t *OpenAPI_subscription_data_create(
     char *nf_status_notification_uri,
     char *req_nf_instance_id,
+    OpenAPI_subscription_data_subscr_cond_t *subscr_cond,
     char *subscription_id,
     char *validity_time,
     OpenAPI_list_t *req_notif_events,

@@ -726,6 +726,7 @@ libsbi_openapi_sources = files('''
     model/wireline_area.c
     model/wireline_service_area_restriction.c
 
+    model/subscription_data_subscr_cond.c
 '''.split())
 
 libsbi_openapi_inc = include_directories('.')
