@@ -252,6 +252,8 @@ static int ogs_strftimezone(char *str, size_t size, int tm_gmtoff)
             off_sign, off / 3600, off % 3600);
 }
 
+#define USE_MILLISECONDS_IN_RFC3339 1
+
 char *ogs_sbi_localtime_string(ogs_time_t timestamp)
 {
     struct tm tm;
@@ -266,8 +268,13 @@ char *ogs_sbi_localtime_string(ogs_time_t timestamp)
     len = ogs_strftimezone(timezone, MAX_TIMESTR_LEN, tm.tm_gmtoff);
     ogs_assert(len == 6);
 
+#if USE_MILLISECONDS_IN_RFC3339
+    return ogs_msprintf("%s.%03lld%s",
+            datetime, (long long)ogs_time_msec(timestamp), timezone);
+#else
     return ogs_msprintf("%s.%06lld%s",
             datetime, (long long)ogs_time_usec(timestamp), timezone);
+#endif
 }
 
 char *ogs_sbi_gmtime_string(ogs_time_t timestamp)
@@ -279,8 +286,13 @@ char *ogs_sbi_gmtime_string(ogs_time_t timestamp)
     ogs_gmtime(ogs_time_sec(timestamp), &tm);
     ogs_strftime(datetime, sizeof datetime, "%Y-%m-%dT%H:%M:%S", &tm);
 
+#if USE_MILLISECONDS_IN_RFC3339
+    return ogs_msprintf("%s.%03lldZ",
+            datetime, (long long)ogs_time_msec(timestamp));
+#else
     return ogs_msprintf("%s.%06lldZ",
             datetime, (long long)ogs_time_usec(timestamp));
+#endif
 }
 
 char *ogs_sbi_timezone_string(int tm_gmtoff)
