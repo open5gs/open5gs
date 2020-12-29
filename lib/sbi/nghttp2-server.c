@@ -786,6 +786,7 @@ static int on_stream_close(nghttp2_session *session, int32_t stream_id,
                 session, NGHTTP2_FLAG_NONE, stream_id, error_code);
     }
 
+    ogs_debug("STREAM closed [%d]", stream_id);
     stream_remove(stream);
     return 0;
 }
@@ -849,6 +850,7 @@ static int on_header(nghttp2_session *session, const nghttp2_frame *frame,
         ogs_assert(request->h.uri == NULL);
         request->h.uri = ogs_sbi_parse_uri(valuestr, "?", &saveptr);
         ogs_assert(request->h.uri);
+        ogs_debug("path: %s", request->h.uri);
 
         memset(params, 0, sizeof(params));
 
@@ -876,6 +878,7 @@ static int on_header(nghttp2_session *session, const nghttp2_frame *frame,
 
         ogs_assert(request->h.method == NULL);
         request->h.method = ogs_strdup(valuestr);
+        ogs_debug("method: %s", request->h.method);
 
     } else {
 
@@ -909,13 +912,24 @@ static int on_data_chunk_recv(nghttp2_session *session, uint8_t flags,
 
     ogs_assert(data);
     ogs_assert(len);
-    ogs_assert(request->http.content == NULL);
+    if (request->http.content) {
+        ogs_fatal("Content-Length [%d]", (int)request->http.content_length);
+        ogs_log_hexdump(OGS_LOG_FATAL,
+                (uint8_t *)request->http.content, request->http.content_length);
+        ogs_fatal("Data Size [%d]", (int)len);
+        ogs_log_hexdump(OGS_LOG_FATAL, data, len);
+        ogs_assert_if_reached();
+    }
 
     request->http.content_length = len;
     request->http.content = (char*)ogs_malloc(request->http.content_length + 1);
     ogs_assert(request->http.content);
     memcpy(request->http.content, data, len);
     request->http.content[request->http.content_length] = '\0';
+
+    ogs_debug("RECEIVED");
+    ogs_debug("content-length: %d", (int)request->http.content_length);
+    ogs_debug("%s", request->http.content);
 
     return 0;
 }
@@ -1030,6 +1044,7 @@ static int on_begin_headers(nghttp2_session *session,
 
     stream = stream_add(sbi_sess, frame->hd.stream_id);
     ogs_assert(stream);
+    ogs_debug("STREAM added [%d]", frame->hd.stream_id);
 
     nghttp2_session_set_stream_user_data(session, frame->hd.stream_id, stream);
 
@@ -1089,6 +1104,10 @@ static int on_send_data(nghttp2_session *session, nghttp2_frame *frame,
 
     ogs_assert(framehd);
     ogs_assert(length);
+
+    ogs_debug("SENDING...");
+    ogs_debug("content-length: %d", (int)response->http.content_length);
+    ogs_debug("%s", response->http.content);
 
     pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
     ogs_assert(pkbuf);
@@ -1204,6 +1223,8 @@ static void session_write_callback(short when, ogs_socket_t fd, void *data)
     ogs_list_remove(&sbi_sess->write_queue, pkbuf);
 
     ogs_send(fd, pkbuf->data, pkbuf->len, 0);
+    ogs_log_hexdump(OGS_LOG_DEBUG, pkbuf->data, pkbuf->len);
+
     ogs_pkbuf_free(pkbuf);
 }
 

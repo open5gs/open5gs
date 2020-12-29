@@ -53,6 +53,10 @@ bool nrf_nnrf_handle_nf_register(ogs_sbi_nf_instance_t *nf_instance,
     } else
         ogs_assert_if_reached();
 
+    /* Store NFProfile */
+    nf_instance->nf_profile = OpenAPI_nf_profile_copy(
+            nf_instance->nf_profile, NFProfile);
+
     response = ogs_sbi_build_response(recvmsg, status);
     ogs_assert(response);
     ogs_sbi_server_send_response(stream, response);
@@ -300,8 +304,6 @@ bool nrf_nnrf_handle_nf_profile_retrieval(
     ogs_sbi_response_t *response = NULL;
     ogs_sbi_nf_instance_t *nf_instance = NULL;
 
-    OpenAPI_nf_profile_t *NFProfile = NULL;
-
     ogs_assert(stream);
     ogs_assert(recvmsg);
 
@@ -315,17 +317,14 @@ bool nrf_nnrf_handle_nf_profile_retrieval(
         return false;
     }
 
-    NFProfile = ogs_nnrf_nfm_build_nf_profile(nf_instance);
-    ogs_assert(NFProfile);
-
     memset(&sendmsg, 0, sizeof(sendmsg));
-    sendmsg.NFProfile = NFProfile;
+
+    ogs_assert(nf_instance->nf_profile);
+    sendmsg.NFProfile = nf_instance->nf_profile;
 
     response = ogs_sbi_build_response(&sendmsg, OGS_SBI_HTTP_STATUS_OK);
     ogs_assert(response);
     ogs_sbi_server_send_response(stream, response);
-
-    ogs_sbi_nnrf_free_nf_profile(NFProfile);
 
     return true;
 }
@@ -338,7 +337,6 @@ bool nrf_nnrf_handle_nf_discover(
     ogs_sbi_nf_instance_t *nf_instance = NULL;
 
     OpenAPI_search_result_t *SearchResult = NULL;
-    OpenAPI_lnode_t *node = NULL;
     int i;
 
     ogs_assert(stream);
@@ -373,8 +371,6 @@ bool nrf_nnrf_handle_nf_discover(
 
     i = 0;
     ogs_list_for_each(&ogs_sbi_self()->nf_instance_list, nf_instance) {
-        OpenAPI_nf_profile_t *NFProfile = NULL;
-
         if (nf_instance->nf_type != recvmsg->param.target_nf_type)
             continue;
         if (nf_instance->nf_type == recvmsg->param.requester_nf_type)
@@ -389,10 +385,9 @@ bool nrf_nnrf_handle_nf_discover(
                     OpenAPI_nf_status_ToString(nf_instance->nf_status),
                     nf_instance->num_of_ipv4, nf_instance->num_of_ipv6);
 
-            NFProfile = ogs_nnrf_nfm_build_nf_profile(nf_instance);
-            ogs_assert(NFProfile);
-
-            OpenAPI_list_add(SearchResult->nf_instances, NFProfile);
+            ogs_assert(nf_instance->nf_profile);
+            OpenAPI_list_add(SearchResult->nf_instances,
+                    nf_instance->nf_profile);
 
             i++;
         }
@@ -409,12 +404,6 @@ bool nrf_nnrf_handle_nf_discover(
     ogs_assert(response);
     ogs_sbi_server_send_response(stream, response);
 
-    OpenAPI_list_for_each(SearchResult->nf_instances, node) {
-        OpenAPI_nf_profile_t *NFProfile = NULL;
-        if (!node->data) continue;
-        NFProfile = node->data;
-        ogs_sbi_nnrf_free_nf_profile(NFProfile);
-    }
     OpenAPI_list_free(SearchResult->nf_instances);
 
     if (sendmsg.http.cache_control)

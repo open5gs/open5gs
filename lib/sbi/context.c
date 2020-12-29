@@ -516,6 +516,9 @@ void ogs_sbi_nf_instance_remove(ogs_sbi_nf_instance_t *nf_instance)
     if (nf_instance->client)
         ogs_sbi_client_remove(nf_instance->client);
 
+    if (nf_instance->nf_profile)
+        OpenAPI_nf_profile_free(nf_instance->nf_profile);
+
     ogs_pool_free(&nf_instance_pool, nf_instance);
 }
 

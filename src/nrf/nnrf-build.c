@@ -31,7 +31,6 @@ ogs_sbi_request_t *nrf_nnrf_nfm_build_nf_status_notify(
     ogs_sbi_server_t *server = NULL;
 
     OpenAPI_notification_data_t *NotificationData = NULL;
-    OpenAPI_nf_profile_t *NFProfile = NULL;
 
     ogs_assert(client);
     ogs_assert(subscription);
@@ -62,19 +61,14 @@ ogs_sbi_request_t *nrf_nnrf_nfm_build_nf_status_notify(
     ogs_assert(NotificationData->nf_instance_uri);
 
     if (event != OpenAPI_notification_event_type_NF_DEREGISTERED) {
-        NFProfile = ogs_nnrf_nfm_build_nf_profile(nf_instance);
-        ogs_assert(NFProfile);
-
-        NotificationData->nf_profile = NFProfile;
+        ogs_assert(nf_instance->nf_profile);
+        NotificationData->nf_profile = nf_instance->nf_profile;
     }
 
     message.NotificationData = NotificationData;
 
     request = ogs_sbi_build_request(&message);
     ogs_assert(request);
-
-    if (NotificationData->nf_profile)
-        ogs_sbi_nnrf_free_nf_profile(NotificationData->nf_profile);
 
     ogs_free(NotificationData->nf_instance_uri);
     ogs_free(NotificationData);

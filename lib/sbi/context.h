@@ -94,6 +94,8 @@ typedef struct ogs_sbi_nf_instance_s {
 
     void *client;                   /* only used in CLIENT */
     unsigned int reference_count;   /* reference count for memory free */
+
+    OpenAPI_nf_profile_t *nf_profile;   /* stored NF Profile */
 } ogs_sbi_nf_instance_t;
 
 #define OGS_SBI_NF_INSTANCE_GET(__aRRAY, __nFType) \
