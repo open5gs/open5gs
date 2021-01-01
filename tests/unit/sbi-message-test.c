@@ -469,6 +469,13 @@ static void sbi_message_test4(abts_case *tc, void *data)
 
 static void sbi_message_test5(abts_case *tc, void *data)
 {
+    struct tm tm;
+
+#define MAX_TIMESTR_LEN 128
+    char datetime[MAX_TIMESTR_LEN];
+    char timezone[MAX_TIMESTR_LEN];
+    int len;
+
     char *str = NULL;
 
     str = ogs_sbi_timezone_string(-18000);
@@ -482,6 +489,12 @@ static void sbi_message_test5(abts_case *tc, void *data)
     str = ogs_sbi_timezone_string(0);
     ABTS_STR_EQUAL(tc, "+00:00", str);
     ogs_free(str);
+
+    ogs_localtime(ogs_time_sec(ogs_time_now()), &tm);
+    ogs_strftime(datetime, sizeof datetime, "%Y-%m-%dT%H:%M:%S", &tm);
+
+    len = ogs_strftimezone(timezone, MAX_TIMESTR_LEN, tm.tm_gmtoff);
+    ABTS_INT_EQUAL(tc, 6, len);
 }
 
 abts_suite *test_sbi_message(abts_suite *suite)

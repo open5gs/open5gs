@@ -233,7 +233,7 @@ uint64_t ogs_sbi_bitrate_from_string(char *str)
 
 #define MAX_TIMESTR_LEN 128
 
-static int ogs_strftimezone(char *str, size_t size, int tm_gmtoff)
+int ogs_strftimezone(char *str, size_t size, int tm_gmtoff)
 {
     uint8_t off_sign;
     int off;

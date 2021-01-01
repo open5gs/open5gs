@@ -46,6 +46,7 @@ ogs_sockaddr_t *ogs_sbi_getaddr_from_uri(char *uri);
 char *ogs_sbi_bitrate_to_string(uint64_t bitrate, int unit);
 uint64_t ogs_sbi_bitrate_from_string(char *str);
 
+int ogs_strftimezone(char *str, size_t size, int tm_gmtoff);
 char *ogs_sbi_localtime_string(ogs_time_t time);
 char *ogs_sbi_gmtime_string(ogs_time_t time);
 char *ogs_sbi_timezone_string(int tm_offset);
