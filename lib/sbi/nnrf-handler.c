@@ -18,6 +18,7 @@
  */
 
 #include "ogs-sbi.h"
+#include "ogs-app.h"
 
 bool ogs_sbi_nnrf_handle_nf_profile(ogs_sbi_nf_instance_t *nf_instance,
         OpenAPI_nf_profile_t *NFProfile,

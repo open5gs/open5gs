@@ -131,6 +131,16 @@ pool:
 #
 # time:
 #
+#  o NF Instance Heartbeat (Default : 10 seconds)
+#
+#  o NF Instance Heartbeat (Disabled)
+#    nf_instance:
+#      heartbeat: 0
+#
+#  o NF Instance Heartbeat (5 seconds)
+#    nf_instance:
+#      heartbeat: 5
+#
 #  o NF Instance Validity (Default : 3600 seconds = 1 hour)
 #
 #  o NF Instance Validity (10 seconds)

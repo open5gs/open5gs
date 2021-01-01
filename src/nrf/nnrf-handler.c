@@ -40,6 +40,10 @@ bool nrf_nnrf_handle_nf_register(ogs_sbi_nf_instance_t *nf_instance,
         return false;
     }
 
+    /* Store NFProfile */
+    nf_instance->nf_profile = OpenAPI_nf_profile_copy(
+            nf_instance->nf_profile, NFProfile);
+
     /* ogs_sbi_nnrf_handle_nf_profile() sends error response */
     handled = ogs_sbi_nnrf_handle_nf_profile(
                 nf_instance, NFProfile, stream, recvmsg);
@@ -53,11 +57,46 @@ bool nrf_nnrf_handle_nf_register(ogs_sbi_nf_instance_t *nf_instance,
     } else
         ogs_assert_if_reached();
 
-    /* Store NFProfile */
-    nf_instance->nf_profile = OpenAPI_nf_profile_copy(
-            nf_instance->nf_profile, NFProfile);
+    /* NRF uses pre-configured heartbeat if NFs did not send it */
+    if (!NFProfile->heart_beat_timer)
+        nf_instance->time.heartbeat_interval =
+            ogs_app()->time.nf_instance.heartbeat_interval;
 
-    response = ogs_sbi_build_response(recvmsg, status);
+    /*
+     * TS29.510
+     * Annex B (normative):NF Profile changes in NFRegister and NFUpdate
+     * (NF Profile Complete Replacement) responses
+     */
+    if (NFProfile->nf_profile_changes_support_ind == true) {
+
+        OpenAPI_nf_profile_t NFProfileChanges;
+        ogs_sbi_message_t sendmsg;
+
+        memset(&NFProfileChanges, 0, sizeof(NFProfileChanges));
+        NFProfileChanges.nf_instance_id = NFProfile->nf_instance_id;
+        NFProfileChanges.nf_type = NFProfile->nf_type;
+        NFProfileChanges.nf_status = NFProfile->nf_status;
+        if (!NFProfile->heart_beat_timer)
+            NFProfileChanges.heart_beat_timer =
+                nf_instance->time.heartbeat_interval;
+        NFProfileChanges.nf_profile_changes_ind = true;
+
+        memset(&sendmsg, 0, sizeof(sendmsg));
+        sendmsg.http.location = recvmsg->http.location;
+        sendmsg.NFProfile = &NFProfileChanges;
+
+        response = ogs_sbi_build_response(&sendmsg, status);
+
+    } else {
+
+        if (!NFProfile->heart_beat_timer)
+            NFProfile->heart_beat_timer =
+                nf_instance->time.heartbeat_interval;
+
+        response = ogs_sbi_build_response(recvmsg, status);
+
+    }
+
     ogs_assert(response);
     ogs_sbi_server_send_response(stream, response);
 

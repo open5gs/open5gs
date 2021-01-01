@@ -161,7 +161,16 @@ pool:
 #
 # time:
 #
-#  o NF Instance Heartbeat (Default : 10 seconds)
+#  o NF Instance Heartbeat (Default : 0)
+#    NFs will not send heart-beat timer in NFProfile
+#    NRF will send heart-beat timer in NFProfile
+#
+#  o NF Instance Heartbeat (20 seconds)
+#    NFs will send heart-beat timer (20 seconds) in NFProfile
+#    NRF can change heart-beat timer in NFProfile
+#
+#    nf_instance:
+#      heartbeat: 20
 #
 #  o NF Instance Heartbeat (Disabled)
 #    nf_instance:

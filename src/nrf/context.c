@@ -59,6 +59,11 @@ nrf_context_t *nrf_self(void)
 
 static int nrf_context_prepare(void)
 {
+    /* NF Instance Heartbeat
+     * Default value is 10 seconds if it is not configured in nrf.yaml */
+    if (!ogs_app()->time.nf_instance.heartbeat_interval)
+        ogs_app()->time.nf_instance.heartbeat_interval = 10;
+
     return OGS_OK;
 }
 

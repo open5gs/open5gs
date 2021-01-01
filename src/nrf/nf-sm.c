@@ -185,7 +185,8 @@ void nrf_nf_state_registered(ogs_fsm_t *s, nrf_event_t *e)
 
     switch (e->id) {
     case OGS_FSM_ENTRY_SIG:
-        ogs_info("[%s] NF registred", nf_instance->id);
+        ogs_info("[%s] NF registred [Heartbeat:%ds]",
+                nf_instance->id, nf_instance->time.heartbeat_interval);
         if (nf_instance->time.heartbeat_interval) {
             ogs_timer_start(nf_instance->t_no_heartbeat,
                     ogs_time_from_sec(

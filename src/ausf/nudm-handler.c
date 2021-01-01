@@ -66,12 +66,13 @@ bool ausf_nudm_ueau_handle_get(ausf_ue_t *ausf_ue,
         return false;
     }
 
+    /* See TS29.509 6.1.7.3 Application Errors */
     if (AuthenticationInfoResult->auth_type !=
             OpenAPI_auth_type_5G_AKA) {
         ogs_error("[%s] Not supported Auth Method [%d]",
             ausf_ue->suci, AuthenticationInfoResult->auth_type);
         ogs_sbi_server_send_error(stream,
-            OGS_SBI_HTTP_STATUS_FORBIDDEN,
+            OGS_SBI_HTTP_STATUS_NOT_IMPLEMENTED,
             recvmsg, "Not supported Auth Method", ausf_ue->suci);
         return false;
     }

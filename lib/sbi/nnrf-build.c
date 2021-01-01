@@ -18,6 +18,7 @@
  */
 
 #include "ogs-sbi.h"
+#include "ogs-app.h"
 
 OpenAPI_nf_profile_t *ogs_nnrf_nfm_build_nf_profile(
         ogs_sbi_nf_instance_t *nf_instance)
@@ -259,7 +260,9 @@ ogs_sbi_request_t *ogs_nnrf_nfm_build_register(
     NFProfile = ogs_nnrf_nfm_build_nf_profile(nf_instance);
     ogs_assert(NFProfile);
 
-    NFProfile->heart_beat_timer = nf_instance->time.heartbeat_interval;
+    NFProfile->nf_profile_changes_support_ind = true;
+    nf_instance->time.heartbeat_interval = NFProfile->heart_beat_timer =
+            ogs_app()->time.nf_instance.heartbeat_interval;
 
     message.NFProfile = NFProfile;
 

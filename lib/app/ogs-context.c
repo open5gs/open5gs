@@ -183,8 +183,8 @@ static void app_context_prepare(void)
 
     recalculate_pool_size();
 
-    /* 10 second */
-    self.time.nf_instance.heartbeat_interval = 10;
+    /* <Heartbeat Checking Interval>
+     *  Heartbeat Interval(e.g: 10 seconds) + No Heartbeat Margin(1 second) */
     self.time.nf_instance.no_heartbeat_margin = 1;
 
     /* 3600 seconds = 1 hour */

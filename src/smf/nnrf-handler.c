@@ -38,7 +38,12 @@ void smf_nnrf_handle_nf_register(
     }
 
     /* TIME : Update heartbeat from NRF */
-    nf_instance->time.heartbeat_interval = NFProfile->heart_beat_timer;
+    if (NFProfile->nf_profile_changes_ind == true) {
+        if (NFProfile->heart_beat_timer)
+            nf_instance->time.heartbeat_interval = NFProfile->heart_beat_timer;
+    } else {
+        nf_instance->time.heartbeat_interval = NFProfile->heart_beat_timer;
+    }
 }
 
 void smf_nnrf_handle_nf_status_subscribe(
