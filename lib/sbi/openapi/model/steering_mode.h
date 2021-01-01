@@ -21,7 +21,7 @@ extern "C" {
 
 typedef struct OpenAPI_steering_mode_s OpenAPI_steering_mode_t;
 typedef struct OpenAPI_steering_mode_s {
-    struct OpenAPI_steer_mode_value_s *steer_mode_value;
+    OpenAPI_steer_mode_value_e steer_mode_value;
     OpenAPI_access_type_e active;
     OpenAPI_access_type_e standby;
     int _3g_load;
@@ -29,7 +29,7 @@ typedef struct OpenAPI_steering_mode_s {
 } OpenAPI_steering_mode_t;
 
 OpenAPI_steering_mode_t *OpenAPI_steering_mode_create(
-    OpenAPI_steer_mode_value_t *steer_mode_value,
+    OpenAPI_steer_mode_value_e steer_mode_value,
     OpenAPI_access_type_e active,
     OpenAPI_access_type_e standby,
     int _3g_load,

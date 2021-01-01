@@ -53,6 +53,10 @@
 #include <stdarg.h>
 #endif
 
+#if HAVE_CTYPE_H
+#include <ctype.h>
+#endif
+
 #include "ogs-core.h"
 
 int ogs_vsnprintf(char *str, size_t size, const char *format, va_list ap)
@@ -253,4 +257,65 @@ char *ogs_mstrcatf(char *source, const char *message, ...)
         }
     }
     return out;
+}
+
+char *ogs_trimwhitespace(char *str)
+{
+    char *end;
+
+    if (str == NULL) {
+        return NULL;
+    } else if (*str == 0) {
+        return str;
+    }
+
+    while (isspace((unsigned char)*str)) str++;
+
+    end = str + strlen(str) - 1;
+    while(end > str && isspace((unsigned char)*end)) {
+        end--;
+    }
+
+    *(end+1) = 0;
+
+    return str;
+}
+
+char *ogs_left_trimcharacter(char *str, char to_remove)
+{
+    if (str == NULL) {
+        return NULL;
+    } else if (*str == 0) {
+        return str;
+    }
+
+    while(*str == to_remove) str++;
+
+    return str;
+}
+
+char *ogs_right_trimcharacter(char *str, char to_remove)
+{
+    char *end;
+
+    if (str == NULL) {
+        return NULL;
+    } else if (*str == 0) {
+        return str;
+    }
+
+    end = str + strlen(str) - 1;
+    while(end > str && (*end == to_remove)) {
+        end--;
+    }
+
+    *(end+1) = 0;
+
+    return str;
+}
+
+char *ogs_trimcharacter(char *str, char to_remove)
+{
+    return ogs_right_trimcharacter(
+            ogs_left_trimcharacter(str, to_remove), to_remove);
 }

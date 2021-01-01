@@ -5,7 +5,7 @@
 #include "steering_mode.h"
 
 OpenAPI_steering_mode_t *OpenAPI_steering_mode_create(
-    OpenAPI_steer_mode_value_t *steer_mode_value,
+    OpenAPI_steer_mode_value_e steer_mode_value,
     OpenAPI_access_type_e active,
     OpenAPI_access_type_e standby,
     int _3g_load,
@@ -31,7 +31,6 @@ void OpenAPI_steering_mode_free(OpenAPI_steering_mode_t *steering_mode)
         return;
     }
     OpenAPI_lnode_t *node;
-    OpenAPI_steer_mode_value_free(steering_mode->steer_mode_value);
     ogs_free(steering_mode);
 }
 
@@ -49,13 +48,7 @@ cJSON *OpenAPI_steering_mode_convertToJSON(OpenAPI_steering_mode_t *steering_mod
         ogs_error("OpenAPI_steering_mode_convertToJSON() failed [steer_mode_value]");
         goto end;
     }
-    cJSON *steer_mode_value_local_JSON = OpenAPI_steer_mode_value_convertToJSON(steering_mode->steer_mode_value);
-    if (steer_mode_value_local_JSON == NULL) {
-        ogs_error("OpenAPI_steering_mode_convertToJSON() failed [steer_mode_value]");
-        goto end;
-    }
-    cJSON_AddItemToObject(item, "steerModeValue", steer_mode_value_local_JSON);
-    if (item->child == NULL) {
+    if (cJSON_AddStringToObject(item, "steerModeValue", OpenAPI_steer_mode_value_ToString(steering_mode->steer_mode_value)) == NULL) {
         ogs_error("OpenAPI_steering_mode_convertToJSON() failed [steer_mode_value]");
         goto end;
     }
@@ -101,9 +94,13 @@ OpenAPI_steering_mode_t *OpenAPI_steering_mode_parseFromJSON(cJSON *steering_mod
         goto end;
     }
 
-    OpenAPI_steer_mode_value_t *steer_mode_value_local_nonprim = NULL;
+    OpenAPI_steer_mode_value_e steer_mode_valueVariable;
 
-    steer_mode_value_local_nonprim = OpenAPI_steer_mode_value_parseFromJSON(steer_mode_value);
+    if (!cJSON_IsString(steer_mode_value)) {
+        ogs_error("OpenAPI_steering_mode_parseFromJSON() failed [steer_mode_value]");
+        goto end;
+    }
+    steer_mode_valueVariable = OpenAPI_steer_mode_value_FromString(steer_mode_value->valuestring);
 
     cJSON *active = cJSON_GetObjectItemCaseSensitive(steering_modeJSON, "active");
 
@@ -148,7 +145,7 @@ OpenAPI_steering_mode_t *OpenAPI_steering_mode_parseFromJSON(cJSON *steering_mod
     }
 
     steering_mode_local_var = OpenAPI_steering_mode_create (
-        steer_mode_value_local_nonprim,
+        steer_mode_valueVariable,
         active ? activeVariable : 0,
         standby ? standbyVariable : 0,
         _3g_load ? _3g_load->valuedouble : 0,

@@ -1,7 +1,7 @@
 /*
  * reporting_level.h
  *
- * Possible values are - SER_ID_LEVEL: Indicates that the usage shall be reported on service id and rating group combination level. - RAT_GR_LEVEL: Indicates that the usage shall be reported on rating group level. - SPON_CON_LEVEL: Indicates that the usage shall be reported on sponsor identity and rating group combination level.
+ *
  */
 
 #ifndef _OpenAPI_reporting_level_H_
@@ -12,22 +12,16 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
-#include "null_value.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_reporting_level_s OpenAPI_reporting_level_t;
-typedef struct OpenAPI_reporting_level_s {
-} OpenAPI_reporting_level_t;
+typedef enum { OpenAPI_reporting_level_NULL = 0, OpenAPI_reporting_level_SER_ID_LEVEL, OpenAPI_reporting_level_RAT_GR_LEVEL, OpenAPI_reporting_level_SPON_CON_LEVEL } OpenAPI_reporting_level_e;
 
-OpenAPI_reporting_level_t *OpenAPI_reporting_level_create(
-    );
-void OpenAPI_reporting_level_free(OpenAPI_reporting_level_t *reporting_level);
-OpenAPI_reporting_level_t *OpenAPI_reporting_level_parseFromJSON(cJSON *reporting_levelJSON);
-cJSON *OpenAPI_reporting_level_convertToJSON(OpenAPI_reporting_level_t *reporting_level);
-OpenAPI_reporting_level_t *OpenAPI_reporting_level_copy(OpenAPI_reporting_level_t *dst, OpenAPI_reporting_level_t *src);
+char* OpenAPI_reporting_level_ToString(OpenAPI_reporting_level_e reporting_level);
+
+OpenAPI_reporting_level_e OpenAPI_reporting_level_FromString(char* reporting_level);
 
 #ifdef __cplusplus
 }

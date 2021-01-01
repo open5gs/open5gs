@@ -67,12 +67,12 @@ typedef struct OpenAPI_sm_policy_context_data_s {
     int ref_qos_indication;
     struct OpenAPI_trace_data_s *trace_req;
     struct OpenAPI_snssai_s *slice_info;
-    struct OpenAPI_qos_flow_usage_s *qos_flow_usage;
+    OpenAPI_qos_flow_usage_e qos_flow_usage;
     struct OpenAPI_serving_nf_identity_s *serv_nf_id;
     char *supp_feat;
     char *smf_id;
     char *recovery_time;
-    struct OpenAPI_ma_pdu_indication_s *ma_pdu_ind;
+    OpenAPI_ma_pdu_indication_e ma_pdu_ind;
     struct OpenAPI_atsss_capability_s *atsss_capab;
 } OpenAPI_sm_policy_context_data_t;
 
@@ -108,12 +108,12 @@ OpenAPI_sm_policy_context_data_t *OpenAPI_sm_policy_context_data_create(
     int ref_qos_indication,
     OpenAPI_trace_data_t *trace_req,
     OpenAPI_snssai_t *slice_info,
-    OpenAPI_qos_flow_usage_t *qos_flow_usage,
+    OpenAPI_qos_flow_usage_e qos_flow_usage,
     OpenAPI_serving_nf_identity_t *serv_nf_id,
     char *supp_feat,
     char *smf_id,
     char *recovery_time,
-    OpenAPI_ma_pdu_indication_t *ma_pdu_ind,
+    OpenAPI_ma_pdu_indication_e ma_pdu_ind,
     OpenAPI_atsss_capability_t *atsss_capab
     );
 void OpenAPI_sm_policy_context_data_free(OpenAPI_sm_policy_context_data_t *sm_policy_context_data);

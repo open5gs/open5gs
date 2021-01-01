@@ -6,12 +6,12 @@
 
 OpenAPI_charging_data_t *OpenAPI_charging_data_create(
     char *chg_id,
-    OpenAPI_metering_method_t *metering_method,
+    OpenAPI_metering_method_e metering_method,
     int offline,
     int online,
     int sdf_handl,
     int rating_group,
-    OpenAPI_reporting_level_t *reporting_level,
+    OpenAPI_reporting_level_e reporting_level,
     int service_id,
     char *sponsor_id,
     char *app_svc_prov_id,
@@ -46,8 +46,6 @@ void OpenAPI_charging_data_free(OpenAPI_charging_data_t *charging_data)
     }
     OpenAPI_lnode_t *node;
     ogs_free(charging_data->chg_id);
-    OpenAPI_metering_method_free(charging_data->metering_method);
-    OpenAPI_reporting_level_free(charging_data->reporting_level);
     ogs_free(charging_data->sponsor_id);
     ogs_free(charging_data->app_svc_prov_id);
     ogs_free(charging_data->af_charg_id);
@@ -74,13 +72,7 @@ cJSON *OpenAPI_charging_data_convertToJSON(OpenAPI_charging_data_t *charging_dat
     }
 
     if (charging_data->metering_method) {
-        cJSON *metering_method_local_JSON = OpenAPI_metering_method_convertToJSON(charging_data->metering_method);
-        if (metering_method_local_JSON == NULL) {
-            ogs_error("OpenAPI_charging_data_convertToJSON() failed [metering_method]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "meteringMethod", metering_method_local_JSON);
-        if (item->child == NULL) {
+        if (cJSON_AddStringToObject(item, "meteringMethod", OpenAPI_metering_method_ToString(charging_data->metering_method)) == NULL) {
             ogs_error("OpenAPI_charging_data_convertToJSON() failed [metering_method]");
             goto end;
         }
@@ -115,13 +107,7 @@ cJSON *OpenAPI_charging_data_convertToJSON(OpenAPI_charging_data_t *charging_dat
     }
 
     if (charging_data->reporting_level) {
-        cJSON *reporting_level_local_JSON = OpenAPI_reporting_level_convertToJSON(charging_data->reporting_level);
-        if (reporting_level_local_JSON == NULL) {
-            ogs_error("OpenAPI_charging_data_convertToJSON() failed [reporting_level]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "reportingLevel", reporting_level_local_JSON);
-        if (item->child == NULL) {
+        if (cJSON_AddStringToObject(item, "reportingLevel", OpenAPI_reporting_level_ToString(charging_data->reporting_level)) == NULL) {
             ogs_error("OpenAPI_charging_data_convertToJSON() failed [reporting_level]");
             goto end;
         }
@@ -183,9 +169,13 @@ OpenAPI_charging_data_t *OpenAPI_charging_data_parseFromJSON(cJSON *charging_dat
 
     cJSON *metering_method = cJSON_GetObjectItemCaseSensitive(charging_dataJSON, "meteringMethod");
 
-    OpenAPI_metering_method_t *metering_method_local_nonprim = NULL;
+    OpenAPI_metering_method_e metering_methodVariable;
     if (metering_method) {
-        metering_method_local_nonprim = OpenAPI_metering_method_parseFromJSON(metering_method);
+        if (!cJSON_IsString(metering_method)) {
+            ogs_error("OpenAPI_charging_data_parseFromJSON() failed [metering_method]");
+            goto end;
+        }
+        metering_methodVariable = OpenAPI_metering_method_FromString(metering_method->valuestring);
     }
 
     cJSON *offline = cJSON_GetObjectItemCaseSensitive(charging_dataJSON, "offline");
@@ -226,9 +216,13 @@ OpenAPI_charging_data_t *OpenAPI_charging_data_parseFromJSON(cJSON *charging_dat
 
     cJSON *reporting_level = cJSON_GetObjectItemCaseSensitive(charging_dataJSON, "reportingLevel");
 
-    OpenAPI_reporting_level_t *reporting_level_local_nonprim = NULL;
+    OpenAPI_reporting_level_e reporting_levelVariable;
     if (reporting_level) {
-        reporting_level_local_nonprim = OpenAPI_reporting_level_parseFromJSON(reporting_level);
+        if (!cJSON_IsString(reporting_level)) {
+            ogs_error("OpenAPI_charging_data_parseFromJSON() failed [reporting_level]");
+            goto end;
+        }
+        reporting_levelVariable = OpenAPI_reporting_level_FromString(reporting_level->valuestring);
     }
 
     cJSON *service_id = cJSON_GetObjectItemCaseSensitive(charging_dataJSON, "serviceId");
@@ -278,12 +272,12 @@ OpenAPI_charging_data_t *OpenAPI_charging_data_parseFromJSON(cJSON *charging_dat
 
     charging_data_local_var = OpenAPI_charging_data_create (
         ogs_strdup(chg_id->valuestring),
-        metering_method ? metering_method_local_nonprim : NULL,
+        metering_method ? metering_methodVariable : 0,
         offline ? offline->valueint : 0,
         online ? online->valueint : 0,
         sdf_handl ? sdf_handl->valueint : 0,
         rating_group ? rating_group->valuedouble : 0,
-        reporting_level ? reporting_level_local_nonprim : NULL,
+        reporting_level ? reporting_levelVariable : 0,
         service_id ? service_id->valuedouble : 0,
         sponsor_id ? ogs_strdup(sponsor_id->valuestring) : NULL,
         app_svc_prov_id ? ogs_strdup(app_svc_prov_id->valuestring) : NULL,

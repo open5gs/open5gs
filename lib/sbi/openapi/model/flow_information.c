@@ -12,7 +12,7 @@ OpenAPI_flow_information_t *OpenAPI_flow_information_create(
     char *tos_traffic_class,
     char *spi,
     char *flow_label,
-    OpenAPI_flow_direction_rm_t *flow_direction
+    OpenAPI_flow_direction_e flow_direction
     )
 {
     OpenAPI_flow_information_t *flow_information_local_var = OpenAPI_malloc(sizeof(OpenAPI_flow_information_t));
@@ -43,7 +43,6 @@ void OpenAPI_flow_information_free(OpenAPI_flow_information_t *flow_information)
     ogs_free(flow_information->tos_traffic_class);
     ogs_free(flow_information->spi);
     ogs_free(flow_information->flow_label);
-    OpenAPI_flow_direction_rm_free(flow_information->flow_direction);
     ogs_free(flow_information);
 }
 
@@ -113,13 +112,7 @@ cJSON *OpenAPI_flow_information_convertToJSON(OpenAPI_flow_information_t *flow_i
     }
 
     if (flow_information->flow_direction) {
-        cJSON *flow_direction_local_JSON = OpenAPI_flow_direction_rm_convertToJSON(flow_information->flow_direction);
-        if (flow_direction_local_JSON == NULL) {
-            ogs_error("OpenAPI_flow_information_convertToJSON() failed [flow_direction]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "flowDirection", flow_direction_local_JSON);
-        if (item->child == NULL) {
+        if (cJSON_AddStringToObject(item, "flowDirection", OpenAPI_flow_direction_ToString(flow_information->flow_direction)) == NULL) {
             ogs_error("OpenAPI_flow_information_convertToJSON() failed [flow_direction]");
             goto end;
         }
@@ -195,9 +188,13 @@ OpenAPI_flow_information_t *OpenAPI_flow_information_parseFromJSON(cJSON *flow_i
 
     cJSON *flow_direction = cJSON_GetObjectItemCaseSensitive(flow_informationJSON, "flowDirection");
 
-    OpenAPI_flow_direction_rm_t *flow_direction_local_nonprim = NULL;
+    OpenAPI_flow_direction_e flow_directionVariable;
     if (flow_direction) {
-        flow_direction_local_nonprim = OpenAPI_flow_direction_rm_parseFromJSON(flow_direction);
+        if (!cJSON_IsString(flow_direction)) {
+            ogs_error("OpenAPI_flow_information_parseFromJSON() failed [flow_direction]");
+            goto end;
+        }
+        flow_directionVariable = OpenAPI_flow_direction_FromString(flow_direction->valuestring);
     }
 
     flow_information_local_var = OpenAPI_flow_information_create (
@@ -208,7 +205,7 @@ OpenAPI_flow_information_t *OpenAPI_flow_information_parseFromJSON(cJSON *flow_i
         tos_traffic_class ? ogs_strdup(tos_traffic_class->valuestring) : NULL,
         spi ? ogs_strdup(spi->valuestring) : NULL,
         flow_label ? ogs_strdup(flow_label->valuestring) : NULL,
-        flow_direction ? flow_direction_local_nonprim : NULL
+        flow_direction ? flow_directionVariable : 0
         );
 
     return flow_information_local_var;

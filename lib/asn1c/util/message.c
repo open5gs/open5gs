@@ -41,7 +41,7 @@ ogs_pkbuf_t *ogs_asn_encode(const asn_TYPE_descriptor_t *td, void *sptr)
         return NULL;
     }
 
-    ogs_pkbuf_trim(pkbuf, (enc_ret.encoded >> 3));
+    ogs_pkbuf_trim(pkbuf, ((enc_ret.encoded + 7) >> 3));
 
     return pkbuf;
 }

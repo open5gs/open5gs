@@ -17,16 +17,11 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_credit_management_status_s OpenAPI_credit_management_status_t;
-typedef struct OpenAPI_credit_management_status_s {
-} OpenAPI_credit_management_status_t;
+typedef enum { OpenAPI_credit_management_status_NULL = 0, OpenAPI_credit_management_status_END_USER_SER_DENIED, OpenAPI_credit_management_status_CREDIT_CTRL_NOT_APP, OpenAPI_credit_management_status_AUTH_REJECTED, OpenAPI_credit_management_status_USER_UNKNOWN, OpenAPI_credit_management_status_RATING_FAILED } OpenAPI_credit_management_status_e;
 
-OpenAPI_credit_management_status_t *OpenAPI_credit_management_status_create(
-    );
-void OpenAPI_credit_management_status_free(OpenAPI_credit_management_status_t *credit_management_status);
-OpenAPI_credit_management_status_t *OpenAPI_credit_management_status_parseFromJSON(cJSON *credit_management_statusJSON);
-cJSON *OpenAPI_credit_management_status_convertToJSON(OpenAPI_credit_management_status_t *credit_management_status);
-OpenAPI_credit_management_status_t *OpenAPI_credit_management_status_copy(OpenAPI_credit_management_status_t *dst, OpenAPI_credit_management_status_t *src);
+char* OpenAPI_credit_management_status_ToString(OpenAPI_credit_management_status_e credit_management_status);
+
+OpenAPI_credit_management_status_e OpenAPI_credit_management_status_FromString(char* credit_management_status);
 
 #ifdef __cplusplus
 }

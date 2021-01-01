@@ -473,6 +473,18 @@ void mme_s11_handle_create_bearer_request(
     bearer->qos.gbr.downlink = bearer_qos.dl_gbr;
     bearer->qos.gbr.uplink = bearer_qos.ul_gbr;
 
+    if (bearer->qos.mbr.downlink || bearer->qos.mbr.uplink ||
+        bearer->qos.gbr.downlink || bearer->qos.gbr.uplink) {
+        if (bearer->qos.mbr.downlink == 0)
+            bearer->qos.mbr.downlink = MAX_BIT_RATE;
+        if (bearer->qos.mbr.uplink == 0)
+            bearer->qos.mbr.uplink = MAX_BIT_RATE;
+        if (bearer->qos.gbr.downlink == 0)
+            bearer->qos.gbr.downlink = MAX_BIT_RATE;
+        if (bearer->qos.gbr.uplink == 0)
+            bearer->qos.gbr.uplink = MAX_BIT_RATE;
+    }
+
     /* Save Bearer TFT */
     OGS_TLV_STORE_DATA(&bearer->tft, &req->bearer_contexts.tft);
 

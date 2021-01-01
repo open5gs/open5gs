@@ -35,8 +35,6 @@
 
 #include "ogs-core.h"
 
-#define OGS_MAX_NUM_OF_PCC_RULE         8   /* Num of PCC Rule */
-
 #define OGS_DIAMETER_INSIDE
 
 #include "diameter/common/message.h"

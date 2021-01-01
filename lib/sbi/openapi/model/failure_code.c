@@ -4,82 +4,27 @@
 #include <stdio.h>
 #include "failure_code.h"
 
-OpenAPI_failure_code_t *OpenAPI_failure_code_create(
-    )
+char* OpenAPI_failure_code_ToString(OpenAPI_failure_code_e failure_code)
 {
-    OpenAPI_failure_code_t *failure_code_local_var = OpenAPI_malloc(sizeof(OpenAPI_failure_code_t));
-    if (!failure_code_local_var) {
-        return NULL;
-    }
-
-    return failure_code_local_var;
+    const char *failure_codeArray[] =  { "NULL", "UNK_RULE_ID", "RA_GR_ERR", "SER_ID_ERR", "NF_MAL", "RES_LIM", "MAX_NR_QoS_FLOW", "MISS_FLOW_INFO", "RES_ALLO_FAIL", "UNSUCC_QOS_VAL", "INCOR_FLOW_INFO", "PS_TO_CS_HAN", "APP_ID_ERR", "NO_QOS_FLOW_BOUND", "FILTER_RES", "MISS_REDI_SER_ADDR", "CM_END_USER_SER_DENIED", "CM_CREDIT_CON_NOT_APP", "CM_AUTH_REJ", "CM_USER_UNK", "CM_RAT_FAILED", "UE_STA_SUSP" };
+    size_t sizeofArray = sizeof(failure_codeArray) / sizeof(failure_codeArray[0]);
+    if (failure_code < sizeofArray)
+        return (char *)failure_codeArray[failure_code];
+    else
+        return (char *)"Unknown";
 }
 
-void OpenAPI_failure_code_free(OpenAPI_failure_code_t *failure_code)
+OpenAPI_failure_code_e OpenAPI_failure_code_FromString(char* failure_code)
 {
-    if (NULL == failure_code) {
-        return;
+    int stringToReturn = 0;
+    const char *failure_codeArray[] =  { "NULL", "UNK_RULE_ID", "RA_GR_ERR", "SER_ID_ERR", "NF_MAL", "RES_LIM", "MAX_NR_QoS_FLOW", "MISS_FLOW_INFO", "RES_ALLO_FAIL", "UNSUCC_QOS_VAL", "INCOR_FLOW_INFO", "PS_TO_CS_HAN", "APP_ID_ERR", "NO_QOS_FLOW_BOUND", "FILTER_RES", "MISS_REDI_SER_ADDR", "CM_END_USER_SER_DENIED", "CM_CREDIT_CON_NOT_APP", "CM_AUTH_REJ", "CM_USER_UNK", "CM_RAT_FAILED", "UE_STA_SUSP" };
+    size_t sizeofArray = sizeof(failure_codeArray) / sizeof(failure_codeArray[0]);
+    while (stringToReturn < sizeofArray) {
+        if (strcmp(failure_code, failure_codeArray[stringToReturn]) == 0) {
+            return stringToReturn;
+        }
+        stringToReturn++;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(failure_code);
-}
-
-cJSON *OpenAPI_failure_code_convertToJSON(OpenAPI_failure_code_t *failure_code)
-{
-    cJSON *item = NULL;
-
-    if (failure_code == NULL) {
-        ogs_error("OpenAPI_failure_code_convertToJSON() failed [FailureCode]");
-        return NULL;
-    }
-
-    item = cJSON_CreateObject();
-end:
-    return item;
-}
-
-OpenAPI_failure_code_t *OpenAPI_failure_code_parseFromJSON(cJSON *failure_codeJSON)
-{
-    OpenAPI_failure_code_t *failure_code_local_var = NULL;
-    failure_code_local_var = OpenAPI_failure_code_create (
-        );
-
-    return failure_code_local_var;
-end:
-    return NULL;
-}
-
-OpenAPI_failure_code_t *OpenAPI_failure_code_copy(OpenAPI_failure_code_t *dst, OpenAPI_failure_code_t *src)
-{
-    cJSON *item = NULL;
-    char *content = NULL;
-
-    ogs_assert(src);
-    item = OpenAPI_failure_code_convertToJSON(src);
-    if (!item) {
-        ogs_error("OpenAPI_failure_code_convertToJSON() failed");
-        return NULL;
-    }
-
-    content = cJSON_Print(item);
-    cJSON_Delete(item);
-
-    if (!content) {
-        ogs_error("cJSON_Print() failed");
-        return NULL;
-    }
-
-    item = cJSON_Parse(content);
-    ogs_free(content);
-    if (!item) {
-        ogs_error("cJSON_Parse() failed");
-        return NULL;
-    }
-
-    OpenAPI_failure_code_free(dst);
-    dst = OpenAPI_failure_code_parseFromJSON(item);
-    cJSON_Delete(item);
-
-    return dst;
+    return 0;
 }
 

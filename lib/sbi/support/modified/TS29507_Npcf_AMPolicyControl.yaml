@@ -300,7 +300,7 @@ components:
       required:
         - suppFeat
     PolicyAssociationRequest: 
-      description: Information which the NF service consumer provides when requesting the creation of a policy association. The serviveName property corresponds to the serviceName in the main body of the specification.
+      description: Information which the NF service consumer provides when requesting the creation of a policy association. The serviceName property corresponds to the serviceName in the main body of the specification.
       type: object
       properties:
         notificationUri:
@@ -378,7 +378,7 @@ components:
           minItems: 1
         guami:
           $ref: 'TS29571_CommonData.yaml#/components/schemas/Guami'
-        serviveName:
+        serviceName:
           $ref: 'TS29510_Nnrf_NFManagement.yaml#/components/schemas/ServiceName'
         traceReq:
           $ref: 'TS29571_CommonData.yaml#/components/schemas/TraceData'

@@ -831,6 +831,10 @@ smf_sess_t *smf_sess_add_by_psi(smf_ue_t *smf_ue, uint8_t psi)
     }
     memset(sess, 0, sizeof *sess);
 
+    /* SBI Features */
+    OGS_SBI_FEATURES_SET(sess->smpolicycontrol_features,
+            OGS_SBI_NPCF_SMPOLICYCONTROL_DN_AUTHORIZATION);
+
     ogs_pfcp_pool_init(&sess->pfcp);
     smf_qfi_pool_init(sess);
 
@@ -1071,6 +1075,9 @@ void smf_sess_remove(smf_sess_t *sess)
     if (sess->upf_n3_addr6)
         ogs_freeaddrinfo(sess->upf_n3_addr6);
 
+    if (sess->pcf_id)
+        ogs_free(sess->pcf_id);
+
     /* Free SBI object memory */
     ogs_sbi_object_free(&sess->sbi);
 
@@ -1190,6 +1197,8 @@ smf_bearer_t *smf_qos_flow_add(smf_sess_t *sess)
     ogs_assert(qos_flow);
     memset(qos_flow, 0, sizeof *qos_flow);
 
+    smf_pf_identifier_pool_init(qos_flow);
+
     qos_flow->index = ogs_pool_index(&smf_bearer_pool, qos_flow);
     ogs_assert(qos_flow->index > 0 && qos_flow->index <=
             ogs_app()->pool.bearer);
@@ -1278,6 +1287,23 @@ smf_bearer_t *smf_qos_flow_find_by_qfi(smf_sess_t *sess, uint8_t qfi)
     }
 
     return qos_flow;
+}
+
+smf_bearer_t *smf_qos_flow_find_by_pcc_rule_id(
+        smf_sess_t *sess, char *pcc_rule_id)
+{
+    smf_bearer_t *qos_flow = NULL;
+
+    ogs_assert(sess);
+    ogs_assert(pcc_rule_id);
+
+    ogs_list_for_each(&sess->bearer_list, qos_flow) {
+        if (qos_flow->pcc_rule.id &&
+            strcmp(qos_flow->pcc_rule.id, pcc_rule_id) == 0)
+            return qos_flow;
+    }
+
+    return NULL;
 }
 
 smf_bearer_t *smf_bearer_add(smf_sess_t *sess)
@@ -1411,8 +1437,10 @@ int smf_bearer_remove(smf_bearer_t *bearer)
     if (bearer->qer)
         ogs_pfcp_qer_remove(bearer->qer);
 
-    if (bearer->name)
-        ogs_free(bearer->name);
+    if (bearer->pcc_rule.name)
+        ogs_free(bearer->pcc_rule.name);
+    if (bearer->pcc_rule.id)
+        ogs_free(bearer->pcc_rule.id);
     if (bearer->pgw_s5u_addr)
         ogs_freeaddrinfo(bearer->pgw_s5u_addr);
     if (bearer->pgw_s5u_addr6)
@@ -1474,15 +1502,17 @@ smf_bearer_t *smf_bearer_find_by_ebi(smf_sess_t *sess, uint8_t ebi)
     return NULL;
 }
 
-smf_bearer_t *smf_bearer_find_by_name(smf_sess_t *sess, char *name)
+smf_bearer_t *smf_bearer_find_by_pcc_rule_name(
+        smf_sess_t *sess, char *pcc_rule_name)
 {
     smf_bearer_t *bearer = NULL;
     
     ogs_assert(sess);
-    ogs_assert(name);
+    ogs_assert(pcc_rule_name);
 
     ogs_list_for_each(&sess->bearer_list, bearer) {
-        if (bearer->name && strcmp(bearer->name, name) == 0)
+        if (bearer->pcc_rule.name &&
+            strcmp(bearer->pcc_rule.name, pcc_rule_name) == 0)
             return bearer;
     }
 
@@ -1580,7 +1610,7 @@ smf_bearer_t *smf_bearer_next(smf_bearer_t *bearer)
     return ogs_list_next(bearer);
 }
 
-smf_pf_t *smf_pf_add(smf_bearer_t *bearer, uint32_t precedence)
+smf_pf_t *smf_pf_add(smf_bearer_t *bearer)
 {
     smf_pf_t *pf = NULL;
 

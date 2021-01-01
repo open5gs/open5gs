@@ -1,7 +1,7 @@
 /*
  * policy_association_request.h
  *
- * Information which the NF service consumer provides when requesting the creation of a policy association. The serviveName property corresponds to the serviceName in the main body of the specification.
+ * Information which the NF service consumer provides when requesting the creation of a policy association. The serviceName property corresponds to the serviceName in the main body of the specification.
  */
 
 #ifndef _OpenAPI_policy_association_request_H_
@@ -53,7 +53,7 @@ typedef struct OpenAPI_policy_association_request_s {
     OpenAPI_list_t *mapping_snssais;
     OpenAPI_list_t *n3g_allowed_snssais;
     struct OpenAPI_guami_s *guami;
-    char *servive_name;
+    char *service_name;
     struct OpenAPI_trace_data_s *trace_req;
     char *supp_feat;
 } OpenAPI_policy_association_request_t;
@@ -82,7 +82,7 @@ OpenAPI_policy_association_request_t *OpenAPI_policy_association_request_create(
     OpenAPI_list_t *mapping_snssais,
     OpenAPI_list_t *n3g_allowed_snssais,
     OpenAPI_guami_t *guami,
-    char *servive_name,
+    char *service_name,
     OpenAPI_trace_data_t *trace_req,
     char *supp_feat
     );

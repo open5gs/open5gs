@@ -6,9 +6,9 @@
 
 OpenAPI_rule_report_t *OpenAPI_rule_report_create(
     OpenAPI_list_t *pcc_rule_ids,
-    OpenAPI_rule_status_t *rule_status,
+    OpenAPI_rule_status_e rule_status,
     OpenAPI_list_t *cont_vers,
-    OpenAPI_failure_code_t *failure_code,
+    OpenAPI_failure_code_e failure_code,
     OpenAPI_final_unit_action_t *fin_unit_act,
     OpenAPI_list_t *ran_nas_rel_causes
     )
@@ -37,12 +37,10 @@ void OpenAPI_rule_report_free(OpenAPI_rule_report_t *rule_report)
         ogs_free(node->data);
     }
     OpenAPI_list_free(rule_report->pcc_rule_ids);
-    OpenAPI_rule_status_free(rule_report->rule_status);
     OpenAPI_list_for_each(rule_report->cont_vers, node) {
         ogs_free(node->data);
     }
     OpenAPI_list_free(rule_report->cont_vers);
-    OpenAPI_failure_code_free(rule_report->failure_code);
     OpenAPI_final_unit_action_free(rule_report->fin_unit_act);
     OpenAPI_list_for_each(rule_report->ran_nas_rel_causes, node) {
         OpenAPI_ran_nas_rel_cause_free(node->data);
@@ -83,13 +81,7 @@ cJSON *OpenAPI_rule_report_convertToJSON(OpenAPI_rule_report_t *rule_report)
         ogs_error("OpenAPI_rule_report_convertToJSON() failed [rule_status]");
         goto end;
     }
-    cJSON *rule_status_local_JSON = OpenAPI_rule_status_convertToJSON(rule_report->rule_status);
-    if (rule_status_local_JSON == NULL) {
-        ogs_error("OpenAPI_rule_report_convertToJSON() failed [rule_status]");
-        goto end;
-    }
-    cJSON_AddItemToObject(item, "ruleStatus", rule_status_local_JSON);
-    if (item->child == NULL) {
+    if (cJSON_AddStringToObject(item, "ruleStatus", OpenAPI_rule_status_ToString(rule_report->rule_status)) == NULL) {
         ogs_error("OpenAPI_rule_report_convertToJSON() failed [rule_status]");
         goto end;
     }
@@ -111,13 +103,7 @@ cJSON *OpenAPI_rule_report_convertToJSON(OpenAPI_rule_report_t *rule_report)
     }
 
     if (rule_report->failure_code) {
-        cJSON *failure_code_local_JSON = OpenAPI_failure_code_convertToJSON(rule_report->failure_code);
-        if (failure_code_local_JSON == NULL) {
-            ogs_error("OpenAPI_rule_report_convertToJSON() failed [failure_code]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "failureCode", failure_code_local_JSON);
-        if (item->child == NULL) {
+        if (cJSON_AddStringToObject(item, "failureCode", OpenAPI_failure_code_ToString(rule_report->failure_code)) == NULL) {
             ogs_error("OpenAPI_rule_report_convertToJSON() failed [failure_code]");
             goto end;
         }
@@ -192,9 +178,13 @@ OpenAPI_rule_report_t *OpenAPI_rule_report_parseFromJSON(cJSON *rule_reportJSON)
         goto end;
     }
 
-    OpenAPI_rule_status_t *rule_status_local_nonprim = NULL;
+    OpenAPI_rule_status_e rule_statusVariable;
 
-    rule_status_local_nonprim = OpenAPI_rule_status_parseFromJSON(rule_status);
+    if (!cJSON_IsString(rule_status)) {
+        ogs_error("OpenAPI_rule_report_parseFromJSON() failed [rule_status]");
+        goto end;
+    }
+    rule_statusVariable = OpenAPI_rule_status_FromString(rule_status->valuestring);
 
     cJSON *cont_vers = cJSON_GetObjectItemCaseSensitive(rule_reportJSON, "contVers");
 
@@ -218,9 +208,13 @@ OpenAPI_rule_report_t *OpenAPI_rule_report_parseFromJSON(cJSON *rule_reportJSON)
 
     cJSON *failure_code = cJSON_GetObjectItemCaseSensitive(rule_reportJSON, "failureCode");
 
-    OpenAPI_failure_code_t *failure_code_local_nonprim = NULL;
+    OpenAPI_failure_code_e failure_codeVariable;
     if (failure_code) {
-        failure_code_local_nonprim = OpenAPI_failure_code_parseFromJSON(failure_code);
+        if (!cJSON_IsString(failure_code)) {
+            ogs_error("OpenAPI_rule_report_parseFromJSON() failed [failure_code]");
+            goto end;
+        }
+        failure_codeVariable = OpenAPI_failure_code_FromString(failure_code->valuestring);
     }
 
     cJSON *fin_unit_act = cJSON_GetObjectItemCaseSensitive(rule_reportJSON, "finUnitAct");
@@ -255,9 +249,9 @@ OpenAPI_rule_report_t *OpenAPI_rule_report_parseFromJSON(cJSON *rule_reportJSON)
 
     rule_report_local_var = OpenAPI_rule_report_create (
         pcc_rule_idsList,
-        rule_status_local_nonprim,
+        rule_statusVariable,
         cont_vers ? cont_versList : NULL,
-        failure_code ? failure_code_local_nonprim : NULL,
+        failure_code ? failure_codeVariable : 0,
         fin_unit_act ? fin_unit_act_local_nonprim : NULL,
         ran_nas_rel_causes ? ran_nas_rel_causesList : NULL
         );

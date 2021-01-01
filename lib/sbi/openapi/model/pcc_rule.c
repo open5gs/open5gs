@@ -10,7 +10,7 @@ OpenAPI_pcc_rule_t *OpenAPI_pcc_rule_create(
     int cont_ver,
     char *pcc_rule_id,
     int precedence,
-    OpenAPI_af_sig_protocol_t *af_sig_protocol,
+    OpenAPI_af_sig_protocol_e af_sig_protocol,
     int app_reloc,
     OpenAPI_list_t *ref_qos_data,
     OpenAPI_list_t *ref_alt_qos_params,
@@ -65,7 +65,6 @@ void OpenAPI_pcc_rule_free(OpenAPI_pcc_rule_t *pcc_rule)
     OpenAPI_list_free(pcc_rule->flow_infos);
     ogs_free(pcc_rule->app_id);
     ogs_free(pcc_rule->pcc_rule_id);
-    OpenAPI_af_sig_protocol_free(pcc_rule->af_sig_protocol);
     OpenAPI_list_for_each(pcc_rule->ref_qos_data, node) {
         ogs_free(node->data);
     }
@@ -165,13 +164,7 @@ cJSON *OpenAPI_pcc_rule_convertToJSON(OpenAPI_pcc_rule_t *pcc_rule)
     }
 
     if (pcc_rule->af_sig_protocol) {
-        cJSON *af_sig_protocol_local_JSON = OpenAPI_af_sig_protocol_convertToJSON(pcc_rule->af_sig_protocol);
-        if (af_sig_protocol_local_JSON == NULL) {
-            ogs_error("OpenAPI_pcc_rule_convertToJSON() failed [af_sig_protocol]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "afSigProtocol", af_sig_protocol_local_JSON);
-        if (item->child == NULL) {
+        if (cJSON_AddStringToObject(item, "afSigProtocol", OpenAPI_af_sig_protocol_ToString(pcc_rule->af_sig_protocol)) == NULL) {
             ogs_error("OpenAPI_pcc_rule_convertToJSON() failed [af_sig_protocol]");
             goto end;
         }
@@ -423,9 +416,13 @@ OpenAPI_pcc_rule_t *OpenAPI_pcc_rule_parseFromJSON(cJSON *pcc_ruleJSON)
 
     cJSON *af_sig_protocol = cJSON_GetObjectItemCaseSensitive(pcc_ruleJSON, "afSigProtocol");
 
-    OpenAPI_af_sig_protocol_t *af_sig_protocol_local_nonprim = NULL;
+    OpenAPI_af_sig_protocol_e af_sig_protocolVariable;
     if (af_sig_protocol) {
-        af_sig_protocol_local_nonprim = OpenAPI_af_sig_protocol_parseFromJSON(af_sig_protocol);
+        if (!cJSON_IsString(af_sig_protocol)) {
+            ogs_error("OpenAPI_pcc_rule_parseFromJSON() failed [af_sig_protocol]");
+            goto end;
+        }
+        af_sig_protocolVariable = OpenAPI_af_sig_protocol_FromString(af_sig_protocol->valuestring);
     }
 
     cJSON *app_reloc = cJSON_GetObjectItemCaseSensitive(pcc_ruleJSON, "appReloc");
@@ -635,7 +632,7 @@ OpenAPI_pcc_rule_t *OpenAPI_pcc_rule_parseFromJSON(cJSON *pcc_ruleJSON)
         cont_ver ? cont_ver->valuedouble : 0,
         ogs_strdup(pcc_rule_id->valuestring),
         precedence ? precedence->valuedouble : 0,
-        af_sig_protocol ? af_sig_protocol_local_nonprim : NULL,
+        af_sig_protocol ? af_sig_protocolVariable : 0,
         app_reloc ? app_reloc->valueint : 0,
         ref_qos_data ? ref_qos_dataList : NULL,
         ref_alt_qos_params ? ref_alt_qos_paramsList : NULL,

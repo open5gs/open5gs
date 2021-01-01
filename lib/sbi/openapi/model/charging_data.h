@@ -22,12 +22,12 @@ extern "C" {
 typedef struct OpenAPI_charging_data_s OpenAPI_charging_data_t;
 typedef struct OpenAPI_charging_data_s {
     char *chg_id;
-    struct OpenAPI_metering_method_s *metering_method;
+    OpenAPI_metering_method_e metering_method;
     int offline;
     int online;
     int sdf_handl;
     int rating_group;
-    struct OpenAPI_reporting_level_s *reporting_level;
+    OpenAPI_reporting_level_e reporting_level;
     int service_id;
     char *sponsor_id;
     char *app_svc_prov_id;
@@ -37,12 +37,12 @@ typedef struct OpenAPI_charging_data_s {
 
 OpenAPI_charging_data_t *OpenAPI_charging_data_create(
     char *chg_id,
-    OpenAPI_metering_method_t *metering_method,
+    OpenAPI_metering_method_e metering_method,
     int offline,
     int online,
     int sdf_handl,
     int rating_group,
-    OpenAPI_reporting_level_t *reporting_level,
+    OpenAPI_reporting_level_e reporting_level,
     int service_id,
     char *sponsor_id,
     char *app_svc_prov_id,

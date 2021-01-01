@@ -996,9 +996,10 @@ void ogs_sbi_object_free(ogs_sbi_object_t *sbi_object)
     }
 }
 
-ogs_sbi_xact_t *ogs_sbi_xact_add(OpenAPI_nf_type_e target_nf_type,
-        ogs_sbi_object_t *sbi_object, void *data,
-        ogs_sbi_build_f build, void (*timer_cb)(void *data))
+ogs_sbi_xact_t *ogs_sbi_xact_add(
+        OpenAPI_nf_type_e target_nf_type, ogs_sbi_object_t *sbi_object,
+        ogs_sbi_build_f build, void *context, void *data,
+        void (*timer_cb)(void *data))
 {
     ogs_sbi_xact_t *xact = NULL;
 
@@ -1011,7 +1012,7 @@ ogs_sbi_xact_t *ogs_sbi_xact_add(OpenAPI_nf_type_e target_nf_type,
     xact->target_nf_type = target_nf_type;
     xact->sbi_object = sbi_object;
 
-    xact->request = (*build)(sbi_object, data);
+    xact->request = (*build)(context, data);
     ogs_assert(xact->request);
 
     xact->t_response = ogs_timer_add(

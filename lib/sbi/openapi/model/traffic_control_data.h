@@ -36,7 +36,7 @@ typedef struct OpenAPI_traffic_control_data_s {
     OpenAPI_list_t *route_to_locs;
     int traff_corre_ind;
     struct OpenAPI_up_path_chg_event_s *up_path_chg_event;
-    struct OpenAPI_steering_functionality_s *steer_fun;
+    OpenAPI_steering_functionality_e steer_fun;
     struct OpenAPI_steering_mode_s *steer_mode_dl;
     struct OpenAPI_steering_mode_s *steer_mode_ul;
     struct OpenAPI_multicast_access_control_s *mul_acc_ctrl;
@@ -53,7 +53,7 @@ OpenAPI_traffic_control_data_t *OpenAPI_traffic_control_data_create(
     OpenAPI_list_t *route_to_locs,
     int traff_corre_ind,
     OpenAPI_up_path_chg_event_t *up_path_chg_event,
-    OpenAPI_steering_functionality_t *steer_fun,
+    OpenAPI_steering_functionality_e steer_fun,
     OpenAPI_steering_mode_t *steer_mode_dl,
     OpenAPI_steering_mode_t *steer_mode_ul,
     OpenAPI_multicast_access_control_t *mul_acc_ctrl

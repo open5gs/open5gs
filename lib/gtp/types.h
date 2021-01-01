@@ -275,7 +275,6 @@ int16_t ogs_gtp_build_flow_qos(ogs_tlv_octet_t *octet,
  * See subclause 10.5.6.12 in 3GPP TS 24.008 [13]. */
 #define OGS_GTP_MAX_TRAFFIC_FLOW_TEMPLATE 255
 
-#define OGS_GTP_MAX_NUM_OF_PACKET_FILTER_COMPONENT 16
 typedef struct ogs_gtp_tft_s {
     union {
         struct {
@@ -302,44 +301,7 @@ ED3(uint8_t code:3;,
             uint8_t flags;
         };
         uint8_t precedence;
-        uint8_t length;
-#define GTP_PACKET_FILTER_PROTOCOL_IDENTIFIER_NEXT_HEADER_TYPE 48
-#define GTP_PACKET_FILTER_IPV4_REMOTE_ADDRESS_TYPE 16
-#define GTP_PACKET_FILTER_IPV4_LOCAL_ADDRESS_TYPE 17
-#define GTP_PACKET_FILTER_IPV6_REMOTE_ADDRESS_TYPE 32
-#define GTP_PACKET_FILTER_IPV6_REMOTE_ADDRESS_PREFIX_LENGTH_TYPE 33
-#define GTP_PACKET_FILTER_IPV6_LOCAL_ADDRESS_TYPE 34
-#define GTP_PACKET_FILTER_IPV6_LOCAL_ADDRESS_PREFIX_LENGTH_TYPE 35
-#define GTP_PACKET_FILTER_SINGLE_LOCAL_PORT_TYPE 64
-#define GTP_PACKET_FILTER_LOCAL_PORT_RANGE_TYPE 65
-#define GTP_PACKET_FILTER_SINGLE_REMOTE_PORT_TYPE 80
-#define GTP_PACKET_FILTER_REMOTE_PORT_RANGE_TYPE 81
-#define GTP_PACKET_FILTER_SECURITY_PARAMETER_INDEX_TYPE 96
-#define GTP_PACKET_FILTER_TOS_TRAFFIC_CLASS_TYPE 112
-#define GTP_PACKET_FILTER_FLOW_LABEL_TYPE 128
-        struct {
-            uint8_t type;
-            union {
-                uint8_t proto;
-                struct {
-                    uint32_t addr;
-                    uint32_t mask;
-                } ipv4;
-                struct {
-                    uint32_t addr[4];
-                    uint8_t prefixlen;
-                } ipv6;
-                struct {
-                    uint32_t addr[4];
-                    uint32_t mask[4];
-                } ipv6_mask;
-                struct {
-                    uint16_t low;
-                    uint16_t high;
-                } port;
-            };
-        } component[OGS_GTP_MAX_NUM_OF_PACKET_FILTER_COMPONENT];
-        uint8_t num_of_component;
+        ogs_pf_content_t content;
     } pf[OGS_MAX_NUM_OF_PACKET_FILTER];
 } ogs_gtp_tft_t;
 

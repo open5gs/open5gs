@@ -79,10 +79,16 @@ void testgsm_recv(test_sess_t *sess, ogs_pkbuf_t *pkbuf)
     rv = ogs_nas_5gsm_decode(&message, pkbuf);
     ogs_assert(rv == OGS_OK);
 
+    sess->pti = message.gsm.h.procedure_transaction_identity;
+
     switch (message.gsm.h.message_type) {
     case OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_ACCEPT:
         testgsm_handle_pdu_session_establishment_accept(sess,
                 &message.gsm.pdu_session_establishment_accept);
+        break;
+    case OGS_NAS_5GS_PDU_SESSION_MODIFICATION_COMMAND:
+        testgsm_handle_pdu_session_modification_command(sess,
+                &message.gsm.pdu_session_modification_command);
         break;
     case OGS_NAS_5GS_PDU_SESSION_RELEASE_COMMAND:
         break;

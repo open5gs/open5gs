@@ -88,6 +88,15 @@ int amf_namf_comm_handle_n1_n2_message_transfer(
         ogs_error("No n2InfoContent");
         return OGS_ERROR;
     }
+    switch (n2InfoContent->ngap_ie_type) {
+    case OpenAPI_ngap_ie_type_PDU_RES_SETUP_REQ:
+    case OpenAPI_ngap_ie_type_PDU_RES_MOD_REQ:
+        break;
+    default:
+        ogs_error("Not implemented ngap_ie_type[%d]",
+                n2InfoContent->ngap_ie_type);
+        return OGS_ERROR;
+    }
     ngapData = n2InfoContent->ngap_data;
     if (!ngapData || !ngapData->content_id) {
         ogs_error("No ngapData");
@@ -144,45 +153,68 @@ int amf_namf_comm_handle_n1_n2_message_transfer(
     n2smbuf = ogs_pkbuf_copy(n2smbuf);
     ogs_assert(n2smbuf);
 
-    if (sess->pdu_session_establishment_accept) {
-        ogs_pkbuf_free(sess->pdu_session_establishment_accept);
-        sess->pdu_session_establishment_accept = NULL;
-    }
+    status = OGS_SBI_HTTP_STATUS_OK;
 
     gmmbuf = gmm_build_dl_nas_transport(sess,
             OGS_NAS_PAYLOAD_CONTAINER_N1_SM_INFORMATION, n1smbuf, 0, 0);
     ogs_assert(gmmbuf);
 
-    ngapbuf = ngap_build_pdu_session_resource_setup_request(
-            sess, gmmbuf, n2smbuf);
-    ogs_assert(ngapbuf);
+    switch (n2InfoContent->ngap_ie_type) {
+    case OpenAPI_ngap_ie_type_PDU_RES_SETUP_REQ:
+        if (sess->pdu_session_establishment_accept) {
+            ogs_pkbuf_free(sess->pdu_session_establishment_accept);
+            sess->pdu_session_establishment_accept = NULL;
+        }
 
-    status = OGS_SBI_HTTP_STATUS_OK;
+        ngapbuf = ngap_build_pdu_session_resource_setup_request(
+                sess, gmmbuf, n2smbuf);
+        ogs_assert(ngapbuf);
 
-    if (SESSION_CONTEXT_IN_SMF(sess)) {
-        /*
-         * [1-CLIENT] /nsmf-pdusession/v1/sm-contexts
-         * [2-SERVER] /namf-comm/v1/ue-contexts/{supi}/n1-n2-messages
-         *
-         * If [2-SERVER] arrives after [1-CLIENT],
-         * sm-context-ref is created in [1-CLIENT].
-         * So, the PDU session establishment accpet can be transmitted now.
-         */
+        if (SESSION_CONTEXT_IN_SMF(sess)) {
+            /*
+             * [1-CLIENT] /nsmf-pdusession/v1/sm-contexts
+             * [2-SERVER] /namf-comm/v1/ue-contexts/{supi}/n1-n2-messages
+             *
+             * If [2-SERVER] arrives after [1-CLIENT],
+             * sm-context-ref is created in [1-CLIENT].
+             * So, the PDU session establishment accpet can be transmitted now.
+             */
+            if (nas_5gs_send_to_gnb(amf_ue, ngapbuf) != OGS_OK) {
+                ogs_error("nas_5gs_send_to_gnb() failed");
+                status = OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR;
+            }
+        } else {
+            sess->pdu_session_establishment_accept = ngapbuf;
+        }
+        break;
+
+    case OpenAPI_ngap_ie_type_PDU_RES_MOD_REQ:
+        ngapbuf = ngap_build_pdu_session_resource_modify_request(
+                sess, gmmbuf, n2smbuf);
+        ogs_assert(ngapbuf);
+
         if (nas_5gs_send_to_gnb(amf_ue, ngapbuf) != OGS_OK) {
             ogs_error("nas_5gs_send_to_gnb() failed");
             status = OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR;
         }
-    } else {
-        sess->pdu_session_establishment_accept = ngapbuf;
-    }
+        break;
 
-    memset(&N1N2MessageTransferRspData, 0, sizeof(N1N2MessageTransferRspData));
-    N1N2MessageTransferRspData.cause =
-        OpenAPI_n1_n2_message_transfer_cause_N1_N2_TRANSFER_INITIATED;
+    default:
+        ogs_error("Not implemented ngap_ie_type[%d]",
+                n2InfoContent->ngap_ie_type);
+        ogs_assert_if_reached();
+    }
 
     memset(&sendmsg, 0, sizeof(sendmsg));
 
-    sendmsg.N1N2MessageTransferRspData = &N1N2MessageTransferRspData;
+    if (status == OGS_SBI_HTTP_STATUS_OK) {
+        memset(&N1N2MessageTransferRspData, 0,
+                sizeof(N1N2MessageTransferRspData));
+        N1N2MessageTransferRspData.cause =
+            OpenAPI_n1_n2_message_transfer_cause_N1_N2_TRANSFER_INITIATED;
+
+        sendmsg.N1N2MessageTransferRspData = &N1N2MessageTransferRspData;
+    }
 
     response = ogs_sbi_build_response(&sendmsg, status);
     ogs_assert(response);

@@ -34,7 +34,7 @@ ogs_sbi_request_t *amf_npcf_am_policy_control_build_create(
 
     OpenAPI_list_t *AllowedSnssais = NULL;
     OpenAPI_user_location_t ueLocation;
-    OpenAPI_ambr_t ueAmbr;
+    OpenAPI_ambr_t UeAmbr;
 
     ogs_assert(amf_ue);
     ogs_assert(amf_ue->supi);
@@ -89,17 +89,20 @@ ogs_sbi_request_t *amf_npcf_am_policy_control_build_create(
 
     PolicyAssociationRequest.rat_type = amf_ue_rat_type(amf_ue);
 
-    memset(&ueAmbr, 0, sizeof(ueAmbr));
-    if (amf_ue->subscribed_ue_ambr.uplink) {
-        ueAmbr.uplink = ogs_sbi_bitrate_to_string(
-            amf_ue->subscribed_ue_ambr.uplink, OGS_SBI_BITRATE_KBPS);
-    }
-    if (amf_ue->subscribed_ue_ambr.downlink) {
-        ueAmbr.downlink = ogs_sbi_bitrate_to_string(
-            amf_ue->subscribed_ue_ambr.downlink, OGS_SBI_BITRATE_KBPS);
-    }
-    if (ueAmbr.downlink || ueAmbr.uplink) {
-        PolicyAssociationRequest.ue_ambr = &ueAmbr;
+    memset(&UeAmbr, 0, sizeof(UeAmbr));
+    if (OGS_SBI_FEATURES_IS_SET(amf_ue->am_policy_control_features,
+                OGS_SBI_NPCF_AM_POLICY_CONTROL_UE_AMBR_AUTHORIZATION)) {
+        if (amf_ue->ue_ambr.uplink) {
+            UeAmbr.uplink = ogs_sbi_bitrate_to_string(
+                amf_ue->ue_ambr.uplink, OGS_SBI_BITRATE_KBPS);
+        }
+        if (amf_ue->ue_ambr.downlink) {
+            UeAmbr.downlink = ogs_sbi_bitrate_to_string(
+                amf_ue->ue_ambr.downlink, OGS_SBI_BITRATE_KBPS);
+        }
+        if (UeAmbr.downlink || UeAmbr.uplink) {
+            PolicyAssociationRequest.ue_ambr = &UeAmbr;
+        }
     }
 
     AllowedSnssais = OpenAPI_list_create();
@@ -128,7 +131,12 @@ ogs_sbi_request_t *amf_npcf_am_policy_control_build_create(
 
     PolicyAssociationRequest.guami = ogs_sbi_build_guami(amf_ue->guami);
 
-    PolicyAssociationRequest.supp_feat = (char *)"";
+    PolicyAssociationRequest.service_name =
+        (char *)OGS_SBI_SERVICE_NAME_NAMF_CALLBACK;
+
+    PolicyAssociationRequest.supp_feat =
+        ogs_uint64_to_string(amf_ue->am_policy_control_features);
+    ogs_assert(PolicyAssociationRequest.supp_feat);
 
     message.PolicyAssociationRequest = &PolicyAssociationRequest;
 
@@ -136,6 +144,8 @@ ogs_sbi_request_t *amf_npcf_am_policy_control_build_create(
     ogs_assert(request);
 
     ogs_free(PolicyAssociationRequest.notification_uri);
+    ogs_free(PolicyAssociationRequest.supp_feat);
+
     if (PolicyAssociationRequest.gpsi)
         ogs_free(PolicyAssociationRequest.gpsi);
 
@@ -150,8 +160,8 @@ ogs_sbi_request_t *amf_npcf_am_policy_control_build_create(
     if (PolicyAssociationRequest.serving_plmn)
         ogs_sbi_free_plmn_id_nid(PolicyAssociationRequest.serving_plmn);
 
-    if (ueAmbr.downlink) ogs_free(ueAmbr.downlink);
-    if (ueAmbr.uplink) ogs_free(ueAmbr.uplink);
+    if (UeAmbr.downlink) ogs_free(UeAmbr.downlink);
+    if (UeAmbr.uplink) ogs_free(UeAmbr.uplink);
 
     OpenAPI_list_for_each(PolicyAssociationRequest.allowed_snssais, node) {
         struct OpenAPI_snssai_s *Snssai = node->data;

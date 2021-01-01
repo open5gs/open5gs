@@ -17,16 +17,11 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_reporting_frequency_s OpenAPI_reporting_frequency_t;
-typedef struct OpenAPI_reporting_frequency_s {
-} OpenAPI_reporting_frequency_t;
+typedef enum { OpenAPI_reporting_frequency_NULL = 0, OpenAPI_reporting_frequency_EVENT_TRIGGERED, OpenAPI_reporting_frequency_PERIODIC, OpenAPI_reporting_frequency_SESSION_RELEASE } OpenAPI_reporting_frequency_e;
 
-OpenAPI_reporting_frequency_t *OpenAPI_reporting_frequency_create(
-    );
-void OpenAPI_reporting_frequency_free(OpenAPI_reporting_frequency_t *reporting_frequency);
-OpenAPI_reporting_frequency_t *OpenAPI_reporting_frequency_parseFromJSON(cJSON *reporting_frequencyJSON);
-cJSON *OpenAPI_reporting_frequency_convertToJSON(OpenAPI_reporting_frequency_t *reporting_frequency);
-OpenAPI_reporting_frequency_t *OpenAPI_reporting_frequency_copy(OpenAPI_reporting_frequency_t *dst, OpenAPI_reporting_frequency_t *src);
+char* OpenAPI_reporting_frequency_ToString(OpenAPI_reporting_frequency_e reporting_frequency);
+
+OpenAPI_reporting_frequency_e OpenAPI_reporting_frequency_FromString(char* reporting_frequency);
 
 #ifdef __cplusplus
 }

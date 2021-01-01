@@ -17,16 +17,11 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_pdu_session_rel_cause_s OpenAPI_pdu_session_rel_cause_t;
-typedef struct OpenAPI_pdu_session_rel_cause_s {
-} OpenAPI_pdu_session_rel_cause_t;
+typedef enum { OpenAPI_pdu_session_rel_cause_NULL = 0, OpenAPI_pdu_session_rel_cause_PS_TO_CS_HO } OpenAPI_pdu_session_rel_cause_e;
 
-OpenAPI_pdu_session_rel_cause_t *OpenAPI_pdu_session_rel_cause_create(
-    );
-void OpenAPI_pdu_session_rel_cause_free(OpenAPI_pdu_session_rel_cause_t *pdu_session_rel_cause);
-OpenAPI_pdu_session_rel_cause_t *OpenAPI_pdu_session_rel_cause_parseFromJSON(cJSON *pdu_session_rel_causeJSON);
-cJSON *OpenAPI_pdu_session_rel_cause_convertToJSON(OpenAPI_pdu_session_rel_cause_t *pdu_session_rel_cause);
-OpenAPI_pdu_session_rel_cause_t *OpenAPI_pdu_session_rel_cause_copy(OpenAPI_pdu_session_rel_cause_t *dst, OpenAPI_pdu_session_rel_cause_t *src);
+char* OpenAPI_pdu_session_rel_cause_ToString(OpenAPI_pdu_session_rel_cause_e pdu_session_rel_cause);
+
+OpenAPI_pdu_session_rel_cause_e OpenAPI_pdu_session_rel_cause_FromString(char* pdu_session_rel_cause);
 
 #ifdef __cplusplus
 }

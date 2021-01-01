@@ -171,7 +171,10 @@ typedef struct smf_bearer_s {
     uint32_t        sgw_s5u_teid;   /* SGW-S5U TEID */
     ogs_ip_t        sgw_s5u_ip;     /* SGW-S5U IPv4/IPv6 */
 
-    char            *name;          /* PCC Rule Name */
+    struct {
+        char            *name;      /* EPC: PCC Rule Name */
+        char            *id;        /* 5GC: PCC Rule Id */
+    } pcc_rule;
     ogs_qos_t       qos;            /* QoS Infomration */
 
     OGS_POOL(pf_identifier_pool, uint8_t);
@@ -191,6 +194,8 @@ typedef struct smf_sess_s {
     ogs_fsm_t       sm;             /* A state machine */
 
     ogs_pfcp_sess_t pfcp;           /* PFCP session context */
+
+    uint64_t        smpolicycontrol_features; /* SBI features */
 
     uint32_t        smf_n4_teid;    /* SMF-N4-TEID is derived from INDEX */
     uint32_t        sgw_s5c_teid;   /* SGW-S5C-TEID is received from SGW */
@@ -235,6 +240,9 @@ typedef struct smf_sess_s {
     ogs_eps_tai_t   e_tai;
     ogs_e_cgi_t     e_cgi;
 
+    /* Rat Type */
+    OpenAPI_rat_type_e rat_type;
+
     /* NR Location */
     ogs_5gs_tai_t   nr_tai;
     ogs_nr_cgi_t    nr_cgi;
@@ -243,6 +251,9 @@ typedef struct smf_sess_s {
     /* S_NSSAI & DNN */
     ogs_s_nssai_t   s_nssai;
     char            *dnn;
+
+    /* PCF ID */
+    char            *pcf_id;
 
     /* Integrity protection maximum data rate */
     struct {
@@ -326,6 +337,8 @@ smf_sess_t *smf_sess_cycle(smf_sess_t *sess);
 
 smf_bearer_t *smf_qos_flow_add(smf_sess_t *sess);
 smf_bearer_t *smf_qos_flow_find_by_qfi(smf_sess_t *sess, uint8_t qfi);
+smf_bearer_t *smf_qos_flow_find_by_pcc_rule_id(
+        smf_sess_t *sess, char *pcc_rule_id);
 
 smf_bearer_t *smf_bearer_add(smf_sess_t *sess);
 int smf_bearer_remove(smf_bearer_t *bearer);
@@ -334,7 +347,8 @@ smf_bearer_t *smf_bearer_find(uint32_t index);
 smf_bearer_t *smf_bearer_find_by_pgw_s5u_teid(
         smf_sess_t *sess, uint32_t pgw_s5u_teid);
 smf_bearer_t *smf_bearer_find_by_ebi(smf_sess_t *sess, uint8_t ebi);
-smf_bearer_t *smf_bearer_find_by_name(smf_sess_t *sess, char *name);
+smf_bearer_t *smf_bearer_find_by_pcc_rule_name(
+        smf_sess_t *sess, char *pcc_rule_name);
 smf_bearer_t *smf_bearer_find_by_qci_arp(smf_sess_t *sess, 
                                 uint8_t qci,
                                 uint8_t priority_level,
@@ -347,7 +361,7 @@ bool smf_bearer_is_default(smf_bearer_t *bearer);
 smf_bearer_t *smf_bearer_first(smf_sess_t *sess);
 smf_bearer_t *smf_bearer_next(smf_bearer_t *bearer);
 
-smf_pf_t *smf_pf_add(smf_bearer_t *bearer, uint32_t precedence);
+smf_pf_t *smf_pf_add(smf_bearer_t *bearer);
 int smf_pf_remove(smf_pf_t *pf);
 void smf_pf_remove_all(smf_bearer_t *bearer);
 smf_pf_t *smf_pf_find_by_id(smf_bearer_t *smf_bearer, uint8_t id);

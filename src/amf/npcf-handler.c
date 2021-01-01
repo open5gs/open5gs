@@ -27,7 +27,10 @@ int amf_npcf_am_policy_control_handle_create(
 {
     int rv;
 
+    uint64_t supported_features;
+
     OpenAPI_policy_association_t *PolicyAssociation = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     ogs_sbi_message_t message;
     ogs_sbi_header_t header;
@@ -83,9 +86,36 @@ int amf_npcf_am_policy_control_handle_create(
         return OGS_ERROR;
     }
 
+    /* SBI Features */
+    supported_features = ogs_uint64_from_string(PolicyAssociation->supp_feat);
+    amf_ue->am_policy_control_features &= supported_features;
+
     if (amf_ue->policy_association_id)
         ogs_free(amf_ue->policy_association_id);
     amf_ue->policy_association_id = ogs_strdup(message.h.resource.component[1]);
+
+    OpenAPI_list_for_each(PolicyAssociation->triggers, node) {
+        if (node->data) {
+            OpenAPI_request_trigger_e trigger =
+                (OpenAPI_request_trigger_e)node->data;
+            OpenAPI_ambr_t *UeAmbr = NULL;
+
+            switch (trigger) {
+            case OpenAPI_request_trigger_UE_AMBR_CH:
+                UeAmbr = PolicyAssociation->ue_ambr;
+                if (UeAmbr) {
+                    amf_ue->ue_ambr.uplink =
+                        ogs_sbi_bitrate_from_string(UeAmbr->uplink);
+                    amf_ue->ue_ambr.downlink =
+                        ogs_sbi_bitrate_from_string(UeAmbr->downlink);
+                }
+                break;
+            default:
+                ogs_error("Not implemented [%d]", trigger);
+                break;
+            }
+        }
+    }
 
     ogs_sbi_header_free(&header);
 

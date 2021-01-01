@@ -330,8 +330,8 @@ typedef struct ogs_pcc_rule_s {
 #define OGS_PCC_RULE_TYPE_REMOVE                2
     uint8_t type;
 
-#define OGS_MAX_PCC_RULE_NAME_LEN               256
-    char *name;
+    char *id;   /* 5GC */
+    char *name; /* EPC */
 
 /* Num of Flow per PCC Rule */
 #define OGS_MAX_NUM_OF_FLOW                     8
@@ -359,8 +359,11 @@ typedef struct ogs_pcc_rule_s {
         if ((__sRC)->name) { \
             (__dST)->name = ogs_strdup((__sRC)->name); \
             ogs_assert((__dST)->name); \
-        } else \
-            ogs_assert_if_reached(); \
+        } \
+        if ((__sRC)->id) { \
+            (__dST)->id = ogs_strdup((__sRC)->id); \
+            ogs_assert((__dST)->id); \
+        } \
         for (__iNDEX = 0; __iNDEX < (__sRC)->num_of_flow; __iNDEX++) { \
             (__dST)->flow[__iNDEX].direction = (__sRC)->flow[__iNDEX].direction; \
             (__dST)->flow[__iNDEX].description = \
@@ -377,6 +380,8 @@ typedef struct ogs_pcc_rule_s {
     do { \
         int __pCCrULE_iNDEX; \
         ogs_assert((__pCCrULE)); \
+        if ((__pCCrULE)->id) \
+            ogs_free((__pCCrULE)->id); \
         if ((__pCCrULE)->name) \
             ogs_free((__pCCrULE)->name); \
         for (__pCCrULE_iNDEX = 0; \
@@ -506,6 +511,15 @@ typedef struct ogs_subscription_data_s {
         char bcd[OGS_MAX_MSISDN_BCD_LEN+1];
     } msisdn[OGS_MAX_NUM_OF_MSISDN];
 } ogs_subscription_data_t;
+
+typedef struct ogs_session_data_s {
+    ogs_pdn_t           pdn;
+#define OGS_MAX_NUM_OF_PCC_RULE         8   /* Num of PCC Rule */
+    ogs_pcc_rule_t      pcc_rule[OGS_MAX_NUM_OF_PCC_RULE];
+    int                 num_of_pcc_rule;
+} ogs_session_data_t;
+
+void ogs_session_data_free(ogs_session_data_t *session_data);
 
 #ifdef __cplusplus
 }

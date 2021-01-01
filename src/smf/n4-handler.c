@@ -22,8 +22,9 @@
 #include "pfcp-path.h"
 #include "gtp-path.h"
 #include "n4-handler.h"
-#include "bearer-binding.h"
+#include "binding.h"
 #include "sbi-path.h"
+#include "ngap-path.h"
 
 static uint8_t gtp_cause_from_pfcp(uint8_t pfcp_cause)
 {
@@ -101,6 +102,8 @@ void smf_5gc_n4_handle_session_establishment_response(
 {
     int i;
 
+    ogs_pkbuf_t *n1smbuf = NULL;
+    ogs_pkbuf_t *n2smbuf = NULL;
     ogs_sbi_stream_t *stream = NULL;
 
     uint8_t pfcp_cause_value = OGS_PFCP_CAUSE_REQUEST_ACCEPTED;
@@ -187,12 +190,14 @@ void smf_5gc_n4_handle_session_establishment_response(
     ogs_assert(up_f_seid);
     sess->upf_n4_seid = be64toh(up_f_seid->seid);
 
-    smf_sbi_discover_and_send(OpenAPI_nf_type_AMF, sess, stream, NULL,
-            smf_namf_comm_build_n1_n2_message_transfer);
+    n1smbuf = gsm_build_pdu_session_establishment_accept(sess);
+    ogs_assert(n1smbuf);
+    n2smbuf = ngap_build_pdu_session_resource_setup_request_transfer(sess);
+    ogs_assert(n2smbuf);
 
-#if 0
-    smf_bearer_binding(sess);
-#endif
+    smf_namf_comm_send_n1_n2_message_transfer(
+            sess, SMF_UE_REQUESTED_PDU_SESSION_ESTABLISHMENT,
+            n1smbuf, n2smbuf);
 }
 
 void smf_5gc_n4_handle_session_modification_response(
@@ -202,14 +207,19 @@ void smf_5gc_n4_handle_session_modification_response(
     int status = 0;
     uint64_t flags = 0;
     ogs_sbi_stream_t *stream = NULL;
+    smf_bearer_t *qos_flow = NULL;
 
     ogs_assert(xact);
     ogs_assert(rsp);
 
-    stream = xact->assoc_stream;
-    ogs_assert(stream);
     flags = xact->modify_flags;
     ogs_assert(flags);
+
+    /* 'stream' could be NULL in smf_qos_flow_binding() */
+    stream = xact->assoc_stream;
+
+    /* If smf_5gc_pfcp_send_qos_flow_modification_request() is called */
+    qos_flow = xact->data;
 
     ogs_pfcp_xact_commit(xact);
 
@@ -271,8 +281,9 @@ void smf_5gc_n4_handle_session_modification_response(
     if (status != OGS_SBI_HTTP_STATUS_OK) {
         char *strerror = ogs_msprintf(
                 "PFCP Cause [%d] : Not Accepted", rsp->cause.u8);
-        smf_sbi_send_sm_context_update_error(stream, status, strerror,
-                NULL, NULL, NULL);
+        if (stream)
+            smf_sbi_send_sm_context_update_error(
+                    stream, status, strerror, NULL, NULL, NULL);
         ogs_free(strerror);
         return;
     }
@@ -280,8 +291,9 @@ void smf_5gc_n4_handle_session_modification_response(
     ogs_assert(sess);
 
     if (sess->upf_n3_addr == NULL && sess->upf_n3_addr6 == NULL) {
-        smf_sbi_send_sm_context_update_error(stream, status, "No UP F_TEID",
-                NULL, NULL, NULL);
+        if (stream)
+            smf_sbi_send_sm_context_update_error(
+                    stream, status, "No UP F_TEID", NULL, NULL, NULL);
         return;
     }
 
@@ -293,6 +305,20 @@ void smf_5gc_n4_handle_session_modification_response(
         /* Only ACTIVING & DEACTIVATED is Included */
         smf_sbi_send_sm_context_updated_data(
                 sess, stream, OpenAPI_up_cnx_state_DEACTIVATED);
+    } else if (flags & OGS_PFCP_MODIFY_CREATE) {
+        ogs_pkbuf_t *n1smbuf = NULL, *n2smbuf = NULL;
+
+        ogs_assert(qos_flow);
+        n1smbuf = gsm_build_qos_flow_modification_command(
+                qos_flow, OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED);
+        ogs_assert(n1smbuf);
+        n2smbuf = ngap_build_qos_flow_resource_modify_request_transfer(
+                qos_flow);
+        ogs_assert(n2smbuf);
+
+        smf_namf_comm_send_n1_n2_message_transfer(
+                sess, SMF_NETWORK_REQUESTED_QOS_FLOW_MODIFICATION,
+                n1smbuf, n2smbuf);
     }
 }
 

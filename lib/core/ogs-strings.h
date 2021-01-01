@@ -96,6 +96,12 @@ char *ogs_msprintf(const char *message, ...)
 char *ogs_mstrcatf(char *source, const char *message, ...)
     OGS_GNUC_PRINTF(2, 3);
 
+char *ogs_trimwhitespace(char *str);
+
+char *ogs_left_trimcharacter(char *str, char to_remove);
+char *ogs_right_trimcharacter(char *str, char to_remove);
+char *ogs_trimcharacter(char *str, char to_remove);
+
 #ifdef __cplusplus
 }
 #endif

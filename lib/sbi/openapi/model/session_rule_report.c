@@ -6,8 +6,8 @@
 
 OpenAPI_session_rule_report_t *OpenAPI_session_rule_report_create(
     OpenAPI_list_t *rule_ids,
-    OpenAPI_rule_status_t *rule_status,
-    OpenAPI_session_rule_failure_code_t *sess_rule_failure_code
+    OpenAPI_rule_status_e rule_status,
+    OpenAPI_session_rule_failure_code_e sess_rule_failure_code
     )
 {
     OpenAPI_session_rule_report_t *session_rule_report_local_var = OpenAPI_malloc(sizeof(OpenAPI_session_rule_report_t));
@@ -31,8 +31,6 @@ void OpenAPI_session_rule_report_free(OpenAPI_session_rule_report_t *session_rul
         ogs_free(node->data);
     }
     OpenAPI_list_free(session_rule_report->rule_ids);
-    OpenAPI_rule_status_free(session_rule_report->rule_status);
-    OpenAPI_session_rule_failure_code_free(session_rule_report->sess_rule_failure_code);
     ogs_free(session_rule_report);
 }
 
@@ -68,25 +66,13 @@ cJSON *OpenAPI_session_rule_report_convertToJSON(OpenAPI_session_rule_report_t *
         ogs_error("OpenAPI_session_rule_report_convertToJSON() failed [rule_status]");
         goto end;
     }
-    cJSON *rule_status_local_JSON = OpenAPI_rule_status_convertToJSON(session_rule_report->rule_status);
-    if (rule_status_local_JSON == NULL) {
-        ogs_error("OpenAPI_session_rule_report_convertToJSON() failed [rule_status]");
-        goto end;
-    }
-    cJSON_AddItemToObject(item, "ruleStatus", rule_status_local_JSON);
-    if (item->child == NULL) {
+    if (cJSON_AddStringToObject(item, "ruleStatus", OpenAPI_rule_status_ToString(session_rule_report->rule_status)) == NULL) {
         ogs_error("OpenAPI_session_rule_report_convertToJSON() failed [rule_status]");
         goto end;
     }
 
     if (session_rule_report->sess_rule_failure_code) {
-        cJSON *sess_rule_failure_code_local_JSON = OpenAPI_session_rule_failure_code_convertToJSON(session_rule_report->sess_rule_failure_code);
-        if (sess_rule_failure_code_local_JSON == NULL) {
-            ogs_error("OpenAPI_session_rule_report_convertToJSON() failed [sess_rule_failure_code]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "sessRuleFailureCode", sess_rule_failure_code_local_JSON);
-        if (item->child == NULL) {
+        if (cJSON_AddStringToObject(item, "sessRuleFailureCode", OpenAPI_session_rule_failure_code_ToString(session_rule_report->sess_rule_failure_code)) == NULL) {
             ogs_error("OpenAPI_session_rule_report_convertToJSON() failed [sess_rule_failure_code]");
             goto end;
         }
@@ -128,21 +114,29 @@ OpenAPI_session_rule_report_t *OpenAPI_session_rule_report_parseFromJSON(cJSON *
         goto end;
     }
 
-    OpenAPI_rule_status_t *rule_status_local_nonprim = NULL;
+    OpenAPI_rule_status_e rule_statusVariable;
 
-    rule_status_local_nonprim = OpenAPI_rule_status_parseFromJSON(rule_status);
+    if (!cJSON_IsString(rule_status)) {
+        ogs_error("OpenAPI_session_rule_report_parseFromJSON() failed [rule_status]");
+        goto end;
+    }
+    rule_statusVariable = OpenAPI_rule_status_FromString(rule_status->valuestring);
 
     cJSON *sess_rule_failure_code = cJSON_GetObjectItemCaseSensitive(session_rule_reportJSON, "sessRuleFailureCode");
 
-    OpenAPI_session_rule_failure_code_t *sess_rule_failure_code_local_nonprim = NULL;
+    OpenAPI_session_rule_failure_code_e sess_rule_failure_codeVariable;
     if (sess_rule_failure_code) {
-        sess_rule_failure_code_local_nonprim = OpenAPI_session_rule_failure_code_parseFromJSON(sess_rule_failure_code);
+        if (!cJSON_IsString(sess_rule_failure_code)) {
+            ogs_error("OpenAPI_session_rule_report_parseFromJSON() failed [sess_rule_failure_code]");
+            goto end;
+        }
+        sess_rule_failure_codeVariable = OpenAPI_session_rule_failure_code_FromString(sess_rule_failure_code->valuestring);
     }
 
     session_rule_report_local_var = OpenAPI_session_rule_report_create (
         rule_idsList,
-        rule_status_local_nonprim,
-        sess_rule_failure_code ? sess_rule_failure_code_local_nonprim : NULL
+        rule_statusVariable,
+        sess_rule_failure_code ? sess_rule_failure_codeVariable : 0
         );
 
     return session_rule_report_local_var;

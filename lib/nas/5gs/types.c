@@ -246,10 +246,84 @@ int ogs_nas_parse_nssai(ogs_s_nssai_t *s_nssai, ogs_nas_nssai_t *nas_nssai)
     return num_of_s_nssai;
 }
 
+void ogs_nas_build_qos_flow_descriptions(
+    ogs_nas_qos_flow_descriptions_t *flow_descriptions,
+    ogs_nas_qos_flow_description_t *flow_description,
+    int num_of_flow_description)
+{
+    int i, j;
+    char *buffer;
+    uint16_t length;
+    ogs_nas_qos_flow_description_t target;
+
+    ogs_assert(flow_descriptions);
+    ogs_assert(flow_description);
+    ogs_assert(num_of_flow_description);
+
+    buffer = ogs_calloc(1, OGS_NAS_MAX_QOS_FLOW_DESCRIPTIONS_LEN);
+    ogs_assert(buffer);
+    length = 0;
+
+    for (i = 0; i < num_of_flow_description; i++) {
+        memcpy(&target, flow_description + i,
+                sizeof(ogs_nas_qos_flow_description_t));
+
+        ogs_assert(length + 3 <= OGS_NAS_MAX_QOS_FLOW_DESCRIPTIONS_LEN);
+        memcpy(buffer + length, &target, 3);
+        length += 3;
+
+        for (j = 0; j < target.num_of_parameter; j++) {
+            ogs_assert(length + sizeof(target.param[j].identifier) <=
+                    OGS_NAS_MAX_QOS_FLOW_DESCRIPTIONS_LEN);
+            memcpy(buffer + length, &target.param[j].identifier,
+                    sizeof(target.param[j].identifier));
+            length += sizeof(target.param[j].identifier);
+
+            ogs_assert(length + sizeof(target.param[j].len) <=
+                    OGS_NAS_MAX_QOS_FLOW_DESCRIPTIONS_LEN);
+            memcpy(buffer + length, &target.param[j].len,
+                    sizeof(target.param[j].len));
+            length += sizeof(target.param[j].len);
+
+            switch(target.param[j].identifier) {
+            case OGS_NAX_QOS_FLOW_PARAMETER_ID_5QI:
+                ogs_assert(target.param[j].len == 1);
+                ogs_assert(length + target.param[j].len <=
+                        OGS_NAS_MAX_QOS_FLOW_DESCRIPTIONS_LEN);
+                memcpy(buffer + length, &target.param[j].qci,
+                        target.param[j].len);
+                length += target.param[j].len;
+                break;
+
+            case OGS_NAX_QOS_FLOW_PARAMETER_ID_GFBR_UPLINK:
+            case OGS_NAX_QOS_FLOW_PARAMETER_ID_GFBR_DOWNLINK:
+            case OGS_NAX_QOS_FLOW_PARAMETER_ID_MFBR_UPLINK:
+            case OGS_NAX_QOS_FLOW_PARAMETER_ID_MFBR_DOWNLINK:
+                ogs_assert(target.param[j].len == 3);
+                ogs_assert(length + target.param[j].len <=
+                        OGS_NAS_MAX_QOS_FLOW_DESCRIPTIONS_LEN);
+                target.param[j].br.bitrate =
+                    htobe16(target.param[j].br.bitrate);
+                memcpy(buffer + length, &target.param[j].br,
+                        target.param[j].len);
+                length += target.param[j].len;
+                break;
+            default:
+                ogs_fatal("Unknown qos_flow parameter identifier [%d]",
+                        target.param[j].identifier);
+                ogs_assert_if_reached();
+            }
+        }
+    }
+
+    flow_descriptions->buffer = buffer;
+    flow_descriptions->length = length;
+}
+
 void ogs_nas_build_qos_rules(ogs_nas_qos_rules_t *rules,
         ogs_nas_qos_rule_t *rule, int num_of_rule)
 {
-    int i, j;
+    int i, j, k;
     char *buffer;
     uint16_t length;
     ogs_nas_qos_rule_t target;
@@ -263,6 +337,8 @@ void ogs_nas_build_qos_rules(ogs_nas_qos_rules_t *rules,
     length = 0;
 
     for (i = 0; i < num_of_rule; i++) {
+        char *rule_length = NULL;
+
         memcpy(&target, rule + i, sizeof(ogs_nas_qos_rule_t));
 
         ogs_assert(length + sizeof(target.identifier) <=
@@ -270,10 +346,13 @@ void ogs_nas_build_qos_rules(ogs_nas_qos_rules_t *rules,
         memcpy(buffer + length, &target.identifier, sizeof(target.identifier));
         length += sizeof(target.identifier);
 
+
         ogs_assert(length + sizeof(target.length) <=
                 OGS_NAS_MAX_QOS_RULES_LEN);
-        target.length = htobe16(target.length);
-        memcpy(buffer + length, &target.length, sizeof(target.length));
+
+        /* Just store the location of the QoS rule length */
+        rule_length = buffer+length;
+
         length += sizeof(target.length);
 
         ogs_assert(length + sizeof(target.flags) <= OGS_NAS_MAX_QOS_RULES_LEN);
@@ -287,126 +366,137 @@ void ogs_nas_build_qos_rules(ogs_nas_qos_rules_t *rules,
                     sizeof(target.pf[j].flags));
             length += sizeof(target.pf[j].flags);
 
-            ogs_assert(length + sizeof(target.pf[j].length) <=
+            ogs_assert(length + sizeof(target.pf[j].content.length) <=
                     OGS_NAS_MAX_QOS_RULES_LEN);
-            memcpy(buffer + length, &target.pf[j].length,
-                    sizeof(target.pf[j].length));
-            length += sizeof(target.pf[j].length);
+            memcpy(buffer + length, &target.pf[j].content.length,
+                    sizeof(target.pf[j].content.length));
+            length += sizeof(target.pf[j].content.length);
 
-            for (j = 0; j < target.pf[j].num_of_component; j++) {
-                ogs_assert(length + sizeof(target.pf[j].component[j].type) <=
+            for (k = 0; k < target.pf[j].content.num_of_component; k++) {
+                ogs_assert(length +
+                        sizeof(target.pf[j].content.component[k].type) <=
                         OGS_NAS_MAX_QOS_RULES_LEN);
-                memcpy(buffer + length,
-                        &target.pf[j].component[j].type,
-                        sizeof(target.pf[j].component[j].type));
-                length += sizeof(target.pf[j].component[j].type);
-                switch(target.pf[j].component[j].type) {
+                memcpy(buffer + length, &target.pf[j].content.component[k].type,
+                        sizeof(target.pf[j].content.component[k].type));
+                length += sizeof(target.pf[j].content.component[k].type);
+                switch(target.pf[j].content.component[k].type) {
                 case OGS_PACKET_FILTER_MATCH_ALL:
                     break;
                 case OGS_PACKET_FILTER_PROTOCOL_IDENTIFIER_NEXT_HEADER_TYPE:
                     ogs_assert(length +
-                            sizeof(target.pf[j].component[j].proto) <=
+                            sizeof(target.pf[j].content.component[k].proto) <=
                                 OGS_NAS_MAX_QOS_RULES_LEN);
                     memcpy(buffer + length,
-                            &target.pf[j].component[j].proto,
-                            sizeof(target.pf[j].component[j].proto));
-                    length += sizeof(target.pf[j].component[j].proto);
+                            &target.pf[j].content.component[k].proto,
+                            sizeof(target.pf[j].content.component[k].proto));
+                    length += sizeof(target.pf[j].content.component[k].proto);
                     break;
                 case OGS_PACKET_FILTER_IPV4_REMOTE_ADDRESS_TYPE:
                 case OGS_PACKET_FILTER_IPV4_LOCAL_ADDRESS_TYPE:
                     ogs_assert(length +
-                        sizeof(target.pf[j].component[j].ipv4.addr)
+                        sizeof(target.pf[j].content.component[k].ipv4.addr)
                             <= OGS_NAS_MAX_QOS_RULES_LEN);
                     memcpy(buffer + length,
-                        &target.pf[j].component[j].ipv4.addr,
-                        sizeof(target.pf[j].component[j].ipv4.addr));
-                    length += sizeof(target.pf[j].component[j].ipv4.addr);
+                        &target.pf[j].content.component[k].ipv4.addr,
+                        sizeof(target.pf[j].content.component[k].ipv4.addr));
+                    length +=
+                        sizeof(target.pf[j].content.component[k].ipv4.addr);
 
                     ogs_assert(length +
-                        sizeof(target.pf[j].component[j].ipv4.mask)
+                        sizeof(target.pf[j].content.component[k].ipv4.mask)
                             <= OGS_NAS_MAX_QOS_RULES_LEN);
                     memcpy(buffer + length,
-                            &target.pf[j].component[j].ipv4.mask,
-                            sizeof(target.pf[j].component[j].ipv4.mask));
-                    length += sizeof(target.pf[j].component[j].ipv4.mask);
+                        &target.pf[j].content.component[k].ipv4.mask,
+                        sizeof(target.pf[j].content.component[k].ipv4.mask));
+                    length +=
+                        sizeof(target.pf[j].content.component[k].ipv4.mask);
                     break;
                 case OGS_PACKET_FILTER_IPV6_REMOTE_ADDRESS_PREFIX_LENGTH_TYPE:
                 case OGS_PACKET_FILTER_IPV6_LOCAL_ADDRESS_PREFIX_LENGTH_TYPE:
                     ogs_assert(length +
-                        sizeof(target.pf[j].component[j].ipv6.addr)
+                        sizeof(target.pf[j].content.component[k].ipv6.addr)
                             <= OGS_NAS_MAX_QOS_RULES_LEN);
                     memcpy(buffer + length,
-                            &target.pf[j].component[j].ipv6.addr,
-                            sizeof(target.pf[j].component[j].ipv6.addr));
-                    length += sizeof(target.pf[j].component[j].ipv6.addr);
+                        &target.pf[j].content.component[k].ipv6.addr,
+                        sizeof(target.pf[j].content.component[k].ipv6.addr));
+                    length +=
+                        sizeof(target.pf[j].content.component[k].ipv6.addr);
 
                     ogs_assert(length +
-                        sizeof(target.pf[j].component[j].ipv6.prefixlen)
+                        sizeof(target.pf[j].content.component[k].ipv6.prefixlen)
                             <= OGS_NAS_MAX_QOS_RULES_LEN);
                     memcpy(buffer + length,
-                        &target.pf[j].component[j].ipv6.prefixlen,
-                        sizeof(target.pf[j].component[j].ipv6.prefixlen));
-                    length += sizeof(target.pf[j].component[j].ipv6.prefixlen);
+                        &target.pf[j].content.component[k].ipv6.prefixlen,
+                        sizeof(
+                            target.pf[j].content.component[k].ipv6.prefixlen));
+                    length += sizeof(
+                            target.pf[j].content.component[k].ipv6.prefixlen);
                     break;
                 case OGS_PACKET_FILTER_IPV6_REMOTE_ADDRESS_TYPE:
                 case OGS_PACKET_FILTER_IPV6_LOCAL_ADDRESS_TYPE:
                     ogs_assert(length +
-                        sizeof(target.pf[j].component[j].ipv6_mask.addr)
+                        sizeof(target.pf[j].content.component[k].ipv6_mask.addr)
                             <= OGS_NAS_MAX_QOS_RULES_LEN);
                     memcpy(buffer + length,
-                            &target.pf[j].component[j].ipv6_mask.addr,
-                            sizeof(target.pf[j].component[j].ipv6_mask.addr));
-                    length += sizeof(target.pf[j].component[j].ipv6_mask.addr);
+                        &target.pf[j].content.component[k].ipv6_mask.addr,
+                        sizeof(
+                            target.pf[j].content.component[k].ipv6_mask.addr));
+                    length += sizeof(
+                            target.pf[j].content.component[k].ipv6_mask.addr);
 
                     ogs_assert(length +
-                        sizeof(target.pf[j].component[j].ipv6_mask.mask)
+                        sizeof(target.pf[j].content.component[k].ipv6_mask.mask)
                             <= OGS_NAS_MAX_QOS_RULES_LEN);
                     memcpy(buffer + length,
-                            &target.pf[j].component[j].ipv6_mask.mask,
-                            sizeof(target.pf[j].component[j].ipv6_mask.mask));
-                    length += sizeof(target.pf[j].component[j].ipv6_mask.mask);
+                        &target.pf[j].content.component[k].ipv6_mask.mask,
+                        sizeof(
+                            target.pf[j].content.component[k].ipv6_mask.mask));
+                    length += sizeof(
+                            target.pf[j].content.component[k].ipv6_mask.mask);
                     break;
                 case OGS_PACKET_FILTER_SINGLE_LOCAL_PORT_TYPE:
                 case OGS_PACKET_FILTER_SINGLE_REMOTE_PORT_TYPE:
                     ogs_assert(length +
-                        sizeof(target.pf[j].component[j].port.low)
+                        sizeof(target.pf[j].content.component[k].port.low)
                             <= OGS_NAS_MAX_QOS_RULES_LEN);
-                    target.pf[j].component[j].port.low =
-                        htobe16(target.pf[j].component[j].port.low);
+                    target.pf[j].content.component[k].port.low =
+                        htobe16(target.pf[j].content.component[k].port.low);
                     memcpy(buffer + length,
-                        &target.pf[j].component[j].port.low,
-                        sizeof(target.pf[j].component[j].port.low));
-                    length += sizeof(target.pf[j].component[j].port.low);
+                        &target.pf[j].content.component[k].port.low,
+                        sizeof(target.pf[j].content.component[k].port.low));
+                    length +=
+                        sizeof(target.pf[j].content.component[k].port.low);
                     break;
                 case OGS_PACKET_FILTER_LOCAL_PORT_RANGE_TYPE:
                 case OGS_PACKET_FILTER_REMOTE_PORT_RANGE_TYPE:
                     ogs_assert(length +
-                        sizeof(target.pf[j].component[j].port.low)
+                        sizeof(target.pf[j].content.component[k].port.low)
                             <= OGS_NAS_MAX_QOS_RULES_LEN);
-                    target.pf[j].component[j].port.low =
-                        htobe16(target.pf[j].component[j].port.low);
+                    target.pf[j].content.component[k].port.low =
+                        htobe16(target.pf[j].content.component[k].port.low);
                     memcpy(buffer + length,
-                            &target.pf[j].component[j].port.low,
-                            sizeof(target.pf[j].component[j].port.low));
-                    length += sizeof(target.pf[j].component[j].port.low);
+                            &target.pf[j].content.component[k].port.low,
+                            sizeof(target.pf[j].content.component[k].port.low));
+                    length +=
+                        sizeof(target.pf[j].content.component[k].port.low);
 
                     ogs_assert(length +
-                        sizeof(target.pf[j].component[j].port.high)
+                        sizeof(target.pf[j].content.component[k].port.high)
                             <= OGS_NAS_MAX_QOS_RULES_LEN);
-                    target.pf[j].component[j].port.high =
-                        htobe16(target.pf[j].component[j].port.high);
+                    target.pf[j].content.component[k].port.high =
+                        htobe16(target.pf[j].content.component[k].port.high);
                     memcpy(buffer + length,
-                        &target.pf[j].component[j].port.high,
-                        sizeof(target.pf[j].component[j].port.high));
-                    length += sizeof(target.pf[j].component[j].port.high);
+                        &target.pf[j].content.component[k].port.high,
+                        sizeof(target.pf[j].content.component[k].port.high));
+                    length +=
+                        sizeof(target.pf[j].content.component[k].port.high);
                     break;
                 default:
                     ogs_fatal("Unknown Packet Filter Type(%d)",
-                            target.pf[j].component[j].type);
+                            target.pf[j].content.component[k].type);
                     ogs_assert_if_reached();
                 }
             }
-
         }
 
         ogs_assert(length + sizeof(target.precedence) <=
@@ -417,6 +507,11 @@ void ogs_nas_build_qos_rules(ogs_nas_qos_rules_t *rules,
                 OGS_NAS_MAX_QOS_RULES_LEN);
         memcpy(buffer + length, &target.flow.flags, sizeof(target.precedence));
         length += sizeof(target.flow.flags);
+
+        /* Update QoS Rule Length */
+        target.length = htobe16(
+                buffer+length - rule_length - sizeof(target.length));
+        memcpy(rule_length, &target.length, sizeof(target.length));
     }
 
     rules->buffer = buffer;

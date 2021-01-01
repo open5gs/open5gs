@@ -933,7 +933,8 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
                         }
 
                         ret = fd_avp_search_avp(avpch3,
-                            ogs_diam_s6a_allocation_retention_priority, &avpch4);
+                            ogs_diam_s6a_allocation_retention_priority,
+                            &avpch4);
                         ogs_assert(ret == 0);
                         if (avpch4) {
                             ret = fd_avp_search_avp(avpch4,
@@ -964,7 +965,8 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
                             }
 
                             ret = fd_avp_search_avp(avpch4,
-                                ogs_diam_s6a_pre_emption_vulnerability, &avpch5);
+                                ogs_diam_s6a_pre_emption_vulnerability,
+                                &avpch5);
                             ogs_assert(ret == 0);
                             if (avpch5) {
                                 ret = fd_msg_avp_hdr(avpch5, &hdr);

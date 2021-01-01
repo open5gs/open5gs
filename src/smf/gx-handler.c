@@ -21,7 +21,7 @@
 #include "gtp-path.h"
 #include "pfcp-path.h"
 #include "gx-handler.h"
-#include "bearer-binding.h"
+#include "binding.h"
 
 static uint8_t gtp_cause_from_diameter(
         const uint32_t *dia_err, const uint32_t *dia_exp_err)
@@ -70,22 +70,23 @@ void smf_gx_handle_cca_initial_request(
         return;
     }
 
-    sess->num_of_pcc_rule = gx_message->num_of_pcc_rule;
-    for (i = 0; i < gx_message->num_of_pcc_rule; i++)
-        OGS_STORE_PCC_RULE(&sess->pcc_rule[i], &gx_message->pcc_rule[i]);
+    sess->num_of_pcc_rule = gx_message->session_data.num_of_pcc_rule;
+    for (i = 0; i < gx_message->session_data.num_of_pcc_rule; i++)
+        OGS_STORE_PCC_RULE(&sess->pcc_rule[i],
+                &gx_message->session_data.pcc_rule[i]);
 
     /* APN-AMBR
      * if PCRF changes APN-AMBR, this should be included. */
     sess->gtp_5gc.create_session_response_apn_ambr = false;
-    if ((gx_message->pdn.ambr.uplink &&
+    if ((gx_message->session_data.pdn.ambr.uplink &&
             (sess->pdn.ambr.uplink / 1000) !=
-                (gx_message->pdn.ambr.uplink / 1000)) ||
-        (gx_message->pdn.ambr.downlink &&
+                (gx_message->session_data.pdn.ambr.uplink / 1000)) ||
+        (gx_message->session_data.pdn.ambr.downlink &&
             (sess->pdn.ambr.downlink / 1000) !=
-                (gx_message->pdn.ambr.downlink / 1000))) {
+                (gx_message->session_data.pdn.ambr.downlink / 1000))) {
 
-        sess->pdn.ambr.downlink = gx_message->pdn.ambr.downlink;
-        sess->pdn.ambr.uplink = gx_message->pdn.ambr.uplink;
+        sess->pdn.ambr.downlink = gx_message->session_data.pdn.ambr.downlink;
+        sess->pdn.ambr.uplink = gx_message->session_data.pdn.ambr.uplink;
 
         sess->gtp_5gc.create_session_response_apn_ambr = true;
     }
@@ -93,23 +94,23 @@ void smf_gx_handle_cca_initial_request(
     /* Bearer QoS
      * if PCRF changes Bearer QoS, this should be included. */
     sess->gtp_5gc.create_session_response_bearer_qos = false;
-    if ((gx_message->pdn.qos.qci &&
-        sess->pdn.qos.qci != gx_message->pdn.qos.qci) ||
-        (gx_message->pdn.qos.arp.priority_level &&
+    if ((gx_message->session_data.pdn.qos.qci &&
+        sess->pdn.qos.qci != gx_message->session_data.pdn.qos.qci) ||
+        (gx_message->session_data.pdn.qos.arp.priority_level &&
         sess->pdn.qos.arp.priority_level !=
-            gx_message->pdn.qos.arp.priority_level) ||
+            gx_message->session_data.pdn.qos.arp.priority_level) ||
         sess->pdn.qos.arp.pre_emption_capability !=
-            gx_message->pdn.qos.arp.pre_emption_capability ||
+            gx_message->session_data.pdn.qos.arp.pre_emption_capability ||
         sess->pdn.qos.arp.pre_emption_vulnerability !=
-            gx_message->pdn.qos.arp.pre_emption_vulnerability) {
+            gx_message->session_data.pdn.qos.arp.pre_emption_vulnerability) {
 
-        sess->pdn.qos.qci = gx_message->pdn.qos.qci;
+        sess->pdn.qos.qci = gx_message->session_data.pdn.qos.qci;
         sess->pdn.qos.arp.priority_level =
-            gx_message->pdn.qos.arp.priority_level;
+            gx_message->session_data.pdn.qos.arp.priority_level;
         sess->pdn.qos.arp.pre_emption_capability =
-            gx_message->pdn.qos.arp.pre_emption_capability;
+            gx_message->session_data.pdn.qos.arp.pre_emption_capability;
         sess->pdn.qos.arp.pre_emption_vulnerability =
-            gx_message->pdn.qos.arp.pre_emption_vulnerability;
+            gx_message->session_data.pdn.qos.arp.pre_emption_vulnerability;
 
         sess->gtp_5gc.create_session_response_bearer_qos = true;
     }
@@ -185,9 +186,10 @@ void smf_gx_handle_re_auth_request(
 {
     int i;
 
-    sess->num_of_pcc_rule = gx_message->num_of_pcc_rule;
-    for (i = 0; i < gx_message->num_of_pcc_rule; i++)
-        OGS_STORE_PCC_RULE(&sess->pcc_rule[i], &gx_message->pcc_rule[i]);
+    sess->num_of_pcc_rule = gx_message->session_data.num_of_pcc_rule;
+    for (i = 0; i < gx_message->session_data.num_of_pcc_rule; i++)
+        OGS_STORE_PCC_RULE(&sess->pcc_rule[i],
+                &gx_message->session_data.pcc_rule[i]);
 
     smf_bearer_binding(sess);
 }

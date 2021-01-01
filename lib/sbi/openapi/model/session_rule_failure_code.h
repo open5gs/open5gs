@@ -1,7 +1,7 @@
 /*
  * session_rule_failure_code.h
  *
- * Possible values are   - NF_MAL: Indicate that the PCC rule could not be successfully installed (for those provisioned from the PCF) or activated (for those pre-defined in SMF) or enforced (for those already successfully installed) due to SMF/UPF malfunction.   - RES_LIM: Indicate that the PCC rule could not be successfully installed (for those provisioned from PCF) or activated (for those pre-defined in SMF) or enforced (for those already successfully installed) due to a limitation of resources at the SMF/UPF.   - UNSUCC_QOS_VAL: indicate that the QoS validation has failed.   - UE_STA_SUSP: Indicates that the UE is in suspend state.
+ *
  */
 
 #ifndef _OpenAPI_session_rule_failure_code_H_
@@ -17,16 +17,11 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_session_rule_failure_code_s OpenAPI_session_rule_failure_code_t;
-typedef struct OpenAPI_session_rule_failure_code_s {
-} OpenAPI_session_rule_failure_code_t;
+typedef enum { OpenAPI_session_rule_failure_code_NULL = 0, OpenAPI_session_rule_failure_code_NF_MAL, OpenAPI_session_rule_failure_code_RES_LIM, OpenAPI_session_rule_failure_code_UNSUCC_QOS_VAL, OpenAPI_session_rule_failure_code_UE_STA_SUSP } OpenAPI_session_rule_failure_code_e;
 
-OpenAPI_session_rule_failure_code_t *OpenAPI_session_rule_failure_code_create(
-    );
-void OpenAPI_session_rule_failure_code_free(OpenAPI_session_rule_failure_code_t *session_rule_failure_code);
-OpenAPI_session_rule_failure_code_t *OpenAPI_session_rule_failure_code_parseFromJSON(cJSON *session_rule_failure_codeJSON);
-cJSON *OpenAPI_session_rule_failure_code_convertToJSON(OpenAPI_session_rule_failure_code_t *session_rule_failure_code);
-OpenAPI_session_rule_failure_code_t *OpenAPI_session_rule_failure_code_copy(OpenAPI_session_rule_failure_code_t *dst, OpenAPI_session_rule_failure_code_t *src);
+char* OpenAPI_session_rule_failure_code_ToString(OpenAPI_session_rule_failure_code_e session_rule_failure_code);
+
+OpenAPI_session_rule_failure_code_e OpenAPI_session_rule_failure_code_FromString(char* session_rule_failure_code);
 
 #ifdef __cplusplus
 }

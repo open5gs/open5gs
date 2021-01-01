@@ -1,7 +1,7 @@
 /*
  * af_sig_protocol.h
  *
- * Possible values are - NO_INFORMATION: Indicate that no information about the AF signalling protocol is being provided.  - SIP: Indicate that the signalling protocol is Session Initiation Protocol.
+ *
  */
 
 #ifndef _OpenAPI_af_sig_protocol_H_
@@ -12,22 +12,16 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
-#include "null_value.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_af_sig_protocol_s OpenAPI_af_sig_protocol_t;
-typedef struct OpenAPI_af_sig_protocol_s {
-} OpenAPI_af_sig_protocol_t;
+typedef enum { OpenAPI_af_sig_protocol_NULL = 0, OpenAPI_af_sig_protocol_NO_INFORMATION, OpenAPI_af_sig_protocol_SIP } OpenAPI_af_sig_protocol_e;
 
-OpenAPI_af_sig_protocol_t *OpenAPI_af_sig_protocol_create(
-    );
-void OpenAPI_af_sig_protocol_free(OpenAPI_af_sig_protocol_t *af_sig_protocol);
-OpenAPI_af_sig_protocol_t *OpenAPI_af_sig_protocol_parseFromJSON(cJSON *af_sig_protocolJSON);
-cJSON *OpenAPI_af_sig_protocol_convertToJSON(OpenAPI_af_sig_protocol_t *af_sig_protocol);
-OpenAPI_af_sig_protocol_t *OpenAPI_af_sig_protocol_copy(OpenAPI_af_sig_protocol_t *dst, OpenAPI_af_sig_protocol_t *src);
+char* OpenAPI_af_sig_protocol_ToString(OpenAPI_af_sig_protocol_e af_sig_protocol);
+
+OpenAPI_af_sig_protocol_e OpenAPI_af_sig_protocol_FromString(char* af_sig_protocol);
 
 #ifdef __cplusplus
 }

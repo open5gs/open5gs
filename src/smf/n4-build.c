@@ -108,6 +108,58 @@ ogs_pkbuf_t *smf_n4_build_session_establishment_request(
     return pkbuf;
 }
 
+ogs_pkbuf_t *smf_n4_build_session_modification_request(
+        uint8_t type, smf_sess_t *sess, uint64_t modify_flags)
+{
+    int i;
+
+    ogs_pfcp_message_t pfcp_message;
+    ogs_pfcp_session_modification_request_t *req = NULL;
+    ogs_pfcp_far_t *far = NULL;
+    ogs_pkbuf_t *pkbuf = NULL;
+
+    ogs_debug("Session Modification Request");
+    ogs_assert(sess);
+    ogs_assert(modify_flags);
+
+    req = &pfcp_message.pfcp_session_modification_request;
+    memset(&pfcp_message, 0, sizeof(ogs_pfcp_message_t));
+
+    i = 0;
+    ogs_list_for_each(&sess->pfcp.far_list, far) {
+
+        /* Update FAR - Only DL */
+        if (far->dst_if == OGS_PFCP_INTERFACE_ACCESS) {
+
+            if (modify_flags & OGS_PFCP_MODIFY_ACTIVATE) {
+
+                if (far->apply_action & OGS_PFCP_APPLY_ACTION_FORW) {
+
+                    if (modify_flags & OGS_PFCP_MODIFY_END_MARKER) {
+                        far->smreq_flags.send_end_marker_packets = 1;
+                    }
+
+                    ogs_pfcp_build_update_far_activate(
+                            &req->update_far[i], i, far);
+
+                    /* Clear all FAR flags */
+                    far->smreq_flags.value = 0;
+                }
+
+            } else if (modify_flags & OGS_PFCP_MODIFY_DEACTIVATE) {
+                ogs_pfcp_build_update_far_deactivate(
+                        &req->update_far[i], i, far);
+            }
+            i++;
+        }
+    }
+
+    pfcp_message.h.type = type;
+    pkbuf = ogs_pfcp_build_msg(&pfcp_message);
+
+    return pkbuf;
+}
+
 ogs_pkbuf_t *smf_n4_build_qos_flow_modification_request(
         uint8_t type, smf_bearer_t *qos_flow, uint64_t modify_flags)
 {
@@ -235,16 +287,27 @@ ogs_pkbuf_t *smf_n4_build_qos_flow_modification_request(
             /* Update FAR - Only DL */
             i = 0;
             if (qos_flow->dl_far) {
-                if (modify_flags & OGS_PFCP_MODIFY_END_MARKER) {
-                    qos_flow->dl_far->smreq_flags.send_end_marker_packets = 1;
-                }
+                if (qos_flow->dl_far->apply_action &
+                        OGS_PFCP_APPLY_ACTION_FORW) {
 
-                ogs_pfcp_build_update_far_activate(
+                    if (modify_flags & OGS_PFCP_MODIFY_END_MARKER) {
+                        qos_flow->dl_far->smreq_flags.send_end_marker_packets = 1;
+                    }
+
+                    ogs_pfcp_build_update_far_activate(
+                            &req->update_far[i], i, qos_flow->dl_far);
+                    i++;
+
+                    /* Clear all FAR flags */
+                    qos_flow->dl_far->smreq_flags.value = 0;
+                }
+            }
+        } else if (modify_flags & OGS_PFCP_MODIFY_DEACTIVATE) {
+            i = 0;
+            if (qos_flow->dl_far) {
+                ogs_pfcp_build_update_far_deactivate(
                         &req->update_far[i], i, qos_flow->dl_far);
                 i++;
-
-                /* Clear all FAR flags */
-                qos_flow->dl_far->smreq_flags.value = 0;
             }
         }
         if (modify_flags & OGS_PFCP_MODIFY_QOS_UPDATE) {
@@ -278,37 +341,4 @@ ogs_pkbuf_t *smf_n4_build_session_deletion_request(
 
     pfcp_message.h.type = type;
     return ogs_pfcp_build_msg(&pfcp_message);
-}
-
-ogs_pkbuf_t *smf_5gc_n4_build_session_modification_request(
-        uint8_t type, smf_sess_t *sess, uint64_t modify_flags)
-{
-    int i;
-
-    ogs_pfcp_message_t pfcp_message;
-    ogs_pfcp_session_modification_request_t *req = NULL;
-    ogs_pfcp_far_t *far = NULL;
-    ogs_pkbuf_t *pkbuf = NULL;
-
-    ogs_debug("Session Modification Request");
-    ogs_assert(sess);
-    ogs_assert(modify_flags & OGS_PFCP_MODIFY_DEACTIVATE);
-
-    req = &pfcp_message.pfcp_session_modification_request;
-    memset(&pfcp_message, 0, sizeof(ogs_pfcp_message_t));
-
-    i = 0;
-    ogs_list_for_each(&sess->pfcp.far_list, far) {
-        /* Update FAR - Only DL */
-        if (far->dst_if == OGS_PFCP_INTERFACE_ACCESS) {
-            ogs_pfcp_build_update_far_deactivate(
-                    &req->update_far[i], i, far);
-            i++;
-        }
-    }
-
-    pfcp_message.h.type = type;
-    pkbuf = ogs_pfcp_build_msg(&pfcp_message);
-
-    return pkbuf;
 }

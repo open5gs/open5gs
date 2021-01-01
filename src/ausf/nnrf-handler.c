@@ -240,7 +240,6 @@ void ausf_nnrf_handle_nf_discover(
 {
     ogs_sbi_object_t *sbi_object = NULL;
     ogs_sbi_nf_instance_t *nf_instance = NULL;
-    ogs_sbi_stream_t *stream = NULL;
 
     OpenAPI_search_result_t *SearchResult = NULL;
     OpenAPI_lnode_t *node = NULL;
@@ -249,8 +248,6 @@ void ausf_nnrf_handle_nf_discover(
     ogs_assert(xact);
     sbi_object = xact->sbi_object;
     ogs_assert(sbi_object);
-    stream = xact->assoc_stream;
-    ogs_assert(stream);
     ogs_assert(recvmsg);
 
     SearchResult = recvmsg->SearchResult;

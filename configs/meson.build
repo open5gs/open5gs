@@ -38,6 +38,7 @@ example_conf = '''
     310014.yaml
     csfb.yaml
     volte.yaml
+    vonr.yaml
     minimal.yaml
     srslte.yaml
     sample.yaml

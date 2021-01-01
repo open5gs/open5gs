@@ -255,7 +255,7 @@ char *ogs_s_nssai_sd_to_string(ogs_uint24_t sd)
     if (sd.v == OGS_S_NSSAI_NO_SD_VALUE)
         return NULL;
 
-    return ogs_uint24_to_string(sd);
+    return ogs_uint24_to_0string(sd);
 }
 
 ogs_uint24_t ogs_s_nssai_sd_from_string(const char *hex)
@@ -471,4 +471,14 @@ char *ogs_ipv6_to_string(uint8_t *addr6)
     ogs_assert(buf);
 
     return (char *)OGS_INET6_NTOP(addr6, buf);
+}
+
+void ogs_session_data_free(ogs_session_data_t *session_data)
+{
+    int i;
+
+    ogs_assert(session_data);
+
+    for (i = 0; i < session_data->num_of_pcc_rule; i++)
+        OGS_PCC_RULE_FREE(&session_data->pcc_rule[i]);
 }

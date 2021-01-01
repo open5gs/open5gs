@@ -21,12 +21,12 @@ extern "C" {
 typedef struct OpenAPI_termination_notification_s OpenAPI_termination_notification_t;
 typedef struct OpenAPI_termination_notification_s {
     char *resource_uri;
-    struct OpenAPI_sm_policy_association_release_cause_s *cause;
+    OpenAPI_sm_policy_association_release_cause_e cause;
 } OpenAPI_termination_notification_t;
 
 OpenAPI_termination_notification_t *OpenAPI_termination_notification_create(
     char *resource_uri,
-    OpenAPI_sm_policy_association_release_cause_t *cause
+    OpenAPI_sm_policy_association_release_cause_e cause
     );
 void OpenAPI_termination_notification_free(OpenAPI_termination_notification_t *termination_notification);
 OpenAPI_termination_notification_t *OpenAPI_termination_notification_parseFromJSON(cJSON *termination_notificationJSON);

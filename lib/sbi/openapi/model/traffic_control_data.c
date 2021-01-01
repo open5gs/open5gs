@@ -15,7 +15,7 @@ OpenAPI_traffic_control_data_t *OpenAPI_traffic_control_data_create(
     OpenAPI_list_t *route_to_locs,
     int traff_corre_ind,
     OpenAPI_up_path_chg_event_t *up_path_chg_event,
-    OpenAPI_steering_functionality_t *steer_fun,
+    OpenAPI_steering_functionality_e steer_fun,
     OpenAPI_steering_mode_t *steer_mode_dl,
     OpenAPI_steering_mode_t *steer_mode_ul,
     OpenAPI_multicast_access_control_t *mul_acc_ctrl
@@ -63,7 +63,6 @@ void OpenAPI_traffic_control_data_free(OpenAPI_traffic_control_data_t *traffic_c
     }
     OpenAPI_list_free(traffic_control_data->route_to_locs);
     OpenAPI_up_path_chg_event_free(traffic_control_data->up_path_chg_event);
-    OpenAPI_steering_functionality_free(traffic_control_data->steer_fun);
     OpenAPI_steering_mode_free(traffic_control_data->steer_mode_dl);
     OpenAPI_steering_mode_free(traffic_control_data->steer_mode_ul);
     OpenAPI_multicast_access_control_free(traffic_control_data->mul_acc_ctrl);
@@ -197,13 +196,7 @@ cJSON *OpenAPI_traffic_control_data_convertToJSON(OpenAPI_traffic_control_data_t
     }
 
     if (traffic_control_data->steer_fun) {
-        cJSON *steer_fun_local_JSON = OpenAPI_steering_functionality_convertToJSON(traffic_control_data->steer_fun);
-        if (steer_fun_local_JSON == NULL) {
-            ogs_error("OpenAPI_traffic_control_data_convertToJSON() failed [steer_fun]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "steerFun", steer_fun_local_JSON);
-        if (item->child == NULL) {
+        if (cJSON_AddStringToObject(item, "steerFun", OpenAPI_steering_functionality_ToString(traffic_control_data->steer_fun)) == NULL) {
             ogs_error("OpenAPI_traffic_control_data_convertToJSON() failed [steer_fun]");
             goto end;
         }
@@ -372,9 +365,13 @@ OpenAPI_traffic_control_data_t *OpenAPI_traffic_control_data_parseFromJSON(cJSON
 
     cJSON *steer_fun = cJSON_GetObjectItemCaseSensitive(traffic_control_dataJSON, "steerFun");
 
-    OpenAPI_steering_functionality_t *steer_fun_local_nonprim = NULL;
+    OpenAPI_steering_functionality_e steer_funVariable;
     if (steer_fun) {
-        steer_fun_local_nonprim = OpenAPI_steering_functionality_parseFromJSON(steer_fun);
+        if (!cJSON_IsString(steer_fun)) {
+            ogs_error("OpenAPI_traffic_control_data_parseFromJSON() failed [steer_fun]");
+            goto end;
+        }
+        steer_funVariable = OpenAPI_steering_functionality_FromString(steer_fun->valuestring);
     }
 
     cJSON *steer_mode_dl = cJSON_GetObjectItemCaseSensitive(traffic_control_dataJSON, "steerModeDl");
@@ -409,7 +406,7 @@ OpenAPI_traffic_control_data_t *OpenAPI_traffic_control_data_parseFromJSON(cJSON
         route_to_locs ? route_to_locsList : NULL,
         traff_corre_ind ? traff_corre_ind->valueint : 0,
         up_path_chg_event ? up_path_chg_event_local_nonprim : NULL,
-        steer_fun ? steer_fun_local_nonprim : NULL,
+        steer_fun ? steer_funVariable : 0,
         steer_mode_dl ? steer_mode_dl_local_nonprim : NULL,
         steer_mode_ul ? steer_mode_ul_local_nonprim : NULL,
         mul_acc_ctrl ? mul_acc_ctrl_local_nonprim : NULL

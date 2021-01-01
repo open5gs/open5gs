@@ -138,8 +138,9 @@ void udm_sbi_discover_and_send(OpenAPI_nf_type_e target_nf_type,
     ogs_assert(stream);
     ogs_assert(build);
 
-    xact = ogs_sbi_xact_add(target_nf_type, &udm_ue->sbi, data,
-            (ogs_sbi_build_f)build, udm_timer_sbi_client_wait_expire);
+    xact = ogs_sbi_xact_add(target_nf_type, &udm_ue->sbi,
+            (ogs_sbi_build_f)build, udm_ue, data,
+            udm_timer_sbi_client_wait_expire);
     ogs_assert(xact);
 
     xact->assoc_stream = stream;

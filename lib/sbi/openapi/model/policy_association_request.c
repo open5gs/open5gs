@@ -28,7 +28,7 @@ OpenAPI_policy_association_request_t *OpenAPI_policy_association_request_create(
     OpenAPI_list_t *mapping_snssais,
     OpenAPI_list_t *n3g_allowed_snssais,
     OpenAPI_guami_t *guami,
-    char *servive_name,
+    char *service_name,
     OpenAPI_trace_data_t *trace_req,
     char *supp_feat
     )
@@ -60,7 +60,7 @@ OpenAPI_policy_association_request_t *OpenAPI_policy_association_request_create(
     policy_association_request_local_var->mapping_snssais = mapping_snssais;
     policy_association_request_local_var->n3g_allowed_snssais = n3g_allowed_snssais;
     policy_association_request_local_var->guami = guami;
-    policy_association_request_local_var->servive_name = servive_name;
+    policy_association_request_local_var->service_name = service_name;
     policy_association_request_local_var->trace_req = trace_req;
     policy_association_request_local_var->supp_feat = supp_feat;
 
@@ -111,7 +111,7 @@ void OpenAPI_policy_association_request_free(OpenAPI_policy_association_request_
     }
     OpenAPI_list_free(policy_association_request->n3g_allowed_snssais);
     OpenAPI_guami_free(policy_association_request->guami);
-    ogs_free(policy_association_request->servive_name);
+    ogs_free(policy_association_request->service_name);
     OpenAPI_trace_data_free(policy_association_request->trace_req);
     ogs_free(policy_association_request->supp_feat);
     ogs_free(policy_association_request);
@@ -416,9 +416,9 @@ cJSON *OpenAPI_policy_association_request_convertToJSON(OpenAPI_policy_associati
         }
     }
 
-    if (policy_association_request->servive_name) {
-        if (cJSON_AddStringToObject(item, "serviveName", policy_association_request->servive_name) == NULL) {
-            ogs_error("OpenAPI_policy_association_request_convertToJSON() failed [servive_name]");
+    if (policy_association_request->service_name) {
+        if (cJSON_AddStringToObject(item, "serviceName", policy_association_request->service_name) == NULL) {
+            ogs_error("OpenAPI_policy_association_request_convertToJSON() failed [service_name]");
             goto end;
         }
     }
@@ -756,11 +756,11 @@ OpenAPI_policy_association_request_t *OpenAPI_policy_association_request_parseFr
         guami_local_nonprim = OpenAPI_guami_parseFromJSON(guami);
     }
 
-    cJSON *servive_name = cJSON_GetObjectItemCaseSensitive(policy_association_requestJSON, "serviveName");
+    cJSON *service_name = cJSON_GetObjectItemCaseSensitive(policy_association_requestJSON, "serviceName");
 
-    if (servive_name) {
-        if (!cJSON_IsString(servive_name)) {
-            ogs_error("OpenAPI_policy_association_request_parseFromJSON() failed [servive_name]");
+    if (service_name) {
+        if (!cJSON_IsString(service_name)) {
+            ogs_error("OpenAPI_policy_association_request_parseFromJSON() failed [service_name]");
             goto end;
         }
     }
@@ -808,7 +808,7 @@ OpenAPI_policy_association_request_t *OpenAPI_policy_association_request_parseFr
         mapping_snssais ? mapping_snssaisList : NULL,
         n3g_allowed_snssais ? n3g_allowed_snssaisList : NULL,
         guami ? guami_local_nonprim : NULL,
-        servive_name ? ogs_strdup(servive_name->valuestring) : NULL,
+        service_name ? ogs_strdup(service_name->valuestring) : NULL,
         trace_req ? trace_req_local_nonprim : NULL,
         ogs_strdup(supp_feat->valuestring)
         );

@@ -9,6 +9,7 @@ parameter:
 #    no_upf: true
 #    no_ausf: true
 #    no_udm: true
+#    no_pcf: true
 #    no_udr: true
 #    no_mme: true
 #    no_sgwc: true
@@ -63,9 +64,9 @@ sgwc:
       - addr: 127.0.0.3
 
 smf:
-    sbi:
-      - addr: 127.0.0.4
-        port: 7777
+#    sbi:
+#      - addr: 127.0.0.4
+#        port: 7777
     gtpc:
       - addr: 127.0.0.4
       - addr: ::1
@@ -182,12 +183,12 @@ pcrf:
         - identity: pcscf.localdomain
           addr: 127.0.0.1
 
-nrf:
-    sbi:
-      - addr:
-        - 127.0.0.10
-        - ::1
-        port: 7777
+#nrf:
+#    sbi:
+#      - addr:
+#        - 127.0.0.10
+#        - ::1
+#        port: 7777
 
 ausf:
     sbi:

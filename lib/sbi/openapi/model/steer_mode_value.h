@@ -17,16 +17,11 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_steer_mode_value_s OpenAPI_steer_mode_value_t;
-typedef struct OpenAPI_steer_mode_value_s {
-} OpenAPI_steer_mode_value_t;
+typedef enum { OpenAPI_steer_mode_value_NULL = 0, OpenAPI_steer_mode_value_ACTIVE_STANDBY, OpenAPI_steer_mode_value_LOAD_BALANCING, OpenAPI_steer_mode_value_SMALLEST_DELAY, OpenAPI_steer_mode_value_PRIORITY_BASED } OpenAPI_steer_mode_value_e;
 
-OpenAPI_steer_mode_value_t *OpenAPI_steer_mode_value_create(
-    );
-void OpenAPI_steer_mode_value_free(OpenAPI_steer_mode_value_t *steer_mode_value);
-OpenAPI_steer_mode_value_t *OpenAPI_steer_mode_value_parseFromJSON(cJSON *steer_mode_valueJSON);
-cJSON *OpenAPI_steer_mode_value_convertToJSON(OpenAPI_steer_mode_value_t *steer_mode_value);
-OpenAPI_steer_mode_value_t *OpenAPI_steer_mode_value_copy(OpenAPI_steer_mode_value_t *dst, OpenAPI_steer_mode_value_t *src);
+char* OpenAPI_steer_mode_value_ToString(OpenAPI_steer_mode_value_e steer_mode_value);
+
+OpenAPI_steer_mode_value_e OpenAPI_steer_mode_value_FromString(char* steer_mode_value);
 
 #ifdef __cplusplus
 }

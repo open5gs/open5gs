@@ -544,7 +544,7 @@ int ogs_pfcp_context_parse_config(const char *local, const char *remote)
                                     v = ogs_yaml_iter_value(&e_cell_id_iter);
                                     if (v) {
                                         e_cell_id[num_of_e_cell_id]
-                                            = ogs_uint28_from_string((char*)v);
+                                            = ogs_uint64_from_string((char*)v);
                                         num_of_e_cell_id++;
                                     }
                                 } while (
@@ -572,7 +572,7 @@ int ogs_pfcp_context_parse_config(const char *local, const char *remote)
                                     v = ogs_yaml_iter_value(&nr_cell_id_iter);
                                     if (v) {
                                         nr_cell_id[num_of_nr_cell_id]
-                                            = ogs_uint36_from_string((char*)v);
+                                            = ogs_uint64_from_string((char*)v);
                                         num_of_nr_cell_id++;
                                     }
                                 } while (

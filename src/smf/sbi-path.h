@@ -34,9 +34,14 @@ int smf_sbi_open(void);
 void smf_sbi_close(void);
 
 void smf_sbi_send(ogs_sbi_nf_instance_t *nf_instance, ogs_sbi_xact_t *xact);
+
 void smf_sbi_discover_and_send(OpenAPI_nf_type_e target_nf_type,
         smf_sess_t *sess, ogs_sbi_stream_t *stream, void *data,
         ogs_sbi_request_t *(*build)(smf_sess_t *sess, void *data));
+
+void smf_namf_comm_send_n1_n2_message_transfer(
+        smf_sess_t *sess, int state,
+        ogs_pkbuf_t *n1smbuf, ogs_pkbuf_t *n2smbuf);
 
 void smf_sbi_send_response(ogs_sbi_stream_t *stream, int status);
 

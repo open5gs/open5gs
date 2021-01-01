@@ -23,6 +23,7 @@
 #include "ogs-app.h"
 #include "ogs-crypt.h"
 #include "ogs-sbi.h"
+#include "ogs-dbi.h"
 
 #include "pcf-sm.h"
 #include "timer.h"
@@ -66,8 +67,6 @@ struct pcf_ue_s {
     ogs_sbi_object_t sbi;
     ogs_fsm_t sm;
 
-    OpenAPI_policy_association_request_t *policy_association_request;
-
     char *association_id;
     char *supi;
 
@@ -75,6 +74,11 @@ struct pcf_ue_s {
 
     ogs_guami_t guami;
     OpenAPI_rat_type_e rat_type;
+
+    uint64_t am_policy_control_features; /* SBI Features */
+
+    OpenAPI_policy_association_request_t *policy_association_request;
+    OpenAPI_ambr_t *subscribed_ue_ambr;
 
     ogs_list_t sess_list;
 };
@@ -92,8 +96,13 @@ struct pcf_sess_s {
     char *notification_uri;
     ogs_s_nssai_t s_nssai;
 
+    uint64_t smpolicycontrol_features; /* SBI Features */
+
+    OpenAPI_ambr_t *subscribed_sess_ambr;
+    OpenAPI_subscribed_default_qos_t *subscribed_default_qos;
+
     /* Related Context */
-    pcf_ue_t        *pcf_ue;
+    pcf_ue_t *pcf_ue;
 };
 
 void pcf_context_init(void);

@@ -35,6 +35,7 @@ void pcf_context_init(void)
     /* Initialize PCF context */
     memset(&self, 0, sizeof(pcf_context_t));
 
+    ogs_log_install_domain(&__ogs_dbi_domain, "dbi", ogs_core()->log.level);
     ogs_log_install_domain(&__pcf_log_domain, "pcf", ogs_core()->log.level);
 
     ogs_pool_init(&pcf_ue_pool, ogs_app()->max.ue);
@@ -125,7 +126,12 @@ pcf_ue_t *pcf_ue_add(char *supi)
     ogs_assert(pcf_ue);
     memset(pcf_ue, 0, sizeof *pcf_ue);
 
+    /* SBI Type */
     pcf_ue->sbi.type = OGS_SBI_OBJ_UE_TYPE;
+
+    /* SBI Features */
+    OGS_SBI_FEATURES_SET(pcf_ue->am_policy_control_features,
+            OGS_SBI_NPCF_AM_POLICY_CONTROL_UE_AMBR_AUTHORIZATION);
 
     pcf_ue->association_id = ogs_msprintf("%d",
             (int)ogs_pool_index(&pcf_ue_pool, pcf_ue));
@@ -164,6 +170,8 @@ void pcf_ue_remove(pcf_ue_t *pcf_ue)
     pcf_sess_remove_all(pcf_ue);
 
     OpenAPI_policy_association_request_free(pcf_ue->policy_association_request);
+    if (pcf_ue->subscribed_ue_ambr)
+        OpenAPI_ambr_free(pcf_ue->subscribed_ue_ambr);
 
     ogs_assert(pcf_ue->association_id);
     ogs_free(pcf_ue->association_id);
@@ -210,7 +218,12 @@ pcf_sess_t *pcf_sess_add(pcf_ue_t *pcf_ue, uint8_t psi)
     ogs_assert(sess);
     memset(sess, 0, sizeof *sess);
 
+    /* SBI Type */
     sess->sbi.type = OGS_SBI_OBJ_SESS_TYPE;
+
+    /* SBI Features */
+    OGS_SBI_FEATURES_SET(sess->smpolicycontrol_features,
+            OGS_SBI_NPCF_SMPOLICYCONTROL_DN_AUTHORIZATION);
 
     sess->sm_policy_id = ogs_msprintf("%d",
             (int)ogs_pool_index(&pcf_sess_pool, sess));
@@ -257,6 +270,11 @@ void pcf_sess_remove(pcf_sess_t *sess)
 
     if (sess->notification_uri)
         ogs_free(sess->notification_uri);
+
+    if (sess->subscribed_sess_ambr)
+        OpenAPI_ambr_free(sess->subscribed_sess_ambr);
+    if (sess->subscribed_default_qos)
+        OpenAPI_subscribed_default_qos_free(sess->subscribed_default_qos);
 
     ogs_pool_free(&pcf_sess_pool, sess);
 }

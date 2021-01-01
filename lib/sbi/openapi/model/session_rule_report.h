@@ -22,14 +22,14 @@ extern "C" {
 typedef struct OpenAPI_session_rule_report_s OpenAPI_session_rule_report_t;
 typedef struct OpenAPI_session_rule_report_s {
     OpenAPI_list_t *rule_ids;
-    struct OpenAPI_rule_status_s *rule_status;
-    struct OpenAPI_session_rule_failure_code_s *sess_rule_failure_code;
+    OpenAPI_rule_status_e rule_status;
+    OpenAPI_session_rule_failure_code_e sess_rule_failure_code;
 } OpenAPI_session_rule_report_t;
 
 OpenAPI_session_rule_report_t *OpenAPI_session_rule_report_create(
     OpenAPI_list_t *rule_ids,
-    OpenAPI_rule_status_t *rule_status,
-    OpenAPI_session_rule_failure_code_t *sess_rule_failure_code
+    OpenAPI_rule_status_e rule_status,
+    OpenAPI_session_rule_failure_code_e sess_rule_failure_code
     );
 void OpenAPI_session_rule_report_free(OpenAPI_session_rule_report_t *session_rule_report);
 OpenAPI_session_rule_report_t *OpenAPI_session_rule_report_parseFromJSON(cJSON *session_rule_reportJSON);

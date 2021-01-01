@@ -40,15 +40,17 @@ libpcf_sources = files('''
 libpcf = static_library('pcf',
     sources : libpcf_sources,
     link_with : libipfw,
-    dependencies : [libapp_dep,
-                    libcrypt_dep,
+    dependencies : [libcrypt_dep,
+                    libapp_dep,
+                    libdbi_dep,
                     libsbi_dep],
     install : false)
 
 libpcf_dep = declare_dependency(
     link_with : libpcf,
-    dependencies : [libapp_dep,
-                    libcrypt_dep,
+    dependencies : [libcrypt_dep,
+                    libapp_dep,
+                    libdbi_dep,
                     libsbi_dep])
 
 pcf_sources = files('''

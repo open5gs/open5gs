@@ -56,3 +56,11 @@ void testgsm_handle_pdu_session_establishment_accept(test_sess_t *sess,
 
     }
 }
+
+void testgsm_handle_pdu_session_modification_command(test_sess_t *sess,
+        ogs_nas_5gs_pdu_session_modification_command_t
+            *pdu_session_modification_command)
+{
+    ogs_assert(sess);
+    ogs_assert(pdu_session_modification_command);
+}

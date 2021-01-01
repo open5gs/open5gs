@@ -25,7 +25,7 @@ typedef struct OpenAPI_packet_filter_info_s {
     char *tos_traffic_class;
     char *spi;
     char *flow_label;
-    struct OpenAPI_flow_direction_s *flow_direction;
+    OpenAPI_flow_direction_e flow_direction;
 } OpenAPI_packet_filter_info_t;
 
 OpenAPI_packet_filter_info_t *OpenAPI_packet_filter_info_create(
@@ -34,7 +34,7 @@ OpenAPI_packet_filter_info_t *OpenAPI_packet_filter_info_create(
     char *tos_traffic_class,
     char *spi,
     char *flow_label,
-    OpenAPI_flow_direction_t *flow_direction
+    OpenAPI_flow_direction_e flow_direction
     );
 void OpenAPI_packet_filter_info_free(OpenAPI_packet_filter_info_t *packet_filter_info);
 OpenAPI_packet_filter_info_t *OpenAPI_packet_filter_info_parseFromJSON(cJSON *packet_filter_infoJSON);

@@ -13,7 +13,7 @@
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
 #include "eth_flow_description.h"
-#include "flow_direction_rm.h"
+#include "flow_direction.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -28,7 +28,7 @@ typedef struct OpenAPI_flow_information_s {
     char *tos_traffic_class;
     char *spi;
     char *flow_label;
-    struct OpenAPI_flow_direction_rm_s *flow_direction;
+    OpenAPI_flow_direction_e flow_direction;
 } OpenAPI_flow_information_t;
 
 OpenAPI_flow_information_t *OpenAPI_flow_information_create(
@@ -39,7 +39,7 @@ OpenAPI_flow_information_t *OpenAPI_flow_information_create(
     char *tos_traffic_class,
     char *spi,
     char *flow_label,
-    OpenAPI_flow_direction_rm_t *flow_direction
+    OpenAPI_flow_direction_e flow_direction
     );
 void OpenAPI_flow_information_free(OpenAPI_flow_information_t *flow_information);
 OpenAPI_flow_information_t *OpenAPI_flow_information_parseFromJSON(cJSON *flow_informationJSON);

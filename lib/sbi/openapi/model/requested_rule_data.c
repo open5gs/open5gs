@@ -29,9 +29,6 @@ void OpenAPI_requested_rule_data_free(OpenAPI_requested_rule_data_t *requested_r
         ogs_free(node->data);
     }
     OpenAPI_list_free(requested_rule_data->ref_pcc_rule_ids);
-    OpenAPI_list_for_each(requested_rule_data->req_data, node) {
-        OpenAPI_requested_rule_data_type_free(node->data);
-    }
     OpenAPI_list_free(requested_rule_data->req_data);
     ogs_free(requested_rule_data);
 }
@@ -68,21 +65,16 @@ cJSON *OpenAPI_requested_rule_data_convertToJSON(OpenAPI_requested_rule_data_t *
         ogs_error("OpenAPI_requested_rule_data_convertToJSON() failed [req_data]");
         goto end;
     }
-    cJSON *req_dataList = cJSON_AddArrayToObject(item, "reqData");
-    if (req_dataList == NULL) {
+    cJSON *req_data = cJSON_AddArrayToObject(item, "reqData");
+    if (req_data == NULL) {
         ogs_error("OpenAPI_requested_rule_data_convertToJSON() failed [req_data]");
         goto end;
     }
-
     OpenAPI_lnode_t *req_data_node;
-    if (requested_rule_data->req_data) {
-        OpenAPI_list_for_each(requested_rule_data->req_data, req_data_node) {
-            cJSON *itemLocal = OpenAPI_requested_rule_data_type_convertToJSON(req_data_node->data);
-            if (itemLocal == NULL) {
-                ogs_error("OpenAPI_requested_rule_data_convertToJSON() failed [req_data]");
-                goto end;
-            }
-            cJSON_AddItemToArray(req_dataList, itemLocal);
+    OpenAPI_list_for_each(requested_rule_data->req_data, req_data_node) {
+        if (cJSON_AddStringToObject(req_data, "", OpenAPI_requested_rule_data_type_ToString((OpenAPI_requested_rule_data_type_e)req_data_node->data)) == NULL) {
+            ogs_error("OpenAPI_requested_rule_data_convertToJSON() failed [req_data]");
+            goto end;
         }
     }
 
@@ -133,13 +125,12 @@ OpenAPI_requested_rule_data_t *OpenAPI_requested_rule_data_parseFromJSON(cJSON *
     req_dataList = OpenAPI_list_create();
 
     cJSON_ArrayForEach(req_data_local_nonprimitive, req_data ) {
-        if (!cJSON_IsObject(req_data_local_nonprimitive)) {
+        if (!cJSON_IsString(req_data_local_nonprimitive)) {
             ogs_error("OpenAPI_requested_rule_data_parseFromJSON() failed [req_data]");
             goto end;
         }
-        OpenAPI_requested_rule_data_type_t *req_dataItem = OpenAPI_requested_rule_data_type_parseFromJSON(req_data_local_nonprimitive);
 
-        OpenAPI_list_add(req_dataList, req_dataItem);
+        OpenAPI_list_add(req_dataList, (void *)OpenAPI_requested_rule_data_type_FromString(req_data_local_nonprimitive->valuestring));
     }
 
     requested_rule_data_local_var = OpenAPI_requested_rule_data_create (

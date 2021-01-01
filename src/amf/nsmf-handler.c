@@ -275,6 +275,15 @@ int amf_nsmf_pdu_session_handle_update_sm_context(
                  * 3. PFCP Session Modifcation Request (Apply: FORWARD)
                  * 4. PFCP Session Modifcation Response
                  */
+
+            } else if (state == AMF_UPDATE_SM_CONTEXT_MODIFIED) {
+                /*
+                 * 1. PDUSessionResourceModifyResponse
+                 * 2. /nsmf-pdusession/v1/sm-contexts/{smContextRef}/modify
+                 * 3. PFCP Session Modifcation Request
+                 * 4. PFCP Session Modifcation Response
+                 */
+
             } else if (state == AMF_UPDATE_SM_CONTEXT_DEACTIVATED) {
                 /*
                  * 1. UEContextReleaseRequest

@@ -26,6 +26,7 @@ ogs_pkbuf_t *gsm_build_pdu_session_establishment_accept(smf_sess_t *sess)
 {
     ogs_pkbuf_t *pkbuf = NULL;
     smf_bearer_t *qos_flow = NULL;
+    int num_of_param;
 
     ogs_nas_5gs_message_t message;
     ogs_nas_5gs_pdu_session_establishment_accept_t *
@@ -44,7 +45,8 @@ ogs_pkbuf_t *gsm_build_pdu_session_establishment_accept(smf_sess_t *sess)
     ogs_nas_dnn_t *dnn = NULL;
 
     ogs_nas_qos_rule_t qos_rule[OGS_NAS_MAX_NUM_OF_QOS_RULE];
-    ogs_nas_qos_flow_description_t qos_flow_description;
+    ogs_nas_qos_flow_description_t
+        qos_flow_description[OGS_NAS_MAX_NUM_OF_QOS_FLOW_DESCRIPTION];
 
     uint8_t pco_buf[OGS_MAX_PCO_LEN];
     int16_t pco_len;
@@ -76,6 +78,7 @@ ogs_pkbuf_t *gsm_build_pdu_session_establishment_accept(smf_sess_t *sess)
     ogs_assert(sess);
     qos_flow = smf_default_bearer_in_sess(sess);
     ogs_assert(qos_flow);
+    ogs_assert(ogs_list_next(qos_flow) == NULL);
 
     memset(&message, 0, sizeof(message));
     message.gsm.h.extended_protocol_discriminator =
@@ -104,17 +107,16 @@ ogs_pkbuf_t *gsm_build_pdu_session_establishment_accept(smf_sess_t *sess)
      * associated with and the RQA should not be sent for this QoS Flow.
      */
     memset(qos_rule, 0, sizeof(qos_rule));
-    qos_rule[0].identifier = 1;
-    qos_rule[0].length = 6;
+    qos_rule[0].identifier = qos_flow->qfi; /* Use QFI in Open5GS */
     qos_rule[0].code = OGS_NAS_QOS_CODE_CREATE_NEW_QOS_RULE;
     qos_rule[0].DQR_bit = 1;
     qos_rule[0].num_of_packet_filter = 1;
 
     qos_rule[0].pf[0].direction = OGS_NAS_QOS_DIRECTION_UPLINK;
-    qos_rule[0].pf[0].pf_identifier = 1;
-    qos_rule[0].pf[0].length = 1;
-    qos_rule[0].pf[0].num_of_component = 1;
-    qos_rule[0].pf[0].component[0].type = OGS_PACKET_FILTER_MATCH_ALL;
+    qos_rule[0].pf[0].identifier = 1;
+    qos_rule[0].pf[0].content.length = 1;
+    qos_rule[0].pf[0].content.num_of_component = 1;
+    qos_rule[0].pf[0].content.component[0].type = OGS_PACKET_FILTER_MATCH_ALL;
 
     /*
      * TS23.501
@@ -130,6 +132,7 @@ ogs_pkbuf_t *gsm_build_pdu_session_establishment_accept(smf_sess_t *sess)
     qos_rule[0].flow.identifier = qos_flow->qfi;
 
     ogs_nas_build_qos_rules(authorized_qos_rules, qos_rule, 1);
+    ogs_assert(authorized_qos_rules->length);
 
     /* Session-AMBR */
     session_ambr->length = 6;
@@ -180,19 +183,26 @@ ogs_pkbuf_t *gsm_build_pdu_session_establishment_accept(smf_sess_t *sess)
 
     /* QoS flow descriptions */
     memset(&qos_flow_description, 0, sizeof(qos_flow_description));
-    qos_flow_description.identifier = qos_flow->qfi;
-    qos_flow_description.code = OGS_NAS_CREATE_NEW_QOS_FLOW_DESCRIPTION;
-    qos_flow_description.E = 1;
-    qos_flow_description.num_of_parameter = 1;
-    qos_flow_description.param[0].identifier =
+    qos_flow_description[0].identifier = qos_flow->qfi;
+    qos_flow_description[0].code = OGS_NAS_CREATE_NEW_QOS_FLOW_DESCRIPTION;
+    qos_flow_description[0].E_bit = 1;
+
+    num_of_param = 0;
+
+    qos_flow_description[0].param[num_of_param].identifier =
         OGS_NAX_QOS_FLOW_PARAMETER_ID_5QI;
-    qos_flow_description.param[0].len = 1;
-    qos_flow_description.param[0].content[0] = sess->pdn.qos.qci;
+    qos_flow_description[0].param[num_of_param].len =
+        sizeof(qos_flow_description[0].param[num_of_param].qci);
+    qos_flow_description[0].param[num_of_param].qci = qos_flow->qos.qci;
+    num_of_param++;
+
+    qos_flow_description[0].num_of_parameter = num_of_param;
 
     pdu_session_establishment_accept->presencemask |=
         OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_ACCEPT_AUTHORIZED_QOS_FLOW_DESCRIPTIONS_PRESENT;
-    authorized_qos_flow_descriptions->length = 6;
-    authorized_qos_flow_descriptions->buffer = &qos_flow_description;
+    ogs_nas_build_qos_flow_descriptions(
+            authorized_qos_flow_descriptions, qos_flow_description, 1);
+    ogs_assert(authorized_qos_flow_descriptions->length);
 
     /* Extended protocol configuration options */
     if (sess->nas.ue_pco.buffer && sess->nas.ue_pco.length) {
@@ -216,6 +226,7 @@ ogs_pkbuf_t *gsm_build_pdu_session_establishment_accept(smf_sess_t *sess)
     ogs_assert(pkbuf);
 
     ogs_free(authorized_qos_rules->buffer);
+    ogs_free(authorized_qos_flow_descriptions->buffer);
 
     return pkbuf;
 }
@@ -238,6 +249,157 @@ ogs_pkbuf_t *gsm_build_pdu_session_establishment_reject(
     pdu_session_establishment_reject->gsm_cause = gsm_cause;
 
     return ogs_nas_5gs_plain_encode(&message);
+}
+
+static void encode_qos_rule_packet_filter(
+        ogs_nas_qos_rule_t *qos_rule, smf_bearer_t *qos_flow)
+{
+    int i;
+    smf_pf_t *pf = NULL;
+
+    ogs_assert(qos_rule);
+    ogs_assert(qos_flow);
+
+    i = 0;
+    ogs_list_for_each(&qos_flow->pf_list, pf) {
+        qos_rule->pf[i].direction = pf->direction;
+        qos_rule->pf[i].identifier = pf->identifier;
+
+        ogs_pf_content_from_ipfw_rule(
+                pf->direction, &qos_rule->pf[i].content, &pf->ipfw_rule);
+        i++;
+    }
+    qos_rule->num_of_packet_filter = i;
+}
+
+ogs_pkbuf_t *gsm_build_qos_flow_modification_command(
+        smf_bearer_t *qos_flow, uint8_t pti)
+{
+    ogs_pkbuf_t *pkbuf = NULL;
+    smf_sess_t *sess = NULL;
+    ogs_pfcp_pdr_t *dl_pdr = NULL;
+    int num_of_param;
+
+    ogs_nas_5gs_message_t message;
+    ogs_nas_5gs_pdu_session_modification_command_t
+        *pdu_session_modification_command =
+            &message.gsm.pdu_session_modification_command;
+
+    ogs_nas_qos_rules_t *authorized_qos_rules = NULL;
+    ogs_nas_qos_flow_descriptions_t *authorized_qos_flow_descriptions = NULL;
+
+    ogs_nas_qos_rule_t qos_rule[OGS_NAS_MAX_NUM_OF_QOS_RULE];
+    ogs_nas_qos_flow_description_t
+        qos_flow_description[OGS_NAS_MAX_NUM_OF_QOS_FLOW_DESCRIPTION];
+
+    authorized_qos_rules = &pdu_session_modification_command->
+        authorized_qos_rules;
+    ogs_assert(authorized_qos_rules);
+    authorized_qos_flow_descriptions =
+        &pdu_session_modification_command->authorized_qos_flow_descriptions;
+    ogs_assert(authorized_qos_flow_descriptions);
+
+    ogs_assert(qos_flow);
+    sess = qos_flow->sess;
+    ogs_assert(sess);
+    dl_pdr = qos_flow->dl_pdr;
+    ogs_assert(dl_pdr);
+
+    memset(&message, 0, sizeof(message));
+    message.gsm.h.extended_protocol_discriminator =
+            OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GSM;
+    message.gsm.h.pdu_session_identity = sess->psi;
+    message.gsm.h.procedure_transaction_identity = pti;
+    message.gsm.h.message_type = OGS_NAS_5GS_PDU_SESSION_MODIFICATION_COMMAND;
+
+    /* QoS rule */
+    memset(qos_rule, 0, sizeof(qos_rule));
+    qos_rule[0].identifier = qos_flow->qfi; /* Use QFI in Open5GS */
+    qos_rule[0].code = OGS_NAS_QOS_CODE_CREATE_NEW_QOS_RULE;
+
+    encode_qos_rule_packet_filter(&qos_rule[0], qos_flow);
+
+    ogs_assert(dl_pdr->precedence > 0 && dl_pdr->precedence < 255);
+    qos_rule[0].precedence = dl_pdr->precedence; /* Use PCC Rule Precedence */
+    qos_rule[0].flow.segregation = 0;
+    qos_rule[0].flow.identifier = qos_flow->qfi;
+
+    pdu_session_modification_command->presencemask |=
+        OGS_NAS_5GS_PDU_SESSION_MODIFICATION_COMMAND_AUTHORIZED_QOS_RULES_PRESENT;
+    ogs_nas_build_qos_rules(authorized_qos_rules, qos_rule, 1);
+    ogs_assert(authorized_qos_rules->length);
+
+    /* QoS flow descriptions */
+    memset(&qos_flow_description, 0, sizeof(qos_flow_description));
+    qos_flow_description[0].identifier = qos_flow->qfi;
+    qos_flow_description[0].code = OGS_NAS_CREATE_NEW_QOS_FLOW_DESCRIPTION;
+    qos_flow_description[0].E_bit = 1;
+
+    num_of_param = 0;
+
+    qos_flow_description[0].param[num_of_param].identifier =
+        OGS_NAX_QOS_FLOW_PARAMETER_ID_5QI;
+    qos_flow_description[0].param[num_of_param].len =
+        sizeof(qos_flow_description[0].param[num_of_param].qci);
+    qos_flow_description[0].param[num_of_param].qci = qos_flow->qos.qci;
+    num_of_param++;
+
+    if (qos_flow->qos.gbr.uplink) {
+        qos_flow_description[0].param[num_of_param].identifier =
+            OGS_NAX_QOS_FLOW_PARAMETER_ID_GFBR_UPLINK;
+        qos_flow_description[0].param[num_of_param].len =
+            sizeof(qos_flow_description[0].param[num_of_param].br);
+        ogs_nas_bitrate_from_uint64(
+                &qos_flow_description[0].param[num_of_param].br,
+                qos_flow->qos.gbr.uplink);
+        num_of_param++;
+    }
+    if (qos_flow->qos.gbr.downlink) {
+        qos_flow_description[0].param[num_of_param].identifier =
+            OGS_NAX_QOS_FLOW_PARAMETER_ID_GFBR_DOWNLINK;
+        qos_flow_description[0].param[num_of_param].len =
+            sizeof(qos_flow_description[0].param[num_of_param].br);
+        ogs_nas_bitrate_from_uint64(
+                &qos_flow_description[0].param[num_of_param].br,
+                qos_flow->qos.gbr.downlink);
+        num_of_param++;
+    }
+    if (qos_flow->qos.mbr.uplink) {
+        qos_flow_description[0].param[num_of_param].identifier =
+            OGS_NAX_QOS_FLOW_PARAMETER_ID_MFBR_UPLINK;
+        qos_flow_description[0].param[num_of_param].len =
+            sizeof(qos_flow_description[0].param[num_of_param].br);
+        ogs_nas_bitrate_from_uint64(
+                &qos_flow_description[0].param[num_of_param].br,
+                qos_flow->qos.mbr.uplink);
+        num_of_param++;
+    }
+    if (qos_flow->qos.mbr.downlink) {
+        qos_flow_description[0].param[num_of_param].identifier =
+            OGS_NAX_QOS_FLOW_PARAMETER_ID_MFBR_DOWNLINK;
+        qos_flow_description[0].param[num_of_param].len =
+            sizeof(qos_flow_description[0].param[num_of_param].br);
+        ogs_nas_bitrate_from_uint64(
+                &qos_flow_description[0].param[num_of_param].br,
+                qos_flow->qos.mbr.downlink);
+        num_of_param++;
+    }
+
+    qos_flow_description[0].num_of_parameter = num_of_param;
+
+    pdu_session_modification_command->presencemask |=
+        OGS_NAS_5GS_PDU_SESSION_MODIFICATION_COMMAND_AUTHORIZED_QOS_FLOW_DESCRIPTIONS_PRESENT;
+    ogs_nas_build_qos_flow_descriptions(
+            authorized_qos_flow_descriptions, qos_flow_description, 1);
+    ogs_assert(authorized_qos_flow_descriptions->length);
+
+    pkbuf = ogs_nas_5gs_plain_encode(&message);
+    ogs_assert(pkbuf);
+
+    ogs_free(authorized_qos_rules->buffer);
+    ogs_free(authorized_qos_flow_descriptions->buffer);
+
+    return pkbuf;
 }
 
 ogs_pkbuf_t *gsm_build_pdu_session_release_command(

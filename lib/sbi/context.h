@@ -125,7 +125,7 @@ typedef struct ogs_sbi_object_s {
 } ogs_sbi_object_t;
 
 typedef ogs_sbi_request_t *(*ogs_sbi_build_f)(
-        ogs_sbi_object_t *sbi_object, void *data);
+        void *context, void *data);
 
 typedef struct ogs_sbi_xact_s {
     ogs_lnode_t lnode;
@@ -230,9 +230,10 @@ bool ogs_sbi_nf_instance_associate(ogs_sbi_nf_type_array_t nf_type_array,
 
 void ogs_sbi_object_free(ogs_sbi_object_t *sbi_object);
 
-ogs_sbi_xact_t *ogs_sbi_xact_add(OpenAPI_nf_type_e target_nf_type,
-        ogs_sbi_object_t *sbi_object, void *data,
-        ogs_sbi_build_f build, void (*timer_cb)(void *data));
+ogs_sbi_xact_t *ogs_sbi_xact_add(
+        OpenAPI_nf_type_e target_nf_type, ogs_sbi_object_t *sbi_object,
+        ogs_sbi_build_f build, void *context, void *data,
+        void (*timer_cb)(void *data));
 void ogs_sbi_xact_remove(ogs_sbi_xact_t *xact);
 void ogs_sbi_xact_remove_all(ogs_sbi_object_t *sbi_object);
 

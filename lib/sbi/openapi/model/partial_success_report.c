@@ -5,7 +5,7 @@
 #include "partial_success_report.h"
 
 OpenAPI_partial_success_report_t *OpenAPI_partial_success_report_create(
-    OpenAPI_failure_cause_t *failure_cause,
+    OpenAPI_failure_cause_e failure_cause,
     OpenAPI_list_t *rule_reports,
     OpenAPI_list_t *sess_rule_reports,
     OpenAPI_ue_camping_rep_t *ue_camping_rep
@@ -29,7 +29,6 @@ void OpenAPI_partial_success_report_free(OpenAPI_partial_success_report_t *parti
         return;
     }
     OpenAPI_lnode_t *node;
-    OpenAPI_failure_cause_free(partial_success_report->failure_cause);
     OpenAPI_list_for_each(partial_success_report->rule_reports, node) {
         OpenAPI_rule_report_free(node->data);
     }
@@ -56,13 +55,7 @@ cJSON *OpenAPI_partial_success_report_convertToJSON(OpenAPI_partial_success_repo
         ogs_error("OpenAPI_partial_success_report_convertToJSON() failed [failure_cause]");
         goto end;
     }
-    cJSON *failure_cause_local_JSON = OpenAPI_failure_cause_convertToJSON(partial_success_report->failure_cause);
-    if (failure_cause_local_JSON == NULL) {
-        ogs_error("OpenAPI_partial_success_report_convertToJSON() failed [failure_cause]");
-        goto end;
-    }
-    cJSON_AddItemToObject(item, "failureCause", failure_cause_local_JSON);
-    if (item->child == NULL) {
+    if (cJSON_AddStringToObject(item, "failureCause", OpenAPI_failure_cause_ToString(partial_success_report->failure_cause)) == NULL) {
         ogs_error("OpenAPI_partial_success_report_convertToJSON() failed [failure_cause]");
         goto end;
     }
@@ -133,9 +126,13 @@ OpenAPI_partial_success_report_t *OpenAPI_partial_success_report_parseFromJSON(c
         goto end;
     }
 
-    OpenAPI_failure_cause_t *failure_cause_local_nonprim = NULL;
+    OpenAPI_failure_cause_e failure_causeVariable;
 
-    failure_cause_local_nonprim = OpenAPI_failure_cause_parseFromJSON(failure_cause);
+    if (!cJSON_IsString(failure_cause)) {
+        ogs_error("OpenAPI_partial_success_report_parseFromJSON() failed [failure_cause]");
+        goto end;
+    }
+    failure_causeVariable = OpenAPI_failure_cause_FromString(failure_cause->valuestring);
 
     cJSON *rule_reports = cJSON_GetObjectItemCaseSensitive(partial_success_reportJSON, "ruleReports");
 
@@ -191,7 +188,7 @@ OpenAPI_partial_success_report_t *OpenAPI_partial_success_report_parseFromJSON(c
     }
 
     partial_success_report_local_var = OpenAPI_partial_success_report_create (
-        failure_cause_local_nonprim,
+        failure_causeVariable,
         rule_reports ? rule_reportsList : NULL,
         sess_rule_reports ? sess_rule_reportsList : NULL,
         ue_camping_rep ? ue_camping_rep_local_nonprim : NULL

@@ -31,7 +31,10 @@ int amf_nudm_sdm_handle_provisioned(
     SWITCH(recvmsg->h.resource.component[1])
     CASE(OGS_SBI_RESOURCE_NAME_AM_DATA)
         if (recvmsg->AccessAndMobilitySubscriptionData) {
-            OpenAPI_list_t *GpsiList =
+            OpenAPI_ambr_rm_t *ue_ambr =
+                recvmsg->AccessAndMobilitySubscriptionData->
+                    subscribed_ue_ambr;
+            OpenAPI_list_t *gpsiList =
                 recvmsg->AccessAndMobilitySubscriptionData->gpsis;
             OpenAPI_ambr_rm_t *SubscribedUeAmbr =
                 recvmsg->AccessAndMobilitySubscriptionData->subscribed_ue_ambr;
@@ -39,9 +42,16 @@ int amf_nudm_sdm_handle_provisioned(
                 recvmsg->AccessAndMobilitySubscriptionData->subscribed_dnn_list;
             OpenAPI_lnode_t *node = NULL;
 
-            if (GpsiList) {
+            if (ue_ambr) {
+                amf_ue->ue_ambr.uplink =
+                    ogs_sbi_bitrate_from_string(ue_ambr->uplink);
+                amf_ue->ue_ambr.downlink =
+                    ogs_sbi_bitrate_from_string(ue_ambr->downlink);
+            }
+
+            if (gpsiList) {
                 amf_ue->num_of_msisdn = 0;
-                OpenAPI_list_for_each(GpsiList, node) {
+                OpenAPI_list_for_each(gpsiList, node) {
                     if (node->data) {
                         char *gpsi = NULL;
 
@@ -66,9 +76,9 @@ int amf_nudm_sdm_handle_provisioned(
             }
 
             if (SubscribedUeAmbr) {
-                amf_ue->subscribed_ue_ambr.uplink =
+                amf_ue->ue_ambr.uplink =
                     ogs_sbi_bitrate_from_string(SubscribedUeAmbr->uplink);
-                amf_ue->subscribed_ue_ambr.downlink =
+                amf_ue->ue_ambr.downlink =
                     ogs_sbi_bitrate_from_string(SubscribedUeAmbr->downlink);
             }
 

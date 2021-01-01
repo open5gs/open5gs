@@ -9,6 +9,7 @@ parameter:
 #    no_upf: true
 #    no_ausf: true
 #    no_udm: true
+#    no_pcf: true
 #    no_udr: true
 #    no_mme: true
 #    no_sgwc: true

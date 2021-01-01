@@ -342,6 +342,117 @@ void testngap_handle_pdu_session_resource_setup_request(
     }
 }
 
+void testngap_handle_pdu_session_resource_modify_request(
+        test_ue_t *test_ue, ogs_ngap_message_t *message)
+{
+    test_sess_t *sess = NULL;
+    test_bearer_t *qos_flow = NULL;
+    int rv, i, j, k, l;
+    char buf[OGS_ADDRSTRLEN];
+
+    NGAP_NGAP_PDU_t pdu;
+    NGAP_InitiatingMessage_t *initiatingMessage = NULL;
+    NGAP_PDUSessionResourceModifyRequest_t *PDUSessionResourceModifyRequest;
+
+    NGAP_PDUSessionResourceModifyListModReq_t *PDUSessionList = NULL;
+    NGAP_PDUSessionResourceModifyItemModReq_t *PDUSessionItem = NULL;
+
+    NGAP_PDUSessionResourceModifyRequestIEs_t *ie = NULL;
+    NGAP_NAS_PDU_t *NAS_PDU = NULL;
+
+    NGAP_PDUSessionResourceModifyRequestTransfer_t n2sm_message;
+    NGAP_PDUSessionResourceModifyRequestTransferIEs_t *ie2 = NULL;
+    NGAP_UPTransportLayerInformation_t *UPTransportLayerInformation = NULL;
+    NGAP_GTPTunnel_t *gTPTunnel = NULL;
+    NGAP_PDUSessionType_t *PDUSessionType = NULL;
+    NGAP_QosFlowAddOrModifyRequestList_t *QosFlowAddOrModifyRequestList = NULL;
+    NGAP_QosFlowAddOrModifyRequestItem_t *QosFlowAddOrModifyRequestItem = NULL;
+    OCTET_STRING_t *transfer = NULL;
+    ogs_pkbuf_t *n2smbuf = NULL;
+
+    ogs_assert(test_ue);
+    ogs_assert(message);
+
+    initiatingMessage = message->choice.initiatingMessage;
+    ogs_assert(initiatingMessage);
+    PDUSessionResourceModifyRequest =
+        &initiatingMessage->value.choice.PDUSessionResourceModifyRequest;
+    ogs_assert(PDUSessionResourceModifyRequest);
+
+    for (i = 0; i < PDUSessionResourceModifyRequest->protocolIEs.list.count;
+            i++) {
+        ie = PDUSessionResourceModifyRequest->protocolIEs.list.array[i];
+        switch (ie->id) {
+        case NGAP_ProtocolIE_ID_id_PDUSessionResourceModifyListModReq:
+            PDUSessionList =
+                &ie->value.choice.PDUSessionResourceModifyListModReq;
+            ogs_assert(PDUSessionList);
+            for (j = 0; j < PDUSessionList->list.count; j++) {
+                PDUSessionItem = (NGAP_PDUSessionResourceModifyItemModReq_t *)
+                    PDUSessionList->list.array[j];
+                ogs_assert(PDUSessionItem);
+
+                sess = test_sess_find_by_psi(
+                            test_ue, PDUSessionItem->pDUSessionID);
+                ogs_assert(sess);
+
+                if (PDUSessionItem->nAS_PDU)
+                    testngap_send_to_nas(test_ue, PDUSessionItem->nAS_PDU);
+                transfer = &PDUSessionItem->
+                    pDUSessionResourceModifyRequestTransfer;
+                ogs_assert(transfer);
+
+                n2smbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
+                ogs_assert(n2smbuf);
+                ogs_pkbuf_put_data(n2smbuf, transfer->buf, transfer->size);
+
+                rv = ogs_asn_decode(
+                        &asn_DEF_NGAP_PDUSessionResourceModifyRequestTransfer,
+                        &n2sm_message, sizeof(n2sm_message), n2smbuf);
+                ogs_assert(rv == OGS_OK);
+
+                for (k = 0; k < n2sm_message.protocolIEs.list.count; k++) {
+                    ie2 = n2sm_message.protocolIEs.list.array[k];
+                    switch (ie2->id) {
+                    case NGAP_ProtocolIE_ID_id_QosFlowAddOrModifyRequestList:
+                        QosFlowAddOrModifyRequestList =
+                            &ie2->value.choice.QosFlowAddOrModifyRequestList;
+                        ogs_assert(QosFlowAddOrModifyRequestList);
+                        for (l = 0;
+                                l < QosFlowAddOrModifyRequestList->list.count;
+                                l++) {
+                            QosFlowAddOrModifyRequestItem =
+                                (struct NGAP_QosFlowAddOrModifyRequestItem *)
+                                QosFlowAddOrModifyRequestList->list.array[l];
+                            ogs_assert(QosFlowAddOrModifyRequestItem);
+                            qos_flow = test_qos_flow_find_by_sess_qfi(sess,
+                                    QosFlowAddOrModifyRequestItem->
+                                        qosFlowIdentifier);
+                            if (!qos_flow)
+                                qos_flow = test_qos_flow_add(sess);
+
+                            qos_flow->qfi = QosFlowAddOrModifyRequestItem->
+                                                qosFlowIdentifier;
+                        }
+                        break;
+                    default:
+                        break;
+                    }
+                }
+
+                ogs_asn_free(
+                        &asn_DEF_NGAP_PDUSessionResourceModifyRequestTransfer,
+                        &n2sm_message);
+
+                ogs_pkbuf_free(n2smbuf);
+            }
+            break;
+        default:
+            break;
+        }
+    }
+}
+
 void testngap_handle_pdu_session_resource_release_command(
         test_ue_t *test_ue, ogs_ngap_message_t *message)
 {

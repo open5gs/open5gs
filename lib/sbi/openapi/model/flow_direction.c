@@ -4,82 +4,27 @@
 #include <stdio.h>
 #include "flow_direction.h"
 
-OpenAPI_flow_direction_t *OpenAPI_flow_direction_create(
-    )
+char* OpenAPI_flow_direction_ToString(OpenAPI_flow_direction_e flow_direction)
 {
-    OpenAPI_flow_direction_t *flow_direction_local_var = OpenAPI_malloc(sizeof(OpenAPI_flow_direction_t));
-    if (!flow_direction_local_var) {
-        return NULL;
-    }
-
-    return flow_direction_local_var;
+    const char *flow_directionArray[] =  { "NULL", "DOWNLINK", "UPLINK", "BIDIRECTIONAL", "UNSPECIFIED" };
+    size_t sizeofArray = sizeof(flow_directionArray) / sizeof(flow_directionArray[0]);
+    if (flow_direction < sizeofArray)
+        return (char *)flow_directionArray[flow_direction];
+    else
+        return (char *)"Unknown";
 }
 
-void OpenAPI_flow_direction_free(OpenAPI_flow_direction_t *flow_direction)
+OpenAPI_flow_direction_e OpenAPI_flow_direction_FromString(char* flow_direction)
 {
-    if (NULL == flow_direction) {
-        return;
+    int stringToReturn = 0;
+    const char *flow_directionArray[] =  { "NULL", "DOWNLINK", "UPLINK", "BIDIRECTIONAL", "UNSPECIFIED" };
+    size_t sizeofArray = sizeof(flow_directionArray) / sizeof(flow_directionArray[0]);
+    while (stringToReturn < sizeofArray) {
+        if (strcmp(flow_direction, flow_directionArray[stringToReturn]) == 0) {
+            return stringToReturn;
+        }
+        stringToReturn++;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(flow_direction);
-}
-
-cJSON *OpenAPI_flow_direction_convertToJSON(OpenAPI_flow_direction_t *flow_direction)
-{
-    cJSON *item = NULL;
-
-    if (flow_direction == NULL) {
-        ogs_error("OpenAPI_flow_direction_convertToJSON() failed [FlowDirection]");
-        return NULL;
-    }
-
-    item = cJSON_CreateObject();
-end:
-    return item;
-}
-
-OpenAPI_flow_direction_t *OpenAPI_flow_direction_parseFromJSON(cJSON *flow_directionJSON)
-{
-    OpenAPI_flow_direction_t *flow_direction_local_var = NULL;
-    flow_direction_local_var = OpenAPI_flow_direction_create (
-        );
-
-    return flow_direction_local_var;
-end:
-    return NULL;
-}
-
-OpenAPI_flow_direction_t *OpenAPI_flow_direction_copy(OpenAPI_flow_direction_t *dst, OpenAPI_flow_direction_t *src)
-{
-    cJSON *item = NULL;
-    char *content = NULL;
-
-    ogs_assert(src);
-    item = OpenAPI_flow_direction_convertToJSON(src);
-    if (!item) {
-        ogs_error("OpenAPI_flow_direction_convertToJSON() failed");
-        return NULL;
-    }
-
-    content = cJSON_Print(item);
-    cJSON_Delete(item);
-
-    if (!content) {
-        ogs_error("cJSON_Print() failed");
-        return NULL;
-    }
-
-    item = cJSON_Parse(content);
-    ogs_free(content);
-    if (!item) {
-        ogs_error("cJSON_Parse() failed");
-        return NULL;
-    }
-
-    OpenAPI_flow_direction_free(dst);
-    dst = OpenAPI_flow_direction_parseFromJSON(item);
-    cJSON_Delete(item);
-
-    return dst;
+    return 0;
 }
 

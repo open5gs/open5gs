@@ -27,6 +27,9 @@ extern "C" {
 void testgsm_handle_pdu_session_establishment_accept(test_sess_t *sess,
         ogs_nas_5gs_pdu_session_establishment_accept_t
             *pdu_session_establishment_accept);
+void testgsm_handle_pdu_session_modification_command(test_sess_t *sess,
+        ogs_nas_5gs_pdu_session_modification_command_t
+            *pdu_session_modification_command);
 
 #ifdef __cplusplus
 }

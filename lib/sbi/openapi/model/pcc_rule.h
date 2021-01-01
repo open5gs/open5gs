@@ -27,7 +27,7 @@ typedef struct OpenAPI_pcc_rule_s {
     int cont_ver;
     char *pcc_rule_id;
     int precedence;
-    struct OpenAPI_af_sig_protocol_s *af_sig_protocol;
+    OpenAPI_af_sig_protocol_e af_sig_protocol;
     int app_reloc;
     OpenAPI_list_t *ref_qos_data;
     OpenAPI_list_t *ref_alt_qos_params;
@@ -49,7 +49,7 @@ OpenAPI_pcc_rule_t *OpenAPI_pcc_rule_create(
     int cont_ver,
     char *pcc_rule_id,
     int precedence,
-    OpenAPI_af_sig_protocol_t *af_sig_protocol,
+    OpenAPI_af_sig_protocol_e af_sig_protocol,
     int app_reloc,
     OpenAPI_list_t *ref_qos_data,
     OpenAPI_list_t *ref_alt_qos_params,

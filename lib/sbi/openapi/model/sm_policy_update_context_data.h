@@ -78,11 +78,11 @@ typedef struct OpenAPI_sm_policy_update_context_data_s {
     OpenAPI_list_t* rep_pra_infos;
     struct OpenAPI_ue_initiated_resource_request_s *ue_init_res_req;
     int ref_qos_indication;
-    struct OpenAPI_qos_flow_usage_s *qos_flow_usage;
-    struct OpenAPI_credit_management_status_s *credit_manage_status;
+    OpenAPI_qos_flow_usage_e qos_flow_usage;
+    OpenAPI_credit_management_status_e credit_manage_status;
     struct OpenAPI_serving_nf_identity_s *serv_nf_id;
     struct OpenAPI_trace_data_s *trace_req;
-    struct OpenAPI_ma_pdu_indication_s *ma_pdu_ind;
+    OpenAPI_ma_pdu_indication_e ma_pdu_ind;
     struct OpenAPI_atsss_capability_s *atsss_capab;
     struct OpenAPI_tsn_bridge_info_s *tsn_bridge_info;
     struct OpenAPI_port_management_container_s *tsn_port_man_cont_dstt;
@@ -124,11 +124,11 @@ OpenAPI_sm_policy_update_context_data_t *OpenAPI_sm_policy_update_context_data_c
     OpenAPI_list_t* rep_pra_infos,
     OpenAPI_ue_initiated_resource_request_t *ue_init_res_req,
     int ref_qos_indication,
-    OpenAPI_qos_flow_usage_t *qos_flow_usage,
-    OpenAPI_credit_management_status_t *credit_manage_status,
+    OpenAPI_qos_flow_usage_e qos_flow_usage,
+    OpenAPI_credit_management_status_e credit_manage_status,
     OpenAPI_serving_nf_identity_t *serv_nf_id,
     OpenAPI_trace_data_t *trace_req,
-    OpenAPI_ma_pdu_indication_t *ma_pdu_ind,
+    OpenAPI_ma_pdu_indication_e ma_pdu_ind,
     OpenAPI_atsss_capability_t *atsss_capab,
     OpenAPI_tsn_bridge_info_t *tsn_bridge_info,
     OpenAPI_port_management_container_t *tsn_port_man_cont_dstt,

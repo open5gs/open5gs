@@ -81,6 +81,7 @@ typedef struct smf_event_s {
         ogs_sbi_request_t *request;
         ogs_sbi_response_t *response;
         void *data;
+        int state;
 
         ogs_sbi_message_t *message;
     } sbi;

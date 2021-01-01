@@ -1,7 +1,7 @@
 /*
  * rule_operation.h
  *
- * Possible values are - CREATE_PCC_RULE: Indicates to create a new PCC rule to reserve the resource requested by the UE.  - DELETE_PCC_RULE: Indicates to delete a PCC rule corresponding to reserve the resource requested by the UE.. - MODIFY_PCC_RULE_AND_ADD_PACKET_FILTERS: Indicates to modify the PCC rule by adding new packet filter(s). - MODIFY_ PCC_RULE_AND_REPLACE_PACKET_FILTERS: Indicates to modify the PCC rule by replacing the existing packet filter(s). - MODIFY_ PCC_RULE_AND_DELETE_PACKET_FILTERS: Indicates to modify the PCC rule by deleting the existing packet filter(s). - MODIFY_PCC_RULE_WITHOUT_MODIFY_PACKET_FILTERS: Indicates to modify the PCC rule by modifying the QoS of the PCC rule.
+ *
  */
 
 #ifndef _OpenAPI_rule_operation_H_
@@ -17,16 +17,11 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_rule_operation_s OpenAPI_rule_operation_t;
-typedef struct OpenAPI_rule_operation_s {
-} OpenAPI_rule_operation_t;
+typedef enum { OpenAPI_rule_operation_NULL = 0, OpenAPI_rule_operation_CREATE_PCC_RULE, OpenAPI_rule_operation_DELETE_PCC_RULE, OpenAPI_rule_operation_MODIFY_PCC_RULE_AND_ADD_PACKET_FILTERS, OpenAPI_rule_operation_MODIFY_PCC_RULE_AND_REPLACE_PACKET_FILTERS, OpenAPI_rule_operation_MODIFY_PCC_RULE_AND_DELETE_PACKET_FILTERS, OpenAPI_rule_operation_MODIFY_PCC_RULE_WITHOUT_MODIFY_PACKET_FILTERS } OpenAPI_rule_operation_e;
 
-OpenAPI_rule_operation_t *OpenAPI_rule_operation_create(
-    );
-void OpenAPI_rule_operation_free(OpenAPI_rule_operation_t *rule_operation);
-OpenAPI_rule_operation_t *OpenAPI_rule_operation_parseFromJSON(cJSON *rule_operationJSON);
-cJSON *OpenAPI_rule_operation_convertToJSON(OpenAPI_rule_operation_t *rule_operation);
-OpenAPI_rule_operation_t *OpenAPI_rule_operation_copy(OpenAPI_rule_operation_t *dst, OpenAPI_rule_operation_t *src);
+char* OpenAPI_rule_operation_ToString(OpenAPI_rule_operation_e rule_operation);
+
+OpenAPI_rule_operation_e OpenAPI_rule_operation_FromString(char* rule_operation);
 
 #ifdef __cplusplus
 }

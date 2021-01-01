@@ -1,7 +1,7 @@
 /*
  * rule_status.h
  *
- * Possible values are - ACTIVE: Indicates that the PCC rule(s) are successfully installed (for those provisioned from PCF) or activated (for those pre-defined in SMF), or the session rule(s) are successfully installed  - INACTIVE: Indicates that the PCC rule(s) are removed (for those provisioned from PCF) or inactive (for those pre-defined in SMF) or the session rule(s) are removed.
+ *
  */
 
 #ifndef _OpenAPI_rule_status_H_
@@ -17,16 +17,11 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_rule_status_s OpenAPI_rule_status_t;
-typedef struct OpenAPI_rule_status_s {
-} OpenAPI_rule_status_t;
+typedef enum { OpenAPI_rule_status_NULL = 0, OpenAPI_rule_status_ACTIVE, OpenAPI_rule_status_INACTIVE } OpenAPI_rule_status_e;
 
-OpenAPI_rule_status_t *OpenAPI_rule_status_create(
-    );
-void OpenAPI_rule_status_free(OpenAPI_rule_status_t *rule_status);
-OpenAPI_rule_status_t *OpenAPI_rule_status_parseFromJSON(cJSON *rule_statusJSON);
-cJSON *OpenAPI_rule_status_convertToJSON(OpenAPI_rule_status_t *rule_status);
-OpenAPI_rule_status_t *OpenAPI_rule_status_copy(OpenAPI_rule_status_t *dst, OpenAPI_rule_status_t *src);
+char* OpenAPI_rule_status_ToString(OpenAPI_rule_status_e rule_status);
+
+OpenAPI_rule_status_e OpenAPI_rule_status_FromString(char* rule_status);
 
 #ifdef __cplusplus
 }

@@ -27,6 +27,7 @@
 
 #include "dbi/ogs-mongoc.h"
 #include "dbi/subscription.h"
+#include "dbi/session.h"
 
 #undef OGS_DBI_INSIDE
 

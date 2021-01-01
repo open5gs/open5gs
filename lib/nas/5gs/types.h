@@ -707,10 +707,14 @@ typedef struct ogs_nas_qos_flow_parameter_s {
 #define OGS_NAX_QOS_FLOW_PARAMETER_ID_EPS_BEARER_IDENTITY   7
     uint8_t identifier;
     uint8_t len;
-#define OGS_NAS_MAX_QOS_FLOW_PARAEMTER_LEN 255
-    uint8_t content[OGS_NAS_MAX_QOS_FLOW_PARAEMTER_LEN];
+    union {
+        uint8_t qci;
+        ogs_nas_bitrate_t br;
+    };
 } ogs_nas_qos_flow_parameter_t;
 
+#define OGS_NAS_MAX_NUM_OF_QOS_FLOW_DESCRIPTION 8
+#define OGS_NAS_MAX_NUM_OF_QOS_FLOW_PARAMETER 8
 typedef struct ogs_nas_qos_flow_description_s {
 ED2(uint8_t spare1:2;,
     uint8_t identifier:6;)
@@ -734,17 +738,22 @@ ED3(uint8_t spare3:1;,
  *   0 extension of previously provided parameters
  *   1 replacement of all previously provided parameters
  */
-    uint8_t E:1;,
+    uint8_t E_bit:1;,
     uint8_t num_of_parameter:6;)
 
-#define OGS_NAS_MAX_NUM_OF_QOS_FLOW_PARAMETER 8
     ogs_nas_qos_flow_parameter_t param[OGS_NAS_MAX_NUM_OF_QOS_FLOW_PARAMETER];
 } ogs_nas_qos_flow_description_t;
 
+#define OGS_NAS_MAX_QOS_FLOW_DESCRIPTIONS_LEN 65535
 typedef struct ogs_nas_qos_flow_descriptions_s {
     uint16_t length;
     void *buffer;
 } ogs_nas_qos_flow_descriptions_t;
+
+void ogs_nas_build_qos_flow_descriptions(
+    ogs_nas_qos_flow_descriptions_t *flow_descriptions,
+    ogs_nas_qos_flow_description_t *flow_description,
+    int num_of_flow_description);
 
 /* 9.11.4.13 QoS rules
  * M LV-E 6-65535 */
@@ -775,49 +784,11 @@ typedef struct ogs_nas_qos_rule_s {
 #define OGS_NAS_QOS_DIRECTION_UPLINK 2
 #define OGS_NAS_QOS_DIRECTION_BIDIRECTIONAL 3
                 uint8_t direction:2;,
-                uint8_t pf_identifier:4;)
+                uint8_t identifier:4;)
             };
             uint8_t flags;
         };
-        uint8_t length;
-#define OGS_PACKET_FILTER_MATCH_ALL 1
-#define OGS_PACKET_FILTER_PROTOCOL_IDENTIFIER_NEXT_HEADER_TYPE 48
-#define OGS_PACKET_FILTER_IPV4_REMOTE_ADDRESS_TYPE 16
-#define OGS_PACKET_FILTER_IPV4_LOCAL_ADDRESS_TYPE 17
-#define OGS_PACKET_FILTER_IPV6_REMOTE_ADDRESS_TYPE 32
-#define OGS_PACKET_FILTER_IPV6_REMOTE_ADDRESS_PREFIX_LENGTH_TYPE 33
-#define OGS_PACKET_FILTER_IPV6_LOCAL_ADDRESS_TYPE 34
-#define OGS_PACKET_FILTER_IPV6_LOCAL_ADDRESS_PREFIX_LENGTH_TYPE 35
-#define OGS_PACKET_FILTER_SINGLE_LOCAL_PORT_TYPE 64
-#define OGS_PACKET_FILTER_LOCAL_PORT_RANGE_TYPE 65
-#define OGS_PACKET_FILTER_SINGLE_REMOTE_PORT_TYPE 80
-#define OGS_PACKET_FILTER_REMOTE_PORT_RANGE_TYPE 81
-#define OGS_PACKET_FILTER_SECURITY_PARAMETER_INDEX_TYPE 96
-#define OGS_PACKET_FILTER_TOS_TRAFFIC_CLASS_TYPE 112
-#define OGS_PACKET_FILTER_FLOW_LABEL_TYPE 128
-        struct {
-            uint8_t type;
-            union {
-                uint8_t proto;
-                struct {
-                    uint32_t addr;
-                    uint32_t mask;
-                } ipv4;
-                struct {
-                    uint32_t addr[4];
-                    uint8_t prefixlen;
-                } ipv6;
-                struct {
-                    uint32_t addr[4];
-                    uint32_t mask[4];
-                } ipv6_mask;
-                struct {
-                    uint16_t low;
-                    uint16_t high;
-                } port;
-            };
-        } component[OGS_NAS_MAX_NUM_OF_PACKET_FILTER_COMPONENT];
-        uint8_t num_of_component;
+        ogs_pf_content_t content;
     } pf[OGS_MAX_NUM_OF_PACKET_FILTER];
 
     uint8_t precedence;

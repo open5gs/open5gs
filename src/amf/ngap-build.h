@@ -41,6 +41,8 @@ ogs_pkbuf_t *ngap_build_ue_context_release_command(
 
 ogs_pkbuf_t *ngap_build_pdu_session_resource_setup_request(
     amf_sess_t *sess, ogs_pkbuf_t *gmmbuf, ogs_pkbuf_t *n2smbuf);
+ogs_pkbuf_t *ngap_build_pdu_session_resource_modify_request(
+    amf_sess_t *sess, ogs_pkbuf_t *gmmbuf, ogs_pkbuf_t *n2smbuf);
 ogs_pkbuf_t *ngap_build_pdu_session_resource_release_command(
     amf_sess_t *sess, ogs_pkbuf_t *gmmbuf, ogs_pkbuf_t *n2smbuf);
 

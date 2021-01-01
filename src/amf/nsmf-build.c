@@ -35,6 +35,7 @@ ogs_sbi_request_t *amf_nsmf_pdu_session_build_create_sm_context(
     OpenAPI_snssai_t hplmnSnssai;
     OpenAPI_ref_to_binary_data_t n1SmMsg;
     OpenAPI_user_location_t ueLocation;
+    ogs_sbi_nf_instance_t *pcf_nf_instance = NULL;
 
     ogs_assert(sess);
     amf_ue = sess->amf_ue;
@@ -64,6 +65,7 @@ ogs_sbi_request_t *amf_nsmf_pdu_session_build_create_sm_context(
         }
     }
     SmContextCreateData.pdu_session_id = sess->psi;
+    ogs_assert(sess->dnn);
     SmContextCreateData.dnn = sess->dnn;
 
     memset(&sNssai, 0, sizeof(sNssai));
@@ -98,6 +100,8 @@ ogs_sbi_request_t *amf_nsmf_pdu_session_build_create_sm_context(
     n1SmMsg.content_id = (char *)OGS_SBI_CONTENT_5GNAS_SM_ID;
     SmContextCreateData.n1_sm_msg = &n1SmMsg;
 
+    SmContextCreateData.rat_type = amf_ue_rat_type(amf_ue);
+
     memset(&ueLocation, 0, sizeof(ueLocation));
     ueLocation.nr_location = ogs_sbi_build_nr_location(
             &amf_ue->tai, &amf_ue->nr_cgi);
@@ -107,6 +111,11 @@ ogs_sbi_request_t *amf_nsmf_pdu_session_build_create_sm_context(
 
     SmContextCreateData.ue_location = &ueLocation;
     SmContextCreateData.ue_time_zone = ogs_sbi_timezone_string(ogs_timezone());
+
+    pcf_nf_instance = OGS_SBI_NF_INSTANCE_GET(
+            amf_ue->sbi.nf_type_array, OpenAPI_nf_type_PCF);
+    ogs_assert(pcf_nf_instance);
+    SmContextCreateData.pcf_id = pcf_nf_instance->id;
 
     message.SmContextCreateData = &SmContextCreateData;
 

@@ -6,7 +6,7 @@
 
 OpenAPI_ue_initiated_resource_request_t *OpenAPI_ue_initiated_resource_request_create(
     char *pcc_rule_id,
-    OpenAPI_rule_operation_t *rule_op,
+    OpenAPI_rule_operation_e rule_op,
     int precedence,
     OpenAPI_list_t *pack_filt_info,
     OpenAPI_requested_qos_t *req_qos
@@ -32,7 +32,6 @@ void OpenAPI_ue_initiated_resource_request_free(OpenAPI_ue_initiated_resource_re
     }
     OpenAPI_lnode_t *node;
     ogs_free(ue_initiated_resource_request->pcc_rule_id);
-    OpenAPI_rule_operation_free(ue_initiated_resource_request->rule_op);
     OpenAPI_list_for_each(ue_initiated_resource_request->pack_filt_info, node) {
         OpenAPI_packet_filter_info_free(node->data);
     }
@@ -62,13 +61,7 @@ cJSON *OpenAPI_ue_initiated_resource_request_convertToJSON(OpenAPI_ue_initiated_
         ogs_error("OpenAPI_ue_initiated_resource_request_convertToJSON() failed [rule_op]");
         goto end;
     }
-    cJSON *rule_op_local_JSON = OpenAPI_rule_operation_convertToJSON(ue_initiated_resource_request->rule_op);
-    if (rule_op_local_JSON == NULL) {
-        ogs_error("OpenAPI_ue_initiated_resource_request_convertToJSON() failed [rule_op]");
-        goto end;
-    }
-    cJSON_AddItemToObject(item, "ruleOp", rule_op_local_JSON);
-    if (item->child == NULL) {
+    if (cJSON_AddStringToObject(item, "ruleOp", OpenAPI_rule_operation_ToString(ue_initiated_resource_request->rule_op)) == NULL) {
         ogs_error("OpenAPI_ue_initiated_resource_request_convertToJSON() failed [rule_op]");
         goto end;
     }
@@ -137,9 +130,13 @@ OpenAPI_ue_initiated_resource_request_t *OpenAPI_ue_initiated_resource_request_p
         goto end;
     }
 
-    OpenAPI_rule_operation_t *rule_op_local_nonprim = NULL;
+    OpenAPI_rule_operation_e rule_opVariable;
 
-    rule_op_local_nonprim = OpenAPI_rule_operation_parseFromJSON(rule_op);
+    if (!cJSON_IsString(rule_op)) {
+        ogs_error("OpenAPI_ue_initiated_resource_request_parseFromJSON() failed [rule_op]");
+        goto end;
+    }
+    rule_opVariable = OpenAPI_rule_operation_FromString(rule_op->valuestring);
 
     cJSON *precedence = cJSON_GetObjectItemCaseSensitive(ue_initiated_resource_requestJSON, "precedence");
 
@@ -185,7 +182,7 @@ OpenAPI_ue_initiated_resource_request_t *OpenAPI_ue_initiated_resource_request_p
 
     ue_initiated_resource_request_local_var = OpenAPI_ue_initiated_resource_request_create (
         pcc_rule_id ? ogs_strdup(pcc_rule_id->valuestring) : NULL,
-        rule_op_local_nonprim,
+        rule_opVariable,
         precedence ? precedence->valuedouble : 0,
         pack_filt_infoList,
         req_qos ? req_qos_local_nonprim : NULL

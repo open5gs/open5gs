@@ -22,7 +22,7 @@
 #include "ngap-build.h"
 
 ogs_sbi_request_t *smf_namf_comm_build_n1_n2_message_transfer(
-        smf_sess_t *sess, void *data)
+        smf_sess_t *sess, smf_n1_n2_message_transfer_data_t *data)
 {
     int i;
     smf_ue_t *smf_ue = NULL;
@@ -44,6 +44,11 @@ ogs_sbi_request_t *smf_namf_comm_build_n1_n2_message_transfer(
     smf_ue = sess->smf_ue;
     ogs_assert(smf_ue);
     ogs_assert(smf_ue->supi);
+
+    ogs_assert(data);
+    ogs_assert(data->state);
+    ogs_assert(data->n1smbuf);
+    ogs_assert(data->n2smbuf);
 
     memset(&message, 0, sizeof(message));
     message.h.method = (char *)OGS_SBI_HTTP_METHOD_POST;
@@ -76,7 +81,18 @@ ogs_sbi_request_t *smf_namf_comm_build_n1_n2_message_transfer(
     smInfo.n2_info_content = &n2InfoContent;
 
     memset(&n2InfoContent, 0, sizeof(n2InfoContent));
-    n2InfoContent.ngap_ie_type = OpenAPI_ngap_ie_type_PDU_RES_SETUP_REQ;
+    switch (data->state) {
+    case SMF_UE_REQUESTED_PDU_SESSION_ESTABLISHMENT:
+        n2InfoContent.ngap_ie_type = OpenAPI_ngap_ie_type_PDU_RES_SETUP_REQ;
+        break;
+    case SMF_NETWORK_REQUESTED_PDU_SESSION_MODIFICATION:
+    case SMF_NETWORK_REQUESTED_QOS_FLOW_MODIFICATION:
+        n2InfoContent.ngap_ie_type = OpenAPI_ngap_ie_type_PDU_RES_MOD_REQ;
+        break;
+    default:
+        ogs_fatal("Unexpected state [%d]", data->state);
+        ogs_assert_if_reached();
+    }
     n2InfoContent.ngap_data = &ngapData;
 
     memset(&ngapData, 0, sizeof(ngapData));
@@ -84,8 +100,7 @@ ogs_sbi_request_t *smf_namf_comm_build_n1_n2_message_transfer(
 
     message.num_of_part = 0;
 
-    message.part[message.num_of_part].pkbuf =
-        gsm_build_pdu_session_establishment_accept(sess);
+    message.part[message.num_of_part].pkbuf = data->n1smbuf;
     if (message.part[message.num_of_part].pkbuf) {
         message.part[message.num_of_part].content_id =
             (char *)OGS_SBI_CONTENT_5GNAS_SM_ID;
@@ -94,8 +109,7 @@ ogs_sbi_request_t *smf_namf_comm_build_n1_n2_message_transfer(
         message.num_of_part++;
     }
 
-    message.part[message.num_of_part].pkbuf =
-        ngap_build_pdu_session_resource_setup_request_transfer(sess);
+    message.part[message.num_of_part].pkbuf = data->n2smbuf;
     if (message.part[message.num_of_part].pkbuf) {
         message.part[message.num_of_part].content_id =
             (char *)OGS_SBI_CONTENT_NGAP_SM_ID;

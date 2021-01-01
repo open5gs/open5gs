@@ -1,7 +1,7 @@
 /*
  * qos_flow_usage.h
  *
- * Possible values are - GENERAL: Indicate no specific QoS flow usage information is available.  - IMS_SIG: Indicate that the QoS flow is used for IMS signalling only.
+ *
  */
 
 #ifndef _OpenAPI_qos_flow_usage_H_
@@ -17,16 +17,11 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_qos_flow_usage_s OpenAPI_qos_flow_usage_t;
-typedef struct OpenAPI_qos_flow_usage_s {
-} OpenAPI_qos_flow_usage_t;
+typedef enum { OpenAPI_qos_flow_usage_NULL = 0, OpenAPI_qos_flow_usage_GENERAL, OpenAPI_qos_flow_usage_IMS_SIG } OpenAPI_qos_flow_usage_e;
 
-OpenAPI_qos_flow_usage_t *OpenAPI_qos_flow_usage_create(
-    );
-void OpenAPI_qos_flow_usage_free(OpenAPI_qos_flow_usage_t *qos_flow_usage);
-OpenAPI_qos_flow_usage_t *OpenAPI_qos_flow_usage_parseFromJSON(cJSON *qos_flow_usageJSON);
-cJSON *OpenAPI_qos_flow_usage_convertToJSON(OpenAPI_qos_flow_usage_t *qos_flow_usage);
-OpenAPI_qos_flow_usage_t *OpenAPI_qos_flow_usage_copy(OpenAPI_qos_flow_usage_t *dst, OpenAPI_qos_flow_usage_t *src);
+char* OpenAPI_qos_flow_usage_ToString(OpenAPI_qos_flow_usage_e qos_flow_usage);
+
+OpenAPI_qos_flow_usage_e OpenAPI_qos_flow_usage_FromString(char* qos_flow_usage);
 
 #ifdef __cplusplus
 }

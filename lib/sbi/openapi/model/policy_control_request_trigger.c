@@ -4,82 +4,27 @@
 #include <stdio.h>
 #include "policy_control_request_trigger.h"
 
-OpenAPI_policy_control_request_trigger_t *OpenAPI_policy_control_request_trigger_create(
-    )
+char* OpenAPI_policy_control_request_trigger_ToString(OpenAPI_policy_control_request_trigger_e policy_control_request_trigger)
 {
-    OpenAPI_policy_control_request_trigger_t *policy_control_request_trigger_local_var = OpenAPI_malloc(sizeof(OpenAPI_policy_control_request_trigger_t));
-    if (!policy_control_request_trigger_local_var) {
-        return NULL;
-    }
-
-    return policy_control_request_trigger_local_var;
+    const char *policy_control_request_triggerArray[] =  { "NULL", "PLMN_CH", "RES_MO_RE", "AC_TY_CH", "UE_IP_CH", "UE_MAC_CH", "AN_CH_COR", "US_RE", "APP_STA", "APP_STO", "AN_INFO", "CM_SES_FAIL", "PS_DA_OFF", "DEF_QOS_CH", "SE_AMBR_CH", "QOS_NOTIF", "NO_CREDIT", "REALLO_OF_CREDIT", "PRA_CH", "SAREA_CH", "SCNN_CH", "RE_TIMEOUT", "RES_RELEASE", "SUCC_RES_ALLO", "RAT_TY_CH", "REF_QOS_IND_CH", "NUM_OF_PACKET_FILTER", "UE_STATUS_RESUME", "UE_TZ_CH", "AUTH_PROF_CH", "QOS_MONITORING", "SCELL_CH", "EPS_FALLBACK", "MA_PDU", "TSN_ETHER_PORT", "TSN_CONTAINER", "_5G_RG_JOIN", "_5G_RG_LEAVE" };
+    size_t sizeofArray = sizeof(policy_control_request_triggerArray) / sizeof(policy_control_request_triggerArray[0]);
+    if (policy_control_request_trigger < sizeofArray)
+        return (char *)policy_control_request_triggerArray[policy_control_request_trigger];
+    else
+        return (char *)"Unknown";
 }
 
-void OpenAPI_policy_control_request_trigger_free(OpenAPI_policy_control_request_trigger_t *policy_control_request_trigger)
+OpenAPI_policy_control_request_trigger_e OpenAPI_policy_control_request_trigger_FromString(char* policy_control_request_trigger)
 {
-    if (NULL == policy_control_request_trigger) {
-        return;
+    int stringToReturn = 0;
+    const char *policy_control_request_triggerArray[] =  { "NULL", "PLMN_CH", "RES_MO_RE", "AC_TY_CH", "UE_IP_CH", "UE_MAC_CH", "AN_CH_COR", "US_RE", "APP_STA", "APP_STO", "AN_INFO", "CM_SES_FAIL", "PS_DA_OFF", "DEF_QOS_CH", "SE_AMBR_CH", "QOS_NOTIF", "NO_CREDIT", "REALLO_OF_CREDIT", "PRA_CH", "SAREA_CH", "SCNN_CH", "RE_TIMEOUT", "RES_RELEASE", "SUCC_RES_ALLO", "RAT_TY_CH", "REF_QOS_IND_CH", "NUM_OF_PACKET_FILTER", "UE_STATUS_RESUME", "UE_TZ_CH", "AUTH_PROF_CH", "QOS_MONITORING", "SCELL_CH", "EPS_FALLBACK", "MA_PDU", "TSN_ETHER_PORT", "TSN_CONTAINER", "_5G_RG_JOIN", "_5G_RG_LEAVE" };
+    size_t sizeofArray = sizeof(policy_control_request_triggerArray) / sizeof(policy_control_request_triggerArray[0]);
+    while (stringToReturn < sizeofArray) {
+        if (strcmp(policy_control_request_trigger, policy_control_request_triggerArray[stringToReturn]) == 0) {
+            return stringToReturn;
+        }
+        stringToReturn++;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(policy_control_request_trigger);
-}
-
-cJSON *OpenAPI_policy_control_request_trigger_convertToJSON(OpenAPI_policy_control_request_trigger_t *policy_control_request_trigger)
-{
-    cJSON *item = NULL;
-
-    if (policy_control_request_trigger == NULL) {
-        ogs_error("OpenAPI_policy_control_request_trigger_convertToJSON() failed [PolicyControlRequestTrigger]");
-        return NULL;
-    }
-
-    item = cJSON_CreateObject();
-end:
-    return item;
-}
-
-OpenAPI_policy_control_request_trigger_t *OpenAPI_policy_control_request_trigger_parseFromJSON(cJSON *policy_control_request_triggerJSON)
-{
-    OpenAPI_policy_control_request_trigger_t *policy_control_request_trigger_local_var = NULL;
-    policy_control_request_trigger_local_var = OpenAPI_policy_control_request_trigger_create (
-        );
-
-    return policy_control_request_trigger_local_var;
-end:
-    return NULL;
-}
-
-OpenAPI_policy_control_request_trigger_t *OpenAPI_policy_control_request_trigger_copy(OpenAPI_policy_control_request_trigger_t *dst, OpenAPI_policy_control_request_trigger_t *src)
-{
-    cJSON *item = NULL;
-    char *content = NULL;
-
-    ogs_assert(src);
-    item = OpenAPI_policy_control_request_trigger_convertToJSON(src);
-    if (!item) {
-        ogs_error("OpenAPI_policy_control_request_trigger_convertToJSON() failed");
-        return NULL;
-    }
-
-    content = cJSON_Print(item);
-    cJSON_Delete(item);
-
-    if (!content) {
-        ogs_error("cJSON_Print() failed");
-        return NULL;
-    }
-
-    item = cJSON_Parse(content);
-    ogs_free(content);
-    if (!item) {
-        ogs_error("cJSON_Parse() failed");
-        return NULL;
-    }
-
-    OpenAPI_policy_control_request_trigger_free(dst);
-    dst = OpenAPI_policy_control_request_trigger_parseFromJSON(item);
-    cJSON_Delete(item);
-
-    return dst;
+    return 0;
 }
 

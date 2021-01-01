@@ -489,6 +489,7 @@ static void smf_gx_cca_cb(void *data, struct msg **msg)
     smf_event_t *e = NULL;
     ogs_gtp_xact_t *xact = NULL;
     smf_sess_t *sess = NULL;
+    ogs_pcc_rule_t *pcc_rule = NULL;
     ogs_pkbuf_t *gxbuf = NULL;
     ogs_diam_gx_message_t *gx_message = NULL;
     uint16_t gxbuf_len = 0;
@@ -626,7 +627,7 @@ static void smf_gx_cca_cb(void *data, struct msg **msg)
         if (avpch1) {
             ret = fd_msg_avp_hdr(avpch1, &hdr);
             ogs_assert(ret == 0);
-            gx_message->pdn.ambr.uplink = hdr->avp_value->u32;
+            gx_message->session_data.pdn.ambr.uplink = hdr->avp_value->u32;
         }
         ret = fd_avp_search_avp(
                 avp, ogs_diam_gx_apn_aggregate_max_bitrate_dl, &avpch1);
@@ -634,7 +635,7 @@ static void smf_gx_cca_cb(void *data, struct msg **msg)
         if (avpch1) {
             ret = fd_msg_avp_hdr(avpch1, &hdr);
             ogs_assert(ret == 0);
-            gx_message->pdn.ambr.downlink = hdr->avp_value->u32;
+            gx_message->session_data.pdn.ambr.downlink = hdr->avp_value->u32;
         }
     }
 
@@ -646,7 +647,7 @@ static void smf_gx_cca_cb(void *data, struct msg **msg)
         if (avpch1) {
             ret = fd_msg_avp_hdr(avpch1, &hdr);
             ogs_assert(ret == 0);
-            gx_message->pdn.qos.qci = hdr->avp_value->u32;
+            gx_message->session_data.pdn.qos.qci = hdr->avp_value->u32;
         }
 
         ret = fd_avp_search_avp(
@@ -659,7 +660,8 @@ static void smf_gx_cca_cb(void *data, struct msg **msg)
             if (avpch2) {
                 ret = fd_msg_avp_hdr(avpch2, &hdr);
                 ogs_assert(ret == 0);
-                gx_message->pdn.qos.arp.priority_level = hdr->avp_value->u32;
+                gx_message->session_data.pdn.qos.arp.priority_level =
+                    hdr->avp_value->u32;
             }
 
             ret = fd_avp_search_avp(
@@ -668,7 +670,7 @@ static void smf_gx_cca_cb(void *data, struct msg **msg)
             if (avpch2) {
                 ret = fd_msg_avp_hdr(avpch2, &hdr);
                 ogs_assert(ret == 0);
-                gx_message->pdn.qos.arp.pre_emption_capability =
+                gx_message->session_data.pdn.qos.arp.pre_emption_capability =
                     hdr->avp_value->u32;
             }
 
@@ -678,7 +680,7 @@ static void smf_gx_cca_cb(void *data, struct msg **msg)
             if (avpch2) {
                 ret = fd_msg_avp_hdr(avpch2, &hdr);
                 ogs_assert(ret == 0);
-                gx_message->pdn.qos.arp.pre_emption_vulnerability =
+                gx_message->session_data.pdn.qos.arp.pre_emption_vulnerability =
                     hdr->avp_value->u32;
             }
         }
@@ -714,18 +716,15 @@ static void smf_gx_cca_cb(void *data, struct msg **msg)
                 ogs_assert(ret == 0);
                 switch (hdr->avp_code) {
                 case OGS_DIAM_GX_AVP_CODE_CHARGING_RULE_DEFINITION:
-                {
-                    ogs_pcc_rule_t *pcc_rule = &gx_message->pcc_rule
-                        [gx_message->num_of_pcc_rule];
+                    pcc_rule = &gx_message->session_data.pcc_rule
+                            [gx_message->session_data.num_of_pcc_rule];
 
-                    rv = decode_pcc_rule_definition(
-                            pcc_rule, avpch1, &error);
+                    rv = decode_pcc_rule_definition(pcc_rule, avpch1, &error);
                     ogs_assert(rv == OGS_OK);
 
                     pcc_rule->type = OGS_PCC_RULE_TYPE_INSTALL;
-                    gx_message->num_of_pcc_rule++;
+                    gx_message->session_data.num_of_pcc_rule++;
                     break;
-                }
                 default:
                     ogs_error("Not supported(%d)", hdr->avp_code);
                     break;
@@ -751,14 +750,14 @@ out:
         rv = ogs_queue_push(ogs_app()->queue, e);
         if (rv != OGS_OK) {
             ogs_warn("ogs_queue_push() failed:%d", (int)rv);
-            ogs_diam_gx_message_free(gx_message);
+            ogs_session_data_free(&gx_message->session_data);
             ogs_pkbuf_free(e->pkbuf);
             smf_event_free(e);
         } else {
             ogs_pollset_notify(ogs_app()->pollset);
         }
     } else {
-        ogs_diam_gx_message_free(gx_message);
+        ogs_session_data_free(&gx_message->session_data);
         ogs_pkbuf_free(gxbuf);
     }
 
@@ -846,6 +845,7 @@ static int smf_gx_rar_cb( struct msg **msg, struct avp *avp,
     ogs_pkbuf_t *gxbuf = NULL;
     smf_sess_t *sess = NULL;
     ogs_diam_gx_message_t *gx_message = NULL;
+    ogs_pcc_rule_t *pcc_rule = NULL;
 
     uint32_t result_code = OGS_DIAM_UNKNOWN_SESSION_ID;
 	
@@ -900,59 +900,22 @@ static int smf_gx_rar_cb( struct msg **msg, struct avp *avp,
         case OGS_DIAM_GX_AVP_CODE_RE_AUTH_REQUEST_TYPE:
             break;
         case OGS_DIAM_GX_AVP_CODE_CHARGING_RULE_INSTALL:
-        {
             ret = fd_msg_browse(avp, MSG_BRW_FIRST_CHILD, &avpch1, NULL);
             ogs_assert(ret == 0);
-            while(avpch1)
-            {
+            while(avpch1) {
                 ret = fd_msg_avp_hdr(avpch1, &hdr);
                 ogs_assert(ret == 0);
-                switch(hdr->avp_code)
-                {
-                    case OGS_DIAM_GX_AVP_CODE_CHARGING_RULE_DEFINITION:
-                    {
-                        ogs_pcc_rule_t *pcc_rule = &gx_message->pcc_rule
-                            [gx_message->num_of_pcc_rule];
+                switch(hdr->avp_code) {
+                case OGS_DIAM_GX_AVP_CODE_CHARGING_RULE_DEFINITION:
+                    pcc_rule = &gx_message->session_data.pcc_rule
+                            [gx_message->session_data.num_of_pcc_rule];
 
-                        rv = decode_pcc_rule_definition(
-                                pcc_rule, avpch1, NULL);
-                        ogs_assert(rv == OGS_OK);
+                    rv = decode_pcc_rule_definition(pcc_rule, avpch1, NULL);
+                    ogs_assert(rv == OGS_OK);
 
-                        pcc_rule->type = OGS_PCC_RULE_TYPE_INSTALL;
-                        gx_message->num_of_pcc_rule++;
-                        break;
-                    }
-                    default:
-                    {
-                        ogs_error("Not supported(%d)", hdr->avp_code);
-                        break;
-                    }
-                }
-                fd_msg_browse(avpch1, MSG_BRW_NEXT, &avpch1, NULL);
-            }
-            break;
-        }
-        case OGS_DIAM_GX_AVP_CODE_CHARGING_RULE_REMOVE:
-        {
-            ret = fd_msg_browse(avp, MSG_BRW_FIRST_CHILD, &avpch1, NULL);
-            ogs_assert(ret == 0);
-            while (avpch1) {
-                ret = fd_msg_avp_hdr(avpch1, &hdr);
-                ogs_assert(ret == 0);
-                switch (hdr->avp_code) {
-                case OGS_DIAM_GX_AVP_CODE_CHARGING_RULE_NAME:
-                {
-                    ogs_pcc_rule_t *pcc_rule = &gx_message->pcc_rule
-                        [gx_message->num_of_pcc_rule];
-
-                    pcc_rule->name = 
-                        ogs_strdup((char*)hdr->avp_value->os.data);
-                    ogs_assert(pcc_rule->name);
-
-                    pcc_rule->type = OGS_PCC_RULE_TYPE_REMOVE;
-                    gx_message->num_of_pcc_rule++;
+                    pcc_rule->type = OGS_PCC_RULE_TYPE_INSTALL;
+                    gx_message->session_data.num_of_pcc_rule++;
                     break;
-                }
                 default:
                     ogs_error("Not supported(%d)", hdr->avp_code);
                     break;
@@ -960,7 +923,30 @@ static int smf_gx_rar_cb( struct msg **msg, struct avp *avp,
                 fd_msg_browse(avpch1, MSG_BRW_NEXT, &avpch1, NULL);
             }
             break;
-        }
+        case OGS_DIAM_GX_AVP_CODE_CHARGING_RULE_REMOVE:
+            ret = fd_msg_browse(avp, MSG_BRW_FIRST_CHILD, &avpch1, NULL);
+            ogs_assert(ret == 0);
+            while (avpch1) {
+                ret = fd_msg_avp_hdr(avpch1, &hdr);
+                ogs_assert(ret == 0);
+                switch (hdr->avp_code) {
+                case OGS_DIAM_GX_AVP_CODE_CHARGING_RULE_NAME:
+                    pcc_rule = &gx_message->session_data.pcc_rule
+                            [gx_message->session_data.num_of_pcc_rule];
+
+                    pcc_rule->name = ogs_strdup((char*)hdr->avp_value->os.data);
+                    ogs_assert(pcc_rule->name);
+
+                    pcc_rule->type = OGS_PCC_RULE_TYPE_REMOVE;
+                    gx_message->session_data.num_of_pcc_rule++;
+                    break;
+                default:
+                    ogs_error("Not supported(%d)", hdr->avp_code);
+                    break;
+                }
+                fd_msg_browse(avpch1, MSG_BRW_NEXT, &avpch1, NULL);
+            }
+            break;
         default:
             ogs_warn("Not supported(%d)", hdr->avp_code);
             break;
@@ -977,7 +963,7 @@ static int smf_gx_rar_cb( struct msg **msg, struct avp *avp,
     rv = ogs_queue_push(ogs_app()->queue, e);
     if (rv != OGS_OK) {
         ogs_warn("ogs_queue_push() failed:%d", (int)rv);
-        ogs_diam_gx_message_free(gx_message);
+        ogs_session_data_free(&gx_message->session_data);
         ogs_pkbuf_free(e->pkbuf);
         smf_event_free(e);
     } else {
@@ -1033,7 +1019,7 @@ out:
 	ret = fd_msg_send(msg, NULL, NULL);
     ogs_assert(ret == 0);
 
-    ogs_diam_gx_message_free(gx_message);
+    ogs_session_data_free(&gx_message->session_data);
     ogs_pkbuf_free(gxbuf);
 
     return 0;
@@ -1143,6 +1129,8 @@ static int decode_pcc_rule_definition(
     ret = fd_msg_browse(avpch1, MSG_BRW_FIRST_CHILD, &avpch2, NULL);
     ogs_assert(ret == 0);
     while (avpch2) {
+        ogs_flow_t *flow = NULL;
+
         ret = fd_msg_avp_hdr(avpch2, &hdr);
         ogs_assert(ret == 0);
         switch (hdr->avp_code) {
@@ -1155,9 +1143,7 @@ static int decode_pcc_rule_definition(
             ogs_assert(pcc_rule->name);
             break;
         case OGS_DIAM_GX_AVP_CODE_FLOW_INFORMATION:
-        {
-            ogs_flow_t *flow =
-                &pcc_rule->flow[pcc_rule->num_of_flow];
+            flow = &pcc_rule->flow[pcc_rule->num_of_flow];
 
             ret = fd_avp_search_avp(
                     avpch2, ogs_diam_gx_flow_direction, &avpch3);
@@ -1171,8 +1157,7 @@ static int decode_pcc_rule_definition(
             ret = fd_avp_search_avp(
                     avpch2, ogs_diam_gx_flow_description, &avpch3);
             ogs_assert(ret == 0);
-            if (avpch3)
-            {
+            if (avpch3) {
                 ret = fd_msg_avp_hdr(avpch3, &hdr);
                 ogs_assert(ret == 0);
                 flow->description = ogs_malloc(hdr->avp_value->os.len+1);
@@ -1183,7 +1168,6 @@ static int decode_pcc_rule_definition(
 
             pcc_rule->num_of_flow++;
             break;
-        }
         case OGS_DIAM_GX_AVP_CODE_FLOW_STATUS:
             pcc_rule->flow_status = hdr->avp_value->i32;
             break;

@@ -420,7 +420,8 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
     }
 
     /* Retrieve QoS Data from Database */
-    rv = pcrf_db_qos_data(sess_data->imsi_bcd, sess_data->apn, &gx_message);
+    rv = pcrf_db_qos_data(
+            sess_data->imsi_bcd, sess_data->apn, &gx_message.session_data);
     if (rv != OGS_OK) {
         ogs_error("Cannot get data for IMSI(%s)+APN(%s)'",
                 sess_data->imsi_bcd, sess_data->apn);
@@ -432,8 +433,8 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
         cc_request_type == OGS_DIAM_GX_CC_REQUEST_TYPE_UPDATE_REQUEST) {
         int charging_rule = 0;
 
-        for (i = 0; i < gx_message.num_of_pcc_rule; i++) {
-            ogs_pcc_rule_t *pcc_rule = &gx_message.pcc_rule[i];
+        for (i = 0; i < gx_message.session_data.num_of_pcc_rule; i++) {
+            ogs_pcc_rule_t *pcc_rule = &gx_message.session_data.pcc_rule[i];
             if (pcc_rule->num_of_flow) {
                 if (charging_rule == 0) {
                     ret = fd_msg_avp_new(
@@ -454,26 +455,27 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
         }
 
         /* Set QoS-Information */
-        if (gx_message.pdn.ambr.downlink || gx_message.pdn.ambr.uplink) {
+        if (gx_message.session_data.pdn.ambr.downlink ||
+                gx_message.session_data.pdn.ambr.uplink) {
             ret = fd_msg_avp_new(ogs_diam_gx_qos_information, 0, &avp);
             ogs_assert(ret == 0);
 
-            if (gx_message.pdn.ambr.uplink) {
+            if (gx_message.session_data.pdn.ambr.uplink) {
                 ret = fd_msg_avp_new(
                         ogs_diam_gx_apn_aggregate_max_bitrate_ul, 0, &avpch1);
                 ogs_assert(ret == 0);
-                val.u32 = gx_message.pdn.ambr.uplink;
+                val.u32 = gx_message.session_data.pdn.ambr.uplink;
                 ret = fd_msg_avp_setvalue (avpch1, &val);
                 ogs_assert(ret == 0);
                 ret = fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1);
                 ogs_assert(ret == 0);
             }
             
-            if (gx_message.pdn.ambr.downlink) {
+            if (gx_message.session_data.pdn.ambr.downlink) {
                 ret = fd_msg_avp_new(
                         ogs_diam_gx_apn_aggregate_max_bitrate_dl, 0, &avpch1);
                 ogs_assert(ret == 0);
-                val.u32 = gx_message.pdn.ambr.downlink;
+                val.u32 = gx_message.session_data.pdn.ambr.downlink;
                 ret = fd_msg_avp_setvalue (avpch1, &val);
                 ogs_assert(ret == 0);
                 ret = fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1);
@@ -490,7 +492,7 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
 
         ret = fd_msg_avp_new(ogs_diam_gx_qos_class_identifier, 0, &avpch1);
         ogs_assert(ret == 0);
-        val.u32 = gx_message.pdn.qos.qci;
+        val.u32 = gx_message.session_data.pdn.qos.qci;
         ret = fd_msg_avp_setvalue (avpch1, &val);
         ogs_assert(ret == 0);
         ret = fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1);
@@ -502,7 +504,7 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
 
         ret = fd_msg_avp_new(ogs_diam_gx_priority_level, 0, &avpch2);
         ogs_assert(ret == 0);
-        val.u32 = gx_message.pdn.qos.arp.priority_level;
+        val.u32 = gx_message.session_data.pdn.qos.arp.priority_level;
         ret = fd_msg_avp_setvalue (avpch2, &val);
         ogs_assert(ret == 0);
         ret = fd_msg_avp_add (avpch1, MSG_BRW_LAST_CHILD, avpch2);
@@ -510,7 +512,7 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
 
         ret = fd_msg_avp_new(ogs_diam_gx_pre_emption_capability, 0, &avpch2);
         ogs_assert(ret == 0);
-        val.u32 = gx_message.pdn.qos.arp.pre_emption_capability;
+        val.u32 = gx_message.session_data.pdn.qos.arp.pre_emption_capability;
         ret = fd_msg_avp_setvalue (avpch2, &val);
         ogs_assert(ret == 0);
         ret = fd_msg_avp_add (avpch1, MSG_BRW_LAST_CHILD, avpch2);
@@ -518,7 +520,7 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
 
         ret = fd_msg_avp_new(ogs_diam_gx_pre_emption_vulnerability, 0, &avpch2);
         ogs_assert(ret == 0);
-        val.u32 = gx_message.pdn.qos.arp.pre_emption_vulnerability;
+        val.u32 = gx_message.session_data.pdn.qos.arp.pre_emption_vulnerability;
         ret = fd_msg_avp_setvalue (avpch2, &val);
         ogs_assert(ret == 0);
         ret = fd_msg_avp_add (avpch1, MSG_BRW_LAST_CHILD, avpch2);
@@ -589,7 +591,7 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
 	ogs_diam_logger_self()->stats.nb_echoed++;
 	ogs_assert(pthread_mutex_unlock(&ogs_diam_logger_self()->stats_lock) ==0);
 
-    ogs_diam_gx_message_free(&gx_message);
+    ogs_session_data_free(&gx_message.session_data);
 
     return 0;
 
@@ -626,7 +628,7 @@ out:
 	ret = fd_msg_send(msg, NULL, NULL);
     ogs_assert(ret == 0);
 
-    ogs_diam_gx_message_free(&gx_message);
+    ogs_session_data_free(&gx_message.session_data);
 
     return 0;
 }
@@ -712,7 +714,8 @@ int pcrf_gx_send_rar(
         }
 
         /* Retrieve QoS Data from Database */
-        rv = pcrf_db_qos_data(sess_data->imsi_bcd, sess_data->apn, &gx_message);
+        rv = pcrf_db_qos_data(
+                sess_data->imsi_bcd, sess_data->apn, &gx_message.session_data);
         if (rv != OGS_OK) {
             ogs_error("Cannot get data for IMSI(%s)+APN(%s)'",
                     sess_data->imsi_bcd, sess_data->apn);
@@ -751,9 +754,9 @@ int pcrf_gx_send_rar(
                 goto out;
             }
             
-            for (j = 0; j < gx_message.num_of_pcc_rule; j++) {
-                if (gx_message.pcc_rule[j].qos.qci == qci) {
-                    db_pcc_rule = &gx_message.pcc_rule[j];
+            for (j = 0; j < gx_message.session_data.num_of_pcc_rule; j++) {
+                if (gx_message.session_data.pcc_rule[j].qos.qci == qci) {
+                    db_pcc_rule = &gx_message.session_data.pcc_rule[j];
                     break;
                 }
             }
@@ -764,12 +767,12 @@ int pcrf_gx_send_rar(
                  * Check for default bearer for IMS signalling
                  * QCI 5 and ARP 1
                  */
-                if (gx_message.pdn.qos.qci != OGS_PDN_QCI_5 ||
-                    gx_message.pdn.qos.arp.priority_level != 1) {
+                if (gx_message.session_data.pdn.qos.qci != OGS_PDN_QCI_5 ||
+                    gx_message.session_data.pdn.qos.arp.priority_level != 1) {
                     ogs_error("CHECK WEBUI : Even the Default "
                         "Bearer(QCI:%d,ARP:%d) cannot support IMS signalling.",
-                        gx_message.pdn.qos.qci,
-                        gx_message.pdn.qos.arp.priority_level);
+                        gx_message.session_data.pdn.qos.qci,
+                        gx_message.session_data.pdn.qos.arp.priority_level);
                     rx_message->result_code =
                         OGS_DIAM_RX_DIAMETER_REQUESTED_SERVICE_NOT_AUTHORIZED;
                     goto out;
@@ -982,7 +985,7 @@ int pcrf_gx_send_rar(
     /* Set no error */
     rx_message->result_code = ER_DIAMETER_SUCCESS;
 
-    ogs_diam_gx_message_free(&gx_message);
+    ogs_session_data_free(&gx_message.session_data);
 
     return OGS_OK;
 
@@ -991,7 +994,7 @@ out:
     ret = fd_sess_state_store(pcrf_gx_reg, session, &sess_data);
     ogs_assert(sess_data == NULL);
 
-    ogs_diam_gx_message_free(&gx_message);
+    ogs_session_data_free(&gx_message.session_data);
 
     return OGS_ERROR;
 }

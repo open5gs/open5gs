@@ -509,7 +509,7 @@ void ogs_pfcp_build_update_far_activate(
     message->far_id.presence = 1;
     message->far_id.u32 = far->id;
 
-    ogs_assert(far->apply_action == OGS_PFCP_APPLY_ACTION_FORW);
+    ogs_assert(far->apply_action & OGS_PFCP_APPLY_ACTION_FORW);
 
     message->apply_action.presence = 1;
     message->apply_action.u8 = far->apply_action;

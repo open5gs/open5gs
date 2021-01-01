@@ -782,9 +782,10 @@ ED2(uint8_t reserved:5;,
 #define OGS_NAS_EPS_PDN_TYPE_NON_IP                             5
 #define OGS_NAS_5GS_REQUEST_TYPE_INITIAL                        1
 #define OGS_NAS_5GS_REQUEST_TYPE_EXISTING_PDU_SESSION           2
-#define OGS_NAS_5GS_REQUEST_TYPE_INITIAL_EMERGENCY              3
-#define OGS_NAS_5GS_REQUEST_TYPE_EXISTING_PDU_SESSION_EMERGENCY 4
-#define OGS_NAS_5GS_REQUEST_TYPE_MODIFICATION                   5
+#define OGS_NAS_5GS_REQUEST_TYPE_INITIAL_EMERGENCY_REQUEST      3
+#define OGS_NAS_5GS_REQUEST_TYPE_EXISTING_EMERGENCY_PDU_SESSION 4
+#define OGS_NAS_5GS_REQUEST_TYPE_MODIFICATION_REQUEST           5
+#define OGS_NAS_5GS_REQUEST_TYPE_MA_PDU_REQUEST                 6
 typedef struct ogs_nas_request_type_s {
 ED3(uint8_t type:4;,
     uint8_t spare:1;,

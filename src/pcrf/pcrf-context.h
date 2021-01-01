@@ -22,6 +22,7 @@
 
 #include "ogs-diameter-gx.h"
 #include "ogs-diameter-rx.h"
+#include "ogs-dbi.h"
 #include "ogs-app.h"
 
 #ifdef __cplusplus
@@ -40,7 +41,6 @@ typedef struct pcrf_context_s {
     const char          *diam_conf_path;  /* PCRF Diameter conf path */
     ogs_diam_config_t   *diam_config;     /* PCRF Diameter config */
 
-    void            *subscriberCollection;
     ogs_thread_mutex_t db_lock;
 
     ogs_hash_t      *ip_hash; /* hash table for Gx Frame IPv4/IPv6 */
@@ -53,11 +53,8 @@ pcrf_context_t *pcrf_self(void);
 
 int pcrf_context_parse_config(void);
 
-int pcrf_db_init(void);
-int pcrf_db_final(void);
-
 int pcrf_db_qos_data(char *imsi_bcd, char *apn,
-        ogs_diam_gx_message_t *gx_message);
+        ogs_session_data_t *session_data);
 
 int pcrf_sess_set_ipv4(const void *key, uint8_t *sid);
 int pcrf_sess_set_ipv6(const void *key, uint8_t *sid);

@@ -365,3 +365,123 @@ void ogs_ipfw_rule_swap(ogs_ipfw_rule_t *ipfw_rule)
     ogs_ipfw_copy_and_swap(&dst, ipfw_rule);
     memcpy(ipfw_rule, &dst, sizeof(ogs_ipfw_rule_t));
 }
+
+void ogs_pf_content_from_ipfw_rule(
+        uint8_t direction, ogs_pf_content_t *content, ogs_ipfw_rule_t *rule)
+{
+    int j, len;
+
+    ogs_assert(content);
+    ogs_assert(rule);
+
+    j = 0, len = 0;
+    if (rule->proto) {
+        content->component[j].type =
+            OGS_PACKET_FILTER_PROTOCOL_IDENTIFIER_NEXT_HEADER_TYPE;
+        content->component[j].proto = rule->proto;
+        j++; len += 2;
+    }
+
+    if (rule->ipv4_src) {
+        if (direction == OGS_FLOW_DOWNLINK_ONLY)
+            content->component[j].type =
+                OGS_PACKET_FILTER_IPV4_REMOTE_ADDRESS_TYPE;
+        else
+            content->component[j].type =
+                OGS_PACKET_FILTER_IPV4_LOCAL_ADDRESS_TYPE;
+        content->component[j].ipv4.addr = rule->ip.src.addr[0];
+        content->component[j].ipv4.mask = rule->ip.src.mask[0];
+        j++; len += 9;
+    }
+
+    if (rule->ipv4_dst) {
+        if (direction == OGS_FLOW_DOWNLINK_ONLY)
+            content->component[j].type =
+                OGS_PACKET_FILTER_IPV4_LOCAL_ADDRESS_TYPE;
+        else
+            content->component[j].type =
+                OGS_PACKET_FILTER_IPV4_REMOTE_ADDRESS_TYPE;
+
+        content->component[j].ipv4.addr = rule->ip.dst.addr[0];
+        content->component[j].ipv4.mask = rule->ip.dst.mask[0];
+        j++; len += 9;
+    }
+
+    if (rule->ipv6_src) {
+        if (direction == OGS_FLOW_DOWNLINK_ONLY)
+            content->component[j].type =
+                OGS_PACKET_FILTER_IPV6_REMOTE_ADDRESS_PREFIX_LENGTH_TYPE;
+        else
+            content->component[j].type =
+                OGS_PACKET_FILTER_IPV6_LOCAL_ADDRESS_PREFIX_LENGTH_TYPE;
+        memcpy(content->component[j].ipv6.addr,
+                rule->ip.src.addr, sizeof rule->ip.src.addr);
+        content->component[j].ipv6.prefixlen =
+            contigmask((uint8_t *)rule->ip.src.mask, 128);
+        j++; len += 18;
+    }
+
+    if (rule->ipv6_dst) {
+        if (direction == OGS_FLOW_DOWNLINK_ONLY)
+            content->component[j].type =
+                OGS_PACKET_FILTER_IPV6_LOCAL_ADDRESS_PREFIX_LENGTH_TYPE;
+        else
+            content->component[j].type =
+                OGS_PACKET_FILTER_IPV6_REMOTE_ADDRESS_PREFIX_LENGTH_TYPE;
+        memcpy(content->component[j].ipv6.addr,
+                rule->ip.dst.addr, sizeof rule->ip.dst.addr);
+        content->component[j].ipv6.prefixlen =
+            contigmask((uint8_t *)rule->ip.dst.mask, 128);
+        j++; len += 18;
+    }
+
+    if (rule->port.src.low) {
+        if (rule->port.src.low == rule->port.src.high) {
+            if (direction == OGS_FLOW_DOWNLINK_ONLY)
+                content->component[j].type =
+                    OGS_PACKET_FILTER_SINGLE_REMOTE_PORT_TYPE;
+            else
+                content->component[j].type =
+                    OGS_PACKET_FILTER_SINGLE_LOCAL_PORT_TYPE;
+            content->component[j].port.low = rule->port.src.low;
+            j++; len += 3;
+        } else {
+            if (direction == OGS_FLOW_DOWNLINK_ONLY)
+                content->component[j].type =
+                    OGS_PACKET_FILTER_REMOTE_PORT_RANGE_TYPE;
+            else
+                content->component[j].type =
+                    OGS_PACKET_FILTER_LOCAL_PORT_RANGE_TYPE;
+            content->component[j].port.low = rule->port.src.low;
+            content->component[j].port.high = rule->port.src.high;
+            j++; len += 5;
+        }
+    }
+
+    if (rule->port.dst.low) {
+        if (rule->port.dst.low == rule->port.dst.high) {
+            if (direction == OGS_FLOW_DOWNLINK_ONLY)
+                content->component[j].type =
+                    OGS_PACKET_FILTER_SINGLE_LOCAL_PORT_TYPE;
+            else
+                content->component[j].type =
+                    OGS_PACKET_FILTER_SINGLE_REMOTE_PORT_TYPE;
+            content->component[j].port.low = rule->port.dst.low;
+            j++; len += 3;
+        } else {
+            if (direction == OGS_FLOW_DOWNLINK_ONLY)
+                content->component[j].type =
+                    OGS_PACKET_FILTER_LOCAL_PORT_RANGE_TYPE;
+            else
+                content->component[j].type =
+                    OGS_PACKET_FILTER_REMOTE_PORT_RANGE_TYPE;
+            content->component[j].port.low = rule->port.dst.low;
+            content->component[j].port.high = rule->port.dst.high;
+            j++; len += 5;
+        }
+    }
+
+    content->num_of_component = j;
+    content->length = len;
+}
+

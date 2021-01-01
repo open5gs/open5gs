@@ -17,16 +17,11 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_ma_pdu_indication_s OpenAPI_ma_pdu_indication_t;
-typedef struct OpenAPI_ma_pdu_indication_s {
-} OpenAPI_ma_pdu_indication_t;
+typedef enum { OpenAPI_ma_pdu_indication_NULL = 0, OpenAPI_ma_pdu_indication_MA_PDU_REQUEST, OpenAPI_ma_pdu_indication_MA_PDU_NETWORK_UPGRADE_ALLOWED } OpenAPI_ma_pdu_indication_e;
 
-OpenAPI_ma_pdu_indication_t *OpenAPI_ma_pdu_indication_create(
-    );
-void OpenAPI_ma_pdu_indication_free(OpenAPI_ma_pdu_indication_t *ma_pdu_indication);
-OpenAPI_ma_pdu_indication_t *OpenAPI_ma_pdu_indication_parseFromJSON(cJSON *ma_pdu_indicationJSON);
-cJSON *OpenAPI_ma_pdu_indication_convertToJSON(OpenAPI_ma_pdu_indication_t *ma_pdu_indication);
-OpenAPI_ma_pdu_indication_t *OpenAPI_ma_pdu_indication_copy(OpenAPI_ma_pdu_indication_t *dst, OpenAPI_ma_pdu_indication_t *src);
+char* OpenAPI_ma_pdu_indication_ToString(OpenAPI_ma_pdu_indication_e ma_pdu_indication);
+
+OpenAPI_ma_pdu_indication_e OpenAPI_ma_pdu_indication_FromString(char* ma_pdu_indication);
 
 #ifdef __cplusplus
 }

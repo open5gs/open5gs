@@ -21,13 +21,13 @@ extern "C" {
 typedef struct OpenAPI_redirect_information_s OpenAPI_redirect_information_t;
 typedef struct OpenAPI_redirect_information_s {
     int redirect_enabled;
-    struct OpenAPI_redirect_address_type_s *redirect_address_type;
+    OpenAPI_redirect_address_type_e redirect_address_type;
     char *redirect_server_address;
 } OpenAPI_redirect_information_t;
 
 OpenAPI_redirect_information_t *OpenAPI_redirect_information_create(
     int redirect_enabled,
-    OpenAPI_redirect_address_type_t *redirect_address_type,
+    OpenAPI_redirect_address_type_e redirect_address_type,
     char *redirect_server_address
     );
 void OpenAPI_redirect_information_free(OpenAPI_redirect_information_t *redirect_information);

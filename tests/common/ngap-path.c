@@ -56,6 +56,9 @@ void testngap_recv(test_ue_t *test_ue, ogs_pkbuf_t *pkbuf)
         case NGAP_ProcedureCode_id_PDUSessionResourceSetup:
             testngap_handle_pdu_session_resource_setup_request(test_ue, pdu);
             break;
+        case NGAP_ProcedureCode_id_PDUSessionResourceModify:
+            testngap_handle_pdu_session_resource_modify_request(test_ue, pdu);
+            break;
         case NGAP_ProcedureCode_id_PDUSessionResourceRelease:
             testngap_handle_pdu_session_resource_release_command(test_ue, pdu);
             break;

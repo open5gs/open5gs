@@ -413,14 +413,14 @@ ogs_pkbuf_t *testesm_build_bearer_resource_modification_request(
         tft.pf[0].direction = 1;
         tft.pf[0].identifier = 0;
         tft.pf[0].precedence = 0x0f;
-        tft.pf[0].length = 9;
-        tft.pf[0].component[0].type =
-            GTP_PACKET_FILTER_IPV4_REMOTE_ADDRESS_TYPE;
+        tft.pf[0].content.length = 9;
+        tft.pf[0].content.component[0].type =
+            OGS_PACKET_FILTER_IPV4_REMOTE_ADDRESS_TYPE;
         rv = ogs_ipsubnet(&ipsubnet, "201.20.2.5", NULL);
         ogs_assert(rv == OGS_OK);
-        tft.pf[0].component[0].ipv4.addr = ipsubnet.sub[0];
-        tft.pf[0].component[0].ipv4.mask = ipsubnet.mask[0];
-        tft.pf[0].num_of_component = 1;
+        tft.pf[0].content.component[0].ipv4.addr = ipsubnet.sub[0];
+        tft.pf[0].content.component[0].ipv4.mask = ipsubnet.mask[0];
+        tft.pf[0].content.num_of_component = 1;
     } else if (tft.code ==
             OGS_GTP_TFT_CODE_ADD_PACKET_FILTERS_TO_EXISTING_TFT) {
         tft.num_of_packet_filter = 1;
@@ -431,22 +431,22 @@ ogs_pkbuf_t *testesm_build_bearer_resource_modification_request(
         rv = ogs_ipsubnet(&ipsubnet, "cafe::9", "120");
         ogs_assert(rv == OGS_OK);
 #if 1
-        tft.pf[0].length = 18;
-        tft.pf[0].component[0].type =
-            GTP_PACKET_FILTER_IPV6_LOCAL_ADDRESS_PREFIX_LENGTH_TYPE;
-        memcpy(tft.pf[0].component[0].ipv6.addr, ipsubnet.sub,
-                sizeof(tft.pf[0].component[0].ipv6.addr));
-        tft.pf[0].component[0].ipv6.prefixlen = 120;
+        tft.pf[0].content.length = 18;
+        tft.pf[0].content.component[0].type =
+            OGS_PACKET_FILTER_IPV6_LOCAL_ADDRESS_PREFIX_LENGTH_TYPE;
+        memcpy(tft.pf[0].content.component[0].ipv6.addr, ipsubnet.sub,
+                sizeof(tft.pf[0].content.component[0].ipv6.addr));
+        tft.pf[0].content.component[0].ipv6.prefixlen = 120;
 #else
-        tft.pf[0].length = 33;
-        tft.pf[0].component[0].type =
-            GTP_PACKET_FILTER_IPV6_LOCAL_ADDRESS_TYPE;
-        memcpy(tft.pf[0].component[0].ipv6_mask.addr, ipsubnet.sub,
-                sizeof(tft.pf[0].component[0].ipv6_mask.addr));
-        memcpy(tft.pf[0].component[0].ipv6_mask.mask, ipsubnet.mask,
-                sizeof(tft.pf[0].component[0].ipv6_mask.mask));
+        tft.pf[0].content.length = 33;
+        tft.pf[0].content.component[0].type =
+            OGS_PACKET_FILTER_IPV6_LOCAL_ADDRESS_TYPE;
+        memcpy(tft.pf[0].content.component[0].ipv6_mask.addr, ipsubnet.sub,
+                sizeof(tft.pf[0].content.component[0].ipv6_mask.addr));
+        memcpy(tft.pf[0].content.component[0].ipv6_mask.mask, ipsubnet.mask,
+                sizeof(tft.pf[0].content.component[0].ipv6_mask.mask));
 #endif
-        tft.pf[0].num_of_component = 1;
+        tft.pf[0].content.num_of_component = 1;
 
     } else if (tft.code == OGS_GTP_TFT_CODE_CREATE_NEW_TFT) {
         tft.num_of_packet_filter = 4;
@@ -454,98 +454,98 @@ ogs_pkbuf_t *testesm_build_bearer_resource_modification_request(
         tft.pf[0].direction = 1;
         tft.pf[0].identifier = 0;
         tft.pf[0].precedence = 0x01;
-        tft.pf[0].length = 0x17;
-        tft.pf[0].component[0].type =
-            GTP_PACKET_FILTER_PROTOCOL_IDENTIFIER_NEXT_HEADER_TYPE;
-        tft.pf[0].component[0].proto = 0x11; /* UDP */
-        tft.pf[0].component[1].type =
-            GTP_PACKET_FILTER_IPV4_LOCAL_ADDRESS_TYPE;
+        tft.pf[0].content.length = 0x17;
+        tft.pf[0].content.component[0].type =
+            OGS_PACKET_FILTER_PROTOCOL_IDENTIFIER_NEXT_HEADER_TYPE;
+        tft.pf[0].content.component[0].proto = 0x11; /* UDP */
+        tft.pf[0].content.component[1].type =
+            OGS_PACKET_FILTER_IPV4_LOCAL_ADDRESS_TYPE;
         rv = ogs_ipsubnet(&ipsubnet, "172.20.166.84", NULL);
         ogs_assert(rv == OGS_OK);
-        tft.pf[0].component[1].ipv4.addr = ipsubnet.sub[0];
-        tft.pf[0].component[1].ipv4.mask = ipsubnet.mask[0];
-        tft.pf[0].component[2].type =
-            GTP_PACKET_FILTER_IPV4_REMOTE_ADDRESS_TYPE;
+        tft.pf[0].content.component[1].ipv4.addr = ipsubnet.sub[0];
+        tft.pf[0].content.component[1].ipv4.mask = ipsubnet.mask[0];
+        tft.pf[0].content.component[2].type =
+            OGS_PACKET_FILTER_IPV4_REMOTE_ADDRESS_TYPE;
         rv = ogs_ipsubnet(&ipsubnet, "172.18.128.20", NULL);
         ogs_assert(rv == OGS_OK);
-        tft.pf[0].component[2].ipv4.addr = ipsubnet.sub[0];
-        tft.pf[0].component[2].ipv4.mask = ipsubnet.mask[0];
-        tft.pf[0].component[3].type =
-            GTP_PACKET_FILTER_SINGLE_REMOTE_PORT_TYPE;
-        tft.pf[0].component[3].port.low = 20001;
-        tft.pf[0].num_of_component = 4;
+        tft.pf[0].content.component[2].ipv4.addr = ipsubnet.sub[0];
+        tft.pf[0].content.component[2].ipv4.mask = ipsubnet.mask[0];
+        tft.pf[0].content.component[3].type =
+            OGS_PACKET_FILTER_SINGLE_REMOTE_PORT_TYPE;
+        tft.pf[0].content.component[3].port.low = 20001;
+        tft.pf[0].content.num_of_component = 4;
 
         tft.pf[1].direction = 2;
         tft.pf[1].identifier = 1;
         tft.pf[1].precedence = 0x02;
-        tft.pf[1].length = 0x17;
-        tft.pf[1].component[0].type =
-            GTP_PACKET_FILTER_PROTOCOL_IDENTIFIER_NEXT_HEADER_TYPE;
-        tft.pf[1].component[0].proto = 0x11; /* UDP */
-        tft.pf[1].component[1].type =
-            GTP_PACKET_FILTER_IPV4_LOCAL_ADDRESS_TYPE;
+        tft.pf[1].content.length = 0x17;
+        tft.pf[1].content.component[0].type =
+            OGS_PACKET_FILTER_PROTOCOL_IDENTIFIER_NEXT_HEADER_TYPE;
+        tft.pf[1].content.component[0].proto = 0x11; /* UDP */
+        tft.pf[1].content.component[1].type =
+            OGS_PACKET_FILTER_IPV4_LOCAL_ADDRESS_TYPE;
         rv = ogs_ipsubnet(&ipsubnet, "172.20.166.84", NULL);
         ogs_assert(rv == OGS_OK);
-        tft.pf[1].component[1].ipv4.addr = ipsubnet.sub[0];
-        tft.pf[1].component[1].ipv4.mask = ipsubnet.mask[0];
-        tft.pf[1].component[2].type =
-            GTP_PACKET_FILTER_IPV4_REMOTE_ADDRESS_TYPE;
+        tft.pf[1].content.component[1].ipv4.addr = ipsubnet.sub[0];
+        tft.pf[1].content.component[1].ipv4.mask = ipsubnet.mask[0];
+        tft.pf[1].content.component[2].type =
+            OGS_PACKET_FILTER_IPV4_REMOTE_ADDRESS_TYPE;
         rv = ogs_ipsubnet(&ipsubnet, "172.18.128.20", NULL);
         ogs_assert(rv == OGS_OK);
-        tft.pf[1].component[2].ipv4.addr = ipsubnet.sub[0];
-        tft.pf[1].component[2].ipv4.mask = ipsubnet.mask[0];
-        tft.pf[1].component[3].type =
-            GTP_PACKET_FILTER_SINGLE_LOCAL_PORT_TYPE;
-        tft.pf[1].component[3].port.low = 20360;
-        tft.pf[1].num_of_component = 4;
+        tft.pf[1].content.component[2].ipv4.addr = ipsubnet.sub[0];
+        tft.pf[1].content.component[2].ipv4.mask = ipsubnet.mask[0];
+        tft.pf[1].content.component[3].type =
+            OGS_PACKET_FILTER_SINGLE_LOCAL_PORT_TYPE;
+        tft.pf[1].content.component[3].port.low = 20360;
+        tft.pf[1].content.num_of_component = 4;
 
         tft.pf[2].direction = 1;
         tft.pf[2].identifier = 2;
         tft.pf[2].precedence = 0x03;
-        tft.pf[2].length = 0x17;
-        tft.pf[2].component[0].type =
-            GTP_PACKET_FILTER_PROTOCOL_IDENTIFIER_NEXT_HEADER_TYPE;
-        tft.pf[2].component[0].proto = 0x11; /* UDP */
-        tft.pf[2].component[1].type =
-            GTP_PACKET_FILTER_IPV4_LOCAL_ADDRESS_TYPE;
+        tft.pf[2].content.length = 0x17;
+        tft.pf[2].content.component[0].type =
+            OGS_PACKET_FILTER_PROTOCOL_IDENTIFIER_NEXT_HEADER_TYPE;
+        tft.pf[2].content.component[0].proto = 0x11; /* UDP */
+        tft.pf[2].content.component[1].type =
+            OGS_PACKET_FILTER_IPV4_LOCAL_ADDRESS_TYPE;
         rv = ogs_ipsubnet(&ipsubnet, "172.20.166.84", NULL);
         ogs_assert(rv == OGS_OK);
-        tft.pf[2].component[1].ipv4.addr = ipsubnet.sub[0];
-        tft.pf[2].component[1].ipv4.mask = ipsubnet.mask[0];
-        tft.pf[2].component[2].type =
-            GTP_PACKET_FILTER_IPV4_REMOTE_ADDRESS_TYPE;
+        tft.pf[2].content.component[1].ipv4.addr = ipsubnet.sub[0];
+        tft.pf[2].content.component[1].ipv4.mask = ipsubnet.mask[0];
+        tft.pf[2].content.component[2].type =
+            OGS_PACKET_FILTER_IPV4_REMOTE_ADDRESS_TYPE;
         rv = ogs_ipsubnet(&ipsubnet, "172.18.128.20", NULL);
         ogs_assert(rv == OGS_OK);
-        tft.pf[2].component[2].ipv4.addr = ipsubnet.sub[0];
-        tft.pf[2].component[2].ipv4.mask = ipsubnet.mask[0];
-        tft.pf[2].component[3].type =
-            GTP_PACKET_FILTER_SINGLE_REMOTE_PORT_TYPE;
-        tft.pf[2].component[3].port.low = 20002;
-        tft.pf[2].num_of_component = 4;
+        tft.pf[2].content.component[2].ipv4.addr = ipsubnet.sub[0];
+        tft.pf[2].content.component[2].ipv4.mask = ipsubnet.mask[0];
+        tft.pf[2].content.component[3].type =
+            OGS_PACKET_FILTER_SINGLE_REMOTE_PORT_TYPE;
+        tft.pf[2].content.component[3].port.low = 20002;
+        tft.pf[2].content.num_of_component = 4;
 
         tft.pf[3].direction = 2;
         tft.pf[3].identifier = 3;
         tft.pf[3].precedence = 0x04;
-        tft.pf[3].length = 0x17;
-        tft.pf[3].component[0].type =
-            GTP_PACKET_FILTER_PROTOCOL_IDENTIFIER_NEXT_HEADER_TYPE;
-        tft.pf[3].component[0].proto = 0x11; /* UDP */
-        tft.pf[3].component[1].type =
-            GTP_PACKET_FILTER_IPV4_LOCAL_ADDRESS_TYPE;
+        tft.pf[3].content.length = 0x17;
+        tft.pf[3].content.component[0].type =
+            OGS_PACKET_FILTER_PROTOCOL_IDENTIFIER_NEXT_HEADER_TYPE;
+        tft.pf[3].content.component[0].proto = 0x11; /* UDP */
+        tft.pf[3].content.component[1].type =
+            OGS_PACKET_FILTER_IPV4_LOCAL_ADDRESS_TYPE;
         rv = ogs_ipsubnet(&ipsubnet, "172.20.166.84", NULL);
         ogs_assert(rv == OGS_OK);
-        tft.pf[3].component[1].ipv4.addr = ipsubnet.sub[0];
-        tft.pf[3].component[1].ipv4.mask = ipsubnet.mask[0];
-        tft.pf[3].component[2].type =
-            GTP_PACKET_FILTER_IPV4_REMOTE_ADDRESS_TYPE;
+        tft.pf[3].content.component[1].ipv4.addr = ipsubnet.sub[0];
+        tft.pf[3].content.component[1].ipv4.mask = ipsubnet.mask[0];
+        tft.pf[3].content.component[2].type =
+            OGS_PACKET_FILTER_IPV4_REMOTE_ADDRESS_TYPE;
         rv = ogs_ipsubnet(&ipsubnet, "172.18.128.20", NULL);
         ogs_assert(rv == OGS_OK);
-        tft.pf[3].component[2].ipv4.addr = ipsubnet.sub[0];
-        tft.pf[3].component[2].ipv4.mask = ipsubnet.mask[0];
-        tft.pf[3].component[3].type =
-            GTP_PACKET_FILTER_SINGLE_LOCAL_PORT_TYPE;
-        tft.pf[3].component[3].port.low = 20361;
-        tft.pf[3].num_of_component = 4;
+        tft.pf[3].content.component[2].ipv4.addr = ipsubnet.sub[0];
+        tft.pf[3].content.component[2].ipv4.mask = ipsubnet.mask[0];
+        tft.pf[3].content.component[3].type =
+            OGS_PACKET_FILTER_SINGLE_LOCAL_PORT_TYPE;
+        tft.pf[3].content.component[3].port.low = 20361;
+        tft.pf[3].content.num_of_component = 4;
     } else if (tft.code ==
             OGS_GTP_TFT_CODE_DELETE_PACKET_FILTERS_FROM_EXISTING) {
         tft.num_of_packet_filter = 4;

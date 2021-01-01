@@ -22,6 +22,7 @@
 #include "nsmf-handler.h"
 #include "nudm-handler.h"
 #include "npcf-handler.h"
+#include "namf-handler.h"
 #include "gsm-handler.h"
 #include "ngap-handler.h"
 #include "pfcp-path.h"
@@ -103,11 +104,11 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
         smf_ue = sess->smf_ue;
         ogs_assert(smf_ue);
 
-        stream = e->sbi.data;
-        ogs_assert(stream);
-
         SWITCH(sbi_message->h.service.name)
         CASE(OGS_SBI_SERVICE_NAME_NUDM_SDM)
+            stream = e->sbi.data;
+            ogs_assert(stream);
+
             SWITCH(sbi_message->h.resource.component[1])
             CASE(OGS_SBI_RESOURCE_NAME_SM_DATA)
                 if (sbi_message->res_status != OGS_SBI_HTTP_STATUS_OK) {
@@ -145,6 +146,9 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
             break;
 
         CASE(OGS_SBI_SERVICE_NAME_NPCF_SMPOLICYCONTROL)
+            stream = e->sbi.data;
+            ogs_assert(stream);
+
             SWITCH(sbi_message->h.resource.component[0])
             CASE(OGS_SBI_RESOURCE_NAME_SM_POLICIES)
                 if (sbi_message->res_status != OGS_SBI_HTTP_STATUS_CREATED) {
@@ -186,6 +190,9 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                         smf_ue->supi, sess->psi, sbi_message->res_status);
                     break;
                 }
+
+                smf_namf_comm_handler_n1_n2_message_transfer(
+                        sess, e->sbi.state, sbi_message);
                 break;
 
             DEFAULT
@@ -222,6 +229,10 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                         smf_ue->supi, sess->psi);
                 OGS_FSM_TRAN(s, smf_gsm_state_exception);
             }
+            break;
+
+        case OGS_NAS_5GS_PDU_SESSION_MODIFICATION_COMPLETE:
+            smf_sbi_send_response(stream, OGS_SBI_HTTP_STATUS_NO_CONTENT);
             break;
 
         case OGS_NAS_5GS_PDU_SESSION_RELEASE_REQUEST:
@@ -277,6 +288,16 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
         switch (e->ngap.type) {
         case OpenAPI_n2_sm_info_type_PDU_RES_SETUP_RSP:
             rv = ngap_handle_pdu_session_resource_setup_response_transfer(
+                    sess, stream, pkbuf);
+            if (rv != OGS_OK) {
+                ogs_error("[%s:%d] Cannot handle NGAP message",
+                        smf_ue->supi, sess->psi);
+                OGS_FSM_TRAN(s, smf_gsm_state_exception);
+            }
+            break;
+
+        case OpenAPI_n2_sm_info_type_PDU_RES_MOD_RSP:
+            rv = ngap_handle_pdu_session_resource_modify_response_transfer(
                     sess, stream, pkbuf);
             if (rv != OGS_OK) {
                 ogs_error("[%s:%d] Cannot handle NGAP message",

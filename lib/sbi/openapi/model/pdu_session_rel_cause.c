@@ -4,82 +4,27 @@
 #include <stdio.h>
 #include "pdu_session_rel_cause.h"
 
-OpenAPI_pdu_session_rel_cause_t *OpenAPI_pdu_session_rel_cause_create(
-    )
+char* OpenAPI_pdu_session_rel_cause_ToString(OpenAPI_pdu_session_rel_cause_e pdu_session_rel_cause)
 {
-    OpenAPI_pdu_session_rel_cause_t *pdu_session_rel_cause_local_var = OpenAPI_malloc(sizeof(OpenAPI_pdu_session_rel_cause_t));
-    if (!pdu_session_rel_cause_local_var) {
-        return NULL;
-    }
-
-    return pdu_session_rel_cause_local_var;
+    const char *pdu_session_rel_causeArray[] =  { "NULL", "PS_TO_CS_HO" };
+    size_t sizeofArray = sizeof(pdu_session_rel_causeArray) / sizeof(pdu_session_rel_causeArray[0]);
+    if (pdu_session_rel_cause < sizeofArray)
+        return (char *)pdu_session_rel_causeArray[pdu_session_rel_cause];
+    else
+        return (char *)"Unknown";
 }
 
-void OpenAPI_pdu_session_rel_cause_free(OpenAPI_pdu_session_rel_cause_t *pdu_session_rel_cause)
+OpenAPI_pdu_session_rel_cause_e OpenAPI_pdu_session_rel_cause_FromString(char* pdu_session_rel_cause)
 {
-    if (NULL == pdu_session_rel_cause) {
-        return;
+    int stringToReturn = 0;
+    const char *pdu_session_rel_causeArray[] =  { "NULL", "PS_TO_CS_HO" };
+    size_t sizeofArray = sizeof(pdu_session_rel_causeArray) / sizeof(pdu_session_rel_causeArray[0]);
+    while (stringToReturn < sizeofArray) {
+        if (strcmp(pdu_session_rel_cause, pdu_session_rel_causeArray[stringToReturn]) == 0) {
+            return stringToReturn;
+        }
+        stringToReturn++;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(pdu_session_rel_cause);
-}
-
-cJSON *OpenAPI_pdu_session_rel_cause_convertToJSON(OpenAPI_pdu_session_rel_cause_t *pdu_session_rel_cause)
-{
-    cJSON *item = NULL;
-
-    if (pdu_session_rel_cause == NULL) {
-        ogs_error("OpenAPI_pdu_session_rel_cause_convertToJSON() failed [PduSessionRelCause]");
-        return NULL;
-    }
-
-    item = cJSON_CreateObject();
-end:
-    return item;
-}
-
-OpenAPI_pdu_session_rel_cause_t *OpenAPI_pdu_session_rel_cause_parseFromJSON(cJSON *pdu_session_rel_causeJSON)
-{
-    OpenAPI_pdu_session_rel_cause_t *pdu_session_rel_cause_local_var = NULL;
-    pdu_session_rel_cause_local_var = OpenAPI_pdu_session_rel_cause_create (
-        );
-
-    return pdu_session_rel_cause_local_var;
-end:
-    return NULL;
-}
-
-OpenAPI_pdu_session_rel_cause_t *OpenAPI_pdu_session_rel_cause_copy(OpenAPI_pdu_session_rel_cause_t *dst, OpenAPI_pdu_session_rel_cause_t *src)
-{
-    cJSON *item = NULL;
-    char *content = NULL;
-
-    ogs_assert(src);
-    item = OpenAPI_pdu_session_rel_cause_convertToJSON(src);
-    if (!item) {
-        ogs_error("OpenAPI_pdu_session_rel_cause_convertToJSON() failed");
-        return NULL;
-    }
-
-    content = cJSON_Print(item);
-    cJSON_Delete(item);
-
-    if (!content) {
-        ogs_error("cJSON_Print() failed");
-        return NULL;
-    }
-
-    item = cJSON_Parse(content);
-    ogs_free(content);
-    if (!item) {
-        ogs_error("cJSON_Parse() failed");
-        return NULL;
-    }
-
-    OpenAPI_pdu_session_rel_cause_free(dst);
-    dst = OpenAPI_pdu_session_rel_cause_parseFromJSON(item);
-    cJSON_Delete(item);
-
-    return dst;
+    return 0;
 }
 

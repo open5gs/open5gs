@@ -6,7 +6,7 @@
 
 OpenAPI_redirect_information_t *OpenAPI_redirect_information_create(
     int redirect_enabled,
-    OpenAPI_redirect_address_type_t *redirect_address_type,
+    OpenAPI_redirect_address_type_e redirect_address_type,
     char *redirect_server_address
     )
 {
@@ -27,7 +27,6 @@ void OpenAPI_redirect_information_free(OpenAPI_redirect_information_t *redirect_
         return;
     }
     OpenAPI_lnode_t *node;
-    OpenAPI_redirect_address_type_free(redirect_information->redirect_address_type);
     ogs_free(redirect_information->redirect_server_address);
     ogs_free(redirect_information);
 }
@@ -50,13 +49,7 @@ cJSON *OpenAPI_redirect_information_convertToJSON(OpenAPI_redirect_information_t
     }
 
     if (redirect_information->redirect_address_type) {
-        cJSON *redirect_address_type_local_JSON = OpenAPI_redirect_address_type_convertToJSON(redirect_information->redirect_address_type);
-        if (redirect_address_type_local_JSON == NULL) {
-            ogs_error("OpenAPI_redirect_information_convertToJSON() failed [redirect_address_type]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "redirectAddressType", redirect_address_type_local_JSON);
-        if (item->child == NULL) {
+        if (cJSON_AddStringToObject(item, "redirectAddressType", OpenAPI_redirect_address_type_ToString(redirect_information->redirect_address_type)) == NULL) {
             ogs_error("OpenAPI_redirect_information_convertToJSON() failed [redirect_address_type]");
             goto end;
         }
@@ -87,9 +80,13 @@ OpenAPI_redirect_information_t *OpenAPI_redirect_information_parseFromJSON(cJSON
 
     cJSON *redirect_address_type = cJSON_GetObjectItemCaseSensitive(redirect_informationJSON, "redirectAddressType");
 
-    OpenAPI_redirect_address_type_t *redirect_address_type_local_nonprim = NULL;
+    OpenAPI_redirect_address_type_e redirect_address_typeVariable;
     if (redirect_address_type) {
-        redirect_address_type_local_nonprim = OpenAPI_redirect_address_type_parseFromJSON(redirect_address_type);
+        if (!cJSON_IsString(redirect_address_type)) {
+            ogs_error("OpenAPI_redirect_information_parseFromJSON() failed [redirect_address_type]");
+            goto end;
+        }
+        redirect_address_typeVariable = OpenAPI_redirect_address_type_FromString(redirect_address_type->valuestring);
     }
 
     cJSON *redirect_server_address = cJSON_GetObjectItemCaseSensitive(redirect_informationJSON, "redirectServerAddress");
@@ -103,7 +100,7 @@ OpenAPI_redirect_information_t *OpenAPI_redirect_information_parseFromJSON(cJSON
 
     redirect_information_local_var = OpenAPI_redirect_information_create (
         redirect_enabled ? redirect_enabled->valueint : 0,
-        redirect_address_type ? redirect_address_type_local_nonprim : NULL,
+        redirect_address_type ? redirect_address_typeVariable : 0,
         redirect_server_address ? ogs_strdup(redirect_server_address->valuestring) : NULL
         );
 

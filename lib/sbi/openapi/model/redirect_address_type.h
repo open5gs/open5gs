@@ -1,7 +1,7 @@
 /*
  * redirect_address_type.h
  *
- * Possible values are - IPV4_ADDR: Indicates that the address type is in the form of \&quot;dotted-decimal\&quot; IPv4 address. - IPV6_ADDR: Indicates that the address type is in the form of IPv6 address. - URL: Indicates that the address type is in the form of Uniform Resource Locator. - SIP_URI: Indicates that the address type is in the form of SIP Uniform Resource Identifier.
+ *
  */
 
 #ifndef _OpenAPI_redirect_address_type_H_
@@ -17,16 +17,11 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_redirect_address_type_s OpenAPI_redirect_address_type_t;
-typedef struct OpenAPI_redirect_address_type_s {
-} OpenAPI_redirect_address_type_t;
+typedef enum { OpenAPI_redirect_address_type_NULL = 0, OpenAPI_redirect_address_type_IPV4_ADDR, OpenAPI_redirect_address_type_IPV6_ADDR, OpenAPI_redirect_address_type_URL, OpenAPI_redirect_address_type_SIP_URI } OpenAPI_redirect_address_type_e;
 
-OpenAPI_redirect_address_type_t *OpenAPI_redirect_address_type_create(
-    );
-void OpenAPI_redirect_address_type_free(OpenAPI_redirect_address_type_t *redirect_address_type);
-OpenAPI_redirect_address_type_t *OpenAPI_redirect_address_type_parseFromJSON(cJSON *redirect_address_typeJSON);
-cJSON *OpenAPI_redirect_address_type_convertToJSON(OpenAPI_redirect_address_type_t *redirect_address_type);
-OpenAPI_redirect_address_type_t *OpenAPI_redirect_address_type_copy(OpenAPI_redirect_address_type_t *dst, OpenAPI_redirect_address_type_t *src);
+char* OpenAPI_redirect_address_type_ToString(OpenAPI_redirect_address_type_e redirect_address_type);
+
+OpenAPI_redirect_address_type_e OpenAPI_redirect_address_type_FromString(char* redirect_address_type);
 
 #ifdef __cplusplus
 }

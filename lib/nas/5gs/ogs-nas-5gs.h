@@ -21,6 +21,7 @@
 #define OGS_NAS_5GS_H
 
 #include "ogs-nas-common.h"
+#include "ipfw/ogs-ipfw.h"
 
 #define OGS_NAS_INSIDE
 

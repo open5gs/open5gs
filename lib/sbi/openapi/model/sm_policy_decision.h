@@ -57,8 +57,8 @@ typedef struct OpenAPI_sm_policy_decision_s {
     OpenAPI_list_t* pra_infos;
     int ipv4_index;
     int ipv6_index;
-    struct OpenAPI_qos_flow_usage_s *qos_flow_usage;
-    struct OpenAPI_sm_policy_association_release_cause_s *rel_cause;
+    OpenAPI_qos_flow_usage_e qos_flow_usage;
+    OpenAPI_sm_policy_association_release_cause_e rel_cause;
     char *supp_feat;
     struct OpenAPI_port_management_container_s *tsn_port_man_cont_dstt;
     OpenAPI_list_t *tsn_port_man_cont_nwtts;
@@ -86,8 +86,8 @@ OpenAPI_sm_policy_decision_t *OpenAPI_sm_policy_decision_create(
     OpenAPI_list_t* pra_infos,
     int ipv4_index,
     int ipv6_index,
-    OpenAPI_qos_flow_usage_t *qos_flow_usage,
-    OpenAPI_sm_policy_association_release_cause_t *rel_cause,
+    OpenAPI_qos_flow_usage_e qos_flow_usage,
+    OpenAPI_sm_policy_association_release_cause_e rel_cause,
     char *supp_feat,
     OpenAPI_port_management_container_t *tsn_port_man_cont_dstt,
     OpenAPI_list_t *tsn_port_man_cont_nwtts

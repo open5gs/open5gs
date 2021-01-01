@@ -41,6 +41,9 @@ int pcf_initialize()
             ogs_app()->logger.domain, ogs_app()->logger.level);
     if (rv != OGS_OK) return rv;
 
+    rv = ogs_dbi_init(ogs_app()->db_uri);
+    if (rv != OGS_OK) return rv;
+
     thread = ogs_thread_create(pcf_main, NULL);
     if (!thread) return OGS_ERROR;
 
@@ -78,6 +81,8 @@ void pcf_terminate(void)
     event_termination();
     ogs_thread_destroy(thread);
     ogs_timer_delete(t_termination_holding);
+
+    ogs_dbi_final();
 
     pcf_context_final();
     ogs_sbi_context_final();

@@ -41,7 +41,7 @@ void amf_ue_sbi_discover_and_send(OpenAPI_nf_type_e target_nf_type,
 #define AMF_UPDATE_SM_CONTEXT_ACTIVATED         1
 #define AMF_UPDATE_SM_CONTEXT_DEACTIVATED       2
 #define AMF_UPDATE_SM_CONTEXT_ACTIVATING        3
-#define AMF_UPDATE_SM_CONTEXT_SUSPENDED         4
+#define AMF_UPDATE_SM_CONTEXT_MODIFIED          4
 #define AMF_UPDATE_SM_CONTEXT_N2_RELEASED       5
 #define AMF_UPDATE_SM_CONTEXT_N1_RELEASED       6
 #define AMF_UPDATE_SM_CONTEXT_NG_RESET          7

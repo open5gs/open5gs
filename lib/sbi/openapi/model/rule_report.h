@@ -24,18 +24,18 @@ extern "C" {
 typedef struct OpenAPI_rule_report_s OpenAPI_rule_report_t;
 typedef struct OpenAPI_rule_report_s {
     OpenAPI_list_t *pcc_rule_ids;
-    struct OpenAPI_rule_status_s *rule_status;
+    OpenAPI_rule_status_e rule_status;
     OpenAPI_list_t *cont_vers;
-    struct OpenAPI_failure_code_s *failure_code;
+    OpenAPI_failure_code_e failure_code;
     struct OpenAPI_final_unit_action_s *fin_unit_act;
     OpenAPI_list_t *ran_nas_rel_causes;
 } OpenAPI_rule_report_t;
 
 OpenAPI_rule_report_t *OpenAPI_rule_report_create(
     OpenAPI_list_t *pcc_rule_ids,
-    OpenAPI_rule_status_t *rule_status,
+    OpenAPI_rule_status_e rule_status,
     OpenAPI_list_t *cont_vers,
-    OpenAPI_failure_code_t *failure_code,
+    OpenAPI_failure_code_e failure_code,
     OpenAPI_final_unit_action_t *fin_unit_act,
     OpenAPI_list_t *ran_nas_rel_causes
     );

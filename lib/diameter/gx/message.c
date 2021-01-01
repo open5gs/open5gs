@@ -157,14 +157,3 @@ int ogs_diam_gx_init(void)
 
     return 0;
 }
-
-void ogs_diam_gx_message_free(ogs_diam_gx_message_t *gx_message)
-{
-    int i;
-
-    ogs_assert(gx_message);
-
-    for (i = 0; i < gx_message->num_of_pcc_rule; i++) {
-        OGS_PCC_RULE_FREE(&gx_message->pcc_rule[i]);
-    }
-}

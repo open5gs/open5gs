@@ -30,7 +30,7 @@ typedef struct OpenAPI_sm_policy_delete_data_s {
     char *user_location_info_time;
     OpenAPI_list_t *ran_nas_rel_causes;
     OpenAPI_list_t *accu_usage_reports;
-    struct OpenAPI_pdu_session_rel_cause_s *pdu_sess_rel_cause;
+    OpenAPI_pdu_session_rel_cause_e pdu_sess_rel_cause;
 } OpenAPI_sm_policy_delete_data_t;
 
 OpenAPI_sm_policy_delete_data_t *OpenAPI_sm_policy_delete_data_create(
@@ -40,7 +40,7 @@ OpenAPI_sm_policy_delete_data_t *OpenAPI_sm_policy_delete_data_create(
     char *user_location_info_time,
     OpenAPI_list_t *ran_nas_rel_causes,
     OpenAPI_list_t *accu_usage_reports,
-    OpenAPI_pdu_session_rel_cause_t *pdu_sess_rel_cause
+    OpenAPI_pdu_session_rel_cause_e pdu_sess_rel_cause
     );
 void OpenAPI_sm_policy_delete_data_free(OpenAPI_sm_policy_delete_data_t *sm_policy_delete_data);
 OpenAPI_sm_policy_delete_data_t *OpenAPI_sm_policy_delete_data_parseFromJSON(cJSON *sm_policy_delete_dataJSON);

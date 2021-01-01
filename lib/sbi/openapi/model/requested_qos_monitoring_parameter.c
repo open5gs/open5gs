@@ -4,82 +4,27 @@
 #include <stdio.h>
 #include "requested_qos_monitoring_parameter.h"
 
-OpenAPI_requested_qos_monitoring_parameter_t *OpenAPI_requested_qos_monitoring_parameter_create(
-    )
+char* OpenAPI_requested_qos_monitoring_parameter_ToString(OpenAPI_requested_qos_monitoring_parameter_e requested_qos_monitoring_parameter)
 {
-    OpenAPI_requested_qos_monitoring_parameter_t *requested_qos_monitoring_parameter_local_var = OpenAPI_malloc(sizeof(OpenAPI_requested_qos_monitoring_parameter_t));
-    if (!requested_qos_monitoring_parameter_local_var) {
-        return NULL;
-    }
-
-    return requested_qos_monitoring_parameter_local_var;
+    const char *requested_qos_monitoring_parameterArray[] =  { "NULL", "DOWNLINK", "UPLINK", "ROUND_TRIP" };
+    size_t sizeofArray = sizeof(requested_qos_monitoring_parameterArray) / sizeof(requested_qos_monitoring_parameterArray[0]);
+    if (requested_qos_monitoring_parameter < sizeofArray)
+        return (char *)requested_qos_monitoring_parameterArray[requested_qos_monitoring_parameter];
+    else
+        return (char *)"Unknown";
 }
 
-void OpenAPI_requested_qos_monitoring_parameter_free(OpenAPI_requested_qos_monitoring_parameter_t *requested_qos_monitoring_parameter)
+OpenAPI_requested_qos_monitoring_parameter_e OpenAPI_requested_qos_monitoring_parameter_FromString(char* requested_qos_monitoring_parameter)
 {
-    if (NULL == requested_qos_monitoring_parameter) {
-        return;
+    int stringToReturn = 0;
+    const char *requested_qos_monitoring_parameterArray[] =  { "NULL", "DOWNLINK", "UPLINK", "ROUND_TRIP" };
+    size_t sizeofArray = sizeof(requested_qos_monitoring_parameterArray) / sizeof(requested_qos_monitoring_parameterArray[0]);
+    while (stringToReturn < sizeofArray) {
+        if (strcmp(requested_qos_monitoring_parameter, requested_qos_monitoring_parameterArray[stringToReturn]) == 0) {
+            return stringToReturn;
+        }
+        stringToReturn++;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(requested_qos_monitoring_parameter);
-}
-
-cJSON *OpenAPI_requested_qos_monitoring_parameter_convertToJSON(OpenAPI_requested_qos_monitoring_parameter_t *requested_qos_monitoring_parameter)
-{
-    cJSON *item = NULL;
-
-    if (requested_qos_monitoring_parameter == NULL) {
-        ogs_error("OpenAPI_requested_qos_monitoring_parameter_convertToJSON() failed [RequestedQosMonitoringParameter]");
-        return NULL;
-    }
-
-    item = cJSON_CreateObject();
-end:
-    return item;
-}
-
-OpenAPI_requested_qos_monitoring_parameter_t *OpenAPI_requested_qos_monitoring_parameter_parseFromJSON(cJSON *requested_qos_monitoring_parameterJSON)
-{
-    OpenAPI_requested_qos_monitoring_parameter_t *requested_qos_monitoring_parameter_local_var = NULL;
-    requested_qos_monitoring_parameter_local_var = OpenAPI_requested_qos_monitoring_parameter_create (
-        );
-
-    return requested_qos_monitoring_parameter_local_var;
-end:
-    return NULL;
-}
-
-OpenAPI_requested_qos_monitoring_parameter_t *OpenAPI_requested_qos_monitoring_parameter_copy(OpenAPI_requested_qos_monitoring_parameter_t *dst, OpenAPI_requested_qos_monitoring_parameter_t *src)
-{
-    cJSON *item = NULL;
-    char *content = NULL;
-
-    ogs_assert(src);
-    item = OpenAPI_requested_qos_monitoring_parameter_convertToJSON(src);
-    if (!item) {
-        ogs_error("OpenAPI_requested_qos_monitoring_parameter_convertToJSON() failed");
-        return NULL;
-    }
-
-    content = cJSON_Print(item);
-    cJSON_Delete(item);
-
-    if (!content) {
-        ogs_error("cJSON_Print() failed");
-        return NULL;
-    }
-
-    item = cJSON_Parse(content);
-    ogs_free(content);
-    if (!item) {
-        ogs_error("cJSON_Parse() failed");
-        return NULL;
-    }
-
-    OpenAPI_requested_qos_monitoring_parameter_free(dst);
-    dst = OpenAPI_requested_qos_monitoring_parameter_parseFromJSON(item);
-    cJSON_Delete(item);
-
-    return dst;
+    return 0;
 }
 

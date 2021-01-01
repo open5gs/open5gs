@@ -17,16 +17,11 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_failure_cause_s OpenAPI_failure_cause_t;
-typedef struct OpenAPI_failure_cause_s {
-} OpenAPI_failure_cause_t;
+typedef enum { OpenAPI_failure_cause_NULL = 0, OpenAPI_failure_cause_PCC_RULE_EVENT, OpenAPI_failure_cause_PCC_QOS_FLOW_EVENT, OpenAPI_failure_cause_RULE_PERMANENT_ERROR, OpenAPI_failure_cause_RULE_TEMPORARY_ERROR } OpenAPI_failure_cause_e;
 
-OpenAPI_failure_cause_t *OpenAPI_failure_cause_create(
-    );
-void OpenAPI_failure_cause_free(OpenAPI_failure_cause_t *failure_cause);
-OpenAPI_failure_cause_t *OpenAPI_failure_cause_parseFromJSON(cJSON *failure_causeJSON);
-cJSON *OpenAPI_failure_cause_convertToJSON(OpenAPI_failure_cause_t *failure_cause);
-OpenAPI_failure_cause_t *OpenAPI_failure_cause_copy(OpenAPI_failure_cause_t *dst, OpenAPI_failure_cause_t *src);
+char* OpenAPI_failure_cause_ToString(OpenAPI_failure_cause_e failure_cause);
+
+OpenAPI_failure_cause_e OpenAPI_failure_cause_FromString(char* failure_cause);
 
 #ifdef __cplusplus
 }

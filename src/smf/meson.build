@@ -43,12 +43,13 @@ libsmf_sources = files('''
     pfcp-path.h
     n4-build.h
     n4-handler.h
-    bearer-binding.h
+    binding.h
     nnrf-handler.h
     nudm-build.h
     nudm-handler.h
     nsmf-handler.h
     namf-build.h
+    namf-handler.h
     npcf-build.h
     npcf-handler.h
     sbi-path.h
@@ -75,12 +76,13 @@ libsmf_sources = files('''
     pfcp-path.c
     n4-build.c
     n4-handler.c
-    bearer-binding.c
+    binding.c
     nnrf-handler.c
     nudm-build.c
     nudm-handler.c
     nsmf-handler.c
     namf-build.c
+    namf-handler.c
     npcf-build.c
     npcf-handler.c
     sbi-path.c

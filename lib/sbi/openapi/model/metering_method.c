@@ -4,82 +4,27 @@
 #include <stdio.h>
 #include "metering_method.h"
 
-OpenAPI_metering_method_t *OpenAPI_metering_method_create(
-    )
+char* OpenAPI_metering_method_ToString(OpenAPI_metering_method_e metering_method)
 {
-    OpenAPI_metering_method_t *metering_method_local_var = OpenAPI_malloc(sizeof(OpenAPI_metering_method_t));
-    if (!metering_method_local_var) {
-        return NULL;
-    }
-
-    return metering_method_local_var;
+    const char *metering_methodArray[] =  { "NULL", "DURATION", "VOLUME", "DURATION_VOLUME", "EVENT" };
+    size_t sizeofArray = sizeof(metering_methodArray) / sizeof(metering_methodArray[0]);
+    if (metering_method < sizeofArray)
+        return (char *)metering_methodArray[metering_method];
+    else
+        return (char *)"Unknown";
 }
 
-void OpenAPI_metering_method_free(OpenAPI_metering_method_t *metering_method)
+OpenAPI_metering_method_e OpenAPI_metering_method_FromString(char* metering_method)
 {
-    if (NULL == metering_method) {
-        return;
+    int stringToReturn = 0;
+    const char *metering_methodArray[] =  { "NULL", "DURATION", "VOLUME", "DURATION_VOLUME", "EVENT" };
+    size_t sizeofArray = sizeof(metering_methodArray) / sizeof(metering_methodArray[0]);
+    while (stringToReturn < sizeofArray) {
+        if (strcmp(metering_method, metering_methodArray[stringToReturn]) == 0) {
+            return stringToReturn;
+        }
+        stringToReturn++;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(metering_method);
-}
-
-cJSON *OpenAPI_metering_method_convertToJSON(OpenAPI_metering_method_t *metering_method)
-{
-    cJSON *item = NULL;
-
-    if (metering_method == NULL) {
-        ogs_error("OpenAPI_metering_method_convertToJSON() failed [MeteringMethod]");
-        return NULL;
-    }
-
-    item = cJSON_CreateObject();
-end:
-    return item;
-}
-
-OpenAPI_metering_method_t *OpenAPI_metering_method_parseFromJSON(cJSON *metering_methodJSON)
-{
-    OpenAPI_metering_method_t *metering_method_local_var = NULL;
-    metering_method_local_var = OpenAPI_metering_method_create (
-        );
-
-    return metering_method_local_var;
-end:
-    return NULL;
-}
-
-OpenAPI_metering_method_t *OpenAPI_metering_method_copy(OpenAPI_metering_method_t *dst, OpenAPI_metering_method_t *src)
-{
-    cJSON *item = NULL;
-    char *content = NULL;
-
-    ogs_assert(src);
-    item = OpenAPI_metering_method_convertToJSON(src);
-    if (!item) {
-        ogs_error("OpenAPI_metering_method_convertToJSON() failed");
-        return NULL;
-    }
-
-    content = cJSON_Print(item);
-    cJSON_Delete(item);
-
-    if (!content) {
-        ogs_error("cJSON_Print() failed");
-        return NULL;
-    }
-
-    item = cJSON_Parse(content);
-    ogs_free(content);
-    if (!item) {
-        ogs_error("cJSON_Parse() failed");
-        return NULL;
-    }
-
-    OpenAPI_metering_method_free(dst);
-    dst = OpenAPI_metering_method_parseFromJSON(item);
-    cJSON_Delete(item);
-
-    return dst;
+    return 0;
 }
 

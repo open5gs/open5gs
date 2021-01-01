@@ -1558,69 +1558,69 @@ components:
       type: string
       description: Defines a packet filter for an IP flow. Refer to subclause 5.4.2 of 3GPP TS 29.212 for encoding.
     FlowDirection:
-      anyOf:
-      - type: string
+#      anyOf:
+#      - type: string
         enum:
           - DOWNLINK
           - UPLINK
           - BIDIRECTIONAL
           - UNSPECIFIED
-      - type: string
-        description: >
-          This string provides forward-compatibility with future
-          extensions to the enumeration but is not used to encode
-          content defined in the present version of this API.
-      description: >
-        Possible values are
-        - DOWNLINK: The corresponding filter applies for traffic to the UE.
-        - UPLINK: The corresponding filter applies for traffic from the UE.
-        - BIDIRECTIONAL: The corresponding filter applies for traffic both to and from the UE.
-        - UNSPECIFIED: The corresponding filter applies for traffic to the UE (downlink), but has no specific direction declared. The service data flow detection shall apply the filter for uplink traffic as if the filter was bidirectional. The PCF shall not use the value UNSPECIFIED in filters created by the network in NW-initiated procedures. The PCF shall only include the value UNSPECIFIED in filters in UE-initiated procedures if the same value is received from the SMF.
+        type: string
+#        description: >
+#          This string provides forward-compatibility with future
+#          extensions to the enumeration but is not used to encode
+#          content defined in the present version of this API.
+#      description: >
+#        Possible values are
+#        - DOWNLINK: The corresponding filter applies for traffic to the UE.
+#        - UPLINK: The corresponding filter applies for traffic from the UE.
+#        - BIDIRECTIONAL: The corresponding filter applies for traffic both to and from the UE.
+#        - UNSPECIFIED: The corresponding filter applies for traffic to the UE (downlink), but has no specific direction declared. The service data flow detection shall apply the filter for uplink traffic as if the filter was bidirectional. The PCF shall not use the value UNSPECIFIED in filters created by the network in NW-initiated procedures. The PCF shall only include the value UNSPECIFIED in filters in UE-initiated procedures if the same value is received from the SMF.
     FlowDirectionRm:
-      anyOf:
-        - $ref: '#/components/schemas/FlowDirection'
-        - $ref: 'TS29571_CommonData.yaml#/components/schemas/NullValue'
+#      anyOf:
+         $ref: '#/components/schemas/FlowDirection'
+#        - $ref: 'TS29571_CommonData.yaml#/components/schemas/NullValue'
     ReportingLevel:
-      anyOf:
-      - type: string
+#      anyOf:
+#      - type: string
         enum:
           - SER_ID_LEVEL
           - RAT_GR_LEVEL
           - SPON_CON_LEVEL
-      - $ref: 'TS29571_CommonData.yaml#/components/schemas/NullValue'
-      - type: string
-        description: >
-          This string provides forward-compatibility with future
-          extensions to the enumeration but is not used to encode
-          content defined in the present version of this API.
-      description: >
-        Possible values are
-        - SER_ID_LEVEL: Indicates that the usage shall be reported on service id and rating group combination level.
-        - RAT_GR_LEVEL: Indicates that the usage shall be reported on rating group level.
-        - SPON_CON_LEVEL: Indicates that the usage shall be reported on sponsor identity and rating group combination level.
+#      - $ref: 'TS29571_CommonData.yaml#/components/schemas/NullValue'
+        type: string
+#        description: >
+#          This string provides forward-compatibility with future
+#          extensions to the enumeration but is not used to encode
+#          content defined in the present version of this API.
+#      description: >
+#        Possible values are
+#        - SER_ID_LEVEL: Indicates that the usage shall be reported on service id and rating group combination level.
+#        - RAT_GR_LEVEL: Indicates that the usage shall be reported on rating group level.
+#        - SPON_CON_LEVEL: Indicates that the usage shall be reported on sponsor identity and rating group combination level.
     MeteringMethod:
-      anyOf:
-      - type: string
+#      anyOf:
+#      - type: string
         enum:
           - DURATION
           - VOLUME
           - DURATION_VOLUME
           - EVENT
-      - $ref: 'TS29571_CommonData.yaml#/components/schemas/NullValue'
-      - type: string
-        description: >
-          This string provides forward-compatibility with future
-          extensions to the enumeration but is not used to encode
-          content defined in the present version of this API.
-      description: >
-        Possible values are
-        - DURATION: Indicates that the duration of the service data flow traffic shall be metered.
-        - VOLUME: Indicates that volume of the service data flow traffic shall be metered.
-        - DURATION_VOLUME: Indicates that the duration and the volume of the service data flow traffic shall be metered.
-        - EVENT: Indicates that events of the service data flow traffic shall be metered.
+#      - $ref: 'TS29571_CommonData.yaml#/components/schemas/NullValue'
+        type: string
+#        description: >
+#          This string provides forward-compatibility with future
+#          extensions to the enumeration but is not used to encode
+#          content defined in the present version of this API.
+#      description: >
+#        Possible values are
+#        - DURATION: Indicates that the duration of the service data flow traffic shall be metered.
+#        - VOLUME: Indicates that volume of the service data flow traffic shall be metered.
+#        - DURATION_VOLUME: Indicates that the duration and the volume of the service data flow traffic shall be metered.
+#        - EVENT: Indicates that events of the service data flow traffic shall be metered.
     PolicyControlRequestTrigger:
-      anyOf:
-      - type: string
+#      anyOf:
+#      - type: string
         enum:
           - PLMN_CH
           - RES_MO_RE
@@ -1659,53 +1659,53 @@ components:
           - TSN_CONTAINER
           - 5G_RG_JOIN
           - 5G_RG_LEAVE
-      - type: string
-        description: >
-          This string provides forward-compatibility with future
-          extensions to the enumeration but is not used to encode
-          content defined in the present version of this API.
-      description: >
-        Possible values are
-        - PLMN_CH: PLMN Change
-        - RES_MO_RE: A request for resource modification has been received by the SMF. The SMF always reports to the PCF.
-        - AC_TY_CH: Access Type Change
-        - UE_IP_CH: UE IP address change. The SMF always reports to the PCF.
-        - UE_MAC_CH: A new UE MAC address is detected or a used UE MAC address is inactive for a specific period
-        - AN_CH_COR: Access Network Charging Correlation Information
-        - US_RE: The PDU Session or the Monitoring key specific resources consumed by a UE either reached the threshold or needs to be reported for other reasons.
-        - APP_STA: The start of application traffic has been detected.
-        - APP_STO: The stop of application traffic has been detected.
-        - AN_INFO: Access Network Information report
-        - CM_SES_FAIL: Credit management session failure
-        - PS_DA_OFF: The SMF reports when the 3GPP PS Data Off status changes. The SMF always reports to the PCF.
-        - DEF_QOS_CH: Default QoS Change. The SMF always reports to the PCF.
-        - SE_AMBR_CH: Session AMBR Change. The SMF always reports to the PCF.
-        - QOS_NOTIF: The SMF notify the PCF when receiving notification from RAN that QoS targets of the QoS Flow cannot be guranteed or gurateed again.
-        - NO_CREDIT: Out of credit
-        - REALLO_OF_CREDIT: Reallocation of credit
-        - PRA_CH: Change of UE presence in Presence Reporting Area
-        - SAREA_CH: Location Change with respect to the Serving Area
-        - SCNN_CH: Location Change with respect to the Serving CN node
-        - RE_TIMEOUT: Indicates the SMF generated the request because there has been a PCC revalidation timeout
-        - RES_RELEASE: Indicate that the SMF can inform the PCF of the outcome of the release of resources for those rules that require so.
-        - SUCC_RES_ALLO: Indicates that the requested rule data is the successful resource allocation.
-        - RAT_TY_CH: RAT Type Change.
-        - REF_QOS_IND_CH: Reflective QoS indication Change
-        - NUM_OF_PACKET_FILTER: Indicates that the SMF shall report the number of supported packet filter for signalled QoS rules
-        - UE_STATUS_RESUME: Indicates that the UE’s status is resumed.
-        - UE_TZ_CH: UE Time Zone Change
-        - AUTH_PROF_CH: The DN-AAA authorization profile index has changed
-        - QOS_MONITORING: Indicate that the SMF notifies the PCF of the QoS Monitoring information.
-        - SCELL_CH: Location Change with respect to the Serving Cell. Only applicable to the interworking scenario as defined in Annex B.
-        - EPS_FALLBACK: EPS Fallback report is enabled in the SMF.
-        - MA_PDU: UE Indicates that the SMF notifies the PCF of the MA PDU session request
-        - TSN_ETHER_PORT: Manageable Ethernet port detected
-        - TSN_CONTAINER: Port management container detected.
-        - 5G_RG_JOIN: The 5G-RG has joined to an IP Multicast Group.
-        - 5G_RG_LEAVE: The 5G-RG has left an IP Multicast Group.
+        type: string
+#        description: >
+#          This string provides forward-compatibility with future
+#          extensions to the enumeration but is not used to encode
+#          content defined in the present version of this API.
+#      description: >
+#        Possible values are
+#        - PLMN_CH: PLMN Change
+#        - RES_MO_RE: A request for resource modification has been received by the SMF. The SMF always reports to the PCF.
+#        - AC_TY_CH: Access Type Change
+#        - UE_IP_CH: UE IP address change. The SMF always reports to the PCF.
+#        - UE_MAC_CH: A new UE MAC address is detected or a used UE MAC address is inactive for a specific period
+#        - AN_CH_COR: Access Network Charging Correlation Information
+#        - US_RE: The PDU Session or the Monitoring key specific resources consumed by a UE either reached the threshold or needs to be reported for other reasons.
+#        - APP_STA: The start of application traffic has been detected.
+#        - APP_STO: The stop of application traffic has been detected.
+#        - AN_INFO: Access Network Information report
+#        - CM_SES_FAIL: Credit management session failure
+#        - PS_DA_OFF: The SMF reports when the 3GPP PS Data Off status changes. The SMF always reports to the PCF.
+#        - DEF_QOS_CH: Default QoS Change. The SMF always reports to the PCF.
+#        - SE_AMBR_CH: Session AMBR Change. The SMF always reports to the PCF.
+#        - QOS_NOTIF: The SMF notify the PCF when receiving notification from RAN that QoS targets of the QoS Flow cannot be guranteed or gurateed again.
+#        - NO_CREDIT: Out of credit
+#        - REALLO_OF_CREDIT: Reallocation of credit
+#        - PRA_CH: Change of UE presence in Presence Reporting Area
+#        - SAREA_CH: Location Change with respect to the Serving Area
+#        - SCNN_CH: Location Change with respect to the Serving CN node
+#        - RE_TIMEOUT: Indicates the SMF generated the request because there has been a PCC revalidation timeout
+#        - RES_RELEASE: Indicate that the SMF can inform the PCF of the outcome of the release of resources for those rules that require so.
+#        - SUCC_RES_ALLO: Indicates that the requested rule data is the successful resource allocation.
+#        - RAT_TY_CH: RAT Type Change.
+#        - REF_QOS_IND_CH: Reflective QoS indication Change
+#        - NUM_OF_PACKET_FILTER: Indicates that the SMF shall report the number of supported packet filter for signalled QoS rules
+#        - UE_STATUS_RESUME: Indicates that the UE’s status is resumed.
+#        - UE_TZ_CH: UE Time Zone Change
+#        - AUTH_PROF_CH: The DN-AAA authorization profile index has changed
+#        - QOS_MONITORING: Indicate that the SMF notifies the PCF of the QoS Monitoring information.
+#        - SCELL_CH: Location Change with respect to the Serving Cell. Only applicable to the interworking scenario as defined in Annex B.
+#        - EPS_FALLBACK: EPS Fallback report is enabled in the SMF.
+#        - MA_PDU: UE Indicates that the SMF notifies the PCF of the MA PDU session request
+#        - TSN_ETHER_PORT: Manageable Ethernet port detected
+#        - TSN_CONTAINER: Port management container detected.
+#        - 5G_RG_JOIN: The 5G-RG has joined to an IP Multicast Group.
+#        - 5G_RG_LEAVE: The 5G-RG has left an IP Multicast Group.
     RequestedRuleDataType:
-      anyOf:
-      - type: string
+#      anyOf:
+#      - type: string
         enum:
           - CH_ID
           - MS_TIME_ZONE
@@ -1713,37 +1713,37 @@ components:
           - RES_RELEASE
           - SUCC_RES_ALLO
           - EPS_FALLBACK
-      - type: string
-        description: >
-          This string provides forward-compatibility with future
-          extensions to the enumeration but is not used to encode
-          content defined in the present version of this API.
-      description: >
-        Possible values are
-        - CH_ID: Indicates that the requested rule data is the charging identifier. 
-        - MS_TIME_ZONE: Indicates that the requested access network info type is the UE's timezone.
-        - USER_LOC_INFO: Indicates that the requested access network info type is the UE's location.
-        - RES_RELEASE: Indicates that the requested rule data is the result of the release of resource.
-        - SUCC_RES_ALLO: Indicates that the requested rule data is the successful resource allocation.
-        - EPS_FALLBACK: Indicates that the requested rule data is the report of QoS flow rejection due to EPS fallback.
+        type: string
+#        description: >
+#          This string provides forward-compatibility with future
+#          extensions to the enumeration but is not used to encode
+#          content defined in the present version of this API.
+#      description: >
+#        Possible values are
+#        - CH_ID: Indicates that the requested rule data is the charging identifier. 
+#        - MS_TIME_ZONE: Indicates that the requested access network info type is the UE's timezone.
+#        - USER_LOC_INFO: Indicates that the requested access network info type is the UE's location.
+#        - RES_RELEASE: Indicates that the requested rule data is the result of the release of resource.
+#        - SUCC_RES_ALLO: Indicates that the requested rule data is the successful resource allocation.
+#        - EPS_FALLBACK: Indicates that the requested rule data is the report of QoS flow rejection due to EPS fallback.
     RuleStatus:
-      anyOf:
-      - type: string
+#      anyOf:
+#      - type: string
         enum:
           - ACTIVE
           - INACTIVE
-      - type: string
-        description: >
-          This string provides forward-compatibility with future
-          extensions to the enumeration but is not used to encode
-          content defined in the present version of this API.
-      description: >
-        Possible values are
-        - ACTIVE: Indicates that the PCC rule(s) are successfully installed (for those provisioned from PCF) or activated (for those pre-defined in SMF), or the session rule(s) are successfully installed 
-        - INACTIVE: Indicates that the PCC rule(s) are removed (for those provisioned from PCF) or inactive (for those pre-defined in SMF) or the session rule(s) are removed.
+        type: string
+#        description: >
+#          This string provides forward-compatibility with future
+#          extensions to the enumeration but is not used to encode
+#          content defined in the present version of this API.
+#      description: >
+#        Possible values are
+#        - ACTIVE: Indicates that the PCC rule(s) are successfully installed (for those provisioned from PCF) or activated (for those pre-defined in SMF), or the session rule(s) are successfully installed 
+#        - INACTIVE: Indicates that the PCC rule(s) are removed (for those provisioned from PCF) or inactive (for those pre-defined in SMF) or the session rule(s) are removed.
     FailureCode:
-      anyOf:
-      - type: string
+#      anyOf:
+#      - type: string
         enum:
           - UNK_RULE_ID
           - RA_GR_ERR
@@ -1766,169 +1766,169 @@ components:
           - CM_USER_UNK
           - CM_RAT_FAILED
           - UE_STA_SUSP
-      - type: string
-        description: >
-          This string provides forward-compatibility with future
-          extensions to the enumeration but is not used to encode
-          content defined in the present version of this API.
-      description: >
-        Possible values are
-          - UNK_RULE_ID: Indicates that the pre-provisioned PCC rule could not be successfully activated because the PCC rule identifier is unknown to the SMF.
-          - RA_GR_ERR: Indicate that the PCC rule could not be successfully installed or enforced because the Rating Group specified within the Charging Data policy decision which the PCC rule refers to is unknown or, invalid.
-          - SER_ID_ERR: Indicate that the PCC rule could not be successfully installed or enforced because the Service Identifier specified within the Charging Data policy decision which the PCC rule refers to is invalid, unknown, or not applicable to the service being charged.
-          - NF_MAL: Indicate that the PCC rule could not be successfully installed (for those provisioned from the PCF) or activated (for those pre-defined in SMF) or enforced (for those already successfully installed) due to SMF/UPF malfunction.
-          - RES_LIM: Indicate that the PCC rule could not be successfully installed (for those provisioned from PCF) or activated (for those pre-defined in SMF) or enforced (for those already successfully installed) due to a limitation of resources at the SMF/UPF.
-          - MAX_NR_QoS_FLOW: Indicate that the PCC rule could not be successfully installed (for those provisioned from PCF) or activated (for those pre-defined in SMF) or enforced (for those already successfully installed) due to the fact that the maximum number of QoS flows has been reached for the PDU session.
-          - MISS_FLOW_INFO: Indicate that the PCC rule could not be successfully installed or enforced because neither the "flowInfos" attribute nor the "appId" attribute is specified within the PccRule data structure by the PCF during the first install request of the PCC rule.
-          - RES_ALLO_FAIL: Indicate that the PCC rule could not be successfully installed or maintained since the QoS flow establishment/modification failed, or the QoS flow was released.
-          - UNSUCC_QOS_VAL: indicate that the QoS validation has failed or when Guaranteed Bandwidth > Max-Requested-Bandwidth.
-          - INCOR_FLOW_INFO: Indicate that the PCC rule could not be successfully installed or modified at the SMF because the provided flow information is not supported by the network (e.g. the provided IP address(es) or Ipv6 prefix(es) do not correspond to an IP version applicable for the PDU session).
-          - PS_TO_CS_HAN: Indicate that the PCC rule could not be maintained because of PS to CS handover.
-          - APP_ID_ERR: Indicate that the rule could not be successfully installed or enforced because the Application Identifier is invalid, unknown, or not applicable to the application required for detection.
-          - NO_QOS_FLOW_BOUND: Indicate that there is no QoS flow which the SMF can bind the PCC rule(s) to.
-          - FILTER_RES: Indicate that the Flow Information within the "flowInfos" attribute cannot be handled by the SMF because any of the restrictions defined in subclause 5.4.2 of 3GPP TS 29.212 was not met.
-          - MISS_REDI_SER_ADDR: Indicate that the PCC rule could not be successfully installed or enforced at the SMF because there is no valid Redirect Server Address within the Traffic Control Data policy decision which the PCC rule refers to provided by the PCF and no preconfigured redirection address for this PCC rule at the SMF.
-          - CM_END_USER_SER_DENIED: Indicate that the charging system denied the service request due to service restrictions (e.g. terminate rating group) or limitations related to the end-user, for example the end-user's account could not cover the requested service.
-          - CM_CREDIT_CON_NOT_APP: Indicate that the charging system determined that the service can be granted to the end user but no further credit control is needed for the service (e.g. service is free of charge or is treated for offline charging).
-          - CM_AUTH_REJ: Indicate that the charging system denied the service request in order to terminate the service for which credit is requested.
-          - CM_USER_UNK: Indicate that the specified end user could not be found in the charging system.
-          - CM_RAT_FAILED: Indicate that the charging system cannot rate the service request due to insufficient rating input, incorrect AVP combination or due to an attribute or an attribute value that is not recognized or supported in the rating.
-          - UE_STA_SUSP: Indicates that the UE is in suspend state.
+        type: string
+#        description: >
+#          This string provides forward-compatibility with future
+#          extensions to the enumeration but is not used to encode
+#          content defined in the present version of this API.
+#      description: >
+#        Possible values are
+#          - UNK_RULE_ID: Indicates that the pre-provisioned PCC rule could not be successfully activated because the PCC rule identifier is unknown to the SMF.
+#          - RA_GR_ERR: Indicate that the PCC rule could not be successfully installed or enforced because the Rating Group specified within the Charging Data policy decision which the PCC rule refers to is unknown or, invalid.
+#          - SER_ID_ERR: Indicate that the PCC rule could not be successfully installed or enforced because the Service Identifier specified within the Charging Data policy decision which the PCC rule refers to is invalid, unknown, or not applicable to the service being charged.
+#          - NF_MAL: Indicate that the PCC rule could not be successfully installed (for those provisioned from the PCF) or activated (for those pre-defined in SMF) or enforced (for those already successfully installed) due to SMF/UPF malfunction.
+#          - RES_LIM: Indicate that the PCC rule could not be successfully installed (for those provisioned from PCF) or activated (for those pre-defined in SMF) or enforced (for those already successfully installed) due to a limitation of resources at the SMF/UPF.
+#          - MAX_NR_QoS_FLOW: Indicate that the PCC rule could not be successfully installed (for those provisioned from PCF) or activated (for those pre-defined in SMF) or enforced (for those already successfully installed) due to the fact that the maximum number of QoS flows has been reached for the PDU session.
+#          - MISS_FLOW_INFO: Indicate that the PCC rule could not be successfully installed or enforced because neither the "flowInfos" attribute nor the "appId" attribute is specified within the PccRule data structure by the PCF during the first install request of the PCC rule.
+#          - RES_ALLO_FAIL: Indicate that the PCC rule could not be successfully installed or maintained since the QoS flow establishment/modification failed, or the QoS flow was released.
+#          - UNSUCC_QOS_VAL: indicate that the QoS validation has failed or when Guaranteed Bandwidth > Max-Requested-Bandwidth.
+#          - INCOR_FLOW_INFO: Indicate that the PCC rule could not be successfully installed or modified at the SMF because the provided flow information is not supported by the network (e.g. the provided IP address(es) or Ipv6 prefix(es) do not correspond to an IP version applicable for the PDU session).
+#          - PS_TO_CS_HAN: Indicate that the PCC rule could not be maintained because of PS to CS handover.
+#          - APP_ID_ERR: Indicate that the rule could not be successfully installed or enforced because the Application Identifier is invalid, unknown, or not applicable to the application required for detection.
+#          - NO_QOS_FLOW_BOUND: Indicate that there is no QoS flow which the SMF can bind the PCC rule(s) to.
+#          - FILTER_RES: Indicate that the Flow Information within the "flowInfos" attribute cannot be handled by the SMF because any of the restrictions defined in subclause 5.4.2 of 3GPP TS 29.212 was not met.
+#          - MISS_REDI_SER_ADDR: Indicate that the PCC rule could not be successfully installed or enforced at the SMF because there is no valid Redirect Server Address within the Traffic Control Data policy decision which the PCC rule refers to provided by the PCF and no preconfigured redirection address for this PCC rule at the SMF.
+#          - CM_END_USER_SER_DENIED: Indicate that the charging system denied the service request due to service restrictions (e.g. terminate rating group) or limitations related to the end-user, for example the end-user's account could not cover the requested service.
+#          - CM_CREDIT_CON_NOT_APP: Indicate that the charging system determined that the service can be granted to the end user but no further credit control is needed for the service (e.g. service is free of charge or is treated for offline charging).
+#          - CM_AUTH_REJ: Indicate that the charging system denied the service request in order to terminate the service for which credit is requested.
+#          - CM_USER_UNK: Indicate that the specified end user could not be found in the charging system.
+#          - CM_RAT_FAILED: Indicate that the charging system cannot rate the service request due to insufficient rating input, incorrect AVP combination or due to an attribute or an attribute value that is not recognized or supported in the rating.
+#          - UE_STA_SUSP: Indicates that the UE is in suspend state.
     AfSigProtocol:
-      anyOf:
-      - type: string
+#      anyOf:
+#      - type: string
         enum:
           - NO_INFORMATION
           - SIP
-      - $ref: 'TS29571_CommonData.yaml#/components/schemas/NullValue'
-      - type: string
-        description: >
-          This string provides forward-compatibility with future
-          extensions to the enumeration but is not used to encode
-          content defined in the present version of this API.
-      description: >
-        Possible values are
-        - NO_INFORMATION: Indicate that no information about the AF signalling protocol is being provided. 
-        - SIP: Indicate that the signalling protocol is Session Initiation Protocol.
+#      - $ref: 'TS29571_CommonData.yaml#/components/schemas/NullValue'
+        type: string
+#        description: >
+#          This string provides forward-compatibility with future
+#          extensions to the enumeration but is not used to encode
+#          content defined in the present version of this API.
+#      description: >
+#        Possible values are
+#        - NO_INFORMATION: Indicate that no information about the AF signalling protocol is being provided. 
+#        - SIP: Indicate that the signalling protocol is Session Initiation Protocol.
     RuleOperation:
-      anyOf:
-      - type: string
+#      anyOf:
+#      - type: string
         enum:
           - CREATE_PCC_RULE
           - DELETE_PCC_RULE
           - MODIFY_PCC_RULE_AND_ADD_PACKET_FILTERS
-          - MODIFY_ PCC_RULE_AND_REPLACE_PACKET_FILTERS
-          - MODIFY_ PCC_RULE_AND_DELETE_PACKET_FILTERS
+          - MODIFY_PCC_RULE_AND_REPLACE_PACKET_FILTERS
+          - MODIFY_PCC_RULE_AND_DELETE_PACKET_FILTERS
           - MODIFY_PCC_RULE_WITHOUT_MODIFY_PACKET_FILTERS
-      - type: string
-        description: >
-          This string provides forward-compatibility with future
-          extensions to the enumeration but is not used to encode
-          content defined in the present version of this API.
-      description: >
-        Possible values are
-        - CREATE_PCC_RULE: Indicates to create a new PCC rule to reserve the resource requested by the UE. 
-        - DELETE_PCC_RULE: Indicates to delete a PCC rule corresponding to reserve the resource requested by the UE..
-        - MODIFY_PCC_RULE_AND_ADD_PACKET_FILTERS: Indicates to modify the PCC rule by adding new packet filter(s).
-        - MODIFY_ PCC_RULE_AND_REPLACE_PACKET_FILTERS: Indicates to modify the PCC rule by replacing the existing packet filter(s).
-        - MODIFY_ PCC_RULE_AND_DELETE_PACKET_FILTERS: Indicates to modify the PCC rule by deleting the existing packet filter(s).
-        - MODIFY_PCC_RULE_WITHOUT_MODIFY_PACKET_FILTERS: Indicates to modify the PCC rule by modifying the QoS of the PCC rule.
+        type: string
+#        description: >
+#          This string provides forward-compatibility with future
+#          extensions to the enumeration but is not used to encode
+#          content defined in the present version of this API.
+#      description: >
+#        Possible values are
+#        - CREATE_PCC_RULE: Indicates to create a new PCC rule to reserve the resource requested by the UE. 
+#        - DELETE_PCC_RULE: Indicates to delete a PCC rule corresponding to reserve the resource requested by the UE..
+#        - MODIFY_PCC_RULE_AND_ADD_PACKET_FILTERS: Indicates to modify the PCC rule by adding new packet filter(s).
+#        - MODIFY_ PCC_RULE_AND_REPLACE_PACKET_FILTERS: Indicates to modify the PCC rule by replacing the existing packet filter(s).
+#        - MODIFY_ PCC_RULE_AND_DELETE_PACKET_FILTERS: Indicates to modify the PCC rule by deleting the existing packet filter(s).
+#        - MODIFY_PCC_RULE_WITHOUT_MODIFY_PACKET_FILTERS: Indicates to modify the PCC rule by modifying the QoS of the PCC rule.
     RedirectAddressType:
-      anyOf:
-      - type: string
+#      anyOf:
+#      - type: string
         enum:
           - IPV4_ADDR
           - IPV6_ADDR
           - URL
           - SIP_URI
-      - type: string
-        description: >
-          This string provides forward-compatibility with future
-          extensions to the enumeration but is not used to encode
-          content defined in the present version of this API.
-      description: >
-        Possible values are
-        - IPV4_ADDR: Indicates that the address type is in the form of "dotted-decimal" IPv4 address.
-        - IPV6_ADDR: Indicates that the address type is in the form of IPv6 address.
-        - URL: Indicates that the address type is in the form of Uniform Resource Locator.
-        - SIP_URI: Indicates that the address type is in the form of SIP Uniform Resource Identifier.
+        type: string
+#        description: >
+#          This string provides forward-compatibility with future
+#          extensions to the enumeration but is not used to encode
+#          content defined in the present version of this API.
+#      description: >
+#        Possible values are
+#        - IPV4_ADDR: Indicates that the address type is in the form of "dotted-decimal" IPv4 address.
+#        - IPV6_ADDR: Indicates that the address type is in the form of IPv6 address.
+#        - URL: Indicates that the address type is in the form of Uniform Resource Locator.
+#        - SIP_URI: Indicates that the address type is in the form of SIP Uniform Resource Identifier.
     QosFlowUsage:
-      anyOf:
-      - type: string
+#      anyOf:
+#      - type: string
         enum:
           - GENERAL
           - IMS_SIG
-      - type: string
-        description: >
-          This string provides forward-compatibility with future
-          extensions to the enumeration but is not used to encode
-          content defined in the present version of this API.
-      description: >
-        Possible values are
-        - GENERAL: Indicate no specific QoS flow usage information is available. 
-        - IMS_SIG: Indicate that the QoS flow is used for IMS signalling only.
+        type: string
+#        description: >
+#          This string provides forward-compatibility with future
+#          extensions to the enumeration but is not used to encode
+#          content defined in the present version of this API.
+#      description: >
+#        Possible values are
+#        - GENERAL: Indicate no specific QoS flow usage information is available. 
+#        - IMS_SIG: Indicate that the QoS flow is used for IMS signalling only.
     FailureCause:
-      anyOf:
-      - type: string
+#      anyOf:
+#      - type: string
         enum:
           - PCC_RULE_EVENT
           - PCC_QOS_FLOW_EVENT
           - RULE_PERMANENT_ERROR
           - RULE_TEMPORARY_ERROR
-      - type: string
+        type: string
     CreditManagementStatus:
-      anyOf:
-      - type: string
+#      anyOf:
+#      - type: string
         enum:
           - END_USER_SER_DENIED
           - CREDIT_CTRL_NOT_APP
           - AUTH_REJECTED
           - USER_UNKNOWN
           - RATING_FAILED
-      - type: string
+        type: string
     SessionRuleFailureCode:
-      anyOf:
-      - type: string
+#      anyOf:
+#      - type: string
         enum:
           - NF_MAL
           - RES_LIM
           - UNSUCC_QOS_VAL
           - UE_STA_SUSP
-      - type: string
-        description: >
-          This string provides forward-compatibility with future
-          extensions to the enumeration but is not used to encode
-          content defined in the present version of this API.
-      description: >
-        Possible values are
-          - NF_MAL: Indicate that the PCC rule could not be successfully installed (for those provisioned from the PCF) or activated (for those pre-defined in SMF) or enforced (for those already successfully installed) due to SMF/UPF malfunction.
-          - RES_LIM: Indicate that the PCC rule could not be successfully installed (for those provisioned from PCF) or activated (for those pre-defined in SMF) or enforced (for those already successfully installed) due to a limitation of resources at the SMF/UPF.
-          - UNSUCC_QOS_VAL: indicate that the QoS validation has failed.
-          - UE_STA_SUSP: Indicates that the UE is in suspend state.
+        type: string
+#        description: >
+#          This string provides forward-compatibility with future
+#          extensions to the enumeration but is not used to encode
+#          content defined in the present version of this API.
+#      description: >
+#        Possible values are
+#          - NF_MAL: Indicate that the PCC rule could not be successfully installed (for those provisioned from the PCF) or activated (for those pre-defined in SMF) or enforced (for those already successfully installed) due to SMF/UPF malfunction.
+#          - RES_LIM: Indicate that the PCC rule could not be successfully installed (for those provisioned from PCF) or activated (for those pre-defined in SMF) or enforced (for those already successfully installed) due to a limitation of resources at the SMF/UPF.
+#          - UNSUCC_QOS_VAL: indicate that the QoS validation has failed.
+#          - UE_STA_SUSP: Indicates that the UE is in suspend state.
     SteeringFunctionality:
-      anyOf:
-      - type: string
+#      anyOf:
+#      - type: string
         enum:
           - MPTCP
           - ATSSS_LL
-      - type: string
-        description: >
-          This string provides forward-compatibility with future
-          extensions to the enumeration but is not used to encode
-          content defined in the present version of this API.
-      description: >
-        Possible values are
-          - MPTCP: Indicates that PCF authorizes the MPTCP functionality to support traffic steering, switching and splitting.
-          - ATSSS_LL: Indicates that PCF authorizes the ATSSS-LL functionality to support traffic steering, switching and splitting.
+        type: string
+#        description: >
+#          This string provides forward-compatibility with future
+#          extensions to the enumeration but is not used to encode
+#          content defined in the present version of this API.
+#      description: >
+#        Possible values are
+#          - MPTCP: Indicates that PCF authorizes the MPTCP functionality to support traffic steering, switching and splitting.
+#          - ATSSS_LL: Indicates that PCF authorizes the ATSSS-LL functionality to support traffic steering, switching and splitting.
     SteerModeValue:
-      anyOf:
-      - type: string
+#      anyOf:
+#      - type: string
         enum:
           - ACTIVE_STANDBY
           - LOAD_BALANCING
           - SMALLEST_DELAY
           - PRIORITY_BASED
-      - type: string
+        type: string
     MulticastAccessControl:
       anyOf:
       - type: string
@@ -1937,43 +1937,43 @@ components:
           - NOT_ALLOWED
       - type: string
     RequestedQosMonitoringParameter:
-      anyOf:
-      - type: string
+#      anyOf:
+#      - type: string
         enum:
           - DOWNLINK
           - UPLINK
           - ROUND_TRIP
-      - type: string
+        type: string
     ReportingFrequency:
-      anyOf:
-      - type: string
+#      anyOf:
+#      - type: string
         enum:
           - EVENT_TRIGGERED
           - PERIODIC
           - SESSION_RELEASE
-      - type: string
+        type: string
     SmPolicyAssociationReleaseCause:
-      anyOf:
-      - type: string
+#      anyOf:
+#      - type: string
         enum:
           - UNSPECIFIED
           - UE_SUBSCRIPTION
           - INSUFFICIENT_RES
           - VALIDATION_CONDITION_NOT_MET
-      - type: string
+        type: string
     PduSessionRelCause:
-      anyOf:
-      - type: string
+#      anyOf:
+#      - type: string
         enum:
           - PS_TO_CS_HO
-      - type: string
+        type: string
     MaPduIndication:
-      anyOf:
-      - type: string
+#      anyOf:
+#      - type: string
         enum:
           - MA_PDU_REQUEST
-          - MA_PDU_ NETWORK_UPGRADE ALLOWED
-      - type: string
+          - MA_PDU_NETWORK_UPGRADE_ALLOWED
+        type: string
     AtsssCapability:
       anyOf:
       - type: string

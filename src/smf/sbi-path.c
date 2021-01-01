@@ -135,8 +135,9 @@ void smf_sbi_discover_and_send(OpenAPI_nf_type_e target_nf_type,
     ogs_assert(stream);
     ogs_assert(build);
 
-    xact = ogs_sbi_xact_add(target_nf_type, &sess->sbi, data,
-            (ogs_sbi_build_f)build, smf_timer_sbi_client_wait_expire);
+    xact = ogs_sbi_xact_add(target_nf_type, &sess->sbi,
+            (ogs_sbi_build_f)build, sess, data,
+            smf_timer_sbi_client_wait_expire);
     ogs_assert(xact);
 
     xact->assoc_stream = stream;
@@ -148,6 +149,38 @@ void smf_sbi_discover_and_send(OpenAPI_nf_type_e target_nf_type,
                 OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT, NULL,
                 "Cannot discover", smf_ue->supi);
     }
+}
+
+void smf_namf_comm_send_n1_n2_message_transfer(
+        smf_sess_t *sess, int state,
+        ogs_pkbuf_t *n1smbuf, ogs_pkbuf_t *n2smbuf)
+{
+    ogs_sbi_xact_t *xact = NULL;
+    smf_ue_t *smf_ue = NULL;
+    smf_n1_n2_message_transfer_data_t data;
+
+    ogs_assert(state);
+    ogs_assert(n1smbuf);
+    ogs_assert(n2smbuf);
+
+    ogs_assert(sess);
+    smf_ue = sess->smf_ue;
+    ogs_assert(smf_ue);
+
+    memset(&data, 0, sizeof(data));
+    data.state = state;
+    data.n1smbuf = n1smbuf;
+    data.n2smbuf = n2smbuf;
+
+    xact = ogs_sbi_xact_add(OpenAPI_nf_type_AMF, &sess->sbi,
+            (ogs_sbi_build_f)smf_namf_comm_build_n1_n2_message_transfer,
+            sess, &data, smf_timer_sbi_client_wait_expire);
+    ogs_assert(xact);
+
+    xact->state = state;
+
+    ogs_sbi_discover_and_send(xact,
+            (ogs_fsm_handler_t)smf_nf_state_registered, client_cb);
 }
 
 void smf_sbi_send_response(ogs_sbi_stream_t *stream, int status)

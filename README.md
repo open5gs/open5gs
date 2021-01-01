@@ -38,9 +38,13 @@ If you find Open5GS useful for work, please consider supporting this Open Source
 
 If you don't understand something about Open5GS, the [https://open5gs.org/open5gs/docs/](https://open5gs.org/open5gs/docs/) is a great place to look for answers.
 
-## Technical Discussion
+## Community
 
-Problem with Open5GS can be filed as [issues](https://github.com/open5gs/open5gs/issues) in this repository. Voice and text chat are available in Open5GS's [Discord](https://discordapp.com/) workspace. Use [this link](https://discord.gg/GreNkuc) to get started.
+Problem with Open5GS can be filed as [issues](https://github.com/open5gs/open5gs/issues) in this repository.
+
+Other topics related to this project are happening on the [discussions](https://github.com/open5gs/open5gs/discussions).
+
+Voice and text chat are available in Open5GS's [Discord](https://discordapp.com/) workspace. Use [this link](https://discord.gg/GreNkuc) to get started.
 
 ## Contributing
 

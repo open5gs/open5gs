@@ -341,9 +341,11 @@ struct amf_ue_s {
      * #define OGS_NAS_SECURITY_ALGORITHMS_128_NIA3    3 */
     uint8_t         selected_int_algorithm;
 
-    ogs_bitrate_t   subscribed_ue_ambr; /* UE-AMBR */
+    ogs_bitrate_t   ue_ambr; /* UE-AMBR */
     int             num_of_subscribed_dnn;
     char            *subscribed_dnn[OGS_MAX_NUM_OF_DNN];
+
+    uint64_t        am_policy_control_features; /* SBI Features */
 
 #define CM_CONNECTED(__aMF) \
     ((__aMF) && ((__aMF)->ran_ue != NULL) && ran_ue_cycle((__aMF)->ran_ue))

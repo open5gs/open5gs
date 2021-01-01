@@ -30,6 +30,8 @@ bool smf_npcf_smpolicycontrol_handle_create(
     char buf1[OGS_ADDRSTRLEN];
     char buf2[OGS_ADDRSTRLEN];
 
+    uint64_t supported_features;
+
     char *strerror = NULL;
     smf_ue_t *smf_ue = NULL;
 
@@ -40,6 +42,10 @@ bool smf_npcf_smpolicycontrol_handle_create(
     ogs_pfcp_qer_t *qer = NULL;
 
     OpenAPI_sm_policy_decision_t *SmPolicyDecision = NULL;
+    OpenAPI_lnode_t *node = NULL, *node2 = NULL;
+
+#define MAX_TRIGGER_ID 128
+    bool trigger_results[MAX_TRIGGER_ID];
 
     ogs_sbi_message_t message;
     ogs_sbi_header_t header;
@@ -88,6 +94,262 @@ bool smf_npcf_smpolicycontrol_handle_create(
 
     ogs_sbi_header_free(&header);
 
+    /* SBI Features */
+    if (SmPolicyDecision->supp_feat) {
+        supported_features =
+            ogs_uint64_from_string(SmPolicyDecision->supp_feat);
+        sess->smpolicycontrol_features &= supported_features;
+    } else {
+        sess->smpolicycontrol_features = 0;
+    }
+
+    /*********************************************************************
+     * Handle Policy Control Request Triggers
+     *********************************************************************/
+
+    /* Get policy control request triggers */
+    memset(&trigger_results, 0, sizeof(trigger_results));
+    OpenAPI_list_for_each(SmPolicyDecision->policy_ctrl_req_triggers, node) {
+        if (node->data) {
+            OpenAPI_policy_control_request_trigger_e trigger_id =
+                (OpenAPI_policy_control_request_trigger_e)node->data;
+
+            ogs_assert(trigger_id < MAX_TRIGGER_ID);
+            trigger_results[trigger_id] = true;
+        }
+    }
+
+    /* Update authorized session-AMBR */
+    if (SmPolicyDecision->sess_rules) {
+        OpenAPI_map_t *SessRuleMap = NULL;
+        OpenAPI_session_rule_t *SessionRule = NULL;
+
+        OpenAPI_ambr_t *AuthSessAmbr = NULL;
+        OpenAPI_authorized_default_qos_t *AuthDefQos = NULL;
+
+        OpenAPI_list_for_each(SmPolicyDecision->sess_rules, node) {
+            SessRuleMap = node->data;
+            if (!SessRuleMap) {
+                ogs_error("No SessRuleMap");
+                continue;
+            }
+
+            SessionRule = SessRuleMap->value;
+            if (!SessionRule) {
+                ogs_error("No SessionRule");
+                continue;
+            }
+
+
+            AuthSessAmbr = SessionRule->auth_sess_ambr;
+            if (AuthSessAmbr && trigger_results[
+                OpenAPI_policy_control_request_trigger_SE_AMBR_CH] == true) {
+                if (AuthSessAmbr->uplink)
+                    sess->pdn.ambr.uplink =
+                        ogs_sbi_bitrate_from_string(AuthSessAmbr->uplink);
+                if (AuthSessAmbr->downlink)
+                    sess->pdn.ambr.downlink =
+                        ogs_sbi_bitrate_from_string(AuthSessAmbr->downlink);
+            }
+
+            AuthDefQos = SessionRule->auth_def_qos;
+            if (AuthDefQos && trigger_results[
+                OpenAPI_policy_control_request_trigger_DEF_QOS_CH] == true) {
+                sess->pdn.qos.qci = AuthDefQos->_5qi;
+                sess->pdn.qos.arp.priority_level =
+                    AuthDefQos->priority_level;
+                if (AuthDefQos->arp) {
+                    sess->pdn.qos.arp.priority_level =
+                            AuthDefQos->arp->priority_level;
+                    if (AuthDefQos->arp->preempt_cap ==
+                        OpenAPI_preemption_capability_NOT_PREEMPT)
+                        sess->pdn.qos.arp.pre_emption_capability =
+                            OGS_PDN_PRE_EMPTION_CAPABILITY_DISABLED;
+                    else if (AuthDefQos->arp->preempt_cap ==
+                        OpenAPI_preemption_capability_MAY_PREEMPT)
+                        sess->pdn.qos.arp.pre_emption_capability =
+                            OGS_PDN_PRE_EMPTION_CAPABILITY_ENABLED;
+
+                    if (AuthDefQos->arp->preempt_vuln ==
+                        OpenAPI_preemption_vulnerability_NOT_PREEMPTABLE)
+                        sess->pdn.qos.arp.pre_emption_vulnerability =
+                            OGS_PDN_PRE_EMPTION_VULNERABILITY_DISABLED;
+                    else if (AuthDefQos->arp->preempt_vuln ==
+                        OpenAPI_preemption_vulnerability_PREEMPTABLE)
+                        sess->pdn.qos.arp.pre_emption_vulnerability =
+                            OGS_PDN_PRE_EMPTION_VULNERABILITY_ENABLED;
+                }
+            }
+        }
+    }
+
+    /* Update authorized PCC rule & QoS */
+    if (SmPolicyDecision->pcc_rules) {
+        OpenAPI_map_t *PccRuleMap = NULL;
+        OpenAPI_pcc_rule_t *PccRule = NULL;
+        OpenAPI_flow_information_t *FlowInformation = NULL;
+        OpenAPI_qos_data_t *QosData = NULL;
+        char *QosId = NULL;
+
+        ogs_assert(sess->num_of_pcc_rule == 0);
+        OpenAPI_list_for_each(SmPolicyDecision->pcc_rules, node) {
+            ogs_pcc_rule_t *pcc_rule = &sess->pcc_rule[sess->num_of_pcc_rule];
+
+            ogs_assert(pcc_rule);
+
+            PccRuleMap = node->data;
+            if (!PccRuleMap) {
+                ogs_error("No PccRuleMap");
+                continue;
+            }
+
+            PccRule = PccRuleMap->value;
+            if (!PccRule) {
+                ogs_error("No PccRule");
+                continue;
+            }
+
+            if (!PccRule->ref_qos_data) {
+                ogs_error("No RefQosData");
+                continue;
+            }
+
+            if (!PccRule->ref_qos_data->first) {
+                ogs_error("No RefQosData->first");
+                continue;
+            }
+
+            QosId = PccRule->ref_qos_data->first->data;
+            if (!QosId) {
+                ogs_error("no QosId");
+                continue;
+            }
+
+            if (SmPolicyDecision->qos_decs) {
+                OpenAPI_map_t *QosDecisionMap = NULL;
+                OpenAPI_qos_data_t *QosDataIter = NULL;
+
+                OpenAPI_list_for_each(SmPolicyDecision->qos_decs, node2) {
+                    QosDecisionMap = node2->data;
+                    if (!QosDecisionMap) {
+                        ogs_error("No QosDecisionMap");
+                        continue;
+                    }
+
+                    QosDataIter = QosDecisionMap->value;
+                    if (!QosDataIter) {
+                        ogs_error("No QosData");
+                        continue;
+                    }
+
+                    if (!QosDataIter->qos_id) {
+                        ogs_error("No QosId");
+                        continue;
+
+                    }
+
+                    if (strcmp(QosId, QosDataIter->qos_id) == 0) {
+                        QosData = QosDataIter;
+                        break;
+                    }
+                }
+            }
+
+            if (!QosData) {
+                ogs_error("no qosData");
+                continue;
+            }
+
+            pcc_rule->type = OGS_PCC_RULE_TYPE_INSTALL;
+            pcc_rule->id = ogs_strdup(PccRule->pcc_rule_id);
+            pcc_rule->precedence = PccRule->precedence;
+
+            if (PccRule->flow_infos) {
+                ogs_assert(pcc_rule->num_of_flow == 0);
+                OpenAPI_list_for_each(PccRule->flow_infos, node2) {
+                    ogs_flow_t *flow = &pcc_rule->flow[pcc_rule->num_of_flow];
+
+                    ogs_assert(flow);
+
+                    FlowInformation = node2->data;
+                    if (!FlowInformation) {
+                        ogs_error("No FlowInformation");
+                        continue;
+                    }
+
+                    if (FlowInformation->flow_direction ==
+                        OpenAPI_flow_direction_UPLINK)
+                        flow->direction = OGS_FLOW_UPLINK_ONLY;
+                    else if (FlowInformation->flow_direction ==
+                        OpenAPI_flow_direction_DOWNLINK)
+                        flow->direction = OGS_FLOW_DOWNLINK_ONLY;
+                    else {
+                        ogs_fatal("Unsupported direction [%d]",
+                                FlowInformation->flow_direction);
+                        ogs_assert_if_reached();
+                    }
+
+                    flow->description =
+                        ogs_strdup(FlowInformation->flow_description);
+
+                    pcc_rule->num_of_flow++;
+                }
+            }
+
+            pcc_rule->qos.qci = QosData->_5qi;
+            pcc_rule->qos.arp.priority_level = QosData->priority_level;
+
+            if (QosData->arp) {
+                pcc_rule->qos.arp.priority_level = QosData->arp->priority_level;
+                if (QosData->arp->preempt_cap ==
+                    OpenAPI_preemption_capability_NOT_PREEMPT)
+                    pcc_rule->qos.arp.pre_emption_capability =
+                        OGS_PDN_PRE_EMPTION_CAPABILITY_DISABLED;
+                else if (QosData->arp->preempt_cap ==
+                    OpenAPI_preemption_capability_MAY_PREEMPT)
+                    pcc_rule->qos.arp.pre_emption_capability =
+                        OGS_PDN_PRE_EMPTION_CAPABILITY_ENABLED;
+
+                if (QosData->arp->preempt_vuln ==
+                    OpenAPI_preemption_vulnerability_NOT_PREEMPTABLE)
+                    pcc_rule->qos.arp.pre_emption_vulnerability =
+                        OGS_PDN_PRE_EMPTION_VULNERABILITY_DISABLED;
+                else if (QosData->arp->preempt_vuln ==
+                    OpenAPI_preemption_vulnerability_PREEMPTABLE)
+                    pcc_rule->qos.arp.pre_emption_vulnerability =
+                        OGS_PDN_PRE_EMPTION_VULNERABILITY_ENABLED;
+            }
+
+            if (QosData->maxbr_ul)
+                pcc_rule->qos.mbr.uplink =
+                    ogs_sbi_bitrate_from_string(QosData->maxbr_ul);
+            if (QosData->maxbr_dl)
+                pcc_rule->qos.mbr.downlink =
+                    ogs_sbi_bitrate_from_string(QosData->maxbr_dl);
+
+            if (QosData->gbr_ul)
+                pcc_rule->qos.gbr.uplink =
+                    ogs_sbi_bitrate_from_string(QosData->gbr_ul);
+            if (QosData->gbr_dl)
+                pcc_rule->qos.gbr.downlink =
+                    ogs_sbi_bitrate_from_string(QosData->gbr_dl);
+
+            if (pcc_rule->qos.mbr.downlink || pcc_rule->qos.mbr.uplink ||
+                pcc_rule->qos.gbr.downlink || pcc_rule->qos.gbr.uplink) {
+                if (pcc_rule->qos.mbr.downlink == 0)
+                    pcc_rule->qos.mbr.downlink = MAX_BIT_RATE;
+                if (pcc_rule->qos.mbr.uplink == 0)
+                    pcc_rule->qos.mbr.uplink = MAX_BIT_RATE;
+                if (pcc_rule->qos.gbr.downlink == 0)
+                    pcc_rule->qos.gbr.downlink = MAX_BIT_RATE;
+                if (pcc_rule->qos.gbr.uplink == 0)
+                    pcc_rule->qos.gbr.uplink = MAX_BIT_RATE;
+            }
+
+            sess->num_of_pcc_rule++;
+        }
+    }
+
     /*********************************************************************
      * Send PFCP Session Establiashment Request to the UPF
      *********************************************************************/
@@ -108,6 +370,9 @@ bool smf_npcf_smpolicycontrol_handle_create(
     /* Setup Default QoS flow */
     qos_flow = smf_qos_flow_add(sess);
     ogs_assert(qos_flow);
+
+    /* Copy Session QoS information to Default QoS Flow */
+    memcpy(&qos_flow->qos, &sess->pdn.qos, sizeof(ogs_qos_t));
 
     /* Setup QER */
     qer = qos_flow->qer;
@@ -134,9 +399,12 @@ bool smf_npcf_smpolicycontrol_handle_create(
         sess->ipv6 ? OGS_INET6_NTOP(&sess->ipv6->addr, buf2) : "");
 
     /* Set UPF-N3 TEID & ADDR to the Default UL PDR */
+    ogs_assert(sess->pfcp_node);
     if (sess->pfcp_node->up_function_features.ftup) {
         ul_pdr->f_teid.ch = 1;
-        ul_pdr->f_teid_len = 1;
+        ul_pdr->f_teid.chid = 1;
+        ul_pdr->f_teid.choose_id = OGS_PFCP_DEFAULT_CHOOSE_ID;
+        ul_pdr->f_teid_len = 2;
     } else {
         resource = ogs_pfcp_gtpu_resource_find(
                 &sess->pfcp_node->gtpu_resource_list,

@@ -484,19 +484,8 @@ bool udr_nudr_dr_handle_subscription_provisioned(
             }
 
             if (!pdn->ambr.uplink && !pdn->ambr.downlink) {
-                if (!subscription_data.ambr.uplink &&
-                        !subscription_data.ambr.downlink) {
-                    ogs_error("No Session-AMBR");
-                    ogs_error("No UE-AMBR");
-                    continue;
-                }
-
-                pdn->ambr.uplink = subscription_data.ambr.uplink;
-                pdn->ambr.downlink = subscription_data.ambr.downlink;
-                ogs_warn("No Session-AMBR : Set UE-AMBR to Session-AMBR "
-                        "[DL-%lld:UL-%lld]",
-                        (long long)pdn->ambr.downlink,
-                        (long long)pdn->ambr.uplink);
+                ogs_error("No Session-AMBR");
+                continue;
             }
 
             dnnConfiguration = ogs_calloc(1, sizeof(*dnnConfiguration));

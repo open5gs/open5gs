@@ -291,11 +291,14 @@ void smf_5gc_pfcp_send_session_modification_request(
     h.type = OGS_PFCP_SESSION_MODIFICATION_REQUEST_TYPE;
     h.seid = sess->upf_n4_seid;
 
-    n4buf = smf_5gc_n4_build_session_modification_request(h.type, sess, flags);
+    n4buf = smf_n4_build_session_modification_request(h.type, sess, flags);
     ogs_expect_or_return(n4buf);
 
     xact = ogs_pfcp_xact_local_create(
-            sess->pfcp_node, &h, n4buf, sess_5gc_timeout, sess);
+            sess->pfcp_node, &h, n4buf, sess_5gc_timeout,
+            /* We'll use xact->data to find out
+             * Modification Type(Session or QosFlow) */
+            NULL);
     ogs_expect_or_return(xact);
     xact->assoc_stream = stream;
     xact->modify_flags = flags | OGS_PFCP_MODIFY_SESSION;
@@ -317,8 +320,6 @@ void smf_5gc_pfcp_send_qos_flow_modification_request(smf_bearer_t *qos_flow,
     sess = qos_flow->sess;
     ogs_assert(sess);
 
-    ogs_assert(stream);
-
     memset(&h, 0, sizeof(ogs_pfcp_header_t));
     h.type = OGS_PFCP_SESSION_MODIFICATION_REQUEST_TYPE;
     h.seid = sess->upf_n4_seid;
@@ -327,7 +328,10 @@ void smf_5gc_pfcp_send_qos_flow_modification_request(smf_bearer_t *qos_flow,
     ogs_expect_or_return(n4buf);
 
     xact = ogs_pfcp_xact_local_create(
-            sess->pfcp_node, &h, n4buf, sess_5gc_timeout, qos_flow);
+            sess->pfcp_node, &h, n4buf, sess_5gc_timeout,
+            /* We'll use xact->data to find out
+             * Modification Type(Session or QosFlow) */
+            qos_flow);
     ogs_expect_or_return(xact);
 
     xact->assoc_stream = stream;

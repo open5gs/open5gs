@@ -30,6 +30,9 @@ ogs_sbi_request_t *smf_npcf_smpolicycontrol_build_create(
     ogs_sbi_server_t *server = NULL;
 
     OpenAPI_sm_policy_context_data_t SmPolicyContextData;
+    OpenAPI_ambr_t SubsSessAmbr;
+    OpenAPI_subscribed_default_qos_t SubsDefQos;
+    OpenAPI_arp_t Arp;
     OpenAPI_snssai_t sNssai;
 
     ogs_assert(sess);
@@ -54,11 +57,6 @@ ogs_sbi_request_t *smf_npcf_smpolicycontrol_build_create(
     ogs_assert(sess->dnn);
     SmPolicyContextData.dnn = sess->dnn;
 
-    memset(&sNssai, 0, sizeof(sNssai));
-    sNssai.sst = sess->s_nssai.sst;
-    sNssai.sd = ogs_s_nssai_sd_to_string(sess->s_nssai.sd);
-    SmPolicyContextData.slice_info = &sNssai;
-
     server = ogs_list_first(&ogs_sbi_self()->server_list);
     ogs_assert(server);
 
@@ -71,6 +69,52 @@ ogs_sbi_request_t *smf_npcf_smpolicycontrol_build_create(
     SmPolicyContextData.notification_uri = ogs_sbi_server_uri(server, &header);
     ogs_assert(SmPolicyContextData.notification_uri);
 
+    memset(&SubsSessAmbr, 0, sizeof(SubsSessAmbr));
+    if (OGS_SBI_FEATURES_IS_SET(sess->smpolicycontrol_features,
+                OGS_SBI_NPCF_SMPOLICYCONTROL_DN_AUTHORIZATION)) {
+        if (sess->pdn.ambr.uplink) {
+            SubsSessAmbr.uplink = ogs_sbi_bitrate_to_string(
+                sess->pdn.ambr.uplink, OGS_SBI_BITRATE_KBPS);
+        }
+        if (sess->pdn.ambr.downlink) {
+            SubsSessAmbr.downlink = ogs_sbi_bitrate_to_string(
+                sess->pdn.ambr.downlink, OGS_SBI_BITRATE_KBPS);
+        }
+        if (SubsSessAmbr.downlink || SubsSessAmbr.uplink) {
+            SmPolicyContextData.subs_sess_ambr = &SubsSessAmbr;
+        }
+    }
+
+    memset(&Arp, 0, sizeof(Arp));
+    if (sess->pdn.qos.arp.pre_emption_capability ==
+            OGS_PDN_PRE_EMPTION_CAPABILITY_ENABLED)
+        Arp.preempt_cap = OpenAPI_preemption_capability_MAY_PREEMPT;
+    else
+        Arp.preempt_cap = OpenAPI_preemption_capability_NOT_PREEMPT;
+    if (sess->pdn.qos.arp.pre_emption_vulnerability ==
+            OGS_PDN_PRE_EMPTION_CAPABILITY_ENABLED)
+        Arp.preempt_vuln = OpenAPI_preemption_vulnerability_PREEMPTABLE;
+    else
+        Arp.preempt_vuln = OpenAPI_preemption_vulnerability_NOT_PREEMPTABLE;
+    Arp.priority_level = sess->pdn.qos.arp.priority_level;
+
+    memset(&SubsDefQos, 0, sizeof(SubsDefQos));
+    SubsDefQos.arp = &Arp;
+    SubsDefQos._5qi = sess->pdn.qos.qci;
+    SubsDefQos.priority_level = sess->pdn.qos.arp.priority_level;
+
+    SmPolicyContextData.subs_def_qos = &SubsDefQos;
+
+    if (sess->smpolicycontrol_features) {
+        SmPolicyContextData.supp_feat =
+            ogs_uint64_to_string(sess->smpolicycontrol_features);
+    }
+
+    memset(&sNssai, 0, sizeof(sNssai));
+    sNssai.sst = sess->s_nssai.sst;
+    sNssai.sd = ogs_s_nssai_sd_to_string(sess->s_nssai.sd);
+    SmPolicyContextData.slice_info = &sNssai;
+
     message.SmPolicyContextData = &SmPolicyContextData;
 
     request = ogs_sbi_build_request(&message);
@@ -82,6 +126,12 @@ ogs_sbi_request_t *smf_npcf_smpolicycontrol_build_create(
 
     if (sNssai.sd)
         ogs_free(sNssai.sd);
+
+    if (SubsSessAmbr.downlink) ogs_free(SubsSessAmbr.downlink);
+    if (SubsSessAmbr.uplink) ogs_free(SubsSessAmbr.uplink);
+
+    if (SmPolicyContextData.supp_feat)
+        ogs_free(SmPolicyContextData.supp_feat);
 
     return request;
 }

@@ -8,7 +8,7 @@ OpenAPI_eth_flow_description_t *OpenAPI_eth_flow_description_create(
     char *dest_mac_addr,
     char *eth_type,
     char *f_desc,
-    OpenAPI_flow_direction_t *f_dir,
+    OpenAPI_flow_direction_e f_dir,
     char *source_mac_addr,
     OpenAPI_list_t *vlan_tags,
     char *src_mac_addr_end,
@@ -40,7 +40,6 @@ void OpenAPI_eth_flow_description_free(OpenAPI_eth_flow_description_t *eth_flow_
     ogs_free(eth_flow_description->dest_mac_addr);
     ogs_free(eth_flow_description->eth_type);
     ogs_free(eth_flow_description->f_desc);
-    OpenAPI_flow_direction_free(eth_flow_description->f_dir);
     ogs_free(eth_flow_description->source_mac_addr);
     OpenAPI_list_for_each(eth_flow_description->vlan_tags, node) {
         ogs_free(node->data);
@@ -85,13 +84,7 @@ cJSON *OpenAPI_eth_flow_description_convertToJSON(OpenAPI_eth_flow_description_t
     }
 
     if (eth_flow_description->f_dir) {
-        cJSON *f_dir_local_JSON = OpenAPI_flow_direction_convertToJSON(eth_flow_description->f_dir);
-        if (f_dir_local_JSON == NULL) {
-            ogs_error("OpenAPI_eth_flow_description_convertToJSON() failed [f_dir]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "fDir", f_dir_local_JSON);
-        if (item->child == NULL) {
+        if (cJSON_AddStringToObject(item, "fDir", OpenAPI_flow_direction_ToString(eth_flow_description->f_dir)) == NULL) {
             ogs_error("OpenAPI_eth_flow_description_convertToJSON() failed [f_dir]");
             goto end;
         }
@@ -173,9 +166,13 @@ OpenAPI_eth_flow_description_t *OpenAPI_eth_flow_description_parseFromJSON(cJSON
 
     cJSON *f_dir = cJSON_GetObjectItemCaseSensitive(eth_flow_descriptionJSON, "fDir");
 
-    OpenAPI_flow_direction_t *f_dir_local_nonprim = NULL;
+    OpenAPI_flow_direction_e f_dirVariable;
     if (f_dir) {
-        f_dir_local_nonprim = OpenAPI_flow_direction_parseFromJSON(f_dir);
+        if (!cJSON_IsString(f_dir)) {
+            ogs_error("OpenAPI_eth_flow_description_parseFromJSON() failed [f_dir]");
+            goto end;
+        }
+        f_dirVariable = OpenAPI_flow_direction_FromString(f_dir->valuestring);
     }
 
     cJSON *source_mac_addr = cJSON_GetObjectItemCaseSensitive(eth_flow_descriptionJSON, "sourceMacAddr");
@@ -229,7 +226,7 @@ OpenAPI_eth_flow_description_t *OpenAPI_eth_flow_description_parseFromJSON(cJSON
         dest_mac_addr ? ogs_strdup(dest_mac_addr->valuestring) : NULL,
         ogs_strdup(eth_type->valuestring),
         f_desc ? ogs_strdup(f_desc->valuestring) : NULL,
-        f_dir ? f_dir_local_nonprim : NULL,
+        f_dir ? f_dirVariable : 0,
         source_mac_addr ? ogs_strdup(source_mac_addr->valuestring) : NULL,
         vlan_tags ? vlan_tagsList : NULL,
         src_mac_addr_end ? ogs_strdup(src_mac_addr_end->valuestring) : NULL,

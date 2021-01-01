@@ -36,12 +36,12 @@ OpenAPI_sm_policy_context_data_t *OpenAPI_sm_policy_context_data_create(
     int ref_qos_indication,
     OpenAPI_trace_data_t *trace_req,
     OpenAPI_snssai_t *slice_info,
-    OpenAPI_qos_flow_usage_t *qos_flow_usage,
+    OpenAPI_qos_flow_usage_e qos_flow_usage,
     OpenAPI_serving_nf_identity_t *serv_nf_id,
     char *supp_feat,
     char *smf_id,
     char *recovery_time,
-    OpenAPI_ma_pdu_indication_t *ma_pdu_ind,
+    OpenAPI_ma_pdu_indication_e ma_pdu_ind,
     OpenAPI_atsss_capability_t *atsss_capab
     )
 {
@@ -121,12 +121,10 @@ void OpenAPI_sm_policy_context_data_free(OpenAPI_sm_policy_context_data_t *sm_po
     OpenAPI_subscribed_default_qos_free(sm_policy_context_data->subs_def_qos);
     OpenAPI_trace_data_free(sm_policy_context_data->trace_req);
     OpenAPI_snssai_free(sm_policy_context_data->slice_info);
-    OpenAPI_qos_flow_usage_free(sm_policy_context_data->qos_flow_usage);
     OpenAPI_serving_nf_identity_free(sm_policy_context_data->serv_nf_id);
     ogs_free(sm_policy_context_data->supp_feat);
     ogs_free(sm_policy_context_data->smf_id);
     ogs_free(sm_policy_context_data->recovery_time);
-    OpenAPI_ma_pdu_indication_free(sm_policy_context_data->ma_pdu_ind);
     OpenAPI_atsss_capability_free(sm_policy_context_data->atsss_capab);
     ogs_free(sm_policy_context_data);
 }
@@ -434,13 +432,7 @@ cJSON *OpenAPI_sm_policy_context_data_convertToJSON(OpenAPI_sm_policy_context_da
     }
 
     if (sm_policy_context_data->qos_flow_usage) {
-        cJSON *qos_flow_usage_local_JSON = OpenAPI_qos_flow_usage_convertToJSON(sm_policy_context_data->qos_flow_usage);
-        if (qos_flow_usage_local_JSON == NULL) {
-            ogs_error("OpenAPI_sm_policy_context_data_convertToJSON() failed [qos_flow_usage]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "qosFlowUsage", qos_flow_usage_local_JSON);
-        if (item->child == NULL) {
+        if (cJSON_AddStringToObject(item, "qosFlowUsage", OpenAPI_qos_flow_usage_ToString(sm_policy_context_data->qos_flow_usage)) == NULL) {
             ogs_error("OpenAPI_sm_policy_context_data_convertToJSON() failed [qos_flow_usage]");
             goto end;
         }
@@ -481,13 +473,7 @@ cJSON *OpenAPI_sm_policy_context_data_convertToJSON(OpenAPI_sm_policy_context_da
     }
 
     if (sm_policy_context_data->ma_pdu_ind) {
-        cJSON *ma_pdu_ind_local_JSON = OpenAPI_ma_pdu_indication_convertToJSON(sm_policy_context_data->ma_pdu_ind);
-        if (ma_pdu_ind_local_JSON == NULL) {
-            ogs_error("OpenAPI_sm_policy_context_data_convertToJSON() failed [ma_pdu_ind]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "maPduInd", ma_pdu_ind_local_JSON);
-        if (item->child == NULL) {
+        if (cJSON_AddStringToObject(item, "maPduInd", OpenAPI_ma_pdu_indication_ToString(sm_policy_context_data->ma_pdu_ind)) == NULL) {
             ogs_error("OpenAPI_sm_policy_context_data_convertToJSON() failed [ma_pdu_ind]");
             goto end;
         }
@@ -813,9 +799,13 @@ OpenAPI_sm_policy_context_data_t *OpenAPI_sm_policy_context_data_parseFromJSON(c
 
     cJSON *qos_flow_usage = cJSON_GetObjectItemCaseSensitive(sm_policy_context_dataJSON, "qosFlowUsage");
 
-    OpenAPI_qos_flow_usage_t *qos_flow_usage_local_nonprim = NULL;
+    OpenAPI_qos_flow_usage_e qos_flow_usageVariable;
     if (qos_flow_usage) {
-        qos_flow_usage_local_nonprim = OpenAPI_qos_flow_usage_parseFromJSON(qos_flow_usage);
+        if (!cJSON_IsString(qos_flow_usage)) {
+            ogs_error("OpenAPI_sm_policy_context_data_parseFromJSON() failed [qos_flow_usage]");
+            goto end;
+        }
+        qos_flow_usageVariable = OpenAPI_qos_flow_usage_FromString(qos_flow_usage->valuestring);
     }
 
     cJSON *serv_nf_id = cJSON_GetObjectItemCaseSensitive(sm_policy_context_dataJSON, "servNfId");
@@ -854,9 +844,13 @@ OpenAPI_sm_policy_context_data_t *OpenAPI_sm_policy_context_data_parseFromJSON(c
 
     cJSON *ma_pdu_ind = cJSON_GetObjectItemCaseSensitive(sm_policy_context_dataJSON, "maPduInd");
 
-    OpenAPI_ma_pdu_indication_t *ma_pdu_ind_local_nonprim = NULL;
+    OpenAPI_ma_pdu_indication_e ma_pdu_indVariable;
     if (ma_pdu_ind) {
-        ma_pdu_ind_local_nonprim = OpenAPI_ma_pdu_indication_parseFromJSON(ma_pdu_ind);
+        if (!cJSON_IsString(ma_pdu_ind)) {
+            ogs_error("OpenAPI_sm_policy_context_data_parseFromJSON() failed [ma_pdu_ind]");
+            goto end;
+        }
+        ma_pdu_indVariable = OpenAPI_ma_pdu_indication_FromString(ma_pdu_ind->valuestring);
     }
 
     cJSON *atsss_capab = cJSON_GetObjectItemCaseSensitive(sm_policy_context_dataJSON, "atsssCapab");
@@ -898,12 +892,12 @@ OpenAPI_sm_policy_context_data_t *OpenAPI_sm_policy_context_data_parseFromJSON(c
         ref_qos_indication ? ref_qos_indication->valueint : 0,
         trace_req ? trace_req_local_nonprim : NULL,
         slice_info_local_nonprim,
-        qos_flow_usage ? qos_flow_usage_local_nonprim : NULL,
+        qos_flow_usage ? qos_flow_usageVariable : 0,
         serv_nf_id ? serv_nf_id_local_nonprim : NULL,
         supp_feat ? ogs_strdup(supp_feat->valuestring) : NULL,
         smf_id ? ogs_strdup(smf_id->valuestring) : NULL,
         recovery_time ? ogs_strdup(recovery_time->valuestring) : NULL,
-        ma_pdu_ind ? ma_pdu_ind_local_nonprim : NULL,
+        ma_pdu_ind ? ma_pdu_indVariable : 0,
         atsss_capab ? atsss_capab_local_nonprim : NULL
         );
 

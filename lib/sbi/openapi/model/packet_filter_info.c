@@ -10,7 +10,7 @@ OpenAPI_packet_filter_info_t *OpenAPI_packet_filter_info_create(
     char *tos_traffic_class,
     char *spi,
     char *flow_label,
-    OpenAPI_flow_direction_t *flow_direction
+    OpenAPI_flow_direction_e flow_direction
     )
 {
     OpenAPI_packet_filter_info_t *packet_filter_info_local_var = OpenAPI_malloc(sizeof(OpenAPI_packet_filter_info_t));
@@ -38,7 +38,6 @@ void OpenAPI_packet_filter_info_free(OpenAPI_packet_filter_info_t *packet_filter
     ogs_free(packet_filter_info->tos_traffic_class);
     ogs_free(packet_filter_info->spi);
     ogs_free(packet_filter_info->flow_label);
-    OpenAPI_flow_direction_free(packet_filter_info->flow_direction);
     ogs_free(packet_filter_info);
 }
 
@@ -88,13 +87,7 @@ cJSON *OpenAPI_packet_filter_info_convertToJSON(OpenAPI_packet_filter_info_t *pa
     }
 
     if (packet_filter_info->flow_direction) {
-        cJSON *flow_direction_local_JSON = OpenAPI_flow_direction_convertToJSON(packet_filter_info->flow_direction);
-        if (flow_direction_local_JSON == NULL) {
-            ogs_error("OpenAPI_packet_filter_info_convertToJSON() failed [flow_direction]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "flowDirection", flow_direction_local_JSON);
-        if (item->child == NULL) {
+        if (cJSON_AddStringToObject(item, "flowDirection", OpenAPI_flow_direction_ToString(packet_filter_info->flow_direction)) == NULL) {
             ogs_error("OpenAPI_packet_filter_info_convertToJSON() failed [flow_direction]");
             goto end;
         }
@@ -154,9 +147,13 @@ OpenAPI_packet_filter_info_t *OpenAPI_packet_filter_info_parseFromJSON(cJSON *pa
 
     cJSON *flow_direction = cJSON_GetObjectItemCaseSensitive(packet_filter_infoJSON, "flowDirection");
 
-    OpenAPI_flow_direction_t *flow_direction_local_nonprim = NULL;
+    OpenAPI_flow_direction_e flow_directionVariable;
     if (flow_direction) {
-        flow_direction_local_nonprim = OpenAPI_flow_direction_parseFromJSON(flow_direction);
+        if (!cJSON_IsString(flow_direction)) {
+            ogs_error("OpenAPI_packet_filter_info_parseFromJSON() failed [flow_direction]");
+            goto end;
+        }
+        flow_directionVariable = OpenAPI_flow_direction_FromString(flow_direction->valuestring);
     }
 
     packet_filter_info_local_var = OpenAPI_packet_filter_info_create (
@@ -165,7 +162,7 @@ OpenAPI_packet_filter_info_t *OpenAPI_packet_filter_info_parseFromJSON(cJSON *pa
         tos_traffic_class ? ogs_strdup(tos_traffic_class->valuestring) : NULL,
         spi ? ogs_strdup(spi->valuestring) : NULL,
         flow_label ? ogs_strdup(flow_label->valuestring) : NULL,
-        flow_direction ? flow_direction_local_nonprim : NULL
+        flow_direction ? flow_directionVariable : 0
         );
 
     return packet_filter_info_local_var;

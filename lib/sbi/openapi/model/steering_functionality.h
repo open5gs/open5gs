@@ -1,7 +1,7 @@
 /*
  * steering_functionality.h
  *
- * Possible values are   - MPTCP: Indicates that PCF authorizes the MPTCP functionality to support traffic steering, switching and splitting.   - ATSSS_LL: Indicates that PCF authorizes the ATSSS-LL functionality to support traffic steering, switching and splitting.
+ *
  */
 
 #ifndef _OpenAPI_steering_functionality_H_
@@ -17,16 +17,11 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_steering_functionality_s OpenAPI_steering_functionality_t;
-typedef struct OpenAPI_steering_functionality_s {
-} OpenAPI_steering_functionality_t;
+typedef enum { OpenAPI_steering_functionality_NULL = 0, OpenAPI_steering_functionality_MPTCP, OpenAPI_steering_functionality_ATSSS_LL } OpenAPI_steering_functionality_e;
 
-OpenAPI_steering_functionality_t *OpenAPI_steering_functionality_create(
-    );
-void OpenAPI_steering_functionality_free(OpenAPI_steering_functionality_t *steering_functionality);
-OpenAPI_steering_functionality_t *OpenAPI_steering_functionality_parseFromJSON(cJSON *steering_functionalityJSON);
-cJSON *OpenAPI_steering_functionality_convertToJSON(OpenAPI_steering_functionality_t *steering_functionality);
-OpenAPI_steering_functionality_t *OpenAPI_steering_functionality_copy(OpenAPI_steering_functionality_t *dst, OpenAPI_steering_functionality_t *src);
+char* OpenAPI_steering_functionality_ToString(OpenAPI_steering_functionality_e steering_functionality);
+
+OpenAPI_steering_functionality_e OpenAPI_steering_functionality_FromString(char* steering_functionality);
 
 #ifdef __cplusplus
 }

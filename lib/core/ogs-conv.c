@@ -23,6 +23,10 @@
 #include <ctype.h>
 #endif
 
+#if HAVE_LIMITS_H
+#include <limits.h>
+#endif
+
 #include "ogs-core.h"
 
 void *ogs_ascii_to_hex(char *in, int in_len, void *out, int out_len)
@@ -156,24 +160,43 @@ char ogs_from_hex(char ch)
     return isdigit(ch) ? ch - '0' : tolower(ch) - 'a' + 10;
 }
 
-char *ogs_uint24_to_string(ogs_uint24_t x)
+char *ogs_uint24_to_0string(ogs_uint24_t x)
 {
     return ogs_msprintf("%06x", x.v);
 }
 
-char *ogs_uint28_to_string(uint32_t x)
+char *ogs_uint28_to_0string(uint32_t x)
 {
     return ogs_msprintf("%07x", x);
 }
 
-char *ogs_uint32_to_string(uint32_t x)
+char *ogs_uint32_to_0string(uint32_t x)
 {
     return ogs_msprintf("%08x", x);
 }
 
-char *ogs_uint36_to_string(uint64_t x)
+char *ogs_uint36_to_0string(uint64_t x)
 {
     return ogs_msprintf("%09llx", (long long)x);
+}
+
+char *ogs_uint64_to_0string(uint64_t x)
+{
+    return ogs_msprintf("%016llx", (long long)x);
+}
+
+char *ogs_uint64_to_string(uint64_t x)
+{
+    char *str, *p;
+
+    str = ogs_uint64_to_0string(x);
+    ogs_assert(str);
+
+    p = ogs_left_trimcharacter(str, '0');
+    ogs_assert(p);
+
+    ogs_free(str);
+    return ogs_strdup(p);
 }
 
 ogs_uint24_t ogs_uint24_from_string(char *str)
@@ -181,39 +204,29 @@ ogs_uint24_t ogs_uint24_from_string(char *str)
     ogs_uint24_t x;
 
     ogs_assert(str);
-    ogs_ascii_to_hex(str, strlen(str), &x, 3);
-    return ogs_be24toh(x);
+
+    x.v = ogs_uint64_from_string(str);
+    return x;
 }
 
-uint32_t ogs_uint28_from_string(char *str)
-{
-    uint32_t x;
-
-    ogs_assert(str);
-
-    x = 0;
-    ogs_ascii_to_hex(str, strlen(str), &x, 4);
-
-    return be32toh(x) >> 4;
-}
-
-uint32_t ogs_uint32_from_string(char *str)
-{
-    uint32_t x;
-
-    ogs_assert(str);
-    ogs_ascii_to_hex(str, strlen(str), &x, 4);
-    return be32toh(x);
-}
-
-uint64_t ogs_uint36_from_string(char *str)
+uint64_t ogs_uint64_from_string(char *str)
 {
     uint64_t x;
 
     ogs_assert(str);
 
-    x = 0;
-    ogs_ascii_to_hex(str, strlen(str), &x, 5);
+    if (strlen(str) == 0)
+        return 0;
 
-    return be64toh(x) >> 28;
+    errno = 0;
+    x = strtoll(str, NULL, 16);
+
+    if ((errno == ERANGE && (x == LONG_MAX || x == LONG_MIN)) ||
+            (errno != 0 && x == 0)) {
+        ogs_log_message(OGS_LOG_FATAL, ogs_errno, "strtoll()) failed [%lld]",
+                (long long)x);
+        ogs_assert_if_reached();
+    }
+
+    return x;
 }
