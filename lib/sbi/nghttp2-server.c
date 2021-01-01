@@ -899,6 +899,8 @@ static int on_data_chunk_recv(nghttp2_session *session, uint8_t flags,
     ogs_sbi_stream_t *stream = NULL;
     ogs_sbi_request_t *request = NULL;
 
+    size_t offset = 0;
+
     ogs_assert(session);
 
     stream = nghttp2_session_get_stream_user_data(session, stream_id);
@@ -912,19 +914,26 @@ static int on_data_chunk_recv(nghttp2_session *session, uint8_t flags,
 
     ogs_assert(data);
     ogs_assert(len);
-    if (request->http.content) {
-        ogs_fatal("Content-Length [%d]", (int)request->http.content_length);
-        ogs_log_hexdump(OGS_LOG_FATAL,
-                (uint8_t *)request->http.content, request->http.content_length);
-        ogs_fatal("Data Size [%d]", (int)len);
-        ogs_log_hexdump(OGS_LOG_FATAL, data, len);
-        ogs_assert_if_reached();
+
+    if (request->http.content == NULL) {
+        request->http.content_length = len;
+        request->http.content =
+            (char*)ogs_malloc(request->http.content_length + 1);
+        ogs_assert(request->http.content);
+    } else {
+        offset = request->http.content_length;
+        if ((request->http.content_length + len) > OGS_HUGE_LEN) {
+            ogs_error("Overflow : Content-Length[%d], len[%d]",
+                        (int)request->http.content_length, (int)len);
+            ogs_assert_if_reached();
+        }
+        request->http.content_length += len;
+        request->http.content = (char *)ogs_realloc(
+                request->http.content, request->http.content_length + 1);
+        ogs_assert(request->http.content);
     }
 
-    request->http.content_length = len;
-    request->http.content = (char*)ogs_malloc(request->http.content_length + 1);
-    ogs_assert(request->http.content);
-    memcpy(request->http.content, data, len);
+    memcpy(request->http.content + offset, data, len);
     request->http.content[request->http.content_length] = '\0';
 
     ogs_debug("RECEIVED");
