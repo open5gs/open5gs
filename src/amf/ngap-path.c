@@ -57,6 +57,9 @@ int ngap_send_to_gnb(amf_gnb_t *gnb, ogs_pkbuf_t *pkbuf, uint16_t stream_no)
     ogs_debug("    IP[%s] RAN_ID[%d]",
             OGS_ADDR(gnb->sctp.addr, buf), gnb->gnb_id);
 
+    ogs_sctp_ppid_in_pkbuf(pkbuf) = OGS_SCTP_NGAP_PPID;
+    ogs_sctp_stream_no_in_pkbuf(pkbuf) = stream_no;
+
     if (gnb->sctp.type == SOCK_STREAM) {
         ogs_sctp_write_to_buffer(&gnb->sctp, pkbuf);
         return OGS_OK;
