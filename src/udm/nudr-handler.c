@@ -29,7 +29,7 @@ bool udm_nudr_dr_handle_subscription_authentication(
     ogs_sbi_header_t header;
     ogs_sbi_response_t *response = NULL;
 
-#if 1
+#if 0
 #if 0
     const char *tmp[1] = { "de8ca9df474091fe4e9263c5daa907e9" };
     /* PFCP test */
@@ -190,7 +190,7 @@ bool udm_nudr_dr_handle_subscription_authentication(
             AuthenticationInfoResult.auth_type = udm_ue->auth_type;
 
             ogs_random(udm_ue->rand, OGS_RAND_LEN);
-#if 1
+#if 0
             OGS_HEX(tmp[step], strlen(tmp[step]), udm_ue->rand);
 #if 0
             if (step == 0) step = 1; /* For supporting authentication failure */
