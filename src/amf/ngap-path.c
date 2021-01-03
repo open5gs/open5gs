@@ -387,20 +387,28 @@ void ngap_send_amf_configuration_transfer(
     ogs_expect(rv == OGS_OK);
 }
 
-void ngap_send_path_switch_ack(amf_ue_t *amf_ue)
+#endif
+
+void ngap_send_path_switch_ack(amf_sess_t *sess, ogs_pkbuf_t *n2smbuf)
 {
     int rv;
+
+    amf_ue_t *amf_ue = NULL;
     ogs_pkbuf_t *ngapbuf = NULL;
 
+    ogs_assert(sess);
+    amf_ue = sess->amf_ue;
     ogs_assert(amf_ue);
+    ogs_assert(n2smbuf);
 
-    ngapbuf = ngap_build_path_switch_ack(amf_ue);
+    ngapbuf = ngap_build_path_switch_ack(amf_ue, n2smbuf);
     ogs_expect_or_return(ngapbuf);
 
     rv = nas_5gs_send_to_gnb(amf_ue, ngapbuf);
     ogs_expect(rv == OGS_OK);
 }
 
+#if 0
 void ngap_send_handover_command(ran_ue_t *source_ue)
 {
     int rv;

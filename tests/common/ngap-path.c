@@ -79,6 +79,8 @@ void testngap_recv(test_ue_t *test_ue, ogs_pkbuf_t *pkbuf)
         case NGAP_ProcedureCode_id_NGSetup:
             testngap_handle_ng_setup_response(test_ue, pdu);
             break;
+        case NGAP_ProcedureCode_id_PathSwitchRequest:
+            break;
         default:
             ogs_error("Not implemented(choice:%d, proc:%d)",
                     pdu->present, (int)successfulOutcome->procedureCode);

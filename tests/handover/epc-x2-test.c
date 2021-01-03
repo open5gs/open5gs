@@ -155,7 +155,7 @@ static void test1_func(abts_case *tc, void *data)
     s1ap2 = tests1ap_client(AF_INET);
     ABTS_PTR_NOTNULL(tc, s1ap2);
 
-    /* eNB connects to SGW */
+    /* Two eNB connects to SGW */
     gtpu1 = test_gtpu_server(1, AF_INET);
     ABTS_PTR_NOTNULL(tc, gtpu1);
 
@@ -368,6 +368,7 @@ static void test1_func(abts_case *tc, void *data)
 
     /* Send Path Switch Request */
     test_ue->e_cgi.cell_id = 0x461530;
+    test_ue->enb_ue_s1ap_id++;
     ogs_list_for_each(&sess->bearer_list, bearer) {
         bearer->enb_s1u_addr = test_self()->gnb2_addr;
         bearer->enb_s1u_addr6 = test_self()->gnb2_addr6;
@@ -375,11 +376,11 @@ static void test1_func(abts_case *tc, void *data)
 
     sendbuf = test_s1ap_build_path_switch_request(test_ue);
     ABTS_PTR_NOTNULL(tc, sendbuf);
-    rv = testenb_s1ap_send(s1ap1, sendbuf);
+    rv = testenb_s1ap_send(s1ap2, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* Receive Path Switch Ack */
-    recvbuf = testenb_s1ap_read(s1ap1);
+    recvbuf = testenb_s1ap_read(s1ap2);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     tests1ap_recv(test_ue, recvbuf);
 
@@ -433,6 +434,16 @@ static void test1_func(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, recvbuf);
     tests1ap_recv(test_ue, recvbuf);
 
+    /* Receive End Mark */
+    recvbuf = test_gtpu_read(gtpu2);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    ogs_pkbuf_free(recvbuf);
+
+    /* Receive End Mark */
+    recvbuf = test_gtpu_read(gtpu2);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    ogs_pkbuf_free(recvbuf);
+
     /* Send GTP-U ICMP Packet */
     bearer = test_bearer_find_by_ue_ebi(test_ue, 5);
     ogs_assert(bearer);
@@ -464,9 +475,9 @@ static void test1_func(abts_case *tc, void *data)
 
     mongoc_collection_destroy(collection);
 
-    /* eNB disonncect from SGW */
-    testgnb_gtpu_close(gtpu2);
+    /* Two eNB disonncect from SGW */
     testgnb_gtpu_close(gtpu1);
+    testgnb_gtpu_close(gtpu2);
 
     /* Two eNB disonncect from MME */
     testenb_s1ap_close(s1ap1);

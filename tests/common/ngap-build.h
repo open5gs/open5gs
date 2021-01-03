@@ -49,6 +49,8 @@ ogs_pkbuf_t *testngap_build_pdu_session_resource_modify_response(
 ogs_pkbuf_t *testngap_build_pdu_session_resource_release_response(
         test_sess_t *sess);
 
+ogs_pkbuf_t *testngap_build_path_switch_request(test_sess_t *sess);
+
 #ifdef __cplusplus
 }
 #endif

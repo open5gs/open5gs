@@ -465,9 +465,13 @@ void ngap_handle_initial_ue_message(amf_gnb_t *gnb, ogs_ngap_message_t *message)
         ogs_ngap_ASN_to_5gs_tai(
                 &userLocationInformationNR->tAI, &ran_ue->saved.tai);
 
-    } else
+    } else {
         ogs_error("Not implemented UserLocationInformation[%d]",
                 UserLocationInformation->present);
+        ngap_send_error_indication(gnb, &ran_ue->ran_ue_ngap_id, NULL,
+                NGAP_Cause_PR_protocol, NGAP_CauseProtocol_unspecified);
+        return;
+    }
 
     ogs_debug("    RAN_UE_NGAP_ID[%d] AMF_UE_NGAP_ID[%lld] "
             "TAC[%d] CellID[0x%llx]",
@@ -1736,6 +1740,8 @@ void ngap_handle_path_switch_request(
     NGAP_EUTRAencryptionAlgorithms_t *eUTRAencryptionAlgorithms = NULL;
     NGAP_EUTRAintegrityProtectionAlgorithms_t
         *eUTRAintegrityProtectionAlgorithms = NULL;
+    uint16_t nea = 0, nia = 0, eps_ea = 0, eps_ia = 0;
+    uint8_t nea0 = 0, nia0 = 0, eps_ea0 = 0, eps_ia0 = 0;
 
     NGAP_PDUSessionResourceToBeSwitchedDLItem_t *PDUSessionItem = NULL;
     OCTET_STRING_t *transfer = NULL;
@@ -1827,6 +1833,20 @@ void ngap_handle_path_switch_request(
         return;
     }
 
+    if (!UESecurityCapabilities) {
+        ogs_error("No UESecurityCapabilities");
+        ngap_send_error_indication(gnb, &ran_ue->ran_ue_ngap_id, NULL,
+                NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
+        return;
+    }
+
+    if (!PDUSessionResourceToBeSwitchedDLList) {
+        ogs_error("No PDUSessionResourceToBeSwitchedDLList");
+        ngap_send_error_indication(gnb, &ran_ue->ran_ue_ngap_id, NULL,
+                NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
+        return;
+    }
+
     if (UserLocationInformation->present ==
             NGAP_UserLocationInformation_PR_userLocationInformationNR) {
         NGAP_UserLocationInformationNR_t *userLocationInformationNR =
@@ -1837,19 +1857,38 @@ void ngap_handle_path_switch_request(
         ogs_ngap_ASN_to_5gs_tai(
                 &userLocationInformationNR->tAI, &ran_ue->saved.tai);
 
-    } else
+    } else {
         ogs_error("Not implemented UserLocationInformation[%d]",
                 UserLocationInformation->present);
-
-    if (!UESecurityCapabilities) {
-        ogs_error("No UESecurityCapabilities");
         ngap_send_error_indication(gnb, &ran_ue->ran_ue_ngap_id, NULL,
-                NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
+                NGAP_Cause_PR_protocol, NGAP_CauseProtocol_unspecified);
         return;
     }
 
-    nRencryptionAlgorithms =
-        &UESecurityCapabilities->nRencryptionAlgorithms;
+    if (SECURITY_CONTEXT_IS_VALID(amf_ue)) {
+        amf_ue->nhcc++;
+        ogs_kdf_nh_gnb(amf_ue->kamf, amf_ue->nh, amf_ue->nh);
+    } else {
+        ogs_error("No Security Context");
+        ngap_send_error_indication(gnb, &ran_ue->ran_ue_ngap_id, NULL,
+                NGAP_Cause_PR_nas, NGAP_CauseNas_authentication_failure);
+        return;
+    }
+
+    ran_ue->ran_ue_ngap_id = *RAN_UE_NGAP_ID;
+
+    ogs_debug("    RAN_UE_NGAP_ID[%d] AMF_UE_NGAP_ID[%lld] ",
+        ran_ue->ran_ue_ngap_id, (long long)ran_ue->amf_ue_ngap_id);
+    ogs_debug("    [OLD] TAC[%d] CellID[0x%llx]",
+        amf_ue->tai.tac.v, (long long)amf_ue->nr_cgi.cell_id);
+    ogs_debug("    [NEW] TAC[%d] CellID[0x%llx]",
+        ran_ue->saved.tai.tac.v, (long long)ran_ue->saved.nr_cgi.cell_id);
+
+    /* Copy TAI and ECGI from ran_ue */
+    memcpy(&amf_ue->tai, &ran_ue->saved.tai, sizeof(ogs_5gs_tai_t));
+    memcpy(&amf_ue->nr_cgi, &ran_ue->saved.nr_cgi, sizeof(ogs_nr_cgi_t));
+
+    nRencryptionAlgorithms = &UESecurityCapabilities->nRencryptionAlgorithms;
     nRintegrityProtectionAlgorithms =
         &UESecurityCapabilities->nRintegrityProtectionAlgorithms;
     eUTRAencryptionAlgorithms =
@@ -1857,19 +1896,29 @@ void ngap_handle_path_switch_request(
     eUTRAintegrityProtectionAlgorithms =
         &UESecurityCapabilities->eUTRAintegrityProtectionAlgorithms;
 
-    amf_ue->ue_security_capability.nea = nRencryptionAlgorithms->buf[0];
-    amf_ue->ue_security_capability.nia =
-        nRintegrityProtectionAlgorithms->buf[0];
-    amf_ue->ue_security_capability.eea = eUTRAencryptionAlgorithms->buf[0];
-    amf_ue->ue_security_capability.eia =
-        eUTRAintegrityProtectionAlgorithms->buf[0];
-    
-    if (!PDUSessionResourceToBeSwitchedDLList) {
-        ogs_error("No PDUSessionResourceToBeSwitchedDLList");
-        ngap_send_error_indication(gnb, &ran_ue->ran_ue_ngap_id, NULL,
-                NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
-        return;
-    }
+    memcpy(&nea, nRencryptionAlgorithms->buf, sizeof(nea));
+    nea = be16toh(nea);
+    nea0 = amf_ue->ue_security_capability.nea0;
+    amf_ue->ue_security_capability.nea = nea >> 9;
+    amf_ue->ue_security_capability.nea0 = nea0;
+
+    memcpy(&nia, nRintegrityProtectionAlgorithms->buf, sizeof(nia));
+    nia = be16toh(nia);
+    nia0 = amf_ue->ue_security_capability.nia0;
+    amf_ue->ue_security_capability.nia = nia >> 9;
+    amf_ue->ue_security_capability.nia0 = nia0;
+
+    memcpy(&eps_ea, eUTRAencryptionAlgorithms->buf, sizeof(eps_ea));
+    eps_ea = be16toh(eps_ea);
+    eps_ea0 = amf_ue->ue_security_capability.eps_ea0;
+    amf_ue->ue_security_capability.eps_ea = eps_ea >> 9;
+    amf_ue->ue_security_capability.eps_ea0 = eps_ea0;
+
+    memcpy(&eps_ia, eUTRAintegrityProtectionAlgorithms->buf, sizeof(eps_ia));
+    eps_ia = be16toh(eps_ia);
+    eps_ia0 = amf_ue->ue_security_capability.eps_ia0;
+    amf_ue->ue_security_capability.eps_ia = eps_ia >> 9;
+    amf_ue->ue_security_capability.eps_ia0 = eps_ia0;
 
     for (i = 0; i < PDUSessionResourceToBeSwitchedDLList->list.count; i++) {
         amf_sess_t *sess = NULL;
@@ -1930,4 +1979,6 @@ void ngap_handle_path_switch_request(
 
         ogs_pkbuf_free(param.n2smbuf);
     }
+
+    ran_ue_switch_to_gnb(ran_ue, gnb);
 }

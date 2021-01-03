@@ -23,6 +23,8 @@ static ogs_pkbuf_t *testngap_build_pdu_session_resource_setup_response_trasfer(
         test_sess_t *sess);
 static ogs_pkbuf_t *testngap_build_pdu_session_resource_modify_response_trasfer(
         test_bearer_t *qos_flow);
+static ogs_pkbuf_t *testngap_build_path_switch_request_trasfer(
+        test_sess_t *sess);
 
 ogs_pkbuf_t *testngap_build_ng_setup_request(uint32_t gnb_id, uint8_t bitsize)
 {
@@ -244,10 +246,10 @@ ogs_pkbuf_t *testngap_build_initial_ue_message(
             CALLOC(1, sizeof(NGAP_UserLocationInformationNR_t));
 
     nR_CGI = &userLocationInformationNR->nR_CGI;
-    ogs_ngap_nr_cgi_to_ASN(&test_self()->nr_cgi, nR_CGI);
+    ogs_ngap_nr_cgi_to_ASN(&test_ue->nr_cgi, nR_CGI);
 
     tAI = &userLocationInformationNR->tAI;
-    ogs_ngap_5gs_tai_to_ASN(&test_self()->nr_tai, tAI);
+    ogs_ngap_5gs_tai_to_ASN(&test_ue->nr_tai, tAI);
 
     UserLocationInformation->present =
         NGAP_UserLocationInformation_PR_userLocationInformationNR;
@@ -381,10 +383,10 @@ ogs_pkbuf_t *testngap_build_uplink_nas_transport(
             CALLOC(1, sizeof(NGAP_UserLocationInformationNR_t));
 
     nR_CGI = &userLocationInformationNR->nR_CGI;
-    ogs_ngap_nr_cgi_to_ASN(&test_self()->nr_cgi, nR_CGI);
+    ogs_ngap_nr_cgi_to_ASN(&test_ue->nr_cgi, nR_CGI);
 
     tAI = &userLocationInformationNR->tAI;
-    ogs_ngap_5gs_tai_to_ASN(&test_self()->nr_tai, tAI);
+    ogs_ngap_5gs_tai_to_ASN(&test_ue->nr_tai, tAI);
 
     UserLocationInformation->present =
         NGAP_UserLocationInformation_PR_userLocationInformationNR;
@@ -1040,6 +1042,171 @@ ogs_pkbuf_t *testngap_build_pdu_session_resource_release_response(
     return ogs_ngap_encode(&pdu);
 }
 
+ogs_pkbuf_t *testngap_build_path_switch_request(test_sess_t *sess)
+{
+    int rv;
+
+    test_ue_t *test_ue = NULL;
+
+    ogs_pkbuf_t *n2smbuf = NULL;
+    ogs_pkbuf_t *ngapbuf = NULL;
+
+    NGAP_NGAP_PDU_t pdu;
+    NGAP_InitiatingMessage_t *initiatingMessage = NULL;
+    NGAP_PathSwitchRequest_t *PathSwitchRequest = NULL;
+
+    NGAP_PathSwitchRequestIEs_t *ie = NULL;
+
+    NGAP_AMF_UE_NGAP_ID_t *AMF_UE_NGAP_ID = NULL;
+    NGAP_RAN_UE_NGAP_ID_t *RAN_UE_NGAP_ID = NULL;
+    NGAP_UserLocationInformation_t *UserLocationInformation = NULL;
+    NGAP_UESecurityCapabilities_t *UESecurityCapabilities = NULL;
+    NGAP_PDUSessionResourceToBeSwitchedDLList_t
+        *PDUSessionResourceToBeSwitchedDLList = NULL;
+
+    NGAP_PDUSessionResourceToBeSwitchedDLItem_t *PDUSessionItem = NULL;
+
+    NGAP_UserLocationInformationNR_t *userLocationInformationNR = NULL;
+    NGAP_NR_CGI_t *nR_CGI = NULL;
+    NGAP_TAI_t *tAI = NULL;
+
+    OCTET_STRING_t *transfer = NULL;
+    ogs_assert(sess);
+    test_ue = sess->test_ue;
+    ogs_assert(test_ue);
+
+    memset(&pdu, 0, sizeof (NGAP_NGAP_PDU_t));
+    pdu.present = NGAP_NGAP_PDU_PR_initiatingMessage;
+    pdu.choice.initiatingMessage = CALLOC(1, sizeof(NGAP_InitiatingMessage_t));
+
+    initiatingMessage = pdu.choice.initiatingMessage;
+    initiatingMessage->procedureCode =
+        NGAP_ProcedureCode_id_PathSwitchRequest;
+    initiatingMessage->criticality = NGAP_Criticality_reject;
+    initiatingMessage->value.present =
+        NGAP_InitiatingMessage__value_PR_PathSwitchRequest;
+
+    PathSwitchRequest =
+        &initiatingMessage->value.choice.PathSwitchRequest;
+
+    ie = CALLOC(1, sizeof(NGAP_PathSwitchRequestIEs_t));
+    ASN_SEQUENCE_ADD(&PathSwitchRequest->protocolIEs, ie);
+
+    ie->id = NGAP_ProtocolIE_ID_id_RAN_UE_NGAP_ID;
+    ie->criticality = NGAP_Criticality_reject;
+    ie->value.present =
+        NGAP_PathSwitchRequestIEs__value_PR_RAN_UE_NGAP_ID;
+
+    RAN_UE_NGAP_ID = &ie->value.choice.RAN_UE_NGAP_ID;
+
+    ie = CALLOC(1, sizeof(NGAP_PathSwitchRequestIEs_t));
+    ASN_SEQUENCE_ADD(&PathSwitchRequest->protocolIEs, ie);
+
+    ie->id = NGAP_ProtocolIE_ID_id_SourceAMF_UE_NGAP_ID;
+    ie->criticality = NGAP_Criticality_reject;
+    ie->value.present =
+        NGAP_PathSwitchRequestIEs__value_PR_AMF_UE_NGAP_ID;
+
+    AMF_UE_NGAP_ID = &ie->value.choice.AMF_UE_NGAP_ID;
+
+    ie = CALLOC(1, sizeof(NGAP_PathSwitchRequestIEs_t));
+    ASN_SEQUENCE_ADD(&PathSwitchRequest->protocolIEs, ie);
+
+    ie->id = NGAP_ProtocolIE_ID_id_UserLocationInformation;
+    ie->criticality = NGAP_Criticality_ignore;
+    ie->value.present =
+        NGAP_PathSwitchRequestIEs__value_PR_UserLocationInformation;
+
+    UserLocationInformation = &ie->value.choice.UserLocationInformation;
+
+    ie = CALLOC(1, sizeof(NGAP_PathSwitchRequestIEs_t));
+    ASN_SEQUENCE_ADD(&PathSwitchRequest->protocolIEs, ie);
+
+    ie->id = NGAP_ProtocolIE_ID_id_UESecurityCapabilities;
+    ie->criticality = NGAP_Criticality_ignore;
+    ie->value.present =
+        NGAP_PathSwitchRequestIEs__value_PR_UESecurityCapabilities;
+
+    UESecurityCapabilities = &ie->value.choice.UESecurityCapabilities;
+
+    ie = CALLOC(1, sizeof(NGAP_PathSwitchRequestIEs_t));
+    ASN_SEQUENCE_ADD(&PathSwitchRequest->protocolIEs, ie);
+
+    ie->id = NGAP_ProtocolIE_ID_id_PDUSessionResourceToBeSwitchedDLList;
+    ie->criticality = NGAP_Criticality_reject;
+    ie->value.present = NGAP_PathSwitchRequestIEs__value_PR_PDUSessionResourceToBeSwitchedDLList;
+
+    PDUSessionResourceToBeSwitchedDLList =
+        &ie->value.choice.PDUSessionResourceToBeSwitchedDLList;
+
+    asn_uint642INTEGER(AMF_UE_NGAP_ID, test_ue->amf_ue_ngap_id);
+    *RAN_UE_NGAP_ID = test_ue->ran_ue_ngap_id;
+
+    userLocationInformationNR =
+            CALLOC(1, sizeof(NGAP_UserLocationInformationNR_t));
+
+    nR_CGI = &userLocationInformationNR->nR_CGI;
+    ogs_ngap_nr_cgi_to_ASN(&test_ue->nr_cgi, nR_CGI);
+
+    tAI = &userLocationInformationNR->tAI;
+    ogs_ngap_5gs_tai_to_ASN(&test_ue->nr_tai, tAI);
+
+    UserLocationInformation->present =
+        NGAP_UserLocationInformation_PR_userLocationInformationNR;
+    UserLocationInformation->choice.userLocationInformationNR =
+        userLocationInformationNR;
+
+    UESecurityCapabilities->nRencryptionAlgorithms.size = 2;
+    UESecurityCapabilities->nRencryptionAlgorithms.buf =
+        CALLOC(UESecurityCapabilities->
+                    nRencryptionAlgorithms.size, sizeof(uint8_t));
+    UESecurityCapabilities->nRencryptionAlgorithms.bits_unused = 0;
+    UESecurityCapabilities->nRencryptionAlgorithms.buf[0] =
+        (test_ue->ue_security_capability.nea << 1);
+
+    UESecurityCapabilities->nRintegrityProtectionAlgorithms.size = 2;
+    UESecurityCapabilities->nRintegrityProtectionAlgorithms.buf =
+        CALLOC(UESecurityCapabilities->
+                    nRintegrityProtectionAlgorithms.size, sizeof(uint8_t));
+    UESecurityCapabilities->nRintegrityProtectionAlgorithms.bits_unused = 0;
+    UESecurityCapabilities->nRintegrityProtectionAlgorithms.buf[0] =
+        (test_ue->ue_security_capability.nia << 1);
+
+    UESecurityCapabilities->eUTRAencryptionAlgorithms.size = 2;
+    UESecurityCapabilities->eUTRAencryptionAlgorithms.buf =
+        CALLOC(UESecurityCapabilities->
+                    eUTRAencryptionAlgorithms.size, sizeof(uint8_t));
+    UESecurityCapabilities->eUTRAencryptionAlgorithms.bits_unused = 0;
+    UESecurityCapabilities->eUTRAencryptionAlgorithms.buf[0] =
+        (test_ue->ue_security_capability.eps_ea << 1);
+
+    UESecurityCapabilities->eUTRAintegrityProtectionAlgorithms.size = 2;
+    UESecurityCapabilities->eUTRAintegrityProtectionAlgorithms.buf =
+        CALLOC(UESecurityCapabilities->
+                    eUTRAintegrityProtectionAlgorithms.size, sizeof(uint8_t));
+    UESecurityCapabilities->eUTRAintegrityProtectionAlgorithms.bits_unused = 0;
+    UESecurityCapabilities->eUTRAintegrityProtectionAlgorithms.buf[0] =
+        (test_ue->ue_security_capability.eps_ia << 1);
+
+    PDUSessionItem =
+        CALLOC(1, sizeof(NGAP_PDUSessionResourceToBeSwitchedDLItem_t));
+    ASN_SEQUENCE_ADD(
+        &PDUSessionResourceToBeSwitchedDLList->list, PDUSessionItem);
+
+    PDUSessionItem->pDUSessionID = sess->psi;
+
+    n2smbuf = testngap_build_path_switch_request_trasfer(sess);
+    ogs_assert(n2smbuf);
+    transfer = &PDUSessionItem->pathSwitchRequestTransfer;
+
+    transfer->size = n2smbuf->len;
+    transfer->buf = CALLOC(transfer->size, sizeof(uint8_t));
+    memcpy(transfer->buf, n2smbuf->data, transfer->size);
+    ogs_pkbuf_free(n2smbuf);
+
+    return ogs_ngap_encode(&pdu);
+}
+
 static ogs_pkbuf_t *testngap_build_pdu_session_resource_setup_response_trasfer(
         test_sess_t *sess)
 {
@@ -1122,4 +1289,59 @@ static ogs_pkbuf_t *testngap_build_pdu_session_resource_modify_response_trasfer(
 
     return ogs_asn_encode(
             &asn_DEF_NGAP_PDUSessionResourceModifyResponseTransfer, &message);
+}
+
+static ogs_pkbuf_t *testngap_build_path_switch_request_trasfer(
+        test_sess_t *sess)
+{
+    int rv;
+
+    test_bearer_t *qos_flow = NULL;
+
+    ogs_gtp_f_teid_t f_teid;
+    ogs_ip_t ip;
+    int len;
+
+    ogs_assert(sess);
+
+    NGAP_PathSwitchRequestTransfer_t message;
+
+    NGAP_UPTransportLayerInformation_t *dL_NGU_UP_TNLInformation = NULL;
+    NGAP_GTPTunnel_t *gTPTunnel = NULL;
+
+    NGAP_QosFlowAcceptedList_t *qosFlowAcceptedList = NULL;
+    NGAP_QosFlowAcceptedItem_t *qosFlowAcceptedItem = NULL;
+
+    memset(&message, 0, sizeof(message));
+
+    dL_NGU_UP_TNLInformation = &message.dL_NGU_UP_TNLInformation;
+
+    gTPTunnel = CALLOC(1, sizeof(struct NGAP_GTPTunnel));
+    dL_NGU_UP_TNLInformation->present =
+        NGAP_UPTransportLayerInformation_PR_gTPTunnel;
+    dL_NGU_UP_TNLInformation->choice.gTPTunnel = gTPTunnel;
+
+    ogs_assert(sess->gnb_n3_addr || sess->gnb_n3_addr6);
+    rv = ogs_gtp_sockaddr_to_f_teid(
+            sess->gnb_n3_addr, sess->gnb_n3_addr6, &f_teid, &len);
+    ogs_assert(rv == OGS_OK);
+
+    rv = ogs_gtp_f_teid_to_ip(&f_teid, &ip);
+    ogs_assert(rv == OGS_OK);
+
+    ogs_asn_ip_to_BIT_STRING(&ip, &gTPTunnel->transportLayerAddress);
+    ogs_asn_uint32_to_OCTET_STRING(sess->gnb_n3_teid, &gTPTunnel->gTP_TEID);
+
+    qosFlowAcceptedList = &message.qosFlowAcceptedList;
+
+    ogs_list_for_each(&sess->bearer_list, qos_flow) {
+        qosFlowAcceptedItem =
+            CALLOC(1, sizeof(NGAP_QosFlowAcceptedItem_t));
+        ASN_SEQUENCE_ADD(&qosFlowAcceptedList->list, qosFlowAcceptedItem);
+
+        qosFlowAcceptedItem->qosFlowIdentifier = qos_flow->qfi;
+    }
+
+    return ogs_asn_encode(
+            &asn_DEF_NGAP_PathSwitchRequestTransfer, &message);
 }

@@ -310,6 +310,16 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
             smf_sbi_send_response(stream, OGS_SBI_HTTP_STATUS_NO_CONTENT);
             break;
 
+        case OpenAPI_n2_sm_info_type_PATH_SWITCH_REQ:
+            rv = ngap_handle_pdu_session_resource_to_be_switched_dl_transfer(
+                    sess, stream, pkbuf);
+            if (rv != OGS_OK) {
+                ogs_error("[%s:%d] Cannot handle NGAP message",
+                        smf_ue->supi, sess->psi);
+                OGS_FSM_TRAN(s, smf_gsm_state_exception);
+            }
+            break;
+
         default:
             ogs_error("Unknown message[%d]", e->ngap.type);
         }

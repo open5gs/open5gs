@@ -874,6 +874,15 @@ test_ue_t *test_ue_add_by_suci(
     test_ue->nas.access_type = OGS_ACCESS_TYPE_3GPP;
     test_ue->abba_len = 2;
 
+    test_ue->ue_security_capability.nea = 0xf0;
+    test_ue->ue_security_capability.nia = 0xf0;
+#if 0
+    test_ue->ue_security_capability.eps_ea = 0xf0;
+    test_ue->ue_security_capability.eps_ia = 0xf0;
+#endif
+    test_ue->ue_network_capability.eea = 0xf0;
+    test_ue->ue_network_capability.eia = 0xf0;
+
     memcpy(&test_ue->e_tai, &test_self()->e_tai, sizeof(ogs_eps_tai_t));
     memcpy(&test_ue->e_cgi.plmn_id, &test_ue->e_tai.plmn_id, OGS_PLMN_ID_LEN);
 

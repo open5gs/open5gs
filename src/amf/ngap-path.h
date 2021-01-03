@@ -69,7 +69,7 @@ void ngap_send_amf_configuration_transfer(
         amf_gnb_t *target_gnb,
         NGAP_SONConfigurationTransfer_t *SONConfigurationTransfer);
 
-void ngap_send_path_switch_ack(amf_ue_t *amf_ue);
+void ngap_send_path_switch_ack(amf_sess_t *sess, ogs_pkbuf_t *n2smbuf);
 
 void ngap_send_handover_command(ran_ue_t *source_ue);
 void ngap_send_handover_preparation_failure(

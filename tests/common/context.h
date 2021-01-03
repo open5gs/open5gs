@@ -363,6 +363,9 @@ typedef struct test_ue_s {
     int             security_context_available;
     int             mac_failed;
 
+    ogs_nas_ue_security_capability_t ue_security_capability;
+    ogs_nas_ue_network_capability_t ue_network_capability;
+
     test_initial_ue_param_t initial_ue_param;
 
     test_registration_request_param_t registration_request_param;

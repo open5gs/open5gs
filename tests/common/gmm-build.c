@@ -133,14 +133,20 @@ ogs_pkbuf_t *testgmm_build_registration_request(
     registration_request->presencemask |=
             OGS_NAS_5GS_REGISTRATION_REQUEST_UE_SECURITY_CAPABILITY_PRESENT;
     ue_security_capability->length = 2;
-    ue_security_capability->nea = 0xf0;
-    ue_security_capability->nia = 0xf0;
+    ue_security_capability->nea = test_ue->ue_security_capability.nea;
+    ue_security_capability->nia = test_ue->ue_security_capability.nia;
+    if (test_ue->ue_security_capability.eps_ea ||
+        test_ue->ue_security_capability.eps_ia) {
+        ue_security_capability->length = 4;
+        ue_security_capability->eps_ea = test_ue->ue_security_capability.eps_ea;
+        ue_security_capability->eps_ia = test_ue->ue_security_capability.eps_ia;
+    }
 
     registration_request->presencemask |=
             OGS_NAS_5GS_REGISTRATION_REQUEST_S1_UE_NETWORK_CAPABILITY_PRESENT;
     s1_ue_network_capability->length = 7;
-    s1_ue_network_capability->eea = 0xf0;
-    s1_ue_network_capability->eia = 0xf0;
+    s1_ue_network_capability->eea = test_ue->ue_network_capability.eea;
+    s1_ue_network_capability->eia = test_ue->ue_network_capability.eia;
     s1_ue_network_capability->uea = 0xc0;
     s1_ue_network_capability->uia = 0xc0;
     s1_ue_network_capability->notification_procedure = 1;

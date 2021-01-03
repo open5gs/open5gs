@@ -1208,6 +1208,7 @@ void s1ap_handle_path_switch_request(
 	S1AP_EncryptionAlgorithms_t	*encryptionAlgorithms = NULL;
 	S1AP_IntegrityProtectionAlgorithms_t *integrityProtectionAlgorithms = NULL;
     uint16_t eea = 0, eia = 0;
+    uint8_t eea0 = 0, eia0 = 0;
 
     enb_ue_t *enb_ue = NULL;
     mme_ue_t *mme_ue = NULL;
@@ -1342,13 +1343,15 @@ void s1ap_handle_path_switch_request(
 
     memcpy(&eea, encryptionAlgorithms->buf, sizeof(eea));
     eea = be16toh(eea);
+    eea0 = mme_ue->ue_network_capability.eea0;
     mme_ue->ue_network_capability.eea = eea >> 9;
-    mme_ue->ue_network_capability.eea0 = 1;
+    mme_ue->ue_network_capability.eea0 = eea0;
 
     memcpy(&eia, integrityProtectionAlgorithms->buf, sizeof(eia));
     eia = be16toh(eia);
+    eia0 = mme_ue->ue_network_capability.eia0;
     mme_ue->ue_network_capability.eia = eia >> 9;
-    mme_ue->ue_network_capability.eia0 = 0;
+    mme_ue->ue_network_capability.eia0 = eia0;
 
     ogs_assert(E_RABToBeSwitchedDLList);
     for (i = 0; i < E_RABToBeSwitchedDLList->list.count; i++) {
