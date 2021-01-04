@@ -35,7 +35,10 @@ ogs_pkbuf_t *testgsm_build_pdu_session_establishment_request(
 #endif
     ogs_nas_extended_protocol_configuration_options_t
         *extended_protocol_configuration_options = NULL;
-    uint8_t ue_pco[10] = "\x80\x00\x0a\x00\x00\x03\x00\x00\x0d\x00";
+    uint8_t ue_pco[35] =
+        "\x80\x80\x21\x10\x01\x00\x00\x10\x81\x06\x00\x00\x00\x00"
+        "\x83\x06\x00\x00\x00\x00\x00\x0c\x00\x00\x0d\x00\x00\x02\x00\x00"
+        "\x0a\x00\x00\x10\x00";
 
     ogs_s_nssai_t *s_nssai = NULL;
 
@@ -80,7 +83,7 @@ ogs_pkbuf_t *testgsm_build_pdu_session_establishment_request(
 
     pdu_session_establishment_request->presencemask |=
         OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REQUEST_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT;
-    extended_protocol_configuration_options->length = 10;
+    extended_protocol_configuration_options->length = sizeof(ue_pco);
     extended_protocol_configuration_options->buffer = ue_pco;
 
     s_nssai = &test_self()->plmn_support[0].s_nssai[0];

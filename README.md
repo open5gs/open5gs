@@ -40,11 +40,9 @@ If you don't understand something about Open5GS, the [https://open5gs.org/open5g
 
 ## Community
 
-Problem with Open5GS can be filed as [issues](https://github.com/open5gs/open5gs/issues) in this repository.
-
-Other topics related to this project are happening on the [discussions](https://github.com/open5gs/open5gs/discussions).
-
-Voice and text chat are available in Open5GS's [Discord](https://discordapp.com/) workspace. Use [this link](https://discord.gg/GreNkuc) to get started.
+- Problem with Open5GS can be filed as [issues](https://github.com/open5gs/open5gs/issues) in this repository.
+- Other topics related to this project are happening on the [discussions](https://github.com/open5gs/open5gs/discussions).
+- Voice and text chat are available in Open5GS's [Discord](https://discordapp.com/) workspace. Use [this link](https://discord.gg/GreNkuc) to get started.
 
 ## Contributing
 

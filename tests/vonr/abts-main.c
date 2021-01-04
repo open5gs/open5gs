@@ -20,11 +20,13 @@
 #include "test-app.h"
 
 abts_suite *test_qos_flow(abts_suite *suite);
+abts_suite *test_session(abts_suite *suite);
 
 const struct testlist {
     abts_suite *(*func)(abts_suite *suite);
 } alltests[] = {
     {test_qos_flow},
+    {test_session},
     {NULL},
 };
 

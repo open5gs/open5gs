@@ -10,6 +10,13 @@ Welcome! If you want to set up your first Open5GS core you have come to the righ
 **TL;DR:** Open5GS contains a series of software components and network functions that implement the 4G/ 5G NSA and 5G SA core functions. If you know what each of these do already and how they interface with each other, skip to section 2.
 {: .notice--info}
 
+<style>
+  img {
+    max-width: 100%;
+    height: auto;
+  }
+</style>
+
 ![Open5GS Diagram]({{ site.url }}{{ site.baseurl }}/assets/images/Open5GS_CUPS-01.jpg)
 
 [[Higher quality PDF diagram available HERE]]({{ site.url }}{{ site.baseurl }}/assets/images/Open5GS_CUPS-01.pdf)

@@ -34,7 +34,6 @@ static void test1_func(abts_case *tc, void *data)
 
     ogs_nas_5gs_mobile_identity_suci_t mobile_identity_suci;
     test_ue_t *test_ue = NULL;
-    test_sess_t *sess = NULL;
     test_bearer_t *qos_flow = NULL;
 
     const char *_k_string = "70d49a71dd1a2b806a25abe0ef749f1e";
@@ -114,9 +113,6 @@ static void test1_func(abts_case *tc, void *data)
 
     OGS_HEX(_k_string, strlen(_k_string), test_ue->k);
     OGS_HEX(_opc_string, strlen(_opc_string), test_ue->opc);
-
-    sess = test_sess_add_by_dnn_and_psi(test_ue, "internet", 5);
-    ogs_assert(sess);
 
     /* gNB connects to AMF */
     ngap = testngap_client(AF_INET);

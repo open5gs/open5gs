@@ -193,7 +193,7 @@ int amf_nsmf_pdu_session_handle_update_sm_context(
                  * To Deliver N2 SM Content to gNB Temporarily,
                  * Store N2 SM Context in Session Context
                  */
-                if (sess->pdu_session_resource_setup_request_transfer) {
+                if (sess->transfer.pdu_session_resource_setup_request) {
                     /*
                      * It should not be reached this way.
                      * If the problem occurred, free the old n2smbuf
@@ -201,16 +201,16 @@ int amf_nsmf_pdu_session_handle_update_sm_context(
                     ogs_error("[%s:%d] N2 SM Content is duplicated",
                             amf_ue->supi, sess->psi);
                     ogs_pkbuf_free(
-                            sess->pdu_session_resource_setup_request_transfer);
+                            sess->transfer.pdu_session_resource_setup_request);
                 }
                 /*
                  * NOTE : The pkbuf created in the SBI message will be removed
                  *        from ogs_sbi_message_free().
                  *        So it must be copied and push a event queue.
                  */
-                sess->pdu_session_resource_setup_request_transfer =
+                sess->transfer.pdu_session_resource_setup_request =
                     ogs_pkbuf_copy(n2smbuf);
-                ogs_assert(sess->pdu_session_resource_setup_request_transfer);
+                ogs_assert(sess->transfer.pdu_session_resource_setup_request);
 
                 if (SESSION_SYNC_DONE(amf_ue)) {
                     nas_5gs_send_accept(amf_ue);
@@ -220,10 +220,10 @@ int amf_nsmf_pdu_session_handle_update_sm_context(
                  * For checking memory, NULL pointer should be set to n2smbuf.
                  */
                     ogs_list_for_each(&amf_ue->sess_list, sess) {
-                        if (sess->pdu_session_resource_setup_request_transfer) {
+                        if (sess->transfer.pdu_session_resource_setup_request) {
                             ogs_pkbuf_free(sess->
-                                pdu_session_resource_setup_request_transfer);
-                            sess->pdu_session_resource_setup_request_transfer =
+                                transfer.pdu_session_resource_setup_request);
+                            sess->transfer.pdu_session_resource_setup_request =
                                 NULL;
                         }
                     }
@@ -234,6 +234,14 @@ int amf_nsmf_pdu_session_handle_update_sm_context(
                 if (!n1smbuf) {
                     ogs_error("[%s:%d] No N1 SM Content [%s]",
                             amf_ue->supi, sess->psi, n1SmMsg->content_id);
+                    nas_5gs_send_back_5gsm_message(sess,
+                            OGS_5GMM_CAUSE_SEMANTICALLY_INCORRECT_MESSAGE);
+                    return OGS_ERROR;
+                }
+
+                if (!n2smbuf) {
+                    ogs_error("[%s:%d] No N2 SM Content",
+                            amf_ue->supi, sess->psi);
                     nas_5gs_send_back_5gsm_message(sess,
                             OGS_5GMM_CAUSE_SEMANTICALLY_INCORRECT_MESSAGE);
                     return OGS_ERROR;
@@ -253,11 +261,54 @@ int amf_nsmf_pdu_session_handle_update_sm_context(
                 break;
 
             case OpenAPI_n2_sm_info_type_PATH_SWITCH_REQ_ACK:
-                n2smbuf = ogs_pkbuf_copy(n2smbuf);
-                ogs_assert(n2smbuf);
+                if (!n2smbuf) {
+                    ogs_error("[%s:%d] No N2 SM Content",
+                            amf_ue->supi, sess->psi);
+                    ngap_send_error_indication2(amf_ue,
+                            NGAP_Cause_PR_protocol,
+                            NGAP_CauseProtocol_semantic_error);
+                    return OGS_ERROR;
+                }
 
-                ngap_send_path_switch_ack(sess, n2smbuf);
+                /*
+                 * To Deliver N2 SM Content to gNB Temporarily,
+                 * Store N2 SM Context in Session Context
+                 */
+                if (sess->transfer.path_switch_request_ack) {
+                    /*
+                     * It should not be reached this way.
+                     * If the problem occurred, free the old n2smbuf
+                     */
+                    ogs_error("[%s:%d] N2 SM Content is duplicated",
+                            amf_ue->supi, sess->psi);
+                    ogs_pkbuf_free(sess->transfer.path_switch_request_ack);
+                }
+                /*
+                 * NOTE : The pkbuf created in the SBI message will be removed
+                 *        from ogs_sbi_message_free().
+                 *        So it must be copied and push a event queue.
+                 */
+                sess->transfer.path_switch_request_ack =
+                    ogs_pkbuf_copy(n2smbuf);
+                ogs_assert(sess->transfer.path_switch_request_ack);
+
+                if (SESSION_SYNC_DONE(amf_ue)) {
+                    ngap_send_path_switch_ack(sess);
+
+                /*
+                 * After sending ack message, N2 SM context is freed
+                 * For checking memory, NULL pointer should be set to n2smbuf.
+                 */
+                    ogs_list_for_each(&amf_ue->sess_list, sess) {
+                        if (sess->transfer.path_switch_request_ack) {
+                            ogs_pkbuf_free(
+                                    sess->transfer.path_switch_request_ack);
+                            sess->transfer.path_switch_request_ack = NULL;
+                        }
+                    }
+                }
                 break;
+
             default:
                 ogs_error("Not implemented [%d]",
                         SmContextUpdatedData->n2_sm_info_type);

@@ -62,7 +62,7 @@ static void test1_func(abts_case *tc, void *data)
         "\"pdn\" : ["
           "{"
             "\"apn\" : \"internet\", "
-            "\"_id\" : { \"$oid\" : \"597223158b8861d7605378c7\" }, "
+            "\"_id\" : { \"$oid\" : \"597223158b8861d7605378c6\" }, "
             "\"ambr\" : {"
               "\"uplink\" : { \"$numberLong\" : \"1024000\" }, "
               "\"downlink\" : { \"$numberLong\" : \"1024000\" } "
@@ -71,6 +71,23 @@ static void test1_func(abts_case *tc, void *data)
               "\"qci\" : 9, "
               "\"arp\" : { "
                 "\"priority_level\" : 8,"
+                "\"pre_emption_vulnerability\" : 1, "
+                "\"pre_emption_capability\" : 1"
+              "} "
+            "}, "
+            "\"type\" : 2"
+          "},"
+          "{"
+            "\"apn\" : \"ims\", "
+            "\"_id\" : { \"$oid\" : \"597223158b8861d7605378c7\" }, "
+            "\"ambr\" : {"
+              "\"uplink\" : { \"$numberLong\" : \"1024000\" }, "
+              "\"downlink\" : { \"$numberLong\" : \"1024000\" } "
+            "},"
+            "\"qos\" : { "
+              "\"qci\" : 6, "
+              "\"arp\" : { "
+                "\"priority_level\" : 6,"
                 "\"pre_emption_vulnerability\" : 1, "
                 "\"pre_emption_capability\" : 1"
               "} "
@@ -99,7 +116,7 @@ static void test1_func(abts_case *tc, void *data)
                       "\"description\" : \"permit out udp from 10.200.136.98/32 23454 to assigned 1-65535\","
                       "\"_id\" : { \"$oid\" : \"599eb929c850caabcbfdcd31\" } },"
                     "{ \"direction\" : 1,"
-                      "\"description\" : \"permit out icmp from any to assigned\","
+                      "\"description\" : \"permit out udp from 10.200.136.98/32 1-65535 to assigned 50020\","
                       "\"_id\" : { \"$oid\" : \"599eb929c850caabcbfdcd30\" } },"
                     "{ \"direction\" : 2,"
                       "\"description\" : \"permit out udp from 10.200.136.98/32 23455 to assigned 1-65535\","
@@ -338,6 +355,36 @@ static void test1_func(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
+    /* Send PDU session establishment request */
+    sess = test_sess_add_by_dnn_and_psi(test_ue, "ims", 6);
+    ogs_assert(sess);
+
+    sess->ul_nas_transport_param.request_type =
+        OGS_NAS_5GS_REQUEST_TYPE_INITIAL;
+    sess->ul_nas_transport_param.dnn = 1;
+    sess->ul_nas_transport_param.s_nssai = 1;
+
+    gsmbuf = testgsm_build_pdu_session_establishment_request(sess);
+    ABTS_PTR_NOTNULL(tc, gsmbuf);
+    gmmbuf = testgmm_build_ul_nas_transport(sess,
+            OGS_NAS_PAYLOAD_CONTAINER_N1_SM_INFORMATION, gsmbuf);
+    ABTS_PTR_NOTNULL(tc, gmmbuf);
+    sendbuf = testngap_build_uplink_nas_transport(test_ue, gmmbuf);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive PDU session establishment accept */
+    recvbuf = testgnb_ngap_read(ngap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    testngap_recv(test_ue, recvbuf);
+
+    /* Send PDU session resource setup response */
+    sendbuf = testngap_build_pdu_session_resource_setup_response(sess);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
     /* Receive PDU session modification command */
     recvbuf = testgnb_ngap_read(ngap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
@@ -378,9 +425,6 @@ static void test1_func(abts_case *tc, void *data)
     /* Receive GTP-U ICMP Packet */
     recvbuf = testgnb_gtpu_read(gtpu);
     ABTS_PTR_NOTNULL(tc, recvbuf);
-    /* For checking qos_flow_identifier == 2 */
-    ABTS_TRUE(tc, memcmp(recvbuf->data,
-        OGS_HEX(_gtp_payload, strlen(_gtp_payload), tmp), 20) == 0);
     ogs_pkbuf_free(recvbuf);
 
     /* Send UE context release request */
@@ -409,7 +453,7 @@ static void test1_func(abts_case *tc, void *data)
     test_ue->service_request_param.integrity_protected = 0;
     test_ue->service_request_param.uplink_data_status = 1;
     test_ue->service_request_param.
-        psimask.uplink_data_status = 1 << sess->psi;
+        psimask.uplink_data_status = (1 << 5 | 1 << 6);
     test_ue->service_request_param.pdu_session_status = 0;
     nasbuf = testgmm_build_service_request(test_ue, NULL);
     ABTS_PTR_NOTNULL(tc, nasbuf);
@@ -445,15 +489,56 @@ static void test1_func(abts_case *tc, void *data)
     /* Receive GTP-U ICMP Packet */
     recvbuf = testgnb_gtpu_read(gtpu);
     ABTS_PTR_NOTNULL(tc, recvbuf);
-    /* For checking qos_flow_identifier == 2 */
-    ABTS_TRUE(tc, memcmp(recvbuf->data,
-        OGS_HEX(_gtp_payload, strlen(_gtp_payload), tmp), 20) == 0);
     ogs_pkbuf_free(recvbuf);
 
-    /* Send De-registration request */
-    gmmbuf = testgmm_build_de_registration_request(test_ue, 1);
+    /* Send PDU Session release request */
+    sess->ul_nas_transport_param.request_type = 0;
+    sess->ul_nas_transport_param.dnn = 0;
+    sess->ul_nas_transport_param.s_nssai = 0;
+
+    gsmbuf = testgsm_build_pdu_session_release_request(sess);
+    ABTS_PTR_NOTNULL(tc, gsmbuf);
+    gmmbuf = testgmm_build_ul_nas_transport(sess,
+            OGS_NAS_PAYLOAD_CONTAINER_N1_SM_INFORMATION, gsmbuf);
     ABTS_PTR_NOTNULL(tc, gmmbuf);
     sendbuf = testngap_build_uplink_nas_transport(test_ue, gmmbuf);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive PDU session release command */
+    recvbuf = testgnb_ngap_read(ngap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    testngap_recv(test_ue, recvbuf);
+
+    /* Send PDU session resource release response */
+    sendbuf = testngap_build_pdu_session_resource_release_response(sess);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Test Session Remove */
+    test_sess_remove(sess);
+
+    /* Send PDU session resource release complete */
+    sess->ul_nas_transport_param.request_type = 0;
+    sess->ul_nas_transport_param.dnn = 0;
+    sess->ul_nas_transport_param.s_nssai = 0;
+
+    gsmbuf = testgsm_build_pdu_session_release_complete(sess);
+    ABTS_PTR_NOTNULL(tc, gsmbuf);
+    gmmbuf = testgmm_build_ul_nas_transport(sess,
+            OGS_NAS_PAYLOAD_CONTAINER_N1_SM_INFORMATION, gsmbuf);
+    ABTS_PTR_NOTNULL(tc, gmmbuf);
+    sendbuf = testngap_build_uplink_nas_transport(test_ue, gmmbuf);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Send UE context release request */
+    sendbuf = testngap_build_ue_context_release_request(test_ue,
+            NGAP_Cause_PR_radioNetwork, NGAP_CauseRadioNetwork_user_inactivity,
+            true);
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
@@ -490,7 +575,7 @@ static void test1_func(abts_case *tc, void *data)
     test_ue_remove(test_ue);
 }
 
-abts_suite *test_qos_flow(abts_suite *suite)
+abts_suite *test_session(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
 

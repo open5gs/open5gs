@@ -466,8 +466,7 @@ void test_bearer_remove_all(test_sess_t *sess);
 test_bearer_t *test_bearer_find_by_sess_ebi(test_sess_t *sess, uint8_t ebi);
 test_bearer_t *test_bearer_find_by_ue_ebi(test_ue_t *test_ue, uint8_t ebi);
 
-test_bearer_t *test_qos_flow_find_by_sess_qfi(test_sess_t *sess, uint8_t qfi);
-test_bearer_t *test_qos_flow_find_by_ue_qfi(test_ue_t *test_ue, uint8_t qfi);
+test_bearer_t *test_qos_flow_find_by_qfi(test_sess_t *sess, uint8_t qfi);
 
 #ifdef __cplusplus
 }

@@ -3,6 +3,13 @@ title: Now in the Github Issue
 head_inline: "<style> .blue { color: blue; } </style>"
 ---
 
+<style>
+  img {
+    max-width: 100%;
+    height: auto;
+  }
+</style>
+
 #### Cannot open shared object file when running daemon
 
 An error occurred when running as follows.
@@ -176,15 +183,15 @@ $ sudo systemctl restart open5gs-upfd.service
 
 By default, wireshark cannot decode NAS-5GS message when the security header type is "Integrity protected and ciphered".
 
-![Wireshark cannot decode]({{ site.url }}{{ site.baseurl }}/assets/images/wireshark_cannot_decode_nas_5gs.png){: height="100%" width="100%"}
+![Wireshark cannot decode]({{ site.url }}{{ site.baseurl }}/assets/images/wireshark_cannot_decode_nas_5gs.png)
 
 You need to turn on "Try to detect and decode 5G-EA0 ciphered messages" in the wireshark perference menu.
 
-![Wireshark perference]({{ site.url }}{{ site.baseurl }}/assets/images/wireshark_preference.png){: height="100%" width="100%"}
+![Wireshark perference]({{ site.url }}{{ site.baseurl }}/assets/images/wireshark_preference.png)
 
 Now, you can see the NAS-5GS message in the wireshark.
 
-![Wireshark can decode]({{ site.url }}{{ site.baseurl }}/assets/images/wireshark_can_decode_nas_5gs.png){: height="100%" width="100%"}
+![Wireshark can decode]({{ site.url }}{{ site.baseurl }}/assets/images/wireshark_can_decode_nas_5gs.png)
 
 #### Test failed (e.g. `meson test -v`)
 

@@ -54,7 +54,7 @@ ogs_pkbuf_t *ngap_build_paging(
 ogs_pkbuf_t *ngap_build_amf_configuration_transfer(
     NGAP_SONConfigurationTransfer_t *son_configuration_transfer);
 
-ogs_pkbuf_t *ngap_build_path_switch_ack(amf_ue_t *amf_ue, ogs_pkbuf_t *n2smbuf);
+ogs_pkbuf_t *ngap_build_path_switch_ack(amf_ue_t *amf_ue);
 
 ogs_pkbuf_t *ngap_build_handover_command(ran_ue_t *source_ue);
 ogs_pkbuf_t *ngap_build_handover_preparation_failure(

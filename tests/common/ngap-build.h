@@ -31,7 +31,7 @@ ogs_pkbuf_t *testngap_build_uplink_nas_transport(
         test_ue_t *test_ue, ogs_pkbuf_t *gmmbuf);
 
 ogs_pkbuf_t *testngap_build_initial_context_setup_response(
-        test_ue_t *test_ue, test_sess_t *sess);
+        test_ue_t *test_ue, bool pdu_session);
 ogs_pkbuf_t *testngap_build_initial_context_setup_failure(test_ue_t *test_ue,
         NGAP_Cause_PR group, long cause);
 
@@ -49,7 +49,7 @@ ogs_pkbuf_t *testngap_build_pdu_session_resource_modify_response(
 ogs_pkbuf_t *testngap_build_pdu_session_resource_release_response(
         test_sess_t *sess);
 
-ogs_pkbuf_t *testngap_build_path_switch_request(test_sess_t *sess);
+ogs_pkbuf_t *testngap_build_path_switch_request(test_ue_t *test_ue);
 
 #ifdef __cplusplus
 }

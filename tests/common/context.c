@@ -1132,7 +1132,7 @@ test_bearer_t *test_bearer_find_by_ue_ebi(test_ue_t *test_ue, uint8_t ebi)
     return NULL;
 }
 
-test_bearer_t *test_qos_flow_find_by_sess_qfi(test_sess_t *sess, uint8_t qfi)
+test_bearer_t *test_qos_flow_find_by_qfi(test_sess_t *sess, uint8_t qfi)
 {
     test_bearer_t *qos_flow = NULL;
 
@@ -1140,22 +1140,6 @@ test_bearer_t *test_qos_flow_find_by_sess_qfi(test_sess_t *sess, uint8_t qfi)
 
     ogs_list_for_each(&sess->bearer_list, qos_flow)
         if (qfi == qos_flow->qfi) return qos_flow;
-
-    return NULL;
-}
-
-test_bearer_t *test_qos_flow_find_by_ue_qfi(test_ue_t *test_ue, uint8_t qfi)
-{
-    test_sess_t *sess = NULL;
-    test_bearer_t *qos_flow = NULL;
-
-    ogs_assert(test_ue);
-
-    ogs_list_for_each(&test_ue->sess_list, sess) {
-        qos_flow = test_qos_flow_find_by_sess_qfi(sess, qfi);
-        if (qos_flow) return qos_flow;
-
-    }
 
     return NULL;
 }

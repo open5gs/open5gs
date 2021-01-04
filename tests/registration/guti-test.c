@@ -115,9 +115,6 @@ static void test1_func(abts_case *tc, void *data)
     OGS_HEX(_k_string, strlen(_k_string), test_ue->k);
     OGS_HEX(_opc_string, strlen(_opc_string), test_ue->opc);
 
-    sess = test_sess_add_by_dnn_and_psi(test_ue, "internet", 5);
-    ogs_assert(sess);
-
     /* gNB connects to AMF */
     ngap = testngap_client(AF_INET);
     ABTS_PTR_NOTNULL(tc, ngap);
@@ -234,7 +231,7 @@ static void test1_func(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* Send Initial context setup response */
-    sendbuf = testngap_build_initial_context_setup_response(test_ue, NULL);
+    sendbuf = testngap_build_initial_context_setup_response(test_ue, false);
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
@@ -253,6 +250,9 @@ static void test1_func(abts_case *tc, void *data)
     testngap_recv(test_ue, recvbuf);
 
     /* Send PDU session establishment request */
+    sess = test_sess_add_by_dnn_and_psi(test_ue, "internet", 5);
+    ogs_assert(sess);
+
     sess->ul_nas_transport_param.request_type =
         OGS_NAS_5GS_REQUEST_TYPE_INITIAL;
     sess->ul_nas_transport_param.dnn = 0;
@@ -274,7 +274,7 @@ static void test1_func(abts_case *tc, void *data)
     testngap_recv(test_ue, recvbuf);
 
     /* Send GTP-U ICMP Packet */
-    qos_flow = test_qos_flow_find_by_ue_qfi(test_ue, 1);
+    qos_flow = test_qos_flow_find_by_qfi(sess, 1);
     ogs_assert(qos_flow);
     rv = test_gtpu_send_ping(gtpu, qos_flow, TEST_PING_IPV4);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
@@ -350,14 +350,13 @@ static void test1_func(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, 0x0000, test_ue->pdu_session_reactivation_result);
 
     /* Send Initial context setup response */
-    sendbuf = testngap_build_initial_context_setup_response(
-            test_ue, sess);
+    sendbuf = testngap_build_initial_context_setup_response(test_ue, true);
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* Send GTP-U ICMP Packet */
-    qos_flow = test_qos_flow_find_by_ue_qfi(test_ue, 1);
+    qos_flow = test_qos_flow_find_by_qfi(sess, 1);
     ogs_assert(qos_flow);
     rv = test_gtpu_send_ping(gtpu, qos_flow, TEST_PING_IPV4);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
@@ -433,7 +432,7 @@ static void test1_func(abts_case *tc, void *data)
     testngap_recv(test_ue, recvbuf);
 
     /* Send Initial context setup response */
-    sendbuf = testngap_build_initial_context_setup_response(test_ue, NULL);
+    sendbuf = testngap_build_initial_context_setup_response(test_ue, false);
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
@@ -479,7 +478,7 @@ static void test1_func(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* Send GTP-U ICMP Packet */
-    qos_flow = test_qos_flow_find_by_ue_qfi(test_ue, 1);
+    qos_flow = test_qos_flow_find_by_qfi(sess, 1);
     ogs_assert(qos_flow);
     rv = test_gtpu_send_ping(gtpu, qos_flow, TEST_PING_IPV4);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);

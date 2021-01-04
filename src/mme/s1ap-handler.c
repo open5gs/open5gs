@@ -1255,24 +1255,6 @@ void s1ap_handle_path_switch_request(
     ogs_debug("    IP[%s] ENB_ID[%d]",
             OGS_ADDR(enb->sctp.addr, buf), enb->enb_id);
 
-    ogs_assert(EUTRAN_CGI);
-    pLMNidentity = &EUTRAN_CGI->pLMNidentity;
-    ogs_assert(pLMNidentity && pLMNidentity->size == sizeof(ogs_plmn_id_t));
-    cell_ID = &EUTRAN_CGI->cell_ID;
-    ogs_assert(cell_ID);
-
-    ogs_assert(TAI);
-    pLMNidentity = &TAI->pLMNidentity;
-    ogs_assert(pLMNidentity && pLMNidentity->size == sizeof(ogs_plmn_id_t));
-    tAC = &TAI->tAC;
-    ogs_assert(tAC && tAC->size == sizeof(uint16_t));
-
-    ogs_assert(UESecurityCapabilities);
-    encryptionAlgorithms =
-        &UESecurityCapabilities->encryptionAlgorithms;
-    integrityProtectionAlgorithms =
-        &UESecurityCapabilities->integrityProtectionAlgorithms;
-
     ogs_assert(MME_UE_S1AP_ID);
     ogs_assert(ENB_UE_S1AP_ID);
     enb_ue = enb_ue_find_by_mme_ue_s1ap_id(*MME_UE_S1AP_ID);
@@ -1298,20 +1280,30 @@ void s1ap_handle_path_switch_request(
     mme_ue = enb_ue->mme_ue;
     ogs_expect_or_return(mme_ue);
 
-    if (SECURITY_CONTEXT_IS_VALID(mme_ue)) {
-        mme_ue->nhcc++;
-        ogs_kdf_nh_enb(mme_ue->kasme, mme_ue->nh, mme_ue->nh);
-    } else {
-        s1apbuf = s1ap_build_path_switch_failure(
-                *ENB_UE_S1AP_ID, *MME_UE_S1AP_ID,
-                S1AP_Cause_PR_nas, S1AP_CauseNas_authentication_failure);
-        ogs_expect_or_return(s1apbuf);
+    ogs_debug("    OLD TAI[PLMN_ID:%06x,TAC:%d]",
+            ogs_plmn_id_hexdump(&mme_ue->tai.plmn_id),
+            mme_ue->tai.tac);
+    ogs_debug("    OLD E_CGI[PLMN_ID:%06x,CELL_ID:%d]",
+            ogs_plmn_id_hexdump(&mme_ue->e_cgi.plmn_id),
+            mme_ue->e_cgi.cell_id);
 
-        s1ap_send_to_enb_ue(enb_ue, s1apbuf);
-        return;
-    }
-
+    /* Update ENB-UE-S1AP-ID */
     enb_ue->enb_ue_s1ap_id = *ENB_UE_S1AP_ID;
+
+    /* Change enb_ue to the NEW eNB */
+    enb_ue_switch_to_enb(enb_ue, enb);
+
+    ogs_assert(EUTRAN_CGI);
+    pLMNidentity = &EUTRAN_CGI->pLMNidentity;
+    ogs_assert(pLMNidentity && pLMNidentity->size == sizeof(ogs_plmn_id_t));
+    cell_ID = &EUTRAN_CGI->cell_ID;
+    ogs_assert(cell_ID);
+
+    ogs_assert(TAI);
+    pLMNidentity = &TAI->pLMNidentity;
+    ogs_assert(pLMNidentity && pLMNidentity->size == sizeof(ogs_plmn_id_t));
+    tAC = &TAI->tAC;
+    ogs_assert(tAC && tAC->size == sizeof(uint16_t));
 
     memcpy(&enb_ue->saved.tai.plmn_id, pLMNidentity->buf, 
             sizeof(enb_ue->saved.tai.plmn_id));
@@ -1324,12 +1316,6 @@ void s1ap_handle_path_switch_request(
             sizeof(enb_ue->saved.e_cgi.cell_id));
     enb_ue->saved.e_cgi.cell_id = (be32toh(enb_ue->saved.e_cgi.cell_id) >> 4);
 
-    ogs_debug("    OLD TAI[PLMN_ID:%06x,TAC:%d]",
-            ogs_plmn_id_hexdump(&mme_ue->tai.plmn_id),
-            mme_ue->tai.tac);
-    ogs_debug("    OLD E_CGI[PLMN_ID:%06x,CELL_ID:%d]",
-            ogs_plmn_id_hexdump(&mme_ue->e_cgi.plmn_id),
-            mme_ue->e_cgi.cell_id);
     ogs_debug("    TAI[PLMN_ID:%06x,TAC:%d]",
             ogs_plmn_id_hexdump(&enb_ue->saved.tai.plmn_id),
             enb_ue->saved.tai.tac);
@@ -1340,6 +1326,12 @@ void s1ap_handle_path_switch_request(
     /* Copy TAI and ECGI from enb_ue */
     memcpy(&mme_ue->tai, &enb_ue->saved.tai, sizeof(ogs_eps_tai_t));
     memcpy(&mme_ue->e_cgi, &enb_ue->saved.e_cgi, sizeof(ogs_e_cgi_t));
+
+    ogs_assert(UESecurityCapabilities);
+    encryptionAlgorithms =
+        &UESecurityCapabilities->encryptionAlgorithms;
+    integrityProtectionAlgorithms =
+        &UESecurityCapabilities->integrityProtectionAlgorithms;
 
     memcpy(&eea, encryptionAlgorithms->buf, sizeof(eea));
     eea = be16toh(eea);
@@ -1352,6 +1344,21 @@ void s1ap_handle_path_switch_request(
     eia0 = mme_ue->ue_network_capability.eia0;
     mme_ue->ue_network_capability.eia = eia >> 9;
     mme_ue->ue_network_capability.eia0 = eia0;
+
+    if (!SECURITY_CONTEXT_IS_VALID(mme_ue)) {
+        ogs_error("No Security Context");
+        s1apbuf = s1ap_build_path_switch_failure(
+                *ENB_UE_S1AP_ID, *MME_UE_S1AP_ID,
+                S1AP_Cause_PR_nas, S1AP_CauseNas_authentication_failure);
+        ogs_expect_or_return(s1apbuf);
+
+        s1ap_send_to_enb_ue(enb_ue, s1apbuf);
+        return;
+    }
+
+    /* Update Security Context (NextHop) */
+    mme_ue->nhcc++;
+    ogs_kdf_nh_enb(mme_ue->kasme, mme_ue->nh, mme_ue->nh);
 
     ogs_assert(E_RABToBeSwitchedDLList);
     for (i = 0; i < E_RABToBeSwitchedDLList->list.count; i++) {
@@ -1382,9 +1389,6 @@ void s1ap_handle_path_switch_request(
 
         mme_gtp_send_modify_bearer_request(bearer, 1);
     }
-
-    /* Switch to enb */
-    enb_ue_switch_to_enb(enb_ue, enb);
 }
 
 void s1ap_handle_enb_configuration_transfer(

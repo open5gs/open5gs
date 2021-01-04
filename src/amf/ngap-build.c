@@ -387,7 +387,7 @@ ogs_pkbuf_t *ngap_build_initial_context_setup_request(
         NGAP_S_NSSAI_t *s_NSSAI = NULL;
         NGAP_SST_t *sST = NULL;
 
-        if (!sess->pdu_session_resource_setup_request_transfer) continue;
+        if (!sess->transfer.pdu_session_resource_setup_request) continue;
 
         if (!PDUSessionList) {
             ie = CALLOC(1, sizeof(NGAP_InitialContextSetupRequestIEs_t));
@@ -417,10 +417,10 @@ ogs_pkbuf_t *ngap_build_initial_context_setup_request(
         }
 
         transfer = &PDUSessionItem->pDUSessionResourceSetupRequestTransfer;
-        transfer->size = sess->pdu_session_resource_setup_request_transfer->len;
+        transfer->size = sess->transfer.pdu_session_resource_setup_request->len;
         transfer->buf = CALLOC(transfer->size, sizeof(uint8_t));
         memcpy(transfer->buf,
-                sess->pdu_session_resource_setup_request_transfer->data,
+                sess->transfer.pdu_session_resource_setup_request->data,
                 transfer->size);
     }
 
@@ -1289,7 +1289,7 @@ ogs_pkbuf_t *ngap_build_amf_configuration_transfer(
 }
 #endif
 
-ogs_pkbuf_t *ngap_build_path_switch_ack(amf_ue_t *amf_ue, ogs_pkbuf_t *n2smbuf)
+ogs_pkbuf_t *ngap_build_path_switch_ack(amf_ue_t *amf_ue)
 {
     int i, j;
 
@@ -1382,6 +1382,8 @@ ogs_pkbuf_t *ngap_build_path_switch_ack(amf_ue_t *amf_ue, ogs_pkbuf_t *n2smbuf)
         OCTET_STRING_t *transfer = NULL;
         NGAP_PDUSessionResourceSwitchedItem_t *PDUSessionItem = NULL;
 
+        if (!sess->transfer.path_switch_request_ack) continue;
+
         if (!PDUSessionResourceSwitchedList) {
             ie = CALLOC(1, sizeof(NGAP_PathSwitchRequestAcknowledgeIEs_t));
             ASN_SEQUENCE_ADD(&PathSwitchRequestAcknowledge->protocolIEs, ie);
@@ -1401,10 +1403,10 @@ ogs_pkbuf_t *ngap_build_path_switch_ack(amf_ue_t *amf_ue, ogs_pkbuf_t *n2smbuf)
         PDUSessionItem->pDUSessionID = sess->psi;
 
         transfer = &PDUSessionItem->pathSwitchRequestAcknowledgeTransfer;
-        transfer->size = n2smbuf->len;
+        transfer->size = sess->transfer.path_switch_request_ack->len;
         transfer->buf = CALLOC(transfer->size, sizeof(uint8_t));
-        memcpy(transfer->buf, n2smbuf->data, transfer->size);
-        ogs_pkbuf_free(n2smbuf);
+        memcpy(transfer->buf, sess->transfer.path_switch_request_ack->data,
+                transfer->size);
     }
 
     ie = CALLOC(1, sizeof(NGAP_PathSwitchRequestAcknowledgeIEs_t));

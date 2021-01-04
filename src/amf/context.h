@@ -440,9 +440,10 @@ typedef struct amf_sess_s {
     bool n1_released;
     bool n2_released;
 
-    /* SMF sends the RESPONSE
-     * of [POST] /nsmf-pdusession/v1/sm-contexts/{smContextRef}/modify */
-    ogs_pkbuf_t *pdu_session_resource_setup_request_transfer;
+    struct {
+        ogs_pkbuf_t *pdu_session_resource_setup_request;
+        ogs_pkbuf_t *path_switch_request_ack;
+    } transfer;
 
     /* last payload for sending back to the UE */
     uint8_t         payload_container_type;
