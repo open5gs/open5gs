@@ -332,11 +332,16 @@ static void server_send_response(
         add_header(&nva[i++], ogs_hash_this_key(hi), ogs_hash_this_val(hi));
     }
 
+    ogs_debug("STATUS [%d]", response->status);
+
     if (response->http.content && response->http.content_length) {
         nghttp2_data_provider data_prd;
 
         data_prd.source.ptr = response;
         data_prd.read_callback = response_read_callback;
+
+        ogs_debug("SENDING...: %d", (int)response->http.content_length);
+        ogs_debug("%s", response->http.content);
 
         rv = nghttp2_submit_response(sbi_sess->session,
                 stream->stream_id, nva, nvlen, &data_prd);
@@ -749,6 +754,13 @@ static int on_frame_recv(nghttp2_session *session,
         /* HEADERS or DATA frame with +END_STREAM flag */
         if (frame->hd.flags & NGHTTP2_FLAG_END_STREAM) {
 
+            ogs_debug("[%s] %s", request->h.method, request->h.uri);
+
+            if (request->http.content_length && request->http.content) {
+                ogs_debug("RECEIVED: %d", (int)request->http.content_length);
+                ogs_debug("%s", request->http.content);
+            }
+
             if (server->cb(request, stream) != OGS_OK) {
                 ogs_warn("server callback error");
                 ogs_sbi_server_send_error(stream,
@@ -850,7 +862,6 @@ static int on_header(nghttp2_session *session, const nghttp2_frame *frame,
         ogs_assert(request->h.uri == NULL);
         request->h.uri = ogs_sbi_parse_uri(valuestr, "?", &saveptr);
         ogs_assert(request->h.uri);
-        ogs_debug("path: %s", request->h.uri);
 
         memset(params, 0, sizeof(params));
 
@@ -878,7 +889,6 @@ static int on_header(nghttp2_session *session, const nghttp2_frame *frame,
 
         ogs_assert(request->h.method == NULL);
         request->h.method = ogs_strdup(valuestr);
-        ogs_debug("method: %s", request->h.method);
 
     } else {
 
@@ -935,10 +945,6 @@ static int on_data_chunk_recv(nghttp2_session *session, uint8_t flags,
 
     memcpy(request->http.content + offset, data, len);
     request->http.content[request->http.content_length] = '\0';
-
-    ogs_debug("RECEIVED");
-    ogs_debug("content-length: %d", (int)request->http.content_length);
-    ogs_debug("%s", request->http.content);
 
     return 0;
 }
@@ -1113,10 +1119,6 @@ static int on_send_data(nghttp2_session *session, nghttp2_frame *frame,
 
     ogs_assert(framehd);
     ogs_assert(length);
-
-    ogs_debug("SENDING...");
-    ogs_debug("content-length: %d", (int)response->http.content_length);
-    ogs_debug("%s", response->http.content);
 
     pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
     ogs_assert(pkbuf);

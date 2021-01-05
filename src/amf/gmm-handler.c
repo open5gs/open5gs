@@ -56,8 +56,6 @@ int gmm_handle_registration_request(amf_ue_t *amf_ue,
     ue_security_capability = &registration_request->ue_security_capability;
     ogs_assert(ue_security_capability);
 
-    ogs_debug("Registration request");
-
     if (!mobile_identity->length || !mobile_identity->buffer) {
         ogs_error("No Mobile Identity");
         nas_5gs_send_registration_reject(amf_ue,
@@ -71,7 +69,7 @@ int gmm_handle_registration_request(amf_ue_t *amf_ue,
     switch (mobile_identity_header->type) {
     case OGS_NAS_5GS_MOBILE_IDENTITY_SUCI:
         amf_ue_set_suci(amf_ue, mobile_identity);
-        ogs_debug("[%s]    SUCI", amf_ue->suci);
+        ogs_info("[%s]    SUCI", amf_ue->suci);
         break;
     case OGS_NAS_5GS_MOBILE_IDENTITY_GUTI:
         mobile_identity_guti =
@@ -84,7 +82,7 @@ int gmm_handle_registration_request(amf_ue_t *amf_ue,
         ogs_nas_5gs_mobile_identity_guti_to_nas_guti(
             mobile_identity_guti, &nas_guti);
 
-        ogs_debug("[%s]    5G-S_GUTI[AMF_ID:0x%x,M_TMSI:0x%x]",
+        ogs_info("[%s]    5G-S_GUTI[AMF_ID:0x%x,M_TMSI:0x%x]",
             AMF_UE_HAVE_SUCI(amf_ue) ? amf_ue->suci : "Unknown ID",
             ogs_amf_id_hexdump(&nas_guti.amf_id), nas_guti.m_tmsi);
         break;
@@ -338,8 +336,6 @@ int gmm_handle_service_request(amf_ue_t *amf_ue,
     ngksi = &service_request->ngksi;
     ogs_assert(ngksi);
 
-    ogs_debug("Service request");
-
     amf_ue->nas.message_type = OGS_NAS_5GS_SERVICE_REQUEST;
     amf_ue->nas.tsc = ngksi->tsc;
     amf_ue->nas.ksi = ngksi->value;
@@ -391,7 +387,7 @@ int gmm_handle_service_request(amf_ue_t *amf_ue,
     }
     ogs_debug("    SERVED_TAI_INDEX[%d]", served_tai_index);
 
-    ogs_debug("[%s]    5G-S_GUTI[AMF_ID:0x%x,M_TMSI:0x%x]",
+    ogs_info("[%s]    5G-S_GUTI[AMF_ID:0x%x,M_TMSI:0x%x]",
         AMF_UE_HAVE_SUCI(amf_ue) ? amf_ue->suci : "Unknown ID",
         ogs_amf_id_hexdump(&amf_ue->guti.amf_id), amf_ue->guti.m_tmsi);
 
@@ -515,8 +511,6 @@ int gmm_handle_deregistration_request(amf_ue_t *amf_ue,
 
     de_registration_type = &deregistration_request->de_registration_type;
 
-    ogs_debug("[%s] Deregistration request", amf_ue->supi);
-
     /* Set 5GS Attach Type */
     memcpy(&amf_ue->nas.de_registration,
             de_registration_type, sizeof(ogs_nas_de_registration_type_t));
@@ -530,6 +524,8 @@ int gmm_handle_deregistration_request(amf_ue_t *amf_ue,
 
     if (deregistration_request->de_registration_type.switch_off)
         ogs_debug("    Switch-Off");
+
+    ogs_info("[%s]    SUCI", amf_ue->suci);
 
     amf_sbi_send_release_all_sessions(
             amf_ue, AMF_RELEASE_SM_CONTEXT_NO_STATE);
@@ -612,7 +608,7 @@ int gmm_handle_identity_response(amf_ue_t *amf_ue,
 
     if (mobile_identity_header->type == OGS_NAS_5GS_MOBILE_IDENTITY_SUCI) {
         amf_ue_set_suci(amf_ue, mobile_identity);
-        ogs_debug("[%s]    SUCI", amf_ue->suci);
+        ogs_info("[%s]    SUCI", amf_ue->suci);
     } else {
         ogs_error("Not supported Identity type[%d]",
                 mobile_identity_header->type);

@@ -486,14 +486,14 @@ ogs_pkbuf_t *gmm_build_configuration_update_command(
         ogs_gmtime(tv.tv_sec, &gmt);
         ogs_localtime(tv.tv_sec, &local);
 
-        ogs_debug("    GMT Time[Y:M:D H:M:S GMT:DST] - "
-                    "%d:%d:%d, %d:%d:%d, %d:%d",
-            gmt.tm_year, gmt.tm_mon, gmt.tm_mday,
+        ogs_info("    UTC [%04d-%02d-%02dT%02d:%02d:%02d] "
+                "Timezone[%d]/DST[%d]",
+            gmt.tm_year+1900, gmt.tm_mon+1, gmt.tm_mday,
             gmt.tm_hour, gmt.tm_min, gmt.tm_sec,
             (int)gmt.tm_gmtoff, gmt.tm_isdst);
-        ogs_debug("    LOCAL Time[Y:M:D H:M:S GMT:DST] - "
-                    "%d:%d:%d, %d:%d:%d, %d:%d",
-            local.tm_year, local.tm_mon, local.tm_mday,
+        ogs_info("    LOCAL [%04d-%02d-%02dT%02d:%02d:%02d] "
+                "Timezone[%d]/DST[%d]",
+            local.tm_year+1900, local.tm_mon+1, local.tm_mday,
             local.tm_hour, local.tm_min, local.tm_sec,
             (int)local.tm_gmtoff, local.tm_isdst);
 

@@ -1205,8 +1205,13 @@ void amf_ue_remove_all()
 {
     amf_ue_t *amf_ue = NULL, *next = NULL;;
 
-    ogs_list_for_each_safe(&self.amf_ue_list, next, amf_ue)
+    ogs_list_for_each_safe(&self.amf_ue_list, next, amf_ue) {
+        ran_ue_t *ran_ue = ran_ue_cycle(amf_ue->ran_ue);
+
+        if (ran_ue) ran_ue_remove(ran_ue);
+
         amf_ue_remove(amf_ue);
+    }
 }
 
 void amf_ue_fsm_init(amf_ue_t *amf_ue)
@@ -1319,7 +1324,7 @@ amf_ue_t *amf_ue_find_by_message(ogs_nas_5gs_message_t *message)
                     amf_ue->suci ? amf_ue->suci : "Unknown",
                     ogs_amf_id_hexdump(&nas_guti.amf_id), nas_guti.m_tmsi);
             } else {
-                ogs_warn("Unknown UE by 5G-S_TMSI[AMF_ID:0x%x,M_TMSI:0x%x]",
+                ogs_info("Unknown UE by 5G-S_TMSI[AMF_ID:0x%x,M_TMSI:0x%x]",
                     ogs_amf_id_hexdump(&nas_guti.amf_id), nas_guti.m_tmsi);
             }
             break;

@@ -120,7 +120,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
 
         if (message->emm.h.security_header_type
                 == OGS_NAS_SECURITY_HEADER_FOR_SERVICE_REQUEST_MESSAGE) {
-            ogs_debug("Service request");
+            ogs_info("Service request");
             rv = emm_handle_service_request(
                     mme_ue, &message->emm.service_request);
             if (rv != OGS_OK) {
@@ -168,7 +168,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
 
         switch (message->emm.h.message_type) {
         case OGS_NAS_EPS_IDENTITY_RESPONSE:
-            ogs_debug("Identity response");
+            ogs_info("Identity response");
             CLEAR_MME_UE_TIMER(mme_ue->t3470);
 
             rv = emm_handle_identity_response(mme_ue,
@@ -185,8 +185,6 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
                 break;
             }
 
-            ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
-
             if (SESSION_CONTEXT_IS_AVAILABLE(mme_ue)) {
                 mme_gtp_send_delete_all_sessions(mme_ue,
                         OGS_GTP_DELETE_SEND_AUTHENTICATION_REQUEST);
@@ -197,7 +195,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
             break;
 
         case OGS_NAS_EPS_ATTACH_REQUEST:
-            ogs_debug("Attach request[%s]", mme_ue->imsi_bcd);
+            ogs_info("Attach request");
             rv = emm_handle_attach_request(
                     mme_ue, &message->emm.attach_request, e->pkbuf);
             if (rv != OGS_OK) {
@@ -241,7 +239,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
             break;
 
         case OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST:
-            ogs_debug("Tracking area update request");
+            ogs_info("Tracking area update request");
             rv = emm_handle_tau_request(mme_ue,
                     &message->emm.tracking_area_update_request, e->pkbuf);
             if (rv != OGS_OK) {
@@ -304,12 +302,12 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
             break;
 
         case OGS_NAS_EPS_TRACKING_AREA_UPDATE_COMPLETE:
-            ogs_debug("Tracking area update complete");
-            ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
+            ogs_info("Tracking area update complete");
+            ogs_info("    IMSI[%s]", mme_ue->imsi_bcd);
             break;
 
         case OGS_NAS_EPS_EXTENDED_SERVICE_REQUEST:
-            ogs_debug("Extended service request");
+            ogs_info("Extended service request");
             rv = emm_handle_extended_service_request(
                     mme_ue, &message->emm.extended_service_request);
             if (rv != OGS_OK) {
@@ -424,8 +422,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
             break;
 
         case OGS_NAS_EPS_DETACH_REQUEST:
-            ogs_debug("Detach request");
-            ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
+            ogs_info("Detach request");
             rv = emm_handle_detach_request(
                     mme_ue, &message->emm.detach_request_from_ue);
             if (rv != OGS_OK) {
@@ -646,8 +643,7 @@ void emm_state_authentication(ogs_fsm_t *s, mme_event_t *e)
             OGS_FSM_TRAN(s, &emm_state_exception);
             break;
         case OGS_NAS_EPS_DETACH_REQUEST:
-            ogs_debug("Detach request");
-            ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
+            ogs_warn("Detach request");
             rv = emm_handle_detach_request(
                     mme_ue, &message->emm.detach_request_from_ue);
             if (rv != OGS_OK) {
@@ -810,8 +806,7 @@ void emm_state_security_mode(ogs_fsm_t *s, mme_event_t *e)
             OGS_FSM_TRAN(s, &emm_state_exception);
             break;
         case OGS_NAS_EPS_DETACH_REQUEST:
-            ogs_debug("Detach request");
-            ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
+            ogs_warn("Detach request");
             rv = emm_handle_detach_request(
                     mme_ue, &message->emm.detach_request_from_ue);
             if (rv != OGS_OK) {
@@ -884,8 +879,7 @@ void emm_state_initial_context_setup(ogs_fsm_t *s, mme_event_t *e)
 
         switch (message->emm.h.message_type) {
         case OGS_NAS_EPS_ATTACH_COMPLETE:
-            ogs_debug("Attach complete");
-            ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
+            ogs_info("Attach complete");
 
             h.type = e->nas_type;
             if (h.integrity_protected == 0) {
@@ -941,8 +935,7 @@ void emm_state_initial_context_setup(ogs_fsm_t *s, mme_event_t *e)
             OGS_FSM_TRAN(s, &emm_state_exception);
             break;
         case OGS_NAS_EPS_DETACH_REQUEST:
-            ogs_debug("Detach request");
-            ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
+            ogs_warn("Detach request");
             rv = emm_handle_detach_request(
                     mme_ue, &message->emm.detach_request_from_ue);
             if (rv != OGS_OK) {
@@ -1012,7 +1005,7 @@ void emm_state_exception(ogs_fsm_t *s, mme_event_t *e)
 
         switch (message->emm.h.message_type) {
         case OGS_NAS_EPS_ATTACH_REQUEST:
-            ogs_debug("Attach request[%s]", mme_ue->imsi_bcd);
+            ogs_info("Attach request[%s]", mme_ue->imsi_bcd);
             rv = emm_handle_attach_request(
                     mme_ue, &message->emm.attach_request, e->pkbuf);
             if (rv != OGS_OK) {

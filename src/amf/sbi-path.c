@@ -221,18 +221,31 @@ void amf_sbi_send_deactivate_all_ue_in_gnb(amf_gnb_t *gnb, int state)
         int old_xact_count = 0, new_xact_count = 0;
 
         amf_ue = ran_ue->amf_ue;
-        ogs_assert(amf_ue);
 
-        old_xact_count = amf_sess_xact_count(amf_ue);
+        if (amf_ue) {
+            old_xact_count = amf_sess_xact_count(amf_ue);
 
-        amf_sbi_send_deactivate_all_sessions(
+            amf_sbi_send_deactivate_all_sessions(
                 amf_ue, state, NGAP_Cause_PR_radioNetwork,
                 NGAP_CauseRadioNetwork_failure_in_radio_interface_procedure);
 
-        new_xact_count = amf_sess_xact_count(amf_ue);
+            new_xact_count = amf_sess_xact_count(amf_ue);
 
-        if (old_xact_count == new_xact_count) {
-            ran_ue_remove(ran_ue);
+            if (old_xact_count == new_xact_count) {
+                ran_ue_remove(ran_ue);
+            }
+        } else {
+            ogs_warn("amf_sbi_send_deactivate_all_ue_in_gnb()");
+            ogs_warn("    RAN_UE_NGAP_ID[%d] AMF_UE_NGAP_ID[%lld] State[%d]",
+                ran_ue->ran_ue_ngap_id, (long long)ran_ue->amf_ue_ngap_id,
+                state);
+
+            if (state == AMF_UPDATE_SM_CONTEXT_NG_RESET) {
+                ran_ue_remove(ran_ue);
+            } else {
+                /* At this point, it does not support other action */
+                ogs_assert_if_reached();
+            }
         }
     }
 }

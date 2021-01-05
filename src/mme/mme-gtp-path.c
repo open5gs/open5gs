@@ -436,9 +436,23 @@ void mme_gtp_send_release_all_ue_in_enb(mme_enb_t *enb, int action)
 
     ogs_list_for_each(&enb->enb_ue_list, enb_ue) {
         mme_ue = enb_ue->mme_ue;
-        ogs_assert(mme_ue);
 
-        mme_gtp_send_release_access_bearers_request(mme_ue, action);
+        if (mme_ue) {
+
+            mme_gtp_send_release_access_bearers_request(mme_ue, action);
+
+        } else {
+            ogs_warn("mme_gtp_send_release_all_ue_in_enb()");
+            ogs_warn("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d] Action[%d]",
+                enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id, action);
+
+            if (action == OGS_GTP_RELEASE_S1_CONTEXT_REMOVE) {
+                enb_ue_remove(enb_ue);
+            } else {
+                /* At this point, it does not support other action */
+                ogs_assert_if_reached();
+            }
+        }
     }
 }
 

@@ -443,7 +443,7 @@ void s1ap_send_handover_request(
 
     enb_ue_t *source_ue = NULL, *target_ue = NULL;
 
-    ogs_debug("[MME] Handover request");
+    ogs_info("Handover request");
     
     ogs_assert(target_enb);
 
@@ -455,9 +455,9 @@ void s1ap_send_handover_request(
     target_ue = enb_ue_add(target_enb, INVALID_UE_S1AP_ID);
     ogs_assert(target_ue);
 
-    ogs_debug("    Source : ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
+    ogs_info("    Source : ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
             source_ue->enb_ue_s1ap_id, source_ue->mme_ue_s1ap_id);
-    ogs_debug("    Target : ENB_UE_S1AP_ID[Unknown] MME_UE_S1AP_ID[%d]",
+    ogs_info("    Target : ENB_UE_S1AP_ID[Unknown] MME_UE_S1AP_ID[%d]",
             target_ue->mme_ue_s1ap_id);
 
     source_ue_associate_target_ue(source_ue, target_ue);

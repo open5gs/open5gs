@@ -783,7 +783,7 @@ void mme_s11_handle_downlink_data_notification(
     }
 
     if (!mme_ue) {
-        ogs_error("No Context");
+        ogs_error("No UE Context");
         cause_value = OGS_GTP_CAUSE_CONTEXT_NOT_FOUND;
     }
 
@@ -795,7 +795,7 @@ void mme_s11_handle_downlink_data_notification(
     }
 
     if (!bearer) {
-        ogs_error("No context");
+        ogs_error("No Bearer Context");
         cause_value = OGS_GTP_CAUSE_CONTEXT_NOT_FOUND;
     }
 

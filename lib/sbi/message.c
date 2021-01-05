@@ -524,8 +524,6 @@ int ogs_sbi_parse_header(ogs_sbi_message_t *message, ogs_sbi_header_t *header)
     message->h.method = header->method;
     message->h.uri = header->uri;
     ogs_assert(message->h.uri);
-    ogs_debug("[%s] %s", message->h.method ? message->h.method : "Notify",
-            message->h.uri);
 
     uri = ogs_strdup(header->uri);
     ogs_assert(uri);

@@ -179,25 +179,10 @@ void ngap_recv_handler(ogs_sock_t *sock)
             }
             break;
         case SCTP_SHUTDOWN_EVENT :
-        case SCTP_SEND_FAILED :
-            if (not->sn_header.sn_type == SCTP_SHUTDOWN_EVENT)
-                ogs_debug("SCTP_SHUTDOWN_EVENT:[T:%d, F:0x%x, L:%d]", 
-                        not->sn_shutdown_event.sse_type,
-                        not->sn_shutdown_event.sse_flags,
-                        not->sn_shutdown_event.sse_length);
-            if (not->sn_header.sn_type == SCTP_SEND_FAILED)
-#if HAVE_USRSCTP
-                ogs_error("SCTP_SEND_FAILED:[T:%d, F:0x%x, S:%d]", 
-                        not->sn_send_failed_event.ssfe_type,
-                        not->sn_send_failed_event.ssfe_flags,
-                        not->sn_send_failed_event.ssfe_error);
-#else
-                ogs_error("SCTP_SEND_FAILED:[T:%d, F:0x%x, S:%d]", 
-                        not->sn_send_failed.ssf_type,
-                        not->sn_send_failed.ssf_flags,
-                        not->sn_send_failed.ssf_error);
-#endif
-
+            ogs_debug("SCTP_SHUTDOWN_EVENT:[T:%d, F:0x%x, L:%d]",
+                    not->sn_shutdown_event.sse_type,
+                    not->sn_shutdown_event.sse_flags,
+                    not->sn_shutdown_event.sse_length);
             addr = ogs_calloc(1, sizeof(ogs_sockaddr_t));
             ogs_assert(addr);
             memcpy(addr, &from, sizeof(ogs_sockaddr_t));
@@ -205,6 +190,21 @@ void ngap_recv_handler(ogs_sock_t *sock)
             ngap_event_push(AMF_EVT_NGAP_LO_CONNREFUSED,
                     sock, addr, NULL, 0, 0);
             break;
+
+        case SCTP_SEND_FAILED :
+#if HAVE_USRSCTP
+            ogs_error("SCTP_SEND_FAILED:[T:%d, F:0x%x, S:%d]",
+                    not->sn_send_failed_event.ssfe_type,
+                    not->sn_send_failed_event.ssfe_flags,
+                    not->sn_send_failed_event.ssfe_error);
+#else
+            ogs_error("SCTP_SEND_FAILED:[T:%d, F:0x%x, S:%d]",
+                    not->sn_send_failed.ssf_type,
+                    not->sn_send_failed.ssf_flags,
+                    not->sn_send_failed.ssf_error);
+#endif
+            break;
+
         case SCTP_PEER_ADDR_CHANGE:
             ogs_warn("SCTP_PEER_ADDR_CHANGE:[T:%d, F:0x%x, S:%d]", 
                     not->sn_paddr_change.spc_type,

@@ -344,7 +344,7 @@ void ngap_handle_initial_ue_message(amf_gnb_t *gnb, ogs_ngap_message_t *message)
     InitialUEMessage = &initiatingMessage->value.choice.InitialUEMessage;
     ogs_assert(InitialUEMessage);
 
-    ogs_debug("Initial UE Message");
+    ogs_info("Initial UE Message");
 
     for (i = 0; i < InitialUEMessage->protocolIEs.list.count; i++) {
         ie = InitialUEMessage->protocolIEs.list.array[i];
@@ -410,10 +410,10 @@ void ngap_handle_initial_ue_message(amf_gnb_t *gnb, ogs_ngap_message_t *message)
 
             amf_ue = amf_ue_find_by_guti(&nas_guti);
             if (!amf_ue) {
-                ogs_debug("Unknown UE by 5G-S_TMSI[AMF_ID:0x%x,M_TMSI:0x%x]",
+                ogs_info("Unknown UE by 5G-S_TMSI[AMF_ID:0x%x,M_TMSI:0x%x]",
                     ogs_amf_id_hexdump(&nas_guti.amf_id), nas_guti.m_tmsi);
             } else {
-                ogs_debug("[%s]    5G-S_TMSI[AMF_ID:0x%x,M_TMSI:0x%x]",
+                ogs_info("[%s]    5G-S_TMSI[AMF_ID:0x%x,M_TMSI:0x%x]",
                         AMF_UE_HAVE_SUCI(amf_ue) ? amf_ue->suci : "Unknown ID",
                         ogs_amf_id_hexdump(&amf_ue->guti.amf_id),
                         amf_ue->guti.m_tmsi);
@@ -473,7 +473,7 @@ void ngap_handle_initial_ue_message(amf_gnb_t *gnb, ogs_ngap_message_t *message)
         return;
     }
 
-    ogs_debug("    RAN_UE_NGAP_ID[%d] AMF_UE_NGAP_ID[%lld] "
+    ogs_info("    RAN_UE_NGAP_ID[%d] AMF_UE_NGAP_ID[%lld] "
             "TAC[%d] CellID[0x%llx]",
         ran_ue->ran_ue_ngap_id, (long long)ran_ue->amf_ue_ngap_id,
         ran_ue->saved.tai.tac.v, (long long)ran_ue->saved.nr_cgi.cell_id);
@@ -1171,6 +1171,11 @@ void ngap_handle_ue_context_release_action(ran_ue_t *ran_ue)
 
     ogs_assert(ran_ue);
 
+    if (ran_ue_cycle(ran_ue) == NULL) {
+        ogs_error("NG context has already been removed");
+        return;
+    }
+
     amf_ue = ran_ue->amf_ue;
 
     ogs_info("UE Context Release [Action:%d]", ran_ue->ue_ctx_rel_action);
@@ -1758,7 +1763,7 @@ void ngap_handle_path_switch_request(
     PathSwitchRequest = &initiatingMessage->value.choice.PathSwitchRequest;
     ogs_assert(PathSwitchRequest);
 
-    ogs_debug("Path switch request");
+    ogs_info("Path switch request");
     
     for (i = 0; i < PathSwitchRequest->protocolIEs.list.count; i++) {
         ie = PathSwitchRequest->protocolIEs.list.array[i];
@@ -1824,9 +1829,9 @@ void ngap_handle_path_switch_request(
         return;
     }
 
-    ogs_debug("    [OLD] RAN_UE_NGAP_ID[%d] AMF_UE_NGAP_ID[%lld] ",
+    ogs_info("    [OLD] RAN_UE_NGAP_ID[%d] AMF_UE_NGAP_ID[%lld] ",
         ran_ue->ran_ue_ngap_id, (long long)ran_ue->amf_ue_ngap_id);
-    ogs_debug("    [OLD] TAC[%d] CellID[0x%llx]",
+    ogs_info("    [OLD] TAC[%d] CellID[0x%llx]",
         amf_ue->tai.tac.v, (long long)amf_ue->nr_cgi.cell_id);
 
     /* Update RAN-UE-NGAP-ID */
@@ -1851,7 +1856,7 @@ void ngap_handle_path_switch_request(
         return;
     }
 
-    ogs_debug("    [NEW] RAN_UE_NGAP_ID[%d] AMF_UE_NGAP_ID[%lld] ",
+    ogs_info("    [NEW] RAN_UE_NGAP_ID[%d] AMF_UE_NGAP_ID[%lld] ",
         ran_ue->ran_ue_ngap_id, (long long)ran_ue->amf_ue_ngap_id);
 
     UserLocationInformationNR =
@@ -1866,7 +1871,7 @@ void ngap_handle_path_switch_request(
     memcpy(&amf_ue->tai, &ran_ue->saved.tai, sizeof(ogs_5gs_tai_t));
     memcpy(&amf_ue->nr_cgi, &ran_ue->saved.nr_cgi, sizeof(ogs_nr_cgi_t));
 
-    ogs_debug("    [NEW] TAC[%d] CellID[0x%llx]",
+    ogs_info("    [NEW] TAC[%d] CellID[0x%llx]",
         amf_ue->tai.tac.v, (long long)amf_ue->nr_cgi.cell_id);
 
     if (!UESecurityCapabilities) {

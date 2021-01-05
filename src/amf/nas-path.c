@@ -284,7 +284,7 @@ void nas_5gs_send_configuration_update_command(
 
     ogs_assert(amf_ue);
 
-    ogs_debug("[%s] Configuration update command", amf_ue->supi);
+    ogs_info("[%s] Configuration update command", amf_ue->supi);
 
     if (amf_ue->t3555.pkbuf) {
         gmmbuf = amf_ue->t3555.pkbuf;

@@ -2289,8 +2289,13 @@ void mme_ue_remove_all(void)
 {
     mme_ue_t *mme_ue = NULL, *next = NULL;;
 
-    ogs_list_for_each_safe(&self.mme_ue_list, next, mme_ue)
+    ogs_list_for_each_safe(&self.mme_ue_list, next, mme_ue) {
+        enb_ue_t *enb_ue = enb_ue_cycle(mme_ue->enb_ue);
+
+        if (enb_ue) enb_ue_remove(enb_ue);
+
         mme_ue_remove(mme_ue);
+    }
 }
 
 void mme_ue_fsm_init(mme_ue_t *mme_ue)

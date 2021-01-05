@@ -157,7 +157,7 @@ static void bearer_timeout(ogs_gtp_xact_t *xact, void *data)
 
     switch (type) {
     case OGS_GTP_DOWNLINK_DATA_NOTIFICATION_TYPE:
-        ogs_error("[%s] No Downlink Data Notification ACK", sgwc_ue->imsi_bcd);
+        ogs_warn("[%s] No Downlink Data Notification ACK", sgwc_ue->imsi_bcd);
         break;
     default:
         ogs_error("GTP Timeout : IMSI[%s] Message-Type[%d]",

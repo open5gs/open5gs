@@ -613,6 +613,8 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
                     ogs_warn("No Context : TEID[%d]", gtp_message.h.teid);
                 else
                     ogs_warn("No Context : No TEID");
+
+                break;
             }
             mme_s11_handle_downlink_data_notification(
                 xact, mme_ue, &gtp_message.downlink_data_notification);

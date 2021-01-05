@@ -144,7 +144,7 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
             }
 
         } else {
-            ogs_error("[DROP] Cannot decode Error-Indication");
+            ogs_error("[DROP] Cannot find FAR by Error-Indication");
             ogs_log_hexdump(OGS_LOG_ERROR, pkbuf->data, pkbuf->len);
         }
     } else if (gtp_h->type == OGS_GTPU_MSGTYPE_GPDU) {

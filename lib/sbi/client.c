@@ -305,6 +305,9 @@ static connection_t *connection_add(
 #else
             curl_easy_setopt(conn->easy, CURLOPT_EXPECT_100_TIMEOUT_MS, 0L);
 #endif
+            ogs_debug("SENDING...[%d]", (int)request->http.content_length);
+            if (request->http.content_length)
+                ogs_debug("%s", request->http.content);
         }
     }
 
@@ -439,8 +442,15 @@ static void check_multi_info(ogs_sbi_client_t *client)
                 /* remove https://localhost:8000 */
                 response->h.uri = ogs_strdup(url);
 
+                ogs_debug("[%d:%s] %s",
+                        response->status, response->h.method, response->h.uri);
+
                 response->http.content = ogs_memdup(conn->memory, conn->size);
                 response->http.content_length = conn->size;
+
+                ogs_debug("RECEIVED[%d]", (int)response->http.content_length);
+                if (response->http.content_length && response->http.content)
+                    ogs_debug("%s", response->http.content);
 
                 if (content_type)
                     ogs_sbi_header_set(response->http.headers,
