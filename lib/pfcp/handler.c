@@ -421,12 +421,6 @@ ogs_pfcp_pdr_t *ogs_pfcp_handle_create_pdr(ogs_pfcp_sess_t *sess,
         ogs_pfcp_pdr_associate_qer(pdr, qer);
     }
 
-    if (message->qer_id.presence) {
-        qer = ogs_pfcp_qer_find_or_add(sess, message->qer_id.u32);
-        ogs_assert(qer);
-        ogs_pfcp_pdr_associate_qer(pdr, qer);
-    }
-
     return pdr;
 }
 
