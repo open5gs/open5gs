@@ -61,19 +61,20 @@ max:
 #
 # pool:
 #
-# o The Number of Default Memory Pool Size
+# o The default memory pool size was set assuming 1024 UEs.
+#   To connect more UEs, you need to increase the size further.
 #
-#   - Pool-size 128         => 32768 Number
-#   - Pool-size 256         => 4096 Number
-#   - Pool-size 512         => 2048 Number
+#   - Pool-size 128         => 65536 Number
+#   - Pool-size 256         => 8192 Number
+#   - Pool-size 512         => 4096 Number
 #   - Pool-size 1024        => 1024 Number
 #   - Pool-size 2048        => 512 Number
 #   - Pool-size 8192        => 128 Number
 #   - Pool-size 1024*1024   => 8 Number
 #
-#    128:  32768
-#    256:  4096
-#    512:  2048
+#    128:  65536
+#    256:  8192
+#    512:  4096
 #    1024: 1024
 #    2048: 512
 #    8192: 128
