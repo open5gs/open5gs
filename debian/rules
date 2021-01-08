@@ -14,4 +14,4 @@ override_dh_install:
 	dh_install --sourcedir=obj-$(DEB_HOST_GNU_TYPE)
 
 override_dh_auto_test:
-	cd obj-$(DEB_HOST_GNU_TYPE) && meson test --suite unit
+	cd obj-$(DEB_HOST_GNU_TYPE) && meson test -v --suite unit

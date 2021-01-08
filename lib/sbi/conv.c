@@ -252,7 +252,7 @@ int ogs_strftimezone(char *str, size_t size, int tm_gmtoff)
             off_sign, off / 3600, off % 3600);
 }
 
-#define USE_MILLISECONDS_IN_RFC3339 1
+#define USE_MILLISECONDS_IN_RFC3339 0
 
 char *ogs_sbi_localtime_string(ogs_time_t timestamp)
 {
