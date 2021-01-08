@@ -371,14 +371,22 @@ typedef struct test_ue_s {
     test_registration_request_param_t registration_request_param;
     test_service_request_param_t service_request_param;
     test_extended_service_request_param_t extended_service_request_param;
-    uint8_t         gmm_message_type; /* Last received 5GMM message type */
 
     uint16_t pdu_session_status;
     uint16_t pdu_session_reactivation_result;
 
     test_attach_request_param_t attach_request_param;
     test_tau_request_param_t tau_request_param;
-    uint8_t         emm_message_type; /* Last received EMM message type */
+
+    /* 5GC: Last received message */
+    S1AP_ProcedureCode_t ngap_procedure_code;
+    uint8_t gmm_message_type;
+    uint8_t gsm_message_type;
+
+    /* EPC: Last received message */
+    S1AP_ProcedureCode_t s1ap_procedure_code;
+    uint8_t emm_message_type;
+    uint8_t esm_message_type;
 
     test_sess_t *sess;
 

@@ -26,7 +26,8 @@ extern "C" {
 
 ogs_pkbuf_t *testngap_build_ng_setup_request(uint32_t gnb_id, uint8_t bitsize);
 ogs_pkbuf_t *testngap_build_initial_ue_message(
-        test_ue_t *test_ue, ogs_pkbuf_t *gmmbuf, bool s_tmsi);
+        test_ue_t *test_ue, ogs_pkbuf_t *gmmbuf,
+        bool s_tmsi, bool ue_context_requested);
 ogs_pkbuf_t *testngap_build_uplink_nas_transport(
         test_ue_t *test_ue, ogs_pkbuf_t *gmmbuf);
 
@@ -42,7 +43,9 @@ ogs_pkbuf_t *testngap_build_ue_context_release_request(test_ue_t *test_ue,
         NGAP_Cause_PR group, long cause, bool pdu_session);
 ogs_pkbuf_t *testngap_build_ue_context_release_complete(test_ue_t *test_ue);
 
-ogs_pkbuf_t *testngap_build_pdu_session_resource_setup_response(
+ogs_pkbuf_t *testngap_ue_build_pdu_session_resource_setup_response(
+        test_ue_t *test_ue);
+ogs_pkbuf_t *testngap_sess_build_pdu_session_resource_setup_response(
         test_sess_t *sess);
 ogs_pkbuf_t *testngap_build_pdu_session_resource_modify_response(
         test_bearer_t *qos_flow);

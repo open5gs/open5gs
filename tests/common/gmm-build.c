@@ -133,13 +133,15 @@ ogs_pkbuf_t *testgmm_build_registration_request(
     registration_request->presencemask |=
             OGS_NAS_5GS_REGISTRATION_REQUEST_UE_SECURITY_CAPABILITY_PRESENT;
     ue_security_capability->length = 2;
-    ue_security_capability->nea = test_ue->ue_security_capability.nea;
-    ue_security_capability->nia = test_ue->ue_security_capability.nia;
-    if (test_ue->ue_security_capability.eps_ea ||
-        test_ue->ue_security_capability.eps_ia) {
+    ue_security_capability->nr_ea = test_ue->ue_security_capability.nr_ea;
+    ue_security_capability->nr_ia = test_ue->ue_security_capability.nr_ia;
+    if (test_ue->ue_security_capability.eutra_ea ||
+        test_ue->ue_security_capability.eutra_ia) {
         ue_security_capability->length = 4;
-        ue_security_capability->eps_ea = test_ue->ue_security_capability.eps_ea;
-        ue_security_capability->eps_ia = test_ue->ue_security_capability.eps_ia;
+        ue_security_capability->eutra_ea =
+            test_ue->ue_security_capability.eutra_ea;
+        ue_security_capability->eutra_ia =
+            test_ue->ue_security_capability.eutra_ia;
     }
 
     registration_request->presencemask |=

@@ -157,6 +157,10 @@ struct ran_ue_s {
 
     uint16_t        gnb_ostream_id; /* SCTP output stream id for eNB */
 
+    /* UE context */
+    bool            ue_context_requested;
+    bool            initial_context_setup_request_sent;
+
     /* Handover Info */
     NGAP_HandoverType_t handover_type;
     ran_ue_t        *source_ue;
@@ -575,6 +579,9 @@ amf_sess_t *amf_sess_cycle(amf_sess_t *sess);
 
 #define SESSION_SYNC_DONE(__aMF) (amf_sess_xact_count(__aMF) == 0)
 int amf_sess_xact_count(amf_ue_t *amf_ue);
+
+#define SESSION_TRANSFER_NEEDED(__aMF) (amf_sess_transfer_needed(__aMF) == true)
+bool amf_sess_transfer_needed(amf_ue_t *amf_ue);
 
 int amf_find_served_tai(ogs_5gs_tai_t *tai);
 ogs_s_nssai_t *amf_find_s_nssai(

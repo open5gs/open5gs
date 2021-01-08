@@ -333,7 +333,9 @@ void ngap_handle_initial_ue_message(amf_gnb_t *gnb, ogs_ngap_message_t *message)
     NGAP_RAN_UE_NGAP_ID_t *RAN_UE_NGAP_ID = NULL;
     NGAP_NAS_PDU_t *NAS_PDU = NULL;
     NGAP_UserLocationInformation_t *UserLocationInformation = NULL;
+    NGAP_UserLocationInformationNR_t *UserLocationInformationNR = NULL;
     NGAP_FiveG_S_TMSI_t *FiveG_S_TMSI = NULL;
+    NGAP_UEContextRequest_t *UEContextRequest = NULL;
 
     ogs_assert(gnb);
     ogs_assert(gnb->sctp.sock);
@@ -361,6 +363,9 @@ void ngap_handle_initial_ue_message(amf_gnb_t *gnb, ogs_ngap_message_t *message)
             break;
         case NGAP_ProtocolIE_ID_id_FiveG_S_TMSI:
             FiveG_S_TMSI = &ie->value.choice.FiveG_S_TMSI;
+            break;
+        case NGAP_ProtocolIE_ID_id_UEContextRequest:
+            UEContextRequest = &ie->value.choice.UEContextRequest;
             break;
         default:
             break;
@@ -448,24 +453,8 @@ void ngap_handle_initial_ue_message(amf_gnb_t *gnb, ogs_ngap_message_t *message)
         return;
     }
 
-    if (!NAS_PDU) {
-        ogs_error("No NAS_PDU");
-        ngap_send_error_indication(gnb, &ran_ue->ran_ue_ngap_id, NULL,
-                NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
-        return;
-    }
-
-    if (UserLocationInformation->present ==
+    if (UserLocationInformation->present !=
             NGAP_UserLocationInformation_PR_userLocationInformationNR) {
-        NGAP_UserLocationInformationNR_t *userLocationInformationNR =
-            UserLocationInformation->choice.userLocationInformationNR;
-
-        ogs_ngap_ASN_to_nr_cgi(
-                &userLocationInformationNR->nR_CGI, &ran_ue->saved.nr_cgi);
-        ogs_ngap_ASN_to_5gs_tai(
-                &userLocationInformationNR->tAI, &ran_ue->saved.tai);
-
-    } else {
         ogs_error("Not implemented UserLocationInformation[%d]",
                 UserLocationInformation->present);
         ngap_send_error_indication(gnb, &ran_ue->ran_ue_ngap_id, NULL,
@@ -473,13 +462,33 @@ void ngap_handle_initial_ue_message(amf_gnb_t *gnb, ogs_ngap_message_t *message)
         return;
     }
 
+    if (!NAS_PDU) {
+        ogs_error("No NAS_PDU");
+        ngap_send_error_indication(gnb, &ran_ue->ran_ue_ngap_id, NULL,
+                NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
+        return;
+    }
+
+    UserLocationInformationNR =
+        UserLocationInformation->choice.userLocationInformationNR;
+    ogs_assert(UserLocationInformationNR);
+    ogs_ngap_ASN_to_nr_cgi(
+            &UserLocationInformationNR->nR_CGI, &ran_ue->saved.nr_cgi);
+    ogs_ngap_ASN_to_5gs_tai(
+            &UserLocationInformationNR->tAI, &ran_ue->saved.tai);
+
     ogs_info("    RAN_UE_NGAP_ID[%d] AMF_UE_NGAP_ID[%lld] "
             "TAC[%d] CellID[0x%llx]",
         ran_ue->ran_ue_ngap_id, (long long)ran_ue->amf_ue_ngap_id,
         ran_ue->saved.tai.tac.v, (long long)ran_ue->saved.nr_cgi.cell_id);
 
-    ngap_send_to_nas(ran_ue,
-            NGAP_ProcedureCode_id_InitialUEMessage, NAS_PDU);
+    if (UEContextRequest) {
+        if (*UEContextRequest == NGAP_UEContextRequest_requested) {
+            ran_ue->ue_context_requested = true;
+        }
+    }
+
+    ngap_send_to_nas(ran_ue, NGAP_ProcedureCode_id_InitialUEMessage, NAS_PDU);
 }
 
 void ngap_handle_uplink_nas_transport(
@@ -1746,8 +1755,8 @@ void ngap_handle_path_switch_request(
     NGAP_EUTRAencryptionAlgorithms_t *eUTRAencryptionAlgorithms = NULL;
     NGAP_EUTRAintegrityProtectionAlgorithms_t
         *eUTRAintegrityProtectionAlgorithms = NULL;
-    uint16_t nea = 0, nia = 0, eps_ea = 0, eps_ia = 0;
-    uint8_t nea0 = 0, nia0 = 0, eps_ea0 = 0, eps_ia0 = 0;
+    uint16_t nr_ea = 0, nr_ia = 0, eutra_ea = 0, eutra_ia = 0;
+    uint8_t nr_ea0 = 0, nr_ia0 = 0, eutra_ea0 = 0, eutra_ia0 = 0;
 
     NGAP_PDUSessionResourceToBeSwitchedDLItem_t *PDUSessionItem = NULL;
     OCTET_STRING_t *transfer = NULL;
@@ -1889,29 +1898,30 @@ void ngap_handle_path_switch_request(
     eUTRAintegrityProtectionAlgorithms =
         &UESecurityCapabilities->eUTRAintegrityProtectionAlgorithms;
 
-    memcpy(&nea, nRencryptionAlgorithms->buf, sizeof(nea));
-    nea = be16toh(nea);
-    nea0 = amf_ue->ue_security_capability.nea0;
-    amf_ue->ue_security_capability.nea = nea >> 9;
-    amf_ue->ue_security_capability.nea0 = nea0;
+    memcpy(&nr_ea, nRencryptionAlgorithms->buf, sizeof(nr_ea));
+    nr_ea = be16toh(nr_ea);
+    nr_ea0 = amf_ue->ue_security_capability.nr_ea0;
+    amf_ue->ue_security_capability.nr_ea = nr_ea >> 9;
+    amf_ue->ue_security_capability.nr_ea0 = nr_ea0;
 
-    memcpy(&nia, nRintegrityProtectionAlgorithms->buf, sizeof(nia));
-    nia = be16toh(nia);
-    nia0 = amf_ue->ue_security_capability.nia0;
-    amf_ue->ue_security_capability.nia = nia >> 9;
-    amf_ue->ue_security_capability.nia0 = nia0;
+    memcpy(&nr_ia, nRintegrityProtectionAlgorithms->buf, sizeof(nr_ia));
+    nr_ia = be16toh(nr_ia);
+    nr_ia0 = amf_ue->ue_security_capability.nr_ia0;
+    amf_ue->ue_security_capability.nr_ia = nr_ia >> 9;
+    amf_ue->ue_security_capability.nr_ia0 = nr_ia0;
 
-    memcpy(&eps_ea, eUTRAencryptionAlgorithms->buf, sizeof(eps_ea));
-    eps_ea = be16toh(eps_ea);
-    eps_ea0 = amf_ue->ue_security_capability.eps_ea0;
-    amf_ue->ue_security_capability.eps_ea = eps_ea >> 9;
-    amf_ue->ue_security_capability.eps_ea0 = eps_ea0;
+    memcpy(&eutra_ea, eUTRAencryptionAlgorithms->buf, sizeof(eutra_ea));
+    eutra_ea = be16toh(eutra_ea);
+    eutra_ea0 = amf_ue->ue_security_capability.eutra_ea0;
+    amf_ue->ue_security_capability.eutra_ea = eutra_ea >> 9;
+    amf_ue->ue_security_capability.eutra_ea0 = eutra_ea0;
 
-    memcpy(&eps_ia, eUTRAintegrityProtectionAlgorithms->buf, sizeof(eps_ia));
-    eps_ia = be16toh(eps_ia);
-    eps_ia0 = amf_ue->ue_security_capability.eps_ia0;
-    amf_ue->ue_security_capability.eps_ia = eps_ia >> 9;
-    amf_ue->ue_security_capability.eps_ia0 = eps_ia0;
+    memcpy(&eutra_ia,
+            eUTRAintegrityProtectionAlgorithms->buf, sizeof(eutra_ia));
+    eutra_ia = be16toh(eutra_ia);
+    eutra_ia0 = amf_ue->ue_security_capability.eutra_ia0;
+    amf_ue->ue_security_capability.eutra_ia = eutra_ia >> 9;
+    amf_ue->ue_security_capability.eutra_ia0 = eutra_ia0;
 
     if (!SECURITY_CONTEXT_IS_VALID(amf_ue)) {
         ogs_error("No Security Context");

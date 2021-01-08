@@ -175,7 +175,7 @@ static void test1_func(abts_case *tc, void *data)
     nasbuf = testgmm_build_registration_request(test_ue, NULL);
     ABTS_PTR_NOTNULL(tc, nasbuf);
 
-    sendbuf = testngap_build_initial_ue_message(test_ue, gmmbuf, false);
+    sendbuf = testngap_build_initial_ue_message(test_ue, gmmbuf, false, true);
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
@@ -219,10 +219,14 @@ static void test1_func(abts_case *tc, void *data)
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    /* Receive Initial context setup request */
+    /* Receive Initial context setup request +
+     * Registration accept */
     recvbuf = testgnb_ngap_read(ngap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     testngap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc,
+            NGAP_ProcedureCode_id_InitialContextSetup,
+            test_ue->ngap_procedure_code);
 
     /* Send UE radio capability info indication */
     sendbuf = testngap_build_ue_radio_capability_info_indication(test_ue);
@@ -268,10 +272,15 @@ static void test1_func(abts_case *tc, void *data)
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    /* Receive PDU session establishment accept */
+    /* Receive PDUSessionResourceSetupRequest +
+     * DL NAS transport +
+     * PDU session establishment accept */
     recvbuf = testgnb_ngap_read(ngap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     testngap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc,
+            NGAP_ProcedureCode_id_PDUSessionResourceSetup,
+            test_ue->ngap_procedure_code);
 
     /* Send GTP-U ICMP Packet */
     qos_flow = test_qos_flow_find_by_qfi(sess, 1);
@@ -279,8 +288,8 @@ static void test1_func(abts_case *tc, void *data)
     rv = test_gtpu_send_ping(gtpu, qos_flow, TEST_PING_IPV4);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    /* Send PDU session resource setup response */
-    sendbuf = testngap_build_pdu_session_resource_setup_response(sess);
+    /* Send PDUSessionResourceSetupResponse */
+    sendbuf = testngap_sess_build_pdu_session_resource_setup_response(sess);
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
@@ -310,11 +319,12 @@ static void test1_func(abts_case *tc, void *data)
     ogs_pkbuf_free(recvbuf);
 #endif
 
-    /* Update Registration request type */
+    /* Send Registration request
+     * - Update Registration request type
+     * - Uplink Data Status */
     test_ue->nas.registration.value =
         OGS_NAS_5GS_REGISTRATION_TYPE_MOBILITY_UPDATING;
 
-    /* Send Registration request : Uplink Data Status */
     test_ue->registration_request_param.integrity_protected = 0;
     test_ue->registration_request_param.uplink_data_status = 1;
     test_ue->registration_request_param.psimask.uplink_data_status =
@@ -327,7 +337,7 @@ static void test1_func(abts_case *tc, void *data)
     gmmbuf = testgmm_build_registration_request(test_ue, nasbuf);
     ABTS_PTR_NOTNULL(tc, gmmbuf);
 
-    sendbuf = testngap_build_initial_ue_message(test_ue, gmmbuf, true);
+    sendbuf = testngap_build_initial_ue_message(test_ue, gmmbuf, true, true);
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
@@ -343,10 +353,14 @@ static void test1_func(abts_case *tc, void *data)
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    /* Receive Registration accept */
+    /* Receive Initial context setup request +
+     * Registration accept */
     recvbuf = testgnb_ngap_read(ngap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     testngap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc,
+            NGAP_ProcedureCode_id_InitialContextSetup,
+            test_ue->ngap_procedure_code);
     ABTS_INT_EQUAL(tc, 0x0000, test_ue->pdu_session_reactivation_result);
 
     /* Send Initial context setup response */
@@ -380,7 +394,7 @@ static void test1_func(abts_case *tc, void *data)
     nasbuf = testgmm_build_registration_request(test_ue, NULL);
     ABTS_PTR_NOTNULL(tc, nasbuf);
 
-    sendbuf = testngap_build_initial_ue_message(test_ue, gmmbuf, true);
+    sendbuf = testngap_build_initial_ue_message(test_ue, gmmbuf, true, true);
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
@@ -426,10 +440,14 @@ static void test1_func(abts_case *tc, void *data)
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    /* Receive Initial context setup request */
+    /* Receive Initial context setup request +
+     * Registration accept */
     recvbuf = testgnb_ngap_read(ngap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     testngap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc,
+            NGAP_ProcedureCode_id_InitialContextSetup,
+            test_ue->ngap_procedure_code);
 
     /* Send Initial context setup response */
     sendbuf = testngap_build_initial_context_setup_response(test_ue, false);
@@ -466,13 +484,18 @@ static void test1_func(abts_case *tc, void *data)
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    /* Receive PDU session establishment accept */
+    /* Receive PDUSessionResourceSetupRequest +
+     * DL NAS transport +
+     * PDU session establishment accept */
     recvbuf = testgnb_ngap_read(ngap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     testngap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc,
+            NGAP_ProcedureCode_id_PDUSessionResourceSetup,
+            test_ue->ngap_procedure_code);
 
-    /* Send PDU session resource setup response */
-    sendbuf = testngap_build_pdu_session_resource_setup_response(sess);
+    /* Send PDUSessionResourceSetupResponse */
+    sendbuf = testngap_sess_build_pdu_session_resource_setup_response(sess);
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);

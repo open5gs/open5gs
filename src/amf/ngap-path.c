@@ -250,20 +250,6 @@ void ngap_send_ng_setup_failure(
             ngap_send_to_gnb(gnb, ngap_buffer, NGAP_NON_UE_SIGNALLING));
 }
 
-void ngap_send_initial_context_setup_request(amf_ue_t *amf_ue)
-{
-    int rv;
-    ogs_pkbuf_t *ngapbuf = NULL;
-
-    ogs_assert(amf_ue);
-
-    ngapbuf = ngap_build_initial_context_setup_request(amf_ue, NULL);
-    ogs_expect_or_return(ngapbuf);
-
-    rv = nas_5gs_send_to_gnb(amf_ue, ngapbuf);
-    ogs_expect(rv == OGS_OK);
-}
-
 #if 0
 void ngap_send_ue_context_modification_request(amf_ue_t *amf_ue)
 {

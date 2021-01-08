@@ -42,6 +42,9 @@ void tests1ap_recv(test_ue_t *test_ue, ogs_pkbuf_t *pkbuf)
         initiatingMessage = pdu->choice.initiatingMessage;
         ogs_assert(initiatingMessage);
 
+        if (test_ue)
+            test_ue->s1ap_procedure_code = initiatingMessage->procedureCode;
+
         switch (initiatingMessage->procedureCode) {
         case S1AP_ProcedureCode_id_downlinkNASTransport:
             tests1ap_handle_downlink_nas_transport(test_ue, pdu);
@@ -85,6 +88,9 @@ void tests1ap_recv(test_ue_t *test_ue, ogs_pkbuf_t *pkbuf)
         successfulOutcome = pdu->choice.successfulOutcome;
         ogs_assert(successfulOutcome);
 
+        if (test_ue)
+            test_ue->s1ap_procedure_code = successfulOutcome->procedureCode;
+
         switch (successfulOutcome->procedureCode) {
         case S1AP_ProcedureCode_id_S1Setup:
             tests1ap_handle_s1_setup_response(pdu);
@@ -106,6 +112,9 @@ void tests1ap_recv(test_ue_t *test_ue, ogs_pkbuf_t *pkbuf)
     case S1AP_S1AP_PDU_PR_unsuccessfulOutcome :
         unsuccessfulOutcome = pdu->choice.unsuccessfulOutcome;
         ogs_assert(unsuccessfulOutcome);
+
+        if (test_ue)
+            test_ue->s1ap_procedure_code = unsuccessfulOutcome->procedureCode;
 
         switch (unsuccessfulOutcome->procedureCode) {
         case S1AP_ProcedureCode_id_S1Setup:

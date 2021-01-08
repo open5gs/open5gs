@@ -51,7 +51,6 @@ void ngap_send_ng_setup_response(amf_gnb_t *gnb);
 void ngap_send_ng_setup_failure(
         amf_gnb_t *gnb, NGAP_Cause_PR group, long cause);
 
-void ngap_send_initial_context_setup_request(amf_ue_t *amf_ue);
 void ngap_send_ue_context_modification_request(amf_ue_t *amf_ue);
 
 void ngap_send_ran_ue_context_release_command(

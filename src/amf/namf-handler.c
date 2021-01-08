@@ -30,6 +30,7 @@ int amf_namf_comm_handle_n1_n2_message_transfer(
     int status;
 
     amf_ue_t *amf_ue = NULL;
+    ran_ue_t *ran_ue = NULL;
     amf_sess_t *sess = NULL;
 
     ogs_pkbuf_t *n1smbuf = NULL;
@@ -121,6 +122,9 @@ int amf_namf_comm_handle_n1_n2_message_transfer(
         return OGS_ERROR;
     }
 
+    ran_ue = ran_ue_cycle(amf_ue->ran_ue);
+    ogs_assert(ran_ue);
+
     sess = amf_sess_find_by_psi(amf_ue, pdu_session_id);
     if (!sess) {
         ogs_error("[%s] No PDU Session Context [%d]",
@@ -166,9 +170,17 @@ int amf_namf_comm_handle_n1_n2_message_transfer(
             sess->pdu_session_establishment_accept = NULL;
         }
 
-        ngapbuf = ngap_build_pdu_session_resource_setup_request(
-                sess, gmmbuf, n2smbuf);
-        ogs_assert(ngapbuf);
+        if (ran_ue->initial_context_setup_request_sent == true) {
+            ngapbuf = ngap_sess_build_pdu_session_resource_setup_request(
+                    sess, gmmbuf, n2smbuf);
+            ogs_assert(ngapbuf);
+        } else {
+            ngapbuf = ngap_sess_build_initial_context_setup_request(
+                    sess, gmmbuf, n2smbuf);
+            ogs_assert(ngapbuf);
+
+            ran_ue->initial_context_setup_request_sent = true;
+        }
 
         if (SESSION_CONTEXT_IN_SMF(sess)) {
             /*

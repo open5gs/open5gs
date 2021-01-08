@@ -1565,7 +1565,20 @@ int amf_sess_xact_count(amf_ue_t *amf_ue)
     ogs_list_for_each(&amf_ue->sess_list, sess)
         xact_count += ogs_list_count(&sess->sbi.xact_list);
 
-    return xact_count;;
+    return xact_count;
+}
+
+bool amf_sess_transfer_needed(amf_ue_t *amf_ue)
+{
+    amf_sess_t *sess = NULL;
+
+    ogs_assert(amf_ue);
+
+    ogs_list_for_each(&amf_ue->sess_list, sess)
+        if (sess->transfer.pdu_session_resource_setup_request)
+            return true;
+
+    return false;
 }
 
 int amf_find_served_tai(ogs_5gs_tai_t *tai)
@@ -1706,7 +1719,7 @@ uint8_t amf_selected_int_algorithm(amf_ue_t *amf_ue)
     ogs_assert(amf_ue);
 
     for (i = 0; i < amf_self()->num_of_integrity_order; i++) {
-        if (amf_ue->ue_security_capability.nia &
+        if (amf_ue->ue_security_capability.nr_ia &
                 (0x80 >> amf_self()->integrity_order[i])) {
             return amf_self()->integrity_order[i];
         }
@@ -1722,7 +1735,7 @@ uint8_t amf_selected_enc_algorithm(amf_ue_t *amf_ue)
     ogs_assert(amf_ue);
 
     for (i = 0; i < amf_self()->num_of_ciphering_order; i++) {
-        if (amf_ue->ue_security_capability.nea &
+        if (amf_ue->ue_security_capability.nr_ea &
                 (0x80 >> amf_self()->ciphering_order[i])) {
             return amf_self()->ciphering_order[i];
         }

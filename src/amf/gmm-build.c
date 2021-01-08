@@ -388,29 +388,31 @@ ogs_pkbuf_t *gmm_build_security_mode_command(amf_ue_t *amf_ue)
     ngksi->tsc = amf_ue->nas.tsc;
     ngksi->value = amf_ue->nas.ksi;
 
-    replayed_ue_security_capabilities->nea = amf_ue->ue_security_capability.nea;
-    replayed_ue_security_capabilities->nia = amf_ue->ue_security_capability.nia;
-    replayed_ue_security_capabilities->eps_ea =
-        amf_ue->ue_security_capability.eps_ea;
-    replayed_ue_security_capabilities->eps_ia =
-        amf_ue->ue_security_capability.eps_ia;
+    replayed_ue_security_capabilities->nr_ea =
+        amf_ue->ue_security_capability.nr_ea;
+    replayed_ue_security_capabilities->nr_ia =
+        amf_ue->ue_security_capability.nr_ia;
+    replayed_ue_security_capabilities->eutra_ea =
+        amf_ue->ue_security_capability.eutra_ea;
+    replayed_ue_security_capabilities->eutra_ia =
+        amf_ue->ue_security_capability.eutra_ia;
 
     replayed_ue_security_capabilities->length =
-        sizeof(replayed_ue_security_capabilities->nea) +
-        sizeof(replayed_ue_security_capabilities->nia);
-    if (replayed_ue_security_capabilities->eps_ea ||
-        replayed_ue_security_capabilities->eps_ia)
+        sizeof(replayed_ue_security_capabilities->nr_ea) +
+        sizeof(replayed_ue_security_capabilities->nr_ia);
+    if (replayed_ue_security_capabilities->eutra_ea ||
+        replayed_ue_security_capabilities->eutra_ia)
         replayed_ue_security_capabilities->length =
-            sizeof(replayed_ue_security_capabilities->nea) +
-            sizeof(replayed_ue_security_capabilities->nia) +
-            sizeof(replayed_ue_security_capabilities->eps_ea) +
-            sizeof(replayed_ue_security_capabilities->eps_ia);
+            sizeof(replayed_ue_security_capabilities->nr_ea) +
+            sizeof(replayed_ue_security_capabilities->nr_ia) +
+            sizeof(replayed_ue_security_capabilities->eutra_ea) +
+            sizeof(replayed_ue_security_capabilities->eutra_ia);
     ogs_debug("    Replayed UE SEC[LEN:%d NEA:0x%x NIA:0x%x EEA:0x%x EIA:0x%x",
             replayed_ue_security_capabilities->length,
-            replayed_ue_security_capabilities->nea,
-            replayed_ue_security_capabilities->nia,
-            replayed_ue_security_capabilities->eps_ea,
-            replayed_ue_security_capabilities->eps_ia);
+            replayed_ue_security_capabilities->nr_ea,
+            replayed_ue_security_capabilities->nr_ia,
+            replayed_ue_security_capabilities->eutra_ea,
+            replayed_ue_security_capabilities->eutra_ia);
     ogs_debug("    Selected[Integrity:0x%x Encrypt:0x%x]",
             amf_ue->selected_int_algorithm, amf_ue->selected_enc_algorithm);
 
@@ -419,8 +421,7 @@ ogs_pkbuf_t *gmm_build_security_mode_command(amf_ue_t *amf_ue)
     imeisv_request->type = OGS_NAS_IMEISV_TYPE;
     imeisv_request->value = OGS_NAS_IMEISV_REQUESTED;
 
-    security_mode_command->presencemask |=
-        OGS_NAS_5GS_SECURITY_MODE_COMMAND_ADDITIONAL_5G_SECURITY_INFORMATION_PRESENT;
+    security_mode_command->presencemask |= OGS_NAS_5GS_SECURITY_MODE_COMMAND_ADDITIONAL_5G_SECURITY_INFORMATION_PRESENT;
     additional_security_information->length = 1;
     additional_security_information->
         retransmission_of_initial_nas_message_request = 1;
@@ -447,6 +448,8 @@ ogs_pkbuf_t *gmm_build_configuration_update_command(
     ogs_nas_5gs_configuration_update_command_t *configuration_update_command =
         &message.gmm.configuration_update_command;
 
+    ogs_nas_time_zone_t *local_time_zone =
+        &configuration_update_command->local_time_zone;
     ogs_nas_time_zone_and_time_t *universal_time_and_local_time_zone =
         &configuration_update_command->universal_time_and_local_time_zone;
     ogs_nas_daylight_saving_time_t *network_daylight_saving_time =
@@ -482,6 +485,20 @@ ogs_pkbuf_t *gmm_build_configuration_update_command(
     }
 
     if (param->nitz) {
+        if (amf_self()->full_name.length) {
+            configuration_update_command->presencemask |=
+                OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND_FULL_NAME_FOR_NETWORK_PRESENT;
+            memcpy(&configuration_update_command->full_name_for_network,
+                &amf_self()->full_name, sizeof(ogs_nas_network_name_t));
+        }
+
+        if (amf_self()->short_name.length) {
+            configuration_update_command->presencemask |=
+                OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND_SHORT_NAME_FOR_NETWORK_PRESENT;
+            memcpy(&configuration_update_command->short_name_for_network,
+                &amf_self()->short_name, sizeof(ogs_nas_network_name_t));
+        }
+
         ogs_gettimeofday(&tv);
         ogs_gmtime(tv.tv_sec, &gmt);
         ogs_localtime(tv.tv_sec, &local);
@@ -498,6 +515,16 @@ ogs_pkbuf_t *gmm_build_configuration_update_command(
             (int)local.tm_gmtoff, local.tm_isdst);
 
         configuration_update_command->presencemask |=
+            OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND_LOCAL_TIME_ZONE_PRESENT;
+        if (local.tm_gmtoff >= 0) {
+            *local_time_zone = OGS_NAS_TIME_TO_BCD(local.tm_gmtoff / 900);
+        } else {
+            *local_time_zone = OGS_NAS_TIME_TO_BCD((-local.tm_gmtoff) / 900);
+            *local_time_zone |= 0x08;
+        }
+        ogs_debug("    Timezone:0x%x", *local_time_zone);
+
+        configuration_update_command->presencemask |=
             OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND_UNIVERSAL_TIME_AND_LOCAL_TIME_ZONE_PRESENT;
         universal_time_and_local_time_zone->year =
                     OGS_NAS_TIME_TO_BCD(gmt.tm_year % 100);
@@ -511,34 +538,11 @@ ogs_pkbuf_t *gmm_build_configuration_update_command(
                     OGS_NAS_TIME_TO_BCD(gmt.tm_min);
         universal_time_and_local_time_zone->sec =
                     OGS_NAS_TIME_TO_BCD(gmt.tm_sec);
-        if (local.tm_gmtoff >= 0) {
-            universal_time_and_local_time_zone->timezone =
-                        OGS_NAS_TIME_TO_BCD(local.tm_gmtoff / 900);
-        } else {
-            universal_time_and_local_time_zone->timezone =
-                        OGS_NAS_TIME_TO_BCD((-local.tm_gmtoff) / 900);
-            universal_time_and_local_time_zone->timezone |= 0x08;
-        }
-        ogs_debug("    Timezone:0x%x",
-            universal_time_and_local_time_zone->timezone);
+        universal_time_and_local_time_zone->timezone = *local_time_zone;
 
         configuration_update_command->presencemask |=
             OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND_NETWORK_DAYLIGHT_SAVING_TIME_PRESENT;
         network_daylight_saving_time->length = 1;
-
-        if (amf_self()->full_name.length) {
-            configuration_update_command->presencemask |=
-                OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND_FULL_NAME_FOR_NETWORK_PRESENT;
-            memcpy(&configuration_update_command->full_name_for_network,
-                &amf_self()->full_name, sizeof(ogs_nas_network_name_t));
-        }
-
-        if (amf_self()->short_name.length) {
-            configuration_update_command->presencemask |=
-                OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND_SHORT_NAME_FOR_NETWORK_PRESENT;
-            memcpy(&configuration_update_command->short_name_for_network,
-                &amf_self()->short_name, sizeof(ogs_nas_network_name_t));
-        }
     }
 
     return nas_5gs_security_encode(amf_ue, &message);

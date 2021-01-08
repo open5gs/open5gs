@@ -31,15 +31,19 @@ ogs_pkbuf_t *ngap_build_ng_setup_failure(
     NGAP_Cause_PR group, long cause, long time_to_wait);
 
 ogs_pkbuf_t *ngap_build_downlink_nas_transport(
-    ran_ue_t *ran_ue, ogs_pkbuf_t *gmmbuf);
+    ran_ue_t *ran_ue, ogs_pkbuf_t *gmmbuf, bool ue_ambr, bool allowed_nssai);
 
-ogs_pkbuf_t *ngap_build_initial_context_setup_request(
+ogs_pkbuf_t *ngap_ue_build_initial_context_setup_request(
     amf_ue_t *amf_ue, ogs_pkbuf_t *gmmbuf);
+ogs_pkbuf_t *ngap_sess_build_initial_context_setup_request(
+    amf_sess_t *sess, ogs_pkbuf_t *n1smbuf, ogs_pkbuf_t *n2smbuf);
 ogs_pkbuf_t *ngap_build_ue_context_modification_request(amf_ue_t *amf_ue);
 ogs_pkbuf_t *ngap_build_ue_context_release_command(
     ran_ue_t *ran_ue, NGAP_Cause_PR group, long cause);
 
-ogs_pkbuf_t *ngap_build_pdu_session_resource_setup_request(
+ogs_pkbuf_t *ngap_ue_build_pdu_session_resource_setup_request(
+    amf_ue_t *amf_ue, ogs_pkbuf_t *gmmbuf);
+ogs_pkbuf_t *ngap_sess_build_pdu_session_resource_setup_request(
     amf_sess_t *sess, ogs_pkbuf_t *gmmbuf, ogs_pkbuf_t *n2smbuf);
 ogs_pkbuf_t *ngap_build_pdu_session_resource_modify_request(
     amf_sess_t *sess, ogs_pkbuf_t *gmmbuf, ogs_pkbuf_t *n2smbuf);

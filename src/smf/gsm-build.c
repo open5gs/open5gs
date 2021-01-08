@@ -112,7 +112,7 @@ ogs_pkbuf_t *gsm_build_pdu_session_establishment_accept(smf_sess_t *sess)
     qos_rule[0].DQR_bit = 1;
     qos_rule[0].num_of_packet_filter = 1;
 
-    qos_rule[0].pf[0].direction = OGS_NAS_QOS_DIRECTION_UPLINK;
+    qos_rule[0].pf[0].direction = OGS_NAS_QOS_DIRECTION_BIDIRECTIONAL;
     qos_rule[0].pf[0].identifier = 1;
     qos_rule[0].pf[0].content.length = 1;
     qos_rule[0].pf[0].content.num_of_component = 1;

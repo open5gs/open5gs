@@ -179,7 +179,7 @@ int gmm_handle_registration_request(amf_ue_t *amf_ue,
             OGS_NAS_SECURITY_ALGORITHMS_NIA0) {
         ogs_error("[UE:0x%x:0x%x], NEA0 can be used in Encrypt[0x%x], "
             "but Integrity[0x%x] cannot be bypassed with NIA0",
-            ue_security_capability->nea, ue_security_capability->nia,
+            ue_security_capability->nr_ea, ue_security_capability->nr_ia,
             amf_selected_enc_algorithm(amf_ue), 
             amf_selected_int_algorithm(amf_ue));
         nas_5gs_send_registration_reject(amf_ue,

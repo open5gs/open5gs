@@ -405,9 +405,20 @@ typedef struct ogs_nas_time_zone_and_time_s {
 #define OGS_TAI2_TYPE                   2
 
 /* 9.9.3.34 UE network capability
- * M LV 3-14
+ * M LV 3-14 in Attach request
+ * O TLV 4-15 in TAU request
  * 9.11.3.48 S1 UE network capability
- * O TLV 4-15 */
+ * O TLV 4-15 in Registration request
+ *
+ * NOTE 1: For a UE supporting dual connectivity with NR, if the UE supports
+ * one of the encryption algorithms for E-UTRAN (bits 8 to 5 of octet 3),
+ * it shall support the same algorithm for NR-PDCP as specified
+ * in 3GPP TS 33.401 [19]. The NR-PDCP is specified in 3GPP TS 38.323 [53].
+ * NOTE 2: For a UE supporting dual connectivity with NR, if the UE supports
+ * one of the integrity algorithms for E-UTRAN (bits 8 to 5 of octet 4),
+ * it shall support the same algorithm for NR-PDCP as specified
+ * in 3GPP TS 33.401 [19].
+ */
 typedef struct ogs_nas_ue_network_capability_s {
     uint8_t length;
     union { 
@@ -489,9 +500,29 @@ ED8(uint8_t signalling_for_a_maximum_number_of_15_eps_bearer_contexts:1;,
 } __attribute__ ((packed)) ogs_nas_ue_network_capability_t;
 
 /* 9.9.3.36 UE security capability
- * M LV 3-6
- * 9.11.3.48A UE security capability
- * O TLV 4-10 */
+ * M LV 3-6 in Security mode command
+ * 9.11.3.48A S1 UE security capability
+ * O TLV 4-7 in Security mode command
+ * 9.11.3.54 UE security capability
+ * M LV 3-9 in Security mode command
+ * O TLV 4-10 in Registration request
+ *
+ * NOTE 1: The code points in octet 3 are used to indicate support
+ * for 5GS encryption algorithms for NAS security in N1 mode and
+ * support for 5GS encryption algorithms for AS security over NR.
+ * NOTE 2: The code points in octet 4 are used to indicate support
+ * for 5GS integrity algorithms for NAS security in N1 mode and support
+ * for 5GS integrity algorithms for AS security over NR.
+ * NOTE 3: The code points in octet 5 are used to indicate support
+ * for EPS encryption algorithms for AS security over E-UTRA connected
+ * to 5GCN.
+ * NOTE 4: The code points in octet 6 are used to indicate support
+ * for EPS integrity algorithms for AS security over E-UTRA connected
+ * to 5GCN.
+ * NOTE 5: The AMF can receive this information element also
+ * from another AMF or MME during N1 mode to N1 mode or
+ * S1 mode to N1 mode handover preparation.
+ */
 typedef struct ogs_nas_ue_security_capability_s {
     uint8_t length;
     union {
@@ -508,16 +539,16 @@ typedef struct ogs_nas_ue_security_capability_s {
         uint8_t eea;
 
         struct {
-        ED8(uint8_t nea0:1;,
-            uint8_t nea1:1;,
-            uint8_t nea2:1;,
-            uint8_t nea3:1;,
-            uint8_t nea4:1;,
-            uint8_t nea5:1;,
-            uint8_t nea6:1;,
-            uint8_t nea7:1;)
+        ED8(uint8_t nr_ea0:1;,
+            uint8_t nr_ea1:1;,
+            uint8_t nr_ea2:1;,
+            uint8_t nr_ea3:1;,
+            uint8_t nr_ea4:1;,
+            uint8_t nr_ea5:1;,
+            uint8_t nr_ea6:1;,
+            uint8_t nr_ea7:1;)
         };
-        uint8_t nea; 
+        uint8_t nr_ea;
     };
     union {
         struct {
@@ -533,16 +564,16 @@ typedef struct ogs_nas_ue_security_capability_s {
         uint8_t eia;
 
         struct {
-        ED8(uint8_t nia0:1;,
-            uint8_t nia1:1;,
-            uint8_t nia2:1;,
-            uint8_t nia3:1;,
-            uint8_t nia4:1;,
-            uint8_t nia5:1;,
-            uint8_t nia6:1;,
-            uint8_t nia7:1;)
+        ED8(uint8_t nr_ia0:1;,
+            uint8_t nr_ia1:1;,
+            uint8_t nr_ia2:1;,
+            uint8_t nr_ia3:1;,
+            uint8_t nr_ia4:1;,
+            uint8_t nr_ia5:1;,
+            uint8_t nr_ia6:1;,
+            uint8_t nr_ia7:1;)
         };
-        uint8_t nia; 
+        uint8_t nr_ia;
     };
     union {
         struct {
@@ -558,16 +589,16 @@ typedef struct ogs_nas_ue_security_capability_s {
         uint8_t uea;
 
         struct {
-        ED8(uint8_t eps_ea0:1;,
-            uint8_t eps_ea1:1;,
-            uint8_t eps_ea2:1;,
-            uint8_t eps_ea3:1;,
-            uint8_t eps_ea4:1;,
-            uint8_t eps_ea5:1;,
-            uint8_t eps_ea6:1;,
-            uint8_t eps_ea7:1;)
+        ED8(uint8_t eutra_ea0:1;,
+            uint8_t eutra_ea1:1;,
+            uint8_t eutra_ea2:1;,
+            uint8_t eutra_ea3:1;,
+            uint8_t eutra_ea4:1;,
+            uint8_t eutra_ea5:1;,
+            uint8_t eutra_ea6:1;,
+            uint8_t eutra_ea7:1;)
         };
-        uint8_t eps_ea; 
+        uint8_t eutra_ea;
     };
     union {
         struct {
@@ -583,16 +614,16 @@ typedef struct ogs_nas_ue_security_capability_s {
         uint8_t uia;
 
         struct {
-        ED8(uint8_t eps_ia0:1;,
-            uint8_t eps_ia1:1;,
-            uint8_t eps_ia2:1;,
-            uint8_t eps_ia3:1;,
-            uint8_t eps_ia4:1;,
-            uint8_t eps_ia5:1;,
-            uint8_t eps_ia6:1;,
-            uint8_t eps_ia7:1;)
+        ED8(uint8_t eutra_ia0:1;,
+            uint8_t eutra_ia1:1;,
+            uint8_t eutra_ia2:1;,
+            uint8_t eutra_ia3:1;,
+            uint8_t eutra_ia4:1;,
+            uint8_t eutra_ia5:1;,
+            uint8_t eutra_ia6:1;,
+            uint8_t eutra_ia7:1;)
         };
-        uint8_t eps_ia; 
+        uint8_t eutra_ia;
     };
     union {
         struct {

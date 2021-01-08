@@ -47,7 +47,8 @@ int nas_5gs_send_to_downlink_nas_transport(amf_ue_t *amf_ue, ogs_pkbuf_t *pkbuf)
         ogs_pkbuf_free(pkbuf);
 
     } else {
-        ngapbuf = ngap_build_downlink_nas_transport(ran_ue, pkbuf);
+        ngapbuf = ngap_build_downlink_nas_transport(
+                ran_ue, pkbuf, false, false);
         if (!ngapbuf) {
             ogs_error("ngap_build_downlink_nas_transport() failed");
             return OGS_ERROR;
@@ -65,17 +66,45 @@ int nas_5gs_send_to_downlink_nas_transport(amf_ue_t *amf_ue, ogs_pkbuf_t *pkbuf)
 void nas_5gs_send_registration_accept(amf_ue_t *amf_ue)
 {
     int rv;
+
+    ran_ue_t *ran_ue = NULL;
+
     ogs_pkbuf_t *ngapbuf = NULL;
     ogs_pkbuf_t *gmmbuf = NULL;
+
+    ogs_assert(amf_ue);
+    ran_ue = ran_ue_cycle(amf_ue->ran_ue);
+    ogs_assert(ran_ue);
 
     gmmbuf = gmm_build_registration_accept(amf_ue);
     ogs_expect_or_return(gmmbuf);
 
-    ngapbuf = ngap_build_initial_context_setup_request(amf_ue, gmmbuf);
-    ogs_expect_or_return(ngapbuf);
+    if (ran_ue->ue_context_requested == true &&
+        ran_ue->initial_context_setup_request_sent == false) {
+        ngapbuf = ngap_ue_build_initial_context_setup_request(amf_ue, gmmbuf);
+        ogs_expect_or_return(ngapbuf);
 
-    rv = nas_5gs_send_to_gnb(amf_ue, ngapbuf);
-    ogs_expect_or_return(rv == OGS_OK);
+        rv = nas_5gs_send_to_gnb(amf_ue, ngapbuf);
+        ogs_expect_or_return(rv == OGS_OK);
+
+        ran_ue->initial_context_setup_request_sent = true;
+    } else {
+        if (SESSION_TRANSFER_NEEDED(amf_ue)) {
+            ngapbuf = ngap_ue_build_pdu_session_resource_setup_request(
+                    amf_ue, gmmbuf);
+            ogs_expect_or_return(ngapbuf);
+
+            rv = nas_5gs_send_to_gnb(amf_ue, ngapbuf);
+            ogs_expect_or_return(rv == OGS_OK);
+        } else {
+            ngapbuf = ngap_build_downlink_nas_transport(
+                    ran_ue, gmmbuf, true, true);
+            ogs_expect_or_return(ngapbuf);
+
+            rv = nas_5gs_send_to_gnb(amf_ue, ngapbuf);
+            ogs_expect_or_return(rv == OGS_OK);
+        }
+    }
 }
 
 void nas_5gs_send_registration_reject(
@@ -98,32 +127,40 @@ void nas_5gs_send_registration_reject(
 void nas_5gs_send_service_accept(amf_ue_t *amf_ue)
 {
     int rv;
+    ran_ue_t *ran_ue = NULL;
+
     ogs_pkbuf_t *gmmbuf = NULL;
     ogs_pkbuf_t *ngapbuf = NULL;
 
     ogs_assert(amf_ue);
+    ran_ue = ran_ue_cycle(amf_ue->ran_ue);
+    ogs_assert(ran_ue);
 
     gmmbuf = gmm_build_service_accept(amf_ue);
     ogs_expect_or_return(gmmbuf);
 
-    switch (amf_ue->nas.ngapProcedureCode) {
-    case NGAP_ProcedureCode_id_InitialUEMessage:
-        ngapbuf = ngap_build_initial_context_setup_request(amf_ue, gmmbuf);
+    if (ran_ue->ue_context_requested == true &&
+        ran_ue->initial_context_setup_request_sent == false) {
+        ngapbuf = ngap_ue_build_initial_context_setup_request(
+                amf_ue, gmmbuf);
         ogs_expect_or_return(ngapbuf);
 
         rv = nas_5gs_send_to_gnb(amf_ue, ngapbuf);
         ogs_expect_or_return(rv == OGS_OK);
-        break;
 
-    case NGAP_ProcedureCode_id_UplinkNASTransport:
-        rv = nas_5gs_send_to_downlink_nas_transport(amf_ue, gmmbuf);
-        ogs_expect_or_return(rv == OGS_OK);
-        break;
+        ran_ue->initial_context_setup_request_sent = true;
+    } else {
+        if (SESSION_TRANSFER_NEEDED(amf_ue)) {
+            ngapbuf = ngap_ue_build_pdu_session_resource_setup_request(
+                    amf_ue, gmmbuf);
+            ogs_expect_or_return(ngapbuf);
 
-    default:
-        ogs_error("Invalid NGAP ProcedureCode [%d]",
-                (int)amf_ue->nas.ngapProcedureCode);
-        return;
+            rv = nas_5gs_send_to_gnb(amf_ue, ngapbuf);
+            ogs_expect_or_return(rv == OGS_OK);
+        } else {
+            rv = nas_5gs_send_to_downlink_nas_transport(amf_ue, gmmbuf);
+            ogs_expect_or_return(rv == OGS_OK);
+        }
     }
 }
 

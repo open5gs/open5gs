@@ -874,11 +874,11 @@ test_ue_t *test_ue_add_by_suci(
     test_ue->nas.access_type = OGS_ACCESS_TYPE_3GPP;
     test_ue->abba_len = 2;
 
-    test_ue->ue_security_capability.nea = 0xf0;
-    test_ue->ue_security_capability.nia = 0xf0;
+    test_ue->ue_security_capability.nr_ea = 0xf0;
+    test_ue->ue_security_capability.nr_ia = 0xf0;
 #if 0
-    test_ue->ue_security_capability.eps_ea = 0xf0;
-    test_ue->ue_security_capability.eps_ia = 0xf0;
+    test_ue->ue_security_capability.eutra_ea = 0xf0;
+    test_ue->ue_security_capability.eutra_ia = 0xf0;
 #endif
     test_ue->ue_network_capability.eea = 0xf0;
     test_ue->ue_network_capability.eia = 0xf0;

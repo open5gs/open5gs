@@ -216,8 +216,10 @@ ogs_pkbuf_t *ngap_build_ng_setup_failure(
 }
 
 ogs_pkbuf_t *ngap_build_downlink_nas_transport(
-    ran_ue_t *ran_ue, ogs_pkbuf_t *gmmbuf)
+    ran_ue_t *ran_ue, ogs_pkbuf_t *gmmbuf, bool ue_ambr, bool allowed_nssai)
 {
+    amf_ue_t *amf_ue = NULL;
+
     NGAP_NGAP_PDU_t pdu;
     NGAP_InitiatingMessage_t *initiatingMessage = NULL;
     NGAP_DownlinkNASTransport_t *DownlinkNASTransport = NULL;
@@ -226,9 +228,13 @@ ogs_pkbuf_t *ngap_build_downlink_nas_transport(
     NGAP_AMF_UE_NGAP_ID_t *AMF_UE_NGAP_ID = NULL;
     NGAP_RAN_UE_NGAP_ID_t *RAN_UE_NGAP_ID = NULL;
     NGAP_NAS_PDU_t *NAS_PDU = NULL;
+    NGAP_UEAggregateMaximumBitRate_t *UEAggregateMaximumBitRate = NULL;
+    NGAP_AllowedNSSAI_t *AllowedNSSAI = NULL;
 
     ogs_assert(gmmbuf);
     ogs_assert(ran_ue);
+
+    amf_ue = ran_ue->amf_ue;
 
     ogs_debug("DownlinkNASTransport");
 
@@ -285,10 +291,72 @@ ogs_pkbuf_t *ngap_build_downlink_nas_transport(
     memcpy(NAS_PDU->buf, gmmbuf->data, NAS_PDU->size);
     ogs_pkbuf_free(gmmbuf);
 
+    if (ue_ambr && (amf_ue->ue_ambr.downlink || amf_ue->ue_ambr.uplink)) {
+        ogs_assert(amf_ue);
+
+        ie = CALLOC(1, sizeof(NGAP_DownlinkNASTransport_IEs_t));
+        ASN_SEQUENCE_ADD(&DownlinkNASTransport->protocolIEs, ie);
+
+        ie->id = NGAP_ProtocolIE_ID_id_UEAggregateMaximumBitRate;
+        ie->criticality = NGAP_Criticality_ignore;
+        ie->value.present = NGAP_DownlinkNASTransport_IEs__value_PR_UEAggregateMaximumBitRate;
+
+        UEAggregateMaximumBitRate = &ie->value.choice.UEAggregateMaximumBitRate;
+
+        asn_uint642INTEGER(
+                &UEAggregateMaximumBitRate->uEAggregateMaximumBitRateUL,
+                amf_ue->ue_ambr.uplink);
+        asn_uint642INTEGER(
+                &UEAggregateMaximumBitRate->uEAggregateMaximumBitRateDL,
+                amf_ue->ue_ambr.downlink);
+    }
+
+    if (allowed_nssai) {
+        int i, j;
+        ogs_assert(amf_ue);
+
+        ie = CALLOC(1, sizeof(NGAP_DownlinkNASTransport_IEs_t));
+        ASN_SEQUENCE_ADD(&DownlinkNASTransport->protocolIEs, ie);
+
+        ie->id = NGAP_ProtocolIE_ID_id_AllowedNSSAI;
+        ie->criticality = NGAP_Criticality_reject;
+        ie->value.present =
+            NGAP_DownlinkNASTransport_IEs__value_PR_AllowedNSSAI;
+
+        AllowedNSSAI = &ie->value.choice.AllowedNSSAI;
+
+        for (i = 0; i < amf_self()->num_of_plmn_support; i++) {
+            if (memcmp(&amf_ue->tai.plmn_id,
+                    &amf_self()->plmn_support[i].plmn_id, OGS_PLMN_ID_LEN) != 0)
+                continue;
+            for (j = 0; j < amf_self()->plmn_support[i].num_of_s_nssai; j++) {
+                NGAP_AllowedNSSAI_Item_t *NGAP_AllowedNSSAI_Item = NULL;
+                NGAP_S_NSSAI_t *s_NSSAI = NULL;
+                NGAP_SST_t *sST = NULL;
+
+                NGAP_AllowedNSSAI_Item = (NGAP_AllowedNSSAI_Item_t *)
+                        CALLOC(1, sizeof(NGAP_AllowedNSSAI_Item_t));
+                s_NSSAI = &NGAP_AllowedNSSAI_Item->s_NSSAI;
+                sST = &s_NSSAI->sST;
+
+                ogs_asn_uint8_to_OCTET_STRING(
+                    amf_self()->plmn_support[i].s_nssai[j].sst, sST);
+                if (amf_self()->plmn_support[i].s_nssai[j].sd.v !=
+                        OGS_S_NSSAI_NO_SD_VALUE) {
+                    s_NSSAI->sD = CALLOC(1, sizeof(NGAP_SD_t));
+                    ogs_asn_uint24_to_OCTET_STRING(
+                        amf_self()->plmn_support[i].s_nssai[j].sd, s_NSSAI->sD);
+                }
+
+                ASN_SEQUENCE_ADD(&AllowedNSSAI->list, NGAP_AllowedNSSAI_Item);
+            }
+        }
+    }
+
     return ogs_ngap_encode(&pdu);
 }
 
-ogs_pkbuf_t *ngap_build_initial_context_setup_request(
+ogs_pkbuf_t *ngap_ue_build_initial_context_setup_request(
             amf_ue_t *amf_ue, ogs_pkbuf_t *gmmbuf)
 {
     int i, j;
@@ -360,8 +428,7 @@ ogs_pkbuf_t *ngap_build_initial_context_setup_request(
 
         ie->id = NGAP_ProtocolIE_ID_id_UEAggregateMaximumBitRate;
         ie->criticality = NGAP_Criticality_reject;
-        ie->value.present =
-            NGAP_InitialContextSetupRequestIEs__value_PR_UEAggregateMaximumBitRate;
+        ie->value.present = NGAP_InitialContextSetupRequestIEs__value_PR_UEAggregateMaximumBitRate;
 
         UEAggregateMaximumBitRate = &ie->value.choice.UEAggregateMaximumBitRate;
 
@@ -503,7 +570,7 @@ ogs_pkbuf_t *ngap_build_initial_context_setup_request(
                     nRencryptionAlgorithms.size, sizeof(uint8_t));
     UESecurityCapabilities->nRencryptionAlgorithms.bits_unused = 0;
     UESecurityCapabilities->nRencryptionAlgorithms.buf[0] =
-        (amf_ue->ue_security_capability.nea << 1);
+        (amf_ue->ue_security_capability.nr_ea << 1);
 
     UESecurityCapabilities->nRintegrityProtectionAlgorithms.size = 2;
     UESecurityCapabilities->nRintegrityProtectionAlgorithms.buf =
@@ -511,7 +578,7 @@ ogs_pkbuf_t *ngap_build_initial_context_setup_request(
                     nRintegrityProtectionAlgorithms.size, sizeof(uint8_t));
     UESecurityCapabilities->nRintegrityProtectionAlgorithms.bits_unused = 0;
     UESecurityCapabilities->nRintegrityProtectionAlgorithms.buf[0] =
-        (amf_ue->ue_security_capability.nia << 1);
+        (amf_ue->ue_security_capability.nr_ia << 1);
 
     UESecurityCapabilities->eUTRAencryptionAlgorithms.size = 2;
     UESecurityCapabilities->eUTRAencryptionAlgorithms.buf =
@@ -519,7 +586,7 @@ ogs_pkbuf_t *ngap_build_initial_context_setup_request(
                     eUTRAencryptionAlgorithms.size, sizeof(uint8_t));
     UESecurityCapabilities->eUTRAencryptionAlgorithms.bits_unused = 0;
     UESecurityCapabilities->eUTRAencryptionAlgorithms.buf[0] =
-        (amf_ue->ue_security_capability.eps_ea << 1);
+        (amf_ue->ue_security_capability.eutra_ea << 1);
 
     UESecurityCapabilities->eUTRAintegrityProtectionAlgorithms.size = 2;
     UESecurityCapabilities->eUTRAintegrityProtectionAlgorithms.buf =
@@ -527,7 +594,7 @@ ogs_pkbuf_t *ngap_build_initial_context_setup_request(
                     eUTRAintegrityProtectionAlgorithms.size, sizeof(uint8_t));
     UESecurityCapabilities->eUTRAintegrityProtectionAlgorithms.bits_unused = 0;
     UESecurityCapabilities->eUTRAintegrityProtectionAlgorithms.buf[0] =
-        (amf_ue->ue_security_capability.eps_ia << 1);
+        (amf_ue->ue_security_capability.eutra_ia << 1);
 
     SecurityKey->size = OGS_SHA256_DIGEST_SIZE;
     SecurityKey->buf = CALLOC(SecurityKey->size, sizeof(uint8_t));
@@ -586,6 +653,295 @@ ogs_pkbuf_t *ngap_build_initial_context_setup_request(
         NAS_PDU->buf = CALLOC(NAS_PDU->size, sizeof(uint8_t));
         memcpy(NAS_PDU->buf, gmmbuf->data, NAS_PDU->size);
         ogs_pkbuf_free(gmmbuf);
+    }
+
+    return ogs_ngap_encode(&pdu);
+}
+
+ogs_pkbuf_t *ngap_sess_build_initial_context_setup_request(
+            amf_sess_t *sess, ogs_pkbuf_t *n1smbuf, ogs_pkbuf_t *n2smbuf)
+{
+    int i, j;
+
+    ran_ue_t *ran_ue = NULL;
+    amf_ue_t *amf_ue = NULL;
+
+    NGAP_NGAP_PDU_t pdu;
+    NGAP_InitiatingMessage_t *initiatingMessage = NULL;
+    NGAP_InitialContextSetupRequest_t *InitialContextSetupRequest = NULL;
+
+    NGAP_InitialContextSetupRequestIEs_t *ie = NULL;
+    NGAP_AMF_UE_NGAP_ID_t *AMF_UE_NGAP_ID = NULL;
+    NGAP_RAN_UE_NGAP_ID_t *RAN_UE_NGAP_ID = NULL;
+    NGAP_UEAggregateMaximumBitRate_t *UEAggregateMaximumBitRate = NULL;
+    NGAP_PDUSessionResourceSetupListCxtReq_t *PDUSessionList = NULL;
+    NGAP_PDUSessionResourceSetupItemCxtReq_t *PDUSessionItem = NULL;
+    NGAP_GUAMI_t *GUAMI = NULL;
+    NGAP_AllowedNSSAI_t *AllowedNSSAI = NULL;
+    NGAP_UESecurityCapabilities_t *UESecurityCapabilities = NULL;
+    NGAP_SecurityKey_t *SecurityKey = NULL;
+    NGAP_MaskedIMEISV_t *MaskedIMEISV = NULL;
+
+    ogs_assert(sess);
+    amf_ue = sess->amf_ue;
+    ogs_assert(amf_ue);
+    ran_ue = ran_ue_cycle(amf_ue->ran_ue);
+    ogs_assert(ran_ue);
+
+    ogs_debug("Initial context setup request");
+
+    memset(&pdu, 0, sizeof (NGAP_NGAP_PDU_t));
+    pdu.present = NGAP_NGAP_PDU_PR_initiatingMessage;
+    pdu.choice.initiatingMessage = CALLOC(1, sizeof(NGAP_InitiatingMessage_t));
+
+    initiatingMessage = pdu.choice.initiatingMessage;
+    initiatingMessage->procedureCode =
+        NGAP_ProcedureCode_id_InitialContextSetup;
+    initiatingMessage->criticality = NGAP_Criticality_reject;
+    initiatingMessage->value.present =
+        NGAP_InitiatingMessage__value_PR_InitialContextSetupRequest;
+
+    InitialContextSetupRequest =
+        &initiatingMessage->value.choice.InitialContextSetupRequest;
+
+    ie = CALLOC(1, sizeof(NGAP_InitialContextSetupRequestIEs_t));
+    ASN_SEQUENCE_ADD(&InitialContextSetupRequest->protocolIEs, ie);
+
+    ie->id = NGAP_ProtocolIE_ID_id_AMF_UE_NGAP_ID;
+    ie->criticality = NGAP_Criticality_reject;
+    ie->value.present =
+        NGAP_InitialContextSetupRequestIEs__value_PR_AMF_UE_NGAP_ID;
+
+    AMF_UE_NGAP_ID = &ie->value.choice.AMF_UE_NGAP_ID;
+
+    ie = CALLOC(1, sizeof(NGAP_InitialContextSetupRequestIEs_t));
+    ASN_SEQUENCE_ADD(&InitialContextSetupRequest->protocolIEs, ie);
+
+    ie->id = NGAP_ProtocolIE_ID_id_RAN_UE_NGAP_ID;
+    ie->criticality = NGAP_Criticality_reject;
+    ie->value.present =
+        NGAP_InitialContextSetupRequestIEs__value_PR_RAN_UE_NGAP_ID;
+
+    RAN_UE_NGAP_ID = &ie->value.choice.RAN_UE_NGAP_ID;
+
+    if (amf_ue->ue_ambr.downlink || amf_ue->ue_ambr.uplink) {
+        ie = CALLOC(1, sizeof(NGAP_InitialContextSetupRequestIEs_t));
+        ASN_SEQUENCE_ADD(&InitialContextSetupRequest->protocolIEs, ie);
+
+        ie->id = NGAP_ProtocolIE_ID_id_UEAggregateMaximumBitRate;
+        ie->criticality = NGAP_Criticality_reject;
+        ie->value.present =
+            NGAP_InitialContextSetupRequestIEs__value_PR_UEAggregateMaximumBitRate;
+
+        UEAggregateMaximumBitRate = &ie->value.choice.UEAggregateMaximumBitRate;
+
+        asn_uint642INTEGER(
+                &UEAggregateMaximumBitRate->uEAggregateMaximumBitRateUL,
+                amf_ue->ue_ambr.uplink);
+        asn_uint642INTEGER(
+                &UEAggregateMaximumBitRate->uEAggregateMaximumBitRateDL,
+                amf_ue->ue_ambr.downlink);
+    }
+
+    ie = CALLOC(1, sizeof(NGAP_InitialContextSetupRequestIEs_t));
+    ASN_SEQUENCE_ADD(&InitialContextSetupRequest->protocolIEs, ie);
+
+    ie->id = NGAP_ProtocolIE_ID_id_GUAMI;
+    ie->criticality = NGAP_Criticality_reject;
+    ie->value.present = NGAP_InitialContextSetupRequestIEs__value_PR_GUAMI;
+
+    GUAMI = &ie->value.choice.GUAMI;
+
+    if (n1smbuf && n2smbuf) {
+        NGAP_NAS_PDU_t *nAS_PDU = NULL;
+        OCTET_STRING_t *transfer = NULL;
+        NGAP_S_NSSAI_t *s_NSSAI = NULL;
+        NGAP_SST_t *sST = NULL;
+
+        ie = CALLOC(1, sizeof(NGAP_InitialContextSetupRequestIEs_t));
+        ASN_SEQUENCE_ADD(&InitialContextSetupRequest->protocolIEs, ie);
+
+        ie->id = NGAP_ProtocolIE_ID_id_PDUSessionResourceSetupListCxtReq;
+        ie->criticality = NGAP_Criticality_reject;
+        ie->value.present = NGAP_InitialContextSetupRequestIEs__value_PR_PDUSessionResourceSetupListCxtReq;
+
+        PDUSessionList = &ie->value.choice.PDUSessionResourceSetupListCxtReq;
+
+        PDUSessionItem = CALLOC(1,
+                sizeof(struct NGAP_PDUSessionResourceSetupItemCxtReq));
+        ASN_SEQUENCE_ADD(&PDUSessionList->list, PDUSessionItem);
+
+        PDUSessionItem->nAS_PDU = nAS_PDU = CALLOC(1, sizeof(*nAS_PDU));
+        ogs_assert(nAS_PDU);
+
+        nAS_PDU->size = n1smbuf->len;
+        nAS_PDU->buf = CALLOC(nAS_PDU->size, sizeof(uint8_t));
+        memcpy(nAS_PDU->buf, n1smbuf->data, nAS_PDU->size);
+        ogs_pkbuf_free(n1smbuf);
+
+        PDUSessionItem->pDUSessionID = sess->psi;
+
+        s_NSSAI = &PDUSessionItem->s_NSSAI;
+        sST = &s_NSSAI->sST;
+
+        ogs_asn_uint8_to_OCTET_STRING(sess->s_nssai.sst, sST);
+        if (sess->s_nssai.sd.v != OGS_S_NSSAI_NO_SD_VALUE) {
+            s_NSSAI->sD = CALLOC(1, sizeof(NGAP_SD_t));
+            ogs_asn_uint24_to_OCTET_STRING(sess->s_nssai.sd, s_NSSAI->sD);
+        }
+
+        transfer = &PDUSessionItem->pDUSessionResourceSetupRequestTransfer;
+        transfer->size = n2smbuf->len;
+        transfer->buf = CALLOC(transfer->size, sizeof(uint8_t));
+        memcpy(transfer->buf, n2smbuf->data, transfer->size);
+        ogs_pkbuf_free(n2smbuf);
+    }
+
+    ie = CALLOC(1, sizeof(NGAP_InitialContextSetupRequestIEs_t));
+    ASN_SEQUENCE_ADD(&InitialContextSetupRequest->protocolIEs, ie);
+
+    ie->id = NGAP_ProtocolIE_ID_id_AllowedNSSAI;
+    ie->criticality = NGAP_Criticality_reject;
+    ie->value.present =
+        NGAP_InitialContextSetupRequestIEs__value_PR_AllowedNSSAI;
+
+    AllowedNSSAI = &ie->value.choice.AllowedNSSAI;
+
+    ie = CALLOC(1, sizeof(NGAP_InitialContextSetupRequestIEs_t));
+    ASN_SEQUENCE_ADD(&InitialContextSetupRequest->protocolIEs, ie);
+
+    ie->id = NGAP_ProtocolIE_ID_id_UESecurityCapabilities;
+    ie->criticality = NGAP_Criticality_reject;
+    ie->value.present =
+        NGAP_InitialContextSetupRequestIEs__value_PR_UESecurityCapabilities;
+
+    UESecurityCapabilities = &ie->value.choice.UESecurityCapabilities;
+
+    ie = CALLOC(1, sizeof(NGAP_InitialContextSetupRequestIEs_t));
+    ASN_SEQUENCE_ADD(&InitialContextSetupRequest->protocolIEs, ie);
+
+    ie->id = NGAP_ProtocolIE_ID_id_SecurityKey;
+    ie->criticality = NGAP_Criticality_reject;
+    ie->value.present =
+        NGAP_InitialContextSetupRequestIEs__value_PR_SecurityKey;
+
+    SecurityKey = &ie->value.choice.SecurityKey;
+
+    ogs_debug("    RAN_UE_NGAP_ID[%d] AMF_UE_NGAP_ID[%lld]",
+            ran_ue->ran_ue_ngap_id, (long long)ran_ue->amf_ue_ngap_id);
+
+    asn_uint642INTEGER(AMF_UE_NGAP_ID, ran_ue->amf_ue_ngap_id);
+    *RAN_UE_NGAP_ID = ran_ue->ran_ue_ngap_id;
+
+    ogs_assert(amf_ue->guami);
+    ogs_asn_buffer_to_OCTET_STRING(&amf_ue->guami->plmn_id, OGS_PLMN_ID_LEN,
+            &GUAMI->pLMNIdentity);
+    ogs_ngap_uint8_to_AMFRegionID(ogs_amf_region_id(&amf_ue->guami->amf_id),
+            &GUAMI->aMFRegionID);
+    ogs_ngap_uint16_to_AMFSetID(ogs_amf_set_id(&amf_ue->guami->amf_id),
+            &GUAMI->aMFSetID);
+    ogs_ngap_uint8_to_AMFPointer(ogs_amf_pointer(&amf_ue->guami->amf_id),
+            &GUAMI->aMFPointer);
+
+    for (i = 0; i < amf_self()->num_of_plmn_support; i++) {
+        if (memcmp(&amf_ue->tai.plmn_id,
+                &amf_self()->plmn_support[i].plmn_id, OGS_PLMN_ID_LEN) != 0)
+            continue;
+        for (j = 0; j < amf_self()->plmn_support[i].num_of_s_nssai; j++) {
+            NGAP_AllowedNSSAI_Item_t *NGAP_AllowedNSSAI_Item = NULL;
+            NGAP_S_NSSAI_t *s_NSSAI = NULL;
+            NGAP_SST_t *sST = NULL;
+
+            NGAP_AllowedNSSAI_Item = (NGAP_AllowedNSSAI_Item_t *)
+                    CALLOC(1, sizeof(NGAP_AllowedNSSAI_Item_t));
+            s_NSSAI = &NGAP_AllowedNSSAI_Item->s_NSSAI;
+            sST = &s_NSSAI->sST;
+
+            ogs_asn_uint8_to_OCTET_STRING(
+                amf_self()->plmn_support[i].s_nssai[j].sst, sST);
+            if (amf_self()->plmn_support[i].s_nssai[j].sd.v !=
+                    OGS_S_NSSAI_NO_SD_VALUE) {
+                s_NSSAI->sD = CALLOC(1, sizeof(NGAP_SD_t));
+                ogs_asn_uint24_to_OCTET_STRING(
+                    amf_self()->plmn_support[i].s_nssai[j].sd, s_NSSAI->sD);
+            }
+
+            ASN_SEQUENCE_ADD(&AllowedNSSAI->list, NGAP_AllowedNSSAI_Item);
+        }
+    }
+
+    UESecurityCapabilities->nRencryptionAlgorithms.size = 2;
+    UESecurityCapabilities->nRencryptionAlgorithms.buf =
+        CALLOC(UESecurityCapabilities->
+                    nRencryptionAlgorithms.size, sizeof(uint8_t));
+    UESecurityCapabilities->nRencryptionAlgorithms.bits_unused = 0;
+    UESecurityCapabilities->nRencryptionAlgorithms.buf[0] =
+        (amf_ue->ue_security_capability.nr_ea << 1);
+
+    UESecurityCapabilities->nRintegrityProtectionAlgorithms.size = 2;
+    UESecurityCapabilities->nRintegrityProtectionAlgorithms.buf =
+        CALLOC(UESecurityCapabilities->
+                    nRintegrityProtectionAlgorithms.size, sizeof(uint8_t));
+    UESecurityCapabilities->nRintegrityProtectionAlgorithms.bits_unused = 0;
+    UESecurityCapabilities->nRintegrityProtectionAlgorithms.buf[0] =
+        (amf_ue->ue_security_capability.nr_ia << 1);
+
+    UESecurityCapabilities->eUTRAencryptionAlgorithms.size = 2;
+    UESecurityCapabilities->eUTRAencryptionAlgorithms.buf =
+        CALLOC(UESecurityCapabilities->
+                    eUTRAencryptionAlgorithms.size, sizeof(uint8_t));
+    UESecurityCapabilities->eUTRAencryptionAlgorithms.bits_unused = 0;
+    UESecurityCapabilities->eUTRAencryptionAlgorithms.buf[0] =
+        (amf_ue->ue_security_capability.eutra_ea << 1);
+
+    UESecurityCapabilities->eUTRAintegrityProtectionAlgorithms.size = 2;
+    UESecurityCapabilities->eUTRAintegrityProtectionAlgorithms.buf =
+        CALLOC(UESecurityCapabilities->
+                    eUTRAintegrityProtectionAlgorithms.size, sizeof(uint8_t));
+    UESecurityCapabilities->eUTRAintegrityProtectionAlgorithms.bits_unused = 0;
+    UESecurityCapabilities->eUTRAintegrityProtectionAlgorithms.buf[0] =
+        (amf_ue->ue_security_capability.eutra_ia << 1);
+
+    SecurityKey->size = OGS_SHA256_DIGEST_SIZE;
+    SecurityKey->buf = CALLOC(SecurityKey->size, sizeof(uint8_t));
+    SecurityKey->bits_unused = 0;
+    memcpy(SecurityKey->buf, amf_ue->kgnb, SecurityKey->size);
+
+    if (amf_ue->ueRadioCapability.buf && amf_ue->ueRadioCapability.size) {
+        /* Set UeRadioCapability if exists */
+        NGAP_UERadioCapability_t *UERadioCapability = NULL;
+
+        ie = CALLOC(1, sizeof(NGAP_InitialContextSetupRequestIEs_t));
+        ASN_SEQUENCE_ADD(&InitialContextSetupRequest->protocolIEs, ie);
+
+        ie->id = NGAP_ProtocolIE_ID_id_UERadioCapability;
+        ie->criticality = NGAP_Criticality_ignore;
+        ie->value.present =
+            NGAP_InitialContextSetupRequestIEs__value_PR_UERadioCapability;
+
+        UERadioCapability = &ie->value.choice.UERadioCapability;
+
+        ogs_assert(UERadioCapability);
+        ogs_asn_buffer_to_OCTET_STRING(
+                amf_ue->ueRadioCapability.buf, amf_ue->ueRadioCapability.size,
+                UERadioCapability);
+    }
+
+    if (amf_ue->masked_imeisv_len) {
+        ie = CALLOC(1, sizeof(NGAP_InitialContextSetupRequestIEs_t));
+        ASN_SEQUENCE_ADD(&InitialContextSetupRequest->protocolIEs, ie);
+
+        ie->id = NGAP_ProtocolIE_ID_id_MaskedIMEISV;
+        ie->criticality = NGAP_Criticality_ignore;
+        ie->value.present =
+            NGAP_InitialContextSetupRequestIEs__value_PR_MaskedIMEISV;
+
+        MaskedIMEISV = &ie->value.choice.MaskedIMEISV;
+
+        MaskedIMEISV->size = amf_ue->masked_imeisv_len;
+        MaskedIMEISV->buf = CALLOC(MaskedIMEISV->size, sizeof(uint8_t));
+        MaskedIMEISV->bits_unused = 0;
+        memcpy(MaskedIMEISV->buf, amf_ue->masked_imeisv, MaskedIMEISV->size);
     }
 
     return ogs_ngap_encode(&pdu);
@@ -801,7 +1157,131 @@ ogs_pkbuf_t *ngap_build_ue_context_release_command(
     return ogs_ngap_encode(&pdu);
 }
 
-ogs_pkbuf_t *ngap_build_pdu_session_resource_setup_request(
+ogs_pkbuf_t *ngap_ue_build_pdu_session_resource_setup_request(
+    amf_ue_t *amf_ue, ogs_pkbuf_t *gmmbuf)
+{
+    ran_ue_t *ran_ue = NULL;
+    amf_sess_t *sess = NULL;
+
+    NGAP_NGAP_PDU_t pdu;
+    NGAP_InitiatingMessage_t *initiatingMessage = NULL;
+    NGAP_PDUSessionResourceSetupRequest_t *PDUSessionResourceSetupRequest;
+
+    NGAP_PDUSessionResourceSetupRequestIEs_t *ie = NULL;
+    NGAP_AMF_UE_NGAP_ID_t *AMF_UE_NGAP_ID = NULL;
+    NGAP_RAN_UE_NGAP_ID_t *RAN_UE_NGAP_ID = NULL;
+    NGAP_NAS_PDU_t *NAS_PDU = NULL;
+
+    NGAP_PDUSessionResourceSetupListSUReq_t *PDUSessionList = NULL;
+    NGAP_PDUSessionResourceSetupItemSUReq_t *PDUSessionItem = NULL;
+
+    ogs_assert(gmmbuf);
+    ogs_assert(amf_ue);
+    ran_ue = ran_ue_cycle(amf_ue->ran_ue);
+    ogs_assert(ran_ue);
+
+    memset(&pdu, 0, sizeof (NGAP_NGAP_PDU_t));
+    pdu.present = NGAP_NGAP_PDU_PR_initiatingMessage;
+    pdu.choice.initiatingMessage = CALLOC(1, sizeof(NGAP_InitiatingMessage_t));
+
+    initiatingMessage = pdu.choice.initiatingMessage;
+    initiatingMessage->procedureCode =
+        NGAP_ProcedureCode_id_PDUSessionResourceSetup;
+    initiatingMessage->criticality = NGAP_Criticality_reject;
+    initiatingMessage->value.present =
+        NGAP_InitiatingMessage__value_PR_PDUSessionResourceSetupRequest;
+
+    PDUSessionResourceSetupRequest =
+        &initiatingMessage->value.choice.PDUSessionResourceSetupRequest;
+
+    ie = CALLOC(1, sizeof(NGAP_PDUSessionResourceSetupRequestIEs_t));
+    ASN_SEQUENCE_ADD(&PDUSessionResourceSetupRequest->protocolIEs, ie);
+
+    ie->id = NGAP_ProtocolIE_ID_id_AMF_UE_NGAP_ID;
+    ie->criticality = NGAP_Criticality_reject;
+    ie->value.present =
+        NGAP_PDUSessionResourceSetupRequestIEs__value_PR_AMF_UE_NGAP_ID;
+
+    AMF_UE_NGAP_ID = &ie->value.choice.AMF_UE_NGAP_ID;
+
+    ie = CALLOC(1, sizeof(NGAP_PDUSessionResourceSetupRequestIEs_t));
+    ASN_SEQUENCE_ADD(&PDUSessionResourceSetupRequest->protocolIEs, ie);
+
+    ie->id = NGAP_ProtocolIE_ID_id_RAN_UE_NGAP_ID;
+    ie->criticality = NGAP_Criticality_reject;
+    ie->value.present =
+        NGAP_PDUSessionResourceSetupRequestIEs__value_PR_RAN_UE_NGAP_ID;
+
+    RAN_UE_NGAP_ID = &ie->value.choice.RAN_UE_NGAP_ID;
+
+    ogs_debug("    RAN_UE_NGAP_ID[%d] AMF_UE_NGAP_ID[%lld]",
+            ran_ue->ran_ue_ngap_id, (long long)ran_ue->amf_ue_ngap_id);
+
+    asn_uint642INTEGER(AMF_UE_NGAP_ID, ran_ue->amf_ue_ngap_id);
+    *RAN_UE_NGAP_ID = ran_ue->ran_ue_ngap_id;
+
+    ie = CALLOC(1, sizeof(NGAP_PDUSessionResourceSetupRequestIEs_t));
+    ASN_SEQUENCE_ADD(&PDUSessionResourceSetupRequest->protocolIEs, ie);
+
+    ie->id = NGAP_ProtocolIE_ID_id_NAS_PDU;
+    ie->criticality = NGAP_Criticality_reject;
+    ie->value.present =
+        NGAP_PDUSessionResourceSetupRequestIEs__value_PR_NAS_PDU;
+
+    NAS_PDU = &ie->value.choice.NAS_PDU;
+
+    NAS_PDU->size = gmmbuf->len;
+    NAS_PDU->buf = CALLOC(NAS_PDU->size, sizeof(uint8_t));
+    memcpy(NAS_PDU->buf, gmmbuf->data, NAS_PDU->size);
+    ogs_pkbuf_free(gmmbuf);
+
+    ogs_list_for_each(&amf_ue->sess_list, sess) {
+        NGAP_S_NSSAI_t *s_NSSAI = NULL;
+        NGAP_SST_t *sST = NULL;
+        OCTET_STRING_t *transfer = NULL;
+
+        if (!sess->transfer.pdu_session_resource_setup_request) continue;
+
+        if (!PDUSessionList) {
+            ie = CALLOC(1, sizeof(NGAP_PDUSessionResourceSetupRequestIEs_t));
+            ASN_SEQUENCE_ADD(&PDUSessionResourceSetupRequest->protocolIEs, ie);
+
+            ie->id = NGAP_ProtocolIE_ID_id_PDUSessionResourceSetupListSUReq;
+            ie->criticality = NGAP_Criticality_reject;
+            ie->value.present = NGAP_PDUSessionResourceSetupRequestIEs__value_PR_PDUSessionResourceSetupListSUReq;
+
+            PDUSessionList = &ie->value.choice.PDUSessionResourceSetupListSUReq;
+        }
+
+        PDUSessionItem =
+            CALLOC(1, sizeof(struct NGAP_PDUSessionResourceSetupItemSUReq));
+        ASN_SEQUENCE_ADD(&PDUSessionList->list, PDUSessionItem);
+
+        PDUSessionItem->pDUSessionID = sess->psi;
+
+        s_NSSAI = &PDUSessionItem->s_NSSAI;
+        sST = &s_NSSAI->sST;
+        ogs_asn_uint8_to_OCTET_STRING(sess->s_nssai.sst, sST);
+        if (sess->s_nssai.sd.v != OGS_S_NSSAI_NO_SD_VALUE) {
+            s_NSSAI->sD = CALLOC(1, sizeof(NGAP_SD_t));
+            ogs_asn_uint24_to_OCTET_STRING(sess->s_nssai.sd, s_NSSAI->sD);
+        }
+
+        transfer = &PDUSessionItem->pDUSessionResourceSetupRequestTransfer;
+        transfer->size = sess->transfer.pdu_session_resource_setup_request->len;
+        transfer->buf = CALLOC(transfer->size, sizeof(uint8_t));
+        memcpy(transfer->buf,
+                sess->transfer.pdu_session_resource_setup_request->data,
+                transfer->size);
+    }
+
+    ogs_assert(PDUSessionList);
+    ogs_assert(PDUSessionList->list.count);
+
+    return ogs_ngap_encode(&pdu);
+}
+
+ogs_pkbuf_t *ngap_sess_build_pdu_session_resource_setup_request(
     amf_sess_t *sess, ogs_pkbuf_t *gmmbuf, ogs_pkbuf_t *n2smbuf)
 {
     amf_ue_t *amf_ue = NULL;
@@ -886,8 +1366,8 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_setup_request(
 
     PDUSessionItem->pDUSessionID = sess->psi;
 
-    pDUSessionNAS_PDU = CALLOC(1, sizeof(NGAP_NAS_PDU_t));
-    PDUSessionItem->pDUSessionNAS_PDU = pDUSessionNAS_PDU;
+    PDUSessionItem->pDUSessionNAS_PDU =
+        pDUSessionNAS_PDU = CALLOC(1, sizeof(NGAP_NAS_PDU_t));
     pDUSessionNAS_PDU->size = gmmbuf->len;
     pDUSessionNAS_PDU->buf = CALLOC(pDUSessionNAS_PDU->size, sizeof(uint8_t));
     memcpy(pDUSessionNAS_PDU->buf, gmmbuf->data, pDUSessionNAS_PDU->size);
@@ -993,8 +1473,7 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_modify_request(
 
     PDUSessionItem->pDUSessionID = sess->psi;
 
-    nAS_PDU = CALLOC(1, sizeof(NGAP_NAS_PDU_t));
-    PDUSessionItem->nAS_PDU = nAS_PDU;
+    PDUSessionItem->nAS_PDU = nAS_PDU = CALLOC(1, sizeof(NGAP_NAS_PDU_t));
     nAS_PDU->size = gmmbuf->len;
     nAS_PDU->buf = CALLOC(nAS_PDU->size, sizeof(uint8_t));
     memcpy(nAS_PDU->buf, gmmbuf->data, nAS_PDU->size);

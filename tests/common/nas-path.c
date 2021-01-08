@@ -71,9 +71,12 @@ void testgmm_recv(test_ue_t *test_ue, ogs_pkbuf_t *pkbuf)
 void testgsm_recv(test_sess_t *sess, ogs_pkbuf_t *pkbuf)
 {
     int rv;
+    test_ue_t *test_ue = NULL;
     ogs_nas_5gs_message_t message;
 
     ogs_assert(sess);
+    test_ue = sess->test_ue;
+    ogs_assert(test_ue);
     ogs_assert(pkbuf);
 
     rv = ogs_nas_5gsm_decode(&message, pkbuf);
@@ -81,6 +84,7 @@ void testgsm_recv(test_sess_t *sess, ogs_pkbuf_t *pkbuf)
 
     sess->pti = message.gsm.h.procedure_transaction_identity;
 
+    test_ue->gsm_message_type = message.gsm.h.message_type;
     switch (message.gsm.h.message_type) {
     case OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_ACCEPT:
         testgsm_handle_pdu_session_establishment_accept(sess,
@@ -177,6 +181,7 @@ void testesm_recv(test_ue_t *test_ue, ogs_pkbuf_t *pkbuf)
     rv = ogs_nas_esm_decode(&message, pkbuf);
     ogs_assert(rv == OGS_OK);
 
+    test_ue->esm_message_type = message.esm.h.message_type;
     switch (message.esm.h.message_type) {
     case OGS_NAS_EPS_ESM_INFORMATION_REQUEST:
         break;
