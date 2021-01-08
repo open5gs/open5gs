@@ -374,7 +374,7 @@ ogs_pkbuf_t *s1ap_build_initial_context_setup_request(
                  * Since all bearers are INACTIVE,
                  * we should not check the bearer activation.
                  */
-            } else if (OGS_FSM_CHECK(&bearer->sm, esm_state_active)) {
+            } else if (OGS_FSM_CHECK(&bearer->sm, esm_state_inactive)) {
                 /*
                  * For Service Request/TAU Request/Extended Service Request,
                  * Only the active EPS bearer can be included.
@@ -394,7 +394,6 @@ ogs_pkbuf_t *s1ap_build_initial_context_setup_request(
                  * 7. UE->MME : Activate dedicated EPS Bearer Context Accept
                  * 8. MME->SGW : Create Bearer Response
                  */
-            } else {
                 ogs_warn("No active EPS bearer [%d]", bearer->ebi);
                 ogs_warn("    IMSI[%s] NAS-EPS Type[%d] "
                         "ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
