@@ -38,6 +38,11 @@ static void sess_timeout(ogs_gtp_xact_t *xact, void *data)
     switch (type) {
     case OGS_GTP_DELETE_SESSION_REQUEST_TYPE:
         ogs_error("[%s] No Delete Session Response", sgwc_ue->imsi_bcd);
+        if (!sgwc_sess_cycle(sess)) {
+            ogs_warn("[%s] Session has already been removed",
+                    sgwc_ue->imsi_bcd);
+            break;
+        }
         sgwc_pfcp_send_session_deletion_request(sess, NULL, NULL);
         break;
     default:

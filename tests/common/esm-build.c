@@ -256,6 +256,40 @@ ogs_pkbuf_t *testesm_build_activate_dedicated_eps_bearer_context_accept(
     return test_nas_eps_security_encode(test_ue, &message);
 }
 
+ogs_pkbuf_t *testesm_build_activate_dedicated_eps_bearer_context_reject(
+        test_bearer_t *bearer, uint8_t esm_cause)
+{
+    ogs_nas_eps_message_t message;
+    ogs_nas_eps_activate_dedicated_eps_bearer_context_reject_t
+        *activate_dedicated_eps_bearer_context_reject =
+            &message.esm.activate_dedicated_eps_bearer_context_reject;
+
+    test_ue_t *test_ue = NULL;
+    test_sess_t *sess = NULL;
+    ogs_pkbuf_t *pkbuf = NULL;
+
+    ogs_assert(bearer);
+    sess = bearer->sess;
+    ogs_assert(sess);
+    test_ue = sess->test_ue;
+    ogs_assert(test_ue);
+
+    memset(&message, 0, sizeof(message));
+
+    message.h.security_header_type =
+       OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
+    message.h.protocol_discriminator = OGS_NAS_PROTOCOL_DISCRIMINATOR_EMM;
+
+    message.esm.h.eps_bearer_identity = bearer->ebi;
+    message.esm.h.protocol_discriminator = OGS_NAS_PROTOCOL_DISCRIMINATOR_ESM;
+    message.esm.h.message_type =
+        OGS_NAS_EPS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REJECT;
+
+    activate_dedicated_eps_bearer_context_reject->esm_cause = esm_cause;
+
+    return test_nas_eps_security_encode(test_ue, &message);
+}
+
 ogs_pkbuf_t *testesm_build_modify_eps_bearer_context_accept(
         test_bearer_t *bearer)
 {

@@ -76,6 +76,11 @@ static void sess_timeout(ogs_gtp_xact_t *xact, void *data)
     switch (type) {
     case OGS_GTP_CREATE_SESSION_REQUEST_TYPE:
         ogs_error("[%s] No Create Session Response", sgwc_ue->imsi_bcd);
+        if (!sgwc_sess_cycle(sess)) {
+            ogs_warn("[%s] Session has already been removed",
+                    sgwc_ue->imsi_bcd);
+            break;
+        }
         sgwc_pfcp_send_session_deletion_request(sess, NULL, NULL);
         break;
     default:
@@ -103,6 +108,10 @@ static void bearer_timeout(ogs_gtp_xact_t *xact, void *data)
     switch (type) {
     case OGS_GTP_CREATE_BEARER_REQUEST_TYPE:
         ogs_error("[%s] No Create Bearer Response", sgwc_ue->imsi_bcd);
+        if (!sgwc_bearer_cycle(bearer)) {
+            ogs_warn("[%s] Bearer has already been removed", sgwc_ue->imsi_bcd);
+            break;
+        }
         sgwc_pfcp_send_bearer_modification_request(
                 bearer, NULL, NULL,
                 OGS_PFCP_MODIFY_UL_ONLY|OGS_PFCP_MODIFY_REMOVE);

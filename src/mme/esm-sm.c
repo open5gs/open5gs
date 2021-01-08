@@ -32,6 +32,24 @@
 #undef OGS_LOG_DOMAIN
 #define OGS_LOG_DOMAIN __esm_log_domain
 
+static uint8_t gtp_cause_from_esm(uint8_t esm_cause)
+{
+    switch (esm_cause) {
+    case ESM_CAUSE_SEMANTIC_ERROR_IN_THE_TFT_OPERATION:
+        return OGS_GTP_CAUSE_SEMANTIC_ERROR_IN_THE_TFT_OPERATION;
+    case ESM_CAUSE_SYNTACTICAL_ERROR_IN_THE_TFT_OPERATION:
+        return OGS_GTP_CAUSE_SYNTACTIC_ERROR_IN_THE_TFT_OPERATION;
+    case ESM_CAUSE_SYNTACTICAL_ERROR_IN_PACKET_FILTERS:
+        return OGS_GTP_CAUSE_SYNTACTIC_ERRORS_IN_PACKET_FILTER;
+    case ESM_CAUSE_SEMANTIC_ERRORS_IN_PACKET_FILTERS:
+        return OGS_GTP_CAUSE_SEMANTIC_ERRORS_IN_PACKET_FILTER;
+    default:
+        return OGS_GTP_CAUSE_SYSTEM_FAILURE;
+    }
+
+    return OGS_GTP_CAUSE_SYSTEM_FAILURE;
+}
+
 void esm_state_initial(ogs_fsm_t *s, mme_event_t *e)
 {
     ogs_assert(s);
@@ -56,6 +74,9 @@ void esm_state_inactive(ogs_fsm_t *s, mme_event_t *e)
     mme_bearer_t *bearer = NULL;
     ogs_nas_eps_message_t *message = NULL;
     ogs_nas_security_header_type_t h;
+
+    ogs_nas_eps_activate_dedicated_eps_bearer_context_reject_t
+        *activate_dedicated_eps_bearer_context_reject = NULL;
 
     ogs_assert(s);
     ogs_assert(e);
@@ -145,8 +166,7 @@ void esm_state_inactive(ogs_fsm_t *s, mme_event_t *e)
             }
             break;
         case OGS_NAS_EPS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_ACCEPT:
-            ogs_debug("Activate default EPS bearer "
-                    "context accept");
+            ogs_debug("Activate default EPS bearer context accept");
             ogs_debug("    IMSI[%s] PTI[%d] EBI[%d]",
                     mme_ue->imsi_bcd, sess->pti, bearer->ebi);
             /* Check if Initial Context Setup Response or 
@@ -159,8 +179,7 @@ void esm_state_inactive(ogs_fsm_t *s, mme_event_t *e)
             OGS_FSM_TRAN(s, esm_state_active);
             break;
         case OGS_NAS_EPS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_ACCEPT:
-            ogs_debug("Activate dedicated EPS bearer "
-                    "context accept");
+            ogs_debug("Activate dedicated EPS bearer context accept");
             ogs_debug("    IMSI[%s] PTI[%d] EBI[%d]",
                     mme_ue->imsi_bcd, sess->pti, bearer->ebi);
             /* Check if Initial Context Setup Response or 
@@ -171,6 +190,18 @@ void esm_state_inactive(ogs_fsm_t *s, mme_event_t *e)
             }
 
             OGS_FSM_TRAN(s, esm_state_active);
+            break;
+        case OGS_NAS_EPS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REJECT:
+            ogs_error("Activate dedicated EPS bearer context reject");
+            ogs_error("    IMSI[%s] PTI[%d] EBI[%d]",
+                    mme_ue->imsi_bcd, sess->pti, bearer->ebi);
+            activate_dedicated_eps_bearer_context_reject =
+                &message->esm.activate_dedicated_eps_bearer_context_reject;
+            ogs_assert(activate_dedicated_eps_bearer_context_reject);
+            mme_gtp_send_create_bearer_response(bearer,
+                gtp_cause_from_esm(
+                    activate_dedicated_eps_bearer_context_reject->esm_cause));
+            OGS_FSM_TRAN(s, esm_state_bearer_deactivated);
             break;
         default:
             ogs_error("Unknown message(type:%d)", message->esm.h.message_type);

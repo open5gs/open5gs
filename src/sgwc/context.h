@@ -175,6 +175,7 @@ sgwc_sess_t *sgwc_sess_find_by_seid(uint64_t seid);
 
 sgwc_sess_t *sgwc_sess_find_by_apn(sgwc_ue_t *sgwc_ue, char *apn);
 sgwc_sess_t *sgwc_sess_find_by_ebi(sgwc_ue_t *sgwc_ue, uint8_t ebi);
+sgwc_sess_t *sgwc_sess_cycle(sgwc_sess_t *sess);
 
 sgwc_bearer_t *sgwc_bearer_add(sgwc_sess_t *sess);
 int sgwc_bearer_remove(sgwc_bearer_t *bearer);
@@ -187,6 +188,7 @@ sgwc_bearer_t *sgwc_bearer_find_by_error_indication_report(
         sgwc_sess_t *sess,
         ogs_pfcp_tlv_error_indication_report_t *error_indication_report);
 sgwc_bearer_t *sgwc_default_bearer_in_sess(sgwc_sess_t *sess);
+sgwc_bearer_t *sgwc_bearer_cycle(sgwc_bearer_t *bearer);
 
 sgwc_tunnel_t *sgwc_tunnel_add(
         sgwc_bearer_t *bearer, uint8_t interface_type);

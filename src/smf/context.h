@@ -332,9 +332,6 @@ smf_sess_t *smf_sess_find_by_sm_context_ref(char *sm_context_ref);
 smf_sess_t *smf_sess_find_by_ipv4(uint32_t addr);
 smf_sess_t *smf_sess_find_by_ipv6(uint32_t *addr6);
 
-smf_ue_t *smf_ue_cycle(smf_ue_t *smf_ue);
-smf_sess_t *smf_sess_cycle(smf_sess_t *sess);
-
 smf_bearer_t *smf_qos_flow_add(smf_sess_t *sess);
 smf_bearer_t *smf_qos_flow_find_by_qfi(smf_sess_t *sess, uint8_t qfi);
 smf_bearer_t *smf_qos_flow_find_by_pcc_rule_id(
@@ -360,6 +357,11 @@ smf_bearer_t *smf_default_bearer_in_sess(smf_sess_t *sess);
 bool smf_bearer_is_default(smf_bearer_t *bearer);
 smf_bearer_t *smf_bearer_first(smf_sess_t *sess);
 smf_bearer_t *smf_bearer_next(smf_bearer_t *bearer);
+
+smf_ue_t *smf_ue_cycle(smf_ue_t *smf_ue);
+smf_sess_t *smf_sess_cycle(smf_sess_t *sess);
+smf_bearer_t *smf_qos_flow_cycle(smf_bearer_t *qos_flow);
+smf_bearer_t *smf_bearer_cycle(smf_bearer_t *bearer);
 
 smf_pf_t *smf_pf_add(smf_bearer_t *bearer);
 int smf_pf_remove(smf_pf_t *pf);

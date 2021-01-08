@@ -44,6 +44,10 @@ static void bearer_timeout(ogs_gtp_xact_t *xact, void *data)
         break;
     case OGS_GTP_DELETE_BEARER_REQUEST_TYPE:
         ogs_error("[%s] No Delete Bearer Response", sgwc_ue->imsi_bcd);
+        if (!sgwc_bearer_cycle(bearer)) {
+            ogs_warn("[%s] Bearer has already been removed", sgwc_ue->imsi_bcd);
+            break;
+        }
         sgwc_pfcp_send_bearer_modification_request(
                 bearer, NULL, NULL, OGS_PFCP_MODIFY_REMOVE);
         break;

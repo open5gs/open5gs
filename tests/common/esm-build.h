@@ -31,6 +31,8 @@ ogs_pkbuf_t *testesm_build_activate_default_eps_bearer_context_accept(
         test_bearer_t *bearer, bool integrity_protected_and_ciphered);
 ogs_pkbuf_t *testesm_build_activate_dedicated_eps_bearer_context_accept(
         test_bearer_t *bearer);
+ogs_pkbuf_t *testesm_build_activate_dedicated_eps_bearer_context_reject(
+        test_bearer_t *bearer, uint8_t esm_cause);
 ogs_pkbuf_t *testesm_build_modify_eps_bearer_context_accept(
         test_bearer_t *bearer);
 ogs_pkbuf_t *testesm_build_deactivate_eps_bearer_context_accept(
