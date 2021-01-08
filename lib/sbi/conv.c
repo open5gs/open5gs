@@ -345,7 +345,7 @@ bool ogs_sbi_time_from_string(ogs_time_t *timestamp, char *str)
 
     memset(&tm, 0, sizeof(tm));
     ogs_strptime(seconds, "%Y-%m-%dT%H:%M:%S%z", &tm);
-    usecs = (ogs_time_t)(atof(subsecs) * 1000000);
+    usecs = (ogs_time_t)floor(atof(subsecs) * 1000000.0 + 0.5);
 
     rv = ogs_time_from_gmt(timestamp, &tm, usecs);
     if (rv != OGS_OK) {
