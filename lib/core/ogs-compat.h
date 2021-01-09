@@ -53,7 +53,6 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-#include <math.h>
 #include <time.h>
 #include <errno.h>
 #include <arpa/inet.h>
