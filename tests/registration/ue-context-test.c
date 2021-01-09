@@ -980,6 +980,28 @@ static void test3_func(abts_case *tc, void *data)
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
+    /* TODO : Needs improvements to handle the situation below.
+     *
+     * If UE sends
+     *    UplinkNASTransport + PDU session resource release complete
+     *    InitialUEMessage + Registration Request
+     * Without ogs_msleep(100),
+     * Then, "No Security Context" could occurred in gmm-sm.c:319.
+     *
+     * 1. Push UL NAS Transport Message to the NAS queue.
+     * 2. Before handling UL NAS Transport message,
+     *    NGAP handler received InitialUEMessage.
+     * 3. In ngap_handle_initial_ue_message(),
+     *    ran_ue/amf_ue is deassociated by ran_ue_deassociate(amf_ue->ran_ue)
+     * 4. Push Registration request message to the NAS queue.
+     * 5. Pop UL NAS Transport message from the NAS queue.
+     *    In AMF_EVT_5GMM_MESSAGE(amf-sm.c),
+     *    NEW amf_ue context is added by amf_ue_add(ran_ue)
+     * 6. Since NEW amf_ue->security_context_available is 0,
+     *    "No Security Context" occurred.
+     */
+    ogs_msleep(100);
+
     /* Send Registration request
      * - Update Registration request type
      * - Uplink Data Status */
@@ -1022,7 +1044,7 @@ static void test3_func(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc,
             NGAP_ProcedureCode_id_DownlinkNASTransport,
             test_ue->ngap_procedure_code);
-    ABTS_INT_EQUAL(tc, 0x2000, test_ue->pdu_session_reactivation_result);
+    ABTS_INT_EQUAL(tc, 0x0000, test_ue->pdu_session_reactivation_result);
 
     /* Send De-registration request */
     gmmbuf = testgmm_build_de_registration_request(test_ue, 1);
