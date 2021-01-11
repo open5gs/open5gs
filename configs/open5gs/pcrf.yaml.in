@@ -46,6 +46,10 @@ pcrf:
 #  o Disable Stateless Address Autoconfiguration for IPv6
 #      no_slaac: true
 #
+#  o Legacy support for pre-release LTE 11 devices to do calling
+#    - Replace IPv4/v6 local addr field in AAR Media-Subcomponent AVP by any
+#      no_ipv4v6_local_addr_in_packet_filter: true
+#
 parameter:
 
 #
