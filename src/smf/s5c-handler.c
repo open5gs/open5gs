@@ -723,7 +723,12 @@ void smf_s5c_handle_bearer_resource_command(
     }
 
     if (cause_value == OGS_GTP_CAUSE_REQUEST_ACCEPTED) {
-        bearer = smf_bearer_find_by_ebi(sess, cmd->linked_eps_bearer_id.u8);
+        uint8_t ebi = cmd->linked_eps_bearer_id.u8;
+
+        if (cmd->eps_bearer_id.presence)
+            ebi = cmd->eps_bearer_id.u8;
+
+        bearer = smf_bearer_find_by_ebi(sess, ebi);
         if (!bearer)
             ogs_error("No Context for Linked EPS Bearer ID[%d]",
                     cmd->linked_eps_bearer_id.u8);
@@ -759,7 +764,7 @@ void smf_s5c_handle_bearer_resource_command(
                     ogs_gtp_send_error_message(
                         xact, sess ? sess->sgw_s5c_teid : 0,
                         OGS_GTP_BEARER_RESOURCE_FAILURE_INDICATION_TYPE,
-                        OGS_GTP_CAUSE_SEMANTIC_ERROR_IN_THE_TAD_OPERATION);
+                        OGS_GTP_CAUSE_SEMANTIC_ERRORS_IN_PACKET_FILTER);
                     return;
                 }
 /*
@@ -825,7 +830,7 @@ void smf_s5c_handle_bearer_resource_command(
                 ogs_gtp_send_error_message(
                     xact, sess ? sess->sgw_s5c_teid : 0,
                     OGS_GTP_BEARER_RESOURCE_FAILURE_INDICATION_TYPE,
-                    OGS_GTP_CAUSE_SEMANTIC_ERROR_IN_THE_TAD_OPERATION);
+                    OGS_GTP_CAUSE_SEMANTIC_ERRORS_IN_PACKET_FILTER);
                 return;
             }
 /*

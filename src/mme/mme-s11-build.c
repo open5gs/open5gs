@@ -770,6 +770,10 @@ ogs_pkbuf_t *mme_s11_build_bearer_resource_command(
     mme_ue = sess->mme_ue;
     ogs_assert(mme_ue);
 
+    ogs_debug("Bearer Resource Command");
+    ogs_debug("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
+            mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
+
     ogs_assert(nas_message);
     switch (nas_message->esm.h.message_type) {
     case OGS_NAS_EPS_BEARER_RESOURCE_ALLOCATION_REQUEST:
@@ -793,15 +797,11 @@ ogs_pkbuf_t *mme_s11_build_bearer_resource_command(
     linked_bearer = mme_linked_bearer(bearer);
     ogs_assert(linked_bearer);
 
-    ogs_debug("Bearer Resource Command");
-    ogs_debug("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
-            mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
-
     memset(&gtp_message, 0, sizeof(ogs_gtp_message_t));
 
     /* Linked Bearer Context : EBI */
     cmd->linked_eps_bearer_id.presence = 1;
-    cmd->linked_eps_bearer_id.u8 = bearer->ebi;
+    cmd->linked_eps_bearer_id.u8 = linked_bearer->ebi;
 
     /* Procedure Transaction ID(PTI) */
     cmd->procedure_transaction_id.presence = 1;
@@ -843,6 +843,19 @@ ogs_pkbuf_t *mme_s11_build_bearer_resource_command(
     cmd->traffic_aggregate_description.presence = 1;
     cmd->traffic_aggregate_description.data = tad->buffer;
     cmd->traffic_aggregate_description.len = tad->length;
+
+    switch (nas_message->esm.h.message_type) {
+    case OGS_NAS_EPS_BEARER_RESOURCE_ALLOCATION_REQUEST:
+        break;
+    case OGS_NAS_EPS_BEARER_RESOURCE_MODIFICATION_REQUEST:
+        /* Bearer Context : EBI */
+        cmd->eps_bearer_id.presence = 1;
+        cmd->eps_bearer_id.u8 = bearer->ebi;
+        break;
+    default:
+        ogs_error("Invalid NAS ESM Type[%d]", nas_message->esm.h.message_type);
+        return NULL;
+    }
 
     gtp_message.h.type = type;
     return ogs_gtp_build_msg(&gtp_message);

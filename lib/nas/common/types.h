@@ -346,12 +346,27 @@ ED2(uint8_t type_of_ciphering_algorithm:4;,
     uint8_t type_of_integrity_protection_algorithm:4;)
 } __attribute__ ((packed)) ogs_nas_security_algorithms_t;
 
-/* 9.9.3.27 Service type
- * M V 1/2 
- * 9.9.3.21 NAS key set identifier 
+/* 9.9.3.21 NAS key set identifier
  * M V 1/2
+ *
+ * 9.9.3.27 Service type
+ * M V 1/2
+ * In lib/nas/eps/types.h
+ * #define OGS_NAS_SERVICE_TYPE_CS_FALLBACK_FROM_UE 0
+ * #define OGS_NAS_SERVICE_TYPE_CS_FALLBACK_TO_UE 1
+ * #define OGS_NAS_SERVICE_TYPE_CS_FALLBACK_EMERGENCY_CALL_FROM_UE 2
+ *
  * 9.11.3.50 Service type
- * M V 1/2 */
+ * M V 1/2
+ * In lib/nas/5gs/types.h
+ * #define OGS_NAS_SERVICE_TYPE_SIGNALLING 0
+ * #define OGS_NAS_SERVICE_TYPE_DATA 1
+ * #define OGS_NAS_SERVICE_TYPE_MOBILE_TERMINATED_SERVICES 2
+ * #define OGS_NAS_SERVICE_TYPE_EMERGENCY_SERVICES 3
+ * #define OGS_NAS_SERVICE_TYPE_EMERGENCY_SERVICES_FALLBACK 4
+ * #define OGS_NAS_SERVICE_TYPE_HIGH_PRIORITY_ACCESS 5
+ * #define OGS_NAS_SERVICE_TYPE_ELEVATED_SIGNALLING 6
+*/
 typedef struct ogs_nas_service_type_s {
 ED3(uint8_t tsc:1;,
     uint8_t nas_key_set_identifier:3;,

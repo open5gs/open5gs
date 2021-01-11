@@ -464,13 +464,15 @@ static void test1_func(abts_case *tc, void *data)
     test_ue->service_request_param.
         psimask.uplink_data_status = (1 << 5 | 1 << 6);
     test_ue->service_request_param.pdu_session_status = 0;
-    nasbuf = testgmm_build_service_request(test_ue, NULL);
+    nasbuf = testgmm_build_service_request(
+            test_ue, OGS_NAS_SERVICE_TYPE_DATA, NULL);
     ABTS_PTR_NOTNULL(tc, nasbuf);
 
     test_ue->service_request_param.integrity_protected = 1;
     test_ue->service_request_param.uplink_data_status = 0;
     test_ue->service_request_param.pdu_session_status = 0;
-    gmmbuf = testgmm_build_service_request(test_ue, nasbuf);
+    gmmbuf = testgmm_build_service_request(
+            test_ue, OGS_NAS_SERVICE_TYPE_DATA, nasbuf);
     ABTS_PTR_NOTNULL(tc, gmmbuf);
 
     sendbuf = testngap_build_initial_ue_message(test_ue, gmmbuf, true, true);

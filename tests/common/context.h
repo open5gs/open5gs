@@ -210,7 +210,6 @@ typedef struct test_service_request_param_s {
         };
         uint8_t value;
     };
-    uint8_t service_type;
     struct {
         uint16_t pdu_session_status;
         uint16_t uplink_data_status;

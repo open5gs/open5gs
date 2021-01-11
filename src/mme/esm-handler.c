@@ -176,9 +176,17 @@ int esm_handle_information_response(mme_sess_t *sess,
 int esm_handle_bearer_resource_allocation_request(
         mme_bearer_t *bearer, ogs_nas_eps_message_t *message)
 {
+    mme_ue_t *mme_ue = NULL;
+    mme_sess_t *sess = NULL;
+
     ogs_assert(bearer);
+    sess = bearer->sess;
+    ogs_assert(sess);
+    mme_ue = sess->mme_ue;
+    ogs_assert(mme_ue);
+
     nas_eps_send_bearer_resource_allocation_reject(
-            bearer, ESM_CAUSE_SERVICE_OPTION_NOT_SUPPORTED);
+            mme_ue, sess->pti, ESM_CAUSE_NETWORK_FAILURE);
 
     return OGS_OK;
 }

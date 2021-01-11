@@ -231,7 +231,7 @@ ogs_pkbuf_t *testgmm_build_registration_complete(test_ue_t *test_ue)
 }
 
 ogs_pkbuf_t *testgmm_build_service_request(
-        test_ue_t *test_ue, ogs_pkbuf_t *nasbuf)
+        test_ue_t *test_ue, uint8_t service_type, ogs_pkbuf_t *nasbuf)
 {
     ogs_nas_5gs_message_t message;
     ogs_pkbuf_t *pkbuf = NULL;
@@ -268,7 +268,7 @@ ogs_pkbuf_t *testgmm_build_service_request(
         OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GMM;
     message.gmm.h.message_type = OGS_NAS_5GS_SERVICE_REQUEST;
 
-    service_request->ngksi.type = test_ue->service_request_param.service_type;
+    service_request->ngksi.type = service_type;
     service_request->ngksi.tsc = test_ue->nas.tsc;
     service_request->ngksi.value = test_ue->nas.ksi;
 

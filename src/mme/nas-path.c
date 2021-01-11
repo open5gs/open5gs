@@ -430,17 +430,16 @@ void nas_eps_send_deactivate_bearer_context_request(mme_bearer_t *bearer)
 }
 
 void nas_eps_send_bearer_resource_allocation_reject(
-    mme_bearer_t *bearer, ogs_nas_esm_cause_t esm_cause)
+        mme_ue_t *mme_ue, uint8_t pti, ogs_nas_esm_cause_t esm_cause)
 {
     int rv;
-    mme_ue_t *mme_ue;
     ogs_pkbuf_t *esmbuf = NULL;
 
-    ogs_assert(bearer);
-    mme_ue = bearer->mme_ue;
-    ogs_assert(bearer);
+    ogs_assert(mme_ue);
+    ogs_assert(pti != OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED);
 
-    esmbuf = esm_build_bearer_resource_allocation_reject(bearer, esm_cause);
+    esmbuf = esm_build_bearer_resource_allocation_reject(
+            mme_ue, pti, esm_cause);
     ogs_expect_or_return(esmbuf);
 
     rv = nas_eps_send_to_downlink_nas_transport(mme_ue, esmbuf);
@@ -448,17 +447,16 @@ void nas_eps_send_bearer_resource_allocation_reject(
 }
 
 void nas_eps_send_bearer_resource_modification_reject(
-    mme_bearer_t *bearer, ogs_nas_esm_cause_t esm_cause)
+        mme_ue_t *mme_ue, uint8_t pti, ogs_nas_esm_cause_t esm_cause)
 {
     int rv;
-    mme_ue_t *mme_ue;
     ogs_pkbuf_t *esmbuf = NULL;
 
-    ogs_assert(bearer);
-    mme_ue = bearer->mme_ue;
-    ogs_assert(bearer);
+    ogs_assert(mme_ue);
+    ogs_assert(pti != OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED);
 
-    esmbuf = esm_build_bearer_resource_modification_reject(bearer, esm_cause);
+    esmbuf = esm_build_bearer_resource_modification_reject(
+            mme_ue, pti, esm_cause);
     ogs_expect_or_return(esmbuf);
 
     rv = nas_eps_send_to_downlink_nas_transport(mme_ue, esmbuf);

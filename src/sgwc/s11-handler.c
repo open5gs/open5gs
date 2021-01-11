@@ -1130,8 +1130,12 @@ void sgwc_s11_handle_bearer_resource_command(
     }
 
     if (cause_value == OGS_GTP_CAUSE_REQUEST_ACCEPTED) {
-        bearer = sgwc_bearer_find_by_ue_ebi(
-                sgwc_ue, cmd->linked_eps_bearer_id.u8);
+        uint8_t ebi = cmd->linked_eps_bearer_id.u8;
+
+        if (cmd->eps_bearer_id.presence)
+            ebi = cmd->eps_bearer_id.u8;
+
+        bearer = sgwc_bearer_find_by_ue_ebi(sgwc_ue, ebi);
         if (!bearer)
             ogs_error("No Context for Linked EPS Bearer ID[%d]",
                     cmd->linked_eps_bearer_id.u8);

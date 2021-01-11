@@ -31,6 +31,33 @@
 #include "mme-s11-build.h"
 #include "mme-s11-handler.h"
 
+static uint8_t esm_cause_from_gtp(uint8_t gtp_cause)
+{
+    switch (gtp_cause) {
+    case OGS_GTP_CAUSE_CONTEXT_NOT_FOUND:
+        return ESM_CAUSE_INVALID_EPS_BEARER_IDENTITY;
+    case OGS_GTP_CAUSE_SERVICE_NOT_SUPPORTED:
+        return ESM_CAUSE_SERVICE_OPTION_NOT_SUPPORTED;
+    case OGS_GTP_CAUSE_SEMANTIC_ERROR_IN_THE_TFT_OPERATION:
+        return ESM_CAUSE_SEMANTIC_ERROR_IN_THE_TFT_OPERATION;
+    case OGS_GTP_CAUSE_SYNTACTIC_ERROR_IN_THE_TFT_OPERATION:
+        return ESM_CAUSE_SYNTACTICAL_ERROR_IN_THE_TFT_OPERATION;
+    case OGS_GTP_CAUSE_SYNTACTIC_ERRORS_IN_PACKET_FILTER:
+        return ESM_CAUSE_SYNTACTICAL_ERROR_IN_PACKET_FILTERS;
+    case OGS_GTP_CAUSE_SEMANTIC_ERRORS_IN_PACKET_FILTER:
+        return ESM_CAUSE_SEMANTIC_ERRORS_IN_PACKET_FILTERS;
+    default:
+        break;
+    }
+
+    /*
+     * OGS_GTP_CAUSE_SYSTEM_FAILURE
+     * OGS_GTP_CAUSE_MANDATORY_IE_MISSING
+     * ...
+     */
+    return ESM_CAUSE_NETWORK_FAILURE;
+}
+
 void mme_s11_handle_echo_request(
         ogs_gtp_xact_t *xact, ogs_gtp_echo_request_t *req)
 {
@@ -560,6 +587,7 @@ void mme_s11_handle_update_bearer_request(
             mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
 
     /* Set PTI */
+    ogs_assert(mme_ue);
     ogs_assert(bearer);
     sess = bearer->sess;
     ogs_assert(sess);
@@ -620,7 +648,7 @@ void mme_s11_handle_update_bearer_request(
         if (xact->xid & OGS_GTP_CMD_XACT_ID) {
             /* MME received Bearer Resource Modification Request */
             nas_eps_send_bearer_resource_modification_reject(
-                    bearer, ESM_CAUSE_SERVICE_OPTION_NOT_SUPPORTED);
+                    mme_ue, sess->pti, ESM_CAUSE_SERVICE_OPTION_NOT_SUPPORTED);
         }
 
         mme_gtp_send_update_bearer_response(
@@ -1013,10 +1041,13 @@ void mme_s11_handle_bearer_resource_failure_indication(
     uint8_t cause_value = 0;
 
     mme_bearer_t *bearer = NULL;
+    mme_sess_t *sess = NULL;
 
     ogs_assert(xact);
     bearer = xact->data;
     ogs_assert(ind);
+    sess = bearer->sess;
+    ogs_assert(sess);
 
     ogs_debug("Bearer Resource Failure Indication");
 
@@ -1028,15 +1059,15 @@ void mme_s11_handle_bearer_resource_failure_indication(
         ogs_assert(cause);
 
         cause_value = cause->value;
-        if (cause_value != OGS_GTP_CAUSE_REQUEST_ACCEPTED)
-            ogs_warn("GTP Failed [CAUSE:%d] - Ignored", cause_value);
+        ogs_warn("GTP Failed [CAUSE:%d] - Ignored", cause_value);
     } else {
         ogs_error("No Cause");
     }
 
+    ogs_assert(mme_ue);
     ogs_debug("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
             mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
 
     nas_eps_send_bearer_resource_modification_reject(
-            bearer, ESM_CAUSE_SERVICE_OPTION_NOT_SUPPORTED);
+            mme_ue, sess->pti, esm_cause_from_gtp(cause_value));
 }

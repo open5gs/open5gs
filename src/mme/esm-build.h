@@ -38,9 +38,9 @@ ogs_pkbuf_t *esm_build_modify_bearer_context_request(
 ogs_pkbuf_t *esm_build_deactivate_bearer_context_request(
         mme_bearer_t *bearer, ogs_nas_esm_cause_t esm_cause);
 ogs_pkbuf_t *esm_build_bearer_resource_allocation_reject(
-        mme_bearer_t *bearer, ogs_nas_esm_cause_t esm_cause);
+        mme_ue_t *mme_ue, uint8_t pti, ogs_nas_esm_cause_t esm_cause);
 ogs_pkbuf_t *esm_build_bearer_resource_modification_reject(
-        mme_bearer_t *bearer, ogs_nas_esm_cause_t esm_cause);
+        mme_ue_t *mme_ue, uint8_t pti, ogs_nas_esm_cause_t esm_cause);
 
 #ifdef __cplusplus
 }

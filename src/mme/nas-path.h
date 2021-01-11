@@ -56,9 +56,9 @@ void nas_eps_send_modify_bearer_context_request(
         mme_bearer_t *bearer, int qos_presence, int tft_presence);
 void nas_eps_send_deactivate_bearer_context_request(mme_bearer_t *bearer);
 void nas_eps_send_bearer_resource_allocation_reject(
-    mme_bearer_t *bearer, ogs_nas_esm_cause_t esm_cause);
+        mme_ue_t *mme_ue, uint8_t pti, ogs_nas_esm_cause_t esm_cause);
 void nas_eps_send_bearer_resource_modification_reject(
-    mme_bearer_t *bearer, ogs_nas_esm_cause_t esm_cause);
+        mme_ue_t *mme_ue, uint8_t pti, ogs_nas_esm_cause_t esm_cause);
 
 void nas_eps_send_tau_accept(
         mme_ue_t *mme_ue, S1AP_ProcedureCode_t procedureCode);

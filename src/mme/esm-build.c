@@ -389,84 +389,62 @@ ogs_pkbuf_t *esm_build_deactivate_bearer_context_request(
 }
 
 ogs_pkbuf_t *esm_build_bearer_resource_allocation_reject(
-        mme_bearer_t *bearer, ogs_nas_esm_cause_t esm_cause)
+        mme_ue_t *mme_ue, uint8_t pti, ogs_nas_esm_cause_t esm_cause)
 {
-    mme_ue_t *mme_ue = NULL;
-    mme_sess_t *sess = NULL;
-
     ogs_nas_eps_message_t message;
     ogs_nas_eps_bearer_resource_allocation_reject_t
         *bearer_resource_allocation_reject =
             &message.esm.bearer_resource_allocation_reject;
 
-    ogs_assert(bearer);
-    sess = bearer->sess;
-    ogs_assert(sess);
-    mme_ue = sess->mme_ue;
     ogs_assert(mme_ue);
+    ogs_assert(pti != OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED);
 
     ogs_debug("Bearer resource allocation reject");
     ogs_debug("    IMSI[%s] PTI[%d] Cause[%d]",
-            mme_ue->imsi_bcd, sess->pti, esm_cause);
+            mme_ue->imsi_bcd, pti, esm_cause);
 
     memset(&message, 0, sizeof(message));
-    if (!SESSION_CONTEXT_IN_ATTACH(sess)) {
-        message.h.security_header_type =
-           OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
-        message.h.protocol_discriminator = OGS_NAS_PROTOCOL_DISCRIMINATOR_EMM;
-    }
+    message.h.security_header_type =
+       OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
+    message.h.protocol_discriminator = OGS_NAS_PROTOCOL_DISCRIMINATOR_EMM;
 
     message.esm.h.eps_bearer_identity = 0;
     message.esm.h.protocol_discriminator = OGS_NAS_PROTOCOL_DISCRIMINATOR_ESM;
-    message.esm.h.procedure_transaction_identity = sess->pti;
+    message.esm.h.procedure_transaction_identity = pti;
     message.esm.h.message_type = OGS_NAS_EPS_BEARER_RESOURCE_ALLOCATION_REJECT;
 
     bearer_resource_allocation_reject->esm_cause = esm_cause;
 
-    if (SESSION_CONTEXT_IN_ATTACH(sess))
-        return ogs_nas_eps_plain_encode(&message);
-    else
-        return nas_eps_security_encode(mme_ue, &message);
+    return nas_eps_security_encode(mme_ue, &message);
 }
 
 ogs_pkbuf_t *esm_build_bearer_resource_modification_reject(
-        mme_bearer_t *bearer, ogs_nas_esm_cause_t esm_cause)
+        mme_ue_t *mme_ue, uint8_t pti, ogs_nas_esm_cause_t esm_cause)
 {
-    mme_ue_t *mme_ue = NULL;
-    mme_sess_t *sess = NULL;
-
     ogs_nas_eps_message_t message;
     ogs_nas_eps_bearer_resource_modification_reject_t
         *bearer_resource_modification_reject =
             &message.esm.bearer_resource_modification_reject;
 
-    ogs_assert(bearer);
-    sess = bearer->sess;
-    ogs_assert(sess);
-    mme_ue = sess->mme_ue;
     ogs_assert(mme_ue);
+    ogs_assert(pti != OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED);
 
     ogs_debug("Bearer resource modification reject");
     ogs_debug("    IMSI[%s] PTI[%d] Cause[%d]",
-            mme_ue->imsi_bcd, sess->pti, esm_cause);
+            mme_ue->imsi_bcd, pti, esm_cause);
 
     memset(&message, 0, sizeof(message));
-    if (!SESSION_CONTEXT_IN_ATTACH(sess)) {
-        message.h.security_header_type =
-           OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
-        message.h.protocol_discriminator = OGS_NAS_PROTOCOL_DISCRIMINATOR_EMM;
-    }
+    message.h.security_header_type =
+       OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
+    message.h.protocol_discriminator = OGS_NAS_PROTOCOL_DISCRIMINATOR_EMM;
 
     message.esm.h.eps_bearer_identity = 0;
     message.esm.h.protocol_discriminator = OGS_NAS_PROTOCOL_DISCRIMINATOR_ESM;
-    message.esm.h.procedure_transaction_identity = sess->pti;
+    message.esm.h.procedure_transaction_identity = pti;
     message.esm.h.message_type =
         OGS_NAS_EPS_BEARER_RESOURCE_MODIFICATION_REJECT;
 
     bearer_resource_modification_reject->esm_cause = esm_cause;
 
-    if (SESSION_CONTEXT_IN_ATTACH(sess))
-        return ogs_nas_eps_plain_encode(&message);
-    else
-        return nas_eps_security_encode(mme_ue, &message);
+    return nas_eps_security_encode(mme_ue, &message);
 }

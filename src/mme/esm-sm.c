@@ -44,7 +44,7 @@ static uint8_t gtp_cause_from_esm(uint8_t esm_cause)
     case ESM_CAUSE_SEMANTIC_ERRORS_IN_PACKET_FILTERS:
         return OGS_GTP_CAUSE_SEMANTIC_ERRORS_IN_PACKET_FILTER;
     default:
-        return OGS_GTP_CAUSE_SYSTEM_FAILURE;
+        break;
     }
 
     return OGS_GTP_CAUSE_SYSTEM_FAILURE;
