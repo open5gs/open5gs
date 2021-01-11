@@ -92,6 +92,8 @@ static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
 {
     int rv;
     int ret;
+    int len;
+    char *from_str, *to_str, *rx_flow;
 
 	struct msg *ans, *qry;
     struct avp *avpch1, *avpch2, *avpch3;
@@ -280,12 +282,58 @@ static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
                             ogs_flow_t *flow = &sub->flow
                                 [sub->num_of_flow];
 
-                            flow->description = ogs_malloc(
+                            /* IE (IPV4-local-addr field ) is not supported on
+                             * the LTE pre release-11 UEs. In order for the call
+                             * to work the local address in packet filter must
+                             * be replaced by any.
+                             */
+                            if (ogs_app()->
+                                parameter.no_ipv4v6_local_addr_in_packet_filter
+                                                                    == true) {
+                                rx_flow = NULL;
+                                rx_flow = (char*)hdr->avp_value->os.data;
+                                len = hdr->avp_value->os.len;
+
+                                from_str = NULL;
+                                to_str = NULL;
+                                from_str = strstr(rx_flow, "from");
+                                ogs_assert(from_str);
+                                to_str = strstr(rx_flow, "to");
+                                ogs_assert(to_str);
+
+                                if (!strncmp(rx_flow,
+                                        "permit out", strlen("permit out"))) {
+
+                                    flow->description = ogs_malloc(len
+                                        - strlen(to_str) + strlen("to any")+1);
+
+                                    strncat(flow->description,
+                                        rx_flow,
+                                        len - strlen(to_str));
+                                    strcat(flow->description, "to any");
+                                } else if (!strncmp(rx_flow,
+                                            "permit in", strlen("permit in"))) {
+
+                                    flow->description = ogs_malloc(
+                                        len - strlen(from_str) + strlen(to_str)
+                                        + strlen("from any ")+1);
+
+                                    strncat(flow->description,
+                                        rx_flow,
+                                        len - strlen(from_str));
+                                    strcat(flow->description, "from any ");
+                                    strncat(flow->description,
+                                        to_str,
+                                        strlen(to_str));
+                                }
+                            } else {
+                                flow->description = ogs_malloc(
                                     hdr->avp_value->os.len+1);
-                            ogs_cpystrn(
-                                flow->description,
-                                (char*)hdr->avp_value->os.data,
-                                hdr->avp_value->os.len+1);
+                                ogs_cpystrn(
+                                    flow->description,
+                                    (char*)hdr->avp_value->os.data,
+                                    hdr->avp_value->os.len+1);
+                            }
 
                             sub->num_of_flow++;
                             break;
