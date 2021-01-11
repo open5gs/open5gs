@@ -2,14 +2,29 @@
 
 If you find Open5GS useful for work, please consider supporting this Open Source project by [Becoming a sponsor](https://github.com/sponsors/acetcom). To manage the funding transactions transparently, you can donate through [OpenCollective](https://opencollective.com/open5gs).
 
-<h3 align="center">Special Sponsor</h3>
-<!--special start-->
+<style>
+table, th, td {
+  padding: 10px;
+}
+</style>
 
-<p align="center">
+<h3 align="center">Special Sponsor</h3>
+<table>
+  <tbody>
+    <tr>
+      <td align="center" valign="middle">
   <a href="https://nextepc.com/" target="_blank">
     <img width="260px" src="https://open5gs.org/assets/img/nextepc_logo.jpg">
   </a>
-</p>
+      </td>
+      <td align="center" valign="middle">
+  <a href="https://5g.eee.strath.ac.uk/" target="_blank">
+    <img width="260px" src="https://open5gs.org/assets/img/strath.png">
+  </a>
+      </td>
+    </tr>
+  </tbody>
+</table>
 
 <h3 align="center">Sponsors</h3>
 <table>

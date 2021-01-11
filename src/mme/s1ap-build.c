@@ -1158,6 +1158,7 @@ ogs_pkbuf_t *s1ap_build_e_rab_release_command(
 
     ENB_UE_S1AP_ID = &ie->value.choice.ENB_UE_S1AP_ID;
 
+#if 0 /* It's redundant */
     ie = CALLOC(1, sizeof(S1AP_E_RABReleaseCommandIEs_t));
     ASN_SEQUENCE_ADD(&E_RABReleaseCommand->protocolIEs, ie);
 
@@ -1167,6 +1168,7 @@ ogs_pkbuf_t *s1ap_build_e_rab_release_command(
         S1AP_E_RABReleaseCommandIEs__value_PR_UEAggregateMaximumBitrate;
 
     UEAggregateMaximumBitrate = &ie->value.choice.UEAggregateMaximumBitrate;
+#endif
 
     ie = CALLOC(1, sizeof(S1AP_E_RABReleaseCommandIEs_t));
     ASN_SEQUENCE_ADD(&E_RABReleaseCommand->protocolIEs, ie);
@@ -1192,12 +1194,14 @@ ogs_pkbuf_t *s1ap_build_e_rab_release_command(
     *MME_UE_S1AP_ID = enb_ue->mme_ue_s1ap_id;
     *ENB_UE_S1AP_ID = enb_ue->enb_ue_s1ap_id;
 
-    asn_uint642INTEGER(
-            &UEAggregateMaximumBitrate->uEaggregateMaximumBitRateUL, 
-            subscription_data->ambr.uplink);
-    asn_uint642INTEGER(
-            &UEAggregateMaximumBitrate->uEaggregateMaximumBitRateDL, 
-            subscription_data->ambr.downlink);
+    if (UEAggregateMaximumBitrate) {
+        asn_uint642INTEGER(
+                &UEAggregateMaximumBitrate->uEaggregateMaximumBitRateUL,
+                subscription_data->ambr.uplink);
+        asn_uint642INTEGER(
+                &UEAggregateMaximumBitrate->uEaggregateMaximumBitRateDL,
+                subscription_data->ambr.downlink);
+    }
 
     item = CALLOC(1, sizeof(S1AP_E_RABItemIEs_t));
     ASN_SEQUENCE_ADD(&E_RABList->list, item);
