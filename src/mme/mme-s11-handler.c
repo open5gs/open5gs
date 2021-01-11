@@ -1070,4 +1070,9 @@ void mme_s11_handle_bearer_resource_failure_indication(
 
     nas_eps_send_bearer_resource_modification_reject(
             mme_ue, sess->pti, esm_cause_from_gtp(cause_value));
+
+    if (cause_value == OGS_GTP_CAUSE_CONTEXT_NOT_FOUND) {
+        ogs_warn("No Bearer");
+        mme_bearer_remove(bearer);
+    }
 }
