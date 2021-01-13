@@ -12,7 +12,7 @@ If you find Open5GS useful for work, please consider supporting this Open Source
   </a>
       </td>
       <td align="center" valign="middle">
-  <a href="https://5g.eee.strath.ac.uk/" target="_blank">
+  <a href="https://sdr.eee.strath.ac.uk/" target="_blank">
     <img width="260px" src="https://open5gs.org/assets/img/strath.png">
   </a>
       </td>
