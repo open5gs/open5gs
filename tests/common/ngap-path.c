@@ -66,6 +66,7 @@ void testngap_recv(test_ue_t *test_ue, ogs_pkbuf_t *pkbuf)
             testngap_handle_pdu_session_resource_release_command(test_ue, pdu);
             break;
         case NGAP_ProcedureCode_id_ErrorIndication:
+        case NGAP_ProcedureCode_id_Paging:
             /* Nothing */
             break;
         default:

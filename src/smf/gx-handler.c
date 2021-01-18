@@ -77,7 +77,7 @@ void smf_gx_handle_cca_initial_request(
 
     /* APN-AMBR
      * if PCRF changes APN-AMBR, this should be included. */
-    sess->gtp_5gc.create_session_response_apn_ambr = false;
+    sess->gtp.create_session_response_apn_ambr = false;
     if ((gx_message->session_data.pdn.ambr.uplink &&
             (sess->pdn.ambr.uplink / 1000) !=
                 (gx_message->session_data.pdn.ambr.uplink / 1000)) ||
@@ -88,12 +88,12 @@ void smf_gx_handle_cca_initial_request(
         sess->pdn.ambr.downlink = gx_message->session_data.pdn.ambr.downlink;
         sess->pdn.ambr.uplink = gx_message->session_data.pdn.ambr.uplink;
 
-        sess->gtp_5gc.create_session_response_apn_ambr = true;
+        sess->gtp.create_session_response_apn_ambr = true;
     }
 
     /* Bearer QoS
      * if PCRF changes Bearer QoS, this should be included. */
-    sess->gtp_5gc.create_session_response_bearer_qos = false;
+    sess->gtp.create_session_response_bearer_qos = false;
     if ((gx_message->session_data.pdn.qos.qci &&
         sess->pdn.qos.qci != gx_message->session_data.pdn.qos.qci) ||
         (gx_message->session_data.pdn.qos.arp.priority_level &&
@@ -112,7 +112,7 @@ void smf_gx_handle_cca_initial_request(
         sess->pdn.qos.arp.pre_emption_vulnerability =
             gx_message->session_data.pdn.qos.arp.pre_emption_vulnerability;
 
-        sess->gtp_5gc.create_session_response_bearer_qos = true;
+        sess->gtp.create_session_response_bearer_qos = true;
     }
 
     bearer = smf_default_bearer_in_sess(sess);

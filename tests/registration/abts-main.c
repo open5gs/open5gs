@@ -23,6 +23,7 @@ abts_suite *test_guti(abts_suite *suite);
 abts_suite *test_auth(abts_suite *suite);
 abts_suite *test_idle(abts_suite *suite);
 abts_suite *test_dereg(abts_suite *suite);
+abts_suite *test_paging(abts_suite *suite);
 abts_suite *test_identity(abts_suite *suite);
 abts_suite *test_gmm_status(abts_suite *suite);
 abts_suite *test_ue_context(abts_suite *suite);
@@ -34,6 +35,7 @@ const struct testlist {
     {test_auth},
     {test_idle},
     {test_dereg},
+    {test_paging},
     {test_identity},
     {test_gmm_status},
     {test_ue_context},

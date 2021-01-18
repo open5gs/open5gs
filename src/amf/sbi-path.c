@@ -273,3 +273,44 @@ void amf_sbi_send_release_all_sessions(amf_ue_t *amf_ue, int state)
             amf_sbi_send_release_session(sess, state);
     }
 }
+
+static int client_notify_cb(ogs_sbi_response_t *response, void *data)
+{
+    int rv;
+
+    ogs_sbi_message_t message;
+
+    ogs_assert(response);
+
+    rv = ogs_sbi_parse_response(&message, response);
+    if (rv != OGS_OK) {
+        ogs_error("cannot parse HTTP response");
+        ogs_sbi_message_free(&message);
+        ogs_sbi_response_free(response);
+        return OGS_ERROR;
+    }
+
+    if (message.res_status != OGS_SBI_HTTP_STATUS_NO_CONTENT)
+        ogs_error("N1-N2-Message Transfer Failure Notification failed [%d]",
+                message.res_status);
+
+    ogs_sbi_message_free(&message);
+    ogs_sbi_response_free(response);
+    return OGS_OK;
+}
+
+void amf_sbi_send_n1_n2_failure_notify(
+        amf_sess_t *sess, OpenAPI_n1_n2_message_transfer_cause_e cause)
+{
+    ogs_sbi_request_t *request = NULL;
+    ogs_sbi_client_t *client = NULL;
+
+    ogs_assert(cause);
+    ogs_assert(sess);
+    client = sess->paging.client;
+    ogs_assert(client);
+
+    request = amf_nsmf_callback_build_n1_n2_failure_notify(sess, cause);
+    ogs_assert(request);
+    ogs_sbi_client_send_request(client, client_notify_cb, request, NULL);
+}

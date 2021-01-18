@@ -325,6 +325,7 @@ struct mme_ue_s {
     uint16_t        vlr_ostream_id; /* SCTP output stream id for VLR */
 
     /* UE Info */
+    uint16_t        enb_ostream_id;
     ogs_eps_tai_t   tai;
     ogs_e_cgi_t     e_cgi;
     ogs_plmn_id_t   last_visited_plmn_id;

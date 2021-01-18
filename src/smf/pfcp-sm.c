@@ -249,6 +249,16 @@ void smf_pfcp_state_associated(ogs_fsm_t *s, smf_event_t *e)
                     sess, xact, &message->pfcp_session_deletion_response);
             break;
 
+        case OGS_PFCP_SESSION_REPORT_REQUEST_TYPE:
+            if (!message->h.seid_presence) {
+                ogs_error("No SEID");
+                break;
+            }
+
+            smf_n4_handle_session_report_request(
+                sess, xact, &message->pfcp_session_report_request);
+            break;
+
         default:
             ogs_error("Not implemented PFCP message type[%d]",
                     message->h.type);

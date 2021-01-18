@@ -33,7 +33,7 @@ ogs_pkbuf_t *ngap_build_qos_flow_resource_modify_request_transfer(
         smf_bearer_t *qos_flow);
 
 ogs_pkbuf_t *ngap_build_pdu_session_resource_release_command_transfer(
-        NGAP_Cause_PR group, long cause);
+        smf_sess_t *sess, int state, NGAP_Cause_PR group, long cause);
 
 ogs_pkbuf_t *ngap_build_path_switch_request_ack_transfer(smf_sess_t *sess);
 

@@ -1876,7 +1876,8 @@ void ngap_handle_path_switch_request(
     ogs_ngap_ASN_to_5gs_tai(
             &UserLocationInformationNR->tAI, &ran_ue->saved.tai);
 
-    /* Copy TAI and ECGI from ran_ue */
+    /* Copy Stream-No/TAI/ECGI from enb_ue */
+    amf_ue->gnb_ostream_id = ran_ue->gnb_ostream_id;
     memcpy(&amf_ue->tai, &ran_ue->saved.tai, sizeof(ogs_5gs_tai_t));
     memcpy(&amf_ue->nr_cgi, &ran_ue->saved.nr_cgi, sizeof(ogs_nr_cgi_t));
 

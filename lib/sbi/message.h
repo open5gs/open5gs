@@ -125,6 +125,7 @@ extern "C" {
 
 #define OGS_SBI_SERVICE_NAME_NSMF_CALLBACK          "nsmf-callback"
 #define OGS_SBI_RESOURCE_NAME_SM_POLICY_NOTIFY      "sm-policy-notify"
+#define OGS_SBI_RESOURCE_NAME_N1_N2_FAILURE_NOTIFY  "n1-n2-failure-notify"
 
 #define OGS_SBI_SERVICE_NAME_NAMF_COMM              "namf-comm"
 #define OGS_SBI_RESOURCE_NAME_UE_CONTEXTS           "ue-contexts"
@@ -321,6 +322,8 @@ typedef struct ogs_sbi_message_s {
             SessionManagementSubscriptionData;
     OpenAPI_n1_n2_message_transfer_req_data_t *N1N2MessageTransferReqData;
     OpenAPI_n1_n2_message_transfer_rsp_data_t *N1N2MessageTransferRspData;
+    OpenAPI_n1_n2_msg_txfr_failure_notification_t
+        *N1N2MsgTxfrFailureNotification;
     OpenAPI_sm_context_status_notification_t *SmContextStatusNotification;
     OpenAPI_policy_association_request_t *PolicyAssociationRequest;
     OpenAPI_policy_association_t *PolicyAssociation;

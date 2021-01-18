@@ -58,6 +58,7 @@
 #include "model/session_management_subscription_data.h"
 #include "model/n1_n2_message_transfer_req_data.h"
 #include "model/n1_n2_message_transfer_rsp_data.h"
+#include "model/n1_n2_msg_txfr_failure_notification.h"
 #include "model/sm_context_status_notification.h"
 #include "model/policy_association.h"
 #include "model/am_policy_data.h"

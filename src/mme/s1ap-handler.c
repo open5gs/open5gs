@@ -1331,7 +1331,8 @@ void s1ap_handle_path_switch_request(
             ogs_plmn_id_hexdump(&enb_ue->saved.e_cgi.plmn_id),
             enb_ue->saved.e_cgi.cell_id);
 
-    /* Copy TAI and ECGI from enb_ue */
+    /* Copy Stream-No/TAI/ECGI from enb_ue */
+    mme_ue->enb_ostream_id = enb_ue->enb_ostream_id;
     memcpy(&mme_ue->tai, &enb_ue->saved.tai, sizeof(ogs_eps_tai_t));
     memcpy(&mme_ue->e_cgi, &enb_ue->saved.e_cgi, sizeof(ogs_e_cgi_t));
 
@@ -2046,7 +2047,8 @@ void s1ap_handle_handover_notification(
             ogs_plmn_id_hexdump(&target_ue->saved.e_cgi.plmn_id),
             target_ue->saved.e_cgi.cell_id);
 
-    /* Copy TAI and ECGI from enb_ue */
+    /* Copy Stream-No/TAI/ECGI from enb_ue */
+    mme_ue->enb_ostream_id = target_ue->enb_ostream_id;
     memcpy(&mme_ue->tai, &target_ue->saved.tai, sizeof(ogs_eps_tai_t));
     memcpy(&mme_ue->e_cgi, &target_ue->saved.e_cgi, sizeof(ogs_e_cgi_t));
 

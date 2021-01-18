@@ -89,7 +89,7 @@ void nas_5gs_send_registration_accept(amf_ue_t *amf_ue)
 
         ran_ue->initial_context_setup_request_sent = true;
     } else {
-        if (SESSION_TRANSFER_NEEDED(amf_ue)) {
+        if (PDU_RES_SETUP_REQ_TRANSFER_NEEDED(amf_ue)) {
             ngapbuf = ngap_ue_build_pdu_session_resource_setup_request(
                     amf_ue, gmmbuf);
             ogs_expect_or_return(ngapbuf);
@@ -141,8 +141,7 @@ void nas_5gs_send_service_accept(amf_ue_t *amf_ue)
 
     if (ran_ue->ue_context_requested == true &&
         ran_ue->initial_context_setup_request_sent == false) {
-        ngapbuf = ngap_ue_build_initial_context_setup_request(
-                amf_ue, gmmbuf);
+        ngapbuf = ngap_ue_build_initial_context_setup_request(amf_ue, gmmbuf);
         ogs_expect_or_return(ngapbuf);
 
         rv = nas_5gs_send_to_gnb(amf_ue, ngapbuf);
@@ -150,7 +149,7 @@ void nas_5gs_send_service_accept(amf_ue_t *amf_ue)
 
         ran_ue->initial_context_setup_request_sent = true;
     } else {
-        if (SESSION_TRANSFER_NEEDED(amf_ue)) {
+        if (PDU_RES_SETUP_REQ_TRANSFER_NEEDED(amf_ue)) {
             ngapbuf = ngap_ue_build_pdu_session_resource_setup_request(
                     amf_ue, gmmbuf);
             ogs_expect_or_return(ngapbuf);
@@ -177,22 +176,6 @@ void nas_5gs_send_service_reject(
 
     rv = nas_5gs_send_to_downlink_nas_transport(amf_ue, gmmbuf);
     ogs_expect(rv == OGS_OK);
-}
-
-void nas_5gs_send_accept(amf_ue_t *amf_ue)
-{
-    ogs_assert(amf_ue);
-
-    switch(amf_ue->nas.message_type) {
-    case OGS_NAS_5GS_REGISTRATION_REQUEST:
-        nas_5gs_send_registration_accept(amf_ue);
-        break;
-    case OGS_NAS_5GS_SERVICE_REQUEST:
-        nas_5gs_send_service_accept(amf_ue);
-        break;
-    default:
-        ogs_error("Unknown message type [%d]", amf_ue->nas.message_type);
-    }
 }
 
 void nas_5gs_send_de_registration_accept(amf_ue_t *amf_ue)

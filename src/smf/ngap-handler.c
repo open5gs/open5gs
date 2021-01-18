@@ -141,7 +141,7 @@ int ngap_handle_pdu_session_resource_setup_response_transfer(
                 sess, stream, OGS_PFCP_MODIFY_ACTIVATE);
     } else {
         /* ACTIVATED Is NOT Included in RESPONSE */
-        smf_sbi_send_sm_context_updated_data(sess, stream, 0);
+        smf_sbi_send_http_status_no_content(stream);
     }
 
     rv = OGS_OK;
@@ -343,7 +343,7 @@ int ngap_handle_pdu_session_resource_to_be_switched_dl_transfer(
                 OGS_PFCP_MODIFY_END_MARKER);
     } else {
         /* ACTIVATED Is NOT Included in RESPONSE */
-        smf_sbi_send_sm_context_updated_data(sess, stream, 0);
+        smf_sbi_send_http_status_no_content(stream);
     }
 
     rv = OGS_OK;

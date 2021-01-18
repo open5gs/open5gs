@@ -404,6 +404,7 @@ static void test1_func(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, recvbuf);
     testngap_recv(test_ue, recvbuf);
 
+    /* TODO : we need to analyze it */
     ogs_msleep(100);
 
     /* Send Identity response */

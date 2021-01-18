@@ -64,6 +64,8 @@ void gmm_state_de_registered(ogs_fsm_t *s, amf_event_t *e)
 
     switch (e->id) {
     case OGS_FSM_ENTRY_SIG:
+        AMF_UE_CLEAR_PAGING_INFO(amf_ue);
+        AMF_UE_CLEAR_N2_TRANSFER(amf_ue, pdu_session_resource_setup_request);
         CLEAR_AMF_UE_ALL_TIMERS(amf_ue);
         break;
     case OGS_FSM_EXIT_SIG:
@@ -159,7 +161,7 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e)
             } else {
 
                 amf_sbi_send_release_all_sessions(
-                        amf_ue, AMF_RELEASE_SM_CONTEXT_NO_STATE);
+                        amf_ue, AMF_SESS_SM_CONTEXT_NO_STATE);
                 if (amf_sess_xact_count(amf_ue) == xact_count) {
                     amf_ue_sbi_discover_and_send(
                             OpenAPI_nf_type_AUSF, amf_ue, NULL,
@@ -226,7 +228,7 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e)
             }
 
             amf_sbi_send_release_all_sessions(
-                        amf_ue, AMF_RELEASE_SM_CONTEXT_NO_STATE);
+                        amf_ue, AMF_SESS_SM_CONTEXT_NO_STATE);
             if (amf_sess_xact_count(amf_ue) == xact_count) {
                 amf_ue_sbi_discover_and_send(OpenAPI_nf_type_AUSF, amf_ue, NULL,
                         amf_nausf_auth_build_authenticate);
@@ -335,20 +337,32 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e)
         case AMF_TIMER_T3513:
             if (amf_ue->t3513.retry_count >=
                     amf_timer_cfg(AMF_TIMER_T3513)->max_count) {
+                amf_sess_t *sess = NULL;
+
                 /* Paging failed */
                 ogs_warn("[%s] Paging failed. Stop", amf_ue->supi);
+
+                ogs_list_for_each(&amf_ue->sess_list, sess) {
+                    if (sess->paging.ongoing == true) {
+                        amf_sbi_send_n1_n2_failure_notify(
+                            sess, OpenAPI_n1_n2_message_transfer_cause_UE_NOT_RESPONDING);
+                    }
+                }
+
+                /* Clear Paging Info */
+                AMF_UE_CLEAR_PAGING_INFO(amf_ue);
+
+                /* Clear N2 Transfer */
+                AMF_UE_CLEAR_N2_TRANSFER(
+                        amf_ue, pdu_session_resource_setup_request);
+
+                /* Clear t3513 Timers */
                 CLEAR_AMF_UE_TIMER(amf_ue->t3513);
 
             } else {
                 amf_ue->t3513.retry_count++;
-                /*
-                 * If t3513 is timeout, the saved pkbuf is used.
-                 * We don't have to set CNDomain.
-                 * So, we just set CNDomain to 0
-                 */
-#if 0
-                ngap_send_paging(amf_ue, 0);
-#endif
+                /* If t3513 is timeout, the saved pkbuf is used.  */
+                ngap_send_paging(amf_ue);
             }
             break;
 
@@ -700,13 +714,6 @@ void gmm_state_security_mode(ogs_fsm_t *s, amf_event_t *e)
             } else if (amf_ue->nas.message_type ==
                         OGS_NAS_5GS_SERVICE_REQUEST) {
                 OGS_FSM_TRAN(s, &gmm_state_registered);
-#if 0
-            } else if (amf_ue->nas.message_type ==
-                        OGS_NAS_5GS_SERVICE_REQUEST ||
-                            amf_ue->nas.message_type ==
-                                AMF_EPS_TYPE_TAU_REQUEST) {
-                OGS_FSM_TRAN(s, &gmm_state_registered);
-#endif
             } else {
                 ogs_fatal("Invalid OGS_NAS_5GS[%d]", amf_ue->nas.message_type);
                 ogs_assert_if_reached();
@@ -926,16 +933,10 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
                 if (amf_ue->guti_present == 0)
                     OGS_FSM_TRAN(&amf_ue->sm, &gmm_state_registered);
 
-                /*
-                 * Do not use nas_5gs_send_registration_accept()
-                 * instead of nas_5gs_send_accept() here.
-                 *
-                 * nas_5gs_send_service_accept() could be used later.
-                 * The reason is why the design could be changed to handle this.
-                 *
-                 * So we'll use nas_5gs_send_accept() at this point.
-                 */
-                nas_5gs_send_accept(amf_ue);
+                /* If nas_5gs_send_service_accept() used, we need change it. */
+                ogs_assert(amf_ue->nas.message_type ==
+                        OGS_NAS_5GS_REGISTRATION_REQUEST);
+                nas_5gs_send_registration_accept(amf_ue);
                 break;
 
             DEFAULT
@@ -1001,7 +1002,7 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
             }
 
             amf_sbi_send_release_all_sessions(
-                        amf_ue, AMF_RELEASE_SM_CONTEXT_NO_STATE);
+                        amf_ue, AMF_SESS_SM_CONTEXT_NO_STATE);
             if (amf_sess_xact_count(amf_ue) == xact_count) {
                 amf_ue_sbi_discover_and_send(OpenAPI_nf_type_AUSF, amf_ue, NULL,
                         amf_nausf_auth_build_authenticate);
@@ -1066,10 +1067,11 @@ void gmm_state_exception(ogs_fsm_t *s, amf_event_t *e)
 
     switch (e->id) {
     case OGS_FSM_ENTRY_SIG:
+        AMF_UE_CLEAR_PAGING_INFO(amf_ue);
+        AMF_UE_CLEAR_N2_TRANSFER(amf_ue, pdu_session_resource_setup_request);
         CLEAR_AMF_UE_ALL_TIMERS(amf_ue);
 
-        amf_sbi_send_release_all_sessions(
-                amf_ue, AMF_RELEASE_SM_CONTEXT_NO_STATE);
+        amf_sbi_send_release_all_sessions(amf_ue, AMF_SESS_SM_CONTEXT_NO_STATE);
 
         if (ogs_list_count(&amf_ue->sess_list) == 0)
             ngap_send_amf_ue_context_release_command(amf_ue,
@@ -1126,7 +1128,7 @@ void gmm_state_exception(ogs_fsm_t *s, amf_event_t *e)
             } else {
 
                 amf_sbi_send_release_all_sessions(
-                        amf_ue, AMF_RELEASE_SM_CONTEXT_NO_STATE);
+                        amf_ue, AMF_SESS_SM_CONTEXT_NO_STATE);
                 if (amf_sess_xact_count(amf_ue) == xact_count) {
                     amf_ue_sbi_discover_and_send(
                             OpenAPI_nf_type_AUSF, amf_ue, NULL,

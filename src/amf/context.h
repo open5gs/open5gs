@@ -262,6 +262,7 @@ struct amf_ue_s {
 
     /* UE Info */
     ogs_guami_t     *guami;
+    uint16_t        gnb_ostream_id;
     ogs_5gs_tai_t   tai;
     ogs_nr_cgi_t    nr_cgi;
     ogs_time_t      ue_location_timestamp;
@@ -447,7 +448,71 @@ typedef struct amf_sess_s {
     struct {
         ogs_pkbuf_t *pdu_session_resource_setup_request;
         ogs_pkbuf_t *path_switch_request_ack;
+        ogs_pkbuf_t *pdu_session_resource_release_command;
     } transfer;
+#define AMF_SESS_STORE_N2_TRANSFER(__sESS, __n2Type, __n2Buf) \
+    do { \
+        ogs_assert(__sESS); \
+        ogs_assert((__sESS)->amf_ue); \
+        if (sess->transfer.__n2Type) { \
+            ogs_warn("[%s:%d] N2 transfer message duplicated. Overwritten", \
+                    ((__sESS)->amf_ue)->supi, sess->psi); \
+            ogs_pkbuf_free(sess->transfer.__n2Type); \
+        } \
+        sess->transfer.__n2Type = __n2Buf; \
+        ogs_assert(sess->transfer.__n2Type); \
+    } while(0);
+
+#define AMF_UE_CLEAR_N2_TRANSFER(__aMF, __n2Type) \
+    do { \
+        amf_sess_t *sess = NULL; \
+        ogs_list_for_each(&((__aMF)->sess_list), sess) { \
+            if (sess->transfer.__n2Type) { \
+                ogs_pkbuf_free(sess->transfer.__n2Type); \
+                sess->transfer.__n2Type = NULL; \
+            } \
+        } \
+    } while(0);
+
+    struct {
+        /* Paging Ongoing */
+        bool ongoing;
+        /* Location in N1N2MessageTransferRspData */
+        char *location;
+        /* last Received n1-n2-trasfer-failure-notification-uri from SMF */
+        char *n1n2_failure_txf_notif_uri;
+        /* notification client */
+        ogs_sbi_client_t *client;
+    } paging;
+#define AMF_SESS_STORE_PAGING_INFO(__sESS, __lOCATION, __uRI) \
+    do { \
+        ogs_assert(__sESS); \
+        ogs_assert(__lOCATION); \
+        ogs_assert(__uRI); \
+        AMF_SESS_CLEAR_PAGING_INFO(__sESS) \
+        (__sESS)->paging.ongoing = true; \
+        ((__sESS)->paging.location) = ogs_strdup(__lOCATION); \
+        ((__sESS)->paging.n1n2_failure_txf_notif_uri) = ogs_strdup(__uRI); \
+    } while(0);
+#define AMF_SESS_CLEAR_PAGING_INFO(__sESS) \
+    do { \
+        if ((__sESS)->paging.ongoing == true) { \
+            ogs_assert((__sESS)->paging.location); \
+            ogs_free((__sESS)->paging.location); \
+            ((__sESS)->paging.location) = NULL; \
+            ogs_assert((__sESS)->paging.n1n2_failure_txf_notif_uri); \
+            ogs_free((__sESS)->paging.n1n2_failure_txf_notif_uri); \
+            ((__sESS)->paging.n1n2_failure_txf_notif_uri) = NULL; \
+            ((__sESS)->paging.ongoing) = false; \
+        } \
+    } while(0);
+#define AMF_UE_CLEAR_PAGING_INFO(__aMF) \
+    do { \
+        amf_sess_t *sess = NULL; \
+        ogs_list_for_each(&((__aMF)->sess_list), sess) { \
+            AMF_SESS_CLEAR_PAGING_INFO(sess); \
+        } \
+    } while(0);
 
     /* last payload for sending back to the UE */
     uint8_t         payload_container_type;
@@ -470,6 +535,7 @@ typedef struct amf_sess_s {
 
     /* Save Protocol Configuration Options from PGW */
     ogs_tlv_octet_t pgw_pco;
+
 } amf_sess_t;
 
 void amf_context_init(void);
@@ -577,11 +643,14 @@ amf_sess_t *amf_sess_find_by_dnn(amf_ue_t *amf_ue, char *dnn);
 amf_ue_t *amf_ue_cycle(amf_ue_t *amf_ue);
 amf_sess_t *amf_sess_cycle(amf_sess_t *sess);
 
-#define SESSION_SYNC_DONE(__aMF) (amf_sess_xact_count(__aMF) == 0)
+#define SESSION_SYNC_DONE(__aMF, __sTATE) \
+    (amf_sess_xact_state_count(__aMF, __sTATE) == 0)
 int amf_sess_xact_count(amf_ue_t *amf_ue);
+int amf_sess_xact_state_count(amf_ue_t *amf_ue, int state);
 
-#define SESSION_TRANSFER_NEEDED(__aMF) (amf_sess_transfer_needed(__aMF) == true)
-bool amf_sess_transfer_needed(amf_ue_t *amf_ue);
+#define PDU_RES_SETUP_REQ_TRANSFER_NEEDED(__aMF) \
+    (amf_pdu_res_setup_req_transfer_needed(__aMF) == true)
+bool amf_pdu_res_setup_req_transfer_needed(amf_ue_t *amf_ue);
 
 int amf_find_served_tai(ogs_5gs_tai_t *tai);
 ogs_s_nssai_t *amf_find_s_nssai(

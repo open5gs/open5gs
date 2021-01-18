@@ -93,7 +93,7 @@ ogs_pkbuf_t *smf_s5c_build_create_session_response(
     
     /* APN-AMBR
      * if PCRF changes APN-AMBR, this should be included. */
-    if (sess->gtp_5gc.create_session_response_apn_ambr == true) {
+    if (sess->gtp.create_session_response_apn_ambr == true) {
         memset(&ambr, 0, sizeof(ogs_gtp_ambr_t));
         ambr.uplink = htobe32(sess->pdn.ambr.uplink / 1000);
         ambr.downlink = htobe32(sess->pdn.ambr.downlink / 1000);
@@ -125,7 +125,7 @@ ogs_pkbuf_t *smf_s5c_build_create_session_response(
 
     /* Bearer QoS
      * if PCRF changes Bearer QoS, this should be included. */
-    if (sess->gtp_5gc.create_session_response_bearer_qos == true) {
+    if (sess->gtp.create_session_response_bearer_qos == true) {
         memset(&bearer_qos, 0, sizeof(bearer_qos));
         bearer_qos.qci = sess->pdn.qos.qci;
         bearer_qos.priority_level = sess->pdn.qos.arp.priority_level;

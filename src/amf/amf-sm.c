@@ -64,7 +64,7 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
 
     ogs_sbi_object_t *sbi_object = NULL;
     ogs_sbi_xact_t *sbi_xact = NULL;
-    int state = AMF_UPDATE_SM_CONTEXT_NO_STATE;
+    int state = AMF_SESS_SM_CONTEXT_NO_STATE;
     ogs_sbi_stream_t *stream = NULL;
     ogs_sbi_request_t *sbi_request = NULL;
 

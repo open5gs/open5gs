@@ -37,14 +37,17 @@ void amf_ue_sbi_discover_and_send(OpenAPI_nf_type_e target_nf_type,
         amf_ue_t *amf_ue, void *data,
         ogs_sbi_request_t *(*build)(amf_ue_t *amf_ue, void *data));
 
-#define AMF_UPDATE_SM_CONTEXT_NO_STATE          0
-#define AMF_UPDATE_SM_CONTEXT_ACTIVATED         1
-#define AMF_UPDATE_SM_CONTEXT_DEACTIVATED       2
-#define AMF_UPDATE_SM_CONTEXT_ACTIVATING        3
-#define AMF_UPDATE_SM_CONTEXT_MODIFIED          4
-#define AMF_UPDATE_SM_CONTEXT_N2_RELEASED       5
-#define AMF_UPDATE_SM_CONTEXT_N1_RELEASED       6
-#define AMF_UPDATE_SM_CONTEXT_NG_RESET          7
+#define AMF_SESS_SM_CONTEXT_NO_STATE                0
+#define AMF_UPDATE_SM_CONTEXT_ACTIVATED             1
+#define AMF_UPDATE_SM_CONTEXT_DEACTIVATED           2
+#define AMF_UPDATE_SM_CONTEXT_ACTIVATING            3
+#define AMF_UPDATE_SM_CONTEXT_MODIFIED              4
+#define AMF_UPDATE_SM_CONTEXT_N2_RELEASED           5
+#define AMF_UPDATE_SM_CONTEXT_N1_RELEASED           6
+#define AMF_UPDATE_SM_CONTEXT_NG_RESET              7
+#define AMF_RELEASE_SM_CONTEXT_NG_CONTEXT_REMOVE    8
+#define AMF_RELEASE_SM_CONTEXT_REGISTRATION_ACCEPT  9
+#define AMF_RELEASE_SM_CONTEXT_SERVICE_ACCEPT       10
 void amf_sess_sbi_discover_and_send(OpenAPI_nf_type_e target_nf_type,
         amf_sess_t *sess, int state, void *data,
         ogs_sbi_request_t *(*build)(amf_sess_t *sess, void *data));
@@ -57,12 +60,11 @@ void amf_sbi_send_deactivate_all_sessions(
         amf_ue_t *amf_ue, int state, int group, int cause);
 void amf_sbi_send_deactivate_all_ue_in_gnb(amf_gnb_t *gnb, int state);
 
-#define AMF_RELEASE_SM_CONTEXT_NO_STATE             0
-#define AMF_RELEASE_SM_CONTEXT_NG_CONTEXT_REMOVE    1
-#define AMF_RELEASE_SM_CONTEXT_REGISTRATION_ACCEPT  2
-#define AMF_RELEASE_SM_CONTEXT_SERVICE_ACCEPT       3
 void amf_sbi_send_release_session(amf_sess_t *sess, int state);
 void amf_sbi_send_release_all_sessions(amf_ue_t *amf_ue, int state);
+
+void amf_sbi_send_n1_n2_failure_notify(
+        amf_sess_t *sess, OpenAPI_n1_n2_message_transfer_cause_e cause);
 
 #ifdef __cplusplus
 }

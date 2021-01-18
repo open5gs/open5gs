@@ -224,6 +224,10 @@ void upf_pfcp_state_associated(ogs_fsm_t *s, upf_event_t *e)
             upf_n4_handle_session_deletion_request(
                 sess, xact, &message->pfcp_session_deletion_request);
             break;
+        case OGS_PFCP_SESSION_REPORT_RESPONSE_TYPE:
+            upf_n4_handle_session_report_response(
+                sess, xact, &message->pfcp_session_report_response);
+            break;
         default:
             ogs_error("Not implemented PFCP message type[%d]",
                     message->h.type);

@@ -37,6 +37,7 @@
 
 #include "event.h"
 #include "gtp-path.h"
+#include "pfcp-path.h"
 #include "rule-match.h"
 
 #define UPF_GTP_HANDLED     1
@@ -52,6 +53,8 @@ static void _gtpv1_tun_recv_cb(short when, ogs_socket_t fd, void *data)
 {
     ogs_pkbuf_t *recvbuf = NULL;
     int n;
+
+    upf_sess_t *sess = NULL;
     ogs_pfcp_pdr_t *pdr = NULL;
     ogs_pfcp_user_plane_report_t report;
 
@@ -74,6 +77,18 @@ static void _gtpv1_tun_recv_cb(short when, ogs_socket_t fd, void *data)
     if (pdr) {
         /* Unicast */
         ogs_pfcp_up_handle_pdr(pdr, recvbuf, &report);
+
+        if (report.type.downlink_data_report) {
+            ogs_assert(pdr->sess);
+            sess = UPF_SESS(pdr->sess);
+            ogs_assert(sess);
+
+            report.downlink_data.pdr_id = pdr->id;
+            if (pdr->qer && pdr->qer->qfi)
+                report.downlink_data.qfi = pdr->qer->qfi; /* for 5GC */
+
+            upf_pfcp_send_session_report_request(sess, &report);
+        }
     } else {
         if (ogs_app()->parameter.multicast) {
             upf_gtp_handle_multicast(recvbuf);
@@ -89,13 +104,13 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
     ssize_t size;
     char buf[OGS_ADDRSTRLEN];
 
+    upf_sess_t *sess = NULL;
+
     ogs_pkbuf_t *pkbuf = NULL;
     ogs_sockaddr_t from;
 
     ogs_gtp_header_t *gtp_h = NULL;
-#if 0
     ogs_pfcp_user_plane_report_t report;
-#endif
 
     uint32_t teid;
     uint8_t qfi;
@@ -188,7 +203,24 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
         /* Nothing */
 
     } else if (gtp_h->type == OGS_GTPU_MSGTYPE_ERR_IND) {
-        /* TODO */
+        ogs_pfcp_far_t *far = NULL;
+
+        far = ogs_pfcp_far_find_by_error_indication(pkbuf);
+        if (far) {
+            ogs_pfcp_up_handle_error_indication(far, &report);
+
+            if (report.type.error_indication_report) {
+                ogs_assert(far->sess);
+                sess = UPF_SESS(far->sess);
+                ogs_assert(sess);
+
+                upf_pfcp_send_session_report_request(sess, &report);
+            }
+
+        } else {
+            ogs_error("[DROP] Cannot find FAR by Error-Indication");
+            ogs_log_hexdump(OGS_LOG_ERROR, pkbuf->data, pkbuf->len);
+        }
 
     } else if (gtp_h->type == OGS_GTPU_MSGTYPE_GPDU) {
         int rv;

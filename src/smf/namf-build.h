@@ -26,19 +26,24 @@
 extern "C" {
 #endif
 
-typedef struct smf_n1_n2_message_transfer_data_s {
+typedef struct smf_n1_n2_message_transfer_param_s {
 #define SMF_N1_N2_MESSAGE_TRANSFER_NO_STATE             0
 #define SMF_UE_REQUESTED_PDU_SESSION_ESTABLISHMENT      1
 #define SMF_NETWORK_REQUESTED_PDU_SESSION_MODIFICATION  2
 #define SMF_NETWORK_REQUESTED_QOS_FLOW_MODIFICATION     3
+#define SMF_NETWORK_TRIGGERED_SERVICE_REQUEST           4
+#define SMF_ERROR_INDICATON_RECEIVED_FROM_5G_AN         5
     int state;
 
     ogs_pkbuf_t *n1smbuf;
     ogs_pkbuf_t *n2smbuf;
-} smf_n1_n2_message_transfer_data_t;
+
+    bool n1n2_failure_txf_notif_uri;
+    bool skip_ind;
+} smf_n1_n2_message_transfer_param_t;
 
 ogs_sbi_request_t *smf_namf_comm_build_n1_n2_message_transfer(
-        smf_sess_t *sess, smf_n1_n2_message_transfer_data_t *data);
+        smf_sess_t *sess, smf_n1_n2_message_transfer_param_t *param);
 
 ogs_sbi_request_t *smf_namf_callback_build_sm_context_status(
         smf_sess_t *sess, void *data);

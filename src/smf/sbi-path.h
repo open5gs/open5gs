@@ -40,26 +40,39 @@ void smf_sbi_discover_and_send(OpenAPI_nf_type_e target_nf_type,
         ogs_sbi_request_t *(*build)(smf_sess_t *sess, void *data));
 
 void smf_namf_comm_send_n1_n2_message_transfer(
-        smf_sess_t *sess, int state,
-        ogs_pkbuf_t *n1smbuf, ogs_pkbuf_t *n2smbuf);
+        smf_sess_t *sess, smf_n1_n2_message_transfer_param_t *param);
 
+#define smf_sbi_send_http_status_no_content(__sTREAM) \
+        smf_sbi_send_response(__sTREAM, OGS_SBI_HTTP_STATUS_NO_CONTENT);
 void smf_sbi_send_response(ogs_sbi_stream_t *stream, int status);
 
 void smf_sbi_send_sm_context_create_error(
         ogs_sbi_stream_t *stream,
         int status, const char *title, const char *detail,
         ogs_pkbuf_t *n1smbuf);
-void smf_sbi_send_sm_context_updated_data(smf_sess_t *sess,
-        ogs_sbi_stream_t *stream, OpenAPI_up_cnx_state_e up_cnx_state);
-void smf_sbi_send_sm_context_updated_data_in_session_deletion(
-        smf_sess_t *sess, ogs_sbi_stream_t *stream);
+
+#define smf_sbi_send_sm_context_updated_data_up_cnx_state( \
+            __sESS, __sTREAM, __uPCnxState) \
+        smf_sbi_send_sm_context_updated_data(\
+            __sESS, __sTREAM, __uPCnxState, NULL, 0, NULL)
+#define smf_sbi_send_sm_context_updated_data_n2smbuf( \
+            __sESS, __sTREAM, __n2Type, __n2SmBuf) \
+        smf_sbi_send_sm_context_updated_data(\
+            __sESS, __sTREAM, 0, NULL, __n2Type, __n2SmBuf)
+#define smf_sbi_send_sm_context_updated_data_n1_n2_message( \
+            __sESS, __sTREAM, __n1SmBuf, __n2Type, __n2SmBuf) \
+        smf_sbi_send_sm_context_updated_data(\
+            __sESS, __sTREAM, 0, __n1SmBuf, __n2Type, __n2SmBuf)
+void smf_sbi_send_sm_context_updated_data(
+        smf_sess_t *sess, ogs_sbi_stream_t *stream,
+        OpenAPI_up_cnx_state_e up_cnx_state,
+        ogs_pkbuf_t *n1smbuf,
+        OpenAPI_n2_sm_info_type_e n2type, ogs_pkbuf_t *n2smbuf);
+
 void smf_sbi_send_sm_context_update_error(
         ogs_sbi_stream_t *stream,
         int status, const char *title, const char *detail,
         ogs_pkbuf_t *n1smbuf, ogs_pkbuf_t *n2smbuf);
-void smf_sbi_send_sm_context_updated_data_with_n2buf(
-        smf_sess_t *sess, ogs_sbi_stream_t *stream,
-        OpenAPI_n2_sm_info_type_e n2_sm_info_type, ogs_pkbuf_t *n2smbuf);
 
 void smf_sbi_send_sm_context_status_notify(smf_sess_t *sess);
 

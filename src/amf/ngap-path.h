@@ -60,9 +60,9 @@ void ngap_send_amf_ue_context_release_command(
     amf_ue_t *amf_ue, NGAP_Cause_PR group, long cause,
     uint8_t action, uint32_t delay);
 
-#if 0
-void ngap_send_paging(amf_ue_t *amf_ue, NGAP_CNDomain_t cn_domain);
-#endif
+void ngap_send_paging(amf_ue_t *amf_ue);
+void ngap_send_pdu_resource_setup_request(
+        amf_sess_t *sess, ogs_pkbuf_t *n2smbuf);
 
 void ngap_send_amf_configuration_transfer(
         amf_gnb_t *target_gnb,

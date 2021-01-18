@@ -19,7 +19,7 @@
 
 #include "test-common.h"
 
-static void test1_func(abts_case *tc, void *data)
+static void cm_idle_paging_func(abts_case *tc, void *data)
 {
     int rv;
     ogs_socknode_t *ngap;
@@ -268,14 +268,100 @@ static void test1_func(abts_case *tc, void *data)
             NGAP_ProcedureCode_id_PDUSessionResourceSetup,
             test_ue->ngap_procedure_code);
 
+    /* Send PDUSessionResourceSetupResponse */
+    sendbuf = testngap_sess_build_pdu_session_resource_setup_response(sess);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Wait to setup N3 data connection
+     *
+     * Otherwise, the following case could occur:
+     *
+     * 1. PDUSessionResourceSetupResponse
+     * 2. UEContextReleaseRequest
+     * 3. /nsmf-pdusession/v1/sm-contexts/{smContextRef}/modify
+     * 4. /nsmf-pdusession/v1/sm-contexts/{smContextRef}/modify
+     * 5. PFCP Session Modifcation Request (Deactivated)
+     * 6. PFCP Session Modifcation Request (OuterHeaderCreation)
+     * 7. PFCP Session Modifcation Response
+     * 8. PFCP Session Modifcation Response
+     *
+     * As such, N3 status could be activated.
+     *
+     * To prevent this situation, we'll use ogs_msleep(100).
+     */
+    ogs_msleep(100);
+
+    /* Send UE context release request */
+    sendbuf = testngap_build_ue_context_release_request(test_ue,
+            NGAP_Cause_PR_radioNetwork, NGAP_CauseRadioNetwork_user_inactivity,
+            true);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive UE context release command */
+    recvbuf = testgnb_ngap_read(ngap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    testngap_recv(test_ue, recvbuf);
+
+    /* Send UE context release complete */
+    sendbuf = testngap_build_ue_context_release_complete(test_ue);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
     /* Send GTP-U ICMP Packet */
     qos_flow = test_qos_flow_find_by_qfi(sess, 1);
     ogs_assert(qos_flow);
     rv = test_gtpu_send_ping(gtpu, qos_flow, TEST_PING_IPV4);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    /* Send PDUSessionResourceSetupResponse */
-    sendbuf = testngap_sess_build_pdu_session_resource_setup_response(sess);
+    /* Receive NG-Paging */
+    recvbuf = testgnb_ngap_read(ngap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    testngap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc,
+            NGAP_ProcedureCode_id_Paging,
+            test_ue->ngap_procedure_code);
+
+    /*
+     * Send InitialUEMessage +
+     * Service request
+     *  - Type: Mobile terminated services(2)
+     *  - PDU Session Status
+     */
+    test_ue->service_request_param.integrity_protected = 0;
+    test_ue->service_request_param.pdu_session_status = 1;
+    test_ue->service_request_param.psimask.pdu_session_status = 1 << sess->psi;
+    nasbuf = testgmm_build_service_request(
+            test_ue, OGS_NAS_SERVICE_TYPE_MOBILE_TERMINATED_SERVICES, NULL);
+    ABTS_PTR_NOTNULL(tc, nasbuf);
+
+    test_ue->service_request_param.integrity_protected = 1;
+    test_ue->service_request_param.pdu_session_status = 0;
+    gmmbuf = testgmm_build_service_request(
+            test_ue, OGS_NAS_SERVICE_TYPE_MOBILE_TERMINATED_SERVICES, nasbuf);
+    ABTS_PTR_NOTNULL(tc, gmmbuf);
+
+    sendbuf = testngap_build_initial_ue_message(test_ue, gmmbuf, true, true);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive Initial context setup request +
+     * Service accept */
+    recvbuf = testgnb_ngap_read(ngap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    testngap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc,
+            NGAP_ProcedureCode_id_InitialContextSetup,
+            test_ue->ngap_procedure_code);
+    ABTS_INT_EQUAL(tc, 0x2000, test_ue->pdu_session_status);
+
+    /* Send Initial context setup response */
+    sendbuf = testngap_build_initial_context_setup_response(test_ue, true);
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
@@ -313,19 +399,57 @@ static void test1_func(abts_case *tc, void *data)
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
+    /* Send GTP-U ICMP Packet */
+    qos_flow = test_qos_flow_find_by_qfi(sess, 1);
+    ogs_assert(qos_flow);
+    rv = test_gtpu_send_ping(gtpu, qos_flow, TEST_PING_IPV4);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive NG-Paging */
+    recvbuf = testgnb_ngap_read(ngap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    testngap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc,
+            NGAP_ProcedureCode_id_Paging,
+            test_ue->ngap_procedure_code);
+
+#define ENABLE_PAGING_FAILED 1
+
+#if ENABLE_PAGING_FAILED
+    /* Receive NG-Paging */
+    recvbuf = testgnb_ngap_read(ngap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    testngap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc,
+            NGAP_ProcedureCode_id_Paging,
+            test_ue->ngap_procedure_code);
+
+    /* Receive NG-Paging */
+    recvbuf = testgnb_ngap_read(ngap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    testngap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc,
+            NGAP_ProcedureCode_id_Paging,
+            test_ue->ngap_procedure_code);
+
+    ogs_msleep(3000);
+#endif
+
     /*
      * Send InitialUEMessage +
      * Service request
-     *  - PDU Session Status
+     *  - Type: Signalling
+     *  - Uplink Data Status
      */
     test_ue->service_request_param.integrity_protected = 0;
-    test_ue->service_request_param.pdu_session_status = 1;
-    test_ue->service_request_param.psimask.pdu_session_status = 1 << sess->psi;
+    test_ue->service_request_param.uplink_data_status = 0;
+    test_ue->service_request_param.pdu_session_status = 0;
     nasbuf = testgmm_build_service_request(
             test_ue, OGS_NAS_SERVICE_TYPE_SIGNALLING, NULL);
     ABTS_PTR_NOTNULL(tc, nasbuf);
 
     test_ue->service_request_param.integrity_protected = 1;
+    test_ue->service_request_param.uplink_data_status = 0;
     test_ue->service_request_param.pdu_session_status = 0;
     gmmbuf = testgmm_build_service_request(
             test_ue, OGS_NAS_SERVICE_TYPE_SIGNALLING, nasbuf);
@@ -344,8 +468,6 @@ static void test1_func(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc,
             NGAP_ProcedureCode_id_InitialContextSetup,
             test_ue->ngap_procedure_code);
-    ABTS_INT_EQUAL(tc, 0x2000, test_ue->pdu_session_status);
-    ABTS_INT_EQUAL(tc, 0x0000, test_ue->pdu_session_reactivation_result);
 
     /* Send Initial context setup response */
     sendbuf = testngap_build_initial_context_setup_response(test_ue, true);
@@ -353,9 +475,10 @@ static void test1_func(abts_case *tc, void *data)
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    /* Wait to setup N3 data connection.
-     * Otherwise, network-triggered service request is initiated */
-    ogs_msleep(100);
+    /* Receive GTP-U ICMP Packet */
+    recvbuf = testgnb_gtpu_read(gtpu);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    ogs_pkbuf_free(recvbuf);
 
     /* Send GTP-U ICMP Packet */
     rv = test_gtpu_send_ping(gtpu, qos_flow, TEST_PING_IPV4);
@@ -385,9 +508,24 @@ static void test1_func(abts_case *tc, void *data)
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
+    /* Send GTP-U ICMP Packet */
+    qos_flow = test_qos_flow_find_by_qfi(sess, 1);
+    ogs_assert(qos_flow);
+    rv = test_gtpu_send_ping(gtpu, qos_flow, TEST_PING_IPV4);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive NG-Paging */
+    recvbuf = testgnb_ngap_read(ngap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    testngap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc,
+            NGAP_ProcedureCode_id_Paging,
+            test_ue->ngap_procedure_code);
+
     /*
      * Send InitialUEMessage +
      * Service request
+     *  - Type: Data
      *  - Uplink Data Status
      */
     test_ue->service_request_param.integrity_protected = 0;
@@ -418,7 +556,7 @@ static void test1_func(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc,
             NGAP_ProcedureCode_id_InitialContextSetup,
             test_ue->ngap_procedure_code);
-    ABTS_INT_EQUAL(tc, 0x0000, test_ue->pdu_session_status);
+
     ABTS_INT_EQUAL(tc, 0x0000, test_ue->pdu_session_reactivation_result);
 
     /* Send Initial context setup response */
@@ -427,9 +565,10 @@ static void test1_func(abts_case *tc, void *data)
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    /* Wait to setup N3 data connection.
-     * Otherwise, network-triggered service request is initiated */
-    ogs_msleep(100);
+    /* Receive GTP-U ICMP Packet */
+    recvbuf = testgnb_gtpu_read(gtpu);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    ogs_pkbuf_free(recvbuf);
 
     /* Send GTP-U ICMP Packet */
     rv = test_gtpu_send_ping(gtpu, qos_flow, TEST_PING_IPV4);
@@ -480,323 +619,7 @@ static void test1_func(abts_case *tc, void *data)
     test_ue_remove(test_ue);
 }
 
-static void test2_func(abts_case *tc, void *data)
-{
-    int rv;
-    ogs_socknode_t *ngap;
-    ogs_socknode_t *gtpu;
-    ogs_pkbuf_t *gmmbuf;
-    ogs_pkbuf_t *gsmbuf;
-    ogs_pkbuf_t *nasbuf;
-    ogs_pkbuf_t *sendbuf;
-    ogs_pkbuf_t *recvbuf;
-    ogs_ngap_message_t message;
-    int i;
-
-    ogs_nas_5gs_mobile_identity_suci_t mobile_identity_suci;
-    test_ue_t *test_ue = NULL;
-    test_bearer_t *qos_flow = NULL;
-
-    const char *_k_string = "70d49a71dd1a2b806a25abe0ef749f1e";
-    uint8_t k[OGS_KEY_LEN];
-    const char *_opc_string = "6f1bf53d624b3a43af6592854e2444c7";
-    uint8_t opc[OGS_KEY_LEN];
-
-    mongoc_collection_t *collection = NULL;
-    bson_t *doc = NULL;
-    int64_t count = 0;
-    bson_error_t error;
-    const char *json =
-      "{"
-        "\"_id\" : { \"$oid\" : \"597223158b8861d7605378c6\" }, "
-        "\"imsi\" : \"901700000021309\","
-        "\"ambr\" : { "
-          "\"uplink\" : { \"$numberLong\" : \"1024000\" }, "
-          "\"downlink\" : { \"$numberLong\" : \"1024000\" } "
-        "},"
-        "\"pdn\" : ["
-          "{"
-            "\"apn\" : \"internet\", "
-            "\"_id\" : { \"$oid\" : \"597223158b8861d7605378c7\" }, "
-            "\"ambr\" : {"
-              "\"uplink\" : { \"$numberLong\" : \"1024000\" }, "
-              "\"downlink\" : { \"$numberLong\" : \"1024000\" } "
-            "},"
-            "\"qos\" : { "
-              "\"qci\" : 9, "
-              "\"arp\" : { "
-                "\"priority_level\" : 8,"
-                "\"pre_emption_vulnerability\" : 1, "
-                "\"pre_emption_capability\" : 1"
-              "} "
-            "}, "
-            "\"type\" : 2"
-          "}"
-        "],"
-        "\"security\" : { "
-          "\"k\" : \"70d49a71dd1a2b806a25abe0ef749f1e\", "
-          "\"opc\" : \"6f1bf53d624b3a43af6592854e2444c7\", "
-          "\"amf\" : \"8000\", "
-          "\"sqn\" : { \"$numberLong\" : \"25235952177090\" } "
-        "}, "
-        "\"subscribed_rau_tau_timer\" : 12,"
-        "\"network_access_mode\" : 2, "
-        "\"subscriber_status\" : 0, "
-        "\"access_restriction_data\" : 32, "
-        "\"__v\" : 0 "
-      "}";
-
-    /* Setup Test UE & Session Context */
-    memset(&mobile_identity_suci, 0, sizeof(mobile_identity_suci));
-
-    mobile_identity_suci.h.supi_format = OGS_NAS_5GS_SUPI_FORMAT_IMSI;
-    mobile_identity_suci.h.type = OGS_NAS_5GS_MOBILE_IDENTITY_SUCI;
-    mobile_identity_suci.routing_indicator1 = 0;
-    mobile_identity_suci.routing_indicator2 = 0xf;
-    mobile_identity_suci.routing_indicator3 = 0xf;
-    mobile_identity_suci.routing_indicator4 = 0xf;
-    mobile_identity_suci.protection_scheme_id = OGS_NAS_5GS_NULL_SCHEME;
-    mobile_identity_suci.home_network_pki_value = 0;
-    mobile_identity_suci.scheme_output[0] = 0;
-    mobile_identity_suci.scheme_output[1] = 0;
-    mobile_identity_suci.scheme_output[2] = 0x20;
-    mobile_identity_suci.scheme_output[3] = 0x31;
-    mobile_identity_suci.scheme_output[4] = 0x90;
-
-    test_ue = test_ue_add_by_suci(&mobile_identity_suci, 13);
-    ogs_assert(test_ue);
-
-    test_ue->nr_cgi.cell_id = 0x40001;
-
-    test_ue->nas.registration.type = OGS_NAS_KSI_NO_KEY_IS_AVAILABLE;
-    test_ue->nas.registration.follow_on_request = 1;
-    test_ue->nas.registration.value = OGS_NAS_5GS_REGISTRATION_TYPE_INITIAL;
-
-    OGS_HEX(_k_string, strlen(_k_string), test_ue->k);
-    OGS_HEX(_opc_string, strlen(_opc_string), test_ue->opc);
-
-    /* gNB connects to AMF */
-    ngap = testngap_client(AF_INET);
-    ABTS_PTR_NOTNULL(tc, ngap);
-
-    /* gNB connects to UPF */
-    gtpu = test_gtpu_server(1, AF_INET);
-    ABTS_PTR_NOTNULL(tc, gtpu);
-
-    /* Send NG-Setup Reqeust */
-    sendbuf = testngap_build_ng_setup_request(0x4000, 24);
-    ABTS_PTR_NOTNULL(tc, sendbuf);
-    rv = testgnb_ngap_send(ngap, sendbuf);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
-
-    /* Receive NG-Setup Response */
-    recvbuf = testgnb_ngap_read(ngap);
-    ABTS_PTR_NOTNULL(tc, recvbuf);
-    testngap_recv(test_ue, recvbuf);
-
-    /********** Insert Subscriber in Database */
-    collection = mongoc_client_get_collection(
-        ogs_mongoc()->client, ogs_mongoc()->name, "subscribers");
-    ABTS_PTR_NOTNULL(tc, collection);
-    doc = BCON_NEW("imsi", BCON_UTF8(test_ue->imsi));
-    ABTS_PTR_NOTNULL(tc, doc);
-
-    count = mongoc_collection_count (
-        collection, MONGOC_QUERY_NONE, doc, 0, 0, NULL, &error);
-    if (count) {
-        ABTS_TRUE(tc, mongoc_collection_remove(collection,
-                MONGOC_REMOVE_SINGLE_REMOVE, doc, NULL, &error))
-    }
-    bson_destroy(doc);
-
-    doc = bson_new_from_json((const uint8_t *)json, -1, &error);;
-    ABTS_PTR_NOTNULL(tc, doc);
-    ABTS_TRUE(tc, mongoc_collection_insert(collection,
-                MONGOC_INSERT_NONE, doc, NULL, &error));
-    bson_destroy(doc);
-
-    doc = BCON_NEW("imsi", BCON_UTF8(test_ue->imsi));
-    ABTS_PTR_NOTNULL(tc, doc);
-    do {
-        count = mongoc_collection_count (
-            collection, MONGOC_QUERY_NONE, doc, 0, 0, NULL, &error);
-    } while (count == 0);
-    bson_destroy(doc);
-
-    /* Send Registration request */
-    gmmbuf = testgmm_build_registration_request(test_ue, NULL);
-    ABTS_PTR_NOTNULL(tc, gmmbuf);
-
-    test_ue->registration_request_param.gmm_capability = 1;
-    test_ue->registration_request_param.requested_nssai = 1;
-    test_ue->registration_request_param.last_visited_registered_tai = 1;
-    test_ue->registration_request_param.ue_usage_setting = 1;
-    nasbuf = testgmm_build_registration_request(test_ue, NULL);
-    ABTS_PTR_NOTNULL(tc, nasbuf);
-
-    sendbuf = testngap_build_initial_ue_message(test_ue, gmmbuf, false, true);
-    ABTS_PTR_NOTNULL(tc, sendbuf);
-    rv = testgnb_ngap_send(ngap, sendbuf);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
-
-    /* Receive Authentication request */
-    recvbuf = testgnb_ngap_read(ngap);
-    ABTS_PTR_NOTNULL(tc, recvbuf);
-    testngap_recv(test_ue, recvbuf);
-
-    /* Send Authentication response */
-    gmmbuf = testgmm_build_authentication_response(test_ue);
-    ABTS_PTR_NOTNULL(tc, gmmbuf);
-    sendbuf = testngap_build_uplink_nas_transport(test_ue, gmmbuf);
-    ABTS_PTR_NOTNULL(tc, sendbuf);
-    rv = testgnb_ngap_send(ngap, sendbuf);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
-
-    /* Receive Security mode command */
-    recvbuf = testgnb_ngap_read(ngap);
-    ABTS_PTR_NOTNULL(tc, recvbuf);
-    testngap_recv(test_ue, recvbuf);
-
-    /* Send Security mode complete */
-    gmmbuf = testgmm_build_security_mode_complete(test_ue, nasbuf);
-    ABTS_PTR_NOTNULL(tc, gmmbuf);
-    sendbuf = testngap_build_uplink_nas_transport(test_ue, gmmbuf);
-    ABTS_PTR_NOTNULL(tc, sendbuf);
-    rv = testgnb_ngap_send(ngap, sendbuf);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
-
-    /* Receive Initial context setup request +
-     * Registration accept */
-    recvbuf = testgnb_ngap_read(ngap);
-    ABTS_PTR_NOTNULL(tc, recvbuf);
-    testngap_recv(test_ue, recvbuf);
-    ABTS_INT_EQUAL(tc,
-            NGAP_ProcedureCode_id_InitialContextSetup,
-            test_ue->ngap_procedure_code);
-
-    /* Send UE radio capability info indication */
-    sendbuf = testngap_build_ue_radio_capability_info_indication(test_ue);
-    ABTS_PTR_NOTNULL(tc, sendbuf);
-    rv = testgnb_ngap_send(ngap, sendbuf);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
-
-    /* Send Initial context setup response */
-    sendbuf = testngap_build_initial_context_setup_response(test_ue, false);
-    ABTS_PTR_NOTNULL(tc, sendbuf);
-    rv = testgnb_ngap_send(ngap, sendbuf);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
-
-    /* Send Registration complete */
-    gmmbuf = testgmm_build_registration_complete(test_ue);
-    ABTS_PTR_NOTNULL(tc, gmmbuf);
-    sendbuf = testngap_build_uplink_nas_transport(test_ue, gmmbuf);
-    ABTS_PTR_NOTNULL(tc, sendbuf);
-    rv = testgnb_ngap_send(ngap, sendbuf);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
-
-    /* Receive Configuration update command */
-    recvbuf = testgnb_ngap_read(ngap);
-    ABTS_PTR_NOTNULL(tc, recvbuf);
-    testngap_recv(test_ue, recvbuf);
-
-    /* Send UE context release request */
-    sendbuf = testngap_build_ue_context_release_request(test_ue,
-            NGAP_Cause_PR_radioNetwork, NGAP_CauseRadioNetwork_user_inactivity,
-            true);
-    ABTS_PTR_NOTNULL(tc, sendbuf);
-    rv = testgnb_ngap_send(ngap, sendbuf);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
-
-    /* Receive UE context release command */
-    recvbuf = testgnb_ngap_read(ngap);
-    ABTS_PTR_NOTNULL(tc, recvbuf);
-    testngap_recv(test_ue, recvbuf);
-
-    /* Send UE context release complete */
-    sendbuf = testngap_build_ue_context_release_complete(test_ue);
-    ABTS_PTR_NOTNULL(tc, sendbuf);
-    rv = testgnb_ngap_send(ngap, sendbuf);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
-
-    /*
-     * Send InitialUEMessage +
-     * Service request
-     *  - PDU Session Status
-     */
-    test_ue->service_request_param.integrity_protected = 0;
-    test_ue->service_request_param.pdu_session_status = 1;
-    nasbuf = testgmm_build_service_request(
-            test_ue, OGS_NAS_SERVICE_TYPE_SIGNALLING, NULL);
-    ABTS_PTR_NOTNULL(tc, nasbuf);
-
-    test_ue->service_request_param.integrity_protected = 1;
-    test_ue->service_request_param.pdu_session_status = 0;
-    gmmbuf = testgmm_build_service_request(
-            test_ue, OGS_NAS_SERVICE_TYPE_SIGNALLING, nasbuf);
-    ABTS_PTR_NOTNULL(tc, gmmbuf);
-    sendbuf = testngap_build_initial_ue_message(test_ue, gmmbuf, true, true);
-    ABTS_PTR_NOTNULL(tc, sendbuf);
-    rv = testgnb_ngap_send(ngap, sendbuf);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
-
-    /* Receive Initial context setup request +
-     * Service accept */
-    recvbuf = testgnb_ngap_read(ngap);
-    ABTS_PTR_NOTNULL(tc, recvbuf);
-    testngap_recv(test_ue, recvbuf);
-    ABTS_INT_EQUAL(tc,
-            NGAP_ProcedureCode_id_InitialContextSetup,
-            test_ue->ngap_procedure_code);
-    ABTS_INT_EQUAL(tc, 0x0000, test_ue->pdu_session_status);
-    ABTS_INT_EQUAL(tc, 0x0000, test_ue->pdu_session_reactivation_result);
-
-    /* Send Initial context setup response */
-    sendbuf = testngap_build_initial_context_setup_response(test_ue, false);
-    ABTS_PTR_NOTNULL(tc, sendbuf);
-    rv = testgnb_ngap_send(ngap, sendbuf);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
-
-    /* Send UE context release request */
-    sendbuf = testngap_build_ue_context_release_request(test_ue,
-            NGAP_Cause_PR_radioNetwork, NGAP_CauseRadioNetwork_user_inactivity,
-            true);
-    ABTS_PTR_NOTNULL(tc, sendbuf);
-    rv = testgnb_ngap_send(ngap, sendbuf);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
-
-    /* Receive UE context release command */
-    recvbuf = testgnb_ngap_read(ngap);
-    ABTS_PTR_NOTNULL(tc, recvbuf);
-    testngap_recv(test_ue, recvbuf);
-
-    /* Send UE context release complete */
-    sendbuf = testngap_build_ue_context_release_complete(test_ue);
-    ABTS_PTR_NOTNULL(tc, sendbuf);
-    rv = testgnb_ngap_send(ngap, sendbuf);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
-
-    ogs_msleep(300);
-
-    /********** Remove Subscriber in Database */
-    doc = BCON_NEW("imsi", BCON_UTF8(test_ue->imsi));
-    ABTS_PTR_NOTNULL(tc, doc);
-    ABTS_TRUE(tc, mongoc_collection_remove(collection,
-            MONGOC_REMOVE_SINGLE_REMOVE, doc, NULL, &error))
-    bson_destroy(doc);
-
-    mongoc_collection_destroy(collection);
-
-    /* gNB disonncect from UPF */
-    testgnb_gtpu_close(gtpu);
-
-    /* gNB disonncect from AMF */
-    testgnb_ngap_close(ngap);
-
-    /* Clear Test UE Context */
-    test_ue_remove(test_ue);
-}
-
-static void test3_func(abts_case *tc, void *data)
+static void cm_idle_error_indication_func(abts_case *tc, void *data)
 {
     int rv;
     ogs_socknode_t *ngap;
@@ -901,7 +724,7 @@ static void test3_func(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, gtpu);
 
     /* Send NG-Setup Reqeust */
-    sendbuf = testngap_build_ng_setup_request(0x4000, 25);
+    sendbuf = testngap_build_ng_setup_request(0x4000, 23);
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
@@ -1045,52 +868,80 @@ static void test3_func(abts_case *tc, void *data)
             NGAP_ProcedureCode_id_PDUSessionResourceSetup,
             test_ue->ngap_procedure_code);
 
-    /* Send GTP-U ICMP Packet */
-    qos_flow = test_qos_flow_find_by_qfi(sess, 1);
-    ogs_assert(qos_flow);
-    rv = test_gtpu_send_ping(gtpu, qos_flow, TEST_PING_IPV4);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
-
     /* Send PDUSessionResourceSetupResponse */
     sendbuf = testngap_sess_build_pdu_session_resource_setup_response(sess);
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    /* Receive GTP-U ICMP Packet */
-    recvbuf = testgnb_gtpu_read(gtpu);
-    ABTS_PTR_NOTNULL(tc, recvbuf);
-    ogs_pkbuf_free(recvbuf);
+    /* Wait to setup N3 data connection
+     *
+     * Otherwise, the following case could occur:
+     *
+     * 1. PDUSessionResourceSetupResponse
+     * 2. UEContextReleaseRequest
+     * 3. /nsmf-pdusession/v1/sm-contexts/{smContextRef}/modify
+     * 4. /nsmf-pdusession/v1/sm-contexts/{smContextRef}/modify
+     * 5. PFCP Session Modifcation Request (Deactivated)
+     * 6. PFCP Session Modifcation Request (OuterHeaderCreation)
+     * 7. PFCP Session Modifcation Response
+     * 8. PFCP Session Modifcation Response
+     *
+     * As such, N3 status could be activated.
+     *
+     * To prevent this situation, we'll use ogs_msleep(100).
+     */
+    ogs_msleep(100);
 
-    /* Send GTP-U ICMP Packet */
-    rv = test_gtpu_send_ping(gtpu, qos_flow, TEST_PING_IPV4);
+    /* Send UE context release request */
+    sendbuf = testngap_build_ue_context_release_request(test_ue,
+            NGAP_Cause_PR_radioNetwork, NGAP_CauseRadioNetwork_user_inactivity,
+            true);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    /* Receive GTP-U ICMP Packet */
-    recvbuf = testgnb_gtpu_read(gtpu);
+    /* Receive UE context release command */
+    recvbuf = testgnb_ngap_read(ngap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
-    ogs_pkbuf_free(recvbuf);
+    testngap_recv(test_ue, recvbuf);
+
+    /* Send UE context release complete */
+    sendbuf = testngap_build_ue_context_release_complete(test_ue);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Send Error Indication */
+    qos_flow = test_qos_flow_find_by_qfi(sess, 1);
+    ogs_assert(qos_flow);
+    rv = test_gtpu_send_error_indication(gtpu, qos_flow);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive NG-Paging */
+    recvbuf = testgnb_ngap_read(ngap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    testngap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc,
+            NGAP_ProcedureCode_id_Paging,
+            test_ue->ngap_procedure_code);
 
     /*
      * Send InitialUEMessage +
      * Service request
-     *  - Uplink Data Status
+     *  - Type: Mobile terminated services(2)
      *  - PDU Session Status
      */
     test_ue->service_request_param.integrity_protected = 0;
-    test_ue->service_request_param.uplink_data_status = 1;
-    test_ue->service_request_param.psimask.uplink_data_status = 1 << sess->psi;
-    test_ue->service_request_param.pdu_session_status = 1;
-    test_ue->service_request_param.psimask.pdu_session_status = 1 << sess->psi;
+    test_ue->service_request_param.pdu_session_status = 0;
     nasbuf = testgmm_build_service_request(
-            test_ue, OGS_NAS_SERVICE_TYPE_DATA, NULL);
+            test_ue, OGS_NAS_SERVICE_TYPE_MOBILE_TERMINATED_SERVICES, NULL);
     ABTS_PTR_NOTNULL(tc, nasbuf);
 
     test_ue->service_request_param.integrity_protected = 1;
-    test_ue->service_request_param.uplink_data_status = 0;
     test_ue->service_request_param.pdu_session_status = 0;
     gmmbuf = testgmm_build_service_request(
-            test_ue, OGS_NAS_SERVICE_TYPE_DATA, nasbuf);
+            test_ue, OGS_NAS_SERVICE_TYPE_MOBILE_TERMINATED_SERVICES, nasbuf);
     ABTS_PTR_NOTNULL(tc, gmmbuf);
 
     sendbuf = testngap_build_initial_ue_message(test_ue, gmmbuf, true, true);
@@ -1098,18 +949,7 @@ static void test3_func(abts_case *tc, void *data)
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    /* OLD Receive UE context release command */
-    recvbuf = testgnb_ngap_read(ngap);
-    ABTS_PTR_NOTNULL(tc, recvbuf);
-    testngap_recv(test_ue, recvbuf);
-
-    /* Send OLD UE Context Release Complete */
-    sendbuf = testngap_build_ue_context_release_complete(test_ue);
-    ABTS_PTR_NOTNULL(tc, sendbuf);
-    rv = testgnb_ngap_send(ngap, sendbuf);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
-
-    /* Receive InitialContextSetupRequest +
+    /* Receive Initial context setup request +
      * Service accept */
     recvbuf = testgnb_ngap_read(ngap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
@@ -1117,57 +957,16 @@ static void test3_func(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc,
             NGAP_ProcedureCode_id_InitialContextSetup,
             test_ue->ngap_procedure_code);
-    ABTS_INT_EQUAL(tc, 0x2000, test_ue->pdu_session_status);
-    ABTS_INT_EQUAL(tc, 0x0000, test_ue->pdu_session_reactivation_result);
 
-    /* Send InitialContextSetupResponse */
-    sendbuf = testngap_build_initial_context_setup_response(test_ue, false);
+    /* Send Initial context setup response */
+    sendbuf = testngap_build_initial_context_setup_response(test_ue, true);
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    /* Send GTP-U ICMP Packet */
-    rv = test_gtpu_send_ping(gtpu, qos_flow, TEST_PING_IPV4);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
-
-    /* Receive GTP-U ICMP Packet */
-    recvbuf = testgnb_gtpu_read(gtpu);
-    ABTS_PTR_NOTNULL(tc, recvbuf);
-    ogs_pkbuf_free(recvbuf);
-
-    /*
-     * Send UplinkNASTransport +
-     * Service request
-     *  - Uplink Data Status
-     */
-    test_ue->service_request_param.integrity_protected = 1;
-    test_ue->service_request_param.ciphered = 1;
-    test_ue->service_request_param.uplink_data_status = 1;
-    test_ue->service_request_param.psimask.uplink_data_status = 1 << sess->psi;
-    gmmbuf = testgmm_build_service_request(
-            test_ue, OGS_NAS_SERVICE_TYPE_DATA, NULL);
-    ABTS_PTR_NOTNULL(tc, gmmbuf);
-
-    sendbuf = testngap_build_uplink_nas_transport(test_ue, gmmbuf);
-    ABTS_PTR_NOTNULL(tc, sendbuf);
-    rv = testgnb_ngap_send(ngap, sendbuf);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
-
-    /* Receive PDUSessionResourceSetupResponse +
-     * Service accept */
-    recvbuf = testgnb_ngap_read(ngap);
-    ABTS_PTR_NOTNULL(tc, recvbuf);
-    testngap_recv(test_ue, recvbuf);
-    ABTS_INT_EQUAL(tc,
-            NGAP_ProcedureCode_id_PDUSessionResourceSetup,
-            test_ue->ngap_procedure_code);
-    ABTS_INT_EQUAL(tc, 0x0000, test_ue->pdu_session_reactivation_result);
-
-    /* Send PDUSessionResourceSetupResponse */
-    sendbuf = testngap_sess_build_pdu_session_resource_setup_response(sess);
-    ABTS_PTR_NOTNULL(tc, sendbuf);
-    rv = testgnb_ngap_send(ngap, sendbuf);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+    /* Wait to setup N3 data connection.
+     * Otherwise, network-triggered service request is initiated */
+    ogs_msleep(100);
 
     /* Send GTP-U ICMP Packet */
     rv = test_gtpu_send_ping(gtpu, qos_flow, TEST_PING_IPV4);
@@ -1181,7 +980,7 @@ static void test3_func(abts_case *tc, void *data)
     /* Send UE context release request */
     sendbuf = testngap_build_ue_context_release_request(test_ue,
             NGAP_Cause_PR_radioNetwork, NGAP_CauseRadioNetwork_user_inactivity,
-            true);
+            false);
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
@@ -1218,7 +1017,7 @@ static void test3_func(abts_case *tc, void *data)
     test_ue_remove(test_ue);
 }
 
-static void test4_func(abts_case *tc, void *data)
+static void cm_connected_error_indication_func(abts_case *tc, void *data)
 {
     int rv;
     ogs_socknode_t *ngap;
@@ -1230,10 +1029,6 @@ static void test4_func(abts_case *tc, void *data)
     ogs_pkbuf_t *recvbuf;
     ogs_ngap_message_t message;
     int i;
-
-    /* for backup */
-    uint32_t ran_ue_ngap_id;
-    uint64_t amf_ue_ngap_id;
 
     ogs_nas_5gs_mobile_identity_suci_t mobile_identity_suci;
     test_ue_t *test_ue = NULL;
@@ -1327,7 +1122,392 @@ static void test4_func(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, gtpu);
 
     /* Send NG-Setup Reqeust */
-    sendbuf = testngap_build_ng_setup_request(0x4000, 28);
+    sendbuf = testngap_build_ng_setup_request(0x4000, 23);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive NG-Setup Response */
+    recvbuf = testgnb_ngap_read(ngap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    testngap_recv(test_ue, recvbuf);
+
+    /********** Insert Subscriber in Database */
+    collection = mongoc_client_get_collection(
+        ogs_mongoc()->client, ogs_mongoc()->name, "subscribers");
+    ABTS_PTR_NOTNULL(tc, collection);
+    doc = BCON_NEW("imsi", BCON_UTF8(test_ue->imsi));
+    ABTS_PTR_NOTNULL(tc, doc);
+
+    count = mongoc_collection_count (
+        collection, MONGOC_QUERY_NONE, doc, 0, 0, NULL, &error);
+    if (count) {
+        ABTS_TRUE(tc, mongoc_collection_remove(collection,
+                MONGOC_REMOVE_SINGLE_REMOVE, doc, NULL, &error))
+    }
+    bson_destroy(doc);
+
+    doc = bson_new_from_json((const uint8_t *)json, -1, &error);;
+    ABTS_PTR_NOTNULL(tc, doc);
+    ABTS_TRUE(tc, mongoc_collection_insert(collection,
+                MONGOC_INSERT_NONE, doc, NULL, &error));
+    bson_destroy(doc);
+
+    doc = BCON_NEW("imsi", BCON_UTF8(test_ue->imsi));
+    ABTS_PTR_NOTNULL(tc, doc);
+    do {
+        count = mongoc_collection_count (
+            collection, MONGOC_QUERY_NONE, doc, 0, 0, NULL, &error);
+    } while (count == 0);
+    bson_destroy(doc);
+
+    /* Send Registration request */
+    gmmbuf = testgmm_build_registration_request(test_ue, NULL);
+    ABTS_PTR_NOTNULL(tc, gmmbuf);
+
+    test_ue->registration_request_param.gmm_capability = 1;
+    test_ue->registration_request_param.requested_nssai = 1;
+    test_ue->registration_request_param.last_visited_registered_tai = 1;
+    test_ue->registration_request_param.ue_usage_setting = 1;
+    nasbuf = testgmm_build_registration_request(test_ue, NULL);
+    ABTS_PTR_NOTNULL(tc, nasbuf);
+
+    sendbuf = testngap_build_initial_ue_message(test_ue, gmmbuf, false, true);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive Authentication request */
+    recvbuf = testgnb_ngap_read(ngap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    testngap_recv(test_ue, recvbuf);
+
+    /* Send Authentication response */
+    gmmbuf = testgmm_build_authentication_response(test_ue);
+    ABTS_PTR_NOTNULL(tc, gmmbuf);
+    sendbuf = testngap_build_uplink_nas_transport(test_ue, gmmbuf);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive Security mode command */
+    recvbuf = testgnb_ngap_read(ngap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    testngap_recv(test_ue, recvbuf);
+
+    /* Send Security mode complete */
+    gmmbuf = testgmm_build_security_mode_complete(test_ue, nasbuf);
+    ABTS_PTR_NOTNULL(tc, gmmbuf);
+    sendbuf = testngap_build_uplink_nas_transport(test_ue, gmmbuf);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive Initial context setup request +
+     * Registration accept */
+    recvbuf = testgnb_ngap_read(ngap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    testngap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc,
+            NGAP_ProcedureCode_id_InitialContextSetup,
+            test_ue->ngap_procedure_code);
+
+    /* Send UE radio capability info indication */
+    sendbuf = testngap_build_ue_radio_capability_info_indication(test_ue);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Send Initial context setup response */
+    sendbuf = testngap_build_initial_context_setup_response(test_ue, false);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Send Registration complete */
+    gmmbuf = testgmm_build_registration_complete(test_ue);
+    ABTS_PTR_NOTNULL(tc, gmmbuf);
+    sendbuf = testngap_build_uplink_nas_transport(test_ue, gmmbuf);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive Configuration update command */
+    recvbuf = testgnb_ngap_read(ngap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    testngap_recv(test_ue, recvbuf);
+
+    /* Send PDU session establishment request */
+    sess = test_sess_add_by_dnn_and_psi(test_ue, "internet", 5);
+    ogs_assert(sess);
+
+    sess->ul_nas_transport_param.request_type =
+        OGS_NAS_5GS_REQUEST_TYPE_INITIAL;
+    sess->ul_nas_transport_param.dnn = 1;
+    sess->ul_nas_transport_param.s_nssai = 1;
+
+    gsmbuf = testgsm_build_pdu_session_establishment_request(sess);
+    ABTS_PTR_NOTNULL(tc, gsmbuf);
+    gmmbuf = testgmm_build_ul_nas_transport(sess,
+            OGS_NAS_PAYLOAD_CONTAINER_N1_SM_INFORMATION, gsmbuf);
+    ABTS_PTR_NOTNULL(tc, gmmbuf);
+    sendbuf = testngap_build_uplink_nas_transport(test_ue, gmmbuf);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive PDUSessionResourceSetupRequest +
+     * DL NAS transport +
+     * PDU session establishment accept */
+    recvbuf = testgnb_ngap_read(ngap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    testngap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc,
+            NGAP_ProcedureCode_id_PDUSessionResourceSetup,
+            test_ue->ngap_procedure_code);
+
+    /* Send PDUSessionResourceSetupResponse */
+    sendbuf = testngap_sess_build_pdu_session_resource_setup_response(sess);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Wait to setup N3 data connection
+     * That's why error-indication should be initiated in CM-CONNECTED */
+    ogs_msleep(100);
+
+    /* Send Error Indication */
+    qos_flow = test_qos_flow_find_by_qfi(sess, 1);
+    ogs_assert(qos_flow);
+    rv = test_gtpu_send_error_indication(gtpu, qos_flow);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive PDUSessionResourceReleaseCommand */
+    recvbuf = testgnb_ngap_read(ngap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    testngap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc,
+            NGAP_ProcedureCode_id_PDUSessionResourceRelease,
+            test_ue->ngap_procedure_code);
+
+    /* Send PDUSessionResourceReleaseResponse */
+    sendbuf = testngap_build_pdu_session_resource_release_response(sess);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive PDUSessionResourceSetupRequest */
+    recvbuf = testgnb_ngap_read(ngap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    testngap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc,
+            NGAP_ProcedureCode_id_PDUSessionResourceSetup,
+            test_ue->ngap_procedure_code);
+
+    /* Send PDUSessionResourceSetupResponse */
+    sendbuf = testngap_sess_build_pdu_session_resource_setup_response(sess);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Wait to setup N3 data connection.
+     * Otherwise, network-triggered service request is initiated */
+    ogs_msleep(100);
+
+    /* Send GTP-U ICMP Packet */
+    rv = test_gtpu_send_ping(gtpu, qos_flow, TEST_PING_IPV4);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive GTP-U ICMP Packet */
+    recvbuf = testgnb_gtpu_read(gtpu);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    ogs_pkbuf_free(recvbuf);
+
+    /* Send UE context release request */
+    sendbuf = testngap_build_ue_context_release_request(test_ue,
+            NGAP_Cause_PR_radioNetwork, NGAP_CauseRadioNetwork_user_inactivity,
+            false);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive UE context release command */
+    recvbuf = testgnb_ngap_read(ngap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    testngap_recv(test_ue, recvbuf);
+
+    /* Send UE context release complete */
+    sendbuf = testngap_build_ue_context_release_complete(test_ue);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    ogs_msleep(300);
+
+    /********** Remove Subscriber in Database */
+    doc = BCON_NEW("imsi", BCON_UTF8(test_ue->imsi));
+    ABTS_PTR_NOTNULL(tc, doc);
+    ABTS_TRUE(tc, mongoc_collection_remove(collection,
+            MONGOC_REMOVE_SINGLE_REMOVE, doc, NULL, &error))
+    bson_destroy(doc);
+
+    mongoc_collection_destroy(collection);
+
+    /* gNB disonncect from UPF */
+    testgnb_gtpu_close(gtpu);
+
+    /* gNB disonncect from AMF */
+    testgnb_ngap_close(ngap);
+
+    /* Clear Test UE Context */
+    test_ue_remove(test_ue);
+}
+
+static void vonr_qos_flow_test1_func(abts_case *tc, void *data)
+{
+    int rv;
+    ogs_socknode_t *ngap;
+    ogs_socknode_t *gtpu;
+    ogs_pkbuf_t *gmmbuf;
+    ogs_pkbuf_t *gsmbuf;
+    ogs_pkbuf_t *nasbuf;
+    ogs_pkbuf_t *sendbuf;
+    ogs_pkbuf_t *recvbuf;
+    ogs_ngap_message_t message;
+    int i;
+
+    uint8_t tmp[OGS_MAX_SDU_LEN];
+    char *_gtp_payload = "34ff0024"
+        "0000000100000085 010002004500001c 0c0b000040015a7a 0a2d00010a2d0002"
+        "00000964cd7c291f";
+
+    ogs_nas_5gs_mobile_identity_suci_t mobile_identity_suci;
+    test_ue_t *test_ue = NULL;
+    test_sess_t *sess = NULL;
+    test_bearer_t *qos_flow = NULL;
+
+    const char *_k_string = "70d49a71dd1a2b806a25abe0ef749f1e";
+    uint8_t k[OGS_KEY_LEN];
+    const char *_opc_string = "6f1bf53d624b3a43af6592854e2444c7";
+    uint8_t opc[OGS_KEY_LEN];
+
+    mongoc_collection_t *collection = NULL;
+    bson_t *doc = NULL;
+    int64_t count = 0;
+    bson_error_t error;
+    const char *json =
+      "{"
+        "\"_id\" : { \"$oid\" : \"597223158b8861d7605378c6\" }, "
+        "\"imsi\" : \"901700000021309\","
+        "\"ambr\" : { "
+          "\"uplink\" : { \"$numberLong\" : \"1024000\" }, "
+          "\"downlink\" : { \"$numberLong\" : \"1024000\" } "
+        "},"
+        "\"pdn\" : ["
+          "{"
+            "\"apn\" : \"internet\", "
+            "\"_id\" : { \"$oid\" : \"597223158b8861d7605378c7\" }, "
+            "\"ambr\" : {"
+              "\"uplink\" : { \"$numberLong\" : \"1024000\" }, "
+              "\"downlink\" : { \"$numberLong\" : \"1024000\" } "
+            "},"
+            "\"qos\" : { "
+              "\"qci\" : 9, "
+              "\"arp\" : { "
+                "\"priority_level\" : 8,"
+                "\"pre_emption_vulnerability\" : 1, "
+                "\"pre_emption_capability\" : 1"
+              "} "
+            "}, "
+            "\"type\" : 2,"
+            "\"pcc_rule\" : ["
+              "{"
+                "\"_id\" : { \"$oid\" : \"599eb929c850caabcbfdcd2d\" },"
+                "\"qos\" : {"
+                  "\"qci\" : 1,"
+                  "\"gbr\" : {"
+                    "\"downlink\" : { \"$numberLong\" : \"64\" },"
+                    "\"uplink\" : { \"$numberLong\" : \"44\" }"
+                  "},"
+                  "\"mbr\" : {"
+                    "\"downlink\" : { \"$numberLong\" : \"64\" },"
+                    "\"uplink\" : { \"$numberLong\" : \"44\" }"
+                  "},"
+                  "\"arp\" : {"
+                    "\"priority_level\" : 3,"
+                    "\"pre_emption_vulnerability\" : 0,"
+                    "\"pre_emption_capability\" : 0 }"
+                  "},"
+                  "\"flow\" : ["
+                    "{ \"direction\" : 2,"
+                      "\"description\" : \"permit out udp from 10.200.136.98/32 23454 to assigned 1-65535\","
+                      "\"_id\" : { \"$oid\" : \"599eb929c850caabcbfdcd31\" } },"
+                    "{ \"direction\" : 1,"
+                      "\"description\" : \"permit out icmp from any to assigned\","
+                      "\"_id\" : { \"$oid\" : \"599eb929c850caabcbfdcd30\" } },"
+                    "{ \"direction\" : 2,"
+                      "\"description\" : \"permit out udp from 10.200.136.98/32 23455 to assigned 1-65535\","
+                      "\"_id\" : { \"$oid\" : \"599eb929c850caabcbfdcd2f\" } },"
+                    "{ \"direction\" : 1,"
+                      "\"description\" : \"permit out udp from 10.200.136.98/32 1-65535 to assigned 50021\","
+                      "\"_id\" : { \"$oid\" : \"599eb929c850caabcbfdcd2e\" } }"
+                  "]"
+              "}"
+            "]"
+          "}"
+        "],"
+        "\"security\" : { "
+          "\"k\" : \"70d49a71dd1a2b806a25abe0ef749f1e\", "
+          "\"opc\" : \"6f1bf53d624b3a43af6592854e2444c7\", "
+          "\"amf\" : \"8000\", "
+          "\"sqn\" : { \"$numberLong\" : \"25235952177090\" } "
+        "}, "
+        "\"subscribed_rau_tau_timer\" : 12,"
+        "\"network_access_mode\" : 2, "
+        "\"subscriber_status\" : 0, "
+        "\"access_restriction_data\" : 32, "
+        "\"__v\" : 0 "
+      "}";
+
+    /* Setup Test UE & Session Context */
+    memset(&mobile_identity_suci, 0, sizeof(mobile_identity_suci));
+
+    mobile_identity_suci.h.supi_format = OGS_NAS_5GS_SUPI_FORMAT_IMSI;
+    mobile_identity_suci.h.type = OGS_NAS_5GS_MOBILE_IDENTITY_SUCI;
+    mobile_identity_suci.routing_indicator1 = 0;
+    mobile_identity_suci.routing_indicator2 = 0xf;
+    mobile_identity_suci.routing_indicator3 = 0xf;
+    mobile_identity_suci.routing_indicator4 = 0xf;
+    mobile_identity_suci.protection_scheme_id = OGS_NAS_5GS_NULL_SCHEME;
+    mobile_identity_suci.home_network_pki_value = 0;
+    mobile_identity_suci.scheme_output[0] = 0;
+    mobile_identity_suci.scheme_output[1] = 0;
+    mobile_identity_suci.scheme_output[2] = 0x20;
+    mobile_identity_suci.scheme_output[3] = 0x31;
+    mobile_identity_suci.scheme_output[4] = 0x90;
+
+    test_ue = test_ue_add_by_suci(&mobile_identity_suci, 13);
+    ogs_assert(test_ue);
+
+    test_ue->nr_cgi.cell_id = 0x40001;
+
+    test_ue->nas.registration.type = OGS_NAS_KSI_NO_KEY_IS_AVAILABLE;
+    test_ue->nas.registration.follow_on_request = 1;
+    test_ue->nas.registration.value = OGS_NAS_5GS_REGISTRATION_TYPE_INITIAL;
+
+    OGS_HEX(_k_string, strlen(_k_string), test_ue->k);
+    OGS_HEX(_opc_string, strlen(_opc_string), test_ue->opc);
+
+    /* gNB connects to AMF */
+    ngap = testngap_client(AF_INET);
+    ABTS_PTR_NOTNULL(tc, ngap);
+
+    /* gNB connects to UPF */
+    gtpu = test_gtpu_server(1, AF_INET);
+    ABTS_PTR_NOTNULL(tc, gtpu);
+
+    /* Send NG-Setup Reqeust */
+    sendbuf = testngap_build_ng_setup_request(0x4000, 22);
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
@@ -1422,7 +1602,7 @@ static void test4_func(abts_case *tc, void *data)
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    /* Receive Initial context setup request +
+    /* Receive InitialContextSetupRequest +
      * Registration accept */
     recvbuf = testgnb_ngap_read(ngap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
@@ -1437,7 +1617,7 @@ static void test4_func(abts_case *tc, void *data)
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    /* Send Initial context setup response */
+    /* Send InitialContextSetupResponse */
     sendbuf = testngap_build_initial_context_setup_response(test_ue, false);
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testgnb_ngap_send(ngap, sendbuf);
@@ -1455,57 +1635,6 @@ static void test4_func(abts_case *tc, void *data)
     recvbuf = testgnb_ngap_read(ngap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     testngap_recv(test_ue, recvbuf);
-
-    /* Send UE context release request */
-    sendbuf = testngap_build_ue_context_release_request(test_ue,
-            NGAP_Cause_PR_radioNetwork, NGAP_CauseRadioNetwork_user_inactivity,
-            false);
-    ABTS_PTR_NOTNULL(tc, sendbuf);
-    rv = testgnb_ngap_send(ngap, sendbuf);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
-
-    /* Receive UE context release command */
-    recvbuf = testgnb_ngap_read(ngap);
-    ABTS_PTR_NOTNULL(tc, recvbuf);
-    testngap_recv(test_ue, recvbuf);
-
-    /* Send UE context release complete */
-    sendbuf = testngap_build_ue_context_release_complete(test_ue);
-    ABTS_PTR_NOTNULL(tc, sendbuf);
-    rv = testgnb_ngap_send(ngap, sendbuf);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
-
-    /*
-     * Send InitialUEMessage
-     * Service request
-     *  - PDU Session Status
-     */
-    test_ue->service_request_param.integrity_protected = 0;
-    test_ue->service_request_param.pdu_session_status = 1;
-    nasbuf = testgmm_build_service_request(
-            test_ue, OGS_NAS_SERVICE_TYPE_SIGNALLING, NULL);
-    ABTS_PTR_NOTNULL(tc, nasbuf);
-
-    test_ue->service_request_param.integrity_protected = 1;
-    test_ue->service_request_param.pdu_session_status = 0;
-    gmmbuf = testgmm_build_service_request(
-            test_ue, OGS_NAS_SERVICE_TYPE_SIGNALLING, nasbuf);
-    ABTS_PTR_NOTNULL(tc, gmmbuf);
-
-    sendbuf = testngap_build_initial_ue_message(test_ue, gmmbuf, true, false);
-    ABTS_PTR_NOTNULL(tc, sendbuf);
-    rv = testgnb_ngap_send(ngap, sendbuf);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
-
-    /* Receive DownlinkNASTrasnport +
-     * Service accept */
-    recvbuf = testgnb_ngap_read(ngap);
-    ABTS_PTR_NOTNULL(tc, recvbuf);
-    testngap_recv(test_ue, recvbuf);
-    ABTS_INT_EQUAL(tc,
-            NGAP_ProcedureCode_id_DownlinkNASTransport,
-            test_ue->ngap_procedure_code);
-    ABTS_INT_EQUAL(tc, 0x0000, test_ue->pdu_session_status);
 
     /* Send PDU session establishment request */
     sess = test_sess_add_by_dnn_and_psi(test_ue, "internet", 5);
@@ -1526,25 +1655,34 @@ static void test4_func(abts_case *tc, void *data)
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    /* Receive InitialContextSetupRequest +
+    /* Receive PDUSessionResourceSetupRequest +
      * DL NAS transport +
      * PDU session establishment accept */
     recvbuf = testgnb_ngap_read(ngap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     testngap_recv(test_ue, recvbuf);
     ABTS_INT_EQUAL(tc,
-            NGAP_ProcedureCode_id_InitialContextSetup,
+            NGAP_ProcedureCode_id_PDUSessionResourceSetup,
             test_ue->ngap_procedure_code);
-
-    /* Send InitialContextSetupResponse */
-    sendbuf = testngap_build_initial_context_setup_response(test_ue, true);
-    ABTS_PTR_NOTNULL(tc, sendbuf);
-    rv = testgnb_ngap_send(ngap, sendbuf);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* Send GTP-U ICMP Packet */
     qos_flow = test_qos_flow_find_by_qfi(sess, 1);
     ogs_assert(qos_flow);
+    rv = test_gtpu_send_ping(gtpu, qos_flow, TEST_PING_IPV4);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Send PDUSessionResourceSetupResponse */
+    sendbuf = testngap_sess_build_pdu_session_resource_setup_response(sess);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive GTP-U ICMP Packet */
+    recvbuf = testgnb_gtpu_read(gtpu);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    ogs_pkbuf_free(recvbuf);
+
+    /* Send GTP-U ICMP Packet */
     rv = test_gtpu_send_ping(gtpu, qos_flow, TEST_PING_IPV4);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
@@ -1553,17 +1691,67 @@ static void test4_func(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
+    /* Receive PDU session modification command */
+    recvbuf = testgnb_ngap_read(ngap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    testngap_recv(test_ue, recvbuf);
+
+    /* Send PDU session resource modify response */
+    qos_flow = test_qos_flow_find_by_qfi(sess, 2);
+    ogs_assert(qos_flow);
+
+    sendbuf = testngap_build_pdu_session_resource_modify_response(qos_flow);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Send PDU session resource modify complete */
+    sess->ul_nas_transport_param.request_type =
+        OGS_NAS_5GS_REQUEST_TYPE_MODIFICATION_REQUEST;
+    sess->ul_nas_transport_param.dnn = 0;
+    sess->ul_nas_transport_param.s_nssai = 0;
+
+    gsmbuf = testgsm_build_pdu_session_modification_complete(sess);
+    ABTS_PTR_NOTNULL(tc, gsmbuf);
+    gmmbuf = testgmm_build_ul_nas_transport(sess,
+            OGS_NAS_PAYLOAD_CONTAINER_N1_SM_INFORMATION, gsmbuf);
+    ABTS_PTR_NOTNULL(tc, gmmbuf);
+    sendbuf = testngap_build_uplink_nas_transport(test_ue, gmmbuf);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Waiting for creating dedicated QoS flow in PFCP protocol */
+    ogs_msleep(100);
+
+    /* Send UE context release request */
+    sendbuf = testngap_build_ue_context_release_request(test_ue,
+            NGAP_Cause_PR_radioNetwork, NGAP_CauseRadioNetwork_user_inactivity,
+            true);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive UE context release command */
+    recvbuf = testgnb_ngap_read(ngap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    testngap_recv(test_ue, recvbuf);
+
+    /* Send UE context release complete */
+    sendbuf = testngap_build_ue_context_release_complete(test_ue);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
     /*
-     * Send InitialUEMessage
+     * Send InitialUEMessage +
      * Service request
      *  - Uplink Data Status
-     *  - PDU Session Status
      */
     test_ue->service_request_param.integrity_protected = 0;
     test_ue->service_request_param.uplink_data_status = 1;
     test_ue->service_request_param.psimask.uplink_data_status = 1 << sess->psi;
-    test_ue->service_request_param.pdu_session_status = 1;
-    test_ue->service_request_param.psimask.pdu_session_status = 1 << sess->psi;
+    test_ue->service_request_param.pdu_session_status = 0;
     nasbuf = testgmm_build_service_request(
             test_ue, OGS_NAS_SERVICE_TYPE_DATA, NULL);
     ABTS_PTR_NOTNULL(tc, nasbuf);
@@ -1580,18 +1768,7 @@ static void test4_func(abts_case *tc, void *data)
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    /* OLD Receive UE context release command */
-    recvbuf = testgnb_ngap_read(ngap);
-    ABTS_PTR_NOTNULL(tc, recvbuf);
-    testngap_recv(test_ue, recvbuf);
-
-    /* Send OLD UE Context Release Complete */
-    sendbuf = testngap_build_ue_context_release_complete(test_ue);
-    ABTS_PTR_NOTNULL(tc, sendbuf);
-    rv = testgnb_ngap_send(ngap, sendbuf);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
-
-    /* Receive Initial context setup request +
+    /* Receive InitialContextSetupRequest +
      * Service accept */
     recvbuf = testgnb_ngap_read(ngap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
@@ -1599,11 +1776,34 @@ static void test4_func(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc,
             NGAP_ProcedureCode_id_InitialContextSetup,
             test_ue->ngap_procedure_code);
-    ABTS_INT_EQUAL(tc, 0x2000, test_ue->pdu_session_status);
+    ABTS_INT_EQUAL(tc, 0x0000, test_ue->pdu_session_status);
     ABTS_INT_EQUAL(tc, 0x0000, test_ue->pdu_session_reactivation_result);
 
-    /* Send Initial context setup response */
-    sendbuf = testngap_build_initial_context_setup_response(test_ue, false);
+    /* Send GTP-U ICMP Packet */
+    rv = test_gtpu_send_ping(gtpu, qos_flow, TEST_PING_IPV4);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Send InitialContextSetupResponse */
+    sendbuf = testngap_build_initial_context_setup_response(test_ue, true);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive GTP-U ICMP Packet */
+    recvbuf = testgnb_gtpu_read(gtpu);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    ogs_pkbuf_free(recvbuf);
+
+    /* Receive PDUSessionResourceSetupRequest */
+    recvbuf = testgnb_ngap_read(ngap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    testngap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc,
+            NGAP_ProcedureCode_id_PDUSessionResourceSetup,
+            test_ue->ngap_procedure_code);
+
+    /* Send PDUSessionResourceSetupResponse */
+    sendbuf = testngap_sess_build_pdu_session_resource_setup_response(sess);
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
@@ -1616,87 +1816,6 @@ static void test4_func(abts_case *tc, void *data)
     recvbuf = testgnb_gtpu_read(gtpu);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
-
-    for (i = 0; i < 200; i++) {
-        /*
-         * Send UplinkNASTransport +
-         * Service request
-         *  - Uplink Data Status
-         */
-        test_ue->service_request_param.integrity_protected = 1;
-        test_ue->service_request_param.ciphered = 1;
-        test_ue->service_request_param.pdu_session_status = 1;
-        test_ue->service_request_param.psimask.pdu_session_status =
-            1 << sess->psi;
-        gmmbuf = testgmm_build_service_request(
-                test_ue, OGS_NAS_SERVICE_TYPE_SIGNALLING, NULL);
-        ABTS_PTR_NOTNULL(tc, gmmbuf);
-
-        sendbuf = testngap_build_uplink_nas_transport(test_ue, gmmbuf);
-        ABTS_PTR_NOTNULL(tc, sendbuf);
-        rv = testgnb_ngap_send(ngap, sendbuf);
-        ABTS_INT_EQUAL(tc, OGS_OK, rv);
-
-        /* Receive Service accept */
-        recvbuf = testgnb_ngap_read(ngap);
-        ABTS_PTR_NOTNULL(tc, recvbuf);
-        testngap_recv(test_ue, recvbuf);
-        ABTS_INT_EQUAL(tc,
-                NGAP_ProcedureCode_id_DownlinkNASTransport,
-                test_ue->ngap_procedure_code);
-        ABTS_INT_EQUAL(tc, 0x0000, test_ue->pdu_session_reactivation_result);
-    }
-
-    /* Send UE context release request */
-    ran_ue_ngap_id = test_ue->ran_ue_ngap_id;
-    amf_ue_ngap_id = test_ue->amf_ue_ngap_id;
-
-    test_ue->ran_ue_ngap_id = 2;
-    test_ue->amf_ue_ngap_id = 2;
-    sendbuf = testngap_build_ue_context_release_request(test_ue,
-            NGAP_Cause_PR_radioNetwork, NGAP_CauseRadioNetwork_user_inactivity,
-            false);
-    ABTS_PTR_NOTNULL(tc, sendbuf);
-    rv = testgnb_ngap_send(ngap, sendbuf);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
-
-    /* Error Indication */
-    recvbuf = testgnb_ngap_read(ngap);
-    ABTS_PTR_NOTNULL(tc, recvbuf);
-    testngap_recv(test_ue, recvbuf);
-
-    test_ue->ran_ue_ngap_id = ran_ue_ngap_id;
-    test_ue->amf_ue_ngap_id = amf_ue_ngap_id;
-
-    for (i = 0; i < 200; i++) {
-        /*
-         * Send UplinkNASTransport +
-         * Service request
-         *  - Uplink Data Status
-         */
-        test_ue->service_request_param.integrity_protected = 1;
-        test_ue->service_request_param.ciphered = 1;
-        test_ue->service_request_param.pdu_session_status = 1;
-        test_ue->service_request_param.psimask.pdu_session_status =
-            1 << sess->psi;
-        gmmbuf = testgmm_build_service_request(
-                test_ue, OGS_NAS_SERVICE_TYPE_SIGNALLING, NULL);
-        ABTS_PTR_NOTNULL(tc, gmmbuf);
-
-        sendbuf = testngap_build_uplink_nas_transport(test_ue, gmmbuf);
-        ABTS_PTR_NOTNULL(tc, sendbuf);
-        rv = testgnb_ngap_send(ngap, sendbuf);
-        ABTS_INT_EQUAL(tc, OGS_OK, rv);
-
-        /* Receive Service accept */
-        recvbuf = testgnb_ngap_read(ngap);
-        ABTS_PTR_NOTNULL(tc, recvbuf);
-        testngap_recv(test_ue, recvbuf);
-        ABTS_INT_EQUAL(tc,
-                NGAP_ProcedureCode_id_DownlinkNASTransport,
-                test_ue->ngap_procedure_code);
-        ABTS_INT_EQUAL(tc, 0x0000, test_ue->pdu_session_reactivation_result);
-    }
 
     /* Send De-registration request */
     gmmbuf = testgmm_build_de_registration_request(test_ue, 1);
@@ -1738,7 +1857,605 @@ static void test4_func(abts_case *tc, void *data)
     test_ue_remove(test_ue);
 }
 
-static void test5_func(abts_case *tc, void *data)
+static void vonr_session_test2_func(abts_case *tc, void *data)
+{
+    int rv;
+    ogs_socknode_t *ngap;
+    ogs_socknode_t *gtpu;
+    ogs_pkbuf_t *gmmbuf;
+    ogs_pkbuf_t *gsmbuf;
+    ogs_pkbuf_t *nasbuf;
+    ogs_pkbuf_t *sendbuf;
+    ogs_pkbuf_t *recvbuf;
+    ogs_ngap_message_t message;
+    int i;
+
+    uint8_t tmp[OGS_MAX_SDU_LEN];
+    char *_gtp_payload = "34ff0024"
+        "0000000100000085 010002004500001c 0c0b000040015a7a 0a2d00010a2d0002"
+        "00000964cd7c291f";
+
+    ogs_nas_5gs_mobile_identity_suci_t mobile_identity_suci;
+    test_ue_t *test_ue = NULL;
+    test_sess_t *sess = NULL;
+    test_bearer_t *qos_flow = NULL;
+
+    const char *_k_string = "70d49a71dd1a2b806a25abe0ef749f1e";
+    uint8_t k[OGS_KEY_LEN];
+    const char *_opc_string = "6f1bf53d624b3a43af6592854e2444c7";
+    uint8_t opc[OGS_KEY_LEN];
+
+    mongoc_collection_t *collection = NULL;
+    bson_t *doc = NULL;
+    int64_t count = 0;
+    bson_error_t error;
+    const char *json =
+      "{"
+        "\"_id\" : { \"$oid\" : \"597223158b8861d7605378c6\" }, "
+        "\"imsi\" : \"901700000021309\","
+        "\"ambr\" : { "
+          "\"uplink\" : { \"$numberLong\" : \"1024000\" }, "
+          "\"downlink\" : { \"$numberLong\" : \"1024000\" } "
+        "},"
+        "\"pdn\" : ["
+          "{"
+            "\"apn\" : \"internet\", "
+            "\"_id\" : { \"$oid\" : \"597223158b8861d7605378c6\" }, "
+            "\"ambr\" : {"
+              "\"uplink\" : { \"$numberLong\" : \"1024000\" }, "
+              "\"downlink\" : { \"$numberLong\" : \"1024000\" } "
+            "},"
+            "\"qos\" : { "
+              "\"qci\" : 9, "
+              "\"arp\" : { "
+                "\"priority_level\" : 8,"
+                "\"pre_emption_vulnerability\" : 1, "
+                "\"pre_emption_capability\" : 1"
+              "} "
+            "}, "
+            "\"type\" : 2"
+          "},"
+          "{"
+            "\"apn\" : \"ims\", "
+            "\"_id\" : { \"$oid\" : \"597223158b8861d7605378c7\" }, "
+            "\"ambr\" : {"
+              "\"uplink\" : { \"$numberLong\" : \"1024000\" }, "
+              "\"downlink\" : { \"$numberLong\" : \"1024000\" } "
+            "},"
+            "\"qos\" : { "
+              "\"qci\" : 6, "
+              "\"arp\" : { "
+                "\"priority_level\" : 6,"
+                "\"pre_emption_vulnerability\" : 1, "
+                "\"pre_emption_capability\" : 1"
+              "} "
+            "}, "
+            "\"type\" : 2,"
+            "\"pcc_rule\" : ["
+              "{"
+                "\"_id\" : { \"$oid\" : \"599eb929c850caabcbfdcd2d\" },"
+                "\"qos\" : {"
+                  "\"qci\" : 1,"
+                  "\"gbr\" : {"
+                    "\"downlink\" : { \"$numberLong\" : \"64\" },"
+                    "\"uplink\" : { \"$numberLong\" : \"44\" }"
+                  "},"
+                  "\"mbr\" : {"
+                    "\"downlink\" : { \"$numberLong\" : \"64\" },"
+                    "\"uplink\" : { \"$numberLong\" : \"44\" }"
+                  "},"
+                  "\"arp\" : {"
+                    "\"priority_level\" : 3,"
+                    "\"pre_emption_vulnerability\" : 0,"
+                    "\"pre_emption_capability\" : 0 }"
+                  "},"
+                  "\"flow\" : ["
+                    "{ \"direction\" : 2,"
+                      "\"description\" : \"permit out udp from 10.200.136.98/32 23454 to assigned 1-65535\","
+                      "\"_id\" : { \"$oid\" : \"599eb929c850caabcbfdcd31\" } },"
+                    "{ \"direction\" : 1,"
+                      "\"description\" : \"permit out udp from 10.200.136.98/32 1-65535 to assigned 50020\","
+                      "\"_id\" : { \"$oid\" : \"599eb929c850caabcbfdcd30\" } },"
+                    "{ \"direction\" : 2,"
+                      "\"description\" : \"permit out udp from 10.200.136.98/32 23455 to assigned 1-65535\","
+                      "\"_id\" : { \"$oid\" : \"599eb929c850caabcbfdcd2f\" } },"
+                    "{ \"direction\" : 1,"
+                      "\"description\" : \"permit out udp from 10.200.136.98/32 1-65535 to assigned 50021\","
+                      "\"_id\" : { \"$oid\" : \"599eb929c850caabcbfdcd2e\" } }"
+                  "]"
+              "}"
+            "]"
+          "}"
+        "],"
+        "\"security\" : { "
+          "\"k\" : \"70d49a71dd1a2b806a25abe0ef749f1e\", "
+          "\"opc\" : \"6f1bf53d624b3a43af6592854e2444c7\", "
+          "\"amf\" : \"8000\", "
+          "\"sqn\" : { \"$numberLong\" : \"25235952177090\" } "
+        "}, "
+        "\"subscribed_rau_tau_timer\" : 12,"
+        "\"network_access_mode\" : 2, "
+        "\"subscriber_status\" : 0, "
+        "\"access_restriction_data\" : 32, "
+        "\"__v\" : 0 "
+      "}";
+
+    /* Setup Test UE & Session Context */
+    memset(&mobile_identity_suci, 0, sizeof(mobile_identity_suci));
+
+    mobile_identity_suci.h.supi_format = OGS_NAS_5GS_SUPI_FORMAT_IMSI;
+    mobile_identity_suci.h.type = OGS_NAS_5GS_MOBILE_IDENTITY_SUCI;
+    mobile_identity_suci.routing_indicator1 = 0;
+    mobile_identity_suci.routing_indicator2 = 0xf;
+    mobile_identity_suci.routing_indicator3 = 0xf;
+    mobile_identity_suci.routing_indicator4 = 0xf;
+    mobile_identity_suci.protection_scheme_id = OGS_NAS_5GS_NULL_SCHEME;
+    mobile_identity_suci.home_network_pki_value = 0;
+    mobile_identity_suci.scheme_output[0] = 0;
+    mobile_identity_suci.scheme_output[1] = 0;
+    mobile_identity_suci.scheme_output[2] = 0x20;
+    mobile_identity_suci.scheme_output[3] = 0x31;
+    mobile_identity_suci.scheme_output[4] = 0x90;
+
+    test_ue = test_ue_add_by_suci(&mobile_identity_suci, 13);
+    ogs_assert(test_ue);
+
+    test_ue->nr_cgi.cell_id = 0x40001;
+
+    test_ue->nas.registration.type = OGS_NAS_KSI_NO_KEY_IS_AVAILABLE;
+    test_ue->nas.registration.follow_on_request = 1;
+    test_ue->nas.registration.value = OGS_NAS_5GS_REGISTRATION_TYPE_INITIAL;
+
+    OGS_HEX(_k_string, strlen(_k_string), test_ue->k);
+    OGS_HEX(_opc_string, strlen(_opc_string), test_ue->opc);
+
+    /* gNB connects to AMF */
+    ngap = testngap_client(AF_INET);
+    ABTS_PTR_NOTNULL(tc, ngap);
+
+    /* gNB connects to UPF */
+    gtpu = test_gtpu_server(1, AF_INET);
+    ABTS_PTR_NOTNULL(tc, gtpu);
+
+    /* Send NG-Setup Reqeust */
+    sendbuf = testngap_build_ng_setup_request(0x4000, 22);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive NG-Setup Response */
+    recvbuf = testgnb_ngap_read(ngap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    testngap_recv(test_ue, recvbuf);
+
+    /********** Insert Subscriber in Database */
+    collection = mongoc_client_get_collection(
+        ogs_mongoc()->client, ogs_mongoc()->name, "subscribers");
+    ABTS_PTR_NOTNULL(tc, collection);
+    doc = BCON_NEW("imsi", BCON_UTF8(test_ue->imsi));
+    ABTS_PTR_NOTNULL(tc, doc);
+
+    count = mongoc_collection_count (
+        collection, MONGOC_QUERY_NONE, doc, 0, 0, NULL, &error);
+    if (count) {
+        ABTS_TRUE(tc, mongoc_collection_remove(collection,
+                MONGOC_REMOVE_SINGLE_REMOVE, doc, NULL, &error))
+    }
+    bson_destroy(doc);
+
+    doc = bson_new_from_json((const uint8_t *)json, -1, &error);;
+    ABTS_PTR_NOTNULL(tc, doc);
+    ABTS_TRUE(tc, mongoc_collection_insert(collection,
+                MONGOC_INSERT_NONE, doc, NULL, &error));
+    bson_destroy(doc);
+
+    doc = BCON_NEW("imsi", BCON_UTF8(test_ue->imsi));
+    ABTS_PTR_NOTNULL(tc, doc);
+    do {
+        count = mongoc_collection_count (
+            collection, MONGOC_QUERY_NONE, doc, 0, 0, NULL, &error);
+    } while (count == 0);
+    bson_destroy(doc);
+
+    /* Send Registration request */
+    test_ue->registration_request_param.guti = 1;
+    gmmbuf = testgmm_build_registration_request(test_ue, NULL);
+    ABTS_PTR_NOTNULL(tc, gmmbuf);
+
+    test_ue->registration_request_param.gmm_capability = 1;
+    test_ue->registration_request_param.requested_nssai = 1;
+    test_ue->registration_request_param.last_visited_registered_tai = 1;
+    test_ue->registration_request_param.ue_usage_setting = 1;
+    nasbuf = testgmm_build_registration_request(test_ue, NULL);
+    ABTS_PTR_NOTNULL(tc, nasbuf);
+
+    sendbuf = testngap_build_initial_ue_message(test_ue, gmmbuf, false, true);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive Identity request */
+    recvbuf = testgnb_ngap_read(ngap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    testngap_recv(test_ue, recvbuf);
+
+    /* Send Identity response */
+    gmmbuf = testgmm_build_identity_response(test_ue);
+    ABTS_PTR_NOTNULL(tc, gmmbuf);
+    sendbuf = testngap_build_uplink_nas_transport(test_ue, gmmbuf);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive Authentication request */
+    recvbuf = testgnb_ngap_read(ngap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    testngap_recv(test_ue, recvbuf);
+
+    /* Send Authentication response */
+    gmmbuf = testgmm_build_authentication_response(test_ue);
+    ABTS_PTR_NOTNULL(tc, gmmbuf);
+    sendbuf = testngap_build_uplink_nas_transport(test_ue, gmmbuf);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive Security mode command */
+    recvbuf = testgnb_ngap_read(ngap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    testngap_recv(test_ue, recvbuf);
+
+    /* Send Security mode complete */
+    gmmbuf = testgmm_build_security_mode_complete(test_ue, nasbuf);
+    ABTS_PTR_NOTNULL(tc, gmmbuf);
+    sendbuf = testngap_build_uplink_nas_transport(test_ue, gmmbuf);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive InitialContextSetupRequest +
+     * Registration accept */
+    recvbuf = testgnb_ngap_read(ngap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    testngap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc,
+            NGAP_ProcedureCode_id_InitialContextSetup,
+            test_ue->ngap_procedure_code);
+
+    /* Send UE radio capability info indication */
+    sendbuf = testngap_build_ue_radio_capability_info_indication(test_ue);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Send InitialContextSetupResponse */
+    sendbuf = testngap_build_initial_context_setup_response(test_ue, false);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Send Registration complete */
+    gmmbuf = testgmm_build_registration_complete(test_ue);
+    ABTS_PTR_NOTNULL(tc, gmmbuf);
+    sendbuf = testngap_build_uplink_nas_transport(test_ue, gmmbuf);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive Configuration update command */
+    recvbuf = testgnb_ngap_read(ngap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    testngap_recv(test_ue, recvbuf);
+
+    /* Send PDU session establishment request */
+    sess = test_sess_add_by_dnn_and_psi(test_ue, "internet", 5);
+    ogs_assert(sess);
+
+    sess->ul_nas_transport_param.request_type =
+        OGS_NAS_5GS_REQUEST_TYPE_INITIAL;
+    sess->ul_nas_transport_param.dnn = 1;
+    sess->ul_nas_transport_param.s_nssai = 1;
+
+    gsmbuf = testgsm_build_pdu_session_establishment_request(sess);
+    ABTS_PTR_NOTNULL(tc, gsmbuf);
+    gmmbuf = testgmm_build_ul_nas_transport(sess,
+            OGS_NAS_PAYLOAD_CONTAINER_N1_SM_INFORMATION, gsmbuf);
+    ABTS_PTR_NOTNULL(tc, gmmbuf);
+    sendbuf = testngap_build_uplink_nas_transport(test_ue, gmmbuf);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive PDUSessionResourceSetupRequest +
+     * DL NAS transport +
+     * PDU session establishment accept */
+    recvbuf = testgnb_ngap_read(ngap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    testngap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc,
+            NGAP_ProcedureCode_id_PDUSessionResourceSetup,
+            test_ue->ngap_procedure_code);
+
+    /* Send GTP-U ICMP Packet */
+    qos_flow = test_qos_flow_find_by_qfi(sess, 1);
+    ogs_assert(qos_flow);
+    rv = test_gtpu_send_ping(gtpu, qos_flow, TEST_PING_IPV4);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Send PDUSessionResourceSetupResponse */
+    sendbuf = testngap_sess_build_pdu_session_resource_setup_response(sess);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive GTP-U ICMP Packet */
+    recvbuf = testgnb_gtpu_read(gtpu);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    ogs_pkbuf_free(recvbuf);
+
+    /* Send GTP-U ICMP Packet */
+    rv = test_gtpu_send_ping(gtpu, qos_flow, TEST_PING_IPV4);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive GTP-U ICMP Packet */
+    recvbuf = testgnb_gtpu_read(gtpu);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    ogs_pkbuf_free(recvbuf);
+
+    /* Send PDU session establishment request */
+    sess = test_sess_add_by_dnn_and_psi(test_ue, "ims", 6);
+    ogs_assert(sess);
+
+    sess->ul_nas_transport_param.request_type =
+        OGS_NAS_5GS_REQUEST_TYPE_INITIAL;
+    sess->ul_nas_transport_param.dnn = 1;
+    sess->ul_nas_transport_param.s_nssai = 1;
+
+    gsmbuf = testgsm_build_pdu_session_establishment_request(sess);
+    ABTS_PTR_NOTNULL(tc, gsmbuf);
+    gmmbuf = testgmm_build_ul_nas_transport(sess,
+            OGS_NAS_PAYLOAD_CONTAINER_N1_SM_INFORMATION, gsmbuf);
+    ABTS_PTR_NOTNULL(tc, gmmbuf);
+    sendbuf = testngap_build_uplink_nas_transport(test_ue, gmmbuf);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive PDU session establishment accept */
+    recvbuf = testgnb_ngap_read(ngap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    testngap_recv(test_ue, recvbuf);
+
+    /* Send PDUSessionResourceSetupResponse */
+    sendbuf = testngap_sess_build_pdu_session_resource_setup_response(sess);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive PDU session modification command */
+    recvbuf = testgnb_ngap_read(ngap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    testngap_recv(test_ue, recvbuf);
+
+    /* Send PDU session resource modify response */
+    qos_flow = test_qos_flow_find_by_qfi(sess, 2);
+    ogs_assert(qos_flow);
+
+    sendbuf = testngap_build_pdu_session_resource_modify_response(qos_flow);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Send PDU session resource modify complete */
+    sess->ul_nas_transport_param.request_type =
+        OGS_NAS_5GS_REQUEST_TYPE_MODIFICATION_REQUEST;
+    sess->ul_nas_transport_param.dnn = 0;
+    sess->ul_nas_transport_param.s_nssai = 0;
+
+    gsmbuf = testgsm_build_pdu_session_modification_complete(sess);
+    ABTS_PTR_NOTNULL(tc, gsmbuf);
+    gmmbuf = testgmm_build_ul_nas_transport(sess,
+            OGS_NAS_PAYLOAD_CONTAINER_N1_SM_INFORMATION, gsmbuf);
+    ABTS_PTR_NOTNULL(tc, gmmbuf);
+    sendbuf = testngap_build_uplink_nas_transport(test_ue, gmmbuf);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Waiting for creating dedicated QoS flow in PFCP protocol */
+    ogs_msleep(100);
+
+    /* Send GTP-U ICMP Packet */
+    rv = test_gtpu_send_ping(gtpu, qos_flow, TEST_PING_IPV4);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive GTP-U ICMP Packet */
+    recvbuf = testgnb_gtpu_read(gtpu);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    ogs_pkbuf_free(recvbuf);
+
+    /* Send UE context release request */
+    sendbuf = testngap_build_ue_context_release_request(test_ue,
+            NGAP_Cause_PR_radioNetwork, NGAP_CauseRadioNetwork_user_inactivity,
+            true);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive UE context release command */
+    recvbuf = testgnb_ngap_read(ngap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    testngap_recv(test_ue, recvbuf);
+
+    /* Send UE context release complete */
+    sendbuf = testngap_build_ue_context_release_complete(test_ue);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /*
+     * Send Service request Using InitialUEMessage
+     *  - Uplink Data Status
+     */
+    test_ue->service_request_param.integrity_protected = 0;
+    test_ue->service_request_param.uplink_data_status = 1;
+    test_ue->service_request_param.
+        psimask.uplink_data_status = (1 << 5 | 1 << 6);
+    test_ue->service_request_param.pdu_session_status = 0;
+    nasbuf = testgmm_build_service_request(
+            test_ue, OGS_NAS_SERVICE_TYPE_DATA, NULL);
+    ABTS_PTR_NOTNULL(tc, nasbuf);
+
+    test_ue->service_request_param.integrity_protected = 1;
+    test_ue->service_request_param.uplink_data_status = 0;
+    test_ue->service_request_param.pdu_session_status = 0;
+    gmmbuf = testgmm_build_service_request(
+            test_ue, OGS_NAS_SERVICE_TYPE_DATA, nasbuf);
+    ABTS_PTR_NOTNULL(tc, gmmbuf);
+
+    sendbuf = testngap_build_initial_ue_message(test_ue, gmmbuf, true, true);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive InitialContextSetupRequest +
+     * Service accept */
+    recvbuf = testgnb_ngap_read(ngap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    testngap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc,
+            NGAP_ProcedureCode_id_InitialContextSetup,
+            test_ue->ngap_procedure_code);
+    ABTS_INT_EQUAL(tc, 0x0000, test_ue->pdu_session_status);
+    ABTS_INT_EQUAL(tc, 0x0000, test_ue->pdu_session_reactivation_result);
+
+    /* Send GTP-U ICMP Packet */
+    rv = test_gtpu_send_ping(gtpu, qos_flow, TEST_PING_IPV4);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Send InitialContextSetupResponse */
+    sendbuf = testngap_build_initial_context_setup_response(test_ue, true);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive GTP-U ICMP Packet */
+    recvbuf = testgnb_gtpu_read(gtpu);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    ogs_pkbuf_free(recvbuf);
+
+    /* Receive PDUSessionResourceSetupRequest */
+    recvbuf = testgnb_ngap_read(ngap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    testngap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc,
+            NGAP_ProcedureCode_id_PDUSessionResourceSetup,
+            test_ue->ngap_procedure_code);
+
+    /* Send PDUSessionResourceSetupResponse */
+    sendbuf = testngap_sess_build_pdu_session_resource_setup_response(sess);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Send GTP-U ICMP Packet */
+    rv = test_gtpu_send_ping(gtpu, qos_flow, TEST_PING_IPV4);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive GTP-U ICMP Packet */
+    recvbuf = testgnb_gtpu_read(gtpu);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    ogs_pkbuf_free(recvbuf);
+
+    /* Send PDU Session release request */
+    sess->ul_nas_transport_param.request_type = 0;
+    sess->ul_nas_transport_param.dnn = 0;
+    sess->ul_nas_transport_param.s_nssai = 0;
+
+    gsmbuf = testgsm_build_pdu_session_release_request(sess);
+    ABTS_PTR_NOTNULL(tc, gsmbuf);
+    gmmbuf = testgmm_build_ul_nas_transport(sess,
+            OGS_NAS_PAYLOAD_CONTAINER_N1_SM_INFORMATION, gsmbuf);
+    ABTS_PTR_NOTNULL(tc, gmmbuf);
+    sendbuf = testngap_build_uplink_nas_transport(test_ue, gmmbuf);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive PDUSessionResourceReleaseCommand +
+     * DL NAS transport +
+     * PDU session release command */
+    recvbuf = testgnb_ngap_read(ngap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    testngap_recv(test_ue, recvbuf);
+
+    /* Send PDUSessionResourceReleaseResponse */
+    sendbuf = testngap_build_pdu_session_resource_release_response(sess);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Send UplinkNASTransport +
+     * UL NAS trasnport +
+     * PDU session resource release complete */
+    sess->ul_nas_transport_param.request_type = 0;
+    sess->ul_nas_transport_param.dnn = 0;
+    sess->ul_nas_transport_param.s_nssai = 0;
+
+    gsmbuf = testgsm_build_pdu_session_release_complete(sess);
+    ABTS_PTR_NOTNULL(tc, gsmbuf);
+    gmmbuf = testgmm_build_ul_nas_transport(sess,
+            OGS_NAS_PAYLOAD_CONTAINER_N1_SM_INFORMATION, gsmbuf);
+    ABTS_PTR_NOTNULL(tc, gmmbuf);
+    sendbuf = testngap_build_uplink_nas_transport(test_ue, gmmbuf);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Test Session Remove */
+    test_sess_remove(sess);
+
+    /* Send UE context release request */
+    sendbuf = testngap_build_ue_context_release_request(test_ue,
+            NGAP_Cause_PR_radioNetwork, NGAP_CauseRadioNetwork_user_inactivity,
+            true);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive UE context release command */
+    recvbuf = testgnb_ngap_read(ngap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    testngap_recv(test_ue, recvbuf);
+
+    /* Send UE context release complete */
+    sendbuf = testngap_build_ue_context_release_complete(test_ue);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    ogs_msleep(300);
+
+    /********** Remove Subscriber in Database */
+    doc = BCON_NEW("imsi", BCON_UTF8(test_ue->imsi));
+    ABTS_PTR_NOTNULL(tc, doc);
+    ABTS_TRUE(tc, mongoc_collection_remove(collection,
+            MONGOC_REMOVE_SINGLE_REMOVE, doc, NULL, &error))
+    bson_destroy(doc);
+
+    mongoc_collection_destroy(collection);
+
+    /* gNB disonncect from UPF */
+    testgnb_gtpu_close(gtpu);
+
+    /* gNB disonncect from AMF */
+    testgnb_ngap_close(ngap);
+
+    /* Clear Test UE Context */
+    test_ue_remove(test_ue);
+}
+
+static void registration_ue_context_test4_func(abts_case *tc, void *data)
 {
     int rv;
     ogs_socknode_t *ngap;
@@ -1834,8 +2551,463 @@ static void test5_func(abts_case *tc, void *data)
     OGS_HEX(_k_string, strlen(_k_string), test_ue->k);
     OGS_HEX(_opc_string, strlen(_opc_string), test_ue->opc);
 
+    /* gNB connects to AMF */
+    ngap = testngap_client(AF_INET);
+    ABTS_PTR_NOTNULL(tc, ngap);
+
+    /* gNB connects to UPF */
+    gtpu = test_gtpu_server(1, AF_INET);
+    ABTS_PTR_NOTNULL(tc, gtpu);
+
+    /* Send NG-Setup Reqeust */
+    sendbuf = testngap_build_ng_setup_request(0x4000, 22);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive NG-Setup Response */
+    recvbuf = testgnb_ngap_read(ngap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    testngap_recv(test_ue, recvbuf);
+
+    /********** Insert Subscriber in Database */
+    collection = mongoc_client_get_collection(
+        ogs_mongoc()->client, ogs_mongoc()->name, "subscribers");
+    ABTS_PTR_NOTNULL(tc, collection);
+    doc = BCON_NEW("imsi", BCON_UTF8(test_ue->imsi));
+    ABTS_PTR_NOTNULL(tc, doc);
+
+    count = mongoc_collection_count (
+        collection, MONGOC_QUERY_NONE, doc, 0, 0, NULL, &error);
+    if (count) {
+        ABTS_TRUE(tc, mongoc_collection_remove(collection,
+                MONGOC_REMOVE_SINGLE_REMOVE, doc, NULL, &error))
+    }
+    bson_destroy(doc);
+
+    doc = bson_new_from_json((const uint8_t *)json, -1, &error);;
+    ABTS_PTR_NOTNULL(tc, doc);
+    ABTS_TRUE(tc, mongoc_collection_insert(collection,
+                MONGOC_INSERT_NONE, doc, NULL, &error));
+    bson_destroy(doc);
+
+    doc = BCON_NEW("imsi", BCON_UTF8(test_ue->imsi));
+    ABTS_PTR_NOTNULL(tc, doc);
+    do {
+        count = mongoc_collection_count (
+            collection, MONGOC_QUERY_NONE, doc, 0, 0, NULL, &error);
+    } while (count == 0);
+    bson_destroy(doc);
+
+    /* Send Registration request */
+    test_ue->registration_request_param.guti = 1;
+    gmmbuf = testgmm_build_registration_request(test_ue, NULL);
+    ABTS_PTR_NOTNULL(tc, gmmbuf);
+
+    test_ue->registration_request_param.gmm_capability = 1;
+    test_ue->registration_request_param.requested_nssai = 1;
+    test_ue->registration_request_param.last_visited_registered_tai = 1;
+    test_ue->registration_request_param.ue_usage_setting = 1;
+    nasbuf = testgmm_build_registration_request(test_ue, NULL);
+    ABTS_PTR_NOTNULL(tc, nasbuf);
+
+    sendbuf = testngap_build_initial_ue_message(test_ue, gmmbuf, false, false);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive Identity request */
+    recvbuf = testgnb_ngap_read(ngap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    testngap_recv(test_ue, recvbuf);
+
+    /* Send Identity response */
+    gmmbuf = testgmm_build_identity_response(test_ue);
+    ABTS_PTR_NOTNULL(tc, gmmbuf);
+    sendbuf = testngap_build_uplink_nas_transport(test_ue, gmmbuf);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive Authentication request */
+    recvbuf = testgnb_ngap_read(ngap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    testngap_recv(test_ue, recvbuf);
+
+    /* Send Authentication response */
+    gmmbuf = testgmm_build_authentication_response(test_ue);
+    ABTS_PTR_NOTNULL(tc, gmmbuf);
+    sendbuf = testngap_build_uplink_nas_transport(test_ue, gmmbuf);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive Security mode command */
+    recvbuf = testgnb_ngap_read(ngap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    testngap_recv(test_ue, recvbuf);
+
+    /* Send Security mode complete */
+    gmmbuf = testgmm_build_security_mode_complete(test_ue, nasbuf);
+    ABTS_PTR_NOTNULL(tc, gmmbuf);
+    sendbuf = testngap_build_uplink_nas_transport(test_ue, gmmbuf);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive DownlinkNASTransport +
+     * Registration accept */
+    recvbuf = testgnb_ngap_read(ngap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    testngap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc,
+            NGAP_ProcedureCode_id_DownlinkNASTransport,
+            test_ue->ngap_procedure_code);
+
+    /* Send UE radio capability info indication */
+    sendbuf = testngap_build_ue_radio_capability_info_indication(test_ue);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Send Registration complete */
+    gmmbuf = testgmm_build_registration_complete(test_ue);
+    ABTS_PTR_NOTNULL(tc, gmmbuf);
+    sendbuf = testngap_build_uplink_nas_transport(test_ue, gmmbuf);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive Configuration update command */
+    recvbuf = testgnb_ngap_read(ngap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    testngap_recv(test_ue, recvbuf);
+
+    /* Send PDU session establishment request */
     sess = test_sess_add_by_dnn_and_psi(test_ue, "internet", 5);
     ogs_assert(sess);
+
+    sess->ul_nas_transport_param.request_type =
+        OGS_NAS_5GS_REQUEST_TYPE_INITIAL;
+    sess->ul_nas_transport_param.dnn = 0;
+    sess->ul_nas_transport_param.s_nssai = 1;
+
+    gsmbuf = testgsm_build_pdu_session_establishment_request(sess);
+    ABTS_PTR_NOTNULL(tc, gsmbuf);
+    gmmbuf = testgmm_build_ul_nas_transport(sess,
+            OGS_NAS_PAYLOAD_CONTAINER_N1_SM_INFORMATION, gsmbuf);
+    ABTS_PTR_NOTNULL(tc, gmmbuf);
+    sendbuf = testngap_build_uplink_nas_transport(test_ue, gmmbuf);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive InitialContextSetupRequest +
+     * DL NAS transport +
+     * PDU session establishment accept */
+    recvbuf = testgnb_ngap_read(ngap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    testngap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc,
+            NGAP_ProcedureCode_id_InitialContextSetup,
+            test_ue->ngap_procedure_code);
+
+    /* Send InitialContextSetupResponse */
+    sendbuf = testngap_build_initial_context_setup_response(test_ue, true);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Send GTP-U ICMP Packet */
+    qos_flow = test_qos_flow_find_by_qfi(sess, 1);
+    ogs_assert(qos_flow);
+    rv = test_gtpu_send_ping(gtpu, qos_flow, TEST_PING_IPV4);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive GTP-U ICMP Packet */
+    recvbuf = testgnb_gtpu_read(gtpu);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    ogs_pkbuf_free(recvbuf);
+
+    /* Send UE context release request */
+    sendbuf = testngap_build_ue_context_release_request(test_ue,
+            NGAP_Cause_PR_radioNetwork, NGAP_CauseRadioNetwork_user_inactivity,
+            false);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive UE context release command */
+    recvbuf = testgnb_ngap_read(ngap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    testngap_recv(test_ue, recvbuf);
+
+    /* Send UE context release complete */
+    sendbuf = testngap_build_ue_context_release_complete(test_ue);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /*
+     * Send InitialUEMessage +
+     * Service request
+     *  - PDU Session Status
+     */
+    test_ue->service_request_param.integrity_protected = 0;
+    test_ue->service_request_param.pdu_session_status = 1;
+    test_ue->service_request_param.psimask.pdu_session_status = 1 << sess->psi;
+    nasbuf = testgmm_build_service_request(
+            test_ue, OGS_NAS_SERVICE_TYPE_SIGNALLING, NULL);
+    ABTS_PTR_NOTNULL(tc, nasbuf);
+
+    test_ue->service_request_param.integrity_protected = 1;
+    test_ue->service_request_param.pdu_session_status = 0;
+    gmmbuf = testgmm_build_service_request(
+            test_ue, OGS_NAS_SERVICE_TYPE_SIGNALLING, nasbuf);
+    ABTS_PTR_NOTNULL(tc, gmmbuf);
+
+    sendbuf = testngap_build_initial_ue_message(test_ue, gmmbuf, true, false);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive DownlinkNASTransport +
+     * Service accept */
+    recvbuf = testgnb_ngap_read(ngap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    testngap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc,
+            NGAP_ProcedureCode_id_DownlinkNASTransport,
+            test_ue->ngap_procedure_code);
+    ABTS_INT_EQUAL(tc, 0x2000, test_ue->pdu_session_status);
+
+    /* Send UE context release request */
+    sendbuf = testngap_build_ue_context_release_request(test_ue,
+            NGAP_Cause_PR_radioNetwork, NGAP_CauseRadioNetwork_user_inactivity,
+            true);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive UE context release command */
+    recvbuf = testgnb_ngap_read(ngap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    testngap_recv(test_ue, recvbuf);
+
+    /* Send UE context release complete */
+    sendbuf = testngap_build_ue_context_release_complete(test_ue);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /*
+     * Send InitialUEMessage +
+     * Service request
+     *  - Uplink Data Status
+     */
+    test_ue->service_request_param.integrity_protected = 0;
+    test_ue->service_request_param.uplink_data_status = 1;
+    test_ue->service_request_param.psimask.uplink_data_status = 1 << sess->psi;
+    test_ue->service_request_param.pdu_session_status = 0;
+    nasbuf = testgmm_build_service_request(
+            test_ue, OGS_NAS_SERVICE_TYPE_DATA, NULL);
+    ABTS_PTR_NOTNULL(tc, nasbuf);
+
+    test_ue->service_request_param.integrity_protected = 1;
+    test_ue->service_request_param.uplink_data_status = 0;
+    test_ue->service_request_param.pdu_session_status = 0;
+    gmmbuf = testgmm_build_service_request(
+            test_ue, OGS_NAS_SERVICE_TYPE_DATA, nasbuf);
+    ABTS_PTR_NOTNULL(tc, gmmbuf);
+
+    sendbuf = testngap_build_initial_ue_message(test_ue, gmmbuf, true, false);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive PDUSessionResourceSetupRequest +
+     * Service accept */
+    recvbuf = testgnb_ngap_read(ngap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    testngap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc,
+            NGAP_ProcedureCode_id_PDUSessionResourceSetup,
+            test_ue->ngap_procedure_code);
+    ABTS_INT_EQUAL(tc, 0x0000, test_ue->pdu_session_reactivation_result);
+
+    /* Send GTP-U ICMP Packet */
+    rv = test_gtpu_send_ping(gtpu, qos_flow, TEST_PING_IPV4);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive PDUSessionResourceSetupRequest */
+    recvbuf = testgnb_ngap_read(ngap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    testngap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc,
+            NGAP_ProcedureCode_id_PDUSessionResourceSetup,
+            test_ue->ngap_procedure_code);
+
+    /* Send PDUSessionResourceSetupResponse */
+    sendbuf = testngap_sess_build_pdu_session_resource_setup_response(sess);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Send PDUSessionResourceSetupResponse */
+    sendbuf = testngap_ue_build_pdu_session_resource_setup_response(test_ue);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive GTP-U ICMP Packet */
+    recvbuf = testgnb_gtpu_read(gtpu);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    ogs_pkbuf_free(recvbuf);
+
+    /* Send GTP-U ICMP Packet */
+    rv = test_gtpu_send_ping(gtpu, qos_flow, TEST_PING_IPV4);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive GTP-U ICMP Packet */
+    recvbuf = testgnb_gtpu_read(gtpu);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    ogs_pkbuf_free(recvbuf);
+
+    /* Send UE context release request */
+    sendbuf = testngap_build_ue_context_release_request(test_ue,
+            NGAP_Cause_PR_radioNetwork, NGAP_CauseRadioNetwork_user_inactivity,
+            true);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive UE context release command */
+    recvbuf = testgnb_ngap_read(ngap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    testngap_recv(test_ue, recvbuf);
+
+    /* Send UE context release complete */
+    sendbuf = testngap_build_ue_context_release_complete(test_ue);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    ogs_msleep(300);
+
+    /********** Remove Subscriber in Database */
+    doc = BCON_NEW("imsi", BCON_UTF8(test_ue->imsi));
+    ABTS_PTR_NOTNULL(tc, doc);
+    ABTS_TRUE(tc, mongoc_collection_remove(collection,
+            MONGOC_REMOVE_SINGLE_REMOVE, doc, NULL, &error))
+    bson_destroy(doc);
+
+    mongoc_collection_destroy(collection);
+
+    /* gNB disonncect from UPF */
+    testgnb_gtpu_close(gtpu);
+
+    /* gNB disonncect from AMF */
+    testgnb_ngap_close(ngap);
+
+    /* Clear Test UE Context */
+    test_ue_remove(test_ue);
+}
+
+static void registration_idle_test1_func(abts_case *tc, void *data)
+{
+    int rv;
+    ogs_socknode_t *ngap;
+    ogs_socknode_t *gtpu;
+    ogs_pkbuf_t *gmmbuf;
+    ogs_pkbuf_t *gsmbuf;
+    ogs_pkbuf_t *nasbuf;
+    ogs_pkbuf_t *sendbuf;
+    ogs_pkbuf_t *recvbuf;
+    ogs_ngap_message_t message;
+    int i;
+
+    ogs_nas_5gs_mobile_identity_suci_t mobile_identity_suci;
+    test_ue_t *test_ue = NULL;
+    test_sess_t *sess = NULL;
+    test_bearer_t *qos_flow = NULL;
+
+    const char *_k_string = "70d49a71dd1a2b806a25abe0ef749f1e";
+    uint8_t k[OGS_KEY_LEN];
+    const char *_opc_string = "6f1bf53d624b3a43af6592854e2444c7";
+    uint8_t opc[OGS_KEY_LEN];
+
+    mongoc_collection_t *collection = NULL;
+    bson_t *doc = NULL;
+    int64_t count = 0;
+    bson_error_t error;
+    const char *json =
+      "{"
+        "\"_id\" : { \"$oid\" : \"597223158b8861d7605378c6\" }, "
+        "\"imsi\" : \"901700000021309\","
+        "\"ambr\" : { "
+          "\"uplink\" : { \"$numberLong\" : \"1024000\" }, "
+          "\"downlink\" : { \"$numberLong\" : \"1024000\" } "
+        "},"
+        "\"pdn\" : ["
+          "{"
+            "\"apn\" : \"internet\", "
+            "\"_id\" : { \"$oid\" : \"597223158b8861d7605378c7\" }, "
+            "\"ambr\" : {"
+              "\"uplink\" : { \"$numberLong\" : \"1024000\" }, "
+              "\"downlink\" : { \"$numberLong\" : \"1024000\" } "
+            "},"
+            "\"qos\" : { "
+              "\"qci\" : 9, "
+              "\"arp\" : { "
+                "\"priority_level\" : 8,"
+                "\"pre_emption_vulnerability\" : 1, "
+                "\"pre_emption_capability\" : 1"
+              "} "
+            "}, "
+            "\"type\" : 2"
+          "}"
+        "],"
+        "\"security\" : { "
+          "\"k\" : \"70d49a71dd1a2b806a25abe0ef749f1e\", "
+          "\"opc\" : \"6f1bf53d624b3a43af6592854e2444c7\", "
+          "\"amf\" : \"8000\", "
+          "\"sqn\" : { \"$numberLong\" : \"25235952177090\" } "
+        "}, "
+        "\"subscribed_rau_tau_timer\" : 12,"
+        "\"network_access_mode\" : 2, "
+        "\"subscriber_status\" : 0, "
+        "\"access_restriction_data\" : 32, "
+        "\"__v\" : 0 "
+      "}";
+
+    /* Setup Test UE & Session Context */
+    memset(&mobile_identity_suci, 0, sizeof(mobile_identity_suci));
+
+    mobile_identity_suci.h.supi_format = OGS_NAS_5GS_SUPI_FORMAT_IMSI;
+    mobile_identity_suci.h.type = OGS_NAS_5GS_MOBILE_IDENTITY_SUCI;
+    mobile_identity_suci.routing_indicator1 = 0;
+    mobile_identity_suci.routing_indicator2 = 0xf;
+    mobile_identity_suci.routing_indicator3 = 0xf;
+    mobile_identity_suci.routing_indicator4 = 0xf;
+    mobile_identity_suci.protection_scheme_id = OGS_NAS_5GS_NULL_SCHEME;
+    mobile_identity_suci.home_network_pki_value = 0;
+    mobile_identity_suci.scheme_output[0] = 0;
+    mobile_identity_suci.scheme_output[1] = 0;
+    mobile_identity_suci.scheme_output[2] = 0x20;
+    mobile_identity_suci.scheme_output[3] = 0x31;
+    mobile_identity_suci.scheme_output[4] = 0x90;
+
+    test_ue = test_ue_add_by_suci(&mobile_identity_suci, 13);
+    ogs_assert(test_ue);
+
+    test_ue->nr_cgi.cell_id = 0x40001;
+
+    test_ue->nas.registration.type = OGS_NAS_KSI_NO_KEY_IS_AVAILABLE;
+    test_ue->nas.registration.follow_on_request = 1;
+    test_ue->nas.registration.value = OGS_NAS_5GS_REGISTRATION_TYPE_INITIAL;
+
+    OGS_HEX(_k_string, strlen(_k_string), test_ue->k);
+    OGS_HEX(_opc_string, strlen(_opc_string), test_ue->opc);
 
     /* gNB connects to AMF */
     ngap = testngap_client(AF_INET);
@@ -1927,7 +3099,7 @@ static void test5_func(abts_case *tc, void *data)
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    /* Receive Initial context setup request +
+    /* Receive InitialContextSetupRequest +
      * Registration accept */
     recvbuf = testgnb_ngap_read(ngap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
@@ -1942,7 +3114,7 @@ static void test5_func(abts_case *tc, void *data)
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    /* Send Initial context setup response */
+    /* Send InitialContextSetupResponse */
     sendbuf = testngap_build_initial_context_setup_response(test_ue, false);
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testgnb_ngap_send(ngap, sendbuf);
@@ -1962,6 +3134,9 @@ static void test5_func(abts_case *tc, void *data)
     testngap_recv(test_ue, recvbuf);
 
     /* Send PDU session establishment request */
+    sess = test_sess_add_by_dnn_and_psi(test_ue, "internet", 5);
+    ogs_assert(sess);
+
     sess->ul_nas_transport_param.request_type =
         OGS_NAS_5GS_REQUEST_TYPE_INITIAL;
     sess->ul_nas_transport_param.dnn = 1;
@@ -2039,6 +3214,7 @@ static void test5_func(abts_case *tc, void *data)
      */
     test_ue->service_request_param.integrity_protected = 0;
     test_ue->service_request_param.pdu_session_status = 1;
+    test_ue->service_request_param.psimask.pdu_session_status = 1 << sess->psi;
     nasbuf = testgmm_build_service_request(
             test_ue, OGS_NAS_SERVICE_TYPE_SIGNALLING, NULL);
     ABTS_PTR_NOTNULL(tc, nasbuf);
@@ -2054,7 +3230,7 @@ static void test5_func(abts_case *tc, void *data)
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    /* Receive Initial context setup request +
+    /* Receive InitialContextSetupRequest +
      * Service accept */
     recvbuf = testgnb_ngap_read(ngap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
@@ -2062,33 +3238,14 @@ static void test5_func(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc,
             NGAP_ProcedureCode_id_InitialContextSetup,
             test_ue->ngap_procedure_code);
-    ABTS_INT_EQUAL(tc, 0x0000, test_ue->pdu_session_status);
+    ABTS_INT_EQUAL(tc, 0x2000, test_ue->pdu_session_status);
     ABTS_INT_EQUAL(tc, 0x0000, test_ue->pdu_session_reactivation_result);
 
-    /* Send Initial context setup response */
-    sendbuf = testngap_build_initial_context_setup_response(test_ue, false);
-    ABTS_PTR_NOTNULL(tc, sendbuf);
-    rv = testgnb_ngap_send(ngap, sendbuf);
+    /* Send GTP-U ICMP Packet */
+    rv = test_gtpu_send_ping(gtpu, qos_flow, TEST_PING_IPV4);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    /* Send PDU session establishment request */
-    sess->ul_nas_transport_param.request_type =
-        OGS_NAS_5GS_REQUEST_TYPE_INITIAL;
-    sess->ul_nas_transport_param.dnn = 1;
-
-    gsmbuf = testgsm_build_pdu_session_establishment_request(sess);
-    ABTS_PTR_NOTNULL(tc, gsmbuf);
-    gmmbuf = testgmm_build_ul_nas_transport(sess,
-            OGS_NAS_PAYLOAD_CONTAINER_N1_SM_INFORMATION, gsmbuf);
-    ABTS_PTR_NOTNULL(tc, gmmbuf);
-    sendbuf = testngap_build_uplink_nas_transport(test_ue, gmmbuf);
-    ABTS_PTR_NOTNULL(tc, sendbuf);
-    rv = testgnb_ngap_send(ngap, sendbuf);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
-
-    /* Receive PDUSessionResourceSetupRequest +
-     * DL NAS transport +
-     * PDU session establishment accept */
+    /* Receive PDUSessionResourceSetupRequest */
     recvbuf = testgnb_ngap_read(ngap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     testngap_recv(test_ue, recvbuf);
@@ -2096,355 +3253,10 @@ static void test5_func(abts_case *tc, void *data)
             NGAP_ProcedureCode_id_PDUSessionResourceSetup,
             test_ue->ngap_procedure_code);
 
-    /* Send GTP-U ICMP Packet */
-    rv = test_gtpu_send_ping(gtpu, qos_flow, TEST_PING_IPV4);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
-
-    /* Send PDUSessionResourceSetupResponse */
-    sendbuf = testngap_sess_build_pdu_session_resource_setup_response(sess);
+    /* Send InitialContextSetupResponse */
+    sendbuf = testngap_build_initial_context_setup_response(test_ue, true);
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testgnb_ngap_send(ngap, sendbuf);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
-
-    /* Receive GTP-U ICMP Packet */
-    recvbuf = testgnb_gtpu_read(gtpu);
-    ABTS_PTR_NOTNULL(tc, recvbuf);
-    ogs_pkbuf_free(recvbuf);
-
-    /* Send GTP-U ICMP Packet */
-    rv = test_gtpu_send_ping(gtpu, qos_flow, TEST_PING_IPV4);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
-
-    /* Receive GTP-U ICMP Packet */
-    recvbuf = testgnb_gtpu_read(gtpu);
-    ABTS_PTR_NOTNULL(tc, recvbuf);
-    ogs_pkbuf_free(recvbuf);
-
-    /* Send UE context release request */
-    sendbuf = testngap_build_ue_context_release_request(test_ue,
-            NGAP_Cause_PR_radioNetwork, NGAP_CauseRadioNetwork_user_inactivity,
-            true);
-    ABTS_PTR_NOTNULL(tc, sendbuf);
-    rv = testgnb_ngap_send(ngap, sendbuf);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
-
-    /* Receive UE context release command */
-    recvbuf = testgnb_ngap_read(ngap);
-    ABTS_PTR_NOTNULL(tc, recvbuf);
-    testngap_recv(test_ue, recvbuf);
-
-    /* Send UE context release complete */
-    sendbuf = testngap_build_ue_context_release_complete(test_ue);
-    ABTS_PTR_NOTNULL(tc, sendbuf);
-    rv = testgnb_ngap_send(ngap, sendbuf);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
-
-    ogs_msleep(300);
-
-    /********** Remove Subscriber in Database */
-    doc = BCON_NEW("imsi", BCON_UTF8(test_ue->imsi));
-    ABTS_PTR_NOTNULL(tc, doc);
-    ABTS_TRUE(tc, mongoc_collection_remove(collection,
-            MONGOC_REMOVE_SINGLE_REMOVE, doc, NULL, &error))
-    bson_destroy(doc);
-
-    mongoc_collection_destroy(collection);
-
-    /* gNB disonncect from UPF */
-    testgnb_gtpu_close(gtpu);
-
-    /* gNB disonncect from AMF */
-    testgnb_ngap_close(ngap);
-
-    /* Clear Test UE Context */
-    test_ue_remove(test_ue);
-}
-
-static void test6_func(abts_case *tc, void *data)
-{
-    int rv;
-    ogs_socknode_t *ngap;
-    ogs_socknode_t *gtpu;
-    ogs_pkbuf_t *gmmbuf;
-    ogs_pkbuf_t *gsmbuf;
-    ogs_pkbuf_t *nasbuf;
-    ogs_pkbuf_t *sendbuf;
-    ogs_pkbuf_t *recvbuf;
-    ogs_ngap_message_t message;
-    int i;
-
-    ogs_nas_5gs_mobile_identity_suci_t mobile_identity_suci;
-    test_ue_t *test_ue = NULL;
-    test_sess_t *sess = NULL;
-    test_bearer_t *qos_flow = NULL;
-
-    const char *_k_string = "70d49a71dd1a2b806a25abe0ef749f1e";
-    uint8_t k[OGS_KEY_LEN];
-    const char *_opc_string = "6f1bf53d624b3a43af6592854e2444c7";
-    uint8_t opc[OGS_KEY_LEN];
-
-    mongoc_collection_t *collection = NULL;
-    bson_t *doc = NULL;
-    int64_t count = 0;
-    bson_error_t error;
-    const char *json =
-      "{"
-        "\"_id\" : { \"$oid\" : \"597223158b8861d7605378c6\" }, "
-        "\"imsi\" : \"901700000021309\","
-        "\"ambr\" : { "
-          "\"uplink\" : { \"$numberLong\" : \"1024000\" }, "
-          "\"downlink\" : { \"$numberLong\" : \"1024000\" } "
-        "},"
-        "\"pdn\" : ["
-          "{"
-            "\"apn\" : \"internet\", "
-            "\"_id\" : { \"$oid\" : \"597223158b8861d7605378c7\" }, "
-            "\"ambr\" : {"
-              "\"uplink\" : { \"$numberLong\" : \"1024000\" }, "
-              "\"downlink\" : { \"$numberLong\" : \"1024000\" } "
-            "},"
-            "\"qos\" : { "
-              "\"qci\" : 9, "
-              "\"arp\" : { "
-                "\"priority_level\" : 8,"
-                "\"pre_emption_vulnerability\" : 1, "
-                "\"pre_emption_capability\" : 1"
-              "} "
-            "}, "
-            "\"type\" : 2"
-          "}"
-        "],"
-        "\"security\" : { "
-          "\"k\" : \"70d49a71dd1a2b806a25abe0ef749f1e\", "
-          "\"opc\" : \"6f1bf53d624b3a43af6592854e2444c7\", "
-          "\"amf\" : \"8000\", "
-          "\"sqn\" : { \"$numberLong\" : \"25235952177090\" } "
-        "}, "
-        "\"subscribed_rau_tau_timer\" : 12,"
-        "\"network_access_mode\" : 2, "
-        "\"subscriber_status\" : 0, "
-        "\"access_restriction_data\" : 32, "
-        "\"__v\" : 0 "
-      "}";
-
-    /* Setup Test UE & Session Context */
-    memset(&mobile_identity_suci, 0, sizeof(mobile_identity_suci));
-
-    mobile_identity_suci.h.supi_format = OGS_NAS_5GS_SUPI_FORMAT_IMSI;
-    mobile_identity_suci.h.type = OGS_NAS_5GS_MOBILE_IDENTITY_SUCI;
-    mobile_identity_suci.routing_indicator1 = 0;
-    mobile_identity_suci.routing_indicator2 = 0xf;
-    mobile_identity_suci.routing_indicator3 = 0xf;
-    mobile_identity_suci.routing_indicator4 = 0xf;
-    mobile_identity_suci.protection_scheme_id = OGS_NAS_5GS_NULL_SCHEME;
-    mobile_identity_suci.home_network_pki_value = 0;
-    mobile_identity_suci.scheme_output[0] = 0;
-    mobile_identity_suci.scheme_output[1] = 0;
-    mobile_identity_suci.scheme_output[2] = 0x20;
-    mobile_identity_suci.scheme_output[3] = 0x31;
-    mobile_identity_suci.scheme_output[4] = 0x90;
-
-    test_ue = test_ue_add_by_suci(&mobile_identity_suci, 13);
-    ogs_assert(test_ue);
-
-    test_ue->nr_cgi.cell_id = 0x40001;
-
-    test_ue->nas.registration.type = OGS_NAS_KSI_NO_KEY_IS_AVAILABLE;
-    test_ue->nas.registration.follow_on_request = 1;
-    test_ue->nas.registration.value = OGS_NAS_5GS_REGISTRATION_TYPE_INITIAL;
-
-    OGS_HEX(_k_string, strlen(_k_string), test_ue->k);
-    OGS_HEX(_opc_string, strlen(_opc_string), test_ue->opc);
-
-    sess = test_sess_add_by_dnn_and_psi(test_ue, "internet", 5);
-    ogs_assert(sess);
-
-    /* gNB connects to AMF */
-    ngap = testngap_client(AF_INET);
-    ABTS_PTR_NOTNULL(tc, ngap);
-
-    /* gNB connects to UPF */
-    gtpu = test_gtpu_server(1, AF_INET);
-    ABTS_PTR_NOTNULL(tc, gtpu);
-
-    /* Send NG-Setup Reqeust */
-    sendbuf = testngap_build_ng_setup_request(0x4000, 23);
-    ABTS_PTR_NOTNULL(tc, sendbuf);
-    rv = testgnb_ngap_send(ngap, sendbuf);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
-
-    /* Receive NG-Setup Response */
-    recvbuf = testgnb_ngap_read(ngap);
-    ABTS_PTR_NOTNULL(tc, recvbuf);
-    testngap_recv(test_ue, recvbuf);
-
-    /********** Insert Subscriber in Database */
-    collection = mongoc_client_get_collection(
-        ogs_mongoc()->client, ogs_mongoc()->name, "subscribers");
-    ABTS_PTR_NOTNULL(tc, collection);
-    doc = BCON_NEW("imsi", BCON_UTF8(test_ue->imsi));
-    ABTS_PTR_NOTNULL(tc, doc);
-
-    count = mongoc_collection_count (
-        collection, MONGOC_QUERY_NONE, doc, 0, 0, NULL, &error);
-    if (count) {
-        ABTS_TRUE(tc, mongoc_collection_remove(collection,
-                MONGOC_REMOVE_SINGLE_REMOVE, doc, NULL, &error))
-    }
-    bson_destroy(doc);
-
-    doc = bson_new_from_json((const uint8_t *)json, -1, &error);;
-    ABTS_PTR_NOTNULL(tc, doc);
-    ABTS_TRUE(tc, mongoc_collection_insert(collection,
-                MONGOC_INSERT_NONE, doc, NULL, &error));
-    bson_destroy(doc);
-
-    doc = BCON_NEW("imsi", BCON_UTF8(test_ue->imsi));
-    ABTS_PTR_NOTNULL(tc, doc);
-    do {
-        count = mongoc_collection_count (
-            collection, MONGOC_QUERY_NONE, doc, 0, 0, NULL, &error);
-    } while (count == 0);
-    bson_destroy(doc);
-
-    /* To start RAN-UE-NGAP-ID : 0 */
-    test_ue->ran_ue_ngap_id = -1;
-    test_self()->nr_cgi.cell_id = 0x000000ce7;
-
-    /* Send Registration request */
-    test_ue->registration_request_param.guti = 1;
-    test_ue->registration_request_param.gmm_capability = 1;
-    gmmbuf = testgmm_build_registration_request(test_ue, NULL);
-    ABTS_PTR_NOTNULL(tc, gmmbuf);
-
-    test_ue->registration_request_param.requested_nssai = 1;
-    test_ue->registration_request_param.last_visited_registered_tai = 1;
-    test_ue->registration_request_param.ue_usage_setting = 1;
-    nasbuf = testgmm_build_registration_request(test_ue, NULL);
-    ABTS_PTR_NOTNULL(tc, nasbuf);
-
-    sendbuf = testngap_build_initial_ue_message(test_ue, gmmbuf, false, true);
-    ABTS_PTR_NOTNULL(tc, sendbuf);
-    rv = testgnb_ngap_send(ngap, sendbuf);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
-
-    /* Receive Indentity request */
-    recvbuf = testgnb_ngap_read(ngap);
-    ABTS_PTR_NOTNULL(tc, recvbuf);
-    testngap_recv(test_ue, recvbuf);
-
-    /* Send Identity response */
-    gmmbuf = testgmm_build_identity_response(test_ue);
-    ABTS_PTR_NOTNULL(tc, gmmbuf);
-    sendbuf = testngap_build_uplink_nas_transport(test_ue, gmmbuf);
-    ABTS_PTR_NOTNULL(tc, sendbuf);
-    rv = testgnb_ngap_send(ngap, sendbuf);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
-
-    /* Receive Authentication request */
-    recvbuf = testgnb_ngap_read(ngap);
-    ABTS_PTR_NOTNULL(tc, recvbuf);
-    testngap_recv(test_ue, recvbuf);
-
-    /* Send Authentication failure - SYNCH failure */
-    gmmbuf = testgmm_build_authentication_failure(
-            test_ue, OGS_5GMM_CAUSE_SYNCH_FAILURE, 0x1f60);
-    ABTS_PTR_NOTNULL(tc, gmmbuf);
-    sendbuf = testngap_build_uplink_nas_transport(test_ue, gmmbuf);
-    ABTS_PTR_NOTNULL(tc, sendbuf);
-    rv = testgnb_ngap_send(ngap, sendbuf);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
-
-    /* Receive Authentication request */
-    recvbuf = testgnb_ngap_read(ngap);
-    ABTS_PTR_NOTNULL(tc, recvbuf);
-    testngap_recv(test_ue, recvbuf);
-
-    /* Send Authentication response */
-    gmmbuf = testgmm_build_authentication_response(test_ue);
-    ABTS_PTR_NOTNULL(tc, gmmbuf);
-    sendbuf = testngap_build_uplink_nas_transport(test_ue, gmmbuf);
-    ABTS_PTR_NOTNULL(tc, sendbuf);
-    rv = testgnb_ngap_send(ngap, sendbuf);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
-
-    /* Receive Security mode command */
-    recvbuf = testgnb_ngap_read(ngap);
-    ABTS_PTR_NOTNULL(tc, recvbuf);
-    testngap_recv(test_ue, recvbuf);
-
-    /* Send Security mode complete */
-    gmmbuf = testgmm_build_security_mode_complete(test_ue, nasbuf);
-    ABTS_PTR_NOTNULL(tc, gmmbuf);
-    sendbuf = testngap_build_uplink_nas_transport(test_ue, gmmbuf);
-    ABTS_PTR_NOTNULL(tc, sendbuf);
-    rv = testgnb_ngap_send(ngap, sendbuf);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
-
-    /* Receive Initial context setup request +
-     * Registration accept */
-    recvbuf = testgnb_ngap_read(ngap);
-    ABTS_PTR_NOTNULL(tc, recvbuf);
-    testngap_recv(test_ue, recvbuf);
-    ABTS_INT_EQUAL(tc,
-            NGAP_ProcedureCode_id_InitialContextSetup,
-            test_ue->ngap_procedure_code);
-
-    /* Send UE radio capability info indication */
-    sendbuf = testngap_build_ue_radio_capability_info_indication(test_ue);
-    ABTS_PTR_NOTNULL(tc, sendbuf);
-    rv = testgnb_ngap_send(ngap, sendbuf);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
-
-    /* Send Initial context setup response */
-    sendbuf = testngap_build_initial_context_setup_response(test_ue, false);
-    ABTS_PTR_NOTNULL(tc, sendbuf);
-    rv = testgnb_ngap_send(ngap, sendbuf);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
-
-    /* Send Registration complete */
-    gmmbuf = testgmm_build_registration_complete(test_ue);
-    ABTS_PTR_NOTNULL(tc, gmmbuf);
-    sendbuf = testngap_build_uplink_nas_transport(test_ue, gmmbuf);
-    ABTS_PTR_NOTNULL(tc, sendbuf);
-    rv = testgnb_ngap_send(ngap, sendbuf);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
-
-    /* Receive Configuration update command */
-    recvbuf = testgnb_ngap_read(ngap);
-    ABTS_PTR_NOTNULL(tc, recvbuf);
-    testngap_recv(test_ue, recvbuf);
-
-    /* Send PDU session establishment request */
-    sess->ul_nas_transport_param.request_type =
-        OGS_NAS_5GS_REQUEST_TYPE_INITIAL;
-    sess->ul_nas_transport_param.dnn = 1;
-    sess->ul_nas_transport_param.s_nssai = 1;
-
-    gsmbuf = testgsm_build_pdu_session_establishment_request(sess);
-    ABTS_PTR_NOTNULL(tc, gsmbuf);
-    gmmbuf = testgmm_build_ul_nas_transport(sess,
-            OGS_NAS_PAYLOAD_CONTAINER_N1_SM_INFORMATION, gsmbuf);
-    ABTS_PTR_NOTNULL(tc, gmmbuf);
-    sendbuf = testngap_build_uplink_nas_transport(test_ue, gmmbuf);
-    ABTS_PTR_NOTNULL(tc, sendbuf);
-    rv = testgnb_ngap_send(ngap, sendbuf);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
-
-    /* Receive PDUSessionResourceSetupRequest +
-     * DL NAS transport +
-     * PDU session establishment accept */
-    recvbuf = testgnb_ngap_read(ngap);
-    ABTS_PTR_NOTNULL(tc, recvbuf);
-    testngap_recv(test_ue, recvbuf);
-    ABTS_INT_EQUAL(tc,
-            NGAP_ProcedureCode_id_PDUSessionResourceSetup,
-            test_ue->ngap_procedure_code);
-
-    /* Send GTP-U ICMP Packet */
-    qos_flow = test_qos_flow_find_by_qfi(sess, 1);
-    ogs_assert(qos_flow);
-    rv = test_gtpu_send_ping(gtpu, qos_flow, TEST_PING_IPV4);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* Send PDUSessionResourceSetupResponse */
@@ -2511,7 +3323,7 @@ static void test6_func(abts_case *tc, void *data)
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    /* Receive Initial context setup request +
+    /* Receive InitialContextSetupRequest +
      * Service accept */
     recvbuf = testgnb_ngap_read(ngap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
@@ -2519,18 +3331,36 @@ static void test6_func(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc,
             NGAP_ProcedureCode_id_InitialContextSetup,
             test_ue->ngap_procedure_code);
-    ABTS_INT_EQUAL(tc, 0x0000, test_ue->pdu_session_status);
     ABTS_INT_EQUAL(tc, 0x0000, test_ue->pdu_session_reactivation_result);
 
-    /* Send Initial context setup response */
+    /* Send GTP-U ICMP Packet */
+    rv = test_gtpu_send_ping(gtpu, qos_flow, TEST_PING_IPV4);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive PDUSessionResourceSetupRequest */
+    recvbuf = testgnb_ngap_read(ngap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    testngap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc,
+            NGAP_ProcedureCode_id_PDUSessionResourceSetup,
+            test_ue->ngap_procedure_code);
+
+    /* Send InitialContextSetupResponse */
     sendbuf = testngap_build_initial_context_setup_response(test_ue, true);
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    /* Wait to setup N3 data connection.
-     * Otherwise, network-triggered service request is initiated */
-    ogs_msleep(100);
+    /* Send PDUSessionResourceSetupResponse */
+    sendbuf = testngap_sess_build_pdu_session_resource_setup_response(sess);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive GTP-U ICMP Packet */
+    recvbuf = testgnb_gtpu_read(gtpu);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    ogs_pkbuf_free(recvbuf);
 
     /* Send GTP-U ICMP Packet */
     rv = test_gtpu_send_ping(gtpu, qos_flow, TEST_PING_IPV4);
@@ -2581,16 +3411,17 @@ static void test6_func(abts_case *tc, void *data)
     test_ue_remove(test_ue);
 }
 
-abts_suite *test_idle(abts_suite *suite)
+abts_suite *test_paging(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
 
-    abts_run_test(suite, test1_func, NULL);
-    abts_run_test(suite, test2_func, NULL);
-    abts_run_test(suite, test3_func, NULL);
-    abts_run_test(suite, test4_func, NULL);
-    abts_run_test(suite, test5_func, NULL);
-    abts_run_test(suite, test6_func, NULL);
+    abts_run_test(suite, cm_idle_paging_func, NULL);
+    abts_run_test(suite, cm_idle_error_indication_func, NULL);
+    abts_run_test(suite, cm_connected_error_indication_func, NULL);
+    abts_run_test(suite, vonr_qos_flow_test1_func, NULL);
+    abts_run_test(suite, vonr_session_test2_func, NULL);
+    abts_run_test(suite, registration_ue_context_test4_func, NULL);
+    abts_run_test(suite, registration_idle_test1_func, NULL);
 
     return suite;
 }

@@ -182,8 +182,7 @@ ogs_sbi_request_t *amf_nsmf_pdu_session_build_update_sm_context(
     message.h.method = (char *)OGS_SBI_HTTP_METHOD_POST;
     message.h.service.name = (char *)OGS_SBI_SERVICE_NAME_NSMF_PDUSESSION;
     message.h.api.version = (char *)OGS_SBI_API_V1;
-    message.h.resource.component[0] =
-        (char *)OGS_SBI_RESOURCE_NAME_SM_CONTEXTS;
+    message.h.resource.component[0] = (char *)OGS_SBI_RESOURCE_NAME_SM_CONTEXTS;
     message.h.resource.component[1] = sess->sm_context_ref;
     message.h.resource.component[2] = (char *)OGS_SBI_RESOURCE_NAME_MODIFY;
 
@@ -314,6 +313,51 @@ ogs_sbi_request_t *amf_nsmf_pdu_session_build_release_sm_context(
     }
     if (SmContextReleaseData.ue_time_zone)
         ogs_free(SmContextReleaseData.ue_time_zone);
+
+    return request;
+}
+
+ogs_sbi_request_t *amf_nsmf_callback_build_n1_n2_failure_notify(
+        amf_sess_t *sess, OpenAPI_n1_n2_message_transfer_cause_e cause)
+{
+    ogs_sbi_message_t message;
+    ogs_sbi_request_t *request = NULL;
+
+    OpenAPI_n1_n2_msg_txfr_failure_notification_t
+        N1N2MsgTxfrFailureNotification;
+
+    ogs_assert(sess);
+    ogs_assert(sess->paging.ongoing == true);
+    ogs_assert(sess->paging.location);
+    ogs_assert(sess->paging.n1n2_failure_txf_notif_uri);
+    ogs_assert(cause);
+
+    memset(&message, 0, sizeof(message));
+    message.h.method = (char *)OGS_SBI_HTTP_METHOD_POST;
+    message.h.uri = sess->paging.n1n2_failure_txf_notif_uri;
+
+    memset(&N1N2MsgTxfrFailureNotification,
+            0, sizeof(N1N2MsgTxfrFailureNotification));
+    N1N2MsgTxfrFailureNotification.cause = cause;
+    if (sess->paging.location) {
+        N1N2MsgTxfrFailureNotification.n1n2_msg_data_uri =
+            sess->paging.location;
+    } else {
+        /* TS29.518 6.1.6.2.30 Type: N1N2MsgTxfrFailureNotification
+         *
+         * If no Location header was returned when the N1/N2
+         * message transfer was initiated, e.g. when a 200 OK
+         * response was sent for a UE in RRC inactive state,
+         * this IE shall be set to a dummy URI, i.e. an URI with
+         * no authority and an empty path (e.g. "http:").
+         */
+        N1N2MsgTxfrFailureNotification.n1n2_msg_data_uri = (char *)"http:";
+    }
+
+    message.N1N2MsgTxfrFailureNotification = &N1N2MsgTxfrFailureNotification;
+
+    request = ogs_sbi_build_request(&message);
+    ogs_assert(request);
 
     return request;
 }

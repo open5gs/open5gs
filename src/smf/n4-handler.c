@@ -64,6 +64,7 @@ static uint8_t gtp_cause_from_pfcp(uint8_t pfcp_cause)
 
     return OGS_GTP_CAUSE_SYSTEM_FAILURE;
 }
+
 static int sbi_status_from_pfcp(uint8_t pfcp_cause)
 {
     switch (pfcp_cause) {
@@ -102,8 +103,7 @@ void smf_5gc_n4_handle_session_establishment_response(
 {
     int i;
 
-    ogs_pkbuf_t *n1smbuf = NULL;
-    ogs_pkbuf_t *n2smbuf = NULL;
+    smf_n1_n2_message_transfer_param_t param;
     ogs_sbi_stream_t *stream = NULL;
 
     uint8_t pfcp_cause_value = OGS_PFCP_CAUSE_REQUEST_ACCEPTED;
@@ -190,14 +190,15 @@ void smf_5gc_n4_handle_session_establishment_response(
     ogs_assert(up_f_seid);
     sess->upf_n4_seid = be64toh(up_f_seid->seid);
 
-    n1smbuf = gsm_build_pdu_session_establishment_accept(sess);
-    ogs_assert(n1smbuf);
-    n2smbuf = ngap_build_pdu_session_resource_setup_request_transfer(sess);
-    ogs_assert(n2smbuf);
+    memset(&param, 0, sizeof(param));
+    param.state = SMF_UE_REQUESTED_PDU_SESSION_ESTABLISHMENT;
+    param.n1smbuf = gsm_build_pdu_session_establishment_accept(sess);
+    ogs_assert(param.n1smbuf);
+    param.n2smbuf = ngap_build_pdu_session_resource_setup_request_transfer(
+            sess);
+    ogs_assert(param.n2smbuf);
 
-    smf_namf_comm_send_n1_n2_message_transfer(
-            sess, SMF_UE_REQUESTED_PDU_SESSION_ESTABLISHMENT,
-            n1smbuf, n2smbuf);
+    smf_namf_comm_send_n1_n2_message_transfer(sess, &param);
 }
 
 void smf_5gc_n4_handle_session_modification_response(
@@ -298,36 +299,51 @@ void smf_5gc_n4_handle_session_modification_response(
     }
 
     if (flags & OGS_PFCP_MODIFY_ACTIVATE) {
-        if (flags & OGS_PFCP_MODIFY_PATH_SWITCH) {    
+        if (flags & OGS_PFCP_MODIFY_PATH_SWITCH) {
             ogs_pkbuf_t *n2smbuf =
                 ngap_build_path_switch_request_ack_transfer(sess);
             ogs_assert(n2smbuf);
 
-            smf_sbi_send_sm_context_updated_data_with_n2buf(sess, stream, 
+            smf_sbi_send_sm_context_updated_data_n2smbuf(sess, stream,
                 OpenAPI_n2_sm_info_type_PATH_SWITCH_REQ_ACK, n2smbuf);
-        } else {            
-            /* ACTIVATED Is NOT Included in RESPONSE */
-            smf_sbi_send_sm_context_updated_data(sess, stream, 0);
+        } else {
+            sess->paging.ue_requested_pdu_session_establishment_done = true;
+            smf_sbi_send_http_status_no_content(stream);
         }
 
     } else if (flags & OGS_PFCP_MODIFY_DEACTIVATE) {
-        /* Only ACTIVING & DEACTIVATED is Included */
-        smf_sbi_send_sm_context_updated_data(
-                sess, stream, OpenAPI_up_cnx_state_DEACTIVATED);
+        if (flags & OGS_PFCP_MODIFY_ERROR_INDICATION) {
+            smf_n1_n2_message_transfer_param_t param;
+
+            memset(&param, 0, sizeof(param));
+            param.state = SMF_ERROR_INDICATON_RECEIVED_FROM_5G_AN;
+            param.n2smbuf =
+                ngap_build_pdu_session_resource_release_command_transfer(
+                    sess, SMF_NGAP_STATE_ERROR_INDICATION_RECEIVED_FROM_5G_AN,
+                    NGAP_Cause_PR_nas, NGAP_CauseNas_normal_release);
+            ogs_assert(param.n2smbuf);
+
+            param.skip_ind = true;
+
+            smf_namf_comm_send_n1_n2_message_transfer(sess, &param);
+        } else {
+            /* Only ACTIVING & DEACTIVATED is Included */
+            smf_sbi_send_sm_context_updated_data_up_cnx_state(
+                    sess, stream, OpenAPI_up_cnx_state_DEACTIVATED);
+        }
     } else if (flags & OGS_PFCP_MODIFY_CREATE) {
-        ogs_pkbuf_t *n1smbuf = NULL, *n2smbuf = NULL;
+        smf_n1_n2_message_transfer_param_t param;
 
-        ogs_assert(qos_flow);
-        n1smbuf = gsm_build_qos_flow_modification_command(
+        memset(&param, 0, sizeof(param));
+        param.state = SMF_NETWORK_REQUESTED_QOS_FLOW_MODIFICATION;
+        param.n1smbuf = gsm_build_qos_flow_modification_command(
                 qos_flow, OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED);
-        ogs_assert(n1smbuf);
-        n2smbuf = ngap_build_qos_flow_resource_modify_request_transfer(
+        ogs_assert(param.n1smbuf);
+        param.n2smbuf = ngap_build_qos_flow_resource_modify_request_transfer(
                 qos_flow);
-        ogs_assert(n2smbuf);
+        ogs_assert(param.n2smbuf);
 
-        smf_namf_comm_send_n1_n2_message_transfer(
-                sess, SMF_NETWORK_REQUESTED_QOS_FLOW_MODIFICATION,
-                n1smbuf, n2smbuf);
+        smf_namf_comm_send_n1_n2_message_transfer(sess, &param);
     }
 }
 
@@ -381,9 +397,19 @@ void smf_5gc_n4_handle_session_deletion_response(
     ogs_assert(sess);
 
     if (trigger == OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED) {
+        ogs_pkbuf_t *n1smbuf = NULL, *n2smbuf = NULL;
 
-        smf_sbi_send_sm_context_updated_data_in_session_deletion(sess, stream);
+        n1smbuf = gsm_build_pdu_session_release_command(
+                sess, OGS_5GSM_CAUSE_REGULAR_DEACTIVATION);
+        ogs_assert(n1smbuf);
 
+        n2smbuf = ngap_build_pdu_session_resource_release_command_transfer(
+                sess, SMF_NGAP_STATE_DELETE_TRIGGER_UE_REQUESTED,
+                NGAP_Cause_PR_nas, NGAP_CauseNas_normal_release);
+        ogs_assert(n2smbuf);
+
+        smf_sbi_send_sm_context_updated_data_n1_n2_message(sess, stream,
+                n1smbuf, OpenAPI_n2_sm_info_type_PDU_RES_REL_CMD, n2smbuf);
     } else {
 
         memset(&sendmsg, 0, sizeof(sendmsg));
@@ -642,4 +668,144 @@ void smf_epc_n4_handle_session_deletion_response(
     smf_gtp_send_delete_session_response(sess, gtp_xact);
 
     SMF_SESS_CLEAR(sess);
+}
+
+void smf_n4_handle_session_report_request(
+        smf_sess_t *sess, ogs_pfcp_xact_t *pfcp_xact,
+        ogs_pfcp_session_report_request_t *pfcp_req)
+{
+    smf_bearer_t *qos_flow = NULL;
+    ogs_pfcp_pdr_t *pdr = NULL;
+
+    ogs_pfcp_report_type_t report_type;
+    uint8_t cause_value = 0;
+    uint16_t pdr_id = 0;
+
+    ogs_assert(pfcp_xact);
+    ogs_assert(pfcp_req);
+
+    cause_value = OGS_GTP_CAUSE_REQUEST_ACCEPTED;
+
+    if (!sess) {
+        ogs_warn("No Context");
+        cause_value = OGS_PFCP_CAUSE_SESSION_CONTEXT_NOT_FOUND;
+    }
+
+    if (pfcp_req->report_type.presence == 0) {
+        ogs_error("No Report Type");
+        cause_value = OGS_GTP_CAUSE_MANDATORY_IE_MISSING;
+    }
+
+    if (cause_value != OGS_GTP_CAUSE_REQUEST_ACCEPTED) {
+        ogs_pfcp_send_error_message(pfcp_xact, 0,
+                OGS_PFCP_SESSION_REPORT_RESPONSE_TYPE,
+                cause_value, 0);
+        return;
+    }
+
+    ogs_assert(sess);
+    report_type.value = pfcp_req->report_type.u8;
+
+    if (report_type.downlink_data_report) {
+        ogs_pfcp_downlink_data_service_information_t *info = NULL;
+        uint8_t paging_policy_indication_value = 0;
+        uint8_t qfi = 0;
+
+        if (pfcp_req->downlink_data_report.presence) {
+            if (pfcp_req->downlink_data_report.
+                    downlink_data_service_information.presence) {
+                info = pfcp_req->downlink_data_report.
+                    downlink_data_service_information.data;
+                if (info) {
+                    if (info->qfii && info->ppi) {
+                        paging_policy_indication_value =
+                            info->paging_policy_indication_value;
+                        qfi = info->qfi;
+                    } else if (info->qfii) {
+                        qfi = info->qfi;
+                    } else if (info->ppi) {
+                        paging_policy_indication_value =
+                            info->paging_policy_indication_value;
+                    } else {
+                        ogs_error("Invalid Downlink Data Service Information");
+                    }
+
+                    if (paging_policy_indication_value) {
+                        ogs_warn("Not implement - "
+                                "Paging Policy Indication Value");
+                        ogs_pfcp_send_error_message(pfcp_xact, 0,
+                                OGS_PFCP_SESSION_REPORT_RESPONSE_TYPE,
+                                OGS_GTP_CAUSE_SERVICE_NOT_SUPPORTED, 0);
+                        return;
+                    }
+
+                    if (qfi) {
+                        qos_flow = smf_qos_flow_find_by_qfi(sess, qfi);
+                        if (!qos_flow)
+                            ogs_error("Cannot find the QoS Flow[%d]", qfi);
+                    }
+                } else {
+                    ogs_error("No Info");
+                }
+            }
+
+            if (pfcp_req->downlink_data_report.pdr_id.presence) {
+                pdr = ogs_pfcp_pdr_find(&sess->pfcp,
+                    pfcp_req->downlink_data_report.pdr_id.u16);
+                if (!pdr)
+                    ogs_error("Cannot find the PDR-ID[%d]", pdr_id);
+
+            } else {
+                ogs_error("No PDR-ID");
+            }
+        } else {
+            ogs_error("No Downlink Data Report");
+        }
+
+        if (!pdr || !qos_flow) {
+            ogs_error("No Context [%p:%p]", pdr, qos_flow);
+            ogs_pfcp_send_error_message(pfcp_xact, 0,
+                    OGS_PFCP_SESSION_REPORT_RESPONSE_TYPE,
+                    cause_value, 0);
+        }
+
+        smf_pfcp_send_session_report_response(
+                pfcp_xact, sess, OGS_PFCP_CAUSE_REQUEST_ACCEPTED);
+
+        if (sess->paging.ue_requested_pdu_session_establishment_done == true) {
+            smf_n1_n2_message_transfer_param_t param;
+
+            memset(&param, 0, sizeof(param));
+            param.state = SMF_NETWORK_TRIGGERED_SERVICE_REQUEST;
+            param.n2smbuf =
+                ngap_build_pdu_session_resource_setup_request_transfer(sess);
+            ogs_assert(param.n2smbuf);
+
+            param.n1n2_failure_txf_notif_uri = true;
+
+            smf_namf_comm_send_n1_n2_message_transfer(sess, &param);
+        }
+
+    } else if (report_type.error_indication_report) {
+        smf_ue_t *smf_ue = sess->smf_ue;
+        smf_sess_t *error_indication_session = NULL;
+        ogs_assert(smf_ue);
+
+        smf_pfcp_send_session_report_response(
+                pfcp_xact, sess, OGS_PFCP_CAUSE_REQUEST_ACCEPTED);
+
+        error_indication_session = smf_sess_find_by_error_indication_report(
+                smf_ue, &pfcp_req->error_indication_report);
+
+        if (!error_indication_session) return;
+
+        smf_5gc_pfcp_send_session_modification_request(
+                error_indication_session, NULL,
+                OGS_PFCP_MODIFY_DEACTIVATE|OGS_PFCP_MODIFY_ERROR_INDICATION);
+
+    } else {
+        ogs_error("Not supported Report Type[%d]", report_type.value);
+        smf_pfcp_send_session_report_response(
+                pfcp_xact, sess, OGS_PFCP_CAUSE_SYSTEM_FAILURE);
+    }
 }

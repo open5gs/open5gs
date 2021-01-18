@@ -1179,6 +1179,12 @@ void amf_ue_remove(amf_ue_t *amf_ue)
     /* Clear Transparent Container */
     OGS_ASN_CLEAR_DATA(&amf_ue->container);
 
+    /* Clear Paging Info */
+    AMF_UE_CLEAR_PAGING_INFO(amf_ue);
+
+    /* Clear N2 Transfer */
+    AMF_UE_CLEAR_N2_TRANSFER(amf_ue, pdu_session_resource_setup_request);
+
     /* Delete All Timers */
     CLEAR_AMF_UE_ALL_TIMERS(amf_ue);
     ogs_timer_delete(amf_ue->t3513.timer);
@@ -1517,6 +1523,21 @@ void amf_sess_remove(amf_sess_t *sess)
     if (sess->pdu_session_establishment_accept)
         ogs_pkbuf_free(sess->pdu_session_establishment_accept);
 
+    if (sess->transfer.pdu_session_resource_setup_request)
+        ogs_pkbuf_free(sess->transfer.pdu_session_resource_setup_request);
+    sess->transfer.pdu_session_resource_setup_request = NULL;
+
+    if (sess->transfer.path_switch_request_ack)
+        ogs_pkbuf_free(sess->transfer.path_switch_request_ack);
+    sess->transfer.path_switch_request_ack = NULL;
+
+    if (sess->transfer.pdu_session_resource_release_command)
+        ogs_pkbuf_free(sess->transfer.pdu_session_resource_release_command);
+    sess->transfer.pdu_session_resource_release_command = NULL;
+
+    if (sess->paging.client)
+        ogs_sbi_client_remove(sess->paging.client);
+
     OGS_NAS_CLEAR_DATA(&sess->ue_pco);
     OGS_TLV_CLEAR_DATA(&sess->pgw_pco);
 
@@ -1568,7 +1589,24 @@ int amf_sess_xact_count(amf_ue_t *amf_ue)
     return xact_count;
 }
 
-bool amf_sess_transfer_needed(amf_ue_t *amf_ue)
+int amf_sess_xact_state_count(amf_ue_t *amf_ue, int state)
+{
+    amf_sess_t *sess = NULL;
+    ogs_sbi_xact_t *xact = NULL;
+    int xact_count = 0;
+
+    ogs_assert(amf_ue);
+    ogs_assert(state);
+
+    ogs_list_for_each(&amf_ue->sess_list, sess) {
+        ogs_list_for_each(&sess->sbi.xact_list, xact)
+            if (xact->state == state) xact_count++;
+    }
+
+    return xact_count;
+}
+
+bool amf_pdu_res_setup_req_transfer_needed(amf_ue_t *amf_ue)
 {
     amf_sess_t *sess = NULL;
 

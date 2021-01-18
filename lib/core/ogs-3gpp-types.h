@@ -365,7 +365,8 @@ typedef struct ogs_pcc_rule_s {
             ogs_assert((__dST)->id); \
         } \
         for (__iNDEX = 0; __iNDEX < (__sRC)->num_of_flow; __iNDEX++) { \
-            (__dST)->flow[__iNDEX].direction = (__sRC)->flow[__iNDEX].direction; \
+            (__dST)->flow[__iNDEX].direction = \
+                (__sRC)->flow[__iNDEX].direction; \
             (__dST)->flow[__iNDEX].description = \
                 ogs_strdup((__sRC)->flow[__iNDEX].description);  \
             ogs_assert((__dST)->flow[__iNDEX].description); \

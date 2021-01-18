@@ -954,18 +954,22 @@ static void test3_func(abts_case *tc, void *data)
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    /* Receive PDU session release command */
+    /* Receive PDUSessionResourceReleaseCommand +
+     * DL NAS transport +
+     * PDU session release command */
     recvbuf = testgnb_ngap_read(ngap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     testngap_recv(test_ue, recvbuf);
 
-    /* Send PDU session resource release response */
+    /* Send PDUSessionResourceReleaseResponse */
     sendbuf = testngap_build_pdu_session_resource_release_response(sess);
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    /* Send PDU session resource release complete */
+    /* Send UplinkNASTransport +
+     * UL NAS trasnport +
+     * PDU session resource release complete */
     sess->ul_nas_transport_param.request_type = 0;
     sess->ul_nas_transport_param.dnn = 0;
     sess->ul_nas_transport_param.s_nssai = 0;
@@ -1425,10 +1429,6 @@ static void test4_func(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, recvbuf);
     testngap_recv(test_ue, recvbuf);
 
-    /* Send GTP-U ICMP Packet */
-    rv = test_gtpu_send_ping(gtpu, qos_flow, TEST_PING_IPV4);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
-
     /* Send UE context release complete */
     sendbuf = testngap_build_ue_context_release_complete(test_ue);
     ABTS_PTR_NOTNULL(tc, sendbuf);
@@ -1476,10 +1476,9 @@ static void test4_func(abts_case *tc, void *data)
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    /* Receive GTP-U ICMP Packet */
-    recvbuf = testgnb_gtpu_read(gtpu);
-    ABTS_PTR_NOTNULL(tc, recvbuf);
-    ogs_pkbuf_free(recvbuf);
+    /* Wait to setup N3 data connection.
+     * Otherwise, network-triggered service request is initiated */
+    ogs_msleep(100);
 
     /* Send GTP-U ICMP Packet */
     rv = test_gtpu_send_ping(gtpu, qos_flow, TEST_PING_IPV4);

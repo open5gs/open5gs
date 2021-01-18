@@ -193,40 +193,41 @@ int amf_nsmf_pdu_session_handle_update_sm_context(
                  * To Deliver N2 SM Content to gNB Temporarily,
                  * Store N2 SM Context in Session Context
                  */
-                if (sess->transfer.pdu_session_resource_setup_request) {
-                    /*
-                     * It should not be reached this way.
-                     * If the problem occurred, free the old n2smbuf
-                     */
-                    ogs_error("[%s:%d] N2 SM Content is duplicated",
-                            amf_ue->supi, sess->psi);
-                    ogs_pkbuf_free(
-                            sess->transfer.pdu_session_resource_setup_request);
-                }
-                /*
-                 * NOTE : The pkbuf created in the SBI message will be removed
-                 *        from ogs_sbi_message_free().
-                 *        So it must be copied and push a event queue.
-                 */
-                sess->transfer.pdu_session_resource_setup_request =
-                    ogs_pkbuf_copy(n2smbuf);
-                ogs_assert(sess->transfer.pdu_session_resource_setup_request);
+                AMF_SESS_STORE_N2_TRANSFER(
+                        sess, pdu_session_resource_setup_request,
+                        ogs_pkbuf_copy(n2smbuf));
 
-                if (SESSION_SYNC_DONE(amf_ue)) {
-                    nas_5gs_send_accept(amf_ue);
+                switch(amf_ue->nas.message_type) {
+                case OGS_NAS_5GS_REGISTRATION_REQUEST:
+                    if (SESSION_SYNC_DONE(amf_ue,
+                                AMF_RELEASE_SM_CONTEXT_REGISTRATION_ACCEPT) &&
+                        SESSION_SYNC_DONE(amf_ue,
+                            AMF_UPDATE_SM_CONTEXT_ACTIVATING)) {
+                        nas_5gs_send_registration_accept(amf_ue);
 
-                /*
-                 * After sending accept message, N2 SM context is freed
-                 * For checking memory, NULL pointer should be set to n2smbuf.
-                 */
-                    ogs_list_for_each(&amf_ue->sess_list, sess) {
-                        if (sess->transfer.pdu_session_resource_setup_request) {
-                            ogs_pkbuf_free(sess->
-                                transfer.pdu_session_resource_setup_request);
-                            sess->transfer.pdu_session_resource_setup_request =
-                                NULL;
-                        }
+                        /* After sending accept message,
+                         * N2 tranfer message is freed */
+                        AMF_UE_CLEAR_N2_TRANSFER(
+                                amf_ue, pdu_session_resource_setup_request);
                     }
+                    break;
+                case OGS_NAS_5GS_SERVICE_REQUEST:
+                    if (SESSION_SYNC_DONE(amf_ue,
+                                AMF_RELEASE_SM_CONTEXT_SERVICE_ACCEPT) &&
+                        SESSION_SYNC_DONE(amf_ue,
+                                AMF_UPDATE_SM_CONTEXT_ACTIVATING)) {
+                        nas_5gs_send_service_accept(amf_ue);
+
+                        /* After sending accept message,
+                         * N2 tranfer message is freed */
+                        AMF_UE_CLEAR_N2_TRANSFER(
+                                amf_ue, pdu_session_resource_setup_request);
+                    }
+                    break;
+                default:
+                    ogs_error("Unknown message type [%d]",
+                            amf_ue->nas.message_type);
+                    ogs_assert_if_reached();
                 }
                 break;
 
@@ -274,38 +275,15 @@ int amf_nsmf_pdu_session_handle_update_sm_context(
                  * To Deliver N2 SM Content to gNB Temporarily,
                  * Store N2 SM Context in Session Context
                  */
-                if (sess->transfer.path_switch_request_ack) {
-                    /*
-                     * It should not be reached this way.
-                     * If the problem occurred, free the old n2smbuf
-                     */
-                    ogs_error("[%s:%d] N2 SM Content is duplicated",
-                            amf_ue->supi, sess->psi);
-                    ogs_pkbuf_free(sess->transfer.path_switch_request_ack);
-                }
-                /*
-                 * NOTE : The pkbuf created in the SBI message will be removed
-                 *        from ogs_sbi_message_free().
-                 *        So it must be copied and push a event queue.
-                 */
-                sess->transfer.path_switch_request_ack =
-                    ogs_pkbuf_copy(n2smbuf);
-                ogs_assert(sess->transfer.path_switch_request_ack);
+                AMF_SESS_STORE_N2_TRANSFER(
+                        sess, path_switch_request_ack,
+                        ogs_pkbuf_copy(n2smbuf));
 
-                if (SESSION_SYNC_DONE(amf_ue)) {
+                if (SESSION_SYNC_DONE(amf_ue, state)) {
                     ngap_send_path_switch_ack(sess);
 
-                /*
-                 * After sending ack message, N2 SM context is freed
-                 * For checking memory, NULL pointer should be set to n2smbuf.
-                 */
-                    ogs_list_for_each(&amf_ue->sess_list, sess) {
-                        if (sess->transfer.path_switch_request_ack) {
-                            ogs_pkbuf_free(
-                                    sess->transfer.path_switch_request_ack);
-                            sess->transfer.path_switch_request_ack = NULL;
-                        }
-                    }
+                    /* After sending ack message, N2 SM context is freed */
+                    AMF_UE_CLEAR_N2_TRANSFER(amf_ue, path_switch_request_ack);
                 }
                 break;
 
@@ -351,7 +329,7 @@ int amf_nsmf_pdu_session_handle_update_sm_context(
                  * 6. UEContextReleaseComplete
                  */
 
-                if (SESSION_SYNC_DONE(amf_ue)) {
+                if (SESSION_SYNC_DONE(amf_ue, state)) {
                     ngap_send_amf_ue_context_release_command(amf_ue,
                             NGAP_Cause_PR_nas, NGAP_CauseNas_normal_release,
                             NGAP_UE_CTX_REL_NG_REMOVE_AND_UNLINK, 0);
@@ -360,6 +338,7 @@ int amf_nsmf_pdu_session_handle_update_sm_context(
             } else if (state == AMF_UPDATE_SM_CONTEXT_ACTIVATING) {
 
                 /* Not reached here */
+                ogs_assert_if_reached();
 
             } else if (state == AMF_UPDATE_SM_CONTEXT_N2_RELEASED) {
 
@@ -394,7 +373,7 @@ int amf_nsmf_pdu_session_handle_update_sm_context(
                  */
 
                 /* Nothing to do */
-                if (SESSION_SYNC_DONE(amf_ue)) {
+                if (SESSION_SYNC_DONE(amf_ue, state)) {
                     ran_ue_t *ran_ue = ran_ue_cycle(amf_ue->ran_ue);
                     if (ran_ue) {
                         ogs_debug("    SUPI[%s]", amf_ue->supi);
@@ -421,7 +400,7 @@ int amf_nsmf_pdu_session_handle_update_sm_context(
 
                 ogs_debug("[%s:%d] SM context remove", amf_ue->supi, sess->psi);
                 amf_nsmf_pdu_session_handle_release_sm_context(
-                        sess, AMF_RELEASE_SM_CONTEXT_NO_STATE);
+                        sess, AMF_SESS_SM_CONTEXT_NO_STATE);
             }
         }
     } else {
@@ -510,92 +489,112 @@ int amf_nsmf_pdu_session_handle_release_sm_context(amf_sess_t *sess, int state)
 
     amf_sess_remove(sess);
 
-    /* Check last session */
-    if (ogs_list_count(&amf_ue->sess_list) == 0) {
-
-        if (state == AMF_RELEASE_SM_CONTEXT_NG_CONTEXT_REMOVE) {
-            /*
-             * 1. Initial context setup failure
-             * 2. Release All SM contexts
-             * 3. UE Context release command
-             * 4. UE Context release complete
-             */
-            ngap_send_amf_ue_context_release_command(amf_ue,
-                    NGAP_Cause_PR_nas, NGAP_CauseNas_normal_release,
-                    NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE, 0);
-
-        } else if (state == AMF_RELEASE_SM_CONTEXT_REGISTRATION_ACCEPT) {
-            /*
-             * 1. Registration request
-             * 2. Release All SM contexts
-             * 3. Registration accept
-             */
+    if (state == AMF_RELEASE_SM_CONTEXT_REGISTRATION_ACCEPT) {
+        /*
+         * 1. Registration request
+         * 2. Release All SM contexts
+         * 3. Registration accept
+         */
+        if (SESSION_SYNC_DONE(amf_ue,
+                    AMF_RELEASE_SM_CONTEXT_REGISTRATION_ACCEPT) &&
+            SESSION_SYNC_DONE(amf_ue, AMF_UPDATE_SM_CONTEXT_ACTIVATING))
             nas_5gs_send_registration_accept(amf_ue);
 
-        } else if (state == AMF_RELEASE_SM_CONTEXT_SERVICE_ACCEPT) {
-            /*
-             * 1. Service request
-             * 2. Release All SM contexts
-             * 3. Service accept
-             */
+    } else if (state == AMF_RELEASE_SM_CONTEXT_SERVICE_ACCEPT) {
+        /*
+         * 1. Service request
+         * 2. Release All SM contexts
+         * 3. Service accept
+         */
+        if (SESSION_SYNC_DONE(amf_ue, AMF_RELEASE_SM_CONTEXT_SERVICE_ACCEPT) &&
+            SESSION_SYNC_DONE(amf_ue, AMF_UPDATE_SM_CONTEXT_ACTIVATING))
             nas_5gs_send_service_accept(amf_ue);
 
-        } else {
-            /* NO_STATE */
+    } else {
 
-            if (OGS_FSM_CHECK(&amf_ue->sm, gmm_state_authentication)) {
+        /* Check last session */
+        if (ogs_list_count(&amf_ue->sess_list) == 0) {
 
-                amf_ue_sbi_discover_and_send(OpenAPI_nf_type_AUSF, amf_ue, NULL,
-                        amf_nausf_auth_build_authenticate);
-
-            } else if (OGS_FSM_CHECK(&amf_ue->sm, gmm_state_de_registered)) {
+            if (state == AMF_RELEASE_SM_CONTEXT_NG_CONTEXT_REMOVE) {
                 /*
-                 * 1. PDU session release request
-                 * 2. PDUSessionResourceReleaseCommand +
-                 *    PDU session release command
-                 * 3. PDUSessionResourceReleaseREsponse
-                 * 4. PDU session release complete
-                 * 5. Deregistration request
-                 * 6. UEContextReleaseCommand
-                 * 7. UEContextReleaseComplete
-                 */
-
-                nas_5gs_send_de_registration_accept(amf_ue);
-
-            } else if (OGS_FSM_CHECK(&amf_ue->sm, gmm_state_registered)) {
-                /*
-                 * 1. PDU session release request
-                 * 2. PDUSessionResourceReleaseCommand +
-                 *    PDU session release command
-                 * 3. PDUSessionResourceReleaseREsponse
-                 * 4. PDU session release complete
-                 *
-                 * No Deregistration request in the above step
-                 *
-                 * So, Nothing to do!
-                 */
-            } else if (OGS_FSM_CHECK(&amf_ue->sm, gmm_state_exception)) {
-                /*
-                 * 1. GMM Exception
+                 * 1. Initial context setup failure
                  * 2. Release All SM contexts
                  * 3. UE Context release command
                  * 4. UE Context release complete
                  */
                 ngap_send_amf_ue_context_release_command(amf_ue,
                         NGAP_Cause_PR_nas, NGAP_CauseNas_normal_release,
-                        NGAP_UE_CTX_REL_UE_CONTEXT_REMOVE, 0);
+                        NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE, 0);
 
-            } else if (OGS_FSM_CHECK(&amf_ue->sm,
-                            gmm_state_initial_context_setup)) {
-                ogs_fatal("Release SM Context in initial-context-setup");
+            } else if (state == AMF_RELEASE_SM_CONTEXT_REGISTRATION_ACCEPT) {
+
+                /* Not reached here */
                 ogs_assert_if_reached();
-            } else if (OGS_FSM_CHECK(
-                        &amf_ue->sm, gmm_state_security_mode)) {
-                ogs_fatal("Release SM Context in security-mode");
+
+            } else if (state == AMF_RELEASE_SM_CONTEXT_SERVICE_ACCEPT) {
+
+                /* Not reached here */
                 ogs_assert_if_reached();
+
             } else {
-                ogs_fatal("Release SM Context : INVALID STATE");
-                ogs_assert_if_reached();
+                /* NO_STATE */
+
+                if (OGS_FSM_CHECK(&amf_ue->sm, gmm_state_authentication)) {
+
+                    amf_ue_sbi_discover_and_send(
+                            OpenAPI_nf_type_AUSF, amf_ue, NULL,
+                            amf_nausf_auth_build_authenticate);
+
+                } else if (OGS_FSM_CHECK(&amf_ue->sm,
+                            gmm_state_de_registered)) {
+                    /*
+                     * 1. PDU session release request
+                     * 2. PDUSessionResourceReleaseCommand +
+                     *    PDU session release command
+                     * 3. PDUSessionResourceReleaseREsponse
+                     * 4. PDU session release complete
+                     * 5. Deregistration request
+                     * 6. UEContextReleaseCommand
+                     * 7. UEContextReleaseComplete
+                     */
+
+                    nas_5gs_send_de_registration_accept(amf_ue);
+
+                } else if (OGS_FSM_CHECK(&amf_ue->sm, gmm_state_registered)) {
+                    /*
+                     * 1. PDU session release request
+                     * 2. PDUSessionResourceReleaseCommand +
+                     *    PDU session release command
+                     * 3. PDUSessionResourceReleaseREsponse
+                     * 4. PDU session release complete
+                     *
+                     * No Deregistration request in the above step
+                     *
+                     * So, Nothing to do!
+                     */
+                } else if (OGS_FSM_CHECK(&amf_ue->sm, gmm_state_exception)) {
+                    /*
+                     * 1. GMM Exception
+                     * 2. Release All SM contexts
+                     * 3. UE Context release command
+                     * 4. UE Context release complete
+                     */
+                    ngap_send_amf_ue_context_release_command(amf_ue,
+                            NGAP_Cause_PR_nas, NGAP_CauseNas_normal_release,
+                            NGAP_UE_CTX_REL_UE_CONTEXT_REMOVE, 0);
+
+                } else if (OGS_FSM_CHECK(&amf_ue->sm,
+                                gmm_state_initial_context_setup)) {
+                    ogs_fatal("Release SM Context in initial-context-setup");
+                    ogs_assert_if_reached();
+                } else if (OGS_FSM_CHECK(
+                            &amf_ue->sm, gmm_state_security_mode)) {
+                    ogs_fatal("Release SM Context in security-mode");
+                    ogs_assert_if_reached();
+                } else {
+                    ogs_fatal("Release SM Context : INVALID STATE");
+                    ogs_assert_if_reached();
+                }
             }
         }
     }

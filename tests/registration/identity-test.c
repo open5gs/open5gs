@@ -316,6 +316,7 @@ static void test1_func(abts_case *tc, void *data)
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
+    /* TODO : we need to analyze it */
     ogs_msleep(100);
 
     /* Send De-registration request */
@@ -358,7 +359,15 @@ static void test1_func(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, recvbuf);
     testngap_recv(test_ue, recvbuf);
 
+    /* TODO :
+     *
+     * I can't remeber why do I add the following sleep
+     * At this point, this commented out.
+     * I'll need to analyze it later.
+     */
+#if 0
     ogs_msleep(100);
+#endif
 
     /* INVALID SUCI */
     test_ue->mobile_identity_suci.scheme_output[0] = 0x99;
@@ -375,6 +384,8 @@ static void test1_func(abts_case *tc, void *data)
     recvbuf = testgnb_ngap_read(ngap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     testngap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc,
+            OGS_NAS_5GS_REGISTRATION_REJECT, test_ue->gmm_message_type);
 
     /* Receive UE context release command */
     recvbuf = testgnb_ngap_read(ngap);

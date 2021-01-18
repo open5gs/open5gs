@@ -687,7 +687,7 @@ sgwc_bearer_t *sgwc_bearer_find_by_error_indication_report(
         sgwc_sess_t *sess,
         ogs_pfcp_tlv_error_indication_report_t *error_indication_report)
 {
-    ogs_pfcp_f_teid_t *remote_f_teid;
+    ogs_pfcp_f_teid_t *remote_f_teid = NULL;
     sgwc_bearer_t *bearer = NULL;
     sgwc_tunnel_t *tunnel = NULL;
 

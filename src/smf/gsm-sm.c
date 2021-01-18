@@ -26,6 +26,7 @@
 #include "gsm-handler.h"
 #include "ngap-handler.h"
 #include "pfcp-path.h"
+#include "ngap-path.h"
 
 void smf_gsm_state_initial(ogs_fsm_t *s, smf_event_t *e)
 {
@@ -40,7 +41,7 @@ void smf_gsm_state_final(ogs_fsm_t *s, smf_event_t *e)
 
 void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
 {
-    int rv;
+    int rv, ngap_state;
     char *strerror = NULL;
     smf_ue_t *smf_ue = NULL;
     smf_sess_t *sess = NULL;
@@ -184,13 +185,6 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
         CASE(OGS_SBI_SERVICE_NAME_NAMF_COMM)
             SWITCH(sbi_message->h.resource.component[0])
             CASE(OGS_SBI_RESOURCE_NAME_UE_CONTEXTS)
-                if (sbi_message->res_status != OGS_SBI_HTTP_STATUS_OK &&
-                    sbi_message->res_status != OGS_SBI_HTTP_STATUS_ACCEPTED) {
-                    ogs_error("[%s:%d] HTTP response error [%d]",
-                        smf_ue->supi, sess->psi, sbi_message->res_status);
-                    break;
-                }
-
                 smf_namf_comm_handler_n1_n2_message_transfer(
                         sess, e->sbi.state, sbi_message);
                 break;
@@ -206,7 +200,7 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
         DEFAULT
             ogs_error("[%s:%d] Invalid API name [%s]",
                     smf_ue->supi, sess->psi, sbi_message->h.service.name);
-
+            ogs_assert_if_reached();
         END
         break;
 
@@ -269,9 +263,7 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
             ogs_sbi_server_send_error(stream,
                     OGS_SBI_HTTP_STATUS_BAD_REQUEST, NULL, strerror, NULL);
             ogs_free(strerror);
-            break;
         }
-
         break;
 
     case SMF_EVT_NGAP_MESSAGE:
@@ -307,7 +299,33 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
             break;
 
         case OpenAPI_n2_sm_info_type_PDU_RES_REL_RSP:
-            smf_sbi_send_response(stream, OGS_SBI_HTTP_STATUS_NO_CONTENT);
+            ngap_state = sess->ngap_state.pdu_session_resource_release;
+
+            /* Clear NGAP State */
+            sess->ngap_state.pdu_session_resource_release = SMF_NGAP_STATE_NONE;
+
+            if (ngap_state == SMF_NGAP_STATE_DELETE_TRIGGER_UE_REQUESTED) {
+                smf_sbi_send_response(stream, OGS_SBI_HTTP_STATUS_NO_CONTENT);
+            } else if (ngap_state ==
+                    SMF_NGAP_STATE_ERROR_INDICATION_RECEIVED_FROM_5G_AN) {
+                smf_n1_n2_message_transfer_param_t param;
+
+                smf_sbi_send_response(stream, OGS_SBI_HTTP_STATUS_NO_CONTENT);
+
+                memset(&param, 0, sizeof(param));
+                param.state = SMF_NETWORK_TRIGGERED_SERVICE_REQUEST;
+                param.n2smbuf =
+                    ngap_build_pdu_session_resource_setup_request_transfer(
+                            sess);
+                ogs_assert(param.n2smbuf);
+
+                param.n1n2_failure_txf_notif_uri = true;
+
+                smf_namf_comm_send_n1_n2_message_transfer(sess, &param);
+            } else {
+                ogs_fatal("Invalid state [%d]", ngap_state);
+                ogs_assert_if_reached();
+            }
             break;
 
         case OpenAPI_n2_sm_info_type_PATH_SWITCH_REQ:
@@ -323,12 +341,10 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
         default:
             ogs_error("Unknown message[%d]", e->ngap.type);
         }
-
         break;
 
     default:
         ogs_error("Unknown event [%s]", smf_event_get_name(e));
-        break;
     }
 }
 

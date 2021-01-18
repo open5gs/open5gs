@@ -902,18 +902,22 @@ static void test3_func(abts_case *tc, void *data)
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    /* Receive PDU session release command */
+    /* Receive PDUSessionResourceReleaseCommand +
+     * DL NAS transport +
+     * PDU session release command */
     recvbuf = testgnb_ngap_read(ngap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     testngap_recv(test_ue, recvbuf);
 
-    /* Send PDU session resource release response */
+    /* Send PDUSessionResourceReleaseResponse */
     sendbuf = testngap_build_pdu_session_resource_release_response(sess);
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    /* Send PDU session resource release complete */
+    /* Send UplinkNASTransport +
+     * UL NAS trasnport +
+     * PDU session resource release complete */
     sess->ul_nas_transport_param.request_type = 0;
     sess->ul_nas_transport_param.dnn = 0;
     sess->ul_nas_transport_param.s_nssai = 0;
@@ -1365,19 +1369,22 @@ static void test4_func(abts_case *tc, void *data)
         rv = testgnb_ngap_send(ngap, sendbuf);
         ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-        /* Receive PDU session release command */
+        /* Receive PDUSessionResourceReleaseCommand +
+         * DL NAS transport +
+         * PDU session release command */
         recvbuf = testgnb_ngap_read(ngap);
         ABTS_PTR_NOTNULL(tc, recvbuf);
         testngap_recv(test_ue, recvbuf);
 
-        /* Send PDU session resource release response */
-        sendbuf =
-            testngap_build_pdu_session_resource_release_response(sess);
+        /* Send PDUSessionResourceReleaseResponse */
+        sendbuf = testngap_build_pdu_session_resource_release_response(sess);
         ABTS_PTR_NOTNULL(tc, sendbuf);
         rv = testgnb_ngap_send(ngap, sendbuf);
         ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-        /* Send PDU session resource release complete */
+        /* Send UplinkNASTransport +
+         * UL NAS trasnport +
+         * PDU session resource release complete */
         sess->ul_nas_transport_param.request_type = 0;
         sess->ul_nas_transport_param.dnn = 0;
         sess->ul_nas_transport_param.s_nssai = 0;

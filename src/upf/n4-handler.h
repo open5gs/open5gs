@@ -36,6 +36,10 @@ void upf_n4_handle_session_deletion_request(
         upf_sess_t *sess, ogs_pfcp_xact_t *xact,
         ogs_pfcp_session_deletion_request_t *req);
 
+void upf_n4_handle_session_report_response(
+        upf_sess_t *sess, ogs_pfcp_xact_t *xact,
+        ogs_pfcp_session_report_response_t *rsp);
+
 #ifdef __cplusplus
 }
 #endif

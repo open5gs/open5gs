@@ -75,6 +75,7 @@ void smf_context_init(void)
     self.imsi_hash = ogs_hash_make();
     self.ipv4_hash = ogs_hash_make();
     self.ipv6_hash = ogs_hash_make();
+    self.n1n2message_hash = ogs_hash_make();
 
     context_initialized = 1;
 }
@@ -93,6 +94,8 @@ void smf_context_final(void)
     ogs_hash_destroy(self.ipv4_hash);
     ogs_assert(self.ipv6_hash);
     ogs_hash_destroy(self.ipv6_hash);
+    ogs_assert(self.n1n2message_hash);
+    ogs_hash_destroy(self.n1n2message_hash);
 
     ogs_pool_final(&smf_ue_pool);
     ogs_pool_final(&smf_bearer_pool);
@@ -1011,6 +1014,91 @@ void smf_sess_set_ue_ip(smf_sess_t *sess)
     }
 }
 
+void smf_sess_set_paging_n1n2message_location(
+        smf_sess_t *sess, char *n1n2message_location)
+{
+    ogs_assert(sess);
+    ogs_assert(n1n2message_location);
+
+    if (sess->paging.n1n2message_location) {
+        ogs_hash_set(self.n1n2message_hash,
+                sess->paging.n1n2message_location,
+                strlen(sess->paging.n1n2message_location),
+                NULL);
+        ogs_free(sess->paging.n1n2message_location);
+    }
+
+    sess->paging.n1n2message_location = ogs_strdup(n1n2message_location);
+    ogs_assert(sess->paging.n1n2message_location);
+
+    ogs_hash_set(self.n1n2message_hash,
+            sess->paging.n1n2message_location,
+            strlen(sess->paging.n1n2message_location),
+            sess);
+}
+
+smf_sess_t *smf_sess_find_by_error_indication_report(
+        smf_ue_t *smf_ue,
+        ogs_pfcp_tlv_error_indication_report_t *error_indication_report)
+{
+    smf_sess_t *sess = NULL;
+    ogs_pfcp_f_teid_t *remote_f_teid = NULL;
+
+    uint32_t teid;
+    uint16_t len;  /* OGS_IPV4_LEN or OGS_IPV6_LEN */
+    uint32_t addr[4];
+
+    ogs_assert(smf_ue);
+    ogs_assert(error_indication_report);
+
+    if (error_indication_report->presence == 0) {
+        ogs_error("No Error Indication Report");
+        return NULL;
+    }
+
+    if (error_indication_report->remote_f_teid.presence == 0) {
+        ogs_error("No Remote F-TEID");
+        return NULL;
+    }
+
+    remote_f_teid = error_indication_report->remote_f_teid.data;
+    ogs_assert(remote_f_teid);
+
+    teid = be32toh(remote_f_teid->teid);
+    if (remote_f_teid->ipv4 && remote_f_teid->ipv6) {
+        ogs_error("User plane should not set both IPv4 and IPv6");
+        return NULL;
+    } else if (remote_f_teid->ipv4) {
+        len = OGS_IPV4_LEN;
+        memcpy(addr, &remote_f_teid->addr, len);
+    } else if (remote_f_teid->ipv6) {
+        len = OGS_IPV6_LEN;
+        memcpy(addr, remote_f_teid->addr6, len);
+    } else {
+        ogs_error("No IPv4 and IPv6");
+        return NULL;
+    }
+
+    ogs_list_for_each(&smf_ue->sess_list, sess) {
+        if (teid == sess->gnb_n3_teid) {
+            if (len == OGS_IPV4_LEN && sess->gnb_n3_ip.ipv4 &&
+                memcmp(addr, &sess->gnb_n3_ip.addr, len) == 0) {
+                return sess;
+            } else if (len == OGS_IPV6_LEN && sess->gnb_n3_ip.ipv6 &&
+                        memcmp(addr, sess->gnb_n3_ip.addr6, len) == 0) {
+                return sess;
+            }
+        }
+    }
+
+    ogs_error("Cannot find the session context "
+            "[TEID:%d,LEN:%d,ADDR:%08x %08x %08x %08x]",
+            teid, len, be32toh(addr[0]), be32toh(addr[1]),
+            be32toh(addr[2]), be32toh(addr[3]));
+
+    return NULL;
+}
+
 void smf_sess_remove(smf_sess_t *sess)
 {
     int i;
@@ -1054,6 +1142,14 @@ void smf_sess_remove(smf_sess_t *sess)
     if (sess->ipv6) {
         ogs_hash_set(self.ipv6_hash, sess->ipv6->addr, OGS_IPV6_LEN, NULL);
         ogs_pfcp_ue_ip_free(sess->ipv6);
+    }
+
+    if (sess->paging.n1n2message_location) {
+        ogs_hash_set(self.n1n2message_hash,
+                sess->paging.n1n2message_location,
+                strlen(sess->paging.n1n2message_location),
+                NULL);
+        ogs_free(sess->paging.n1n2message_location);
     }
 
     if (sess->sm_context_ref)
@@ -1169,6 +1265,15 @@ smf_sess_t *smf_sess_find_by_ipv6(uint32_t *addr6)
     ogs_assert(self.ipv6_hash);
     ogs_assert(addr6);
     return (smf_sess_t *)ogs_hash_get(self.ipv6_hash, addr6, OGS_IPV6_LEN);
+}
+
+smf_sess_t *smf_sess_find_by_paging_n1n2message_location(
+        char *n1n2message_location)
+{
+    ogs_assert(self.n1n2message_hash);
+    ogs_assert(n1n2message_location);
+    return (smf_sess_t *)ogs_hash_get(self.n1n2message_hash,
+            n1n2message_location, strlen(n1n2message_location));
 }
 
 smf_bearer_t *smf_qos_flow_add(smf_sess_t *sess)

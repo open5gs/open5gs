@@ -200,12 +200,11 @@ ogs_pkbuf_t *s1ap_build_downlink_nas_transport(
     ogs_assert(emmbuf);
     ogs_assert(enb_ue);
 
-    ogs_debug("[MME] DownlinkNASTransport");
+    ogs_debug("DownlinkNASTransport");
 
     memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
     pdu.present = S1AP_S1AP_PDU_PR_initiatingMessage;
-    pdu.choice.initiatingMessage = 
-        CALLOC(1, sizeof(S1AP_InitiatingMessage_t));
+    pdu.choice.initiatingMessage = CALLOC(1, sizeof(S1AP_InitiatingMessage_t));
 
     initiatingMessage = pdu.choice.initiatingMessage;
     initiatingMessage->procedureCode =
@@ -288,12 +287,11 @@ ogs_pkbuf_t *s1ap_build_initial_context_setup_request(
     subscription_data = &mme_ue->subscription_data;
     ogs_assert(subscription_data);
 
-    ogs_debug("[MME] Initial context setup request");
+    ogs_debug("Initial context setup request");
 
     memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
     pdu.present = S1AP_S1AP_PDU_PR_initiatingMessage;
-    pdu.choice.initiatingMessage = 
-        CALLOC(1, sizeof(S1AP_InitiatingMessage_t));
+    pdu.choice.initiatingMessage = CALLOC(1, sizeof(S1AP_InitiatingMessage_t));
 
     initiatingMessage = pdu.choice.initiatingMessage;
     initiatingMessage->procedureCode =
@@ -641,12 +639,11 @@ ogs_pkbuf_t *s1ap_build_ue_context_modification_request(mme_ue_t *mme_ue)
     enb_ue = enb_ue_cycle(mme_ue->enb_ue);
     ogs_assert(enb_ue);
 
-    ogs_debug("[MME] UE context modification request");
+    ogs_debug("UE context modification request");
 
     memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
     pdu.present = S1AP_S1AP_PDU_PR_initiatingMessage;
-    pdu.choice.initiatingMessage = 
-        CALLOC(1, sizeof(S1AP_InitiatingMessage_t));
+    pdu.choice.initiatingMessage = CALLOC(1, sizeof(S1AP_InitiatingMessage_t));
 
     initiatingMessage = pdu.choice.initiatingMessage;
     initiatingMessage->procedureCode =
@@ -782,8 +779,7 @@ ogs_pkbuf_t *s1ap_build_ue_context_release_command(
 
     memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
     pdu.present = S1AP_S1AP_PDU_PR_initiatingMessage;
-    pdu.choice.initiatingMessage = 
-        CALLOC(1, sizeof(S1AP_InitiatingMessage_t));
+    pdu.choice.initiatingMessage = CALLOC(1, sizeof(S1AP_InitiatingMessage_t));
 
     initiatingMessage = pdu.choice.initiatingMessage;
     initiatingMessage->procedureCode = S1AP_ProcedureCode_id_UEContextRelease;
@@ -864,8 +860,7 @@ ogs_pkbuf_t *s1ap_build_e_rab_setup_request(
 
     memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
     pdu.present = S1AP_S1AP_PDU_PR_initiatingMessage;
-    pdu.choice.initiatingMessage = 
-        CALLOC(1, sizeof(S1AP_InitiatingMessage_t));
+    pdu.choice.initiatingMessage = CALLOC(1, sizeof(S1AP_InitiatingMessage_t));
 
     initiatingMessage = pdu.choice.initiatingMessage;
     initiatingMessage->procedureCode = S1AP_ProcedureCode_id_E_RABSetup;
@@ -994,11 +989,10 @@ ogs_pkbuf_t *s1ap_build_e_rab_modify_request(
     enb_ue = enb_ue_cycle(mme_ue->enb_ue);
     ogs_assert(enb_ue);
 
-    ogs_debug("[MME] E-RAB modify request");
+    ogs_debug("E-RAB modify request");
     memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
     pdu.present = S1AP_S1AP_PDU_PR_initiatingMessage;
-    pdu.choice.initiatingMessage = 
-        CALLOC(1, sizeof(S1AP_InitiatingMessage_t));
+    pdu.choice.initiatingMessage = CALLOC(1, sizeof(S1AP_InitiatingMessage_t));
 
     initiatingMessage = pdu.choice.initiatingMessage;
     initiatingMessage->procedureCode = S1AP_ProcedureCode_id_E_RABModify;
@@ -1125,12 +1119,11 @@ ogs_pkbuf_t *s1ap_build_e_rab_release_command(
     subscription_data = &mme_ue->subscription_data;
     ogs_assert(subscription_data);
 
-    ogs_debug("[MME] E-RAB release command");
+    ogs_debug("E-RAB release command");
 
     memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
     pdu.present = S1AP_S1AP_PDU_PR_initiatingMessage;
-    pdu.choice.initiatingMessage = 
-        CALLOC(1, sizeof(S1AP_InitiatingMessage_t));
+    pdu.choice.initiatingMessage = CALLOC(1, sizeof(S1AP_InitiatingMessage_t));
 
     initiatingMessage = pdu.choice.initiatingMessage;
     initiatingMessage->procedureCode = S1AP_ProcedureCode_id_E_RABRelease;
@@ -1250,12 +1243,11 @@ ogs_pkbuf_t *s1ap_build_paging(
 
     ogs_assert(mme_ue);
 
-    ogs_debug("[MME] Paging");
+    ogs_debug("Paging");
 
     memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
     pdu.present = S1AP_S1AP_PDU_PR_initiatingMessage;
-    pdu.choice.initiatingMessage = 
-        CALLOC(1, sizeof(S1AP_InitiatingMessage_t));
+    pdu.choice.initiatingMessage = CALLOC(1, sizeof(S1AP_InitiatingMessage_t));
 
     initiatingMessage = pdu.choice.initiatingMessage;
     initiatingMessage->procedureCode = S1AP_ProcedureCode_id_Paging;
@@ -1318,8 +1310,7 @@ ogs_pkbuf_t *s1ap_build_paging(
 
     /* Set Paging Identity */
     UEPagingID->present = S1AP_UEPagingID_PR_s_TMSI;
-    UEPagingID->choice.s_TMSI = 
-        CALLOC(1, sizeof(S1AP_S_TMSI_t));
+    UEPagingID->choice.s_TMSI = CALLOC(1, sizeof(S1AP_S_TMSI_t));
     ogs_asn_uint8_to_OCTET_STRING(mme_ue->guti.mme_code, 
             &UEPagingID->choice.s_TMSI->mMEC);
 
@@ -1364,12 +1355,11 @@ ogs_pkbuf_t *s1ap_build_mme_configuration_transfer(
 
     ogs_assert(son_configuration_transfer);
 
-    ogs_debug("[MME] MME Configuration Transfer");
+    ogs_debug("MME Configuration Transfer");
 
     memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
     pdu.present = S1AP_S1AP_PDU_PR_initiatingMessage;
-    pdu.choice.initiatingMessage = 
-        CALLOC(1, sizeof(S1AP_InitiatingMessage_t));
+    pdu.choice.initiatingMessage = CALLOC(1, sizeof(S1AP_InitiatingMessage_t));
 
     initiatingMessage = pdu.choice.initiatingMessage;
     initiatingMessage->procedureCode =
@@ -1415,7 +1405,7 @@ ogs_pkbuf_t *s1ap_build_path_switch_ack(mme_ue_t *mme_ue)
     enb_ue = enb_ue_cycle(mme_ue->enb_ue);
     ogs_assert(enb_ue);
 
-    ogs_debug("[MME] Path switch acknowledge");
+    ogs_debug("Path switch acknowledge");
 
     memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
     pdu.present = S1AP_S1AP_PDU_PR_successfulOutcome;
@@ -1492,7 +1482,7 @@ ogs_pkbuf_t *s1ap_build_path_switch_failure(
     S1AP_ENB_UE_S1AP_ID_t *ENB_UE_S1AP_ID = NULL;
     S1AP_Cause_t *Cause = NULL;
 
-    ogs_debug("[MME] Path switch failure");
+    ogs_debug("Path switch failure");
 
     memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
     pdu.present = S1AP_S1AP_PDU_PR_unsuccessfulOutcome;
@@ -1574,7 +1564,7 @@ ogs_pkbuf_t *s1ap_build_handover_command(enb_ue_t *source_ue)
     ogs_assert(source_ue);
     mme_ue = source_ue->mme_ue;
 
-    ogs_debug("[MME] Handover command");
+    ogs_debug("Handover command");
 
     memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
     pdu.present = S1AP_S1AP_PDU_PR_successfulOutcome;
@@ -1732,7 +1722,7 @@ ogs_pkbuf_t *s1ap_build_handover_preparation_failure(
     ogs_assert(source_ue);
     ogs_assert(cause);
 
-    ogs_debug("[MME] Handover preparation failure");
+    ogs_debug("Handover preparation failure");
 
     memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
     pdu.present = S1AP_S1AP_PDU_PR_unsuccessfulOutcome;
@@ -1830,12 +1820,11 @@ ogs_pkbuf_t *s1ap_build_handover_request(
     subscription_data = &mme_ue->subscription_data;
     ogs_assert(subscription_data);
 
-    ogs_debug("[MME] Handover request");
+    ogs_debug("Handover request");
 
     memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
     pdu.present = S1AP_S1AP_PDU_PR_initiatingMessage;
-    pdu.choice.initiatingMessage = 
-        CALLOC(1, sizeof(S1AP_InitiatingMessage_t));
+    pdu.choice.initiatingMessage = CALLOC(1, sizeof(S1AP_InitiatingMessage_t));
 
     initiatingMessage = pdu.choice.initiatingMessage;
     initiatingMessage->procedureCode =
@@ -2040,7 +2029,7 @@ ogs_pkbuf_t *s1ap_build_handover_cancel_ack(enb_ue_t *source_ue)
 
     ogs_assert(source_ue);
 
-    ogs_debug("[MME] Handover cancel acknowledge");
+    ogs_debug("Handover cancel acknowledge");
 
     memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
     pdu.present = S1AP_S1AP_PDU_PR_successfulOutcome;
@@ -2105,12 +2094,11 @@ ogs_pkbuf_t *s1ap_build_mme_status_transfer(
     ogs_assert(target_ue);
     ogs_assert(enb_statustransfer_transparentContainer);
     
-    ogs_debug("[MME] MME status transfer");
+    ogs_debug("MME status transfer");
 
     memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
     pdu.present = S1AP_S1AP_PDU_PR_initiatingMessage;
-    pdu.choice.initiatingMessage = 
-        CALLOC(1, sizeof(S1AP_InitiatingMessage_t));
+    pdu.choice.initiatingMessage = CALLOC(1, sizeof(S1AP_InitiatingMessage_t));
 
     initiatingMessage = pdu.choice.initiatingMessage;
     initiatingMessage->procedureCode = S1AP_ProcedureCode_id_MMEStatusTransfer;
@@ -2178,14 +2166,13 @@ ogs_pkbuf_t *s1ap_build_write_replace_warning_request(sbc_pws_data_t *sbc_pws)
     S1AP_DataCodingScheme_t *DataCodingScheme = NULL;
     S1AP_WarningMessageContents_t *WarningMessageContents = NULL;
 
-    ogs_debug("[MME] Write-replace warning request");
+    ogs_debug("Write-replace warning request");
 
     ogs_assert(sbc_pws);
 
     memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
     pdu.present = S1AP_S1AP_PDU_PR_initiatingMessage;
-    pdu.choice.initiatingMessage = 
-        CALLOC(1, sizeof(S1AP_InitiatingMessage_t));
+    pdu.choice.initiatingMessage = CALLOC(1, sizeof(S1AP_InitiatingMessage_t));
 
     initiatingMessage = pdu.choice.initiatingMessage;
     initiatingMessage->procedureCode =
@@ -2316,14 +2303,13 @@ ogs_pkbuf_t *s1ap_build_kill_request(sbc_pws_data_t *sbc_pws)
     S1AP_MessageIdentifier_t *MessageIdentifier = NULL;
     S1AP_SerialNumber_t *SerialNumber = NULL;
 
-    ogs_debug("[MME] Kill request");
+    ogs_debug("Kill request");
 
     ogs_assert(sbc_pws);
 
     memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
     pdu.present = S1AP_S1AP_PDU_PR_initiatingMessage;
-    pdu.choice.initiatingMessage = 
-        CALLOC(1, sizeof(S1AP_InitiatingMessage_t));
+    pdu.choice.initiatingMessage = CALLOC(1, sizeof(S1AP_InitiatingMessage_t));
 
     initiatingMessage = pdu.choice.initiatingMessage;
     initiatingMessage->procedureCode = S1AP_ProcedureCode_id_Kill;

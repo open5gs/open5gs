@@ -30,11 +30,10 @@ int amf_namf_comm_handle_n1_n2_message_transfer(
     int status;
 
     amf_ue_t *amf_ue = NULL;
-    ran_ue_t *ran_ue = NULL;
     amf_sess_t *sess = NULL;
 
-    ogs_pkbuf_t *n1smbuf = NULL;
-    ogs_pkbuf_t *n2smbuf = NULL;
+    ogs_pkbuf_t *n1buf = NULL;
+    ogs_pkbuf_t *n2buf = NULL;
 
     ogs_pkbuf_t *gmmbuf = NULL;
     ogs_pkbuf_t *ngapbuf = NULL;
@@ -63,47 +62,6 @@ int amf_namf_comm_handle_n1_n2_message_transfer(
         return OGS_ERROR;
     }
 
-    n1MessageContainer = N1N2MessageTransferReqData->n1_message_container;
-    if (!n1MessageContainer) {
-        ogs_error("No n1MessageContainer");
-        return OGS_ERROR;
-    }
-    n1MessageContent = n1MessageContainer->n1_message_content;
-    if (!n1MessageContent || !n1MessageContent->content_id) {
-        ogs_error("No n1MessageContent");
-        return OGS_ERROR;
-    }
-
-    n2InfoContainer = N1N2MessageTransferReqData->n2_info_container;
-    if (!n2InfoContainer) {
-        ogs_error("No n2InfoContainer");
-        return OGS_ERROR;
-    }
-    smInfo = n2InfoContainer->sm_info;
-    if (!smInfo) {
-        ogs_error("No smInfo");
-        return OGS_ERROR;
-    }
-    n2InfoContent = smInfo->n2_info_content;
-    if (!n2InfoContent) {
-        ogs_error("No n2InfoContent");
-        return OGS_ERROR;
-    }
-    switch (n2InfoContent->ngap_ie_type) {
-    case OpenAPI_ngap_ie_type_PDU_RES_SETUP_REQ:
-    case OpenAPI_ngap_ie_type_PDU_RES_MOD_REQ:
-        break;
-    default:
-        ogs_error("Not implemented ngap_ie_type[%d]",
-                n2InfoContent->ngap_ie_type);
-        return OGS_ERROR;
-    }
-    ngapData = n2InfoContent->ngap_data;
-    if (!ngapData || !ngapData->content_id) {
-        ogs_error("No ngapData");
-        return OGS_ERROR;
-    }
-
     pdu_session_id = N1N2MessageTransferReqData->pdu_session_id;
     if (pdu_session_id == OGS_NAS_PDU_SESSION_IDENTITY_UNASSIGNED) {
         ogs_error("No PDU Session Identity");
@@ -122,9 +80,6 @@ int amf_namf_comm_handle_n1_n2_message_transfer(
         return OGS_ERROR;
     }
 
-    ran_ue = ran_ue_cycle(amf_ue->ran_ue);
-    ogs_assert(ran_ue);
-
     sess = amf_sess_find_by_psi(amf_ue, pdu_session_id);
     if (!sess) {
         ogs_error("[%s] No PDU Session Context [%d]",
@@ -132,82 +87,278 @@ int amf_namf_comm_handle_n1_n2_message_transfer(
         return OGS_ERROR;
     }
 
-    n1smbuf = ogs_sbi_find_part_by_content_id(
-            recvmsg, n1MessageContent->content_id);
-    if (!n1smbuf) {
-        ogs_error("[%s] No N1 SM Content", amf_ue->supi);
-        return OGS_ERROR;
+    n1MessageContainer = N1N2MessageTransferReqData->n1_message_container;
+    if (n1MessageContainer) {
+        n1MessageContent = n1MessageContainer->n1_message_content;
+        if (!n1MessageContent || !n1MessageContent->content_id) {
+            ogs_error("No n1MessageContent");
+            return OGS_ERROR;
+        }
+
+        n1buf = ogs_sbi_find_part_by_content_id(
+                recvmsg, n1MessageContent->content_id);
+        if (!n1buf) {
+            ogs_error("[%s] No N1 SM Content", amf_ue->supi);
+            return OGS_ERROR;
+        }
+
+        /*
+         * NOTE : The pkbuf created in the SBI message will be removed
+         *        from ogs_sbi_message_free(), so it must be copied.
+         */
+        n1buf = ogs_pkbuf_copy(n1buf);
+        ogs_assert(n1buf);
     }
-    /*
-     * NOTE : The pkbuf created in the SBI message will be removed
-     *        from ogs_sbi_message_free(), so it must be copied.
-     */
-    n1smbuf = ogs_pkbuf_copy(n1smbuf);
-    ogs_assert(n1smbuf);
 
-    n2smbuf = ogs_sbi_find_part_by_content_id(recvmsg, ngapData->content_id);
-    if (!n2smbuf) {
-        ogs_error("[%s] No N2 SM Content", amf_ue->supi);
-        return OGS_ERROR;
+    n2InfoContainer = N1N2MessageTransferReqData->n2_info_container;
+    if (n2InfoContainer) {
+        smInfo = n2InfoContainer->sm_info;
+        if (!smInfo) {
+            ogs_error("No smInfo");
+            return OGS_ERROR;
+        }
+        n2InfoContent = smInfo->n2_info_content;
+        if (!n2InfoContent) {
+            ogs_error("No n2InfoContent");
+            return OGS_ERROR;
+        }
+
+        ngapData = n2InfoContent->ngap_data;
+        if (!ngapData || !ngapData->content_id) {
+            ogs_error("No ngapData");
+            return OGS_ERROR;
+        }
+        n2buf = ogs_sbi_find_part_by_content_id(
+                recvmsg, ngapData->content_id);
+        if (!n2buf) {
+            ogs_error("[%s] No N2 SM Content", amf_ue->supi);
+            return OGS_ERROR;
+        }
+
+        /*
+         * NOTE : The pkbuf created in the SBI message will be removed
+         *        from ogs_sbi_message_free(), so it must be copied.
+         */
+        n2buf = ogs_pkbuf_copy(n2buf);
+        ogs_assert(n2buf);
     }
-    /*
-     * NOTE : The pkbuf created in the SBI message will be removed
-     *        from ogs_sbi_message_free(), so it must be copied.
-     */
-    n2smbuf = ogs_pkbuf_copy(n2smbuf);
-    ogs_assert(n2smbuf);
-
-    status = OGS_SBI_HTTP_STATUS_OK;
-
-    gmmbuf = gmm_build_dl_nas_transport(sess,
-            OGS_NAS_PAYLOAD_CONTAINER_N1_SM_INFORMATION, n1smbuf, 0, 0);
-    ogs_assert(gmmbuf);
 
     switch (n2InfoContent->ngap_ie_type) {
     case OpenAPI_ngap_ie_type_PDU_RES_SETUP_REQ:
-        if (sess->pdu_session_establishment_accept) {
-            ogs_pkbuf_free(sess->pdu_session_establishment_accept);
-            sess->pdu_session_establishment_accept = NULL;
+    case OpenAPI_ngap_ie_type_PDU_RES_MOD_REQ:
+    case OpenAPI_ngap_ie_type_PDU_RES_REL_CMD:
+        /* N1 SM Message */
+        if (n1buf) {
+            gmmbuf = gmm_build_dl_nas_transport(sess,
+                    OGS_NAS_PAYLOAD_CONTAINER_N1_SM_INFORMATION, n1buf, 0, 0);
+            ogs_assert(gmmbuf);
+        }
+        break;
+    default:
+        ogs_error("Not implemented ngap_ie_type[%d]",
+                n2InfoContent->ngap_ie_type);
+        return OGS_ERROR;
+    }
+
+    memset(&sendmsg, 0, sizeof(sendmsg));
+
+    status = OGS_SBI_HTTP_STATUS_OK;
+
+    memset(&N1N2MessageTransferRspData, 0, sizeof(N1N2MessageTransferRspData));
+    N1N2MessageTransferRspData.cause =
+        OpenAPI_n1_n2_message_transfer_cause_N1_N2_TRANSFER_INITIATED;
+
+    sendmsg.N1N2MessageTransferRspData = &N1N2MessageTransferRspData;
+
+    switch (n2InfoContent->ngap_ie_type) {
+    case OpenAPI_ngap_ie_type_PDU_RES_SETUP_REQ:
+        if (!n2buf) {
+            ogs_error("[%s] No N2 SM Content", amf_ue->supi);
+            return OGS_ERROR;
         }
 
-        if (ran_ue->initial_context_setup_request_sent == true) {
-            ngapbuf = ngap_sess_build_pdu_session_resource_setup_request(
-                    sess, gmmbuf, n2smbuf);
-            ogs_assert(ngapbuf);
-        } else {
-            ngapbuf = ngap_sess_build_initial_context_setup_request(
-                    sess, gmmbuf, n2smbuf);
-            ogs_assert(ngapbuf);
+        if (gmmbuf) {
+            ran_ue_t *ran_ue = NULL;
 
-            ran_ue->initial_context_setup_request_sent = true;
-        }
+            /***********************************
+             * 4.3.2 PDU Session Establishment *
+             ***********************************/
 
-        if (SESSION_CONTEXT_IN_SMF(sess)) {
-            /*
-             * [1-CLIENT] /nsmf-pdusession/v1/sm-contexts
-             * [2-SERVER] /namf-comm/v1/ue-contexts/{supi}/n1-n2-messages
-             *
-             * If [2-SERVER] arrives after [1-CLIENT],
-             * sm-context-ref is created in [1-CLIENT].
-             * So, the PDU session establishment accpet can be transmitted now.
-             */
-            if (nas_5gs_send_to_gnb(amf_ue, ngapbuf) != OGS_OK) {
-                ogs_error("nas_5gs_send_to_gnb() failed");
-                status = OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR;
+            ran_ue = ran_ue_cycle(amf_ue->ran_ue);
+            ogs_assert(ran_ue);
+
+            if (sess->pdu_session_establishment_accept) {
+                ogs_pkbuf_free(sess->pdu_session_establishment_accept);
+                sess->pdu_session_establishment_accept = NULL;
             }
+
+            if (ran_ue->initial_context_setup_request_sent == true) {
+                ngapbuf = ngap_sess_build_pdu_session_resource_setup_request(
+                        sess, gmmbuf, n2buf);
+                ogs_assert(ngapbuf);
+            } else {
+                ngapbuf = ngap_sess_build_initial_context_setup_request(
+                        sess, gmmbuf, n2buf);
+                ogs_assert(ngapbuf);
+
+                ran_ue->initial_context_setup_request_sent = true;
+            }
+
+            if (SESSION_CONTEXT_IN_SMF(sess)) {
+                /*
+                 * [1-CLIENT] /nsmf-pdusession/v1/sm-contexts
+                 * [2-SERVER] /namf-comm/v1/ue-contexts/{supi}/n1-n2-messages
+                 *
+                 * If [2-SERVER] arrives after [1-CLIENT],
+                 * sm-context-ref is created in [1-CLIENT].
+                 * So, the PDU session establishment accpet can be transmitted.
+                 */
+                if (nas_5gs_send_to_gnb(amf_ue, ngapbuf) != OGS_OK)
+                    ogs_error("nas_5gs_send_to_gnb() failed");
+            } else {
+                sess->pdu_session_establishment_accept = ngapbuf;
+            }
+
         } else {
-            sess->pdu_session_establishment_accept = ngapbuf;
+            /*********************************************
+             * 4.2.3.3 Network Triggered Service Request *
+             *********************************************/
+
+            if (CM_IDLE(amf_ue)) {
+                ogs_sbi_server_t *server = NULL;
+                ogs_sbi_header_t header;
+                ogs_sbi_client_t *client = NULL;
+                ogs_sockaddr_t *addr = NULL;
+
+                if (!N1N2MessageTransferReqData->n1n2_failure_txf_notif_uri) {
+                    ogs_error("[%s:%d] No n1-n2-failure-notification-uri",
+                            amf_ue->supi, sess->psi);
+                    return OGS_ERROR;
+                }
+
+                addr = ogs_sbi_getaddr_from_uri(
+                        N1N2MessageTransferReqData->n1n2_failure_txf_notif_uri);
+                if (!addr) {
+                    ogs_error("[%s:%d] Invalid URI [%s]",
+                            amf_ue->supi, sess->psi,
+                            N1N2MessageTransferReqData->
+                                n1n2_failure_txf_notif_uri);
+                    return OGS_ERROR;;
+                }
+
+                client = ogs_sbi_client_find(addr);
+                if (!client) {
+                    client = ogs_sbi_client_add(addr);
+                    ogs_assert(client);
+                }
+                OGS_SETUP_SBI_CLIENT(&sess->paging, client);
+
+                ogs_freeaddrinfo(addr);
+
+                status = OGS_SBI_HTTP_STATUS_ACCEPTED;
+                N1N2MessageTransferRspData.cause =
+                    OpenAPI_n1_n2_message_transfer_cause_ATTEMPTING_TO_REACH_UE;
+
+                /* Location */
+                server = ogs_sbi_server_from_stream(stream);
+                ogs_assert(server);
+
+                memset(&header, 0, sizeof(header));
+                header.service.name = (char *)OGS_SBI_SERVICE_NAME_NAMF_COMM;
+                header.api.version = (char *)OGS_SBI_API_V1;
+                header.resource.component[0] =
+                    (char *)OGS_SBI_RESOURCE_NAME_UE_CONTEXTS;
+                header.resource.component[1] = amf_ue->supi;
+                header.resource.component[2] =
+                    (char *)OGS_SBI_RESOURCE_NAME_N1_N2_MESSAGES;
+                header.resource.component[3] = sess->sm_context_ref;
+
+                sendmsg.http.location = ogs_sbi_server_uri(server, &header);
+
+                /* Store Paging Info */
+                AMF_SESS_STORE_PAGING_INFO(
+                        sess, sendmsg.http.location,
+                        N1N2MessageTransferReqData->n1n2_failure_txf_notif_uri);
+
+                /* Store N2 Transfer message */
+                AMF_SESS_STORE_N2_TRANSFER(
+                        sess, pdu_session_resource_setup_request, n2buf);
+
+                ngap_send_paging(amf_ue);
+
+            } else if (CM_CONNECTED(amf_ue)) {
+                ngap_send_pdu_resource_setup_request(sess, n2buf);
+
+            } else {
+
+                ogs_fatal("[%s] Invalid AMF-UE state", amf_ue->supi);
+                ogs_assert_if_reached();
+
+            }
+
         }
         break;
 
     case OpenAPI_ngap_ie_type_PDU_RES_MOD_REQ:
-        ngapbuf = ngap_build_pdu_session_resource_modify_request(
-                sess, gmmbuf, n2smbuf);
-        ogs_assert(ngapbuf);
+        if (!gmmbuf) {
+            ogs_error("[%s] No N1 SM Content", amf_ue->supi);
+            return OGS_ERROR;
+        }
+        if (!n2buf) {
+            ogs_error("[%s] No N2 SM Content", amf_ue->supi);
+            return OGS_ERROR;
+        }
 
-        if (nas_5gs_send_to_gnb(amf_ue, ngapbuf) != OGS_OK) {
-            ogs_error("nas_5gs_send_to_gnb() failed");
-            status = OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR;
+        if (CM_IDLE(amf_ue)) {
+            ogs_fatal("[%s] IDLE state is not implemented", amf_ue->supi);
+            ogs_assert_if_reached();
+
+        } else if (CM_CONNECTED(amf_ue)) {
+            ngapbuf = ngap_build_pdu_session_resource_modify_request(
+                    sess, gmmbuf, n2buf);
+            ogs_assert(ngapbuf);
+
+            if (nas_5gs_send_to_gnb(amf_ue, ngapbuf) != OGS_OK)
+                ogs_error("nas_5gs_send_to_gnb() failed");
+
+        } else {
+            ogs_fatal("[%s] Invalid AMF-UE state", amf_ue->supi);
+            ogs_assert_if_reached();
+        }
+
+        break;
+
+    case OpenAPI_ngap_ie_type_PDU_RES_REL_CMD:
+        if (!n2buf) {
+            ogs_error("[%s] No N2 SM Content", amf_ue->supi);
+            return OGS_ERROR;
+        }
+
+        if (CM_IDLE(amf_ue)) {
+            if (gmmbuf)
+                ogs_pkbuf_free(gmmbuf);
+            if (n2buf)
+                ogs_pkbuf_free(n2buf);
+
+            if (N1N2MessageTransferReqData->skip_ind == true) {
+                N1N2MessageTransferRspData.cause =
+                    OpenAPI_n1_n2_message_transfer_cause_N1_MSG_NOT_TRANSFERRED;
+            } else {
+                ogs_fatal("[%s] No skipInd", amf_ue->supi);
+                ogs_assert_if_reached();
+            }
+
+        } else if (CM_CONNECTED(amf_ue)) {
+            ngapbuf = ngap_build_pdu_session_resource_release_command(
+                    sess, NULL, n2buf);
+            ogs_assert(ngapbuf);
+
+            if (nas_5gs_send_to_gnb(amf_ue, ngapbuf) != OGS_OK)
+                ogs_error("nas_5gs_send_to_gnb() failed");
+
+        } else {
+            ogs_fatal("[%s] Invalid AMF-UE state", amf_ue->supi);
+            ogs_assert_if_reached();
         }
         break;
 
@@ -217,20 +368,12 @@ int amf_namf_comm_handle_n1_n2_message_transfer(
         ogs_assert_if_reached();
     }
 
-    memset(&sendmsg, 0, sizeof(sendmsg));
-
-    if (status == OGS_SBI_HTTP_STATUS_OK) {
-        memset(&N1N2MessageTransferRspData, 0,
-                sizeof(N1N2MessageTransferRspData));
-        N1N2MessageTransferRspData.cause =
-            OpenAPI_n1_n2_message_transfer_cause_N1_N2_TRANSFER_INITIATED;
-
-        sendmsg.N1N2MessageTransferRspData = &N1N2MessageTransferRspData;
-    }
-
     response = ogs_sbi_build_response(&sendmsg, status);
     ogs_assert(response);
     ogs_sbi_server_send_response(stream, response);
+
+    if (sendmsg.http.location)
+        ogs_free(sendmsg.http.location);
 
     return OGS_OK;
 }
@@ -322,7 +465,7 @@ int amf_namf_callback_handle_sm_context_status(
 
         ogs_debug("[%s:%d] SM context remove", amf_ue->supi, sess->psi);
         amf_nsmf_pdu_session_handle_release_sm_context(
-                sess, AMF_RELEASE_SM_CONTEXT_NO_STATE);
+                sess, AMF_SESS_SM_CONTEXT_NO_STATE);
     }
 
 cleanup:

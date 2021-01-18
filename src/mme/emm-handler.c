@@ -99,7 +99,8 @@ int emm_handle_attach_request(mme_ue_t *mme_ue,
             ogs_plmn_id_hexdump(&enb_ue->saved.e_cgi.plmn_id),
             enb_ue->saved.e_cgi.cell_id);
 
-    /* Copy TAI and ECGI from enb_ue */
+    /* Copy Stream-No/TAI/ECGI from enb_ue */
+    mme_ue->enb_ostream_id = enb_ue->enb_ostream_id;
     memcpy(&mme_ue->tai, &enb_ue->saved.tai, sizeof(ogs_eps_tai_t));
     memcpy(&mme_ue->e_cgi, &enb_ue->saved.e_cgi, sizeof(ogs_e_cgi_t));
 
@@ -489,7 +490,8 @@ int emm_handle_tau_request(mme_ue_t *mme_ue,
             ogs_plmn_id_hexdump(&enb_ue->saved.e_cgi.plmn_id),
             enb_ue->saved.e_cgi.cell_id);
 
-    /* Copy TAI and ECGI from enb_ue */
+    /* Copy Stream-No/TAI/ECGI from enb_ue */
+    mme_ue->enb_ostream_id = enb_ue->enb_ostream_id;
     memcpy(&mme_ue->tai, &enb_ue->saved.tai, sizeof(ogs_eps_tai_t));
     memcpy(&mme_ue->e_cgi, &enb_ue->saved.e_cgi, sizeof(ogs_e_cgi_t));
 
@@ -605,7 +607,8 @@ int emm_handle_extended_service_request(mme_ue_t *mme_ue,
             ogs_plmn_id_hexdump(&enb_ue->saved.e_cgi.plmn_id),
             enb_ue->saved.e_cgi.cell_id);
 
-    /* Copy TAI and ECGI from enb_ue */
+    /* Copy Stream-No/TAI/ECGI from enb_ue */
+    mme_ue->enb_ostream_id = enb_ue->enb_ostream_id;
     memcpy(&mme_ue->tai, &enb_ue->saved.tai, sizeof(ogs_eps_tai_t));
     memcpy(&mme_ue->e_cgi, &enb_ue->saved.e_cgi, sizeof(ogs_e_cgi_t));
 

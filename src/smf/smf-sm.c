@@ -25,6 +25,7 @@
 #include "s5c-handler.h"
 #include "gx-handler.h"
 #include "nnrf-handler.h"
+#include "namf-handler.h"
 
 void smf_state_initial(ogs_fsm_t *s, smf_event_t *e)
 {
@@ -199,8 +200,7 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
                         sess, gx_message, gtp_xact);
                 break;
             default:
-                ogs_error("Not implemented(%d)",
-                        gx_message->cc_request_type);
+                ogs_error("Not implemented(%d)", gx_message->cc_request_type);
                 break;
             }
 
@@ -299,11 +299,9 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
                     break;
 
                 DEFAULT
-                    ogs_error("Invalid HTTP method [%s]",
-                            sbi_message.h.method);
+                    ogs_error("Invalid HTTP method [%s]", sbi_message.h.method);
                     ogs_sbi_server_send_error(stream,
-                            OGS_SBI_HTTP_STATUS_FORBIDDEN,
-                            &sbi_message,
+                            OGS_SBI_HTTP_STATUS_FORBIDDEN, &sbi_message,
                             "Invalid HTTP method", sbi_message.h.method);
                 END
                 break;
@@ -388,17 +386,24 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
             break;
 
         CASE(OGS_SBI_SERVICE_NAME_NSMF_CALLBACK)
-            SWITCH(sbi_message.h.resource.component[1])
-            CASE(OGS_SBI_RESOURCE_NAME_SM_POLICY_NOTIFY)
-                /* TODO */
-
+            SWITCH(sbi_message.h.resource.component[0])
+            CASE(OGS_SBI_RESOURCE_NAME_N1_N2_FAILURE_NOTIFY)
+                smf_namf_comm_handler_n1_n2_message_transfer_failure_notify(
+                        stream, &sbi_message);
+                break;
             DEFAULT
-                ogs_error("Invalid resource name [%s]",
-                        sbi_message.h.resource.component[1]);
-                ogs_sbi_server_send_error(stream,
-                        OGS_SBI_HTTP_STATUS_BAD_REQUEST, &sbi_message,
-                        "Invalid resource name",
-                        sbi_message.h.resource.component[1]);
+                SWITCH(sbi_message.h.resource.component[1])
+                CASE(OGS_SBI_RESOURCE_NAME_SM_POLICY_NOTIFY)
+                    /* TODO */
+
+                DEFAULT
+                    ogs_error("Invalid resource name [%s]",
+                            sbi_message.h.resource.component[1]);
+                    ogs_sbi_server_send_error(stream,
+                            OGS_SBI_HTTP_STATUS_BAD_REQUEST, &sbi_message,
+                            "Invalid resource name",
+                            sbi_message.h.resource.component[1]);
+                END
             END
             break;
 

@@ -133,6 +133,9 @@ void ogs_sbi_message_free(ogs_sbi_message_t *message)
     if (message->N1N2MessageTransferRspData)
         OpenAPI_n1_n2_message_transfer_rsp_data_free(
                 message->N1N2MessageTransferRspData);
+    if (message->N1N2MsgTxfrFailureNotification)
+        OpenAPI_n1_n2_msg_txfr_failure_notification_free(
+                message->N1N2MsgTxfrFailureNotification);
     if (message->SmContextStatusNotification)
         OpenAPI_sm_context_status_notification_free(
                 message->SmContextStatusNotification);
@@ -711,6 +714,10 @@ static char *build_json(ogs_sbi_message_t *message)
     } else if (message->N1N2MessageTransferRspData) {
         item = OpenAPI_n1_n2_message_transfer_rsp_data_convertToJSON(
                 message->N1N2MessageTransferRspData);
+        ogs_assert(item);
+    } else if (message->N1N2MsgTxfrFailureNotification) {
+        item = OpenAPI_n1_n2_msg_txfr_failure_notification_convertToJSON(
+                message->N1N2MsgTxfrFailureNotification);
         ogs_assert(item);
     } else if (message->SmContextStatusNotification) {
         item = OpenAPI_sm_context_status_notification_convertToJSON(
@@ -1369,6 +1376,25 @@ static int parse_json(ogs_sbi_message_t *message,
                 message->SmContextStatusNotification =
                     OpenAPI_sm_context_status_notification_parseFromJSON(item);
                 if (!message->SmContextStatusNotification) {
+                    rv = OGS_ERROR;
+                    ogs_error("JSON parse error");
+                }
+                break;
+
+            DEFAULT
+                rv = OGS_ERROR;
+                ogs_error("Unknown resource name [%s]",
+                        message->h.resource.component[1]);
+            END
+            break;
+
+        CASE(OGS_SBI_SERVICE_NAME_NSMF_CALLBACK)
+            SWITCH(message->h.resource.component[0])
+            CASE(OGS_SBI_RESOURCE_NAME_N1_N2_FAILURE_NOTIFY)
+                message->N1N2MsgTxfrFailureNotification =
+                    OpenAPI_n1_n2_msg_txfr_failure_notification_parseFromJSON(
+                            item);
+                if (!message->N1N2MsgTxfrFailureNotification) {
                     rv = OGS_ERROR;
                     ogs_error("JSON parse error");
                 }

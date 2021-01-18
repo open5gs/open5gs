@@ -440,14 +440,12 @@ bool smf_nsmf_handle_update_sm_context(
 
         } else {
             char *strerror = ogs_msprintf("[%s:%d] Invalid upCnxState [%d]",
-                smf_ue->supi, sess->psi,
-                SmContextUpdateData->up_cnx_state);
+                smf_ue->supi, sess->psi, SmContextUpdateData->up_cnx_state);
             ogs_assert(strerror);
 
             ogs_error("%s", strerror);
             smf_sbi_send_sm_context_update_error(stream,
-                    OGS_SBI_HTTP_STATUS_BAD_REQUEST, strerror,
-                    NULL, NULL, NULL);
+                OGS_SBI_HTTP_STATUS_BAD_REQUEST, strerror, NULL, NULL, NULL);
             ogs_free(strerror);
 
             return false;

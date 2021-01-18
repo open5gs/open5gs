@@ -25,15 +25,14 @@
 int amf_nudm_sdm_handle_provisioned(
         amf_ue_t *amf_ue, ogs_sbi_message_t *recvmsg)
 {
+    int i;
+
     ogs_assert(amf_ue);
     ogs_assert(recvmsg);
 
     SWITCH(recvmsg->h.resource.component[1])
     CASE(OGS_SBI_RESOURCE_NAME_AM_DATA)
         if (recvmsg->AccessAndMobilitySubscriptionData) {
-            OpenAPI_ambr_rm_t *ue_ambr =
-                recvmsg->AccessAndMobilitySubscriptionData->
-                    subscribed_ue_ambr;
             OpenAPI_list_t *gpsiList =
                 recvmsg->AccessAndMobilitySubscriptionData->gpsis;
             OpenAPI_ambr_rm_t *SubscribedUeAmbr =
@@ -42,15 +41,14 @@ int amf_nudm_sdm_handle_provisioned(
                 recvmsg->AccessAndMobilitySubscriptionData->subscribed_dnn_list;
             OpenAPI_lnode_t *node = NULL;
 
-            if (ue_ambr) {
-                amf_ue->ue_ambr.uplink =
-                    ogs_sbi_bitrate_from_string(ue_ambr->uplink);
-                amf_ue->ue_ambr.downlink =
-                    ogs_sbi_bitrate_from_string(ue_ambr->downlink);
+            /* Clear MSISDN */
+            for (i = 0; i < amf_ue->num_of_msisdn; i++) {
+                ogs_assert(amf_ue->msisdn[i]);
+                ogs_free(amf_ue->msisdn[i]);
             }
+            amf_ue->num_of_msisdn = 0;
 
             if (gpsiList) {
-                amf_ue->num_of_msisdn = 0;
                 OpenAPI_list_for_each(gpsiList, node) {
                     if (node->data) {
                         char *gpsi = NULL;
@@ -75,12 +73,23 @@ int amf_nudm_sdm_handle_provisioned(
                 }
             }
 
+            /* Clear Subscribed-UE-AMBR */
+            amf_ue->ue_ambr.uplink = 0;
+            amf_ue->ue_ambr.downlink = 0;
+
             if (SubscribedUeAmbr) {
                 amf_ue->ue_ambr.uplink =
                     ogs_sbi_bitrate_from_string(SubscribedUeAmbr->uplink);
                 amf_ue->ue_ambr.downlink =
                     ogs_sbi_bitrate_from_string(SubscribedUeAmbr->downlink);
             }
+
+            /* Clear Subscribed-DNN */
+            for (i = 0; i < amf_ue->num_of_subscribed_dnn; i++) {
+                ogs_assert(amf_ue->subscribed_dnn[i]);
+                ogs_free(amf_ue->subscribed_dnn[i]);
+            }
+            amf_ue->num_of_subscribed_dnn = 0;
 
             if (SubscribedDnnList) {
                 OpenAPI_list_for_each(SubscribedDnnList, node) {

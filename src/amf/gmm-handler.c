@@ -102,8 +102,11 @@ int gmm_handle_registration_request(amf_ue_t *amf_ue,
     /*
      * REGISTRATION_REQUEST
      * SERVICE_REQUEST
+     *   Clear N2 Transfer
      *   Clear Timer and Message
      */
+    AMF_UE_CLEAR_PAGING_INFO(amf_ue);
+    AMF_UE_CLEAR_N2_TRANSFER(amf_ue, pdu_session_resource_setup_request);
     CLEAR_AMF_UE_ALL_TIMERS(amf_ue);
 
     if (SECURITY_CONTEXT_IS_VALID(amf_ue)) {
@@ -126,7 +129,8 @@ int gmm_handle_registration_request(amf_ue_t *amf_ue,
             ogs_plmn_id_hexdump(&ran_ue->saved.nr_cgi.plmn_id),
             (long long)ran_ue->saved.nr_cgi.cell_id);
 
-    /* Copy TAI and ECGI from ran_ue */
+    /* Copy Stream-No/TAI/ECGI from enb_ue */
+    amf_ue->gnb_ostream_id = ran_ue->gnb_ostream_id;
     memcpy(&amf_ue->tai, &ran_ue->saved.tai, sizeof(ogs_5gs_tai_t));
     memcpy(&amf_ue->nr_cgi, &ran_ue->saved.nr_cgi, sizeof(ogs_nr_cgi_t));
     amf_ue->ue_location_timestamp = ogs_time_now();
@@ -270,36 +274,6 @@ int gmm_handle_registration_update(amf_ue_t *amf_ue,
     }
 
     if ((registration_request->presencemask &
-        OGS_NAS_5GS_REGISTRATION_REQUEST_UPLINK_DATA_STATUS_PRESENT) == 0) {
-        amf_ue->nas.present.uplink_data_status = 0;
-    } else {
-        amf_ue->nas.present.uplink_data_status = 1;
-
-        psimask = 0;
-        psimask |= uplink_data_status->psi << 8;
-        psimask |= uplink_data_status->psi >> 8;
-
-        ogs_list_for_each(&amf_ue->sess_list, sess) {
-            if (psimask & (1 << sess->psi)) {
-#if REMOVED
-    /*
-     * TS23.502
-     * 4.2.3.2 UE Triggered Service Request
-     *
-     * Step 4. The Nsmf_PDUSession_UpdateSMContext Request is invoked:
-     *
-     *  - If the UE identifies List Of PDU Sessions To Be Activated
-     *    in the Service Request message;
-     *          if (sess->smfUpCnxState == OpenAPI_up_cnx_state_DEACTIVATED)
-     */
-#endif
-                if (SESSION_CONTEXT_IN_SMF(sess))
-                    amf_sbi_send_activating_session(sess);
-            }
-        }
-    }
-
-    if ((registration_request->presencemask &
             OGS_NAS_5GS_REGISTRATION_REQUEST_PDU_SESSION_STATUS_PRESENT) == 0) {
         amf_ue->nas.present.pdu_session_status = 0;
     } else {
@@ -314,6 +288,24 @@ int gmm_handle_registration_update(amf_ue_t *amf_ue,
                 if (SESSION_CONTEXT_IN_SMF(sess))
                     amf_sbi_send_release_session(
                             sess, AMF_RELEASE_SM_CONTEXT_REGISTRATION_ACCEPT);
+            }
+        }
+    }
+
+    if ((registration_request->presencemask &
+        OGS_NAS_5GS_REGISTRATION_REQUEST_UPLINK_DATA_STATUS_PRESENT) == 0) {
+        amf_ue->nas.present.uplink_data_status = 0;
+    } else {
+        amf_ue->nas.present.uplink_data_status = 1;
+
+        psimask = 0;
+        psimask |= uplink_data_status->psi << 8;
+        psimask |= uplink_data_status->psi >> 8;
+
+        ogs_list_for_each(&amf_ue->sess_list, sess) {
+            if (psimask & (1 << sess->psi)) {
+                if (SESSION_CONTEXT_IN_SMF(sess))
+                    amf_sbi_send_activating_session(sess);
             }
         }
     }
@@ -346,8 +338,10 @@ int gmm_handle_service_request(amf_ue_t *amf_ue,
     /*
      * REGISTRATION_REQUEST
      * SERVICE_REQUEST
+     *   Clear Paging Info
      *   Clear Timer and Message
      */
+    AMF_UE_CLEAR_PAGING_INFO(amf_ue);
     CLEAR_AMF_UE_ALL_TIMERS(amf_ue);
 
     if (SECURITY_CONTEXT_IS_VALID(amf_ue)) {
@@ -370,7 +364,8 @@ int gmm_handle_service_request(amf_ue_t *amf_ue,
             ogs_plmn_id_hexdump(&ran_ue->saved.nr_cgi.plmn_id),
             (long long)ran_ue->saved.nr_cgi.cell_id);
 
-    /* Copy TAI and ECGI from ran_ue */
+    /* Copy Stream-No/TAI/ECGI from enb_ue */
+    amf_ue->gnb_ostream_id = ran_ue->gnb_ostream_id;
     memcpy(&amf_ue->tai, &ran_ue->saved.tai, sizeof(ogs_5gs_tai_t));
     memcpy(&amf_ue->nr_cgi, &ran_ue->saved.nr_cgi, sizeof(ogs_nr_cgi_t));
     amf_ue->ue_location_timestamp = ogs_time_now();
@@ -423,44 +418,6 @@ int gmm_handle_service_update(amf_ue_t *amf_ue,
 
     xact_count = amf_sess_xact_count(amf_ue);
 
-    if ((service_request->presencemask &
-        OGS_NAS_5GS_SERVICE_REQUEST_ALLOWED_PDU_SESSION_STATUS_PRESENT) == 0) {
-        amf_ue->nas.present.allowed_pdu_session_status = 0;
-    } else {
-        amf_ue->nas.present.allowed_pdu_session_status = 1;
-        ogs_error("Not implemented for Allowed PDU Session Status IE");
-    }
-
-    if ((service_request->presencemask &
-            OGS_NAS_5GS_SERVICE_REQUEST_UPLINK_DATA_STATUS_PRESENT) == 0) {
-        amf_ue->nas.present.uplink_data_status = 0;
-    } else {
-        amf_ue->nas.present.uplink_data_status = 1;
-
-        psimask = 0;
-        psimask |= uplink_data_status->psi << 8;
-        psimask |= uplink_data_status->psi >> 8;
-
-        ogs_list_for_each(&amf_ue->sess_list, sess) {
-            if (psimask & (1 << sess->psi)) {
-#if REMOVED
-    /*
-     * TS23.502
-     * 4.2.3.2 UE Triggered Service Request
-     *
-     * Step 4. The Nsmf_PDUSession_UpdateSMContext Request is invoked:
-     *
-     *  - If the UE identifies List Of PDU Sessions To Be Activated
-     *    in the Service Request message;
-     *          if (sess->smfUpCnxState == OpenAPI_up_cnx_state_DEACTIVATED)
-     */
-#endif
-                if (SESSION_CONTEXT_IN_SMF(sess))
-                    amf_sbi_send_activating_session(sess);
-            }
-        }
-    }
-
     /*
      * TS24.501
      * 5.6.1.5 Service request procedure not accepted by the network
@@ -491,6 +448,32 @@ int gmm_handle_service_update(amf_ue_t *amf_ue,
                 if (SESSION_CONTEXT_IN_SMF(sess))
                     amf_sbi_send_release_session(
                             sess, AMF_RELEASE_SM_CONTEXT_SERVICE_ACCEPT);
+            }
+        }
+    }
+
+    if ((service_request->presencemask &
+        OGS_NAS_5GS_SERVICE_REQUEST_ALLOWED_PDU_SESSION_STATUS_PRESENT) == 0) {
+        amf_ue->nas.present.allowed_pdu_session_status = 0;
+    } else {
+        amf_ue->nas.present.allowed_pdu_session_status = 1;
+        ogs_error("Not implemented for Allowed PDU Session Status IE");
+    }
+
+    if ((service_request->presencemask &
+            OGS_NAS_5GS_SERVICE_REQUEST_UPLINK_DATA_STATUS_PRESENT) == 0) {
+        amf_ue->nas.present.uplink_data_status = 0;
+    } else {
+        amf_ue->nas.present.uplink_data_status = 1;
+
+        psimask = 0;
+        psimask |= uplink_data_status->psi << 8;
+        psimask |= uplink_data_status->psi >> 8;
+
+        ogs_list_for_each(&amf_ue->sess_list, sess) {
+            if (psimask & (1 << sess->psi)) {
+                if (SESSION_CONTEXT_IN_SMF(sess))
+                    amf_sbi_send_activating_session(sess);
             }
         }
     }
@@ -527,8 +510,7 @@ int gmm_handle_deregistration_request(amf_ue_t *amf_ue,
 
     ogs_info("[%s]    SUCI", amf_ue->suci);
 
-    amf_sbi_send_release_all_sessions(
-            amf_ue, AMF_RELEASE_SM_CONTEXT_NO_STATE);
+    amf_sbi_send_release_all_sessions(amf_ue, AMF_SESS_SM_CONTEXT_NO_STATE);
 
     if (ogs_list_count(&amf_ue->sess_list) == 0)
         nas_5gs_send_de_registration_accept(amf_ue);
@@ -810,7 +792,7 @@ int gmm_handle_ul_nas_transport(amf_ue_t *amf_ue,
             }
 
             amf_sess_sbi_discover_and_send(OpenAPI_nf_type_SMF,
-                    sess, AMF_UPDATE_SM_CONTEXT_NO_STATE, NULL,
+                    sess, AMF_SESS_SM_CONTEXT_NO_STATE, NULL,
                     amf_nsmf_pdu_session_build_create_sm_context);
 
         } else {

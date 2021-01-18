@@ -250,3 +250,46 @@ void upf_pfcp_send_session_deletion_response(ogs_pfcp_xact_t *xact,
     rv = ogs_pfcp_xact_commit(xact);
     ogs_expect(rv == OGS_OK);
 }
+
+static void sess_timeout(ogs_pfcp_xact_t *xact, void *data)
+{
+    uint8_t type;
+
+    ogs_assert(xact);
+    type = xact->seq[0].type;
+
+    switch (type) {
+    case OGS_PFCP_SESSION_REPORT_REQUEST_TYPE:
+        ogs_error("No PFCP session report response");
+        break;
+    default:
+        ogs_error("Not implemented [type:%d]", type);
+        break;
+    }
+}
+
+void upf_pfcp_send_session_report_request(
+        upf_sess_t *sess, ogs_pfcp_user_plane_report_t *report)
+{
+    int rv;
+    ogs_pkbuf_t *n4buf = NULL;
+    ogs_pfcp_header_t h;
+    ogs_pfcp_xact_t *xact = NULL;
+
+    ogs_assert(sess);
+    ogs_assert(report);
+
+    memset(&h, 0, sizeof(ogs_pfcp_header_t));
+    h.type = OGS_PFCP_SESSION_REPORT_REQUEST_TYPE;
+    h.seid = sess->smf_n4_seid;
+
+    n4buf = ogs_pfcp_build_session_report_request(h.type, report);
+    ogs_expect_or_return(n4buf);
+
+    xact = ogs_pfcp_xact_local_create(
+            sess->pfcp_node, &h, n4buf, sess_timeout, sess);
+    ogs_expect_or_return(xact);
+
+    rv = ogs_pfcp_xact_commit(xact);
+    ogs_expect(rv == OGS_OK);
+}

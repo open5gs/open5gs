@@ -447,14 +447,18 @@ static void test1_func(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, 0x0000, test_ue->pdu_session_status);
     ABTS_INT_EQUAL(tc, 0x0000, test_ue->pdu_session_reactivation_result);
 
-    /* Send GTP-U ICMP Packet */
-    rv = test_gtpu_send_ping(gtpu, qos_flow, TEST_PING_IPV4);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
-
     /* Send Initial context setup response */
     sendbuf = testngap_build_initial_context_setup_response(test_ue, true);
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Wait to setup N3 data connection.
+     * Otherwise, network-triggered service request is initiated */
+    ogs_msleep(100);
+
+    /* Send GTP-U ICMP Packet */
+    rv = test_gtpu_send_ping(gtpu, qos_flow, TEST_PING_IPV4);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* Receive GTP-U ICMP Packet */

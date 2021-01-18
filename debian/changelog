@@ -1,3 +1,9 @@
+open5gs (2.1.4) unstable; urgency=medium
+
+  * Paging added
+
+ -- Sukchan Lee <acetcom@gmail.com>  Mon, 18 Jan 2021 15:53:28 +0000
+
 open5gs (2.1.3) unstable; urgency=medium
 
   * Bug Fixed

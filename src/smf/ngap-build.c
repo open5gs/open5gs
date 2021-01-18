@@ -276,10 +276,14 @@ ogs_pkbuf_t *ngap_build_qos_flow_resource_modify_request_transfer(
 }
 
 ogs_pkbuf_t *ngap_build_pdu_session_resource_release_command_transfer(
-        NGAP_Cause_PR group, long cause)
+        smf_sess_t *sess, int state, NGAP_Cause_PR group, long cause)
 {
     NGAP_PDUSessionResourceReleaseCommandTransfer_t message;
     NGAP_Cause_t *Cause = NULL;
+
+    ogs_assert(sess);
+    ogs_assert(state);
+    sess->ngap_state.pdu_session_resource_release = state;
 
     ogs_debug("PDUSessionResourceReleaseCommandTransfer");
     memset(&message, 0,

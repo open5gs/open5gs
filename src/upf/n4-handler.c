@@ -431,3 +431,39 @@ void upf_n4_handle_session_deletion_request(
 
     upf_sess_remove(sess);
 }
+
+void upf_n4_handle_session_report_response(
+        upf_sess_t *sess, ogs_pfcp_xact_t *xact,
+        ogs_pfcp_session_report_response_t *rsp)
+{
+    uint8_t cause_value = 0;
+
+    ogs_assert(xact);
+    ogs_assert(rsp);
+
+    ogs_pfcp_xact_commit(xact);
+
+    ogs_debug("Session report resopnse");
+
+    cause_value = OGS_PFCP_CAUSE_REQUEST_ACCEPTED;
+
+    if (!sess) {
+        ogs_warn("No Context");
+        cause_value = OGS_PFCP_CAUSE_SESSION_CONTEXT_NOT_FOUND;
+    }
+
+    if (rsp->cause.presence) {
+        if (rsp->cause.u8 != OGS_PFCP_CAUSE_REQUEST_ACCEPTED) {
+            ogs_error("PFCP Cause[%d] : Not Accepted", rsp->cause.u8);
+            cause_value = rsp->cause.u8;
+        }
+    } else {
+        ogs_error("No Cause");
+        cause_value = OGS_PFCP_CAUSE_MANDATORY_IE_MISSING;
+    }
+
+    if (cause_value != OGS_PFCP_CAUSE_REQUEST_ACCEPTED) {
+        ogs_error("Cause request not accepted[%d]", cause_value);
+        return;
+    }
+}
