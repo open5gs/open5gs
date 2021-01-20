@@ -250,8 +250,7 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, ogs_s1ap_message_t *message)
 
     if (!ENB_UE_S1AP_ID) {
         ogs_error("No ENB_UE_S1AP_ID");
-        s1ap_send_error_indication(enb,
-                NULL, ENB_UE_S1AP_ID,
+        s1ap_send_error_indication(enb, NULL, ENB_UE_S1AP_ID,
                 S1AP_Cause_PR_protocol, S1AP_CauseProtocol_semantic_error);
         return;
     }
@@ -315,30 +314,50 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, ogs_s1ap_message_t *message)
         }
     }
 
-    ogs_assert(TAI);
+    if (!NAS_PDU) {
+        ogs_error("No NAS_PDU");
+        s1ap_send_error_indication(enb, NULL, ENB_UE_S1AP_ID,
+                S1AP_Cause_PR_protocol, S1AP_CauseProtocol_semantic_error);
+        return;
+    }
+
+    if (!TAI) {
+        ogs_error("No TAI");
+        s1ap_send_error_indication(enb, NULL, ENB_UE_S1AP_ID,
+                S1AP_Cause_PR_protocol, S1AP_CauseProtocol_semantic_error);
+        return;
+    }
+
+    if (!EUTRAN_CGI) {
+        ogs_error("No EUTRAN_CGI");
+        s1ap_send_error_indication(enb, NULL, ENB_UE_S1AP_ID,
+                S1AP_Cause_PR_protocol, S1AP_CauseProtocol_semantic_error);
+        return;
+    }
+
     pLMNidentity = &TAI->pLMNidentity;
     ogs_assert(pLMNidentity && pLMNidentity->size == sizeof(ogs_plmn_id_t));
     tAC = &TAI->tAC;
     ogs_assert(tAC && tAC->size == sizeof(uint16_t));
 
-    memcpy(&enb_ue->saved.tai.plmn_id, pLMNidentity->buf, 
+    memcpy(&enb_ue->saved.tai.plmn_id, pLMNidentity->buf,
             sizeof(enb_ue->saved.tai.plmn_id));
     memcpy(&enb_ue->saved.tai.tac, tAC->buf, sizeof(enb_ue->saved.tai.tac));
     enb_ue->saved.tai.tac = be16toh(enb_ue->saved.tai.tac);
     
-    ogs_assert(EUTRAN_CGI);
     pLMNidentity = &EUTRAN_CGI->pLMNidentity;
     ogs_assert(pLMNidentity && pLMNidentity->size == sizeof(ogs_plmn_id_t));
     cell_ID = &EUTRAN_CGI->cell_ID;
     ogs_assert(cell_ID);
-    memcpy(&enb_ue->saved.e_cgi.plmn_id, pLMNidentity->buf, 
+    memcpy(&enb_ue->saved.e_cgi.plmn_id, pLMNidentity->buf,
             sizeof(enb_ue->saved.e_cgi.plmn_id));
     memcpy(&enb_ue->saved.e_cgi.cell_id, cell_ID->buf,
             sizeof(enb_ue->saved.e_cgi.cell_id));
     enb_ue->saved.e_cgi.cell_id = (be32toh(enb_ue->saved.e_cgi.cell_id) >> 4);
 
-    ogs_info("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d] TAC[%d]",
-        enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id, enb_ue->saved.tai.tac);
+    ogs_info("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d] TAC[%d] CellID[0x%x]",
+        enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id,
+        enb_ue->saved.tai.tac, enb_ue->saved.e_cgi.cell_id);
 
     s1ap_send_to_nas(enb_ue,
             S1AP_ProcedureCode_id_initialUEMessage, NAS_PDU);
@@ -354,8 +373,15 @@ void s1ap_handle_uplink_nas_transport(
     S1AP_UplinkNASTransport_t *UplinkNASTransport = NULL;
 
     S1AP_UplinkNASTransport_IEs_t *ie = NULL;
+    S1AP_MME_UE_S1AP_ID_t *MME_UE_S1AP_ID = NULL;
     S1AP_ENB_UE_S1AP_ID_t *ENB_UE_S1AP_ID = NULL;
     S1AP_NAS_PDU_t *NAS_PDU = NULL;
+    S1AP_EUTRAN_CGI_t *EUTRAN_CGI = NULL;
+    S1AP_TAI_t *TAI = NULL;
+
+	S1AP_PLMNidentity_t	*pLMNidentity = NULL;
+	S1AP_TAC_t *tAC = NULL;
+	S1AP_CellIdentity_t *cell_ID = NULL;
 
     enb_ue_t *enb_ue = NULL;
 
@@ -373,11 +399,20 @@ void s1ap_handle_uplink_nas_transport(
     for (i = 0; i < UplinkNASTransport->protocolIEs.list.count; i++) {
         ie = UplinkNASTransport->protocolIEs.list.array[i];
         switch (ie->id) {
+        case S1AP_ProtocolIE_ID_id_MME_UE_S1AP_ID:
+            MME_UE_S1AP_ID = &ie->value.choice.MME_UE_S1AP_ID;
+            break;
         case S1AP_ProtocolIE_ID_id_eNB_UE_S1AP_ID:
             ENB_UE_S1AP_ID = &ie->value.choice.ENB_UE_S1AP_ID;
             break;
         case S1AP_ProtocolIE_ID_id_NAS_PDU:
             NAS_PDU = &ie->value.choice.NAS_PDU;
+            break;
+        case S1AP_ProtocolIE_ID_id_EUTRAN_CGI:
+            EUTRAN_CGI = &ie->value.choice.EUTRAN_CGI;
+            break;
+        case S1AP_ProtocolIE_ID_id_TAI:
+            TAI = &ie->value.choice.TAI;
             break;
         default:
             break;
@@ -387,26 +422,85 @@ void s1ap_handle_uplink_nas_transport(
     ogs_debug("    IP[%s] ENB_ID[%d]",
             OGS_ADDR(enb->sctp.addr, buf), enb->enb_id);
 
-    if (!ENB_UE_S1AP_ID) {
-        ogs_error("No ENB_UE_S1AP_ID");
-        s1ap_send_error_indication(enb,
-                NULL, ENB_UE_S1AP_ID,
+    if (!MME_UE_S1AP_ID) {
+        ogs_error("No MME_UE_S1AP_ID");
+        s1ap_send_error_indication(enb, MME_UE_S1AP_ID, NULL,
                 S1AP_Cause_PR_protocol, S1AP_CauseProtocol_semantic_error);
         return;
     }
-    enb_ue = enb_ue_find_by_enb_ue_s1ap_id(enb, *ENB_UE_S1AP_ID);
+
+    enb_ue = enb_ue_find_by_mme_ue_s1ap_id(*MME_UE_S1AP_ID);
     if (!enb_ue) {
-        ogs_error("No eNB UE Context : ENB_UE_S1AP_ID[%lld]",
-                (long long)*ENB_UE_S1AP_ID);
-        s1ap_send_error_indication(enb,
-                NULL, ENB_UE_S1AP_ID,
+        ogs_error("No eNB UE Context : MME_UE_S1AP_ID[%lld]",
+                (long long)*MME_UE_S1AP_ID);
+        s1ap_send_error_indication(enb, MME_UE_S1AP_ID, NULL,
                 S1AP_Cause_PR_radioNetwork,
-                S1AP_CauseRadioNetwork_unknown_enb_ue_s1ap_id);
+                S1AP_CauseRadioNetwork_unknown_mme_ue_s1ap_id);
         return;
     }
 
-    ogs_debug("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
-            enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
+    if (!ENB_UE_S1AP_ID) {
+        ogs_error("No ENB_UE_S1AP_ID");
+        s1ap_send_error_indication(enb, MME_UE_S1AP_ID, ENB_UE_S1AP_ID,
+                S1AP_Cause_PR_protocol, S1AP_CauseProtocol_semantic_error);
+        return;
+    }
+
+    if (!NAS_PDU) {
+        ogs_error("No NAS_PDU");
+        s1ap_send_error_indication(enb, MME_UE_S1AP_ID, ENB_UE_S1AP_ID,
+                S1AP_Cause_PR_protocol, S1AP_CauseProtocol_semantic_error);
+        return;
+    }
+
+    if (!EUTRAN_CGI) {
+        ogs_error("No EUTRAN_CGI");
+        s1ap_send_error_indication(enb, MME_UE_S1AP_ID, ENB_UE_S1AP_ID,
+                S1AP_Cause_PR_protocol, S1AP_CauseProtocol_semantic_error);
+        return;
+    }
+
+    if (!TAI) {
+        ogs_error("No TAI");
+        s1ap_send_error_indication(enb, MME_UE_S1AP_ID, ENB_UE_S1AP_ID,
+                S1AP_Cause_PR_protocol, S1AP_CauseProtocol_semantic_error);
+        return;
+    }
+
+    pLMNidentity = &EUTRAN_CGI->pLMNidentity;
+    ogs_assert(pLMNidentity && pLMNidentity->size == sizeof(ogs_plmn_id_t));
+    cell_ID = &EUTRAN_CGI->cell_ID;
+    ogs_assert(cell_ID);
+    memcpy(&enb_ue->saved.e_cgi.plmn_id, pLMNidentity->buf,
+            sizeof(enb_ue->saved.e_cgi.plmn_id));
+    memcpy(&enb_ue->saved.e_cgi.cell_id, cell_ID->buf,
+            sizeof(enb_ue->saved.e_cgi.cell_id));
+    enb_ue->saved.e_cgi.cell_id = (be32toh(enb_ue->saved.e_cgi.cell_id) >> 4);
+
+    pLMNidentity = &TAI->pLMNidentity;
+    ogs_assert(pLMNidentity && pLMNidentity->size == sizeof(ogs_plmn_id_t));
+    tAC = &TAI->tAC;
+    ogs_assert(tAC && tAC->size == sizeof(uint16_t));
+
+    memcpy(&enb_ue->saved.tai.plmn_id, pLMNidentity->buf,
+            sizeof(enb_ue->saved.tai.plmn_id));
+    memcpy(&enb_ue->saved.tai.tac, tAC->buf, sizeof(enb_ue->saved.tai.tac));
+    enb_ue->saved.tai.tac = be16toh(enb_ue->saved.tai.tac);
+
+    ogs_debug("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d] TAC[%d] CellID[0x%x]",
+        enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id,
+        enb_ue->saved.tai.tac, enb_ue->saved.e_cgi.cell_id);
+
+    /* Copy Stream-No/TAI/ECGI from enb_ue */
+    if (enb_ue->mme_ue) {
+        mme_ue_t *mme_ue = enb_ue->mme_ue;
+
+        memcpy(&mme_ue->tai, &enb_ue->saved.tai, sizeof(ogs_eps_tai_t));
+        memcpy(&mme_ue->e_cgi, &enb_ue->saved.e_cgi, sizeof(ogs_e_cgi_t));
+    } else {
+        ogs_fatal("No UE Context in UplinkNASTransport");
+        ogs_assert_if_reached();
+    }
 
     s1ap_send_to_nas(enb_ue,
             S1AP_ProcedureCode_id_uplinkNASTransport, NAS_PDU);

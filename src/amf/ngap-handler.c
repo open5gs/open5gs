@@ -533,9 +533,8 @@ void ngap_handle_uplink_nas_transport(
         case NGAP_ProtocolIE_ID_id_NAS_PDU:
             NAS_PDU = &ie->value.choice.NAS_PDU;
             break;
-	case NGAP_ProtocolIE_ID_id_UserLocationInformation:
-            UserLocationInformation =
-                &ie->value.choice.UserLocationInformation;
+        case NGAP_ProtocolIE_ID_id_UserLocationInformation:
+            UserLocationInformation = &ie->value.choice.UserLocationInformation;
             break;
         default:
             break;
@@ -603,13 +602,24 @@ void ngap_handle_uplink_nas_transport(
     ogs_ngap_ASN_to_5gs_tai(
             &UserLocationInformationNR->tAI, &ran_ue->saved.tai);
 
-    ogs_info("    RAN_UE_NGAP_ID[%d] AMF_UE_NGAP_ID[%lld] "
+    ogs_debug("    RAN_UE_NGAP_ID[%d] AMF_UE_NGAP_ID[%lld] "
             "TAC[%d] CellID[0x%llx]",
         ran_ue->ran_ue_ngap_id, (long long)ran_ue->amf_ue_ngap_id,
         ran_ue->saved.tai.tac.v, (long long)ran_ue->saved.nr_cgi.cell_id);
 
-    ngap_send_to_nas(ran_ue,
-        NGAP_ProcedureCode_id_UplinkNASTransport, NAS_PDU);
+    if (ran_ue->amf_ue) {
+        amf_ue_t *amf_ue = ran_ue->amf_ue;
+
+        /* Copy Stream-No/NR-TAI/NR-CGI from ran_ue */
+        memcpy(&amf_ue->tai, &ran_ue->saved.tai, sizeof(ogs_5gs_tai_t));
+        memcpy(&amf_ue->nr_cgi, &ran_ue->saved.nr_cgi, sizeof(ogs_nr_cgi_t));
+
+    } else {
+        ogs_fatal("No UE Context in UplinkNASTransport");
+        ogs_assert_if_reached();
+    }
+
+    ngap_send_to_nas(ran_ue, NGAP_ProcedureCode_id_UplinkNASTransport, NAS_PDU);
 }
 
 void ngap_handle_ue_radio_capability_info_indication(
