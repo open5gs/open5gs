@@ -507,6 +507,8 @@ void ngap_handle_uplink_nas_transport(
     NGAP_RAN_UE_NGAP_ID_t *RAN_UE_NGAP_ID = NULL;
     NGAP_AMF_UE_NGAP_ID_t *AMF_UE_NGAP_ID = NULL;
     NGAP_NAS_PDU_t *NAS_PDU = NULL;
+    NGAP_UserLocationInformation_t *UserLocationInformation = NULL;
+    NGAP_UserLocationInformationNR_t *UserLocationInformationNR = NULL;
 
     ogs_assert(gnb);
     ogs_assert(gnb->sctp.sock);
@@ -530,6 +532,10 @@ void ngap_handle_uplink_nas_transport(
             break;
         case NGAP_ProtocolIE_ID_id_NAS_PDU:
             NAS_PDU = &ie->value.choice.NAS_PDU;
+            break;
+	case NGAP_ProtocolIE_ID_id_UserLocationInformation:
+            UserLocationInformation =
+                &ie->value.choice.UserLocationInformation;
             break;
         default:
             break;
@@ -565,6 +571,22 @@ void ngap_handle_uplink_nas_transport(
         return;
     }
 
+    if (!UserLocationInformation) {
+        ogs_error("No UserLocationInformation");
+        ngap_send_error_indication(gnb, &ran_ue->ran_ue_ngap_id, NULL,
+                NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
+        return;
+    }
+
+    if (UserLocationInformation->present !=
+            NGAP_UserLocationInformation_PR_userLocationInformationNR) {
+        ogs_error("Not implemented UserLocationInformation[%d]",
+                UserLocationInformation->present);
+        ngap_send_error_indication(gnb, &ran_ue->ran_ue_ngap_id, NULL,
+                NGAP_Cause_PR_protocol, NGAP_CauseProtocol_unspecified);
+        return;
+    }
+
     if (!NAS_PDU) {
         ogs_error("No NAS_PDU");
         ngap_send_error_indication(
@@ -572,6 +594,19 @@ void ngap_handle_uplink_nas_transport(
             NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
         return;
     }
+
+    UserLocationInformationNR =
+        UserLocationInformation->choice.userLocationInformationNR;
+    ogs_assert(UserLocationInformationNR);
+    ogs_ngap_ASN_to_nr_cgi(
+            &UserLocationInformationNR->nR_CGI, &ran_ue->saved.nr_cgi);
+    ogs_ngap_ASN_to_5gs_tai(
+            &UserLocationInformationNR->tAI, &ran_ue->saved.tai);
+
+    ogs_info("    RAN_UE_NGAP_ID[%d] AMF_UE_NGAP_ID[%lld] "
+            "TAC[%d] CellID[0x%llx]",
+        ran_ue->ran_ue_ngap_id, (long long)ran_ue->amf_ue_ngap_id,
+        ran_ue->saved.tai.tac.v, (long long)ran_ue->saved.nr_cgi.cell_id);
 
     ngap_send_to_nas(ran_ue,
         NGAP_ProcedureCode_id_UplinkNASTransport, NAS_PDU);
