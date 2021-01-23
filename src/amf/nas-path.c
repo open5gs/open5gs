@@ -90,8 +90,31 @@ void nas_5gs_send_registration_accept(amf_ue_t *amf_ue)
         ran_ue->initial_context_setup_request_sent = true;
     } else {
         if (PDU_RES_SETUP_REQ_TRANSFER_NEEDED(amf_ue)) {
+        /*
+         * Previously, AMF would sends PDUSessionResourceSetupRequest
+         * when the following conditions were met:
+         * - gNB didn't send UE Context Request IE of InitialUEMessage
+         * - AMF should send SMF generated TRANSFER message(PDU_RES_SETUP_REQ)
+         *   to the gNB
+         *
+         * However, in issues #771, the gNB did not accept
+         * PDUSessionResourceSetupRequest. Perhaps the gNB engineer thought
+         * that if gNB needs to send data traffic to the UE, AMF should send
+         * an InitialContextSetupRequest regardless of UE Context Request IE.
+         * This is because gNB requires the kgNB security context
+         * for data connection.
+         *
+         * So, in this case, Open5GS-AMF decided to send
+         * an InitialContexSetupRequest regardless of
+         * whether it received UE Context Request IE of InitialUEMessage.
+         */
+#if WILL_BE_REMOVED
             ngapbuf = ngap_ue_build_pdu_session_resource_setup_request(
                     amf_ue, gmmbuf);
+#else
+            ngapbuf = ngap_ue_build_initial_context_setup_request(
+                    amf_ue, gmmbuf);
+#endif
             ogs_expect_or_return(ngapbuf);
 
             rv = nas_5gs_send_to_gnb(amf_ue, ngapbuf);
@@ -150,8 +173,31 @@ void nas_5gs_send_service_accept(amf_ue_t *amf_ue)
         ran_ue->initial_context_setup_request_sent = true;
     } else {
         if (PDU_RES_SETUP_REQ_TRANSFER_NEEDED(amf_ue)) {
+        /*
+         * Previously, AMF would sends PDUSessionResourceSetupRequest
+         * when the following conditions were met:
+         * - gNB didn't send UE Context Request IE of InitialUEMessage
+         * - AMF should send SMF generated TRANSFER message(PDU_RES_SETUP_REQ)
+         *   to the gNB
+         *
+         * However, in issues #771, the gNB did not accept
+         * PDUSessionResourceSetupRequest. Perhaps the gNB engineer thought
+         * that if gNB needs to send data traffic to the UE, AMF should send
+         * an InitialContextSetupRequest regardless of UE Context Request IE.
+         * This is because gNB requires the kgNB security context
+         * for data connection.
+         *
+         * So, in this case, Open5GS-AMF decided to send
+         * an InitialContexSetupRequest regardless of
+         * whether it received UE Context Request IE of InitialUEMessage.
+         */
+#if WILL_BE_REMOVED
             ngapbuf = ngap_ue_build_pdu_session_resource_setup_request(
                     amf_ue, gmmbuf);
+#else
+            ngapbuf = ngap_ue_build_initial_context_setup_request(
+                    amf_ue, gmmbuf);
+#endif
             ogs_expect_or_return(ngapbuf);
 
             rv = nas_5gs_send_to_gnb(amf_ue, ngapbuf);

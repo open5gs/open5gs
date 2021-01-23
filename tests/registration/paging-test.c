@@ -2825,13 +2825,13 @@ static void registration_ue_context_test4_func(abts_case *tc, void *data)
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    /* Receive PDUSessionResourceSetupRequest +
+    /* Receive InitialContextSetupRequest +
      * Service accept */
     recvbuf = testgnb_ngap_read(ngap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     testngap_recv(test_ue, recvbuf);
     ABTS_INT_EQUAL(tc,
-            NGAP_ProcedureCode_id_PDUSessionResourceSetup,
+            NGAP_ProcedureCode_id_InitialContextSetup,
             test_ue->ngap_procedure_code);
     ABTS_INT_EQUAL(tc, 0x0000, test_ue->pdu_session_reactivation_result);
 
@@ -2847,8 +2847,8 @@ static void registration_ue_context_test4_func(abts_case *tc, void *data)
             NGAP_ProcedureCode_id_PDUSessionResourceSetup,
             test_ue->ngap_procedure_code);
 
-    /* Send PDUSessionResourceSetupResponse */
-    sendbuf = testngap_sess_build_pdu_session_resource_setup_response(sess);
+    /* Send InitialContextSetupResponse */
+    sendbuf = testngap_build_initial_context_setup_response(test_ue, true);
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
