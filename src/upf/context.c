@@ -600,7 +600,7 @@ void upf_sess_set_ue_ip(upf_sess_t *sess,
                 pdn_type, ue_ip->ipv4, ue_ip->ipv6, pdr->dnn ? pdr->dnn : "");
     }
 
-    ogs_info("UE F-SEID[CP:0x%lx,UP:0x%lx] "
+    ogs_info("UE F-SEID[CP:0x%lx UP:0x%lx] "
              "APN[%s] PDN-Type[%d] IPv4[%s] IPv6[%s]",
         (long)sess->upf_n4_seid, (long)sess->smf_n4_seid,
         pdr->dnn, pdn_type,

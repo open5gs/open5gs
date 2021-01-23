@@ -393,7 +393,7 @@ bool smf_npcf_smpolicycontrol_handle_create(
             &dl_pdr->ue_ip_addr, &dl_pdr->ue_ip_addr_len);
     dl_pdr->ue_ip_addr.sd = OGS_PFCP_UE_IP_DST;
 
-    ogs_info("UE SUPI:[%s] DNN:[%s] IPv4:[%s] IPv6:[%s]",
+    ogs_info("UE SUPI[%s] DNN[%s] IPv4[%s] IPv6[%s]",
 	    smf_ue->supi, sess->pdn.dnn,
         sess->ipv4 ? OGS_INET_NTOP(&sess->ipv4->addr, buf1) : "",
         sess->ipv6 ? OGS_INET6_NTOP(&sess->ipv6->addr, buf2) : "");

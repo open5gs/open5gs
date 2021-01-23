@@ -484,8 +484,6 @@ void ogs_sbi_nf_instance_clear(ogs_sbi_nf_instance_t *nf_instance)
             ogs_freeaddrinfo(nf_instance->ipv6[i]);
     }
     nf_instance->num_of_ipv6 = 0;
-
-    ogs_sbi_nf_service_remove_all(nf_instance);
 }
 
 void ogs_sbi_nf_instance_remove(ogs_sbi_nf_instance_t *nf_instance)
@@ -502,11 +500,12 @@ void ogs_sbi_nf_instance_remove(ogs_sbi_nf_instance_t *nf_instance)
     ogs_list_remove(&ogs_sbi_self()->nf_instance_list, nf_instance);
 
     ogs_sbi_subscription_remove_all_by_nf_instance_id(nf_instance->id);
+    ogs_sbi_nf_service_remove_all(nf_instance);
+
+    ogs_sbi_nf_instance_clear(nf_instance);
 
     ogs_assert(nf_instance->id);
     ogs_free(nf_instance->id);
-
-    ogs_sbi_nf_instance_clear(nf_instance);
 
     ogs_timer_delete(nf_instance->t_registration_interval);
     ogs_timer_delete(nf_instance->t_heartbeat_interval);
@@ -657,7 +656,24 @@ void ogs_sbi_nf_service_remove_all(ogs_sbi_nf_instance_t *nf_instance)
         ogs_sbi_nf_service_remove(nf_service);
 }
 
-ogs_sbi_nf_service_t *ogs_sbi_nf_service_find(
+ogs_sbi_nf_service_t *ogs_sbi_nf_service_find_by_id(
+        ogs_sbi_nf_instance_t *nf_instance, char *id)
+{
+    ogs_sbi_nf_service_t *nf_service = NULL;
+
+    ogs_assert(nf_instance);
+    ogs_assert(id);
+
+    ogs_list_for_each(&nf_instance->nf_service_list, nf_service) {
+        ogs_assert(nf_service->id);
+        if (strcmp(nf_service->id, id) == 0)
+            break;
+    }
+
+    return nf_service;
+}
+
+ogs_sbi_nf_service_t *ogs_sbi_nf_service_find_by_name(
         ogs_sbi_nf_instance_t *nf_instance, char *name)
 {
     ogs_sbi_nf_service_t *nf_service = NULL;

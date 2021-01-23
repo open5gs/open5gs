@@ -600,14 +600,17 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
             ogs_assert(sbi_xact);
 
             stream = sbi_xact->assoc_stream;
-            ogs_assert(stream);
+            /* Here, we should not use ogs_assert(stream)
+             * since 'namf-comm' service has no an associated stream. */
 
             ogs_sbi_xact_remove(sbi_xact);
 
             ogs_error("Cannot receive SBI message");
-            ogs_sbi_server_send_error(stream,
-                    OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT, NULL,
-                    "Cannot receive SBI message", NULL);
+            if (stream) {
+                ogs_sbi_server_send_error(stream,
+                        OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT, NULL,
+                        "Cannot receive SBI message", NULL);
+            }
             break;
 
         case SMF_TIMER_RELEASE_HOLDING:

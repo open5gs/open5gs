@@ -27,6 +27,7 @@ bool ogs_sbi_nnrf_handle_nf_profile(ogs_sbi_nf_instance_t *nf_instance,
     int rv;
 
     OpenAPI_lnode_t *node;
+    ogs_sbi_nf_service_t *nf_service = NULL, *next_nf_service = NULL;
 
     ogs_assert(nf_instance);
     ogs_assert(NFProfile);
@@ -63,6 +64,41 @@ bool ogs_sbi_nnrf_handle_nf_profile(ogs_sbi_nf_instance_t *nf_instance,
         return false;
     }
 
+    ogs_list_for_each_safe(&nf_instance->nf_service_list,
+            next_nf_service, nf_service) {
+        bool nf_service_should_not_be_deleted = false;
+
+        ogs_assert(nf_service->id);
+
+        OpenAPI_list_for_each(NFProfile->nf_services, node) {
+            OpenAPI_nf_service_t *NFService = node->data;
+
+            if (!NFService) continue;
+            if (!NFService->service_instance_id) continue;
+            if (!NFService->service_name) continue;
+
+            if (strcmp(nf_service->id, NFService->service_instance_id) == 0) {
+                nf_service_should_not_be_deleted = true;
+                break;
+            }
+        }
+
+        if (nf_service_should_not_be_deleted == false) {
+            ogs_warn("NFService[%s:%s] removed",
+                    nf_service->id, nf_service->name);
+            OpenAPI_list_for_each(NFProfile->nf_services, node) {
+                OpenAPI_nf_service_t *NFService = node->data;
+
+                if (!NFService) continue;
+                if (!NFService->service_instance_id) continue;
+                if (!NFService->service_name) continue;
+
+                ogs_warn("NFService[%s:%s] will be added",
+                    NFService->service_instance_id, NFService->service_name);
+            }
+            ogs_sbi_nf_service_remove(nf_service);
+        }
+    }
     ogs_sbi_nf_instance_clear(nf_instance);
 
     nf_instance->nf_type = NFProfile->nf_type;
@@ -111,8 +147,6 @@ bool ogs_sbi_nnrf_handle_nf_profile(ogs_sbi_nf_instance_t *nf_instance,
         OpenAPI_list_t *IpEndPointList = NULL;
         OpenAPI_lnode_t *node2 = NULL;
 
-        ogs_sbi_nf_service_t *nf_service = NULL;
-
         if (!NFService) continue;
         if (!NFService->service_instance_id) continue;
         if (!NFService->service_name) continue;
@@ -120,8 +154,8 @@ bool ogs_sbi_nnrf_handle_nf_profile(ogs_sbi_nf_instance_t *nf_instance,
         VersionList = NFService->versions;
         IpEndPointList = NFService->ip_end_points;
 
-        nf_service = ogs_sbi_nf_service_find(nf_instance,
-                NFService->service_name);
+        nf_service = ogs_sbi_nf_service_find_by_id(nf_instance,
+                NFService->service_instance_id);
         if (!nf_service) {
             nf_service = ogs_sbi_nf_service_add(nf_instance,
                 NFService->service_instance_id,

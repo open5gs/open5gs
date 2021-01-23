@@ -197,6 +197,23 @@ static void sess_timeout(ogs_pfcp_xact_t *xact, void *data)
     }
 }
 
+static void bearer_timeout(ogs_pfcp_xact_t *xact, void *data)
+{
+    uint8_t type;
+
+    ogs_assert(xact);
+    type = xact->seq[0].type;
+
+    switch (type) {
+    case OGS_PFCP_SESSION_MODIFICATION_REQUEST_TYPE:
+        ogs_error("No PFCP session modification response");
+        break;
+    default:
+        ogs_error("Not implemented [type:%d]", type);
+        break;
+    }
+}
+
 void sgwc_pfcp_send_session_establishment_request(
         sgwc_sess_t *sess, ogs_gtp_xact_t *gtp_xact, ogs_pkbuf_t *gtpbuf)
 {
@@ -281,7 +298,7 @@ void sgwc_pfcp_send_bearer_modification_request(
     ogs_expect_or_return(sxabuf);
 
     xact = ogs_pfcp_xact_local_create(
-            sess->pfcp_node, &h, sxabuf, sess_timeout, bearer);
+            sess->pfcp_node, &h, sxabuf, bearer_timeout, bearer);
     ogs_expect_or_return(xact);
     xact->assoc_xact = gtp_xact;
     xact->modify_flags = flags;

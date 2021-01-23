@@ -226,6 +226,45 @@ static void sess_5gc_timeout(ogs_pfcp_xact_t *xact, void *data)
     }
 }
 
+static void qos_flow_5gc_timeout(ogs_pfcp_xact_t *xact, void *data)
+{
+    smf_ue_t *smf_ue = NULL;
+    smf_sess_t *sess = NULL;
+    smf_bearer_t *qos_flow = NULL;
+    ogs_sbi_stream_t *stream = NULL;
+    uint8_t type;
+    char *strerror = NULL;
+
+    ogs_assert(xact);
+    ogs_assert(data);
+
+    qos_flow = data;
+    ogs_assert(qos_flow);
+    sess = qos_flow->sess;
+    ogs_assert(sess);
+    smf_ue = sess->smf_ue;
+    ogs_assert(smf_ue);
+
+    type = xact->seq[0].type;
+    switch (type) {
+    case OGS_PFCP_SESSION_MODIFICATION_REQUEST_TYPE:
+        strerror = ogs_msprintf("[%s:%d] No PFCP session modification response",
+                smf_ue->supi, sess->psi);
+        ogs_assert(strerror);
+
+        ogs_error("%s", strerror);
+        if (stream)
+            smf_sbi_send_sm_context_update_error(stream,
+                    OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT,
+                    strerror, NULL, NULL, NULL);
+        ogs_free(strerror);
+        break;
+    default:
+        ogs_error("Not implemented [type:%d]", type);
+        break;
+    }
+}
+
 static void sess_epc_timeout(ogs_pfcp_xact_t *xact, void *data)
 {
     uint8_t type;
@@ -237,11 +276,25 @@ static void sess_epc_timeout(ogs_pfcp_xact_t *xact, void *data)
     case OGS_PFCP_SESSION_ESTABLISHMENT_REQUEST_TYPE:
         ogs_warn("No PFCP session establishment response");
         break;
-    case OGS_PFCP_SESSION_MODIFICATION_REQUEST_TYPE:
-        ogs_error("No PFCP session modification response");
-        break;
     case OGS_PFCP_SESSION_DELETION_REQUEST_TYPE:
         ogs_error("No PFCP session deletion response");
+        break;
+    default:
+        ogs_error("Not implemented [type:%d]", type);
+        break;
+    }
+}
+
+static void bearer_epc_timeout(ogs_pfcp_xact_t *xact, void *data)
+{
+    uint8_t type;
+
+    ogs_assert(xact);
+    type = xact->seq[0].type;
+
+    switch (type) {
+    case OGS_PFCP_SESSION_MODIFICATION_REQUEST_TYPE:
+        ogs_error("No PFCP session modification response");
         break;
     default:
         ogs_error("Not implemented [type:%d]", type);
@@ -296,10 +349,7 @@ void smf_5gc_pfcp_send_session_modification_request(
     ogs_expect_or_return(n4buf);
 
     xact = ogs_pfcp_xact_local_create(
-            sess->pfcp_node, &h, n4buf, sess_5gc_timeout,
-            /* We'll use xact->data to find out
-             * Modification Type(Session or QosFlow) */
-            NULL);
+            sess->pfcp_node, &h, n4buf, sess_5gc_timeout, sess);
     ogs_expect_or_return(xact);
     xact->assoc_stream = stream;
     xact->modify_flags = flags | OGS_PFCP_MODIFY_SESSION;
@@ -329,10 +379,7 @@ void smf_5gc_pfcp_send_qos_flow_modification_request(smf_bearer_t *qos_flow,
     ogs_expect_or_return(n4buf);
 
     xact = ogs_pfcp_xact_local_create(
-            sess->pfcp_node, &h, n4buf, sess_5gc_timeout,
-            /* We'll use xact->data to find out
-             * Modification Type(Session or QosFlow) */
-            qos_flow);
+            sess->pfcp_node, &h, n4buf, qos_flow_5gc_timeout, qos_flow);
     ogs_expect_or_return(xact);
 
     xact->assoc_stream = stream;
@@ -420,7 +467,7 @@ void smf_epc_pfcp_send_bearer_modification_request(
     ogs_expect_or_return(n4buf);
 
     xact = ogs_pfcp_xact_local_create(
-            sess->pfcp_node, &h, n4buf, sess_epc_timeout, bearer);
+            sess->pfcp_node, &h, n4buf, bearer_epc_timeout, bearer);
     ogs_expect_or_return(xact);
 
     xact->epc = true; /* EPC PFCP transaction */

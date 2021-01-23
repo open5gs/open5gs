@@ -284,6 +284,9 @@ static void server_send_response(
         ogs_sbi_stream_t *stream, ogs_sbi_response_t *response)
 {
     ogs_sbi_session_t *sbi_sess = NULL;
+    ogs_sock_t *sock = NULL;
+    ogs_socket_t fd = INVALID_SOCKET;
+
     ogs_hash_index_t *hi;
     nghttp2_nv *nva;
     size_t nvlen;
@@ -297,6 +300,11 @@ static void server_send_response(
     ogs_assert(sbi_sess);
     ogs_assert(sbi_sess->session);
     ogs_assert(response);
+
+    sock = sbi_sess->sock;
+    ogs_assert(sock);
+    fd = sock->fd;
+    ogs_assert(fd != INVALID_SOCKET); /* Check if session is removed */
 
     nvlen = 3; /* :status && server && date */
 
@@ -793,7 +801,7 @@ static int on_stream_close(nghttp2_session *session, int32_t stream_id,
 
     if (error_code) {
         ogs_error("on_stream_close_callback() failed (%d:%s)",
-                    error_code, nghttp2_strerror(error_code));
+                    error_code, nghttp2_http2_strerror(error_code));
         nghttp2_submit_rst_stream(
                 session, NGHTTP2_FLAG_NONE, stream_id, error_code);
     }

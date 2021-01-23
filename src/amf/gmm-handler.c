@@ -791,6 +791,9 @@ int gmm_handle_ul_nas_transport(amf_ue_t *amf_ue,
                 ogs_assert_if_reached();
             }
 
+            ogs_info("UE SUPI[%s] DNN[%s] S_NSSAI[SST:%d SD:0x%x]",
+                amf_ue->supi, sess->dnn, sess->s_nssai.sst, sess->s_nssai.sd.v);
+
             amf_sess_sbi_discover_and_send(OpenAPI_nf_type_SMF,
                     sess, AMF_SESS_SM_CONTEXT_NO_STATE, NULL,
                     amf_nsmf_pdu_session_build_create_sm_context);
