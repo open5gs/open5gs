@@ -35,6 +35,7 @@ struct errbufDesc {
 };
 
 static void
+CC_PRINTFLIKE(4, 5)
 _asn_i_ctfailcb(void *key, const asn_TYPE_descriptor_t *td, const void *sptr,
                 const char *fmt, ...) {
     struct errbufDesc *arg = key;

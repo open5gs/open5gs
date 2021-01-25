@@ -18,7 +18,7 @@ static void s1ap_message_test1(abts_case *tc, void *data)
 
     pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
     ogs_assert(pkbuf);
-    ogs_pkbuf_put_data(pkbuf, 
+    ogs_pkbuf_put_data(pkbuf,
             OGS_HEX(payload, strlen(payload), hexbuf), 49);
 
     result = ogs_s1ap_decode(&message, pkbuf);
@@ -48,7 +48,7 @@ static void s1ap_message_test2(abts_case *tc, void *data)
 
     pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
     ogs_assert(pkbuf);
-    ogs_pkbuf_put_data(pkbuf, 
+    ogs_pkbuf_put_data(pkbuf,
             OGS_HEX(payload, strlen(payload), hexbuf), 115);
 
     result = ogs_s1ap_decode(&message, pkbuf);
@@ -73,7 +73,7 @@ static void s1ap_message_test3(abts_case *tc, void *data)
 
     pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
     ogs_assert(pkbuf);
-    ogs_pkbuf_put_data(pkbuf, 
+    ogs_pkbuf_put_data(pkbuf,
             OGS_HEX(payload, strlen(payload), hexbuf), 41);
 
     result = ogs_s1ap_decode(&message, pkbuf);
@@ -178,7 +178,7 @@ static void s1ap_message_test7(abts_case *tc, void *data)
 
     pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
     ogs_assert(pkbuf);
-    ogs_pkbuf_put_data(pkbuf, 
+    ogs_pkbuf_put_data(pkbuf,
             OGS_HEX(payload, strlen(payload), hexbuf), 128);
 
     result = ogs_s1ap_decode(&message, pkbuf);

@@ -78,23 +78,6 @@ ogs_pkbuf_t *ngap_build_amf_status_transfer(
     NGAP_RANStatusTransfer_TransparentContainer_t
         *gnb_statustransfer_transparentContainer);
 
-ogs_pkbuf_t *ngap_build_error_indication(
-    uint32_t *ran_ue_ngap_id,
-    uint64_t *amf_ue_ngap_id,
-    NGAP_Cause_PR group, long cause);
-
-ogs_pkbuf_t *ngap_build_s1_reset(
-    NGAP_Cause_PR group, long cause,
-    NGAP_UE_associatedLogicalNG_connectionList_t *partOfS1_Interface);
-
-ogs_pkbuf_t *ngap_build_s1_reset_partial(
-    NGAP_Cause_PR group, long cause,
-    NGAP_AMF_UE_NGAP_ID_t *amf_ue_ngap_id,
-    NGAP_RAN_UE_NGAP_ID_t *ran_ue_ngap_id);
-
-ogs_pkbuf_t *ngap_build_s1_reset_ack(
-    NGAP_UE_associatedLogicalNG_connectionList_t *partOfS1_Interface);
-
 #ifdef __cplusplus
 }
 #endif

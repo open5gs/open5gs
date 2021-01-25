@@ -2047,3 +2047,159 @@ void ngap_handle_path_switch_request(
         ogs_pkbuf_free(param.n2smbuf);
     }
 }
+
+void ngap_handle_ng_reset(
+        amf_gnb_t *gnb, ogs_ngap_message_t *message)
+{
+    char buf[OGS_ADDRSTRLEN];
+    int i;
+
+    NGAP_InitiatingMessage_t *initiatingMessage = NULL;
+    NGAP_NGReset_t *NGReset = NULL;
+
+    NGAP_NGResetIEs_t *ie = NULL;
+    NGAP_Cause_t *Cause = NULL;
+    NGAP_ResetType_t *ResetType = NULL;
+#if 0
+    NGAP_UE_associatedLogicalNG_connectionList_t *partOfNG_Interface = NULL;
+#endif
+
+    ogs_assert(gnb);
+    ogs_assert(gnb->sctp.sock);
+
+    ogs_assert(message);
+    initiatingMessage = message->choice.initiatingMessage;
+    ogs_assert(initiatingMessage);
+    NGReset = &initiatingMessage->value.choice.NGReset;
+    ogs_assert(NGReset);
+
+    ogs_warn("NGReset");
+
+    for (i = 0; i < NGReset->protocolIEs.list.count; i++) {
+        ie = NGReset->protocolIEs.list.array[i];
+        switch (ie->id) {
+        case NGAP_ProtocolIE_ID_id_Cause:
+            Cause = &ie->value.choice.Cause;
+            break;
+        case NGAP_ProtocolIE_ID_id_ResetType:
+            ResetType = &ie->value.choice.ResetType;
+            break;
+        default:
+            break;
+        }
+    }
+
+    ogs_debug("    IP[%s] ENB_ID[%d]",
+            OGS_ADDR(gnb->sctp.addr, buf), gnb->gnb_id);
+
+    if (!Cause) {
+        ogs_error("No Cause");
+        ngap_send_error_indication(gnb, NULL, NULL,
+                NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
+        return;
+    }
+
+    ogs_warn("    Cause[Group:%d Cause:%d]",
+            Cause->present, (int)Cause->choice.radioNetwork);
+
+    if (!ResetType) {
+        ogs_error("No ResetType");
+        ngap_send_error_indication(gnb, NULL, NULL,
+                NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
+        return;
+    }
+
+    switch (ResetType->present) {
+    case NGAP_ResetType_PR_nG_Interface:
+        ogs_warn("    NGAP_ResetType_PR_nG_Interface");
+
+        amf_sbi_send_deactivate_all_ue_in_gnb(
+                gnb, AMF_REMOVE_S1_CONTEXT_BY_RESET_ALL);
+
+    /*
+     * TS38.413
+     *
+     * 8.7.4.2.1 NG Reset initiated by the AMF
+     * At reception of the NG RESET message the NG-RAN node shall release all
+     * allocated resources on NG and Uu related to the UE association(s)
+     * indicated explicitly or implicitly in the NG RESET message and
+     * remove the indicated UE contexts including NGAP ID.
+     *
+     * After the NG-RAN node has released all assigned NG resources and
+     * the UE NGAP IDs for all indicated UE associations which can be used
+     * for new UE-associated logical NG-connections over the NG interface,
+     * the NG-RAN node shall respond with the NG RESET ACKNOWLEDGE message.
+     *
+     * The NG-RAN node does not need to wait for the release of radio resources
+     * to be completed before returning the NG RESET ACKNOWLEDGE message.
+     *
+     * 8.7.4.2.2 NG Reset initiated by the NG-RAN node
+     *
+     * At reception of the NG RESET message the AMF shall release
+     * all allocated resources on NG related to the UE association(s)
+     * indicated explicitly or implicitly in the NG RESET message and
+     * remove the NGAP ID for the indicated UE associations.
+     *
+     * After the AMF has released all assigned NG resources and
+     * the UE NGAP IDs for all indicated UE associations which can be used
+     * for new UE-associated logical NG-connections over the NG interface,
+     * the AMF shall respond with the NG RESET ACKNOWLEDGE message.
+     */
+        if (ogs_list_count(&gnb->ran_ue_list) == 0)
+            ngap_send_ng_reset_ack(gnb, NULL);
+
+        break;
+
+    case NGAP_ResetType_PR_partOfNG_Interface:
+        ogs_fatal("Not implemented");
+        ogs_assert_if_reached();
+
+        ogs_warn("    NGAP_ResetType_PR_partOfNG_Interface");
+#if 0
+        partOfNG_Interface = ResetType->choice.partOfNG_Interface;
+        ogs_assert(partOfNG_Interface);
+        for (i = 0; i < partOfNG_Interface->list.count; i++) {
+            NGAP_UE_associatedLogicalNG_ConnectionItemRes_t *ie2 = NULL;
+            NGAP_UE_associatedLogicalNG_ConnectionItem_t *item = NULL;
+
+            ran_ue_t *ran_ue = NULL;
+            amf_ue_t *amf_ue = NULL;
+
+            ie2 = (NGAP_UE_associatedLogicalNG_ConnectionItemRes_t *)
+                partOfNG_Interface->list.array[i];
+            ogs_assert(ie2);
+
+            item = &ie2->value.choice.UE_associatedLogicalNG_ConnectionItem;
+            ogs_assert(item);
+
+            ogs_warn("    MME_UE_NGAP_ID[%d] ENB_UE_NGAP_ID[%d]",
+                    item->mME_UE_NGAP_ID ? (int)*item->mME_UE_NGAP_ID : -1,
+                    item->eNB_UE_NGAP_ID ? (int)*item->eNB_UE_NGAP_ID : -1);
+
+            if (item->mME_UE_NGAP_ID)
+                ran_ue = ran_ue_find_by_amf_ue_ngap_id( *item->mME_UE_NGAP_ID);
+            else if (item->eNB_UE_NGAP_ID)
+                ran_ue = ran_ue_find_by_ran_ue_ngap_id(gnb,
+                        *item->eNB_UE_NGAP_ID);
+
+            if (ran_ue == NULL) {
+                ogs_warn("Cannot find NG Context "
+                    "(MME_UE_NGAP_ID[%d] ENB_UE_NGAP_ID[%d])",
+                    item->mME_UE_NGAP_ID ? (int)*item->mME_UE_NGAP_ID : -1,
+                    item->eNB_UE_NGAP_ID ? (int)*item->eNB_UE_NGAP_ID : -1);
+                continue;
+            }
+
+            amf_ue = ran_ue->amf_ue;
+            ogs_assert(amf_ue);
+
+            amf_gtp_send_release_access_bearers_request(
+                    amf_ue, OGS_GTP_RELEASE_NG_CONTEXT_REMOVE);
+        }
+#endif
+        break;
+    default:
+        ogs_warn("Invalid ResetType[%d]", ResetType->present);
+        break;
+    }
+}

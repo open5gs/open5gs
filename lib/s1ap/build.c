@@ -33,7 +33,7 @@ ogs_pkbuf_t *ogs_s1ap_build_error_indication(
     S1AP_ENB_UE_S1AP_ID_t *ENB_UE_S1AP_ID = NULL;
     S1AP_Cause_t *Cause = NULL;
 
-    ogs_debug("[MME] Error Indication");
+    ogs_debug("Error Indication");
 
     memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
     pdu.present = S1AP_S1AP_PDU_PR_initiatingMessage;
@@ -106,18 +106,16 @@ ogs_pkbuf_t *ogs_s1ap_build_s1_reset(
     S1AP_Cause_t *Cause = NULL;
     S1AP_ResetType_t *ResetType = NULL;
 
-    ogs_debug("[MME] Reset");
+    ogs_debug("Reset");
 
     memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
     pdu.present = S1AP_S1AP_PDU_PR_initiatingMessage;
-    pdu.choice.initiatingMessage = 
-        CALLOC(1, sizeof(S1AP_InitiatingMessage_t));
+    pdu.choice.initiatingMessage = CALLOC(1, sizeof(S1AP_InitiatingMessage_t));
 
     initiatingMessage = pdu.choice.initiatingMessage;
     initiatingMessage->procedureCode = S1AP_ProcedureCode_id_Reset;
-    initiatingMessage->criticality = S1AP_Criticality_ignore;
-    initiatingMessage->value.present =
-        S1AP_InitiatingMessage__value_PR_Reset;
+    initiatingMessage->criticality = S1AP_Criticality_reject;
+    initiatingMessage->value.present = S1AP_InitiatingMessage__value_PR_Reset;
 
     Reset = &initiatingMessage->value.choice.Reset;
 
@@ -156,32 +154,42 @@ ogs_pkbuf_t *ogs_s1ap_build_s1_reset(
     return ogs_s1ap_encode(&pdu);
 }
 
-ogs_pkbuf_t *ogs_s1ap_build_s1_reset_partial(
-        S1AP_Cause_PR group, long cause,
-        S1AP_MME_UE_S1AP_ID_t *mme_ue_s1ap_id,
-        S1AP_ENB_UE_S1AP_ID_t *enb_ue_s1ap_id)
+void ogs_s1ap_build_part_of_s1_interface(
+    S1AP_UE_associatedLogicalS1_ConnectionListRes_t **list,
+    uint32_t *mme_ue_s1ap_id,
+    uint32_t *enb_ue_s1ap_id)
 {
     S1AP_UE_associatedLogicalS1_ConnectionListRes_t *partOfS1_Interface = NULL;
-    S1AP_UE_associatedLogicalS1_ConnectionItemRes_t *ie2 = NULL;
+    S1AP_UE_associatedLogicalS1_ConnectionItemRes_t *ie = NULL;
     S1AP_UE_associatedLogicalS1_ConnectionItem_t *item = NULL;
 
-    partOfS1_Interface = CALLOC(1,
-            sizeof(S1AP_UE_associatedLogicalS1_ConnectionListRes_t));
+    ogs_assert(list);
+    ogs_assert(mme_ue_s1ap_id || enb_ue_s1ap_id);
+
+    if (!*list) *list = CALLOC(1, sizeof(**list));
+
+    partOfS1_Interface = *list;
     ogs_assert(partOfS1_Interface);
 
-    ie2 = CALLOC(1,
-            sizeof(S1AP_UE_associatedLogicalS1_ConnectionItemRes_t));
-    ASN_SEQUENCE_ADD(&partOfS1_Interface->list, ie2);
+    ie = CALLOC(1, sizeof(S1AP_UE_associatedLogicalS1_ConnectionItemRes_t));
+    ASN_SEQUENCE_ADD(&partOfS1_Interface->list, ie);
 
-    ie2->id = S1AP_ProtocolIE_ID_id_UE_associatedLogicalS1_ConnectionItem;
-    ie2->criticality = S1AP_Criticality_reject;
-    ie2->value.present = S1AP_UE_associatedLogicalS1_ConnectionItemRes__value_PR_UE_associatedLogicalS1_ConnectionItem;
+    ie->id = S1AP_ProtocolIE_ID_id_UE_associatedLogicalS1_ConnectionItem;
+    ie->criticality = S1AP_Criticality_reject;
+    ie->value.present = S1AP_UE_associatedLogicalS1_ConnectionItemRes__value_PR_UE_associatedLogicalS1_ConnectionItem;
 
-    item = &ie2->value.choice.UE_associatedLogicalS1_ConnectionItem;
-    item->mME_UE_S1AP_ID = mme_ue_s1ap_id;
-    item->eNB_UE_S1AP_ID = enb_ue_s1ap_id;
+    item = &ie->value.choice.UE_associatedLogicalS1_ConnectionItem;
+    if (mme_ue_s1ap_id) {
+        item->mME_UE_S1AP_ID = CALLOC(1, sizeof(*item->mME_UE_S1AP_ID));
+        ogs_assert(item->mME_UE_S1AP_ID);
+        *item->mME_UE_S1AP_ID = *mme_ue_s1ap_id;
+    }
 
-    return ogs_s1ap_build_s1_reset(group, cause, partOfS1_Interface);
+    if (enb_ue_s1ap_id) {
+        item->eNB_UE_S1AP_ID = CALLOC(1, sizeof(*item->eNB_UE_S1AP_ID));
+        ogs_assert(item->eNB_UE_S1AP_ID);
+        *item->eNB_UE_S1AP_ID = *enb_ue_s1ap_id;
+    }
 }
 
 ogs_pkbuf_t *ogs_s1ap_build_s1_reset_ack(
@@ -193,12 +201,11 @@ ogs_pkbuf_t *ogs_s1ap_build_s1_reset_ack(
 
     S1AP_ResetAcknowledgeIEs_t *ie = NULL;
 
-    ogs_debug("[MME] Reset acknowledge");
+    ogs_debug("Reset acknowledge");
 
     memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
     pdu.present = S1AP_S1AP_PDU_PR_successfulOutcome;
-    pdu.choice.successfulOutcome = 
-        CALLOC(1, sizeof(S1AP_SuccessfulOutcome_t));
+    pdu.choice.successfulOutcome = CALLOC(1, sizeof(S1AP_SuccessfulOutcome_t));
 
     successfulOutcome = pdu.choice.successfulOutcome;
     successfulOutcome->procedureCode = S1AP_ProcedureCode_id_Reset;
@@ -209,7 +216,7 @@ ogs_pkbuf_t *ogs_s1ap_build_s1_reset_ack(
     ResetAcknowledge = &successfulOutcome->value.choice.ResetAcknowledge;
 
     if (partOfS1_Interface && partOfS1_Interface->list.count) {
-        int i = 0;
+        int i;
         S1AP_UE_associatedLogicalS1_ConnectionListResAck_t *list = NULL;
 
         ie = CALLOC(1, sizeof(S1AP_ResetAcknowledgeIEs_t));
@@ -237,13 +244,13 @@ ogs_pkbuf_t *ogs_s1ap_build_s1_reset_ack(
             ogs_assert(item1);
 
             if (item1->mME_UE_S1AP_ID == NULL &&
-                    item1->eNB_UE_S1AP_ID == NULL) {
+                item1->eNB_UE_S1AP_ID == NULL) {
                 ogs_warn("No MME_UE_S1AP_ID & ENB_UE_S1AP_ID");
                 continue;
             }
 
             ie2 = CALLOC(1,
-                    sizeof(S1AP_UE_associatedLogicalS1_ConnectionItemResAck_t));
+                sizeof(S1AP_UE_associatedLogicalS1_ConnectionItemResAck_t));
             ogs_assert(ie2);
             ASN_SEQUENCE_ADD(&list->list, ie2);
 
@@ -256,15 +263,15 @@ ogs_pkbuf_t *ogs_s1ap_build_s1_reset_ack(
             ogs_assert(item2);
 
             if (item1->mME_UE_S1AP_ID) {
-                item2->mME_UE_S1AP_ID = CALLOC(1,
-                        sizeof(S1AP_MME_UE_S1AP_ID_t));
+                item2->mME_UE_S1AP_ID =
+                    CALLOC(1, sizeof(S1AP_MME_UE_S1AP_ID_t));
                 ogs_assert(item2->mME_UE_S1AP_ID);
                 *item2->mME_UE_S1AP_ID = *item1->mME_UE_S1AP_ID;
             }
 
             if (item1->eNB_UE_S1AP_ID) {
-                item2->eNB_UE_S1AP_ID = CALLOC(1,
-                        sizeof(S1AP_ENB_UE_S1AP_ID_t));
+                item2->eNB_UE_S1AP_ID =
+                    CALLOC(1, sizeof(S1AP_ENB_UE_S1AP_ID_t));
                 ogs_assert(item2->eNB_UE_S1AP_ID);
                 *item2->eNB_UE_S1AP_ID = *item1->eNB_UE_S1AP_ID;
             }

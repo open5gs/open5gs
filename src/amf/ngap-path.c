@@ -550,7 +550,7 @@ void ngap_send_error_indication(
 
     ogs_assert(gnb);
 
-    ngapbuf = ngap_build_error_indication(
+    ngapbuf = ogs_ngap_build_error_indication(
             ran_ue_ngap_id, amf_ue_ngap_id, group, cause);
     ogs_expect_or_return(ngapbuf);
 
@@ -574,20 +574,18 @@ void ngap_send_error_indication2(
         gnb, &ran_ue->ran_ue_ngap_id, &ran_ue->amf_ue_ngap_id, group, cause);
 }
 
-#if 0
 void ngap_send_ng_reset_ack(
         amf_gnb_t *gnb,
-        NGAP_UE_associatedLogicalNG_ConnectionListRes_t *partOfNG_Interface)
+        NGAP_UE_associatedLogicalNG_connectionList_t *partOfNG_Interface)
 {
     int rv;
     ogs_pkbuf_t *ngapbuf = NULL;
 
     ogs_assert(gnb);
 
-    ngapbuf = ngap_build_ng_reset_ack(partOfNG_Interface);
+    ngapbuf = ogs_ngap_build_ng_reset_ack(partOfNG_Interface);
     ogs_expect_or_return(ngapbuf);
 
     rv = ngap_send_to_gnb(gnb, ngapbuf, NGAP_NON_UE_SIGNALLING);
     ogs_expect(rv == OGS_OK);
 }
-#endif

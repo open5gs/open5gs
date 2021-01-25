@@ -116,10 +116,10 @@ void ngap_state_operational(ogs_fsm_t *s, amf_event_t *e)
             case NGAP_ProcedureCode_id_HandoverNotification:
                 ngap_handle_handover_notification(gnb, pdu);
                 break;
-            case NGAP_ProcedureCode_id_Reset:
-                ngap_handle_s1_reset(gnb, pdu);
-                break;
 #endif
+            case NGAP_ProcedureCode_id_NGReset:
+                ngap_handle_ng_reset(gnb, pdu);
+                break;
             default:
                 ogs_error("Not implemented(choice:%d, proc:%d)",
                         pdu->present, (int)initiatingMessage->procedureCode);

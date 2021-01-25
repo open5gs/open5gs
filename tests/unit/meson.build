@@ -20,6 +20,7 @@ testunit_unit_sources = files('''
     s1ap-message-test.c
     nas-message-test.c
     gtp-message-test.c
+    ngap-message-test.c
     sbi-message-test.c
     security-test.c
     crash-test.c

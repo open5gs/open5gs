@@ -233,6 +233,7 @@ void amf_sbi_send_deactivate_all_ue_in_gnb(amf_gnb_t *gnb, int state)
 
             if (old_xact_count == new_xact_count) {
                 ran_ue_remove(ran_ue);
+                amf_ue_deassociate(amf_ue);
             }
         } else {
             ogs_warn("amf_sbi_send_deactivate_all_ue_in_gnb()");
@@ -240,7 +241,8 @@ void amf_sbi_send_deactivate_all_ue_in_gnb(amf_gnb_t *gnb, int state)
                 ran_ue->ran_ue_ngap_id, (long long)ran_ue->amf_ue_ngap_id,
                 state);
 
-            if (state == AMF_UPDATE_SM_CONTEXT_NG_RESET) {
+            if (state == AMF_REMOVE_S1_CONTEXT_BY_LO_CONNREFUSED ||
+                state == AMF_REMOVE_S1_CONTEXT_BY_RESET_ALL) {
                 ran_ue_remove(ran_ue);
             } else {
                 /* At this point, it does not support other action */

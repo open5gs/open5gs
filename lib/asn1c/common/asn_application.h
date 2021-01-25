@@ -10,6 +10,7 @@
 
 #include "asn_system.h"		/* for platform-dependent types */
 #include "asn_codecs.h"		/* for ASN.1 codecs specifics */
+#include "asn_config.h"
 
 #ifdef __cplusplus
 extern "C" {

@@ -21,6 +21,15 @@
 extern "C" {
 #endif
 
+#if !defined(ASN_DISABLE_UPER_SUPPORT)
+#include <uper_decoder.h>
+#include <uper_encoder.h>
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) */
+#if !defined(ASN_DISABLE_APER_SUPPORT)
+#include <aper_decoder.h>
+#include <aper_encoder.h>
+#endif  /* !defined(ASN_DISABLE_APER_SUPPORT) */
+
 /* Environment version might be used to avoid running with the old library */
 #define	ASN1C_ENVIRONMENT_VERSION	923	/* Compile-time version */
 int get_asn1c_environment_version(void);	/* Run-time version */
@@ -136,6 +145,13 @@ asn__format_to_callback(
  * Check stack against overflow, if limit is set.
  */
 #define	ASN__DEFAULT_STACK_MAX	(30000)
+#ifdef ASN_DISABLE_STACK_OVERFLOW_CHECK
+static int CC_NOTUSED
+ASN__STACK_OVERFLOW_CHECK(const asn_codec_ctx_t *ctx) {
+   (void)ctx;
+   return 0;
+}
+#else
 static int CC_NOTUSED
 ASN__STACK_OVERFLOW_CHECK(const asn_codec_ctx_t *ctx) {
 	if(ctx && ctx->max_stack_size) {
@@ -153,6 +169,7 @@ ASN__STACK_OVERFLOW_CHECK(const asn_codec_ctx_t *ctx) {
 	}
 	return 0;
 }
+#endif
 
 #ifdef	__cplusplus
 }

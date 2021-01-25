@@ -363,18 +363,12 @@ int amf_nsmf_pdu_session_handle_update_sm_context(
 
                 sess->n1_released = true;
 
-            } else if (state == AMF_UPDATE_SM_CONTEXT_NG_RESET) {
-                /*
-                 * 1. NG RESET
-                 * 2. /nsmf-pdusession/v1/sm-contexts/{smContextRef}/modify
-                 * 3. PFCP Session Modifcation Request (Apply:Buff & NOCP)
-                 * 4. PFCP Session Modifcation Response
-                 * 5. NG RESET ACKNOWLEDGE
-                 */
-
-                /* Nothing to do */
+            } else if (state == AMF_REMOVE_S1_CONTEXT_BY_LO_CONNREFUSED) {
                 if (SESSION_SYNC_DONE(amf_ue, state)) {
                     ran_ue_t *ran_ue = ran_ue_cycle(amf_ue->ran_ue);
+
+                    amf_ue_deassociate(amf_ue);
+
                     if (ran_ue) {
                         ogs_debug("    SUPI[%s]", amf_ue->supi);
                         ran_ue_remove(ran_ue);
@@ -383,6 +377,32 @@ int amf_nsmf_pdu_session_handle_update_sm_context(
                                 amf_ue->supi);
                     }
                 }
+
+            } else if (state == AMF_REMOVE_S1_CONTEXT_BY_RESET_ALL) {
+                if (SESSION_SYNC_DONE(amf_ue, state)) {
+                    ran_ue_t *ran_ue = ran_ue_cycle(amf_ue->ran_ue);
+
+                    amf_ue_deassociate(amf_ue);
+
+                    if (ran_ue) {
+                        amf_gnb_t *gnb = ran_ue->gnb;
+                        ogs_assert(gnb);
+
+                        ogs_debug("    SUPI[%s]", amf_ue->supi);
+                        ran_ue_remove(ran_ue);
+
+                        if (ogs_list_count(&gnb->ran_ue_list) == 0)
+                            ngap_send_ng_reset_ack(gnb, NULL);
+
+                    } else {
+                        ogs_warn("[%s] RAN-NG Context has already been removed",
+                                amf_ue->supi);
+                    }
+                }
+
+            } else if (state == AMF_REMOVE_S1_CONTEXT_BY_RESET_PARTIAL) {
+                ogs_fatal("Not implemented");
+                ogs_assert_if_reached();
 
             } else {
                 ogs_error("Invalid STATE[%d]", state);

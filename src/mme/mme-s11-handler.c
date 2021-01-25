@@ -777,13 +777,80 @@ void mme_s11_handle_release_access_bearers_response(
         } else {
             ogs_warn("ENB-S1 Context has already been removed");
         }
-    } else if (action == OGS_GTP_RELEASE_S1_CONTEXT_REMOVE) {
+    } else if (action == OGS_GTP_RELEASE_S1_CONTEXT_REMOVE_BY_LO_CONNREFUSED) {
         enb_ue = enb_ue_cycle(mme_ue->enb_ue);
+
+        mme_ue_deassociate(mme_ue);
+
         if (enb_ue) {
             enb_ue_remove(enb_ue);
         } else {
             ogs_warn("ENB-S1 Context has already been removed");
         }
+
+    /*
+     * TS36.413
+     * 8.7.1.2.1 Reset Procedure Initiated from the MME
+     *
+     * The eNB does not need to wait for the release of radio resources
+     * to be completed before returning the RESET ACKNOWLEDGE message.
+     *
+     * 8.7.1.2.2 Reset Procedure Initiated from the E-UTRAN
+     * After the MME has released all assigned S1 resources and
+     * the UE S1AP IDs for all indicated UE associations which can be used
+     * for new UE-associated logical S1-connections over the S1 interface,
+     * the MME shall respond with the RESET ACKNOWLEDGE message.
+     */
+    } else if (action == OGS_GTP_RELEASE_S1_CONTEXT_REMOVE_BY_RESET_ALL) {
+        enb_ue = enb_ue_cycle(mme_ue->enb_ue);
+
+        mme_ue_deassociate(mme_ue);
+
+        if (enb_ue) {
+            mme_enb_t *enb = enb_ue->enb;
+            ogs_assert(enb);
+
+            enb_ue_remove(enb_ue);
+
+            if (ogs_list_count(&enb->enb_ue_list) == 0)
+                s1ap_send_s1_reset_ack(enb, NULL);
+        } else {
+            ogs_warn("ENB-S1 Context has already been removed");
+        }
+
+    } else if (action == OGS_GTP_RELEASE_S1_CONTEXT_REMOVE_BY_RESET_PARTIAL) {
+        enb_ue_t *iter = NULL;
+
+        enb_ue = enb_ue_cycle(mme_ue->enb_ue);
+
+        mme_ue_deassociate(mme_ue);
+
+        if (enb_ue) {
+            mme_enb_t *enb = enb_ue->enb;
+            ogs_assert(enb);
+
+            enb_ue_remove(enb_ue);
+
+            ogs_list_for_each(&enb->enb_ue_list, iter) {
+                if (iter->part_of_s1_reset_requested == true) {
+                    /* The ENB_UE context
+                     * where PartOfS1_interface was requested
+                     * still remains */
+                    return;
+                }
+            }
+
+            /* All ENB_UE context
+             * where PartOfS1_interface was requested
+             * REMOVED */
+            s1ap_send_to_enb(enb, enb->s1_reset_ack, S1AP_NON_UE_SIGNALLING);
+
+            /* Clear S1-Reset Ack Buffer */
+            enb->s1_reset_ack = NULL;
+        } else {
+            ogs_warn("ENB-S1 Context has already been removed");
+        }
+
     } else {
         ogs_fatal("Invalid action = %d", action);
         ogs_assert_if_reached();

@@ -21,23 +21,47 @@ typedef ASN__PRIMITIVE_TYPE_t OBJECT_IDENTIFIER_t;
 extern asn_TYPE_descriptor_t asn_DEF_OBJECT_IDENTIFIER;
 extern asn_TYPE_operation_t asn_OP_OBJECT_IDENTIFIER;
 
+ssize_t OBJECT_IDENTIFIER__dump_body(const OBJECT_IDENTIFIER_t *st,
+                                     asn_app_consume_bytes_f *cb,
+                                     void *app_key);
+
+#define OBJECT_IDENTIFIER_free ASN__PRIMITIVE_TYPE_free
+
+#if !defined(ASN_DISABLE_PRINT_SUPPORT)
 asn_struct_print_f OBJECT_IDENTIFIER_print;
+#endif  /* !defined(ASN_DISABLE_PRINT_SUPPORT) */
+
+#define OBJECT_IDENTIFIER_compare OCTET_STRING_compare
+
 asn_constr_check_f OBJECT_IDENTIFIER_constraint;
-der_type_encoder_f OBJECT_IDENTIFIER_encode_der;
+
+#if !defined(ASN_DISABLE_BER_SUPPORT)
+#define OBJECT_IDENTIFIER_decode_ber ber_decode_primitive
+#define OBJECT_IDENTIFIER_encode_der der_encode_primitive
+#endif  /* !defined(ASN_DISABLE_BER_SUPPORT) */
+
+#if !defined(ASN_DISABLE_XER_SUPPORT)
 xer_type_decoder_f OBJECT_IDENTIFIER_decode_xer;
 xer_type_encoder_f OBJECT_IDENTIFIER_encode_xer;
-asn_random_fill_f  OBJECT_IDENTIFIER_random_fill;
+#endif  /* !defined(ASN_DISABLE_XER_SUPPORT) */
 
-#define OBJECT_IDENTIFIER_free           ASN__PRIMITIVE_TYPE_free
-#define OBJECT_IDENTIFIER_compare        OCTET_STRING_compare
-#define OBJECT_IDENTIFIER_decode_ber     ber_decode_primitive
-#define OBJECT_IDENTIFIER_encode_der     der_encode_primitive
-#define OBJECT_IDENTIFIER_decode_oer     oer_decode_primitive
-#define OBJECT_IDENTIFIER_encode_oer     oer_encode_primitive
-#define OBJECT_IDENTIFIER_decode_uper    OCTET_STRING_decode_uper
-#define OBJECT_IDENTIFIER_encode_uper    OCTET_STRING_encode_uper
-#define OBJECT_IDENTIFIER_decode_aper    OCTET_STRING_decode_aper
-#define OBJECT_IDENTIFIER_encode_aper    OCTET_STRING_encode_aper
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+#define OBJECT_IDENTIFIER_decode_oer oer_decode_primitive
+#define OBJECT_IDENTIFIER_encode_oer oer_encode_primitive
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+
+#if !defined(ASN_DISABLE_UPER_SUPPORT)
+#define OBJECT_IDENTIFIER_decode_uper OCTET_STRING_decode_uper
+#define OBJECT_IDENTIFIER_encode_uper OCTET_STRING_encode_uper
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) */
+#if !defined(ASN_DISABLE_APER_SUPPORT)
+#define OBJECT_IDENTIFIER_decode_aper OCTET_STRING_decode_aper
+#define OBJECT_IDENTIFIER_encode_aper OCTET_STRING_encode_aper
+#endif  /* !defined(ASN_DISABLE_APER_SUPPORT) */
+
+#if !defined(ASN_DISABLE_RFILL_SUPPORT)
+asn_random_fill_f  OBJECT_IDENTIFIER_random_fill;
+#endif  /* !defined(ASN_DISABLE_RFILL_SUPPORT) */
 
 /**********************************
  * Some handy conversion routines *

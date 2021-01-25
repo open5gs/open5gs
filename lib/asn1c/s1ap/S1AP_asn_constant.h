@@ -55,6 +55,10 @@ extern "C" {
 #define S1AP_maxnoofBluetoothName (4)
 #define S1AP_maxnoofWLANName (4)
 #define S1AP_maxnoofConnectedengNBs (256)
+#define S1AP_maxnoofPC5QoSFlows (2048)
+#define S1AP_maxnooffrequencies (64)
+#define S1AP_maxNARFCN (32)
+#define S1AP_maxRS_IndexCellQual (16)
 
 
 #ifdef __cplusplus

@@ -273,7 +273,7 @@ static void test1_func(abts_case *tc, void *data)
     rv = testgnb_ngap_send(ngap1, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    /* Receive Initial context setup request +
+    /* Receive InitialContextSetupRequest +
      * Registration accept */
     recvbuf = testgnb_ngap_read(ngap1);
     ABTS_PTR_NOTNULL(tc, recvbuf);
@@ -282,13 +282,13 @@ static void test1_func(abts_case *tc, void *data)
             NGAP_ProcedureCode_id_InitialContextSetup,
             test_ue->ngap_procedure_code);
 
-    /* Send UE radio capability info indication */
+    /* Send UERadioCapabilityInfoIndication */
     sendbuf = testngap_build_ue_radio_capability_info_indication(test_ue);
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testgnb_ngap_send(ngap1, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    /* Send Initial context setup response */
+    /* Send InitialContextSetupResponse */
     sendbuf = testngap_build_initial_context_setup_response(test_ue, false);
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testgnb_ngap_send(ngap1, sendbuf);
@@ -498,7 +498,7 @@ static void test1_func(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
-    /* Send UE context release request */
+    /* Send UEContextReleaseRequest */
     sendbuf = testngap_build_ue_context_release_request(test_ue,
             NGAP_Cause_PR_radioNetwork, NGAP_CauseRadioNetwork_user_inactivity,
             true);
@@ -506,12 +506,15 @@ static void test1_func(abts_case *tc, void *data)
     rv = testgnb_ngap_send(ngap1, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    /* Receive UE context release command */
+    /* Receive UEContextReleaseCommand */
     recvbuf = testgnb_ngap_read(ngap1);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     testngap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc,
+            NGAP_ProcedureCode_id_UEContextRelease,
+            test_ue->ngap_procedure_code);
 
-    /* Send UE context release complete */
+    /* Send UEContextReleaseComplete */
     sendbuf = testngap_build_ue_context_release_complete(test_ue);
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testgnb_ngap_send(ngap1, sendbuf);

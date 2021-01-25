@@ -5,7 +5,7 @@
 #include <asn_internal.h>
 #include <INTEGER.h>
 #include <OBJECT_IDENTIFIER.h>
-#include <OCTET_STRING.h>
+#include <asn_codecs_prim.h>
 #include <limits.h>	/* for CHAR_BIT */
 #include <errno.h>
 
@@ -13,50 +13,79 @@
  * OBJECT IDENTIFIER basic type description.
  */
 static const ber_tlv_tag_t asn_DEF_OBJECT_IDENTIFIER_tags[] = {
-	(ASN_TAG_CLASS_UNIVERSAL | (6 << 2))
+    (ASN_TAG_CLASS_UNIVERSAL | (6 << 2))
 };
 asn_TYPE_operation_t asn_OP_OBJECT_IDENTIFIER = {
-	ASN__PRIMITIVE_TYPE_free,
-	OBJECT_IDENTIFIER_print,
-	OCTET_STRING_compare,   /* Implemented in terms of a string comparison */
-	ber_decode_primitive,
-	der_encode_primitive,
-	OBJECT_IDENTIFIER_decode_xer,
-	OBJECT_IDENTIFIER_encode_xer,
-#ifdef	ASN_DISABLE_OER_SUPPORT
-	0,
-	0,
+    ASN__PRIMITIVE_TYPE_free,
+#if !defined(ASN_DISABLE_PRINT_SUPPORT)
+    OBJECT_IDENTIFIER_print,
 #else
-	OBJECT_IDENTIFIER_decode_oer,
-	OBJECT_IDENTIFIER_encode_oer,
-#endif  /* ASN_DISABLE_OER_SUPPORT */
-#ifdef	ASN_DISABLE_PER_SUPPORT
-	0,
-	0,
-	0,
-	0,
+    0,
+#endif  /* !defined(ASN_DISABLE_PRINT_SUPPORT) */
+    OCTET_STRING_compare,   /* Implemented in terms of a string comparison */
+#if !defined(ASN_DISABLE_BER_SUPPORT)
+    ber_decode_primitive,
+    der_encode_primitive,
 #else
-	OCTET_STRING_decode_uper,
-	OCTET_STRING_encode_uper,
-	OCTET_STRING_decode_aper,
-	OCTET_STRING_encode_aper,
-#endif	/* ASN_DISABLE_PER_SUPPORT */
-	OBJECT_IDENTIFIER_random_fill,
-	0	/* Use generic outmost tag fetcher */
+    0,
+    0,
+#endif  /* !defined(ASN_DISABLE_BER_SUPPORT) */
+#if !defined(ASN_DISABLE_XER_SUPPORT)
+    OBJECT_IDENTIFIER_decode_xer,
+    OBJECT_IDENTIFIER_encode_xer,
+#else
+    0,
+    0,
+#endif  /* !defined(ASN_DISABLE_XER_SUPPORT) */
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+    OBJECT_IDENTIFIER_decode_oer,
+    OBJECT_IDENTIFIER_encode_oer,
+#else
+    0,
+    0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT)
+    OCTET_STRING_decode_uper,
+    OCTET_STRING_encode_uper,
+#else
+    0,
+    0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) */
+#if !defined(ASN_DISABLE_APER_SUPPORT)
+    OCTET_STRING_decode_aper,
+    OCTET_STRING_encode_aper,
+#else
+    0,
+    0,
+#endif  /* !defined(ASN_DISABLE_APER_SUPPORT) */
+#if !defined(ASN_DISABLE_RFILL_SUPPORT)
+    OBJECT_IDENTIFIER_random_fill,
+#else
+    0,
+#endif  /* !defined(ASN_DISABLE_RFILL_SUPPORT) */
+    0  /* Use generic outmost tag fetcher */
 };
 asn_TYPE_descriptor_t asn_DEF_OBJECT_IDENTIFIER = {
-	"OBJECT IDENTIFIER",
-	"OBJECT_IDENTIFIER",
-	&asn_OP_OBJECT_IDENTIFIER,
-	asn_DEF_OBJECT_IDENTIFIER_tags,
-	sizeof(asn_DEF_OBJECT_IDENTIFIER_tags)
-	    / sizeof(asn_DEF_OBJECT_IDENTIFIER_tags[0]),
-	asn_DEF_OBJECT_IDENTIFIER_tags,	/* Same as above */
-	sizeof(asn_DEF_OBJECT_IDENTIFIER_tags)
-	    / sizeof(asn_DEF_OBJECT_IDENTIFIER_tags[0]),
-	{ 0, 0, OBJECT_IDENTIFIER_constraint },
-	0, 0,	/* No members */
-	0	/* No specifics */
+    "OBJECT IDENTIFIER",
+    "OBJECT_IDENTIFIER",
+    &asn_OP_OBJECT_IDENTIFIER,
+    asn_DEF_OBJECT_IDENTIFIER_tags,
+    sizeof(asn_DEF_OBJECT_IDENTIFIER_tags)
+        / sizeof(asn_DEF_OBJECT_IDENTIFIER_tags[0]),
+    asn_DEF_OBJECT_IDENTIFIER_tags,  /* Same as above */
+    sizeof(asn_DEF_OBJECT_IDENTIFIER_tags)
+        / sizeof(asn_DEF_OBJECT_IDENTIFIER_tags[0]),
+    {
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+        0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+        0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+        OBJECT_IDENTIFIER_constraint
+    },
+    0, 0,  /* No members */
+    0  /* No specifics */
 };
 
 int
@@ -143,11 +172,12 @@ OBJECT_IDENTIFIER_get_single_arc(const uint8_t *arcbuf, size_t arcbuf_len,
 
 }
 
-static ssize_t
+ssize_t
 OBJECT_IDENTIFIER__dump_body(const OBJECT_IDENTIFIER_t *st,
                              asn_app_consume_bytes_f *cb, void *app_key) {
     char scratch[32];
-    asn_oid_arc_t arc0, arc1;
+    asn_oid_arc_t arc0 = 0;
+    asn_oid_arc_t arc1 = 0;
     size_t produced = 0;
     size_t off = 0;
     ssize_t rd;
@@ -195,105 +225,11 @@ OBJECT_IDENTIFIER__dump_body(const OBJECT_IDENTIFIER_t *st,
 	return produced;
 }
 
-static enum xer_pbd_rval
-OBJECT_IDENTIFIER__xer_body_decode(const asn_TYPE_descriptor_t *td, void *sptr,
-                                   const void *chunk_buf, size_t chunk_size) {
-    OBJECT_IDENTIFIER_t *st = (OBJECT_IDENTIFIER_t *)sptr;
-	const char *chunk_end = (const char *)chunk_buf + chunk_size;
-	const char *endptr;
-	asn_oid_arc_t s_arcs[10];
-	asn_oid_arc_t *arcs = s_arcs;
-	ssize_t num_arcs;
-	ssize_t ret;
-
-	(void)td;
-
-    num_arcs = OBJECT_IDENTIFIER_parse_arcs(
-        (const char *)chunk_buf, chunk_size, arcs,
-        sizeof(s_arcs) / sizeof(s_arcs[0]), &endptr);
-    if(num_arcs < 0) {
-		/* Expecting more than zero arcs */
-		return XPBD_BROKEN_ENCODING;
-	} else if(num_arcs == 0) {
-		return XPBD_NOT_BODY_IGNORE;
-	}
-	assert(endptr == chunk_end);
-
-	if((size_t)num_arcs > sizeof(s_arcs)/sizeof(s_arcs[0])) {
-		arcs = (asn_oid_arc_t *)MALLOC(num_arcs * sizeof(asn_oid_arc_t));
-		if(!arcs) return XPBD_SYSTEM_FAILURE;
-        ret = OBJECT_IDENTIFIER_parse_arcs((const char *)chunk_buf, chunk_size,
-                                           arcs, num_arcs, &endptr);
-        if(ret != num_arcs)
-			return XPBD_SYSTEM_FAILURE;	/* assert?.. */
-	}
-
-	/*
-	 * Convert arcs into BER representation.
-	 */
-	ret = OBJECT_IDENTIFIER_set_arcs(st, arcs, num_arcs);
-	if(arcs != s_arcs) FREEMEM(arcs);
-
-	return ret ? XPBD_SYSTEM_FAILURE : XPBD_BODY_CONSUMED;
-}
-
-asn_dec_rval_t
-OBJECT_IDENTIFIER_decode_xer(const asn_codec_ctx_t *opt_codec_ctx,
-                             const asn_TYPE_descriptor_t *td, void **sptr,
-                             const char *opt_mname, const void *buf_ptr,
-                             size_t size) {
-    return xer_decode_primitive(opt_codec_ctx, td,
-		sptr, sizeof(OBJECT_IDENTIFIER_t), opt_mname,
-			buf_ptr, size, OBJECT_IDENTIFIER__xer_body_decode);
-}
-
-asn_enc_rval_t
-OBJECT_IDENTIFIER_encode_xer(const asn_TYPE_descriptor_t *td, const void *sptr,
-                             int ilevel, enum xer_encoder_flags_e flags,
-                             asn_app_consume_bytes_f *cb, void *app_key) {
-    const OBJECT_IDENTIFIER_t *st = (const OBJECT_IDENTIFIER_t *)sptr;
-    asn_enc_rval_t er = {0,0,0};
-
-    (void)ilevel;
-    (void)flags;
-
-    if(!st || !st->buf) {
-        ASN__ENCODE_FAILED;
-    }
-
-    er.encoded = OBJECT_IDENTIFIER__dump_body(st, cb, app_key);
-    if(er.encoded < 0) ASN__ENCODE_FAILED;
-
-    ASN__ENCODED_OK(er);
-}
-
-int
-OBJECT_IDENTIFIER_print(const asn_TYPE_descriptor_t *td, const void *sptr,
-                        int ilevel, asn_app_consume_bytes_f *cb,
-                        void *app_key) {
-    const OBJECT_IDENTIFIER_t *st = (const OBJECT_IDENTIFIER_t *)sptr;
-
-	(void)td;	/* Unused argument */
-	(void)ilevel;	/* Unused argument */
-
-	if(!st || !st->buf)
-		return (cb("<absent>", 8, app_key) < 0) ? -1 : 0;
-
-	/* Dump preamble */
-	if(cb("{ ", 2, app_key) < 0)
-		return -1;
-
-    if(OBJECT_IDENTIFIER__dump_body(st, cb, app_key) < 0) {
-        return -1;
-    }
-
-    return (cb(" }", 2, app_key) < 0) ? -1 : 0;
-}
-
 ssize_t
 OBJECT_IDENTIFIER_get_arcs(const OBJECT_IDENTIFIER_t *st, asn_oid_arc_t *arcs,
                            size_t arc_slots) {
-    asn_oid_arc_t arc0, arc1;
+    asn_oid_arc_t arc0 = 0;
+    asn_oid_arc_t arc1 = 0;
     size_t num_arcs = 0;
     size_t off;
     ssize_t rd;
@@ -587,70 +523,4 @@ OBJECT_IDENTIFIER_parse_arcs(const char *oid_text, ssize_t oid_txt_length,
 
 	errno = EINVAL;	/* Broken OID */
 	return -1;
-}
-
-/*
- * Generate values from the list of interesting values, or just a random
- * value up to the upper limit.
- */
-static asn_oid_arc_t
-OBJECT_IDENTIFIER__biased_random_arc(asn_oid_arc_t upper_bound) {
-    const asn_oid_arc_t values[] = {0, 1, 127, 128, 129, 254, 255, 256};
-    size_t idx;
-
-    switch(asn_random_between(0, 2)) {
-    case 0:
-        idx = asn_random_between(0, sizeof(values) / sizeof(values[0]) - 1);
-        if(values[idx] < upper_bound) {
-            return values[idx];
-        }
-        /* Fall through */
-    case 1:
-        return asn_random_between(0, upper_bound);
-    case 2:
-    default:
-        return upper_bound;
-    }
-}
-
-asn_random_fill_result_t
-OBJECT_IDENTIFIER_random_fill(const asn_TYPE_descriptor_t *td, void **sptr,
-                              const asn_encoding_constraints_t *constraints,
-                              size_t max_length) {
-    asn_random_fill_result_t result_ok = {ARFILL_OK, 1};
-    asn_random_fill_result_t result_failed = {ARFILL_FAILED, 0};
-    asn_random_fill_result_t result_skipped = {ARFILL_SKIPPED, 0};
-    OBJECT_IDENTIFIER_t *st;
-    asn_oid_arc_t arcs[5];
-    size_t arcs_len = asn_random_between(2, 5);
-    size_t i;
-
-    (void)constraints;
-
-    if(max_length < arcs_len) return result_skipped;
-
-    if(*sptr) {
-        st = *sptr;
-    } else {
-        st = CALLOC(1, sizeof(*st));
-    }
-
-    arcs[0] = asn_random_between(0, 2);
-    arcs[1] = OBJECT_IDENTIFIER__biased_random_arc(
-        arcs[0] <= 1 ? 39 : (ASN_OID_ARC_MAX - 80));
-    for(i = 2; i < arcs_len; i++) {
-        arcs[i] = OBJECT_IDENTIFIER__biased_random_arc(ASN_OID_ARC_MAX);
-    }
-
-    if(OBJECT_IDENTIFIER_set_arcs(st, arcs, arcs_len)) {
-        if(st != *sptr) {
-            ASN_STRUCT_FREE(*td, st);
-        }
-        return result_failed;
-    }
-
-    *sptr = st;
-
-    result_ok.length = st->size;
-    return result_ok;
 }

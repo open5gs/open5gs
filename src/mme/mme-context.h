@@ -222,6 +222,8 @@ typedef struct mme_enb_s {
     uint8_t         num_of_supported_ta_list;
     ogs_eps_tai_t   supported_ta_list[OGS_MAX_NUM_OF_TAI*OGS_MAX_NUM_OF_BPLMN];
 
+    ogs_pkbuf_t     *s1_reset_ack; /* Reset message */
+
     ogs_list_t      enb_ue_list;
 
 } mme_enb_t;
@@ -263,6 +265,8 @@ struct enb_ue_s {
 #define S1AP_UE_CTX_REL_DELETE_INDIRECT_TUNNEL              4
 #define S1AP_UE_CTX_REL_S1_PAGING                           5
     uint8_t         ue_ctx_rel_action;
+
+    bool            part_of_s1_reset_requested;
 
     /* Related Context */
     mme_enb_t       *enb;

@@ -819,7 +819,8 @@ void s1ap_handle_ue_context_modification_response(
 
     ogs_debug("UE context modification response");
 
-    for (i = 0; i < UEContextModificationResponse->protocolIEs.list.count; i++) {
+    for (i = 0;
+            i < UEContextModificationResponse->protocolIEs.list.count; i++) {
         ie = UEContextModificationResponse->protocolIEs.list.array[i];
         switch (ie->id) {
         case S1AP_ProtocolIE_ID_id_eNB_UE_S1AP_ID:
@@ -2179,6 +2180,8 @@ void s1ap_handle_s1_reset(
     S1AP_ResetType_t *ResetType = NULL;
     S1AP_UE_associatedLogicalS1_ConnectionListRes_t *partOfS1_Interface = NULL;
 
+    enb_ue_t *iter = NULL;
+
     ogs_assert(enb);
     ogs_assert(enb->sctp.sock);
 
@@ -2208,22 +2211,8 @@ void s1ap_handle_s1_reset(
             OGS_ADDR(enb->sctp.addr, buf), enb->enb_id);
 
     ogs_assert(Cause);
-    ogs_debug("    Cause[Group:%d Cause:%d]",
+    ogs_warn("    Cause[Group:%d Cause:%d]",
             Cause->present, (int)Cause->choice.radioNetwork);
-
-    switch (Cause->present) {
-    case S1AP_Cause_PR_radioNetwork:
-    case S1AP_Cause_PR_transport:
-    case S1AP_Cause_PR_protocol:
-    case S1AP_Cause_PR_misc:
-        break;
-    case S1AP_Cause_PR_nas:
-        ogs_warn("NAS-Cause[%d]", (int)Cause->choice.nas);
-        break;
-    default:
-        ogs_warn("Invalid cause group[%d]", Cause->present);
-        break;
-    }
 
     ogs_assert(ResetType);
     switch (ResetType->present) {
@@ -2231,8 +2220,26 @@ void s1ap_handle_s1_reset(
         ogs_warn("    S1AP_ResetType_PR_s1_Interface");
 
         mme_gtp_send_release_all_ue_in_enb(
-                enb, OGS_GTP_RELEASE_S1_CONTEXT_REMOVE);
+                enb, OGS_GTP_RELEASE_S1_CONTEXT_REMOVE_BY_RESET_ALL);
+
+        /*
+         * TS36.413
+         * 8.7.1.2.1 Reset Procedure Initiated from the MME
+         *
+         * The eNB does not need to wait for the release of radio resources
+         * to be completed before returning the RESET ACKNOWLEDGE message.
+         *
+         * 8.7.1.2.2 Reset Procedure Initiated from the E-UTRAN
+         * After the MME has released all assigned S1 resources and
+         * the UE S1AP IDs for all indicated UE associations which can be used
+         * for new UE-associated logical S1-connections over the S1 interface,
+         * the MME shall respond with the RESET ACKNOWLEDGE message.
+         */
+        if (ogs_list_count(&enb->enb_ue_list) == 0)
+            s1ap_send_s1_reset_ack(enb, NULL);
+
         break;
+
     case S1AP_ResetType_PR_partOfS1_Interface:
         ogs_warn("    S1AP_ResetType_PR_partOfS1_Interface");
 
@@ -2251,7 +2258,7 @@ void s1ap_handle_s1_reset(
 
             item = &ie2->value.choice.UE_associatedLogicalS1_ConnectionItem;
             ogs_assert(item);
-            
+
             ogs_warn("    MME_UE_S1AP_ID[%d] ENB_UE_S1AP_ID[%d]",
                     item->mME_UE_S1AP_ID ? (int)*item->mME_UE_S1AP_ID : -1,
                     item->eNB_UE_S1AP_ID ? (int)*item->eNB_UE_S1AP_ID : -1);
@@ -2270,39 +2277,58 @@ void s1ap_handle_s1_reset(
                 continue;
             }
 
-            mme_ue = enb_ue->mme_ue;
-            ogs_assert(mme_ue);
+            /* ENB_UE Context where PartOfS1_interface was requested */
+            enb_ue->part_of_s1_reset_requested = true;
 
-            mme_gtp_send_release_access_bearers_request(
-                    mme_ue, OGS_GTP_RELEASE_S1_CONTEXT_REMOVE);
+            mme_ue = enb_ue->mme_ue;
+            if (mme_ue) {
+                mme_gtp_send_release_access_bearers_request(
+                    mme_ue, OGS_GTP_RELEASE_S1_CONTEXT_REMOVE_BY_RESET_PARTIAL);
+            } else {
+                enb_ue_remove(enb_ue);
+            }
         }
+
+        /*
+         * TS36.413
+         * 8.7.1.2.1 Reset Procedure Initiated from the MME
+         *
+         * The eNB does not need to wait for the release of radio resources
+         * to be completed before returning the RESET ACKNOWLEDGE message.
+         *
+         * 8.7.1.2.2 Reset Procedure Initiated from the E-UTRAN
+         * After the MME has released all assigned S1 resources and
+         * the UE S1AP IDs for all indicated UE associations which can be used
+         * for new UE-associated logical S1-connections over the S1 interface,
+         * the MME shall respond with the RESET ACKNOWLEDGE message.
+         */
+        if (enb->s1_reset_ack)
+            ogs_pkbuf_free(enb->s1_reset_ack);
+
+        enb->s1_reset_ack = ogs_s1ap_build_s1_reset_ack(partOfS1_Interface);
+        ogs_expect_or_return(enb->s1_reset_ack);
+
+        ogs_list_for_each(&enb->enb_ue_list, iter) {
+            if (iter->part_of_s1_reset_requested == true) {
+                /* The ENB_UE context
+                 * where PartOfS1_interface was requested
+                 * still remains */
+                return;
+            }
+        }
+
+        /* All ENB_UE context
+         * where PartOfS1_interface was requested
+         * REMOVED */
+        s1ap_send_to_enb(enb, enb->s1_reset_ack, S1AP_NON_UE_SIGNALLING);
+
+        /* Clear S1-Reset Ack Buffer */
+        enb->s1_reset_ack = NULL;
         break;
     default:
         ogs_warn("Invalid ResetType[%d]", ResetType->present);
         break;
     }
-
-    /*
-     * In the specification, eNB can send RESET ACK without waiting
-     * for resource release, but MME must send after releasing all resources.
-     *
-     * Why? Huh.. At this point, I implemented MME to send RESET ACK
-     * without waiting for resource release. If problems are found,
-     * I will fix them later.
-     *
-     * TS36.413
-     * 8.7.1.2.1 Reset Procedure Initiated from the MME
-     *
-     * The eNB does not need to wait for the release of radio resources
-     * to be completed before returning the RESET ACKNOWLEDGE message.
-     *
-     * 8.7.1.2.2 Reset Procedure Initiated from the E-UTRAN
-     * After the MME has released all assigned S1 resources and
-     * the UE S1AP IDs for all indicated UE associations which can be used
-     * for new UE-associated logical S1-connections over the S1 interface,
-     * the MME shall respond with the RESET ACKNOWLEDGE message.
-     */
-    s1ap_send_s1_reset_ack(enb, partOfS1_Interface);
 }
 
 void s1ap_handle_write_replace_warning_response(

@@ -40,22 +40,57 @@ typedef struct asn_CHOICE_specifics_s {
  * A set specialized functions dealing with the CHOICE type.
  */
 asn_struct_free_f CHOICE_free;
+
+#if !defined(ASN_DISABLE_PRINT_SUPPORT)
 asn_struct_print_f CHOICE_print;
+#endif  /* !defined(ASN_DISABLE_PRINT_SUPPORT) */
+
 asn_struct_compare_f CHOICE_compare;
+
 asn_constr_check_f CHOICE_constraint;
+
+#if !defined(ASN_DISABLE_BER_SUPPORT)
 ber_type_decoder_f CHOICE_decode_ber;
 der_type_encoder_f CHOICE_encode_der;
+#endif  /* !defined(ASN_DISABLE_BER_SUPPORT) */
+
+#if !defined(ASN_DISABLE_XER_SUPPORT)
 xer_type_decoder_f CHOICE_decode_xer;
 xer_type_encoder_f CHOICE_encode_xer;
+#endif  /* !defined(ASN_DISABLE_XER_SUPPORT) */
+
+#if !defined(ASN_DISABLE_OER_SUPPORT)
 oer_type_decoder_f CHOICE_decode_oer;
 oer_type_encoder_f CHOICE_encode_oer;
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+
+#if !defined(ASN_DISABLE_UPER_SUPPORT)
 per_type_decoder_f CHOICE_decode_uper;
 per_type_encoder_f CHOICE_encode_uper;
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) */
+#if !defined(ASN_DISABLE_APER_SUPPORT)
 per_type_decoder_f CHOICE_decode_aper;
 per_type_encoder_f CHOICE_encode_aper;
-asn_outmost_tag_f CHOICE_outmost_tag;
+#endif  /* !defined(ASN_DISABLE_APER_SUPPORT) */
+
+#if !defined(ASN_DISABLE_RFILL_SUPPORT)
 asn_random_fill_f CHOICE_random_fill;
+#endif  /* !defined(ASN_DISABLE_RFILL_SUPPORT) */
+
+asn_outmost_tag_f CHOICE_outmost_tag;
+
 extern asn_TYPE_operation_t asn_OP_CHOICE;
+
+unsigned _fetch_present_idx(
+        const void *struct_ptr,
+        unsigned off,
+        unsigned size);
+
+void _set_present_idx(
+        void *sptr,
+        unsigned offset,
+        unsigned size,
+        unsigned present);
 
 /*
  * Return the 1-based choice variant presence index.

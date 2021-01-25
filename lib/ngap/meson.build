@@ -18,6 +18,7 @@
 libngap_sources = files('''
     conv.c
     message.c
+    build.c
 '''.split())
 
 libngap_inc = include_directories('.')

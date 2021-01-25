@@ -27,6 +27,7 @@ abts_suite *test_paging(abts_suite *suite);
 abts_suite *test_identity(abts_suite *suite);
 abts_suite *test_gmm_status(abts_suite *suite);
 abts_suite *test_ue_context(abts_suite *suite);
+abts_suite *test_reset(abts_suite *suite);
 
 const struct testlist {
     abts_suite *(*func)(abts_suite *suite);
@@ -39,6 +40,7 @@ const struct testlist {
     {test_identity},
     {test_gmm_status},
     {test_ue_context},
+    {test_reset},
     {NULL},
 };
 

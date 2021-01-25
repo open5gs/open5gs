@@ -446,7 +446,8 @@ void mme_gtp_send_release_all_ue_in_enb(mme_enb_t *enb, int action)
             ogs_warn("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d] Action[%d]",
                 enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id, action);
 
-            if (action == OGS_GTP_RELEASE_S1_CONTEXT_REMOVE) {
+            if (action == OGS_GTP_RELEASE_S1_CONTEXT_REMOVE_BY_LO_CONNREFUSED ||
+                action == OGS_GTP_RELEASE_S1_CONTEXT_REMOVE_BY_RESET_ALL) {
                 enb_ue_remove(enb_ue);
             } else {
                 /* At this point, it does not support other action */

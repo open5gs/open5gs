@@ -637,6 +637,7 @@
 
 #include "ngap/conv.h"
 #include "ngap/message.h"
+#include "ngap/build.h"
 
 #undef OGS_NGAP_INSIDE
 

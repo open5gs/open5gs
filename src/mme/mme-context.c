@@ -1935,6 +1935,13 @@ int mme_enb_remove(mme_enb_t *enb)
             enb->sctp.addr, sizeof(ogs_sockaddr_t), NULL);
     ogs_hash_set(self.enb_id_hash, &enb->enb_id, sizeof(enb->enb_id), NULL);
 
+    /*
+     * CHECK:
+     *
+     * S1-Reset Ack buffer is not cleared at this point.
+     * ogs_sctp_flush_and_destroy will clear this buffer
+     */
+
     ogs_sctp_flush_and_destroy(&enb->sctp);
 
     ogs_pool_free(&mme_enb_pool, enb);

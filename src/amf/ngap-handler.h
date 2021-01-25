@@ -76,7 +76,7 @@ void ngap_handle_gnb_configuration_transfer(
 void ngap_handle_handover_notification(
         amf_gnb_t *gnb, ogs_ngap_message_t *message);
 
-void ngap_handle_s1_reset(
+void ngap_handle_ng_reset(
         amf_gnb_t *gnb, ogs_ngap_message_t *message);
 
 #ifdef __cplusplus

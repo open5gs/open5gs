@@ -35,21 +35,48 @@ typedef struct asn_INTEGER_specifics_s {
 	int field_unsigned;			/* Signed=0, unsigned=1 */
 } asn_INTEGER_specifics_t;
 
-#define INTEGER_free    ASN__PRIMITIVE_TYPE_free
-#define INTEGER_decode_ber	ber_decode_primitive
-#define INTEGER_constraint	asn_generic_no_constraint
+ssize_t INTEGER__dump(const asn_TYPE_descriptor_t *td,
+                      const INTEGER_t *st,
+                      asn_app_consume_bytes_f *cb,
+                      void *app_key, int plainOrXER);
+
+#define INTEGER_free ASN__PRIMITIVE_TYPE_free
+
+#if !defined(ASN_DISABLE_PRINT_SUPPORT)
 asn_struct_print_f INTEGER_print;
+#endif  /* !defined(ASN_DISABLE_PRINT_SUPPORT) */
+
 asn_struct_compare_f INTEGER_compare;
+
+#define INTEGER_constraint asn_generic_no_constraint
+
+#if !defined(ASN_DISABLE_BER_SUPPORT)
+#define INTEGER_decode_ber ber_decode_primitive
 der_type_encoder_f INTEGER_encode_der;
+#endif  /* !defined(ASN_DISABLE_BER_SUPPORT) */
+
+#if !defined(ASN_DISABLE_XER_SUPPORT)
 xer_type_decoder_f INTEGER_decode_xer;
 xer_type_encoder_f INTEGER_encode_xer;
+#endif  /* !defined(ASN_DISABLE_XER_SUPPORT) */
+
+#if !defined(ASN_DISABLE_OER_SUPPORT)
 oer_type_decoder_f INTEGER_decode_oer;
 oer_type_encoder_f INTEGER_encode_oer;
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+
+#if !defined(ASN_DISABLE_UPER_SUPPORT)
 per_type_decoder_f INTEGER_decode_uper;
 per_type_encoder_f INTEGER_encode_uper;
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) */
+#if !defined(ASN_DISABLE_APER_SUPPORT)
 per_type_decoder_f INTEGER_decode_aper;
 per_type_encoder_f INTEGER_encode_aper;
-asn_random_fill_f  INTEGER_random_fill;
+#endif  /* !defined(ASN_DISABLE_APER_SUPPORT) */
+
+#if !defined(ASN_DISABLE_RFILL_SUPPORT)
+asn_random_fill_f INTEGER_random_fill;
+#endif  /* !defined(ASN_DISABLE_RFILL_SUPPORT) */
 
 /***********************************
  * Some handy conversion routines. *

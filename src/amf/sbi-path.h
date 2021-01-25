@@ -44,10 +44,12 @@ void amf_ue_sbi_discover_and_send(OpenAPI_nf_type_e target_nf_type,
 #define AMF_UPDATE_SM_CONTEXT_MODIFIED              4
 #define AMF_UPDATE_SM_CONTEXT_N2_RELEASED           5
 #define AMF_UPDATE_SM_CONTEXT_N1_RELEASED           6
-#define AMF_UPDATE_SM_CONTEXT_NG_RESET              7
-#define AMF_RELEASE_SM_CONTEXT_NG_CONTEXT_REMOVE    8
-#define AMF_RELEASE_SM_CONTEXT_REGISTRATION_ACCEPT  9
-#define AMF_RELEASE_SM_CONTEXT_SERVICE_ACCEPT       10
+#define AMF_RELEASE_SM_CONTEXT_NG_CONTEXT_REMOVE    7
+#define AMF_RELEASE_SM_CONTEXT_REGISTRATION_ACCEPT  8
+#define AMF_RELEASE_SM_CONTEXT_SERVICE_ACCEPT       9
+#define AMF_REMOVE_S1_CONTEXT_BY_LO_CONNREFUSED     10
+#define AMF_REMOVE_S1_CONTEXT_BY_RESET_ALL          11
+#define AMF_REMOVE_S1_CONTEXT_BY_RESET_PARTIAL      12
 void amf_sess_sbi_discover_and_send(OpenAPI_nf_type_e target_nf_type,
         amf_sess_t *sess, int state, void *data,
         ogs_sbi_request_t *(*build)(amf_sess_t *sess, void *data));

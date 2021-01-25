@@ -97,11 +97,9 @@ void ngap_send_error_indication(
         NGAP_Cause_PR group, long cause);
 void ngap_send_error_indication2(
         amf_ue_t *amf_ue, NGAP_Cause_PR group, long cause);
-#if 0
 void ngap_send_ng_reset_ack(
         amf_gnb_t *gnb,
-        NGAP_UE_associatedLogicalNG_ConnectionListRes_t *partOfNG_Interface);
-#endif
+        NGAP_UE_associatedLogicalNG_connectionList_t *partOfNG_Interface);
 
 #ifdef __cplusplus
 }
