@@ -40,9 +40,7 @@ void ngap_state_final(ogs_fsm_t *s, amf_event_t *e)
 void ngap_state_operational(ogs_fsm_t *s, amf_event_t *e)
 {
     amf_gnb_t *gnb = NULL;
-#if 0
     ogs_pkbuf_t *pkbuf = NULL;
-#endif
 
     NGAP_NGAP_PDU_t *pdu = NULL;
     NGAP_InitiatingMessage_t *initiatingMessage = NULL;
@@ -97,26 +95,24 @@ void ngap_state_operational(ogs_fsm_t *s, amf_event_t *e)
             case NGAP_ProcedureCode_id_PathSwitchRequest:
                 ngap_handle_path_switch_request(gnb, pdu);
                 break;
-#if 0
-            case NGAP_ProcedureCode_id_eNBConfigurationTransfer:
+            case NGAP_ProcedureCode_id_UplinkRANConfigurationTransfer:
                 pkbuf = e->pkbuf;
                 ogs_assert(pkbuf);
 
-                ngap_handle_gnb_configuration_transfer(gnb, pdu, pkbuf);
+                ngap_handle_uplink_ran_configuration_transfer(gnb, pdu, pkbuf);
                 break;
             case NGAP_ProcedureCode_id_HandoverPreparation:
                 ngap_handle_handover_required(gnb, pdu);
                 break;
-            case NGAP_ProcedureCode_id_HandoverCancel:
-                ngap_handle_handover_cancel(gnb, pdu);
-                break;
-            case NGAP_ProcedureCode_id_eNBStatusTransfer:
-                ngap_handle_gnb_status_transfer(gnb, pdu);
+            case NGAP_ProcedureCode_id_UplinkRANStatusTransfer:
+                ngap_handle_uplink_ran_status_transfer(gnb, pdu);
                 break;
             case NGAP_ProcedureCode_id_HandoverNotification:
                 ngap_handle_handover_notification(gnb, pdu);
                 break;
-#endif
+            case NGAP_ProcedureCode_id_HandoverCancel:
+                ngap_handle_handover_cancel(gnb, pdu);
+                break;
             case NGAP_ProcedureCode_id_NGReset:
                 ngap_handle_ng_reset(gnb, pdu);
                 break;
@@ -151,11 +147,9 @@ void ngap_state_operational(ogs_fsm_t *s, amf_event_t *e)
             case NGAP_ProcedureCode_id_UEContextRelease:
                 ngap_handle_ue_context_release_complete(gnb, pdu);
                 break;
-#if 0
             case NGAP_ProcedureCode_id_HandoverResourceAllocation:
                 ngap_handle_handover_request_ack(gnb, pdu);
                 break;
-#endif
             default:
                 ogs_error("Not implemented(choice:%d, proc:%d)",
                         pdu->present, (int)successfulOutcome->procedureCode);
@@ -174,10 +168,10 @@ void ngap_state_operational(ogs_fsm_t *s, amf_event_t *e)
             case NGAP_ProcedureCode_id_UEContextModification:
                 ngap_handle_ue_context_modification_failure(gnb, pdu);
                 break;
+#endif
             case NGAP_ProcedureCode_id_HandoverResourceAllocation :
                 ngap_handle_handover_failure(gnb, pdu);
                 break;
-#endif
             default:
                 ogs_error("Not implemented(choice:%d, proc:%d)",
                         pdu->present, (int)unsuccessfulOutcome->procedureCode);

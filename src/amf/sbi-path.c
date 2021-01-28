@@ -167,9 +167,9 @@ void amf_sess_sbi_discover_and_send(OpenAPI_nf_type_e target_nf_type,
     }
 }
 
-void amf_sbi_send_activating_session(amf_sess_t *sess)
+void amf_sbi_send_activating_session(amf_sess_t *sess, int state)
 {
-    amf_nsmf_pdu_session_update_sm_context_param_t param;
+    amf_nsmf_pdusession_update_sm_context_param_t param;
 
     ogs_assert(sess);
 
@@ -177,14 +177,14 @@ void amf_sbi_send_activating_session(amf_sess_t *sess)
     param.upCnxState = OpenAPI_up_cnx_state_ACTIVATING;
 
     amf_sess_sbi_discover_and_send(OpenAPI_nf_type_SMF,
-            sess, AMF_UPDATE_SM_CONTEXT_ACTIVATING, &param,
-            amf_nsmf_pdu_session_build_update_sm_context);
+            sess, state, &param,
+            amf_nsmf_pdusession_build_update_sm_context);
 }
 
 void amf_sbi_send_deactivate_session(
         amf_sess_t *sess, int state, int group, int cause)
 {
-    amf_nsmf_pdu_session_update_sm_context_param_t param;
+    amf_nsmf_pdusession_update_sm_context_param_t param;
 
     ogs_assert(sess);
 
@@ -196,7 +196,7 @@ void amf_sbi_send_deactivate_session(
     param.ue_timezone = true;
 
     amf_sess_sbi_discover_and_send(OpenAPI_nf_type_SMF,
-            sess, state, &param, amf_nsmf_pdu_session_build_update_sm_context);
+            sess, state, &param, amf_nsmf_pdusession_build_update_sm_context);
 }
 
 void amf_sbi_send_deactivate_all_sessions(
@@ -258,7 +258,7 @@ void amf_sbi_send_release_session(amf_sess_t *sess, int state)
 
     amf_sess_sbi_discover_and_send(
             OpenAPI_nf_type_SMF, sess, state, NULL,
-            amf_nsmf_pdu_session_build_release_sm_context);
+            amf_nsmf_pdusession_build_release_sm_context);
 
     /* Prevent to invoke SMF for this session */
     CLEAR_SM_CONTEXT_REF(sess);

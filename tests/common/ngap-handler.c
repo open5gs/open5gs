@@ -600,3 +600,42 @@ void testngap_handle_pdu_session_resource_release_command(
     if (NAS_PDU)
         testngap_send_to_nas(test_ue, NAS_PDU);
 }
+
+void testngap_handle_handover_request(
+        test_ue_t *test_ue, ogs_ngap_message_t *message)
+{
+    int rv, i;
+    char buf[OGS_ADDRSTRLEN];
+
+    NGAP_NGAP_PDU_t pdu;
+    NGAP_InitiatingMessage_t *initiatingMessage = NULL;
+    NGAP_HandoverRequest_t *HandoverRequest = NULL;
+
+    NGAP_HandoverRequestIEs_t *ie = NULL;
+    NGAP_AMF_UE_NGAP_ID_t *AMF_UE_NGAP_ID = NULL;
+
+    ogs_assert(test_ue);
+    ogs_assert(message);
+
+    initiatingMessage = message->choice.initiatingMessage;
+    ogs_assert(initiatingMessage);
+    HandoverRequest = &initiatingMessage->value.choice.HandoverRequest;
+    ogs_assert(HandoverRequest);
+
+    for (i = 0; i < HandoverRequest->protocolIEs.list.count; i++) {
+        ie = HandoverRequest->protocolIEs.list.array[i];
+        switch (ie->id) {
+        case NGAP_ProtocolIE_ID_id_AMF_UE_NGAP_ID:
+            AMF_UE_NGAP_ID = &ie->value.choice.AMF_UE_NGAP_ID;
+            break;
+        default:
+            break;
+        }
+    }
+
+    if (AMF_UE_NGAP_ID) {
+        uint64_t amf_ue_ngap_id;
+        asn_INTEGER2ulong(AMF_UE_NGAP_ID, (unsigned long *)&amf_ue_ngap_id);
+        test_ue->amf_ue_ngap_id = (uint64_t)amf_ue_ngap_id;
+    }
+}

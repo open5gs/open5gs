@@ -284,7 +284,7 @@ void s1ap_send_ue_context_modification_request(mme_ue_t *mme_ue)
 
 void s1ap_send_ue_context_release_command(
     enb_ue_t *enb_ue, S1AP_Cause_PR group, long cause,
-    uint8_t action, uint32_t delay)
+    uint8_t action, ogs_time_t duration)
 {
     int rv;
     ogs_pkbuf_t *s1apbuf = NULL;
@@ -298,21 +298,14 @@ void s1ap_send_ue_context_release_command(
     ogs_assert(action != S1AP_UE_CTX_REL_INVALID_ACTION);
     enb_ue->ue_ctx_rel_action = action;
 
-    ogs_debug("    Group[%d] Cause[%d] Action[%d] Delay[%d]",
-            group, (int)cause, action, delay);
+    ogs_debug("    Group[%d] Cause[%d] Action[%d] Duration[%d]",
+            group, (int)cause, action, (int)duration);
 
     s1apbuf = s1ap_build_ue_context_release_command(enb_ue, group, cause);
     ogs_expect_or_return(s1apbuf);
 
-    rv = s1ap_delayed_send_to_enb_ue(enb_ue, s1apbuf, delay);
+    rv = s1ap_delayed_send_to_enb_ue(enb_ue, s1apbuf, duration);
     ogs_expect(rv == OGS_OK);
-
-    if (enb_ue->t_s1_holding)
-        ogs_timer_delete(enb_ue->t_s1_holding);
-
-    enb_ue->t_s1_holding = ogs_timer_add(
-            ogs_app()->timer_mgr, mme_timer_s1_holding_timer_expire, enb_ue);
-    ogs_assert(enb_ue->t_s1_holding);
 
     ogs_timer_start(enb_ue->t_s1_holding,
             mme_timer_cfg(MME_TIMER_S1_HOLDING)->duration);
@@ -430,28 +423,21 @@ void s1ap_send_handover_cancel_ack(enb_ue_t *source_ue)
 
 
 void s1ap_send_handover_request(
-        mme_ue_t *mme_ue,
-        mme_enb_t *target_enb,
-        S1AP_ENB_UE_S1AP_ID_t *enb_ue_s1ap_id,
-        S1AP_MME_UE_S1AP_ID_t *mme_ue_s1ap_id,
-        S1AP_HandoverType_t *handovertype,
-        S1AP_Cause_t *cause,
+        enb_ue_t *source_ue, mme_enb_t *target_enb,
+        S1AP_HandoverType_t *handovertype, S1AP_Cause_t *cause,
         S1AP_Source_ToTarget_TransparentContainer_t
             *source_totarget_transparentContainer)
 {
     int rv;
     ogs_pkbuf_t *s1apbuf = NULL;
 
-    enb_ue_t *source_ue = NULL, *target_ue = NULL;
+    enb_ue_t *target_ue = NULL;
 
     ogs_info("Handover request");
     
-    ogs_assert(target_enb);
-
-    ogs_assert(mme_ue);
-    source_ue = enb_ue_cycle(mme_ue->enb_ue);
     ogs_assert(source_ue);
     ogs_assert(source_ue->target_ue == NULL);
+    ogs_assert(target_enb);
 
     target_ue = enb_ue_add(target_enb, INVALID_UE_S1AP_ID);
     ogs_assert(target_ue);
@@ -463,9 +449,8 @@ void s1ap_send_handover_request(
 
     source_ue_associate_target_ue(source_ue, target_ue);
 
-    s1apbuf = s1ap_build_handover_request(mme_ue, target_ue,
-            enb_ue_s1ap_id, mme_ue_s1ap_id,
-            handovertype, cause,
+    s1apbuf = s1ap_build_handover_request(
+            target_ue, handovertype, cause,
             source_totarget_transparentContainer);
     ogs_expect_or_return(s1apbuf);
 

@@ -262,7 +262,7 @@ struct enb_ue_s {
 #define S1AP_UE_CTX_REL_S1_CONTEXT_REMOVE                   1
 #define S1AP_UE_CTX_REL_S1_REMOVE_AND_UNLINK                2
 #define S1AP_UE_CTX_REL_UE_CONTEXT_REMOVE                   3
-#define S1AP_UE_CTX_REL_DELETE_INDIRECT_TUNNEL              4
+#define S1AP_UE_CTX_REL_S1_HANDOVER_COMPLETE                4
 #define S1AP_UE_CTX_REL_S1_PAGING                           5
     uint8_t         ue_ctx_rel_action;
 

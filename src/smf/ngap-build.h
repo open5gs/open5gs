@@ -37,6 +37,8 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_release_command_transfer(
 
 ogs_pkbuf_t *ngap_build_path_switch_request_ack_transfer(smf_sess_t *sess);
 
+ogs_pkbuf_t *ngap_build_handover_command_transfer(smf_sess_t *sess);
+
 #ifdef __cplusplus
 }
 #endif

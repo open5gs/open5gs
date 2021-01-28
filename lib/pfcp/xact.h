@@ -80,7 +80,8 @@ typedef struct ogs_pfcp_xact_s {
 #define OGS_PFCP_MODIFY_DEACTIVATE ((uint64_t)1<<9)
 #define OGS_PFCP_MODIFY_END_MARKER ((uint64_t)1<<10)
 #define OGS_PFCP_MODIFY_ERROR_INDICATION ((uint64_t)1<<11)
-#define OGS_PFCP_MODIFY_PATH_SWITCH ((uint64_t)1<<12)
+#define OGS_PFCP_MODIFY_XN_HANDOVER ((uint64_t)1<<12)
+#define OGS_PFCP_MODIFY_N2_HANDOVER ((uint64_t)1<<13)
     uint64_t        modify_flags;
 
 #define OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED 1

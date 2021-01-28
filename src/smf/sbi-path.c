@@ -236,6 +236,7 @@ void smf_sbi_send_sm_context_create_error(
 void smf_sbi_send_sm_context_updated_data(
         smf_sess_t *sess, ogs_sbi_stream_t *stream,
         OpenAPI_up_cnx_state_e up_cnx_state,
+        OpenAPI_ho_state_e ho_state,
         ogs_pkbuf_t *n1smbuf,
         OpenAPI_n2_sm_info_type_e n2type, ogs_pkbuf_t *n2smbuf)
 {
@@ -251,7 +252,9 @@ void smf_sbi_send_sm_context_updated_data(
     ogs_assert(sess);
     ogs_assert(stream);
 
-    ogs_assert(up_cnx_state != OpenAPI_up_cnx_state_NULL || n1smbuf || n2smbuf);
+    ogs_assert(up_cnx_state != OpenAPI_up_cnx_state_NULL ||
+                ho_state != OpenAPI_ho_state_NULL ||
+                n1smbuf || n2smbuf);
 
     memset(&sendmsg, 0, sizeof(sendmsg));
 
@@ -259,6 +262,9 @@ void smf_sbi_send_sm_context_updated_data(
 
     /* up_cnx_state */
     SmContextUpdatedData.up_cnx_state = up_cnx_state;
+
+    /* ho_state */
+    SmContextUpdatedData.ho_state = ho_state;
 
     /* n1smbuf */
     if (n1smbuf) {

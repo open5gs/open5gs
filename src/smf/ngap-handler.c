@@ -20,6 +20,7 @@
 #include "ngap-handler.h"
 #include "sbi-path.h"
 #include "pfcp-path.h"
+#include "ngap-path.h"
 
 int ngap_handle_pdu_session_resource_setup_response_transfer(
         smf_sess_t *sess, ogs_sbi_stream_t *stream, ogs_pkbuf_t *pkbuf)
@@ -230,7 +231,7 @@ cleanup:
     return rv;
 }
 
-int ngap_handle_pdu_session_resource_to_be_switched_dl_transfer(
+int ngap_handle_path_switch_request_transfer(
         smf_sess_t *sess, ogs_sbi_stream_t *stream, ogs_pkbuf_t *pkbuf)
 {
     smf_ue_t *smf_ue = NULL;
@@ -246,6 +247,7 @@ int ngap_handle_pdu_session_resource_to_be_switched_dl_transfer(
     NGAP_PathSwitchRequestTransfer_t message;
 
     NGAP_UPTransportLayerInformation_t *dL_NGU_UP_TNLInformation = NULL;
+    NGAP_QosFlowAcceptedItem_t *acceptedQosFlowItem = NULL;
     NGAP_GTPTunnel_t *gTPTunnel = NULL;
 
     NGAP_QosFlowAcceptedList_t *qosFlowAcceptedList = NULL;
@@ -274,11 +276,11 @@ int ngap_handle_pdu_session_resource_to_be_switched_dl_transfer(
     if (dL_NGU_UP_TNLInformation->present !=
         NGAP_UPTransportLayerInformation_PR_gTPTunnel) {
         ogs_error(
-            "[%s:%d] Unknown NGAP_UPTransportLayerInformation.present [%d]",
+            "[%s:%d] Unknown dL_NGU_UP_TNLInformation->present [%d]",
             smf_ue->supi, sess->psi, dL_NGU_UP_TNLInformation->present);
         smf_sbi_send_sm_context_update_error(stream,
                 OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                "Unknown NGAP_UPTransportLayerInformation.present",
+                "Unknown dL_NGU_UP_TNLInformation->present",
                 smf_ue->supi, NULL, NULL);
         goto cleanup;
     }
@@ -306,7 +308,6 @@ int ngap_handle_pdu_session_resource_to_be_switched_dl_transfer(
 
     qosFlowAcceptedList = &message.qosFlowAcceptedList;
     for (i = 0; i < qosFlowAcceptedList->list.count; i++) {
-        NGAP_QosFlowAcceptedItem_t *acceptedQosFlowItem = NULL;
         acceptedQosFlowItem = (NGAP_QosFlowAcceptedItem_t *)
                 qosFlowAcceptedList->list.array[i];
         if (acceptedQosFlowItem) {
@@ -339,7 +340,7 @@ int ngap_handle_pdu_session_resource_to_be_switched_dl_transfer(
     if (far_update) {
         smf_5gc_pfcp_send_session_modification_request(
                 sess, stream,
-                OGS_PFCP_MODIFY_ACTIVATE | OGS_PFCP_MODIFY_PATH_SWITCH |
+                OGS_PFCP_MODIFY_ACTIVATE | OGS_PFCP_MODIFY_XN_HANDOVER |
                 OGS_PFCP_MODIFY_END_MARKER);
     } else {
         /* ACTIVATED Is NOT Included in RESPONSE */
@@ -350,5 +351,152 @@ int ngap_handle_pdu_session_resource_to_be_switched_dl_transfer(
 
 cleanup:
     ogs_asn_free(&asn_DEF_NGAP_PathSwitchRequestTransfer, &message);
+    return rv;
+}
+
+int ngap_handle_handover_required_transfer(
+        smf_sess_t *sess, ogs_sbi_stream_t *stream, ogs_pkbuf_t *pkbuf)
+{
+    smf_ue_t *smf_ue = NULL;
+    int rv;
+
+    NGAP_HandoverRequiredTransfer_t message;
+
+    ogs_pkbuf_t *n2smbuf = NULL;
+
+    ogs_assert(pkbuf);
+    ogs_assert(stream);
+
+    ogs_assert(sess);
+    smf_ue = sess->smf_ue;
+    ogs_assert(smf_ue);
+
+    rv = ogs_asn_decode(&asn_DEF_NGAP_HandoverRequiredTransfer,
+            &message, sizeof(message), pkbuf);
+    if (rv != OGS_OK) {
+        ogs_error("[%s:%d] Cannot decode NGAP message",
+                smf_ue->supi, sess->psi);
+        smf_sbi_send_sm_context_update_error(stream,
+                OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                "No N2 SM Info Type", smf_ue->supi, NULL, NULL);
+        goto cleanup;
+    }
+
+    n2smbuf = ngap_build_pdu_session_resource_setup_request_transfer(sess);
+    ogs_assert(n2smbuf);
+
+    smf_sbi_send_sm_context_updated_data(
+        sess, stream, 0, OpenAPI_ho_state_PREPARING,
+        NULL, OpenAPI_n2_sm_info_type_PDU_RES_SETUP_REQ, n2smbuf);
+
+    rv = OGS_OK;
+
+cleanup:
+    ogs_asn_free(&asn_DEF_NGAP_HandoverRequiredTransfer, &message);
+    return rv;
+}
+
+int ngap_handle_handover_request_ack(
+        smf_sess_t *sess, ogs_sbi_stream_t *stream, ogs_pkbuf_t *pkbuf)
+{
+    smf_ue_t *smf_ue = NULL;
+    smf_bearer_t *qos_flow = NULL;
+    int rv, i;
+
+    ogs_pfcp_far_t *dl_far = NULL;
+
+    NGAP_HandoverRequestAcknowledgeTransfer_t message;
+
+    NGAP_UPTransportLayerInformation_t *dL_NGU_UP_TNLInformation = NULL;
+    NGAP_QosFlowListWithDataForwarding_t *qosFlowSetupResponseList = NULL;
+    NGAP_QosFlowItemWithDataForwarding_t *qosFlowSetupResponseItem = NULL;
+    NGAP_GTPTunnel_t *gTPTunnel = NULL;
+
+    ogs_pkbuf_t *n2smbuf = NULL;
+
+    ogs_assert(pkbuf);
+    ogs_assert(stream);
+
+    ogs_assert(sess);
+    smf_ue = sess->smf_ue;
+    ogs_assert(smf_ue);
+
+    rv = ogs_asn_decode(&asn_DEF_NGAP_HandoverRequestAcknowledgeTransfer,
+            &message, sizeof(message), pkbuf);
+    if (rv != OGS_OK) {
+        ogs_error("[%s:%d] Cannot decode NGAP message",
+                smf_ue->supi, sess->psi);
+        smf_sbi_send_sm_context_update_error(stream,
+                OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                "No N2 SM Info Type", smf_ue->supi, NULL, NULL);
+        goto cleanup;
+    }
+
+    rv = OGS_ERROR;
+
+    dL_NGU_UP_TNLInformation = &message.dL_NGU_UP_TNLInformation;
+    if (dL_NGU_UP_TNLInformation->present !=
+        NGAP_UPTransportLayerInformation_PR_gTPTunnel) {
+        ogs_error(
+            "[%s:%d] Unknown dL_NGU_UP_TNLInformation->present [%d]",
+            smf_ue->supi, sess->psi, dL_NGU_UP_TNLInformation->present);
+        smf_sbi_send_sm_context_update_error(stream,
+                OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                "Unknown dL_NGU_UP_TNLInformation->present",
+                smf_ue->supi, NULL, NULL);
+        goto cleanup;
+    }
+
+    gTPTunnel = dL_NGU_UP_TNLInformation->choice.gTPTunnel;
+    if (!gTPTunnel) {
+        ogs_error("[%s:%d] No GTPTunnel", smf_ue->supi, sess->psi);
+        smf_sbi_send_sm_context_update_error(stream,
+                OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                "No GTPTunnel", smf_ue->supi, NULL, NULL);
+        goto cleanup;
+    }
+
+    /* Store FAR */
+    ogs_asn_BIT_STRING_to_ip(&gTPTunnel->transportLayerAddress,
+            &sess->handover.gnb_n3_ip);
+    ogs_asn_OCTET_STRING_to_uint32(&gTPTunnel->gTP_TEID,
+            &sess->handover.gnb_n3_teid);
+    sess->handover.prepared = true;
+
+    qosFlowSetupResponseList = &message.qosFlowSetupResponseList;
+    for (i = 0; i < qosFlowSetupResponseList->list.count; i++) {
+        qosFlowSetupResponseItem = (NGAP_QosFlowItemWithDataForwarding_t *)
+                qosFlowSetupResponseList->list.array[i];
+        if (qosFlowSetupResponseItem) {
+            qos_flow = smf_qos_flow_find_by_qfi(sess,
+                    qosFlowSetupResponseItem->qosFlowIdentifier);
+
+            if (qos_flow) {
+                dl_far = qos_flow->dl_far;
+                ogs_assert(dl_far);
+
+                dl_far->handover.prepared = true;
+
+            } else {
+                ogs_error("[%s:%d] No QoS flow", smf_ue->supi, sess->psi);
+                smf_sbi_send_sm_context_update_error(stream,
+                        OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                        "No QoS flow", smf_ue->supi, NULL, NULL);
+                goto cleanup;
+            }
+        }
+    }
+
+    n2smbuf = ngap_build_handover_command_transfer(sess);
+    ogs_assert(n2smbuf);
+
+    smf_sbi_send_sm_context_updated_data(
+        sess, stream, 0, OpenAPI_ho_state_PREPARED,
+        NULL, OpenAPI_n2_sm_info_type_HANDOVER_CMD, n2smbuf);
+
+    rv = OGS_OK;
+
+cleanup:
+    ogs_asn_free(&asn_DEF_NGAP_HandoverRequestAcknowledgeTransfer, &message);
     return rv;
 }

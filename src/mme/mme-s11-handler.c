@@ -304,7 +304,7 @@ void mme_s11_handle_modify_bearer_response(
         s1ap_send_ue_context_release_command(source_ue,
                 S1AP_Cause_PR_radioNetwork,
                 S1AP_CauseRadioNetwork_successful_handover,
-                S1AP_UE_CTX_REL_DELETE_INDIRECT_TUNNEL,
+                S1AP_UE_CTX_REL_S1_HANDOVER_COMPLETE,
                 ogs_time_from_msec(300));
     );
 }

@@ -24,7 +24,7 @@
 
 #include "gmm-build.h"
 
-int amf_nsmf_pdu_session_handle_create_sm_context(
+int amf_nsmf_pdusession_handle_create_sm_context(
         amf_sess_t *sess, ogs_sbi_message_t *recvmsg)
 {
     int rv;
@@ -142,7 +142,7 @@ int amf_nsmf_pdu_session_handle_create_sm_context(
     return OGS_OK;
 }
 
-int amf_nsmf_pdu_session_handle_update_sm_context(
+int amf_nsmf_pdusession_handle_update_sm_context(
         amf_sess_t *sess, int state, ogs_sbi_message_t *recvmsg)
 {
     amf_ue_t *amf_ue = NULL;
@@ -189,44 +189,46 @@ int amf_nsmf_pdu_session_handle_update_sm_context(
                     return OGS_ERROR;
                 }
 
-                /*
-                 * To Deliver N2 SM Content to gNB Temporarily,
-                 * Store N2 SM Context in Session Context
-                 */
-                AMF_SESS_STORE_N2_TRANSFER(
-                        sess, pdu_session_resource_setup_request,
-                        ogs_pkbuf_copy(n2smbuf));
+                if (state == AMF_UPDATE_SM_CONTEXT_REGISTRATION_REQUEST) {
+                    AMF_SESS_STORE_N2_TRANSFER(
+                            sess, pdu_session_resource_setup_request,
+                            ogs_pkbuf_copy(n2smbuf));
 
-                switch(amf_ue->nas.message_type) {
-                case OGS_NAS_5GS_REGISTRATION_REQUEST:
                     if (SESSION_SYNC_DONE(amf_ue,
                                 AMF_RELEASE_SM_CONTEXT_REGISTRATION_ACCEPT) &&
                         SESSION_SYNC_DONE(amf_ue,
-                            AMF_UPDATE_SM_CONTEXT_ACTIVATING)) {
+                            AMF_UPDATE_SM_CONTEXT_REGISTRATION_REQUEST)) {
                         nas_5gs_send_registration_accept(amf_ue);
 
-                        /* After sending accept message,
-                         * N2 tranfer message is freed */
                         AMF_UE_CLEAR_N2_TRANSFER(
                                 amf_ue, pdu_session_resource_setup_request);
                     }
-                    break;
-                case OGS_NAS_5GS_SERVICE_REQUEST:
+                } else if (state == AMF_UPDATE_SM_CONTEXT_SERVICE_REQUEST) {
+                    AMF_SESS_STORE_N2_TRANSFER(
+                            sess, pdu_session_resource_setup_request,
+                            ogs_pkbuf_copy(n2smbuf));
+
                     if (SESSION_SYNC_DONE(amf_ue,
                                 AMF_RELEASE_SM_CONTEXT_SERVICE_ACCEPT) &&
                         SESSION_SYNC_DONE(amf_ue,
-                                AMF_UPDATE_SM_CONTEXT_ACTIVATING)) {
+                                AMF_UPDATE_SM_CONTEXT_SERVICE_REQUEST)) {
                         nas_5gs_send_service_accept(amf_ue);
 
-                        /* After sending accept message,
-                         * N2 tranfer message is freed */
                         AMF_UE_CLEAR_N2_TRANSFER(
                                 amf_ue, pdu_session_resource_setup_request);
                     }
-                    break;
-                default:
-                    ogs_error("Unknown message type [%d]",
-                            amf_ue->nas.message_type);
+                } else if (state == AMF_UPDATE_SM_CONTEXT_HANDOVER_REQUIRED) {
+                    AMF_SESS_STORE_N2_TRANSFER(
+                            sess, handover_request, ogs_pkbuf_copy(n2smbuf));
+
+                    if (SESSION_SYNC_DONE(amf_ue,
+                                AMF_UPDATE_SM_CONTEXT_HANDOVER_REQUIRED)) {
+                        ngap_send_handover_request(amf_ue);
+
+                        AMF_UE_CLEAR_N2_TRANSFER(amf_ue, handover_request);
+                    }
+                } else {
+                    ogs_error("Invalid STATE[%d]", state);
                     ogs_assert_if_reached();
                 }
                 break;
@@ -271,10 +273,6 @@ int amf_nsmf_pdu_session_handle_update_sm_context(
                     return OGS_ERROR;
                 }
 
-                /*
-                 * To Deliver N2 SM Content to gNB Temporarily,
-                 * Store N2 SM Context in Session Context
-                 */
                 AMF_SESS_STORE_N2_TRANSFER(
                         sess, path_switch_request_ack,
                         ogs_pkbuf_copy(n2smbuf));
@@ -282,8 +280,27 @@ int amf_nsmf_pdu_session_handle_update_sm_context(
                 if (SESSION_SYNC_DONE(amf_ue, state)) {
                     ngap_send_path_switch_ack(sess);
 
-                    /* After sending ack message, N2 SM context is freed */
                     AMF_UE_CLEAR_N2_TRANSFER(amf_ue, path_switch_request_ack);
+                }
+                break;
+
+            case OpenAPI_n2_sm_info_type_HANDOVER_CMD:
+                if (!n2smbuf) {
+                    ogs_error("[%s:%d] No N2 SM Content",
+                            amf_ue->supi, sess->psi);
+                    ngap_send_error_indication2(amf_ue,
+                            NGAP_Cause_PR_protocol,
+                            NGAP_CauseProtocol_semantic_error);
+                    return OGS_ERROR;
+                }
+
+                AMF_SESS_STORE_N2_TRANSFER(
+                        sess, handover_command, ogs_pkbuf_copy(n2smbuf));
+
+                if (SESSION_SYNC_DONE(amf_ue, state)) {
+                    ngap_send_handover_command(amf_ue);
+
+                    AMF_UE_CLEAR_N2_TRANSFER(amf_ue, handover_command);
                 }
                 break;
 
@@ -335,7 +352,12 @@ int amf_nsmf_pdu_session_handle_update_sm_context(
                             NGAP_UE_CTX_REL_NG_REMOVE_AND_UNLINK, 0);
                 }
 
-            } else if (state == AMF_UPDATE_SM_CONTEXT_ACTIVATING) {
+            } else if (state == AMF_UPDATE_SM_CONTEXT_REGISTRATION_REQUEST) {
+
+                /* Not reached here */
+                ogs_assert_if_reached();
+
+            } else if (state == AMF_UPDATE_SM_CONTEXT_SERVICE_REQUEST) {
 
                 /* Not reached here */
                 ogs_assert_if_reached();
@@ -362,6 +384,56 @@ int amf_nsmf_pdu_session_handle_update_sm_context(
                         amf_ue->supi, sess->psi);
 
                 sess->n1_released = true;
+
+            } else if (state == AMF_UPDATE_SM_CONTEXT_PATH_SWITCH_REQUEST) {
+
+                /* Not reached here */
+                ogs_assert_if_reached();
+
+            } else if (state == AMF_UPDATE_SM_CONTEXT_HANDOVER_REQUIRED) {
+
+                /* Not reached here */
+                ogs_assert_if_reached();
+
+            } else if (state == AMF_UPDATE_SM_CONTEXT_HANDOVER_REQ_ACK) {
+
+                /* Not reached here */
+                ogs_assert_if_reached();
+
+            } else if (state == AMF_UPDATE_SM_CONTEXT_HANDOVER_CANCEL) {
+
+                if (SESSION_SYNC_DONE(amf_ue, state)) {
+                    ran_ue_t *source_ue = NULL, *target_ue = NULL;
+
+                    source_ue = amf_ue->ran_ue;
+                    ogs_assert(source_ue);
+                    target_ue = source_ue->target_ue;
+                    ogs_assert(target_ue);
+
+                    ngap_send_handover_cancel_ack(source_ue);
+
+                    ngap_send_ran_ue_context_release_command(target_ue,
+                            NGAP_Cause_PR_radioNetwork,
+                            NGAP_CauseRadioNetwork_handover_cancelled,
+                            NGAP_UE_CTX_REL_NG_HANDOVER_COMPLETE,
+                            ogs_time_from_msec(300));
+                }
+
+            } else if (state == AMF_UPDATE_SM_CONTEXT_HANDOVER_NOTIFY) {
+                if (SESSION_SYNC_DONE(amf_ue, state)) {
+                    ran_ue_t *target_ue = NULL, *source_ue = NULL; 
+
+                    target_ue = amf_ue->ran_ue;
+                    ogs_assert(target_ue);
+                    source_ue = target_ue->source_ue;
+                    ogs_assert(source_ue);
+
+                    ngap_send_ran_ue_context_release_command(source_ue,
+                            NGAP_Cause_PR_radioNetwork,
+                            NGAP_CauseRadioNetwork_successful_handover,
+                            NGAP_UE_CTX_REL_NG_HANDOVER_COMPLETE,
+                            ogs_time_from_msec(300));
+                }
 
             } else if (state == AMF_REMOVE_S1_CONTEXT_BY_LO_CONNREFUSED) {
                 if (SESSION_SYNC_DONE(amf_ue, state)) {
@@ -406,20 +478,21 @@ int amf_nsmf_pdu_session_handle_update_sm_context(
 
             } else {
                 ogs_error("Invalid STATE[%d]", state);
+                ogs_assert_if_reached();
             }
 
             /*
              * If resource-status has already been updated by
              *   notify(/namf-callback/v1/{supi}/sm-context-status/{psi})
              * Remove 'amf_sess_t' context to call
-             *   amf_nsmf_pdu_session_handle_release_sm_context().
+             *   amf_nsmf_pdusession_handle_release_sm_context().
              */
             if (sess->n1_released == true &&
                 sess->n2_released == true &&
                 sess->resource_status == OpenAPI_resource_status_RELEASED) {
 
                 ogs_debug("[%s:%d] SM context remove", amf_ue->supi, sess->psi);
-                amf_nsmf_pdu_session_handle_release_sm_context(
+                amf_nsmf_pdusession_handle_release_sm_context(
                         sess, AMF_SESS_SM_CONTEXT_NO_STATE);
             }
         }
@@ -499,7 +572,7 @@ int amf_nsmf_pdu_session_handle_update_sm_context(
     return OGS_OK;
 }
 
-int amf_nsmf_pdu_session_handle_release_sm_context(amf_sess_t *sess, int state)
+int amf_nsmf_pdusession_handle_release_sm_context(amf_sess_t *sess, int state)
 {
     amf_ue_t *amf_ue = NULL;
 
@@ -515,9 +588,10 @@ int amf_nsmf_pdu_session_handle_release_sm_context(amf_sess_t *sess, int state)
          * 2. Release All SM contexts
          * 3. Registration accept
          */
-        if (SESSION_SYNC_DONE(amf_ue,
-                    AMF_RELEASE_SM_CONTEXT_REGISTRATION_ACCEPT) &&
-            SESSION_SYNC_DONE(amf_ue, AMF_UPDATE_SM_CONTEXT_ACTIVATING))
+        if (SESSION_SYNC_DONE(
+                amf_ue, AMF_RELEASE_SM_CONTEXT_REGISTRATION_ACCEPT) &&
+            SESSION_SYNC_DONE(
+                amf_ue, AMF_UPDATE_SM_CONTEXT_REGISTRATION_REQUEST))
             nas_5gs_send_registration_accept(amf_ue);
 
     } else if (state == AMF_RELEASE_SM_CONTEXT_SERVICE_ACCEPT) {
@@ -527,7 +601,7 @@ int amf_nsmf_pdu_session_handle_release_sm_context(amf_sess_t *sess, int state)
          * 3. Service accept
          */
         if (SESSION_SYNC_DONE(amf_ue, AMF_RELEASE_SM_CONTEXT_SERVICE_ACCEPT) &&
-            SESSION_SYNC_DONE(amf_ue, AMF_UPDATE_SM_CONTEXT_ACTIVATING))
+            SESSION_SYNC_DONE(amf_ue, AMF_UPDATE_SM_CONTEXT_SERVICE_REQUEST))
             nas_5gs_send_service_accept(amf_ue);
 
     } else {

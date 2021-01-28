@@ -162,7 +162,6 @@ struct ran_ue_s {
     bool            initial_context_setup_request_sent;
 
     /* Handover Info */
-    NGAP_HandoverType_t handover_type;
     ran_ue_t        *source_ue;
     ran_ue_t        *target_ue;
 
@@ -184,7 +183,7 @@ struct ran_ue_s {
 #define NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE                   1
 #define NGAP_UE_CTX_REL_NG_REMOVE_AND_UNLINK                2
 #define NGAP_UE_CTX_REL_UE_CONTEXT_REMOVE                   3
-#define NGAP_UE_CTX_REL_DELETE_INDIRECT_TUNNEL              4
+#define NGAP_UE_CTX_REL_NG_HANDOVER_COMPLETE                4
     uint8_t         ue_ctx_rel_action;
 
     /* Related Context */
@@ -387,8 +386,13 @@ struct amf_ue_s {
     /* UE Radio Capability */
     OCTET_STRING_t  ueRadioCapability;
 
-    /* NGAP Transparent Container */
-    OCTET_STRING_t  container;
+    /* Handover Info */
+    struct {
+        NGAP_HandoverType_t type;
+        OCTET_STRING_t container;
+        NGAP_Cause_PR group;
+        long cause;
+    } handover;
 
     ogs_list_t      sess_list;
 };
@@ -448,7 +452,8 @@ typedef struct amf_sess_s {
     struct {
         ogs_pkbuf_t *pdu_session_resource_setup_request;
         ogs_pkbuf_t *path_switch_request_ack;
-        ogs_pkbuf_t *pdu_session_resource_release_command;
+        ogs_pkbuf_t *handover_request;
+        ogs_pkbuf_t *handover_command;
     } transfer;
 #define AMF_SESS_STORE_N2_TRANSFER(__sESS, __n2Type, __n2Buf) \
     do { \
@@ -463,14 +468,18 @@ typedef struct amf_sess_s {
         ogs_assert(sess->transfer.__n2Type); \
     } while(0);
 
+#define AMF_SESS_CLEAR_N2_TRANSFER(__sESS, __n2Type) \
+    do { \
+        if ((__sESS)->transfer.__n2Type) \
+            ogs_pkbuf_free((__sESS)->transfer.__n2Type); \
+        (__sESS)->transfer.__n2Type = NULL; \
+    } while(0);
+
 #define AMF_UE_CLEAR_N2_TRANSFER(__aMF, __n2Type) \
     do { \
         amf_sess_t *sess = NULL; \
         ogs_list_for_each(&((__aMF)->sess_list), sess) { \
-            if (sess->transfer.__n2Type) { \
-                ogs_pkbuf_free(sess->transfer.__n2Type); \
-                sess->transfer.__n2Type = NULL; \
-            } \
+            AMF_SESS_CLEAR_N2_TRANSFER(sess, __n2Type) \
         } \
     } while(0);
 

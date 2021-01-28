@@ -19,7 +19,7 @@
 
 #include "nsmf-build.h"
 
-ogs_sbi_request_t *amf_nsmf_pdu_session_build_create_sm_context(
+ogs_sbi_request_t *amf_nsmf_pdusession_build_create_sm_context(
         amf_sess_t *sess, void *data)
 {
     ogs_sbi_message_t message;
@@ -157,10 +157,10 @@ ogs_sbi_request_t *amf_nsmf_pdu_session_build_create_sm_context(
     return request;
 }
 
-ogs_sbi_request_t *amf_nsmf_pdu_session_build_update_sm_context(
+ogs_sbi_request_t *amf_nsmf_pdusession_build_update_sm_context(
         amf_sess_t *sess, void *data)
 {
-    amf_nsmf_pdu_session_update_sm_context_param_t *param = data;
+    amf_nsmf_pdusession_update_sm_context_param_t *param = data;
     ogs_sbi_message_t message;
     ogs_sbi_request_t *request = NULL;
 
@@ -225,14 +225,26 @@ ogs_sbi_request_t *amf_nsmf_pdu_session_build_update_sm_context(
     if (param->upCnxState) {
         SmContextUpdateData.up_cnx_state = param->upCnxState;
 
-        if (param->ngApCause.group) {
-            SmContextUpdateData.ng_ap_cause = &ngApCause;
-            memset(&ngApCause, 0, sizeof(ngApCause));
-            ngApCause.group = param->ngApCause.group;
-            ngApCause.value = param->ngApCause.value;
+        message.SmContextUpdateData = &SmContextUpdateData;
+    }
+
+    if (param->hoState) {
+        SmContextUpdateData.ho_state = param->hoState;
+
+        if (param->TargetID) {
+            SmContextUpdateData.target_id =
+                amf_nsmf_pdusession_build_target_id(param->TargetID);
+            ogs_assert(SmContextUpdateData.target_id);
         }
 
         message.SmContextUpdateData = &SmContextUpdateData;
+    }
+
+    if (param->ngApCause.group) {
+        SmContextUpdateData.ng_ap_cause = &ngApCause;
+        memset(&ngApCause, 0, sizeof(ngApCause));
+        ngApCause.group = param->ngApCause.group;
+        ngApCause.value = param->ngApCause.value;
     }
 
     memset(&ueLocation, 0, sizeof(ueLocation));
@@ -260,11 +272,14 @@ ogs_sbi_request_t *amf_nsmf_pdu_session_build_update_sm_context(
     }
     if (SmContextUpdateData.ue_time_zone)
         ogs_free(SmContextUpdateData.ue_time_zone);
+    if (SmContextUpdateData.target_id)
+        amf_nsmf_pdusession_free_target_id(SmContextUpdateData.target_id);
+
 
     return request;
 }
 
-ogs_sbi_request_t *amf_nsmf_pdu_session_build_release_sm_context(
+ogs_sbi_request_t *amf_nsmf_pdusession_build_release_sm_context(
         amf_sess_t *sess, void *data)
 {
     ogs_sbi_message_t message;
@@ -360,4 +375,110 @@ ogs_sbi_request_t *amf_nsmf_callback_build_n1_n2_failure_notify(
     ogs_assert(request);
 
     return request;
+}
+
+OpenAPI_ng_ran_target_id_t *amf_nsmf_pdusession_build_target_id(
+        NGAP_TargetID_t *TargetID)
+{
+    ogs_plmn_id_t plmn_id;
+    ogs_5gs_tai_t nr_tai;
+
+    NGAP_TargetRANNodeID_t *targetRANNodeID = NULL;
+    NGAP_GlobalRANNodeID_t *globalRANNodeID = NULL;
+    NGAP_GlobalGNB_ID_t *globalGNB_ID = NULL;
+
+    OpenAPI_ng_ran_target_id_t *targetId = NULL;
+    OpenAPI_global_ran_node_id_t *ranNodeId = NULL;
+    OpenAPI_g_nb_id_t *gNbId = NULL;
+    OpenAPI_tai_t *tai = NULL;
+
+    ogs_assert(TargetID);
+
+    if (TargetID->present != NGAP_TargetID_PR_targetRANNodeID) {
+        ogs_error("Not implemented TargetID[%d]", TargetID->present);
+        return NULL;
+    }
+    targetRANNodeID = TargetID->choice.targetRANNodeID;
+    if (!targetRANNodeID) {
+        ogs_error("No targetRANNodeID");
+        return NULL;
+    }
+
+    globalRANNodeID = &targetRANNodeID->globalRANNodeID;
+    if (globalRANNodeID->present != NGAP_GlobalRANNodeID_PR_globalGNB_ID) {
+        ogs_error("Not implemented globalRANNodeID[%d]",
+                globalRANNodeID->present);
+        return NULL;
+    }
+
+    globalGNB_ID = globalRANNodeID->choice.globalGNB_ID;
+    if (!globalGNB_ID) {
+        ogs_error("No globalGNB_ID");
+        return NULL;
+    }
+
+    targetId = ogs_calloc(1, sizeof(*targetId));
+    ogs_assert(targetId);
+
+    targetId->ran_node_id = ranNodeId = ogs_calloc(1, sizeof(*ranNodeId));;
+    ogs_assert(ranNodeId);
+
+    memcpy(&plmn_id, globalGNB_ID->pLMNIdentity.buf, OGS_PLMN_ID_LEN);
+    ranNodeId->plmn_id = ogs_sbi_build_plmn_id(&plmn_id);
+    ogs_assert(ranNodeId->plmn_id);
+
+    ranNodeId->g_nb_id = gNbId = ogs_calloc(1, sizeof(*gNbId));
+    ogs_assert(gNbId);
+
+    gNbId->g_nb_value = ogs_calloc(
+            1, OGS_KEYSTRLEN(globalGNB_ID->gNB_ID.choice.gNB_ID.size));
+    ogs_assert(gNbId->g_nb_value);
+    ogs_hex_to_ascii(
+            globalGNB_ID->gNB_ID.choice.gNB_ID.buf,
+            globalGNB_ID->gNB_ID.choice.gNB_ID.size,
+            gNbId->g_nb_value,
+            OGS_KEYSTRLEN(globalGNB_ID->gNB_ID.choice.gNB_ID.size));
+    gNbId->bit_length = 32 - globalGNB_ID->gNB_ID.choice.gNB_ID.bits_unused;
+
+    targetId->tai = tai = ogs_calloc(1, sizeof(*tai));;
+    ogs_assert(tai);
+
+    ogs_ngap_ASN_to_5gs_tai(&targetRANNodeID->selectedTAI, &nr_tai);
+    tai->plmn_id = ogs_sbi_build_plmn_id(&nr_tai.plmn_id);
+    ogs_assert(tai->plmn_id);
+    tai->tac = ogs_uint24_to_0string(nr_tai.tac);
+    ogs_assert(tai->tac);
+
+    return targetId;
+}
+
+void amf_nsmf_pdusession_free_target_id(OpenAPI_ng_ran_target_id_t *targetId)
+{
+    ogs_assert(targetId);
+
+    if (targetId->ran_node_id) {
+        OpenAPI_global_ran_node_id_t *ranNodeId = targetId->ran_node_id;
+        OpenAPI_tai_t *tai = targetId->tai;
+
+        if (ranNodeId) {
+            if (ranNodeId->plmn_id)
+                OpenAPI_plmn_id_free(ranNodeId->plmn_id);
+            if (ranNodeId->g_nb_id) {
+                OpenAPI_g_nb_id_t *gNbId = ranNodeId->g_nb_id;
+                if (gNbId->g_nb_value)
+                    ogs_free(gNbId->g_nb_value);
+                ogs_free(gNbId);
+            }
+            ogs_free(ranNodeId);
+        }
+
+        if (tai) {
+            if (tai->plmn_id)
+                OpenAPI_plmn_id_free(tai->plmn_id);
+            if (tai->tac)
+                ogs_free(tai->tac);
+            ogs_free(tai);
+        }
+    }
+    ogs_free(targetId);
 }

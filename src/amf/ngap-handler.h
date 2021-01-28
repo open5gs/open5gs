@@ -57,6 +57,9 @@ void ngap_handle_ue_context_release_complete(
         amf_gnb_t *gnb, ogs_ngap_message_t *message);
 void ngap_handle_ue_context_release_action(ran_ue_t *ran_ue);
 
+void ngap_handle_uplink_ran_configuration_transfer(
+        amf_gnb_t *gnb, ogs_ngap_message_t *message, ogs_pkbuf_t *pkbuf);
+
 void ngap_handle_path_switch_request(
         amf_gnb_t *gnb, ogs_ngap_message_t *message);
 
@@ -68,11 +71,8 @@ void ngap_handle_handover_failure(
         amf_gnb_t *gnb, ogs_ngap_message_t *message);
 void ngap_handle_handover_cancel(
         amf_gnb_t *gnb, ogs_ngap_message_t *message);
-
-void ngap_handle_gnb_status_transfer(
+void ngap_handle_uplink_ran_status_transfer(
         amf_gnb_t *gnb, ogs_ngap_message_t *message);
-void ngap_handle_gnb_configuration_transfer(
-        amf_gnb_t *gnb, ogs_ngap_message_t *message, ogs_pkbuf_t *pkbuf);
 void ngap_handle_handover_notification(
         amf_gnb_t *gnb, ogs_ngap_message_t *message);
 

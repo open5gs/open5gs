@@ -329,8 +329,25 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
             break;
 
         case OpenAPI_n2_sm_info_type_PATH_SWITCH_REQ:
-            rv = ngap_handle_pdu_session_resource_to_be_switched_dl_transfer(
-                    sess, stream, pkbuf);
+            rv = ngap_handle_path_switch_request_transfer(sess, stream, pkbuf);
+            if (rv != OGS_OK) {
+                ogs_error("[%s:%d] Cannot handle NGAP message",
+                        smf_ue->supi, sess->psi);
+                OGS_FSM_TRAN(s, smf_gsm_state_exception);
+            }
+            break;
+
+        case OpenAPI_n2_sm_info_type_HANDOVER_REQUIRED:
+            rv = ngap_handle_handover_required_transfer(sess, stream, pkbuf);
+            if (rv != OGS_OK) {
+                ogs_error("[%s:%d] Cannot handle NGAP message",
+                        smf_ue->supi, sess->psi);
+                OGS_FSM_TRAN(s, smf_gsm_state_exception);
+            }
+            break;
+
+        case OpenAPI_n2_sm_info_type_HANDOVER_REQ_ACK:
+            rv = ngap_handle_handover_request_ack(sess, stream, pkbuf);
             if (rv != OGS_OK) {
                 ogs_error("[%s:%d] Cannot handle NGAP message",
                         smf_ue->supi, sess->psi);

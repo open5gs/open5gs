@@ -418,7 +418,7 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
 
             SWITCH(sbi_message.h.resource.component[2])
             CASE(OGS_SBI_RESOURCE_NAME_MODIFY)
-                amf_nsmf_pdu_session_handle_update_sm_context(
+                amf_nsmf_pdusession_handle_update_sm_context(
                         sess, state, &sbi_message);
                 break;
 
@@ -432,11 +432,11 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
                             amf_ue->supi, sbi_message.res_status);
                 }
 
-                amf_nsmf_pdu_session_handle_release_sm_context(sess, state);
+                amf_nsmf_pdusession_handle_release_sm_context(sess, state);
                 break;
 
             DEFAULT
-                amf_nsmf_pdu_session_handle_create_sm_context(
+                amf_nsmf_pdusession_handle_create_sm_context(
                         sess, &sbi_message);
             END
             break;

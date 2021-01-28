@@ -183,6 +183,10 @@ typedef struct ogs_pfcp_far_s {
     uint32_t                num_of_buffered_packet;
     ogs_pkbuf_t             *buffered_packet[OGS_MAX_NUM_OF_PACKET_BUFFER];
 
+    struct {
+        bool prepared;
+    } handover; /* Saved from N2-Handover Request Acknowledge */
+
     /* Related Context */
     ogs_pfcp_sess_t         *sess;
     void                    *gnode;

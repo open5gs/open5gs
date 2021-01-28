@@ -26,7 +26,7 @@
 extern "C" {
 #endif
 
-typedef struct amf_nsmf_pdu_session_update_sm_context_param_s {
+typedef struct amf_nsmf_pdusession_update_sm_context_param_s {
     ogs_pkbuf_t *n1smbuf;
     ogs_pkbuf_t *n2smbuf;
     OpenAPI_n2_sm_info_type_e n2SmInfoType;
@@ -43,17 +43,26 @@ typedef struct amf_nsmf_pdu_session_update_sm_context_param_s {
         };
         uint8_t indications;
     };
-} amf_nsmf_pdu_session_update_sm_context_param_t;
 
-ogs_sbi_request_t *amf_nsmf_pdu_session_build_create_sm_context(
+    OpenAPI_ho_state_e hoState;
+    OpenAPI_ng_ran_target_id_t *targetId;
+    NGAP_TargetID_t *TargetID;
+} amf_nsmf_pdusession_update_sm_context_param_t;
+
+ogs_sbi_request_t *amf_nsmf_pdusession_build_create_sm_context(
         amf_sess_t *sess, void *data);
-ogs_sbi_request_t *amf_nsmf_pdu_session_build_update_sm_context(
+ogs_sbi_request_t *amf_nsmf_pdusession_build_update_sm_context(
         amf_sess_t *sess, void *data);
-ogs_sbi_request_t *amf_nsmf_pdu_session_build_release_sm_context(
+ogs_sbi_request_t *amf_nsmf_pdusession_build_release_sm_context(
         amf_sess_t *sess, void *data);
 
 ogs_sbi_request_t *amf_nsmf_callback_build_n1_n2_failure_notify(
         amf_sess_t *sess, OpenAPI_n1_n2_message_transfer_cause_e cause);
+
+OpenAPI_ng_ran_target_id_t *amf_nsmf_pdusession_build_target_id(
+        NGAP_TargetID_t *TargetID);
+
+void amf_nsmf_pdusession_free_target_id(OpenAPI_ng_ran_target_id_t *targetId);
 
 #ifdef __cplusplus
 }

@@ -1253,8 +1253,8 @@ void s1ap_handle_ue_context_release_action(enb_ue_t *enb_ue)
         ogs_expect_or_return(mme_ue);
         mme_ue_remove(mme_ue);
         break;
-    case S1AP_UE_CTX_REL_DELETE_INDIRECT_TUNNEL:
-        ogs_debug("    Action: Delete indirect tunnel");
+    case S1AP_UE_CTX_REL_S1_HANDOVER_COMPLETE:
+        ogs_debug("    Action: S1 handover complete");
 
         source_ue_deassociate_target_ue(enb_ue);
         enb_ue_remove(enb_ue);
@@ -1556,15 +1556,15 @@ void s1ap_handle_enb_configuration_transfer(
         target_tac = be16toh(target_tac);
 
         ogs_debug("    Source : ENB_ID[%s:%d], TAC[%d]",
-                sourceeNB_ID->global_ENB_ID.eNB_ID.present == 
-                    S1AP_ENB_ID_PR_homeENB_ID ? "Home" : 
-                sourceeNB_ID->global_ENB_ID.eNB_ID.present == 
+                sourceeNB_ID->global_ENB_ID.eNB_ID.present ==
+                    S1AP_ENB_ID_PR_homeENB_ID ? "Home" :
+                sourceeNB_ID->global_ENB_ID.eNB_ID.present ==
                     S1AP_ENB_ID_PR_macroENB_ID ? "Macro" : "Others",
                 source_enb_id, source_tac);
         ogs_debug("    Target : ENB_ID[%s:%d], TAC[%d]",
-                targeteNB_ID->global_ENB_ID.eNB_ID.present == 
-                    S1AP_ENB_ID_PR_homeENB_ID ? "Home" : 
-                targeteNB_ID->global_ENB_ID.eNB_ID.present == 
+                targeteNB_ID->global_ENB_ID.eNB_ID.present ==
+                    S1AP_ENB_ID_PR_homeENB_ID ? "Home" :
+                targeteNB_ID->global_ENB_ID.eNB_ID.present ==
                     S1AP_ENB_ID_PR_macroENB_ID ? "Macro" : "Others",
                 target_enb_id, target_tac);
 
@@ -1687,9 +1687,8 @@ void s1ap_handle_handover_required(mme_enb_t *enb, ogs_s1ap_message_t *message)
     ogs_assert(HandoverType);
     source_ue->handover_type = *HandoverType;
 
-    s1ap_send_handover_request(mme_ue, target_enb,
-            ENB_UE_S1AP_ID, MME_UE_S1AP_ID,
-            HandoverType, Cause,
+    s1ap_send_handover_request(
+            source_ue, target_enb, HandoverType, Cause,
             Source_ToTarget_TransparentContainer);
 }
 
@@ -1885,7 +1884,7 @@ void s1ap_handle_handover_failure(mme_enb_t *enb, ogs_s1ap_message_t *message)
     s1ap_send_ue_context_release_command(
         target_ue, S1AP_Cause_PR_radioNetwork,
         S1AP_CauseRadioNetwork_ho_failure_in_target_EPC_eNB_or_target_system,
-        S1AP_UE_CTX_REL_DELETE_INDIRECT_TUNNEL, 0);
+        S1AP_UE_CTX_REL_S1_HANDOVER_COMPLETE, 0);
 }
 
 void s1ap_handle_handover_cancel(mme_enb_t *enb, ogs_s1ap_message_t *message)
@@ -1954,7 +1953,7 @@ void s1ap_handle_handover_cancel(mme_enb_t *enb, ogs_s1ap_message_t *message)
     s1ap_send_ue_context_release_command(
             target_ue, S1AP_Cause_PR_radioNetwork,
             S1AP_CauseRadioNetwork_handover_cancelled,
-            S1AP_UE_CTX_REL_DELETE_INDIRECT_TUNNEL,
+            S1AP_UE_CTX_REL_S1_HANDOVER_COMPLETE,
             ogs_time_from_msec(300));
 
     ogs_debug("Handover Cancel : "

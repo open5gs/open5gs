@@ -22,6 +22,7 @@
 abts_suite *test_epc_x2(abts_suite *suite);
 abts_suite *test_epc_s1(abts_suite *suite);
 abts_suite *test_5gc_xn(abts_suite *suite);
+abts_suite *test_5gc_n2(abts_suite *suite);
 
 const struct testlist {
     abts_suite *(*func)(abts_suite *suite);
@@ -29,6 +30,7 @@ const struct testlist {
     {test_epc_x2},
     {test_epc_s1},
     {test_5gc_xn},
+    {test_5gc_n2},
     {NULL},
 };
 

@@ -54,18 +54,23 @@ void smf_sbi_send_sm_context_create_error(
 #define smf_sbi_send_sm_context_updated_data_up_cnx_state( \
             __sESS, __sTREAM, __uPCnxState) \
         smf_sbi_send_sm_context_updated_data(\
-            __sESS, __sTREAM, __uPCnxState, NULL, 0, NULL)
+            __sESS, __sTREAM, __uPCnxState, 0, NULL, 0, NULL)
 #define smf_sbi_send_sm_context_updated_data_n2smbuf( \
             __sESS, __sTREAM, __n2Type, __n2SmBuf) \
         smf_sbi_send_sm_context_updated_data(\
-            __sESS, __sTREAM, 0, NULL, __n2Type, __n2SmBuf)
+            __sESS, __sTREAM, 0, 0, NULL, __n2Type, __n2SmBuf)
+#define smf_sbi_send_sm_context_updated_data_ho_state( \
+            __sESS, __sTREAM, __hoState) \
+        smf_sbi_send_sm_context_updated_data(\
+            __sESS, __sTREAM, 0, __hoState, NULL, 0, NULL)
 #define smf_sbi_send_sm_context_updated_data_n1_n2_message( \
             __sESS, __sTREAM, __n1SmBuf, __n2Type, __n2SmBuf) \
         smf_sbi_send_sm_context_updated_data(\
-            __sESS, __sTREAM, 0, __n1SmBuf, __n2Type, __n2SmBuf)
+            __sESS, __sTREAM, 0, 0, __n1SmBuf, __n2Type, __n2SmBuf)
 void smf_sbi_send_sm_context_updated_data(
         smf_sess_t *sess, ogs_sbi_stream_t *stream,
         OpenAPI_up_cnx_state_e up_cnx_state,
+        OpenAPI_ho_state_e ho_state,
         ogs_pkbuf_t *n1smbuf,
         OpenAPI_n2_sm_info_type_e n2type, ogs_pkbuf_t *n2smbuf);
 

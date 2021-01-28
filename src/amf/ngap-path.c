@@ -269,7 +269,7 @@ void ngap_send_ue_context_modification_request(amf_ue_t *amf_ue)
 
 void ngap_send_ran_ue_context_release_command(
     ran_ue_t *ran_ue, NGAP_Cause_PR group, long cause,
-    uint8_t action, uint32_t delay)
+    uint8_t action, ogs_time_t duration)
 {
     int rv;
     ogs_pkbuf_t *ngapbuf = NULL;
@@ -283,21 +283,14 @@ void ngap_send_ran_ue_context_release_command(
     ogs_assert(action != NGAP_UE_CTX_REL_INVALID_ACTION);
     ran_ue->ue_ctx_rel_action = action;
 
-    ogs_debug("    Group[%d] Cause[%d] Action[%d] Delay[%d]",
-            group, (int)cause, action, delay);
+    ogs_debug("    Group[%d] Cause[%d] Action[%d] Duration[%d]",
+            group, (int)cause, action, (int)duration);
 
     ngapbuf = ngap_build_ue_context_release_command(ran_ue, group, cause);
     ogs_expect_or_return(ngapbuf);
 
-    rv = ngap_delayed_send_to_ran_ue(ran_ue, ngapbuf, delay);
+    rv = ngap_delayed_send_to_ran_ue(ran_ue, ngapbuf, duration);
     ogs_expect(rv == OGS_OK);
-
-    if (ran_ue->t_ng_holding)
-        ogs_timer_delete(ran_ue->t_ng_holding);
-
-    ran_ue->t_ng_holding = ogs_timer_add(
-            ogs_app()->timer_mgr, amf_timer_ng_holding_timer_expire, ran_ue);
-    ogs_assert(ran_ue->t_ng_holding);
 
     ogs_timer_start(ran_ue->t_ng_holding,
             amf_timer_cfg(AMF_TIMER_NG_HOLDING)->duration);
@@ -305,19 +298,19 @@ void ngap_send_ran_ue_context_release_command(
 
 void ngap_send_amf_ue_context_release_command(
     amf_ue_t *amf_ue, NGAP_Cause_PR group, long cause,
-    uint8_t action, uint32_t delay)
+    uint8_t action, ogs_time_t duration)
 {
     ogs_assert(amf_ue);
 
     ran_ue_t *ran_ue = ran_ue_cycle(amf_ue->ran_ue);
     if (ran_ue) {
         ngap_send_ran_ue_context_release_command(ran_ue,
-                group, cause, action, delay);
+                group, cause, action, duration);
         ogs_debug("    SUPI[%s]", amf_ue->supi);
     } else {
         ogs_error("[%s] No NG Context - "
-                "Group[%d] Cause[%d] Action[%d] Delay[%d]",
-                amf_ue->supi, group, (int)cause, action, delay);
+                "Group[%d] Cause[%d] Action[%d] Duration[%d]",
+                amf_ue->supi, group, (int)cause, action, (int)duration);
     }
 }
 
@@ -392,25 +385,21 @@ void ngap_send_pdu_resource_setup_request(
     }
 }
 
-#if 0
-void ngap_send_amf_configuration_transfer(
-        amf_gnb_t *target_gnb,
-        NGAP_SONConfigurationTransfer_t *SONConfigurationTransfer)
+void ngap_send_downlink_ran_configuration_transfer(
+        amf_gnb_t *target_gnb, NGAP_SONConfigurationTransfer_t *transfer)
 {
     int rv;
     ogs_pkbuf_t *ngapbuf = NULL;
 
     ogs_assert(target_gnb);
-    ogs_assert(SONConfigurationTransfer);
+    ogs_assert(transfer);
 
-    ngapbuf = ngap_build_amf_configuration_transfer(SONConfigurationTransfer);
+    ngapbuf = ngap_build_downlink_ran_configuration_transfer(transfer);
     ogs_expect_or_return(ngapbuf);
 
     rv = ngap_send_to_gnb(target_gnb, ngapbuf, NGAP_NON_UE_SIGNALLING);
     ogs_expect(rv == OGS_OK);
 }
-
-#endif
 
 void ngap_send_path_switch_ack(amf_sess_t *sess)
 {
@@ -430,18 +419,23 @@ void ngap_send_path_switch_ack(amf_sess_t *sess)
     ogs_expect(rv == OGS_OK);
 }
 
-#if 0
-void ngap_send_handover_command(ran_ue_t *source_ue)
+void ngap_send_handover_request(amf_ue_t *amf_ue)
 {
     int rv;
+
+    ran_ue_t *source_ue = NULL, *target_ue = NULL;
     ogs_pkbuf_t *ngapbuf = NULL;
 
+    ogs_assert(amf_ue);
+    source_ue = amf_ue->ran_ue;
     ogs_assert(source_ue);
+    target_ue = source_ue->target_ue;
+    ogs_assert(target_ue);
 
-    ngapbuf = ngap_build_handover_command(source_ue);
+    ngapbuf = ngap_build_handover_request(target_ue);
     ogs_expect_or_return(ngapbuf);
 
-    rv = ngap_send_to_ran_ue(source_ue, ngapbuf);
+    rv = ngap_send_to_ran_ue(target_ue, ngapbuf);
     ogs_expect(rv == OGS_OK);
 }
 
@@ -455,6 +449,24 @@ void ngap_send_handover_preparation_failure(
     ogs_assert(cause);
 
     ngapbuf = ngap_build_handover_preparation_failure(source_ue, cause);
+    ogs_expect_or_return(ngapbuf);
+
+    rv = ngap_send_to_ran_ue(source_ue, ngapbuf);
+    ogs_expect(rv == OGS_OK);
+}
+
+void ngap_send_handover_command(amf_ue_t *amf_ue)
+{
+    int rv;
+
+    ran_ue_t *source_ue = NULL;
+    ogs_pkbuf_t *ngapbuf = NULL;
+
+    ogs_assert(amf_ue);
+    source_ue = amf_ue->ran_ue;
+    ogs_assert(source_ue);
+
+    ngapbuf = ngap_build_handover_command(source_ue);
     ogs_expect_or_return(ngapbuf);
 
     rv = ngap_send_to_ran_ue(source_ue, ngapbuf);
@@ -475,69 +487,22 @@ void ngap_send_handover_cancel_ack(ran_ue_t *source_ue)
     ogs_expect(rv == OGS_OK);
 }
 
-
-void ngap_send_handover_request(
-        amf_ue_t *amf_ue,
-        amf_gnb_t *target_gnb,
-        NGAP_RAN_UE_NGAP_ID_t *ran_ue_ngap_id,
-        NGAP_AMF_UE_NGAP_ID_t *amf_ue_ngap_id,
-        NGAP_HandoverType_t *handovertype,
-        NGAP_Cause_t *cause,
-        NGAP_Source_ToTarget_TransparentContainer_t
-            *source_totarget_transparentContainer)
-{
-    int rv;
-    ogs_pkbuf_t *ngapbuf = NULL;
-
-    ran_ue_t *source_ue = NULL, *target_ue = NULL;
-
-    ogs_debug("[AMF] Handover request");
-    
-    ogs_assert(target_gnb);
-
-    ogs_assert(amf_ue);
-    source_ue = ran_ue_cycle(amf_ue->ran_ue);
-    ogs_assert(source_ue);
-    ogs_assert(source_ue->target_ue == NULL);
-
-    target_ue = ran_ue_add(target_gnb, INVALID_UE_NGAP_ID);
-    ogs_assert(target_ue);
-
-    ogs_debug("    Source : RAN_UE_NGAP_ID[%d] AMF_UE_NGAP_ID[%d]",
-            source_ue->ran_ue_ngap_id, source_ue->amf_ue_ngap_id);
-    ogs_debug("    Target : RAN_UE_NGAP_ID[Unknown] AMF_UE_NGAP_ID[%d]",
-            target_ue->amf_ue_ngap_id);
-
-    source_ue_associate_target_ue(source_ue, target_ue);
-
-    ngapbuf = ngap_build_handover_request(amf_ue, target_ue,
-            ran_ue_ngap_id, amf_ue_ngap_id,
-            handovertype, cause,
-            source_totarget_transparentContainer);
-    ogs_expect_or_return(ngapbuf);
-
-    rv = ngap_send_to_ran_ue(target_ue, ngapbuf);
-    ogs_expect(rv == OGS_OK);
-}
-
-void ngap_send_amf_status_transfer(
+void ngap_send_downlink_ran_status_transfer(
         ran_ue_t *target_ue,
-        NGAP_RAN_StatusTransfer_TransparentContainer_t
-            *gnb_statustransfer_transparentContainer)
+        NGAP_RANStatusTransfer_TransparentContainer_t *transfer)
 {
     int rv;
     ogs_pkbuf_t *ngapbuf = NULL;
 
     ogs_assert(target_ue);
+    ogs_assert(transfer);
 
-    ngapbuf = ngap_build_amf_status_transfer(target_ue,
-            gnb_statustransfer_transparentContainer);
+    ngapbuf = ngap_build_uplink_ran_status_transfer(target_ue, transfer);
     ogs_expect_or_return(ngapbuf);
 
     rv = ngap_send_to_ran_ue(target_ue, ngapbuf);
     ogs_expect(rv == OGS_OK);
 }
-#endif
 
 void ngap_send_error_indication(
         amf_gnb_t *gnb,

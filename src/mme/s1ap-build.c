@@ -1782,13 +1782,9 @@ ogs_pkbuf_t *s1ap_build_handover_preparation_failure(
 }
 
 ogs_pkbuf_t *s1ap_build_handover_request(
-        mme_ue_t *mme_ue, enb_ue_t *target_ue,
-        S1AP_ENB_UE_S1AP_ID_t *enb_ue_s1ap_id,
-        S1AP_MME_UE_S1AP_ID_t *mme_ue_s1ap_id,
-        S1AP_HandoverType_t *handovertype,
-        S1AP_Cause_t *cause,
-        S1AP_Source_ToTarget_TransparentContainer_t
-            *source_totarget_transparentContainer)
+    enb_ue_t *target_ue, S1AP_HandoverType_t *handovertype, S1AP_Cause_t *cause,
+    S1AP_Source_ToTarget_TransparentContainer_t
+        *source_totarget_transparentContainer)
 {
     int rv;
 
@@ -1807,6 +1803,7 @@ ogs_pkbuf_t *s1ap_build_handover_request(
     S1AP_UESecurityCapabilities_t *UESecurityCapabilities = NULL;
     S1AP_SecurityContext_t *SecurityContext = NULL;
 
+    mme_ue_t *mme_ue = NULL;
     mme_sess_t *sess = NULL;
     mme_bearer_t *bearer = NULL;
     ogs_subscription_data_t *subscription_data = NULL;
@@ -1816,6 +1813,7 @@ ogs_pkbuf_t *s1ap_build_handover_request(
     ogs_assert(source_totarget_transparentContainer);
 
     ogs_assert(target_ue);
+    mme_ue = target_ue->mme_ue;
     ogs_assert(mme_ue);
     subscription_data = &mme_ue->subscription_data;
     ogs_assert(subscription_data);
@@ -1985,8 +1983,8 @@ ogs_pkbuf_t *s1ap_build_handover_request(
     }
 
     ogs_s1ap_buffer_to_OCTET_STRING(
-            source_totarget_transparentContainer->buf, 
-            source_totarget_transparentContainer->size, 
+            source_totarget_transparentContainer->buf,
+            source_totarget_transparentContainer->size,
             Source_ToTarget_TransparentContainer);
 
     UESecurityCapabilities->encryptionAlgorithms.size = 2;

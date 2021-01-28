@@ -975,6 +975,10 @@ ran_ue_t *ran_ue_add(amf_gnb_t *gnb, uint32_t ran_ue_ngap_id)
     ran_ue->gnb_ostream_id =
         OGS_NEXT_ID(gnb->ostream_id, 1, gnb->max_num_of_ostreams-1);
 
+    ran_ue->t_ng_holding = ogs_timer_add(
+            ogs_app()->timer_mgr, amf_timer_ng_holding_timer_expire, ran_ue);
+    ogs_assert(ran_ue->t_ng_holding);
+
     ran_ue->gnb = gnb;
 
     ogs_list_add(&gnb->ran_ue_list, ran_ue);
@@ -991,8 +995,8 @@ void ran_ue_remove(ran_ue_t *ran_ue)
 
     ogs_list_remove(&ran_ue->gnb->ran_ue_list, ran_ue);
 
-    if (ran_ue->t_ng_holding)
-        ogs_timer_delete(ran_ue->t_ng_holding);
+    ogs_assert(ran_ue->t_ng_holding);
+    ogs_timer_delete(ran_ue->t_ng_holding);
 
     ogs_pool_free(&ran_ue_pool, ran_ue);
 
@@ -1177,7 +1181,7 @@ void amf_ue_remove(amf_ue_t *amf_ue)
     OGS_ASN_CLEAR_DATA(&amf_ue->ueRadioCapability);
 
     /* Clear Transparent Container */
-    OGS_ASN_CLEAR_DATA(&amf_ue->container);
+    OGS_ASN_CLEAR_DATA(&amf_ue->handover.container);
 
     /* Clear Paging Info */
     AMF_UE_CLEAR_PAGING_INFO(amf_ue);
@@ -1523,17 +1527,10 @@ void amf_sess_remove(amf_sess_t *sess)
     if (sess->pdu_session_establishment_accept)
         ogs_pkbuf_free(sess->pdu_session_establishment_accept);
 
-    if (sess->transfer.pdu_session_resource_setup_request)
-        ogs_pkbuf_free(sess->transfer.pdu_session_resource_setup_request);
-    sess->transfer.pdu_session_resource_setup_request = NULL;
-
-    if (sess->transfer.path_switch_request_ack)
-        ogs_pkbuf_free(sess->transfer.path_switch_request_ack);
-    sess->transfer.path_switch_request_ack = NULL;
-
-    if (sess->transfer.pdu_session_resource_release_command)
-        ogs_pkbuf_free(sess->transfer.pdu_session_resource_release_command);
-    sess->transfer.pdu_session_resource_release_command = NULL;
+    AMF_SESS_CLEAR_N2_TRANSFER(sess, pdu_session_resource_setup_request);
+    AMF_SESS_CLEAR_N2_TRANSFER(sess, path_switch_request_ack);
+    AMF_SESS_CLEAR_N2_TRANSFER(sess, handover_request);
+    AMF_SESS_CLEAR_N2_TRANSFER(sess, handover_command);
 
     if (sess->paging.client)
         ogs_sbi_client_remove(sess->paging.client);

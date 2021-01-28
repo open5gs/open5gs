@@ -54,7 +54,7 @@ void s1ap_send_initial_context_setup_request(mme_ue_t *mme_ue);
 void s1ap_send_ue_context_modification_request(mme_ue_t *mme_ue);
 void s1ap_send_ue_context_release_command(
     enb_ue_t *enb_ue, S1AP_Cause_PR group, long cause,
-    uint8_t action, uint32_t delay);
+    uint8_t action, ogs_time_t duration);
 
 void s1ap_send_paging(mme_ue_t *mme_ue, S1AP_CNDomain_t cn_domain);
 
@@ -69,12 +69,8 @@ void s1ap_send_handover_preparation_failure(
         enb_ue_t *source_ue, S1AP_Cause_t *cause);
 
 void s1ap_send_handover_request(
-        mme_ue_t *mme_ue,
-        mme_enb_t *target_enb,
-        S1AP_ENB_UE_S1AP_ID_t *enb_ue_s1ap_id,
-        S1AP_MME_UE_S1AP_ID_t *mme_ue_s1ap_id,
-        S1AP_HandoverType_t *handovertype,
-        S1AP_Cause_t *cause,
+        enb_ue_t *source_ue, mme_enb_t *target_enb,
+        S1AP_HandoverType_t *handovertype, S1AP_Cause_t *cause,
         S1AP_Source_ToTarget_TransparentContainer_t
             *source_totarget_transparentContainer);
 

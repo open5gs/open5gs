@@ -25,6 +25,10 @@ static ogs_pkbuf_t *testngap_build_pdu_session_resource_modify_response_trasfer(
         test_bearer_t *qos_flow);
 static ogs_pkbuf_t *testngap_build_path_switch_request_trasfer(
         test_sess_t *sess);
+static ogs_pkbuf_t *testngap_build_handover_required_transfer(
+        test_sess_t *sess, bool direct);
+static ogs_pkbuf_t *testngap_build_handover_request_ack_transfer(
+        test_sess_t *sess);
 
 ogs_pkbuf_t *testngap_build_ng_setup_request(uint32_t gnb_id, uint8_t bitsize)
 {
@@ -1149,6 +1153,101 @@ ogs_pkbuf_t *testngap_build_pdu_session_resource_release_response(
     return ogs_ngap_encode(&pdu);
 }
 
+ogs_pkbuf_t *testngap_build_uplink_ran_configuration_transfer(
+        uint32_t source_gnb_id, uint8_t source_bitsize,
+        uint32_t target_gnb_id, uint8_t target_bitsize)
+{
+    int rv;
+    ogs_plmn_id_t *plmn_id = NULL;
+
+    NGAP_NGAP_PDU_t pdu;
+    NGAP_InitiatingMessage_t *initiatingMessage = NULL;
+    NGAP_UplinkRANConfigurationTransfer_t
+        *UplinkRANConfigurationTransfer = NULL;
+
+    NGAP_UplinkRANConfigurationTransferIEs_t *ie = NULL;
+    NGAP_SONConfigurationTransfer_t *SONConfigurationTransfer = NULL;
+    NGAP_SourceRANNodeID_t *sourceRANNodeID = NULL;
+    NGAP_GlobalRANNodeID_t *sourceGlobalRANNodeID;
+    NGAP_GlobalGNB_ID_t *sourceGlobalGNB_ID;
+    NGAP_TAI_t *sourceSelectedTAI;
+    NGAP_TargetRANNodeID_t *targetRANNodeID = NULL;
+    NGAP_GlobalRANNodeID_t *targetGlobalRANNodeID;
+    NGAP_GlobalGNB_ID_t *targetGlobalGNB_ID;
+    NGAP_TAI_t *targetSelectedTAI;
+    NGAP_SONInformation_t *sONInformation = NULL;
+    NGAP_SONInformationRequest_t *sONInformationRequest = NULL;
+
+    ogs_debug("Uplink Configuration Transfer");
+
+    memset(&pdu, 0, sizeof (NGAP_NGAP_PDU_t));
+    pdu.present = NGAP_NGAP_PDU_PR_initiatingMessage;
+    pdu.choice.initiatingMessage = CALLOC(1, sizeof(NGAP_InitiatingMessage_t));
+    ogs_assert(pdu.choice.initiatingMessage);
+
+    initiatingMessage = pdu.choice.initiatingMessage;
+    initiatingMessage->procedureCode =
+        NGAP_ProcedureCode_id_UplinkRANConfigurationTransfer;
+    initiatingMessage->criticality = NGAP_Criticality_ignore;
+    initiatingMessage->value.present =
+        NGAP_InitiatingMessage__value_PR_UplinkRANConfigurationTransfer;
+
+    UplinkRANConfigurationTransfer =
+        &initiatingMessage->value.choice.UplinkRANConfigurationTransfer;
+
+    ie = CALLOC(1, sizeof(NGAP_UplinkRANConfigurationTransferIEs_t));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(&UplinkRANConfigurationTransfer->protocolIEs, ie);
+
+    ie->id = NGAP_ProtocolIE_ID_id_SONConfigurationTransferUL;
+    ie->criticality = NGAP_Criticality_ignore;
+    ie->value.present = NGAP_UplinkRANConfigurationTransferIEs__value_PR_SONConfigurationTransfer;
+
+    SONConfigurationTransfer = &ie->value.choice.SONConfigurationTransfer;
+
+    plmn_id = &test_self()->plmn_support[0].plmn_id;
+
+    targetRANNodeID = &SONConfigurationTransfer->targetRANNodeID;
+    targetGlobalRANNodeID = &targetRANNodeID->globalRANNodeID;
+    targetSelectedTAI = &targetRANNodeID->selectedTAI;
+
+    targetGlobalRANNodeID->present = NGAP_GlobalRANNodeID_PR_globalGNB_ID;
+    targetGlobalRANNodeID->choice.globalGNB_ID = targetGlobalGNB_ID =
+        CALLOC(1, sizeof(*targetGlobalGNB_ID));
+    ogs_assert(targetGlobalGNB_ID);
+
+    ogs_asn_buffer_to_OCTET_STRING(
+            plmn_id, OGS_PLMN_ID_LEN, &targetGlobalGNB_ID->pLMNIdentity);
+    ogs_ngap_uint32_to_GNB_ID(target_gnb_id, target_bitsize,
+            &targetGlobalGNB_ID->gNB_ID);
+    ogs_ngap_5gs_tai_to_ASN(&test_self()->nr_tai, targetSelectedTAI);
+
+    sourceRANNodeID = &SONConfigurationTransfer->sourceRANNodeID;
+    sourceGlobalRANNodeID = &sourceRANNodeID->globalRANNodeID;
+    sourceSelectedTAI = &sourceRANNodeID->selectedTAI;
+
+    sourceGlobalRANNodeID->present = NGAP_GlobalRANNodeID_PR_globalGNB_ID;
+    sourceGlobalRANNodeID->choice.globalGNB_ID = sourceGlobalGNB_ID =
+        CALLOC(1, sizeof(*sourceGlobalGNB_ID));
+    ogs_assert(sourceGlobalGNB_ID);
+
+    ogs_asn_buffer_to_OCTET_STRING(
+            plmn_id, OGS_PLMN_ID_LEN, &sourceGlobalGNB_ID->pLMNIdentity);
+    ogs_ngap_uint32_to_GNB_ID(source_gnb_id, source_bitsize,
+            &sourceGlobalGNB_ID->gNB_ID);
+    ogs_ngap_5gs_tai_to_ASN(&test_self()->nr_tai, sourceSelectedTAI);
+
+    sONInformation = &SONConfigurationTransfer->sONInformation;
+
+    sONInformation->present = NGAP_SONInformation_PR_sONInformationRequest;
+    sONInformationRequest = &sONInformation->choice.sONInformationRequest;
+
+    *sONInformationRequest =
+        NGAP_SONInformationRequest_xn_TNL_configuration_info;
+
+    return ogs_ngap_encode(&pdu);
+}
+
 ogs_pkbuf_t *testngap_build_path_switch_request(test_ue_t *test_ue)
 {
     int rv;
@@ -1315,6 +1414,610 @@ ogs_pkbuf_t *testngap_build_path_switch_request(test_ue_t *test_ue)
     return ogs_ngap_encode(&pdu);
 }
 
+ogs_pkbuf_t *testngap_build_handover_required(
+        test_ue_t *test_ue, NGAP_HandoverType_t handover_type,
+        uint32_t gnb_id, uint8_t bitsize,
+        NGAP_Cause_PR group, long cause,
+        bool direct)
+{
+    test_sess_t *sess = NULL;
+
+    ogs_pkbuf_t *n2smbuf = NULL;
+
+    ogs_plmn_id_t *plmn_id = NULL;
+
+    NGAP_NGAP_PDU_t pdu;
+    NGAP_InitiatingMessage_t *initiatingMessage = NULL;
+    NGAP_HandoverRequired_t *HandoverRequired = NULL;
+
+    NGAP_HandoverRequiredIEs_t *ie = NULL;
+    NGAP_AMF_UE_NGAP_ID_t *AMF_UE_NGAP_ID = NULL;
+    NGAP_RAN_UE_NGAP_ID_t *RAN_UE_NGAP_ID = NULL;
+    NGAP_HandoverType_t *HandoverType = NULL;
+    NGAP_Cause_t *Cause = NULL;
+    NGAP_TargetID_t *TargetID = NULL;
+    NGAP_TargetRANNodeID_t *targetRANNodeID = NULL;
+    NGAP_GlobalRANNodeID_t *globalRANNodeID = NULL;
+    NGAP_GlobalGNB_ID_t *globalGNB_ID = NULL;
+    NGAP_TAI_t *selectedTAI = NULL;
+
+    NGAP_PDUSessionResourceListHORqd_t *PDUSessionList = NULL;
+    NGAP_PDUSessionResourceItemHORqd_t *PDUSessionItem = NULL;
+    OCTET_STRING_t *transfer = NULL;
+
+    NGAP_SourceToTarget_TransparentContainer_t
+        *SourceToTarget_TransparentContainer = NULL;
+
+    uint8_t tmp[OGS_MAX_SDU_LEN];
+    char *_container =
+        "40"
+        "0300001100000a00 010002f839000102 0120000002f83900 0000001000000a";
+
+    memset(&pdu, 0, sizeof (NGAP_NGAP_PDU_t));
+    pdu.present = NGAP_NGAP_PDU_PR_initiatingMessage;
+    pdu.choice.initiatingMessage = CALLOC(1, sizeof(NGAP_InitiatingMessage_t));
+    ogs_assert(pdu.choice.initiatingMessage);
+
+    initiatingMessage = pdu.choice.initiatingMessage;
+    initiatingMessage->procedureCode =
+        NGAP_ProcedureCode_id_HandoverPreparation;
+    initiatingMessage->criticality = NGAP_Criticality_reject;
+    initiatingMessage->value.present =
+        NGAP_InitiatingMessage__value_PR_HandoverRequired;
+
+    HandoverRequired = &initiatingMessage->value.choice.HandoverRequired;
+
+    ie = CALLOC(1, sizeof(NGAP_HandoverRequiredIEs_t));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(&HandoverRequired->protocolIEs, ie);
+
+    ie->id = NGAP_ProtocolIE_ID_id_AMF_UE_NGAP_ID;
+    ie->criticality = NGAP_Criticality_reject;
+    ie->value.present = NGAP_HandoverRequiredIEs__value_PR_AMF_UE_NGAP_ID;
+
+    AMF_UE_NGAP_ID = &ie->value.choice.AMF_UE_NGAP_ID;
+
+    ie = CALLOC(1, sizeof(NGAP_HandoverRequiredIEs_t));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(&HandoverRequired->protocolIEs, ie);
+
+    ie->id = NGAP_ProtocolIE_ID_id_RAN_UE_NGAP_ID;
+    ie->criticality = NGAP_Criticality_reject;
+    ie->value.present = NGAP_HandoverRequiredIEs__value_PR_RAN_UE_NGAP_ID;
+
+    RAN_UE_NGAP_ID = &ie->value.choice.RAN_UE_NGAP_ID;
+
+    asn_uint642INTEGER(AMF_UE_NGAP_ID, test_ue->amf_ue_ngap_id);
+    *RAN_UE_NGAP_ID = test_ue->ran_ue_ngap_id;
+
+    ie = CALLOC(1, sizeof(NGAP_HandoverRequiredIEs_t));
+    ASN_SEQUENCE_ADD(&HandoverRequired->protocolIEs, ie);
+
+    ie->id = NGAP_ProtocolIE_ID_id_HandoverType;
+    ie->criticality = NGAP_Criticality_reject;
+    ie->value.present = NGAP_HandoverRequiredIEs__value_PR_HandoverType;
+
+    HandoverType = &ie->value.choice.HandoverType;
+
+    *HandoverType = handover_type;
+
+    ie = CALLOC(1, sizeof(NGAP_HandoverRequiredIEs_t));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(&HandoverRequired->protocolIEs, ie);
+
+    ie->id = NGAP_ProtocolIE_ID_id_Cause;
+    ie->criticality = NGAP_Criticality_ignore;
+    ie->value.present = NGAP_HandoverRequiredIEs__value_PR_Cause;
+
+    Cause = &ie->value.choice.Cause;
+
+    Cause->present = group;
+    Cause->choice.radioNetwork = cause;
+
+    ie = CALLOC(1, sizeof(NGAP_HandoverRequiredIEs_t));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(&HandoverRequired->protocolIEs, ie);
+
+    ie->id = NGAP_ProtocolIE_ID_id_TargetID;
+    ie->criticality = NGAP_Criticality_reject;
+    ie->value.present = NGAP_HandoverRequiredIEs__value_PR_TargetID;
+
+    TargetID = &ie->value.choice.TargetID;
+
+    TargetID->present = NGAP_TargetID_PR_targetRANNodeID;
+    TargetID->choice.targetRANNodeID = targetRANNodeID =
+        CALLOC(1, sizeof(*targetRANNodeID));
+    ogs_assert(targetRANNodeID);
+
+    globalRANNodeID = &targetRANNodeID->globalRANNodeID;
+    globalRANNodeID->present = NGAP_GlobalRANNodeID_PR_globalGNB_ID;
+    globalRANNodeID->choice.globalGNB_ID = globalGNB_ID =
+        CALLOC(1, sizeof(*globalGNB_ID));
+    ogs_assert(globalGNB_ID);
+
+    plmn_id = &test_self()->plmn_support[0].plmn_id;
+    ogs_asn_buffer_to_OCTET_STRING(
+            plmn_id, OGS_PLMN_ID_LEN, &globalGNB_ID->pLMNIdentity);
+
+    ogs_ngap_uint32_to_GNB_ID(gnb_id, bitsize, &globalGNB_ID->gNB_ID);
+
+    selectedTAI = &targetRANNodeID->selectedTAI;
+    ogs_ngap_5gs_tai_to_ASN(&test_ue->nr_tai, selectedTAI);
+
+    ogs_list_for_each(&test_ue->sess_list, sess) {
+        if (!PDUSessionList) {
+            ie = CALLOC(1, sizeof(NGAP_HandoverRequiredIEs_t));
+            ogs_assert(ie);
+            ASN_SEQUENCE_ADD(&HandoverRequired->protocolIEs, ie);
+
+            ie->id = NGAP_ProtocolIE_ID_id_PDUSessionResourceListHORqd;
+            ie->criticality = NGAP_Criticality_reject;
+            ie->value.present = NGAP_HandoverRequiredIEs__value_PR_PDUSessionResourceListHORqd;
+
+            PDUSessionList = &ie->value.choice.PDUSessionResourceListHORqd;
+        }
+
+        PDUSessionItem = CALLOC(1, sizeof(*PDUSessionItem));
+        ogs_assert(PDUSessionItem);
+        ASN_SEQUENCE_ADD(&PDUSessionList->list, PDUSessionItem);
+
+        PDUSessionItem->pDUSessionID = sess->psi;
+
+        n2smbuf = testngap_build_handover_required_transfer(sess, direct);
+        ogs_assert(n2smbuf);
+        transfer = &PDUSessionItem->handoverRequiredTransfer;
+
+        transfer->size = n2smbuf->len;
+        transfer->buf = CALLOC(transfer->size, sizeof(uint8_t));
+        memcpy(transfer->buf, n2smbuf->data, transfer->size);
+        ogs_pkbuf_free(n2smbuf);
+    }
+
+    ie = CALLOC(1, sizeof(NGAP_HandoverRequiredIEs_t));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(&HandoverRequired->protocolIEs, ie);
+
+    ie->id = NGAP_ProtocolIE_ID_id_SourceToTarget_TransparentContainer;
+    ie->criticality = NGAP_Criticality_reject;
+    ie->value.present = NGAP_HandoverRequiredIEs__value_PR_SourceToTarget_TransparentContainer;
+
+    SourceToTarget_TransparentContainer =
+        &ie->value.choice.SourceToTarget_TransparentContainer;
+
+    OGS_HEX(_container, strlen(_container), tmp),
+
+    SourceToTarget_TransparentContainer->size = 32;
+    SourceToTarget_TransparentContainer->buf =
+        CALLOC(SourceToTarget_TransparentContainer->size, sizeof(uint8_t));
+    memcpy(SourceToTarget_TransparentContainer->buf,
+            tmp, SourceToTarget_TransparentContainer->size);
+
+    return ogs_ngap_encode(&pdu);
+}
+
+ogs_pkbuf_t *testngap_build_handover_request_ack(test_ue_t *test_ue)
+{
+    int rv;
+    test_sess_t *sess = NULL;
+
+    NGAP_NGAP_PDU_t pdu;
+    NGAP_SuccessfulOutcome_t *successfulOutcome = NULL;
+    NGAP_HandoverRequestAcknowledge_t *HandoverRequestAcknowledge = NULL;
+
+    NGAP_HandoverRequestAcknowledgeIEs_t *ie = NULL;
+    NGAP_AMF_UE_NGAP_ID_t *AMF_UE_NGAP_ID = NULL;
+    NGAP_RAN_UE_NGAP_ID_t *RAN_UE_NGAP_ID = NULL;
+    NGAP_PDUSessionResourceAdmittedList_t *PDUSessionList = NULL;
+    NGAP_PDUSessionResourceAdmittedItem_t *PDUSessionItem = NULL;
+    NGAP_TargetToSource_TransparentContainer_t
+        *TargetToSource_TransparentContainer = NULL;
+
+    uint8_t tmp[OGS_MAX_SDU_LEN];
+    char *_container =
+        "00010000";
+
+    memset(&pdu, 0, sizeof (NGAP_NGAP_PDU_t));
+    pdu.present = NGAP_NGAP_PDU_PR_successfulOutcome;
+    pdu.choice.successfulOutcome = CALLOC(1, sizeof(NGAP_SuccessfulOutcome_t));
+
+    successfulOutcome = pdu.choice.successfulOutcome;
+    successfulOutcome->procedureCode =
+        NGAP_ProcedureCode_id_HandoverResourceAllocation;
+    successfulOutcome->criticality = NGAP_Criticality_reject;
+    successfulOutcome->value.present =
+        NGAP_SuccessfulOutcome__value_PR_HandoverRequestAcknowledge;
+
+    HandoverRequestAcknowledge =
+        &successfulOutcome->value.choice.HandoverRequestAcknowledge;
+
+    ie = CALLOC(1, sizeof(NGAP_HandoverRequestAcknowledgeIEs_t));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(&HandoverRequestAcknowledge->protocolIEs, ie);
+
+    ie->id = NGAP_ProtocolIE_ID_id_AMF_UE_NGAP_ID;
+    ie->criticality = NGAP_Criticality_ignore;
+    ie->value.present =
+        NGAP_HandoverRequestAcknowledgeIEs__value_PR_AMF_UE_NGAP_ID;
+
+    AMF_UE_NGAP_ID = &ie->value.choice.AMF_UE_NGAP_ID;
+
+    ie = CALLOC(1, sizeof(NGAP_HandoverRequestAcknowledgeIEs_t));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(&HandoverRequestAcknowledge->protocolIEs, ie);
+
+    ie->id = NGAP_ProtocolIE_ID_id_RAN_UE_NGAP_ID;
+    ie->criticality = NGAP_Criticality_ignore;
+    ie->value.present =
+        NGAP_HandoverRequestAcknowledgeIEs__value_PR_RAN_UE_NGAP_ID;
+
+    RAN_UE_NGAP_ID = &ie->value.choice.RAN_UE_NGAP_ID;
+
+    asn_uint642INTEGER(AMF_UE_NGAP_ID, test_ue->amf_ue_ngap_id);
+
+    test_ue->ran_ue_ngap_id++;
+    *RAN_UE_NGAP_ID = test_ue->ran_ue_ngap_id;
+
+    ogs_list_for_each(&test_ue->sess_list, sess) {
+        OCTET_STRING_t *transfer = NULL;
+        ogs_pkbuf_t *n2smbuf = NULL;
+
+        if (!PDUSessionList) {
+            ie = CALLOC(1, sizeof(NGAP_HandoverRequestAcknowledgeIEs_t));
+            ogs_assert(ie);
+            ASN_SEQUENCE_ADD(&HandoverRequestAcknowledge->protocolIEs, ie);
+
+            ie->id = NGAP_ProtocolIE_ID_id_PDUSessionResourceAdmittedList;
+            ie->criticality = NGAP_Criticality_ignore;
+            ie->value.present = NGAP_HandoverRequestAcknowledgeIEs__value_PR_PDUSessionResourceAdmittedList;
+
+            PDUSessionList = &ie->value.choice.PDUSessionResourceAdmittedList;
+        }
+
+        PDUSessionItem = CALLOC(1,
+                sizeof(struct NGAP_PDUSessionResourceAdmittedItem));
+        ogs_assert(PDUSessionItem);
+        ASN_SEQUENCE_ADD(&PDUSessionList->list, PDUSessionItem);
+
+        PDUSessionItem->pDUSessionID = sess->psi;
+
+        n2smbuf = testngap_build_handover_request_ack_transfer(sess);
+        ogs_assert(n2smbuf);
+        transfer = &PDUSessionItem->handoverRequestAcknowledgeTransfer;
+
+        transfer->size = n2smbuf->len;
+        transfer->buf = CALLOC(transfer->size, sizeof(uint8_t));
+        memcpy(transfer->buf, n2smbuf->data, transfer->size);
+        ogs_pkbuf_free(n2smbuf);
+    }
+
+    ie = CALLOC(1, sizeof(NGAP_HandoverRequestAcknowledgeIEs_t));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(&HandoverRequestAcknowledge->protocolIEs, ie);
+
+    ie->id = NGAP_ProtocolIE_ID_id_TargetToSource_TransparentContainer;
+    ie->criticality = NGAP_Criticality_reject;
+    ie->value.present = NGAP_HandoverRequestAcknowledgeIEs__value_PR_TargetToSource_TransparentContainer;
+
+    TargetToSource_TransparentContainer =
+        &ie->value.choice.TargetToSource_TransparentContainer;
+
+    OGS_HEX(_container, strlen(_container), tmp),
+
+    TargetToSource_TransparentContainer->size = 4;
+    TargetToSource_TransparentContainer->buf =
+        CALLOC(TargetToSource_TransparentContainer->size, sizeof(uint8_t));
+    memcpy(TargetToSource_TransparentContainer->buf,
+            tmp, TargetToSource_TransparentContainer->size);
+
+    return ogs_ngap_encode(&pdu);
+}
+
+ogs_pkbuf_t *testngap_build_uplink_ran_status_transfer(test_ue_t *test_ue)
+{
+    test_sess_t *sess = NULL;
+
+    NGAP_NGAP_PDU_t pdu;
+    NGAP_InitiatingMessage_t *initiatingMessage = NULL;
+    NGAP_UplinkRANStatusTransfer_t *UplinkRANStatusTransfer = NULL;
+
+    NGAP_UplinkRANStatusTransferIEs_t *ie = NULL;
+    NGAP_AMF_UE_NGAP_ID_t *AMF_UE_NGAP_ID = NULL;
+    NGAP_RAN_UE_NGAP_ID_t *RAN_UE_NGAP_ID = NULL;
+    NGAP_RANStatusTransfer_TransparentContainer_t
+        *RANStatusTransfer_TransparentContainer = NULL;
+    NGAP_DRBsSubjectToStatusTransferList_t *StatusTransferList = NULL;
+
+    ogs_assert(test_ue);
+
+    memset(&pdu, 0, sizeof (NGAP_NGAP_PDU_t));
+    pdu.present = NGAP_NGAP_PDU_PR_initiatingMessage;
+    pdu.choice.initiatingMessage = CALLOC(1, sizeof(NGAP_InitiatingMessage_t));
+
+    initiatingMessage = pdu.choice.initiatingMessage;
+    initiatingMessage->procedureCode =
+        NGAP_ProcedureCode_id_UplinkRANStatusTransfer;
+    initiatingMessage->criticality = NGAP_Criticality_ignore;
+    initiatingMessage->value.present =
+        NGAP_InitiatingMessage__value_PR_UplinkRANStatusTransfer;
+
+    UplinkRANStatusTransfer = &initiatingMessage->value.choice.UplinkRANStatusTransfer;
+
+    ie = CALLOC(1, sizeof(NGAP_UplinkRANStatusTransferIEs_t));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(&UplinkRANStatusTransfer->protocolIEs, ie);
+
+    ie->id = NGAP_ProtocolIE_ID_id_AMF_UE_NGAP_ID;
+    ie->criticality = NGAP_Criticality_reject;
+    ie->value.present =
+        NGAP_UplinkRANStatusTransferIEs__value_PR_AMF_UE_NGAP_ID;
+
+    AMF_UE_NGAP_ID = &ie->value.choice.AMF_UE_NGAP_ID;
+
+    ie = CALLOC(1, sizeof(NGAP_UplinkRANStatusTransferIEs_t));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(&UplinkRANStatusTransfer->protocolIEs, ie);
+
+    ie->id = NGAP_ProtocolIE_ID_id_RAN_UE_NGAP_ID;
+    ie->criticality = NGAP_Criticality_reject;
+    ie->value.present =
+        NGAP_UplinkRANStatusTransferIEs__value_PR_RAN_UE_NGAP_ID;
+
+    RAN_UE_NGAP_ID = &ie->value.choice.RAN_UE_NGAP_ID;
+
+    asn_uint642INTEGER(AMF_UE_NGAP_ID, test_ue->amf_ue_ngap_id);
+    *RAN_UE_NGAP_ID = test_ue->ran_ue_ngap_id;
+
+    ie = CALLOC(1, sizeof(NGAP_UplinkRANStatusTransferIEs_t));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(&UplinkRANStatusTransfer->protocolIEs, ie);
+
+    ie->id = NGAP_ProtocolIE_ID_id_RANStatusTransfer_TransparentContainer;
+    ie->criticality = NGAP_Criticality_reject;
+    ie->value.present = NGAP_UplinkRANStatusTransferIEs__value_PR_RANStatusTransfer_TransparentContainer;
+
+    RANStatusTransfer_TransparentContainer =
+        &ie->value.choice.RANStatusTransfer_TransparentContainer;
+
+    StatusTransferList = &RANStatusTransfer_TransparentContainer->dRBsSubjectToStatusTransferList;
+
+    ogs_list_for_each(&test_ue->sess_list, sess) {
+        NGAP_DRBsSubjectToStatusTransferItem_t *StatusTransferItem = NULL;
+        NGAP_DRB_ID_t *dRB_ID = NULL;
+        NGAP_DRBStatusUL_t *dRBStatusUL = NULL;
+        NGAP_DRBStatusUL12_t *dRBStatusUL12 = NULL;
+        NGAP_COUNTValueForPDCP_SN12_t *uL_COUNTValue = NULL;
+        NGAP_DRBStatusDL_t *dRBStatusDL = NULL;
+        NGAP_DRBStatusDL18_t *dRBStatusDL18 = NULL;
+        NGAP_COUNTValueForPDCP_SN18_t *dL_COUNTValue = NULL;
+
+        StatusTransferItem = CALLOC(1, sizeof(*StatusTransferItem));
+        ogs_assert(StatusTransferItem);
+        ASN_SEQUENCE_ADD(&StatusTransferList->list, StatusTransferItem);
+
+        dRB_ID = &StatusTransferItem->dRB_ID;
+
+        *dRB_ID = sess->psi;
+
+        dRBStatusUL = &StatusTransferItem->dRBStatusUL;
+        dRBStatusUL->present = NGAP_DRBStatusUL_PR_dRBStatusUL12;
+        dRBStatusUL->choice.dRBStatusUL12 = dRBStatusUL12 =
+            CALLOC(1, sizeof(*dRBStatusUL12));
+        uL_COUNTValue = &dRBStatusUL12->uL_COUNTValue;
+        uL_COUNTValue->pDCP_SN12 = 1;
+        uL_COUNTValue->hFN_PDCP_SN12 = 2;
+
+        dRBStatusDL = &StatusTransferItem->dRBStatusDL;
+        dRBStatusDL->present = NGAP_DRBStatusDL_PR_dRBStatusDL18;
+        dRBStatusDL->choice.dRBStatusDL18 = dRBStatusDL18 =
+            CALLOC(1, sizeof(*dRBStatusDL18));
+        dL_COUNTValue = &dRBStatusDL18->dL_COUNTValue;
+        dL_COUNTValue->pDCP_SN18 = 3;
+        dL_COUNTValue->hFN_PDCP_SN18 = 4;
+    }
+
+    return ogs_ngap_encode(&pdu);
+}
+
+ogs_pkbuf_t *testngap_build_handover_notify(test_ue_t *test_ue)
+{
+    NGAP_NGAP_PDU_t pdu;
+    NGAP_InitiatingMessage_t *initiatingMessage = NULL;
+    NGAP_HandoverNotify_t *HandoverNotify = NULL;
+
+    NGAP_HandoverNotifyIEs_t *ie = NULL;
+    NGAP_AMF_UE_NGAP_ID_t *AMF_UE_NGAP_ID = NULL;
+    NGAP_RAN_UE_NGAP_ID_t *RAN_UE_NGAP_ID = NULL;
+    NGAP_UserLocationInformation_t *UserLocationInformation = NULL;
+    NGAP_UserLocationInformationNR_t *userLocationInformationNR = NULL;
+    NGAP_NR_CGI_t *nR_CGI = NULL;
+    NGAP_TAI_t *tAI = NULL;
+
+    ogs_assert(test_ue);
+
+    memset(&pdu, 0, sizeof (NGAP_NGAP_PDU_t));
+    pdu.present = NGAP_NGAP_PDU_PR_initiatingMessage;
+    pdu.choice.initiatingMessage = CALLOC(1, sizeof(NGAP_InitiatingMessage_t));
+
+    initiatingMessage = pdu.choice.initiatingMessage;
+    initiatingMessage->procedureCode =
+        NGAP_ProcedureCode_id_HandoverNotification;
+    initiatingMessage->criticality = NGAP_Criticality_ignore;
+    initiatingMessage->value.present =
+        NGAP_InitiatingMessage__value_PR_HandoverNotify;
+
+    HandoverNotify = &initiatingMessage->value.choice.HandoverNotify;
+
+    ie = CALLOC(1, sizeof(NGAP_HandoverNotifyIEs_t));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(&HandoverNotify->protocolIEs, ie);
+
+    ie->id = NGAP_ProtocolIE_ID_id_AMF_UE_NGAP_ID;
+    ie->criticality = NGAP_Criticality_reject;
+    ie->value.present = NGAP_HandoverNotifyIEs__value_PR_AMF_UE_NGAP_ID;
+
+    AMF_UE_NGAP_ID = &ie->value.choice.AMF_UE_NGAP_ID;
+
+    ie = CALLOC(1, sizeof(NGAP_HandoverNotifyIEs_t));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(&HandoverNotify->protocolIEs, ie);
+
+    ie->id = NGAP_ProtocolIE_ID_id_RAN_UE_NGAP_ID;
+    ie->criticality = NGAP_Criticality_reject;
+    ie->value.present = NGAP_HandoverNotifyIEs__value_PR_RAN_UE_NGAP_ID;
+
+    RAN_UE_NGAP_ID = &ie->value.choice.RAN_UE_NGAP_ID;
+
+    asn_uint642INTEGER(AMF_UE_NGAP_ID, test_ue->amf_ue_ngap_id);
+    *RAN_UE_NGAP_ID = test_ue->ran_ue_ngap_id;
+
+    ie = CALLOC(1, sizeof(NGAP_HandoverNotifyIEs_t));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(&HandoverNotify->protocolIEs, ie);
+
+    ie->id = NGAP_ProtocolIE_ID_id_UserLocationInformation;
+    ie->criticality = NGAP_Criticality_ignore;
+    ie->value.present =
+        NGAP_HandoverNotifyIEs__value_PR_UserLocationInformation;
+
+    UserLocationInformation = &ie->value.choice.UserLocationInformation;
+
+    userLocationInformationNR =
+            CALLOC(1, sizeof(NGAP_UserLocationInformationNR_t));
+    ogs_assert(userLocationInformationNR);
+
+    nR_CGI = &userLocationInformationNR->nR_CGI;
+    ogs_ngap_nr_cgi_to_ASN(&test_ue->nr_cgi, nR_CGI);
+
+    tAI = &userLocationInformationNR->tAI;
+    ogs_ngap_5gs_tai_to_ASN(&test_ue->nr_tai, tAI);
+
+    UserLocationInformation->present =
+        NGAP_UserLocationInformation_PR_userLocationInformationNR;
+    UserLocationInformation->choice.userLocationInformationNR =
+        userLocationInformationNR;
+
+    return ogs_ngap_encode(&pdu);
+}
+
+ogs_pkbuf_t *testngap_build_handover_failure(test_ue_t *test_ue,
+        NGAP_Cause_PR group, long cause)
+{
+    int rv;
+
+    NGAP_NGAP_PDU_t pdu;
+    NGAP_UnsuccessfulOutcome_t *unsuccessfulOutcome = NULL;
+    NGAP_HandoverFailure_t *HandoverFailure = NULL;
+
+    NGAP_HandoverFailureIEs_t *ie = NULL;
+    NGAP_AMF_UE_NGAP_ID_t *AMF_UE_NGAP_ID = NULL;
+    NGAP_Cause_t *Cause = NULL;
+
+    memset(&pdu, 0, sizeof (NGAP_NGAP_PDU_t));
+    pdu.present = NGAP_NGAP_PDU_PR_unsuccessfulOutcome;
+    pdu.choice.unsuccessfulOutcome =
+        CALLOC(1, sizeof(NGAP_UnsuccessfulOutcome_t));
+
+    unsuccessfulOutcome = pdu.choice.unsuccessfulOutcome;
+    unsuccessfulOutcome->procedureCode =
+        NGAP_ProcedureCode_id_HandoverResourceAllocation;
+    unsuccessfulOutcome->criticality = NGAP_Criticality_reject;
+    unsuccessfulOutcome->value.present =
+        NGAP_UnsuccessfulOutcome__value_PR_HandoverFailure;
+
+    HandoverFailure = &unsuccessfulOutcome->value.choice.HandoverFailure;
+
+    ie = CALLOC(1, sizeof(NGAP_HandoverFailureIEs_t));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(&HandoverFailure->protocolIEs, ie);
+
+    ie->id = NGAP_ProtocolIE_ID_id_AMF_UE_NGAP_ID;
+    ie->criticality = NGAP_Criticality_ignore;
+    ie->value.present = NGAP_HandoverFailureIEs__value_PR_AMF_UE_NGAP_ID;
+
+    AMF_UE_NGAP_ID = &ie->value.choice.AMF_UE_NGAP_ID;
+
+    ie = CALLOC(1, sizeof(NGAP_HandoverFailureIEs_t));
+    ASN_SEQUENCE_ADD(&HandoverFailure->protocolIEs, ie);
+
+    ie->id = NGAP_ProtocolIE_ID_id_Cause;
+    ie->criticality = NGAP_Criticality_ignore;
+    ie->value.present = NGAP_HandoverFailureIEs__value_PR_Cause;
+
+    Cause = &ie->value.choice.Cause;
+
+    asn_uint642INTEGER(AMF_UE_NGAP_ID, test_ue->amf_ue_ngap_id);
+
+    Cause->present = group;
+    Cause->choice.radioNetwork = cause;
+
+    return ogs_ngap_encode(&pdu);
+}
+
+ogs_pkbuf_t *testngap_build_handover_cancel(test_ue_t *test_ue,
+        NGAP_Cause_PR group, long cause)
+{
+    NGAP_NGAP_PDU_t pdu;
+    NGAP_InitiatingMessage_t *initiatingMessage = NULL;
+    NGAP_HandoverCancel_t *HandoverCancel = NULL;
+
+    NGAP_HandoverCancelIEs_t *ie = NULL;
+    NGAP_AMF_UE_NGAP_ID_t *AMF_UE_NGAP_ID = NULL;
+    NGAP_RAN_UE_NGAP_ID_t *RAN_UE_NGAP_ID = NULL;
+    NGAP_Cause_t *Cause = NULL;
+
+    ogs_assert(test_ue);
+
+    memset(&pdu, 0, sizeof (NGAP_NGAP_PDU_t));
+    pdu.present = NGAP_NGAP_PDU_PR_initiatingMessage;
+    pdu.choice.initiatingMessage = CALLOC(1, sizeof(NGAP_InitiatingMessage_t));
+
+    initiatingMessage = pdu.choice.initiatingMessage;
+    initiatingMessage->procedureCode = NGAP_ProcedureCode_id_HandoverCancel;
+    initiatingMessage->criticality = NGAP_Criticality_reject;
+    initiatingMessage->value.present =
+        NGAP_InitiatingMessage__value_PR_HandoverCancel;
+
+    HandoverCancel = &initiatingMessage->value.choice.HandoverCancel;
+
+    ie = CALLOC(1, sizeof(NGAP_HandoverCancelIEs_t));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(&HandoverCancel->protocolIEs, ie);
+
+    ie->id = NGAP_ProtocolIE_ID_id_AMF_UE_NGAP_ID;
+    ie->criticality = NGAP_Criticality_reject;
+    ie->value.present = NGAP_HandoverCancelIEs__value_PR_AMF_UE_NGAP_ID;
+
+    AMF_UE_NGAP_ID = &ie->value.choice.AMF_UE_NGAP_ID;
+
+    ie = CALLOC(1, sizeof(NGAP_HandoverCancelIEs_t));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(&HandoverCancel->protocolIEs, ie);
+
+    ie->id = NGAP_ProtocolIE_ID_id_RAN_UE_NGAP_ID;
+    ie->criticality = NGAP_Criticality_reject;
+    ie->value.present = NGAP_HandoverCancelIEs__value_PR_RAN_UE_NGAP_ID;
+
+    RAN_UE_NGAP_ID = &ie->value.choice.RAN_UE_NGAP_ID;
+
+    asn_uint642INTEGER(AMF_UE_NGAP_ID, test_ue->amf_ue_ngap_id);
+    *RAN_UE_NGAP_ID = test_ue->ran_ue_ngap_id;
+
+    ie = CALLOC(1, sizeof(NGAP_HandoverCancelIEs_t));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(&HandoverCancel->protocolIEs, ie);
+
+    ie->id = NGAP_ProtocolIE_ID_id_Cause;
+    ie->criticality = NGAP_Criticality_ignore;
+    ie->value.present = NGAP_HandoverCancelIEs__value_PR_Cause;
+
+    Cause = &ie->value.choice.Cause;
+
+    Cause->present = group;
+    Cause->choice.radioNetwork = cause;
+
+    return ogs_ngap_encode(&pdu);
+}
+
 static ogs_pkbuf_t *testngap_build_pdu_session_resource_setup_response_trasfer(
         test_sess_t *sess)
 {
@@ -1340,6 +2043,7 @@ static ogs_pkbuf_t *testngap_build_pdu_session_resource_setup_response_trasfer(
     memset(&message, 0, sizeof(message));
 
     dLQosFlowPerTNLInformation = &message.dLQosFlowPerTNLInformation;
+
     uPTransportLayerInformation =
         &dLQosFlowPerTNLInformation->uPTransportLayerInformation;
 
@@ -1450,6 +2154,93 @@ static ogs_pkbuf_t *testngap_build_path_switch_request_trasfer(
         qosFlowAcceptedItem->qosFlowIdentifier = qos_flow->qfi;
     }
 
+    return ogs_asn_encode(&asn_DEF_NGAP_PathSwitchRequestTransfer, &message);
+}
+
+static ogs_pkbuf_t *testngap_build_handover_required_transfer(
+        test_sess_t *sess, bool direct)
+{
+    int rv;
+
+    test_bearer_t *qos_flow = NULL;
+
+    ogs_gtp_f_teid_t f_teid;
+    ogs_ip_t ip;
+    int len;
+
+    ogs_assert(sess);
+
+    NGAP_HandoverRequiredTransfer_t message;
+
+    NGAP_DirectForwardingPathAvailability_t
+        *directForwardingPathAvailability = NULL;
+
+    memset(&message, 0, sizeof(message));
+
+    if (direct == true) {
+        message.directForwardingPathAvailability =
+            directForwardingPathAvailability =
+                CALLOC(1, sizeof(*directForwardingPathAvailability));
+
+        *directForwardingPathAvailability =
+            NGAP_DirectForwardingPathAvailability_direct_path_available;
+    }
+
+    return ogs_asn_encode(&asn_DEF_NGAP_HandoverRequiredTransfer, &message);
+}
+
+static ogs_pkbuf_t *testngap_build_handover_request_ack_transfer(
+        test_sess_t *sess)
+{
+    int rv;
+    test_bearer_t *qos_flow = NULL;
+
+    ogs_gtp_f_teid_t f_teid;
+    ogs_ip_t ip;
+    int len;
+
+    ogs_assert(sess);
+
+    NGAP_HandoverRequestAcknowledgeTransfer_t message;
+
+    NGAP_UPTransportLayerInformation_t *dL_NGU_UP_TNLInformation = NULL;
+    NGAP_QosFlowListWithDataForwarding_t *qosFlowSetupResponseList = NULL;
+    NGAP_QosFlowItemWithDataForwarding_t *qosFlowSetupResponseItem = NULL;
+    NGAP_GTPTunnel_t *gTPTunnel = NULL;
+
+    memset(&message, 0, sizeof(message));
+
+    dL_NGU_UP_TNLInformation = &message.dL_NGU_UP_TNLInformation;
+
+    dL_NGU_UP_TNLInformation->present =
+        NGAP_UPTransportLayerInformation_PR_gTPTunnel;
+    dL_NGU_UP_TNLInformation->choice.gTPTunnel = gTPTunnel =
+        CALLOC(1, sizeof(struct NGAP_GTPTunnel));
+    ogs_assert(gTPTunnel);
+
+    ogs_assert(sess->gnb_n3_addr || sess->gnb_n3_addr6);
+    rv = ogs_gtp_sockaddr_to_f_teid(
+            sess->gnb_n3_addr, sess->gnb_n3_addr6, &f_teid, &len);
+    ogs_assert(rv == OGS_OK);
+
+    rv = ogs_gtp_f_teid_to_ip(&f_teid, &ip);
+    ogs_assert(rv == OGS_OK);
+
+    ogs_asn_ip_to_BIT_STRING(&ip, &gTPTunnel->transportLayerAddress);
+    ogs_asn_uint32_to_OCTET_STRING(sess->gnb_n3_teid, &gTPTunnel->gTP_TEID);
+
+    qosFlowSetupResponseList = &message.qosFlowSetupResponseList;
+
+    ogs_list_for_each(&sess->bearer_list, qos_flow) {
+        qosFlowSetupResponseItem =
+            CALLOC(1, sizeof(struct NGAP_QosFlowItemWithDataForwarding));
+        ogs_assert(qosFlowSetupResponseItem);
+        ASN_SEQUENCE_ADD(&qosFlowSetupResponseList->list,
+                qosFlowSetupResponseItem);
+
+        qosFlowSetupResponseItem->qosFlowIdentifier = qos_flow->qfi;
+    }
+
     return ogs_asn_encode(
-            &asn_DEF_NGAP_PathSwitchRequestTransfer, &message);
+            &asn_DEF_NGAP_HandoverRequestAcknowledgeTransfer, &message);
 }

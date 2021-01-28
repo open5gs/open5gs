@@ -20,6 +20,7 @@ testapp_handover_sources = files('''
     epc-x2-test.c
     epc-s1-test.c
     5gc-xn-test.c
+    5gc-n2-test.c
 '''.split())
 
 testapp_handover_exe = executable('handover',

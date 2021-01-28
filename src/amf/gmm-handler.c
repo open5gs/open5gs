@@ -305,7 +305,8 @@ int gmm_handle_registration_update(amf_ue_t *amf_ue,
         ogs_list_for_each(&amf_ue->sess_list, sess) {
             if (psimask & (1 << sess->psi)) {
                 if (SESSION_CONTEXT_IN_SMF(sess))
-                    amf_sbi_send_activating_session(sess);
+                    amf_sbi_send_activating_session(
+                            sess, AMF_UPDATE_SM_CONTEXT_REGISTRATION_REQUEST);
             }
         }
     }
@@ -473,7 +474,8 @@ int gmm_handle_service_update(amf_ue_t *amf_ue,
         ogs_list_for_each(&amf_ue->sess_list, sess) {
             if (psimask & (1 << sess->psi)) {
                 if (SESSION_CONTEXT_IN_SMF(sess))
-                    amf_sbi_send_activating_session(sess);
+                    amf_sbi_send_activating_session(
+                            sess, AMF_UPDATE_SM_CONTEXT_SERVICE_REQUEST);
             }
         }
     }
@@ -653,7 +655,7 @@ int gmm_handle_ul_nas_transport(amf_ue_t *amf_ue,
         ogs_nas_5gs_ul_nas_transport_t *ul_nas_transport)
 {
     amf_sess_t *sess = NULL;
-    amf_nsmf_pdu_session_update_sm_context_param_t param;
+    amf_nsmf_pdusession_update_sm_context_param_t param;
 
     ogs_nas_payload_container_type_t *payload_container_type = NULL;
     ogs_nas_payload_container_t *payload_container = NULL;
@@ -796,7 +798,7 @@ int gmm_handle_ul_nas_transport(amf_ue_t *amf_ue,
 
             amf_sess_sbi_discover_and_send(OpenAPI_nf_type_SMF,
                     sess, AMF_SESS_SM_CONTEXT_NO_STATE, NULL,
-                    amf_nsmf_pdu_session_build_create_sm_context);
+                    amf_nsmf_pdusession_build_create_sm_context);
 
         } else {
 
@@ -819,7 +821,7 @@ int gmm_handle_ul_nas_transport(amf_ue_t *amf_ue,
 
             amf_sess_sbi_discover_and_send(OpenAPI_nf_type_SMF,
                     sess, AMF_UPDATE_SM_CONTEXT_N1_RELEASED, &param,
-                    amf_nsmf_pdu_session_build_update_sm_context);
+                    amf_nsmf_pdusession_build_update_sm_context);
 
             if (gsm_header->message_type ==
                     OGS_NAS_5GS_PDU_SESSION_RELEASE_COMPLETE) {

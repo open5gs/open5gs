@@ -195,7 +195,7 @@ void smf_5gc_n4_handle_session_establishment_response(
     param.n1smbuf = gsm_build_pdu_session_establishment_accept(sess);
     ogs_assert(param.n1smbuf);
     param.n2smbuf = ngap_build_pdu_session_resource_setup_request_transfer(
-            sess);
+                        sess);
     ogs_assert(param.n2smbuf);
 
     smf_namf_comm_send_n1_n2_message_transfer(sess, &param);
@@ -299,13 +299,18 @@ void smf_5gc_n4_handle_session_modification_response(
     }
 
     if (flags & OGS_PFCP_MODIFY_ACTIVATE) {
-        if (flags & OGS_PFCP_MODIFY_PATH_SWITCH) {
+        if (flags & OGS_PFCP_MODIFY_XN_HANDOVER) {
             ogs_pkbuf_t *n2smbuf =
                 ngap_build_path_switch_request_ack_transfer(sess);
             ogs_assert(n2smbuf);
 
             smf_sbi_send_sm_context_updated_data_n2smbuf(sess, stream,
                 OpenAPI_n2_sm_info_type_PATH_SWITCH_REQ_ACK, n2smbuf);
+        } else if (flags & OGS_PFCP_MODIFY_N2_HANDOVER) {
+
+            smf_sbi_send_sm_context_updated_data_ho_state(
+                    sess, stream, OpenAPI_ho_state_COMPLETED);
+
         } else {
             sess->paging.ue_requested_pdu_session_establishment_done = true;
             smf_sbi_send_http_status_no_content(stream);
@@ -778,7 +783,8 @@ void smf_n4_handle_session_report_request(
             memset(&param, 0, sizeof(param));
             param.state = SMF_NETWORK_TRIGGERED_SERVICE_REQUEST;
             param.n2smbuf =
-                ngap_build_pdu_session_resource_setup_request_transfer(sess);
+                ngap_build_pdu_session_resource_setup_request_transfer(
+                        sess);
             ogs_assert(param.n2smbuf);
 
             param.n1n2_failure_txf_notif_uri = true;

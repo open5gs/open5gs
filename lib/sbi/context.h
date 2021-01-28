@@ -136,7 +136,7 @@ typedef struct ogs_sbi_xact_s {
     ogs_timer_t *t_response;
 
     ogs_sbi_stream_t *assoc_stream;
-    uint8_t state;
+    int state;
 
     ogs_sbi_object_t *sbi_object;
 } ogs_sbi_xact_t;

@@ -341,14 +341,7 @@ bool smf_nsmf_handle_update_sm_context(
         ngap_send_to_n2sm(
                 sess, stream, SmContextUpdateData->n2_sm_info_type, n2smbuf);
 
-    } else {
-        if (!SmContextUpdateData->up_cnx_state) {
-            ogs_error("[%s:%d] No upCnxState", smf_ue->supi, sess->psi);
-            smf_sbi_send_sm_context_update_error(stream,
-                    OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                    "No upCnxState", smf_ue->supi, NULL, NULL);
-            return false;
-        }
+    } else if (SmContextUpdateData->up_cnx_state) {
 
         if (SmContextUpdateData->up_cnx_state ==
                 OpenAPI_up_cnx_state_DEACTIVATED) {
@@ -450,6 +443,96 @@ bool smf_nsmf_handle_update_sm_context(
 
             return false;
         }
+    } else if (SmContextUpdateData->ho_state) {
+        if (SmContextUpdateData->ho_state == OpenAPI_ho_state_COMPLETED) {
+            bool far_update = false;
+            smf_bearer_t *qos_flow = NULL;
+
+            if (sess->handover.prepared == true) {
+                /* Need to Update? */
+                if (memcmp(&sess->gnb_n3_ip, &sess->handover.gnb_n3_ip,
+                            sizeof(sess->gnb_n3_ip)) != 0 ||
+                    sess->gnb_n3_teid != sess->handover.gnb_n3_teid)
+                    far_update = true;
+
+                memcpy(&sess->gnb_n3_ip,
+                        &sess->handover.gnb_n3_ip, sizeof(sess->gnb_n3_ip));
+                sess->gnb_n3_teid = sess->handover.gnb_n3_teid;
+            }
+            sess->handover.prepared = false;
+
+            ogs_list_for_each(&sess->bearer_list, qos_flow) {
+                ogs_pfcp_far_t *dl_far = qos_flow->dl_far;
+                ogs_assert(dl_far);
+
+                if (dl_far->handover.prepared == true) {
+
+                    if (dl_far->apply_action != OGS_PFCP_APPLY_ACTION_FORW) {
+                        far_update = true;
+                    }
+
+                    dl_far->apply_action = OGS_PFCP_APPLY_ACTION_FORW;
+                    ogs_pfcp_ip_to_outer_header_creation(
+                            &sess->gnb_n3_ip,
+                            &dl_far->outer_header_creation,
+                            &dl_far->outer_header_creation_len);
+                    dl_far->outer_header_creation.teid = sess->gnb_n3_teid;
+                }
+                dl_far->handover.prepared = false;
+            }
+
+            if (far_update) {
+                smf_5gc_pfcp_send_session_modification_request(
+                        sess, stream,
+                        OGS_PFCP_MODIFY_ACTIVATE | OGS_PFCP_MODIFY_N2_HANDOVER |
+                        OGS_PFCP_MODIFY_END_MARKER);
+            } else {
+                char *strerror = ogs_msprintf(
+                        "[%s:%d] No FAR Update", smf_ue->supi, sess->psi);
+                ogs_assert(strerror);
+
+                ogs_error("%s", strerror);
+                smf_sbi_send_sm_context_update_error(
+                        stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                        strerror, NULL, NULL, NULL);
+                ogs_free(strerror);
+
+                return false;
+            }
+        } else if (SmContextUpdateData->ho_state ==
+                OpenAPI_ho_state_CANCELLED) {
+            smf_bearer_t *qos_flow = NULL;
+
+            sess->handover.prepared = false;
+
+            ogs_list_for_each(&sess->bearer_list, qos_flow) {
+                ogs_pfcp_far_t *dl_far = qos_flow->dl_far;
+                ogs_assert(dl_far);
+
+                dl_far->handover.prepared = false;
+            }
+
+            smf_sbi_send_sm_context_updated_data_ho_state(
+                    sess, stream, OpenAPI_ho_state_CANCELLED);
+
+        } else {
+            char *strerror = ogs_msprintf("[%s:%d] Invalid hoState [%d]",
+                smf_ue->supi, sess->psi, SmContextUpdateData->ho_state);
+            ogs_assert(strerror);
+
+            ogs_error("%s", strerror);
+            smf_sbi_send_sm_context_update_error(stream,
+                OGS_SBI_HTTP_STATUS_BAD_REQUEST, strerror, NULL, NULL, NULL);
+            ogs_free(strerror);
+
+            return false;
+        }
+    } else {
+        ogs_error("[%s:%d] No UpdateData", smf_ue->supi, sess->psi);
+        smf_sbi_send_sm_context_update_error(stream,
+                OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                "No UpdateData", smf_ue->supi, NULL, NULL);
+        return false;
     }
 
     return true;

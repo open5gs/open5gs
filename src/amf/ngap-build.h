@@ -52,31 +52,21 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_release_command(
 
 ogs_pkbuf_t *ngap_build_paging(amf_ue_t *amf_ue);
 
-ogs_pkbuf_t *ngap_build_amf_configuration_transfer(
-    NGAP_SONConfigurationTransfer_t *son_configuration_transfer);
+ogs_pkbuf_t *ngap_build_downlink_ran_configuration_transfer(
+    NGAP_SONConfigurationTransfer_t *transfer);
 
 ogs_pkbuf_t *ngap_build_path_switch_ack(amf_ue_t *amf_ue);
 
-ogs_pkbuf_t *ngap_build_handover_command(ran_ue_t *source_ue);
+ogs_pkbuf_t *ngap_build_handover_request(ran_ue_t *target_ue);
 ogs_pkbuf_t *ngap_build_handover_preparation_failure(
     ran_ue_t *source_ue, NGAP_Cause_t *cause);
 
-ogs_pkbuf_t *ngap_build_handover_request(
-    amf_ue_t *amf_ue, ran_ue_t *target_ue,
-    NGAP_RAN_UE_NGAP_ID_t *ran_ue_ngap_id,
-    NGAP_AMF_UE_NGAP_ID_t *amf_ue_ngap_id,
-    NGAP_HandoverType_t *handovertype,
-    NGAP_Cause_t *cause,
-    NGAP_SourceToTarget_TransparentContainer_t
-        *source_totarget_transparentContainer);
+ogs_pkbuf_t *ngap_build_handover_command(ran_ue_t *source_ue);
+ogs_pkbuf_t *ngap_build_handover_cancel_ack(ran_ue_t *source_ue);
 
-ogs_pkbuf_t *ngap_build_handover_cancel_ack(
-    ran_ue_t *source_ue);
-
-ogs_pkbuf_t *ngap_build_amf_status_transfer(
+ogs_pkbuf_t *ngap_build_uplink_ran_status_transfer(
     ran_ue_t *target_ue,
-    NGAP_RANStatusTransfer_TransparentContainer_t
-        *gnb_statustransfer_transparentContainer);
+    NGAP_RANStatusTransfer_TransparentContainer_t *transfer);
 
 #ifdef __cplusplus
 }
