@@ -176,6 +176,10 @@ ogs_sbi_request_t *udm_nudr_dr_build_query_subscription_provisioned(
             memcpy(&sendmsg.param.single_nssai, &recvmsg->param.single_nssai,
                     sizeof(sendmsg.param.single_nssai));
         }
+	break;
+    CASE(OGS_SBI_RESOURCE_NAME_SMF_SELECT_DATA)
+        sendmsg.h.resource.component[4] =
+        (char *)OGS_SBI_RESOURCE_NAME_SMF_SELECTION_SUBSCRIPTION_DATA;
     DEFAULT
     END
 

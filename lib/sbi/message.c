@@ -1085,7 +1085,7 @@ static int parse_json(ogs_sbi_message_t *message,
                             }
                             break;
 
-                        CASE(OGS_SBI_RESOURCE_NAME_SMF_SELECT_DATA)
+                        CASE(OGS_SBI_RESOURCE_NAME_SMF_SELECTION_SUBSCRIPTION_DATA)
                             message->SmfSelectionSubscriptionData =
                                 OpenAPI_smf_selection_subscription_data_parseFromJSON(item);
                             if (!message->SmfSelectionSubscriptionData) {

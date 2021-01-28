@@ -545,7 +545,7 @@ bool udm_nudr_dr_handle_subscription_provisioned(
                 sendmsg.AccessAndMobilitySubscriptionData);
         break;
 
-    CASE(OGS_SBI_RESOURCE_NAME_SMF_SELECT_DATA)
+    CASE(OGS_SBI_RESOURCE_NAME_SMF_SELECTION_SUBSCRIPTION_DATA)
         OpenAPI_smf_selection_subscription_data_t *SmfSelectionSubscriptionData;
 
         SmfSelectionSubscriptionData = recvmsg->SmfSelectionSubscriptionData;
