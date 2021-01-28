@@ -423,7 +423,7 @@ bool udr_nudr_dr_handle_subscription_provisioned(
 
         break;
 
-    CASE(OGS_SBI_RESOURCE_NAME_SMF_SELECT_DATA)
+    CASE(OGS_SBI_RESOURCE_NAME_SMF_SELECTION_SUBSCRIPTION_DATA)
         OpenAPI_smf_selection_subscription_data_t SmfSelectionSubscriptionData;
 
         memset(&SmfSelectionSubscriptionData, 0,
