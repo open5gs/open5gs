@@ -621,17 +621,31 @@ int gmm_handle_security_mode_complete(amf_ue_t *amf_ue,
 
         switch (mobile_identity_imeisv->type) {
         case OGS_NAS_5GS_MOBILE_IDENTITY_IMEISV:
-            memcpy(&amf_ue->nas_mobile_identity_imeisv,
-                mobile_identity_imeisv, imeisv->length);
-            ogs_nas_imeisv_to_bcd(mobile_identity_imeisv, imeisv->length,
-                    amf_ue->imeisv_bcd);
-            ogs_nas_imeisv_bcd_to_buffer(amf_ue->imeisv_bcd,
-                    amf_ue->masked_imeisv, &amf_ue->masked_imeisv_len);
-            amf_ue->masked_imeisv[5] = 0xff;
-            amf_ue->masked_imeisv[6] = 0xff;
-            if (amf_ue->pei)
-                ogs_free(amf_ue->pei);
-            amf_ue->pei = ogs_msprintf("imeisv-%s", amf_ue->imeisv_bcd);
+            /* TS23.003 6.2.2 Composition of IMEISV
+             *
+             * The International Mobile station Equipment Identity and
+             * Software Version Number (IMEISV) is composed.
+             *
+             * TAC(8 digits) - SNR(6 digits) - SVN(2 digits)
+             * IMEISV(16 digits) ==> 8bytes
+             */
+            if (imeisv->length == sizeof(ogs_nas_mobile_identity_imeisv_t)) {
+                memcpy(&amf_ue->nas_mobile_identity_imeisv,
+                    mobile_identity_imeisv, imeisv->length);
+                ogs_nas_imeisv_to_bcd(mobile_identity_imeisv, imeisv->length,
+                        amf_ue->imeisv_bcd);
+                ogs_nas_imeisv_bcd_to_buffer(amf_ue->imeisv_bcd,
+                        amf_ue->masked_imeisv, &amf_ue->masked_imeisv_len);
+                amf_ue->masked_imeisv[5] = 0xff;
+                amf_ue->masked_imeisv[6] = 0xff;
+                if (amf_ue->pei)
+                    ogs_free(amf_ue->pei);
+                amf_ue->pei = ogs_msprintf("imeisv-%s", amf_ue->imeisv_bcd);
+            } else {
+                ogs_error("[%s] Unknown IMEISV Length [%d]",
+                        amf_ue->supi, imeisv->length);
+                ogs_log_hexdump(OGS_LOG_ERROR, imeisv->buffer, imeisv->length);
+            }
             break;
         default:
             ogs_warn("[%s] Invalid IMEISV Type [%d]",

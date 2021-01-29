@@ -201,6 +201,10 @@ logger:
 #
 #    mme_name: open5gs-mme0
 #
+#  <Relative Capacity> - Default(255)
+#
+#    relative_capacity: 100
+#
 mme:
     freeDiameter: @sysconfdir@/freeDiameter/mme.conf
     s1ap:

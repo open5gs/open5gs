@@ -619,7 +619,15 @@ ogs_pkbuf_t *ngap_ue_build_initial_context_setup_request(
                 UERadioCapability);
     }
 
-    if (amf_ue->masked_imeisv_len) {
+    /* TS23.003 6.2.2 Composition of IMEISV
+     *
+     * The International Mobile station Equipment Identity and
+     * Software Version Number (IMEISV) is composed.
+     *
+     * TAC(8 digits) - SNR(6 digits) - SVN(2 digits)
+     * IMEISV(16 digits) ==> 8bytes
+     */
+    if (amf_ue->masked_imeisv_len == OGS_MAX_IMEISV_LEN) {
         ie = CALLOC(1, sizeof(NGAP_InitialContextSetupRequestIEs_t));
         ASN_SEQUENCE_ADD(&InitialContextSetupRequest->protocolIEs, ie);
 

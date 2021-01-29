@@ -195,7 +195,7 @@ ogs_pkbuf_t *testngap_build_initial_ue_message(
 
     initiatingMessage = pdu.choice.initiatingMessage;
     initiatingMessage->procedureCode = NGAP_ProcedureCode_id_InitialUEMessage;
-    initiatingMessage->criticality = NGAP_Criticality_reject;
+    initiatingMessage->criticality = NGAP_Criticality_ignore;
     initiatingMessage->value.present =
         NGAP_InitiatingMessage__value_PR_InitialUEMessage;
 
@@ -272,9 +272,8 @@ ogs_pkbuf_t *testngap_build_initial_ue_message(
         ASN_SEQUENCE_ADD(&InitialUEMessage->protocolIEs, ie);
 
         ie->id = NGAP_ProtocolIE_ID_id_FiveG_S_TMSI;
-        ie->criticality = NGAP_Criticality_ignore;
-        ie->value.present =
-            NGAP_InitialUEMessage_IEs__value_PR_FiveG_S_TMSI;
+        ie->criticality = NGAP_Criticality_reject;
+        ie->value.present = NGAP_InitialUEMessage_IEs__value_PR_FiveG_S_TMSI;
 
         FiveG_S_TMSI = &ie->value.choice.FiveG_S_TMSI;
 

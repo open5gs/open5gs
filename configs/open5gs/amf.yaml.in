@@ -160,6 +160,10 @@ logger:
 #
 #    amf_name: amf1.open5gs.amf.5gc.mnc70.mcc901.3gppnetwork.org
 #
+#  <Relative Capacity> - Default(255)
+#
+#    relative_capacity: 100
+#
 amf:
     sbi:
       - addr: 127.0.0.5

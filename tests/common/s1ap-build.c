@@ -123,7 +123,7 @@ ogs_pkbuf_t *test_s1ap_build_initial_ue_message(
 
     initiatingMessage = pdu.choice.initiatingMessage;
     initiatingMessage->procedureCode = S1AP_ProcedureCode_id_initialUEMessage;
-    initiatingMessage->criticality = S1AP_Criticality_reject;
+    initiatingMessage->criticality = S1AP_Criticality_ignore;
     initiatingMessage->value.present =
         S1AP_InitiatingMessage__value_PR_InitialUEMessage;
 
@@ -211,7 +211,7 @@ ogs_pkbuf_t *test_s1ap_build_initial_ue_message(
         ASN_SEQUENCE_ADD(&InitialUEMessage->protocolIEs, ie);
 
         ie->id = S1AP_ProtocolIE_ID_id_S_TMSI;
-        ie->criticality = S1AP_Criticality_ignore;
+        ie->criticality = S1AP_Criticality_reject;
         ie->value.present = S1AP_InitialUEMessage_IEs__value_PR_S_TMSI;
 
         S_TMSI = &ie->value.choice.S_TMSI;
