@@ -35,6 +35,8 @@ ogs_pkbuf_t *s1ap_build_setup_rsp(void)
     S1AP_RelativeMMECapacity_t *RelativeMMECapacity = NULL;
     S1AP_MMEname_t *MMEname = NULL;
 
+    ogs_debug("S1SetupResponse");
+
     memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
     pdu.present = S1AP_S1AP_PDU_PR_successfulOutcome;
     pdu.choice.successfulOutcome = 
@@ -139,6 +141,8 @@ ogs_pkbuf_t *s1ap_build_setup_failure(
     S1AP_S1SetupFailureIEs_t *ie = NULL;
     S1AP_Cause_t *Cause = NULL;
     S1AP_TimeToWait_t *TimeToWait = NULL;
+
+    ogs_debug("S1SetupFailure");
     
     ogs_debug("    Group[%d] Cause[%d] TimeToWait[%ld]",
             group, (int)cause, time_to_wait);
@@ -287,7 +291,7 @@ ogs_pkbuf_t *s1ap_build_initial_context_setup_request(
     subscription_data = &mme_ue->subscription_data;
     ogs_assert(subscription_data);
 
-    ogs_debug("Initial context setup request");
+    ogs_debug("InitialContextSetupRequest");
 
     memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
     pdu.present = S1AP_S1AP_PDU_PR_initiatingMessage;
@@ -647,7 +651,7 @@ ogs_pkbuf_t *s1ap_build_ue_context_modification_request(mme_ue_t *mme_ue)
     enb_ue = enb_ue_cycle(mme_ue->enb_ue);
     ogs_assert(enb_ue);
 
-    ogs_debug("UE context modification request");
+    ogs_debug("UEContextModificationRequest");
 
     memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
     pdu.present = S1AP_S1AP_PDU_PR_initiatingMessage;
@@ -785,6 +789,8 @@ ogs_pkbuf_t *s1ap_build_ue_context_release_command(
         return NULL;
     }
 
+    ogs_debug("UEContextReleaseCommand");
+
     memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
     pdu.present = S1AP_S1AP_PDU_PR_initiatingMessage;
     pdu.choice.initiatingMessage = CALLOC(1, sizeof(S1AP_InitiatingMessage_t));
@@ -865,6 +871,8 @@ ogs_pkbuf_t *s1ap_build_e_rab_setup_request(
     ogs_assert(mme_ue);
     enb_ue = enb_ue_cycle(mme_ue->enb_ue);
     ogs_assert(enb_ue);
+
+    ogs_debug("E-RABSetupRequest");
 
     memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
     pdu.present = S1AP_S1AP_PDU_PR_initiatingMessage;
@@ -997,7 +1005,8 @@ ogs_pkbuf_t *s1ap_build_e_rab_modify_request(
     enb_ue = enb_ue_cycle(mme_ue->enb_ue);
     ogs_assert(enb_ue);
 
-    ogs_debug("E-RAB modify request");
+    ogs_debug("E-RABModifyRequest");
+
     memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
     pdu.present = S1AP_S1AP_PDU_PR_initiatingMessage;
     pdu.choice.initiatingMessage = CALLOC(1, sizeof(S1AP_InitiatingMessage_t));
@@ -1127,7 +1136,7 @@ ogs_pkbuf_t *s1ap_build_e_rab_release_command(
     subscription_data = &mme_ue->subscription_data;
     ogs_assert(subscription_data);
 
-    ogs_debug("E-RAB release command");
+    ogs_debug("E-RABReleaseCommand");
 
     memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
     pdu.present = S1AP_S1AP_PDU_PR_initiatingMessage;
@@ -1363,7 +1372,7 @@ ogs_pkbuf_t *s1ap_build_mme_configuration_transfer(
 
     ogs_assert(son_configuration_transfer);
 
-    ogs_debug("MME Configuration Transfer");
+    ogs_debug("MMEConfigurationTransfer");
 
     memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
     pdu.present = S1AP_S1AP_PDU_PR_initiatingMessage;
@@ -1413,7 +1422,7 @@ ogs_pkbuf_t *s1ap_build_path_switch_ack(mme_ue_t *mme_ue)
     enb_ue = enb_ue_cycle(mme_ue->enb_ue);
     ogs_assert(enb_ue);
 
-    ogs_debug("Path switch acknowledge");
+    ogs_debug("PathSwitchAcknowledge");
 
     memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
     pdu.present = S1AP_S1AP_PDU_PR_successfulOutcome;
@@ -1490,7 +1499,7 @@ ogs_pkbuf_t *s1ap_build_path_switch_failure(
     S1AP_ENB_UE_S1AP_ID_t *ENB_UE_S1AP_ID = NULL;
     S1AP_Cause_t *Cause = NULL;
 
-    ogs_debug("Path switch failure");
+    ogs_debug("PathSwitchFailure");
 
     memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
     pdu.present = S1AP_S1AP_PDU_PR_unsuccessfulOutcome;
@@ -1572,7 +1581,7 @@ ogs_pkbuf_t *s1ap_build_handover_command(enb_ue_t *source_ue)
     ogs_assert(source_ue);
     mme_ue = source_ue->mme_ue;
 
-    ogs_debug("Handover command");
+    ogs_debug("HandoverCommand");
 
     memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
     pdu.present = S1AP_S1AP_PDU_PR_successfulOutcome;
@@ -1730,7 +1739,7 @@ ogs_pkbuf_t *s1ap_build_handover_preparation_failure(
     ogs_assert(source_ue);
     ogs_assert(cause);
 
-    ogs_debug("Handover preparation failure");
+    ogs_debug("HandoverPreparationFailure");
 
     memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
     pdu.present = S1AP_S1AP_PDU_PR_unsuccessfulOutcome;
@@ -1827,7 +1836,7 @@ ogs_pkbuf_t *s1ap_build_handover_request(
     subscription_data = &mme_ue->subscription_data;
     ogs_assert(subscription_data);
 
-    ogs_debug("Handover request");
+    ogs_debug("HandoverRequest");
 
     memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
     pdu.present = S1AP_S1AP_PDU_PR_initiatingMessage;
@@ -2059,7 +2068,7 @@ ogs_pkbuf_t *s1ap_build_handover_cancel_ack(enb_ue_t *source_ue)
 
     ogs_assert(source_ue);
 
-    ogs_debug("Handover cancel acknowledge");
+    ogs_debug("HandoverCancelAcknowledge");
 
     memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
     pdu.present = S1AP_S1AP_PDU_PR_successfulOutcome;
@@ -2124,7 +2133,7 @@ ogs_pkbuf_t *s1ap_build_mme_status_transfer(
     ogs_assert(target_ue);
     ogs_assert(enb_statustransfer_transparentContainer);
     
-    ogs_debug("MME status transfer");
+    ogs_debug("MMEStatusTransfer");
 
     memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
     pdu.present = S1AP_S1AP_PDU_PR_initiatingMessage;
@@ -2196,7 +2205,7 @@ ogs_pkbuf_t *s1ap_build_write_replace_warning_request(sbc_pws_data_t *sbc_pws)
     S1AP_DataCodingScheme_t *DataCodingScheme = NULL;
     S1AP_WarningMessageContents_t *WarningMessageContents = NULL;
 
-    ogs_debug("Write-replace warning request");
+    ogs_debug("WriteReplaceWarningRequest");
 
     ogs_assert(sbc_pws);
 
@@ -2333,7 +2342,7 @@ ogs_pkbuf_t *s1ap_build_kill_request(sbc_pws_data_t *sbc_pws)
     S1AP_MessageIdentifier_t *MessageIdentifier = NULL;
     S1AP_SerialNumber_t *SerialNumber = NULL;
 
-    ogs_debug("Kill request");
+    ogs_debug("KillRequest");
 
     ogs_assert(sbc_pws);
 

@@ -90,7 +90,7 @@ void s1ap_handle_s1_setup_request(mme_enb_t *enb, ogs_s1ap_message_t *message)
     S1SetupRequest = &initiatingMessage->value.choice.S1SetupRequest;
     ogs_assert(S1SetupRequest);
 
-    ogs_debug("S1-Setup request");
+    ogs_debug("S1SetupRequest");
 
     for (i = 0; i < S1SetupRequest->protocolIEs.list.count; i++) {
         ie = S1SetupRequest->protocolIEs.list.array[i];
@@ -220,7 +220,7 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, ogs_s1ap_message_t *message)
     InitialUEMessage = &initiatingMessage->value.choice.InitialUEMessage;
     ogs_assert(InitialUEMessage);
 
-    ogs_info("Initial UE Message");
+    ogs_info("InitialUEMessage");
 
     for (i = 0; i < InitialUEMessage->protocolIEs.list.count; i++) {
         ie = InitialUEMessage->protocolIEs.list.array[i];
@@ -394,7 +394,7 @@ void s1ap_handle_uplink_nas_transport(
     UplinkNASTransport = &initiatingMessage->value.choice.UplinkNASTransport;
     ogs_assert(UplinkNASTransport);
 
-    ogs_debug("Uplink NAS transport");
+    ogs_debug("UplinkNASTransport");
 
     for (i = 0; i < UplinkNASTransport->protocolIEs.list.count; i++) {
         ie = UplinkNASTransport->protocolIEs.list.array[i];
@@ -531,7 +531,7 @@ void s1ap_handle_ue_capability_info_indication(
         &initiatingMessage->value.choice.UECapabilityInfoIndication;
     ogs_assert(UECapabilityInfoIndication);
 
-    ogs_debug("UE capability info indication");
+    ogs_debug("UECapabilityInfoIndication");
 
     for (i = 0; i < UECapabilityInfoIndication->protocolIEs.list.count; i++) {
         ie = UECapabilityInfoIndication->protocolIEs.list.array[i];
@@ -591,7 +591,7 @@ void s1ap_handle_initial_context_setup_response(
         &successfulOutcome->value.choice.InitialContextSetupResponse;
     ogs_assert(InitialContextSetupResponse);
 
-    ogs_debug("Initial context setup response");
+    ogs_debug("InitialContextSetupResponse");
 
     for (i = 0; i < InitialContextSetupResponse->protocolIEs.list.count; i++) {
         ie = InitialContextSetupResponse->protocolIEs.list.array[i];
@@ -729,7 +729,7 @@ void s1ap_handle_initial_context_setup_failure(
         &unsuccessfulOutcome->value.choice.InitialContextSetupFailure;
     ogs_assert(InitialContextSetupFailure);
 
-    ogs_debug("Initial context setup failure");
+    ogs_debug("InitialContextSetupFailure");
 
     for (i = 0; i < InitialContextSetupFailure->protocolIEs.list.count; i++) {
         ie = InitialContextSetupFailure->protocolIEs.list.array[i];
@@ -817,7 +817,7 @@ void s1ap_handle_ue_context_modification_response(
         &successfulOutcome->value.choice.UEContextModificationResponse;
     ogs_assert(UEContextModificationResponse);
 
-    ogs_debug("UE context modification response");
+    ogs_debug("UEContextModificationResponse");
 
     for (i = 0;
             i < UEContextModificationResponse->protocolIEs.list.count; i++) {
@@ -887,7 +887,7 @@ void s1ap_handle_ue_context_modification_failure(
         &unsuccessfulOutcome->value.choice.UEContextModificationFailure;
     ogs_assert(UEContextModificationFailure);
 
-    ogs_warn("UE context modification failure");
+    ogs_warn("UEContextModificationFailure");
 
     for (i = 0; i < UEContextModificationFailure->protocolIEs.list.count; i++) {
         ie = UEContextModificationFailure->protocolIEs.list.array[i];
@@ -964,7 +964,7 @@ void s1ap_handle_e_rab_setup_response(
     E_RABSetupResponse = &successfulOutcome->value.choice.E_RABSetupResponse;
     ogs_assert(E_RABSetupResponse);
 
-    ogs_debug("E-RAB setup response");
+    ogs_debug("E-RABSetupResponse");
 
     for (i = 0; i < E_RABSetupResponse->protocolIEs.list.count; i++) {
         ie = E_RABSetupResponse->protocolIEs.list.array[i];
@@ -1092,7 +1092,7 @@ void s1ap_handle_ue_context_release_request(
         &initiatingMessage->value.choice.UEContextReleaseRequest;
     ogs_assert(UEContextReleaseRequest);
 
-    ogs_debug("UE Context release request");
+    ogs_debug("UEContextReleaseRequest");
 
     for (i = 0; i < UEContextReleaseRequest->protocolIEs.list.count; i++) {
         ie = UEContextReleaseRequest->protocolIEs.list.array[i];
@@ -1180,7 +1180,7 @@ void s1ap_handle_ue_context_release_complete(
         &successfulOutcome->value.choice.UEContextReleaseComplete;
     ogs_assert(UEContextReleaseComplete);
 
-    ogs_debug("UE Context release complete");
+    ogs_debug("UEContextReleaseComplete");
 
     for (i = 0; i < UEContextReleaseComplete->protocolIEs.list.count; i++) {
         ie = UEContextReleaseComplete->protocolIEs.list.array[i];
@@ -1356,7 +1356,7 @@ void s1ap_handle_path_switch_request(
     PathSwitchRequest = &initiatingMessage->value.choice.PathSwitchRequest;
     ogs_assert(PathSwitchRequest);
 
-    ogs_info("Path switch request");
+    ogs_info("PathSwitchRequest");
 
     for (i = 0; i < PathSwitchRequest->protocolIEs.list.count; i++) {
         ie = PathSwitchRequest->protocolIEs.list.array[i];
@@ -1550,7 +1550,7 @@ void s1ap_handle_enb_configuration_transfer(
         &initiatingMessage->value.choice.ENBConfigurationTransfer;
     ogs_assert(ENBConfigurationTransfer);
 
-    ogs_debug("ENB configuration transfer");
+    ogs_debug("ENBConfigurationTransfer");
     for (i = 0; i < ENBConfigurationTransfer->protocolIEs.list.count; i++) {
         ie = ENBConfigurationTransfer->protocolIEs.list.array[i];
         switch (ie->id) {
@@ -1644,7 +1644,7 @@ void s1ap_handle_handover_required(mme_enb_t *enb, ogs_s1ap_message_t *message)
     mme_enb_t *target_enb = NULL;
     uint32_t target_enb_id = 0;
 
-    ogs_debug("Handover required");
+    ogs_debug("HandoverRequired");
     for (i = 0; i < HandoverRequired->protocolIEs.list.count; i++) {
         ie = HandoverRequired->protocolIEs.list.array[i];
         switch (ie->id) {
@@ -1756,7 +1756,7 @@ void s1ap_handle_handover_request_ack(
         &successfulOutcome->value.choice.HandoverRequestAcknowledge;
     ogs_assert(HandoverRequestAcknowledge);
 
-    ogs_debug("Handover request acknowledge");
+    ogs_debug("HandoverRequestAcknowledge");
     for (i = 0; i < HandoverRequestAcknowledge->protocolIEs.list.count; i++) {
         ie = HandoverRequestAcknowledge->protocolIEs.list.array[i];
         switch (ie->id) {
@@ -1880,7 +1880,7 @@ void s1ap_handle_handover_failure(mme_enb_t *enb, ogs_s1ap_message_t *message)
     HandoverFailure = &unsuccessfulOutcome->value.choice.HandoverFailure;
     ogs_assert(HandoverFailure);
 
-    ogs_debug("Handover failure");
+    ogs_debug("HandoverFailure");
     for (i = 0; i < HandoverFailure->protocolIEs.list.count; i++) {
         ie = HandoverFailure->protocolIEs.list.array[i];
         switch (ie->id) {
@@ -1945,7 +1945,7 @@ void s1ap_handle_handover_cancel(mme_enb_t *enb, ogs_s1ap_message_t *message)
     HandoverCancel = &initiatingMessage->value.choice.HandoverCancel;
     ogs_assert(HandoverCancel);
 
-    ogs_debug("Handover cancel");
+    ogs_debug("HandoverCancel");
     for (i = 0; i < HandoverCancel->protocolIEs.list.count; i++) {
         ie = HandoverCancel->protocolIEs.list.array[i];
         switch (ie->id) {
@@ -2017,7 +2017,7 @@ void s1ap_handle_enb_status_transfer(mme_enb_t *enb, ogs_s1ap_message_t *message
     ENBStatusTransfer = &initiatingMessage->value.choice.ENBStatusTransfer;
     ogs_assert(ENBStatusTransfer);
 
-    ogs_debug("ENB status transfer");
+    ogs_debug("ENBStatusTransfer");
     for (i = 0; i < ENBStatusTransfer->protocolIEs.list.count; i++) {
         ie = ENBStatusTransfer->protocolIEs.list.array[i];
         switch (ie->id) {
@@ -2092,7 +2092,7 @@ void s1ap_handle_handover_notification(
     HandoverNotify = &initiatingMessage->value.choice.HandoverNotify;
     ogs_assert(HandoverNotify);
 
-    ogs_debug("Handover notification");
+    ogs_debug("HandoverNotify");
     for (i = 0; i < HandoverNotify->protocolIEs.list.count; i++) {
         ie = HandoverNotify->protocolIEs.list.array[i];
         switch (ie->id) {
@@ -2376,7 +2376,7 @@ void s1ap_handle_write_replace_warning_response(
         &successfulOutcome->value.choice.WriteReplaceWarningResponse;
     ogs_assert(WriteReplaceWarningResponse);
 
-    ogs_debug("Write replace warning response");
+    ogs_debug("WriteReplaceWarningResponse");
 
     ogs_debug("    IP[%s] ENB_ID[%d]",
             OGS_ADDR(enb->sctp.addr, buf), enb->enb_id);
@@ -2401,7 +2401,7 @@ void s1ap_handle_kill_response(
         &successfulOutcome->value.choice.KillResponse;
     ogs_assert(KillResponse);
 
-    ogs_debug("Kill response");
+    ogs_debug("KillResponse");
 
     ogs_debug("    IP[%s] ENB_ID[%d]",
             OGS_ADDR(enb->sctp.addr, buf), enb->enb_id);

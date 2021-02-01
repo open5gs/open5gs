@@ -33,6 +33,8 @@ ogs_pkbuf_t *ngap_build_ng_setup_response(void)
     NGAP_RelativeAMFCapacity_t *RelativeAMFCapacity = NULL;
     NGAP_PLMNSupportList_t *PLMNSupportList = NULL;
 
+    ogs_debug("NGSetupResponse");
+
     memset(&pdu, 0, sizeof (NGAP_NGAP_PDU_t));
     pdu.present = NGAP_NGAP_PDU_PR_successfulOutcome;
     pdu.choice.successfulOutcome =
@@ -384,7 +386,7 @@ ogs_pkbuf_t *ngap_ue_build_initial_context_setup_request(
     ran_ue = ran_ue_cycle(amf_ue->ran_ue);
     ogs_assert(ran_ue);
 
-    ogs_debug("Initial context setup request");
+    ogs_debug("InitialContextSetupRequest(UE)");
 
     memset(&pdu, 0, sizeof (NGAP_NGAP_PDU_t));
     pdu.present = NGAP_NGAP_PDU_PR_initiatingMessage;
@@ -694,7 +696,7 @@ ogs_pkbuf_t *ngap_sess_build_initial_context_setup_request(
     ran_ue = ran_ue_cycle(amf_ue->ran_ue);
     ogs_assert(ran_ue);
 
-    ogs_debug("Initial context setup request");
+    ogs_debug("InitialContextSetupRequest(Session)");
 
     memset(&pdu, 0, sizeof (NGAP_NGAP_PDU_t));
     pdu.present = NGAP_NGAP_PDU_PR_initiatingMessage;
@@ -1113,6 +1115,8 @@ ogs_pkbuf_t *ngap_build_ue_context_release_command(
 
     ogs_assert(ran_ue);
 
+    ogs_debug("UEContextReleaseCommand");
+
     memset(&pdu, 0, sizeof (NGAP_NGAP_PDU_t));
     pdu.present = NGAP_NGAP_PDU_PR_initiatingMessage;
     pdu.choice.initiatingMessage = CALLOC(1, sizeof(NGAP_InitiatingMessage_t));
@@ -1186,6 +1190,8 @@ ogs_pkbuf_t *ngap_ue_build_pdu_session_resource_setup_request(
     ogs_assert(amf_ue);
     ran_ue = ran_ue_cycle(amf_ue->ran_ue);
     ogs_assert(ran_ue);
+
+    ogs_debug("PDUSessionResourceSetupRequest(UE)");
 
     memset(&pdu, 0, sizeof (NGAP_NGAP_PDU_t));
     pdu.present = NGAP_NGAP_PDU_PR_initiatingMessage;
@@ -1319,6 +1325,8 @@ ogs_pkbuf_t *ngap_sess_build_pdu_session_resource_setup_request(
     ran_ue = ran_ue_cycle(amf_ue->ran_ue);
     ogs_assert(ran_ue);
 
+    ogs_debug("PDUSessionResourceSetupRequest(Session)");
+
     memset(&pdu, 0, sizeof (NGAP_NGAP_PDU_t));
     pdu.present = NGAP_NGAP_PDU_PR_initiatingMessage;
     pdu.choice.initiatingMessage = CALLOC(1, sizeof(NGAP_InitiatingMessage_t));
@@ -1429,6 +1437,8 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_modify_request(
     ran_ue = ran_ue_cycle(amf_ue->ran_ue);
     ogs_assert(ran_ue);
 
+    ogs_debug("PDUSessionResourceModifyRequest");
+
     memset(&pdu, 0, sizeof (NGAP_NGAP_PDU_t));
     pdu.present = NGAP_NGAP_PDU_PR_initiatingMessage;
     pdu.choice.initiatingMessage = CALLOC(1, sizeof(NGAP_InitiatingMessage_t));
@@ -1525,6 +1535,8 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_release_command(
     ogs_assert(amf_ue);
     ran_ue = ran_ue_cycle(amf_ue->ran_ue);
     ogs_assert(ran_ue);
+
+    ogs_debug("PDUSessionResourceReleaseCommand");
 
     memset(&pdu, 0, sizeof (NGAP_NGAP_PDU_t));
     pdu.present = NGAP_NGAP_PDU_PR_initiatingMessage;
@@ -1750,6 +1762,8 @@ ogs_pkbuf_t *ngap_build_path_switch_ack(amf_ue_t *amf_ue)
     ran_ue = ran_ue_cycle(amf_ue->ran_ue);
     ogs_assert(ran_ue);
 
+    ogs_debug("PathSwitchAcknowledge");
+
     memset(&pdu, 0, sizeof (NGAP_NGAP_PDU_t));
     pdu.present = NGAP_NGAP_PDU_PR_successfulOutcome;
     pdu.choice.successfulOutcome = CALLOC(1, sizeof(NGAP_SuccessfulOutcome_t));
@@ -1918,7 +1932,7 @@ ogs_pkbuf_t *ngap_build_handover_request(ran_ue_t *target_ue)
     amf_ue = target_ue->amf_ue;
     ogs_assert(amf_ue);
 
-    ogs_debug("Handover request");
+    ogs_debug("HandoverRequest");
 
     memset(&pdu, 0, sizeof (NGAP_NGAP_PDU_t));
     pdu.present = NGAP_NGAP_PDU_PR_initiatingMessage;
@@ -2300,7 +2314,7 @@ ogs_pkbuf_t *ngap_build_handover_command(ran_ue_t *source_ue)
     amf_ue = source_ue->amf_ue;
     ogs_assert(amf_ue);
 
-    ogs_debug("Handover command");
+    ogs_debug("HandoverCommand");
 
     memset(&pdu, 0, sizeof (NGAP_NGAP_PDU_t));
     pdu.present = NGAP_NGAP_PDU_PR_successfulOutcome;
@@ -2415,7 +2429,7 @@ ogs_pkbuf_t *ngap_build_handover_cancel_ack(ran_ue_t *source_ue)
 
     ogs_assert(source_ue);
 
-    ogs_debug("Handover cancel");
+    ogs_debug("HandoverCancelAcknowledge");
 
     memset(&pdu, 0, sizeof (NGAP_NGAP_PDU_t));
     pdu.present = NGAP_NGAP_PDU_PR_successfulOutcome;

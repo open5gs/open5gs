@@ -124,7 +124,7 @@ void ngap_handle_ng_setup_request(amf_gnb_t *gnb, ogs_ngap_message_t *message)
     NGSetupRequest = &initiatingMessage->value.choice.NGSetupRequest;
     ogs_assert(NGSetupRequest);
 
-    ogs_debug("NG-Setup request");
+    ogs_debug("NGSetupRequest");
 
     for (i = 0; i < NGSetupRequest->protocolIEs.list.count; i++) {
         ie = NGSetupRequest->protocolIEs.list.array[i];
@@ -346,7 +346,7 @@ void ngap_handle_initial_ue_message(amf_gnb_t *gnb, ogs_ngap_message_t *message)
     InitialUEMessage = &initiatingMessage->value.choice.InitialUEMessage;
     ogs_assert(InitialUEMessage);
 
-    ogs_info("Initial UE Message");
+    ogs_info("InitialUEMessage");
 
     for (i = 0; i < InitialUEMessage->protocolIEs.list.count; i++) {
         ie = InitialUEMessage->protocolIEs.list.array[i];
@@ -520,7 +520,7 @@ void ngap_handle_uplink_nas_transport(
     UplinkNASTransport = &initiatingMessage->value.choice.UplinkNASTransport;
     ogs_assert(UplinkNASTransport);
 
-    ogs_debug("Uplink NAS transport");
+    ogs_debug("UplinkNASTransport");
 
     for (i = 0; i < UplinkNASTransport->protocolIEs.list.count; i++) {
         ie = UplinkNASTransport->protocolIEs.list.array[i];
@@ -654,7 +654,7 @@ void ngap_handle_ue_radio_capability_info_indication(
         &initiatingMessage->value.choice.UERadioCapabilityInfoIndication;
     ogs_assert(UERadioCapabilityInfoIndication);
 
-    ogs_debug("UE radio capability info indication");
+    ogs_debug("UERadioCapabilityInfoIndication");
 
     for (i = 0;
             i < UERadioCapabilityInfoIndication->protocolIEs.list.count; i++) {
@@ -750,7 +750,7 @@ void ngap_handle_initial_context_setup_response(
         &successfulOutcome->value.choice.InitialContextSetupResponse;
     ogs_assert(InitialContextSetupResponse);
 
-    ogs_debug("Initial context setup response");
+    ogs_debug("InitialContextSetupResponse");
 
     for (i = 0; i < InitialContextSetupResponse->protocolIEs.list.count; i++) {
         ie = InitialContextSetupResponse->protocolIEs.list.array[i];
@@ -905,7 +905,7 @@ void ngap_handle_initial_context_setup_failure(
         &unsuccessfulOutcome->value.choice.InitialContextSetupFailure;
     ogs_assert(InitialContextSetupFailure);
 
-    ogs_debug("Initial context setup failure");
+    ogs_debug("InitialContextSetupFailure");
 
     for (i = 0; i < InitialContextSetupFailure->protocolIEs.list.count; i++) {
         ie = InitialContextSetupFailure->protocolIEs.list.array[i];
@@ -1025,7 +1025,7 @@ void ngap_handle_ue_context_release_request(
         &initiatingMessage->value.choice.UEContextReleaseRequest;
     ogs_assert(UEContextReleaseRequest);
 
-    ogs_debug("UE Context release request");
+    ogs_debug("UEContextReleaseRequest");
 
     for (i = 0; i < UEContextReleaseRequest->protocolIEs.list.count; i++) {
         ie = UEContextReleaseRequest->protocolIEs.list.array[i];
@@ -1183,7 +1183,7 @@ void ngap_handle_ue_context_release_complete(
         &successfulOutcome->value.choice.UEContextReleaseComplete;
     ogs_assert(UEContextReleaseComplete);
 
-    ogs_debug("UE Context release complete");
+    ogs_debug("UEContextReleaseComplete");
 
     for (i = 0; i < UEContextReleaseComplete->protocolIEs.list.count; i++) {
         ie = UEContextReleaseComplete->protocolIEs.list.array[i];
@@ -1331,7 +1331,7 @@ void ngap_handle_pdu_session_resource_setup_response(
         &successfulOutcome->value.choice.PDUSessionResourceSetupResponse;
     ogs_assert(PDUSessionResourceSetupResponse);
 
-    ogs_debug("PDU session resource setup response");
+    ogs_debug("PDUSessionResourceSetupResponse");
 
     for (i = 0; i < PDUSessionResourceSetupResponse->protocolIEs.list.count;
             i++) {
@@ -1494,7 +1494,7 @@ void ngap_handle_pdu_session_resource_modify_response(
         &successfulOutcome->value.choice.PDUSessionResourceModifyResponse;
     ogs_assert(PDUSessionResourceModifyResponse);
 
-    ogs_debug("PDU session resource modify response");
+    ogs_debug("PDUSessionResourceModifyResponse");
 
     for (i = 0; i < PDUSessionResourceModifyResponse->protocolIEs.list.count;
             i++) {
@@ -1658,7 +1658,7 @@ void ngap_handle_pdu_session_resource_release_response(
         &successfulOutcome->value.choice.PDUSessionResourceReleaseResponse;
     ogs_assert(PDUSessionResourceReleaseResponse);
 
-    ogs_debug("PDU session resource release response");
+    ogs_debug("PDUSessionResourceReleaseResponse");
 
     for (i = 0; i < PDUSessionResourceReleaseResponse->protocolIEs.list.count;
             i++) {
@@ -1813,7 +1813,7 @@ void ngap_handle_uplink_ran_configuration_transfer(
         &initiatingMessage->value.choice.UplinkRANConfigurationTransfer;
     ogs_assert(UplinkRANConfigurationTransfer);
 
-    ogs_debug("Uplink ran configuration transfer");
+    ogs_debug("UplinkRANConfigurationTransfer");
     for (i = 0;
             i < UplinkRANConfigurationTransfer->protocolIEs.list.count; i++) {
         ie = UplinkRANConfigurationTransfer->protocolIEs.list.array[i];
@@ -1952,7 +1952,7 @@ void ngap_handle_path_switch_request(
     PathSwitchRequest = &initiatingMessage->value.choice.PathSwitchRequest;
     ogs_assert(PathSwitchRequest);
 
-    ogs_info("Path switch request");
+    ogs_info("PathSwitchRequest");
     
     for (i = 0; i < PathSwitchRequest->protocolIEs.list.count; i++) {
         ie = PathSwitchRequest->protocolIEs.list.array[i];
@@ -2226,7 +2226,7 @@ void ngap_handle_handover_required(
     HandoverRequired = &initiatingMessage->value.choice.HandoverRequired;
     ogs_assert(HandoverRequired);
 
-    ogs_info("Handover required");
+    ogs_info("HandoverRequired");
 
     for (i = 0; i < HandoverRequired->protocolIEs.list.count; i++) {
         ie = HandoverRequired->protocolIEs.list.array[i];
@@ -2507,7 +2507,7 @@ void ngap_handle_handover_request_ack(
         &successfulOutcome->value.choice.HandoverRequestAcknowledge;
     ogs_assert(HandoverRequestAcknowledge);
 
-    ogs_debug("Handover request acknowledge");
+    ogs_debug("HandoverRequestAcknowledge");
 
     for (i = 0; i < HandoverRequestAcknowledge->protocolIEs.list.count; i++) {
         ie = HandoverRequestAcknowledge->protocolIEs.list.array[i];
@@ -2701,7 +2701,7 @@ void ngap_handle_handover_failure(
         &unsuccessfulOutcome->value.choice.HandoverFailure;
     ogs_assert(HandoverFailure);
 
-    ogs_debug("Initial context setup failure");
+    ogs_debug("HandoverFailure");
 
     for (i = 0; i < HandoverFailure->protocolIEs.list.count; i++) {
         ie = HandoverFailure->protocolIEs.list.array[i];
@@ -2808,7 +2808,7 @@ void ngap_handle_handover_cancel(
     HandoverCancel = &initiatingMessage->value.choice.HandoverCancel;
     ogs_assert(HandoverCancel);
 
-    ogs_debug("Handover cancel");
+    ogs_debug("HandoverCancel");
 
     for (i = 0; i < HandoverCancel->protocolIEs.list.count; i++) {
         ie = HandoverCancel->protocolIEs.list.array[i];
@@ -2933,7 +2933,7 @@ void ngap_handle_uplink_ran_status_transfer(
         &initiatingMessage->value.choice.UplinkRANStatusTransfer;
     ogs_assert(UplinkRANStatusTransfer);
 
-    ogs_debug("Uplink ran status transfer");
+    ogs_debug("UplinkRANStatusTransfer");
 
     for (i = 0; i < UplinkRANStatusTransfer->protocolIEs.list.count; i++) {
         ie = UplinkRANStatusTransfer->protocolIEs.list.array[i];
@@ -3042,7 +3042,7 @@ void ngap_handle_handover_notification(
     HandoverNotify = &initiatingMessage->value.choice.HandoverNotify;
     ogs_assert(HandoverNotify);
 
-    ogs_debug("Handover notify");
+    ogs_debug("HandoverNotify");
 
     for (i = 0; i < HandoverNotify->protocolIEs.list.count; i++) {
         ie = HandoverNotify->protocolIEs.list.array[i];
