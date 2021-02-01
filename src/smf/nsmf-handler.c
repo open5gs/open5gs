@@ -537,6 +537,9 @@ bool smf_nsmf_handle_update_sm_context(
 
             return false;
         }
+    } else if (SmContextUpdateData->release) {
+        smf_5gc_pfcp_send_session_deletion_request(sess, stream,
+                OGS_PFCP_DELETE_TRIGGER_AMF_UPDATE_SM_CONTEXT);
     } else {
         ogs_error("[%s:%d] No UpdateData", smf_ue->supi, sess->psi);
         smf_sbi_send_sm_context_update_error(stream,

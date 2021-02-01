@@ -385,6 +385,22 @@ int amf_nsmf_pdusession_handle_update_sm_context(
 
                 sess->n1_released = true;
 
+            } else if (state ==
+                    AMF_UPDATE_SM_CONTEXT_DUPLICATED_PDU_SESSION_ID) {
+                /*
+                 * 1. PDU session establishment request
+                 *    (Duplicated PDU Session ID)
+                 * 2. /nsmf-pdusession/v1/sm-contexts/{smContextRef}/modify
+                 * 3. POST /nsmf-pdusession/v1/sm-contexts
+                 */
+
+                ogs_error("[%s:%d] Receive Update SM context"
+                        "(DUPLICATED_PDU_SESSION_ID)", amf_ue->supi, sess->psi);
+
+                amf_sess_sbi_discover_and_send(OpenAPI_nf_type_SMF,
+                        sess, AMF_SESS_SM_CONTEXT_NO_STATE, NULL,
+                        amf_nsmf_pdusession_build_create_sm_context);
+
             } else if (state == AMF_UPDATE_SM_CONTEXT_PATH_SWITCH_REQUEST) {
 
                 /* Not reached here */

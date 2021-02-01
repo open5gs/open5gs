@@ -188,6 +188,8 @@ ogs_sbi_request_t *amf_nsmf_pdusession_build_update_sm_context(
 
     memset(&SmContextUpdateData, 0, sizeof(SmContextUpdateData));
 
+    message.SmContextUpdateData = &SmContextUpdateData;
+
     message.num_of_part = 0;
 
     if (param->n1smbuf) {
@@ -200,8 +202,6 @@ ogs_sbi_request_t *amf_nsmf_pdusession_build_update_sm_context(
         message.part[message.num_of_part].content_type =
             (char *)OGS_SBI_CONTENT_5GNAS_TYPE;
         message.num_of_part++;
-
-        message.SmContextUpdateData = &SmContextUpdateData;
     }
 
     if (param->n2smbuf) {
@@ -218,26 +218,16 @@ ogs_sbi_request_t *amf_nsmf_pdusession_build_update_sm_context(
         message.part[message.num_of_part].content_type =
             (char *)OGS_SBI_CONTENT_NGAP_TYPE;
         message.num_of_part++;
-
-        message.SmContextUpdateData = &SmContextUpdateData;
     }
 
-    if (param->upCnxState) {
-        SmContextUpdateData.up_cnx_state = param->upCnxState;
+    SmContextUpdateData.up_cnx_state = param->upCnxState;
 
-        message.SmContextUpdateData = &SmContextUpdateData;
-    }
+    SmContextUpdateData.ho_state = param->hoState;
 
-    if (param->hoState) {
-        SmContextUpdateData.ho_state = param->hoState;
-
-        if (param->TargetID) {
-            SmContextUpdateData.target_id =
-                amf_nsmf_pdusession_build_target_id(param->TargetID);
-            ogs_assert(SmContextUpdateData.target_id);
-        }
-
-        message.SmContextUpdateData = &SmContextUpdateData;
+    if (param->TargetID) {
+        SmContextUpdateData.target_id =
+            amf_nsmf_pdusession_build_target_id(param->TargetID);
+        ogs_assert(SmContextUpdateData.target_id);
     }
 
     if (param->ngApCause.group) {
@@ -261,6 +251,9 @@ ogs_sbi_request_t *amf_nsmf_pdusession_build_update_sm_context(
         SmContextUpdateData.ue_time_zone =
             ogs_sbi_timezone_string(ogs_timezone());
     }
+
+    SmContextUpdateData.release = param->release;
+    SmContextUpdateData.cause = param->cause;
 
     request = ogs_sbi_build_request(&message);
     ogs_assert(request);

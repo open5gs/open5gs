@@ -679,6 +679,8 @@ int gmm_handle_ul_nas_transport(amf_ue_t *amf_ue,
     ogs_nas_dnn_t *dnn = NULL;
     ogs_nas_5gsm_header_t *gsm_header = NULL;
 
+    bool duplicated_pdu_session_id = false;
+
     ogs_assert(amf_ue);
     ogs_assert(ul_nas_transport);
 
@@ -741,6 +743,8 @@ int gmm_handle_ul_nas_transport(amf_ue_t *amf_ue,
             if (!sess) {
                 sess = amf_sess_add(amf_ue, *pdu_session_id);
                 ogs_assert(sess);
+            } else {
+                duplicated_pdu_session_id = true;
             }
         } else {
             sess = amf_sess_find_by_psi(amf_ue, *pdu_session_id);
@@ -810,9 +814,19 @@ int gmm_handle_ul_nas_transport(amf_ue_t *amf_ue,
             ogs_info("UE SUPI[%s] DNN[%s] S_NSSAI[SST:%d SD:0x%x]",
                 amf_ue->supi, sess->dnn, sess->s_nssai.sst, sess->s_nssai.sd.v);
 
-            amf_sess_sbi_discover_and_send(OpenAPI_nf_type_SMF,
-                    sess, AMF_SESS_SM_CONTEXT_NO_STATE, NULL,
-                    amf_nsmf_pdusession_build_create_sm_context);
+            if (duplicated_pdu_session_id == false) {
+                amf_sess_sbi_discover_and_send(OpenAPI_nf_type_SMF,
+                        sess, AMF_SESS_SM_CONTEXT_NO_STATE, NULL,
+                        amf_nsmf_pdusession_build_create_sm_context);
+            } else {
+                memset(&param, 0, sizeof(param));
+                param.release = 1;
+                param.cause = OpenAPI_cause_REL_DUE_TO_DUPLICATE_SESSION_ID;
+
+                amf_sess_sbi_discover_and_send(OpenAPI_nf_type_SMF,
+                        sess, AMF_UPDATE_SM_CONTEXT_DUPLICATED_PDU_SESSION_ID,
+                        &param, amf_nsmf_pdusession_build_update_sm_context);
+            }
 
         } else {
 

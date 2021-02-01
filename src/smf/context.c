@@ -912,7 +912,7 @@ smf_sess_t *smf_sess_add_by_sbi_message(ogs_sbi_message_t *message)
 
     sess = smf_sess_find_by_psi(smf_ue, SmContextCreateData->pdu_session_id);
     if (sess) {
-        ogs_warn("OLD Session Release [SUPI:%s,PDU Session identity:%d]",
+        ogs_error("OLD Session Release [SUPI:%s,PDU Session identity:%d]",
                 SmContextCreateData->supi, SmContextCreateData->pdu_session_id);
         smf_sess_remove(sess);
     }

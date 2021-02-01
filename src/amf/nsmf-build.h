@@ -44,6 +44,9 @@ typedef struct amf_nsmf_pdusession_update_sm_context_param_s {
         uint8_t indications;
     };
 
+    int release;
+    OpenAPI_cause_e cause;
+
     OpenAPI_ho_state_e hoState;
     OpenAPI_ng_ran_target_id_t *targetId;
     NGAP_TargetID_t *TargetID;
