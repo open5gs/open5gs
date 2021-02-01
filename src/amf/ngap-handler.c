@@ -2926,7 +2926,7 @@ void ngap_handle_uplink_ran_status_transfer(
         &initiatingMessage->value.choice.UplinkRANStatusTransfer;
     ogs_assert(UplinkRANStatusTransfer);
 
-    ogs_debug("Handover notify");
+    ogs_debug("Uplink ran status transfer");
 
     for (i = 0; i < UplinkRANStatusTransfer->protocolIEs.list.count; i++) {
         ie = UplinkRANStatusTransfer->protocolIEs.list.array[i];
