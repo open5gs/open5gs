@@ -146,6 +146,12 @@ typedef struct ogs_app_context_s {
                 ogs_time_t no_heartbeat_duration;
             } pfcp;
         } message;
+
+        struct {
+            ogs_time_t duration;
+            ogs_time_t complete_delay;
+        } handover;
+
     } time;
 } ogs_app_context_t;
 

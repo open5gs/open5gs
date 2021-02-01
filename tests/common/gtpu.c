@@ -327,8 +327,6 @@ int test_gtpu_send_error_indication(
     sess = bearer->sess;
     ogs_assert(sess);
 
-    ogs_assert(bearer);
-
     if (bearer->qfi) {
         /* 5GC */
         teid = sess->gnb_n3_teid;
@@ -351,6 +349,41 @@ int test_gtpu_send_error_indication(
     gtp_hdesc.type = OGS_GTPU_MSGTYPE_ERR_IND;
     gtp_hdesc.flags = OGS_GTPU_FLAGS_S|OGS_GTPU_FLAGS_E;
     ext_hdesc.type = OGS_GTP_EXTENSION_HEADER_TYPE_UDP_PORT;
+
+    return test_gtpu_send(node, bearer, &gtp_hdesc, &ext_hdesc, pkbuf);
+}
+
+int test_gtpu_send_indirect_data_forwarding(
+        ogs_socknode_t *node, test_bearer_t *bearer, ogs_pkbuf_t *pkbuf)
+{
+    test_sess_t *sess = NULL;
+
+    ogs_gtp_header_t gtp_hdesc;
+    ogs_gtp_extension_header_t ext_hdesc;
+
+    ogs_assert(bearer);
+    sess = bearer->sess;
+    ogs_assert(sess);
+    ogs_assert(pkbuf);
+
+    memset(&gtp_hdesc, 0, sizeof(gtp_hdesc));
+    memset(&ext_hdesc, 0, sizeof(ext_hdesc));
+
+    gtp_hdesc.type = OGS_GTPU_MSGTYPE_GPDU;
+
+    if (bearer->qfi) {
+        gtp_hdesc.teid = sess->handover.upf_dl_teid;
+        ext_hdesc.qos_flow_identifier = bearer->qfi;
+
+    } else if (bearer->ebi) {
+
+        ogs_fatal("Not implmented EPC Indirect Tunnel");
+        ogs_assert_if_reached();
+
+    } else {
+        ogs_fatal("No QFI[%d] and EBI[%d]", bearer->qfi, bearer->ebi);
+        ogs_assert_if_reached();
+    }
 
     return test_gtpu_send(node, bearer, &gtp_hdesc, &ext_hdesc, pkbuf);
 }

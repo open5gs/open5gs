@@ -353,4 +353,13 @@ pool:
 #  o Message Wait Duration (3000 ms)
 #    message:
 #        duration: 3000
+#
+#  o Handover Wait Duration (Default : 300 ms)
+#    Time to wait for SMF to send
+#    PFCP Session Modification Request(Remove Indirect Tunnel) to the UPF
+#    after sending Nsmf_PDUSession_UpdateSMContext Response(hoState:COMPLETED)
+#
+#  o Handover Wait Duration (500ms)
+#    handover:
+#        duration: 500
 time:

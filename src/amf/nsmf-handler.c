@@ -410,30 +410,15 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                     target_ue = source_ue->target_ue;
                     ogs_assert(target_ue);
 
-                    ngap_send_handover_cancel_ack(source_ue);
-
                     ngap_send_ran_ue_context_release_command(target_ue,
                             NGAP_Cause_PR_radioNetwork,
                             NGAP_CauseRadioNetwork_handover_cancelled,
-                            NGAP_UE_CTX_REL_NG_HANDOVER_COMPLETE,
-                            ogs_time_from_msec(300));
+                            NGAP_UE_CTX_REL_NG_HANDOVER_CANCEL, 0);
                 }
 
             } else if (state == AMF_UPDATE_SM_CONTEXT_HANDOVER_NOTIFY) {
-                if (SESSION_SYNC_DONE(amf_ue, state)) {
-                    ran_ue_t *target_ue = NULL, *source_ue = NULL; 
 
-                    target_ue = amf_ue->ran_ue;
-                    ogs_assert(target_ue);
-                    source_ue = target_ue->source_ue;
-                    ogs_assert(source_ue);
-
-                    ngap_send_ran_ue_context_release_command(source_ue,
-                            NGAP_Cause_PR_radioNetwork,
-                            NGAP_CauseRadioNetwork_successful_handover,
-                            NGAP_UE_CTX_REL_NG_HANDOVER_COMPLETE,
-                            ogs_time_from_msec(300));
-                }
+                /* Nothing to do */
 
             } else if (state == AMF_REMOVE_S1_CONTEXT_BY_LO_CONNREFUSED) {
                 if (SESSION_SYNC_DONE(amf_ue, state)) {

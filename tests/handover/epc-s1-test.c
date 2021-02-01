@@ -443,16 +443,10 @@ static void test1_func(abts_case *tc, void *data)
     tests1ap_recv(test_ue, recvbuf);
 
     /* Send eNB Status Transfer */
-    mme_ue_s1ap_id = test_ue->mme_ue_s1ap_id--;
-    enb_ue_s1ap_id = test_ue->enb_ue_s1ap_id--;
-
     sendbuf = test_s1ap_build_enb_status_transfer(test_ue);
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testenb_s1ap_send(s1ap1, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-
-    test_ue->mme_ue_s1ap_id = mme_ue_s1ap_id;
-    test_ue->enb_ue_s1ap_id = enb_ue_s1ap_id;
 
     /* Receive MME Status Transfer */
     recvbuf = testenb_s1ap_read(s1ap2);
@@ -569,16 +563,10 @@ static void test1_func(abts_case *tc, void *data)
     tests1ap_recv(test_ue, recvbuf);
 
     /* Send eNB Status Transfer */
-    mme_ue_s1ap_id = test_ue->mme_ue_s1ap_id--;
-    enb_ue_s1ap_id = test_ue->enb_ue_s1ap_id--;
-
     sendbuf = test_s1ap_build_enb_status_transfer(test_ue);
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testenb_s1ap_send(s1ap2, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-
-    test_ue->mme_ue_s1ap_id = mme_ue_s1ap_id;
-    test_ue->enb_ue_s1ap_id = enb_ue_s1ap_id;
 
     /* Receive MME Status Transfer */
     recvbuf = testenb_s1ap_read(s1ap1);
@@ -672,9 +660,6 @@ static void test1_func(abts_case *tc, void *data)
     tests1ap_recv(test_ue, recvbuf);
 
     /* Send Handover Cancel */
-    mme_ue_s1ap_id = test_ue->mme_ue_s1ap_id--;
-    enb_ue_s1ap_id = test_ue->enb_ue_s1ap_id--;
-
     sendbuf = test_s1ap_build_handover_cancel(test_ue,
             S1AP_Cause_PR_radioNetwork,
             S1AP_CauseRadioNetwork_tS1relocprep_expiry);
@@ -682,15 +667,7 @@ static void test1_func(abts_case *tc, void *data)
     rv = testenb_s1ap_send(s1ap1, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    /* Recv Handover Cancel Ack */
-    recvbuf = testenb_s1ap_read(s1ap1);
-    ABTS_PTR_NOTNULL(tc, recvbuf);
-    tests1ap_recv(test_ue, recvbuf);
-
     /* Receive UE Context Release Command */
-    mme_ue_s1ap_id = test_ue->mme_ue_s1ap_id;
-    enb_ue_s1ap_id = test_ue->enb_ue_s1ap_id;
-
     recvbuf = testenb_s1ap_read(s1ap2);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     tests1ap_recv(test_ue, recvbuf);
@@ -701,8 +678,10 @@ static void test1_func(abts_case *tc, void *data)
     rv = testenb_s1ap_send(s1ap2, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    test_ue->mme_ue_s1ap_id = mme_ue_s1ap_id;
-    test_ue->enb_ue_s1ap_id = enb_ue_s1ap_id;
+    /* Recv HandoverCancelAcknowledge */
+    recvbuf = testenb_s1ap_read(s1ap1);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    tests1ap_recv(test_ue, recvbuf);
 
     ogs_msleep(300);
 
@@ -741,9 +720,6 @@ static void test2_func(abts_case *tc, void *data)
     test_ue_t *test_ue = NULL;
     test_sess_t *sess = NULL;
     test_bearer_t *bearer = NULL;
-
-    uint32_t enb_ue_s1ap_id;
-    uint64_t mme_ue_s1ap_id;
 
     const char *_k_string = "465b5ce8b199b49faa5f0a2ee238a6bc";
     uint8_t k[OGS_KEY_LEN];
@@ -1125,9 +1101,6 @@ static void test2_func(abts_case *tc, void *data)
     tests1ap_recv(test_ue, recvbuf);
 
     /* Send Handover Cancel */
-    mme_ue_s1ap_id = test_ue->mme_ue_s1ap_id--;
-    enb_ue_s1ap_id = test_ue->enb_ue_s1ap_id--;
-
     sendbuf = test_s1ap_build_handover_cancel(test_ue,
             S1AP_Cause_PR_radioNetwork,
             S1AP_CauseRadioNetwork_tS1relocprep_expiry);
@@ -1135,15 +1108,7 @@ static void test2_func(abts_case *tc, void *data)
     rv = testenb_s1ap_send(s1ap1, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    /* Recv Handover Cancel Ack */
-    recvbuf = testenb_s1ap_read(s1ap1);
-    ABTS_PTR_NOTNULL(tc, recvbuf);
-    tests1ap_recv(test_ue, recvbuf);
-
     /* Receive UE Context Release Command */
-    mme_ue_s1ap_id = test_ue->mme_ue_s1ap_id;
-    enb_ue_s1ap_id = test_ue->enb_ue_s1ap_id;
-
     recvbuf = testenb_s1ap_read(s1ap2);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     tests1ap_recv(test_ue, recvbuf);
@@ -1154,8 +1119,10 @@ static void test2_func(abts_case *tc, void *data)
     rv = testenb_s1ap_send(s1ap2, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    test_ue->mme_ue_s1ap_id = mme_ue_s1ap_id;
-    test_ue->enb_ue_s1ap_id = enb_ue_s1ap_id;
+    /* Recv Handover Cancel Ack */
+    recvbuf = testenb_s1ap_read(s1ap1);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    tests1ap_recv(test_ue, recvbuf);
 
     ogs_msleep(300);
 
@@ -1194,9 +1161,6 @@ static void test3_func(abts_case *tc, void *data)
     test_ue_t *test_ue = NULL;
     test_sess_t *sess = NULL;
     test_bearer_t *bearer = NULL;
-
-    uint32_t enb_ue_s1ap_id;
-    uint64_t mme_ue_s1ap_id;
 
     const char *_k_string = "465b5ce8b199b49faa5f0a2ee238a6bc";
     uint8_t k[OGS_KEY_LEN];
@@ -1569,26 +1533,21 @@ static void test3_func(abts_case *tc, void *data)
     rv = testenb_s1ap_send(s1ap2, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    /* Receive Handover Preparation Failure */
-    mme_ue_s1ap_id = test_ue->mme_ue_s1ap_id--;
-
-    recvbuf = testenb_s1ap_read(s1ap1);
-    ABTS_PTR_NOTNULL(tc, recvbuf);
-    tests1ap_recv(test_ue, recvbuf);
-
-    test_ue->mme_ue_s1ap_id = mme_ue_s1ap_id;
-
     /* Receive UE Context Release Command */
     recvbuf = testenb_s1ap_read(s1ap2);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     tests1ap_recv(test_ue, recvbuf);
 
     /* Send UE Context Release Complete */
-    test_ue->enb_ue_s1ap_id++;
     sendbuf = test_s1ap_build_ue_context_release_complete(test_ue);
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testenb_s1ap_send(s1ap2, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive Handover Preparation Failure */
+    recvbuf = testenb_s1ap_read(s1ap1);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    tests1ap_recv(test_ue, recvbuf);
 
     ogs_msleep(300);
 

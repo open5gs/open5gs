@@ -350,7 +350,9 @@ bool smf_nsmf_handle_update_sm_context(
          * Handle DEACTIVATED
          ********************************************************/
             smf_5gc_pfcp_send_session_modification_request(
-                    sess, stream, OGS_PFCP_MODIFY_DEACTIVATE);
+                    sess, stream,
+                    OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_DEACTIVATE,
+                    0);
 
         } else if (SmContextUpdateData->up_cnx_state ==
                 OpenAPI_up_cnx_state_ACTIVATING) {
@@ -402,7 +404,6 @@ bool smf_nsmf_handle_update_sm_context(
             sendmsg.SmContextUpdatedData = &SmContextUpdatedData;
 
             memset(&SmContextUpdatedData, 0, sizeof(SmContextUpdatedData));
-            /* Only ACTIVING & DEACTIVATED is Included */
             SmContextUpdatedData.up_cnx_state = OpenAPI_up_cnx_state_ACTIVATING;
             SmContextUpdatedData.n2_sm_info_type =
                 OpenAPI_n2_sm_info_type_PDU_RES_SETUP_REQ;
@@ -484,8 +485,9 @@ bool smf_nsmf_handle_update_sm_context(
             if (far_update) {
                 smf_5gc_pfcp_send_session_modification_request(
                         sess, stream,
-                        OGS_PFCP_MODIFY_ACTIVATE | OGS_PFCP_MODIFY_N2_HANDOVER |
-                        OGS_PFCP_MODIFY_END_MARKER);
+                        OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_ACTIVATE|
+                        OGS_PFCP_MODIFY_N2_HANDOVER|OGS_PFCP_MODIFY_END_MARKER,
+                        0);
             } else {
                 char *strerror = ogs_msprintf(
                         "[%s:%d] No FAR Update", smf_ue->supi, sess->psi);
@@ -512,8 +514,16 @@ bool smf_nsmf_handle_update_sm_context(
                 dl_far->handover.prepared = false;
             }
 
-            smf_sbi_send_sm_context_updated_data_ho_state(
-                    sess, stream, OpenAPI_ho_state_CANCELLED);
+            if (smf_sess_have_indirect_data_forwarding(sess) == true) {
+                smf_5gc_pfcp_send_session_modification_request(
+                        sess, stream,
+                        OGS_PFCP_MODIFY_INDIRECT|OGS_PFCP_MODIFY_REMOVE|
+                        OGS_PFCP_MODIFY_HANDOVER_CANCEL,
+                        0);
+            } else {
+                smf_sbi_send_sm_context_updated_data_ho_state(
+                        sess, stream, OpenAPI_ho_state_CANCELLED);
+            }
 
         } else {
             char *strerror = ogs_msprintf("[%s:%d] Invalid hoState [%d]",

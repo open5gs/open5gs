@@ -330,7 +330,8 @@ void smf_5gc_pfcp_send_session_establishment_request(
 }
 
 void smf_5gc_pfcp_send_session_modification_request(
-        smf_sess_t *sess, ogs_sbi_stream_t *stream, uint64_t flags)
+        smf_sess_t *sess, ogs_sbi_stream_t *stream,
+        uint64_t flags, ogs_time_t duration)
 {
     int rv;
     ogs_pkbuf_t *n4buf = NULL;
@@ -354,8 +355,12 @@ void smf_5gc_pfcp_send_session_modification_request(
     xact->assoc_stream = stream;
     xact->modify_flags = flags | OGS_PFCP_MODIFY_SESSION;
 
-    rv = ogs_pfcp_xact_commit(xact);
-    ogs_expect(rv == OGS_OK);
+    if (duration) {
+        ogs_pfcp_xact_delayed_commit(xact, duration);
+    } else {
+        rv = ogs_pfcp_xact_commit(xact);
+        ogs_expect(rv == OGS_OK);
+    }
 }
 
 void smf_5gc_pfcp_send_qos_flow_modification_request(smf_bearer_t *qos_flow,

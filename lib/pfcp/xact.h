@@ -61,6 +61,8 @@ typedef struct ogs_pfcp_xact_s {
     ogs_timer_t     *tm_holding;    /**< Timer waiting for holding message */
     uint8_t         holding_rcount;
 
+    ogs_timer_t     *tm_delayed_commit; /**< Timer waiting for commit xact */
+
     void            *assoc_xact;    /**< Associated GTP transaction */
     ogs_pkbuf_t     *gtpbuf;        /**< GTP packet buffer */
 
@@ -82,6 +84,7 @@ typedef struct ogs_pfcp_xact_s {
 #define OGS_PFCP_MODIFY_ERROR_INDICATION ((uint64_t)1<<11)
 #define OGS_PFCP_MODIFY_XN_HANDOVER ((uint64_t)1<<12)
 #define OGS_PFCP_MODIFY_N2_HANDOVER ((uint64_t)1<<13)
+#define OGS_PFCP_MODIFY_HANDOVER_CANCEL ((uint64_t)1<<14)
     uint64_t        modify_flags;
 
 #define OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED 1
@@ -109,6 +112,7 @@ int ogs_pfcp_xact_update_tx(ogs_pfcp_xact_t *xact,
 int ogs_pfcp_xact_update_rx(ogs_pfcp_xact_t *xact, uint8_t type);
 
 int ogs_pfcp_xact_commit(ogs_pfcp_xact_t *xact);
+void ogs_pfcp_xact_delayed_commit(ogs_pfcp_xact_t *xact, ogs_time_t duration);
 
 int ogs_pfcp_xact_receive(ogs_pfcp_node_t *node,
         ogs_pfcp_header_t *h, ogs_pfcp_xact_t **xact);

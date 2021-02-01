@@ -1909,6 +1909,7 @@ ogs_pkbuf_t *ngap_build_handover_request(ran_ue_t *target_ue)
     NGAP_PDUSessionResourceSetupListHOReq_t *PDUSessionList = NULL;
     NGAP_PDUSessionResourceSetupItemHOReq_t *PDUSessionItem = NULL;
     NGAP_AllowedNSSAI_t *AllowedNSSAI = NULL;
+    NGAP_MaskedIMEISV_t *MaskedIMEISV = NULL;
     NGAP_SourceToTarget_TransparentContainer_t
         *SourceToTarget_TransparentContainer = NULL;
     NGAP_GUAMI_t *GUAMI = NULL;
@@ -2135,6 +2136,31 @@ ogs_pkbuf_t *ngap_build_handover_request(ran_ue_t *target_ue)
 
             ASN_SEQUENCE_ADD(&AllowedNSSAI->list, NGAP_AllowedNSSAI_Item);
         }
+    }
+
+    /* TS23.003 6.2.2 Composition of IMEISV
+     *
+     * The International Mobile station Equipment Identity and
+     * Software Version Number (IMEISV) is composed.
+     *
+     * TAC(8 digits) - SNR(6 digits) - SVN(2 digits)
+     * IMEISV(16 digits) ==> 8bytes
+     */
+    if (amf_ue->masked_imeisv_len == OGS_MAX_IMEISV_LEN) {
+        ie = CALLOC(1, sizeof(NGAP_HandoverRequestIEs_t));
+        ogs_assert(ie);
+        ASN_SEQUENCE_ADD(&HandoverRequest->protocolIEs, ie);
+
+        ie->id = NGAP_ProtocolIE_ID_id_MaskedIMEISV;
+        ie->criticality = NGAP_Criticality_ignore;
+        ie->value.present = NGAP_HandoverRequestIEs__value_PR_MaskedIMEISV;
+
+        MaskedIMEISV = &ie->value.choice.MaskedIMEISV;
+
+        MaskedIMEISV->size = amf_ue->masked_imeisv_len;
+        MaskedIMEISV->buf = CALLOC(MaskedIMEISV->size, sizeof(uint8_t));
+        MaskedIMEISV->bits_unused = 0;
+        memcpy(MaskedIMEISV->buf, amf_ue->masked_imeisv, MaskedIMEISV->size);
     }
 
     ie = CALLOC(1, sizeof(NGAP_HandoverRequestIEs_t));

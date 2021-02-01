@@ -43,6 +43,14 @@ void testngap_handle_pdu_session_resource_release_command(
 
 void testngap_handle_handover_request(
         test_ue_t *test_ue, ogs_ngap_message_t *message);
+void testngap_handle_handover_command(
+        test_ue_t *test_ue, ogs_ngap_message_t *message);
+void testngap_handle_handover_preparation_failure(
+        test_ue_t *test_ue, ogs_ngap_message_t *message);
+void testngap_handle_handover_cancel_ack(
+        test_ue_t *test_ue, ogs_ngap_message_t *message);
+void testngap_handle_downlink_ran_status_transfer(
+        test_ue_t *test_ue, ogs_ngap_message_t *message);
 
 #ifdef __cplusplus
 }

@@ -567,7 +567,7 @@ static void response_timeout(void *data)
 {
     char buf[OGS_ADDRSTRLEN];
     ogs_gtp_xact_t *xact = data;
-    
+
     ogs_assert(xact);
     ogs_assert(xact->gnode);
 
@@ -618,7 +618,7 @@ static void holding_timeout(void *data)
 {
     char buf[OGS_ADDRSTRLEN];
     ogs_gtp_xact_t *xact = data;
-    
+
     ogs_assert(xact);
     ogs_assert(xact->gnode);
 

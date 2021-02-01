@@ -253,7 +253,6 @@ void mme_s11_handle_modify_bearer_response(
 {
     int rv;
     uint8_t cause_value = 0;
-    enb_ue_t *source_ue = NULL, *target_ue = NULL;
 
     ogs_assert(xact);
     ogs_assert(rsp);
@@ -293,19 +292,6 @@ void mme_s11_handle_modify_bearer_response(
 
     GTP_COUNTER_CHECK(mme_ue, GTP_COUNTER_MODIFY_BEARER_BY_PATH_SWITCH,
         s1ap_send_path_switch_ack(mme_ue);
-    );
-
-    GTP_COUNTER_CHECK(mme_ue, GTP_COUNTER_MODIFY_BEARER_BY_HANDOVER_NOTIFY,
-        target_ue = mme_ue->enb_ue;
-        ogs_assert(target_ue);
-        source_ue = target_ue->source_ue;
-        ogs_assert(source_ue);
-
-        s1ap_send_ue_context_release_command(source_ue,
-                S1AP_Cause_PR_radioNetwork,
-                S1AP_CauseRadioNetwork_successful_handover,
-                S1AP_UE_CTX_REL_S1_HANDOVER_COMPLETE,
-                ogs_time_from_msec(300));
     );
 }
 
@@ -1065,8 +1051,11 @@ void mme_s11_handle_delete_indirect_data_forwarding_tunnel_response(
 {
     int rv;
     uint8_t cause_value = 0;
+    int action = 0;
 
     ogs_assert(xact);
+    action = xact->delete_indirect_action;
+    ogs_assert(action);
     ogs_assert(rsp);
 
     ogs_debug("Delete Indirect Data Forwarding Tunnel Response");
@@ -1098,6 +1087,15 @@ void mme_s11_handle_delete_indirect_data_forwarding_tunnel_response(
             mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
 
     mme_ue_clear_indirect_tunnel(mme_ue);
+
+    if (action == OGS_GTP_DELETE_INDIRECT_HANDOVER_COMPLETE) {
+        /* Nothing to do */
+    } else if (action == OGS_GTP_DELETE_INDIRECT_HANDOVER_CANCEL) {
+        s1ap_send_handover_cancel_ack(mme_ue->enb_ue);
+    } else {
+        ogs_fatal("Invalid action = %d", action);
+        ogs_assert_if_reached();
+    }
 }
 
 void mme_s11_handle_bearer_resource_failure_indication(

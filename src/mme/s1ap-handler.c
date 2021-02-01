@@ -1262,11 +1262,44 @@ void s1ap_handle_ue_context_release_action(enb_ue_t *enb_ue)
         ogs_expect_or_return(mme_ue);
         if (mme_ue_have_indirect_tunnel(mme_ue) == true) {
             mme_gtp_send_delete_indirect_data_forwarding_tunnel_request(
-                    mme_ue);
+                    mme_ue, OGS_GTP_DELETE_INDIRECT_HANDOVER_COMPLETE);
         } else {
             ogs_warn("Check your eNodeB");
-            ogs_warn("  There is no INDIRECT TUNNEL");
+            ogs_warn("  No INDIRECT TUNNEL");
             ogs_warn("  Packet could be dropped during S1-Handover");
+            mme_ue_clear_indirect_tunnel(mme_ue);
+        }
+        break;
+    case S1AP_UE_CTX_REL_S1_HANDOVER_CANCEL:
+        ogs_warn("    Action: S1 handover cancel");
+
+        source_ue_deassociate_target_ue(enb_ue);
+        enb_ue_remove(enb_ue);
+
+        ogs_expect_or_return(mme_ue);
+        if (mme_ue_have_indirect_tunnel(mme_ue) == true) {
+            mme_gtp_send_delete_indirect_data_forwarding_tunnel_request(
+                    mme_ue, OGS_GTP_DELETE_INDIRECT_HANDOVER_CANCEL);
+        } else {
+            ogs_warn("Check your eNodeB");
+            ogs_warn("  No INDIRECT TUNNEL");
+            ogs_warn("  Packet could be dropped during S1-Handover");
+            mme_ue_clear_indirect_tunnel(mme_ue);
+
+            ogs_expect_or_return(mme_ue->enb_ue);
+            s1ap_send_handover_cancel_ack(mme_ue->enb_ue);
+        }
+        break;
+    case S1AP_UE_CTX_REL_S1_HANDOVER_FAILURE:
+        ogs_warn("    Action: S1 handover failure");
+
+        source_ue_deassociate_target_ue(enb_ue);
+        enb_ue_remove(enb_ue);
+
+        ogs_expect_or_return(mme_ue);
+        if (mme_ue_have_indirect_tunnel(mme_ue) == true) {
+            ogs_error("Check your eNodeB");
+            ogs_error("  We found INDIRECT TUNNEL in HandoverFailure");
             mme_ue_clear_indirect_tunnel(mme_ue);
         }
         break;
@@ -1884,7 +1917,7 @@ void s1ap_handle_handover_failure(mme_enb_t *enb, ogs_s1ap_message_t *message)
     s1ap_send_ue_context_release_command(
         target_ue, S1AP_Cause_PR_radioNetwork,
         S1AP_CauseRadioNetwork_ho_failure_in_target_EPC_eNB_or_target_system,
-        S1AP_UE_CTX_REL_S1_HANDOVER_COMPLETE, 0);
+        S1AP_UE_CTX_REL_S1_HANDOVER_FAILURE, 0);
 }
 
 void s1ap_handle_handover_cancel(mme_enb_t *enb, ogs_s1ap_message_t *message)
@@ -1948,13 +1981,10 @@ void s1ap_handle_handover_cancel(mme_enb_t *enb, ogs_s1ap_message_t *message)
     ogs_debug("    Target : ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
             target_ue->enb_ue_s1ap_id, target_ue->mme_ue_s1ap_id);
 
-    s1ap_send_handover_cancel_ack(source_ue);
-
     s1ap_send_ue_context_release_command(
             target_ue, S1AP_Cause_PR_radioNetwork,
             S1AP_CauseRadioNetwork_handover_cancelled,
-            S1AP_UE_CTX_REL_S1_HANDOVER_COMPLETE,
-            ogs_time_from_msec(300));
+            S1AP_UE_CTX_REL_S1_HANDOVER_CANCEL, 0);
 
     ogs_debug("Handover Cancel : "
             "UE[eNB-UE-S1AP-ID(%d)] --> eNB[%s:%d]",
@@ -2146,22 +2176,20 @@ void s1ap_handle_handover_notification(
     memcpy(&mme_ue->tai, &target_ue->saved.tai, sizeof(ogs_eps_tai_t));
     memcpy(&mme_ue->e_cgi, &target_ue->saved.e_cgi, sizeof(ogs_e_cgi_t));
 
-    sess = mme_sess_first(mme_ue);
-    while (sess) {
-        bearer = mme_bearer_first(sess);
-        while (bearer) {
+    s1ap_send_ue_context_release_command(source_ue,
+            S1AP_Cause_PR_radioNetwork,
+            S1AP_CauseRadioNetwork_successful_handover,
+            S1AP_UE_CTX_REL_S1_HANDOVER_COMPLETE,
+            ogs_app()->time.handover.duration);
+
+    ogs_list_for_each(&mme_ue->sess_list, sess) {
+        ogs_list_for_each(&sess->bearer_list, bearer) {
             bearer->enb_s1u_teid = bearer->target_s1u_teid;
             memcpy(&bearer->enb_s1u_ip, &bearer->target_s1u_ip,
                     sizeof(ogs_ip_t));
 
-            GTP_COUNTER_INCREMENT(
-                    mme_ue, GTP_COUNTER_MODIFY_BEARER_BY_HANDOVER_NOTIFY);
-
             mme_gtp_send_modify_bearer_request(bearer, 1);
-
-            bearer = mme_bearer_next(bearer);
         }
-        sess = mme_sess_next(sess);
     }
 }
 

@@ -1810,6 +1810,7 @@ ogs_pkbuf_t *s1ap_build_handover_request(
         *Source_ToTarget_TransparentContainer = NULL;
     S1AP_UESecurityCapabilities_t *UESecurityCapabilities = NULL;
     S1AP_SecurityContext_t *SecurityContext = NULL;
+    S1AP_Masked_IMEISV_t *Masked_IMEISV = NULL;
 
     mme_ue_t *mme_ue = NULL;
     mme_sess_t *sess = NULL;
@@ -1914,8 +1915,7 @@ ogs_pkbuf_t *s1ap_build_handover_request(
 
     ie->id = S1AP_ProtocolIE_ID_id_SecurityContext;
     ie->criticality = S1AP_Criticality_reject;
-    ie->value.present =
-        S1AP_HandoverRequestIEs__value_PR_SecurityContext;
+    ie->value.present = S1AP_HandoverRequestIEs__value_PR_SecurityContext;
 
     SecurityContext = &ie->value.choice.SecurityContext;
 
@@ -2019,6 +2019,30 @@ ogs_pkbuf_t *s1ap_build_handover_request(
     SecurityContext->nextHopParameter.bits_unused = 0;
     memcpy(SecurityContext->nextHopParameter.buf,
             mme_ue->nh, SecurityContext->nextHopParameter.size);
+
+    /* TS23.003 6.2.2 Composition of IMEISV
+     *
+     * The International Mobile station Equipment Identity and
+     * Software Version Number (IMEISV) is composed.
+     *
+     * TAC(8 digits) - SNR(6 digits) - SVN(2 digits)
+     * IMEISV(16 digits) ==> 8bytes
+     */
+    if (mme_ue->imeisv_len == OGS_MAX_IMEISV_LEN) {
+        ie = CALLOC(1, sizeof(S1AP_HandoverRequestIEs_t));
+        ASN_SEQUENCE_ADD(&HandoverRequest->protocolIEs, ie);
+
+        ie->id = S1AP_ProtocolIE_ID_id_Masked_IMEISV;
+        ie->criticality = S1AP_Criticality_ignore;
+        ie->value.present = S1AP_HandoverRequestIEs__value_PR_Masked_IMEISV;
+
+        Masked_IMEISV = &ie->value.choice.Masked_IMEISV;
+
+        Masked_IMEISV->size = mme_ue->masked_imeisv_len;
+        Masked_IMEISV->buf = CALLOC(Masked_IMEISV->size, sizeof(uint8_t));
+        Masked_IMEISV->bits_unused = 0;
+        memcpy(Masked_IMEISV->buf, mme_ue->masked_imeisv, Masked_IMEISV->size);
+    }
 
     return ogs_s1ap_encode(&pdu);
 }

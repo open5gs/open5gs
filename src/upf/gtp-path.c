@@ -227,6 +227,7 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
 
         struct ip *ip_h = NULL;
         ogs_pfcp_pdr_t *pdr = NULL;
+        ogs_pfcp_far_t *far = NULL;
 
         upf_sess_t *sess = NULL;
         ogs_pfcp_subnet_t *subnet = NULL;
@@ -240,38 +241,60 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
             /* TODO : Send Error Indication */
             goto cleanup;
         }
+
         ogs_assert(pdr->sess);
         sess = UPF_SESS(pdr->sess);
         ogs_assert(sess);
 
-        if (ip_h->ip_v == 4 && sess->ipv4)
-            subnet = sess->ipv4->subnet;
-        else if (ip_h->ip_v == 6 && sess->ipv6)
-            subnet = sess->ipv6->subnet;
+        far = pdr->far;
+        ogs_assert(far);
 
-        if (!subnet) {
+        if (far->dst_if == OGS_PFCP_INTERFACE_ACCESS) {
+            ogs_pfcp_up_handle_pdr(pdr, pkbuf, &report);
+
+            if (report.type.downlink_data_report) {
+                ogs_error("Indirect Data Fowarding Buffered");
+
+                report.downlink_data.pdr_id = pdr->id;
+                if (pdr->qer && pdr->qer->qfi)
+                    report.downlink_data.qfi = pdr->qer->qfi; /* for 5GC */
+
+                upf_pfcp_send_session_report_request(sess, &report);
+            }
+
+        } else if (far->dst_if == OGS_PFCP_INTERFACE_CORE) {
+            if (ip_h->ip_v == 4 && sess->ipv4)
+                subnet = sess->ipv4->subnet;
+            else if (ip_h->ip_v == 6 && sess->ipv6)
+                subnet = sess->ipv6->subnet;
+
+            if (!subnet) {
 #if 0 /* It's redundant log message */
-            ogs_error("[DROP] Cannot find subnet V:%d, IPv4:%p, IPv6:%p",
-                    ip_h->ip_v, sess->ipv4, sess->ipv6);
-            ogs_log_hexdump(OGS_LOG_ERROR, pkbuf->data, pkbuf->len);
+                ogs_error("[DROP] Cannot find subnet V:%d, IPv4:%p, IPv6:%p",
+                        ip_h->ip_v, sess->ipv4, sess->ipv6);
+                ogs_log_hexdump(OGS_LOG_ERROR, pkbuf->data, pkbuf->len);
 #endif
-            goto cleanup;
-        }
-
-        /* Check IPv6 */
-        if (ogs_app()->parameter.no_slaac == 0 && ip_h->ip_v == 6) {
-            rv = upf_gtp_handle_slaac(sess, pkbuf);
-            if (rv == UPF_GTP_HANDLED) {
                 goto cleanup;
             }
-            ogs_assert(rv == OGS_OK);
-        }
 
-        dev = subnet->dev;
-        ogs_assert(dev);
-        if (ogs_write(dev->fd, pkbuf->data, pkbuf->len) <= 0) {
-            ogs_log_message(OGS_LOG_ERROR,
-                    ogs_socket_errno, "ogs_write() failed");
+            /* Check IPv6 */
+            if (ogs_app()->parameter.no_slaac == 0 && ip_h->ip_v == 6) {
+                rv = upf_gtp_handle_slaac(sess, pkbuf);
+                if (rv == UPF_GTP_HANDLED) {
+                    goto cleanup;
+                }
+                ogs_assert(rv == OGS_OK);
+            }
+
+            dev = subnet->dev;
+            ogs_assert(dev);
+            if (ogs_write(dev->fd, pkbuf->data, pkbuf->len) <= 0) {
+                ogs_log_message(OGS_LOG_ERROR,
+                        ogs_socket_errno, "ogs_write() failed");
+            }
+        } else {
+            ogs_fatal("Not implemented : FAR-DST_IF[%d]", far->dst_if);
+            ogs_assert_if_reached();
         }
     } else {
         ogs_error("[DROP] Invalid GTPU Type [%d]", gtp_h->type);

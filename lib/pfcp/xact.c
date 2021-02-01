@@ -41,6 +41,7 @@ static int ogs_pfcp_xact_delete(ogs_pfcp_xact_t *xact);
 
 static void response_timeout(void *data);
 static void holding_timeout(void *data);
+static void delayed_commit_timeout(void *data);
 
 int ogs_pfcp_xact_init(void)
 {
@@ -95,6 +96,10 @@ ogs_pfcp_xact_t *ogs_pfcp_xact_local_create(ogs_pfcp_node_t *node,
     ogs_assert(xact->tm_holding);
     xact->holding_rcount = ogs_app()->time.message.pfcp.n1_holding_rcount,
 
+    xact->tm_delayed_commit = ogs_timer_add(
+            ogs_app()->timer_mgr, delayed_commit_timeout, xact);
+    ogs_assert(xact->tm_delayed_commit);
+
     ogs_list_add(xact->org == OGS_PFCP_LOCAL_ORIGINATOR ?  
             &xact->node->local_list : &xact->node->remote_list, xact);
 
@@ -140,6 +145,10 @@ ogs_pfcp_xact_t *ogs_pfcp_xact_remote_create(
             ogs_app()->timer_mgr, holding_timeout, xact);
     ogs_assert(xact->tm_holding);
     xact->holding_rcount = ogs_app()->time.message.pfcp.n1_holding_rcount,
+
+    xact->tm_delayed_commit = ogs_timer_add(
+            ogs_app()->timer_mgr, delayed_commit_timeout, xact);
+    ogs_assert(xact->tm_delayed_commit);
 
     ogs_list_add(xact->org == OGS_PFCP_LOCAL_ORIGINATOR ?  
             &xact->node->local_list : &xact->node->remote_list, xact);
@@ -449,7 +458,6 @@ int ogs_pfcp_xact_update_rx(ogs_pfcp_xact_t *xact, uint8_t type)
     return OGS_OK;
 }
 
-
 int ogs_pfcp_xact_commit(ogs_pfcp_xact_t *xact)
 {
     int rv;
@@ -561,11 +569,20 @@ int ogs_pfcp_xact_commit(ogs_pfcp_xact_t *xact)
     return OGS_OK;
 }
 
+void ogs_pfcp_xact_delayed_commit(ogs_pfcp_xact_t *xact, ogs_time_t duration)
+{
+    ogs_assert(xact);
+    ogs_assert(duration);
+    ogs_assert(xact->tm_delayed_commit);
+
+    ogs_timer_start(xact->tm_delayed_commit, duration);
+}
+
 static void response_timeout(void *data)
 {
     char buf[OGS_ADDRSTRLEN];
     ogs_pfcp_xact_t *xact = data;
-    
+
     ogs_assert(xact);
     ogs_assert(xact->node);
 
@@ -616,7 +633,7 @@ static void holding_timeout(void *data)
 {
     char buf[OGS_ADDRSTRLEN];
     ogs_pfcp_xact_t *xact = data;
-    
+
     ogs_assert(xact);
     ogs_assert(xact->node);
 
@@ -644,6 +661,24 @@ static void holding_timeout(void *data)
     }
 }
 
+static void delayed_commit_timeout(void *data)
+{
+    char buf[OGS_ADDRSTRLEN];
+    ogs_pfcp_xact_t *xact = data;
+
+    ogs_assert(xact);
+    ogs_assert(xact->node);
+
+    ogs_debug("[%d] %s Delayed Send Timeout "
+            "for step %d type %d peer [%s]:%d",
+            xact->xid,
+            xact->org == OGS_PFCP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
+            xact->step, xact->seq[xact->step-1].type,
+            OGS_ADDR(&xact->node->addr, buf),
+            OGS_PORT(&xact->node->addr));
+
+    ogs_pfcp_xact_commit(xact);
+}
 
 int ogs_pfcp_xact_receive(
         ogs_pfcp_node_t *node, ogs_pfcp_header_t *h, ogs_pfcp_xact_t **xact)
@@ -785,6 +820,8 @@ static int ogs_pfcp_xact_delete(ogs_pfcp_xact_t *xact)
         ogs_timer_delete(xact->tm_response);
     if (xact->tm_holding)
         ogs_timer_delete(xact->tm_holding);
+    if (xact->tm_delayed_commit)
+        ogs_timer_delete(xact->tm_delayed_commit);
 
     ogs_list_remove(xact->org == OGS_PFCP_LOCAL_ORIGINATOR ?
             &xact->node->local_list : &xact->node->remote_list, xact);

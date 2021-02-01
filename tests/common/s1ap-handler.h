@@ -40,6 +40,14 @@ void tests1ap_handle_e_rab_release_command(
 
 void tests1ap_handle_handover_request(
         test_ue_t *test_ue, ogs_s1ap_message_t *message);
+void tests1ap_handle_handover_command(
+        test_ue_t *test_ue, ogs_s1ap_message_t *message);
+void tests1ap_handle_handover_preparation_failure(
+        test_ue_t *test_ue, ogs_s1ap_message_t *message);
+void tests1ap_handle_handover_cancel_ack(
+        test_ue_t *test_ue, ogs_s1ap_message_t *message);
+void tests1ap_handle_mme_status_transfer(
+        test_ue_t *test_ue, ogs_s1ap_message_t *message);
 
 #ifdef __cplusplus
 }

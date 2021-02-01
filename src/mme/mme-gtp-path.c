@@ -515,13 +515,14 @@ void mme_gtp_send_create_indirect_data_forwarding_tunnel_request(
 }
 
 void mme_gtp_send_delete_indirect_data_forwarding_tunnel_request(
-        mme_ue_t *mme_ue)
+        mme_ue_t *mme_ue, int action)
 {
     int rv;
     ogs_gtp_header_t h;
     ogs_pkbuf_t *pkbuf = NULL;
     ogs_gtp_xact_t *xact = NULL;
 
+    ogs_assert(action);
     ogs_assert(mme_ue);
 
     memset(&h, 0, sizeof(ogs_gtp_header_t));
@@ -534,6 +535,7 @@ void mme_gtp_send_delete_indirect_data_forwarding_tunnel_request(
 
     xact = ogs_gtp_xact_local_create(mme_ue->gnode, &h, pkbuf, timeout, mme_ue);
     ogs_expect_or_return(xact);
+    xact->delete_indirect_action = action;
 
     rv = ogs_gtp_xact_commit(xact);
     ogs_expect(rv == OGS_OK);

@@ -487,6 +487,7 @@ ED5(uint8_t     spare1:4;,
     uint8_t     ipv4:1;)
     union {
 #define OGS_PFCP_DEFAULT_CHOOSE_ID 5
+#define OGS_PFCP_INDIRECT_DATA_FORWARDING_CHOOSE_ID 10
         struct {
         ED4(uint8_t choose_id;,
             uint8_t spare2;,

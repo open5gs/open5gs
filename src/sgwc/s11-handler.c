@@ -1083,9 +1083,7 @@ void sgwc_s11_handle_delete_indirect_data_forwarding_tunnel_request(
         sess->state.delete_indirect_tunnel = false;
         sgwc_pfcp_send_sess_modification_request(
                 sess, s11_xact, gtpbuf,
-                    OGS_PFCP_MODIFY_SESSION|
-                    OGS_PFCP_MODIFY_INDIRECT|
-                    OGS_PFCP_MODIFY_REMOVE);
+                OGS_PFCP_MODIFY_INDIRECT| OGS_PFCP_MODIFY_REMOVE);
     }
 }
 

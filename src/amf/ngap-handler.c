@@ -1274,18 +1274,25 @@ void ngap_handle_ue_context_release_action(ran_ue_t *ran_ue)
         ran_ue_remove(ran_ue);
 
         ogs_expect_or_return(amf_ue);
-#if 0
-        if (amf_ue_have_indirect_tunnel(amf_ue)) {
-            amf_gtp_send_delete_indirect_data_forwarding_tunnel_request(
-                    amf_ue);
-        } else {
-            ogs_warn("Check your eNodeB");
-            ogs_warn("  There is no INDIRECT TUNNEL");
-            ogs_warn("  Packet could be dropped during S1-Handover");
-            rv = amf_ue_clear_indirect_tunnel(amf_ue);
-            ogs_expect(rv == OGS_OK);
-        }
-#endif
+        break;
+    case NGAP_UE_CTX_REL_NG_HANDOVER_CANCEL:
+        ogs_warn("    Action: NG handover cancel");
+
+        source_ue_deassociate_target_ue(ran_ue);
+        ran_ue_remove(ran_ue);
+
+        ogs_expect_or_return(amf_ue);
+        ogs_expect_or_return(amf_ue->ran_ue);
+
+        ngap_send_handover_cancel_ack(amf_ue->ran_ue);
+        break;
+    case NGAP_UE_CTX_REL_NG_HANDOVER_FAILURE:
+        ogs_warn("    Action: NG handover failure");
+
+        source_ue_deassociate_target_ue(ran_ue);
+        ran_ue_remove(ran_ue);
+
+        ogs_expect_or_return(amf_ue);
         break;
     default:
         ogs_error("Invalid Action[%d]", ran_ue->ue_ctx_rel_action);
@@ -2769,7 +2776,7 @@ void ngap_handle_handover_failure(
 
     ngap_send_ran_ue_context_release_command(target_ue,
             NGAP_Cause_PR_radioNetwork, NGAP_CauseRadioNetwork_ho_failure_in_target_5GC_ngran_node_or_target_system,
-            NGAP_UE_CTX_REL_NG_HANDOVER_COMPLETE, 0);
+            NGAP_UE_CTX_REL_NG_HANDOVER_FAILURE, 0);
 }
 
 void ngap_handle_handover_cancel(
@@ -3143,6 +3150,12 @@ void ngap_handle_handover_notification(
     amf_ue->gnb_ostream_id = target_ue->gnb_ostream_id;
     memcpy(&amf_ue->tai, &target_ue->saved.tai, sizeof(ogs_5gs_tai_t));
     memcpy(&amf_ue->nr_cgi, &target_ue->saved.nr_cgi, sizeof(ogs_nr_cgi_t));
+
+    ngap_send_ran_ue_context_release_command(source_ue,
+            NGAP_Cause_PR_radioNetwork,
+            NGAP_CauseRadioNetwork_successful_handover,
+            NGAP_UE_CTX_REL_NG_HANDOVER_COMPLETE,
+            ogs_app()->time.handover.duration);
 
     ogs_list_for_each(&amf_ue->sess_list, sess) {
         memset(&param, 0, sizeof(param));

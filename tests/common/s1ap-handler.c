@@ -399,3 +399,178 @@ void tests1ap_handle_handover_request(
     if (MME_UE_S1AP_ID)
         test_ue->mme_ue_s1ap_id = *MME_UE_S1AP_ID;
 }
+
+void tests1ap_handle_handover_command(
+        test_ue_t *test_ue, ogs_s1ap_message_t *message)
+{
+    int i;
+    char buf[OGS_ADDRSTRLEN];
+
+    test_sess_t *sess = NULL;
+
+    S1AP_S1AP_PDU_t pdu;
+    S1AP_SuccessfulOutcome_t *successfulOutcome = NULL;
+    S1AP_HandoverCommand_t *HandoverCommand = NULL;
+
+    S1AP_HandoverCommandIEs_t *ie = NULL;
+    S1AP_MME_UE_S1AP_ID_t *MME_UE_S1AP_ID = NULL;
+    S1AP_ENB_UE_S1AP_ID_t *ENB_UE_S1AP_ID = NULL;
+
+    ogs_assert(test_ue);
+    ogs_assert(message);
+
+    successfulOutcome = message->choice.successfulOutcome;
+    ogs_assert(successfulOutcome);
+    HandoverCommand = &successfulOutcome->value.choice.HandoverCommand;
+    ogs_assert(HandoverCommand);
+
+    for (i = 0; i < HandoverCommand->protocolIEs.list.count; i++) {
+        ie = HandoverCommand->protocolIEs.list.array[i];
+        switch (ie->id) {
+        case S1AP_ProtocolIE_ID_id_MME_UE_S1AP_ID:
+            MME_UE_S1AP_ID = &ie->value.choice.MME_UE_S1AP_ID;
+            break;
+        case S1AP_ProtocolIE_ID_id_eNB_UE_S1AP_ID:
+            ENB_UE_S1AP_ID = &ie->value.choice.ENB_UE_S1AP_ID;
+            break;
+        default:
+            break;
+        }
+    }
+
+    if (MME_UE_S1AP_ID)
+        test_ue->mme_ue_s1ap_id = *MME_UE_S1AP_ID;
+    if (ENB_UE_S1AP_ID)
+        test_ue->enb_ue_s1ap_id = *ENB_UE_S1AP_ID;
+}
+
+void tests1ap_handle_handover_preparation_failure(
+        test_ue_t *test_ue, ogs_s1ap_message_t *message)
+{
+    int i;
+    char buf[OGS_ADDRSTRLEN];
+
+    test_sess_t *sess = NULL;
+
+    S1AP_S1AP_PDU_t pdu;
+    S1AP_UnsuccessfulOutcome_t *unsuccessfulOutcome = NULL;
+    S1AP_HandoverPreparationFailure_t *HandoverPreparationFailure = NULL;
+
+    S1AP_HandoverPreparationFailureIEs_t *ie = NULL;
+    S1AP_MME_UE_S1AP_ID_t *MME_UE_S1AP_ID = NULL;
+    S1AP_ENB_UE_S1AP_ID_t *ENB_UE_S1AP_ID = NULL;
+
+    ogs_assert(test_ue);
+    ogs_assert(message);
+
+    unsuccessfulOutcome = message->choice.unsuccessfulOutcome;
+    ogs_assert(unsuccessfulOutcome);
+    HandoverPreparationFailure =
+        &unsuccessfulOutcome->value.choice.HandoverPreparationFailure;
+    ogs_assert(HandoverPreparationFailure);
+
+    for (i = 0; i < HandoverPreparationFailure->protocolIEs.list.count; i++) {
+        ie = HandoverPreparationFailure->protocolIEs.list.array[i];
+        switch (ie->id) {
+        case S1AP_ProtocolIE_ID_id_MME_UE_S1AP_ID:
+            MME_UE_S1AP_ID = &ie->value.choice.MME_UE_S1AP_ID;
+            break;
+        case S1AP_ProtocolIE_ID_id_eNB_UE_S1AP_ID:
+            ENB_UE_S1AP_ID = &ie->value.choice.ENB_UE_S1AP_ID;
+            break;
+        default:
+            break;
+        }
+    }
+
+    if (MME_UE_S1AP_ID)
+        test_ue->mme_ue_s1ap_id = *MME_UE_S1AP_ID;
+    if (ENB_UE_S1AP_ID)
+        test_ue->enb_ue_s1ap_id = *ENB_UE_S1AP_ID;
+}
+
+void tests1ap_handle_handover_cancel_ack(
+        test_ue_t *test_ue, ogs_s1ap_message_t *message)
+{
+    int i;
+    char buf[OGS_ADDRSTRLEN];
+
+    test_sess_t *sess = NULL;
+
+    S1AP_S1AP_PDU_t pdu;
+    S1AP_SuccessfulOutcome_t *successfulOutcome = NULL;
+    S1AP_HandoverCancelAcknowledge_t *HandoverCancelAcknowledge = NULL;
+
+    S1AP_HandoverCancelAcknowledgeIEs_t *ie = NULL;
+    S1AP_MME_UE_S1AP_ID_t *MME_UE_S1AP_ID = NULL;
+    S1AP_ENB_UE_S1AP_ID_t *ENB_UE_S1AP_ID = NULL;
+
+    ogs_assert(test_ue);
+    ogs_assert(message);
+
+    successfulOutcome = message->choice.successfulOutcome;
+    ogs_assert(successfulOutcome);
+    HandoverCancelAcknowledge =
+        &successfulOutcome->value.choice.HandoverCancelAcknowledge;
+    ogs_assert(HandoverCancelAcknowledge);
+
+    for (i = 0; i < HandoverCancelAcknowledge->protocolIEs.list.count; i++) {
+        ie = HandoverCancelAcknowledge->protocolIEs.list.array[i];
+        switch (ie->id) {
+        case S1AP_ProtocolIE_ID_id_MME_UE_S1AP_ID:
+            MME_UE_S1AP_ID = &ie->value.choice.MME_UE_S1AP_ID;
+            break;
+        case S1AP_ProtocolIE_ID_id_eNB_UE_S1AP_ID:
+            ENB_UE_S1AP_ID = &ie->value.choice.ENB_UE_S1AP_ID;
+            break;
+        default:
+            break;
+        }
+    }
+
+    if (MME_UE_S1AP_ID)
+        test_ue->mme_ue_s1ap_id = *MME_UE_S1AP_ID;
+    if (ENB_UE_S1AP_ID)
+        test_ue->enb_ue_s1ap_id = *ENB_UE_S1AP_ID;
+}
+
+void tests1ap_handle_mme_status_transfer(
+        test_ue_t *test_ue, ogs_s1ap_message_t *message)
+{
+    int i;
+
+    S1AP_S1AP_PDU_t pdu;
+    S1AP_InitiatingMessage_t *initiatingMessage = NULL;
+    S1AP_MMEStatusTransfer_t *MMEStatusTransfer = NULL;
+
+    S1AP_MMEStatusTransferIEs_t *ie = NULL;
+    S1AP_MME_UE_S1AP_ID_t *MME_UE_S1AP_ID = NULL;
+    S1AP_ENB_UE_S1AP_ID_t *ENB_UE_S1AP_ID = NULL;
+
+    ogs_assert(test_ue);
+    ogs_assert(message);
+
+    initiatingMessage = message->choice.initiatingMessage;
+    ogs_assert(initiatingMessage);
+    MMEStatusTransfer = &initiatingMessage->value.choice.MMEStatusTransfer;
+    ogs_assert(MMEStatusTransfer);
+
+    for (i = 0; i < MMEStatusTransfer->protocolIEs.list.count; i++) {
+        ie = MMEStatusTransfer->protocolIEs.list.array[i];
+        switch (ie->id) {
+        case S1AP_ProtocolIE_ID_id_MME_UE_S1AP_ID:
+            MME_UE_S1AP_ID = &ie->value.choice.MME_UE_S1AP_ID;
+            break;
+        case S1AP_ProtocolIE_ID_id_eNB_UE_S1AP_ID:
+            ENB_UE_S1AP_ID = &ie->value.choice.ENB_UE_S1AP_ID;
+            break;
+        default:
+            break;
+        }
+    }
+
+    if (MME_UE_S1AP_ID)
+        test_ue->mme_ue_s1ap_id = *MME_UE_S1AP_ID;
+    if (ENB_UE_S1AP_ID)
+        test_ue->enb_ue_s1ap_id = *ENB_UE_S1AP_ID;
+}

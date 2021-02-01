@@ -73,6 +73,7 @@ void tests1ap_recv(test_ue_t *test_ue, ogs_pkbuf_t *pkbuf)
             tests1ap_handle_handover_request(test_ue, pdu);
             break;
         case S1AP_ProcedureCode_id_MMEStatusTransfer:
+            tests1ap_handle_mme_status_transfer(test_ue, pdu);
             break;
         case S1AP_ProcedureCode_id_Paging:
             break;
@@ -98,8 +99,10 @@ void tests1ap_recv(test_ue_t *test_ue, ogs_pkbuf_t *pkbuf)
         case S1AP_ProcedureCode_id_PathSwitchRequest:
             break;
         case S1AP_ProcedureCode_id_HandoverPreparation:
+            tests1ap_handle_handover_command(test_ue, pdu);
             break;
         case S1AP_ProcedureCode_id_HandoverCancel:
+            tests1ap_handle_handover_cancel_ack(test_ue, pdu);
             break;
         case S1AP_ProcedureCode_id_Reset:
             break;

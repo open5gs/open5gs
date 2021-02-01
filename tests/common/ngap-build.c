@@ -1607,7 +1607,6 @@ ogs_pkbuf_t *testngap_build_handover_request_ack(test_ue_t *test_ue)
     NGAP_AMF_UE_NGAP_ID_t *AMF_UE_NGAP_ID = NULL;
     NGAP_RAN_UE_NGAP_ID_t *RAN_UE_NGAP_ID = NULL;
     NGAP_PDUSessionResourceAdmittedList_t *PDUSessionList = NULL;
-    NGAP_PDUSessionResourceAdmittedItem_t *PDUSessionItem = NULL;
     NGAP_TargetToSource_TransparentContainer_t
         *TargetToSource_TransparentContainer = NULL;
 
@@ -1657,6 +1656,7 @@ ogs_pkbuf_t *testngap_build_handover_request_ack(test_ue_t *test_ue)
     *RAN_UE_NGAP_ID = test_ue->ran_ue_ngap_id;
 
     ogs_list_for_each(&test_ue->sess_list, sess) {
+        NGAP_PDUSessionResourceAdmittedItem_t *PDUSessionItem = NULL;
         OCTET_STRING_t *transfer = NULL;
         ogs_pkbuf_t *n2smbuf = NULL;
 
@@ -1672,8 +1672,7 @@ ogs_pkbuf_t *testngap_build_handover_request_ack(test_ue_t *test_ue)
             PDUSessionList = &ie->value.choice.PDUSessionResourceAdmittedList;
         }
 
-        PDUSessionItem = CALLOC(1,
-                sizeof(struct NGAP_PDUSessionResourceAdmittedItem));
+        PDUSessionItem = CALLOC(1, sizeof(*PDUSessionItem));
         ogs_assert(PDUSessionItem);
         ASN_SEQUENCE_ADD(&PDUSessionList->list, PDUSessionItem);
 
@@ -2203,6 +2202,7 @@ static ogs_pkbuf_t *testngap_build_handover_request_ack_transfer(
     NGAP_HandoverRequestAcknowledgeTransfer_t message;
 
     NGAP_UPTransportLayerInformation_t *dL_NGU_UP_TNLInformation = NULL;
+    NGAP_UPTransportLayerInformation_t *dLForwardingUP_TNLInformation = NULL;
     NGAP_QosFlowListWithDataForwarding_t *qosFlowSetupResponseList = NULL;
     NGAP_QosFlowItemWithDataForwarding_t *qosFlowSetupResponseItem = NULL;
     NGAP_GTPTunnel_t *gTPTunnel = NULL;
@@ -2214,7 +2214,7 @@ static ogs_pkbuf_t *testngap_build_handover_request_ack_transfer(
     dL_NGU_UP_TNLInformation->present =
         NGAP_UPTransportLayerInformation_PR_gTPTunnel;
     dL_NGU_UP_TNLInformation->choice.gTPTunnel = gTPTunnel =
-        CALLOC(1, sizeof(struct NGAP_GTPTunnel));
+        CALLOC(1, sizeof(*gTPTunnel));
     ogs_assert(gTPTunnel);
 
     ogs_assert(sess->gnb_n3_addr || sess->gnb_n3_addr6);
@@ -2227,6 +2227,25 @@ static ogs_pkbuf_t *testngap_build_handover_request_ack_transfer(
 
     ogs_asn_ip_to_BIT_STRING(&ip, &gTPTunnel->transportLayerAddress);
     ogs_asn_uint32_to_OCTET_STRING(sess->gnb_n3_teid, &gTPTunnel->gTP_TEID);
+
+    if (sess->handover.data_forwarding_not_possible) {
+        NGAP_GTPTunnel_t *gTPTunnelForDLForwarding = NULL;
+        message.dLForwardingUP_TNLInformation = dLForwardingUP_TNLInformation =
+            CALLOC(1, sizeof(*dLForwardingUP_TNLInformation));
+        ogs_assert(dLForwardingUP_TNLInformation);
+
+        dLForwardingUP_TNLInformation->present =
+            NGAP_UPTransportLayerInformation_PR_gTPTunnel;
+        dLForwardingUP_TNLInformation->choice.gTPTunnel =
+            gTPTunnelForDLForwarding =
+                CALLOC(1, sizeof(*gTPTunnelForDLForwarding));
+        ogs_assert(gTPTunnelForDLForwarding);
+
+        ogs_asn_ip_to_BIT_STRING(&ip,
+                &gTPTunnelForDLForwarding->transportLayerAddress);
+        ogs_asn_uint32_to_OCTET_STRING(sess->gnb_n3_teid+10,
+                &gTPTunnelForDLForwarding->gTP_TEID);
+    }
 
     qosFlowSetupResponseList = &message.qosFlowSetupResponseList;
 

@@ -203,6 +203,14 @@ static void app_context_prepare(void)
      */
     self.time.message.duration = ogs_time_from_sec(10);
 
+    /*
+     * Handover Wait Duration : 300 ms (Default)
+     *
+     * Time to wait for AMF/MME to send UEContextReleaseCommand
+     * to the source gNB/eNB after receiving HandoverNotify
+     */
+    self.time.handover.duration = ogs_time_from_msec(300);
+
     regenerate_all_timer_duration();
 }
  
@@ -482,9 +490,27 @@ int ogs_app_context_parse_config(void)
                         if (!strcmp(msg_key, "duration")) {
                             const char *v = ogs_yaml_iter_value(&msg_iter);
                             if (v) {
-                                self.time.message.duration = 
+                                self.time.message.duration =
                                     ogs_time_from_msec(atoll(v));
                                 regenerate_all_timer_duration();
+                            }
+                        } else
+                            ogs_warn("unknown key `%s`", msg_key);
+                    }
+                } else if (!strcmp(time_key, "handover")) {
+                    ogs_yaml_iter_t msg_iter;
+                    ogs_yaml_iter_recurse(&time_iter, &msg_iter);
+
+                    while (ogs_yaml_iter_next(&msg_iter)) {
+                        const char *msg_key =
+                            ogs_yaml_iter_key(&msg_iter);
+                        ogs_assert(msg_key);
+
+                        if (!strcmp(msg_key, "duration")) {
+                            const char *v = ogs_yaml_iter_value(&msg_iter);
+                            if (v) {
+                                self.time.handover.duration =
+                                    ogs_time_from_msec(atoll(v));
                             }
                         } else
                             ogs_warn("unknown key `%s`", msg_key);

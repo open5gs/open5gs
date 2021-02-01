@@ -71,6 +71,7 @@ void testngap_recv(test_ue_t *test_ue, ogs_pkbuf_t *pkbuf)
             testngap_handle_handover_request(test_ue, pdu);
             break;
         case NGAP_ProcedureCode_id_DownlinkRANStatusTransfer:
+            testngap_handle_downlink_ran_status_transfer(test_ue, pdu);
             break;
         case NGAP_ProcedureCode_id_ErrorIndication:
         case NGAP_ProcedureCode_id_Paging:
@@ -96,8 +97,10 @@ void testngap_recv(test_ue_t *test_ue, ogs_pkbuf_t *pkbuf)
         case NGAP_ProcedureCode_id_PathSwitchRequest:
             break;
         case NGAP_ProcedureCode_id_HandoverPreparation:
+            testngap_handle_handover_command(test_ue, pdu);
             break;
         case NGAP_ProcedureCode_id_HandoverCancel:
+            testngap_handle_handover_cancel_ack(test_ue, pdu);
             break;
         case NGAP_ProcedureCode_id_NGReset:
             break;
@@ -118,6 +121,7 @@ void testngap_recv(test_ue_t *test_ue, ogs_pkbuf_t *pkbuf)
         case NGAP_ProcedureCode_id_NGSetup:
             break;
         case NGAP_ProcedureCode_id_HandoverPreparation:
+            testngap_handle_handover_preparation_failure(test_ue, pdu);
             break;
         default:
             ogs_error("Not implemented(choice:%d, proc:%d)",

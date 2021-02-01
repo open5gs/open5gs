@@ -99,6 +99,10 @@ typedef struct ogs_gtp_xact_s {
 #define OGS_GTP_RELEASE_S1_CONTEXT_REMOVE_BY_RESET_ALL      3
 #define OGS_GTP_RELEASE_S1_CONTEXT_REMOVE_BY_RESET_PARTIAL  4
     int             release_action;
+
+#define OGS_GTP_DELETE_INDIRECT_HANDOVER_COMPLETE 1
+#define OGS_GTP_DELETE_INDIRECT_HANDOVER_CANCEL 2
+    int             delete_indirect_action;
 } ogs_gtp_xact_t;
 
 int ogs_gtp_xact_init(void);

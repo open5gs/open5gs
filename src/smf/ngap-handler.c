@@ -26,13 +26,11 @@ int ngap_handle_pdu_session_resource_setup_response_transfer(
         smf_sess_t *sess, ogs_sbi_stream_t *stream, ogs_pkbuf_t *pkbuf)
 {
     smf_ue_t *smf_ue = NULL;
-    smf_bearer_t *qos_flow = NULL;
     int rv, i;
 
     uint32_t gnb_n3_teid;
     ogs_ip_t gnb_n3_ip;
 
-    ogs_pfcp_far_t *dl_far = NULL;
     bool far_update = false;
 
     NGAP_PDUSessionResourceSetupResponseTransfer_t message;
@@ -111,11 +109,11 @@ int ngap_handle_pdu_session_resource_setup_response_transfer(
                 associatedQosFlowList->list.array[i];
 
         if (associatedQosFlowItem) {
-            qos_flow = smf_qos_flow_find_by_qfi(sess,
-                    associatedQosFlowItem->qosFlowIdentifier);
+            smf_bearer_t *qos_flow = smf_qos_flow_find_by_qfi(
+                    sess, associatedQosFlowItem->qosFlowIdentifier);
 
             if (qos_flow) {
-                dl_far = qos_flow->dl_far;
+                ogs_pfcp_far_t *dl_far = qos_flow->dl_far;
                 ogs_assert(dl_far);
                 if (dl_far->apply_action != OGS_PFCP_APPLY_ACTION_FORW) {
                     far_update = true;
@@ -139,7 +137,8 @@ int ngap_handle_pdu_session_resource_setup_response_transfer(
 
     if (far_update) {
         smf_5gc_pfcp_send_session_modification_request(
-                sess, stream, OGS_PFCP_MODIFY_ACTIVATE);
+                sess, stream, OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_ACTIVATE,
+                0);
     } else {
         /* ACTIVATED Is NOT Included in RESPONSE */
         smf_sbi_send_http_status_no_content(stream);
@@ -235,13 +234,11 @@ int ngap_handle_path_switch_request_transfer(
         smf_sess_t *sess, ogs_sbi_stream_t *stream, ogs_pkbuf_t *pkbuf)
 {
     smf_ue_t *smf_ue = NULL;
-    smf_bearer_t *qos_flow = NULL;
     int rv, i;
 
     uint32_t gnb_n3_teid;
     ogs_ip_t gnb_n3_ip;
 
-    ogs_pfcp_far_t *dl_far = NULL;
     bool far_update = false;
 
     NGAP_PathSwitchRequestTransfer_t message;
@@ -311,11 +308,11 @@ int ngap_handle_path_switch_request_transfer(
         acceptedQosFlowItem = (NGAP_QosFlowAcceptedItem_t *)
                 qosFlowAcceptedList->list.array[i];
         if (acceptedQosFlowItem) {
-            qos_flow = smf_qos_flow_find_by_qfi(sess,
-                    acceptedQosFlowItem->qosFlowIdentifier);
+            smf_bearer_t *qos_flow = smf_qos_flow_find_by_qfi(
+                    sess, acceptedQosFlowItem->qosFlowIdentifier);
 
             if (qos_flow) {
-                dl_far = qos_flow->dl_far;
+                ogs_pfcp_far_t *dl_far = qos_flow->dl_far;
                 ogs_assert(dl_far);
                 if (dl_far->apply_action != OGS_PFCP_APPLY_ACTION_FORW) {
                     far_update = true;
@@ -340,8 +337,9 @@ int ngap_handle_path_switch_request_transfer(
     if (far_update) {
         smf_5gc_pfcp_send_session_modification_request(
                 sess, stream,
-                OGS_PFCP_MODIFY_ACTIVATE | OGS_PFCP_MODIFY_XN_HANDOVER |
-                OGS_PFCP_MODIFY_END_MARKER);
+                OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_ACTIVATE|
+                OGS_PFCP_MODIFY_XN_HANDOVER|OGS_PFCP_MODIFY_END_MARKER,
+                0);
     } else {
         /* ACTIVATED Is NOT Included in RESPONSE */
         smf_sbi_send_http_status_no_content(stream);
@@ -361,6 +359,9 @@ int ngap_handle_handover_required_transfer(
     int rv;
 
     NGAP_HandoverRequiredTransfer_t message;
+
+    NGAP_DirectForwardingPathAvailability_t
+        *directForwardingPathAvailability = NULL;
 
     ogs_pkbuf_t *n2smbuf = NULL;
 
@@ -382,6 +383,13 @@ int ngap_handle_handover_required_transfer(
         goto cleanup;
     }
 
+    directForwardingPathAvailability = message.directForwardingPathAvailability;
+    if (directForwardingPathAvailability) {
+        sess->handover.direct_available = true;
+    } else {
+        sess->handover.direct_available = false;
+    }
+
     n2smbuf = ngap_build_pdu_session_resource_setup_request_transfer(sess);
     ogs_assert(n2smbuf);
 
@@ -400,19 +408,15 @@ int ngap_handle_handover_request_ack(
         smf_sess_t *sess, ogs_sbi_stream_t *stream, ogs_pkbuf_t *pkbuf)
 {
     smf_ue_t *smf_ue = NULL;
-    smf_bearer_t *qos_flow = NULL;
     int rv, i;
-
-    ogs_pfcp_far_t *dl_far = NULL;
 
     NGAP_HandoverRequestAcknowledgeTransfer_t message;
 
     NGAP_UPTransportLayerInformation_t *dL_NGU_UP_TNLInformation = NULL;
+    NGAP_UPTransportLayerInformation_t *dLForwardingUP_TNLInformation = NULL;
     NGAP_QosFlowListWithDataForwarding_t *qosFlowSetupResponseList = NULL;
     NGAP_QosFlowItemWithDataForwarding_t *qosFlowSetupResponseItem = NULL;
     NGAP_GTPTunnel_t *gTPTunnel = NULL;
-
-    ogs_pkbuf_t *n2smbuf = NULL;
 
     ogs_assert(pkbuf);
     ogs_assert(stream);
@@ -456,23 +460,21 @@ int ngap_handle_handover_request_ack(
         goto cleanup;
     }
 
-    /* Store FAR */
     ogs_asn_BIT_STRING_to_ip(&gTPTunnel->transportLayerAddress,
             &sess->handover.gnb_n3_ip);
     ogs_asn_OCTET_STRING_to_uint32(&gTPTunnel->gTP_TEID,
             &sess->handover.gnb_n3_teid);
-    sess->handover.prepared = true;
 
     qosFlowSetupResponseList = &message.qosFlowSetupResponseList;
     for (i = 0; i < qosFlowSetupResponseList->list.count; i++) {
         qosFlowSetupResponseItem = (NGAP_QosFlowItemWithDataForwarding_t *)
                 qosFlowSetupResponseList->list.array[i];
         if (qosFlowSetupResponseItem) {
-            qos_flow = smf_qos_flow_find_by_qfi(sess,
-                    qosFlowSetupResponseItem->qosFlowIdentifier);
+            smf_bearer_t *qos_flow = smf_qos_flow_find_by_qfi(
+                    sess, qosFlowSetupResponseItem->qosFlowIdentifier);
 
             if (qos_flow) {
-                dl_far = qos_flow->dl_far;
+                ogs_pfcp_far_t *dl_far = qos_flow->dl_far;
                 ogs_assert(dl_far);
 
                 dl_far->handover.prepared = true;
@@ -487,12 +489,78 @@ int ngap_handle_handover_request_ack(
         }
     }
 
-    n2smbuf = ngap_build_handover_command_transfer(sess);
-    ogs_assert(n2smbuf);
+    dLForwardingUP_TNLInformation = message.dLForwardingUP_TNLInformation;
+    if (dLForwardingUP_TNLInformation) {
+        if (dLForwardingUP_TNLInformation->present !=
+                NGAP_UPTransportLayerInformation_PR_gTPTunnel) {
+            ogs_error(
+                "[%s:%d] Unknown dLForwardingUP_TNLInformation->present [%d]",
+                smf_ue->supi, sess->psi, dL_NGU_UP_TNLInformation->present);
+            smf_sbi_send_sm_context_update_error(stream,
+                    OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                    "Unknown dLForwardingUP_TNLInformation->present",
+                    smf_ue->supi, NULL, NULL);
+            goto cleanup;
+        }
 
-    smf_sbi_send_sm_context_updated_data(
-        sess, stream, 0, OpenAPI_ho_state_PREPARED,
-        NULL, OpenAPI_n2_sm_info_type_HANDOVER_CMD, n2smbuf);
+        gTPTunnel = dLForwardingUP_TNLInformation->choice.gTPTunnel;
+        if (!gTPTunnel) {
+            ogs_error("[%s:%d] No GTPTunnel", smf_ue->supi, sess->psi);
+            smf_sbi_send_sm_context_update_error(stream,
+                    OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                    "No GTPTunnel", smf_ue->supi, NULL, NULL);
+            goto cleanup;
+        }
+
+        ogs_asn_BIT_STRING_to_ip(&gTPTunnel->transportLayerAddress,
+                &sess->handover.gnb_dl_ip);
+        ogs_asn_OCTET_STRING_to_uint32(&gTPTunnel->gTP_TEID,
+                &sess->handover.gnb_dl_teid);
+
+        sess->handover.indirect_data_forwarding = true;
+    }
+
+    sess->handover.prepared = true;
+
+    if (sess->handover.indirect_data_forwarding == true) {
+        if (smf_sess_have_indirect_data_forwarding(sess) == true) {
+            ogs_error("We found redundant INDIRECT Tunnel");
+            ogs_error("It will be automatically removed");
+
+            smf_5gc_pfcp_send_session_modification_request(
+                    sess, stream,
+                    OGS_PFCP_MODIFY_INDIRECT|
+                    /*
+                     * Firstly, OGS_PFCP_MODIFY_REMOVE is only appled.
+                     * And then, after receiving PFCP response message,
+                     * we can apply OGS_PFCP_MODIFY_CREATE.
+                     *
+                     * PFCP build is implemented as below.
+                     *
+                     * if OGS_PFCP_MODIFY_REMOVE
+                     * else if OGS_PFCP_MODIFY_CREATE
+                     * else if ..
+                     * ...
+                     */
+                    OGS_PFCP_MODIFY_REMOVE|OGS_PFCP_MODIFY_CREATE,
+                    0);
+        } else {
+
+            smf_sess_create_indirect_data_forwarding(sess);
+
+            smf_5gc_pfcp_send_session_modification_request(
+                    sess, stream,
+                    OGS_PFCP_MODIFY_INDIRECT|OGS_PFCP_MODIFY_CREATE,
+                    0);
+        }
+    } else {
+        ogs_pkbuf_t *n2smbuf = ngap_build_handover_command_transfer(sess);
+        ogs_assert(n2smbuf);
+
+        smf_sbi_send_sm_context_updated_data(
+            sess, stream, 0, OpenAPI_ho_state_PREPARED,
+            NULL, OpenAPI_n2_sm_info_type_HANDOVER_CMD, n2smbuf);
+    }
 
     rv = OGS_OK;
 

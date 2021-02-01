@@ -184,6 +184,8 @@ struct ran_ue_s {
 #define NGAP_UE_CTX_REL_NG_REMOVE_AND_UNLINK                2
 #define NGAP_UE_CTX_REL_UE_CONTEXT_REMOVE                   3
 #define NGAP_UE_CTX_REL_NG_HANDOVER_COMPLETE                4
+#define NGAP_UE_CTX_REL_NG_HANDOVER_CANCEL                  5
+#define NGAP_UE_CTX_REL_NG_HANDOVER_FAILURE                 6
     uint8_t         ue_ctx_rel_action;
 
     /* Related Context */
