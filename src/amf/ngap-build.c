@@ -2300,7 +2300,7 @@ ogs_pkbuf_t *ngap_build_handover_command(ran_ue_t *source_ue)
     amf_ue = source_ue->amf_ue;
     ogs_assert(amf_ue);
 
-    ogs_debug("Handover request");
+    ogs_debug("Handover command");
 
     memset(&pdu, 0, sizeof (NGAP_NGAP_PDU_t));
     pdu.present = NGAP_NGAP_PDU_PR_successfulOutcome;
