@@ -394,7 +394,7 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                  * 3. POST /nsmf-pdusession/v1/sm-contexts
                  */
 
-                ogs_error("[%s:%d] Receive Update SM context"
+                ogs_warn("[%s:%d] Receive Update SM context"
                         "(DUPLICATED_PDU_SESSION_ID)", amf_ue->supi, sess->psi);
 
                 amf_sess_sbi_discover_and_send(OpenAPI_nf_type_SMF,
