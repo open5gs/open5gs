@@ -188,7 +188,6 @@ static void s1ap_message_test7(abts_case *tc, void *data)
     ogs_pkbuf_free(pkbuf);
 }
 
-#if 0
 static void s1ap_message_test8(abts_case *tc, void *data)
 {
     /* ENBDirectInformationTransferRAN-INFORMATION-REQUEST */
@@ -238,7 +237,6 @@ static void s1ap_message_test9(abts_case *tc, void *data)
 
     ogs_pkbuf_free(pkbuf);
 }
-#endif
 
 static void s1ap_message_test10(abts_case *tc, void *data)
 {
@@ -276,10 +274,8 @@ abts_suite *test_s1ap_message(abts_suite *suite)
     abts_run_test(suite, s1ap_message_test5, NULL);
     abts_run_test(suite, s1ap_message_test6, NULL);
     abts_run_test(suite, s1ap_message_test7, NULL);
-#if 0
     abts_run_test(suite, s1ap_message_test8, NULL);
     abts_run_test(suite, s1ap_message_test9, NULL);
-#endif
     abts_run_test(suite, s1ap_message_test10, NULL);
 
     return suite;
