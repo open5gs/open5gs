@@ -474,9 +474,42 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                 }
 
             } else if (state == AMF_REMOVE_S1_CONTEXT_BY_RESET_PARTIAL) {
-                ogs_fatal("Not implemented");
-                ogs_assert_if_reached();
+                if (SESSION_SYNC_DONE(amf_ue, state)) {
+                    ran_ue_t *iter = NULL;
+                    ran_ue_t *ran_ue = ran_ue_cycle(amf_ue->ran_ue);
 
+                    amf_ue_deassociate(amf_ue);
+
+                    if (ran_ue) {
+                        amf_gnb_t *gnb = ran_ue->gnb;
+                        ogs_assert(gnb);
+
+                        ogs_debug("    SUPI[%s]", amf_ue->supi);
+                        ran_ue_remove(ran_ue);
+
+                        ogs_list_for_each(&gnb->ran_ue_list, iter) {
+                            if (iter->part_of_ng_reset_requested == true) {
+                                /* The GNB_UE context
+                                 * where PartOfNG_interface was requested
+                                 * still remains */
+                                return OGS_OK;
+                            }
+                        }
+
+                        /* All GNB_UE context
+                         * where PartOfNG_interface was requested
+                         * REMOVED */
+                        ngap_send_to_gnb(
+                                gnb, gnb->ng_reset_ack, NGAP_NON_UE_SIGNALLING);
+
+                        /* Clear NG-Reset Ack Buffer */
+                        gnb->ng_reset_ack = NULL;
+
+                    } else {
+                        ogs_warn("[%s] RAN-NG Context has already been removed",
+                                amf_ue->supi);
+                    }
+                }
             } else {
                 ogs_error("Invalid STATE[%d]", state);
                 ogs_assert_if_reached();

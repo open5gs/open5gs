@@ -142,6 +142,8 @@ typedef struct amf_gnb_s {
 
     OpenAPI_rat_type_e rat_type;
 
+    ogs_pkbuf_t     *ng_reset_ack; /* Reset message */
+
     ogs_list_t      ran_ue_list;
 
 } amf_gnb_t;
@@ -187,6 +189,8 @@ struct ran_ue_s {
 #define NGAP_UE_CTX_REL_NG_HANDOVER_CANCEL                  5
 #define NGAP_UE_CTX_REL_NG_HANDOVER_FAILURE                 6
     uint8_t         ue_ctx_rel_action;
+
+    bool            part_of_ng_reset_requested;
 
     /* Related Context */
     amf_gnb_t       *gnb;

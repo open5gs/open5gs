@@ -22,7 +22,20 @@ aper_get_length(asn_per_data_t *pd, int range, int ebits, int *repeat) {
 
 	*repeat = 0;
 
-	if (range <= 65536 && range >= 0)
+    /*
+     * ITU-T X.691(08/2015)
+     * #11.9.4.2
+     *
+     * If the length determinant "n" to be encoded is a normally small length,
+     * or a constrained whole number with "ub" greater than or equal to 64K,
+     * or is a semi-constrained whole number, then "n" shall be encoded
+     * as specified in 11.9.3.4 to 11.9.3.8.4.
+     *
+     * NOTE – Thus, if "ub" is greater than or equal to 64K,
+     * the encoding of the length determinant is the same as it would be
+     * if the length were unconstrained.
+     */
+	if (range <= 65535 && range >= 0)
 		return aper_get_nsnnwn(pd, range);
 
 	if (aper_get_align(pd) < 0)
@@ -32,14 +45,14 @@ aper_get_length(asn_per_data_t *pd, int range, int ebits, int *repeat) {
 
 	value = per_get_few_bits(pd, 8);
 	if(value < 0) return -1;
-	if((value & 128) == 0)  /* #10.9.3.6 */
+	if((value & 128) == 0)  /* #11.9.3.6 */
 		return (value & 0x7F);
-	if((value & 64) == 0) { /* #10.9.3.7 */
+	if((value & 64) == 0) { /* #11.9.3.7 */
 		value = ((value & 63) << 8) | per_get_few_bits(pd, 8);
 		if(value < 0) return -1;
 		return value;
 	}
-	value &= 63;	/* this is "m" from X.691, #10.9.3.8 */
+	value &= 63;	/* this is "m" from X.691, #11.9.3.8 */
 	if(value < 1 || value > 4)
 		return -1;
 	*repeat = 1;
@@ -162,18 +175,18 @@ aper_put_length(asn_per_outp_t *po, int range, size_t length, int *need_eom) {
 
 	ASN_DEBUG("APER put length %zu with range %d", length, range);
 
-	/* 10.9 X.691 Note 2 */
+	/* 11.9 X.691 Note 2 */
 	if (range <= 65536 && range >= 0)
 		return aper_put_nsnnwn(po, range, length);
 
 	if (aper_put_align(po) < 0)
 		return -1;
 
-	if(length <= 127)	   /* #10.9.3.6 */{
+	if(length <= 127)	   /* #11.9.3.6 */{
 		return per_put_few_bits(po, length, 8)
 		? -1 : (ssize_t)length;
 	}
-	else if(length < 16384) /* #10.9.3.7 */
+	else if(length < 16384) /* #11.9.3.7 */
 		return per_put_few_bits(po, length|0x8000, 16)
 		? -1 : (ssize_t)length;
 
@@ -193,7 +206,7 @@ int
 aper_put_nslength(asn_per_outp_t *po, size_t length) {
 
 	if(length <= 64) {
-		/* #10.9.3.4 */
+		/* #11.9.3.4 */
 		if(length == 0) return -1;
 		return per_put_few_bits(po, length-1, 7) ? -1 : 0;
 	} else {

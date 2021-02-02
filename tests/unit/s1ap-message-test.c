@@ -188,6 +188,83 @@ static void s1ap_message_test7(abts_case *tc, void *data)
     ogs_pkbuf_free(pkbuf);
 }
 
+#if 0
+static void s1ap_message_test8(abts_case *tc, void *data)
+{
+    /* ENBDirectInformationTransferRAN-INFORMATION-REQUEST */
+    const char *payload =
+        "0025004a000001007900432036715489 0164f0000100010002548f0264f00000"
+        "010064f000400000002057974b81054c 84000000204f81005581014d860064f0"
+        "00000280094064f0000100010002";
+
+    ogs_s1ap_message_t message;
+    ogs_pkbuf_t *pkbuf;
+    int result;
+    char hexbuf[OGS_MAX_SDU_LEN];
+
+    pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
+    ogs_assert(pkbuf);
+    ogs_pkbuf_put_data(pkbuf,
+            OGS_HEX(payload, strlen(payload), hexbuf), 78);
+
+    result = ogs_s1ap_decode(&message, pkbuf);
+    ABTS_INT_EQUAL(tc, 0, result);
+    ogs_s1ap_free(&message);
+
+    ogs_pkbuf_free(pkbuf);
+}
+
+static void s1ap_message_test9(abts_case *tc, void *data)
+{
+    /* ENBDirectInformationTransferRAN-INFORMATION-REQUEST */
+    const char *payload =
+        "0025004a000001007900432036715489 0164f0000100010001548f0264f00000"
+        "010064f000400000002057974b81054c 840000001f4f81005581014d860064f0"
+        "00000180094064f0000100010001";
+
+    ogs_s1ap_message_t message;
+    ogs_pkbuf_t *pkbuf;
+    int result;
+    char hexbuf[OGS_MAX_SDU_LEN];
+
+    pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
+    ogs_assert(pkbuf);
+    ogs_pkbuf_put_data(pkbuf,
+            OGS_HEX(payload, strlen(payload), hexbuf), 78);
+
+    result = ogs_s1ap_decode(&message, pkbuf);
+    ABTS_INT_EQUAL(tc, 0, result);
+    ogs_s1ap_free(&message);
+
+    ogs_pkbuf_free(pkbuf);
+}
+#endif
+
+static void s1ap_message_test10(abts_case *tc, void *data)
+{
+    /* ENBDirectInformationTransferRAN-INFORMATION-REQUEST */
+    const char *payload =
+        "0025004a000001007900432038715489 0064f000170001002d548f0254f42100"
+        "010054f421400000002057994b81014c 84000000014f81045581014d8864f000"
+        "170001002d0064f000170001002d";
+
+    ogs_s1ap_message_t message;
+    ogs_pkbuf_t *pkbuf;
+    int result;
+    char hexbuf[OGS_MAX_SDU_LEN];
+
+    pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
+    ogs_assert(pkbuf);
+    ogs_pkbuf_put_data(pkbuf,
+            OGS_HEX(payload, strlen(payload), hexbuf), 78);
+
+    result = ogs_s1ap_decode(&message, pkbuf);
+    ABTS_INT_EQUAL(tc, 0, result);
+    ogs_s1ap_free(&message);
+
+    ogs_pkbuf_free(pkbuf);
+}
+
 abts_suite *test_s1ap_message(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
@@ -199,6 +276,11 @@ abts_suite *test_s1ap_message(abts_suite *suite)
     abts_run_test(suite, s1ap_message_test5, NULL);
     abts_run_test(suite, s1ap_message_test6, NULL);
     abts_run_test(suite, s1ap_message_test7, NULL);
+#if 0
+    abts_run_test(suite, s1ap_message_test8, NULL);
+    abts_run_test(suite, s1ap_message_test9, NULL);
+#endif
+    abts_run_test(suite, s1ap_message_test10, NULL);
 
     return suite;
 }

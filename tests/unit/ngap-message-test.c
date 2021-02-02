@@ -3,7 +3,6 @@
 #include "amf/ngap-build.h"
 #include "test-common.h"
 
-#if 0
 static void ngap_message_test1(abts_case *tc, void *data)
 {
     ogs_pkbuf_t *pkbuf = NULL;
@@ -50,13 +49,8 @@ static void ngap_message_test1(abts_case *tc, void *data)
     ogs_ngap_build_part_of_ng_interface(UE_associatedLogicalNG_connectionList,
             &ran_ue_ngap_id, &amf_ue_ngap_id);
 
-    ogs_log_install_domain(&__ogs_ngap_domain, "ngap", OGS_LOG_ERROR);
-
-    asn_fprint(stdout, &asn_DEF_NGAP_NGAP_PDU, &pdu);
-
     pkbuf = ogs_ngap_encode(&pdu);
     ogs_assert(pkbuf);
-    ogs_log_hexdump(OGS_LOG_FATAL, pkbuf->data, pkbuf->len);
 
     struct_ptr = &message;
     struct_size = sizeof(ogs_ngap_message_t);
@@ -64,10 +58,12 @@ static void ngap_message_test1(abts_case *tc, void *data)
     memset(struct_ptr, 0, struct_size);
     dec_ret = aper_decode(NULL, &asn_DEF_NGAP_NGAP_PDU, (void **)&struct_ptr,
             pkbuf->data, pkbuf->len, 0, 0);
-    ogs_fatal("Failed to decode ASN-PDU [code:%d,consumed:%d]",
-            dec_ret.code, (int)dec_ret.consumed);
+    ABTS_INT_EQUAL(tc, 0, dec_ret.code);
+    ABTS_INT_EQUAL(tc, 128, dec_ret.consumed);
+
+    ogs_ngap_free(&message);
+    ogs_pkbuf_free(pkbuf);
 }
-#endif
 
 static void ngap_message_test2(abts_case *tc, void *data)
 {
@@ -83,8 +79,6 @@ static void ngap_message_test2(abts_case *tc, void *data)
     size_t struct_size;
     asn_dec_rval_t dec_ret = {0};
 
-    ogs_log_install_domain(&__ogs_ngap_domain, "ngap", OGS_LOG_ERROR);
-
     pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
     ogs_assert(pkbuf);
     ogs_pkbuf_put_data(pkbuf,
@@ -96,17 +90,20 @@ static void ngap_message_test2(abts_case *tc, void *data)
     memset(struct_ptr, 0, struct_size);
     dec_ret = aper_decode(NULL, &asn_DEF_NGAP_NGAP_PDU, (void **)&struct_ptr,
             pkbuf->data, pkbuf->len, 0, 0);
-    ogs_fatal("Failed to decode ASN-PDU [code:%d,consumed:%d]",
-            dec_ret.code, (int)dec_ret.consumed);
+    ABTS_INT_EQUAL(tc, 0, dec_ret.code);
+    ABTS_INT_EQUAL(tc, 184, dec_ret.consumed);
+
+    ogs_ngap_free(&message);
+    ogs_pkbuf_free(pkbuf);
 }
 
 abts_suite *test_ngap_message(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
 
-#if 0
+    ogs_log_install_domain(&__ogs_ngap_domain, "ngap", OGS_LOG_ERROR);
+
     abts_run_test(suite, ngap_message_test1, NULL);
-#endif
     abts_run_test(suite, ngap_message_test2, NULL);
 
     return suite;

@@ -34,9 +34,7 @@ const struct testlist {
     {test_s1ap_message},
     {test_nas_message},
     {test_gtp_message},
-#if 0
     {test_ngap_message},
-#endif
     {test_sbi_message},
     {test_security},
     {test_crash},

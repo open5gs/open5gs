@@ -363,7 +363,7 @@ static void test1_func(abts_case *tc, void *data)
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    /* Receive UEContextReleaseCommand */
+    /* Receive ErrorIndication */
     recvbuf = testgnb_ngap_read(ngap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     testngap_recv(test_ue, recvbuf);
@@ -392,7 +392,6 @@ static void test1_func(abts_case *tc, void *data)
     test_ue_remove(test_ue);
 }
 
-#if 0
 static void test2_func(abts_case *tc, void *data)
 {
     int rv;
@@ -674,7 +673,8 @@ static void test2_func(abts_case *tc, void *data)
     ogs_assert(partOfNG_Interface);
 
     ogs_ngap_build_part_of_ng_interface(
-            partOfNG_Interface, &test_ue->ran_ue_ngap_id, NULL);
+            partOfNG_Interface,
+            &test_ue->ran_ue_ngap_id, &test_ue->amf_ue_ngap_id);
 
     sendbuf = ogs_ngap_build_ng_reset(
             NGAP_Cause_PR_radioNetwork,
@@ -699,7 +699,7 @@ static void test2_func(abts_case *tc, void *data)
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    /* Receive UEContextReleaseCommand */
+    /* Receive ErrorIndication */
     recvbuf = testgnb_ngap_read(ngap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     testngap_recv(test_ue, recvbuf);
@@ -727,16 +727,13 @@ static void test2_func(abts_case *tc, void *data)
     /* Clear Test UE Context */
     test_ue_remove(test_ue);
 }
-#endif
 
 abts_suite *test_reset(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
 
     abts_run_test(suite, test1_func, NULL);
-#if 0
     abts_run_test(suite, test2_func, NULL);
-#endif
 
     return suite;
 }

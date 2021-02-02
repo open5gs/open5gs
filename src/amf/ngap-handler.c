@@ -3179,9 +3179,9 @@ void ngap_handle_ng_reset(
     NGAP_NGResetIEs_t *ie = NULL;
     NGAP_Cause_t *Cause = NULL;
     NGAP_ResetType_t *ResetType = NULL;
-#if 0
     NGAP_UE_associatedLogicalNG_connectionList_t *partOfNG_Interface = NULL;
-#endif
+
+    ran_ue_t *iter = NULL;
 
     ogs_assert(gnb);
     ogs_assert(gnb->sctp.sock);
@@ -3270,52 +3270,103 @@ void ngap_handle_ng_reset(
         break;
 
     case NGAP_ResetType_PR_partOfNG_Interface:
-        ogs_fatal("Not implemented");
-        ogs_assert_if_reached();
-
         ogs_warn("    NGAP_ResetType_PR_partOfNG_Interface");
-#if 0
+
         partOfNG_Interface = ResetType->choice.partOfNG_Interface;
         ogs_assert(partOfNG_Interface);
         for (i = 0; i < partOfNG_Interface->list.count; i++) {
-            NGAP_UE_associatedLogicalNG_ConnectionItemRes_t *ie2 = NULL;
-            NGAP_UE_associatedLogicalNG_ConnectionItem_t *item = NULL;
+            NGAP_UE_associatedLogicalNG_connectionItem_t *item = NULL;
+            uint64_t amf_ue_ngap_id;
 
             ran_ue_t *ran_ue = NULL;
             amf_ue_t *amf_ue = NULL;
 
-            ie2 = (NGAP_UE_associatedLogicalNG_ConnectionItemRes_t *)
-                partOfNG_Interface->list.array[i];
-            ogs_assert(ie2);
-
-            item = &ie2->value.choice.UE_associatedLogicalNG_ConnectionItem;
-            ogs_assert(item);
-
-            ogs_warn("    MME_UE_NGAP_ID[%d] ENB_UE_NGAP_ID[%d]",
-                    item->mME_UE_NGAP_ID ? (int)*item->mME_UE_NGAP_ID : -1,
-                    item->eNB_UE_NGAP_ID ? (int)*item->eNB_UE_NGAP_ID : -1);
-
-            if (item->mME_UE_NGAP_ID)
-                ran_ue = ran_ue_find_by_amf_ue_ngap_id( *item->mME_UE_NGAP_ID);
-            else if (item->eNB_UE_NGAP_ID)
-                ran_ue = ran_ue_find_by_ran_ue_ngap_id(gnb,
-                        *item->eNB_UE_NGAP_ID);
-
-            if (ran_ue == NULL) {
-                ogs_warn("Cannot find NG Context "
-                    "(MME_UE_NGAP_ID[%d] ENB_UE_NGAP_ID[%d])",
-                    item->mME_UE_NGAP_ID ? (int)*item->mME_UE_NGAP_ID : -1,
-                    item->eNB_UE_NGAP_ID ? (int)*item->eNB_UE_NGAP_ID : -1);
-                continue;
+            item = (NGAP_UE_associatedLogicalNG_connectionItem_t *)
+                        partOfNG_Interface->list.array[i];
+            if (!item) {
+                ogs_error("No ResetType");
+                ngap_send_error_indication(
+                        gnb, NULL, NULL,
+                        NGAP_Cause_PR_protocol,
+                        NGAP_CauseProtocol_semantic_error);
+                return;
             }
+
+            if (item->aMF_UE_NGAP_ID) {
+                if (asn_INTEGER2ulong(item->aMF_UE_NGAP_ID,
+                            (unsigned long *)&amf_ue_ngap_id) != 0) {
+                    ogs_error("Invalid AMF_UE_NGAP_ID");
+                    ngap_send_error_indication(
+                            gnb, NULL, NULL,
+                            NGAP_Cause_PR_protocol,
+                            NGAP_CauseProtocol_semantic_error);
+                    return;
+                }
+
+                ran_ue = ran_ue_find_by_amf_ue_ngap_id(amf_ue_ngap_id);
+
+                if (!ran_ue) {
+                    ogs_error("No RAN UE Context : AMF_UE_NGAP_ID[%lld]",
+                            (long long)amf_ue_ngap_id);
+                    ngap_send_error_indication(
+                            gnb, NULL, &amf_ue_ngap_id,
+                            NGAP_Cause_PR_radioNetwork,
+                            NGAP_CauseRadioNetwork_unknown_local_UE_NGAP_ID);
+                    return;
+                }
+
+            } else if (item->rAN_UE_NGAP_ID) {
+
+                ran_ue = ran_ue_find_by_ran_ue_ngap_id(
+                            gnb, *item->rAN_UE_NGAP_ID);
+
+                if (!ran_ue) {
+                    ogs_error("No RAN UE Context : RAN_UE_NGAP_ID[%d]",
+                            (int)*item->rAN_UE_NGAP_ID);
+                    ngap_send_error_indication(
+                            gnb, NULL, NULL,
+                            NGAP_Cause_PR_radioNetwork,
+                            NGAP_CauseRadioNetwork_unknown_local_UE_NGAP_ID);
+                    return;
+                }
+            }
+
+            ogs_assert(ran_ue);
+
+            /* RAN_UE Context where PartOfNG_interface was requested */
+            ran_ue->part_of_ng_reset_requested = true;
 
             amf_ue = ran_ue->amf_ue;
             ogs_assert(amf_ue);
 
-            amf_gtp_send_release_access_bearers_request(
-                    amf_ue, OGS_GTP_RELEASE_NG_CONTEXT_REMOVE);
+            amf_sbi_send_deactivate_all_sessions(
+                amf_ue, AMF_REMOVE_S1_CONTEXT_BY_RESET_PARTIAL,
+                NGAP_Cause_PR_radioNetwork,
+                NGAP_CauseRadioNetwork_failure_in_radio_interface_procedure);
         }
-#endif
+
+        if (gnb->ng_reset_ack)
+            ogs_pkbuf_free(gnb->ng_reset_ack);
+
+        gnb->ng_reset_ack = ogs_ngap_build_ng_reset_ack(partOfNG_Interface);
+        ogs_expect_or_return(gnb->ng_reset_ack);
+
+        ogs_list_for_each(&gnb->ran_ue_list, iter) {
+            if (iter->part_of_ng_reset_requested == true) {
+                /* The GNB_UE context
+                 * where PartOfNG_interface was requested
+                 * still remains */
+                return;
+            }
+        }
+
+        /* All GNB_UE context
+         * where PartOfNG_interface was requested
+         * REMOVED */
+        ngap_send_to_gnb(gnb, gnb->ng_reset_ack, NGAP_NON_UE_SIGNALLING);
+
+        /* Clear NG-Reset Ack Buffer */
+        gnb->ng_reset_ack = NULL;
         break;
     default:
         ogs_warn("Invalid ResetType[%d]", ResetType->present);
