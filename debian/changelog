@@ -1,3 +1,21 @@
+open5gs (2.1.5) unstable; urgency=medium
+
+  * Bug Fixed
+
+ -- Sukchan Lee <acetcom@gmail.com>  Tue, 02 Feb 2021 14:47:59 -0500
+
+open5gs (2.1.5~bionic) bionic; urgency=medium
+
+  * Bug Fixed
+
+ -- Sukchan Lee <acetcom@gmail.com>  Tue, 02 Feb 2021 14:46:57 -0500
+
+open5gs (2.1.5~focal) focal; urgency=medium
+
+  * Bug Fixed
+
+ -- Sukchan Lee <acetcom@gmail.com>  Tue, 02 Feb 2021 14:45:48 -0500
+
 open5gs (2.1.4) unstable; urgency=medium
 
   * Paging was added
