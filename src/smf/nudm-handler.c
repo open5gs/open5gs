@@ -25,6 +25,7 @@ bool smf_nudm_sdm_handle_get(smf_sess_t *sess, ogs_sbi_stream_t *stream,
 {
     char *strerror = NULL;
     smf_ue_t *smf_ue = NULL;
+    ogs_pkbuf_t *n1smbuf = NULL;
 
     OpenAPI_sm_context_created_data_t SmContextCreatedData;
 
@@ -68,7 +69,18 @@ bool smf_nudm_sdm_handle_get(smf_sess_t *sess, ogs_sbi_stream_t *stream,
     if (!dnnConfigurationList) {
         strerror = ogs_msprintf("[%s:%d] No dnnConfigurations",
                 smf_ue->supi, sess->psi);
-        goto cleanup;
+        ogs_assert(strerror);
+
+        n1smbuf = gsm_build_pdu_session_establishment_reject(sess,
+            OGS_5GSM_CAUSE_MISSING_OR_UNKNOWN_DNN);
+        ogs_assert(n1smbuf);
+
+        ogs_warn("%s", strerror);
+        smf_sbi_send_sm_context_create_error(stream,
+                OGS_SBI_HTTP_STATUS_NOT_FOUND, strerror, NULL, n1smbuf);
+        ogs_free(strerror);
+
+        return false;
     }
 
     OpenAPI_list_for_each(dnnConfigurationList, node) {

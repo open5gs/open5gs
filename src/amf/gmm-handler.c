@@ -512,7 +512,7 @@ int gmm_handle_deregistration_request(amf_ue_t *amf_ue,
 
     ogs_info("[%s]    SUCI", amf_ue->suci);
 
-    amf_sbi_send_release_all_sessions(amf_ue, AMF_SESS_SM_CONTEXT_NO_STATE);
+    amf_sbi_send_release_all_sessions(amf_ue, AMF_RELEASE_SM_CONTEXT_NO_STATE);
 
     if (ogs_list_count(&amf_ue->sess_list) == 0)
         nas_5gs_send_de_registration_accept(amf_ue);
@@ -679,8 +679,6 @@ int gmm_handle_ul_nas_transport(amf_ue_t *amf_ue,
     ogs_nas_dnn_t *dnn = NULL;
     ogs_nas_5gsm_header_t *gsm_header = NULL;
 
-    bool duplicated_pdu_session_id = false;
-
     ogs_assert(amf_ue);
     ogs_assert(ul_nas_transport);
 
@@ -743,8 +741,6 @@ int gmm_handle_ul_nas_transport(amf_ue_t *amf_ue,
             if (!sess) {
                 sess = amf_sess_add(amf_ue, *pdu_session_id);
                 ogs_assert(sess);
-            } else {
-                duplicated_pdu_session_id = true;
             }
         } else {
             sess = amf_sess_find_by_psi(amf_ue, *pdu_session_id);
@@ -786,7 +782,7 @@ int gmm_handle_ul_nas_transport(amf_ue_t *amf_ue,
             }
 
             if (!selected_s_nssai) {
-                ogs_error("No S_NSSAI : Set default S_NSSAI using AMF config");
+                ogs_warn("No S_NSSAI : Set default S_NSSAI using AMF config");
                 selected_s_nssai = &amf_self()->plmn_support[0].s_nssai[0];
                 ogs_assert(selected_s_nssai);
             }
@@ -814,9 +810,9 @@ int gmm_handle_ul_nas_transport(amf_ue_t *amf_ue,
             ogs_info("UE SUPI[%s] DNN[%s] S_NSSAI[SST:%d SD:0x%x]",
                 amf_ue->supi, sess->dnn, sess->s_nssai.sst, sess->s_nssai.sd.v);
 
-            if (duplicated_pdu_session_id == false) {
+            if (!SESSION_CONTEXT_IN_SMF(sess)) {
                 amf_sess_sbi_discover_and_send(OpenAPI_nf_type_SMF,
-                        sess, AMF_SESS_SM_CONTEXT_NO_STATE, NULL,
+                        sess, AMF_CREATE_SM_CONTEXT_NO_STATE, NULL,
                         amf_nsmf_pdusession_build_create_sm_context);
             } else {
                 memset(&param, 0, sizeof(param));

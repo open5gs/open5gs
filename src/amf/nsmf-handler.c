@@ -135,7 +135,6 @@ int amf_nsmf_pdusession_handle_create_sm_context(
         }
 
         nas_5gs_send_back_5gsm_message_from_sbi(sess, recvmsg->res_status);
-
         return OGS_ERROR;
     }
 
@@ -398,7 +397,7 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                         "(DUPLICATED_PDU_SESSION_ID)", amf_ue->supi, sess->psi);
 
                 amf_sess_sbi_discover_and_send(OpenAPI_nf_type_SMF,
-                        sess, AMF_SESS_SM_CONTEXT_NO_STATE, NULL,
+                        sess, AMF_CREATE_SM_CONTEXT_NO_STATE, NULL,
                         amf_nsmf_pdusession_build_create_sm_context);
 
             } else if (state == AMF_UPDATE_SM_CONTEXT_PATH_SWITCH_REQUEST) {
@@ -527,7 +526,7 @@ int amf_nsmf_pdusession_handle_update_sm_context(
 
                 ogs_debug("[%s:%d] SM context remove", amf_ue->supi, sess->psi);
                 amf_nsmf_pdusession_handle_release_sm_context(
-                        sess, AMF_SESS_SM_CONTEXT_NO_STATE);
+                        sess, AMF_RELEASE_SM_CONTEXT_NO_STATE);
             }
         }
     } else {
@@ -547,13 +546,15 @@ int amf_nsmf_pdusession_handle_update_sm_context(
 
         SmContextUpdateError = recvmsg->SmContextUpdateError;
         if (!SmContextUpdateError) {
-            ogs_error("[%d:%d] No SmContextUpdateError", sess->psi, sess->pti);
+            ogs_error("[%d:%d] No SmContextUpdateError [%d]",
+                    sess->psi, sess->pti, recvmsg->res_status);
             ngap_send_error_indication2(amf_ue,
                     NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
             return OGS_ERROR;
         }
         if (!SmContextUpdateError->error) {
-            ogs_error("[%d:%d] No Error", sess->psi, sess->pti);
+            ogs_error("[%d:%d] No Error [%d]",
+                    sess->psi, sess->pti, recvmsg->res_status);
             ngap_send_error_indication2(amf_ue,
                     NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
             return OGS_ERROR;
@@ -597,8 +598,12 @@ int amf_nsmf_pdusession_handle_update_sm_context(
         }
 #endif
 
+        ogs_error("[%d:%d] HTTP response error [%d]",
+                sess->psi, sess->pti, recvmsg->res_status);
+#if 0 /* Is it needed */
         ngap_send_error_indication2(amf_ue,
                 NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
+#endif
 
         return OGS_ERROR;
     }
@@ -640,8 +645,7 @@ int amf_nsmf_pdusession_handle_release_sm_context(amf_sess_t *sess, int state)
 
     } else {
 
-        /* Check last session */
-        if (ogs_list_count(&amf_ue->sess_list) == 0) {
+        if (SESSION_SYNC_DONE(amf_ue, state)) {
 
             if (state == AMF_RELEASE_SM_CONTEXT_NG_CONTEXT_REMOVE) {
                 /*
@@ -664,7 +668,7 @@ int amf_nsmf_pdusession_handle_release_sm_context(amf_sess_t *sess, int state)
                 /* Not reached here */
                 ogs_assert_if_reached();
 
-            } else {
+            } else if (state == AMF_RELEASE_SM_CONTEXT_NO_STATE) {
                 /* NO_STATE */
 
                 if (OGS_FSM_CHECK(&amf_ue->sm, gmm_state_authentication)) {
@@ -723,6 +727,9 @@ int amf_nsmf_pdusession_handle_release_sm_context(amf_sess_t *sess, int state)
                     ogs_fatal("Release SM Context : INVALID STATE");
                     ogs_assert_if_reached();
                 }
+            } else {
+                ogs_fatal("Release SM STATE undefined");
+                ogs_assert_if_reached();
             }
         }
     }

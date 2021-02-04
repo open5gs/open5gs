@@ -64,7 +64,7 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
 
     ogs_sbi_object_t *sbi_object = NULL;
     ogs_sbi_xact_t *sbi_xact = NULL;
-    int state = AMF_SESS_SM_CONTEXT_NO_STATE;
+    int state = AMF_CREATE_SM_CONTEXT_NO_STATE;
     ogs_sbi_stream_t *stream = NULL;
     ogs_sbi_request_t *sbi_request = NULL;
 
@@ -436,8 +436,32 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
                 break;
 
             DEFAULT
-                amf_nsmf_pdusession_handle_create_sm_context(
+                rv = amf_nsmf_pdusession_handle_create_sm_context(
                         sess, &sbi_message);
+                if (rv != OGS_OK) {
+                    /*
+                     * 1. First PDU session establishment request
+                     *    (PSI:5, internet)
+                     * 2. First session created
+                     * 3. Seconds PDU session establishment request
+                     *    (PSI:5, ims)
+                     * 4. AMF sends DUPLICATED_PDU_SESSION_ID to the SMF
+                     * 5. AMF try to create second PDU session.
+                     * 6. But, Second session rejected due to Subscription Info.
+                     *
+                     * In above situation, AMF need to clear SM_CONTEXT_REF.
+                     * Otherwise, AMF have redundant PDU session.
+                     *
+                     * Moreover, AMF could send UEContextReleaseRequest
+                     * with deactivating this redundant session.
+                     *
+                     * So, if CreateSMContext is failed,
+                     * we'll clear SM_CONTEXT_REF.
+                     */
+                    if (SESSION_CONTEXT_IN_SMF(sess)) {
+                        CLEAR_SM_CONTEXT_REF(sess);
+                    }
+                }
             END
             break;
 

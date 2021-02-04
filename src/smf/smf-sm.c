@@ -554,6 +554,9 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
             if (OGS_FSM_CHECK(&sess->sm, smf_gsm_state_exception)) {
                 ogs_error("[%s] State machine exception", smf_ue->supi);
                 SMF_SESS_CLEAR(sess);
+            } else if (OGS_FSM_CHECK(
+                        &sess->sm, smf_gsm_state_session_will_release)) {
+                SMF_SESS_CLEAR(sess);
             }
             break;
 

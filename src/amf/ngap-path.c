@@ -53,7 +53,12 @@ int ngap_send_to_gnb(amf_gnb_t *gnb, ogs_pkbuf_t *pkbuf, uint16_t stream_no)
     ogs_assert(gnb);
     ogs_assert(pkbuf);
     ogs_assert(gnb->sctp.sock);
-    ogs_assert(gnb->sctp.sock->fd != INVALID_SOCKET);
+    if (gnb->sctp.sock->fd == INVALID_SOCKET) {
+        ogs_fatal("gNB SCTP socket has already been destroyed");
+        ogs_log_hexdump(OGS_LOG_FATAL, pkbuf->data, pkbuf->len);
+        ogs_assert_if_reached();
+        return OGS_ERROR;
+    }
 
     ogs_debug("    IP[%s] RAN_ID[%d]",
             OGS_ADDR(gnb->sctp.addr, buf), gnb->gnb_id);

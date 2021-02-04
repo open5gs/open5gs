@@ -570,6 +570,8 @@ void smf_ue_remove(smf_ue_t *smf_ue)
 
     ogs_list_remove(&self.smf_ue_list, smf_ue);
 
+    smf_sess_remove_all(smf_ue);
+
     if (smf_ue->supi) {
         ogs_hash_set(self.supi_hash, smf_ue->supi, strlen(smf_ue->supi), NULL);
         ogs_free(smf_ue->supi);
@@ -578,8 +580,6 @@ void smf_ue_remove(smf_ue_t *smf_ue)
     if (smf_ue->imsi_len) {
         ogs_hash_set(self.imsi_hash, smf_ue->imsi, smf_ue->imsi_len, NULL);
     }
-
-    smf_sess_remove_all(smf_ue);
 
     ogs_pool_free(&smf_ue_pool, smf_ue);
 
@@ -1112,11 +1112,11 @@ void smf_sess_remove(smf_sess_t *sess)
     smf_ue = sess->smf_ue;
     ogs_assert(smf_ue);
    
-    ogs_info("Removed Session: UE IMSI:[%s] DNN:[%s] IPv4:[%s] IPv6:[%s]",
-           smf_ue->imsi_bcd,
-           sess->pdn.dnn,
-       sess->ipv4 ? OGS_INET_NTOP(&sess->ipv4->addr, buf1) : "",
-       sess->ipv6 ? OGS_INET6_NTOP(&sess->ipv6->addr, buf2) : "");
+    ogs_info("Removed Session: UE IMSI:[%s] DNN:[%s:%d] IPv4:[%s] IPv6:[%s]",
+            smf_ue->supi ? smf_ue->supi : smf_ue->imsi_bcd,
+            sess->pdn.dnn, sess->psi,
+            sess->ipv4 ? OGS_INET_NTOP(&sess->ipv4->addr, buf1) : "",
+            sess->ipv6 ? OGS_INET6_NTOP(&sess->ipv6->addr, buf2) : "");
 
     ogs_list_remove(&smf_ue->sess_list, sess);
 

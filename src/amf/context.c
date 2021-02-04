@@ -1143,6 +1143,9 @@ void amf_ue_remove(amf_ue_t *amf_ue)
 
     amf_ue_fsm_fini(amf_ue);
 
+    /* Remove all session context */
+    amf_sess_remove_all(amf_ue);
+
     /* Clear hash table */
     if (amf_ue->m_tmsi) {
         ogs_hash_set(self.guti_ue_hash,
@@ -1202,8 +1205,6 @@ void amf_ue_remove(amf_ue_t *amf_ue)
     ogs_sbi_object_free(&amf_ue->sbi);
 
     amf_ue_deassociate(amf_ue);
-
-    amf_sess_remove_all(amf_ue);
 
     ogs_pool_free(&amf_ue_pool, amf_ue);
 

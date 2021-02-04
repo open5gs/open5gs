@@ -37,7 +37,7 @@ void amf_ue_sbi_discover_and_send(OpenAPI_nf_type_e target_nf_type,
         amf_ue_t *amf_ue, void *data,
         ogs_sbi_request_t *(*build)(amf_ue_t *amf_ue, void *data));
 
-#define AMF_SESS_SM_CONTEXT_NO_STATE                0
+#define AMF_CREATE_SM_CONTEXT_NO_STATE              0
 #define AMF_UPDATE_SM_CONTEXT_ACTIVATED             11
 #define AMF_UPDATE_SM_CONTEXT_DEACTIVATED           12
 #define AMF_UPDATE_SM_CONTEXT_REGISTRATION_REQUEST  13
@@ -51,9 +51,10 @@ void amf_ue_sbi_discover_and_send(OpenAPI_nf_type_e target_nf_type,
 #define AMF_UPDATE_SM_CONTEXT_HANDOVER_REQ_ACK      21
 #define AMF_UPDATE_SM_CONTEXT_HANDOVER_NOTIFY       22
 #define AMF_UPDATE_SM_CONTEXT_HANDOVER_CANCEL       23
-#define AMF_RELEASE_SM_CONTEXT_NG_CONTEXT_REMOVE    31
-#define AMF_RELEASE_SM_CONTEXT_REGISTRATION_ACCEPT  32
-#define AMF_RELEASE_SM_CONTEXT_SERVICE_ACCEPT       33
+#define AMF_RELEASE_SM_CONTEXT_NO_STATE             31
+#define AMF_RELEASE_SM_CONTEXT_NG_CONTEXT_REMOVE    32
+#define AMF_RELEASE_SM_CONTEXT_REGISTRATION_ACCEPT  33
+#define AMF_RELEASE_SM_CONTEXT_SERVICE_ACCEPT       34
 #define AMF_REMOVE_S1_CONTEXT_BY_LO_CONNREFUSED     51
 #define AMF_REMOVE_S1_CONTEXT_BY_RESET_ALL          52
 #define AMF_REMOVE_S1_CONTEXT_BY_RESET_PARTIAL      53

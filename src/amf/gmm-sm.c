@@ -161,7 +161,7 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e)
             } else {
 
                 amf_sbi_send_release_all_sessions(
-                        amf_ue, AMF_SESS_SM_CONTEXT_NO_STATE);
+                        amf_ue, AMF_RELEASE_SM_CONTEXT_NO_STATE);
                 if (amf_sess_xact_count(amf_ue) == xact_count) {
                     amf_ue_sbi_discover_and_send(
                             OpenAPI_nf_type_AUSF, amf_ue, NULL,
@@ -228,7 +228,7 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e)
             }
 
             amf_sbi_send_release_all_sessions(
-                        amf_ue, AMF_SESS_SM_CONTEXT_NO_STATE);
+                        amf_ue, AMF_RELEASE_SM_CONTEXT_NO_STATE);
             if (amf_sess_xact_count(amf_ue) == xact_count) {
                 amf_ue_sbi_discover_and_send(OpenAPI_nf_type_AUSF, amf_ue, NULL,
                         amf_nausf_auth_build_authenticate);
@@ -1002,7 +1002,7 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
             }
 
             amf_sbi_send_release_all_sessions(
-                        amf_ue, AMF_SESS_SM_CONTEXT_NO_STATE);
+                        amf_ue, AMF_RELEASE_SM_CONTEXT_NO_STATE);
             if (amf_sess_xact_count(amf_ue) == xact_count) {
                 amf_ue_sbi_discover_and_send(OpenAPI_nf_type_AUSF, amf_ue, NULL,
                         amf_nausf_auth_build_authenticate);
@@ -1071,7 +1071,8 @@ void gmm_state_exception(ogs_fsm_t *s, amf_event_t *e)
         AMF_UE_CLEAR_N2_TRANSFER(amf_ue, pdu_session_resource_setup_request);
         CLEAR_AMF_UE_ALL_TIMERS(amf_ue);
 
-        amf_sbi_send_release_all_sessions(amf_ue, AMF_SESS_SM_CONTEXT_NO_STATE);
+        amf_sbi_send_release_all_sessions(
+                amf_ue, AMF_RELEASE_SM_CONTEXT_NO_STATE);
 
         if (ogs_list_count(&amf_ue->sess_list) == 0)
             ngap_send_amf_ue_context_release_command(amf_ue,
@@ -1128,7 +1129,7 @@ void gmm_state_exception(ogs_fsm_t *s, amf_event_t *e)
             } else {
 
                 amf_sbi_send_release_all_sessions(
-                        amf_ue, AMF_SESS_SM_CONTEXT_NO_STATE);
+                        amf_ue, AMF_RELEASE_SM_CONTEXT_NO_STATE);
                 if (amf_sess_xact_count(amf_ue) == xact_count) {
                     amf_ue_sbi_discover_and_send(
                             OpenAPI_nf_type_AUSF, amf_ue, NULL,

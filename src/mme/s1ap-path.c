@@ -54,7 +54,12 @@ int s1ap_send_to_enb(mme_enb_t *enb, ogs_pkbuf_t *pkbuf, uint16_t stream_no)
     ogs_assert(enb);
     ogs_assert(pkbuf);
     ogs_assert(enb->sctp.sock);
-    ogs_assert(enb->sctp.sock->fd != INVALID_SOCKET);
+    if (enb->sctp.sock->fd == INVALID_SOCKET) {
+        ogs_fatal("eNB SCTP socket has already been destroyed");
+        ogs_log_hexdump(OGS_LOG_FATAL, pkbuf->data, pkbuf->len);
+        ogs_assert_if_reached();
+        return OGS_ERROR;
+    }
 
     ogs_debug("    IP[%s] ENB_ID[%d]",
             OGS_ADDR(enb->sctp.addr, buf), enb->enb_id);

@@ -121,14 +121,14 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                     ogs_sbi_server_send_error(stream, sbi_message->res_status,
                         sbi_message, strerror, NULL);
                     ogs_free(strerror);
+
+                    OGS_FSM_TRAN(s, smf_gsm_state_exception);
                     break;
                 }
 
                 if (smf_nudm_sdm_handle_get(
                             sess, stream, sbi_message) != true) {
-                    ogs_sbi_server_send_error(stream,
-                            OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR,
-                            sbi_message, "HTTP response error", smf_ue->supi);
+                    OGS_FSM_TRAN(s, smf_gsm_state_session_will_release);
                 }
                 break;
 
@@ -143,6 +143,7 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                         OGS_SBI_HTTP_STATUS_BAD_REQUEST,
                         sbi_message, strerror, NULL);
                 ogs_free(strerror);
+                OGS_FSM_TRAN(s, smf_gsm_state_exception);
             END
             break;
 
@@ -362,6 +363,30 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
 
     default:
         ogs_error("Unknown event [%s]", smf_event_get_name(e));
+    }
+}
+
+void smf_gsm_state_session_will_release(ogs_fsm_t *s, smf_event_t *e)
+{
+    smf_sess_t *sess = NULL;
+    ogs_assert(s);
+    ogs_assert(e);
+
+    smf_sm_debug(e);
+
+    sess = e->sess;
+    ogs_assert(sess);
+
+    switch (e->id) {
+    case OGS_FSM_ENTRY_SIG:
+        break;
+
+    case OGS_FSM_EXIT_SIG:
+        break;
+
+    default:
+        ogs_error("Unknown event %s", smf_event_get_name(e));
+        break;
     }
 }
 

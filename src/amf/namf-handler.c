@@ -465,7 +465,7 @@ int amf_namf_callback_handle_sm_context_status(
 
         ogs_debug("[%s:%d] SM context remove", amf_ue->supi, sess->psi);
         amf_nsmf_pdusession_handle_release_sm_context(
-                sess, AMF_SESS_SM_CONTEXT_NO_STATE);
+                sess, AMF_RELEASE_SM_CONTEXT_NO_STATE);
     }
 
 cleanup:
