@@ -14,15 +14,18 @@ Open5GS is a C-language Open Source implementation of 5GC and EPC, i.e. the core
 - Support of USIM cards using Milenage
 - IPv6 support
 - Multiple PDU session
-- S1/X2 and Xn Handover
+- Handover(5GC Xn/N2 and EPC S1/X2)
 - CSFB(Circuit Switched Fall Back) and SMSoS(SMS Over SGs)
 - VoLTE(Voice over LTE)
 
 #### Known Limitations
 ---
 
-- No OCS/OFCS
+- No NSSF
+- No VoNR(Voice over NR)
+- No Interworking with EPC
 - No NB-IoT
+- No OCS/OFCS
 - No eMBMS
 - No SRVCC
 - No Roaming
