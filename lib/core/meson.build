@@ -280,7 +280,6 @@ libcore_sources = files('''
     ogs-socknode.c
     ogs-udp.c
     ogs-tcp.c
-    ogs-tun.c
     ogs-queue.c
     ogs-select.c
     ogs-poll.c
@@ -302,6 +301,12 @@ if have_func_epoll_ctl
 endif
 if have_func_kqueue
     libcore_sources += files('ogs-kqueue.c')
+endif
+
+if host_system == 'darwin'
+    libcore_sources += files('ogs-utun.c')
+else
+    libcore_sources += files('ogs-tun.c')
 endif
 
 libcore_inc = include_directories('.')

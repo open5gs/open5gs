@@ -444,11 +444,13 @@ target     prot opt source               destination
 Chain POSTROUTING (policy ACCEPT)
 target     prot opt source               destination
 
-### Enable IPv4 Forwarding
-$ sudo sh -c "echo 1 > /proc/sys/net/ipv4/ip_forward"
+### Enable IPv4/IPv6 Forwarding
+$ sudo sysctl -w net.ipv4.ip_forward=1
+$ sudo sysctl -w net.ipv6.conf.all.forwarding=1
 
 ### Add NAT Rule
 $ sudo iptables -t nat -A POSTROUTING -s 10.45.0.0/16 ! -o ogstun -j MASQUERADE
+$ sudo ip6tables -t nat -A POSTROUTING -s cafe::/64 ! -o ogstun -j MASQUERADE
 ```
 
 **Note:** The above assumes you do not have any existing rules in the filter and nat tables. If a program such as docker has already set up rules, you may need to add the Open5GS related rules differently.

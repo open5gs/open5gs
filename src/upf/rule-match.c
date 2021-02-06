@@ -141,22 +141,24 @@ ogs_pfcp_pdr_t *upf_pdr_find_by_packet(ogs_pkbuf_t *pkt)
         addr_len = OGS_IPV6_LEN;
 
         sess = upf_sess_find_by_ipv6(dst_addr);
-    } else
-        ogs_error("Invalid IP version = %d", ip_h->ip_v);
-
-    ogs_debug("PROTO:%d SRC:%08x %08x %08x %08x",
-            proto, be32toh(src_addr[0]), be32toh(src_addr[1]),
-            be32toh(src_addr[2]), be32toh(src_addr[3]));
-    ogs_debug("HLEN:%d  DST:%08x %08x %08x %08x",
-            ip_hlen, be32toh(dst_addr[0]), be32toh(dst_addr[1]),
-            be32toh(dst_addr[2]), be32toh(dst_addr[3]));
-
+    } else {
+        ogs_error("Invalid packet [IP version:%d, Packet Length:%d]",
+                ip_h->ip_v, pkt->len);
+        ogs_log_hexdump(OGS_LOG_ERROR, pkt->data, pkt->len);
+    }
 
     if (sess) {
         ogs_pfcp_pdr_t *fallback_pdr = NULL;
         ogs_pfcp_pdr_t *pdr = NULL;
         ogs_pfcp_far_t *far = NULL;
         ogs_pfcp_rule_t *rule = NULL;
+
+        ogs_debug("PROTO:%d SRC:%08x %08x %08x %08x",
+                proto, be32toh(src_addr[0]), be32toh(src_addr[1]),
+                be32toh(src_addr[2]), be32toh(src_addr[3]));
+        ogs_debug("HLEN:%d  DST:%08x %08x %08x %08x",
+                ip_hlen, be32toh(dst_addr[0]), be32toh(dst_addr[1]),
+                be32toh(dst_addr[2]), be32toh(dst_addr[3]));
 
         if (ip_h && sess->ipv4)
             ogs_debug("PAA IPv4:%s", OGS_INET_NTOP(&sess->ipv4->addr, buf));

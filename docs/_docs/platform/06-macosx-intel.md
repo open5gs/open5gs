@@ -3,14 +3,23 @@ title: Mac OS X
 head_inline: "<style> .blue { color: blue; } </style>"
 ---
 
-This guide is based on **macOS Big Sur 11.0.1**.
+This guide is based on macOS Big Sur 11.2 on a Macbook Pro(Intel Chips) computer.
 {: .blue}
+
+### Install Xcode Command-Line Tools
+---
+
+Homebrew requires the Xcode command-line tools from Apple's Xcode.
+```bash
+$ xcode-select --install
+```
 
 ### Installing Homebrew
 ---
 
+Install brew using the official Homebrew installation instructions.
 ```bash
-$ /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+$ /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 ```
 
 ### Getting MongoDB
@@ -32,14 +41,13 @@ $ mongod --config /usr/local/etc/mongod.conf
 {: .notice--info}
 
 
-### Setting up TUN device (No persistent after rebooting)
+### Setting up network (No persistent after rebooting)
 ---
 
-Install TUN/TAP driver
-- You can download it from [http://tuntaposx.sourceforge.net/](http://tuntaposx.sourceforge.net/)
-- And then, run tuntap_20150118.pkg to install TUN/TAP driver.
+Note that Open5GS uses built-in "utun" device driver. So, You don't have to install external TUN/TAP driver.
+{: .blue}
 
-Configure the TUN device.
+Configure the loopback interface.
 ```bash
 $ sudo ifconfig lo0 alias 127.0.0.2 netmask 255.255.255.255
 $ sudo ifconfig lo0 alias 127.0.0.3 netmask 255.255.255.255
@@ -54,12 +62,21 @@ $ sudo ifconfig lo0 alias 127.0.0.10 netmask 255.255.255.255
 $ sudo ifconfig lo0 alias 127.0.0.11 netmask 255.255.255.255
 $ sudo ifconfig lo0 alias 127.0.0.12 netmask 255.255.255.255
 $ sudo ifconfig lo0 alias 127.0.0.13 netmask 255.255.255.255
+$ sudo ifconfig lo0 alias 127.0.0.14 netmask 255.255.255.255
+$ sudo ifconfig lo0 alias 127.0.0.15 netmask 255.255.255.255
+$ sudo ifconfig lo0 alias 127.0.0.16 netmask 255.255.255.255
+$ sudo ifconfig lo0 alias 127.0.0.17 netmask 255.255.255.255
+$ sudo ifconfig lo0 alias 127.0.0.18 netmask 255.255.255.255
+$ sudo ifconfig lo0 alias 127.0.0.19 netmask 255.255.255.255
+$ sudo ifconfig lo0 alias 127.0.0.20 netmask 255.255.255.255
 ```
 
 Enable IP forwarding & Masquerading
 ```bash
 $ sudo sysctl -w net.inet.ip.forwarding=1
+$ sudo sysctl -w net.inet6.ip6.forwarding=1
 $ sudo sh -c "echo 'nat on {en0} from 10.45.0.0/16 to any -> {en0}' > /etc/pf.anchors/org.open5gs"
+$ sudo sh -c "echo 'nat on {en0} from cafe::1/64 to any -> {en0}' > /etc/pf.anchors/org.open5gs"
 $ sudo pfctl -e -f /etc/pf.anchors/org.open5gs
 ```
 
@@ -152,4 +169,3 @@ The WebUI runs as an [npm](https://www.npmjs.com/) script.
 ```bash
 $ npm run dev
 ```
-

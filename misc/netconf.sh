@@ -17,6 +17,7 @@ if [ "$SYSTEM" = "Linux" ]; then
     ip link set ogstun up
 else
     sysctl -w net.inet.ip.forwarding=1
+    sysctl -w net.inet6.ip6.forwarding=1
     ifconfig lo0 alias 127.0.0.2 netmask 255.255.255.255
     ifconfig lo0 alias 127.0.0.3 netmask 255.255.255.255
     ifconfig lo0 alias 127.0.0.4 netmask 255.255.255.255
@@ -39,6 +40,7 @@ else
     if [ "$SYSTEM" = "Darwin" ]; then
         if ! test -f /etc/pf.anchors/org.open5gs; then
             sudo sh -c "echo 'nat on {en0} from 10.45.0.0/16 to any -> {en0}' > /etc/pf.anchors/org.open5gs"
+            sudo sh -c "echo 'nat on {en0} from cafe::1/64 to any -> {en0}' > /etc/pf.anchors/org.open5gs"
         fi
         pfctl -e -f /etc/pf.anchors/org.open5gs
     fi

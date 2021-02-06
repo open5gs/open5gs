@@ -357,9 +357,10 @@ Timeout:               0
 
 #### Is it possible to setup IP/NAT table along with Docker?
 
-Enable IP Forward.
+Enable IPv4/IPv6 Forward.
 ```
-$ sudo sh -c "echo 1 > /proc/sys/net/ipv4/ip_forward"
+$ sudo sysctl -w net.ipv4.ip_forward=1
+$ sudo sysctl -w net.ipv6.conf.all.forwarding=1
 ```
 
 The following is the default docker IP/NAT table.
@@ -435,6 +436,11 @@ And then, apply **newtables** as below.
 $ sudo iptables-restore < newtables
 ```
 
+Docker doesn't have IPv6 NAT rules. In this case, you just add the NAT rule as below.
+```
+$ sudo ip6tables -t nat -A POSTROUTING -s cafe::/64 ! -o ogstun -j MASQUERADE
+```
+
 The above operation is the same as described in the following manuals.
 ```
 ### Check IP Tables
@@ -462,11 +468,13 @@ target     prot opt source               destination
 Chain POSTROUTING (policy ACCEPT)
 target     prot opt source               destination
 
-### Enable IPv4 Forwarding
-$ sudo sh -c "echo 1 > /proc/sys/net/ipv4/ip_forward"
+### Enable IPv4/IPv6 Forwarding
+$ sudo sysctl -w net.ipv4.ip_forward=1
+$ sudo sysctl -w net.ipv6.conf.all.forwarding=1
 
 ### Add NAT Rule
 $ sudo iptables -t nat -A POSTROUTING -s 10.45.0.0/16 ! -o ogstun -j MASQUERADE
+$ sudo ip6tables -t nat -A POSTROUTING -s cafe::/64 ! -o ogstun -j MASQUERADE
 ```
 
 #### How to use a different DNN/APN for each SMF

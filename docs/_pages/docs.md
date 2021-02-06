@@ -30,7 +30,8 @@ head_inline: "<style> ul { padding-bottom: 1em; } </style>"
   - [Debian/Ubuntu](platform/01-debian-ubuntu)
   - [CentOS](platform/02-centos)
   - [Fedora](platform/03-fedora)
-  - [MacOSX](platform/05-macosx)
+  - [MacOSX(Apple Silicon)](platform/05-macosx-apple-silicon)
+  - [MacOSX(Intel)](platform/06-macosx-intel)
   
 - Hardware Specific Notes
   - [Tested e/gNodeBs](hardware/01-genodebs)

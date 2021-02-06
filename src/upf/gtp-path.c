@@ -52,25 +52,16 @@ static int upf_gtp_send_router_advertisement(
 static void _gtpv1_tun_recv_cb(short when, ogs_socket_t fd, void *data)
 {
     ogs_pkbuf_t *recvbuf = NULL;
-    int n;
 
     upf_sess_t *sess = NULL;
     ogs_pfcp_pdr_t *pdr = NULL;
     ogs_pfcp_user_plane_report_t report;
 
-    recvbuf = ogs_pkbuf_alloc(packet_pool, OGS_MAX_PKT_LEN);
-    ogs_assert(recvbuf);
-    ogs_pkbuf_reserve(recvbuf, OGS_GTPV1U_5GC_HEADER_LEN);
-    ogs_pkbuf_put(recvbuf, OGS_MAX_PKT_LEN-OGS_GTPV1U_5GC_HEADER_LEN);
-
-    n = ogs_read(fd, recvbuf->data, recvbuf->len);
-    if (n <= 0) {
-        ogs_log_message(OGS_LOG_WARN, ogs_socket_errno, "ogs_read() failed");
-        ogs_pkbuf_free(recvbuf);
+    recvbuf = ogs_tun_read(fd, packet_pool);
+    if (!recvbuf) {
+        ogs_warn("ogs_tun_read() failed");
         return;
     }
-
-    ogs_pkbuf_trim(recvbuf, n);
 
     /* Find the PDR by packet filter */
     pdr = upf_pdr_find_by_packet(recvbuf);
@@ -119,7 +110,8 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
 
     pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_PKT_LEN);
     ogs_assert(pkbuf);
-    ogs_pkbuf_put(pkbuf, OGS_MAX_PKT_LEN);
+    ogs_pkbuf_reserve(pkbuf, OGS_TUN_MAX_HEADROOM);
+    ogs_pkbuf_put(pkbuf, OGS_MAX_PKT_LEN-OGS_TUN_MAX_HEADROOM);
 
     size = ogs_recvfrom(fd, pkbuf->data, pkbuf->len, 0, &from);
     if (size <= 0) {
@@ -288,10 +280,8 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
 
             dev = subnet->dev;
             ogs_assert(dev);
-            if (ogs_write(dev->fd, pkbuf->data, pkbuf->len) <= 0) {
-                ogs_log_message(OGS_LOG_ERROR,
-                        ogs_socket_errno, "ogs_write() failed");
-            }
+            if (ogs_tun_write(dev->fd, pkbuf) != OGS_OK)
+                ogs_warn("ogs_tun_write() failed");
         } else {
             ogs_fatal("Not implemented : FAR-DST_IF[%d]", far->dst_if);
             ogs_assert_if_reached();

@@ -754,8 +754,8 @@ Below startup script can be used for setting up interfaces:
 ```
 #!/bin/bash
 
-sh -c "echo 1 > /proc/sys/net/ipv4/ip_forward"
-sh -c "echo 1 > /proc/sys/net/ipv6/ip_forward"
+sudo sysctl -w net.ipv4.ip_forward=1
+sudo sysctl -w net.ipv6.conf.all.forwarding=1
 
 ip tuntap add name ogstun mode tun
 ip addr add 192.168.100.1/24 dev ogstun

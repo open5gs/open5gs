@@ -86,7 +86,7 @@ static void child_main(void *data)
     ogs_proc_t *current = NULL;
     FILE *out = NULL;
     char buf[OGS_HUGE_LEN];
-    int ret = 0, out_return_code = 0;;
+    int ret = 0, out_return_code = 0;
 
     current = &process[process_num++];
     ret = ogs_proc_create(commandLine,
