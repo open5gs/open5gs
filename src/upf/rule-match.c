@@ -20,13 +20,13 @@
 #define _DEFAULT_SOURCE 1
 #define _BSD_SOURCE     1
 
+#include "rule-match.h"
+
 #include <netinet/ip.h>
 #include <netinet/ip6.h>
 #include <netinet/tcp.h>
 #include <netinet/udp.h>
 #include <arpa/inet.h>
-
-#include "rule-match.h"
 
 static int decode_ipv6_header(
         struct ip6_hdr *ip6_h, uint8_t *proto, uint16_t *hlen)

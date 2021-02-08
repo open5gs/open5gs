@@ -32,6 +32,7 @@ head_inline: "<style> ul { padding-bottom: 1em; } </style>"
   - [Fedora](platform/03-fedora)
   - [MacOSX(Apple Silicon)](platform/05-macosx-apple-silicon)
   - [MacOSX(Intel)](platform/06-macosx-intel)
+  - [FreeBSD](platform/07-freebsd)
   
 - Hardware Specific Notes
   - [Tested e/gNodeBs](hardware/01-genodebs)

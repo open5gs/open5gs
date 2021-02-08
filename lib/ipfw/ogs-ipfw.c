@@ -24,10 +24,10 @@
 #endif
 #endif
 
+#include "ogs-ipfw.h"
+
 #include "ipfw2.h"
 #include "objs/include_e/netinet/ip_fw.h"
-
-#include "ogs-ipfw.h"
 
 #define MAX_NUM_OF_TOKEN 32
 #define MAX_NUM_OF_RULE_BUFFER 1024

@@ -310,7 +310,7 @@ bool ogs_sbi_time_from_string(ogs_time_t *timestamp, char *str)
 {
     int rv, i, j, k;
     struct tm tm;
-    bool is_seconds;
+    bool is_subsecs, is_time, timezone_found;
     char seconds[MAX_TIMESTR_LEN];
     char subsecs[MAX_TIMESTR_LEN];
     ogs_time_t usecs;
@@ -321,18 +321,25 @@ bool ogs_sbi_time_from_string(ogs_time_t *timestamp, char *str)
     memset(seconds, 0, sizeof seconds);
     memset(subsecs, 0, sizeof subsecs);
 
-    is_seconds = true;
+    is_subsecs = false;
+    is_time = false;
+    timezone_found = false;
     i = 0; j = 0, k = 0;
     while(str[i]) {
-        if (is_seconds == true && str[i] == '.')
-            is_seconds = false;
-        else if (is_seconds == false && (str[i] < '0' || str[i] > '9'))
-            is_seconds = true;
+        if (is_subsecs == false && str[i] == '.')
+            is_subsecs = true;
+        else if (is_subsecs == false && str[i] == 'T')
+            is_time = true;
+        else if (is_subsecs == true && (str[i] < '0' || str[i] > '9'))
+            is_subsecs = false;
 
-        if (is_seconds == true) {
+        if (is_time == true && (str[i] == '+' || str[i] == '-'))
+            timezone_found = true;
+
+        if (is_subsecs == false) {
             if (str[i] == ':' && i >= 3 &&
                     (str[i-3] == '+' || str[i-3] == '-')) {
-                /* skip timezone ':' character */
+                /* remove ':' character in timezone string range */
             } else {
                 seconds[j++] = str[i];
             }
@@ -344,7 +351,10 @@ bool ogs_sbi_time_from_string(ogs_time_t *timestamp, char *str)
     }
 
     memset(&tm, 0, sizeof(tm));
-    ogs_strptime(seconds, "%Y-%m-%dT%H:%M:%S%z", &tm);
+    if (timezone_found == true)
+        ogs_strptime(seconds, "%Y-%m-%dT%H:%M:%S%z", &tm);
+    else
+        ogs_strptime(seconds, "%Y-%m-%dT%H:%M:%S", &tm);
 #if USE_MATH
     usecs = (ogs_time_t)floor(atof(subsecs) * 1000000.0 + 0.5);
 #else

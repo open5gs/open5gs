@@ -1,6 +1,24 @@
-#include "core/abts.h"
+/*
+ * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ *
+ * This file is part of Open5GS.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
 
-#include "mme/s1ap-build.h"
+#include "ogs-s1ap.h"
+#include "core/abts.h"
 
 static void s1ap_message_test1(abts_case *tc, void *data)
 {
@@ -83,6 +101,7 @@ static void s1ap_message_test3(abts_case *tc, void *data)
     ogs_pkbuf_free(pkbuf);
 }
 
+#if 0
 static void s1ap_message_test4(abts_case *tc, void *data)
 {
     ogs_s1ap_message_t message;
@@ -110,7 +129,6 @@ static void s1ap_message_test4(abts_case *tc, void *data)
 
 static void s1ap_message_test5(abts_case *tc, void *data)
 {
-#if 0
     ogs_s1ap_message_t message;
     int rv;
     ogs_pkbuf_t *pkbuf;
@@ -129,7 +147,6 @@ static void s1ap_message_test5(abts_case *tc, void *data)
 
     ogs_s1ap_free(&message);
     ogs_pkbuf_free(pkbuf);
-#endif
 }
 
 static void s1ap_message_test6(abts_case *tc, void *data)
@@ -161,6 +178,7 @@ static void s1ap_message_test6(abts_case *tc, void *data)
             s1apbuf->data, s1apbuf->len) == 0);
     ogs_pkbuf_free(s1apbuf);
 }
+#endif
 
 static void s1ap_message_test7(abts_case *tc, void *data)
 {
@@ -267,12 +285,16 @@ abts_suite *test_s1ap_message(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
 
+    ogs_log_install_domain(&__ogs_s1ap_domain, "s1ap", OGS_LOG_ERROR);
+
     abts_run_test(suite, s1ap_message_test1, NULL);
     abts_run_test(suite, s1ap_message_test2, NULL);
     abts_run_test(suite, s1ap_message_test3, NULL);
+#if 0 /* Will remove it in order not to use mme-context.h */
     abts_run_test(suite, s1ap_message_test4, NULL);
     abts_run_test(suite, s1ap_message_test5, NULL);
     abts_run_test(suite, s1ap_message_test6, NULL);
+#endif
     abts_run_test(suite, s1ap_message_test7, NULL);
     abts_run_test(suite, s1ap_message_test8, NULL);
     abts_run_test(suite, s1ap_message_test9, NULL);

@@ -32,7 +32,6 @@ libnrf_sources = files('''
 
 libnrf = static_library('nrf',
     sources : libnrf_sources,
-    link_with : libipfw,
     dependencies : [libapp_dep,
                     libdbi_dep,
                     libsbi_dep],

@@ -17,9 +17,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "test-common.h"
-
 #include "ogs-sbi.h"
+#include "core/abts.h"
 
 static void sbi_message_test1(abts_case *tc, void *data)
 {

@@ -17,10 +17,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "ogs-crypt.h"
-
-#include "mme/nas-security.h"
-
+#include "ogs-nas-common.h"
 #include "core/abts.h"
 
 static void security_test1(abts_case *tc, void *data)

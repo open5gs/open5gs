@@ -39,7 +39,6 @@ libpcf_sources = files('''
 
 libpcf = static_library('pcf',
     sources : libpcf_sources,
-    link_with : libipfw,
     dependencies : [libcrypt_dep,
                     libapp_dep,
                     libdbi_dep,

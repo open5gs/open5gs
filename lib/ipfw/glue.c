@@ -110,7 +110,15 @@ strlcpy(dst, src, siz)
 }
 
 
-#endif /* __linux__ */
+/********************************************************
+ * modifed by acetcom
+ *
+ * move down to remove sysctlbyname() in MacOSX and FreeBSD
+ */
+
+/* #endif */ /* __linux__ */
+
+/********************************************************/
 
 
 #if defined (EMULATE_SYSCTL)
@@ -358,6 +366,16 @@ skip:			;
 	return ret;
 #endif /* __linux__ */
 }
+
+/********************************************************
+ * modifed by acetcom
+ *
+ * move down to remove sysctlbyname in MacOSX and FreeBSD
+ */
+
+#endif /* __linux__ */
+
+/********************************************************/
 
 /*
  * The following two functions implement getsockopt/setsockopt

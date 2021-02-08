@@ -17,7 +17,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "test-common.h"
+#include "ogs-gtp.h"
+#include "core/abts.h"
 
 static void gtp_message_test1(abts_case *tc, void *data)
 {

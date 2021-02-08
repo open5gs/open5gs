@@ -18,6 +18,7 @@
  */
 
 #include "ogs-tun.h"
+#include "ipfw/ipfw2.h"
 
 #undef OGS_LOG_DOMAIN
 #define OGS_LOG_DOMAIN __ogs_sock_domain
@@ -31,13 +32,12 @@
 #include <netinet6/in6_var.h>
 #include <netinet6/nd6.h>
 
+#if defined(__APPLE__)
 #include <net/if_utun.h>
 #include <sys/kern_event.h>
 #include <sys/kern_control.h>
 
-static int unit = 0;
-
-static int utun_open(char *ifname, socklen_t len)
+static int utun_open(int unit, char *ifname, socklen_t maxlen)
 {
 	struct sockaddr_ctl addr;
 	struct ctl_info info;
@@ -45,7 +45,7 @@ static int utun_open(char *ifname, socklen_t len)
 	int err = 0;
 
     ogs_assert(ifname);
-    ogs_assert(len);
+    ogs_assert(maxlen);
 
 	fd = socket(PF_SYSTEM, SOCK_DGRAM, SYSPROTO_CONTROL);
 	if (fd < 0) return fd;
@@ -65,7 +65,7 @@ static int utun_open(char *ifname, socklen_t len)
 	err = connect(fd, (struct sockaddr *)&addr, sizeof (addr));
 	if (err != 0) goto on_error;
 
-	err = getsockopt(fd, SYSPROTO_CONTROL, UTUN_OPT_IFNAME, ifname, &len);
+	err = getsockopt(fd, SYSPROTO_CONTROL, UTUN_OPT_IFNAME, ifname, &maxlen);
 	if (err != 0) goto on_error;
 
 on_error:
@@ -76,18 +76,31 @@ on_error:
 
 	return fd;
 }
+#endif
 
-ogs_socket_t ogs_tun_open(char *ifname, int len, int is_tap)
+ogs_socket_t ogs_tun_open(char *ifname, int maxlen, int is_tap)
 {
     ogs_socket_t fd = INVALID_SOCKET;
+    int unit;
 
     ogs_assert(ifname);
 
 #define TUNTAP_ID_MAX 256
     for (unit = 0; unit < TUNTAP_ID_MAX; unit++) {
-        if ((fd = utun_open(ifname, len)) > 0) {
+#if defined(__APPLE__)
+        /* MacOSX "utun" device driver */
+        if ((fd = utun_open(unit, ifname, maxlen)) > 0) {
             break;
         }
+#else
+        /* FreeBSD "tun" device driver */
+        char name[IFNAMSIZ];
+        ogs_snprintf(name, sizeof(name), "/dev/tun%i", unit);
+        if ((fd = open(name, O_RDWR)) > 0) {
+            ogs_snprintf(ifname, maxlen, "tun%i", unit);
+            break;
+        }
+#endif
     }
     if (fd < 0) {
         ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno, "open() failed");
@@ -207,19 +220,6 @@ static int tun_set_ipv4(char *ifname,
 	return OGS_OK;
 }
 
-static int contigmask(uint8_t *p, int len)
-{
-	int i, n;
-
-	for (i=0; i<len ; i++)
-		if ( (p[i/8] & (1 << (7 - (i%8)))) == 0) /* first bit unset */
-			break;
-	for (n=i+1; n < len; n++)
-		if ( (p[n/8] & (1 << (7 - (n%8)))) != 0)
-			return -1; /* mask not contiguous */
-	return i;
-}
-
 static int tun_set_ipv6(char *ifname,
         ogs_ipsubnet_t *ipaddr, ogs_ipsubnet_t *ipsub)
 {
@@ -228,24 +228,23 @@ static int tun_set_ipv6(char *ifname,
     int ret = 0, out_return_code = 0;
 
     const char *commandLine[OGS_ARG_MAX];
-    char devname[32];
     char addr[128];
 
     char buf[OGS_ADDRSTRLEN];
     int prefixlen;
 
+    ogs_assert(ifname);
     ogs_assert(ipsub);
     ogs_assert(ipaddr);
 
 #define IPV6_BITLEN    (OGS_IPV6_LEN * 8)
     prefixlen = contigmask((uint8_t *)ipsub->mask, IPV6_BITLEN);
 
-    ogs_snprintf(devname, sizeof devname, "utun%d", unit);
     ogs_snprintf(addr, sizeof addr, "%s/%d",
             OGS_INET6_NTOP(ipaddr->sub, buf), prefixlen);
 
     commandLine[0] = "/sbin/ifconfig";
-    commandLine[1] = devname;
+    commandLine[1] = ifname;;
     commandLine[2] = "inet6";
     commandLine[3] = addr;
     commandLine[4] = "up";
@@ -412,64 +411,4 @@ int ogs_tun_set_ip(char *ifname, ogs_ipsubnet_t *gw, ogs_ipsubnet_t *sub)
         rv = tun_set_ipv6(ifname, gw, sub);
 
     return rv;
-}
-
-ogs_pkbuf_t *ogs_tun_read(ogs_socket_t fd, ogs_pkbuf_pool_t *packet_pool)
-{
-    ogs_pkbuf_t *recvbuf = NULL;
-    int n;
-
-    ogs_assert(fd != INVALID_SOCKET);
-    ogs_assert(packet_pool);
-
-    recvbuf = ogs_pkbuf_alloc(packet_pool, OGS_MAX_PKT_LEN);
-    ogs_assert(recvbuf);
-    ogs_pkbuf_reserve(recvbuf, OGS_TUN_MAX_HEADROOM);
-    ogs_pkbuf_put(recvbuf, OGS_MAX_PKT_LEN-OGS_TUN_MAX_HEADROOM);
-
-    n = ogs_read(fd, recvbuf->data, recvbuf->len);
-    if (n <= 0) {
-        ogs_log_message(OGS_LOG_WARN, ogs_socket_errno, "ogs_read() failed");
-        ogs_pkbuf_free(recvbuf);
-        return NULL;
-    }
-
-    ogs_pkbuf_trim(recvbuf, n);
-
-    /* Remove Null/Loopback Header (4bytes) */
-    ogs_pkbuf_pull(recvbuf, 4);
-
-    return recvbuf;
-}
-
-int ogs_tun_write(ogs_socket_t fd, ogs_pkbuf_t *pkbuf)
-{
-    uint8_t version;
-    uint32_t family;
-
-    ogs_assert(fd != INVALID_SOCKET);
-    ogs_assert(pkbuf);
-
-    version = (*((unsigned char *)pkbuf->data) >> 4) & 0xf;
-
-    if (version == 4) {
-        family = htobe32(AF_INET);
-    } else if (version == 6) {
-        family = htobe32(AF_INET6);
-    } else {
-        ogs_error("Invalid packet [IP version:%d, Packet Length:%d]",
-                version, pkbuf->len);
-        ogs_log_hexdump(OGS_LOG_ERROR, pkbuf->data, pkbuf->len);
-        return OGS_ERROR;
-    }
-
-    ogs_pkbuf_push(pkbuf, sizeof(family));
-    memcpy(pkbuf->data, &family, sizeof(family));
-
-    if (ogs_write(fd, pkbuf->data, pkbuf->len) <= 0) {
-        ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno, "ogs_write() failed");
-        return OGS_ERROR;
-    }
-
-    return OGS_OK;
 }

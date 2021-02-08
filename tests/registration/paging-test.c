@@ -1841,6 +1841,9 @@ static void vonr_qos_flow_test1_func(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
+    /* TODO: If there is no delay here, it won't work on FreeBSD */
+    ogs_msleep(100);
+
     /* Send De-registration request */
     gmmbuf = testgmm_build_de_registration_request(test_ue, 1);
     ABTS_PTR_NOTNULL(tc, gmmbuf);

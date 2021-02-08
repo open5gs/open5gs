@@ -17,47 +17,21 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef OGS_DIAMETER_COMMON_H
-#define OGS_DIAMETER_COMMON_H
-
-#include "freeDiameter/freeDiameter-host.h"
-
-#if defined(__GNUC__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wstrict-prototypes"
-#endif
-
-#if defined(__FreeBSD__)
-#define HAVE_NTOHLL 1
-#endif
-
-#include "freeDiameter/libfdcore.h"
-
-#if defined(__GNUC__)
-#pragma GCC diagnostic pop
-#endif
-
-#include "ogs-core.h"
-
-#define OGS_DIAMETER_INSIDE
-
-#include "diameter/common/message.h"
-#include "diameter/common/logger.h"
-#include "diameter/common/base.h"
-
-#undef OGS_DIAMETER_INSIDE
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-extern int __ogs_diam_domain;
+#include "ogs-tun.h"
 
 #undef OGS_LOG_DOMAIN
-#define OGS_LOG_DOMAIN __ogs_diam_domain
+#define OGS_LOG_DOMAIN __ogs_sock_domain
 
-#ifdef __cplusplus
+ogs_socket_t ogs_tun_open(char *ifname, int len, int is_tap)
+{
+    ogs_error("Not implemented");
+    ogs_assert_if_reached();
+    return INVALID_SOCKET;
 }
-#endif
 
-#endif /* OGS_DIAMETER_COMMON_H */
+int ogs_tun_set_ip(char *ifname, ogs_ipsubnet_t *gw, ogs_ipsubnet_t *sub)
+{
+    ogs_error("Not implemented");
+    ogs_assert_if_reached();
+    return OGS_ERROR;
+}

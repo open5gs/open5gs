@@ -20,7 +20,6 @@
 #ifndef SMF_GTP_PATH_H
 #define SMF_GTP_PATH_H
 
-#include "ogs-tun.h"
 #include "ogs-gtp.h"
 
 #ifdef __cplusplus

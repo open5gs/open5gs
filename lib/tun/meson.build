@@ -15,24 +15,31 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-testunit_unit_sources = files('''
-    abts-main.c
-    s1ap-message-test.c
-    nas-message-test.c
-    gtp-message-test.c
-    ngap-message-test.c
-    sbi-message-test.c
-    security-test.c
-    crash-test.c
+libtun_sources = files('''
+    ogs-tun.h
+
+    tunio.c
 '''.split())
 
-testunit_unit_exe = executable('unit',
-    sources : testunit_unit_sources,
-    c_args : [testunit_core_cc_flags, sbi_cc_flags],
-    dependencies : [libs1ap_dep,
-                    libgtp_dep,
-                    libngap_dep,
-                    libnas_eps_dep,
-                    libsbi_dep])
+if host_system == 'linux'
+    libtun_sources += files('linux-setup.c')
+elif host_system == 'windows'
+    libtun_sources += files('windows-setup.c')
+else
+    libtun_sources += files('mac-setup.c')
+endif
 
-test('unit', testunit_unit_exe, is_parallel : false, suite: 'unit')
+libtun_inc = include_directories('.')
+
+libtun = library('ogstun',
+    sources : libtun_sources,
+    version : libogslib_version,
+    c_args : '-DOGS_TUN_COMPILATION',
+    include_directories : [libtun_inc, libinc],
+    dependencies : [libcore_dep, libipfw_dep],
+    install : true)
+
+libtun_dep = declare_dependency(
+    link_with : libtun,
+    include_directories : [libtun_inc, libinc],
+    dependencies : [libcore_dep, libipfw_dep])

@@ -17,7 +17,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "test-common.h"
+#include "ogs-s1ap.h"
+#include "ogs-crypt.h"
+#include "core/abts.h"
 
 static void test1_func(abts_case *tc, void *data)
 {

@@ -57,6 +57,9 @@
 #include <errno.h>
 #include <arpa/inet.h>
 #include <pthread.h>
+#include <sys/time.h>
+#include <netinet/in.h>
+#include <sys/socket.h>
 
 #endif
 

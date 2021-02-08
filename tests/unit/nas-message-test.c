@@ -17,8 +17,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include "ogs-nas-eps.h"
 #include "core/abts.h"
-#include "mme/nas-security.h"
 
 static void ogs_nas_eps_message_test1(abts_case *tc, void *data)
 {
@@ -185,6 +185,7 @@ static void ogs_nas_eps_message_test4(abts_case *tc, void *data)
     ogs_pkbuf_free(pkbuf);
 }
 
+#if 0
 static void ogs_nas_eps_message_test5(abts_case *tc, void *data)
 {
     mme_ue_t ue;
@@ -198,6 +199,7 @@ static void ogs_nas_eps_message_test5(abts_case *tc, void *data)
     ue.ul_count.sqn = 0xef;
     ABTS_INT_EQUAL(tc, 0xabcdef, ue.ul_count.i32);
 }
+#endif
 
 static void ogs_nas_eps_message_test6(abts_case *tc, void *data)
 {
@@ -329,11 +331,15 @@ abts_suite *test_nas_message(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
 
+    ogs_log_install_domain(&__ogs_nas_domain, "nas", OGS_LOG_ERROR);
+
     abts_run_test(suite, ogs_nas_eps_message_test1, NULL);
     abts_run_test(suite, ogs_nas_eps_message_test2, NULL);
     abts_run_test(suite, ogs_nas_eps_message_test3, NULL);
     abts_run_test(suite, ogs_nas_eps_message_test4, NULL);
+#if 0 /* Will remove it in order not to use mme-context.h */
     abts_run_test(suite, ogs_nas_eps_message_test5, NULL);
+#endif
     abts_run_test(suite, ogs_nas_eps_message_test6, NULL);
     abts_run_test(suite, ogs_nas_eps_message_test7, NULL);
     abts_run_test(suite, ogs_nas_eps_message_test8, NULL);

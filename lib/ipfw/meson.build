@@ -52,6 +52,8 @@ ipfw_cc_flags = ['-D_DEFAULT_SOURCE', '-D_BSD_SOURCE', '-DUSERSPACE',
 
 if host_system == 'linux'
     ipfw_cc_flags += ['-DNEED_SYSCTLBYNAME', '-DNEED_SIN_LEN']
+elif host_system == 'freebsd'
+    ipfw_cc_flags += ['-DNEED_SYSCTLBYNAME']
 endif
 
 if cc.get_id() == 'gcc' or cc.get_id() == 'clang'

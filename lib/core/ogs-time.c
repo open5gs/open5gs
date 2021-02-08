@@ -60,14 +60,9 @@
 #include <mach/clock.h>
 #include <mach/mach.h>
 #include <mach/mach_time.h>
-#include <sys/time.h>
 #endif
 
 #include "core-config-private.h"
-
-#if HAVE_SYS_TIME_H
-#include <sys/time.h>
-#endif
 
 #include "ogs-core.h"
 

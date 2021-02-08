@@ -58,7 +58,6 @@ libamf_sources = files('''
 
 libamf = static_library('amf',
     sources : libamf_sources,
-    link_with : libipfw,
     dependencies : [libapp_dep,
                     libsctp_dep,
                     libngap_dep,

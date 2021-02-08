@@ -33,7 +33,6 @@ libudr_sources = files('''
 
 libudr = static_library('udr',
     sources : libudr_sources,
-    link_with : libipfw,
     dependencies : [libapp_dep,
                     libdbi_dep,
                     libsbi_dep],

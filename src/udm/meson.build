@@ -37,7 +37,6 @@ libudm_sources = files('''
 
 libudm = static_library('udm',
     sources : libudm_sources,
-    link_with : libipfw,
     dependencies : [libapp_dep,
                     libcrypt_dep,
                     libsbi_dep],

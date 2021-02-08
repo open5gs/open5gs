@@ -80,7 +80,7 @@ $ sudo sh -c "echo 'nat on {en0} from cafe::1/64 to any -> {en0}' > /etc/pf.anch
 $ sudo pfctl -e -f /etc/pf.anchors/org.open5gs
 ```
 
-**Tip:** The script provided in [$GIT_REPO/misc/netconf.sh](https://github.com/{{ site.github_username }}/open5gs/blob/master/misc/netconf.sh) makes it easy to configure the TUN device as follows:  
+**Tip:** The script provided in [$GIT_REPO/misc/netconf.sh](https://github.com/{{ site.github_username }}/open5gs/blob/master/misc/netconf.sh) makes it easy to configure the TUN device as follows:
 `$ sudo ./misc/netconf.sh`
 {: .notice--info}
 

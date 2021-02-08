@@ -64,16 +64,15 @@ libupf_sources = files('''
 
 libupf = static_library('upf',
     sources : libupf_sources,
-    link_with : libipfw,
     dependencies : [
-        libapp_dep, libdiameter_gx_dep, libgtp_dep, libpfcp_dep, libipfw_dep
+        libapp_dep, libdiameter_gx_dep, libgtp_dep, libpfcp_dep, libtun_dep
     ],
     install : false)
 
 libupf_dep = declare_dependency(
     link_with : libupf,
     dependencies : [
-        libapp_dep, libdiameter_gx_dep, libgtp_dep, libpfcp_dep, libipfw_dep
+        libapp_dep, libdiameter_gx_dep, libgtp_dep, libpfcp_dep, libtun_dep
     ])
 
 upf_sources = files('''

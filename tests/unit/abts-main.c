@@ -17,8 +17,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "test-app.h"
-#include "mme/mme-context.h"
+#include "ogs-core.h"
+#include "core/abts.h"
 
 abts_suite *test_s1ap_message(abts_suite *suite);
 abts_suite *test_nas_message(abts_suite *suite);
@@ -43,8 +43,6 @@ const struct testlist {
 
 static void terminate(void)
 {
-    mme_context_final();
-
     ogs_pkbuf_default_destroy();
 
     ogs_core_terminate();
@@ -85,13 +83,9 @@ int main(int argc, const char *const argv[])
     }
 
     ogs_core_initialize();
-    ogs_app_setup_log();
 
     ogs_pkbuf_default_init(&config);
     ogs_pkbuf_default_create(&config);
-
-    ogs_app_context_init();
-    mme_context_init();
 
     atexit(terminate);
 

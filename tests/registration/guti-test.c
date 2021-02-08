@@ -308,6 +308,7 @@ static void test1_func(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
+#if !defined(__FreeBSD__)
     /* Send GTP-U ICMP Packet */
     rv = test_gtpu_send_ping(gtpu, qos_flow, TEST_PING_IPV6);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
@@ -316,6 +317,7 @@ static void test1_func(abts_case *tc, void *data)
     recvbuf = test_gtpu_read(gtpu);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
+#endif
 
     /* Send Registration request
      * - Update Registration request type
@@ -845,6 +847,7 @@ static void test2_func(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
+#if !defined(__FreeBSD__)
     /* Send GTP-U ICMP Packet */
     rv = test_gtpu_send_ping(gtpu, qos_flow, TEST_PING_IPV6);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
@@ -853,6 +856,7 @@ static void test2_func(abts_case *tc, void *data)
     recvbuf = test_gtpu_read(gtpu);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
+#endif
 
     /* Send Registration request
      * - Update Registration request type

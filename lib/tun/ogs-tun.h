@@ -45,7 +45,7 @@ extern "C" {
  */
 #define OGS_TUN_MAX_HEADROOM 16
 
-ogs_socket_t ogs_tun_open(char *ifname, int len, int is_tap);
+ogs_socket_t ogs_tun_open(char *ifname, int maxlen, int is_tap);
 int ogs_tun_set_ip(char *ifname, ogs_ipsubnet_t *gw,  ogs_ipsubnet_t *sub);
 
 ogs_pkbuf_t *ogs_tun_read(ogs_socket_t fd, ogs_pkbuf_pool_t *packet_pool);
