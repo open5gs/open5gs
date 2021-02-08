@@ -317,7 +317,7 @@ max:
 #   To connect more UEs, you need to increase the size further.
 #
 #   - Pool-size 128         => 65536 Number
-#   - Pool-size 256         => 8192 Number
+#   - Pool-size 256         => 16384 Number
 #   - Pool-size 512         => 4096 Number
 #   - Pool-size 1024        => 1024 Number
 #   - Pool-size 2048        => 512 Number
@@ -325,7 +325,7 @@ max:
 #   - Pool-size 1024*1024   => 8 Number
 #
 #    128:  65536
-#    256:  8192
+#    256:  16384
 #    512:  4096
 #    1024: 1024
 #    2048: 512

@@ -93,7 +93,7 @@ void ogs_pkbuf_default_init(ogs_pkbuf_config_t *config)
     memset(config, 0, sizeof *config);
 
     config->cluster_128_pool = 65536;
-    config->cluster_256_pool = 8192;
+    config->cluster_256_pool = 16384;
     config->cluster_512_pool = 4096;
     config->cluster_1024_pool = 1024;
     config->cluster_2048_pool = 512;
