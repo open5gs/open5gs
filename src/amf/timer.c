@@ -137,7 +137,14 @@ static void sbi_timer_send_event(int timer_id, void *data)
         break;
     case AMF_TIMER_SBI_CLIENT_WAIT:
         e = amf_event_new(AMF_EVT_SBI_TIMER);
-        ogs_assert(e);
+        if (!e) {
+            ogs_sbi_xact_t *sbi_xact = data;
+            ogs_assert(sbi_xact);
+
+            ogs_error("sbi_timer_send_event() failed");
+            ogs_sbi_xact_remove(sbi_xact);
+            return;
+        }
         e->timer_id = timer_id;
         e->sbi.data = data;
         break;
@@ -193,6 +200,7 @@ static void gmm_timer_event_send(
     ogs_assert(amf_ue);
 
     e = amf_event_new(AMF_EVT_5GMM_TIMER);
+    ogs_assert(e);
     e->timer_id = timer_id;
     e->amf_ue = amf_ue;
 
@@ -238,6 +246,7 @@ void amf_timer_ng_holding_timer_expire(void *data)
     ran_ue = data;
 
     e = amf_event_new(AMF_EVT_NGAP_TIMER);
+    ogs_assert(e);
 
     e->timer_id = AMF_TIMER_NG_HOLDING;
     e->ran_ue = ran_ue;

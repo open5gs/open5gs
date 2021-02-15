@@ -203,14 +203,18 @@ int ngap_send_to_nas(ran_ue_t *ran_ue,
             OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GMM) {
         int rv;
         e = amf_event_new(AMF_EVT_5GMM_MESSAGE);
-        ogs_assert(e);
+        if (!e) {
+            ogs_error("ngap_send_to_nas() failed");
+            ogs_pkbuf_free(nasbuf);
+            return OGS_ERROR;
+        }
         e->ran_ue = ran_ue;
         e->ngap.code = procedureCode;
         e->nas.type = security_header_type.type;
         e->pkbuf = nasbuf;
         rv = ogs_queue_push(ogs_app()->queue, e);
         if (rv != OGS_OK) {
-            ogs_warn("ogs_queue_push() failed:%d", (int)rv);
+            ogs_warn("ngap_send_to_nas() failed:%d", (int)rv);
             ogs_pkbuf_free(e->pkbuf);
             amf_event_free(e);
         }
@@ -220,12 +224,14 @@ int ngap_send_to_nas(ran_ue_t *ran_ue,
         amf_ue_t *amf_ue = ran_ue->amf_ue;
         if (!amf_ue) {
             ogs_error("No UE Context");
+            ogs_pkbuf_free(nasbuf);
             return OGS_ERROR;
         }
         return ngap_send_to_5gsm(amf_ue, nasbuf);
     } else {
         ogs_error("Unknown NAS Protocol discriminator 0x%02x",
                   h->extended_protocol_discriminator);
+        ogs_pkbuf_free(nasbuf);
         return OGS_ERROR;
     }
 }

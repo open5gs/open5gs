@@ -1022,7 +1022,7 @@ ogs_sbi_xact_t *ogs_sbi_xact_add(
     ogs_assert(sbi_object);
 
     ogs_pool_alloc(&xact_pool, &xact);
-    ogs_assert(xact);
+    if (!xact) return NULL;
     memset(xact, 0, sizeof(ogs_sbi_xact_t));
 
     xact->target_nf_type = target_nf_type;

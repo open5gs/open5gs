@@ -138,16 +138,23 @@ void smf_sbi_discover_and_send(OpenAPI_nf_type_e target_nf_type,
     xact = ogs_sbi_xact_add(target_nf_type, &sess->sbi,
             (ogs_sbi_build_f)build, sess, data,
             smf_timer_sbi_client_wait_expire);
-    ogs_assert(xact);
+    if (!xact) {
+        ogs_error("smf_sbi_discover_and_send() failed");
+        ogs_sbi_server_send_error(stream,
+                OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT, NULL,
+                "Cannot discover", smf_ue->supi);
+        return;
+    }
 
     xact->assoc_stream = stream;
 
     if (ogs_sbi_discover_and_send(xact,
             (ogs_fsm_handler_t)smf_nf_state_registered, client_cb) != true) {
-
+        ogs_error("smf_sbi_discover_and_send() failed");
         ogs_sbi_server_send_error(stream,
                 OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT, NULL,
                 "Cannot discover", smf_ue->supi);
+        return;
     }
 }
 
@@ -168,7 +175,10 @@ void smf_namf_comm_send_n1_n2_message_transfer(
     xact = ogs_sbi_xact_add(OpenAPI_nf_type_AMF, &sess->sbi,
             (ogs_sbi_build_f)smf_namf_comm_build_n1_n2_message_transfer,
             sess, param, smf_timer_sbi_client_wait_expire);
-    ogs_assert(xact);
+    if (!xact) {
+        ogs_error("smf_namf_comm_send_n1_n2_message_transfer() failed");
+        return;
+    }
 
     xact->state = param->state;
 

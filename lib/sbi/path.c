@@ -148,7 +148,10 @@ void ogs_nnrf_nfm_send_nf_register(ogs_sbi_nf_instance_t *nf_instance)
     ogs_assert(client);
 
     request = ogs_nnrf_nfm_build_register(nf_instance);
-    ogs_assert(request);
+    if (!request) {
+        ogs_error("ogs_nnrf_nfm_send_nf_register() failed");
+        return;
+    }
     ogs_sbi_client_send_request(client, client->cb, request, nf_instance);
 }
 
@@ -162,7 +165,10 @@ void ogs_nnrf_nfm_send_nf_update(ogs_sbi_nf_instance_t *nf_instance)
     ogs_assert(client);
 
     request = ogs_nnrf_nfm_build_update(nf_instance);
-    ogs_assert(request);
+    if (!request) {
+        ogs_error("ogs_nnrf_nfm_send_nf_update() failed");
+        return;
+    }
     ogs_sbi_client_send_request(client, client->cb, request, nf_instance);
 }
 
@@ -176,7 +182,10 @@ void ogs_nnrf_nfm_send_nf_de_register(ogs_sbi_nf_instance_t *nf_instance)
     ogs_assert(client);
 
     request = ogs_nnrf_nfm_build_de_register(nf_instance);
-    ogs_assert(request);
+    if (!request) {
+        ogs_error("ogs_nnrf_nfm_send_nf_de_register() failed");
+        return;
+    }
     ogs_sbi_client_send_request(client, client->cb, request, nf_instance);
 }
 
@@ -199,7 +208,11 @@ void ogs_nnrf_nfm_send_nf_status_subscribe(ogs_sbi_client_t *client,
     subscription->subscr_cond.nf_type = subscr_cond_nf_type;
 
     request = ogs_nnrf_nfm_build_status_subscribe(subscription);
-    ogs_assert(request);
+    if (!request) {
+        ogs_error("ogs_nnrf_nfm_send_nf_status_subscribe() failed");
+        ogs_sbi_subscription_remove(subscription);
+        return;
+    }
     ogs_sbi_client_send_request(client, client->cb, request, subscription);
 }
 
@@ -214,7 +227,10 @@ void ogs_nnrf_nfm_send_nf_status_unsubscribe(
     ogs_assert(client);
 
     request = ogs_nnrf_nfm_build_status_unsubscribe(subscription);
-    ogs_assert(request);
+    if (!request) {
+        ogs_error("ogs_nnrf_nfm_send_nf_status_unsubscribe() failed");
+        return;
+    }
     ogs_sbi_client_send_request(client, client->cb, request, subscription);
 }
 

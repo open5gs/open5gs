@@ -137,7 +137,7 @@ static bool pcf_sbi_discover_and_send(OpenAPI_nf_type_e target_nf_type,
     xact = ogs_sbi_xact_add(target_nf_type, sbi_object,
                             build, context, data,
                             pcf_timer_sbi_client_wait_expire);
-    ogs_assert(xact);
+    if (!xact) return false;
 
     xact->assoc_stream = stream;
 
@@ -151,9 +151,11 @@ void pcf_ue_sbi_discover_and_send(OpenAPI_nf_type_e target_nf_type,
 {
     if (pcf_sbi_discover_and_send(target_nf_type, &pcf_ue->sbi, stream,
                 (ogs_sbi_build_f)build, pcf_ue, data) != true) {
+        ogs_error("pcf_ue_sbi_discover_and_send() failed");
         ogs_sbi_server_send_error(stream,
                 OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT, NULL,
                 "Cannot discover", pcf_ue->supi);
+        return;
     }
 }
 
@@ -163,8 +165,10 @@ void pcf_sess_sbi_discover_and_send(OpenAPI_nf_type_e target_nf_type,
 {
     if (pcf_sbi_discover_and_send(target_nf_type, &sess->sbi, stream,
                 (ogs_sbi_build_f)build, sess, data) != true) {
+        ogs_error("pcf_sess_sbi_discover_and_send() failed");
         ogs_sbi_server_send_error(stream,
                 OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT, NULL,
                 "Cannot discover", NULL);
+        return;
     }
 }

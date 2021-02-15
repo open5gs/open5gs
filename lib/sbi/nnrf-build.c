@@ -267,7 +267,6 @@ ogs_sbi_request_t *ogs_nnrf_nfm_build_register(
     message.NFProfile = NFProfile;
 
     request = ogs_sbi_build_request(&message);
-    ogs_assert(request);
 
     ogs_sbi_nnrf_free_nf_profile(NFProfile);
 
@@ -306,7 +305,6 @@ ogs_sbi_request_t *ogs_nnrf_nfm_build_update(ogs_sbi_nf_instance_t *nf_instance)
     message.PatchItemList = PatchItemList;
 
     request = ogs_sbi_build_request(&message);
-    ogs_assert(request);
 
     OpenAPI_list_free(PatchItemList);
 
@@ -330,7 +328,6 @@ ogs_sbi_request_t *ogs_nnrf_nfm_build_de_register(
     message.h.resource.component[1] = nf_instance->id;
 
     request = ogs_sbi_build_request(&message);
-    ogs_assert(request);
 
     return request;
 }
@@ -383,7 +380,6 @@ ogs_sbi_request_t *ogs_nnrf_nfm_build_status_subscribe(
     message.SubscriptionData = SubscriptionData;
 
     request = ogs_sbi_build_request(&message);
-    ogs_assert(request);
 
     ogs_free(SubscriptionData->nf_status_notification_uri);
     ogs_free(SubscriptionData);
@@ -408,7 +404,6 @@ ogs_sbi_request_t *ogs_nnrf_nfm_build_status_unsubscribe(
     message.h.resource.component[1] = subscription->id;
 
     request = ogs_sbi_build_request(&message);
-    ogs_assert(request);
 
     return request;
 }
@@ -433,7 +428,6 @@ ogs_sbi_request_t *ogs_nnrf_disc_build_discover(
     message.param.requester_nf_type = requester_nf_type;
 
     request = ogs_sbi_build_request(&message);
-    ogs_assert(request);
 
     return request;
 }

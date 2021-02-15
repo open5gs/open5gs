@@ -38,7 +38,7 @@ amf_event_t *amf_event_new(amf_event_e id)
     amf_event_t *e = NULL;
 
     ogs_pool_alloc(&pool, &e);
-    ogs_assert(e);
+    if (!e) return NULL;
     memset(e, 0, sizeof(*e));
 
     e->id = id;

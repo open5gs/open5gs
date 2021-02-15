@@ -132,13 +132,19 @@ void amf_ue_sbi_discover_and_send(
     xact = ogs_sbi_xact_add(target_nf_type, &amf_ue->sbi,
             (ogs_sbi_build_f)build, amf_ue, data,
             amf_timer_sbi_client_wait_expire);
-    ogs_assert(xact);
+    if (!xact) {
+        ogs_error("amf_ue_sbi_discover_and_send() failed");
+        nas_5gs_send_gmm_reject_from_sbi(
+                amf_ue, OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT);
+        return;
+    }
 
     if (ogs_sbi_discover_and_send(xact,
             (ogs_fsm_handler_t)amf_nf_state_registered, client_cb) != true) {
-
+        ogs_error("amf_ue_sbi_discover_and_send() failed");
         nas_5gs_send_gmm_reject_from_sbi(
                 amf_ue, OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT);
+        return;
     }
 }
 
@@ -155,15 +161,21 @@ void amf_sess_sbi_discover_and_send(OpenAPI_nf_type_e target_nf_type,
     xact = ogs_sbi_xact_add(target_nf_type, &sess->sbi,
             (ogs_sbi_build_f)build, sess, data,
             amf_timer_sbi_client_wait_expire);
-    ogs_assert(xact);
+    if (!xact) {
+        ogs_error("amf_sess_sbi_discover_and_send() failed");
+        nas_5gs_send_back_5gsm_message_from_sbi(
+                sess, OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT);
+        return;
+    }
 
     xact->state = state;
 
     if (ogs_sbi_discover_and_send(xact,
             (ogs_fsm_handler_t)amf_nf_state_registered, client_cb) != true) {
-
+        ogs_error("amf_sess_sbi_discover_and_send() failed");
         nas_5gs_send_back_5gsm_message_from_sbi(
                 sess, OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT);
+        return;
     }
 }
 

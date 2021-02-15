@@ -86,7 +86,7 @@ static void recalculate_pool_size(void)
     self.pool.pfcp_node = self.pool.nf;
 
 #define MAX_NUM_OF_NF_SERVICE   16  /* Num of NF Service per NF Instance */
-#define MAX_NUM_OF_SBI_MESSAGE  8   /* Num of HTTP(s) Request/Response per NF */
+#define MAX_NUM_OF_SBI_MESSAGE  4   /* Num of HTTP(s) Request/Response per NF */
 #define MAX_NUM_OF_NF_SUBSCRIPTION  4 /* Num of Subscription per NF */
     self.pool.nf_service = self.pool.nf * MAX_NUM_OF_NF_SERVICE;
     self.pool.sbi_message = self.pool.nf * MAX_NUM_OF_SBI_MESSAGE;

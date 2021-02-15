@@ -164,8 +164,7 @@ ogs_sbi_request_t *ogs_sbi_request_new(void)
     ogs_sbi_request_t *request = NULL;
 
     ogs_pool_alloc(&request_pool, &request);
-
-    ogs_assert(request);
+    if (!request) return NULL;
     memset(request, 0, sizeof(ogs_sbi_request_t));
 
     request->http.params = ogs_hash_make();
@@ -221,7 +220,7 @@ ogs_sbi_request_t *ogs_sbi_build_request(ogs_sbi_message_t *message)
     ogs_assert(message);
 
     request = ogs_sbi_request_new();
-    ogs_assert(request);
+    if (!request) return NULL;
 
     ogs_assert(message->h.method);
     request->h.method = ogs_strdup(message->h.method);

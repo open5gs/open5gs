@@ -68,10 +68,22 @@ static void timer_send_event(int timer_id, void *data)
     case SMF_TIMER_NF_INSTANCE_NO_HEARTBEAT:
     case SMF_TIMER_NF_INSTANCE_VALIDITY:
     case SMF_TIMER_SUBSCRIPTION_VALIDITY:
-    case SMF_TIMER_SBI_CLIENT_WAIT:
     case SMF_TIMER_RELEASE_HOLDING:
         e = smf_event_new(SMF_EVT_SBI_TIMER);
         ogs_assert(e);
+        e->timer_id = timer_id;
+        e->sbi.data = data;
+        break;
+    case SMF_TIMER_SBI_CLIENT_WAIT:
+        e = smf_event_new(SMF_EVT_SBI_TIMER);
+        if (!e) {
+            ogs_sbi_xact_t *sbi_xact = data;
+            ogs_assert(sbi_xact);
+
+            ogs_error("timer_send_event() failed");
+            ogs_sbi_xact_remove(sbi_xact);
+            return;
+        }
         e->timer_id = timer_id;
         e->sbi.data = data;
         break;

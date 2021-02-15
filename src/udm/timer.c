@@ -53,9 +53,21 @@ static void sbi_timer_send_event(int timer_id, void *data)
     case UDM_TIMER_NF_INSTANCE_NO_HEARTBEAT:
     case UDM_TIMER_NF_INSTANCE_VALIDITY:
     case UDM_TIMER_SUBSCRIPTION_VALIDITY:
-    case UDM_TIMER_SBI_CLIENT_WAIT:
         e = udm_event_new(UDM_EVT_SBI_TIMER);
         ogs_assert(e);
+        e->timer_id = timer_id;
+        e->sbi.data = data;
+        break;
+    case UDM_TIMER_SBI_CLIENT_WAIT:
+        e = udm_event_new(UDM_EVT_SBI_TIMER);
+        if (!e) {
+            ogs_sbi_xact_t *sbi_xact = data;
+            ogs_assert(sbi_xact);
+
+            ogs_error("sbi_timer_send_event() failed");
+            ogs_sbi_xact_remove(sbi_xact);
+            return;
+        }
         e->timer_id = timer_id;
         e->sbi.data = data;
         break;

@@ -131,15 +131,22 @@ void ausf_sbi_discover_and_send(OpenAPI_nf_type_e target_nf_type,
     xact = ogs_sbi_xact_add(target_nf_type, &ausf_ue->sbi,
             (ogs_sbi_build_f)build, ausf_ue, data,
             ausf_timer_sbi_client_wait_expire);
-    ogs_assert(xact);
+    if (!xact) {
+        ogs_error("ausf_sbi_discover_and_send() failed");
+        ogs_sbi_server_send_error(stream,
+            OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT, NULL,
+            "Cannot discover", ausf_ue->suci);
+        return;
+    }
 
     xact->assoc_stream = stream;
 
     if (ogs_sbi_discover_and_send(xact,
             (ogs_fsm_handler_t)ausf_nf_state_registered, client_cb) != true) {
-
+        ogs_error("ausf_sbi_discover_and_send() failed");
         ogs_sbi_server_send_error(stream,
             OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT, NULL,
             "Cannot discover", ausf_ue->suci);
+        return;
     }
 }
