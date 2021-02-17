@@ -980,6 +980,9 @@ void ngap_handle_initial_context_setup_failure(
     if (amf_ue) {
         old_xact_count = amf_sess_xact_count(amf_ue);
 
+        amf_ue->deactivation.group = NGAP_Cause_PR_nas;
+        amf_ue->deactivation.cause = NGAP_CauseNas_normal_release;
+
         amf_sbi_send_deactivate_all_sessions(
                 amf_ue, AMF_UPDATE_SM_CONTEXT_DEACTIVATED,
                 Cause->present, (int)Cause->choice.radioNetwork);
@@ -1109,10 +1112,13 @@ void ngap_handle_ue_context_release_request(
         ogs_error("Cannot find AMF-UE Context [%lld]",
                 (long long)amf_ue_ngap_id);
         ngap_send_ran_ue_context_release_command(ran_ue,
-                NGAP_Cause_PR_nas, NGAP_CauseNas_normal_release,
+                Cause->present, (int)Cause->choice.radioNetwork,
                 NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE, 0);
     } else {
         int xact_count = amf_sess_xact_count(amf_ue);
+
+        amf_ue->deactivation.group = Cause->present;
+        amf_ue->deactivation.cause = (int)Cause->choice.radioNetwork;
 
         if (!PDUSessionList) {
             amf_sbi_send_deactivate_all_sessions(
@@ -1152,7 +1158,7 @@ void ngap_handle_ue_context_release_request(
 
         if (amf_sess_xact_count(amf_ue) == xact_count)
             ngap_send_amf_ue_context_release_command(amf_ue,
-                    NGAP_Cause_PR_nas, NGAP_CauseNas_normal_release,
+                    Cause->present, (int)Cause->choice.radioNetwork,
                     NGAP_UE_CTX_REL_NG_REMOVE_AND_UNLINK, 0);
     }
 }

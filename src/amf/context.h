@@ -392,6 +392,12 @@ struct amf_ue_s {
     /* UE Radio Capability */
     OCTET_STRING_t  ueRadioCapability;
 
+    /* UEContextReleaseRequest or InitialContextSetupFailure */
+    struct {
+        NGAP_Cause_PR group;
+        long cause;
+    } deactivation;
+
     /* Handover Info */
     struct {
         NGAP_HandoverType_t type;
