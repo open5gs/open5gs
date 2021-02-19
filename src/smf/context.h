@@ -305,7 +305,7 @@ typedef struct smf_sess_s {
     /* Handover */
     struct {
         bool prepared;
-        bool direct_available;
+        bool data_forwarding_not_possible;
         bool indirect_data_forwarding;
 
         /* NG-U UP Transport Information Saved Temporally */

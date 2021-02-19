@@ -392,11 +392,8 @@ int ngap_handle_handover_required_transfer(
     }
 
     directForwardingPathAvailability = message.directForwardingPathAvailability;
-    if (directForwardingPathAvailability) {
-        sess->handover.direct_available = true;
-    } else {
-        sess->handover.direct_available = false;
-    }
+    if (!directForwardingPathAvailability)
+        sess->handover.data_forwarding_not_possible = true;
 
     n2smbuf = ngap_build_pdu_session_resource_setup_request_transfer(sess);
     ogs_assert(n2smbuf);

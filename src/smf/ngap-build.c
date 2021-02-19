@@ -87,7 +87,7 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_setup_request_transfer(
     ogs_asn_ip_to_BIT_STRING(&upf_n3_ip, &gTPTunnel->transportLayerAddress);
     ogs_asn_uint32_to_OCTET_STRING(sess->upf_n3_teid, &gTPTunnel->gTP_TEID);
 
-    if (sess->handover.direct_available == false) {
+    if (sess->handover.data_forwarding_not_possible == true) {
         ie = CALLOC(1,
                 sizeof(NGAP_PDUSessionResourceSetupRequestTransferIEs_t));
         ogs_assert(ie);
