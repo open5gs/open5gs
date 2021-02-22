@@ -10,7 +10,7 @@ COPY setup.sh /root
 
 ARG USER=open5gs
 ARG REPO=open5gs
-ARG BRANCH=master
+ARG BRANCH=main
 RUN	git clone https://github.com/$USER/$REPO
 ADD https://api.github.com/repos/$USER/$REPO/git/refs/heads/$BRANCH /root/open5gs-ver.json
 
