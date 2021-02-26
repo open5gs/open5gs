@@ -20,9 +20,11 @@
 #include <mongoc.h>
 
 #include "ogs-dbi.h"
+#include <string.h>
 
 int __ogs_dbi_domain;
 
+static char masked_db_uri[255];
 static ogs_mongoc_t self;
 
 /*
@@ -48,6 +50,30 @@ ogs_mongoc_mongoc_client_get_server_status (mongoc_client_t *client, /* IN */
    return ret;
 }
 
+const char* ogs_mask_db_uri(const char *db_uri)
+{
+    bzero(masked_db_uri, sizeof(masked_db_uri));
+    if (strnlen(db_uri, sizeof(masked_db_uri)) == sizeof(masked_db_uri)) {
+        return db_uri;
+    }
+
+    char *token = strtok((char *)db_uri, "@");
+    if (strlen(token) > 1) {
+        strcpy((char *)masked_db_uri, "mongodb://*****:*****@");
+        while (token != NULL) {
+            token = strtok(NULL, "@");
+            if (token != NULL) {
+                strcat((char *)masked_db_uri, token);
+            }
+        }
+    } else {
+        // no credentials provided, no need to mask anything
+        return db_uri;
+    }
+
+    return masked_db_uri;
+}
+
 int ogs_mongoc_init(const char *db_uri)
 {
     bson_t reply;
@@ -69,7 +95,7 @@ int ogs_mongoc_init(const char *db_uri)
 
     self.client = mongoc_client_new(db_uri);
     if (!self.client) {
-        ogs_error("Failed to parse DB URI [%s]", db_uri);
+        ogs_error("Failed to parse DB URI [%s]", ogs_mask_db_uri(db_uri));
         return OGS_ERROR;
     }
 
@@ -88,7 +114,7 @@ int ogs_mongoc_init(const char *db_uri)
 
     if (!ogs_mongoc_mongoc_client_get_server_status(
                 self.client, NULL, &reply, &error)) {
-        ogs_warn("Failed to connect to server [%s]", db_uri);
+        ogs_warn("Failed to connect to server [%s]", ogs_mask_db_uri(db_uri));
         return OGS_RETRY;
     }
 
@@ -96,7 +122,7 @@ int ogs_mongoc_init(const char *db_uri)
 
     bson_destroy(&reply);
 
-    ogs_info("MongoDB URI: '%s'", db_uri);
+    ogs_info("MongoDB URI: '%s'", ogs_mask_db_uri(db_uri));
 
     return OGS_OK;
 }
