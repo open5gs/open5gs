@@ -141,6 +141,11 @@ Restart systemd-networkd
 $ sudo systemctl restart systemd-networkd
 ```
 
+And then, you need to chanage NAT table as below.
+```
+$ sudo iptables -t nat -A POSTROUTING -s 10.46.0.0/16 ! -o ogstun -j MASQUERADE
+```
+
 Now, you need to modify the configuration file of Open5GS to adjust the UE IP Pool. UE IP Pool can be allocated by SMF or UPF, but in this tutorial, we will modify both configuration files.
 
 ```diff
