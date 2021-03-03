@@ -37,12 +37,13 @@ typedef struct ogs_mongoc_s {
     void *client;
     void *database;
 
+    char *masked_db_uri;
+
     struct {
         void *subscriber;
     } collection;
 } ogs_mongoc_t;
 
-const char* ogs_mask_db_uri(const char *db_uri);
 int ogs_mongoc_init(const char *db_uri);
 void ogs_mongoc_final(void);
 ogs_mongoc_t *ogs_mongoc(void);
