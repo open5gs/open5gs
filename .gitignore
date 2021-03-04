@@ -1,3 +1,5 @@
 # This directory is fetched during first build and is present in this directory
 subprojects/freeDiameter
 subprojects/usrsctp
+
+webui/.next

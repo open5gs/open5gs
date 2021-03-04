@@ -3,10 +3,14 @@ import { all, takeEvery, put, call, take, fork } from 'redux-saga/effects';
 import { CRUD } from './actions';
 import Session from 'modules/auth/session';
 
-const crudApi = (method, url, csrf, { params, data } = {} ) => {
+const crudApi = (method, url, csrf, authToken, { params, data } = {} ) => {
+  let headers = { 'X-CSRF-TOKEN': csrf }
+  if (authToken) {
+    headers['Authorization'] = "Bearer " + authToken
+  }
   return axios({
     baseURL: '/api/db',
-    headers: { 'X-CSRF-TOKEN': csrf },
+    headers: headers,
     method,
     url,
     params,
@@ -25,7 +29,8 @@ function* crudEntity(action) {
   try {
     const sessionData = new Session();
     const csrf = ((sessionData || {}).session || {}).csrfToken;
-    const response = yield call(crudApi, method, url, csrf, { params, data })
+    const authToken = ((sessionData || {}).session || {}).authToken;
+    const response = yield call(crudApi, method, url, csrf, authToken, { params, data })
     yield put({ meta, type: success, payload: response })
   } catch (error) {
     yield put({ meta, type: failure, payload: error, error: true })

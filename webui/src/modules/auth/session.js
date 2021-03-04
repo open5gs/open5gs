@@ -31,6 +31,9 @@ export default class Session {
         if (req.user) {
           this.session.user = req.user
         }
+        if (req.authToken) {
+          this.session.authToken = req.authToken;
+        }
       } else {
         // If running on client, attempt to load session from localStorage
         this.session = this.getLocalStore('session')
