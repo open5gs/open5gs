@@ -121,7 +121,7 @@ $ diff -u /etc/open5gs/smf.yaml.old /etc/open5gs/smf.yaml
 -      - addr: 127.0.0.4
 -      - addr: ::1
 +      - addr: 10.10.0.4
-     pdn:
+     subnet:
        - addr: 10.45.0.1/16
        - addr: cafe::1/64
 @@ -282,7 +281,7 @@
@@ -214,7 +214,7 @@ $ diff -u /etc/open5gs/upf.yaml.old /etc/open5gs/upf.yaml
 -        - 127.0.0.7
 -        - ::1
 +      - addr: 10.11.0.7
-     pdn:
+     subnet:
        - addr: 10.45.0.1/16
        - addr: cafe::1/64
 ```

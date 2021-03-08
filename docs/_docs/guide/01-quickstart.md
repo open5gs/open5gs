@@ -340,7 +340,7 @@ upf:
      gtpu:
 -      - addr: 127.0.0.7
 +      - addr: 10.11.0.7 # for external gNB - a local address that can be reached by the gNB
-     pdn:
+     subnet:
        - addr: 10.45.0.1/16
        - addr: cafe::1/64
 

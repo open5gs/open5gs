@@ -146,7 +146,7 @@ $ diff -u /etc/open5gs/upf.yaml.old /etc/open5gs/upf.yaml
 -        - 127.0.0.7
 -        - ::1
 +      - addr: 10.11.0.7
-     pdn:
+     subnet:
        - addr: 10.45.0.1/16
        - addr: cafe::1/64
 ```
