@@ -1,8 +1,20 @@
 open5gs (2.2.0) unstable; urgency=medium
 
-  * New function: NSSF
+  * DB Schame Changes
 
- -- Sukchan Lee <acetcom@gmail.com>  Mon, 08 Mar 2021 14:14:41 +0900
+ -- Sukchan Lee <acetcom@gmail.com>  Mon, 08 Mar 2021 21:31:35 +0900
+
+open5gs (2.2.0~bionic) bionic; urgency=medium
+
+  * DB Schame Changes
+
+ -- Sukchan Lee <acetcom@gmail.com>  Mon, 08 Mar 2021 21:30:31 +0900
+
+open5gs (2.2.0~focal) focal; urgency=medium
+
+  * DB Schame Changes
+
+ -- Sukchan Lee <acetcom@gmail.com>  Mon, 08 Mar 2021 21:29:03 +0900
 
 open5gs (2.1.7) unstable; urgency=medium
 
