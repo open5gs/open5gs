@@ -27,6 +27,9 @@ typedef struct OpenAPI_dynamic5_qi_s {
     int aver_window;
     int max_data_burst_vol;
     int ext_max_data_burst_vol;
+    int ext_packet_del_budget;
+    int cn_packet_delay_budget_dl;
+    int cn_packet_delay_budget_ul;
 } OpenAPI_dynamic5_qi_t;
 
 OpenAPI_dynamic5_qi_t *OpenAPI_dynamic5_qi_create(
@@ -36,7 +39,10 @@ OpenAPI_dynamic5_qi_t *OpenAPI_dynamic5_qi_create(
     char *packet_err_rate,
     int aver_window,
     int max_data_burst_vol,
-    int ext_max_data_burst_vol
+    int ext_max_data_burst_vol,
+    int ext_packet_del_budget,
+    int cn_packet_delay_budget_dl,
+    int cn_packet_delay_budget_ul
     );
 void OpenAPI_dynamic5_qi_free(OpenAPI_dynamic5_qi_t *dynamic5_qi);
 OpenAPI_dynamic5_qi_t *OpenAPI_dynamic5_qi_parseFromJSON(cJSON *dynamic5_qiJSON);

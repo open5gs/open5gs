@@ -5,7 +5,7 @@
 #include "sm_context_update_error.h"
 
 OpenAPI_sm_context_update_error_t *OpenAPI_sm_context_update_error_create(
-    OpenAPI_problem_details_t *error,
+    OpenAPI_ext_problem_details_t *error,
     OpenAPI_ref_to_binary_data_t *n1_sm_msg,
     OpenAPI_ref_to_binary_data_t *n2_sm_info,
     OpenAPI_n2_sm_info_type_e n2_sm_info_type,
@@ -33,7 +33,7 @@ void OpenAPI_sm_context_update_error_free(OpenAPI_sm_context_update_error_t *sm_
         return;
     }
     OpenAPI_lnode_t *node;
-    OpenAPI_problem_details_free(sm_context_update_error->error);
+    OpenAPI_ext_problem_details_free(sm_context_update_error->error);
     OpenAPI_ref_to_binary_data_free(sm_context_update_error->n1_sm_msg);
     OpenAPI_ref_to_binary_data_free(sm_context_update_error->n2_sm_info);
     ogs_free(sm_context_update_error->recovery_time);
@@ -54,7 +54,7 @@ cJSON *OpenAPI_sm_context_update_error_convertToJSON(OpenAPI_sm_context_update_e
         ogs_error("OpenAPI_sm_context_update_error_convertToJSON() failed [error]");
         goto end;
     }
-    cJSON *error_local_JSON = OpenAPI_problem_details_convertToJSON(sm_context_update_error->error);
+    cJSON *error_local_JSON = OpenAPI_ext_problem_details_convertToJSON(sm_context_update_error->error);
     if (error_local_JSON == NULL) {
         ogs_error("OpenAPI_sm_context_update_error_convertToJSON() failed [error]");
         goto end;
@@ -125,9 +125,9 @@ OpenAPI_sm_context_update_error_t *OpenAPI_sm_context_update_error_parseFromJSON
         goto end;
     }
 
-    OpenAPI_problem_details_t *error_local_nonprim = NULL;
+    OpenAPI_ext_problem_details_t *error_local_nonprim = NULL;
 
-    error_local_nonprim = OpenAPI_problem_details_parseFromJSON(error);
+    error_local_nonprim = OpenAPI_ext_problem_details_parseFromJSON(error);
 
     cJSON *n1_sm_msg = cJSON_GetObjectItemCaseSensitive(sm_context_update_errorJSON, "n1SmMsg");
 

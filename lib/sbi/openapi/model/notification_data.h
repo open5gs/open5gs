@@ -13,6 +13,7 @@
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
 #include "change_item.h"
+#include "condition_event_type.h"
 #include "nf_profile.h"
 #include "notification_event_type.h"
 
@@ -26,13 +27,15 @@ typedef struct OpenAPI_notification_data_s {
     char *nf_instance_uri;
     struct OpenAPI_nf_profile_s *nf_profile;
     OpenAPI_list_t *profile_changes;
+    OpenAPI_condition_event_type_e condition_event;
 } OpenAPI_notification_data_t;
 
 OpenAPI_notification_data_t *OpenAPI_notification_data_create(
     OpenAPI_notification_event_type_e event,
     char *nf_instance_uri,
     OpenAPI_nf_profile_t *nf_profile,
-    OpenAPI_list_t *profile_changes
+    OpenAPI_list_t *profile_changes,
+    OpenAPI_condition_event_type_e condition_event
     );
 void OpenAPI_notification_data_free(OpenAPI_notification_data_t *notification_data);
 OpenAPI_notification_data_t *OpenAPI_notification_data_parseFromJSON(cJSON *notification_dataJSON);

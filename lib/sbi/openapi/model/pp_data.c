@@ -11,7 +11,8 @@ OpenAPI_pp_data_t *OpenAPI_pp_data_create(
     OpenAPI_ec_restriction_t *ec_restriction,
     OpenAPI_acs_info_rm_t *acs_info,
     char *stn_sr,
-    OpenAPI_lcs_privacy_t *lcs_privacy
+    OpenAPI_lcs_privacy_t *lcs_privacy,
+    OpenAPI_sor_info_t *sor_info
     )
 {
     OpenAPI_pp_data_t *pp_data_local_var = OpenAPI_malloc(sizeof(OpenAPI_pp_data_t));
@@ -25,6 +26,7 @@ OpenAPI_pp_data_t *OpenAPI_pp_data_create(
     pp_data_local_var->acs_info = acs_info;
     pp_data_local_var->stn_sr = stn_sr;
     pp_data_local_var->lcs_privacy = lcs_privacy;
+    pp_data_local_var->sor_info = sor_info;
 
     return pp_data_local_var;
 }
@@ -42,6 +44,7 @@ void OpenAPI_pp_data_free(OpenAPI_pp_data_t *pp_data)
     OpenAPI_acs_info_rm_free(pp_data->acs_info);
     ogs_free(pp_data->stn_sr);
     OpenAPI_lcs_privacy_free(pp_data->lcs_privacy);
+    OpenAPI_sor_info_free(pp_data->sor_info);
     ogs_free(pp_data);
 }
 
@@ -134,6 +137,19 @@ cJSON *OpenAPI_pp_data_convertToJSON(OpenAPI_pp_data_t *pp_data)
         }
     }
 
+    if (pp_data->sor_info) {
+        cJSON *sor_info_local_JSON = OpenAPI_sor_info_convertToJSON(pp_data->sor_info);
+        if (sor_info_local_JSON == NULL) {
+            ogs_error("OpenAPI_pp_data_convertToJSON() failed [sor_info]");
+            goto end;
+        }
+        cJSON_AddItemToObject(item, "sorInfo", sor_info_local_JSON);
+        if (item->child == NULL) {
+            ogs_error("OpenAPI_pp_data_convertToJSON() failed [sor_info]");
+            goto end;
+        }
+    }
+
 end:
     return item;
 }
@@ -194,6 +210,13 @@ OpenAPI_pp_data_t *OpenAPI_pp_data_parseFromJSON(cJSON *pp_dataJSON)
         lcs_privacy_local_nonprim = OpenAPI_lcs_privacy_parseFromJSON(lcs_privacy);
     }
 
+    cJSON *sor_info = cJSON_GetObjectItemCaseSensitive(pp_dataJSON, "sorInfo");
+
+    OpenAPI_sor_info_t *sor_info_local_nonprim = NULL;
+    if (sor_info) {
+        sor_info_local_nonprim = OpenAPI_sor_info_parseFromJSON(sor_info);
+    }
+
     pp_data_local_var = OpenAPI_pp_data_create (
         communication_characteristics ? communication_characteristics_local_nonprim : NULL,
         supported_features ? ogs_strdup(supported_features->valuestring) : NULL,
@@ -201,7 +224,8 @@ OpenAPI_pp_data_t *OpenAPI_pp_data_parseFromJSON(cJSON *pp_dataJSON)
         ec_restriction ? ec_restriction_local_nonprim : NULL,
         acs_info ? acs_info_local_nonprim : NULL,
         stn_sr ? ogs_strdup(stn_sr->valuestring) : NULL,
-        lcs_privacy ? lcs_privacy_local_nonprim : NULL
+        lcs_privacy ? lcs_privacy_local_nonprim : NULL,
+        sor_info ? sor_info_local_nonprim : NULL
         );
 
     return pp_data_local_var;

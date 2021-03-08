@@ -16,7 +16,9 @@ OpenAPI_sdm_subscription_t *OpenAPI_sdm_subscription_create(
     char *subscription_id,
     OpenAPI_plmn_id_t *plmn_id,
     int immediate_report,
-    OpenAPI_subscription_data_sets_t *report
+    OpenAPI_subscription_data_sets_t *report,
+    char *supported_features,
+    OpenAPI_context_info_t *context_info
     )
 {
     OpenAPI_sdm_subscription_t *sdm_subscription_local_var = OpenAPI_malloc(sizeof(OpenAPI_sdm_subscription_t));
@@ -35,6 +37,8 @@ OpenAPI_sdm_subscription_t *OpenAPI_sdm_subscription_create(
     sdm_subscription_local_var->plmn_id = plmn_id;
     sdm_subscription_local_var->immediate_report = immediate_report;
     sdm_subscription_local_var->report = report;
+    sdm_subscription_local_var->supported_features = supported_features;
+    sdm_subscription_local_var->context_info = context_info;
 
     return sdm_subscription_local_var;
 }
@@ -58,6 +62,8 @@ void OpenAPI_sdm_subscription_free(OpenAPI_sdm_subscription_t *sdm_subscription)
     ogs_free(sdm_subscription->subscription_id);
     OpenAPI_plmn_id_free(sdm_subscription->plmn_id);
     OpenAPI_subscription_data_sets_free(sdm_subscription->report);
+    ogs_free(sdm_subscription->supported_features);
+    OpenAPI_context_info_free(sdm_subscription->context_info);
     ogs_free(sdm_subscription);
 }
 
@@ -184,6 +190,26 @@ cJSON *OpenAPI_sdm_subscription_convertToJSON(OpenAPI_sdm_subscription_t *sdm_su
         cJSON_AddItemToObject(item, "report", report_local_JSON);
         if (item->child == NULL) {
             ogs_error("OpenAPI_sdm_subscription_convertToJSON() failed [report]");
+            goto end;
+        }
+    }
+
+    if (sdm_subscription->supported_features) {
+        if (cJSON_AddStringToObject(item, "supportedFeatures", sdm_subscription->supported_features) == NULL) {
+            ogs_error("OpenAPI_sdm_subscription_convertToJSON() failed [supported_features]");
+            goto end;
+        }
+    }
+
+    if (sdm_subscription->context_info) {
+        cJSON *context_info_local_JSON = OpenAPI_context_info_convertToJSON(sdm_subscription->context_info);
+        if (context_info_local_JSON == NULL) {
+            ogs_error("OpenAPI_sdm_subscription_convertToJSON() failed [context_info]");
+            goto end;
+        }
+        cJSON_AddItemToObject(item, "contextInfo", context_info_local_JSON);
+        if (item->child == NULL) {
+            ogs_error("OpenAPI_sdm_subscription_convertToJSON() failed [context_info]");
             goto end;
         }
     }
@@ -317,6 +343,22 @@ OpenAPI_sdm_subscription_t *OpenAPI_sdm_subscription_parseFromJSON(cJSON *sdm_su
         report_local_nonprim = OpenAPI_subscription_data_sets_parseFromJSON(report);
     }
 
+    cJSON *supported_features = cJSON_GetObjectItemCaseSensitive(sdm_subscriptionJSON, "supportedFeatures");
+
+    if (supported_features) {
+        if (!cJSON_IsString(supported_features)) {
+            ogs_error("OpenAPI_sdm_subscription_parseFromJSON() failed [supported_features]");
+            goto end;
+        }
+    }
+
+    cJSON *context_info = cJSON_GetObjectItemCaseSensitive(sdm_subscriptionJSON, "contextInfo");
+
+    OpenAPI_context_info_t *context_info_local_nonprim = NULL;
+    if (context_info) {
+        context_info_local_nonprim = OpenAPI_context_info_parseFromJSON(context_info);
+    }
+
     sdm_subscription_local_var = OpenAPI_sdm_subscription_create (
         ogs_strdup(nf_instance_id->valuestring),
         implicit_unsubscribe ? implicit_unsubscribe->valueint : 0,
@@ -329,7 +371,9 @@ OpenAPI_sdm_subscription_t *OpenAPI_sdm_subscription_parseFromJSON(cJSON *sdm_su
         subscription_id ? ogs_strdup(subscription_id->valuestring) : NULL,
         plmn_id ? plmn_id_local_nonprim : NULL,
         immediate_report ? immediate_report->valueint : 0,
-        report ? report_local_nonprim : NULL
+        report ? report_local_nonprim : NULL,
+        supported_features ? ogs_strdup(supported_features->valuestring) : NULL,
+        context_info ? context_info_local_nonprim : NULL
         );
 
     return sdm_subscription_local_var;

@@ -17,16 +17,11 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_an_node_type_s OpenAPI_an_node_type_t;
-typedef struct OpenAPI_an_node_type_s {
-} OpenAPI_an_node_type_t;
+typedef enum { OpenAPI_an_node_type_NULL = 0, OpenAPI_an_node_type_GNB, OpenAPI_an_node_type_NG_ENB } OpenAPI_an_node_type_e;
 
-OpenAPI_an_node_type_t *OpenAPI_an_node_type_create(
-    );
-void OpenAPI_an_node_type_free(OpenAPI_an_node_type_t *an_node_type);
-OpenAPI_an_node_type_t *OpenAPI_an_node_type_parseFromJSON(cJSON *an_node_typeJSON);
-cJSON *OpenAPI_an_node_type_convertToJSON(OpenAPI_an_node_type_t *an_node_type);
-OpenAPI_an_node_type_t *OpenAPI_an_node_type_copy(OpenAPI_an_node_type_t *dst, OpenAPI_an_node_type_t *src);
+char* OpenAPI_an_node_type_ToString(OpenAPI_an_node_type_e an_node_type);
+
+OpenAPI_an_node_type_e OpenAPI_an_node_type_FromString(char* an_node_type);
 
 #ifdef __cplusplus
 }

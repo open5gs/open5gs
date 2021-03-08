@@ -165,11 +165,9 @@ bool smf_nsmf_handle_create_sm_context(
     sess->s_nssai.sst = sNssai->sst;
     sess->s_nssai.sd = ogs_s_nssai_sd_from_string(sNssai->sd);
     if (SmContextCreateData->hplmn_snssai) {
-        sess->s_nssai.mapped_hplmn_sst =
-            SmContextCreateData->hplmn_snssai->sst;
-        sess->s_nssai.mapped_hplmn_sd =
-            ogs_s_nssai_sd_from_string(
-                    SmContextCreateData->hplmn_snssai->sd);
+        sess->mapped_hplmn.sst = SmContextCreateData->hplmn_snssai->sst;
+        sess->mapped_hplmn.sd = ogs_s_nssai_sd_from_string(
+                                    SmContextCreateData->hplmn_snssai->sd);
     }
 
     if (sess->sm_context_status_uri)
@@ -187,8 +185,8 @@ bool smf_nsmf_handle_create_sm_context(
     ogs_freeaddrinfo(addr);
 
     if (SmContextCreateData->dnn) {
-        if (sess->dnn) ogs_free(sess->dnn);
-        sess->dnn = ogs_strdup(SmContextCreateData->dnn);
+        if (sess->session.name) ogs_free(sess->session.name);
+        sess->session.name = ogs_strdup(SmContextCreateData->dnn);
     }
 
     if (SmContextCreateData->pcf_id) {

@@ -12,6 +12,8 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+#include "ambr.h"
+#include "null_value.h"
 
 #ifdef __cplusplus
 extern "C" {

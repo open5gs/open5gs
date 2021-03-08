@@ -313,7 +313,7 @@ ogs_pkbuf_t *ngap_build_downlink_nas_transport(
     }
 
     if (allowed_nssai) {
-        int i, j;
+        int i;
         ogs_assert(amf_ue);
 
         ie = CALLOC(1, sizeof(NGAP_DownlinkNASTransport_IEs_t));
@@ -326,31 +326,26 @@ ogs_pkbuf_t *ngap_build_downlink_nas_transport(
 
         AllowedNSSAI = &ie->value.choice.AllowedNSSAI;
 
-        for (i = 0; i < amf_self()->num_of_plmn_support; i++) {
-            if (memcmp(&amf_ue->tai.plmn_id,
-                    &amf_self()->plmn_support[i].plmn_id, OGS_PLMN_ID_LEN) != 0)
-                continue;
-            for (j = 0; j < amf_self()->plmn_support[i].num_of_s_nssai; j++) {
-                NGAP_AllowedNSSAI_Item_t *NGAP_AllowedNSSAI_Item = NULL;
-                NGAP_S_NSSAI_t *s_NSSAI = NULL;
-                NGAP_SST_t *sST = NULL;
+        for (i = 0; i < amf_ue->allowed_nssai.num_of_s_nssai; i++) {
+            NGAP_AllowedNSSAI_Item_t *NGAP_AllowedNSSAI_Item = NULL;
+            NGAP_S_NSSAI_t *s_NSSAI = NULL;
+            NGAP_SST_t *sST = NULL;
 
-                NGAP_AllowedNSSAI_Item = (NGAP_AllowedNSSAI_Item_t *)
-                        CALLOC(1, sizeof(NGAP_AllowedNSSAI_Item_t));
-                s_NSSAI = &NGAP_AllowedNSSAI_Item->s_NSSAI;
-                sST = &s_NSSAI->sST;
+            NGAP_AllowedNSSAI_Item = (NGAP_AllowedNSSAI_Item_t *)
+                    CALLOC(1, sizeof(NGAP_AllowedNSSAI_Item_t));
+            s_NSSAI = &NGAP_AllowedNSSAI_Item->s_NSSAI;
+            sST = &s_NSSAI->sST;
 
-                ogs_asn_uint8_to_OCTET_STRING(
-                    amf_self()->plmn_support[i].s_nssai[j].sst, sST);
-                if (amf_self()->plmn_support[i].s_nssai[j].sd.v !=
-                        OGS_S_NSSAI_NO_SD_VALUE) {
-                    s_NSSAI->sD = CALLOC(1, sizeof(NGAP_SD_t));
-                    ogs_asn_uint24_to_OCTET_STRING(
-                        amf_self()->plmn_support[i].s_nssai[j].sd, s_NSSAI->sD);
-                }
-
-                ASN_SEQUENCE_ADD(&AllowedNSSAI->list, NGAP_AllowedNSSAI_Item);
+            ogs_asn_uint8_to_OCTET_STRING(
+                amf_ue->allowed_nssai.s_nssai[i].sst, sST);
+            if (amf_ue->allowed_nssai.s_nssai[i].sd.v !=
+                    OGS_S_NSSAI_NO_SD_VALUE) {
+                s_NSSAI->sD = CALLOC(1, sizeof(NGAP_SD_t));
+                ogs_asn_uint24_to_OCTET_STRING(
+                    amf_ue->allowed_nssai.s_nssai[i].sd, s_NSSAI->sD);
             }
+
+            ASN_SEQUENCE_ADD(&AllowedNSSAI->list, NGAP_AllowedNSSAI_Item);
         }
     }
 
@@ -360,7 +355,7 @@ ogs_pkbuf_t *ngap_build_downlink_nas_transport(
 ogs_pkbuf_t *ngap_ue_build_initial_context_setup_request(
             amf_ue_t *amf_ue, ogs_pkbuf_t *gmmbuf)
 {
-    int i, j;
+    int i;
 
     ran_ue_t *ran_ue = NULL;
     amf_sess_t *sess = NULL;
@@ -537,31 +532,26 @@ ogs_pkbuf_t *ngap_ue_build_initial_context_setup_request(
     ogs_ngap_uint8_to_AMFPointer(ogs_amf_pointer(&amf_ue->guami->amf_id),
             &GUAMI->aMFPointer);
 
-    for (i = 0; i < amf_self()->num_of_plmn_support; i++) {
-        if (memcmp(&amf_ue->tai.plmn_id,
-                &amf_self()->plmn_support[i].plmn_id, OGS_PLMN_ID_LEN) != 0)
-            continue;
-        for (j = 0; j < amf_self()->plmn_support[i].num_of_s_nssai; j++) {
-            NGAP_AllowedNSSAI_Item_t *NGAP_AllowedNSSAI_Item = NULL;
-            NGAP_S_NSSAI_t *s_NSSAI = NULL;
-            NGAP_SST_t *sST = NULL;
+    for (i = 0; i < amf_ue->allowed_nssai.num_of_s_nssai; i++) {
+        NGAP_AllowedNSSAI_Item_t *NGAP_AllowedNSSAI_Item = NULL;
+        NGAP_S_NSSAI_t *s_NSSAI = NULL;
+        NGAP_SST_t *sST = NULL;
 
-            NGAP_AllowedNSSAI_Item = (NGAP_AllowedNSSAI_Item_t *)
-                    CALLOC(1, sizeof(NGAP_AllowedNSSAI_Item_t));
-            s_NSSAI = &NGAP_AllowedNSSAI_Item->s_NSSAI;
-            sST = &s_NSSAI->sST;
+        NGAP_AllowedNSSAI_Item = (NGAP_AllowedNSSAI_Item_t *)
+                CALLOC(1, sizeof(NGAP_AllowedNSSAI_Item_t));
+        s_NSSAI = &NGAP_AllowedNSSAI_Item->s_NSSAI;
+        sST = &s_NSSAI->sST;
 
-            ogs_asn_uint8_to_OCTET_STRING(
-                amf_self()->plmn_support[i].s_nssai[j].sst, sST);
-            if (amf_self()->plmn_support[i].s_nssai[j].sd.v !=
-                    OGS_S_NSSAI_NO_SD_VALUE) {
-                s_NSSAI->sD = CALLOC(1, sizeof(NGAP_SD_t));
-                ogs_asn_uint24_to_OCTET_STRING(
-                    amf_self()->plmn_support[i].s_nssai[j].sd, s_NSSAI->sD);
-            }
-
-            ASN_SEQUENCE_ADD(&AllowedNSSAI->list, NGAP_AllowedNSSAI_Item);
+        ogs_asn_uint8_to_OCTET_STRING(
+            amf_ue->allowed_nssai.s_nssai[i].sst, sST);
+        if (amf_ue->allowed_nssai.s_nssai[i].sd.v !=
+                OGS_S_NSSAI_NO_SD_VALUE) {
+            s_NSSAI->sD = CALLOC(1, sizeof(NGAP_SD_t));
+            ogs_asn_uint24_to_OCTET_STRING(
+                amf_ue->allowed_nssai.s_nssai[i].sd, s_NSSAI->sD);
         }
+
+        ASN_SEQUENCE_ADD(&AllowedNSSAI->list, NGAP_AllowedNSSAI_Item);
     }
 
     UESecurityCapabilities->nRencryptionAlgorithms.size = 2;
@@ -669,7 +659,7 @@ ogs_pkbuf_t *ngap_ue_build_initial_context_setup_request(
 ogs_pkbuf_t *ngap_sess_build_initial_context_setup_request(
             amf_sess_t *sess, ogs_pkbuf_t *gmmbuf, ogs_pkbuf_t *n2smbuf)
 {
-    int i, j;
+    int i;
 
     ran_ue_t *ran_ue = NULL;
     amf_ue_t *amf_ue = NULL;
@@ -855,31 +845,26 @@ ogs_pkbuf_t *ngap_sess_build_initial_context_setup_request(
     ogs_ngap_uint8_to_AMFPointer(ogs_amf_pointer(&amf_ue->guami->amf_id),
             &GUAMI->aMFPointer);
 
-    for (i = 0; i < amf_self()->num_of_plmn_support; i++) {
-        if (memcmp(&amf_ue->tai.plmn_id,
-                &amf_self()->plmn_support[i].plmn_id, OGS_PLMN_ID_LEN) != 0)
-            continue;
-        for (j = 0; j < amf_self()->plmn_support[i].num_of_s_nssai; j++) {
-            NGAP_AllowedNSSAI_Item_t *NGAP_AllowedNSSAI_Item = NULL;
-            NGAP_S_NSSAI_t *s_NSSAI = NULL;
-            NGAP_SST_t *sST = NULL;
+    for (i = 0; i < amf_ue->allowed_nssai.num_of_s_nssai; i++) {
+        NGAP_AllowedNSSAI_Item_t *NGAP_AllowedNSSAI_Item = NULL;
+        NGAP_S_NSSAI_t *s_NSSAI = NULL;
+        NGAP_SST_t *sST = NULL;
 
-            NGAP_AllowedNSSAI_Item = (NGAP_AllowedNSSAI_Item_t *)
-                    CALLOC(1, sizeof(NGAP_AllowedNSSAI_Item_t));
-            s_NSSAI = &NGAP_AllowedNSSAI_Item->s_NSSAI;
-            sST = &s_NSSAI->sST;
+        NGAP_AllowedNSSAI_Item = (NGAP_AllowedNSSAI_Item_t *)
+                CALLOC(1, sizeof(NGAP_AllowedNSSAI_Item_t));
+        s_NSSAI = &NGAP_AllowedNSSAI_Item->s_NSSAI;
+        sST = &s_NSSAI->sST;
 
-            ogs_asn_uint8_to_OCTET_STRING(
-                amf_self()->plmn_support[i].s_nssai[j].sst, sST);
-            if (amf_self()->plmn_support[i].s_nssai[j].sd.v !=
-                    OGS_S_NSSAI_NO_SD_VALUE) {
-                s_NSSAI->sD = CALLOC(1, sizeof(NGAP_SD_t));
-                ogs_asn_uint24_to_OCTET_STRING(
-                    amf_self()->plmn_support[i].s_nssai[j].sd, s_NSSAI->sD);
-            }
-
-            ASN_SEQUENCE_ADD(&AllowedNSSAI->list, NGAP_AllowedNSSAI_Item);
+        ogs_asn_uint8_to_OCTET_STRING(
+            amf_ue->allowed_nssai.s_nssai[i].sst, sST);
+        if (amf_ue->allowed_nssai.s_nssai[i].sd.v !=
+                OGS_S_NSSAI_NO_SD_VALUE) {
+            s_NSSAI->sD = CALLOC(1, sizeof(NGAP_SD_t));
+            ogs_asn_uint24_to_OCTET_STRING(
+                amf_ue->allowed_nssai.s_nssai[i].sd, s_NSSAI->sD);
         }
+
+        ASN_SEQUENCE_ADD(&AllowedNSSAI->list, NGAP_AllowedNSSAI_Item);
     }
 
     UESecurityCapabilities->nRencryptionAlgorithms.size = 2;
@@ -1050,7 +1035,7 @@ ogs_pkbuf_t *ngap_build_ue_context_modification_request(amf_ue_t *amf_ue)
         ogs_assert(LAI);
 
         ogs_asn_buffer_to_OCTET_STRING(
-            &amf_ue->tai.plmn_id, sizeof(ogs_plmn_id_t), &LAI->pLMNidentity);
+            &amf_ue->nr_tai.plmn_id, sizeof(ogs_plmn_id_t), &LAI->pLMNidentity);
         ogs_assert(amf_ue->csmap);
         ogs_assert(amf_ue->p_tmsi);
         ogs_asn_uint16_to_OCTET_STRING(amf_ue->csmap->lai.lac, &LAI->lAC);
@@ -1687,7 +1672,7 @@ ogs_pkbuf_t *ngap_build_paging(amf_ue_t *amf_ue)
     ASN_SEQUENCE_ADD(&TAIList->list, TAIItem);
 
     tAI = &TAIItem->tAI;
-    ogs_ngap_5gs_tai_to_ASN(&amf_ue->tai, tAI);
+    ogs_ngap_5gs_tai_to_ASN(&amf_ue->nr_tai, tAI);
 
     return ogs_ngap_encode(&pdu);
 }
@@ -1742,7 +1727,7 @@ ogs_pkbuf_t *ngap_build_downlink_ran_configuration_transfer(
 
 ogs_pkbuf_t *ngap_build_path_switch_ack(amf_ue_t *amf_ue)
 {
-    int i, j;
+    int i;
 
     ran_ue_t *ran_ue = NULL;
     amf_sess_t *sess = NULL;
@@ -1872,31 +1857,26 @@ ogs_pkbuf_t *ngap_build_path_switch_ack(amf_ue_t *amf_ue)
 
     AllowedNSSAI = &ie->value.choice.AllowedNSSAI;
 
-    for (i = 0; i < amf_self()->num_of_plmn_support; i++) {
-        if (memcmp(&amf_ue->tai.plmn_id,
-                &amf_self()->plmn_support[i].plmn_id, OGS_PLMN_ID_LEN) != 0)
-            continue;
-        for (j = 0; j < amf_self()->plmn_support[i].num_of_s_nssai; j++) {
-            NGAP_AllowedNSSAI_Item_t *NGAP_AllowedNSSAI_Item = NULL;
-            NGAP_S_NSSAI_t *s_NSSAI = NULL;
-            NGAP_SST_t *sST = NULL;
+    for (i = 0; i < amf_ue->allowed_nssai.num_of_s_nssai; i++) {
+        NGAP_AllowedNSSAI_Item_t *NGAP_AllowedNSSAI_Item = NULL;
+        NGAP_S_NSSAI_t *s_NSSAI = NULL;
+        NGAP_SST_t *sST = NULL;
 
-            NGAP_AllowedNSSAI_Item = (NGAP_AllowedNSSAI_Item_t *)
-                    CALLOC(1, sizeof(NGAP_AllowedNSSAI_Item_t));
-            s_NSSAI = &NGAP_AllowedNSSAI_Item->s_NSSAI;
-            sST = &s_NSSAI->sST;
+        NGAP_AllowedNSSAI_Item = (NGAP_AllowedNSSAI_Item_t *)
+                CALLOC(1, sizeof(NGAP_AllowedNSSAI_Item_t));
+        s_NSSAI = &NGAP_AllowedNSSAI_Item->s_NSSAI;
+        sST = &s_NSSAI->sST;
 
-            ogs_asn_uint8_to_OCTET_STRING(
-                amf_self()->plmn_support[i].s_nssai[j].sst, sST);
-            if (amf_self()->plmn_support[i].s_nssai[j].sd.v !=
-                    OGS_S_NSSAI_NO_SD_VALUE) {
-                s_NSSAI->sD = CALLOC(1, sizeof(NGAP_SD_t));
-                ogs_asn_uint24_to_OCTET_STRING(
-                    amf_self()->plmn_support[i].s_nssai[j].sd, s_NSSAI->sD);
-            }
-
-            ASN_SEQUENCE_ADD(&AllowedNSSAI->list, NGAP_AllowedNSSAI_Item);
+        ogs_asn_uint8_to_OCTET_STRING(
+            amf_ue->allowed_nssai.s_nssai[i].sst, sST);
+        if (amf_ue->allowed_nssai.s_nssai[i].sd.v !=
+                OGS_S_NSSAI_NO_SD_VALUE) {
+            s_NSSAI->sD = CALLOC(1, sizeof(NGAP_SD_t));
+            ogs_asn_uint24_to_OCTET_STRING(
+                amf_ue->allowed_nssai.s_nssai[i].sd, s_NSSAI->sD);
         }
+
+        ASN_SEQUENCE_ADD(&AllowedNSSAI->list, NGAP_AllowedNSSAI_Item);
     }
 
     return ogs_ngap_encode(&pdu);
@@ -1904,7 +1884,7 @@ ogs_pkbuf_t *ngap_build_path_switch_ack(amf_ue_t *amf_ue)
 
 ogs_pkbuf_t *ngap_build_handover_request(ran_ue_t *target_ue)
 {
-    int i, j;
+    int i;
 
     amf_ue_t *amf_ue = NULL;
     amf_sess_t *sess = NULL;
@@ -2123,33 +2103,26 @@ ogs_pkbuf_t *ngap_build_handover_request(ran_ue_t *target_ue)
 
     AllowedNSSAI = &ie->value.choice.AllowedNSSAI;
 
-    for (i = 0; i < amf_self()->num_of_plmn_support; i++) {
-        if (memcmp(&amf_ue->tai.plmn_id,
-                &amf_self()->plmn_support[i].plmn_id, OGS_PLMN_ID_LEN) != 0)
-            continue;
-        for (j = 0; j < amf_self()->plmn_support[i].num_of_s_nssai; j++) {
-            NGAP_AllowedNSSAI_Item_t *NGAP_AllowedNSSAI_Item = NULL;
-            NGAP_S_NSSAI_t *s_NSSAI = NULL;
-            NGAP_SST_t *sST = NULL;
+    for (i = 0; i < amf_ue->allowed_nssai.num_of_s_nssai; i++) {
+        NGAP_AllowedNSSAI_Item_t *NGAP_AllowedNSSAI_Item = NULL;
+        NGAP_S_NSSAI_t *s_NSSAI = NULL;
+        NGAP_SST_t *sST = NULL;
 
-            NGAP_AllowedNSSAI_Item = (NGAP_AllowedNSSAI_Item_t *)
-                    CALLOC(1, sizeof(NGAP_AllowedNSSAI_Item_t));
-            ogs_assert(NGAP_AllowedNSSAI_Item);
-            s_NSSAI = &NGAP_AllowedNSSAI_Item->s_NSSAI;
-            sST = &s_NSSAI->sST;
+        NGAP_AllowedNSSAI_Item = (NGAP_AllowedNSSAI_Item_t *)
+                CALLOC(1, sizeof(NGAP_AllowedNSSAI_Item_t));
+        s_NSSAI = &NGAP_AllowedNSSAI_Item->s_NSSAI;
+        sST = &s_NSSAI->sST;
 
-            ogs_asn_uint8_to_OCTET_STRING(
-                amf_self()->plmn_support[i].s_nssai[j].sst, sST);
-            if (amf_self()->plmn_support[i].s_nssai[j].sd.v !=
-                    OGS_S_NSSAI_NO_SD_VALUE) {
-                s_NSSAI->sD = CALLOC(1, sizeof(NGAP_SD_t));
-                ogs_assert(s_NSSAI->sD);
-                ogs_asn_uint24_to_OCTET_STRING(
-                    amf_self()->plmn_support[i].s_nssai[j].sd, s_NSSAI->sD);
-            }
-
-            ASN_SEQUENCE_ADD(&AllowedNSSAI->list, NGAP_AllowedNSSAI_Item);
+        ogs_asn_uint8_to_OCTET_STRING(
+            amf_ue->allowed_nssai.s_nssai[i].sst, sST);
+        if (amf_ue->allowed_nssai.s_nssai[i].sd.v !=
+                OGS_S_NSSAI_NO_SD_VALUE) {
+            s_NSSAI->sD = CALLOC(1, sizeof(NGAP_SD_t));
+            ogs_asn_uint24_to_OCTET_STRING(
+                amf_ue->allowed_nssai.s_nssai[i].sd, s_NSSAI->sD);
         }
+
+        ASN_SEQUENCE_ADD(&AllowedNSSAI->list, NGAP_AllowedNSSAI_Item);
     }
 
     /* TS23.003 6.2.2 Composition of IMEISV

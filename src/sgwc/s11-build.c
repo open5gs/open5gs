@@ -54,9 +54,10 @@ ogs_pkbuf_t *sgwc_s11_build_downlink_data_notification(
     noti->eps_bearer_id.u8 = bearer->ebi;
 
     memset(&arp, 0, sizeof(arp));
-    arp.pre_emption_vulnerability = sess->pdn.qos.arp.pre_emption_vulnerability;
-    arp.priority_level = sess->pdn.qos.arp.priority_level;
-    arp.pre_emption_capability = sess->pdn.qos.arp.pre_emption_capability;
+    arp.pre_emption_vulnerability =
+        sess->session.qos.arp.pre_emption_vulnerability;
+    arp.priority_level = sess->session.qos.arp.priority_level;
+    arp.pre_emption_capability = sess->session.qos.arp.pre_emption_capability;
 
     noti->allocation_retention_priority.presence = 1;
     noti->allocation_retention_priority.data = &arp;

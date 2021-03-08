@@ -8,7 +8,8 @@ OpenAPI_pp_subs_reg_timer_t *OpenAPI_pp_subs_reg_timer_create(
     int subs_reg_timer,
     char *af_instance_id,
     int reference_id,
-    char *validity_time
+    char *validity_time,
+    char *mtc_provider_information
     )
 {
     OpenAPI_pp_subs_reg_timer_t *pp_subs_reg_timer_local_var = OpenAPI_malloc(sizeof(OpenAPI_pp_subs_reg_timer_t));
@@ -19,6 +20,7 @@ OpenAPI_pp_subs_reg_timer_t *OpenAPI_pp_subs_reg_timer_create(
     pp_subs_reg_timer_local_var->af_instance_id = af_instance_id;
     pp_subs_reg_timer_local_var->reference_id = reference_id;
     pp_subs_reg_timer_local_var->validity_time = validity_time;
+    pp_subs_reg_timer_local_var->mtc_provider_information = mtc_provider_information;
 
     return pp_subs_reg_timer_local_var;
 }
@@ -31,6 +33,7 @@ void OpenAPI_pp_subs_reg_timer_free(OpenAPI_pp_subs_reg_timer_t *pp_subs_reg_tim
     OpenAPI_lnode_t *node;
     ogs_free(pp_subs_reg_timer->af_instance_id);
     ogs_free(pp_subs_reg_timer->validity_time);
+    ogs_free(pp_subs_reg_timer->mtc_provider_information);
     ogs_free(pp_subs_reg_timer);
 }
 
@@ -74,6 +77,13 @@ cJSON *OpenAPI_pp_subs_reg_timer_convertToJSON(OpenAPI_pp_subs_reg_timer_t *pp_s
     if (pp_subs_reg_timer->validity_time) {
         if (cJSON_AddStringToObject(item, "validityTime", pp_subs_reg_timer->validity_time) == NULL) {
             ogs_error("OpenAPI_pp_subs_reg_timer_convertToJSON() failed [validity_time]");
+            goto end;
+        }
+    }
+
+    if (pp_subs_reg_timer->mtc_provider_information) {
+        if (cJSON_AddStringToObject(item, "mtcProviderInformation", pp_subs_reg_timer->mtc_provider_information) == NULL) {
+            ogs_error("OpenAPI_pp_subs_reg_timer_convertToJSON() failed [mtc_provider_information]");
             goto end;
         }
     }
@@ -130,11 +140,21 @@ OpenAPI_pp_subs_reg_timer_t *OpenAPI_pp_subs_reg_timer_parseFromJSON(cJSON *pp_s
         }
     }
 
+    cJSON *mtc_provider_information = cJSON_GetObjectItemCaseSensitive(pp_subs_reg_timerJSON, "mtcProviderInformation");
+
+    if (mtc_provider_information) {
+        if (!cJSON_IsString(mtc_provider_information)) {
+            ogs_error("OpenAPI_pp_subs_reg_timer_parseFromJSON() failed [mtc_provider_information]");
+            goto end;
+        }
+    }
+
     pp_subs_reg_timer_local_var = OpenAPI_pp_subs_reg_timer_create (
         subs_reg_timer->valuedouble,
         ogs_strdup(af_instance_id->valuestring),
         reference_id->valuedouble,
-        validity_time ? ogs_strdup(validity_time->valuestring) : NULL
+        validity_time ? ogs_strdup(validity_time->valuestring) : NULL,
+        mtc_provider_information ? ogs_strdup(mtc_provider_information->valuestring) : NULL
         );
 
     return pp_subs_reg_timer_local_var;

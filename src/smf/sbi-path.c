@@ -114,6 +114,23 @@ void smf_sbi_close(void)
     ogs_sbi_server_stop_all();
 }
 
+void smf_nnrf_nfm_send_nf_register(ogs_sbi_nf_instance_t *nf_instance)
+{
+    ogs_sbi_request_t *request = NULL;
+    ogs_sbi_client_t *client = NULL;
+
+    ogs_assert(nf_instance);
+    client = nf_instance->client;
+    ogs_assert(client);
+
+    request = smf_nnrf_nfm_build_register(nf_instance);
+    if (!request) {
+        ogs_error("smf_nnrf_nfm_send_nf_register() failed");
+        return;
+    }
+    ogs_sbi_client_send_request(client, client->cb, request, nf_instance);
+}
+
 void smf_sbi_send(ogs_sbi_nf_instance_t *nf_instance, ogs_sbi_xact_t *xact)
 {
     ogs_sbi_send(nf_instance, client_cb, xact);
@@ -209,7 +226,7 @@ void smf_sbi_send_sm_context_create_error(
     ogs_sbi_response_t *response = NULL;
 
     OpenAPI_sm_context_create_error_t SmContextCreateError;
-    OpenAPI_problem_details_t problem;
+    OpenAPI_ext_problem_details_t problem;
     OpenAPI_ref_to_binary_data_t n1SmMsg;
 
     ogs_assert(stream);
@@ -325,7 +342,7 @@ void smf_sbi_send_sm_context_update_error(
     ogs_sbi_response_t *response = NULL;
 
     OpenAPI_sm_context_update_error_t SmContextUpdateError;
-    OpenAPI_problem_details_t problem;
+    OpenAPI_ext_problem_details_t problem;
     OpenAPI_ref_to_binary_data_t n1SmMsg;
     OpenAPI_ref_to_binary_data_t n2SmInfo;
 

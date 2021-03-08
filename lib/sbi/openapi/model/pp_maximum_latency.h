@@ -23,13 +23,15 @@ typedef struct OpenAPI_pp_maximum_latency_s {
     char *af_instance_id;
     int reference_id;
     char *validity_time;
+    char *mtc_provider_information;
 } OpenAPI_pp_maximum_latency_t;
 
 OpenAPI_pp_maximum_latency_t *OpenAPI_pp_maximum_latency_create(
     int maximum_latency,
     char *af_instance_id,
     int reference_id,
-    char *validity_time
+    char *validity_time,
+    char *mtc_provider_information
     );
 void OpenAPI_pp_maximum_latency_free(OpenAPI_pp_maximum_latency_t *pp_maximum_latency);
 OpenAPI_pp_maximum_latency_t *OpenAPI_pp_maximum_latency_parseFromJSON(cJSON *pp_maximum_latencyJSON);

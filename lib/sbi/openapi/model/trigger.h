@@ -25,7 +25,7 @@ typedef struct OpenAPI_trigger_s {
     struct OpenAPI_trigger_category_s *trigger_category;
     int time_limit;
     int volume_limit;
-    long volume_limit64;
+    int volume_limit64;
     int max_number_ofccc;
 } OpenAPI_trigger_t;
 
@@ -34,7 +34,7 @@ OpenAPI_trigger_t *OpenAPI_trigger_create(
     OpenAPI_trigger_category_t *trigger_category,
     int time_limit,
     int volume_limit,
-    long volume_limit64,
+    int volume_limit64,
     int max_number_ofccc
     );
 void OpenAPI_trigger_free(OpenAPI_trigger_t *trigger);

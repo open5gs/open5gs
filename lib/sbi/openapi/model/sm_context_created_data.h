@@ -38,6 +38,8 @@ typedef struct OpenAPI_sm_context_created_data_s {
     char *smf_service_instance_id;
     char *recovery_time;
     char *supported_features;
+    char *selected_smf_id;
+    char *selected_old_smf_id;
 } OpenAPI_sm_context_created_data_t;
 
 OpenAPI_sm_context_created_data_t *OpenAPI_sm_context_created_data_create(
@@ -53,7 +55,9 @@ OpenAPI_sm_context_created_data_t *OpenAPI_sm_context_created_data_create(
     char *gpsi,
     char *smf_service_instance_id,
     char *recovery_time,
-    char *supported_features
+    char *supported_features,
+    char *selected_smf_id,
+    char *selected_old_smf_id
     );
 void OpenAPI_sm_context_created_data_free(OpenAPI_sm_context_created_data_t *sm_context_created_data);
 OpenAPI_sm_context_created_data_t *OpenAPI_sm_context_created_data_parseFromJSON(cJSON *sm_context_created_dataJSON);

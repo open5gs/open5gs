@@ -173,8 +173,8 @@ ogs_sbi_request_t *udm_nudr_dr_build_query_subscription_provisioned(
             sendmsg.param.dnn = recvmsg->param.dnn;
         if (recvmsg->param.single_nssai_presence) {
             sendmsg.param.single_nssai_presence = true;
-            memcpy(&sendmsg.param.single_nssai, &recvmsg->param.single_nssai,
-                    sizeof(sendmsg.param.single_nssai));
+            memcpy(&sendmsg.param.s_nssai, &recvmsg->param.s_nssai,
+                    sizeof(sendmsg.param.s_nssai));
         }
         break;
 

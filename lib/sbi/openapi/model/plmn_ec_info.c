@@ -6,8 +6,8 @@
 
 OpenAPI_plmn_ec_info_t *OpenAPI_plmn_ec_info_create(
     OpenAPI_plmn_id_t *plmn_id,
-    int ec_mode_a_restricted,
-    int ec_mode_b_restricted
+    OpenAPI_ec_restriction_data_wb_t *ec_restriction_data_wb,
+    int ec_restriction_data_nb
     )
 {
     OpenAPI_plmn_ec_info_t *plmn_ec_info_local_var = OpenAPI_malloc(sizeof(OpenAPI_plmn_ec_info_t));
@@ -15,8 +15,8 @@ OpenAPI_plmn_ec_info_t *OpenAPI_plmn_ec_info_create(
         return NULL;
     }
     plmn_ec_info_local_var->plmn_id = plmn_id;
-    plmn_ec_info_local_var->ec_mode_a_restricted = ec_mode_a_restricted;
-    plmn_ec_info_local_var->ec_mode_b_restricted = ec_mode_b_restricted;
+    plmn_ec_info_local_var->ec_restriction_data_wb = ec_restriction_data_wb;
+    plmn_ec_info_local_var->ec_restriction_data_nb = ec_restriction_data_nb;
 
     return plmn_ec_info_local_var;
 }
@@ -28,6 +28,7 @@ void OpenAPI_plmn_ec_info_free(OpenAPI_plmn_ec_info_t *plmn_ec_info)
     }
     OpenAPI_lnode_t *node;
     OpenAPI_plmn_id_free(plmn_ec_info->plmn_id);
+    OpenAPI_ec_restriction_data_wb_free(plmn_ec_info->ec_restriction_data_wb);
     ogs_free(plmn_ec_info);
 }
 
@@ -56,16 +57,22 @@ cJSON *OpenAPI_plmn_ec_info_convertToJSON(OpenAPI_plmn_ec_info_t *plmn_ec_info)
         goto end;
     }
 
-    if (plmn_ec_info->ec_mode_a_restricted) {
-        if (cJSON_AddBoolToObject(item, "ecModeARestricted", plmn_ec_info->ec_mode_a_restricted) == NULL) {
-            ogs_error("OpenAPI_plmn_ec_info_convertToJSON() failed [ec_mode_a_restricted]");
+    if (plmn_ec_info->ec_restriction_data_wb) {
+        cJSON *ec_restriction_data_wb_local_JSON = OpenAPI_ec_restriction_data_wb_convertToJSON(plmn_ec_info->ec_restriction_data_wb);
+        if (ec_restriction_data_wb_local_JSON == NULL) {
+            ogs_error("OpenAPI_plmn_ec_info_convertToJSON() failed [ec_restriction_data_wb]");
+            goto end;
+        }
+        cJSON_AddItemToObject(item, "ecRestrictionDataWb", ec_restriction_data_wb_local_JSON);
+        if (item->child == NULL) {
+            ogs_error("OpenAPI_plmn_ec_info_convertToJSON() failed [ec_restriction_data_wb]");
             goto end;
         }
     }
 
-    if (plmn_ec_info->ec_mode_b_restricted) {
-        if (cJSON_AddBoolToObject(item, "ecModeBRestricted", plmn_ec_info->ec_mode_b_restricted) == NULL) {
-            ogs_error("OpenAPI_plmn_ec_info_convertToJSON() failed [ec_mode_b_restricted]");
+    if (plmn_ec_info->ec_restriction_data_nb) {
+        if (cJSON_AddBoolToObject(item, "ecRestrictionDataNb", plmn_ec_info->ec_restriction_data_nb) == NULL) {
+            ogs_error("OpenAPI_plmn_ec_info_convertToJSON() failed [ec_restriction_data_nb]");
             goto end;
         }
     }
@@ -87,28 +94,26 @@ OpenAPI_plmn_ec_info_t *OpenAPI_plmn_ec_info_parseFromJSON(cJSON *plmn_ec_infoJS
 
     plmn_id_local_nonprim = OpenAPI_plmn_id_parseFromJSON(plmn_id);
 
-    cJSON *ec_mode_a_restricted = cJSON_GetObjectItemCaseSensitive(plmn_ec_infoJSON, "ecModeARestricted");
+    cJSON *ec_restriction_data_wb = cJSON_GetObjectItemCaseSensitive(plmn_ec_infoJSON, "ecRestrictionDataWb");
 
-    if (ec_mode_a_restricted) {
-        if (!cJSON_IsBool(ec_mode_a_restricted)) {
-            ogs_error("OpenAPI_plmn_ec_info_parseFromJSON() failed [ec_mode_a_restricted]");
-            goto end;
-        }
+    OpenAPI_ec_restriction_data_wb_t *ec_restriction_data_wb_local_nonprim = NULL;
+    if (ec_restriction_data_wb) {
+        ec_restriction_data_wb_local_nonprim = OpenAPI_ec_restriction_data_wb_parseFromJSON(ec_restriction_data_wb);
     }
 
-    cJSON *ec_mode_b_restricted = cJSON_GetObjectItemCaseSensitive(plmn_ec_infoJSON, "ecModeBRestricted");
+    cJSON *ec_restriction_data_nb = cJSON_GetObjectItemCaseSensitive(plmn_ec_infoJSON, "ecRestrictionDataNb");
 
-    if (ec_mode_b_restricted) {
-        if (!cJSON_IsBool(ec_mode_b_restricted)) {
-            ogs_error("OpenAPI_plmn_ec_info_parseFromJSON() failed [ec_mode_b_restricted]");
+    if (ec_restriction_data_nb) {
+        if (!cJSON_IsBool(ec_restriction_data_nb)) {
+            ogs_error("OpenAPI_plmn_ec_info_parseFromJSON() failed [ec_restriction_data_nb]");
             goto end;
         }
     }
 
     plmn_ec_info_local_var = OpenAPI_plmn_ec_info_create (
         plmn_id_local_nonprim,
-        ec_mode_a_restricted ? ec_mode_a_restricted->valueint : 0,
-        ec_mode_b_restricted ? ec_mode_b_restricted->valueint : 0
+        ec_restriction_data_wb ? ec_restriction_data_wb_local_nonprim : NULL,
+        ec_restriction_data_nb ? ec_restriction_data_nb->valueint : 0
         );
 
     return plmn_ec_info_local_var;

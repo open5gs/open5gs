@@ -17,16 +17,11 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_trace_depth_s OpenAPI_trace_depth_t;
-typedef struct OpenAPI_trace_depth_s {
-} OpenAPI_trace_depth_t;
+typedef enum { OpenAPI_trace_depth_NULL = 0, OpenAPI_trace_depth_MINIMUM, OpenAPI_trace_depth_MEDIUM, OpenAPI_trace_depth_MAXIMUM, OpenAPI_trace_depth_MINIMUM_WO_VENDOR_EXTENSION, OpenAPI_trace_depth_MEDIUM_WO_VENDOR_EXTENSION, OpenAPI_trace_depth_MAXIMUM_WO_VENDOR_EXTENSION } OpenAPI_trace_depth_e;
 
-OpenAPI_trace_depth_t *OpenAPI_trace_depth_create(
-    );
-void OpenAPI_trace_depth_free(OpenAPI_trace_depth_t *trace_depth);
-OpenAPI_trace_depth_t *OpenAPI_trace_depth_parseFromJSON(cJSON *trace_depthJSON);
-cJSON *OpenAPI_trace_depth_convertToJSON(OpenAPI_trace_depth_t *trace_depth);
-OpenAPI_trace_depth_t *OpenAPI_trace_depth_copy(OpenAPI_trace_depth_t *dst, OpenAPI_trace_depth_t *src);
+char* OpenAPI_trace_depth_ToString(OpenAPI_trace_depth_e trace_depth);
+
+OpenAPI_trace_depth_e OpenAPI_trace_depth_FromString(char* trace_depth);
 
 #ifdef __cplusplus
 }

@@ -190,7 +190,7 @@ int sgwc_context_parse_config(void)
                                             break;
                                     }
 
-                                    ogs_assert(num <= OGS_MAX_NUM_OF_HOSTNAME);
+                                    ogs_assert(num < OGS_MAX_NUM_OF_HOSTNAME);
                                     hostname[num++] = 
                                         ogs_yaml_iter_value(&hostname_iter);
                                 } while (
@@ -413,7 +413,8 @@ sgwc_sess_t *sgwc_sess_add(sgwc_ue_t *sgwc_ue, char *apn)
     ogs_pfcp_bar_new(&sess->pfcp);
 
     /* Set APN */
-    ogs_cpystrn(sess->pdn.apn, apn, OGS_MAX_APN_LEN+1);
+    sess->session.name = ogs_strdup(apn);
+    ogs_assert(sess->session.name);
 
     sess->sgwc_ue = sgwc_ue;
 
@@ -434,8 +435,9 @@ static bool compare_ue_info(ogs_pfcp_node_t *node, sgwc_sess_t *sess)
     sgwc_ue = sess->sgwc_ue;
     ogs_assert(sgwc_ue);
 
+    ogs_assert(sess->session.name);
     for (i = 0; i < node->num_of_dnn; i++)
-        if (ogs_strcasecmp(node->dnn[i], sess->pdn.apn) == 0) return true;
+        if (ogs_strcasecmp(node->dnn[i], sess->session.name) == 0) return true;
 
     for (i = 0; i < node->num_of_e_cell_id; i++)
         if (node->e_cell_id[i] == sgwc_ue->e_cgi.cell_id) return true;
@@ -540,6 +542,9 @@ int sgwc_sess_remove(sgwc_sess_t *sess)
 
     ogs_pfcp_pool_final(&sess->pfcp);
 
+    ogs_assert(sess->session.name);
+    ogs_free(sess->session.name);
+
     ogs_pool_free(&sgwc_sess_pool, sess);
 
     stats_remove_sgwc_session();
@@ -580,7 +585,7 @@ sgwc_sess_t* sgwc_sess_find_by_apn(sgwc_ue_t *sgwc_ue, char *apn)
     ogs_assert(apn);
 
     ogs_list_for_each(&sgwc_ue->sess_list, sess) {
-        if (!ogs_strcasecmp(sess->pdn.apn, apn))
+        if (!ogs_strcasecmp(sess->session.name, apn))
             return sess;
     }
 
@@ -810,17 +815,17 @@ sgwc_tunnel_t *sgwc_tunnel_add(
     ogs_assert(pdr);
     pdr->src_if = src_if;
 
-    if (strlen(sess->pdn.apn))
-        pdr->apn = ogs_strdup(sess->pdn.apn);
+    if (sess->session.name)
+        pdr->apn = ogs_strdup(sess->session.name);
 
     pdr->outer_header_removal_len = 1;
-    if (sess->pdn.pdn_type == OGS_GTP_PDN_TYPE_IPV4) {
+    if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV4) {
         pdr->outer_header_removal.description =
             OGS_PFCP_OUTER_HEADER_REMOVAL_GTPU_UDP_IPV4;
-    } else if (sess->pdn.pdn_type == OGS_GTP_PDN_TYPE_IPV6) {
+    } else if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV6) {
         pdr->outer_header_removal.description =
             OGS_PFCP_OUTER_HEADER_REMOVAL_GTPU_UDP_IPV6;
-    } else if (sess->pdn.pdn_type == OGS_GTP_PDN_TYPE_IPV4V6) {
+    } else if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV4V6) {
         pdr->outer_header_removal.description =
             OGS_PFCP_OUTER_HEADER_REMOVAL_GTPU_UDP_IP;
     } else
@@ -843,7 +848,7 @@ sgwc_tunnel_t *sgwc_tunnel_add(
     } else {
         resource = ogs_pfcp_gtpu_resource_find(
                 &sess->pfcp_node->gtpu_resource_list,
-                sess->pdn.apn, OGS_PFCP_INTERFACE_ACCESS);
+                sess->session.name, OGS_PFCP_INTERFACE_ACCESS);
         if (resource) {
             ogs_pfcp_user_plane_ip_resource_info_to_sockaddr(&resource->info,
                 &tunnel->local_addr, &tunnel->local_addr6);

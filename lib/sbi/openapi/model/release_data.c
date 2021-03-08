@@ -12,7 +12,10 @@ OpenAPI_release_data_t *OpenAPI_release_data_create(
     char *ue_time_zone,
     OpenAPI_user_location_t *add_ue_location,
     OpenAPI_list_t *secondary_rat_usage_report,
-    OpenAPI_list_t *secondary_rat_usage_info
+    OpenAPI_list_t *secondary_rat_usage_info,
+    OpenAPI_n4_information_t *n4_info,
+    OpenAPI_n4_information_t *n4_info_ext1,
+    OpenAPI_n4_information_t *n4_info_ext2
     )
 {
     OpenAPI_release_data_t *release_data_local_var = OpenAPI_malloc(sizeof(OpenAPI_release_data_t));
@@ -27,6 +30,9 @@ OpenAPI_release_data_t *OpenAPI_release_data_create(
     release_data_local_var->add_ue_location = add_ue_location;
     release_data_local_var->secondary_rat_usage_report = secondary_rat_usage_report;
     release_data_local_var->secondary_rat_usage_info = secondary_rat_usage_info;
+    release_data_local_var->n4_info = n4_info;
+    release_data_local_var->n4_info_ext1 = n4_info_ext1;
+    release_data_local_var->n4_info_ext2 = n4_info_ext2;
 
     return release_data_local_var;
 }
@@ -49,6 +55,9 @@ void OpenAPI_release_data_free(OpenAPI_release_data_t *release_data)
         OpenAPI_secondary_rat_usage_info_free(node->data);
     }
     OpenAPI_list_free(release_data->secondary_rat_usage_info);
+    OpenAPI_n4_information_free(release_data->n4_info);
+    OpenAPI_n4_information_free(release_data->n4_info_ext1);
+    OpenAPI_n4_information_free(release_data->n4_info_ext2);
     ogs_free(release_data);
 }
 
@@ -162,6 +171,45 @@ cJSON *OpenAPI_release_data_convertToJSON(OpenAPI_release_data_t *release_data)
         }
     }
 
+    if (release_data->n4_info) {
+        cJSON *n4_info_local_JSON = OpenAPI_n4_information_convertToJSON(release_data->n4_info);
+        if (n4_info_local_JSON == NULL) {
+            ogs_error("OpenAPI_release_data_convertToJSON() failed [n4_info]");
+            goto end;
+        }
+        cJSON_AddItemToObject(item, "n4Info", n4_info_local_JSON);
+        if (item->child == NULL) {
+            ogs_error("OpenAPI_release_data_convertToJSON() failed [n4_info]");
+            goto end;
+        }
+    }
+
+    if (release_data->n4_info_ext1) {
+        cJSON *n4_info_ext1_local_JSON = OpenAPI_n4_information_convertToJSON(release_data->n4_info_ext1);
+        if (n4_info_ext1_local_JSON == NULL) {
+            ogs_error("OpenAPI_release_data_convertToJSON() failed [n4_info_ext1]");
+            goto end;
+        }
+        cJSON_AddItemToObject(item, "n4InfoExt1", n4_info_ext1_local_JSON);
+        if (item->child == NULL) {
+            ogs_error("OpenAPI_release_data_convertToJSON() failed [n4_info_ext1]");
+            goto end;
+        }
+    }
+
+    if (release_data->n4_info_ext2) {
+        cJSON *n4_info_ext2_local_JSON = OpenAPI_n4_information_convertToJSON(release_data->n4_info_ext2);
+        if (n4_info_ext2_local_JSON == NULL) {
+            ogs_error("OpenAPI_release_data_convertToJSON() failed [n4_info_ext2]");
+            goto end;
+        }
+        cJSON_AddItemToObject(item, "n4InfoExt2", n4_info_ext2_local_JSON);
+        if (item->child == NULL) {
+            ogs_error("OpenAPI_release_data_convertToJSON() failed [n4_info_ext2]");
+            goto end;
+        }
+    }
+
 end:
     return item;
 }
@@ -265,6 +313,27 @@ OpenAPI_release_data_t *OpenAPI_release_data_parseFromJSON(cJSON *release_dataJS
         }
     }
 
+    cJSON *n4_info = cJSON_GetObjectItemCaseSensitive(release_dataJSON, "n4Info");
+
+    OpenAPI_n4_information_t *n4_info_local_nonprim = NULL;
+    if (n4_info) {
+        n4_info_local_nonprim = OpenAPI_n4_information_parseFromJSON(n4_info);
+    }
+
+    cJSON *n4_info_ext1 = cJSON_GetObjectItemCaseSensitive(release_dataJSON, "n4InfoExt1");
+
+    OpenAPI_n4_information_t *n4_info_ext1_local_nonprim = NULL;
+    if (n4_info_ext1) {
+        n4_info_ext1_local_nonprim = OpenAPI_n4_information_parseFromJSON(n4_info_ext1);
+    }
+
+    cJSON *n4_info_ext2 = cJSON_GetObjectItemCaseSensitive(release_dataJSON, "n4InfoExt2");
+
+    OpenAPI_n4_information_t *n4_info_ext2_local_nonprim = NULL;
+    if (n4_info_ext2) {
+        n4_info_ext2_local_nonprim = OpenAPI_n4_information_parseFromJSON(n4_info_ext2);
+    }
+
     release_data_local_var = OpenAPI_release_data_create (
         cause ? causeVariable : 0,
         ng_ap_cause ? ng_ap_cause_local_nonprim : NULL,
@@ -273,7 +342,10 @@ OpenAPI_release_data_t *OpenAPI_release_data_parseFromJSON(cJSON *release_dataJS
         ue_time_zone ? ogs_strdup(ue_time_zone->valuestring) : NULL,
         add_ue_location ? add_ue_location_local_nonprim : NULL,
         secondary_rat_usage_report ? secondary_rat_usage_reportList : NULL,
-        secondary_rat_usage_info ? secondary_rat_usage_infoList : NULL
+        secondary_rat_usage_info ? secondary_rat_usage_infoList : NULL,
+        n4_info ? n4_info_local_nonprim : NULL,
+        n4_info_ext1 ? n4_info_ext1_local_nonprim : NULL,
+        n4_info_ext2 ? n4_info_ext2_local_nonprim : NULL
         );
 
     return release_data_local_var;

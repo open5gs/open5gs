@@ -25,6 +25,7 @@ extern "C" {
 typedef struct OpenAPI_presence_info_s OpenAPI_presence_info_t;
 typedef struct OpenAPI_presence_info_s {
     char *pra_id;
+    char *additional_pra_id;
     OpenAPI_presence_state_e presence_state;
     OpenAPI_list_t *tracking_area_list;
     OpenAPI_list_t *ecgi_list;
@@ -35,6 +36,7 @@ typedef struct OpenAPI_presence_info_s {
 
 OpenAPI_presence_info_t *OpenAPI_presence_info_create(
     char *pra_id,
+    char *additional_pra_id,
     OpenAPI_presence_state_e presence_state,
     OpenAPI_list_t *tracking_area_list,
     OpenAPI_list_t *ecgi_list,

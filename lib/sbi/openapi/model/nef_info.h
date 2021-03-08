@@ -13,6 +13,7 @@
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
 #include "af_event_exposure_data.h"
+#include "identity_range.h"
 #include "pfd_data.h"
 
 #ifdef __cplusplus
@@ -24,12 +25,18 @@ typedef struct OpenAPI_nef_info_s {
     char *nef_id;
     struct OpenAPI_pfd_data_s *pfd_data;
     struct OpenAPI_af_event_exposure_data_s *af_ee_data;
+    OpenAPI_list_t *gpsi_ranges;
+    OpenAPI_list_t *external_group_identifiers_ranges;
+    OpenAPI_list_t *served_fqdn_list;
 } OpenAPI_nef_info_t;
 
 OpenAPI_nef_info_t *OpenAPI_nef_info_create(
     char *nef_id,
     OpenAPI_pfd_data_t *pfd_data,
-    OpenAPI_af_event_exposure_data_t *af_ee_data
+    OpenAPI_af_event_exposure_data_t *af_ee_data,
+    OpenAPI_list_t *gpsi_ranges,
+    OpenAPI_list_t *external_group_identifiers_ranges,
+    OpenAPI_list_t *served_fqdn_list
     );
 void OpenAPI_nef_info_free(OpenAPI_nef_info_t *nef_info);
 OpenAPI_nef_info_t *OpenAPI_nef_info_parseFromJSON(cJSON *nef_infoJSON);

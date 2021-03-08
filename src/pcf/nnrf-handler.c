@@ -287,6 +287,9 @@ void pcf_nnrf_handle_nf_discover(
         }
 
         if (NF_INSTANCE_IS_OTHERS(nf_instance->id)) {
+            pcf_ue_t *pcf_ue = NULL;
+            pcf_sess_t *sess = NULL;
+
             handled = ogs_sbi_nnrf_handle_nf_profile(
                         nf_instance, NFProfile, NULL, NULL);
             if (!handled) {
@@ -303,10 +306,22 @@ void pcf_nnrf_handle_nf_discover(
                 continue;
             }
 
-            if (!OGS_SBI_NF_INSTANCE_GET(
-                        sbi_object->nf_type_array, nf_instance->nf_type))
-                ogs_sbi_nf_instance_associate(sbi_object->nf_type_array,
-                        nf_instance->nf_type, pcf_nf_state_registered);
+            switch(sbi_object->type) {
+            case OGS_SBI_OBJ_UE_TYPE:
+                pcf_ue = (pcf_ue_t *)sbi_object;
+                ogs_assert(pcf_ue);
+                pcf_ue_select_nf(pcf_ue, nf_instance->nf_type);
+                break;
+            case OGS_SBI_OBJ_SESS_TYPE:
+                sess = (pcf_sess_t *)sbi_object;
+                ogs_assert(sess);
+                pcf_sess_select_nf(sess, nf_instance->nf_type);
+                break;
+            default:
+                ogs_fatal("(NF discover search result) Not implemented [%d]",
+                            sbi_object->type);
+                ogs_assert_if_reached();
+            }
 
             /* TIME : Update validity from NRF */
             if (SearchResult->validity_period) {
@@ -326,8 +341,7 @@ void pcf_nnrf_handle_nf_discover(
     }
 
     ogs_assert(xact->target_nf_type);
-    nf_instance = OGS_SBI_NF_INSTANCE_GET(
-            sbi_object->nf_type_array, xact->target_nf_type);
+    nf_instance = OGS_SBI_NF_INSTANCE(sbi_object, xact->target_nf_type);
     if (!nf_instance) {
         ogs_assert(sbi_object->type > OGS_SBI_OBJ_BASE &&
                     sbi_object->type < OGS_SBI_OBJ_TOP);

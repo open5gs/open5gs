@@ -3,6 +3,12 @@ const Schema = mongoose.Schema;
 require('mongoose-long')(mongoose);
 
 const Subscriber = new Schema({
+
+  schema_version: {
+    $type: Number,
+    default: 1  // Current Schema Version
+  },
+
   imsi: { $type: String, unique: true, required: true },
 
   security: {
@@ -14,11 +20,68 @@ const Subscriber = new Schema({
     sqn: Schema.Types.Long
   },
 
-  access_restriction_data: { 
-    $type: Number, 
+  ambr: {
+    downlink: { value: Number, unit: Number },
+    uplink: { value: Number, unit: Number }
+  },
+
+  slice: [{
+    sst: { $type: Number, required: true },
+    sd: String,
+    default_indicator: Boolean,
+    session: [{
+      name: { $type: String, required: true }, // DNN or APN
+      type: Number,
+      qos: {
+        index: Number, // 5QI or QCI
+        arp: {
+          priority_level: Number,
+          pre_emption_capability: Number,
+          pre_emption_vulnerability: Number,
+        }
+      },
+      ambr: {
+        downlink: { value: Number, unit: Number },
+        uplink: { value: Number, unit: Number }
+      },
+      ue: {
+        addr: String,
+        addr6: String
+      },
+      smf: {
+        addr: String,
+        addr6: String
+      },
+      pcc_rule: [{
+        flow: [{
+          direction: Number,
+          description: String
+        }],
+        qos: {
+          index: Number, // 5QI or QCI
+          arp: {
+            priority_level: Number,
+            pre_emption_capability: Number,
+            pre_emption_vulnerability: Number,
+          },
+          mbr: {
+            downlink: { value: Number, unit: Number },
+            uplink: { value: Number, unit: Number }
+          },
+          gbr: {
+            downlink: { value: Number, unit: Number },
+            uplink: { value: Number, unit: Number }
+          },
+        },
+      }]
+    }]
+  }],
+
+  access_restriction_data: {
+    $type: Number,
     default: 32 // Handover to Non-3GPP Access Not Allowed
   },
-  subscriber_status: { 
+  subscriber_status: {
     $type: Number,
     default: 0  // Service Granted
   },
@@ -26,73 +89,11 @@ const Subscriber = new Schema({
     $type: Number,
     default: 2 // Only Packet
   },
-
   subscribed_rau_tau_timer: {
     $type: Number,
     default: 12 // minites
-  },
+  }
 
-  ambr: {
-    downlink: Schema.Types.Long,
-    uplink: Schema.Types.Long
-  },
-
-  pdn: [{
-    apn: { $type: String, required: true },
-    type: {
-      $type: Number, default: 2 // IPv4, IPv6 and dualstack IPv4v6
-    },
-    qos: {
-      qci: Number,
-      arp: {
-        priority_level: Number,
-        pre_emption_capability: {
-          $type: Number, default: 1 // Capability Disabled
-        },
-        pre_emption_vulnerability: {
-          $type : Number, default: 0 // Vulnerability Disabled
-        }
-      }
-    },
-    ambr: {
-      downlink: Schema.Types.Long,
-      uplink: Schema.Types.Long
-    },
-    ue: {
-      addr: String,
-      addr6: String
-    },
-    pgw: {
-      addr: String,
-      addr6: String
-    },
-    pcc_rule: [{
-      flow: [{
-        direction: Number,
-        description: String
-      }],
-      qos: {
-        qci: Number,
-        arp: {
-          priority_level: Number,
-          pre_emption_capability: {
-            $type: Number, default: 1 // Capability Disabled
-          },
-          pre_emption_vulnerability: {
-            $type : Number, default: 0 // Vulnerability Disabled
-          }
-        },
-        mbr: {
-          downlink: Schema.Types.Long,
-          uplink: Schema.Types.Long
-        },
-        gbr: {
-          downlink: Schema.Types.Long,
-          uplink: Schema.Types.Long
-        },
-      },
-    }]
-  }]
 }, { typeKey: '$type' });
 
 module.exports = mongoose.model('Subscriber', Subscriber);

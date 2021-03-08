@@ -447,7 +447,7 @@ int test_context_parse_config(void)
                                         self.plmn_support[
                                             self.num_of_plmn_support].
                                                 num_of_s_nssai <=
-                                            OGS_MAX_NUM_OF_S_NSSAI);
+                                            OGS_MAX_NUM_OF_SLICE);
                                     s_nssai = &self.plmn_support[
                                             self.num_of_plmn_support].s_nssai[
                                                 self.plmn_support[
@@ -495,10 +495,6 @@ int test_context_parse_config(void)
                                                         (char*)sd);
                                         else
                                             s_nssai->sd.v =
-                                                OGS_S_NSSAI_NO_SD_VALUE;
-
-                                        s_nssai->mapped_hplmn_sst = 0;
-                                        s_nssai->mapped_hplmn_sd.v =
                                                 OGS_S_NSSAI_NO_SD_VALUE;
 
                                         self.plmn_support[
@@ -862,6 +858,7 @@ test_ue_t *test_ue_add_by_suci(
     ogs_nas_5gs_mobile_identity_suci_t *mobile_identity_suci,
     uint16_t mobile_identity_suci_length)
 {
+    int i, j;
     test_ue_t *test_ue = NULL;
 
     ogs_assert(mobile_identity_suci);
@@ -895,6 +892,23 @@ test_ue_t *test_ue_add_by_suci(
     else
         ogs_nas_from_plmn_id(
             &mobile_identity_suci->nas_plmn_id, &test_ue->e_tai.plmn_id);
+
+    for (i = 0; i < test_self()->num_of_plmn_support; i++) {
+        for (j = 0; j < test_self()->plmn_support[i].num_of_s_nssai; j++) {
+            ogs_nas_s_nssai_ie_t *s_nssai = &test_ue->requested_nssai.
+                    s_nssai[test_ue->requested_nssai.num_of_s_nssai];
+
+            s_nssai->sst = 0;
+            s_nssai->sd.v = OGS_S_NSSAI_NO_SD_VALUE;
+            s_nssai->mapped_hplmn_sst = 0;
+            s_nssai->mapped_hplmn_sd.v = OGS_S_NSSAI_NO_SD_VALUE;
+
+            memcpy(s_nssai, &test_self()->plmn_support[i].s_nssai[j],
+                    sizeof(ogs_s_nssai_t));
+
+            test_ue->requested_nssai.num_of_s_nssai++;
+        }
+    }
 
     test_ue_set_mobile_identity_suci(
             test_ue, mobile_identity_suci, mobile_identity_suci_length);
@@ -1142,4 +1156,1723 @@ test_bearer_t *test_qos_flow_find_by_qfi(test_sess_t *sess, uint8_t qfi)
         if (qfi == qos_flow->qfi) return qos_flow;
 
     return NULL;
+}
+
+int test_db_insert_ue(test_ue_t *test_ue, bson_t *doc)
+{
+    mongoc_collection_t *collection = NULL;
+    bson_t *key = NULL;
+    int64_t count = 0;
+    bson_error_t error;
+
+    ogs_assert(test_ue);
+    ogs_assert(doc);
+
+    OGS_HEX(test_ue->k_string, strlen(test_ue->k_string), test_ue->k);
+    OGS_HEX(test_ue->opc_string, strlen(test_ue->opc_string), test_ue->opc);
+
+    collection = mongoc_client_get_collection(
+        ogs_mongoc()->client, ogs_mongoc()->name, "subscribers");
+    if (!collection) {
+        ogs_error("mongoc_client_get_collection() failed");
+        return OGS_ERROR;
+    }
+    key = BCON_NEW("imsi", BCON_UTF8(test_ue->imsi));
+    ogs_assert(key);
+
+    count = mongoc_collection_count (
+        collection, MONGOC_QUERY_NONE, key, 0, 0, NULL, &error);
+    if (count) {
+        if (mongoc_collection_remove(collection,
+                MONGOC_REMOVE_SINGLE_REMOVE, key, NULL, &error) != true) {
+            ogs_error("mongoc_collection_remove() failed");
+            bson_destroy(key);
+            return OGS_ERROR;
+        }
+    }
+    bson_destroy(key);
+
+    if (mongoc_collection_insert(collection,
+                MONGOC_INSERT_NONE, doc, NULL, &error) != true) {
+        ogs_error("mongoc_collection_insert() failed");
+        bson_destroy(doc);
+        return OGS_ERROR;
+    }
+    bson_destroy(doc);
+
+    key = BCON_NEW("imsi", BCON_UTF8(test_ue->imsi));
+    ogs_assert(key);
+    do {
+        count = mongoc_collection_count(
+            collection, MONGOC_QUERY_NONE, key, 0, 0, NULL, &error);
+    } while (count == 0);
+    bson_destroy(key);
+
+    mongoc_collection_destroy(collection);
+
+    return OGS_OK;
+}
+
+int test_db_remove_ue(test_ue_t *test_ue)
+{
+    mongoc_collection_t *collection = NULL;
+    bson_t *key = NULL;
+    bson_error_t error;
+
+    ogs_assert(test_ue);
+
+    collection = mongoc_client_get_collection(
+        ogs_mongoc()->client, ogs_mongoc()->name, "subscribers");
+    if (!collection) {
+        ogs_error("mongoc_client_get_collection() failed");
+        return OGS_ERROR;
+    }
+
+    key = BCON_NEW("imsi", BCON_UTF8(test_ue->imsi));
+    ogs_assert(key);
+    if (mongoc_collection_remove(collection,
+            MONGOC_REMOVE_SINGLE_REMOVE, key, NULL, &error) != true) {
+        ogs_error("mongoc_collection_remove() failed");
+        bson_destroy(key);
+        return OGS_ERROR;
+    }
+    bson_destroy(key);
+
+    mongoc_collection_destroy(collection);
+
+    return OGS_OK;
+}
+
+bson_t *test_db_new_simple(test_ue_t *test_ue)
+{
+    bson_t *doc = NULL;
+
+    ogs_assert(test_ue);
+
+#if 1
+    doc = BCON_NEW(
+            "imsi", BCON_UTF8(test_ue->imsi),
+            "ambr", "{",
+                "downlink", "{",
+                    "value", BCON_INT32(1),
+                    "unit", BCON_INT32(3),
+                "}",
+                "uplink", "{",
+                    "value", BCON_INT32(1),
+                    "unit", BCON_INT32(3),
+                "}",
+            "}",
+            "slice", "[", "{",
+                "sst", BCON_INT32(1),
+                "default_indicator", BCON_BOOL(true),
+                "session", "[", "{",
+                    "name", BCON_UTF8("internet"),
+                    "type", BCON_INT32(3),
+                    "ambr", "{",
+                        "downlink", "{",
+                            "value", BCON_INT32(1),
+                            "unit", BCON_INT32(3),
+                        "}",
+                        "uplink", "{",
+                            "value", BCON_INT32(1),
+                            "unit", BCON_INT32(3),
+                        "}",
+                    "}",
+                    "qos", "{",
+                        "index", BCON_INT32(9),
+                        "arp", "{",
+                            "priority_level", BCON_INT32(8),
+                            "pre_emption_vulnerability", BCON_INT32(1),
+                            "pre_emption_capability", BCON_INT32(1),
+                        "}",
+                    "}",
+                "}", "]",
+            "}", "]",
+            "security", "{",
+                "k", BCON_UTF8(test_ue->k_string),
+                "opc", BCON_UTF8(test_ue->opc_string),
+                "amf", BCON_UTF8("8000"),
+                "sqn", BCON_INT64(64),
+            "}",
+            "subscribed_rau_tau_timer", BCON_INT32(12),
+            "network_access_mode", BCON_INT32(2),
+            "subscriber_status", BCON_INT32(0),
+            "access_restriction_data", BCON_INT32(32)
+          );
+#else /* For verify WebUI */
+    bson_error_t error;
+    const char *json =
+      "{"
+        "\"_id\" : { \"$oid\" : \"597223158b8861d7605378c6\" }, "
+        "\"imsi\" : \"901700000021309\","
+#if 0
+        "\"msisdn\" : [\"821012345678\", \"82107654321\" ], "
+        "\"msisdn\" : [\"82107654321\", \"821012345678\" ], "
+#endif
+        "\"ambr\" : { "
+          "\"downlink\" : {"
+            "\"value\" : 1,"
+            "\"unit\" : 3"
+          "},"
+          "\"uplink\" : {"
+            "\"value\" : 1,"
+            "\"unit\" : 3"
+          "}"
+        "},"
+        "\"slice\" : ["
+          "{"
+            "\"sst\" : 1,"
+            "\"default_indicator\" : true,"
+            "\"session\" : ["
+              "{"
+                "\"name\" : \"internet\", "
+                "\"_id\" : { \"$oid\" : \"597223158b8861d7605378c7\" }, "
+                "\"ambr\" : {"
+                  "\"downlink\" : {"
+                    "\"value\" : 1,"
+                    "\"unit\" : 3"
+                  "},"
+                  "\"uplink\" : {"
+                    "\"value\" : 1,"
+                    "\"unit\" : 3"
+                  "}"
+                "},"
+                "\"qos\" : { "
+                  "\"index\" : 9, "
+                  "\"arp\" : { "
+                    "\"priority_level\" : 8,"
+                    "\"pre_emption_vulnerability\" : 1, "
+                    "\"pre_emption_capability\" : 1"
+                  "} "
+                "}, "
+                "\"type\" : 3"
+              "}"
+            "]"
+          "}"
+        "],"
+        "\"security\" : { "
+          "\"k\" : \"465B5CE8 B199B49F AA5F0A2E E238A6BC\", "
+          "\"opc\" : \"E8ED289D EBA952E4 283B54E8 8E6183CA\", "
+          "\"amf\" : \"8000\", "
+          "\"sqn\" : { \"$numberLong\" : \"64\" } "
+        "}, "
+        "\"subscribed_rau_tau_timer\" : 12,"
+        "\"network_access_mode\" : 2, "
+        "\"subscriber_status\" : 0, "
+        "\"access_restriction_data\" : 32, "
+        "\"__v\" : 0 "
+      "}";
+
+    doc = bson_new_from_json((const uint8_t *)json, -1, &error);;
+#endif
+    ogs_assert(doc);
+
+    return doc;
+}
+
+bson_t *test_db_new_qos_flow(test_ue_t *test_ue)
+{
+    bson_t *doc = NULL;
+
+    ogs_assert(test_ue);
+
+#if 1
+    doc = BCON_NEW(
+            "imsi", BCON_UTF8(test_ue->imsi),
+            "ambr", "{",
+                "downlink", "{",
+                    "value", BCON_INT32(1),
+                    "unit", BCON_INT32(3),
+                "}",
+                "uplink", "{",
+                    "value", BCON_INT32(1),
+                    "unit", BCON_INT32(3),
+                "}",
+            "}",
+            "slice", "[", "{",
+                "sst", BCON_INT32(1),
+                "default_indicator", BCON_BOOL(true),
+                "session", "[", "{",
+                    "name", BCON_UTF8("internet"),
+                    "type", BCON_INT32(3),
+                    "ambr", "{",
+                        "downlink", "{",
+                            "value", BCON_INT32(1),
+                            "unit", BCON_INT32(3),
+                        "}",
+                        "uplink", "{",
+                            "value", BCON_INT32(1),
+                            "unit", BCON_INT32(3),
+                        "}",
+                    "}",
+                    "qos", "{",
+                        "index", BCON_INT32(9),
+                        "arp", "{",
+                            "priority_level", BCON_INT32(8),
+                            "pre_emption_vulnerability", BCON_INT32(1),
+                            "pre_emption_capability", BCON_INT32(1),
+                        "}",
+                    "}",
+                    "pcc_rule", "[", "{",
+                        "qos", "{",
+                            "index", BCON_INT32(1),
+                            "arp", "{",
+                                "priority_level", BCON_INT32(2),
+                                "pre_emption_vulnerability", BCON_INT32(2),
+                                "pre_emption_capability", BCON_INT32(2),
+                            "}",
+                            "mbr", "{",
+                                "downlink", "{",
+                                    "value", BCON_INT32(64),
+                                    "unit", BCON_INT32(1),
+                                "}",
+                                "uplink", "{",
+                                    "value", BCON_INT32(44),
+                                    "unit", BCON_INT32(1),
+                                "}",
+                            "}",
+                            "gbr", "{",
+                                "downlink", "{",
+                                    "value", BCON_INT32(64),
+                                    "unit", BCON_INT32(1),
+                                "}",
+                                "uplink", "{",
+                                    "value", BCON_INT32(44),
+                                    "unit", BCON_INT32(1),
+                                "}",
+                            "}",
+                        "}",
+                        "flow", "[",
+                            "{", "direction", BCON_INT32(2),
+                                 "description", BCON_UTF8("permit out udp from 10.200.136.98/32 23454 to assigned 1-65535"), "}",
+                            "{", "direction", BCON_INT32(1),
+                                 "description", BCON_UTF8("permit out icmp from any to assigned"), "}",
+                            "{", "direction", BCON_INT32(2),
+                                 "description", BCON_UTF8("permit out udp from 10.200.136.98/32 23455 to assigned 1-65535"), "}",
+                            "{", "direction", BCON_INT32(1),
+                                 "description", BCON_UTF8("permit out udp from 10.200.136.98/32 1-65535 to assigned 50021"), "}",
+                        "]",
+                    "}", "]",
+                "}", "]",
+            "}", "]",
+            "security", "{",
+                "k", BCON_UTF8(test_ue->k_string),
+                "opc", BCON_UTF8(test_ue->opc_string),
+                "amf", BCON_UTF8("8000"),
+                "sqn", BCON_INT64(64),
+            "}",
+            "subscribed_rau_tau_timer", BCON_INT32(12),
+            "network_access_mode", BCON_INT32(2),
+            "subscriber_status", BCON_INT32(0),
+            "access_restriction_data", BCON_INT32(32)
+          );
+#else /* For verify WebUI */
+    bson_error_t error;
+    const char *json =
+      "{"
+        "\"_id\" : { \"$oid\" : \"597223158b8861d7605378c6\" }, "
+        "\"imsi\" : \"901700000021309\","
+        "\"ambr\" : { "
+          "\"downlink\" : {"
+            "\"value\" : 1,"
+            "\"unit\" : 3"
+          "},"
+          "\"uplink\" : {"
+            "\"value\" : 1,"
+            "\"unit\" : 3"
+          "}"
+        "},"
+        "\"slice\" : ["
+          "{"
+            "\"sst\" : 1,"
+            "\"default_indicator\" : true,"
+            "\"session\" : ["
+              "{"
+                "\"name\" : \"internet\", "
+                "\"_id\" : { \"$oid\" : \"597223158b8861d7605378c7\" }, "
+                "\"ambr\" : {"
+                  "\"downlink\" : {"
+                    "\"value\" : 1,"
+                    "\"unit\" : 3"
+                  "},"
+                  "\"uplink\" : {"
+                    "\"value\" : 1,"
+                    "\"unit\" : 3"
+                  "}"
+                "},"
+                "\"qos\" : { "
+                  "\"index\" : 9, "
+                  "\"arp\" : { "
+                    "\"priority_level\" : 8,"
+                    "\"pre_emption_vulnerability\" : 1, "
+                    "\"pre_emption_capability\" : 1"
+                  "} "
+                "}, "
+                "\"type\" : 3,"
+                "\"pcc_rule\" : ["
+                  "{"
+                    "\"_id\" : { \"$oid\" : \"599eb929c850caabcbfdcd2d\" },"
+                    "\"qos\" : {"
+                      "\"index\" : 1,"
+                      "\"mbr\" : {"
+                        "\"downlink\" : {"
+                          "\"value\" : 64,"
+                          "\"unit\" : 1"
+                        "},"
+                        "\"uplink\" : {"
+                          "\"value\" : 44,"
+                          "\"unit\" : 1"
+                        "}"
+                      "},"
+                      "\"gbr\" : {"
+                        "\"downlink\" : {"
+                          "\"value\" : 64,"
+                          "\"unit\" : 1"
+                        "},"
+                        "\"uplink\" : {"
+                          "\"value\" : 44,"
+                          "\"unit\" : 1"
+                        "}"
+                      "},"
+                      "\"arp\" : {"
+                        "\"priority_level\" : 3,"
+                        "\"pre_emption_vulnerability\" : 2,"
+                        "\"pre_emption_capability\" : 2 }"
+                      "},"
+                      "\"flow\" : ["
+                        "{ \"direction\" : 2,"
+                          "\"description\" : \"permit out udp from 10.200.136.98/32 23454 to assigned 1-65535\","
+                          "\"_id\" : { \"$oid\" : \"599eb929c850caabcbfdcd31\" } },"
+                        "{ \"direction\" : 1,"
+                          "\"description\" : \"permit out icmp from any to assigned\","
+                          "\"_id\" : { \"$oid\" : \"599eb929c850caabcbfdcd30\" } },"
+                        "{ \"direction\" : 2,"
+                          "\"description\" : \"permit out udp from 10.200.136.98/32 23455 to assigned 1-65535\","
+                          "\"_id\" : { \"$oid\" : \"599eb929c850caabcbfdcd2f\" } },"
+                        "{ \"direction\" : 1,"
+                          "\"description\" : \"permit out udp from 10.200.136.98/32 1-65535 to assigned 50021\","
+                          "\"_id\" : { \"$oid\" : \"599eb929c850caabcbfdcd2e\" } }"
+                      "]"
+                  "}"
+                "]"
+              "}"
+            "]"
+          "}"
+        "],"
+        "\"security\" : { "
+          "\"k\" : \"465B5CE8 B199B49F AA5F0A2E E238A6BC\", "
+          "\"opc\" : \"E8ED289D EBA952E4 283B54E8 8E6183CA\", "
+          "\"amf\" : \"8000\", "
+          "\"sqn\" : { \"$numberLong\" : \"64\" } "
+        "}, "
+        "\"subscribed_rau_tau_timer\" : 12,"
+        "\"network_access_mode\" : 2, "
+        "\"subscriber_status\" : 0, "
+        "\"access_restriction_data\" : 32, "
+        "\"__v\" : 0 "
+      "}";
+
+    doc = bson_new_from_json((const uint8_t *)json, -1, &error);;
+#endif
+    ogs_assert(doc);
+
+    return doc;
+}
+
+bson_t *test_db_new_session(test_ue_t *test_ue)
+{
+    bson_t *doc = NULL;
+
+    ogs_assert(test_ue);
+
+#if 1
+    doc = BCON_NEW(
+            "imsi", BCON_UTF8(test_ue->imsi),
+            "ambr", "{",
+                "downlink", "{",
+                    "value", BCON_INT32(1),
+                    "unit", BCON_INT32(3),
+                "}",
+                "uplink", "{",
+                    "value", BCON_INT32(1),
+                    "unit", BCON_INT32(3),
+                "}",
+            "}",
+            "slice", "[", "{",
+                "sst", BCON_INT32(1),
+                "default_indicator", BCON_BOOL(true),
+                "session", "[",
+                  "{",
+                    "name", BCON_UTF8("internet"),
+                    "type", BCON_INT32(3),
+                    "ambr", "{",
+                        "downlink", "{",
+                            "value", BCON_INT32(1),
+                            "unit", BCON_INT32(3),
+                        "}",
+                        "uplink", "{",
+                            "value", BCON_INT32(1),
+                            "unit", BCON_INT32(3),
+                        "}",
+                    "}",
+                    "qos", "{",
+                        "index", BCON_INT32(9),
+                        "arp", "{",
+                            "priority_level", BCON_INT32(8),
+                            "pre_emption_vulnerability", BCON_INT32(1),
+                            "pre_emption_capability", BCON_INT32(1),
+                        "}",
+                    "}",
+                  "}",
+                  "{",
+                    "name", BCON_UTF8("ims"),
+                    "type", BCON_INT32(3),
+                    "ambr", "{",
+                        "downlink", "{",
+                            "value", BCON_INT32(1),
+                            "unit", BCON_INT32(3),
+                        "}",
+                        "uplink", "{",
+                            "value", BCON_INT32(1),
+                            "unit", BCON_INT32(3),
+                        "}",
+                    "}",
+                    "qos", "{",
+                        "index", BCON_INT32(6),
+                        "arp", "{",
+                            "priority_level", BCON_INT32(6),
+                            "pre_emption_vulnerability", BCON_INT32(1),
+                            "pre_emption_capability", BCON_INT32(1),
+                        "}",
+                    "}",
+                    "pcc_rule", "[", "{",
+                        "qos", "{",
+                            "index", BCON_INT32(1),
+                            "arp", "{",
+                                "priority_level", BCON_INT32(3),
+                                "pre_emption_vulnerability", BCON_INT32(2),
+                                "pre_emption_capability", BCON_INT32(2),
+                            "}",
+                            "mbr", "{",
+                                "downlink", "{",
+                                    "value", BCON_INT32(64),
+                                    "unit", BCON_INT32(1),
+                                "}",
+                                "uplink", "{",
+                                    "value", BCON_INT32(44),
+                                    "unit", BCON_INT32(1),
+                                "}",
+                            "}",
+                            "gbr", "{",
+                                "downlink", "{",
+                                    "value", BCON_INT32(64),
+                                    "unit", BCON_INT32(1),
+                                "}",
+                                "uplink", "{",
+                                    "value", BCON_INT32(44),
+                                    "unit", BCON_INT32(1),
+                                "}",
+                            "}",
+                        "}",
+                        "flow", "[",
+                            "{", "direction", BCON_INT32(2),
+                                 "description", BCON_UTF8("permit out udp from 10.200.136.98/32 23454 to assigned 1-65535"), "}",
+                            "{", "direction", BCON_INT32(1),
+                                 "description", BCON_UTF8("permit out udp from 10.200.136.98/32 1-65535 to assigned 50020"), "}",
+                            "{", "direction", BCON_INT32(2),
+                                 "description", BCON_UTF8("permit out udp from 10.200.136.98/32 23455 to assigned 1-65535"), "}",
+                            "{", "direction", BCON_INT32(1),
+                                 "description", BCON_UTF8("permit out udp from 10.200.136.98/32 1-65535 to assigned 50021"), "}",
+                        "]",
+                    "}", "]",
+                  "}",
+                "]",
+            "}", "]",
+            "security", "{",
+                "k", BCON_UTF8(test_ue->k_string),
+                "opc", BCON_UTF8(test_ue->opc_string),
+                "amf", BCON_UTF8("8000"),
+                "sqn", BCON_INT64(64),
+            "}",
+            "subscribed_rau_tau_timer", BCON_INT32(12),
+            "network_access_mode", BCON_INT32(2),
+            "subscriber_status", BCON_INT32(0),
+            "access_restriction_data", BCON_INT32(32)
+          );
+#else /* For verify WebUI */
+    bson_error_t error;
+    const char *json =
+      "{"
+        "\"_id\" : { \"$oid\" : \"597223158b8861d7605378c6\" }, "
+        "\"imsi\" : \"901700000021309\","
+        "\"ambr\" : { "
+          "\"downlink\" : {"
+            "\"value\" : 1,"
+            "\"unit\" : 3"
+          "},"
+          "\"uplink\" : {"
+            "\"value\" : 1,"
+            "\"unit\" : 3"
+          "}"
+        "},"
+        "\"slice\" : ["
+          "{"
+            "\"sst\" : 1,"
+            "\"default_indicator\" : true,"
+            "\"session\" : ["
+              "{"
+                "\"name\" : \"internet\", "
+                "\"_id\" : { \"$oid\" : \"597223158b8861d7605378c6\" }, "
+                "\"ambr\" : {"
+                  "\"downlink\" : {"
+                    "\"value\" : 1,"
+                    "\"unit\" : 3"
+                  "},"
+                  "\"uplink\" : {"
+                    "\"value\" : 1,"
+                    "\"unit\" : 3"
+                  "}"
+                "},"
+                "\"qos\" : { "
+                  "\"index\" : 9, "
+                  "\"arp\" : { "
+                    "\"priority_level\" : 8,"
+                    "\"pre_emption_vulnerability\" : 1, "
+                    "\"pre_emption_capability\" : 1"
+                  "} "
+                "}, "
+                "\"type\" : 3"
+              "},"
+              "{"
+                "\"name\" : \"ims\", "
+                "\"_id\" : { \"$oid\" : \"597223158b8861d7605378c7\" }, "
+                "\"ambr\" : {"
+                  "\"downlink\" : {"
+                    "\"value\" : 1,"
+                    "\"unit\" : 3"
+                  "},"
+                  "\"uplink\" : {"
+                    "\"value\" : 1,"
+                    "\"unit\" : 3"
+                  "}"
+                "},"
+                "\"qos\" : { "
+                  "\"index\" : 6, "
+                  "\"arp\" : { "
+                    "\"priority_level\" : 6,"
+                    "\"pre_emption_vulnerability\" : 1, "
+                    "\"pre_emption_capability\" : 1"
+                  "} "
+                "}, "
+                "\"type\" : 3,"
+                "\"pcc_rule\" : ["
+                  "{"
+                    "\"_id\" : { \"$oid\" : \"599eb929c850caabcbfdcd2d\" },"
+                    "\"qos\" : {"
+                      "\"index\" : 1,"
+                      "\"mbr\" : {"
+                        "\"downlink\" : {"
+                          "\"value\" : 64,"
+                          "\"unit\" : 1"
+                        "},"
+                        "\"uplink\" : {"
+                          "\"value\" : 44,"
+                          "\"unit\" : 1"
+                        "}"
+                      "},"
+                      "\"gbr\" : {"
+                        "\"downlink\" : {"
+                          "\"value\" : 64,"
+                          "\"unit\" : 1"
+                        "},"
+                        "\"uplink\" : {"
+                          "\"value\" : 44,"
+                          "\"unit\" : 1"
+                        "}"
+                      "},"
+                      "\"arp\" : {"
+                        "\"priority_level\" : 3,"
+                        "\"pre_emption_vulnerability\" : 2,"
+                        "\"pre_emption_capability\" : 2 }"
+                      "},"
+                      "\"flow\" : ["
+                        "{ \"direction\" : 2,"
+                          "\"description\" : \"permit out udp from 10.200.136.98/32 23454 to assigned 1-65535\","
+                          "\"_id\" : { \"$oid\" : \"599eb929c850caabcbfdcd31\" } },"
+                        "{ \"direction\" : 1,"
+                          "\"description\" : \"permit out udp from 10.200.136.98/32 1-65535 to assigned 50020\","
+                          "\"_id\" : { \"$oid\" : \"599eb929c850caabcbfdcd30\" } },"
+                        "{ \"direction\" : 2,"
+                          "\"description\" : \"permit out udp from 10.200.136.98/32 23455 to assigned 1-65535\","
+                          "\"_id\" : { \"$oid\" : \"599eb929c850caabcbfdcd2f\" } },"
+                        "{ \"direction\" : 1,"
+                          "\"description\" : \"permit out udp from 10.200.136.98/32 1-65535 to assigned 50021\","
+                          "\"_id\" : { \"$oid\" : \"599eb929c850caabcbfdcd2e\" } }"
+                      "]"
+                  "}"
+                "]"
+              "}"
+            "]"
+          "}"
+        "],"
+        "\"security\" : { "
+          "\"k\" : \"465B5CE8 B199B49F AA5F0A2E E238A6BC\", "
+          "\"opc\" : \"E8ED289D EBA952E4 283B54E8 8E6183CA\", "
+          "\"amf\" : \"8000\", "
+          "\"sqn\" : { \"$numberLong\" : \"64\" } "
+        "}, "
+        "\"subscribed_rau_tau_timer\" : 12,"
+        "\"network_access_mode\" : 2, "
+        "\"subscriber_status\" : 0, "
+        "\"access_restriction_data\" : 32, "
+        "\"__v\" : 0 "
+      "}";
+
+    doc = bson_new_from_json((const uint8_t *)json, -1, &error);;
+#endif
+    ogs_assert(doc);
+
+    return doc;
+}
+
+bson_t *test_db_new_ims(test_ue_t *test_ue)
+{
+    bson_t *doc = NULL;
+
+    ogs_assert(test_ue);
+
+#if 1
+    doc = BCON_NEW(
+            "imsi", BCON_UTF8(test_ue->imsi),
+            "ambr", "{",
+                "downlink", "{",
+                    "value", BCON_INT32(1),
+                    "unit", BCON_INT32(3),
+                "}",
+                "uplink", "{",
+                    "value", BCON_INT32(1),
+                    "unit", BCON_INT32(3),
+                "}",
+            "}",
+            "slice", "[", "{",
+                "sst", BCON_INT32(1),
+                "default_indicator", BCON_BOOL(true),
+                "session", "[",
+                  "{",
+                    "name", BCON_UTF8("internet"),
+                    "type", BCON_INT32(3),
+                    "ambr", "{",
+                        "downlink", "{",
+                            "value", BCON_INT32(1),
+                            "unit", BCON_INT32(3),
+                        "}",
+                        "uplink", "{",
+                            "value", BCON_INT32(1),
+                            "unit", BCON_INT32(3),
+                        "}",
+                    "}",
+                    "qos", "{",
+                        "index", BCON_INT32(9),
+                        "arp", "{",
+                            "priority_level", BCON_INT32(8),
+                            "pre_emption_vulnerability", BCON_INT32(1),
+                            "pre_emption_capability", BCON_INT32(1),
+                        "}",
+                    "}",
+                  "}",
+                  "{",
+                    "name", BCON_UTF8("ims"),
+                    "type", BCON_INT32(3),
+                    "ambr", "{",
+                        "downlink", "{",
+                            "value", BCON_INT32(1),
+                            "unit", BCON_INT32(3),
+                        "}",
+                        "uplink", "{",
+                            "value", BCON_INT32(1),
+                            "unit", BCON_INT32(3),
+                        "}",
+                    "}",
+                    "qos", "{",
+                        "index", BCON_INT32(5),
+                        "arp", "{",
+                            "priority_level", BCON_INT32(1),
+                            "pre_emption_vulnerability", BCON_INT32(1),
+                            "pre_emption_capability", BCON_INT32(1),
+                        "}",
+                    "}",
+                    "pcc_rule", "[",
+                      "{",
+                        "qos", "{",
+                            "index", BCON_INT32(1),
+                            "arp", "{",
+                                "priority_level", BCON_INT32(3),
+                                "pre_emption_vulnerability", BCON_INT32(2),
+                                "pre_emption_capability", BCON_INT32(2),
+                            "}",
+                            "mbr", "{",
+                                "downlink", "{",
+                                    "value", BCON_INT32(82),
+                                    "unit", BCON_INT32(1),
+                                "}",
+                                "uplink", "{",
+                                    "value", BCON_INT32(82),
+                                    "unit", BCON_INT32(1),
+                                "}",
+                            "}",
+                            "gbr", "{",
+                                "downlink", "{",
+                                    "value", BCON_INT32(82),
+                                    "unit", BCON_INT32(1),
+                                "}",
+                                "uplink", "{",
+                                    "value", BCON_INT32(82),
+                                    "unit", BCON_INT32(1),
+                                "}",
+                            "}",
+                        "}",
+                      "}",
+                      "{",
+                        "qos", "{",
+                            "index", BCON_INT32(2),
+                            "arp", "{",
+                                "priority_level", BCON_INT32(4),
+                                "pre_emption_vulnerability", BCON_INT32(2),
+                                "pre_emption_capability", BCON_INT32(2),
+                            "}",
+                            "mbr", "{",
+                                "downlink", "{",
+                                    "value", BCON_INT32(802),
+                                    "unit", BCON_INT32(1),
+                                "}",
+                                "uplink", "{",
+                                    "value", BCON_INT32(802),
+                                    "unit", BCON_INT32(1),
+                                "}",
+                            "}",
+                            "gbr", "{",
+                                "downlink", "{",
+                                    "value", BCON_INT32(802),
+                                    "unit", BCON_INT32(1),
+                                "}",
+                                "uplink", "{",
+                                    "value", BCON_INT32(802),
+                                    "unit", BCON_INT32(1),
+                                "}",
+                            "}",
+                        "}",
+                      "}",
+                    "]",
+                  "}",
+                "]",
+            "}", "]",
+            "security", "{",
+                "k", BCON_UTF8(test_ue->k_string),
+                "opc", BCON_UTF8(test_ue->opc_string),
+                "amf", BCON_UTF8("8000"),
+                "sqn", BCON_INT64(64),
+            "}",
+            "subscribed_rau_tau_timer", BCON_INT32(12),
+            "network_access_mode", BCON_INT32(2),
+            "subscriber_status", BCON_INT32(0),
+            "access_restriction_data", BCON_INT32(32)
+          );
+#else /* For verify WebUI */
+    bson_error_t error;
+    const char *json =
+      "{"
+        "\"_id\" : { \"$oid\" : \"310014158b8861d7605378c6\" }, "
+        "\"imsi\" : \"001010123456819\", "
+        "\"ambr\" : { "
+          "\"downlink\" : {"
+            "\"value\" : 1,"
+            "\"unit\" : 3"
+          "},"
+          "\"uplink\" : {"
+            "\"value\" : 1,"
+            "\"unit\" : 3"
+          "}"
+        "},"
+        "\"slice\" : ["
+          "{"
+            "\"sst\" : 1,"
+            "\"default_indicator\" : true,"
+            "\"session\" : ["
+              "{"
+                "\"_id\" : { \"$oid\" : \"599eb929c850caabcbfdcd32\" },"
+                "\"name\" : \"internet\","
+                "\"ambr\" : {"
+                  "\"downlink\" : {"
+                    "\"value\" : 1,"
+                    "\"unit\" : 3"
+                  "},"
+                  "\"uplink\" : {"
+                    "\"value\" : 1,"
+                    "\"unit\" : 3"
+                  "}"
+                "},"
+                "\"qos\" : {"
+                  "\"index\" : 9,"
+                  "\"arp\" : {"
+                    "\"priority_level\" : 8,"
+                    "\"pre_emption_vulnerability\" : 1,"
+                    "\"pre_emption_capability\" : 1"
+                  "}"
+                "},"
+                "\"type\" : 3"
+              "},"
+              "{"
+                "\"_id\" : { \"$oid\" : \"310014158b8861d7605378c7\" }, "
+                "\"name\" : \"ims\", "
+                "\"ambr\" : {"
+                  "\"downlink\" : {"
+                    "\"value\" : 1,"
+                    "\"unit\" : 3"
+                  "},"
+                  "\"uplink\" : {"
+                    "\"value\" : 1,"
+                    "\"unit\" : 3"
+                  "}"
+                "},"
+                "\"qos\" : { "
+                  "\"index\" : 5, "
+                  "\"arp\" : { "
+                    "\"priority_level\" : 1,"
+                    "\"pre_emption_vulnerability\" : 1, "
+                    "\"pre_emption_capability\" : 1"
+                  "} "
+                "}, "
+                "\"pcc_rule\" : ["
+                  "{"
+                    "\"_id\" : { \"$oid\" : \"599eb929c850caabcbfdcd2d\" },"
+                    "\"qos\" : {"
+                      "\"index\" : 1,"
+                      "\"mbr\" : {"
+                        "\"downlink\" : {"
+                          "\"value\" : 82,"
+                          "\"unit\" : 1"
+                        "},"
+                        "\"uplink\" : {"
+                          "\"value\" : 82,"
+                          "\"unit\" : 1"
+                        "}"
+                      "},"
+                      "\"gbr\" : {"
+                        "\"downlink\" : {"
+                          "\"value\" : 82,"
+                          "\"unit\" : 1"
+                        "},"
+                        "\"uplink\" : {"
+                          "\"value\" : 82,"
+                          "\"unit\" : 1"
+                        "}"
+                      "},"
+                      "\"arp\" : {"
+                        "\"priority_level\" : 2,"
+                        "\"pre_emption_vulnerability\" : 2,"
+                        "\"pre_emption_capability\" : 2 }"
+                      "}"
+                  "},"
+                  "{"
+                    "\"_id\" : { \"$oid\" : \"599eb929c850caabcbfdcd4d\" },"
+                    "\"qos\" : {"
+                      "\"index\" : 2,"
+                      "\"mbr\" : {"
+                        "\"downlink\" : {"
+                          "\"value\" : 802,"
+                          "\"unit\" : 1"
+                        "},"
+                        "\"uplink\" : {"
+                          "\"value\" : 802,"
+                          "\"unit\" : 1"
+                        "}"
+                      "},"
+                      "\"gbr\" : {"
+                        "\"downlink\" : {"
+                          "\"value\" : 802,"
+                          "\"unit\" : 1"
+                        "},"
+                        "\"uplink\" : {"
+                          "\"value\" : 802,"
+                          "\"unit\" : 1"
+                        "}"
+                      "},"
+                      "\"arp\" : {"
+                        "\"priority_level\" : 4,"
+                        "\"pre_emption_vulnerability\" : 2,"
+                        "\"pre_emption_capability\" : 2 }"
+                      "}"
+                  "}"
+                "],"
+                "\"type\" : 3"
+              "}"
+            "]"
+          "}"
+        "],"
+        "\"subscribed_rau_tau_timer\" : 12,"
+        "\"network_access_mode\" : 2, "
+        "\"subscriber_status\" : 0, "
+        "\"access_restriction_data\" : 32, "
+        "\"security\" : { "
+          "\"k\" : \"465B5CE8 B199B49F AA5F0A2E E238A6BC\", "
+          "\"opc\" : \"E8ED289D EBA952E4 283B54E8 8E6183CA\", "
+          "\"amf\" : \"8000\", "
+          "\"sqn\" : { \"$numberLong\" : \"64\" } "
+        "}, "
+        "\"__v\" : 0 "
+      "}";
+
+    doc = bson_new_from_json((const uint8_t *)json, -1, &error);;
+#endif
+    ogs_assert(doc);
+
+    return doc;
+}
+
+bson_t *test_db_new_slice(test_ue_t *test_ue)
+{
+    bson_t *doc = NULL;
+
+    ogs_assert(test_ue);
+
+#if 1
+    doc = BCON_NEW(
+            "imsi", BCON_UTF8(test_ue->imsi),
+            "ambr", "{",
+                "downlink", "{",
+                    "value", BCON_INT32(1),
+                    "unit", BCON_INT32(3),
+                "}",
+                "uplink", "{",
+                    "value", BCON_INT32(1),
+                    "unit", BCON_INT32(3),
+                "}",
+            "}",
+            "slice", "[",
+              "{",
+                "sst", BCON_INT32(1),
+                "default_indicator", BCON_BOOL(true),
+                "session", "[",
+                  "{",
+                    "name", BCON_UTF8("internet"),
+                    "type", BCON_INT32(3),
+                    "ambr", "{",
+                        "downlink", "{",
+                            "value", BCON_INT32(1),
+                            "unit", BCON_INT32(3),
+                        "}",
+                        "uplink", "{",
+                            "value", BCON_INT32(1),
+                            "unit", BCON_INT32(3),
+                        "}",
+                    "}",
+                    "qos", "{",
+                        "index", BCON_INT32(9),
+                        "arp", "{",
+                            "priority_level", BCON_INT32(8),
+                            "pre_emption_vulnerability", BCON_INT32(1),
+                            "pre_emption_capability", BCON_INT32(1),
+                        "}",
+                    "}",
+                  "}",
+                  "{",
+                    "name", BCON_UTF8("ims"),
+                    "type", BCON_INT32(3),
+                    "ambr", "{",
+                        "downlink", "{",
+                            "value", BCON_INT32(1),
+                            "unit", BCON_INT32(3),
+                        "}",
+                        "uplink", "{",
+                            "value", BCON_INT32(1),
+                            "unit", BCON_INT32(3),
+                        "}",
+                    "}",
+                    "qos", "{",
+                        "index", BCON_INT32(5),
+                        "arp", "{",
+                            "priority_level", BCON_INT32(1),
+                            "pre_emption_vulnerability", BCON_INT32(1),
+                            "pre_emption_capability", BCON_INT32(1),
+                        "}",
+                    "}",
+                    "pcc_rule", "[",
+                      "{",
+                        "qos", "{",
+                            "index", BCON_INT32(1),
+                            "arp", "{",
+                                "priority_level", BCON_INT32(3),
+                                "pre_emption_vulnerability", BCON_INT32(2),
+                                "pre_emption_capability", BCON_INT32(2),
+                            "}",
+                            "mbr", "{",
+                                "downlink", "{",
+                                    "value", BCON_INT32(82),
+                                    "unit", BCON_INT32(1),
+                                "}",
+                                "uplink", "{",
+                                    "value", BCON_INT32(82),
+                                    "unit", BCON_INT32(1),
+                                "}",
+                            "}",
+                            "gbr", "{",
+                                "downlink", "{",
+                                    "value", BCON_INT32(82),
+                                    "unit", BCON_INT32(1),
+                                "}",
+                                "uplink", "{",
+                                    "value", BCON_INT32(82),
+                                    "unit", BCON_INT32(1),
+                                "}",
+                            "}",
+                        "}",
+                      "}",
+                      "{",
+                        "qos", "{",
+                            "index", BCON_INT32(2),
+                            "arp", "{",
+                                "priority_level", BCON_INT32(4),
+                                "pre_emption_vulnerability", BCON_INT32(2),
+                                "pre_emption_capability", BCON_INT32(2),
+                            "}",
+                            "mbr", "{",
+                                "downlink", "{",
+                                    "value", BCON_INT32(802),
+                                    "unit", BCON_INT32(1),
+                                "}",
+                                "uplink", "{",
+                                    "value", BCON_INT32(802),
+                                    "unit", BCON_INT32(1),
+                                "}",
+                            "}",
+                            "gbr", "{",
+                                "downlink", "{",
+                                    "value", BCON_INT32(802),
+                                    "unit", BCON_INT32(1),
+                                "}",
+                                "uplink", "{",
+                                    "value", BCON_INT32(802),
+                                    "unit", BCON_INT32(1),
+                                "}",
+                            "}",
+                        "}",
+                      "}",
+                    "]",
+                  "}",
+                "]",
+              "}",
+              "{",
+                "sst", BCON_INT32(1),
+                "sd", BCON_UTF8("000080"),
+                "session", "[",
+                  "{",
+                    "name", BCON_UTF8("internet"),
+                    "type", BCON_INT32(3),
+                    "ambr", "{",
+                        "downlink", "{",
+                            "value", BCON_INT32(1),
+                            "unit", BCON_INT32(3),
+                        "}",
+                        "uplink", "{",
+                            "value", BCON_INT32(1),
+                            "unit", BCON_INT32(3),
+                        "}",
+                    "}",
+                    "qos", "{",
+                        "index", BCON_INT32(9),
+                        "arp", "{",
+                            "priority_level", BCON_INT32(8),
+                            "pre_emption_vulnerability", BCON_INT32(1),
+                            "pre_emption_capability", BCON_INT32(1),
+                        "}",
+                    "}",
+                  "}",
+                  "{",
+                    "name", BCON_UTF8("ims"),
+                    "type", BCON_INT32(3),
+                    "ambr", "{",
+                        "downlink", "{",
+                            "value", BCON_INT32(1),
+                            "unit", BCON_INT32(3),
+                        "}",
+                        "uplink", "{",
+                            "value", BCON_INT32(1),
+                            "unit", BCON_INT32(3),
+                        "}",
+                    "}",
+                    "qos", "{",
+                        "index", BCON_INT32(5),
+                        "arp", "{",
+                            "priority_level", BCON_INT32(1),
+                            "pre_emption_vulnerability", BCON_INT32(1),
+                            "pre_emption_capability", BCON_INT32(1),
+                        "}",
+                    "}",
+                    "pcc_rule", "[",
+                      "{",
+                        "qos", "{",
+                            "index", BCON_INT32(1),
+                            "arp", "{",
+                                "priority_level", BCON_INT32(3),
+                                "pre_emption_vulnerability", BCON_INT32(2),
+                                "pre_emption_capability", BCON_INT32(2),
+                            "}",
+                            "mbr", "{",
+                                "downlink", "{",
+                                    "value", BCON_INT32(82),
+                                    "unit", BCON_INT32(1),
+                                "}",
+                                "uplink", "{",
+                                    "value", BCON_INT32(82),
+                                    "unit", BCON_INT32(1),
+                                "}",
+                            "}",
+                            "gbr", "{",
+                                "downlink", "{",
+                                    "value", BCON_INT32(82),
+                                    "unit", BCON_INT32(1),
+                                "}",
+                                "uplink", "{",
+                                    "value", BCON_INT32(82),
+                                    "unit", BCON_INT32(1),
+                                "}",
+                            "}",
+                        "}",
+                      "}",
+                      "{",
+                        "qos", "{",
+                            "index", BCON_INT32(2),
+                            "arp", "{",
+                                "priority_level", BCON_INT32(4),
+                                "pre_emption_vulnerability", BCON_INT32(2),
+                                "pre_emption_capability", BCON_INT32(2),
+                            "}",
+                            "mbr", "{",
+                                "downlink", "{",
+                                    "value", BCON_INT32(802),
+                                    "unit", BCON_INT32(1),
+                                "}",
+                                "uplink", "{",
+                                    "value", BCON_INT32(802),
+                                    "unit", BCON_INT32(1),
+                                "}",
+                            "}",
+                            "gbr", "{",
+                                "downlink", "{",
+                                    "value", BCON_INT32(802),
+                                    "unit", BCON_INT32(1),
+                                "}",
+                                "uplink", "{",
+                                    "value", BCON_INT32(802),
+                                    "unit", BCON_INT32(1),
+                                "}",
+                            "}",
+                        "}",
+                      "}",
+                    "]",
+                  "}",
+                "]",
+              "}",
+              "{",
+                "sst", BCON_INT32(1),
+                "sd", BCON_UTF8("009000"),
+                "session", "[",
+                  "{",
+                    "name", BCON_UTF8("internet"),
+                    "type", BCON_INT32(3),
+                    "ambr", "{",
+                        "downlink", "{",
+                            "value", BCON_INT32(1),
+                            "unit", BCON_INT32(3),
+                        "}",
+                        "uplink", "{",
+                            "value", BCON_INT32(1),
+                            "unit", BCON_INT32(3),
+                        "}",
+                    "}",
+                    "qos", "{",
+                        "index", BCON_INT32(9),
+                        "arp", "{",
+                            "priority_level", BCON_INT32(8),
+                            "pre_emption_vulnerability", BCON_INT32(1),
+                            "pre_emption_capability", BCON_INT32(1),
+                        "}",
+                    "}",
+                  "}",
+                  "{",
+                    "name", BCON_UTF8("ims"),
+                    "type", BCON_INT32(3),
+                    "ambr", "{",
+                        "downlink", "{",
+                            "value", BCON_INT32(1),
+                            "unit", BCON_INT32(3),
+                        "}",
+                        "uplink", "{",
+                            "value", BCON_INT32(1),
+                            "unit", BCON_INT32(3),
+                        "}",
+                    "}",
+                    "qos", "{",
+                        "index", BCON_INT32(5),
+                        "arp", "{",
+                            "priority_level", BCON_INT32(1),
+                            "pre_emption_vulnerability", BCON_INT32(1),
+                            "pre_emption_capability", BCON_INT32(1),
+                        "}",
+                    "}",
+                    "pcc_rule", "[",
+                      "{",
+                        "qos", "{",
+                            "index", BCON_INT32(1),
+                            "arp", "{",
+                                "priority_level", BCON_INT32(3),
+                                "pre_emption_vulnerability", BCON_INT32(2),
+                                "pre_emption_capability", BCON_INT32(2),
+                            "}",
+                            "mbr", "{",
+                                "downlink", "{",
+                                    "value", BCON_INT32(82),
+                                    "unit", BCON_INT32(1),
+                                "}",
+                                "uplink", "{",
+                                    "value", BCON_INT32(82),
+                                    "unit", BCON_INT32(1),
+                                "}",
+                            "}",
+                            "gbr", "{",
+                                "downlink", "{",
+                                    "value", BCON_INT32(82),
+                                    "unit", BCON_INT32(1),
+                                "}",
+                                "uplink", "{",
+                                    "value", BCON_INT32(82),
+                                    "unit", BCON_INT32(1),
+                                "}",
+                            "}",
+                        "}",
+                      "}",
+                      "{",
+                        "qos", "{",
+                            "index", BCON_INT32(2),
+                            "arp", "{",
+                                "priority_level", BCON_INT32(4),
+                                "pre_emption_vulnerability", BCON_INT32(2),
+                                "pre_emption_capability", BCON_INT32(2),
+                            "}",
+                            "mbr", "{",
+                                "downlink", "{",
+                                    "value", BCON_INT32(802),
+                                    "unit", BCON_INT32(1),
+                                "}",
+                                "uplink", "{",
+                                    "value", BCON_INT32(802),
+                                    "unit", BCON_INT32(1),
+                                "}",
+                            "}",
+                            "gbr", "{",
+                                "downlink", "{",
+                                    "value", BCON_INT32(802),
+                                    "unit", BCON_INT32(1),
+                                "}",
+                                "uplink", "{",
+                                    "value", BCON_INT32(802),
+                                    "unit", BCON_INT32(1),
+                                "}",
+                            "}",
+                        "}",
+                      "}",
+                    "]",
+                  "}",
+                "]",
+              "}",
+            "]",
+            "security", "{",
+                "k", BCON_UTF8(test_ue->k_string),
+                "opc", BCON_UTF8(test_ue->opc_string),
+                "amf", BCON_UTF8("8000"),
+                "sqn", BCON_INT64(64),
+            "}",
+            "subscribed_rau_tau_timer", BCON_INT32(12),
+            "network_access_mode", BCON_INT32(2),
+            "subscriber_status", BCON_INT32(0),
+            "access_restriction_data", BCON_INT32(32)
+          );
+#else /* For verify WebUI */
+    bson_error_t error;
+    const char *json =
+      "{"
+        "\"_id\" : { \"$oid\" : \"310014158b8861d7605378c6\" }, "
+        "\"imsi\" : \"9017000007487\", "
+        "\"ambr\" : { "
+          "\"downlink\" : {"
+            "\"value\" : 1,"
+            "\"unit\" : 3"
+          "},"
+          "\"uplink\" : {"
+            "\"value\" : 1,"
+            "\"unit\" : 3"
+          "}"
+        "},"
+        "\"slice\" : ["
+          "{"
+            "\"sst\" : 1,"
+            "\"default_indicator\" : true,"
+            "\"session\" : ["
+              "{"
+                "\"_id\" : { \"$oid\" : \"599eb929c850caabcbfdcd32\" },"
+                "\"name\" : \"internet\","
+                "\"ambr\" : {"
+                  "\"downlink\" : {"
+                    "\"value\" : 1,"
+                    "\"unit\" : 3"
+                  "},"
+                  "\"uplink\" : {"
+                    "\"value\" : 1,"
+                    "\"unit\" : 3"
+                  "}"
+                "},"
+                "\"qos\" : {"
+                  "\"index\" : 9,"
+                  "\"arp\" : {"
+                    "\"priority_level\" : 8,"
+                    "\"pre_emption_vulnerability\" : 1,"
+                    "\"pre_emption_capability\" : 1"
+                  "}"
+                "},"
+                "\"type\" : 3"
+              "},"
+              "{"
+                "\"_id\" : { \"$oid\" : \"310014158b8861d7605378c7\" }, "
+                "\"name\" : \"ims\", "
+                "\"ambr\" : {"
+                  "\"downlink\" : {"
+                    "\"value\" : 1,"
+                    "\"unit\" : 3"
+                  "},"
+                  "\"uplink\" : {"
+                    "\"value\" : 1,"
+                    "\"unit\" : 3"
+                  "}"
+                "},"
+                "\"qos\" : { "
+                  "\"index\" : 5, "
+                  "\"arp\" : { "
+                    "\"priority_level\" : 1,"
+                    "\"pre_emption_vulnerability\" : 1, "
+                    "\"pre_emption_capability\" : 1"
+                  "} "
+                "}, "
+                "\"pcc_rule\" : ["
+                  "{"
+                    "\"_id\" : { \"$oid\" : \"599eb929c850caabcbfdcd2d\" },"
+                    "\"qos\" : {"
+                      "\"index\" : 1,"
+                      "\"mbr\" : {"
+                        "\"downlink\" : {"
+                          "\"value\" : 82,"
+                          "\"unit\" : 1"
+                        "},"
+                        "\"uplink\" : {"
+                          "\"value\" : 82,"
+                          "\"unit\" : 1"
+                        "}"
+                      "},"
+                      "\"gbr\" : {"
+                        "\"downlink\" : {"
+                          "\"value\" : 82,"
+                          "\"unit\" : 1"
+                        "},"
+                        "\"uplink\" : {"
+                          "\"value\" : 82,"
+                          "\"unit\" : 1"
+                        "}"
+                      "},"
+                      "\"arp\" : {"
+                        "\"priority_level\" : 2,"
+                        "\"pre_emption_vulnerability\" : 2,"
+                        "\"pre_emption_capability\" : 2 }"
+                      "}"
+                  "},"
+                  "{"
+                    "\"_id\" : { \"$oid\" : \"599eb929c850caabcbfdcd4d\" },"
+                    "\"qos\" : {"
+                      "\"index\" : 2,"
+                      "\"mbr\" : {"
+                        "\"downlink\" : {"
+                          "\"value\" : 802,"
+                          "\"unit\" : 1"
+                        "},"
+                        "\"uplink\" : {"
+                          "\"value\" : 802,"
+                          "\"unit\" : 1"
+                        "}"
+                      "},"
+                      "\"gbr\" : {"
+                        "\"downlink\" : {"
+                          "\"value\" : 802,"
+                          "\"unit\" : 1"
+                        "},"
+                        "\"uplink\" : {"
+                          "\"value\" : 802,"
+                          "\"unit\" : 1"
+                        "}"
+                      "},"
+                      "\"arp\" : {"
+                        "\"priority_level\" : 4,"
+                        "\"pre_emption_vulnerability\" : 2,"
+                        "\"pre_emption_capability\" : 2 }"
+                      "}"
+                  "}"
+                "],"
+                "\"type\" : 3"
+              "}"
+            "]"
+          "},"
+          "{"
+            "\"sst\" : 1,"
+            "\"sd\" : \"000080\","
+            "\"session\" : ["
+              "{"
+                "\"_id\" : { \"$oid\" : \"599eb929c850caabcbfdcd32\" },"
+                "\"name\" : \"internet\","
+                "\"ambr\" : {"
+                  "\"downlink\" : {"
+                    "\"value\" : 1,"
+                    "\"unit\" : 3"
+                  "},"
+                  "\"uplink\" : {"
+                    "\"value\" : 1,"
+                    "\"unit\" : 3"
+                  "}"
+                "},"
+                "\"qos\" : {"
+                  "\"index\" : 9,"
+                  "\"arp\" : {"
+                    "\"priority_level\" : 8,"
+                    "\"pre_emption_vulnerability\" : 1,"
+                    "\"pre_emption_capability\" : 1"
+                  "}"
+                "},"
+                "\"type\" : 3"
+              "},"
+              "{"
+                "\"_id\" : { \"$oid\" : \"310014158b8861d7605378c7\" }, "
+                "\"name\" : \"ims\", "
+                "\"ambr\" : {"
+                  "\"downlink\" : {"
+                    "\"value\" : 1,"
+                    "\"unit\" : 3"
+                  "},"
+                  "\"uplink\" : {"
+                    "\"value\" : 1,"
+                    "\"unit\" : 3"
+                  "}"
+                "},"
+                "\"qos\" : { "
+                  "\"index\" : 5, "
+                  "\"arp\" : { "
+                    "\"priority_level\" : 1,"
+                    "\"pre_emption_vulnerability\" : 1, "
+                    "\"pre_emption_capability\" : 1"
+                  "} "
+                "}, "
+                "\"pcc_rule\" : ["
+                  "{"
+                    "\"_id\" : { \"$oid\" : \"599eb929c850caabcbfdcd2d\" },"
+                    "\"qos\" : {"
+                      "\"index\" : 1,"
+                      "\"mbr\" : {"
+                        "\"downlink\" : {"
+                          "\"value\" : 82,"
+                          "\"unit\" : 1"
+                        "},"
+                        "\"uplink\" : {"
+                          "\"value\" : 82,"
+                          "\"unit\" : 1"
+                        "}"
+                      "},"
+                      "\"gbr\" : {"
+                        "\"downlink\" : {"
+                          "\"value\" : 82,"
+                          "\"unit\" : 1"
+                        "},"
+                        "\"uplink\" : {"
+                          "\"value\" : 82,"
+                          "\"unit\" : 1"
+                        "}"
+                      "},"
+                      "\"arp\" : {"
+                        "\"priority_level\" : 2,"
+                        "\"pre_emption_vulnerability\" : 2,"
+                        "\"pre_emption_capability\" : 2 }"
+                      "}"
+                  "},"
+                  "{"
+                    "\"_id\" : { \"$oid\" : \"599eb929c850caabcbfdcd4d\" },"
+                    "\"qos\" : {"
+                      "\"index\" : 2,"
+                      "\"mbr\" : {"
+                        "\"downlink\" : {"
+                          "\"value\" : 802,"
+                          "\"unit\" : 1"
+                        "},"
+                        "\"uplink\" : {"
+                          "\"value\" : 802,"
+                          "\"unit\" : 1"
+                        "}"
+                      "},"
+                      "\"gbr\" : {"
+                        "\"downlink\" : {"
+                          "\"value\" : 802,"
+                          "\"unit\" : 1"
+                        "},"
+                        "\"uplink\" : {"
+                          "\"value\" : 802,"
+                          "\"unit\" : 1"
+                        "}"
+                      "},"
+                      "\"arp\" : {"
+                        "\"priority_level\" : 4,"
+                        "\"pre_emption_vulnerability\" : 2,"
+                        "\"pre_emption_capability\" : 2 }"
+                      "}"
+                  "}"
+                "],"
+                "\"type\" : 3"
+              "}"
+            "]"
+          "},"
+          "{"
+            "\"sst\" : 1,"
+            "\"sd\" : \"009000\","
+            "\"session\" : ["
+              "{"
+                "\"_id\" : { \"$oid\" : \"599eb929c850caabcbfdcd32\" },"
+                "\"name\" : \"internet\","
+                "\"ambr\" : {"
+                  "\"downlink\" : {"
+                    "\"value\" : 1,"
+                    "\"unit\" : 3"
+                  "},"
+                  "\"uplink\" : {"
+                    "\"value\" : 1,"
+                    "\"unit\" : 3"
+                  "}"
+                "},"
+                "\"qos\" : {"
+                  "\"index\" : 9,"
+                  "\"arp\" : {"
+                    "\"priority_level\" : 8,"
+                    "\"pre_emption_vulnerability\" : 1,"
+                    "\"pre_emption_capability\" : 1"
+                  "}"
+                "},"
+                "\"type\" : 3"
+              "},"
+              "{"
+                "\"_id\" : { \"$oid\" : \"310014158b8861d7605378c7\" }, "
+                "\"name\" : \"ims\", "
+                "\"ambr\" : {"
+                  "\"downlink\" : {"
+                    "\"value\" : 1,"
+                    "\"unit\" : 3"
+                  "},"
+                  "\"uplink\" : {"
+                    "\"value\" : 1,"
+                    "\"unit\" : 3"
+                  "}"
+                "},"
+                "\"qos\" : { "
+                  "\"index\" : 5, "
+                  "\"arp\" : { "
+                    "\"priority_level\" : 1,"
+                    "\"pre_emption_vulnerability\" : 1, "
+                    "\"pre_emption_capability\" : 1"
+                  "} "
+                "}, "
+                "\"pcc_rule\" : ["
+                  "{"
+                    "\"_id\" : { \"$oid\" : \"599eb929c850caabcbfdcd2d\" },"
+                    "\"qos\" : {"
+                      "\"index\" : 1,"
+                      "\"mbr\" : {"
+                        "\"downlink\" : {"
+                          "\"value\" : 82,"
+                          "\"unit\" : 1"
+                        "},"
+                        "\"uplink\" : {"
+                          "\"value\" : 82,"
+                          "\"unit\" : 1"
+                        "}"
+                      "},"
+                      "\"gbr\" : {"
+                        "\"downlink\" : {"
+                          "\"value\" : 82,"
+                          "\"unit\" : 1"
+                        "},"
+                        "\"uplink\" : {"
+                          "\"value\" : 82,"
+                          "\"unit\" : 1"
+                        "}"
+                      "},"
+                      "\"arp\" : {"
+                        "\"priority_level\" : 2,"
+                        "\"pre_emption_vulnerability\" : 2,"
+                        "\"pre_emption_capability\" : 2 }"
+                      "}"
+                  "},"
+                  "{"
+                    "\"_id\" : { \"$oid\" : \"599eb929c850caabcbfdcd4d\" },"
+                    "\"qos\" : {"
+                      "\"index\" : 2,"
+                      "\"mbr\" : {"
+                        "\"downlink\" : {"
+                          "\"value\" : 802,"
+                          "\"unit\" : 1"
+                        "},"
+                        "\"uplink\" : {"
+                          "\"value\" : 802,"
+                          "\"unit\" : 1"
+                        "}"
+                      "},"
+                      "\"gbr\" : {"
+                        "\"downlink\" : {"
+                          "\"value\" : 802,"
+                          "\"unit\" : 1"
+                        "},"
+                        "\"uplink\" : {"
+                          "\"value\" : 802,"
+                          "\"unit\" : 1"
+                        "}"
+                      "},"
+                      "\"arp\" : {"
+                        "\"priority_level\" : 4,"
+                        "\"pre_emption_vulnerability\" : 2,"
+                        "\"pre_emption_capability\" : 2 }"
+                      "}"
+                  "}"
+                "],"
+                "\"type\" : 3"
+              "}"
+            "]"
+          "}"
+        "],"
+        "\"subscribed_rau_tau_timer\" : 12,"
+        "\"network_access_mode\" : 2, "
+        "\"subscriber_status\" : 0, "
+        "\"access_restriction_data\" : 32, "
+        "\"security\" : { "
+          "\"k\" : \"465B5CE8 B199B49F AA5F0A2E E238A6BC\", "
+          "\"opc\" : \"E8ED289D EBA952E4 283B54E8 8E6183CA\", "
+          "\"amf\" : \"8000\", "
+          "\"sqn\" : { \"$numberLong\" : \"64\" } "
+        "}, "
+        "\"__v\" : 0 "
+      "}";
+
+    doc = bson_new_from_json((const uint8_t *)json, -1, &error);;
+#endif
+    ogs_assert(doc);
+
+    return doc;
 }

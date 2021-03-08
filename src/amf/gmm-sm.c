@@ -891,7 +891,15 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
                     break;
                 }
 
-                amf_nudm_sdm_handle_provisioned(amf_ue, sbi_message);
+                rv = amf_nudm_sdm_handle_provisioned(amf_ue, sbi_message);
+                if (rv != OGS_OK) {
+                    ogs_error("[%s] amf_nudm_sdm_handle_provisioned(%s) failed",
+                            amf_ue->supi, sbi_message->h.resource.component[1]);
+                    nas_5gs_send_gmm_reject(
+                            amf_ue, OGS_5GMM_CAUSE_5GS_SERVICES_NOT_ALLOWED);
+                    OGS_FSM_TRAN(&amf_ue->sm, &gmm_state_exception);
+                    break;
+                }
                 break;
 
             DEFAULT
@@ -907,8 +915,8 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
                 rv = amf_npcf_am_policy_control_handle_create(
                         amf_ue, sbi_message);
                 if (rv != OGS_OK) {
-                    ogs_error("amf_npcf_am_policy_control_handle_create() "
-                            "failed");
+                    ogs_error("[%s] amf_npcf_am_policy_control_handle_create() "
+                            "failed", amf_ue->supi);
                     OGS_FSM_TRAN(&amf_ue->sm, &gmm_state_exception);
                     break;
                 }

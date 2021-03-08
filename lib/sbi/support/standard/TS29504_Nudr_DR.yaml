@@ -1,7 +1,7 @@
-openapi: 3.0.0
+﻿openapi: 3.0.0
 
 info:
-  version: 2.1.0.alpha-4
+  version: 2.1.2
   title: 'Nudr_DataRepository API OpenAPI file'
   description: |
     Unified Data Repository Service.
@@ -9,7 +9,7 @@ info:
     All rights reserved.
 
 externalDocs:
-  description: 3GPP TS 29.504 V16.3.0; 5G System; Unified Data Repository Services; Stage 3
+  description: 3GPP TS 29.504 V16.6.0; 5G System; Unified Data Repository Services; Stage 3
   url: 'http://www.3gpp.org/ftp/Specs/archive/29_series/29.504/'
 
 servers:
@@ -45,6 +45,8 @@ paths:
     $ref: 'TS29505_Subscription_Data.yaml#/paths/~1subscription-data~1%7BueId%7D~1%7BservingPlmnId%7D~1provisioned-data~1smf-selection-subscription-data'
   /subscription-data/{ueId}/{servingPlmnId}/provisioned-data/sm-data:
     $ref: 'TS29505_Subscription_Data.yaml#/paths/~1subscription-data~1%7BueId%7D~1%7BservingPlmnId%7D~1provisioned-data~1sm-data'
+  /subscription-data/{ueId}/{servingPlmnId}/provisioned-data/lcs-bca-data:
+    $ref: 'TS29505_Subscription_Data.yaml#/paths/~1subscription-data~1%7BueId%7D~1%7BservingPlmnId%7D~1provisioned-data~1lcs-bca-data'
   /subscription-data/{ueId}/context-data:
     $ref: 'TS29505_Subscription_Data.yaml#/paths/~1subscription-data~1%7BueId%7D~1context-data'
   /subscription-data/{ueId}/context-data/amf-3gpp-access:
@@ -61,14 +63,20 @@ paths:
     $ref: 'TS29505_Subscription_Data.yaml#/paths/~1subscription-data~1%7BueId%7D~1context-data~1smsf-3gpp-access'
   /subscription-data/{ueId}/context-data/smsf-non-3gpp-access:
     $ref: 'TS29505_Subscription_Data.yaml#/paths/~1subscription-data~1%7BueId%7D~1context-data~1smsf-non-3gpp-access'
+  /subscription-data/{ueId}/context-data/location:
+    $ref: 'TS29505_Subscription_Data.yaml#/paths/~1subscription-data~1%7BueId%7D~1context-data~1location'
+  /subscription-data/{ueId}/context-data/ip-sm-gw:
+    $ref: 'TS29505_Subscription_Data.yaml#/paths/~1subscription-data~1%7BueId%7D~1context-data~1ip-sm-gw'
+  /subscription-data/{ueId}/context-data/mwd:
+    $ref: 'TS29505_Subscription_Data.yaml#/paths/~1subscription-data~1%7BueId%7D~1context-data~1mwd'
   /subscription-data/{ueId}/{servingPlmnId}/provisioned-data/sms-mng-data:
     $ref: 'TS29505_Subscription_Data.yaml#/paths/~1subscription-data~1%7BueId%7D~1%7BservingPlmnId%7D~1provisioned-data~1sms-mng-data'
   /subscription-data/{ueId}/{servingPlmnId}/provisioned-data/sms-data:
     $ref: 'TS29505_Subscription_Data.yaml#/paths/~1subscription-data~1%7BueId%7D~1%7BservingPlmnId%7D~1provisioned-data~1sms-data'
-  /subscription-data/{ueId}/{servingPlmnId}/provisioned-data/lcs-privacy-data:
-    $ref: 'TS29505_Subscription_Data.yaml#/paths/~1subscription-data~1%7BueId%7D~1%7BservingPlmnId%7D~1provisioned-data~1lcs-privacy-data'
-  /subscription-data/{ueId}/{servingPlmnId}/provisioned-data/lcs-mo-data:
-    $ref: 'TS29505_Subscription_Data.yaml#/paths/~1subscription-data~1%7BueId%7D~1%7BservingPlmnId%7D~1provisioned-data~1lcs-mo-data'
+  /subscription-data/{ueId}/lcs-privacy-data:
+    $ref: 'TS29505_Subscription_Data.yaml#/paths/~1subscription-data~1%7BueId%7D~1lcs-privacy-data'
+  /subscription-data/{ueId}/lcs-mo-data:
+    $ref: 'TS29505_Subscription_Data.yaml#/paths/~1subscription-data~1%7BueId%7D~1lcs-mo-data'
   /subscription-data/{ueId}/pp-data:
     $ref: 'TS29505_Subscription_Data.yaml#/paths/~1subscription-data~1%7BueId%7D~1pp-data'
   /subscription-data/{ueId}/context-data/ee-subscriptions:
@@ -85,6 +93,8 @@ paths:
     $ref: 'TS29505_Subscription_Data.yaml#/paths/~1subscription-data~1group-data~15g-vn-groups'
   /subscription-data/group-data/5g-vn-groups/{externalGroupId}:
     $ref: 'TS29505_Subscription_Data.yaml#/paths/~1subscription-data~1group-data~15g-vn-groups~1%7BexternalGroupId%7D'
+  /subscription-data/group-data/5g-vn-groups/internal:
+    $ref: 'TS29505_Subscription_Data.yaml#/paths/~1subscription-data~1group-data~15g-vn-groups~1internal'
   /subscription-data/{ueId}/ee-profile-data:
     $ref: 'TS29505_Subscription_Data.yaml#/paths/~1subscription-data~1%7BueId%7D~1ee-profile-data'
   /subscription-data/{ueId}/context-data/sdm-subscriptions:
@@ -105,6 +115,10 @@ paths:
     $ref: 'TS29505_Subscription_Data.yaml#/paths/~1subscription-data~1%7BueId%7D~1operator-determined-barring-data'
   /subscription-data/{ueId}/nidd-authorization-data:
     $ref: 'TS29505_Subscription_Data.yaml#/paths/~1subscription-data~1%7BueId%7D~1nidd-authorization-data'
+  /subscription-data/{ueId}/v2x-data:
+    $ref: 'TS29505_Subscription_Data.yaml#/paths/~1subscription-data~1%7BueId%7D~1v2x-data'
+  /subscription-data/{ueId}/coverage-restriction-data:
+    $ref: 'TS29505_Subscription_Data.yaml#/paths/~1subscription-data~1%7BueId%7D~1coverage-restriction-data'
   /subscription-data/group-data/group-identifiers:
     $ref: 'TS29505_Subscription_Data.yaml#/paths/~1subscription-data~1group-data~1group-identifiers'
   /policy-data/ues/{ueId}/am-data:
@@ -170,3 +184,5 @@ components:
           tokenUrl: '{nrfApiRoot}/oauth2/token'
           scopes:
             nudr-dr: Access to the Nudr_DataRepository API
+            nudr-dr:subscription-data:authentication-subscription:read: Access to read the AuthenticationSubscription resource of the SubscriptionData data set
+            nudr-dr:subscription-data:authentication-subscription:modify: Access to update the AuthenticationSubscription resource of the SubscriptionData data set

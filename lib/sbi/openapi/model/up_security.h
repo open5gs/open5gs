@@ -21,13 +21,13 @@ extern "C" {
 
 typedef struct OpenAPI_up_security_s OpenAPI_up_security_t;
 typedef struct OpenAPI_up_security_s {
-    struct OpenAPI_up_integrity_s *up_integr;
-    struct OpenAPI_up_confidentiality_s *up_confid;
+    OpenAPI_up_integrity_e up_integr;
+    OpenAPI_up_confidentiality_e up_confid;
 } OpenAPI_up_security_t;
 
 OpenAPI_up_security_t *OpenAPI_up_security_create(
-    OpenAPI_up_integrity_t *up_integr,
-    OpenAPI_up_confidentiality_t *up_confid
+    OpenAPI_up_integrity_e up_integr,
+    OpenAPI_up_confidentiality_e up_confid
     );
 void OpenAPI_up_security_free(OpenAPI_up_security_t *up_security);
 OpenAPI_up_security_t *OpenAPI_up_security_parseFromJSON(cJSON *up_securityJSON);

@@ -17,6 +17,7 @@
 #include "dnn_selection_mode.h"
 #include "eps_interworking_indication.h"
 #include "guami.h"
+#include "max_integrity_protected_data_rate.h"
 #include "plmn_id_nid.h"
 #include "presence_state.h"
 #include "rat_type.h"
@@ -27,7 +28,9 @@
 #include "small_data_rate_status.h"
 #include "snssai.h"
 #include "tunnel_info.h"
+#include "up_security_info.h"
 #include "user_location.h"
+#include "vplmn_qos.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -40,6 +43,7 @@ typedef struct OpenAPI_pdu_session_create_data_s {
     char *pei;
     int pdu_session_id;
     char *dnn;
+    char *selected_dnn;
     struct OpenAPI_snssai_s *s_nssai;
     char *vsmf_id;
     char *ismf_id;
@@ -82,6 +86,8 @@ typedef struct OpenAPI_pdu_session_create_data_s {
     char *eps_bearer_ctx_status;
     char *amf_nf_id;
     struct OpenAPI_guami_s *guami;
+    OpenAPI_max_integrity_protected_data_rate_e max_integrity_protected_data_rate_ul;
+    OpenAPI_max_integrity_protected_data_rate_e max_integrity_protected_data_rate_dl;
     int cp_ciot_enabled;
     int cp_only_ind;
     int invoke_nef;
@@ -93,6 +99,8 @@ typedef struct OpenAPI_pdu_session_create_data_s {
     struct OpenAPI_small_data_rate_status_s *small_data_rate_status;
     struct OpenAPI_apn_rate_status_s *apn_rate_status;
     int dl_serving_plmn_rate_ctl;
+    struct OpenAPI_up_security_info_s *up_security_info;
+    struct OpenAPI_vplmn_qos_s *vplmn_qos;
 } OpenAPI_pdu_session_create_data_t;
 
 OpenAPI_pdu_session_create_data_t *OpenAPI_pdu_session_create_data_create(
@@ -101,6 +109,7 @@ OpenAPI_pdu_session_create_data_t *OpenAPI_pdu_session_create_data_create(
     char *pei,
     int pdu_session_id,
     char *dnn,
+    char *selected_dnn,
     OpenAPI_snssai_t *s_nssai,
     char *vsmf_id,
     char *ismf_id,
@@ -143,6 +152,8 @@ OpenAPI_pdu_session_create_data_t *OpenAPI_pdu_session_create_data_create(
     char *eps_bearer_ctx_status,
     char *amf_nf_id,
     OpenAPI_guami_t *guami,
+    OpenAPI_max_integrity_protected_data_rate_e max_integrity_protected_data_rate_ul,
+    OpenAPI_max_integrity_protected_data_rate_e max_integrity_protected_data_rate_dl,
     int cp_ciot_enabled,
     int cp_only_ind,
     int invoke_nef,
@@ -153,7 +164,9 @@ OpenAPI_pdu_session_create_data_t *OpenAPI_pdu_session_create_data_create(
     OpenAPI_list_t *secondary_rat_usage_info,
     OpenAPI_small_data_rate_status_t *small_data_rate_status,
     OpenAPI_apn_rate_status_t *apn_rate_status,
-    int dl_serving_plmn_rate_ctl
+    int dl_serving_plmn_rate_ctl,
+    OpenAPI_up_security_info_t *up_security_info,
+    OpenAPI_vplmn_qos_t *vplmn_qos
     );
 void OpenAPI_pdu_session_create_data_free(OpenAPI_pdu_session_create_data_t *pdu_session_create_data);
 OpenAPI_pdu_session_create_data_t *OpenAPI_pdu_session_create_data_parseFromJSON(cJSON *pdu_session_create_dataJSON);

@@ -1,7 +1,7 @@
 /*
  * gmlc_info.h
  *
- *
+ * Information of a GMLC NF Instance
  */
 
 #ifndef _OpenAPI_gmlc_info_H_

@@ -12,7 +12,9 @@ OpenAPI_provisioned_data_sets_t *OpenAPI_provisioned_data_sets_create(
     OpenAPI_trace_data_t *trace_data,
     OpenAPI_sms_management_subscription_data_t *sms_mng_data,
     OpenAPI_lcs_privacy_data_t *lcs_privacy_data,
-    OpenAPI_lcs_mo_data_t *lcs_mo_data
+    OpenAPI_lcs_mo_data_t *lcs_mo_data,
+    OpenAPI_lcs_broadcast_assistance_types_data_t *lcs_bca_data,
+    OpenAPI_v2x_subscription_data_t *v2x_data
     )
 {
     OpenAPI_provisioned_data_sets_t *provisioned_data_sets_local_var = OpenAPI_malloc(sizeof(OpenAPI_provisioned_data_sets_t));
@@ -27,6 +29,8 @@ OpenAPI_provisioned_data_sets_t *OpenAPI_provisioned_data_sets_create(
     provisioned_data_sets_local_var->sms_mng_data = sms_mng_data;
     provisioned_data_sets_local_var->lcs_privacy_data = lcs_privacy_data;
     provisioned_data_sets_local_var->lcs_mo_data = lcs_mo_data;
+    provisioned_data_sets_local_var->lcs_bca_data = lcs_bca_data;
+    provisioned_data_sets_local_var->v2x_data = v2x_data;
 
     return provisioned_data_sets_local_var;
 }
@@ -48,6 +52,8 @@ void OpenAPI_provisioned_data_sets_free(OpenAPI_provisioned_data_sets_t *provisi
     OpenAPI_sms_management_subscription_data_free(provisioned_data_sets->sms_mng_data);
     OpenAPI_lcs_privacy_data_free(provisioned_data_sets->lcs_privacy_data);
     OpenAPI_lcs_mo_data_free(provisioned_data_sets->lcs_mo_data);
+    OpenAPI_lcs_broadcast_assistance_types_data_free(provisioned_data_sets->lcs_bca_data);
+    OpenAPI_v2x_subscription_data_free(provisioned_data_sets->v2x_data);
     ogs_free(provisioned_data_sets);
 }
 
@@ -172,6 +178,32 @@ cJSON *OpenAPI_provisioned_data_sets_convertToJSON(OpenAPI_provisioned_data_sets
         }
     }
 
+    if (provisioned_data_sets->lcs_bca_data) {
+        cJSON *lcs_bca_data_local_JSON = OpenAPI_lcs_broadcast_assistance_types_data_convertToJSON(provisioned_data_sets->lcs_bca_data);
+        if (lcs_bca_data_local_JSON == NULL) {
+            ogs_error("OpenAPI_provisioned_data_sets_convertToJSON() failed [lcs_bca_data]");
+            goto end;
+        }
+        cJSON_AddItemToObject(item, "lcsBcaData", lcs_bca_data_local_JSON);
+        if (item->child == NULL) {
+            ogs_error("OpenAPI_provisioned_data_sets_convertToJSON() failed [lcs_bca_data]");
+            goto end;
+        }
+    }
+
+    if (provisioned_data_sets->v2x_data) {
+        cJSON *v2x_data_local_JSON = OpenAPI_v2x_subscription_data_convertToJSON(provisioned_data_sets->v2x_data);
+        if (v2x_data_local_JSON == NULL) {
+            ogs_error("OpenAPI_provisioned_data_sets_convertToJSON() failed [v2x_data]");
+            goto end;
+        }
+        cJSON_AddItemToObject(item, "v2xData", v2x_data_local_JSON);
+        if (item->child == NULL) {
+            ogs_error("OpenAPI_provisioned_data_sets_convertToJSON() failed [v2x_data]");
+            goto end;
+        }
+    }
+
 end:
     return item;
 }
@@ -251,6 +283,20 @@ OpenAPI_provisioned_data_sets_t *OpenAPI_provisioned_data_sets_parseFromJSON(cJS
         lcs_mo_data_local_nonprim = OpenAPI_lcs_mo_data_parseFromJSON(lcs_mo_data);
     }
 
+    cJSON *lcs_bca_data = cJSON_GetObjectItemCaseSensitive(provisioned_data_setsJSON, "lcsBcaData");
+
+    OpenAPI_lcs_broadcast_assistance_types_data_t *lcs_bca_data_local_nonprim = NULL;
+    if (lcs_bca_data) {
+        lcs_bca_data_local_nonprim = OpenAPI_lcs_broadcast_assistance_types_data_parseFromJSON(lcs_bca_data);
+    }
+
+    cJSON *v2x_data = cJSON_GetObjectItemCaseSensitive(provisioned_data_setsJSON, "v2xData");
+
+    OpenAPI_v2x_subscription_data_t *v2x_data_local_nonprim = NULL;
+    if (v2x_data) {
+        v2x_data_local_nonprim = OpenAPI_v2x_subscription_data_parseFromJSON(v2x_data);
+    }
+
     provisioned_data_sets_local_var = OpenAPI_provisioned_data_sets_create (
         am_data ? am_data_local_nonprim : NULL,
         smf_sel_data ? smf_sel_data_local_nonprim : NULL,
@@ -259,7 +305,9 @@ OpenAPI_provisioned_data_sets_t *OpenAPI_provisioned_data_sets_parseFromJSON(cJS
         trace_data ? trace_data_local_nonprim : NULL,
         sms_mng_data ? sms_mng_data_local_nonprim : NULL,
         lcs_privacy_data ? lcs_privacy_data_local_nonprim : NULL,
-        lcs_mo_data ? lcs_mo_data_local_nonprim : NULL
+        lcs_mo_data ? lcs_mo_data_local_nonprim : NULL,
+        lcs_bca_data ? lcs_bca_data_local_nonprim : NULL,
+        v2x_data ? v2x_data_local_nonprim : NULL
         );
 
     return provisioned_data_sets_local_var;

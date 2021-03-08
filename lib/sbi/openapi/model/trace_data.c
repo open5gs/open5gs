@@ -6,7 +6,7 @@
 
 OpenAPI_trace_data_t *OpenAPI_trace_data_create(
     char *trace_ref,
-    OpenAPI_trace_depth_t *trace_depth,
+    OpenAPI_trace_depth_e trace_depth,
     char *ne_type_list,
     char *event_list,
     char *collection_entity_ipv4_addr,
@@ -36,7 +36,6 @@ void OpenAPI_trace_data_free(OpenAPI_trace_data_t *trace_data)
     }
     OpenAPI_lnode_t *node;
     ogs_free(trace_data->trace_ref);
-    OpenAPI_trace_depth_free(trace_data->trace_depth);
     ogs_free(trace_data->ne_type_list);
     ogs_free(trace_data->event_list);
     ogs_free(trace_data->collection_entity_ipv4_addr);
@@ -68,13 +67,7 @@ cJSON *OpenAPI_trace_data_convertToJSON(OpenAPI_trace_data_t *trace_data)
         ogs_error("OpenAPI_trace_data_convertToJSON() failed [trace_depth]");
         goto end;
     }
-    cJSON *trace_depth_local_JSON = OpenAPI_trace_depth_convertToJSON(trace_data->trace_depth);
-    if (trace_depth_local_JSON == NULL) {
-        ogs_error("OpenAPI_trace_data_convertToJSON() failed [trace_depth]");
-        goto end;
-    }
-    cJSON_AddItemToObject(item, "traceDepth", trace_depth_local_JSON);
-    if (item->child == NULL) {
+    if (cJSON_AddStringToObject(item, "traceDepth", OpenAPI_trace_depth_ToString(trace_data->trace_depth)) == NULL) {
         ogs_error("OpenAPI_trace_data_convertToJSON() failed [trace_depth]");
         goto end;
     }
@@ -143,9 +136,13 @@ OpenAPI_trace_data_t *OpenAPI_trace_data_parseFromJSON(cJSON *trace_dataJSON)
         goto end;
     }
 
-    OpenAPI_trace_depth_t *trace_depth_local_nonprim = NULL;
+    OpenAPI_trace_depth_e trace_depthVariable;
 
-    trace_depth_local_nonprim = OpenAPI_trace_depth_parseFromJSON(trace_depth);
+    if (!cJSON_IsString(trace_depth)) {
+        ogs_error("OpenAPI_trace_data_parseFromJSON() failed [trace_depth]");
+        goto end;
+    }
+    trace_depthVariable = OpenAPI_trace_depth_FromString(trace_depth->valuestring);
 
     cJSON *ne_type_list = cJSON_GetObjectItemCaseSensitive(trace_dataJSON, "neTypeList");
     if (!ne_type_list) {
@@ -200,7 +197,7 @@ OpenAPI_trace_data_t *OpenAPI_trace_data_parseFromJSON(cJSON *trace_dataJSON)
 
     trace_data_local_var = OpenAPI_trace_data_create (
         ogs_strdup(trace_ref->valuestring),
-        trace_depth_local_nonprim,
+        trace_depthVariable,
         ogs_strdup(ne_type_list->valuestring),
         ogs_strdup(event_list->valuestring),
         collection_entity_ipv4_addr ? ogs_strdup(collection_entity_ipv4_addr->valuestring) : NULL,

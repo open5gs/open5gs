@@ -9,7 +9,12 @@ OpenAPI_ee_subscription_t *OpenAPI_ee_subscription_create(
     OpenAPI_list_t* monitoring_configurations,
     OpenAPI_reporting_options_t *reporting_options,
     char *supported_features,
-    char *subscription_id
+    char *subscription_id,
+    OpenAPI_context_info_t *context_info,
+    int epc_applied_ind,
+    char *scef_diam_host,
+    char *scef_diam_realm,
+    char *notify_correlation_id
     )
 {
     OpenAPI_ee_subscription_t *ee_subscription_local_var = OpenAPI_malloc(sizeof(OpenAPI_ee_subscription_t));
@@ -21,6 +26,11 @@ OpenAPI_ee_subscription_t *OpenAPI_ee_subscription_create(
     ee_subscription_local_var->reporting_options = reporting_options;
     ee_subscription_local_var->supported_features = supported_features;
     ee_subscription_local_var->subscription_id = subscription_id;
+    ee_subscription_local_var->context_info = context_info;
+    ee_subscription_local_var->epc_applied_ind = epc_applied_ind;
+    ee_subscription_local_var->scef_diam_host = scef_diam_host;
+    ee_subscription_local_var->scef_diam_realm = scef_diam_realm;
+    ee_subscription_local_var->notify_correlation_id = notify_correlation_id;
 
     return ee_subscription_local_var;
 }
@@ -41,6 +51,10 @@ void OpenAPI_ee_subscription_free(OpenAPI_ee_subscription_t *ee_subscription)
     OpenAPI_reporting_options_free(ee_subscription->reporting_options);
     ogs_free(ee_subscription->supported_features);
     ogs_free(ee_subscription->subscription_id);
+    OpenAPI_context_info_free(ee_subscription->context_info);
+    ogs_free(ee_subscription->scef_diam_host);
+    ogs_free(ee_subscription->scef_diam_realm);
+    ogs_free(ee_subscription->notify_correlation_id);
     ogs_free(ee_subscription);
 }
 
@@ -109,6 +123,47 @@ cJSON *OpenAPI_ee_subscription_convertToJSON(OpenAPI_ee_subscription_t *ee_subsc
     if (ee_subscription->subscription_id) {
         if (cJSON_AddStringToObject(item, "subscriptionId", ee_subscription->subscription_id) == NULL) {
             ogs_error("OpenAPI_ee_subscription_convertToJSON() failed [subscription_id]");
+            goto end;
+        }
+    }
+
+    if (ee_subscription->context_info) {
+        cJSON *context_info_local_JSON = OpenAPI_context_info_convertToJSON(ee_subscription->context_info);
+        if (context_info_local_JSON == NULL) {
+            ogs_error("OpenAPI_ee_subscription_convertToJSON() failed [context_info]");
+            goto end;
+        }
+        cJSON_AddItemToObject(item, "contextInfo", context_info_local_JSON);
+        if (item->child == NULL) {
+            ogs_error("OpenAPI_ee_subscription_convertToJSON() failed [context_info]");
+            goto end;
+        }
+    }
+
+    if (ee_subscription->epc_applied_ind) {
+        if (cJSON_AddBoolToObject(item, "epcAppliedInd", ee_subscription->epc_applied_ind) == NULL) {
+            ogs_error("OpenAPI_ee_subscription_convertToJSON() failed [epc_applied_ind]");
+            goto end;
+        }
+    }
+
+    if (ee_subscription->scef_diam_host) {
+        if (cJSON_AddStringToObject(item, "scefDiamHost", ee_subscription->scef_diam_host) == NULL) {
+            ogs_error("OpenAPI_ee_subscription_convertToJSON() failed [scef_diam_host]");
+            goto end;
+        }
+    }
+
+    if (ee_subscription->scef_diam_realm) {
+        if (cJSON_AddStringToObject(item, "scefDiamRealm", ee_subscription->scef_diam_realm) == NULL) {
+            ogs_error("OpenAPI_ee_subscription_convertToJSON() failed [scef_diam_realm]");
+            goto end;
+        }
+    }
+
+    if (ee_subscription->notify_correlation_id) {
+        if (cJSON_AddStringToObject(item, "notifyCorrelationId", ee_subscription->notify_correlation_id) == NULL) {
+            ogs_error("OpenAPI_ee_subscription_convertToJSON() failed [notify_correlation_id]");
             goto end;
         }
     }
@@ -183,12 +238,60 @@ OpenAPI_ee_subscription_t *OpenAPI_ee_subscription_parseFromJSON(cJSON *ee_subsc
         }
     }
 
+    cJSON *context_info = cJSON_GetObjectItemCaseSensitive(ee_subscriptionJSON, "contextInfo");
+
+    OpenAPI_context_info_t *context_info_local_nonprim = NULL;
+    if (context_info) {
+        context_info_local_nonprim = OpenAPI_context_info_parseFromJSON(context_info);
+    }
+
+    cJSON *epc_applied_ind = cJSON_GetObjectItemCaseSensitive(ee_subscriptionJSON, "epcAppliedInd");
+
+    if (epc_applied_ind) {
+        if (!cJSON_IsBool(epc_applied_ind)) {
+            ogs_error("OpenAPI_ee_subscription_parseFromJSON() failed [epc_applied_ind]");
+            goto end;
+        }
+    }
+
+    cJSON *scef_diam_host = cJSON_GetObjectItemCaseSensitive(ee_subscriptionJSON, "scefDiamHost");
+
+    if (scef_diam_host) {
+        if (!cJSON_IsString(scef_diam_host)) {
+            ogs_error("OpenAPI_ee_subscription_parseFromJSON() failed [scef_diam_host]");
+            goto end;
+        }
+    }
+
+    cJSON *scef_diam_realm = cJSON_GetObjectItemCaseSensitive(ee_subscriptionJSON, "scefDiamRealm");
+
+    if (scef_diam_realm) {
+        if (!cJSON_IsString(scef_diam_realm)) {
+            ogs_error("OpenAPI_ee_subscription_parseFromJSON() failed [scef_diam_realm]");
+            goto end;
+        }
+    }
+
+    cJSON *notify_correlation_id = cJSON_GetObjectItemCaseSensitive(ee_subscriptionJSON, "notifyCorrelationId");
+
+    if (notify_correlation_id) {
+        if (!cJSON_IsString(notify_correlation_id)) {
+            ogs_error("OpenAPI_ee_subscription_parseFromJSON() failed [notify_correlation_id]");
+            goto end;
+        }
+    }
+
     ee_subscription_local_var = OpenAPI_ee_subscription_create (
         ogs_strdup(callback_reference->valuestring),
         monitoring_configurationsList,
         reporting_options ? reporting_options_local_nonprim : NULL,
         supported_features ? ogs_strdup(supported_features->valuestring) : NULL,
-        subscription_id ? ogs_strdup(subscription_id->valuestring) : NULL
+        subscription_id ? ogs_strdup(subscription_id->valuestring) : NULL,
+        context_info ? context_info_local_nonprim : NULL,
+        epc_applied_ind ? epc_applied_ind->valueint : 0,
+        scef_diam_host ? ogs_strdup(scef_diam_host->valuestring) : NULL,
+        scef_diam_realm ? ogs_strdup(scef_diam_realm->valuestring) : NULL,
+        notify_correlation_id ? ogs_strdup(notify_correlation_id->valuestring) : NULL
         );
 
     return ee_subscription_local_var;

@@ -37,54 +37,7 @@ static void test1_func(abts_case *tc, void *data)
 
     S1AP_UE_associatedLogicalS1_ConnectionListRes_t *partOfS1_Interface = NULL;
 
-    const char *_k_string = "465b5ce8b199b49faa5f0a2ee238a6bc";
-    uint8_t k[OGS_KEY_LEN];
-    const char *_opc_string = "e8ed289deba952e4283b54e88e6183ca";
-    uint8_t opc[OGS_KEY_LEN];
-
-    mongoc_collection_t *collection = NULL;
     bson_t *doc = NULL;
-    int64_t count = 0;
-    bson_error_t error;
-    const char *json =
-      "{"
-        "\"_id\" : { \"$oid\" : \"310014158b8861d7605378c6\" }, "
-        "\"imsi\" : \"901707364000060\", "
-        "\"pdn\" : ["
-          "{"
-            "\"apn\" : \"internet\", "
-            "\"_id\" : { \"$oid\" : \"310014158b8861d7605378c7\" }, "
-            "\"ambr\" : {"
-              "\"uplink\" : { \"$numberLong\" : \"1000000\" }, "
-              "\"downlink\" : { \"$numberLong\" : \"1000000\" } "
-            "},"
-            "\"qos\" : { "
-              "\"qci\" : 9, "
-              "\"arp\" : { "
-                "\"priority_level\" : 15,"
-                "\"pre_emption_vulnerability\" : 1, "
-                "\"pre_emption_capability\" : 1"
-              "} "
-            "}, "
-            "\"type\" : 2"
-          "}"
-        "],"
-        "\"ambr\" : { "
-          "\"uplink\" : { \"$numberLong\" : \"1000000\" }, "
-          "\"downlink\" : { \"$numberLong\" : \"1000000\" } "
-        "},"
-        "\"subscribed_rau_tau_timer\" : 12,"
-        "\"network_access_mode\" : 2, "
-        "\"subscriber_status\" : 0, "
-        "\"access_restriction_data\" : 32, "
-        "\"security\" : { "
-          "\"k\" : \"465B5CE8 B199B49F AA5F0A2E E238A6BC\", "
-          "\"opc\" : \"E8ED289D EBA952E4 283B54E8 8E6183CA\", "
-          "\"amf\" : \"8000\", "
-          "\"sqn\" : { \"$numberLong\" : \"64\" } "
-        "}, "
-        "\"__v\" : 0 "
-      "}";
 
     /* Setup Test UE & Session Context */
     memset(&mobile_identity_suci, 0, sizeof(mobile_identity_suci));
@@ -110,8 +63,8 @@ static void test1_func(abts_case *tc, void *data)
     test_ue->nas.ksi = OGS_NAS_KSI_NO_KEY_IS_AVAILABLE;
     test_ue->nas.value = OGS_NAS_ATTACH_TYPE_COMBINED_EPS_IMSI_ATTACH;
 
-    OGS_HEX(_k_string, strlen(_k_string), test_ue->k);
-    OGS_HEX(_opc_string, strlen(_opc_string), test_ue->opc);
+    test_ue->k_string = "465b5ce8b199b49faa5f0a2ee238a6bc";
+    test_ue->opc_string = "e8ed289deba952e4283b54e88e6183ca";
 
     sess = test_sess_add_by_apn(test_ue, "internet");
     ogs_assert(sess);
@@ -137,37 +90,9 @@ static void test1_func(abts_case *tc, void *data)
     tests1ap_recv(NULL, recvbuf);
 
     /********** Insert Subscriber in Database */
-    collection = mongoc_client_get_collection(
-        ogs_mongoc()->client, ogs_mongoc()->name, "subscribers");
-    ABTS_PTR_NOTNULL(tc, collection);
-    doc = BCON_NEW("imsi", BCON_UTF8(test_ue->imsi));
+    doc = test_db_new_simple(test_ue);
     ABTS_PTR_NOTNULL(tc, doc);
-
-    count = mongoc_collection_count (
-        collection, MONGOC_QUERY_NONE, doc, 0, 0, NULL, &error);
-    if (count) {
-        ABTS_TRUE(tc, mongoc_collection_remove(collection,
-                MONGOC_REMOVE_SINGLE_REMOVE, doc, NULL, &error))
-    }
-    bson_destroy(doc);
-
-    doc = bson_new_from_json((const uint8_t *)json, -1, &error);;
-    ABTS_PTR_NOTNULL(tc, doc);
-    ABTS_TRUE(tc, mongoc_collection_insert(collection,
-                MONGOC_INSERT_NONE, doc, NULL, &error));
-    bson_destroy(doc);
-
-    doc = BCON_NEW("imsi", BCON_UTF8(test_ue->imsi));
-    ABTS_PTR_NOTNULL(tc, doc);
-    do {
-        count = mongoc_collection_count (
-            collection, MONGOC_QUERY_NONE, doc, 0, 0, NULL, &error);
-    } while (count == 0);
-    bson_destroy(doc);
-
-    collection = mongoc_client_get_collection(
-        ogs_mongoc()->client, ogs_mongoc()->name, "subscribers");
-    ABTS_PTR_NOTNULL(tc, collection);
+    ABTS_INT_EQUAL(tc, OGS_OK, test_db_insert_ue(test_ue, doc));
 
     /* Send Service Request */
     emmbuf = testemm_build_service_request(test_ue);
@@ -337,13 +262,7 @@ static void test1_func(abts_case *tc, void *data)
     ogs_msleep(300);
 
     /********** Remove Subscriber in Database */
-    doc = BCON_NEW("imsi", BCON_UTF8(test_ue->imsi));
-    ABTS_PTR_NOTNULL(tc, doc);
-    ABTS_TRUE(tc, mongoc_collection_remove(collection,
-            MONGOC_REMOVE_SINGLE_REMOVE, doc, NULL, &error))
-    bson_destroy(doc);
-
-    mongoc_collection_destroy(collection);
+    ABTS_INT_EQUAL(tc, OGS_OK, test_db_remove_ue(test_ue));
 
     /* eNB disonncect from MME */
     testenb_s1ap_close(s1ap);
@@ -354,9 +273,10 @@ static void test1_func(abts_case *tc, void *data)
     test_ue_remove(test_ue);
 }
 
+#define NUM_OF_TEST_UE 3
+
 static void test2_func(abts_case *tc, void *data)
 {
-#define NUM_OF_TEST_UE 3
     int rv, i;
     ogs_socknode_t *s1ap;
     ogs_socknode_t *gtpu;
@@ -371,136 +291,7 @@ static void test2_func(abts_case *tc, void *data)
     test_sess_t *sess = NULL;
     test_bearer_t *bearer = NULL;
 
-    const char *_k_string = "465b5ce8b199b49faa5f0a2ee238a6bc";
-    uint8_t k[OGS_KEY_LEN];
-    const char *_opc_string = "e8ed289deba952e4283b54e88e6183ca";
-    uint8_t opc[OGS_KEY_LEN];
-
-    mongoc_collection_t *collection = NULL;
     bson_t *doc = NULL;
-    int64_t count = 0;
-    bson_error_t error;
-    const char *json[NUM_OF_TEST_UE] = {
-      "{"
-        "\"_id\" : { \"$oid\" : \"310014158b8861d7605378c6\" }, "
-        "\"imsi\" : \"901707364000060\", "
-        "\"pdn\" : ["
-          "{"
-            "\"apn\" : \"internet\", "
-            "\"_id\" : { \"$oid\" : \"310014158b8861d7605378c7\" }, "
-            "\"ambr\" : {"
-              "\"uplink\" : { \"$numberLong\" : \"1000000\" }, "
-              "\"downlink\" : { \"$numberLong\" : \"1000000\" } "
-            "},"
-            "\"qos\" : { "
-              "\"qci\" : 9, "
-              "\"arp\" : { "
-                "\"priority_level\" : 15,"
-                "\"pre_emption_vulnerability\" : 1, "
-                "\"pre_emption_capability\" : 1"
-              "} "
-            "}, "
-            "\"type\" : 2"
-          "}"
-        "],"
-        "\"ambr\" : { "
-          "\"uplink\" : { \"$numberLong\" : \"1000000\" }, "
-          "\"downlink\" : { \"$numberLong\" : \"1000000\" } "
-        "},"
-        "\"subscribed_rau_tau_timer\" : 12,"
-        "\"network_access_mode\" : 2, "
-        "\"subscriber_status\" : 0, "
-        "\"access_restriction_data\" : 32, "
-        "\"security\" : { "
-          "\"k\" : \"465B5CE8 B199B49F AA5F0A2E E238A6BC\", "
-          "\"opc\" : \"E8ED289D EBA952E4 283B54E8 8E6183CA\", "
-          "\"amf\" : \"8000\", "
-          "\"sqn\" : { \"$numberLong\" : \"64\" } "
-        "}, "
-        "\"__v\" : 0 "
-      "}",
-      "{"
-        "\"_id\" : { \"$oid\" : \"310014158b8861d7605378c7\" }, "
-        "\"imsi\" : \"901707364000061\", "
-        "\"pdn\" : ["
-          "{"
-            "\"apn\" : \"internet\", "
-            "\"_id\" : { \"$oid\" : \"310014158b8861d7605378c8\" }, "
-            "\"ambr\" : {"
-              "\"uplink\" : { \"$numberLong\" : \"1000000\" }, "
-              "\"downlink\" : { \"$numberLong\" : \"1000000\" } "
-            "},"
-            "\"qos\" : { "
-              "\"qci\" : 9, "
-              "\"arp\" : { "
-                "\"priority_level\" : 15,"
-                "\"pre_emption_vulnerability\" : 1, "
-                "\"pre_emption_capability\" : 1"
-              "} "
-            "}, "
-            "\"type\" : 2"
-          "}"
-        "],"
-        "\"ambr\" : { "
-          "\"uplink\" : { \"$numberLong\" : \"1000000\" }, "
-          "\"downlink\" : { \"$numberLong\" : \"1000000\" } "
-        "},"
-        "\"subscribed_rau_tau_timer\" : 12,"
-        "\"network_access_mode\" : 2, "
-        "\"subscriber_status\" : 0, "
-        "\"access_restriction_data\" : 32, "
-        "\"security\" : { "
-          "\"k\" : \"465B5CE8 B199B49F AA5F0A2E E238A6BC\", "
-          "\"opc\" : \"E8ED289D EBA952E4 283B54E8 8E6183CA\", "
-          "\"amf\" : \"8000\", "
-          "\"sqn\" : { \"$numberLong\" : \"64\" } "
-        "}, "
-        "\"__v\" : 0 "
-      "}",
-      "{"
-        "\"_id\" : { \"$oid\" : \"310014158b8861d7605378c8\" }, "
-        "\"imsi\" : \"901707364000062\", "
-        "\"pdn\" : ["
-          "{"
-            "\"apn\" : \"internet\", "
-            "\"_id\" : { \"$oid\" : \"310014158b8861d7605378c9\" }, "
-            "\"ambr\" : {"
-              "\"uplink\" : { \"$numberLong\" : \"1000000\" }, "
-              "\"downlink\" : { \"$numberLong\" : \"1000000\" } "
-            "},"
-            "\"qos\" : { "
-              "\"qci\" : 9, "
-              "\"arp\" : { "
-                "\"priority_level\" : 15,"
-                "\"pre_emption_vulnerability\" : 1, "
-                "\"pre_emption_capability\" : 1"
-              "} "
-            "}, "
-            "\"type\" : 2"
-          "}"
-        "],"
-        "\"ambr\" : { "
-          "\"uplink\" : { \"$numberLong\" : \"1000000\" }, "
-          "\"downlink\" : { \"$numberLong\" : \"1000000\" } "
-        "},"
-        "\"subscribed_rau_tau_timer\" : 12,"
-        "\"network_access_mode\" : 2, "
-        "\"subscriber_status\" : 0, "
-        "\"access_restriction_data\" : 32, "
-        "\"security\" : { "
-          "\"k\" : \"465B5CE8 B199B49F AA5F0A2E E238A6BC\", "
-          "\"opc\" : \"E8ED289D EBA952E4 283B54E8 8E6183CA\", "
-          "\"amf\" : \"8000\", "
-          "\"sqn\" : { \"$numberLong\" : \"64\" } "
-        "}, "
-        "\"__v\" : 0 "
-      "}",
-    };
-
-    /* Get DB collection */
-    collection = mongoc_client_get_collection(
-        ogs_mongoc()->client, ogs_mongoc()->name, "subscribers");
-    ABTS_PTR_NOTNULL(tc, collection);
 
     /* eNB connects to MME */
     s1ap = tests1ap_client(AF_INET);
@@ -523,6 +314,8 @@ static void test2_func(abts_case *tc, void *data)
     tests1ap_recv(NULL, recvbuf);
 
     for (i = 0; i < NUM_OF_TEST_UE; i++) {
+        uint64_t imsi_index;
+
         /* Setup Test UE & Session Context */
         memset(&mobile_identity_suci, 0, sizeof(mobile_identity_suci));
 
@@ -534,19 +327,9 @@ static void test2_func(abts_case *tc, void *data)
         mobile_identity_suci.routing_indicator4 = 0xf;
         mobile_identity_suci.protection_scheme_id = OGS_NAS_5GS_NULL_SCHEME;
         mobile_identity_suci.home_network_pki_value = 0;
-        mobile_identity_suci.scheme_output[0] = 0x37;
-        mobile_identity_suci.scheme_output[1] = 0x46;
-        mobile_identity_suci.scheme_output[2] = 0;
-        mobile_identity_suci.scheme_output[3] = 0;
-        /* Multiple IMSI */
-        if (i == 0)
-            mobile_identity_suci.scheme_output[4] = 0x06;
-        else if (i == 1)
-            mobile_identity_suci.scheme_output[4] = 0x16;
-        else if (i == 2)
-            mobile_identity_suci.scheme_output[4] = 0x26;
-        else
-            ogs_assert_if_reached();
+
+        imsi_index = i + 1;
+        ogs_uint64_to_buffer(imsi_index, 5, mobile_identity_suci.scheme_output);
 
         test_ue[i] = test_ue_add_by_suci(&mobile_identity_suci, 13);
         ogs_assert(test_ue[i]);
@@ -558,37 +341,16 @@ static void test2_func(abts_case *tc, void *data)
         test_ue[i]->nas.ksi = OGS_NAS_KSI_NO_KEY_IS_AVAILABLE;
         test_ue[i]->nas.value = OGS_NAS_ATTACH_TYPE_COMBINED_EPS_IMSI_ATTACH;
 
-        OGS_HEX(_k_string, strlen(_k_string), test_ue[i]->k);
-        OGS_HEX(_opc_string, strlen(_opc_string), test_ue[i]->opc);
+        test_ue[i]->k_string = "465b5ce8b199b49faa5f0a2ee238a6bc";
+        test_ue[i]->opc_string = "e8ed289deba952e4283b54e88e6183ca";
 
         sess = test_sess_add_by_apn(test_ue[i], "internet");
         ogs_assert(sess);
 
         /********** Insert Subscriber in Database */
-        doc = BCON_NEW("imsi", BCON_UTF8(test_ue[i]->imsi));
+        doc = test_db_new_simple(test_ue[i]);
         ABTS_PTR_NOTNULL(tc, doc);
-
-        count = mongoc_collection_count (
-            collection, MONGOC_QUERY_NONE, doc, 0, 0, NULL, &error);
-        if (count) {
-            ABTS_TRUE(tc, mongoc_collection_remove(collection,
-                    MONGOC_REMOVE_SINGLE_REMOVE, doc, NULL, &error))
-        }
-        bson_destroy(doc);
-
-        doc = bson_new_from_json((const uint8_t *)json[i], -1, &error);;
-        ABTS_PTR_NOTNULL(tc, doc);
-        ABTS_TRUE(tc, mongoc_collection_insert(collection,
-                    MONGOC_INSERT_NONE, doc, NULL, &error));
-        bson_destroy(doc);
-
-        doc = BCON_NEW("imsi", BCON_UTF8(test_ue[i]->imsi));
-        ABTS_PTR_NOTNULL(tc, doc);
-        do {
-            count = mongoc_collection_count (
-                collection, MONGOC_QUERY_NONE, doc, 0, 0, NULL, &error);
-        } while (count == 0);
-        bson_destroy(doc);
+        ABTS_INT_EQUAL(tc, OGS_OK, test_db_insert_ue(test_ue[i], doc));
     }
 
     for (i = 0; i < NUM_OF_TEST_UE; i++) {
@@ -722,11 +484,7 @@ static void test2_func(abts_case *tc, void *data)
 
     for (i = 0; i < NUM_OF_TEST_UE; i++) {
         /********** Remove Subscriber in Database */
-        doc = BCON_NEW("imsi", BCON_UTF8(test_ue[i]->imsi));
-        ABTS_PTR_NOTNULL(tc, doc);
-        ABTS_TRUE(tc, mongoc_collection_remove(collection,
-                MONGOC_REMOVE_SINGLE_REMOVE, doc, NULL, &error))
-        bson_destroy(doc);
+        ABTS_INT_EQUAL(tc, OGS_OK, test_db_remove_ue(test_ue[i]));
     }
 
     /* eNB disonncect from MME */
@@ -735,15 +493,11 @@ static void test2_func(abts_case *tc, void *data)
     /* eNB disonncect from SGW */
     test_gtpu_close(gtpu);
 
-    /* Destroy DB collection */
-    mongoc_collection_destroy(collection);
-
     test_ue_remove_all();
 }
 
 static void test3_func(abts_case *tc, void *data)
 {
-#define NUM_OF_TEST_UE 3
     int rv, i;
     ogs_socknode_t *s1ap;
     ogs_socknode_t *gtpu;
@@ -760,136 +514,7 @@ static void test3_func(abts_case *tc, void *data)
 
     S1AP_UE_associatedLogicalS1_ConnectionListRes_t *partOfS1_Interface = NULL;
 
-    const char *_k_string = "465b5ce8b199b49faa5f0a2ee238a6bc";
-    uint8_t k[OGS_KEY_LEN];
-    const char *_opc_string = "e8ed289deba952e4283b54e88e6183ca";
-    uint8_t opc[OGS_KEY_LEN];
-
-    mongoc_collection_t *collection = NULL;
     bson_t *doc = NULL;
-    int64_t count = 0;
-    bson_error_t error;
-    const char *json[NUM_OF_TEST_UE] = {
-      "{"
-        "\"_id\" : { \"$oid\" : \"310014158b8861d7605378c6\" }, "
-        "\"imsi\" : \"901707364000060\", "
-        "\"pdn\" : ["
-          "{"
-            "\"apn\" : \"internet\", "
-            "\"_id\" : { \"$oid\" : \"310014158b8861d7605378c7\" }, "
-            "\"ambr\" : {"
-              "\"uplink\" : { \"$numberLong\" : \"1000000\" }, "
-              "\"downlink\" : { \"$numberLong\" : \"1000000\" } "
-            "},"
-            "\"qos\" : { "
-              "\"qci\" : 9, "
-              "\"arp\" : { "
-                "\"priority_level\" : 15,"
-                "\"pre_emption_vulnerability\" : 1, "
-                "\"pre_emption_capability\" : 1"
-              "} "
-            "}, "
-            "\"type\" : 2"
-          "}"
-        "],"
-        "\"ambr\" : { "
-          "\"uplink\" : { \"$numberLong\" : \"1000000\" }, "
-          "\"downlink\" : { \"$numberLong\" : \"1000000\" } "
-        "},"
-        "\"subscribed_rau_tau_timer\" : 12,"
-        "\"network_access_mode\" : 2, "
-        "\"subscriber_status\" : 0, "
-        "\"access_restriction_data\" : 32, "
-        "\"security\" : { "
-          "\"k\" : \"465B5CE8 B199B49F AA5F0A2E E238A6BC\", "
-          "\"opc\" : \"E8ED289D EBA952E4 283B54E8 8E6183CA\", "
-          "\"amf\" : \"8000\", "
-          "\"sqn\" : { \"$numberLong\" : \"64\" } "
-        "}, "
-        "\"__v\" : 0 "
-      "}",
-      "{"
-        "\"_id\" : { \"$oid\" : \"310014158b8861d7605378c7\" }, "
-        "\"imsi\" : \"901707364000061\", "
-        "\"pdn\" : ["
-          "{"
-            "\"apn\" : \"internet\", "
-            "\"_id\" : { \"$oid\" : \"310014158b8861d7605378c8\" }, "
-            "\"ambr\" : {"
-              "\"uplink\" : { \"$numberLong\" : \"1000000\" }, "
-              "\"downlink\" : { \"$numberLong\" : \"1000000\" } "
-            "},"
-            "\"qos\" : { "
-              "\"qci\" : 9, "
-              "\"arp\" : { "
-                "\"priority_level\" : 15,"
-                "\"pre_emption_vulnerability\" : 1, "
-                "\"pre_emption_capability\" : 1"
-              "} "
-            "}, "
-            "\"type\" : 2"
-          "}"
-        "],"
-        "\"ambr\" : { "
-          "\"uplink\" : { \"$numberLong\" : \"1000000\" }, "
-          "\"downlink\" : { \"$numberLong\" : \"1000000\" } "
-        "},"
-        "\"subscribed_rau_tau_timer\" : 12,"
-        "\"network_access_mode\" : 2, "
-        "\"subscriber_status\" : 0, "
-        "\"access_restriction_data\" : 32, "
-        "\"security\" : { "
-          "\"k\" : \"465B5CE8 B199B49F AA5F0A2E E238A6BC\", "
-          "\"opc\" : \"E8ED289D EBA952E4 283B54E8 8E6183CA\", "
-          "\"amf\" : \"8000\", "
-          "\"sqn\" : { \"$numberLong\" : \"64\" } "
-        "}, "
-        "\"__v\" : 0 "
-      "}",
-      "{"
-        "\"_id\" : { \"$oid\" : \"310014158b8861d7605378c8\" }, "
-        "\"imsi\" : \"901707364000062\", "
-        "\"pdn\" : ["
-          "{"
-            "\"apn\" : \"internet\", "
-            "\"_id\" : { \"$oid\" : \"310014158b8861d7605378c9\" }, "
-            "\"ambr\" : {"
-              "\"uplink\" : { \"$numberLong\" : \"1000000\" }, "
-              "\"downlink\" : { \"$numberLong\" : \"1000000\" } "
-            "},"
-            "\"qos\" : { "
-              "\"qci\" : 9, "
-              "\"arp\" : { "
-                "\"priority_level\" : 15,"
-                "\"pre_emption_vulnerability\" : 1, "
-                "\"pre_emption_capability\" : 1"
-              "} "
-            "}, "
-            "\"type\" : 2"
-          "}"
-        "],"
-        "\"ambr\" : { "
-          "\"uplink\" : { \"$numberLong\" : \"1000000\" }, "
-          "\"downlink\" : { \"$numberLong\" : \"1000000\" } "
-        "},"
-        "\"subscribed_rau_tau_timer\" : 12,"
-        "\"network_access_mode\" : 2, "
-        "\"subscriber_status\" : 0, "
-        "\"access_restriction_data\" : 32, "
-        "\"security\" : { "
-          "\"k\" : \"465B5CE8 B199B49F AA5F0A2E E238A6BC\", "
-          "\"opc\" : \"E8ED289D EBA952E4 283B54E8 8E6183CA\", "
-          "\"amf\" : \"8000\", "
-          "\"sqn\" : { \"$numberLong\" : \"64\" } "
-        "}, "
-        "\"__v\" : 0 "
-      "}",
-    };
-
-    /* Get DB collection */
-    collection = mongoc_client_get_collection(
-        ogs_mongoc()->client, ogs_mongoc()->name, "subscribers");
-    ABTS_PTR_NOTNULL(tc, collection);
 
     /* eNB connects to MME */
     s1ap = tests1ap_client(AF_INET);
@@ -912,6 +537,8 @@ static void test3_func(abts_case *tc, void *data)
     tests1ap_recv(NULL, recvbuf);
 
     for (i = 0; i < NUM_OF_TEST_UE; i++) {
+        uint64_t imsi_index;
+
         /* Setup Test UE & Session Context */
         memset(&mobile_identity_suci, 0, sizeof(mobile_identity_suci));
 
@@ -923,19 +550,9 @@ static void test3_func(abts_case *tc, void *data)
         mobile_identity_suci.routing_indicator4 = 0xf;
         mobile_identity_suci.protection_scheme_id = OGS_NAS_5GS_NULL_SCHEME;
         mobile_identity_suci.home_network_pki_value = 0;
-        mobile_identity_suci.scheme_output[0] = 0x37;
-        mobile_identity_suci.scheme_output[1] = 0x46;
-        mobile_identity_suci.scheme_output[2] = 0;
-        mobile_identity_suci.scheme_output[3] = 0;
-        /* Multiple IMSI */
-        if (i == 0)
-            mobile_identity_suci.scheme_output[4] = 0x06;
-        else if (i == 1)
-            mobile_identity_suci.scheme_output[4] = 0x16;
-        else if (i == 2)
-            mobile_identity_suci.scheme_output[4] = 0x26;
-        else
-            ogs_assert_if_reached();
+
+        imsi_index = i + 1;
+        ogs_uint64_to_buffer(imsi_index, 5, mobile_identity_suci.scheme_output);
 
         test_ue[i] = test_ue_add_by_suci(&mobile_identity_suci, 13);
         ogs_assert(test_ue[i]);
@@ -947,37 +564,16 @@ static void test3_func(abts_case *tc, void *data)
         test_ue[i]->nas.ksi = OGS_NAS_KSI_NO_KEY_IS_AVAILABLE;
         test_ue[i]->nas.value = OGS_NAS_ATTACH_TYPE_COMBINED_EPS_IMSI_ATTACH;
 
-        OGS_HEX(_k_string, strlen(_k_string), test_ue[i]->k);
-        OGS_HEX(_opc_string, strlen(_opc_string), test_ue[i]->opc);
+        test_ue[i]->k_string = "465b5ce8b199b49faa5f0a2ee238a6bc";
+        test_ue[i]->opc_string = "e8ed289deba952e4283b54e88e6183ca";
 
         sess = test_sess_add_by_apn(test_ue[i], "internet");
         ogs_assert(sess);
 
         /********** Insert Subscriber in Database */
-        doc = BCON_NEW("imsi", BCON_UTF8(test_ue[i]->imsi));
+        doc = test_db_new_simple(test_ue[i]);
         ABTS_PTR_NOTNULL(tc, doc);
-
-        count = mongoc_collection_count (
-            collection, MONGOC_QUERY_NONE, doc, 0, 0, NULL, &error);
-        if (count) {
-            ABTS_TRUE(tc, mongoc_collection_remove(collection,
-                    MONGOC_REMOVE_SINGLE_REMOVE, doc, NULL, &error))
-        }
-        bson_destroy(doc);
-
-        doc = bson_new_from_json((const uint8_t *)json[i], -1, &error);;
-        ABTS_PTR_NOTNULL(tc, doc);
-        ABTS_TRUE(tc, mongoc_collection_insert(collection,
-                    MONGOC_INSERT_NONE, doc, NULL, &error));
-        bson_destroy(doc);
-
-        doc = BCON_NEW("imsi", BCON_UTF8(test_ue[i]->imsi));
-        ABTS_PTR_NOTNULL(tc, doc);
-        do {
-            count = mongoc_collection_count (
-                collection, MONGOC_QUERY_NONE, doc, 0, 0, NULL, &error);
-        } while (count == 0);
-        bson_destroy(doc);
+        ABTS_INT_EQUAL(tc, OGS_OK, test_db_insert_ue(test_ue[i], doc));
     }
 
     for (i = 0; i < NUM_OF_TEST_UE; i++) {
@@ -1134,11 +730,7 @@ static void test3_func(abts_case *tc, void *data)
 
     for (i = 0; i < NUM_OF_TEST_UE; i++) {
         /********** Remove Subscriber in Database */
-        doc = BCON_NEW("imsi", BCON_UTF8(test_ue[i]->imsi));
-        ABTS_PTR_NOTNULL(tc, doc);
-        ABTS_TRUE(tc, mongoc_collection_remove(collection,
-                MONGOC_REMOVE_SINGLE_REMOVE, doc, NULL, &error))
-        bson_destroy(doc);
+        ABTS_INT_EQUAL(tc, OGS_OK, test_db_remove_ue(test_ue[i]));
     }
 
     /* eNB disonncect from MME */
@@ -1146,9 +738,6 @@ static void test3_func(abts_case *tc, void *data)
 
     /* eNB disonncect from SGW */
     test_gtpu_close(gtpu);
-
-    /* Destroy DB collection */
-    mongoc_collection_destroy(collection);
 
     test_ue_remove_all();
 }

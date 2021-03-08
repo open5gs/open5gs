@@ -109,7 +109,7 @@ void pcf_nf_state_will_register(ogs_fsm_t *s, pcf_event_t *e)
             ogs_timer_start(nf_instance->t_registration_interval,
                 ogs_app()->time.message.sbi.nf_register_interval);
 
-        ogs_nnrf_nfm_send_nf_register(nf_instance);
+        pcf_nnrf_nfm_send_nf_register(nf_instance);
         break;
 
     case OGS_FSM_EXIT_SIG:
@@ -164,7 +164,7 @@ void pcf_nf_state_will_register(ogs_fsm_t *s, pcf_event_t *e)
                 ogs_timer_start(nf_instance->t_registration_interval,
                     ogs_app()->time.message.sbi.nf_register_interval);
 
-            ogs_nnrf_nfm_send_nf_register(nf_instance);
+            pcf_nnrf_nfm_send_nf_register(nf_instance);
             break;
 
         default:

@@ -285,6 +285,8 @@ void ausf_nnrf_handle_nf_discover(
         }
 
         if (NF_INSTANCE_IS_OTHERS(nf_instance->id)) {
+            ausf_ue_t *ausf_ue = NULL;
+
             handled = ogs_sbi_nnrf_handle_nf_profile(
                         nf_instance, NFProfile, NULL, NULL);
             if (!handled) {
@@ -301,10 +303,9 @@ void ausf_nnrf_handle_nf_discover(
                 continue;
             }
 
-            if (!OGS_SBI_NF_INSTANCE_GET(
-                        sbi_object->nf_type_array, nf_instance->nf_type))
-                ogs_sbi_nf_instance_associate(sbi_object->nf_type_array,
-                        nf_instance->nf_type, ausf_nf_state_registered);
+            ausf_ue = (ausf_ue_t *)sbi_object;
+            ogs_assert(ausf_ue);
+            ausf_ue_select_nf(ausf_ue, nf_instance->nf_type);
 
             /* TIME : Update validity from NRF */
             if (SearchResult->validity_period) {
@@ -324,8 +325,7 @@ void ausf_nnrf_handle_nf_discover(
     }
 
     ogs_assert(xact->target_nf_type);
-    nf_instance = OGS_SBI_NF_INSTANCE_GET(
-            sbi_object->nf_type_array, xact->target_nf_type);
+    nf_instance = OGS_SBI_NF_INSTANCE(sbi_object, xact->target_nf_type);
     if (!nf_instance) {
         ogs_error("(NF discover) No [%s]",
                 OpenAPI_nf_type_ToString(xact->target_nf_type));

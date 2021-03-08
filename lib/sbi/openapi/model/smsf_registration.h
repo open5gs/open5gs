@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+#include "context_info.h"
 #include "network_node_diameter_address.h"
 #include "plmn_id.h"
 
@@ -28,6 +29,7 @@ typedef struct OpenAPI_smsf_registration_s {
     char *smsf_map_address;
     struct OpenAPI_network_node_diameter_address_s *smsf_diameter_address;
     char *registration_time;
+    struct OpenAPI_context_info_s *context_info;
 } OpenAPI_smsf_registration_t;
 
 OpenAPI_smsf_registration_t *OpenAPI_smsf_registration_create(
@@ -37,7 +39,8 @@ OpenAPI_smsf_registration_t *OpenAPI_smsf_registration_create(
     OpenAPI_plmn_id_t *plmn_id,
     char *smsf_map_address,
     OpenAPI_network_node_diameter_address_t *smsf_diameter_address,
-    char *registration_time
+    char *registration_time,
+    OpenAPI_context_info_t *context_info
     );
 void OpenAPI_smsf_registration_free(OpenAPI_smsf_registration_t *smsf_registration);
 OpenAPI_smsf_registration_t *OpenAPI_smsf_registration_parseFromJSON(cJSON *smsf_registrationJSON);

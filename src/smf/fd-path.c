@@ -283,7 +283,7 @@ void smf_gx_send_ccr(smf_sess_t *sess, ogs_gtp_xact_t *xact,
         if (sess->ipv6) {
             ret = fd_msg_avp_new(ogs_diam_gx_framed_ipv6_prefix, 0, &avp);
             ogs_assert(ret == 0);
-            memcpy(&paa, &sess->pdn.paa, OGS_PAA_IPV6_LEN);
+            memcpy(&paa, &sess->session.paa, OGS_PAA_IPV6_LEN);
 #define FRAMED_IPV6_PREFIX_LENGTH 128  /* from spec document */
             paa.len = FRAMED_IPV6_PREFIX_LENGTH; 
             val.os.data = (uint8_t*)&paa;
@@ -313,26 +313,26 @@ void smf_gx_send_ccr(smf_sess_t *sess, ogs_gtp_xact_t *xact,
         ogs_assert(ret == 0);
 
         /* Set QoS-Information */
-        if (sess->pdn.ambr.downlink || sess->pdn.ambr.uplink) {
+        if (sess->session.ambr.downlink || sess->session.ambr.uplink) {
             ret = fd_msg_avp_new(ogs_diam_gx_qos_information, 0, &avp);
             ogs_assert(ret == 0);
 
-            if (sess->pdn.ambr.uplink) {
+            if (sess->session.ambr.uplink) {
                 ret = fd_msg_avp_new(ogs_diam_gx_apn_aggregate_max_bitrate_ul,
                         0, &avpch1);
                 ogs_assert(ret == 0);
-                val.u32 = sess->pdn.ambr.uplink;
+                val.u32 = sess->session.ambr.uplink;
                 ret = fd_msg_avp_setvalue (avpch1, &val);
                 ogs_assert(ret == 0);
                 ret = fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1);
                 ogs_assert(ret == 0);
             }
             
-            if (sess->pdn.ambr.downlink) {
+            if (sess->session.ambr.downlink) {
                 ret = fd_msg_avp_new(
                         ogs_diam_gx_apn_aggregate_max_bitrate_dl, 0, &avpch1);
                 ogs_assert(ret == 0);
-                val.u32 = sess->pdn.ambr.downlink;
+                val.u32 = sess->session.ambr.downlink;
                 ret = fd_msg_avp_setvalue (avpch1, &val);
                 ogs_assert(ret == 0);
                 ret = fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1);
@@ -349,7 +349,7 @@ void smf_gx_send_ccr(smf_sess_t *sess, ogs_gtp_xact_t *xact,
 
         ret = fd_msg_avp_new(ogs_diam_gx_qos_class_identifier, 0, &avpch1);
         ogs_assert(ret == 0);
-        val.u32 = sess->pdn.qos.qci;
+        val.u32 = sess->session.qos.index;
         ret = fd_msg_avp_setvalue (avpch1, &val);
         ogs_assert(ret == 0);
         ret = fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1);
@@ -361,7 +361,7 @@ void smf_gx_send_ccr(smf_sess_t *sess, ogs_gtp_xact_t *xact,
 
         ret = fd_msg_avp_new(ogs_diam_gx_priority_level, 0, &avpch2);
         ogs_assert(ret == 0);
-        val.u32 = sess->pdn.qos.arp.priority_level;
+        val.u32 = sess->session.qos.arp.priority_level;
         ret = fd_msg_avp_setvalue (avpch2, &val);
         ogs_assert(ret == 0);
         ret = fd_msg_avp_add (avpch1, MSG_BRW_LAST_CHILD, avpch2);
@@ -369,7 +369,7 @@ void smf_gx_send_ccr(smf_sess_t *sess, ogs_gtp_xact_t *xact,
 
         ret = fd_msg_avp_new(ogs_diam_gx_pre_emption_capability, 0, &avpch2);
         ogs_assert(ret == 0);
-        val.u32 = sess->pdn.qos.arp.pre_emption_capability;
+        val.u32 = sess->session.qos.arp.pre_emption_capability;
         ret = fd_msg_avp_setvalue (avpch2, &val);
         ogs_assert(ret == 0);
         ret = fd_msg_avp_add (avpch1, MSG_BRW_LAST_CHILD, avpch2);
@@ -377,7 +377,7 @@ void smf_gx_send_ccr(smf_sess_t *sess, ogs_gtp_xact_t *xact,
 
         ret = fd_msg_avp_new(ogs_diam_gx_pre_emption_vulnerability, 0, &avpch2);
         ogs_assert(ret == 0);
-        val.u32 = sess->pdn.qos.arp.pre_emption_vulnerability;
+        val.u32 = sess->session.qos.arp.pre_emption_vulnerability;
         ret = fd_msg_avp_setvalue (avpch2, &val);
         ogs_assert(ret == 0);
         ret = fd_msg_avp_add (avpch1, MSG_BRW_LAST_CHILD, avpch2);
@@ -444,8 +444,9 @@ void smf_gx_send_ccr(smf_sess_t *sess, ogs_gtp_xact_t *xact,
     /* Set Called-Station-Id */
     ret = fd_msg_avp_new(ogs_diam_gx_called_station_id, 0, &avp);
     ogs_assert(ret == 0);
-    val.os.data = (uint8_t*)sess->pdn.apn;
-    val.os.len = strlen(sess->pdn.apn);
+    ogs_assert(sess->session.name);
+    val.os.data = (uint8_t*)sess->session.name;
+    val.os.len = strlen(sess->session.name);
     ret = fd_msg_avp_setvalue(avp, &val);
     ogs_assert(ret == 0);
     ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
@@ -627,7 +628,7 @@ static void smf_gx_cca_cb(void *data, struct msg **msg)
         if (avpch1) {
             ret = fd_msg_avp_hdr(avpch1, &hdr);
             ogs_assert(ret == 0);
-            gx_message->session_data.pdn.ambr.uplink = hdr->avp_value->u32;
+            gx_message->session_data.session.ambr.uplink = hdr->avp_value->u32;
         }
         ret = fd_avp_search_avp(
                 avp, ogs_diam_gx_apn_aggregate_max_bitrate_dl, &avpch1);
@@ -635,7 +636,8 @@ static void smf_gx_cca_cb(void *data, struct msg **msg)
         if (avpch1) {
             ret = fd_msg_avp_hdr(avpch1, &hdr);
             ogs_assert(ret == 0);
-            gx_message->session_data.pdn.ambr.downlink = hdr->avp_value->u32;
+            gx_message->session_data.session.ambr.downlink =
+                hdr->avp_value->u32;
         }
     }
 
@@ -647,7 +649,7 @@ static void smf_gx_cca_cb(void *data, struct msg **msg)
         if (avpch1) {
             ret = fd_msg_avp_hdr(avpch1, &hdr);
             ogs_assert(ret == 0);
-            gx_message->session_data.pdn.qos.qci = hdr->avp_value->u32;
+            gx_message->session_data.session.qos.index = hdr->avp_value->u32;
         }
 
         ret = fd_avp_search_avp(
@@ -660,18 +662,38 @@ static void smf_gx_cca_cb(void *data, struct msg **msg)
             if (avpch2) {
                 ret = fd_msg_avp_hdr(avpch2, &hdr);
                 ogs_assert(ret == 0);
-                gx_message->session_data.pdn.qos.arp.priority_level =
+                gx_message->session_data.session.qos.arp.priority_level =
                     hdr->avp_value->u32;
             }
 
+            /*
+             * Ch 7.3.40 Allocation-Retenion-Proirty in TS 29.272 V15.9.0
+             *
+             * If the Pre-emption-Capability AVP is not present in the
+             * Allocation-Retention-Priority AVP, the default value shall be
+             * PRE-EMPTION_CAPABILITY_DISABLED (1).
+             *
+             * If the Pre-emption-Vulnerability AVP is not present in the
+             * Allocation-Retention-Priority AVP, the default value shall be
+             * PRE-EMPTION_VULNERABILITY_ENABLED (0).
+             *
+             * However, to easily set up VoLTE service,
+             * enable Pre-emption Capability/Vulnerablility
+             * in Default Bearer
+             */
             ret = fd_avp_search_avp(
                     avpch1, ogs_diam_gx_pre_emption_capability, &avpch2);
             ogs_assert(ret == 0);
             if (avpch2) {
                 ret = fd_msg_avp_hdr(avpch2, &hdr);
                 ogs_assert(ret == 0);
-                gx_message->session_data.pdn.qos.arp.pre_emption_capability =
-                    hdr->avp_value->u32;
+                gx_message->session_data.
+                    session.qos.arp.pre_emption_capability =
+                        hdr->avp_value->u32;
+            } else {
+                gx_message->session_data.
+                    session.qos.arp.pre_emption_capability =
+                        OGS_EPC_PRE_EMPTION_DISABLED;
             }
 
             ret = fd_avp_search_avp(avpch1,
@@ -680,8 +702,13 @@ static void smf_gx_cca_cb(void *data, struct msg **msg)
             if (avpch2) {
                 ret = fd_msg_avp_hdr(avpch2, &hdr);
                 ogs_assert(ret == 0);
-                gx_message->session_data.pdn.qos.arp.pre_emption_vulnerability =
-                    hdr->avp_value->u32;
+                gx_message->session_data.
+                    session.qos.arp.pre_emption_vulnerability =
+                        hdr->avp_value->u32;
+            } else {
+                gx_message->session_data.
+                    session.qos.arp.pre_emption_vulnerability =
+                        OGS_EPC_PRE_EMPTION_ENABLED;
             }
         }
     }
@@ -1178,7 +1205,7 @@ static int decode_pcc_rule_definition(
             if (avpch3) {
                 ret = fd_msg_avp_hdr(avpch3, &hdr);
                 ogs_assert(ret == 0);
-                pcc_rule->qos.qci = hdr->avp_value->u32;
+                pcc_rule->qos.index = hdr->avp_value->u32;
             } else {
                 ogs_error("no_QCI");
                 error++;
@@ -1200,6 +1227,21 @@ static int decode_pcc_rule_definition(
                     error++;
                 }
 
+                /*
+                 * Ch 7.3.40 Allocation-Retenion-Proirty in TS 29.272 V15.9.0
+                 *
+                 * If the Pre-emption-Capability AVP is not present in the
+                 * Allocation-Retention-Priority AVP, the default value shall be
+                 * PRE-EMPTION_CAPABILITY_DISABLED (1).
+                 *
+                 * If the Pre-emption-Vulnerability AVP is not present in the
+                 * Allocation-Retention-Priority AVP, the default value shall be
+                 * PRE-EMPTION_VULNERABILITY_ENABLED (0).
+                 *
+                 * However, to easily set up VoLTE service,
+                 * enable Pre-emption Capability/Vulnerablility
+                 * in Default Bearer
+                 */
                 ret = fd_avp_search_avp(avpch3,
                     ogs_diam_gx_pre_emption_capability, &avpch4);
                 ogs_assert(ret == 0);
@@ -1209,8 +1251,8 @@ static int decode_pcc_rule_definition(
                     pcc_rule->qos.arp.pre_emption_capability =
                             hdr->avp_value->u32;
                 } else {
-                    ogs_error("no_Preemption-Capability");
-                    error++;
+                    pcc_rule->qos.arp.pre_emption_capability =
+                        OGS_EPC_PRE_EMPTION_DISABLED;
                 }
 
                 ret = fd_avp_search_avp(avpch3,
@@ -1222,8 +1264,9 @@ static int decode_pcc_rule_definition(
                     pcc_rule->qos.arp.pre_emption_vulnerability =
                             hdr->avp_value->u32;
                 } else {
-                    ogs_error("no_Preemption-Vulnerability");
-                    error++;
+                    pcc_rule->qos.arp.pre_emption_vulnerability =
+                        OGS_EPC_PRE_EMPTION_ENABLED;
+
                 }
             } else {
                 ogs_error("no_ARP");

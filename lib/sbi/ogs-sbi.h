@@ -65,6 +65,8 @@
 #include "model/sm_policy_context_data.h"
 #include "model/sm_policy_decision.h"
 #include "model/sm_policy_data.h"
+#include "model/slice_info_for_pdu_session.h"
+#include "model/authorized_network_slice_info.h"
 
 #include "custom/links.h"
 

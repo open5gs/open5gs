@@ -35,9 +35,6 @@ void OpenAPI_datalink_reporting_configuration_free(OpenAPI_datalink_reporting_co
     OpenAPI_list_free(datalink_reporting_configuration->ddd_traffic_des);
     ogs_free(datalink_reporting_configuration->dnn);
     OpenAPI_snssai_free(datalink_reporting_configuration->slice);
-    OpenAPI_list_for_each(datalink_reporting_configuration->ddd_status_list, node) {
-        OpenAPI_dl_data_delivery_status_free(node->data);
-    }
     OpenAPI_list_free(datalink_reporting_configuration->ddd_status_list);
     ogs_free(datalink_reporting_configuration);
 }
@@ -93,21 +90,16 @@ cJSON *OpenAPI_datalink_reporting_configuration_convertToJSON(OpenAPI_datalink_r
     }
 
     if (datalink_reporting_configuration->ddd_status_list) {
-        cJSON *ddd_status_listList = cJSON_AddArrayToObject(item, "dddStatusList");
-        if (ddd_status_listList == NULL) {
+        cJSON *ddd_status_list = cJSON_AddArrayToObject(item, "dddStatusList");
+        if (ddd_status_list == NULL) {
             ogs_error("OpenAPI_datalink_reporting_configuration_convertToJSON() failed [ddd_status_list]");
             goto end;
         }
-
         OpenAPI_lnode_t *ddd_status_list_node;
-        if (datalink_reporting_configuration->ddd_status_list) {
-            OpenAPI_list_for_each(datalink_reporting_configuration->ddd_status_list, ddd_status_list_node) {
-                cJSON *itemLocal = OpenAPI_dl_data_delivery_status_convertToJSON(ddd_status_list_node->data);
-                if (itemLocal == NULL) {
-                    ogs_error("OpenAPI_datalink_reporting_configuration_convertToJSON() failed [ddd_status_list]");
-                    goto end;
-                }
-                cJSON_AddItemToArray(ddd_status_listList, itemLocal);
+        OpenAPI_list_for_each(datalink_reporting_configuration->ddd_status_list, ddd_status_list_node) {
+            if (cJSON_AddStringToObject(ddd_status_list, "", OpenAPI_dl_data_delivery_status_ToString((OpenAPI_dl_data_delivery_status_e)ddd_status_list_node->data)) == NULL) {
+                ogs_error("OpenAPI_datalink_reporting_configuration_convertToJSON() failed [ddd_status_list]");
+                goto end;
             }
         }
     }
@@ -171,13 +163,12 @@ OpenAPI_datalink_reporting_configuration_t *OpenAPI_datalink_reporting_configura
         ddd_status_listList = OpenAPI_list_create();
 
         cJSON_ArrayForEach(ddd_status_list_local_nonprimitive, ddd_status_list ) {
-            if (!cJSON_IsObject(ddd_status_list_local_nonprimitive)) {
+            if (!cJSON_IsString(ddd_status_list_local_nonprimitive)) {
                 ogs_error("OpenAPI_datalink_reporting_configuration_parseFromJSON() failed [ddd_status_list]");
                 goto end;
             }
-            OpenAPI_dl_data_delivery_status_t *ddd_status_listItem = OpenAPI_dl_data_delivery_status_parseFromJSON(ddd_status_list_local_nonprimitive);
 
-            OpenAPI_list_add(ddd_status_listList, ddd_status_listItem);
+            OpenAPI_list_add(ddd_status_listList, (void *)OpenAPI_dl_data_delivery_status_FromString(ddd_status_list_local_nonprimitive->valuestring));
         }
     }
 

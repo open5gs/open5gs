@@ -111,3 +111,20 @@ void udr_sbi_close(void)
 {
     ogs_sbi_server_stop_all();
 }
+
+void udr_nnrf_nfm_send_nf_register(ogs_sbi_nf_instance_t *nf_instance)
+{
+    ogs_sbi_request_t *request = NULL;
+    ogs_sbi_client_t *client = NULL;
+
+    ogs_assert(nf_instance);
+    client = nf_instance->client;
+    ogs_assert(client);
+
+    request = udr_nnrf_nfm_build_register(nf_instance);
+    if (!request) {
+        ogs_error("udr_nnrf_nfm_send_nf_register() failed");
+        return;
+    }
+    ogs_sbi_client_send_request(client, client->cb, request, nf_instance);
+}

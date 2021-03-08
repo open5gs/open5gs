@@ -16,6 +16,9 @@
 #include "datalink_reporting_configuration.h"
 #include "event_type.h"
 #include "location_reporting_configuration.h"
+#include "loss_connectivity_cfg.h"
+#include "pdu_session_status_cfg.h"
+#include "reachability_for_sms_configuration.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -28,6 +31,14 @@ typedef struct OpenAPI_monitoring_configuration_s {
     struct OpenAPI_location_reporting_configuration_s *location_reporting_configuration;
     struct OpenAPI_association_type_s *association_type;
     struct OpenAPI_datalink_reporting_configuration_s *datalink_report_cfg;
+    struct OpenAPI_loss_connectivity_cfg_s *loss_connectivity_cfg;
+    int maximum_latency;
+    int maximum_response_time;
+    int suggested_packet_num_dl;
+    struct OpenAPI_pdu_session_status_cfg_s *pdu_session_status_cfg;
+    struct OpenAPI_reachability_for_sms_configuration_s *reachability_for_sms_cfg;
+    char *mtc_provider_information;
+    char *af_id;
 } OpenAPI_monitoring_configuration_t;
 
 OpenAPI_monitoring_configuration_t *OpenAPI_monitoring_configuration_create(
@@ -35,7 +46,15 @@ OpenAPI_monitoring_configuration_t *OpenAPI_monitoring_configuration_create(
     int immediate_flag,
     OpenAPI_location_reporting_configuration_t *location_reporting_configuration,
     OpenAPI_association_type_t *association_type,
-    OpenAPI_datalink_reporting_configuration_t *datalink_report_cfg
+    OpenAPI_datalink_reporting_configuration_t *datalink_report_cfg,
+    OpenAPI_loss_connectivity_cfg_t *loss_connectivity_cfg,
+    int maximum_latency,
+    int maximum_response_time,
+    int suggested_packet_num_dl,
+    OpenAPI_pdu_session_status_cfg_t *pdu_session_status_cfg,
+    OpenAPI_reachability_for_sms_configuration_t *reachability_for_sms_cfg,
+    char *mtc_provider_information,
+    char *af_id
     );
 void OpenAPI_monitoring_configuration_free(OpenAPI_monitoring_configuration_t *monitoring_configuration);
 OpenAPI_monitoring_configuration_t *OpenAPI_monitoring_configuration_parseFromJSON(cJSON *monitoring_configurationJSON);

@@ -1,3 +1,9 @@
+open5gs (2.2.0) unstable; urgency=medium
+
+  * New function: NSSF
+
+ -- Sukchan Lee <acetcom@gmail.com>  Mon, 08 Mar 2021 14:14:41 +0900
+
 open5gs (2.1.7) unstable; urgency=medium
 
   * Bug Fixed

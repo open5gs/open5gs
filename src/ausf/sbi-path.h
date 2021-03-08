@@ -20,6 +20,7 @@
 #ifndef AUSF_SBI_PATH_H
 #define AUSF_SBI_PATH_H
 
+#include "nnrf-build.h"
 #include "nudm-build.h"
 
 #ifdef __cplusplus
@@ -28,6 +29,8 @@ extern "C" {
 
 int ausf_sbi_open(void);
 void ausf_sbi_close(void);
+
+void ausf_nnrf_nfm_send_nf_register(ogs_sbi_nf_instance_t *nf_instance);
 
 void ausf_sbi_send(ogs_sbi_nf_instance_t *nf_instance, ogs_sbi_xact_t *xact);
 void ausf_sbi_discover_and_send(OpenAPI_nf_type_e target_nf_type,

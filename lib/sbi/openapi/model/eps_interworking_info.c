@@ -25,7 +25,7 @@ void OpenAPI_eps_interworking_info_free(OpenAPI_eps_interworking_info_t *eps_int
     OpenAPI_lnode_t *node;
     OpenAPI_list_for_each(eps_interworking_info->eps_iwk_pgws, node) {
         OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
-        OpenAPI_object_free(localKeyValue->value);
+        OpenAPI_eps_iwk_pgw_free(localKeyValue->value);
         ogs_free(localKeyValue);
     }
     OpenAPI_list_free(eps_interworking_info->eps_iwk_pgws);
@@ -53,7 +53,7 @@ cJSON *OpenAPI_eps_interworking_info_convertToJSON(OpenAPI_eps_interworking_info
         if (eps_interworking_info->eps_iwk_pgws) {
             OpenAPI_list_for_each(eps_interworking_info->eps_iwk_pgws, eps_iwk_pgws_node) {
                 OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)eps_iwk_pgws_node->data;
-                cJSON *itemLocal = OpenAPI_object_convertToJSON(localKeyValue->value);
+                cJSON *itemLocal = OpenAPI_eps_iwk_pgw_convertToJSON(localKeyValue->value);
                 if (itemLocal == NULL) {
                     ogs_error("OpenAPI_eps_interworking_info_convertToJSON() failed [eps_iwk_pgws]");
                     goto end;
@@ -88,7 +88,7 @@ OpenAPI_eps_interworking_info_t *OpenAPI_eps_interworking_info_parseFromJSON(cJS
                 goto end;
             }
             localMapKeyPair = OpenAPI_map_create(
-                localMapObject->string, OpenAPI_object_parseFromJSON(localMapObject));
+                localMapObject->string, OpenAPI_eps_iwk_pgw_parseFromJSON(localMapObject));
             OpenAPI_list_add(eps_iwk_pgwsList, localMapKeyPair);
         }
     }

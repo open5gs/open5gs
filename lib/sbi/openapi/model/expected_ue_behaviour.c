@@ -15,7 +15,8 @@ OpenAPI_expected_ue_behaviour_t *OpenAPI_expected_ue_behaviour_create(
     OpenAPI_list_t *expected_umts,
     OpenAPI_traffic_profile_rm_t *traffic_profile,
     OpenAPI_battery_indication_rm_t *battery_indication,
-    char *validity_time
+    char *validity_time,
+    char *mtc_provider_information
     )
 {
     OpenAPI_expected_ue_behaviour_t *expected_ue_behaviour_local_var = OpenAPI_malloc(sizeof(OpenAPI_expected_ue_behaviour_t));
@@ -33,6 +34,7 @@ OpenAPI_expected_ue_behaviour_t *OpenAPI_expected_ue_behaviour_create(
     expected_ue_behaviour_local_var->traffic_profile = traffic_profile;
     expected_ue_behaviour_local_var->battery_indication = battery_indication;
     expected_ue_behaviour_local_var->validity_time = validity_time;
+    expected_ue_behaviour_local_var->mtc_provider_information = mtc_provider_information;
 
     return expected_ue_behaviour_local_var;
 }
@@ -54,6 +56,7 @@ void OpenAPI_expected_ue_behaviour_free(OpenAPI_expected_ue_behaviour_t *expecte
     OpenAPI_traffic_profile_rm_free(expected_ue_behaviour->traffic_profile);
     OpenAPI_battery_indication_rm_free(expected_ue_behaviour->battery_indication);
     ogs_free(expected_ue_behaviour->validity_time);
+    ogs_free(expected_ue_behaviour->mtc_provider_information);
     ogs_free(expected_ue_behaviour);
 }
 
@@ -191,6 +194,13 @@ cJSON *OpenAPI_expected_ue_behaviour_convertToJSON(OpenAPI_expected_ue_behaviour
         }
     }
 
+    if (expected_ue_behaviour->mtc_provider_information) {
+        if (cJSON_AddStringToObject(item, "mtcProviderInformation", expected_ue_behaviour->mtc_provider_information) == NULL) {
+            ogs_error("OpenAPI_expected_ue_behaviour_convertToJSON() failed [mtc_provider_information]");
+            goto end;
+        }
+    }
+
 end:
     return item;
 }
@@ -307,6 +317,15 @@ OpenAPI_expected_ue_behaviour_t *OpenAPI_expected_ue_behaviour_parseFromJSON(cJS
         }
     }
 
+    cJSON *mtc_provider_information = cJSON_GetObjectItemCaseSensitive(expected_ue_behaviourJSON, "mtcProviderInformation");
+
+    if (mtc_provider_information) {
+        if (!cJSON_IsString(mtc_provider_information)) {
+            ogs_error("OpenAPI_expected_ue_behaviour_parseFromJSON() failed [mtc_provider_information]");
+            goto end;
+        }
+    }
+
     expected_ue_behaviour_local_var = OpenAPI_expected_ue_behaviour_create (
         ogs_strdup(af_instance_id->valuestring),
         reference_id->valuedouble,
@@ -318,7 +337,8 @@ OpenAPI_expected_ue_behaviour_t *OpenAPI_expected_ue_behaviour_parseFromJSON(cJS
         expected_umts ? expected_umtsList : NULL,
         traffic_profile ? traffic_profile_local_nonprim : NULL,
         battery_indication ? battery_indication_local_nonprim : NULL,
-        validity_time ? ogs_strdup(validity_time->valuestring) : NULL
+        validity_time ? ogs_strdup(validity_time->valuestring) : NULL,
+        mtc_provider_information ? ogs_strdup(mtc_provider_information->valuestring) : NULL
         );
 
     return expected_ue_behaviour_local_var;

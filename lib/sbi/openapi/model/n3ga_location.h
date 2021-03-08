@@ -13,7 +13,10 @@
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
 #include "hfc_node_id.h"
+#include "line_type.h"
 #include "tai.h"
+#include "tnap_id.h"
+#include "twap_id.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -26,11 +29,12 @@ typedef struct OpenAPI_n3ga_location_s {
     char *ue_ipv4_addr;
     char *ue_ipv6_addr;
     int port_number;
-    char *ss_id;
-    char *bss_id;
-    char civic_address;
+    struct OpenAPI_tnap_id_s *tnap_id;
+    struct OpenAPI_twap_id_s *twap_id;
     struct OpenAPI_hfc_node_id_s *hfc_node_id;
     char gli;
+    OpenAPI_line_type_e w5gban_line_type;
+    char *gci;
 } OpenAPI_n3ga_location_t;
 
 OpenAPI_n3ga_location_t *OpenAPI_n3ga_location_create(
@@ -39,11 +43,12 @@ OpenAPI_n3ga_location_t *OpenAPI_n3ga_location_create(
     char *ue_ipv4_addr,
     char *ue_ipv6_addr,
     int port_number,
-    char *ss_id,
-    char *bss_id,
-    char civic_address,
+    OpenAPI_tnap_id_t *tnap_id,
+    OpenAPI_twap_id_t *twap_id,
     OpenAPI_hfc_node_id_t *hfc_node_id,
-    char gli
+    char gli,
+    OpenAPI_line_type_e w5gban_line_type,
+    char *gci
     );
 void OpenAPI_n3ga_location_free(OpenAPI_n3ga_location_t *n3ga_location);
 OpenAPI_n3ga_location_t *OpenAPI_n3ga_location_parseFromJSON(cJSON *n3ga_locationJSON);

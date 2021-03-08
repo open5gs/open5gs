@@ -17,6 +17,7 @@
 #include "bsf_info.h"
 #include "chf_info.h"
 #include "default_notification_subscription.h"
+#include "ext_snssai.h"
 #include "gmlc_info.h"
 #include "hss_info.h"
 #include "lmf_info.h"
@@ -32,8 +33,8 @@
 #include "plmn_id.h"
 #include "plmn_id_nid.h"
 #include "plmn_snssai.h"
+#include "scp_info.h"
 #include "smf_info.h"
-#include "snssai.h"
 #include "udm_info.h"
 #include "udr_info.h"
 #include "udsf_info.h"
@@ -70,34 +71,35 @@ typedef struct OpenAPI_nf_profile_s {
     char *load_time_stamp;
     char *locality;
     struct OpenAPI_udr_info_s *udr_info;
-    OpenAPI_list_t *udr_info_ext;
+    OpenAPI_list_t* udr_info_list;
     struct OpenAPI_udm_info_s *udm_info;
-    OpenAPI_list_t *udm_info_ext;
+    OpenAPI_list_t* udm_info_list;
     struct OpenAPI_ausf_info_s *ausf_info;
-    OpenAPI_list_t *ausf_info_ext;
+    OpenAPI_list_t* ausf_info_list;
     struct OpenAPI_amf_info_s *amf_info;
-    OpenAPI_list_t *amf_info_ext;
+    OpenAPI_list_t* amf_info_list;
     struct OpenAPI_smf_info_s *smf_info;
-    OpenAPI_list_t *smf_info_ext;
+    OpenAPI_list_t* smf_info_list;
     struct OpenAPI_upf_info_s *upf_info;
-    OpenAPI_list_t *upf_info_ext;
+    OpenAPI_list_t* upf_info_list;
     struct OpenAPI_pcf_info_s *pcf_info;
-    OpenAPI_list_t *pcf_info_ext;
+    OpenAPI_list_t* pcf_info_list;
     struct OpenAPI_bsf_info_s *bsf_info;
-    OpenAPI_list_t *bsf_info_ext;
+    OpenAPI_list_t* bsf_info_list;
     struct OpenAPI_chf_info_s *chf_info;
-    OpenAPI_list_t *chf_info_ext;
+    OpenAPI_list_t* chf_info_list;
     struct OpenAPI_nef_info_s *nef_info;
     struct OpenAPI_nrf_info_s *nrf_info;
     struct OpenAPI_udsf_info_s *udsf_info;
-    OpenAPI_list_t *udsf_info_ext;
+    OpenAPI_list_t* udsf_info_list;
     struct OpenAPI_nwdaf_info_s *nwdaf_info;
-    OpenAPI_list_t *pcscf_info;
-    OpenAPI_list_t *hss_info;
+    OpenAPI_list_t* pcscf_info_list;
+    OpenAPI_list_t* hss_info_list;
     OpenAPI_object_t *custom_info;
     char *recovery_time;
     int nf_service_persistence;
     OpenAPI_list_t *nf_services;
+    OpenAPI_list_t* nf_service_list;
     int nf_profile_changes_support_ind;
     int nf_profile_changes_ind;
     OpenAPI_list_t *default_notification_subscriptions;
@@ -107,6 +109,10 @@ typedef struct OpenAPI_nf_profile_s {
     OpenAPI_list_t *serving_scope;
     int lc_h_support_ind;
     int olc_h_support_ind;
+    OpenAPI_list_t* nf_set_recovery_time_list;
+    OpenAPI_list_t* service_set_recovery_time_list;
+    OpenAPI_list_t *scp_domains;
+    struct OpenAPI_scp_info_s *scp_info;
 } OpenAPI_nf_profile_t;
 
 OpenAPI_nf_profile_t *OpenAPI_nf_profile_create(
@@ -135,34 +141,35 @@ OpenAPI_nf_profile_t *OpenAPI_nf_profile_create(
     char *load_time_stamp,
     char *locality,
     OpenAPI_udr_info_t *udr_info,
-    OpenAPI_list_t *udr_info_ext,
+    OpenAPI_list_t* udr_info_list,
     OpenAPI_udm_info_t *udm_info,
-    OpenAPI_list_t *udm_info_ext,
+    OpenAPI_list_t* udm_info_list,
     OpenAPI_ausf_info_t *ausf_info,
-    OpenAPI_list_t *ausf_info_ext,
+    OpenAPI_list_t* ausf_info_list,
     OpenAPI_amf_info_t *amf_info,
-    OpenAPI_list_t *amf_info_ext,
+    OpenAPI_list_t* amf_info_list,
     OpenAPI_smf_info_t *smf_info,
-    OpenAPI_list_t *smf_info_ext,
+    OpenAPI_list_t* smf_info_list,
     OpenAPI_upf_info_t *upf_info,
-    OpenAPI_list_t *upf_info_ext,
+    OpenAPI_list_t* upf_info_list,
     OpenAPI_pcf_info_t *pcf_info,
-    OpenAPI_list_t *pcf_info_ext,
+    OpenAPI_list_t* pcf_info_list,
     OpenAPI_bsf_info_t *bsf_info,
-    OpenAPI_list_t *bsf_info_ext,
+    OpenAPI_list_t* bsf_info_list,
     OpenAPI_chf_info_t *chf_info,
-    OpenAPI_list_t *chf_info_ext,
+    OpenAPI_list_t* chf_info_list,
     OpenAPI_nef_info_t *nef_info,
     OpenAPI_nrf_info_t *nrf_info,
     OpenAPI_udsf_info_t *udsf_info,
-    OpenAPI_list_t *udsf_info_ext,
+    OpenAPI_list_t* udsf_info_list,
     OpenAPI_nwdaf_info_t *nwdaf_info,
-    OpenAPI_list_t *pcscf_info,
-    OpenAPI_list_t *hss_info,
+    OpenAPI_list_t* pcscf_info_list,
+    OpenAPI_list_t* hss_info_list,
     OpenAPI_object_t *custom_info,
     char *recovery_time,
     int nf_service_persistence,
     OpenAPI_list_t *nf_services,
+    OpenAPI_list_t* nf_service_list,
     int nf_profile_changes_support_ind,
     int nf_profile_changes_ind,
     OpenAPI_list_t *default_notification_subscriptions,
@@ -171,7 +178,11 @@ OpenAPI_nf_profile_t *OpenAPI_nf_profile_create(
     OpenAPI_list_t *nf_set_id_list,
     OpenAPI_list_t *serving_scope,
     int lc_h_support_ind,
-    int olc_h_support_ind
+    int olc_h_support_ind,
+    OpenAPI_list_t* nf_set_recovery_time_list,
+    OpenAPI_list_t* service_set_recovery_time_list,
+    OpenAPI_list_t *scp_domains,
+    OpenAPI_scp_info_t *scp_info
     );
 void OpenAPI_nf_profile_free(OpenAPI_nf_profile_t *nf_profile);
 OpenAPI_nf_profile_t *OpenAPI_nf_profile_parseFromJSON(cJSON *nf_profileJSON);

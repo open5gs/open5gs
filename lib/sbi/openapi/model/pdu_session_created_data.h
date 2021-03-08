@@ -15,6 +15,7 @@
 #include "ambr.h"
 #include "eps_bearer_info.h"
 #include "eps_pdn_cnx_info.h"
+#include "ip_address.h"
 #include "max_integrity_protected_data_rate.h"
 #include "pdu_session_type.h"
 #include "qos_flow_setup_item.h"
@@ -49,6 +50,7 @@ typedef struct OpenAPI_pdu_session_created_data_s {
     OpenAPI_list_t *eps_bearer_info;
     char *supported_features;
     OpenAPI_max_integrity_protected_data_rate_e max_integrity_protected_data_rate;
+    OpenAPI_max_integrity_protected_data_rate_e max_integrity_protected_data_rate_dl;
     int always_on_granted;
     char *gpsi;
     struct OpenAPI_up_security_s *up_security;
@@ -61,6 +63,10 @@ typedef struct OpenAPI_pdu_session_created_data_s {
     int ma_accepted_ind;
     char *home_provided_charging_id;
     int nef_ext_buf_support_ind;
+    int small_data_rate_control_enabled;
+    char *ue_ipv6_interface_id;
+    int ipv6_index;
+    struct OpenAPI_ip_address_s *dn_aaa_address;
 } OpenAPI_pdu_session_created_data_t;
 
 OpenAPI_pdu_session_created_data_t *OpenAPI_pdu_session_created_data_create(
@@ -83,6 +89,7 @@ OpenAPI_pdu_session_created_data_t *OpenAPI_pdu_session_created_data_create(
     OpenAPI_list_t *eps_bearer_info,
     char *supported_features,
     OpenAPI_max_integrity_protected_data_rate_e max_integrity_protected_data_rate,
+    OpenAPI_max_integrity_protected_data_rate_e max_integrity_protected_data_rate_dl,
     int always_on_granted,
     char *gpsi,
     OpenAPI_up_security_t *up_security,
@@ -94,7 +101,11 @@ OpenAPI_pdu_session_created_data_t *OpenAPI_pdu_session_created_data_create(
     int ipv6_multi_homing_ind,
     int ma_accepted_ind,
     char *home_provided_charging_id,
-    int nef_ext_buf_support_ind
+    int nef_ext_buf_support_ind,
+    int small_data_rate_control_enabled,
+    char *ue_ipv6_interface_id,
+    int ipv6_index,
+    OpenAPI_ip_address_t *dn_aaa_address
     );
 void OpenAPI_pdu_session_created_data_free(OpenAPI_pdu_session_created_data_t *pdu_session_created_data);
 OpenAPI_pdu_session_created_data_t *OpenAPI_pdu_session_created_data_parseFromJSON(cJSON *pdu_session_created_dataJSON);

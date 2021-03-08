@@ -8,7 +8,9 @@ OpenAPI_non_dynamic5_qi_t *OpenAPI_non_dynamic5_qi_create(
     int priority_level,
     int aver_window,
     int max_data_burst_vol,
-    int ext_max_data_burst_vol
+    int ext_max_data_burst_vol,
+    int cn_packet_delay_budget_dl,
+    int cn_packet_delay_budget_ul
     )
 {
     OpenAPI_non_dynamic5_qi_t *non_dynamic5_qi_local_var = OpenAPI_malloc(sizeof(OpenAPI_non_dynamic5_qi_t));
@@ -19,6 +21,8 @@ OpenAPI_non_dynamic5_qi_t *OpenAPI_non_dynamic5_qi_create(
     non_dynamic5_qi_local_var->aver_window = aver_window;
     non_dynamic5_qi_local_var->max_data_burst_vol = max_data_burst_vol;
     non_dynamic5_qi_local_var->ext_max_data_burst_vol = ext_max_data_burst_vol;
+    non_dynamic5_qi_local_var->cn_packet_delay_budget_dl = cn_packet_delay_budget_dl;
+    non_dynamic5_qi_local_var->cn_packet_delay_budget_ul = cn_packet_delay_budget_ul;
 
     return non_dynamic5_qi_local_var;
 }
@@ -70,6 +74,20 @@ cJSON *OpenAPI_non_dynamic5_qi_convertToJSON(OpenAPI_non_dynamic5_qi_t *non_dyna
         }
     }
 
+    if (non_dynamic5_qi->cn_packet_delay_budget_dl) {
+        if (cJSON_AddNumberToObject(item, "cnPacketDelayBudgetDl", non_dynamic5_qi->cn_packet_delay_budget_dl) == NULL) {
+            ogs_error("OpenAPI_non_dynamic5_qi_convertToJSON() failed [cn_packet_delay_budget_dl]");
+            goto end;
+        }
+    }
+
+    if (non_dynamic5_qi->cn_packet_delay_budget_ul) {
+        if (cJSON_AddNumberToObject(item, "cnPacketDelayBudgetUl", non_dynamic5_qi->cn_packet_delay_budget_ul) == NULL) {
+            ogs_error("OpenAPI_non_dynamic5_qi_convertToJSON() failed [cn_packet_delay_budget_ul]");
+            goto end;
+        }
+    }
+
 end:
     return item;
 }
@@ -113,11 +131,31 @@ OpenAPI_non_dynamic5_qi_t *OpenAPI_non_dynamic5_qi_parseFromJSON(cJSON *non_dyna
         }
     }
 
+    cJSON *cn_packet_delay_budget_dl = cJSON_GetObjectItemCaseSensitive(non_dynamic5_qiJSON, "cnPacketDelayBudgetDl");
+
+    if (cn_packet_delay_budget_dl) {
+        if (!cJSON_IsNumber(cn_packet_delay_budget_dl)) {
+            ogs_error("OpenAPI_non_dynamic5_qi_parseFromJSON() failed [cn_packet_delay_budget_dl]");
+            goto end;
+        }
+    }
+
+    cJSON *cn_packet_delay_budget_ul = cJSON_GetObjectItemCaseSensitive(non_dynamic5_qiJSON, "cnPacketDelayBudgetUl");
+
+    if (cn_packet_delay_budget_ul) {
+        if (!cJSON_IsNumber(cn_packet_delay_budget_ul)) {
+            ogs_error("OpenAPI_non_dynamic5_qi_parseFromJSON() failed [cn_packet_delay_budget_ul]");
+            goto end;
+        }
+    }
+
     non_dynamic5_qi_local_var = OpenAPI_non_dynamic5_qi_create (
         priority_level ? priority_level->valuedouble : 0,
         aver_window ? aver_window->valuedouble : 0,
         max_data_burst_vol ? max_data_burst_vol->valuedouble : 0,
-        ext_max_data_burst_vol ? ext_max_data_burst_vol->valuedouble : 0
+        ext_max_data_burst_vol ? ext_max_data_burst_vol->valuedouble : 0,
+        cn_packet_delay_budget_dl ? cn_packet_delay_budget_dl->valuedouble : 0,
+        cn_packet_delay_budget_ul ? cn_packet_delay_budget_ul->valuedouble : 0
         );
 
     return non_dynamic5_qi_local_var;

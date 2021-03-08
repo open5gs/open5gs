@@ -83,61 +83,48 @@ logger:
 #      - addr: 127.0.0.4
 #      - addr: fe80::3%@loopback_devname@
 #
-#  <PDN Configuration with UE Pool>
+#  <Subnet for UE Pool>
 #
 #  o IPv4 Pool
-#    pdn:
+#    subnet:
 #      addr: 10.45.0.1/16
 #
 #  o IPv4/IPv6 Pool
-#    pdn:
+#    subnet:
 #      - addr: 10.45.0.1/16
 #      - addr: cafe:1::1/64
 #
 #
 #  o Specific DNN/APN(e.g 'ims') uses 10.46.0.1/16, cafe:2::1/64
-#    pdn:
-#      - addr: 10.45.0.1/16
-#        dnn: internet
-#      - addr: cafe:1::1/64
-#        dnn: internet
-#      - addr: 10.46.0.1/16
-#        dnn: ims
-#      - addr: cafe:2::1/64
-#        dnn: ims
 #
-#  o Multiple Devices (default: ogstun)
-#    pdn:
+#    subnet:
 #      - addr: 10.45.0.1/16
 #        dnn: internet
 #      - addr: cafe:1::1/64
 #        dnn: internet
-#        dev: ogstun2
 #      - addr: 10.46.0.1/16
 #        dnn: ims
-#        dev: ogstun3
 #      - addr: cafe:2::1/64
 #        dnn: ims
-#        dev: ogstun3
 #
 #  o Pool Range Sample
-#    pdn:
+#    subnet:
 #      - addr: 10.45.0.1/24
 #        range: 10.45.0.100-10.45.0.200
 #
-#    pdn:
+#    subnet:
 #      - addr: 10.45.0.1/24
 #        range:
 #          - 10.45.0.5-10.45.0.50
 #          - 10.45.0.100-
 #
-#    pdn:
+#    subnet:
 #      - addr: 10.45.0.1/24
 #        range:
 #          - -10.45.0.200
 #          - 10.45.0.210-10.45.0.220
 #
-#    pdn:
+#    subnet:
 #      - addr: 10.45.0.1/16
 #        range:
 #          - 10.45.0.100-10.45.0.200
@@ -150,6 +137,12 @@ logger:
 #  <Domain Name Server>
 #
 #  o Primary/Secondary can be configured. Others are ignored.
+#
+#    dns:
+#      - 8.8.8.8
+#      - 8.8.4.4
+#      - 2001:4860:4860::8888
+#      - 2001:4860:4860::8844
 #
 #  <MTU Size>
 #
@@ -167,6 +160,136 @@ logger:
 #      - 127.0.0.1
 #      - ::1
 #
+#  <SMF Selection - 5G Core only>
+#  1. SMF sends SmfInfo(S-NSSAI, DNN, TAI) to the NRF
+#  2. NRF responds to AMF with SmfInfo during NF-Discovery.
+#  3. AMF selects SMF based on S-NSSAI, DNN and TAI in SmfInfo.
+#
+#  Note that if there is no SmfInfo, any AMF can select this SMF.
+#
+#  o S-NSSAI[SST:1] and DNN[internet] - At least 1 DNN is required in S-NSSAI
+#    info:
+#      - s_nssai:
+#          - sst: 1
+#            dnn:
+#              - internet
+#
+#  o S-NSSAI[SST:1 SD:009000] and DNN[internet or ims]
+#    info:
+#      - s_nssai:
+#          - sst: 1
+#            sd: 009000
+#            dnn:
+#              - internet
+#              - ims
+#
+#  o S-NSSAI[SST:1] and DNN[internet] and TAI[PLMN-ID:90170 TAC:1]
+#    info:
+#      - s_nssai:
+#          - sst: 1
+#            dnn:
+#              - internet
+#        tai:
+#          - plmn_id:
+#              mcc: 901
+#              mnc: 70
+#            tac: 1
+#
+#  o If any of conditions below are met:
+#   - S-NSSAI[SST:1] and DNN[internet] and TAI[PLMN-ID:90170 TAC:1-9]
+#   - S-NSSAI[SST:2 SD:000080] and DNN[internet or ims]
+#   - S-NSSAI[SST:4] and DNN[internet] and TAI[PLMN-ID:90170 TAC:10-20,30-40]
+#
+#    info:
+#      - s_nssai:
+#          - sst: 1
+#            dnn:
+#              - internet
+#        tai:
+#          - plmn_id:
+#              mcc: 901
+#              mnc: 70
+#            range:
+#              - 1-9
+#      - s_nssai:
+#          - sst: 2
+#            sd: 000080
+#            dnn:
+#              - internet
+#              - ims
+#      - s_nssai:
+#          - sst: 4
+#            dnn:
+#              - internet
+#        tai:
+#          - plmn_id:
+#              mcc: 901
+#              mnc: 70
+#            range:
+#              - 10-20
+#              - 30-40
+#
+#  o Complex Example
+#    info:
+#      - s_nssai:
+#          - sst: 1
+#            dnn:
+#              - internet
+#          - sst: 1
+#            sd: 000080
+#            dnn:
+#              - internet
+#              - ims
+#          - sst: 1
+#            sd: 009000
+#            dnn:
+#              [internet, ims]
+#          - sst: 2
+#            dnn:
+#              - internet
+#          - sst: 3
+#            sd: 123456
+#            dnn:
+#              - internet
+#        tai:
+#          - plmn_id:
+#              mcc: 901
+#              mnc: 70
+#            tac: [1, 2, 3]
+#          - plmn_id:
+#              mcc: 901
+#              mnc: 70
+#            tac: 4
+#          - plmn_id:
+#              mcc: 901
+#              mnc: 70
+#            tac:
+#              - 5
+#              - 6
+#          - plmn_id:
+#              mcc: 901
+#              mnc: 70
+#            range:
+#              - 100-200
+#              - 300-400
+#          - plmn_id:
+#              mcc: 901
+#              mnc: 70
+#            range:
+#              - 500-600
+#              - 700-800
+#              - 900-1000
+#      - s_nssai:
+#          - sst: 4
+#            dnn:
+#              - internet
+#        tai:
+#          - plmn_id:
+#              mcc: 901
+#              mnc: 70
+#            tac: 99
+# 
+
 smf:
     sbi:
       - addr: 127.0.0.4
@@ -177,7 +300,7 @@ smf:
     pfcp:
       - addr: 127.0.0.4
       - addr: ::1
-    pdn:
+    subnet:
       - addr: 10.45.0.1/16
       - addr: cafe::1/64
     dns:
@@ -231,10 +354,10 @@ nrf:
 #    pfcp:
 #      addr: 127.0.0.7
 #
-#  <UPF_SELECTION_MODE - EPC only>
+#  <UPF Selection>
 #
-# o Round-Robin
-#   (note that round robin can be disabled for a particular node
+#  o Round-Robin
+#    (note that round robin can be disabled for a particular node
 #     by setting flag 'rr' to 0)
 #
 #  upf:
@@ -244,8 +367,8 @@ nrf:
 #        rr: 0
 #      - addr: 127.0.0.19
 #
-# o UPF selection by eNodeB TAC
-#   (either single TAC or multiple TACs, DECIMAL representation)
+#  o UPF selection by eNodeB TAC
+#    (either single TAC or multiple TACs, DECIMAL representation)
 #
 #  upf:
 #    pfcp:
@@ -254,7 +377,7 @@ nrf:
 #      - addr: 127.0.0.12
 #        tac: [3,5,8]
 #
-# o UPF selection by UE's DNN/APN (either single DNN/APN or multiple DNNs/APNs)
+#  o UPF selection by UE's DNN/APN (either single DNN/APN or multiple DNNs/APNs)
 #
 #  upf:
 #    pfcp:
@@ -263,8 +386,8 @@ nrf:
 #      - addr: 127.0.0.12
 #        dnn: [internet, web]
 #
-# o UPF selection by CellID(e_cell_id: 28bit, nr_cell_id: 36bit)
-#   (either single enb_id or multiple enb_ids, HEX representation)
+#  o UPF selection by CellID(e_cell_id: 28bit, nr_cell_id: 36bit)
+#    (either single enb_id or multiple enb_ids, HEX representation)
 #
 #  upf:
 #    pfcp:

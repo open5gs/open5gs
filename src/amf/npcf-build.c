@@ -29,7 +29,7 @@ ogs_sbi_request_t *amf_npcf_am_policy_control_build_create(
 
     OpenAPI_policy_association_request_t PolicyAssociationRequest;
 
-    int i, j;
+    int i;
     OpenAPI_lnode_t *node = NULL;
 
     OpenAPI_list_t *AllowedSnssais = NULL;
@@ -75,7 +75,7 @@ ogs_sbi_request_t *amf_npcf_am_policy_control_build_create(
 
     memset(&ueLocation, 0, sizeof(ueLocation));
     ueLocation.nr_location = ogs_sbi_build_nr_location(
-            &amf_ue->tai, &amf_ue->nr_cgi);
+            &amf_ue->nr_tai, &amf_ue->nr_cgi);
     ogs_assert(ueLocation.nr_location);
     ueLocation.nr_location->ue_location_timestamp =
         ogs_sbi_gmtime_string(amf_ue->ue_location_timestamp);
@@ -85,7 +85,7 @@ ogs_sbi_request_t *amf_npcf_am_policy_control_build_create(
         ogs_sbi_timezone_string(ogs_timezone());
 
     PolicyAssociationRequest.serving_plmn =
-        ogs_sbi_build_plmn_id_nid(&amf_ue->tai.plmn_id);
+        ogs_sbi_build_plmn_id_nid(&amf_ue->nr_tai.plmn_id);
 
     PolicyAssociationRequest.rat_type = amf_ue_rat_type(amf_ue);
 
@@ -108,20 +108,15 @@ ogs_sbi_request_t *amf_npcf_am_policy_control_build_create(
     AllowedSnssais = OpenAPI_list_create();
     ogs_assert(AllowedSnssais);
 
-    for (i = 0; i < amf_self()->num_of_plmn_support; i++) {
-        if (memcmp(&amf_ue->tai.plmn_id,
-                &amf_self()->plmn_support[i].plmn_id, OGS_PLMN_ID_LEN) != 0)
-            continue;
-        for (j = 0; j < amf_self()->plmn_support[i].num_of_s_nssai; j++) {
-            struct OpenAPI_snssai_s *Snssai = ogs_calloc(1, sizeof(*Snssai));
-            ogs_assert(Snssai);
+    for (i = 0; i < amf_ue->allowed_nssai.num_of_s_nssai; i++) {
+        struct OpenAPI_snssai_s *Snssai = ogs_calloc(1, sizeof(*Snssai));
+        ogs_assert(Snssai);
 
-            Snssai->sst = amf_self()->plmn_support[i].s_nssai[j].sst;
-            Snssai->sd = ogs_s_nssai_sd_to_string(
-                amf_self()->plmn_support[i].s_nssai[j].sd);
+        Snssai->sst = amf_ue->allowed_nssai.s_nssai[i].sst;
+        Snssai->sd = ogs_s_nssai_sd_to_string(
+            amf_ue->allowed_nssai.s_nssai[i].sd);
 
-            OpenAPI_list_add(AllowedSnssais, Snssai);
-        }
+        OpenAPI_list_add(AllowedSnssais, Snssai);
     }
 
     if (AllowedSnssais->count)

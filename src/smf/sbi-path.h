@@ -20,6 +20,7 @@
 #ifndef SMF_SBI_PATH_H
 #define SMF_SBI_PATH_H
 
+#include "nnrf-build.h"
 #include "nudm-build.h"
 #include "namf-build.h"
 #include "gsm-build.h"
@@ -32,6 +33,8 @@ extern "C" {
 
 int smf_sbi_open(void);
 void smf_sbi_close(void);
+
+void smf_nnrf_nfm_send_nf_register(ogs_sbi_nf_instance_t *nf_instance);
 
 void smf_sbi_send(ogs_sbi_nf_instance_t *nf_instance, ogs_sbi_xact_t *xact);
 

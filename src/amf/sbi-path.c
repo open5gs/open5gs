@@ -19,8 +19,7 @@
 
 #include "sbi-path.h"
 #include "nas-path.h"
-#include "nausf-build.h"
-#include "nudm-build.h"
+#include "nnrf-handler.h"
 
 static int server_cb(ogs_sbi_request_t *request, void *data)
 {
@@ -114,6 +113,23 @@ void amf_sbi_close(void)
     ogs_sbi_server_stop_all();
 }
 
+void amf_nnrf_nfm_send_nf_register(ogs_sbi_nf_instance_t *nf_instance)
+{
+    ogs_sbi_request_t *request = NULL;
+    ogs_sbi_client_t *client = NULL;
+
+    ogs_assert(nf_instance);
+    client = nf_instance->client;
+    ogs_assert(client);
+
+    request = amf_nnrf_nfm_build_register(nf_instance);
+    if (!request) {
+        ogs_error("ogs_nnrf_nfm_send_nf_register() failed");
+        return;
+    }
+    ogs_sbi_client_send_request(client, client->cb, request, nf_instance);
+}
+
 void amf_sbi_send(ogs_sbi_nf_instance_t *nf_instance, ogs_sbi_xact_t *xact)
 {
     ogs_sbi_send(nf_instance, client_cb, xact);
@@ -177,6 +193,82 @@ void amf_sess_sbi_discover_and_send(OpenAPI_nf_type_e target_nf_type,
                 sess, OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT);
         return;
     }
+}
+static int client_discover_cb(ogs_sbi_response_t *response, void *data)
+{
+    int rv;
+
+    ogs_sbi_message_t message;
+    amf_sess_t *sess = data;
+
+    ogs_assert(response);
+    ogs_assert(sess);
+    ogs_assert(sess->sbi.type == OGS_SBI_OBJ_SESS_TYPE);
+
+    rv = ogs_sbi_parse_response(&message, response);
+    if (rv != OGS_OK) {
+        ogs_error("cannot parse HTTP response");
+        nas_5gs_send_back_5gsm_message_from_sbi(
+                sess, OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT);
+
+        goto cleanup;
+    }
+
+    if (message.res_status != OGS_SBI_HTTP_STATUS_OK) {
+        ogs_error("NF-Discover failed [%d]", message.res_status);
+        nas_5gs_send_back_5gsm_message_from_sbi(
+                sess, OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT);
+
+        goto cleanup;
+    }
+
+    if (!message.SearchResult) {
+        ogs_error("No SearchResult");
+        nas_5gs_send_back_5gsm_message_from_sbi(
+                sess, OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT);
+
+        goto cleanup;
+    }
+
+    amf_nnrf_handle_nf_discover_search_result(
+            &sess->sbi, message.SearchResult);
+
+    if (!OGS_SBI_NF_INSTANCE(&sess->sbi, OpenAPI_nf_type_SMF)) {
+        ogs_error("Cannot discover [%s]",
+                    OpenAPI_nf_type_ToString(OpenAPI_nf_type_SMF));
+        nas_5gs_send_back_5gsm_message_from_sbi(
+                sess, OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT);
+
+        goto cleanup;
+    }
+
+    amf_sess_sbi_discover_and_send(OpenAPI_nf_type_SMF,
+            sess, AMF_CREATE_SM_CONTEXT_NO_STATE, NULL,
+            amf_nsmf_pdusession_build_create_sm_context);
+
+cleanup:
+    ogs_sbi_message_free(&message);
+    ogs_sbi_response_free(response);
+
+    return OGS_ERROR;
+}
+
+void amf_sess_sbi_discover_by_nsi(
+        OpenAPI_nf_type_e target_nf_type, amf_sess_t *sess)
+{
+    ogs_sbi_request_t *request = NULL;
+    ogs_sbi_client_t *client = NULL;
+
+    ogs_assert(target_nf_type);
+    ogs_assert(sess);
+    client = sess->nssf.nrf.client;
+    ogs_assert(client);
+
+    request = amf_nnrf_disc_build_discover(
+            sess->nssf.nrf.id, target_nf_type, amf_self()->nf_type);
+    ogs_assert(request);
+    ogs_sbi_client_send_request(
+            client, client_discover_cb, request, sess);
 }
 
 void amf_sbi_send_activating_session(amf_sess_t *sess, int state)

@@ -468,7 +468,7 @@ int mme_context_parse_config()
                                             break;
                                     }
 
-                                    ogs_assert(num <= OGS_MAX_NUM_OF_HOSTNAME);
+                                    ogs_assert(num < OGS_MAX_NUM_OF_HOSTNAME);
                                     hostname[num++] = 
                                         ogs_yaml_iter_value(&hostname_iter);
                                 } while (
@@ -579,7 +579,7 @@ int mme_context_parse_config()
                                             break;
                                     }
 
-                                    ogs_assert(num <= OGS_MAX_NUM_OF_HOSTNAME);
+                                    ogs_assert(num < OGS_MAX_NUM_OF_HOSTNAME);
                                     hostname[num++] = 
                                         ogs_yaml_iter_value(&hostname_iter);
                                 } while (
@@ -638,7 +638,7 @@ int mme_context_parse_config()
                     ogs_yaml_iter_recurse(&mme_iter, &gummei_array);
                     do {
                         served_gummei_t *gummei = NULL;
-                        ogs_assert(self.max_num_of_served_gummei <=
+                        ogs_assert(self.max_num_of_served_gummei <
                                 MAX_NUM_OF_SERVED_GUMMEI);
                         gummei = &self.served_gummei[
                             self.max_num_of_served_gummei];
@@ -671,7 +671,7 @@ int mme_context_parse_config()
                                 do {
                                     ogs_plmn_id_t *plmn_id = NULL;
                                     const char *mcc = NULL, *mnc = NULL;
-                                    ogs_assert(gummei->num_of_plmn_id <=
+                                    ogs_assert(gummei->num_of_plmn_id <
                                             OGS_MAX_NUM_OF_PLMN);
                                     plmn_id = &gummei->plmn_id[
                                         gummei->num_of_plmn_id];
@@ -729,7 +729,7 @@ int mme_context_parse_config()
                                     uint16_t *mme_gid = NULL;
                                     const char *v = NULL;
 
-                                    ogs_assert(gummei->num_of_mme_gid <=
+                                    ogs_assert(gummei->num_of_mme_gid <
                                             GRP_PER_MME);
                                     mme_gid = &gummei->mme_gid[
                                         gummei->num_of_mme_gid];
@@ -760,7 +760,7 @@ int mme_context_parse_config()
                                     uint8_t *mme_code = NULL;
                                     const char *v = NULL;
 
-                                    ogs_assert(gummei->num_of_mme_code <=
+                                    ogs_assert(gummei->num_of_mme_code <
                                             CODE_PER_MME);
                                     mme_code = &gummei->mme_code[
                                         gummei->num_of_mme_code];
@@ -804,7 +804,7 @@ int mme_context_parse_config()
                     ogs_eps_tai0_list_t *list0 = NULL;
                     ogs_eps_tai2_list_t *list2 = NULL;
 
-                    ogs_assert(self.num_of_served_tai <=
+                    ogs_assert(self.num_of_served_tai <
                             OGS_MAX_NUM_OF_SERVED_TAI);
                     list0 = &self.served_tai[self.num_of_served_tai].list0;
                     ogs_assert(list0);
@@ -862,7 +862,7 @@ int mme_context_parse_config()
                                 do {
                                     const char *v = NULL;
 
-                                    ogs_assert(num_of_tac <=
+                                    ogs_assert(num_of_tac <
                                             OGS_MAX_NUM_OF_TAI);
                                     if (ogs_yaml_iter_type(&tac_iter) ==
                                             YAML_SEQUENCE_NODE) {
@@ -1119,7 +1119,7 @@ int mme_context_parse_config()
                                             break;
                                     }
 
-                                    ogs_assert(hostname_num <=
+                                    ogs_assert(hostname_num <
                                             OGS_MAX_NUM_OF_HOSTNAME);
                                     hostname[hostname_num++] =
                                         ogs_yaml_iter_value(&hostname_iter);
@@ -1364,9 +1364,9 @@ int mme_context_parse_config()
             ogs_yaml_iter_t sgw_iter;
             ogs_yaml_iter_recurse(&root_iter, &sgw_iter);
             while (ogs_yaml_iter_next(&sgw_iter)) {
-                const char *mme_key = ogs_yaml_iter_key(&sgw_iter);
-                ogs_assert(mme_key);
-                if (!strcmp(mme_key, "gtpc")) {
+                const char *sgw_key = ogs_yaml_iter_key(&sgw_iter);
+                ogs_assert(sgw_key);
+                if (!strcmp(sgw_key, "gtpc")) {
                     ogs_yaml_iter_t gtpc_array, gtpc_iter;
                     ogs_yaml_iter_recurse(&sgw_iter, &gtpc_array);
                     do {
@@ -1426,7 +1426,7 @@ int mme_context_parse_config()
                                             break;
                                     }
 
-                                    ogs_assert(num <= OGS_MAX_NUM_OF_HOSTNAME);
+                                    ogs_assert(num < OGS_MAX_NUM_OF_HOSTNAME);
                                     hostname[num++] = 
                                         ogs_yaml_iter_value(&hostname_iter);
                                 } while (
@@ -1444,7 +1444,7 @@ int mme_context_parse_config()
                                 do {
                                     const char *v = NULL;
 
-                                    ogs_assert(num_of_tac <=
+                                    ogs_assert(num_of_tac <
                                             OGS_MAX_NUM_OF_TAI);
                                     if (ogs_yaml_iter_type(&tac_iter) ==
                                             YAML_SEQUENCE_NODE) {
@@ -1470,7 +1470,7 @@ int mme_context_parse_config()
                                 do {
                                     const char *v = NULL;
 
-                                    ogs_assert(num_of_e_cell_id <=
+                                    ogs_assert(num_of_e_cell_id <
                                             OGS_MAX_NUM_OF_CELL_ID);
                                     if (ogs_yaml_iter_type(&e_cell_id_iter) ==
                                             YAML_SEQUENCE_NODE) {
@@ -1525,9 +1525,9 @@ int mme_context_parse_config()
             ogs_yaml_iter_t pgw_iter;
             ogs_yaml_iter_recurse(&root_iter, &pgw_iter);
             while (ogs_yaml_iter_next(&pgw_iter)) {
-                const char *mme_key = ogs_yaml_iter_key(&pgw_iter);
-                ogs_assert(mme_key);
-                if (!strcmp(mme_key, "gtpc")) {
+                const char *pgw_key = ogs_yaml_iter_key(&pgw_iter);
+                ogs_assert(pgw_key);
+                if (!strcmp(pgw_key, "gtpc")) {
                     ogs_yaml_iter_t gtpc_array, gtpc_iter;
                     ogs_yaml_iter_recurse(&pgw_iter, &gtpc_array);
                     do {
@@ -1584,7 +1584,7 @@ int mme_context_parse_config()
                                             break;
                                     }
 
-                                    ogs_assert(num <= OGS_MAX_NUM_OF_HOSTNAME);
+                                    ogs_assert(num < OGS_MAX_NUM_OF_HOSTNAME);
                                     hostname[num++] = 
                                         ogs_yaml_iter_value(&hostname_iter);
                                 } while (
@@ -2286,7 +2286,7 @@ void mme_ue_remove(mme_ue_t *mme_ue)
     mme_ue_deassociate(mme_ue);
 
     mme_sess_remove_all(mme_ue);
-    mme_pdn_remove_all(mme_ue);
+    mme_session_remove_all(mme_ue);
 
     mme_ebi_pool_final(mme_ue);
 
@@ -2743,7 +2743,8 @@ mme_sess_t *mme_sess_find_by_apn(mme_ue_t *mme_ue, char *apn)
 
     sess = mme_sess_first(mme_ue);
     while (sess) {
-        if (sess->pdn && ogs_strcasecmp(sess->pdn->apn, apn) == 0)
+        ogs_assert(sess->session->name);
+        if (sess->session && ogs_strcasecmp(sess->session->name, apn) == 0)
             return sess;
 
         sess = mme_sess_next(sess);
@@ -3075,52 +3076,49 @@ mme_bearer_t *mme_bearer_cycle(mme_bearer_t *bearer)
     return ogs_pool_cycle(&mme_bearer_pool, bearer);
 }
 
-void mme_pdn_remove_all(mme_ue_t *mme_ue)
+void mme_session_remove_all(mme_ue_t *mme_ue)
 {
-    ogs_subscription_data_t *subscription_data = NULL;
+    int i;
 
     ogs_assert(mme_ue);
-    subscription_data = &mme_ue->subscription_data;
-    ogs_assert(subscription_data);
 
-    subscription_data->num_of_pdn = 0;
+    for (i = 0; i < mme_ue->num_of_session; i++) {
+        if (mme_ue->session[i].name)
+            ogs_free(mme_ue->session[i].name);
+    }
+
+    mme_ue->num_of_session = 0;
 }
 
-ogs_pdn_t *mme_pdn_find_by_apn(mme_ue_t *mme_ue, char *apn)
+ogs_session_t *mme_session_find_by_apn(mme_ue_t *mme_ue, char *apn)
 {
-    ogs_subscription_data_t *subscription_data = NULL;
-    ogs_pdn_t *pdn = NULL;
+    ogs_session_t *session = NULL;
     int i = 0;
     
     ogs_assert(mme_ue);
     ogs_assert(apn);
 
-    subscription_data = &mme_ue->subscription_data;
-    ogs_assert(subscription_data);
-
-    for (i = 0; i < subscription_data->num_of_pdn; i++) {
-        pdn = &subscription_data->pdn[i];
-        if (ogs_strcasecmp(pdn->apn, apn) == 0)
-            return pdn;
+    for (i = 0; i < mme_ue->num_of_session; i++) {
+        session = &mme_ue->session[i];
+        ogs_assert(session->name);
+        if (ogs_strcasecmp(session->name, apn) == 0)
+            return session;
     }
 
     return NULL;
 }
 
-ogs_pdn_t *mme_default_pdn(mme_ue_t *mme_ue)
+ogs_session_t *mme_default_session(mme_ue_t *mme_ue)
 {
-    ogs_subscription_data_t *subscription_data = NULL;
-    ogs_pdn_t *pdn = NULL;
+    ogs_session_t *session = NULL;
     int i = 0;
     
     ogs_assert(mme_ue);
-    subscription_data = &mme_ue->subscription_data;
-    ogs_assert(subscription_data);
 
-    for (i = 0; i < subscription_data->num_of_pdn; i++) {
-        pdn = &subscription_data->pdn[i];
-        if (pdn->context_identifier == subscription_data->context_identifier)
-            return pdn;
+    for (i = 0; i < mme_ue->num_of_session; i++) {
+        session = &mme_ue->session[i];
+        if (session->context_identifier == mme_ue->context_identifier)
+            return session;
     }
 
     return NULL;

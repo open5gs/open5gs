@@ -253,7 +253,7 @@ int amf_context_parse_config(void)
                                             break;
                                     }
 
-                                    ogs_assert(num <= OGS_MAX_NUM_OF_HOSTNAME);
+                                    ogs_assert(num < OGS_MAX_NUM_OF_HOSTNAME);
                                     hostname[num++] =
                                         ogs_yaml_iter_value(&hostname_iter);
                                 } while (
@@ -315,7 +315,7 @@ int amf_context_parse_config(void)
                         const char *mcc = NULL, *mnc = NULL;
                         const char *region = NULL, *set = NULL;
                         const char *pointer = NULL;
-                        ogs_assert(self.num_of_served_guami <=
+                        ogs_assert(self.num_of_served_guami <
                                 MAX_NUM_OF_SERVED_GUAMI);
 
                         if (ogs_yaml_iter_type(&guami_array) ==
@@ -410,7 +410,7 @@ int amf_context_parse_config(void)
                     ogs_5gs_tai0_list_t *list0 = NULL;
                     ogs_5gs_tai2_list_t *list2 = NULL;
 
-                    ogs_assert(self.num_of_served_tai <=
+                    ogs_assert(self.num_of_served_tai <
                             OGS_MAX_NUM_OF_SERVED_TAI);
                     list0 = &self.served_tai[self.num_of_served_tai].list0;
                     ogs_assert(list0);
@@ -468,7 +468,7 @@ int amf_context_parse_config(void)
                                 do {
                                     const char *v = NULL;
 
-                                    ogs_assert(num_of_tac <=
+                                    ogs_assert(num_of_tac <
                                             OGS_MAX_NUM_OF_TAI);
                                     if (ogs_yaml_iter_type(&tac_iter) ==
                                             YAML_SEQUENCE_NODE) {
@@ -530,7 +530,7 @@ int amf_context_parse_config(void)
                     ogs_yaml_iter_recurse(&amf_iter, &plmn_support_array);
                     do {
                         const char *mnc = NULL, *mcc = NULL;
-                        ogs_assert(self.num_of_plmn_support <=
+                        ogs_assert(self.num_of_plmn_support <
                                 OGS_MAX_NUM_OF_PLMN);
 
                         if (ogs_yaml_iter_type(&plmn_support_array) ==
@@ -588,8 +588,8 @@ int amf_context_parse_config(void)
                                     ogs_assert(
                                         self.plmn_support[
                                             self.num_of_plmn_support].
-                                                num_of_s_nssai <=
-                                            OGS_MAX_NUM_OF_S_NSSAI);
+                                                num_of_s_nssai <
+                                            OGS_MAX_NUM_OF_SLICE);
                                     s_nssai = &self.plmn_support[
                                             self.num_of_plmn_support].s_nssai[
                                                 self.plmn_support[
@@ -637,10 +637,6 @@ int amf_context_parse_config(void)
                                                         (char*)sd);
                                         else
                                             s_nssai->sd.v =
-                                                OGS_S_NSSAI_NO_SD_VALUE;
-
-                                        s_nssai->mapped_hplmn_sst = 0;
-                                        s_nssai->mapped_hplmn_sd.v =
                                                 OGS_S_NSSAI_NO_SD_VALUE;
 
                                         self.plmn_support[
@@ -872,7 +868,7 @@ amf_gnb_t *amf_gnb_add(ogs_sock_t *sock, ogs_sockaddr_t *addr)
     return gnb;
 }
 
-int amf_gnb_remove(amf_gnb_t *gnb)
+void amf_gnb_remove(amf_gnb_t *gnb)
 {
     amf_event_t e;
 
@@ -896,18 +892,14 @@ int amf_gnb_remove(amf_gnb_t *gnb)
 
     ogs_info("[Removed] Number of gNBs is now %d",
             ogs_list_count(&self.gnb_list));
-
-    return OGS_OK;
 }
 
-int amf_gnb_remove_all()
+void amf_gnb_remove_all()
 {
     amf_gnb_t *gnb = NULL, *next_gnb = NULL;
 
     ogs_list_for_each_safe(&self.gnb_list, next_gnb, gnb)
         amf_gnb_remove(gnb);
-
-    return OGS_OK;
 }
 
 amf_gnb_t *amf_gnb_find_by_addr(ogs_sockaddr_t *addr)
@@ -1169,10 +1161,8 @@ void amf_ue_remove(amf_ue_t *amf_ue)
         ogs_free(amf_ue->msisdn[i]);
     }
 
-    for (i = 0; i < amf_ue->num_of_subscribed_dnn; i++) {
-        ogs_assert(amf_ue->subscribed_dnn[i]);
-        ogs_free(amf_ue->subscribed_dnn[i]);
-    }
+    /* Clear SubscribedInfo */
+    amf_clear_subscribed_info(amf_ue);
 
     if (amf_ue->policy_association_id)
         ogs_free(amf_ue->policy_association_id);
@@ -1497,8 +1487,8 @@ amf_sess_t *amf_sess_add(amf_ue_t *amf_ue, uint8_t psi)
 
     sess->s_nssai.sst = 0;
     sess->s_nssai.sd.v = OGS_S_NSSAI_NO_SD_VALUE;
-    sess->s_nssai.mapped_hplmn_sst = 0;
-    sess->s_nssai.mapped_hplmn_sd.v = OGS_S_NSSAI_NO_SD_VALUE;
+    sess->mapped_hplmn.sst = 0;
+    sess->mapped_hplmn.sd.v = OGS_S_NSSAI_NO_SD_VALUE;
 
     ogs_list_add(&amf_ue->sess_list, sess);
 
@@ -1536,6 +1526,13 @@ void amf_sess_remove(amf_sess_t *sess)
     if (sess->paging.client)
         ogs_sbi_client_remove(sess->paging.client);
 
+    if (sess->nssf.nsi_id)
+        ogs_free(sess->nssf.nsi_id);
+    if (sess->nssf.nrf.id)
+        ogs_free(sess->nssf.nrf.id);
+    if (sess->nssf.nrf.client)
+        ogs_sbi_client_remove(sess->nssf.nrf.client);
+
     OGS_NAS_CLEAR_DATA(&sess->ue_pco);
     OGS_TLV_CLEAR_DATA(&sess->pgw_pco);
 
@@ -1572,6 +1569,48 @@ amf_ue_t *amf_ue_cycle(amf_ue_t *amf_ue)
 amf_sess_t *amf_sess_cycle(amf_sess_t *sess)
 {
     return ogs_pool_cycle(&amf_sess_pool, sess);
+}
+
+void amf_ue_select_nf(amf_ue_t *amf_ue, OpenAPI_nf_type_e nf_type)
+{
+    ogs_assert(amf_ue);
+    ogs_assert(nf_type);
+
+    if (nf_type == OpenAPI_nf_type_NRF)
+        ogs_sbi_select_nrf(&amf_ue->sbi, amf_nf_state_registered);
+    else
+        ogs_sbi_select_first_nf(&amf_ue->sbi, nf_type, amf_nf_state_registered);
+}
+
+void amf_sess_select_nf(amf_sess_t *sess, OpenAPI_nf_type_e nf_type)
+{
+    ogs_assert(sess);
+    ogs_assert(nf_type);
+
+    if (nf_type == OpenAPI_nf_type_NRF)
+        ogs_sbi_select_nrf(&sess->sbi, amf_nf_state_registered);
+    else if (nf_type == OpenAPI_nf_type_SMF)
+        amf_sess_select_smf(sess);
+    else
+        ogs_sbi_select_first_nf(&sess->sbi, nf_type, amf_nf_state_registered);
+}
+
+static bool check_smf_info(amf_sess_t *sess, ogs_list_t *nf_info_list);
+
+void amf_sess_select_smf(amf_sess_t *sess)
+{
+    ogs_sbi_nf_instance_t *nf_instance = NULL;
+
+    ogs_assert(sess);
+
+    ogs_list_for_each(&ogs_sbi_self()->nf_instance_list, nf_instance) {
+        if (OGS_FSM_CHECK(&nf_instance->sm, amf_nf_state_registered) &&
+            nf_instance->nf_type == OpenAPI_nf_type_SMF &&
+            check_smf_info(sess, &nf_instance->nf_info_list) == true) {
+            OGS_SBI_SETUP_NF(&sess->sbi, OpenAPI_nf_type_SMF, nf_instance);
+            break;
+        }
+    }
 }
 
 int amf_sess_xact_count(amf_ue_t *amf_ue)
@@ -1617,11 +1656,11 @@ bool amf_pdu_res_setup_req_transfer_needed(amf_ue_t *amf_ue)
     return false;
 }
 
-int amf_find_served_tai(ogs_5gs_tai_t *tai)
+int amf_find_served_tai(ogs_5gs_tai_t *nr_tai)
 {
     int i = 0, j = 0, k = 0;
 
-    ogs_assert(tai);
+    ogs_assert(nr_tai);
 
     for (i = 0; i < self.num_of_served_tai; i++) {
         ogs_5gs_tai0_list_t *list0 = &self.served_tai[i].list0;
@@ -1635,8 +1674,8 @@ int amf_find_served_tai(ogs_5gs_tai_t *tai)
 
             for (k = 0; k < list0->tai[j].num; k++) {
                 if (memcmp(&list0->tai[j].plmn_id,
-                            &tai->plmn_id, OGS_PLMN_ID_LEN) == 0 && 
-                    list0->tai[j].tac[k].v == tai->tac.v) {
+                            &nr_tai->plmn_id, OGS_PLMN_ID_LEN) == 0 &&
+                    list0->tai[j].tac[k].v == nr_tai->tac.v) {
                     return i;
                 }
             }
@@ -1649,8 +1688,8 @@ int amf_find_served_tai(ogs_5gs_tai_t *tai)
 
             for (j = 0; j < list2->num; j++) {
                 if (memcmp(&list2->tai[j].plmn_id,
-                            &tai->plmn_id, OGS_PLMN_ID_LEN) == 0 && 
-                    list2->tai[j].tac.v == tai->tac.v) {
+                            &nr_tai->plmn_id, OGS_PLMN_ID_LEN) == 0 &&
+                    list2->tai[j].tac.v == nr_tai->tac.v) {
                     return i;
                 }
             }
@@ -1674,18 +1713,11 @@ ogs_s_nssai_t *amf_find_s_nssai(
             continue;
 
         for (j = 0; j < amf_self()->plmn_support[i].num_of_s_nssai; j++) {
-            if (amf_self()->plmn_support[i].s_nssai[j].sst != s_nssai->sst)
-                continue;
-
-            if (amf_self()->plmn_support[i].s_nssai[j].sd.v !=
-                    OGS_S_NSSAI_NO_SD_VALUE &&
-                        s_nssai->sd.v != OGS_S_NSSAI_NO_SD_VALUE) {
-                if (amf_self()->plmn_support[i].s_nssai[j].sd.v !=
-                        s_nssai->sd.v)
-                    continue;
+            /* Compare S-NSSAI */
+            if (amf_self()->plmn_support[i].s_nssai[j].sst == s_nssai->sst &&
+                amf_self()->plmn_support[i].s_nssai[j].sd.v == s_nssai->sd.v) {
+                return &amf_self()->plmn_support[i].s_nssai[j];
             }
-
-            return &amf_self()->plmn_support[i].s_nssai[j];
         }
     }
 
@@ -1780,6 +1812,22 @@ uint8_t amf_selected_enc_algorithm(amf_ue_t *amf_ue)
     return 0;
 }
 
+void amf_clear_subscribed_info(amf_ue_t *amf_ue)
+{
+    int i, j;
+
+    ogs_assert(amf_ue);
+
+    for (i = 0; i < amf_ue->num_of_slice; i++) {
+        for (j = 0; j < amf_ue->slice[i].num_of_session; j++) {
+            ogs_assert(amf_ue->slice[i].session[j].name);
+            ogs_free(amf_ue->slice[i].session[j].name);
+        }
+        amf_ue->slice[i].num_of_session = 0;
+    }
+    amf_ue->num_of_slice = 0;
+}
+
 static void stats_add_ran_ue(void)
 {
     num_of_ran_ue = num_of_ran_ue + 1;
@@ -1802,4 +1850,94 @@ static void stats_remove_amf_session(void)
 {
     num_of_amf_sess = num_of_amf_sess - 1;
     ogs_info("[Removed] Number of AMF-Sessions is now %d", num_of_amf_sess);
+}
+
+static bool check_smf_info_s_nssai(
+        amf_sess_t *sess, ogs_sbi_smf_info_t *smf_info);
+static bool check_smf_info_nr_tai(
+        amf_sess_t *sess, ogs_sbi_smf_info_t *smf_info);
+
+static bool check_smf_info(amf_sess_t *sess, ogs_list_t *nf_info_list)
+{
+    ogs_sbi_nf_info_t *nf_info = NULL;
+
+    ogs_assert(sess);
+    ogs_assert(nf_info_list);
+
+    if (ogs_list_count(nf_info_list) == 0) {
+        return true;
+    }
+
+    ogs_list_for_each(nf_info_list, nf_info) {
+        ogs_sbi_smf_info_t *smf_info = &nf_info->smf;
+        ogs_assert(smf_info);
+
+        if (check_smf_info_s_nssai(sess, smf_info) == true &&
+            check_smf_info_nr_tai(sess, smf_info) == true)
+            return true;
+    }
+
+    return false;
+}
+
+static bool check_smf_info_s_nssai(
+        amf_sess_t *sess, ogs_sbi_smf_info_t *smf_info)
+{
+    int i, j;
+
+    ogs_assert(sess);
+    ogs_assert(sess->dnn);
+    ogs_assert(smf_info);
+
+    for (i = 0; i < smf_info->num_of_slice; i++) {
+        if (sess->s_nssai.sst == smf_info->slice[i].s_nssai.sst &&
+            sess->s_nssai.sd.v == smf_info->slice[i].s_nssai.sd.v) {
+
+            for (j = 0; j < smf_info->slice[i].num_of_dnn; j++) {
+                if (strcmp(sess->dnn, smf_info->slice[i].dnn[j]) == 0)
+                    return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+static bool check_smf_info_nr_tai(
+        amf_sess_t *sess, ogs_sbi_smf_info_t *smf_info)
+{
+    amf_ue_t *amf_ue = NULL;
+    int i, j;
+
+    ogs_assert(sess);
+    amf_ue = sess->amf_ue;
+    ogs_assert(amf_ue);
+    ogs_assert(smf_info);
+
+    if (smf_info->num_of_nr_tai == 0 && smf_info->num_of_nr_tai_range == 0)
+        return true;
+
+    for (i = 0; i < smf_info->num_of_nr_tai; i++) {
+        if (memcmp(&amf_ue->nr_tai.plmn_id,
+                &smf_info->nr_tai[i].plmn_id, OGS_PLMN_ID_LEN) == 0) {
+            if (amf_ue->nr_tai.tac.v == smf_info->nr_tai[i].tac.v)
+                return true;
+        }
+    }
+
+    for (i = 0; i < smf_info->num_of_nr_tai_range; i++) {
+        if (memcmp(&amf_ue->nr_tai.plmn_id,
+                &smf_info->nr_tai_range[i].plmn_id, OGS_PLMN_ID_LEN) == 0) {
+            for (j = 0; j < smf_info->nr_tai_range[i].num_of_tac_range; j++) {
+                if (amf_ue->nr_tai.tac.v >=
+                    smf_info->nr_tai_range[i].start[j].v &&
+                    amf_ue->nr_tai.tac.v <=
+                    smf_info->nr_tai_range[i].end[j].v) {
+                    return true;
+                }
+            }
+        }
+    }
+
+    return false;
 }

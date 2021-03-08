@@ -7,7 +7,7 @@
 OpenAPI_ip_end_point_t *OpenAPI_ip_end_point_create(
     char *ipv4_address,
     char *ipv6_address,
-    OpenAPI_transport_protocol_t *transport,
+    OpenAPI_transport_protocol_e transport,
     int port
     )
 {
@@ -31,7 +31,6 @@ void OpenAPI_ip_end_point_free(OpenAPI_ip_end_point_t *ip_end_point)
     OpenAPI_lnode_t *node;
     ogs_free(ip_end_point->ipv4_address);
     ogs_free(ip_end_point->ipv6_address);
-    OpenAPI_transport_protocol_free(ip_end_point->transport);
     ogs_free(ip_end_point);
 }
 
@@ -60,13 +59,7 @@ cJSON *OpenAPI_ip_end_point_convertToJSON(OpenAPI_ip_end_point_t *ip_end_point)
     }
 
     if (ip_end_point->transport) {
-        cJSON *transport_local_JSON = OpenAPI_transport_protocol_convertToJSON(ip_end_point->transport);
-        if (transport_local_JSON == NULL) {
-            ogs_error("OpenAPI_ip_end_point_convertToJSON() failed [transport]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "transport", transport_local_JSON);
-        if (item->child == NULL) {
+        if (cJSON_AddStringToObject(item, "transport", OpenAPI_transport_protocol_ToString(ip_end_point->transport)) == NULL) {
             ogs_error("OpenAPI_ip_end_point_convertToJSON() failed [transport]");
             goto end;
         }
@@ -106,9 +99,13 @@ OpenAPI_ip_end_point_t *OpenAPI_ip_end_point_parseFromJSON(cJSON *ip_end_pointJS
 
     cJSON *transport = cJSON_GetObjectItemCaseSensitive(ip_end_pointJSON, "transport");
 
-    OpenAPI_transport_protocol_t *transport_local_nonprim = NULL;
+    OpenAPI_transport_protocol_e transportVariable;
     if (transport) {
-        transport_local_nonprim = OpenAPI_transport_protocol_parseFromJSON(transport);
+        if (!cJSON_IsString(transport)) {
+            ogs_error("OpenAPI_ip_end_point_parseFromJSON() failed [transport]");
+            goto end;
+        }
+        transportVariable = OpenAPI_transport_protocol_FromString(transport->valuestring);
     }
 
     cJSON *port = cJSON_GetObjectItemCaseSensitive(ip_end_pointJSON, "port");
@@ -123,7 +120,7 @@ OpenAPI_ip_end_point_t *OpenAPI_ip_end_point_parseFromJSON(cJSON *ip_end_pointJS
     ip_end_point_local_var = OpenAPI_ip_end_point_create (
         ipv4_address ? ogs_strdup(ipv4_address->valuestring) : NULL,
         ipv6_address ? ogs_strdup(ipv6_address->valuestring) : NULL,
-        transport ? transport_local_nonprim : NULL,
+        transport ? transportVariable : 0,
         port ? port->valuedouble : 0
         );
 

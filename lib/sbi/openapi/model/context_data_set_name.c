@@ -4,82 +4,27 @@
 #include <stdio.h>
 #include "context_data_set_name.h"
 
-OpenAPI_context_data_set_name_t *OpenAPI_context_data_set_name_create(
-    )
+char* OpenAPI_context_data_set_name_ToString(OpenAPI_context_data_set_name_e context_data_set_name)
 {
-    OpenAPI_context_data_set_name_t *context_data_set_name_local_var = OpenAPI_malloc(sizeof(OpenAPI_context_data_set_name_t));
-    if (!context_data_set_name_local_var) {
-        return NULL;
-    }
-
-    return context_data_set_name_local_var;
+    const char *context_data_set_nameArray[] =  { "NULL", "AMF_3GPP", "AMF_NON_3GPP", "SDM_SUBSCRIPTIONS", "EE_SUBSCRIPTIONS", "SMSF_3GPP", "SMSF_NON_3GPP", "SUBS_TO_NOTIFY", "SMF_REG", "IP_SM_GW" };
+    size_t sizeofArray = sizeof(context_data_set_nameArray) / sizeof(context_data_set_nameArray[0]);
+    if (context_data_set_name < sizeofArray)
+        return (char *)context_data_set_nameArray[context_data_set_name];
+    else
+        return (char *)"Unknown";
 }
 
-void OpenAPI_context_data_set_name_free(OpenAPI_context_data_set_name_t *context_data_set_name)
+OpenAPI_context_data_set_name_e OpenAPI_context_data_set_name_FromString(char* context_data_set_name)
 {
-    if (NULL == context_data_set_name) {
-        return;
+    int stringToReturn = 0;
+    const char *context_data_set_nameArray[] =  { "NULL", "AMF_3GPP", "AMF_NON_3GPP", "SDM_SUBSCRIPTIONS", "EE_SUBSCRIPTIONS", "SMSF_3GPP", "SMSF_NON_3GPP", "SUBS_TO_NOTIFY", "SMF_REG", "IP_SM_GW" };
+    size_t sizeofArray = sizeof(context_data_set_nameArray) / sizeof(context_data_set_nameArray[0]);
+    while (stringToReturn < sizeofArray) {
+        if (strcmp(context_data_set_name, context_data_set_nameArray[stringToReturn]) == 0) {
+            return stringToReturn;
+        }
+        stringToReturn++;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(context_data_set_name);
-}
-
-cJSON *OpenAPI_context_data_set_name_convertToJSON(OpenAPI_context_data_set_name_t *context_data_set_name)
-{
-    cJSON *item = NULL;
-
-    if (context_data_set_name == NULL) {
-        ogs_error("OpenAPI_context_data_set_name_convertToJSON() failed [ContextDataSetName]");
-        return NULL;
-    }
-
-    item = cJSON_CreateObject();
-end:
-    return item;
-}
-
-OpenAPI_context_data_set_name_t *OpenAPI_context_data_set_name_parseFromJSON(cJSON *context_data_set_nameJSON)
-{
-    OpenAPI_context_data_set_name_t *context_data_set_name_local_var = NULL;
-    context_data_set_name_local_var = OpenAPI_context_data_set_name_create (
-        );
-
-    return context_data_set_name_local_var;
-end:
-    return NULL;
-}
-
-OpenAPI_context_data_set_name_t *OpenAPI_context_data_set_name_copy(OpenAPI_context_data_set_name_t *dst, OpenAPI_context_data_set_name_t *src)
-{
-    cJSON *item = NULL;
-    char *content = NULL;
-
-    ogs_assert(src);
-    item = OpenAPI_context_data_set_name_convertToJSON(src);
-    if (!item) {
-        ogs_error("OpenAPI_context_data_set_name_convertToJSON() failed");
-        return NULL;
-    }
-
-    content = cJSON_Print(item);
-    cJSON_Delete(item);
-
-    if (!content) {
-        ogs_error("cJSON_Print() failed");
-        return NULL;
-    }
-
-    item = cJSON_Parse(content);
-    ogs_free(content);
-    if (!item) {
-        ogs_error("cJSON_Parse() failed");
-        return NULL;
-    }
-
-    OpenAPI_context_data_set_name_free(dst);
-    dst = OpenAPI_context_data_set_name_parseFromJSON(item);
-    cJSON_Delete(item);
-
-    return dst;
+    return 0;
 }
 

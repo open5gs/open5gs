@@ -13,9 +13,12 @@
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
 #include "backup_amf_info.h"
+#include "context_info.h"
+#include "eps_interworking_info.h"
 #include "guami.h"
 #include "ims_vo_ps.h"
 #include "rat_type.h"
+#include "vgmlc_address.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -39,12 +42,12 @@ typedef struct OpenAPI_amf3_gpp_access_registration_s {
     OpenAPI_rat_type_e rat_type;
     int urrp_indicator;
     char *amf_ee_subscription_id;
+    struct OpenAPI_eps_interworking_info_s *eps_interworking_info;
     int ue_srvcc_capability;
-    char *nid;
     char *registration_time;
-    char *vgmlc_address_ipv4;
-    char *vgmlc_address_ipv6;
-    char *vgmlc_fqdn;
+    struct OpenAPI_vgmlc_address_s *vgmlc_address;
+    struct OpenAPI_context_info_s *context_info;
+    int no_ee_subscription_ind;
 } OpenAPI_amf3_gpp_access_registration_t;
 
 OpenAPI_amf3_gpp_access_registration_t *OpenAPI_amf3_gpp_access_registration_create(
@@ -64,12 +67,12 @@ OpenAPI_amf3_gpp_access_registration_t *OpenAPI_amf3_gpp_access_registration_cre
     OpenAPI_rat_type_e rat_type,
     int urrp_indicator,
     char *amf_ee_subscription_id,
+    OpenAPI_eps_interworking_info_t *eps_interworking_info,
     int ue_srvcc_capability,
-    char *nid,
     char *registration_time,
-    char *vgmlc_address_ipv4,
-    char *vgmlc_address_ipv6,
-    char *vgmlc_fqdn
+    OpenAPI_vgmlc_address_t *vgmlc_address,
+    OpenAPI_context_info_t *context_info,
+    int no_ee_subscription_ind
     );
 void OpenAPI_amf3_gpp_access_registration_free(OpenAPI_amf3_gpp_access_registration_t *amf3_gpp_access_registration);
 OpenAPI_amf3_gpp_access_registration_t *OpenAPI_amf3_gpp_access_registration_parseFromJSON(cJSON *amf3_gpp_access_registrationJSON);

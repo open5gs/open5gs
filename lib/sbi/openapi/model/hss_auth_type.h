@@ -17,16 +17,11 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_hss_auth_type_s OpenAPI_hss_auth_type_t;
-typedef struct OpenAPI_hss_auth_type_s {
-} OpenAPI_hss_auth_type_t;
+typedef enum { OpenAPI_hss_auth_type_NULL = 0, OpenAPI_hss_auth_type_EPS_AKA, OpenAPI_hss_auth_type_EAP_AKA, OpenAPI_hss_auth_type_EAP_AKA_PRIME, OpenAPI_hss_auth_type_IMS_AKA, OpenAPI_hss_auth_type_GBA_AKA, OpenAPI_hss_auth_type_UMTS_AKA } OpenAPI_hss_auth_type_e;
 
-OpenAPI_hss_auth_type_t *OpenAPI_hss_auth_type_create(
-    );
-void OpenAPI_hss_auth_type_free(OpenAPI_hss_auth_type_t *hss_auth_type);
-OpenAPI_hss_auth_type_t *OpenAPI_hss_auth_type_parseFromJSON(cJSON *hss_auth_typeJSON);
-cJSON *OpenAPI_hss_auth_type_convertToJSON(OpenAPI_hss_auth_type_t *hss_auth_type);
-OpenAPI_hss_auth_type_t *OpenAPI_hss_auth_type_copy(OpenAPI_hss_auth_type_t *dst, OpenAPI_hss_auth_type_t *src);
+char* OpenAPI_hss_auth_type_ToString(OpenAPI_hss_auth_type_e hss_auth_type);
+
+OpenAPI_hss_auth_type_e OpenAPI_hss_auth_type_FromString(char* hss_auth_type);
 
 #ifdef __cplusplus
 }

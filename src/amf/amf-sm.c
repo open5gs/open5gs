@@ -24,6 +24,7 @@
 #include "nnrf-handler.h"
 #include "namf-handler.h"
 #include "nsmf-handler.h"
+#include "nnssf-handler.h"
 #include "nas-security.h"
 
 void amf_state_initial(ogs_fsm_t *s, amf_event_t *e)
@@ -253,6 +254,7 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
 
         SWITCH(sbi_message.h.service.name)
         CASE(OGS_SBI_SERVICE_NAME_NUDM_SDM)
+        CASE(OGS_SBI_SERVICE_NAME_NNSSF_NSSELECTION)
             api_version = OGS_SBI_API_V2;
             break;
         DEFAULT
@@ -463,6 +465,33 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
                     }
                 }
             END
+            break;
+
+        CASE(OGS_SBI_SERVICE_NAME_NNSSF_NSSELECTION)
+            sbi_xact = e->sbi.data;
+            ogs_assert(sbi_xact);
+
+            sess = (amf_sess_t *)sbi_xact->sbi_object;
+            ogs_assert(sess);
+            sess = amf_sess_cycle(sess);
+            ogs_assert(sess);
+
+            amf_ue = sess->amf_ue;
+            ogs_assert(amf_ue);
+            amf_ue = amf_ue_cycle(amf_ue);
+            ogs_assert(amf_ue);
+
+            ogs_assert(OGS_FSM_STATE(&amf_ue->sm));
+
+            e->amf_ue = amf_ue;
+            e->sess = sess;
+            e->sbi.message = &sbi_message;;
+
+            state = sbi_xact->state;
+
+            ogs_sbi_xact_remove(sbi_xact);
+
+            amf_nnssf_nsselection_handle_get(sess, &sbi_message);
             break;
 
         DEFAULT

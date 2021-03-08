@@ -195,7 +195,7 @@ int sgwu_context_parse_config(void)
                                             break;
                                     }
 
-                                    ogs_assert(num <= OGS_MAX_NUM_OF_HOSTNAME);
+                                    ogs_assert(num < OGS_MAX_NUM_OF_HOSTNAME);
                                     hostname[num++] =
                                         ogs_yaml_iter_value(&hostname_iter);
                                 } while (
@@ -218,7 +218,7 @@ int sgwu_context_parse_config(void)
                                             break;
                                     }
 
-                                    ogs_assert(adv_num <=
+                                    ogs_assert(adv_num <
                                             OGS_MAX_NUM_OF_HOSTNAME);
                                     adv_hostname[adv_num++] =
                                         ogs_yaml_iter_value(&adv_hostname_iter);
@@ -397,9 +397,10 @@ int sgwu_context_parse_config(void)
                         ogs_list_for_each_safe(&list6, next_iter, iter)
                             ogs_list_add(&self.gtpu_list, iter);
                     }
-                } else if (!strcmp(sgwu_key, "pdn")) {
+                } else if (!strcmp(sgwu_key, "pfcp")) {
                     /* handle config in pfcp library */
-                }
+                } else
+                    ogs_warn("unknown key `%s`", sgwu_key);
             }
         }
     }

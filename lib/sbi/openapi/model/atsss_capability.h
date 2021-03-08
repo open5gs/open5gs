@@ -21,11 +21,13 @@ typedef struct OpenAPI_atsss_capability_s OpenAPI_atsss_capability_t;
 typedef struct OpenAPI_atsss_capability_s {
     int atsss_ll;
     int mptcp;
+    int rtt_without_pmf;
 } OpenAPI_atsss_capability_t;
 
 OpenAPI_atsss_capability_t *OpenAPI_atsss_capability_create(
     int atsss_ll,
-    int mptcp
+    int mptcp,
+    int rtt_without_pmf
     );
 void OpenAPI_atsss_capability_free(OpenAPI_atsss_capability_t *atsss_capability);
 OpenAPI_atsss_capability_t *OpenAPI_atsss_capability_parseFromJSON(cJSON *atsss_capabilityJSON);

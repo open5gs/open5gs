@@ -9,7 +9,8 @@ OpenAPI_default_notification_subscription_t *OpenAPI_default_notification_subscr
     char *callback_uri,
     OpenAPI_n1_message_class_e n1_message_class,
     OpenAPI_n2_information_class_e n2_information_class,
-    OpenAPI_list_t *versions
+    OpenAPI_list_t *versions,
+    char *binding
     )
 {
     OpenAPI_default_notification_subscription_t *default_notification_subscription_local_var = OpenAPI_malloc(sizeof(OpenAPI_default_notification_subscription_t));
@@ -21,6 +22,7 @@ OpenAPI_default_notification_subscription_t *OpenAPI_default_notification_subscr
     default_notification_subscription_local_var->n1_message_class = n1_message_class;
     default_notification_subscription_local_var->n2_information_class = n2_information_class;
     default_notification_subscription_local_var->versions = versions;
+    default_notification_subscription_local_var->binding = binding;
 
     return default_notification_subscription_local_var;
 }
@@ -36,6 +38,7 @@ void OpenAPI_default_notification_subscription_free(OpenAPI_default_notification
         ogs_free(node->data);
     }
     OpenAPI_list_free(default_notification_subscription->versions);
+    ogs_free(default_notification_subscription->binding);
     ogs_free(default_notification_subscription);
 }
 
@@ -94,6 +97,13 @@ cJSON *OpenAPI_default_notification_subscription_convertToJSON(OpenAPI_default_n
                 ogs_error("OpenAPI_default_notification_subscription_convertToJSON() failed [versions]");
                 goto end;
             }
+        }
+    }
+
+    if (default_notification_subscription->binding) {
+        if (cJSON_AddStringToObject(item, "binding", default_notification_subscription->binding) == NULL) {
+            ogs_error("OpenAPI_default_notification_subscription_convertToJSON() failed [binding]");
+            goto end;
         }
     }
 
@@ -172,12 +182,22 @@ OpenAPI_default_notification_subscription_t *OpenAPI_default_notification_subscr
         }
     }
 
+    cJSON *binding = cJSON_GetObjectItemCaseSensitive(default_notification_subscriptionJSON, "binding");
+
+    if (binding) {
+        if (!cJSON_IsString(binding)) {
+            ogs_error("OpenAPI_default_notification_subscription_parseFromJSON() failed [binding]");
+            goto end;
+        }
+    }
+
     default_notification_subscription_local_var = OpenAPI_default_notification_subscription_create (
         notification_typeVariable,
         ogs_strdup(callback_uri->valuestring),
         n1_message_class ? n1_message_classVariable : 0,
         n2_information_class ? n2_information_classVariable : 0,
-        versions ? versionsList : NULL
+        versions ? versionsList : NULL,
+        binding ? ogs_strdup(binding->valuestring) : NULL
         );
 
     return default_notification_subscription_local_var;

@@ -4,82 +4,27 @@
 #include <stdio.h>
 #include "transport_protocol.h"
 
-OpenAPI_transport_protocol_t *OpenAPI_transport_protocol_create(
-    )
+char* OpenAPI_transport_protocol_ToString(OpenAPI_transport_protocol_e transport_protocol)
 {
-    OpenAPI_transport_protocol_t *transport_protocol_local_var = OpenAPI_malloc(sizeof(OpenAPI_transport_protocol_t));
-    if (!transport_protocol_local_var) {
-        return NULL;
-    }
-
-    return transport_protocol_local_var;
+    const char *transport_protocolArray[] =  { "NULL", "TCP" };
+    size_t sizeofArray = sizeof(transport_protocolArray) / sizeof(transport_protocolArray[0]);
+    if (transport_protocol < sizeofArray)
+        return (char *)transport_protocolArray[transport_protocol];
+    else
+        return (char *)"Unknown";
 }
 
-void OpenAPI_transport_protocol_free(OpenAPI_transport_protocol_t *transport_protocol)
+OpenAPI_transport_protocol_e OpenAPI_transport_protocol_FromString(char* transport_protocol)
 {
-    if (NULL == transport_protocol) {
-        return;
+    int stringToReturn = 0;
+    const char *transport_protocolArray[] =  { "NULL", "TCP" };
+    size_t sizeofArray = sizeof(transport_protocolArray) / sizeof(transport_protocolArray[0]);
+    while (stringToReturn < sizeofArray) {
+        if (strcmp(transport_protocol, transport_protocolArray[stringToReturn]) == 0) {
+            return stringToReturn;
+        }
+        stringToReturn++;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(transport_protocol);
-}
-
-cJSON *OpenAPI_transport_protocol_convertToJSON(OpenAPI_transport_protocol_t *transport_protocol)
-{
-    cJSON *item = NULL;
-
-    if (transport_protocol == NULL) {
-        ogs_error("OpenAPI_transport_protocol_convertToJSON() failed [TransportProtocol]");
-        return NULL;
-    }
-
-    item = cJSON_CreateObject();
-end:
-    return item;
-}
-
-OpenAPI_transport_protocol_t *OpenAPI_transport_protocol_parseFromJSON(cJSON *transport_protocolJSON)
-{
-    OpenAPI_transport_protocol_t *transport_protocol_local_var = NULL;
-    transport_protocol_local_var = OpenAPI_transport_protocol_create (
-        );
-
-    return transport_protocol_local_var;
-end:
-    return NULL;
-}
-
-OpenAPI_transport_protocol_t *OpenAPI_transport_protocol_copy(OpenAPI_transport_protocol_t *dst, OpenAPI_transport_protocol_t *src)
-{
-    cJSON *item = NULL;
-    char *content = NULL;
-
-    ogs_assert(src);
-    item = OpenAPI_transport_protocol_convertToJSON(src);
-    if (!item) {
-        ogs_error("OpenAPI_transport_protocol_convertToJSON() failed");
-        return NULL;
-    }
-
-    content = cJSON_Print(item);
-    cJSON_Delete(item);
-
-    if (!content) {
-        ogs_error("cJSON_Print() failed");
-        return NULL;
-    }
-
-    item = cJSON_Parse(content);
-    ogs_free(content);
-    if (!item) {
-        ogs_error("cJSON_Parse() failed");
-        return NULL;
-    }
-
-    OpenAPI_transport_protocol_free(dst);
-    dst = OpenAPI_transport_protocol_parseFromJSON(item);
-    cJSON_Delete(item);
-
-    return dst;
+    return 0;
 }
 

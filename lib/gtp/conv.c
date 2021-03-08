@@ -147,16 +147,16 @@ int ogs_gtp_paa_to_ip(ogs_paa_t *paa, ogs_ip_t *ip)
 
     memset(ip, 0, sizeof *ip);
 
-    if (paa->pdn_type == OGS_GTP_PDN_TYPE_IPV4V6) {
+    if (paa->session_type == OGS_PDU_SESSION_TYPE_IPV4V6) {
         ip->ipv4 = 1;
         ip->addr = paa->both.addr;
         ip->ipv6 = 1;
         memcpy(ip->addr6, paa->both.addr6, OGS_IPV6_LEN);
-    } else if (paa->pdn_type == OGS_GTP_PDN_TYPE_IPV4) {
+    } else if (paa->session_type == OGS_PDU_SESSION_TYPE_IPV4) {
         ip->ipv4 = 1;
         ip->ipv6 = 0;
         ip->addr = paa->addr;
-    } else if (paa->pdn_type == OGS_GTP_PDN_TYPE_IPV6) {
+    } else if (paa->session_type == OGS_PDU_SESSION_TYPE_IPV6) {
         ip->ipv4 = 0;
         ip->ipv6 = 1;
         memcpy(ip->addr6, paa->addr6, OGS_IPV6_LEN);

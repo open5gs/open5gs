@@ -8,7 +8,8 @@ OpenAPI_notification_data_t *OpenAPI_notification_data_create(
     OpenAPI_notification_event_type_e event,
     char *nf_instance_uri,
     OpenAPI_nf_profile_t *nf_profile,
-    OpenAPI_list_t *profile_changes
+    OpenAPI_list_t *profile_changes,
+    OpenAPI_condition_event_type_e condition_event
     )
 {
     OpenAPI_notification_data_t *notification_data_local_var = OpenAPI_malloc(sizeof(OpenAPI_notification_data_t));
@@ -19,6 +20,7 @@ OpenAPI_notification_data_t *OpenAPI_notification_data_create(
     notification_data_local_var->nf_instance_uri = nf_instance_uri;
     notification_data_local_var->nf_profile = nf_profile;
     notification_data_local_var->profile_changes = profile_changes;
+    notification_data_local_var->condition_event = condition_event;
 
     return notification_data_local_var;
 }
@@ -99,6 +101,13 @@ cJSON *OpenAPI_notification_data_convertToJSON(OpenAPI_notification_data_t *noti
         }
     }
 
+    if (notification_data->condition_event) {
+        if (cJSON_AddStringToObject(item, "conditionEvent", OpenAPI_condition_event_type_ToString(notification_data->condition_event)) == NULL) {
+            ogs_error("OpenAPI_notification_data_convertToJSON() failed [condition_event]");
+            goto end;
+        }
+    }
+
 end:
     return item;
 }
@@ -162,11 +171,23 @@ OpenAPI_notification_data_t *OpenAPI_notification_data_parseFromJSON(cJSON *noti
         }
     }
 
+    cJSON *condition_event = cJSON_GetObjectItemCaseSensitive(notification_dataJSON, "conditionEvent");
+
+    OpenAPI_condition_event_type_e condition_eventVariable;
+    if (condition_event) {
+        if (!cJSON_IsString(condition_event)) {
+            ogs_error("OpenAPI_notification_data_parseFromJSON() failed [condition_event]");
+            goto end;
+        }
+        condition_eventVariable = OpenAPI_condition_event_type_FromString(condition_event->valuestring);
+    }
+
     notification_data_local_var = OpenAPI_notification_data_create (
         eventVariable,
         ogs_strdup(nf_instance_uri->valuestring),
         nf_profile ? nf_profile_local_nonprim : NULL,
-        profile_changes ? profile_changesList : NULL
+        profile_changes ? profile_changesList : NULL,
+        condition_event ? condition_eventVariable : 0
         );
 
     return notification_data_local_var;

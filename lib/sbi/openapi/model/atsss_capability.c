@@ -6,7 +6,8 @@
 
 OpenAPI_atsss_capability_t *OpenAPI_atsss_capability_create(
     int atsss_ll,
-    int mptcp
+    int mptcp,
+    int rtt_without_pmf
     )
 {
     OpenAPI_atsss_capability_t *atsss_capability_local_var = OpenAPI_malloc(sizeof(OpenAPI_atsss_capability_t));
@@ -15,6 +16,7 @@ OpenAPI_atsss_capability_t *OpenAPI_atsss_capability_create(
     }
     atsss_capability_local_var->atsss_ll = atsss_ll;
     atsss_capability_local_var->mptcp = mptcp;
+    atsss_capability_local_var->rtt_without_pmf = rtt_without_pmf;
 
     return atsss_capability_local_var;
 }
@@ -52,6 +54,13 @@ cJSON *OpenAPI_atsss_capability_convertToJSON(OpenAPI_atsss_capability_t *atsss_
         }
     }
 
+    if (atsss_capability->rtt_without_pmf) {
+        if (cJSON_AddBoolToObject(item, "rttWithoutPmf", atsss_capability->rtt_without_pmf) == NULL) {
+            ogs_error("OpenAPI_atsss_capability_convertToJSON() failed [rtt_without_pmf]");
+            goto end;
+        }
+    }
+
 end:
     return item;
 }
@@ -77,9 +86,19 @@ OpenAPI_atsss_capability_t *OpenAPI_atsss_capability_parseFromJSON(cJSON *atsss_
         }
     }
 
+    cJSON *rtt_without_pmf = cJSON_GetObjectItemCaseSensitive(atsss_capabilityJSON, "rttWithoutPmf");
+
+    if (rtt_without_pmf) {
+        if (!cJSON_IsBool(rtt_without_pmf)) {
+            ogs_error("OpenAPI_atsss_capability_parseFromJSON() failed [rtt_without_pmf]");
+            goto end;
+        }
+    }
+
     atsss_capability_local_var = OpenAPI_atsss_capability_create (
         atsss_ll ? atsss_ll->valueint : 0,
-        mptcp ? mptcp->valueint : 0
+        mptcp ? mptcp->valueint : 0,
+        rtt_without_pmf ? rtt_without_pmf->valueint : 0
         );
 
     return atsss_capability_local_var;

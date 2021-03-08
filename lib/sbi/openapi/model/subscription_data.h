@@ -16,6 +16,8 @@
 #include "notif_condition.h"
 #include "notification_event_type.h"
 #include "plmn_id.h"
+#include "plmn_id_nid.h"
+#include "plmn_snssai.h"
 #include "snssai.h"
 #include "subscription_data_subscr_cond.h"
 
@@ -37,7 +39,10 @@ typedef struct OpenAPI_subscription_data_s {
     OpenAPI_nf_type_e req_nf_type;
     char *req_nf_fqdn;
     OpenAPI_list_t *req_snssais;
+    OpenAPI_list_t *req_per_plmn_snssais;
     OpenAPI_list_t *req_plmn_list;
+    OpenAPI_list_t *req_snpn_list;
+    OpenAPI_list_t *serving_scope;
 } OpenAPI_subscription_data_t;
 
 OpenAPI_subscription_data_t *OpenAPI_subscription_data_create(
@@ -53,7 +58,10 @@ OpenAPI_subscription_data_t *OpenAPI_subscription_data_create(
     OpenAPI_nf_type_e req_nf_type,
     char *req_nf_fqdn,
     OpenAPI_list_t *req_snssais,
-    OpenAPI_list_t *req_plmn_list
+    OpenAPI_list_t *req_per_plmn_snssais,
+    OpenAPI_list_t *req_plmn_list,
+    OpenAPI_list_t *req_snpn_list,
+    OpenAPI_list_t *serving_scope
     );
 void OpenAPI_subscription_data_free(OpenAPI_subscription_data_t *subscription_data);
 OpenAPI_subscription_data_t *OpenAPI_subscription_data_parseFromJSON(cJSON *subscription_dataJSON);

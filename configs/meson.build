@@ -39,7 +39,7 @@ example_conf = '''
     csfb.yaml
     volte.yaml
     vonr.yaml
-    minimal.yaml
+    slice.yaml
     srslte.yaml
     sample.yaml
 '''.split()

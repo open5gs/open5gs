@@ -9,7 +9,8 @@ OpenAPI_authentication_info_request_t *OpenAPI_authentication_info_request_creat
     char *serving_network_name,
     OpenAPI_resynchronization_info_t *resynchronization_info,
     char *ausf_instance_id,
-    char *cag_id
+    OpenAPI_list_t *cell_cag_info,
+    int n5gc_ind
     )
 {
     OpenAPI_authentication_info_request_t *authentication_info_request_local_var = OpenAPI_malloc(sizeof(OpenAPI_authentication_info_request_t));
@@ -20,7 +21,8 @@ OpenAPI_authentication_info_request_t *OpenAPI_authentication_info_request_creat
     authentication_info_request_local_var->serving_network_name = serving_network_name;
     authentication_info_request_local_var->resynchronization_info = resynchronization_info;
     authentication_info_request_local_var->ausf_instance_id = ausf_instance_id;
-    authentication_info_request_local_var->cag_id = cag_id;
+    authentication_info_request_local_var->cell_cag_info = cell_cag_info;
+    authentication_info_request_local_var->n5gc_ind = n5gc_ind;
 
     return authentication_info_request_local_var;
 }
@@ -35,7 +37,10 @@ void OpenAPI_authentication_info_request_free(OpenAPI_authentication_info_reques
     ogs_free(authentication_info_request->serving_network_name);
     OpenAPI_resynchronization_info_free(authentication_info_request->resynchronization_info);
     ogs_free(authentication_info_request->ausf_instance_id);
-    ogs_free(authentication_info_request->cag_id);
+    OpenAPI_list_for_each(authentication_info_request->cell_cag_info, node) {
+        ogs_free(node->data);
+    }
+    OpenAPI_list_free(authentication_info_request->cell_cag_info);
     ogs_free(authentication_info_request);
 }
 
@@ -87,9 +92,25 @@ cJSON *OpenAPI_authentication_info_request_convertToJSON(OpenAPI_authentication_
         goto end;
     }
 
-    if (authentication_info_request->cag_id) {
-        if (cJSON_AddStringToObject(item, "cagId", authentication_info_request->cag_id) == NULL) {
-            ogs_error("OpenAPI_authentication_info_request_convertToJSON() failed [cag_id]");
+    if (authentication_info_request->cell_cag_info) {
+        cJSON *cell_cag_info = cJSON_AddArrayToObject(item, "cellCagInfo");
+        if (cell_cag_info == NULL) {
+            ogs_error("OpenAPI_authentication_info_request_convertToJSON() failed [cell_cag_info]");
+            goto end;
+        }
+
+        OpenAPI_lnode_t *cell_cag_info_node;
+        OpenAPI_list_for_each(authentication_info_request->cell_cag_info, cell_cag_info_node)  {
+            if (cJSON_AddStringToObject(cell_cag_info, "", (char*)cell_cag_info_node->data) == NULL) {
+                ogs_error("OpenAPI_authentication_info_request_convertToJSON() failed [cell_cag_info]");
+                goto end;
+            }
+        }
+    }
+
+    if (authentication_info_request->n5gc_ind) {
+        if (cJSON_AddBoolToObject(item, "n5gcInd", authentication_info_request->n5gc_ind) == NULL) {
+            ogs_error("OpenAPI_authentication_info_request_convertToJSON() failed [n5gc_ind]");
             goto end;
         }
     }
@@ -141,11 +162,31 @@ OpenAPI_authentication_info_request_t *OpenAPI_authentication_info_request_parse
         goto end;
     }
 
-    cJSON *cag_id = cJSON_GetObjectItemCaseSensitive(authentication_info_requestJSON, "cagId");
+    cJSON *cell_cag_info = cJSON_GetObjectItemCaseSensitive(authentication_info_requestJSON, "cellCagInfo");
 
-    if (cag_id) {
-        if (!cJSON_IsString(cag_id)) {
-            ogs_error("OpenAPI_authentication_info_request_parseFromJSON() failed [cag_id]");
+    OpenAPI_list_t *cell_cag_infoList;
+    if (cell_cag_info) {
+        cJSON *cell_cag_info_local;
+        if (!cJSON_IsArray(cell_cag_info)) {
+            ogs_error("OpenAPI_authentication_info_request_parseFromJSON() failed [cell_cag_info]");
+            goto end;
+        }
+        cell_cag_infoList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(cell_cag_info_local, cell_cag_info) {
+            if (!cJSON_IsString(cell_cag_info_local)) {
+                ogs_error("OpenAPI_authentication_info_request_parseFromJSON() failed [cell_cag_info]");
+                goto end;
+            }
+            OpenAPI_list_add(cell_cag_infoList, ogs_strdup(cell_cag_info_local->valuestring));
+        }
+    }
+
+    cJSON *n5gc_ind = cJSON_GetObjectItemCaseSensitive(authentication_info_requestJSON, "n5gcInd");
+
+    if (n5gc_ind) {
+        if (!cJSON_IsBool(n5gc_ind)) {
+            ogs_error("OpenAPI_authentication_info_request_parseFromJSON() failed [n5gc_ind]");
             goto end;
         }
     }
@@ -155,7 +196,8 @@ OpenAPI_authentication_info_request_t *OpenAPI_authentication_info_request_parse
         ogs_strdup(serving_network_name->valuestring),
         resynchronization_info ? resynchronization_info_local_nonprim : NULL,
         ogs_strdup(ausf_instance_id->valuestring),
-        cag_id ? ogs_strdup(cag_id->valuestring) : NULL
+        cell_cag_info ? cell_cag_infoList : NULL,
+        n5gc_ind ? n5gc_ind->valueint : 0
         );
 
     return authentication_info_request_local_var;

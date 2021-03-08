@@ -38,11 +38,11 @@ ogs_sbi_request_t *smf_nudm_sdm_build_get(smf_sess_t *sess, void *data)
     message.h.resource.component[1] = data;
 
     message.param.single_nssai_presence = true;
-    memcpy(&message.param.single_nssai, &sess->s_nssai,
-            sizeof(message.param.single_nssai));
+    memcpy(&message.param.s_nssai, &sess->s_nssai,
+            sizeof(message.param.s_nssai));
 
-    if (sess->dnn)
-        message.param.dnn = sess->dnn;
+    if (sess->session.name)
+        message.param.dnn = sess->session.name;
 
     request = ogs_sbi_build_request(&message);
     ogs_assert(request);

@@ -134,7 +134,7 @@ void smf_bearer_binding(smf_sess_t *sess)
             ogs_pfcp_pdr_t *dl_pdr = NULL, *ul_pdr = NULL;
 
             bearer = smf_bearer_find_by_qci_arp(sess,
-                        pcc_rule->qos.qci,
+                        pcc_rule->qos.index,
                         pcc_rule->qos.arp.priority_level,
                         pcc_rule->qos.arp.pre_emption_capability,
                         pcc_rule->qos.arp.pre_emption_vulnerability);
@@ -399,7 +399,7 @@ void smf_qos_flow_binding(smf_sess_t *sess, ogs_sbi_stream_t *stream)
             ogs_pfcp_pdr_t *dl_pdr = NULL, *ul_pdr = NULL;
 
             qos_flow = smf_bearer_find_by_qci_arp(sess,
-                        pcc_rule->qos.qci,
+                        pcc_rule->qos.index,
                         pcc_rule->qos.arp.priority_level,
                         pcc_rule->qos.arp.pre_emption_capability,
                         pcc_rule->qos.arp.pre_emption_vulnerability);

@@ -137,16 +137,15 @@ ogs_pkbuf_t *testngap_build_ng_setup_request(uint32_t gnb_id, uint8_t bitsize)
 
         for (j = 0; j < test_self()->plmn_support[i].num_of_s_nssai; j++) {
             ogs_s_nssai_t *s_nssai = &test_self()->plmn_support[i].s_nssai[j];
-            ogs_uint24_t sd;
 
             SliceSupportItem = CALLOC(1, sizeof(NGAP_SliceSupportItem_t));
             ogs_asn_uint8_to_OCTET_STRING(s_nssai->sst,
                     &SliceSupportItem->s_NSSAI.sST);
-            sd.v = s_nssai->sd.v;
-            if (sd.v == OGS_S_NSSAI_NO_SD_VALUE)
-                sd.v = 0x010000;
-            SliceSupportItem->s_NSSAI.sD = CALLOC(1, sizeof(NGAP_SD_t));
-            ogs_asn_uint24_to_OCTET_STRING(sd, SliceSupportItem->s_NSSAI.sD);
+            if (s_nssai->sd.v != OGS_S_NSSAI_NO_SD_VALUE) {
+                SliceSupportItem->s_NSSAI.sD = CALLOC(1, sizeof(NGAP_SD_t));
+                ogs_asn_uint24_to_OCTET_STRING(
+                        s_nssai->sd, SliceSupportItem->s_NSSAI.sD);
+            }
 
             ASN_SEQUENCE_ADD(&BroadcastPLMNItem->tAISliceSupportList.list,
                             SliceSupportItem);

@@ -143,7 +143,7 @@ logger:
 #          mnc: 70
 #        s_nssai:
 #          - sst: 1
-#          - sd: 010000
+#            sd: 010000
 #      - plmn_id:
 #          mcc: 901
 #          mnc: 70

@@ -148,15 +148,16 @@ void smf_s5c_handle_create_session_request(
 
     /* UE IP Address */
     ogs_assert(req->pdn_address_allocation.data);
-    sess->pdn.pdn_type = req->pdn_type.u8;
+    sess->session.session_type = req->pdn_type.u8;
     ogs_gtp_paa_to_ip(
-            (ogs_paa_t *)req->pdn_address_allocation.data, &sess->pdn.ue_ip);
+            (ogs_paa_t *)req->pdn_address_allocation.data,
+            &sess->session.ue_ip);
 
     smf_sess_set_ue_ip(sess);
 
     ogs_info("UE IMSI[%s] APN[%s] IPv4[%s] IPv6[%s]",
 	    smf_ue->imsi_bcd,
-	    sess->pdn.apn,
+	    sess->session.name,
         sess->ipv4 ? OGS_INET_NTOP(&sess->ipv4->addr, buf1) : "",
         sess->ipv6 ? OGS_INET6_NTOP(&sess->ipv6->addr, buf2) : "");
 
@@ -192,11 +193,11 @@ void smf_s5c_handle_create_session_request(
         &req->bearer_contexts_to_be_created.bearer_level_qos);
     ogs_assert(req->bearer_contexts_to_be_created.bearer_level_qos.len ==
             decoded);
-    sess->pdn.qos.qci = bearer_qos.qci;
-    sess->pdn.qos.arp.priority_level = bearer_qos.priority_level;
-    sess->pdn.qos.arp.pre_emption_capability =
+    sess->session.qos.index = bearer_qos.qci;
+    sess->session.qos.arp.priority_level = bearer_qos.priority_level;
+    sess->session.qos.arp.pre_emption_capability =
                     bearer_qos.pre_emption_capability;
-    sess->pdn.qos.arp.pre_emption_vulnerability =
+    sess->session.qos.arp.pre_emption_vulnerability =
                     bearer_qos.pre_emption_vulnerability;
 
     /* Set AMBR if available */
@@ -209,8 +210,8 @@ void smf_s5c_handle_create_session_request(
          * Unsigned32 binary integer values in kbps (1000 bits per second).
          */
         ambr = req->aggregate_maximum_bit_rate.data;
-        sess->pdn.ambr.downlink = be32toh(ambr->downlink) * 1000;
-        sess->pdn.ambr.uplink = be32toh(ambr->uplink) * 1000;
+        sess->session.ambr.downlink = be32toh(ambr->downlink) * 1000;
+        sess->session.ambr.uplink = be32toh(ambr->uplink) * 1000;
     }
 
     /* PCO */

@@ -9,7 +9,10 @@ OpenAPI_dnn_info_t *OpenAPI_dnn_info_create(
     int default_dnn_indicator,
     int lbo_roaming_allowed,
     int iwk_eps_ind,
-    int dnn_barred
+    int dnn_barred,
+    int invoke_nef_ind,
+    OpenAPI_list_t *smf_list,
+    int same_smf_ind
     )
 {
     OpenAPI_dnn_info_t *dnn_info_local_var = OpenAPI_malloc(sizeof(OpenAPI_dnn_info_t));
@@ -21,6 +24,9 @@ OpenAPI_dnn_info_t *OpenAPI_dnn_info_create(
     dnn_info_local_var->lbo_roaming_allowed = lbo_roaming_allowed;
     dnn_info_local_var->iwk_eps_ind = iwk_eps_ind;
     dnn_info_local_var->dnn_barred = dnn_barred;
+    dnn_info_local_var->invoke_nef_ind = invoke_nef_ind;
+    dnn_info_local_var->smf_list = smf_list;
+    dnn_info_local_var->same_smf_ind = same_smf_ind;
 
     return dnn_info_local_var;
 }
@@ -32,6 +38,10 @@ void OpenAPI_dnn_info_free(OpenAPI_dnn_info_t *dnn_info)
     }
     OpenAPI_lnode_t *node;
     ogs_free(dnn_info->dnn);
+    OpenAPI_list_for_each(dnn_info->smf_list, node) {
+        ogs_free(node->data);
+    }
+    OpenAPI_list_free(dnn_info->smf_list);
     ogs_free(dnn_info);
 }
 
@@ -78,6 +88,36 @@ cJSON *OpenAPI_dnn_info_convertToJSON(OpenAPI_dnn_info_t *dnn_info)
     if (dnn_info->dnn_barred) {
         if (cJSON_AddBoolToObject(item, "dnnBarred", dnn_info->dnn_barred) == NULL) {
             ogs_error("OpenAPI_dnn_info_convertToJSON() failed [dnn_barred]");
+            goto end;
+        }
+    }
+
+    if (dnn_info->invoke_nef_ind) {
+        if (cJSON_AddBoolToObject(item, "invokeNefInd", dnn_info->invoke_nef_ind) == NULL) {
+            ogs_error("OpenAPI_dnn_info_convertToJSON() failed [invoke_nef_ind]");
+            goto end;
+        }
+    }
+
+    if (dnn_info->smf_list) {
+        cJSON *smf_list = cJSON_AddArrayToObject(item, "smfList");
+        if (smf_list == NULL) {
+            ogs_error("OpenAPI_dnn_info_convertToJSON() failed [smf_list]");
+            goto end;
+        }
+
+        OpenAPI_lnode_t *smf_list_node;
+        OpenAPI_list_for_each(dnn_info->smf_list, smf_list_node)  {
+            if (cJSON_AddStringToObject(smf_list, "", (char*)smf_list_node->data) == NULL) {
+                ogs_error("OpenAPI_dnn_info_convertToJSON() failed [smf_list]");
+                goto end;
+            }
+        }
+    }
+
+    if (dnn_info->same_smf_ind) {
+        if (cJSON_AddBoolToObject(item, "sameSmfInd", dnn_info->same_smf_ind) == NULL) {
+            ogs_error("OpenAPI_dnn_info_convertToJSON() failed [same_smf_ind]");
             goto end;
         }
     }
@@ -137,12 +177,53 @@ OpenAPI_dnn_info_t *OpenAPI_dnn_info_parseFromJSON(cJSON *dnn_infoJSON)
         }
     }
 
+    cJSON *invoke_nef_ind = cJSON_GetObjectItemCaseSensitive(dnn_infoJSON, "invokeNefInd");
+
+    if (invoke_nef_ind) {
+        if (!cJSON_IsBool(invoke_nef_ind)) {
+            ogs_error("OpenAPI_dnn_info_parseFromJSON() failed [invoke_nef_ind]");
+            goto end;
+        }
+    }
+
+    cJSON *smf_list = cJSON_GetObjectItemCaseSensitive(dnn_infoJSON, "smfList");
+
+    OpenAPI_list_t *smf_listList;
+    if (smf_list) {
+        cJSON *smf_list_local;
+        if (!cJSON_IsArray(smf_list)) {
+            ogs_error("OpenAPI_dnn_info_parseFromJSON() failed [smf_list]");
+            goto end;
+        }
+        smf_listList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(smf_list_local, smf_list) {
+            if (!cJSON_IsString(smf_list_local)) {
+                ogs_error("OpenAPI_dnn_info_parseFromJSON() failed [smf_list]");
+                goto end;
+            }
+            OpenAPI_list_add(smf_listList, ogs_strdup(smf_list_local->valuestring));
+        }
+    }
+
+    cJSON *same_smf_ind = cJSON_GetObjectItemCaseSensitive(dnn_infoJSON, "sameSmfInd");
+
+    if (same_smf_ind) {
+        if (!cJSON_IsBool(same_smf_ind)) {
+            ogs_error("OpenAPI_dnn_info_parseFromJSON() failed [same_smf_ind]");
+            goto end;
+        }
+    }
+
     dnn_info_local_var = OpenAPI_dnn_info_create (
         ogs_strdup(dnn->valuestring),
         default_dnn_indicator ? default_dnn_indicator->valueint : 0,
         lbo_roaming_allowed ? lbo_roaming_allowed->valueint : 0,
         iwk_eps_ind ? iwk_eps_ind->valueint : 0,
-        dnn_barred ? dnn_barred->valueint : 0
+        dnn_barred ? dnn_barred->valueint : 0,
+        invoke_nef_ind ? invoke_nef_ind->valueint : 0,
+        smf_list ? smf_listList : NULL,
+        same_smf_ind ? same_smf_ind->valueint : 0
         );
 
     return dnn_info_local_var;

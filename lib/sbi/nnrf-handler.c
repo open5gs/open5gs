@@ -20,6 +20,163 @@
 #include "ogs-sbi.h"
 #include "ogs-app.h"
 
+static void handle_smf_info(
+        ogs_sbi_nf_instance_t *nf_instance, OpenAPI_smf_info_t *SmfInfo)
+{
+    ogs_sbi_nf_info_t *nf_info = NULL;
+
+    OpenAPI_list_t *sNssaiSmfInfoList = NULL;
+    OpenAPI_snssai_smf_info_item_t *sNssaiSmfInfoItem = NULL;
+    OpenAPI_snssai_t *sNssai = NULL;
+    OpenAPI_list_t *DnnSmfInfoList = NULL;
+    OpenAPI_dnn_smf_info_item_t *DnnSmfInfoItem = NULL;
+
+    OpenAPI_list_t *TaiList = NULL;
+    OpenAPI_tai_t *TaiItem = NULL;
+    OpenAPI_list_t *TaiRangeList = NULL;
+    OpenAPI_tai_range_t *TaiRangeItem = NULL;
+    OpenAPI_list_t *TacRangeList = NULL;
+    OpenAPI_tac_range_t *TacRangeItem = NULL;
+
+    OpenAPI_lnode_t *node = NULL, *node2 = NULL;
+
+    ogs_assert(nf_instance);
+    ogs_assert(SmfInfo);
+
+    nf_info = ogs_sbi_nf_info_add(
+            &nf_instance->nf_info_list, OpenAPI_nf_type_SMF);
+    ogs_assert(nf_info);
+
+    sNssaiSmfInfoList = SmfInfo->s_nssai_smf_info_list;
+    OpenAPI_list_for_each(sNssaiSmfInfoList, node) {
+        sNssaiSmfInfoItem = node->data;
+        if (sNssaiSmfInfoItem) {
+            ogs_assert(nf_info->smf.num_of_slice < OGS_MAX_NUM_OF_SLICE);
+
+            DnnSmfInfoList = sNssaiSmfInfoItem->dnn_smf_info_list;
+            OpenAPI_list_for_each(DnnSmfInfoList, node2) {
+                DnnSmfInfoItem = node2->data;
+                if (DnnSmfInfoItem && DnnSmfInfoItem->dnn) {
+                    int dnn_index = nf_info->smf.slice
+                        [nf_info->smf.num_of_slice].num_of_dnn;
+
+                    ogs_assert(dnn_index < OGS_MAX_NUM_OF_DNN);
+                    nf_info->smf.slice[nf_info->smf.num_of_slice].
+                        dnn[dnn_index] = ogs_strdup(DnnSmfInfoItem->dnn);
+                    nf_info->smf.slice[nf_info->smf.num_of_slice].
+                        num_of_dnn++;
+                }
+            }
+
+            if (!nf_info->smf.slice[nf_info->smf.num_of_slice].num_of_dnn) {
+                ogs_error("No DNN");
+                continue;
+            }
+
+            sNssai = sNssaiSmfInfoItem->s_nssai;
+            if (sNssai) {
+                ogs_s_nssai_t *s_nssai = NULL;
+
+                s_nssai = &nf_info->smf.
+                    slice[nf_info->smf.num_of_slice].s_nssai;
+                s_nssai->sst = sNssai->sst;
+                s_nssai->sd = ogs_s_nssai_sd_from_string(sNssai->sd);
+                nf_info->smf.num_of_slice++;
+            }
+        }
+    }
+
+    if (nf_info->smf.num_of_slice == 0) {
+        ogs_error("No S-NSSAI(DNN) in smfInfo");
+        ogs_sbi_nf_info_remove(&nf_instance->nf_info_list, nf_info);
+        return;
+    }
+
+    TaiList = SmfInfo->tai_list;
+    OpenAPI_list_for_each(TaiList, node) {
+        TaiItem = node->data;
+        if (TaiItem && TaiItem->plmn_id && TaiItem->tac) {
+            ogs_5gs_tai_t *nr_tai = NULL;
+            ogs_assert(nf_info->smf.num_of_nr_tai < OGS_MAX_NUM_OF_TAI);
+
+            nr_tai = &nf_info->smf.nr_tai[nf_info->smf.num_of_nr_tai];
+            ogs_assert(nr_tai);
+            ogs_sbi_parse_plmn_id(&nr_tai->plmn_id, TaiItem->plmn_id);
+            nr_tai->tac = ogs_uint24_from_string(TaiItem->tac);
+
+            nf_info->smf.num_of_nr_tai++;
+        }
+    }
+
+    TaiRangeList = SmfInfo->tai_range_list;
+    OpenAPI_list_for_each(TaiRangeList, node) {
+        TaiRangeItem = node->data;
+        if (TaiRangeItem && TaiRangeItem->plmn_id &&
+                TaiRangeItem->tac_range_list) {
+            ogs_assert(nf_info->smf.num_of_nr_tai_range <
+                    OGS_MAX_NUM_OF_TAI);
+
+            ogs_sbi_parse_plmn_id(
+                &nf_info->smf.nr_tai_range
+                    [nf_info->smf.num_of_nr_tai_range].plmn_id,
+                TaiRangeItem->plmn_id);
+
+            TacRangeList = TaiRangeItem->tac_range_list;
+            OpenAPI_list_for_each(TacRangeList, node2) {
+                TacRangeItem = node2->data;
+                if (TacRangeItem &&
+                        TacRangeItem->start && TacRangeItem->end) {
+                    int tac_index = nf_info->smf.nr_tai_range
+                        [nf_info->smf.num_of_nr_tai_range].num_of_tac_range;
+                    ogs_assert(tac_index < OGS_MAX_NUM_OF_TAI);
+
+                    nf_info->smf.nr_tai_range
+                        [nf_info->smf.num_of_nr_tai_range].
+                            start[tac_index] =
+                                ogs_uint24_from_string(TacRangeItem->start);
+                    nf_info->smf.nr_tai_range
+                        [nf_info->smf.num_of_nr_tai_range].
+                            end[tac_index] =
+                                ogs_uint24_from_string(TacRangeItem->end);
+
+                    nf_info->smf.nr_tai_range
+                        [nf_info->smf.num_of_nr_tai_range].
+                            num_of_tac_range++;
+                }
+            }
+
+            nf_info->smf.num_of_nr_tai_range++;
+        }
+    }
+
+#if 0
+    ogs_sbi_smf_info_t *smf_info = &nf_info->smf;
+    int i, j;
+    for (i = 0; i < smf_info->num_of_slice; i++) {
+        ogs_fatal("%d, %x", smf_info->slice[i].s_nssai.sst,
+                smf_info->slice[i].s_nssai.sd.v);
+        for (j = 0; j < smf_info->slice[i].num_of_dnn; j++)
+            ogs_fatal("   %s", smf_info->slice[i].dnn[j]);
+    }
+    for (i = 0; i < smf_info->num_of_nr_tai; i++) {
+        ogs_fatal("%d, %d, %x",
+                ogs_plmn_id_mcc(&smf_info->nr_tai[i].plmn_id),
+                ogs_plmn_id_mnc(&smf_info->nr_tai[i].plmn_id),
+                smf_info->nr_tai[i].tac.v);
+    }
+    for (i = 0; i < smf_info->num_of_nr_tai_range; i++) {
+        ogs_fatal("%d, %d",
+                ogs_plmn_id_mcc(&smf_info->nr_tai[i].plmn_id),
+                ogs_plmn_id_mnc(&smf_info->nr_tai[i].plmn_id));
+        for (j = 0; j < smf_info->nr_tai_range[i].num_of_tac_range; j++) {
+            ogs_fatal("   %d-%d",
+                smf_info->nr_tai_range[i].start[j].v,
+                smf_info->nr_tai_range[i].end[j].v);
+        }
+    }
+#endif
+}
+
 bool ogs_sbi_nnrf_handle_nf_profile(ogs_sbi_nf_instance_t *nf_instance,
         OpenAPI_nf_profile_t *NFProfile,
         ogs_sbi_stream_t *stream, ogs_sbi_message_t *message)
@@ -220,6 +377,17 @@ bool ogs_sbi_nnrf_handle_nf_profile(ogs_sbi_nf_instance_t *nf_instance,
                 }
             }
         }
+    }
+
+    ogs_sbi_nf_info_remove_all(&nf_instance->nf_info_list);
+
+    if (NFProfile->smf_info)
+        handle_smf_info(nf_instance, NFProfile->smf_info);
+
+    OpenAPI_list_for_each(NFProfile->smf_info_list, node) {
+        OpenAPI_map_t *SmfInfoMap = node->data;
+        if (SmfInfoMap && SmfInfoMap->value)
+            handle_smf_info(nf_instance, SmfInfoMap->value);
     }
 
     return true;

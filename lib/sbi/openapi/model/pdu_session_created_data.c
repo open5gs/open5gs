@@ -24,6 +24,7 @@ OpenAPI_pdu_session_created_data_t *OpenAPI_pdu_session_created_data_create(
     OpenAPI_list_t *eps_bearer_info,
     char *supported_features,
     OpenAPI_max_integrity_protected_data_rate_e max_integrity_protected_data_rate,
+    OpenAPI_max_integrity_protected_data_rate_e max_integrity_protected_data_rate_dl,
     int always_on_granted,
     char *gpsi,
     OpenAPI_up_security_t *up_security,
@@ -35,7 +36,11 @@ OpenAPI_pdu_session_created_data_t *OpenAPI_pdu_session_created_data_create(
     int ipv6_multi_homing_ind,
     int ma_accepted_ind,
     char *home_provided_charging_id,
-    int nef_ext_buf_support_ind
+    int nef_ext_buf_support_ind,
+    int small_data_rate_control_enabled,
+    char *ue_ipv6_interface_id,
+    int ipv6_index,
+    OpenAPI_ip_address_t *dn_aaa_address
     )
 {
     OpenAPI_pdu_session_created_data_t *pdu_session_created_data_local_var = OpenAPI_malloc(sizeof(OpenAPI_pdu_session_created_data_t));
@@ -61,6 +66,7 @@ OpenAPI_pdu_session_created_data_t *OpenAPI_pdu_session_created_data_create(
     pdu_session_created_data_local_var->eps_bearer_info = eps_bearer_info;
     pdu_session_created_data_local_var->supported_features = supported_features;
     pdu_session_created_data_local_var->max_integrity_protected_data_rate = max_integrity_protected_data_rate;
+    pdu_session_created_data_local_var->max_integrity_protected_data_rate_dl = max_integrity_protected_data_rate_dl;
     pdu_session_created_data_local_var->always_on_granted = always_on_granted;
     pdu_session_created_data_local_var->gpsi = gpsi;
     pdu_session_created_data_local_var->up_security = up_security;
@@ -73,6 +79,10 @@ OpenAPI_pdu_session_created_data_t *OpenAPI_pdu_session_created_data_create(
     pdu_session_created_data_local_var->ma_accepted_ind = ma_accepted_ind;
     pdu_session_created_data_local_var->home_provided_charging_id = home_provided_charging_id;
     pdu_session_created_data_local_var->nef_ext_buf_support_ind = nef_ext_buf_support_ind;
+    pdu_session_created_data_local_var->small_data_rate_control_enabled = small_data_rate_control_enabled;
+    pdu_session_created_data_local_var->ue_ipv6_interface_id = ue_ipv6_interface_id;
+    pdu_session_created_data_local_var->ipv6_index = ipv6_index;
+    pdu_session_created_data_local_var->dn_aaa_address = dn_aaa_address;
 
     return pdu_session_created_data_local_var;
 }
@@ -115,6 +125,8 @@ void OpenAPI_pdu_session_created_data_free(OpenAPI_pdu_session_created_data_t *p
     }
     OpenAPI_list_free(pdu_session_created_data->dnai_list);
     ogs_free(pdu_session_created_data->home_provided_charging_id);
+    ogs_free(pdu_session_created_data->ue_ipv6_interface_id);
+    OpenAPI_ip_address_free(pdu_session_created_data->dn_aaa_address);
     ogs_free(pdu_session_created_data);
 }
 
@@ -333,6 +345,13 @@ cJSON *OpenAPI_pdu_session_created_data_convertToJSON(OpenAPI_pdu_session_create
         }
     }
 
+    if (pdu_session_created_data->max_integrity_protected_data_rate_dl) {
+        if (cJSON_AddStringToObject(item, "maxIntegrityProtectedDataRateDl", OpenAPI_max_integrity_protected_data_rate_ToString(pdu_session_created_data->max_integrity_protected_data_rate_dl)) == NULL) {
+            ogs_error("OpenAPI_pdu_session_created_data_convertToJSON() failed [max_integrity_protected_data_rate_dl]");
+            goto end;
+        }
+    }
+
     if (pdu_session_created_data->always_on_granted) {
         if (cJSON_AddBoolToObject(item, "alwaysOnGranted", pdu_session_created_data->always_on_granted) == NULL) {
             ogs_error("OpenAPI_pdu_session_created_data_convertToJSON() failed [always_on_granted]");
@@ -434,6 +453,40 @@ cJSON *OpenAPI_pdu_session_created_data_convertToJSON(OpenAPI_pdu_session_create
     if (pdu_session_created_data->nef_ext_buf_support_ind) {
         if (cJSON_AddBoolToObject(item, "nefExtBufSupportInd", pdu_session_created_data->nef_ext_buf_support_ind) == NULL) {
             ogs_error("OpenAPI_pdu_session_created_data_convertToJSON() failed [nef_ext_buf_support_ind]");
+            goto end;
+        }
+    }
+
+    if (pdu_session_created_data->small_data_rate_control_enabled) {
+        if (cJSON_AddBoolToObject(item, "smallDataRateControlEnabled", pdu_session_created_data->small_data_rate_control_enabled) == NULL) {
+            ogs_error("OpenAPI_pdu_session_created_data_convertToJSON() failed [small_data_rate_control_enabled]");
+            goto end;
+        }
+    }
+
+    if (pdu_session_created_data->ue_ipv6_interface_id) {
+        if (cJSON_AddStringToObject(item, "ueIpv6InterfaceId", pdu_session_created_data->ue_ipv6_interface_id) == NULL) {
+            ogs_error("OpenAPI_pdu_session_created_data_convertToJSON() failed [ue_ipv6_interface_id]");
+            goto end;
+        }
+    }
+
+    if (pdu_session_created_data->ipv6_index) {
+        if (cJSON_AddNumberToObject(item, "ipv6Index", pdu_session_created_data->ipv6_index) == NULL) {
+            ogs_error("OpenAPI_pdu_session_created_data_convertToJSON() failed [ipv6_index]");
+            goto end;
+        }
+    }
+
+    if (pdu_session_created_data->dn_aaa_address) {
+        cJSON *dn_aaa_address_local_JSON = OpenAPI_ip_address_convertToJSON(pdu_session_created_data->dn_aaa_address);
+        if (dn_aaa_address_local_JSON == NULL) {
+            ogs_error("OpenAPI_pdu_session_created_data_convertToJSON() failed [dn_aaa_address]");
+            goto end;
+        }
+        cJSON_AddItemToObject(item, "dnAaaAddress", dn_aaa_address_local_JSON);
+        if (item->child == NULL) {
+            ogs_error("OpenAPI_pdu_session_created_data_convertToJSON() failed [dn_aaa_address]");
             goto end;
         }
     }
@@ -640,6 +693,17 @@ OpenAPI_pdu_session_created_data_t *OpenAPI_pdu_session_created_data_parseFromJS
         max_integrity_protected_data_rateVariable = OpenAPI_max_integrity_protected_data_rate_FromString(max_integrity_protected_data_rate->valuestring);
     }
 
+    cJSON *max_integrity_protected_data_rate_dl = cJSON_GetObjectItemCaseSensitive(pdu_session_created_dataJSON, "maxIntegrityProtectedDataRateDl");
+
+    OpenAPI_max_integrity_protected_data_rate_e max_integrity_protected_data_rate_dlVariable;
+    if (max_integrity_protected_data_rate_dl) {
+        if (!cJSON_IsString(max_integrity_protected_data_rate_dl)) {
+            ogs_error("OpenAPI_pdu_session_created_data_parseFromJSON() failed [max_integrity_protected_data_rate_dl]");
+            goto end;
+        }
+        max_integrity_protected_data_rate_dlVariable = OpenAPI_max_integrity_protected_data_rate_FromString(max_integrity_protected_data_rate_dl->valuestring);
+    }
+
     cJSON *always_on_granted = cJSON_GetObjectItemCaseSensitive(pdu_session_created_dataJSON, "alwaysOnGranted");
 
     if (always_on_granted) {
@@ -755,6 +819,40 @@ OpenAPI_pdu_session_created_data_t *OpenAPI_pdu_session_created_data_parseFromJS
         }
     }
 
+    cJSON *small_data_rate_control_enabled = cJSON_GetObjectItemCaseSensitive(pdu_session_created_dataJSON, "smallDataRateControlEnabled");
+
+    if (small_data_rate_control_enabled) {
+        if (!cJSON_IsBool(small_data_rate_control_enabled)) {
+            ogs_error("OpenAPI_pdu_session_created_data_parseFromJSON() failed [small_data_rate_control_enabled]");
+            goto end;
+        }
+    }
+
+    cJSON *ue_ipv6_interface_id = cJSON_GetObjectItemCaseSensitive(pdu_session_created_dataJSON, "ueIpv6InterfaceId");
+
+    if (ue_ipv6_interface_id) {
+        if (!cJSON_IsString(ue_ipv6_interface_id)) {
+            ogs_error("OpenAPI_pdu_session_created_data_parseFromJSON() failed [ue_ipv6_interface_id]");
+            goto end;
+        }
+    }
+
+    cJSON *ipv6_index = cJSON_GetObjectItemCaseSensitive(pdu_session_created_dataJSON, "ipv6Index");
+
+    if (ipv6_index) {
+        if (!cJSON_IsNumber(ipv6_index)) {
+            ogs_error("OpenAPI_pdu_session_created_data_parseFromJSON() failed [ipv6_index]");
+            goto end;
+        }
+    }
+
+    cJSON *dn_aaa_address = cJSON_GetObjectItemCaseSensitive(pdu_session_created_dataJSON, "dnAaaAddress");
+
+    OpenAPI_ip_address_t *dn_aaa_address_local_nonprim = NULL;
+    if (dn_aaa_address) {
+        dn_aaa_address_local_nonprim = OpenAPI_ip_address_parseFromJSON(dn_aaa_address);
+    }
+
     pdu_session_created_data_local_var = OpenAPI_pdu_session_created_data_create (
         pdu_session_typeVariable,
         ogs_strdup(ssc_mode->valuestring),
@@ -775,6 +873,7 @@ OpenAPI_pdu_session_created_data_t *OpenAPI_pdu_session_created_data_parseFromJS
         eps_bearer_info ? eps_bearer_infoList : NULL,
         supported_features ? ogs_strdup(supported_features->valuestring) : NULL,
         max_integrity_protected_data_rate ? max_integrity_protected_data_rateVariable : 0,
+        max_integrity_protected_data_rate_dl ? max_integrity_protected_data_rate_dlVariable : 0,
         always_on_granted ? always_on_granted->valueint : 0,
         gpsi ? ogs_strdup(gpsi->valuestring) : NULL,
         up_security ? up_security_local_nonprim : NULL,
@@ -786,7 +885,11 @@ OpenAPI_pdu_session_created_data_t *OpenAPI_pdu_session_created_data_parseFromJS
         ipv6_multi_homing_ind ? ipv6_multi_homing_ind->valueint : 0,
         ma_accepted_ind ? ma_accepted_ind->valueint : 0,
         home_provided_charging_id ? ogs_strdup(home_provided_charging_id->valuestring) : NULL,
-        nef_ext_buf_support_ind ? nef_ext_buf_support_ind->valueint : 0
+        nef_ext_buf_support_ind ? nef_ext_buf_support_ind->valueint : 0,
+        small_data_rate_control_enabled ? small_data_rate_control_enabled->valueint : 0,
+        ue_ipv6_interface_id ? ogs_strdup(ue_ipv6_interface_id->valuestring) : NULL,
+        ipv6_index ? ipv6_index->valuedouble : 0,
+        dn_aaa_address ? dn_aaa_address_local_nonprim : NULL
         );
 
     return pdu_session_created_data_local_var;

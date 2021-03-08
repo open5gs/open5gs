@@ -5,7 +5,7 @@
 #include "guami.h"
 
 OpenAPI_guami_t *OpenAPI_guami_create(
-    OpenAPI_plmn_id_t *plmn_id,
+    OpenAPI_plmn_id_nid_t *plmn_id,
     char *amf_id
     )
 {
@@ -25,7 +25,7 @@ void OpenAPI_guami_free(OpenAPI_guami_t *guami)
         return;
     }
     OpenAPI_lnode_t *node;
-    OpenAPI_plmn_id_free(guami->plmn_id);
+    OpenAPI_plmn_id_nid_free(guami->plmn_id);
     ogs_free(guami->amf_id);
     ogs_free(guami);
 }
@@ -44,7 +44,7 @@ cJSON *OpenAPI_guami_convertToJSON(OpenAPI_guami_t *guami)
         ogs_error("OpenAPI_guami_convertToJSON() failed [plmn_id]");
         goto end;
     }
-    cJSON *plmn_id_local_JSON = OpenAPI_plmn_id_convertToJSON(guami->plmn_id);
+    cJSON *plmn_id_local_JSON = OpenAPI_plmn_id_nid_convertToJSON(guami->plmn_id);
     if (plmn_id_local_JSON == NULL) {
         ogs_error("OpenAPI_guami_convertToJSON() failed [plmn_id]");
         goto end;
@@ -77,9 +77,9 @@ OpenAPI_guami_t *OpenAPI_guami_parseFromJSON(cJSON *guamiJSON)
         goto end;
     }
 
-    OpenAPI_plmn_id_t *plmn_id_local_nonprim = NULL;
+    OpenAPI_plmn_id_nid_t *plmn_id_local_nonprim = NULL;
 
-    plmn_id_local_nonprim = OpenAPI_plmn_id_parseFromJSON(plmn_id);
+    plmn_id_local_nonprim = OpenAPI_plmn_id_nid_parseFromJSON(plmn_id);
 
     cJSON *amf_id = cJSON_GetObjectItemCaseSensitive(guamiJSON, "amfId");
     if (!amf_id) {

@@ -17,16 +17,11 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_up_integrity_s OpenAPI_up_integrity_t;
-typedef struct OpenAPI_up_integrity_s {
-} OpenAPI_up_integrity_t;
+typedef enum { OpenAPI_up_integrity_NULL = 0, OpenAPI_up_integrity_REQUIRED, OpenAPI_up_integrity_PREFERRED, OpenAPI_up_integrity_NOT_NEEDED } OpenAPI_up_integrity_e;
 
-OpenAPI_up_integrity_t *OpenAPI_up_integrity_create(
-    );
-void OpenAPI_up_integrity_free(OpenAPI_up_integrity_t *up_integrity);
-OpenAPI_up_integrity_t *OpenAPI_up_integrity_parseFromJSON(cJSON *up_integrityJSON);
-cJSON *OpenAPI_up_integrity_convertToJSON(OpenAPI_up_integrity_t *up_integrity);
-OpenAPI_up_integrity_t *OpenAPI_up_integrity_copy(OpenAPI_up_integrity_t *dst, OpenAPI_up_integrity_t *src);
+char* OpenAPI_up_integrity_ToString(OpenAPI_up_integrity_e up_integrity);
+
+OpenAPI_up_integrity_e OpenAPI_up_integrity_FromString(char* up_integrity);
 
 #ifdef __cplusplus
 }

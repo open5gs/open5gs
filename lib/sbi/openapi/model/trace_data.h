@@ -21,7 +21,7 @@ extern "C" {
 typedef struct OpenAPI_trace_data_s OpenAPI_trace_data_t;
 typedef struct OpenAPI_trace_data_s {
     char *trace_ref;
-    struct OpenAPI_trace_depth_s *trace_depth;
+    OpenAPI_trace_depth_e trace_depth;
     char *ne_type_list;
     char *event_list;
     char *collection_entity_ipv4_addr;
@@ -31,7 +31,7 @@ typedef struct OpenAPI_trace_data_s {
 
 OpenAPI_trace_data_t *OpenAPI_trace_data_create(
     char *trace_ref,
-    OpenAPI_trace_depth_t *trace_depth,
+    OpenAPI_trace_depth_e trace_depth,
     char *ne_type_list,
     char *event_list,
     char *collection_entity_ipv4_addr,

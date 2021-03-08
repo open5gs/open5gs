@@ -20,7 +20,6 @@
 #include "event.h"
 #include "context.h"
 
-#define EVENT_POOL 32 /* FIXME : 32 */
 static OGS_POOL(pool, amf_event_t);
 
 void amf_event_init(void)

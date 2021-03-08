@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+#include "alternative_qos_profile.h"
 #include "notification_control.h"
 
 #ifdef __cplusplus
@@ -24,9 +25,10 @@ typedef struct OpenAPI_gbr_qos_flow_information_s {
     char *max_fbr_ul;
     char *gua_fbr_dl;
     char *gua_fbr_ul;
-    struct OpenAPI_notification_control_s *notif_control;
+    OpenAPI_notification_control_e notif_control;
     int max_packet_loss_rate_dl;
     int max_packet_loss_rate_ul;
+    OpenAPI_list_t *alternative_qos_profile_list;
 } OpenAPI_gbr_qos_flow_information_t;
 
 OpenAPI_gbr_qos_flow_information_t *OpenAPI_gbr_qos_flow_information_create(
@@ -34,9 +36,10 @@ OpenAPI_gbr_qos_flow_information_t *OpenAPI_gbr_qos_flow_information_create(
     char *max_fbr_ul,
     char *gua_fbr_dl,
     char *gua_fbr_ul,
-    OpenAPI_notification_control_t *notif_control,
+    OpenAPI_notification_control_e notif_control,
     int max_packet_loss_rate_dl,
-    int max_packet_loss_rate_ul
+    int max_packet_loss_rate_ul,
+    OpenAPI_list_t *alternative_qos_profile_list
     );
 void OpenAPI_gbr_qos_flow_information_free(OpenAPI_gbr_qos_flow_information_t *gbr_qos_flow_information);
 OpenAPI_gbr_qos_flow_information_t *OpenAPI_gbr_qos_flow_information_parseFromJSON(cJSON *gbr_qos_flow_informationJSON);

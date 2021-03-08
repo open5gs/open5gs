@@ -23,12 +23,14 @@ typedef struct OpenAPI_lcs_privacy_s {
     char *af_instance_id;
     int reference_id;
     struct OpenAPI_lpi_s *lpi;
+    char *mtc_provider_information;
 } OpenAPI_lcs_privacy_t;
 
 OpenAPI_lcs_privacy_t *OpenAPI_lcs_privacy_create(
     char *af_instance_id,
     int reference_id,
-    OpenAPI_lpi_t *lpi
+    OpenAPI_lpi_t *lpi,
+    char *mtc_provider_information
     );
 void OpenAPI_lcs_privacy_free(OpenAPI_lcs_privacy_t *lcs_privacy);
 OpenAPI_lcs_privacy_t *OpenAPI_lcs_privacy_parseFromJSON(cJSON *lcs_privacyJSON);

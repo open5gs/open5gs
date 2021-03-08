@@ -19,11 +19,9 @@ OpenAPI_amf_non3_gpp_access_registration_t *OpenAPI_amf_non3_gpp_access_registra
     OpenAPI_rat_type_e rat_type,
     int urrp_indicator,
     char *amf_ee_subscription_id,
-    char *nid,
     char *registration_time,
-    char *vgmlc_address_ipv4,
-    char *vgmlc_address_ipv6,
-    char *vgmlc_fqdn
+    OpenAPI_vgmlc_address_t *vgmlc_address,
+    OpenAPI_context_info_t *context_info
     )
 {
     OpenAPI_amf_non3_gpp_access_registration_t *amf_non3_gpp_access_registration_local_var = OpenAPI_malloc(sizeof(OpenAPI_amf_non3_gpp_access_registration_t));
@@ -44,11 +42,9 @@ OpenAPI_amf_non3_gpp_access_registration_t *OpenAPI_amf_non3_gpp_access_registra
     amf_non3_gpp_access_registration_local_var->rat_type = rat_type;
     amf_non3_gpp_access_registration_local_var->urrp_indicator = urrp_indicator;
     amf_non3_gpp_access_registration_local_var->amf_ee_subscription_id = amf_ee_subscription_id;
-    amf_non3_gpp_access_registration_local_var->nid = nid;
     amf_non3_gpp_access_registration_local_var->registration_time = registration_time;
-    amf_non3_gpp_access_registration_local_var->vgmlc_address_ipv4 = vgmlc_address_ipv4;
-    amf_non3_gpp_access_registration_local_var->vgmlc_address_ipv6 = vgmlc_address_ipv6;
-    amf_non3_gpp_access_registration_local_var->vgmlc_fqdn = vgmlc_fqdn;
+    amf_non3_gpp_access_registration_local_var->vgmlc_address = vgmlc_address;
+    amf_non3_gpp_access_registration_local_var->context_info = context_info;
 
     return amf_non3_gpp_access_registration_local_var;
 }
@@ -73,11 +69,9 @@ void OpenAPI_amf_non3_gpp_access_registration_free(OpenAPI_amf_non3_gpp_access_r
     }
     OpenAPI_list_free(amf_non3_gpp_access_registration->backup_amf_info);
     ogs_free(amf_non3_gpp_access_registration->amf_ee_subscription_id);
-    ogs_free(amf_non3_gpp_access_registration->nid);
     ogs_free(amf_non3_gpp_access_registration->registration_time);
-    ogs_free(amf_non3_gpp_access_registration->vgmlc_address_ipv4);
-    ogs_free(amf_non3_gpp_access_registration->vgmlc_address_ipv6);
-    ogs_free(amf_non3_gpp_access_registration->vgmlc_fqdn);
+    OpenAPI_vgmlc_address_free(amf_non3_gpp_access_registration->vgmlc_address);
+    OpenAPI_context_info_free(amf_non3_gpp_access_registration->context_info);
     ogs_free(amf_non3_gpp_access_registration);
 }
 
@@ -224,13 +218,6 @@ cJSON *OpenAPI_amf_non3_gpp_access_registration_convertToJSON(OpenAPI_amf_non3_g
         }
     }
 
-    if (amf_non3_gpp_access_registration->nid) {
-        if (cJSON_AddStringToObject(item, "nid", amf_non3_gpp_access_registration->nid) == NULL) {
-            ogs_error("OpenAPI_amf_non3_gpp_access_registration_convertToJSON() failed [nid]");
-            goto end;
-        }
-    }
-
     if (amf_non3_gpp_access_registration->registration_time) {
         if (cJSON_AddStringToObject(item, "registrationTime", amf_non3_gpp_access_registration->registration_time) == NULL) {
             ogs_error("OpenAPI_amf_non3_gpp_access_registration_convertToJSON() failed [registration_time]");
@@ -238,23 +225,28 @@ cJSON *OpenAPI_amf_non3_gpp_access_registration_convertToJSON(OpenAPI_amf_non3_g
         }
     }
 
-    if (amf_non3_gpp_access_registration->vgmlc_address_ipv4) {
-        if (cJSON_AddStringToObject(item, "vgmlcAddressIpv4", amf_non3_gpp_access_registration->vgmlc_address_ipv4) == NULL) {
-            ogs_error("OpenAPI_amf_non3_gpp_access_registration_convertToJSON() failed [vgmlc_address_ipv4]");
+    if (amf_non3_gpp_access_registration->vgmlc_address) {
+        cJSON *vgmlc_address_local_JSON = OpenAPI_vgmlc_address_convertToJSON(amf_non3_gpp_access_registration->vgmlc_address);
+        if (vgmlc_address_local_JSON == NULL) {
+            ogs_error("OpenAPI_amf_non3_gpp_access_registration_convertToJSON() failed [vgmlc_address]");
+            goto end;
+        }
+        cJSON_AddItemToObject(item, "vgmlcAddress", vgmlc_address_local_JSON);
+        if (item->child == NULL) {
+            ogs_error("OpenAPI_amf_non3_gpp_access_registration_convertToJSON() failed [vgmlc_address]");
             goto end;
         }
     }
 
-    if (amf_non3_gpp_access_registration->vgmlc_address_ipv6) {
-        if (cJSON_AddStringToObject(item, "vgmlcAddressIpv6", amf_non3_gpp_access_registration->vgmlc_address_ipv6) == NULL) {
-            ogs_error("OpenAPI_amf_non3_gpp_access_registration_convertToJSON() failed [vgmlc_address_ipv6]");
+    if (amf_non3_gpp_access_registration->context_info) {
+        cJSON *context_info_local_JSON = OpenAPI_context_info_convertToJSON(amf_non3_gpp_access_registration->context_info);
+        if (context_info_local_JSON == NULL) {
+            ogs_error("OpenAPI_amf_non3_gpp_access_registration_convertToJSON() failed [context_info]");
             goto end;
         }
-    }
-
-    if (amf_non3_gpp_access_registration->vgmlc_fqdn) {
-        if (cJSON_AddStringToObject(item, "vgmlcFqdn", amf_non3_gpp_access_registration->vgmlc_fqdn) == NULL) {
-            ogs_error("OpenAPI_amf_non3_gpp_access_registration_convertToJSON() failed [vgmlc_fqdn]");
+        cJSON_AddItemToObject(item, "contextInfo", context_info_local_JSON);
+        if (item->child == NULL) {
+            ogs_error("OpenAPI_amf_non3_gpp_access_registration_convertToJSON() failed [context_info]");
             goto end;
         }
     }
@@ -419,15 +411,6 @@ OpenAPI_amf_non3_gpp_access_registration_t *OpenAPI_amf_non3_gpp_access_registra
         }
     }
 
-    cJSON *nid = cJSON_GetObjectItemCaseSensitive(amf_non3_gpp_access_registrationJSON, "nid");
-
-    if (nid) {
-        if (!cJSON_IsString(nid)) {
-            ogs_error("OpenAPI_amf_non3_gpp_access_registration_parseFromJSON() failed [nid]");
-            goto end;
-        }
-    }
-
     cJSON *registration_time = cJSON_GetObjectItemCaseSensitive(amf_non3_gpp_access_registrationJSON, "registrationTime");
 
     if (registration_time) {
@@ -437,31 +420,18 @@ OpenAPI_amf_non3_gpp_access_registration_t *OpenAPI_amf_non3_gpp_access_registra
         }
     }
 
-    cJSON *vgmlc_address_ipv4 = cJSON_GetObjectItemCaseSensitive(amf_non3_gpp_access_registrationJSON, "vgmlcAddressIpv4");
+    cJSON *vgmlc_address = cJSON_GetObjectItemCaseSensitive(amf_non3_gpp_access_registrationJSON, "vgmlcAddress");
 
-    if (vgmlc_address_ipv4) {
-        if (!cJSON_IsString(vgmlc_address_ipv4)) {
-            ogs_error("OpenAPI_amf_non3_gpp_access_registration_parseFromJSON() failed [vgmlc_address_ipv4]");
-            goto end;
-        }
+    OpenAPI_vgmlc_address_t *vgmlc_address_local_nonprim = NULL;
+    if (vgmlc_address) {
+        vgmlc_address_local_nonprim = OpenAPI_vgmlc_address_parseFromJSON(vgmlc_address);
     }
 
-    cJSON *vgmlc_address_ipv6 = cJSON_GetObjectItemCaseSensitive(amf_non3_gpp_access_registrationJSON, "vgmlcAddressIpv6");
+    cJSON *context_info = cJSON_GetObjectItemCaseSensitive(amf_non3_gpp_access_registrationJSON, "contextInfo");
 
-    if (vgmlc_address_ipv6) {
-        if (!cJSON_IsString(vgmlc_address_ipv6)) {
-            ogs_error("OpenAPI_amf_non3_gpp_access_registration_parseFromJSON() failed [vgmlc_address_ipv6]");
-            goto end;
-        }
-    }
-
-    cJSON *vgmlc_fqdn = cJSON_GetObjectItemCaseSensitive(amf_non3_gpp_access_registrationJSON, "vgmlcFqdn");
-
-    if (vgmlc_fqdn) {
-        if (!cJSON_IsString(vgmlc_fqdn)) {
-            ogs_error("OpenAPI_amf_non3_gpp_access_registration_parseFromJSON() failed [vgmlc_fqdn]");
-            goto end;
-        }
+    OpenAPI_context_info_t *context_info_local_nonprim = NULL;
+    if (context_info) {
+        context_info_local_nonprim = OpenAPI_context_info_parseFromJSON(context_info);
     }
 
     amf_non3_gpp_access_registration_local_var = OpenAPI_amf_non3_gpp_access_registration_create (
@@ -479,11 +449,9 @@ OpenAPI_amf_non3_gpp_access_registration_t *OpenAPI_amf_non3_gpp_access_registra
         rat_typeVariable,
         urrp_indicator ? urrp_indicator->valueint : 0,
         amf_ee_subscription_id ? ogs_strdup(amf_ee_subscription_id->valuestring) : NULL,
-        nid ? ogs_strdup(nid->valuestring) : NULL,
         registration_time ? ogs_strdup(registration_time->valuestring) : NULL,
-        vgmlc_address_ipv4 ? ogs_strdup(vgmlc_address_ipv4->valuestring) : NULL,
-        vgmlc_address_ipv6 ? ogs_strdup(vgmlc_address_ipv6->valuestring) : NULL,
-        vgmlc_fqdn ? ogs_strdup(vgmlc_fqdn->valuestring) : NULL
+        vgmlc_address ? vgmlc_address_local_nonprim : NULL,
+        context_info ? context_info_local_nonprim : NULL
         );
 
     return amf_non3_gpp_access_registration_local_var;

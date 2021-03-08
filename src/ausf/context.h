@@ -99,6 +99,8 @@ ausf_ue_t *ausf_ue_find_by_ctx_id(char *ctx_id);
 
 ausf_ue_t *ausf_ue_cycle(ausf_ue_t *ausf_ue);
 
+void ausf_ue_select_nf(ausf_ue_t *ausf_ue, OpenAPI_nf_type_e nf_type);
+
 #ifdef __cplusplus
 }
 #endif

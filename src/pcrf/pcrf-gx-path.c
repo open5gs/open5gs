@@ -455,27 +455,27 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
         }
 
         /* Set QoS-Information */
-        if (gx_message.session_data.pdn.ambr.downlink ||
-                gx_message.session_data.pdn.ambr.uplink) {
+        if (gx_message.session_data.session.ambr.downlink ||
+                gx_message.session_data.session.ambr.uplink) {
             ret = fd_msg_avp_new(ogs_diam_gx_qos_information, 0, &avp);
             ogs_assert(ret == 0);
 
-            if (gx_message.session_data.pdn.ambr.uplink) {
+            if (gx_message.session_data.session.ambr.uplink) {
                 ret = fd_msg_avp_new(
                         ogs_diam_gx_apn_aggregate_max_bitrate_ul, 0, &avpch1);
                 ogs_assert(ret == 0);
-                val.u32 = gx_message.session_data.pdn.ambr.uplink;
+                val.u32 = gx_message.session_data.session.ambr.uplink;
                 ret = fd_msg_avp_setvalue (avpch1, &val);
                 ogs_assert(ret == 0);
                 ret = fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1);
                 ogs_assert(ret == 0);
             }
             
-            if (gx_message.session_data.pdn.ambr.downlink) {
+            if (gx_message.session_data.session.ambr.downlink) {
                 ret = fd_msg_avp_new(
                         ogs_diam_gx_apn_aggregate_max_bitrate_dl, 0, &avpch1);
                 ogs_assert(ret == 0);
-                val.u32 = gx_message.session_data.pdn.ambr.downlink;
+                val.u32 = gx_message.session_data.session.ambr.downlink;
                 ret = fd_msg_avp_setvalue (avpch1, &val);
                 ogs_assert(ret == 0);
                 ret = fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1);
@@ -492,7 +492,7 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
 
         ret = fd_msg_avp_new(ogs_diam_gx_qos_class_identifier, 0, &avpch1);
         ogs_assert(ret == 0);
-        val.u32 = gx_message.session_data.pdn.qos.qci;
+        val.u32 = gx_message.session_data.session.qos.index;
         ret = fd_msg_avp_setvalue (avpch1, &val);
         ogs_assert(ret == 0);
         ret = fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1);
@@ -504,7 +504,7 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
 
         ret = fd_msg_avp_new(ogs_diam_gx_priority_level, 0, &avpch2);
         ogs_assert(ret == 0);
-        val.u32 = gx_message.session_data.pdn.qos.arp.priority_level;
+        val.u32 = gx_message.session_data.session.qos.arp.priority_level;
         ret = fd_msg_avp_setvalue (avpch2, &val);
         ogs_assert(ret == 0);
         ret = fd_msg_avp_add (avpch1, MSG_BRW_LAST_CHILD, avpch2);
@@ -512,7 +512,10 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
 
         ret = fd_msg_avp_new(ogs_diam_gx_pre_emption_capability, 0, &avpch2);
         ogs_assert(ret == 0);
-        val.u32 = gx_message.session_data.pdn.qos.arp.pre_emption_capability;
+        val.u32 = OGS_EPC_PRE_EMPTION_DISABLED;
+        if (gx_message.session_data.session.qos.arp.pre_emption_capability ==
+                OGS_5GC_PRE_EMPTION_ENABLED)
+            val.u32 = OGS_EPC_PRE_EMPTION_ENABLED;
         ret = fd_msg_avp_setvalue (avpch2, &val);
         ogs_assert(ret == 0);
         ret = fd_msg_avp_add (avpch1, MSG_BRW_LAST_CHILD, avpch2);
@@ -520,7 +523,10 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
 
         ret = fd_msg_avp_new(ogs_diam_gx_pre_emption_vulnerability, 0, &avpch2);
         ogs_assert(ret == 0);
-        val.u32 = gx_message.session_data.pdn.qos.arp.pre_emption_vulnerability;
+        val.u32 = OGS_EPC_PRE_EMPTION_DISABLED;
+        if (gx_message.session_data.session.qos.arp.pre_emption_vulnerability ==
+                OGS_5GC_PRE_EMPTION_ENABLED)
+            val.u32 = OGS_EPC_PRE_EMPTION_ENABLED;
         ret = fd_msg_avp_setvalue (avpch2, &val);
         ogs_assert(ret == 0);
         ret = fd_msg_avp_add (avpch1, MSG_BRW_LAST_CHILD, avpch2);
@@ -729,7 +735,7 @@ int pcrf_gx_send_rar(
             int flow_presence = 0;
             ogs_pcc_rule_t *pcc_rule = NULL;
             ogs_pcc_rule_t *db_pcc_rule = NULL;
-            uint8_t qci = 0;
+            uint8_t qos_index = 0;
             ogs_diam_rx_media_component_t *media_component =
                 &rx_message->media_component[i];
 
@@ -739,13 +745,13 @@ int pcrf_gx_send_rar(
 
             switch(media_component->media_type) {
             case OGS_DIAM_RX_MEDIA_TYPE_AUDIO:
-                qci = OGS_PDN_QCI_1;
+                qos_index = OGS_QOS_INDEX_1;
                 break;
             case OGS_DIAM_RX_MEDIA_TYPE_VIDEO:
-                qci = OGS_PDN_QCI_2;
+                qos_index = OGS_QOS_INDEX_2;
                 break;
             case OGS_DIAM_RX_MEDIA_TYPE_CONTROL:
-                qci = OGS_PDN_QCI_5;
+                qos_index = OGS_QOS_INDEX_5;
                 break;
             default:
                 ogs_error("Not implemented : [Media-Type:%d]",
@@ -755,7 +761,8 @@ int pcrf_gx_send_rar(
             }
             
             for (j = 0; j < gx_message.session_data.num_of_pcc_rule; j++) {
-                if (gx_message.session_data.pcc_rule[j].qos.qci == qci) {
+                if (gx_message.session_data.pcc_rule[j].qos.index ==
+                        qos_index) {
                     db_pcc_rule = &gx_message.session_data.pcc_rule[j];
                     break;
                 }
@@ -767,12 +774,14 @@ int pcrf_gx_send_rar(
                  * Check for default bearer for IMS signalling
                  * QCI 5 and ARP 1
                  */
-                if (gx_message.session_data.pdn.qos.qci != OGS_PDN_QCI_5 ||
-                    gx_message.session_data.pdn.qos.arp.priority_level != 1) {
+                if (gx_message.session_data.
+                        session.qos.index != OGS_QOS_INDEX_5 ||
+                    gx_message.session_data.
+                        session.qos.arp.priority_level != 1) {
                     ogs_error("CHECK WEBUI : Even the Default "
                         "Bearer(QCI:%d,ARP:%d) cannot support IMS signalling.",
-                        gx_message.session_data.pdn.qos.qci,
-                        gx_message.session_data.pdn.qos.arp.priority_level);
+                        gx_message.session_data.session.qos.index,
+                        gx_message.session_data.session.qos.arp.priority_level);
                     rx_message->result_code =
                         OGS_DIAM_RX_DIAMETER_REQUESTED_SERVICE_NOT_AUTHORIZED;
                     goto out;
@@ -782,7 +791,8 @@ int pcrf_gx_send_rar(
             }
 
             if (!db_pcc_rule) {
-                ogs_error("CHECK WEBUI : No PCC Rule in DB [QCI:%d]", qci);
+                ogs_error("CHECK WEBUI : No PCC Rule in DB [QoS Index:%d]",
+                        qos_index);
                 ogs_error("Please add PCC Rule using WEBUI");
                 rx_message->result_code = 
                     OGS_DIAM_RX_DIAMETER_REQUESTED_SERVICE_NOT_AUTHORIZED;
@@ -790,7 +800,7 @@ int pcrf_gx_send_rar(
             }
 
             for (j = 0; j < rx_sess_data->num_of_pcc_rule; j++) {
-                if (rx_sess_data->pcc_rule[j].qos.qci == qci) {
+                if (rx_sess_data->pcc_rule[j].qos.index == qos_index) {
                     pcc_rule = &rx_sess_data->pcc_rule[j];
                     break;
                 }
@@ -1245,7 +1255,7 @@ static int encode_pcc_rule_definition(
 
     ret = fd_msg_avp_new(ogs_diam_gx_qos_class_identifier, 0, &avpch3);
     ogs_assert(ret == 0);
-    val.u32 = pcc_rule->qos.qci;
+    val.u32 = pcc_rule->qos.index;
     ret = fd_msg_avp_setvalue (avpch3, &val);
     ogs_assert(ret == 0);
     ret = fd_msg_avp_add (avpch2, MSG_BRW_LAST_CHILD, avpch3);
@@ -1264,7 +1274,9 @@ static int encode_pcc_rule_definition(
 
     ret = fd_msg_avp_new(ogs_diam_gx_pre_emption_capability, 0, &avpch4);
     ogs_assert(ret == 0);
-    val.u32 = pcc_rule->qos.arp.pre_emption_capability;
+    val.u32 = OGS_EPC_PRE_EMPTION_DISABLED;
+    if (pcc_rule->qos.arp.pre_emption_capability == OGS_5GC_PRE_EMPTION_ENABLED)
+        val.u32 = OGS_EPC_PRE_EMPTION_ENABLED;
     ret = fd_msg_avp_setvalue (avpch4, &val);
     ogs_assert(ret == 0);
     ret = fd_msg_avp_add (avpch3, MSG_BRW_LAST_CHILD, avpch4);
@@ -1272,7 +1284,10 @@ static int encode_pcc_rule_definition(
 
     ret = fd_msg_avp_new(ogs_diam_gx_pre_emption_vulnerability, 0, &avpch4);
     ogs_assert(ret == 0);
-    val.u32 = pcc_rule->qos.arp.pre_emption_vulnerability;
+    val.u32 = OGS_EPC_PRE_EMPTION_DISABLED;
+    if (pcc_rule->qos.arp.pre_emption_vulnerability ==
+            OGS_5GC_PRE_EMPTION_ENABLED)
+        val.u32 = OGS_EPC_PRE_EMPTION_ENABLED;
     ret = fd_msg_avp_setvalue (avpch4, &val);
     ogs_assert(ret == 0);
     ret = fd_msg_avp_add (avpch3, MSG_BRW_LAST_CHILD, avpch4);

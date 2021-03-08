@@ -3,6 +3,12 @@ const Schema = mongoose.Schema;
 require('mongoose-long')(mongoose);
 
 const Profile = new Schema({
+
+  schema_version: {
+    $type: Number,
+    default: 1  // Current Schema Version
+  },
+
   title: { $type: String, required: true },
 
   security: {
@@ -13,64 +19,59 @@ const Profile = new Schema({
   },
 
   ambr: {
-    downlink: Schema.Types.Long,
-    uplink: Schema.Types.Long
+    downlink: { value: Number, unit: Number },
+    uplink: { value: Number, unit: Number }
   },
 
-  pdn: [{
-    apn: { $type: String, required: true },
-    type: {
-      $type: Number, default: 2 // IPv4, IPv6 and dualstack IPv4v6
-    },
-    qos: {
-      qci: Number,
-      arp: {
-        priority_level: Number,
-        pre_emption_capability: {
-          $type: Number, default: 1 // Capability Disabled
-        },
-        pre_emption_vulnerability: {
-          $type : Number, default: 1 // Vulnerability Disabled
-        }
-      }
-    },
-    ambr: {
-      downlink: Schema.Types.Long,
-      uplink: Schema.Types.Long
-    },
-    ue: {
-      addr: String,
-      addr6: String
-    },
-    pgw: {
-      addr: String,
-      addr6: String
-    },
-    pcc_rule: [{
-      flow: [{
-        direction: Number,
-        description: String
-      }],
+  slice: [{
+    sst: { $type: Number, required: true },
+    sd: String,
+    default_indicator: Boolean,
+    session: [{
+      name: { $type: String, required: true }, // DNN or APN
+      type: Number,
       qos: {
-        qci: Number,
+        index: Number, // 5QI or QCI
         arp: {
           priority_level: Number,
-          pre_emption_capability: {
-            $type: Number, default: 1 // Capability Disabled
-          },
-          pre_emption_vulnerability: {
-            $type : Number, default: 1 // Vulnerability Disabled
-          }
-        },
-        mbr: {
-          downlink: Schema.Types.Long,
-          uplink: Schema.Types.Long
-        },
-        gbr: {
-          downlink: Schema.Types.Long,
-          uplink: Schema.Types.Long
-        },
+          pre_emption_capability: Number,
+          pre_emption_vulnerability: Number,
+        }
       },
+      ambr: {
+        downlink: { value: Number, unit: Number },
+        uplink: { value: Number, unit: Number }
+      },
+      ue: {
+        addr: String,
+        addr6: String
+      },
+      smf: {
+        addr: String,
+        addr6: String
+      },
+      pcc_rule: [{
+        flow: [{
+          direction: Number,
+          description: String
+        }],
+        qos: {
+          index: Number,
+          arp: {
+            priority_level: Number,
+            pre_emption_capability: Number,
+            pre_emption_vulnerability: Number,
+          },
+          mbr: {
+            downlink: { value: Number, unit: Number },
+            uplink: { value: Number, unit: Number }
+          },
+          gbr: {
+            downlink: { value: Number, unit: Number },
+            uplink: { value: Number, unit: Number }
+          },
+        },
+      }]
     }]
   }]
 }, { typeKey: '$type' });

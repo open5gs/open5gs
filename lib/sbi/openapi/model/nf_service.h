@@ -14,6 +14,7 @@
 #include "../include/binary.h"
 #include "chf_service_info.h"
 #include "default_notification_subscription.h"
+#include "ext_snssai.h"
 #include "ip_end_point.h"
 #include "nf_service_status.h"
 #include "nf_service_version.h"
@@ -21,7 +22,6 @@
 #include "plmn_id.h"
 #include "plmn_id_nid.h"
 #include "plmn_snssai.h"
-#include "snssai.h"
 #include "uri_scheme.h"
 #include "vendor_specific_feature.h"
 
@@ -46,6 +46,8 @@ typedef struct OpenAPI_nf_service_s {
     OpenAPI_list_t *allowed_nf_types;
     OpenAPI_list_t *allowed_nf_domains;
     OpenAPI_list_t *allowed_nssais;
+    OpenAPI_list_t* allowed_operations_per_nf_type;
+    OpenAPI_list_t* allowed_operations_per_nf_instance;
     int priority;
     int capacity;
     int load;
@@ -77,6 +79,8 @@ OpenAPI_nf_service_t *OpenAPI_nf_service_create(
     OpenAPI_list_t *allowed_nf_types,
     OpenAPI_list_t *allowed_nf_domains,
     OpenAPI_list_t *allowed_nssais,
+    OpenAPI_list_t* allowed_operations_per_nf_type,
+    OpenAPI_list_t* allowed_operations_per_nf_instance,
     int priority,
     int capacity,
     int load,

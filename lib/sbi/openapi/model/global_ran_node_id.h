@@ -25,6 +25,8 @@ typedef struct OpenAPI_global_ran_node_id_s {
     char *n3_iwf_id;
     struct OpenAPI_g_nb_id_s *g_nb_id;
     char *nge_nb_id;
+    char *wagf_id;
+    char *tngf_id;
     char *nid;
     char *e_nb_id;
 } OpenAPI_global_ran_node_id_t;
@@ -34,6 +36,8 @@ OpenAPI_global_ran_node_id_t *OpenAPI_global_ran_node_id_create(
     char *n3_iwf_id,
     OpenAPI_g_nb_id_t *g_nb_id,
     char *nge_nb_id,
+    char *wagf_id,
+    char *tngf_id,
     char *nid,
     char *e_nb_id
     );

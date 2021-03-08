@@ -1,7 +1,7 @@
 openapi: 3.0.0
 
 info:
-  version: '1.0.0.alpha-2'
+  version: '1.0.1'
   title: 'NRF Bootstrapping'
   description: |
     NRF Bootstrapping.
@@ -9,7 +9,7 @@ info:
     All rights reserved.
 
 externalDocs:
-  description: 3GPP TS 29.510 V16.3.0; 5G System; Network Function Repository Services; Stage 3
+  description: 3GPP TS 29.510 V16.6.0; 5G System; Network Function Repository Services; Stage 3
   url: 'http://www.3gpp.org/ftp/Specs/archive/29_series/29.510/'
 
 paths:
@@ -26,6 +26,30 @@ paths:
             application/3gppHal+json:
               schema:
                 $ref: '#/components/schemas/BootstrappingInfo'
+        '307':
+          description: Temporary Redirect
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+          headers:
+            Location:
+              description: 'The URI pointing to the resource located on the redirect target NRF'
+              required: true
+              schema:
+                type: string
+        '308':
+          description: Permanent Redirect
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+          headers:
+            Location:
+              description: 'The URI pointing to the resource located on the redirect target NRF'
+              required: true
+              schema:
+                type: string
         '400':
           $ref: 'TS29571_CommonData.yaml#/components/responses/400'
         '500':

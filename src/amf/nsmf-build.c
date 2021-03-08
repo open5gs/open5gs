@@ -54,7 +54,7 @@ ogs_sbi_request_t *amf_nsmf_pdusession_build_create_sm_context(
     SmContextCreateData.serving_nf_id = ogs_sbi_self()->nf_instance_id;
 
     SmContextCreateData.serving_network =
-        ogs_sbi_build_plmn_id_nid(&amf_ue->tai.plmn_id);
+        ogs_sbi_build_plmn_id_nid(&amf_ue->nr_tai.plmn_id);
 
     SmContextCreateData.supi = amf_ue->supi;
     SmContextCreateData.pei = amf_ue->pei;
@@ -74,10 +74,10 @@ ogs_sbi_request_t *amf_nsmf_pdusession_build_create_sm_context(
     SmContextCreateData.s_nssai = &sNssai;
 
     memset(&hplmnSnssai, 0, sizeof(hplmnSnssai));
-    if (sess->s_nssai.mapped_hplmn_sst) {
-        hplmnSnssai.sst = sess->s_nssai.mapped_hplmn_sst;
+    if (sess->mapped_hplmn.sst) {
+        hplmnSnssai.sst = sess->mapped_hplmn.sst;
         hplmnSnssai.sd = ogs_s_nssai_sd_to_string(
-                sess->s_nssai.mapped_hplmn_sd);
+                sess->mapped_hplmn.sd);
         SmContextCreateData.hplmn_snssai = &hplmnSnssai;
     }
 
@@ -104,7 +104,7 @@ ogs_sbi_request_t *amf_nsmf_pdusession_build_create_sm_context(
 
     memset(&ueLocation, 0, sizeof(ueLocation));
     ueLocation.nr_location = ogs_sbi_build_nr_location(
-            &amf_ue->tai, &amf_ue->nr_cgi);
+            &amf_ue->nr_tai, &amf_ue->nr_cgi);
     ogs_assert(ueLocation.nr_location);
     ueLocation.nr_location->ue_location_timestamp =
         ogs_sbi_gmtime_string(amf_ue->ue_location_timestamp);
@@ -112,8 +112,7 @@ ogs_sbi_request_t *amf_nsmf_pdusession_build_create_sm_context(
     SmContextCreateData.ue_location = &ueLocation;
     SmContextCreateData.ue_time_zone = ogs_sbi_timezone_string(ogs_timezone());
 
-    pcf_nf_instance = OGS_SBI_NF_INSTANCE_GET(
-            amf_ue->sbi.nf_type_array, OpenAPI_nf_type_PCF);
+    pcf_nf_instance = OGS_SBI_NF_INSTANCE(&amf_ue->sbi, OpenAPI_nf_type_PCF);
     ogs_assert(pcf_nf_instance);
     SmContextCreateData.pcf_id = pcf_nf_instance->id;
 
@@ -240,7 +239,7 @@ ogs_sbi_request_t *amf_nsmf_pdusession_build_update_sm_context(
     memset(&ueLocation, 0, sizeof(ueLocation));
     if (param->ue_location) {
         ueLocation.nr_location = ogs_sbi_build_nr_location(
-                &amf_ue->tai, &amf_ue->nr_cgi);
+                &amf_ue->nr_tai, &amf_ue->nr_cgi);
         ogs_assert(ueLocation.nr_location);
         ueLocation.nr_location->ue_location_timestamp =
             ogs_sbi_gmtime_string(amf_ue->ue_location_timestamp);
@@ -301,7 +300,7 @@ ogs_sbi_request_t *amf_nsmf_pdusession_build_release_sm_context(
 
     memset(&ueLocation, 0, sizeof(ueLocation));
     ueLocation.nr_location = ogs_sbi_build_nr_location(
-            &amf_ue->tai, &amf_ue->nr_cgi);
+            &amf_ue->nr_tai, &amf_ue->nr_cgi);
     ogs_assert(ueLocation.nr_location);
     ueLocation.nr_location->ue_location_timestamp =
         ogs_sbi_gmtime_string(amf_ue->ue_location_timestamp);

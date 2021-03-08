@@ -7,7 +7,8 @@
 OpenAPI_lcs_privacy_t *OpenAPI_lcs_privacy_create(
     char *af_instance_id,
     int reference_id,
-    OpenAPI_lpi_t *lpi
+    OpenAPI_lpi_t *lpi,
+    char *mtc_provider_information
     )
 {
     OpenAPI_lcs_privacy_t *lcs_privacy_local_var = OpenAPI_malloc(sizeof(OpenAPI_lcs_privacy_t));
@@ -17,6 +18,7 @@ OpenAPI_lcs_privacy_t *OpenAPI_lcs_privacy_create(
     lcs_privacy_local_var->af_instance_id = af_instance_id;
     lcs_privacy_local_var->reference_id = reference_id;
     lcs_privacy_local_var->lpi = lpi;
+    lcs_privacy_local_var->mtc_provider_information = mtc_provider_information;
 
     return lcs_privacy_local_var;
 }
@@ -29,6 +31,7 @@ void OpenAPI_lcs_privacy_free(OpenAPI_lcs_privacy_t *lcs_privacy)
     OpenAPI_lnode_t *node;
     ogs_free(lcs_privacy->af_instance_id);
     OpenAPI_lpi_free(lcs_privacy->lpi);
+    ogs_free(lcs_privacy->mtc_provider_information);
     ogs_free(lcs_privacy);
 }
 
@@ -69,6 +72,13 @@ cJSON *OpenAPI_lcs_privacy_convertToJSON(OpenAPI_lcs_privacy_t *lcs_privacy)
         }
     }
 
+    if (lcs_privacy->mtc_provider_information) {
+        if (cJSON_AddStringToObject(item, "mtcProviderInformation", lcs_privacy->mtc_provider_information) == NULL) {
+            ogs_error("OpenAPI_lcs_privacy_convertToJSON() failed [mtc_provider_information]");
+            goto end;
+        }
+    }
+
 end:
     return item;
 }
@@ -101,10 +111,20 @@ OpenAPI_lcs_privacy_t *OpenAPI_lcs_privacy_parseFromJSON(cJSON *lcs_privacyJSON)
         lpi_local_nonprim = OpenAPI_lpi_parseFromJSON(lpi);
     }
 
+    cJSON *mtc_provider_information = cJSON_GetObjectItemCaseSensitive(lcs_privacyJSON, "mtcProviderInformation");
+
+    if (mtc_provider_information) {
+        if (!cJSON_IsString(mtc_provider_information)) {
+            ogs_error("OpenAPI_lcs_privacy_parseFromJSON() failed [mtc_provider_information]");
+            goto end;
+        }
+    }
+
     lcs_privacy_local_var = OpenAPI_lcs_privacy_create (
         af_instance_id ? ogs_strdup(af_instance_id->valuestring) : NULL,
         reference_id ? reference_id->valuedouble : 0,
-        lpi ? lpi_local_nonprim : NULL
+        lpi ? lpi_local_nonprim : NULL,
+        mtc_provider_information ? ogs_strdup(mtc_provider_information->valuestring) : NULL
         );
 
     return lcs_privacy_local_var;

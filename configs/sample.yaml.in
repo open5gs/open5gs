@@ -10,6 +10,7 @@ parameter:
 #    no_ausf: true
 #    no_udm: true
 #    no_pcf: true
+#    no_nssf: true
 #    no_udr: true
 #    no_mme: true
 #    no_sgwc: true
@@ -72,7 +73,7 @@ smf:
       - addr: ::1
     pfcp:
       - addr: 127.0.0.4
-    pdn:
+    subnet:
       - addr: 10.45.0.1/16
       - addr: cafe::1/64
     dns:
@@ -139,7 +140,7 @@ upf:
       - addr: 127.0.0.7
     gtpu:
       - addr: 127.0.0.7
-    pdn:
+    subnet:
       - addr: 10.45.0.1/16
       - addr: cafe::1/64
 
@@ -199,6 +200,26 @@ pcf:
     sbi:
       - addr: 127.0.0.13
         port: 7777
+
+nssf:
+    sbi:
+      - addr: 127.0.0.14
+        port: 7777
+    nsi:
+      - addr: ::1
+        port: 7777
+        s_nssai:
+          sst: 1
+      - addr: 127.0.0.19
+        port: 7777
+        s_nssai:
+          sst: 1
+          sd: 000080
+      - addr: 127.0.0.10
+        port: 7777
+        s_nssai:
+          sst: 1
+          sd: 009000
 
 udr:
     sbi:

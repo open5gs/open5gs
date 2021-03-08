@@ -22,7 +22,6 @@
 #include "ho_state.h"
 #include "indirect_data_forwarding_tunnel_info.h"
 #include "ma_release_indication.h"
-#include "mo_exception_data_flag.h"
 #include "mo_exp_data_counter.h"
 #include "n2_sm_info_type.h"
 #include "ng_ap_cause.h"
@@ -50,6 +49,7 @@ typedef struct OpenAPI_sm_context_update_data_s {
     OpenAPI_list_t *backup_amf_info;
     OpenAPI_access_type_e an_type;
     OpenAPI_access_type_e additional_an_type;
+    OpenAPI_access_type_e an_type_to_reactivate;
     OpenAPI_rat_type_e rat_type;
     OpenAPI_presence_state_e presence_in_ladn;
     struct OpenAPI_user_location_s *ue_location;
@@ -86,7 +86,6 @@ typedef struct OpenAPI_sm_context_update_data_s {
     int ma_request_ind;
     struct OpenAPI_exemption_ind_s *exemption_ind;
     char *supported_features;
-    struct OpenAPI_mo_exception_data_flag_s *mo_exp_data_ind;
     struct OpenAPI_mo_exp_data_counter_s *mo_exp_data_counter;
     int extended_nas_sm_timer_ind;
     char forwarding_f_teid;
@@ -102,6 +101,7 @@ OpenAPI_sm_context_update_data_t *OpenAPI_sm_context_update_data_create(
     OpenAPI_list_t *backup_amf_info,
     OpenAPI_access_type_e an_type,
     OpenAPI_access_type_e additional_an_type,
+    OpenAPI_access_type_e an_type_to_reactivate,
     OpenAPI_rat_type_e rat_type,
     OpenAPI_presence_state_e presence_in_ladn,
     OpenAPI_user_location_t *ue_location,
@@ -138,7 +138,6 @@ OpenAPI_sm_context_update_data_t *OpenAPI_sm_context_update_data_create(
     int ma_request_ind,
     OpenAPI_exemption_ind_t *exemption_ind,
     char *supported_features,
-    OpenAPI_mo_exception_data_flag_t *mo_exp_data_ind,
     OpenAPI_mo_exp_data_counter_t *mo_exp_data_counter,
     int extended_nas_sm_timer_ind,
     char forwarding_f_teid,

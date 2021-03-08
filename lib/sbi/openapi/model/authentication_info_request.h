@@ -24,7 +24,8 @@ typedef struct OpenAPI_authentication_info_request_s {
     char *serving_network_name;
     struct OpenAPI_resynchronization_info_s *resynchronization_info;
     char *ausf_instance_id;
-    char *cag_id;
+    OpenAPI_list_t *cell_cag_info;
+    int n5gc_ind;
 } OpenAPI_authentication_info_request_t;
 
 OpenAPI_authentication_info_request_t *OpenAPI_authentication_info_request_create(
@@ -32,7 +33,8 @@ OpenAPI_authentication_info_request_t *OpenAPI_authentication_info_request_creat
     char *serving_network_name,
     OpenAPI_resynchronization_info_t *resynchronization_info,
     char *ausf_instance_id,
-    char *cag_id
+    OpenAPI_list_t *cell_cag_info,
+    int n5gc_ind
     );
 void OpenAPI_authentication_info_request_free(OpenAPI_authentication_info_request_t *authentication_info_request);
 OpenAPI_authentication_info_request_t *OpenAPI_authentication_info_request_parseFromJSON(cJSON *authentication_info_requestJSON);

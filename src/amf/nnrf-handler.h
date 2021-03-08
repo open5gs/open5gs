@@ -36,6 +36,8 @@ bool amf_nnrf_handle_nf_status_notify(
 
 void amf_nnrf_handle_nf_discover(
         ogs_sbi_xact_t *xact, ogs_sbi_message_t *recvmsg);
+void amf_nnrf_handle_nf_discover_search_result(
+        ogs_sbi_object_t *sbi_object, OpenAPI_search_result_t *SearchResult);
 
 #ifdef __cplusplus
 }

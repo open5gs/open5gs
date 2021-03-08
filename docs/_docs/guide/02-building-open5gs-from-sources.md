@@ -34,7 +34,7 @@ $ sudo ip addr add cafe::1/64 dev ogstun
 $ sudo ip link set ogstun up
 ```
 
-**Tip:** The script provided in [$GIT_REPO/misc/netconf.sh](https://github.com/{{ site.github_username }}/open5gs/blob/master/misc/netconf.sh) makes it easy to configure the TUN device as follows:  
+**Tip:** The script provided in [$GIT_REPO/misc/netconf.sh](https://github.com/{{ site.github_username }}/open5gs/blob/main/misc/netconf.sh) makes it easy to configure the TUN device as follows:
 `$ sudo ./misc/netconf.sh`
 {: .notice--info}
 
@@ -93,7 +93,7 @@ $ cd ../
 
 ##### 5G Core
 
-Modify [install/etc/open5gs/amf.yaml](https://github.com/{{ site.github_username }}/open5gs/blob/master/configs/open5gs/amf.yaml.in) to set the NGAP IP address, PLMN ID, TAC and NSSAI.
+Modify [install/etc/open5gs/amf.yaml](https://github.com/{{ site.github_username }}/open5gs/blob/main/configs/open5gs/amf.yaml.in) to set the NGAP IP address, PLMN ID, TAC and NSSAI.
 
 ```diff
 $ diff -u /etc/open5gs/amf.yaml.old /etc/open5gs/amf.yaml
@@ -133,7 +133,7 @@ $ diff -u /etc/open5gs/amf.yaml.old /etc/open5gs/amf.yaml
      security:
 ```
 
-Modify [install/etc/open5gs/upf.yaml](https://github.com/{{ site.github_username }}/open5gs/blob/master/configs/open5gs/upf.yaml.in) to set the GTP-U and PFCP IP address.
+Modify [install/etc/open5gs/upf.yaml](https://github.com/{{ site.github_username }}/open5gs/blob/main/configs/open5gs/upf.yaml.in) to set the GTP-U and PFCP IP address.
 ```diff
 $ diff -u /etc/open5gs/upf.yaml.old /etc/open5gs/upf.yaml
 --- upf.yaml	2020-09-05 20:52:28.652234967 -0400
@@ -152,7 +152,7 @@ $ diff -u /etc/open5gs/upf.yaml.old /etc/open5gs/upf.yaml
 ```
 ##### 4G EPC
 
-Modify [install/etc/open5gs/mme.yaml](https://github.com/{{ site.github_username }}/open5gs/blob/master/configs/open5gs/mme.yaml.in) to set the S1AP IP address, PLMN ID, and TAC.
+Modify [install/etc/open5gs/mme.yaml](https://github.com/{{ site.github_username }}/open5gs/blob/main/configs/open5gs/mme.yaml.in) to set the S1AP IP address, PLMN ID, and TAC.
 
 ```diff
 $ diff -u /etc/open5gs/mme.yaml.old /etc/open5gs/mme.yaml
@@ -187,7 +187,7 @@ $ diff -u /etc/open5gs/mme.yaml.old /etc/open5gs/mme.yaml
          ciphering_order : [ EEA0, EEA1, EEA2 ]
 ```
 
-Modify [install/etc/open5gs/sgwu.yaml](https://github.com/{{ site.github_username }}/open5gs/blob/master/configs/open5gs/sgwu.yaml.in) to set the GTP-U IP address.
+Modify [install/etc/open5gs/sgwu.yaml](https://github.com/{{ site.github_username }}/open5gs/blob/main/configs/open5gs/sgwu.yaml.in) to set the GTP-U IP address.
 ```diff
 $ diff -u /etc/open5gs/sgwu.yaml.old /etc/open5gs/sgwu.yaml
 --- sgwu.yaml	2020-09-05 20:50:39.393022566 -0400
@@ -211,7 +211,7 @@ If you modify the config files while Open5GS daemons are running, please restart
 
 ```bash
 $ cd install/bin/
-$ ./install/bin/open5gs-mmed 
+$ ./install/bin/open5gs-mmed
 Open5GS daemon v2.1.0
 
 08/21 22:53:47.328: [app] INFO: Configuration: '/home/acetcom/Documents/git/open5gs/install/etc/open5gs/mme.yaml' (../src/main.c:54)
@@ -221,7 +221,7 @@ Open5GS daemon v2.1.0
 08/21 22:53:47.365: [gtp] INFO: gtp_connect() [127.0.0.3]:2123 (../lib/gtp/path.c:59)
 08/21 22:53:47.366: [mme] INFO: s1ap_server() [127.0.0.2]:36412 (../src/mme/s1ap-sctp.c:57)
 
-$ ./install/bin/open5gs-sgwcd 
+$ ./install/bin/open5gs-sgwcd
 Open5GS daemon v2.1.0
 
 08/21 22:54:43.059: [app] INFO: Configuration: '/home/acetcom/Documents/git/open5gs/install/etc/open5gs/sgwc.yaml' (../src/main.c:54)
@@ -253,7 +253,7 @@ Open5GS daemon v2.1.0
 08/21 22:55:14.040: [sbi] INFO: sbi_server() [127.0.0.5]:7777 (../lib/sbi/server.c:298)
 08/21 22:55:14.040: [amf] INFO: ngap_server() [127.0.0.5]:38412 (../src/amf/ngap-sctp.c:56)
 
-$ ./install/bin/open5gs-sgwud 
+$ ./install/bin/open5gs-sgwud
 Open5GS daemon v2.1.0
 
 08/21 22:54:10.357: [app] INFO: Configuration: '/home/acetcom/Documents/git/open5gs/install/etc/open5gs/sgwu.yaml' (../src/main.c:54)
@@ -262,7 +262,7 @@ Open5GS daemon v2.1.0
 08/21 22:54:10.360: [app] INFO: SGW-U initialize...done (../src/sgwu/app.c:31)
 08/21 22:54:10.361: [gtp] INFO: gtp_server() [127.0.0.6]:2152 (../lib/gtp/path.c:32)
 
-$ ./install/bin/open5gs-upfd 
+$ ./install/bin/open5gs-upfd
 Open5GS daemon v2.1.0
 
 08/21 22:54:21.596: [app] INFO: Configuration: '/home/acetcom/Documents/git/open5gs/install/etc/open5gs/upf.yaml' (../src/main.c:54)
@@ -280,7 +280,7 @@ Open5GS daemon v2.1.0
 08/21 22:57:17.451: [dbi] INFO: MongoDB URI: 'mongodb://localhost/open5gs' (../lib/dbi/ogs-mongoc.c:99)
 08/21 22:57:17.519: [app] INFO: HSS initialize...done (../src/hss/app-init.c:31)
 
-$ ./install/bin/open5gs-pcrfd 
+$ ./install/bin/open5gs-pcrfd
 Open5GS daemon v2.1.0
 
 08/21 22:57:45.894: [app] INFO: Configuration: '/home/acetcom/Documents/git/open5gs/install/etc/open5gs/pcrf.yaml' (../src/main.c:54)
@@ -305,7 +305,7 @@ Open5GS daemon v2.1.0
 08/21 22:55:41.900: [app] INFO: AUSF initialize...done (../src/ausf/app.c:31)
 08/21 22:55:41.900: [sbi] INFO: sbi_server() [127.0.0.11]:7777 (../lib/sbi/server.c:298)
 
-$ ./install/bin/open5gs-udmd 
+$ ./install/bin/open5gs-udmd
 Open5GS daemon v2.1.0
 
 08/21 22:56:02.154: [app] INFO: Configuration: '/home/acetcom/Documents/git/open5gs/install/etc/open5gs/udm.yaml' (../src/main.c:54)
@@ -313,7 +313,7 @@ Open5GS daemon v2.1.0
 08/21 22:56:02.155: [app] INFO: UDM initialize...done (../src/udm/app.c:31)
 08/21 22:56:02.155: [sbi] INFO: sbi_server() [127.0.0.12]:7777 (../lib/sbi/server.c:298)
 
-$ ./install/bin/open5gs-pcfd 
+$ ./install/bin/open5gs-pcfd
 Open5GS daemon v2.1.0
 
 08/21 22:56:02.154: [app] INFO: Configuration: '/home/acetcom/Documents/git/open5gs/install/etc/open5gs/pcf.yaml' (../src/main.c:54)
@@ -321,7 +321,15 @@ Open5GS daemon v2.1.0
 08/21 22:56:02.155: [app] INFO: PCF initialize...done (../src/pcf/app.c:31)
 08/21 22:56:02.155: [sbi] INFO: sbi_server() [127.0.0.12]:7777 (../lib/sbi/server.c:298)
 
-$ ./install/bin/open5gs-udrd 
+$ ./install/bin/open5gs-nssfd
+Open5GS daemon v2.1.0
+
+08/21 22:56:02.154: [app] INFO: Configuration: '/home/acetcom/Documents/git/open5gs/install/etc/open5gs/nssfd.yaml' (../src/main.c:54)
+08/21 22:56:02.154: [app] INFO: File Logging: '/home/acetcom/Documents/git/open5gs/install/var/log/open5gs/nssfd.log' (../src/main.c:57)
+08/21 22:56:02.155: [app] INFO: NSSF initialize...done (../src/nssfd/app.c:31)
+08/21 22:56:02.155: [sbi] INFO: sbi_server() [127.0.0.12]:7777 (../lib/sbi/server.c:298)
+
+$ ./install/bin/open5gs-udrd
 Open5GS daemon v2.1.0
 
 08/21 22:56:15.810: [app] INFO: Configuration: '/home/acetcom/Documents/git/open5gs/install/etc/open5gs/udr.yaml' (../src/main.c:54)

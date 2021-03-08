@@ -58,9 +58,6 @@ typedef struct sgwu_sess_s {
     uint64_t        sgwu_sxa_seid;      /* SGW-U SEID is dervied from INDEX */
     uint64_t        sgwc_sxa_seid;      /* SGW-C SEID is received from Peer */
 
-    /* APN Configuration */
-    ogs_pdn_t       pdn;
-
     ogs_pfcp_node_t *pfcp_node;
 } sgwu_sess_t;
 

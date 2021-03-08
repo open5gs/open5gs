@@ -29,7 +29,6 @@ static uint16_t get_pdu_session_reactivation_result(amf_ue_t *amf_ue);
 
 ogs_pkbuf_t *gmm_build_registration_accept(amf_ue_t *amf_ue)
 {
-    int i;
     int served_tai_index = 0;
     ogs_pkbuf_t *pkbuf = NULL;
 
@@ -42,6 +41,8 @@ ogs_pkbuf_t *gmm_build_registration_accept(amf_ue_t *amf_ue)
         &registration_accept->guti;
     ogs_nas_5gs_mobile_identity_guti_t mobile_identity_guti;
     ogs_nas_nssai_t *allowed_nssai = &registration_accept->allowed_nssai;
+    ogs_nas_rejected_nssai_t *rejected_nssai =
+        &registration_accept->rejected_nssai;
     ogs_nas_5gs_network_feature_support_t *network_feature_support =
         &registration_accept->network_feature_support;
     ogs_nas_pdu_session_status_t *pdu_session_status =
@@ -87,12 +88,12 @@ ogs_pkbuf_t *gmm_build_registration_accept(amf_ue_t *amf_ue)
     registration_accept->presencemask |= OGS_NAS_5GS_REGISTRATION_ACCEPT_TAI_LIST_PRESENT;
 
     ogs_debug("[%s]    TAI[PLMN_ID:%06x,TAC:%d]", amf_ue->supi,
-            ogs_plmn_id_hexdump(&amf_ue->tai.plmn_id), amf_ue->tai.tac.v);
+            ogs_plmn_id_hexdump(&amf_ue->nr_tai.plmn_id), amf_ue->nr_tai.tac.v);
     ogs_debug("[%s]    NR_CGI[PLMN_ID:%06x,CELL_ID:0x%llx]", amf_ue->supi,
             ogs_plmn_id_hexdump(&amf_ue->nr_cgi.plmn_id),
             (long long)amf_ue->nr_cgi.cell_id);
 
-    served_tai_index = amf_find_served_tai(&amf_ue->tai);
+    served_tai_index = amf_find_served_tai(&amf_ue->nr_tai);
     ogs_debug("[%s]    SERVED_TAI_INDEX[%d]", amf_ue->supi, served_tai_index);
     ogs_assert(served_tai_index >= 0 &&
             served_tai_index < OGS_MAX_NUM_OF_SERVED_TAI);
@@ -102,23 +103,25 @@ ogs_pkbuf_t *gmm_build_registration_accept(amf_ue_t *amf_ue)
             &amf_self()->served_tai[served_tai_index].list2);
 
     /* Set Allowed NSSAI */
-    allowed_nssai->length = 0;
-
-    for (i = 0; i < amf_self()->num_of_plmn_support; i++) {
-        if (memcmp(&amf_ue->tai.plmn_id,
-                &amf_self()->plmn_support[i].plmn_id, OGS_PLMN_ID_LEN) != 0)
-            continue;
-
-        ogs_debug("[%s]    NSSAI[PLMN_ID:%06x]", amf_ue->supi,
-                ogs_plmn_id_hexdump(&amf_self()->plmn_support[i].plmn_id));
+    if (amf_ue->allowed_nssai_present == true) {
+        ogs_assert(amf_ue->allowed_nssai.num_of_s_nssai);
 
         ogs_nas_build_nssai(allowed_nssai,
-            amf_self()->plmn_support[i].s_nssai,
-            amf_self()->plmn_support[i].num_of_s_nssai);
-    }
+                amf_ue->allowed_nssai.s_nssai,
+                amf_ue->allowed_nssai.num_of_s_nssai);
 
-    if (allowed_nssai->length) {
-        registration_accept->presencemask |= OGS_NAS_5GS_REGISTRATION_ACCEPT_ALLOWED_NSSAI_PRESENT;
+        registration_accept->presencemask |=
+            OGS_NAS_5GS_REGISTRATION_ACCEPT_ALLOWED_NSSAI_PRESENT;
+
+        if (amf_ue->rejected_nssai.num_of_s_nssai) {
+            ogs_nas_build_rejected_nssai(rejected_nssai,
+                    amf_ue->rejected_nssai.s_nssai,
+                    amf_ue->rejected_nssai.num_of_s_nssai);
+            registration_accept->presencemask |=
+                OGS_NAS_5GS_REGISTRATION_ACCEPT_REJECTED_NSSAI_PRESENT;
+        }
+
+        amf_ue->allowed_nssai_present = false;
     }
 
     /* 5GS network feature support */
@@ -649,12 +652,12 @@ ogs_pkbuf_t *gmm_build_tau_accept(amf_ue_t *amf_ue)
         OGS_NAS_5GS_TRACKING_AREA_UPDATE_ACCEPT_TAI_LIST_PRESENT;
 
     ogs_debug("    TAI[PLMN_ID:%06x,TAC:%d]",
-            ogs_plmn_id_hexdump(&amf_ue->tai.plmn_id),
-            amf_ue->tai.tac);
+            ogs_plmn_id_hexdump(&amf_ue->nr_tai.plmn_id),
+            amf_ue->nr_tai.tac);
     ogs_debug("    E_CGI[PLMN_ID:%06x,CELL_ID:%d]",
             ogs_plmn_id_hexdump(&amf_ue->e_cgi.plmn_id),
             amf_ue->e_cgi.cell_id);
-    served_tai_index = amf_find_served_tai(&amf_ue->tai);
+    served_tai_index = amf_find_served_tai(&amf_ue->nr_tai);
     ogs_debug("    SERVED_TAI_INDEX[%d]", served_tai_index);
     ogs_assert(served_tai_index >= 0 &&
             served_tai_index < OGS_MAX_NUM_OF_SERVED_TAI);

@@ -127,6 +127,9 @@ pcf_sess_t *pcf_sess_find_by_dnn(pcf_ue_t *pcf_ue, char *dnn);
 pcf_ue_t *pcf_ue_cycle(pcf_ue_t *pcf_ue);
 pcf_sess_t *pcf_sess_cycle(pcf_sess_t *sess);
 
+void pcf_ue_select_nf(pcf_ue_t *pcf_ue, OpenAPI_nf_type_e nf_type);
+void pcf_sess_select_nf(pcf_sess_t *sess, OpenAPI_nf_type_e nf_type);
+
 #ifdef __cplusplus
 }
 #endif

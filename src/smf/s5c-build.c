@@ -76,7 +76,7 @@ ogs_pkbuf_t *smf_s5c_build_create_session_response(
         len = len;
 
     /* PDN Address Allocation */
-    rsp->pdn_address_allocation.data = &sess->pdn.paa;
+    rsp->pdn_address_allocation.data = &sess->session.paa;
     if (sess->ipv4 && sess->ipv6)
         rsp->pdn_address_allocation.len = OGS_PAA_IPV4V6_LEN;
     else if (sess->ipv4)
@@ -95,8 +95,8 @@ ogs_pkbuf_t *smf_s5c_build_create_session_response(
      * if PCRF changes APN-AMBR, this should be included. */
     if (sess->gtp.create_session_response_apn_ambr == true) {
         memset(&ambr, 0, sizeof(ogs_gtp_ambr_t));
-        ambr.uplink = htobe32(sess->pdn.ambr.uplink / 1000);
-        ambr.downlink = htobe32(sess->pdn.ambr.downlink / 1000);
+        ambr.uplink = htobe32(sess->session.ambr.uplink / 1000);
+        ambr.downlink = htobe32(sess->session.ambr.downlink / 1000);
         rsp->aggregate_maximum_bit_rate.presence = 1;
         rsp->aggregate_maximum_bit_rate.data = &ambr;
         rsp->aggregate_maximum_bit_rate.len = sizeof(ambr);
@@ -127,12 +127,12 @@ ogs_pkbuf_t *smf_s5c_build_create_session_response(
      * if PCRF changes Bearer QoS, this should be included. */
     if (sess->gtp.create_session_response_bearer_qos == true) {
         memset(&bearer_qos, 0, sizeof(bearer_qos));
-        bearer_qos.qci = sess->pdn.qos.qci;
-        bearer_qos.priority_level = sess->pdn.qos.arp.priority_level;
+        bearer_qos.qci = sess->session.qos.index;
+        bearer_qos.priority_level = sess->session.qos.arp.priority_level;
         bearer_qos.pre_emption_capability =
-            sess->pdn.qos.arp.pre_emption_capability;
+            sess->session.qos.arp.pre_emption_capability;
         bearer_qos.pre_emption_vulnerability =
-            sess->pdn.qos.arp.pre_emption_vulnerability;
+            sess->session.qos.arp.pre_emption_vulnerability;
 
         rsp->bearer_contexts_created.bearer_level_qos.presence = 1;
         ogs_gtp_build_bearer_qos(&rsp->bearer_contexts_created.bearer_level_qos,
@@ -249,7 +249,7 @@ ogs_pkbuf_t *smf_s5c_build_create_bearer_request(
 
     /* Bearer QoS */
     memset(&bearer_qos, 0, sizeof(bearer_qos));
-    bearer_qos.qci = bearer->qos.qci;
+    bearer_qos.qci = bearer->qos.index;
     bearer_qos.priority_level = bearer->qos.arp.priority_level;
     bearer_qos.pre_emption_capability = 
         bearer->qos.arp.pre_emption_capability;
@@ -304,7 +304,7 @@ ogs_pkbuf_t *smf_s5c_build_update_bearer_request(
     req->bearer_contexts.eps_bearer_id.presence = 1;
     req->bearer_contexts.eps_bearer_id.u8 = bearer->ebi;
 
-    if (sess->pdn.ambr.uplink || sess->pdn.ambr.downlink) {
+    if (sess->session.ambr.uplink || sess->session.ambr.downlink) {
         /*
          * Ch 8.7. Aggregate Maximum Bit Rate(AMBR) in TS 29.274 V15.9.0
          *
@@ -313,8 +313,8 @@ ogs_pkbuf_t *smf_s5c_build_update_bearer_request(
          * Unsigned32 binary integer values in kbps (1000 bits per second).
          */
         memset(&ambr, 0, sizeof(ogs_gtp_ambr_t));
-        ambr.uplink = htobe32(sess->pdn.ambr.uplink / 1000);
-        ambr.downlink = htobe32(sess->pdn.ambr.downlink / 1000);
+        ambr.uplink = htobe32(sess->session.ambr.uplink / 1000);
+        ambr.downlink = htobe32(sess->session.ambr.downlink / 1000);
         req->aggregate_maximum_bit_rate.presence = 1;
         req->aggregate_maximum_bit_rate.data = &ambr;
         req->aggregate_maximum_bit_rate.len = sizeof(ambr);
@@ -329,7 +329,7 @@ ogs_pkbuf_t *smf_s5c_build_update_bearer_request(
     /* Bearer QoS */
     if (qos_presence == 1) {
         memset(&bearer_qos, 0, sizeof(bearer_qos));
-        bearer_qos.qci = bearer->qos.qci;
+        bearer_qos.qci = bearer->qos.index;
         bearer_qos.priority_level = bearer->qos.arp.priority_level;
         bearer_qos.pre_emption_capability = 
             bearer->qos.arp.pre_emption_capability;

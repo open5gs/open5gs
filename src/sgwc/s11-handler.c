@@ -194,7 +194,7 @@ void sgwc_s11_handle_create_session_request(
             req->bearer_contexts_to_be_created.eps_bearer_id.u8);
     if (sess) {
         ogs_warn("OLD Session Release [IMSI:%s,APN:%s]",
-                sgwc_ue->imsi_bcd, sess->pdn.apn);
+                sgwc_ue->imsi_bcd, sess->session.name);
         sgwc_sess_remove(sess);
     }
     sess = sgwc_sess_add(sgwc_ue, apn);
@@ -227,16 +227,16 @@ void sgwc_s11_handle_create_session_request(
         &req->bearer_contexts_to_be_created.bearer_level_qos);
     ogs_assert(req->bearer_contexts_to_be_created.bearer_level_qos.len ==
             decoded);
-    sess->pdn.qos.qci = bearer_qos.qci;
-    sess->pdn.qos.arp.priority_level = bearer_qos.priority_level;
-    sess->pdn.qos.arp.pre_emption_capability =
+    sess->session.qos.index = bearer_qos.qci;
+    sess->session.qos.arp.priority_level = bearer_qos.priority_level;
+    sess->session.qos.arp.pre_emption_capability =
                     bearer_qos.pre_emption_capability;
-    sess->pdn.qos.arp.pre_emption_vulnerability =
+    sess->session.qos.arp.pre_emption_vulnerability =
                     bearer_qos.pre_emption_vulnerability;
 
     /* Set PDN Type */
-    sess->pdn.pdn_type = req->pdn_type.u8;
-    sess->pdn.paa.pdn_type = req->pdn_type.u8;
+    sess->session.session_type = req->pdn_type.u8;
+    sess->session.paa.session_type = req->pdn_type.u8;
 
     /* Remove all previous bearer */
     sgwc_bearer_remove_all(sess);

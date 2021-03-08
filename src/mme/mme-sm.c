@@ -476,6 +476,8 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
                     S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
                     S1AP_UE_CTX_REL_UE_CONTEXT_REMOVE, 0);
 
+            ogs_subscription_data_free(
+                    &s6a_message->ula_message.subscription_data);
             ogs_pkbuf_free(s6abuf);
             break;
         }
@@ -513,6 +515,7 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
             ogs_error("Invalid Type[%d]", s6a_message->cmd_code);
             break;
         }
+        ogs_subscription_data_free(&s6a_message->ula_message.subscription_data);
         ogs_pkbuf_free(s6abuf);
         break;
 

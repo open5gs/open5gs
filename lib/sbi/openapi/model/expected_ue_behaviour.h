@@ -36,6 +36,7 @@ typedef struct OpenAPI_expected_ue_behaviour_s {
     struct OpenAPI_traffic_profile_rm_s *traffic_profile;
     struct OpenAPI_battery_indication_rm_s *battery_indication;
     char *validity_time;
+    char *mtc_provider_information;
 } OpenAPI_expected_ue_behaviour_t;
 
 OpenAPI_expected_ue_behaviour_t *OpenAPI_expected_ue_behaviour_create(
@@ -49,7 +50,8 @@ OpenAPI_expected_ue_behaviour_t *OpenAPI_expected_ue_behaviour_create(
     OpenAPI_list_t *expected_umts,
     OpenAPI_traffic_profile_rm_t *traffic_profile,
     OpenAPI_battery_indication_rm_t *battery_indication,
-    char *validity_time
+    char *validity_time,
+    char *mtc_provider_information
     );
 void OpenAPI_expected_ue_behaviour_free(OpenAPI_expected_ue_behaviour_t *expected_ue_behaviour);
 OpenAPI_expected_ue_behaviour_t *OpenAPI_expected_ue_behaviour_parseFromJSON(cJSON *expected_ue_behaviourJSON);

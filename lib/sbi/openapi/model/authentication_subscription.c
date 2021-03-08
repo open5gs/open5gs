@@ -13,7 +13,10 @@ OpenAPI_authentication_subscription_t *OpenAPI_authentication_subscription_creat
     char *algorithm_id,
     char *enc_opc_key,
     char *enc_topc_key,
-    int vector_generation_in_hss
+    int vector_generation_in_hss,
+    OpenAPI_auth_method_e n5gc_auth_method,
+    int rg_authentication_ind,
+    char *supi
     )
 {
     OpenAPI_authentication_subscription_t *authentication_subscription_local_var = OpenAPI_malloc(sizeof(OpenAPI_authentication_subscription_t));
@@ -29,6 +32,9 @@ OpenAPI_authentication_subscription_t *OpenAPI_authentication_subscription_creat
     authentication_subscription_local_var->enc_opc_key = enc_opc_key;
     authentication_subscription_local_var->enc_topc_key = enc_topc_key;
     authentication_subscription_local_var->vector_generation_in_hss = vector_generation_in_hss;
+    authentication_subscription_local_var->n5gc_auth_method = n5gc_auth_method;
+    authentication_subscription_local_var->rg_authentication_ind = rg_authentication_ind;
+    authentication_subscription_local_var->supi = supi;
 
     return authentication_subscription_local_var;
 }
@@ -46,6 +52,7 @@ void OpenAPI_authentication_subscription_free(OpenAPI_authentication_subscriptio
     ogs_free(authentication_subscription->algorithm_id);
     ogs_free(authentication_subscription->enc_opc_key);
     ogs_free(authentication_subscription->enc_topc_key);
+    ogs_free(authentication_subscription->supi);
     ogs_free(authentication_subscription);
 }
 
@@ -126,6 +133,27 @@ cJSON *OpenAPI_authentication_subscription_convertToJSON(OpenAPI_authentication_
     if (authentication_subscription->vector_generation_in_hss) {
         if (cJSON_AddBoolToObject(item, "vectorGenerationInHss", authentication_subscription->vector_generation_in_hss) == NULL) {
             ogs_error("OpenAPI_authentication_subscription_convertToJSON() failed [vector_generation_in_hss]");
+            goto end;
+        }
+    }
+
+    if (authentication_subscription->n5gc_auth_method) {
+        if (cJSON_AddStringToObject(item, "n5gcAuthMethod", OpenAPI_auth_method_ToString(authentication_subscription->n5gc_auth_method)) == NULL) {
+            ogs_error("OpenAPI_authentication_subscription_convertToJSON() failed [n5gc_auth_method]");
+            goto end;
+        }
+    }
+
+    if (authentication_subscription->rg_authentication_ind) {
+        if (cJSON_AddBoolToObject(item, "rgAuthenticationInd", authentication_subscription->rg_authentication_ind) == NULL) {
+            ogs_error("OpenAPI_authentication_subscription_convertToJSON() failed [rg_authentication_ind]");
+            goto end;
+        }
+    }
+
+    if (authentication_subscription->supi) {
+        if (cJSON_AddStringToObject(item, "supi", authentication_subscription->supi) == NULL) {
+            ogs_error("OpenAPI_authentication_subscription_convertToJSON() failed [supi]");
             goto end;
         }
     }
@@ -221,6 +249,35 @@ OpenAPI_authentication_subscription_t *OpenAPI_authentication_subscription_parse
         }
     }
 
+    cJSON *n5gc_auth_method = cJSON_GetObjectItemCaseSensitive(authentication_subscriptionJSON, "n5gcAuthMethod");
+
+    OpenAPI_auth_method_e n5gc_auth_methodVariable;
+    if (n5gc_auth_method) {
+        if (!cJSON_IsString(n5gc_auth_method)) {
+            ogs_error("OpenAPI_authentication_subscription_parseFromJSON() failed [n5gc_auth_method]");
+            goto end;
+        }
+        n5gc_auth_methodVariable = OpenAPI_auth_method_FromString(n5gc_auth_method->valuestring);
+    }
+
+    cJSON *rg_authentication_ind = cJSON_GetObjectItemCaseSensitive(authentication_subscriptionJSON, "rgAuthenticationInd");
+
+    if (rg_authentication_ind) {
+        if (!cJSON_IsBool(rg_authentication_ind)) {
+            ogs_error("OpenAPI_authentication_subscription_parseFromJSON() failed [rg_authentication_ind]");
+            goto end;
+        }
+    }
+
+    cJSON *supi = cJSON_GetObjectItemCaseSensitive(authentication_subscriptionJSON, "supi");
+
+    if (supi) {
+        if (!cJSON_IsString(supi)) {
+            ogs_error("OpenAPI_authentication_subscription_parseFromJSON() failed [supi]");
+            goto end;
+        }
+    }
+
     authentication_subscription_local_var = OpenAPI_authentication_subscription_create (
         authentication_methodVariable,
         enc_permanent_key ? ogs_strdup(enc_permanent_key->valuestring) : NULL,
@@ -230,7 +287,10 @@ OpenAPI_authentication_subscription_t *OpenAPI_authentication_subscription_parse
         algorithm_id ? ogs_strdup(algorithm_id->valuestring) : NULL,
         enc_opc_key ? ogs_strdup(enc_opc_key->valuestring) : NULL,
         enc_topc_key ? ogs_strdup(enc_topc_key->valuestring) : NULL,
-        vector_generation_in_hss ? vector_generation_in_hss->valueint : 0
+        vector_generation_in_hss ? vector_generation_in_hss->valueint : 0,
+        n5gc_auth_method ? n5gc_auth_methodVariable : 0,
+        rg_authentication_ind ? rg_authentication_ind->valueint : 0,
+        supi ? ogs_strdup(supi->valuestring) : NULL
         );
 
     return authentication_subscription_local_var;

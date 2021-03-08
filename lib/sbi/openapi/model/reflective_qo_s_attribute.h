@@ -17,16 +17,11 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_reflective_qo_s_attribute_s OpenAPI_reflective_qo_s_attribute_t;
-typedef struct OpenAPI_reflective_qo_s_attribute_s {
-} OpenAPI_reflective_qo_s_attribute_t;
+typedef enum { OpenAPI_reflective_qo_s_attribute_NULL = 0, OpenAPI_reflective_qo_s_attribute_RQOS, OpenAPI_reflective_qo_s_attribute_NO_RQOS } OpenAPI_reflective_qo_s_attribute_e;
 
-OpenAPI_reflective_qo_s_attribute_t *OpenAPI_reflective_qo_s_attribute_create(
-    );
-void OpenAPI_reflective_qo_s_attribute_free(OpenAPI_reflective_qo_s_attribute_t *reflective_qo_s_attribute);
-OpenAPI_reflective_qo_s_attribute_t *OpenAPI_reflective_qo_s_attribute_parseFromJSON(cJSON *reflective_qo_s_attributeJSON);
-cJSON *OpenAPI_reflective_qo_s_attribute_convertToJSON(OpenAPI_reflective_qo_s_attribute_t *reflective_qo_s_attribute);
-OpenAPI_reflective_qo_s_attribute_t *OpenAPI_reflective_qo_s_attribute_copy(OpenAPI_reflective_qo_s_attribute_t *dst, OpenAPI_reflective_qo_s_attribute_t *src);
+char* OpenAPI_reflective_qo_s_attribute_ToString(OpenAPI_reflective_qo_s_attribute_e reflective_qo_s_attribute);
+
+OpenAPI_reflective_qo_s_attribute_e OpenAPI_reflective_qo_s_attribute_FromString(char* reflective_qo_s_attribute);
 
 #ifdef __cplusplus
 }

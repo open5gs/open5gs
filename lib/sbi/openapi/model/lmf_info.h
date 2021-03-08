@@ -1,7 +1,7 @@
 /*
  * lmf_info.h
  *
- *
+ * Information of an LMF NF Instance
  */
 
 #ifndef _OpenAPI_lmf_info_H_

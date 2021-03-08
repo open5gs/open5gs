@@ -12,6 +12,7 @@ OpenAPI_sm_context_update_data_t *OpenAPI_sm_context_update_data_create(
     OpenAPI_list_t *backup_amf_info,
     OpenAPI_access_type_e an_type,
     OpenAPI_access_type_e additional_an_type,
+    OpenAPI_access_type_e an_type_to_reactivate,
     OpenAPI_rat_type_e rat_type,
     OpenAPI_presence_state_e presence_in_ladn,
     OpenAPI_user_location_t *ue_location,
@@ -48,7 +49,6 @@ OpenAPI_sm_context_update_data_t *OpenAPI_sm_context_update_data_create(
     int ma_request_ind,
     OpenAPI_exemption_ind_t *exemption_ind,
     char *supported_features,
-    OpenAPI_mo_exception_data_flag_t *mo_exp_data_ind,
     OpenAPI_mo_exp_data_counter_t *mo_exp_data_counter,
     int extended_nas_sm_timer_ind,
     char forwarding_f_teid,
@@ -67,6 +67,7 @@ OpenAPI_sm_context_update_data_t *OpenAPI_sm_context_update_data_create(
     sm_context_update_data_local_var->backup_amf_info = backup_amf_info;
     sm_context_update_data_local_var->an_type = an_type;
     sm_context_update_data_local_var->additional_an_type = additional_an_type;
+    sm_context_update_data_local_var->an_type_to_reactivate = an_type_to_reactivate;
     sm_context_update_data_local_var->rat_type = rat_type;
     sm_context_update_data_local_var->presence_in_ladn = presence_in_ladn;
     sm_context_update_data_local_var->ue_location = ue_location;
@@ -103,7 +104,6 @@ OpenAPI_sm_context_update_data_t *OpenAPI_sm_context_update_data_create(
     sm_context_update_data_local_var->ma_request_ind = ma_request_ind;
     sm_context_update_data_local_var->exemption_ind = exemption_ind;
     sm_context_update_data_local_var->supported_features = supported_features;
-    sm_context_update_data_local_var->mo_exp_data_ind = mo_exp_data_ind;
     sm_context_update_data_local_var->mo_exp_data_counter = mo_exp_data_counter;
     sm_context_update_data_local_var->extended_nas_sm_timer_ind = extended_nas_sm_timer_ind;
     sm_context_update_data_local_var->forwarding_f_teid = forwarding_f_teid;
@@ -158,7 +158,6 @@ void OpenAPI_sm_context_update_data_free(OpenAPI_sm_context_update_data_t *sm_co
     OpenAPI_ref_to_binary_data_free(sm_context_update_data->n2_sm_info_ext1);
     OpenAPI_exemption_ind_free(sm_context_update_data->exemption_ind);
     ogs_free(sm_context_update_data->supported_features);
-    OpenAPI_mo_exception_data_flag_free(sm_context_update_data->mo_exp_data_ind);
     OpenAPI_mo_exp_data_counter_free(sm_context_update_data->mo_exp_data_counter);
     OpenAPI_list_for_each(sm_context_update_data->forwarding_bearer_contexts, node) {
         ogs_free(node->data);
@@ -248,6 +247,13 @@ cJSON *OpenAPI_sm_context_update_data_convertToJSON(OpenAPI_sm_context_update_da
     if (sm_context_update_data->additional_an_type) {
         if (cJSON_AddStringToObject(item, "additionalAnType", OpenAPI_access_type_ToString(sm_context_update_data->additional_an_type)) == NULL) {
             ogs_error("OpenAPI_sm_context_update_data_convertToJSON() failed [additional_an_type]");
+            goto end;
+        }
+    }
+
+    if (sm_context_update_data->an_type_to_reactivate) {
+        if (cJSON_AddStringToObject(item, "anTypeToReactivate", OpenAPI_access_type_ToString(sm_context_update_data->an_type_to_reactivate)) == NULL) {
+            ogs_error("OpenAPI_sm_context_update_data_convertToJSON() failed [an_type_to_reactivate]");
             goto end;
         }
     }
@@ -614,19 +620,6 @@ cJSON *OpenAPI_sm_context_update_data_convertToJSON(OpenAPI_sm_context_update_da
         }
     }
 
-    if (sm_context_update_data->mo_exp_data_ind) {
-        cJSON *mo_exp_data_ind_local_JSON = OpenAPI_mo_exception_data_flag_convertToJSON(sm_context_update_data->mo_exp_data_ind);
-        if (mo_exp_data_ind_local_JSON == NULL) {
-            ogs_error("OpenAPI_sm_context_update_data_convertToJSON() failed [mo_exp_data_ind]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "moExpDataInd", mo_exp_data_ind_local_JSON);
-        if (item->child == NULL) {
-            ogs_error("OpenAPI_sm_context_update_data_convertToJSON() failed [mo_exp_data_ind]");
-            goto end;
-        }
-    }
-
     if (sm_context_update_data->mo_exp_data_counter) {
         cJSON *mo_exp_data_counter_local_JSON = OpenAPI_mo_exp_data_counter_convertToJSON(sm_context_update_data->mo_exp_data_counter);
         if (mo_exp_data_counter_local_JSON == NULL) {
@@ -765,6 +758,17 @@ OpenAPI_sm_context_update_data_t *OpenAPI_sm_context_update_data_parseFromJSON(c
             goto end;
         }
         additional_an_typeVariable = OpenAPI_access_type_FromString(additional_an_type->valuestring);
+    }
+
+    cJSON *an_type_to_reactivate = cJSON_GetObjectItemCaseSensitive(sm_context_update_dataJSON, "anTypeToReactivate");
+
+    OpenAPI_access_type_e an_type_to_reactivateVariable;
+    if (an_type_to_reactivate) {
+        if (!cJSON_IsString(an_type_to_reactivate)) {
+            ogs_error("OpenAPI_sm_context_update_data_parseFromJSON() failed [an_type_to_reactivate]");
+            goto end;
+        }
+        an_type_to_reactivateVariable = OpenAPI_access_type_FromString(an_type_to_reactivate->valuestring);
     }
 
     cJSON *rat_type = cJSON_GetObjectItemCaseSensitive(sm_context_update_dataJSON, "ratType");
@@ -1137,13 +1141,6 @@ OpenAPI_sm_context_update_data_t *OpenAPI_sm_context_update_data_parseFromJSON(c
         }
     }
 
-    cJSON *mo_exp_data_ind = cJSON_GetObjectItemCaseSensitive(sm_context_update_dataJSON, "moExpDataInd");
-
-    OpenAPI_mo_exception_data_flag_t *mo_exp_data_ind_local_nonprim = NULL;
-    if (mo_exp_data_ind) {
-        mo_exp_data_ind_local_nonprim = OpenAPI_mo_exception_data_flag_parseFromJSON(mo_exp_data_ind);
-    }
-
     cJSON *mo_exp_data_counter = cJSON_GetObjectItemCaseSensitive(sm_context_update_dataJSON, "moExpDataCounter");
 
     OpenAPI_mo_exp_data_counter_t *mo_exp_data_counter_local_nonprim = NULL;
@@ -1204,6 +1201,7 @@ OpenAPI_sm_context_update_data_t *OpenAPI_sm_context_update_data_parseFromJSON(c
         backup_amf_info ? backup_amf_infoList : NULL,
         an_type ? an_typeVariable : 0,
         additional_an_type ? additional_an_typeVariable : 0,
+        an_type_to_reactivate ? an_type_to_reactivateVariable : 0,
         rat_type ? rat_typeVariable : 0,
         presence_in_ladn ? presence_in_ladnVariable : 0,
         ue_location ? ue_location_local_nonprim : NULL,
@@ -1240,7 +1238,6 @@ OpenAPI_sm_context_update_data_t *OpenAPI_sm_context_update_data_parseFromJSON(c
         ma_request_ind ? ma_request_ind->valueint : 0,
         exemption_ind ? exemption_ind_local_nonprim : NULL,
         supported_features ? ogs_strdup(supported_features->valuestring) : NULL,
-        mo_exp_data_ind ? mo_exp_data_ind_local_nonprim : NULL,
         mo_exp_data_counter ? mo_exp_data_counter_local_nonprim : NULL,
         extended_nas_sm_timer_ind ? extended_nas_sm_timer_ind->valueint : 0,
         forwarding_f_teid ? forwarding_f_teid->valueint : 0,

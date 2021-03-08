@@ -7,7 +7,8 @@
 OpenAPI_pgw_info_t *OpenAPI_pgw_info_create(
     char *dnn,
     char *pgw_fqdn,
-    OpenAPI_plmn_id_t *plmn_id
+    OpenAPI_plmn_id_t *plmn_id,
+    int epdg_ind
     )
 {
     OpenAPI_pgw_info_t *pgw_info_local_var = OpenAPI_malloc(sizeof(OpenAPI_pgw_info_t));
@@ -17,6 +18,7 @@ OpenAPI_pgw_info_t *OpenAPI_pgw_info_create(
     pgw_info_local_var->dnn = dnn;
     pgw_info_local_var->pgw_fqdn = pgw_fqdn;
     pgw_info_local_var->plmn_id = plmn_id;
+    pgw_info_local_var->epdg_ind = epdg_ind;
 
     return pgw_info_local_var;
 }
@@ -74,6 +76,13 @@ cJSON *OpenAPI_pgw_info_convertToJSON(OpenAPI_pgw_info_t *pgw_info)
         }
     }
 
+    if (pgw_info->epdg_ind) {
+        if (cJSON_AddBoolToObject(item, "epdgInd", pgw_info->epdg_ind) == NULL) {
+            ogs_error("OpenAPI_pgw_info_convertToJSON() failed [epdg_ind]");
+            goto end;
+        }
+    }
+
 end:
     return item;
 }
@@ -112,10 +121,20 @@ OpenAPI_pgw_info_t *OpenAPI_pgw_info_parseFromJSON(cJSON *pgw_infoJSON)
         plmn_id_local_nonprim = OpenAPI_plmn_id_parseFromJSON(plmn_id);
     }
 
+    cJSON *epdg_ind = cJSON_GetObjectItemCaseSensitive(pgw_infoJSON, "epdgInd");
+
+    if (epdg_ind) {
+        if (!cJSON_IsBool(epdg_ind)) {
+            ogs_error("OpenAPI_pgw_info_parseFromJSON() failed [epdg_ind]");
+            goto end;
+        }
+    }
+
     pgw_info_local_var = OpenAPI_pgw_info_create (
         ogs_strdup(dnn->valuestring),
         ogs_strdup(pgw_fqdn->valuestring),
-        plmn_id ? plmn_id_local_nonprim : NULL
+        plmn_id ? plmn_id_local_nonprim : NULL,
+        epdg_ind ? epdg_ind->valueint : 0
         );
 
     return pgw_info_local_var;

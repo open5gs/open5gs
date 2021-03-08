@@ -32,7 +32,7 @@ void OpenAPI_location_info_free(OpenAPI_location_info_t *location_info)
     ogs_free(location_info->supi);
     ogs_free(location_info->gpsi);
     OpenAPI_list_for_each(location_info->registration_location_info_list, node) {
-        OpenAPI_object_free(node->data);
+        OpenAPI_registration_location_info_free(node->data);
     }
     OpenAPI_list_free(location_info->registration_location_info_list);
     ogs_free(location_info->supported_features);
@@ -76,7 +76,7 @@ cJSON *OpenAPI_location_info_convertToJSON(OpenAPI_location_info_t *location_inf
     OpenAPI_lnode_t *registration_location_info_list_node;
     if (location_info->registration_location_info_list) {
         OpenAPI_list_for_each(location_info->registration_location_info_list, registration_location_info_list_node) {
-            cJSON *itemLocal = OpenAPI_object_convertToJSON(registration_location_info_list_node->data);
+            cJSON *itemLocal = OpenAPI_registration_location_info_convertToJSON(registration_location_info_list_node->data);
             if (itemLocal == NULL) {
                 ogs_error("OpenAPI_location_info_convertToJSON() failed [registration_location_info_list]");
                 goto end;
@@ -138,7 +138,7 @@ OpenAPI_location_info_t *OpenAPI_location_info_parseFromJSON(cJSON *location_inf
             ogs_error("OpenAPI_location_info_parseFromJSON() failed [registration_location_info_list]");
             goto end;
         }
-        OpenAPI_object_t *registration_location_info_listItem = OpenAPI_object_parseFromJSON(registration_location_info_list_local_nonprimitive);
+        OpenAPI_registration_location_info_t *registration_location_info_listItem = OpenAPI_registration_location_info_parseFromJSON(registration_location_info_list_local_nonprimitive);
 
         OpenAPI_list_add(registration_location_info_listList, registration_location_info_listItem);
     }

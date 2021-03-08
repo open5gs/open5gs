@@ -247,7 +247,7 @@ $ ip link show
 
 **Notice:** This configuration is not persistent after rebooting. The
 script provided in [$GIT_REPO/misc/netconf.sh](https://github.com/{{
-site.github_username }}/open5gs/blob/master/misc/netconf.sh) makes it easy
+site.github_username }}/open5gs/blob/main/misc/netconf.sh) makes it easy
 to configure the TUN device as follows:
 `$ sudo ./misc/netconf.sh`
 {: .notice--info}
@@ -325,7 +325,7 @@ $ cd ../
 $ ls install/bin
 open5gs-amfd   open5gs-hssd  open5gs-nrfd   open5gs-sgwcd  open5gs-smfd  open5gs-udrd
 open5gs-ausfd  open5gs-mmed  open5gs-pcrfd  open5gs-sgwud  open5gs-udmd  open5gs-pcfd
-open5gs-upfd
+open5gs-upfd   open5gs-nssfd
 ```
 
 ## Building WebUI of Open5GS

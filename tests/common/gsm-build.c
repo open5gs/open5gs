@@ -40,8 +40,6 @@ ogs_pkbuf_t *testgsm_build_pdu_session_establishment_request(
         "\x83\x06\x00\x00\x00\x00\x00\x0c\x00\x00\x0d\x00\x00\x02\x00\x00"
         "\x0a\x00\x00\x10\x00";
 
-    ogs_s_nssai_t *s_nssai = NULL;
-
     test_ue_t *test_ue = NULL;
     ogs_pkbuf_t *pkbuf = NULL;
 
@@ -85,9 +83,6 @@ ogs_pkbuf_t *testgsm_build_pdu_session_establishment_request(
         OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REQUEST_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT;
     extended_protocol_configuration_options->length = sizeof(ue_pco);
     extended_protocol_configuration_options->buffer = ue_pco;
-
-    s_nssai = &test_self()->plmn_support[0].s_nssai[0];
-    ogs_assert(s_nssai);
 
     return ogs_nas_5gs_plain_encode(&message);
 }

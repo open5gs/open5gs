@@ -27,6 +27,7 @@
 #include "rat_type.h"
 #include "ref_to_binary_data.h"
 #include "request_type.h"
+#include "sbi_binding_level.h"
 #include "small_data_rate_status.h"
 #include "snssai.h"
 #include "tngf_info.h"
@@ -48,6 +49,7 @@ typedef struct OpenAPI_sm_context_create_data_s {
     char *gpsi;
     int pdu_session_id;
     char *dnn;
+    char *selected_dnn;
     struct OpenAPI_snssai_s *s_nssai;
     struct OpenAPI_snssai_s *hplmn_snssai;
     char *serving_nf_id;
@@ -65,9 +67,13 @@ typedef struct OpenAPI_sm_context_create_data_s {
     struct OpenAPI_user_location_s *add_ue_location;
     char *sm_context_status_uri;
     char *h_smf_uri;
+    char *h_smf_id;
     char *smf_uri;
+    char *smf_id;
     OpenAPI_list_t *additional_hsmf_uri;
+    OpenAPI_list_t *additional_hsmf_id;
     OpenAPI_list_t *additional_smf_uri;
+    OpenAPI_list_t *additional_smf_id;
     int old_pdu_session_id;
     OpenAPI_list_t *pdu_sessions_activate_list;
     char *ue_eps_pdn_connection;
@@ -84,6 +90,7 @@ typedef struct OpenAPI_sm_context_create_data_s {
     char *routing_indicator;
     OpenAPI_eps_interworking_indication_e eps_interworking_ind;
     int indirect_forwarding_flag;
+    int direct_forwarding_flag;
     struct OpenAPI_ng_ran_target_id_s *target_id;
     char *eps_bearer_ctx_status;
     int cp_ciot_enabled;
@@ -96,6 +103,10 @@ typedef struct OpenAPI_sm_context_create_data_s {
     struct OpenAPI_ref_to_binary_data_s *n2_sm_info_ext1;
     OpenAPI_n2_sm_info_type_e n2_sm_info_type_ext1;
     char *sm_context_ref;
+    char *sm_context_smf_id;
+    char *sm_context_smf_set_id;
+    char *sm_context_smf_service_set_id;
+    OpenAPI_sbi_binding_level_e sm_context_smf_binding;
     OpenAPI_up_cnx_state_e up_cnx_state;
     struct OpenAPI_small_data_rate_status_s *small_data_rate_status;
     struct OpenAPI_apn_rate_status_s *apn_rate_status;
@@ -117,6 +128,7 @@ OpenAPI_sm_context_create_data_t *OpenAPI_sm_context_create_data_create(
     char *gpsi,
     int pdu_session_id,
     char *dnn,
+    char *selected_dnn,
     OpenAPI_snssai_t *s_nssai,
     OpenAPI_snssai_t *hplmn_snssai,
     char *serving_nf_id,
@@ -134,9 +146,13 @@ OpenAPI_sm_context_create_data_t *OpenAPI_sm_context_create_data_create(
     OpenAPI_user_location_t *add_ue_location,
     char *sm_context_status_uri,
     char *h_smf_uri,
+    char *h_smf_id,
     char *smf_uri,
+    char *smf_id,
     OpenAPI_list_t *additional_hsmf_uri,
+    OpenAPI_list_t *additional_hsmf_id,
     OpenAPI_list_t *additional_smf_uri,
+    OpenAPI_list_t *additional_smf_id,
     int old_pdu_session_id,
     OpenAPI_list_t *pdu_sessions_activate_list,
     char *ue_eps_pdn_connection,
@@ -153,6 +169,7 @@ OpenAPI_sm_context_create_data_t *OpenAPI_sm_context_create_data_create(
     char *routing_indicator,
     OpenAPI_eps_interworking_indication_e eps_interworking_ind,
     int indirect_forwarding_flag,
+    int direct_forwarding_flag,
     OpenAPI_ng_ran_target_id_t *target_id,
     char *eps_bearer_ctx_status,
     int cp_ciot_enabled,
@@ -165,6 +182,10 @@ OpenAPI_sm_context_create_data_t *OpenAPI_sm_context_create_data_create(
     OpenAPI_ref_to_binary_data_t *n2_sm_info_ext1,
     OpenAPI_n2_sm_info_type_e n2_sm_info_type_ext1,
     char *sm_context_ref,
+    char *sm_context_smf_id,
+    char *sm_context_smf_set_id,
+    char *sm_context_smf_service_set_id,
+    OpenAPI_sbi_binding_level_e sm_context_smf_binding,
     OpenAPI_up_cnx_state_e up_cnx_state,
     OpenAPI_small_data_rate_status_t *small_data_rate_status,
     OpenAPI_apn_rate_status_t *apn_rate_status,

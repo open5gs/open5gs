@@ -9,7 +9,7 @@ info:
     All rights reserved.
 
 externalDocs:
-  description: 3GPP TS 29.505 V16.2.0; 5G System; Usage of the Unified Data Repository Service for subscription data; Stage 3
+  description: 3GPP TS 29.505 V16.5.0; 5G System; Usage of the Unified Data Repository Service for subscription data; Stage 3
   url: 'http://www.3gpp.org/ftp/Specs/archive/29_series/29.505/'
 
 paths:
@@ -20,13 +20,20 @@ paths:
       operationId: QueryAuthSubsData
       tags:
         - Authentication Data (Document)
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nudr-dr
+        - oAuth2ClientCredentials:
+          - nudr-dr
+          - nudr-dr:subscription-data:authentication-subscription:read
       parameters:
         - name: ueId
           in: path
           description: UE id
           required: true
           schema:
-            $ref: 'TS29571_CommonData.yaml#/components/schemas/VarUeId'
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
         - name: supported-features
           in: query
           description: Supported Features
@@ -40,23 +47,27 @@ paths:
               schema:
                 $ref: '#/components/schemas/AuthenticationSubscription'
         default:
-          description: Unexpected error
-          content:
-            application/problem+json:
-              schema:
-                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
     patch:
       summary: modify the authentication subscription data of a UE
       operationId: ModifyAuthenticationSubscription
       tags:
         - Authentication Subscription (Document)
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nudr-dr
+        - oAuth2ClientCredentials:
+          - nudr-dr
+          - nudr-dr:subscription-data:authentication-subscription:modify
       parameters:
         - name: ueId
           in: path
           description: UE id
           required: true
           schema:
-            $ref: 'TS29571_CommonData.yaml#/components/schemas/VarUeId'
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
         - name: supported-features
           in: query
           description: Features required to be supported by the target NF
@@ -86,11 +97,7 @@ paths:
               schema:
                 $ref: 'TS29571_CommonData.yaml#/components/schemas/PatchResult'
         default:
-          description: Unexpected error
-          content:
-            application/problem+json:
-              schema:
-                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
 
   /subscription-data/{ueId}/authentication-data/authentication-status:
     put:
@@ -104,7 +111,7 @@ paths:
           description: UE id
           required: true
           schema:
-            $ref: 'TS29571_CommonData.yaml#/components/schemas/VarUeId'
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
       requestBody:
         content:
           application/json:
@@ -114,11 +121,7 @@ paths:
         '204':
           description: Upon success, an empty response body shall be returned
         default:
-          description: Unexpected error
-          content:
-            application/problem+json:
-              schema:
-                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
 
     get:
       summary: Retrieves the Authentication Status of a UE
@@ -131,7 +134,7 @@ paths:
           description: UE id
           required: true
           schema:
-            $ref: 'TS29571_CommonData.yaml#/components/schemas/VarUeId'
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
         - name: fields
           in: query
           description: attributes to be retrieved
@@ -156,11 +159,7 @@ paths:
               schema:
                 $ref: 'TS29503_Nudm_UEAU.yaml#/components/schemas/AuthEvent'
         default:
-          description: Unexpected error
-          content:
-            application/problem+json:
-              schema:
-                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
 
     delete:
       summary: To remove the Authentication Status of a UE
@@ -173,16 +172,110 @@ paths:
           description: UE id
           required: true
           schema:
-            $ref: 'TS29571_CommonData.yaml#/components/schemas/VarUeId'
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
       responses:
         '204':
           description: Upon success, an empty response body shall be returned.
         default:
-          description: Unexpected error
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+  /subscription-data/{ueId}/authentication-data/authentication-status/{servingNetworkName}:
+    put:
+      summary: To store the individual Authentication Status data of a UE
+      operationId: CreateIndividualAuthenticationStatus
+      tags:
+        - Individual Authentication Status (Document)
+      parameters:
+        - name: ueId
+          in: path
+          description: UE id
+          required: true
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+        - name: servingNetworkName
+          in: path
+          description: Serving Network Name
+          required: true
+          schema:
+            $ref: 'TS29503_Nudm_UEAU.yaml#/components/schemas/ServingNetworkName'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: 'TS29503_Nudm_UEAU.yaml#/components/schemas/AuthEvent'
+      responses:
+        '204':
+          description: Upon success, an empty response body shall be returned
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+    get:
+      summary: Retrieves the Individual Authentication Status of a UE
+      operationId: QueryIndividualAuthenticationStatus
+      tags:
+        - Individual AuthEvent (Document)
+      parameters:
+        - name: ueId
+          in: path
+          description: UE id
+          required: true
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+        - name: servingNetworkName
+          in: path
+          description: Serving Network Name
+          required: true
+          schema:
+            $ref: 'TS29503_Nudm_UEAU.yaml#/components/schemas/ServingNetworkName'
+        - name: fields
+          in: query
+          description: attributes to be retrieved
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+            minItems: 1
+          style: form
+          explode: false
+        - name: supported-features
+          description: Supported Features
+          in: query
+          schema:
+             $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      responses:
+        '200':
+          description: Expected response to a valid request
           content:
-            application/problem+json:
+            application/json:
               schema:
-                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+                $ref: 'TS29503_Nudm_UEAU.yaml#/components/schemas/AuthEvent'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+    delete:
+      summary: To remove the Individual Authentication Status of a UE
+      operationId: DeleteIndividualAuthenticationStatus
+      tags:
+        - Individual AuthEvent (Document)
+      parameters:
+        - name: ueId
+          in: path
+          description: UE id
+          required: true
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+        - name: servingNetworkName
+          in: path
+          description: Serving Network Name
+          required: true
+          schema:
+            $ref: 'TS29503_Nudm_UEAU.yaml#/components/schemas/ServingNetworkName'
+      responses:
+        '204':
+          description: Upon success, an empty response body shall be returned.
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
 
   /subscription-data/{ueId}/ue-update-confirmation-data/sor-data:
     put:
@@ -196,7 +289,7 @@ paths:
           description: UE id
           required: true
           schema:
-            $ref: 'TS29571_CommonData.yaml#/components/schemas/VarUeId'
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
         - name: supported-features
           in: query
           description: Supported Features
@@ -211,11 +304,8 @@ paths:
         '204':
           description: Expected response to a valid request
         default:
-          description: Unexpected error
-          content:
-            application/problem+json:
-              schema:
-                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
     get:
       summary: Retrieves the SoR acknowledgement information of a UE
       operationId: QueryAuthSoR
@@ -227,7 +317,7 @@ paths:
           description: UE id
           required: true
           schema:
-            $ref: 'TS29571_CommonData.yaml#/components/schemas/VarUeId'
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
         - name: supportedFeatures
           in: query
           description: Supported Features
@@ -241,11 +331,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/SorData'
         default:
-          description: Unexpected error
-          content:
-            application/problem+json:
-              schema:
-                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
 
   /subscription-data/{ueId}/ue-update-confirmation-data/upu-data:
     put:
@@ -259,7 +345,7 @@ paths:
           description: UE id
           required: true
           schema:
-            $ref: 'TS29571_CommonData.yaml#/components/schemas/VarUeId'
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
         - name: supported-features
           in: query
           description: Supported Features
@@ -274,11 +360,8 @@ paths:
         '204':
           description: Expected response to a valid request
         default:
-          description: Unexpected error
-          content:
-            application/problem+json:
-              schema:
-                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
     get:
       summary: Retrieves the UPU acknowledgement information of a UE
       operationId: QueryAuthUPU
@@ -290,7 +373,7 @@ paths:
           description: UE id
           required: true
           schema:
-            $ref: 'TS29571_CommonData.yaml#/components/schemas/VarUeId'
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
         - name: supportedFeatures
           in: query
           description: Supported Features
@@ -304,11 +387,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/UpuData'
         default:
-          description: Unexpected error
-          content:
-            application/problem+json:
-              schema:
-                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
 
   /subscription-data/{ueId}/ue-update-confirmation-data/subscribed-snssais:
     put:
@@ -322,7 +401,7 @@ paths:
           description: UE id
           required: true
           schema:
-            $ref: 'TS29571_CommonData.yaml#/components/schemas/VarUeId'
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
         - name: supported-features
           in: query
           description: Supported Features
@@ -337,11 +416,8 @@ paths:
         '204':
           description: Expected response to a valid request
         default:
-          description: Unexpected error
-          content:
-            application/problem+json:
-              schema:
-                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
     get:
       summary: Retrieves the UPU acknowledgement information of a UE
       operationId: QueryNssaiAck
@@ -353,7 +429,7 @@ paths:
           description: UE id
           required: true
           schema:
-            $ref: 'TS29571_CommonData.yaml#/components/schemas/VarUeId'
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
         - name: supportedFeatures
           in: query
           description: Supported Features
@@ -367,11 +443,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/NssaiAckData'
         default:
-          description: Unexpected error
-          content:
-            application/problem+json:
-              schema:
-                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
 
   /subscription-data/{ueId}/ue-update-confirmation-data/subscribed-cag:
     put:
@@ -385,7 +457,7 @@ paths:
           description: UE id
           required: true
           schema:
-            $ref: 'TS29571_CommonData.yaml#/components/schemas/VarUeId'
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
         - name: supported-features
           in: query
           description: Supported Features
@@ -400,11 +472,8 @@ paths:
         '204':
           description: Expected response to a valid request
         default:
-          description: Unexpected error
-          content:
-            application/problem+json:
-              schema:
-                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
     get:
       summary: Retrieves the CAG acknowledgement information of a UE
       operationId: QueryCagAck
@@ -416,7 +485,7 @@ paths:
           description: UE id
           required: true
           schema:
-            $ref: 'TS29571_CommonData.yaml#/components/schemas/VarUeId'
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
         - name: supported-features
           in: query
           description: Supported Features
@@ -430,11 +499,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/CagAckData'
         default:
-          description: Unexpected error
-          content:
-            application/problem+json:
-              schema:
-                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
 
   /subscription-data/{ueId}/{servingPlmnId}/provisioned-data:
     get:
@@ -470,12 +535,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ProvisionedDataSets'
         default:
-          description: Unexpected error
-          content:
-            application/problem+json:
-              schema:
-                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
-
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
 
   /subscription-data/{ueId}/{servingPlmnId}/provisioned-data/am-data:
     get:
@@ -543,11 +603,7 @@ paths:
               schema:
                 type: string
         default:
-          description: Unexpected error
-          content:
-            application/problem+json:
-              schema:
-                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
 
   /subscription-data/{ueId}/{servingPlmnId}/provisioned-data/smf-selection-subscription-data:
     get:
@@ -615,11 +671,7 @@ paths:
               schema:
                 type: string
         default:
-          description: Unexpected error
-          content:
-            application/problem+json:
-              schema:
-                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
 
   /subscription-data/{ueId}/{servingPlmnId}/provisioned-data/sm-data:
     get:
@@ -704,11 +756,7 @@ paths:
               schema:
                 type: string
         default:
-          description: Unexpected error
-          content:
-            application/problem+json:
-              schema:
-                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
 
   /subscription-data/{ueId}/context-data/amf-3gpp-access:
     get:
@@ -747,11 +795,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/Amf3GppAccessRegistration'
         default:
-          description: Unexpected error
-          content:
-            application/problem+json:
-              schema:
-                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
     put:
       summary: To store the AMF context data of a UE using 3gpp access in the UDR
       operationId: CreateAmfContext3gpp
@@ -772,12 +817,21 @@ paths:
       responses:
         '204':
           description: Upon success, an empty response body shall be returned
-        default:
-          description: Unexpected error
+        '201':
+          description: Created
           content:
-            application/problem+json:
+            application/json:
               schema:
-                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+                $ref: '#/components/schemas/Amf3GppAccessRegistration'
+          headers:
+            Location:
+              description: 'Contains the URI of the newly created resource, according to the structure: {apiRoot}/nudr-dr/<apiVersion>/subscription-data/{ueId}/context-data/amf-3gpp-access'
+              required: true
+              schema:
+                type: string
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
     patch:
       summary: To modify the AMF context data of a UE using 3gpp access in the UDR
       operationId: AmfContext3gpp
@@ -819,11 +873,7 @@ paths:
               schema:
                 $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
         default:
-          description: Unexpected error
-          content:
-            application/problem+json:
-              schema:
-                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
 
   /subscription-data/{ueId}/context-data/amf-non-3gpp-access:
     get:
@@ -862,11 +912,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/AmfNon3GppAccessRegistration'
         default:
-          description: Unexpected error
-          content:
-            application/problem+json:
-              schema:
-                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
     put:
       summary: To store the AMF context data of a UE using non-3gpp access in the UDR
       operationId: CreateAmfContextNon3gpp
@@ -887,12 +934,21 @@ paths:
       responses:
         '204':
           description: Upon success, an empty response body shall be returned
-        default:
-          description: Unexpected error
+        '201':
+          description: Created
           content:
-            application/problem+json:
+            application/json:
               schema:
-                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+                $ref: '#/components/schemas/Amf3GppAccessRegistration'
+          headers:
+            Location:
+              description: 'Contains the URI of the newly created resource, according to the structure: {apiRoot}/nudr-dr/<apiVersion>/subscription-data/{ueId}/context-data/amf-non-3gpp-access'
+              required: true
+              schema:
+                type: string
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
     patch:
       summary: To modify the AMF context data of a UE using non 3gpp access in the UDR
       operationId: AmfContextNon3gpp
@@ -934,11 +990,7 @@ paths:
               schema:
                 $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
         default:
-          description: Unexpected error
-          content:
-            application/problem+json:
-              schema:
-                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
 
   /subscription-data/{ueId}/context-data/smf-registrations:
     get:
@@ -966,11 +1018,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/SmfRegList'
         default:
-          description: Unexpected error
-          content:
-            application/problem+json:
-              schema:
-                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
 
   /subscription-data/{ueId}/context-data/smf-registrations/{pduSessionId}:
     get:
@@ -1015,11 +1063,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/SmfRegistration'
         default:
-          description: Unexpected error
-          content:
-            application/problem+json:
-              schema:
-                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
     put:
       summary: To create an individual SMF context data of a UE in the UDR
       operationId: CreateSmfContextNon3gpp
@@ -1046,18 +1091,21 @@ paths:
       responses:
         '201':
           description: Upon success, a response body containing a representation of the created Individual SmfRegistration resource shall be returned
-        default:
-          description: Unexpected error
           content:
-            application/problem+json:
+            application/json:
               schema:
-                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+                $ref: '#/components/schemas/SmfRegistration'
           headers:
             Location:
               description: 'Contains the URI of the newly created resource, according to the structure: {apiRoot}/nudr-dr/<apiVersion>/subscription-data/{ueId}/context-data/smf-registrations/{pduSessionId}'
               required: true
               schema:
                 type: string
+        '204':
+          description: No content
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
     delete:
       summary: To remove an individual SMF context data of a UE the UDR
       operationId: DeleteSmfContext
@@ -1080,11 +1128,7 @@ paths:
         '204':
           description: Upon success, an empty response body shall be returned.
         default:
-          description: Unexpected error
-          content:
-            application/problem+json:
-              schema:
-                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
 
   /subscription-data/{ueId}/operator-specific-data:
     get:
@@ -1148,11 +1192,8 @@ paths:
               schema:
                 type: string
         default:
-          description: Unexpected error
-          content:
-            application/problem+json:
-              schema:
-                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
     patch:
       summary: To modify operator specific data of a UE
       operationId: ModifyOperSpecData
@@ -1194,11 +1235,7 @@ paths:
               schema:
                 $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
         default:
-          description: Unexpected error
-          content:
-            application/problem+json:
-              schema:
-                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
 
   /subscription-data/{ueId}/context-data/smsf-3gpp-access:
     put:
@@ -1221,12 +1258,21 @@ paths:
       responses:
         '204':
           description: Upon success, an empty response body shall be returned
-        default:
-          description: Unexpected error
+        '201':
+          description: Created
           content:
-            application/problem+json:
+            application/json:
               schema:
-                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+                $ref: '#/components/schemas/SmsfRegistration'
+          headers:
+            Location:
+              description: 'Contains the URI of the newly created resource, according to the structure: {apiRoot}/nudr-dr/<apiVersion>/subscription-data/{ueId}/context-data/smsf-3gpp-access'
+              required: true
+              schema:
+                type: string
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
     delete:
       summary: To remove the SMSF context data of a UE via 3GPP access
       operationId: DeleteSmsfContext3gpp
@@ -1243,11 +1289,8 @@ paths:
         '204':
           description: Upon success, an empty response body shall be returned
         default:
-          description: Unexpected error
-          content:
-            application/problem+json:
-              schema:
-                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
     get:
       summary: Retrieves the SMSF context data of a UE using 3gpp access
       operationId: QuerySmsfContext3gpp
@@ -1284,11 +1327,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/SmsfRegistration'
         default:
-          description: Unexpected error
-          content:
-            application/problem+json:
-              schema:
-                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
 
   /subscription-data/{ueId}/context-data/smsf-non-3gpp-access:
     put:
@@ -1311,12 +1350,21 @@ paths:
       responses:
         '204':
           description: Upon success, an empty response body shall be returned
-        default:
-          description: Unexpected error
+        '201':
+          description: Created
           content:
-            application/problem+json:
+            application/json:
               schema:
-                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+                $ref: '#/components/schemas/SmsfRegistration'
+          headers:
+            Location:
+              description: 'Contains the URI of the newly created resource, according to the structure: {apiRoot}/nudr-dr/<apiVersion>/subscription-data/{ueId}/context-data/smsf-non-3gpp-access'
+              required: true
+              schema:
+                type: string
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
     delete:
       summary: To remove the SMSF context data of a UE via non-3GPP access
       operationId: DeleteSmsfContextNon3gpp
@@ -1333,11 +1381,8 @@ paths:
         '204':
           description: Upon success, an empty response body shall be returned
         default:
-          description: Unexpected error
-          content:
-            application/problem+json:
-              schema:
-                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
     get:
       summary: Retrieves the SMSF context data of a UE using non-3gpp access
       operationId: QuerySmsfContextNon3gpp
@@ -1374,11 +1419,228 @@ paths:
               schema:
                 $ref: '#/components/schemas/SmsfRegistration'
         default:
-          description: Unexpected error
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+  /subscription-data/{ueId}/context-data/ip-sm-gw:
+    put:
+      summary: Create the IP-SM-GW context data of a UE
+      operationId: CreateIpSmGwContext
+      tags:
+        - IP-SM-GW Registration (Document)
+      parameters:
+        - name: ueId
+          in: path
+          description: UE id
+          required: true
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/VarUeId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IpSmGwRegistration'
+      responses:
+        '204':
+          description: Upon success, an empty response body shall be returned
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+    delete:
+      summary: To remove the IP-SM-GW context data of a UE
+      operationId: DeleteIpSmGwContext
+      tags:
+        - IP-SM-GW Registration (Document)
+      parameters:
+        - name: ueId
+          in: path
+          description: UE id
+          required: true
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/VarUeId'
+      responses:
+        '204':
+          description: Upon success, an empty response body shall be returned
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+    patch:
+      summary: Modify the IP-SM-GW context data of a UE
+      operationId: ModifyIpSmGwContext
+      tags:
+        - IP-SM-GW Registration (Document)
+      parameters:
+        - name: ueId
+          in: path
+          description: UE id
+          required: true
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/VarUeId'
+      requestBody:
+        content:
+          application/json-patch+json:
+            schema:
+              type: array
+              items:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/PatchItem'
+              minItems: 1
+        required: true
+      responses:
+        '204':
+          description: Successful response
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+    get:
+      summary: Retrieves the IP-SM-GW context data of a UE
+      operationId: QueryIpSmGwContext
+      tags:
+        - IP-SM-GW Registration (Document)
+      parameters:
+        - name: ueId
+          in: path
+          description: UE id
+          required: true
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/VarUeId'
+        - name: fields
+          in: query
+          description: attributes to be retrieved
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+            minItems: 1
+          style: form
+          explode: false
+        - name: supported-features
+          in: query
+          description: Supported Features
+          schema:
+             $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      responses:
+        '200':
+          description: Expected response to a valid request
           content:
-            application/problem+json:
+            application/json:
               schema:
-                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+                $ref: '#/components/schemas/IpSmGwRegistration'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+  /subscription-data/{ueId}/context-data/mwd:
+    put:
+      summary: Create the Message Waiting Data of the UE
+      operationId: CreateMessageWaitingData
+      tags:
+        - Message Waiting Data (Document)
+      parameters:
+        - name: ueId
+          in: path
+          description: UE id
+          required: true
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/VarUeId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MessageWaitingData'
+      responses:
+        '204':
+          description: Upon success, an empty response body shall be returned
+        default:
+          description: Unexpected error
+    delete:
+      summary: To remove the Message Waiting Data of the UE
+      operationId: DeleteMessageWaitingData
+      tags:
+        - Message Waiting Data (Document)
+      parameters:
+        - name: ueId
+          in: path
+          description: UE id
+          required: true
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/VarUeId'
+      responses:
+        '204':
+          description: Upon success, an empty response body shall be returned
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+    patch:
+      summary: Modify the Message Waiting Data of the UE
+      operationId: ModifyMessageWaitingData
+      tags:
+        - Message Waiting Data (Document)
+      parameters:
+        - name: ueId
+          in: path
+          description: UE id
+          required: true
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/VarUeId'
+      requestBody:
+        content:
+          application/json-patch+json:
+            schema:
+              type: array
+              items:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/PatchItem'
+              minItems: 1
+        required: true
+      responses:
+        '204':
+          description: Successful response
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+    get:
+      summary: Retrieves the Message Waiting Data of the UE
+      operationId: QueryMessageWaitingData
+      tags:
+        - Message Waiting Data (Document)
+      parameters:
+        - name: ueId
+          in: path
+          description: UE id
+          required: true
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/VarUeId'
+        - name: fields
+          in: query
+          description: attributes to be retrieved
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+            minItems: 1
+          style: form
+          explode: false
+        - name: supported-features
+          in: query
+          description: Supported Features
+          schema:
+             $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      responses:
+        '200':
+          description: Expected response to a valid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageWaitingData'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
 
   /subscription-data/{ueId}/{servingPlmnId}/provisioned-data/sms-mng-data:
     get:
@@ -1435,11 +1697,7 @@ paths:
               schema:
                 type: string
         default:
-          description: Unexpected error
-          content:
-            application/problem+json:
-              schema:
-                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
 
   /subscription-data/{ueId}/{servingPlmnId}/provisioned-data/sms-data:
     get:
@@ -1496,11 +1754,7 @@ paths:
               schema:
                 type: string
         default:
-          description: Unexpected error
-          content:
-            application/problem+json:
-              schema:
-                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
 
   /subscription-data/{ueId}/pp-data:
     get:
@@ -1557,11 +1811,8 @@ paths:
               schema:
                 $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
         default:
-          description: Unexpected error
-          content:
-            application/problem+json:
-              schema:
-                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
     patch:
       summary: modify the provisioned parameter data
       operationId: ModifyPpData
@@ -1595,7 +1846,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: 'TS29571_CommonData.yaml#/components/schemas/PatchResult' 
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/PatchResult'
         '403':
           description: modification is rejected
           content:
@@ -1603,11 +1854,7 @@ paths:
               schema:
                 $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
         default:
-          description: Unexpected error
-          content:
-            application/problem+json:
-              schema:
-                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
 
   /subscription-data/{ueId}/context-data/ee-subscriptions:
     get:
@@ -1637,11 +1884,8 @@ paths:
                items:
                 $ref: '#/components/schemas/EeSubscription'
         default:
-          description: Unexpected error
-          content:
-            application/problem+json:
-              schema:
-                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
     post:
       summary: Create individual EE subscription
       operationId: CreateEeSubscriptions
@@ -1674,11 +1918,7 @@ paths:
               schema:
                 type: string
         default:
-          description: Unexpected error
-          content:
-            application/problem+json:
-              schema:
-                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
 
   /subscription-data/{ueId}/context-data/ee-subscriptions/{subsId}:
     put:
@@ -1712,11 +1952,8 @@ paths:
               schema:
                 $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
         default:
-          description: Unexpected error
-          content:
-            application/problem+json:
-              schema:
-                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
     delete:
       summary: Deletes a eeSubscription
       operationId: RemoveeeSubscriptions
@@ -1737,6 +1974,8 @@ paths:
       responses:
         '204':
           description: Expected response to a successful subscription removal
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
 
     patch:
       summary: Modify an individual ee subscription of a UE
@@ -1783,7 +2022,7 @@ paths:
         '404':
           $ref: 'TS29571_CommonData.yaml#/components/responses/404'
         default:
-          description: Unexpected error
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
 
     get:
       summary: Retrieve a eeSubscription
@@ -1811,11 +2050,7 @@ paths:
                items:
                 $ref: '#/components/schemas/EeSubscription'
         default:
-          description: Unexpected error
-          content:
-            application/problem+json:
-              schema:
-                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
 
   /subscription-data/{ueId}/context-data/ee-subscriptions/{subsId}/amf-subscriptions:
     put:
@@ -1847,11 +2082,8 @@ paths:
         '204':
           description: Upon success, an empty response body shall be returned
         default:
-          description: Unexpected error
-          content:
-            application/problem+json:
-              schema:
-                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
     delete:
       summary: Deletes AMF Subscription Info for an eeSubscription
       operationId: RemoveAmfSubscriptionsInfo
@@ -1871,6 +2103,9 @@ paths:
       responses:
         '204':
           description: Expected response to a successful subscription removal
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
     patch:
       summary: modify the AMF Subscription Info
       operationId: ModifyAmfSubscriptionInfo
@@ -1916,11 +2151,8 @@ paths:
               schema:
                 $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
         default:
-          description: Unexpected error
-          content:
-            application/problem+json:
-              schema:
-                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
     get:
       summary: Retrieve AMF subscription Info
       operationId: GetAmfSubscriptionInfo
@@ -1948,11 +2180,7 @@ paths:
                   $ref: '#/components/schemas/AmfSubscriptionInfo'
                 minItems: 1
         default:
-          description: Unexpected error
-          content:
-            application/problem+json:
-              schema:
-                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
 
   /subscription-data/group-data/{ueGroupId}/ee-subscriptions:
     get:
@@ -1982,11 +2210,8 @@ paths:
                items:
                 $ref: '#/components/schemas/EeSubscription'
         default:
-          description: Unexpected error
-          content:
-            application/problem+json:
-              schema:
-                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
     post:
       summary: Create individual EE subscription for a group of UEs or any UE
       operationId: CreateEeGroupSubscriptions
@@ -2014,23 +2239,19 @@ paths:
                 $ref: '#/components/schemas/EeSubscription'
           headers:
             Location:
-              description: 'Contains the URI of the newly created resource, according to the structure: {apiRoot}/nudr-dr/<apiVersion>/subscription-data/group-data/{ueGroupId}/ee-subscriptions '
+              description: 'Contains the URI of the newly created resource, according to the structure: {apiRoot}/nudr-dr/<apiVersion>/subscription-data/group-data/{ueGroupId}/ee-subscriptions'
               required: true
               schema:
                 type: string
         default:
-          description: Unexpected error
-          content:
-            application/problem+json:
-              schema:
-                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
 
   /subscription-data/group-data/{ueGroupId}/ee-subscriptions/{subsId}:
     put:
       summary: Update an individual ee subscription of a group of UEs or any UE
       operationId: UpdateEeGroupSubscriptions
       tags:
-        - Event Exposure Subscription (Document)
+        - Event Exposure Group Subscription (Document)
       parameters:
         - name: ueGroupId
           in: path
@@ -2057,16 +2278,13 @@ paths:
               schema:
                 $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
         default:
-          description: Unexpected error
-          content:
-            application/problem+json:
-              schema:
-                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
     delete:
       summary: Deletes a eeSubscription for a group of UEs or any UE
       operationId: RemoveEeGroupSubscriptions
       tags:
-        - Event Exposure Subscription (Document)
+        - Event Exposure Group Subscription (Document)
       parameters:
         - name: ueGroupId
           in: path
@@ -2082,12 +2300,14 @@ paths:
       responses:
         '204':
           description: Expected response to a successful subscription removal
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
 
     patch:
       summary: Modify an individual ee subscription for a group of a UEs
       operationId: ModifyEeGroupSubscription
       tags:
-        - Event Exposure Subscription (Document)
+        - Event Exposure Group Subscription (Document)
       parameters:
         - name: ueGroupId
           in: path
@@ -2127,13 +2347,13 @@ paths:
         '404':
           $ref: 'TS29571_CommonData.yaml#/components/responses/404'
         default:
-          description: Unexpected error
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
 
     get:
       summary: Retrieve a individual eeSubscription for a group of UEs or any UE
       operationId: QueryEeGroupSubscription
       tags:
-        - Event Exposure Subscription (Document)
+        - Event Exposure Group Subscription (Document)
       parameters:
         - name: ueGroupId
           in: path
@@ -2155,11 +2375,7 @@ paths:
                items:
                 $ref: '#/components/schemas/EeSubscription'
         default:
-          description: Unexpected error
-          content:
-            application/problem+json:
-              schema:
-                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
 
   /subscription-data/{ueId}/ee-profile-data:
     get:
@@ -2197,12 +2413,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/EeProfileData'
         default:
-          description: Unexpected error
-          content:
-            application/problem+json:
-              schema:
-                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
-
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
 
   /subscription-data/{ueId}/context-data/sdm-subscriptions:
     get:
@@ -2232,11 +2443,8 @@ paths:
                items:
                 $ref: '#/components/schemas/SdmSubscription'
         default:
-          description: Unexpected error
-          content:
-            application/problem+json:
-              schema:
-                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
     post:
       summary: Create individual sdm subscription
       operationId: CreateSdmSubscriptions
@@ -2269,11 +2477,7 @@ paths:
               schema:
                 type: string
         default:
-          description: Unexpected error
-          content:
-            application/problem+json:
-              schema:
-                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
 
   /subscription-data/{ueId}/context-data/sdm-subscriptions/{subsId}:
     put:
@@ -2307,11 +2511,8 @@ paths:
               schema:
                 $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
         default:
-          description: Unexpected error
-          content:
-            application/problem+json:
-              schema:
-                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
     delete:
       summary: Deletes a sdmsubscriptions
       operationId: RemovesdmSubscriptions
@@ -2334,6 +2535,8 @@ paths:
           description: Expected response to a successful subscription removal
         '404':
           $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
 
     patch:
       summary: Modify an individual sdm subscription
@@ -2380,7 +2583,7 @@ paths:
         '404':
           $ref: 'TS29571_CommonData.yaml#/components/responses/404'
         default:
-          description: Unexpected error
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
 
     get:
       summary: Retrieves a individual sdmSubscription identified by subsId
@@ -2407,6 +2610,8 @@ paths:
               schema:
                 items:
                   $ref: '#/components/schemas/SdmSubscription'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
 
   /subscription-data/shared-data:
     get:
@@ -2447,13 +2652,14 @@ paths:
         '503':
           $ref: 'TS29571_CommonData.yaml#/components/responses/503'
         default:
-          description: Unexpected error
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
   /subscription-data/subs-to-notify:
     post:
       summary: Subscription data subscriptions
       operationId: SubscriptionDataSubscriptions
       tags:
-        - Subs To Nofify (Collection)
+        - Subs To Notify (Collection)
       requestBody:
         content:
           application/json:
@@ -2474,11 +2680,7 @@ paths:
               schema:
                 type: string
         default:
-          description: Unexpected error
-          content:
-            application/problem+json:
-              schema:
-                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
       callbacks:
         onDataChange:
           '{request.body#/callbackReference}':
@@ -2497,7 +2699,7 @@ paths:
       summary: Retrieves the list of subscriptions
       operationId: QuerySubsToNotify
       tags:
-        - Subs To Nofify (Collection)
+        - Subs To Notify (Collection)
       parameters:
         - name: ue-id
           in: query
@@ -2520,11 +2722,8 @@ paths:
                 items:
                   $ref: '#/components/schemas/SubscriptionDataSubscriptions'
         default:
-          description: Unexpected error
-          content:
-            application/problem+json:
-              schema:
-                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
     delete:
       summary: Deletes subscriptions identified by a given ue-id parameter
       operationId: RemoveMultipleSubscriptionDataSubscriptions
@@ -2558,6 +2757,8 @@ paths:
       responses:
         '204':
           description: Expected response to a successful subscription removal
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
 
   /subscription-data/subs-to-notify/{subsId}:
     delete:
@@ -2575,6 +2776,8 @@ paths:
       responses:
         '204':
           description: Expected response to a successful subscription removal
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
 
     patch:
       summary: Modify an individual subscriptionDataSubscription
@@ -2615,7 +2818,7 @@ paths:
         '404':
           $ref: 'TS29571_CommonData.yaml#/components/responses/404'
         default:
-          description: Unexpected error
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
 
     get:
       summary: Retrieves a individual subscriptionDataSubscription identified by subsId
@@ -2637,6 +2840,8 @@ paths:
               schema:
                 items:
                   $ref: '#/components/schemas/SubscriptionDataSubscriptions'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
 
   /subscription-data/{ueId}/{servingPlmnId}/provisioned-data/trace-data:
     get:
@@ -2689,6 +2894,7 @@ paths:
                 type: string
         default:
           $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
   /subscription-data/{ueId}/identity-data:
     get:
       summary: Retrieve identity data by SUPI or GPSI
@@ -2740,11 +2946,7 @@ paths:
               schema:
                 type: string
         default:
-          description: Unexpected error
-          content:
-            application/problem+json:
-              schema:
-                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
 
   /subscription-data/{ueId}/operator-determined-barring-data:
     get:
@@ -2767,11 +2969,7 @@ paths:
               schema:
                 $ref: 'TS29571_CommonData.yaml#/components/schemas/OdbData'
         default:
-          description: Unexpected error
-          content:
-            application/problem+json:
-              schema:
-                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
 
   /subscription-data/{ueId}/context-data:
     get:
@@ -2802,11 +3000,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ContextDataSets'
         default:
-          description: Unexpected error
-          content:
-            application/problem+json:
-              schema:
-                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
 
   /subscription-data/group-data/group-identifiers:
     get:
@@ -2846,6 +3040,8 @@ paths:
             application/json:
               schema:
                 $ref: 'TS29503_Nudm_SDM.yaml#/components/schemas/GroupIdentifiers'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
 
   /subscription-data/group-data/5g-vn-groups:
     get:
@@ -2874,11 +3070,7 @@ paths:
                additionalProperties:
                  $ref: 'TS29503_Nudm_PP.yaml#/components/schemas/5GVnGroupConfiguration'
         default:
-          description: Unexpected error
-          content:
-            application/problem+json:
-              schema:
-                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
 
   /subscription-data/group-data/5g-vn-groups/{externalGroupId}:
     put:
@@ -2908,11 +3100,8 @@ paths:
         '403':
           $ref: 'TS29571_CommonData.yaml#/components/responses/403'
         default:
-          description: Unexpected error
-          content:
-            application/problem+json:
-              schema:
-                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
     delete:
       summary: Deletes the 5GVnGroup
       operationId: Delete5GVnGroup
@@ -2927,6 +3116,9 @@ paths:
       responses:
         '204':
           description: Expected response to a successful group removal
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
     patch:
       summary: modify the 5GVnGroup
       operationId: Modify5GVnGroup
@@ -2967,11 +3159,8 @@ paths:
               schema:
                 $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
         default:
-          description: Unexpected error
-          content:
-            application/problem+json:
-              schema:
-                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
     get:
       summary: Retrieve a 5GVnGroup configuration
       operationId: Get5GVnGroupConfiguration
@@ -2991,13 +3180,9 @@ paths:
               schema:
                 $ref: 'TS29503_Nudm_PP.yaml#/components/schemas/5GVnGroupConfiguration'
         default:
-          description: Unexpected error
-          content:
-            application/problem+json:
-              schema:
-                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
 
-  /subscription-data/{ueId}/{servingPlmnId}/provisioned-data/lcs-privacy-data:
+  /subscription-data/{ueId}/lcs-privacy-data:
     get:
       summary: Retrieves the LCS Privacy subscription data of a UE
       operationId: QueryLcsPrivacyData
@@ -3010,12 +3195,6 @@ paths:
           required: true
           schema:
             $ref: 'TS29571_CommonData.yaml#/components/schemas/VarUeId'
-        - name: servingPlmnId
-          in: path
-          description: PLMN ID
-          required: true
-          schema:
-            $ref: '#/components/schemas/VarPlmnId'
         - name: fields
           in: query
           description: attributes to be retrieved
@@ -3048,10 +3227,7 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/LcsPrivacyData'
-                minItems: 1
+                $ref: '#/components/schemas/LcsPrivacyData'
           headers:
             Cache-Control:
               description: Cache-Control containing max-age, as described in RFC 7234, 5.2
@@ -3066,13 +3242,9 @@ paths:
               schema:
                 type: string
         default:
-          description: Unexpected error
-          content:
-            application/problem+json:
-              schema:
-                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
 
-  /subscription-data/{ueId}/{servingPlmnId}/provisioned-data/lcs-mo-data:
+  /subscription-data/{ueId}/lcs-mo-data:
     get:
       summary: Retrieves the LCS Mobile Originated subscription data of a UE
       operationId: QueryLcsMoData
@@ -3085,12 +3257,6 @@ paths:
           required: true
           schema:
             $ref: 'TS29571_CommonData.yaml#/components/schemas/VarUeId'
-        - name: servingPlmnId
-          in: path
-          description: PLMN ID
-          required: true
-          schema:
-            $ref: '#/components/schemas/VarPlmnId'
         - name: fields
           in: query
           description: attributes to be retrieved
@@ -3123,10 +3289,7 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/LcsMoData'
-                minItems: 1
+                $ref: '#/components/schemas/LcsMoData'
           headers:
             Cache-Control:
               description: Cache-Control containing max-age, as described in RFC 7234, 5.2
@@ -3141,11 +3304,8 @@ paths:
               schema:
                 type: string
         default:
-          description: Unexpected error
-          content:
-            application/problem+json:
-              schema:
-                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
   /subscription-data/{ueId}/nidd-authorization-data:
     get:
       summary: Retrieve NIDD Authorization Data GPSI or External Group identifier
@@ -3211,11 +3371,7 @@ paths:
               schema:
                 type: string
         default:
-          description: Unexpected error
-          content:
-            application/problem+json:
-              schema:
-                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
 
   /subscription-data/{ueId}/coverage-restriction-data:
     get:
@@ -3266,11 +3422,177 @@ paths:
               schema:
                 type: string
         default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+  /subscription-data/{ueId}/context-data/location:
+    get:
+      summary: Retrieves the UE's Location Information
+      operationId: QueryUeLocation
+      tags:
+        - UE's Location Information (Document)
+      parameters:
+        - name: ueId
+          in: path
+          description: UE id
+          required: true
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/VarUeId'
+        - name: supported-features
+          in: query
+          description: Supported Features
+          schema:
+             $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      responses:
+        '200':
+          description: Expected response to a valid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LocationInfo'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+  /subscription-data/{ueId}/v2x-data:
+    get:
+      summary: Retrieves the subscribed V2X Data of a UE
+      operationId: QueryV2xData
+      tags:
+        - V2X Subscription Data
+      parameters:
+        - name: ueId
+          in: path
+          description: UE id
+          required: true
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/VarUeId'
+        - name: supported-features
+          in: query
+          description: Supported Features
+          schema:
+             $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        - name: If-None-Match
+          in: header
+          description: Validator for conditional requests, as described in RFC 7232, 3.2
+          schema:
+            type: string
+        - name: If-Modified-Since
+          in: header
+          description: Validator for conditional requests, as described in RFC 7232, 3.3
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V2xSubscriptionData'
+          headers:
+            Cache-Control:
+              description: Cache-Control containing max-age, as described in RFC 7234, 5.2
+              schema:
+                type: string
+            ETag:
+              description: Entity Tag, containing a strong validator, as described in RFC 7232, 2.3
+              schema:
+                type: string
+            Last-Modified:
+              description: Timestamp for last modification of the resource, as described in RFC 7232, 2.2
+              schema:
+                type: string
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+  /subscription-data/{ueId}/{servingPlmnId}/provisioned-data/lcs-bca-data:
+    get:
+      summary: Retrieves the LCS Broadcast Assistance subscription data of a UE
+      operationId: QueryLcsBcaData
+      tags:
+        - LCS Broadcast Assistance Subscription Data
+      parameters:
+        - name: ueId
+          in: path
+          description: UE id
+          required: true
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/VarUeId'
+        - name: servingPlmnId
+          in: path
+          description: PLMN ID
+          required: true
+          schema:
+            $ref: '#/components/schemas/VarPlmnId'
+        - name: supported-features
+          in: query
+          description: Supported Features
+          schema:
+             $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        - name: If-None-Match
+          in: header
+          description: Validator for conditional requests, as described in RFC 7232, 3.2
+          schema:
+            type: string
+        - name: If-Modified-Since
+          in: header
+          description: Validator for conditional requests, as described in RFC 7232, 3.3
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Expected response to a valid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LcsBroadcastAssistanceTypesData'
+          headers:
+            Cache-Control:
+              description: Cache-Control containing max-age, as described in RFC 7234, 5.2
+              schema:
+                type: string
+            ETag:
+              description: Entity Tag, containing a strong validator, as described in RFC 7232, 2.3
+              schema:
+                type: string
+            Last-Modified:
+              description: Timestamp for last modification of the resource, as described in RFC 7232, 2.2
+              schema:
+                type: string
+        default:
           description: Unexpected error
           content:
             application/problem+json:
               schema:
                 $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+
+  /subscription-data/group-data/5g-vn-groups/internal:
+    get:
+      summary: Retrieves the data of 5G VN Group
+      operationId: Query5GVnGroupInternal
+      tags:
+        - 5G-VN-Groups-Internal (Document)
+      parameters:
+        - name: internal-group-ids
+          in: query
+          description: List of Internal Group IDs
+          required: true
+          schema:
+            type: array
+            items:
+              $ref: 'TS29571_CommonData.yaml#/components/schemas/GroupId'
+          style: form
+          explode: false
+      responses:
+        '200':
+          description: Expected response to a valid request
+          content:
+            application/json:
+              schema:
+               type: object
+               description: A map (list of key-value pairs) where ExtGroupId serves as key
+               additionalProperties:
+                 $ref: 'TS29503_Nudm_PP.yaml#/components/schemas/5GVnGroupConfiguration'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
 
 components:
   schemas:
@@ -3299,6 +3621,13 @@ components:
         vectorGenerationInHss:
           type: boolean
           default: false
+        n5gcAuthMethod:
+          $ref: '#/components/schemas/AuthMethod'
+        rgAuthenticationInd:
+          type: boolean
+          default: false
+        supi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
     SequenceNumber:
       type: object
       properties:
@@ -3341,8 +3670,8 @@ components:
       minItems: 1
       uniqueItems: true
     DataSetName:
-      anyOf:
-      - type: string
+#      anyOf:
+#      - type: string
         enum:
         - AM
         - SMF_SEL
@@ -3352,7 +3681,9 @@ components:
         - SMS_MNG
         - LCS_PRIVACY
         - LCS_MO
-      - type: string
+        - LCS_BCA
+        - V2X
+        type: string
     ProvisionedDataSets:
       type: object
       properties:
@@ -3374,6 +3705,10 @@ components:
           $ref: '#/components/schemas/LcsPrivacyData'
         lcsMoData:
           $ref: '#/components/schemas/LcsMoData'
+        lcsBcaData:
+          $ref: '#/components/schemas/LcsBroadcastAssistanceTypesData'
+        v2xData:
+          $ref: '#/components/schemas/V2xSubscriptionData'
     AccessAndMobilitySubscriptionData:
       $ref: 'TS29503_Nudm_SDM.yaml#/components/schemas/AccessAndMobilitySubscriptionData'
     SmfSelectionSubscriptionData:
@@ -3392,6 +3727,8 @@ components:
       $ref: 'TS29503_Nudm_UECM.yaml#/components/schemas/SmfRegistration'
     SmsfRegistration:
       $ref: 'TS29503_Nudm_UECM.yaml#/components/schemas/SmsfRegistration'
+    LocationInfo:
+      $ref: 'TS29503_Nudm_UECM.yaml#/components/schemas/LocationInfo'
     SmsManagementSubscriptionData:
       $ref: 'TS29503_Nudm_SDM.yaml#/components/schemas/SmsManagementSubscriptionData'
     SmsSubscriptionData:
@@ -3404,6 +3741,10 @@ components:
       $ref: 'TS29503_Nudm_NIDDAU.yaml#/components/schemas/AuthorizationData'
     EnhancedCoverageRestrictionData:
       $ref: 'TS29503_Nudm_SDM.yaml#/components/schemas/EnhancedCoverageRestrictionData'
+    V2xSubscriptionData:
+      $ref: 'TS29503_Nudm_SDM.yaml#/components/schemas/V2xSubscriptionData'
+    LcsBroadcastAssistanceTypesData:
+      $ref: 'TS29503_Nudm_SDM.yaml#/components/schemas/LcsBroadcastAssistanceTypesData'
     OperatorSpecificDataContainer:
       type: object
       required:
@@ -3422,7 +3763,7 @@ components:
           type: string
         value:
 #          oneOf:
-            type: string
+             type: string
 #            - type: integer
 #            - type: number
 #            - type: boolean
@@ -3600,11 +3941,11 @@ components:
       type: array
       items:
         $ref: '#/components/schemas/ContextDataSetName'
-      minItems: 1
+      minItems: 2
       uniqueItems: true
     ContextDataSetName:
-      anyOf:
-      - type: string
+#      anyOf:
+#      - type: string
         enum:
         - AMF_3GPP
         - AMF_NON_3GPP
@@ -3614,7 +3955,8 @@ components:
         - SMSF_NON_3GPP
         - SUBS_TO_NOTIFY
         - SMF_REG
-      - type: string
+        - IP_SM_GW
+        type: string
     ContextDataSets:
       type: object
       properties:
@@ -3643,3 +3985,28 @@ components:
           minItems: 1
         smfRegistrations:
           $ref: '#/components/schemas/SmfRegList'
+        ipSmGw:
+          $ref: '#/components/schemas/IpSmGwRegistration'
+
+    IpSmGwRegistration:
+      $ref: 'TS29503_Nudm_UECM.yaml#/components/schemas/IpSmGwRegistration'
+
+    MessageWaitingData:
+      type: object
+      properties:
+        mwdList:
+          type: array
+          items:
+            $ref: '#/components/schemas/SmscData'
+          minItems: 1
+
+    SmscData:
+      type: object
+      anyOf:
+        - required: [ smscMapAddress ]
+        - required: [ smscDiameterAddress ]
+      properties:
+        smscMapAddress:
+          $ref: 'TS29503_Nudm_UECM.yaml#/components/schemas/E164Number'
+        smscDiameterAddress:
+          $ref: 'TS29503_Nudm_UECM.yaml#/components/schemas/NetworkNodeDiameterAddress'

@@ -40,6 +40,8 @@ typedef struct OpenAPI_upf_info_s {
     struct OpenAPI_twif_info_s *twif_info;
     int priority;
     int redundant_gtpu;
+    int ipups;
+    int data_forwarding;
 } OpenAPI_upf_info_t;
 
 OpenAPI_upf_info_t *OpenAPI_upf_info_create(
@@ -55,7 +57,9 @@ OpenAPI_upf_info_t *OpenAPI_upf_info_create(
     OpenAPI_tngf_info_t *tngf_info,
     OpenAPI_twif_info_t *twif_info,
     int priority,
-    int redundant_gtpu
+    int redundant_gtpu,
+    int ipups,
+    int data_forwarding
     );
 void OpenAPI_upf_info_free(OpenAPI_upf_info_t *upf_info);
 OpenAPI_upf_info_t *OpenAPI_upf_info_parseFromJSON(cJSON *upf_infoJSON);

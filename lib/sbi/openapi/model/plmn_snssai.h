@@ -12,8 +12,8 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+#include "ext_snssai.h"
 #include "plmn_id.h"
-#include "snssai.h"
 
 #ifdef __cplusplus
 extern "C" {

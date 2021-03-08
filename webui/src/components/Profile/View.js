@@ -163,12 +163,12 @@ const View = ({ visible, disableOnClickOutside, profile, onEdit, onDelete, onHid
   const title = (profile || {}).title;
   const security = ((profile || {}).security || {});
   const ambr = ((profile || {}).ambr || {});
-  const pdns = ((profile || {}).pdn || []);
+  const slice_list = ((profile || {}).slice || []);
 
   return (
     <div>
-      <Modal 
-        visible={visible} 
+      <Modal
+        visible={visible}
         onOutside={onHide}
         disableOnClickOutside={disableOnClickOutside}>
         <Wrapper>
@@ -230,115 +230,281 @@ const View = ({ visible, disableOnClickOutside, profile, onEdit, onDelete, onHid
                 </div>
                 <div className="right">
                   <div className="data">
-                    {ambr.downlink} Kbps
+                    {ambr['downlink'] === undefined ? "unlimited" :
+                      ambr.downlink['value'] === undefined ? "unlimited" :
+                        ambr.downlink.value
+                    } {ambr['downlink'] === undefined ? "unlimited" :
+                         ambr.downlink['value'] === undefined ? "" :
+                         ambr.downlink['unit'] === undefined ? "bps" :
+                            ambr.downlink.unit === 0 ? "bps" :
+                            ambr.downlink.unit === 1 ? "Kbps" :
+                            ambr.downlink.unit === 2 ? "Mbps" :
+                            ambr.downlink.unit === 3 ? "Gbps" :
+                            ambr.downlink.unit === 4 ? "Tbps" :
+                              "Unknown Unit" }
                     <span style={{color:oc.gray[5]}}><KeyboardControlIcon/>UL</span>
                   </div>
                   <div className="data">
-                    {ambr.uplink} Kbps
+                    {ambr['uplink'] === undefined ? "unlimited" :
+                      ambr.uplink['value'] === undefined ? "unlimited" :
+                        ambr.uplink.value
+                    } {ambr['uplink'] === undefined ? "unlimited" :
+                         ambr.uplink['value'] === undefined ? "" :
+                         ambr.uplink['unit'] === undefined ? "bps" :
+                            ambr.uplink.unit === 0 ? "bps" :
+                            ambr.uplink.unit === 1 ? "Kbps" :
+                            ambr.uplink.unit === 2 ? "Mbps" :
+                            ambr.uplink.unit === 3 ? "Gbps" :
+                            ambr.uplink.unit === 4 ? "Tbps" :
+                              "Unknown Unit" }
                     <span style={{color:oc.gray[5]}}><KeyboardControlIcon/>DL</span>
                   </div>
                 </div>
               </div>
             </Profile>
             <Pdn>
-              <div className="header">
-                APN Configrations
-              </div>
-              <div className="body" style={{color:oc.gray[5]}}>
-                <div className="medium_data">APN</div>
-                <div className="medium_data">Type</div>
-                <div className="small_data">QCI</div>
-                <div className="small_data">ARP</div>
-                <div className="medium_data">Capability</div>
-                <div className="medium_data">Vulnerablility</div>
-                <div className="large_data">MBR DL/UL(Kbps)</div>
-                <div className="large_data">GBR DL/UL(Kbps)</div>
-              </div>
-              {pdns.map(pdn =>
-                <div key={pdn.apn}>
-                  <div className="body">
-                    <div className="medium_data">{pdn.apn}</div>
-                    <div className="medium_data">{pdn.type === 0 ? "IPv4" : (pdn.type === 1 ? "IPv6" : "IPv4v6")}</div>
-                    <div className="small_data">{pdn.qos.qci}</div>
-                    <div className="small_data">{pdn.qos.arp.priority_level}</div>
-                    <div className="medium_data">{pdn.qos.arp.pre_emption_capability === 1 ? "Disabled" : "Enabled"}</div>
-                    <div className="medium_data">{pdn.qos.arp.pre_emption_vulnerability === 1 ? "Disabled" : "Enabled"}</div>
-                    {pdn['ambr'] === undefined ? 
-                      <div className="large_data">
-                        unlimited/unlimited
-                        </div> :
-                      <div className="large_data">
-                        {pdn.ambr['downlink'] === undefined ? "unlimited" : pdn.ambr.downlink}
-                        /
-                        {pdn.ambr['uplink'] === undefined ? "unlimited" : pdn.ambr.uplink}
-                      </div>
-                    }
-                    <div className="large_data"></div>
+              {slice_list.map((slice, index) =>
+                <div key={index}>
+                  {slice.sd === undefined ?
+                    <div className="header">
+                      SST:{slice.sst} {slice.default_indicator ==
+                              true ? "(Default S-NSSAI)" : ""}
+                    </div> :
+                    <div className="header">
+                      SST:{slice.sst} SD:{slice.sd} {slice.default_indicator ==
+                              true ? "(Default S-NSSAI)" : ""}
+                    </div>
+                  }
+                  <div className="body" style={{color:oc.gray[5]}}>
+                    <div className="medium_data">DNN/APN</div>
+                    <div className="medium_data">Type</div>
+                    <div className="small_data">5QI/QCI</div>
+                    <div className="small_data">ARP</div>
+                    <div className="medium_data">Capability</div>
+                    <div className="medium_data">Vulnerablility</div>
+                    <div className="large_data">MBR DL/UL</div>
+                    <div className="large_data">GBR DL/UL</div>
                   </div>
-                  {pdn['ue'] !== undefined &&
-                    <div className="body">
-                      <div className="medium_data"></div>
-                      <div className="medium_data" style={{color:oc.gray[5]}}>{"UE IPv4"} </div>
-                      <div className="large_data">{(pdn.ue || {}).addr}</div>
-                      <div className="medium_data" style={{color:oc.gray[5]}}>{"UE IPv6"} </div>
-                      <div className="large_data">{(pdn.ue || {}).addr6}</div>
-                    </div>
-                  }
-                  {pdn['pgw'] !== undefined &&
-                    <div className="body">
-                      <div className="medium_data"></div>
-                      <div className="medium_data" style={{color:oc.gray[5]}}>{"PGW IPv4"} </div>
-                      <div className="large_data">{(pdn.pgw || {}).addr}</div>
-                      <div className="medium_data" style={{color:oc.gray[5]}}>{"PGW IPv6"} </div>
-                      <div className="large_data">{(pdn.pgw || {}).addr6}</div>
-                    </div>
-                  }
-                  {pdn['pcc_rule'] !== undefined &&
-                    pdn.pcc_rule.map((pcc_rule, index) =>
-                      <div key={index}>
+                  {slice['session'] !== undefined &&
+                      slice.session.map(session =>
+                    <div key={session.name}>
+                      <div className="body">
+                        <div className="medium_data">{session.name}</div>
+                        <div className="medium_data">{
+                            session.type === 1 ? "IPv4" :
+                            session.type === 2 ? "IPv6" :
+                            session.type === 3 ? "IPv4v6" :
+                            "Unknown"
+                        }</div>
+                        <div className="small_data">{session.qos.index}</div>
+                        <div className="small_data">{session.qos.arp.priority_level}</div>
+                        <div className="medium_data">
+                          {session.qos.arp.pre_emption_capability ===
+                              2 ? "Enabled" :
+                           session.qos.arp.pre_emption_capability ===
+                              1 ? "Disabled" : "Unknown"}
+                        </div>
+                        <div className="medium_data">
+                          {session.qos.arp.pre_emption_vulnerability ===
+                              2 ? "Enabled" :
+                           session.qos.arp.pre_emption_vulnerability ===
+                              1 ? "Disabled" : "Unknown"}
+                        </div>
+                        {session['ambr'] === undefined ?
+                          <div className="large_data">
+                            unlimited/unlimited
+                          </div> :
+                          <div className="large_data">
+                            {session.ambr['downlink'] === undefined ? "unlimited" :
+                              session.ambr.downlink['value'] === undefined ?
+                                "unlimited" : session.ambr.downlink.value
+                            } {session.ambr['downlink'] === undefined ?
+                                "unlimited" :
+                                  session.ambr.downlink['value'] ===
+                                    undefined ?  "" :
+                                  session.ambr.downlink['unit'] ===
+                                    undefined ?  "bps" :
+                                    session.ambr.downlink.unit === 0 ? "bps" :
+                                    session.ambr.downlink.unit === 1 ? "Kbps" :
+                                    session.ambr.downlink.unit === 2 ? "Mbps" :
+                                    session.ambr.downlink.unit === 3 ? "Gbps" :
+                                    session.ambr.downlink.unit === 4 ? "Tbps" :
+                                        "Unknown Unit"
+                            } / {session.ambr['uplink'] ===
+                                    undefined ? "unlimited" :
+                              session.ambr.uplink['value'] === undefined ?
+                                "unlimited" : session.ambr.uplink.value
+                            } {session.ambr['uplink'] === undefined ?
+                                "unlimited" :
+                                  session.ambr.uplink['value'] ===
+                                    undefined ?  "" :
+                                  session.ambr.uplink['unit'] ===
+                                    undefined ?  "bps" :
+                                    session.ambr.uplink.unit === 0 ? "bps" :
+                                    session.ambr.uplink.unit === 1 ? "Kbps" :
+                                    session.ambr.uplink.unit === 2 ? "Mbps" :
+                                    session.ambr.uplink.unit === 3 ? "Gbps" :
+                                    session.ambr.uplink.unit === 4 ? "Tbps" :
+                                        "Unknown Unit"
+                            }
+                          </div>
+                        }
+                        <div className="large_data"></div>
+                      </div>
+                      {session['ue'] !== undefined &&
                         <div className="body">
                           <div className="medium_data"></div>
-                          <div className="medium_data"></div>
-                          <div className="small_data">{pcc_rule.qos.qci}</div>
-                          <div className="small_data">{pcc_rule.qos.arp.priority_level}</div>
-                          <div className="medium_data">{pcc_rule.qos.arp.pre_emption_capability === 1 ? "Disabled" : "Enabled"}</div>
-                          <div className="medium_data">{pcc_rule.qos.arp.pre_emption_vulnerability === 1 ? "Disabled" : "Enabled"}</div>
-                          {pcc_rule.qos['mbr'] === undefined ? 
-                            <div className="large_data">
-                              unlimited/unlimited
-                              </div> :
-                            <div className="large_data">
-                              {pcc_rule.qos.mbr['downlink'] === undefined ? "unlimited" : pcc_rule.qos.mbr.downlink}
-                              /
-                              {pcc_rule.qos.mbr['uplink'] === undefined ? "unlimited" : pcc_rule.qos.mbr.uplink}
-                            </div>
-                          }
-                          {pcc_rule.qos['gbr'] === undefined ? 
-                            <div className="large_data">
-                              unlimited/unlimited
-                              </div> :
-                            <div className="large_data">
-                              {pcc_rule.qos.gbr['downlink'] === undefined ? "unlimited" : pcc_rule.qos.gbr.downlink}
-                              /
-                              {pcc_rule.qos.gbr['uplink'] === undefined ? "unlimited" : pcc_rule.qos.gbr.uplink}
-                            </div>
-                          }
+                          <div className="medium_data" style={{color:oc.gray[5]}}>{"UE IPv4"} </div>
+                          <div className="large_data">{(session.ue || {}).addr}</div>
+                          <div className="medium_data" style={{color:oc.gray[5]}}>{"UE IPv6"} </div>
+                          <div className="large_data">{(session.ue || {}).addr6}</div>
                         </div>
-                        {pcc_rule['flow'] !== undefined &&
-                          pcc_rule.flow.map((flow, index) =>
-                            <div className="body" key={index}>
+                      }
+                      {session['smf'] !== undefined &&
+                        <div className="body">
+                          <div className="medium_data"></div>
+                          <div className="medium_data" style={{color:oc.gray[5]}}>{"SMF IPv4"} </div>
+                          <div className="large_data">{(session.smf || {}).addr}</div>
+                          <div className="medium_data" style={{color:oc.gray[5]}}>{"SMF IPv6"} </div>
+                          <div className="large_data">{(session.smf || {}).addr6}</div>
+                        </div>
+                      }
+                      {session['pcc_rule'] !== undefined &&
+                        session.pcc_rule.map((pcc_rule, index) =>
+                          <div key={index}>
+                            <div className="body">
                               <div className="medium_data"></div>
-                              <div className="small_data" style={{color:oc.gray[5]}}>
-                                {flow.direction == 1 && "Downlink"}
-                                {flow.direction == 2 && "Uplink"}
+                              <div className="medium_data"></div>
+                              <div className="small_data">{pcc_rule.qos.index}</div>
+                              <div className="small_data">{pcc_rule.qos.arp.priority_level}</div>
+                              <div className="medium_data">
+                                {pcc_rule.qos.arp.pre_emption_capability ===
+                                    2 ? "Enabled" :
+                                 pcc_rule.qos.arp.pre_emption_capability ===
+                                    1 ? "Disabled" : "Unknown"}
                               </div>
-                              <div className="large_data" style={{width:"480px"}}>{flow.description}</div>
+                              <div className="medium_data">
+                                {pcc_rule.qos.arp.pre_emption_vulnerability ===
+                                    2 ? "Enabled" :
+                                 pcc_rule.qos.arp.pre_emption_vulnerability ===
+                                    1 ? "Disabled" : "Unknown"}
+                              </div>
+                              {pcc_rule.qos['mbr'] === undefined ?
+                                <div className="large_data">
+                                  unlimited/unlimited
+                                </div> :
+                                <div className="large_data">
+                                  {pcc_rule.qos.mbr['downlink'] ===
+                                      undefined ? "unlimited" :
+                                    pcc_rule.qos.mbr.downlink['value'] ===
+                                      undefined ? "unlimited" :
+                                      pcc_rule.qos.mbr.downlink.value
+                                  } {pcc_rule.qos.mbr['downlink'] ===
+                                       undefined ? "unlimited" :
+                                       pcc_rule.qos.mbr.downlink['value'] ===
+                                          undefined ? "" :
+                                       pcc_rule.qos.mbr.downlink['unit'] ===
+                                          undefined ?  "bps" :
+                                       pcc_rule.qos.mbr.downlink.unit === 0 ?
+                                          "bps" :
+                                       pcc_rule.qos.mbr.downlink.unit === 1 ?
+                                          "Kbps" :
+                                       pcc_rule.qos.mbr.downlink.unit === 2 ?
+                                          "Mbps" :
+                                       pcc_rule.qos.mbr.downlink.unit === 3 ?
+                                          "Gbps" :
+                                       pcc_rule.qos.mbr.downlink.unit === 4 ?
+                                          "Tbps" : "Unknown Unit"
+                                  } / {pcc_rule.qos.mbr['uplink'] ===
+                                      undefined ? "unlimited" :
+                                    pcc_rule.qos.mbr.uplink['value'] ===
+                                      undefined ? "unlimited" :
+                                      pcc_rule.qos.mbr.uplink.value
+                                  } {pcc_rule.qos.mbr['uplink'] ===
+                                       undefined ? "unlimited" :
+                                       pcc_rule.qos.mbr.uplink['value'] ===
+                                          undefined ?  "" :
+                                       pcc_rule.qos.mbr.uplink['unit'] ===
+                                          undefined ?  "bps" :
+                                       pcc_rule.qos.mbr.uplink.unit === 0 ?
+                                          "bps" :
+                                       pcc_rule.qos.mbr.uplink.unit === 1 ?
+                                          "Kbps" :
+                                       pcc_rule.qos.mbr.uplink.unit === 2 ?
+                                          "Mbps" :
+                                       pcc_rule.qos.mbr.uplink.unit === 3 ?
+                                          "Gbps" :
+                                       pcc_rule.qos.mbr.uplink.unit === 4 ?
+                                          "Tbps" : "Unknown Unit"
+                                  }
+                                </div>
+                              }
+                              {pcc_rule.qos['gbr'] === undefined ?
+                                <div className="large_data">
+                                  unlimited/unlimited
+                                </div> :
+                                <div className="large_data">
+                                  {pcc_rule.qos.gbr['downlink'] ===
+                                      undefined ? "unlimited" :
+                                    pcc_rule.qos.gbr.downlink['value'] ===
+                                      undefined ? "unlimited" :
+                                      pcc_rule.qos.gbr.downlink.value
+                                  } {pcc_rule.qos.gbr['downlink'] ===
+                                       undefined ? "unlimited" :
+                                       pcc_rule.qos.gbr.downlink['value'] ===
+                                          undefined ?  "" :
+                                       pcc_rule.qos.gbr.downlink['unit'] ===
+                                          undefined ?  "bps" :
+                                       pcc_rule.qos.gbr.downlink.unit === 0 ?
+                                          "bps" :
+                                       pcc_rule.qos.gbr.downlink.unit === 1 ?
+                                          "Kbps" :
+                                       pcc_rule.qos.gbr.downlink.unit === 2 ?
+                                          "Mbps" :
+                                       pcc_rule.qos.gbr.downlink.unit === 3 ?
+                                          "Gbps" :
+                                       pcc_rule.qos.gbr.downlink.unit === 4 ?
+                                          "Tbps" : "Unknown Unit"
+                                  } / {pcc_rule.qos.gbr['uplink'] ===
+                                      undefined ? "unlimited" :
+                                    pcc_rule.qos.gbr.uplink['value'] ===
+                                      undefined ? "unlimited" :
+                                      pcc_rule.qos.gbr.uplink.value
+                                  } {pcc_rule.qos.gbr['uplink'] ===
+                                       undefined ? "unlimited" :
+                                       pcc_rule.qos.gbr.uplink['value'] ===
+                                          undefined ?  "" :
+                                       pcc_rule.qos.gbr.uplink['unit'] ===
+                                          undefined ?  "bps" :
+                                       pcc_rule.qos.gbr.uplink.unit === 0 ?
+                                          "bps" :
+                                       pcc_rule.qos.gbr.uplink.unit === 1 ?
+                                          "Kbps" :
+                                       pcc_rule.qos.gbr.uplink.unit === 2 ?
+                                          "Mbps" :
+                                       pcc_rule.qos.gbr.uplink.unit === 3 ?
+                                          "Gbps" :
+                                       pcc_rule.qos.gbr.uplink.unit === 4 ?
+                                          "Tbps" : "Unknown Unit"
+                                  }
+                                </div>
+                              }
                             </div>
-                          )
-                        }
-                      </div>
-                    )
-                  }
+                            {pcc_rule['flow'] !== undefined &&
+                              pcc_rule.flow.map((flow, index) =>
+                                <div className="body" key={index}>
+                                  <div className="medium_data"></div>
+                                  <div className="small_data" style={{color:oc.gray[5]}}>
+                                    {flow.direction == 1 && "Downlink"}
+                                    {flow.direction == 2 && "Uplink"}
+                                  </div>
+                                  <div className="large_data" style={{width:"480px"}}>{flow.description}</div>
+                                </div>
+                            )}
+                          </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
             </Pdn>

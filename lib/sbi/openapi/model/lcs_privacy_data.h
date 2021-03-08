@@ -23,13 +23,13 @@ extern "C" {
 typedef struct OpenAPI_lcs_privacy_data_s OpenAPI_lcs_privacy_data_t;
 typedef struct OpenAPI_lcs_privacy_data_s {
     struct OpenAPI_lpi_s *lpi;
-    OpenAPI_list_t *unrelated_classes;
+    struct OpenAPI_unrelated_class_s *unrelated_class;
     OpenAPI_list_t *plmn_operator_classes;
 } OpenAPI_lcs_privacy_data_t;
 
 OpenAPI_lcs_privacy_data_t *OpenAPI_lcs_privacy_data_create(
     OpenAPI_lpi_t *lpi,
-    OpenAPI_list_t *unrelated_classes,
+    OpenAPI_unrelated_class_t *unrelated_class,
     OpenAPI_list_t *plmn_operator_classes
     );
 void OpenAPI_lcs_privacy_data_free(OpenAPI_lcs_privacy_data_t *lcs_privacy_data);

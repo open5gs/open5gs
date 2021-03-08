@@ -10,7 +10,8 @@ OpenAPI_smf_info_t *OpenAPI_smf_info_create(
     OpenAPI_list_t *tai_range_list,
     char *pgw_fqdn,
     OpenAPI_list_t *access_type,
-    int priority
+    int priority,
+    int vsmf_support_ind
     )
 {
     OpenAPI_smf_info_t *smf_info_local_var = OpenAPI_malloc(sizeof(OpenAPI_smf_info_t));
@@ -23,6 +24,7 @@ OpenAPI_smf_info_t *OpenAPI_smf_info_create(
     smf_info_local_var->pgw_fqdn = pgw_fqdn;
     smf_info_local_var->access_type = access_type;
     smf_info_local_var->priority = priority;
+    smf_info_local_var->vsmf_support_ind = vsmf_support_ind;
 
     return smf_info_local_var;
 }
@@ -151,6 +153,13 @@ cJSON *OpenAPI_smf_info_convertToJSON(OpenAPI_smf_info_t *smf_info)
         }
     }
 
+    if (smf_info->vsmf_support_ind) {
+        if (cJSON_AddBoolToObject(item, "vsmfSupportInd", smf_info->vsmf_support_ind) == NULL) {
+            ogs_error("OpenAPI_smf_info_convertToJSON() failed [vsmf_support_ind]");
+            goto end;
+        }
+    }
+
 end:
     return item;
 }
@@ -270,13 +279,23 @@ OpenAPI_smf_info_t *OpenAPI_smf_info_parseFromJSON(cJSON *smf_infoJSON)
         }
     }
 
+    cJSON *vsmf_support_ind = cJSON_GetObjectItemCaseSensitive(smf_infoJSON, "vsmfSupportInd");
+
+    if (vsmf_support_ind) {
+        if (!cJSON_IsBool(vsmf_support_ind)) {
+            ogs_error("OpenAPI_smf_info_parseFromJSON() failed [vsmf_support_ind]");
+            goto end;
+        }
+    }
+
     smf_info_local_var = OpenAPI_smf_info_create (
         s_nssai_smf_info_listList,
         tai_list ? tai_listList : NULL,
         tai_range_list ? tai_range_listList : NULL,
         pgw_fqdn ? ogs_strdup(pgw_fqdn->valuestring) : NULL,
         access_type ? access_typeList : NULL,
-        priority ? priority->valuedouble : 0
+        priority ? priority->valuedouble : 0,
+        vsmf_support_ind ? vsmf_support_ind->valueint : 0
         );
 
     return smf_info_local_var;

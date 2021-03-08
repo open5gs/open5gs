@@ -444,5 +444,5 @@ void ogs_nas_bitrate_from_uint64(ogs_nas_bitrate_t *nas, uint64_t bitrate)
         }
         bitrate >>= 2;
     }
-    nas->bitrate = bitrate;
+    nas->value = bitrate;
 }

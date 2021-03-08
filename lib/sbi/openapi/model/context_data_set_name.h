@@ -17,16 +17,11 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_context_data_set_name_s OpenAPI_context_data_set_name_t;
-typedef struct OpenAPI_context_data_set_name_s {
-} OpenAPI_context_data_set_name_t;
+typedef enum { OpenAPI_context_data_set_name_NULL = 0, OpenAPI_context_data_set_name_AMF_3GPP, OpenAPI_context_data_set_name_AMF_NON_3GPP, OpenAPI_context_data_set_name_SDM_SUBSCRIPTIONS, OpenAPI_context_data_set_name_EE_SUBSCRIPTIONS, OpenAPI_context_data_set_name_SMSF_3GPP, OpenAPI_context_data_set_name_SMSF_NON_3GPP, OpenAPI_context_data_set_name_SUBS_TO_NOTIFY, OpenAPI_context_data_set_name_SMF_REG, OpenAPI_context_data_set_name_IP_SM_GW } OpenAPI_context_data_set_name_e;
 
-OpenAPI_context_data_set_name_t *OpenAPI_context_data_set_name_create(
-    );
-void OpenAPI_context_data_set_name_free(OpenAPI_context_data_set_name_t *context_data_set_name);
-OpenAPI_context_data_set_name_t *OpenAPI_context_data_set_name_parseFromJSON(cJSON *context_data_set_nameJSON);
-cJSON *OpenAPI_context_data_set_name_convertToJSON(OpenAPI_context_data_set_name_t *context_data_set_name);
-OpenAPI_context_data_set_name_t *OpenAPI_context_data_set_name_copy(OpenAPI_context_data_set_name_t *dst, OpenAPI_context_data_set_name_t *src);
+char* OpenAPI_context_data_set_name_ToString(OpenAPI_context_data_set_name_e context_data_set_name);
+
+OpenAPI_context_data_set_name_e OpenAPI_context_data_set_name_FromString(char* context_data_set_name);
 
 #ifdef __cplusplus
 }

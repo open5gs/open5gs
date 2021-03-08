@@ -21,6 +21,7 @@
 #include "n4_information.h"
 #include "qos_flow_add_modify_request_item.h"
 #include "qos_flow_release_request_item.h"
+#include "qos_monitoring_info.h"
 #include "ref_to_binary_data.h"
 #include "request_indication.h"
 #include "tunnel_info.h"
@@ -54,6 +55,8 @@ typedef struct OpenAPI_vsmf_update_data_s {
     struct OpenAPI_n4_information_s *n4_info;
     struct OpenAPI_n4_information_s *n4_info_ext1;
     struct OpenAPI_n4_information_s *n4_info_ext2;
+    int small_data_rate_control_enabled;
+    struct OpenAPI_qos_monitoring_info_s *qos_monitoring_info;
 } OpenAPI_vsmf_update_data_t;
 
 OpenAPI_vsmf_update_data_t *OpenAPI_vsmf_update_data_create(
@@ -79,7 +82,9 @@ OpenAPI_vsmf_update_data_t *OpenAPI_vsmf_update_data_create(
     OpenAPI_list_t *dnai_list,
     OpenAPI_n4_information_t *n4_info,
     OpenAPI_n4_information_t *n4_info_ext1,
-    OpenAPI_n4_information_t *n4_info_ext2
+    OpenAPI_n4_information_t *n4_info_ext2,
+    int small_data_rate_control_enabled,
+    OpenAPI_qos_monitoring_info_t *qos_monitoring_info
     );
 void OpenAPI_vsmf_update_data_free(OpenAPI_vsmf_update_data_t *vsmf_update_data);
 OpenAPI_vsmf_update_data_t *OpenAPI_vsmf_update_data_parseFromJSON(cJSON *vsmf_update_dataJSON);

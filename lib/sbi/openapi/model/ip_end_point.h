@@ -22,14 +22,14 @@ typedef struct OpenAPI_ip_end_point_s OpenAPI_ip_end_point_t;
 typedef struct OpenAPI_ip_end_point_s {
     char *ipv4_address;
     char *ipv6_address;
-    struct OpenAPI_transport_protocol_s *transport;
+    OpenAPI_transport_protocol_e transport;
     int port;
 } OpenAPI_ip_end_point_t;
 
 OpenAPI_ip_end_point_t *OpenAPI_ip_end_point_create(
     char *ipv4_address,
     char *ipv6_address,
-    OpenAPI_transport_protocol_t *transport,
+    OpenAPI_transport_protocol_e transport,
     int port
     );
 void OpenAPI_ip_end_point_free(OpenAPI_ip_end_point_t *ip_end_point);

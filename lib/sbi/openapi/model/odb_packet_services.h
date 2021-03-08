@@ -12,22 +12,16 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
-#include "null_value.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_odb_packet_services_s OpenAPI_odb_packet_services_t;
-typedef struct OpenAPI_odb_packet_services_s {
-} OpenAPI_odb_packet_services_t;
+typedef enum { OpenAPI_odb_packet_services_NULL = 0, OpenAPI_odb_packet_services_ALL_PACKET_SERVICES, OpenAPI_odb_packet_services_ROAMER_ACCESS_HPLMN_AP, OpenAPI_odb_packet_services_ROAMER_ACCESS_VPLMN_AP } OpenAPI_odb_packet_services_e;
 
-OpenAPI_odb_packet_services_t *OpenAPI_odb_packet_services_create(
-    );
-void OpenAPI_odb_packet_services_free(OpenAPI_odb_packet_services_t *odb_packet_services);
-OpenAPI_odb_packet_services_t *OpenAPI_odb_packet_services_parseFromJSON(cJSON *odb_packet_servicesJSON);
-cJSON *OpenAPI_odb_packet_services_convertToJSON(OpenAPI_odb_packet_services_t *odb_packet_services);
-OpenAPI_odb_packet_services_t *OpenAPI_odb_packet_services_copy(OpenAPI_odb_packet_services_t *dst, OpenAPI_odb_packet_services_t *src);
+char* OpenAPI_odb_packet_services_ToString(OpenAPI_odb_packet_services_e odb_packet_services);
+
+OpenAPI_odb_packet_services_e OpenAPI_odb_packet_services_FromString(char* odb_packet_services);
 
 #ifdef __cplusplus
 }

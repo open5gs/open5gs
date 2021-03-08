@@ -87,8 +87,8 @@ ogs_pkbuf_t *gsm_build_pdu_session_establishment_accept(smf_sess_t *sess)
     message.gsm.h.procedure_transaction_identity = sess->pti;
     message.gsm.h.message_type = OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_ACCEPT;
 
-    selected_pdu_session_type->type = sess->pdn.ssc_mode;
-    selected_pdu_session_type->value = sess->pdn.pdn_type;
+    selected_pdu_session_type->type = sess->session.ssc_mode;
+    selected_pdu_session_type->value = sess->session.session_type;
 
     /*
      * TS23.501
@@ -137,26 +137,26 @@ ogs_pkbuf_t *gsm_build_pdu_session_establishment_accept(smf_sess_t *sess)
     /* Session-AMBR */
     session_ambr->length = 6;
     ogs_nas_bitrate_from_uint64(
-            &session_ambr->downlink, sess->pdn.ambr.downlink);
+            &session_ambr->downlink, sess->session.ambr.downlink);
     ogs_nas_bitrate_from_uint64(
-            &session_ambr->uplink, sess->pdn.ambr.uplink);
+            &session_ambr->uplink, sess->session.ambr.uplink);
 
     /* PDU Address */
     pdu_session_establishment_accept->presencemask |=
         OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_ACCEPT_PDU_ADDRESS_PRESENT;
-    pdu_address->pdn_type = sess->pdn.paa.pdn_type;
+    pdu_address->pdn_type = sess->session.paa.session_type;
 
     if (pdu_address->pdn_type == OGS_PDU_SESSION_TYPE_IPV4) {
-        pdu_address->addr = sess->pdn.paa.addr;
+        pdu_address->addr = sess->session.paa.addr;
         pdu_address->length = OGS_NAS_PDU_ADDRESS_IPV4_LEN;
     } else if (pdu_address->pdn_type == OGS_PDU_SESSION_TYPE_IPV6) {
         memcpy(pdu_address->addr6,
-                sess->pdn.paa.addr6+(OGS_IPV6_LEN>>1), OGS_IPV6_LEN>>1);
+                sess->session.paa.addr6+(OGS_IPV6_LEN>>1), OGS_IPV6_LEN>>1);
         pdu_address->length = OGS_NAS_PDU_ADDRESS_IPV6_LEN;
     } else if (pdu_address->pdn_type == OGS_PDU_SESSION_TYPE_IPV4V6) {
-        pdu_address->both.addr = sess->pdn.paa.both.addr;
+        pdu_address->both.addr = sess->session.paa.both.addr;
         memcpy(pdu_address->both.addr6,
-                sess->pdn.paa.both.addr6+(OGS_IPV6_LEN>>1), OGS_IPV6_LEN>>1);
+                sess->session.paa.both.addr6+(OGS_IPV6_LEN>>1), OGS_IPV6_LEN>>1);
         pdu_address->length = OGS_NAS_PDU_ADDRESS_IPV4V6_LEN;
     } else {
         ogs_error("Unexpected PDN Type %u", pdu_address->pdn_type);
@@ -179,7 +179,7 @@ ogs_pkbuf_t *gsm_build_pdu_session_establishment_accept(smf_sess_t *sess)
     /* S-NSSAI */
     pdu_session_establishment_accept->presencemask |=
         OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_ACCEPT_S_NSSAI_PRESENT;
-    ogs_nas_build_s_nssai(nas_s_nssai, &sess->s_nssai);
+    ogs_nas_build_s_nssai2(nas_s_nssai, &sess->s_nssai, &sess->mapped_hplmn);
 
     /* QoS flow descriptions */
     memset(&qos_flow_description, 0, sizeof(qos_flow_description));
@@ -192,8 +192,8 @@ ogs_pkbuf_t *gsm_build_pdu_session_establishment_accept(smf_sess_t *sess)
     qos_flow_description[0].param[num_of_param].identifier =
         OGS_NAX_QOS_FLOW_PARAMETER_ID_5QI;
     qos_flow_description[0].param[num_of_param].len =
-        sizeof(qos_flow_description[0].param[num_of_param].qci);
-    qos_flow_description[0].param[num_of_param].qci = qos_flow->qos.qci;
+        sizeof(qos_flow_description[0].param[num_of_param].qos_index);
+    qos_flow_description[0].param[num_of_param].qos_index = qos_flow->qos.index;
     num_of_param++;
 
     qos_flow_description[0].num_of_parameter = num_of_param;
@@ -218,8 +218,9 @@ ogs_pkbuf_t *gsm_build_pdu_session_establishment_accept(smf_sess_t *sess)
     /* DNN */
     pdu_session_establishment_accept->presencemask |=
         OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_ACCEPT_DNN_PRESENT;
-    dnn->length = strlen(sess->pdn.dnn);
-    ogs_cpystrn(dnn->value, sess->pdn.dnn,
+    ogs_assert(sess->session.name);
+    dnn->length = strlen(sess->session.name);
+    ogs_cpystrn(dnn->value, sess->session.name,
             ogs_min(dnn->length, OGS_MAX_DNN_LEN) + 1);
 
     pkbuf = ogs_nas_5gs_plain_encode(&message);
@@ -340,8 +341,8 @@ ogs_pkbuf_t *gsm_build_qos_flow_modification_command(
     qos_flow_description[0].param[num_of_param].identifier =
         OGS_NAX_QOS_FLOW_PARAMETER_ID_5QI;
     qos_flow_description[0].param[num_of_param].len =
-        sizeof(qos_flow_description[0].param[num_of_param].qci);
-    qos_flow_description[0].param[num_of_param].qci = qos_flow->qos.qci;
+        sizeof(qos_flow_description[0].param[num_of_param].qos_index);
+    qos_flow_description[0].param[num_of_param].qos_index = qos_flow->qos.index;
     num_of_param++;
 
     if (qos_flow->qos.gbr.uplink) {

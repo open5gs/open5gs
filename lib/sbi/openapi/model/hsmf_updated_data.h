@@ -12,9 +12,11 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+#include "max_integrity_protected_data_rate.h"
 #include "n4_information.h"
 #include "ref_to_binary_data.h"
 #include "roaming_charging_profile.h"
+#include "up_security.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -29,6 +31,9 @@ typedef struct OpenAPI_hsmf_updated_data_s {
     OpenAPI_list_t *dnai_list;
     char *supported_features;
     struct OpenAPI_roaming_charging_profile_s *roaming_charging_profile;
+    struct OpenAPI_up_security_s *up_security;
+    OpenAPI_max_integrity_protected_data_rate_e max_integrity_protected_data_rate_ul;
+    OpenAPI_max_integrity_protected_data_rate_e max_integrity_protected_data_rate_dl;
     int ipv6_multi_homing_ind;
 } OpenAPI_hsmf_updated_data_t;
 
@@ -40,6 +45,9 @@ OpenAPI_hsmf_updated_data_t *OpenAPI_hsmf_updated_data_create(
     OpenAPI_list_t *dnai_list,
     char *supported_features,
     OpenAPI_roaming_charging_profile_t *roaming_charging_profile,
+    OpenAPI_up_security_t *up_security,
+    OpenAPI_max_integrity_protected_data_rate_e max_integrity_protected_data_rate_ul,
+    OpenAPI_max_integrity_protected_data_rate_e max_integrity_protected_data_rate_dl,
     int ipv6_multi_homing_ind
     );
 void OpenAPI_hsmf_updated_data_free(OpenAPI_hsmf_updated_data_t *hsmf_updated_data);

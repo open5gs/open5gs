@@ -21,7 +21,6 @@ Open5GS is a C-language Open Source implementation of 5GC and EPC, i.e. the core
 #### Known Limitations
 ---
 
-- No NSSF
 - No VoNR(Voice over NR)
 - No Interworking with EPC
 - No NB-IoT

@@ -25,6 +25,7 @@ typedef struct OpenAPI_model_5_g_vn_group_configuration_s {
     int reference_id;
     char *af_instance_id;
     char *internal_group_identifier;
+    char *mtc_provider_information;
 } OpenAPI_model_5_g_vn_group_configuration_t;
 
 OpenAPI_model_5_g_vn_group_configuration_t *OpenAPI_model_5_g_vn_group_configuration_create(
@@ -32,7 +33,8 @@ OpenAPI_model_5_g_vn_group_configuration_t *OpenAPI_model_5_g_vn_group_configura
     OpenAPI_list_t *members,
     int reference_id,
     char *af_instance_id,
-    char *internal_group_identifier
+    char *internal_group_identifier,
+    char *mtc_provider_information
     );
 void OpenAPI_model_5_g_vn_group_configuration_free(OpenAPI_model_5_g_vn_group_configuration_t *model_5_g_vn_group_configuration);
 OpenAPI_model_5_g_vn_group_configuration_t *OpenAPI_model_5_g_vn_group_configuration_parseFromJSON(cJSON *model_5_g_vn_group_configurationJSON);

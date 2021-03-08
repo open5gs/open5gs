@@ -59,178 +59,108 @@ const schema = {
       "title": "",
       "properties": {
         "downlink": {
-          "type": "number",
-          "title": "UE-AMBR Downlink (Kbps)*",
-          "required": true
+          "type": "object",
+          "title": "",
+          "properties": {
+            "value": {
+              "type": "number",
+              "title": "UE-AMBR Downlink*",
+              "required": true,
+            },
+            "unit": {
+              "type": "number",
+              "title": "Unit",
+              "enum": [0, 1, 2, 3, 4],
+              "enumNames": ["bps", "Kbps", "Mbps", "Gbps", "Tbps"],
+              "default": 3,
+            }
+          }
         },
         "uplink": {
-          "type": "number",
-          "title": "UE-AMBR Uplink (Kbps)*",
-          "required": true
+          "type": "object",
+          "title": "",
+          "properties": {
+            "value": {
+              "type": "number",
+              "title": "UE-AMBR Uplink*",
+              "required": true,
+            },
+            "unit": {
+              "type": "number",
+              "title": "Unit",
+              "enum": [0, 1, 2, 3, 4],
+              "enumNames": ["bps", "Kbps", "Mbps", "Gbps", "Tbps"],
+              "default": 3,
+            }
+          }
         }
       }
     },
-    "pdn": {
+    "slice": {
       "type": "array",
-      "title": "APN Configurations",
+      "title": "Slice Configurations",
       "minItems": 1,
-      "maxItems": 4,
+      "maxItems": 8,
       "messages": {
-        "minItems": "At least 1 APN is required",
-        "maxItems": "4 APNs are supported"
+        "minItems": "At least 1 Slice is required",
+        "maxItems": "8 Slices are supported"
       },
       "items": {
         "type": "object",
         "properties": {
-          "apn": {
-            "type": "string",
-            "title": "Access Point Name (APN)*",
+          "sst": {
+            "type": "number",
+            "title": "SST*",
+            "enum": [ 1, 2, 3, 4 ],
             "required": true
           },
-          "type": {
-            "type": "number",
-            "title": "Type*",
-            "enum": [0, 1, 2],
-            "enumNames": ["IPv4", "IPv6", "IPv4v6"],
-            "default": 2,
-          },
-          "qos": {
-            "type": "object",
-            "title": "",
-            "properties": {
-              "qci": {
-                "type": "number",
-                "title": "QoS Class Identifier (QCI)*",
-                "enum": [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 65, 66, 69, 70 ],
-                "default": 5,
-              },
-              "arp" : {
-                "type": "object",
-                "title": "",
-                "properties": {
-                  "priority_level": {
-                    "type": "number",
-                    "title": "ARP Priority Level (1-15)*",
-                    "default": 1,
-                    "minimum": 1,
-                    "maximum": 15,
-                    "required": true
-                  },
-                  "pre_emption_capability": {
-                    "type": "number",
-                    "title": "Capability*",
-                    "enum": [1, 0],
-                    "enumNames": ["Disabled", "Enabled"],
-                    "default": 1,
-                  },
-                  "pre_emption_vulnerability": {
-                    "type": "number",
-                    "title": "Vulnerability*",
-                    "enum": [1, 0],
-                    "enumNames": ["Disabled", "Enabled"],
-                    "default": 1,
-                  },
-                }
-              }
-            }
-          },
-          "ambr": {
-            "type": "object",
-            "title": "",
-            "properties": {
-              "downlink": {
-                "type": "number",
-                "title": "APN-AMBR Downlink (Kbps)*",
-                "required": true
-              },
-              "uplink": {
-                "type": "number",
-                "title": "APN-AMBR Uplink (Kbps)*",
-                "required": true
-              },
-            }
-          },
-          "ue": {
-            "type": "object",
-            "title": "",
-            "properties": {
-              "addr": {
-                "type": "string",
-                "title": "UE IPv4 Address",
-                "format" : "ipv4"
-              },
-              "addr6": {
-                "type": "string",
-                "title": "UE IPv6 Address",
-                "format" : "ipv6"
-              },
-            }
-          },
-          "pgw": {
-            "type": "object",
-            "title": "",
-            "properties": {
-              "addr": {
-                "type": "string",
-                "title": "PGW IPv4 Address",
-                "format" : "ipv4"
-              },
-              "addr6": {
-                "type": "string",
-                "title": "PGW IPv6 Address",
-                "format" : "ipv6"
-              },
-            }
-          },
-          "pcc_rule": {
-            "type": "array",
-            "title": "PCC Rules",
-            "maxItems": 8,
+          "sd": {
+            "type": "string",
+            "title": "SD",
+            "pattern": "^[0-9a-fA-F]+$",
+            "minLength": 6,
+            "maxLength": 6,
             "messages": {
-              "maxItems": "8 PCC Rules are supported"
+              "pattern": "Only hexadecimal digits are allowed"
+            }
+          },
+          "default_indicator": {
+            "type": "boolean",
+            "title": "Default S-NSSAI",
+          },
+          "session": {
+            "type": "array",
+            "title": "Session Configurations",
+            "minItems": 1,
+            "maxItems": 4,
+            "messages": {
+              "minItems": "At least 1 Session is required",
+              "maxItems": "4 Sessions are supported"
             },
             "items": {
               "type": "object",
               "properties": {
-                "flow": {
-                  "type": "array",
-                  "title": "",
-                  "maxItems": 8,
-                  "messages": {
-                    "maxItems": "8 Flows are supported"
-                  },
-                  "items": {
-                    "type": "object",
-                    "properties": {
-                      "direction": {
-                        "type": "number",
-                        "title": "Flow Direction*",
-                        "enum": [1, 2],
-                        "enumNames": ["Downlink", "Uplink"],
-                        "default": 1,
-                      },
-                      "description": {
-                        "type": "string",
-                        "title": "Description*",
-                        "default": "permit out udp from any 1-65535 to 45.45.45.45",
-                        "required": true,
-                        "pattern": "^permit\\s+out",
-                        "messages": {
-                          "pattern": "Begin with reserved keyword 'permit out'."
-                        }
-                      }
-                    }
-                  }
+                "name": {
+                  "type": "string",
+                  "title": "DNN/APN*",
+                  "required": true
+                },
+                "type": {
+                  "type": "number",
+                  "title": "Type*",
+                  "enum": [1, 2, 3],
+                  "enumNames": ["IPv4", "IPv6", "IPv4v6"],
+                  "default": 3,
                 },
                 "qos": {
                   "type": "object",
                   "title": "",
                   "properties": {
-                    "qci": {
+                    "index": {
                       "type": "number",
-                      "title": "QoS Class Identifier (QCI)*",
-                      "enum": [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 65, 66, 69, 70 ],
-                      "default": 1,
+                      "title": "5QI/QCI*",
+                      "enum": [ 1, 2, 3, 4, 65, 66, 67, 75, 71, 72, 73, 74, 76, 5, 6, 7, 8, 9, 69, 70, 79, 80, 82, 83, 84, 85, 86 ],
+                      "default": 5,
                     },
                     "arp" : {
                       "type": "object",
@@ -239,69 +169,264 @@ const schema = {
                         "priority_level": {
                           "type": "number",
                           "title": "ARP Priority Level (1-15)*",
-                          "default": 2,
-                          "minimum": 1,
-                          "maximum": 15,
-                          "required": true
+                          "enum": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
+                          "default": 1,
                         },
-      // Ch 7.3.40 Allocation-Retenion-Proirty in TS 29.272 V15.9.0
-      //
-      // If the Pre-emption-Capability AVP is not present
-      // in the Allocation-Retention-Priority AVP, the default value shall be
-      // PRE-EMPTION_CAPABILITY_DISABLED (1).
-      //
-      // If the Pre-emption-Vulnerability AVP is not present
-      // in the Allocation-Retention-Priority AVP, the default value shall be
-      // PRE-EMPTION_VULNERABILITY_ENABLED (0).
-      //
-      // However, to easily set up VoLTE service,
-      // enable Pre-emption Capability/Vulnerablility in Default Bearer
                         "pre_emption_capability": {
                           "type": "number",
                           "title": "Capability*",
-                          "enum": [1, 0],
+                          "enum": [1, 2],
                           "enumNames": ["Disabled", "Enabled"],
-                          "default": 0,
+                          "default": 1
                         },
                         "pre_emption_vulnerability": {
                           "type": "number",
                           "title": "Vulnerability*",
-                          "enum": [1, 0],
+                          "enum": [1, 2],
                           "enumNames": ["Disabled", "Enabled"],
-                          "default": 0,
+                          "default": 1
                         },
                       }
-                    },
-                    "mbr": {
-                      "type": "object",
-                      "title": "",
-                      "properties": {
-                        "downlink": {
-                          "type": "number",
-                          "title": "MBR Downlink (Kbps)",
-                        },
-                        "uplink": {
-                          "type": "number",
-                          "title": "MBR Uplink (Kbps)",
-                        },
-                      }
-                    },
-                    "gbr": {
-                      "type": "object",
-                      "title": "",
-                      "properties": {
-                        "downlink": {
-                          "type": "number",
-                          "title": "GBR Downlink (Kbps)",
-                        },
-                        "uplink": {
-                          "type": "number",
-                          "title": "GBR Uplink (Kbps)",
-                        },
-                      }
-                    },
-                  },
+                    }
+                  }
                 },
+                "ambr": {
+                  "type": "object",
+                  "title": "",
+                  "properties": {
+                    "downlink": {
+                      "type": "object",
+                      "title": "",
+                      "properties": {
+                        "value": {
+                          "type": "number",
+                          "title": "Session-AMBR Downlink*",
+                          "default": 1,
+                          "required": true,
+                        },
+                        "unit": {
+                          "type": "number",
+                          "title": "Unit",
+                          "enum": [0, 1, 2, 3, 4],
+                          "enumNames": ["bps", "Kbps", "Mbps", "Gbps", "Tbps"],
+                          "default": 3,
+                        }
+                      }
+                    },
+                    "uplink": {
+                      "type": "object",
+                      "title": "",
+                      "properties": {
+                        "value": {
+                          "type": "number",
+                          "title": "Session-AMBR Uplink*",
+                          "default": 1,
+                          "required": true,
+                        },
+                        "unit": {
+                          "type": "number",
+                          "title": "Unit",
+                          "enum": [0, 1, 2, 3, 4],
+                          "enumNames": ["bps", "Kbps", "Mbps", "Gbps", "Tbps"],
+                          "default": 3,
+                        }
+                      }
+                    }
+                  }
+                },
+                "ue": {
+                  "type": "object",
+                  "title": "",
+                  "properties": {
+                    "addr": {
+                      "type": "string",
+                      "title": "UE IPv4 Address",
+                      "format" : "ipv4"
+                    },
+                    "addr6": {
+                      "type": "string",
+                      "title": "UE IPv6 Address",
+                      "format" : "ipv6"
+                    },
+                  }
+                },
+                "smf": {
+                  "type": "object",
+                  "title": "",
+                  "properties": {
+                    "addr": {
+                      "type": "string",
+                      "title": "SMF IPv4 Address",
+                      "format" : "ipv4"
+                    },
+                    "addr6": {
+                      "type": "string",
+                      "title": "SMF IPv6 Address",
+                      "format" : "ipv6"
+                    },
+                  }
+                },
+                "pcc_rule": {
+                  "type": "array",
+                  "title": "PCC Rules",
+                  "maxItems": 8,
+                  "messages": {
+                    "maxItems": "8 PCC Rules are supported"
+                  },
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "flow": {
+                        "type": "array",
+                        "title": "",
+                        "maxItems": 8,
+                        "messages": {
+                          "maxItems": "8 Flows are supported"
+                        },
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "direction": {
+                              "type": "number",
+                              "title": "Flow Direction*",
+                              "enum": [1, 2],
+                              "enumNames": ["Downlink", "Uplink"],
+                              "default": 1,
+                            },
+                            "description": {
+                              "type": "string",
+                              "title": "Description*",
+                              "default": "permit out udp from any 1-65535 to 45.45.45.45",
+                              "required": true,
+                              "pattern": "^permit\\s+out",
+                              "messages": {
+                                "pattern": "Begin with reserved keyword 'permit out'."
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "qos": {
+                        "type": "object",
+                        "title": "",
+                        "properties": {
+                          "index": {
+                            "type": "number",
+                            "title": "5QI/QCI*",
+                            "enum": [ 1, 2, 3, 4, 65, 66, 67, 75, 71, 72, 73, 74, 76, 5, 6, 7, 8, 9, 69, 70, 79, 80, 82, 83, 84, 85, 86 ],
+                            "default": 1,
+                          },
+                          "arp" : {
+                            "type": "object",
+                            "title": "",
+                            "properties": {
+                              "priority_level": {
+                                "type": "number",
+                                "title": "ARP Priority Level (1-15)*",
+                                "enum": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
+                                "default": 2,
+                              },
+                              "pre_emption_capability": {
+                                "type": "number",
+                                "title": "Capability*",
+                                "enum": [1, 2],
+                                "enumNames": ["Disabled", "Enabled"],
+                                "default": 2,
+                              },
+                              "pre_emption_vulnerability": {
+                                "type": "number",
+                                "title": "Vulnerability*",
+                                "enum": [1, 2],
+                                "enumNames": ["Disabled", "Enabled"],
+                                "default": 2,
+                              },
+                            }
+                          },
+                          "mbr": {
+                            "type": "object",
+                            "title": "",
+                            "properties": {
+                              "downlink": {
+                                "type": "object",
+                                "title": "",
+                                "properties": {
+                                  "value": {
+                                    "type": "number",
+                                    "title": "MBR Downlink",
+                                  },
+                                  "unit": {
+                                    "type": "number",
+                                    "title": "Unit",
+                                    "enum": [0, 1, 2, 3, 4],
+                                    "enumNames": ["bps", "Kbps", "Mbps", "Gbps", "Tbps"],
+                                    "default": 1,
+                                  }
+                                }
+                              },
+                              "uplink": {
+                                "type": "object",
+                                "title": "",
+                                "properties": {
+                                  "value": {
+                                    "type": "number",
+                                    "title": "MBR Uplink",
+                                  },
+                                  "unit": {
+                                    "type": "number",
+                                    "title": "Unit",
+                                    "enum": [0, 1, 2, 3, 4],
+                                    "enumNames": ["bps", "Kbps", "Mbps", "Gbps", "Tbps"],
+                                    "default": 1,
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          "gbr": {
+                            "type": "object",
+                            "title": "",
+                            "properties": {
+                              "downlink": {
+                                "type": "object",
+                                "title": "",
+                                "properties": {
+                                  "value": {
+                                    "type": "number",
+                                    "title": "GBR Downlink",
+                                  },
+                                  "unit": {
+                                    "type": "number",
+                                    "title": "Unit",
+                                    "enum": [0, 1, 2, 3, 4],
+                                    "enumNames": ["bps", "Kbps", "Mbps", "Gbps", "Tbps"],
+                                    "default": 1,
+                                  }
+                                }
+                              },
+                              "uplink": {
+                                "type": "object",
+                                "title": "",
+                                "properties": {
+                                  "value": {
+                                    "type": "number",
+                                    "title": "GBR Uplink",
+                                  },
+                                  "unit": {
+                                    "type": "number",
+                                    "title": "Unit",
+                                    "enum": [0, 1, 2, 3, 4],
+                                    "enumNames": ["bps", "Kbps", "Mbps", "Gbps", "Tbps"],
+                                    "default": 1,
+                                  }
+                                }
+                              }
+                            }
+                          },
+                        },
+                      },
+                    }
+                  }
+                }
               }
             }
           }
@@ -330,114 +455,161 @@ const uiSchema = {
     },
   },
   "ambr" : {
-    "downlink" : {
-      classNames: "col-xs-6"
-    },
-    "uplink" : {
-      classNames: "col-xs-6"
-    },
-  },
-  "pdn": {
-    "items": {
-      "apn": {
+    "downlink": {
+      classNames: "col-xs-6",
+      "value": {
         classNames: "col-xs-8",
       },
-      "type": {
+      "unit": {
         classNames: "col-xs-4",
       },
-      "qos": {
-        classNames: "col-xs-12",
-        "qci": {
-          "ui:widget": "radio",
-          "ui:options": {
-            "inline": true
-          },
-        },
-        "arp": {
-          "priority_level": {
-            classNames: "col-xs-6"
-          },
-          "pre_emption_capability": {
-            classNames: "col-xs-3"
-          },
-          "pre_emption_vulnerability": {
-            classNames: "col-xs-3"
-          }
-        }
+    },
+    "uplink": {
+      classNames: "col-xs-6",
+      "value": {
+        classNames: "col-xs-8",
       },
-      "ambr" : {
-        classNames: "col-xs-12",
-        "downlink" : {
-          classNames: "col-xs-6"
-        },
-        "uplink" : {
-          classNames: "col-xs-6"
-        },
+      "unit": {
+        classNames: "col-xs-4",
       },
-      "ue" : {
-        classNames: "col-xs-12",
-        "addr" : {
-          classNames: "col-xs-6"
-        },
-        "addr6" : {
-          classNames: "col-xs-6"
-        },
+    }
+  },
+  "slice": {
+    "items": {
+      "sst": {
+        classNames: "col-xs-3",
+        "ui:widget": "radio",
+        "ui:options": { "inline": true },
       },
-      "pgw" : {
-        classNames: "col-xs-12",
-        "addr" : {
-          classNames: "col-xs-6"
-        },
-        "addr6" : {
-          classNames: "col-xs-6"
-        },
+      "sd": {
+        classNames: "col-xs-6",
       },
-      "pcc_rule": {
+      "default_indicator": {
+        classNames: "col-xs-3",
+      },
+      "session": {
         classNames: "col-xs-12",
         "items": {
-          "flow": {
-            "items": {
-              "direction": {
-                classNames: "col-xs-12"
-              },
-              "description": {
-                classNames: "col-xs-12",
-                "ui:help": "Hint: Flow-Description(TS29.212), IPFilterRule(RFC 3588)",
-              },
-            },
+          "name": {
+            classNames: "col-xs-8",
+          },
+          "type": {
+            classNames: "col-xs-4",
           },
           "qos": {
-            "qci": {
-              "ui:widget": "radio",
-              "ui:options": {
-                "inline": true
-              },
+            classNames: "col-xs-12",
+            "index": {
             },
             "arp": {
               "priority_level": {
-                classNames: "col-xs-6"
               },
               "pre_emption_capability": {
-                classNames: "col-xs-3"
+                classNames: "col-xs-6"
               },
               "pre_emption_vulnerability": {
-                classNames: "col-xs-3"
-              }
-            },
-            "mbr": {
-              "downlink": {
-                classNames: "col-xs-6"
-              },
-              "uplink": {
                 classNames: "col-xs-6"
               }
-            },
-            "gbr": {
-              "downlink": {
-                classNames: "col-xs-6"
+            }
+          },
+          "ambr" : {
+            classNames: "col-xs-12",
+            "downlink": {
+              "value": {
+                classNames: "col-xs-8"
               },
-              "uplink": {
-                classNames: "col-xs-6"
+              "unit": {
+                classNames: "col-xs-4"
+              },
+            },
+            "uplink": {
+              "value": {
+                classNames: "col-xs-8"
+              },
+              "unit": {
+                classNames: "col-xs-4"
+              },
+            },
+          },
+          "ue" : {
+            classNames: "col-xs-12",
+            "addr" : {
+              classNames: "col-xs-6"
+            },
+            "addr6" : {
+              classNames: "col-xs-6"
+            },
+          },
+          "smf" : {
+            classNames: "col-xs-12",
+            "addr" : {
+              classNames: "col-xs-6"
+            },
+            "addr6" : {
+              classNames: "col-xs-6"
+            },
+          },
+          "pcc_rule": {
+            classNames: "col-xs-12",
+            "items": {
+              "flow": {
+                "items": {
+                  "direction": {
+                  },
+                  "description": {
+                    "ui:help": "Hint: 5.4.2 Flow-Description in TS29.212",
+                  },
+                },
+              },
+              "qos": {
+                "index": {
+                },
+                "arp": {
+                  "priority_level": {
+                    classNames: "col-xs-12"
+                  },
+                  "pre_emption_capability": {
+                    classNames: "col-xs-6"
+                  },
+                  "pre_emption_vulnerability": {
+                    classNames: "col-xs-6"
+                  }
+                },
+                "mbr": {
+                  "downlink": {
+                    "value": {
+                      classNames: "col-xs-8"
+                    },
+                    "unit": {
+                      classNames: "col-xs-4"
+                    },
+                  },
+                  "uplink": {
+                    "value": {
+                      classNames: "col-xs-8"
+                    },
+                    "unit": {
+                      classNames: "col-xs-4"
+                    },
+                  }
+                },
+                "gbr": {
+                  "downlink": {
+                    "value": {
+                      classNames: "col-xs-8"
+                    },
+                    "unit": {
+                      classNames: "col-xs-4"
+                    },
+                  },
+                  "uplink": {
+                    "value": {
+                      classNames: "col-xs-8"
+                    },
+                    "unit": {
+                      classNames: "col-xs-4"
+                    },
+                  }
+                }
               }
             }
           }

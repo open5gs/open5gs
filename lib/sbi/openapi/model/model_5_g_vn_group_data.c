@@ -8,7 +8,9 @@ OpenAPI_model_5_g_vn_group_data_t *OpenAPI_model_5_g_vn_group_data_create(
     char *dnn,
     OpenAPI_snssai_t *s_nssai,
     OpenAPI_list_t *pdu_session_types,
-    OpenAPI_list_t *app_descriptors
+    OpenAPI_list_t *app_descriptors,
+    int secondary_auth,
+    OpenAPI_ip_address_t *dn_aaa_address
     )
 {
     OpenAPI_model_5_g_vn_group_data_t *model_5_g_vn_group_data_local_var = OpenAPI_malloc(sizeof(OpenAPI_model_5_g_vn_group_data_t));
@@ -19,6 +21,8 @@ OpenAPI_model_5_g_vn_group_data_t *OpenAPI_model_5_g_vn_group_data_create(
     model_5_g_vn_group_data_local_var->s_nssai = s_nssai;
     model_5_g_vn_group_data_local_var->pdu_session_types = pdu_session_types;
     model_5_g_vn_group_data_local_var->app_descriptors = app_descriptors;
+    model_5_g_vn_group_data_local_var->secondary_auth = secondary_auth;
+    model_5_g_vn_group_data_local_var->dn_aaa_address = dn_aaa_address;
 
     return model_5_g_vn_group_data_local_var;
 }
@@ -36,6 +40,7 @@ void OpenAPI_model_5_g_vn_group_data_free(OpenAPI_model_5_g_vn_group_data_t *mod
         OpenAPI_app_descriptor_free(node->data);
     }
     OpenAPI_list_free(model_5_g_vn_group_data->app_descriptors);
+    OpenAPI_ip_address_free(model_5_g_vn_group_data->dn_aaa_address);
     ogs_free(model_5_g_vn_group_data);
 }
 
@@ -105,6 +110,26 @@ cJSON *OpenAPI_model_5_g_vn_group_data_convertToJSON(OpenAPI_model_5_g_vn_group_
                 }
                 cJSON_AddItemToArray(app_descriptorsList, itemLocal);
             }
+        }
+    }
+
+    if (model_5_g_vn_group_data->secondary_auth) {
+        if (cJSON_AddBoolToObject(item, "secondaryAuth", model_5_g_vn_group_data->secondary_auth) == NULL) {
+            ogs_error("OpenAPI_model_5_g_vn_group_data_convertToJSON() failed [secondary_auth]");
+            goto end;
+        }
+    }
+
+    if (model_5_g_vn_group_data->dn_aaa_address) {
+        cJSON *dn_aaa_address_local_JSON = OpenAPI_ip_address_convertToJSON(model_5_g_vn_group_data->dn_aaa_address);
+        if (dn_aaa_address_local_JSON == NULL) {
+            ogs_error("OpenAPI_model_5_g_vn_group_data_convertToJSON() failed [dn_aaa_address]");
+            goto end;
+        }
+        cJSON_AddItemToObject(item, "dnAaaAddress", dn_aaa_address_local_JSON);
+        if (item->child == NULL) {
+            ogs_error("OpenAPI_model_5_g_vn_group_data_convertToJSON() failed [dn_aaa_address]");
+            goto end;
         }
     }
 
@@ -182,11 +207,29 @@ OpenAPI_model_5_g_vn_group_data_t *OpenAPI_model_5_g_vn_group_data_parseFromJSON
         }
     }
 
+    cJSON *secondary_auth = cJSON_GetObjectItemCaseSensitive(model_5_g_vn_group_dataJSON, "secondaryAuth");
+
+    if (secondary_auth) {
+        if (!cJSON_IsBool(secondary_auth)) {
+            ogs_error("OpenAPI_model_5_g_vn_group_data_parseFromJSON() failed [secondary_auth]");
+            goto end;
+        }
+    }
+
+    cJSON *dn_aaa_address = cJSON_GetObjectItemCaseSensitive(model_5_g_vn_group_dataJSON, "dnAaaAddress");
+
+    OpenAPI_ip_address_t *dn_aaa_address_local_nonprim = NULL;
+    if (dn_aaa_address) {
+        dn_aaa_address_local_nonprim = OpenAPI_ip_address_parseFromJSON(dn_aaa_address);
+    }
+
     model_5_g_vn_group_data_local_var = OpenAPI_model_5_g_vn_group_data_create (
         ogs_strdup(dnn->valuestring),
         s_nssai_local_nonprim,
         pdu_session_types ? pdu_session_typesList : NULL,
-        app_descriptors ? app_descriptorsList : NULL
+        app_descriptors ? app_descriptorsList : NULL,
+        secondary_auth ? secondary_auth->valueint : 0,
+        dn_aaa_address ? dn_aaa_address_local_nonprim : NULL
         );
 
     return model_5_g_vn_group_data_local_var;

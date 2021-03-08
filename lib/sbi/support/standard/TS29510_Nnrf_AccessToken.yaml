@@ -1,7 +1,7 @@
 openapi: 3.0.0
 
 info:
-  version: '1.1.0.alpha-3'
+  version: '1.1.1'
   title: 'NRF OAuth2'
   description: |
     NRF OAuth2 Authorization.
@@ -9,7 +9,7 @@ info:
     All rights reserved.
 
 externalDocs:
-  description: 3GPP TS 29.510 V16.3.0; 5G System; Network Function Repository Services; Stage 3
+  description: 3GPP TS 29.510 V16.6.0; 5G System; Network Function Repository Services; Stage 3
   url: 'http://www.3gpp.org/ftp/Specs/archive/29_series/29.510/'
 
 paths:
@@ -58,6 +58,28 @@ paths:
                 type: string
         '307':
           description: Temporary Redirect
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+          headers:
+            Location:
+              description: 'The URI pointing to the resource located on the redirect target NRF'
+              required: true
+              schema:
+                type: string
+        '308':
+          description: Permanent Redirect
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+          headers:
+            Location:
+              description: 'The URI pointing to the resource located on the redirect target NRF'
+              required: true
+              schema:
+                type: string
         '400':
           description: Error in the Access Token Request
           content:
@@ -126,11 +148,28 @@ components:
           $ref: 'TS29510_Nnrf_NFManagement.yaml#/components/schemas/NFType'
         scope:
           type: string
-          pattern: '^([a-zA-Z0-9_-]+)( [a-zA-Z0-9_-]+)*$'
+          pattern: '^([a-zA-Z0-9_:-]+)( [a-zA-Z0-9_:-]+)*$'
         targetNfInstanceId:
           $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
         requesterPlmn:
           $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnId'
+        requesterPlmnList:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnId'
+          minItems: 2
+        requesterSnssaiList:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+          minItems: 1
+        requesterFqdn:
+          $ref: 'TS29510_Nnrf_NFManagement.yaml#/components/schemas/Fqdn'
+        requesterSnpnList:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnIdNid'
+          minItems: 1
         targetPlmn:
           $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnId'
         targetSnssaiList:
@@ -145,6 +184,8 @@ components:
           minItems: 1
         targetNfSetId:
           $ref: 'TS29571_CommonData.yaml#/components/schemas/NfSetId'
+        targetNfServiceSetId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfServiceSetId'
     AccessTokenRsp:
       description: Contains information related to the access token response
       type: object
@@ -163,7 +204,7 @@ components:
           type: integer
         scope:
           type: string
-          pattern: '^([a-zA-Z0-9_-]+)( [a-zA-Z0-9_-]+)*$'
+          pattern: '^([a-zA-Z0-9_:-]+)( [a-zA-Z0-9_:-]+)*$'
     AccessTokenClaims:
       description: The claims data structure for the access token
       type: object
@@ -187,7 +228,7 @@ components:
               minItems: 1
         scope:
           type: string
-          pattern: '^([a-zA-Z0-9_-]+)( [a-zA-Z0-9_-]+)*$'
+          pattern: '^([a-zA-Z0-9_:-]+)( [a-zA-Z0-9_:-]+)*$'
         exp:
           type: integer
         consumerPlmnId:

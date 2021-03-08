@@ -65,7 +65,7 @@ typedef struct amf_context_s {
     struct {
         ogs_plmn_id_t plmn_id;
         int num_of_s_nssai;
-        ogs_s_nssai_t s_nssai[OGS_MAX_NUM_OF_S_NSSAI];
+        ogs_s_nssai_t s_nssai[OGS_MAX_NUM_OF_SLICE];
     } plmn_support[OGS_MAX_NUM_OF_PLMN];
 
     /* defined in 'nas_ies.h'
@@ -136,7 +136,7 @@ typedef struct amf_gnb_s {
         struct {
             ogs_plmn_id_t plmn_id;
             uint8_t num_of_s_nssai;
-            ogs_s_nssai_t s_nssai[OGS_MAX_NUM_OF_S_NSSAI];
+            ogs_s_nssai_t s_nssai[OGS_MAX_NUM_OF_SLICE];
         } bplmn_list[OGS_MAX_NUM_OF_BPLMN];
     } supported_ta_list[OGS_MAX_NUM_OF_TAI];
 
@@ -167,12 +167,12 @@ struct ran_ue_s {
     ran_ue_t        *source_ue;
     ran_ue_t        *target_ue;
 
-    /* Use amf_ue->tai, amf_ue->nr_cgi.
+    /* Use amf_ue->nr_tai, amf_ue->nr_cgi.
      * Do not access ran_ue->saved.tai ran_ue->saved.nr_cgi.
      * 
-     * Save TAI and ECGI. And then, this will copy 'amf_ue_t' context later */
+     * Save TAI and CGI. And then, this will copy 'amf_ue_t' context later */
     struct {
-        ogs_5gs_tai_t   tai;
+        ogs_5gs_tai_t   nr_tai;
         ogs_nr_cgi_t    nr_cgi;
     } saved;
 
@@ -268,14 +268,23 @@ struct amf_ue_s {
     /* UE Info */
     ogs_guami_t     *guami;
     uint16_t        gnb_ostream_id;
-    ogs_5gs_tai_t   tai;
+    ogs_5gs_tai_t   nr_tai;
     ogs_nr_cgi_t    nr_cgi;
     ogs_time_t      ue_location_timestamp;
     ogs_plmn_id_t   last_visited_plmn_id;
     ogs_nas_ue_usage_setting_t ue_usage_setting;
 
-    int num_of_requested_nssai;
-    ogs_s_nssai_t   requested_nssai[OGS_MAX_NUM_OF_S_NSSAI];
+    struct {
+        int num_of_s_nssai;
+        ogs_nas_s_nssai_ie_t s_nssai[OGS_MAX_NUM_OF_SLICE];
+    } requested_nssai, allowed_nssai;
+
+    bool allowed_nssai_present;
+
+    struct {
+        int num_of_s_nssai;
+        ogs_nas_rejected_s_nssai_t s_nssai[OGS_MAX_NUM_OF_SLICE];
+    } rejected_nssai;
 
     /* PCF sends the RESPONSE
      * of [POST] /npcf-am-polocy-control/v1/policies */
@@ -351,9 +360,10 @@ struct amf_ue_s {
      * #define OGS_NAS_SECURITY_ALGORITHMS_128_NIA3    3 */
     uint8_t         selected_int_algorithm;
 
-    ogs_bitrate_t   ue_ambr; /* UE-AMBR */
-    int             num_of_subscribed_dnn;
-    char            *subscribed_dnn[OGS_MAX_NUM_OF_DNN];
+    /* SubscribedInfo */
+    ogs_bitrate_t   ue_ambr;
+    int num_of_slice;
+    ogs_slice_data_t slice[OGS_MAX_NUM_OF_SLICE];
 
     uint64_t        am_policy_control_features; /* SBI Features */
 
@@ -535,6 +545,14 @@ typedef struct amf_sess_s {
         } \
     } while(0);
 
+    struct {
+        char *nsi_id;
+        struct {
+            char *id;
+            ogs_sbi_client_t *client;
+        } nrf;
+    } nssf;
+
     /* last payload for sending back to the UE */
     uint8_t         payload_container_type;
     ogs_pkbuf_t     *payload_container;
@@ -545,8 +563,9 @@ typedef struct amf_sess_s {
     /* Related Context */
     amf_ue_t        *amf_ue;
 
-    ogs_s_nssai_t   s_nssai;
-    char            *dnn;
+    ogs_s_nssai_t s_nssai;
+    ogs_s_nssai_t mapped_hplmn;
+    char *dnn;
 
     /* Save Protocol Configuration Options from UE */
     struct {
@@ -566,8 +585,8 @@ amf_context_t *amf_self(void);
 int amf_context_parse_config(void);
 
 amf_gnb_t *amf_gnb_add(ogs_sock_t *sock, ogs_sockaddr_t *addr);
-int amf_gnb_remove(amf_gnb_t *gnb);
-int amf_gnb_remove_all(void);
+void amf_gnb_remove(amf_gnb_t *gnb);
+void amf_gnb_remove_all(void);
 amf_gnb_t *amf_gnb_find_by_addr(ogs_sockaddr_t *addr);
 amf_gnb_t *amf_gnb_find_by_gnb_id(uint32_t gnb_id);
 int amf_gnb_set_gnb_id(amf_gnb_t *gnb, uint32_t gnb_id);
@@ -664,6 +683,11 @@ amf_sess_t *amf_sess_find_by_dnn(amf_ue_t *amf_ue, char *dnn);
 amf_ue_t *amf_ue_cycle(amf_ue_t *amf_ue);
 amf_sess_t *amf_sess_cycle(amf_sess_t *sess);
 
+void amf_ue_select_nf(amf_ue_t *amf_ue, OpenAPI_nf_type_e nf_type);
+void amf_sess_select_nf(amf_sess_t *sess, OpenAPI_nf_type_e nf_type);
+
+void amf_sess_select_smf(amf_sess_t *sess);
+
 #define SESSION_SYNC_DONE(__aMF, __sTATE) \
     (amf_sess_xact_state_count(__aMF, __sTATE) == 0)
 int amf_sess_xact_count(amf_ue_t *amf_ue);
@@ -673,7 +697,7 @@ int amf_sess_xact_state_count(amf_ue_t *amf_ue, int state);
     (amf_pdu_res_setup_req_transfer_needed(__aMF) == true)
 bool amf_pdu_res_setup_req_transfer_needed(amf_ue_t *amf_ue);
 
-int amf_find_served_tai(ogs_5gs_tai_t *tai);
+int amf_find_served_tai(ogs_5gs_tai_t *nr_tai);
 ogs_s_nssai_t *amf_find_s_nssai(
         ogs_plmn_id_t *served_plmn_id, ogs_s_nssai_t *s_nssai);
 
@@ -683,6 +707,8 @@ int amf_m_tmsi_free(amf_m_tmsi_t *tmsi);
 
 uint8_t amf_selected_int_algorithm(amf_ue_t *amf_ue);
 uint8_t amf_selected_enc_algorithm(amf_ue_t *amf_ue);
+
+void amf_clear_subscribed_info(amf_ue_t *amf_ue);
 
 #ifdef __cplusplus
 }

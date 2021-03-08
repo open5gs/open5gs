@@ -109,8 +109,9 @@ bool smf_nudm_sdm_handle_get(smf_sess_t *sess, ogs_sbi_stream_t *stream,
                 continue;
             }
 
-            if (sess->dnn &&
-                ogs_strcasecmp(sess->dnn, dnnConfigurationMap->key) != 0)
+            if (sess->session.name &&
+                ogs_strcasecmp(sess->session.name,
+                    dnnConfigurationMap->key) != 0)
                 continue;
 
             if (sess->ue_pdu_session_type) {
@@ -119,31 +120,33 @@ bool smf_nudm_sdm_handle_get(smf_sess_t *sess, ogs_sbi_stream_t *stream,
                     if (node2->data) {
                         uint8_t allowed_session_type = (uintptr_t)node2->data;
                         if (sess->ue_pdu_session_type == allowed_session_type) {
-                            sess->pdn.pdn_type = sess->ue_pdu_session_type;
+                            sess->session.session_type =
+                                sess->ue_pdu_session_type;
                             break;
                         }
                     }
                 }
             }
 
-            if (!sess->pdn.pdn_type)
-                sess->pdn.pdn_type = pduSessionTypeList->default_session_type;
+            if (!sess->session.session_type)
+                sess->session.session_type =
+                    pduSessionTypeList->default_session_type;
 
             if (sess->ue_ssc_mode) {
                 OpenAPI_list_for_each(sscModeList->allowed_ssc_modes, node2) {
                     if (node2->data) {
                         uint8_t allowed_ssc_mode = (uintptr_t)node2->data;
                         if (sess->ue_ssc_mode == allowed_ssc_mode) {
-                            sess->pdn.ssc_mode = sess->ue_ssc_mode;
+                            sess->session.ssc_mode = sess->ue_ssc_mode;
                             break;
                         }
                     }
                 }
             } else {
-                sess->pdn.ssc_mode = sscModeList->default_ssc_mode;
+                sess->session.ssc_mode = sscModeList->default_ssc_mode;
             }
 
-            if (!sess->pdn.ssc_mode) {
+            if (!sess->session.ssc_mode) {
                 ogs_error("SSCMode is not allowed");
                 continue;
             }
@@ -154,32 +157,38 @@ bool smf_nudm_sdm_handle_get(smf_sess_t *sess, ogs_sbi_stream_t *stream,
                 continue;
             }
 
-            sess->pdn.ambr.uplink =
+            sess->session.ambr.uplink =
                 ogs_sbi_bitrate_from_string(sessionAmbr->uplink);
-            sess->pdn.ambr.downlink =
+            sess->session.ambr.downlink =
                 ogs_sbi_bitrate_from_string(sessionAmbr->downlink);
 
             _5gQoSProfile = dnnConfiguration->_5g_qos_profile;
             if (_5gQoSProfile) {
-                sess->pdn.qos.qci = _5gQoSProfile->_5qi;
-                sess->pdn.qos.arp.priority_level =
+                sess->session.qos.index = _5gQoSProfile->_5qi;
+                sess->session.qos.arp.priority_level =
                     _5gQoSProfile->priority_level;
-                sess->pdn.qos.arp.pre_emption_capability =
-                    OGS_PDN_PRE_EMPTION_CAPABILITY_DISABLED;
-                sess->pdn.qos.arp.pre_emption_vulnerability =
-                    OGS_PDN_PRE_EMPTION_VULNERABILITY_DISABLED;
                 if (_5gQoSProfile->arp) {
-                    sess->pdn.qos.arp.priority_level =
+                    sess->session.qos.arp.priority_level =
                             _5gQoSProfile->arp->priority_level;
                     if (_5gQoSProfile->arp->preempt_cap ==
                             OpenAPI_preemption_capability_MAY_PREEMPT)
-                        sess->pdn.qos.arp.pre_emption_capability =
-                            OGS_PDN_PRE_EMPTION_CAPABILITY_ENABLED;
+                        sess->session.qos.arp.pre_emption_capability =
+                            OGS_5GC_PRE_EMPTION_ENABLED;
+                    else if (_5gQoSProfile->arp->preempt_cap ==
+                            OpenAPI_preemption_capability_NOT_PREEMPT)
+                        sess->session.qos.arp.pre_emption_capability =
+                            OGS_5GC_PRE_EMPTION_DISABLED;
+                    ogs_assert(sess->session.qos.arp.pre_emption_capability);
+
                     if (_5gQoSProfile->arp->preempt_vuln ==
-                            OpenAPI_preemption_vulnerability_PREEMPTABLE) {
-                        sess->pdn.qos.arp.pre_emption_vulnerability =
-                            OGS_PDN_PRE_EMPTION_VULNERABILITY_ENABLED;
-                    }
+                            OpenAPI_preemption_vulnerability_PREEMPTABLE)
+                        sess->session.qos.arp.pre_emption_vulnerability =
+                            OGS_5GC_PRE_EMPTION_ENABLED;
+                    else if (_5gQoSProfile->arp->preempt_vuln ==
+                            OpenAPI_preemption_vulnerability_NOT_PREEMPTABLE)
+                        sess->session.qos.arp.pre_emption_vulnerability =
+                            OGS_5GC_PRE_EMPTION_DISABLED;
+                    ogs_assert(sess->session.qos.arp.pre_emption_vulnerability);
                 }
             }
 
@@ -204,13 +213,13 @@ bool smf_nudm_sdm_handle_get(smf_sess_t *sess, ogs_sbi_stream_t *stream,
                             }
 
                             if (ipv4 && ipv6) {
-                                sess->pdn.ue_ip.addr = ipsub4.sub[0];
-                                memcpy(sess->pdn.ue_ip.addr6,
+                                sess->session.ue_ip.addr = ipsub4.sub[0];
+                                memcpy(sess->session.ue_ip.addr6,
                                         ipsub6.sub, OGS_IPV6_LEN);
                             } else if (ipv4) {
-                                sess->pdn.ue_ip.addr = ipsub4.sub[0];
+                                sess->session.ue_ip.addr = ipsub4.sub[0];
                             } else if (ipv6) {
-                                memcpy(sess->pdn.ue_ip.addr6,
+                                memcpy(sess->session.ue_ip.addr6,
                                         ipsub6.sub, OGS_IPV6_LEN);
                             }
                         }
@@ -219,15 +228,14 @@ bool smf_nudm_sdm_handle_get(smf_sess_t *sess, ogs_sbi_stream_t *stream,
             }
 
             /* Succeeded to get PDU Session */
-            ogs_cpystrn(sess->pdn.dnn, dnnConfigurationMap->key,
-                ogs_min(strlen(dnnConfigurationMap->key),
-                    OGS_MAX_DNN_LEN)+1);
+            if (!sess->session.name)
+                sess->session.name = ogs_strdup(dnnConfigurationMap->key);
 
             break;
         }
     }
 
-    if (!strlen(sess->pdn.dnn)) {
+    if (!sess->session.name) {
         strerror = ogs_msprintf("[%s:%d] No dnnConfiguration",
                 smf_ue->supi, sess->psi);
         return false;

@@ -17,16 +17,11 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_notification_control_s OpenAPI_notification_control_t;
-typedef struct OpenAPI_notification_control_s {
-} OpenAPI_notification_control_t;
+typedef enum { OpenAPI_notification_control_NULL = 0, OpenAPI_notification_control_REQUESTED, OpenAPI_notification_control_NOT_REQUESTED } OpenAPI_notification_control_e;
 
-OpenAPI_notification_control_t *OpenAPI_notification_control_create(
-    );
-void OpenAPI_notification_control_free(OpenAPI_notification_control_t *notification_control);
-OpenAPI_notification_control_t *OpenAPI_notification_control_parseFromJSON(cJSON *notification_controlJSON);
-cJSON *OpenAPI_notification_control_convertToJSON(OpenAPI_notification_control_t *notification_control);
-OpenAPI_notification_control_t *OpenAPI_notification_control_copy(OpenAPI_notification_control_t *dst, OpenAPI_notification_control_t *src);
+char* OpenAPI_notification_control_ToString(OpenAPI_notification_control_e notification_control);
+
+OpenAPI_notification_control_e OpenAPI_notification_control_FromString(char* notification_control);
 
 #ifdef __cplusplus
 }

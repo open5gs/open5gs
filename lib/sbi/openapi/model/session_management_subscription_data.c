@@ -8,10 +8,9 @@ OpenAPI_session_management_subscription_data_t *OpenAPI_session_management_subsc
     OpenAPI_snssai_t *single_nssai,
     OpenAPI_list_t* dnn_configurations,
     OpenAPI_list_t *internal_group_ids,
-    OpenAPI_list_t* vn_group_info,
     OpenAPI_list_t* shared_vn_group_data_ids,
     char *shared_dnn_configurations_id,
-    OpenAPI_odb_packet_services_t *odb_packet_services,
+    OpenAPI_odb_packet_services_e odb_packet_services,
     OpenAPI_trace_data_t *trace_data,
     char *shared_trace_data_id,
     OpenAPI_list_t* expected_ue_behaviours_list,
@@ -26,7 +25,6 @@ OpenAPI_session_management_subscription_data_t *OpenAPI_session_management_subsc
     session_management_subscription_data_local_var->single_nssai = single_nssai;
     session_management_subscription_data_local_var->dnn_configurations = dnn_configurations;
     session_management_subscription_data_local_var->internal_group_ids = internal_group_ids;
-    session_management_subscription_data_local_var->vn_group_info = vn_group_info;
     session_management_subscription_data_local_var->shared_vn_group_data_ids = shared_vn_group_data_ids;
     session_management_subscription_data_local_var->shared_dnn_configurations_id = shared_dnn_configurations_id;
     session_management_subscription_data_local_var->odb_packet_services = odb_packet_services;
@@ -56,12 +54,6 @@ void OpenAPI_session_management_subscription_data_free(OpenAPI_session_managemen
         ogs_free(node->data);
     }
     OpenAPI_list_free(session_management_subscription_data->internal_group_ids);
-    OpenAPI_list_for_each(session_management_subscription_data->vn_group_info, node) {
-        OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
-        OpenAPI_vn_group_data_free(localKeyValue->value);
-        ogs_free(localKeyValue);
-    }
-    OpenAPI_list_free(session_management_subscription_data->vn_group_info);
     OpenAPI_list_for_each(session_management_subscription_data->shared_vn_group_data_ids, node) {
         OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
         ogs_free(localKeyValue->value);
@@ -69,7 +61,6 @@ void OpenAPI_session_management_subscription_data_free(OpenAPI_session_managemen
     }
     OpenAPI_list_free(session_management_subscription_data->shared_vn_group_data_ids);
     ogs_free(session_management_subscription_data->shared_dnn_configurations_id);
-    OpenAPI_odb_packet_services_free(session_management_subscription_data->odb_packet_services);
     OpenAPI_trace_data_free(session_management_subscription_data->trace_data);
     ogs_free(session_management_subscription_data->shared_trace_data_id);
     OpenAPI_list_for_each(session_management_subscription_data->expected_ue_behaviours_list, node) {
@@ -150,27 +141,6 @@ cJSON *OpenAPI_session_management_subscription_data_convertToJSON(OpenAPI_sessio
         }
     }
 
-    if (session_management_subscription_data->vn_group_info) {
-        cJSON *vn_group_info = cJSON_AddObjectToObject(item, "vnGroupInfo");
-        if (vn_group_info == NULL) {
-            ogs_error("OpenAPI_session_management_subscription_data_convertToJSON() failed [vn_group_info]");
-            goto end;
-        }
-        cJSON *localMapObject = vn_group_info;
-        OpenAPI_lnode_t *vn_group_info_node;
-        if (session_management_subscription_data->vn_group_info) {
-            OpenAPI_list_for_each(session_management_subscription_data->vn_group_info, vn_group_info_node) {
-                OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)vn_group_info_node->data;
-                cJSON *itemLocal = OpenAPI_vn_group_data_convertToJSON(localKeyValue->value);
-                if (itemLocal == NULL) {
-                    ogs_error("OpenAPI_session_management_subscription_data_convertToJSON() failed [vn_group_info]");
-                    goto end;
-                }
-                cJSON_AddItemToObject(vn_group_info, localKeyValue->key, itemLocal);
-            }
-        }
-    }
-
     if (session_management_subscription_data->shared_vn_group_data_ids) {
         cJSON *shared_vn_group_data_ids = cJSON_AddObjectToObject(item, "sharedVnGroupDataIds");
         if (shared_vn_group_data_ids == NULL) {
@@ -194,13 +164,7 @@ cJSON *OpenAPI_session_management_subscription_data_convertToJSON(OpenAPI_sessio
     }
 
     if (session_management_subscription_data->odb_packet_services) {
-        cJSON *odb_packet_services_local_JSON = OpenAPI_odb_packet_services_convertToJSON(session_management_subscription_data->odb_packet_services);
-        if (odb_packet_services_local_JSON == NULL) {
-            ogs_error("OpenAPI_session_management_subscription_data_convertToJSON() failed [odb_packet_services]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "odbPacketServices", odb_packet_services_local_JSON);
-        if (item->child == NULL) {
+        if (cJSON_AddStringToObject(item, "odbPacketServices", OpenAPI_odb_packet_services_ToString(session_management_subscription_data->odb_packet_services)) == NULL) {
             ogs_error("OpenAPI_session_management_subscription_data_convertToJSON() failed [odb_packet_services]");
             goto end;
         }
@@ -335,29 +299,6 @@ OpenAPI_session_management_subscription_data_t *OpenAPI_session_management_subsc
         }
     }
 
-    cJSON *vn_group_info = cJSON_GetObjectItemCaseSensitive(session_management_subscription_dataJSON, "vnGroupInfo");
-
-    OpenAPI_list_t *vn_group_infoList;
-    if (vn_group_info) {
-        cJSON *vn_group_info_local_map;
-        if (!cJSON_IsObject(vn_group_info)) {
-            ogs_error("OpenAPI_session_management_subscription_data_parseFromJSON() failed [vn_group_info]");
-            goto end;
-        }
-        vn_group_infoList = OpenAPI_list_create();
-        OpenAPI_map_t *localMapKeyPair = NULL;
-        cJSON_ArrayForEach(vn_group_info_local_map, vn_group_info) {
-            cJSON *localMapObject = vn_group_info_local_map;
-            if (!cJSON_IsObject(vn_group_info_local_map)) {
-                ogs_error("OpenAPI_session_management_subscription_data_parseFromJSON() failed [vn_group_info]");
-                goto end;
-            }
-            localMapKeyPair = OpenAPI_map_create(
-                localMapObject->string, OpenAPI_vn_group_data_parseFromJSON(localMapObject));
-            OpenAPI_list_add(vn_group_infoList, localMapKeyPair);
-        }
-    }
-
     cJSON *shared_vn_group_data_ids = cJSON_GetObjectItemCaseSensitive(session_management_subscription_dataJSON, "sharedVnGroupDataIds");
 
     OpenAPI_list_t *shared_vn_group_data_idsList;
@@ -386,9 +327,13 @@ OpenAPI_session_management_subscription_data_t *OpenAPI_session_management_subsc
 
     cJSON *odb_packet_services = cJSON_GetObjectItemCaseSensitive(session_management_subscription_dataJSON, "odbPacketServices");
 
-    OpenAPI_odb_packet_services_t *odb_packet_services_local_nonprim = NULL;
+    OpenAPI_odb_packet_services_e odb_packet_servicesVariable;
     if (odb_packet_services) {
-        odb_packet_services_local_nonprim = OpenAPI_odb_packet_services_parseFromJSON(odb_packet_services);
+        if (!cJSON_IsString(odb_packet_services)) {
+            ogs_error("OpenAPI_session_management_subscription_data_parseFromJSON() failed [odb_packet_services]");
+            goto end;
+        }
+        odb_packet_servicesVariable = OpenAPI_odb_packet_services_FromString(odb_packet_services->valuestring);
     }
 
     cJSON *trace_data = cJSON_GetObjectItemCaseSensitive(session_management_subscription_dataJSON, "traceData");
@@ -466,10 +411,9 @@ OpenAPI_session_management_subscription_data_t *OpenAPI_session_management_subsc
         single_nssai_local_nonprim,
         dnn_configurations ? dnn_configurationsList : NULL,
         internal_group_ids ? internal_group_idsList : NULL,
-        vn_group_info ? vn_group_infoList : NULL,
         shared_vn_group_data_ids ? shared_vn_group_data_idsList : NULL,
         shared_dnn_configurations_id ? ogs_strdup(shared_dnn_configurations_id->valuestring) : NULL,
-        odb_packet_services ? odb_packet_services_local_nonprim : NULL,
+        odb_packet_services ? odb_packet_servicesVariable : 0,
         trace_data ? trace_data_local_nonprim : NULL,
         shared_trace_data_id ? ogs_strdup(shared_trace_data_id->valuestring) : NULL,
         expected_ue_behaviours_list ? expected_ue_behaviours_listList : NULL,

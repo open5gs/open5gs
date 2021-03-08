@@ -1,7 +1,7 @@
 openapi: 3.0.0
 
 info:
-  version: 1.0.0.alpha-1
+  version: 1.0.0
   title: 'Nudr_GroupIDmap'
   description: |
     Unified Data Repository Service for NF-Group ID retrieval.
@@ -9,7 +9,7 @@ info:
     All rights reserved.
 
 externalDocs:
-  description: 3GPP TS 29.504 V16.2.0; 5G System; Unified Data Repository Services; Stage 3
+  description: 3GPP TS 29.504 V16.4.0; 5G System; Unified Data Repository Services; Stage 3
   url: 'http://www.3gpp.org/ftp/Specs/archive/29_series/29.504/'
 
 servers:

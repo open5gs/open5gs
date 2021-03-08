@@ -81,19 +81,22 @@ logger:
 #        advertise_name: upf1.5gc.mnc001.mcc001.3gppnetwork.org
 #
 #
-#  <PDN Configuration with UE Pool>
+#  <Subnet for UE network>
+#
+#  Note that you need to setup your UE network using TUN device.
+#  (ogstun, ogstun2, ogstunX, ..)
 #
 #  o IPv4 Pool
 #    $ sudo ip addr add 10.45.0.1/16 dev ogstun
 #
-#    pdn:
+#    subnet:
 #      addr: 10.45.0.1/16
 #
 #  o IPv4/IPv6 Pool
 #    $ sudo ip addr add 10.45.0.1/16 dev ogstun
 #    $ sudo ip addr add cafe:1::1/64 dev ogstun
 #
-#    pdn:
+#    subnet:
 #      - addr: 10.45.0.1/16
 #      - addr: cafe:1::1/64
 #
@@ -105,7 +108,7 @@ logger:
 #    $ sudo ip addr add cafe:1::1/64 dev ogstun
 #    $ sudo ip addr add cafe:2::1/64 dev ogstun
 #
-#    pdn:
+#    subnet:
 #      - addr: 10.45.0.1/16
 #        dnn: internet
 #      - addr: cafe:1::1/64
@@ -121,7 +124,7 @@ logger:
 #    $ sudo ip addr add 10.46.0.1/16 dev ogstun3
 #    $ sudo ip addr add cafe:2::1/64 dev ogstun3
 #
-#    pdn:
+#    subnet:
 #      - addr: 10.45.0.1/16
 #        dnn: internet
 #      - addr: cafe:1::1/64
@@ -134,39 +137,12 @@ logger:
 #        dnn: ims
 #        dev: ogstun3
 #
-#  o Pool Range Sample
-#    pdn:
-#      - addr: 10.45.0.1/24
-#        range: 10.45.0.100-10.45.0.200
-#
-#    pdn:
-#      - addr: 10.45.0.1/24
-#        range:
-#          - 10.45.0.5-10.45.0.50
-#          - 10.45.0.100-
-#
-#    pdn:
-#      - addr: 10.45.0.1/24
-#        range:
-#          - -10.45.0.200
-#          - 10.45.0.210-10.45.0.220
-#
-#    pdn:
-#      - addr: 10.45.0.1/16
-#        range:
-#          - 10.45.0.100-10.45.0.200
-#          - 10.45.1.100-10.45.1.200
-#      - addr: cafe::1/64
-#        range:
-#          - cafe::a0-cafe:b0
-#          - cafe::c0-cafe:d0
-#
 upf:
     pfcp:
       - addr: 127.0.0.7
     gtpu:
       - addr: 127.0.0.7
-    pdn:
+    subnet:
       - addr: 10.45.0.1/16
       - addr: cafe::1/64
 

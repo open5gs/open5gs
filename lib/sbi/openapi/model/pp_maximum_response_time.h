@@ -23,13 +23,15 @@ typedef struct OpenAPI_pp_maximum_response_time_s {
     char *af_instance_id;
     int reference_id;
     char *validity_time;
+    char *mtc_provider_information;
 } OpenAPI_pp_maximum_response_time_t;
 
 OpenAPI_pp_maximum_response_time_t *OpenAPI_pp_maximum_response_time_create(
     int maximum_response_time,
     char *af_instance_id,
     int reference_id,
-    char *validity_time
+    char *validity_time,
+    char *mtc_provider_information
     );
 void OpenAPI_pp_maximum_response_time_free(OpenAPI_pp_maximum_response_time_t *pp_maximum_response_time);
 OpenAPI_pp_maximum_response_time_t *OpenAPI_pp_maximum_response_time_parseFromJSON(cJSON *pp_maximum_response_timeJSON);

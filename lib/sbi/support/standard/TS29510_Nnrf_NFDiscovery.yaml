@@ -1,7 +1,7 @@
 openapi: 3.0.0
 
 info:
-  version: '1.1.0.alpha-4'
+  version: '1.1.2'
   title: 'NRF NFDiscovery Service'
   description: |
     NRF NFDiscovery Service.
@@ -9,7 +9,7 @@ info:
     All rights reserved.
 
 externalDocs:
-  description: 3GPP TS 29.510 V16.3.0; 5G System; Network Function Repository Services; Stage 3
+  description: 3GPP TS 29.510 V16.6.0; 5G System; Network Function Repository Services; Stage 3
   url: 'http://www.3gpp.org/ftp/Specs/archive/29_series/29.510/'
 
 servers:
@@ -128,6 +128,16 @@ paths:
         - name: plmn-specific-snssai-list
           in: query
           description: PLMN specific Slice info of the target NF
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: 'TS29510_Nnrf_NFManagement.yaml#/components/schemas/PlmnSnssai'
+                minItems: 1
+        - name: requester-plmn-specific-snssai-list
+          in: query
+          description: PLMN-specific slice info of the NF issuing the Discovery request
           content:
             application/json:
               schema:
@@ -350,6 +360,13 @@ paths:
             type: integer
             maximum: 2000
             default: 124
+        - name: max-payload-size-ext
+          in: query
+          description: Extended query for maximum payload size of the response expressed in kilo octets
+          required: false
+          schema:
+            type: integer
+            default: 124
         - name: atsss-capability
           in: query
           description: ATSSS Capability
@@ -406,7 +423,7 @@ paths:
               $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
             minItems: 1
           style: form
-          explode: false        
+          explode: false
         - name: If-None-Match
           in: header
           description: Validator for conditional requests, as described in IETF RFC 7232, 3.2
@@ -419,6 +436,16 @@ paths:
             application/json:
               schema:
                 $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnIdNid'
+        - name: requester-snpn-list
+          in: query
+          description: SNPN ID(s) of the NF instance issuing the Discovery request
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnIdNid'
+                minItems: 1
         - name: af-ee-data
           in: query
           description: NEF exposured by the AF
@@ -467,6 +494,16 @@ paths:
           description: Notification Type
           schema:
             $ref: 'TS29510_Nnrf_NFManagement.yaml#/components/schemas/NotificationType'
+        - name: n1-msg-class
+          in: query
+          description: N1 Message Class
+          schema:
+            $ref: 'TS29518_Namf_Communication.yaml#/components/schemas/N1MessageClass'
+        - name: n2-info-class
+          in: query
+          description: N2 Information Class
+          schema:
+            $ref: 'TS29518_Namf_Communication.yaml#/components/schemas/N2InformationClass'
         - name: serving-scope
           in: query
           description: areas that can be served by the target NF
@@ -480,6 +517,21 @@ paths:
         - name: imsi
           in: query
           description: IMSI of the requester UE to search for an appropriate NF (e.g. HSS)
+          schema:
+            type: string
+        - name: ims-private-identity
+          in: query
+          description: IMPI of the requester UE to search for a target HSS
+          schema:
+            type: string
+        - name: ims-public-identity
+          in: query
+          description: IMS Public Identity of the requester UE to search for a target HSS
+          schema:
+            type: string
+        - name: msisdn
+          in: query
+          description: MSISDN of the requester UE to search for a target HSS
           schema:
             type: string
         - name: preferred-api-versions
@@ -505,6 +557,78 @@ paths:
         - name: redundant-transport
           in: query
           description: UPF supports redundant transport path to be discovered
+          schema:
+            type: boolean
+        - name: ipups
+          in: query
+          description: UPF which is configured for IPUPS functionality to be discovered
+          schema:
+            type: boolean
+        - name: scp-domain-list
+          in: query
+          description: SCP domains the target SCP belongs to
+          schema:
+            type: array
+            items:
+              type: string
+            minItems: 1
+          style: form
+          explode: false
+        - name: address-domain
+          in: query
+          description: Address domain reachable through the SCP
+          schema:
+            $ref: 'TS29510_Nnrf_NFManagement.yaml#/components/schemas/Fqdn'
+        - name: ipv4-addr
+          in: query
+          description: IPv4 address reachable through the SCP
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv4Addr'
+        - name: ipv6-prefix
+          in: query
+          description: IPv6 prefix reachable through the SCP
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv6Prefix'
+        - name: served-nf-set-id
+          in: query
+          description: NF Set ID served by the SCP
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/NfSetId'
+        - name: remote-plmn-id
+          in: query
+          description: Id of the PLMN reachable through the SCP
+          content:
+            application/json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnId'
+        - name: data-forwarding
+          in: query
+          description: UPF Instance(s) configured for data forwarding are requested
+          schema:
+            type: boolean
+        - name: preferred-full-plmn
+          in: query
+          description: NF Instance(s) serving the full PLMN are preferred
+          schema:
+            type: boolean
+        - name: requester-features
+          in: query
+          description: Features supported by the NF Service Consumer that is invoking the Nnrf_NFDiscovery service
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        - name: realm-id
+          in: query
+          description: realm-id to search for an appropriate UDSF
+          schema:
+            type: string
+        - name: storage-id
+          in: query 
+          description: storage-id to search for an appropriate UDSF
+          schema:
+            type: string
+        - name: vsmf-support-ind
+          in: query
+          description: V-SMF capability supported by the target NF instance(s)
           schema:
             type: boolean
       responses:
@@ -544,6 +668,22 @@ paths:
                 type: string
         '307':
           description: Temporary Redirect
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+          headers:
+            Location:
+              description: 'The URI pointing to the resource located on the redirect target NRF'
+              required: true
+              schema:
+                type: string
+        '308':
+          description: Permanent Redirect
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
           headers:
             Location:
               description: 'The URI pointing to the resource located on the redirect target NRF'
@@ -592,6 +732,30 @@ paths:
       responses:
         '200':
           $ref: '#/components/responses/200'
+        '307':
+          description: Temporary Redirect
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+          headers:
+            Location:
+              description: 'The URI pointing to the resource located on the redirect target NRF'
+              required: true
+              schema:
+                type: string
+        '308':
+          description: Permanent Redirect
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+          headers:
+            Location:
+              description: 'The URI pointing to the resource located on the redirect target NRF'
+              required: true
+              schema:
+                type: string
 
   /searches/{searchId}/complete:
     get:
@@ -608,6 +772,30 @@ paths:
       responses:
         '200':
           $ref: '#/components/responses/200'
+        '307':
+          description: Temporary Redirect
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+          headers:
+            Location:
+              description: 'The URI pointing to the resource located on the redirect target NRF'
+              required: true
+              schema:
+                type: string
+        '308':
+          description: Permanent Redirect
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+          headers:
+            Location:
+              description: 'The URI pointing to the resource located on the redirect target NRF'
+              required: true
+              schema:
+                type: string
 
 components:
   securitySchemes:
@@ -646,6 +834,31 @@ components:
           description: Content-Encoding, described in IETF RFC 7231
           schema:
             type: string
+    '307':
+      description: Temporary Redirect
+      content:
+        application/problem+json:
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+      headers:
+        Location:
+          description: 'The URI pointing to the resource located on the redirect target NRF'
+          required: true
+          schema:
+            type: string
+    '308':
+      description: Permanent Redirect
+      content:
+        application/problem+json:
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+      headers:
+        Location:
+          description: 'The URI pointing to the resource located on the redirect target NRF'
+          required: true
+          schema:
+            type: string
+
   schemas:
     SearchResult:
       description: Contains the list of NF Profiles returned in a Discovery response
@@ -701,7 +914,7 @@ components:
         sNssais:
           type: array
           items:
-            $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/ExtSnssai'
           minItems: 1
         perPlmnSnssaiList:
           type: array
@@ -743,88 +956,88 @@ components:
           maximum: 65535
         udrInfo:
           $ref: 'TS29510_Nnrf_NFManagement.yaml#/components/schemas/UdrInfo'
-        udrInfoExt:
-          type: array
-          items:
+        udrInfoList:
+          type: object
+          additionalProperties:
             $ref: 'TS29510_Nnrf_NFManagement.yaml#/components/schemas/UdrInfo'
-          minItems: 1
+          minProperties: 1
         udmInfo:
           $ref: 'TS29510_Nnrf_NFManagement.yaml#/components/schemas/UdmInfo'
-        udmInfoExt:
-          type: array
-          items:
+        udmInfoList:
+          type: object
+          additionalProperties:
             $ref: 'TS29510_Nnrf_NFManagement.yaml#/components/schemas/UdmInfo'
-          minItems: 1
+          minProperties: 1
         ausfInfo:
           $ref: 'TS29510_Nnrf_NFManagement.yaml#/components/schemas/AusfInfo'
-        ausfInfoExt:
-          type: array
-          items:
+        ausfInfoList:
+          type: object
+          additionalProperties:
             $ref: 'TS29510_Nnrf_NFManagement.yaml#/components/schemas/AusfInfo'
-          minItems: 1
+          minProperties: 1
         amfInfo:
           $ref: 'TS29510_Nnrf_NFManagement.yaml#/components/schemas/AmfInfo'
-        amfInfoExt:
-          type: array
-          items:
+        amfInfoList:
+          type: object
+          additionalProperties:
             $ref: 'TS29510_Nnrf_NFManagement.yaml#/components/schemas/AmfInfo'
-          minItems: 1
+          minProperties: 1
         smfInfo:
           $ref: 'TS29510_Nnrf_NFManagement.yaml#/components/schemas/SmfInfo'
-        smfInfoExt:
-          type: array
-          items:
+        smfInfoList:
+          type: object
+          additionalProperties:
             $ref: 'TS29510_Nnrf_NFManagement.yaml#/components/schemas/SmfInfo'
-          minItems: 1
+          minProperties: 1
         upfInfo:
           $ref: 'TS29510_Nnrf_NFManagement.yaml#/components/schemas/UpfInfo'
-        upfInfoExt:
-          type: array
-          items:
+        upfInfoList:
+          type: object
+          additionalProperties:
             $ref: 'TS29510_Nnrf_NFManagement.yaml#/components/schemas/UpfInfo'
-          minItems: 1
+          minProperties: 1
         pcfInfo:
           $ref: 'TS29510_Nnrf_NFManagement.yaml#/components/schemas/PcfInfo'
-        pcfInfoExt:
-          type: array
-          items:
+        pcfInfoList:
+          type: object
+          additionalProperties:
             $ref: 'TS29510_Nnrf_NFManagement.yaml#/components/schemas/PcfInfo'
-          minItems: 1
+          minProperties: 1
         bsfInfo:
           $ref: 'TS29510_Nnrf_NFManagement.yaml#/components/schemas/BsfInfo'
-        bsfInfoExt:
-          type: array
-          items:
+        bsfInfoList:
+          type: object
+          additionalProperties:
             $ref: 'TS29510_Nnrf_NFManagement.yaml#/components/schemas/BsfInfo'
-          minItems: 1
+          minProperties: 1
         chfInfo:
           $ref: 'TS29510_Nnrf_NFManagement.yaml#/components/schemas/ChfInfo'
-        chfInfoExt:
-          type: array
-          items:
+        chfInfoList:
+          type: object
+          additionalProperties:
             $ref: 'TS29510_Nnrf_NFManagement.yaml#/components/schemas/ChfInfo'
-          minItems: 1
+          minProperties: 1
         udsfInfo:
           $ref: 'TS29510_Nnrf_NFManagement.yaml#/components/schemas/UdsfInfo'
-        udsfInfoExt:
-          type: array
-          items:
+        udsfInfoList:
+          type: object
+          additionalProperties:
             $ref: 'TS29510_Nnrf_NFManagement.yaml#/components/schemas/UdsfInfo'
-          minItems: 1
+          minProperties: 1
         nwdafInfo:
           $ref: 'TS29510_Nnrf_NFManagement.yaml#/components/schemas/NwdafInfo'
         nefInfo:
           $ref: 'TS29510_Nnrf_NFManagement.yaml#/components/schemas/NefInfo'
-        pcscfInfo:
-          type: array
-          items:
+        pcscfInfoList:
+          type: object
+          additionalProperties:
             $ref: 'TS29510_Nnrf_NFManagement.yaml#/components/schemas/PcscfInfo'
-          minItems: 1
-        hssInfo:
-          type: array
-          items:
+          minProperties: 1
+        hssInfoList:
+          type: object
+          additionalProperties:
             $ref: 'TS29510_Nnrf_NFManagement.yaml#/components/schemas/HssInfo'
-          minItems: 1
+          minProperties: 1
         customInfo:
           type: object
         recoveryTime:
@@ -833,10 +1046,16 @@ components:
           type: boolean
           default: false
         nfServices:
+          deprecated: true
           type: array
           items:
             $ref: '#/components/schemas/NFService'
           minItems: 1
+        nfServiceList:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/NFService'
+          minProperties: 1
         defaultNotificationSubscriptions:
           type: array
           items:
@@ -866,6 +1085,23 @@ components:
         olcHSupportInd:
           type: boolean
           default: false
+        nfSetRecoveryTimeList:
+          type: object
+          additionalProperties:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+          minProperties: 1
+        serviceSetRecoveryTimeList:
+          type: object
+          additionalProperties:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+          minProperties: 1
+        scpDomains:
+          type: array
+          items:
+            type: string
+          minItems: 1
+        scpInfo:
+          $ref: 'TS29510_Nnrf_NFManagement.yaml#/components/schemas/ScpInfo'
     NFService:
       description: Information of a given NF Service Instance; it is part of the NFProfile of an NF Instance discovered by the NRF
       type: object
@@ -931,7 +1167,7 @@ components:
         sNssais:
           type: array
           items:
-            $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/ExtSnssai'
           minItems: 1
         perPlmnSnssaiList:
           type: array
@@ -949,10 +1185,37 @@ components:
           minProperties: 1
         oauth2Required:
           type: boolean
+        allowedOperationsPerNfType:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+            minItems: 1
+        allowedOperationsPerNfInstance:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+            minItems: 1
     PreferredSearch:
       description: Contains information on whether the returned NFProfiles match the preferred query parameters
       type: object
       properties:
         preferredTaiMatchInd:
+          type: boolean
+          default: false
+        preferredFullPlmnMatchInd:
+          type: boolean
+          default: false
+        preferredApiVersionsMatchInd:
+          type: boolean
+        otherApiVersionsInd:
+          type: boolean
+        preferredLocalityMatchInd:
+          type: boolean
+          default: false
+        otherLocalityInd:
           type: boolean
           default: false

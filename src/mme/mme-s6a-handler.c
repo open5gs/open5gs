@@ -51,12 +51,41 @@ void mme_s6a_handle_ula(mme_ue_t *mme_ue,
         ogs_diam_s6a_ula_message_t *ula_message)
 {
     ogs_subscription_data_t *subscription_data = NULL;
+    ogs_slice_data_t *slice_data = NULL;
+    int i;
 
     ogs_assert(mme_ue);
     ogs_assert(ula_message);
     subscription_data = &ula_message->subscription_data;
     ogs_assert(subscription_data);
 
-    memcpy(&mme_ue->subscription_data,
-            subscription_data, sizeof(ogs_subscription_data_t));
+    ogs_assert(subscription_data->num_of_slice == 1);
+    slice_data = &subscription_data->slice[0];
+
+    memcpy(&mme_ue->ambr, &subscription_data->ambr, sizeof(ogs_bitrate_t));
+
+    mme_session_remove_all(mme_ue);
+
+    mme_ue->num_of_session = slice_data->num_of_session;
+    mme_ue->context_identifier = slice_data->context_identifier;
+
+    for (i = 0; i < slice_data->num_of_session; i++) {
+        mme_ue->session[i].name = ogs_strdup(slice_data->session[i].name);
+        ogs_assert(mme_ue->session[i].name);
+
+        mme_ue->session[i].context_identifier =
+            slice_data->session[i].context_identifier;
+
+        mme_ue->session[i].session_type = slice_data->session[i].session_type;
+        memcpy(&mme_ue->session[i].paa, &slice_data->session[i].paa,
+                sizeof(mme_ue->session[i].paa));
+
+        memcpy(&mme_ue->session[i].qos, &slice_data->session[i].qos,
+                sizeof(mme_ue->session[i].qos));
+        memcpy(&mme_ue->session[i].ambr, &slice_data->session[i].ambr,
+                sizeof(mme_ue->session[i].ambr));
+
+        memcpy(&mme_ue->session[i].smf_ip, &slice_data->session[i].smf_ip,
+                sizeof(mme_ue->session[i].smf_ip));
+    }
 }

@@ -17,6 +17,7 @@
 #include "dynamic5_qi.h"
 #include "gbr_qos_flow_information.h"
 #include "non_dynamic5_qi.h"
+#include "qos_monitoring_req.h"
 #include "reflective_qo_s_attribute.h"
 
 #ifdef __cplusplus
@@ -30,8 +31,10 @@ typedef struct OpenAPI_qos_flow_profile_s {
     struct OpenAPI_dynamic5_qi_s *dynamic5_qi;
     struct OpenAPI_arp_s *arp;
     struct OpenAPI_gbr_qos_flow_information_s *gbr_qos_flow_info;
-    struct OpenAPI_reflective_qo_s_attribute_s *rqa;
-    struct OpenAPI_additional_qos_flow_info_s *additional_qos_flow_info;
+    OpenAPI_reflective_qo_s_attribute_e rqa;
+    OpenAPI_additional_qos_flow_info_e additional_qos_flow_info;
+    OpenAPI_qos_monitoring_req_e qos_monitoring_req;
+    int qos_rep_period;
 } OpenAPI_qos_flow_profile_t;
 
 OpenAPI_qos_flow_profile_t *OpenAPI_qos_flow_profile_create(
@@ -40,8 +43,10 @@ OpenAPI_qos_flow_profile_t *OpenAPI_qos_flow_profile_create(
     OpenAPI_dynamic5_qi_t *dynamic5_qi,
     OpenAPI_arp_t *arp,
     OpenAPI_gbr_qos_flow_information_t *gbr_qos_flow_info,
-    OpenAPI_reflective_qo_s_attribute_t *rqa,
-    OpenAPI_additional_qos_flow_info_t *additional_qos_flow_info
+    OpenAPI_reflective_qo_s_attribute_e rqa,
+    OpenAPI_additional_qos_flow_info_e additional_qos_flow_info,
+    OpenAPI_qos_monitoring_req_e qos_monitoring_req,
+    int qos_rep_period
     );
 void OpenAPI_qos_flow_profile_free(OpenAPI_qos_flow_profile_t *qos_flow_profile);
 OpenAPI_qos_flow_profile_t *OpenAPI_qos_flow_profile_parseFromJSON(cJSON *qos_flow_profileJSON);
