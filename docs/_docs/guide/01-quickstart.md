@@ -318,7 +318,7 @@ amf:
 +          mcc: 001 # set your PLMN-MCC
 +          mnc: 01  # set your PLMN-MNC
 +        tac: 2 # should match the TAC used by your gNB
-     plmn:
+     plmn_support:
        - plmn_id:
 -          mcc: 901
 -          mnc: 70

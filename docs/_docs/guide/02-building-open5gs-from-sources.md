@@ -122,7 +122,7 @@ $ diff -u /etc/open5gs/amf.yaml.old /etc/open5gs/amf.yaml
 +          mcc: 001
 +          mnc: 01
 +        tac: 2
-     plmn:
+     plmn_support:
        - plmn_id:
 -          mcc: 901
 -          mnc: 70
