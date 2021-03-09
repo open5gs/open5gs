@@ -32,6 +32,8 @@ void testemm_handle_security_mode_command(test_ue_t *test_ue,
         ogs_nas_eps_security_mode_command_t *security_mode_command);
 void testemm_handle_attach_accept(test_ue_t *test_ue,
         ogs_nas_eps_attach_accept_t *attach_accept);
+void testemm_handle_tau_accept(test_ue_t *test_ue,
+        ogs_nas_eps_tracking_area_update_accept_t *tau_accept);
 
 #ifdef __cplusplus
 }

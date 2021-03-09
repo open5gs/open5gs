@@ -363,6 +363,8 @@ static void test1_func(abts_case *tc, void *data)
 
     /* Send TAU Request */
     memset(&test_ue->tau_request_param, 0, sizeof(test_ue->tau_request_param));
+    test_ue->tau_request_param.integrity_protected = 1;
+    test_ue->tau_request_param.ciphered = 1;
     test_ue->tau_request_param.ue_network_capability = 1;
     test_ue->tau_request_param.last_visited_registered_tai = 1;
     test_ue->tau_request_param.drx_parameter = 1;

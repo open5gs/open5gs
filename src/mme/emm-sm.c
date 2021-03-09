@@ -195,7 +195,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
             break;
 
         case OGS_NAS_EPS_ATTACH_REQUEST:
-            ogs_info("Attach request");
+            ogs_warn("[%s] Attach request", mme_ue->imsi_bcd);
             rv = emm_handle_attach_request(
                     mme_ue, &message->emm.attach_request, e->pkbuf);
             if (rv != OGS_OK) {
@@ -266,13 +266,13 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
 
             if (!ACTIVE_EPS_BEARERS_IS_AVAIABLE(mme_ue)) {
                 ogs_warn("No active EPS bearers : IMSI[%s]", mme_ue->imsi_bcd);
-                nas_eps_send_service_reject(mme_ue,
+                nas_eps_send_tau_reject(mme_ue,
                     EMM_CAUSE_NO_EPS_BEARER_CONTEXT_ACTIVATED);
                 OGS_FSM_TRAN(s, &emm_state_exception);
                 break;
             }
 
-            if (!SECURITY_CONTEXT_IS_VALID(mme_ue)) {
+            if (!h.integrity_protected || !SECURITY_CONTEXT_IS_VALID(mme_ue)) {
                 mme_s6a_send_air(mme_ue, NULL);
                 OGS_FSM_TRAN(&mme_ue->sm, &emm_state_authentication);
                 break;
@@ -304,6 +304,9 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
         case OGS_NAS_EPS_TRACKING_AREA_UPDATE_COMPLETE:
             ogs_info("Tracking area update complete");
             ogs_info("    IMSI[%s]", mme_ue->imsi_bcd);
+
+            /* Clear GUTI present */
+            mme_ue->guti_present = false;
             break;
 
         case OGS_NAS_EPS_EXTENDED_SERVICE_REQUEST:
@@ -462,9 +465,8 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
             break;
 
         case OGS_NAS_EPS_ATTACH_COMPLETE:
-            ogs_warn("[%s] should not send Attach-Complete"
-                    " if GUTI is not present in Attach-Accept",
-                    mme_ue->imsi_bcd);
+            ogs_error("[%s] Attach complete in INVALID-STATE",
+                        mme_ue->imsi_bcd);
             break;
 
         default:
@@ -624,7 +626,7 @@ void emm_state_authentication(ogs_fsm_t *s, mme_event_t *e)
             break;
         }
         case OGS_NAS_EPS_ATTACH_REQUEST:
-            ogs_warn("Attach request[%s]", mme_ue->imsi_bcd);
+            ogs_warn("[%s] Attach request", mme_ue->imsi_bcd);
             rv = emm_handle_attach_request(
                     mme_ue, &message->emm.attach_request, e->pkbuf);
             if (rv != OGS_OK) {
@@ -759,12 +761,12 @@ void emm_state_security_mode(ogs_fsm_t *s, mme_event_t *e)
             ogs_kdf_nh_enb(mme_ue->kasme, mme_ue->kenb, mme_ue->nh);
             mme_ue->nhcc = 1;
 
+            /* Create New GUTI */
+            mme_ue_new_guti(mme_ue);
+
             mme_s6a_send_ulr(mme_ue);
             if (mme_ue->nas_eps.type == MME_EPS_TYPE_ATTACH_REQUEST) {
-                if (mme_ue->guti_present)
-                    OGS_FSM_TRAN(s, &emm_state_initial_context_setup);
-                else
-                    OGS_FSM_TRAN(s, &emm_state_registered);
+                OGS_FSM_TRAN(s, &emm_state_initial_context_setup);
             } else if (mme_ue->nas_eps.type ==
                     MME_EPS_TYPE_SERVICE_REQUEST ||
                     mme_ue->nas_eps.type == MME_EPS_TYPE_TAU_REQUEST) {
@@ -781,7 +783,7 @@ void emm_state_security_mode(ogs_fsm_t *s, mme_event_t *e)
             OGS_FSM_TRAN(s, &emm_state_exception);
             break;
         case OGS_NAS_EPS_ATTACH_REQUEST:
-            ogs_warn("Attach request[%s]", mme_ue->imsi_bcd);
+            ogs_warn("[%s] Attach request", mme_ue->imsi_bcd);
             rv = emm_handle_attach_request(
                     mme_ue, &message->emm.attach_request, e->pkbuf);
             if (rv != OGS_OK) {
@@ -877,6 +879,15 @@ void emm_state_initial_context_setup(ogs_fsm_t *s, mme_event_t *e)
         message = e->nas_message;
         ogs_assert(message);
 
+        if (message->emm.h.security_header_type
+                == OGS_NAS_SECURITY_HEADER_FOR_SERVICE_REQUEST_MESSAGE) {
+            ogs_debug("Service request");
+            nas_eps_send_service_reject(mme_ue,
+                    EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
+            OGS_FSM_TRAN(s, &emm_state_exception);
+            break;
+        }
+
         switch (message->emm.h.message_type) {
         case OGS_NAS_EPS_ATTACH_COMPLETE:
             ogs_info("Attach complete");
@@ -909,13 +920,17 @@ void emm_state_initial_context_setup(ogs_fsm_t *s, mme_event_t *e)
                 OGS_FSM_TRAN(s, emm_state_exception);
                 break;
             }
+
+            /* Clear GUTI present */
+            mme_ue->guti_present = false;
+
             if (MME_P_TMSI_IS_AVAILABLE(mme_ue))
                 sgsap_send_tmsi_reallocation_complete(mme_ue);
 
             OGS_FSM_TRAN(s, &emm_state_registered);
             break;
         case OGS_NAS_EPS_ATTACH_REQUEST:
-            ogs_warn("Attach request[%s]", mme_ue->imsi_bcd);
+            ogs_warn("[%s] Attach request", mme_ue->imsi_bcd);
             rv = emm_handle_attach_request(
                     mme_ue, &message->emm.attach_request, e->pkbuf);
             if (rv != OGS_OK) {
@@ -1005,7 +1020,7 @@ void emm_state_exception(ogs_fsm_t *s, mme_event_t *e)
 
         switch (message->emm.h.message_type) {
         case OGS_NAS_EPS_ATTACH_REQUEST:
-            ogs_info("Attach request[%s]", mme_ue->imsi_bcd);
+            ogs_warn("[%s] Attach request", mme_ue->imsi_bcd);
             rv = emm_handle_attach_request(
                     mme_ue, &message->emm.attach_request, e->pkbuf);
             if (rv != OGS_OK) {

@@ -189,8 +189,8 @@ typedef struct test_tau_request_param_s {
     struct {
     ED8(uint8_t additional_update_type:1;,
         uint8_t device_properties:1;,
+        uint8_t integrity_protected:1;,
         uint8_t ciphered:1;,
-        uint8_t spare4:1;,
         uint8_t spare5:1;,
         uint8_t spare6:1;,
         uint8_t spare7:1;,

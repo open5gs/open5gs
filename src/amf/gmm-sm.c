@@ -237,65 +237,6 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e)
             OGS_FSM_TRAN(s, &gmm_state_authentication);
             break;
 
-#if 0
-        case OGS_NAS_5GS_TRACKING_AREA_UPDATE_REQUEST:
-            ogs_error("[%s] Tracking area update request",
-                    amf_ue->supi);
-            rv = gmm_handle_tau_request(
-                    amf_ue, &nas_message->gmm.tracking_area_update_request);
-            if (rv != OGS_OK) {
-                ogs_error("gmm_handle_tau_request() failed");
-                OGS_FSM_TRAN(s, gmm_state_exception);
-                break;
-            }
-
-            if (!AMF_UE_HAVE_SUCI(amf_ue)) {
-                ogs_warn("TAU request : Unknown UE");
-                nas_5gs_send_tau_reject(amf_ue,
-                    GMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
-                OGS_FSM_TRAN(s, &gmm_state_exception);
-                break;
-            }
-            break;
-            case AMF_EPS_TYPE_TAU_REQUEST:
-                procedureCode = e->ngap_code;
-
-                if (!SESSION_CONTEXT_IS_AVAILABLE(amf_ue)) {
-                    ogs_warn("No PDN Connection : UE[%s]", amf_ue->imsi_bcd);
-                    nas_5gs_send_tau_reject(amf_ue,
-                        GMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
-                    OGS_FSM_TRAN(s, gmm_state_exception);
-                    break;
-                }
-
-                if (!SECURITY_CONTEXT_IS_VALID(amf_ue)) {
-                    amf_s6a_send_air(amf_ue, NULL);
-                    OGS_FSM_TRAN(&amf_ue->sm, &gmm_state_authentication);
-                    break;
-                }
-
-                if (procedureCode == NGAP_ProcedureCode_id_initialUEMessage) {
-                    ogs_debug("    Iniital UE Message");
-                    if (amf_ue->nas_5gs.update.active_flag) {
-                        nas_5gs_send_tau_accept(amf_ue,
-                                NGAP_ProcedureCode_id_InitialContextSetup);
-                    } else {
-                        nas_5gs_send_tau_accept(amf_ue,
-                                NGAP_ProcedureCode_id_downlinkNASTransport);
-                        amf_send_release_access_bearer_or_ue_context_release(ran_ue);
-                    }
-                } else if (procedureCode == NGAP_ProcedureCode_id_uplinkNASTransport) {
-                    ogs_debug("    Uplink NAS Transport");
-                    nas_5gs_send_tau_accept(amf_ue,
-                            NGAP_ProcedureCode_id_downlinkNASTransport);
-                } else {
-                    ogs_fatal("Invalid Procedure Code[%d]", (int)procedureCode);
-                }
-                break;
-        case OGS_NAS_5GS_TRACKING_AREA_UPDATE_COMPLETE:
-            ogs_error("[%s] Tracking area update complete", amf_ue->supi);
-            break;
-#endif
         case OGS_NAS_5GS_5GMM_STATUS:
             ogs_warn("[%s] 5GMM STATUS : Cause[%d]", amf_ue->suci,
                     nas_message->gmm.gmm_status.gmm_cause);
@@ -325,6 +266,11 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e)
 
             gmm_handle_ul_nas_transport(
                     amf_ue, &nas_message->gmm.ul_nas_transport);
+            break;
+
+        case OGS_NAS_5GS_REGISTRATION_COMPLETE:
+            ogs_error("[%s] Registration complete in INVALID-STATE",
+                        amf_ue->supi);
             break;
 
         default:
@@ -706,6 +652,9 @@ void gmm_state_security_mode(ogs_fsm_t *s, amf_event_t *e)
             ogs_kdf_nh_gnb(amf_ue->kamf, amf_ue->kgnb, amf_ue->nh);
             amf_ue->nhcc = 1;
 
+            /* Create New GUTI */
+            amf_ue_new_guti(amf_ue);
+
             amf_ue_sbi_discover_and_send(OpenAPI_nf_type_UDM, amf_ue, NULL,
                     amf_nudm_uecm_build_registration);
 
@@ -741,21 +690,13 @@ void gmm_state_security_mode(ogs_fsm_t *s, amf_event_t *e)
 
             OGS_FSM_TRAN(s, &gmm_state_authentication);
             break;
+
         case OGS_NAS_5GS_SERVICE_REQUEST:
             ogs_info("[%s] Service request", amf_ue->supi);
             nas_5gs_send_service_reject(amf_ue,
-                    OGS_5GMM_CAUSE_SECURITY_MODE_REJECTED_UNSPECIFIED);
+                OGS_5GMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
             OGS_FSM_TRAN(s, &gmm_state_exception);
             break;
-
-#if 0
-        case OGS_NAS_5GS_TRACKING_AREA_UPDATE_REQUEST:
-            ogs_debug("Tracking area update request");
-            nas_5gs_send_tau_reject(amf_ue,
-                GMM_CAUSE_SECURITY_MODE_REJECTED_UNSPECIFIED);
-            OGS_FSM_TRAN(s, &gmm_state_exception);
-            break;
-#endif
 
         case OGS_NAS_5GS_5GMM_STATUS:
             ogs_warn("[%s] 5GMM STATUS : Cause[%d]",
@@ -921,6 +862,11 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
                     break;
                 }
 
+/*
+ * The usage of guti_present is changed
+ * This following code should be removed.
+ */
+#if 0
                 /*
                  * Issues #553
                  *
@@ -940,6 +886,7 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
                  */
                 if (amf_ue->guti_present == 0)
                     OGS_FSM_TRAN(&amf_ue->sm, &gmm_state_registered);
+#endif
 
                 /* If nas_5gs_send_service_accept() used, we need change it. */
                 ogs_assert(amf_ue->nas.message_type ==
@@ -967,6 +914,9 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
         switch (nas_message->gmm.h.message_type) {
         case OGS_NAS_5GS_REGISTRATION_COMPLETE:
             ogs_info("[%s] Registration complete", amf_ue->supi);
+
+            /* Clear GUTI present */
+            amf_ue->guti_present = false;
 
             /*
              * TS24.501
@@ -1016,6 +966,13 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
                         amf_nausf_auth_build_authenticate);
             }
             OGS_FSM_TRAN(s, &gmm_state_authentication);
+            break;
+
+        case OGS_NAS_5GS_SERVICE_REQUEST:
+            ogs_info("[%s] Service request", amf_ue->supi);
+            nas_5gs_send_service_reject(amf_ue,
+                OGS_5GMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
+            OGS_FSM_TRAN(s, &gmm_state_exception);
             break;
 
         case OGS_NAS_5GS_5GMM_STATUS:

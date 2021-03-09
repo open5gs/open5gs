@@ -118,6 +118,17 @@ static void timeout(ogs_gtp_xact_t *xact, void *data)
 
     switch (type) {
     case OGS_GTP_DELETE_SESSION_REQUEST_TYPE:
+        /*
+         * If SESSION_CONTEXT_WILL_DELETED(MME_UE) is not cleared,
+         * The MME cannot send Delete-Session-Request to the SGW-C.
+         * As such, it could be the infinite loop occurred in EMM state machine.
+         *
+         * To prevent this situation,
+         * force clearing SESSION_CONTEXT_WILL_DELETED variable
+         * when MME does not receive Delete-Session-Response message from SGW-C.
+         */
+        CLEAR_SESSION_CONTEXT(mme_ue);
+
         enb_ue = enb_ue_cycle(mme_ue->enb_ue);
         if (enb_ue) {
             s1ap_send_ue_context_release_command(enb_ue,

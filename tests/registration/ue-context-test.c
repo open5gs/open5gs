@@ -373,9 +373,18 @@ static void test2_func(abts_case *tc, void *data)
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    /* GUTI Not Present
-     * SKIP Send Registration complete */
-    /* SKIP Receive Configuration update command */
+    /* Send Registration complete */
+    gmmbuf = testgmm_build_registration_complete(test_ue);
+    ABTS_PTR_NOTNULL(tc, gmmbuf);
+    sendbuf = testngap_build_uplink_nas_transport(test_ue, gmmbuf);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive Configuration update command */
+    recvbuf = testgnb_ngap_read(ngap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    testngap_recv(test_ue, recvbuf);
 
     /* Send PDU session establishment request */
     sess = test_sess_add_by_dnn_and_psi(test_ue, "internet", 5);

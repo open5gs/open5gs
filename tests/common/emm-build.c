@@ -422,6 +422,23 @@ ogs_pkbuf_t *testemm_build_attach_complete(
     return test_nas_eps_security_encode(test_ue, &message);
 }
 
+ogs_pkbuf_t *testemm_build_tau_complete(test_ue_t *test_ue)
+{
+    ogs_nas_eps_message_t message;
+
+    ogs_assert(test_ue);
+
+    memset(&message, 0, sizeof(message));
+    message.h.security_header_type =
+        OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
+    message.h.protocol_discriminator = OGS_NAS_PROTOCOL_DISCRIMINATOR_EMM;
+
+    message.emm.h.protocol_discriminator = OGS_NAS_PROTOCOL_DISCRIMINATOR_EMM;
+    message.emm.h.message_type = OGS_NAS_EPS_TRACKING_AREA_UPDATE_COMPLETE;
+
+    return test_nas_eps_security_encode(test_ue, &message);
+}
+
 ogs_pkbuf_t *testemm_build_detach_request(test_ue_t *test_ue, bool switch_off)
 {
     ogs_nas_eps_message_t message;
@@ -556,12 +573,14 @@ ogs_pkbuf_t *testemm_build_tau_request(
     ogs_assert(test_ue);
 
     memset(&message, 0, sizeof(message));
-    if (test_ue->tau_request_param.ciphered) {
-        message.h.security_header_type =
-            OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
-    } else {
-        message.h.security_header_type =
-            OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED;
+    if (test_ue->tau_request_param.integrity_protected) {
+        if (test_ue->tau_request_param.ciphered) {
+            message.h.security_header_type =
+                OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
+        } else {
+            message.h.security_header_type =
+                OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED;
+        }
     }
     message.h.protocol_discriminator = OGS_NAS_PROTOCOL_DISCRIMINATOR_EMM;
 
@@ -736,7 +755,10 @@ ogs_pkbuf_t *testemm_build_tau_request(
             OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_DEVICE_PROPERTIES_PRESENT;
     }
 
-    return test_nas_eps_security_encode(test_ue, &message);
+    if (test_ue->tau_request_param.integrity_protected)
+        return test_nas_eps_security_encode(test_ue, &message);
+    else
+        return ogs_nas_eps_plain_encode(&message);
 }
 
 ogs_pkbuf_t *testemm_build_emm_status(

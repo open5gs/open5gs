@@ -2103,7 +2103,7 @@ enb_ue_t *enb_ue_cycle(enb_ue_t *enb_ue)
     return ogs_pool_cycle(&enb_ue_pool, enb_ue);
 }
 
-static int mme_ue_new_guti(mme_ue_t *mme_ue)
+void mme_ue_new_guti(mme_ue_t *mme_ue)
 {
     served_gummei_t *served_gummei = NULL;
 
@@ -2137,7 +2137,7 @@ static int mme_ue_new_guti(mme_ue_t *mme_ue)
     ogs_hash_set(self.guti_ue_hash,
             &mme_ue->guti, sizeof(ogs_nas_eps_guti_t), mme_ue);
 
-    return OGS_OK;
+    mme_ue->guti_present = true;
 }
 
 static bool compare_ue_info(mme_sgw_t *node, enb_ue_t *enb_ue)
@@ -2198,9 +2198,6 @@ mme_ue_t *mme_ue_add(enb_ue_t *enb_ue)
     mme_ue->mme_s11_teid = ogs_pool_index(&mme_ue_pool, mme_ue);
     ogs_assert(mme_ue->mme_s11_teid > 0 &&
             mme_ue->mme_s11_teid <= ogs_app()->max.ue);
-
-    /* Create New GUTI */
-    mme_ue_new_guti(mme_ue);
 
     /*
      * When used for the first time, if last node is set,
@@ -2531,8 +2528,6 @@ int mme_ue_set_imsi(mme_ue_t *mme_ue, char *imsi_bcd)
     }
 
     ogs_hash_set(self.imsi_ue_hash, mme_ue->imsi, mme_ue->imsi_len, mme_ue);
-
-    mme_ue->guti_present = 1;
 
     return OGS_OK;
 }

@@ -1040,7 +1040,7 @@ ran_ue_t *ran_ue_cycle(ran_ue_t *ran_ue)
     return ogs_pool_cycle(&ran_ue_pool, ran_ue);
 }
 
-static int amf_ue_new_guti(amf_ue_t *amf_ue)
+void amf_ue_new_guti(amf_ue_t *amf_ue)
 {
     if (amf_ue->m_tmsi) {
         /* AMF has a VALID GUTI
@@ -1062,7 +1062,7 @@ static int amf_ue_new_guti(amf_ue_t *amf_ue)
     ogs_hash_set(self.guti_ue_hash,
             &amf_ue->guti, sizeof(ogs_nas_5gs_guti_t), amf_ue);
 
-    return OGS_OK;
+    amf_ue->guti_present = true;
 }
 
 amf_ue_t *amf_ue_add(ran_ue_t *ran_ue)
@@ -1091,9 +1091,6 @@ amf_ue_t *amf_ue_add(ran_ue_t *ran_ue)
     amf_ue->guami = &amf_self()->served_guami[0];
     amf_ue->nas.access_type = OGS_ACCESS_TYPE_3GPP;
     amf_ue->abba_len = 2;
-
-    /* Create New GUTI */
-    amf_ue_new_guti(amf_ue);
 
     /* Add All Timers */
     amf_ue->t3513.timer = ogs_timer_add(
@@ -1378,8 +1375,6 @@ void amf_ue_set_suci(amf_ue_t *amf_ue,
     }
     amf_ue->suci = suci;
     ogs_hash_set(self.suci_hash, amf_ue->suci, strlen(amf_ue->suci), amf_ue);
-
-    amf_ue->guti_present = 1;
 }
 
 void amf_ue_set_supi(amf_ue_t *amf_ue, char *supi)

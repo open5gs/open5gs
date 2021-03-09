@@ -71,9 +71,9 @@ ogs_pkbuf_t *gmm_build_registration_accept(amf_ue_t *amf_ue)
 
     /* Set GUTI */
     ogs_debug("[%s]    %s 5G-S_GUTI[AMF_ID:0x%x,M_TMSI:0x%x]", amf_ue->supi,
-            amf_ue->guti_present ? "[V]" : "[N]",
+            amf_ue->guti_present == true ? "[V]" : "[N]",
             ogs_amf_id_hexdump(&amf_ue->guti.amf_id), amf_ue->guti.m_tmsi);
-    if (amf_ue->guti_present) {
+    if (amf_ue->guti_present == true) {
         registration_accept->presencemask |= OGS_NAS_5GS_REGISTRATION_ACCEPT_5G_GUTI_PRESENT;
 
         ogs_nas_5gs_nas_guti_to_mobilty_identity_guti(
@@ -82,7 +82,6 @@ ogs_pkbuf_t *gmm_build_registration_accept(amf_ue_t *amf_ue)
         mobile_identity->length = sizeof(mobile_identity_guti);
         mobile_identity->buffer = &mobile_identity_guti;
     }
-    amf_ue->guti_present = 0;
 
     /* Set TAI List */
     registration_accept->presencemask |= OGS_NAS_5GS_REGISTRATION_ACCEPT_TAI_LIST_PRESENT;

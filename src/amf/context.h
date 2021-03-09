@@ -263,7 +263,7 @@ struct amf_ue_s {
 
     amf_m_tmsi_t    *m_tmsi;
     ogs_nas_5gs_guti_t guti;
-    int             guti_present;
+    bool             guti_present;
 
     /* UE Info */
     ogs_guami_t     *guami;
@@ -600,6 +600,8 @@ ran_ue_t *ran_ue_find_by_ran_ue_ngap_id(
 ran_ue_t *ran_ue_find(uint32_t index);
 ran_ue_t *ran_ue_find_by_amf_ue_ngap_id(uint64_t amf_ue_ngap_id);
 ran_ue_t *ran_ue_cycle(ran_ue_t *ran_ue);
+
+void amf_ue_new_guti(amf_ue_t *amf_ue);
 
 amf_ue_t *amf_ue_add(ran_ue_t *ran_ue);
 void amf_ue_remove(amf_ue_t *amf_ue);
