@@ -63,7 +63,7 @@ typedef struct test_context_s {
     struct {
         ogs_plmn_id_t plmn_id;
         int num_of_s_nssai;
-        ogs_s_nssai_t s_nssai[OGS_MAX_NUM_OF_S_NSSAI];
+        ogs_s_nssai_t s_nssai[OGS_MAX_NUM_OF_SLICE];
     } plmn_support[OGS_MAX_NUM_OF_PLMN];
 
     /* Served EPC TAI */
@@ -189,8 +189,8 @@ typedef struct test_tau_request_param_s {
     struct {
     ED8(uint8_t additional_update_type:1;,
         uint8_t device_properties:1;,
+        uint8_t integrity_protected:1;,
         uint8_t ciphered:1;,
-        uint8_t spare4:1;,
         uint8_t spare5:1;,
         uint8_t spare6:1;,
         uint8_t spare7:1;,
@@ -304,7 +304,9 @@ typedef struct test_ue_s {
     ogs_nr_cgi_t nr_cgi;
 
     uint8_t k[OGS_KEY_LEN];
+    const char *k_string;
     uint8_t opc[OGS_KEY_LEN];
+    const char *opc_string;
 
     uint8_t rand[OGS_RAND_LEN];
     uint8_t autn[OGS_AUTN_LEN];
@@ -364,6 +366,16 @@ typedef struct test_ue_s {
 
     ogs_nas_ue_security_capability_t ue_security_capability;
     ogs_nas_ue_network_capability_t ue_network_capability;
+
+    struct {
+        int num_of_s_nssai;
+        ogs_nas_s_nssai_ie_t s_nssai[OGS_MAX_NUM_OF_SLICE];
+    } requested_nssai, allowed_nssai;
+
+    struct {
+        int num_of_s_nssai;
+        ogs_nas_rejected_s_nssai_t s_nssai[OGS_MAX_NUM_OF_SLICE];
+    } rejected_nssai;
 
     test_initial_ue_param_t initial_ue_param;
 
@@ -482,6 +494,15 @@ test_bearer_t *test_bearer_find_by_sess_ebi(test_sess_t *sess, uint8_t ebi);
 test_bearer_t *test_bearer_find_by_ue_ebi(test_ue_t *test_ue, uint8_t ebi);
 
 test_bearer_t *test_qos_flow_find_by_qfi(test_sess_t *sess, uint8_t qfi);
+
+int test_db_insert_ue(test_ue_t *test_ue, bson_t *doc);
+int test_db_remove_ue(test_ue_t *test_ue);
+
+bson_t *test_db_new_simple(test_ue_t *test_ue);
+bson_t *test_db_new_qos_flow(test_ue_t *test_ue);
+bson_t *test_db_new_session(test_ue_t *test_ue);
+bson_t *test_db_new_ims(test_ue_t *test_ue);
+bson_t *test_db_new_slice(test_ue_t *test_ue);
 
 #ifdef __cplusplus
 }

@@ -4,82 +4,27 @@
 #include <stdio.h>
 #include "ue_auth.h"
 
-OpenAPI_ue_auth_t *OpenAPI_ue_auth_create(
-    )
+char* OpenAPI_ue_auth_ToString(OpenAPI_ue_auth_e ue_auth)
 {
-    OpenAPI_ue_auth_t *ue_auth_local_var = OpenAPI_malloc(sizeof(OpenAPI_ue_auth_t));
-    if (!ue_auth_local_var) {
-        return NULL;
-    }
-
-    return ue_auth_local_var;
+    const char *ue_authArray[] =  { "NULL", "AUTHORIZED", "NOT_AUTHORIZED" };
+    size_t sizeofArray = sizeof(ue_authArray) / sizeof(ue_authArray[0]);
+    if (ue_auth < sizeofArray)
+        return (char *)ue_authArray[ue_auth];
+    else
+        return (char *)"Unknown";
 }
 
-void OpenAPI_ue_auth_free(OpenAPI_ue_auth_t *ue_auth)
+OpenAPI_ue_auth_e OpenAPI_ue_auth_FromString(char* ue_auth)
 {
-    if (NULL == ue_auth) {
-        return;
+    int stringToReturn = 0;
+    const char *ue_authArray[] =  { "NULL", "AUTHORIZED", "NOT_AUTHORIZED" };
+    size_t sizeofArray = sizeof(ue_authArray) / sizeof(ue_authArray[0]);
+    while (stringToReturn < sizeofArray) {
+        if (strcmp(ue_auth, ue_authArray[stringToReturn]) == 0) {
+            return stringToReturn;
+        }
+        stringToReturn++;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(ue_auth);
-}
-
-cJSON *OpenAPI_ue_auth_convertToJSON(OpenAPI_ue_auth_t *ue_auth)
-{
-    cJSON *item = NULL;
-
-    if (ue_auth == NULL) {
-        ogs_error("OpenAPI_ue_auth_convertToJSON() failed [UeAuth]");
-        return NULL;
-    }
-
-    item = cJSON_CreateObject();
-end:
-    return item;
-}
-
-OpenAPI_ue_auth_t *OpenAPI_ue_auth_parseFromJSON(cJSON *ue_authJSON)
-{
-    OpenAPI_ue_auth_t *ue_auth_local_var = NULL;
-    ue_auth_local_var = OpenAPI_ue_auth_create (
-        );
-
-    return ue_auth_local_var;
-end:
-    return NULL;
-}
-
-OpenAPI_ue_auth_t *OpenAPI_ue_auth_copy(OpenAPI_ue_auth_t *dst, OpenAPI_ue_auth_t *src)
-{
-    cJSON *item = NULL;
-    char *content = NULL;
-
-    ogs_assert(src);
-    item = OpenAPI_ue_auth_convertToJSON(src);
-    if (!item) {
-        ogs_error("OpenAPI_ue_auth_convertToJSON() failed");
-        return NULL;
-    }
-
-    content = cJSON_Print(item);
-    cJSON_Delete(item);
-
-    if (!content) {
-        ogs_error("cJSON_Print() failed");
-        return NULL;
-    }
-
-    item = cJSON_Parse(content);
-    ogs_free(content);
-    if (!item) {
-        ogs_error("cJSON_Parse() failed");
-        return NULL;
-    }
-
-    OpenAPI_ue_auth_free(dst);
-    dst = OpenAPI_ue_auth_parseFromJSON(item);
-    cJSON_Delete(item);
-
-    return dst;
+    return 0;
 }
 

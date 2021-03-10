@@ -4,82 +4,27 @@
 #include <stdio.h>
 #include "odb_packet_services.h"
 
-OpenAPI_odb_packet_services_t *OpenAPI_odb_packet_services_create(
-    )
+char* OpenAPI_odb_packet_services_ToString(OpenAPI_odb_packet_services_e odb_packet_services)
 {
-    OpenAPI_odb_packet_services_t *odb_packet_services_local_var = OpenAPI_malloc(sizeof(OpenAPI_odb_packet_services_t));
-    if (!odb_packet_services_local_var) {
-        return NULL;
-    }
-
-    return odb_packet_services_local_var;
+    const char *odb_packet_servicesArray[] =  { "NULL", "ALL_PACKET_SERVICES", "ROAMER_ACCESS_HPLMN_AP", "ROAMER_ACCESS_VPLMN_AP" };
+    size_t sizeofArray = sizeof(odb_packet_servicesArray) / sizeof(odb_packet_servicesArray[0]);
+    if (odb_packet_services < sizeofArray)
+        return (char *)odb_packet_servicesArray[odb_packet_services];
+    else
+        return (char *)"Unknown";
 }
 
-void OpenAPI_odb_packet_services_free(OpenAPI_odb_packet_services_t *odb_packet_services)
+OpenAPI_odb_packet_services_e OpenAPI_odb_packet_services_FromString(char* odb_packet_services)
 {
-    if (NULL == odb_packet_services) {
-        return;
+    int stringToReturn = 0;
+    const char *odb_packet_servicesArray[] =  { "NULL", "ALL_PACKET_SERVICES", "ROAMER_ACCESS_HPLMN_AP", "ROAMER_ACCESS_VPLMN_AP" };
+    size_t sizeofArray = sizeof(odb_packet_servicesArray) / sizeof(odb_packet_servicesArray[0]);
+    while (stringToReturn < sizeofArray) {
+        if (strcmp(odb_packet_services, odb_packet_servicesArray[stringToReturn]) == 0) {
+            return stringToReturn;
+        }
+        stringToReturn++;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(odb_packet_services);
-}
-
-cJSON *OpenAPI_odb_packet_services_convertToJSON(OpenAPI_odb_packet_services_t *odb_packet_services)
-{
-    cJSON *item = NULL;
-
-    if (odb_packet_services == NULL) {
-        ogs_error("OpenAPI_odb_packet_services_convertToJSON() failed [OdbPacketServices]");
-        return NULL;
-    }
-
-    item = cJSON_CreateObject();
-end:
-    return item;
-}
-
-OpenAPI_odb_packet_services_t *OpenAPI_odb_packet_services_parseFromJSON(cJSON *odb_packet_servicesJSON)
-{
-    OpenAPI_odb_packet_services_t *odb_packet_services_local_var = NULL;
-    odb_packet_services_local_var = OpenAPI_odb_packet_services_create (
-        );
-
-    return odb_packet_services_local_var;
-end:
-    return NULL;
-}
-
-OpenAPI_odb_packet_services_t *OpenAPI_odb_packet_services_copy(OpenAPI_odb_packet_services_t *dst, OpenAPI_odb_packet_services_t *src)
-{
-    cJSON *item = NULL;
-    char *content = NULL;
-
-    ogs_assert(src);
-    item = OpenAPI_odb_packet_services_convertToJSON(src);
-    if (!item) {
-        ogs_error("OpenAPI_odb_packet_services_convertToJSON() failed");
-        return NULL;
-    }
-
-    content = cJSON_Print(item);
-    cJSON_Delete(item);
-
-    if (!content) {
-        ogs_error("cJSON_Print() failed");
-        return NULL;
-    }
-
-    item = cJSON_Parse(content);
-    ogs_free(content);
-    if (!item) {
-        ogs_error("cJSON_Parse() failed");
-        return NULL;
-    }
-
-    OpenAPI_odb_packet_services_free(dst);
-    dst = OpenAPI_odb_packet_services_parseFromJSON(item);
-    cJSON_Delete(item);
-
-    return dst;
+    return 0;
 }
 

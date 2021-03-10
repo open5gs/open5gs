@@ -78,10 +78,10 @@ ogs_pkbuf_t *emm_build_attach_accept(
     attach_accept->esm_message_container.length = esmbuf->len;
 
     ogs_debug("    %s GUTI[G:%d,C:%d,M_TMSI:0x%x] IMSI:[%s]",
-            mme_ue->guti_present ? "[V]" : "[N]",
+            mme_ue->guti_present == true ? "[V]" : "[N]",
             mme_ue->guti.mme_gid, mme_ue->guti.mme_code,
             mme_ue->guti.m_tmsi, mme_ue->imsi_bcd);
-    if (mme_ue->guti_present) {
+    if (mme_ue->guti_present == true) {
         attach_accept->presencemask |= OGS_NAS_EPS_ATTACH_ACCEPT_GUTI_PRESENT;
         nas_guti->length = sizeof(ogs_nas_eps_mobile_identity_guti_t);
         nas_guti->guti.odd_even = OGS_NAS_MOBILE_IDENTITY_EVEN;
@@ -91,7 +91,6 @@ ogs_pkbuf_t *emm_build_attach_accept(
         nas_guti->guti.mme_code = mme_ue->guti.mme_code;
         nas_guti->guti.m_tmsi = mme_ue->guti.m_tmsi;
     }
-    mme_ue->guti_present = 0;
 
 #if 0 /* Need not to include T3402 */
     /* Set T3402 */
@@ -378,6 +377,7 @@ ogs_pkbuf_t *emm_build_tau_accept(mme_ue_t *mme_ue)
     ogs_nas_eps_message_t message;
     ogs_nas_eps_tracking_area_update_accept_t *tau_accept = 
         &message.emm.tracking_area_update_accept;
+    ogs_nas_eps_mobile_identity_t *nas_guti = &tau_accept->guti;
     int served_tai_index = 0;
 
     mme_sess_t *sess = NULL;
@@ -408,6 +408,22 @@ ogs_pkbuf_t *emm_build_tau_accept(mme_ue_t *mme_ue)
         OGS_NAS_EPS_TRACKING_AREA_UPDATE_ACCEPT_T3412_VALUE_PRESENT ;
     tau_accept->t3412_value.unit = OGS_NAS_GRPS_TIMER_UNIT_MULTIPLES_OF_DECI_HH;
     tau_accept->t3412_value.value = 9;
+
+    ogs_debug("    %s GUTI[G:%d,C:%d,M_TMSI:0x%x] IMSI:[%s]",
+            mme_ue->guti_present == true ? "[V]" : "[N]",
+            mme_ue->guti.mme_gid, mme_ue->guti.mme_code,
+            mme_ue->guti.m_tmsi, mme_ue->imsi_bcd);
+    if (mme_ue->guti_present == true) {
+        tau_accept->presencemask |=
+            OGS_NAS_EPS_TRACKING_AREA_UPDATE_ACCEPT_GUTI_PRESENT;
+        nas_guti->length = sizeof(ogs_nas_eps_mobile_identity_guti_t);
+        nas_guti->guti.odd_even = OGS_NAS_MOBILE_IDENTITY_EVEN;
+        nas_guti->guti.type = OGS_NAS_EPS_MOBILE_IDENTITY_GUTI;
+        nas_guti->guti.nas_plmn_id = mme_ue->guti.nas_plmn_id;
+        nas_guti->guti.mme_gid = mme_ue->guti.mme_gid;
+        nas_guti->guti.mme_code = mme_ue->guti.mme_code;
+        nas_guti->guti.m_tmsi = mme_ue->guti.m_tmsi;
+    }
 
     /* Set TAI */
     tau_accept->presencemask |=

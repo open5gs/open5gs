@@ -12,6 +12,9 @@ OpenAPI_hsmf_updated_data_t *OpenAPI_hsmf_updated_data_create(
     OpenAPI_list_t *dnai_list,
     char *supported_features,
     OpenAPI_roaming_charging_profile_t *roaming_charging_profile,
+    OpenAPI_up_security_t *up_security,
+    OpenAPI_max_integrity_protected_data_rate_e max_integrity_protected_data_rate_ul,
+    OpenAPI_max_integrity_protected_data_rate_e max_integrity_protected_data_rate_dl,
     int ipv6_multi_homing_ind
     )
 {
@@ -26,6 +29,9 @@ OpenAPI_hsmf_updated_data_t *OpenAPI_hsmf_updated_data_create(
     hsmf_updated_data_local_var->dnai_list = dnai_list;
     hsmf_updated_data_local_var->supported_features = supported_features;
     hsmf_updated_data_local_var->roaming_charging_profile = roaming_charging_profile;
+    hsmf_updated_data_local_var->up_security = up_security;
+    hsmf_updated_data_local_var->max_integrity_protected_data_rate_ul = max_integrity_protected_data_rate_ul;
+    hsmf_updated_data_local_var->max_integrity_protected_data_rate_dl = max_integrity_protected_data_rate_dl;
     hsmf_updated_data_local_var->ipv6_multi_homing_ind = ipv6_multi_homing_ind;
 
     return hsmf_updated_data_local_var;
@@ -47,6 +53,7 @@ void OpenAPI_hsmf_updated_data_free(OpenAPI_hsmf_updated_data_t *hsmf_updated_da
     OpenAPI_list_free(hsmf_updated_data->dnai_list);
     ogs_free(hsmf_updated_data->supported_features);
     OpenAPI_roaming_charging_profile_free(hsmf_updated_data->roaming_charging_profile);
+    OpenAPI_up_security_free(hsmf_updated_data->up_security);
     ogs_free(hsmf_updated_data);
 }
 
@@ -148,6 +155,33 @@ cJSON *OpenAPI_hsmf_updated_data_convertToJSON(OpenAPI_hsmf_updated_data_t *hsmf
         }
     }
 
+    if (hsmf_updated_data->up_security) {
+        cJSON *up_security_local_JSON = OpenAPI_up_security_convertToJSON(hsmf_updated_data->up_security);
+        if (up_security_local_JSON == NULL) {
+            ogs_error("OpenAPI_hsmf_updated_data_convertToJSON() failed [up_security]");
+            goto end;
+        }
+        cJSON_AddItemToObject(item, "upSecurity", up_security_local_JSON);
+        if (item->child == NULL) {
+            ogs_error("OpenAPI_hsmf_updated_data_convertToJSON() failed [up_security]");
+            goto end;
+        }
+    }
+
+    if (hsmf_updated_data->max_integrity_protected_data_rate_ul) {
+        if (cJSON_AddStringToObject(item, "maxIntegrityProtectedDataRateUl", OpenAPI_max_integrity_protected_data_rate_ToString(hsmf_updated_data->max_integrity_protected_data_rate_ul)) == NULL) {
+            ogs_error("OpenAPI_hsmf_updated_data_convertToJSON() failed [max_integrity_protected_data_rate_ul]");
+            goto end;
+        }
+    }
+
+    if (hsmf_updated_data->max_integrity_protected_data_rate_dl) {
+        if (cJSON_AddStringToObject(item, "maxIntegrityProtectedDataRateDl", OpenAPI_max_integrity_protected_data_rate_ToString(hsmf_updated_data->max_integrity_protected_data_rate_dl)) == NULL) {
+            ogs_error("OpenAPI_hsmf_updated_data_convertToJSON() failed [max_integrity_protected_data_rate_dl]");
+            goto end;
+        }
+    }
+
     if (hsmf_updated_data->ipv6_multi_homing_ind) {
         if (cJSON_AddBoolToObject(item, "ipv6MultiHomingInd", hsmf_updated_data->ipv6_multi_homing_ind) == NULL) {
             ogs_error("OpenAPI_hsmf_updated_data_convertToJSON() failed [ipv6_multi_homing_ind]");
@@ -226,6 +260,35 @@ OpenAPI_hsmf_updated_data_t *OpenAPI_hsmf_updated_data_parseFromJSON(cJSON *hsmf
         roaming_charging_profile_local_nonprim = OpenAPI_roaming_charging_profile_parseFromJSON(roaming_charging_profile);
     }
 
+    cJSON *up_security = cJSON_GetObjectItemCaseSensitive(hsmf_updated_dataJSON, "upSecurity");
+
+    OpenAPI_up_security_t *up_security_local_nonprim = NULL;
+    if (up_security) {
+        up_security_local_nonprim = OpenAPI_up_security_parseFromJSON(up_security);
+    }
+
+    cJSON *max_integrity_protected_data_rate_ul = cJSON_GetObjectItemCaseSensitive(hsmf_updated_dataJSON, "maxIntegrityProtectedDataRateUl");
+
+    OpenAPI_max_integrity_protected_data_rate_e max_integrity_protected_data_rate_ulVariable;
+    if (max_integrity_protected_data_rate_ul) {
+        if (!cJSON_IsString(max_integrity_protected_data_rate_ul)) {
+            ogs_error("OpenAPI_hsmf_updated_data_parseFromJSON() failed [max_integrity_protected_data_rate_ul]");
+            goto end;
+        }
+        max_integrity_protected_data_rate_ulVariable = OpenAPI_max_integrity_protected_data_rate_FromString(max_integrity_protected_data_rate_ul->valuestring);
+    }
+
+    cJSON *max_integrity_protected_data_rate_dl = cJSON_GetObjectItemCaseSensitive(hsmf_updated_dataJSON, "maxIntegrityProtectedDataRateDl");
+
+    OpenAPI_max_integrity_protected_data_rate_e max_integrity_protected_data_rate_dlVariable;
+    if (max_integrity_protected_data_rate_dl) {
+        if (!cJSON_IsString(max_integrity_protected_data_rate_dl)) {
+            ogs_error("OpenAPI_hsmf_updated_data_parseFromJSON() failed [max_integrity_protected_data_rate_dl]");
+            goto end;
+        }
+        max_integrity_protected_data_rate_dlVariable = OpenAPI_max_integrity_protected_data_rate_FromString(max_integrity_protected_data_rate_dl->valuestring);
+    }
+
     cJSON *ipv6_multi_homing_ind = cJSON_GetObjectItemCaseSensitive(hsmf_updated_dataJSON, "ipv6MultiHomingInd");
 
     if (ipv6_multi_homing_ind) {
@@ -243,6 +306,9 @@ OpenAPI_hsmf_updated_data_t *OpenAPI_hsmf_updated_data_parseFromJSON(cJSON *hsmf
         dnai_list ? dnai_listList : NULL,
         supported_features ? ogs_strdup(supported_features->valuestring) : NULL,
         roaming_charging_profile ? roaming_charging_profile_local_nonprim : NULL,
+        up_security ? up_security_local_nonprim : NULL,
+        max_integrity_protected_data_rate_ul ? max_integrity_protected_data_rate_ulVariable : 0,
+        max_integrity_protected_data_rate_dl ? max_integrity_protected_data_rate_dlVariable : 0,
         ipv6_multi_homing_ind ? ipv6_multi_homing_ind->valueint : 0
         );
 

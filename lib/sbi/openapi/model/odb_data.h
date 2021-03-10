@@ -20,11 +20,11 @@ extern "C" {
 
 typedef struct OpenAPI_odb_data_s OpenAPI_odb_data_t;
 typedef struct OpenAPI_odb_data_s {
-    struct OpenAPI_roaming_odb_s *roaming_odb;
+    OpenAPI_roaming_odb_e roaming_odb;
 } OpenAPI_odb_data_t;
 
 OpenAPI_odb_data_t *OpenAPI_odb_data_create(
-    OpenAPI_roaming_odb_t *roaming_odb
+    OpenAPI_roaming_odb_e roaming_odb
     );
 void OpenAPI_odb_data_free(OpenAPI_odb_data_t *odb_data);
 OpenAPI_odb_data_t *OpenAPI_odb_data_parseFromJSON(cJSON *odb_dataJSON);

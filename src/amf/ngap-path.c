@@ -336,8 +336,8 @@ void ngap_send_paging(amf_ue_t *amf_ue)
         for (i = 0; i < gnb->num_of_supported_ta_list; i++) {
             for (j = 0; j < gnb->supported_ta_list[i].num_of_bplmn_list; j++) {
                 if (memcmp(&gnb->supported_ta_list[i].bplmn_list[j].plmn_id,
-                            &amf_ue->tai.plmn_id, OGS_PLMN_ID_LEN) == 0 &&
-                    gnb->supported_ta_list[i].tac.v == amf_ue->tai.tac.v) {
+                            &amf_ue->nr_tai.plmn_id, OGS_PLMN_ID_LEN) == 0 &&
+                    gnb->supported_ta_list[i].tac.v == amf_ue->nr_tai.tac.v) {
 
                     if (amf_ue->t3513.pkbuf) {
                         ngapbuf = amf_ue->t3513.pkbuf;

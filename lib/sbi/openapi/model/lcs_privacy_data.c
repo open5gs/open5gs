@@ -6,7 +6,7 @@
 
 OpenAPI_lcs_privacy_data_t *OpenAPI_lcs_privacy_data_create(
     OpenAPI_lpi_t *lpi,
-    OpenAPI_list_t *unrelated_classes,
+    OpenAPI_unrelated_class_t *unrelated_class,
     OpenAPI_list_t *plmn_operator_classes
     )
 {
@@ -15,7 +15,7 @@ OpenAPI_lcs_privacy_data_t *OpenAPI_lcs_privacy_data_create(
         return NULL;
     }
     lcs_privacy_data_local_var->lpi = lpi;
-    lcs_privacy_data_local_var->unrelated_classes = unrelated_classes;
+    lcs_privacy_data_local_var->unrelated_class = unrelated_class;
     lcs_privacy_data_local_var->plmn_operator_classes = plmn_operator_classes;
 
     return lcs_privacy_data_local_var;
@@ -28,10 +28,7 @@ void OpenAPI_lcs_privacy_data_free(OpenAPI_lcs_privacy_data_t *lcs_privacy_data)
     }
     OpenAPI_lnode_t *node;
     OpenAPI_lpi_free(lcs_privacy_data->lpi);
-    OpenAPI_list_for_each(lcs_privacy_data->unrelated_classes, node) {
-        OpenAPI_unrelated_class_free(node->data);
-    }
-    OpenAPI_list_free(lcs_privacy_data->unrelated_classes);
+    OpenAPI_unrelated_class_free(lcs_privacy_data->unrelated_class);
     OpenAPI_list_for_each(lcs_privacy_data->plmn_operator_classes, node) {
         OpenAPI_plmn_operator_class_free(node->data);
     }
@@ -62,23 +59,16 @@ cJSON *OpenAPI_lcs_privacy_data_convertToJSON(OpenAPI_lcs_privacy_data_t *lcs_pr
         }
     }
 
-    if (lcs_privacy_data->unrelated_classes) {
-        cJSON *unrelated_classesList = cJSON_AddArrayToObject(item, "unrelatedClasses");
-        if (unrelated_classesList == NULL) {
-            ogs_error("OpenAPI_lcs_privacy_data_convertToJSON() failed [unrelated_classes]");
+    if (lcs_privacy_data->unrelated_class) {
+        cJSON *unrelated_class_local_JSON = OpenAPI_unrelated_class_convertToJSON(lcs_privacy_data->unrelated_class);
+        if (unrelated_class_local_JSON == NULL) {
+            ogs_error("OpenAPI_lcs_privacy_data_convertToJSON() failed [unrelated_class]");
             goto end;
         }
-
-        OpenAPI_lnode_t *unrelated_classes_node;
-        if (lcs_privacy_data->unrelated_classes) {
-            OpenAPI_list_for_each(lcs_privacy_data->unrelated_classes, unrelated_classes_node) {
-                cJSON *itemLocal = OpenAPI_unrelated_class_convertToJSON(unrelated_classes_node->data);
-                if (itemLocal == NULL) {
-                    ogs_error("OpenAPI_lcs_privacy_data_convertToJSON() failed [unrelated_classes]");
-                    goto end;
-                }
-                cJSON_AddItemToArray(unrelated_classesList, itemLocal);
-            }
+        cJSON_AddItemToObject(item, "unrelatedClass", unrelated_class_local_JSON);
+        if (item->child == NULL) {
+            ogs_error("OpenAPI_lcs_privacy_data_convertToJSON() failed [unrelated_class]");
+            goto end;
         }
     }
 
@@ -116,27 +106,11 @@ OpenAPI_lcs_privacy_data_t *OpenAPI_lcs_privacy_data_parseFromJSON(cJSON *lcs_pr
         lpi_local_nonprim = OpenAPI_lpi_parseFromJSON(lpi);
     }
 
-    cJSON *unrelated_classes = cJSON_GetObjectItemCaseSensitive(lcs_privacy_dataJSON, "unrelatedClasses");
+    cJSON *unrelated_class = cJSON_GetObjectItemCaseSensitive(lcs_privacy_dataJSON, "unrelatedClass");
 
-    OpenAPI_list_t *unrelated_classesList;
-    if (unrelated_classes) {
-        cJSON *unrelated_classes_local_nonprimitive;
-        if (!cJSON_IsArray(unrelated_classes)) {
-            ogs_error("OpenAPI_lcs_privacy_data_parseFromJSON() failed [unrelated_classes]");
-            goto end;
-        }
-
-        unrelated_classesList = OpenAPI_list_create();
-
-        cJSON_ArrayForEach(unrelated_classes_local_nonprimitive, unrelated_classes ) {
-            if (!cJSON_IsObject(unrelated_classes_local_nonprimitive)) {
-                ogs_error("OpenAPI_lcs_privacy_data_parseFromJSON() failed [unrelated_classes]");
-                goto end;
-            }
-            OpenAPI_unrelated_class_t *unrelated_classesItem = OpenAPI_unrelated_class_parseFromJSON(unrelated_classes_local_nonprimitive);
-
-            OpenAPI_list_add(unrelated_classesList, unrelated_classesItem);
-        }
+    OpenAPI_unrelated_class_t *unrelated_class_local_nonprim = NULL;
+    if (unrelated_class) {
+        unrelated_class_local_nonprim = OpenAPI_unrelated_class_parseFromJSON(unrelated_class);
     }
 
     cJSON *plmn_operator_classes = cJSON_GetObjectItemCaseSensitive(lcs_privacy_dataJSON, "plmnOperatorClasses");
@@ -164,7 +138,7 @@ OpenAPI_lcs_privacy_data_t *OpenAPI_lcs_privacy_data_parseFromJSON(cJSON *lcs_pr
 
     lcs_privacy_data_local_var = OpenAPI_lcs_privacy_data_create (
         lpi ? lpi_local_nonprim : NULL,
-        unrelated_classes ? unrelated_classesList : NULL,
+        unrelated_class ? unrelated_class_local_nonprim : NULL,
         plmn_operator_classes ? plmn_operator_classesList : NULL
         );
 

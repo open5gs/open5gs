@@ -9,7 +9,8 @@ OpenAPI_service_type_unrelated_class_t *OpenAPI_service_type_unrelated_class_cre
     OpenAPI_list_t *allowed_geographic_area,
     OpenAPI_privacy_check_related_action_e privacy_check_related_action,
     OpenAPI_code_word_ind_e code_word_ind,
-    OpenAPI_valid_time_period_t *valid_time_period
+    OpenAPI_valid_time_period_t *valid_time_period,
+    OpenAPI_list_t *code_word_list
     )
 {
     OpenAPI_service_type_unrelated_class_t *service_type_unrelated_class_local_var = OpenAPI_malloc(sizeof(OpenAPI_service_type_unrelated_class_t));
@@ -21,6 +22,7 @@ OpenAPI_service_type_unrelated_class_t *OpenAPI_service_type_unrelated_class_cre
     service_type_unrelated_class_local_var->privacy_check_related_action = privacy_check_related_action;
     service_type_unrelated_class_local_var->code_word_ind = code_word_ind;
     service_type_unrelated_class_local_var->valid_time_period = valid_time_period;
+    service_type_unrelated_class_local_var->code_word_list = code_word_list;
 
     return service_type_unrelated_class_local_var;
 }
@@ -36,6 +38,10 @@ void OpenAPI_service_type_unrelated_class_free(OpenAPI_service_type_unrelated_cl
     }
     OpenAPI_list_free(service_type_unrelated_class->allowed_geographic_area);
     OpenAPI_valid_time_period_free(service_type_unrelated_class->valid_time_period);
+    OpenAPI_list_for_each(service_type_unrelated_class->code_word_list, node) {
+        ogs_free(node->data);
+    }
+    OpenAPI_list_free(service_type_unrelated_class->code_word_list);
     ogs_free(service_type_unrelated_class);
 }
 
@@ -102,6 +108,22 @@ cJSON *OpenAPI_service_type_unrelated_class_convertToJSON(OpenAPI_service_type_u
         if (item->child == NULL) {
             ogs_error("OpenAPI_service_type_unrelated_class_convertToJSON() failed [valid_time_period]");
             goto end;
+        }
+    }
+
+    if (service_type_unrelated_class->code_word_list) {
+        cJSON *code_word_list = cJSON_AddArrayToObject(item, "codeWordList");
+        if (code_word_list == NULL) {
+            ogs_error("OpenAPI_service_type_unrelated_class_convertToJSON() failed [code_word_list]");
+            goto end;
+        }
+
+        OpenAPI_lnode_t *code_word_list_node;
+        OpenAPI_list_for_each(service_type_unrelated_class->code_word_list, code_word_list_node)  {
+            if (cJSON_AddStringToObject(code_word_list, "", (char*)code_word_list_node->data) == NULL) {
+                ogs_error("OpenAPI_service_type_unrelated_class_convertToJSON() failed [code_word_list]");
+                goto end;
+            }
         }
     }
 
@@ -176,12 +198,33 @@ OpenAPI_service_type_unrelated_class_t *OpenAPI_service_type_unrelated_class_par
         valid_time_period_local_nonprim = OpenAPI_valid_time_period_parseFromJSON(valid_time_period);
     }
 
+    cJSON *code_word_list = cJSON_GetObjectItemCaseSensitive(service_type_unrelated_classJSON, "codeWordList");
+
+    OpenAPI_list_t *code_word_listList;
+    if (code_word_list) {
+        cJSON *code_word_list_local;
+        if (!cJSON_IsArray(code_word_list)) {
+            ogs_error("OpenAPI_service_type_unrelated_class_parseFromJSON() failed [code_word_list]");
+            goto end;
+        }
+        code_word_listList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(code_word_list_local, code_word_list) {
+            if (!cJSON_IsString(code_word_list_local)) {
+                ogs_error("OpenAPI_service_type_unrelated_class_parseFromJSON() failed [code_word_list]");
+                goto end;
+            }
+            OpenAPI_list_add(code_word_listList, ogs_strdup(code_word_list_local->valuestring));
+        }
+    }
+
     service_type_unrelated_class_local_var = OpenAPI_service_type_unrelated_class_create (
         service_type->valuedouble,
         allowed_geographic_area ? allowed_geographic_areaList : NULL,
         privacy_check_related_action ? privacy_check_related_actionVariable : 0,
         code_word_ind ? code_word_indVariable : 0,
-        valid_time_period ? valid_time_period_local_nonprim : NULL
+        valid_time_period ? valid_time_period_local_nonprim : NULL,
+        code_word_list ? code_word_listList : NULL
         );
 
     return service_type_unrelated_class_local_var;

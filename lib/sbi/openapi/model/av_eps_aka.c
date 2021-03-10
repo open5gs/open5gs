@@ -5,7 +5,7 @@
 #include "av_eps_aka.h"
 
 OpenAPI_av_eps_aka_t *OpenAPI_av_eps_aka_create(
-    OpenAPI_hss_av_type_t *av_type,
+    OpenAPI_hss_av_type_e av_type,
     char *rand,
     char *xres,
     char *autn,
@@ -31,7 +31,6 @@ void OpenAPI_av_eps_aka_free(OpenAPI_av_eps_aka_t *av_eps_aka)
         return;
     }
     OpenAPI_lnode_t *node;
-    OpenAPI_hss_av_type_free(av_eps_aka->av_type);
     ogs_free(av_eps_aka->rand);
     ogs_free(av_eps_aka->xres);
     ogs_free(av_eps_aka->autn);
@@ -53,13 +52,7 @@ cJSON *OpenAPI_av_eps_aka_convertToJSON(OpenAPI_av_eps_aka_t *av_eps_aka)
         ogs_error("OpenAPI_av_eps_aka_convertToJSON() failed [av_type]");
         goto end;
     }
-    cJSON *av_type_local_JSON = OpenAPI_hss_av_type_convertToJSON(av_eps_aka->av_type);
-    if (av_type_local_JSON == NULL) {
-        ogs_error("OpenAPI_av_eps_aka_convertToJSON() failed [av_type]");
-        goto end;
-    }
-    cJSON_AddItemToObject(item, "avType", av_type_local_JSON);
-    if (item->child == NULL) {
+    if (cJSON_AddStringToObject(item, "avType", OpenAPI_hss_av_type_ToString(av_eps_aka->av_type)) == NULL) {
         ogs_error("OpenAPI_av_eps_aka_convertToJSON() failed [av_type]");
         goto end;
     }
@@ -113,9 +106,13 @@ OpenAPI_av_eps_aka_t *OpenAPI_av_eps_aka_parseFromJSON(cJSON *av_eps_akaJSON)
         goto end;
     }
 
-    OpenAPI_hss_av_type_t *av_type_local_nonprim = NULL;
+    OpenAPI_hss_av_type_e av_typeVariable;
 
-    av_type_local_nonprim = OpenAPI_hss_av_type_parseFromJSON(av_type);
+    if (!cJSON_IsString(av_type)) {
+        ogs_error("OpenAPI_av_eps_aka_parseFromJSON() failed [av_type]");
+        goto end;
+    }
+    av_typeVariable = OpenAPI_hss_av_type_FromString(av_type->valuestring);
 
     cJSON *rand = cJSON_GetObjectItemCaseSensitive(av_eps_akaJSON, "rand");
     if (!rand) {
@@ -166,7 +163,7 @@ OpenAPI_av_eps_aka_t *OpenAPI_av_eps_aka_parseFromJSON(cJSON *av_eps_akaJSON)
     }
 
     av_eps_aka_local_var = OpenAPI_av_eps_aka_create (
-        av_type_local_nonprim,
+        av_typeVariable,
         ogs_strdup(rand->valuestring),
         ogs_strdup(xres->valuestring),
         ogs_strdup(autn->valuestring),

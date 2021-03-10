@@ -7,7 +7,8 @@
 OpenAPI_pp_dl_packet_count_ext_t *OpenAPI_pp_dl_packet_count_ext_create(
     char *af_instance_id,
     int reference_id,
-    char *validity_time
+    char *validity_time,
+    char *mtc_provider_information
     )
 {
     OpenAPI_pp_dl_packet_count_ext_t *pp_dl_packet_count_ext_local_var = OpenAPI_malloc(sizeof(OpenAPI_pp_dl_packet_count_ext_t));
@@ -17,6 +18,7 @@ OpenAPI_pp_dl_packet_count_ext_t *OpenAPI_pp_dl_packet_count_ext_create(
     pp_dl_packet_count_ext_local_var->af_instance_id = af_instance_id;
     pp_dl_packet_count_ext_local_var->reference_id = reference_id;
     pp_dl_packet_count_ext_local_var->validity_time = validity_time;
+    pp_dl_packet_count_ext_local_var->mtc_provider_information = mtc_provider_information;
 
     return pp_dl_packet_count_ext_local_var;
 }
@@ -29,6 +31,7 @@ void OpenAPI_pp_dl_packet_count_ext_free(OpenAPI_pp_dl_packet_count_ext_t *pp_dl
     OpenAPI_lnode_t *node;
     ogs_free(pp_dl_packet_count_ext->af_instance_id);
     ogs_free(pp_dl_packet_count_ext->validity_time);
+    ogs_free(pp_dl_packet_count_ext->mtc_provider_information);
     ogs_free(pp_dl_packet_count_ext);
 }
 
@@ -63,6 +66,13 @@ cJSON *OpenAPI_pp_dl_packet_count_ext_convertToJSON(OpenAPI_pp_dl_packet_count_e
     if (pp_dl_packet_count_ext->validity_time) {
         if (cJSON_AddStringToObject(item, "validityTime", pp_dl_packet_count_ext->validity_time) == NULL) {
             ogs_error("OpenAPI_pp_dl_packet_count_ext_convertToJSON() failed [validity_time]");
+            goto end;
+        }
+    }
+
+    if (pp_dl_packet_count_ext->mtc_provider_information) {
+        if (cJSON_AddStringToObject(item, "mtcProviderInformation", pp_dl_packet_count_ext->mtc_provider_information) == NULL) {
+            ogs_error("OpenAPI_pp_dl_packet_count_ext_convertToJSON() failed [mtc_provider_information]");
             goto end;
         }
     }
@@ -107,10 +117,20 @@ OpenAPI_pp_dl_packet_count_ext_t *OpenAPI_pp_dl_packet_count_ext_parseFromJSON(c
         }
     }
 
+    cJSON *mtc_provider_information = cJSON_GetObjectItemCaseSensitive(pp_dl_packet_count_extJSON, "mtcProviderInformation");
+
+    if (mtc_provider_information) {
+        if (!cJSON_IsString(mtc_provider_information)) {
+            ogs_error("OpenAPI_pp_dl_packet_count_ext_parseFromJSON() failed [mtc_provider_information]");
+            goto end;
+        }
+    }
+
     pp_dl_packet_count_ext_local_var = OpenAPI_pp_dl_packet_count_ext_create (
         ogs_strdup(af_instance_id->valuestring),
         reference_id->valuedouble,
-        validity_time ? ogs_strdup(validity_time->valuestring) : NULL
+        validity_time ? ogs_strdup(validity_time->valuestring) : NULL,
+        mtc_provider_information ? ogs_strdup(mtc_provider_information->valuestring) : NULL
         );
 
     return pp_dl_packet_count_ext_local_var;

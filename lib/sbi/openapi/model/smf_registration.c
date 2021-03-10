@@ -18,7 +18,8 @@ OpenAPI_smf_registration_t *OpenAPI_smf_registration_create(
     int epdg_ind,
     char *dereg_callback_uri,
     OpenAPI_registration_reason_t *registration_reason,
-    char *registration_time
+    char *registration_time,
+    OpenAPI_context_info_t *context_info
     )
 {
     OpenAPI_smf_registration_t *smf_registration_local_var = OpenAPI_malloc(sizeof(OpenAPI_smf_registration_t));
@@ -39,6 +40,7 @@ OpenAPI_smf_registration_t *OpenAPI_smf_registration_create(
     smf_registration_local_var->dereg_callback_uri = dereg_callback_uri;
     smf_registration_local_var->registration_reason = registration_reason;
     smf_registration_local_var->registration_time = registration_time;
+    smf_registration_local_var->context_info = context_info;
 
     return smf_registration_local_var;
 }
@@ -60,6 +62,7 @@ void OpenAPI_smf_registration_free(OpenAPI_smf_registration_t *smf_registration)
     ogs_free(smf_registration->dereg_callback_uri);
     OpenAPI_registration_reason_free(smf_registration->registration_reason);
     ogs_free(smf_registration->registration_time);
+    OpenAPI_context_info_free(smf_registration->context_info);
     ogs_free(smf_registration);
 }
 
@@ -193,6 +196,19 @@ cJSON *OpenAPI_smf_registration_convertToJSON(OpenAPI_smf_registration_t *smf_re
     if (smf_registration->registration_time) {
         if (cJSON_AddStringToObject(item, "registrationTime", smf_registration->registration_time) == NULL) {
             ogs_error("OpenAPI_smf_registration_convertToJSON() failed [registration_time]");
+            goto end;
+        }
+    }
+
+    if (smf_registration->context_info) {
+        cJSON *context_info_local_JSON = OpenAPI_context_info_convertToJSON(smf_registration->context_info);
+        if (context_info_local_JSON == NULL) {
+            ogs_error("OpenAPI_smf_registration_convertToJSON() failed [context_info]");
+            goto end;
+        }
+        cJSON_AddItemToObject(item, "contextInfo", context_info_local_JSON);
+        if (item->child == NULL) {
+            ogs_error("OpenAPI_smf_registration_convertToJSON() failed [context_info]");
             goto end;
         }
     }
@@ -336,6 +352,13 @@ OpenAPI_smf_registration_t *OpenAPI_smf_registration_parseFromJSON(cJSON *smf_re
         }
     }
 
+    cJSON *context_info = cJSON_GetObjectItemCaseSensitive(smf_registrationJSON, "contextInfo");
+
+    OpenAPI_context_info_t *context_info_local_nonprim = NULL;
+    if (context_info) {
+        context_info_local_nonprim = OpenAPI_context_info_parseFromJSON(context_info);
+    }
+
     smf_registration_local_var = OpenAPI_smf_registration_create (
         ogs_strdup(smf_instance_id->valuestring),
         smf_set_id ? ogs_strdup(smf_set_id->valuestring) : NULL,
@@ -350,7 +373,8 @@ OpenAPI_smf_registration_t *OpenAPI_smf_registration_parseFromJSON(cJSON *smf_re
         epdg_ind ? epdg_ind->valueint : 0,
         dereg_callback_uri ? ogs_strdup(dereg_callback_uri->valuestring) : NULL,
         registration_reason ? registration_reason_local_nonprim : NULL,
-        registration_time ? ogs_strdup(registration_time->valuestring) : NULL
+        registration_time ? ogs_strdup(registration_time->valuestring) : NULL,
+        context_info ? context_info_local_nonprim : NULL
         );
 
     return smf_registration_local_var;

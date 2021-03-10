@@ -33,6 +33,7 @@ ogs_pkbuf_t *testemm_build_authentication_failure(
 ogs_pkbuf_t *testemm_build_security_mode_complete(test_ue_t *test_ue);
 ogs_pkbuf_t *testemm_build_attach_complete(
         test_ue_t *test_ue, ogs_pkbuf_t *esmbuf);
+ogs_pkbuf_t *testemm_build_tau_complete(test_ue_t *test_ue);
 
 ogs_pkbuf_t *testemm_build_detach_request(test_ue_t *test_ue, bool switch_off);
 

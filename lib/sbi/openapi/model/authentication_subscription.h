@@ -30,6 +30,9 @@ typedef struct OpenAPI_authentication_subscription_s {
     char *enc_opc_key;
     char *enc_topc_key;
     int vector_generation_in_hss;
+    OpenAPI_auth_method_e n5gc_auth_method;
+    int rg_authentication_ind;
+    char *supi;
 } OpenAPI_authentication_subscription_t;
 
 OpenAPI_authentication_subscription_t *OpenAPI_authentication_subscription_create(
@@ -41,7 +44,10 @@ OpenAPI_authentication_subscription_t *OpenAPI_authentication_subscription_creat
     char *algorithm_id,
     char *enc_opc_key,
     char *enc_topc_key,
-    int vector_generation_in_hss
+    int vector_generation_in_hss,
+    OpenAPI_auth_method_e n5gc_auth_method,
+    int rg_authentication_ind,
+    char *supi
     );
 void OpenAPI_authentication_subscription_free(OpenAPI_authentication_subscription_t *authentication_subscription);
 OpenAPI_authentication_subscription_t *OpenAPI_authentication_subscription_parseFromJSON(cJSON *authentication_subscriptionJSON);

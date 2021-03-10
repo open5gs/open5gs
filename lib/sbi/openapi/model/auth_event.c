@@ -9,7 +9,8 @@ OpenAPI_auth_event_t *OpenAPI_auth_event_create(
     int success,
     char *time_stamp,
     OpenAPI_auth_type_e auth_type,
-    char *serving_network_name
+    char *serving_network_name,
+    int auth_removal_ind
     )
 {
     OpenAPI_auth_event_t *auth_event_local_var = OpenAPI_malloc(sizeof(OpenAPI_auth_event_t));
@@ -21,6 +22,7 @@ OpenAPI_auth_event_t *OpenAPI_auth_event_create(
     auth_event_local_var->time_stamp = time_stamp;
     auth_event_local_var->auth_type = auth_type;
     auth_event_local_var->serving_network_name = serving_network_name;
+    auth_event_local_var->auth_removal_ind = auth_removal_ind;
 
     return auth_event_local_var;
 }
@@ -86,6 +88,13 @@ cJSON *OpenAPI_auth_event_convertToJSON(OpenAPI_auth_event_t *auth_event)
     if (cJSON_AddStringToObject(item, "servingNetworkName", auth_event->serving_network_name) == NULL) {
         ogs_error("OpenAPI_auth_event_convertToJSON() failed [serving_network_name]");
         goto end;
+    }
+
+    if (auth_event->auth_removal_ind) {
+        if (cJSON_AddBoolToObject(item, "authRemovalInd", auth_event->auth_removal_ind) == NULL) {
+            ogs_error("OpenAPI_auth_event_convertToJSON() failed [auth_removal_ind]");
+            goto end;
+        }
     }
 
 end:
@@ -157,12 +166,22 @@ OpenAPI_auth_event_t *OpenAPI_auth_event_parseFromJSON(cJSON *auth_eventJSON)
         goto end;
     }
 
+    cJSON *auth_removal_ind = cJSON_GetObjectItemCaseSensitive(auth_eventJSON, "authRemovalInd");
+
+    if (auth_removal_ind) {
+        if (!cJSON_IsBool(auth_removal_ind)) {
+            ogs_error("OpenAPI_auth_event_parseFromJSON() failed [auth_removal_ind]");
+            goto end;
+        }
+    }
+
     auth_event_local_var = OpenAPI_auth_event_create (
         ogs_strdup(nf_instance_id->valuestring),
         success->valueint,
         ogs_strdup(time_stamp->valuestring),
         auth_typeVariable,
-        ogs_strdup(serving_network_name->valuestring)
+        ogs_strdup(serving_network_name->valuestring),
+        auth_removal_ind ? auth_removal_ind->valueint : 0
         );
 
     return auth_event_local_var;

@@ -41,87 +41,7 @@ static void test1_func(abts_case *tc, void *data)
     uint32_t enb_ue_s1ap_id;
     uint64_t mme_ue_s1ap_id;
 
-    const char *_k_string = "465b5ce8b199b49faa5f0a2ee238a6bc";
-    uint8_t k[OGS_KEY_LEN];
-    const char *_opc_string = "e8ed289deba952e4283b54e88e6183ca";
-    uint8_t opc[OGS_KEY_LEN];
-
-    mongoc_collection_t *collection = NULL;
     bson_t *doc = NULL;
-    int64_t count = 0;
-    bson_error_t error;
-    const char *json =
-      "{"
-        "\"_id\" : { \"$oid\" : \"310014158b8861d7605378c6\" }, "
-        "\"imsi\" : \"001010123456819\", "
-        "\"pdn\" : ["
-          "{"
-            "\"_id\" : { \"$oid\" : \"599eb929c850caabcbfdcd32\" },"
-            "\"apn\" : \"internet\","
-            "\"qos\" : {"
-              "\"qci\" : 9,"
-              "\"arp\" : {"
-                "\"priority_level\" : 8,"
-                "\"pre_emption_vulnerability\" : 1,"
-                "\"pre_emption_capability\" : 1"
-              "}"
-            "},"
-            "\"type\" : 2"
-          "},"
-          "{"
-            "\"_id\" : { \"$oid\" : \"310014158b8861d7605378c7\" }, "
-            "\"apn\" : \"ims\", "
-            "\"pcc_rule\" : ["
-              "{"
-                "\"_id\" : { \"$oid\" : \"599eb929c850caabcbfdcd2d\" },"
-                "\"qos\" : {"
-                  "\"qci\" : 1,"
-                  "\"gbr\" : {"
-                    "\"downlink\" : { \"$numberLong\" : \"64\" },"
-                    "\"uplink\" : { \"$numberLong\" : \"44\" }"
-                  "},"
-                  "\"mbr\" : {"
-                    "\"downlink\" : { \"$numberLong\" : \"64\" },"
-                    "\"uplink\" : { \"$numberLong\" : \"44\" }"
-                  "},"
-                  "\"arp\" : {"
-                    "\"priority_level\" : 3,"
-                    "\"pre_emption_vulnerability\" : 0,"
-                    "\"pre_emption_capability\" : 0 }"
-                  "}"
-              "}"
-            "],"
-            "\"ambr\" : {"
-              "\"uplink\" : { \"$numberLong\" : \"1000000\" }, "
-              "\"downlink\" : { \"$numberLong\" : \"1000000\" } "
-            "},"
-            "\"qos\" : { "
-              "\"qci\" : 6, "
-              "\"arp\" : { "
-                "\"priority_level\" : 6,"
-                "\"pre_emption_vulnerability\" : 1, "
-                "\"pre_emption_capability\" : 1"
-              "} "
-            "}, "
-            "\"type\" : 2"
-          "}"
-        "],"
-        "\"ambr\" : { "
-          "\"uplink\" : { \"$numberLong\" : \"1000000\" }, "
-          "\"downlink\" : { \"$numberLong\" : \"1000000\" } "
-        "},"
-        "\"subscribed_rau_tau_timer\" : 12,"
-        "\"network_access_mode\" : 2, "
-        "\"subscriber_status\" : 0, "
-        "\"access_restriction_data\" : 32, "
-        "\"security\" : { "
-          "\"k\" : \"465B5CE8 B199B49F AA5F0A2E E238A6BC\", "
-          "\"opc\" : \"E8ED289D EBA952E4 283B54E8 8E6183CA\", "
-          "\"amf\" : \"8000\", "
-          "\"sqn\" : { \"$numberLong\" : \"64\" } "
-        "}, "
-        "\"__v\" : 0 "
-      "}";
 
     /* Setup Test UE & Session Context */
     memset(&mobile_identity_suci, 0, sizeof(mobile_identity_suci));
@@ -147,8 +67,8 @@ static void test1_func(abts_case *tc, void *data)
     test_ue->nas.ksi = 0;
     test_ue->nas.value = OGS_NAS_ATTACH_TYPE_COMBINED_EPS_IMSI_ATTACH;
 
-    OGS_HEX(_k_string, strlen(_k_string), test_ue->k);
-    OGS_HEX(_opc_string, strlen(_opc_string), test_ue->opc);
+    test_ue->k_string = "465b5ce8b199b49faa5f0a2ee238a6bc";
+    test_ue->opc_string = "e8ed289deba952e4283b54e88e6183ca";
 
     sess = test_sess_add_by_apn(test_ue, "internet");
     ogs_assert(sess);
@@ -174,37 +94,9 @@ static void test1_func(abts_case *tc, void *data)
     tests1ap_recv(NULL, recvbuf);
 
     /********** Insert Subscriber in Database */
-    collection = mongoc_client_get_collection(
-        ogs_mongoc()->client, ogs_mongoc()->name, "subscribers");
-    ABTS_PTR_NOTNULL(tc, collection);
-    doc = BCON_NEW("imsi", BCON_UTF8(test_ue->imsi));
+    doc = test_db_new_ims(test_ue);
     ABTS_PTR_NOTNULL(tc, doc);
-
-    count = mongoc_collection_count (
-        collection, MONGOC_QUERY_NONE, doc, 0, 0, NULL, &error);
-    if (count) {
-        ABTS_TRUE(tc, mongoc_collection_remove(collection,
-                MONGOC_REMOVE_SINGLE_REMOVE, doc, NULL, &error))
-    }
-    bson_destroy(doc);
-
-    doc = bson_new_from_json((const uint8_t *)json, -1, &error);;
-    ABTS_PTR_NOTNULL(tc, doc);
-    ABTS_TRUE(tc, mongoc_collection_insert(collection,
-                MONGOC_INSERT_NONE, doc, NULL, &error));
-    bson_destroy(doc);
-
-    doc = BCON_NEW("imsi", BCON_UTF8(test_ue->imsi));
-    ABTS_PTR_NOTNULL(tc, doc);
-    do {
-        count = mongoc_collection_count (
-            collection, MONGOC_QUERY_NONE, doc, 0, 0, NULL, &error);
-    } while (count == 0);
-    bson_destroy(doc);
-
-    collection = mongoc_client_get_collection(
-        ogs_mongoc()->client, ogs_mongoc()->name, "subscribers");
-    ABTS_PTR_NOTNULL(tc, collection);
+    ABTS_INT_EQUAL(tc, OGS_OK, test_db_insert_ue(test_ue, doc));
 
     /* Send Attach Request */
     memset(&sess->pdn_connectivity_param,
@@ -613,13 +505,7 @@ static void test1_func(abts_case *tc, void *data)
     ogs_msleep(300);
 
     /********** Remove Subscriber in Database */
-    doc = BCON_NEW("imsi", BCON_UTF8(test_ue->imsi));
-    ABTS_PTR_NOTNULL(tc, doc);
-    ABTS_TRUE(tc, mongoc_collection_remove(collection,
-            MONGOC_REMOVE_SINGLE_REMOVE, doc, NULL, &error))
-    bson_destroy(doc);
-
-    mongoc_collection_destroy(collection);
+    ABTS_INT_EQUAL(tc, OGS_OK, test_db_remove_ue(test_ue));
 
     /* eNB disonncect from MME */
     testenb_s1ap_close(s1ap);
@@ -648,101 +534,7 @@ static void test2_func(abts_case *tc, void *data)
     test_sess_t *sess = NULL;
     test_bearer_t *bearer = NULL;
 
-    const char *_k_string = "465b5ce8b199b49faa5f0a2ee238a6bc";
-    uint8_t k[OGS_KEY_LEN];
-    const char *_opc_string = "e8ed289deba952e4283b54e88e6183ca";
-    uint8_t opc[OGS_KEY_LEN];
-
-    mongoc_collection_t *collection = NULL;
     bson_t *doc = NULL;
-    int64_t count = 0;
-    bson_error_t error;
-    const char *json =
-      "{"
-        "\"_id\" : { \"$oid\" : \"310014158b8861d7605378c6\" }, "
-        "\"imsi\" : \"001010123456819\", "
-        "\"pdn\" : ["
-          "{"
-            "\"_id\" : { \"$oid\" : \"599eb929c850caabcbfdcd32\" },"
-            "\"apn\" : \"internet\","
-            "\"qos\" : {"
-              "\"qci\" : 9,"
-              "\"arp\" : {"
-                "\"priority_level\" : 8,"
-                "\"pre_emption_vulnerability\" : 1,"
-                "\"pre_emption_capability\" : 1"
-              "}"
-            "},"
-            "\"type\" : 2"
-          "},"
-          "{"
-            "\"_id\" : { \"$oid\" : \"310014158b8861d7605378c7\" }, "
-            "\"apn\" : \"ims\", "
-            "\"pcc_rule\" : ["
-              "{"
-                "\"_id\" : { \"$oid\" : \"599eb929c850caabcbfdcd2d\" },"
-                "\"qos\" : {"
-                  "\"qci\" : 1,"
-                  "\"gbr\" : {"
-                    "\"downlink\" : { \"$numberLong\" : \"64\" },"
-                    "\"uplink\" : { \"$numberLong\" : \"44\" }"
-                  "},"
-                  "\"mbr\" : {"
-                    "\"downlink\" : { \"$numberLong\" : \"64\" },"
-                    "\"uplink\" : { \"$numberLong\" : \"44\" }"
-                  "},"
-                  "\"arp\" : {"
-                    "\"priority_level\" : 3,"
-                    "\"pre_emption_vulnerability\" : 0,"
-                    "\"pre_emption_capability\" : 0 }"
-                  "},"
-                  "\"flow\" : ["
-                    "{ \"direction\" : 2,"
-                      "\"description\" : \"permit out udp from 10.200.136.98/32 23454 to assigned 1-65535\","
-                      "\"_id\" : { \"$oid\" : \"599eb929c850caabcbfdcd31\" } },"
-                    "{ \"direction\" : 1,"
-                      "\"description\" : \"permit out udp from 10.200.136.98/32 1-65535 to assigned 50020\","
-                      "\"_id\" : { \"$oid\" : \"599eb929c850caabcbfdcd30\" } },"
-                    "{ \"direction\" : 2,"
-                      "\"description\" : \"permit out udp from 10.200.136.98/32 23455 to assigned 1-65535\","
-                      "\"_id\" : { \"$oid\" : \"599eb929c850caabcbfdcd2f\" } },"
-                    "{ \"direction\" : 1,"
-                      "\"description\" : \"permit out udp from 10.200.136.98/32 1-65535 to assigned 50021\","
-                      "\"_id\" : { \"$oid\" : \"599eb929c850caabcbfdcd2e\" } }"
-                  "]"
-              "}"
-            "],"
-            "\"ambr\" : {"
-              "\"uplink\" : { \"$numberLong\" : \"1000000\" }, "
-              "\"downlink\" : { \"$numberLong\" : \"1000000\" } "
-            "},"
-            "\"qos\" : { "
-              "\"qci\" : 6, "
-              "\"arp\" : { "
-                "\"priority_level\" : 6,"
-                "\"pre_emption_vulnerability\" : 1, "
-                "\"pre_emption_capability\" : 1"
-              "} "
-            "}, "
-            "\"type\" : 2"
-          "}"
-        "],"
-        "\"ambr\" : { "
-          "\"uplink\" : { \"$numberLong\" : \"1000000\" }, "
-          "\"downlink\" : { \"$numberLong\" : \"1000000\" } "
-        "},"
-        "\"subscribed_rau_tau_timer\" : 12,"
-        "\"network_access_mode\" : 2, "
-        "\"subscriber_status\" : 0, "
-        "\"access_restriction_data\" : 32, "
-        "\"security\" : { "
-          "\"k\" : \"465B5CE8 B199B49F AA5F0A2E E238A6BC\", "
-          "\"opc\" : \"E8ED289D EBA952E4 283B54E8 8E6183CA\", "
-          "\"amf\" : \"8000\", "
-          "\"sqn\" : { \"$numberLong\" : \"64\" } "
-        "}, "
-        "\"__v\" : 0 "
-      "}";
 
     /* Setup Test UE & Session Context */
     memset(&mobile_identity_suci, 0, sizeof(mobile_identity_suci));
@@ -768,8 +560,8 @@ static void test2_func(abts_case *tc, void *data)
     test_ue->nas.ksi = 0;
     test_ue->nas.value = OGS_NAS_ATTACH_TYPE_COMBINED_EPS_IMSI_ATTACH;
 
-    OGS_HEX(_k_string, strlen(_k_string), test_ue->k);
-    OGS_HEX(_opc_string, strlen(_opc_string), test_ue->opc);
+    test_ue->k_string = "465b5ce8b199b49faa5f0a2ee238a6bc";
+    test_ue->opc_string = "e8ed289deba952e4283b54e88e6183ca";
 
     sess = test_sess_add_by_apn(test_ue, "internet");
     ogs_assert(sess);
@@ -795,37 +587,9 @@ static void test2_func(abts_case *tc, void *data)
     tests1ap_recv(NULL, recvbuf);
 
     /********** Insert Subscriber in Database */
-    collection = mongoc_client_get_collection(
-        ogs_mongoc()->client, ogs_mongoc()->name, "subscribers");
-    ABTS_PTR_NOTNULL(tc, collection);
-    doc = BCON_NEW("imsi", BCON_UTF8(test_ue->imsi));
+    doc = test_db_new_session(test_ue);
     ABTS_PTR_NOTNULL(tc, doc);
-
-    count = mongoc_collection_count (
-        collection, MONGOC_QUERY_NONE, doc, 0, 0, NULL, &error);
-    if (count) {
-        ABTS_TRUE(tc, mongoc_collection_remove(collection,
-                MONGOC_REMOVE_SINGLE_REMOVE, doc, NULL, &error))
-    }
-    bson_destroy(doc);
-
-    doc = bson_new_from_json((const uint8_t *)json, -1, &error);;
-    ABTS_PTR_NOTNULL(tc, doc);
-    ABTS_TRUE(tc, mongoc_collection_insert(collection,
-                MONGOC_INSERT_NONE, doc, NULL, &error));
-    bson_destroy(doc);
-
-    doc = BCON_NEW("imsi", BCON_UTF8(test_ue->imsi));
-    ABTS_PTR_NOTNULL(tc, doc);
-    do {
-        count = mongoc_collection_count (
-            collection, MONGOC_QUERY_NONE, doc, 0, 0, NULL, &error);
-    } while (count == 0);
-    bson_destroy(doc);
-
-    collection = mongoc_client_get_collection(
-        ogs_mongoc()->client, ogs_mongoc()->name, "subscribers");
-    ABTS_PTR_NOTNULL(tc, collection);
+    ABTS_INT_EQUAL(tc, OGS_OK, test_db_insert_ue(test_ue, doc));
 
     /* Send Attach Request */
     memset(&sess->pdn_connectivity_param,
@@ -1074,13 +838,7 @@ static void test2_func(abts_case *tc, void *data)
     ogs_msleep(300);
 
     /********** Remove Subscriber in Database */
-    doc = BCON_NEW("imsi", BCON_UTF8(test_ue->imsi));
-    ABTS_PTR_NOTNULL(tc, doc);
-    ABTS_TRUE(tc, mongoc_collection_remove(collection,
-            MONGOC_REMOVE_SINGLE_REMOVE, doc, NULL, &error))
-    bson_destroy(doc);
-
-    mongoc_collection_destroy(collection);
+    ABTS_INT_EQUAL(tc, OGS_OK, test_db_remove_ue(test_ue));
 
     /* eNB disonncect from MME */
     testenb_s1ap_close(s1ap);
@@ -1112,87 +870,7 @@ static void test3_func(abts_case *tc, void *data)
     uint32_t enb_ue_s1ap_id;
     uint64_t mme_ue_s1ap_id;
 
-    const char *_k_string = "465b5ce8b199b49faa5f0a2ee238a6bc";
-    uint8_t k[OGS_KEY_LEN];
-    const char *_opc_string = "e8ed289deba952e4283b54e88e6183ca";
-    uint8_t opc[OGS_KEY_LEN];
-
-    mongoc_collection_t *collection = NULL;
     bson_t *doc = NULL;
-    int64_t count = 0;
-    bson_error_t error;
-    const char *json =
-      "{"
-        "\"_id\" : { \"$oid\" : \"310014158b8861d7605378c6\" }, "
-        "\"imsi\" : \"001010123456819\", "
-        "\"pdn\" : ["
-          "{"
-            "\"_id\" : { \"$oid\" : \"599eb929c850caabcbfdcd32\" },"
-            "\"apn\" : \"internet\","
-            "\"qos\" : {"
-              "\"qci\" : 9,"
-              "\"arp\" : {"
-                "\"priority_level\" : 8,"
-                "\"pre_emption_vulnerability\" : 1,"
-                "\"pre_emption_capability\" : 1"
-              "}"
-            "},"
-            "\"type\" : 2"
-          "},"
-          "{"
-            "\"_id\" : { \"$oid\" : \"310014158b8861d7605378c7\" }, "
-            "\"apn\" : \"ims\", "
-            "\"pcc_rule\" : ["
-              "{"
-                "\"_id\" : { \"$oid\" : \"599eb929c850caabcbfdcd2d\" },"
-                "\"qos\" : {"
-                  "\"qci\" : 1,"
-                  "\"gbr\" : {"
-                    "\"downlink\" : { \"$numberLong\" : \"64\" },"
-                    "\"uplink\" : { \"$numberLong\" : \"44\" }"
-                  "},"
-                  "\"mbr\" : {"
-                    "\"downlink\" : { \"$numberLong\" : \"64\" },"
-                    "\"uplink\" : { \"$numberLong\" : \"44\" }"
-                  "},"
-                  "\"arp\" : {"
-                    "\"priority_level\" : 3,"
-                    "\"pre_emption_vulnerability\" : 0,"
-                    "\"pre_emption_capability\" : 0 }"
-                  "}"
-              "}"
-            "],"
-            "\"ambr\" : {"
-              "\"uplink\" : { \"$numberLong\" : \"1000000\" }, "
-              "\"downlink\" : { \"$numberLong\" : \"1000000\" } "
-            "},"
-            "\"qos\" : { "
-              "\"qci\" : 5, "
-              "\"arp\" : { "
-                "\"priority_level\" : 1,"
-                "\"pre_emption_vulnerability\" : 1, "
-                "\"pre_emption_capability\" : 1"
-              "} "
-            "}, "
-            "\"type\" : 2"
-          "}"
-        "],"
-        "\"ambr\" : { "
-          "\"uplink\" : { \"$numberLong\" : \"1000000\" }, "
-          "\"downlink\" : { \"$numberLong\" : \"1000000\" } "
-        "},"
-        "\"subscribed_rau_tau_timer\" : 12,"
-        "\"network_access_mode\" : 2, "
-        "\"subscriber_status\" : 0, "
-        "\"access_restriction_data\" : 32, "
-        "\"security\" : { "
-          "\"k\" : \"465B5CE8 B199B49F AA5F0A2E E238A6BC\", "
-          "\"opc\" : \"E8ED289D EBA952E4 283B54E8 8E6183CA\", "
-          "\"amf\" : \"8000\", "
-          "\"sqn\" : { \"$numberLong\" : \"64\" } "
-        "}, "
-        "\"__v\" : 0 "
-      "}";
 
     /* Setup Test UE & Session Context */
     memset(&mobile_identity_suci, 0, sizeof(mobile_identity_suci));
@@ -1218,8 +896,8 @@ static void test3_func(abts_case *tc, void *data)
     test_ue->nas.ksi = 0;
     test_ue->nas.value = OGS_NAS_ATTACH_TYPE_COMBINED_EPS_IMSI_ATTACH;
 
-    OGS_HEX(_k_string, strlen(_k_string), test_ue->k);
-    OGS_HEX(_opc_string, strlen(_opc_string), test_ue->opc);
+    test_ue->k_string = "465b5ce8b199b49faa5f0a2ee238a6bc";
+    test_ue->opc_string = "e8ed289deba952e4283b54e88e6183ca";
 
     sess = test_sess_add_by_apn(test_ue, "internet");
     ogs_assert(sess);
@@ -1245,37 +923,9 @@ static void test3_func(abts_case *tc, void *data)
     tests1ap_recv(NULL, recvbuf);
 
     /********** Insert Subscriber in Database */
-    collection = mongoc_client_get_collection(
-        ogs_mongoc()->client, ogs_mongoc()->name, "subscribers");
-    ABTS_PTR_NOTNULL(tc, collection);
-    doc = BCON_NEW("imsi", BCON_UTF8(test_ue->imsi));
+    doc = test_db_new_ims(test_ue);
     ABTS_PTR_NOTNULL(tc, doc);
-
-    count = mongoc_collection_count (
-        collection, MONGOC_QUERY_NONE, doc, 0, 0, NULL, &error);
-    if (count) {
-        ABTS_TRUE(tc, mongoc_collection_remove(collection,
-                MONGOC_REMOVE_SINGLE_REMOVE, doc, NULL, &error))
-    }
-    bson_destroy(doc);
-
-    doc = bson_new_from_json((const uint8_t *)json, -1, &error);;
-    ABTS_PTR_NOTNULL(tc, doc);
-    ABTS_TRUE(tc, mongoc_collection_insert(collection,
-                MONGOC_INSERT_NONE, doc, NULL, &error));
-    bson_destroy(doc);
-
-    doc = BCON_NEW("imsi", BCON_UTF8(test_ue->imsi));
-    ABTS_PTR_NOTNULL(tc, doc);
-    do {
-        count = mongoc_collection_count (
-            collection, MONGOC_QUERY_NONE, doc, 0, 0, NULL, &error);
-    } while (count == 0);
-    bson_destroy(doc);
-
-    collection = mongoc_client_get_collection(
-        ogs_mongoc()->client, ogs_mongoc()->name, "subscribers");
-    ABTS_PTR_NOTNULL(tc, collection);
+    ABTS_INT_EQUAL(tc, OGS_OK, test_db_insert_ue(test_ue, doc));
 
     /* Send Attach Request */
     memset(&sess->pdn_connectivity_param,
@@ -1555,13 +1205,7 @@ static void test3_func(abts_case *tc, void *data)
     ogs_msleep(300);
 
     /********** Remove Subscriber in Database */
-    doc = BCON_NEW("imsi", BCON_UTF8(test_ue->imsi));
-    ABTS_PTR_NOTNULL(tc, doc);
-    ABTS_TRUE(tc, mongoc_collection_remove(collection,
-            MONGOC_REMOVE_SINGLE_REMOVE, doc, NULL, &error))
-    bson_destroy(doc);
-
-    mongoc_collection_destroy(collection);
+    ABTS_INT_EQUAL(tc, OGS_OK, test_db_remove_ue(test_ue));
 
     /* eNB disonncect from MME */
     testenb_s1ap_close(s1ap);
@@ -1593,87 +1237,7 @@ static void test4_func(abts_case *tc, void *data)
     uint32_t enb_ue_s1ap_id;
     uint64_t mme_ue_s1ap_id;
 
-    const char *_k_string = "465b5ce8b199b49faa5f0a2ee238a6bc";
-    uint8_t k[OGS_KEY_LEN];
-    const char *_opc_string = "e8ed289deba952e4283b54e88e6183ca";
-    uint8_t opc[OGS_KEY_LEN];
-
-    mongoc_collection_t *collection = NULL;
     bson_t *doc = NULL;
-    int64_t count = 0;
-    bson_error_t error;
-    const char *json =
-      "{"
-        "\"_id\" : { \"$oid\" : \"310014158b8861d7605378c6\" }, "
-        "\"imsi\" : \"001010123456819\", "
-        "\"pdn\" : ["
-          "{"
-            "\"_id\" : { \"$oid\" : \"599eb929c850caabcbfdcd32\" },"
-            "\"apn\" : \"internet\","
-            "\"qos\" : {"
-              "\"qci\" : 9,"
-              "\"arp\" : {"
-                "\"priority_level\" : 8,"
-                "\"pre_emption_vulnerability\" : 1,"
-                "\"pre_emption_capability\" : 1"
-              "}"
-            "},"
-            "\"type\" : 2"
-          "},"
-          "{"
-            "\"_id\" : { \"$oid\" : \"310014158b8861d7605378c7\" }, "
-            "\"apn\" : \"ims\", "
-            "\"pcc_rule\" : ["
-              "{"
-                "\"_id\" : { \"$oid\" : \"599eb929c850caabcbfdcd2d\" },"
-                "\"qos\" : {"
-                  "\"qci\" : 1,"
-                  "\"gbr\" : {"
-                    "\"downlink\" : { \"$numberLong\" : \"64\" },"
-                    "\"uplink\" : { \"$numberLong\" : \"44\" }"
-                  "},"
-                  "\"mbr\" : {"
-                    "\"downlink\" : { \"$numberLong\" : \"64\" },"
-                    "\"uplink\" : { \"$numberLong\" : \"44\" }"
-                  "},"
-                  "\"arp\" : {"
-                    "\"priority_level\" : 3,"
-                    "\"pre_emption_vulnerability\" : 0,"
-                    "\"pre_emption_capability\" : 0 }"
-                  "}"
-              "}"
-            "],"
-            "\"ambr\" : {"
-              "\"uplink\" : { \"$numberLong\" : \"1000000\" }, "
-              "\"downlink\" : { \"$numberLong\" : \"1000000\" } "
-            "},"
-            "\"qos\" : { "
-              "\"qci\" : 5, "
-              "\"arp\" : { "
-                "\"priority_level\" : 1,"
-                "\"pre_emption_vulnerability\" : 1, "
-                "\"pre_emption_capability\" : 1"
-              "} "
-            "}, "
-            "\"type\" : 2"
-          "}"
-        "],"
-        "\"ambr\" : { "
-          "\"uplink\" : { \"$numberLong\" : \"1000000\" }, "
-          "\"downlink\" : { \"$numberLong\" : \"1000000\" } "
-        "},"
-        "\"subscribed_rau_tau_timer\" : 12,"
-        "\"network_access_mode\" : 2, "
-        "\"subscriber_status\" : 0, "
-        "\"access_restriction_data\" : 32, "
-        "\"security\" : { "
-          "\"k\" : \"465B5CE8 B199B49F AA5F0A2E E238A6BC\", "
-          "\"opc\" : \"E8ED289D EBA952E4 283B54E8 8E6183CA\", "
-          "\"amf\" : \"8000\", "
-          "\"sqn\" : { \"$numberLong\" : \"64\" } "
-        "}, "
-        "\"__v\" : 0 "
-      "}";
 
     /* Setup Test UE & Session Context */
     memset(&mobile_identity_suci, 0, sizeof(mobile_identity_suci));
@@ -1699,8 +1263,8 @@ static void test4_func(abts_case *tc, void *data)
     test_ue->nas.ksi = 0;
     test_ue->nas.value = OGS_NAS_ATTACH_TYPE_COMBINED_EPS_IMSI_ATTACH;
 
-    OGS_HEX(_k_string, strlen(_k_string), test_ue->k);
-    OGS_HEX(_opc_string, strlen(_opc_string), test_ue->opc);
+    test_ue->k_string = "465b5ce8b199b49faa5f0a2ee238a6bc";
+    test_ue->opc_string = "e8ed289deba952e4283b54e88e6183ca";
 
     sess = test_sess_add_by_apn(test_ue, "internet");
     ogs_assert(sess);
@@ -1726,37 +1290,9 @@ static void test4_func(abts_case *tc, void *data)
     tests1ap_recv(NULL, recvbuf);
 
     /********** Insert Subscriber in Database */
-    collection = mongoc_client_get_collection(
-        ogs_mongoc()->client, ogs_mongoc()->name, "subscribers");
-    ABTS_PTR_NOTNULL(tc, collection);
-    doc = BCON_NEW("imsi", BCON_UTF8(test_ue->imsi));
+    doc = test_db_new_ims(test_ue);
     ABTS_PTR_NOTNULL(tc, doc);
-
-    count = mongoc_collection_count (
-        collection, MONGOC_QUERY_NONE, doc, 0, 0, NULL, &error);
-    if (count) {
-        ABTS_TRUE(tc, mongoc_collection_remove(collection,
-                MONGOC_REMOVE_SINGLE_REMOVE, doc, NULL, &error))
-    }
-    bson_destroy(doc);
-
-    doc = bson_new_from_json((const uint8_t *)json, -1, &error);;
-    ABTS_PTR_NOTNULL(tc, doc);
-    ABTS_TRUE(tc, mongoc_collection_insert(collection,
-                MONGOC_INSERT_NONE, doc, NULL, &error));
-    bson_destroy(doc);
-
-    doc = BCON_NEW("imsi", BCON_UTF8(test_ue->imsi));
-    ABTS_PTR_NOTNULL(tc, doc);
-    do {
-        count = mongoc_collection_count (
-            collection, MONGOC_QUERY_NONE, doc, 0, 0, NULL, &error);
-    } while (count == 0);
-    bson_destroy(doc);
-
-    collection = mongoc_client_get_collection(
-        ogs_mongoc()->client, ogs_mongoc()->name, "subscribers");
-    ABTS_PTR_NOTNULL(tc, collection);
+    ABTS_INT_EQUAL(tc, OGS_OK, test_db_insert_ue(test_ue, doc));
 
     /* Send Attach Request */
     memset(&sess->pdn_connectivity_param,
@@ -2181,13 +1717,7 @@ static void test4_func(abts_case *tc, void *data)
     ogs_msleep(300);
 
     /********** Remove Subscriber in Database */
-    doc = BCON_NEW("imsi", BCON_UTF8(test_ue->imsi));
-    ABTS_PTR_NOTNULL(tc, doc);
-    ABTS_TRUE(tc, mongoc_collection_remove(collection,
-            MONGOC_REMOVE_SINGLE_REMOVE, doc, NULL, &error))
-    bson_destroy(doc);
-
-    mongoc_collection_destroy(collection);
+    ABTS_INT_EQUAL(tc, OGS_OK, test_db_remove_ue(test_ue));
 
     /* eNB disonncect from MME */
     testenb_s1ap_close(s1ap);
@@ -2219,87 +1749,7 @@ static void test5_func(abts_case *tc, void *data)
     uint32_t enb_ue_s1ap_id;
     uint64_t mme_ue_s1ap_id;
 
-    const char *_k_string = "465b5ce8b199b49faa5f0a2ee238a6bc";
-    uint8_t k[OGS_KEY_LEN];
-    const char *_opc_string = "e8ed289deba952e4283b54e88e6183ca";
-    uint8_t opc[OGS_KEY_LEN];
-
-    mongoc_collection_t *collection = NULL;
     bson_t *doc = NULL;
-    int64_t count = 0;
-    bson_error_t error;
-    const char *json =
-      "{"
-        "\"_id\" : { \"$oid\" : \"310014158b8861d7605378c6\" }, "
-        "\"imsi\" : \"001010123456819\", "
-        "\"pdn\" : ["
-          "{"
-            "\"_id\" : { \"$oid\" : \"599eb929c850caabcbfdcd32\" },"
-            "\"apn\" : \"internet\","
-            "\"qos\" : {"
-              "\"qci\" : 9,"
-              "\"arp\" : {"
-                "\"priority_level\" : 8,"
-                "\"pre_emption_vulnerability\" : 1,"
-                "\"pre_emption_capability\" : 1"
-              "}"
-            "},"
-            "\"type\" : 2"
-          "},"
-          "{"
-            "\"_id\" : { \"$oid\" : \"310014158b8861d7605378c7\" }, "
-            "\"apn\" : \"ims\", "
-            "\"pcc_rule\" : ["
-              "{"
-                "\"_id\" : { \"$oid\" : \"599eb929c850caabcbfdcd2d\" },"
-                "\"qos\" : {"
-                  "\"qci\" : 1,"
-                  "\"gbr\" : {"
-                    "\"downlink\" : { \"$numberLong\" : \"64\" },"
-                    "\"uplink\" : { \"$numberLong\" : \"44\" }"
-                  "},"
-                  "\"mbr\" : {"
-                    "\"downlink\" : { \"$numberLong\" : \"64\" },"
-                    "\"uplink\" : { \"$numberLong\" : \"44\" }"
-                  "},"
-                  "\"arp\" : {"
-                    "\"priority_level\" : 3,"
-                    "\"pre_emption_vulnerability\" : 0,"
-                    "\"pre_emption_capability\" : 0 }"
-                  "}"
-              "}"
-            "],"
-            "\"ambr\" : {"
-              "\"uplink\" : { \"$numberLong\" : \"1000000\" }, "
-              "\"downlink\" : { \"$numberLong\" : \"1000000\" } "
-            "},"
-            "\"qos\" : { "
-              "\"qci\" : 5, "
-              "\"arp\" : { "
-                "\"priority_level\" : 1,"
-                "\"pre_emption_vulnerability\" : 1, "
-                "\"pre_emption_capability\" : 1"
-              "} "
-            "}, "
-            "\"type\" : 2"
-          "}"
-        "],"
-        "\"ambr\" : { "
-          "\"uplink\" : { \"$numberLong\" : \"1000000\" }, "
-          "\"downlink\" : { \"$numberLong\" : \"1000000\" } "
-        "},"
-        "\"subscribed_rau_tau_timer\" : 12,"
-        "\"network_access_mode\" : 2, "
-        "\"subscriber_status\" : 0, "
-        "\"access_restriction_data\" : 32, "
-        "\"security\" : { "
-          "\"k\" : \"465B5CE8 B199B49F AA5F0A2E E238A6BC\", "
-          "\"opc\" : \"E8ED289D EBA952E4 283B54E8 8E6183CA\", "
-          "\"amf\" : \"8000\", "
-          "\"sqn\" : { \"$numberLong\" : \"64\" } "
-        "}, "
-        "\"__v\" : 0 "
-      "}";
 
     /* Setup Test UE & Session Context */
     memset(&mobile_identity_suci, 0, sizeof(mobile_identity_suci));
@@ -2325,8 +1775,8 @@ static void test5_func(abts_case *tc, void *data)
     test_ue->nas.ksi = 0;
     test_ue->nas.value = OGS_NAS_ATTACH_TYPE_COMBINED_EPS_IMSI_ATTACH;
 
-    OGS_HEX(_k_string, strlen(_k_string), test_ue->k);
-    OGS_HEX(_opc_string, strlen(_opc_string), test_ue->opc);
+    test_ue->k_string = "465b5ce8b199b49faa5f0a2ee238a6bc";
+    test_ue->opc_string = "e8ed289deba952e4283b54e88e6183ca";
 
     sess = test_sess_add_by_apn(test_ue, "internet");
     ogs_assert(sess);
@@ -2352,37 +1802,9 @@ static void test5_func(abts_case *tc, void *data)
     tests1ap_recv(NULL, recvbuf);
 
     /********** Insert Subscriber in Database */
-    collection = mongoc_client_get_collection(
-        ogs_mongoc()->client, ogs_mongoc()->name, "subscribers");
-    ABTS_PTR_NOTNULL(tc, collection);
-    doc = BCON_NEW("imsi", BCON_UTF8(test_ue->imsi));
+    doc = test_db_new_ims(test_ue);
     ABTS_PTR_NOTNULL(tc, doc);
-
-    count = mongoc_collection_count (
-        collection, MONGOC_QUERY_NONE, doc, 0, 0, NULL, &error);
-    if (count) {
-        ABTS_TRUE(tc, mongoc_collection_remove(collection,
-                MONGOC_REMOVE_SINGLE_REMOVE, doc, NULL, &error))
-    }
-    bson_destroy(doc);
-
-    doc = bson_new_from_json((const uint8_t *)json, -1, &error);;
-    ABTS_PTR_NOTNULL(tc, doc);
-    ABTS_TRUE(tc, mongoc_collection_insert(collection,
-                MONGOC_INSERT_NONE, doc, NULL, &error));
-    bson_destroy(doc);
-
-    doc = BCON_NEW("imsi", BCON_UTF8(test_ue->imsi));
-    ABTS_PTR_NOTNULL(tc, doc);
-    do {
-        count = mongoc_collection_count (
-            collection, MONGOC_QUERY_NONE, doc, 0, 0, NULL, &error);
-    } while (count == 0);
-    bson_destroy(doc);
-
-    collection = mongoc_client_get_collection(
-        ogs_mongoc()->client, ogs_mongoc()->name, "subscribers");
-    ABTS_PTR_NOTNULL(tc, collection);
+    ABTS_INT_EQUAL(tc, OGS_OK, test_db_insert_ue(test_ue, doc));
 
     /* Send Attach Request */
     memset(&sess->pdn_connectivity_param,
@@ -2787,13 +2209,7 @@ static void test5_func(abts_case *tc, void *data)
     ogs_msleep(300);
 
     /********** Remove Subscriber in Database */
-    doc = BCON_NEW("imsi", BCON_UTF8(test_ue->imsi));
-    ABTS_PTR_NOTNULL(tc, doc);
-    ABTS_TRUE(tc, mongoc_collection_remove(collection,
-            MONGOC_REMOVE_SINGLE_REMOVE, doc, NULL, &error))
-    bson_destroy(doc);
-
-    mongoc_collection_destroy(collection);
+    ABTS_INT_EQUAL(tc, OGS_OK, test_db_remove_ue(test_ue));
 
     /* eNB disonncect from MME */
     testenb_s1ap_close(s1ap);

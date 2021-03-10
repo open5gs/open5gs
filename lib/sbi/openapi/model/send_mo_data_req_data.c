@@ -6,7 +6,6 @@
 
 OpenAPI_send_mo_data_req_data_t *OpenAPI_send_mo_data_req_data_create(
     OpenAPI_ref_to_binary_data_t *mo_data,
-    OpenAPI_mo_exception_data_flag_t *mo_exp_data_ind,
     OpenAPI_mo_exp_data_counter_t *mo_exp_data_counter,
     OpenAPI_user_location_t *ue_location
     )
@@ -16,7 +15,6 @@ OpenAPI_send_mo_data_req_data_t *OpenAPI_send_mo_data_req_data_create(
         return NULL;
     }
     send_mo_data_req_data_local_var->mo_data = mo_data;
-    send_mo_data_req_data_local_var->mo_exp_data_ind = mo_exp_data_ind;
     send_mo_data_req_data_local_var->mo_exp_data_counter = mo_exp_data_counter;
     send_mo_data_req_data_local_var->ue_location = ue_location;
 
@@ -30,7 +28,6 @@ void OpenAPI_send_mo_data_req_data_free(OpenAPI_send_mo_data_req_data_t *send_mo
     }
     OpenAPI_lnode_t *node;
     OpenAPI_ref_to_binary_data_free(send_mo_data_req_data->mo_data);
-    OpenAPI_mo_exception_data_flag_free(send_mo_data_req_data->mo_exp_data_ind);
     OpenAPI_mo_exp_data_counter_free(send_mo_data_req_data->mo_exp_data_counter);
     OpenAPI_user_location_free(send_mo_data_req_data->ue_location);
     ogs_free(send_mo_data_req_data);
@@ -59,19 +56,6 @@ cJSON *OpenAPI_send_mo_data_req_data_convertToJSON(OpenAPI_send_mo_data_req_data
     if (item->child == NULL) {
         ogs_error("OpenAPI_send_mo_data_req_data_convertToJSON() failed [mo_data]");
         goto end;
-    }
-
-    if (send_mo_data_req_data->mo_exp_data_ind) {
-        cJSON *mo_exp_data_ind_local_JSON = OpenAPI_mo_exception_data_flag_convertToJSON(send_mo_data_req_data->mo_exp_data_ind);
-        if (mo_exp_data_ind_local_JSON == NULL) {
-            ogs_error("OpenAPI_send_mo_data_req_data_convertToJSON() failed [mo_exp_data_ind]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "moExpDataInd", mo_exp_data_ind_local_JSON);
-        if (item->child == NULL) {
-            ogs_error("OpenAPI_send_mo_data_req_data_convertToJSON() failed [mo_exp_data_ind]");
-            goto end;
-        }
     }
 
     if (send_mo_data_req_data->mo_exp_data_counter) {
@@ -117,13 +101,6 @@ OpenAPI_send_mo_data_req_data_t *OpenAPI_send_mo_data_req_data_parseFromJSON(cJS
 
     mo_data_local_nonprim = OpenAPI_ref_to_binary_data_parseFromJSON(mo_data);
 
-    cJSON *mo_exp_data_ind = cJSON_GetObjectItemCaseSensitive(send_mo_data_req_dataJSON, "moExpDataInd");
-
-    OpenAPI_mo_exception_data_flag_t *mo_exp_data_ind_local_nonprim = NULL;
-    if (mo_exp_data_ind) {
-        mo_exp_data_ind_local_nonprim = OpenAPI_mo_exception_data_flag_parseFromJSON(mo_exp_data_ind);
-    }
-
     cJSON *mo_exp_data_counter = cJSON_GetObjectItemCaseSensitive(send_mo_data_req_dataJSON, "moExpDataCounter");
 
     OpenAPI_mo_exp_data_counter_t *mo_exp_data_counter_local_nonprim = NULL;
@@ -140,7 +117,6 @@ OpenAPI_send_mo_data_req_data_t *OpenAPI_send_mo_data_req_data_parseFromJSON(cJS
 
     send_mo_data_req_data_local_var = OpenAPI_send_mo_data_req_data_create (
         mo_data_local_nonprim,
-        mo_exp_data_ind ? mo_exp_data_ind_local_nonprim : NULL,
         mo_exp_data_counter ? mo_exp_data_counter_local_nonprim : NULL,
         ue_location ? ue_location_local_nonprim : NULL
         );

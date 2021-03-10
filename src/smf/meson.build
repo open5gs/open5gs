@@ -44,6 +44,7 @@ libsmf_sources = files('''
     n4-build.h
     n4-handler.h
     binding.h
+    nnrf-build.h
     nnrf-handler.h
     nudm-build.h
     nudm-handler.h
@@ -77,6 +78,7 @@ libsmf_sources = files('''
     n4-build.c
     n4-handler.c
     binding.c
+    nnrf-build.c
     nnrf-handler.c
     nudm-build.c
     nudm-handler.c

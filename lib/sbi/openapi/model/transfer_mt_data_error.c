@@ -13,6 +13,7 @@ OpenAPI_transfer_mt_data_error_t *OpenAPI_transfer_mt_data_error_create(
     char *cause,
     OpenAPI_list_t *invalid_params,
     char *supported_features,
+    char *target_scp,
     int max_waiting_time
     )
 {
@@ -28,6 +29,7 @@ OpenAPI_transfer_mt_data_error_t *OpenAPI_transfer_mt_data_error_create(
     transfer_mt_data_error_local_var->cause = cause;
     transfer_mt_data_error_local_var->invalid_params = invalid_params;
     transfer_mt_data_error_local_var->supported_features = supported_features;
+    transfer_mt_data_error_local_var->target_scp = target_scp;
     transfer_mt_data_error_local_var->max_waiting_time = max_waiting_time;
 
     return transfer_mt_data_error_local_var;
@@ -49,6 +51,7 @@ void OpenAPI_transfer_mt_data_error_free(OpenAPI_transfer_mt_data_error_t *trans
     }
     OpenAPI_list_free(transfer_mt_data_error->invalid_params);
     ogs_free(transfer_mt_data_error->supported_features);
+    ogs_free(transfer_mt_data_error->target_scp);
     ogs_free(transfer_mt_data_error);
 }
 
@@ -127,6 +130,13 @@ cJSON *OpenAPI_transfer_mt_data_error_convertToJSON(OpenAPI_transfer_mt_data_err
     if (transfer_mt_data_error->supported_features) {
         if (cJSON_AddStringToObject(item, "supportedFeatures", transfer_mt_data_error->supported_features) == NULL) {
             ogs_error("OpenAPI_transfer_mt_data_error_convertToJSON() failed [supported_features]");
+            goto end;
+        }
+    }
+
+    if (transfer_mt_data_error->target_scp) {
+        if (cJSON_AddStringToObject(item, "targetScp", transfer_mt_data_error->target_scp) == NULL) {
+            ogs_error("OpenAPI_transfer_mt_data_error_convertToJSON() failed [target_scp]");
             goto end;
         }
     }
@@ -231,6 +241,15 @@ OpenAPI_transfer_mt_data_error_t *OpenAPI_transfer_mt_data_error_parseFromJSON(c
         }
     }
 
+    cJSON *target_scp = cJSON_GetObjectItemCaseSensitive(transfer_mt_data_errorJSON, "targetScp");
+
+    if (target_scp) {
+        if (!cJSON_IsString(target_scp)) {
+            ogs_error("OpenAPI_transfer_mt_data_error_parseFromJSON() failed [target_scp]");
+            goto end;
+        }
+    }
+
     cJSON *max_waiting_time = cJSON_GetObjectItemCaseSensitive(transfer_mt_data_errorJSON, "maxWaitingTime");
 
     if (max_waiting_time) {
@@ -249,6 +268,7 @@ OpenAPI_transfer_mt_data_error_t *OpenAPI_transfer_mt_data_error_parseFromJSON(c
         cause ? ogs_strdup(cause->valuestring) : NULL,
         invalid_params ? invalid_paramsList : NULL,
         supported_features ? ogs_strdup(supported_features->valuestring) : NULL,
+        target_scp ? ogs_strdup(target_scp->valuestring) : NULL,
         max_waiting_time ? max_waiting_time->valuedouble : 0
         );
 

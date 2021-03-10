@@ -47,7 +47,7 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_setup_request_transfer(
     ogs_debug("PDUSessionResourceSetupRequestTransfer");
     memset(&message, 0, sizeof(NGAP_PDUSessionResourceSetupRequestTransfer_t));
 
-    if (sess->pdn.ambr.downlink || sess->pdn.ambr.uplink) {
+    if (sess->session.ambr.downlink || sess->session.ambr.uplink) {
         ie = CALLOC(1,
                 sizeof(NGAP_PDUSessionResourceSetupRequestTransferIEs_t));
         ogs_assert(ie);
@@ -61,9 +61,9 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_setup_request_transfer(
             &ie->value.choice.PDUSessionAggregateMaximumBitRate;
 
         asn_uint642INTEGER(&PDUSessionAggregateMaximumBitRate->
-            pDUSessionAggregateMaximumBitRateUL, sess->pdn.ambr.uplink);
+            pDUSessionAggregateMaximumBitRateUL, sess->session.ambr.uplink);
         asn_uint642INTEGER(&PDUSessionAggregateMaximumBitRate->
-            pDUSessionAggregateMaximumBitRateDL, sess->pdn.ambr.downlink);
+            pDUSessionAggregateMaximumBitRateDL, sess->session.ambr.downlink);
     }
 
     ie = CALLOC(1, sizeof(NGAP_PDUSessionResourceSetupRequestTransferIEs_t));
@@ -114,7 +114,7 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_setup_request_transfer(
     PDUSessionType = &ie->value.choice.PDUSessionType;
 
     *PDUSessionType = OGS_PDU_SESSION_TYPE_IPV4;
-    switch (sess->pdn.pdn_type) {
+    switch (sess->session.session_type) {
     case OGS_PDU_SESSION_TYPE_IPV4 :
         *PDUSessionType = NGAP_PDUSessionType_ipv4;
         break;
@@ -125,7 +125,7 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_setup_request_transfer(
         *PDUSessionType = NGAP_PDUSessionType_ipv4v6;
         break;
     default:
-        ogs_fatal("Unknown PDU Session Type [%d]", sess->pdn.pdn_type);
+        ogs_fatal("Unknown PDU Session Type [%d]", sess->session.session_type);
         ogs_assert_if_reached();
     }
 
@@ -160,23 +160,16 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_setup_request_transfer(
 
         *qosFlowIdentifier = qos_flow->qfi;
 
-        nonDynamic5QI->fiveQI = qos_flow->qos.qci;
+        nonDynamic5QI->fiveQI = qos_flow->qos.index;
 
         allocationAndRetentionPriority->priorityLevelARP =
             qos_flow->qos.arp.priority_level;
         if (qos_flow->qos.arp.pre_emption_capability ==
-                OGS_PDN_PRE_EMPTION_CAPABILITY_DISABLED)
-            allocationAndRetentionPriority->pre_emptionCapability =
-                NGAP_Pre_emptionCapability_shall_not_trigger_pre_emption;
-        else
+                OGS_5GC_PRE_EMPTION_ENABLED)
             allocationAndRetentionPriority->pre_emptionCapability =
                 NGAP_Pre_emptionCapability_may_trigger_pre_emption;
-
         if (qos_flow->qos.arp.pre_emption_vulnerability ==
-                OGS_PDN_PRE_EMPTION_VULNERABILITY_DISABLED)
-            allocationAndRetentionPriority->pre_emptionVulnerability =
-                NGAP_Pre_emptionVulnerability_not_pre_emptable;
-        else
+                OGS_5GC_PRE_EMPTION_ENABLED)
             allocationAndRetentionPriority->pre_emptionVulnerability =
                 NGAP_Pre_emptionVulnerability_pre_emptable;
 
@@ -256,23 +249,16 @@ ogs_pkbuf_t *ngap_build_qos_flow_resource_modify_request_transfer(
 
     *qosFlowIdentifier = qos_flow->qfi;
 
-    nonDynamic5QI->fiveQI = qos_flow->qos.qci;
+    nonDynamic5QI->fiveQI = qos_flow->qos.index;
 
     allocationAndRetentionPriority->priorityLevelARP =
         qos_flow->qos.arp.priority_level;
     if (qos_flow->qos.arp.pre_emption_capability ==
-            OGS_PDN_PRE_EMPTION_CAPABILITY_DISABLED)
-        allocationAndRetentionPriority->pre_emptionCapability =
-            NGAP_Pre_emptionCapability_shall_not_trigger_pre_emption;
-    else
+            OGS_5GC_PRE_EMPTION_ENABLED)
         allocationAndRetentionPriority->pre_emptionCapability =
             NGAP_Pre_emptionCapability_may_trigger_pre_emption;
-
     if (qos_flow->qos.arp.pre_emption_vulnerability ==
-            OGS_PDN_PRE_EMPTION_VULNERABILITY_DISABLED)
-        allocationAndRetentionPriority->pre_emptionVulnerability =
-            NGAP_Pre_emptionVulnerability_not_pre_emptable;
-    else
+            OGS_5GC_PRE_EMPTION_ENABLED)
         allocationAndRetentionPriority->pre_emptionVulnerability =
             NGAP_Pre_emptionVulnerability_pre_emptable;
 

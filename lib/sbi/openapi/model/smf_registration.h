@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+#include "context_info.h"
 #include "plmn_id.h"
 #include "registration_reason.h"
 #include "snssai.h"
@@ -36,6 +37,7 @@ typedef struct OpenAPI_smf_registration_s {
     char *dereg_callback_uri;
     struct OpenAPI_registration_reason_s *registration_reason;
     char *registration_time;
+    struct OpenAPI_context_info_s *context_info;
 } OpenAPI_smf_registration_t;
 
 OpenAPI_smf_registration_t *OpenAPI_smf_registration_create(
@@ -52,7 +54,8 @@ OpenAPI_smf_registration_t *OpenAPI_smf_registration_create(
     int epdg_ind,
     char *dereg_callback_uri,
     OpenAPI_registration_reason_t *registration_reason,
-    char *registration_time
+    char *registration_time,
+    OpenAPI_context_info_t *context_info
     );
 void OpenAPI_smf_registration_free(OpenAPI_smf_registration_t *smf_registration);
 OpenAPI_smf_registration_t *OpenAPI_smf_registration_parseFromJSON(cJSON *smf_registrationJSON);

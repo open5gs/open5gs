@@ -199,6 +199,18 @@ Description: PCF (Policy Control Function)
  .
  This package provides the PCF (Policy Control Function)
 
+Package: open5gs-nssf
+Architecture: any
+Multi-Arch: same
+Depends: ${shlibs:Depends},
+         ${misc:Depends},
+         open5gs-common (= ${binary:Version})
+Description: NSSF (Network Slice Selection Function)
+ Open5GS is a C-language implementation of 5G Core and EPC
+ Packet Core, i.e. the core network of an NR/LTE network (Release-16)
+ .
+ This package provides the NSSF (Network Slice Selection Function)
+
 Package: open5gs-udr
 Architecture: any
 Multi-Arch: same
@@ -228,6 +240,7 @@ Depends: ${misc:Depends},
          open5gs-ausf (= ${binary:Version}),
          open5gs-udm (= ${binary:Version}),
          open5gs-pcf (= ${binary:Version}),
+         open5gs-nssf (= ${binary:Version}),
          open5gs-udr (= ${binary:Version})
 Description: 5G Core and EPC (metapackage)
  Open5GS is a C-language implementation of 5G Core and EPC

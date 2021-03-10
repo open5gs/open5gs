@@ -20,10 +20,20 @@ extern "C" {
 typedef struct OpenAPI_preferred_search_s OpenAPI_preferred_search_t;
 typedef struct OpenAPI_preferred_search_s {
     int preferred_tai_match_ind;
+    int preferred_full_plmn_match_ind;
+    int preferred_api_versions_match_ind;
+    int other_api_versions_ind;
+    int preferred_locality_match_ind;
+    int other_locality_ind;
 } OpenAPI_preferred_search_t;
 
 OpenAPI_preferred_search_t *OpenAPI_preferred_search_create(
-    int preferred_tai_match_ind
+    int preferred_tai_match_ind,
+    int preferred_full_plmn_match_ind,
+    int preferred_api_versions_match_ind,
+    int other_api_versions_ind,
+    int preferred_locality_match_ind,
+    int other_locality_ind
     );
 void OpenAPI_preferred_search_free(OpenAPI_preferred_search_t *preferred_search);
 OpenAPI_preferred_search_t *OpenAPI_preferred_search_parseFromJSON(cJSON *preferred_searchJSON);

@@ -473,11 +473,63 @@ char *ogs_ipv6_to_string(uint8_t *addr6)
     return (char *)OGS_INET6_NTOP(addr6, buf);
 }
 
+ogs_slice_data_t *ogs_slice_find_by_s_nssai(
+        ogs_slice_data_t *slice_data, int num_of_slice_data,
+        ogs_s_nssai_t *s_nssai)
+{
+    int i;
+
+    ogs_assert(slice_data);
+    ogs_assert(num_of_slice_data);
+    ogs_assert(s_nssai);
+
+    /* Compare S-NSSAI */
+    for (i = 0; i < num_of_slice_data; i++) {
+        if (s_nssai->sst == slice_data[i].s_nssai.sst &&
+                s_nssai->sd.v == slice_data[i].s_nssai.sd.v) {
+            return slice_data + i;
+        }
+    }
+
+    /* Compare Only SST if DefaultSingleNSSAI */
+    for (i = 0; i < num_of_slice_data; i++) {
+        if (slice_data[i].default_indicator == true &&
+            s_nssai->sst == slice_data[i].s_nssai.sst) {
+            return slice_data + i;
+        }
+    }
+
+    return NULL;
+}
+
+void ogs_subscription_data_free(ogs_subscription_data_t *subscription_data)
+{
+    int i, j;
+
+    ogs_assert(subscription_data);
+
+    for (i = 0; i < subscription_data->num_of_slice; i++) {
+        ogs_slice_data_t *slice_data = &subscription_data->slice[i];
+
+        for (j = 0; j < slice_data->num_of_session; j++) {
+            if (slice_data->session[j].name)
+                ogs_free(slice_data->session[j].name);
+        }
+
+        slice_data->num_of_session = 0;
+    }
+
+    subscription_data->num_of_slice = 0;
+}
+
 void ogs_session_data_free(ogs_session_data_t *session_data)
 {
     int i;
 
     ogs_assert(session_data);
+
+    if (session_data->session.name)
+        ogs_free(session_data->session.name);
 
     for (i = 0; i < session_data->num_of_pcc_rule; i++)
         OGS_PCC_RULE_FREE(&session_data->pcc_rule[i]);

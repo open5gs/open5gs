@@ -17,7 +17,9 @@ OpenAPI_upf_info_t *OpenAPI_upf_info_create(
     OpenAPI_tngf_info_t *tngf_info,
     OpenAPI_twif_info_t *twif_info,
     int priority,
-    int redundant_gtpu
+    int redundant_gtpu,
+    int ipups,
+    int data_forwarding
     )
 {
     OpenAPI_upf_info_t *upf_info_local_var = OpenAPI_malloc(sizeof(OpenAPI_upf_info_t));
@@ -37,6 +39,8 @@ OpenAPI_upf_info_t *OpenAPI_upf_info_create(
     upf_info_local_var->twif_info = twif_info;
     upf_info_local_var->priority = priority;
     upf_info_local_var->redundant_gtpu = redundant_gtpu;
+    upf_info_local_var->ipups = ipups;
+    upf_info_local_var->data_forwarding = data_forwarding;
 
     return upf_info_local_var;
 }
@@ -254,6 +258,20 @@ cJSON *OpenAPI_upf_info_convertToJSON(OpenAPI_upf_info_t *upf_info)
         }
     }
 
+    if (upf_info->ipups) {
+        if (cJSON_AddBoolToObject(item, "ipups", upf_info->ipups) == NULL) {
+            ogs_error("OpenAPI_upf_info_convertToJSON() failed [ipups]");
+            goto end;
+        }
+    }
+
+    if (upf_info->data_forwarding) {
+        if (cJSON_AddBoolToObject(item, "dataForwarding", upf_info->data_forwarding) == NULL) {
+            ogs_error("OpenAPI_upf_info_convertToJSON() failed [data_forwarding]");
+            goto end;
+        }
+    }
+
 end:
     return item;
 }
@@ -439,6 +457,24 @@ OpenAPI_upf_info_t *OpenAPI_upf_info_parseFromJSON(cJSON *upf_infoJSON)
         }
     }
 
+    cJSON *ipups = cJSON_GetObjectItemCaseSensitive(upf_infoJSON, "ipups");
+
+    if (ipups) {
+        if (!cJSON_IsBool(ipups)) {
+            ogs_error("OpenAPI_upf_info_parseFromJSON() failed [ipups]");
+            goto end;
+        }
+    }
+
+    cJSON *data_forwarding = cJSON_GetObjectItemCaseSensitive(upf_infoJSON, "dataForwarding");
+
+    if (data_forwarding) {
+        if (!cJSON_IsBool(data_forwarding)) {
+            ogs_error("OpenAPI_upf_info_parseFromJSON() failed [data_forwarding]");
+            goto end;
+        }
+    }
+
     upf_info_local_var = OpenAPI_upf_info_create (
         s_nssai_upf_info_listList,
         smf_serving_area ? smf_serving_areaList : NULL,
@@ -452,7 +488,9 @@ OpenAPI_upf_info_t *OpenAPI_upf_info_parseFromJSON(cJSON *upf_infoJSON)
         tngf_info ? tngf_info_local_nonprim : NULL,
         twif_info ? twif_info_local_nonprim : NULL,
         priority ? priority->valuedouble : 0,
-        redundant_gtpu ? redundant_gtpu->valueint : 0
+        redundant_gtpu ? redundant_gtpu->valueint : 0,
+        ipups ? ipups->valueint : 0,
+        data_forwarding ? data_forwarding->valueint : 0
         );
 
     return upf_info_local_var;

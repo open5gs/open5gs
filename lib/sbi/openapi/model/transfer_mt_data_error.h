@@ -30,6 +30,7 @@ typedef struct OpenAPI_transfer_mt_data_error_s {
     char *cause;
     OpenAPI_list_t *invalid_params;
     char *supported_features;
+    char *target_scp;
     int max_waiting_time;
 } OpenAPI_transfer_mt_data_error_t;
 
@@ -42,6 +43,7 @@ OpenAPI_transfer_mt_data_error_t *OpenAPI_transfer_mt_data_error_create(
     char *cause,
     OpenAPI_list_t *invalid_params,
     char *supported_features,
+    char *target_scp,
     int max_waiting_time
     );
 void OpenAPI_transfer_mt_data_error_free(OpenAPI_transfer_mt_data_error_t *transfer_mt_data_error);

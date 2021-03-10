@@ -249,10 +249,6 @@ typedef struct smf_sess_s {
     ogs_nr_cgi_t    nr_cgi;
     ogs_time_t      ue_location_timestamp;
 
-    /* S_NSSAI & DNN */
-    ogs_s_nssai_t   s_nssai;
-    char            *dnn;
-
     /* PCF ID */
     char            *pcf_id;
 
@@ -262,8 +258,12 @@ typedef struct smf_sess_s {
         uint8_t mbr_ul;
     } integrity_protection;
 
+    /* S_NSSAI */
+    ogs_s_nssai_t s_nssai;
+    ogs_s_nssai_t mapped_hplmn;
+
     /* PDN Configuration */
-    ogs_pdn_t pdn;
+    ogs_session_t session;
     uint8_t ue_pdu_session_type;
     uint8_t ue_ssc_mode;
 
@@ -388,7 +388,7 @@ smf_bearer_t *smf_bearer_find_by_ebi(smf_sess_t *sess, uint8_t ebi);
 smf_bearer_t *smf_bearer_find_by_pcc_rule_name(
         smf_sess_t *sess, char *pcc_rule_name);
 smf_bearer_t *smf_bearer_find_by_qci_arp(smf_sess_t *sess, 
-                                uint8_t qci,
+                                uint8_t qos_index,
                                 uint8_t priority_level,
                                 uint8_t pre_emption_capability,
                                 uint8_t pre_emption_vulnerability);
@@ -403,6 +403,8 @@ smf_ue_t *smf_ue_cycle(smf_ue_t *smf_ue);
 smf_sess_t *smf_sess_cycle(smf_sess_t *sess);
 smf_bearer_t *smf_qos_flow_cycle(smf_bearer_t *qos_flow);
 smf_bearer_t *smf_bearer_cycle(smf_bearer_t *bearer);
+
+void smf_sess_select_nf(smf_sess_t *sess, OpenAPI_nf_type_e nf_type);
 
 smf_pf_t *smf_pf_add(smf_bearer_t *bearer);
 int smf_pf_remove(smf_pf_t *pf);

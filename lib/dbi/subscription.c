@@ -211,15 +211,23 @@ int ogs_dbi_subscription_data(char *supi,
     bson_error_t error;
     const bson_t *document;
     bson_iter_t iter;
-    bson_iter_t child1_iter, child2_iter, child3_iter, child4_iter;
+    bson_iter_t child1_iter, child2_iter, child3_iter;
+    bson_iter_t child4_iter, child5_iter, child6_iter;
     const char *utf8 = NULL;
     uint32_t length = 0;
 
     char *supi_type = NULL;
     char *supi_id = NULL;
 
+    ogs_subscription_data_t zero_data;
+
     ogs_assert(subscription_data);
     ogs_assert(supi);
+
+    memset(&zero_data, 0, sizeof(zero_data));
+
+    /* subscription_data should be initialized to zero */
+    ogs_assert(memcmp(subscription_data, &zero_data, sizeof(zero_data)) == 0);
 
     supi_type = ogs_id_get_type(supi);
     ogs_assert(supi_type);
@@ -256,7 +264,6 @@ int ogs_dbi_subscription_data(char *supi,
         goto out;
     }
 
-    memset(subscription_data, 0, sizeof(ogs_subscription_data_t));
     while (bson_iter_next(&iter)) {
         const char *key = bson_iter_key(&iter);
         if (!strcmp(key, "msisdn") &&
@@ -265,10 +272,6 @@ int ogs_dbi_subscription_data(char *supi,
 
             bson_iter_recurse(&iter, &child1_iter);
             while (bson_iter_next(&child1_iter)) {
-                const char *child1_key = bson_iter_key(&child1_iter);
-
-                ogs_assert(child1_key);
-                msisdn_index = atoi(child1_key);
                 ogs_assert(msisdn_index < OGS_MAX_NUM_OF_MSISDN);
 
                 if (BSON_ITER_HOLDS_UTF8(&child1_iter)) {
@@ -301,160 +304,310 @@ int ogs_dbi_subscription_data(char *supi,
             BSON_ITER_HOLDS_INT32(&iter)) {
             subscription_data->subscribed_rau_tau_timer =
                 bson_iter_int32(&iter);
-        } else if (!strcmp(key, "ambr") &&
-            BSON_ITER_HOLDS_DOCUMENT(&iter)) {
+        } else if (!strcmp(key, "ambr") && BSON_ITER_HOLDS_DOCUMENT(&iter)) {
             bson_iter_recurse(&iter, &child1_iter);
             while (bson_iter_next(&child1_iter)) {
                 const char *child1_key = bson_iter_key(&child1_iter);
-                if (!strcmp(child1_key, "uplink") &&
-                    BSON_ITER_HOLDS_INT64(&child1_iter)) {
-                    subscription_data->ambr.uplink =
-                        bson_iter_int64(&child1_iter) * 1024;
-                } else if (!strcmp(child1_key, "downlink") &&
-                    BSON_ITER_HOLDS_INT64(&child1_iter)) {
-                    subscription_data->ambr.downlink =
-                        bson_iter_int64(&child1_iter) * 1024;
+                if (!strcmp(child1_key, "downlink") &&
+                        BSON_ITER_HOLDS_DOCUMENT(&child1_iter)) {
+                    uint8_t unit = 0;
+                    int n;
+
+                    bson_iter_recurse(&child1_iter, &child2_iter);
+                    while (bson_iter_next(&child2_iter)) {
+                        const char *child2_key = bson_iter_key(&child2_iter);
+                        if (!strcmp(child2_key, "value") &&
+                            BSON_ITER_HOLDS_INT32(&child2_iter)) {
+                            subscription_data->ambr.downlink =
+                                bson_iter_int32(&child2_iter);
+                        } else if (!strcmp(child2_key, "unit") &&
+                            BSON_ITER_HOLDS_INT32(&child2_iter)) {
+                            unit = bson_iter_int32(&child2_iter);
+                        }
+                    }
+
+                    for (n = 0; n < unit; n++)
+                        subscription_data->ambr.downlink *= 1024;
+                } else if (!strcmp(child1_key, "uplink") &&
+                        BSON_ITER_HOLDS_DOCUMENT(&child1_iter)) {
+                    uint8_t unit = 0;
+                    int n;
+
+                    bson_iter_recurse(&child1_iter, &child2_iter);
+                    while (bson_iter_next(&child2_iter)) {
+                        const char *child2_key = bson_iter_key(&child2_iter);
+                        if (!strcmp(child2_key, "value") &&
+                            BSON_ITER_HOLDS_INT32(&child2_iter)) {
+                            subscription_data->ambr.uplink =
+                                bson_iter_int32(&child2_iter);
+                        } else if (!strcmp(child2_key, "unit") &&
+                            BSON_ITER_HOLDS_INT32(&child2_iter)) {
+                            unit = bson_iter_int32(&child2_iter);
+                        }
+                    }
+
+                    for (n = 0; n < unit; n++)
+                        subscription_data->ambr.uplink *= 1024;
                 }
+
             }
-        } else if (!strcmp(key, "pdn") &&
-            BSON_ITER_HOLDS_ARRAY(&iter)) {
-            int pdn_index = 0;
+        } else if (!strcmp(key, "slice") && BSON_ITER_HOLDS_ARRAY(&iter)) {
 
             bson_iter_recurse(&iter, &child1_iter);
             while (bson_iter_next(&child1_iter)) {
-                const char *child1_key = bson_iter_key(&child1_iter);
-                ogs_pdn_t *pdn = NULL;
+                ogs_slice_data_t *slice_data = NULL;
 
-                ogs_assert(child1_key);
-                pdn_index = atoi(child1_key);
-                ogs_assert(pdn_index < OGS_MAX_NUM_OF_SESS);
+                ogs_assert(
+                        subscription_data->num_of_slice < OGS_MAX_NUM_OF_SLICE);
 
-                pdn = &subscription_data->pdn[pdn_index];
+                slice_data = &subscription_data->slice[
+                                subscription_data->num_of_slice];
+
+                slice_data->s_nssai.sst = 0;
+                slice_data->s_nssai.sd.v = OGS_S_NSSAI_NO_SD_VALUE;
 
                 bson_iter_recurse(&child1_iter, &child2_iter);
                 while (bson_iter_next(&child2_iter)) {
                     const char *child2_key = bson_iter_key(&child2_iter);
-                    if (!strcmp(child2_key, "apn") &&
+
+                    if (!strcmp(child2_key, "sst") &&
+                        BSON_ITER_HOLDS_INT32(&child2_iter)) {
+                        slice_data->s_nssai.sst = bson_iter_int32(&child2_iter);
+                    } else if (!strcmp(child2_key, "sd") &&
                         BSON_ITER_HOLDS_UTF8(&child2_iter)) {
                         utf8 = bson_iter_utf8(&child2_iter, &length);
-                        ogs_cpystrn(pdn->apn, utf8,
-                            ogs_min(length, OGS_MAX_APN_LEN)+1);
-                    } else if (!strcmp(child2_key, "type") &&
-                        BSON_ITER_HOLDS_INT32(&child2_iter)) {
-                        pdn->pdn_type = bson_iter_int32(&child2_iter);
-                    } else if (!strcmp(child2_key, "qos") &&
-                        BSON_ITER_HOLDS_DOCUMENT(&child2_iter)) {
+                        ogs_assert(utf8);
+                        slice_data->s_nssai.sd =
+                            ogs_s_nssai_sd_from_string(utf8);
+                    } else if (!strcmp(child2_key, "default_indicator") &&
+                        BSON_ITER_HOLDS_BOOL(&child2_iter)) {
+                        slice_data->default_indicator =
+                            bson_iter_bool(&child2_iter);
+                    } else if (!strcmp(child2_key, "session") &&
+                        BSON_ITER_HOLDS_ARRAY(&child2_iter)) {
+
                         bson_iter_recurse(&child2_iter, &child3_iter);
                         while (bson_iter_next(&child3_iter)) {
-                            const char *child3_key =
-                                bson_iter_key(&child3_iter);
-                            if (!strcmp(child3_key, "qci") &&
-                                BSON_ITER_HOLDS_INT32(&child3_iter)) {
-                                pdn->qos.qci = bson_iter_int32(&child3_iter);
-                            } else if (!strcmp(child3_key, "arp") &&
-                                BSON_ITER_HOLDS_DOCUMENT(&child3_iter)) {
-                                bson_iter_recurse(&child3_iter, &child4_iter);
-                                while (bson_iter_next(&child4_iter)) {
-                                    const char *child4_key =
-                                        bson_iter_key(&child4_iter);
-                                    if (!strcmp(child4_key, "priority_level") &&
-                                        BSON_ITER_HOLDS_INT32(&child4_iter)) {
-                                        pdn->qos.arp.priority_level =
-                                            bson_iter_int32(&child4_iter);
-                                    } else if (!strcmp(child4_key,
-                                                "pre_emption_capability") &&
-                                        BSON_ITER_HOLDS_INT32(&child4_iter)) {
-                                        pdn->qos.arp.pre_emption_capability =
-                                            bson_iter_int32(&child4_iter);
-                                    } else if (!strcmp(child4_key,
+                            ogs_session_t *session = NULL;
+
+                            ogs_assert(
+                                slice_data->num_of_session <
+                                    OGS_MAX_NUM_OF_SESS);
+                            session = &slice_data->session
+                                [slice_data->num_of_session];
+
+                            bson_iter_recurse(&child3_iter, &child4_iter);
+                            while (bson_iter_next(&child4_iter)) {
+                                const char *child4_key =
+                                    bson_iter_key(&child4_iter);
+                                if (!strcmp(child4_key, "name") &&
+                                    BSON_ITER_HOLDS_UTF8(&child4_iter)) {
+                                    utf8 = bson_iter_utf8(
+                                            &child4_iter, &length);
+                                    session->name = ogs_strndup(utf8, length);
+                                    ogs_assert(session->name);
+                                } else if (!strcmp(child4_key, "type") &&
+                                    BSON_ITER_HOLDS_INT32(&child4_iter)) {
+                                    session->session_type =
+                                        bson_iter_int32(&child4_iter);
+                                } else if (!strcmp(child4_key, "qos") &&
+                                    BSON_ITER_HOLDS_DOCUMENT(&child4_iter)) {
+                                    bson_iter_recurse(
+                                            &child4_iter, &child5_iter);
+                                    while (bson_iter_next(&child5_iter)) {
+                                        const char *child5_key =
+                                            bson_iter_key(&child5_iter);
+                                        if (!strcmp(child5_key, "index") &&
+                                            BSON_ITER_HOLDS_INT32(
+                                                &child5_iter)) {
+                                            session->qos.index =
+                                                bson_iter_int32(&child5_iter);
+                                        } else if (!strcmp(child5_key, "arp") &&
+                                            BSON_ITER_HOLDS_DOCUMENT(
+                                                &child5_iter)) {
+                                            bson_iter_recurse(
+                                                    &child5_iter, &child6_iter);
+                                            while (bson_iter_next(
+                                                        &child6_iter)) {
+                                                const char *child6_key =
+                                                    bson_iter_key(&child6_iter);
+                                                if (!strcmp(child6_key,
+                                                            "priority_level") &&
+                                                    BSON_ITER_HOLDS_INT32(
+                                                        &child6_iter)) {
+                                                    session->qos.arp.
+                                                        priority_level =
+                                                        bson_iter_int32(
+                                                                &child6_iter);
+                                                } else if (!strcmp(child6_key,
+                                                    "pre_emption_capability") &&
+                                                    BSON_ITER_HOLDS_INT32(
+                                                        &child6_iter)) {
+                                                    session->qos.arp.
+                                                        pre_emption_capability =
+                                                            bson_iter_int32(
+                                                                &child6_iter);
+                                                } else if (!strcmp(child6_key,
                                                 "pre_emption_vulnerability") &&
-                                        BSON_ITER_HOLDS_INT32(&child4_iter)) {
-                                        pdn->qos.arp.pre_emption_vulnerability =
-                                            bson_iter_int32(&child4_iter);
+                                                    BSON_ITER_HOLDS_INT32(
+                                                        &child6_iter)) {
+                                                    session->qos.arp.
+                                                    pre_emption_vulnerability =
+                                                        bson_iter_int32(
+                                                                &child6_iter);
+                                                }
+                                            }
+                                        }
+                                    }
+                                } else if (!strcmp(child4_key, "ambr") &&
+                                    BSON_ITER_HOLDS_DOCUMENT(&child4_iter)) {
+                                    bson_iter_recurse(
+                                            &child4_iter, &child5_iter);
+
+                                    while (bson_iter_next(&child5_iter)) {
+                                        const char *child5_key =
+                                            bson_iter_key(&child5_iter);
+                                        if (!strcmp(child5_key, "downlink") &&
+                                                BSON_ITER_HOLDS_DOCUMENT(
+                                                    &child5_iter)) {
+                                            uint8_t unit = 0;
+                                            int n;
+
+                                            bson_iter_recurse(
+                                                    &child5_iter, &child6_iter);
+                                            while (bson_iter_next(
+                                                        &child6_iter)) {
+                                                const char *child6_key =
+                                                    bson_iter_key(&child6_iter);
+                                                if (!strcmp(child6_key,
+                                                            "value") &&
+                                                    BSON_ITER_HOLDS_INT32(
+                                                        &child6_iter)) {
+                                                    session->ambr.downlink =
+                                                        bson_iter_int32(
+                                                                &child6_iter);
+                                                } else if (!strcmp(child6_key,
+                                                            "unit") &&
+                                                    BSON_ITER_HOLDS_INT32(
+                                                        &child6_iter)) {
+                                                    unit = bson_iter_int32(
+                                                            &child6_iter);
+                                                }
+                                            }
+
+                                            for (n = 0; n < unit; n++)
+                                                session->ambr.downlink *= 1024;
+                                        } else if (!strcmp(child5_key,
+                                                    "uplink") &&
+                                                BSON_ITER_HOLDS_DOCUMENT(
+                                                    &child5_iter)) {
+                                            uint8_t unit = 0;
+                                            int n;
+
+                                            bson_iter_recurse(
+                                                    &child5_iter, &child6_iter);
+                                            while (bson_iter_next(
+                                                        &child6_iter)) {
+                                                const char *child6_key =
+                                                    bson_iter_key(&child6_iter);
+                                                if (!strcmp(child6_key,
+                                                            "value") &&
+                                                    BSON_ITER_HOLDS_INT32(
+                                                        &child6_iter)) {
+                                                    session->ambr.uplink =
+                                                        bson_iter_int32(
+                                                                &child6_iter);
+                                                } else if (!strcmp(child6_key,
+                                                            "unit") &&
+                                                    BSON_ITER_HOLDS_INT32(
+                                                        &child6_iter)) {
+                                                    unit = bson_iter_int32(
+                                                            &child6_iter);
+                                                }
+                                            }
+
+                                            for (n = 0; n < unit; n++)
+                                                session->ambr.uplink *= 1024;
+                                        }
+                                    }
+                                } else if (!strcmp(child4_key, "smf") &&
+                                    BSON_ITER_HOLDS_DOCUMENT(&child4_iter)) {
+                                    bson_iter_recurse(
+                                            &child4_iter, &child5_iter);
+                                    while (bson_iter_next(&child5_iter)) {
+                                        const char *child5_key =
+                                            bson_iter_key(&child5_iter);
+                                        if (!strcmp(child5_key, "addr") &&
+                                            BSON_ITER_HOLDS_UTF8(
+                                                &child5_iter)) {
+                                            ogs_ipsubnet_t ipsub;
+                                            const char *v = bson_iter_utf8(
+                                                    &child5_iter, &length);
+                                            rv = ogs_ipsubnet(&ipsub, v, NULL);
+                                            if (rv == OGS_OK) {
+                                                session->smf_ip.ipv4 = 1;
+                                                session->smf_ip.addr =
+                                                    ipsub.sub[0];
+                                            }
+                                        } else if (!strcmp(
+                                                    child5_key, "addr6") &&
+                                            BSON_ITER_HOLDS_UTF8(
+                                                &child5_iter)) {
+                                            ogs_ipsubnet_t ipsub;
+                                            const char *v = bson_iter_utf8(
+                                                    &child5_iter, &length);
+                                            rv = ogs_ipsubnet(&ipsub, v, NULL);
+                                            if (rv == OGS_OK) {
+                                                session->smf_ip.ipv6 = 1;
+                                                memcpy(session->smf_ip.addr6,
+                                                        ipsub.sub,
+                                                        sizeof(ipsub.sub));
+                                            }
+                                        }
+                                    }
+                                } else if (!strcmp(child4_key, "ue") &&
+                                    BSON_ITER_HOLDS_DOCUMENT(&child4_iter)) {
+                                    bson_iter_recurse(
+                                            &child4_iter, &child5_iter);
+                                    while (bson_iter_next(&child5_iter)) {
+                                        const char *child5_key =
+                                            bson_iter_key(&child5_iter);
+                                        if (!strcmp(child5_key, "addr") &&
+                                            BSON_ITER_HOLDS_UTF8(
+                                                &child5_iter)) {
+                                            ogs_ipsubnet_t ipsub;
+                                            const char *v = bson_iter_utf8(
+                                                    &child5_iter, &length);
+                                            rv = ogs_ipsubnet(&ipsub, v, NULL);
+                                            if (rv == OGS_OK) {
+                                                session->ue_ip.ipv4 = true;
+                                                session->ue_ip.addr =
+                                                    ipsub.sub[0];
+                                            }
+                                        } else if (!strcmp(
+                                                    child5_key, "addr6") &&
+                                            BSON_ITER_HOLDS_UTF8(
+                                                &child5_iter)) {
+                                            ogs_ipsubnet_t ipsub;
+                                            const char *v = bson_iter_utf8(
+                                                    &child5_iter, &length);
+                                            rv = ogs_ipsubnet(&ipsub, v, NULL);
+                                            if (rv == OGS_OK) {
+                                                session->ue_ip.ipv6 = true;
+                                                memcpy(session->ue_ip.addr6,
+                                                    ipsub.sub, OGS_IPV6_LEN);
+                                            }
+
+                                        }
                                     }
                                 }
                             }
-                        }
-                    } else if (!strcmp(child2_key, "ambr") &&
-                        BSON_ITER_HOLDS_DOCUMENT(&child2_iter)) {
-                        bson_iter_recurse(&child2_iter, &child3_iter);
-                        while (bson_iter_next(&child3_iter)) {
-                            const char *child3_key =
-                                bson_iter_key(&child3_iter);
-                            if (!strcmp(child3_key, "uplink") &&
-                                BSON_ITER_HOLDS_INT64(&child3_iter)) {
-                                pdn->ambr.uplink =
-                                    bson_iter_int64(&child3_iter) * 1024;
-                            } else if (!strcmp(child3_key, "downlink") &&
-                                BSON_ITER_HOLDS_INT64(&child3_iter)) {
-                                pdn->ambr.downlink =
-                                    bson_iter_int64(&child3_iter) * 1024;
-                            }
-                        }
-                    } else if (!strcmp(child2_key, "pgw") &&
-                        BSON_ITER_HOLDS_DOCUMENT(&child2_iter)) {
-                        bson_iter_recurse(&child2_iter, &child3_iter);
-                        while (bson_iter_next(&child3_iter)) {
-                            const char *child3_key =
-                                bson_iter_key(&child3_iter);
-                            if (!strcmp(child3_key, "addr") &&
-                                BSON_ITER_HOLDS_UTF8(&child3_iter)) {
-                                ogs_ipsubnet_t ipsub;
-                                const char *v = 
-                                    bson_iter_utf8(&child3_iter, &length);
-                                rv = ogs_ipsubnet(&ipsub, v, NULL);
-                                if (rv == OGS_OK) {
-                                    pdn->pgw_ip.ipv4 = 1;
-                                    pdn->pgw_ip.addr = ipsub.sub[0];
-                                }
-                            } else if (!strcmp(child3_key, "addr6") &&
-                                BSON_ITER_HOLDS_UTF8(&child3_iter)) {
-                                ogs_ipsubnet_t ipsub;
-                                const char *v = 
-                                    bson_iter_utf8(&child3_iter, &length);
-                                rv = ogs_ipsubnet(&ipsub, v, NULL);
-                                if (rv == OGS_OK) {
-                                    pdn->pgw_ip.ipv6 = 1;
-                                    memcpy(pdn->pgw_ip.addr6,
-                                            ipsub.sub, sizeof(ipsub.sub));
-                                }
-                            }
-                        }
-                    } else if (!strcmp(child2_key, "ue") &&
-                        BSON_ITER_HOLDS_DOCUMENT(&child2_iter)) {
-                        bson_iter_recurse(&child2_iter, &child3_iter);
-                        while (bson_iter_next(&child3_iter)) {
-                            const char *child3_key =
-                                bson_iter_key(&child3_iter);
-                            if (!strcmp(child3_key, "addr") &&
-                                BSON_ITER_HOLDS_UTF8(&child3_iter)) {
-                                ogs_ipsubnet_t ipsub;
-                                const char *v = 
-                                    bson_iter_utf8(&child3_iter, &length);
-                                rv = ogs_ipsubnet(&ipsub, v, NULL);
-                                if (rv == OGS_OK) {
-                                    pdn->ue_ip.ipv4 = true;
-                                    pdn->ue_ip.addr = ipsub.sub[0];
-                                }
-                            } else if (!strcmp(child3_key, "addr6") &&
-                                BSON_ITER_HOLDS_UTF8(&child3_iter)) {
-                                ogs_ipsubnet_t ipsub;
-                                const char *v = 
-                                    bson_iter_utf8(&child3_iter, &length);
-                                rv = ogs_ipsubnet(&ipsub, v, NULL);
-                                if (rv == OGS_OK) {
-                                    pdn->ue_ip.ipv6 = true;
-                                    memcpy(pdn->ue_ip.addr6,
-                                            ipsub.sub, OGS_IPV6_LEN);
-                                }
-
-                            }
+                            slice_data->num_of_session++;
                         }
                     }
                 }
-                pdn_index++;
+                subscription_data->num_of_slice++;
             }
-            subscription_data->num_of_pdn = pdn_index;
         }
     }
 

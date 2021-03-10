@@ -9,6 +9,8 @@ OpenAPI_global_ran_node_id_t *OpenAPI_global_ran_node_id_create(
     char *n3_iwf_id,
     OpenAPI_g_nb_id_t *g_nb_id,
     char *nge_nb_id,
+    char *wagf_id,
+    char *tngf_id,
     char *nid,
     char *e_nb_id
     )
@@ -21,6 +23,8 @@ OpenAPI_global_ran_node_id_t *OpenAPI_global_ran_node_id_create(
     global_ran_node_id_local_var->n3_iwf_id = n3_iwf_id;
     global_ran_node_id_local_var->g_nb_id = g_nb_id;
     global_ran_node_id_local_var->nge_nb_id = nge_nb_id;
+    global_ran_node_id_local_var->wagf_id = wagf_id;
+    global_ran_node_id_local_var->tngf_id = tngf_id;
     global_ran_node_id_local_var->nid = nid;
     global_ran_node_id_local_var->e_nb_id = e_nb_id;
 
@@ -37,6 +41,8 @@ void OpenAPI_global_ran_node_id_free(OpenAPI_global_ran_node_id_t *global_ran_no
     ogs_free(global_ran_node_id->n3_iwf_id);
     OpenAPI_g_nb_id_free(global_ran_node_id->g_nb_id);
     ogs_free(global_ran_node_id->nge_nb_id);
+    ogs_free(global_ran_node_id->wagf_id);
+    ogs_free(global_ran_node_id->tngf_id);
     ogs_free(global_ran_node_id->nid);
     ogs_free(global_ran_node_id->e_nb_id);
     ogs_free(global_ran_node_id);
@@ -90,6 +96,20 @@ cJSON *OpenAPI_global_ran_node_id_convertToJSON(OpenAPI_global_ran_node_id_t *gl
     if (global_ran_node_id->nge_nb_id) {
         if (cJSON_AddStringToObject(item, "ngeNbId", global_ran_node_id->nge_nb_id) == NULL) {
             ogs_error("OpenAPI_global_ran_node_id_convertToJSON() failed [nge_nb_id]");
+            goto end;
+        }
+    }
+
+    if (global_ran_node_id->wagf_id) {
+        if (cJSON_AddStringToObject(item, "wagfId", global_ran_node_id->wagf_id) == NULL) {
+            ogs_error("OpenAPI_global_ran_node_id_convertToJSON() failed [wagf_id]");
+            goto end;
+        }
+    }
+
+    if (global_ran_node_id->tngf_id) {
+        if (cJSON_AddStringToObject(item, "tngfId", global_ran_node_id->tngf_id) == NULL) {
+            ogs_error("OpenAPI_global_ran_node_id_convertToJSON() failed [tngf_id]");
             goto end;
         }
     }
@@ -150,6 +170,24 @@ OpenAPI_global_ran_node_id_t *OpenAPI_global_ran_node_id_parseFromJSON(cJSON *gl
         }
     }
 
+    cJSON *wagf_id = cJSON_GetObjectItemCaseSensitive(global_ran_node_idJSON, "wagfId");
+
+    if (wagf_id) {
+        if (!cJSON_IsString(wagf_id)) {
+            ogs_error("OpenAPI_global_ran_node_id_parseFromJSON() failed [wagf_id]");
+            goto end;
+        }
+    }
+
+    cJSON *tngf_id = cJSON_GetObjectItemCaseSensitive(global_ran_node_idJSON, "tngfId");
+
+    if (tngf_id) {
+        if (!cJSON_IsString(tngf_id)) {
+            ogs_error("OpenAPI_global_ran_node_id_parseFromJSON() failed [tngf_id]");
+            goto end;
+        }
+    }
+
     cJSON *nid = cJSON_GetObjectItemCaseSensitive(global_ran_node_idJSON, "nid");
 
     if (nid) {
@@ -173,6 +211,8 @@ OpenAPI_global_ran_node_id_t *OpenAPI_global_ran_node_id_parseFromJSON(cJSON *gl
         n3_iwf_id ? ogs_strdup(n3_iwf_id->valuestring) : NULL,
         g_nb_id ? g_nb_id_local_nonprim : NULL,
         nge_nb_id ? ogs_strdup(nge_nb_id->valuestring) : NULL,
+        wagf_id ? ogs_strdup(wagf_id->valuestring) : NULL,
+        tngf_id ? ogs_strdup(tngf_id->valuestring) : NULL,
         nid ? ogs_strdup(nid->valuestring) : NULL,
         e_nb_id ? ogs_strdup(e_nb_id->valuestring) : NULL
         );

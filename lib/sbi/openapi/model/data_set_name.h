@@ -17,16 +17,11 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_data_set_name_s OpenAPI_data_set_name_t;
-typedef struct OpenAPI_data_set_name_s {
-} OpenAPI_data_set_name_t;
+typedef enum { OpenAPI_data_set_name_NULL = 0, OpenAPI_data_set_name_AM, OpenAPI_data_set_name_SMF_SEL, OpenAPI_data_set_name_SMS_SUB, OpenAPI_data_set_name_SM, OpenAPI_data_set_name_TRACE, OpenAPI_data_set_name_SMS_MNG, OpenAPI_data_set_name_LCS_PRIVACY, OpenAPI_data_set_name_LCS_MO, OpenAPI_data_set_name_LCS_BCA, OpenAPI_data_set_name_V2X } OpenAPI_data_set_name_e;
 
-OpenAPI_data_set_name_t *OpenAPI_data_set_name_create(
-    );
-void OpenAPI_data_set_name_free(OpenAPI_data_set_name_t *data_set_name);
-OpenAPI_data_set_name_t *OpenAPI_data_set_name_parseFromJSON(cJSON *data_set_nameJSON);
-cJSON *OpenAPI_data_set_name_convertToJSON(OpenAPI_data_set_name_t *data_set_name);
-OpenAPI_data_set_name_t *OpenAPI_data_set_name_copy(OpenAPI_data_set_name_t *dst, OpenAPI_data_set_name_t *src);
+char* OpenAPI_data_set_name_ToString(OpenAPI_data_set_name_e data_set_name);
+
+OpenAPI_data_set_name_e OpenAPI_data_set_name_FromString(char* data_set_name);
 
 #ifdef __cplusplus
 }

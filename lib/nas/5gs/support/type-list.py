@@ -38,12 +38,12 @@ type_list["DNN"]["encode"] = \
 "    size = target.length + sizeof(target.length);\n\n"
 
 type_list["Session-AMBR"]["decode"] = \
-"    session_ambr->downlink.bitrate = be16toh(source->downlink.bitrate);\n" \
-"    session_ambr->uplink.bitrate = be16toh(source->uplink.bitrate);\n\n"
+"    session_ambr->downlink.value = be16toh(source->downlink.value);\n" \
+"    session_ambr->uplink.value = be16toh(source->uplink.value);\n\n"
 
 type_list["Session-AMBR"]["encode"] = \
-"    target.downlink.bitrate = htobe16(session_ambr->downlink.bitrate);\n" \
-"    target.uplink.bitrate = htobe16(session_ambr->uplink.bitrate);\n\n"
+"    target.downlink.value = htobe16(session_ambr->downlink.value);\n" \
+"    target.uplink.value = htobe16(session_ambr->uplink.value);\n\n"
 
 type_list["Uplink data status"]["decode"] = \
 "    uplink_data_status->psi = be16toh(uplink_data_status->psi);\n\n"

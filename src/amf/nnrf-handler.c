@@ -245,15 +245,12 @@ bool amf_nnrf_handle_nf_status_notify(
 void amf_nnrf_handle_nf_discover(
         ogs_sbi_xact_t *xact, ogs_sbi_message_t *recvmsg)
 {
-    bool handled;
-
     ogs_sbi_object_t *sbi_object = NULL;
     amf_ue_t *amf_ue = NULL;
     amf_sess_t *sess = NULL;
     ogs_sbi_nf_instance_t *nf_instance = NULL;
 
     OpenAPI_search_result_t *SearchResult = NULL;
-    OpenAPI_lnode_t *node = NULL;
 
     ogs_assert(xact);
     sbi_object = xact->sbi_object;
@@ -266,71 +263,10 @@ void amf_nnrf_handle_nf_discover(
         return;
     }
 
-    OpenAPI_list_for_each(SearchResult->nf_instances, node) {
-        OpenAPI_nf_profile_t *NFProfile = NULL;
-
-        if (!node->data) continue;
-
-        NFProfile = node->data;
-
-        nf_instance = ogs_sbi_nf_instance_find(NFProfile->nf_instance_id);
-        if (!nf_instance) {
-            nf_instance = ogs_sbi_nf_instance_add(NFProfile->nf_instance_id);
-            ogs_assert(nf_instance);
-
-            amf_nf_fsm_init(nf_instance);
-
-            ogs_info("[%s] (NF-discover) NF registered", nf_instance->id);
-        } else {
-            OGS_FSM_TRAN(&nf_instance->sm, amf_nf_state_registered);
-            ogs_fsm_dispatch(&nf_instance->sm, NULL);
-
-            ogs_warn("[%s] (NF-discover) NF has already been added",
-                    NFProfile->nf_instance_id);
-        }
-
-        if (NF_INSTANCE_IS_OTHERS(nf_instance->id)) {
-            handled = ogs_sbi_nnrf_handle_nf_profile(
-                        nf_instance, NFProfile, NULL, NULL);
-            if (!handled) {
-                ogs_error("ogs_sbi_nnrf_handle_nf_profile() failed [%s]",
-                        nf_instance->id);
-                AMF_NF_INSTANCE_CLEAR("NRF-discover", nf_instance);
-                continue;
-            }
-
-            handled = ogs_sbi_client_associate(nf_instance);
-            if (!handled) {
-                ogs_error("[%s] Cannot assciate NF EndPoint", nf_instance->id);
-                AMF_NF_INSTANCE_CLEAR("NRF-discover", nf_instance);
-                continue;
-            }
-
-            if (!OGS_SBI_NF_INSTANCE_GET(
-                        sbi_object->nf_type_array, nf_instance->nf_type))
-                ogs_sbi_nf_instance_associate(sbi_object->nf_type_array,
-                        nf_instance->nf_type, amf_nf_state_registered);
-
-            /* TIME : Update validity from NRF */
-            if (SearchResult->validity_period) {
-                nf_instance->time.validity_duration =
-                        SearchResult->validity_period;
-
-                ogs_assert(nf_instance->t_validity);
-                ogs_timer_start(nf_instance->t_validity,
-                    ogs_time_from_sec(nf_instance->time.validity_duration));
-
-            } else
-                ogs_warn("[%s] NF Instance validity-time should not 0",
-                        nf_instance->id);
-
-            ogs_info("[%s] (NF-discover) NF Profile updated", nf_instance->id);
-        }
-    }
+    amf_nnrf_handle_nf_discover_search_result(sbi_object, SearchResult);
 
     ogs_assert(xact->target_nf_type);
-    nf_instance = OGS_SBI_NF_INSTANCE_GET(
-            sbi_object->nf_type_array, xact->target_nf_type);
+    nf_instance = OGS_SBI_NF_INSTANCE(sbi_object, xact->target_nf_type);
     if (!nf_instance) {
         ogs_assert(sbi_object->type > OGS_SBI_OBJ_BASE &&
                     sbi_object->type < OGS_SBI_OBJ_TOP);
@@ -365,5 +301,94 @@ void amf_nnrf_handle_nf_discover(
         }
     } else {
         amf_sbi_send(nf_instance, xact);
+    }
+}
+
+void amf_nnrf_handle_nf_discover_search_result(
+        ogs_sbi_object_t *sbi_object, OpenAPI_search_result_t *SearchResult)
+{
+    bool handled;
+
+    OpenAPI_lnode_t *node = NULL;
+    ogs_sbi_nf_instance_t *nf_instance = NULL;
+
+    ogs_assert(sbi_object);
+    ogs_assert(SearchResult);
+
+    OpenAPI_list_for_each(SearchResult->nf_instances, node) {
+        OpenAPI_nf_profile_t *NFProfile = NULL;
+
+        if (!node->data) continue;
+
+        NFProfile = node->data;
+
+        nf_instance = ogs_sbi_nf_instance_find(NFProfile->nf_instance_id);
+        if (!nf_instance) {
+            nf_instance = ogs_sbi_nf_instance_add(NFProfile->nf_instance_id);
+            ogs_assert(nf_instance);
+
+            amf_nf_fsm_init(nf_instance);
+
+            ogs_info("[%s] (NF-discover) NF registered", nf_instance->id);
+        } else {
+            OGS_FSM_TRAN(&nf_instance->sm, amf_nf_state_registered);
+            ogs_fsm_dispatch(&nf_instance->sm, NULL);
+
+            ogs_warn("[%s] (NF-discover) NF has already been added",
+                    NFProfile->nf_instance_id);
+        }
+
+        if (NF_INSTANCE_IS_OTHERS(nf_instance->id)) {
+            amf_ue_t *amf_ue = NULL;
+            amf_sess_t *sess = NULL;
+
+            handled = ogs_sbi_nnrf_handle_nf_profile(
+                        nf_instance, NFProfile, NULL, NULL);
+            if (!handled) {
+                ogs_error("ogs_sbi_nnrf_handle_nf_profile() failed [%s]",
+                        nf_instance->id);
+                AMF_NF_INSTANCE_CLEAR("NRF-discover", nf_instance);
+                continue;
+            }
+
+            handled = ogs_sbi_client_associate(nf_instance);
+            if (!handled) {
+                ogs_error("[%s] Cannot assciate NF EndPoint", nf_instance->id);
+                AMF_NF_INSTANCE_CLEAR("NRF-discover", nf_instance);
+                continue;
+            }
+
+            switch(sbi_object->type) {
+            case OGS_SBI_OBJ_UE_TYPE:
+                amf_ue = (amf_ue_t *)sbi_object;
+                ogs_assert(amf_ue);
+                amf_ue_select_nf(amf_ue, nf_instance->nf_type);
+                break;
+            case OGS_SBI_OBJ_SESS_TYPE:
+                sess = (amf_sess_t *)sbi_object;
+                ogs_assert(sess);
+                amf_sess_select_nf(sess, nf_instance->nf_type);
+                break;
+            default:
+                ogs_fatal("(NF discover search result) Not implemented [%d]",
+                            sbi_object->type);
+                ogs_assert_if_reached();
+            }
+
+            /* TIME : Update validity from NRF */
+            if (SearchResult->validity_period) {
+                nf_instance->time.validity_duration =
+                        SearchResult->validity_period;
+
+                ogs_assert(nf_instance->t_validity);
+                ogs_timer_start(nf_instance->t_validity,
+                    ogs_time_from_sec(nf_instance->time.validity_duration));
+
+            } else
+                ogs_warn("[%s] NF Instance validity-time should not 0",
+                        nf_instance->id);
+
+            ogs_info("[%s] (NF-discover) NF Profile updated", nf_instance->id);
+        }
     }
 }

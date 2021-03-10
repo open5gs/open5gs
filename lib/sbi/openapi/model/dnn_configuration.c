@@ -14,14 +14,16 @@ OpenAPI_dnn_configuration_t *OpenAPI_dnn_configuration_create(
     OpenAPI_list_t *static_ip_address,
     OpenAPI_up_security_t *up_security,
     OpenAPI_pdu_session_continuity_ind_e pdu_session_continuity_ind,
-    int invoke_nef_selection,
     char *nidd_nef_id,
     OpenAPI_nidd_information_t *nidd_info,
     int redundant_session_allowed,
     OpenAPI_acs_info_t *acs_info,
     OpenAPI_list_t *ipv4_frame_route_list,
     OpenAPI_list_t *ipv6_frame_route_list,
-    int atsss_allowed
+    int atsss_allowed,
+    int secondary_auth,
+    int dn_aaa_ip_address_allocation,
+    OpenAPI_ip_address_t *dn_aaa_address
     )
 {
     OpenAPI_dnn_configuration_t *dnn_configuration_local_var = OpenAPI_malloc(sizeof(OpenAPI_dnn_configuration_t));
@@ -37,7 +39,6 @@ OpenAPI_dnn_configuration_t *OpenAPI_dnn_configuration_create(
     dnn_configuration_local_var->static_ip_address = static_ip_address;
     dnn_configuration_local_var->up_security = up_security;
     dnn_configuration_local_var->pdu_session_continuity_ind = pdu_session_continuity_ind;
-    dnn_configuration_local_var->invoke_nef_selection = invoke_nef_selection;
     dnn_configuration_local_var->nidd_nef_id = nidd_nef_id;
     dnn_configuration_local_var->nidd_info = nidd_info;
     dnn_configuration_local_var->redundant_session_allowed = redundant_session_allowed;
@@ -45,6 +46,9 @@ OpenAPI_dnn_configuration_t *OpenAPI_dnn_configuration_create(
     dnn_configuration_local_var->ipv4_frame_route_list = ipv4_frame_route_list;
     dnn_configuration_local_var->ipv6_frame_route_list = ipv6_frame_route_list;
     dnn_configuration_local_var->atsss_allowed = atsss_allowed;
+    dnn_configuration_local_var->secondary_auth = secondary_auth;
+    dnn_configuration_local_var->dn_aaa_ip_address_allocation = dn_aaa_ip_address_allocation;
+    dnn_configuration_local_var->dn_aaa_address = dn_aaa_address;
 
     return dnn_configuration_local_var;
 }
@@ -76,6 +80,7 @@ void OpenAPI_dnn_configuration_free(OpenAPI_dnn_configuration_t *dnn_configurati
         OpenAPI_frame_route_info_free(node->data);
     }
     OpenAPI_list_free(dnn_configuration->ipv6_frame_route_list);
+    OpenAPI_ip_address_free(dnn_configuration->dn_aaa_address);
     ogs_free(dnn_configuration);
 }
 
@@ -199,13 +204,6 @@ cJSON *OpenAPI_dnn_configuration_convertToJSON(OpenAPI_dnn_configuration_t *dnn_
         }
     }
 
-    if (dnn_configuration->invoke_nef_selection) {
-        if (cJSON_AddBoolToObject(item, "invokeNefSelection", dnn_configuration->invoke_nef_selection) == NULL) {
-            ogs_error("OpenAPI_dnn_configuration_convertToJSON() failed [invoke_nef_selection]");
-            goto end;
-        }
-    }
-
     if (dnn_configuration->nidd_nef_id) {
         if (cJSON_AddStringToObject(item, "niddNefId", dnn_configuration->nidd_nef_id) == NULL) {
             ogs_error("OpenAPI_dnn_configuration_convertToJSON() failed [nidd_nef_id]");
@@ -289,6 +287,33 @@ cJSON *OpenAPI_dnn_configuration_convertToJSON(OpenAPI_dnn_configuration_t *dnn_
     if (dnn_configuration->atsss_allowed) {
         if (cJSON_AddBoolToObject(item, "atsssAllowed", dnn_configuration->atsss_allowed) == NULL) {
             ogs_error("OpenAPI_dnn_configuration_convertToJSON() failed [atsss_allowed]");
+            goto end;
+        }
+    }
+
+    if (dnn_configuration->secondary_auth) {
+        if (cJSON_AddBoolToObject(item, "secondaryAuth", dnn_configuration->secondary_auth) == NULL) {
+            ogs_error("OpenAPI_dnn_configuration_convertToJSON() failed [secondary_auth]");
+            goto end;
+        }
+    }
+
+    if (dnn_configuration->dn_aaa_ip_address_allocation) {
+        if (cJSON_AddBoolToObject(item, "dnAaaIpAddressAllocation", dnn_configuration->dn_aaa_ip_address_allocation) == NULL) {
+            ogs_error("OpenAPI_dnn_configuration_convertToJSON() failed [dn_aaa_ip_address_allocation]");
+            goto end;
+        }
+    }
+
+    if (dnn_configuration->dn_aaa_address) {
+        cJSON *dn_aaa_address_local_JSON = OpenAPI_ip_address_convertToJSON(dnn_configuration->dn_aaa_address);
+        if (dn_aaa_address_local_JSON == NULL) {
+            ogs_error("OpenAPI_dnn_configuration_convertToJSON() failed [dn_aaa_address]");
+            goto end;
+        }
+        cJSON_AddItemToObject(item, "dnAaaAddress", dn_aaa_address_local_JSON);
+        if (item->child == NULL) {
+            ogs_error("OpenAPI_dnn_configuration_convertToJSON() failed [dn_aaa_address]");
             goto end;
         }
     }
@@ -393,15 +418,6 @@ OpenAPI_dnn_configuration_t *OpenAPI_dnn_configuration_parseFromJSON(cJSON *dnn_
         pdu_session_continuity_indVariable = OpenAPI_pdu_session_continuity_ind_FromString(pdu_session_continuity_ind->valuestring);
     }
 
-    cJSON *invoke_nef_selection = cJSON_GetObjectItemCaseSensitive(dnn_configurationJSON, "invokeNefSelection");
-
-    if (invoke_nef_selection) {
-        if (!cJSON_IsBool(invoke_nef_selection)) {
-            ogs_error("OpenAPI_dnn_configuration_parseFromJSON() failed [invoke_nef_selection]");
-            goto end;
-        }
-    }
-
     cJSON *nidd_nef_id = cJSON_GetObjectItemCaseSensitive(dnn_configurationJSON, "niddNefId");
 
     if (nidd_nef_id) {
@@ -489,6 +505,31 @@ OpenAPI_dnn_configuration_t *OpenAPI_dnn_configuration_parseFromJSON(cJSON *dnn_
         }
     }
 
+    cJSON *secondary_auth = cJSON_GetObjectItemCaseSensitive(dnn_configurationJSON, "secondaryAuth");
+
+    if (secondary_auth) {
+        if (!cJSON_IsBool(secondary_auth)) {
+            ogs_error("OpenAPI_dnn_configuration_parseFromJSON() failed [secondary_auth]");
+            goto end;
+        }
+    }
+
+    cJSON *dn_aaa_ip_address_allocation = cJSON_GetObjectItemCaseSensitive(dnn_configurationJSON, "dnAaaIpAddressAllocation");
+
+    if (dn_aaa_ip_address_allocation) {
+        if (!cJSON_IsBool(dn_aaa_ip_address_allocation)) {
+            ogs_error("OpenAPI_dnn_configuration_parseFromJSON() failed [dn_aaa_ip_address_allocation]");
+            goto end;
+        }
+    }
+
+    cJSON *dn_aaa_address = cJSON_GetObjectItemCaseSensitive(dnn_configurationJSON, "dnAaaAddress");
+
+    OpenAPI_ip_address_t *dn_aaa_address_local_nonprim = NULL;
+    if (dn_aaa_address) {
+        dn_aaa_address_local_nonprim = OpenAPI_ip_address_parseFromJSON(dn_aaa_address);
+    }
+
     dnn_configuration_local_var = OpenAPI_dnn_configuration_create (
         pdu_session_types_local_nonprim,
         ssc_modes_local_nonprim,
@@ -499,14 +540,16 @@ OpenAPI_dnn_configuration_t *OpenAPI_dnn_configuration_parseFromJSON(cJSON *dnn_
         static_ip_address ? static_ip_addressList : NULL,
         up_security ? up_security_local_nonprim : NULL,
         pdu_session_continuity_ind ? pdu_session_continuity_indVariable : 0,
-        invoke_nef_selection ? invoke_nef_selection->valueint : 0,
         nidd_nef_id ? ogs_strdup(nidd_nef_id->valuestring) : NULL,
         nidd_info ? nidd_info_local_nonprim : NULL,
         redundant_session_allowed ? redundant_session_allowed->valueint : 0,
         acs_info ? acs_info_local_nonprim : NULL,
         ipv4_frame_route_list ? ipv4_frame_route_listList : NULL,
         ipv6_frame_route_list ? ipv6_frame_route_listList : NULL,
-        atsss_allowed ? atsss_allowed->valueint : 0
+        atsss_allowed ? atsss_allowed->valueint : 0,
+        secondary_auth ? secondary_auth->valueint : 0,
+        dn_aaa_ip_address_allocation ? dn_aaa_ip_address_allocation->valueint : 0,
+        dn_aaa_address ? dn_aaa_address_local_nonprim : NULL
         );
 
     return dnn_configuration_local_var;

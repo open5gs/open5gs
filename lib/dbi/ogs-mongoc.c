@@ -48,6 +48,34 @@ ogs_mongoc_mongoc_client_get_server_status (mongoc_client_t *client, /* IN */
    return ret;
 }
 
+static char *masked_db_uri(const char *db_uri)
+{
+    char *tmp;
+    char *array[2], *saveptr = NULL;
+    char *masked = NULL;
+
+    ogs_assert(db_uri);
+
+    tmp = ogs_strdup(db_uri);
+
+    memset(array, 0, sizeof(array));
+    array[0] = strtok_r(tmp, "@", &saveptr);
+    if (array[0])
+        array[1] = strtok_r(NULL, "@", &saveptr);
+
+    if (array[1]) {
+        masked = ogs_msprintf("mongodb://*****:*****@%s", array[1]);
+        ogs_assert(masked);
+    } else {
+        masked = ogs_strdup(array[0]);
+        ogs_assert(masked);
+    }
+
+    ogs_free(tmp);
+
+    return masked;
+}
+
 int ogs_mongoc_init(const char *db_uri)
 {
     bson_t reply;
@@ -63,13 +91,15 @@ int ogs_mongoc_init(const char *db_uri)
 
     memset(&self, 0, sizeof(ogs_mongoc_t));
 
+    self.masked_db_uri = masked_db_uri(db_uri);
+
     mongoc_init();
 
     self.initialized = true;
 
     self.client = mongoc_client_new(db_uri);
     if (!self.client) {
-        ogs_error("Failed to parse DB URI [%s]", db_uri);
+        ogs_error("Failed to parse DB URI [%s]", self.masked_db_uri);
         return OGS_ERROR;
     }
 
@@ -88,7 +118,7 @@ int ogs_mongoc_init(const char *db_uri)
 
     if (!ogs_mongoc_mongoc_client_get_server_status(
                 self.client, NULL, &reply, &error)) {
-        ogs_warn("Failed to connect to server [%s]", db_uri);
+        ogs_warn("Failed to connect to server [%s]", self.masked_db_uri);
         return OGS_RETRY;
     }
 
@@ -96,7 +126,7 @@ int ogs_mongoc_init(const char *db_uri)
 
     bson_destroy(&reply);
 
-    ogs_info("MongoDB URI: '%s'", db_uri);
+    ogs_info("MongoDB URI: '%s'", self.masked_db_uri);
 
     return OGS_OK;
 }
@@ -110,6 +140,10 @@ void ogs_mongoc_final(void)
     if (self.client) {
         mongoc_client_destroy(self.client);
         self.client = NULL;
+    }
+    if (self.masked_db_uri) {
+        ogs_free(self.masked_db_uri);
+        self.masked_db_uri = NULL;
     }
 
     if (self.initialized) {

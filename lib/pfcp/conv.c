@@ -331,18 +331,18 @@ int ogs_pfcp_paa_to_ue_ip_addr(
 
     memset(addr, 0, sizeof *addr);
 
-    if (paa->pdn_type == OGS_GTP_PDN_TYPE_IPV4V6) {
+    if (paa->session_type == OGS_PDU_SESSION_TYPE_IPV4V6) {
         addr->ipv4 = 1;
         addr->both.addr = paa->both.addr;
         addr->ipv6 = 1;
         memcpy(addr->both.addr6, paa->both.addr6, OGS_IPV6_LEN);
         *len = OGS_IPV4V6_LEN + hdr_len;
-    } else if (paa->pdn_type == OGS_GTP_PDN_TYPE_IPV4) {
+    } else if (paa->session_type == OGS_PDU_SESSION_TYPE_IPV4) {
         addr->ipv4 = 1;
         addr->ipv6 = 0;
         addr->addr = paa->addr;
         *len = OGS_IPV4_LEN + hdr_len;
-    } else if (paa->pdn_type == OGS_GTP_PDN_TYPE_IPV6) {
+    } else if (paa->session_type == OGS_PDU_SESSION_TYPE_IPV6) {
         addr->ipv4 = 0;
         addr->ipv6 = 1;
         memcpy(addr->addr6, paa->addr6, OGS_IPV6_LEN);

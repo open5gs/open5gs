@@ -1,0 +1,59 @@
+/*
+ * ext_problem_details.h
+ *
+ *
+ */
+
+#ifndef _OpenAPI_ext_problem_details_H_
+#define _OpenAPI_ext_problem_details_H_
+
+#include <string.h>
+#include "../external/cJSON.h"
+#include "../include/list.h"
+#include "../include/keyValuePair.h"
+#include "../include/binary.h"
+#include "invalid_param.h"
+#include "problem_details.h"
+#include "problem_details_add_info.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+typedef struct OpenAPI_ext_problem_details_s OpenAPI_ext_problem_details_t;
+typedef struct OpenAPI_ext_problem_details_s {
+    char *type;
+    char *title;
+    int status;
+    char *detail;
+    char *instance;
+    char *cause;
+    OpenAPI_list_t *invalid_params;
+    char *supported_features;
+    char *target_scp;
+    int remote_error;
+} OpenAPI_ext_problem_details_t;
+
+OpenAPI_ext_problem_details_t *OpenAPI_ext_problem_details_create(
+    char *type,
+    char *title,
+    int status,
+    char *detail,
+    char *instance,
+    char *cause,
+    OpenAPI_list_t *invalid_params,
+    char *supported_features,
+    char *target_scp,
+    int remote_error
+    );
+void OpenAPI_ext_problem_details_free(OpenAPI_ext_problem_details_t *ext_problem_details);
+OpenAPI_ext_problem_details_t *OpenAPI_ext_problem_details_parseFromJSON(cJSON *ext_problem_detailsJSON);
+cJSON *OpenAPI_ext_problem_details_convertToJSON(OpenAPI_ext_problem_details_t *ext_problem_details);
+OpenAPI_ext_problem_details_t *OpenAPI_ext_problem_details_copy(OpenAPI_ext_problem_details_t *dst, OpenAPI_ext_problem_details_t *src);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* _OpenAPI_ext_problem_details_H_ */
+

@@ -37,9 +37,6 @@ void OpenAPI_lmf_info_free(OpenAPI_lmf_info_t *lmf_info)
     OpenAPI_list_free(lmf_info->serving_client_types);
     ogs_free(lmf_info->lmf_id);
     OpenAPI_list_free(lmf_info->serving_access_types);
-    OpenAPI_list_for_each(lmf_info->serving_an_node_types, node) {
-        OpenAPI_an_node_type_free(node->data);
-    }
     OpenAPI_list_free(lmf_info->serving_an_node_types);
     OpenAPI_list_free(lmf_info->serving_rat_types);
     ogs_free(lmf_info);
@@ -98,21 +95,16 @@ cJSON *OpenAPI_lmf_info_convertToJSON(OpenAPI_lmf_info_t *lmf_info)
     }
 
     if (lmf_info->serving_an_node_types) {
-        cJSON *serving_an_node_typesList = cJSON_AddArrayToObject(item, "servingAnNodeTypes");
-        if (serving_an_node_typesList == NULL) {
+        cJSON *serving_an_node_types = cJSON_AddArrayToObject(item, "servingAnNodeTypes");
+        if (serving_an_node_types == NULL) {
             ogs_error("OpenAPI_lmf_info_convertToJSON() failed [serving_an_node_types]");
             goto end;
         }
-
         OpenAPI_lnode_t *serving_an_node_types_node;
-        if (lmf_info->serving_an_node_types) {
-            OpenAPI_list_for_each(lmf_info->serving_an_node_types, serving_an_node_types_node) {
-                cJSON *itemLocal = OpenAPI_an_node_type_convertToJSON(serving_an_node_types_node->data);
-                if (itemLocal == NULL) {
-                    ogs_error("OpenAPI_lmf_info_convertToJSON() failed [serving_an_node_types]");
-                    goto end;
-                }
-                cJSON_AddItemToArray(serving_an_node_typesList, itemLocal);
+        OpenAPI_list_for_each(lmf_info->serving_an_node_types, serving_an_node_types_node) {
+            if (cJSON_AddStringToObject(serving_an_node_types, "", OpenAPI_an_node_type_ToString((OpenAPI_an_node_type_e)serving_an_node_types_node->data)) == NULL) {
+                ogs_error("OpenAPI_lmf_info_convertToJSON() failed [serving_an_node_types]");
+                goto end;
             }
         }
     }
@@ -206,13 +198,12 @@ OpenAPI_lmf_info_t *OpenAPI_lmf_info_parseFromJSON(cJSON *lmf_infoJSON)
         serving_an_node_typesList = OpenAPI_list_create();
 
         cJSON_ArrayForEach(serving_an_node_types_local_nonprimitive, serving_an_node_types ) {
-            if (!cJSON_IsObject(serving_an_node_types_local_nonprimitive)) {
+            if (!cJSON_IsString(serving_an_node_types_local_nonprimitive)) {
                 ogs_error("OpenAPI_lmf_info_parseFromJSON() failed [serving_an_node_types]");
                 goto end;
             }
-            OpenAPI_an_node_type_t *serving_an_node_typesItem = OpenAPI_an_node_type_parseFromJSON(serving_an_node_types_local_nonprimitive);
 
-            OpenAPI_list_add(serving_an_node_typesList, serving_an_node_typesItem);
+            OpenAPI_list_add(serving_an_node_typesList, (void *)OpenAPI_an_node_type_FromString(serving_an_node_types_local_nonprimitive->valuestring));
         }
     }
 

@@ -20,13 +20,13 @@ extern "C" {
 
 typedef struct OpenAPI_lte_v2x_auth_s OpenAPI_lte_v2x_auth_t;
 typedef struct OpenAPI_lte_v2x_auth_s {
-    struct OpenAPI_ue_auth_s *vehicle_ue_auth;
-    struct OpenAPI_ue_auth_s *pedestrian_ue_auth;
+    OpenAPI_ue_auth_e vehicle_ue_auth;
+    OpenAPI_ue_auth_e pedestrian_ue_auth;
 } OpenAPI_lte_v2x_auth_t;
 
 OpenAPI_lte_v2x_auth_t *OpenAPI_lte_v2x_auth_create(
-    OpenAPI_ue_auth_t *vehicle_ue_auth,
-    OpenAPI_ue_auth_t *pedestrian_ue_auth
+    OpenAPI_ue_auth_e vehicle_ue_auth,
+    OpenAPI_ue_auth_e pedestrian_ue_auth
     );
 void OpenAPI_lte_v2x_auth_free(OpenAPI_lte_v2x_auth_t *lte_v2x_auth);
 OpenAPI_lte_v2x_auth_t *OpenAPI_lte_v2x_auth_parseFromJSON(cJSON *lte_v2x_authJSON);

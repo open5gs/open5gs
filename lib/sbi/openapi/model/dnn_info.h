@@ -24,6 +24,9 @@ typedef struct OpenAPI_dnn_info_s {
     int lbo_roaming_allowed;
     int iwk_eps_ind;
     int dnn_barred;
+    int invoke_nef_ind;
+    OpenAPI_list_t *smf_list;
+    int same_smf_ind;
 } OpenAPI_dnn_info_t;
 
 OpenAPI_dnn_info_t *OpenAPI_dnn_info_create(
@@ -31,7 +34,10 @@ OpenAPI_dnn_info_t *OpenAPI_dnn_info_create(
     int default_dnn_indicator,
     int lbo_roaming_allowed,
     int iwk_eps_ind,
-    int dnn_barred
+    int dnn_barred,
+    int invoke_nef_ind,
+    OpenAPI_list_t *smf_list,
+    int same_smf_ind
     );
 void OpenAPI_dnn_info_free(OpenAPI_dnn_info_t *dnn_info);
 OpenAPI_dnn_info_t *OpenAPI_dnn_info_parseFromJSON(cJSON *dnn_infoJSON);

@@ -55,9 +55,10 @@ OpenAPI_hsmf_update_data_t *OpenAPI_hsmf_update_data_create(
     OpenAPI_list_t *dnai_list,
     char *supported_features,
     OpenAPI_roaming_charging_profile_t *roaming_charging_profile,
-    OpenAPI_mo_exception_data_flag_t *mo_exp_data_ind,
     OpenAPI_mo_exp_data_counter_t *mo_exp_data_counter,
-    OpenAPI_vplmn_qos_t *vplmn_qos
+    OpenAPI_vplmn_qos_t *vplmn_qos,
+    OpenAPI_security_result_t *security_result,
+    OpenAPI_up_security_info_t *up_security_info
     )
 {
     OpenAPI_hsmf_update_data_t *hsmf_update_data_local_var = OpenAPI_malloc(sizeof(OpenAPI_hsmf_update_data_t));
@@ -114,9 +115,10 @@ OpenAPI_hsmf_update_data_t *OpenAPI_hsmf_update_data_create(
     hsmf_update_data_local_var->dnai_list = dnai_list;
     hsmf_update_data_local_var->supported_features = supported_features;
     hsmf_update_data_local_var->roaming_charging_profile = roaming_charging_profile;
-    hsmf_update_data_local_var->mo_exp_data_ind = mo_exp_data_ind;
     hsmf_update_data_local_var->mo_exp_data_counter = mo_exp_data_counter;
     hsmf_update_data_local_var->vplmn_qos = vplmn_qos;
+    hsmf_update_data_local_var->security_result = security_result;
+    hsmf_update_data_local_var->up_security_info = up_security_info;
 
     return hsmf_update_data_local_var;
 }
@@ -186,9 +188,10 @@ void OpenAPI_hsmf_update_data_free(OpenAPI_hsmf_update_data_t *hsmf_update_data)
     OpenAPI_list_free(hsmf_update_data->dnai_list);
     ogs_free(hsmf_update_data->supported_features);
     OpenAPI_roaming_charging_profile_free(hsmf_update_data->roaming_charging_profile);
-    OpenAPI_mo_exception_data_flag_free(hsmf_update_data->mo_exp_data_ind);
     OpenAPI_mo_exp_data_counter_free(hsmf_update_data->mo_exp_data_counter);
     OpenAPI_vplmn_qos_free(hsmf_update_data->vplmn_qos);
+    OpenAPI_security_result_free(hsmf_update_data->security_result);
+    OpenAPI_up_security_info_free(hsmf_update_data->up_security_info);
     ogs_free(hsmf_update_data);
 }
 
@@ -743,19 +746,6 @@ cJSON *OpenAPI_hsmf_update_data_convertToJSON(OpenAPI_hsmf_update_data_t *hsmf_u
         }
     }
 
-    if (hsmf_update_data->mo_exp_data_ind) {
-        cJSON *mo_exp_data_ind_local_JSON = OpenAPI_mo_exception_data_flag_convertToJSON(hsmf_update_data->mo_exp_data_ind);
-        if (mo_exp_data_ind_local_JSON == NULL) {
-            ogs_error("OpenAPI_hsmf_update_data_convertToJSON() failed [mo_exp_data_ind]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "moExpDataInd", mo_exp_data_ind_local_JSON);
-        if (item->child == NULL) {
-            ogs_error("OpenAPI_hsmf_update_data_convertToJSON() failed [mo_exp_data_ind]");
-            goto end;
-        }
-    }
-
     if (hsmf_update_data->mo_exp_data_counter) {
         cJSON *mo_exp_data_counter_local_JSON = OpenAPI_mo_exp_data_counter_convertToJSON(hsmf_update_data->mo_exp_data_counter);
         if (mo_exp_data_counter_local_JSON == NULL) {
@@ -778,6 +768,32 @@ cJSON *OpenAPI_hsmf_update_data_convertToJSON(OpenAPI_hsmf_update_data_t *hsmf_u
         cJSON_AddItemToObject(item, "vplmnQos", vplmn_qos_local_JSON);
         if (item->child == NULL) {
             ogs_error("OpenAPI_hsmf_update_data_convertToJSON() failed [vplmn_qos]");
+            goto end;
+        }
+    }
+
+    if (hsmf_update_data->security_result) {
+        cJSON *security_result_local_JSON = OpenAPI_security_result_convertToJSON(hsmf_update_data->security_result);
+        if (security_result_local_JSON == NULL) {
+            ogs_error("OpenAPI_hsmf_update_data_convertToJSON() failed [security_result]");
+            goto end;
+        }
+        cJSON_AddItemToObject(item, "securityResult", security_result_local_JSON);
+        if (item->child == NULL) {
+            ogs_error("OpenAPI_hsmf_update_data_convertToJSON() failed [security_result]");
+            goto end;
+        }
+    }
+
+    if (hsmf_update_data->up_security_info) {
+        cJSON *up_security_info_local_JSON = OpenAPI_up_security_info_convertToJSON(hsmf_update_data->up_security_info);
+        if (up_security_info_local_JSON == NULL) {
+            ogs_error("OpenAPI_hsmf_update_data_convertToJSON() failed [up_security_info]");
+            goto end;
+        }
+        cJSON_AddItemToObject(item, "upSecurityInfo", up_security_info_local_JSON);
+        if (item->child == NULL) {
+            ogs_error("OpenAPI_hsmf_update_data_convertToJSON() failed [up_security_info]");
             goto end;
         }
     }
@@ -1349,13 +1365,6 @@ OpenAPI_hsmf_update_data_t *OpenAPI_hsmf_update_data_parseFromJSON(cJSON *hsmf_u
         roaming_charging_profile_local_nonprim = OpenAPI_roaming_charging_profile_parseFromJSON(roaming_charging_profile);
     }
 
-    cJSON *mo_exp_data_ind = cJSON_GetObjectItemCaseSensitive(hsmf_update_dataJSON, "moExpDataInd");
-
-    OpenAPI_mo_exception_data_flag_t *mo_exp_data_ind_local_nonprim = NULL;
-    if (mo_exp_data_ind) {
-        mo_exp_data_ind_local_nonprim = OpenAPI_mo_exception_data_flag_parseFromJSON(mo_exp_data_ind);
-    }
-
     cJSON *mo_exp_data_counter = cJSON_GetObjectItemCaseSensitive(hsmf_update_dataJSON, "moExpDataCounter");
 
     OpenAPI_mo_exp_data_counter_t *mo_exp_data_counter_local_nonprim = NULL;
@@ -1368,6 +1377,20 @@ OpenAPI_hsmf_update_data_t *OpenAPI_hsmf_update_data_parseFromJSON(cJSON *hsmf_u
     OpenAPI_vplmn_qos_t *vplmn_qos_local_nonprim = NULL;
     if (vplmn_qos) {
         vplmn_qos_local_nonprim = OpenAPI_vplmn_qos_parseFromJSON(vplmn_qos);
+    }
+
+    cJSON *security_result = cJSON_GetObjectItemCaseSensitive(hsmf_update_dataJSON, "securityResult");
+
+    OpenAPI_security_result_t *security_result_local_nonprim = NULL;
+    if (security_result) {
+        security_result_local_nonprim = OpenAPI_security_result_parseFromJSON(security_result);
+    }
+
+    cJSON *up_security_info = cJSON_GetObjectItemCaseSensitive(hsmf_update_dataJSON, "upSecurityInfo");
+
+    OpenAPI_up_security_info_t *up_security_info_local_nonprim = NULL;
+    if (up_security_info) {
+        up_security_info_local_nonprim = OpenAPI_up_security_info_parseFromJSON(up_security_info);
     }
 
     hsmf_update_data_local_var = OpenAPI_hsmf_update_data_create (
@@ -1421,9 +1444,10 @@ OpenAPI_hsmf_update_data_t *OpenAPI_hsmf_update_data_parseFromJSON(cJSON *hsmf_u
         dnai_list ? dnai_listList : NULL,
         supported_features ? ogs_strdup(supported_features->valuestring) : NULL,
         roaming_charging_profile ? roaming_charging_profile_local_nonprim : NULL,
-        mo_exp_data_ind ? mo_exp_data_ind_local_nonprim : NULL,
         mo_exp_data_counter ? mo_exp_data_counter_local_nonprim : NULL,
-        vplmn_qos ? vplmn_qos_local_nonprim : NULL
+        vplmn_qos ? vplmn_qos_local_nonprim : NULL,
+        security_result ? security_result_local_nonprim : NULL,
+        up_security_info ? up_security_info_local_nonprim : NULL
         );
 
     return hsmf_update_data_local_var;

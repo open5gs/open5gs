@@ -6,6 +6,7 @@
 
 OpenAPI_presence_info_t *OpenAPI_presence_info_create(
     char *pra_id,
+    char *additional_pra_id,
     OpenAPI_presence_state_e presence_state,
     OpenAPI_list_t *tracking_area_list,
     OpenAPI_list_t *ecgi_list,
@@ -19,6 +20,7 @@ OpenAPI_presence_info_t *OpenAPI_presence_info_create(
         return NULL;
     }
     presence_info_local_var->pra_id = pra_id;
+    presence_info_local_var->additional_pra_id = additional_pra_id;
     presence_info_local_var->presence_state = presence_state;
     presence_info_local_var->tracking_area_list = tracking_area_list;
     presence_info_local_var->ecgi_list = ecgi_list;
@@ -36,6 +38,7 @@ void OpenAPI_presence_info_free(OpenAPI_presence_info_t *presence_info)
     }
     OpenAPI_lnode_t *node;
     ogs_free(presence_info->pra_id);
+    ogs_free(presence_info->additional_pra_id);
     OpenAPI_list_for_each(presence_info->tracking_area_list, node) {
         OpenAPI_tai_free(node->data);
     }
@@ -72,6 +75,13 @@ cJSON *OpenAPI_presence_info_convertToJSON(OpenAPI_presence_info_t *presence_inf
     if (presence_info->pra_id) {
         if (cJSON_AddStringToObject(item, "praId", presence_info->pra_id) == NULL) {
             ogs_error("OpenAPI_presence_info_convertToJSON() failed [pra_id]");
+            goto end;
+        }
+    }
+
+    if (presence_info->additional_pra_id) {
+        if (cJSON_AddStringToObject(item, "additionalPraId", presence_info->additional_pra_id) == NULL) {
+            ogs_error("OpenAPI_presence_info_convertToJSON() failed [additional_pra_id]");
             goto end;
         }
     }
@@ -195,6 +205,15 @@ OpenAPI_presence_info_t *OpenAPI_presence_info_parseFromJSON(cJSON *presence_inf
     if (pra_id) {
         if (!cJSON_IsString(pra_id)) {
             ogs_error("OpenAPI_presence_info_parseFromJSON() failed [pra_id]");
+            goto end;
+        }
+    }
+
+    cJSON *additional_pra_id = cJSON_GetObjectItemCaseSensitive(presence_infoJSON, "additionalPraId");
+
+    if (additional_pra_id) {
+        if (!cJSON_IsString(additional_pra_id)) {
+            ogs_error("OpenAPI_presence_info_parseFromJSON() failed [additional_pra_id]");
             goto end;
         }
     }
@@ -327,6 +346,7 @@ OpenAPI_presence_info_t *OpenAPI_presence_info_parseFromJSON(cJSON *presence_inf
 
     presence_info_local_var = OpenAPI_presence_info_create (
         pra_id ? ogs_strdup(pra_id->valuestring) : NULL,
+        additional_pra_id ? ogs_strdup(additional_pra_id->valuestring) : NULL,
         presence_state ? presence_stateVariable : 0,
         tracking_area_list ? tracking_area_listList : NULL,
         ecgi_list ? ecgi_listList : NULL,

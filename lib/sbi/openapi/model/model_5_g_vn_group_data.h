@@ -13,6 +13,7 @@
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
 #include "app_descriptor.h"
+#include "ip_address.h"
 #include "pdu_session_type.h"
 #include "snssai.h"
 
@@ -26,13 +27,17 @@ typedef struct OpenAPI_model_5_g_vn_group_data_s {
     struct OpenAPI_snssai_s *s_nssai;
     OpenAPI_list_t *pdu_session_types;
     OpenAPI_list_t *app_descriptors;
+    int secondary_auth;
+    struct OpenAPI_ip_address_s *dn_aaa_address;
 } OpenAPI_model_5_g_vn_group_data_t;
 
 OpenAPI_model_5_g_vn_group_data_t *OpenAPI_model_5_g_vn_group_data_create(
     char *dnn,
     OpenAPI_snssai_t *s_nssai,
     OpenAPI_list_t *pdu_session_types,
-    OpenAPI_list_t *app_descriptors
+    OpenAPI_list_t *app_descriptors,
+    int secondary_auth,
+    OpenAPI_ip_address_t *dn_aaa_address
     );
 void OpenAPI_model_5_g_vn_group_data_free(OpenAPI_model_5_g_vn_group_data_t *model_5_g_vn_group_data);
 OpenAPI_model_5_g_vn_group_data_t *OpenAPI_model_5_g_vn_group_data_parseFromJSON(cJSON *model_5_g_vn_group_dataJSON);

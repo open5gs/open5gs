@@ -1,0 +1,231 @@
+db_uri: mongodb://localhost/open5gs
+
+logger:
+
+parameter:
+#    no_nrf: true
+#    no_amf: true
+#    no_smf: true
+#    no_upf: true
+#    no_ausf: true
+#    no_udm: true
+#    no_pcf: true
+#    no_nssf: true
+#    no_udr: true
+#    no_mme: true
+#    no_sgwc: true
+#    no_sgwu: true
+#    no_pcrf: true
+#    no_hss: true
+
+mme:
+    freeDiameter:
+      identity: mme.localdomain
+      realm: localdomain
+      listen_on: 127.0.0.2
+      load_extension:
+        - module: @freediameter_extensions_builddir@/dbg_msg_dumps.fdx
+          conf: 0x8888
+        - module: @freediameter_extensions_builddir@/dict_rfc5777.fdx
+        - module: @freediameter_extensions_builddir@/dict_mip6i.fdx
+        - module: @freediameter_extensions_builddir@/dict_nasreq.fdx
+        - module: @freediameter_extensions_builddir@/dict_nas_mipv6.fdx
+        - module: @freediameter_extensions_builddir@/dict_dcca.fdx
+        - module: @freediameter_extensions_builddir@/dict_dcca_3gpp.fdx
+      connect:
+        - identity: hss.localdomain
+          addr: 127.0.0.8
+
+    s1ap:
+      - addr: 127.0.0.2
+    gtpc:
+      - addr: 127.0.0.2
+    gummei:
+      plmn_id:
+        mcc: 901
+        mnc: 70
+      mme_gid: 2
+      mme_code: 1
+    tai:
+      plmn_id:
+        mcc: 901
+        mnc: 70
+      tac: 1
+    security:
+        integrity_order : [ EIA2, EIA1, EIA0 ]
+        ciphering_order : [ EEA0, EEA1, EEA2 ]
+
+    network_name:
+        full: Open5GS
+
+sgwc:
+    gtpc:
+      - addr: 127.0.0.3
+    pfcp:
+      - addr: 127.0.0.3
+
+smf:
+    sbi:
+      - addr: 127.0.0.4
+        port: 7777
+    gtpc:
+      - addr: 127.0.0.4
+      - addr: ::1
+    pfcp:
+      - addr: 127.0.0.4
+    subnet:
+      - addr: 10.45.0.1/16
+      - addr: cafe::1/64
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
+      - 2001:4860:4860::8888
+      - 2001:4860:4860::8844
+    mtu: 1400
+    freeDiameter:
+      identity: smf.localdomain
+      realm: localdomain
+      listen_on: 127.0.0.4
+      load_extension:
+        - module: @freediameter_extensions_builddir@/dbg_msg_dumps.fdx
+          conf: 0x8888
+        - module: @freediameter_extensions_builddir@/dict_rfc5777.fdx
+        - module: @freediameter_extensions_builddir@/dict_mip6i.fdx
+        - module: @freediameter_extensions_builddir@/dict_nasreq.fdx
+        - module: @freediameter_extensions_builddir@/dict_nas_mipv6.fdx
+        - module: @freediameter_extensions_builddir@/dict_dcca.fdx
+        - module: @freediameter_extensions_builddir@/dict_dcca_3gpp.fdx
+      connect:
+        - identity: pcrf.localdomain
+          addr: 127.0.0.9
+amf:
+    sbi:
+      - addr: 127.0.0.5
+        port: 7777
+    ngap:
+      - addr: 127.0.0.5
+    guami:
+      - plmn_id:
+          mcc: 901
+          mnc: 70
+        amf_id:
+          region: 202
+          set: 1016
+    tai:
+      - plmn_id:
+          mcc: 901
+          mnc: 70
+        tac: 1
+    plmn_support:
+      - plmn_id:
+          mcc: 901
+          mnc: 70
+        s_nssai:
+          - sst: 1
+          - sst: 1
+            sd: 000080
+          - sst: 1
+            sd: 009000
+    security:
+        integrity_order : [ NIA2, NIA1 ]
+        ciphering_order : [ NEA0, NEA1, NEA2 ]
+    network_name:
+        full: Open5GS
+    amf_name: open5gs-amf0
+
+sgwu:
+    gtpu:
+      - addr: 127.0.0.6
+    pfcp:
+      - addr: 127.0.0.6
+
+upf:
+    pfcp:
+      - addr: 127.0.0.7
+    gtpu:
+      - addr: 127.0.0.7
+    subnet:
+      - addr: 10.45.0.1/16
+      - addr: cafe::1/64
+
+hss:
+    freeDiameter:
+      identity: hss.localdomain
+      realm: localdomain
+      listen_on: 127.0.0.8
+      load_extension:
+        - module: @freediameter_extensions_builddir@/dbg_msg_dumps.fdx
+          conf: 0x8888
+        - module: @freediameter_extensions_builddir@/dict_rfc5777.fdx
+        - module: @freediameter_extensions_builddir@/dict_mip6i.fdx
+        - module: @freediameter_extensions_builddir@/dict_nasreq.fdx
+        - module: @freediameter_extensions_builddir@/dict_nas_mipv6.fdx
+        - module: @freediameter_extensions_builddir@/dict_dcca.fdx
+        - module: @freediameter_extensions_builddir@/dict_dcca_3gpp.fdx
+      connect:
+        - identity: mme.localdomain
+          addr: 127.0.0.2
+pcrf:
+    freeDiameter:
+      identity: pcrf.localdomain
+      realm: localdomain
+      listen_on: 127.0.0.9
+      load_extension:
+        - module: @freediameter_extensions_builddir@/dbg_msg_dumps.fdx
+          conf: 0x8888
+        - module: @freediameter_extensions_builddir@/dict_rfc5777.fdx
+        - module: @freediameter_extensions_builddir@/dict_mip6i.fdx
+        - module: @freediameter_extensions_builddir@/dict_nasreq.fdx
+        - module: @freediameter_extensions_builddir@/dict_nas_mipv6.fdx
+        - module: @freediameter_extensions_builddir@/dict_dcca.fdx
+        - module: @freediameter_extensions_builddir@/dict_dcca_3gpp.fdx
+      connect:
+        - identity: smf.localdomain
+          addr: 127.0.0.4
+
+nrf:
+    sbi:
+      - addr:
+        - 127.0.0.10
+        - ::1
+        port: 7777
+
+ausf:
+    sbi:
+      - addr: 127.0.0.11
+        port: 7777
+
+udm:
+    sbi:
+      - addr: 127.0.0.12
+        port: 7777
+
+pcf:
+    sbi:
+      - addr: 127.0.0.13
+        port: 7777
+
+nssf:
+    sbi:
+      - addr: 127.0.0.14
+        port: 7777
+    nsi:
+      - addr: ::1
+        port: 7777
+        s_nssai:
+          sst: 1
+      - addr: 127.0.0.19
+        port: 7777
+        s_nssai:
+          sst: 1
+          sd: 000080
+      - addr: 127.0.0.10
+        port: 7777
+        s_nssai:
+          sst: 1
+          sd: 009000
+
+udr:
+    sbi:
+      - addr: 127.0.0.20
+        port: 7777

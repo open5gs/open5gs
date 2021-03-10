@@ -12,7 +12,8 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
-#include "problem_details.h"
+#include "ext_problem_details.h"
+#include "n2_sm_info_type.h"
 #include "ref_to_binary_data.h"
 
 #ifdef __cplusplus
@@ -21,14 +22,18 @@ extern "C" {
 
 typedef struct OpenAPI_sm_context_create_error_s OpenAPI_sm_context_create_error_t;
 typedef struct OpenAPI_sm_context_create_error_s {
-    struct OpenAPI_problem_details_s *error;
+    struct OpenAPI_ext_problem_details_s *error;
     struct OpenAPI_ref_to_binary_data_s *n1_sm_msg;
+    struct OpenAPI_ref_to_binary_data_s *n2_sm_info;
+    OpenAPI_n2_sm_info_type_e n2_sm_info_type;
     char *recovery_time;
 } OpenAPI_sm_context_create_error_t;
 
 OpenAPI_sm_context_create_error_t *OpenAPI_sm_context_create_error_create(
-    OpenAPI_problem_details_t *error,
+    OpenAPI_ext_problem_details_t *error,
     OpenAPI_ref_to_binary_data_t *n1_sm_msg,
+    OpenAPI_ref_to_binary_data_t *n2_sm_info,
+    OpenAPI_n2_sm_info_type_e n2_sm_info_type,
     char *recovery_time
     );
 void OpenAPI_sm_context_create_error_free(OpenAPI_sm_context_create_error_t *sm_context_create_error);

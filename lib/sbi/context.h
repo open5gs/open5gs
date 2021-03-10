@@ -30,7 +30,11 @@ extern "C" {
 
 #define OGS_SBI_MAX_NF_TYPE 64
 
+#define OGS_MAX_NUM_OF_NF_INFO 8
+
 typedef struct ogs_sbi_client_s ogs_sbi_client_t;
+typedef struct ogs_sbi_smf_info_s ogs_sbi_smf_info_t;
+
 typedef struct ogs_sbi_context_s {
     uint32_t            http_port;      /* SBI HTTP local port */
     uint32_t            https_port;     /* SBI HTTPS local port */
@@ -44,16 +48,17 @@ typedef struct ogs_sbi_context_s {
     ogs_list_t          nf_instance_list;
     ogs_list_t          subscription_list;
 
+    ogs_list_t          nf_info_list;
+
     const char          *content_encoding;
 } ogs_sbi_context_t;
 
 #define OGS_SETUP_SBI_NF_INSTANCE(__cTX, __pNF_INSTANCE) \
     do { \
-        ogs_assert((__cTX)); \
         ogs_assert((__pNF_INSTANCE)); \
-        if ((__cTX)->nf_instance != __pNF_INSTANCE) \
+        if ((__cTX) != __pNF_INSTANCE) \
             __pNF_INSTANCE->reference_count++; \
-        (__cTX)->nf_instance = __pNF_INSTANCE; \
+        (__cTX) = __pNF_INSTANCE; \
         ogs_trace("nf_instance->reference_count = %d", \
                 __pNF_INSTANCE->reference_count); \
     } while(0)
@@ -95,11 +100,11 @@ typedef struct ogs_sbi_nf_instance_s {
     void *client;                   /* only used in CLIENT */
     unsigned int reference_count;   /* reference count for memory free */
 
+    ogs_list_t nf_info_list;
+
     OpenAPI_nf_profile_t *nf_profile;   /* stored NF Profile */
 } ogs_sbi_nf_instance_t;
 
-#define OGS_SBI_NF_INSTANCE_GET(__aRRAY, __nFType) \
-    ((__aRRAY)[__nFType].nf_instance) 
 typedef struct ogs_sbi_nf_type_array_s {
     ogs_sbi_nf_instance_t *nf_instance;
 } ogs_sbi_nf_type_array_t[OGS_SBI_MAX_NF_TYPE];
@@ -193,6 +198,41 @@ typedef struct ogs_sbi_subscription_s {
     void *client;                       /* only used in SERVER */
 } ogs_sbi_subscription_t;
 
+typedef struct ogs_sbi_smf_info_s {
+    int num_of_slice;
+    struct {
+        ogs_s_nssai_t s_nssai;
+
+        int num_of_dnn;
+        char *dnn[OGS_MAX_NUM_OF_DNN];
+    } slice[OGS_MAX_NUM_OF_SLICE];
+
+    int num_of_nr_tai;
+    ogs_5gs_tai_t nr_tai[OGS_MAX_NUM_OF_TAI];
+
+    int num_of_nr_tai_range;
+    struct {
+        ogs_plmn_id_t plmn_id;
+        /*
+         * TS29.510 6.1.6.2.28 Type: TacRange
+         *
+         * Either the start and end attributes, or
+         * the pattern attribute, shall be present.
+         */
+        int num_of_tac_range;
+        ogs_uint24_t start[OGS_MAX_NUM_OF_TAI], end[OGS_MAX_NUM_OF_TAI];
+    } nr_tai_range[OGS_MAX_NUM_OF_TAI];
+} ogs_sbi_smf_info_t;
+
+typedef struct ogs_sbi_nf_info_s {
+    ogs_lnode_t lnode;
+
+    OpenAPI_nf_type_e nf_type;
+    union {
+        ogs_sbi_smf_info_t smf;
+    };
+} ogs_sbi_nf_info_t;
+
 void ogs_sbi_context_init(void);
 void ogs_sbi_context_final(void);
 ogs_sbi_context_t *ogs_sbi_self(void);
@@ -203,8 +243,6 @@ void ogs_sbi_nf_instance_clear(ogs_sbi_nf_instance_t *nf_instance);
 void ogs_sbi_nf_instance_remove(ogs_sbi_nf_instance_t *nf_instance);
 void ogs_sbi_nf_instance_remove_all(void);
 ogs_sbi_nf_instance_t *ogs_sbi_nf_instance_find(char *id);
-ogs_sbi_nf_instance_t *ogs_sbi_nf_instance_find_by_nf_type(
-        OpenAPI_nf_type_e nf_type);
 
 ogs_sbi_nf_service_t *ogs_sbi_nf_service_add(ogs_sbi_nf_instance_t *nf_instance,
         char *id, char *name, OpenAPI_uri_scheme_e scheme);
@@ -218,6 +256,11 @@ ogs_sbi_nf_service_t *ogs_sbi_nf_service_find_by_id(
 ogs_sbi_nf_service_t *ogs_sbi_nf_service_find_by_name(
         ogs_sbi_nf_instance_t *nf_instance, char *name);
 
+ogs_sbi_nf_info_t *ogs_sbi_nf_info_add(
+        ogs_list_t *list, OpenAPI_nf_type_e nf_type);
+void ogs_sbi_nf_info_remove(ogs_list_t *list, ogs_sbi_nf_info_t *nf_info);
+void ogs_sbi_nf_info_remove_all(ogs_list_t *list);
+
 void ogs_sbi_nf_instance_build_default(
         ogs_sbi_nf_instance_t *nf_instance, OpenAPI_nf_type_e nf_type);
 ogs_sbi_nf_service_t *ogs_sbi_nf_service_build_default(
@@ -227,8 +270,36 @@ ogs_sbi_client_t *ogs_sbi_client_find_by_service_name(
         ogs_sbi_nf_instance_t *nf_instance, char *name, char *version);
 
 bool ogs_sbi_client_associate(ogs_sbi_nf_instance_t *nf_instance);
-bool ogs_sbi_nf_instance_associate(ogs_sbi_nf_type_array_t nf_type_array,
-        OpenAPI_nf_type_e nf_type, void *state);
+
+#define OGS_SBI_NF_INSTANCE(__sBIObject, __nFType) \
+    (((__sBIObject)->nf_type_array)[__nFType].nf_instance)
+
+#define OGS_SBI_SETUP_NF(__sBIObject, __nFType, __nFInstance) \
+    do { \
+        ogs_assert((__sBIObject)); \
+        ogs_assert((__nFType)); \
+        ogs_assert((__nFInstance)); \
+        \
+        if (OGS_SBI_NF_INSTANCE((__sBIObject), (__nFType))) { \
+            ogs_warn("UE %s-EndPoint updated [%s]", \
+                    OpenAPI_nf_type_ToString((__nFType)), \
+                    (__nFInstance)->id); \
+            ogs_sbi_nf_instance_remove( \
+                    OGS_SBI_NF_INSTANCE((__sBIObject), (__nFType))); \
+        } \
+        \
+        if (OGS_SBI_NF_INSTANCE( \
+                (__sBIObject), (__nFType)) != (__nFInstance)) { \
+            (__nFInstance)->reference_count++; \
+        } \
+        OGS_SBI_NF_INSTANCE((__sBIObject), (__nFType)) = (__nFInstance); \
+        ogs_trace("nf_instance->reference_count = %d", \
+                (__nFInstance)->reference_count); \
+    } while(0)
+
+void ogs_sbi_select_nrf(ogs_sbi_object_t *sbi_object, void *state);
+void ogs_sbi_select_first_nf(
+        ogs_sbi_object_t *sbi_object, OpenAPI_nf_type_e nf_type, void *state);
 
 void ogs_sbi_object_free(ogs_sbi_object_t *sbi_object);
 

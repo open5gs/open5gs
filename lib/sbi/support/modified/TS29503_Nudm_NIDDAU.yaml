@@ -1,7 +1,7 @@
 openapi: 3.0.0
 
 info:
-  version: '1.0.0.alpha-4'
+  version: '1.0.1'
   title: 'Nudm_NIDDAU'
   description: |
     Nudm NIDD Authorization Service.
@@ -9,7 +9,7 @@ info:
     All rights reserved.
 
 externalDocs:
-  description: 3GPP TS 29.503 Unified Data Management Services, version 16.3.0
+  description: 3GPP TS 29.503 Unified Data Management Services, version 16.6.0
   url: 'http://www.3gpp.org/ftp/Specs/archive/29_series/29.503/'
 
 servers:
@@ -158,6 +158,8 @@ components:
           $ref: 'TS29571_CommonData.yaml#/components/schemas/MtcProviderInformation'
         authUpdateCallbackUri:
           $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        afId:
+          type: string
 
 
 # SIMPLE TYPES:

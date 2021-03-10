@@ -52,10 +52,10 @@ ogs_sbi_request_t *smf_npcf_smpolicycontrol_build_create(
     SmPolicyContextData.supi = smf_ue->supi;
     ogs_assert(sess->psi);
     SmPolicyContextData.pdu_session_id = sess->psi;
-    ogs_assert(sess->pdn.pdn_type);
-    SmPolicyContextData.pdu_session_type = sess->pdn.pdn_type;
-    ogs_assert(sess->dnn);
-    SmPolicyContextData.dnn = sess->dnn;
+    ogs_assert(sess->session.session_type);
+    SmPolicyContextData.pdu_session_type = sess->session.session_type;
+    ogs_assert(sess->session.name);
+    SmPolicyContextData.dnn = sess->session.name;
 
     server = ogs_list_first(&ogs_sbi_self()->server_list);
     ogs_assert(server);
@@ -72,13 +72,13 @@ ogs_sbi_request_t *smf_npcf_smpolicycontrol_build_create(
     memset(&SubsSessAmbr, 0, sizeof(SubsSessAmbr));
     if (OGS_SBI_FEATURES_IS_SET(sess->smpolicycontrol_features,
                 OGS_SBI_NPCF_SMPOLICYCONTROL_DN_AUTHORIZATION)) {
-        if (sess->pdn.ambr.uplink) {
+        if (sess->session.ambr.uplink) {
             SubsSessAmbr.uplink = ogs_sbi_bitrate_to_string(
-                sess->pdn.ambr.uplink, OGS_SBI_BITRATE_KBPS);
+                sess->session.ambr.uplink, OGS_SBI_BITRATE_KBPS);
         }
-        if (sess->pdn.ambr.downlink) {
+        if (sess->session.ambr.downlink) {
             SubsSessAmbr.downlink = ogs_sbi_bitrate_to_string(
-                sess->pdn.ambr.downlink, OGS_SBI_BITRATE_KBPS);
+                sess->session.ambr.downlink, OGS_SBI_BITRATE_KBPS);
         }
         if (SubsSessAmbr.downlink || SubsSessAmbr.uplink) {
             SmPolicyContextData.subs_sess_ambr = &SubsSessAmbr;
@@ -86,22 +86,26 @@ ogs_sbi_request_t *smf_npcf_smpolicycontrol_build_create(
     }
 
     memset(&Arp, 0, sizeof(Arp));
-    if (sess->pdn.qos.arp.pre_emption_capability ==
-            OGS_PDN_PRE_EMPTION_CAPABILITY_ENABLED)
+    if (sess->session.qos.arp.pre_emption_capability ==
+            OGS_5GC_PRE_EMPTION_ENABLED)
         Arp.preempt_cap = OpenAPI_preemption_capability_MAY_PREEMPT;
-    else
+    else if (sess->session.qos.arp.pre_emption_capability ==
+            OGS_5GC_PRE_EMPTION_DISABLED)
         Arp.preempt_cap = OpenAPI_preemption_capability_NOT_PREEMPT;
-    if (sess->pdn.qos.arp.pre_emption_vulnerability ==
-            OGS_PDN_PRE_EMPTION_CAPABILITY_ENABLED)
+    ogs_assert(Arp.preempt_cap);
+    if (sess->session.qos.arp.pre_emption_vulnerability ==
+            OGS_5GC_PRE_EMPTION_ENABLED)
         Arp.preempt_vuln = OpenAPI_preemption_vulnerability_PREEMPTABLE;
-    else
+    else if (sess->session.qos.arp.pre_emption_vulnerability ==
+            OGS_5GC_PRE_EMPTION_DISABLED)
         Arp.preempt_vuln = OpenAPI_preemption_vulnerability_NOT_PREEMPTABLE;
-    Arp.priority_level = sess->pdn.qos.arp.priority_level;
+    ogs_assert(Arp.preempt_vuln);
+    Arp.priority_level = sess->session.qos.arp.priority_level;
 
     memset(&SubsDefQos, 0, sizeof(SubsDefQos));
     SubsDefQos.arp = &Arp;
-    SubsDefQos._5qi = sess->pdn.qos.qci;
-    SubsDefQos.priority_level = sess->pdn.qos.arp.priority_level;
+    SubsDefQos._5qi = sess->session.qos.index;
+    SubsDefQos.priority_level = sess->session.qos.arp.priority_level;
 
     SmPolicyContextData.subs_def_qos = &SubsDefQos;
 

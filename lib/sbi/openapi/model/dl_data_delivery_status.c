@@ -4,82 +4,27 @@
 #include <stdio.h>
 #include "dl_data_delivery_status.h"
 
-OpenAPI_dl_data_delivery_status_t *OpenAPI_dl_data_delivery_status_create(
-    )
+char* OpenAPI_dl_data_delivery_status_ToString(OpenAPI_dl_data_delivery_status_e dl_data_delivery_status)
 {
-    OpenAPI_dl_data_delivery_status_t *dl_data_delivery_status_local_var = OpenAPI_malloc(sizeof(OpenAPI_dl_data_delivery_status_t));
-    if (!dl_data_delivery_status_local_var) {
-        return NULL;
-    }
-
-    return dl_data_delivery_status_local_var;
+    const char *dl_data_delivery_statusArray[] =  { "NULL", "BUFFERED", "TRANSMITTED", "DISCARDED" };
+    size_t sizeofArray = sizeof(dl_data_delivery_statusArray) / sizeof(dl_data_delivery_statusArray[0]);
+    if (dl_data_delivery_status < sizeofArray)
+        return (char *)dl_data_delivery_statusArray[dl_data_delivery_status];
+    else
+        return (char *)"Unknown";
 }
 
-void OpenAPI_dl_data_delivery_status_free(OpenAPI_dl_data_delivery_status_t *dl_data_delivery_status)
+OpenAPI_dl_data_delivery_status_e OpenAPI_dl_data_delivery_status_FromString(char* dl_data_delivery_status)
 {
-    if (NULL == dl_data_delivery_status) {
-        return;
+    int stringToReturn = 0;
+    const char *dl_data_delivery_statusArray[] =  { "NULL", "BUFFERED", "TRANSMITTED", "DISCARDED" };
+    size_t sizeofArray = sizeof(dl_data_delivery_statusArray) / sizeof(dl_data_delivery_statusArray[0]);
+    while (stringToReturn < sizeofArray) {
+        if (strcmp(dl_data_delivery_status, dl_data_delivery_statusArray[stringToReturn]) == 0) {
+            return stringToReturn;
+        }
+        stringToReturn++;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(dl_data_delivery_status);
-}
-
-cJSON *OpenAPI_dl_data_delivery_status_convertToJSON(OpenAPI_dl_data_delivery_status_t *dl_data_delivery_status)
-{
-    cJSON *item = NULL;
-
-    if (dl_data_delivery_status == NULL) {
-        ogs_error("OpenAPI_dl_data_delivery_status_convertToJSON() failed [DlDataDeliveryStatus]");
-        return NULL;
-    }
-
-    item = cJSON_CreateObject();
-end:
-    return item;
-}
-
-OpenAPI_dl_data_delivery_status_t *OpenAPI_dl_data_delivery_status_parseFromJSON(cJSON *dl_data_delivery_statusJSON)
-{
-    OpenAPI_dl_data_delivery_status_t *dl_data_delivery_status_local_var = NULL;
-    dl_data_delivery_status_local_var = OpenAPI_dl_data_delivery_status_create (
-        );
-
-    return dl_data_delivery_status_local_var;
-end:
-    return NULL;
-}
-
-OpenAPI_dl_data_delivery_status_t *OpenAPI_dl_data_delivery_status_copy(OpenAPI_dl_data_delivery_status_t *dst, OpenAPI_dl_data_delivery_status_t *src)
-{
-    cJSON *item = NULL;
-    char *content = NULL;
-
-    ogs_assert(src);
-    item = OpenAPI_dl_data_delivery_status_convertToJSON(src);
-    if (!item) {
-        ogs_error("OpenAPI_dl_data_delivery_status_convertToJSON() failed");
-        return NULL;
-    }
-
-    content = cJSON_Print(item);
-    cJSON_Delete(item);
-
-    if (!content) {
-        ogs_error("cJSON_Print() failed");
-        return NULL;
-    }
-
-    item = cJSON_Parse(content);
-    ogs_free(content);
-    if (!item) {
-        ogs_error("cJSON_Parse() failed");
-        return NULL;
-    }
-
-    OpenAPI_dl_data_delivery_status_free(dst);
-    dst = OpenAPI_dl_data_delivery_status_parseFromJSON(item);
-    cJSON_Delete(item);
-
-    return dst;
+    return 0;
 }
 

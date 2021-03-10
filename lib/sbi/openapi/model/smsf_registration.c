@@ -11,7 +11,8 @@ OpenAPI_smsf_registration_t *OpenAPI_smsf_registration_create(
     OpenAPI_plmn_id_t *plmn_id,
     char *smsf_map_address,
     OpenAPI_network_node_diameter_address_t *smsf_diameter_address,
-    char *registration_time
+    char *registration_time,
+    OpenAPI_context_info_t *context_info
     )
 {
     OpenAPI_smsf_registration_t *smsf_registration_local_var = OpenAPI_malloc(sizeof(OpenAPI_smsf_registration_t));
@@ -25,6 +26,7 @@ OpenAPI_smsf_registration_t *OpenAPI_smsf_registration_create(
     smsf_registration_local_var->smsf_map_address = smsf_map_address;
     smsf_registration_local_var->smsf_diameter_address = smsf_diameter_address;
     smsf_registration_local_var->registration_time = registration_time;
+    smsf_registration_local_var->context_info = context_info;
 
     return smsf_registration_local_var;
 }
@@ -42,6 +44,7 @@ void OpenAPI_smsf_registration_free(OpenAPI_smsf_registration_t *smsf_registrati
     ogs_free(smsf_registration->smsf_map_address);
     OpenAPI_network_node_diameter_address_free(smsf_registration->smsf_diameter_address);
     ogs_free(smsf_registration->registration_time);
+    OpenAPI_context_info_free(smsf_registration->context_info);
     ogs_free(smsf_registration);
 }
 
@@ -120,6 +123,19 @@ cJSON *OpenAPI_smsf_registration_convertToJSON(OpenAPI_smsf_registration_t *smsf
         }
     }
 
+    if (smsf_registration->context_info) {
+        cJSON *context_info_local_JSON = OpenAPI_context_info_convertToJSON(smsf_registration->context_info);
+        if (context_info_local_JSON == NULL) {
+            ogs_error("OpenAPI_smsf_registration_convertToJSON() failed [context_info]");
+            goto end;
+        }
+        cJSON_AddItemToObject(item, "contextInfo", context_info_local_JSON);
+        if (item->child == NULL) {
+            ogs_error("OpenAPI_smsf_registration_convertToJSON() failed [context_info]");
+            goto end;
+        }
+    }
+
 end:
     return item;
 }
@@ -192,6 +208,13 @@ OpenAPI_smsf_registration_t *OpenAPI_smsf_registration_parseFromJSON(cJSON *smsf
         }
     }
 
+    cJSON *context_info = cJSON_GetObjectItemCaseSensitive(smsf_registrationJSON, "contextInfo");
+
+    OpenAPI_context_info_t *context_info_local_nonprim = NULL;
+    if (context_info) {
+        context_info_local_nonprim = OpenAPI_context_info_parseFromJSON(context_info);
+    }
+
     smsf_registration_local_var = OpenAPI_smsf_registration_create (
         ogs_strdup(smsf_instance_id->valuestring),
         smsf_set_id ? ogs_strdup(smsf_set_id->valuestring) : NULL,
@@ -199,7 +222,8 @@ OpenAPI_smsf_registration_t *OpenAPI_smsf_registration_parseFromJSON(cJSON *smsf
         plmn_id_local_nonprim,
         smsf_map_address ? ogs_strdup(smsf_map_address->valuestring) : NULL,
         smsf_diameter_address ? smsf_diameter_address_local_nonprim : NULL,
-        registration_time ? ogs_strdup(registration_time->valuestring) : NULL
+        registration_time ? ogs_strdup(registration_time->valuestring) : NULL,
+        context_info ? context_info_local_nonprim : NULL
         );
 
     return smsf_registration_local_var;

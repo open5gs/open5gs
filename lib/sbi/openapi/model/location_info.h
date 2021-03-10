@@ -12,7 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
-#include "object.h"
+#include "registration_location_info.h"
 
 #ifdef __cplusplus
 extern "C" {

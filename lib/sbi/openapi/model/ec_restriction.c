@@ -7,7 +7,8 @@
 OpenAPI_ec_restriction_t *OpenAPI_ec_restriction_create(
     char *af_instance_id,
     int reference_id,
-    OpenAPI_list_t *plmn_ec_infos
+    OpenAPI_list_t *plmn_ec_infos,
+    char *mtc_provider_information
     )
 {
     OpenAPI_ec_restriction_t *ec_restriction_local_var = OpenAPI_malloc(sizeof(OpenAPI_ec_restriction_t));
@@ -17,6 +18,7 @@ OpenAPI_ec_restriction_t *OpenAPI_ec_restriction_create(
     ec_restriction_local_var->af_instance_id = af_instance_id;
     ec_restriction_local_var->reference_id = reference_id;
     ec_restriction_local_var->plmn_ec_infos = plmn_ec_infos;
+    ec_restriction_local_var->mtc_provider_information = mtc_provider_information;
 
     return ec_restriction_local_var;
 }
@@ -32,6 +34,7 @@ void OpenAPI_ec_restriction_free(OpenAPI_ec_restriction_t *ec_restriction)
         OpenAPI_plmn_ec_info_free(node->data);
     }
     OpenAPI_list_free(ec_restriction->plmn_ec_infos);
+    ogs_free(ec_restriction->mtc_provider_information);
     ogs_free(ec_restriction);
 }
 
@@ -80,6 +83,13 @@ cJSON *OpenAPI_ec_restriction_convertToJSON(OpenAPI_ec_restriction_t *ec_restric
                 }
                 cJSON_AddItemToArray(plmn_ec_infosList, itemLocal);
             }
+        }
+    }
+
+    if (ec_restriction->mtc_provider_information) {
+        if (cJSON_AddStringToObject(item, "mtcProviderInformation", ec_restriction->mtc_provider_information) == NULL) {
+            ogs_error("OpenAPI_ec_restriction_convertToJSON() failed [mtc_provider_information]");
+            goto end;
         }
     }
 
@@ -137,10 +147,20 @@ OpenAPI_ec_restriction_t *OpenAPI_ec_restriction_parseFromJSON(cJSON *ec_restric
         }
     }
 
+    cJSON *mtc_provider_information = cJSON_GetObjectItemCaseSensitive(ec_restrictionJSON, "mtcProviderInformation");
+
+    if (mtc_provider_information) {
+        if (!cJSON_IsString(mtc_provider_information)) {
+            ogs_error("OpenAPI_ec_restriction_parseFromJSON() failed [mtc_provider_information]");
+            goto end;
+        }
+    }
+
     ec_restriction_local_var = OpenAPI_ec_restriction_create (
         ogs_strdup(af_instance_id->valuestring),
         reference_id->valuedouble,
-        plmn_ec_infos ? plmn_ec_infosList : NULL
+        plmn_ec_infos ? plmn_ec_infosList : NULL,
+        mtc_provider_information ? ogs_strdup(mtc_provider_information->valuestring) : NULL
         );
 
     return ec_restriction_local_var;

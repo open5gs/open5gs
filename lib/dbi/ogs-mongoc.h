@@ -37,6 +37,8 @@ typedef struct ogs_mongoc_s {
     void *client;
     void *database;
 
+    char *masked_db_uri;
+
     struct {
         void *subscriber;
     } collection;

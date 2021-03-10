@@ -17,10 +17,12 @@
 #include "dnn_selection_mode.h"
 #include "eps_bearer_info.h"
 #include "eps_pdn_cnx_info.h"
+#include "ip_address.h"
 #include "max_integrity_protected_data_rate.h"
 #include "pdu_session_type.h"
 #include "qos_flow_setup_item.h"
 #include "roaming_charging_profile.h"
+#include "sbi_binding_level.h"
 #include "snssai.h"
 #include "tunnel_info.h"
 #include "up_security.h"
@@ -50,6 +52,9 @@ typedef struct OpenAPI_sm_context_s {
     OpenAPI_list_t *qos_flows_list;
     char *h_smf_instance_id;
     char *smf_instance_id;
+    char *pdu_session_smf_set_id;
+    char *pdu_session_smf_service_set_id;
+    OpenAPI_sbi_binding_level_e pdu_session_smf_binding;
     int enable_pause_charging;
     char *ue_ipv4_address;
     char *ue_ipv6_prefix;
@@ -67,6 +72,8 @@ typedef struct OpenAPI_sm_context_s {
     struct OpenAPI_charging_information_s *charging_info;
     struct OpenAPI_roaming_charging_profile_s *roaming_charging_profile;
     int nef_ext_buf_support_ind;
+    int ipv6_index;
+    struct OpenAPI_ip_address_s *dn_aaa_address;
 } OpenAPI_sm_context_t;
 
 OpenAPI_sm_context_t *OpenAPI_sm_context_create(
@@ -89,6 +96,9 @@ OpenAPI_sm_context_t *OpenAPI_sm_context_create(
     OpenAPI_list_t *qos_flows_list,
     char *h_smf_instance_id,
     char *smf_instance_id,
+    char *pdu_session_smf_set_id,
+    char *pdu_session_smf_service_set_id,
+    OpenAPI_sbi_binding_level_e pdu_session_smf_binding,
     int enable_pause_charging,
     char *ue_ipv4_address,
     char *ue_ipv6_prefix,
@@ -105,7 +115,9 @@ OpenAPI_sm_context_t *OpenAPI_sm_context_create(
     char *home_provided_charging_id,
     OpenAPI_charging_information_t *charging_info,
     OpenAPI_roaming_charging_profile_t *roaming_charging_profile,
-    int nef_ext_buf_support_ind
+    int nef_ext_buf_support_ind,
+    int ipv6_index,
+    OpenAPI_ip_address_t *dn_aaa_address
     );
 void OpenAPI_sm_context_free(OpenAPI_sm_context_t *sm_context);
 OpenAPI_sm_context_t *OpenAPI_sm_context_parseFromJSON(cJSON *sm_contextJSON);

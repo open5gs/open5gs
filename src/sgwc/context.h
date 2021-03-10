@@ -105,7 +105,7 @@ typedef struct sgwc_sess_s {
     } state;
 
     /* APN Configuration */
-    ogs_pdn_t       pdn;
+    ogs_session_t session;
 
     ogs_list_t      bearer_list;
 

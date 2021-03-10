@@ -28,6 +28,7 @@ typedef struct OpenAPI_problem_details_2_s {
     char *cause;
     OpenAPI_list_t *invalid_params;
     char *supported_features;
+    char *target_scp;
 } OpenAPI_problem_details_2_t;
 
 OpenAPI_problem_details_2_t *OpenAPI_problem_details_2_create(
@@ -38,7 +39,8 @@ OpenAPI_problem_details_2_t *OpenAPI_problem_details_2_create(
     char *instance,
     char *cause,
     OpenAPI_list_t *invalid_params,
-    char *supported_features
+    char *supported_features,
+    char *target_scp
     );
 void OpenAPI_problem_details_2_free(OpenAPI_problem_details_2_t *problem_details_2);
 OpenAPI_problem_details_2_t *OpenAPI_problem_details_2_parseFromJSON(cJSON *problem_details_2JSON);

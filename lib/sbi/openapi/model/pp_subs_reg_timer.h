@@ -23,13 +23,15 @@ typedef struct OpenAPI_pp_subs_reg_timer_s {
     char *af_instance_id;
     int reference_id;
     char *validity_time;
+    char *mtc_provider_information;
 } OpenAPI_pp_subs_reg_timer_t;
 
 OpenAPI_pp_subs_reg_timer_t *OpenAPI_pp_subs_reg_timer_create(
     int subs_reg_timer,
     char *af_instance_id,
     int reference_id,
-    char *validity_time
+    char *validity_time,
+    char *mtc_provider_information
     );
 void OpenAPI_pp_subs_reg_timer_free(OpenAPI_pp_subs_reg_timer_t *pp_subs_reg_timer);
 OpenAPI_pp_subs_reg_timer_t *OpenAPI_pp_subs_reg_timer_parseFromJSON(cJSON *pp_subs_reg_timerJSON);

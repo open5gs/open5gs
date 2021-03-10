@@ -52,8 +52,9 @@ The Open5GS 5G SA Core contains the following functions:
 * UDM - Unified Data Management
 * UDR - Unified Data Repository
 * PCF - Policy and Charging Function
+* NSSF - Network Slice Selection Function
 
-The 5G SA core works in a different way to the 4G core - it uses a **Service Based Architecture** (SBI). **Control plane** functions are configured to register with the NRF, and the NRF then helps them discover the other core functions. Running through the other functions: The AMF handles connection and mobility management; a subset of what the 4G MME is tasked with. gNBs (5G basestations) connect to the AMF. The UDM, AUSF and UDR carry out similar operations as the 4G HSS, generating SIM authentication vectors and holding the subscriber profile. Session management is all handled by the SMF (previously the responsibility of the 4G MME/ SGWC/ PGWC). Finally there is the PCF, used for charging and enforcing subscriber policies.
+The 5G SA core works in a different way to the 4G core - it uses a **Service Based Architecture** (SBI). **Control plane** functions are configured to register with the NRF, and the NRF then helps them discover the other core functions. Running through the other functions: The AMF handles connection and mobility management; a subset of what the 4G MME is tasked with. gNBs (5G basestations) connect to the AMF. The UDM, AUSF and UDR carry out similar operations as the 4G HSS, generating SIM authentication vectors and holding the subscriber profile. Session management is all handled by the SMF (previously the responsibility of the 4G MME/ SGWC/ PGWC). The NSSF provides a way to select the network slice. Finally there is the PCF, used for charging and enforcing subscriber policies.
 
 The 5G SA core **user plane** is much simpler, as it only contains a single function. The UPF carries user data packets between the gNB and the external WAN. It connects back to the SMF too. 
 
@@ -153,7 +154,7 @@ https://download.opensuse.org/repositories/network:/osmocom:/nightly/xUbuntu_20.
 ## 3. Install the  WebUI of Open5GS
 ---
 
-The WebUI allows you to interactively edit subscriber data. While it is not essential to use this, it makes things easier when you are just starting out on your Open5GS adventure. (A [command line tool](https://github.com/{{ site.github_username }}/open5gs/blob/master/misc/db/open5gs-dbctl) is available for advanced users).
+The WebUI allows you to interactively edit subscriber data. While it is not essential to use this, it makes things easier when you are just starting out on your Open5GS adventure. (A [command line tool](https://github.com/{{ site.github_username }}/open5gs/blob/main/misc/db/open5gs-dbctl) is available for advanced users).
 
 
 [Node.js](https://nodejs.org/) is required to install the WebUI of Open5GS
@@ -218,6 +219,7 @@ NRF-sbi   = 127.0.0.10:7777 for 5G SBI
 AUSF-sbi  = 127.0.0.11:7777 for 5G SBI
 UDM-sbi   = 127.0.0.12:7777 for 5G SBI
 PCF-sbi   = 127.0.0.13:7777 for 5G SBI
+NSSF-sbi  = 127.0.0.14:7777 for 5G SBI
 UDR-sbi   = 127.0.0.20:7777 for 5G SBI
 ```
 
@@ -228,7 +230,7 @@ You will need to modify your 4G MME config to support your PLMN and TAC. The int
 If you are aiming to connect an external eNB to your core, you will also need to change the S1AP bind address of the MME **and** the GTP-U bind address of the SGWU. If you are running an eNB stack locally, you will not need to make these changes.
 
 
-Modify [/etc/open5gs/mme.yaml](https://github.com/{{ site.github_username }}/open5gs/blob/master/configs/open5gs/mme.yaml.in) to set the S1AP IP address, PLMN ID, and TAC.
+Modify [/etc/open5gs/mme.yaml](https://github.com/{{ site.github_username }}/open5gs/blob/main/configs/open5gs/mme.yaml.in) to set the S1AP IP address, PLMN ID, and TAC.
 
 ```diff
 $ diff -u /etc/open5gs/mme.yaml.old /etc/open5gs/mme.yaml
@@ -260,7 +262,7 @@ $ diff -u /etc/open5gs/mme.yaml.old /etc/open5gs/mme.yaml
 
 ```
 
-Modify [/etc/open5gs/sgwu.yaml](https://github.com/{{ site.github_username }}/open5gs/blob/master/configs/open5gs/sgwu.yaml.in) to set the GTP-U IP address.
+Modify [/etc/open5gs/sgwu.yaml](https://github.com/{{ site.github_username }}/open5gs/blob/main/configs/open5gs/sgwu.yaml.in) to set the GTP-U IP address.
 ```diff
 $ diff -u /etc/open5gs/sgwu.yaml.old /etc/open5gs/sgwu.yaml
 
@@ -287,7 +289,7 @@ You will need to modify your 5G AMF config to support your PLMN and TAC. The int
 If you are aiming to connect an external gNB to your core, you will also need to change the NGAP bind address of the AMF **and** the GTPU bind address of the UPF. If you are running an gNB stack locally, you will not need to make these changes.
 
 
-Modify [/etc/open5gs/amf.yaml](https://github.com/{{ site.github_username }}/open5gs/blob/master/configs/open5gs/amf.yaml.in) to set the NGAP IP address, PLMN ID, TAC and NSSAI.
+Modify [/etc/open5gs/amf.yaml](https://github.com/{{ site.github_username }}/open5gs/blob/main/configs/open5gs/amf.yaml.in) to set the NGAP IP address, PLMN ID, TAC and NSSAI.
 
 ```diff
 $ diff -u /etc/open5gs/amf.yaml.old /etc/open5gs/amf.yaml
@@ -316,7 +318,7 @@ amf:
 +          mcc: 001 # set your PLMN-MCC
 +          mnc: 01  # set your PLMN-MNC
 +        tac: 2 # should match the TAC used by your gNB
-     plmn:
+     plmn_support:
        - plmn_id:
 -          mcc: 901
 -          mnc: 70
@@ -328,7 +330,7 @@ amf:
 
 ```
 
-Modify [/etc/open5gs/upf.yaml](https://github.com/{{ site.github_username }}/open5gs/blob/master/configs/open5gs/upf.yaml.in) to set the GTP-U address.
+Modify [/etc/open5gs/upf.yaml](https://github.com/{{ site.github_username }}/open5gs/blob/main/configs/open5gs/upf.yaml.in) to set the GTP-U address.
 ```diff
 $ diff -u /etc/open5gs/upf.yaml.old /etc/open5gs/upf.yaml
 
@@ -338,7 +340,7 @@ upf:
      gtpu:
 -      - addr: 127.0.0.7
 +      - addr: 10.11.0.7 # for external gNB - a local address that can be reached by the gNB
-     pdn:
+     subnet:
        - addr: 10.45.0.1/16
        - addr: cafe::1/64
 
@@ -463,6 +465,7 @@ $ sudo systemctl stop open5gs-nrfd
 $ sudo systemctl stop open5gs-ausfd
 $ sudo systemctl stop open5gs-udmd
 $ sudo systemctl stop open5gs-pcfd
+$ sudo systemctl stop open5gs-nssfd
 $ sudo systemctl stop open5gs-udrd
 $ sudo systemctl stop open5gs-webui
 ```
@@ -480,6 +483,7 @@ $ sudo systemctl restart open5gs-nrfd
 $ sudo systemctl restart open5gs-ausfd
 $ sudo systemctl restart open5gs-udmd
 $ sudo systemctl restart open5gs-pcfd
+$ sudo systemctl restart open5gs-nssfd
 $ sudo systemctl restart open5gs-udrd
 $ sudo systemctl restart open5gs-webui
 ```

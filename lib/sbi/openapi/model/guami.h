@@ -12,7 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
-#include "plmn_id.h"
+#include "plmn_id_nid.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -20,12 +20,12 @@ extern "C" {
 
 typedef struct OpenAPI_guami_s OpenAPI_guami_t;
 typedef struct OpenAPI_guami_s {
-    struct OpenAPI_plmn_id_s *plmn_id;
+    struct OpenAPI_plmn_id_nid_s *plmn_id;
     char *amf_id;
 } OpenAPI_guami_t;
 
 OpenAPI_guami_t *OpenAPI_guami_create(
-    OpenAPI_plmn_id_t *plmn_id,
+    OpenAPI_plmn_id_nid_t *plmn_id,
     char *amf_id
     );
 void OpenAPI_guami_free(OpenAPI_guami_t *guami);

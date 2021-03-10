@@ -10,11 +10,12 @@ OpenAPI_n3ga_location_t *OpenAPI_n3ga_location_create(
     char *ue_ipv4_addr,
     char *ue_ipv6_addr,
     int port_number,
-    char *ss_id,
-    char *bss_id,
-    char civic_address,
+    OpenAPI_tnap_id_t *tnap_id,
+    OpenAPI_twap_id_t *twap_id,
     OpenAPI_hfc_node_id_t *hfc_node_id,
-    char gli
+    char gli,
+    OpenAPI_line_type_e w5gban_line_type,
+    char *gci
     )
 {
     OpenAPI_n3ga_location_t *n3ga_location_local_var = OpenAPI_malloc(sizeof(OpenAPI_n3ga_location_t));
@@ -26,11 +27,12 @@ OpenAPI_n3ga_location_t *OpenAPI_n3ga_location_create(
     n3ga_location_local_var->ue_ipv4_addr = ue_ipv4_addr;
     n3ga_location_local_var->ue_ipv6_addr = ue_ipv6_addr;
     n3ga_location_local_var->port_number = port_number;
-    n3ga_location_local_var->ss_id = ss_id;
-    n3ga_location_local_var->bss_id = bss_id;
-    n3ga_location_local_var->civic_address = civic_address;
+    n3ga_location_local_var->tnap_id = tnap_id;
+    n3ga_location_local_var->twap_id = twap_id;
     n3ga_location_local_var->hfc_node_id = hfc_node_id;
     n3ga_location_local_var->gli = gli;
+    n3ga_location_local_var->w5gban_line_type = w5gban_line_type;
+    n3ga_location_local_var->gci = gci;
 
     return n3ga_location_local_var;
 }
@@ -45,9 +47,10 @@ void OpenAPI_n3ga_location_free(OpenAPI_n3ga_location_t *n3ga_location)
     ogs_free(n3ga_location->n3_iwf_id);
     ogs_free(n3ga_location->ue_ipv4_addr);
     ogs_free(n3ga_location->ue_ipv6_addr);
-    ogs_free(n3ga_location->ss_id);
-    ogs_free(n3ga_location->bss_id);
+    OpenAPI_tnap_id_free(n3ga_location->tnap_id);
+    OpenAPI_twap_id_free(n3ga_location->twap_id);
     OpenAPI_hfc_node_id_free(n3ga_location->hfc_node_id);
+    ogs_free(n3ga_location->gci);
     ogs_free(n3ga_location);
 }
 
@@ -102,23 +105,28 @@ cJSON *OpenAPI_n3ga_location_convertToJSON(OpenAPI_n3ga_location_t *n3ga_locatio
         }
     }
 
-    if (n3ga_location->ss_id) {
-        if (cJSON_AddStringToObject(item, "ssId", n3ga_location->ss_id) == NULL) {
-            ogs_error("OpenAPI_n3ga_location_convertToJSON() failed [ss_id]");
+    if (n3ga_location->tnap_id) {
+        cJSON *tnap_id_local_JSON = OpenAPI_tnap_id_convertToJSON(n3ga_location->tnap_id);
+        if (tnap_id_local_JSON == NULL) {
+            ogs_error("OpenAPI_n3ga_location_convertToJSON() failed [tnap_id]");
+            goto end;
+        }
+        cJSON_AddItemToObject(item, "tnapId", tnap_id_local_JSON);
+        if (item->child == NULL) {
+            ogs_error("OpenAPI_n3ga_location_convertToJSON() failed [tnap_id]");
             goto end;
         }
     }
 
-    if (n3ga_location->bss_id) {
-        if (cJSON_AddStringToObject(item, "bssId", n3ga_location->bss_id) == NULL) {
-            ogs_error("OpenAPI_n3ga_location_convertToJSON() failed [bss_id]");
+    if (n3ga_location->twap_id) {
+        cJSON *twap_id_local_JSON = OpenAPI_twap_id_convertToJSON(n3ga_location->twap_id);
+        if (twap_id_local_JSON == NULL) {
+            ogs_error("OpenAPI_n3ga_location_convertToJSON() failed [twap_id]");
             goto end;
         }
-    }
-
-    if (n3ga_location->civic_address) {
-        if (cJSON_AddNumberToObject(item, "civicAddress", n3ga_location->civic_address) == NULL) {
-            ogs_error("OpenAPI_n3ga_location_convertToJSON() failed [civic_address]");
+        cJSON_AddItemToObject(item, "twapId", twap_id_local_JSON);
+        if (item->child == NULL) {
+            ogs_error("OpenAPI_n3ga_location_convertToJSON() failed [twap_id]");
             goto end;
         }
     }
@@ -139,6 +147,20 @@ cJSON *OpenAPI_n3ga_location_convertToJSON(OpenAPI_n3ga_location_t *n3ga_locatio
     if (n3ga_location->gli) {
         if (cJSON_AddNumberToObject(item, "gli", n3ga_location->gli) == NULL) {
             ogs_error("OpenAPI_n3ga_location_convertToJSON() failed [gli]");
+            goto end;
+        }
+    }
+
+    if (n3ga_location->w5gban_line_type) {
+        if (cJSON_AddStringToObject(item, "w5gbanLineType", OpenAPI_line_type_ToString(n3ga_location->w5gban_line_type)) == NULL) {
+            ogs_error("OpenAPI_n3ga_location_convertToJSON() failed [w5gban_line_type]");
+            goto end;
+        }
+    }
+
+    if (n3ga_location->gci) {
+        if (cJSON_AddStringToObject(item, "gci", n3ga_location->gci) == NULL) {
+            ogs_error("OpenAPI_n3ga_location_convertToJSON() failed [gci]");
             goto end;
         }
     }
@@ -193,31 +215,18 @@ OpenAPI_n3ga_location_t *OpenAPI_n3ga_location_parseFromJSON(cJSON *n3ga_locatio
         }
     }
 
-    cJSON *ss_id = cJSON_GetObjectItemCaseSensitive(n3ga_locationJSON, "ssId");
+    cJSON *tnap_id = cJSON_GetObjectItemCaseSensitive(n3ga_locationJSON, "tnapId");
 
-    if (ss_id) {
-        if (!cJSON_IsString(ss_id)) {
-            ogs_error("OpenAPI_n3ga_location_parseFromJSON() failed [ss_id]");
-            goto end;
-        }
+    OpenAPI_tnap_id_t *tnap_id_local_nonprim = NULL;
+    if (tnap_id) {
+        tnap_id_local_nonprim = OpenAPI_tnap_id_parseFromJSON(tnap_id);
     }
 
-    cJSON *bss_id = cJSON_GetObjectItemCaseSensitive(n3ga_locationJSON, "bssId");
+    cJSON *twap_id = cJSON_GetObjectItemCaseSensitive(n3ga_locationJSON, "twapId");
 
-    if (bss_id) {
-        if (!cJSON_IsString(bss_id)) {
-            ogs_error("OpenAPI_n3ga_location_parseFromJSON() failed [bss_id]");
-            goto end;
-        }
-    }
-
-    cJSON *civic_address = cJSON_GetObjectItemCaseSensitive(n3ga_locationJSON, "civicAddress");
-
-    if (civic_address) {
-        if (!cJSON_IsNumber(civic_address)) {
-            ogs_error("OpenAPI_n3ga_location_parseFromJSON() failed [civic_address]");
-            goto end;
-        }
+    OpenAPI_twap_id_t *twap_id_local_nonprim = NULL;
+    if (twap_id) {
+        twap_id_local_nonprim = OpenAPI_twap_id_parseFromJSON(twap_id);
     }
 
     cJSON *hfc_node_id = cJSON_GetObjectItemCaseSensitive(n3ga_locationJSON, "hfcNodeId");
@@ -236,17 +245,38 @@ OpenAPI_n3ga_location_t *OpenAPI_n3ga_location_parseFromJSON(cJSON *n3ga_locatio
         }
     }
 
+    cJSON *w5gban_line_type = cJSON_GetObjectItemCaseSensitive(n3ga_locationJSON, "w5gbanLineType");
+
+    OpenAPI_line_type_e w5gban_line_typeVariable;
+    if (w5gban_line_type) {
+        if (!cJSON_IsString(w5gban_line_type)) {
+            ogs_error("OpenAPI_n3ga_location_parseFromJSON() failed [w5gban_line_type]");
+            goto end;
+        }
+        w5gban_line_typeVariable = OpenAPI_line_type_FromString(w5gban_line_type->valuestring);
+    }
+
+    cJSON *gci = cJSON_GetObjectItemCaseSensitive(n3ga_locationJSON, "gci");
+
+    if (gci) {
+        if (!cJSON_IsString(gci)) {
+            ogs_error("OpenAPI_n3ga_location_parseFromJSON() failed [gci]");
+            goto end;
+        }
+    }
+
     n3ga_location_local_var = OpenAPI_n3ga_location_create (
         n3gpp_tai ? n3gpp_tai_local_nonprim : NULL,
         n3_iwf_id ? ogs_strdup(n3_iwf_id->valuestring) : NULL,
         ue_ipv4_addr ? ogs_strdup(ue_ipv4_addr->valuestring) : NULL,
         ue_ipv6_addr ? ogs_strdup(ue_ipv6_addr->valuestring) : NULL,
         port_number ? port_number->valuedouble : 0,
-        ss_id ? ogs_strdup(ss_id->valuestring) : NULL,
-        bss_id ? ogs_strdup(bss_id->valuestring) : NULL,
-        civic_address ? civic_address->valueint : 0,
+        tnap_id ? tnap_id_local_nonprim : NULL,
+        twap_id ? twap_id_local_nonprim : NULL,
         hfc_node_id ? hfc_node_id_local_nonprim : NULL,
-        gli ? gli->valueint : 0
+        gli ? gli->valueint : 0,
+        w5gban_line_type ? w5gban_line_typeVariable : 0,
+        gci ? ogs_strdup(gci->valuestring) : NULL
         );
 
     return n3ga_location_local_var;

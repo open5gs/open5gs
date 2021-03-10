@@ -118,6 +118,23 @@ void pcf_sbi_close(void)
     ogs_sbi_server_stop_all();
 }
 
+void pcf_nnrf_nfm_send_nf_register(ogs_sbi_nf_instance_t *nf_instance)
+{
+    ogs_sbi_request_t *request = NULL;
+    ogs_sbi_client_t *client = NULL;
+
+    ogs_assert(nf_instance);
+    client = nf_instance->client;
+    ogs_assert(client);
+
+    request = pcf_nnrf_nfm_build_register(nf_instance);
+    if (!request) {
+        ogs_error("ogs_nnrf_nfm_send_nf_register() failed");
+        return;
+    }
+    ogs_sbi_client_send_request(client, client->cb, request, nf_instance);
+}
+
 void pcf_sbi_send(ogs_sbi_nf_instance_t *nf_instance, ogs_sbi_xact_t *xact)
 {
     ogs_sbi_send(nf_instance, client_cb, xact);

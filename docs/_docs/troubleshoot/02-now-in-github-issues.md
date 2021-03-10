@@ -64,6 +64,7 @@ $ open5gs-amfd
 $ open5gs-ausfd
 $ open5gs-udmd
 $ open5gs-pcfd
+$ open5gs-nssfd
 $ open5gs-udrd
 ```
 
@@ -155,7 +156,7 @@ $ diff -u smf.yaml smf.yaml.new
 @@ -190,7 +190,7 @@
        - addr: 127.0.0.4
        - addr: ::1
-     pdn:
+     subnet:
 -      - addr: 10.45.0.1/16
 +      - addr: 10.46.0.1/16
        - addr: cafe::1/64
@@ -170,7 +171,7 @@ $ diff -u upf.yaml upf.yaml.new
 @@ -139,7 +139,7 @@
      gtpu:
        - addr: 127.0.0.7
-     pdn:
+     subnet:
 -      - addr: 10.45.0.1/16
 +      - addr: 10.46.0.1/16
        - addr: cafe::1/64
@@ -268,6 +269,7 @@ $ sudo pkill -9 open5gs-nrfd
 $ sudo pkill -9 open5gs-ausfd
 $ sudo pkill -9 open5gs-udmd
 $ sudo pkill -9 open5gs-pcfd
+$ sudo pkill -9 open5gs-nssfd
 $ sudo pkill -9 open5gs-udrd
 ```
 
@@ -534,19 +536,19 @@ The IP address of the UE can also use a different UE pool depending on the DNN/A
 
 ```
 ### For reference, see `smf.yaml`
-#  <PDN Configuration with UE Pool>
+#  <Subnet for UE Pool>
 #
 #  o IPv4 Pool
 #    $ sudo ip addr add 10.45.0.1/16 dev ogstun
 #
-#    pdn:
+#    subnet:
 #      addr: 10.45.0.1/16
 #
 #  o IPv4/IPv6 Pool
 #    $ sudo ip addr add 10.45.0.1/16 dev ogstun
 #    $ sudo ip addr add cafe:1::1/64 dev ogstun
 #
-#    pdn:
+#    subnet:
 #      - addr: 10.45.0.1/16
 #      - addr: cafe:1::1/64
 #
@@ -558,49 +560,32 @@ The IP address of the UE can also use a different UE pool depending on the DNN/A
 #    $ sudo ip addr add cafe:1::1/64 dev ogstun
 #    $ sudo ip addr add cafe:2::1/64 dev ogstun
 #
-#    pdn:
+#    subnet:
 #      - addr: 10.45.0.1/16
 #      - addr: cafe:1::1/64
 #      - addr: 10.46.0.1/16
 #        dnn: volte
 #      - addr: cafe:2::1/64
 #        dnn: volte
-#
-#  o Multiple Devices (default: ogstun)
-#    $ sudo ip addr add 10.45.0.1/16 dev ogstun
-#    $ sudo ip addr add cafe:1::1/64 dev ogstun2
-#    $ sudo ip addr add 10.46.0.1/16 dev ogstun3
-#    $ sudo ip addr add cafe:2::1/64 dev ogstun3
-#
-#    pdn:
-#      - addr: 10.45.0.1/16
-#      - addr: cafe:1::1/64
-#        dev: ogstun2
-#      - addr: 10.46.0.1/16
-#        dnn: volte
-#        dev: ogstun3
-#      - addr: cafe:2::1/64
-#        dnn: volte
-#        dev: ogstun3
 #
 #  o Pool Range Sample
-#    pdn:
+#    subnet:
 #      - addr: 10.45.0.1/24
 #        range: 10.45.0.100-10.45.0.200
 #
-#    pdn:
+#    subnet:
 #      - addr: 10.45.0.1/24
 #        range:
 #          - 10.45.0.5-10.45.0.50
 #          - 10.45.0.100-
 #
-#    pdn:
+#    subnet:
 #      - addr: 10.45.0.1/24
 #        range:
 #          - -10.45.0.200
 #          - 10.45.0.210-10.45.0.220
 #
-#    pdn:
+#    subnet:
 #      - addr: 10.45.0.1/16
 #        range:
 #          - 10.45.0.100-10.45.0.200
@@ -706,7 +691,7 @@ You should configure the domain name on your computer. Otherwise, freeDiameter r
 
 #### How many of UEs can Open5GS support?
 
-See the [lib/core/ogs-3gpp-types.h](https://github.com/{{ site.github_username }}/open5gs/blob/master/lib/core/ogs-3gpp-types.h).
+See the [lib/core/ogs-3gpp-types.h](https://github.com/{{ site.github_username }}/open5gs/blob/main/lib/core/ogs-3gpp-types.h).
 
 ```
 #define MAX_NUM_OF_ENB              128
@@ -744,6 +729,7 @@ Currently, the number of UE is limited to `128*128`.
 * AUSF : 127.0.0.11
 * UDM : 127.0.0.12
 * PCF : 127.0.0.13
+* NSSF : 127.0.0.14
 * UDR : 127.0.0.20
 ```
 

@@ -97,7 +97,7 @@ $ sudo sysctl -w net.inet.ip.forwarding=1
 $ sudo sysctl -w net.inet6.ip6.forwarding=1
 ```
 
-**Tip:** The script provided in [$GIT_REPO/misc/netconf.sh](https://github.com/{{ site.github_username }}/open5gs/blob/master/misc/netconf.sh) makes it easy to configure the TUN device as follows:
+**Tip:** The script provided in [$GIT_REPO/misc/netconf.sh](https://github.com/{{ site.github_username }}/open5gs/blob/main/misc/netconf.sh) makes it easy to configure the TUN device as follows:
 `$ sudo ./misc/netconf.sh`
 {: .notice--info}
 

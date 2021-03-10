@@ -17,16 +17,11 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_hss_av_type_s OpenAPI_hss_av_type_t;
-typedef struct OpenAPI_hss_av_type_s {
-} OpenAPI_hss_av_type_t;
+typedef enum { OpenAPI_hss_av_type_NULL = 0, OpenAPI_hss_av_type_EPS_AKA, OpenAPI_hss_av_type_EAP_AKA, OpenAPI_hss_av_type_IMS_AKA, OpenAPI_hss_av_type_GBA_AKA, OpenAPI_hss_av_type_UMTS_AKA } OpenAPI_hss_av_type_e;
 
-OpenAPI_hss_av_type_t *OpenAPI_hss_av_type_create(
-    );
-void OpenAPI_hss_av_type_free(OpenAPI_hss_av_type_t *hss_av_type);
-OpenAPI_hss_av_type_t *OpenAPI_hss_av_type_parseFromJSON(cJSON *hss_av_typeJSON);
-cJSON *OpenAPI_hss_av_type_convertToJSON(OpenAPI_hss_av_type_t *hss_av_type);
-OpenAPI_hss_av_type_t *OpenAPI_hss_av_type_copy(OpenAPI_hss_av_type_t *dst, OpenAPI_hss_av_type_t *src);
+char* OpenAPI_hss_av_type_ToString(OpenAPI_hss_av_type_e hss_av_type);
+
+OpenAPI_hss_av_type_e OpenAPI_hss_av_type_FromString(char* hss_av_type);
 
 #ifdef __cplusplus
 }

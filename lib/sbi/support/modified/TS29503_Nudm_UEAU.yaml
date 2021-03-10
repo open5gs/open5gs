@@ -1,14 +1,14 @@
 openapi: 3.0.0
 info:
-  version: '1.1.0.alpha-2'
-  title: 'NudmUEAU'
+  version: '1.1.2'
+  title: 'Nudm_UEAU'
   description: |
     UDM UE Authentication Service.
     © 2020, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
     All rights reserved.
 
 externalDocs:
-  description: 3GPP TS 29.503 Unified Data Management Services, version 16.3.0
+  description: 3GPP TS 29.503 Unified Data Management Services, version 16.6.0
   url: 'http://www.3gpp.org/ftp/Specs/archive/29_series/29.503/'
 
 servers:
@@ -98,12 +98,12 @@ paths:
                 $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnId'
         - name: If-None-Match
           in: header
-          description: Validator for conditional requests, as described in RFC 7232, 3.2 
+          description: Validator for conditional requests, as described in RFC 7232, 3.2
           schema:
             type: string
         - name: If-Modified-Since
           in: header
-          description: Validator for conditional requests, as described in RFC 7232, 3.3 
+          description: Validator for conditional requests, as described in RFC 7232, 3.3
           schema:
             type: string
       responses:
@@ -169,12 +169,12 @@ paths:
         default:
           description: Unexpected error
 
-  /{supi}/hss-security-information/generate-av:
+  /{supi}/hss-security-information/{hssAuthType}/generate-av:
     post:
       summary: Generate authentication data for the UE in EPS or IMS domain
       operationId: GenerateAv
       tags:
-        - Generate HSS Authentication Vectors 
+        - Generate HSS Authentication Vectors
       parameters:
         - name: supi
           in: path
@@ -182,6 +182,12 @@ paths:
           required: true
           schema:
             $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+        - name: hssAuthType
+          in: path
+          description: Type of AV requested by HSS
+          required: true
+          schema:
+            $ref: '#/components/schemas/HssAuthTypeInUri'
       requestBody:
         content:
           application/json:
@@ -197,6 +203,8 @@ paths:
                 $ref: '#/components/schemas/HssAuthenticationInfoResult'
         '400':
           $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
         '404':
           $ref: 'TS29571_CommonData.yaml#/components/responses/404'
         '500':
@@ -209,7 +217,7 @@ paths:
           description: Unexpected error
 
   /{supi}/auth-events/{authEventId}:
-    delete:
+    put:
       summary: Deletes the authentication result in the UDM
       operationId: DeleteAuth
       tags:
@@ -227,6 +235,12 @@ paths:
           required: true
           schema:
             type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthEvent'
+        required: true
       responses:
         '204':
           description: Expected response to a successful authentication result removal
@@ -245,8 +259,8 @@ components:
   securitySchemes:
     oAuth2ClientCredentials:
       type: oauth2
-      flows: 
-        clientCredentials: 
+      flows:
+        clientCredentials:
           tokenUrl: '{nrfApiRoot}/oauth2/token'
           scopes:
             nudm-ueau: Access to the nudm-ueau API
@@ -270,8 +284,15 @@ components:
           $ref: '#/components/schemas/ResynchronizationInfo'
         ausfInstanceId:
           $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
-        cagId:
-          $ref: 'TS29571_CommonData.yaml#/components/schemas/CagId'
+        cellCagInfo:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/CagId'
+          minItems: 1
+        n5gcInd:
+          type: boolean
+          default: false
+
     AuthenticationInfoResult:
       type: object
       required:
@@ -292,7 +313,7 @@ components:
         - $ref: '#/components/schemas/Av5GHeAka'
       discriminator:
         propertyName: avType
-        mapping: 
+        mapping:
           5G_HE_AKA: '#/components/schemas/Av5GHeAka'
           EAP_AKA_PRIME: '#/components/schemas/AvEapAkaPrime'
 
@@ -369,6 +390,9 @@ components:
           $ref: '#/components/schemas/AuthType'
         servingNetworkName:
           $ref: '#/components/schemas/ServingNetworkName'
+        authRemovalInd:
+          type: boolean
+          default: false
 
     RgAuthCtx:
       type: object
@@ -395,11 +419,16 @@ components:
           $ref: '#/components/schemas/HssAuthType'
         numOfRequestedVectors:
           $ref: '#/components/schemas/NumOfRequestedVectors'
+        requestingNodeType:
+          $ref: '#/components/schemas/NodeType'
         servingNetworkId:
           $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnId'
         resynchronizationInfo:
           $ref: '#/components/schemas/ResynchronizationInfo'
-        
+        anId:
+          $ref: '#/components/schemas/AccessNetworkId'
+
+
     HssAuthenticationInfoResult:
       type: object
       required:
@@ -554,23 +583,60 @@ components:
           type: string
 
     HssAuthType:
-      anyOf:
-        - type: string
+#      anyOf:
+#        - type: string
           enum:
           - EPS_AKA
           - EAP_AKA
           - EAP_AKA_PRIME
           - IMS_AKA
           - GBA_AKA
-        - type: string
+          - UMTS_AKA
+          type: string
 
     HssAvType:
-      anyOf:
-        - type: string
+#      anyOf:
+#        - type: string
           enum:
           - EPS_AKA
           - EAP_AKA
           - IMS_AKA
           - GBA_AKA
-        - type: string
+          - UMTS_AKA
+          type: string
+
+    HssAuthTypeInUri:
+#      anyOf:
+#        - type: string
+          enum:
+          - eps-aka
+          - eap-aka
+          - eap-aka-prime
+          - ims-aka
+          - gba-aka
+          type: string
+
+    AccessNetworkId:
+#      anyOf:
+#        - type: string
+          enum:
+          - HRPD
+          - WIMAX
+          - WLAN
+          - ETHERNET
+          type: string
+
+    NodeType:
+#      anyOf:
+#        - type: string
+          enum:
+          - AUSF
+          - VLR
+          - SGSN
+          - S_CSCF
+          - BSF
+          - GAN_AAA_SERVER
+          - WLAN_AAA_SERVER
+          - MME
+          type: string
 

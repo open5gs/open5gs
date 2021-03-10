@@ -6,7 +6,8 @@
 
 OpenAPI_udsf_info_t *OpenAPI_udsf_info_create(
     char *group_id,
-    OpenAPI_list_t *supi_ranges
+    OpenAPI_list_t *supi_ranges,
+    OpenAPI_list_t* storage_id_ranges
     )
 {
     OpenAPI_udsf_info_t *udsf_info_local_var = OpenAPI_malloc(sizeof(OpenAPI_udsf_info_t));
@@ -15,6 +16,7 @@ OpenAPI_udsf_info_t *OpenAPI_udsf_info_create(
     }
     udsf_info_local_var->group_id = group_id;
     udsf_info_local_var->supi_ranges = supi_ranges;
+    udsf_info_local_var->storage_id_ranges = storage_id_ranges;
 
     return udsf_info_local_var;
 }
@@ -30,6 +32,12 @@ void OpenAPI_udsf_info_free(OpenAPI_udsf_info_t *udsf_info)
         OpenAPI_supi_range_free(node->data);
     }
     OpenAPI_list_free(udsf_info->supi_ranges);
+    OpenAPI_list_for_each(udsf_info->storage_id_ranges, node) {
+        OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+        ogs_free(localKeyValue->value);
+        ogs_free(localKeyValue);
+    }
+    OpenAPI_list_free(udsf_info->storage_id_ranges);
     ogs_free(udsf_info);
 }
 
@@ -66,6 +74,21 @@ cJSON *OpenAPI_udsf_info_convertToJSON(OpenAPI_udsf_info_t *udsf_info)
                     goto end;
                 }
                 cJSON_AddItemToArray(supi_rangesList, itemLocal);
+            }
+        }
+    }
+
+    if (udsf_info->storage_id_ranges) {
+        cJSON *storage_id_ranges = cJSON_AddObjectToObject(item, "storageIdRanges");
+        if (storage_id_ranges == NULL) {
+            ogs_error("OpenAPI_udsf_info_convertToJSON() failed [storage_id_ranges]");
+            goto end;
+        }
+        cJSON *localMapObject = storage_id_ranges;
+        OpenAPI_lnode_t *storage_id_ranges_node;
+        if (udsf_info->storage_id_ranges) {
+            OpenAPI_list_for_each(udsf_info->storage_id_ranges, storage_id_ranges_node) {
+                OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)storage_id_ranges_node->data;
             }
         }
     }
@@ -109,9 +132,27 @@ OpenAPI_udsf_info_t *OpenAPI_udsf_info_parseFromJSON(cJSON *udsf_infoJSON)
         }
     }
 
+    cJSON *storage_id_ranges = cJSON_GetObjectItemCaseSensitive(udsf_infoJSON, "storageIdRanges");
+
+    OpenAPI_list_t *storage_id_rangesList;
+    if (storage_id_ranges) {
+        cJSON *storage_id_ranges_local_map;
+        if (!cJSON_IsObject(storage_id_ranges)) {
+            ogs_error("OpenAPI_udsf_info_parseFromJSON() failed [storage_id_ranges]");
+            goto end;
+        }
+        storage_id_rangesList = OpenAPI_list_create();
+        OpenAPI_map_t *localMapKeyPair = NULL;
+        cJSON_ArrayForEach(storage_id_ranges_local_map, storage_id_ranges) {
+            cJSON *localMapObject = storage_id_ranges_local_map;
+            OpenAPI_list_add(storage_id_rangesList, localMapKeyPair);
+        }
+    }
+
     udsf_info_local_var = OpenAPI_udsf_info_create (
         group_id ? ogs_strdup(group_id->valuestring) : NULL,
-        supi_ranges ? supi_rangesList : NULL
+        supi_ranges ? supi_rangesList : NULL,
+        storage_id_ranges ? storage_id_rangesList : NULL
         );
 
     return udsf_info_local_var;

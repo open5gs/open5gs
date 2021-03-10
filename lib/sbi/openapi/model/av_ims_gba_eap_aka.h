@@ -20,7 +20,7 @@ extern "C" {
 
 typedef struct OpenAPI_av_ims_gba_eap_aka_s OpenAPI_av_ims_gba_eap_aka_t;
 typedef struct OpenAPI_av_ims_gba_eap_aka_s {
-    struct OpenAPI_hss_av_type_s *av_type;
+    OpenAPI_hss_av_type_e av_type;
     char *rand;
     char *xres;
     char *autn;
@@ -29,7 +29,7 @@ typedef struct OpenAPI_av_ims_gba_eap_aka_s {
 } OpenAPI_av_ims_gba_eap_aka_t;
 
 OpenAPI_av_ims_gba_eap_aka_t *OpenAPI_av_ims_gba_eap_aka_create(
-    OpenAPI_hss_av_type_t *av_type,
+    OpenAPI_hss_av_type_e av_type,
     char *rand,
     char *xres,
     char *autn,

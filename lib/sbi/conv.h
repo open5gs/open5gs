@@ -32,6 +32,7 @@ typedef struct ogs_sbi_server_s ogs_sbi_server_t;
 typedef struct ogs_sbi_client_s ogs_sbi_client_t;
 typedef struct ogs_sbi_header_s ogs_sbi_header_t;
 
+char *ogs_uridup(bool https, ogs_sockaddr_t *addr, ogs_sbi_header_t *h);
 char *ogs_sbi_server_uri(ogs_sbi_server_t *server, ogs_sbi_header_t *h);
 char *ogs_sbi_client_uri(ogs_sbi_client_t *client, ogs_sbi_header_t *h);
 

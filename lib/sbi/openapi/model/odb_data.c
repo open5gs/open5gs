@@ -5,7 +5,7 @@
 #include "odb_data.h"
 
 OpenAPI_odb_data_t *OpenAPI_odb_data_create(
-    OpenAPI_roaming_odb_t *roaming_odb
+    OpenAPI_roaming_odb_e roaming_odb
     )
 {
     OpenAPI_odb_data_t *odb_data_local_var = OpenAPI_malloc(sizeof(OpenAPI_odb_data_t));
@@ -23,7 +23,6 @@ void OpenAPI_odb_data_free(OpenAPI_odb_data_t *odb_data)
         return;
     }
     OpenAPI_lnode_t *node;
-    OpenAPI_roaming_odb_free(odb_data->roaming_odb);
     ogs_free(odb_data);
 }
 
@@ -38,13 +37,7 @@ cJSON *OpenAPI_odb_data_convertToJSON(OpenAPI_odb_data_t *odb_data)
 
     item = cJSON_CreateObject();
     if (odb_data->roaming_odb) {
-        cJSON *roaming_odb_local_JSON = OpenAPI_roaming_odb_convertToJSON(odb_data->roaming_odb);
-        if (roaming_odb_local_JSON == NULL) {
-            ogs_error("OpenAPI_odb_data_convertToJSON() failed [roaming_odb]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "roamingOdb", roaming_odb_local_JSON);
-        if (item->child == NULL) {
+        if (cJSON_AddStringToObject(item, "roamingOdb", OpenAPI_roaming_odb_ToString(odb_data->roaming_odb)) == NULL) {
             ogs_error("OpenAPI_odb_data_convertToJSON() failed [roaming_odb]");
             goto end;
         }
@@ -59,13 +52,17 @@ OpenAPI_odb_data_t *OpenAPI_odb_data_parseFromJSON(cJSON *odb_dataJSON)
     OpenAPI_odb_data_t *odb_data_local_var = NULL;
     cJSON *roaming_odb = cJSON_GetObjectItemCaseSensitive(odb_dataJSON, "roamingOdb");
 
-    OpenAPI_roaming_odb_t *roaming_odb_local_nonprim = NULL;
+    OpenAPI_roaming_odb_e roaming_odbVariable;
     if (roaming_odb) {
-        roaming_odb_local_nonprim = OpenAPI_roaming_odb_parseFromJSON(roaming_odb);
+        if (!cJSON_IsString(roaming_odb)) {
+            ogs_error("OpenAPI_odb_data_parseFromJSON() failed [roaming_odb]");
+            goto end;
+        }
+        roaming_odbVariable = OpenAPI_roaming_odb_FromString(roaming_odb->valuestring);
     }
 
     odb_data_local_var = OpenAPI_odb_data_create (
-        roaming_odb ? roaming_odb_local_nonprim : NULL
+        roaming_odb ? roaming_odbVariable : 0
         );
 
     return odb_data_local_var;

@@ -144,6 +144,10 @@ extern "C" {
 #define OGS_SBI_SERVICE_NAME_NPCF_SMPOLICYCONTROL   "npcf-smpolicycontrol"
 #define OGS_SBI_RESOURCE_NAME_SM_POLICIES           "sm-policies"
 
+#define OGS_SBI_SERVICE_NAME_NNSSF_NSSELECTION      "nnssf-nsselection"
+#define OGS_SBI_RESOURCE_NAME_NETWORK_SLICE_INFORMATION \
+                                                    "network-slice-information"
+
 #define OGS_SBI_FEATURES_IS_SET(__fEATURES, __n) \
     (__fEATURES & (1 << ((__n)-1)))
 #define OGS_SBI_FEATURES_SET(__fEATURES, __n) \
@@ -195,6 +199,7 @@ extern "C" {
 #define OGS_SBI_NPCF_SMPOLICYCONTROL_DDN_EVENT_POLICY_CONTROL 37
 #define OGS_SBI_NPCF_SMPOLICYCONTROL_REALLOCATION_OF_CREDIT 38
 
+#define OGS_SBI_PARAM_NF_ID                         "nf-id"
 #define OGS_SBI_PARAM_NF_TYPE                       "nf-type"
 #define OGS_SBI_PARAM_TARGET_NF_TYPE                "target-nf-type"
 #define OGS_SBI_PARAM_REQUESTER_NF_TYPE             "requester-nf-type"
@@ -203,6 +208,8 @@ extern "C" {
 #define OGS_SBI_PARAM_PLMN_ID                       "plmn-id"
 #define OGS_SBI_PARAM_SINGLE_NSSAI                  "single-nssai"
 #define OGS_SBI_PARAM_SNSSAI                        "snssai"
+#define OGS_SBI_PARAM_SLICE_INFO_REQUEST_FOR_PDU_SESSION \
+        "slice-info-request-for-pdu-session"
 
 #define OGS_SBI_ACCEPT                              "Accept"
 #define OGS_SBI_ACCEPT_ENCODING                     "Accept-Encoding"
@@ -279,16 +286,20 @@ typedef struct ogs_sbi_message_s {
     struct {
         OpenAPI_nf_type_e target_nf_type;
         OpenAPI_nf_type_e requester_nf_type;
+        char *nf_id;
         OpenAPI_nf_type_e nf_type;
         int limit;
         char *dnn;
-        bool plmn_id_presence;
-        ogs_plmn_id_t plmn_id;
 
+        /* Shared memory */
+        ogs_plmn_id_t plmn_id;
+        ogs_s_nssai_t s_nssai;
+
+        bool plmn_id_presence;
         bool single_nssai_presence;
-        ogs_s_nssai_t single_nssai;
         bool snssai_presence;
-        ogs_s_nssai_t snssai;
+        bool slice_info_request_for_pdu_session_presence;
+        OpenAPI_roaming_indication_e roaming_indication;
     } param;
 
     int res_status;
@@ -334,6 +345,7 @@ typedef struct ogs_sbi_message_s {
     OpenAPI_sm_policy_context_data_t *SmPolicyContextData;
     OpenAPI_sm_policy_decision_t *SmPolicyDecision;
     OpenAPI_sm_policy_data_t *SmPolicyData;
+    OpenAPI_authorized_network_slice_info_t *AuthorizedNetworkSliceInfo;
 
     ogs_sbi_links_t *links;
 

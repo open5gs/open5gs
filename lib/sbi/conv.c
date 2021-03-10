@@ -20,7 +20,7 @@
 #include "ogs-sbi.h"
 #include "yuarel.h"
 
-static char *ogs_uridup(bool https, ogs_sockaddr_t *addr, ogs_sbi_header_t *h)
+char *ogs_uridup(bool https, ogs_sockaddr_t *addr, ogs_sbi_header_t *h)
 {
     char buf[OGS_ADDRSTRLEN];
     char uri[OGS_HUGE_LEN];
@@ -515,7 +515,7 @@ OpenAPI_guami_t *ogs_sbi_build_guami(ogs_guami_t *guami)
     Guami = ogs_calloc(1, sizeof(*Guami));
     ogs_assert(Guami);
 
-    Guami->plmn_id = ogs_sbi_build_plmn_id(&guami->plmn_id);
+    Guami->plmn_id = ogs_sbi_build_plmn_id_nid(&guami->plmn_id);
     ogs_assert(Guami->plmn_id);
     Guami->amf_id = ogs_amf_id_to_string(&guami->amf_id);
     ogs_assert(Guami->amf_id);
@@ -531,7 +531,7 @@ bool ogs_sbi_parse_guami(ogs_guami_t *guami, OpenAPI_guami_t *Guami)
     ogs_assert(Guami->plmn_id);
 
     ogs_amf_id_from_string(&guami->amf_id, Guami->amf_id);
-    ogs_sbi_parse_plmn_id(&guami->plmn_id, Guami->plmn_id);
+    ogs_sbi_parse_plmn_id_nid(&guami->plmn_id, Guami->plmn_id);
 
     return true;
 }
@@ -541,7 +541,7 @@ void ogs_sbi_free_guami(OpenAPI_guami_t *Guami)
     ogs_assert(Guami);
 
     if (Guami->plmn_id)
-        ogs_sbi_free_plmn_id(Guami->plmn_id);
+        ogs_sbi_free_plmn_id_nid(Guami->plmn_id);
     if (Guami->amf_id)
         ogs_free(Guami->amf_id);
     ogs_free(Guami);

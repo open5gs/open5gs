@@ -320,3 +320,25 @@ pcf_sess_t *pcf_sess_cycle(pcf_sess_t *sess)
 {
     return ogs_pool_cycle(&pcf_sess_pool, sess);
 }
+
+void pcf_ue_select_nf(pcf_ue_t *pcf_ue, OpenAPI_nf_type_e nf_type)
+{
+    ogs_assert(pcf_ue);
+    ogs_assert(nf_type);
+
+    if (nf_type == OpenAPI_nf_type_NRF)
+        ogs_sbi_select_nrf(&pcf_ue->sbi, pcf_nf_state_registered);
+    else
+        ogs_sbi_select_first_nf(&pcf_ue->sbi, nf_type, pcf_nf_state_registered);
+}
+
+void pcf_sess_select_nf(pcf_sess_t *sess, OpenAPI_nf_type_e nf_type)
+{
+    ogs_assert(sess);
+    ogs_assert(nf_type);
+
+    if (nf_type == OpenAPI_nf_type_NRF)
+        ogs_sbi_select_nrf(&sess->sbi, pcf_nf_state_registered);
+    else
+        ogs_sbi_select_first_nf(&sess->sbi, nf_type, pcf_nf_state_registered);
+}

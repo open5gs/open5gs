@@ -118,29 +118,29 @@ int gmm_handle_registration_request(amf_ue_t *amf_ue,
     }
 
     ogs_debug("    OLD TAI[PLMN_ID:%06x,TAC:%d]",
-            ogs_plmn_id_hexdump(&amf_ue->tai.plmn_id), amf_ue->tai.tac.v);
+            ogs_plmn_id_hexdump(&amf_ue->nr_tai.plmn_id), amf_ue->nr_tai.tac.v);
     ogs_debug("    OLD NR_CGI[PLMN_ID:%06x,CELL_ID:0x%llx]",
             ogs_plmn_id_hexdump(&amf_ue->nr_cgi.plmn_id),
             (long long)amf_ue->nr_cgi.cell_id);
     ogs_debug("    TAI[PLMN_ID:%06x,TAC:%d]",
-            ogs_plmn_id_hexdump(&ran_ue->saved.tai.plmn_id),
-            ran_ue->saved.tai.tac.v);
+            ogs_plmn_id_hexdump(&ran_ue->saved.nr_tai.plmn_id),
+            ran_ue->saved.nr_tai.tac.v);
     ogs_debug("    NR_CGI[PLMN_ID:%06x,CELL_ID:0x%llx]",
             ogs_plmn_id_hexdump(&ran_ue->saved.nr_cgi.plmn_id),
             (long long)ran_ue->saved.nr_cgi.cell_id);
 
     /* Copy Stream-No/NR-TAI/NR-CGI from ran_ue */
     amf_ue->gnb_ostream_id = ran_ue->gnb_ostream_id;
-    memcpy(&amf_ue->tai, &ran_ue->saved.tai, sizeof(ogs_5gs_tai_t));
+    memcpy(&amf_ue->nr_tai, &ran_ue->saved.nr_tai, sizeof(ogs_5gs_tai_t));
     memcpy(&amf_ue->nr_cgi, &ran_ue->saved.nr_cgi, sizeof(ogs_nr_cgi_t));
     amf_ue->ue_location_timestamp = ogs_time_now();
 
     /* Check TAI */
-    served_tai_index = amf_find_served_tai(&amf_ue->tai);
+    served_tai_index = amf_find_served_tai(&amf_ue->nr_tai);
     if (served_tai_index < 0) {
         /* Send Registration Reject */
         ogs_warn("Cannot find Served TAI[PLMN_ID:%06x,TAC:%d]",
-            ogs_plmn_id_hexdump(&amf_ue->tai.plmn_id), amf_ue->tai.tac.v);
+            ogs_plmn_id_hexdump(&amf_ue->nr_tai.plmn_id), amf_ue->nr_tai.tac.v);
         nas_5gs_send_registration_reject(amf_ue,
             OGS_5GMM_CAUSE_TRACKING_AREA_NOT_ALLOWED);
         return OGS_ERROR;
@@ -226,24 +226,27 @@ int gmm_handle_registration_update(amf_ue_t *amf_ue,
     if (registration_request->presencemask &
         OGS_NAS_5GS_REGISTRATION_REQUEST_REQUESTED_NSSAI_PRESENT) {
 
-        amf_ue->num_of_requested_nssai = ogs_nas_parse_nssai(
-            amf_ue->requested_nssai, &registration_request->requested_nssai);
+        amf_ue->requested_nssai.num_of_s_nssai =
+            ogs_nas_parse_nssai(
+                    amf_ue->requested_nssai.s_nssai,
+                    &registration_request->requested_nssai);
 
-        for (i = 0; i < amf_ue->num_of_requested_nssai; i++) {
+        for (i = 0; i < amf_ue->requested_nssai.num_of_s_nssai; i++) {
             if (amf_find_s_nssai(
-                    &amf_ue->tai.plmn_id, &amf_ue->requested_nssai[i]))
+                    &amf_ue->nr_tai.plmn_id,
+                    (ogs_s_nssai_t *)&amf_ue->requested_nssai.s_nssai[i]))
                 break;
         }
 
-        if (i == amf_ue->num_of_requested_nssai) {
+        if (i == amf_ue->requested_nssai.num_of_s_nssai) {
             ogs_error("CHECK CONFIGURATION: Cannot find Requested NSSAI");
-            for (i = 0; i < amf_ue->num_of_requested_nssai; i++) {
+            for (i = 0; i < amf_ue->requested_nssai.num_of_s_nssai; i++) {
                 ogs_error("    PLMN_ID[MCC:%d MNC:%d]",
-                        ogs_plmn_id_mcc(&amf_ue->tai.plmn_id),
-                        ogs_plmn_id_mnc(&amf_ue->tai.plmn_id));
+                        ogs_plmn_id_mcc(&amf_ue->nr_tai.plmn_id),
+                        ogs_plmn_id_mnc(&amf_ue->nr_tai.plmn_id));
                 ogs_error("    S_NSSAI[SST:%d SD:0x%x]",
-                        amf_ue->requested_nssai[i].sst,
-                        amf_ue->requested_nssai[i].sd.v);
+                        amf_ue->requested_nssai.s_nssai[i].sst,
+                        amf_ue->requested_nssai.s_nssai[i].sd.v);
             }
             return OGS_ERROR;
         }
@@ -354,29 +357,29 @@ int gmm_handle_service_request(amf_ue_t *amf_ue,
     }
 
     ogs_debug("    OLD TAI[PLMN_ID:%06x,TAC:%d]",
-            ogs_plmn_id_hexdump(&amf_ue->tai.plmn_id), amf_ue->tai.tac.v);
+            ogs_plmn_id_hexdump(&amf_ue->nr_tai.plmn_id), amf_ue->nr_tai.tac.v);
     ogs_debug("    OLD NR_CGI[PLMN_ID:%06x,CELL_ID:0x%llx]",
             ogs_plmn_id_hexdump(&amf_ue->nr_cgi.plmn_id),
             (long long)amf_ue->nr_cgi.cell_id);
     ogs_debug("    TAI[PLMN_ID:%06x,TAC:%d]",
-            ogs_plmn_id_hexdump(&ran_ue->saved.tai.plmn_id),
-            ran_ue->saved.tai.tac.v);
+            ogs_plmn_id_hexdump(&ran_ue->saved.nr_tai.plmn_id),
+            ran_ue->saved.nr_tai.tac.v);
     ogs_debug("    NR_CGI[PLMN_ID:%06x,CELL_ID:0x%llx]",
             ogs_plmn_id_hexdump(&ran_ue->saved.nr_cgi.plmn_id),
             (long long)ran_ue->saved.nr_cgi.cell_id);
 
     /* Copy Stream-No/NR-TAI/NR-CGI from ran_ue */
     amf_ue->gnb_ostream_id = ran_ue->gnb_ostream_id;
-    memcpy(&amf_ue->tai, &ran_ue->saved.tai, sizeof(ogs_5gs_tai_t));
+    memcpy(&amf_ue->nr_tai, &ran_ue->saved.nr_tai, sizeof(ogs_5gs_tai_t));
     memcpy(&amf_ue->nr_cgi, &ran_ue->saved.nr_cgi, sizeof(ogs_nr_cgi_t));
     amf_ue->ue_location_timestamp = ogs_time_now();
 
     /* Check TAI */
-    served_tai_index = amf_find_served_tai(&amf_ue->tai);
+    served_tai_index = amf_find_served_tai(&amf_ue->nr_tai);
     if (served_tai_index < 0) {
         /* Send Registration Reject */
         ogs_warn("Cannot find Served TAI[PLMN_ID:%06x,TAC:%d]",
-            ogs_plmn_id_hexdump(&amf_ue->tai.plmn_id), amf_ue->tai.tac.v);
+            ogs_plmn_id_hexdump(&amf_ue->nr_tai.plmn_id), amf_ue->nr_tai.tac.v);
         nas_5gs_send_registration_reject(amf_ue,
             OGS_5GMM_CAUSE_TRACKING_AREA_NOT_ALLOWED);
         return OGS_ERROR;
@@ -668,6 +671,7 @@ int gmm_handle_security_mode_complete(amf_ue_t *amf_ue,
 int gmm_handle_ul_nas_transport(amf_ue_t *amf_ue,
         ogs_nas_5gs_ul_nas_transport_t *ul_nas_transport)
 {
+    ogs_slice_data_t *selected_slice = NULL;
     amf_sess_t *sess = NULL;
     amf_nsmf_pdusession_update_sm_context_param_t param;
 
@@ -675,7 +679,6 @@ int gmm_handle_ul_nas_transport(amf_ue_t *amf_ue,
     ogs_nas_payload_container_t *payload_container = NULL;
     ogs_nas_pdu_session_identity_2_t *pdu_session_id = NULL;
     ogs_nas_s_nssai_t *nas_s_nssai = NULL;
-    ogs_s_nssai_t *selected_s_nssai = NULL;
     ogs_nas_dnn_t *dnn = NULL;
     ogs_nas_5gsm_header_t *gsm_header = NULL;
 
@@ -768,26 +771,24 @@ int gmm_handle_ul_nas_transport(amf_ue_t *amf_ue,
 
             if (ul_nas_transport->presencemask &
                     OGS_NAS_5GS_UL_NAS_TRANSPORT_S_NSSAI_PRESENT) {
-                ogs_s_nssai_t s_nssai;
-                if (ogs_nas_parse_s_nssai(&s_nssai, nas_s_nssai) != 0) {
-                    selected_s_nssai =
-                        amf_find_s_nssai(&amf_ue->tai.plmn_id, &s_nssai);
+                ogs_nas_s_nssai_ie_t ie;
+                if (ogs_nas_parse_s_nssai(&ie, nas_s_nssai) != 0) {
+                    selected_slice = ogs_slice_find_by_s_nssai(
+                                amf_ue->slice, amf_ue->num_of_slice,
+                                (ogs_s_nssai_t *)&ie);
                 }
             }
 
-            if (!selected_s_nssai) {
-                if (amf_ue->num_of_requested_nssai) {
-                    selected_s_nssai = &amf_ue->requested_nssai[0];
-                }
+            if (!selected_slice) {
+                ogs_error("[%s] No S-NSSAI", amf_ue->supi);
+                nas_5gs_send_gmm_status(amf_ue,
+                    OGS_5GMM_CAUSE_INSUFFICIENT_RESOURCES_FOR_SPECIFIC_SLICE);
+                return OGS_ERROR;
             }
 
-            if (!selected_s_nssai) {
-                ogs_warn("No S_NSSAI : Set default S_NSSAI using AMF config");
-                selected_s_nssai = &amf_self()->plmn_support[0].s_nssai[0];
-                ogs_assert(selected_s_nssai);
-            }
-
-            memcpy(&sess->s_nssai, selected_s_nssai, sizeof(ogs_s_nssai_t));
+            /* Store S-NSSAI */
+            sess->s_nssai.sst = selected_slice->s_nssai.sst;
+            sess->s_nssai.sd.v = selected_slice->s_nssai.sd.v;
 
             if (ul_nas_transport->presencemask &
                     OGS_NAS_5GS_UL_NAS_TRANSPORT_DNN_PRESENT) {
@@ -797,24 +798,43 @@ int gmm_handle_ul_nas_transport(amf_ue_t *amf_ue,
             }
 
             if (!sess->dnn) {
-                if (amf_ue->num_of_subscribed_dnn) {
-                    sess->dnn = ogs_strdup(amf_ue->subscribed_dnn[0]);
+                if (selected_slice->num_of_session) {
+                    sess->dnn = ogs_strdup(selected_slice->session[0].name);
                 }
             }
 
             if (!sess->dnn) {
-                ogs_fatal("No DNN : Set default DNN using WebUI");
-                ogs_assert_if_reached();
+                ogs_error("[%s] No DNN", amf_ue->supi);
+                nas_5gs_send_gmm_status(amf_ue, OGS_5GMM_CAUSE_DNN_NOT_SUPPORTED_OR_NOT_SUBSCRIBED_IN_THE_SLICE);
+                return OGS_ERROR;
             }
 
             ogs_info("UE SUPI[%s] DNN[%s] S_NSSAI[SST:%d SD:0x%x]",
                 amf_ue->supi, sess->dnn, sess->s_nssai.sst, sess->s_nssai.sd.v);
 
+
             if (!SESSION_CONTEXT_IN_SMF(sess)) {
-                amf_sess_sbi_discover_and_send(OpenAPI_nf_type_SMF,
-                        sess, AMF_CREATE_SM_CONTEXT_NO_STATE, NULL,
-                        amf_nsmf_pdusession_build_create_sm_context);
+                ogs_sbi_nf_instance_t *nf_instance = NULL;
+
+                nf_instance = OGS_SBI_NF_INSTANCE(
+                                &sess->sbi, OpenAPI_nf_type_SMF);
+                if (!nf_instance) {
+                    amf_sess_select_smf(sess);
+                    nf_instance = OGS_SBI_NF_INSTANCE(
+                                    &sess->sbi, OpenAPI_nf_type_SMF);
+                }
+
+                if (nf_instance) {
+                    amf_sess_sbi_discover_and_send(OpenAPI_nf_type_SMF,
+                            sess, AMF_CREATE_SM_CONTEXT_NO_STATE, NULL,
+                            amf_nsmf_pdusession_build_create_sm_context);
+                } else {
+                    amf_sess_sbi_discover_and_send(OpenAPI_nf_type_NSSF,
+                            sess, 0, NULL, amf_nnssf_nsselection_build_get);
+                }
+
             } else {
+
                 memset(&param, 0, sizeof(param));
                 param.release = 1;
                 param.cause = OpenAPI_cause_REL_DUE_TO_DUPLICATE_SESSION_ID;

@@ -24,10 +24,11 @@ open5gs  27485  0.0  0.0 243816 15064 ?        Ssl  12:13   0:00 /usr/bin/open5g
 open5gs  27543  0.0  0.0 222416  9672 ?        Ssl  12:13   0:00 /usr/bin/open5gs-ausfd -c /etc/open5gs/ausf.yaml
 open5gs  27600  0.0  0.0 222328  9668 ?        Ssl  12:13   0:00 /usr/bin/open5gs-udmd -c /etc/open5gs/udm.yaml
 open5gs  27600  0.0  0.0 222329  9669 ?        Ssl  12:13   0:00 /usr/bin/open5gs-pcfd -c /etc/open5gs/pcf.yaml
+open5gs  27600  0.0  0.0 222329  9669 ?        Ssl  12:13   0:00 /usr/bin/open5gs-nssfd -c /etc/open5gs/nssf.yaml
 open5gs  27697  0.0  0.0 243976 13716 ?        Ssl  12:13   0:00 /usr/bin/open5gs-udrd -c /etc/open5gs/udr.yaml
 ```
 
-You should see each of the above services, MME, SGW-C, SMF, AMF, SGW-U, UPF, HSS, PCRF, NRF, AUSF, UDM, PCF & UDR are all running.
+You should see each of the above services, MME, SGW-C, SMF, AMF, SGW-U, UPF, HSS, PCRF, NRF, AUSF, UDM, PCF, NSSF & UDR are all running.
 
 If your instance doesn't show this make sure you're started each service:
 ```bash
@@ -43,6 +44,7 @@ $ systemctl start open5gs-nrfd.service
 $ systemctl start open5gs-ausfd.service
 $ systemctl start open5gs-udmd.service
 $ systemctl start open5gs-pcfd.service
+$ systemctl start open5gs-nssfd.service
 $ systemctl start open5gs-udrd.service
 ```
 

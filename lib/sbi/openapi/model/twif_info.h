@@ -1,7 +1,7 @@
 /*
  * twif_info.h
  *
- *
+ * Addressing information (IP addresses, FQDN) of the TWIF
  */
 
 #ifndef _OpenAPI_twif_info_H_

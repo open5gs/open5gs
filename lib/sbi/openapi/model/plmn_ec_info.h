@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+#include "ec_restriction_data_wb.h"
 #include "plmn_id.h"
 
 #ifdef __cplusplus
@@ -21,14 +22,14 @@ extern "C" {
 typedef struct OpenAPI_plmn_ec_info_s OpenAPI_plmn_ec_info_t;
 typedef struct OpenAPI_plmn_ec_info_s {
     struct OpenAPI_plmn_id_s *plmn_id;
-    int ec_mode_a_restricted;
-    int ec_mode_b_restricted;
+    struct OpenAPI_ec_restriction_data_wb_s *ec_restriction_data_wb;
+    int ec_restriction_data_nb;
 } OpenAPI_plmn_ec_info_t;
 
 OpenAPI_plmn_ec_info_t *OpenAPI_plmn_ec_info_create(
     OpenAPI_plmn_id_t *plmn_id,
-    int ec_mode_a_restricted,
-    int ec_mode_b_restricted
+    OpenAPI_ec_restriction_data_wb_t *ec_restriction_data_wb,
+    int ec_restriction_data_nb
     );
 void OpenAPI_plmn_ec_info_free(OpenAPI_plmn_ec_info_t *plmn_ec_info);
 OpenAPI_plmn_ec_info_t *OpenAPI_plmn_ec_info_parseFromJSON(cJSON *plmn_ec_infoJSON);

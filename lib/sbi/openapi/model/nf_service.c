@@ -20,6 +20,8 @@ OpenAPI_nf_service_t *OpenAPI_nf_service_create(
     OpenAPI_list_t *allowed_nf_types,
     OpenAPI_list_t *allowed_nf_domains,
     OpenAPI_list_t *allowed_nssais,
+    OpenAPI_list_t* allowed_operations_per_nf_type,
+    OpenAPI_list_t* allowed_operations_per_nf_instance,
     int priority,
     int capacity,
     int load,
@@ -54,6 +56,8 @@ OpenAPI_nf_service_t *OpenAPI_nf_service_create(
     nf_service_local_var->allowed_nf_types = allowed_nf_types;
     nf_service_local_var->allowed_nf_domains = allowed_nf_domains;
     nf_service_local_var->allowed_nssais = allowed_nssais;
+    nf_service_local_var->allowed_operations_per_nf_type = allowed_operations_per_nf_type;
+    nf_service_local_var->allowed_operations_per_nf_instance = allowed_operations_per_nf_instance;
     nf_service_local_var->priority = priority;
     nf_service_local_var->capacity = capacity;
     nf_service_local_var->load = load;
@@ -108,9 +112,21 @@ void OpenAPI_nf_service_free(OpenAPI_nf_service_t *nf_service)
     }
     OpenAPI_list_free(nf_service->allowed_nf_domains);
     OpenAPI_list_for_each(nf_service->allowed_nssais, node) {
-        OpenAPI_snssai_free(node->data);
+        OpenAPI_ext_snssai_free(node->data);
     }
     OpenAPI_list_free(nf_service->allowed_nssais);
+    OpenAPI_list_for_each(nf_service->allowed_operations_per_nf_type, node) {
+        OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+        ogs_free(localKeyValue->value);
+        ogs_free(localKeyValue);
+    }
+    OpenAPI_list_free(nf_service->allowed_operations_per_nf_type);
+    OpenAPI_list_for_each(nf_service->allowed_operations_per_nf_instance, node) {
+        OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+        ogs_free(localKeyValue->value);
+        ogs_free(localKeyValue);
+    }
+    OpenAPI_list_free(nf_service->allowed_operations_per_nf_instance);
     ogs_free(nf_service->load_time_stamp);
     ogs_free(nf_service->recovery_time);
     OpenAPI_chf_service_info_free(nf_service->chf_service_info);
@@ -120,7 +136,7 @@ void OpenAPI_nf_service_free(OpenAPI_nf_service_t *nf_service)
     }
     OpenAPI_list_free(nf_service->nf_service_set_id_list);
     OpenAPI_list_for_each(nf_service->s_nssais, node) {
-        OpenAPI_snssai_free(node->data);
+        OpenAPI_ext_snssai_free(node->data);
     }
     OpenAPI_list_free(nf_service->s_nssais);
     OpenAPI_list_for_each(nf_service->per_plmn_snssai_list, node) {
@@ -347,12 +363,42 @@ cJSON *OpenAPI_nf_service_convertToJSON(OpenAPI_nf_service_t *nf_service)
         OpenAPI_lnode_t *allowed_nssais_node;
         if (nf_service->allowed_nssais) {
             OpenAPI_list_for_each(nf_service->allowed_nssais, allowed_nssais_node) {
-                cJSON *itemLocal = OpenAPI_snssai_convertToJSON(allowed_nssais_node->data);
+                cJSON *itemLocal = OpenAPI_ext_snssai_convertToJSON(allowed_nssais_node->data);
                 if (itemLocal == NULL) {
                     ogs_error("OpenAPI_nf_service_convertToJSON() failed [allowed_nssais]");
                     goto end;
                 }
                 cJSON_AddItemToArray(allowed_nssaisList, itemLocal);
+            }
+        }
+    }
+
+    if (nf_service->allowed_operations_per_nf_type) {
+        cJSON *allowed_operations_per_nf_type = cJSON_AddObjectToObject(item, "allowedOperationsPerNfType");
+        if (allowed_operations_per_nf_type == NULL) {
+            ogs_error("OpenAPI_nf_service_convertToJSON() failed [allowed_operations_per_nf_type]");
+            goto end;
+        }
+        cJSON *localMapObject = allowed_operations_per_nf_type;
+        OpenAPI_lnode_t *allowed_operations_per_nf_type_node;
+        if (nf_service->allowed_operations_per_nf_type) {
+            OpenAPI_list_for_each(nf_service->allowed_operations_per_nf_type, allowed_operations_per_nf_type_node) {
+                OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)allowed_operations_per_nf_type_node->data;
+            }
+        }
+    }
+
+    if (nf_service->allowed_operations_per_nf_instance) {
+        cJSON *allowed_operations_per_nf_instance = cJSON_AddObjectToObject(item, "allowedOperationsPerNfInstance");
+        if (allowed_operations_per_nf_instance == NULL) {
+            ogs_error("OpenAPI_nf_service_convertToJSON() failed [allowed_operations_per_nf_instance]");
+            goto end;
+        }
+        cJSON *localMapObject = allowed_operations_per_nf_instance;
+        OpenAPI_lnode_t *allowed_operations_per_nf_instance_node;
+        if (nf_service->allowed_operations_per_nf_instance) {
+            OpenAPI_list_for_each(nf_service->allowed_operations_per_nf_instance, allowed_operations_per_nf_instance_node) {
+                OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)allowed_operations_per_nf_instance_node->data;
             }
         }
     }
@@ -438,7 +484,7 @@ cJSON *OpenAPI_nf_service_convertToJSON(OpenAPI_nf_service_t *nf_service)
         OpenAPI_lnode_t *s_nssais_node;
         if (nf_service->s_nssais) {
             OpenAPI_list_for_each(nf_service->s_nssais, s_nssais_node) {
-                cJSON *itemLocal = OpenAPI_snssai_convertToJSON(s_nssais_node->data);
+                cJSON *itemLocal = OpenAPI_ext_snssai_convertToJSON(s_nssais_node->data);
                 if (itemLocal == NULL) {
                     ogs_error("OpenAPI_nf_service_convertToJSON() failed [s_nssais]");
                     goto end;
@@ -760,9 +806,43 @@ OpenAPI_nf_service_t *OpenAPI_nf_service_parseFromJSON(cJSON *nf_serviceJSON)
                 ogs_error("OpenAPI_nf_service_parseFromJSON() failed [allowed_nssais]");
                 goto end;
             }
-            OpenAPI_snssai_t *allowed_nssaisItem = OpenAPI_snssai_parseFromJSON(allowed_nssais_local_nonprimitive);
+            OpenAPI_ext_snssai_t *allowed_nssaisItem = OpenAPI_ext_snssai_parseFromJSON(allowed_nssais_local_nonprimitive);
 
             OpenAPI_list_add(allowed_nssaisList, allowed_nssaisItem);
+        }
+    }
+
+    cJSON *allowed_operations_per_nf_type = cJSON_GetObjectItemCaseSensitive(nf_serviceJSON, "allowedOperationsPerNfType");
+
+    OpenAPI_list_t *allowed_operations_per_nf_typeList;
+    if (allowed_operations_per_nf_type) {
+        cJSON *allowed_operations_per_nf_type_local_map;
+        if (!cJSON_IsObject(allowed_operations_per_nf_type)) {
+            ogs_error("OpenAPI_nf_service_parseFromJSON() failed [allowed_operations_per_nf_type]");
+            goto end;
+        }
+        allowed_operations_per_nf_typeList = OpenAPI_list_create();
+        OpenAPI_map_t *localMapKeyPair = NULL;
+        cJSON_ArrayForEach(allowed_operations_per_nf_type_local_map, allowed_operations_per_nf_type) {
+            cJSON *localMapObject = allowed_operations_per_nf_type_local_map;
+            OpenAPI_list_add(allowed_operations_per_nf_typeList, localMapKeyPair);
+        }
+    }
+
+    cJSON *allowed_operations_per_nf_instance = cJSON_GetObjectItemCaseSensitive(nf_serviceJSON, "allowedOperationsPerNfInstance");
+
+    OpenAPI_list_t *allowed_operations_per_nf_instanceList;
+    if (allowed_operations_per_nf_instance) {
+        cJSON *allowed_operations_per_nf_instance_local_map;
+        if (!cJSON_IsObject(allowed_operations_per_nf_instance)) {
+            ogs_error("OpenAPI_nf_service_parseFromJSON() failed [allowed_operations_per_nf_instance]");
+            goto end;
+        }
+        allowed_operations_per_nf_instanceList = OpenAPI_list_create();
+        OpenAPI_map_t *localMapKeyPair = NULL;
+        cJSON_ArrayForEach(allowed_operations_per_nf_instance_local_map, allowed_operations_per_nf_instance) {
+            cJSON *localMapObject = allowed_operations_per_nf_instance_local_map;
+            OpenAPI_list_add(allowed_operations_per_nf_instanceList, localMapKeyPair);
         }
     }
 
@@ -864,7 +944,7 @@ OpenAPI_nf_service_t *OpenAPI_nf_service_parseFromJSON(cJSON *nf_serviceJSON)
                 ogs_error("OpenAPI_nf_service_parseFromJSON() failed [s_nssais]");
                 goto end;
             }
-            OpenAPI_snssai_t *s_nssaisItem = OpenAPI_snssai_parseFromJSON(s_nssais_local_nonprimitive);
+            OpenAPI_ext_snssai_t *s_nssaisItem = OpenAPI_ext_snssai_parseFromJSON(s_nssais_local_nonprimitive);
 
             OpenAPI_list_add(s_nssaisList, s_nssaisItem);
         }
@@ -944,6 +1024,8 @@ OpenAPI_nf_service_t *OpenAPI_nf_service_parseFromJSON(cJSON *nf_serviceJSON)
         allowed_nf_types ? allowed_nf_typesList : NULL,
         allowed_nf_domains ? allowed_nf_domainsList : NULL,
         allowed_nssais ? allowed_nssaisList : NULL,
+        allowed_operations_per_nf_type ? allowed_operations_per_nf_typeList : NULL,
+        allowed_operations_per_nf_instance ? allowed_operations_per_nf_instanceList : NULL,
         priority ? priority->valuedouble : 0,
         capacity ? capacity->valuedouble : 0,
         load ? load->valuedouble : 0,

@@ -24,7 +24,7 @@ ogs_pkbuf_t *testgmm_build_registration_request(
 {
     int i;
     uint16_t psimask = 0;
-    ogs_s_nssai_t *s_nssai = NULL;
+    ogs_nas_s_nssai_ie_t *s_nssai = NULL;
 
     ogs_nas_5gs_message_t message;
     ogs_pkbuf_t *pkbuf = NULL;
@@ -162,11 +162,9 @@ ogs_pkbuf_t *testgmm_build_registration_request(
             OGS_NAS_5GS_REGISTRATION_REQUEST_REQUESTED_NSSAI_PRESENT;
         requested_nssai->length = 0;
 
-        for (i = 0; i < test_self()->num_of_plmn_support; i++) {
-            ogs_nas_build_nssai(requested_nssai,
-                test_self()->plmn_support[i].s_nssai,
-                test_self()->plmn_support[i].num_of_s_nssai);
-        }
+        ogs_nas_build_nssai(requested_nssai,
+                            test_ue->requested_nssai.s_nssai,
+                            test_ue->requested_nssai.num_of_s_nssai);
     }
 
     if (test_ue->registration_request_param.last_visited_registered_tai) {
@@ -637,7 +635,9 @@ ogs_pkbuf_t *testgmm_build_ul_nas_transport(test_sess_t *test_sess,
         ul_nas_transport->presencemask |=
                 OGS_NAS_5GS_UL_NAS_TRANSPORT_S_NSSAI_PRESENT;
         ogs_nas_build_s_nssai(
-                nas_s_nssai, &test_self()->plmn_support[0].s_nssai[0]);
+                nas_s_nssai,
+                &test_ue->allowed_nssai.
+                    s_nssai[test_ue->allowed_nssai.num_of_s_nssai-1]);
     }
 
     if (test_sess->ul_nas_transport_param.dnn) {

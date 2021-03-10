@@ -1,0 +1,3 @@
+usr/bin/open5gs-nssfd
+configs/open5gs/nssf.yaml etc/open5gs
+configs/systemd/open5gs-nssfd.service lib/systemd/system

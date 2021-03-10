@@ -108,3 +108,23 @@ void testemm_handle_attach_accept(test_ue_t *test_ue,
 
     testemm_send_to_esm(test_ue, &attach_accept->esm_message_container);
 }
+
+void testemm_handle_tau_accept(test_ue_t *test_ue,
+        ogs_nas_eps_tracking_area_update_accept_t *tau_accept)
+{
+    ogs_nas_eps_mobile_identity_t *guti = NULL;
+
+    ogs_assert(test_ue);
+    ogs_assert(tau_accept);
+
+    guti = &tau_accept->guti;
+
+    if (tau_accept->presencemask &
+            OGS_NAS_EPS_TRACKING_AREA_UPDATE_ACCEPT_GUTI_PRESENT) {
+        memcpy(&test_ue->nas_eps_guti.nas_plmn_id,
+                &guti->guti.nas_plmn_id, OGS_PLMN_ID_LEN);
+        test_ue->nas_eps_guti.mme_gid = guti->guti.mme_gid;
+        test_ue->nas_eps_guti.mme_code = guti->guti.mme_code;
+        test_ue->nas_eps_guti.m_tmsi = guti->guti.m_tmsi;
+    }
+}

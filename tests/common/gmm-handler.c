@@ -50,10 +50,23 @@ void testgmm_handle_registration_accept(test_ue_t *test_ue,
     test_ue->pdu_session_status = 0;
     test_ue->pdu_session_reactivation_result = 0;
     if (registration_accept->presencemask &
+        OGS_NAS_5GS_REGISTRATION_ACCEPT_ALLOWED_NSSAI_PRESENT) {
+        test_ue->allowed_nssai.num_of_s_nssai =
+            ogs_nas_parse_nssai(
+                    test_ue->allowed_nssai.s_nssai,
+                    &registration_accept->allowed_nssai);
+    }
+    if (registration_accept->presencemask &
+        OGS_NAS_5GS_REGISTRATION_ACCEPT_REJECTED_NSSAI_PRESENT) {
+        test_ue->rejected_nssai.num_of_s_nssai =
+            ogs_nas_parse_rejected_nssai(
+                    test_ue->rejected_nssai.s_nssai,
+                    &registration_accept->rejected_nssai);
+    }
+    if (registration_accept->presencemask &
         OGS_NAS_5GS_REGISTRATION_ACCEPT_PDU_SESSION_STATUS_PRESENT)
         test_ue->pdu_session_status = pdu_session_status->psi;
-    if (registration_accept->presencemask &
-        OGS_NAS_5GS_REGISTRATION_ACCEPT_PDU_SESSION_REACTIVATION_RESULT_PRESENT)
+    if (registration_accept->presencemask & OGS_NAS_5GS_REGISTRATION_ACCEPT_PDU_SESSION_REACTIVATION_RESULT_PRESENT)
         test_ue->pdu_session_reactivation_result =
             pdu_session_reactivation_result->psi;
 }

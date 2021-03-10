@@ -17,16 +17,11 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_roaming_odb_s OpenAPI_roaming_odb_t;
-typedef struct OpenAPI_roaming_odb_s {
-} OpenAPI_roaming_odb_t;
+typedef enum { OpenAPI_roaming_odb_NULL = 0, OpenAPI_roaming_odb_OUTSIDE_HOME_PLMN, OpenAPI_roaming_odb_OUTSIDE_HOME_PLMN_COUNTRY } OpenAPI_roaming_odb_e;
 
-OpenAPI_roaming_odb_t *OpenAPI_roaming_odb_create(
-    );
-void OpenAPI_roaming_odb_free(OpenAPI_roaming_odb_t *roaming_odb);
-OpenAPI_roaming_odb_t *OpenAPI_roaming_odb_parseFromJSON(cJSON *roaming_odbJSON);
-cJSON *OpenAPI_roaming_odb_convertToJSON(OpenAPI_roaming_odb_t *roaming_odb);
-OpenAPI_roaming_odb_t *OpenAPI_roaming_odb_copy(OpenAPI_roaming_odb_t *dst, OpenAPI_roaming_odb_t *src);
+char* OpenAPI_roaming_odb_ToString(OpenAPI_roaming_odb_e roaming_odb);
+
+OpenAPI_roaming_odb_e OpenAPI_roaming_odb_FromString(char* roaming_odb);
 
 #ifdef __cplusplus
 }

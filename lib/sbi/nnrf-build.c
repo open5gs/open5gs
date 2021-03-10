@@ -50,6 +50,9 @@ OpenAPI_nf_profile_t *ogs_nnrf_nfm_build_nf_profile(
                 OpenAPI_nf_status_ToString(nf_instance->nf_status),
                 nf_instance->num_of_ipv4, nf_instance->num_of_ipv6);
 
+    NFProfile->heart_beat_timer = nf_instance->time.heartbeat_interval;
+    NFProfile->nf_profile_changes_support_ind = true;
+
     if (strlen(nf_instance->fqdn)) {
         memset(fqdn, 0, sizeof(fqdn));
         fqdn_len = ogs_fqdn_build(fqdn,
@@ -232,45 +235,6 @@ void ogs_sbi_nnrf_free_nf_profile(OpenAPI_nf_profile_t *NFProfile)
         ogs_free(NFProfile->fqdn);
 
     ogs_free(NFProfile);
-}
-
-ogs_sbi_request_t *ogs_nnrf_nfm_build_register(
-        ogs_sbi_nf_instance_t *nf_instance)
-{
-    ogs_sbi_message_t message;
-    ogs_sbi_request_t *request = NULL;
-    ogs_sbi_client_t *client = NULL;
-
-    OpenAPI_nf_profile_t *NFProfile = NULL;
-
-    ogs_assert(nf_instance);
-    client = nf_instance->client;
-    ogs_assert(client);
-
-    memset(&message, 0, sizeof(message));
-    message.h.method = (char *)OGS_SBI_HTTP_METHOD_PUT;
-    message.h.service.name = (char *)OGS_SBI_SERVICE_NAME_NNRF_NFM;
-    message.h.api.version = (char *)OGS_SBI_API_V1;
-    message.h.resource.component[0] =
-        (char *)OGS_SBI_RESOURCE_NAME_NF_INSTANCES;
-    message.h.resource.component[1] = ogs_sbi_self()->nf_instance_id;
-
-    message.http.content_encoding = (char*)ogs_sbi_self()->content_encoding;
-
-    NFProfile = ogs_nnrf_nfm_build_nf_profile(nf_instance);
-    ogs_assert(NFProfile);
-
-    NFProfile->nf_profile_changes_support_ind = true;
-    nf_instance->time.heartbeat_interval = NFProfile->heart_beat_timer =
-            ogs_app()->time.nf_instance.heartbeat_interval;
-
-    message.NFProfile = NFProfile;
-
-    request = ogs_sbi_build_request(&message);
-
-    ogs_sbi_nnrf_free_nf_profile(NFProfile);
-
-    return request;
 }
 
 ogs_sbi_request_t *ogs_nnrf_nfm_build_update(ogs_sbi_nf_instance_t *nf_instance)

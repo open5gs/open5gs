@@ -33,7 +33,8 @@ PCRF-frDi = 127.0.0.9 :3868 for Gx auth
 NRF-sbi   = 127.0.0.10:7777 for 5G SBI
 AUSF-sbi  = 127.0.0.11:7777 for 5G SBI
 UDM-sbi   = 127.0.0.12:7777 for 5G SBI
-PCF-sbi   = 127.0.0.12:7777 for 5G SBI
+PCF-sbi   = 127.0.0.13:7777 for 5G SBI
+NSSF-sbi   = 127.0.0.14:7777 for 5G SBI
 UDR-sbi   = 127.0.0.20:7777 for 5G SBI
 ```
 
@@ -50,7 +51,7 @@ You can refer to the network settings at
 [{{ site.url }}{{ site.baseurl }}/assets/Open5GS-Diagram.pdf]({{ site.url }}{{ site.baseurl }}/assets/Open5GS-Diagram.pdf) provided by [@kbarlee](https://github.com/kbarlee) in issue [#528](https://github.com/{{ site.github_username }}/open5gs/issues/528)
 {: .notice--danger}
 
-Modify [install/etc/open5gs/mme.yaml](https://github.com/{{ site.github_username }}/open5gs/blob/master/configs/open5gs/mme.yaml.in) to set the S1AP IP address, PLMN ID, and TAC.
+Modify [install/etc/open5gs/mme.yaml](https://github.com/{{ site.github_username }}/open5gs/blob/main/configs/open5gs/mme.yaml.in) to set the S1AP IP address, PLMN ID, and TAC.
 
 ```diff
 $ diff -u /etc/open5gs/mme.yaml.old /etc/open5gs/mme.yaml
@@ -85,7 +86,7 @@ $ diff -u /etc/open5gs/mme.yaml.old /etc/open5gs/mme.yaml
          ciphering_order : [ EEA0, EEA1, EEA2 ]
 ```
 
-Modify [install/etc/open5gs/sgwc.yaml](https://github.com/{{ site.github_username }}/open5gs/blob/master/configs/open5gs/sgwc.yaml.in) to set the PFCP IP address.
+Modify [install/etc/open5gs/sgwc.yaml](https://github.com/{{ site.github_username }}/open5gs/blob/main/configs/open5gs/sgwc.yaml.in) to set the PFCP IP address.
 ```diff
 $ diff -u /etc/open5gs/sgwc.yaml.old /etc/open5gs/sgwc.yaml
 @@ -49,7 +49,7 @@
@@ -108,7 +109,7 @@ $ diff -u /etc/open5gs/sgwc.yaml.old /etc/open5gs/sgwc.yaml
  # parameter:
 ```
 
-Modify [install/etc/open5gs/smf.yaml](https://github.com/{{ site.github_username }}/open5gs/blob/master/configs/open5gs/smf.yaml.in) to set the PFCP IP address.
+Modify [install/etc/open5gs/smf.yaml](https://github.com/{{ site.github_username }}/open5gs/blob/main/configs/open5gs/smf.yaml.in) to set the PFCP IP address.
 ```diff
 $ diff -u /etc/open5gs/smf.yaml.old /etc/open5gs/smf.yaml
 --- smf.yaml.old	2020-08-22 11:37:39.990816411 -0400
@@ -120,7 +121,7 @@ $ diff -u /etc/open5gs/smf.yaml.old /etc/open5gs/smf.yaml
 -      - addr: 127.0.0.4
 -      - addr: ::1
 +      - addr: 10.10.0.4
-     pdn:
+     subnet:
        - addr: 10.45.0.1/16
        - addr: cafe::1/64
 @@ -282,7 +281,7 @@
@@ -135,7 +136,7 @@ $ diff -u /etc/open5gs/smf.yaml.old /etc/open5gs/smf.yaml
 
 ```
 
-Modify [install/etc/open5gs/amf.yaml](https://github.com/{{ site.github_username }}/open5gs/blob/master/configs/open5gs/amf.yaml.in) to set the NGAP IP address, PLMN ID, TAC and NSSAI.
+Modify [install/etc/open5gs/amf.yaml](https://github.com/{{ site.github_username }}/open5gs/blob/main/configs/open5gs/amf.yaml.in) to set the NGAP IP address, PLMN ID, TAC and NSSAI.
 
 ```diff
 diff -u /etc/open5gs/amf.yaml.old /etc/open5gs/amf.yaml
@@ -164,7 +165,7 @@ diff -u /etc/open5gs/amf.yaml.old /etc/open5gs/amf.yaml
 +          mcc: 901
 +          mnc: 70
 +        tac: 1
-     plmn:
+     plmn_support:
        - plmn_id:
 -          mcc: 001
 -          mnc: 01
@@ -178,7 +179,7 @@ diff -u /etc/open5gs/amf.yaml.old /etc/open5gs/amf.yaml
          ciphering_order : [ NEA0, NEA1, NEA2 ]
 ```
 
-Modify [install/etc/open5gs/sgwu.yaml](https://github.com/{{ site.github_username }}/open5gs/blob/master/configs/open5gs/sgwu.yaml.in) to set the GTP-U and PFCP IP address.
+Modify [install/etc/open5gs/sgwu.yaml](https://github.com/{{ site.github_username }}/open5gs/blob/main/configs/open5gs/sgwu.yaml.in) to set the GTP-U and PFCP IP address.
 ```diff
 $ diff -u /etc/open5gs/sgwu.yaml.old /etc/open5gs/sgwu.yaml
 --- sgwu.yaml.old	2020-08-22 11:41:09.214670723 -0400
@@ -197,7 +198,7 @@ $ diff -u /etc/open5gs/sgwu.yaml.old /etc/open5gs/sgwu.yaml
  # sgwc:
 ```
 
-Modify [install/etc/open5gs/upf.yaml](https://github.com/{{ site.github_username }}/open5gs/blob/master/configs/open5gs/upf.yaml.in) to set the GTP-U and PFCP IP address.
+Modify [install/etc/open5gs/upf.yaml](https://github.com/{{ site.github_username }}/open5gs/blob/main/configs/open5gs/upf.yaml.in) to set the GTP-U and PFCP IP address.
 ```diff
 $ diff -u /etc/open5gs/upf.yaml.old /etc/open5gs/upf.yaml
 --- upf.yaml.old	2020-08-22 11:42:57.781750067 -0400
@@ -213,7 +214,7 @@ $ diff -u /etc/open5gs/upf.yaml.old /etc/open5gs/upf.yaml
 -        - 127.0.0.7
 -        - ::1
 +      - addr: 10.11.0.7
-     pdn:
+     subnet:
        - addr: 10.45.0.1/16
        - addr: cafe::1/64
 ```

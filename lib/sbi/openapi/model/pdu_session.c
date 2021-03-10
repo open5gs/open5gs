@@ -7,7 +7,8 @@
 OpenAPI_pdu_session_t *OpenAPI_pdu_session_create(
     char *dnn,
     char *smf_instance_id,
-    OpenAPI_plmn_id_t *plmn_id
+    OpenAPI_plmn_id_t *plmn_id,
+    OpenAPI_snssai_t *single_nssai
     )
 {
     OpenAPI_pdu_session_t *pdu_session_local_var = OpenAPI_malloc(sizeof(OpenAPI_pdu_session_t));
@@ -17,6 +18,7 @@ OpenAPI_pdu_session_t *OpenAPI_pdu_session_create(
     pdu_session_local_var->dnn = dnn;
     pdu_session_local_var->smf_instance_id = smf_instance_id;
     pdu_session_local_var->plmn_id = plmn_id;
+    pdu_session_local_var->single_nssai = single_nssai;
 
     return pdu_session_local_var;
 }
@@ -30,6 +32,7 @@ void OpenAPI_pdu_session_free(OpenAPI_pdu_session_t *pdu_session)
     ogs_free(pdu_session->dnn);
     ogs_free(pdu_session->smf_instance_id);
     OpenAPI_plmn_id_free(pdu_session->plmn_id);
+    OpenAPI_snssai_free(pdu_session->single_nssai);
     ogs_free(pdu_session);
 }
 
@@ -76,6 +79,19 @@ cJSON *OpenAPI_pdu_session_convertToJSON(OpenAPI_pdu_session_t *pdu_session)
         goto end;
     }
 
+    if (pdu_session->single_nssai) {
+        cJSON *single_nssai_local_JSON = OpenAPI_snssai_convertToJSON(pdu_session->single_nssai);
+        if (single_nssai_local_JSON == NULL) {
+            ogs_error("OpenAPI_pdu_session_convertToJSON() failed [single_nssai]");
+            goto end;
+        }
+        cJSON_AddItemToObject(item, "singleNssai", single_nssai_local_JSON);
+        if (item->child == NULL) {
+            ogs_error("OpenAPI_pdu_session_convertToJSON() failed [single_nssai]");
+            goto end;
+        }
+    }
+
 end:
     return item;
 }
@@ -117,10 +133,18 @@ OpenAPI_pdu_session_t *OpenAPI_pdu_session_parseFromJSON(cJSON *pdu_sessionJSON)
 
     plmn_id_local_nonprim = OpenAPI_plmn_id_parseFromJSON(plmn_id);
 
+    cJSON *single_nssai = cJSON_GetObjectItemCaseSensitive(pdu_sessionJSON, "singleNssai");
+
+    OpenAPI_snssai_t *single_nssai_local_nonprim = NULL;
+    if (single_nssai) {
+        single_nssai_local_nonprim = OpenAPI_snssai_parseFromJSON(single_nssai);
+    }
+
     pdu_session_local_var = OpenAPI_pdu_session_create (
         ogs_strdup(dnn->valuestring),
         ogs_strdup(smf_instance_id->valuestring),
-        plmn_id_local_nonprim
+        plmn_id_local_nonprim,
+        single_nssai ? single_nssai_local_nonprim : NULL
         );
 
     return pdu_session_local_var;

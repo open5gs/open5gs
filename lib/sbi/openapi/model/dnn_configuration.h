@@ -38,7 +38,6 @@ typedef struct OpenAPI_dnn_configuration_s {
     OpenAPI_list_t *static_ip_address;
     struct OpenAPI_up_security_s *up_security;
     OpenAPI_pdu_session_continuity_ind_e pdu_session_continuity_ind;
-    int invoke_nef_selection;
     char *nidd_nef_id;
     struct OpenAPI_nidd_information_s *nidd_info;
     int redundant_session_allowed;
@@ -46,6 +45,9 @@ typedef struct OpenAPI_dnn_configuration_s {
     OpenAPI_list_t *ipv4_frame_route_list;
     OpenAPI_list_t *ipv6_frame_route_list;
     int atsss_allowed;
+    int secondary_auth;
+    int dn_aaa_ip_address_allocation;
+    struct OpenAPI_ip_address_s *dn_aaa_address;
 } OpenAPI_dnn_configuration_t;
 
 OpenAPI_dnn_configuration_t *OpenAPI_dnn_configuration_create(
@@ -58,14 +60,16 @@ OpenAPI_dnn_configuration_t *OpenAPI_dnn_configuration_create(
     OpenAPI_list_t *static_ip_address,
     OpenAPI_up_security_t *up_security,
     OpenAPI_pdu_session_continuity_ind_e pdu_session_continuity_ind,
-    int invoke_nef_selection,
     char *nidd_nef_id,
     OpenAPI_nidd_information_t *nidd_info,
     int redundant_session_allowed,
     OpenAPI_acs_info_t *acs_info,
     OpenAPI_list_t *ipv4_frame_route_list,
     OpenAPI_list_t *ipv6_frame_route_list,
-    int atsss_allowed
+    int atsss_allowed,
+    int secondary_auth,
+    int dn_aaa_ip_address_allocation,
+    OpenAPI_ip_address_t *dn_aaa_address
     );
 void OpenAPI_dnn_configuration_free(OpenAPI_dnn_configuration_t *dnn_configuration);
 OpenAPI_dnn_configuration_t *OpenAPI_dnn_configuration_parseFromJSON(cJSON *dnn_configurationJSON);

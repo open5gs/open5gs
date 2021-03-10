@@ -27,7 +27,9 @@ OpenAPI_vsmf_update_data_t *OpenAPI_vsmf_update_data_create(
     OpenAPI_list_t *dnai_list,
     OpenAPI_n4_information_t *n4_info,
     OpenAPI_n4_information_t *n4_info_ext1,
-    OpenAPI_n4_information_t *n4_info_ext2
+    OpenAPI_n4_information_t *n4_info_ext2,
+    int small_data_rate_control_enabled,
+    OpenAPI_qos_monitoring_info_t *qos_monitoring_info
     )
 {
     OpenAPI_vsmf_update_data_t *vsmf_update_data_local_var = OpenAPI_malloc(sizeof(OpenAPI_vsmf_update_data_t));
@@ -57,6 +59,8 @@ OpenAPI_vsmf_update_data_t *OpenAPI_vsmf_update_data_create(
     vsmf_update_data_local_var->n4_info = n4_info;
     vsmf_update_data_local_var->n4_info_ext1 = n4_info_ext1;
     vsmf_update_data_local_var->n4_info_ext2 = n4_info_ext2;
+    vsmf_update_data_local_var->small_data_rate_control_enabled = small_data_rate_control_enabled;
+    vsmf_update_data_local_var->qos_monitoring_info = qos_monitoring_info;
 
     return vsmf_update_data_local_var;
 }
@@ -104,6 +108,7 @@ void OpenAPI_vsmf_update_data_free(OpenAPI_vsmf_update_data_t *vsmf_update_data)
     OpenAPI_n4_information_free(vsmf_update_data->n4_info);
     OpenAPI_n4_information_free(vsmf_update_data->n4_info_ext1);
     OpenAPI_n4_information_free(vsmf_update_data->n4_info_ext2);
+    OpenAPI_qos_monitoring_info_free(vsmf_update_data->qos_monitoring_info);
     ogs_free(vsmf_update_data);
 }
 
@@ -395,6 +400,26 @@ cJSON *OpenAPI_vsmf_update_data_convertToJSON(OpenAPI_vsmf_update_data_t *vsmf_u
         cJSON_AddItemToObject(item, "n4InfoExt2", n4_info_ext2_local_JSON);
         if (item->child == NULL) {
             ogs_error("OpenAPI_vsmf_update_data_convertToJSON() failed [n4_info_ext2]");
+            goto end;
+        }
+    }
+
+    if (vsmf_update_data->small_data_rate_control_enabled) {
+        if (cJSON_AddBoolToObject(item, "smallDataRateControlEnabled", vsmf_update_data->small_data_rate_control_enabled) == NULL) {
+            ogs_error("OpenAPI_vsmf_update_data_convertToJSON() failed [small_data_rate_control_enabled]");
+            goto end;
+        }
+    }
+
+    if (vsmf_update_data->qos_monitoring_info) {
+        cJSON *qos_monitoring_info_local_JSON = OpenAPI_qos_monitoring_info_convertToJSON(vsmf_update_data->qos_monitoring_info);
+        if (qos_monitoring_info_local_JSON == NULL) {
+            ogs_error("OpenAPI_vsmf_update_data_convertToJSON() failed [qos_monitoring_info]");
+            goto end;
+        }
+        cJSON_AddItemToObject(item, "qosMonitoringInfo", qos_monitoring_info_local_JSON);
+        if (item->child == NULL) {
+            ogs_error("OpenAPI_vsmf_update_data_convertToJSON() failed [qos_monitoring_info]");
             goto end;
         }
     }
@@ -702,6 +727,22 @@ OpenAPI_vsmf_update_data_t *OpenAPI_vsmf_update_data_parseFromJSON(cJSON *vsmf_u
         n4_info_ext2_local_nonprim = OpenAPI_n4_information_parseFromJSON(n4_info_ext2);
     }
 
+    cJSON *small_data_rate_control_enabled = cJSON_GetObjectItemCaseSensitive(vsmf_update_dataJSON, "smallDataRateControlEnabled");
+
+    if (small_data_rate_control_enabled) {
+        if (!cJSON_IsBool(small_data_rate_control_enabled)) {
+            ogs_error("OpenAPI_vsmf_update_data_parseFromJSON() failed [small_data_rate_control_enabled]");
+            goto end;
+        }
+    }
+
+    cJSON *qos_monitoring_info = cJSON_GetObjectItemCaseSensitive(vsmf_update_dataJSON, "qosMonitoringInfo");
+
+    OpenAPI_qos_monitoring_info_t *qos_monitoring_info_local_nonprim = NULL;
+    if (qos_monitoring_info) {
+        qos_monitoring_info_local_nonprim = OpenAPI_qos_monitoring_info_parseFromJSON(qos_monitoring_info);
+    }
+
     vsmf_update_data_local_var = OpenAPI_vsmf_update_data_create (
         request_indicationVariable,
         session_ambr ? session_ambr_local_nonprim : NULL,
@@ -725,7 +766,9 @@ OpenAPI_vsmf_update_data_t *OpenAPI_vsmf_update_data_parseFromJSON(cJSON *vsmf_u
         dnai_list ? dnai_listList : NULL,
         n4_info ? n4_info_local_nonprim : NULL,
         n4_info_ext1 ? n4_info_ext1_local_nonprim : NULL,
-        n4_info_ext2 ? n4_info_ext2_local_nonprim : NULL
+        n4_info_ext2 ? n4_info_ext2_local_nonprim : NULL,
+        small_data_rate_control_enabled ? small_data_rate_control_enabled->valueint : 0,
+        qos_monitoring_info ? qos_monitoring_info_local_nonprim : NULL
         );
 
     return vsmf_update_data_local_var;

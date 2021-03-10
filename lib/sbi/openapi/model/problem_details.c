@@ -12,7 +12,8 @@ OpenAPI_problem_details_t *OpenAPI_problem_details_create(
     char *instance,
     char *cause,
     OpenAPI_list_t *invalid_params,
-    char *supported_features
+    char *supported_features,
+    char *target_scp
     )
 {
     OpenAPI_problem_details_t *problem_details_local_var = OpenAPI_malloc(sizeof(OpenAPI_problem_details_t));
@@ -27,6 +28,7 @@ OpenAPI_problem_details_t *OpenAPI_problem_details_create(
     problem_details_local_var->cause = cause;
     problem_details_local_var->invalid_params = invalid_params;
     problem_details_local_var->supported_features = supported_features;
+    problem_details_local_var->target_scp = target_scp;
 
     return problem_details_local_var;
 }
@@ -47,6 +49,7 @@ void OpenAPI_problem_details_free(OpenAPI_problem_details_t *problem_details)
     }
     OpenAPI_list_free(problem_details->invalid_params);
     ogs_free(problem_details->supported_features);
+    ogs_free(problem_details->target_scp);
     ogs_free(problem_details);
 }
 
@@ -125,6 +128,13 @@ cJSON *OpenAPI_problem_details_convertToJSON(OpenAPI_problem_details_t *problem_
     if (problem_details->supported_features) {
         if (cJSON_AddStringToObject(item, "supportedFeatures", problem_details->supported_features) == NULL) {
             ogs_error("OpenAPI_problem_details_convertToJSON() failed [supported_features]");
+            goto end;
+        }
+    }
+
+    if (problem_details->target_scp) {
+        if (cJSON_AddStringToObject(item, "targetScp", problem_details->target_scp) == NULL) {
+            ogs_error("OpenAPI_problem_details_convertToJSON() failed [target_scp]");
             goto end;
         }
     }
@@ -222,6 +232,15 @@ OpenAPI_problem_details_t *OpenAPI_problem_details_parseFromJSON(cJSON *problem_
         }
     }
 
+    cJSON *target_scp = cJSON_GetObjectItemCaseSensitive(problem_detailsJSON, "targetScp");
+
+    if (target_scp) {
+        if (!cJSON_IsString(target_scp)) {
+            ogs_error("OpenAPI_problem_details_parseFromJSON() failed [target_scp]");
+            goto end;
+        }
+    }
+
     problem_details_local_var = OpenAPI_problem_details_create (
         type ? ogs_strdup(type->valuestring) : NULL,
         title ? ogs_strdup(title->valuestring) : NULL,
@@ -230,7 +249,8 @@ OpenAPI_problem_details_t *OpenAPI_problem_details_parseFromJSON(cJSON *problem_
         instance ? ogs_strdup(instance->valuestring) : NULL,
         cause ? ogs_strdup(cause->valuestring) : NULL,
         invalid_params ? invalid_paramsList : NULL,
-        supported_features ? ogs_strdup(supported_features->valuestring) : NULL
+        supported_features ? ogs_strdup(supported_features->valuestring) : NULL,
+        target_scp ? ogs_strdup(target_scp->valuestring) : NULL
         );
 
     return problem_details_local_var;

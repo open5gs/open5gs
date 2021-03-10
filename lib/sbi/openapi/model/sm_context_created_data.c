@@ -17,7 +17,9 @@ OpenAPI_sm_context_created_data_t *OpenAPI_sm_context_created_data_create(
     char *gpsi,
     char *smf_service_instance_id,
     char *recovery_time,
-    char *supported_features
+    char *supported_features,
+    char *selected_smf_id,
+    char *selected_old_smf_id
     )
 {
     OpenAPI_sm_context_created_data_t *sm_context_created_data_local_var = OpenAPI_malloc(sizeof(OpenAPI_sm_context_created_data_t));
@@ -37,6 +39,8 @@ OpenAPI_sm_context_created_data_t *OpenAPI_sm_context_created_data_create(
     sm_context_created_data_local_var->smf_service_instance_id = smf_service_instance_id;
     sm_context_created_data_local_var->recovery_time = recovery_time;
     sm_context_created_data_local_var->supported_features = supported_features;
+    sm_context_created_data_local_var->selected_smf_id = selected_smf_id;
+    sm_context_created_data_local_var->selected_old_smf_id = selected_old_smf_id;
 
     return sm_context_created_data_local_var;
 }
@@ -59,6 +63,8 @@ void OpenAPI_sm_context_created_data_free(OpenAPI_sm_context_created_data_t *sm_
     ogs_free(sm_context_created_data->smf_service_instance_id);
     ogs_free(sm_context_created_data->recovery_time);
     ogs_free(sm_context_created_data->supported_features);
+    ogs_free(sm_context_created_data->selected_smf_id);
+    ogs_free(sm_context_created_data->selected_old_smf_id);
     ogs_free(sm_context_created_data);
 }
 
@@ -184,6 +190,20 @@ cJSON *OpenAPI_sm_context_created_data_convertToJSON(OpenAPI_sm_context_created_
     if (sm_context_created_data->supported_features) {
         if (cJSON_AddStringToObject(item, "supportedFeatures", sm_context_created_data->supported_features) == NULL) {
             ogs_error("OpenAPI_sm_context_created_data_convertToJSON() failed [supported_features]");
+            goto end;
+        }
+    }
+
+    if (sm_context_created_data->selected_smf_id) {
+        if (cJSON_AddStringToObject(item, "selectedSmfId", sm_context_created_data->selected_smf_id) == NULL) {
+            ogs_error("OpenAPI_sm_context_created_data_convertToJSON() failed [selected_smf_id]");
+            goto end;
+        }
+    }
+
+    if (sm_context_created_data->selected_old_smf_id) {
+        if (cJSON_AddStringToObject(item, "selectedOldSmfId", sm_context_created_data->selected_old_smf_id) == NULL) {
+            ogs_error("OpenAPI_sm_context_created_data_convertToJSON() failed [selected_old_smf_id]");
             goto end;
         }
     }
@@ -328,6 +348,24 @@ OpenAPI_sm_context_created_data_t *OpenAPI_sm_context_created_data_parseFromJSON
         }
     }
 
+    cJSON *selected_smf_id = cJSON_GetObjectItemCaseSensitive(sm_context_created_dataJSON, "selectedSmfId");
+
+    if (selected_smf_id) {
+        if (!cJSON_IsString(selected_smf_id)) {
+            ogs_error("OpenAPI_sm_context_created_data_parseFromJSON() failed [selected_smf_id]");
+            goto end;
+        }
+    }
+
+    cJSON *selected_old_smf_id = cJSON_GetObjectItemCaseSensitive(sm_context_created_dataJSON, "selectedOldSmfId");
+
+    if (selected_old_smf_id) {
+        if (!cJSON_IsString(selected_old_smf_id)) {
+            ogs_error("OpenAPI_sm_context_created_data_parseFromJSON() failed [selected_old_smf_id]");
+            goto end;
+        }
+    }
+
     sm_context_created_data_local_var = OpenAPI_sm_context_created_data_create (
         h_smf_uri ? ogs_strdup(h_smf_uri->valuestring) : NULL,
         smf_uri ? ogs_strdup(smf_uri->valuestring) : NULL,
@@ -341,7 +379,9 @@ OpenAPI_sm_context_created_data_t *OpenAPI_sm_context_created_data_parseFromJSON
         gpsi ? ogs_strdup(gpsi->valuestring) : NULL,
         smf_service_instance_id ? ogs_strdup(smf_service_instance_id->valuestring) : NULL,
         recovery_time ? ogs_strdup(recovery_time->valuestring) : NULL,
-        supported_features ? ogs_strdup(supported_features->valuestring) : NULL
+        supported_features ? ogs_strdup(supported_features->valuestring) : NULL,
+        selected_smf_id ? ogs_strdup(selected_smf_id->valuestring) : NULL,
+        selected_old_smf_id ? ogs_strdup(selected_old_smf_id->valuestring) : NULL
         );
 
     return sm_context_created_data_local_var;

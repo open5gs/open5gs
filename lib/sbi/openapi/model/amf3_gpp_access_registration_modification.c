@@ -11,7 +11,8 @@ OpenAPI_amf3_gpp_access_registration_modification_t *OpenAPI_amf3_gpp_access_reg
     OpenAPI_ims_vo_ps_t *ims_vo_ps,
     OpenAPI_list_t *backup_amf_info,
     OpenAPI_eps_interworking_info_t *eps_interworking_info,
-    int ue_srvcc_capability
+    int ue_srvcc_capability,
+    int no_ee_subscription_ind
     )
 {
     OpenAPI_amf3_gpp_access_registration_modification_t *amf3_gpp_access_registration_modification_local_var = OpenAPI_malloc(sizeof(OpenAPI_amf3_gpp_access_registration_modification_t));
@@ -25,6 +26,7 @@ OpenAPI_amf3_gpp_access_registration_modification_t *OpenAPI_amf3_gpp_access_reg
     amf3_gpp_access_registration_modification_local_var->backup_amf_info = backup_amf_info;
     amf3_gpp_access_registration_modification_local_var->eps_interworking_info = eps_interworking_info;
     amf3_gpp_access_registration_modification_local_var->ue_srvcc_capability = ue_srvcc_capability;
+    amf3_gpp_access_registration_modification_local_var->no_ee_subscription_ind = no_ee_subscription_ind;
 
     return amf3_gpp_access_registration_modification_local_var;
 }
@@ -138,6 +140,13 @@ cJSON *OpenAPI_amf3_gpp_access_registration_modification_convertToJSON(OpenAPI_a
         }
     }
 
+    if (amf3_gpp_access_registration_modification->no_ee_subscription_ind) {
+        if (cJSON_AddBoolToObject(item, "noEeSubscriptionInd", amf3_gpp_access_registration_modification->no_ee_subscription_ind) == NULL) {
+            ogs_error("OpenAPI_amf3_gpp_access_registration_modification_convertToJSON() failed [no_ee_subscription_ind]");
+            goto end;
+        }
+    }
+
 end:
     return item;
 }
@@ -219,6 +228,15 @@ OpenAPI_amf3_gpp_access_registration_modification_t *OpenAPI_amf3_gpp_access_reg
         }
     }
 
+    cJSON *no_ee_subscription_ind = cJSON_GetObjectItemCaseSensitive(amf3_gpp_access_registration_modificationJSON, "noEeSubscriptionInd");
+
+    if (no_ee_subscription_ind) {
+        if (!cJSON_IsBool(no_ee_subscription_ind)) {
+            ogs_error("OpenAPI_amf3_gpp_access_registration_modification_parseFromJSON() failed [no_ee_subscription_ind]");
+            goto end;
+        }
+    }
+
     amf3_gpp_access_registration_modification_local_var = OpenAPI_amf3_gpp_access_registration_modification_create (
         guami_local_nonprim,
         purge_flag ? purge_flag->valueint : 0,
@@ -226,7 +244,8 @@ OpenAPI_amf3_gpp_access_registration_modification_t *OpenAPI_amf3_gpp_access_reg
         ims_vo_ps ? ims_vo_ps_local_nonprim : NULL,
         backup_amf_info ? backup_amf_infoList : NULL,
         eps_interworking_info ? eps_interworking_info_local_nonprim : NULL,
-        ue_srvcc_capability ? ue_srvcc_capability->valueint : 0
+        ue_srvcc_capability ? ue_srvcc_capability->valueint : 0,
+        no_ee_subscription_ind ? no_ee_subscription_ind->valueint : 0
         );
 
     return amf3_gpp_access_registration_modification_local_var;

@@ -311,12 +311,12 @@ components:
   
   
     RoamingIndication:
-      anyOf:
-        - type: string
+#      anyOf:
+#        - type: string
           enum:
             - NON_ROAMING
             - LOCAL_BREAKOUT
             - HOME_ROUTED_ROAMING
-        - type: string
+          type: string
     NsiId:
       type: string

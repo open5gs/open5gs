@@ -23,12 +23,14 @@ typedef struct OpenAPI_ec_restriction_s {
     char *af_instance_id;
     int reference_id;
     OpenAPI_list_t *plmn_ec_infos;
+    char *mtc_provider_information;
 } OpenAPI_ec_restriction_t;
 
 OpenAPI_ec_restriction_t *OpenAPI_ec_restriction_create(
     char *af_instance_id,
     int reference_id,
-    OpenAPI_list_t *plmn_ec_infos
+    OpenAPI_list_t *plmn_ec_infos,
+    char *mtc_provider_information
     );
 void OpenAPI_ec_restriction_free(OpenAPI_ec_restriction_t *ec_restriction);
 OpenAPI_ec_restriction_t *OpenAPI_ec_restriction_parseFromJSON(cJSON *ec_restrictionJSON);

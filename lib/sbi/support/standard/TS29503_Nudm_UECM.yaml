@@ -1,7 +1,7 @@
 openapi: 3.0.0
 
 info:
-  version: '1.1.0.alpha-3'
+  version: '1.1.2'
   title: 'Nudm_UECM'
   description: |
     Nudm Context Management Service.
@@ -9,7 +9,7 @@ info:
     All rights reserved.
 
 externalDocs:
-  description: 3GPP TS 29.503 Unified Data Management Services, version 16.3.0
+  description: 3GPP TS 29.503 Unified Data Management Services, version 16.6.0
   url: 'http://www.3gpp.org/ftp/Specs/archive/29_series/29.503/'
 
 servers:
@@ -25,6 +25,61 @@ security:
   - {}
 
 paths:
+  /{ueId}/registrations:
+    get:
+      summary: retrieve UE registration data sets
+      operationId: GetRegistrations
+      tags:
+        - UECM Registration Info Retrieval
+      parameters:
+        - name: ueId
+          in: path
+          description: Identifier of the UE
+          required: true
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/VarUeId'
+        - name: supported-features
+          in: query
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        - name: registration-dataset-names
+          in: query
+          style: form
+          explode: false
+          description: List of UECM registration dataset names
+          required: true
+          schema:
+             $ref: '#/components/schemas/RegistrationDatasetNames'
+        - name: single-nssai
+          in: query
+          content:
+            application/json:
+              schema:
+               $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        - name: dnn
+          in: query
+          schema:
+             $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+      responses:
+        '200':
+          description: Expected response to a valid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegistrationDataSets'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+
   /{ueId}/registrations/amf-3gpp-access:
     put:
       summary: register as AMF for 3GPP access
@@ -90,6 +145,38 @@ paths:
               responses:
                 '204':
                   description: Successful Notification response
+                '307':
+                  description: Temporary Redirect
+                  content:
+                    application/problem+json:
+                      schema:
+                        $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+                  headers:
+                    Location:
+                      description: 'Contains the new Callback URI of the target NF Service Consumer (e.g. AMF) to which the request is redirected'
+                      required: true
+                      schema:
+                        type: string
+                    3gpp-Sbi-Target-Nf-Id:
+                      description: 'Identifier of target NF (service) instance towards which the notification is redirected'
+                      schema:
+                        type: string
+                '308':
+                  description: Permanent Redirect
+                  content:
+                    application/problem+json:
+                      schema:
+                        $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+                  headers:
+                    Location:
+                      description: 'Contains the new Callback URI of the target NF Service Consumer (e.g. AMF) to which the request is redirected'
+                      required: true
+                      schema:
+                        type: string
+                    3gpp-Sbi-Target-Nf-Id:
+                      description: 'Identifier of target NF (service) instance towards which the notification is redirected'
+                      schema:
+                        type: string
                 '400':
                   $ref: 'TS29571_CommonData.yaml#/components/responses/400'
                 '404':
@@ -112,10 +199,44 @@ paths:
               responses:
                 '204':
                   description: Successful Notification response
+                '307':
+                  description: Temporary Redirect
+                  content:
+                    application/problem+json:
+                      schema:
+                        $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+                  headers:
+                    Location:
+                      description: 'Contains the new Callback URI of the target NF Service Consumer (e.g. AMF) to which the request is redirected'
+                      required: true
+                      schema:
+                        type: string
+                    3gpp-Sbi-Target-Nf-Id:
+                      description: 'Identifier of target NF (service) instance towards which the notification is redirected'
+                      schema:
+                        type: string
+                '308':
+                  description: Permanent Redirect
+                  content:
+                    application/problem+json:
+                      schema:
+                        $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+                  headers:
+                    Location:
+                      description: 'Contains the new Callback URI of the target NF Service Consumer (e.g. AMF) to which the request is redirected'
+                      required: true
+                      schema:
+                        type: string
+                    3gpp-Sbi-Target-Nf-Id:
+                      description: 'Identifier of target NF (service) instance towards which the notification is redirected'
+                      schema:
+                        type: string
                 '400':
                   $ref: 'TS29571_CommonData.yaml#/components/responses/400'
                 '404':
                   $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+                '409':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/409'
                 '500':
                   $ref: 'TS29571_CommonData.yaml#/components/responses/500'
                 '503':
@@ -344,6 +465,38 @@ paths:
               responses:
                 '204':
                   description: Successful Notification response
+                '307':
+                  description: Temporary Redirect
+                  content:
+                    application/problem+json:
+                      schema:
+                        $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+                  headers:
+                    Location:
+                      description: 'Contains the new Callback URI of the target NF Service Consumer (e.g. AMF) to which the request is redirected'
+                      required: true
+                      schema:
+                        type: string
+                    3gpp-Sbi-Target-Nf-Id:
+                      description: 'Identifier of target NF (service) instance towards which the notification is redirected'
+                      schema:
+                        type: string
+                '308':
+                  description: Permanent Redirect
+                  content:
+                    application/problem+json:
+                      schema:
+                        $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+                  headers:
+                    Location:
+                      description: 'Contains the new Callback URI of the target NF Service Consumer (e.g. AMF) to which the request is redirected'
+                      required: true
+                      schema:
+                        type: string
+                    3gpp-Sbi-Target-Nf-Id:
+                      description: 'Identifier of target NF (service) instance towards which the notification is redirected'
+                      schema:
+                        type: string
                 '400':
                   $ref: 'TS29571_CommonData.yaml#/components/responses/400'
                 '404':
@@ -366,6 +519,38 @@ paths:
               responses:
                 '204':
                   description: Successful Notification response
+                '307':
+                  description: Temporary Redirect
+                  content:
+                    application/problem+json:
+                      schema:
+                        $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+                  headers:
+                    Location:
+                      description: 'Contains the new Callback URI of the target NF Service Consumer (e.g. AMF) to which the request is redirected'
+                      required: true
+                      schema:
+                        type: string
+                    3gpp-Sbi-Target-Nf-Id:
+                      description: 'Identifier of target NF (service) instance towards which the notification is redirected'
+                      schema:
+                        type: string
+                '308':
+                  description: Permanent Redirect
+                  content:
+                    application/problem+json:
+                      schema:
+                        $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+                  headers:
+                    Location:
+                      description: 'Contains the new Callback URI of the target NF Service Consumer (e.g. AMF) to which the request is redirected'
+                      required: true
+                      schema:
+                        type: string
+                    3gpp-Sbi-Target-Nf-Id:
+                      description: 'Identifier of target NF (service) instance towards which the notification is redirected'
+                      schema:
+                        type: string
                 '400':
                   $ref: 'TS29571_CommonData.yaml#/components/responses/400'
                 '404':
@@ -580,6 +765,38 @@ paths:
               responses:
                 '204':
                   description: Successful Notification response
+                '307':
+                  description: Temporary Redirect
+                  content:
+                    application/problem+json:
+                      schema:
+                        $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+                  headers:
+                    Location:
+                      description: 'Contains the new Callback URI of the target NF Service Consumer (e.g. SMF) to which the request is redirected'
+                      required: true
+                      schema:
+                        type: string
+                    3gpp-Sbi-Target-Nf-Id:
+                      description: 'Identifier of target NF (service) instance towards which the notification is redirected'
+                      schema:
+                        type: string
+                '308':
+                  description: Permanent Redirect
+                  content:
+                    application/problem+json:
+                      schema:
+                        $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+                  headers:
+                    Location:
+                      description: 'Contains the new Callback URI of the target NF Service Consumer (e.g. SMF) to which the request is redirected'
+                      required: true
+                      schema:
+                        type: string
+                    3gpp-Sbi-Target-Nf-Id:
+                      description: 'Identifier of target NF (service) instance towards which the notification is redirected'
+                      schema:
+                        type: string
                 '400':
                   $ref: 'TS29571_CommonData.yaml#/components/responses/400'
                 '404':
@@ -602,6 +819,38 @@ paths:
               responses:
                 '204':
                   description: Successful Notification response
+                '307':
+                  description: Temporary Redirect
+                  content:
+                    application/problem+json:
+                      schema:
+                        $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+                  headers:
+                    Location:
+                      description: 'Contains the new Callback URI of the target NF Service Consumer (e.g. SMF) to which the request is redirected'
+                      required: true
+                      schema:
+                        type: string
+                    3gpp-Sbi-Target-Nf-Id:
+                      description: 'Identifier of target NF (service) instance towards which the notification is redirected'
+                      schema:
+                        type: string
+                '308':
+                  description: Permanent Redirect
+                  content:
+                    application/problem+json:
+                      schema:
+                        $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+                  headers:
+                    Location:
+                      description: 'Contains the new Callback URI of the target NF Service Consumer (e.g. SMF) to which the request is redirected'
+                      required: true
+                      schema:
+                        type: string
+                    3gpp-Sbi-Target-Nf-Id:
+                      description: 'Identifier of target NF (service) instance towards which the notification is redirected'
+                      schema:
+                        type: string
                 '400':
                   $ref: 'TS29571_CommonData.yaml#/components/responses/400'
                 '404':
@@ -937,6 +1186,115 @@ paths:
         default:
           description: Unexpected error
 
+  /{ueId}/registrations/ip-sm-gw:
+    put:
+      summary: Register an IP-SM-GW
+      operationId: IpSmGwRegistration
+      tags:
+        - IP-SM-GW registration
+      parameters:
+        - name: ueId
+          in: path
+          description: Identifier of the UE
+          required: true
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IpSmGwRegistration'
+        required: true
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IpSmGwRegistration'
+          headers:
+            Location:
+              description: 'Contains the URI of the newly created resource, according to the structure: {apiRoot}/nudm-uecm/v1/{ueId}/registrations/ip-sm-gw'
+              required: true
+              schema:
+                type: string
+        '200':
+          description: Expected response to a valid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IpSmGwRegistration'
+        '204':
+          description: No content
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+    delete:
+      summary: Delete the IP-SM-GW registration
+      operationId: IpSmGwDeregistration
+      tags:
+        - IP-SM-GW Deregistration
+      parameters:
+        - name: ueId
+          in: path
+          description: Identifier of the UE
+          required: true
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+      responses:
+        '204':
+          description: Expected response to a valid request
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+    get:
+      summary: Retrieve the IP-SM-GW registration information
+      operationId: GetIpSmGwRegistration
+      tags:
+        - IP-SM-GW Registration Info Retrieval
+      parameters:
+        - name: ueId
+          in: path
+          description: Identifier of the UE
+          required: true
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+      responses:
+        '200':
+          description: Expected response to a valid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IpSmGwRegistration'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+
   /restore-pcscf:
     post:
       summary: Trigger the Restoration of the P-CSCF
@@ -967,9 +1325,9 @@ paths:
         default:
           description: Unexpected error
 
-  /{ueId}/registrations/loation:
+  /{ueId}/registrations/location:
     get:
-      summary: retrieve the target UE’s location information
+      summary: retrieve the target UE's location information
       operationId: GetLocationInfo
       tags:
         - UE Location Information retrieval
@@ -1009,8 +1367,8 @@ components:
   securitySchemes:
     oAuth2ClientCredentials:
       type: oauth2
-      flows: 
-        clientCredentials: 
+      flows:
+        clientCredentials:
           tokenUrl: '{nrfApiRoot}/oauth2/token'
           scopes:
             nudm-uecm: Access to the nudm-uecm API
@@ -1066,16 +1424,15 @@ components:
           $ref: '#/components/schemas/EpsInterworkingInfo'
         ueSrvccCapability:
           type: boolean
-        nid:
-          $ref: 'TS29571_CommonData.yaml#/components/schemas/Nid'
         registrationTime:
           $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
-        vgmlcAddressIpv4:
-          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv4Addr'
-        vgmlcAddressIpv6:
-          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv6Addr'
-        vgmlcFqdn:
-          $ref: 'TS29510_Nnrf_NFManagement.yaml#/components/schemas/Fqdn'
+        vgmlcAddress:
+          $ref: '#/components/schemas/VgmlcAddress'
+        contextInfo:
+          $ref: 'TS29503_Nudm_SDM.yaml#/components/schemas/ContextInfo'
+        noEeSubscriptionInd:
+          type: boolean
+          default: false
 
 
     Amf3GppAccessRegistrationModification:
@@ -1100,6 +1457,9 @@ components:
         ueSrvccCapability:
           type: boolean
           nullable: true
+        noEeSubscriptionInd:
+          type: boolean
+          default: false
 
     EpsInterworkingInfo:
       type: object
@@ -1108,7 +1468,7 @@ components:
           description: A map (list of key-value pairs where Dnn serves as key) of EpsIwkPgws
           type: object
           additionalProperties:
-            $ref: '#components/schemas/EpsIwkPgw'
+            $ref: '#/components/schemas/EpsIwkPgw'
 
     EpsIwkPgw:
       type: object
@@ -1161,17 +1521,12 @@ components:
           type: boolean
         amfEeSubscriptionId:
           type: string
-        nid:
-          $ref: 'TS29571_CommonData.yaml#/components/schemas/Nid'
         registrationTime:
           $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
-        vgmlcAddressIpv4:
-          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv4Addr'
-        vgmlcAddressIpv6:
-          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv6Addr'
-        vgmlcFqdn:
-          $ref: 'TS29510_Nnrf_NFManagement.yaml#/components/schemas/Fqdn'
-
+        vgmlcAddress:
+          $ref: '#/components/schemas/VgmlcAddress'
+        contextInfo:
+          $ref: 'TS29503_Nudm_SDM.yaml#/components/schemas/ContextInfo'
 
     AmfNon3GppAccessRegistrationModification:
       type: object
@@ -1228,6 +1583,8 @@ components:
           $ref: '#/components/schemas/RegistrationReason'
         registrationTime:
           $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        contextInfo:
+          $ref: 'TS29503_Nudm_SDM.yaml#/components/schemas/ContextInfo'
 
     SmsfRegistration:
       type: object
@@ -1249,12 +1606,14 @@ components:
           $ref: '#/components/schemas/NetworkNodeDiameterAddress'
         registrationTime:
           $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        contextInfo:
+          $ref: 'TS29503_Nudm_SDM.yaml#/components/schemas/ContextInfo'
+
 
     DeregistrationData:
       type: object
       required:
         - deregReason
-        - accessType
       properties:
         deregReason:
           $ref: '#/components/schemas/DeregistrationReason'
@@ -1303,6 +1662,21 @@ components:
             $ref: '#/components/schemas/SmfRegistration'
           minItems: 1
 
+    IpSmGwRegistration:
+      type: object
+      anyOf:
+        - required: [ ipSmGwMapAddress ]
+        - required: [ ipSmGwDiameterAddress ]
+      properties:
+        ipSmGwMapAddress:
+          $ref: '#/components/schemas/E164Number'
+        ipSmGwDiameterAddress:
+          $ref: '#/components/schemas/NetworkNodeDiameterAddress'
+        unriIndicator:
+          type: boolean
+          default: false
+
+
     AmfDeregInfo:
       type: object
       required:
@@ -1331,22 +1705,20 @@ components:
 
     RegistrationLocationInfo:
       type: object
-
-    CmInfoReport:
-      type: object
       required:
-        - newCmInfoList
+        - amfInstanceId
+        - accessTypeList
       properties:
-        oldCmInfoList:
+        amfInstanceId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+        plmnId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnId'
+        vgmlcAddress:
+          $ref: '#/components/schemas/VgmlcAddress'
+        accessTypeList:
           type: array
           items:
-            $ref: 'TS29518_Namf_EventExposure.yaml#/components/schemas/CmInfo'
-          minItems: 1
-          maxItems: 2
-        newCmInfoList:
-          type: array
-          items:
-            $ref: 'TS29518_Namf_EventExposure.yaml#/components/schemas/CmInfo'
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/AccessType'
           minItems: 1
           maxItems: 2
 
@@ -1367,6 +1739,27 @@ components:
       properties:
         pei:
           $ref: 'TS29571_CommonData.yaml#/components/schemas/Pei'
+
+    RegistrationDatasetNames:
+      type: array
+      items:
+        $ref: '#/components/schemas/RegistrationDataSetName'
+      minItems: 2
+      uniqueItems: true
+
+    RegistrationDataSets:
+      type: object
+      properties:
+        amf3Gpp:
+          $ref: '#/components/schemas/Amf3GppAccessRegistration'
+        amfNon3Gpp:
+          $ref: '#/components/schemas/AmfNon3GppAccessRegistration'
+        smfRegistration:
+          $ref: '#/components/schemas/SmfRegistrationInfo'
+        smsf3Gpp:
+          $ref: '#/components/schemas/SmsfRegistration'
+        smsfNon3Gpp:
+          $ref: '#/components/schemas/SmsfRegistration'
 
 
 # SIMPLE TYPES:
@@ -1403,12 +1796,23 @@ components:
           - 5GS_TO_EPS_MOBILITY_UE_INITIAL_REGISTRATION
           - REREGISTRATION_REQUIRED
           - SMF_CONTEXT_TRANSFERRED
-        - type: string  
+        - type: string
 
     RegistrationReason:
       anyOf:
         - type: string
           enum:
           - SMF_CONTEXT_TRANSFERRED
+        - type: string
+
+    RegistrationDataSetName:
+      anyOf:
+        - type: string
+          enum:
+          - AMF_3GPP
+          - AMF_NON_3GPP
+          - SMF_PDU_SESSIONS
+          - SMSF_3GPP
+          - SMSF_NON_3GPP
         - type: string
 

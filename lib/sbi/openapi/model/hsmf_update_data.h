@@ -16,7 +16,6 @@
 #include "cause.h"
 #include "eps_interworking_indication.h"
 #include "ma_release_indication.h"
-#include "mo_exception_data_flag.h"
 #include "mo_exp_data_counter.h"
 #include "n4_information.h"
 #include "ng_ap_cause.h"
@@ -32,9 +31,11 @@
 #include "roaming_charging_profile.h"
 #include "secondary_rat_usage_info.h"
 #include "secondary_rat_usage_report.h"
+#include "security_result.h"
 #include "tunnel_info.h"
 #include "ulcl_bp_information.h"
 #include "unavailable_access_indication.h"
+#include "up_security_info.h"
 #include "user_location.h"
 #include "vplmn_qos.h"
 
@@ -94,9 +95,10 @@ typedef struct OpenAPI_hsmf_update_data_s {
     OpenAPI_list_t *dnai_list;
     char *supported_features;
     struct OpenAPI_roaming_charging_profile_s *roaming_charging_profile;
-    struct OpenAPI_mo_exception_data_flag_s *mo_exp_data_ind;
     struct OpenAPI_mo_exp_data_counter_s *mo_exp_data_counter;
     struct OpenAPI_vplmn_qos_s *vplmn_qos;
+    struct OpenAPI_security_result_s *security_result;
+    struct OpenAPI_up_security_info_s *up_security_info;
 } OpenAPI_hsmf_update_data_t;
 
 OpenAPI_hsmf_update_data_t *OpenAPI_hsmf_update_data_create(
@@ -150,9 +152,10 @@ OpenAPI_hsmf_update_data_t *OpenAPI_hsmf_update_data_create(
     OpenAPI_list_t *dnai_list,
     char *supported_features,
     OpenAPI_roaming_charging_profile_t *roaming_charging_profile,
-    OpenAPI_mo_exception_data_flag_t *mo_exp_data_ind,
     OpenAPI_mo_exp_data_counter_t *mo_exp_data_counter,
-    OpenAPI_vplmn_qos_t *vplmn_qos
+    OpenAPI_vplmn_qos_t *vplmn_qos,
+    OpenAPI_security_result_t *security_result,
+    OpenAPI_up_security_info_t *up_security_info
     );
 void OpenAPI_hsmf_update_data_free(OpenAPI_hsmf_update_data_t *hsmf_update_data);
 OpenAPI_hsmf_update_data_t *OpenAPI_hsmf_update_data_parseFromJSON(cJSON *hsmf_update_dataJSON);

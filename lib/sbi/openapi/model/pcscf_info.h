@@ -22,11 +22,17 @@ typedef struct OpenAPI_pcscf_info_s OpenAPI_pcscf_info_t;
 typedef struct OpenAPI_pcscf_info_s {
     OpenAPI_list_t *access_type;
     OpenAPI_list_t *dnn_list;
+    char *gm_fqdn;
+    OpenAPI_list_t *gm_ipv4_addresses;
+    OpenAPI_list_t *gm_ipv6_addresses;
 } OpenAPI_pcscf_info_t;
 
 OpenAPI_pcscf_info_t *OpenAPI_pcscf_info_create(
     OpenAPI_list_t *access_type,
-    OpenAPI_list_t *dnn_list
+    OpenAPI_list_t *dnn_list,
+    char *gm_fqdn,
+    OpenAPI_list_t *gm_ipv4_addresses,
+    OpenAPI_list_t *gm_ipv6_addresses
     );
 void OpenAPI_pcscf_info_free(OpenAPI_pcscf_info_t *pcscf_info);
 OpenAPI_pcscf_info_t *OpenAPI_pcscf_info_parseFromJSON(cJSON *pcscf_infoJSON);

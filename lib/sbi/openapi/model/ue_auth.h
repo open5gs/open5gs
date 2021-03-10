@@ -17,16 +17,11 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_ue_auth_s OpenAPI_ue_auth_t;
-typedef struct OpenAPI_ue_auth_s {
-} OpenAPI_ue_auth_t;
+typedef enum { OpenAPI_ue_auth_NULL = 0, OpenAPI_ue_auth_AUTHORIZED, OpenAPI_ue_auth_NOT_AUTHORIZED } OpenAPI_ue_auth_e;
 
-OpenAPI_ue_auth_t *OpenAPI_ue_auth_create(
-    );
-void OpenAPI_ue_auth_free(OpenAPI_ue_auth_t *ue_auth);
-OpenAPI_ue_auth_t *OpenAPI_ue_auth_parseFromJSON(cJSON *ue_authJSON);
-cJSON *OpenAPI_ue_auth_convertToJSON(OpenAPI_ue_auth_t *ue_auth);
-OpenAPI_ue_auth_t *OpenAPI_ue_auth_copy(OpenAPI_ue_auth_t *dst, OpenAPI_ue_auth_t *src);
+char* OpenAPI_ue_auth_ToString(OpenAPI_ue_auth_e ue_auth);
+
+OpenAPI_ue_auth_e OpenAPI_ue_auth_FromString(char* ue_auth);
 
 #ifdef __cplusplus
 }

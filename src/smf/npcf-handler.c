@@ -145,39 +145,41 @@ bool smf_npcf_smpolicycontrol_handle_create(
             if (AuthSessAmbr && trigger_results[
                 OpenAPI_policy_control_request_trigger_SE_AMBR_CH] == true) {
                 if (AuthSessAmbr->uplink)
-                    sess->pdn.ambr.uplink =
+                    sess->session.ambr.uplink =
                         ogs_sbi_bitrate_from_string(AuthSessAmbr->uplink);
                 if (AuthSessAmbr->downlink)
-                    sess->pdn.ambr.downlink =
+                    sess->session.ambr.downlink =
                         ogs_sbi_bitrate_from_string(AuthSessAmbr->downlink);
             }
 
             AuthDefQos = SessionRule->auth_def_qos;
             if (AuthDefQos && trigger_results[
                 OpenAPI_policy_control_request_trigger_DEF_QOS_CH] == true) {
-                sess->pdn.qos.qci = AuthDefQos->_5qi;
-                sess->pdn.qos.arp.priority_level =
+                sess->session.qos.index = AuthDefQos->_5qi;
+                sess->session.qos.arp.priority_level =
                     AuthDefQos->priority_level;
                 if (AuthDefQos->arp) {
-                    sess->pdn.qos.arp.priority_level =
+                    sess->session.qos.arp.priority_level =
                             AuthDefQos->arp->priority_level;
                     if (AuthDefQos->arp->preempt_cap ==
                         OpenAPI_preemption_capability_NOT_PREEMPT)
-                        sess->pdn.qos.arp.pre_emption_capability =
-                            OGS_PDN_PRE_EMPTION_CAPABILITY_DISABLED;
+                        sess->session.qos.arp.pre_emption_capability =
+                            OGS_5GC_PRE_EMPTION_DISABLED;
                     else if (AuthDefQos->arp->preempt_cap ==
                         OpenAPI_preemption_capability_MAY_PREEMPT)
-                        sess->pdn.qos.arp.pre_emption_capability =
-                            OGS_PDN_PRE_EMPTION_CAPABILITY_ENABLED;
+                        sess->session.qos.arp.pre_emption_capability =
+                            OGS_5GC_PRE_EMPTION_ENABLED;
+                    ogs_assert(sess->session.qos.arp.pre_emption_capability);
 
                     if (AuthDefQos->arp->preempt_vuln ==
                         OpenAPI_preemption_vulnerability_NOT_PREEMPTABLE)
-                        sess->pdn.qos.arp.pre_emption_vulnerability =
-                            OGS_PDN_PRE_EMPTION_VULNERABILITY_DISABLED;
+                        sess->session.qos.arp.pre_emption_vulnerability =
+                            OGS_5GC_PRE_EMPTION_DISABLED;
                     else if (AuthDefQos->arp->preempt_vuln ==
                         OpenAPI_preemption_vulnerability_PREEMPTABLE)
-                        sess->pdn.qos.arp.pre_emption_vulnerability =
-                            OGS_PDN_PRE_EMPTION_VULNERABILITY_ENABLED;
+                        sess->session.qos.arp.pre_emption_vulnerability =
+                            OGS_5GC_PRE_EMPTION_ENABLED;
+                    ogs_assert(sess->session.qos.arp.pre_emption_vulnerability);
                 }
             }
         }
@@ -296,7 +298,7 @@ bool smf_npcf_smpolicycontrol_handle_create(
                 }
             }
 
-            pcc_rule->qos.qci = QosData->_5qi;
+            pcc_rule->qos.index = QosData->_5qi;
             pcc_rule->qos.arp.priority_level = QosData->priority_level;
 
             if (QosData->arp) {
@@ -304,20 +306,22 @@ bool smf_npcf_smpolicycontrol_handle_create(
                 if (QosData->arp->preempt_cap ==
                     OpenAPI_preemption_capability_NOT_PREEMPT)
                     pcc_rule->qos.arp.pre_emption_capability =
-                        OGS_PDN_PRE_EMPTION_CAPABILITY_DISABLED;
+                        OGS_5GC_PRE_EMPTION_DISABLED;
                 else if (QosData->arp->preempt_cap ==
                     OpenAPI_preemption_capability_MAY_PREEMPT)
                     pcc_rule->qos.arp.pre_emption_capability =
-                        OGS_PDN_PRE_EMPTION_CAPABILITY_ENABLED;
+                        OGS_5GC_PRE_EMPTION_ENABLED;
+                ogs_assert(pcc_rule->qos.arp.pre_emption_capability);
 
                 if (QosData->arp->preempt_vuln ==
                     OpenAPI_preemption_vulnerability_NOT_PREEMPTABLE)
                     pcc_rule->qos.arp.pre_emption_vulnerability =
-                        OGS_PDN_PRE_EMPTION_VULNERABILITY_DISABLED;
+                        OGS_5GC_PRE_EMPTION_DISABLED;
                 else if (QosData->arp->preempt_vuln ==
                     OpenAPI_preemption_vulnerability_PREEMPTABLE)
                     pcc_rule->qos.arp.pre_emption_vulnerability =
-                        OGS_PDN_PRE_EMPTION_VULNERABILITY_ENABLED;
+                        OGS_5GC_PRE_EMPTION_ENABLED;
+                ogs_assert(pcc_rule->qos.arp.pre_emption_vulnerability);
             }
 
             if (QosData->maxbr_ul)
@@ -372,13 +376,13 @@ bool smf_npcf_smpolicycontrol_handle_create(
     ogs_assert(qos_flow);
 
     /* Copy Session QoS information to Default QoS Flow */
-    memcpy(&qos_flow->qos, &sess->pdn.qos, sizeof(ogs_qos_t));
+    memcpy(&qos_flow->qos, &sess->session.qos, sizeof(ogs_qos_t));
 
     /* Setup QER */
     qer = qos_flow->qer;
     ogs_assert(qer);
-    qer->mbr.uplink = sess->pdn.ambr.uplink;
-    qer->mbr.downlink = sess->pdn.ambr.downlink;
+    qer->mbr.uplink = sess->session.ambr.uplink;
+    qer->mbr.downlink = sess->session.ambr.downlink;
 
     /* Setup PDR */
     dl_pdr = qos_flow->dl_pdr;
@@ -389,12 +393,12 @@ bool smf_npcf_smpolicycontrol_handle_create(
     /* Set UE IP Address to the Default DL PDR */
     smf_sess_set_ue_ip(sess);
 
-    ogs_pfcp_paa_to_ue_ip_addr(&sess->pdn.paa,
+    ogs_pfcp_paa_to_ue_ip_addr(&sess->session.paa,
             &dl_pdr->ue_ip_addr, &dl_pdr->ue_ip_addr_len);
     dl_pdr->ue_ip_addr.sd = OGS_PFCP_UE_IP_DST;
 
     ogs_info("UE SUPI[%s] DNN[%s] IPv4[%s] IPv6[%s]",
-	    smf_ue->supi, sess->pdn.dnn,
+	    smf_ue->supi, sess->session.name,
         sess->ipv4 ? OGS_INET_NTOP(&sess->ipv4->addr, buf1) : "",
         sess->ipv6 ? OGS_INET6_NTOP(&sess->ipv6->addr, buf2) : "");
 
@@ -408,7 +412,7 @@ bool smf_npcf_smpolicycontrol_handle_create(
     } else {
         resource = ogs_pfcp_gtpu_resource_find(
                 &sess->pfcp_node->gtpu_resource_list,
-                sess->pdn.dnn, OGS_PFCP_INTERFACE_ACCESS);
+                sess->session.name, OGS_PFCP_INTERFACE_ACCESS);
         if (resource) {
             ogs_pfcp_user_plane_ip_resource_info_to_sockaddr(&resource->info,
                 &sess->upf_n3_addr, &sess->upf_n3_addr6);

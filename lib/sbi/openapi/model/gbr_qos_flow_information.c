@@ -9,9 +9,10 @@ OpenAPI_gbr_qos_flow_information_t *OpenAPI_gbr_qos_flow_information_create(
     char *max_fbr_ul,
     char *gua_fbr_dl,
     char *gua_fbr_ul,
-    OpenAPI_notification_control_t *notif_control,
+    OpenAPI_notification_control_e notif_control,
     int max_packet_loss_rate_dl,
-    int max_packet_loss_rate_ul
+    int max_packet_loss_rate_ul,
+    OpenAPI_list_t *alternative_qos_profile_list
     )
 {
     OpenAPI_gbr_qos_flow_information_t *gbr_qos_flow_information_local_var = OpenAPI_malloc(sizeof(OpenAPI_gbr_qos_flow_information_t));
@@ -25,6 +26,7 @@ OpenAPI_gbr_qos_flow_information_t *OpenAPI_gbr_qos_flow_information_create(
     gbr_qos_flow_information_local_var->notif_control = notif_control;
     gbr_qos_flow_information_local_var->max_packet_loss_rate_dl = max_packet_loss_rate_dl;
     gbr_qos_flow_information_local_var->max_packet_loss_rate_ul = max_packet_loss_rate_ul;
+    gbr_qos_flow_information_local_var->alternative_qos_profile_list = alternative_qos_profile_list;
 
     return gbr_qos_flow_information_local_var;
 }
@@ -39,7 +41,10 @@ void OpenAPI_gbr_qos_flow_information_free(OpenAPI_gbr_qos_flow_information_t *g
     ogs_free(gbr_qos_flow_information->max_fbr_ul);
     ogs_free(gbr_qos_flow_information->gua_fbr_dl);
     ogs_free(gbr_qos_flow_information->gua_fbr_ul);
-    OpenAPI_notification_control_free(gbr_qos_flow_information->notif_control);
+    OpenAPI_list_for_each(gbr_qos_flow_information->alternative_qos_profile_list, node) {
+        OpenAPI_alternative_qos_profile_free(node->data);
+    }
+    OpenAPI_list_free(gbr_qos_flow_information->alternative_qos_profile_list);
     ogs_free(gbr_qos_flow_information);
 }
 
@@ -90,13 +95,7 @@ cJSON *OpenAPI_gbr_qos_flow_information_convertToJSON(OpenAPI_gbr_qos_flow_infor
     }
 
     if (gbr_qos_flow_information->notif_control) {
-        cJSON *notif_control_local_JSON = OpenAPI_notification_control_convertToJSON(gbr_qos_flow_information->notif_control);
-        if (notif_control_local_JSON == NULL) {
-            ogs_error("OpenAPI_gbr_qos_flow_information_convertToJSON() failed [notif_control]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "notifControl", notif_control_local_JSON);
-        if (item->child == NULL) {
+        if (cJSON_AddStringToObject(item, "notifControl", OpenAPI_notification_control_ToString(gbr_qos_flow_information->notif_control)) == NULL) {
             ogs_error("OpenAPI_gbr_qos_flow_information_convertToJSON() failed [notif_control]");
             goto end;
         }
@@ -113,6 +112,26 @@ cJSON *OpenAPI_gbr_qos_flow_information_convertToJSON(OpenAPI_gbr_qos_flow_infor
         if (cJSON_AddNumberToObject(item, "maxPacketLossRateUl", gbr_qos_flow_information->max_packet_loss_rate_ul) == NULL) {
             ogs_error("OpenAPI_gbr_qos_flow_information_convertToJSON() failed [max_packet_loss_rate_ul]");
             goto end;
+        }
+    }
+
+    if (gbr_qos_flow_information->alternative_qos_profile_list) {
+        cJSON *alternative_qos_profile_listList = cJSON_AddArrayToObject(item, "alternativeQosProfileList");
+        if (alternative_qos_profile_listList == NULL) {
+            ogs_error("OpenAPI_gbr_qos_flow_information_convertToJSON() failed [alternative_qos_profile_list]");
+            goto end;
+        }
+
+        OpenAPI_lnode_t *alternative_qos_profile_list_node;
+        if (gbr_qos_flow_information->alternative_qos_profile_list) {
+            OpenAPI_list_for_each(gbr_qos_flow_information->alternative_qos_profile_list, alternative_qos_profile_list_node) {
+                cJSON *itemLocal = OpenAPI_alternative_qos_profile_convertToJSON(alternative_qos_profile_list_node->data);
+                if (itemLocal == NULL) {
+                    ogs_error("OpenAPI_gbr_qos_flow_information_convertToJSON() failed [alternative_qos_profile_list]");
+                    goto end;
+                }
+                cJSON_AddItemToArray(alternative_qos_profile_listList, itemLocal);
+            }
         }
     }
 
@@ -173,9 +192,13 @@ OpenAPI_gbr_qos_flow_information_t *OpenAPI_gbr_qos_flow_information_parseFromJS
 
     cJSON *notif_control = cJSON_GetObjectItemCaseSensitive(gbr_qos_flow_informationJSON, "notifControl");
 
-    OpenAPI_notification_control_t *notif_control_local_nonprim = NULL;
+    OpenAPI_notification_control_e notif_controlVariable;
     if (notif_control) {
-        notif_control_local_nonprim = OpenAPI_notification_control_parseFromJSON(notif_control);
+        if (!cJSON_IsString(notif_control)) {
+            ogs_error("OpenAPI_gbr_qos_flow_information_parseFromJSON() failed [notif_control]");
+            goto end;
+        }
+        notif_controlVariable = OpenAPI_notification_control_FromString(notif_control->valuestring);
     }
 
     cJSON *max_packet_loss_rate_dl = cJSON_GetObjectItemCaseSensitive(gbr_qos_flow_informationJSON, "maxPacketLossRateDl");
@@ -196,14 +219,38 @@ OpenAPI_gbr_qos_flow_information_t *OpenAPI_gbr_qos_flow_information_parseFromJS
         }
     }
 
+    cJSON *alternative_qos_profile_list = cJSON_GetObjectItemCaseSensitive(gbr_qos_flow_informationJSON, "alternativeQosProfileList");
+
+    OpenAPI_list_t *alternative_qos_profile_listList;
+    if (alternative_qos_profile_list) {
+        cJSON *alternative_qos_profile_list_local_nonprimitive;
+        if (!cJSON_IsArray(alternative_qos_profile_list)) {
+            ogs_error("OpenAPI_gbr_qos_flow_information_parseFromJSON() failed [alternative_qos_profile_list]");
+            goto end;
+        }
+
+        alternative_qos_profile_listList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(alternative_qos_profile_list_local_nonprimitive, alternative_qos_profile_list ) {
+            if (!cJSON_IsObject(alternative_qos_profile_list_local_nonprimitive)) {
+                ogs_error("OpenAPI_gbr_qos_flow_information_parseFromJSON() failed [alternative_qos_profile_list]");
+                goto end;
+            }
+            OpenAPI_alternative_qos_profile_t *alternative_qos_profile_listItem = OpenAPI_alternative_qos_profile_parseFromJSON(alternative_qos_profile_list_local_nonprimitive);
+
+            OpenAPI_list_add(alternative_qos_profile_listList, alternative_qos_profile_listItem);
+        }
+    }
+
     gbr_qos_flow_information_local_var = OpenAPI_gbr_qos_flow_information_create (
         ogs_strdup(max_fbr_dl->valuestring),
         ogs_strdup(max_fbr_ul->valuestring),
         ogs_strdup(gua_fbr_dl->valuestring),
         ogs_strdup(gua_fbr_ul->valuestring),
-        notif_control ? notif_control_local_nonprim : NULL,
+        notif_control ? notif_controlVariable : 0,
         max_packet_loss_rate_dl ? max_packet_loss_rate_dl->valuedouble : 0,
-        max_packet_loss_rate_ul ? max_packet_loss_rate_ul->valuedouble : 0
+        max_packet_loss_rate_ul ? max_packet_loss_rate_ul->valuedouble : 0,
+        alternative_qos_profile_list ? alternative_qos_profile_listList : NULL
         );
 
     return gbr_qos_flow_information_local_var;

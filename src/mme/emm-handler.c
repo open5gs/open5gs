@@ -553,8 +553,7 @@ int emm_handle_tau_request(mme_ue_t *mme_ue,
                     ? mme_ue->imsi_bcd : "Unknown");
         break;
     default:
-        ogs_warn("Not implemented[%d]", 
-                eps_mobile_identity->imsi.type);
+        ogs_error("Not implemented[%d]", eps_mobile_identity->imsi.type);
         
         return OGS_OK;
     }

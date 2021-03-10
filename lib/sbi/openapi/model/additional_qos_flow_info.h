@@ -12,22 +12,16 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
-#include "null_value.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_additional_qos_flow_info_s OpenAPI_additional_qos_flow_info_t;
-typedef struct OpenAPI_additional_qos_flow_info_s {
-} OpenAPI_additional_qos_flow_info_t;
+typedef enum { OpenAPI_additional_qos_flow_info_NULL = 0, OpenAPI_additional_qos_flow_info_MORE_LIKELY } OpenAPI_additional_qos_flow_info_e;
 
-OpenAPI_additional_qos_flow_info_t *OpenAPI_additional_qos_flow_info_create(
-    );
-void OpenAPI_additional_qos_flow_info_free(OpenAPI_additional_qos_flow_info_t *additional_qos_flow_info);
-OpenAPI_additional_qos_flow_info_t *OpenAPI_additional_qos_flow_info_parseFromJSON(cJSON *additional_qos_flow_infoJSON);
-cJSON *OpenAPI_additional_qos_flow_info_convertToJSON(OpenAPI_additional_qos_flow_info_t *additional_qos_flow_info);
-OpenAPI_additional_qos_flow_info_t *OpenAPI_additional_qos_flow_info_copy(OpenAPI_additional_qos_flow_info_t *dst, OpenAPI_additional_qos_flow_info_t *src);
+char* OpenAPI_additional_qos_flow_info_ToString(OpenAPI_additional_qos_flow_info_e additional_qos_flow_info);
+
+OpenAPI_additional_qos_flow_info_e OpenAPI_additional_qos_flow_info_FromString(char* additional_qos_flow_info);
 
 #ifdef __cplusplus
 }

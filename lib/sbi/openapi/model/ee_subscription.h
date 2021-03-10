@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+#include "context_info.h"
 #include "monitoring_configuration.h"
 #include "reporting_options.h"
 
@@ -26,6 +27,11 @@ typedef struct OpenAPI_ee_subscription_s {
     struct OpenAPI_reporting_options_s *reporting_options;
     char *supported_features;
     char *subscription_id;
+    struct OpenAPI_context_info_s *context_info;
+    int epc_applied_ind;
+    char *scef_diam_host;
+    char *scef_diam_realm;
+    char *notify_correlation_id;
 } OpenAPI_ee_subscription_t;
 
 OpenAPI_ee_subscription_t *OpenAPI_ee_subscription_create(
@@ -33,7 +39,12 @@ OpenAPI_ee_subscription_t *OpenAPI_ee_subscription_create(
     OpenAPI_list_t* monitoring_configurations,
     OpenAPI_reporting_options_t *reporting_options,
     char *supported_features,
-    char *subscription_id
+    char *subscription_id,
+    OpenAPI_context_info_t *context_info,
+    int epc_applied_ind,
+    char *scef_diam_host,
+    char *scef_diam_realm,
+    char *notify_correlation_id
     );
 void OpenAPI_ee_subscription_free(OpenAPI_ee_subscription_t *ee_subscription);
 OpenAPI_ee_subscription_t *OpenAPI_ee_subscription_parseFromJSON(cJSON *ee_subscriptionJSON);

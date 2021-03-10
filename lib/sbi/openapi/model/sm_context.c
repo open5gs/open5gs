@@ -24,6 +24,9 @@ OpenAPI_sm_context_t *OpenAPI_sm_context_create(
     OpenAPI_list_t *qos_flows_list,
     char *h_smf_instance_id,
     char *smf_instance_id,
+    char *pdu_session_smf_set_id,
+    char *pdu_session_smf_service_set_id,
+    OpenAPI_sbi_binding_level_e pdu_session_smf_binding,
     int enable_pause_charging,
     char *ue_ipv4_address,
     char *ue_ipv6_prefix,
@@ -40,7 +43,9 @@ OpenAPI_sm_context_t *OpenAPI_sm_context_create(
     char *home_provided_charging_id,
     OpenAPI_charging_information_t *charging_info,
     OpenAPI_roaming_charging_profile_t *roaming_charging_profile,
-    int nef_ext_buf_support_ind
+    int nef_ext_buf_support_ind,
+    int ipv6_index,
+    OpenAPI_ip_address_t *dn_aaa_address
     )
 {
     OpenAPI_sm_context_t *sm_context_local_var = OpenAPI_malloc(sizeof(OpenAPI_sm_context_t));
@@ -66,6 +71,9 @@ OpenAPI_sm_context_t *OpenAPI_sm_context_create(
     sm_context_local_var->qos_flows_list = qos_flows_list;
     sm_context_local_var->h_smf_instance_id = h_smf_instance_id;
     sm_context_local_var->smf_instance_id = smf_instance_id;
+    sm_context_local_var->pdu_session_smf_set_id = pdu_session_smf_set_id;
+    sm_context_local_var->pdu_session_smf_service_set_id = pdu_session_smf_service_set_id;
+    sm_context_local_var->pdu_session_smf_binding = pdu_session_smf_binding;
     sm_context_local_var->enable_pause_charging = enable_pause_charging;
     sm_context_local_var->ue_ipv4_address = ue_ipv4_address;
     sm_context_local_var->ue_ipv6_prefix = ue_ipv6_prefix;
@@ -83,6 +91,8 @@ OpenAPI_sm_context_t *OpenAPI_sm_context_create(
     sm_context_local_var->charging_info = charging_info;
     sm_context_local_var->roaming_charging_profile = roaming_charging_profile;
     sm_context_local_var->nef_ext_buf_support_ind = nef_ext_buf_support_ind;
+    sm_context_local_var->ipv6_index = ipv6_index;
+    sm_context_local_var->dn_aaa_address = dn_aaa_address;
 
     return sm_context_local_var;
 }
@@ -112,6 +122,8 @@ void OpenAPI_sm_context_free(OpenAPI_sm_context_t *sm_context)
     OpenAPI_list_free(sm_context->qos_flows_list);
     ogs_free(sm_context->h_smf_instance_id);
     ogs_free(sm_context->smf_instance_id);
+    ogs_free(sm_context->pdu_session_smf_set_id);
+    ogs_free(sm_context->pdu_session_smf_service_set_id);
     ogs_free(sm_context->ue_ipv4_address);
     ogs_free(sm_context->ue_ipv6_prefix);
     OpenAPI_eps_pdn_cnx_info_free(sm_context->eps_pdn_cnx_info);
@@ -127,6 +139,7 @@ void OpenAPI_sm_context_free(OpenAPI_sm_context_t *sm_context)
     ogs_free(sm_context->home_provided_charging_id);
     OpenAPI_charging_information_free(sm_context->charging_info);
     OpenAPI_roaming_charging_profile_free(sm_context->roaming_charging_profile);
+    OpenAPI_ip_address_free(sm_context->dn_aaa_address);
     ogs_free(sm_context);
 }
 
@@ -316,6 +329,27 @@ cJSON *OpenAPI_sm_context_convertToJSON(OpenAPI_sm_context_t *sm_context)
         }
     }
 
+    if (sm_context->pdu_session_smf_set_id) {
+        if (cJSON_AddStringToObject(item, "pduSessionSmfSetId", sm_context->pdu_session_smf_set_id) == NULL) {
+            ogs_error("OpenAPI_sm_context_convertToJSON() failed [pdu_session_smf_set_id]");
+            goto end;
+        }
+    }
+
+    if (sm_context->pdu_session_smf_service_set_id) {
+        if (cJSON_AddStringToObject(item, "pduSessionSmfServiceSetId", sm_context->pdu_session_smf_service_set_id) == NULL) {
+            ogs_error("OpenAPI_sm_context_convertToJSON() failed [pdu_session_smf_service_set_id]");
+            goto end;
+        }
+    }
+
+    if (sm_context->pdu_session_smf_binding) {
+        if (cJSON_AddStringToObject(item, "pduSessionSmfBinding", OpenAPI_sbi_binding_level_ToString(sm_context->pdu_session_smf_binding)) == NULL) {
+            ogs_error("OpenAPI_sm_context_convertToJSON() failed [pdu_session_smf_binding]");
+            goto end;
+        }
+    }
+
     if (sm_context->enable_pause_charging) {
         if (cJSON_AddBoolToObject(item, "enablePauseCharging", sm_context->enable_pause_charging) == NULL) {
             ogs_error("OpenAPI_sm_context_convertToJSON() failed [enable_pause_charging]");
@@ -474,6 +508,26 @@ cJSON *OpenAPI_sm_context_convertToJSON(OpenAPI_sm_context_t *sm_context)
     if (sm_context->nef_ext_buf_support_ind) {
         if (cJSON_AddBoolToObject(item, "nefExtBufSupportInd", sm_context->nef_ext_buf_support_ind) == NULL) {
             ogs_error("OpenAPI_sm_context_convertToJSON() failed [nef_ext_buf_support_ind]");
+            goto end;
+        }
+    }
+
+    if (sm_context->ipv6_index) {
+        if (cJSON_AddNumberToObject(item, "ipv6Index", sm_context->ipv6_index) == NULL) {
+            ogs_error("OpenAPI_sm_context_convertToJSON() failed [ipv6_index]");
+            goto end;
+        }
+    }
+
+    if (sm_context->dn_aaa_address) {
+        cJSON *dn_aaa_address_local_JSON = OpenAPI_ip_address_convertToJSON(sm_context->dn_aaa_address);
+        if (dn_aaa_address_local_JSON == NULL) {
+            ogs_error("OpenAPI_sm_context_convertToJSON() failed [dn_aaa_address]");
+            goto end;
+        }
+        cJSON_AddItemToObject(item, "dnAaaAddress", dn_aaa_address_local_JSON);
+        if (item->child == NULL) {
+            ogs_error("OpenAPI_sm_context_convertToJSON() failed [dn_aaa_address]");
             goto end;
         }
     }
@@ -686,6 +740,35 @@ OpenAPI_sm_context_t *OpenAPI_sm_context_parseFromJSON(cJSON *sm_contextJSON)
         }
     }
 
+    cJSON *pdu_session_smf_set_id = cJSON_GetObjectItemCaseSensitive(sm_contextJSON, "pduSessionSmfSetId");
+
+    if (pdu_session_smf_set_id) {
+        if (!cJSON_IsString(pdu_session_smf_set_id)) {
+            ogs_error("OpenAPI_sm_context_parseFromJSON() failed [pdu_session_smf_set_id]");
+            goto end;
+        }
+    }
+
+    cJSON *pdu_session_smf_service_set_id = cJSON_GetObjectItemCaseSensitive(sm_contextJSON, "pduSessionSmfServiceSetId");
+
+    if (pdu_session_smf_service_set_id) {
+        if (!cJSON_IsString(pdu_session_smf_service_set_id)) {
+            ogs_error("OpenAPI_sm_context_parseFromJSON() failed [pdu_session_smf_service_set_id]");
+            goto end;
+        }
+    }
+
+    cJSON *pdu_session_smf_binding = cJSON_GetObjectItemCaseSensitive(sm_contextJSON, "pduSessionSmfBinding");
+
+    OpenAPI_sbi_binding_level_e pdu_session_smf_bindingVariable;
+    if (pdu_session_smf_binding) {
+        if (!cJSON_IsString(pdu_session_smf_binding)) {
+            ogs_error("OpenAPI_sm_context_parseFromJSON() failed [pdu_session_smf_binding]");
+            goto end;
+        }
+        pdu_session_smf_bindingVariable = OpenAPI_sbi_binding_level_FromString(pdu_session_smf_binding->valuestring);
+    }
+
     cJSON *enable_pause_charging = cJSON_GetObjectItemCaseSensitive(sm_contextJSON, "enablePauseCharging");
 
     if (enable_pause_charging) {
@@ -845,6 +928,22 @@ OpenAPI_sm_context_t *OpenAPI_sm_context_parseFromJSON(cJSON *sm_contextJSON)
         }
     }
 
+    cJSON *ipv6_index = cJSON_GetObjectItemCaseSensitive(sm_contextJSON, "ipv6Index");
+
+    if (ipv6_index) {
+        if (!cJSON_IsNumber(ipv6_index)) {
+            ogs_error("OpenAPI_sm_context_parseFromJSON() failed [ipv6_index]");
+            goto end;
+        }
+    }
+
+    cJSON *dn_aaa_address = cJSON_GetObjectItemCaseSensitive(sm_contextJSON, "dnAaaAddress");
+
+    OpenAPI_ip_address_t *dn_aaa_address_local_nonprim = NULL;
+    if (dn_aaa_address) {
+        dn_aaa_address_local_nonprim = OpenAPI_ip_address_parseFromJSON(dn_aaa_address);
+    }
+
     sm_context_local_var = OpenAPI_sm_context_create (
         pdu_session_id->valuedouble,
         ogs_strdup(dnn->valuestring),
@@ -865,6 +964,9 @@ OpenAPI_sm_context_t *OpenAPI_sm_context_parseFromJSON(cJSON *sm_contextJSON)
         qos_flows_listList,
         h_smf_instance_id ? ogs_strdup(h_smf_instance_id->valuestring) : NULL,
         smf_instance_id ? ogs_strdup(smf_instance_id->valuestring) : NULL,
+        pdu_session_smf_set_id ? ogs_strdup(pdu_session_smf_set_id->valuestring) : NULL,
+        pdu_session_smf_service_set_id ? ogs_strdup(pdu_session_smf_service_set_id->valuestring) : NULL,
+        pdu_session_smf_binding ? pdu_session_smf_bindingVariable : 0,
         enable_pause_charging ? enable_pause_charging->valueint : 0,
         ue_ipv4_address ? ogs_strdup(ue_ipv4_address->valuestring) : NULL,
         ue_ipv6_prefix ? ogs_strdup(ue_ipv6_prefix->valuestring) : NULL,
@@ -881,7 +983,9 @@ OpenAPI_sm_context_t *OpenAPI_sm_context_parseFromJSON(cJSON *sm_contextJSON)
         home_provided_charging_id ? ogs_strdup(home_provided_charging_id->valuestring) : NULL,
         charging_info ? charging_info_local_nonprim : NULL,
         roaming_charging_profile ? roaming_charging_profile_local_nonprim : NULL,
-        nef_ext_buf_support_ind ? nef_ext_buf_support_ind->valueint : 0
+        nef_ext_buf_support_ind ? nef_ext_buf_support_ind->valueint : 0,
+        ipv6_index ? ipv6_index->valuedouble : 0,
+        dn_aaa_address ? dn_aaa_address_local_nonprim : NULL
         );
 
     return sm_context_local_var;

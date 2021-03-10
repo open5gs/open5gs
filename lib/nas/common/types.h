@@ -951,7 +951,7 @@ ED8(uint8_t ebi15:1;,
 #define OGS_NAS_BR_UNIT_256P    25
 typedef struct ogs_nas_bitrate_s {
     uint8_t unit;
-    uint16_t bitrate;
+    uint16_t value;
 } __attribute__ ((packed)) ogs_nas_bitrate_t;
 
 void ogs_nas_bitrate_from_uint64(

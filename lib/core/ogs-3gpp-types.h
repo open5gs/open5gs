@@ -178,13 +178,11 @@ typedef struct ogs_nr_cgi_s {
 
 /************************************
  * S-NSSAI Structure                */
-#define OGS_MAX_NUM_OF_S_NSSAI      16
+#define OGS_MAX_NUM_OF_SLICE        8
 #define OGS_S_NSSAI_NO_SD_VALUE     0xffffff
 typedef struct ogs_s_nssai_s {
     uint8_t sst;
     ogs_uint24_t sd;
-    uint8_t mapped_hplmn_sst;
-    ogs_uint24_t mapped_hplmn_sd;
 } __attribute__ ((packed)) ogs_s_nssai_t;
 
 char *ogs_s_nssai_sd_to_string(ogs_uint24_t sd);
@@ -220,26 +218,17 @@ char *ogs_ipv6_to_string(uint8_t *addr6);
 typedef struct ogs_paa_s {
 ED2(uint8_t spare:5;,
 /* 8.34 PDN Type  */
-#define OGS_GTP_PDN_TYPE_IPV4                   OGS_PDU_SESSION_TYPE_IPV4
-#define OGS_GTP_PDN_TYPE_IPV6                   OGS_PDU_SESSION_TYPE_IPV6
-#define OGS_GTP_PDN_TYPE_IPV4V6                 OGS_PDU_SESSION_TYPE_IPV4V6
-#define OGS_GTP_PDN_TYPE_NON_IP                 OGS_PDU_SESSION_TYPE_NONIP
-#define OGS_PFCP_PDN_TYPE_IPV4                  OGS_PDU_SESSION_TYPE_IPV4
-#define OGS_PFCP_PDN_TYPE_IPV6                  OGS_PDU_SESSION_TYPE_IPV6
-#define OGS_PFCP_PDN_TYPE_IPV4V6                OGS_PDU_SESSION_TYPE_IPV4V6
-#define OGS_PFCP_PDN_TYPE_NONIP                 OGS_PDU_SESSION_TYPE_NONIP
+#define OGS_PDU_SESSION_TYPE_IS_VALID(x) \
+        ((x) == OGS_PDU_SESSION_TYPE_IPV4 || \
+         (x) == OGS_PDU_SESSION_TYPE_IPV6 || \
+         (x) == OGS_PDU_SESSION_TYPE_IPV4V6) \
 
-#define OGS_GTP_PDN_TYPE_IS_VALID(x) \
-        ((x) == OGS_GTP_PDN_TYPE_IPV4 || \
-         (x) == OGS_GTP_PDN_TYPE_IPV6 || \
-         (x) == OGS_GTP_PDN_TYPE_IPV4V6) \
-
-    uint8_t pdn_type:3;)
+    uint8_t session_type:3;)
     union {
-        /* GTP_PDN_TYPE_IPV4 */
+        /* PDU_SESSION_TYPE_IPV4 */
         uint32_t addr;      
 
-        /* GTP_PDN_TYPE_IPV6 */
+        /* PDU_SESSION_TYPE_IPV6 */
         struct {
             /* the IPv6 Prefix Length */
             uint8_t len;
@@ -247,7 +236,7 @@ ED2(uint8_t spare:5;,
             uint8_t addr6[OGS_IPV6_LEN];
         };
 
-        /* GTP_PDN_TYPE_BOTH */
+        /* PDU_SESSION_TYPE_IPV4V6 */
         struct {
             struct {
                 /* the IPv6 Prefix Length */
@@ -270,20 +259,10 @@ typedef struct ogs_bitrate_s {
 /**********************************
  * QoS Structure                 */
 typedef struct ogs_qos_s {
-#define OGS_PDN_QCI_1                                       1
-#define OGS_PDN_QCI_2                                       2
-#define OGS_PDN_QCI_3                                       3
-#define OGS_PDN_QCI_4                                       4
-#define OGS_PDN_QCI_5                                       5
-#define OGS_PDN_QCI_6                                       6
-#define OGS_PDN_QCI_7                                       7
-#define OGS_PDN_QCI_8                                       8
-#define OGS_PDN_QCI_9                                       9
-#define OGS_PDN_QCI_65                                      65
-#define OGS_PDN_QCI_66                                      66
-#define OGS_PDN_QCI_69                                      69
-#define OGS_PDN_QCI_70                                      70
-    uint8_t         qci;
+#define OGS_QOS_INDEX_1                                       1
+#define OGS_QOS_INDEX_2                                       2
+#define OGS_QOS_INDEX_5                                       5
+    uint8_t         index;
 
     struct {
     /* Values 1 to 8 should only be assigned for services that are
@@ -291,12 +270,27 @@ typedef struct ogs_qos_s {
      * Values 9 to 15 may be assigned to resources that are authorized 
      * by the home network and thus applicable when a UE is roaming. */
         uint8_t     priority_level;
+/*
+ * Ch 7.3.40 Allocation-Retenion-Proirty in TS 29.272 V15.9.0
+ *
+ * If the Pre-emption-Capability AVP is not present in the
+ * Allocation-Retention-Priority AVP, the default value shall be
+ * PRE-EMPTION_CAPABILITY_DISABLED (1).
+ *
+ * If the Pre-emption-Vulnerability AVP is not present in the
+ * Allocation-Retention-Priority AVP, the default value shall be
+ * PRE-EMPTION_VULNERABILITY_ENABLED (0).
+ *
+ * However, to easily set up VoLTE service,
+ * enable Pre-emption Capability/Vulnerablility
+ * in Default Bearer
+ */
+#define OGS_EPC_PRE_EMPTION_DISABLED                        1
+#define OGS_EPC_PRE_EMPTION_ENABLED                         0
 
-#define OGS_PDN_PRE_EMPTION_CAPABILITY_ENABLED              0
-#define OGS_PDN_PRE_EMPTION_CAPABILITY_DISABLED             1
+#define OGS_5GC_PRE_EMPTION_DISABLED                        1
+#define OGS_5GC_PRE_EMPTION_ENABLED                         2
         uint8_t     pre_emption_capability;
-#define OGS_PDN_PRE_EMPTION_VULNERABILITY_ENABLED           0
-#define OGS_PDN_PRE_EMPTION_VULNERABILITY_DISABLED          1
         uint8_t     pre_emption_vulnerability;
     } arp;
 
@@ -394,22 +388,21 @@ typedef struct ogs_pcc_rule_s {
 
 /**********************************
  * PDN Structure                 */
-typedef struct ogs_pdn_s {
-    uint32_t context_identifier;
-    union {
-        char apn[OGS_MAX_APN_LEN+1];
-        char dnn[OGS_MAX_DNN_LEN+1];
-    };
-#define OGS_DIAM_PDN_TYPE_IPV4                      0
-#define OGS_DIAM_PDN_TYPE_IPV6                      1
-#define OGS_DIAM_PDN_TYPE_IPV4V6                    2
-#define OGS_DIAM_PDN_TYPE_IPV4_OR_IPV6              3
+typedef struct ogs_session_s {
+    char *name;
+
+    uint32_t context_identifier; /* EPC */
+    bool default_dnn_indicator; /* 5GC */
+
 #define OGS_PDU_SESSION_TYPE_IPV4                   1
 #define OGS_PDU_SESSION_TYPE_IPV6                   2
 #define OGS_PDU_SESSION_TYPE_IPV4V6                 3
 #define OGS_PDU_SESSION_TYPE_UNSTRUCTURED           4
 #define OGS_PDU_SESSION_TYPE_ETHERNET               5
-    uint8_t pdn_type;
+
+#define OGS_PDU_SESSION_TYPE_TO_DIAMETER(x)         ((x)-1)
+#define OGS_PDU_SESSION_TYPE_FROM_DIAMETER(x)       ((x)+1)
+    uint8_t session_type;
 
 #define OGS_SSC_MODE_1                              1
 #define OGS_SSC_MODE_2                              2
@@ -421,8 +414,8 @@ typedef struct ogs_pdn_s {
 
     ogs_paa_t paa;
     ogs_ip_t ue_ip;
-    ogs_ip_t pgw_ip;
-} ogs_pdn_t;
+    ogs_ip_t smf_ip;
+} ogs_session_t;
 
 int ogs_fqdn_build(char *dst, char *src, int len);
 int ogs_fqdn_parse(char *dst, char *src, int len);
@@ -478,6 +471,20 @@ ED3(uint8_t ext:1;,
 int ogs_pco_parse(ogs_pco_t *pco, unsigned char *data, int data_len);
 int ogs_pco_build(unsigned char *data, int data_len, ogs_pco_t *pco);
 
+typedef struct ogs_slice_data_s {
+    ogs_s_nssai_t s_nssai;
+    bool default_indicator;
+
+    uint32_t context_identifier; /* EPC for checking default APN */
+
+    int num_of_session;
+    ogs_session_t session[OGS_MAX_NUM_OF_SESS];
+} ogs_slice_data_t;
+
+ogs_slice_data_t *ogs_slice_find_by_s_nssai(
+        ogs_slice_data_t *slice_data, int num_of_slice_data,
+        ogs_s_nssai_t *s_nssai);
+
 typedef struct ogs_subscription_data_s {
 #define OGS_ACCESS_RESTRICTION_UTRAN_NOT_ALLOWED                (1)
 #define OGS_ACCESS_RESTRICTION_GERAN_NOT_ALLOWED                (1<<1)
@@ -500,9 +507,8 @@ typedef struct ogs_subscription_data_s {
 #define OGS_RAU_TAU_DEFAULT_TIME                (12*60)     /* 12 min */
     uint32_t                subscribed_rau_tau_timer;       /* unit : seconds */
 
-    uint32_t                context_identifier;             /* default APN */
-    ogs_pdn_t               pdn[OGS_MAX_NUM_OF_SESS];
-    int                     num_of_pdn;
+    int num_of_slice;
+    ogs_slice_data_t slice[OGS_MAX_NUM_OF_SLICE];
 
 #define OGS_MAX_NUM_OF_MSISDN                                   4
     int num_of_msisdn;
@@ -513,11 +519,13 @@ typedef struct ogs_subscription_data_s {
     } msisdn[OGS_MAX_NUM_OF_MSISDN];
 } ogs_subscription_data_t;
 
+void ogs_subscription_data_free(ogs_subscription_data_t *subscription_data);
+
 typedef struct ogs_session_data_s {
-    ogs_pdn_t           pdn;
+    ogs_session_t session;
 #define OGS_MAX_NUM_OF_PCC_RULE         8   /* Num of PCC Rule */
-    ogs_pcc_rule_t      pcc_rule[OGS_MAX_NUM_OF_PCC_RULE];
-    int                 num_of_pcc_rule;
+    ogs_pcc_rule_t pcc_rule[OGS_MAX_NUM_OF_PCC_RULE];
+    int num_of_pcc_rule;
 } ogs_session_data_t;
 
 void ogs_session_data_free(ogs_session_data_t *session_data);

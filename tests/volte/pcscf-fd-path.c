@@ -254,7 +254,7 @@ void pcscf_rx_send_aar_audio(uint8_t **rx_sid,
         memset(&paa, 0, sizeof(ogs_paa_t));
 
         memcpy(paa.addr6, ipsub.sub, OGS_IPV6_LEN);
-        paa.pdn_type = 0x03;
+        paa.session_type = 0x03;
 #define FRAMED_IPV6_PREFIX_LENGTH 128  /* from spec document */
         paa.len = FRAMED_IPV6_PREFIX_LENGTH;
         val.os.data = (uint8_t*)&paa;
@@ -1032,7 +1032,7 @@ void pcscf_rx_send_aar_video(uint8_t **rx_sid, test_sess_t *sess, int id_type)
         memset(&paa, 0, sizeof(ogs_paa_t));
 
         memcpy(paa.addr6, ipsub.sub, OGS_IPV6_LEN);
-        paa.pdn_type = 0x03;
+        paa.session_type = 0x03;
 #define FRAMED_IPV6_PREFIX_LENGTH 128  /* from spec document */
         paa.len = FRAMED_IPV6_PREFIX_LENGTH;
         val.os.data = (uint8_t*)&paa;
@@ -1477,7 +1477,7 @@ void pcscf_rx_send_aar_ctrl(uint8_t **rx_sid, test_sess_t *sess, int id_type)
         memset(&paa, 0, sizeof(ogs_paa_t));
 
         memcpy(paa.addr6, ipsub.sub, OGS_IPV6_LEN);
-        paa.pdn_type = 0x03;
+        paa.session_type = 0x03;
 #define FRAMED_IPV6_PREFIX_LENGTH 128  /* from spec document */
         paa.len = FRAMED_IPV6_PREFIX_LENGTH;
         val.os.data = (uint8_t*)&paa;

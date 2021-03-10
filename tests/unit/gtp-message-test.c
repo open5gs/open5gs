@@ -117,10 +117,10 @@ static void gtp_message_test1(abts_case *tc, void *data)
         OGS_GTP_SELECTION_MODE_MS_OR_NETWORK_PROVIDED_APN | 0xfc;
 
     req.pdn_type.presence = 1;
-    req.pdn_type.u8 = OGS_GTP_PDN_TYPE_IPV4;
+    req.pdn_type.u8 = OGS_PDU_SESSION_TYPE_IPV4;
 
     memset(&paa, 0, sizeof(ogs_paa_t));
-    paa.pdn_type = OGS_GTP_PDN_TYPE_IPV4;
+    paa.session_type = OGS_PDU_SESSION_TYPE_IPV4;
     req.pdn_address_allocation.presence = 1;
     req.pdn_address_allocation.data = &paa;
     req.pdn_address_allocation.len = OGS_PAA_IPV4_LEN;

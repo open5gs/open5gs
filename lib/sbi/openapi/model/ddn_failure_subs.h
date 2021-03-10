@@ -12,7 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
-#include "ddd_traffic_descriptor.h"
+#include "ddn_failure_sub_info.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -21,12 +21,12 @@ extern "C" {
 typedef struct OpenAPI_ddn_failure_subs_s OpenAPI_ddn_failure_subs_t;
 typedef struct OpenAPI_ddn_failure_subs_s {
     int ddn_failure_subs_ind;
-    OpenAPI_list_t *ddd_traffic_descriptor_list;
+    OpenAPI_list_t *ddn_failure_subs_info_list;
 } OpenAPI_ddn_failure_subs_t;
 
 OpenAPI_ddn_failure_subs_t *OpenAPI_ddn_failure_subs_create(
     int ddn_failure_subs_ind,
-    OpenAPI_list_t *ddd_traffic_descriptor_list
+    OpenAPI_list_t *ddn_failure_subs_info_list
     );
 void OpenAPI_ddn_failure_subs_free(OpenAPI_ddn_failure_subs_t *ddn_failure_subs);
 OpenAPI_ddn_failure_subs_t *OpenAPI_ddn_failure_subs_parseFromJSON(cJSON *ddn_failure_subsJSON);

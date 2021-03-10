@@ -21,12 +21,12 @@ OpenAPI_amf3_gpp_access_registration_t *OpenAPI_amf3_gpp_access_registration_cre
     OpenAPI_rat_type_e rat_type,
     int urrp_indicator,
     char *amf_ee_subscription_id,
+    OpenAPI_eps_interworking_info_t *eps_interworking_info,
     int ue_srvcc_capability,
-    char *nid,
     char *registration_time,
-    char *vgmlc_address_ipv4,
-    char *vgmlc_address_ipv6,
-    char *vgmlc_fqdn
+    OpenAPI_vgmlc_address_t *vgmlc_address,
+    OpenAPI_context_info_t *context_info,
+    int no_ee_subscription_ind
     )
 {
     OpenAPI_amf3_gpp_access_registration_t *amf3_gpp_access_registration_local_var = OpenAPI_malloc(sizeof(OpenAPI_amf3_gpp_access_registration_t));
@@ -49,12 +49,12 @@ OpenAPI_amf3_gpp_access_registration_t *OpenAPI_amf3_gpp_access_registration_cre
     amf3_gpp_access_registration_local_var->rat_type = rat_type;
     amf3_gpp_access_registration_local_var->urrp_indicator = urrp_indicator;
     amf3_gpp_access_registration_local_var->amf_ee_subscription_id = amf_ee_subscription_id;
+    amf3_gpp_access_registration_local_var->eps_interworking_info = eps_interworking_info;
     amf3_gpp_access_registration_local_var->ue_srvcc_capability = ue_srvcc_capability;
-    amf3_gpp_access_registration_local_var->nid = nid;
     amf3_gpp_access_registration_local_var->registration_time = registration_time;
-    amf3_gpp_access_registration_local_var->vgmlc_address_ipv4 = vgmlc_address_ipv4;
-    amf3_gpp_access_registration_local_var->vgmlc_address_ipv6 = vgmlc_address_ipv6;
-    amf3_gpp_access_registration_local_var->vgmlc_fqdn = vgmlc_fqdn;
+    amf3_gpp_access_registration_local_var->vgmlc_address = vgmlc_address;
+    amf3_gpp_access_registration_local_var->context_info = context_info;
+    amf3_gpp_access_registration_local_var->no_ee_subscription_ind = no_ee_subscription_ind;
 
     return amf3_gpp_access_registration_local_var;
 }
@@ -79,11 +79,10 @@ void OpenAPI_amf3_gpp_access_registration_free(OpenAPI_amf3_gpp_access_registrat
     }
     OpenAPI_list_free(amf3_gpp_access_registration->backup_amf_info);
     ogs_free(amf3_gpp_access_registration->amf_ee_subscription_id);
-    ogs_free(amf3_gpp_access_registration->nid);
+    OpenAPI_eps_interworking_info_free(amf3_gpp_access_registration->eps_interworking_info);
     ogs_free(amf3_gpp_access_registration->registration_time);
-    ogs_free(amf3_gpp_access_registration->vgmlc_address_ipv4);
-    ogs_free(amf3_gpp_access_registration->vgmlc_address_ipv6);
-    ogs_free(amf3_gpp_access_registration->vgmlc_fqdn);
+    OpenAPI_vgmlc_address_free(amf3_gpp_access_registration->vgmlc_address);
+    OpenAPI_context_info_free(amf3_gpp_access_registration->context_info);
     ogs_free(amf3_gpp_access_registration);
 }
 
@@ -242,16 +241,22 @@ cJSON *OpenAPI_amf3_gpp_access_registration_convertToJSON(OpenAPI_amf3_gpp_acces
         }
     }
 
-    if (amf3_gpp_access_registration->ue_srvcc_capability) {
-        if (cJSON_AddBoolToObject(item, "ueSrvccCapability", amf3_gpp_access_registration->ue_srvcc_capability) == NULL) {
-            ogs_error("OpenAPI_amf3_gpp_access_registration_convertToJSON() failed [ue_srvcc_capability]");
+    if (amf3_gpp_access_registration->eps_interworking_info) {
+        cJSON *eps_interworking_info_local_JSON = OpenAPI_eps_interworking_info_convertToJSON(amf3_gpp_access_registration->eps_interworking_info);
+        if (eps_interworking_info_local_JSON == NULL) {
+            ogs_error("OpenAPI_amf3_gpp_access_registration_convertToJSON() failed [eps_interworking_info]");
+            goto end;
+        }
+        cJSON_AddItemToObject(item, "epsInterworkingInfo", eps_interworking_info_local_JSON);
+        if (item->child == NULL) {
+            ogs_error("OpenAPI_amf3_gpp_access_registration_convertToJSON() failed [eps_interworking_info]");
             goto end;
         }
     }
 
-    if (amf3_gpp_access_registration->nid) {
-        if (cJSON_AddStringToObject(item, "nid", amf3_gpp_access_registration->nid) == NULL) {
-            ogs_error("OpenAPI_amf3_gpp_access_registration_convertToJSON() failed [nid]");
+    if (amf3_gpp_access_registration->ue_srvcc_capability) {
+        if (cJSON_AddBoolToObject(item, "ueSrvccCapability", amf3_gpp_access_registration->ue_srvcc_capability) == NULL) {
+            ogs_error("OpenAPI_amf3_gpp_access_registration_convertToJSON() failed [ue_srvcc_capability]");
             goto end;
         }
     }
@@ -263,23 +268,35 @@ cJSON *OpenAPI_amf3_gpp_access_registration_convertToJSON(OpenAPI_amf3_gpp_acces
         }
     }
 
-    if (amf3_gpp_access_registration->vgmlc_address_ipv4) {
-        if (cJSON_AddStringToObject(item, "vgmlcAddressIpv4", amf3_gpp_access_registration->vgmlc_address_ipv4) == NULL) {
-            ogs_error("OpenAPI_amf3_gpp_access_registration_convertToJSON() failed [vgmlc_address_ipv4]");
+    if (amf3_gpp_access_registration->vgmlc_address) {
+        cJSON *vgmlc_address_local_JSON = OpenAPI_vgmlc_address_convertToJSON(amf3_gpp_access_registration->vgmlc_address);
+        if (vgmlc_address_local_JSON == NULL) {
+            ogs_error("OpenAPI_amf3_gpp_access_registration_convertToJSON() failed [vgmlc_address]");
+            goto end;
+        }
+        cJSON_AddItemToObject(item, "vgmlcAddress", vgmlc_address_local_JSON);
+        if (item->child == NULL) {
+            ogs_error("OpenAPI_amf3_gpp_access_registration_convertToJSON() failed [vgmlc_address]");
             goto end;
         }
     }
 
-    if (amf3_gpp_access_registration->vgmlc_address_ipv6) {
-        if (cJSON_AddStringToObject(item, "vgmlcAddressIpv6", amf3_gpp_access_registration->vgmlc_address_ipv6) == NULL) {
-            ogs_error("OpenAPI_amf3_gpp_access_registration_convertToJSON() failed [vgmlc_address_ipv6]");
+    if (amf3_gpp_access_registration->context_info) {
+        cJSON *context_info_local_JSON = OpenAPI_context_info_convertToJSON(amf3_gpp_access_registration->context_info);
+        if (context_info_local_JSON == NULL) {
+            ogs_error("OpenAPI_amf3_gpp_access_registration_convertToJSON() failed [context_info]");
+            goto end;
+        }
+        cJSON_AddItemToObject(item, "contextInfo", context_info_local_JSON);
+        if (item->child == NULL) {
+            ogs_error("OpenAPI_amf3_gpp_access_registration_convertToJSON() failed [context_info]");
             goto end;
         }
     }
 
-    if (amf3_gpp_access_registration->vgmlc_fqdn) {
-        if (cJSON_AddStringToObject(item, "vgmlcFqdn", amf3_gpp_access_registration->vgmlc_fqdn) == NULL) {
-            ogs_error("OpenAPI_amf3_gpp_access_registration_convertToJSON() failed [vgmlc_fqdn]");
+    if (amf3_gpp_access_registration->no_ee_subscription_ind) {
+        if (cJSON_AddBoolToObject(item, "noEeSubscriptionInd", amf3_gpp_access_registration->no_ee_subscription_ind) == NULL) {
+            ogs_error("OpenAPI_amf3_gpp_access_registration_convertToJSON() failed [no_ee_subscription_ind]");
             goto end;
         }
     }
@@ -459,20 +476,18 @@ OpenAPI_amf3_gpp_access_registration_t *OpenAPI_amf3_gpp_access_registration_par
         }
     }
 
+    cJSON *eps_interworking_info = cJSON_GetObjectItemCaseSensitive(amf3_gpp_access_registrationJSON, "epsInterworkingInfo");
+
+    OpenAPI_eps_interworking_info_t *eps_interworking_info_local_nonprim = NULL;
+    if (eps_interworking_info) {
+        eps_interworking_info_local_nonprim = OpenAPI_eps_interworking_info_parseFromJSON(eps_interworking_info);
+    }
+
     cJSON *ue_srvcc_capability = cJSON_GetObjectItemCaseSensitive(amf3_gpp_access_registrationJSON, "ueSrvccCapability");
 
     if (ue_srvcc_capability) {
         if (!cJSON_IsBool(ue_srvcc_capability)) {
             ogs_error("OpenAPI_amf3_gpp_access_registration_parseFromJSON() failed [ue_srvcc_capability]");
-            goto end;
-        }
-    }
-
-    cJSON *nid = cJSON_GetObjectItemCaseSensitive(amf3_gpp_access_registrationJSON, "nid");
-
-    if (nid) {
-        if (!cJSON_IsString(nid)) {
-            ogs_error("OpenAPI_amf3_gpp_access_registration_parseFromJSON() failed [nid]");
             goto end;
         }
     }
@@ -486,29 +501,25 @@ OpenAPI_amf3_gpp_access_registration_t *OpenAPI_amf3_gpp_access_registration_par
         }
     }
 
-    cJSON *vgmlc_address_ipv4 = cJSON_GetObjectItemCaseSensitive(amf3_gpp_access_registrationJSON, "vgmlcAddressIpv4");
+    cJSON *vgmlc_address = cJSON_GetObjectItemCaseSensitive(amf3_gpp_access_registrationJSON, "vgmlcAddress");
 
-    if (vgmlc_address_ipv4) {
-        if (!cJSON_IsString(vgmlc_address_ipv4)) {
-            ogs_error("OpenAPI_amf3_gpp_access_registration_parseFromJSON() failed [vgmlc_address_ipv4]");
-            goto end;
-        }
+    OpenAPI_vgmlc_address_t *vgmlc_address_local_nonprim = NULL;
+    if (vgmlc_address) {
+        vgmlc_address_local_nonprim = OpenAPI_vgmlc_address_parseFromJSON(vgmlc_address);
     }
 
-    cJSON *vgmlc_address_ipv6 = cJSON_GetObjectItemCaseSensitive(amf3_gpp_access_registrationJSON, "vgmlcAddressIpv6");
+    cJSON *context_info = cJSON_GetObjectItemCaseSensitive(amf3_gpp_access_registrationJSON, "contextInfo");
 
-    if (vgmlc_address_ipv6) {
-        if (!cJSON_IsString(vgmlc_address_ipv6)) {
-            ogs_error("OpenAPI_amf3_gpp_access_registration_parseFromJSON() failed [vgmlc_address_ipv6]");
-            goto end;
-        }
+    OpenAPI_context_info_t *context_info_local_nonprim = NULL;
+    if (context_info) {
+        context_info_local_nonprim = OpenAPI_context_info_parseFromJSON(context_info);
     }
 
-    cJSON *vgmlc_fqdn = cJSON_GetObjectItemCaseSensitive(amf3_gpp_access_registrationJSON, "vgmlcFqdn");
+    cJSON *no_ee_subscription_ind = cJSON_GetObjectItemCaseSensitive(amf3_gpp_access_registrationJSON, "noEeSubscriptionInd");
 
-    if (vgmlc_fqdn) {
-        if (!cJSON_IsString(vgmlc_fqdn)) {
-            ogs_error("OpenAPI_amf3_gpp_access_registration_parseFromJSON() failed [vgmlc_fqdn]");
+    if (no_ee_subscription_ind) {
+        if (!cJSON_IsBool(no_ee_subscription_ind)) {
+            ogs_error("OpenAPI_amf3_gpp_access_registration_parseFromJSON() failed [no_ee_subscription_ind]");
             goto end;
         }
     }
@@ -530,12 +541,12 @@ OpenAPI_amf3_gpp_access_registration_t *OpenAPI_amf3_gpp_access_registration_par
         rat_typeVariable,
         urrp_indicator ? urrp_indicator->valueint : 0,
         amf_ee_subscription_id ? ogs_strdup(amf_ee_subscription_id->valuestring) : NULL,
+        eps_interworking_info ? eps_interworking_info_local_nonprim : NULL,
         ue_srvcc_capability ? ue_srvcc_capability->valueint : 0,
-        nid ? ogs_strdup(nid->valuestring) : NULL,
         registration_time ? ogs_strdup(registration_time->valuestring) : NULL,
-        vgmlc_address_ipv4 ? ogs_strdup(vgmlc_address_ipv4->valuestring) : NULL,
-        vgmlc_address_ipv6 ? ogs_strdup(vgmlc_address_ipv6->valuestring) : NULL,
-        vgmlc_fqdn ? ogs_strdup(vgmlc_fqdn->valuestring) : NULL
+        vgmlc_address ? vgmlc_address_local_nonprim : NULL,
+        context_info ? context_info_local_nonprim : NULL,
+        no_ee_subscription_ind ? no_ee_subscription_ind->valueint : 0
         );
 
     return amf3_gpp_access_registration_local_var;

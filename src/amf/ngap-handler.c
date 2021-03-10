@@ -231,7 +231,7 @@ void ngap_handle_ng_setup_request(amf_gnb_t *gnb, ogs_ngap_message_t *message)
                             bplmn_list[j].num_of_s_nssai = 0;
                     k < BroadcastPLMNItem->tAISliceSupportList.list.count &&
                     gnb->supported_ta_list[i].bplmn_list[j].num_of_s_nssai <
-                        OGS_MAX_NUM_OF_S_NSSAI;
+                        OGS_MAX_NUM_OF_SLICE;
                             k++) {
                 NGAP_SliceSupportItem_t *SliceSupportItem = NULL;
                 NGAP_S_NSSAI_t *s_NSSAI = NULL;
@@ -475,12 +475,12 @@ void ngap_handle_initial_ue_message(amf_gnb_t *gnb, ogs_ngap_message_t *message)
     ogs_ngap_ASN_to_nr_cgi(
             &UserLocationInformationNR->nR_CGI, &ran_ue->saved.nr_cgi);
     ogs_ngap_ASN_to_5gs_tai(
-            &UserLocationInformationNR->tAI, &ran_ue->saved.tai);
+            &UserLocationInformationNR->tAI, &ran_ue->saved.nr_tai);
 
     ogs_info("    RAN_UE_NGAP_ID[%d] AMF_UE_NGAP_ID[%lld] "
             "TAC[%d] CellID[0x%llx]",
         ran_ue->ran_ue_ngap_id, (long long)ran_ue->amf_ue_ngap_id,
-        ran_ue->saved.tai.tac.v, (long long)ran_ue->saved.nr_cgi.cell_id);
+        ran_ue->saved.nr_tai.tac.v, (long long)ran_ue->saved.nr_cgi.cell_id);
 
     if (UEContextRequest) {
         if (*UEContextRequest == NGAP_UEContextRequest_requested) {
@@ -612,15 +612,15 @@ void ngap_handle_uplink_nas_transport(
     ogs_ngap_ASN_to_nr_cgi(
             &UserLocationInformationNR->nR_CGI, &ran_ue->saved.nr_cgi);
     ogs_ngap_ASN_to_5gs_tai(
-            &UserLocationInformationNR->tAI, &ran_ue->saved.tai);
+            &UserLocationInformationNR->tAI, &ran_ue->saved.nr_tai);
 
     ogs_debug("    RAN_UE_NGAP_ID[%d] AMF_UE_NGAP_ID[%lld] "
             "TAC[%d] CellID[0x%llx]",
         ran_ue->ran_ue_ngap_id, (long long)ran_ue->amf_ue_ngap_id,
-        ran_ue->saved.tai.tac.v, (long long)ran_ue->saved.nr_cgi.cell_id);
+        ran_ue->saved.nr_tai.tac.v, (long long)ran_ue->saved.nr_cgi.cell_id);
 
     /* Copy NR-TAI/NR-CGI from ran_ue */
-    memcpy(&amf_ue->tai, &ran_ue->saved.tai, sizeof(ogs_5gs_tai_t));
+    memcpy(&amf_ue->nr_tai, &ran_ue->saved.nr_tai, sizeof(ogs_5gs_tai_t));
     memcpy(&amf_ue->nr_cgi, &ran_ue->saved.nr_cgi, sizeof(ogs_nr_cgi_t));
 
     ngap_send_to_nas(ran_ue, NGAP_ProcedureCode_id_UplinkNASTransport, NAS_PDU);
@@ -2027,7 +2027,7 @@ void ngap_handle_path_switch_request(
     ogs_info("    [OLD] RAN_UE_NGAP_ID[%d] AMF_UE_NGAP_ID[%lld] ",
         ran_ue->ran_ue_ngap_id, (long long)ran_ue->amf_ue_ngap_id);
     ogs_info("    [OLD] TAC[%d] CellID[0x%llx]",
-        amf_ue->tai.tac.v, (long long)amf_ue->nr_cgi.cell_id);
+        amf_ue->nr_tai.tac.v, (long long)amf_ue->nr_cgi.cell_id);
 
     /* Update RAN-UE-NGAP-ID */
     ran_ue->ran_ue_ngap_id = *RAN_UE_NGAP_ID;
@@ -2060,15 +2060,15 @@ void ngap_handle_path_switch_request(
     ogs_ngap_ASN_to_nr_cgi(
             &UserLocationInformationNR->nR_CGI, &ran_ue->saved.nr_cgi);
     ogs_ngap_ASN_to_5gs_tai(
-            &UserLocationInformationNR->tAI, &ran_ue->saved.tai);
+            &UserLocationInformationNR->tAI, &ran_ue->saved.nr_tai);
 
     /* Copy Stream-No/TAI/ECGI from ran_ue */
     amf_ue->gnb_ostream_id = ran_ue->gnb_ostream_id;
-    memcpy(&amf_ue->tai, &ran_ue->saved.tai, sizeof(ogs_5gs_tai_t));
+    memcpy(&amf_ue->nr_tai, &ran_ue->saved.nr_tai, sizeof(ogs_5gs_tai_t));
     memcpy(&amf_ue->nr_cgi, &ran_ue->saved.nr_cgi, sizeof(ogs_nr_cgi_t));
 
     ogs_info("    [NEW] TAC[%d] CellID[0x%llx]",
-        amf_ue->tai.tac.v, (long long)amf_ue->nr_cgi.cell_id);
+        amf_ue->nr_tai.tac.v, (long long)amf_ue->nr_cgi.cell_id);
 
     if (!UESecurityCapabilities) {
         ogs_error("No UESecurityCapabilities");
@@ -3141,20 +3141,22 @@ void ngap_handle_handover_notification(
     ogs_ngap_ASN_to_nr_cgi(
             &UserLocationInformationNR->nR_CGI, &target_ue->saved.nr_cgi);
     ogs_ngap_ASN_to_5gs_tai(
-            &UserLocationInformationNR->tAI, &target_ue->saved.tai);
+            &UserLocationInformationNR->tAI, &target_ue->saved.nr_tai);
 
     ogs_debug("    Source : RAN_UE_NGAP_ID[%d] AMF_UE_NGAP_ID[%lld] ",
         source_ue->ran_ue_ngap_id, (long long)source_ue->amf_ue_ngap_id);
     ogs_debug("    Source : TAC[%d] CellID[0x%llx]",
-        source_ue->saved.tai.tac.v, (long long)source_ue->saved.nr_cgi.cell_id);
+        source_ue->saved.nr_tai.tac.v,
+        (long long)source_ue->saved.nr_cgi.cell_id);
     ogs_debug("    Target : RAN_UE_NGAP_ID[%d] AMF_UE_NGAP_ID[%lld] ",
         target_ue->ran_ue_ngap_id, (long long)target_ue->amf_ue_ngap_id);
     ogs_debug("    Target : TAC[%d] CellID[0x%llx]",
-        target_ue->saved.tai.tac.v, (long long)target_ue->saved.nr_cgi.cell_id);
+        target_ue->saved.nr_tai.tac.v,
+        (long long)target_ue->saved.nr_cgi.cell_id);
 
     /* Copy Stream-No/TAI/ECGI from ran_ue */
     amf_ue->gnb_ostream_id = target_ue->gnb_ostream_id;
-    memcpy(&amf_ue->tai, &target_ue->saved.tai, sizeof(ogs_5gs_tai_t));
+    memcpy(&amf_ue->nr_tai, &target_ue->saved.nr_tai, sizeof(ogs_5gs_tai_t));
     memcpy(&amf_ue->nr_cgi, &target_ue->saved.nr_cgi, sizeof(ogs_nr_cgi_t));
 
     ngap_send_ran_ue_context_release_command(source_ue,

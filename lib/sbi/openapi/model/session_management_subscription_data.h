@@ -18,7 +18,6 @@
 #include "snssai.h"
 #include "suggested_packet_num_dl.h"
 #include "trace_data.h"
-#include "vn_group_data.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -29,10 +28,9 @@ typedef struct OpenAPI_session_management_subscription_data_s {
     struct OpenAPI_snssai_s *single_nssai;
     OpenAPI_list_t* dnn_configurations;
     OpenAPI_list_t *internal_group_ids;
-    OpenAPI_list_t* vn_group_info;
     OpenAPI_list_t* shared_vn_group_data_ids;
     char *shared_dnn_configurations_id;
-    struct OpenAPI_odb_packet_services_s *odb_packet_services;
+    OpenAPI_odb_packet_services_e odb_packet_services;
     struct OpenAPI_trace_data_s *trace_data;
     char *shared_trace_data_id;
     OpenAPI_list_t* expected_ue_behaviours_list;
@@ -44,10 +42,9 @@ OpenAPI_session_management_subscription_data_t *OpenAPI_session_management_subsc
     OpenAPI_snssai_t *single_nssai,
     OpenAPI_list_t* dnn_configurations,
     OpenAPI_list_t *internal_group_ids,
-    OpenAPI_list_t* vn_group_info,
     OpenAPI_list_t* shared_vn_group_data_ids,
     char *shared_dnn_configurations_id,
-    OpenAPI_odb_packet_services_t *odb_packet_services,
+    OpenAPI_odb_packet_services_e odb_packet_services,
     OpenAPI_trace_data_t *trace_data,
     char *shared_trace_data_id,
     OpenAPI_list_t* expected_ue_behaviours_list,

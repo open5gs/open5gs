@@ -20,39 +20,41 @@ const formData = {
     op_value: "E8ED289D EBA952E4 283B54E8 8E6183CA",
   },
   "ambr": {
-    "downlink": 1024000,
-    "uplink": 1024000
-  },
-  "pdn": [
-    {
-      "apn": "internet",
-      "type": 2,
-      "ambr": {
-        "downlink": 1024000,
-        "uplink": 1024000
-      },
-      "qos": {
-        "qci": 9,
-      // Ch 7.3.40 Allocation-Retenion-Proirty in TS 29.272 V15.9.0
-      //
-      // If the Pre-emption-Capability AVP is not present
-      // in the Allocation-Retention-Priority AVP, the default value shall be
-      // PRE-EMPTION_CAPABILITY_DISABLED (1).
-      //
-      // If the Pre-emption-Vulnerability AVP is not present
-      // in the Allocation-Retention-Priority AVP, the default value shall be
-      // PRE-EMPTION_VULNERABILITY_ENABLED (0).
-      //
-      // However, to easily set up VoLTE service,
-      // disable Pre-emption Capability/Vulnerablility in Default Bearer
-        "arp": {
-          "priority_level": 8,
-          "pre_emption_capability": 1,
-          "pre_emption_vulnerability": 1
-        }
-      },
+    "downlink": {
+      "value": 1,
+      "unit": 3
+    },
+    "uplink": {
+      "value": 1,
+      "unit": 3
     }
-  ]
+  },
+  "slice": [{
+    "sst": 1,
+    "default_indicator": true,
+    "session": [{
+        "name": "internet",
+        "type": 3,
+        "ambr": {
+          "downlink": {
+            "value": 1,
+            "unit": 3
+          },
+          "uplink": {
+            "value": 1,
+            "unit": 3
+          }
+        },
+        "qos": {
+          "index": 9,
+          "arp": {
+            "priority_level": 8,
+            "pre_emption_capability": 1,
+            "pre_emption_vulnerability": 1
+          }
+        },
+    }]
+  }]
 }
 
 class Document extends Component {
@@ -94,10 +96,10 @@ class Document extends Component {
       //    The followings are changed from 'String' to 'Number' after DB CREATE or UPDATE
       //     - ambr.downlink, ambr.uplink, qos.mbr.downlink, qos.mbr.uplink, qos.gbr.downlink, qos.gbr.uplink
       // 
-      traverse(profile.data).forEach(function(x) {
-        if (this.key == 'downlink') this.update(Number(x));
-        if (this.key == 'uplink') this.update(Number(x));
-      })
+      //traverse(profile.data).forEach(function(x) {
+      //  if (this.key == 'downlink') this.update(Number(x));
+      //  if (this.key == 'uplink') this.update(Number(x));
+      //})
 
       if (profile.data.security) {
         if (profile.data.security.opc) {
@@ -167,20 +169,46 @@ class Document extends Component {
   validate = (formData, errors) => {
     const { profiles, action, status } = this.props;
 
-    if (formData.pdn) {
-      let apns = formData.pdn.map(pdn => { return pdn.apn } )
+    if (formData.slice) {
+      let s_nssais = formData.slice.map(slice => {
+        return JSON.stringify({ sst: slice.sst, sd: slice.sd })
+      });
       let duplicates = {};
-      for (let i = 0; i < apns.length; i++) {
-        if (duplicates.hasOwnProperty(apns[i])) {
-          duplicates[apns[i]].push(i);
-        } else if (apns.lastIndexOf(apns[i]) !== i) {
-          duplicates[apns[i]] = [i];
+      for (let i = 0; i < s_nssais.length; i++) {
+        if (duplicates.hasOwnProperty(s_nssais[i])) {
+          duplicates[s_nssais[i]].push(i);
+        } else if (s_nssais.lastIndexOf(s_nssais[i]) !== i) {
+          duplicates[s_nssais[i]] = [i];
         }
       }
+      for (let key in duplicates) {
+        duplicates[key].forEach(index =>
+          errors.slice[index].sst.addError(`${key} is duplicated`));
+      }
+    }
 
+    for (let i = 0; i < formData.slice.length; i++) {
+      let names = formData.slice[i].session.map(session => {
+        return session.name
+      });
+      let duplicates = {};
+      for (let j = 0; j < names.length; j++) {
+        if (duplicates.hasOwnProperty(names[j])) {
+          duplicates[names[j]].push(j);
+        } else if (names.lastIndexOf(names[j]) !== j) {
+          duplicates[names[j]] = [j];
+        }
+      }
       for (let key in duplicates) {
         duplicates[key].forEach(index => 
-          errors.pdn[index].apn.addError(`'${key}' is duplicated`));
+          errors.slice[i].session[index].name.addError(`'${key}' is duplicated`));
+      }
+    }
+
+    if (!formData.slice.some(slice => slice.default_indicator == true)) {
+      for (let i = 0; i < formData.slice.length; i++) {
+        errors.slice[i].default_indicator.addError(
+            `At least 1 Default S-NSSAI is required`);
       }
     }
 

@@ -127,14 +127,46 @@ static int smf_context_prepare(void)
 
 static int smf_context_validation(void)
 {
+    ogs_sbi_nf_info_t *nf_info = NULL;
+
     if (self.dns[0] == NULL && self.dns6[0] == NULL) {
         ogs_error("No smf.dns in '%s'", ogs_app()->file);
         return OGS_ERROR;
     }
     if (ogs_list_first(&ogs_pfcp_self()->subnet_list) == NULL) {
-        ogs_error("No smf.pdn: in '%s'", ogs_app()->file);
+        ogs_error("No smf.subnet: in '%s'", ogs_app()->file);
         return OGS_ERROR;
     }
+
+    ogs_list_for_each(&ogs_sbi_self()->nf_info_list, nf_info) {
+        int i;
+        ogs_sbi_smf_info_t *smf_info = &nf_info->smf;
+        ogs_assert(smf_info);
+
+        if (smf_info->num_of_slice == 0) {
+            ogs_error("CHECK CONFIGURATION: No S-NSSAI in smfInfo");
+            return OGS_ERROR;
+        }
+
+        for (i = 0; i < smf_info->num_of_slice; i++) {
+            if (smf_info->slice[i].num_of_dnn == 0) {
+                ogs_error("CHECK CONFIGURATION: No DNN in SST[%d] SD[0x%x]",
+                            smf_info->slice[i].s_nssai.sst,
+                            smf_info->slice[i].s_nssai.sd.v);
+                return OGS_ERROR;
+            }
+        }
+        for (i = 0; i < smf_info->num_of_nr_tai_range; i++) {
+            if (smf_info->nr_tai_range[i].num_of_tac_range == 0) {
+                ogs_error("CHECK CONFIGURATION: No TacRange in "
+                        "MCC[%d] MNC[0x%x]",
+                    ogs_plmn_id_mcc(&smf_info->nr_tai[i].plmn_id),
+                    ogs_plmn_id_mnc(&smf_info->nr_tai[i].plmn_id));
+                return OGS_ERROR;
+            }
+        }
+    }
+
     return OGS_OK;
 }
 
@@ -355,7 +387,7 @@ int smf_context_parse_config(void)
                                             break;
                                     }
 
-                                    ogs_assert(num <= OGS_MAX_NUM_OF_HOSTNAME);
+                                    ogs_assert(num < OGS_MAX_NUM_OF_HOSTNAME);
                                     hostname[num++] = 
                                         ogs_yaml_iter_value(&hostname_iter);
                                 } while (
@@ -449,18 +481,17 @@ int smf_context_parse_config(void)
                                 ogs_warn("Ignore DNS : %s", v);
                         }
 
-                    } while (
-                        ogs_yaml_iter_type(&dns_iter) ==
-                            YAML_SEQUENCE_NODE);
+                    } while (ogs_yaml_iter_type(&dns_iter) ==
+                                YAML_SEQUENCE_NODE);
                 } else if (!strcmp(smf_key, "mtu")) {
                     ogs_assert(ogs_yaml_iter_type(&smf_iter) !=
                             YAML_SCALAR_NODE);
                     self.mtu = atoi(ogs_yaml_iter_value(&smf_iter));
                     ogs_assert(self.mtu);
                 } else if (!strcmp(smf_key, "p-cscf")) {
-                    ogs_yaml_iter_t dns_iter;
-                    ogs_yaml_iter_recurse(&smf_iter, &dns_iter);
-                    ogs_assert(ogs_yaml_iter_type(&dns_iter) !=
+                    ogs_yaml_iter_t p_cscf_iter;
+                    ogs_yaml_iter_recurse(&smf_iter, &p_cscf_iter);
+                    ogs_assert(ogs_yaml_iter_type(&p_cscf_iter) !=
                         YAML_MAPPING_NODE);
 
                     self.num_of_p_cscf = 0;
@@ -468,13 +499,13 @@ int smf_context_parse_config(void)
                     do {
                         const char *v = NULL;
 
-                        if (ogs_yaml_iter_type(&dns_iter) ==
+                        if (ogs_yaml_iter_type(&p_cscf_iter) ==
                                 YAML_SEQUENCE_NODE) {
-                            if (!ogs_yaml_iter_next(&dns_iter))
+                            if (!ogs_yaml_iter_next(&p_cscf_iter))
                                 break;
                         }
 
-                        v = ogs_yaml_iter_value(&dns_iter);
+                        v = ogs_yaml_iter_value(&p_cscf_iter);
                         if (v) {
                             ogs_ipsubnet_t ipsub;
                             rv = ogs_ipsubnet(&ipsub, v, NULL);
@@ -493,12 +524,345 @@ int smf_context_parse_config(void)
                                 ogs_warn("Ignore P-CSCF : %s", v);
                         }
 
-                    } while (
-                        ogs_yaml_iter_type(&dns_iter) ==
+                    } while (ogs_yaml_iter_type(&p_cscf_iter) ==
+                                YAML_SEQUENCE_NODE);
+                } else if (!strcmp(smf_key, "info")) {
+                    ogs_yaml_iter_t info_array, info_iter;
+                    ogs_yaml_iter_recurse(&smf_iter, &info_array);
+                    do {
+                        ogs_sbi_nf_info_t *nf_info = NULL;
+                        ogs_sbi_smf_info_t *smf_info = NULL;
+
+                        if (ogs_yaml_iter_type(&info_array) ==
+                                YAML_MAPPING_NODE) {
+                            memcpy(&info_iter, &info_array,
+                                    sizeof(ogs_yaml_iter_t));
+                        } else if (ogs_yaml_iter_type(&info_array) ==
+                                    YAML_SEQUENCE_NODE) {
+                            if (!ogs_yaml_iter_next(&info_array))
+                                break;
+                            ogs_yaml_iter_recurse(&info_array, &info_iter);
+                        } else if (ogs_yaml_iter_type(&info_array) ==
+                                    YAML_SCALAR_NODE) {
+                            break;
+                        } else
+                            ogs_assert_if_reached();
+
+                        nf_info = ogs_sbi_nf_info_add(
+                                    &ogs_sbi_self()->nf_info_list,
+                                        OpenAPI_nf_type_SMF);
+                        ogs_assert(nf_info);
+
+                        smf_info = &nf_info->smf;
+                        ogs_assert(smf_info);
+
+                        while (ogs_yaml_iter_next(&info_iter)) {
+                            const char *info_key =
+                                ogs_yaml_iter_key(&info_iter);
+                            ogs_assert(info_key);
+                            if (!strcmp(info_key, "s_nssai")) {
+                                int num_of_slice = 0;
+
+                                ogs_yaml_iter_t s_nssai_array, s_nssai_iter;
+                                ogs_yaml_iter_recurse(&info_iter,
+                                        &s_nssai_array);
+                                do {
+                                    ogs_s_nssai_t *s_nssai = NULL;
+                                    const char *sst = NULL, *sd = NULL;
+                                    int num_of_dnn = 0;
+                                    const char *dnn[OGS_MAX_NUM_OF_DNN];
+
+                                    ogs_assert(num_of_slice <
+                                            OGS_MAX_NUM_OF_SLICE);
+                                    s_nssai = &smf_info->slice[num_of_slice].
+                                            s_nssai;
+                                    ogs_assert(s_nssai);
+
+                                    if (ogs_yaml_iter_type(&s_nssai_array) ==
+                                            YAML_MAPPING_NODE) {
+                                        memcpy(&s_nssai_iter, &s_nssai_array,
+                                                sizeof(ogs_yaml_iter_t));
+                                    } else if (ogs_yaml_iter_type(
+                                                &s_nssai_array) ==
+                                                YAML_SEQUENCE_NODE) {
+                                        if (!ogs_yaml_iter_next(&s_nssai_array))
+                                            break;
+                                        ogs_yaml_iter_recurse(&s_nssai_array,
+                                                &s_nssai_iter);
+                                    } else if (ogs_yaml_iter_type(
+                                                &s_nssai_array) ==
+                                                    YAML_SCALAR_NODE) {
+                                        break;
+                                    } else
+                                        ogs_assert_if_reached();
+
+                                    while (ogs_yaml_iter_next(&s_nssai_iter)) {
+                                        const char *s_nssai_key =
+                                            ogs_yaml_iter_key(&s_nssai_iter);
+                                        ogs_assert(s_nssai_key);
+                                        if (!strcmp(s_nssai_key, "sst")) {
+                                            sst = ogs_yaml_iter_value(
+                                                    &s_nssai_iter);
+                                        } else if (!strcmp(s_nssai_key, "sd")) {
+                                            sd = ogs_yaml_iter_value(
+                                                    &s_nssai_iter);
+                                        } else if (!strcmp(s_nssai_key,
+                                                    "dnn")) {
+                                            ogs_yaml_iter_t dnn_iter;
+                                            ogs_yaml_iter_recurse(&s_nssai_iter,
+                                                    &dnn_iter);
+                                            ogs_assert(ogs_yaml_iter_type(
+                                                        &dnn_iter) !=
+                                                        YAML_MAPPING_NODE);
+
+                                            do {
+                                                const char *v = NULL;
+
+                                                if (ogs_yaml_iter_type(
+                                                        &dnn_iter) ==
+                                                        YAML_SEQUENCE_NODE) {
+                                                    if (!ogs_yaml_iter_next(
+                                                                &dnn_iter))
+                                                        break;
+                                                }
+
+                                                v = ogs_yaml_iter_value(
+                                                        &dnn_iter);
+                                                if (v) {
+                                                    ogs_assert(num_of_dnn <
+                                                            OGS_MAX_NUM_OF_DNN);
+                                                    dnn[num_of_dnn++] = v;
+                                                }
+                                            } while (ogs_yaml_iter_type(
+                                                        &dnn_iter) ==
+                                                        YAML_SEQUENCE_NODE);
+                                        }
+                                    }
+
+                                    if (sst) {
+                                        int i;
+
+                                        s_nssai->sst = atoi(sst);
+                                        if (sd)
+                                            s_nssai->sd =
+                                                ogs_uint24_from_string(
+                                                        (char*)sd);
+                                        else
+                                            s_nssai->sd.v =
+                                                OGS_S_NSSAI_NO_SD_VALUE;
+
+                                        ogs_assert(num_of_dnn <
+                                                OGS_MAX_NUM_OF_DNN);
+
+                                        for (i = 0; i < num_of_dnn; i++)
+                                            smf_info->slice[num_of_slice].
+                                                dnn[i] = ogs_strdup(dnn[i]);
+
+                                        smf_info->slice[num_of_slice].
+                                            num_of_dnn = num_of_dnn;
+
+                                        num_of_slice++;
+                                    }
+                                } while (ogs_yaml_iter_type(&s_nssai_array) ==
+                                        YAML_SEQUENCE_NODE);
+
+                                smf_info->num_of_slice = num_of_slice;
+
+                            } else if (!strcmp(info_key, "tai")) {
+                                int num_of_nr_tai = 0;
+                                int num_of_nr_tai_range = 0;
+
+                                ogs_yaml_iter_t tai_array, tai_iter;
+                                ogs_yaml_iter_recurse(&info_iter, &tai_array);
+                                do {
+                                    const char *mcc = NULL, *mnc = NULL;
+                                    int num_of_tac = 0;
+                                    ogs_uint24_t tac[OGS_MAX_NUM_OF_TAI];
+                                    int num_of_range = 0;
+                                    ogs_uint24_t start[OGS_MAX_NUM_OF_TAI];
+                                    ogs_uint24_t end[OGS_MAX_NUM_OF_TAI];
+
+                                    if (ogs_yaml_iter_type(&tai_array) ==
+                                            YAML_MAPPING_NODE) {
+                                        memcpy(&tai_iter, &tai_array,
+                                                sizeof(ogs_yaml_iter_t));
+                                    } else if (ogs_yaml_iter_type(&tai_array) ==
+                                            YAML_SEQUENCE_NODE) {
+                                        if (!ogs_yaml_iter_next(&tai_array))
+                                            break;
+                                        ogs_yaml_iter_recurse(&tai_array,
+                                                &tai_iter);
+                                    } else if (ogs_yaml_iter_type(&tai_array) ==
+                                            YAML_SCALAR_NODE) {
+                                        break;
+                                    } else
+                                        ogs_assert_if_reached();
+
+                                    while (ogs_yaml_iter_next(&tai_iter)) {
+                                        const char *tai_key =
+                                            ogs_yaml_iter_key(&tai_iter);
+                                        ogs_assert(tai_key);
+                                        if (!strcmp(tai_key, "plmn_id")) {
+                                            ogs_yaml_iter_t plmn_id_iter;
+
+                                            ogs_yaml_iter_recurse(
+                                                    &tai_iter, &plmn_id_iter);
+                                            while (ogs_yaml_iter_next(
+                                                        &plmn_id_iter)) {
+                                                const char *plmn_id_key =
+                                                    ogs_yaml_iter_key(
+                                                            &plmn_id_iter);
+                                                ogs_assert(plmn_id_key);
+                                                if (!strcmp(plmn_id_key,
+                                                            "mcc")) {
+                                                    mcc = ogs_yaml_iter_value(
+                                                            &plmn_id_iter);
+                                                } else if (!strcmp(plmn_id_key,
+                                                            "mnc")) {
+                                                    mnc = ogs_yaml_iter_value(
+                                                            &plmn_id_iter);
+                                                }
+                                            }
+                                        } else if (!strcmp(tai_key, "tac")) {
+                                            ogs_yaml_iter_t tac_iter;
+                                            ogs_yaml_iter_recurse(
+                                                    &tai_iter, &tac_iter);
+                                            ogs_assert(ogs_yaml_iter_type(
+                                                        &tac_iter) !=
+                                                        YAML_MAPPING_NODE);
+
+                                            do {
+                                                const char *v = NULL;
+
+                                                ogs_assert(num_of_tac <
+                                                        OGS_MAX_NUM_OF_TAI);
+                                                if (ogs_yaml_iter_type(
+                                                        &tac_iter) ==
+                                                        YAML_SEQUENCE_NODE) {
+                                                    if (!ogs_yaml_iter_next(
+                                                            &tac_iter))
+                                                        break;
+                                                }
+
+                                                v = ogs_yaml_iter_value(
+                                                        &tac_iter);
+                                                if (v) {
+                                                    tac[num_of_tac].v = atoi(v);
+                                                    num_of_tac++;
+                                                }
+                                            } while (
+                                                ogs_yaml_iter_type(&tac_iter) ==
+                                                    YAML_SEQUENCE_NODE);
+                                        } else if (!strcmp(tai_key, "range")) {
+                                            ogs_yaml_iter_t range_iter;
+                                            ogs_yaml_iter_recurse(
+                                                    &tai_iter, &range_iter);
+                                            ogs_assert(ogs_yaml_iter_type(
+                                                        &range_iter) !=
+                                                        YAML_MAPPING_NODE);
+                                            do {
+                                                char *v = NULL;
+                                                char *low = NULL, *high = NULL;
+
+                                                if (ogs_yaml_iter_type(
+                                                        &range_iter) ==
+                                                        YAML_SEQUENCE_NODE) {
+                                                    if (!ogs_yaml_iter_next(
+                                                                &range_iter))
+                                                        break;
+                                                }
+
+                                                v = (char *)ogs_yaml_iter_value(
+                                                            &range_iter);
+                                                if (v) {
+                                                    low = strsep(&v, "-");
+                                                    if (low && strlen(low) == 0)
+                                                        low = NULL;
+
+                                                    high = v;
+                                                    if (high &&
+                                                            strlen(high) == 0)
+                                                        high = NULL;
+
+                                                    if (low && high) {
+                                                        ogs_assert(
+                                                            num_of_range <
+                                                            OGS_MAX_NUM_OF_TAI);
+                                                        start[num_of_range].v =
+                                                            atoi(low);
+                                                        end[num_of_range].v =
+                                                            atoi(high);
+                                                        num_of_range++;
+                                                    }
+                                                }
+                                            } while (
+                                                ogs_yaml_iter_type(
+                                                    &range_iter) ==
+                                                    YAML_SEQUENCE_NODE);
+
+                                        } else
+                                            ogs_warn("unknown key `%s`",
+                                                    tai_key);
+                                    }
+
+                                    if (mcc && mnc) {
+                                        int i;
+
+                                        if (num_of_range) {
+                                            ogs_assert(num_of_nr_tai_range <
+                                                    OGS_MAX_NUM_OF_TAI);
+                                            ogs_plmn_id_build(
+                                                &smf_info->nr_tai_range
+                                                    [num_of_nr_tai_range].
+                                                        plmn_id,
+                                                atoi(mcc), atoi(mnc),
+                                                strlen(mnc));
+                                            for (i = 0; i < num_of_range; i++) {
+                                                smf_info->nr_tai_range
+                                                    [num_of_nr_tai_range].
+                                                        start[i].v = start[i].v;
+                                                smf_info->nr_tai_range
+                                                    [num_of_nr_tai_range].
+                                                        end[i].v = end[i].v;
+                                            }
+                                            smf_info->nr_tai_range
+                                                [num_of_nr_tai_range].
+                                                    num_of_tac_range =
+                                                        num_of_range;
+                                            num_of_nr_tai_range++;
+                                        } else if (num_of_tac) {
+                                            for (i = 0; i < num_of_tac; i++) {
+                                                ogs_assert(num_of_nr_tai <
+                                                        OGS_MAX_NUM_OF_TAI);
+                                                ogs_plmn_id_build(
+                                                        &smf_info->nr_tai
+                                                        [num_of_nr_tai].plmn_id,
+                                                    atoi(mcc), atoi(mnc),
+                                                    strlen(mnc));
+                                                smf_info->nr_tai[num_of_nr_tai].
+                                                    tac.v = tac[i].v;
+                                                num_of_nr_tai++;
+                                            }
+                                        } else {
+                                            ogs_warn("No TAC info");
+                                        }
+                                    }
+                                } while (ogs_yaml_iter_type(&tai_array) ==
+                                        YAML_SEQUENCE_NODE);
+
+                                smf_info->num_of_nr_tai = num_of_nr_tai;
+                                smf_info->num_of_nr_tai_range =
+                                    num_of_nr_tai_range;
+                            } else
+                                ogs_warn("unknown key `%s`", info_key);
+                        }
+
+                    } while (ogs_yaml_iter_type(&info_array) ==
                             YAML_SEQUENCE_NODE);
+
                 } else if (!strcmp(smf_key, "pfcp")) {
                     /* handle config in pfcp library */
-                } else if (!strcmp(smf_key, "pdn")) {
+                } else if (!strcmp(smf_key, "subnet")) {
                     /* handle config in pfcp library */
                 } else if (!strcmp(smf_key, "sbi")) {
                     /* handle config in sbi library */
@@ -614,9 +978,10 @@ static bool compare_ue_info(ogs_pfcp_node_t *node, smf_sess_t *sess)
 
     ogs_assert(node);
     ogs_assert(sess);
+    ogs_assert(sess->session.name);
 
     for (i = 0; i < node->num_of_dnn; i++)
-        if (ogs_strcasecmp(node->dnn[i], sess->pdn.dnn) == 0) return true;
+        if (ogs_strcasecmp(node->dnn[i], sess->session.name) == 0) return true;
 
     for (i = 0; i < node->num_of_e_cell_id; i++)
         if (node->e_cell_id[i] == sess->e_cgi.cell_id) return true;
@@ -739,7 +1104,8 @@ smf_sess_t *smf_sess_add_by_apn(smf_ue_t *smf_ue, char *apn)
     ogs_pfcp_bar_new(&sess->pfcp);
 
     /* Set APN */
-    ogs_cpystrn(sess->pdn.apn, apn, OGS_MAX_APN_LEN+1);
+    sess->session.name = ogs_strdup(apn);
+    ogs_assert(sess->session.name);
 
     /* Setup Timer */
     sess->t_release_holding = ogs_timer_add(
@@ -809,7 +1175,7 @@ smf_sess_t *smf_sess_add_by_gtp_message(ogs_gtp_message_t *message)
     sess = smf_sess_find_by_apn(smf_ue, apn);
     if (sess) {
         ogs_warn("OLD Session Release [IMSI:%s,APN:%s]",
-                smf_ue->imsi_bcd, sess->pdn.apn);
+                smf_ue->imsi_bcd, sess->session.name);
         smf_sess_remove(sess);
     }
 
@@ -857,8 +1223,8 @@ smf_sess_t *smf_sess_add_by_psi(smf_ue_t *smf_ue, uint8_t psi)
     /* Set S-NSSAI */
     sess->s_nssai.sst = 0;
     sess->s_nssai.sd.v = OGS_S_NSSAI_NO_SD_VALUE;
-    sess->s_nssai.mapped_hplmn_sst = 0;
-    sess->s_nssai.mapped_hplmn_sd.v = OGS_S_NSSAI_NO_SD_VALUE;
+    sess->mapped_hplmn.sst = 0;
+    sess->mapped_hplmn.sd.v = OGS_S_NSSAI_NO_SD_VALUE;
 
     /* Set TEID & SEID */
     sess->smf_n4_teid = sess->index;
@@ -931,7 +1297,7 @@ void smf_sess_set_ue_ip(smf_sess_t *sess)
     smf_ue = sess->smf_ue;
     ogs_assert(smf_ue);
 
-    if (sess->pdn.pdn_type == OGS_PDU_SESSION_TYPE_IPV4V6) {
+    if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV4V6) {
 
         /*
          * This is the case when the HSS is set to IPv4v6 and
@@ -948,17 +1314,18 @@ void smf_sess_set_ue_ip(smf_sess_t *sess)
         ogs_pfcp_subnet_t *subnet = NULL;
         ogs_pfcp_subnet_t *subnet6 = NULL;
 
-        subnet = ogs_pfcp_find_subnet_by_dnn(AF_INET, sess->pdn.dnn);
-        subnet6 = ogs_pfcp_find_subnet_by_dnn(AF_INET6, sess->pdn.dnn);
+        ogs_assert(sess->session.name);
+        subnet = ogs_pfcp_find_subnet_by_dnn(AF_INET, sess->session.name);
+        subnet6 = ogs_pfcp_find_subnet_by_dnn(AF_INET6, sess->session.name);
 
         if (subnet != NULL && subnet6 == NULL)
-            sess->pdn.pdn_type = OGS_PDU_SESSION_TYPE_IPV4;
+            sess->session.session_type = OGS_PDU_SESSION_TYPE_IPV4;
         else if (subnet == NULL && subnet6 != NULL)
-            sess->pdn.pdn_type = OGS_PDU_SESSION_TYPE_IPV6;
+            sess->session.session_type = OGS_PDU_SESSION_TYPE_IPV6;
     }
 
-    sess->pdn.paa.pdn_type = sess->pdn.pdn_type;
-    ogs_assert(sess->pdn.pdn_type);
+    sess->session.paa.session_type = sess->session.session_type;
+    ogs_assert(sess->session.session_type);
 
     if (sess->ipv4) {
         ogs_hash_set(smf_self()->ipv4_hash,
@@ -971,45 +1338,46 @@ void smf_sess_set_ue_ip(smf_sess_t *sess)
         ogs_pfcp_ue_ip_free(sess->ipv6);
     }
 
-    if (sess->pdn.pdn_type == OGS_PDU_SESSION_TYPE_IPV4) {
-        sess->ipv4 = ogs_pfcp_ue_ip_alloc(
-                AF_INET, sess->pdn.dnn, (uint8_t *)&sess->pdn.ue_ip.addr);
+    if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV4) {
+        sess->ipv4 = ogs_pfcp_ue_ip_alloc(AF_INET,
+                sess->session.name, (uint8_t *)&sess->session.ue_ip.addr);
         ogs_assert(sess->ipv4);
-        sess->pdn.paa.addr = sess->ipv4->addr[0];
+        sess->session.paa.addr = sess->ipv4->addr[0];
         ogs_hash_set(smf_self()->ipv4_hash,
                 sess->ipv4->addr, OGS_IPV4_LEN, sess);
-    } else if (sess->pdn.pdn_type == OGS_PDU_SESSION_TYPE_IPV6) {
+    } else if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV6) {
         sess->ipv6 = ogs_pfcp_ue_ip_alloc(
-                AF_INET6, sess->pdn.dnn, sess->pdn.ue_ip.addr6);
+                AF_INET6, sess->session.name, sess->session.ue_ip.addr6);
         ogs_assert(sess->ipv6);
 
         subnet6 = sess->ipv6->subnet;
         ogs_assert(subnet6);
 
-        sess->pdn.paa.len = subnet6->prefixlen;
-        memcpy(sess->pdn.paa.addr6, sess->ipv6->addr, OGS_IPV6_LEN);
+        sess->session.paa.len = subnet6->prefixlen;
+        memcpy(sess->session.paa.addr6, sess->ipv6->addr, OGS_IPV6_LEN);
         ogs_hash_set(smf_self()->ipv6_hash,
                 sess->ipv6->addr, OGS_IPV6_LEN, sess);
-    } else if (sess->pdn.pdn_type == OGS_PDU_SESSION_TYPE_IPV4V6) {
-        sess->ipv4 = ogs_pfcp_ue_ip_alloc(
-                AF_INET, sess->pdn.dnn, (uint8_t *)&sess->pdn.ue_ip.addr);
+    } else if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV4V6) {
+        sess->ipv4 = ogs_pfcp_ue_ip_alloc(AF_INET,
+                sess->session.name, (uint8_t *)&sess->session.ue_ip.addr);
         ogs_assert(sess->ipv4);
         sess->ipv6 = ogs_pfcp_ue_ip_alloc(
-                AF_INET6, sess->pdn.dnn, sess->pdn.ue_ip.addr6);
+                AF_INET6, sess->session.name, sess->session.ue_ip.addr6);
         ogs_assert(sess->ipv6);
 
         subnet6 = sess->ipv6->subnet;
         ogs_assert(subnet6);
 
-        sess->pdn.paa.both.addr = sess->ipv4->addr[0];
-        sess->pdn.paa.both.len = subnet6->prefixlen;
-        memcpy(sess->pdn.paa.both.addr6, sess->ipv6->addr, OGS_IPV6_LEN);
+        sess->session.paa.both.addr = sess->ipv4->addr[0];
+        sess->session.paa.both.len = subnet6->prefixlen;
+        memcpy(sess->session.paa.both.addr6, sess->ipv6->addr, OGS_IPV6_LEN);
         ogs_hash_set(smf_self()->ipv4_hash,
                 sess->ipv4->addr, OGS_IPV4_LEN, sess);
         ogs_hash_set(smf_self()->ipv6_hash,
                 sess->ipv6->addr, OGS_IPV6_LEN, sess);
     } else {
-        ogs_fatal("Invalid sess->pdn.pdn_type[%d]", sess->pdn.pdn_type);
+        ogs_fatal("Invalid sess->session.session_type[%d]",
+                sess->session.session_type);
         ogs_assert_if_reached();
     }
 }
@@ -1114,7 +1482,7 @@ void smf_sess_remove(smf_sess_t *sess)
    
     ogs_info("Removed Session: UE IMSI:[%s] DNN:[%s:%d] IPv4:[%s] IPv6:[%s]",
             smf_ue->supi ? smf_ue->supi : smf_ue->imsi_bcd,
-            sess->pdn.dnn, sess->psi,
+            sess->session.name, sess->psi,
             sess->ipv4 ? OGS_INET_NTOP(&sess->ipv4->addr, buf1) : "",
             sess->ipv6 ? OGS_INET6_NTOP(&sess->ipv6->addr, buf2) : "");
 
@@ -1163,8 +1531,8 @@ void smf_sess_remove(smf_sess_t *sess)
     if (sess->policy_association_id)
         ogs_free(sess->policy_association_id);
 
-    if (sess->dnn)
-        ogs_free(sess->dnn);
+    if (sess->session.name)
+        ogs_free(sess->session.name);
 
     if (sess->upf_n3_addr)
         ogs_freeaddrinfo(sess->upf_n3_addr);
@@ -1231,7 +1599,7 @@ smf_sess_t *smf_sess_find_by_apn(smf_ue_t *smf_ue, char *apn)
     ogs_assert(apn);
 
     ogs_list_for_each(&smf_ue->sess_list, sess) {
-        if (!ogs_strcasecmp(sess->pdn.apn, apn))
+        if (!ogs_strcasecmp(sess->session.name, apn))
             return sess;
     }
 
@@ -1311,8 +1679,8 @@ smf_bearer_t *smf_qos_flow_add(smf_sess_t *sess)
 
     dl_pdr->src_if = OGS_PFCP_INTERFACE_CORE;
 
-    if (strlen(sess->pdn.apn))
-        dl_pdr->apn = ogs_strdup(sess->pdn.apn);
+    if (sess->session.name)
+        dl_pdr->apn = ogs_strdup(sess->session.name);
 
     ul_pdr = ogs_pfcp_pdr_add(&sess->pfcp);
     ogs_assert(ul_pdr);
@@ -1320,17 +1688,17 @@ smf_bearer_t *smf_qos_flow_add(smf_sess_t *sess)
 
     ul_pdr->src_if = OGS_PFCP_INTERFACE_ACCESS;
 
-    if (strlen(sess->pdn.apn))
-        ul_pdr->apn = ogs_strdup(sess->pdn.apn);
+    if (sess->session.name)
+        ul_pdr->apn = ogs_strdup(sess->session.name);
 
     ul_pdr->outer_header_removal_len = 1;
-    if (sess->pdn.pdn_type == OGS_GTP_PDN_TYPE_IPV4) {
+    if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV4) {
         ul_pdr->outer_header_removal.description =
             OGS_PFCP_OUTER_HEADER_REMOVAL_GTPU_UDP_IPV4;
-    } else if (sess->pdn.pdn_type == OGS_GTP_PDN_TYPE_IPV6) {
+    } else if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV6) {
         ul_pdr->outer_header_removal.description =
             OGS_PFCP_OUTER_HEADER_REMOVAL_GTPU_UDP_IPV6;
-    } else if (sess->pdn.pdn_type == OGS_GTP_PDN_TYPE_IPV4V6) {
+    } else if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV4V6) {
         ul_pdr->outer_header_removal.description =
             OGS_PFCP_OUTER_HEADER_REMOVAL_GTPU_UDP_IP;
     } else
@@ -1395,13 +1763,13 @@ void smf_sess_create_indirect_data_forwarding(smf_sess_t *sess)
         pdr->src_if = OGS_PFCP_INTERFACE_ACCESS;
 
         pdr->outer_header_removal_len = 1;
-        if (sess->pdn.pdn_type == OGS_GTP_PDN_TYPE_IPV4) {
+        if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV4) {
             pdr->outer_header_removal.description =
                 OGS_PFCP_OUTER_HEADER_REMOVAL_GTPU_UDP_IPV4;
-        } else if (sess->pdn.pdn_type == OGS_GTP_PDN_TYPE_IPV6) {
+        } else if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV6) {
             pdr->outer_header_removal.description =
                 OGS_PFCP_OUTER_HEADER_REMOVAL_GTPU_UDP_IPV6;
-        } else if (sess->pdn.pdn_type == OGS_GTP_PDN_TYPE_IPV4V6) {
+        } else if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV4V6) {
             pdr->outer_header_removal.description =
                 OGS_PFCP_OUTER_HEADER_REMOVAL_GTPU_UDP_IP;
         } else
@@ -1548,8 +1916,8 @@ smf_bearer_t *smf_bearer_add(smf_sess_t *sess)
 
     dl_pdr->src_if = OGS_PFCP_INTERFACE_CORE;
 
-    if (strlen(sess->pdn.apn))
-        dl_pdr->apn = ogs_strdup(sess->pdn.apn);
+    ogs_assert(sess->session.name);
+    dl_pdr->apn = ogs_strdup(sess->session.name);
 
     ul_pdr = ogs_pfcp_pdr_add(&sess->pfcp);
     ogs_assert(ul_pdr);
@@ -1557,17 +1925,17 @@ smf_bearer_t *smf_bearer_add(smf_sess_t *sess)
 
     ul_pdr->src_if = OGS_PFCP_INTERFACE_ACCESS;
 
-    if (strlen(sess->pdn.apn))
-        ul_pdr->apn = ogs_strdup(sess->pdn.apn);
+    ogs_assert(sess->session.name);
+    ul_pdr->apn = ogs_strdup(sess->session.name);
 
     ul_pdr->outer_header_removal_len = 1;
-    if (sess->pdn.pdn_type == OGS_GTP_PDN_TYPE_IPV4) {
+    if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV4) {
         ul_pdr->outer_header_removal.description =
             OGS_PFCP_OUTER_HEADER_REMOVAL_GTPU_UDP_IPV4;
-    } else if (sess->pdn.pdn_type == OGS_GTP_PDN_TYPE_IPV6) {
+    } else if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV6) {
         ul_pdr->outer_header_removal.description =
             OGS_PFCP_OUTER_HEADER_REMOVAL_GTPU_UDP_IPV6;
-    } else if (sess->pdn.pdn_type == OGS_GTP_PDN_TYPE_IPV4V6) {
+    } else if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV4V6) {
         ul_pdr->outer_header_removal.description =
             OGS_PFCP_OUTER_HEADER_REMOVAL_GTPU_UDP_IP;
     } else
@@ -1600,7 +1968,7 @@ smf_bearer_t *smf_bearer_add(smf_sess_t *sess)
     } else {
         resource = ogs_pfcp_gtpu_resource_find(
                 &sess->pfcp_node->gtpu_resource_list,
-                sess->pdn.apn, OGS_PFCP_INTERFACE_ACCESS);
+                sess->session.name, OGS_PFCP_INTERFACE_ACCESS);
         if (resource) {
             ogs_pfcp_user_plane_ip_resource_info_to_sockaddr(&resource->info,
                 &bearer->pgw_s5u_addr, &bearer->pgw_s5u_addr6);
@@ -1736,7 +2104,7 @@ smf_bearer_t *smf_bearer_find_by_pcc_rule_name(
 }
 
 smf_bearer_t *smf_bearer_find_by_qci_arp(smf_sess_t *sess, 
-                                uint8_t qci,
+                                uint8_t qos_index,
                                 uint8_t priority_level,
                                 uint8_t pre_emption_capability,
                                 uint8_t pre_emption_vulnerability)
@@ -1748,18 +2116,18 @@ smf_bearer_t *smf_bearer_find_by_qci_arp(smf_sess_t *sess,
     bearer = smf_default_bearer_in_sess(sess);
     if (!bearer) return NULL;
 
-    if (sess->pdn.qos.qci == qci &&
-        sess->pdn.qos.arp.priority_level == priority_level &&
-        sess->pdn.qos.arp.pre_emption_capability == 
+    if (sess->session.qos.index == qos_index &&
+        sess->session.qos.arp.priority_level == priority_level &&
+        sess->session.qos.arp.pre_emption_capability == 
             pre_emption_capability &&
-        sess->pdn.qos.arp.pre_emption_vulnerability == 
+        sess->session.qos.arp.pre_emption_vulnerability == 
             pre_emption_vulnerability) {
         return bearer;
     }
 
     bearer = smf_bearer_next(bearer);
     while (bearer) {
-        if (bearer->qos.qci == qci &&
+        if (bearer->qos.index == qos_index &&
             bearer->qos.arp.priority_level == priority_level &&
             bearer->qos.arp.pre_emption_capability == 
                 pre_emption_capability &&
@@ -1844,6 +2212,17 @@ smf_bearer_t *smf_bearer_cycle(smf_bearer_t *bearer)
 smf_bearer_t *smf_qos_flow_cycle(smf_bearer_t *qos_flow)
 {
     return ogs_pool_cycle(&smf_bearer_pool, qos_flow);
+}
+
+void smf_sess_select_nf(smf_sess_t *sess, OpenAPI_nf_type_e nf_type)
+{
+    ogs_assert(sess);
+    ogs_assert(nf_type);
+
+    if (nf_type == OpenAPI_nf_type_NRF)
+        ogs_sbi_select_nrf(&sess->sbi, smf_nf_state_registered);
+    else
+        ogs_sbi_select_first_nf(&sess->sbi, nf_type, smf_nf_state_registered);
 }
 
 smf_pf_t *smf_pf_add(smf_bearer_t *bearer)
