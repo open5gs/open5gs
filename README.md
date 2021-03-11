@@ -26,17 +26,23 @@ If you find Open5GS useful for work, please consider supporting this Open Source
     <tr>
       <td align="center" valign="middle">
         <a href="https://www.auctionsoftware.com/" target="_blank">
-          <img width="222px" src="https://open5gs.org/assets/img/asLogonew.png">
+          <img width="160px" src="https://open5gs.org/assets/img/asLogonew.png">
         </a>
       </td>
       <td align="center" valign="middle">
         <a href="https://www.wearetriple.com/" target="_blank">
-          <img width="222px" src="https://open5gs.org/assets/img/triple_logo.png">
+          <img width="160px" src="https://open5gs.org/assets/img/triple_logo.png">
         </a>
       </td>
       <td align="center" valign="middle">
         <a href="https://www.accessparks.com/" target="_blank">
-          <img width="222px" src="https://open5gs.org/assets/img/AccessParks.png">
+          <img width="160px" src="https://open5gs.org/assets/img/AccessParks.png">
+        </a>
+      </td>
+      <td width="20px"></td>
+      <td align="center" valign="middle">
+        <a href="https://skylarkwireless.com/" target="_blank">
+          <img width="140px" src="https://open5gs.org/assets/img/SkylarkWireless-420x78-Web2-R.png">
         </a>
       </td>
     </tr>
