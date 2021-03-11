@@ -11,6 +11,7 @@ If you find Open5GS useful for work, please consider supporting this Open Source
     <img width="260px" src="https://open5gs.org/assets/img/nextepc_logo.jpg">
   </a>
       </td>
+      <td width="20px"></td>
       <td align="center" valign="middle">
   <a href="https://sdr.eee.strath.ac.uk/" target="_blank">
     <img width="260px" src="https://open5gs.org/assets/img/strath.png">
@@ -34,13 +35,13 @@ If you find Open5GS useful for work, please consider supporting this Open Source
           <img width="222px" src="https://open5gs.org/assets/img/triple_logo.png">
         </a>
       </td>
-    </tr>
-    <tr>
       <td align="center" valign="middle">
         <a href="https://www.accessparks.com/" target="_blank">
           <img width="222px" src="https://open5gs.org/assets/img/AccessParks.png">
         </a>
       </td>
+    </tr>
+    <tr>
       <td align="center" valign="middle">
         <a href="https://skylarkwireless.com/" target="_blank">
           <img width="222px" src="https://open5gs.org/assets/img/SkylarkWireless-420x78-Web2-R.png">
