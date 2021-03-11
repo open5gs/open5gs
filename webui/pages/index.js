@@ -9,6 +9,7 @@ import App from 'containers/App';
 
 const Restricted = (Component) => {
   const checkAuth = (props) => {
+  	console.log("auth props: %o", props);
     return props.isLoggedIn ? <Component {...props} /> : <Auth/>
   }
 
