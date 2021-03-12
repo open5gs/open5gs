@@ -3,6 +3,9 @@ const router = express.Router();
 
 const passport = require('passport');
 
+const jwt = require('jsonwebtoken');
+const secret = process.env.JWT_SECRET_KEY || 'change-me';
+
 router.get('/csrf', (req, res) => {
   return res.json({csrfToken: res.locals._csrf});
 })
@@ -14,6 +17,9 @@ router.get('/session', (req, res) => {
   }
   if (req.user) {
     session.user = req.user
+    const body = { '_id': req.user._id, 'username': req.user.username, 'roles':req.user.roles };
+    const token = jwt.sign({ user: body }, secret);
+    session.authToken = token
   }
 
   return res.json(session)

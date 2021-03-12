@@ -21,6 +21,7 @@ const MongoStore = require('connect-mongo')(session);
 
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
+
 const csrf = require('lusca').csrf();
 const secret = process.env.SECRET_KEY || 'change-me';
 
