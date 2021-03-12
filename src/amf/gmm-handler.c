@@ -780,6 +780,15 @@ int gmm_handle_ul_nas_transport(amf_ue_t *amf_ue,
             }
 
             if (!selected_slice) {
+                int i;
+                for (i = 0; i < amf_ue->num_of_slice; i++) {
+                    if (amf_ue->slice[i].default_indicator == true) {
+                        selected_slice = &amf_ue->slice[i];
+                    }
+                }
+            }
+
+            if (!selected_slice) {
                 ogs_error("[%s] No S-NSSAI", amf_ue->supi);
                 nas_5gs_send_gmm_status(amf_ue,
                     OGS_5GMM_CAUSE_INSUFFICIENT_RESOURCES_FOR_SPECIFIC_SLICE);
