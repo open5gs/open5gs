@@ -326,6 +326,7 @@ ogs_pkbuf_t *ngap_build_downlink_nas_transport(
 
         AllowedNSSAI = &ie->value.choice.AllowedNSSAI;
 
+        ogs_assert(amf_ue->allowed_nssai.num_of_s_nssai);
         for (i = 0; i < amf_ue->allowed_nssai.num_of_s_nssai; i++) {
             NGAP_AllowedNSSAI_Item_t *NGAP_AllowedNSSAI_Item = NULL;
             NGAP_S_NSSAI_t *s_NSSAI = NULL;
@@ -532,6 +533,7 @@ ogs_pkbuf_t *ngap_ue_build_initial_context_setup_request(
     ogs_ngap_uint8_to_AMFPointer(ogs_amf_pointer(&amf_ue->guami->amf_id),
             &GUAMI->aMFPointer);
 
+    ogs_assert(amf_ue->allowed_nssai.num_of_s_nssai);
     for (i = 0; i < amf_ue->allowed_nssai.num_of_s_nssai; i++) {
         NGAP_AllowedNSSAI_Item_t *NGAP_AllowedNSSAI_Item = NULL;
         NGAP_S_NSSAI_t *s_NSSAI = NULL;
@@ -845,6 +847,7 @@ ogs_pkbuf_t *ngap_sess_build_initial_context_setup_request(
     ogs_ngap_uint8_to_AMFPointer(ogs_amf_pointer(&amf_ue->guami->amf_id),
             &GUAMI->aMFPointer);
 
+    ogs_assert(amf_ue->allowed_nssai.num_of_s_nssai);
     for (i = 0; i < amf_ue->allowed_nssai.num_of_s_nssai; i++) {
         NGAP_AllowedNSSAI_Item_t *NGAP_AllowedNSSAI_Item = NULL;
         NGAP_S_NSSAI_t *s_NSSAI = NULL;
@@ -1857,6 +1860,7 @@ ogs_pkbuf_t *ngap_build_path_switch_ack(amf_ue_t *amf_ue)
 
     AllowedNSSAI = &ie->value.choice.AllowedNSSAI;
 
+    ogs_assert(amf_ue->allowed_nssai.num_of_s_nssai);
     for (i = 0; i < amf_ue->allowed_nssai.num_of_s_nssai; i++) {
         NGAP_AllowedNSSAI_Item_t *NGAP_AllowedNSSAI_Item = NULL;
         NGAP_S_NSSAI_t *s_NSSAI = NULL;
@@ -2103,6 +2107,7 @@ ogs_pkbuf_t *ngap_build_handover_request(ran_ue_t *target_ue)
 
     AllowedNSSAI = &ie->value.choice.AllowedNSSAI;
 
+    ogs_assert(amf_ue->allowed_nssai.num_of_s_nssai);
     for (i = 0; i < amf_ue->allowed_nssai.num_of_s_nssai; i++) {
         NGAP_AllowedNSSAI_Item_t *NGAP_AllowedNSSAI_Item = NULL;
         NGAP_S_NSSAI_t *s_NSSAI = NULL;

@@ -134,9 +134,25 @@ int amf_nudm_sdm_handle_provisioned(
             }
         }
 
-        if (amf_ue->requested_nssai.num_of_s_nssai) {
-            amf_ue->allowed_nssai.num_of_s_nssai = 0;
-            amf_ue->rejected_nssai.num_of_s_nssai = 0;
+        amf_ue->allowed_nssai.num_of_s_nssai = 0;
+        amf_ue->rejected_nssai.num_of_s_nssai = 0;
+
+        if (!amf_ue->requested_nssai.num_of_s_nssai) {
+
+            for (i = 0; i < amf_ue->num_of_slice; i++) {
+                ogs_slice_data_t *slice = &amf_ue->slice[i];
+                ogs_nas_s_nssai_ie_t *allowed =
+                    &amf_ue->allowed_nssai.s_nssai[i];
+
+                allowed->sst = slice->s_nssai.sst;
+                allowed->sd.v = slice->s_nssai.sd.v;
+                allowed->mapped_hplmn_sst = 0;
+                allowed->mapped_hplmn_sd.v = OGS_S_NSSAI_NO_SD_VALUE;
+            }
+            amf_ue->allowed_nssai.num_of_s_nssai = amf_ue->num_of_slice;
+
+        } else {
+
             for (i = 0; i < amf_ue->requested_nssai.num_of_s_nssai; i++) {
                 ogs_slice_data_t *slice = NULL;
                 ogs_nas_s_nssai_ie_t *requested =
@@ -172,23 +188,22 @@ int amf_nudm_sdm_handle_provisioned(
 
                     amf_ue->rejected_nssai.num_of_s_nssai++;
                 }
-
             }
+        }
 
-            if (amf_ue->allowed_nssai.num_of_s_nssai) {
-                amf_ue->allowed_nssai_present = true;
-            } else {
-                ogs_error("CHECK DATABASE: Cannot find Requested NSSAI");
-                for (i = 0; i < amf_ue->requested_nssai.num_of_s_nssai; i++) {
-                    ogs_error("    PLMN_ID[MCC:%d MNC:%d]",
-                            ogs_plmn_id_mcc(&amf_ue->nr_tai.plmn_id),
-                            ogs_plmn_id_mnc(&amf_ue->nr_tai.plmn_id));
-                    ogs_error("    S_NSSAI[SST:%d SD:0x%x]",
-                            amf_ue->requested_nssai.s_nssai[i].sst,
-                            amf_ue->requested_nssai.s_nssai[i].sd.v);
-                }
-                return OGS_ERROR;
+        if (amf_ue->allowed_nssai.num_of_s_nssai) {
+            amf_ue->allowed_nssai_present = true;
+        } else {
+            ogs_error("CHECK DATABASE: Cannot create Allowed-NSSAI");
+            for (i = 0; i < amf_ue->requested_nssai.num_of_s_nssai; i++) {
+                ogs_error("    PLMN_ID[MCC:%d MNC:%d]",
+                        ogs_plmn_id_mcc(&amf_ue->nr_tai.plmn_id),
+                        ogs_plmn_id_mnc(&amf_ue->nr_tai.plmn_id));
+                ogs_error("    S_NSSAI[SST:%d SD:0x%x]",
+                        amf_ue->requested_nssai.s_nssai[i].sst,
+                        amf_ue->requested_nssai.s_nssai[i].sd.v);
             }
+            return OGS_ERROR;
         }
 
         amf_ue_sbi_discover_and_send(OpenAPI_nf_type_UDM, amf_ue,
