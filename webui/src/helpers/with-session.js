@@ -12,7 +12,7 @@ export default (Component) => class extends React.Component {
 
     const sessionData = await session.getSession();
     let isLoggedIn = false;
-    if (sessionData.user && sessionData.user.username && sessionData.authToken) {
+    if (sessionData.user && sessionData.user.username) {
       isLoggedIn = true;
     }
 

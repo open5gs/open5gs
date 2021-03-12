@@ -228,7 +228,7 @@ if [[ $RC != 0 ]]; then
 fi
 
 print_status "Build the Open5GS WebUI..."
-exec_cmd "cd ./${PACKAGE}-${VERSION}/webui && npm install && npm run build"
+exec_cmd "cd ./${PACKAGE}-${VERSION}/webui && npm ci --no-optional && npm run build"
 
 print_status "Install the Open5GS WebUI..."
 exec_cmd "mv ./${PACKAGE}-${VERSION}/webui /usr/lib/node_modules/${PACKAGE}"

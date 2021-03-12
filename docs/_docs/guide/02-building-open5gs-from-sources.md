@@ -383,7 +383,7 @@ Install the dependencies to run WebUI
 
 ```bash
 $ cd webui
-$ npm install
+$ npm ci --no-optional
 ```
 
 The WebUI runs as an [npm](https://www.npmjs.com/) script.
