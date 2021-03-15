@@ -1,8 +1,20 @@
 open5gs (2.2.1) unstable; urgency=medium
 
-  * Support IPv6
+  * UE IPv6 Support
 
- -- Sukchan Lee <acetcom@gmail.com>  Mon, 15 Mar 2021 09:36:24 +0900
+ -- Sukchan Lee <acetcom@gmail.com>  Mon, 15 Mar 2021 10:06:16 +0900
+
+open5gs (2.2.1~bionic) bionic; urgency=medium
+
+  * UE IPv6 Support
+
+ -- Sukchan Lee <acetcom@gmail.com>  Mon, 15 Mar 2021 10:05:00 +0900
+
+open5gs (2.2.1~focal) focal; urgency=medium
+
+  * UE IPv6 Support
+
+ -- Sukchan Lee <acetcom@gmail.com>  Mon, 15 Mar 2021 10:03:39 +0900
 
 open5gs (2.2.0) unstable; urgency=medium
 
