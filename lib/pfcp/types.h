@@ -486,8 +486,6 @@ ED5(uint8_t     spare1:4;,
     uint8_t     ipv6:1;,
     uint8_t     ipv4:1;)
     union {
-#define OGS_PFCP_DEFAULT_CHOOSE_ID 5
-#define OGS_PFCP_INDIRECT_DATA_FORWARDING_CHOOSE_ID 10
         struct {
         ED4(uint8_t choose_id;,
             uint8_t spare2;,
@@ -538,7 +536,11 @@ ED5(uint8_t     spare1:4;,
  * ignore the interface identifier part.
  */
 typedef struct ogs_pfcp_ue_ip_addr_s {
-ED4(uint8_t     spare:5;,
+ED8(uint8_t     spare:1;,
+    uint8_t     ip6pl:1;,
+    uint8_t     chv6:1;,
+    uint8_t     chv4:1;,
+    uint8_t     ipv6d:1;,
 #define OGS_PFCP_UE_IP_SRC     0
 #define OGS_PFCP_UE_IP_DST     1
     uint8_t     sd:1;,
@@ -629,7 +631,8 @@ ED8(uint8_t     stag:1;,
     };
 } __attribute__ ((packed)) ogs_pfcp_outer_header_creation_t;
 
-/* 8.2.82 User Plane IP Resource Information
+/*
+ * 8.2.82 User Plane IP Resource Information
  *
  * The following flags are coded within Octet 5:
  * - Bit 1 – V4: If this bit is set to "1", then the IPv4 address field
@@ -676,44 +679,12 @@ ED8(uint8_t     stag:1;,
  * identifying the Source Interface with which the IP address or TEID Range
  * is associated.
  */
-
-/* Flags(1) + TEID Range(1) + IPV4(4) + IPV6(16) + Source Interface(1) = 23 */
-#define OGS_PFCP_MAX_USER_PLANE_IP_RESOURCE_INFO_LEN \
-    (23 + OGS_MAX_APN_LEN)
-typedef struct ogs_pfcp_user_plane_ip_resource_info_s {
-    union {
-        struct {
-ED6(uint8_t     spare:1;,
-    uint8_t     assosi:1;,
-    uint8_t     assoni:1;,
-    uint8_t     teidri:3;,
-    uint8_t     v6:1;,
-    uint8_t     v4:1;)
-        };
-        uint8_t flags;
-    };
-
-    /*
-     * OGS_PFCP-GTPU-TEID   = INDEX              | TEID_RANGE
-     * INDEX                = OGS_PFCP-GTPU-TEID & ~TEID_RANGE
-     */
-#define OGS_PFCP_GTPU_TEID_TO_INDEX(__tEID, __iND, __rANGE) \
-    (__tEID & ~(__rANGE << (32 - __iND)))
-#define OGS_PFCP_GTPU_INDEX_TO_TEID(__iNDEX, __iND, __rANGE) \
-    (__iNDEX | (__rANGE << (32 - __iND)))
-    uint8_t     teid_range;
-    uint32_t    addr;
-    uint8_t     addr6[OGS_IPV6_LEN];
-    char        network_instance[OGS_MAX_APN_LEN];
-    ogs_pfcp_interface_t source_interface;
-} __attribute__ ((packed)) ogs_pfcp_user_plane_ip_resource_info_t;
-
 int16_t ogs_pfcp_build_user_plane_ip_resource_info(
         ogs_tlv_octet_t *octet,
-        ogs_pfcp_user_plane_ip_resource_info_t *info,
+        ogs_user_plane_ip_resource_info_t *info,
         void *data, int data_len);
 int16_t ogs_pfcp_parse_user_plane_ip_resource_info(
-        ogs_pfcp_user_plane_ip_resource_info_t *info,
+        ogs_user_plane_ip_resource_info_t *info,
         ogs_tlv_octet_t *octet);
 
 /*

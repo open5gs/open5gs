@@ -45,9 +45,6 @@
 static ogs_pkbuf_pool_t *packet_pool = NULL;
 
 static void upf_gtp_handle_multicast(ogs_pkbuf_t *recvbuf);
-static int upf_gtp_handle_slaac(upf_sess_t *sess, ogs_pkbuf_t *recvbuf);
-static int upf_gtp_send_router_advertisement(
-        upf_sess_t *sess, uint8_t *ip6_dst);
 
 static void _gtpv1_tun_recv_cb(short when, ogs_socket_t fd, void *data)
 {
@@ -55,6 +52,8 @@ static void _gtpv1_tun_recv_cb(short when, ogs_socket_t fd, void *data)
 
     upf_sess_t *sess = NULL;
     ogs_pfcp_pdr_t *pdr = NULL;
+    ogs_pfcp_pdr_t *fallback_pdr = NULL;
+    ogs_pfcp_far_t *far = NULL;
     ogs_pfcp_user_plane_report_t report;
 
     recvbuf = ogs_tun_read(fd, packet_pool);
@@ -63,29 +62,67 @@ static void _gtpv1_tun_recv_cb(short when, ogs_socket_t fd, void *data)
         return;
     }
 
-    /* Find the PDR by packet filter */
-    pdr = upf_pdr_find_by_packet(recvbuf);
-    if (pdr) {
-        /* Unicast */
-        ogs_pfcp_up_handle_pdr(pdr, recvbuf, &report);
+    sess = upf_sess_find_by_ue_ip_address(recvbuf);
+    if (!sess)
+        goto cleanup;
 
-        if (report.type.downlink_data_report) {
-            ogs_assert(pdr->sess);
-            sess = UPF_SESS(pdr->sess);
-            ogs_assert(sess);
+    ogs_list_for_each(&sess->pfcp.pdr_list, pdr) {
+        far = pdr->far;
+        ogs_assert(far);
 
-            report.downlink_data.pdr_id = pdr->id;
-            if (pdr->qer && pdr->qer->qfi)
-                report.downlink_data.qfi = pdr->qer->qfi; /* for 5GC */
+        /* Check if PDR is Downlink */
+        if (pdr->src_if != OGS_PFCP_INTERFACE_CORE)
+            continue;
 
-            upf_pfcp_send_session_report_request(sess, &report);
-        }
-    } else {
+        /* Save the Fallback PDR : Lowest precedence downlink PDR */
+        fallback_pdr = pdr;
+
+        /* Check if FAR is Downlink */
+        if (far->dst_if != OGS_PFCP_INTERFACE_ACCESS)
+            continue;
+
+        /* Check if Outer header creation */
+        if (far->outer_header_creation.ip4 == 0 &&
+            far->outer_header_creation.ip6 == 0 &&
+            far->outer_header_creation.udp4 == 0 &&
+            far->outer_header_creation.udp6 == 0 &&
+            far->outer_header_creation.gtpu4 == 0 &&
+            far->outer_header_creation.gtpu6 == 0)
+            continue;
+
+        /* Check if Rule List in PDR */
+        if (ogs_list_first(&pdr->rule_list) &&
+            ogs_pfcp_pdr_rule_find_by_packet(pdr, recvbuf) == NULL)
+            continue;
+
+        break;
+    }
+
+    if (!pdr)
+        pdr = fallback_pdr;
+
+    if (!pdr) {
         if (ogs_app()->parameter.multicast) {
             upf_gtp_handle_multicast(recvbuf);
         }
+        goto cleanup;
     }
 
+    ogs_pfcp_up_handle_pdr(pdr, recvbuf, &report);
+
+    if (report.type.downlink_data_report) {
+        ogs_assert(pdr->sess);
+        sess = UPF_SESS(pdr->sess);
+        ogs_assert(sess);
+
+        report.downlink_data.pdr_id = pdr->id;
+        if (pdr->qer && pdr->qer->qfi)
+            report.downlink_data.qfi = pdr->qer->qfi; /* for 5GC */
+
+        upf_pfcp_send_session_report_request(sess, &report);
+    }
+
+cleanup:
     ogs_pkbuf_free(recvbuf);
 }
 
@@ -215,46 +252,78 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
         }
 
     } else if (gtp_h->type == OGS_GTPU_MSGTYPE_GPDU) {
-        int rv;
-
         struct ip *ip_h = NULL;
+        ogs_pfcp_object_t *pfcp_object = NULL;
+        ogs_pfcp_sess_t *pfcp_sess = NULL;
         ogs_pfcp_pdr_t *pdr = NULL;
         ogs_pfcp_far_t *far = NULL;
 
-        upf_sess_t *sess = NULL;
         ogs_pfcp_subnet_t *subnet = NULL;
         ogs_pfcp_dev_t *dev = NULL;
 
         ip_h = (struct ip *)pkbuf->data;
         ogs_assert(ip_h);
 
-        pdr = ogs_pfcp_pdr_find_by_teid_and_qfi(teid, qfi);
-        if (!pdr) {
+        pfcp_object = ogs_pfcp_object_find_by_teid(teid);
+        if (!pfcp_object) {
             /* TODO : Send Error Indication */
             goto cleanup;
         }
 
+        switch(pfcp_object->type) {
+        case OGS_PFCP_OBJ_PDR_TYPE:
+            pdr = (ogs_pfcp_pdr_t *)pfcp_object;
+            ogs_assert(pdr);
+            break;
+        case OGS_PFCP_OBJ_SESS_TYPE:
+            pfcp_sess = (ogs_pfcp_sess_t *)pfcp_object;
+            ogs_assert(pfcp_sess);
+
+            ogs_list_for_each(&pfcp_sess->pdr_list, pdr) {
+
+                /* Check if Source Interface */
+                if (pdr->src_if != OGS_PFCP_INTERFACE_ACCESS &&
+                    pdr->src_if != OGS_PFCP_INTERFACE_CP_FUNCTION)
+                    continue;
+
+                /* Check if TEID */
+                if (teid != pdr->f_teid.teid)
+                    continue;
+
+                /* Check if QFI */
+                if (qfi && pdr->qfi != qfi)
+                    continue;
+
+                /* Check if Rule List in PDR */
+                if (ogs_list_first(&pdr->rule_list) &&
+                    ogs_pfcp_pdr_rule_find_by_packet(pdr, pkbuf) == NULL)
+                    continue;
+
+                break;
+            }
+
+            if (!pdr) {
+                /* TODO : Send Error Indication */
+                goto cleanup;
+            }
+
+            break;
+        default:
+            ogs_fatal("Unknown type [%d]", pfcp_object->type);
+            ogs_assert_if_reached();
+        }
+
+        ogs_assert(pdr);
         ogs_assert(pdr->sess);
+        ogs_assert(pdr->sess->obj.type == OGS_PFCP_OBJ_SESS_TYPE);
+
         sess = UPF_SESS(pdr->sess);
         ogs_assert(sess);
 
         far = pdr->far;
         ogs_assert(far);
 
-        if (far->dst_if == OGS_PFCP_INTERFACE_ACCESS) {
-            ogs_pfcp_up_handle_pdr(pdr, pkbuf, &report);
-
-            if (report.type.downlink_data_report) {
-                ogs_error("Indirect Data Fowarding Buffered");
-
-                report.downlink_data.pdr_id = pdr->id;
-                if (pdr->qer && pdr->qer->qfi)
-                    report.downlink_data.qfi = pdr->qer->qfi; /* for 5GC */
-
-                upf_pfcp_send_session_report_request(sess, &report);
-            }
-
-        } else if (far->dst_if == OGS_PFCP_INTERFACE_CORE) {
+        if (far->dst_if == OGS_PFCP_INTERFACE_CORE) {
             if (ip_h->ip_v == 4 && sess->ipv4)
                 subnet = sess->ipv4->subnet;
             else if (ip_h->ip_v == 6 && sess->ipv6)
@@ -269,19 +338,41 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
                 goto cleanup;
             }
 
-            /* Check IPv6 */
-            if (ogs_app()->parameter.no_slaac == 0 && ip_h->ip_v == 6) {
-                rv = upf_gtp_handle_slaac(sess, pkbuf);
-                if (rv == UPF_GTP_HANDLED) {
-                    goto cleanup;
-                }
-                ogs_assert(rv == OGS_OK);
-            }
-
             dev = subnet->dev;
             ogs_assert(dev);
             if (ogs_tun_write(dev->fd, pkbuf) != OGS_OK)
                 ogs_warn("ogs_tun_write() failed");
+
+        } else if (far->dst_if == OGS_PFCP_INTERFACE_ACCESS) {
+            ogs_pfcp_up_handle_pdr(pdr, pkbuf, &report);
+
+            if (report.type.downlink_data_report) {
+                ogs_error("Indirect Data Fowarding Buffered");
+
+                report.downlink_data.pdr_id = pdr->id;
+                if (pdr->qer && pdr->qer->qfi)
+                    report.downlink_data.qfi = pdr->qer->qfi; /* for 5GC */
+
+                upf_pfcp_send_session_report_request(sess, &report);
+            }
+
+        } else if (far->dst_if == OGS_PFCP_INTERFACE_CP_FUNCTION) {
+
+            if (!far->gnode) {
+                ogs_error("No Outer Header Creation in FAR");
+                goto cleanup;
+            }
+
+            if ((far->apply_action & OGS_PFCP_APPLY_ACTION_FORW) == 0) {
+                ogs_error("Not supported Apply Action [0x%x]",
+                            far->apply_action);
+                goto cleanup;
+            }
+
+            ogs_pfcp_up_handle_pdr(pdr, pkbuf, &report);
+
+            ogs_assert(report.type.downlink_data_report == 0);
+
         } else {
             ogs_fatal("Not implemented : FAR-DST_IF[%d]", far->dst_if);
             ogs_assert_if_reached();
@@ -321,20 +412,20 @@ int upf_gtp_open(void)
     ogs_sock_t *sock = NULL;
     int rc;
 
-    ogs_list_for_each(&upf_self()->gtpu_list, node) {
+    ogs_list_for_each(&ogs_gtp_self()->gtpu_list, node) {
         sock = ogs_gtp_server(node);
         ogs_assert(sock);
 
         if (sock->family == AF_INET)
-            upf_self()->gtpu_sock = sock;
+            ogs_gtp_self()->gtpu_sock = sock;
         else if (sock->family == AF_INET6)
-            upf_self()->gtpu_sock6 = sock;
+            ogs_gtp_self()->gtpu_sock6 = sock;
 
         node->poll = ogs_pollset_add(ogs_app()->pollset,
                 OGS_POLLIN, sock->fd, _gtpv1_u_recv_cb, sock);
     }
 
-    ogs_assert(upf_self()->gtpu_sock || upf_self()->gtpu_sock6);
+    OGS_SETUP_GTPU_SERVER;
 
     /* NOTE : tun device can be created via following command.
      *
@@ -391,7 +482,7 @@ void upf_gtp_close(void)
 {
     ogs_pfcp_dev_t *dev = NULL;
 
-    ogs_socknode_remove_all(&upf_self()->gtpu_list);
+    ogs_socknode_remove_all(&ogs_gtp_self()->gtpu_list);
 
     ogs_list_for_each(&ogs_pfcp_self()->dev_list, dev) {
         if (dev->poll)
@@ -426,139 +517,16 @@ static void upf_gtp_handle_multicast(ogs_pkbuf_t *recvbuf)
                     /* PDN IPv6 is avaiable */
                     ogs_pfcp_pdr_t *pdr = NULL;
 
-                    pdr = OGS_DEFAULT_DL_PDR(&sess->pfcp);
-                    ogs_assert(pdr);
+                    ogs_list_for_each(&sess->pfcp.pdr_list, pdr) {
+                        if (pdr->src_if == OGS_PFCP_INTERFACE_CORE) {
+                            ogs_pfcp_up_handle_pdr(pdr, recvbuf, &report);
+                            break;
+                        }
+                    }
 
-                    ogs_pfcp_up_handle_pdr(pdr, recvbuf, &report);
                     return;
                 }
             }
         }
     }
-}
-
-static int upf_gtp_handle_slaac(upf_sess_t *sess, ogs_pkbuf_t *recvbuf)
-{
-    int rv;
-    struct ip *ip_h = NULL;
-
-    ogs_assert(sess);
-    ogs_assert(recvbuf);
-    ogs_assert(recvbuf->len);
-    ip_h = (struct ip *)recvbuf->data;
-    if (ip_h->ip_v == 6) {
-        struct ip6_hdr *ip6_h = (struct ip6_hdr *)recvbuf->data;
-        if (ip6_h->ip6_nxt == IPPROTO_ICMPV6) {
-            struct icmp6_hdr *icmp_h =
-                (struct icmp6_hdr *)(recvbuf->data + sizeof(struct ip6_hdr));
-            if (icmp_h->icmp6_type == ND_ROUTER_SOLICIT) {
-                ogs_debug("      Router Solict");
-                if (sess->ipv6) {
-                    rv = upf_gtp_send_router_advertisement(
-                            sess, ip6_h->ip6_src.s6_addr);
-                    ogs_assert(rv == OGS_OK);
-                }
-                return UPF_GTP_HANDLED;
-            }
-        }
-    }
-
-    return OGS_OK;
-}
-
-static int upf_gtp_send_router_advertisement(
-        upf_sess_t *sess, uint8_t *ip6_dst)
-{
-    int rv;
-    ogs_pkbuf_t *pkbuf = NULL;
-    ogs_pfcp_user_plane_report_t report;
-
-    ogs_pfcp_pdr_t *pdr = NULL;
-    ogs_pfcp_far_t *far = NULL;
-    ogs_pfcp_ue_ip_t *ue_ip = NULL;
-    ogs_pfcp_subnet_t *subnet = NULL;
-    ogs_pfcp_dev_t *dev = NULL;
-
-    ogs_ipsubnet_t src_ipsub;
-    uint16_t plen = 0;
-    uint8_t nxt = 0;
-    uint8_t *p = NULL;
-    struct ip6_hdr *ip6_h =  NULL;
-    struct nd_router_advert *advert_h = NULL;
-    struct nd_opt_prefix_info *prefix = NULL;
-
-    ogs_assert(sess);
-    pdr = OGS_DEFAULT_DL_PDR(&sess->pfcp);
-    ogs_assert(pdr);
-    far = pdr->far;
-    ogs_assert(far);
-    ue_ip = sess->ipv6;
-    ogs_assert(ue_ip);
-    subnet = ue_ip->subnet;
-    ogs_assert(subnet);
-    dev = subnet->dev;
-    ogs_assert(dev);
-
-    pkbuf = ogs_pkbuf_alloc(NULL, OGS_GTPV1U_5GC_HEADER_LEN+200);
-    ogs_assert(pkbuf);
-    ogs_pkbuf_reserve(pkbuf, OGS_GTPV1U_5GC_HEADER_LEN);
-    ogs_pkbuf_put(pkbuf, 200);
-    pkbuf->len = sizeof *ip6_h + sizeof *advert_h + sizeof *prefix;
-    memset(pkbuf->data, 0, pkbuf->len);
-
-    p = (uint8_t *)pkbuf->data;
-    ip6_h = (struct ip6_hdr *)p;
-    advert_h = (struct nd_router_advert *)((uint8_t *)ip6_h + sizeof *ip6_h);
-    prefix = (struct nd_opt_prefix_info *)
-        ((uint8_t*)advert_h + sizeof *advert_h);
-
-    rv = ogs_ipsubnet(&src_ipsub, "fe80::1", NULL);
-    ogs_assert(rv == OGS_OK);
-    if (dev->link_local_addr)
-        memcpy(src_ipsub.sub, dev->link_local_addr->sin6.sin6_addr.s6_addr,
-                sizeof src_ipsub.sub);
-
-    advert_h->nd_ra_type = ND_ROUTER_ADVERT;
-    advert_h->nd_ra_code = 0;
-    advert_h->nd_ra_curhoplimit = 64;
-    advert_h->nd_ra_flags_reserved = 0;
-    advert_h->nd_ra_router_lifetime = htobe16(64800);  /* 64800s */
-    advert_h->nd_ra_reachable = 0;
-    advert_h->nd_ra_retransmit = 0;
-
-    prefix->nd_opt_pi_type = ND_OPT_PREFIX_INFORMATION;
-    prefix->nd_opt_pi_len = 4; /* 32bytes */
-    prefix->nd_opt_pi_prefix_len = subnet->prefixlen;
-    prefix->nd_opt_pi_flags_reserved =
-        ND_OPT_PI_FLAG_ONLINK|ND_OPT_PI_FLAG_AUTO;
-    prefix->nd_opt_pi_valid_time = htobe32(0xffffffff); /* Infinite */
-    prefix->nd_opt_pi_preferred_time = htobe32(0xffffffff); /* Infinite */
-    memcpy(prefix->nd_opt_pi_prefix.s6_addr,
-            subnet->sub.sub, sizeof prefix->nd_opt_pi_prefix.s6_addr);
-
-    /* For IPv6 Pseudo-Header */
-    plen = htobe16(sizeof *advert_h + sizeof *prefix);
-    nxt = IPPROTO_ICMPV6;
-
-    memcpy(p, src_ipsub.sub, sizeof src_ipsub.sub);
-    p += sizeof src_ipsub.sub;
-    memcpy(p, ip6_dst, OGS_IPV6_LEN);
-    p += OGS_IPV6_LEN;
-    p += 2; memcpy(p, &plen, 2); p += 2;
-    p += 3; *p = nxt; p += 1;
-    advert_h->nd_ra_cksum = ogs_in_cksum((uint16_t *)pkbuf->data, pkbuf->len);
-
-    ip6_h->ip6_flow = htobe32(0x60000001);
-    ip6_h->ip6_plen = plen;
-    ip6_h->ip6_nxt = nxt;  /* ICMPv6 */
-    ip6_h->ip6_hlim = 0xff;
-    memcpy(ip6_h->ip6_src.s6_addr, src_ipsub.sub, sizeof src_ipsub.sub);
-    memcpy(ip6_h->ip6_dst.s6_addr, ip6_dst, OGS_IPV6_LEN);
-    
-    ogs_pfcp_up_handle_pdr(pdr, pkbuf, &report);
-
-    ogs_debug("      Router Advertisement");
-
-    ogs_pkbuf_free(pkbuf);
-    return rv;
 }

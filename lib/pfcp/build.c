@@ -127,9 +127,9 @@ ogs_pkbuf_t *ogs_pfcp_up_build_association_setup_request(uint8_t type)
     ogs_pfcp_node_id_t node_id;
     int node_id_len = 0;
 
-    ogs_pfcp_gtpu_resource_t *resource = NULL;
+    ogs_gtpu_resource_t *resource = NULL;
     char infobuf[OGS_MAX_NUM_OF_GTPU_RESOURCE]
-                [OGS_PFCP_MAX_USER_PLANE_IP_RESOURCE_INFO_LEN];
+                [OGS_MAX_USER_PLANE_IP_RESOURCE_INFO_LEN];
     int i = 0;
 
     ogs_debug("Association Setup Request");
@@ -155,7 +155,7 @@ ogs_pkbuf_t *ogs_pfcp_up_build_association_setup_request(uint8_t type)
 
     if (ogs_pfcp_self()->up_function_features.ftup == 0) {
         i = 0;
-        ogs_list_for_each(&ogs_pfcp_self()->gtpu_resource_list, resource) {
+        ogs_list_for_each(&ogs_gtp_self()->gtpu_resource_list, resource) {
             ogs_assert(i < OGS_MAX_NUM_OF_GTPU_RESOURCE);
             ogs_pfcp_tlv_user_plane_ip_resource_information_t *message =
                 &req->user_plane_ip_resource_information[i];
@@ -164,7 +164,7 @@ ogs_pkbuf_t *ogs_pfcp_up_build_association_setup_request(uint8_t type)
             message->presence = 1;
             ogs_pfcp_build_user_plane_ip_resource_info(
                 message, &resource->info, infobuf[i],
-                OGS_PFCP_MAX_USER_PLANE_IP_RESOURCE_INFO_LEN);
+                OGS_MAX_USER_PLANE_IP_RESOURCE_INFO_LEN);
             i++;
         }
     }
@@ -182,9 +182,9 @@ ogs_pkbuf_t *ogs_pfcp_up_build_association_setup_response(uint8_t type,
     ogs_pfcp_node_id_t node_id;
     int node_id_len = 0;
 
-    ogs_pfcp_gtpu_resource_t *resource = NULL;
+    ogs_gtpu_resource_t *resource = NULL;
     char infobuf[OGS_MAX_NUM_OF_GTPU_RESOURCE]
-                [OGS_PFCP_MAX_USER_PLANE_IP_RESOURCE_INFO_LEN];
+                [OGS_MAX_USER_PLANE_IP_RESOURCE_INFO_LEN];
     int i = 0;
 
     ogs_debug("Association Setup Response");
@@ -213,7 +213,7 @@ ogs_pkbuf_t *ogs_pfcp_up_build_association_setup_response(uint8_t type,
 
     if (ogs_pfcp_self()->up_function_features.ftup == 0) {
         i = 0;
-        ogs_list_for_each(&ogs_pfcp_self()->gtpu_resource_list, resource) {
+        ogs_list_for_each(&ogs_gtp_self()->gtpu_resource_list, resource) {
             ogs_assert(i < OGS_MAX_NUM_OF_GTPU_RESOURCE);
             ogs_pfcp_tlv_user_plane_ip_resource_information_t *message =
                 &rsp->user_plane_ip_resource_information[i];
@@ -222,7 +222,7 @@ ogs_pkbuf_t *ogs_pfcp_up_build_association_setup_response(uint8_t type,
             message->presence = 1;
             ogs_pfcp_build_user_plane_ip_resource_info(
                 message, &resource->info, infobuf[i],
-                OGS_PFCP_MAX_USER_PLANE_IP_RESOURCE_INFO_LEN);
+                OGS_MAX_USER_PLANE_IP_RESOURCE_INFO_LEN);
             i++;
         }
     }

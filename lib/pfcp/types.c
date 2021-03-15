@@ -19,8 +19,6 @@
 
 #include "ogs-pfcp.h"
 
-int __ogs_pfcp_domain;
-
 const char *ogs_pfcp_cause_get_name(uint8_t cause)
 {
     switch(cause) {
@@ -77,10 +75,10 @@ const char *ogs_pfcp_cause_get_name(uint8_t cause)
 
 int16_t ogs_pfcp_build_user_plane_ip_resource_info(
         ogs_tlv_octet_t *octet,
-        ogs_pfcp_user_plane_ip_resource_info_t *info,
+        ogs_user_plane_ip_resource_info_t *info,
         void *data, int data_len)
 {
-    ogs_pfcp_user_plane_ip_resource_info_t target;
+    ogs_user_plane_ip_resource_info_t target;
     int16_t size = 0;
 
     ogs_assert(info);
@@ -89,7 +87,7 @@ int16_t ogs_pfcp_build_user_plane_ip_resource_info(
     ogs_assert(data_len);
 
     octet->data = data;
-    memcpy(&target, info, sizeof(ogs_pfcp_user_plane_ip_resource_info_t));
+    memcpy(&target, info, sizeof(ogs_user_plane_ip_resource_info_t));
 
     ogs_assert(size + sizeof(target.flags) <= data_len);
     memcpy((unsigned char *)octet->data + size,
@@ -136,7 +134,7 @@ int16_t ogs_pfcp_build_user_plane_ip_resource_info(
 }
 
 int16_t ogs_pfcp_parse_user_plane_ip_resource_info(
-        ogs_pfcp_user_plane_ip_resource_info_t *info,
+        ogs_user_plane_ip_resource_info_t *info,
         ogs_tlv_octet_t *octet)
 {
     int16_t size = 0;
@@ -144,7 +142,7 @@ int16_t ogs_pfcp_parse_user_plane_ip_resource_info(
     ogs_assert(info);
     ogs_assert(octet);
 
-    memset(info, 0, sizeof(ogs_pfcp_user_plane_ip_resource_info_t));
+    memset(info, 0, sizeof(ogs_user_plane_ip_resource_info_t));
 
     memcpy(&info->flags,
             (unsigned char *)octet->data + size, sizeof(info->flags));

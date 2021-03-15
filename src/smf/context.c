@@ -51,19 +51,9 @@ void smf_context_init(void)
 
     ogs_log_install_domain(&__ogs_ngap_domain, "ngap", ogs_core()->log.level);
     ogs_log_install_domain(&__ogs_nas_domain, "nas", ogs_core()->log.level);
-    ogs_log_install_domain(&__ogs_gtp_domain, "gtp", ogs_core()->log.level);
     ogs_log_install_domain(&__ogs_diam_domain, "diam", ogs_core()->log.level);
     ogs_log_install_domain(&__smf_log_domain, "smf", ogs_core()->log.level);
     ogs_log_install_domain(&__gsm_log_domain, "gsm", ogs_core()->log.level);
-
-    ogs_gtp_node_init();
-
-    ogs_list_init(&self.smf_ue_list);
-
-    ogs_list_init(&self.gtpc_list);
-    ogs_list_init(&self.gtpc_list6);
-
-    ogs_list_init(&self.sgw_s5c_list);
 
     ogs_pool_init(&smf_ue_pool, ogs_app()->max.ue);
     ogs_pool_init(&smf_sess_pool, ogs_app()->pool.sess);
@@ -105,8 +95,6 @@ void smf_context_final(void)
 
     ogs_gtp_node_remove_all(&self.sgw_s5c_list);
 
-    ogs_gtp_node_final();
-
     context_initialized = 0;
 }
 
@@ -117,7 +105,6 @@ smf_context_t *smf_self(void)
 
 static int smf_context_prepare(void)
 {
-    self.gtpc_port = OGS_GTPV2_C_UDP_PORT;
     self.diam_config->cnf_port = DIAMETER_PORT;
     self.diam_config->cnf_port_tls = DIAMETER_SECURE_PORT;
     self.nf_type = OpenAPI_nf_type_SMF;
@@ -131,6 +118,10 @@ static int smf_context_validation(void)
 
     if (self.dns[0] == NULL && self.dns6[0] == NULL) {
         ogs_error("No smf.dns in '%s'", ogs_app()->file);
+        return OGS_ERROR;
+    }
+    if (ogs_list_first(&ogs_gtp_self()->gtpu_list) == NULL) {
+        ogs_error("No smf.gtpu in '%s'", ogs_app()->file);
         return OGS_ERROR;
     }
     if (ogs_list_first(&ogs_pfcp_self()->subnet_list) == NULL) {
@@ -331,120 +322,9 @@ int smf_context_parse_config(void)
                         }
                     }
                 } else if (!strcmp(smf_key, "gtpc")) {
-                    ogs_yaml_iter_t gtpc_array, gtpc_iter;
-                    ogs_yaml_iter_recurse(&smf_iter, &gtpc_array);
-                    do {
-                        int family = AF_UNSPEC;
-                        int i, num = 0;
-                        const char *hostname[OGS_MAX_NUM_OF_HOSTNAME];
-                        uint16_t port = self.gtpc_port;
-                        const char *dev = NULL;
-                        ogs_sockaddr_t *addr = NULL;
-
-                        if (ogs_yaml_iter_type(&gtpc_array) ==
-                                YAML_MAPPING_NODE) {
-                            memcpy(&gtpc_iter, &gtpc_array,
-                                    sizeof(ogs_yaml_iter_t));
-                        } else if (ogs_yaml_iter_type(&gtpc_array) ==
-                            YAML_SEQUENCE_NODE) {
-                            if (!ogs_yaml_iter_next(&gtpc_array))
-                                break;
-                            ogs_yaml_iter_recurse(&gtpc_array, &gtpc_iter);
-                        } else if (ogs_yaml_iter_type(&gtpc_array) ==
-                            YAML_SCALAR_NODE) {
-                            break;
-                        } else
-                            ogs_assert_if_reached();
-
-                        while (ogs_yaml_iter_next(&gtpc_iter)) {
-                            const char *gtpc_key =
-                                ogs_yaml_iter_key(&gtpc_iter);
-                            ogs_assert(gtpc_key);
-                            if (!strcmp(gtpc_key, "family")) {
-                                const char *v = ogs_yaml_iter_value(&gtpc_iter);
-                                if (v) family = atoi(v);
-                                if (family != AF_UNSPEC &&
-                                    family != AF_INET && family != AF_INET6) {
-                                    ogs_warn("Ignore family(%d) : "
-                                        "AF_UNSPEC(%d), "
-                                        "AF_INET(%d), AF_INET6(%d) ", 
-                                        family, AF_UNSPEC, AF_INET, AF_INET6);
-                                    family = AF_UNSPEC;
-                                }
-                            } else if (!strcmp(gtpc_key, "addr") ||
-                                    !strcmp(gtpc_key, "name")) {
-                                ogs_yaml_iter_t hostname_iter;
-                                ogs_yaml_iter_recurse(&gtpc_iter,
-                                        &hostname_iter);
-                                ogs_assert(ogs_yaml_iter_type(&hostname_iter) !=
-                                    YAML_MAPPING_NODE);
-
-                                do {
-                                    if (ogs_yaml_iter_type(&hostname_iter) ==
-                                            YAML_SEQUENCE_NODE) {
-                                        if (!ogs_yaml_iter_next(
-                                                    &hostname_iter))
-                                            break;
-                                    }
-
-                                    ogs_assert(num < OGS_MAX_NUM_OF_HOSTNAME);
-                                    hostname[num++] = 
-                                        ogs_yaml_iter_value(&hostname_iter);
-                                } while (
-                                    ogs_yaml_iter_type(&hostname_iter) ==
-                                        YAML_SEQUENCE_NODE);
-                            } else if (!strcmp(gtpc_key, "port")) {
-                                const char *v = ogs_yaml_iter_value(&gtpc_iter);
-                                if (v) port = atoi(v);
-                            } else if (!strcmp(gtpc_key, "dev")) {
-                                dev = ogs_yaml_iter_value(&gtpc_iter);
-                            } else if (!strcmp(gtpc_key, "apn") ||
-                                        !strcmp(gtpc_key, "dnn")) {
-                                /* Skip */
-                            } else
-                                ogs_warn("unknown key `%s`", gtpc_key);
-                        }
-
-                        addr = NULL;
-                        for (i = 0; i < num; i++) {
-                            rv = ogs_addaddrinfo(&addr,
-                                    family, hostname[i], port, 0);
-                            ogs_assert(rv == OGS_OK);
-                        }
-
-                        if (addr) {
-                            if (ogs_app()->parameter.no_ipv4 == 0)
-                                ogs_socknode_add(
-                                        &self.gtpc_list, AF_INET, addr);
-                            if (ogs_app()->parameter.no_ipv6 == 0)
-                                ogs_socknode_add(
-                                        &self.gtpc_list6, AF_INET6, addr);
-                            ogs_freeaddrinfo(addr);
-                        }
-
-                        if (dev) {
-                            rv = ogs_socknode_probe(
-                                    ogs_app()->parameter.no_ipv4 ?
-                                        NULL : &self.gtpc_list,
-                                    ogs_app()->parameter.no_ipv6 ?
-                                        NULL : &self.gtpc_list6,
-                                    dev, port);
-                            ogs_assert(rv == OGS_OK);
-                        }
-
-                    } while (ogs_yaml_iter_type(&gtpc_array) ==
-                            YAML_SEQUENCE_NODE);
-
-                    if (ogs_list_first(&self.gtpc_list) == NULL &&
-                        ogs_list_first(&self.gtpc_list6) == NULL) {
-                        rv = ogs_socknode_probe(
-                                ogs_app()->parameter.no_ipv4 ?
-                                    NULL : &self.gtpc_list,
-                                ogs_app()->parameter.no_ipv6 ?
-                                    NULL : &self.gtpc_list6,
-                                NULL, self.gtpc_port);
-                        ogs_assert(rv == OGS_OK);
-                    }
+                    /* handle config in gtp library */
+                } else if (!strcmp(smf_key, "gtpu")) {
+                    /* handle config in gtp library */
                 } else if (!strcmp(smf_key, "dns")) {
                     ogs_yaml_iter_t dns_iter;
                     ogs_yaml_iter_recurse(&smf_iter, &dns_iter);
@@ -1023,7 +903,7 @@ static ogs_pfcp_node_t *selected_upf_node(
             }
         }
         /* cyclic search from top to current position */
-        for (node = ogs_list_first(&ogs_pfcp_self()->peer_list);
+        for (node = ogs_list_first(&ogs_pfcp_self()->pfcp_peer_list);
                 node != next; node = ogs_list_next(node)) {
             if (!RR) {
                 if (OGS_FSM_CHECK(&node->sm, smf_pfcp_state_associated) &&
@@ -1049,7 +929,7 @@ static ogs_pfcp_node_t *selected_upf_node(
     }
 
     ogs_error("No UPFs are PFCP associated that are suited to RR");
-    return ogs_list_first(&ogs_pfcp_self()->peer_list);
+    return ogs_list_first(&ogs_pfcp_self()->pfcp_peer_list);
 }
 
 void smf_sess_select_upf(smf_sess_t *sess)
@@ -1062,15 +942,17 @@ void smf_sess_select_upf(smf_sess_t *sess)
      * When used for the first time, if last node is set,
      * the search is performed from the first UPF in a round-robin manner.
      */
-    if (ogs_pfcp_self()->node == NULL)
-        ogs_pfcp_self()->node = ogs_list_last(&ogs_pfcp_self()->peer_list);
+    if (ogs_pfcp_self()->pfcp_node == NULL)
+        ogs_pfcp_self()->pfcp_node =
+            ogs_list_last(&ogs_pfcp_self()->pfcp_peer_list);
 
     /* setup GTP session with selected UPF */
-    ogs_pfcp_self()->node = selected_upf_node(ogs_pfcp_self()->node, sess);
-    ogs_assert(ogs_pfcp_self()->node);
-    OGS_SETUP_PFCP_NODE(sess, ogs_pfcp_self()->node);
+    ogs_pfcp_self()->pfcp_node =
+        selected_upf_node(ogs_pfcp_self()->pfcp_node, sess);
+    ogs_assert(ogs_pfcp_self()->pfcp_node);
+    OGS_SETUP_PFCP_NODE(sess, ogs_pfcp_self()->pfcp_node);
     ogs_debug("UE using UPF on IP[%s]",
-            OGS_ADDR(&ogs_pfcp_self()->node->addr, buf));
+            OGS_ADDR(&ogs_pfcp_self()->pfcp_node->addr, buf));
 }
 
 smf_sess_t *smf_sess_add_by_apn(smf_ue_t *smf_ue, char *apn)
@@ -1334,7 +1216,7 @@ void smf_sess_set_ue_ip(smf_sess_t *sess)
     }
     if (sess->ipv6) {
         ogs_hash_set(smf_self()->ipv6_hash,
-                sess->ipv6->addr, OGS_IPV6_LEN, NULL);
+                sess->ipv6->addr, OGS_IPV6_DEFAULT_PREFIX_LEN >> 3, NULL);
         ogs_pfcp_ue_ip_free(sess->ipv6);
     }
 
@@ -1353,10 +1235,10 @@ void smf_sess_set_ue_ip(smf_sess_t *sess)
         subnet6 = sess->ipv6->subnet;
         ogs_assert(subnet6);
 
-        sess->session.paa.len = subnet6->prefixlen;
+        sess->session.paa.len = OGS_IPV6_DEFAULT_PREFIX_LEN >> 3;
         memcpy(sess->session.paa.addr6, sess->ipv6->addr, OGS_IPV6_LEN);
         ogs_hash_set(smf_self()->ipv6_hash,
-                sess->ipv6->addr, OGS_IPV6_LEN, sess);
+                sess->ipv6->addr, OGS_IPV6_DEFAULT_PREFIX_LEN >> 3, sess);
     } else if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV4V6) {
         sess->ipv4 = ogs_pfcp_ue_ip_alloc(AF_INET,
                 sess->session.name, (uint8_t *)&sess->session.ue_ip.addr);
@@ -1369,12 +1251,12 @@ void smf_sess_set_ue_ip(smf_sess_t *sess)
         ogs_assert(subnet6);
 
         sess->session.paa.both.addr = sess->ipv4->addr[0];
-        sess->session.paa.both.len = subnet6->prefixlen;
+        sess->session.paa.both.len = OGS_IPV6_DEFAULT_PREFIX_LEN >> 3;
         memcpy(sess->session.paa.both.addr6, sess->ipv6->addr, OGS_IPV6_LEN);
         ogs_hash_set(smf_self()->ipv4_hash,
                 sess->ipv4->addr, OGS_IPV4_LEN, sess);
         ogs_hash_set(smf_self()->ipv6_hash,
-                sess->ipv6->addr, OGS_IPV6_LEN, sess);
+                sess->ipv6->addr, OGS_IPV6_DEFAULT_PREFIX_LEN >> 3, sess);
     } else {
         ogs_fatal("Invalid sess->session.session_type[%d]",
                 sess->session.session_type);
@@ -1508,7 +1390,8 @@ void smf_sess_remove(smf_sess_t *sess)
         ogs_pfcp_ue_ip_free(sess->ipv4);
     }
     if (sess->ipv6) {
-        ogs_hash_set(self.ipv6_hash, sess->ipv6->addr, OGS_IPV6_LEN, NULL);
+        ogs_hash_set(self.ipv6_hash,
+                sess->ipv6->addr, OGS_IPV6_DEFAULT_PREFIX_LEN >> 3, NULL);
         ogs_pfcp_ue_ip_free(sess->ipv6);
     }
 
@@ -1556,6 +1439,8 @@ void smf_sess_remove(smf_sess_t *sess)
 
     ogs_assert(sess->pfcp.bar);
     ogs_pfcp_bar_delete(sess->pfcp.bar);
+
+    smf_sess_delete_cp_up_data_forwarding(sess);
 
     ogs_pfcp_pool_final(&sess->pfcp);
     smf_qfi_pool_final(sess);
@@ -1637,7 +1522,8 @@ smf_sess_t *smf_sess_find_by_ipv6(uint32_t *addr6)
 {
     ogs_assert(self.ipv6_hash);
     ogs_assert(addr6);
-    return (smf_sess_t *)ogs_hash_get(self.ipv6_hash, addr6, OGS_IPV6_LEN);
+    return (smf_sess_t *)ogs_hash_get(
+            self.ipv6_hash, addr6, OGS_IPV6_DEFAULT_PREFIX_LEN >> 3);
 }
 
 smf_sess_t *smf_sess_find_by_paging_n1n2message_location(
@@ -1813,7 +1699,7 @@ void smf_sess_create_indirect_data_forwarding(smf_sess_t *sess)
 
         /* Indirect Data Forwarding PDRs is set to highest precedence
          * (lowest precedence value) */
-        pdr->precedence = 1;
+        pdr->precedence = OGS_PFCP_INDIRECT_PDR_PRECEDENCE;
     }
 }
 
@@ -1856,6 +1742,92 @@ void smf_sess_delete_indirect_data_forwarding(smf_sess_t *sess)
     }
 }
 
+void smf_sess_create_cp_up_data_forwarding(smf_sess_t *sess)
+{
+    smf_bearer_t *qos_flow = NULL;
+
+    ogs_pfcp_pdr_t *cp2up_pdr = NULL;
+    ogs_pfcp_pdr_t *up2cp_pdr = NULL;
+    ogs_pfcp_far_t *cp2up_far = NULL;
+    ogs_pfcp_far_t *up2cp_far = NULL;
+
+    ogs_assert(sess);
+
+    smf_sess_delete_cp_up_data_forwarding(sess);
+
+    cp2up_pdr = ogs_pfcp_pdr_add(&sess->pfcp);
+    ogs_assert(cp2up_pdr);
+    sess->cp2up_pdr = cp2up_pdr;
+
+    cp2up_pdr->src_if = OGS_PFCP_INTERFACE_CP_FUNCTION;
+
+    cp2up_pdr->outer_header_removal_len = 1;
+    if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV4) {
+        cp2up_pdr->outer_header_removal.description =
+            OGS_PFCP_OUTER_HEADER_REMOVAL_GTPU_UDP_IPV4;
+    } else if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV6) {
+        cp2up_pdr->outer_header_removal.description =
+            OGS_PFCP_OUTER_HEADER_REMOVAL_GTPU_UDP_IPV6;
+    } else if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV4V6) {
+        cp2up_pdr->outer_header_removal.description =
+            OGS_PFCP_OUTER_HEADER_REMOVAL_GTPU_UDP_IP;
+    } else
+        ogs_assert_if_reached();
+
+    up2cp_pdr = ogs_pfcp_pdr_add(&sess->pfcp);
+    ogs_assert(up2cp_pdr);
+    sess->up2cp_pdr = up2cp_pdr;
+
+    up2cp_pdr->src_if = OGS_PFCP_INTERFACE_ACCESS;
+
+    up2cp_pdr->outer_header_removal_len = 1;
+    if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV4) {
+        up2cp_pdr->outer_header_removal.description =
+            OGS_PFCP_OUTER_HEADER_REMOVAL_GTPU_UDP_IPV4;
+    } else if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV6) {
+        up2cp_pdr->outer_header_removal.description =
+            OGS_PFCP_OUTER_HEADER_REMOVAL_GTPU_UDP_IPV6;
+    } else if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV4V6) {
+        up2cp_pdr->outer_header_removal.description =
+            OGS_PFCP_OUTER_HEADER_REMOVAL_GTPU_UDP_IP;
+    } else
+        ogs_assert_if_reached();
+
+    qos_flow = smf_default_bearer_in_sess(sess);
+    ogs_assert(qos_flow);
+    ogs_assert(ogs_list_next(qos_flow) == NULL);
+
+    /* We'll use the DL-FAR for CP2UP-FAR */
+    cp2up_far = qos_flow->dl_far;
+    ogs_assert(cp2up_far);
+    ogs_pfcp_pdr_associate_far(cp2up_pdr, cp2up_far);
+    sess->cp2up_far = cp2up_far;
+
+    up2cp_far = ogs_pfcp_far_add(&sess->pfcp);
+    ogs_assert(up2cp_far);
+    sess->up2cp_far = up2cp_far;
+
+    up2cp_far->dst_if = OGS_PFCP_INTERFACE_CP_FUNCTION;
+    ogs_pfcp_pdr_associate_far(up2cp_pdr, up2cp_far);
+
+    up2cp_far->apply_action = OGS_PFCP_APPLY_ACTION_FORW;
+}
+
+void smf_sess_delete_cp_up_data_forwarding(smf_sess_t *sess)
+{
+    ogs_assert(sess);
+
+    if (sess->cp2up_pdr)
+        ogs_pfcp_pdr_remove(sess->cp2up_pdr);
+    if (sess->up2cp_pdr)
+        ogs_pfcp_pdr_remove(sess->up2cp_pdr);
+
+    /* CP2UP-FAR == DL-FAR in Default QoS Flow
+     * Should not remove CP2UP-FAR here */
+    if (sess->up2cp_far)
+        ogs_pfcp_far_remove(sess->up2cp_far);
+}
+
 smf_bearer_t *smf_qos_flow_find_by_qfi(smf_sess_t *sess, uint8_t qfi)
 {
     smf_bearer_t *qos_flow = NULL;
@@ -1889,7 +1861,6 @@ smf_bearer_t *smf_qos_flow_find_by_pcc_rule_id(
 smf_bearer_t *smf_bearer_add(smf_sess_t *sess)
 {
     smf_bearer_t *bearer = NULL;
-    ogs_pfcp_gtpu_resource_t *resource = NULL;
 
     ogs_pfcp_pdr_t *dl_pdr = NULL;
     ogs_pfcp_pdr_t *ul_pdr = NULL;
@@ -1960,41 +1931,6 @@ smf_bearer_t *smf_bearer_add(smf_sess_t *sess)
     ogs_pfcp_pdr_associate_far(ul_pdr, ul_far);
 
     ul_far->apply_action = OGS_PFCP_APPLY_ACTION_FORW;
-
-    ogs_assert(sess->pfcp_node);
-    if (sess->pfcp_node->up_function_features.ftup) {
-        ul_pdr->f_teid.ch = 1;
-        ul_pdr->f_teid_len = 1;
-    } else {
-        resource = ogs_pfcp_gtpu_resource_find(
-                &sess->pfcp_node->gtpu_resource_list,
-                sess->session.name, OGS_PFCP_INTERFACE_ACCESS);
-        if (resource) {
-            ogs_pfcp_user_plane_ip_resource_info_to_sockaddr(&resource->info,
-                &bearer->pgw_s5u_addr, &bearer->pgw_s5u_addr6);
-            if (resource->info.teidri)
-                bearer->pgw_s5u_teid = OGS_PFCP_GTPU_INDEX_TO_TEID(
-                        bearer->index, resource->info.teidri,
-                        resource->info.teid_range);
-            else
-                bearer->pgw_s5u_teid = bearer->index;
-        } else {
-            if (sess->pfcp_node->addr.ogs_sa_family == AF_INET)
-                ogs_copyaddrinfo(&bearer->pgw_s5u_addr, &sess->pfcp_node->addr);
-            else if (sess->pfcp_node->addr.ogs_sa_family == AF_INET6)
-                ogs_copyaddrinfo(
-                        &bearer->pgw_s5u_addr6, &sess->pfcp_node->addr);
-            else
-                ogs_assert_if_reached();
-
-            bearer->pgw_s5u_teid = bearer->index;
-        }
-
-        ogs_assert(bearer->pgw_s5u_addr || bearer->pgw_s5u_addr6);
-        ogs_pfcp_sockaddr_to_f_teid(bearer->pgw_s5u_addr, bearer->pgw_s5u_addr6,
-                &ul_pdr->f_teid, &ul_pdr->f_teid_len);
-        ul_pdr->f_teid.teid = bearer->pgw_s5u_teid;
-    }
 
     bearer->sess = sess;
 

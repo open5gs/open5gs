@@ -243,54 +243,34 @@ int ogs_pfcp_f_teid_to_sockaddr(
     return OGS_OK;
 }
 
-int ogs_pfcp_sockaddr_to_user_plane_ip_resource_info(
-    ogs_sockaddr_t *addr, ogs_sockaddr_t *addr6,
-    ogs_pfcp_user_plane_ip_resource_info_t *info)
+int ogs_pfcp_f_teid_to_ip(ogs_pfcp_f_teid_t *f_teid, ogs_ip_t *ip)
 {
-    ogs_assert(addr || addr6);
-    ogs_assert(info);
+    ogs_assert(ip);
+    ogs_assert(f_teid);
 
-    if (addr) {
-        info->v4 = 1;
-        info->addr = addr->sin.sin_addr.s_addr;
-    }
-    if (addr6) {
-        info->v6 = 1;
-        memcpy(info->addr6, addr6->sin6.sin6_addr.s6_addr, OGS_IPV6_LEN);
-    }
+    memset(ip, 0, sizeof *ip);
 
-    return OGS_OK;
-}
+    ip->ipv4 = f_teid->ipv4;
+    ip->ipv6 = f_teid->ipv6;
 
-int ogs_pfcp_user_plane_ip_resource_info_to_sockaddr(
-    ogs_pfcp_user_plane_ip_resource_info_t *info,
-    ogs_sockaddr_t **addr, ogs_sockaddr_t **addr6)
-{
-    ogs_assert(addr && addr6);
-    ogs_assert(info);
-
-    *addr = NULL;
-    *addr6 = NULL;
-
-    if (info->v4) {
-        *addr = ogs_calloc(1, sizeof(**addr));
-        ogs_assert(*addr);
-        (*addr)->sin.sin_addr.s_addr = info->addr;
-        (*addr)->ogs_sa_family = AF_INET;
-    }
-
-    if (info->v6) {
-        *addr6 = ogs_calloc(1, sizeof(**addr6));
-        ogs_assert(*addr6);
-        memcpy((*addr6)->sin6.sin6_addr.s6_addr, info->addr6, OGS_IPV6_LEN);
-        (*addr6)->ogs_sa_family = AF_INET6;
-    }
+    if (ip->ipv4 && ip->ipv6) {
+        ip->addr = f_teid->both.addr;
+        memcpy(ip->addr6, f_teid->both.addr6, OGS_IPV6_LEN);
+        ip->len = OGS_IPV4V6_LEN;
+    } else if (ip->ipv4) {
+        ip->addr = f_teid->addr;
+        ip->len = OGS_IPV4_LEN;
+    } else if (ip->ipv6) {
+        memcpy(ip->addr6, f_teid->addr6, OGS_IPV6_LEN);
+        ip->len = OGS_IPV6_LEN;
+    } else
+        ogs_assert_if_reached();
 
     return OGS_OK;
 }
 
 int ogs_pfcp_user_plane_ip_resource_info_to_f_teid(
-    ogs_pfcp_user_plane_ip_resource_info_t *info,
+    ogs_user_plane_ip_resource_info_t *info,
     ogs_pfcp_f_teid_t *f_teid, int *len)
 {
     const int hdr_len = 5;

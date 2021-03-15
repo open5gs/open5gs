@@ -32,7 +32,7 @@
 #include "gtp/message.h"
 #include "gtp/types.h"
 #include "gtp/conv.h"
-#include "gtp/node.h"
+#include "gtp/context.h"
 #include "gtp/build.h"
 #include "gtp/path.h"
 #include "gtp/xact.h"

@@ -78,18 +78,10 @@ typedef struct mme_context_s {
     ogs_diam_config_t   *diam_config;     /* MME Diameter config */
 
     uint16_t        s1ap_port;      /* Default S1AP Port */
-    uint16_t        gtpc_port;      /* Default GTPC Port */
     uint16_t        sgsap_port;     /* Default SGsAP Port */
 
     ogs_list_t      s1ap_list;      /* MME S1AP IPv4 Server List */
     ogs_list_t      s1ap_list6;     /* MME S1AP IPv6 Server List */
-
-    ogs_list_t      gtpc_list;      /* MME GTPC IPv4 Server List */
-    ogs_list_t      gtpc_list6;     /* MME GTPC IPv6 Server List */
-    ogs_sock_t      *gtpc_sock;     /* MME GTPC IPv4 Socket */
-    ogs_sock_t      *gtpc_sock6;    /* MME GTPC IPv6 Socket */
-    ogs_sockaddr_t  *gtpc_addr;     /* MME GTPC IPv4 Address */
-    ogs_sockaddr_t  *gtpc_addr6;    /* MME GTPC IPv6 Address */
 
     ogs_list_t      sgw_list;       /* SGW GTPC Client List */
     mme_sgw_t       *sgw;           /* Iterator for SGW round-robin */

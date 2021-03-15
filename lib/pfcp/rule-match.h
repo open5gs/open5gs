@@ -17,21 +17,22 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef UPF_RULE_MATCH_H
-#define UPF_RULE_MATCH_H
+#if !defined(OGS_PFCP_INSIDE) && !defined(OGS_PFCP_COMPILATION)
+#error "This header cannot be included directly."
+#endif
 
-#include "context.h"
+#ifndef OGS_PFCP_RULE_MATCH_H
+#define OGS_PFCP_RULE_MATCH_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-upf_sess_t *upf_sess_find_by_ue_ip_address(ogs_pkbuf_t *pkbuf);
-ogs_pfcp_rule_t *upf_pdr_rule_find_by_packet(
+ogs_pfcp_rule_t *ogs_pfcp_pdr_rule_find_by_packet(
                     ogs_pfcp_pdr_t *pdr, ogs_pkbuf_t *pkbuf);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* UPF_RULE_MATCH_H */
+#endif /* OGS_PFCP_RULE_MATCH_H */

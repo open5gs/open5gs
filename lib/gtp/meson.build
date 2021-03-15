@@ -21,7 +21,7 @@ libgtp_sources = files('''
     message.h
     types.h
     conv.h
-    node.h
+    context.h
     build.h
     path.h
     xact.h
@@ -30,7 +30,7 @@ libgtp_sources = files('''
     message.c
     types.c
     conv.c
-    node.c
+    context.c
     build.c
     path.c
     xact.c

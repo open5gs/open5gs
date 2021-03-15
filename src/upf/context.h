@@ -46,14 +46,6 @@ extern int __upf_log_domain;
 #define OGS_LOG_DOMAIN __upf_log_domain
 
 typedef struct upf_context_s {
-    uint32_t        gtpu_port;      /* Default: UPF GTP-U local port */
-
-    ogs_list_t      gtpu_list;      /* UPF GTPU Server List */
-    ogs_sock_t      *gtpu_sock;     /* UPF GTPU IPv4 Socket */
-    ogs_sock_t      *gtpu_sock6;    /* UPF GTPU IPv6 Socket */
-
-    ogs_list_t      peer_list;    /* gNB N3 Node List */
-
     ogs_hash_t      *sess_hash;     /* hash table (F-SEID) */
     ogs_hash_t      *ipv4_hash;     /* hash table (IPv4 Address) */
     ogs_hash_t      *ipv6_hash;     /* hash table (IPv6 Address) */

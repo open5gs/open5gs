@@ -149,6 +149,7 @@ void smf_5gc_n4_handle_session_establishment_response(
     pfcp_cause_value = OGS_PFCP_CAUSE_REQUEST_ACCEPTED;
     for (i = 0; i < OGS_MAX_NUM_OF_PDR; i++) {
         ogs_pfcp_pdr_t *pdr = NULL;
+        ogs_pfcp_far_t *far = NULL;
 
         pdr = ogs_pfcp_handle_created_pdr(
                 &sess->pfcp, &rsp->created_pdr[i],
@@ -157,21 +158,28 @@ void smf_5gc_n4_handle_session_establishment_response(
         if (!pdr)
             break;
 
-        if (pdr->src_if != OGS_PFCP_INTERFACE_ACCESS)
-            continue;
+        far = pdr->far;
+        ogs_assert(far);
 
-        ogs_assert(sess->pfcp_node);
-        if (sess->pfcp_node->up_function_features.ftup &&
-            pdr->f_teid_len) {
-            if (sess->upf_n3_addr)
-                ogs_freeaddrinfo(sess->upf_n3_addr);
-            if (sess->upf_n3_addr6)
-                ogs_freeaddrinfo(sess->upf_n3_addr6);
+        if (pdr->src_if == OGS_PFCP_INTERFACE_ACCESS) {
+            if (far->dst_if == OGS_PFCP_INTERFACE_CP_FUNCTION)
+                ogs_pfcp_far_teid_hash_set(far);
 
-            ogs_pfcp_f_teid_to_sockaddr(
-                    &pdr->f_teid, pdr->f_teid_len,
-                    &sess->upf_n3_addr, &sess->upf_n3_addr6);
-            sess->upf_n3_teid = pdr->f_teid.teid;
+            ogs_assert(sess->pfcp_node);
+            if (sess->pfcp_node->up_function_features.ftup &&
+                pdr->f_teid_len) {
+                if (sess->upf_n3_addr)
+                    ogs_freeaddrinfo(sess->upf_n3_addr);
+                if (sess->upf_n3_addr6)
+                    ogs_freeaddrinfo(sess->upf_n3_addr6);
+
+                ogs_pfcp_f_teid_to_sockaddr(
+                        &pdr->f_teid, pdr->f_teid_len,
+                        &sess->upf_n3_addr, &sess->upf_n3_addr6);
+                sess->upf_n3_teid = pdr->f_teid.teid;
+            }
+        } else if (pdr->src_if == OGS_PFCP_INTERFACE_CP_FUNCTION) {
+            ogs_pfcp_setup_pdr_gtpu_node(pdr);
         }
     }
 
@@ -250,6 +258,7 @@ void smf_5gc_n4_handle_session_modification_response(
         ogs_assert(sess);
         for (i = 0; i < OGS_MAX_NUM_OF_PDR; i++) {
             ogs_pfcp_pdr_t *pdr = NULL;
+            ogs_pfcp_far_t *far = NULL;
 
             pdr = ogs_pfcp_handle_created_pdr(
                     &sess->pfcp, &rsp->created_pdr[i],
@@ -258,38 +267,42 @@ void smf_5gc_n4_handle_session_modification_response(
             if (!pdr)
                 break;
 
-            if (pdr->src_if != OGS_PFCP_INTERFACE_ACCESS)
-                continue;
+            far = pdr->far;
+            ogs_assert(far);
 
-            ogs_assert(sess->pfcp_node);
-            if (sess->pfcp_node->up_function_features.ftup &&
-                pdr->f_teid_len) {
+            if (pdr->src_if == OGS_PFCP_INTERFACE_ACCESS) {
+                if (far->dst_if == OGS_PFCP_INTERFACE_CP_FUNCTION)
+                    ogs_pfcp_far_teid_hash_set(far);
 
-                ogs_pfcp_far_t *far = pdr->far;
-                ogs_assert(far);
+                ogs_assert(sess->pfcp_node);
+                if (sess->pfcp_node->up_function_features.ftup &&
+                    pdr->f_teid_len) {
 
-                if (far->dst_if == OGS_PFCP_INTERFACE_CORE) {
-                    if (sess->upf_n3_addr)
-                        ogs_freeaddrinfo(sess->upf_n3_addr);
-                    if (sess->upf_n3_addr6)
-                        ogs_freeaddrinfo(sess->upf_n3_addr6);
+                    if (far->dst_if == OGS_PFCP_INTERFACE_CORE) {
+                        if (sess->upf_n3_addr)
+                            ogs_freeaddrinfo(sess->upf_n3_addr);
+                        if (sess->upf_n3_addr6)
+                            ogs_freeaddrinfo(sess->upf_n3_addr6);
 
-                    ogs_pfcp_f_teid_to_sockaddr(
-                            &pdr->f_teid, pdr->f_teid_len,
-                            &sess->upf_n3_addr, &sess->upf_n3_addr6);
-                    sess->upf_n3_teid = pdr->f_teid.teid;
-                } else if (far->dst_if == OGS_PFCP_INTERFACE_ACCESS) {
-                    if (sess->handover.upf_dl_addr)
-                        ogs_freeaddrinfo(sess->handover.upf_dl_addr);
-                    if (sess->handover.upf_dl_addr6)
-                        ogs_freeaddrinfo(sess->handover.upf_dl_addr6);
+                        ogs_pfcp_f_teid_to_sockaddr(
+                                &pdr->f_teid, pdr->f_teid_len,
+                                &sess->upf_n3_addr, &sess->upf_n3_addr6);
+                        sess->upf_n3_teid = pdr->f_teid.teid;
+                    } else if (far->dst_if == OGS_PFCP_INTERFACE_ACCESS) {
+                        if (sess->handover.upf_dl_addr)
+                            ogs_freeaddrinfo(sess->handover.upf_dl_addr);
+                        if (sess->handover.upf_dl_addr6)
+                            ogs_freeaddrinfo(sess->handover.upf_dl_addr6);
 
-                    ogs_pfcp_f_teid_to_sockaddr(
-                            &pdr->f_teid, pdr->f_teid_len,
-                            &sess->handover.upf_dl_addr,
-                            &sess->handover.upf_dl_addr6);
-                    sess->handover.upf_dl_teid = pdr->f_teid.teid;
+                        ogs_pfcp_f_teid_to_sockaddr(
+                                &pdr->f_teid, pdr->f_teid_len,
+                                &sess->handover.upf_dl_addr,
+                                &sess->handover.upf_dl_addr6);
+                        sess->handover.upf_dl_teid = pdr->f_teid.teid;
+                    }
                 }
+            } else if (pdr->src_if == OGS_PFCP_INTERFACE_CP_FUNCTION) {
+                ogs_pfcp_setup_pdr_gtpu_node(pdr);
             }
         }
 
@@ -545,6 +558,7 @@ void smf_epc_n4_handle_session_establishment_response(
         ogs_assert(sess);
         for (i = 0; i < OGS_MAX_NUM_OF_PDR; i++) {
             ogs_pfcp_pdr_t *pdr = NULL;
+            ogs_pfcp_far_t *far = NULL;
 
             pdr = ogs_pfcp_handle_created_pdr(
                     &sess->pfcp, &rsp->created_pdr[i],
@@ -553,27 +567,31 @@ void smf_epc_n4_handle_session_establishment_response(
             if (!pdr)
                 break;
 
-            if (pdr->src_if != OGS_PFCP_INTERFACE_ACCESS)
-                continue;
+            far = pdr->far;
+            ogs_assert(far);
 
-            bearer = smf_bearer_find_by_pdr_id(sess, pdr->id);
-            if (!bearer) {
-                pfcp_cause_value = OGS_PFCP_CAUSE_SESSION_CONTEXT_NOT_FOUND;
-                break;
-            }
+            if (pdr->src_if == OGS_PFCP_INTERFACE_ACCESS) {
+                if (far->dst_if == OGS_PFCP_INTERFACE_CP_FUNCTION)
+                    ogs_pfcp_far_teid_hash_set(far);
 
-            ogs_assert(sess->pfcp_node);
-            if (sess->pfcp_node->up_function_features.ftup &&
-                pdr->f_teid_len) {
-                if (bearer->pgw_s5u_addr)
-                    ogs_freeaddrinfo(bearer->pgw_s5u_addr);
-                if (bearer->pgw_s5u_addr)
-                    ogs_freeaddrinfo(bearer->pgw_s5u_addr6);
+                bearer = smf_bearer_find_by_pdr_id(sess, pdr->id);
+                if (bearer) {
+                    ogs_assert(sess->pfcp_node);
+                    if (sess->pfcp_node->up_function_features.ftup &&
+                        pdr->f_teid_len) {
+                        if (bearer->pgw_s5u_addr)
+                            ogs_freeaddrinfo(bearer->pgw_s5u_addr);
+                        if (bearer->pgw_s5u_addr)
+                            ogs_freeaddrinfo(bearer->pgw_s5u_addr6);
 
-                ogs_pfcp_f_teid_to_sockaddr(
-                        &pdr->f_teid, pdr->f_teid_len,
-                        &bearer->pgw_s5u_addr, &bearer->pgw_s5u_addr6);
-                bearer->pgw_s5u_teid = pdr->f_teid.teid;
+                        ogs_pfcp_f_teid_to_sockaddr(
+                                &pdr->f_teid, pdr->f_teid_len,
+                                &bearer->pgw_s5u_addr, &bearer->pgw_s5u_addr6);
+                        bearer->pgw_s5u_teid = pdr->f_teid.teid;
+                    }
+                }
+            } else if (pdr->src_if == OGS_PFCP_INTERFACE_CP_FUNCTION) {
+                ogs_pfcp_setup_pdr_gtpu_node(pdr);
             }
         }
 
@@ -650,6 +668,7 @@ void smf_epc_n4_handle_session_modification_response(
     pfcp_cause_value = OGS_PFCP_CAUSE_REQUEST_ACCEPTED;
     for (i = 0; i < OGS_MAX_NUM_OF_PDR; i++) {
         ogs_pfcp_pdr_t *pdr = NULL;
+        ogs_pfcp_far_t *far = NULL;
 
         pdr = ogs_pfcp_handle_created_pdr(
                 &sess->pfcp, &rsp->created_pdr[i],
@@ -658,21 +677,28 @@ void smf_epc_n4_handle_session_modification_response(
         if (!pdr)
             break;
 
-        if (pdr->src_if != OGS_PFCP_INTERFACE_ACCESS)
-            continue;
+        far = pdr->far;
+        ogs_assert(far);
 
-        ogs_assert(sess->pfcp_node);
-        if (sess->pfcp_node->up_function_features.ftup &&
-            pdr->f_teid_len) {
-            if (bearer->pgw_s5u_addr)
-                ogs_freeaddrinfo(bearer->pgw_s5u_addr);
-            if (bearer->pgw_s5u_addr)
-                ogs_freeaddrinfo(bearer->pgw_s5u_addr6);
+        if (pdr->src_if == OGS_PFCP_INTERFACE_ACCESS) {
+            if (far->dst_if == OGS_PFCP_INTERFACE_CP_FUNCTION)
+                ogs_pfcp_far_teid_hash_set(far);
 
-            ogs_pfcp_f_teid_to_sockaddr(
-                    &pdr->f_teid, pdr->f_teid_len,
-                    &bearer->pgw_s5u_addr, &bearer->pgw_s5u_addr6);
-            bearer->pgw_s5u_teid = pdr->f_teid.teid;
+            ogs_assert(sess->pfcp_node);
+            if (sess->pfcp_node->up_function_features.ftup &&
+                pdr->f_teid_len) {
+                if (bearer->pgw_s5u_addr)
+                    ogs_freeaddrinfo(bearer->pgw_s5u_addr);
+                if (bearer->pgw_s5u_addr)
+                    ogs_freeaddrinfo(bearer->pgw_s5u_addr6);
+
+                ogs_pfcp_f_teid_to_sockaddr(
+                        &pdr->f_teid, pdr->f_teid_len,
+                        &bearer->pgw_s5u_addr, &bearer->pgw_s5u_addr6);
+                bearer->pgw_s5u_teid = pdr->f_teid.teid;
+            }
+        } else if (pdr->src_if == OGS_PFCP_INTERFACE_CP_FUNCTION) {
+            ogs_pfcp_setup_pdr_gtpu_node(pdr);
         }
     }
 

@@ -19,6 +19,10 @@ smf_conf = configuration_data()
 
 smf_headers = ('''
     net/if.h
+    netinet/ip.h
+    netinet/ip6.h
+    netinet/ip_icmp.h
+    netinet/icmp6.h
 '''.split())
 
 foreach h : smf_headers

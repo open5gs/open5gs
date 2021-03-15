@@ -18,6 +18,7 @@
  */
 
 #include "test-common.h"
+#include "ipfw/ipfw2.h"
 
 ogs_socknode_t *test_gtpu_server(int index, int family)
 {
@@ -95,6 +96,73 @@ void test_gtpu_close(ogs_socknode_t *node)
 #if HAVE_NETINET_ICMP6_H
 #include <netinet/icmp6.h>
 #endif
+
+void testgtpu_recv(test_ue_t *test_ue, ogs_pkbuf_t *pkbuf)
+{
+    test_sess_t *sess = NULL;
+    test_bearer_t *bearer = NULL;
+
+    ogs_gtp_header_t *gtp_h = NULL;
+    struct ip6_hdr *ip6_h =  NULL;
+    struct nd_router_advert *advert_h = NULL;
+    struct nd_opt_prefix_info *prefix = NULL;
+
+    uint32_t teid;
+    uint8_t mask[OGS_IPV6_LEN];
+
+    ogs_assert(test_ue);
+    ogs_assert(pkbuf);
+
+    gtp_h = (ogs_gtp_header_t *)pkbuf->data;
+    ogs_assert(gtp_h);
+
+    ogs_assert(gtp_h->version == OGS_GTP_VERSION_1);
+    ogs_assert(gtp_h->type == OGS_GTPU_MSGTYPE_GPDU);
+
+    teid = be32toh(gtp_h->teid);
+
+    if (test_ue->mme_ue_s1ap_id) {
+        /* EPC */
+        ogs_list_for_each(&test_ue->sess_list, sess) {
+            ogs_list_for_each(&sess->bearer_list, bearer) {
+                if (teid == bearer->enb_s1u_teid) goto found;
+            }
+            ogs_assert(bearer);
+        }
+        ogs_assert(sess);
+    } else if (test_ue->amf_ue_ngap_id) {
+        /* 5GC */
+        ogs_list_for_each(&test_ue->sess_list, sess) {
+            if (sess->gnb_n3_teid == teid) goto found;
+        }
+        ogs_assert(sess);
+    } else {
+        ogs_assert_if_reached();
+    }
+
+found:
+    ogs_assert(sess);
+
+    ip6_h = pkbuf->data + OGS_GTPV1U_HEADER_LEN;
+    ogs_assert(ip6_h);
+    if (ip6_h->ip6_nxt == IPPROTO_ICMPV6) {
+        struct nd_router_advert *advert_h = (struct nd_router_advert *)
+            ((unsigned char*)ip6_h + sizeof(struct ip6_hdr));
+        ogs_assert(advert_h);
+        if (advert_h->nd_ra_hdr.icmp6_type == ND_ROUTER_ADVERT) {
+            int i;
+            struct nd_opt_prefix_info *prefix = (struct nd_opt_prefix_info *)
+                ((unsigned char*)advert_h + sizeof(struct nd_router_advert));
+            ogs_assert(prefix);
+            n2mask(mask, prefix->nd_opt_pi_prefix_len);
+            for (i = 0; i < OGS_IPV6_LEN; i++) {
+                sess->ue_ip.addr6[i] |=
+                    (mask[i] & prefix->nd_opt_pi_prefix.s6_addr[i]);
+            }
+        }
+    }
+    ogs_pkbuf_free(pkbuf);
+}
 
 int test_gtpu_send(
         ogs_socknode_t *node, test_bearer_t *bearer,
@@ -299,7 +367,11 @@ int test_gtpu_send_slacc_rs(ogs_socknode_t *node, test_bearer_t *bearer)
 
     if (bearer->qfi) {
         gtp_hdesc.teid = sess->upf_n3_teid;
+
+/* CHECK: I guess that Router Soliciation does not include QFI in 5G Core */
+#if 0
         ext_hdesc.qos_flow_identifier = bearer->qfi;
+#endif
 
     } else if (bearer->ebi) {
         gtp_hdesc.teid = bearer->sgw_s1u_teid;

@@ -69,6 +69,10 @@ logger:
 #      - addr: 127.0.0.4
 #      - addr: ::1
 #
+#  o PFCP-U Server(127.0.0.1:2152, [::1]:2152)
+#    pfcp:
+#      name: localhost
+#
 #  <GTP-C Server>
 #
 #  o GTP-C Server(127.0.0.4:2123, [fe80::3%@loopback_devname@]:2123)
@@ -83,6 +87,17 @@ logger:
 #      - addr: 127.0.0.4
 #      - addr: fe80::3%@loopback_devname@
 #
+#  <GTP-U Server>>
+#
+#  o GTP-U Server(127.0.0.4:2152, [::1]:2152)
+#    gtpu:
+#      - addr: 127.0.0.4
+#      - addr: ::1
+#
+#  o GTP-U Server(127.0.0.1:2152, [::1]:2152)
+#    gtpu:
+#      name: localhost
+#
 #  <Subnet for UE Pool>
 #
 #  o IPv4 Pool
@@ -92,19 +107,19 @@ logger:
 #  o IPv4/IPv6 Pool
 #    subnet:
 #      - addr: 10.45.0.1/16
-#      - addr: cafe:1::1/64
+#      - addr: 2001:230:cafe::1/48
 #
 #
-#  o Specific DNN/APN(e.g 'ims') uses 10.46.0.1/16, cafe:2::1/64
+#  o Specific DNN/APN(e.g 'ims') uses 10.46.0.1/16, 2001:230:babe::1/48
 #
 #    subnet:
 #      - addr: 10.45.0.1/16
 #        dnn: internet
-#      - addr: cafe:1::1/64
+#      - addr: 2001:230:cafe::1/48
 #        dnn: internet
 #      - addr: 10.46.0.1/16
 #        dnn: ims
-#      - addr: cafe:2::1/64
+#      - addr: 2001:230:babe::1/48
 #        dnn: ims
 #
 #  o Pool Range Sample
@@ -129,10 +144,10 @@ logger:
 #        range:
 #          - 10.45.0.100-10.45.0.200
 #          - 10.45.1.100-10.45.1.200
-#      - addr: cafe::1/64
+#      - addr: 2001:230:cafe::1/48
 #        range:
-#          - cafe::a0-cafe:b0
-#          - cafe::c0-cafe:d0
+#          - 2001:230:cafe:a0::0-2001:230:cafe:b0::0
+#          - 2001:230:cafe:c0::0-2001:230:cafe:d0::0
 #
 #  <Domain Name Server>
 #
@@ -294,15 +309,18 @@ smf:
     sbi:
       - addr: 127.0.0.4
         port: 7777
+    pfcp:
+      - addr: 127.0.0.4
+      - addr: ::1
     gtpc:
       - addr: 127.0.0.4
       - addr: ::1
-    pfcp:
+    gtpu:
       - addr: 127.0.0.4
       - addr: ::1
     subnet:
       - addr: 10.45.0.1/16
-      - addr: cafe::1/64
+      - addr: 2001:230:cafe::1/48
     dns:
       - 8.8.8.8
       - 8.8.4.4

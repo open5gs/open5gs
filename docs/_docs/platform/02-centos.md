@@ -236,7 +236,7 @@ Set the IP address on the `ogstun` TUN interface.
 
 ```bash
 $ sudo ip addr add 10.45.0.1/16 dev ogstun
-$ sudo ip addr add cafe::1/64 dev ogstun
+$ sudo ip addr add 2001:230:cafe::1/48 dev ogstun
 ```
 
 Make sure it is set up properly.

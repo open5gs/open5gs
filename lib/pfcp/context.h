@@ -28,6 +28,14 @@
 extern "C" {
 #endif
 
+#define OGS_PFCP_DEFAULT_PDR_PRECEDENCE 255
+#define OGS_PFCP_INDIRECT_PDR_PRECEDENCE 1
+#define OGS_PFCP_UP2CP_PDR_PRECEDENCE 1
+#define OGS_PFCP_CP2UP_PDR_PRECEDENCE 1000
+
+#define OGS_PFCP_DEFAULT_CHOOSE_ID 5
+#define OGS_PFCP_INDIRECT_DATA_FORWARDING_CHOOSE_ID 10
+
 #define OGS_MAX_NUM_OF_DEV      16
 #define OGS_MAX_NUM_OF_SUBNET   16
 
@@ -35,6 +43,7 @@ typedef struct ogs_pfcp_node_s ogs_pfcp_node_t;
 
 typedef struct ogs_pfcp_context_s {
     uint32_t        pfcp_port;      /* PFCP local port */
+
     const char      *tun_ifname;    /* PFCP TUN Interface Name */
 
     ogs_list_t      pfcp_list;      /* PFCP IPv4 Server List */
@@ -52,16 +61,15 @@ typedef struct ogs_pfcp_context_s {
     ogs_pfcp_up_function_features_t up_function_features;
     int up_function_features_len;
 
-    ogs_list_t      gtpu_resource_list; /* UP IP Resource List */
-
-    ogs_list_t      peer_list;      /* PFCP Node List */
-    ogs_pfcp_node_t *node;          /* Iterator for Peer round-robin */
+    ogs_list_t      pfcp_peer_list; /* PFCP Node List */
+    ogs_pfcp_node_t *pfcp_node;     /* Iterator for Peer round-robin */
 
     ogs_list_t      dev_list;       /* Tun Device List */
     ogs_list_t      subnet_list;    /* UE Subnet List */
 
-    ogs_hash_t      *pdr_hash;      /* hash table for PDR(TEID+QFI) */
-    ogs_hash_t      *far_hash;      /* hash table for FAR(TEID+ADDR) */
+    ogs_hash_t      *object_teid_hash; /* hash table for PFCP OBJ(TEID) */
+    ogs_hash_t      *far_f_teid_hash;  /* hash table for FAR(TEID+ADDR) */
+    ogs_hash_t      *far_teid_hash; /* hash table for FAR(TEID) */
 } ogs_pfcp_context_t;
 
 #define OGS_SETUP_PFCP_NODE(__cTX, __pNODE) \
@@ -104,11 +112,19 @@ typedef struct ogs_pfcp_node_s {
     int up_function_features_len;
 } ogs_pfcp_node_t;
 
-typedef struct ogs_pfcp_gtpu_resource_s {
-    ogs_lnode_t lnode;
+typedef enum {
+    OGS_PFCP_OBJ_BASE = 0,
 
-    ogs_pfcp_user_plane_ip_resource_info_t info;
-} __attribute__ ((packed)) ogs_pfcp_gtpu_resource_t;
+    OGS_PFCP_OBJ_SESS_TYPE,
+    OGS_PFCP_OBJ_PDR_TYPE,
+
+    OGS_PFCP_OBJ_TOP,
+} ogs_pfcp_object_type_e;
+
+typedef struct ogs_pfcp_object_s {
+    ogs_lnode_t lnode;
+    ogs_pfcp_object_type_e type;
+} ogs_pfcp_object_t;
 
 typedef struct ogs_pfcp_sess_s ogs_pfcp_sess_t;
 typedef struct ogs_pfcp_pdr_s ogs_pfcp_pdr_t;
@@ -118,10 +134,15 @@ typedef struct ogs_pfcp_qer_s ogs_pfcp_qer_t;
 typedef struct ogs_pfcp_bar_s ogs_pfcp_bar_t;
 
 typedef struct ogs_pfcp_pdr_s {
-    ogs_lnode_t             lnode;
+    ogs_pfcp_object_t       obj;
     uint32_t                index;
 
-    uint64_t                hashkey;
+    struct {
+        struct {
+            int len;
+            uint32_t key;
+        } teid;
+    } hash;
 
     uint8_t                 *id_node;      /* Pool-Node for ID */
     ogs_pfcp_pdr_id_t       id;
@@ -158,18 +179,28 @@ typedef struct ogs_pfcp_pdr_s {
 
     /* Related Context */
     ogs_pfcp_sess_t         *sess;
+    void                    *gnode;         /* For CP-Function */
 } ogs_pfcp_pdr_t;
 
-typedef struct ogs_pfcp_far_hashkey_s {
+typedef struct ogs_pfcp_far_hash_f_teid_s {
     uint32_t teid;
     uint32_t addr[4];
-} ogs_pfcp_far_hashkey_t;
+} ogs_pfcp_far_hash_f_teid_t;
 
 typedef struct ogs_pfcp_far_s {
     ogs_lnode_t             lnode;
 
-    int                     hashkey_len;
-    ogs_pfcp_far_hashkey_t  hashkey;
+    struct {
+        struct {
+            int len;
+            ogs_pfcp_far_hash_f_teid_t key;
+        } f_teid;
+
+        struct {
+            int len;
+            uint32_t key;
+        } teid;
+    } hash;
 
     uint8_t                 *id_node;      /* Pool-Node for ID */
     ogs_pfcp_far_id_t       id;
@@ -226,6 +257,8 @@ typedef struct ogs_pfcp_bar_s {
 } ogs_pfcp_bar_t;
 
 typedef struct ogs_pfcp_sess_s {
+    ogs_pfcp_object_t   obj;
+
     ogs_list_t          pdr_list;       /* PDR List */
     ogs_list_t          far_list;       /* FAR List */
     ogs_list_t          urr_list;       /* URR List */
@@ -261,15 +294,15 @@ typedef struct ogs_pfcp_dev_s {
 typedef struct ogs_pfcp_subnet_s {
     ogs_lnode_t     lnode;
 
-    ogs_ipsubnet_t  sub;                /* Subnet : cafe::0/64 */
-    ogs_ipsubnet_t  gw;                 /* Gateway : cafe::1 */
+    ogs_ipsubnet_t  sub;                    /* Subnet : 2001:230:cafe::0/48 */
+    ogs_ipsubnet_t  gw;                     /* Gateway : 2001:230:cafe::1 */
     char            dnn[OGS_MAX_DNN_LEN];   /* DNN : "internet", "volte", .. */
 
-#define MAX_NUM_OF_SUBNET_RANGE         16
+#define OGS_MAX_NUM_OF_SUBNET_RANGE 16
     struct {
         const char *low;
         const char *high;
-    } range[MAX_NUM_OF_SUBNET_RANGE];
+    } range[OGS_MAX_NUM_OF_SUBNET_RANGE];
     int num_of_range;
 
     int             family;         /* AF_INET or AF_INET6 */
@@ -301,7 +334,7 @@ ED6(uint8_t     spare1:3;,
     ogs_pfcp_pdr_t  *pdr;
 } ogs_pfcp_rule_t;
 
-void ogs_pfcp_context_init(int num_of_gtpu_resource);
+void ogs_pfcp_context_init(void);
 void ogs_pfcp_context_final(void);
 ogs_pfcp_context_t *ogs_pfcp_self(void);
 int ogs_pfcp_context_parse_config(const char *local, const char *remote);
@@ -316,20 +349,11 @@ ogs_pfcp_node_t *ogs_pfcp_node_find(
 void ogs_pfcp_node_remove(ogs_list_t *list, ogs_pfcp_node_t *node);
 void ogs_pfcp_node_remove_all(ogs_list_t *list);
 
-ogs_pfcp_gtpu_resource_t *ogs_pfcp_gtpu_resource_add(ogs_list_t *list,
-        ogs_pfcp_user_plane_ip_resource_info_t *info);
-ogs_pfcp_gtpu_resource_t *ogs_pfcp_gtpu_resource_find(ogs_list_t *list,
+ogs_gtpu_resource_t *ogs_pfcp_find_gtpu_resource(ogs_list_t *list,
         char *dnn, ogs_pfcp_interface_t source_interface);
-void ogs_pfcp_gtpu_resource_remove(ogs_list_t *list,
-        ogs_pfcp_gtpu_resource_t *resource);
-void ogs_pfcp_gtpu_resource_remove_all(ogs_list_t *list);
+void ogs_pfcp_setup_far_gtpu_node(ogs_pfcp_far_t *far);
+void ogs_pfcp_setup_pdr_gtpu_node(ogs_pfcp_pdr_t *pdr);
 
-#define OGS_DEFAULT_DL_PDR(__sESS) \
-    ogs_pfcp_sess_default_pdr(__sESS, OGS_PFCP_INTERFACE_CORE)
-#define OGS_DEFAULT_UL_PDR(__sESS) \
-    ogs_pfcp_sess_default_pdr(__sESS, OGS_PFCP_INTERFACE_ACCESS)
-ogs_pfcp_pdr_t *ogs_pfcp_sess_default_pdr(
-        ogs_pfcp_sess_t *sess, ogs_pfcp_interface_t src_if);
 void ogs_pfcp_sess_clear(ogs_pfcp_sess_t *sess);
 
 ogs_pfcp_pdr_t *ogs_pfcp_pdr_add(ogs_pfcp_sess_t *sess);
@@ -338,8 +362,9 @@ ogs_pfcp_pdr_t *ogs_pfcp_pdr_find(
 ogs_pfcp_pdr_t *ogs_pfcp_pdr_find_or_add(
         ogs_pfcp_sess_t *sess, ogs_pfcp_pdr_id_t id);
 
-void ogs_pfcp_pdr_hash_set(ogs_pfcp_pdr_t *pdr);
-ogs_pfcp_pdr_t *ogs_pfcp_pdr_find_by_teid_and_qfi(uint32_t teid, uint8_t qfi);
+void ogs_pfcp_object_teid_hash_set(
+        ogs_pfcp_object_type_e type, ogs_pfcp_pdr_t *pdr);
+ogs_pfcp_object_t *ogs_pfcp_object_find_by_teid(uint32_t teid);
 
 ogs_pfcp_pdr_t *ogs_pfcp_pdr_find_by_choose_id(
         ogs_pfcp_sess_t *sess, uint8_t choose_id);
@@ -358,8 +383,11 @@ ogs_pfcp_far_t *ogs_pfcp_far_find(
 ogs_pfcp_far_t *ogs_pfcp_far_find_or_add(
         ogs_pfcp_sess_t *sess, ogs_pfcp_far_id_t id);
 
-void ogs_pfcp_far_hash_set(ogs_pfcp_far_t *far);
+void ogs_pfcp_far_f_teid_hash_set(ogs_pfcp_far_t *far);
 ogs_pfcp_far_t *ogs_pfcp_far_find_by_error_indication(ogs_pkbuf_t *pkbuf);
+
+void ogs_pfcp_far_teid_hash_set(ogs_pfcp_far_t *far);
+ogs_pfcp_far_t *ogs_pfcp_far_find_by_teid(uint32_t teid);
 
 void ogs_pfcp_far_remove(ogs_pfcp_far_t *far);
 void ogs_pfcp_far_remove_all(ogs_pfcp_sess_t *sess);

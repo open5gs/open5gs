@@ -19,8 +19,6 @@
 
 #include "ogs-gtp.h"
 
-int __ogs_gtp_domain;
-
 /* 8.13 Protocol Configuration Options (PCO) 
  * 10.5.6.3 Protocol configuration options in 3GPP TS 24.008 */
 

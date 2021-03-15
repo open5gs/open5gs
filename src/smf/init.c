@@ -29,7 +29,9 @@ int smf_initialize()
 {
     int rv;
 
-    ogs_pfcp_context_init(ogs_app()->pool.nf * OGS_MAX_NUM_OF_GTPU_RESOURCE);
+    ogs_gtp_context_init(ogs_app()->pool.nf * OGS_MAX_NUM_OF_GTPU_RESOURCE);
+    ogs_pfcp_context_init();
+
     smf_context_init();
     smf_event_init();
     ogs_sbi_context_init();
@@ -38,6 +40,9 @@ int smf_initialize()
     if (rv != OGS_OK) return rv;
 
     rv = ogs_pfcp_xact_init();
+    if (rv != OGS_OK) return rv;
+
+    rv = ogs_gtp_context_parse_config("smf", "upf");
     if (rv != OGS_OK) return rv;
 
     rv = ogs_pfcp_context_parse_config("smf", "upf");
@@ -100,8 +105,10 @@ void smf_terminate(void)
     smf_fd_final();
 
     smf_context_final();
+
     ogs_pfcp_context_final();
     ogs_sbi_context_final();
+    ogs_gtp_context_final();
 
     ogs_pfcp_xact_final();
     ogs_gtp_xact_final();

@@ -157,14 +157,14 @@ int mme_gtp_open(void)
     ogs_sock_t *sock = NULL;
     mme_sgw_t *sgw = NULL;
 
-    ogs_list_for_each(&mme_self()->gtpc_list, node) {
+    ogs_list_for_each(&ogs_gtp_self()->gtpc_list, node) {
         sock = ogs_gtp_server(node);
         ogs_assert(sock);
 
         node->poll = ogs_pollset_add(ogs_app()->pollset,
                 OGS_POLLIN, sock->fd, _gtpv2_c_recv_cb, sock);
     }
-    ogs_list_for_each(&mme_self()->gtpc_list6, node) {
+    ogs_list_for_each(&ogs_gtp_self()->gtpc_list6, node) {
         sock = ogs_gtp_server(node);
         ogs_assert(sock);
 
@@ -172,15 +172,7 @@ int mme_gtp_open(void)
                 OGS_POLLIN, sock->fd, _gtpv2_c_recv_cb, sock);
     }
 
-    mme_self()->gtpc_sock = ogs_socknode_sock_first(&mme_self()->gtpc_list);
-    if (mme_self()->gtpc_sock)
-        mme_self()->gtpc_addr = &mme_self()->gtpc_sock->local_addr;
-
-    mme_self()->gtpc_sock6 = ogs_socknode_sock_first(&mme_self()->gtpc_list6);
-    if (mme_self()->gtpc_sock6)
-        mme_self()->gtpc_addr6 = &mme_self()->gtpc_sock6->local_addr;
-
-    ogs_assert(mme_self()->gtpc_addr || mme_self()->gtpc_addr6);
+    OGS_SETUP_GTPC_SERVER;
 
     mme_self()->pgw_addr = mme_pgw_addr_find_by_apn(
             &mme_self()->pgw_list, AF_INET, NULL);
@@ -190,7 +182,8 @@ int mme_gtp_open(void)
 
     ogs_list_for_each(&mme_self()->sgw_list, sgw) {
         rv = ogs_gtp_connect(
-                mme_self()->gtpc_sock, mme_self()->gtpc_sock6, sgw->gnode);
+                ogs_gtp_self()->gtpc_sock, ogs_gtp_self()->gtpc_sock6,
+                sgw->gnode);
         ogs_assert(rv == OGS_OK);
     }
 
@@ -199,8 +192,8 @@ int mme_gtp_open(void)
 
 void mme_gtp_close(void)
 {
-    ogs_socknode_remove_all(&mme_self()->gtpc_list);
-    ogs_socknode_remove_all(&mme_self()->gtpc_list6);
+    ogs_socknode_remove_all(&ogs_gtp_self()->gtpc_list);
+    ogs_socknode_remove_all(&ogs_gtp_self()->gtpc_list6);
 }
 
 void mme_gtp_send_create_session_request(mme_sess_t *sess)

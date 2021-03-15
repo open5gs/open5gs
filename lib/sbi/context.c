@@ -21,6 +21,8 @@
 #include "ogs-sbi.h"
 
 int __ogs_sbi_domain;
+static ogs_sbi_context_t self;
+static int context_initialized = 0;
 
 static OGS_POOL(nf_instance_pool, ogs_sbi_nf_instance_t);
 static OGS_POOL(nf_service_pool, ogs_sbi_nf_service_t);
@@ -29,15 +31,11 @@ static OGS_POOL(subscription_pool, ogs_sbi_subscription_t);
 static OGS_POOL(smf_info_pool, ogs_sbi_smf_info_t);
 static OGS_POOL(nf_info_pool, ogs_sbi_nf_info_t);
 
-static ogs_sbi_context_t self;
-
-static int context_initialized = 0;
-
 void ogs_sbi_context_init(void)
 {
     ogs_assert(context_initialized == 0);
 
-    /* Initialize SMF context */
+    /* Initialize SBI context */
     memset(&self, 0, sizeof(ogs_sbi_context_t));
 
     ogs_log_install_domain(&__ogs_sbi_domain, "sbi", ogs_core()->log.level);

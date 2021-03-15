@@ -134,7 +134,7 @@ $ diff -u /etc/systemd/network/99-open5gs.network /etc/systemd/network/99-open5g
  [Network]
 -Address=10.45.0.1/16
 +Address=10.46.0.1/16
- Address=cafe::1/64
+ Address=2001:230:cafe::1/48
 ```
 
 Restart systemd-networkd
@@ -159,7 +159,7 @@ $ diff -u smf.yaml smf.yaml.new
      subnet:
 -      - addr: 10.45.0.1/16
 +      - addr: 10.46.0.1/16
-       - addr: cafe::1/64
+       - addr: 2001:230:cafe::1/48
      dns:
        - 8.8.8.8
 ```
@@ -174,7 +174,7 @@ $ diff -u upf.yaml upf.yaml.new
      subnet:
 -      - addr: 10.45.0.1/16
 +      - addr: 10.46.0.1/16
-       - addr: cafe::1/64
+       - addr: 2001:230:cafe::1/48
 
  #
 ```
@@ -445,7 +445,7 @@ $ sudo iptables-restore < newtables
 
 Docker doesn't have IPv6 NAT rules. In this case, you just add the NAT rule as below.
 ```
-$ sudo ip6tables -t nat -A POSTROUTING -s cafe::/64 ! -o ogstun -j MASQUERADE
+$ sudo ip6tables -t nat -A POSTROUTING -s 2001:230:cafe::/48 ! -o ogstun -j MASQUERADE
 ```
 
 The above operation is the same as described in the following manuals.
@@ -481,7 +481,7 @@ $ sudo sysctl -w net.ipv6.conf.all.forwarding=1
 
 ### Add NAT Rule
 $ sudo iptables -t nat -A POSTROUTING -s 10.45.0.0/16 ! -o ogstun -j MASQUERADE
-$ sudo ip6tables -t nat -A POSTROUTING -s cafe::/64 ! -o ogstun -j MASQUERADE
+$ sudo ip6tables -t nat -A POSTROUTING -s 2001:230:cafe::/48 ! -o ogstun -j MASQUERADE
 ```
 
 #### How to use a different DNN/APN for each SMF
@@ -546,26 +546,26 @@ The IP address of the UE can also use a different UE pool depending on the DNN/A
 #
 #  o IPv4/IPv6 Pool
 #    $ sudo ip addr add 10.45.0.1/16 dev ogstun
-#    $ sudo ip addr add cafe:1::1/64 dev ogstun
+#    $ sudo ip addr add 2001:230:cafe::1/48 dev ogstun
 #
 #    subnet:
 #      - addr: 10.45.0.1/16
-#      - addr: cafe:1::1/64
+#      - addr: 2001:230:cafe::1/48
 #
 #
-#  o Specific DNN/APN(e.g 'volte') uses 10.46.0.1/16, cafe:2::1/64
-#    All other DNNs/APNs use 10.45.0.1/16, cafe:1::1/64
+#  o Specific DNN/APN(e.g 'volte') uses 10.46.0.1/16, 2001:230:babe::1/48
+#    All other DNNs/APNs use 10.45.0.1/16, 2001:230:cafe::1/48
 #    $ sudo ip addr add 10.45.0.1/16 dev ogstun
 #    $ sudo ip addr add 10.46.0.1/16 dev ogstun
-#    $ sudo ip addr add cafe:1::1/64 dev ogstun
-#    $ sudo ip addr add cafe:2::1/64 dev ogstun
+#    $ sudo ip addr add 2001:230:cafe::1/48 dev ogstun
+#    $ sudo ip addr add 2001:230:babe::1/48 dev ogstun
 #
 #    subnet:
 #      - addr: 10.45.0.1/16
-#      - addr: cafe:1::1/64
+#      - addr: 2001:230:cafe::1/48
 #      - addr: 10.46.0.1/16
 #        dnn: volte
-#      - addr: cafe:2::1/64
+#      - addr: 2001:230:babe::1/48
 #        dnn: volte
 #
 #  o Pool Range Sample
@@ -590,10 +590,10 @@ The IP address of the UE can also use a different UE pool depending on the DNN/A
 #        range:
 #          - 10.45.0.100-10.45.0.200
 #          - 10.45.1.100-10.45.1.200
-#      - addr: cafe::1/64
+#      - addr: 2001:230:cafe::1/48
 #        range:
-#          - cafe::a0-cafe:b0
-#          - cafe::c0-cafe:d0
+#          - 2001:230:cafe:a0::0-2001:230:cafe:b0::0
+#          - 2001:230:cafe:c0::0-2001:230:cafe:d0::0
 #
 ```
 
@@ -773,7 +773,7 @@ Currently, the number of UE is limited to `128*128`.
 
 ```
 * IPv4 : 10.45.0.1/16
-* IPv6 : cafe::1/64
+* IPv6 : 2001:230:cafe::1/48
 ```
 
 - DNS

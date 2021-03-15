@@ -21,6 +21,9 @@
 #define OGS_PFCP_H
 
 #include "ogs-core.h"
+
+#include "pfcp/pfcp-config.h"
+
 #include "ipfw/ogs-ipfw.h"
 #include "ogs-app.h"
 #include "ogs-gtp.h"
@@ -32,7 +35,6 @@
 #define OGS_MAX_NUM_OF_URR              2
 #define OGS_MAX_NUM_OF_QER              4
 #define OGS_MAX_NUM_OF_BAR              1
-#define OGS_MAX_NUM_OF_GTPU_RESOURCE    4
 
 #define OGS_PFCP_INSIDE
 
@@ -40,6 +42,7 @@
 #include "pfcp/types.h"
 #include "pfcp/conv.h"
 #include "pfcp/context.h"
+#include "pfcp/rule-match.h"
 #include "pfcp/build.h"
 #include "pfcp/path.h"
 #include "pfcp/xact.h"

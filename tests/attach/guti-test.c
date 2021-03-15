@@ -206,7 +206,7 @@ static void test1_func(abts_case *tc, void *data)
     /* Receive GTP-U Router Solicitation */
     recvbuf = test_gtpu_read(gtpu);
     ABTS_PTR_NOTNULL(tc, recvbuf);
-    ogs_pkbuf_free(recvbuf);
+    testgtpu_recv(test_ue, recvbuf);
 
     /* Send GTP-U ICMP Packet */
     rv = test_gtpu_send_ping(gtpu, bearer, TEST_PING_IPV4);

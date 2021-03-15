@@ -37,13 +37,6 @@ extern int __sgwu_log_domain;
 #define OGS_LOG_DOMAIN __sgwu_log_domain
 
 typedef struct sgwu_context_s {
-    uint32_t        gtpu_port;      /* Default: SGWU GTP-U local port */
-
-    ogs_list_t      gtpu_list;      /* SGWU GTPU Server List */
-    ogs_sock_t      *gtpu_sock;     /* SGWU GTPU IPv4 Socket */
-    ogs_sock_t      *gtpu_sock6;    /* SGWU GTPU IPv6 Socket */
-
-    ogs_list_t      peer_list;      /* gNB/SMF Node List */
     ogs_hash_t      *sess_hash;     /* hash table (F-SEID) */
     ogs_list_t      sess_list;
 } sgwu_context_t;

@@ -237,6 +237,15 @@ static void test1_func(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
+    /* Send GTP-U Router Solicitation */
+    rv = test_gtpu_send_slacc_rs(gtpu, qos_flow);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive GTP-U Router Advertisement */
+    recvbuf = test_gtpu_read(gtpu);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    testgtpu_recv(test_ue, recvbuf);
+
 #if !defined(__FreeBSD__)
     /* Send GTP-U ICMP Packet */
     rv = test_gtpu_send_ping(gtpu, qos_flow, TEST_PING_IPV6);
@@ -698,6 +707,15 @@ static void test2_func(abts_case *tc, void *data)
     recvbuf = testgnb_gtpu_read(gtpu);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
+
+    /* Send GTP-U Router Solicitation */
+    rv = test_gtpu_send_slacc_rs(gtpu, qos_flow);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive GTP-U Router Advertisement */
+    recvbuf = test_gtpu_read(gtpu);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    testgtpu_recv(test_ue, recvbuf);
 
 #if !defined(__FreeBSD__)
     /* Send GTP-U ICMP Packet */

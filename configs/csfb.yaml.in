@@ -102,14 +102,17 @@ smf:
 #    sbi:
 #      - addr: 127.0.0.4
 #        port: 7777
+    pfcp:
+      - addr: 127.0.0.4
     gtpc:
       - addr: 127.0.0.4
       - addr: ::1
-    pfcp:
+    gtpu:
       - addr: 127.0.0.4
+      - addr: ::1
     subnet:
       - addr: 10.45.0.1/16
-      - addr: cafe::1/64
+      - addr: 2001:230:cafe::1/48
     dns:
       - 8.8.8.8
       - 8.8.4.4
@@ -164,9 +167,9 @@ amf:
     amf_name: open5gs-amf0
 
 sgwu:
-    gtpu:
-      - addr: 127.0.0.6
     pfcp:
+      - addr: 127.0.0.6
+    gtpu:
       - addr: 127.0.0.6
 
 upf:
@@ -176,7 +179,7 @@ upf:
       - addr: 127.0.0.7
     subnet:
       - addr: 10.45.0.1/16
-      - addr: cafe::1/64
+      - addr: 2001:230:cafe::1/48
 
 hss:
     freeDiameter:

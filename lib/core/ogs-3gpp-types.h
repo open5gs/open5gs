@@ -37,6 +37,8 @@ extern "C" {
 /* Num of PacketFilter per Bearer(GTP) or QoS(NAS-5GS) */
 #define OGS_MAX_NUM_OF_PACKET_FILTER    16
 
+#define OGS_MAX_NUM_OF_GTPU_RESOURCE    4
+
 #define OGS_MAX_SDU_LEN                 8192
 #define OGS_MAX_PKT_LEN                 2048
 #define OGS_PLMN_ID_LEN                 3
@@ -192,9 +194,10 @@ ogs_uint24_t ogs_s_nssai_sd_from_string(const char *hex);
  * Common Structure
  * S1AP : 9.2.2.1 Transport Layer Address, See 36.414
  * GTP : 8.22 Fully Qualified TEID (F-TEID) */
-#define OGS_IPV4_LEN                4
-#define OGS_IPV6_LEN                16
-#define OGS_IPV4V6_LEN              20
+#define OGS_IPV4_LEN                        4
+#define OGS_IPV6_LEN                        16
+#define OGS_IPV6_DEFAULT_PREFIX_LEN         64
+#define OGS_IPV4V6_LEN                      20
 typedef struct ogs_ip_s {
     uint32_t addr;
     uint8_t addr6[OGS_IPV6_LEN];
@@ -470,6 +473,95 @@ ED3(uint8_t ext:1;,
 
 int ogs_pco_parse(ogs_pco_t *pco, unsigned char *data, int data_len);
 int ogs_pco_build(unsigned char *data, int data_len, ogs_pco_t *pco);
+
+/*
+ * PFCP Specification
+ *
+ * TS29.244, Ch 8.2.82 User Plane IP Resource Information
+ *
+ * The following flags are coded within Octet 5:
+ * - Bit 1 – V4: If this bit is set to "1", then the IPv4 address field
+ *   shall be present, otherwise the IPv4 address field shall not be present.
+ * - Bit 2 – V6: If this bit is set to "1", then the IPv6 address field
+ *   shall be present, otherwise the IPv6 address field shall not be present.
+ * - Bit 3-5 – TEID Range Indication (TEIDRI): the value of this field
+ *   indicates the number of bits in the most significant octet of a TEID
+ *   that are used to partition the TEID range,
+ *   e.g. if this field is set to "4", then the first 4 bits in the TEID
+ *   are used to partition the TEID range.
+ * - Bit 6 – Associated Network Instance (ASSONI): if this bit is set to "1",
+ *   then the Network Instance field shall be present, otherwise the Network
+ *   Instance field shall not be present.
+ * - Bit 7 – Associated Source Interface (ASSOSI): if this bit is set to "1",
+ *   then the Source Interface field shall be present,
+ *   otherwise the Source Interface field shall not be present.
+ * - Bit 8: Spare, for future use and set to 0.
+ *
+ * At least one of the V4 and V6 flags shall be set to "1",
+ * and both may be set to "1".
+ *
+ * If both the ASSONI and ASSOSI flags are set to "0", this shall indicate
+ * that the User Plane IP Resource Information provided can be used
+ * by CP function for any Network Instance and any Source Interface
+ * of GTP-U user plane in the UP function.  Octet 6 (TEID Range) shall be
+ * present if the TEID Range Indication is not set to zero and
+ * shall contain a value of the bits which are used to partition the TEID range.
+ * E.g. if the TEID Range Indication is set to "4", then Octet 6 shall be
+ * one of values between 0 and 15. When TEID Range Indication is set to zero,
+ * the Octet 6 shall not be present, the TEID is not partitioned,
+ * i.e. all TEID values are available for use by the CP function.
+ *
+ * Octets "m to (m+3)" and/or "p to (p+15)" (IPv4 address / IPv6 address fields)
+ * , if present, shall contain the respective IP address values.
+ *
+ * Octets "k to l", if present, shall contain a Network Instance value
+ * as encoded in octet "5 to n+4" of the Figure 8.2.4-1 in clause 8.2.4,
+ * identifying a Network Instance with which the IP address or TEID Range
+ * is associated.
+ *
+ * Octet r, if present, shall contain a Source Interface value as encoded
+ * in octet 5 of the Figure 8.2.2-1 in clause 8.2.2,
+ * identifying the Source Interface with which the IP address or TEID Range
+ * is associated.
+ */
+
+/* Flags(1) + TEID Range(1) + IPV4(4) + IPV6(16) + Source Interface(1) = 23 */
+#define OGS_MAX_USER_PLANE_IP_RESOURCE_INFO_LEN \
+    (23 + OGS_MAX_APN_LEN)
+typedef struct ogs_user_plane_ip_resource_info_s {
+    union {
+        struct {
+ED6(uint8_t     spare:1;,
+    uint8_t     assosi:1;,
+    uint8_t     assoni:1;,
+    uint8_t     teidri:3;,
+    uint8_t     v6:1;,
+    uint8_t     v4:1;)
+        };
+        uint8_t flags;
+    };
+
+    /*
+     * OGS_PFCP-GTPU-TEID   = INDEX              | TEID_RANGE
+     * INDEX                = OGS_PFCP-GTPU-TEID & ~TEID_RANGE
+     */
+#define OGS_PFCP_GTPU_TEID_TO_INDEX(__tEID, __iND, __rANGE) \
+    (__tEID & ~(__rANGE << (32 - __iND)))
+#define OGS_PFCP_GTPU_INDEX_TO_TEID(__iNDEX, __iND, __rANGE) \
+    (__iNDEX | (__rANGE << (32 - __iND)))
+    uint8_t     teid_range;
+    uint32_t    addr;
+    uint8_t     addr6[OGS_IPV6_LEN];
+    char        network_instance[OGS_MAX_APN_LEN];
+    uint8_t     source_interface;
+} __attribute__ ((packed)) ogs_user_plane_ip_resource_info_t;
+
+int ogs_sockaddr_to_user_plane_ip_resource_info(
+    ogs_sockaddr_t *addr, ogs_sockaddr_t *addr6,
+    ogs_user_plane_ip_resource_info_t *info);
+int ogs_user_plane_ip_resource_info_to_sockaddr(
+    ogs_user_plane_ip_resource_info_t *info,
+    ogs_sockaddr_t **addr, ogs_sockaddr_t **addr6);
 
 typedef struct ogs_slice_data_s {
     ogs_s_nssai_t s_nssai;

@@ -39,19 +39,8 @@ extern int __sgwc_log_domain;
 typedef struct sgwc_tunnel_s sgwc_tunnel_t;
 
 typedef struct sgwc_context_s {
-    uint32_t        gtpc_port;      /* Default GTPC port */
-
-    ogs_list_t      gtpc_list;      /* SGW GTPC IPv4 Server List */
-    ogs_list_t      gtpc_list6;     /* SGW GTPC IPv6 Server List */
-    ogs_sock_t      *gtpc_sock;     /* SGW GTPC IPv4 Socket */
-    ogs_sock_t      *gtpc_sock6;    /* SGW GTPC IPv6 Socket */
-    ogs_sockaddr_t  *gtpc_addr;     /* SGW GTPC IPv4 Address */
-    ogs_sockaddr_t  *gtpc_addr6;    /* SGW GTPC IPv6 Address */
-
     ogs_list_t      mme_s11_list;   /* MME GTPC Node List */
     ogs_list_t      pgw_s5c_list;   /* PGW GTPC Node List */
-    ogs_list_t      enb_s1u_list;   /* eNB GTPU Node List */
-    ogs_list_t      pgw_s5u_list;   /* PGW GTPU Node List */
 
     ogs_hash_t      *imsi_ue_hash;  /* hash table (IMSI : SGW_UE) */
 

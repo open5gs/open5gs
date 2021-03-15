@@ -45,6 +45,10 @@ logger:
 #      - addr: 127.0.0.3
 #      - addr: ::1
 #
+#  o PFCP-U Server(127.0.0.1:2152, [::1]:2152)
+#    pfcp:
+#      name: localhost
+#
 sgwc:
     gtpc:
       - addr: 127.0.0.3

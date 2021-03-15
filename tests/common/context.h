@@ -36,7 +36,7 @@ extern "C" {
 #define TEST_SGWU_IPV4          "127.0.0.7"
 
 #define TEST_PING_IPV4          "10.45.0.1"
-#define TEST_PING_IPV6          "cafe::1"
+#define TEST_PING_IPV6          "2001:230:cafe::1"
 
 #define MAX_NUM_OF_SERVED_GUAMI     8
 

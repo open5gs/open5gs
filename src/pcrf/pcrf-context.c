@@ -307,7 +307,7 @@ int pcrf_sess_set_ipv6(const void *key, uint8_t *sid)
 
     ogs_thread_mutex_lock(&self.hash_lock);
 
-    ogs_hash_set(self.ip_hash, key, OGS_IPV6_LEN, sid);
+    ogs_hash_set(self.ip_hash, key, OGS_IPV6_DEFAULT_PREFIX_LEN >> 3, sid);
 
     ogs_thread_mutex_unlock(&self.hash_lock);
 
@@ -335,7 +335,8 @@ uint8_t *pcrf_sess_find_by_ipv6(const void *key)
 
     ogs_thread_mutex_lock(&self.hash_lock);
 
-    sid = (uint8_t *)ogs_hash_get(self.ip_hash, key, OGS_IPV6_LEN);
+    sid = (uint8_t *)ogs_hash_get(
+            self.ip_hash, key, OGS_IPV6_DEFAULT_PREFIX_LEN >> 3);
 
     ogs_thread_mutex_unlock(&self.hash_lock);
 

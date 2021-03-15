@@ -31,6 +31,8 @@ ogs_socknode_t *test_gtpu_server(int index, int family);
 ogs_pkbuf_t *test_gtpu_read(ogs_socknode_t *node);
 void test_gtpu_close(ogs_socknode_t *node);
 
+void testgtpu_recv(test_ue_t *test_ue, ogs_pkbuf_t *pkbuf);
+
 int test_gtpu_send(
         ogs_socknode_t *node, test_bearer_t *bearer,
         ogs_gtp_header_t *gtp_hdesc, ogs_gtp_extension_header_t *ext_hdesc,

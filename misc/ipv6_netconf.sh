@@ -8,8 +8,8 @@ if [ "$SYSTEM" = "Linux" ]; then
     fi
     ip addr del 10.45.0.1/16 dev ogstun 2> /dev/null
     ip addr add 10.45.0.1/16 dev ogstun
-    ip addr del cafe::1/64 dev ogstun 2> /dev/null
-    ip addr add cafe::1/64 dev ogstun
+    ip addr del 2001:230:cafe::1/48 dev ogstun 2> /dev/null
+    ip addr add 2001:230:cafe::1/48 dev ogstun
     ip link set ogstun up
     ip addr del fe80::2 dev lo 2> /dev/null
     ip addr del fe80::3 dev lo 2> /dev/null

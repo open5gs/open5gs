@@ -54,15 +54,6 @@ typedef struct smf_context_s {
 
     OpenAPI_nf_type_e   nf_type;
 
-    uint32_t        gtpc_port;      /* Default: SMF GTP-C local port */
-
-    ogs_list_t      gtpc_list;      /* SMF GTPC IPv4 Server List */
-    ogs_list_t      gtpc_list6;     /* SMF GTPC IPv6 Server List */
-    ogs_sock_t      *gtpc_sock;     /* SMF GTPC IPv4 Socket */
-    ogs_sock_t      *gtpc_sock6;    /* SMF GTPC IPv6 Socket */
-    ogs_sockaddr_t  *gtpc_addr;     /* SMF GTPC IPv4 Address */
-    ogs_sockaddr_t  *gtpc_addr6;    /* SMF GTPC IPv6 Address */
-
 #define MAX_NUM_OF_DNS              2
     const char      *dns[MAX_NUM_OF_DNS];
     const char      *dns6[MAX_NUM_OF_DNS];
@@ -320,6 +311,12 @@ typedef struct smf_sess_s {
         ogs_ip_t gnb_dl_ip;
     } handover;
 
+    /* Data Forwarding between the CP and UP functions */
+    ogs_pfcp_pdr_t  *cp2up_pdr;
+    ogs_pfcp_pdr_t  *up2cp_pdr;
+    ogs_pfcp_far_t  *cp2up_far;
+    ogs_pfcp_far_t  *up2cp_far;
+
     ogs_list_t      bearer_list;
 
     ogs_gtp_node_t  *gnode;
@@ -372,6 +369,9 @@ smf_sess_t *smf_sess_find_by_error_indication_report(
 void smf_sess_create_indirect_data_forwarding(smf_sess_t *sess);
 bool smf_sess_have_indirect_data_forwarding(smf_sess_t *sess);
 void smf_sess_delete_indirect_data_forwarding(smf_sess_t *sess);
+
+void smf_sess_create_cp_up_data_forwarding(smf_sess_t *sess);
+void smf_sess_delete_cp_up_data_forwarding(smf_sess_t *sess);
 
 smf_bearer_t *smf_qos_flow_add(smf_sess_t *sess);
 smf_bearer_t *smf_qos_flow_find_by_qfi(smf_sess_t *sess, uint8_t qfi);

@@ -36,9 +36,13 @@ int mme_initialize()
 {
     int rv;
 
+    ogs_gtp_context_init(OGS_MAX_NUM_OF_GTPU_RESOURCE);
     mme_context_init();
 
     rv = ogs_gtp_xact_init();
+    if (rv != OGS_OK) return rv;
+
+    rv = ogs_gtp_context_parse_config("mme", "sgwc");
     if (rv != OGS_OK) return rv;
 
     rv = mme_context_parse_config();
@@ -73,6 +77,8 @@ void mme_terminate(void)
     mme_fd_final();
 
     mme_context_final();
+
+    ogs_gtp_context_final();
 
     ogs_gtp_xact_final();
 }

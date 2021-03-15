@@ -43,17 +43,7 @@ void sgwc_context_init(void)
 
     memset(&self, 0, sizeof(sgwc_context_t));
 
-    ogs_log_install_domain(&__ogs_gtp_domain, "gtp", ogs_core()->log.level);
     ogs_log_install_domain(&__sgwc_log_domain, "sgwc", ogs_core()->log.level);
-
-    ogs_list_init(&self.gtpc_list);
-    ogs_list_init(&self.gtpc_list6);
-
-    ogs_gtp_node_init();
-    ogs_list_init(&self.mme_s11_list);
-    ogs_list_init(&self.pgw_s5c_list);
-    ogs_list_init(&self.enb_s1u_list);
-    ogs_list_init(&self.pgw_s5u_list);
 
     ogs_pool_init(&sgwc_ue_pool, ogs_app()->max.ue);
     ogs_pool_init(&sgwc_sess_pool, ogs_app()->pool.sess);
@@ -83,9 +73,6 @@ void sgwc_context_final(void)
 
     ogs_gtp_node_remove_all(&self.mme_s11_list);
     ogs_gtp_node_remove_all(&self.pgw_s5c_list);
-    ogs_gtp_node_remove_all(&self.enb_s1u_list);
-    ogs_gtp_node_remove_all(&self.pgw_s5u_list);
-    ogs_gtp_node_final();
 
     context_initialized = 0;
 }
@@ -97,15 +84,13 @@ sgwc_context_t *sgwc_self(void)
 
 static int sgwc_context_prepare(void)
 {
-    self.gtpc_port = OGS_GTPV2_C_UDP_PORT;
-
     return OGS_OK;
 }
 
 static int sgwc_context_validation(void)
 {
-    if (ogs_list_empty(&self.gtpc_list) &&
-        ogs_list_empty(&self.gtpc_list6)) {
+    if (ogs_list_empty(&ogs_gtp_self()->gtpc_list) &&
+        ogs_list_empty(&ogs_gtp_self()->gtpc_list6)) {
         ogs_error("No sgwc.gtpc in '%s'", ogs_app()->file);
         return OGS_ERROR;
     }
@@ -135,116 +120,7 @@ int sgwc_context_parse_config(void)
                 const char *sgwc_key = ogs_yaml_iter_key(&sgwc_iter);
                 ogs_assert(sgwc_key);
                 if (!strcmp(sgwc_key, "gtpc")) {
-                    ogs_yaml_iter_t gtpc_array, gtpc_iter;
-                    ogs_yaml_iter_recurse(&sgwc_iter, &gtpc_array);
-                    do {
-                        int family = AF_UNSPEC;
-                        int i, num = 0;
-                        const char *hostname[OGS_MAX_NUM_OF_HOSTNAME];
-                        uint16_t port = self.gtpc_port;
-                        const char *dev = NULL;
-                        ogs_sockaddr_t *addr = NULL;
-
-                        if (ogs_yaml_iter_type(&gtpc_array) ==
-                                YAML_MAPPING_NODE) {
-                            memcpy(&gtpc_iter, &gtpc_array,
-                                    sizeof(ogs_yaml_iter_t));
-                        } else if (ogs_yaml_iter_type(&gtpc_array) ==
-                            YAML_SEQUENCE_NODE) {
-                            if (!ogs_yaml_iter_next(&gtpc_array))
-                                break;
-                            ogs_yaml_iter_recurse(&gtpc_array, &gtpc_iter);
-                        } else if (ogs_yaml_iter_type(&gtpc_array) ==
-                            YAML_SCALAR_NODE) {
-                            break;
-                        } else
-                            ogs_assert_if_reached();
-
-                        while (ogs_yaml_iter_next(&gtpc_iter)) {
-                            const char *gtpc_key =
-                                ogs_yaml_iter_key(&gtpc_iter);
-                            ogs_assert(gtpc_key);
-                            if (!strcmp(gtpc_key, "family")) {
-                                const char *v = ogs_yaml_iter_value(&gtpc_iter);
-                                if (v) family = atoi(v);
-                                if (family != AF_UNSPEC &&
-                                    family != AF_INET && family != AF_INET6) {
-                                    ogs_warn("Ignore family(%d) : "
-                                        "AF_UNSPEC(%d), "
-                                        "AF_INET(%d), AF_INET6(%d) ", 
-                                        family, AF_UNSPEC, AF_INET, AF_INET6);
-                                    family = AF_UNSPEC;
-                                }
-                            } else if (!strcmp(gtpc_key, "addr") ||
-                                    !strcmp(gtpc_key, "name")) {
-                                ogs_yaml_iter_t hostname_iter;
-                                ogs_yaml_iter_recurse(&gtpc_iter,
-                                        &hostname_iter);
-                                ogs_assert(ogs_yaml_iter_type(&hostname_iter) !=
-                                    YAML_MAPPING_NODE);
-
-                                do {
-                                    if (ogs_yaml_iter_type(&hostname_iter) ==
-                                            YAML_SEQUENCE_NODE) {
-                                        if (!ogs_yaml_iter_next(&hostname_iter))
-                                            break;
-                                    }
-
-                                    ogs_assert(num < OGS_MAX_NUM_OF_HOSTNAME);
-                                    hostname[num++] = 
-                                        ogs_yaml_iter_value(&hostname_iter);
-                                } while (
-                                    ogs_yaml_iter_type(&hostname_iter) ==
-                                        YAML_SEQUENCE_NODE);
-                            } else if (!strcmp(gtpc_key, "port")) {
-                                const char *v = ogs_yaml_iter_value(&gtpc_iter);
-                                if (v) port = atoi(v);
-                            } else if (!strcmp(gtpc_key, "dev")) {
-                                dev = ogs_yaml_iter_value(&gtpc_iter);
-                            } else
-                                ogs_warn("unknown key `%s`", gtpc_key);
-                        }
-
-                        addr = NULL;
-                        for (i = 0; i < num; i++) {
-                            rv = ogs_addaddrinfo(&addr,
-                                    family, hostname[i], port, 0);
-                            ogs_assert(rv == OGS_OK);
-                        }
-
-                        if (addr) {
-                            if (ogs_app()->parameter.no_ipv4 == 0)
-                                ogs_socknode_add(
-                                        &self.gtpc_list, AF_INET, addr);
-                            if (ogs_app()->parameter.no_ipv6 == 0)
-                                ogs_socknode_add(
-                                        &self.gtpc_list6, AF_INET6, addr);
-                            ogs_freeaddrinfo(addr);
-                        }
-
-                        if (dev) {
-                            rv = ogs_socknode_probe(
-                                    ogs_app()->parameter.no_ipv4 ?
-                                        NULL : &self.gtpc_list,
-                                    ogs_app()->parameter.no_ipv6 ?
-                                        NULL : &self.gtpc_list6,
-                                    dev, port);
-                            ogs_assert(rv == OGS_OK);
-                        }
-
-                    } while (ogs_yaml_iter_type(&gtpc_array) == 
-                            YAML_SEQUENCE_NODE);
-
-                    if (ogs_list_empty(&self.gtpc_list) &&
-                        ogs_list_empty(&self.gtpc_list6)) {
-                        rv = ogs_socknode_probe(
-                                ogs_app()->parameter.no_ipv4 ?
-                                    NULL : &self.gtpc_list,
-                                ogs_app()->parameter.no_ipv6 ?
-                                    NULL : &self.gtpc_list6,
-                                NULL, self.gtpc_port);
-                        ogs_assert(rv == OGS_OK);
-                    }
+                    /* handle config in gtp library */
                 } else if (!strcmp(sgwc_key, "pfcp")) {
                     /* handle config in pfcp library */
                 } else
@@ -475,7 +351,7 @@ static ogs_pfcp_node_t *selected_sgwu_node(
             }
         }
         /* cyclic search from top to current position */
-        for (node = ogs_list_first(&ogs_pfcp_self()->peer_list);
+        for (node = ogs_list_first(&ogs_pfcp_self()->pfcp_peer_list);
                 node != next; node = ogs_list_next(node)) {
             if (!RR) {
                 if (OGS_FSM_CHECK(&node->sm, sgwc_pfcp_state_associated) &&
@@ -501,7 +377,7 @@ static ogs_pfcp_node_t *selected_sgwu_node(
     }
 
     ogs_error("No SGWUs are PFCP associated that are suited to RR");
-    return ogs_list_first(&ogs_pfcp_self()->peer_list);
+    return ogs_list_first(&ogs_pfcp_self()->pfcp_peer_list);
 }
 
 void sgwc_sess_select_sgwu(sgwc_sess_t *sess)
@@ -514,15 +390,17 @@ void sgwc_sess_select_sgwu(sgwc_sess_t *sess)
      * When used for the first time, if last node is set,
      * the search is performed from the first SGW-U in a round-robin manner.
      */
-    if (ogs_pfcp_self()->node == NULL)
-        ogs_pfcp_self()->node = ogs_list_last(&ogs_pfcp_self()->peer_list);
+    if (ogs_pfcp_self()->pfcp_node == NULL)
+        ogs_pfcp_self()->pfcp_node =
+            ogs_list_last(&ogs_pfcp_self()->pfcp_peer_list);
 
     /* setup GTP session with selected SGW-U */
-    ogs_pfcp_self()->node = selected_sgwu_node(ogs_pfcp_self()->node, sess);
-    ogs_assert(ogs_pfcp_self()->node);
-    OGS_SETUP_PFCP_NODE(sess, ogs_pfcp_self()->node);
+    ogs_pfcp_self()->pfcp_node =
+        selected_sgwu_node(ogs_pfcp_self()->pfcp_node, sess);
+    ogs_assert(ogs_pfcp_self()->pfcp_node);
+    OGS_SETUP_PFCP_NODE(sess, ogs_pfcp_self()->pfcp_node);
     ogs_debug("UE using SGW-U on IP[%s]",
-            OGS_ADDR(&ogs_pfcp_self()->node->addr, buf));
+            OGS_ADDR(&ogs_pfcp_self()->pfcp_node->addr, buf));
 }
 
 int sgwc_sess_remove(sgwc_sess_t *sess)
@@ -769,7 +647,7 @@ sgwc_tunnel_t *sgwc_tunnel_add(
 {
     sgwc_sess_t *sess = NULL;
     sgwc_tunnel_t *tunnel = NULL;
-    ogs_pfcp_gtpu_resource_t *resource = NULL;
+    ogs_gtpu_resource_t *resource = NULL;
 
     ogs_pfcp_pdr_t *pdr = NULL;
     ogs_pfcp_far_t *far = NULL;
@@ -846,11 +724,11 @@ sgwc_tunnel_t *sgwc_tunnel_add(
         pdr->f_teid.ch = 1;
         pdr->f_teid_len = 1;
     } else {
-        resource = ogs_pfcp_gtpu_resource_find(
+        resource = ogs_pfcp_find_gtpu_resource(
                 &sess->pfcp_node->gtpu_resource_list,
                 sess->session.name, OGS_PFCP_INTERFACE_ACCESS);
         if (resource) {
-            ogs_pfcp_user_plane_ip_resource_info_to_sockaddr(&resource->info,
+            ogs_user_plane_ip_resource_info_to_sockaddr(&resource->info,
                 &tunnel->local_addr, &tunnel->local_addr6);
             if (resource->info.teidri)
                 tunnel->local_teid = OGS_PFCP_GTPU_INDEX_TO_TEID(

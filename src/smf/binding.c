@@ -149,11 +149,53 @@ void smf_bearer_binding(smf_sess_t *sess)
                 bearer = smf_bearer_add(sess);
                 ogs_assert(bearer);
 
+                dl_pdr = bearer->dl_pdr;
+                ogs_assert(dl_pdr);
+                ul_pdr = bearer->ul_pdr;
+                ogs_assert(ul_pdr);
+
                 /* Precedence is set to the order in which it was created */
-                ogs_assert(bearer->dl_pdr);
-                ogs_assert(bearer->ul_pdr);
-                bearer->dl_pdr->precedence = bearer->dl_pdr->id;
-                bearer->ul_pdr->precedence = bearer->ul_pdr->id;
+                dl_pdr->precedence = dl_pdr->id;
+                ul_pdr->precedence = ul_pdr->id;
+
+                ogs_assert(sess->pfcp_node);
+                if (sess->pfcp_node->up_function_features.ftup) {
+                    ul_pdr->f_teid.ch = 1;
+                    ul_pdr->f_teid_len = 1;
+                } else {
+                    ogs_gtpu_resource_t *resource = ogs_pfcp_find_gtpu_resource(
+                            &sess->pfcp_node->gtpu_resource_list,
+                            sess->session.name, OGS_PFCP_INTERFACE_ACCESS);
+                    if (resource) {
+                        ogs_user_plane_ip_resource_info_to_sockaddr(
+                                &resource->info,
+                                &bearer->pgw_s5u_addr, &bearer->pgw_s5u_addr6);
+                        if (resource->info.teidri)
+                            bearer->pgw_s5u_teid = OGS_PFCP_GTPU_INDEX_TO_TEID(
+                                    bearer->index, resource->info.teidri,
+                                    resource->info.teid_range);
+                        else
+                            bearer->pgw_s5u_teid = bearer->index;
+                    } else {
+                        if (sess->pfcp_node->addr.ogs_sa_family == AF_INET)
+                            ogs_copyaddrinfo(&bearer->pgw_s5u_addr,
+                                    &sess->pfcp_node->addr);
+                        else if (sess->pfcp_node->addr.ogs_sa_family ==
+                                AF_INET6)
+                            ogs_copyaddrinfo(&bearer->pgw_s5u_addr6,
+                                    &sess->pfcp_node->addr);
+                        else
+                            ogs_assert_if_reached();
+
+                        bearer->pgw_s5u_teid = bearer->index;
+                    }
+
+                    ogs_assert(bearer->pgw_s5u_addr || bearer->pgw_s5u_addr6);
+                    ogs_pfcp_sockaddr_to_f_teid(bearer->pgw_s5u_addr,
+                            bearer->pgw_s5u_addr6,
+                            &ul_pdr->f_teid, &ul_pdr->f_teid_len);
+                    ul_pdr->f_teid.teid = bearer->pgw_s5u_teid;
+                }
 
                 bearer->pcc_rule.name = ogs_strdup(pcc_rule->name);
                 ogs_assert(bearer->pcc_rule.name);

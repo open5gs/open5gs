@@ -149,25 +149,74 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
         }
     } else if (gtp_h->type == OGS_GTPU_MSGTYPE_GPDU) {
         struct ip *ip_h = NULL;
+        ogs_pfcp_object_t *pfcp_object = NULL;
+        ogs_pfcp_sess_t *pfcp_sess = NULL;
         ogs_pfcp_pdr_t *pdr = NULL;
 
         ip_h = (struct ip *)pkbuf->data;
         ogs_assert(ip_h);
 
-        pdr = ogs_pfcp_pdr_find_by_teid_and_qfi(teid, qfi);
-        if (pdr) {
-            ogs_pfcp_up_handle_pdr(pdr, pkbuf, &report);
+        pfcp_object = ogs_pfcp_object_find_by_teid(teid);
+        if (!pfcp_object) {
+            /* TODO : Send Error Indication */
+            goto cleanup;
+        }
 
-            if (report.type.downlink_data_report) {
-                ogs_assert(pdr->sess);
-                sess = SGWU_SESS(pdr->sess);
-                ogs_assert(sess);
+        switch(pfcp_object->type) {
+        case OGS_PFCP_OBJ_PDR_TYPE:
+            pdr = (ogs_pfcp_pdr_t *)pfcp_object;
+            ogs_assert(pdr);
+            break;
+        case OGS_PFCP_OBJ_SESS_TYPE:
+            pfcp_sess = (ogs_pfcp_sess_t *)pfcp_object;
+            ogs_assert(pfcp_sess);
 
-                report.downlink_data.pdr_id = pdr->id;
-                report.downlink_data.qfi = qfi; /* for 5GC */
+            ogs_list_for_each(&pfcp_sess->pdr_list, pdr) {
+                /* Check if Source Interface */
+                if (pdr->src_if != OGS_PFCP_INTERFACE_ACCESS &&
+                    pdr->src_if != OGS_PFCP_INTERFACE_CP_FUNCTION)
+                    continue;
 
-                sgwu_pfcp_send_session_report_request(sess, &report);
+                /* Check if TEID */
+                if (teid != pdr->f_teid.teid)
+                    continue;
+
+                /* Check if QFI */
+                if (qfi && pdr->qfi != qfi)
+                    continue;
+
+                /* Check if Rule List in PDR */
+                if (ogs_list_first(&pdr->rule_list) &&
+                    ogs_pfcp_pdr_rule_find_by_packet(pdr, pkbuf) == NULL)
+                    continue;
+
+                break;
             }
+
+            if (!pdr) {
+                /* TODO : Send Error Indication */
+                goto cleanup;
+            }
+
+            break;
+        default:
+            ogs_fatal("Unknown type [%d]", pfcp_object->type);
+            ogs_assert_if_reached();
+        }
+
+        ogs_assert(pdr);
+        ogs_pfcp_up_handle_pdr(pdr, pkbuf, &report);
+
+        if (report.type.downlink_data_report) {
+            ogs_assert(pdr->sess);
+            ogs_assert(pdr->sess->obj.type == OGS_PFCP_OBJ_SESS_TYPE);
+            sess = SGWU_SESS(pdr->sess);
+            ogs_assert(sess);
+
+            report.downlink_data.pdr_id = pdr->id;
+            report.downlink_data.qfi = qfi; /* for 5GC */
+
+            sgwu_pfcp_send_session_report_request(sess, &report);
         }
     } else {
         ogs_error("[DROP] Invalid GTPU Type [%d]", gtp_h->type);
@@ -200,25 +249,25 @@ int sgwu_gtp_open(void)
     ogs_socknode_t *node = NULL;
     ogs_sock_t *sock = NULL;
 
-    ogs_list_for_each(&sgwu_self()->gtpu_list, node) {
+    ogs_list_for_each(&ogs_gtp_self()->gtpu_list, node) {
         sock = ogs_gtp_server(node);
         ogs_assert(sock);
 
         if (sock->family == AF_INET)
-            sgwu_self()->gtpu_sock = sock;
+            ogs_gtp_self()->gtpu_sock = sock;
         else if (sock->family == AF_INET6)
-            sgwu_self()->gtpu_sock6 = sock;
+            ogs_gtp_self()->gtpu_sock6 = sock;
 
         node->poll = ogs_pollset_add(ogs_app()->pollset,
                 OGS_POLLIN, sock->fd, _gtpv1_u_recv_cb, sock);
     }
 
-    ogs_assert(sgwu_self()->gtpu_sock || sgwu_self()->gtpu_sock6);
+    OGS_SETUP_GTPU_SERVER;
 
     return OGS_OK;
 }
 
 void sgwu_gtp_close(void)
 {
-    ogs_socknode_remove_all(&sgwu_self()->gtpu_list);
+    ogs_socknode_remove_all(&ogs_gtp_self()->gtpu_list);
 }

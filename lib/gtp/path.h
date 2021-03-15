@@ -28,6 +28,44 @@
 extern "C" {
 #endif
 
+#define OGS_SETUP_GTPC_SERVER \
+    do { \
+        ogs_gtp_self()->gtpc_sock = \
+            ogs_socknode_sock_first(&ogs_gtp_self()->gtpc_list); \
+        ogs_gtp_self()->gtpc_sock6 = \
+            ogs_socknode_sock_first(&ogs_gtp_self()->gtpc_list6); \
+        \
+        ogs_assert(ogs_gtp_self()->gtpc_sock || ogs_gtp_self()->gtpc_sock6); \
+        \
+        if (ogs_gtp_self()->gtpc_sock) \
+            ogs_gtp_self()->gtpc_addr = \
+                &ogs_gtp_self()->gtpc_sock->local_addr; \
+        if (ogs_gtp_self()->gtpc_sock6) \
+            ogs_gtp_self()->gtpc_addr6 = \
+                &ogs_gtp_self()->gtpc_sock6->local_addr; \
+        \
+        ogs_assert(ogs_gtp_self()->gtpc_addr || ogs_gtp_self()->gtpc_addr6); \
+        \
+    } while(0)
+
+#define OGS_SETUP_GTPU_SERVER \
+    do { \
+        ogs_assert(ogs_gtp_self()->gtpu_sock || ogs_gtp_self()->gtpu_sock6); \
+        \
+        if (ogs_gtp_self()->gtpu_sock) \
+            ogs_gtp_self()->gtpu_addr = \
+                &ogs_gtp_self()->gtpu_sock->local_addr; \
+        if (ogs_gtp_self()->gtpu_sock6) \
+            ogs_gtp_self()->gtpu_addr6 = \
+                &ogs_gtp_self()->gtpu_sock6->local_addr; \
+        \
+        ogs_assert(ogs_gtp_self()->gtpu_addr || ogs_gtp_self()->gtpu_addr6); \
+        \
+        ogs_sockaddr_to_ip( \
+                ogs_gtp_self()->gtpu_addr, ogs_gtp_self()->gtpu_addr6, \
+                &ogs_gtp_self()->gtpu_ip); \
+    } while(0)
+
 typedef struct ogs_gtp_xact_s ogs_gtp_xact_t;
 
 ogs_sock_t *ogs_gtp_server(ogs_socknode_t *node);

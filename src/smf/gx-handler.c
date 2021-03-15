@@ -48,10 +48,15 @@ void smf_gx_handle_cca_initial_request(
     int i;
 
     smf_bearer_t *bearer = NULL;
+
     ogs_pfcp_pdr_t *dl_pdr = NULL;
     ogs_pfcp_pdr_t *ul_pdr = NULL;
     ogs_pfcp_far_t *dl_far = NULL;
     ogs_pfcp_qer_t *qer = NULL;
+
+    ogs_pfcp_pdr_t *cp2up_pdr = NULL;
+    ogs_pfcp_pdr_t *up2cp_pdr = NULL;
+    ogs_pfcp_far_t *up2cp_far = NULL;
 
     ogs_assert(sess);
     ogs_assert(gx_message);
@@ -122,6 +127,9 @@ void smf_gx_handle_cca_initial_request(
     bearer = smf_default_bearer_in_sess(sess);
     ogs_assert(bearer);
 
+    /* Setup CP/UP Data Forwarding PDR/FAR */
+    smf_sess_create_cp_up_data_forwarding(sess);
+
     /* Setup QER */
     if (sess->session.ambr.downlink || sess->session.ambr.uplink) {
         /* Only 1 QER is used per bearer */
@@ -139,6 +147,8 @@ void smf_gx_handle_cca_initial_request(
     /* Setup FAR */
     dl_far = bearer->dl_far;
     ogs_assert(dl_far);
+    up2cp_far = sess->up2cp_far;
+    ogs_assert(up2cp_far);
 
     dl_far->apply_action = OGS_PFCP_APPLY_ACTION_FORW;
 
@@ -152,15 +162,86 @@ void smf_gx_handle_cca_initial_request(
     ogs_assert(dl_pdr);
     ul_pdr = bearer->ul_pdr;
     ogs_assert(ul_pdr);
+    cp2up_pdr = sess->cp2up_pdr;
+    ogs_assert(cp2up_pdr);
+    up2cp_pdr = sess->up2cp_pdr;
+    ogs_assert(up2cp_pdr);
 
     /* Set UE IP Address to the Default DL PDR */
     ogs_pfcp_paa_to_ue_ip_addr(&sess->session.paa,
             &dl_pdr->ue_ip_addr, &dl_pdr->ue_ip_addr_len);
     dl_pdr->ue_ip_addr.sd = OGS_PFCP_UE_IP_DST;
 
-    /* Default PDRs is set to lowest precedence(highest precedence value) */
-    dl_pdr->precedence = 0xffffffff;
-    ul_pdr->precedence = 0xffffffff;
+    /* Set UE-to-CP Flow-Description and Outer-Header-Creation */
+    up2cp_pdr->flow_description[up2cp_pdr->num_of_flow++] =
+        (char *)"permit out 58 from ff02::2/128 to assigned";
+    ogs_pfcp_ip_to_outer_header_creation(
+            &ogs_gtp_self()->gtpu_ip,
+            &up2cp_far->outer_header_creation,
+            &up2cp_far->outer_header_creation_len);
+    up2cp_far->outer_header_creation.teid = sess->index;
+
+    /* Set F-TEID */
+    ogs_assert(sess->pfcp_node);
+    if (sess->pfcp_node->up_function_features.ftup) {
+        ul_pdr->f_teid.ch = 1;
+        ul_pdr->f_teid.chid = 1;
+        ul_pdr->f_teid.choose_id = OGS_PFCP_DEFAULT_CHOOSE_ID;
+        ul_pdr->f_teid_len = 2;
+
+        cp2up_pdr->f_teid.ch = 1;
+        cp2up_pdr->f_teid_len = 1;
+
+        up2cp_pdr->f_teid.ch = 1;
+        up2cp_pdr->f_teid.chid = 1;
+        up2cp_pdr->f_teid.choose_id = OGS_PFCP_DEFAULT_CHOOSE_ID;
+        up2cp_pdr->f_teid_len = 2;
+    } else {
+        ogs_gtpu_resource_t *resource = ogs_pfcp_find_gtpu_resource(
+                &sess->pfcp_node->gtpu_resource_list,
+                sess->session.name, OGS_PFCP_INTERFACE_ACCESS);
+        if (resource) {
+            ogs_user_plane_ip_resource_info_to_sockaddr(&resource->info,
+                &bearer->pgw_s5u_addr, &bearer->pgw_s5u_addr6);
+            if (resource->info.teidri)
+                bearer->pgw_s5u_teid = OGS_PFCP_GTPU_INDEX_TO_TEID(
+                        bearer->index, resource->info.teidri,
+                        resource->info.teid_range);
+            else
+                bearer->pgw_s5u_teid = bearer->index;
+        } else {
+            if (sess->pfcp_node->addr.ogs_sa_family == AF_INET)
+                ogs_copyaddrinfo(&bearer->pgw_s5u_addr, &sess->pfcp_node->addr);
+            else if (sess->pfcp_node->addr.ogs_sa_family == AF_INET6)
+                ogs_copyaddrinfo(
+                        &bearer->pgw_s5u_addr6, &sess->pfcp_node->addr);
+            else
+                ogs_assert_if_reached();
+
+            bearer->pgw_s5u_teid = bearer->index;
+        }
+
+        ogs_assert(bearer->pgw_s5u_addr || bearer->pgw_s5u_addr6);
+        ogs_pfcp_sockaddr_to_f_teid(bearer->pgw_s5u_addr, bearer->pgw_s5u_addr6,
+                &ul_pdr->f_teid, &ul_pdr->f_teid_len);
+        ul_pdr->f_teid.teid = bearer->pgw_s5u_teid;
+
+        ogs_assert(ogs_gtp_self()->gtpu_addr || ogs_gtp_self()->gtpu_addr6);
+        ogs_pfcp_sockaddr_to_f_teid(
+                ogs_gtp_self()->gtpu_addr, ogs_gtp_self()->gtpu_addr6,
+                &cp2up_pdr->f_teid, &cp2up_pdr->f_teid_len);
+        cp2up_pdr->f_teid.teid = bearer->index;
+
+        ogs_pfcp_sockaddr_to_f_teid(sess->upf_n3_addr, sess->upf_n3_addr6,
+                &up2cp_pdr->f_teid, &up2cp_pdr->f_teid_len);
+        up2cp_pdr->f_teid.teid = bearer->pgw_s5u_teid;
+    }
+
+    dl_pdr->precedence = OGS_PFCP_DEFAULT_PDR_PRECEDENCE;
+    ul_pdr->precedence = OGS_PFCP_DEFAULT_PDR_PRECEDENCE;
+
+    cp2up_pdr->precedence = OGS_PFCP_CP2UP_PDR_PRECEDENCE;
+    up2cp_pdr->precedence = OGS_PFCP_UP2CP_PDR_PRECEDENCE;
 
     if (qer) {
         ogs_pfcp_pdr_associate_qer(dl_pdr, qer);

@@ -194,6 +194,7 @@ void sgwc_sxa_handle_session_establishment_response(
         for (i = 0; i < OGS_MAX_NUM_OF_PDR; i++) {
             sgwc_tunnel_t *tunnel = NULL;
             ogs_pfcp_pdr_t *pdr = NULL;
+            ogs_pfcp_far_t *far = NULL;
 
             pdr = ogs_pfcp_handle_created_pdr(
                     &sess->pfcp, &pfcp_rsp->created_pdr[i],
@@ -202,24 +203,30 @@ void sgwc_sxa_handle_session_establishment_response(
             if (!pdr)
                 break;
 
+            far = pdr->far;
+            ogs_assert(far);
+
+            if (pdr->src_if == OGS_PFCP_INTERFACE_CP_FUNCTION)
+                ogs_pfcp_setup_pdr_gtpu_node(pdr);
+
+            if (far->dst_if == OGS_PFCP_INTERFACE_CP_FUNCTION)
+                ogs_pfcp_far_teid_hash_set(far);
+
             tunnel = sgwc_tunnel_find_by_pdr_id(sess, pdr->id);
-            if (!tunnel) {
-                pfcp_cause_value = OGS_PFCP_CAUSE_SESSION_CONTEXT_NOT_FOUND;
-                break;
-            }
+            if (tunnel) {
+                ogs_assert(sess->pfcp_node);
+                if (sess->pfcp_node->up_function_features.ftup &&
+                    pdr->f_teid_len) {
+                    if (tunnel->local_addr)
+                        ogs_freeaddrinfo(tunnel->local_addr);
+                    if (tunnel->local_addr6)
+                        ogs_freeaddrinfo(tunnel->local_addr6);
 
-            ogs_assert(sess->pfcp_node);
-            if (sess->pfcp_node->up_function_features.ftup &&
-                pdr->f_teid_len) {
-                if (tunnel->local_addr)
-                    ogs_freeaddrinfo(tunnel->local_addr);
-                if (tunnel->local_addr6)
-                    ogs_freeaddrinfo(tunnel->local_addr6);
-
-                ogs_pfcp_f_teid_to_sockaddr(
-                        &pdr->f_teid, pdr->f_teid_len,
-                        &tunnel->local_addr, &tunnel->local_addr6);
-                tunnel->local_teid = pdr->f_teid.teid;
+                    ogs_pfcp_f_teid_to_sockaddr(
+                            &pdr->f_teid, pdr->f_teid_len,
+                            &tunnel->local_addr, &tunnel->local_addr6);
+                    tunnel->local_teid = pdr->f_teid.teid;
+                }
             }
         }
 
@@ -260,7 +267,8 @@ void sgwc_sxa_handle_session_establishment_response(
     sgw_s5c_teid.interface_type = OGS_GTP_F_TEID_S5_S8_SGW_GTP_C;
     sgw_s5c_teid.teid = htobe32(sess->sgw_s5c_teid);
     rv = ogs_gtp_sockaddr_to_f_teid(
-        sgwc_self()->gtpc_addr, sgwc_self()->gtpc_addr6, &sgw_s5c_teid, &len);
+            ogs_gtp_self()->gtpc_addr, ogs_gtp_self()->gtpc_addr6,
+            &sgw_s5c_teid, &len);
     ogs_assert(rv == OGS_OK);
     gtp_req->sender_f_teid_for_control_plane.presence = 1;
     gtp_req->sender_f_teid_for_control_plane.data = &sgw_s5c_teid;
@@ -277,14 +285,12 @@ void sgwc_sxa_handle_session_establishment_response(
     pgw = ogs_gtp_node_find_by_f_teid(&sgwc_self()->pgw_s5c_list, pgw_s5c_teid);
     if (!pgw) {
         pgw = ogs_gtp_node_add_by_f_teid(
-            &sgwc_self()->pgw_s5c_list, pgw_s5c_teid, sgwc_self()->gtpc_port,
-            ogs_app()->parameter.no_ipv4,
-            ogs_app()->parameter.no_ipv6,
-            ogs_app()->parameter.prefer_ipv4);
+                &sgwc_self()->pgw_s5c_list,
+                pgw_s5c_teid, ogs_gtp_self()->gtpc_port);
         ogs_assert(pgw);
 
         rv = ogs_gtp_connect(
-                sgwc_self()->gtpc_sock, sgwc_self()->gtpc_sock6, pgw);
+                ogs_gtp_self()->gtpc_sock, ogs_gtp_self()->gtpc_sock6, pgw);
         ogs_assert(rv == OGS_OK);
     }
     /* Setup GTP Node */
@@ -401,9 +407,11 @@ void sgwc_sxa_handle_session_modification_response(
         uint8_t pfcp_cause_value = OGS_PFCP_CAUSE_REQUEST_ACCEPTED;
         uint8_t offending_ie_value = 0;
 
+        ogs_assert(sess);
         for (i = 0; i < OGS_MAX_NUM_OF_PDR; i++) {
             sgwc_tunnel_t *tunnel = NULL;
             ogs_pfcp_pdr_t *pdr = NULL;
+            ogs_pfcp_far_t *far = NULL;
 
             pdr = ogs_pfcp_handle_created_pdr(
                     &sess->pfcp, &pfcp_rsp->created_pdr[i],
@@ -412,24 +420,30 @@ void sgwc_sxa_handle_session_modification_response(
             if (!pdr)
                 break;
 
+            far = pdr->far;
+            ogs_assert(far);
+
+            if (pdr->src_if == OGS_PFCP_INTERFACE_CP_FUNCTION)
+                ogs_pfcp_setup_pdr_gtpu_node(pdr);
+
+            if (far->dst_if == OGS_PFCP_INTERFACE_CP_FUNCTION)
+                ogs_pfcp_far_teid_hash_set(far);
+
             tunnel = sgwc_tunnel_find_by_pdr_id(sess, pdr->id);
-            if (!tunnel) {
-                pfcp_cause_value = OGS_PFCP_CAUSE_SESSION_CONTEXT_NOT_FOUND;
-                break;
-            }
+            if (tunnel) {
+                ogs_assert(sess->pfcp_node);
+                if (sess->pfcp_node->up_function_features.ftup &&
+                    pdr->f_teid_len) {
+                    if (tunnel->local_addr)
+                        ogs_freeaddrinfo(tunnel->local_addr);
+                    if (tunnel->local_addr6)
+                        ogs_freeaddrinfo(tunnel->local_addr6);
 
-            ogs_assert(sess->pfcp_node);
-            if (sess->pfcp_node->up_function_features.ftup &&
-                pdr->f_teid_len) {
-                if (tunnel->local_addr)
-                    ogs_freeaddrinfo(tunnel->local_addr);
-                if (tunnel->local_addr6)
-                    ogs_freeaddrinfo(tunnel->local_addr6);
-
-                ogs_pfcp_f_teid_to_sockaddr(
-                        &pdr->f_teid, pdr->f_teid_len,
-                        &tunnel->local_addr, &tunnel->local_addr6);
-                tunnel->local_teid = pdr->f_teid.teid;
+                    ogs_pfcp_f_teid_to_sockaddr(
+                            &pdr->f_teid, pdr->f_teid_len,
+                            &tunnel->local_addr, &tunnel->local_addr6);
+                    tunnel->local_teid = pdr->f_teid.teid;
+                }
             }
         }
 
@@ -831,7 +845,7 @@ void sgwc_sxa_handle_session_modification_response(
             sgw_s11_teid.interface_type = OGS_GTP_F_TEID_S11_S4_SGW_GTP_C;
             sgw_s11_teid.teid = htobe32(sgwc_ue->sgw_s11_teid);
             rv = ogs_gtp_sockaddr_to_f_teid(
-                    sgwc_self()->gtpc_addr, sgwc_self()->gtpc_addr6,
+                    ogs_gtp_self()->gtpc_addr, ogs_gtp_self()->gtpc_addr6,
                     &sgw_s11_teid, &len);
             ogs_expect(rv == OGS_OK);
             gtp_rsp->sender_f_teid_for_control_plane.presence = 1;

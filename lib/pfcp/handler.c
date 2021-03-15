@@ -51,18 +51,18 @@ void ogs_pfcp_cp_handle_association_setup_request(
     ogs_pfcp_cp_send_association_setup_response(
             xact, OGS_PFCP_CAUSE_REQUEST_ACCEPTED);
 
-    ogs_pfcp_gtpu_resource_remove_all(&node->gtpu_resource_list);
+    ogs_gtpu_resource_remove_all(&node->gtpu_resource_list);
 
     for (i = 0; i < OGS_MAX_NUM_OF_GTPU_RESOURCE; i++) {
         ogs_pfcp_tlv_user_plane_ip_resource_information_t *message =
             &req->user_plane_ip_resource_information[i];
-        ogs_pfcp_user_plane_ip_resource_info_t info;
+        ogs_user_plane_ip_resource_info_t info;
 
         if (message->presence == 0)
             break;
 
         ogs_pfcp_parse_user_plane_ip_resource_info(&info, message);
-        ogs_pfcp_gtpu_resource_add(&node->gtpu_resource_list, &info);
+        ogs_gtpu_resource_add(&node->gtpu_resource_list, &info);
     }
 
     if (req->up_function_features.presence) {
@@ -86,18 +86,18 @@ void ogs_pfcp_cp_handle_association_setup_response(
     ogs_assert(node);
     ogs_assert(rsp);
 
-    ogs_pfcp_gtpu_resource_remove_all(&node->gtpu_resource_list);
+    ogs_gtpu_resource_remove_all(&node->gtpu_resource_list);
 
     for (i = 0; i < OGS_MAX_NUM_OF_GTPU_RESOURCE; i++) {
         ogs_pfcp_tlv_user_plane_ip_resource_information_t *message =
             &rsp->user_plane_ip_resource_information[i];
-        ogs_pfcp_user_plane_ip_resource_info_t info;
+        ogs_user_plane_ip_resource_info_t info;
 
         if (message->presence == 0)
             break;
 
         ogs_pfcp_parse_user_plane_ip_resource_info(&info, message);
-        ogs_pfcp_gtpu_resource_add(&node->gtpu_resource_list, &info);
+        ogs_gtpu_resource_add(&node->gtpu_resource_list, &info);
     }
 
     if (rsp->up_function_features.presence) {
@@ -204,24 +204,26 @@ void ogs_pfcp_up_handle_error_indication(
     uint16_t len;
 
     ogs_assert(far);
-    ogs_assert(far->hashkey_len);
+    ogs_assert(far->hash.f_teid.len);
 
     ogs_assert(report);
 
     memset(report, 0, sizeof(*report));
 
-    len = far->hashkey_len - 4; /* Remove TEID size, Only use ADDR size */
+    /* Remove TEID size, Only use ADDR size */
+    len = far->hash.f_teid.len - 4;
 
     report->error_indication.remote_f_teid_len = 5 + len;
-    report->error_indication.remote_f_teid.teid = htobe32(far->hashkey.teid);
+    report->error_indication.remote_f_teid.teid =
+        htobe32(far->hash.f_teid.key.teid);
     if (len == OGS_IPV4_LEN) {
         report->error_indication.remote_f_teid.ipv4 = 1;
         memcpy(&report->error_indication.remote_f_teid.addr,
-                far->hashkey.addr, len);
+                far->hash.f_teid.key.addr, len);
     } else if (len == OGS_IPV6_LEN) {
         report->error_indication.remote_f_teid.ipv6 = 1;
         memcpy(report->error_indication.remote_f_teid.addr6,
-                far->hashkey.addr, len);
+                far->hash.f_teid.key.addr, len);
     } else {
         ogs_error("Invalid Length [%d]", len);
         return;

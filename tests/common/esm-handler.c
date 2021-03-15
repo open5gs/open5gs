@@ -55,14 +55,14 @@ void testesm_handle_activate_default_eps_bearer_context_request(
         break;
     case OGS_PDU_SESSION_TYPE_IPV6:
         sess->ue_ip.ipv6 = 1;
-        memcpy(sess->ue_ip.addr6, "\xca\xfe\x00\x00\x00\x00\x00\x00", 8);
+        memset(sess->ue_ip.addr6, 0, 8);
         memcpy(sess->ue_ip.addr6+8, pdn_address->addr6, 8);
         break;
     case OGS_PDU_SESSION_TYPE_IPV4V6:
         sess->ue_ip.ipv4 = 1;
         sess->ue_ip.addr = pdn_address->both.addr;
         sess->ue_ip.ipv6 = 1;
-        memcpy(sess->ue_ip.addr6, "\xca\xfe\x00\x00\x00\x00\x00\x00", 8);
+        memset(sess->ue_ip.addr6, 0, 8);
         memcpy(sess->ue_ip.addr6+8, pdn_address->both.addr6, 8);
         break;
     default:

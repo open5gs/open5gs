@@ -314,6 +314,9 @@ int ogs_app_context_parse_config(void)
                 } else if (!strcmp(parameter_key, "no_pcf")) {
                     self.parameter.no_pcf =
                         ogs_yaml_iter_bool(&parameter_iter);
+                } else if (!strcmp(parameter_key, "no_nssf")) {
+                    self.parameter.no_nssf =
+                        ogs_yaml_iter_bool(&parameter_iter);
                 } else if (!strcmp(parameter_key, "no_udr")) {
                     self.parameter.no_udr =
                         ogs_yaml_iter_bool(&parameter_iter);
@@ -328,9 +331,6 @@ int ogs_app_context_parse_config(void)
                         ogs_yaml_iter_bool(&parameter_iter);
                 } else if (!strcmp(parameter_key, "multicast")) {
                     self.parameter.multicast =
-                        ogs_yaml_iter_bool(&parameter_iter);
-                } else if (!strcmp(parameter_key, "no_slaac")) {
-                    self.parameter.no_slaac =
                         ogs_yaml_iter_bool(&parameter_iter);
                 } else if (!strcmp(parameter_key, "use_openair")) {
                     self.parameter.use_openair =

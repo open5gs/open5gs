@@ -759,17 +759,17 @@ sudo sysctl -w net.ipv6.conf.all.forwarding=1
 
 ip tuntap add name ogstun mode tun
 ip addr add 192.168.100.1/24 dev ogstun
-ip addr add fd84:6aea:c36e:2b69::/64 dev ogstun
+ip addr add fd84:6aea:c36e:2b69::/48 dev ogstun
 ip link set ogstun mtu 1400
 ip link set ogstun up
 iptables -t nat -A POSTROUTING -s 192.168.100.0/24 ! -o ogstun -j MASQUERADE
-ip6tables -t nat -A POSTROUTING -s fd84:6aea:c36e:2b69::/64 ! -o ogstun -j MASQUERADE
+ip6tables -t nat -A POSTROUTING -s fd84:6aea:c36e:2b69::/48 ! -o ogstun -j MASQUERADE
 iptables -I INPUT -i ogstun -j ACCEPT
 ip6tables -I INPUT -i ogstun -j ACCEPT
 
 ip tuntap add name ogstun2 mode tun
 ip addr add 192.168.101.1/24 dev ogstun2
-ip addr add fd1f:76f3:da9b:0101::/64 dev ogstun2
+ip addr add fd1f:76f3:da9b:0101::/48 dev ogstun2
 ip link set ogstun2 mtu 1400
 ip link set ogstun2 up
 iptables -I INPUT -i ogstun2 -j ACCEPT

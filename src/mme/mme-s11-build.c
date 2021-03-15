@@ -97,7 +97,8 @@ ogs_pkbuf_t *mme_s11_build_create_session_request(
     mme_s11_teid.interface_type = OGS_GTP_F_TEID_S11_MME_GTP_C;
     mme_s11_teid.teid = htobe32(mme_ue->mme_s11_teid);
     rv = ogs_gtp_sockaddr_to_f_teid(
-            mme_self()->gtpc_addr, mme_self()->gtpc_addr6, &mme_s11_teid, &len);
+            ogs_gtp_self()->gtpc_addr, ogs_gtp_self()->gtpc_addr6,
+            &mme_s11_teid, &len);
     ogs_assert(rv == OGS_OK);
     req->sender_f_teid_for_control_plane.presence = 1;
     req->sender_f_teid_for_control_plane.data = &mme_s11_teid;

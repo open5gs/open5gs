@@ -66,7 +66,8 @@ ogs_pkbuf_t *smf_s5c_build_create_session_response(
     smf_s5c_teid.interface_type = OGS_GTP_F_TEID_S5_S8_PGW_GTP_C;
     smf_s5c_teid.teid = htobe32(sess->smf_n4_teid);
     rv = ogs_gtp_sockaddr_to_f_teid(
-        smf_self()->gtpc_addr, smf_self()->gtpc_addr6, &smf_s5c_teid, &len);
+            ogs_gtp_self()->gtpc_addr, ogs_gtp_self()->gtpc_addr6,
+            &smf_s5c_teid, &len);
     ogs_assert(rv == OGS_OK);
     rsp->pgw_s5_s8__s2a_s2b_f_teid_for_pmip_based_interface_or_for_gtp_based_control_plane_interface.
         presence = 1;

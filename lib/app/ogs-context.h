@@ -72,7 +72,6 @@ typedef struct ogs_app_context_s {
         int no_ipv6;
         int prefer_ipv4;
         int multicast;
-        int no_slaac;
 
         int use_openair;
         int no_ipv4v6_local_addr_in_packet_filter;

@@ -15,6 +15,24 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+pfcp_conf = configuration_data()
+
+pfcp_headers = ('''
+    netinet/ip.h
+    netinet/ip6.h
+    netinet/udp.h
+    netinet/tcp.h
+'''.split())
+
+foreach h : pfcp_headers
+    if cc.has_header(h)
+        define = 'HAVE_' + h.underscorify().to_upper()
+        pfcp_conf.set(define, 1)
+    endif
+endforeach
+
+configure_file(output : 'pfcp-config.h', configuration : pfcp_conf)
+
 libpfcp_sources = files('''
     ogs-pfcp.h
 
@@ -26,6 +44,7 @@ libpfcp_sources = files('''
     path.h
     xact.h
     context.h
+    rule-match.h
 
     message.c
     types.c
@@ -35,6 +54,7 @@ libpfcp_sources = files('''
     path.c
     xact.c
     context.c
+    rule-match.c
 '''.split())
 
 libpfcp_inc = include_directories('.')
