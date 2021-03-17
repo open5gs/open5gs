@@ -47,6 +47,8 @@ ogs_pkbuf_t *test_s1ap_build_e_rab_setup_response(test_bearer_t *bearer);
 ogs_pkbuf_t *test_s1ap_build_e_rab_modify_response(test_bearer_t *bearer);
 ogs_pkbuf_t *test_s1ap_build_e_rab_release_response(test_bearer_t *bearer);
 
+ogs_pkbuf_t *test_s1ap_build_e_rab_modification_indication(test_ue_t *test_ue);
+
 ogs_pkbuf_t *test_s1ap_build_path_switch_request(test_ue_t *test_ue);
 
 ogs_pkbuf_t *test_s1ap_build_handover_required(

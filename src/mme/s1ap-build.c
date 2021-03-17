@@ -39,8 +39,7 @@ ogs_pkbuf_t *s1ap_build_setup_rsp(void)
 
     memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
     pdu.present = S1AP_S1AP_PDU_PR_successfulOutcome;
-    pdu.choice.successfulOutcome = 
-        CALLOC(1, sizeof(S1AP_SuccessfulOutcome_t));
+    pdu.choice.successfulOutcome = CALLOC(1, sizeof(S1AP_SuccessfulOutcome_t));
 
     successfulOutcome = pdu.choice.successfulOutcome;
     successfulOutcome->procedureCode = S1AP_ProcedureCode_id_S1Setup;
@@ -1231,6 +1230,100 @@ ogs_pkbuf_t *s1ap_build_e_rab_release_command(
     return ogs_s1ap_encode(&pdu);
 }
 
+ogs_pkbuf_t *s1ap_build_e_rab_modification_confirm(mme_ue_t *mme_ue)
+{
+    S1AP_S1AP_PDU_t pdu;
+    S1AP_SuccessfulOutcome_t *successfulOutcome = NULL;
+    S1AP_E_RABModificationConfirm_t *E_RABModificationConfirm = NULL;
+
+    S1AP_E_RABModificationConfirmIEs_t *ie = NULL;
+    S1AP_MME_UE_S1AP_ID_t *MME_UE_S1AP_ID = NULL;
+    S1AP_ENB_UE_S1AP_ID_t *ENB_UE_S1AP_ID = NULL;
+    S1AP_E_RABModifyListBearerModConf_t *E_RABModifyListBearerModConf = NULL;
+
+    enb_ue_t *enb_ue = NULL;
+    mme_sess_t *sess = NULL;
+    mme_bearer_t *bearer = NULL;
+
+    ogs_assert(mme_ue);
+    enb_ue = enb_ue_cycle(mme_ue->enb_ue);
+    ogs_assert(enb_ue);
+
+    ogs_debug("E-RABModificationConfirm");
+
+    memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
+    pdu.present = S1AP_S1AP_PDU_PR_successfulOutcome;
+    pdu.choice.successfulOutcome = CALLOC(1, sizeof(S1AP_SuccessfulOutcome_t));
+
+    successfulOutcome = pdu.choice.successfulOutcome;
+    successfulOutcome->procedureCode =
+        S1AP_ProcedureCode_id_E_RABModificationIndication;
+    successfulOutcome->criticality = S1AP_Criticality_reject;
+    successfulOutcome->value.present =
+        S1AP_SuccessfulOutcome__value_PR_E_RABModificationConfirm;
+
+    E_RABModificationConfirm =
+        &successfulOutcome->value.choice.E_RABModificationConfirm;
+
+    ie = CALLOC(1, sizeof(S1AP_E_RABModificationConfirmIEs_t));
+    ASN_SEQUENCE_ADD(&E_RABModificationConfirm->protocolIEs, ie);
+
+    ie->id = S1AP_ProtocolIE_ID_id_MME_UE_S1AP_ID;
+    ie->criticality = S1AP_Criticality_ignore;
+    ie->value.present =
+        S1AP_E_RABModificationConfirmIEs__value_PR_MME_UE_S1AP_ID;
+
+    MME_UE_S1AP_ID = &ie->value.choice.MME_UE_S1AP_ID;
+
+    ie = CALLOC(1, sizeof(S1AP_E_RABModificationConfirmIEs_t));
+    ASN_SEQUENCE_ADD(&E_RABModificationConfirm->protocolIEs, ie);
+
+    ie->id = S1AP_ProtocolIE_ID_id_eNB_UE_S1AP_ID;
+    ie->criticality = S1AP_Criticality_ignore;
+    ie->value.present =
+        S1AP_E_RABModificationConfirmIEs__value_PR_ENB_UE_S1AP_ID;
+
+    ENB_UE_S1AP_ID = &ie->value.choice.ENB_UE_S1AP_ID;
+
+    ie = CALLOC(1, sizeof(S1AP_E_RABModificationConfirmIEs_t));
+    ASN_SEQUENCE_ADD(&E_RABModificationConfirm->protocolIEs, ie);
+
+    ie->id = S1AP_ProtocolIE_ID_id_E_RABModifyListBearerModConf;
+    ie->criticality = S1AP_Criticality_ignore;
+    ie->value.present =
+        S1AP_E_RABModificationConfirmIEs__value_PR_E_RABModifyListBearerModConf;
+
+    E_RABModifyListBearerModConf = &ie->value.choice.E_RABModifyListBearerModConf;
+
+    ogs_debug("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
+            enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
+
+    *MME_UE_S1AP_ID = enb_ue->mme_ue_s1ap_id;
+    *ENB_UE_S1AP_ID = enb_ue->enb_ue_s1ap_id;
+
+    ogs_list_for_each(&mme_ue->sess_list, sess) {
+        ogs_list_for_each(&sess->bearer_list, bearer) {
+            S1AP_E_RABModifyItemBearerModConfIEs_t *item = NULL;
+            S1AP_E_RABModifyItemBearerModConf_t *e_rab = NULL;
+
+            item = CALLOC(1, sizeof(S1AP_E_RABModifyItemBearerModConfIEs_t));
+            ASN_SEQUENCE_ADD(&E_RABModifyListBearerModConf->list, item);
+
+            item->id = S1AP_ProtocolIE_ID_id_E_RABModifyItemBearerModConf;
+            item->criticality = S1AP_Criticality_ignore;
+            item->value.present = S1AP_E_RABModifyItemBearerModConfIEs__value_PR_E_RABModifyItemBearerModConf;
+
+            e_rab = &item->value.choice.E_RABModifyItemBearerModConf;
+
+            e_rab->e_RAB_ID = bearer->ebi;
+
+            ogs_debug("    EBI[%d]", bearer->ebi);
+        }
+    }
+
+    return ogs_s1ap_encode(&pdu);
+}
+
 ogs_pkbuf_t *s1ap_build_paging(
         mme_ue_t *mme_ue, S1AP_CNDomain_t cn_domain)
 {
@@ -1420,8 +1513,7 @@ ogs_pkbuf_t *s1ap_build_path_switch_ack(mme_ue_t *mme_ue)
 
     memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
     pdu.present = S1AP_S1AP_PDU_PR_successfulOutcome;
-    pdu.choice.successfulOutcome = 
-        CALLOC(1, sizeof(S1AP_SuccessfulOutcome_t));
+    pdu.choice.successfulOutcome = CALLOC(1, sizeof(S1AP_SuccessfulOutcome_t));
 
     successfulOutcome = pdu.choice.successfulOutcome;
     successfulOutcome->procedureCode = S1AP_ProcedureCode_id_PathSwitchRequest;
@@ -1579,8 +1671,7 @@ ogs_pkbuf_t *s1ap_build_handover_command(enb_ue_t *source_ue)
 
     memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
     pdu.present = S1AP_S1AP_PDU_PR_successfulOutcome;
-    pdu.choice.successfulOutcome = 
-        CALLOC(1, sizeof(S1AP_SuccessfulOutcome_t));
+    pdu.choice.successfulOutcome = CALLOC(1, sizeof(S1AP_SuccessfulOutcome_t));
 
     successfulOutcome = pdu.choice.successfulOutcome;
     successfulOutcome->procedureCode =
@@ -2063,8 +2154,7 @@ ogs_pkbuf_t *s1ap_build_handover_cancel_ack(enb_ue_t *source_ue)
 
     memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
     pdu.present = S1AP_S1AP_PDU_PR_successfulOutcome;
-    pdu.choice.successfulOutcome = 
-        CALLOC(1, sizeof(S1AP_SuccessfulOutcome_t));
+    pdu.choice.successfulOutcome = CALLOC(1, sizeof(S1AP_SuccessfulOutcome_t));
 
     successfulOutcome = pdu.choice.successfulOutcome;
     successfulOutcome->procedureCode = S1AP_ProcedureCode_id_HandoverCancel;

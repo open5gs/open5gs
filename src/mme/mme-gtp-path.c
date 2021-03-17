@@ -221,8 +221,7 @@ void mme_gtp_send_create_session_request(mme_sess_t *sess)
     ogs_expect(rv == OGS_OK);
 }
 
-void mme_gtp_send_modify_bearer_request(
-        mme_bearer_t *bearer, int uli_presence)
+void mme_gtp_send_modify_bearer_request(mme_bearer_t *bearer, int uli_presence)
 {
     int rv;
 

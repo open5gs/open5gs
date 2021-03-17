@@ -374,6 +374,20 @@ void s1ap_send_mme_configuration_transfer(
     ogs_expect(rv == OGS_OK);
 }
 
+void s1ap_send_e_rab_modification_confirm(mme_ue_t *mme_ue)
+{
+    int rv;
+    ogs_pkbuf_t *s1apbuf = NULL;
+
+    ogs_assert(mme_ue);
+
+    s1apbuf = s1ap_build_e_rab_modification_confirm(mme_ue);
+    ogs_expect_or_return(s1apbuf);
+
+    rv = nas_eps_send_to_enb(mme_ue, s1apbuf);
+    ogs_expect(rv == OGS_OK);
+}
+
 void s1ap_send_path_switch_ack(mme_ue_t *mme_ue)
 {
     int rv;

@@ -106,6 +106,8 @@ void tests1ap_recv(test_ue_t *test_ue, ogs_pkbuf_t *pkbuf)
             break;
         case S1AP_ProcedureCode_id_Reset:
             break;
+        case S1AP_ProcedureCode_id_E_RABModificationIndication:
+            break;
         default:
             ogs_error("Not implemented(choice:%d, proc:%d)",
                     pdu->present, (int)successfulOutcome->procedureCode);

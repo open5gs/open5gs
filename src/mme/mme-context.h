@@ -490,6 +490,7 @@ struct mme_ue_s {
 #define MAX_NUM_OF_GTP_COUNTER                                  16
 
 #define GTP_COUNTER_MODIFY_BEARER_BY_PATH_SWITCH                1
+#define GTP_COUNTER_MODIFY_BEARER_BY_E_RAB_MODIFICATION         2
     struct {
         uint8_t request;
         uint8_t response;

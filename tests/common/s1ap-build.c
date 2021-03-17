@@ -811,7 +811,6 @@ ogs_pkbuf_t *test_s1ap_build_ue_context_release_complete(test_ue_t *test_ue)
 ogs_pkbuf_t *test_s1ap_build_e_rab_setup_response(test_bearer_t *bearer)
 {
     int rv;
-    ogs_sockaddr_t *addr = NULL;
 
     test_ue_t *test_ue = NULL;
     test_sess_t *sess = NULL;
@@ -911,7 +910,6 @@ ogs_pkbuf_t *test_s1ap_build_e_rab_setup_response(test_bearer_t *bearer)
 ogs_pkbuf_t *test_s1ap_build_e_rab_modify_response(test_bearer_t *bearer)
 {
     int rv;
-    ogs_sockaddr_t *addr = NULL;
 
     test_ue_t *test_ue = NULL;
     test_sess_t *sess = NULL;
@@ -995,7 +993,6 @@ ogs_pkbuf_t *test_s1ap_build_e_rab_modify_response(test_bearer_t *bearer)
 ogs_pkbuf_t *test_s1ap_build_e_rab_release_response(test_bearer_t *bearer)
 {
     int rv;
-    ogs_sockaddr_t *addr = NULL;
 
     test_ue_t *test_ue = NULL;
     test_sess_t *sess = NULL;
@@ -1075,6 +1072,107 @@ ogs_pkbuf_t *test_s1ap_build_e_rab_release_response(test_bearer_t *bearer)
     e_rab = &item->value.choice.E_RABReleaseItemBearerRelComp;
 
     e_rab->e_RAB_ID = bearer->ebi;
+
+    return ogs_s1ap_encode(&pdu);
+}
+
+ogs_pkbuf_t *test_s1ap_build_e_rab_modification_indication(test_ue_t *test_ue)
+{
+    int rv;
+
+    test_sess_t *sess = NULL;
+    test_bearer_t *bearer = NULL;
+
+    S1AP_S1AP_PDU_t pdu;
+    S1AP_InitiatingMessage_t *initiatingMessage = NULL;
+    S1AP_E_RABModificationIndication_t *E_RABModificationIndication = NULL;
+
+    S1AP_E_RABModificationIndicationIEs_t *ie = NULL;
+    S1AP_ENB_UE_S1AP_ID_t *ENB_UE_S1AP_ID = NULL;
+    S1AP_MME_UE_S1AP_ID_t *MME_UE_S1AP_ID = NULL;
+    S1AP_E_RABToBeModifiedListBearerModInd_t
+        *E_RABToBeModifiedListBearerModInd = NULL;
+
+    memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
+    pdu.present = S1AP_S1AP_PDU_PR_initiatingMessage;
+    pdu.choice.initiatingMessage = CALLOC(1, sizeof(S1AP_InitiatingMessage_t));
+
+    initiatingMessage = pdu.choice.initiatingMessage;
+    initiatingMessage->procedureCode =
+        S1AP_ProcedureCode_id_E_RABModificationIndication;
+    initiatingMessage->criticality = S1AP_Criticality_reject;
+    initiatingMessage->value.present =
+        S1AP_InitiatingMessage__value_PR_E_RABModificationIndication;
+
+    E_RABModificationIndication =
+        &initiatingMessage->value.choice.E_RABModificationIndication;
+
+    ie = CALLOC(1, sizeof(S1AP_E_RABModificationIndicationIEs_t));
+    ASN_SEQUENCE_ADD(&E_RABModificationIndication->protocolIEs, ie);
+
+    ie->id = S1AP_ProtocolIE_ID_id_MME_UE_S1AP_ID;
+    ie->criticality = S1AP_Criticality_reject;
+    ie->value.present =
+        S1AP_E_RABModificationIndicationIEs__value_PR_MME_UE_S1AP_ID;
+    MME_UE_S1AP_ID = &ie->value.choice.MME_UE_S1AP_ID;
+
+    ie = CALLOC(1, sizeof(S1AP_E_RABModificationIndicationIEs_t));
+    ASN_SEQUENCE_ADD(&E_RABModificationIndication->protocolIEs, ie);
+
+    ie->id = S1AP_ProtocolIE_ID_id_eNB_UE_S1AP_ID;
+    ie->criticality = S1AP_Criticality_reject;
+    ie->value.present =
+        S1AP_E_RABModificationIndicationIEs__value_PR_ENB_UE_S1AP_ID;
+
+    ENB_UE_S1AP_ID = &ie->value.choice.ENB_UE_S1AP_ID;
+
+    ie = CALLOC(1, sizeof(S1AP_E_RABModificationIndicationIEs_t));
+    ASN_SEQUENCE_ADD(&E_RABModificationIndication->protocolIEs, ie);
+
+    ie->id = S1AP_ProtocolIE_ID_id_E_RABToBeModifiedListBearerModInd;
+    ie->criticality = S1AP_Criticality_reject;
+    ie->value.present = S1AP_E_RABModificationIndicationIEs__value_PR_E_RABToBeModifiedListBearerModInd;
+
+    E_RABToBeModifiedListBearerModInd =
+        &ie->value.choice.E_RABToBeModifiedListBearerModInd;
+
+    *ENB_UE_S1AP_ID = test_ue->enb_ue_s1ap_id;
+    *MME_UE_S1AP_ID = test_ue->mme_ue_s1ap_id;
+
+    ogs_list_for_each(&test_ue->sess_list, sess) {
+        ogs_list_for_each(&sess->bearer_list, bearer) {
+            S1AP_E_RABToBeModifiedItemBearerModIndIEs_t *item = NULL;
+            S1AP_E_RABToBeModifiedItemBearerModInd_t *e_rab = NULL;
+
+            ogs_gtp_f_teid_t f_teid;
+            ogs_ip_t ip;
+            int len;
+
+            item = CALLOC(1,
+                    sizeof(S1AP_E_RABToBeModifiedItemBearerModIndIEs_t));
+            ASN_SEQUENCE_ADD(&E_RABToBeModifiedListBearerModInd->list, item);
+
+            item->id = S1AP_ProtocolIE_ID_id_E_RABToBeModifiedItemBearerModInd;
+            item->criticality = S1AP_Criticality_reject;
+            item->value.present = S1AP_E_RABToBeModifiedItemBearerModIndIEs__value_PR_E_RABToBeModifiedItemBearerModInd;
+
+            e_rab = &item->value.choice.E_RABToBeModifiedItemBearerModInd;
+
+            e_rab->e_RAB_ID = bearer->ebi;
+
+            rv = ogs_gtp_sockaddr_to_f_teid(
+                    bearer->enb_s1u_addr, bearer->enb_s1u_addr6, &f_teid, &len);
+            ogs_assert(rv == OGS_OK);
+
+            rv = ogs_gtp_f_teid_to_ip(&f_teid, &ip);
+            ogs_assert(rv == OGS_OK);
+
+            rv = ogs_asn_ip_to_BIT_STRING(&ip, &e_rab->transportLayerAddress);
+            ogs_assert(rv == OGS_OK);
+            ogs_asn_uint32_to_OCTET_STRING(
+                    bearer->enb_s1u_teid, &e_rab->dL_GTP_TEID);
+        }
+    }
 
     return ogs_s1ap_encode(&pdu);
 }
@@ -1174,7 +1272,6 @@ ogs_pkbuf_t *test_s1ap_build_path_switch_request(test_ue_t *test_ue)
             S1AP_E_RABToBeSwitchedDLItemIEs_t *item = NULL;
             S1AP_E_RABToBeSwitchedDLItem_t *e_rab = NULL;
 
-            ogs_sockaddr_t *addr = NULL;
             ogs_gtp_f_teid_t f_teid;
             ogs_ip_t ip;
             int len;

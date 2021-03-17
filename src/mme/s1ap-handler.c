@@ -1317,6 +1317,120 @@ void s1ap_handle_ue_context_release_action(enb_ue_t *enb_ue)
     }
 }
 
+void s1ap_handle_e_rab_modification_indication(
+        mme_enb_t *enb, ogs_s1ap_message_t *message)
+{
+    char buf[OGS_ADDRSTRLEN];
+    int rv, i;
+
+    S1AP_InitiatingMessage_t *initiatingMessage = NULL;
+    S1AP_E_RABModificationIndication_t *E_RABModificationIndication = NULL;
+
+    S1AP_E_RABModificationIndicationIEs_t *ie = NULL;
+    S1AP_ENB_UE_S1AP_ID_t *ENB_UE_S1AP_ID = NULL;
+    S1AP_MME_UE_S1AP_ID_t *MME_UE_S1AP_ID = NULL;
+    S1AP_E_RABToBeModifiedListBearerModInd_t
+        *E_RABToBeModifiedListBearerModInd = NULL;
+
+    enb_ue_t *enb_ue = NULL;
+    mme_ue_t *mme_ue = NULL;
+
+    ogs_assert(enb);
+    ogs_assert(enb->sctp.sock);
+
+    ogs_assert(message);
+    initiatingMessage = message->choice.initiatingMessage;
+    ogs_assert(initiatingMessage);
+    E_RABModificationIndication = &initiatingMessage->value.choice.E_RABModificationIndication;
+    ogs_assert(E_RABModificationIndication);
+
+    ogs_info("E_RABModificationIndication");
+
+    for (i = 0; i < E_RABModificationIndication->protocolIEs.list.count; i++) {
+        ie = E_RABModificationIndication->protocolIEs.list.array[i];
+        switch (ie->id) {
+        case S1AP_ProtocolIE_ID_id_MME_UE_S1AP_ID:
+            MME_UE_S1AP_ID = &ie->value.choice.MME_UE_S1AP_ID;
+            break;
+        case S1AP_ProtocolIE_ID_id_eNB_UE_S1AP_ID:
+            ENB_UE_S1AP_ID = &ie->value.choice.ENB_UE_S1AP_ID;
+            break;
+        case S1AP_ProtocolIE_ID_id_E_RABToBeModifiedListBearerModInd:
+            E_RABToBeModifiedListBearerModInd =
+                &ie->value.choice.E_RABToBeModifiedListBearerModInd;
+            break;
+        default:
+            break;
+        }
+    }
+
+    ogs_debug("    IP[%s] ENB_ID[%d]",
+            OGS_ADDR(enb->sctp.addr, buf), enb->enb_id);
+
+    if (!MME_UE_S1AP_ID) {
+        ogs_error("No MME_UE_S1AP_ID");
+        s1ap_send_error_indication(enb,
+                MME_UE_S1AP_ID, NULL,
+                S1AP_Cause_PR_protocol, S1AP_CauseProtocol_semantic_error);
+        return;
+    }
+    enb_ue = enb_ue_find_by_mme_ue_s1ap_id(*MME_UE_S1AP_ID);
+    if (!enb_ue) {
+        ogs_warn("No ENB UE Context : MME_UE_S1AP_ID[%d]",
+                (int)*MME_UE_S1AP_ID);
+        s1ap_send_error_indication(enb,
+                MME_UE_S1AP_ID, NULL,
+                S1AP_Cause_PR_radioNetwork,
+                S1AP_CauseRadioNetwork_unknown_mme_ue_s1ap_id);
+        return;
+    }
+
+    ogs_debug("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
+            enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
+
+    mme_ue = enb_ue->mme_ue;
+    ogs_expect_or_return(mme_ue);
+
+    if (!E_RABToBeModifiedListBearerModInd) {
+        ogs_error("No E_RABToBeModifiedListBearerModInd");
+        s1ap_send_error_indication2(mme_ue,
+            S1AP_Cause_PR_protocol, S1AP_CauseProtocol_semantic_error);
+        return;
+    }
+
+    for (i = 0; i < E_RABToBeModifiedListBearerModInd->list.count; i++) {
+        S1AP_E_RABToBeModifiedItemBearerModIndIEs_t *item = NULL;
+        S1AP_E_RABToBeModifiedItemBearerModInd_t *e_rab = NULL;
+
+        mme_bearer_t *bearer = NULL;
+
+        item = (S1AP_E_RABToBeModifiedItemBearerModIndIEs_t *)
+                E_RABToBeModifiedListBearerModInd->list.array[i];
+        ogs_assert(item);
+
+        e_rab = &item->value.choice.E_RABToBeModifiedItemBearerModInd;
+        ogs_assert(e_rab);
+
+        bearer = mme_bearer_find_by_ue_ebi(mme_ue, e_rab->e_RAB_ID);
+        if (!bearer) {
+            ogs_error("No Bearer [%d]", (int)e_rab->e_RAB_ID);
+            continue;
+        }
+
+        memcpy(&bearer->enb_s1u_teid, e_rab->dL_GTP_TEID.buf,
+                sizeof(bearer->enb_s1u_teid));
+        bearer->enb_s1u_teid = be32toh(bearer->enb_s1u_teid);
+        rv = ogs_asn_BIT_STRING_to_ip(
+                &e_rab->transportLayerAddress, &bearer->enb_s1u_ip);
+        ogs_expect(rv == OGS_OK);
+
+        GTP_COUNTER_INCREMENT(
+                mme_ue, GTP_COUNTER_MODIFY_BEARER_BY_E_RAB_MODIFICATION);
+
+        mme_gtp_send_modify_bearer_request(bearer, 0);
+    }
+}
+
 void s1ap_handle_path_switch_request(
         mme_enb_t *enb, ogs_s1ap_message_t *message)
 {
@@ -1388,8 +1502,13 @@ void s1ap_handle_path_switch_request(
     ogs_debug("    IP[%s] ENB_ID[%d]",
             OGS_ADDR(enb->sctp.addr, buf), enb->enb_id);
 
-    ogs_assert(MME_UE_S1AP_ID);
-    ogs_assert(ENB_UE_S1AP_ID);
+    if (!MME_UE_S1AP_ID) {
+        ogs_error("No MME_UE_S1AP_ID");
+        s1ap_send_error_indication(enb,
+                MME_UE_S1AP_ID, NULL,
+                S1AP_Cause_PR_protocol, S1AP_CauseProtocol_semantic_error);
+        return;
+    }
     enb_ue = enb_ue_find_by_mme_ue_s1ap_id(*MME_UE_S1AP_ID);
     if (!enb_ue) {
         ogs_error("Cannot find UE from sourceMME-UE-S1AP-ID[%d] and eNB[%s:%d]",

@@ -23,7 +23,7 @@ static void test1_func(abts_case *tc, void *data)
 {
     int rv;
     ogs_socknode_t *s1ap;
-    ogs_socknode_t *gtpu;
+    ogs_socknode_t *gtpu1, *gtpu2;
     ogs_pkbuf_t *emmbuf;
     ogs_pkbuf_t *esmbuf;
     ogs_pkbuf_t *sendbuf;
@@ -71,9 +71,12 @@ static void test1_func(abts_case *tc, void *data)
     s1ap = tests1ap_client(AF_INET);
     ABTS_PTR_NOTNULL(tc, s1ap);
 
-    /* eNB connects to SGW */
-    gtpu = test_gtpu_server(1, AF_INET);
-    ABTS_PTR_NOTNULL(tc, gtpu);
+    /* Two eNB connects to SGW */
+    gtpu1 = test_gtpu_server(1, AF_INET);
+    ABTS_PTR_NOTNULL(tc, gtpu1);
+
+    gtpu2 = test_gtpu_server(2, AF_INET);
+    ABTS_PTR_NOTNULL(tc, gtpu2);
 
     /* Send S1-Setup Reqeust */
     sendbuf = test_s1ap_build_s1_setup_request(
@@ -99,6 +102,7 @@ static void test1_func(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, esmbuf);
 
     test_ue->attach_request_param.ms_network_feature_support = 1;
+    test_ue->attach_request_param.ue_additional_security_capability = 1;
     emmbuf = testemm_build_attach_request(test_ue, esmbuf);
     ABTS_PTR_NOTNULL(tc, emmbuf);
 
@@ -189,11 +193,38 @@ static void test1_func(abts_case *tc, void *data)
     /* Send GTP-U ICMP Packet */
     bearer = test_bearer_find_by_ue_ebi(test_ue, 5);
     ogs_assert(bearer);
-    rv = test_gtpu_send_ping(gtpu, bearer, TEST_PING_IPV4);
+    rv = test_gtpu_send_ping(gtpu1, bearer, TEST_PING_IPV4);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* Receive GTP-U ICMP Packet */
-    recvbuf = test_gtpu_read(gtpu);
+    recvbuf = test_gtpu_read(gtpu1);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    ogs_pkbuf_free(recvbuf);
+
+    /* Send E-RABModificationIndication */
+    ogs_list_for_each(&sess->bearer_list, bearer) {
+        bearer->enb_s1u_addr = test_self()->gnb2_addr;
+        bearer->enb_s1u_addr6 = test_self()->gnb2_addr6;
+    }
+
+    sendbuf = test_s1ap_build_e_rab_modification_indication(test_ue);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testenb_s1ap_send(s1ap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive E-RABModificationConfirm */
+    recvbuf = testenb_s1ap_read(s1ap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    tests1ap_recv(test_ue, recvbuf);
+
+    /* Send GTP-U ICMP Packet */
+    bearer = test_bearer_find_by_ue_ebi(test_ue, 5);
+    ogs_assert(bearer);
+    rv = test_gtpu_send_ping(gtpu2, bearer, TEST_PING_IPV4);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive GTP-U ICMP Packet */
+    recvbuf = test_gtpu_read(gtpu2);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
@@ -203,8 +234,9 @@ static void test1_func(abts_case *tc, void *data)
     /* eNB disonncect from MME */
     testenb_s1ap_close(s1ap);
 
-    /* eNB disonncect from SGW */
-    test_gtpu_close(gtpu);
+    /* Two eNB disonncect from SGW */
+    testgnb_gtpu_close(gtpu1);
+    testgnb_gtpu_close(gtpu2);
 
     test_ue_remove(test_ue);
 }

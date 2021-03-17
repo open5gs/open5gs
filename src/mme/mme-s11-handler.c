@@ -295,6 +295,10 @@ void mme_s11_handle_modify_bearer_response(
     GTP_COUNTER_CHECK(mme_ue, GTP_COUNTER_MODIFY_BEARER_BY_PATH_SWITCH,
         s1ap_send_path_switch_ack(mme_ue);
     );
+
+    GTP_COUNTER_CHECK(mme_ue, GTP_COUNTER_MODIFY_BEARER_BY_E_RAB_MODIFICATION,
+        s1ap_send_e_rab_modification_confirm(mme_ue);
+    );
 }
 
 void mme_s11_handle_delete_session_response(

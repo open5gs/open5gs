@@ -48,6 +48,8 @@ ogs_pkbuf_t *s1ap_build_e_rab_modify_request(
 ogs_pkbuf_t *s1ap_build_e_rab_release_command(
     mme_bearer_t *bearer, ogs_pkbuf_t *esmbuf, S1AP_Cause_PR group, long cause);
 
+ogs_pkbuf_t *s1ap_build_e_rab_modification_confirm(mme_ue_t *mme_ue);
+
 ogs_pkbuf_t *s1ap_build_paging(
         mme_ue_t *mme_ue, S1AP_CNDomain_t cn_domain);
 
