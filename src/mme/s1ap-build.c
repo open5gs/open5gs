@@ -1810,7 +1810,7 @@ ogs_pkbuf_t *s1ap_build_handover_command(enb_ue_t *source_ue)
 }
 
 ogs_pkbuf_t *s1ap_build_handover_preparation_failure(
-        enb_ue_t *source_ue, S1AP_Cause_t *cause)
+        enb_ue_t *source_ue, S1AP_Cause_PR group, long cause)
 {
     S1AP_S1AP_PDU_t pdu;
     S1AP_UnsuccessfulOutcome_t *unsuccessfulOutcome = NULL;
@@ -1822,7 +1822,7 @@ ogs_pkbuf_t *s1ap_build_handover_preparation_failure(
     S1AP_Cause_t *Cause = NULL;
 
     ogs_assert(source_ue);
-    ogs_assert(cause);
+    ogs_assert(group);
 
     ogs_debug("HandoverPreparationFailure");
 
@@ -1872,13 +1872,12 @@ ogs_pkbuf_t *s1ap_build_handover_preparation_failure(
 
     ogs_debug("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
             source_ue->enb_ue_s1ap_id, source_ue->mme_ue_s1ap_id);
-    ogs_debug("    Group[%d] Cause[%d]",
-            cause->present, (int)cause->choice.radioNetwork);
+    ogs_debug("    Group[%d] Cause[%d]", group, (int)cause);
 
     *MME_UE_S1AP_ID = source_ue->mme_ue_s1ap_id;
     *ENB_UE_S1AP_ID = source_ue->enb_ue_s1ap_id;
-    Cause->present = cause->present;
-    Cause->choice.radioNetwork = cause->choice.radioNetwork;
+    Cause->present = group;
+    Cause->choice.radioNetwork = cause;
 
     return ogs_s1ap_encode(&pdu);
 }

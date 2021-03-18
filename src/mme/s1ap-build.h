@@ -63,7 +63,7 @@ ogs_pkbuf_t *s1ap_build_path_switch_failure(
 
 ogs_pkbuf_t *s1ap_build_handover_command(enb_ue_t *source_ue);
 ogs_pkbuf_t *s1ap_build_handover_preparation_failure(
-    enb_ue_t *source_ue, S1AP_Cause_t *cause);
+        enb_ue_t *source_ue, S1AP_Cause_PR group, long cause);
 
 ogs_pkbuf_t *s1ap_build_handover_request(
     enb_ue_t *target_ue, S1AP_HandoverType_t *handovertype, S1AP_Cause_t *cause,

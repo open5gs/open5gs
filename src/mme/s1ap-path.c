@@ -417,15 +417,15 @@ void s1ap_send_handover_command(enb_ue_t *source_ue)
 }
 
 void s1ap_send_handover_preparation_failure(
-        enb_ue_t *source_ue, S1AP_Cause_t *cause)
+        enb_ue_t *source_ue, S1AP_Cause_PR group, long cause)
 {
     int rv;
     ogs_pkbuf_t *s1apbuf = NULL;
 
     ogs_assert(source_ue);
-    ogs_assert(cause);
+    ogs_assert(group);
 
-    s1apbuf = s1ap_build_handover_preparation_failure(source_ue, cause);
+    s1apbuf = s1ap_build_handover_preparation_failure(source_ue, group, cause);
     ogs_expect_or_return(s1apbuf);
 
     rv = s1ap_send_to_enb_ue(source_ue, s1apbuf);
