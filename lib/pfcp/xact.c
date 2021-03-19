@@ -785,10 +785,10 @@ ogs_pfcp_xact_t *ogs_pfcp_xact_find_by_xid(
     ogs_list_for_each(list, xact) {
         if (xact->xid == xid) {
             ogs_debug("[%d] %s Find    peer [%s]:%d",
-                    xact->xid,
-                    xact->org == OGS_PFCP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
-                    OGS_ADDR(&node->addr, buf),
-                    OGS_PORT(&node->addr));
+                xact->xid,
+                xact->org == OGS_PFCP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
+                OGS_ADDR(&node->addr, buf),
+                OGS_PORT(&node->addr));
             break;
         }
     }
@@ -829,4 +829,3 @@ static int ogs_pfcp_xact_delete(ogs_pfcp_xact_t *xact)
 
     return OGS_OK;
 }
-

@@ -246,6 +246,17 @@ typedef struct test_ul_nas_transport_param_s {
     };
 } __attribute__ ((packed)) test_ul_nas_transport_param_t;
 
+typedef struct test_pdu_session_establishment_param_s {
+    union {
+        struct {
+        ED3(uint8_t ssc_mode:1;,
+            uint8_t epco:1;,
+            uint8_t reserved:6;)
+        };
+        uint8_t value;
+    };
+} __attribute__ ((packed)) test_pdu_session_establishment_param_t;
+
 typedef struct test_pdn_connectivity_param_s {
     union {
         struct {
@@ -427,6 +438,7 @@ typedef struct test_sess_s {
     ogs_sockaddr_t *gnb_n3_addr6;   /* gNB-N3 IPv6 */
 
     test_ul_nas_transport_param_t ul_nas_transport_param;
+    test_pdu_session_establishment_param_t pdu_session_establishment_param;
     test_pdn_connectivity_param_t pdn_connectivity_param;
     test_esm_information_param_t esm_information_param;
 

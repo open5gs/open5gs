@@ -177,6 +177,9 @@ static void test1_func(abts_case *tc, void *data)
     sess->ul_nas_transport_param.dnn = 1;
     sess->ul_nas_transport_param.s_nssai = 1;
 
+    sess->pdu_session_establishment_param.ssc_mode = 1;
+    sess->pdu_session_establishment_param.epco = 1;
+
     gsmbuf = testgsm_build_pdu_session_establishment_request(sess);
     ABTS_PTR_NOTNULL(tc, gsmbuf);
     gmmbuf = testgmm_build_ul_nas_transport(sess,

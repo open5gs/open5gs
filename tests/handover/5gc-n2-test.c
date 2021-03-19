@@ -211,6 +211,9 @@ static void failure_func(abts_case *tc, void *data)
     sess->ul_nas_transport_param.dnn = 1;
     sess->ul_nas_transport_param.s_nssai = 1;
 
+    sess->pdu_session_establishment_param.ssc_mode = 1;
+    sess->pdu_session_establishment_param.epco = 1;
+
     gsmbuf = testgsm_build_pdu_session_establishment_request(sess);
     ABTS_PTR_NOTNULL(tc, gsmbuf);
     gmmbuf = testgmm_build_ul_nas_transport(sess,
@@ -266,6 +269,9 @@ static void failure_func(abts_case *tc, void *data)
     sess->ul_nas_transport_param.dnn = 1;
     sess->ul_nas_transport_param.s_nssai = 1;
 
+    sess->pdu_session_establishment_param.ssc_mode = 1;
+    sess->pdu_session_establishment_param.epco = 1;
+
     gsmbuf = testgsm_build_pdu_session_establishment_request(sess);
     ABTS_PTR_NOTNULL(tc, gsmbuf);
     gmmbuf = testgmm_build_ul_nas_transport(sess,
@@ -306,6 +312,9 @@ static void failure_func(abts_case *tc, void *data)
         OGS_NAS_5GS_REQUEST_TYPE_MODIFICATION_REQUEST;
     sess->ul_nas_transport_param.dnn = 0;
     sess->ul_nas_transport_param.s_nssai = 0;
+
+    sess->pdu_session_establishment_param.ssc_mode = 0;
+    sess->pdu_session_establishment_param.epco = 0;
 
     gsmbuf = testgsm_build_pdu_session_modification_complete(sess);
     ABTS_PTR_NOTNULL(tc, gsmbuf);
@@ -602,6 +611,9 @@ static void direct_complete_func(abts_case *tc, void *data)
     sess->ul_nas_transport_param.dnn = 1;
     sess->ul_nas_transport_param.s_nssai = 1;
 
+    sess->pdu_session_establishment_param.ssc_mode = 1;
+    sess->pdu_session_establishment_param.epco = 1;
+
     gsmbuf = testgsm_build_pdu_session_establishment_request(sess);
     ABTS_PTR_NOTNULL(tc, gsmbuf);
     gmmbuf = testgmm_build_ul_nas_transport(sess,
@@ -657,6 +669,9 @@ static void direct_complete_func(abts_case *tc, void *data)
     sess->ul_nas_transport_param.dnn = 1;
     sess->ul_nas_transport_param.s_nssai = 1;
 
+    sess->pdu_session_establishment_param.ssc_mode = 1;
+    sess->pdu_session_establishment_param.epco = 1;
+
     gsmbuf = testgsm_build_pdu_session_establishment_request(sess);
     ABTS_PTR_NOTNULL(tc, gsmbuf);
     gmmbuf = testgmm_build_ul_nas_transport(sess,
@@ -697,6 +712,9 @@ static void direct_complete_func(abts_case *tc, void *data)
         OGS_NAS_5GS_REQUEST_TYPE_MODIFICATION_REQUEST;
     sess->ul_nas_transport_param.dnn = 0;
     sess->ul_nas_transport_param.s_nssai = 0;
+
+    sess->pdu_session_establishment_param.ssc_mode = 0;
+    sess->pdu_session_establishment_param.epco = 0;
 
     gsmbuf = testgsm_build_pdu_session_modification_complete(sess);
     ABTS_PTR_NOTNULL(tc, gsmbuf);
@@ -1209,6 +1227,9 @@ static void direct_cancel_func(abts_case *tc, void *data)
     sess->ul_nas_transport_param.dnn = 1;
     sess->ul_nas_transport_param.s_nssai = 1;
 
+    sess->pdu_session_establishment_param.ssc_mode = 1;
+    sess->pdu_session_establishment_param.epco = 1;
+
     gsmbuf = testgsm_build_pdu_session_establishment_request(sess);
     ABTS_PTR_NOTNULL(tc, gsmbuf);
     gmmbuf = testgmm_build_ul_nas_transport(sess,
@@ -1264,6 +1285,9 @@ static void direct_cancel_func(abts_case *tc, void *data)
     sess->ul_nas_transport_param.dnn = 1;
     sess->ul_nas_transport_param.s_nssai = 1;
 
+    sess->pdu_session_establishment_param.ssc_mode = 1;
+    sess->pdu_session_establishment_param.epco = 1;
+
     gsmbuf = testgsm_build_pdu_session_establishment_request(sess);
     ABTS_PTR_NOTNULL(tc, gsmbuf);
     gmmbuf = testgmm_build_ul_nas_transport(sess,
@@ -1304,6 +1328,9 @@ static void direct_cancel_func(abts_case *tc, void *data)
         OGS_NAS_5GS_REQUEST_TYPE_MODIFICATION_REQUEST;
     sess->ul_nas_transport_param.dnn = 0;
     sess->ul_nas_transport_param.s_nssai = 0;
+
+    sess->pdu_session_establishment_param.ssc_mode = 0;
+    sess->pdu_session_establishment_param.epco = 0;
 
     gsmbuf = testgsm_build_pdu_session_modification_complete(sess);
     ABTS_PTR_NOTNULL(tc, gsmbuf);
@@ -1616,6 +1643,9 @@ static void indirect_complete_func(abts_case *tc, void *data)
     sess->ul_nas_transport_param.dnn = 1;
     sess->ul_nas_transport_param.s_nssai = 1;
 
+    sess->pdu_session_establishment_param.ssc_mode = 1;
+    sess->pdu_session_establishment_param.epco = 1;
+
     gsmbuf = testgsm_build_pdu_session_establishment_request(sess);
     ABTS_PTR_NOTNULL(tc, gsmbuf);
     gmmbuf = testgmm_build_ul_nas_transport(sess,
@@ -1671,6 +1701,9 @@ static void indirect_complete_func(abts_case *tc, void *data)
     sess->ul_nas_transport_param.dnn = 1;
     sess->ul_nas_transport_param.s_nssai = 1;
 
+    sess->pdu_session_establishment_param.ssc_mode = 1;
+    sess->pdu_session_establishment_param.epco = 1;
+
     gsmbuf = testgsm_build_pdu_session_establishment_request(sess);
     ABTS_PTR_NOTNULL(tc, gsmbuf);
     gmmbuf = testgmm_build_ul_nas_transport(sess,
@@ -1711,6 +1744,9 @@ static void indirect_complete_func(abts_case *tc, void *data)
         OGS_NAS_5GS_REQUEST_TYPE_MODIFICATION_REQUEST;
     sess->ul_nas_transport_param.dnn = 0;
     sess->ul_nas_transport_param.s_nssai = 0;
+
+    sess->pdu_session_establishment_param.ssc_mode = 0;
+    sess->pdu_session_establishment_param.epco = 0;
 
     gsmbuf = testgsm_build_pdu_session_modification_complete(sess);
     ABTS_PTR_NOTNULL(tc, gsmbuf);
@@ -2259,6 +2295,9 @@ static void indirect_cancel_func(abts_case *tc, void *data)
     sess->ul_nas_transport_param.dnn = 1;
     sess->ul_nas_transport_param.s_nssai = 1;
 
+    sess->pdu_session_establishment_param.ssc_mode = 1;
+    sess->pdu_session_establishment_param.epco = 1;
+
     gsmbuf = testgsm_build_pdu_session_establishment_request(sess);
     ABTS_PTR_NOTNULL(tc, gsmbuf);
     gmmbuf = testgmm_build_ul_nas_transport(sess,
@@ -2314,6 +2353,9 @@ static void indirect_cancel_func(abts_case *tc, void *data)
     sess->ul_nas_transport_param.dnn = 1;
     sess->ul_nas_transport_param.s_nssai = 1;
 
+    sess->pdu_session_establishment_param.ssc_mode = 1;
+    sess->pdu_session_establishment_param.epco = 1;
+
     gsmbuf = testgsm_build_pdu_session_establishment_request(sess);
     ABTS_PTR_NOTNULL(tc, gsmbuf);
     gmmbuf = testgmm_build_ul_nas_transport(sess,
@@ -2354,6 +2396,9 @@ static void indirect_cancel_func(abts_case *tc, void *data)
         OGS_NAS_5GS_REQUEST_TYPE_MODIFICATION_REQUEST;
     sess->ul_nas_transport_param.dnn = 0;
     sess->ul_nas_transport_param.s_nssai = 0;
+
+    sess->pdu_session_establishment_param.ssc_mode = 0;
+    sess->pdu_session_establishment_param.epco = 0;
 
     gsmbuf = testgsm_build_pdu_session_modification_complete(sess);
     ABTS_PTR_NOTNULL(tc, gsmbuf);

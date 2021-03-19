@@ -377,6 +377,11 @@ ogs_pfcp_pdr_t *ogs_pfcp_handle_create_pdr(ogs_pfcp_sess_t *sess,
         }
     }
 
+    if (pdr->dnn) {
+        ogs_free(pdr->dnn);
+        pdr->dnn = NULL;
+    }
+
     if (message->pdi.network_instance.presence) {
         char dnn[OGS_MAX_DNN_LEN];
 
@@ -384,10 +389,14 @@ ogs_pfcp_pdr_t *ogs_pfcp_handle_create_pdr(ogs_pfcp_sess_t *sess,
             message->pdi.network_instance.data,
             message->pdi.network_instance.len);
 
-        if (pdr->dnn)
-            ogs_free(pdr->dnn);
         pdr->dnn = ogs_strdup(dnn);
     }
+
+    pdr->chid = false;
+    pdr->choose_id = 0;
+
+    memset(&pdr->f_teid, 0, sizeof(pdr->f_teid));
+    pdr->f_teid_len = 0;
 
     if (message->pdi.local_f_teid.presence) {
         pdr->f_teid_len = message->pdi.local_f_teid.len;
@@ -395,9 +404,14 @@ ogs_pfcp_pdr_t *ogs_pfcp_handle_create_pdr(ogs_pfcp_sess_t *sess,
         pdr->f_teid.teid = be32toh(pdr->f_teid.teid);
     }
 
+    pdr->qfi = 0;
+
     if (message->pdi.qfi.presence) {
         pdr->qfi = message->pdi.qfi.u8;
     }
+
+    memset(&pdr->ue_ip_addr, 0, sizeof(pdr->ue_ip_addr));
+    pdr->ue_ip_addr_len = 0;
 
     if (message->pdi.ue_ip_address.presence) {
         pdr->ue_ip_addr_len = message->pdi.ue_ip_address.len;
@@ -405,17 +419,24 @@ ogs_pfcp_pdr_t *ogs_pfcp_handle_create_pdr(ogs_pfcp_sess_t *sess,
                 message->pdi.ue_ip_address.data, pdr->ue_ip_addr_len);
     }
 
+    memset(&pdr->outer_header_removal, 0, sizeof(pdr->outer_header_removal));
+    pdr->outer_header_removal_len = 0;
+
     if (message->outer_header_removal.presence) {
         pdr->outer_header_removal_len = message->outer_header_removal.len;
         memcpy(&pdr->outer_header_removal, message->outer_header_removal.data,
                 pdr->outer_header_removal_len);
     }
 
+    pdr->far = NULL;
+
     if (message->far_id.presence) {
         far = ogs_pfcp_far_find_or_add(sess, message->far_id.u32);
         ogs_assert(far);
         ogs_pfcp_pdr_associate_far(pdr, far);
     }
+
+    pdr->qer = NULL;
 
     if (message->qer_id.presence) {
         qer = ogs_pfcp_qer_find_or_add(sess, message->qer_id.u32);
@@ -693,6 +714,9 @@ ogs_pfcp_far_t *ogs_pfcp_handle_create_far(ogs_pfcp_sess_t *sess,
 
     far->apply_action = message->apply_action.u8;
 
+    far->dst_if = 0;
+    memset(&far->outer_header_creation, 0, sizeof(far->outer_header_creation));
+
     if (message->forwarding_parameters.presence) {
         if (message->forwarding_parameters.destination_interface.presence) {
             far->dst_if =
@@ -711,7 +735,6 @@ ogs_pfcp_far_t *ogs_pfcp_handle_create_far(ogs_pfcp_sess_t *sess,
             far->outer_header_creation.teid =
                     be32toh(far->outer_header_creation.teid);
         }
-
     }
 
     return far;
@@ -877,10 +900,15 @@ ogs_pfcp_qer_t *ogs_pfcp_handle_create_qer(ogs_pfcp_sess_t *sess,
 
     qer->gate_status.value = message->gate_status.u8;
 
+    memset(&qer->mbr, 0, sizeof(qer->mbr));
+    memset(&qer->gbr, 0, sizeof(qer->gbr));
+
     if (message->maximum_bitrate.presence)
         ogs_pfcp_parse_bitrate(&qer->mbr, &message->maximum_bitrate);
     if (message->guaranteed_bitrate.presence)
         ogs_pfcp_parse_bitrate(&qer->gbr, &message->guaranteed_bitrate);
+
+    qer->qfi = 0;
 
     if (message->qos_flow_identifier.presence)
         qer->qfi = message->qos_flow_identifier.u8;

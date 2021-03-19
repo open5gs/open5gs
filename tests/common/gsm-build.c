@@ -29,10 +29,7 @@ ogs_pkbuf_t *testgsm_build_pdu_session_establishment_request(
     ogs_nas_integrity_protection_maximum_data_rate_t
         *integrity_protection_maximum_data_rate = NULL;
     ogs_nas_pdu_session_type_t *pdu_session_type = NULL;
-#define ADD_SSC_MODE 1
-#if ADD_SSC_MODE
     ogs_nas_ssc_mode_t *ssc_mode = NULL;
-#endif
     ogs_nas_extended_protocol_configuration_options_t
         *extended_protocol_configuration_options = NULL;
     uint8_t ue_pco[35] =
@@ -51,9 +48,7 @@ ogs_pkbuf_t *testgsm_build_pdu_session_establishment_request(
         &pdu_session_establishment_request->
             integrity_protection_maximum_data_rate;
     pdu_session_type = &pdu_session_establishment_request->pdu_session_type;
-#if ADD_SSC_MODE
     ssc_mode = &pdu_session_establishment_request->ssc_mode;
-#endif
     extended_protocol_configuration_options =
         &pdu_session_establishment_request->
             extended_protocol_configuration_options;
@@ -73,16 +68,18 @@ ogs_pkbuf_t *testgsm_build_pdu_session_establishment_request(
         OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REQUEST_PDU_SESSION_TYPE_PRESENT;
     pdu_session_type->value = test_sess->pdu_session_type;
 
-#if ADD_SSC_MODE
-    pdu_session_establishment_request->presencemask |=
-        OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REQUEST_SSC_MODE_PRESENT;
-    ssc_mode->value = OGS_NAS_SSC_MODE_1;
-#endif
+    if (test_sess->pdu_session_establishment_param.ssc_mode) {
+        pdu_session_establishment_request->presencemask |=
+            OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REQUEST_SSC_MODE_PRESENT;
+        ssc_mode->value = OGS_NAS_SSC_MODE_1;
+    }
 
-    pdu_session_establishment_request->presencemask |=
-        OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REQUEST_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT;
-    extended_protocol_configuration_options->length = sizeof(ue_pco);
-    extended_protocol_configuration_options->buffer = ue_pco;
+    if (test_sess->pdu_session_establishment_param.epco) {
+        pdu_session_establishment_request->presencemask |=
+            OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REQUEST_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT;
+        extended_protocol_configuration_options->length = sizeof(ue_pco);
+        extended_protocol_configuration_options->buffer = ue_pco;
+    }
 
     return ogs_nas_5gs_plain_encode(&message);
 }

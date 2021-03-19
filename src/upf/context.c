@@ -268,6 +268,17 @@ void upf_sess_set_ue_ip(upf_sess_t *sess,
     ue_ip = &pdr->ue_ip_addr;
     ogs_assert(ue_ip);
 
+    if (sess->ipv4) {
+        ogs_hash_set(self.ipv4_hash,
+                sess->ipv4->addr, OGS_IPV4_LEN, NULL);
+        ogs_pfcp_ue_ip_free(sess->ipv4);
+    }
+    if (sess->ipv6) {
+        ogs_hash_set(self.ipv6_hash,
+                sess->ipv6->addr, OGS_IPV6_DEFAULT_PREFIX_LEN >> 3, NULL);
+        ogs_pfcp_ue_ip_free(sess->ipv6);
+    }
+
     /* Set PDN-Type and UE IP Address */
     if (session_type == OGS_PDU_SESSION_TYPE_IPV4) {
         if (ue_ip->ipv4 || pdr->dnn) {
