@@ -64,21 +64,21 @@ logger:
 #  o Provide custom SGW-U GTP-U address to be advertised inside S1AP messages
 #    gtpu:
 #      - addr: 10.4.128.21
-#        advertise_addr: 172.24.15.30
+#        advertise: 172.24.15.30
 #
 #    gtpu:
 #      - addr: 10.4.128.21
-#        advertise_addr:
+#        advertise:
 #        - 127.0.0.1
 #        - ::1
 #
 #    gtpu:
 #      - addr: 10.4.128.21
-#        advertise_name: sgw1.epc.mnc001.mcc001.3gppnetwork.org
+#        advertise: sgw1.epc.mnc001.mcc001.3gppnetwork.org
 #
 #    gtpu:
 #      - dev: ens3
-#        advertise_name: sgw1.epc.mnc001.mcc001.3gppnetwork.org
+#        advertise: sgw1.epc.mnc001.mcc001.3gppnetwork.org
 #
 sgwu:
     pfcp:

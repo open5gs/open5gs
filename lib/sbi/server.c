@@ -78,6 +78,8 @@ void ogs_sbi_server_remove(ogs_sbi_server_t *server)
 
     ogs_assert(server->node.addr);
     ogs_freeaddrinfo(server->node.addr);
+    if (server->advertise)
+        ogs_freeaddrinfo(server->advertise);
 
     ogs_pool_free(&server_pool, server);
 }
@@ -88,6 +90,22 @@ void ogs_sbi_server_remove_all(void)
 
     ogs_list_for_each_safe(&ogs_sbi_self()->server_list, next_server, server)
         ogs_sbi_server_remove(server);
+}
+
+void ogs_sbi_server_set_advertise(
+        ogs_sbi_server_t *server, int family, ogs_sockaddr_t *advertise)
+{
+    ogs_sockaddr_t *addr = NULL;
+
+    ogs_assert(server);
+    ogs_assert(advertise);
+
+    ogs_copyaddrinfo(&addr, advertise);
+    if (family != AF_UNSPEC)
+        ogs_filteraddrinfo(&addr, family);
+
+    if (addr)
+        server->advertise = addr;
 }
 
 void ogs_sbi_server_start_all(

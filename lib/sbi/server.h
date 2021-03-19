@@ -32,6 +32,7 @@ typedef struct ogs_sbi_stream_s ogs_sbi_stream_t;
 
 typedef struct ogs_sbi_server_s {
     ogs_socknode_t  node;
+    ogs_sockaddr_t  *advertise;
 
     struct {
         const char  *key;
@@ -64,6 +65,9 @@ void ogs_sbi_server_final(void);
 ogs_sbi_server_t *ogs_sbi_server_add(ogs_sockaddr_t *addr);
 void ogs_sbi_server_remove(ogs_sbi_server_t *server);
 void ogs_sbi_server_remove_all(void);
+
+void ogs_sbi_server_set_advertise(
+        ogs_sbi_server_t *server, int family, ogs_sockaddr_t *advertise);
 
 void ogs_sbi_server_start_all(
         int (*cb)(ogs_sbi_request_t *request, void *data));

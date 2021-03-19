@@ -64,21 +64,21 @@ logger:
 #  o Provide custom UPF GTP-U address to be advertised inside NGAP messages
 #    gtpu:
 #      - addr: 10.4.128.21
-#        advertise_addr: 172.24.15.30
+#        advertise: 172.24.15.30
 #
 #    gtpu:
 #      - addr: 10.4.128.21
-#        advertise_addr:
+#        advertise:
 #        - 127.0.0.1
 #        - ::1
 #
 #    gtpu:
 #      - addr: 10.4.128.21
-#        advertise_name: upf1.5gc.mnc001.mcc001.3gppnetwork.org
+#        advertise: upf1.5gc.mnc001.mcc001.3gppnetwork.org
 #
 #    gtpu:
 #      - dev: ens3
-#        advertise_name: upf1.5gc.mnc001.mcc001.3gppnetwork.org
+#        advertise: upf1.5gc.mnc001.mcc001.3gppnetwork.org
 #
 #  <Subnet for UE network>
 #

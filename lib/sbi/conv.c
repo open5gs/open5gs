@@ -67,6 +67,7 @@ char *ogs_uridup(bool https, ogs_sockaddr_t *addr, ogs_sbi_header_t *h)
 
 char *ogs_sbi_server_uri(ogs_sbi_server_t *server, ogs_sbi_header_t *h)
 {
+    ogs_sockaddr_t *advertise = NULL;
     bool https = false;
 
     ogs_assert(server);
@@ -75,7 +76,13 @@ char *ogs_sbi_server_uri(ogs_sbi_server_t *server, ogs_sbi_header_t *h)
     if (server->tls.key && server->tls.pem)
         https = true;
 
-    return ogs_uridup(https, server->node.addr, h);
+    advertise = server->advertise;
+
+    if (!advertise)
+        advertise = server->node.addr;
+    ogs_assert(advertise);
+
+    return ogs_uridup(https, advertise, h);
 }
 
 char *ogs_sbi_client_uri(ogs_sbi_client_t *client, ogs_sbi_header_t *h)

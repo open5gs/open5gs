@@ -215,10 +215,10 @@ int ogs_gtp_context_parse_config(const char *local, const char *remote)
 
                     do {
                         int family = AF_UNSPEC;
-                        int i, num = 0;
-                        int adv_num = 0;
+                        int i, num_of_hostname = 0;
                         const char *hostname[OGS_MAX_NUM_OF_HOSTNAME];
-                        const char *adv_hostname[OGS_MAX_NUM_OF_HOSTNAME];
+                        int num_of_advertise = 0;
+                        const char *advertise[OGS_MAX_NUM_OF_HOSTNAME];
                         uint16_t port = self.gtpu_port;
                         const char *dev = NULL;
                         ogs_sockaddr_t *addr = NULL;
@@ -283,35 +283,34 @@ int ogs_gtp_context_parse_config(const char *local, const char *remote)
                                             break;
                                     }
 
-                                    ogs_assert(num < OGS_MAX_NUM_OF_HOSTNAME);
-                                    hostname[num++] =
+                                    ogs_assert(num_of_hostname <
+                                            OGS_MAX_NUM_OF_HOSTNAME);
+                                    hostname[num_of_hostname++] =
                                         ogs_yaml_iter_value(&hostname_iter);
                                 } while (
                                     ogs_yaml_iter_type(&hostname_iter) ==
                                         YAML_SEQUENCE_NODE);
-                            } else if (!strcmp(gtpu_key, "advertise_addr") ||
-                                    !strcmp(gtpu_key, "advertise_name")) {
-                                ogs_yaml_iter_t adv_hostname_iter;
+                            } else if (!strcmp(gtpu_key, "advertise")) {
+                                ogs_yaml_iter_t advertise_iter;
                                 ogs_yaml_iter_recurse(
-                                        &gtpu_iter, &adv_hostname_iter);
+                                        &gtpu_iter, &advertise_iter);
                                 ogs_assert(ogs_yaml_iter_type(
-                                    &adv_hostname_iter) != YAML_MAPPING_NODE);
+                                    &advertise_iter) != YAML_MAPPING_NODE);
 
                                 do {
-                                    if (ogs_yaml_iter_type(
-                                        &adv_hostname_iter) ==
+                                    if (ogs_yaml_iter_type(&advertise_iter) ==
                                             YAML_SEQUENCE_NODE) {
                                         if (!ogs_yaml_iter_next(
-                                            &adv_hostname_iter))
+                                            &advertise_iter))
                                             break;
                                     }
 
-                                    ogs_assert(adv_num <
+                                    ogs_assert(num_of_advertise <
                                             OGS_MAX_NUM_OF_HOSTNAME);
-                                    adv_hostname[adv_num++] =
-                                        ogs_yaml_iter_value(&adv_hostname_iter);
+                                    advertise[num_of_advertise++] =
+                                        ogs_yaml_iter_value(&advertise_iter);
                                 } while (
-                                    ogs_yaml_iter_type(&adv_hostname_iter) ==
+                                    ogs_yaml_iter_type(&advertise_iter) ==
                                         YAML_SEQUENCE_NODE);
                             } else if (!strcmp(gtpu_key, "port")) {
                                 const char *v = ogs_yaml_iter_value(&gtpu_iter);
@@ -338,7 +337,7 @@ int ogs_gtp_context_parse_config(const char *local, const char *remote)
                         }
 
                         addr = NULL;
-                        for (i = 0; i < num; i++) {
+                        for (i = 0; i < num_of_hostname; i++) {
                             rv = ogs_addaddrinfo(&addr,
                                     family, hostname[i], port, 0);
                             ogs_assert(rv == OGS_OK);
@@ -364,9 +363,9 @@ int ogs_gtp_context_parse_config(const char *local, const char *remote)
                         }
 
                         adv_addr = NULL;
-                        for (i = 0; i < adv_num; i++) {
+                        for (i = 0; i < num_of_advertise; i++) {
                             rv = ogs_addaddrinfo(&adv_addr,
-                                    family, adv_hostname[i], port, 0);
+                                    family, advertise[i], port, 0);
                             ogs_assert(rv == OGS_OK);
                         }
                         rv = ogs_copyaddrinfo(&adv_addr6, adv_addr);

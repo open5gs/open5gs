@@ -146,14 +146,17 @@ int ogs_sbi_context_parse_config(const char *local, const char *remote)
                     ogs_yaml_iter_t sbi_array, sbi_iter;
                     ogs_yaml_iter_recurse(&local_iter, &sbi_array);
                     do {
-                        int family = AF_UNSPEC;
-                        int i, num = 0;
+                        int i, family = AF_UNSPEC;
+                        int num = 0;
                         const char *hostname[OGS_MAX_NUM_OF_HOSTNAME];
+                        int num_of_advertise = 0;
+                        const char *advertise[OGS_MAX_NUM_OF_HOSTNAME];
+                        const char *key = NULL;
+                        const char *pem = NULL;
+
                         uint16_t port = self.http_port;
                         const char *dev = NULL;
                         ogs_sockaddr_t *addr = NULL;
-                        const char *key = NULL;
-                        const char *pem = NULL;
 
                         if (ogs_yaml_iter_type(&sbi_array) ==
                                 YAML_MAPPING_NODE) {
@@ -206,6 +209,28 @@ int ogs_sbi_context_parse_config(const char *local, const char *remote)
                                         ogs_yaml_iter_value(&hostname_iter);
                                 } while (
                                     ogs_yaml_iter_type(&hostname_iter) ==
+                                        YAML_SEQUENCE_NODE);
+                            } else if (!strcmp(sbi_key, "advertise")) {
+                                ogs_yaml_iter_t advertise_iter;
+                                ogs_yaml_iter_recurse(&sbi_iter,
+                                        &advertise_iter);
+                                ogs_assert(ogs_yaml_iter_type(
+                                    &advertise_iter) != YAML_MAPPING_NODE);
+
+                                do {
+                                    if (ogs_yaml_iter_type(&advertise_iter) ==
+                                                YAML_SEQUENCE_NODE) {
+                                        if (!ogs_yaml_iter_next(
+                                                    &advertise_iter))
+                                            break;
+                                    }
+
+                                    ogs_assert(num_of_advertise <
+                                            OGS_MAX_NUM_OF_HOSTNAME);
+                                    advertise[num_of_advertise++] =
+                                        ogs_yaml_iter_value(&advertise_iter);
+                                } while (
+                                    ogs_yaml_iter_type(&advertise_iter) ==
                                         YAML_SEQUENCE_NODE);
                             } else if (!strcmp(sbi_key, "port")) {
                                 const char *v = ogs_yaml_iter_value(&sbi_iter);
@@ -261,11 +286,22 @@ int ogs_sbi_context_parse_config(const char *local, const char *remote)
                             ogs_assert(rv == OGS_OK);
                         }
 
+                        addr = NULL;
+                        for (i = 0; i < num_of_advertise; i++) {
+                            rv = ogs_addaddrinfo(&addr,
+                                    family, advertise[i], port, 0);
+                            ogs_assert(rv == OGS_OK);
+                        }
+
                         node = ogs_list_first(&list);
                         if (node) {
                             ogs_sbi_server_t *server =
                                 ogs_sbi_server_add(node->addr);
                             ogs_assert(server);
+
+                            if (addr && ogs_app()->parameter.no_ipv4 == 0)
+                                ogs_sbi_server_set_advertise(
+                                        server, AF_INET, addr);
 
                             if (key) server->tls.key = key;
                             if (pem) server->tls.pem = pem;
@@ -276,12 +312,20 @@ int ogs_sbi_context_parse_config(const char *local, const char *remote)
                                 ogs_sbi_server_add(node6->addr);
                             ogs_assert(server);
 
+                            if (addr && ogs_app()->parameter.no_ipv6 == 0)
+                                ogs_sbi_server_set_advertise(
+                                        server, AF_INET6, addr);
+
                             if (key) server->tls.key = key;
                             if (pem) server->tls.pem = pem;
                         }
 
+                        if (addr)
+                            ogs_freeaddrinfo(addr);
+
                         ogs_socknode_remove_all(&list);
                         ogs_socknode_remove_all(&list6);
+
                     } while (ogs_yaml_iter_type(&sbi_array) ==
                             YAML_SEQUENCE_NODE);
 
@@ -395,6 +439,8 @@ int ogs_sbi_context_parse_config(const char *local, const char *remote)
                                     } else
                                         ogs_warn("unknown key `%s`", tls_key);
                                 }
+                            } else if (!strcmp(sbi_key, "advertise")) {
+                                /* Nothing in client */
                             } else
                                 ogs_warn("unknown key `%s`", sbi_key);
                         }
@@ -781,18 +827,23 @@ void ogs_sbi_nf_instance_build_default(
 
     hostname = NULL;
     ogs_list_for_each(&ogs_sbi_self()->server_list, server) {
-        ogs_assert(server->node.addr);
+        ogs_sockaddr_t *advertise = NULL;
+
+        advertise = server->advertise;
+        if (!advertise)
+            advertise = server->node.addr;
+        ogs_assert(advertise);
 
         /* First FQDN is selected */
         if (!hostname) {
-            hostname = ogs_gethostname(server->node.addr);
+            hostname = ogs_gethostname(advertise);
             if (hostname)
                 continue;
         }
 
         if (nf_instance->num_of_ipv4 < OGS_SBI_MAX_NUM_OF_IP_ADDRESS) {
             ogs_sockaddr_t *addr = NULL;
-            ogs_copyaddrinfo(&addr, server->node.addr);
+            ogs_copyaddrinfo(&addr, advertise);
             ogs_assert(addr);
 
             if (addr->ogs_sa_family == AF_INET) {
@@ -840,11 +891,16 @@ ogs_sbi_nf_service_t *ogs_sbi_nf_service_build_default(
 
     hostname = NULL;
     ogs_list_for_each(&ogs_sbi_self()->server_list, server) {
-        ogs_assert(server->node.addr);
+        ogs_sockaddr_t *advertise = NULL;
+
+        advertise = server->advertise;
+        if (!advertise)
+            advertise = server->node.addr;
+        ogs_assert(advertise);
 
         /* First FQDN is selected */
         if (!hostname) {
-            hostname = ogs_gethostname(server->node.addr);
+            hostname = ogs_gethostname(advertise);
             if (hostname)
                 continue;
         }
@@ -852,7 +908,7 @@ ogs_sbi_nf_service_t *ogs_sbi_nf_service_build_default(
         if (nf_service->num_of_addr < OGS_SBI_MAX_NUM_OF_IP_ADDRESS) {
             int port = 0;
             ogs_sockaddr_t *addr = NULL;
-            ogs_copyaddrinfo(&addr, server->node.addr);
+            ogs_copyaddrinfo(&addr, advertise);
             ogs_assert(addr);
 
             port = OGS_PORT(addr);
