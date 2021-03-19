@@ -123,7 +123,7 @@ static int amf_context_validation(void)
     if (ogs_list_first(&self.ngap_list) == NULL &&
         ogs_list_first(&self.ngap_list6) == NULL) {
         ogs_error("No amf.ngap in '%s'", ogs_app()->file);
-        return OGS_RETRY;
+        return OGS_ERROR;
     }
 
     if (self.num_of_served_guami == 0) {

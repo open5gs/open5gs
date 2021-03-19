@@ -218,16 +218,6 @@ nssf:
         port: 7777
         s_nssai:
           sst: 1
-      - addr: 127.0.0.19
-        port: 7777
-        s_nssai:
-          sst: 1
-          sd: 000080
-      - addr: 127.0.0.10
-        port: 7777
-        s_nssai:
-          sst: 1
-          sd: 009000
 
 udr:
     sbi:

@@ -62,10 +62,52 @@ logger:
 #    sbi:
 #      dev: eth0
 #
+#  <List of avaiable Network Slice Instance(NSI)>
+#
+#  o One NSI
+#   - NRF[http://::1:7777/nnrf-nfm/v1/nf-instances]
+#     NSSAI[SST:1]
+#
+#    nsi:
+#      - addr: ::1
+#        port: 7777
+#        s_nssai:
+#          sst: 1
+#
+#  o Three NSI
+#   1. NRF[http://::1:7777/nnrf-nfm/v1/nf-instances]
+#      S-NSSAI[SST:1]
+#
+#   2. NRF[http://127.0.0.19:7777/nnrf-nfm/v1/nf-instances]
+#      NSSAI[SST:1, SD:000080]
+#
+#   2. NRF[http://127.0.0.10:7777/nnrf-nfm/v1/nf-instances]
+#      NSSAI[SST:1, SD:009000]
+#
+#    nsi:
+#      - addr: ::1
+#        port: 7777
+#        s_nssai:
+#          sst: 1
+#      - addr: 127.0.0.19
+#        port: 7777
+#        s_nssai:
+#          sst: 1
+#          sd: 000080
+#      - addr: 127.0.0.10
+#        port: 7777
+#        s_nssai:
+#          sst: 1
+#          sd: 009000
 nssf:
     sbi:
       - addr: 127.0.0.14
         port: 7777
+    nsi:
+      - addr: ::1
+        port: 7777
+        s_nssai:
+          sst: 1
 
 #
 # nrf:
