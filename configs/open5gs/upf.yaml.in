@@ -46,6 +46,40 @@ logger:
 #    gtpu:
 #      name: localhost
 #
+#  o User Plane IP Resource information
+#    gtpu:
+#      - addr:
+#        - 127.0.0.7
+#        - ::1
+#        teid_range_indication: 4
+#        teid_range: 10
+#        network_instance: internet
+#        source_interface: 0
+#      - addr: 127.0.10.4
+#        teid_range_indication: 4
+#        teid_range: 5
+#        network_instance: ims
+#        source_interface: 1
+#
+#  o Provide custom UPF GTP-U address to be advertised inside NGAP messages
+#    gtpu:
+#      - addr: 10.4.128.21
+#        advertise_addr: 172.24.15.30
+#
+#    gtpu:
+#      - addr: 10.4.128.21
+#        advertise_addr:
+#        - 127.0.0.1
+#        - ::1
+#
+#    gtpu:
+#      - addr: 10.4.128.21
+#        advertise_name: upf1.5gc.mnc001.mcc001.3gppnetwork.org
+#
+#    gtpu:
+#      - dev: ens3
+#        advertise_name: upf1.5gc.mnc001.mcc001.3gppnetwork.org
+#
 #  <Subnet for UE network>
 #
 #  Note that you need to setup your UE network using TUN device.
