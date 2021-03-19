@@ -37,7 +37,7 @@ logger:
 #
 #  o SBI Server(https://<all address avaiable>:443)
 #    sbi:
-#        tls:
+#      - tls:
 #          key: ausf.key
 #          pem: ausf.pem
 #
@@ -51,7 +51,7 @@ logger:
 #
 #  o SBI Server(http://ausf.open5gs.org:80)
 #    sbi:
-#      name: ausf.open5gs.org
+#      - name: ausf.open5gs.org
 #
 #  o SBI Server(http://127.0.0.11:7777)
 #    sbi:
@@ -60,7 +60,18 @@ logger:
 #
 #  o SBI Server(http://<eth0 IP address>:80)
 #    sbi:
-#      dev: eth0
+#      - dev: eth0
+#
+#  o Provide custom SBI address to be advertised to NRF
+#    sbi:
+#      - dev: eth0
+#        advertise: open5gs-ausf.svc.local
+#
+#    sbi:
+#      - addr: localhost
+#        advertise:
+#          - 127.0.0.99
+#          - ::1
 #
 ausf:
     sbi:
