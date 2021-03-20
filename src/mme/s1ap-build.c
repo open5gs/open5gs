@@ -1293,7 +1293,8 @@ ogs_pkbuf_t *s1ap_build_e_rab_modification_confirm(mme_ue_t *mme_ue)
     ie->value.present =
         S1AP_E_RABModificationConfirmIEs__value_PR_E_RABModifyListBearerModConf;
 
-    E_RABModifyListBearerModConf = &ie->value.choice.E_RABModifyListBearerModConf;
+    E_RABModifyListBearerModConf =
+        &ie->value.choice.E_RABModifyListBearerModConf;
 
     ogs_debug("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
             enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);

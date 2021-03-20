@@ -305,7 +305,7 @@ void ngap_handle_ng_setup_request(amf_gnb_t *gnb, ogs_ngap_message_t *message)
     if (!s_nssai_is_found(gnb)) {
         ogs_warn("NG-Setup failure:");
         ogs_warn("    Cannot find S_NSSAI. "
-                    "Check 'amf.plmn.s_nssai' configuration");
+                    "Check 'amf.plmn_support.s_nssai' configuration");
         group = NGAP_Cause_PR_misc;
         cause = NGAP_CauseMisc_unknown_PLMN;
 
