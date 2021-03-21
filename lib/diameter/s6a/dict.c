@@ -312,7 +312,7 @@ int ogs_dict_s6a_entry(char *conffile)
                 { { .avp_vendor = 10415, .avp_name = "APN-OI-Replacement" }, RULE_OPTIONAL, -1, 1 },
                 { { .avp_vendor = 10415, .avp_name = "LCS-Info" }, RULE_OPTIONAL, -1, 1 },
                 { { .avp_vendor = 10415, .avp_name = "Teleservice-List" }, RULE_OPTIONAL, -1, 1 },
-                { { .avp_vendor = 10415, .avp_name = "Call-Barring-Infor-List" }, RULE_OPTIONAL, -1, 1 },
+                { { .avp_vendor = 10415, .avp_name = "Call-Barring-Info" }, RULE_OPTIONAL, -1, 1 },
                 { { .avp_vendor = 10415, .avp_name = "3GPP-Charging-Characteristics" }, RULE_OPTIONAL, -1, 1 },
                 { { .avp_vendor = 10415, .avp_name = "AMBR" }, RULE_OPTIONAL, -1, 1 },
                 { { .avp_vendor = 10415, .avp_name = "APN-Configuration-Profile" }, RULE_OPTIONAL, -1, 1 },

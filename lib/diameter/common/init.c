@@ -22,8 +22,7 @@
 int __ogs_diam_domain;
 
 static void diam_gnutls_log_func(int level, const char *str);
-static void diam_log_func(int printlevel,
-        const char *fname, int line, const char *format, va_list ap);
+static void diam_log_func(int printlevel, const char *format, va_list ap);
 
 int ogs_diam_init(int mode, const char *conffile, ogs_diam_config_t *fd_config)
 {
@@ -87,8 +86,7 @@ static void diam_gnutls_log_func(int level, const char *str)
     ogs_trace("gnutls[%d]: %s", level, str);
 }
 
-static void diam_log_func(int printlevel,
-        const char *fname, int line, const char *format, va_list ap)
+static void diam_log_func(int printlevel, const char *format, va_list ap)
 {
     char buffer[OGS_HUGE_LEN*2];
     int  ret = 0;
@@ -102,18 +100,24 @@ static void diam_log_func(int printlevel,
         return;
     }
 
+#define diam_log_printf(level, ...) \
+    ogs_log_printf(level, OGS_LOG_DOMAIN, 0, NULL, 0, NULL, 0, __VA_ARGS__)
+
     switch(printlevel) {
     case FD_LOG_ANNOYING: 
-        ogs_trace("[%d]: %s:%u %s", printlevel, fname, line, buffer);
+        diam_log_printf(OGS_LOG_TRACE, "[%d] %s\n", printlevel, buffer);
         break;  
     case FD_LOG_DEBUG:
-        ogs_trace("[%d]: %s:%u %s", printlevel, fname, line, buffer);
+        diam_log_printf(OGS_LOG_TRACE, "[%d] %s\n", printlevel, buffer);
         break;  
+    case FD_LOG_INFO:
+        diam_log_printf(OGS_LOG_TRACE, "[%d] %s\n", printlevel, buffer);
+        break;
     case FD_LOG_NOTICE:
-        ogs_trace("[%d]: %s:%u %s", printlevel, fname, line, buffer);
+        diam_log_printf(OGS_LOG_DEBUG, "%s\n", buffer);
         break;
     case FD_LOG_ERROR:
-        ogs_error("%s:%d %s", fname, line, buffer);
+        diam_log_printf(OGS_LOG_ERROR, "%s\n", buffer);
         if (!strcmp(buffer, " - The certificate is expired.")) {
             ogs_error("You can renew CERT as follows:");
             ogs_error("./support/freeDiameter/make_certs.sh "
@@ -121,16 +125,10 @@ static void diam_log_func(int printlevel,
         }
         break;
     case FD_LOG_FATAL:
-        {
-            const char *except = "Initiating freeDiameter shutdown sequence";
-            if (strncmp(buffer, except, strlen(except)) == 0)
-                ogs_info("[%d]: %s:%u %s", printlevel, fname, line, buffer);
-            else
-                ogs_fatal("%s:%d %s", fname, line, buffer);
-        }
+        diam_log_printf(OGS_LOG_FATAL, "%s\n", buffer);
         break;
     default:
-        ogs_warn("%s:%d %s", fname, line, buffer);
+        diam_log_printf(OGS_LOG_ERROR, "[%d] %s\n", printlevel, buffer);
         break;
     }
 }
