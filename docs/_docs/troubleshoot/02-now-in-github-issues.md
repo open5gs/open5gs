@@ -10,35 +10,93 @@ head_inline: "<style> .blue { color: blue; } </style>"
   }
 </style>
 
-#### Cannot open shared object file when running daemon
+#### How to use a different Slice for each SMF
 
-An error occurred when running as follows.
+To add a slice with SST of 1 and SD of 000080, you need to update the configuration file as shown below.
 
+```diff
+### amf.yaml
+
+$ diff --git a/configs/open5gs/amf.yaml.in b/configs/open5gs/amf.yaml.in
+index 7e939e81..dfe4456d 100644
+--- a/configs/open5gs/amf.yaml.in
++++ b/configs/open5gs/amf.yaml.in
+@@ -199,6 +199,12 @@ amf:
+           mnc: 70
+         s_nssai:
+           - sst: 1
++      - plmn_id:
++          mcc: 901
++          mnc: 70
++        s_nssai:
++          - sst: 1
++            sd: 000080
+     security:
+         integrity_order : [ NIA2, NIA1, NIA0 ]
+         ciphering_order : [ NEA0, NEA1, NEA2 ]
+
+### FIRST smf.yaml
+
+$ diff --git a/configs/open5gs/smf.yaml.in b/configs/open5gs/smf.yaml.in
+index d45aa60f..701ee533 100644
+--- a/configs/open5gs/smf.yaml.in
++++ b/configs/open5gs/smf.yaml.in
+@@ -317,6 +317,11 @@ logger:
+ # 
+ 
+ smf:
++    info:
++      - s_nssai:
++          - sst: 1
++            dnn:
++              - internet
+     sbi:
+       - addr: 127.0.0.4
+         port: 7777
+
+### SECOND smf.yaml
+
+$ diff --git a/configs/open5gs/smf.yaml.in b/configs/open5gs/smf.yaml.in
+index d45aa60f..949da220 100644
+--- a/configs/open5gs/smf.yaml.in
++++ b/configs/open5gs/smf.yaml.in
+@@ -317,6 +317,12 @@ logger:
+ #
+
+ smf:
++    info:
++      - s_nssai:
++          - sst: 1
++            sd: 000080
++            dnn:
++              - internet
+     sbi:
+       - addr: 127.0.0.4
+         port: 7777
+
+### nssf.yaml
+$ diff --git a/configs/open5gs/nssf.yaml.in b/configs/open5gs/nssf.yaml.in
+index ecd4f7e2..04d9c4ba 100644
+--- a/configs/open5gs/nssf.yaml.in
++++ b/configs/open5gs/nssf.yaml.in
+@@ -119,6 +119,11 @@ nssf:
+         port: 7777
+         s_nssai:
+           sst: 1
++      - addr: 127.0.0.10
++        port: 7777
++        s_nssai:
++          sst: 1
++          sd: 000080
+ 
+ #
+ # nrf:
 ```
-$ ./install/bin/open5gs-nrfd
-./install/bin/open5gs-nrfd: error while loading shared libraries: libogscrypt.so.2: cannot open shared object file: No such file or directory
-```
 
-You need to specify the absolute path to the shared library as follows.
+Then add a slice to MongoDB's subscriber info.
 
-```bash
-$ echo $(cd $(dirname ./install/lib/x86_64-linux-gnu/) && pwd -P)/$(basename ./install/lib/x86_64-linux-gnu/)
-/home/acetcom/Documents/git/open5gs/install/lib/x86_64-linux-gnu
-$ export LD_LIBRARY_PATH=/home/acetcom/Documents/git/open5gs/install/lib/x86_64-linux-gnu
-$ ldd ./install/bin/open5gs-amfd
-...
-	libogsapp.so.1 => /home/acetcom/Documents/git/open5gs/install/lib/x86_64-linux-gnu/libogsapp.so.1 (0x00007f161ab51000)
-	libogscore.so.1 => /home/acetcom/Documents/git/open5gs/install/lib/x86_64-linux-gnu/libogscore.so.1 (0x00007f161a922000)
-	libogssctp.so.1 => /home/acetcom/Documents/git/open5gs/install/lib/x86_64-linux-gnu/libogssctp.so.1 (0x00007f161a71d000)
-	libogss1ap.so.1 => /home/acetcom/Documents/git/open5gs/install/lib/x86_64-linux-gnu/libogss1ap.so.1 (0x00007f161a519000)
-...
-```
+![Subscriber Info]({{ site.url }}{{ site.baseurl }}/assets/images/subscriber_info_with_two_slice.png)
 
-If you want to set the shared library path permanently, you can use ldconfig.
-```bash
-$ sudo sh -c "echo /home/acetcom/Documents/git/open5gs/install/lib/x86_64-linux-gnu > /etc/ld.so.conf.d/open5gs.conf"
-$ sudo ldconfig
-```
 
 #### Can I disable specific services if 5G functionally is not needed?
 
@@ -903,3 +961,33 @@ getsockopt level=132 optname=0 not yet supported
 
 The SCTP module is not included in the QEMU kernel. I believe that if the Linux kernel installed on your target platform contains an SCTP module, it will work normally.
 {: .notice--warning}
+
+#### Cannot open shared object file when running daemon
+
+An error occurred when running as follows.
+
+```
+$ ./install/bin/open5gs-nrfd
+./install/bin/open5gs-nrfd: error while loading shared libraries: libogscrypt.so.2: cannot open shared object file: No such file or directory
+```
+
+You need to specify the absolute path to the shared library as follows.
+
+```bash
+$ echo $(cd $(dirname ./install/lib/x86_64-linux-gnu/) && pwd -P)/$(basename ./install/lib/x86_64-linux-gnu/)
+/home/acetcom/Documents/git/open5gs/install/lib/x86_64-linux-gnu
+$ export LD_LIBRARY_PATH=/home/acetcom/Documents/git/open5gs/install/lib/x86_64-linux-gnu
+$ ldd ./install/bin/open5gs-amfd
+...
+	libogsapp.so.1 => /home/acetcom/Documents/git/open5gs/install/lib/x86_64-linux-gnu/libogsapp.so.1 (0x00007f161ab51000)
+	libogscore.so.1 => /home/acetcom/Documents/git/open5gs/install/lib/x86_64-linux-gnu/libogscore.so.1 (0x00007f161a922000)
+	libogssctp.so.1 => /home/acetcom/Documents/git/open5gs/install/lib/x86_64-linux-gnu/libogssctp.so.1 (0x00007f161a71d000)
+	libogss1ap.so.1 => /home/acetcom/Documents/git/open5gs/install/lib/x86_64-linux-gnu/libogss1ap.so.1 (0x00007f161a519000)
+...
+```
+
+If you want to set the shared library path permanently, you can use ldconfig.
+```bash
+$ sudo sh -c "echo /home/acetcom/Documents/git/open5gs/install/lib/x86_64-linux-gnu > /etc/ld.so.conf.d/open5gs.conf"
+$ sudo ldconfig
+```

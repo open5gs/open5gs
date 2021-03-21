@@ -36,7 +36,7 @@ libsctp_sources = files('''
 
 if host_system == 'darwin'
     sctp_dep = dependency('usrsctp',
-        version: ['>=1.0.0', '<2'],
+        version: ['>=0.9.5'],
         fallback: ['usrsctp', 'usrsctp_dep'],
         default_options: [
             'sctp_build_programs=false',
