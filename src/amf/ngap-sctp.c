@@ -104,7 +104,7 @@ void ngap_accept_handler(ogs_sock_t *sock)
         ogs_assert(addr);
         memcpy(addr, &new->remote_addr, sizeof(ogs_sockaddr_t));
 
-        ogs_info("gNB-S1 accepted[%s]:%d in ng-path module",
+        ogs_info("gNB-N2 accepted[%s]:%d in ng-path module",
             OGS_ADDR(addr, buf), OGS_PORT(addr));
 
         ngap_event_push(AMF_EVT_NGAP_LO_ACCEPT,
