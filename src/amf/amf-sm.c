@@ -589,7 +589,7 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
         addr = e->ngap.addr;
         ogs_assert(addr);
 
-        ogs_info("gNB-N1 accepted[%s] in master_sm module",
+        ogs_info("gNB-N2 accepted[%s] in master_sm module",
             OGS_ADDR(addr, buf));
 
         gnb = amf_gnb_find_by_addr(addr);
@@ -601,7 +601,7 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
                     OGS_ADDR(addr, buf));
             ogs_sock_destroy(sock);
             ogs_free(addr);
-            ogs_warn("N1 Socket Closed");
+            ogs_warn("N2 Socket Closed");
         }
 
         break;
@@ -625,7 +625,7 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
         gnb->max_num_of_ostreams =
                 ogs_min(max_num_of_ostreams, gnb->max_num_of_ostreams);
 
-        ogs_debug("gNB-N1 SCTP_COMM_UP[%s] Max Num of Outbound Streams[%d]", 
+        ogs_debug("gNB-N2 SCTP_COMM_UP[%s] Max Num of Outbound Streams[%d]", 
             OGS_ADDR(gnb->sctp.addr, buf), gnb->max_num_of_ostreams);
 
         break;
@@ -638,12 +638,12 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
 
         gnb = amf_gnb_find_by_addr(addr);
         if (gnb) {
-            ogs_info("gNB-N1[%s] connection refused!!!", OGS_ADDR(addr, buf));
+            ogs_info("gNB-N2[%s] connection refused!!!", OGS_ADDR(addr, buf));
             amf_sbi_send_deactivate_all_ue_in_gnb(
                     gnb, AMF_REMOVE_S1_CONTEXT_BY_LO_CONNREFUSED);
             amf_gnb_remove(gnb);
         } else {
-            ogs_warn("gNB-N1[%s] connection refused, Already Removed!",
+            ogs_warn("gNB-N2[%s] connection refused, Already Removed!",
                     OGS_ADDR(addr, buf));
         }
         ogs_free(addr);
