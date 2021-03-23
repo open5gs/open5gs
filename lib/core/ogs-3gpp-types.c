@@ -526,7 +526,6 @@ ogs_slice_data_t *ogs_slice_find_by_s_nssai(
     int i;
 
     ogs_assert(slice_data);
-    ogs_assert(num_of_slice_data);
     ogs_assert(s_nssai);
 
     /* Compare S-NSSAI */
