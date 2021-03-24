@@ -451,8 +451,9 @@ static int tlv_parse_compound(void *msg, ogs_tlv_desc_t *parent_desc,
     while (tlv) {
         desc = tlv_find_desc(&index, &offset, parent_desc, tlv);
         if (desc == NULL) {
-            ogs_error("Unexpected TLV type:%d", tlv->type);
-            return OGS_ERROR;
+            ogs_warn("Unknown TLV type [%d]", tlv->type);
+            tlv = tlv->next;
+            continue;
         }
 
         presence_p = (ogs_tlv_presence_t *)(p + offset);
