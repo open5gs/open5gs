@@ -1919,6 +1919,7 @@ bson_t *test_db_new_slice(test_ue_t *test_ue)
               "{",
                 "sst", BCON_INT32(1),
                 "sd", BCON_UTF8("009000"),
+                "default_indicator", BCON_BOOL(true),
                 "session", "[",
                   "{",
                     "name", BCON_UTF8("internet"),
