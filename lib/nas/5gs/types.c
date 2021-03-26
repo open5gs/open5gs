@@ -258,7 +258,7 @@ int ogs_nas_parse_nssai(
 
     if (!nas_nssai->length) {
         ogs_error("No NSSAI [%p:%d]", nas_nssai->buffer, nas_nssai->length);
-        return OGS_ERROR;
+        return 0;
     }
 
     while (pos < nas_nssai->length &&

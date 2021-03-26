@@ -239,7 +239,8 @@ int gmm_handle_registration_update(amf_ue_t *amf_ue,
         }
 
         if (i == amf_ue->requested_nssai.num_of_s_nssai) {
-            ogs_error("CHECK CONFIGURATION: Cannot find Requested NSSAI");
+            ogs_error("Cannot find Requested NSSAI [%d]",
+                    amf_ue->requested_nssai.num_of_s_nssai);
             for (i = 0; i < amf_ue->requested_nssai.num_of_s_nssai; i++) {
                 ogs_error("    PLMN_ID[MCC:%d MNC:%d]",
                         ogs_plmn_id_mcc(&amf_ue->nr_tai.plmn_id),

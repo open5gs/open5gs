@@ -254,11 +254,9 @@ nrf:
 #  o Prefer IPv4 instead of IPv6 for estabishing new GTP connections.
 #      prefer_ipv4: true
 #
-#  o Enable Multicast traffic to the UE
-#      multicast: true
-#
-#  o Disable Stateless Address Autoconfiguration for IPv6
-#      no_slaac: true
+#  o AMF ignores the UE Requested NSSAI and creates an allowed-NSSAI
+#    based on the Default S-NSSAI in the Subscription DB.
+#      ignore_requested_nssai: true
 #
 parameter:
 

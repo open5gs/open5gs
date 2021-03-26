@@ -339,6 +339,9 @@ int ogs_app_context_parse_config(void)
                     parameter_key, "no_ipv4v6_local_addr_in_packet_filter")) {
                     self.parameter.no_ipv4v6_local_addr_in_packet_filter =
                         ogs_yaml_iter_bool(&parameter_iter);
+                } else if (!strcmp(parameter_key, "ignore_requested_nssai")) {
+                    self.parameter.ignore_requested_nssai =
+                        ogs_yaml_iter_bool(&parameter_iter);
                 } else
                     ogs_warn("unknown key `%s`", parameter_key);
             }
