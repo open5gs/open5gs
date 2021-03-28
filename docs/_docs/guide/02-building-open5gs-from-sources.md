@@ -470,6 +470,42 @@ $ sudo ip6tables -t nat -A POSTROUTING -s 2001:230:cafe::/48 ! -o ogstun -j MASQ
 - You can see actual traffic through wireshark -- [[srsenb.pcapng]]({{ site.url }}{{ site.baseurl }}/assets/pcapng/srsenb.pcapng).
 - You can view the log at `$INSTALL_PREFIX/var/log/open5gs/*.log`.
 
+### Re-install with updated source code
+
+You need to update the Open5GS source and all subprojects.
+
+```bash
+$ cd open5gs
+$ git pull ## Update the Open5GS source
+$ meson subprojects update ## Update all subprojects
+```
+
+To compile with meson:
+
+```bash
+$ ninja -C build
+```
+
+Check whether the compilation is correct.
+```bash
+$ cd build
+$ meson test -v
+```
+
+Install Open5GS without making any configuration file changes.
+```bash
+$ ninja install
+```
+
+**Note:** The configuration files in the installation directory are not changed. If you want to initialize the configuration files as well, you need to delete the existing installation directory and install it.
+{: .notice--danger}
+
+Install Open5GS and initialize configuration files.
+```bash
+$ rm -Rf ../install
+$ ninja install
+```
+
 ### Troubleshooting
 ---
 

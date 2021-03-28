@@ -55,6 +55,7 @@ void testgmm_handle_registration_accept(test_ue_t *test_ue,
             ogs_nas_parse_nssai(
                     test_ue->allowed_nssai.s_nssai,
                     &registration_accept->allowed_nssai);
+        ogs_assert(test_ue->allowed_nssai.num_of_s_nssai);
     }
     if (registration_accept->presencemask &
         OGS_NAS_5GS_REGISTRATION_ACCEPT_REJECTED_NSSAI_PRESENT) {
