@@ -1944,12 +1944,6 @@ static void test5_func(abts_case *tc, void *data)
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    /* Send Initial Context Setup Response */
-    sendbuf = test_s1ap_build_initial_context_setup_response(test_ue);
-    ABTS_PTR_NOTNULL(tc, sendbuf);
-    rv = testenb_s1ap_send(s1ap, sendbuf);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
-
     /* Send Attach Complete + Activate default EPS bearer cotext accept */
     test_ue->nr_cgi.cell_id = 0x1234502;
     bearer = test_bearer_find_by_ue_ebi(test_ue, 5);
@@ -1960,6 +1954,12 @@ static void test5_func(abts_case *tc, void *data)
     emmbuf = testemm_build_attach_complete(test_ue, esmbuf);
     ABTS_PTR_NOTNULL(tc, emmbuf);
     sendbuf = test_s1ap_build_uplink_nas_transport(test_ue, emmbuf);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testenb_s1ap_send(s1ap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Send Initial Context Setup Response */
+    sendbuf = test_s1ap_build_initial_context_setup_response(test_ue);
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);

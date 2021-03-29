@@ -715,16 +715,13 @@ void s1ap_handle_initial_context_setup_response(
             ogs_debug("    EBI[%d] ENB-S1U-TEID[%d]",
                     bearer->ebi, bearer->enb_s1u_teid);
 
-            if (mme_ue->nas_eps.type == MME_EPS_TYPE_ATTACH_REQUEST) {
-                /* For Attach Request, Nothing to do */
-            } else if (OGS_FSM_CHECK(&bearer->sm, esm_state_active)) {
-                int uli_presence = 1;
-                /*
-                 * For Service Request/TAU Request/Extended Service Request,
-                 * ULI is present if it's the active EPS bearer.
-                 *
-                 */
-                ogs_debug("    ### ULI PRESENT ###");
+            if (OGS_FSM_CHECK(&bearer->sm, esm_state_active)) {
+                ogs_debug("    NAS_EPS Type[%d]", mme_ue->nas_eps.type);
+                int uli_presence = 0;
+                if (mme_ue->nas_eps.type != MME_EPS_TYPE_ATTACH_REQUEST) {
+                    ogs_debug("    ### ULI PRESENT ###");
+                    uli_presence = 1;
+                }
                 mme_gtp_send_modify_bearer_request(bearer, uli_presence);
             }
         }
