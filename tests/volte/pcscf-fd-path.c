@@ -442,6 +442,86 @@ void pcscf_rx_send_aar_audio(uint8_t **rx_sid,
 
         ret = fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1);
         ogs_assert(ret == 0);
+    } else if (flow_type == 2) {
+        /* Set Media-Sub-Component #1 */
+        ret = fd_msg_avp_new(ogs_diam_rx_media_sub_component, 0, &avpch1);
+
+        ret = fd_msg_avp_new(ogs_diam_rx_flow_number, 0, &avpch2);
+        ogs_assert(ret == 0);
+        val.i32 = 1;
+        ret = fd_msg_avp_setvalue (avpch2, &val);
+        ogs_assert(ret == 0);
+        ret = fd_msg_avp_add (avpch1, MSG_BRW_LAST_CHILD, avpch2);
+        ogs_assert(ret == 0);
+
+        ret = fd_msg_avp_new(ogs_diam_rx_flow_description, 0, &avpch2);
+        ogs_assert(ret == 0);
+        #define TEST_OGS_DIAM_RX_FLOW_DESC17  \
+            "permit out 17 from 172.20.166.84 to 10.45.0.2 30001"
+        val.os.data = (uint8_t *)TEST_OGS_DIAM_RX_FLOW_DESC17;
+        val.os.len  = strlen(TEST_OGS_DIAM_RX_FLOW_DESC17);
+        ret = fd_msg_avp_setvalue (avpch2, &val);
+        ogs_assert(ret == 0);
+        ret = fd_msg_avp_add (avpch1, MSG_BRW_LAST_CHILD, avpch2);
+        ogs_assert(ret == 0);
+
+        ret = fd_msg_avp_new(ogs_diam_rx_flow_description, 0, &avpch2);
+        ogs_assert(ret == 0);
+        #define TEST_OGS_DIAM_RX_FLOW_DESC18  \
+            "permit in 17 from 10.45.0.2 to 172.20.166.84 30360"
+        val.os.data = (uint8_t *)TEST_OGS_DIAM_RX_FLOW_DESC18;
+        val.os.len  = strlen(TEST_OGS_DIAM_RX_FLOW_DESC18);
+        ret = fd_msg_avp_setvalue (avpch2, &val);
+        ogs_assert(ret == 0);
+        ret = fd_msg_avp_add (avpch1, MSG_BRW_LAST_CHILD, avpch2);
+        ogs_assert(ret == 0);
+
+        ret = fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1);
+        ogs_assert(ret == 0);
+
+        /* Set Media-Sub-Component #2 */
+        ret = fd_msg_avp_new(ogs_diam_rx_media_sub_component, 0, &avpch1);
+
+        ret = fd_msg_avp_new(ogs_diam_rx_flow_number, 0, &avpch2);
+        ogs_assert(ret == 0);
+        val.i32 = 2;
+        ret = fd_msg_avp_setvalue (avpch2, &val);
+        ogs_assert(ret == 0);
+        ret = fd_msg_avp_add (avpch1, MSG_BRW_LAST_CHILD, avpch2);
+        ogs_assert(ret == 0);
+
+        ret = fd_msg_avp_new(ogs_diam_rx_flow_usage, 0, &avpch2);
+        ogs_assert(ret == 0);
+        val.i32 = OGS_DIAM_RX_FLOW_USAGE_RTCP;
+        ret = fd_msg_avp_setvalue (avpch2, &val);
+        ogs_assert(ret == 0);
+        ret = fd_msg_avp_add (avpch1, MSG_BRW_LAST_CHILD, avpch2);
+        ogs_assert(ret == 0);
+
+        ret = fd_msg_avp_new(ogs_diam_rx_flow_description, 0, &avpch2);
+        ogs_assert(ret == 0);
+        #define TEST_OGS_DIAM_RX_FLOW_DESC19  \
+            "permit out 17 from 172.20.166.84 to 10.45.0.2 30002"
+        val.os.data = (uint8_t *)TEST_OGS_DIAM_RX_FLOW_DESC19;
+        val.os.len  = strlen(TEST_OGS_DIAM_RX_FLOW_DESC19);
+        ret = fd_msg_avp_setvalue (avpch2, &val);
+        ogs_assert(ret == 0);
+        ret = fd_msg_avp_add (avpch1, MSG_BRW_LAST_CHILD, avpch2);
+        ogs_assert(ret == 0);
+
+        ret = fd_msg_avp_new(ogs_diam_rx_flow_description, 0, &avpch2);
+        ogs_assert(ret == 0);
+        #define TEST_OGS_DIAM_RX_FLOW_DESC20  \
+            "permit in 17 from 10.45.0.2 to 172.20.166.84 30361"
+        val.os.data = (uint8_t *)TEST_OGS_DIAM_RX_FLOW_DESC20;
+        val.os.len  = strlen(TEST_OGS_DIAM_RX_FLOW_DESC20);
+        ret = fd_msg_avp_setvalue (avpch2, &val);
+        ogs_assert(ret == 0);
+        ret = fd_msg_avp_add (avpch1, MSG_BRW_LAST_CHILD, avpch2);
+        ogs_assert(ret == 0);
+
+        ret = fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1);
+        ogs_assert(ret == 0);
     } else {
         ogs_fatal("Unknown flow-type[%d]", flow_type);
         ogs_assert_if_reached();

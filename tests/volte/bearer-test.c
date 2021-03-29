@@ -195,13 +195,16 @@ static void test1_func(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, recvbuf);
     tests1ap_recv(test_ue, recvbuf);
 
-    /* Receive E-RAB Setup Request +
+    /* Receive E-RABSetupRequest +
      * Activate dedicated EPS bearer context request */
     recvbuf = testenb_s1ap_read(s1ap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     tests1ap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc,
+            S1AP_ProcedureCode_id_E_RABSetup,
+            test_ue->s1ap_procedure_code);
 
-    /* Send E-RAB Setup Response */
+    /* Send E-RABSetupResponse */
     bearer = test_bearer_find_by_ue_ebi(test_ue, 6);
     ogs_assert(bearer);
     sendbuf = test_s1ap_build_e_rab_setup_response(bearer);

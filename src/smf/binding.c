@@ -133,11 +133,7 @@ void smf_bearer_binding(smf_sess_t *sess)
         if (pcc_rule->type == OGS_PCC_RULE_TYPE_INSTALL) {
             ogs_pfcp_pdr_t *dl_pdr = NULL, *ul_pdr = NULL;
 
-            bearer = smf_bearer_find_by_qci_arp(sess,
-                        pcc_rule->qos.index,
-                        pcc_rule->qos.arp.priority_level,
-                        pcc_rule->qos.arp.pre_emption_capability,
-                        pcc_rule->qos.arp.pre_emption_vulnerability);
+            bearer = smf_bearer_find_by_pcc_rule_name(sess, pcc_rule->name);
             if (!bearer) {
                 if (pcc_rule->num_of_flow == 0) {
                     /* TFT is mandatory in
@@ -440,11 +436,7 @@ void smf_qos_flow_binding(smf_sess_t *sess, ogs_sbi_stream_t *stream)
         if (pcc_rule->type == OGS_PCC_RULE_TYPE_INSTALL) {
             ogs_pfcp_pdr_t *dl_pdr = NULL, *ul_pdr = NULL;
 
-            qos_flow = smf_bearer_find_by_qci_arp(sess,
-                        pcc_rule->qos.index,
-                        pcc_rule->qos.arp.priority_level,
-                        pcc_rule->qos.arp.pre_emption_capability,
-                        pcc_rule->qos.arp.pre_emption_vulnerability);
+            qos_flow = smf_qos_flow_find_by_pcc_rule_id(sess, pcc_rule->id);
             if (!qos_flow) {
                 if (pcc_rule->num_of_flow == 0) {
                     /* TFT is mandatory in
@@ -488,6 +480,8 @@ void smf_qos_flow_binding(smf_sess_t *sess, ogs_sbi_stream_t *stream)
                 qos_flow_created = 1;
 
             } else {
+                ogs_fatal("Update QoS Flow: Not implemented in 5G Core");
+                ogs_assert_if_reached();
                 ogs_assert(strcmp(qos_flow->pcc_rule.id, pcc_rule->id) == 0);
 
                 if (pcc_rule->num_of_flow) {

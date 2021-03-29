@@ -278,10 +278,15 @@ static void test1_func(abts_case *tc, void *data)
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    /* Receive PDU session modification command */
+    /* Receive PDUSessionResourceModifyRequest +
+     * DL NAS transport +
+     * PDU session modification command */
     recvbuf = testgnb_ngap_read(ngap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     testngap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc,
+            NGAP_ProcedureCode_id_PDUSessionResourceModify,
+            test_ue->ngap_procedure_code);
 
     /* Send PDU session resource modify response */
     qos_flow = test_qos_flow_find_by_qfi(sess, 2);
@@ -750,10 +755,15 @@ static void test2_func(abts_case *tc, void *data)
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    /* Receive PDU session modification command */
+    /* Receive PDUSessionResourceModifyRequest +
+     * DL NAS transport +
+     * PDU session modification command */
     recvbuf = testgnb_ngap_read(ngap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     testngap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc,
+            NGAP_ProcedureCode_id_PDUSessionResourceModify,
+            test_ue->ngap_procedure_code);
 
     /* Send PDU session resource modify response */
     qos_flow = test_qos_flow_find_by_qfi(sess, 2);
@@ -1178,10 +1188,15 @@ static void test3_func(abts_case *tc, void *data)
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    /* Receive PDU session modification command */
+    /* Receive PDUSessionResourceModifyRequest +
+     * DL NAS transport +
+     * PDU session modification command */
     recvbuf = testgnb_ngap_read(ngap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     testngap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc,
+            NGAP_ProcedureCode_id_PDUSessionResourceModify,
+            test_ue->ngap_procedure_code);
 
     /* Send PDU session resource modify response */
     qos_flow = test_qos_flow_find_by_qfi(sess, 2);
@@ -1595,10 +1610,15 @@ static void test4_func(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
-    /* Receive PDU session modification command */
+    /* Receive PDUSessionResourceModifyRequest +
+     * DL NAS transport +
+     * PDU session modification command */
     recvbuf = testgnb_ngap_read(ngap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     testngap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc,
+            NGAP_ProcedureCode_id_PDUSessionResourceModify,
+            test_ue->ngap_procedure_code);
 
     /* Send PDU session resource modify response */
     qos_flow2 = test_qos_flow_find_by_qfi(sess6, 2);

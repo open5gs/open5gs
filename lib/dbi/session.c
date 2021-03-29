@@ -253,14 +253,11 @@ done:
 
             bson_iter_recurse(&child4_iter, &child5_iter);
             while (bson_iter_next(&child5_iter)) {
-                const char *child5_key = bson_iter_key(&child5_iter);
                 ogs_pcc_rule_t *pcc_rule = NULL;
 
-                ogs_assert(child5_key);
-                pcc_rule_index = atoi(child5_key);
                 ogs_assert(pcc_rule_index < OGS_MAX_NUM_OF_PCC_RULE);
-
                 pcc_rule = &session_data->pcc_rule[pcc_rule_index];
+
                 bson_iter_recurse(&child5_iter, &child6_iter);
                 while (bson_iter_next(&child6_iter)) {
                     const char *child6_key = bson_iter_key(&child6_iter);
@@ -437,15 +434,11 @@ done:
 
                         bson_iter_recurse(&child6_iter, &child7_iter);
                         while (bson_iter_next(&child7_iter)) {
-                            const char *child7_key =
-                                bson_iter_key(&child7_iter);
                             ogs_flow_t *flow = NULL;
 
-                            ogs_assert(child7_key);
-                            flow_index = atoi(child7_key);
                             ogs_assert(flow_index < OGS_MAX_NUM_OF_FLOW);
-
                             flow = &pcc_rule->flow[flow_index];
+
                             bson_iter_recurse(&child7_iter, &child8_iter);
                             while (bson_iter_next(&child8_iter)) {
                                 const char *child8_key =
@@ -474,7 +467,7 @@ done:
                     ogs_error("PCC Rule Name has already been defined");
                     ogs_free(pcc_rule->name);
                 }
-                pcc_rule->name = ogs_msprintf("%s%d", dnn, pcc_rule_index+1);
+                pcc_rule->name = ogs_msprintf("%s-g%d", dnn, pcc_rule_index+1);
                 ogs_assert(pcc_rule->name);
 
                 /* 5GC: PCC-Rule-Id */

@@ -2039,44 +2039,6 @@ smf_bearer_t *smf_bearer_find_by_pcc_rule_name(
     return NULL;
 }
 
-smf_bearer_t *smf_bearer_find_by_qci_arp(smf_sess_t *sess, 
-                                uint8_t qos_index,
-                                uint8_t priority_level,
-                                uint8_t pre_emption_capability,
-                                uint8_t pre_emption_vulnerability)
-{
-    smf_bearer_t *bearer = NULL;
-
-    ogs_assert(sess);
-
-    bearer = smf_default_bearer_in_sess(sess);
-    if (!bearer) return NULL;
-
-    if (sess->session.qos.index == qos_index &&
-        sess->session.qos.arp.priority_level == priority_level &&
-        sess->session.qos.arp.pre_emption_capability == 
-            pre_emption_capability &&
-        sess->session.qos.arp.pre_emption_vulnerability == 
-            pre_emption_vulnerability) {
-        return bearer;
-    }
-
-    bearer = smf_bearer_next(bearer);
-    while (bearer) {
-        if (bearer->qos.index == qos_index &&
-            bearer->qos.arp.priority_level == priority_level &&
-            bearer->qos.arp.pre_emption_capability == 
-                pre_emption_capability &&
-            bearer->qos.arp.pre_emption_vulnerability == 
-                pre_emption_vulnerability) {
-            return bearer;
-        }
-        bearer = smf_bearer_next(bearer);
-    }
-
-    return NULL;
-}
-
 smf_bearer_t *smf_bearer_find_by_pdr_id(
         smf_sess_t *sess, ogs_pfcp_pdr_id_t pdr_id)
 {

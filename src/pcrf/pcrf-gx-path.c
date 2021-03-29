@@ -811,7 +811,8 @@ int pcrf_gx_send_rar(
                     &rx_sess_data->pcc_rule[rx_sess_data->num_of_pcc_rule];
 
                 /* Device PCC Rule Info from DB Profile */
-                pcc_rule->name = ogs_strdup(db_pcc_rule->name);
+                pcc_rule->name = ogs_msprintf("%s-r%d", db_pcc_rule->name,
+                    (int)ogs_pool_index(&rx_sess_state_pool, rx_sess_data));
                 ogs_assert(pcc_rule->name);
 
                 memcpy(&pcc_rule->qos, &db_pcc_rule->qos, sizeof(ogs_qos_t));
@@ -831,8 +832,6 @@ int pcrf_gx_send_rar(
 
                 rx_sess_data->num_of_pcc_rule++;
             } else {
-                ogs_assert(strcmp(pcc_rule->name, db_pcc_rule->name) == 0);
-
                 /* Check Flow */
                 count = matched_flow(pcc_rule, media_component);
                 if (count == -1) {

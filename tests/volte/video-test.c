@@ -225,13 +225,16 @@ static void test1_func(abts_case *tc, void *data)
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    /* Receive E-RAB Setup Request +
+    /* Receive E-RABSetupRequest +
      * Activate default EPS bearer context request */
     recvbuf = testenb_s1ap_read(s1ap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     tests1ap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc,
+            S1AP_ProcedureCode_id_E_RABSetup,
+            test_ue->s1ap_procedure_code);
 
-    /* Send E-RAB Setup Response */
+    /* Send E-RABSetupResponse */
     bearer = test_bearer_find_by_ue_ebi(test_ue, 6);
     ogs_assert(bearer);
     sendbuf = test_s1ap_build_e_rab_setup_response(bearer);
@@ -262,19 +265,25 @@ static void test1_func(abts_case *tc, void *data)
     pcscf_rx_send_aar_video(&rx_sid, sess,
             OGS_DIAM_RX_SUBSCRIPTION_ID_TYPE_END_USER_SIP_URI);
 
-    /* Receive E-RAB Setup Request +
+    /* Receive E-RABSetupRequest +
      * Activate dedicated EPS bearer context request */
     recvbuf = testenb_s1ap_read(s1ap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     tests1ap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc,
+            S1AP_ProcedureCode_id_E_RABSetup,
+            test_ue->s1ap_procedure_code);
 
-    /* Receive E-RAB Setup Request +
+    /* Receive E-RABSetupRequest +
      * Activate dedicated EPS bearer context request */
     recvbuf = testenb_s1ap_read(s1ap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     tests1ap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc,
+            S1AP_ProcedureCode_id_E_RABSetup,
+            test_ue->s1ap_procedure_code);
 
-    /* Send E-RAB Setup Response */
+    /* Send E-RABSetupResponse */
     bearer = test_bearer_find_by_ue_ebi(test_ue, 7);
     ogs_assert(bearer);
     sendbuf = test_s1ap_build_e_rab_setup_response(bearer);
@@ -290,7 +299,7 @@ static void test1_func(abts_case *tc, void *data)
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    /* Send E-RAB Setup Response */
+    /* Send E-RABSetupResponse */
     bearer = test_bearer_find_by_ue_ebi(test_ue, 8);
     ogs_assert(bearer);
     sendbuf = test_s1ap_build_e_rab_setup_response(bearer);
@@ -344,13 +353,16 @@ static void test1_func(abts_case *tc, void *data)
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    /* Receive E-RAB Release Command +
+    /* Receive E-RABReleaseCommand +
      * Dectivate EPS bearer context request */
     recvbuf = testenb_s1ap_read(s1ap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     tests1ap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc,
+            S1AP_ProcedureCode_id_E_RABRelease,
+            test_ue->s1ap_procedure_code);
 
-    /* Send E-RAB Release Response */
+    /* Send E-RABReleaseResponse */
     bearer = test_bearer_find_by_ue_ebi(test_ue, 7);
     ogs_assert(bearer);
     sendbuf = test_s1ap_build_e_rab_release_response(bearer);
@@ -377,13 +389,16 @@ static void test1_func(abts_case *tc, void *data)
     /* Send Session-Termination-Request */
     pcscf_rx_send_str(rx_sid);
 
-    /* Receive E-RAB Release Command +
+    /* Receive E-RABReleaseCommand +
      * Dectivate EPS bearer context request */
     recvbuf = testenb_s1ap_read(s1ap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     tests1ap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc,
+            S1AP_ProcedureCode_id_E_RABRelease,
+            test_ue->s1ap_procedure_code);
 
-    /* Send E-RAB Release Response */
+    /* Send E-RABReleaseResponse */
     bearer = test_bearer_find_by_ue_ebi(test_ue, 8);
     ogs_assert(bearer);
     sendbuf = test_s1ap_build_e_rab_release_response(bearer);
@@ -412,19 +427,25 @@ static void test1_func(abts_case *tc, void *data)
     pcscf_rx_send_aar_video(&rx_sid, sess,
             OGS_DIAM_RX_SUBSCRIPTION_ID_TYPE_END_USER_SIP_URI);
 
-    /* Receive E-RAB Setup Request +
+    /* Receive E-RABSetupRequest +
      * Activate dedicated EPS bearer context request */
     recvbuf = testenb_s1ap_read(s1ap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     tests1ap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc,
+            S1AP_ProcedureCode_id_E_RABSetup,
+            test_ue->s1ap_procedure_code);
 
-    /* Receive E-RAB Setup Request +
+    /* Receive E-RABSetupRequest +
      * Activate dedicated EPS bearer context request */
     recvbuf = testenb_s1ap_read(s1ap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     tests1ap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc,
+            S1AP_ProcedureCode_id_E_RABSetup,
+            test_ue->s1ap_procedure_code);
 
-    /* Send E-RAB Setup Response */
+    /* Send E-RABSetupResponse */
     bearer = test_bearer_find_by_ue_ebi(test_ue, 9);
     ogs_assert(bearer);
     sendbuf = test_s1ap_build_e_rab_setup_response(bearer);
@@ -440,7 +461,7 @@ static void test1_func(abts_case *tc, void *data)
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    /* Send E-RAB Setup Response */
+    /* Send E-RABSetupResponse */
     bearer = test_bearer_find_by_ue_ebi(test_ue, 10);
     ogs_assert(bearer);
     sendbuf = test_s1ap_build_e_rab_setup_response(bearer);
@@ -494,13 +515,16 @@ static void test1_func(abts_case *tc, void *data)
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    /* Receive E-RAB Release Command +
+    /* Receive E-RABReleaseCommand +
      * Dectivate EPS bearer context request */
     recvbuf = testenb_s1ap_read(s1ap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     tests1ap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc,
+            S1AP_ProcedureCode_id_E_RABRelease,
+            test_ue->s1ap_procedure_code);
 
-    /* Send E-RAB Release Response */
+    /* Send E-RABReleaseResponse */
     bearer = test_bearer_find_by_ue_ebi(test_ue, 9);
     ogs_assert(bearer);
     sendbuf = test_s1ap_build_e_rab_release_response(bearer);
@@ -527,13 +551,16 @@ static void test1_func(abts_case *tc, void *data)
     /* Send Session-Termination-Request */
     pcscf_rx_send_str(rx_sid);
 
-    /* Receive E-RAB Release Command +
+    /* Receive E-RABReleaseCommand +
      * Dectivate EPS bearer context request */
     recvbuf = testenb_s1ap_read(s1ap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     tests1ap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc,
+            S1AP_ProcedureCode_id_E_RABRelease,
+            test_ue->s1ap_procedure_code);
 
-    /* Send E-RAB Release Response */
+    /* Send E-RABReleaseResponse */
     bearer = test_bearer_find_by_ue_ebi(test_ue, 10);
     ogs_assert(bearer);
     sendbuf = test_s1ap_build_e_rab_release_response(bearer);
@@ -562,19 +589,25 @@ static void test1_func(abts_case *tc, void *data)
     pcscf_rx_send_aar_video(&rx_sid, sess,
             OGS_DIAM_RX_SUBSCRIPTION_ID_TYPE_END_USER_SIP_URI);
 
-    /* Receive E-RAB Setup Request +
+    /* Receive E-RABSetupRequest +
      * Activate dedicated EPS bearer context request */
     recvbuf = testenb_s1ap_read(s1ap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     tests1ap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc,
+            S1AP_ProcedureCode_id_E_RABSetup,
+            test_ue->s1ap_procedure_code);
 
-    /* Receive E-RAB Setup Request +
+    /* Receive E-RABSetupRequest +
      * Activate dedicated EPS bearer context request */
     recvbuf = testenb_s1ap_read(s1ap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     tests1ap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc,
+            S1AP_ProcedureCode_id_E_RABSetup,
+            test_ue->s1ap_procedure_code);
 
-    /* Send E-RAB Setup Response */
+    /* Send E-RABSetupResponse */
     bearer = test_bearer_find_by_ue_ebi(test_ue, 11);
     ogs_assert(bearer);
     sendbuf = test_s1ap_build_e_rab_setup_response(bearer);
@@ -590,7 +623,7 @@ static void test1_func(abts_case *tc, void *data)
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    /* Send E-RAB Setup Response */
+    /* Send E-RABSetupResponse */
     bearer = test_bearer_find_by_ue_ebi(test_ue, 12);
     ogs_assert(bearer);
     sendbuf = test_s1ap_build_e_rab_setup_response(bearer);
@@ -644,13 +677,16 @@ static void test1_func(abts_case *tc, void *data)
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    /* Receive E-RAB Release Command +
+    /* Receive E-RABReleaseCommand +
      * Dectivate EPS bearer context request */
     recvbuf = testenb_s1ap_read(s1ap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     tests1ap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc,
+            S1AP_ProcedureCode_id_E_RABRelease,
+            test_ue->s1ap_procedure_code);
 
-    /* Send E-RAB Release Response */
+    /* Send E-RABReleaseResponse */
     bearer = test_bearer_find_by_ue_ebi(test_ue, 11);
     ogs_assert(bearer);
     sendbuf = test_s1ap_build_e_rab_release_response(bearer);
@@ -677,13 +713,16 @@ static void test1_func(abts_case *tc, void *data)
     /* Send Session-Termination-Request */
     pcscf_rx_send_str(rx_sid);
 
-    /* Receive E-RAB Release Command +
+    /* Receive E-RABReleaseCommand +
      * Dectivate EPS bearer context request */
     recvbuf = testenb_s1ap_read(s1ap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     tests1ap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc,
+            S1AP_ProcedureCode_id_E_RABRelease,
+            test_ue->s1ap_procedure_code);
 
-    /* Send E-RAB Release Response */
+    /* Send E-RABReleaseResponse */
     bearer = test_bearer_find_by_ue_ebi(test_ue, 12);
     ogs_assert(bearer);
     sendbuf = test_s1ap_build_e_rab_release_response(bearer);
@@ -712,19 +751,25 @@ static void test1_func(abts_case *tc, void *data)
     pcscf_rx_send_aar_video(&rx_sid, sess,
             OGS_DIAM_RX_SUBSCRIPTION_ID_TYPE_END_USER_SIP_URI);
 
-    /* Receive E-RAB Setup Request +
+    /* Receive E-RABSetupRequest +
      * Activate dedicated EPS bearer context request */
     recvbuf = testenb_s1ap_read(s1ap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     tests1ap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc,
+            S1AP_ProcedureCode_id_E_RABSetup,
+            test_ue->s1ap_procedure_code);
 
-    /* Receive E-RAB Setup Request +
+    /* Receive E-RABSetupRequest +
      * Activate dedicated EPS bearer context request */
     recvbuf = testenb_s1ap_read(s1ap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     tests1ap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc,
+            S1AP_ProcedureCode_id_E_RABSetup,
+            test_ue->s1ap_procedure_code);
 
-    /* Send E-RAB Setup Response */
+    /* Send E-RABSetupResponse */
     bearer = test_bearer_find_by_ue_ebi(test_ue, 13);
     ogs_assert(bearer);
     sendbuf = test_s1ap_build_e_rab_setup_response(bearer);
@@ -740,7 +785,7 @@ static void test1_func(abts_case *tc, void *data)
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    /* Send E-RAB Setup Response */
+    /* Send E-RABSetupResponse */
     bearer = test_bearer_find_by_ue_ebi(test_ue, 14);
     ogs_assert(bearer);
     sendbuf = test_s1ap_build_e_rab_setup_response(bearer);
@@ -794,13 +839,16 @@ static void test1_func(abts_case *tc, void *data)
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    /* Receive E-RAB Release Command +
+    /* Receive E-RABReleaseCommand +
      * Dectivate EPS bearer context request */
     recvbuf = testenb_s1ap_read(s1ap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     tests1ap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc,
+            S1AP_ProcedureCode_id_E_RABRelease,
+            test_ue->s1ap_procedure_code);
 
-    /* Send E-RAB Release Response */
+    /* Send E-RABReleaseResponse */
     bearer = test_bearer_find_by_ue_ebi(test_ue, 13);
     ogs_assert(bearer);
     sendbuf = test_s1ap_build_e_rab_release_response(bearer);
@@ -827,13 +875,16 @@ static void test1_func(abts_case *tc, void *data)
     /* Send Session-Termination-Request */
     pcscf_rx_send_str(rx_sid);
 
-    /* Receive E-RAB Release Command +
+    /* Receive E-RABReleaseCommand +
      * Dectivate EPS bearer context request */
     recvbuf = testenb_s1ap_read(s1ap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     tests1ap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc,
+            S1AP_ProcedureCode_id_E_RABRelease,
+            test_ue->s1ap_procedure_code);
 
-    /* Send E-RAB Release Response */
+    /* Send E-RABReleaseResponse */
     bearer = test_bearer_find_by_ue_ebi(test_ue, 14);
     ogs_assert(bearer);
     sendbuf = test_s1ap_build_e_rab_release_response(bearer);
@@ -862,19 +913,25 @@ static void test1_func(abts_case *tc, void *data)
     pcscf_rx_send_aar_video(&rx_sid, sess,
             OGS_DIAM_RX_SUBSCRIPTION_ID_TYPE_END_USER_SIP_URI);
 
-    /* Receive E-RAB Setup Request +
+    /* Receive E-RABSetupRequest +
      * Activate dedicated EPS bearer context request */
     recvbuf = testenb_s1ap_read(s1ap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     tests1ap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc,
+            S1AP_ProcedureCode_id_E_RABSetup,
+            test_ue->s1ap_procedure_code);
 
-    /* Receive E-RAB Setup Request +
+    /* Receive E-RABSetupRequest +
      * Activate dedicated EPS bearer context request */
     recvbuf = testenb_s1ap_read(s1ap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     tests1ap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc,
+            S1AP_ProcedureCode_id_E_RABSetup,
+            test_ue->s1ap_procedure_code);
 
-    /* Send E-RAB Setup Response */
+    /* Send E-RABSetupResponse */
     bearer = test_bearer_find_by_ue_ebi(test_ue, 15);
     ogs_assert(bearer);
     sendbuf = test_s1ap_build_e_rab_setup_response(bearer);
@@ -890,7 +947,7 @@ static void test1_func(abts_case *tc, void *data)
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    /* Send E-RAB Setup Response */
+    /* Send E-RABSetupResponse */
     bearer = test_bearer_find_by_ue_ebi(test_ue, 7);
     ogs_assert(bearer);
     sendbuf = test_s1ap_build_e_rab_setup_response(bearer);
@@ -944,13 +1001,16 @@ static void test1_func(abts_case *tc, void *data)
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    /* Receive E-RAB Release Command +
+    /* Receive E-RABReleaseCommand +
      * Dectivate EPS bearer context request */
     recvbuf = testenb_s1ap_read(s1ap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     tests1ap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc,
+            S1AP_ProcedureCode_id_E_RABRelease,
+            test_ue->s1ap_procedure_code);
 
-    /* Send E-RAB Release Response */
+    /* Send E-RABReleaseResponse */
     bearer = test_bearer_find_by_ue_ebi(test_ue, 15);
     ogs_assert(bearer);
     sendbuf = test_s1ap_build_e_rab_release_response(bearer);
@@ -977,13 +1037,16 @@ static void test1_func(abts_case *tc, void *data)
     /* Send Session-Termination-Request */
     pcscf_rx_send_str(rx_sid);
 
-    /* Receive E-RAB Release Command +
+    /* Receive E-RABReleaseCommand +
      * Dectivate EPS bearer context request */
     recvbuf = testenb_s1ap_read(s1ap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     tests1ap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc,
+            S1AP_ProcedureCode_id_E_RABRelease,
+            test_ue->s1ap_procedure_code);
 
-    /* Send E-RAB Release Response */
+    /* Send E-RABReleaseResponse */
     bearer = test_bearer_find_by_ue_ebi(test_ue, 7);
     ogs_assert(bearer);
     sendbuf = test_s1ap_build_e_rab_release_response(bearer);
@@ -1012,19 +1075,25 @@ static void test1_func(abts_case *tc, void *data)
     pcscf_rx_send_aar_video(&rx_sid, sess,
             OGS_DIAM_RX_SUBSCRIPTION_ID_TYPE_END_USER_SIP_URI);
 
-    /* Receive E-RAB Setup Request +
+    /* Receive E-RABSetupRequest +
      * Activate dedicated EPS bearer context request */
     recvbuf = testenb_s1ap_read(s1ap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     tests1ap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc,
+            S1AP_ProcedureCode_id_E_RABSetup,
+            test_ue->s1ap_procedure_code);
 
-    /* Receive E-RAB Setup Request +
+    /* Receive E-RABSetupRequest +
      * Activate dedicated EPS bearer context request */
     recvbuf = testenb_s1ap_read(s1ap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     tests1ap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc,
+            S1AP_ProcedureCode_id_E_RABSetup,
+            test_ue->s1ap_procedure_code);
 
-    /* Send E-RAB Setup Response */
+    /* Send E-RABSetupResponse */
     bearer = test_bearer_find_by_ue_ebi(test_ue, 8);
     ogs_assert(bearer);
     sendbuf = test_s1ap_build_e_rab_setup_response(bearer);
@@ -1040,7 +1109,7 @@ static void test1_func(abts_case *tc, void *data)
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    /* Send E-RAB Setup Response */
+    /* Send E-RABSetupResponse */
     bearer = test_bearer_find_by_ue_ebi(test_ue, 9);
     ogs_assert(bearer);
     sendbuf = test_s1ap_build_e_rab_setup_response(bearer);
@@ -1094,13 +1163,16 @@ static void test1_func(abts_case *tc, void *data)
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    /* Receive E-RAB Release Command +
+    /* Receive E-RABReleaseCommand +
      * Dectivate EPS bearer context request */
     recvbuf = testenb_s1ap_read(s1ap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     tests1ap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc,
+            S1AP_ProcedureCode_id_E_RABRelease,
+            test_ue->s1ap_procedure_code);
 
-    /* Send E-RAB Release Response */
+    /* Send E-RABReleaseResponse */
     bearer = test_bearer_find_by_ue_ebi(test_ue, 8);
     ogs_assert(bearer);
     sendbuf = test_s1ap_build_e_rab_release_response(bearer);
@@ -1127,13 +1199,16 @@ static void test1_func(abts_case *tc, void *data)
     /* Send Session-Termination-Request */
     pcscf_rx_send_str(rx_sid);
 
-    /* Receive E-RAB Release Command +
+    /* Receive E-RABReleaseCommand +
      * Dectivate EPS bearer context request */
     recvbuf = testenb_s1ap_read(s1ap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     tests1ap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc,
+            S1AP_ProcedureCode_id_E_RABRelease,
+            test_ue->s1ap_procedure_code);
 
-    /* Send E-RAB Release Response */
+    /* Send E-RABReleaseResponse */
     bearer = test_bearer_find_by_ue_ebi(test_ue, 9);
     ogs_assert(bearer);
     sendbuf = test_s1ap_build_e_rab_release_response(bearer);
