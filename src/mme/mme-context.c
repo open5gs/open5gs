@@ -2250,6 +2250,7 @@ mme_ue_t *mme_ue_find_by_message(ogs_nas_eps_message_t *message)
 {
     mme_ue_t *mme_ue = NULL;
     ogs_nas_eps_attach_request_t *attach_request = NULL;
+    ogs_nas_eps_detach_request_from_ue_t *detach_request = NULL;
     ogs_nas_eps_tracking_area_update_request_t *tau_request = NULL;
     ogs_nas_eps_extended_service_request_t *extended_service_request = NULL;
     ogs_nas_eps_mobile_identity_t *eps_mobile_identity = NULL;
@@ -2302,12 +2303,9 @@ mme_ue_t *mme_ue_find_by_message(ogs_nas_eps_message_t *message)
             }
             break;
         default:
-            ogs_error("Unknown IMSI type [%d]", eps_mobile_identity->imsi.type);
-            break;
+            ogs_error("Unknown EPS Mobile Identity Type [%d]",
+                    eps_mobile_identity->imsi.type);
         }
-        break;
-    case OGS_NAS_EPS_DETACH_REQUEST:
-        /* TODO */
         break;
     case OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST:
         tau_request = &message->emm.tracking_area_update_request;
@@ -2337,8 +2335,40 @@ mme_ue_t *mme_ue_find_by_message(ogs_nas_eps_message_t *message)
             }
             break;
         default:
-            ogs_error("Unknown IMSI type [%d]", eps_mobile_identity->imsi.type);
+            ogs_error("Unknown EPS Mobile Identity Type [%d]",
+                    eps_mobile_identity->imsi.type);
+        }
+        break;
+    case OGS_NAS_EPS_DETACH_REQUEST:
+        detach_request = &message->emm.detach_request_from_ue;
+        eps_mobile_identity = &detach_request->eps_mobile_identity;
+
+        switch(eps_mobile_identity->imsi.type) {
+        case OGS_NAS_EPS_MOBILE_IDENTITY_GUTI:
+            eps_mobile_identity_guti = &eps_mobile_identity->guti;
+
+            ogs_nas_guti.nas_plmn_id = eps_mobile_identity_guti->nas_plmn_id;
+            ogs_nas_guti.mme_gid = eps_mobile_identity_guti->mme_gid;
+            ogs_nas_guti.mme_code = eps_mobile_identity_guti->mme_code;
+            ogs_nas_guti.m_tmsi = eps_mobile_identity_guti->m_tmsi;
+
+            mme_ue = mme_ue_find_by_guti(&ogs_nas_guti);
+            if (mme_ue) {
+                ogs_info("[%s] Known UE by GUTI[G:%d,C:%d,M_TMSI:0x%x]",
+                        mme_ue->imsi_bcd,
+                        ogs_nas_guti.mme_gid,
+                        ogs_nas_guti.mme_code,
+                        ogs_nas_guti.m_tmsi);
+            } else {
+                ogs_info("Unknown UE by GUTI[G:%d,C:%d,M_TMSI:0x%x]",
+                        ogs_nas_guti.mme_gid,
+                        ogs_nas_guti.mme_code,
+                        ogs_nas_guti.m_tmsi);
+            }
             break;
+        default:
+            ogs_error("Unknown EPS Mobile Identity Type [%d]",
+                    eps_mobile_identity->imsi.type);
         }
         break;
     case OGS_NAS_EPS_EXTENDED_SERVICE_REQUEST:
@@ -2372,8 +2402,8 @@ mme_ue_t *mme_ue_find_by_message(ogs_nas_eps_message_t *message)
             }
             break;
         default:
-            ogs_error("Unknown TMSI type [%d]", mobile_identity->tmsi.type);
-            break;
+            ogs_error("Unknown Mobile Identity Type [%d]",
+                    mobile_identity->tmsi.type);
         }
         break;
     default:

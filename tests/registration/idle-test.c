@@ -266,7 +266,7 @@ static void test1_func(abts_case *tc, void *data)
             test_ue, OGS_NAS_SERVICE_TYPE_SIGNALLING, nasbuf);
     ABTS_PTR_NOTNULL(tc, gmmbuf);
 
-    sendbuf = testngap_build_initial_ue_message(test_ue, gmmbuf, true, true);
+    sendbuf = testngap_build_initial_ue_message(test_ue, gmmbuf, false, true);
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);

@@ -421,10 +421,32 @@ static void test2_func(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, recvbuf);
     testngap_recv(test_ue, recvbuf);
 
+    /* Send UEContextReleaseRequest */
+    sendbuf = testngap_build_ue_context_release_request(test_ue,
+            NGAP_Cause_PR_radioNetwork, NGAP_CauseRadioNetwork_user_inactivity,
+            true);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive UEContextReleaseCommand */
+    recvbuf = testgnb_ngap_read(ngap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    testngap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc,
+            NGAP_ProcedureCode_id_UEContextRelease,
+            test_ue->ngap_procedure_code);
+
+    /* Send UEContextReleaseComplete */
+    sendbuf = testngap_build_ue_context_release_complete(test_ue);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
     /* Send De-registration request */
     gmmbuf = testgmm_build_de_registration_request(test_ue, 1);
     ABTS_PTR_NOTNULL(tc, gmmbuf);
-    sendbuf = testngap_build_uplink_nas_transport(test_ue, gmmbuf);
+    sendbuf = testngap_build_initial_ue_message(test_ue, gmmbuf, true, false);
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
@@ -836,10 +858,32 @@ static void test3_func(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
+    /* Send UEContextReleaseRequest */
+    sendbuf = testngap_build_ue_context_release_request(test_ue,
+            NGAP_Cause_PR_radioNetwork, NGAP_CauseRadioNetwork_user_inactivity,
+            true);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive UEContextReleaseCommand */
+    recvbuf = testgnb_ngap_read(ngap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    testngap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc,
+            NGAP_ProcedureCode_id_UEContextRelease,
+            test_ue->ngap_procedure_code);
+
+    /* Send UEContextReleaseComplete */
+    sendbuf = testngap_build_ue_context_release_complete(test_ue);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
     /* Send De-registration request */
     gmmbuf = testgmm_build_de_registration_request(test_ue, 1);
     ABTS_PTR_NOTNULL(tc, gmmbuf);
-    sendbuf = testngap_build_uplink_nas_transport(test_ue, gmmbuf);
+    sendbuf = testngap_build_initial_ue_message(test_ue, gmmbuf, false, false);
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);

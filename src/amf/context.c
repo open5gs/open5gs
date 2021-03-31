@@ -1265,17 +1265,18 @@ amf_ue_t *amf_ue_find_by_message(ogs_nas_5gs_message_t *message)
 {
     amf_ue_t *amf_ue = NULL;
     ogs_nas_5gs_registration_request_t *registration_request = NULL;
-#if 0
-    ogs_nas_5gs_tracking_area_update_request_t *tau_request = NULL;
-#endif
+    ogs_nas_5gs_deregistration_request_from_ue_t *deregistration_request = NULL;
+    ogs_nas_5gs_service_request_t *service_request = NULL;
     ogs_nas_5gs_mobile_identity_t *mobile_identity = NULL;
     ogs_nas_5gs_mobile_identity_header_t *mobile_identity_header = NULL;
     ogs_nas_5gs_mobile_identity_guti_t *mobile_identity_guti = NULL;
+    ogs_nas_5gs_mobile_identity_s_tmsi_t *mobile_identity_s_tmsi = NULL;
     ogs_nas_5gs_guti_t nas_guti;
 
     char *suci = NULL;
 
     ogs_assert(message);
+    memset(&nas_guti, 0, sizeof(ogs_nas_5gs_guti_t));
 
     switch (message->gmm.h.message_type) {
     case OGS_NAS_5GS_REGISTRATION_REQUEST:
@@ -1284,8 +1285,10 @@ amf_ue_t *amf_ue_find_by_message(ogs_nas_5gs_message_t *message)
         mobile_identity = &registration_request->mobile_identity;
         ogs_assert(mobile_identity);
 
-        if (!mobile_identity->length || !mobile_identity->buffer)
+        if (!mobile_identity->length || !mobile_identity->buffer) {
+            ogs_error("No Mobilie Identity [%d]", mobile_identity->length);
             return NULL;
+        }
 
         mobile_identity_header =
                 (ogs_nas_5gs_mobile_identity_header_t *)mobile_identity->buffer;
@@ -1303,15 +1306,10 @@ amf_ue_t *amf_ue_find_by_message(ogs_nas_5gs_message_t *message)
             }
             ogs_free(suci);
             break;
-
         case OGS_NAS_5GS_MOBILE_IDENTITY_GUTI:
             mobile_identity_guti =
                 (ogs_nas_5gs_mobile_identity_guti_t *)mobile_identity->buffer;
-
-            if (!mobile_identity_guti) {
-                ogs_error("No mobile identity");
-                return NULL;
-            }
+            ogs_assert(mobile_identity_guti);
 
             ogs_nas_5gs_mobile_identity_guti_to_nas_guti(
                 mobile_identity_guti, &nas_guti);
@@ -1327,8 +1325,93 @@ amf_ue_t *amf_ue_find_by_message(ogs_nas_5gs_message_t *message)
             }
             break;
         default:
-            ogs_error("Unknown SUCI type [%d]", mobile_identity_header->type);
+            ogs_error("Unknown Mobile Identity type [%d]",
+                    mobile_identity_header->type);
+        }
+        break;
+    case OGS_NAS_5GS_SERVICE_REQUEST:
+        service_request = &message->gmm.service_request;
+        ogs_assert(service_request);
+        mobile_identity = &service_request->s_tmsi;
+        ogs_assert(mobile_identity);
 
+        if (!mobile_identity->length || !mobile_identity->buffer) {
+            ogs_error("No Mobilie Identity [%d]", mobile_identity->length);
+            return NULL;
+        }
+
+        mobile_identity_header =
+                (ogs_nas_5gs_mobile_identity_header_t *)mobile_identity->buffer;
+
+        switch (mobile_identity_header->type) {
+        case OGS_NAS_5GS_MOBILE_IDENTITY_S_TMSI:
+            mobile_identity_s_tmsi =
+                (ogs_nas_5gs_mobile_identity_s_tmsi_t *)mobile_identity->buffer;
+            ogs_assert(mobile_identity_s_tmsi);
+
+            /* Use the first configured plmn_id and mme group id */
+            ogs_nas_from_plmn_id(&nas_guti.nas_plmn_id,
+                    &amf_self()->served_guami[0].plmn_id);
+            nas_guti.amf_id.region = amf_self()->served_guami[0].amf_id.region;
+
+            /* Getting from S_TMSI */
+            nas_guti.amf_id.set1 = mobile_identity_s_tmsi->set1;
+            nas_guti.amf_id.set2 = mobile_identity_s_tmsi->set2;
+            nas_guti.amf_id.pointer = mobile_identity_s_tmsi->pointer;
+
+            nas_guti.m_tmsi = be32toh(mobile_identity_s_tmsi->m_tmsi);
+
+            amf_ue = amf_ue_find_by_guti(&nas_guti);
+            if (amf_ue) {
+                ogs_info("[%s] Known UE by 5G-S_TMSI[AMF_ID:0x%x,M_TMSI:0x%x]",
+                    amf_ue->suci ? amf_ue->suci : "Unknown",
+                    ogs_amf_id_hexdump(&nas_guti.amf_id), nas_guti.m_tmsi);
+            } else {
+                ogs_info("Unknown UE by 5G-S_TMSI[AMF_ID:0x%x,M_TMSI:0x%x]",
+                    ogs_amf_id_hexdump(&nas_guti.amf_id), nas_guti.m_tmsi);
+            }
+            break;
+        default:
+            ogs_error("Unknown Mobile Identity type [%d]",
+                    mobile_identity_header->type);
+        }
+        break;
+    case OGS_NAS_5GS_DEREGISTRATION_REQUEST:
+        deregistration_request = &message->gmm.deregistration_request_from_ue;
+        ogs_assert(deregistration_request);
+        mobile_identity = &deregistration_request->mobile_identity;
+        ogs_assert(mobile_identity);
+
+        if (!mobile_identity->length || !mobile_identity->buffer) {
+            ogs_error("No Mobilie Identity [%d]", mobile_identity->length);
+            return NULL;
+        }
+
+        mobile_identity_header =
+                (ogs_nas_5gs_mobile_identity_header_t *)mobile_identity->buffer;
+
+        switch (mobile_identity_header->type) {
+        case OGS_NAS_5GS_MOBILE_IDENTITY_GUTI:
+            mobile_identity_guti =
+                (ogs_nas_5gs_mobile_identity_guti_t *)mobile_identity->buffer;
+            ogs_assert(mobile_identity_guti);
+
+            ogs_nas_5gs_mobile_identity_guti_to_nas_guti(
+                mobile_identity_guti, &nas_guti);
+
+            amf_ue = amf_ue_find_by_guti(&nas_guti);
+            if (amf_ue) {
+                ogs_info("[%s] Known UE by 5G-S_TMSI[AMF_ID:0x%x,M_TMSI:0x%x]",
+                    amf_ue->suci ? amf_ue->suci : "Unknown",
+                    ogs_amf_id_hexdump(&nas_guti.amf_id), nas_guti.m_tmsi);
+            } else {
+                ogs_info("Unknown UE by 5G-S_TMSI[AMF_ID:0x%x,M_TMSI:0x%x]",
+                    ogs_amf_id_hexdump(&nas_guti.amf_id), nas_guti.m_tmsi);
+            }
+            break;
+        default:
+            ogs_error("Unknown Mobile Identity type [%d]",
+                    mobile_identity_header->type);
         }
         break;
     default:
