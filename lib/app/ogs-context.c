@@ -92,7 +92,7 @@ static void recalculate_pool_size(void)
     self.pool.sbi_message = self.pool.nf * MAX_NUM_OF_SBI_MESSAGE;
     self.pool.nf_subscription = self.pool.nf * MAX_NUM_OF_NF_SUBSCRIPTION;
 
-#define MAX_EVENT_POOL          32
+#define MAX_EVENT_POOL          256
     self.pool.event = MAX_EVENT_POOL;
 
 #define MAX_CSMAP_POOL          128

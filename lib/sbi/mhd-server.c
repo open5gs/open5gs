@@ -28,7 +28,7 @@ typedef enum MHD_Result _MHD_Result;
 typedef int _MHD_Result;
 #endif
 
-static void server_init(int num_of_session_pool);
+static void server_init(int num_of_session_pool, int num_of_stream_pool);
 static void server_final(void);
 
 static void server_start(ogs_sbi_server_t *server,
@@ -103,7 +103,7 @@ typedef struct ogs_sbi_session_s {
 
 static OGS_POOL(session_pool, ogs_sbi_session_t);
 
-static void server_init(int num_of_session_pool)
+static void server_init(int num_of_session_pool, int num_of_stream_pool)
 {
     ogs_pool_init(&session_pool, num_of_session_pool);
 }

@@ -26,7 +26,7 @@
 
 #define USE_SEND_DATA_WITH_NO_COPY 1
 
-static void server_init(int num_of_stream_pool);
+static void server_init(int num_of_session_pool, int num_of_stream_pool);
 static void server_final(void);
 
 static void server_start(ogs_sbi_server_t *server,
@@ -100,9 +100,9 @@ static void session_write_to_buffer(
 static OGS_POOL(session_pool, ogs_sbi_session_t);
 static OGS_POOL(stream_pool, ogs_sbi_stream_t);
 
-static void server_init(int num_of_stream_pool)
+static void server_init(int num_of_session_pool, int num_of_stream_pool)
 {
-    ogs_pool_init(&session_pool, num_of_stream_pool);
+    ogs_pool_init(&session_pool, num_of_session_pool);
     ogs_pool_init(&stream_pool, num_of_stream_pool);
 }
 

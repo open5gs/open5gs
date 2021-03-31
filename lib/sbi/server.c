@@ -28,7 +28,7 @@ bool ogs_sbi_server_actions_initialized = false;
 
 static OGS_POOL(server_pool, ogs_sbi_server_t);
 
-void ogs_sbi_server_init(int num_of_stream_pool)
+void ogs_sbi_server_init(int num_of_session_pool, int num_of_stream_pool)
 {
     if (ogs_sbi_server_actions_initialized == false) {
 #if 1 /* Use HTTP2 */
@@ -38,7 +38,7 @@ void ogs_sbi_server_init(int num_of_stream_pool)
 #endif
     }
 
-    ogs_sbi_server_actions.init(num_of_stream_pool);
+    ogs_sbi_server_actions.init(num_of_session_pool, num_of_stream_pool);
 
     ogs_list_init(&ogs_sbi_self()->server_list);
     ogs_pool_init(&server_pool, ogs_app()->pool.nf);

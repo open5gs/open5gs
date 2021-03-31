@@ -42,8 +42,8 @@ void ogs_sbi_context_init(void)
 
     ogs_sbi_message_init(
         ogs_app()->pool.sbi_message, ogs_app()->pool.sbi_message);
-    ogs_sbi_server_init(ogs_app()->pool.nf);
-    ogs_sbi_client_init(ogs_app()->pool.nf, ogs_app()->pool.nf);
+    ogs_sbi_server_init(ogs_app()->pool.nf, ogs_app()->pool.event);
+    ogs_sbi_client_init(ogs_app()->pool.nf, ogs_app()->pool.event);
 
     ogs_list_init(&self.nf_instance_list);
     ogs_pool_init(&nf_instance_pool, ogs_app()->pool.nf);
