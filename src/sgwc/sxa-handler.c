@@ -145,6 +145,8 @@ void sgwc_sxa_handle_session_establishment_response(
     ogs_gtp_create_session_request_t *gtp_req = NULL;
     ogs_pkbuf_t *pkbuf = NULL;
 
+    ogs_debug("Session Establishment Response");
+
     ogs_assert(pfcp_xact);
     ogs_assert(pfcp_rsp);
     ogs_assert(gtp_message);
@@ -350,6 +352,8 @@ void sgwc_sxa_handle_session_modification_response(
     ogs_pkbuf_t *pkbuf = NULL;
 
     ogs_gtp_cause_t cause;
+
+    ogs_debug("Session Modification Response");
 
     ogs_assert(pfcp_xact);
     ogs_assert(pfcp_rsp);
@@ -1014,6 +1018,8 @@ void sgwc_sxa_handle_session_deletion_response(
     ogs_gtp_xact_t *s11_xact = NULL;
     ogs_pkbuf_t *pkbuf = NULL;
 
+    ogs_debug("Session Deletion Response");
+
     ogs_assert(pfcp_xact);
     ogs_assert(pfcp_rsp);
 
@@ -1080,6 +1086,8 @@ void sgwc_sxa_handle_session_report_request(
     ogs_pfcp_report_type_t report_type;
     uint8_t cause_value = 0;
     uint16_t pdr_id = 0;
+
+    ogs_debug("Session Report Request");
 
     ogs_assert(pfcp_xact);
     ogs_assert(pfcp_req);
