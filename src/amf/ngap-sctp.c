@@ -37,9 +37,6 @@ ogs_sock_t *ngap_server(ogs_socknode_t *node)
 
     ogs_assert(node);
 
-    ogs_socknode_sctp_option(node, &ogs_app()->sockopt);
-    ogs_socknode_nodelay(node, true);
-
 #if HAVE_USRSCTP
     sock = ogs_sctp_server(SOCK_SEQPACKET, node);
     ogs_assert(sock);

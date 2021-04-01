@@ -43,14 +43,6 @@ ogs_sock_t *sgsap_client(mme_vlr_t *vlr)
     memset(&node, 0, sizeof node);
     node.addr = vlr->sa_list;
 
-    ogs_socknode_sctp_option(&node, &ogs_app()->sockopt);
-    ogs_socknode_nodelay(&node, true);
-#if 0 /* Try to remove LINGER in usrsctp */
-#if HAVE_USRSCTP
-    ogs_socknode_linger(&node, true, 0);
-#endif
-#endif
-
     sock = ogs_sctp_client(SOCK_SEQPACKET, &node);
     if (sock) {
         vlr->sock = sock;

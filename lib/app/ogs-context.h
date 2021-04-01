@@ -78,7 +78,24 @@ typedef struct ogs_app_context_s {
         int ignore_requested_nssai;
     } parameter;
 
-    ogs_sockopt_t sockopt;
+    struct {
+        int no_delay;
+        int l_onoff;
+        int l_linger;
+    } sockopt;
+
+    struct {
+        int heartbit_interval;
+        int sack_delay;
+        int rto_initial;
+        int rto_min;
+        int rto_max;
+        int max_num_of_ostreams;
+        int max_num_of_istreams;
+        int max_attempts;
+        int max_initial_timeout;
+    } sctp;
+
     struct {
         int udp_port;
     } usrsctp;

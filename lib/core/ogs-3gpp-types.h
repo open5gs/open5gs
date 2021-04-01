@@ -90,6 +90,8 @@ extern "C" {
 
 #define OGS_MAX_QOS_FLOW_ID             63
 
+#define OGS_DEFAULT_SCTP_MAX_NUM_OF_OSTREAMS 30
+
 /************************************
  * PLMN_ID Structure                */
 #define OGS_MAX_NUM_OF_PLMN         6

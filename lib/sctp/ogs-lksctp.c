@@ -23,9 +23,9 @@
 #define OGS_LOG_DOMAIN __ogs_sock_domain
 
 static int subscribe_to_events(ogs_sock_t *sock);
-static int set_paddrparams(ogs_sock_t *sock, ogs_sockopt_t *option);
-static int set_rtoinfo(ogs_sock_t *sock, ogs_sockopt_t *option);
-static int set_initmsg(ogs_sock_t *sock, ogs_sockopt_t *option);
+static int set_paddrparams(ogs_sock_t *sock);
+static int set_rtoinfo(ogs_sock_t *sock);
+static int set_initmsg(ogs_sock_t *sock);
 static int set_nodelay(ogs_sock_t *sock, int on);
 
 void ogs_sctp_init(uint16_t port)
@@ -40,18 +40,6 @@ ogs_sock_t *ogs_sctp_socket(int family, int type, ogs_socknode_t *node)
 {
     ogs_sock_t *new = NULL;
     int rv;
-    ogs_sockopt_t option = {
-        .sctp.heartbit_interval = 5000,     /* 5 seconds */
-        .sctp.rto_initial = 3000,           /* 3 seconds */
-        .sctp.rto_min = 1000,               /* 1 seconds */
-        .sctp.rto_max = 5000,               /* 5 seconds */
-        .sctp.max_num_of_ostreams = DEFAULT_SCTP_MAX_NUM_OF_OSTREAMS,
-        .sctp.max_num_of_istreams = 65535,
-        .sctp.max_attempts = 4,
-        .sctp.max_initial_timeout = 8000,   /* 8 seconds */
-    };
-
-    ogs_sctp_set_option(&option, node);
 
     new = ogs_sock_socket(family, type, IPPROTO_SCTP);
     ogs_assert(new);
@@ -59,20 +47,20 @@ ogs_sock_t *ogs_sctp_socket(int family, int type, ogs_socknode_t *node)
     rv = subscribe_to_events(new);
     ogs_assert(rv == OGS_OK);
 
-    rv = set_paddrparams(new, &option);
+    rv = set_paddrparams(new);
     ogs_assert(rv == OGS_OK);
 
-    rv = set_rtoinfo(new, &option);
+    rv = set_rtoinfo(new);
     ogs_assert(rv == OGS_OK);
 
-    rv = set_initmsg(new, &option);
+    rv = set_initmsg(new);
     ogs_assert(rv == OGS_OK);
 
-    if (node) {
-        if (node->option.nodelay) {
-            rv = set_nodelay(new, node->option.nodelay);
-            ogs_assert(rv == OGS_OK);
-        }
+    if (ogs_app()->sockopt.no_delay == true) {
+        rv = set_nodelay(new, true);
+        ogs_assert(rv == OGS_OK);
+    } else {
+        ogs_warn("SCTP NO_DELAY Disabled");
     }
 
     return new;
@@ -464,13 +452,12 @@ static int sctp_setsockopt_paddrparams_workaround(
     }
 }
 
-static int set_paddrparams(ogs_sock_t *sock, ogs_sockopt_t *option)
+static int set_paddrparams(ogs_sock_t *sock)
 {
     struct sctp_paddrparams paddrparams;
     socklen_t socklen;
 
     ogs_assert(sock);
-    ogs_assert(option);
 
     memset(&paddrparams, 0, sizeof(paddrparams));
     socklen = sizeof(paddrparams);
@@ -481,12 +468,14 @@ static int set_paddrparams(ogs_sock_t *sock, ogs_sockopt_t *option)
         return OGS_ERROR;
     }
 
-    ogs_trace("OLD spp_flags = 0x%x hbinter = %d pathmax = %d",
+    ogs_debug("OLD spp_flags = 0x%x hbinter = %d pathmax = %d, sackdelay = %d",
             paddrparams.spp_flags,
             paddrparams.spp_hbinterval,
-            paddrparams.spp_pathmaxrxt);
+            paddrparams.spp_pathmaxrxt,
+            paddrparams.spp_sackdelay);
 
-    paddrparams.spp_hbinterval = option->sctp.heartbit_interval;
+    paddrparams.spp_hbinterval = ogs_app()->sctp.heartbit_interval;
+    paddrparams.spp_sackdelay = ogs_app()->sctp.sack_delay;
 
 #ifdef DISABLE_SCTP_EVENT_WORKAROUND
     if (setsockopt(sock->fd, IPPROTO_SCTP, SCTP_PEER_ADDR_PARAMS,
@@ -502,21 +491,21 @@ static int set_paddrparams(ogs_sock_t *sock, ogs_sockopt_t *option)
     }
 #endif
 
-    ogs_trace("NEW spp_flags = 0x%x hbinter = %d pathmax = %d",
+    ogs_debug("NEW spp_flags = 0x%x hbinter = %d pathmax = %d, sackdelay = %d",
             paddrparams.spp_flags,
             paddrparams.spp_hbinterval,
-            paddrparams.spp_pathmaxrxt);
+            paddrparams.spp_pathmaxrxt,
+            paddrparams.spp_sackdelay);
 
     return OGS_OK;
 }
 
-static int set_rtoinfo(ogs_sock_t *sock, ogs_sockopt_t *option)
+static int set_rtoinfo(ogs_sock_t *sock)
 {
     struct sctp_rtoinfo rtoinfo;
     socklen_t socklen;
 
     ogs_assert(sock);
-    ogs_assert(option);
 
     memset(&rtoinfo, 0, sizeof(rtoinfo));
     socklen = sizeof(rtoinfo);
@@ -527,14 +516,14 @@ static int set_rtoinfo(ogs_sock_t *sock, ogs_sockopt_t *option)
         return OGS_ERROR;
     }
 
-    ogs_trace("OLD RTO (initial:%d max:%d min:%d)",
+    ogs_debug("OLD RTO (initial:%d max:%d min:%d)",
             rtoinfo.srto_initial,
             rtoinfo.srto_max,
             rtoinfo.srto_min);
 
-    rtoinfo.srto_initial = option->sctp.rto_initial;
-    rtoinfo.srto_min = option->sctp.rto_min;
-    rtoinfo.srto_max = option->sctp.rto_max;
+    rtoinfo.srto_initial = ogs_app()->sctp.rto_initial;
+    rtoinfo.srto_min = ogs_app()->sctp.rto_min;
+    rtoinfo.srto_max = ogs_app()->sctp.rto_max;
 
     if (setsockopt(sock->fd, IPPROTO_SCTP, SCTP_RTOINFO,
                             &rtoinfo, sizeof(rtoinfo)) != 0) {
@@ -542,7 +531,7 @@ static int set_rtoinfo(ogs_sock_t *sock, ogs_sockopt_t *option)
                 "setsockopt for SCTP_RTOINFO failed");
         return OGS_ERROR;
     }
-    ogs_trace("New RTO (initial:%d max:%d min:%d)",
+    ogs_debug("New RTO (initial:%d max:%d min:%d)",
             rtoinfo.srto_initial,
             rtoinfo.srto_max,
             rtoinfo.srto_min);
@@ -550,14 +539,13 @@ static int set_rtoinfo(ogs_sock_t *sock, ogs_sockopt_t *option)
     return OGS_OK;
 }
 
-static int set_initmsg(ogs_sock_t *sock, ogs_sockopt_t *option)
+static int set_initmsg(ogs_sock_t *sock)
 {
     struct sctp_initmsg initmsg;
     socklen_t socklen;
 
     ogs_assert(sock);
-    ogs_assert(option);
-    ogs_assert(option->sctp.max_num_of_ostreams > 1);
+    ogs_assert(ogs_app()->sctp.max_num_of_ostreams > 1);
 
     memset(&initmsg, 0, sizeof(initmsg));
     socklen = sizeof(initmsg);
@@ -568,16 +556,16 @@ static int set_initmsg(ogs_sock_t *sock, ogs_sockopt_t *option)
         return OGS_ERROR;
     }
 
-    ogs_trace("Old INITMSG (numout:%d maxin:%d maxattempt:%d maxinit_to:%d)",
+    ogs_debug("Old INITMSG (numout:%d maxin:%d maxattempt:%d maxinit_to:%d)",
                 initmsg.sinit_num_ostreams,
                 initmsg.sinit_max_instreams,
                 initmsg.sinit_max_attempts,
                 initmsg.sinit_max_init_timeo);
 
-    initmsg.sinit_num_ostreams = option->sctp.max_num_of_ostreams;
-    initmsg.sinit_max_instreams = option->sctp.max_num_of_istreams;
-    initmsg.sinit_max_attempts = option->sctp.max_attempts;
-    initmsg.sinit_max_init_timeo = option->sctp.max_initial_timeout;
+    initmsg.sinit_num_ostreams = ogs_app()->sctp.max_num_of_ostreams;
+    initmsg.sinit_max_instreams = ogs_app()->sctp.max_num_of_istreams;
+    initmsg.sinit_max_attempts = ogs_app()->sctp.max_attempts;
+    initmsg.sinit_max_init_timeo = ogs_app()->sctp.max_initial_timeout;
 
     if (setsockopt(sock->fd, IPPROTO_SCTP, SCTP_INITMSG,
                             &initmsg, sizeof(initmsg)) != 0) {
@@ -586,7 +574,7 @@ static int set_initmsg(ogs_sock_t *sock, ogs_sockopt_t *option)
         return OGS_ERROR;
     }
 
-    ogs_trace("New INITMSG (numout:%d maxin:%d maxattempt:%d maxinit_to:%d)",
+    ogs_debug("New INITMSG (numout:%d maxin:%d maxattempt:%d maxinit_to:%d)",
                 initmsg.sinit_num_ostreams,
                 initmsg.sinit_max_instreams,
                 initmsg.sinit_max_attempts,
@@ -599,7 +587,7 @@ static int set_nodelay(ogs_sock_t *sock, int on)
 {
     ogs_assert(sock);
 
-    ogs_trace("Turn on SCTP_NODELAY");
+    ogs_debug("Turn on SCTP_NODELAY");
     if (setsockopt(sock->fd, IPPROTO_SCTP, SCTP_NODELAY,
                 &on, sizeof(on)) != 0) {
         ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,

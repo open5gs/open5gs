@@ -20,7 +20,7 @@
 #ifndef OGS_SCTP_H
 #define OGS_SCTP_H
 
-#include "ogs-core.h"
+#include "ogs-app.h"
 
 #include "sctp/sctp-config.h"
 
@@ -80,8 +80,6 @@ ogs_sock_t *ogs_sctp_accept(ogs_sock_t *sock);
 
 #endif
 
-#define DEFAULT_SCTP_MAX_NUM_OF_OSTREAMS 30
-
 typedef struct ogs_sctp_sock_s {
     int             type;           /* SOCK_STREAM or SOCK_SEQPACKET */
 
@@ -107,8 +105,6 @@ void ogs_sctp_init(uint16_t port);
 void ogs_sctp_final(void);
 
 ogs_sock_t *ogs_sctp_socket(int family, int type, ogs_socknode_t *node);
-
-void ogs_sctp_set_option(ogs_sockopt_t *option, ogs_socknode_t *node);
 
 ogs_sock_t *ogs_sctp_server(int type, ogs_socknode_t *node);
 ogs_sock_t *ogs_sctp_client(int type, ogs_socknode_t *node);

@@ -75,7 +75,11 @@ int main(int argc, const char *const argv[])
     ogs_pkbuf_default_init(&config);
     ogs_pkbuf_default_create(&config);
 
+    ogs_app_setup_log();
+    ogs_app_context_init();
+
     ogs_log_install_domain(&__ogs_sctp_domain, "sctp", OGS_LOG_ERROR);
+
 #define USRSCTP_LOCAL_UDP_PORT      9899
     ogs_sctp_init(USRSCTP_LOCAL_UDP_PORT);
     atexit(terminate);

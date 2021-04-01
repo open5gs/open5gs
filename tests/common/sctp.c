@@ -30,7 +30,6 @@ ogs_socknode_t *testsctp_server(const char *ipstr, int port)
 
     node = ogs_socknode_new(addr);
     ogs_assert(node);
-    ogs_socknode_nodelay(node, true);
 
     ogs_sctp_server(SOCK_SEQPACKET, node);
     ogs_assert(node->sock);
@@ -49,7 +48,6 @@ ogs_socknode_t *testsctp_client(const char *ipstr, int port)
 
     node = ogs_socknode_new(addr);
     ogs_assert(node);
-    ogs_socknode_nodelay(node, true);
 
     ogs_sctp_client(SOCK_STREAM, node);
     ogs_assert(node->sock);
@@ -117,7 +115,6 @@ ogs_socknode_t *tests1ap_client(int family)
 
     node = ogs_socknode_new(addr);
     ogs_assert(node);
-    ogs_socknode_nodelay(node, true);
 
     ogs_sctp_client(SOCK_STREAM, node);
     ogs_assert(node->sock);
@@ -140,7 +137,6 @@ ogs_socknode_t *testngap_client(int family)
 
     node = ogs_socknode_new(addr);
     ogs_assert(node);
-    ogs_socknode_nodelay(node, true);
 
     ogs_sctp_client(SOCK_STREAM, node);
     ogs_assert(node->sock);

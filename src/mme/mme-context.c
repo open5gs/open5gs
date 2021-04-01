@@ -1634,7 +1634,7 @@ mme_vlr_t *mme_vlr_add(ogs_sockaddr_t *sa_list)
     ogs_assert(vlr);
     memset(vlr, 0, sizeof *vlr);
 
-    vlr->max_num_of_ostreams = DEFAULT_SCTP_MAX_NUM_OF_OSTREAMS;
+    vlr->max_num_of_ostreams = OGS_DEFAULT_SCTP_MAX_NUM_OF_OSTREAMS;
     vlr->ostream_id = 0;
 
     vlr->sa_list = sa_list;
@@ -1775,11 +1775,10 @@ mme_enb_t *mme_enb_add(ogs_sock_t *sock, ogs_sockaddr_t *addr)
         ogs_list_init(&enb->sctp.write_queue);
     }
 
-    enb->max_num_of_ostreams = DEFAULT_SCTP_MAX_NUM_OF_OSTREAMS;
+    enb->max_num_of_ostreams = OGS_DEFAULT_SCTP_MAX_NUM_OF_OSTREAMS;
     enb->ostream_id = 0;
-    if (ogs_app()->sockopt.sctp.max_num_of_ostreams) {
-        enb->max_num_of_ostreams =
-            ogs_app()->sockopt.sctp.max_num_of_ostreams;
+    if (ogs_app()->sctp.max_num_of_ostreams) {
+        enb->max_num_of_ostreams = ogs_app()->sctp.max_num_of_ostreams;
         ogs_info("[ENB] max_num_of_ostreams : %d", enb->max_num_of_ostreams);
     }
 

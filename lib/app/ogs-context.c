@@ -173,6 +173,18 @@ static void app_context_prepare(void)
 #define USRSCTP_LOCAL_UDP_PORT      9899
     self.usrsctp.udp_port = USRSCTP_LOCAL_UDP_PORT;
 
+    self.sctp.heartbit_interval = 5000;     /* 5 seconds */
+    self.sctp.sack_delay = 200;             /* 200 ms */
+    self.sctp.rto_initial = 3000;           /* 3 seconds */
+    self.sctp.rto_min = 1000;               /* 1 seconds */
+    self.sctp.rto_max = 5000;               /* 5 seconds */
+    self.sctp.max_num_of_ostreams = OGS_DEFAULT_SCTP_MAX_NUM_OF_OSTREAMS;
+    self.sctp.max_num_of_istreams = 65535;
+    self.sctp.max_attempts = 4;
+    self.sctp.max_initial_timeout = 8000;   /* 8 seconds */
+
+    self.sockopt.no_delay = true;
+
 #define MAX_NUM_OF_UE               1024    /* Num of UE per AMF/MME */
 #define MAX_NUM_OF_GNB              32      /* Num of gNB per AMF/MME */
 
@@ -345,6 +357,22 @@ int ogs_app_context_parse_config(void)
                 } else
                     ogs_warn("unknown key `%s`", parameter_key);
             }
+        } else if (!strcmp(root_key, "sockopt")) {
+            ogs_yaml_iter_t sockopt_iter;
+            ogs_yaml_iter_recurse(&root_iter, &sockopt_iter);
+            while (ogs_yaml_iter_next(&sockopt_iter)) {
+                const char *sockopt_key = ogs_yaml_iter_key(&sockopt_iter);
+                ogs_assert(sockopt_key);
+                if (!strcmp(sockopt_key, "no_delay")) {
+                    self.sockopt.no_delay =
+                        ogs_yaml_iter_bool(&sockopt_iter);
+                } else if (!strcmp(sockopt_key, "linger")) {
+                    const char *v = ogs_yaml_iter_value(&sockopt_iter);
+                    if (v) self.sockopt.l_linger = atoi(v);
+                    self.sockopt.l_onoff = true;
+                } else
+                    ogs_warn("unknown key `%s`", sockopt_key);
+            }
         } else if (!strcmp(root_key, "sctp")) {
             ogs_yaml_iter_t sctp_iter;
             ogs_yaml_iter_recurse(&root_iter, &sctp_iter);
@@ -353,31 +381,34 @@ int ogs_app_context_parse_config(void)
                 ogs_assert(sctp_key);
                 if (!strcmp(sctp_key, "heartbit_interval")) {
                     const char *v = ogs_yaml_iter_value(&sctp_iter);
-                    if (v) self.sockopt.sctp.heartbit_interval = atoi(v);
+                    if (v) self.sctp.heartbit_interval = atoi(v);
+                } else if (!strcmp(sctp_key, "sack_delay")) {
+                    const char *v = ogs_yaml_iter_value(&sctp_iter);
+                    if (v) self.sctp.sack_delay = atoi(v);
                 } else if (!strcmp(sctp_key, "rto_initial")) {
                     const char *v = ogs_yaml_iter_value(&sctp_iter);
-                    if (v) self.sockopt.sctp.rto_initial = atoi(v);
+                    if (v) self.sctp.rto_initial = atoi(v);
                 } else if (!strcmp(sctp_key, "rto_min")) {
                     const char *v = ogs_yaml_iter_value(&sctp_iter);
-                    if (v) self.sockopt.sctp.rto_min = atoi(v);
+                    if (v) self.sctp.rto_min = atoi(v);
                 } else if (!strcmp(sctp_key, "rto_max")) {
                     const char *v = ogs_yaml_iter_value(&sctp_iter);
-                    if (v) self.sockopt.sctp.rto_max = atoi(v);
+                    if (v) self.sctp.rto_max = atoi(v);
                 } else if (!strcmp(sctp_key, "max_num_of_ostreams")) {
                     const char *v = ogs_yaml_iter_value(&sctp_iter);
                     if (v)
-                        self.sockopt.sctp.max_num_of_ostreams = atoi(v);
+                        self.sctp.max_num_of_ostreams = atoi(v);
                 } else if (!strcmp(sctp_key, "max_num_of_istreams")) {
                     const char *v = ogs_yaml_iter_value(&sctp_iter);
                     if (v)
-                        self.sockopt.sctp.max_num_of_istreams = atoi(v);
+                        self.sctp.max_num_of_istreams = atoi(v);
                 } else if (!strcmp(sctp_key, "max_attempts")) {
                     const char *v = ogs_yaml_iter_value(&sctp_iter);
-                    if (v) self.sockopt.sctp.max_attempts = atoi(v);
+                    if (v) self.sctp.max_attempts = atoi(v);
                 } else if (!strcmp(sctp_key, "max_initial_timeout")) {
                     const char *v = ogs_yaml_iter_value(&sctp_iter);
                     if (v)
-                        self.sockopt.sctp.max_initial_timeout = atoi(v);
+                        self.sctp.max_initial_timeout = atoi(v);
                 } else if (!strcmp(sctp_key, "usrsctp_udp_port")) {
                     const char *v = ogs_yaml_iter_value(&sctp_iter);
                     if (v) self.usrsctp.udp_port = atoi(v);

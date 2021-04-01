@@ -28,23 +28,6 @@
 extern "C" {
 #endif
 
-typedef struct ogs_sockopt_s {
-    struct {
-        int heartbit_interval;
-        int rto_initial;
-        int rto_min;
-        int rto_max;
-        int max_num_of_ostreams;
-        int max_num_of_istreams;
-        int max_attempts;
-        int max_initial_timeout;
-    } sctp;
-
-    int nodelay;
-    int l_onoff;
-    int l_linger;;
-} ogs_sockopt_t;
-
 typedef struct ogs_pollset_s ogs_pollset_t;
 typedef struct ogs_poll_s ogs_poll_t;
 
@@ -56,8 +39,6 @@ typedef struct ogs_socknode_s {
     ogs_sock_t *sock;
     void (*cleanup)(ogs_sock_t *sock);
     ogs_poll_t *poll;
-
-    ogs_sockopt_t option;
 } ogs_socknode_t;
 
 ogs_socknode_t *ogs_socknode_new(ogs_sockaddr_t *addr);
@@ -71,10 +52,6 @@ void ogs_socknode_remove_all(ogs_list_t *list);
 int ogs_socknode_probe(
         ogs_list_t *list, ogs_list_t *list6, const char *dev, uint16_t port);
 int ogs_socknode_fill_scope_id_in_local(ogs_sockaddr_t *sa_list);
-
-void ogs_socknode_sctp_option(ogs_socknode_t *node, ogs_sockopt_t *option);
-void ogs_socknode_nodelay(ogs_socknode_t *node, int on);
-void ogs_socknode_linger(ogs_socknode_t *node, int onoff, int linger); 
 
 void ogs_socknode_set_cleanup(
         ogs_socknode_t *node, void (*cleanup)(ogs_sock_t *));

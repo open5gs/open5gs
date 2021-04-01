@@ -59,42 +59,30 @@ ogs_sock_t *ogs_sctp_socket(int family, int type, ogs_socknode_t *node)
     socklen_t socklen;
     int i;
 
-    ogs_sockopt_t option = {
-        .sctp.heartbit_interval = 5000,     /* 5 seconds */
-        .sctp.rto_initial = 3000,           /* 3 seconds */
-        .sctp.rto_min = 1000,               /* 1 seconds */
-        .sctp.rto_max = 5000,               /* 5 seconds */
-        .sctp.max_num_of_ostreams = DEFAULT_SCTP_MAX_NUM_OF_OSTREAMS,
-        .sctp.max_num_of_istreams = 65535,
-        .sctp.max_attempts = 4,
-        .sctp.max_initial_timeout = 8000,   /* 8 seconds */
-    };
-
-    ogs_sctp_set_option(&option, node);
-
     if (!(socket = usrsctp_socket(family, type, IPPROTO_SCTP,
                     NULL, NULL, 0, NULL))) {
         ogs_error("ogs_sctp_socket() failed");
         return NULL;
     }
 
-    if (node) {
-        if (node->option.nodelay) {
-            if (usrsctp_setsockopt(socket, IPPROTO_SCTP, SCTP_NODELAY,
-                        &on, sizeof(int)) < 0) {
-                ogs_error("usrsctp_setsockopt SCTP_NODELAY failed");
-                return NULL;
-            }
+    if (ogs_app()->sockopt.no_delay == true) {
+        if (usrsctp_setsockopt(socket, IPPROTO_SCTP, SCTP_NODELAY,
+                    &on, sizeof(int)) < 0) {
+            ogs_error("usrsctp_setsockopt SCTP_NODELAY failed");
+            return NULL;
         }
-        if (node->option.l_onoff) {
-            memset(&l, 0, sizeof(l));
-            l.l_onoff = node->option.l_onoff;
-            l.l_linger = node->option.l_linger;
-            if (usrsctp_setsockopt(socket, SOL_SOCKET, SO_LINGER,
-                    (const void *)&l, (socklen_t) sizeof(struct linger)) < 0) {
-                ogs_error("Could not set SO_LINGER on SCTP socket");
-                return NULL;
-            }
+    } else {
+        ogs_warn("SCTP NO_DELAY Disabled");
+    }
+
+    if (ogs_app()->sockopt.l_onoff == true) {
+        memset(&l, 0, sizeof(l));
+        l.l_onoff = 1;
+        l.l_linger = ogs_app()->sockopt.l_linger;
+        if (usrsctp_setsockopt(socket, SOL_SOCKET, SO_LINGER,
+                (const void *)&l, (socklen_t) sizeof(struct linger)) < 0) {
+            ogs_error("Could not set SO_LINGER on SCTP socket");
+            return NULL;
         }
     }
 
@@ -131,12 +119,12 @@ ogs_sock_t *ogs_sctp_socket(int family, int type, ogs_socknode_t *node)
                 initmsg.sinit_max_attempts,
                 initmsg.sinit_max_init_timeo);
 
-    ogs_assert(option.sctp.max_num_of_ostreams > 1);
+    ogs_assert(ogs_app()->sctp.max_num_of_ostreams > 1);
 
-    initmsg.sinit_num_ostreams = option.sctp.max_num_of_ostreams;
-    initmsg.sinit_max_instreams = option.sctp.max_num_of_istreams;
-    initmsg.sinit_max_attempts = option.sctp.max_attempts;
-    initmsg.sinit_max_init_timeo = option.sctp.max_initial_timeout;
+    initmsg.sinit_num_ostreams = ogs_app()->sctp.max_num_of_ostreams;
+    initmsg.sinit_max_instreams = ogs_app()->sctp.max_num_of_istreams;
+    initmsg.sinit_max_attempts = ogs_app()->sctp.max_attempts;
+    initmsg.sinit_max_init_timeo = ogs_app()->sctp.max_initial_timeout;
 
     if (usrsctp_setsockopt(socket, IPPROTO_SCTP, SCTP_INITMSG,
                             &initmsg, sizeof(initmsg)) != 0) {

@@ -842,11 +842,10 @@ amf_gnb_t *amf_gnb_add(ogs_sock_t *sock, ogs_sockaddr_t *addr)
         ogs_assert(gnb->sctp.poll.read);
     }
 
-    gnb->max_num_of_ostreams = DEFAULT_SCTP_MAX_NUM_OF_OSTREAMS;
+    gnb->max_num_of_ostreams = OGS_DEFAULT_SCTP_MAX_NUM_OF_OSTREAMS;
     gnb->ostream_id = 0;
-    if (ogs_app()->sockopt.sctp.max_num_of_ostreams) {
-        gnb->max_num_of_ostreams =
-            ogs_app()->sockopt.sctp.max_num_of_ostreams;
+    if (ogs_app()->sctp.max_num_of_ostreams) {
+        gnb->max_num_of_ostreams = ogs_app()->sctp.max_num_of_ostreams;
         ogs_info("[GNB] max_num_of_ostreams : %d", gnb->max_num_of_ostreams);
     }
 

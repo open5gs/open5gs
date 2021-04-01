@@ -242,9 +242,6 @@ nrf:
 #
 # parameter:
 #
-#  o Number of output streams per SCTP associations.
-#      sctp_streams: 30
-#
 #  o Disable use of IPv4 addresses (only IPv6)
 #      no_ipv4: true
 #
@@ -293,6 +290,27 @@ max:
 #    big:  8
 #
 pool:
+
+#
+# sockopt:
+#    no_delay : true
+#
+sockopt:
+
+#
+# sctp:
+#    heartbit_interval : 5000 (5secs)
+#    sack_delay : 200 (200ms)
+#    rto_initial : 3000 (3secs)
+#    rto_min : 1000 (1sec)
+#    rto_max : 5000 (5secs)
+#    max_num_of_ostreams : 30
+#    max_num_of_istreams : 65535
+#    max_attempts : 4
+#    max_initial_timeout : 8000(8secs)
+#    usrsctp_udp_port : 9899
+#
+sctp:
 
 #
 # time:
