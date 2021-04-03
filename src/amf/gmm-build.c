@@ -102,25 +102,21 @@ ogs_pkbuf_t *gmm_build_registration_accept(amf_ue_t *amf_ue)
             &amf_self()->served_tai[served_tai_index].list2);
 
     /* Set Allowed NSSAI */
-    if (amf_ue->allowed_nssai_present == true) {
-        ogs_assert(amf_ue->allowed_nssai.num_of_s_nssai);
+    ogs_assert(amf_ue->allowed_nssai.num_of_s_nssai);
 
-        ogs_nas_build_nssai(allowed_nssai,
-                amf_ue->allowed_nssai.s_nssai,
-                amf_ue->allowed_nssai.num_of_s_nssai);
+    ogs_nas_build_nssai(allowed_nssai,
+            amf_ue->allowed_nssai.s_nssai,
+            amf_ue->allowed_nssai.num_of_s_nssai);
 
+    registration_accept->presencemask |=
+        OGS_NAS_5GS_REGISTRATION_ACCEPT_ALLOWED_NSSAI_PRESENT;
+
+    if (amf_ue->rejected_nssai.num_of_s_nssai) {
+        ogs_nas_build_rejected_nssai(rejected_nssai,
+                amf_ue->rejected_nssai.s_nssai,
+                amf_ue->rejected_nssai.num_of_s_nssai);
         registration_accept->presencemask |=
-            OGS_NAS_5GS_REGISTRATION_ACCEPT_ALLOWED_NSSAI_PRESENT;
-
-        if (amf_ue->rejected_nssai.num_of_s_nssai) {
-            ogs_nas_build_rejected_nssai(rejected_nssai,
-                    amf_ue->rejected_nssai.s_nssai,
-                    amf_ue->rejected_nssai.num_of_s_nssai);
-            registration_accept->presencemask |=
-                OGS_NAS_5GS_REGISTRATION_ACCEPT_REJECTED_NSSAI_PRESENT;
-        }
-
-        amf_ue->allowed_nssai_present = false;
+            OGS_NAS_5GS_REGISTRATION_ACCEPT_REJECTED_NSSAI_PRESENT;
     }
 
     /* 5GS network feature support */

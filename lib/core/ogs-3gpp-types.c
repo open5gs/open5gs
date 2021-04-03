@@ -537,14 +537,6 @@ ogs_slice_data_t *ogs_slice_find_by_s_nssai(
         }
     }
 
-    /* Compare Only SST if DefaultSingleNSSAI */
-    for (i = 0; i < num_of_slice_data; i++) {
-        if (slice_data[i].default_indicator == true &&
-            s_nssai->sst == slice_data[i].s_nssai.sst) {
-            return slice_data + i;
-        }
-    }
-
     return NULL;
 }
 

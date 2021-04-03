@@ -251,10 +251,6 @@ nrf:
 #  o Prefer IPv4 instead of IPv6 for estabishing new GTP connections.
 #      prefer_ipv4: true
 #
-#  o AMF ignores the UE Requested NSSAI and creates an allowed-NSSAI
-#    based on the Default S-NSSAI in the Subscription DB.
-#      ignore_requested_nssai: true
-#
 parameter:
 
 #

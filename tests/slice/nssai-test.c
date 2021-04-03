@@ -247,6 +247,73 @@ static void test1_func(abts_case *tc, void *data)
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
+    /* Send Registration request : Uplink Data Status */
+    test_ue->registration_request_param.integrity_protected = 0;
+    test_ue->registration_request_param.guti = 1;
+    test_ue->registration_request_param.gmm_capability = 1;
+
+    test_ue->registration_request_param.requested_nssai = 1;
+    test_ue->requested_nssai.s_nssai[2].sd.v = 0x000006;
+
+    test_ue->registration_request_param.last_visited_registered_tai = 1;
+    test_ue->registration_request_param.ue_usage_setting = 1;
+    test_ue->registration_request_param.update_type = 1;
+    nasbuf = testgmm_build_registration_request(test_ue, NULL);
+    ABTS_PTR_NOTNULL(tc, nasbuf);
+
+    test_ue->registration_request_param.integrity_protected = 1;
+    test_ue->registration_request_param.guti = 1;
+    test_ue->registration_request_param.gmm_capability = 0;
+    test_ue->registration_request_param.requested_nssai = 0;
+    test_ue->registration_request_param.last_visited_registered_tai = 0;
+    test_ue->registration_request_param.ue_usage_setting = 0;
+    test_ue->registration_request_param.update_type = 0;
+    gmmbuf = testgmm_build_registration_request(test_ue, nasbuf);
+    ABTS_PTR_NOTNULL(tc, gmmbuf);
+
+    sendbuf = testngap_build_initial_ue_message(test_ue, gmmbuf, true, true);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive InitialContextSetupRequest +
+     * Registration accept */
+    recvbuf = testgnb_ngap_read(ngap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    testngap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc,
+            NGAP_ProcedureCode_id_InitialContextSetup,
+            test_ue->ngap_procedure_code);
+    ABTS_INT_EQUAL(tc, 0x0000, test_ue->pdu_session_reactivation_result);
+
+    /* Send InitialContextSetupResponse */
+    sendbuf = testngap_build_initial_context_setup_response(test_ue, false);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Send UEContextReleaseRequest */
+    sendbuf = testngap_build_ue_context_release_request(test_ue,
+            NGAP_Cause_PR_radioNetwork, NGAP_CauseRadioNetwork_user_inactivity,
+            true);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive UEContextReleaseCommand */
+    recvbuf = testgnb_ngap_read(ngap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    testngap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc,
+            NGAP_ProcedureCode_id_UEContextRelease,
+            test_ue->ngap_procedure_code);
+
+    /* Send UEContextReleaseComplete */
+    sendbuf = testngap_build_ue_context_release_complete(test_ue);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
     ogs_msleep(300);
 
     /********** Remove Subscriber in Database */

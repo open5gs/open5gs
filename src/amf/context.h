@@ -279,8 +279,6 @@ struct amf_ue_s {
         ogs_nas_s_nssai_ie_t s_nssai[OGS_MAX_NUM_OF_SLICE];
     } requested_nssai, allowed_nssai;
 
-    bool allowed_nssai_present;
-
     struct {
         int num_of_s_nssai;
         ogs_nas_rejected_s_nssai_t s_nssai[OGS_MAX_NUM_OF_SLICE];
@@ -711,6 +709,8 @@ uint8_t amf_selected_int_algorithm(amf_ue_t *amf_ue);
 uint8_t amf_selected_enc_algorithm(amf_ue_t *amf_ue);
 
 void amf_clear_subscribed_info(amf_ue_t *amf_ue);
+
+void amf_update_allowed_nssai(amf_ue_t *amf_ue);
 
 #ifdef __cplusplus
 }

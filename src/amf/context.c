@@ -2018,3 +2018,145 @@ static bool check_smf_info_nr_tai(
 
     return false;
 }
+
+void amf_update_allowed_nssai(amf_ue_t *amf_ue)
+{
+    int i;
+    ogs_assert(amf_ue);
+
+    /*
+     * TS23.501
+     *
+     * 5.15.4 UE NSSAI configuration and NSSAI storage aspects
+     * 5.15.4.1 General
+     * 5.15.4.1.1 UE Network Slice configuration
+     *
+     * S-NSSAIs that the UE provides in the Requested NSSAI which are neither
+     * in the Allowed NSSAI nor provided as a rejected S-NSSAI, shall, by the
+     * UE, not be regarded as rejected, i.e. the UE may request to register
+     * these S-NSSAIs again next time the UE sends a Requested NSSAI
+     *
+     * 5.15.5 Detailed Operation Overview
+     *
+     * 5.15.5.2 Selection of a Serving AMF supporting the Network Slices
+     * 5.15.5.2.1 Registration to a set of Network Slices
+     *
+     * AMF checks whether it can serve all the S-NSSAI(s) from
+     * the Requested NSSAI present in the Subscribed S-NSSAIs
+     * (potentially using configuration for mapping S-NSSAI values
+     * between HPLMN and Serving PLMN), or all the S-NSSAI(s) marked
+     * as default in the Subscribed S-NSSAIs in the case that
+     * no Requested NSSAI was provided or none of the S-NSSAIs
+     * in the Requested NSSAI are permitted,
+     * i.e. do not match any of the Subscribed S-NSSAIs or not available
+     * at the current UE's Tracking Area (see clause 5.15.3).
+     *
+     *
+     * TS24.501
+     *
+     * 4.6.2 Mobility management aspects
+     * 4.6.2.1 General
+     *
+     * The UE in NB-N1 mode does not include the requested NSSAI during
+     * the registration procedure if the 5GS registration type IE indicates
+     * "mobility registration updating", procedure is not initiated
+     * to change the slice(s) that the UE is currently registered to,
+     * and the UE is still in the current registration area. The AMF does not
+     * include the allowed NSSAI during a registration procedure with the 5GS
+     * registration type IE indicating "mobility registration updating" except
+     * if the allowed NSSAI has changed for the UE. The UE considers
+     * the last received allowed NSSAI as valid until the UE receives
+     * a new allowed NSSAI.
+     *
+     * 5.5.1.2.4 Initial registration accepted by the network
+     *
+     * The AMF shall include the allowed NSSAI for the current PLMN
+     * and shall include the mapped S-NSSAI(s) for the allowed NSSAI
+     * contained in the requested NSSAI from the UE if available,
+     * in the REGISTRATION ACCEPT message if the UE included
+     * the requested NSSAI in the REGISTRATION REQUEST message
+     * and the AMF allows one or more S-NSSAIs in the requested NSSAI.
+     *
+     * 8.2.7.5 Allowed NSSAI
+     *
+     * This IE shall be included:
+     * a) if:
+     *   1) one or more S-NSSAIs in the requested NSSAI of
+     *      the REGISTRATION REQUEST message are allowed by the AMF
+     *      for a network not supporting NSSAA;
+     *   2) one or more S-NSSAIs in the requested NSSAI of
+     *      the REGISTRATION REQUEST message are not subject
+     *      to network slice-specific authentication and authorization
+     *      and are allowed by the AMF; or
+     *   3) the network slice-specific authentication and authorization
+     *      has been successfully performed for one or more S-NSSAIs in
+     *      the requested NSSAI of the REGISTRATION REQUEST message; or
+     * b) if:
+     *   1) the requested NSSAI was not included in the REGISTRATION
+     *      REQUEST message or none of the requested NSSAI are allowed;
+     *   2) the network not supporting NSSAA has one or more subscribed
+     *      S-NSSAIs marked as default that are available; or
+     *   3) the network has one or more subscribed S-NSSAIs marked
+     *      as default which are not subject to network slice-specific
+     *      authentication and authorization that are available.
+     */
+
+    amf_ue->allowed_nssai.num_of_s_nssai = 0;
+    amf_ue->rejected_nssai.num_of_s_nssai = 0;
+
+    if (amf_ue->requested_nssai.num_of_s_nssai) {
+        for (i = 0; i < amf_ue->requested_nssai.num_of_s_nssai; i++) {
+            ogs_slice_data_t *slice = NULL;
+            ogs_nas_s_nssai_ie_t *requested =
+                    &amf_ue->requested_nssai.s_nssai[i];
+            ogs_nas_s_nssai_ie_t *allowed =
+                    &amf_ue->allowed_nssai.
+                        s_nssai[amf_ue->allowed_nssai.num_of_s_nssai];
+            ogs_nas_rejected_s_nssai_t *rejected =
+                    &amf_ue->rejected_nssai.
+                        s_nssai[amf_ue->rejected_nssai.num_of_s_nssai];
+            slice = ogs_slice_find_by_s_nssai(
+                    amf_ue->slice, amf_ue->num_of_slice,
+                    (ogs_s_nssai_t *)requested);
+            if (slice) {
+                allowed->sst = requested->sst;
+                allowed->sd.v = requested->sd.v;
+                allowed->mapped_hplmn_sst = requested->mapped_hplmn_sst;
+                allowed->mapped_hplmn_sd.v = requested->mapped_hplmn_sd.v;
+
+                amf_ue->allowed_nssai.num_of_s_nssai++;
+
+            } else {
+                rejected->sst = requested->sst;
+                rejected->sd.v = requested->sd.v;
+
+                if (rejected->sd.v != OGS_S_NSSAI_NO_SD_VALUE)
+                    rejected->length_of_rejected_s_nssai = 4;
+                else
+                    rejected->length_of_rejected_s_nssai = 1;
+
+                rejected->cause_value =
+                    OGS_NAS_REJECTED_S_NSSAI_NOT_AVIALABLE_IN_PLMN;
+
+                amf_ue->rejected_nssai.num_of_s_nssai++;
+            }
+        }
+    }
+
+    if (!amf_ue->allowed_nssai.num_of_s_nssai) {
+        for (i = 0; i < amf_ue->num_of_slice; i++) {
+            ogs_slice_data_t *slice = &amf_ue->slice[i];
+            ogs_nas_s_nssai_ie_t *allowed =
+                &amf_ue->allowed_nssai.s_nssai[i];
+
+            if (slice->default_indicator == true) {
+                allowed->sst = slice->s_nssai.sst;
+                allowed->sd.v = slice->s_nssai.sd.v;
+                allowed->mapped_hplmn_sst = 0;
+                allowed->mapped_hplmn_sd.v = OGS_S_NSSAI_NO_SD_VALUE;
+
+                amf_ue->allowed_nssai.num_of_s_nssai++;
+            }
+        }
+    }
+}

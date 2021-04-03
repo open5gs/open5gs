@@ -134,97 +134,9 @@ int amf_nudm_sdm_handle_provisioned(
             }
         }
 
-    /* 
-     * TS23.501
-     *
-     * 5.15.4 UE NSSAI configuration and NSSAI storage aspects
-     * 5.15.4.1 General
-     * 5.15.4.1.1 UE Network Slice configuration
-     *
-     * S-NSSAIs that the UE provides in the Requested NSSAI which are neither
-     * in the Allowed NSSAI nor provided as a rejected S-NSSAI, shall, by the
-     * UE, not be regarded as rejected, i.e. the UE may request to register
-     * these S-NSSAIs again next time the UE sends a Requested NSSAI
-     *
-     * 5.15.5 Detailed Operation Overview
-     *
-     * 5.15.5.2 Selection of a Serving AMF supporting the Network Slices
-     * 5.15.5.2.1 Registration to a set of Network Slices
-     *
-     * AMF checks whether it can serve all the S-NSSAI(s) from
-     * the Requested NSSAI present in the Subscribed S-NSSAIs
-     * (potentially using configuration for mapping S-NSSAI values
-     * between HPLMN and Serving PLMN), or all the S-NSSAI(s) marked
-     * as default in the Subscribed S-NSSAIs in the case that
-     * no Requested NSSAI was provided or none of the S-NSSAIs
-     * in the Requested NSSAI are permitted,
-     * i.e. do not match any of the Subscribed S-NSSAIs or not available
-     * at the current UE's Tracking Area (see clause 5.15.3).
-     */
-
-        amf_ue->allowed_nssai.num_of_s_nssai = 0;
-        amf_ue->rejected_nssai.num_of_s_nssai = 0;
-
-        if (ogs_app()->parameter.ignore_requested_nssai == 0 &&
-            amf_ue->requested_nssai.num_of_s_nssai) {
-            for (i = 0; i < amf_ue->requested_nssai.num_of_s_nssai; i++) {
-                ogs_slice_data_t *slice = NULL;
-                ogs_nas_s_nssai_ie_t *requested =
-                        &amf_ue->requested_nssai.s_nssai[i];
-                ogs_nas_s_nssai_ie_t *allowed =
-                        &amf_ue->allowed_nssai.
-                            s_nssai[amf_ue->allowed_nssai.num_of_s_nssai];
-                ogs_nas_rejected_s_nssai_t *rejected =
-                        &amf_ue->rejected_nssai.
-                            s_nssai[amf_ue->rejected_nssai.num_of_s_nssai];
-                slice = ogs_slice_find_by_s_nssai(
-                        amf_ue->slice, amf_ue->num_of_slice,
-                        (ogs_s_nssai_t *)requested);
-                if (slice) {
-                    allowed->sst = requested->sst;
-                    allowed->sd.v = requested->sd.v;
-                    allowed->mapped_hplmn_sst = requested->mapped_hplmn_sst;
-                    allowed->mapped_hplmn_sd.v = requested->mapped_hplmn_sd.v;
-
-                    amf_ue->allowed_nssai.num_of_s_nssai++;
-
-                } else {
-                    rejected->sst = requested->sst;
-                    rejected->sd.v = requested->sd.v;
-
-                    if (rejected->sd.v != OGS_S_NSSAI_NO_SD_VALUE)
-                        rejected->length_of_rejected_s_nssai = 4;
-                    else
-                        rejected->length_of_rejected_s_nssai = 1;
-
-                    rejected->cause_value =
-                        OGS_NAS_REJECTED_S_NSSAI_NOT_AVIALABLE_IN_PLMN;
-
-                    amf_ue->rejected_nssai.num_of_s_nssai++;
-                }
-            }
-        }
+        amf_update_allowed_nssai(amf_ue);
 
         if (!amf_ue->allowed_nssai.num_of_s_nssai) {
-            for (i = 0; i < amf_ue->num_of_slice; i++) {
-                ogs_slice_data_t *slice = &amf_ue->slice[i];
-                ogs_nas_s_nssai_ie_t *allowed =
-                    &amf_ue->allowed_nssai.s_nssai[i];
-
-                if (slice->default_indicator == true) {
-                    allowed->sst = slice->s_nssai.sst;
-                    allowed->sd.v = slice->s_nssai.sd.v;
-                    allowed->mapped_hplmn_sst = 0;
-                    allowed->mapped_hplmn_sd.v = OGS_S_NSSAI_NO_SD_VALUE;
-
-                    amf_ue->allowed_nssai.num_of_s_nssai++;
-                }
-            }
-        }
-
-        if (amf_ue->allowed_nssai.num_of_s_nssai) {
-            amf_ue->allowed_nssai_present = true;
-        } else {
             ogs_error("No Allowed-NSSAI");
             ogs_error("    Number of Subscribed S-NSSAI [%d]",
                     amf_ue->num_of_slice);
