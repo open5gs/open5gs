@@ -69,7 +69,10 @@ const fields = {
 };
 
 function Label(props) {
-  const { label, required, id } = props;
+//  modified by acetcom
+//  const { label, required, id } = props;
+  const { label, id } = props;
+  const required = 0;
   if (!label) {
     // See #312: Ensure compatibility with old versions of React.
     return <div />;

@@ -22,39 +22,11 @@
 
 int pcrf_fd_init(void)
 {
-    int rv, ret;
-    struct dict_object *gx_app, *rx_app, *vnd;
-    struct dict_vendor_data vnd_data;
-    struct dict_application_data gx_app_data, rx_app_data;
+    int rv;
 
-    ret = ogs_diam_init(FD_MODE_CLIENT|FD_MODE_SERVER,
+    rv = ogs_diam_init(FD_MODE_CLIENT|FD_MODE_SERVER,
                 pcrf_self()->diam_conf_path, pcrf_self()->diam_config);
-    ogs_assert(ret == 0);
-
-    vnd_data.vendor_id = 10415;
-    vnd_data.vendor_name = (char *) "3GPP";
-
-    ret = fd_dict_new(fd_g_config->cnf_dict,
-            DICT_VENDOR, &vnd_data, NULL, &vnd);
-    ogs_assert(ret == 0);
-
-    gx_app_data.application_id = 16777238;
-    gx_app_data.application_name = (char *) "Gx";
-
-    rx_app_data.application_id = 16777236;
-    rx_app_data.application_name = (char *) "Rx";
-
-    ret = fd_dict_new(fd_g_config->cnf_dict, DICT_APPLICATION,
-            &gx_app_data, NULL, &gx_app);
-    ogs_assert(ret == 0);
-    ret = fd_dict_new(fd_g_config->cnf_dict, DICT_APPLICATION,
-            &rx_app_data, NULL, &rx_app);
-    ogs_assert(ret == 0);
-
-    ret = fd_disp_app_support(gx_app, vnd, 1, 0);
-    ogs_assert(ret == 0);
-    ret = fd_disp_app_support(rx_app, vnd, 1, 0);
-    ogs_assert(ret == 0);
+    ogs_assert(rv == 0);
 
     rv = pcrf_gx_init();
     ogs_assert(rv == OGS_OK);

@@ -15,8 +15,26 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-subdir('common')
-subdir('gx')
-subdir('rx')
-subdir('s6a')
-subdir('cx')
+libdiameter_cx_sources = files('''
+    ogs-diameter-cx.h
+    
+    message.h
+
+    dict.c
+    message.c
+'''.split())
+
+libdiameter_cx_inc = include_directories('.')
+
+libdiameter_cx = library('ogsdiameter-cx',
+    sources : libdiameter_cx_sources,
+    version : libogslib_version,
+    c_args : libdiameter_common_cc_flags,
+    include_directories : libdiameter_cx_inc,
+    dependencies : libdiameter_common_dep,
+    install : true)
+
+libdiameter_cx_dep = declare_dependency(
+    link_with : libdiameter_cx,
+    include_directories : libdiameter_cx_inc,
+    dependencies : libdiameter_common_dep)

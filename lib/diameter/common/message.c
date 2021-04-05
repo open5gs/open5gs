@@ -22,8 +22,6 @@
 #define CHECK_dict_search( _type, _criteria, _what, _result )	\
 	CHECK_FCT(  fd_dict_search( fd_g_config->cnf_dict, (_type), (_criteria), (_what), (_result), ENOENT) );
 
-#define OGS_3GPP_VENDOR_ID 10415
-
 struct dict_object *ogs_diam_session_id = NULL;
 struct dict_object *ogs_diam_origin_host = NULL;
 struct dict_object *ogs_diam_origin_realm = NULL;

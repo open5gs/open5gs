@@ -11,6 +11,8 @@ const Profile = new Schema({
 
   title: { $type: String, required: true },
 
+  msisdn: [ String ],
+
   security: {
     k: String,
     op: String,

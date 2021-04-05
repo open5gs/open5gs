@@ -40,6 +40,9 @@ extern "C" {
 
 #define MAX_NUM_OF_SERVED_GUAMI     8
 
+#define TEST_MSISDN             "491725670014"
+#define TEST_ADDITIONAL_MSISDN  "491725670015"
+
 typedef struct test_context_s {
     uint16_t        ngap_port;      /* Default NGAP Port */
     ogs_list_t      ngap_list;      /* AMF NGAP IPv4 Server List */

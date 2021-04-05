@@ -289,7 +289,7 @@ int pcrf_db_qos_data(
     return rv;
 }
 
-int pcrf_sess_set_ipv4(const void *key, uint8_t *sid)
+void pcrf_sess_set_ipv4(const void *key, uint8_t *sid)
 {
     ogs_assert(self.ip_hash);
 
@@ -298,10 +298,8 @@ int pcrf_sess_set_ipv4(const void *key, uint8_t *sid)
     ogs_hash_set(self.ip_hash, key, OGS_IPV4_LEN, sid);
 
     ogs_thread_mutex_unlock(&self.hash_lock);
-
-    return OGS_OK;
 }
-int pcrf_sess_set_ipv6(const void *key, uint8_t *sid)
+void pcrf_sess_set_ipv6(const void *key, uint8_t *sid)
 {
     ogs_assert(self.ip_hash);
 
@@ -310,8 +308,6 @@ int pcrf_sess_set_ipv6(const void *key, uint8_t *sid)
     ogs_hash_set(self.ip_hash, key, OGS_IPV6_DEFAULT_PREFIX_LEN >> 3, sid);
 
     ogs_thread_mutex_unlock(&self.hash_lock);
-
-    return OGS_OK;
 }
 
 uint8_t *pcrf_sess_find_by_ipv4(const void *key)

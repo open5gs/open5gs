@@ -167,6 +167,8 @@ hss:
       connect:
         - identity: mme.localdomain
           addr: 127.0.0.2
+        - identity: ims.localdomain
+          addr: 127.0.0.1
 pcrf:
     freeDiameter:
       identity: pcrf.localdomain
@@ -184,7 +186,7 @@ pcrf:
       connect:
         - identity: smf.localdomain
           addr: 127.0.0.4
-        - identity: pcscf.localdomain
+        - identity: ims.localdomain
           addr: 127.0.0.1
 
 #nrf:

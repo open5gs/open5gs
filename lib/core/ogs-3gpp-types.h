@@ -604,7 +604,7 @@ typedef struct ogs_subscription_data_s {
     int num_of_slice;
     ogs_slice_data_t slice[OGS_MAX_NUM_OF_SLICE];
 
-#define OGS_MAX_NUM_OF_MSISDN                                   4
+#define OGS_MAX_NUM_OF_MSISDN                                   2
     int num_of_msisdn;
     struct {
         uint8_t buf[OGS_MAX_MSISDN_LEN];

@@ -9,10 +9,28 @@ const schema = {
   "type": "object",
   "properties": {
     "title": {
-      "type": "string", 
+      "type": "string",
       "title": "Title*",
       "required": true,
       "maxLength": 24
+    },
+    "msisdn": {
+      "type": "array",
+      "title": "",
+      "maxItems": 2,
+      "messages": {
+        "maxItems": "2 MSISDN are supported"
+      },
+      "items": {
+        "type": "string",
+        "title": "MSISDN",
+        "maxLength": 15,
+        "required": true,
+        "pattern": "^\\d+$",
+        "messages": {
+          "pattern": "Only digits are allowed"
+        }
+      }
     },
     "security": {
       "title": "",
@@ -440,7 +458,11 @@ const uiSchema = {
   "title" : {
     classNames: "col-xs-12",
   },
+  "msisdn" : {
+    classNames: "col-xs-7",
+  },
   "security" : {
+    classNames: "col-xs-12",
     "k" : {
       classNames: "col-xs-7",
     },
@@ -455,6 +477,7 @@ const uiSchema = {
     },
   },
   "ambr" : {
+    classNames: "col-xs-12",
     "downlink": {
       classNames: "col-xs-6",
       "value": {
@@ -475,6 +498,7 @@ const uiSchema = {
     }
   },
   "slice": {
+    classNames: "col-xs-12",
     "items": {
       "sst": {
         classNames: "col-xs-3",
@@ -621,12 +645,12 @@ const uiSchema = {
 
 class Edit extends Component {
   static propTypes = {
-    visible: PropTypes.bool, 
-    action: PropTypes.string, 
+    visible: PropTypes.bool,
+    action: PropTypes.string,
     formData: PropTypes.object,
     isLoading: PropTypes.bool,
-    validate: PropTypes.func, 
-    onHide: PropTypes.func, 
+    validate: PropTypes.func,
+    onHide: PropTypes.func,
     onSubmit: PropTypes.func,
     onError: PropTypes.func
   }

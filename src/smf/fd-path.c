@@ -1056,9 +1056,6 @@ int smf_fd_init(void)
 {
     int ret;
 	struct disp_when data;
-    struct dict_object *gx_app, *vnd;
-    struct dict_vendor_data vnd_data;
-    struct dict_application_data gx_app_data;
 
     if (smf_self()->diam_conf_path == NULL &&
         (smf_self()->diam_config->cnf_diamid == NULL ||
@@ -1073,23 +1070,6 @@ int smf_fd_init(void)
 
     ret = ogs_diam_init(FD_MODE_CLIENT|FD_MODE_SERVER,
                 smf_self()->diam_conf_path, smf_self()->diam_config);
-    ogs_assert(ret == 0);
-
-    vnd_data.vendor_id = 10415;
-    vnd_data.vendor_name = (char *) "3GPP";
-
-    ret = fd_dict_new(fd_g_config->cnf_dict,
-            DICT_VENDOR, &vnd_data, NULL, &vnd);
-    ogs_assert(ret == 0);
-
-    gx_app_data.application_id = 16777238;
-    gx_app_data.application_name = (char *) "Gx";
-
-    ret = fd_dict_new(fd_g_config->cnf_dict, DICT_APPLICATION,
-            &gx_app_data, NULL, &gx_app);
-    ogs_assert(ret == 0);
-
-    ret = fd_disp_app_support(gx_app, vnd, 1, 0);
     ogs_assert(ret == 0);
 
 	/* Install objects definitions for this application */
@@ -1114,6 +1094,7 @@ int smf_fd_init(void)
 
 	/* Advertise the support for the application in the peer */
 	ret = fd_disp_app_support(ogs_diam_gx_application, ogs_diam_vendor, 1, 0);
+    ogs_assert(ret == 0);
 
 	return OGS_OK;
 }

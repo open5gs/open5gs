@@ -126,6 +126,9 @@ typedef struct ogs_app_context_s {
         uint64_t gtp_node;
         uint64_t pfcp_xact;
         uint64_t pfcp_node;
+
+        uint64_t impi;
+        uint64_t impu;
     } pool;
 
     struct {

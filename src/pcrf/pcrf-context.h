@@ -41,10 +41,10 @@ typedef struct pcrf_context_s {
     const char          *diam_conf_path;  /* PCRF Diameter conf path */
     ogs_diam_config_t   *diam_config;     /* PCRF Diameter config */
 
-    ogs_thread_mutex_t db_lock;
+    ogs_thread_mutex_t  db_lock;
 
-    ogs_hash_t      *ip_hash; /* hash table for Gx Frame IPv4/IPv6 */
-    ogs_thread_mutex_t hash_lock;
+    ogs_hash_t          *ip_hash; /* hash table for Gx Frame IPv4/IPv6 */
+    ogs_thread_mutex_t  hash_lock;
 } pcrf_context_t;
 
 void pcrf_context_init(void);
@@ -56,8 +56,8 @@ int pcrf_context_parse_config(void);
 int pcrf_db_qos_data(char *imsi_bcd, char *apn,
         ogs_session_data_t *session_data);
 
-int pcrf_sess_set_ipv4(const void *key, uint8_t *sid);
-int pcrf_sess_set_ipv6(const void *key, uint8_t *sid);
+void pcrf_sess_set_ipv4(const void *key, uint8_t *sid);
+void pcrf_sess_set_ipv6(const void *key, uint8_t *sid);
 uint8_t *pcrf_sess_find_by_ipv4(const void *key);
 uint8_t *pcrf_sess_find_by_ipv6(const void *key);
 

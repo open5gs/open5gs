@@ -17,31 +17,25 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "ogs-crypt.h"
+#ifndef OGS_DIAMETER_CX_H
+#define OGS_DIAMETER_CX_H
 
-#include "hss-context.h"
-#include "hss-fd-path.h"
+#include "ogs-diameter-common.h"
 
-int hss_fd_init(void)
-{
-    int rv;
+#define OGS_DIAMETER_INSIDE
 
-    rv = ogs_diam_init(FD_MODE_SERVER,
-                hss_self()->diam_conf_path, hss_self()->diam_config);
-    ogs_assert(rv == 0);
+#include "diameter/cx/message.h"
 
-    rv = hss_s6a_init();
-    ogs_assert(rv == OGS_OK);
-    rv = hss_cx_init();
-    ogs_assert(rv == OGS_OK);
+#undef OGS_DIAMETER_INSIDE
 
-	return OGS_OK;
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/* Nothing */
+
+#ifdef __cplusplus
 }
+#endif
 
-void hss_fd_final(void)
-{
-    hss_s6a_final();
-    hss_cx_final();
-
-    ogs_diam_final();
-}
+#endif /* OGS_DIAMETER_CX_H */

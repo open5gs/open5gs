@@ -8,6 +8,7 @@ import EditIcon from 'react-icons/lib/md/edit';
 import DeleteIcon from 'react-icons/lib/md/delete';
 import CloseIcon from 'react-icons/lib/md/close';
 
+import PhoneIcon from 'react-icons/lib/md/phone';
 import SecurityIcon from 'react-icons/lib/md/security';
 import PdnIcon from 'react-icons/lib/md/cast';
 import KeyboardControlIcon from 'react-icons/lib/md/keyboard-control';
@@ -161,6 +162,7 @@ const Pdn = styled.div`
 const View = ({ visible, disableOnClickOutside, profile, onEdit, onDelete, onHide }) => {
   const _id = (profile || {})._id;
   const title = (profile || {}).title;
+  const msisdn_list = ((profile || {}).msisdn || []);
   const security = ((profile || {}).security || {});
   const ambr = ((profile || {}).ambr || {});
   const slice_list = ((profile || {}).slice || []);
@@ -191,6 +193,21 @@ const View = ({ visible, disableOnClickOutside, profile, onEdit, onDelete, onHid
               <div className="header">
                 Profile Configuration
               </div>
+              {msisdn_list.length !== 0 &&
+                <div className="body">
+                  <div className="left">
+                    <PhoneIcon/>
+                  </div>
+                  <div className="right">
+                    {msisdn_list.map((msisdn, index) =>
+                      <div key={index} className="data">
+                          {msisdn}
+                          <span style={{color:oc.gray[5]}}><KeyboardControlIcon/>MSISDN</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              }
               <div className="body">
                 <div className="left">
                   <SecurityIcon/>

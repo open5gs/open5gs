@@ -97,6 +97,10 @@ static void recalculate_pool_size(void)
 
 #define MAX_CSMAP_POOL          128
     self.pool.csmap = MAX_CSMAP_POOL;   /* Num of TAI-LAI Mapping Table */
+
+#define MAX_NUM_OF_IMPU         8
+    self.pool.impi = self.max.ue;
+    self.pool.impu = self.pool.impi * MAX_NUM_OF_IMPU;
 }
 
 static void regenerate_all_timer_duration(void)

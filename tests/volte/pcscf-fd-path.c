@@ -58,7 +58,7 @@ static void state_cleanup(struct sess_state *sess_data, os0_t sid, void *opaque)
     ogs_free(sess_data);
 }
 
-static int pcscf_rx_fb_cb(struct msg **msg, struct avp *avp, 
+static int pcscf_rx_fb_cb(struct msg **msg, struct avp *avp,
         struct session *sess, void *opaque, enum disp_action *act)
 {
 	/* This CB should never be called */
@@ -154,6 +154,16 @@ void pcscf_rx_send_aar_audio(uint8_t **rx_sid,
 
     /* Set Origin-Host & Origin-Realm */
     ret = fd_msg_add_origin(req, 0);
+    ogs_assert(ret == 0);
+
+    /* Set the Destination-Host AVP */
+    ret = fd_msg_avp_new(ogs_diam_destination_host, 0, &avp);
+    ogs_assert(ret == 0);
+    val.os.data = TEST_PCRF_IDENTITY;
+    val.os.len  = strlen(TEST_PCRF_IDENTITY);
+    ret = fd_msg_avp_setvalue(avp, &val);
+    ogs_assert(ret == 0);
+    ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
     ogs_assert(ret == 0);
 
     /* Set the Destination-Realm AVP */
@@ -641,6 +651,16 @@ void pcscf_rx_send_aar_video(uint8_t **rx_sid, test_sess_t *sess, int id_type)
 
     /* Set Origin-Host & Origin-Realm */
     ret = fd_msg_add_origin(req, 0);
+    ogs_assert(ret == 0);
+
+    /* Set the Destination-Host AVP */
+    ret = fd_msg_avp_new(ogs_diam_destination_host, 0, &avp);
+    ogs_assert(ret == 0);
+    val.os.data = TEST_PCRF_IDENTITY;
+    val.os.len  = strlen(TEST_PCRF_IDENTITY);
+    ret = fd_msg_avp_setvalue(avp, &val);
+    ogs_assert(ret == 0);
+    ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
     ogs_assert(ret == 0);
 
     /* Set the Destination-Realm AVP */
@@ -1311,6 +1331,16 @@ void pcscf_rx_send_aar_ctrl(uint8_t **rx_sid, test_sess_t *sess, int id_type)
     ret = fd_msg_add_origin(req, 0);
     ogs_assert(ret == 0);
 
+    /* Set the Destination-Host AVP */
+    ret = fd_msg_avp_new(ogs_diam_destination_host, 0, &avp);
+    ogs_assert(ret == 0);
+    val.os.data = TEST_PCRF_IDENTITY;
+    val.os.len  = strlen(TEST_PCRF_IDENTITY);
+    ret = fd_msg_avp_setvalue(avp, &val);
+    ogs_assert(ret == 0);
+    ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
+    ogs_assert(ret == 0);
+
     /* Set the Destination-Realm AVP */
     ret = fd_msg_avp_new(ogs_diam_destination_realm, 0, &avp);
     ogs_assert(ret == 0);
@@ -1881,6 +1911,16 @@ void pcscf_rx_send_str(uint8_t *rx_sid)
     ret = fd_msg_add_origin(req, 0);
     ogs_assert(ret == 0);
     
+    /* Set the Destination-Host AVP */
+    ret = fd_msg_avp_new(ogs_diam_destination_host, 0, &avp);
+    ogs_assert(ret == 0);
+    val.os.data = TEST_PCRF_IDENTITY;
+    val.os.len  = strlen(TEST_PCRF_IDENTITY);
+    ret = fd_msg_avp_setvalue(avp, &val);
+    ogs_assert(ret == 0);
+    ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
+    ogs_assert(ret == 0);
+
     /* Set the Destination-Realm AVP */
     ret = fd_msg_avp_new(ogs_diam_destination_realm, 0, &avp);
     ogs_assert(ret == 0);
@@ -2063,7 +2103,7 @@ void pcscf_diam_config(void)
 {
     memset(&diam_config, 0, sizeof(ogs_diam_config_t));
 
-    diam_config.cnf_diamid = "pcscf.localdomain";
+    diam_config.cnf_diamid = "ims.localdomain";
     diam_config.cnf_diamrlm = "localdomain";
     diam_config.cnf_port = DIAMETER_PORT;
     diam_config.cnf_port_tls = DIAMETER_SECURE_PORT;
@@ -2093,7 +2133,10 @@ void pcscf_diam_config(void)
         FD_EXT_DIR OGS_DIR_SEPARATOR_S "dict_dcca_3gpp.fdx";
     diam_config.num_of_ext++;
 
-    diam_config.conn[diam_config.num_of_conn].identity = "pcrf.localdomain";
+    diam_config.conn[diam_config.num_of_conn].identity = TEST_HSS_IDENTITY;
+    diam_config.conn[diam_config.num_of_conn].addr = "127.0.0.8";
+    diam_config.num_of_conn++;
+    diam_config.conn[diam_config.num_of_conn].identity = TEST_PCRF_IDENTITY;
     diam_config.conn[diam_config.num_of_conn].addr = "127.0.0.9";
     diam_config.num_of_conn++;
 }
@@ -2107,6 +2150,8 @@ int pcscf_fd_init(void)
 
     ret = ogs_diam_init(FD_MODE_CLIENT, NULL, &diam_config);
     ogs_assert(ret == 0);
+
+    test_cx_init();
 
 	/* Install objects definitions for this application */
 	ret = ogs_diam_rx_init();
@@ -2147,6 +2192,8 @@ void pcscf_fd_final(void)
 		(void) fd_disp_unregister(&hdl_rx_fb, NULL);
 	if (hdl_rx_asr)
 		(void) fd_disp_unregister(&hdl_rx_asr, NULL);
+
+    test_cx_final();
 
     ogs_diam_final();
 }

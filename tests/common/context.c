@@ -1535,6 +1535,10 @@ bson_t *test_db_new_ims(test_ue_t *test_ue)
 
     doc = BCON_NEW(
             "imsi", BCON_UTF8(test_ue->imsi),
+            "msisdn", "[",
+                BCON_UTF8(TEST_MSISDN),
+                BCON_UTF8(TEST_ADDITIONAL_MSISDN),
+            "]",
             "ambr", "{",
                 "downlink", "{",
                     "value", BCON_INT32(1),

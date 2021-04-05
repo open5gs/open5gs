@@ -28,16 +28,18 @@
 extern "C" {
 #endif
 
-#define OGS_DIAM_AVP_CODE_FRAME_IP_ADDRESS                    8
-#define OGS_DIAM_AVP_CODE_FRAME_IPV6_PREFIX                   97 
+#define OGS_3GPP_VENDOR_ID 10415
+
+#define OGS_DIAM_AVP_CODE_FRAME_IP_ADDRESS          8
+#define OGS_DIAM_AVP_CODE_FRAME_IPV6_PREFIX         97
 
 /* Result-Code AVP */
-#define OGS_DIAM_UNKNOWN_PEER                        3010
-#define OGS_DIAM_AVP_UNSUPPORTED                     5001
-#define OGS_DIAM_UNKNOWN_SESSION_ID                  5002
-#define OGS_DIAM_AUTHORIZATION_REJECTED              5003
-#define OGS_DIAM_MISSING_AVP                         5004
-#define OGS_DIAM_INVALID_AVP_VALUE                   5005
+#define OGS_DIAM_UNKNOWN_PEER                       3010
+#define OGS_DIAM_AVP_UNSUPPORTED                    5001
+#define OGS_DIAM_UNKNOWN_SESSION_ID                 5002
+#define OGS_DIAM_AUTHORIZATION_REJECTED             5003
+#define OGS_DIAM_MISSING_AVP                        5004
+#define OGS_DIAM_INVALID_AVP_VALUE                  5005
 
 extern struct dict_object *ogs_diam_session_id;
 extern struct dict_object *ogs_diam_origin_host;

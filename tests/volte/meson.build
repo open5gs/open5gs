@@ -18,12 +18,14 @@
 testapp_volte_sources = files('''
     pcscf-fd-path.h
     pcscf-fd-path.c
+    diameter-cx-path.c
 
     abts-main.c
     bearer-test.c
     session-test.c
     rx-test.c
     video-test.c
+    cx-test.c
 '''.split())
 
 testapp_volte_exe = executable('volte',
