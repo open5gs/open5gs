@@ -244,6 +244,7 @@ int ogs_strftimezone(char *str, size_t size, int tm_gmtoff)
 {
     uint8_t off_sign;
     int off;
+    int len;
 
     ogs_assert(str);
     ogs_assert(size);
@@ -255,8 +256,17 @@ int ogs_strftimezone(char *str, size_t size, int tm_gmtoff)
         off = -off;
     }
 
-    return ogs_snprintf(str, size, "%c%02d:%02d",
+    len = ogs_snprintf(str, size, "%c%02d:%02d",
             off_sign, off / 3600, off % 3600);
+
+    if (len != 6) {
+        ogs_warn("Unknown tm_gmtoff[%d:%d]", tm_gmtoff, off);
+
+        len = ogs_snprintf(str, size, "%c%02d:%02d",
+                off_sign, (off / 3600) % 100, (off % 3600) % 100);
+    }
+
+    return len;
 }
 
 #define USE_MILLISECONDS_IN_RFC3339 0

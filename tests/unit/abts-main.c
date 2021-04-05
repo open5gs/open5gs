@@ -20,6 +20,12 @@
 #include "ogs-core.h"
 #include "core/abts.h"
 
+extern int __ogs_s1ap_domain;
+extern int __ogs_ngap_domain;
+extern int __ogs_nas_domain;
+extern int __ogs_gtp_domain;
+extern int __ogs_sbi_domain;
+
 abts_suite *test_s1ap_message(abts_suite *suite);
 abts_suite *test_nas_message(abts_suite *suite);
 abts_suite *test_gtp_message(abts_suite *suite);
@@ -86,6 +92,12 @@ int main(int argc, const char *const argv[])
 
     ogs_pkbuf_default_init(&config);
     ogs_pkbuf_default_create(&config);
+
+    ogs_log_install_domain(&__ogs_s1ap_domain, "s1ap", OGS_LOG_ERROR);
+    ogs_log_install_domain(&__ogs_ngap_domain, "ngap", OGS_LOG_ERROR);
+    ogs_log_install_domain(&__ogs_nas_domain, "nas", OGS_LOG_ERROR);
+    ogs_log_install_domain(&__ogs_gtp_domain, "gtp", OGS_LOG_ERROR);
+    ogs_log_install_domain(&__ogs_sbi_domain, "sbi", OGS_LOG_ERROR);
 
     atexit(terminate);
 
