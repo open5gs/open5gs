@@ -237,8 +237,7 @@ exec_cmd_nobail "chown -R open5gs:open5gs /usr/lib/node_modules/${PACKAGE}"
 exec_cmd "cat << EOF > /lib/systemd/system/open5gs-webui.service
 [Unit]
 Description=Open5GS WebUI
-BindTo=mongodb.service
-After=networking.service mongodb.service
+Wants=mongodb.service mongod.service
 
 [Service]
 Type=simple

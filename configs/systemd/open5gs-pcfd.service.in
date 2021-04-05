@@ -1,6 +1,6 @@
 [Unit]
 Description=Open5GS PCF Daemon
-After=networking.service
+Wants=mongodb.service mongod.service
 
 [Service]
 Type=simple
