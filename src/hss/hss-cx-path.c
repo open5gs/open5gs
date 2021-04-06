@@ -313,8 +313,10 @@ static int hss_ogs_diam_cx_mar_cb( struct msg **msg, struct avp *avp,
 
     /* IMS_AKA is only supported */
     if (authentication_scheme &&
-        strcmp(authentication_scheme, OGS_DIAM_CX_AUTH_SCHEME_IMS_AKA) != 0 &&
-        strcmp(authentication_scheme, OGS_DIAM_CX_AUTH_SCHEME_UNKNOWN) != 0) {
+        ogs_strcasecmp(authentication_scheme,
+            OGS_DIAM_CX_AUTH_SCHEME_IMS_AKA) != 0 &&
+        ogs_strcasecmp(authentication_scheme,
+            OGS_DIAM_CX_AUTH_SCHEME_UNKNOWN) != 0) {
         ogs_error("Authentication-Scheme[%s] is not supported",
                     authentication_scheme);
         result_code = OGS_DIAM_CX_ERROR_AUTH_SCHEME_NOT_SUPPORTED;

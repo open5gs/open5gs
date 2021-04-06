@@ -233,12 +233,18 @@ uint64_t ogs_uint64_from_string(char *str)
 
 void ogs_extract_digit_from_string(char *digit, char *string)
 {
+    bool extracting = false;
+
     ogs_assert(string);
     ogs_assert(digit);
 
-    while(*string) {
-        if (*string >= '0' && *string <= '9')
+    while (*string) {
+        if (*string >= '0' && *string <= '9') {
             *digit++ = *string;
+            extracting = true;
+        } else if (extracting == true) {
+            break;
+        }
         string++;
     }
 
