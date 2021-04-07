@@ -17,8 +17,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef PCSCF_FD_PATH_H
-#define PCSCF_FD_PATH_H
+#ifndef TEST_FD_PATH_H
+#define TEST_FD_PATH_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -29,17 +29,20 @@ extern "C" {
 #define TEST_HSS_IDENTITY "hss.localdomain"
 #define TEST_PCRF_IDENTITY "pcrf.localdomain"
 
-int pcscf_fd_init(void);
-void pcscf_fd_final(void);
+int test_fd_init(void);
+void test_fd_final(void);
+
+int test_rx_init(void);
+void test_rx_final(void);
 
 int test_cx_init(void);
 void test_cx_final(void);
 
-void pcscf_rx_send_aar_audio(uint8_t **rx_sid,
+void test_rx_send_aar_audio(uint8_t **rx_sid,
         test_sess_t *sess, int id_type, int qos_type, int flow_type);
-void pcscf_rx_send_aar_video(uint8_t **rx_sid, test_sess_t *sess, int id_type);
-void pcscf_rx_send_aar_ctrl(uint8_t **rx_sid, test_sess_t *sess, int id_type);
-void pcscf_rx_send_str(uint8_t *rx_sid);
+void test_rx_send_aar_video(uint8_t **rx_sid, test_sess_t *sess, int id_type);
+void test_rx_send_aar_ctrl(uint8_t **rx_sid, test_sess_t *sess, int id_type);
+void test_rx_send_str(uint8_t *rx_sid);
 
 void test_cx_send_uar(test_ue_t *test_ue, int id_type);
 
@@ -47,5 +50,5 @@ void test_cx_send_uar(test_ue_t *test_ue, int id_type);
 }
 #endif
 
-#endif /* PCSCF_FD_PATH_H */
+#endif /* TEST_FD_PATH_H */
 

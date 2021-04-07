@@ -21,9 +21,7 @@
 #include "ogs-diameter-rx.h"
 
 #include "test-common.h"
-#include "pcscf-fd-path.h"
-
-#define MAX_NUM_SESSION_STATE 32
+#include "test-fd-path.h"
 
 static struct session_handler *pcscf_rx_reg = NULL;
 static struct disp_hdl *hdl_rx_fb = NULL; 
@@ -67,7 +65,7 @@ static int pcscf_rx_fb_cb(struct msg **msg, struct avp *avp,
 	return ENOTSUP;
 }
 
-void pcscf_rx_send_aar_audio(uint8_t **rx_sid,
+void test_rx_send_aar_audio(uint8_t **rx_sid,
         test_sess_t *sess, int id_type, int qos_type, int flow_type)
 {
     int rv;
@@ -565,7 +563,7 @@ void pcscf_rx_send_aar_audio(uint8_t **rx_sid,
     ogs_free(sip_uri);
 }
 
-void pcscf_rx_send_aar_video(uint8_t **rx_sid, test_sess_t *sess, int id_type)
+void test_rx_send_aar_video(uint8_t **rx_sid, test_sess_t *sess, int id_type)
 {
     int rv;
     int ret;
@@ -1243,7 +1241,7 @@ void pcscf_rx_send_aar_video(uint8_t **rx_sid, test_sess_t *sess, int id_type)
     ogs_free(sip_uri);
 }
 
-void pcscf_rx_send_aar_ctrl(uint8_t **rx_sid, test_sess_t *sess, int id_type)
+void test_rx_send_aar_ctrl(uint8_t **rx_sid, test_sess_t *sess, int id_type)
 {
     int rv;
     int ret;
@@ -1860,12 +1858,12 @@ static int pcscf_rx_asr_cb( struct msg **msg, struct avp *avp,
 	ogs_diam_logger_self()->stats.nb_echoed++;
 	ogs_assert(pthread_mutex_unlock(&ogs_diam_logger_self()->stats_lock) == 0);
 
-    pcscf_rx_send_str(sid);
+    test_rx_send_str(sid);
 
     return 0;
 }
 
-void pcscf_rx_send_str(uint8_t *rx_sid)
+void test_rx_send_str(uint8_t *rx_sid)
 {
     int rv;
     int ret;
@@ -2099,57 +2097,10 @@ out:
     return;
 }
 
-void pcscf_diam_config(void)
-{
-    memset(&diam_config, 0, sizeof(ogs_diam_config_t));
-
-    diam_config.cnf_diamid = "ims.localdomain";
-    diam_config.cnf_diamrlm = "localdomain";
-    diam_config.cnf_port = DIAMETER_PORT;
-    diam_config.cnf_port_tls = DIAMETER_SECURE_PORT;
-    diam_config.cnf_flags.no_sctp = 1;
-    diam_config.cnf_addr = "127.0.0.1";
-
-    diam_config.ext[diam_config.num_of_ext].module =
-        FD_EXT_DIR OGS_DIR_SEPARATOR_S "dbg_msg_dumps.fdx";
-    diam_config.ext[diam_config.num_of_ext].conf = "0x8888";
-    diam_config.num_of_ext++;
-    diam_config.ext[diam_config.num_of_ext].module =
-        FD_EXT_DIR OGS_DIR_SEPARATOR_S "dict_rfc5777.fdx";
-    diam_config.num_of_ext++;
-    diam_config.ext[diam_config.num_of_ext].module =
-        FD_EXT_DIR OGS_DIR_SEPARATOR_S "dict_mip6i.fdx";
-    diam_config.num_of_ext++;
-    diam_config.ext[diam_config.num_of_ext].module =
-        FD_EXT_DIR OGS_DIR_SEPARATOR_S "dict_nasreq.fdx";
-    diam_config.num_of_ext++;
-    diam_config.ext[diam_config.num_of_ext].module =
-        FD_EXT_DIR OGS_DIR_SEPARATOR_S "dict_nas_mipv6.fdx";
-    diam_config.num_of_ext++;
-    diam_config.ext[diam_config.num_of_ext].module =
-        FD_EXT_DIR OGS_DIR_SEPARATOR_S "dict_dcca.fdx";
-    diam_config.num_of_ext++;
-    diam_config.ext[diam_config.num_of_ext].module =
-        FD_EXT_DIR OGS_DIR_SEPARATOR_S "dict_dcca_3gpp.fdx";
-    diam_config.num_of_ext++;
-
-    diam_config.conn[diam_config.num_of_conn].identity = TEST_HSS_IDENTITY;
-    diam_config.conn[diam_config.num_of_conn].addr = "127.0.0.8";
-    diam_config.num_of_conn++;
-    diam_config.conn[diam_config.num_of_conn].identity = TEST_PCRF_IDENTITY;
-    diam_config.conn[diam_config.num_of_conn].addr = "127.0.0.9";
-    diam_config.num_of_conn++;
-}
-
-int pcscf_fd_init(void)
+int test_rx_init(void)
 {
     int ret;
 	struct disp_when data;
-
-    pcscf_diam_config();
-
-    ret = ogs_diam_init(FD_MODE_CLIENT, NULL, &diam_config);
-    ogs_assert(ret == 0);
 
     test_cx_init();
 
@@ -2182,9 +2133,10 @@ int pcscf_fd_init(void)
 	return 0;
 }
 
-void pcscf_fd_final(void)
+void test_rx_final(void)
 {
     int ret;
+
 	ret = fd_sess_handler_destroy(&pcscf_rx_reg, NULL);
     ogs_assert(ret == 0);
 
@@ -2192,8 +2144,4 @@ void pcscf_fd_final(void)
 		(void) fd_disp_unregister(&hdl_rx_fb, NULL);
 	if (hdl_rx_asr)
 		(void) fd_disp_unregister(&hdl_rx_asr, NULL);
-
-    test_cx_final();
-
-    ogs_diam_final();
 }

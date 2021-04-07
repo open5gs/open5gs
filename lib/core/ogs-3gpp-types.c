@@ -558,6 +558,8 @@ void ogs_subscription_data_free(ogs_subscription_data_t *subscription_data)
     }
 
     subscription_data->num_of_slice = 0;
+
+    subscription_data->num_of_msisdn = 0;
 }
 
 void ogs_session_data_free(ogs_session_data_t *session_data)

@@ -18,7 +18,7 @@
  */
 
 #include "test-common.h"
-#include "pcscf-fd-path.h"
+#include "test-fd-path.h"
 
 static void test1_func(abts_case *tc, void *data)
 {
@@ -263,7 +263,7 @@ static void test1_func(abts_case *tc, void *data)
     ogs_pkbuf_free(recvbuf);
 
     /* Send AA-Request */
-    pcscf_rx_send_aar_audio(&rx_sid, sess,
+    test_rx_send_aar_audio(&rx_sid, sess,
             OGS_DIAM_RX_SUBSCRIPTION_ID_TYPE_END_USER_IMSI, 1, 1);
 
     /* Receive E-RABSetupRequest +
@@ -304,7 +304,7 @@ static void test1_func(abts_case *tc, void *data)
     ogs_pkbuf_free(recvbuf);
 
     /* Send AA-Request without Flow */
-    pcscf_rx_send_aar_audio(&rx_sid, sess,
+    test_rx_send_aar_audio(&rx_sid, sess,
             OGS_DIAM_RX_SUBSCRIPTION_ID_TYPE_END_USER_IMSI, 2, 1);
 
     /* Receive E-RABModifyRequest +
@@ -460,7 +460,7 @@ static void test1_func(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* Send Session-Termination-Request */
-    pcscf_rx_send_str(rx_sid);
+    test_rx_send_str(rx_sid);
 
     /* Receive E-RABReleaseCommand +
      * Dectivate EPS bearer context request */
@@ -787,7 +787,7 @@ static void test2_func(abts_case *tc, void *data)
     ogs_msleep(100);
 
     /* Send AA-Request */
-    pcscf_rx_send_aar_audio(&rx_sid, sess,
+    test_rx_send_aar_audio(&rx_sid, sess,
             OGS_DIAM_RX_SUBSCRIPTION_ID_TYPE_END_USER_IMSI, 0, 1);
 
     /* Receive E-RABSetupRequest +
@@ -1121,14 +1121,14 @@ static void test3_func(abts_case *tc, void *data)
     ogs_msleep(100);
 
     /* Send AA-Request */
-    pcscf_rx_send_aar_ctrl(&rx_sid, sess,
+    test_rx_send_aar_ctrl(&rx_sid, sess,
             OGS_DIAM_RX_SUBSCRIPTION_ID_TYPE_END_USER_SIP_URI);
 
     /* DELAY is needed for receiving AA-Answer */
     ogs_msleep(100);
 
     /* Send Session-Termination-Request */
-    pcscf_rx_send_str(rx_sid);
+    test_rx_send_str(rx_sid);
 
     /* DELAY is needed for receiving Session-Termination-Answer */
     ogs_msleep(100);
@@ -1582,7 +1582,7 @@ static void test4_func(abts_case *tc, void *data)
     /* Send AA-Request */
     sess = test_sess_find_by_apn(test_ue, "ims");
     ogs_assert(sess);
-    pcscf_rx_send_aar_audio(&rx_sid, sess,
+    test_rx_send_aar_audio(&rx_sid, sess,
             OGS_DIAM_RX_SUBSCRIPTION_ID_TYPE_END_USER_IMSI, 1, 1);
 
     /* Receive E-RABSetupRequest +
@@ -1613,7 +1613,7 @@ static void test4_func(abts_case *tc, void *data)
     /* DELAY is needed in dedicated EPS bearer */
     ogs_msleep(100);
 
-    pcscf_rx_send_str(rx_sid);
+    test_rx_send_str(rx_sid);
 
     /* Receive E-RABReleaseCommand +
      * Dectivate EPS bearer context request */
@@ -2048,7 +2048,7 @@ static void test5_func(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* Send AA-Request */
-    pcscf_rx_send_aar_audio(&rx_sid, sess,
+    test_rx_send_aar_audio(&rx_sid, sess,
             OGS_DIAM_RX_SUBSCRIPTION_ID_TYPE_END_USER_IMSI, 1, 1);
 
     /* Receive S1-Paging */
@@ -2132,7 +2132,7 @@ static void test5_func(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* Send AA-Request without Flow */
-    pcscf_rx_send_aar_audio(&rx_sid, sess,
+    test_rx_send_aar_audio(&rx_sid, sess,
             OGS_DIAM_RX_SUBSCRIPTION_ID_TYPE_END_USER_IMSI, 2, 1);
 
     /* Receive S1-Paging */
@@ -2204,7 +2204,7 @@ static void test5_func(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* Send Session-Termination-Request */
-    pcscf_rx_send_str(rx_sid);
+    test_rx_send_str(rx_sid);
 
     /* Receive S1-Paging */
     recvbuf = testenb_s1ap_read(s1ap);
@@ -2535,7 +2535,7 @@ static void test6_func(abts_case *tc, void *data)
     ogs_pkbuf_free(recvbuf);
 
     /* Send AA-Request */
-    pcscf_rx_send_aar_audio(&rx_sid1, sess,
+    test_rx_send_aar_audio(&rx_sid1, sess,
             OGS_DIAM_RX_SUBSCRIPTION_ID_TYPE_END_USER_IMSI, 1, 1);
 
     /* Receive E-RABSetupRequest +
@@ -2576,7 +2576,7 @@ static void test6_func(abts_case *tc, void *data)
     ogs_pkbuf_free(recvbuf);
 
     /* Send AA-Request */
-    pcscf_rx_send_aar_audio(&rx_sid2, sess,
+    test_rx_send_aar_audio(&rx_sid2, sess,
             OGS_DIAM_RX_SUBSCRIPTION_ID_TYPE_END_USER_IMSI, 1, 2);
 
     /* Receive E-RABSetupRequest +
@@ -2605,7 +2605,7 @@ static void test6_func(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* Send Session-Termination-Request */
-    pcscf_rx_send_str(rx_sid1);
+    test_rx_send_str(rx_sid1);
 
     /* Receive E-RABReleaseCommand +
      * Dectivate EPS bearer context request */
@@ -2636,7 +2636,7 @@ static void test6_func(abts_case *tc, void *data)
     test_bearer_remove(bearer);
 
     /* Send Session-Termination-Request */
-    pcscf_rx_send_str(rx_sid2);
+    test_rx_send_str(rx_sid2);
 
     /* Receive E-RABReleaseCommand +
      * Dectivate EPS bearer context request */

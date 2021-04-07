@@ -40,7 +40,8 @@ static char *impi_get_server_name(hss_impi_t *impi);
 static hss_impu_t *impu_add(hss_impi_t *impi, char *id);
 static void impu_remove(hss_impu_t *impu);
 static void impu_remove_all(hss_impi_t *impi);
-static hss_impu_t *impu_find_by_id(hss_impi_t *impi, char *id);
+static hss_impu_t *impu_find_by_id(char *id);
+static hss_impu_t *impu_find_by_impi_and_id(hss_impi_t *impi, char *id);
 
 hss_context_t* hss_self(void)
 {
@@ -66,6 +67,7 @@ void hss_context_init(void)
     ogs_pool_init(&impu_pool, ogs_app()->pool.impu);
 
     self.impi_hash = ogs_hash_make();
+    self.impu_hash = ogs_hash_make();
 
     ogs_thread_mutex_init(&self.db_lock);
     ogs_thread_mutex_init(&self.cx_lock);
@@ -81,6 +83,8 @@ void hss_context_final(void)
 
     ogs_assert(self.impi_hash);
     ogs_hash_destroy(self.impi_hash);
+    ogs_assert(self.impu_hash);
+    ogs_hash_destroy(self.impu_hash);
 
     ogs_pool_final(&impi_pool);
     ogs_pool_final(&impu_pool);
@@ -365,6 +369,42 @@ int hss_db_subscription_data(
     return rv;
 }
 
+int hss_db_msisdn_data(char *imsi_or_msisdn_bcd, ogs_msisdn_data_t *msisdn_data)
+{
+    int rv;
+
+    ogs_assert(imsi_or_msisdn_bcd);
+    ogs_assert(msisdn_data);
+
+    ogs_thread_mutex_lock(&self.db_lock);
+
+    rv = ogs_dbi_msisdn_data(imsi_or_msisdn_bcd, msisdn_data);
+
+    ogs_thread_mutex_unlock(&self.db_lock);
+
+    return rv;
+}
+
+int hss_db_ims_data(char *imsi_bcd, ogs_ims_data_t *ims_data)
+{
+    int rv;
+    char *supi = NULL;
+
+    ogs_assert(imsi_bcd);
+    ogs_assert(ims_data);
+
+    ogs_thread_mutex_lock(&self.db_lock);
+    supi = ogs_msprintf("%s-%s", OGS_ID_SUPI_TYPE_IMSI, imsi_bcd);
+    ogs_assert(supi);
+
+    rv = ogs_dbi_ims_data(supi, ims_data);
+
+    ogs_free(supi);
+    ogs_thread_mutex_unlock(&self.db_lock);
+
+    return rv;
+}
+
 static hss_impi_t *impi_add(char *id)
 {
     hss_impi_t *impi = NULL;
@@ -396,6 +436,9 @@ static void impi_remove(hss_impi_t *impi)
     ogs_assert(impi->id);
     ogs_hash_set(self.impi_hash, impi->id, strlen(impi->id), NULL);
     ogs_free(impi->id);
+
+    if (impi->imsi_bcd)
+        ogs_free(impi->imsi_bcd);
 
     ogs_pool_free(&impi_pool, impi);
 }
@@ -442,6 +485,8 @@ static hss_impu_t *impu_add(hss_impi_t *impi, char *id)
     impu->id = ogs_strdup(id);
     ogs_assert(impu->id);
 
+    ogs_hash_set(self.impu_hash, impu->id, strlen(impu->id), impu);
+
     impu->impi = impi;
     ogs_list_add(&impi->impu_list, impu);
 
@@ -459,6 +504,7 @@ static void impu_remove(hss_impu_t *impu)
     ogs_list_remove(&impi->impu_list, impu);
 
     ogs_assert(impu->id);
+    ogs_hash_set(self.impu_hash, impu->id, strlen(impu->id), NULL);
     ogs_free(impu->id);
 
     if (impu->server_name)
@@ -475,7 +521,13 @@ static void impu_remove_all(hss_impi_t *impi)
         impu_remove(impu);
 }
 
-static hss_impu_t *impu_find_by_id(hss_impi_t *impi, char *id)
+static hss_impu_t *impu_find_by_id(char *id)
+{
+    ogs_assert(id);
+    return (hss_impu_t *)ogs_hash_get(self.impu_hash, id, strlen(id));
+}
+
+static hss_impu_t *impu_find_by_impi_and_id(hss_impi_t *impi, char *id)
 {
     hss_impu_t *impu = NULL;
 
@@ -506,7 +558,7 @@ void hss_cx_associate_identity(char *user_name, char *public_identity)
         ogs_assert(impi);
     }
 
-    impu = impu_find_by_id(impi, public_identity);
+    impu = impu_find_by_id(public_identity);
     if (!impu) {
         impu = impu_add(impi, public_identity);
         ogs_assert(impu);
@@ -526,7 +578,7 @@ bool hss_cx_identity_is_associated(char *user_name, char *public_identity)
 
     impi = impi_find_by_id(user_name);
     if (impi) {
-        impu = impu_find_by_id(impi, public_identity);
+        impu = impu_find_by_impi_and_id(impi, public_identity);
         if (impu) {
             match_result = true;
         }
@@ -537,7 +589,50 @@ bool hss_cx_identity_is_associated(char *user_name, char *public_identity)
     return match_result;
 }
 
-char *hss_cx_get_server_name(char *user_name, char *public_identity)
+char *hss_cx_get_imsi_bcd(char *public_identity)
+{
+    hss_impi_t *impi = NULL;
+    hss_impu_t *impu = NULL;
+
+    char *imsi_bcd = NULL;
+
+    ogs_thread_mutex_lock(&self.cx_lock);
+
+    impu = impu_find_by_id(public_identity);
+    if (impu) {
+        impi = impu->impi;
+        ogs_assert(impi);
+
+        imsi_bcd = impi->imsi_bcd;
+    }
+
+    ogs_thread_mutex_unlock(&self.cx_lock);
+
+    return imsi_bcd;;
+}
+
+void hss_cx_set_imsi_bcd(char *user_name, char *imsi_bcd)
+{
+    hss_impi_t *impi = NULL;
+
+    ogs_assert(user_name);
+    ogs_assert(imsi_bcd);
+
+    ogs_thread_mutex_lock(&self.cx_lock);
+
+    impi = impi_find_by_id(user_name);
+    ogs_assert(impi);
+
+    if (impi->imsi_bcd)
+        ogs_free(impi->imsi_bcd);
+
+    impi->imsi_bcd = ogs_strdup(imsi_bcd);
+    ogs_assert(impi->imsi_bcd);
+
+    ogs_thread_mutex_unlock(&self.cx_lock);
+}
+
+char *hss_cx_get_server_name(char *public_identity)
 {
     char *server_name = NULL;
 
@@ -546,15 +641,15 @@ char *hss_cx_get_server_name(char *user_name, char *public_identity)
 
     ogs_thread_mutex_lock(&self.cx_lock);
 
-    impi = impi_find_by_id(user_name);
-    ogs_assert(impi);
+    impu = impu_find_by_id(public_identity);
+    if (impu) {
+        server_name = impu->server_name;
+        if (!server_name) {
+            impi = impu->impi;
+            ogs_assert(impi);
 
-    impu = impu_find_by_id(impi, public_identity);
-    ogs_assert(impu);
-
-    server_name = impu->server_name;
-    if (!server_name) {
-        server_name = impi_get_server_name(impi);
+            server_name = impi_get_server_name(impi);
+        }
     }
 
     ogs_thread_mutex_unlock(&self.cx_lock);
@@ -563,18 +658,13 @@ char *hss_cx_get_server_name(char *user_name, char *public_identity)
 }
 
 void hss_cx_set_server_name(
-        char *user_name, char *public_identity,
-        char *server_name, bool overwrite)
+        char *public_identity, char *server_name, bool overwrite)
 {
-    hss_impi_t *impi = NULL;
     hss_impu_t *impu = NULL;
 
     ogs_thread_mutex_lock(&self.cx_lock);
 
-    impi = impi_find_by_id(user_name);
-    ogs_assert(impi);
-
-    impu = impu_find_by_id(impi, public_identity);
+    impu = impu_find_by_id(public_identity);
     ogs_assert(impu);
 
     if (!impu->server_name) {
@@ -596,4 +686,111 @@ void hss_cx_set_server_name(
     }
 
     ogs_thread_mutex_unlock(&self.cx_lock);
+}
+
+char *hss_cx_download_user_data(char *user_name, ogs_ims_data_t *ims_data)
+{
+    char *user_data = NULL;
+
+    hss_impi_t *impi = NULL;
+    hss_impu_t *impu = NULL;
+
+    bool barring_indication_presence = true;
+    int i;
+
+    ogs_assert(user_name);
+    ogs_assert(ims_data);
+
+    /* Download User-Data */
+    for (i = 0; i < ims_data->num_of_msisdn; i++) {
+        char *public_identity = NULL;
+
+        public_identity = ogs_msprintf("sip:%s", ims_data->msisdn[i].bcd);
+        ogs_assert(public_identity);
+        hss_cx_associate_identity(user_name, public_identity);
+        ogs_free(public_identity);
+
+        public_identity = ogs_msprintf("tel:%s", ims_data->msisdn[i].bcd);
+        ogs_assert(public_identity);
+        hss_cx_associate_identity(user_name, public_identity);
+        ogs_free(public_identity);
+    }
+
+
+    /* Generate XML Data */
+
+    ogs_thread_mutex_lock(&self.cx_lock);
+
+    user_data = ogs_strdup(ogs_diam_cx_xml_version);
+    ogs_assert(user_data);
+
+    user_data = ogs_mstrcatf(user_data, "%s",
+                ogs_diam_cx_xml_ims_subscription_s);
+    ogs_assert(user_data);
+
+      user_data = ogs_mstrcatf(user_data, "%s%s%s",
+                  ogs_diam_cx_xml_private_id_s,
+                  user_name,
+                  ogs_diam_cx_xml_private_id_e);
+      ogs_assert(user_data);
+
+      user_data = ogs_mstrcatf(user_data, "%s",
+                  ogs_diam_cx_xml_service_profile_s);
+      ogs_assert(user_data);
+
+        impi = impi_find_by_id(user_name);
+        ogs_assert(impi);
+
+        barring_indication_presence = true;
+
+        ogs_list_for_each(&impi->impu_list, impu) {
+            user_data = ogs_mstrcatf(user_data, "%s",
+                        ogs_diam_cx_xml_public_id_s);
+            ogs_assert(user_data);
+
+              if (barring_indication_presence == true) {
+                  user_data = ogs_mstrcatf(user_data, "%s%s%s",
+                              ogs_diam_cx_xml_barring_indication_s,
+                              "1",
+                              ogs_diam_cx_xml_barring_indication_e);
+                  ogs_assert(user_data);
+                  barring_indication_presence = false;
+              }
+
+              user_data = ogs_mstrcatf(user_data, "%s%s%s",
+                          ogs_diam_cx_xml_identity_s,
+                          impu->id,
+                          ogs_diam_cx_xml_identity_e);
+              ogs_assert(user_data);
+
+              user_data = ogs_mstrcatf(user_data, "%s",
+                          ogs_diam_cx_xml_extension_s);
+              ogs_assert(user_data);
+
+                user_data = ogs_mstrcatf(user_data, "%s%s%s",
+                            ogs_diam_cx_xml_identity_type_s,
+                            "0",
+                            ogs_diam_cx_xml_identity_type_e);
+                ogs_assert(user_data);
+
+              user_data = ogs_mstrcatf(user_data, "%s",
+                          ogs_diam_cx_xml_extension_e);
+              ogs_assert(user_data);
+
+            user_data = ogs_mstrcatf(user_data, "%s",
+                        ogs_diam_cx_xml_public_id_e);
+            ogs_assert(user_data);
+        }
+
+      user_data = ogs_mstrcatf(user_data, "%s",
+                  ogs_diam_cx_xml_service_profile_e);
+      ogs_assert(user_data);
+
+    user_data = ogs_mstrcatf(user_data,
+                "%s", ogs_diam_cx_xml_ims_subscription_e);
+    ogs_assert(user_data);
+
+    ogs_thread_mutex_unlock(&self.cx_lock);
+
+    return user_data;
 }

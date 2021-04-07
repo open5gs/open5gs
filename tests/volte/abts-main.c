@@ -19,7 +19,7 @@
 
 #include "test-app.h"
 
-#include "pcscf-fd-path.h"
+#include "test-fd-path.h"
 
 abts_suite *test_bearer(abts_suite *suite);
 abts_suite *test_session(abts_suite *suite);
@@ -45,7 +45,7 @@ static void terminate(void)
     test_child_terminate();
     app_terminate();
 
-    pcscf_fd_final();
+    test_fd_final();
 
     test_epc_final();
     ogs_app_terminate();
@@ -59,7 +59,7 @@ static void initialize(const char *const argv[])
     ogs_assert(rv == OGS_OK);
     test_epc_init();
 
-    rv = pcscf_fd_init();
+    rv = test_fd_init();
     ogs_assert(rv == OGS_OK);
 
     rv = app_initialize(argv);

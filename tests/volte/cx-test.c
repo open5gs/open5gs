@@ -18,7 +18,7 @@
  */
 
 #include "test-common.h"
-#include "pcscf-fd-path.h"
+#include "test-fd-path.h"
 
 static void test1_func(abts_case *tc, void *data)
 {
@@ -265,7 +265,7 @@ static void test1_func(abts_case *tc, void *data)
     ogs_pkbuf_free(recvbuf);
 
     /* Send AA-Request */
-    pcscf_rx_send_aar_audio(&rx_sid, sess,
+    test_rx_send_aar_audio(&rx_sid, sess,
             OGS_DIAM_RX_SUBSCRIPTION_ID_TYPE_END_USER_IMSI, 1, 1);
 
     /* Receive E-RAB Setup Request +

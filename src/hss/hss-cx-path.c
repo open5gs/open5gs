@@ -30,9 +30,8 @@ static struct disp_hdl *hdl_cx_uar = NULL;
 static struct disp_hdl *hdl_cx_mar = NULL;
 /* handler for Server-Assignment-Request cb */
 static struct disp_hdl *hdl_cx_sar = NULL;
-
-static char *download_user_data(
-        char *user_name, ogs_subscription_data_t *subscription_data);
+/* handler for Location-Info-Request cb */
+static struct disp_hdl *hdl_cx_lir = NULL;
 
 /* Default callback for the application. */
 static int hss_ogs_diam_cx_fb_cb(struct msg **msg, struct avp *avp, 
@@ -60,10 +59,9 @@ static int hss_ogs_diam_cx_uar_cb( struct msg **msg, struct avp *avp,
     char *public_identity = NULL;
     char *server_name = NULL;
 
-    char imsi_bcd[OGS_MAX_IMSI_BCD_LEN+1];
-    char msisdn_bcd[OGS_MAX_MSISDN_BCD_LEN+1];
+    char imsi_or_msisdn_bcd[OGS_MAX_IMSI_BCD_LEN+1];
 
-    ogs_subscription_data_t subscription_data;
+    ogs_msisdn_data_t msisdn_data;
 	
     ogs_assert(msg);
 
@@ -75,7 +73,7 @@ static int hss_ogs_diam_cx_uar_cb( struct msg **msg, struct avp *avp,
     ogs_assert(ret == 0);
     ans = *msg;
 
-    /* Get User-Name AVP (Mandatory has already been checked) */
+    /* Get User-Name AVP (Mandatory) */
     ret = fd_msg_search_avp(qry, ogs_diam_user_name, &avp);
     ogs_assert(ret == 0);
     ret = fd_msg_avp_hdr(avp, &hdr);
@@ -85,9 +83,9 @@ static int hss_ogs_diam_cx_uar_cb( struct msg **msg, struct avp *avp,
         (char*)hdr->avp_value->os.data, hdr->avp_value->os.len);
     ogs_assert(user_name);
 
-    ogs_extract_digit_from_string(imsi_bcd, user_name);
+    ogs_extract_digit_from_string(imsi_or_msisdn_bcd, user_name);
 
-    /* Get Public-Identity AVP (Mandatory has already been checked) */
+    /* Get Public-Identity AVP (Mandatory) */
     ret = fd_msg_search_avp(qry, ogs_diam_cx_public_identity, &avp);
     ogs_assert(ret == 0);
     ret = fd_msg_avp_hdr(avp, &hdr);
@@ -97,12 +95,11 @@ static int hss_ogs_diam_cx_uar_cb( struct msg **msg, struct avp *avp,
         (char*)hdr->avp_value->os.data, hdr->avp_value->os.len);
     ogs_assert(public_identity);
 
-    ogs_extract_digit_from_string(msisdn_bcd, public_identity);
-
-    memset(&subscription_data, 0, sizeof(ogs_subscription_data_t));
-    rv = hss_db_subscription_data(imsi_bcd, &subscription_data);
+    memset(&msisdn_data, 0, sizeof(ogs_msisdn_data_t));
+    rv = hss_db_msisdn_data(imsi_or_msisdn_bcd, &msisdn_data);
     if (rv != OGS_OK) {
-        ogs_error("Cannot get Subscription-Data for IMSI:'%s'", imsi_bcd);
+        ogs_error("Cannot get MSISDN-Data for IMSI or MSISDN:'%s'",
+                    imsi_or_msisdn_bcd);
         result_code = OGS_DIAM_CX_ERROR_USER_UNKNOWN;
         goto out;
     }
@@ -112,19 +109,21 @@ static int hss_ogs_diam_cx_uar_cb( struct msg **msg, struct avp *avp,
             ans, OGS_DIAM_CX_APPLICATION_ID);
     ogs_assert(ret == 0);
 
-    /* Associate IMPI(User-Name) + IMPU(Public-Identity) */
+    /* Associate IMPI(User-Name) with IMPU(Public-Identity) */
     hss_cx_associate_identity(user_name, public_identity);
 
-    /* Get Server-Name for IMPI(User-Name) + IMPU(Public-Identity) */
-    server_name = hss_cx_get_server_name(user_name, public_identity);
+    /* Set IMSI for IMPI(User-Name) */
+    hss_cx_set_imsi_bcd(user_name, msisdn_data.imsi.bcd);
+
+    /* Get Server-Name by IMPU(Public-Identity) */
+    server_name = hss_cx_get_server_name(public_identity);
     if (!server_name)
         result_code = OGS_DIAM_CX_FIRST_REGISTRATION;
     else
         result_code = OGS_DIAM_CX_SUBSEQUENT_REGISTRATION;
 
 	/* Set the Experimental-Result, Origin-Host and Origin-Realm AVPs */
-    ret = ogs_diam_message_experimental_rescode_set(
-            ans, result_code);
+    ret = ogs_diam_message_experimental_rescode_set(ans, result_code);
     ogs_assert(ret == 0);
 
     /* Set the Auth-Session-State AVP */
@@ -159,8 +158,6 @@ static int hss_ogs_diam_cx_uar_cb( struct msg **msg, struct avp *avp,
 	ogs_diam_logger_self()->stats.nb_echoed++;
 	ogs_assert(pthread_mutex_unlock(&ogs_diam_logger_self()->stats_lock) == 0);
 
-    ogs_subscription_data_free(&subscription_data);
-
     ogs_free(user_name);
     ogs_free(public_identity);
 
@@ -187,8 +184,6 @@ out:
 
 	ret = fd_msg_send(msg, NULL, NULL);
     ogs_assert(ret == 0);
-
-    ogs_subscription_data_free(&subscription_data);
 
     ogs_free(user_name);
     ogs_free(public_identity);
@@ -218,8 +213,7 @@ static int hss_ogs_diam_cx_mar_cb( struct msg **msg, struct avp *avp,
     char *server_name = NULL;
     char *authentication_scheme = NULL;
 
-    char imsi_bcd[OGS_MAX_IMSI_BCD_LEN+1];
-    char msisdn_bcd[OGS_MAX_MSISDN_BCD_LEN+1];
+    char *imsi_bcd = NULL;
 
     ogs_dbi_auth_info_t auth_info;
     uint8_t zero[OGS_RAND_LEN];
@@ -248,7 +242,7 @@ static int hss_ogs_diam_cx_mar_cb( struct msg **msg, struct avp *avp,
     ogs_assert(ret == 0);
     ans = *msg;
 
-    /* Get User-Name AVP (Mandatory has already been checked) */
+    /* Get User-Name AVP (Mandatory) */
     ret = fd_msg_search_avp(qry, ogs_diam_user_name, &avp);
     ogs_assert(ret == 0);
     ret = fd_msg_avp_hdr(avp, &hdr);
@@ -258,9 +252,7 @@ static int hss_ogs_diam_cx_mar_cb( struct msg **msg, struct avp *avp,
         (char*)hdr->avp_value->os.data, hdr->avp_value->os.len);
     ogs_assert(user_name);
 
-    ogs_extract_digit_from_string(imsi_bcd, user_name);
-
-    /* Get Public-Identity AVP (Mandatory has already been checked) */
+    /* Get Public-Identity AVP (Mandatory) */
     ret = fd_msg_search_avp(qry, ogs_diam_cx_public_identity, &avp);
     ogs_assert(ret == 0);
     ret = fd_msg_avp_hdr(avp, &hdr);
@@ -270,9 +262,7 @@ static int hss_ogs_diam_cx_mar_cb( struct msg **msg, struct avp *avp,
         (char*)hdr->avp_value->os.data, hdr->avp_value->os.len);
     ogs_assert(public_identity);
 
-    ogs_extract_digit_from_string(msisdn_bcd, public_identity);
-
-    /* Get Server-Name AVP (Mandatory has already been checked) */
+    /* Get Server-Name AVP (Mandatory) */
     ret = fd_msg_search_avp(qry, ogs_diam_cx_server_name, &avp);
     ogs_assert(ret == 0);
     ret = fd_msg_avp_hdr(avp, &hdr);
@@ -291,7 +281,16 @@ static int hss_ogs_diam_cx_mar_cb( struct msg **msg, struct avp *avp,
         goto out;
     }
 
-    /* Get the SIP-Auth-Data-Item AVP (Mandatory has already been checked) */
+    /* Check if IMSI */
+    imsi_bcd = hss_cx_get_imsi_bcd(public_identity);
+    if (!imsi_bcd) {
+        ogs_error("Cannot find IMSI for User-Name[%s] Public-Identity[%s]",
+                    user_name, public_identity);
+        result_code = OGS_DIAM_CX_ERROR_IDENTITY_NOT_REGISTERED;
+        goto out;
+    }
+
+    /* Get the SIP-Auth-Data-Item AVP (Mandatory) */
     ret = fd_msg_search_avp(
             qry, ogs_diam_cx_sip_auth_data_item, &sip_auth_data_item_avp);
     ogs_assert(ret == 0);
@@ -323,15 +322,16 @@ static int hss_ogs_diam_cx_mar_cb( struct msg **msg, struct avp *avp,
         goto out;
     }
 
+    /* DB : HSS Auth-Info */
     rv = hss_db_auth_info(imsi_bcd, &auth_info);
     if (rv != OGS_OK) {
-        ogs_error("Cannot get Subscription-Data for IMSI:'%s'", imsi_bcd);
+        ogs_error("Cannot get IMS-Data for IMSI:'%s'", imsi_bcd);
         result_code = OGS_DIAM_CX_ERROR_USER_UNKNOWN;
         goto out;
     }
 
-    /* Overwrite Server-Name for IMPI(User-Name) + IMPU(Public-Identity) */
-    hss_cx_set_server_name(user_name, public_identity, server_name, true);
+    /* Overwrite Server-Name for IMPU(Public-Identity) */
+    hss_cx_set_server_name(public_identity, server_name, true);
 
     memset(zero, 0, sizeof(zero));
     if (memcmp(auth_info.rand, zero, OGS_RAND_LEN) == 0) {
@@ -390,24 +390,6 @@ static int hss_ogs_diam_cx_mar_cb( struct msg **msg, struct avp *avp,
         goto out;
     }
 
-#if 0 /* Test Vector for ipsec_reg.pcapng */
-    /*
-     * Ki : 8baf473f2f8fd09487cccbd7097c6862
-     * OP : 11111111111111111111111111111111
-     * OPc : 8E27B6AF0E692E750F32667A3B14605D
-     * open5gs SQN : 44254 (dec)
-     * Fhoss SQN : 00000000ad25 (hex)
-     * RAND : a0944c75ff3c4f0853a2f910aa1f104f
-     * AMF : c6e2f46c8f4280007f3bb9b84b7c3ff6
-     *
-     * New SQN : 000017242898 (hex)
-     */
-
-    auth_info.sqn = 0x17242898;
-#define RAND "a0944c75ff3c4f0853a2f910aa1f104f"
-    OGS_HEX(RAND, strlen(RAND), auth_info.rand);
-#endif
-
     milenage_generate(opc, auth_info.amf, auth_info.k,
         ogs_uint64_to_buffer(auth_info.sqn, OGS_SQN_LEN, sqn), auth_info.rand,
         autn, ik, ck, ak, xres, &xres_len);
@@ -451,7 +433,7 @@ static int hss_ogs_diam_cx_mar_cb( struct msg **msg, struct avp *avp,
     ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
     ogs_assert(ret == 0);
 
-	/* Set the Origin-Host, Origin-Realm, andResult-Code AVPs */
+	/* Set the Origin-Host, Origin-Realm, and Result-Code AVPs */
 	ret = fd_msg_rescode_set(ans, (char*)"DIAMETER_SUCCESS", NULL, NULL, 1);
     ogs_assert(ret == 0);
 
@@ -620,10 +602,9 @@ static int hss_ogs_diam_cx_sar_cb( struct msg **msg, struct avp *avp,
     char *server_name = NULL;
     char *user_data = NULL;
 
-    char imsi_bcd[OGS_MAX_IMSI_BCD_LEN+1];
-    char msisdn_bcd[OGS_MAX_MSISDN_BCD_LEN+1];
+    char *imsi_bcd = NULL;
 
-    ogs_subscription_data_t subscription_data;
+    ogs_ims_data_t ims_data;
 
     ogs_assert(msg);
 
@@ -635,7 +616,7 @@ static int hss_ogs_diam_cx_sar_cb( struct msg **msg, struct avp *avp,
     ogs_assert(ret == 0);
     ans = *msg;
 
-    /* Get User-Name AVP (Mandatory has already been checked) */
+    /* Get User-Name AVP (Mandatory) */
     ret = fd_msg_search_avp(qry, ogs_diam_user_name, &avp);
     ogs_assert(ret == 0);
     ret = fd_msg_avp_hdr(avp, &hdr);
@@ -645,9 +626,7 @@ static int hss_ogs_diam_cx_sar_cb( struct msg **msg, struct avp *avp,
         (char*)hdr->avp_value->os.data, hdr->avp_value->os.len);
     ogs_assert(user_name);
 
-    ogs_extract_digit_from_string(imsi_bcd, user_name);
-
-    /* Get Public-Identity AVP (Mandatory has already been checked) */
+    /* Get Public-Identity AVP (Mandatory) */
     ret = fd_msg_search_avp(qry, ogs_diam_cx_public_identity, &avp);
     ogs_assert(ret == 0);
     ret = fd_msg_avp_hdr(avp, &hdr);
@@ -657,17 +636,7 @@ static int hss_ogs_diam_cx_sar_cb( struct msg **msg, struct avp *avp,
         (char*)hdr->avp_value->os.data, hdr->avp_value->os.len);
     ogs_assert(public_identity);
 
-    ogs_extract_digit_from_string(msisdn_bcd, public_identity);
-
-    memset(&subscription_data, 0, sizeof(ogs_subscription_data_t));
-    rv = hss_db_subscription_data(imsi_bcd, &subscription_data);
-    if (rv != OGS_OK) {
-        ogs_error("Cannot get Subscription-Data for IMSI:'%s'", imsi_bcd);
-        result_code = OGS_DIAM_CX_ERROR_USER_UNKNOWN;
-        goto out;
-    }
-
-    /* Get Server-Name AVP (Mandatory has already been checked) */
+    /* Get Server-Name AVP (Mandatory) */
     ret = fd_msg_search_avp(qry, ogs_diam_cx_server_name, &avp);
     ogs_assert(ret == 0);
     ret = fd_msg_avp_hdr(avp, &hdr);
@@ -686,8 +655,26 @@ static int hss_ogs_diam_cx_sar_cb( struct msg **msg, struct avp *avp,
         goto out;
     }
 
-    /* Overwrite Server-Name for IMPI(User-Name) + IMPU(Public-Identity) */
-    hss_cx_set_server_name(user_name, public_identity, server_name, true);
+    /* Check if IMSI */
+    imsi_bcd = hss_cx_get_imsi_bcd(public_identity);
+    if (!imsi_bcd) {
+        ogs_error("Cannot find IMSI for User-Name[%s] Public-Identity[%s]",
+                    user_name, public_identity);
+        result_code = OGS_DIAM_CX_ERROR_IDENTITY_NOT_REGISTERED;
+        goto out;
+    }
+
+    /* DB : HSS IMS Service Profile */
+    memset(&ims_data, 0, sizeof(ogs_ims_data_t));
+    rv = hss_db_ims_data(imsi_bcd, &ims_data);
+    if (rv != OGS_OK) {
+        ogs_error("Cannot get IMS-Data for IMSI:'%s'", imsi_bcd);
+        result_code = OGS_DIAM_CX_ERROR_USER_UNKNOWN;
+        goto out;
+    }
+
+    /* Overwrite Server-Name for IMPU(Public-Identity) */
+    hss_cx_set_server_name(public_identity, server_name, true);
 
     /* Set Vendor-Specific-Application-Id AVP */
     ret = ogs_diam_message_vendor_specific_appid_set(
@@ -703,7 +690,7 @@ static int hss_ogs_diam_cx_sar_cb( struct msg **msg, struct avp *avp,
     ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
     ogs_assert(ret == 0);
 
-	/* Set the Origin-Host, Origin-Realm, andResult-Code AVPs */
+	/* Set the Origin-Host, Origin-Realm, and Result-Code AVPs */
 	ret = fd_msg_rescode_set(ans, (char*)"DIAMETER_SUCCESS", NULL, NULL, 1);
     ogs_assert(ret == 0);
 
@@ -717,7 +704,7 @@ static int hss_ogs_diam_cx_sar_cb( struct msg **msg, struct avp *avp,
     ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
     ogs_assert(ret == 0);
 
-    /* Get User-Data-Already-Available AVP (Mandatory has already been checked) */
+    /* Get User-Data-Already-Available AVP (Mandatory) */
     ret = fd_msg_search_avp(qry, ogs_diam_cx_user_data_already_available, &avp);
     ogs_assert(ret == 0);
     ret = fd_msg_avp_hdr(avp, &hdr);
@@ -727,7 +714,7 @@ static int hss_ogs_diam_cx_sar_cb( struct msg **msg, struct avp *avp,
         /* Nothing to do */
     } else {
         /* Set the User-Data AVP */
-        user_data = download_user_data(user_name, &subscription_data);
+        user_data = hss_cx_download_user_data(user_name, &ims_data);
         ogs_assert(user_data);
 
         ret = fd_msg_avp_new(ogs_diam_cx_user_data, 0, &avp);
@@ -775,8 +762,6 @@ static int hss_ogs_diam_cx_sar_cb( struct msg **msg, struct avp *avp,
 	ogs_diam_logger_self()->stats.nb_echoed++;
 	ogs_assert(pthread_mutex_unlock(&ogs_diam_logger_self()->stats_lock) == 0);
 
-    ogs_subscription_data_free(&subscription_data);
-
     if (user_data)
         ogs_free(user_data);
     ogs_free(user_name);
@@ -807,8 +792,6 @@ out:
 	ret = fd_msg_send(msg, NULL, NULL);
     ogs_assert(ret == 0);
 
-    ogs_subscription_data_free(&subscription_data);
-
     if (user_data)
         ogs_free(user_data);
     ogs_free(user_name);
@@ -818,132 +801,117 @@ out:
     return 0;
 }
 
-static char *download_user_data(
-        char *user_name, ogs_subscription_data_t *subscription_data)
+/* Callback for incoming Location-Info-Request messages */
+static int hss_ogs_diam_cx_lir_cb( struct msg **msg, struct avp *avp,
+        struct session *session, void *opaque, enum disp_action *act)
 {
-    char *user_data = NULL;
-    int i;
+    int ret;
+    uint32_t result_code = 0;
 
-    ogs_assert(user_name);
-    ogs_assert(subscription_data);
+	struct msg *ans, *qry;
 
-    user_data = ogs_strdup(ogs_diam_cx_xml_version);
-    ogs_assert(user_data);
+    struct avp_hdr *hdr;
+    union avp_value val;
 
-    user_data = ogs_mstrcatf(user_data, "%s",
-                ogs_diam_cx_xml_ims_subscription_s);
-    ogs_assert(user_data);
+    char *public_identity = NULL;
+    char *server_name = NULL;
 
-      user_data = ogs_mstrcatf(user_data, "%s%s%s",
-                  ogs_diam_cx_xml_private_id_s,
-                  user_name,
-                  ogs_diam_cx_xml_private_id_e);
-      ogs_assert(user_data);
+    ogs_assert(msg);
 
-      user_data = ogs_mstrcatf(user_data, "%s",
-                  ogs_diam_cx_xml_service_profile_s);
-      ogs_assert(user_data);
+    ogs_debug("Location-Info-Request");
 
-        user_data = ogs_mstrcatf(user_data, "%s",
-                    ogs_diam_cx_xml_public_id_s);
-        ogs_assert(user_data);
+	/* Create answer header */
+	qry = *msg;
+	ret = fd_msg_new_answer_from_req(fd_g_config->cnf_dict, msg, 0);
+    ogs_assert(ret == 0);
+    ans = *msg;
 
-          user_data = ogs_mstrcatf(user_data, "%s%s%s",
-                      ogs_diam_cx_xml_barring_indication_s,
-                      "1",
-                      ogs_diam_cx_xml_barring_indication_e);
-          ogs_assert(user_data);
+    /* Get Public-Identity AVP (Mandatory) */
+    ret = fd_msg_search_avp(qry, ogs_diam_cx_public_identity, &avp);
+    ogs_assert(ret == 0);
+    ret = fd_msg_avp_hdr(avp, &hdr);
+    ogs_assert(ret == 0);
 
-          user_data = ogs_mstrcatf(user_data, "%ssip:%s%s",
-                      ogs_diam_cx_xml_identity_s,
-                      user_name,
-                      ogs_diam_cx_xml_identity_e);
-          ogs_assert(user_data);
+    public_identity = ogs_strndup(
+        (char*)hdr->avp_value->os.data, hdr->avp_value->os.len);
+    ogs_assert(public_identity);
 
-          user_data = ogs_mstrcatf(user_data, "%s",
-                      ogs_diam_cx_xml_extension_s);
-          ogs_assert(user_data);
+    /* Get Server-Name by IMPU(Public-Identity) */
+    server_name = hss_cx_get_server_name(public_identity);
+    if (!server_name) {
+        ogs_error("No Server-Name in Public-Identity[%s]", public_identity);
+        result_code = OGS_DIAM_CX_SERVER_NAME_NOT_STORED;
+        goto out;
+    }
 
-            user_data = ogs_mstrcatf(user_data, "%s%s%s",
-                        ogs_diam_cx_xml_identity_type_s,
-                        "0",
-                        ogs_diam_cx_xml_identity_type_e);
-            ogs_assert(user_data);
+    /* Set Vendor-Specific-Application-Id AVP */
+    ret = ogs_diam_message_vendor_specific_appid_set(
+            ans, OGS_DIAM_CX_APPLICATION_ID);
+    ogs_assert(ret == 0);
 
-          user_data = ogs_mstrcatf(user_data, "%s",
-                      ogs_diam_cx_xml_extension_e);
-          ogs_assert(user_data);
+    /* Set the Auth-Session-State AVP */
+    ret = fd_msg_avp_new(ogs_diam_auth_session_state, 0, &avp);
+    ogs_assert(ret == 0);
+    val.i32 = 1;
+    ret = fd_msg_avp_setvalue(avp, &val);
+    ogs_assert(ret == 0);
+    ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
+    ogs_assert(ret == 0);
 
-        user_data = ogs_mstrcatf(user_data, "%s",
-                    ogs_diam_cx_xml_public_id_e);
-        ogs_assert(user_data);
+	/* Set the Origin-Host, Origin-Realm, and Result-Code AVPs */
+	ret = fd_msg_rescode_set(ans, (char*)"DIAMETER_SUCCESS", NULL, NULL, 1);
+    ogs_assert(ret == 0);
 
-        for (i = 0; i < subscription_data->num_of_msisdn; i++) {
-            user_data = ogs_mstrcatf(user_data, "%s",
-                        ogs_diam_cx_xml_public_id_s);
-            ogs_assert(user_data);
+    /* Set Server-Name AVPs */
+    ret = fd_msg_avp_new(ogs_diam_cx_server_name, 0, &avp);
+    ogs_assert(ret == 0);
+    val.os.data = (uint8_t *)server_name;
+    val.os.len  = strlen(server_name);
+    ret = fd_msg_avp_setvalue(avp, &val);
+    ogs_assert(ret == 0);
+    ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
+    ogs_assert(ret == 0);
 
-              user_data = ogs_mstrcatf(user_data, "%stel:%s%s",
-                          ogs_diam_cx_xml_identity_s,
-                          subscription_data->msisdn[i].bcd,
-                          ogs_diam_cx_xml_identity_e);
-              ogs_assert(user_data);
+	/* Send the answer */
+	ret = fd_msg_send(msg, NULL, NULL);
+    ogs_assert(ret == 0);
 
-              user_data = ogs_mstrcatf(user_data, "%s",
-                          ogs_diam_cx_xml_extension_s);
-              ogs_assert(user_data);
+    ogs_debug("Location-Info-Answer");
 
-                user_data = ogs_mstrcatf(user_data, "%s%s%s",
-                            ogs_diam_cx_xml_identity_type_s,
-                            "0",
-                            ogs_diam_cx_xml_identity_type_e);
-                ogs_assert(user_data);
+	/* Add this value to the stats */
+	ogs_assert(pthread_mutex_lock(&ogs_diam_logger_self()->stats_lock) == 0);
+	ogs_diam_logger_self()->stats.nb_echoed++;
+	ogs_assert(pthread_mutex_unlock(&ogs_diam_logger_self()->stats_lock) == 0);
 
-              user_data = ogs_mstrcatf(user_data, "%s",
-                          ogs_diam_cx_xml_extension_e);
-              ogs_assert(user_data);
+    ogs_free(public_identity);
 
-            user_data = ogs_mstrcatf(user_data, "%s",
-                        ogs_diam_cx_xml_public_id_e);
-            ogs_assert(user_data);
-            user_data = ogs_mstrcatf(user_data, "%s",
-                        ogs_diam_cx_xml_public_id_s);
-            ogs_assert(user_data);
+	return 0;
 
-              user_data = ogs_mstrcatf(user_data, "%ssip:%s%s",
-                          ogs_diam_cx_xml_identity_s,
-                          subscription_data->msisdn[i].bcd,
-                          ogs_diam_cx_xml_identity_e);
-              ogs_assert(user_data);
+out:
+    /* Set Vendor-Specific-Application-Id AVP */
+    ret = ogs_diam_message_vendor_specific_appid_set(
+            ans, OGS_DIAM_CX_APPLICATION_ID);
+    ogs_assert(ret == 0);
 
-              user_data = ogs_mstrcatf(user_data, "%s",
-                          ogs_diam_cx_xml_extension_s);
-              ogs_assert(user_data);
+	/* Set the Experimental-Result, Origin-Host and Origin-Realm AVPs */
+    ret = ogs_diam_message_experimental_rescode_set(ans, result_code);
+    ogs_assert(ret == 0);
 
-                user_data = ogs_mstrcatf(user_data, "%s%s%s",
-                            ogs_diam_cx_xml_identity_type_s,
-                            "0",
-                            ogs_diam_cx_xml_identity_type_e);
-                ogs_assert(user_data);
+    /* Set the Auth-Session-State AVP */
+    ret = fd_msg_avp_new(ogs_diam_auth_session_state, 0, &avp);
+    ogs_assert(ret == 0);
+    val.i32 = 1;
+    ret = fd_msg_avp_setvalue(avp, &val);
+    ogs_assert(ret == 0);
+    ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
+    ogs_assert(ret == 0);
 
-              user_data = ogs_mstrcatf(user_data, "%s",
-                          ogs_diam_cx_xml_extension_e);
-              ogs_assert(user_data);
+	ret = fd_msg_send(msg, NULL, NULL);
+    ogs_assert(ret == 0);
 
-            user_data = ogs_mstrcatf(user_data, "%s",
-                        ogs_diam_cx_xml_public_id_e);
-            ogs_assert(user_data);
-        }
+    ogs_free(public_identity);
 
-      user_data = ogs_mstrcatf(user_data, "%s",
-                  ogs_diam_cx_xml_service_profile_e);
-      ogs_assert(user_data);
-
-    user_data = ogs_mstrcatf(user_data,
-                "%s", ogs_diam_cx_xml_ims_subscription_e);
-    ogs_assert(user_data);
-
-    return user_data;
+    return 0;
 }
 
 int hss_cx_init(void)
@@ -981,6 +949,12 @@ int hss_cx_init(void)
                 &hdl_cx_sar);
     ogs_assert(ret == 0);
 
+	/* Specific handler for Location-Info-Request */
+	data.command = ogs_diam_cx_cmd_lir;
+	ret = fd_disp_register(hss_ogs_diam_cx_lir_cb, DISP_HOW_CC, &data, NULL,
+                &hdl_cx_lir);
+    ogs_assert(ret == 0);
+
 	/* Advertise the support for the application in the peer */
 	ret = fd_disp_app_support(ogs_diam_cx_application, ogs_diam_vendor, 1, 0);
     ogs_assert(ret == 0);
@@ -998,4 +972,6 @@ void hss_cx_final(void)
 		(void) fd_disp_unregister(&hdl_cx_mar, NULL);
 	if (hdl_cx_sar)
 		(void) fd_disp_unregister(&hdl_cx_sar, NULL);
+	if (hdl_cx_lir)
+		(void) fd_disp_unregister(&hdl_cx_lir, NULL);
 }

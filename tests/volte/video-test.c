@@ -18,7 +18,7 @@
  */
 
 #include "test-common.h"
-#include "pcscf-fd-path.h"
+#include "test-fd-path.h"
 
 static void test1_func(abts_case *tc, void *data)
 {
@@ -262,7 +262,7 @@ static void test1_func(abts_case *tc, void *data)
 
     /* Send AA-Request */
     rx_sid = NULL;
-    pcscf_rx_send_aar_video(&rx_sid, sess,
+    test_rx_send_aar_video(&rx_sid, sess,
             OGS_DIAM_RX_SUBSCRIPTION_ID_TYPE_END_USER_SIP_URI);
 
     /* Receive E-RABSetupRequest +
@@ -387,7 +387,7 @@ static void test1_func(abts_case *tc, void *data)
     ogs_msleep(100);
 
     /* Send Session-Termination-Request */
-    pcscf_rx_send_str(rx_sid);
+    test_rx_send_str(rx_sid);
 
     /* Receive E-RABReleaseCommand +
      * Dectivate EPS bearer context request */
@@ -424,7 +424,7 @@ static void test1_func(abts_case *tc, void *data)
 
     /* Send AA-Request */
     rx_sid = NULL;
-    pcscf_rx_send_aar_video(&rx_sid, sess,
+    test_rx_send_aar_video(&rx_sid, sess,
             OGS_DIAM_RX_SUBSCRIPTION_ID_TYPE_END_USER_SIP_URI);
 
     /* Receive E-RABSetupRequest +
@@ -549,7 +549,7 @@ static void test1_func(abts_case *tc, void *data)
     ogs_msleep(100);
 
     /* Send Session-Termination-Request */
-    pcscf_rx_send_str(rx_sid);
+    test_rx_send_str(rx_sid);
 
     /* Receive E-RABReleaseCommand +
      * Dectivate EPS bearer context request */
@@ -586,7 +586,7 @@ static void test1_func(abts_case *tc, void *data)
 
     /* Send AA-Request */
     rx_sid = NULL;
-    pcscf_rx_send_aar_video(&rx_sid, sess,
+    test_rx_send_aar_video(&rx_sid, sess,
             OGS_DIAM_RX_SUBSCRIPTION_ID_TYPE_END_USER_SIP_URI);
 
     /* Receive E-RABSetupRequest +
@@ -711,7 +711,7 @@ static void test1_func(abts_case *tc, void *data)
     ogs_msleep(100);
 
     /* Send Session-Termination-Request */
-    pcscf_rx_send_str(rx_sid);
+    test_rx_send_str(rx_sid);
 
     /* Receive E-RABReleaseCommand +
      * Dectivate EPS bearer context request */
@@ -748,7 +748,7 @@ static void test1_func(abts_case *tc, void *data)
 
     /* Send AA-Request */
     rx_sid = NULL;
-    pcscf_rx_send_aar_video(&rx_sid, sess,
+    test_rx_send_aar_video(&rx_sid, sess,
             OGS_DIAM_RX_SUBSCRIPTION_ID_TYPE_END_USER_SIP_URI);
 
     /* Receive E-RABSetupRequest +
@@ -873,7 +873,7 @@ static void test1_func(abts_case *tc, void *data)
     ogs_msleep(100);
 
     /* Send Session-Termination-Request */
-    pcscf_rx_send_str(rx_sid);
+    test_rx_send_str(rx_sid);
 
     /* Receive E-RABReleaseCommand +
      * Dectivate EPS bearer context request */
@@ -910,7 +910,7 @@ static void test1_func(abts_case *tc, void *data)
 
     /* Send AA-Request */
     rx_sid = NULL;
-    pcscf_rx_send_aar_video(&rx_sid, sess,
+    test_rx_send_aar_video(&rx_sid, sess,
             OGS_DIAM_RX_SUBSCRIPTION_ID_TYPE_END_USER_SIP_URI);
 
     /* Receive E-RABSetupRequest +
@@ -1035,7 +1035,7 @@ static void test1_func(abts_case *tc, void *data)
     ogs_msleep(100);
 
     /* Send Session-Termination-Request */
-    pcscf_rx_send_str(rx_sid);
+    test_rx_send_str(rx_sid);
 
     /* Receive E-RABReleaseCommand +
      * Dectivate EPS bearer context request */
@@ -1072,7 +1072,7 @@ static void test1_func(abts_case *tc, void *data)
 
     /* Send AA-Request */
     rx_sid = NULL;
-    pcscf_rx_send_aar_video(&rx_sid, sess,
+    test_rx_send_aar_video(&rx_sid, sess,
             OGS_DIAM_RX_SUBSCRIPTION_ID_TYPE_END_USER_SIP_URI);
 
     /* Receive E-RABSetupRequest +
@@ -1197,7 +1197,7 @@ static void test1_func(abts_case *tc, void *data)
     ogs_msleep(100);
 
     /* Send Session-Termination-Request */
-    pcscf_rx_send_str(rx_sid);
+    test_rx_send_str(rx_sid);
 
     /* Receive E-RABReleaseCommand +
      * Dectivate EPS bearer context request */

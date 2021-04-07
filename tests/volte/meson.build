@@ -16,8 +16,9 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 testapp_volte_sources = files('''
-    pcscf-fd-path.h
-    pcscf-fd-path.c
+    test-fd-path.h
+    test-fd-path.c
+    diameter-rx-path.c
     diameter-cx-path.c
 
     abts-main.c

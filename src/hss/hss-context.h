@@ -43,12 +43,14 @@ typedef struct _hss_context_t {
 
     ogs_list_t          impi_list;
     ogs_hash_t          *impi_hash;     /* hash table (IMPI) */
+    ogs_hash_t          *impu_hash;     /* hash table (IMPU) */
 } hss_context_t;
 
 typedef struct hss_impi_s {
     ogs_lnode_t lnode;
 
     char *id;
+    char *imsi_bcd;
 
     ogs_list_t impu_list;
 } hss_impi_t;
@@ -75,13 +77,23 @@ int hss_db_increment_sqn(char *imsi_bcd);
 int hss_db_subscription_data(
     char *imsi_bcd, ogs_subscription_data_t *subscription_data);
 
+int hss_db_msisdn_data(
+        char *imsi_or_msisdn_bcd, ogs_msisdn_data_t *msisdn_data);
+
+int hss_db_ims_data(char *imsi_bcd, ogs_ims_data_t *ims_data);
+
 void hss_cx_associate_identity(char *user_name, char *public_identity);
 bool hss_cx_identity_is_associated(char *user_name, char *public_identity);
 
-char *hss_cx_get_server_name(char *user_name, char *public_identity);
+char *hss_cx_get_imsi_bcd(char *public_identity);
+void hss_cx_set_imsi_bcd(char *user_name, char *imsi_bcd);
+
+char *hss_cx_get_server_name(char *public_identity);
 void hss_cx_set_server_name(
-        char *user_name, char *public_identity,
-        char *server_name, bool overwrite);
+        char *public_identity, char *server_name, bool overwrite);
+
+char *hss_cx_download_user_data(char *user_name, ogs_ims_data_t *ims_data);
+
 
 #ifdef __cplusplus
 }

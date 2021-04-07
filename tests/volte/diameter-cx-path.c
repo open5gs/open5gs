@@ -20,7 +20,7 @@
 #include "ogs-diameter-cx.h"
 
 #include "test-common.h"
-#include "pcscf-fd-path.h"
+#include "test-fd-path.h"
 
 static struct session_handler *test_cx_reg = NULL;
 
@@ -44,6 +44,9 @@ static void test_cx_maa_cb(void *data, struct msg **msg);
 
 static void test_cx_send_sar(struct sess_state *sess_data);
 static void test_cx_saa_cb(void *data, struct msg **msg);
+
+static void test_cx_send_lir(struct sess_state *sess_data);
+static void test_cx_lia_cb(void *data, struct msg **msg);
 
 static void state_cleanup(struct sess_state *sess_data, os0_t sid, void *opaque)
 {
@@ -794,6 +797,231 @@ static void test_cx_saa_cb(void *data, struct msg **msg)
     uint32_t *err = NULL, *exp_err = NULL;
 
     ogs_debug("Server-Assignment-Answer");
+
+    ret = clock_gettime(CLOCK_REALTIME, &ts);
+    ogs_assert(ret == 0);
+
+    /* Search the session, retrieve its data */
+    ret = fd_msg_sess_get(fd_g_config->cnf_dict, *msg, &session, &new);
+    ogs_expect_or_return(ret == 0);
+    ogs_expect_or_return(new == 0);
+
+    ret = fd_sess_state_retrieve(test_cx_reg, session, &sess_data);
+    ogs_expect_or_return(ret == 0);
+    ogs_expect_or_return(sess_data);
+    ogs_expect_or_return((void *)sess_data == data);
+
+    test_ue = sess_data->test_ue;
+    ogs_assert(test_ue);
+
+    /* Value of Result Code */
+    ret = fd_msg_search_avp(*msg, ogs_diam_result_code, &avp);
+    ogs_assert(ret == 0);
+    if (avp) {
+        ret = fd_msg_avp_hdr(avp, &hdr);
+        ogs_assert(ret == 0);
+        result_code = hdr->avp_value->i32;
+        err = &result_code;
+        ogs_debug("    Result Code: %d", hdr->avp_value->i32);
+    } else {
+        ret = fd_msg_search_avp(*msg, ogs_diam_experimental_result, &avp);
+        ogs_assert(ret == 0);
+        if (avp) {
+            ret = fd_avp_search_avp(avp,
+                    ogs_diam_experimental_result_code, &avpch);
+            ogs_assert(ret == 0);
+            if (avpch) {
+                ret = fd_msg_avp_hdr(avpch, &hdr);
+                ogs_assert(ret == 0);
+                result_code = hdr->avp_value->i32;
+                exp_err = &result_code;
+                ogs_debug("    Experimental Result Code: %d", result_code);
+            }
+        } else {
+            ogs_error("no Result-Code");
+            error++;
+        }
+    }
+
+    ogs_assert(err && !exp_err && result_code == ER_DIAMETER_SUCCESS);
+
+    /* Free the message */
+    ogs_assert(pthread_mutex_lock(&ogs_diam_logger_self()->stats_lock) == 0);
+    dur = ((ts.tv_sec - sess_data->ts.tv_sec) * 1000000) +
+        ((ts.tv_nsec - sess_data->ts.tv_nsec) / 1000);
+    if (ogs_diam_logger_self()->stats.nb_recv) {
+        /* Ponderate in the avg */
+        ogs_diam_logger_self()->stats.avg = (ogs_diam_logger_self()->stats.avg *
+            ogs_diam_logger_self()->stats.nb_recv + dur) /
+            (ogs_diam_logger_self()->stats.nb_recv + 1);
+        /* Min, max */
+        if (dur < ogs_diam_logger_self()->stats.shortest)
+            ogs_diam_logger_self()->stats.shortest = dur;
+        if (dur > ogs_diam_logger_self()->stats.longest)
+            ogs_diam_logger_self()->stats.longest = dur;
+    } else {
+        ogs_diam_logger_self()->stats.shortest = dur;
+        ogs_diam_logger_self()->stats.longest = dur;
+        ogs_diam_logger_self()->stats.avg = dur;
+    }
+    if (error)
+        ogs_diam_logger_self()->stats.nb_errs++;
+    else
+        ogs_diam_logger_self()->stats.nb_recv++;
+
+    ogs_assert(pthread_mutex_unlock(&ogs_diam_logger_self()->stats_lock) == 0);
+
+    /* Display how long it took */
+    if (ts.tv_nsec > sess_data->ts.tv_nsec)
+        ogs_trace("in %d.%06ld sec",
+                (int)(ts.tv_sec - sess_data->ts.tv_sec),
+                (long)(ts.tv_nsec - sess_data->ts.tv_nsec) / 1000);
+    else
+        ogs_trace("in %d.%06ld sec",
+                (int)(ts.tv_sec + 1 - sess_data->ts.tv_sec),
+                (long)(1000000000 + ts.tv_nsec - sess_data->ts.tv_nsec) / 1000);
+
+    ret = fd_msg_free(*msg);
+    ogs_assert(ret == 0);
+    *msg = NULL;
+
+    test_cx_send_lir(sess_data);
+    return;
+}
+
+static void test_cx_send_lir(struct sess_state *sess_data)
+{
+    int ret;
+
+    struct msg *req = NULL;
+
+    struct msg_hdr *msg_header = NULL;
+
+    struct session *session = NULL;
+    struct sess_state *svg;
+
+    struct avp *avp = NULL, *avpch = NULL;
+    union avp_value val;
+
+    test_ue_t *test_ue = NULL;
+    char *public_identity = NULL;
+
+    ogs_assert(sess_data);
+    test_ue = sess_data->test_ue;
+    ogs_assert(test_ue);
+
+    ogs_debug("Location-Info-Request");
+
+    /* Create the request */
+    ret = fd_msg_new(ogs_diam_cx_cmd_lir, MSGFL_ALLOC_ETEID, &req);
+    ogs_assert(ret == 0);
+
+    ret = fd_msg_hdr(req, &msg_header);
+    ogs_assert(ret == 0);
+    msg_header->msg_appl = OGS_DIAM_CX_APPLICATION_ID;
+
+    #define OGS_DIAM_CX_APP_SID_OPT  "app_cx"
+    ret = fd_msg_new_session(req, (os0_t)OGS_DIAM_CX_APP_SID_OPT,
+            CONSTSTRLEN(OGS_DIAM_CX_APP_SID_OPT));
+    ogs_assert(ret == 0);
+    ret = fd_msg_sess_get(fd_g_config->cnf_dict, req, &session, NULL);
+    ogs_assert(ret == 0);
+
+    /* Set Vendor-Specific-Application-Id AVP */
+    ret = ogs_diam_message_vendor_specific_appid_set(
+            req, OGS_DIAM_CX_APPLICATION_ID);
+    ogs_assert(ret == 0);
+
+    /* Set the Auth-Session-State AVP */
+    ret = fd_msg_avp_new(ogs_diam_auth_session_state, 0, &avp);
+    ogs_assert(ret == 0);
+    val.i32 = 1;
+    ret = fd_msg_avp_setvalue(avp, &val);
+    ogs_assert(ret == 0);
+    ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
+    ogs_assert(ret == 0);
+
+    /* Set Origin-Host & Origin-Realm */
+    ret = fd_msg_add_origin(req, 0);
+    ogs_assert(ret == 0);
+
+    /* Set the Destination-Host AVP */
+    ret = fd_msg_avp_new(ogs_diam_destination_host, 0, &avp);
+    ogs_assert(ret == 0);
+    val.os.data = TEST_HSS_IDENTITY;
+    val.os.len  = strlen(TEST_HSS_IDENTITY);
+    ret = fd_msg_avp_setvalue(avp, &val);
+    ogs_assert(ret == 0);
+    ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
+    ogs_assert(ret == 0);
+
+    /* Set the Destination-Realm AVP */
+    ret = fd_msg_avp_new(ogs_diam_destination_realm, 0, &avp);
+    ogs_assert(ret == 0);
+    val.os.data = (unsigned char *)(fd_g_config->cnf_diamrlm);
+    val.os.len  = strlen(fd_g_config->cnf_diamrlm);
+    ret = fd_msg_avp_setvalue(avp, &val);
+    ogs_assert(ret == 0);
+    ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
+    ogs_assert(ret == 0);
+
+    /* Set the Public-Identity AVP */
+    ret = fd_msg_avp_new(ogs_diam_cx_public_identity, 0, &avp);
+    ogs_assert(ret == 0);
+    public_identity = ogs_msprintf("tel:%s", TEST_ADDITIONAL_MSISDN);
+    ogs_assert(public_identity);
+    val.os.data = (uint8_t *)public_identity;
+    val.os.len = strlen(public_identity);
+    ret = fd_msg_avp_setvalue(avp, &val);
+    ogs_assert(ret == 0);
+    ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
+    ogs_assert(ret == 0);
+
+    ret = clock_gettime(CLOCK_REALTIME, &sess_data->ts);
+    ogs_assert(ret == 0);
+
+    /* Keep a pointer to the session data for debug purpose,
+     * in real life we would not need it */
+    svg = sess_data;
+
+    /* Store this value in the session */
+    ret = fd_sess_state_store(test_cx_reg, session, &sess_data);
+    ogs_assert(ret == 0);
+    ogs_assert(sess_data == 0);
+
+    /* Send the request */
+    ret = fd_msg_send(&req, test_cx_lia_cb, svg);
+    ogs_assert(ret == 0);
+
+    /* Increment the counter */
+    ogs_assert(pthread_mutex_lock(&ogs_diam_logger_self()->stats_lock) == 0);
+    ogs_diam_logger_self()->stats.nb_sent++;
+    ogs_assert(pthread_mutex_unlock(&ogs_diam_logger_self()->stats_lock) == 0);
+
+    ogs_free(public_identity);
+}
+
+/* Callback for incoming Location-Info-Answer messages */
+static void test_cx_lia_cb(void *data, struct msg **msg)
+{
+    int ret, new;
+
+    struct avp *avp, *avpch;
+    struct avp_hdr *hdr;
+
+    unsigned long dur;
+    int error = 0;
+
+    struct sess_state *sess_data = NULL;
+    struct timespec ts;
+    struct session *session;
+
+    test_ue_t *test_ue = NULL;
+
+    uint32_t result_code;
+    uint32_t *err = NULL, *exp_err = NULL;
+
+    ogs_debug("Location-Info-Answer");
 
     ret = clock_gettime(CLOCK_REALTIME, &ts);
     ogs_assert(ret == 0);

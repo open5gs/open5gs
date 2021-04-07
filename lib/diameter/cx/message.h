@@ -38,6 +38,8 @@ extern struct dict_object *ogs_diam_cx_cmd_mar;
 extern struct dict_object *ogs_diam_cx_cmd_maa;
 extern struct dict_object *ogs_diam_cx_cmd_sar;
 extern struct dict_object *ogs_diam_cx_cmd_saa;
+extern struct dict_object *ogs_diam_cx_cmd_lir;
+extern struct dict_object *ogs_diam_cx_cmd_lia;
 
 extern struct dict_object *ogs_diam_cx_public_identity;
 extern struct dict_object *ogs_diam_cx_visited_network_identifier;

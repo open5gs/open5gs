@@ -234,11 +234,12 @@ uint64_t ogs_uint64_from_string(char *str)
 void ogs_extract_digit_from_string(char *digit, char *string)
 {
     bool extracting = false;
+    int i = 0;
 
     ogs_assert(string);
     ogs_assert(digit);
 
-    while (*string) {
+    while (*string && i < OGS_MAX_IMSI_BCD_LEN) {
         if (*string >= '0' && *string <= '9') {
             *digit++ = *string;
             extracting = true;
@@ -246,6 +247,7 @@ void ogs_extract_digit_from_string(char *digit, char *string)
             break;
         }
         string++;
+        i++;
     }
 
     *digit = 0;

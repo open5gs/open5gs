@@ -33,6 +33,9 @@ struct dict_object *ogs_diam_cx_cmd_maa = NULL;
 struct dict_object *ogs_diam_cx_cmd_sar = NULL;
 struct dict_object *ogs_diam_cx_cmd_saa = NULL;
 
+struct dict_object *ogs_diam_cx_cmd_lir = NULL;
+struct dict_object *ogs_diam_cx_cmd_lia = NULL;
+
 struct dict_object *ogs_diam_cx_public_identity = NULL;
 struct dict_object *ogs_diam_cx_visited_network_identifier = NULL;
 struct dict_object *ogs_diam_cx_server_name = NULL;
@@ -159,6 +162,11 @@ int ogs_diam_cx_init(void)
             "3GPP/Server-Assignment-Request", &ogs_diam_cx_cmd_sar);
     CHECK_dict_search(DICT_COMMAND, CMD_BY_NAME,
             "3GPP/Server-Assignment-Answer", &ogs_diam_cx_cmd_saa);
+
+    CHECK_dict_search(DICT_COMMAND, CMD_BY_NAME,
+            "3GPP/Location-Info-Request", &ogs_diam_cx_cmd_lir);
+    CHECK_dict_search(DICT_COMMAND, CMD_BY_NAME,
+            "3GPP/Location-Info-Answer", &ogs_diam_cx_cmd_lia);
 
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS,
             "Public-Identity", &ogs_diam_cx_public_identity);
