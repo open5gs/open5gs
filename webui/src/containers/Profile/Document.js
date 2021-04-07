@@ -169,6 +169,22 @@ class Document extends Component {
   validate = (formData, errors) => {
     const { profiles, action, status } = this.props;
 
+//    In Editing-mode, this is not working!
+//    More study is needed.
+//
+//    if (formData.msisdn) {
+//      formData.msisdn.map(msisdn => {
+//        if (subscribers.data.filter(subscriber => subscriber.msisdn.includes(msisdn)).length > 0) {
+//          errors.msisdn.addError(`'${msisdn}' is duplicated`);
+//        }
+//      });
+
+    if (formData.msisdn) {
+      const { msisdn } = formData;
+      if (msisdn && msisdn.length > 1 && msisdn[0] === msisdn[1])
+        errors.msisdn.addError(`'${msisdn[1]}' is duplicated`);
+    }
+
     if (formData.slice) {
       let s_nssais = formData.slice.map(slice => {
         return JSON.stringify({ sst: slice.sst, sd: slice.sd })
