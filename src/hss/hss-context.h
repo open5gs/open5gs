@@ -41,28 +41,15 @@ typedef struct _hss_context_t {
     ogs_thread_mutex_t  db_lock;
     ogs_thread_mutex_t  cx_lock;
 
+    /* S6A Interface */
+    ogs_list_t          imsi_list;
+    ogs_hash_t          *imsi_hash;     /* hash table (IMSI) */
+
+    /* CX Interface */
     ogs_list_t          impi_list;
     ogs_hash_t          *impi_hash;     /* hash table (IMPI) */
     ogs_hash_t          *impu_hash;     /* hash table (IMPU) */
 } hss_context_t;
-
-typedef struct hss_impi_s {
-    ogs_lnode_t lnode;
-
-    char *id;
-    char *imsi_bcd;
-
-    ogs_list_t impu_list;
-} hss_impi_t;
-
-typedef struct hss_impu_s {
-    ogs_lnode_t lnode;
-
-    char *id;
-    char *server_name;
-
-    hss_impi_t *impi;
-} hss_impu_t;
 
 void hss_context_init(void);
 void hss_context_final(void);
@@ -82,17 +69,23 @@ int hss_db_msisdn_data(
 
 int hss_db_ims_data(char *imsi_bcd, ogs_ims_data_t *ims_data);
 
+void hss_s6a_set_visited_plmn_id(
+        char *imsi_bcd, ogs_plmn_id_t *visited_plmn_id);
+
 void hss_cx_associate_identity(char *user_name, char *public_identity);
 bool hss_cx_identity_is_associated(char *user_name, char *public_identity);
 
-char *hss_cx_get_imsi_bcd(char *public_identity);
 void hss_cx_set_imsi_bcd(char *user_name, char *imsi_bcd);
+
+char *hss_cx_get_imsi_bcd(char *public_identity);
+ogs_plmn_id_t *hss_cx_get_visited_plmn_id(char *public_identity);
 
 char *hss_cx_get_server_name(char *public_identity);
 void hss_cx_set_server_name(
         char *public_identity, char *server_name, bool overwrite);
 
-char *hss_cx_download_user_data(char *user_name, ogs_ims_data_t *ims_data);
+char *hss_cx_download_user_data(
+        char *user_name, ogs_plmn_id_t *plmn_id, ogs_ims_data_t *ims_data);
 
 
 #ifdef __cplusplus

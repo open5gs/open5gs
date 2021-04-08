@@ -69,6 +69,8 @@ static int hss_ogs_diam_s6a_air_cb( struct msg **msg, struct avp *avp,
     int rv;
     uint32_t result_code = 0;
 
+    ogs_plmn_id_t visited_plmn_id;
+
     ogs_assert(msg);
 
     ogs_debug("Authentication-Information-Request");
@@ -155,9 +157,9 @@ static int hss_ogs_diam_s6a_air_cb( struct msg **msg, struct avp *avp,
     ogs_assert(ret == 0);
     ret = fd_msg_avp_hdr(avp, &hdr);
     ogs_assert(ret == 0);
-#if 0  // TODO : check visited_plmn_id
-    memcpy(visited_plmn_id, hdr->avp_value->os.data, hdr->avp_value->os.len);
-#endif
+    memcpy(&visited_plmn_id, hdr->avp_value->os.data, hdr->avp_value->os.len);
+
+    hss_s6a_set_visited_plmn_id(imsi_bcd, &visited_plmn_id);
 
     milenage_generate(opc, auth_info.amf, auth_info.k,
         ogs_uint64_to_buffer(auth_info.sqn, OGS_SQN_LEN, sqn), auth_info.rand,
@@ -286,6 +288,8 @@ static int hss_ogs_diam_s6a_ulr_cb( struct msg **msg, struct avp *avp,
     struct sockaddr_in sin;
     struct sockaddr_in6 sin6;
 
+    ogs_plmn_id_t visited_plmn_id;
+
     ogs_assert(msg);
 
     ogs_debug("Update-Location-Request");
@@ -316,9 +320,9 @@ static int hss_ogs_diam_s6a_ulr_cb( struct msg **msg, struct avp *avp,
     ogs_assert(ret == 0);
     ret = fd_msg_avp_hdr(avp, &hdr);
     ogs_assert(ret == 0);
-#if 0  // TODO : check visited_plmn_id
-    memcpy(visited_plmn_id, hdr->avp_value->os.data, hdr->avp_value->os.len);
-#endif
+    memcpy(&visited_plmn_id, hdr->avp_value->os.data, hdr->avp_value->os.len);
+
+    hss_s6a_set_visited_plmn_id(imsi_bcd, &visited_plmn_id);
 
 	/* Set the Origin-Host, Origin-Realm, andResult-Code AVPs */
 	ret = fd_msg_rescode_set(ans, (char*)"DIAMETER_SUCCESS", NULL, NULL, 1);

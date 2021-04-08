@@ -20,6 +20,35 @@
 #include "ogs-dbi.h"
 #include "hss-context.h"
 
+typedef struct hss_impi_s hss_impi_t;
+
+typedef struct hss_imsi_s {
+    ogs_lnode_t lnode;
+
+    char *id;
+    ogs_plmn_id_t visited_plmn_id;
+
+    hss_impi_t *impi;
+} hss_imsi_t;
+
+typedef struct hss_impi_s {
+    ogs_lnode_t lnode;
+
+    char *id;
+
+    hss_imsi_t *imsi;
+    ogs_list_t impu_list;
+} hss_impi_t;
+
+typedef struct hss_impu_s {
+    ogs_lnode_t lnode;
+
+    char *id;
+    char *server_name;
+
+    hss_impi_t *impi;
+} hss_impu_t;
+
 static hss_context_t self;
 static ogs_diam_config_t g_diam_conf;
 
@@ -27,8 +56,14 @@ int __hss_log_domain;
 
 static int context_initialized = 0;
 
+static OGS_POOL(imsi_pool, hss_imsi_t);
 static OGS_POOL(impi_pool, hss_impi_t);
 static OGS_POOL(impu_pool, hss_impu_t);
+
+static hss_imsi_t *imsi_add(char *id);
+static void imsi_remove(hss_imsi_t *imsi);
+static void imsi_remove_all(void);
+static hss_imsi_t *imsi_find_by_id(char *id);
 
 static hss_impi_t *impi_add(char *id);
 static void impi_remove(hss_impi_t *impi);
@@ -63,9 +98,11 @@ void hss_context_init(void)
     ogs_log_install_domain(&__ogs_dbi_domain, "dbi", ogs_core()->log.level);
     ogs_log_install_domain(&__hss_log_domain, "hss", ogs_core()->log.level);
 
+    ogs_pool_init(&imsi_pool, ogs_app()->pool.impi);
     ogs_pool_init(&impi_pool, ogs_app()->pool.impi);
     ogs_pool_init(&impu_pool, ogs_app()->pool.impu);
 
+    self.imsi_hash = ogs_hash_make();
     self.impi_hash = ogs_hash_make();
     self.impu_hash = ogs_hash_make();
 
@@ -79,13 +116,17 @@ void hss_context_final(void)
 {
     ogs_assert(context_initialized == 1);
 
+    imsi_remove_all();
     impi_remove_all();
 
+    ogs_assert(self.imsi_hash);
+    ogs_hash_destroy(self.imsi_hash);
     ogs_assert(self.impi_hash);
     ogs_hash_destroy(self.impi_hash);
     ogs_assert(self.impu_hash);
     ogs_hash_destroy(self.impu_hash);
 
+    ogs_pool_final(&imsi_pool);
     ogs_pool_final(&impi_pool);
     ogs_pool_final(&impu_pool);
 
@@ -405,6 +446,53 @@ int hss_db_ims_data(char *imsi_bcd, ogs_ims_data_t *ims_data)
     return rv;
 }
 
+static hss_imsi_t *imsi_add(char *id)
+{
+    hss_imsi_t *imsi = NULL;
+
+    ogs_assert(id);
+
+    ogs_pool_alloc(&imsi_pool, &imsi);
+    ogs_assert(imsi);
+    memset(imsi, 0, sizeof *imsi);
+
+    imsi->id = ogs_strdup(id);
+    ogs_assert(imsi->id);
+
+    ogs_hash_set(self.imsi_hash, imsi->id, strlen(imsi->id), imsi);
+
+    ogs_list_add(&self.imsi_list, imsi);
+
+    return imsi;
+}
+
+static void imsi_remove(hss_imsi_t *imsi)
+{
+    ogs_assert(imsi);
+
+    ogs_list_remove(&self.imsi_list, imsi);
+
+    ogs_assert(imsi->id);
+    ogs_hash_set(self.imsi_hash, imsi->id, strlen(imsi->id), NULL);
+    ogs_free(imsi->id);
+
+    ogs_pool_free(&imsi_pool, imsi);
+}
+
+static void imsi_remove_all(void)
+{
+    hss_imsi_t *imsi = NULL, *next = NULL;
+
+    ogs_list_for_each_safe(&self.imsi_list, next, imsi)
+        imsi_remove(imsi);
+}
+
+static hss_imsi_t *imsi_find_by_id(char *id)
+{
+    ogs_assert(id);
+    return (hss_imsi_t *)ogs_hash_get(self.imsi_hash, id, strlen(id));
+}
+
 static hss_impi_t *impi_add(char *id)
 {
     hss_impi_t *impi = NULL;
@@ -436,9 +524,6 @@ static void impi_remove(hss_impi_t *impi)
     ogs_assert(impi->id);
     ogs_hash_set(self.impi_hash, impi->id, strlen(impi->id), NULL);
     ogs_free(impi->id);
-
-    if (impi->imsi_bcd)
-        ogs_free(impi->imsi_bcd);
 
     ogs_pool_free(&impi_pool, impi);
 }
@@ -542,6 +627,26 @@ static hss_impu_t *impu_find_by_impi_and_id(hss_impi_t *impi, char *id)
     return NULL;
 }
 
+void hss_s6a_set_visited_plmn_id(char *imsi_bcd, ogs_plmn_id_t *visited_plmn_id)
+{
+    hss_imsi_t *imsi = NULL;
+
+    ogs_assert(imsi_bcd);
+    ogs_assert(visited_plmn_id);
+
+    ogs_thread_mutex_lock(&self.cx_lock);
+
+    imsi = imsi_find_by_id(imsi_bcd);
+    if (!imsi) {
+        imsi = imsi_add(imsi_bcd);
+        ogs_assert(imsi);
+    }
+
+    memcpy(&imsi->visited_plmn_id, visited_plmn_id, OGS_PLMN_ID_LEN);
+
+    ogs_thread_mutex_unlock(&self.cx_lock);
+}
+
 void hss_cx_associate_identity(char *user_name, char *public_identity)
 {
     hss_impi_t *impi = NULL;
@@ -589,6 +694,27 @@ bool hss_cx_identity_is_associated(char *user_name, char *public_identity)
     return match_result;
 }
 
+void hss_cx_set_imsi_bcd(char *user_name, char *imsi_bcd)
+{
+    hss_imsi_t *imsi = NULL;
+    hss_impi_t *impi = NULL;
+
+    ogs_assert(user_name);
+    ogs_assert(imsi_bcd);
+
+    ogs_thread_mutex_lock(&self.cx_lock);
+
+    impi = impi_find_by_id(user_name);
+    ogs_assert(impi);
+
+    imsi = imsi_find_by_id(imsi_bcd);
+    ogs_assert(imsi);
+
+    impi->imsi = imsi;
+
+    ogs_thread_mutex_unlock(&self.cx_lock);
+}
+
 char *hss_cx_get_imsi_bcd(char *public_identity)
 {
     hss_impi_t *impi = NULL;
@@ -603,33 +729,36 @@ char *hss_cx_get_imsi_bcd(char *public_identity)
         impi = impu->impi;
         ogs_assert(impi);
 
-        imsi_bcd = impi->imsi_bcd;
+        if (impi->imsi)
+            imsi_bcd = impi->imsi->id;
     }
 
     ogs_thread_mutex_unlock(&self.cx_lock);
 
-    return imsi_bcd;;
+    return imsi_bcd;
 }
 
-void hss_cx_set_imsi_bcd(char *user_name, char *imsi_bcd)
+ogs_plmn_id_t *hss_cx_get_visited_plmn_id(char *public_identity)
 {
     hss_impi_t *impi = NULL;
+    hss_impu_t *impu = NULL;
 
-    ogs_assert(user_name);
-    ogs_assert(imsi_bcd);
+    ogs_plmn_id_t *visited_plmn_id = NULL;
 
     ogs_thread_mutex_lock(&self.cx_lock);
 
-    impi = impi_find_by_id(user_name);
-    ogs_assert(impi);
+    impu = impu_find_by_id(public_identity);
+    if (impu) {
+        impi = impu->impi;
+        ogs_assert(impi);
 
-    if (impi->imsi_bcd)
-        ogs_free(impi->imsi_bcd);
-
-    impi->imsi_bcd = ogs_strdup(imsi_bcd);
-    ogs_assert(impi->imsi_bcd);
+        if (impi->imsi)
+            visited_plmn_id = &impi->imsi->visited_plmn_id;
+    }
 
     ogs_thread_mutex_unlock(&self.cx_lock);
+
+    return visited_plmn_id;
 }
 
 char *hss_cx_get_server_name(char *public_identity)
@@ -688,7 +817,8 @@ void hss_cx_set_server_name(
     ogs_thread_mutex_unlock(&self.cx_lock);
 }
 
-char *hss_cx_download_user_data(char *user_name, ogs_ims_data_t *ims_data)
+char *hss_cx_download_user_data(
+        char *user_name, ogs_plmn_id_t *plmn_id, ogs_ims_data_t *ims_data)
 {
     char *user_data = NULL;
 
@@ -699,13 +829,17 @@ char *hss_cx_download_user_data(char *user_name, ogs_ims_data_t *ims_data)
     int i;
 
     ogs_assert(user_name);
+    ogs_assert(plmn_id);
     ogs_assert(ims_data);
 
     /* Download User-Data */
     for (i = 0; i < ims_data->num_of_msisdn; i++) {
         char *public_identity = NULL;
 
-        public_identity = ogs_msprintf("sip:%s", ims_data->msisdn[i].bcd);
+        public_identity = ogs_msprintf(
+                "sip:%s@ims.mnc%03d.mcc%03d.3gppnetwork.org",
+                ims_data->msisdn[i].bcd,
+                ogs_plmn_id_mnc(plmn_id), ogs_plmn_id_mcc(plmn_id));
         ogs_assert(public_identity);
         hss_cx_associate_identity(user_name, public_identity);
         ogs_free(public_identity);

@@ -603,6 +603,7 @@ static int hss_ogs_diam_cx_sar_cb( struct msg **msg, struct avp *avp,
     char *user_data = NULL;
 
     char *imsi_bcd = NULL;
+    ogs_plmn_id_t *visited_plmn_id = NULL;
 
     ogs_ims_data_t ims_data;
 
@@ -664,6 +665,15 @@ static int hss_ogs_diam_cx_sar_cb( struct msg **msg, struct avp *avp,
         goto out;
     }
 
+    /* Check if IMSI */
+    visited_plmn_id = hss_cx_get_visited_plmn_id(public_identity);
+    if (!visited_plmn_id) {
+        ogs_error("Cannot find PLMN-ID for User-Name[%s] Public-Identity[%s]",
+                    user_name, public_identity);
+        result_code = OGS_DIAM_CX_ERROR_IDENTITY_NOT_REGISTERED;
+        goto out;
+    }
+
     /* DB : HSS IMS Service Profile */
     memset(&ims_data, 0, sizeof(ogs_ims_data_t));
     rv = hss_db_ims_data(imsi_bcd, &ims_data);
@@ -714,7 +724,8 @@ static int hss_ogs_diam_cx_sar_cb( struct msg **msg, struct avp *avp,
         /* Nothing to do */
     } else {
         /* Set the User-Data AVP */
-        user_data = hss_cx_download_user_data(user_name, &ims_data);
+        user_data = hss_cx_download_user_data(
+                user_name, visited_plmn_id, &ims_data);
         ogs_assert(user_data);
 
         ret = fd_msg_avp_new(ogs_diam_cx_user_data, 0, &avp);
