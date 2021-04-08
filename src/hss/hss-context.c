@@ -27,8 +27,6 @@ typedef struct hss_imsi_s {
 
     char *id;
     ogs_plmn_id_t visited_plmn_id;
-
-    hss_impi_t *impi;
 } hss_imsi_t;
 
 typedef struct hss_impi_s {
