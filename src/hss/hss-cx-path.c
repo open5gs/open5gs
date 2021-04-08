@@ -682,7 +682,7 @@ static int hss_ogs_diam_cx_sar_cb( struct msg **msg, struct avp *avp,
         goto out;
     }
 
-    /* Check if IMSI */
+    /* Check if Visited-PLMN-ID from S6A */
     visited_plmn_id = hss_cx_get_visited_plmn_id(public_identity);
     if (!visited_plmn_id) {
         ogs_error("Cannot find PLMN-ID for User-Name[%s] Public-Identity[%s]",
