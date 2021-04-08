@@ -79,6 +79,7 @@ void hss_cx_set_imsi_bcd(char *user_name, char *imsi_bcd);
 
 char *hss_cx_get_imsi_bcd(char *public_identity);
 ogs_plmn_id_t *hss_cx_get_visited_plmn_id(char *public_identity);
+char *hss_cx_get_user_name(char *public_identity);
 
 char *hss_cx_get_server_name(char *public_identity);
 void hss_cx_set_server_name(

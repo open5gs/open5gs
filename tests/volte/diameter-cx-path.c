@@ -32,6 +32,8 @@ struct sess_state {
 
     bool resync;
 
+    int server_assignment_type;
+
     struct timespec ts; /* Time of sending the message */
 };
 
@@ -623,6 +625,8 @@ static void test_cx_maa_cb(void *data, struct msg **msg)
     *msg = NULL;
 
     if (sess_data->resync == true) {
+        sess_data->server_assignment_type =
+            OGS_DIAM_CX_SERVER_ASSIGNMENT_REGISTRATION;
         test_cx_send_sar(sess_data);
     } else {
         sess_data->resync = true;
@@ -706,15 +710,18 @@ static void test_cx_send_sar(struct sess_state *sess_data)
     ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
     ogs_assert(ret == 0);
 
-    /* Set the User-Name AVP */
-    ret = fd_msg_avp_new(ogs_diam_user_name, 0, &avp);
-    ogs_assert(ret == 0);
-    val.os.data = (uint8_t *)sess_data->user_name;
-    val.os.len = strlen(sess_data->user_name);
-    ret = fd_msg_avp_setvalue(avp, &val);
-    ogs_assert(ret == 0);
-    ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
-    ogs_assert(ret == 0);
+    if (sess_data->server_assignment_type ==
+            OGS_DIAM_CX_SERVER_ASSIGNMENT_REGISTRATION) {
+        /* Set the User-Name AVP */
+        ret = fd_msg_avp_new(ogs_diam_user_name, 0, &avp);
+        ogs_assert(ret == 0);
+        val.os.data = (uint8_t *)sess_data->user_name;
+        val.os.len = strlen(sess_data->user_name);
+        ret = fd_msg_avp_setvalue(avp, &val);
+        ogs_assert(ret == 0);
+        ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
+        ogs_assert(ret == 0);
+    }
 
     /* Set the Public-Identity AVP */
     ret = fd_msg_avp_new(ogs_diam_cx_public_identity, 0, &avp);
@@ -739,7 +746,7 @@ static void test_cx_send_sar(struct sess_state *sess_data)
     /* Set the Server-Assignment-Type AVP */
     ret = fd_msg_avp_new(ogs_diam_cx_server_assignment_type, 0, &avp);
     ogs_assert(ret == 0);
-    val.i32 = OGS_DIAM_CX_SERVER_ASSIGNMENT_REGISTRATION;
+    val.i32 = sess_data->server_assignment_type;
     ret = fd_msg_avp_setvalue(avp, &val);
     ogs_assert(ret == 0);
     ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
@@ -885,7 +892,11 @@ static void test_cx_saa_cb(void *data, struct msg **msg)
     ogs_assert(ret == 0);
     *msg = NULL;
 
-    test_cx_send_lir(sess_data);
+    if (sess_data->server_assignment_type ==
+            OGS_DIAM_CX_SERVER_ASSIGNMENT_UNREGISTERED_USER)
+        state_cleanup(sess_data, NULL, NULL);
+    else
+        test_cx_send_lir(sess_data);
     return;
 }
 
@@ -1110,7 +1121,9 @@ static void test_cx_lia_cb(void *data, struct msg **msg)
     ogs_assert(ret == 0);
     *msg = NULL;
 
-    state_cleanup(sess_data, NULL, NULL);
+    sess_data->server_assignment_type =
+        OGS_DIAM_CX_SERVER_ASSIGNMENT_UNREGISTERED_USER;
+    test_cx_send_sar(sess_data);
     return;
 }
 

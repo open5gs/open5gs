@@ -759,6 +759,28 @@ ogs_plmn_id_t *hss_cx_get_visited_plmn_id(char *public_identity)
     return visited_plmn_id;
 }
 
+char *hss_cx_get_user_name(char *public_identity)
+{
+    hss_impi_t *impi = NULL;
+    hss_impu_t *impu = NULL;
+
+    char *user_name = NULL;
+
+    ogs_thread_mutex_lock(&self.cx_lock);
+
+    impu = impu_find_by_id(public_identity);
+    if (impu) {
+        impi = impu->impi;
+        ogs_assert(impi);
+
+        user_name = impi->id;
+    }
+
+    ogs_thread_mutex_unlock(&self.cx_lock);
+
+    return user_name;
+}
+
 char *hss_cx_get_server_name(char *public_identity)
 {
     char *server_name = NULL;

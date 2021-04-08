@@ -232,6 +232,8 @@ static int hss_ogs_diam_cx_mar_cb( struct msg **msg, struct avp *avp,
 
     uint8_t mac_s[OGS_MAC_S_LEN];
 
+    bool matched = false;
+
     ogs_assert(msg);
 
     ogs_debug("Multimedia-Auth-Request");
@@ -273,7 +275,7 @@ static int hss_ogs_diam_cx_mar_cb( struct msg **msg, struct avp *avp,
     ogs_assert(server_name);
 
     /* Check if IMPI(User-Name) + IMPU(Public-Identity) is associated */
-    bool matched = hss_cx_identity_is_associated(user_name, public_identity);
+    matched = hss_cx_identity_is_associated(user_name, public_identity);
     if (!matched) {
         ogs_error("User-Name[%s] Public-Identity[%s] is not assocated",
                     user_name, public_identity);
@@ -593,6 +595,8 @@ static int hss_ogs_diam_cx_sar_cb( struct msg **msg, struct avp *avp,
 
 	struct msg *ans, *qry;
 
+    bool matched = false;
+    struct avp *user_name_avp = NULL;
     struct avp *avpch = NULL;
     struct avp_hdr *hdr;
     union avp_value val;
@@ -617,16 +621,6 @@ static int hss_ogs_diam_cx_sar_cb( struct msg **msg, struct avp *avp,
     ogs_assert(ret == 0);
     ans = *msg;
 
-    /* Get User-Name AVP (Mandatory) */
-    ret = fd_msg_search_avp(qry, ogs_diam_user_name, &avp);
-    ogs_assert(ret == 0);
-    ret = fd_msg_avp_hdr(avp, &hdr);
-    ogs_assert(ret == 0);
-
-    user_name = ogs_strndup(
-        (char*)hdr->avp_value->os.data, hdr->avp_value->os.len);
-    ogs_assert(user_name);
-
     /* Get Public-Identity AVP (Mandatory) */
     ret = fd_msg_search_avp(qry, ogs_diam_cx_public_identity, &avp);
     ogs_assert(ret == 0);
@@ -647,13 +641,36 @@ static int hss_ogs_diam_cx_sar_cb( struct msg **msg, struct avp *avp,
         (char*)hdr->avp_value->os.data, hdr->avp_value->os.len);
     ogs_assert(server_name);
 
-    /* Check if IMPI(User-Name) + IMPU(Public-Identity) is associated */
-    bool matched = hss_cx_identity_is_associated(user_name, public_identity);
-    if (!matched) {
-        ogs_error("User-Name[%s] Public-Identity[%s] is not assocated",
-                    user_name, public_identity);
-        result_code = OGS_DIAM_CX_ERROR_IDENTITIES_DONT_MATCH;
-        goto out;
+    /* Get User-Name AVP */
+    ret = fd_msg_search_avp(qry, ogs_diam_user_name, &user_name_avp);
+    ogs_assert(ret == 0);
+    if (user_name_avp) {
+        ret = fd_msg_avp_hdr(user_name_avp, &hdr);
+        ogs_assert(ret == 0);
+
+        user_name = ogs_strndup(
+            (char*)hdr->avp_value->os.data, hdr->avp_value->os.len);
+        ogs_assert(user_name);
+
+        /* Check if IMPI(User-Name) + IMPU(Public-Identity) is associated */
+        matched = hss_cx_identity_is_associated(user_name, public_identity);
+        if (!matched) {
+            ogs_error("User-Name[%s] Public-Identity[%s] is not assocated",
+                        user_name, public_identity);
+            result_code = OGS_DIAM_CX_ERROR_IDENTITIES_DONT_MATCH;
+            goto out;
+        }
+    } else {
+        user_name = hss_cx_get_user_name(public_identity);
+        if (!user_name) {
+            ogs_error("Cannot find User-Name for Public-Identity[%s]",
+                        public_identity);
+            result_code = OGS_DIAM_CX_ERROR_USER_UNKNOWN;
+            goto out;
+        }
+
+        user_name = ogs_strdup(user_name);
+        ogs_assert(user_name);
     }
 
     /* Check if IMSI */
@@ -704,62 +721,75 @@ static int hss_ogs_diam_cx_sar_cb( struct msg **msg, struct avp *avp,
 	ret = fd_msg_rescode_set(ans, (char*)"DIAMETER_SUCCESS", NULL, NULL, 1);
     ogs_assert(ret == 0);
 
-    /* Set the User-Name AVP */
-    ret = fd_msg_avp_new(ogs_diam_user_name, 0, &avp);
-    ogs_assert(ret == 0);
-    val.os.data = (uint8_t *)user_name;
-    val.os.len = strlen(user_name);
-    ret = fd_msg_avp_setvalue(avp, &val);
-    ogs_assert(ret == 0);
-    ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
-    ogs_assert(ret == 0);
-
-    /* Get User-Data-Already-Available AVP (Mandatory) */
-    ret = fd_msg_search_avp(qry, ogs_diam_cx_user_data_already_available, &avp);
-    ogs_assert(ret == 0);
-    ret = fd_msg_avp_hdr(avp, &hdr);
-    ogs_assert(ret == 0);
-
-    if (hdr->avp_value->i32 == OGS_DIAM_CX_USER_DATA_ALREADY_AVAILABLE) {
-        /* Nothing to do */
-    } else {
-        /* Set the User-Data AVP */
-        user_data = hss_cx_download_user_data(
-                user_name, visited_plmn_id, &ims_data);
-        ogs_assert(user_data);
-
-        ret = fd_msg_avp_new(ogs_diam_cx_user_data, 0, &avp);
+    if (user_name_avp) {
+        /* Set the User-Name AVP */
+        ret = fd_msg_avp_new(ogs_diam_user_name, 0, &avp);
         ogs_assert(ret == 0);
-        val.os.data = (uint8_t *)user_data;
-        val.os.len = strlen(user_data);
+        val.os.data = (uint8_t *)user_name;
+        val.os.len = strlen(user_name);
         ret = fd_msg_avp_setvalue(avp, &val);
         ogs_assert(ret == 0);
         ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
         ogs_assert(ret == 0);
+    }
 
-        /* Set the Charging-Information AVP */
-        ret = fd_msg_avp_new(ogs_diam_cx_charging_information, 0, &avp);
+    /* Get Server-Assignment-Type AVP (Mandatory) */
+    ret = fd_msg_search_avp(qry,
+            ogs_diam_cx_server_assignment_type, &avp);
+    ogs_assert(ret == 0);
+    ret = fd_msg_avp_hdr(avp, &hdr);
+    ogs_assert(ret == 0);
+    if (hdr->avp_value->i32 == OGS_DIAM_CX_SERVER_ASSIGNMENT_REGISTRATION ||
+        hdr->avp_value->i32 == OGS_DIAM_CX_SERVER_ASSIGNMENT_RE_REGISTRATION) {
+
+        /* Get User-Data-Already-Available AVP (Mandatory) */
+        ret = fd_msg_search_avp(
+                qry, ogs_diam_cx_user_data_already_available, &avp);
+        ogs_assert(ret == 0);
+        ret = fd_msg_avp_hdr(avp, &hdr);
         ogs_assert(ret == 0);
 
-        /* Set the Charging-Information AVP */
-        ret = fd_msg_avp_new(ogs_diam_cx_charging_information, 0, &avp);
-        ogs_assert(ret == 0);
+        if (hdr->avp_value->i32 == OGS_DIAM_CX_USER_DATA_ALREADY_AVAILABLE) {
+            /* Nothing to do */
+        } else {
+            /* Set the User-Data AVP */
+            user_data = hss_cx_download_user_data(
+                    user_name, visited_plmn_id, &ims_data);
+            ogs_assert(user_data);
 
-        /* Set the Primary-Charging-Collection-Function-Name AVP */
-        ret = fd_msg_avp_new(
-                ogs_diam_cx_primary_charging_collection_function_name, 0,
-                &avpch);
-        ogs_assert(ret == 0);
+            ret = fd_msg_avp_new(ogs_diam_cx_user_data, 0, &avp);
+            ogs_assert(ret == 0);
+            val.os.data = (uint8_t *)user_data;
+            val.os.len = strlen(user_data);
+            ret = fd_msg_avp_setvalue(avp, &val);
+            ogs_assert(ret == 0);
+            ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
+            ogs_assert(ret == 0);
+
+            /* Set the Charging-Information AVP */
+            ret = fd_msg_avp_new(ogs_diam_cx_charging_information, 0, &avp);
+            ogs_assert(ret == 0);
+
+            /* Set the Charging-Information AVP */
+            ret = fd_msg_avp_new(ogs_diam_cx_charging_information, 0, &avp);
+            ogs_assert(ret == 0);
+
+            /* Set the Primary-Charging-Collection-Function-Name AVP */
+            ret = fd_msg_avp_new(
+                    ogs_diam_cx_primary_charging_collection_function_name, 0,
+                    &avpch);
+            ogs_assert(ret == 0);
 #define PRIMARY_CHARGING_COLLECTION_FUNCTION_NAME "pcrf"
-        val.os.data = (uint8_t *)PRIMARY_CHARGING_COLLECTION_FUNCTION_NAME;
-        val.os.len = strlen(PRIMARY_CHARGING_COLLECTION_FUNCTION_NAME);
-        ret = fd_msg_avp_setvalue(avpch, &val);
-        ogs_assert(ret == 0);
-        ret = fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD, avpch);
-        ogs_assert(ret == 0);
+            val.os.data = (uint8_t *)PRIMARY_CHARGING_COLLECTION_FUNCTION_NAME;
+            val.os.len = strlen(PRIMARY_CHARGING_COLLECTION_FUNCTION_NAME);
+            ret = fd_msg_avp_setvalue(avpch, &val);
+            ogs_assert(ret == 0);
+            ret = fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD, avpch);
+            ogs_assert(ret == 0);
 
-        ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
-        ogs_assert(ret == 0);
+            ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
+            ogs_assert(ret == 0);
+        }
     }
 
 	/* Send the answer */
