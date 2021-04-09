@@ -1,3 +1,21 @@
+open5gs (2.2.6) unstable; urgency=medium
+
+  * HSS Cx Added
+
+ -- Sukchan Lee <acetcom@gmail.com>  Fri, 09 Apr 2021 21:10:43 +0900
+
+open5gs (2.2.6~bionic) bionic; urgency=medium
+
+  * HSS Cx Added
+
+ -- Sukchan Lee <acetcom@gmail.com>  Fri, 09 Apr 2021 21:09:14 +0900
+
+open5gs (2.2.6~focal) focal; urgency=medium
+
+  * HSS Cx Added
+
+ -- Sukchan Lee <acetcom@gmail.com>  Fri, 09 Apr 2021 21:07:19 +0900
+
 open5gs (2.2.5) unstable; urgency=medium
 
   * Bug Fixed
