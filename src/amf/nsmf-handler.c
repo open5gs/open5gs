@@ -602,10 +602,8 @@ int amf_nsmf_pdusession_handle_update_sm_context(
 
         ogs_error("[%d:%d] HTTP response error [%d]",
                 sess->psi, sess->pti, recvmsg->res_status);
-#if 0 /* Is it needed */
         ngap_send_error_indication2(amf_ue,
                 NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
-#endif
 
         return OGS_ERROR;
     }
