@@ -39,7 +39,7 @@ char *ogs_nas_5gs_suci_from_mobile_identity(
 void ogs_nas_5gs_mobile_identity_guti_to_nas_guti(
         ogs_nas_5gs_mobile_identity_guti_t *mobile_identity_guti,
         ogs_nas_5gs_guti_t *nas_guti);
-void ogs_nas_5gs_nas_guti_to_mobilty_identity_guti(
+void ogs_nas_5gs_nas_guti_to_mobility_identity_guti(
         ogs_nas_5gs_guti_t *nas_guti,
         ogs_nas_5gs_mobile_identity_guti_t *mobile_identity_guti);
 

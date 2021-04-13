@@ -76,7 +76,7 @@ ogs_pkbuf_t *gmm_build_registration_accept(amf_ue_t *amf_ue)
     if (amf_ue->guti_present == true) {
         registration_accept->presencemask |= OGS_NAS_5GS_REGISTRATION_ACCEPT_5G_GUTI_PRESENT;
 
-        ogs_nas_5gs_nas_guti_to_mobilty_identity_guti(
+        ogs_nas_5gs_nas_guti_to_mobility_identity_guti(
                 &amf_ue->guti, &mobile_identity_guti);
 
         mobile_identity->length = sizeof(mobile_identity_guti);

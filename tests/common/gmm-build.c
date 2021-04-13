@@ -77,7 +77,7 @@ ogs_pkbuf_t *testgmm_build_registration_request(
     registration_type->data = test_ue->nas.data;
 
     if (test_ue->registration_request_param.guti) {
-        ogs_nas_5gs_nas_guti_to_mobilty_identity_guti(
+        ogs_nas_5gs_nas_guti_to_mobility_identity_guti(
                 &test_ue->nas_5gs_guti, &mobile_identity_guti);
         registration_request->mobile_identity.length =
             sizeof(ogs_nas_5gs_mobile_identity_guti_t);
@@ -369,7 +369,7 @@ ogs_pkbuf_t *testgmm_build_de_registration_request(
     de_registration_type->access_type = test_ue->nas.access_type;
 
     if (test_ue->nas_5gs_guti.m_tmsi) {
-        ogs_nas_5gs_nas_guti_to_mobilty_identity_guti(
+        ogs_nas_5gs_nas_guti_to_mobility_identity_guti(
                 &test_ue->nas_5gs_guti, &mobile_identity_guti);
         deregistration_request_from_ue->mobile_identity.length =
             sizeof(ogs_nas_5gs_mobile_identity_guti_t);
