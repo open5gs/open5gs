@@ -27,7 +27,7 @@ head_inline: "<style> ul { padding-bottom: 1em; } </style>"
   - [FreeBSD](platform/07-freebsd)
   
 - Hardware Specific Notes
-  - [Tested e/gNodeBs](hardware/01-genodebs)
+  - [eNodeBs/gNodeBs tested on Open5GS](hardware/01-genodebs)
   
 - @infinitydon
   - [Kubernetes Open5GS Deployment](https://dev.to/infinitydon/virtual-4g-simulation-using-kubernetes-and-gns3-3b7k?fbclid=IwAR1p99h13a-mCfejanbBQe0H0-jp5grXkn5mWf1WrTHf47UtegB2-UHGGZQ)
