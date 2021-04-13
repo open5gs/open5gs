@@ -56,6 +56,8 @@ void testgmm_recv(test_ue_t *test_ue, ogs_pkbuf_t *pkbuf)
     case OGS_NAS_5GS_SECURITY_MODE_COMMAND:
         break;
     case OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND:
+        testgmm_handle_configuration_update_command(
+                test_ue, &message.gmm.configuration_update_command);
         break;
     case OGS_NAS_5GS_DL_NAS_TRANSPORT:
         testgmm_handle_dl_nas_transport(test_ue, &message.gmm.dl_nas_transport);

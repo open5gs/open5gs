@@ -422,9 +422,9 @@ int emm_handle_service_request(
     }
 
     ogs_info("    GUTI[G:%d,C:%d,M_TMSI:0x%x] IMSI[%s]",
-            mme_ue->guti.mme_gid,
-            mme_ue->guti.mme_code,
-            mme_ue->guti.m_tmsi,
+            mme_ue->current.guti.mme_gid,
+            mme_ue->current.guti.mme_code,
+            mme_ue->current.guti.m_tmsi,
             MME_UE_HAVE_IMSI(mme_ue) ? mme_ue->imsi_bcd : "Unknown");
 
     return OGS_OK;

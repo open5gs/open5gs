@@ -1416,14 +1416,14 @@ ogs_pkbuf_t *s1ap_build_paging(
     /* Set Paging Identity */
     UEPagingID->present = S1AP_UEPagingID_PR_s_TMSI;
     UEPagingID->choice.s_TMSI = CALLOC(1, sizeof(S1AP_S_TMSI_t));
-    ogs_asn_uint8_to_OCTET_STRING(mme_ue->guti.mme_code, 
+    ogs_asn_uint8_to_OCTET_STRING(mme_ue->current.guti.mme_code,
             &UEPagingID->choice.s_TMSI->mMEC);
 
-    ogs_asn_uint32_to_OCTET_STRING(mme_ue->guti.m_tmsi, 
+    ogs_asn_uint32_to_OCTET_STRING(mme_ue->current.guti.m_tmsi,
             &UEPagingID->choice.s_TMSI->m_TMSI);
 
     ogs_debug("    MME_CODE[%d] M_TMSI[0x%x]",
-            mme_ue->guti.mme_code, mme_ue->guti.m_tmsi);
+            mme_ue->current.guti.mme_code, mme_ue->current.guti.m_tmsi);
     ogs_debug("    CN_DOMAIN[%s]",
             cn_domain == S1AP_CNDomain_cs ? "CS" :
                 cn_domain == S1AP_CNDomain_ps ? "PS" : "Unknown");

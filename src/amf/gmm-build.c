@@ -70,14 +70,16 @@ ogs_pkbuf_t *gmm_build_registration_accept(amf_ue_t *amf_ue)
     registration_result->value = amf_ue->nas.access_type;
 
     /* Set GUTI */
-    ogs_debug("[%s]    %s 5G-S_GUTI[AMF_ID:0x%x,M_TMSI:0x%x]", amf_ue->supi,
-            amf_ue->guti_present == true ? "[V]" : "[N]",
-            ogs_amf_id_hexdump(&amf_ue->guti.amf_id), amf_ue->guti.m_tmsi);
-    if (amf_ue->guti_present == true) {
-        registration_accept->presencemask |= OGS_NAS_5GS_REGISTRATION_ACCEPT_5G_GUTI_PRESENT;
+    if (amf_ue->next.m_tmsi) {
+        registration_accept->presencemask |=
+            OGS_NAS_5GS_REGISTRATION_ACCEPT_5G_GUTI_PRESENT;
+
+        ogs_debug("[%s]    5G-S_GUTI[AMF_ID:0x%x,M_TMSI:0x%x]", amf_ue->supi,
+                ogs_amf_id_hexdump(&amf_ue->next.guti.amf_id),
+                amf_ue->next.guti.m_tmsi);
 
         ogs_nas_5gs_nas_guti_to_mobility_identity_guti(
-                &amf_ue->guti, &mobile_identity_guti);
+                &amf_ue->next.guti, &mobile_identity_guti);
 
         mobile_identity->length = sizeof(mobile_identity_guti);
         mobile_identity->buffer = &mobile_identity_guti;
@@ -455,6 +457,9 @@ ogs_pkbuf_t *gmm_build_configuration_update_command(
     ogs_nas_configuration_update_indication_t
         *configuration_update_indication =
             &configuration_update_command->configuration_update_indication;
+    ogs_nas_5gs_mobile_identity_t *mobile_identity =
+        &configuration_update_command->guti;
+    ogs_nas_5gs_mobile_identity_guti_t mobile_identity_guti;
 
     struct timeval tv;
     struct tm gmt, local;
@@ -541,6 +546,22 @@ ogs_pkbuf_t *gmm_build_configuration_update_command(
         configuration_update_command->presencemask |=
             OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND_NETWORK_DAYLIGHT_SAVING_TIME_PRESENT;
         network_daylight_saving_time->length = 1;
+    }
+
+    if (param->guti) {
+        configuration_update_command->presencemask |=
+            OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND_5G_GUTI_PRESENT;
+
+        ogs_assert(amf_ue->next.m_tmsi);
+        ogs_info("[%s]    5G-S_GUTI[AMF_ID:0x%x,M_TMSI:0x%x]", amf_ue->supi,
+                ogs_amf_id_hexdump(&amf_ue->next.guti.amf_id),
+                amf_ue->next.guti.m_tmsi);
+
+        ogs_nas_5gs_nas_guti_to_mobility_identity_guti(
+                &amf_ue->next.guti, &mobile_identity_guti);
+
+        mobile_identity->length = sizeof(mobile_identity_guti);
+        mobile_identity->buffer = &mobile_identity_guti;
     }
 
     return nas_5gs_security_encode(amf_ue, &message);

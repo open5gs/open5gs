@@ -261,9 +261,10 @@ struct amf_ue_s {
     int             num_of_msisdn;
     char            *msisdn[OGS_MAX_NUM_OF_MSISDN];
 
-    amf_m_tmsi_t    *m_tmsi;
-    ogs_nas_5gs_guti_t guti;
-    bool             guti_present;
+    struct {
+        amf_m_tmsi_t *m_tmsi;
+        ogs_nas_5gs_guti_t guti;
+    } current, next;
 
     /* UE Info */
     ogs_guami_t     *guami;
@@ -600,6 +601,7 @@ ran_ue_t *ran_ue_find_by_amf_ue_ngap_id(uint64_t amf_ue_ngap_id);
 ran_ue_t *ran_ue_cycle(ran_ue_t *ran_ue);
 
 void amf_ue_new_guti(amf_ue_t *amf_ue);
+void amf_ue_confirm_guti(amf_ue_t *amf_ue);
 
 amf_ue_t *amf_ue_add(ran_ue_t *ran_ue);
 void amf_ue_remove(amf_ue_t *amf_ue);

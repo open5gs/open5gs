@@ -280,9 +280,6 @@ static void test1_func(abts_case *tc, void *data)
     test_ue->nas.registration.value =
         OGS_NAS_5GS_REGISTRATION_TYPE_PERIODIC_UPDATING;
 
-    /* INVALID GUTI */
-    test_ue->nas_5gs_guti.m_tmsi = 0x1234;
-
     /* Send Registration request */
     gmmbuf = testgmm_build_registration_request(test_ue, NULL);
 

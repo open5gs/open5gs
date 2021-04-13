@@ -1361,8 +1361,6 @@ static void test4_func(abts_case *tc, void *data)
 
     memset(&test_ue->attach_request_param,
             0, sizeof(test_ue->attach_request_param));
-    test_ue->attach_request_param.integrity_protected = 1;
-    test_ue->attach_request_param.guti = 1;
     test_ue->attach_request_param.last_visited_registered_tai = 1;
     test_ue->attach_request_param.old_guti_type = 1;
     emmbuf = testemm_build_attach_request(test_ue, esmbuf);

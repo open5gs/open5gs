@@ -1041,27 +1041,47 @@ ran_ue_t *ran_ue_cycle(ran_ue_t *ran_ue)
 
 void amf_ue_new_guti(amf_ue_t *amf_ue)
 {
-    if (amf_ue->m_tmsi) {
+    if (amf_ue->next.m_tmsi) {
+        ogs_warn("GUTI has already been allocated");
+        return;
+    }
+
+    memset(&amf_ue->next.guti, 0, sizeof(ogs_nas_5gs_guti_t));
+
+    ogs_assert(amf_ue->guami);
+    ogs_nas_from_plmn_id(
+            &amf_ue->next.guti.nas_plmn_id, &amf_ue->guami->plmn_id);
+    memcpy(&amf_ue->next.guti.amf_id,
+            &amf_ue->guami->amf_id, sizeof(ogs_amf_id_t));
+
+    amf_ue->next.m_tmsi = amf_m_tmsi_alloc();
+    ogs_assert(amf_ue->next.m_tmsi);
+    amf_ue->next.guti.m_tmsi = *(amf_ue->next.m_tmsi);
+}
+
+void amf_ue_confirm_guti(amf_ue_t *amf_ue)
+{
+    ogs_assert(amf_ue->next.m_tmsi);
+
+    if (amf_ue->current.m_tmsi) {
         /* AMF has a VALID GUTI
          * As such, we need to remove previous GUTI in hash table */
         ogs_hash_set(self.guti_ue_hash,
-                &amf_ue->guti, sizeof(ogs_nas_5gs_guti_t), NULL);
-        ogs_assert(amf_m_tmsi_free(amf_ue->m_tmsi) == OGS_OK);
+                &amf_ue->current.guti, sizeof(ogs_nas_5gs_guti_t), NULL);
+        ogs_assert(amf_m_tmsi_free(amf_ue->current.m_tmsi) == OGS_OK);
     }
 
-    memset(&amf_ue->guti, 0, sizeof(ogs_nas_5gs_guti_t));
+    /* Copying from Current to Next Guti */
+    amf_ue->current.m_tmsi = amf_ue->next.m_tmsi;
+    memcpy(&amf_ue->current.guti,
+            &amf_ue->next.guti, sizeof(ogs_nas_5gs_guti_t));
 
-    ogs_assert(amf_ue->guami);
-    ogs_nas_from_plmn_id(&amf_ue->guti.nas_plmn_id, &amf_ue->guami->plmn_id);
-    memcpy(&amf_ue->guti.amf_id, &amf_ue->guami->amf_id, sizeof(ogs_amf_id_t));
-
-    amf_ue->m_tmsi = amf_m_tmsi_alloc();
-    ogs_assert(amf_ue->m_tmsi);
-    amf_ue->guti.m_tmsi = *(amf_ue->m_tmsi);
+    /* Hashing Current GUTI */
     ogs_hash_set(self.guti_ue_hash,
-            &amf_ue->guti, sizeof(ogs_nas_5gs_guti_t), amf_ue);
+            &amf_ue->current.guti, sizeof(ogs_nas_5gs_guti_t), amf_ue);
 
-    amf_ue->guti_present = true;
+    /* Clear Next GUTI */
+    amf_ue->next.m_tmsi = NULL;
 }
 
 amf_ue_t *amf_ue_add(ran_ue_t *ran_ue)
@@ -1131,14 +1151,22 @@ void amf_ue_remove(amf_ue_t *amf_ue)
 
     amf_ue_fsm_fini(amf_ue);
 
+    /* Clear Paging Info */
+    AMF_UE_CLEAR_PAGING_INFO(amf_ue);
+
+    /* Clear N2 Transfer */
+    AMF_UE_CLEAR_N2_TRANSFER(amf_ue, pdu_session_resource_setup_request);
+
     /* Remove all session context */
     amf_sess_remove_all(amf_ue);
 
-    /* Clear hash table */
-    if (amf_ue->m_tmsi) {
+    if (amf_ue->current.m_tmsi) {
         ogs_hash_set(self.guti_ue_hash,
-                &amf_ue->guti, sizeof(ogs_nas_5gs_guti_t), NULL);
-        ogs_assert(amf_m_tmsi_free(amf_ue->m_tmsi) == OGS_OK);
+                &amf_ue->current.guti, sizeof(ogs_nas_5gs_guti_t), NULL);
+        ogs_assert(amf_m_tmsi_free(amf_ue->current.m_tmsi) == OGS_OK);
+    }
+    if (amf_ue->next.m_tmsi) {
+        ogs_assert(amf_m_tmsi_free(amf_ue->next.m_tmsi) == OGS_OK);
     }
     if (amf_ue->suci) {
         ogs_hash_set(self.suci_hash, amf_ue->suci, strlen(amf_ue->suci), NULL);
@@ -1171,12 +1199,6 @@ void amf_ue_remove(amf_ue_t *amf_ue)
 
     /* Clear Transparent Container */
     OGS_ASN_CLEAR_DATA(&amf_ue->handover.container);
-
-    /* Clear Paging Info */
-    AMF_UE_CLEAR_PAGING_INFO(amf_ue);
-
-    /* Clear N2 Transfer */
-    AMF_UE_CLEAR_N2_TRANSFER(amf_ue, pdu_session_resource_setup_request);
 
     /* Delete All Timers */
     CLEAR_AMF_UE_ALL_TIMERS(amf_ue);

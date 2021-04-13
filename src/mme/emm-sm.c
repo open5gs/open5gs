@@ -305,8 +305,12 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
             ogs_info("Tracking area update complete");
             ogs_info("    IMSI[%s]", mme_ue->imsi_bcd);
 
-            /* Clear GUTI present */
-            mme_ue->guti_present = false;
+            /* Confirm GUTI */
+            if (mme_ue->next.m_tmsi) {
+                mme_ue_confirm_guti(mme_ue);
+            } else {
+                ogs_error("[%s] No GUTI allocated", mme_ue->imsi_bcd);
+            }
             break;
 
         case OGS_NAS_EPS_EXTENDED_SERVICE_REQUEST:
@@ -921,8 +925,9 @@ void emm_state_initial_context_setup(ogs_fsm_t *s, mme_event_t *e)
                 break;
             }
 
-            /* Clear GUTI present */
-            mme_ue->guti_present = false;
+            /* Confirm GUTI */
+            if (mme_ue->next.m_tmsi)
+                mme_ue_confirm_guti(mme_ue);
 
             if (MME_P_TMSI_IS_AVAILABLE(mme_ue))
                 sgsap_send_tmsi_reallocation_complete(mme_ue);

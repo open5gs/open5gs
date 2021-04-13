@@ -194,7 +194,10 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e)
                     nas_5gs_send_registration_accept(amf_ue);
                 }
 
-                OGS_FSM_TRAN(s, &gmm_state_registered);
+                if (amf_ue->next.m_tmsi)
+                    OGS_FSM_TRAN(s, &gmm_state_initial_context_setup);
+                else
+                    OGS_FSM_TRAN(s, &gmm_state_registered);
 
             } else {
 
@@ -291,6 +294,13 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e)
 
         case OGS_NAS_5GS_CONFIGURATION_UPDATE_COMPLETE:
             ogs_debug("[%s] Configuration update complete", amf_ue->supi);
+
+            /* Confirm GUTI */
+            if (amf_ue->next.m_tmsi) {
+                amf_ue_confirm_guti(amf_ue);
+            } else {
+                ogs_error("[%s] No GUTI allocated", amf_ue->supi);
+            }
 
             CLEAR_AMF_UE_TIMER(amf_ue->t3555);
             break;
@@ -690,9 +700,6 @@ void gmm_state_security_mode(ogs_fsm_t *s, amf_event_t *e)
             ogs_kdf_nh_gnb(amf_ue->kamf, amf_ue->kgnb, amf_ue->nh);
             amf_ue->nhcc = 1;
 
-            /* Create New GUTI */
-            amf_ue_new_guti(amf_ue);
-
             amf_ue_sbi_discover_and_send(OpenAPI_nf_type_UDM, amf_ue, NULL,
                     amf_nudm_uecm_build_registration);
 
@@ -953,8 +960,12 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
         case OGS_NAS_5GS_REGISTRATION_COMPLETE:
             ogs_info("[%s] Registration complete", amf_ue->supi);
 
-            /* Clear GUTI present */
-            amf_ue->guti_present = false;
+            /* Confirm GUTI */
+            if (amf_ue->next.m_tmsi) {
+                amf_ue_confirm_guti(amf_ue);
+            } else {
+                ogs_error("[%s] No GUTI allocated", amf_ue->supi);
+            }
 
             /*
              * TS24.501
@@ -1165,7 +1176,10 @@ void gmm_state_exception(ogs_fsm_t *s, amf_event_t *e)
                     nas_5gs_send_registration_accept(amf_ue);
                 }
 
-                OGS_FSM_TRAN(s, &gmm_state_registered);
+                if (amf_ue->next.m_tmsi)
+                    OGS_FSM_TRAN(s, &gmm_state_initial_context_setup);
+                else
+                    OGS_FSM_TRAN(s, &gmm_state_registered);
 
             } else {
 

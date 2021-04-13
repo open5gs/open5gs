@@ -181,6 +181,28 @@ void testgmm_handle_security_mode_command(test_ue_t *test_ue,
     test_ue->security_context_available = 1;
 }
 
+void testgmm_handle_configuration_update_command(test_ue_t *test_ue,
+        ogs_nas_5gs_configuration_update_command_t
+            *configuration_update_command)
+{
+    ogs_assert(test_ue);
+    ogs_assert(configuration_update_command);
+    if (configuration_update_command->presencemask &
+            OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND_5G_GUTI_PRESENT) {
+        ogs_nas_5gs_mobile_identity_t *mobile_identity = NULL;
+        ogs_nas_5gs_mobile_identity_guti_t *mobile_identity_guti = NULL;
+
+        mobile_identity = &configuration_update_command->guti;
+        mobile_identity_guti = mobile_identity->buffer;
+
+        memcpy(&test_ue->nas_5gs_guti.nas_plmn_id,
+                &mobile_identity_guti->nas_plmn_id, OGS_PLMN_ID_LEN);
+        memcpy(&test_ue->nas_5gs_guti.amf_id,
+                &mobile_identity_guti->amf_id, sizeof(ogs_amf_id_t));
+        test_ue->nas_5gs_guti.m_tmsi = be32toh(mobile_identity_guti->m_tmsi);
+    }
+}
+
 void testgmm_handle_dl_nas_transport(test_ue_t *test_ue,
         ogs_nas_5gs_dl_nas_transport_t *dl_nas_transport)
 {

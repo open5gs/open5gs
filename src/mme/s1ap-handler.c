@@ -284,9 +284,9 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, ogs_s1ap_message_t *message)
                         nas_guti.mme_gid, nas_guti.mme_code, nas_guti.m_tmsi);
             } else {
                 ogs_info("    S_TMSI[G:%d,C:%d,M_TMSI:0x%x] IMSI:[%s]",
-                        mme_ue->guti.mme_gid,
-                        mme_ue->guti.mme_code,
-                        mme_ue->guti.m_tmsi,
+                        mme_ue->current.guti.mme_gid,
+                        mme_ue->current.guti.mme_code,
+                        mme_ue->current.guti.m_tmsi,
                         MME_UE_HAVE_IMSI(mme_ue) 
                             ? mme_ue->imsi_bcd : "Unknown");
 

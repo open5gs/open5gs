@@ -1999,28 +1999,47 @@ void mme_ue_new_guti(mme_ue_t *mme_ue)
     ogs_assert(served_gummei->num_of_mme_gid > 0);
     ogs_assert(served_gummei->num_of_mme_code > 0);
 
-    if (mme_ue->m_tmsi) {
+    if (mme_ue->next.m_tmsi) {
+        ogs_warn("GUTI has already been allocated");
+        return;
+    }
+
+    memset(&mme_ue->next.guti, 0, sizeof(ogs_nas_eps_guti_t));
+
+    /* Use the first configured plmn_id and mme group id */
+    ogs_nas_from_plmn_id(
+            &mme_ue->next.guti.nas_plmn_id, &served_gummei->plmn_id[0]);
+    mme_ue->next.guti.mme_gid = served_gummei->mme_gid[0];
+    mme_ue->next.guti.mme_code = served_gummei->mme_code[0];
+
+    mme_ue->next.m_tmsi = mme_m_tmsi_alloc();
+    ogs_assert(mme_ue->next.m_tmsi);
+    mme_ue->next.guti.m_tmsi = *(mme_ue->next.m_tmsi);
+}
+
+void mme_ue_confirm_guti(mme_ue_t *mme_ue)
+{
+    ogs_assert(mme_ue->next.m_tmsi);
+
+    if (mme_ue->current.m_tmsi) {
         /* MME has a VALID GUTI
          * As such, we need to remove previous GUTI in hash table */
         ogs_hash_set(self.guti_ue_hash,
-                &mme_ue->guti, sizeof(ogs_nas_eps_guti_t), NULL);
-        ogs_assert(mme_m_tmsi_free(mme_ue->m_tmsi) == OGS_OK);
+                &mme_ue->current.guti, sizeof(ogs_nas_eps_guti_t), NULL);
+        ogs_assert(mme_m_tmsi_free(mme_ue->current.m_tmsi) == OGS_OK);
     }
 
-    memset(&mme_ue->guti, 0, sizeof(ogs_nas_eps_guti_t));
+    /* Copying from Current to Next Guti */
+    mme_ue->current.m_tmsi = mme_ue->next.m_tmsi;
+    memcpy(&mme_ue->current.guti,
+            &mme_ue->next.guti, sizeof(ogs_nas_eps_guti_t));
 
-    /* Use the first configured plmn_id and mme group id */
-    ogs_nas_from_plmn_id(&mme_ue->guti.nas_plmn_id, &served_gummei->plmn_id[0]);
-    mme_ue->guti.mme_gid = served_gummei->mme_gid[0];
-    mme_ue->guti.mme_code = served_gummei->mme_code[0];
-
-    mme_ue->m_tmsi = mme_m_tmsi_alloc();
-    ogs_assert(mme_ue->m_tmsi);
-    mme_ue->guti.m_tmsi = *(mme_ue->m_tmsi);
+    /* Hashing Current GUTI */
     ogs_hash_set(self.guti_ue_hash,
-            &mme_ue->guti, sizeof(ogs_nas_eps_guti_t), mme_ue);
+            &mme_ue->current.guti, sizeof(ogs_nas_eps_guti_t), mme_ue);
 
-    mme_ue->guti_present = true;
+    /* Clear Next GUTI */
+    mme_ue->next.m_tmsi = NULL;
 }
 
 static bool compare_ue_info(mme_sgw_t *node, enb_ue_t *enb_ue)
@@ -2134,11 +2153,13 @@ void mme_ue_remove(mme_ue_t *mme_ue)
 
     mme_ue_fsm_fini(mme_ue);
 
-    /* Clear hash table */
-    if (mme_ue->m_tmsi) {
+    if (mme_ue->current.m_tmsi) {
         ogs_hash_set(self.guti_ue_hash,
-                &mme_ue->guti, sizeof(ogs_nas_eps_guti_t), NULL);
-        ogs_assert(mme_m_tmsi_free(mme_ue->m_tmsi) == OGS_OK);
+                &mme_ue->current.guti, sizeof(ogs_nas_eps_guti_t), NULL);
+        ogs_assert(mme_m_tmsi_free(mme_ue->current.m_tmsi) == OGS_OK);
+    }
+    if (mme_ue->next.m_tmsi) {
+        ogs_assert(mme_m_tmsi_free(mme_ue->next.m_tmsi) == OGS_OK);
     }
     if (mme_ue->imsi_len != 0)
         ogs_hash_set(self.imsi_ue_hash, mme_ue->imsi, mme_ue->imsi_len, NULL);

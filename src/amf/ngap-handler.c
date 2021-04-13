@@ -20,6 +20,7 @@
 #include "ngap-handler.h"
 #include "ngap-path.h"
 #include "sbi-path.h"
+#include "nas-path.h"
 
 static bool served_tai_is_found(amf_gnb_t *gnb)
 {
@@ -420,8 +421,8 @@ void ngap_handle_initial_ue_message(amf_gnb_t *gnb, ogs_ngap_message_t *message)
             } else {
                 ogs_info("[%s]    5G-S_TMSI[AMF_ID:0x%x,M_TMSI:0x%x]",
                         AMF_UE_HAVE_SUCI(amf_ue) ? amf_ue->suci : "Unknown ID",
-                        ogs_amf_id_hexdump(&amf_ue->guti.amf_id),
-                        amf_ue->guti.m_tmsi);
+                        ogs_amf_id_hexdump(&amf_ue->current.guti.amf_id),
+                        amf_ue->current.guti.m_tmsi);
                 /* If NAS(amf_ue_t) has already been associated with
                  * older NG(ran_ue_t) context */
                 if (CM_CONNECTED(amf_ue)) {
@@ -727,8 +728,11 @@ void ngap_handle_initial_context_setup_response(
 
     amf_ue_t *amf_ue = NULL;
     ran_ue_t *ran_ue = NULL;
+    amf_sess_t *sess = NULL;
     uint64_t amf_ue_ngap_id;
     amf_nsmf_pdusession_update_sm_context_param_t param;
+
+    bool paging_ongoing = false;
 
     NGAP_SuccessfulOutcome_t *successfulOutcome = NULL;
     NGAP_InitialContextSetupResponse_t *InitialContextSetupResponse = NULL;
@@ -802,9 +806,6 @@ void ngap_handle_initial_context_setup_response(
     ogs_debug("    RAN_UE_NGAP_ID[%d] AMF_UE_NGAP_ID[%lld]",
             ran_ue->ran_ue_ngap_id, (long long)ran_ue->amf_ue_ngap_id);
 
-    if (!PDUSessionList) /* No PDUSessionList */
-        return;
-
     amf_ue = ran_ue->amf_ue;
     if (!amf_ue) {
         ogs_error("Cannot find AMF-UE Context [%lld]",
@@ -816,8 +817,7 @@ void ngap_handle_initial_context_setup_response(
         return;
     }
 
-    for (i = 0; i < PDUSessionList->list.count; i++) {
-        amf_sess_t *sess = NULL;
+    for (i = 0; PDUSessionList && i < PDUSessionList->list.count; i++) {
         PDUSessionItem = (NGAP_PDUSessionResourceSetupItemCxtRes_t *)
             PDUSessionList->list.array[i];
 
@@ -875,6 +875,27 @@ void ngap_handle_initial_context_setup_response(
 
         ogs_pkbuf_free(param.n2smbuf);
     }
+
+    ogs_list_for_each(&amf_ue->sess_list, sess) {
+        if (sess->paging.ongoing == true) {
+            paging_ongoing = true;
+            break;
+        }
+    }
+
+    if (paging_ongoing == true) {
+        gmm_configuration_update_command_param_t param;
+
+        /* Create New GUTI */
+        amf_ue_new_guti(amf_ue);
+
+        memset(&param, 0, sizeof(param));
+        param.acknowledgement_requested = 1;
+        param.guti = 1;
+        nas_5gs_send_configuration_update_command(amf_ue, &param);
+    }
+
+    AMF_UE_CLEAR_PAGING_INFO(amf_ue);
 }
 
 void ngap_handle_initial_context_setup_failure(

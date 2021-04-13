@@ -1514,10 +1514,10 @@ ogs_pkbuf_t *ngap_build_paging(amf_ue_t *amf_ue)
     fiveG_TMSI = &fiveG_S_TMSI->fiveG_TMSI;
 
     ogs_ngap_uint16_to_AMFSetID(
-            ogs_amf_set_id(&amf_ue->guti.amf_id), aMFSetID);
+            ogs_amf_set_id(&amf_ue->current.guti.amf_id), aMFSetID);
     ogs_ngap_uint8_to_AMFPointer(
-            ogs_amf_pointer(&amf_ue->guti.amf_id), aMFPointer);
-    ogs_asn_uint32_to_OCTET_STRING(amf_ue->guti.m_tmsi, fiveG_TMSI);
+            ogs_amf_pointer(&amf_ue->current.guti.amf_id), aMFPointer);
+    ogs_asn_uint32_to_OCTET_STRING(amf_ue->current.guti.m_tmsi, fiveG_TMSI);
 
     ie = CALLOC(1, sizeof(NGAP_PagingIEs_t));
     ASN_SEQUENCE_ADD(&Paging->protocolIEs, ie);

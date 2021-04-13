@@ -117,6 +117,9 @@ int gmm_handle_registration_request(amf_ue_t *amf_ue,
         amf_ue->nhcc = 1;
     }
 
+    /* Create New GUTI */
+    amf_ue_new_guti(amf_ue);
+
     ogs_debug("    OLD TAI[PLMN_ID:%06x,TAC:%d]",
             ogs_plmn_id_hexdump(&amf_ue->nr_tai.plmn_id), amf_ue->nr_tai.tac.v);
     ogs_debug("    OLD NR_CGI[PLMN_ID:%06x,CELL_ID:0x%llx]",
@@ -343,10 +346,8 @@ int gmm_handle_service_request(amf_ue_t *amf_ue,
     /*
      * REGISTRATION_REQUEST
      * SERVICE_REQUEST
-     *   Clear Paging Info
      *   Clear Timer and Message
      */
-    AMF_UE_CLEAR_PAGING_INFO(amf_ue);
     CLEAR_AMF_UE_ALL_TIMERS(amf_ue);
 
     if (SECURITY_CONTEXT_IS_VALID(amf_ue)) {
@@ -389,7 +390,8 @@ int gmm_handle_service_request(amf_ue_t *amf_ue,
 
     ogs_info("[%s]    5G-S_GUTI[AMF_ID:0x%x,M_TMSI:0x%x]",
         AMF_UE_HAVE_SUCI(amf_ue) ? amf_ue->suci : "Unknown ID",
-        ogs_amf_id_hexdump(&amf_ue->guti.amf_id), amf_ue->guti.m_tmsi);
+        ogs_amf_id_hexdump(&amf_ue->current.guti.amf_id),
+        amf_ue->current.guti.m_tmsi);
 
     return OGS_OK;
 }
