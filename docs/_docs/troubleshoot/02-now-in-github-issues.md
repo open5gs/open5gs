@@ -10,6 +10,39 @@ head_inline: "<style> .blue { color: blue; } </style>"
   }
 </style>
 
+#### HSS crash using v2.2.x
+
+When trying to connect the UE, the HSS may crash as shown below.
+
+```
+04/12 10:13:45.025: [app] INFO: Configuration: '/home/open5gs/install/etc/open5gs/hss.yaml' (../lib/app/ogs-init.c:129)
+04/12 10:13:45.025: [app] INFO: File Logging: '/home/open5gs/install/var/log/open5gs/hss.log' (../lib/app/ogs-init.c:132)
+04/12 10:13:45.028: [dbi] INFO: MongoDB URI: 'mongodb://localhost/open5gs' (../lib/dbi/ogs-mongoc.c:129)
+04/12 10:13:45.068: [diam] INFO: CONNECTED TO 'mme.epc.mnc001.mcc001.3gppnetwork.org' (SCTP,soc#17): (../lib/diameter/common/logger.c:108)
+04/12 10:13:45.069: [app] INFO: HSS initialize...done (../src/hss/app-init.c:31)
+04/12 10:14:27.167: [core] FATAL: ogs_slice_find_by_s_nssai: Assertion `num_of_slice_data' failed. (../lib/core/ogs-3gpp-types.c:529)
+04/12 10:14:27.168: [core] FATAL: backtrace() returned 10 addresses (../lib/core/ogs-abort.c:37)
+/home/open5gs/install/lib/x86_64-linux-gnu/libogscore.so.2(ogs_slice_find_by_s_nssai+0xd2) [0x7f3b720a126e]
+./install/bin/open5gs-hssd(+0xd12e) [0x55a57bb6f12e]
+/home/open5gs/install/lib/x86_64-linux-gnu/libfdproto.so.7(fd_disp_call_cb_int+0x270) [0x7f3b7135acb3]
+/home/open5gs/install/lib/x86_64-linux-gnu/libfdproto.so.7(fd_msg_dispatch+0xdca) [0x7f3b7137442f]
+home/open5gs/install/lib/x86_64-linux-gnu/libfdcore.so.7(+0x67c3c) [0x7f3b715f9c3c]
+/home/open5gs/install/lib/x86_64-linux-gnu/libfdcore.so.7(+0x6ca99) [0x7f3b715fea99]
+/open5gs/install/lib/x86_64-linux-gnu/libfdcore.so.7(+0x6cd06) [0x7f3b715fed06]
+/lib/x86_64-linux-gnu/libpthread.so.0(+0x76db) [0x7f3b70d016db]
+/lib/x86_64-linux-gnu/libc.so.6(clone+0x3f) [0x7f3b70a2a71f]
+```
+
+**DB Schema changes**: If you are using an old subscription DB, you should delete the existing DB. Then you need to add a new subscription DB.
+
+```
+$ mongo
+> use open5gs
+switched to db open5gs
+> db.subscribers.drop()
+true
+```
+
 #### How to use a different Slice for each SMF
 
 To add a slice with SST of 1 and SD of 000080, you need to update the configuration file as shown below.
