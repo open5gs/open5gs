@@ -43,6 +43,68 @@ switched to db open5gs
 true
 ```
 
+#### 5G Core test failed (e.g. `./build/tests/registration/registration`)
+
+The AUSF(or SMF) has already been started, but NRF-discovery fails and the test program does not work as shown below.
+
+```
+$ ./build/tests/registration/registration
+
+...
+04/12 14:26:25.885: [app] ERROR: Cannot discover [AUSF] (../lib/sbi/path.c:119)
+...
+04/12 14:27:25.666: [app] ERROR: Cannot discover [SMF] (../lib/sbi/path.c:119)
+```
+
+This is a test program bug and has not yet been resolved.
+{: .blue}
+
+To restart the test program, first remove all subscriber information using MongoDB Client
+```
+$ mongo
+> use open5gs
+switched to db open5gs
+> db.subscribers.find()  ### Check the test subscriber
+> db.subscribers.drop()  ### Remove all subscriber
+> db.subscribers.find()  ### Check that all subscribers are empty
+```
+
+Kill all processes.
+```bash
+$ ps -ef | grep open5gs
+$ sudo pkill -9 open5gs-mmed
+$ sudo pkill -9 open5gs-sgwcd
+$ sudo pkill -9 open5gs-smfd
+$ sudo pkill -9 open5gs-amfd
+$ sudo pkill -9 open5gs-sgwud
+$ sudo pkill -9 open5gs-upfd
+$ sudo pkill -9 open5gs-hssd
+$ sudo pkill -9 open5gs-pcrfd
+$ sudo pkill -9 open5gs-nrfd
+$ sudo pkill -9 open5gs-ausfd
+$ sudo pkill -9 open5gs-udmd
+$ sudo pkill -9 open5gs-pcfd
+$ sudo pkill -9 open5gs-nssfd
+$ sudo pkill -9 open5gs-udrd
+```
+
+Run `./build/tests/registration/registration` again
+```
+$ ./build/tests/registration/registration
+guti-test           : SUCCESS
+auth-test           : SUCCESS
+idle-test           : SUCCESS
+dereg-test          : SUCCESS
+paging-test         : SUCCESS
+identity-test       : SUCCESS
+gmm-status-test     : SUCCESS
+ue-context-test     : SUCCESS
+reset-test          : SUCCESS
+All tests passed.
+```
+
+In general, if this test program succeeds at least once, you can assume that you have successfully built the development environment.
+
 #### How to use a different Slice for each SMF
 
 To add a slice with SST of 1 and SD of 000080, you need to update the configuration file as shown below.
