@@ -172,7 +172,7 @@ ogs_pkbuf_t *ngap_build_ng_setup_failure(
     NGAP_NGSetupFailureIEs_t *ie = NULL;
     NGAP_Cause_t *Cause = NULL;
     NGAP_TimeToWait_t *TimeToWait = NULL;
-    
+
     ogs_debug("    Group[%d] Cause[%d] TimeToWait[%ld]",
             group, (int)cause, time_to_wait);
 
@@ -206,6 +206,85 @@ ogs_pkbuf_t *ngap_build_ng_setup_failure(
     ie->id = NGAP_ProtocolIE_ID_id_Cause;
     ie->criticality = NGAP_Criticality_ignore;
     ie->value.present = NGAP_NGSetupFailureIEs__value_PR_Cause;
+
+    Cause = &ie->value.choice.Cause;
+    Cause->present = group;
+    Cause->choice.radioNetwork = cause;
+
+    if (TimeToWait)
+        *TimeToWait = time_to_wait;
+
+    return ogs_ngap_encode(&pdu);
+}
+
+ogs_pkbuf_t *ngap_build_ran_configuration_update_ack(void)
+{
+    NGAP_NGAP_PDU_t pdu;
+    NGAP_SuccessfulOutcome_t *successfulOutcome = NULL;
+
+    ogs_debug("RANConfigurationUpdateAcknowledge");
+
+    memset(&pdu, 0, sizeof (NGAP_NGAP_PDU_t));
+    pdu.present = NGAP_NGAP_PDU_PR_successfulOutcome;
+    pdu.choice.successfulOutcome = CALLOC(1, sizeof(NGAP_SuccessfulOutcome_t));
+
+    successfulOutcome = pdu.choice.successfulOutcome;
+    successfulOutcome->procedureCode =
+        NGAP_ProcedureCode_id_RANConfigurationUpdate;
+    successfulOutcome->criticality = NGAP_Criticality_reject;
+    successfulOutcome->value.present =
+        NGAP_SuccessfulOutcome__value_PR_RANConfigurationUpdateAcknowledge;
+
+    return ogs_ngap_encode(&pdu);
+}
+
+ogs_pkbuf_t *ngap_build_ran_configuration_update_failure(
+        NGAP_Cause_PR group, long cause, long time_to_wait)
+{
+    NGAP_NGAP_PDU_t pdu;
+    NGAP_UnsuccessfulOutcome_t *unsuccessfulOutcome = NULL;
+    NGAP_RANConfigurationUpdateFailure_t *RANConfigurationUpdateFailure = NULL;
+
+    NGAP_RANConfigurationUpdateFailureIEs_t *ie = NULL;
+    NGAP_Cause_t *Cause = NULL;
+    NGAP_TimeToWait_t *TimeToWait = NULL;
+
+    ogs_debug("    Group[%d] Cause[%d] TimeToWait[%ld]",
+            group, (int)cause, time_to_wait);
+
+    memset(&pdu, 0, sizeof (NGAP_NGAP_PDU_t));
+    pdu.present = NGAP_NGAP_PDU_PR_unsuccessfulOutcome;
+    pdu.choice.unsuccessfulOutcome =
+        CALLOC(1, sizeof(NGAP_UnsuccessfulOutcome_t));
+
+    unsuccessfulOutcome = pdu.choice.unsuccessfulOutcome;
+    unsuccessfulOutcome->procedureCode =
+        NGAP_ProcedureCode_id_RANConfigurationUpdate;
+    unsuccessfulOutcome->criticality = NGAP_Criticality_reject;
+    unsuccessfulOutcome->value.present =
+        NGAP_UnsuccessfulOutcome__value_PR_RANConfigurationUpdateFailure;
+
+    RANConfigurationUpdateFailure =
+        &unsuccessfulOutcome->value.choice.RANConfigurationUpdateFailure;
+
+    if (time_to_wait > -1) {
+        ie = CALLOC(1, sizeof(NGAP_RANConfigurationUpdateFailureIEs_t));
+        ASN_SEQUENCE_ADD(&RANConfigurationUpdateFailure->protocolIEs, ie);
+
+        ie->id = NGAP_ProtocolIE_ID_id_TimeToWait;
+        ie->criticality = NGAP_Criticality_ignore;
+        ie->value.present =
+            NGAP_RANConfigurationUpdateFailureIEs__value_PR_TimeToWait;
+
+        TimeToWait = &ie->value.choice.TimeToWait;
+    }
+
+    ie = CALLOC(1, sizeof(NGAP_RANConfigurationUpdateFailureIEs_t));
+    ASN_SEQUENCE_ADD(&RANConfigurationUpdateFailure->protocolIEs, ie);
+
+    ie->id = NGAP_ProtocolIE_ID_id_Cause;
+    ie->criticality = NGAP_Criticality_ignore;
+    ie->value.present = NGAP_RANConfigurationUpdateFailureIEs__value_PR_Cause;
 
     Cause = &ie->value.choice.Cause;
     Cause->present = group;

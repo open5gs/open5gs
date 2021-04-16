@@ -50,6 +50,9 @@ int ngap_send_to_5gsm(amf_ue_t *amf_ue, ogs_pkbuf_t *esmbuf);
 void ngap_send_ng_setup_response(amf_gnb_t *gnb);
 void ngap_send_ng_setup_failure(
         amf_gnb_t *gnb, NGAP_Cause_PR group, long cause);
+void ngap_send_ran_configuration_update_ack(amf_gnb_t *gnb);
+void ngap_send_ran_configuration_update_failure(
+        amf_gnb_t *gnb, NGAP_Cause_PR group, long cause);
 
 void ngap_send_ue_context_modification_request(amf_ue_t *amf_ue);
 

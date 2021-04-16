@@ -262,6 +262,32 @@ void ngap_send_ng_setup_failure(
             ngap_send_to_gnb(gnb, ngap_buffer, NGAP_NON_UE_SIGNALLING));
 }
 
+void ngap_send_ran_configuration_update_ack(amf_gnb_t *gnb)
+{
+    ogs_pkbuf_t *ngap_buffer;
+
+    ogs_debug("RANConfigurationUpdateAcknowledge");
+    ngap_buffer = ngap_build_ran_configuration_update_ack();
+    ogs_expect_or_return(ngap_buffer);
+
+    ogs_expect(OGS_OK ==
+            ngap_send_to_gnb(gnb, ngap_buffer, NGAP_NON_UE_SIGNALLING));
+}
+
+void ngap_send_ran_configuration_update_failure(
+        amf_gnb_t *gnb, NGAP_Cause_PR group, long cause)
+{
+    ogs_pkbuf_t *ngap_buffer;
+
+    ogs_debug("RANConfigurationUpdateFailure");
+    ngap_buffer = ngap_build_ran_configuration_update_failure(
+            group, cause, NGAP_TimeToWait_v10s);
+    ogs_expect_or_return(ngap_buffer);
+
+    ogs_expect(OGS_OK ==
+            ngap_send_to_gnb(gnb, ngap_buffer, NGAP_NON_UE_SIGNALLING));
+}
+
 #if 0
 void ngap_send_ue_context_modification_request(amf_ue_t *amf_ue)
 {

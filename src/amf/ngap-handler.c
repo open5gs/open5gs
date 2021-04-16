@@ -3196,6 +3196,214 @@ void ngap_handle_handover_notification(
     }
 }
 
+void ngap_handle_ran_configuration_update(
+        amf_gnb_t *gnb, ogs_ngap_message_t *message)
+{
+    char buf[OGS_ADDRSTRLEN];
+    int i, j, k;
+
+    NGAP_InitiatingMessage_t *initiatingMessage = NULL;
+    NGAP_RANConfigurationUpdate_t *RANConfigurationUpdate = NULL;
+
+    NGAP_RANConfigurationUpdateIEs_t *ie = NULL;
+    NGAP_GlobalRANNodeID_t *GlobalRANNodeID = NULL;
+    NGAP_GlobalGNB_ID_t *globalGNB_ID = NULL;
+    NGAP_SupportedTAList_t *SupportedTAList = NULL;
+    NGAP_PagingDRX_t *PagingDRX = NULL;
+
+    NGAP_Cause_PR group = NGAP_Cause_PR_NOTHING;
+    long cause = 0;
+
+    uint32_t gnb_id;
+
+    ogs_assert(gnb);
+    ogs_assert(gnb->sctp.sock);
+
+    ogs_assert(message);
+    initiatingMessage = message->choice.initiatingMessage;
+    ogs_assert(initiatingMessage);
+    RANConfigurationUpdate = &initiatingMessage->value.choice.RANConfigurationUpdate;
+    ogs_assert(RANConfigurationUpdate);
+
+    ogs_debug("RANConfigurationUpdate");
+
+    for (i = 0; i < RANConfigurationUpdate->protocolIEs.list.count; i++) {
+        ie = RANConfigurationUpdate->protocolIEs.list.array[i];
+        switch (ie->id) {
+        case NGAP_ProtocolIE_ID_id_GlobalRANNodeID:
+            GlobalRANNodeID = &ie->value.choice.GlobalRANNodeID;
+            break;
+        case NGAP_ProtocolIE_ID_id_SupportedTAList:
+            SupportedTAList = &ie->value.choice.SupportedTAList;
+            break;
+        case NGAP_ProtocolIE_ID_id_DefaultPagingDRX:
+            PagingDRX = &ie->value.choice.PagingDRX;
+            break;
+        default:
+            break;
+        }
+    }
+
+    if (GlobalRANNodeID) {
+        globalGNB_ID = GlobalRANNodeID->choice.globalGNB_ID;
+        if (!globalGNB_ID) {
+            ogs_error("No globalGNB_ID");
+            group = NGAP_Cause_PR_protocol;
+            cause = NGAP_CauseProtocol_semantic_error;
+            ngap_send_ran_configuration_update_failure(gnb, group, cause);
+            return;
+        }
+
+        ogs_ngap_GNB_ID_to_uint32(&globalGNB_ID->gNB_ID, &gnb_id);
+        ogs_debug("    IP[%s] GNB_ID[0x%x]",
+                OGS_ADDR(gnb->sctp.addr, buf), gnb_id);
+
+        amf_gnb_set_gnb_id(gnb, gnb_id);
+    }
+
+    if (SupportedTAList) {
+        /* Parse Supported TA */
+        for (i = 0, gnb->num_of_supported_ta_list = 0;
+                i < SupportedTAList->list.count &&
+                gnb->num_of_supported_ta_list < OGS_MAX_NUM_OF_TAI;
+                    i++) {
+            NGAP_SupportedTAItem_t *SupportedTAItem = NULL;
+
+            SupportedTAItem = (NGAP_SupportedTAItem_t *)
+                    SupportedTAList->list.array[i];
+            if (!SupportedTAItem) {
+                ogs_error("No SupportedTAItem");
+                group = NGAP_Cause_PR_protocol;
+                cause = NGAP_CauseProtocol_semantic_error;
+                ngap_send_ran_configuration_update_failure(gnb, group, cause);
+                return;
+            }
+
+            ogs_asn_OCTET_STRING_to_uint24(&SupportedTAItem->tAC,
+                &gnb->supported_ta_list[i].tac);
+
+            ogs_debug("    TAC[%d]", gnb->supported_ta_list[i].tac.v);
+
+            for (j = 0, gnb->supported_ta_list[i].num_of_bplmn_list = 0;
+                    j < SupportedTAItem->broadcastPLMNList.list.count &&
+                    gnb->supported_ta_list[i].num_of_bplmn_list <
+                        OGS_MAX_NUM_OF_BPLMN;
+                            j++) {
+
+                NGAP_BroadcastPLMNItem_t *BroadcastPLMNItem = NULL;
+                NGAP_PLMNIdentity_t *pLMNIdentity = NULL;
+
+                BroadcastPLMNItem = (NGAP_BroadcastPLMNItem_t *)
+                        SupportedTAItem->broadcastPLMNList.list.array[j];
+                if (!BroadcastPLMNItem) {
+                    ogs_error("No BroadcastPLMNItem");
+                    group = NGAP_Cause_PR_protocol;
+                    cause = NGAP_CauseProtocol_semantic_error;
+                    ngap_send_ran_configuration_update_failure(
+                            gnb, group, cause);
+                    return;
+                }
+
+                pLMNIdentity = (NGAP_PLMNIdentity_t *)
+                        &BroadcastPLMNItem->pLMNIdentity;
+                ogs_assert(pLMNIdentity);
+
+                memcpy(&gnb->supported_ta_list[i].bplmn_list[j].plmn_id,
+                        pLMNIdentity->buf, sizeof(ogs_plmn_id_t));
+                ogs_debug("    PLMN_ID[MCC:%d MNC:%d]",
+                    ogs_plmn_id_mcc(&gnb->supported_ta_list[i].
+                        bplmn_list[j].plmn_id),
+                    ogs_plmn_id_mnc(&gnb->supported_ta_list[i].
+                        bplmn_list[j].plmn_id));
+
+                for (k = 0, gnb->supported_ta_list[i].
+                                bplmn_list[j].num_of_s_nssai = 0;
+                        k < BroadcastPLMNItem->tAISliceSupportList.list.count &&
+                        gnb->supported_ta_list[i].bplmn_list[j].num_of_s_nssai <
+                            OGS_MAX_NUM_OF_SLICE;
+                                k++) {
+                    NGAP_SliceSupportItem_t *SliceSupportItem = NULL;
+                    NGAP_S_NSSAI_t *s_NSSAI = NULL;
+
+                    SliceSupportItem = (NGAP_SliceSupportItem_t *)
+                        BroadcastPLMNItem->tAISliceSupportList.list.array[k];
+                    if (!SliceSupportItem) {
+                        ogs_error("No SliceSupportItem");
+                        group = NGAP_Cause_PR_protocol;
+                        cause = NGAP_CauseProtocol_semantic_error;
+                        ngap_send_ran_configuration_update_failure(
+                                gnb, group, cause);
+                        return;
+                    }
+
+                    s_NSSAI = &SliceSupportItem->s_NSSAI;
+                    ogs_assert(s_NSSAI);
+
+                    ogs_asn_OCTET_STRING_to_uint8(&s_NSSAI->sST,
+                        &gnb->supported_ta_list[i].
+                            bplmn_list[j].s_nssai[k].sst);
+                    if (!s_NSSAI->sD) {
+                        gnb->supported_ta_list[i].bplmn_list[j].
+                            s_nssai[k].sd.v = OGS_S_NSSAI_NO_SD_VALUE;
+                    } else {
+                        ogs_asn_OCTET_STRING_to_uint24(s_NSSAI->sD,
+                        &gnb->supported_ta_list[i].bplmn_list[j].s_nssai[k].sd);
+                    }
+
+                    ogs_debug("    S_NSSAI[SST:%d SD:0x%x]",
+                        gnb->supported_ta_list[i].bplmn_list[j].s_nssai[k].sst,
+                        gnb->supported_ta_list[i].bplmn_list[j].
+                            s_nssai[k].sd.v);
+
+                    gnb->supported_ta_list[i].bplmn_list[j].num_of_s_nssai++;
+                }
+
+                gnb->supported_ta_list[i].num_of_bplmn_list++;
+            }
+
+            gnb->num_of_supported_ta_list++;
+        }
+
+        if (gnb->num_of_supported_ta_list == 0) {
+            ogs_warn("RANConfigurationUpdate failure:");
+            ogs_warn("    No supported TA exist in request");
+            group = NGAP_Cause_PR_protocol;
+            cause =
+                NGAP_CauseProtocol_message_not_compatible_with_receiver_state;
+
+            ngap_send_ran_configuration_update_failure(gnb, group, cause);
+            return;
+        }
+
+        if (!served_tai_is_found(gnb)) {
+            ogs_warn("RANConfigurationUpdate failure:");
+            ogs_warn("    Cannot find Served TAI. "
+                        "Check 'amf.tai' configuration");
+            group = NGAP_Cause_PR_misc;
+            cause = NGAP_CauseMisc_unknown_PLMN;
+
+            ngap_send_ran_configuration_update_failure(gnb, group, cause);
+            return;
+        }
+
+        if (!s_nssai_is_found(gnb)) {
+            ogs_warn("RANConfigurationUpdate failure:");
+            ogs_warn("    Cannot find S_NSSAI. "
+                        "Check 'amf.plmn_support.s_nssai' configuration");
+            group = NGAP_Cause_PR_misc;
+            cause = NGAP_CauseMisc_unknown_PLMN;
+
+            ngap_send_ran_configuration_update_failure(gnb, group, cause);
+            return;
+        }
+    }
+
+    if (PagingDRX)
+        ogs_debug("    PagingDRX[%ld]", *PagingDRX);
+
+    ngap_send_ran_configuration_update_ack(gnb);
+}
+
 void ngap_handle_ng_reset(
         amf_gnb_t *gnb, ogs_ngap_message_t *message)
 {

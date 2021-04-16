@@ -30,6 +30,10 @@ ogs_pkbuf_t *ngap_build_ng_setup_response(void);
 ogs_pkbuf_t *ngap_build_ng_setup_failure(
     NGAP_Cause_PR group, long cause, long time_to_wait);
 
+ogs_pkbuf_t *ngap_build_ran_configuration_update_ack(void);
+ogs_pkbuf_t *ngap_build_ran_configuration_update_failure(
+        NGAP_Cause_PR group, long cause, long time_to_wait);
+
 ogs_pkbuf_t *ngap_build_downlink_nas_transport(
     ran_ue_t *ran_ue, ogs_pkbuf_t *gmmbuf, bool ue_ambr, bool allowed_nssai);
 

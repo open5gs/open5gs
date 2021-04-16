@@ -76,6 +76,9 @@ void ngap_handle_uplink_ran_status_transfer(
 void ngap_handle_handover_notification(
         amf_gnb_t *gnb, ogs_ngap_message_t *message);
 
+void ngap_handle_ran_configuration_update(
+        amf_gnb_t *gnb, ogs_ngap_message_t *message);
+
 void ngap_handle_ng_reset(
         amf_gnb_t *gnb, ogs_ngap_message_t *message);
 

@@ -272,6 +272,17 @@ static void test1_func(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
+    /* Send RANConfigurationUpdate */
+    sendbuf = testngap_build_ran_configuration_update(true);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive RANConfigurationUpdateAcknowledge */
+    recvbuf = testgnb_ngap_read(ngap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    ogs_pkbuf_free(recvbuf);
+
     /* Send NGReset */
     sendbuf = ogs_ngap_build_ng_reset(
             NGAP_Cause_PR_radioNetwork,
