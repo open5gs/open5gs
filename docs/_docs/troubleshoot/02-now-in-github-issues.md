@@ -12,7 +12,18 @@ head_inline: "<style> .blue { color: blue; } </style>"
 
 #### HSS crash using v2.2.x
 
-When trying to connect the UE, the HSS may crash as shown below.
+If the following MME log occurs while connecting to the UE, it means that the Open5GS upgrade was not properly performed.
+
+```
+04/14 20:14:21.981: [diam] ERROR: pid:PSM/hss.localdomain in fd_psm_change_state@p_psm.c:287: 'STATE_OPEN' -> 'STATE_CLOSED' 'hss.localdomain'
+((null):0)
+04/14 20:14:21.982: [diam] ERROR: pid:PSM/hss.localdomain in md_hook_cb_tree@dbg_msg_dumps.c:89: FAILOVER from 'hss.localdomain':
+((null):0)
+04/14 20:14:21.982: [diam] ERROR: pid:PSM/hss.localdomain in md_hook_cb_tree@dbg_msg_dumps.c:90: 'Update-Location-Request'
+((null):0)
+```
+
+In this case, the HSS may crash as shown below.
 
 ```
 04/12 10:13:45.025: [app] INFO: Configuration: '/home/open5gs/install/etc/open5gs/hss.yaml' (../lib/app/ogs-init.c:129)
@@ -33,7 +44,7 @@ home/open5gs/install/lib/x86_64-linux-gnu/libfdcore.so.7(+0x67c3c) [0x7f3b715f9c
 /lib/x86_64-linux-gnu/libc.so.6(clone+0x3f) [0x7f3b70a2a71f]
 ```
 
-**DB Schema changes**: If you are using an old subscription DB, you should delete the existing DB. Then you need to add a new subscription DB.
+First of all, it is recommended to use the following command to remove all existing subscription DB.
 
 ```
 $ mongo
@@ -42,6 +53,10 @@ switched to db open5gs
 > db.subscribers.drop()
 true
 ```
+
+Then, if you are using a version of WebUI prior to v2.1.7, you need to log out. Finally, install the latest version of WebUI and add subscriber information.
+
+If the above problem still occurs, we recommend that you delete all Open5GS and start from scratch.
 
 #### 5G Core test failed (e.g. `./build/tests/registration/registration`)
 
