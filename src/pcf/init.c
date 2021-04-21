@@ -80,12 +80,12 @@ void pcf_terminate(void)
 {
     if (!initialized) return;
 
-    pcf_sbi_close();
-
     /* Daemon terminating */
     event_termination();
     ogs_thread_destroy(thread);
     ogs_timer_delete(t_termination_holding);
+
+    pcf_sbi_close();
 
     ogs_dbi_final();
 

@@ -71,12 +71,12 @@ void sgwu_terminate(void)
 {
     if (!initialized) return;
 
-    sgwu_pfcp_close();
-    sgwu_gtp_close();
-
     sgwu_event_term();
 
     ogs_thread_destroy(thread);
+
+    sgwu_pfcp_close();
+    sgwu_gtp_close();
 
     sgwu_context_final();
 

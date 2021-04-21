@@ -84,13 +84,13 @@ void amf_terminate(void)
 {
     if (!initialized) return;
 
-    ngap_close();
-    amf_sbi_close();
-
     /* Daemon terminating */
     event_termination();
     ogs_thread_destroy(thread);
     ogs_timer_delete(t_termination_holding);
+
+    ngap_close();
+    amf_sbi_close();
 
     amf_context_final();
     ogs_sbi_context_final();

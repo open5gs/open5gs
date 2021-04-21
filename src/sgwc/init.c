@@ -74,12 +74,12 @@ void sgwc_terminate(void)
 {
     if (!initialized) return;
 
-    sgwc_gtp_close();
-    sgwc_pfcp_close();
-
     sgwc_event_term();
 
     ogs_thread_destroy(thread);
+
+    sgwc_gtp_close();
+    sgwc_pfcp_close();
 
     sgwc_context_final();
 

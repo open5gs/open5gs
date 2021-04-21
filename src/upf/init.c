@@ -74,12 +74,12 @@ void upf_terminate(void)
 {
     if (!initialized) return;
 
-    upf_pfcp_close();
-    upf_gtp_close();
-
     upf_event_term();
 
     ogs_thread_destroy(thread);
+
+    upf_pfcp_close();
+    upf_gtp_close();
 
     upf_context_final();
 

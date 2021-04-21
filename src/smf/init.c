@@ -109,14 +109,14 @@ void smf_terminate(void)
 {
     if (!initialized) return;
 
-    smf_gtp_close();
-    smf_pfcp_close();
-    smf_sbi_close();
-
     /* Daemon terminating */
     event_termination();
     ogs_thread_destroy(thread);
     ogs_timer_delete(t_termination_holding);
+
+    smf_gtp_close();
+    smf_pfcp_close();
+    smf_sbi_close();
 
     smf_fd_final();
 

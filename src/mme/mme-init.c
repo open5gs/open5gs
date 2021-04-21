@@ -82,13 +82,13 @@ void mme_terminate(void)
 {
     if (!initialized) return;
 
-    mme_gtp_close();
-    sgsap_close();
-    s1ap_close();
-
     mme_event_term();
 
     ogs_thread_destroy(thread);
+
+    mme_gtp_close();
+    sgsap_close();
+    s1ap_close();
 
     mme_fd_final();
 

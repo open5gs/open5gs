@@ -77,12 +77,12 @@ void nssf_terminate(void)
 {
     if (!initialized) return;
 
-    nssf_sbi_close();
-
     /* Daemon terminating */
     event_termination();
     ogs_thread_destroy(thread);
     ogs_timer_delete(t_termination_holding);
+
+    nssf_sbi_close();
 
     nssf_context_final();
     ogs_sbi_context_final();
