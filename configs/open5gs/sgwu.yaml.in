@@ -91,10 +91,10 @@ sgwu:
 #
 #  <PFCP Client>>
 #
-#  o PFCP Client(127.0.0.6:8805)
+#  o PFCP Client(127.0.0.3:8805)
 #
 #    pfcp:
-#      addr: 127.0.0.6
+#      addr: 127.0.0.3
 #
 sgwc:
 
