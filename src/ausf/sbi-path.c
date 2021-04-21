@@ -69,7 +69,8 @@ int ausf_sbi_open(void)
 {
     ogs_sbi_nf_instance_t *nf_instance = NULL;
 
-    ogs_sbi_server_start_all(server_cb);
+    if (ogs_sbi_server_start_all(server_cb) != OGS_OK)
+        return OGS_ERROR;
 
     /*
      * The connection between NF and NRF is a little special.

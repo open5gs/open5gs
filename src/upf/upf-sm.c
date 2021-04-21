@@ -54,19 +54,9 @@ void upf_state_operational(ogs_fsm_t *s, upf_event_t *e)
 
     switch (e->id) {
     case OGS_FSM_ENTRY_SIG:
-        rv = upf_pfcp_open();
-        if (rv != OGS_OK) {
-            ogs_fatal("Can't establish N4-PFCP path");
-        }
-        rv = upf_gtp_open();
-        if (rv != OGS_OK) {
-            ogs_fatal("Can't establish GTP-U path");
-        }
         break;
 
     case OGS_FSM_EXIT_SIG:
-        upf_pfcp_close();
-        upf_gtp_close();
         break;
 
     case UPF_EVT_N4_MESSAGE:

@@ -17,7 +17,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "context.h"
+#include "sbi-path.h"
 
 static ogs_thread_t *thread;
 static void udr_main(void *data);
@@ -42,6 +42,9 @@ int udr_initialize()
     if (rv != OGS_OK) return rv;
 
     rv = ogs_dbi_init(ogs_app()->db_uri);
+    if (rv != OGS_OK) return rv;
+
+    rv = udr_sbi_open();
     if (rv != OGS_OK) return rv;
 
     thread = ogs_thread_create(udr_main, NULL);
@@ -76,6 +79,8 @@ static void event_termination(void)
 void udr_terminate(void)
 {
     if (!initialized) return;
+
+    udr_sbi_close();
 
     /* Daemon terminating */
     event_termination();

@@ -51,19 +51,8 @@ void sgwu_state_operational(ogs_fsm_t *s, sgwu_event_t *e)
 
     switch (e->id) {
     case OGS_FSM_ENTRY_SIG:
-        rv = sgwu_pfcp_open();
-        if (rv != OGS_OK) {
-            ogs_fatal("Can't establish N4-PFCP path");
-        }
-        rv = sgwu_gtp_open();
-        if (rv != OGS_OK) {
-            ogs_error("Can't establish SGW path");
-            break;
-        }
         break;
     case OGS_FSM_EXIT_SIG:
-        sgwu_pfcp_close();
-        sgwu_gtp_close();
         break;
     case SGWU_EVT_SXA_MESSAGE:
         ogs_assert(e);

@@ -31,7 +31,7 @@ typedef int _MHD_Result;
 static void server_init(int num_of_session_pool, int num_of_stream_pool);
 static void server_final(void);
 
-static void server_start(ogs_sbi_server_t *server,
+static int server_start(ogs_sbi_server_t *server,
         int (*cb)(ogs_sbi_request_t *request, void *data));
 static void server_stop(ogs_sbi_server_t *server);
 
@@ -191,7 +191,7 @@ static void session_remove_all(ogs_sbi_server_t *server)
         session_remove(sbi_sess);
 }
 
-static void server_start(ogs_sbi_server_t *server,
+static int server_start(ogs_sbi_server_t *server,
         int (*cb)(ogs_sbi_request_t *request, void *data))
 {
     char buf[OGS_ADDRSTRLEN];
@@ -254,7 +254,7 @@ static void server_start(ogs_sbi_server_t *server,
                 MHD_OPTION_END);
     if (!server->mhd) {
         ogs_error("Cannot start SBI server");
-        return;
+        return OGS_ERROR;
     }
 
     /* Setup poll for server listening socket */
@@ -270,6 +270,8 @@ static void server_start(ogs_sbi_server_t *server,
         ogs_info("mhd_server() [%s]:%d", hostname, OGS_PORT(addr));
     else
         ogs_info("mhd_server() [%s]:%d", OGS_ADDR(addr, buf), OGS_PORT(addr));
+
+    return OGS_OK;
 }
 
 static void server_stop(ogs_sbi_server_t *server)

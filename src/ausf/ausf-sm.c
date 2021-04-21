@@ -55,15 +55,9 @@ void ausf_state_operational(ogs_fsm_t *s, ausf_event_t *e)
 
     switch (e->id) {
     case OGS_FSM_ENTRY_SIG:
-        rv = ausf_sbi_open();
-        if (rv != OGS_OK) {
-            ogs_fatal("Can't establish SBI path");
-        }
-
         break;
 
     case OGS_FSM_EXIT_SIG:
-        ausf_sbi_close();
         break;
 
     case AUSF_EVT_SBI_SERVER:

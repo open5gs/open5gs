@@ -26,10 +26,10 @@ ogs_sock_t *ogs_pfcp_server(ogs_socknode_t *node)
     ogs_assert(node);
 
     pfcp = ogs_udp_server(node);
-    ogs_assert(pfcp);
-
-    ogs_info("pfcp_server() [%s]:%d",
-            OGS_ADDR(node->addr, buf), OGS_PORT(node->addr));
+    if (pfcp) {
+        ogs_info("pfcp_server() [%s]:%d",
+                OGS_ADDR(node->addr, buf), OGS_PORT(node->addr));
+    }
 
     return pfcp;
 }

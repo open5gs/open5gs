@@ -29,7 +29,7 @@
 static void server_init(int num_of_session_pool, int num_of_stream_pool);
 static void server_final(void);
 
-static void server_start(ogs_sbi_server_t *server,
+static int server_start(ogs_sbi_server_t *server,
         int (*cb)(ogs_sbi_request_t *request, void *data));
 static void server_stop(ogs_sbi_server_t *server);
 
@@ -112,7 +112,7 @@ static void server_final(void)
     ogs_pool_final(&session_pool);
 }
 
-static void server_start(ogs_sbi_server_t *server,
+static int server_start(ogs_sbi_server_t *server,
         int (*cb)(ogs_sbi_request_t *request, void *data))
 {
     char buf[OGS_ADDRSTRLEN];
@@ -126,7 +126,7 @@ static void server_start(ogs_sbi_server_t *server,
     sock = ogs_tcp_server(&server->node);
     if (!sock) {
         ogs_error("Cannot start SBI server");
-        return;
+        return OGS_ERROR;
     }
 
     /* Setup callback function */
@@ -143,6 +143,8 @@ static void server_start(ogs_sbi_server_t *server,
     else
         ogs_info("nghttp2_server() [%s]:%d",
                 OGS_ADDR(addr, buf), OGS_PORT(addr));
+
+    return OGS_OK;
 }
 
 static void server_stop(ogs_sbi_server_t *server)

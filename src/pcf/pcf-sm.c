@@ -58,15 +58,9 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
 
     switch (e->id) {
     case OGS_FSM_ENTRY_SIG:
-        rv = pcf_sbi_open();
-        if (rv != OGS_OK) {
-            ogs_fatal("Can't establish SBI path");
-        }
-
         break;
 
     case OGS_FSM_EXIT_SIG:
-        pcf_sbi_close();
         break;
 
     case PCF_EVT_SBI_SERVER:

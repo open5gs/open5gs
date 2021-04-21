@@ -19,6 +19,7 @@
 
 #include "context.h"
 #include "gtp-path.h"
+#include "pfcp-path.h"
 
 static ogs_thread_t *thread;
 static void upf_main(void *data);
@@ -55,6 +56,12 @@ int upf_initialize()
     rv = ogs_pfcp_ue_pool_generate();
     if (rv != OGS_OK) return rv;
 
+    rv = upf_pfcp_open();
+    if (rv != OGS_OK) return rv;
+
+    rv = upf_gtp_open();
+    if (rv != OGS_OK) return rv;
+
     thread = ogs_thread_create(upf_main, NULL);
     if (!thread) return OGS_ERROR;
 
@@ -66,6 +73,9 @@ int upf_initialize()
 void upf_terminate(void)
 {
     if (!initialized) return;
+
+    upf_pfcp_close();
+    upf_gtp_close();
 
     upf_event_term();
 

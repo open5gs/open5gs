@@ -26,10 +26,10 @@ ogs_sock_t *ogs_gtp_server(ogs_socknode_t *node)
     ogs_assert(node);
 
     gtp = ogs_udp_server(node);
-    ogs_assert(gtp);
-
-    ogs_info("gtp_server() [%s]:%d",
-            OGS_ADDR(node->addr, buf), OGS_PORT(node->addr));
+    if (gtp) {
+        ogs_info("gtp_server() [%s]:%d",
+                OGS_ADDR(node->addr, buf), OGS_PORT(node->addr));
+    }
 
     return gtp;
 }

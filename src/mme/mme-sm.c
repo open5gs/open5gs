@@ -135,29 +135,9 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
 
     switch (e->id) {
     case OGS_FSM_ENTRY_SIG:
-        rv = mme_gtp_open();
-        if (rv != OGS_OK) {
-            ogs_error("Can't establish S11-GTP path");
-            break;
-        }
-        rv = sgsap_open();
-        if (rv != OGS_OK) {
-            ogs_error("Can't establish SGsAP path");
-            break;
-        }
-        rv = s1ap_open();
-        if (rv != OGS_OK) {
-            ogs_error("Can't establish S1AP path");
-            break;
-        }
-
         break;
 
     case OGS_FSM_EXIT_SIG:
-        mme_gtp_close();
-        sgsap_close();
-        s1ap_close();
-
         break;
 
     case MME_EVT_S1AP_LO_ACCEPT:

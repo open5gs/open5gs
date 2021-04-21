@@ -131,17 +131,19 @@ int sgwc_pfcp_open(void)
     /* PFCP Server */
     ogs_list_for_each(&ogs_pfcp_self()->pfcp_list, node) {
         sock = ogs_pfcp_server(node);
-        ogs_assert(sock);
+        if (!sock) return OGS_ERROR;
         
         node->poll = ogs_pollset_add(ogs_app()->pollset,
                 OGS_POLLIN, sock->fd, pfcp_recv_cb, sock);
+        ogs_assert(node->poll);
     }
     ogs_list_for_each(&ogs_pfcp_self()->pfcp_list6, node) {
         sock = ogs_pfcp_server(node);
-        ogs_assert(sock);
+        if (!sock) return OGS_ERROR;
 
         node->poll = ogs_pollset_add(ogs_app()->pollset,
                 OGS_POLLIN, sock->fd, pfcp_recv_cb, sock);
+        ogs_assert(node->poll);
     }
 
     OGS_SETUP_PFCP_SERVER;

@@ -33,10 +33,10 @@ int s1ap_open(void)
     ogs_socknode_t *node = NULL;
 
     ogs_list_for_each(&mme_self()->s1ap_list, node)
-        s1ap_server(node);
+        if (s1ap_server(node) == NULL) return OGS_ERROR;
 
     ogs_list_for_each(&mme_self()->s1ap_list6, node)
-        s1ap_server(node);
+        if (s1ap_server(node) == NULL) return OGS_ERROR;
 
     return OGS_OK;
 }

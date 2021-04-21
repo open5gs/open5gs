@@ -53,14 +53,9 @@ void nrf_state_operational(ogs_fsm_t *s, nrf_event_t *e)
 
     switch (e->id) {
     case OGS_FSM_ENTRY_SIG:
-        rv = nrf_sbi_open();
-        if (rv != OGS_OK) {
-            ogs_fatal("Can't establish SBI path");
-        }
         break;
 
     case OGS_FSM_EXIT_SIG:
-        nrf_sbi_close();
         break;
 
     case NRF_EVT_SBI_SERVER:

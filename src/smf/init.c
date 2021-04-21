@@ -19,6 +19,9 @@
 
 #include "context.h"
 #include "fd-path.h"
+#include "gtp-path.h"
+#include "pfcp-path.h"
+#include "sbi-path.h"
 
 static ogs_thread_t *thread;
 static void smf_main(void *data);
@@ -64,6 +67,15 @@ int smf_initialize()
     rv = smf_fd_init();
     if (rv != 0) return OGS_ERROR;
 
+    rv = smf_gtp_open();
+    if (rv != 0) return OGS_ERROR;
+
+    rv = smf_pfcp_open();
+    if (rv != 0) return OGS_ERROR;
+
+    rv = smf_sbi_open();
+    if (rv != 0) return OGS_ERROR;
+
     thread = ogs_thread_create(smf_main, NULL);
     if (!thread) return OGS_ERROR;
 
@@ -96,6 +108,10 @@ static void event_termination(void)
 void smf_terminate(void)
 {
     if (!initialized) return;
+
+    smf_gtp_close();
+    smf_pfcp_close();
+    smf_sbi_close();
 
     /* Daemon terminating */
     event_termination();

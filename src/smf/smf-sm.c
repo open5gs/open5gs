@@ -80,26 +80,9 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
 
     switch (e->id) {
     case OGS_FSM_ENTRY_SIG:
-        rv = smf_gtp_open();
-        if (rv != OGS_OK) {
-            ogs_fatal("Can't establish S11-GTP path");
-        }
-
-        rv = smf_pfcp_open();
-        if (rv != OGS_OK) {
-            ogs_fatal("Can't establish N4-PFCP path");
-        }
-
-        rv = smf_sbi_open();
-        if (rv != OGS_OK) {
-            ogs_fatal("Can't establish SBI path");
-        }
         break;
 
     case OGS_FSM_EXIT_SIG:
-        smf_gtp_close();
-        smf_pfcp_close();
-        smf_sbi_close();
         break;
 
     case SMF_EVT_S5C_MESSAGE:

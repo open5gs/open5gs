@@ -19,6 +19,7 @@
 
 #include "context.h"
 #include "gtp-path.h"
+#include "pfcp-path.h"
 
 static ogs_thread_t *thread;
 static void sgwu_main(void *data);
@@ -52,6 +53,12 @@ int sgwu_initialize()
             ogs_app()->logger.domain, ogs_app()->logger.level);
     if (rv != OGS_OK) return rv;
 
+    rv = sgwu_pfcp_open();
+    if (rv != OGS_OK) return rv;
+
+    rv = sgwu_gtp_open();
+    if (rv != OGS_OK) return rv;
+
     thread = ogs_thread_create(sgwu_main, NULL);
     if (!thread) return OGS_ERROR;
 
@@ -63,6 +70,9 @@ int sgwu_initialize()
 void sgwu_terminate(void)
 {
     if (!initialized) return;
+
+    sgwu_pfcp_close();
+    sgwu_gtp_close();
 
     sgwu_event_term();
 

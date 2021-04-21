@@ -80,22 +80,9 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
 
     switch (e->id) {
     case OGS_FSM_ENTRY_SIG:
-        rv = amf_sbi_open();
-        if (rv != OGS_OK) {
-            ogs_fatal("Can't establish SBI path");
-        }
-
-        rv = ngap_open();
-        if (rv != OGS_OK) {
-            ogs_error("Can't establish NGAP path");
-            break;
-        }
-
         break;
 
     case OGS_FSM_EXIT_SIG:
-        ngap_close();
-        amf_sbi_close();
         break;
 
     case AMF_EVT_SBI_SERVER:

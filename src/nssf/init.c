@@ -17,7 +17,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "context.h"
+#include "sbi-path.h"
 
 static ogs_thread_t *thread;
 static void nssf_main(void *data);
@@ -39,6 +39,9 @@ int nssf_initialize()
 
     rv = ogs_log_config_domain(
             ogs_app()->logger.domain, ogs_app()->logger.level);
+    if (rv != OGS_OK) return rv;
+
+    rv = nssf_sbi_open();
     if (rv != OGS_OK) return rv;
 
     thread = ogs_thread_create(nssf_main, NULL);
@@ -73,6 +76,8 @@ static void event_termination(void)
 void nssf_terminate(void)
 {
     if (!initialized) return;
+
+    nssf_sbi_close();
 
     /* Daemon terminating */
     event_termination();

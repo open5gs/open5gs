@@ -17,7 +17,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "context.h"
+#include "sbi-path.h"
+#include "ngap-path.h"
 
 static ogs_thread_t *thread;
 static void amf_main(void *data);
@@ -42,6 +43,12 @@ int amf_initialize()
 
     rv = ogs_log_config_domain(
             ogs_app()->logger.domain, ogs_app()->logger.level);
+    if (rv != OGS_OK) return rv;
+
+    rv = amf_sbi_open();
+    if (rv != OGS_OK) return rv;
+
+    rv = ngap_open();
     if (rv != OGS_OK) return rv;
 
     thread = ogs_thread_create(amf_main, NULL);
@@ -76,6 +83,9 @@ static void event_termination(void)
 void amf_terminate(void)
 {
     if (!initialized) return;
+
+    ngap_close();
+    amf_sbi_close();
 
     /* Daemon terminating */
     event_termination();

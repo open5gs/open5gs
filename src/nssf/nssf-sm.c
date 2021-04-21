@@ -56,15 +56,9 @@ void nssf_state_operational(ogs_fsm_t *s, nssf_event_t *e)
 
     switch (e->id) {
     case OGS_FSM_ENTRY_SIG:
-        rv = nssf_sbi_open();
-        if (rv != OGS_OK) {
-            ogs_fatal("Can't establish SBI path");
-        }
-
         break;
 
     case OGS_FSM_EXIT_SIG:
-        nssf_sbi_close();
         break;
 
     case NSSF_EVT_SBI_SERVER:

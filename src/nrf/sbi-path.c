@@ -69,7 +69,8 @@ static int client_notify_cb(ogs_sbi_response_t *response, void *data)
 
 int nrf_sbi_open(void)
 {
-    ogs_sbi_server_start_all(server_cb);
+    if (ogs_sbi_server_start_all(server_cb) != OGS_OK)
+        return OGS_ERROR;
 
     return OGS_OK;
 }

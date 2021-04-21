@@ -55,15 +55,9 @@ void udr_state_operational(ogs_fsm_t *s, udr_event_t *e)
 
     switch (e->id) {
     case OGS_FSM_ENTRY_SIG:
-        rv = udr_sbi_open();
-        if (rv != OGS_OK) {
-            ogs_fatal("Can't establish SBI path");
-        }
-
         break;
 
     case OGS_FSM_EXIT_SIG:
-        udr_sbi_close();
         break;
 
     case UDR_EVT_SBI_SERVER:
