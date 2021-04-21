@@ -150,10 +150,10 @@ upf:
 #
 #  <PFCP Client>>
 #
-#  o PFCP Client(127.0.0.3:8805)
+#  o PFCP Client(127.0.0.4:8805)
 #
 #    pfcp:
-#      addr: 127.0.0.3
+#      addr: 127.0.0.4
 #
 smf:
 
