@@ -192,13 +192,14 @@ MongoDB   = 127.0.0.1 (subscriber data) - http://localhost:3000
 
 MME-s1ap  = 127.0.0.2 :36412 for S1-MME
 MME-gtpc  = 127.0.0.2 :2123 for S11
-MME-frDi  = 127.0.0.2 :3868 for S6a auth
+MME-frDi  = 127.0.0.2 :3868 for S6a
 
 SGWC-gtpc = 127.0.0.3 :2123 for S11
 SGWC-pfcp = 127.0.0.3 :8805 for Sxa
 
-SMF-gtpc  = 127.0.0.4 :2123 for S5/8c, N11
-SMF-pfcp  = 127.0.0.4 :8805 for N4
+SMF-gtpc  = 127.0.0.4 :2123 for S5c, N11
+SMF-gtpu  = 127.0.0.4 :2152 for N4u (Sxu)
+SMF-pfcp  = 127.0.0.4 :8805 for N4 (Sxb)
 SMF-frDi  = 127.0.0.4 :3868 for Gx auth
 SMF-sbi   = 127.0.0.4 :7777 for 5G SBI (N7,N10,N11)
 
@@ -206,14 +207,14 @@ AMF-ngap  = 127.0.0.5 :38412 for N2
 AMF-sbi   = 127.0.0.5 :7777 for 5G SBI (N8,N12,N11)
 
 SGWU-pfcp = 127.0.0.6 :8805 for Sxa
-SGWU-gtpu = 127.0.0.6 :2152 for S1-U, S5/8u
+SGWU-gtpu = 127.0.0.6 :2152 for S1-U, S5u
 
-UPF-pfcp  = 127.0.0.7 :8805 for N4
-UPF-gtpu  = 127.0.0.7 :2152 for S5/8u, N3
+UPF-pfcp  = 127.0.0.7 :8805 for N4 (Sxb)
+UPF-gtpu  = 127.0.0.7 :2152 for S5u, N3, N4u (Sxu)
 
-HSS-frDi  = 127.0.0.8 :3868 for S6a auth
+HSS-frDi  = 127.0.0.8 :3868 for S6a, Cx
 
-PCRF-frDi = 127.0.0.9 :3868 for Gx auth
+PCRF-frDi = 127.0.0.9 :3868 for Gx
 
 NRF-sbi   = 127.0.0.10:7777 for 5G SBI
 AUSF-sbi  = 127.0.0.11:7777 for 5G SBI
