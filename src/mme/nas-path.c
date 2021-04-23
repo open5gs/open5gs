@@ -109,11 +109,19 @@ void nas_eps_send_attach_accept(mme_ue_t *mme_ue)
     ogs_assert(bearer);
     ogs_assert(mme_bearer_next(bearer) == NULL);
 
+    ogs_debug("[%s] Attach accept", mme_ue->imsi_bcd);
+
     esmbuf = esm_build_activate_default_bearer_context_request(sess);
     ogs_expect_or_return(esmbuf);
 
     emmbuf = emm_build_attach_accept(mme_ue, esmbuf);
     ogs_expect_or_return(emmbuf);
+
+    CLEAR_MME_UE_TIMER(mme_ue->t3450);
+    mme_ue->t3450.pkbuf = ogs_pkbuf_copy(emmbuf);
+    ogs_assert(mme_ue->t3450.pkbuf);
+    ogs_timer_start(mme_ue->t3450.timer,
+            mme_timer_cfg(MME_TIMER_T3450)->duration);
 
     s1apbuf = s1ap_build_initial_context_setup_request(mme_ue, emmbuf);
     ogs_expect_or_return(s1apbuf);
@@ -131,8 +139,8 @@ void nas_eps_send_attach_reject(mme_ue_t *mme_ue,
 
     ogs_assert(mme_ue);
 
-    ogs_debug("Attach reject");
-    ogs_debug("    IMSI[%s] Cause[%d]", mme_ue->imsi_bcd, emm_cause);
+    ogs_debug("[%s] Attach reject", mme_ue->imsi_bcd);
+    ogs_debug("    Cause[%d]", emm_cause);
 
     sess = mme_sess_first(mme_ue);
     if (sess) {
@@ -179,8 +187,7 @@ void nas_eps_send_authentication_request(mme_ue_t *mme_ue)
 
     ogs_assert(mme_ue);
 
-    ogs_debug("Authentication request");
-    ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
+    ogs_debug("[%s] Authentication request", mme_ue->imsi_bcd);
 
     if (mme_ue->t3460.pkbuf) {
         emmbuf = mme_ue->t3460.pkbuf;
@@ -206,8 +213,7 @@ void nas_eps_send_security_mode_command(mme_ue_t *mme_ue)
 
     ogs_assert(mme_ue);
 
-    ogs_debug("Security mode command");
-    ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
+    ogs_debug("[%s] Security mode command", mme_ue->imsi_bcd);
 
     if (mme_ue->t3460.pkbuf) {
         emmbuf = mme_ue->t3460.pkbuf;
@@ -233,8 +239,7 @@ void nas_eps_send_authentication_reject(mme_ue_t *mme_ue)
 
     ogs_assert(mme_ue);
 
-    ogs_debug("Authentication reject");
-    ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
+    ogs_debug("[%s] Authentication reject", mme_ue->imsi_bcd);
 
     emmbuf = emm_build_authentication_reject();
     ogs_expect_or_return(emmbuf);
@@ -251,6 +256,8 @@ void nas_eps_send_detach_accept(mme_ue_t *mme_ue)
     ogs_assert(mme_ue);
     enb_ue = enb_ue_cycle(mme_ue->enb_ue);
     ogs_assert(enb_ue);
+
+    ogs_debug("[%s] Detach accept", mme_ue->imsi_bcd);
 
     /* reply with detach accept */
     if (mme_ue->nas_eps.detach.switch_off == 0) {
@@ -471,11 +478,18 @@ void nas_eps_send_tau_accept(
 
     ogs_assert(mme_ue);
 
-    ogs_debug("Tracking area update accept");
-    ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
+    ogs_debug("[%s] Tracking area update accept", mme_ue->imsi_bcd);
 
     emmbuf = emm_build_tau_accept(mme_ue);
     ogs_expect_or_return(emmbuf);
+
+    if (mme_ue->next.m_tmsi) {
+        CLEAR_MME_UE_TIMER(mme_ue->t3450);
+        mme_ue->t3450.pkbuf = ogs_pkbuf_copy(emmbuf);
+        ogs_assert(mme_ue->t3450.pkbuf);
+        ogs_timer_start(mme_ue->t3450.timer,
+                mme_timer_cfg(MME_TIMER_T3450)->duration);
+    }
 
     if (procedureCode == S1AP_ProcedureCode_id_InitialContextSetup) {
         ogs_pkbuf_t *s1apbuf = NULL;
@@ -498,6 +512,8 @@ void nas_eps_send_tau_reject(mme_ue_t *mme_ue, ogs_nas_emm_cause_t emm_cause)
 
     ogs_assert(mme_ue);
 
+    ogs_debug("[%s] Tracking area update reject", mme_ue->imsi_bcd);
+
     /* Build TAU reject */
     emmbuf = emm_build_tau_reject(emm_cause, mme_ue);
     ogs_expect_or_return(emmbuf);
@@ -514,6 +530,8 @@ void nas_eps_send_service_reject(mme_ue_t *mme_ue,
 
     ogs_assert(mme_ue);
 
+    ogs_debug("[%s] Service reject", mme_ue->imsi_bcd);
+
     /* Build Service Reject */
     emmbuf = emm_build_service_reject(emm_cause, mme_ue);
     ogs_expect_or_return(emmbuf);
@@ -529,8 +547,7 @@ void nas_eps_send_cs_service_notification(mme_ue_t *mme_ue)
 
     ogs_assert(mme_ue);
 
-    ogs_debug("CS Service Notification");
-    ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
+    ogs_debug("[%s] CS Service Notification", mme_ue->imsi_bcd);
 
     emmbuf = emm_build_cs_service_notification(mme_ue);
     ogs_expect_or_return(emmbuf);
@@ -549,8 +566,7 @@ void nas_eps_send_downlink_nas_transport(
     ogs_assert(buffer);
     ogs_assert(length);
 
-    ogs_debug("Downlink NAS transport");
-    ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
+    ogs_debug("[%s] Downlink NAS transport", mme_ue->imsi_bcd);
 
     emmbuf = emm_build_downlink_nas_transport(mme_ue, buffer, length);
     ogs_expect_or_return(emmbuf);

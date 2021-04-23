@@ -77,8 +77,25 @@ void nas_5gs_send_registration_accept(amf_ue_t *amf_ue)
     ran_ue = ran_ue_cycle(amf_ue->ran_ue);
     ogs_assert(ran_ue);
 
-    gmmbuf = gmm_build_registration_accept(amf_ue);
-    ogs_expect_or_return(gmmbuf);
+    ogs_debug("[%s] Registration accept", amf_ue->supi);
+
+    if (amf_ue->next.m_tmsi) {
+        if (amf_ue->t3550.pkbuf) {
+            gmmbuf = amf_ue->t3550.pkbuf;
+            ogs_expect_or_return(gmmbuf);
+        } else {
+            gmmbuf = gmm_build_registration_accept(amf_ue);
+            ogs_expect_or_return(gmmbuf);
+        }
+
+        amf_ue->t3550.pkbuf = ogs_pkbuf_copy(gmmbuf);
+        ogs_assert(amf_ue->t3550.pkbuf);
+        ogs_timer_start(amf_ue->t3550.timer,
+                amf_timer_cfg(AMF_TIMER_T3550)->duration);
+    } else {
+        gmmbuf = gmm_build_registration_accept(amf_ue);
+        ogs_expect_or_return(gmmbuf);
+    }
 
     /*
      * Previously, AMF would sends PDUSessionResourceSetupRequest
@@ -158,6 +175,8 @@ void nas_5gs_send_service_accept(amf_ue_t *amf_ue)
     ran_ue = ran_ue_cycle(amf_ue->ran_ue);
     ogs_assert(ran_ue);
 
+    ogs_debug("[%s] Service accept", amf_ue->supi);
+
     gmmbuf = gmm_build_service_accept(amf_ue);
     ogs_expect_or_return(gmmbuf);
 
@@ -213,6 +232,8 @@ void nas_5gs_send_service_reject(
 
     ogs_assert(amf_ue);
 
+    ogs_debug("[%s] Service reject", amf_ue->supi);
+
     gmmbuf = gmm_build_service_reject(amf_ue, gmm_cause);
     ogs_expect_or_return(gmmbuf);
 
@@ -228,6 +249,8 @@ void nas_5gs_send_de_registration_accept(amf_ue_t *amf_ue)
     ogs_assert(amf_ue);
     ran_ue = ran_ue_cycle(amf_ue->ran_ue);
     ogs_assert(ran_ue);
+
+    ogs_debug("[%s] De-registration accept", amf_ue->supi);
 
     if (amf_ue->nas.de_registration.switch_off == 0) {
         int rv;

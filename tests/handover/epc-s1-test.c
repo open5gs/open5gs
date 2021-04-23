@@ -374,7 +374,7 @@ static void test1_func(abts_case *tc, void *data)
     test_ue->tau_request_param.mobile_station_classmark_2 = 1;
     test_ue->tau_request_param.ue_usage_setting = 1;
     emmbuf = testemm_build_tau_request(
-            test_ue, false, OGS_NAS_EPS_UPDATE_TYPE_COMBINED_TA_LA_UPDATING);
+            test_ue, true, OGS_NAS_EPS_UPDATE_TYPE_COMBINED_TA_LA_UPDATING);
     ABTS_PTR_NOTNULL(tc, emmbuf);
     sendbuf = test_s1ap_build_uplink_nas_transport(test_ue, emmbuf);
     ABTS_PTR_NOTNULL(tc, sendbuf);

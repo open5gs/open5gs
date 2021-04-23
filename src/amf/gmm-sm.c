@@ -191,6 +191,7 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e)
                         break;
                     }
 
+                    CLEAR_AMF_UE_TIMER(amf_ue->t3550);
                     nas_5gs_send_registration_accept(amf_ue);
                 }
 
@@ -907,36 +908,13 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
                     break;
                 }
 
-/*
- * The usage of guti_present is changed
- * This following code should be removed.
- */
-#if 0
-                /*
-                 * Issues #553
-                 *
-                 * o Tester
-                 * 1. UE registered to 5GS and can connect to internet.
-                 * 2. Turn off the UE and turn on the UE immediately
-                 * 3. UE send PDU session request message
-                 *    without sending registration complete
-                 *
-                 * o Analysis Result
-                 * 1. UE sends registration request with unknown GUTI
-                 * 2. AMF send registration accept without GUTI
-                 * 3. UE skips the registration complete
-                 *
-                 * So, if GUTI is not present,
-                 * we need to move REGISTERED state.
-                 */
-                if (amf_ue->guti_present == 0)
-                    OGS_FSM_TRAN(&amf_ue->sm, &gmm_state_registered);
-#endif
-
-                /* If nas_5gs_send_service_accept() used, we need change it. */
                 ogs_assert(amf_ue->nas.message_type ==
                         OGS_NAS_5GS_REGISTRATION_REQUEST);
+                CLEAR_AMF_UE_TIMER(amf_ue->t3550);
                 nas_5gs_send_registration_accept(amf_ue);
+
+                if (!amf_ue->next.m_tmsi)
+                    OGS_FSM_TRAN(s, &gmm_state_registered);
                 break;
 
             DEFAULT
@@ -959,6 +937,8 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
         switch (nas_message->gmm.h.message_type) {
         case OGS_NAS_5GS_REGISTRATION_COMPLETE:
             ogs_info("[%s] Registration complete", amf_ue->supi);
+
+            CLEAR_AMF_UE_TIMER(amf_ue->t3550);
 
             /* Confirm GUTI */
             if (amf_ue->next.m_tmsi) {
@@ -1045,8 +1025,19 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
         break;
     case AMF_EVT_5GMM_TIMER:
         switch (e->timer_id) {
+        case AMF_TIMER_T3550:
+            if (amf_ue->t3550.retry_count >=
+                    amf_timer_cfg(AMF_TIMER_T3550)->max_count) {
+                ogs_warn("[%s] Retransmission failed. Stop retransmission",
+                        amf_ue->suci);
+                OGS_FSM_TRAN(&amf_ue->sm, &gmm_state_exception);
+            } else {
+                amf_ue->t3550.retry_count++;
+                nas_5gs_send_registration_accept(amf_ue);
+            }
+            break;
         default:
-            ogs_error("Unknown timer[%s:%d]",
+            ogs_error("[%s] Unknown timer[%s:%d]", amf_ue->suci,
                     amf_timer_get_name(e->timer_id), e->timer_id);
             break;
         }
@@ -1122,6 +1113,8 @@ void gmm_state_exception(ogs_fsm_t *s, amf_event_t *e)
             if (!AMF_UE_HAVE_SUCI(amf_ue)) {
                 CLEAR_AMF_UE_TIMER(amf_ue->t3570);
                 nas_5gs_send_identity_request(amf_ue);
+
+                OGS_FSM_TRAN(s, &gmm_state_de_registered);
                 break;
             }
 
@@ -1173,6 +1166,7 @@ void gmm_state_exception(ogs_fsm_t *s, amf_event_t *e)
                         break;
                     }
 
+                    CLEAR_AMF_UE_TIMER(amf_ue->t3550);
                     nas_5gs_send_registration_accept(amf_ue);
                 }
 

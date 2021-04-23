@@ -2418,6 +2418,11 @@ void ngap_handle_handover_required(
     /* Source UE - Target UE associated */
     source_ue_associate_target_ue(source_ue, target_ue);
 
+    /* Context Transfer */
+    target_ue->ue_context_requested = source_ue->ue_context_requested;
+    target_ue->initial_context_setup_request_sent =
+            source_ue->initial_context_setup_request_sent;
+
     ogs_debug("    Target : RAN_UE_NGAP_ID[%d] AMF_UE_NGAP_ID[%lld] ",
         target_ue->ran_ue_ngap_id, (long long)target_ue->amf_ue_ngap_id);
 

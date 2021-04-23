@@ -27,14 +27,11 @@ static amf_timer_cfg_t g_amf_timer_cfg[MAX_NUM_OF_AMF_TIMER] = {
     [AMF_TIMER_T3513] =
         { .max_count = 2, .duration = ogs_time_from_sec(2) },
 
-    /* DETACH REQUEST sent */
+    /* DEREGISTRATION REQUEST sent */
     [AMF_TIMER_T3522] =
         { .max_count = 4, .duration = ogs_time_from_sec(3) },
 
-    /* ATTACH ACCEPT sent
-     * TRACKING AREA UPDATE ACCEPT sent with GUTI
-     * TRACKING AREA UPDATE ACCEPT sent with TMSI
-     * GUTI REALLOCATION COMMAND sent */
+    /* REGISTRATION ACCEPT sent */
     [AMF_TIMER_T3550] =
         { .max_count = 4, .duration = ogs_time_from_sec(6) },
 

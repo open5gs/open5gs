@@ -53,8 +53,6 @@ ogs_pkbuf_t *gmm_build_registration_accept(amf_ue_t *amf_ue)
 
     ogs_assert(amf_ue);
 
-    ogs_debug("[%s] Registration accept", amf_ue->supi);
-
     memset(&message, 0, sizeof(message));
     message.h.security_header_type =
         OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
@@ -196,8 +194,6 @@ ogs_pkbuf_t *gmm_build_service_accept(amf_ue_t *amf_ue)
         pdu_session_reactivation_result;
     ogs_assert(pdu_session_reactivation_result);
 
-    ogs_debug("[%s] Service accept", amf_ue->supi);
-
     memset(&message, 0, sizeof(message));
     message.h.security_header_type =
         OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
@@ -241,8 +237,6 @@ ogs_pkbuf_t *gmm_build_service_reject(
 
     pdu_session_status = &service_reject->pdu_session_status;
 
-    ogs_debug("Service reject");
-
     memset(&message, 0, sizeof(message));
     message.gmm.h.extended_protocol_discriminator =
         OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GMM;
@@ -273,8 +267,6 @@ ogs_pkbuf_t *gmm_build_de_registration_accept(amf_ue_t *amf_ue)
         OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
     message.h.extended_protocol_discriminator =
         OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GMM;
-
-    ogs_debug("[%s] De-registration accept", amf_ue->supi);
 
     message.gmm.h.extended_protocol_discriminator =
         OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GMM;
@@ -633,184 +625,6 @@ ogs_pkbuf_t *gmm_build_dl_nas_transport(amf_sess_t *sess,
 
     return gmmbuf;
 }
-#if 0
-ogs_pkbuf_t *gmm_build_tau_accept(amf_ue_t *amf_ue)
-{
-    ogs_nas_5gs_message_t message;
-    ogs_nas_5gs_tracking_area_update_accept_t *tau_accept =
-        &message.gmm.tracking_area_update_accept;
-    int served_tai_index = 0;
-
-    amf_sess_t *sess = NULL;
-
-    ogs_assert(amf_ue);
-
-    memset(&message, 0, sizeof(message));
-    message.h.security_header_type =
-        OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
-    message.h.extended_protocol_discriminator =
-        OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GMM;
-
-    message.gmm.h.extended_protocol_discriminator =
-        OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GMM;
-    message.gmm.h.message_type = OGS_NAS_5GS_TRACKING_AREA_UPDATE_ACCEPT;
-
-    tau_accept->eps_update_result.result = amf_ue->nas_5gs.update.value;
-
-    /* Set T3512 */
-    tau_accept->presencemask |=
-        OGS_NAS_5GS_TRACKING_AREA_UPDATE_ACCEPT_T3512_VALUE_PRESENT ;
-    tau_accept->t3512_value.unit = OGS_NAS_GRPS_TIMER_UNIT_MULTIPLES_OF_DECI_HH;
-    tau_accept->t3512_value.value = 9;
-
-    /* Set TAI */
-    tau_accept->presencemask |=
-        OGS_NAS_5GS_TRACKING_AREA_UPDATE_ACCEPT_TAI_LIST_PRESENT;
-
-    ogs_debug("    TAI[PLMN_ID:%06x,TAC:%d]",
-            ogs_plmn_id_hexdump(&amf_ue->nr_tai.plmn_id),
-            amf_ue->nr_tai.tac);
-    ogs_debug("    E_CGI[PLMN_ID:%06x,CELL_ID:%d]",
-            ogs_plmn_id_hexdump(&amf_ue->e_cgi.plmn_id),
-            amf_ue->e_cgi.cell_id);
-    served_tai_index = amf_find_served_tai(&amf_ue->nr_tai);
-    ogs_debug("    SERVED_TAI_INDEX[%d]", served_tai_index);
-    ogs_assert(served_tai_index >= 0 &&
-            served_tai_index < OGS_MAX_NUM_OF_SERVED_TAI);
-    ogs_nas_tai_list_build(&tau_accept->tai_list,
-            &amf_self()->served_tai[served_tai_index].list0,
-            &amf_self()->served_tai[served_tai_index].list2);
-
-    /* Set EPS bearer context status */
-    tau_accept->presencemask |=
-        OGS_NAS_5GS_TRACKING_AREA_UPDATE_ACCEPT_EPS_BEARER_CONTEXT_STATUS_PRESENT;
-    tau_accept->eps_bearer_context_status.length = 2;
-    sess = amf_sess_first(amf_ue);
-    while (sess) {
-        amf_bearer_t *bearer = amf_bearer_first(sess);
-        while (bearer) {
-            switch (bearer->ebi) {
-            case 5: tau_accept->eps_bearer_context_status.ebi5 = 1; break;
-            case 6: tau_accept->eps_bearer_context_status.ebi6 = 1; break;
-            case 7: tau_accept->eps_bearer_context_status.ebi7 = 1; break;
-            case 8: tau_accept->eps_bearer_context_status.ebi8 = 1; break;
-            case 9: tau_accept->eps_bearer_context_status.ebi9 = 1; break;
-            case 10: tau_accept->eps_bearer_context_status.ebi10 = 1; break;
-            case 11: tau_accept->eps_bearer_context_status.ebi11 = 1; break;
-            case 12: tau_accept->eps_bearer_context_status.ebi12 = 1; break;
-            case 13: tau_accept->eps_bearer_context_status.ebi13 = 1; break;
-            case 14: tau_accept->eps_bearer_context_status.ebi14 = 1; break;
-            case 15: tau_accept->eps_bearer_context_status.ebi15 = 1; break;
-            default: break;
-            }
-
-            bearer = amf_bearer_next(bearer);
-        }
-        sess = amf_sess_next(sess);
-    }
-
-#if 0 /* Need not to include T3502 */
-    /* Set T3502 */
-    tau_accept->presencemask |=
-        OGS_NAS_5GS_TRACKING_AREA_UPDATE_ACCEPT_T3502_VALUE_PRESENT;
-    tau_accept->t3502_value.unit = OGS_NAS_GRPS_TIMER_UNIT_MULTIPLES_OF_1_MM;
-    tau_accept->t3502_value.value = 12;
-#endif
-
-    /* Set T3523 */
-    tau_accept->presencemask |=
-        OGS_NAS_5GS_TRACKING_AREA_UPDATE_ACCEPT_T3523_VALUE_PRESENT;
-    tau_accept->t3523_value.unit = OGS_NAS_GRPS_TIMER_UNIT_MULTIPLES_OF_DECI_HH;
-    tau_accept->t3523_value.value = 9;
-
-    /* Set EPS network feature support */
-    tau_accept->presencemask |=
-        OGS_NAS_5GS_TRACKING_AREA_UPDATE_ACCEPT_EPS_NETWORK_FEATURE_SUPPORT_PRESENT;
-    tau_accept->eps_network_feature_support.length = 1;
-    tau_accept->eps_network_feature_support.ims_vops = 1;
-
-    return nas_5gs_security_encode(amf_ue, &message);
-}
-
-ogs_pkbuf_t *gmm_build_tau_reject(
-        ogs_nas_5gmm_cause_t gmm_cause, amf_ue_t *amf_ue)
-{
-    ogs_nas_5gs_message_t message;
-    ogs_nas_5gs_tracking_area_update_reject_t *tau_reject =
-        &message.gmm.tracking_area_update_reject;
-
-    ogs_assert(amf_ue);
-
-    ogs_debug("Tracking area update reject");
-    ogs_debug("    IMSI[%s] Cause[%d]",
-            MME_UE_HAVE_IMSI(amf_ue) ? amf_ue->imsi_bcd : "Unknown", gmm_cause);
-
-    memset(&message, 0, sizeof(message));
-    message.gmm.h.extended_protocol_discriminator =
-        OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GMM;
-    message.gmm.h.message_type = OGS_NAS_5GS_TRACKING_AREA_UPDATE_REJECT;
-
-    tau_reject->gmm_cause = gmm_cause;
-
-    return ogs_nas_5gs_plain_encode(&message);
-}
-
-ogs_pkbuf_t *gmm_build_cs_service_notification(amf_ue_t *amf_ue)
-{
-    ogs_nas_5gs_message_t message;
-    ogs_nas_5gs_cs_service_notification_t *cs_service_notification =
-        &message.gmm.cs_service_notification;
-    ogs_nas_paging_identity_t *paging_identity =
-        &cs_service_notification->paging_identity;
-
-    ogs_assert(amf_ue);
-
-    memset(&message, 0, sizeof(message));
-    message.h.security_header_type =
-        OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
-    message.h.extended_protocol_discriminator =
-        OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GMM;
-
-    message.gmm.h.extended_protocol_discriminator =
-        OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GMM;
-    message.gmm.h.message_type = OGS_NAS_5GS_CS_SERVICE_NOTIFICATION;
-
-    /* FIXME : Does it right to use TMSI */
-    paging_identity->identity = OGS_NAS_PAGING_IDENTITY_TMSI;
-    ogs_debug("    Paging Identity[%d]", paging_identity->identity);
-
-    /* FIXME : What optional filed should be included in this message? */  
-
-    return nas_5gs_security_encode(amf_ue, &message);
-}
-
-ogs_pkbuf_t *gmm_build_downlink_nas_transport(
-        amf_ue_t *amf_ue, uint8_t *buffer, uint8_t length)
-{
-    ogs_nas_5gs_message_t message;
-    ogs_nas_5gs_downlink_nas_transport_t *downlink_nas_transport =
-        &message.gmm.downlink_nas_transport;
-    ogs_nas_5gs_message_container_t *nas_message_container =
-        &downlink_nas_transport->nas_message_container;
-
-    ogs_assert(amf_ue);
-
-    memset(&message, 0, sizeof(message));
-    message.h.security_header_type =
-        OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
-    message.h.extended_protocol_discriminator =
-        OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GMM;
-
-    message.gmm.h.extended_protocol_discriminator =
-        OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GMM;
-    message.gmm.h.message_type = OGS_NAS_5GS_DOWNLINK_NAS_TRANSPORT;
-
-    nas_message_container->length = length;
-    memcpy(nas_message_container->buffer, buffer, length);
-
-    return nas_5gs_security_encode(amf_ue, &message);
-}
-#endif
 
 ogs_pkbuf_t *gmm_build_status(amf_ue_t *amf_ue, ogs_nas_5gmm_cause_t cause)
 {

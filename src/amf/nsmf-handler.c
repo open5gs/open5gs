@@ -194,9 +194,11 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                             ogs_pkbuf_copy(n2smbuf));
 
                     if (SESSION_SYNC_DONE(amf_ue,
-                                AMF_RELEASE_SM_CONTEXT_REGISTRATION_ACCEPT) &&
+                            AMF_RELEASE_SM_CONTEXT_REGISTRATION_ACCEPT) &&
                         SESSION_SYNC_DONE(amf_ue,
                             AMF_UPDATE_SM_CONTEXT_REGISTRATION_REQUEST)) {
+
+                        CLEAR_AMF_UE_TIMER(amf_ue->t3550);
                         nas_5gs_send_registration_accept(amf_ue);
 
                         AMF_UE_CLEAR_N2_TRANSFER(
@@ -631,6 +633,8 @@ int amf_nsmf_pdusession_handle_release_sm_context(amf_sess_t *sess, int state)
                 amf_ue, AMF_RELEASE_SM_CONTEXT_REGISTRATION_ACCEPT) &&
             SESSION_SYNC_DONE(
                 amf_ue, AMF_UPDATE_SM_CONTEXT_REGISTRATION_REQUEST))
+
+            CLEAR_AMF_UE_TIMER(amf_ue->t3550);
             nas_5gs_send_registration_accept(amf_ue);
 
     } else if (state == AMF_RELEASE_SM_CONTEXT_SERVICE_ACCEPT) {

@@ -482,10 +482,10 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
                 nas_eps_send_tau_accept(mme_ue,
                         S1AP_ProcedureCode_id_InitialContextSetup);
             } else if (mme_ue->nas_eps.type == MME_EPS_TYPE_SERVICE_REQUEST) {
-                s1ap_send_initial_context_setup_request(mme_ue);
+                ogs_error("[%s] Service request", mme_ue->imsi_bcd);
             } else if (mme_ue->nas_eps.type ==
                     MME_EPS_TYPE_DETACH_REQUEST_FROM_UE) {
-                ogs_error("Detach request");
+                ogs_error("[%s] Detach request", mme_ue->imsi_bcd);
             } else {
                 ogs_fatal("Invalid Type[%d]", mme_ue->nas_eps.type);
                 ogs_assert_if_reached();
