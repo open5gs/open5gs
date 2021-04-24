@@ -109,6 +109,8 @@ extern "C" {
 
 #elif defined(__FreeBSD__)
 #include <sys/endian.h>
+#elif ! defined(__GLIBC__)
+#include <endian.h>
 #endif
 
 #ifndef WORDS_BIGENDIAN
@@ -181,7 +183,7 @@ static ogs_inline ogs_uint24_t ogs_htobe24(ogs_uint24_t x)
 #endif
 
 #define ogs_container_of(ptr, type, member) \
-    (type *)((u_char *)ptr - offsetof(type, member))
+    (type *)((unsigned char *)ptr - offsetof(type, member))
 
 #ifndef SWITCH_CASE_INIT
 #define SWITCH_CASE_INIT
