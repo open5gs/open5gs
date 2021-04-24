@@ -40,9 +40,9 @@ for x in mycol.find():
         #Propogate APN / DDN Slice Details
         old_template_json['slice'] = []
         old_template_json['slice'].append({"sst": 1, "default_indicator" : True, "session" : []})
-        
+
         i = 0
-        while i < len(old_template_json['pdn']):    
+        while i < len(old_template_json['pdn']):
             ddn_dict = {}
             ddn_dict['name'] = old_template_json['pdn'][i]['apn']
             ddn_dict['type'] = old_template_json['pdn'][i]['type']
@@ -53,7 +53,7 @@ for x in mycol.find():
             ddn_dict['ambr'] = {"uplink": {"value": old_template_json['pdn'][i]['ambr']['uplink'], "unit": 0}, "downlink": {"value": old_template_json['pdn'][i]['ambr']['downlink'], "unit": 0}}
             i += 1
             old_template_json['slice'][0]['session'].append(ddn_dict)
-            
+
         #Remove old PDN info
         #del old_template_json['pdn']
 

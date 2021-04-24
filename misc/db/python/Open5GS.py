@@ -30,14 +30,13 @@ class Open5GS:
         for x in mydoc:
             print(x)
             return x
-        
 
     def AddSubscriber(self, sub_data):
 
         myclient = pymongo.MongoClient("mongodb://" + str(self.server) + ":" + str(self.port) + "/")
         mydb = myclient["open5gs"]
         mycol = mydb["subscribers"]
-        
+
         x = mycol.insert_one(sub_data)
         print("Added subscriber with Inserted ID : " + str(x.inserted_id))
         return x.inserted_id
