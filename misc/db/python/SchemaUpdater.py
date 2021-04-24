@@ -5,60 +5,67 @@
 
 import pymongo
 
-myclient = pymongo.MongoClient("mongodb://localhost:27017/")
-mydb = myclient["open5gs"]
-mycol = mydb["subscribers"]
-subs_list = []
-for x in mycol.find():
-    if 'schema_version' not in x:
-        print("Subscriber record "  + str(x['imsi']) + " needs updating")
-        old_template_json = x
-        print(old_template_json)
-        #Set AMBR Values to new format (Old format is in bits per second)
-        try:
-            uplink = old_template_json['ambr']['uplink']
-            old_template_json['ambr']['uplink'] = {}
-            old_template_json['ambr']['uplink']['value'] = uplink
-            old_template_json['ambr']['uplink']['unit'] = 0
-        except Exception as e:
-            print(e)
-            print("Failed to set Uplink AMBR values")
 
-        try:
-            downlink = old_template_json['ambr']['downlink']
-            old_template_json['ambr']['downlink'] = {}
-            old_template_json['ambr']['downlink']['value'] = downlink
-            old_template_json['ambr']['downlink']['unit'] = 0
-        except Exception as e:
-            print(e)
-            print("Failed to set Downlink AMBR values")
+def migrate_all_subscribers(mycol):
+    """Migrates all subscribers in the mycol collection from schema version 0 to version 1
+    """
+    subs_list = []
+    for x in mycol.find():
+        if 'schema_version' not in x:
+            print("Subscriber record "  + str(x['imsi']) + " needs updating")
+            old_template_json = x
+            print(old_template_json)
+            #Set AMBR Values to new format (Old format is in bits per second)
+            try:
+                uplink = old_template_json['ambr']['uplink']
+                old_template_json['ambr']['uplink'] = {}
+                old_template_json['ambr']['uplink']['value'] = uplink
+                old_template_json['ambr']['uplink']['unit'] = 0
+            except Exception as e:
+                print(e)
+                print("Failed to set Uplink AMBR values")
 
-        #Propogate APN / DDN Slice Details
-        old_template_json['slice'] = []
-        old_template_json['slice'].append({"sst": 1, "default_indicator" : True, "session" : []})
+            try:
+                downlink = old_template_json['ambr']['downlink']
+                old_template_json['ambr']['downlink'] = {}
+                old_template_json['ambr']['downlink']['value'] = downlink
+                old_template_json['ambr']['downlink']['unit'] = 0
+            except Exception as e:
+                print(e)
+                print("Failed to set Downlink AMBR values")
 
-        i = 0
-        while i < len(old_template_json['pdn']):
-            ddn_dict = {}
-            ddn_dict['name'] = old_template_json['pdn'][i]['apn']
-            ddn_dict['type'] = old_template_json['pdn'][i]['type']
-            ddn_dict['pcc_rule'] = old_template_json['pdn'][i]['pcc_rule']
-            ddn_dict['qos'] = old_template_json['pdn'][i]['qos']
-            ddn_dict['qos']['index'] = old_template_json['pdn'][i]['qos']['qci']
-            ddn_dict['qos']['arp'] = old_template_json['pdn'][i]['qos']['arp']
-            ddn_dict['ambr'] = {"uplink": {"value": old_template_json['pdn'][i]['ambr']['uplink'], "unit": 0}, "downlink": {"value": old_template_json['pdn'][i]['ambr']['downlink'], "unit": 0}}
-            i += 1
-            old_template_json['slice'][0]['session'].append(ddn_dict)
+            #Propogate APN / DDN Slice Details
+            old_template_json['slice'] = []
+            old_template_json['slice'].append({"sst": 1, "default_indicator" : True, "session" : []})
 
-        #Remove old PDN info
-        #del old_template_json['pdn']
+            i = 0
+            while i < len(old_template_json['pdn']):
+                ddn_dict = {}
+                ddn_dict['name'] = old_template_json['pdn'][i]['apn']
+                ddn_dict['type'] = old_template_json['pdn'][i]['type']
+                ddn_dict['pcc_rule'] = old_template_json['pdn'][i]['pcc_rule']
+                ddn_dict['qos'] = old_template_json['pdn'][i]['qos']
+                ddn_dict['qos']['index'] = old_template_json['pdn'][i]['qos']['qci']
+                ddn_dict['qos']['arp'] = old_template_json['pdn'][i]['qos']['arp']
+                ddn_dict['ambr'] = {"uplink": {"value": old_template_json['pdn'][i]['ambr']['uplink'], "unit": 0}, "downlink": {"value": old_template_json['pdn'][i]['ambr']['downlink'], "unit": 0}}
+                i += 1
+                old_template_json['slice'][0]['session'].append(ddn_dict)
 
-        #Add "schema_version" feild
-        old_template_json['schema_version'] = 1
+            #Remove old PDN info
+            #del old_template_json['pdn']
 
-        #Write back to MongoDB
-        myquery = { "imsi": str(old_template_json['imsi'])}
-        newvalues = { "$set": old_template_json }
-        mycol.update_one(myquery, newvalues)
-        print("Updated OK")
+            #Add "schema_version" feild
+            old_template_json['schema_version'] = 1
 
+            #Write back to MongoDB
+            myquery = { "imsi": str(old_template_json['imsi'])}
+            newvalues = { "$set": old_template_json }
+            mycol.update_one(myquery, newvalues)
+            print("Updated OK")
+
+
+if __name__ == "__main__":
+    myclient = pymongo.MongoClient("mongodb://localhost:27017/")
+    mydb = myclient["open5gs"]
+
+    migrate_all_subscribers(mycol=mydb["subscribers"])
