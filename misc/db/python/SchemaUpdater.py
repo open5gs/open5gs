@@ -10,7 +10,6 @@ import pymongo
 def migrate_all_subscribers(mycol):
     """Migrates all subscribers in the mycol collection from schema version 0 to version 1
     """
-    subs_list = []
     for x in mycol.find():
         if 'schema_version' not in x:
             imsi = x['imsi']
