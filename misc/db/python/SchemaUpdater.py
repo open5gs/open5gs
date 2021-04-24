@@ -29,51 +29,52 @@ def create_v1_from_v0(old_sub):
     """
     # Make a copy to avoid mutating the existing subscriber object so it can be
     # re-used for other parts of the migration.
-    old_template_json = copy.deepcopy(old_sub)
-    print(old_template_json)
+    new_sub = copy.deepcopy(old_sub)
+    print(old_sub)
+
+    # Remove old PDN info
+    del new_sub['pdn']
+
     #Set AMBR Values to new format (Old format is in bits per second)
     try:
-        uplink = old_template_json['ambr']['uplink']
-        old_template_json['ambr']['uplink'] = {}
-        old_template_json['ambr']['uplink']['value'] = uplink
-        old_template_json['ambr']['uplink']['unit'] = 0
+        uplink = old_sub['ambr']['uplink']
+        new_sub['ambr']['uplink'] = {}
+        new_sub['ambr']['uplink']['value'] = uplink
+        new_sub['ambr']['uplink']['unit'] = 0
     except Exception as e:
         print(e)
         print("Failed to set Uplink AMBR values")
 
     try:
-        downlink = old_template_json['ambr']['downlink']
-        old_template_json['ambr']['downlink'] = {}
-        old_template_json['ambr']['downlink']['value'] = downlink
-        old_template_json['ambr']['downlink']['unit'] = 0
+        downlink = old_sub['ambr']['downlink']
+        new_sub['ambr']['downlink'] = {}
+        new_sub['ambr']['downlink']['value'] = downlink
+        new_sub['ambr']['downlink']['unit'] = 0
     except Exception as e:
         print(e)
         print("Failed to set Downlink AMBR values")
 
     #Propogate APN / DDN Slice Details
-    old_template_json['slice'] = []
-    old_template_json['slice'].append({"sst": 1, "default_indicator" : True, "session" : []})
+    new_sub['slice'] = []
+    new_sub['slice'].append({"sst": 1, "default_indicator" : True, "session" : []})
 
     i = 0
-    while i < len(old_template_json['pdn']):
+    while i < len(old_sub['pdn']):
         ddn_dict = {}
-        ddn_dict['name'] = old_template_json['pdn'][i]['apn']
-        ddn_dict['type'] = old_template_json['pdn'][i]['type']
-        ddn_dict['pcc_rule'] = old_template_json['pdn'][i]['pcc_rule']
-        ddn_dict['qos'] = old_template_json['pdn'][i]['qos']
-        ddn_dict['qos']['index'] = old_template_json['pdn'][i]['qos']['qci']
-        ddn_dict['qos']['arp'] = old_template_json['pdn'][i]['qos']['arp']
-        ddn_dict['ambr'] = {"uplink": {"value": old_template_json['pdn'][i]['ambr']['uplink'], "unit": 0}, "downlink": {"value": old_template_json['pdn'][i]['ambr']['downlink'], "unit": 0}}
+        ddn_dict['name'] = old_sub['pdn'][i]['apn']
+        ddn_dict['type'] = old_sub['pdn'][i]['type']
+        ddn_dict['pcc_rule'] = old_sub['pdn'][i]['pcc_rule']
+        ddn_dict['qos'] = old_sub['pdn'][i]['qos']
+        ddn_dict['qos']['index'] = old_sub['pdn'][i]['qos']['qci']
+        ddn_dict['qos']['arp'] = old_sub['pdn'][i]['qos']['arp']
+        ddn_dict['ambr'] = {"uplink": {"value": old_sub['pdn'][i]['ambr']['uplink'], "unit": 0}, "downlink": {"value": old_sub['pdn'][i]['ambr']['downlink'], "unit": 0}}
         i += 1
-        old_template_json['slice'][0]['session'].append(ddn_dict)
-
-    #Remove old PDN info
-    #del old_template_json['pdn']
+        new_sub['slice'][0]['session'].append(ddn_dict)
 
     #Add "schema_version" feild
-    old_template_json['schema_version'] = 1
+    new_sub['schema_version'] = 1
 
-    return old_template_json
+    return new_sub
 
 
 if __name__ == "__main__":
