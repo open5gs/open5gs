@@ -36,24 +36,14 @@ def create_v1_from_v0(old_sub):
     # Remove old PDN info
     del new_sub['pdn']
 
-    #Set AMBR Values to new format (Old format is in bits per second)
-    try:
-        uplink = old_sub['ambr']['uplink']
-        new_sub['ambr']['uplink'] = {}
-        new_sub['ambr']['uplink']['value'] = uplink
-        new_sub['ambr']['uplink']['unit'] = 0
-    except Exception as e:
-        print(e)
-        print("Failed to set Uplink AMBR values")
+    # Set AMBR Values to new format (Old format is in bits per second)
+    new_sub['ambr']['uplink'] = {}
+    new_sub['ambr']['uplink']['value'] = old_sub['ambr']['uplink']
+    new_sub['ambr']['uplink']['unit'] = 0
 
-    try:
-        downlink = old_sub['ambr']['downlink']
-        new_sub['ambr']['downlink'] = {}
-        new_sub['ambr']['downlink']['value'] = downlink
-        new_sub['ambr']['downlink']['unit'] = 0
-    except Exception as e:
-        print(e)
-        print("Failed to set Downlink AMBR values")
+    new_sub['ambr']['downlink'] = {}
+    new_sub['ambr']['downlink']['value'] = old_sub['ambr']['downlink']
+    new_sub['ambr']['downlink']['unit'] = 0
 
     #Propogate APN / DDN Slice Details
     new_sub['slice'] = []
