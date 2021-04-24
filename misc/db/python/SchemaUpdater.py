@@ -6,7 +6,6 @@
 import json
 import sys
 import random, string
-import mongo
 import pymongo
 
 myclient = pymongo.MongoClient("mongodb://localhost:27017/")

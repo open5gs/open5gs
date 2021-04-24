@@ -1,6 +1,6 @@
 ## Open5GS Python Library
 
-Basic Python library to interface with MongoDB subscriber DB in Open5GS HSS / PCRF. Requires Python 3+, mongo, pymongo and bson. (All available through PIP)
+Basic Python library to interface with MongoDB subscriber DB in Open5GS HSS / PCRF. Requires Python 3+, pymongo and bson. (All available through PIP)
 
 If you are planning to run this on a different machine other than localhost (the machine hosting the MongoDB service) you will need to enable remote access to MongoDB by binding it's IP to 0.0.0.0:
 
