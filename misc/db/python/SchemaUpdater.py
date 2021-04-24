@@ -15,7 +15,9 @@ def migrate_all_subscribers(mycol):
             imsi = x['imsi']
             print("Subscriber record "  + str(imsi) + " needs updating")
 
+            print("Current value:", x)
             new_subscriber = create_v1_from_v0(x)
+            print("Migrated value:", new_subscriber)
 
             #Write back to MongoDB
             myquery = { "imsi": str(imsi) }
@@ -30,7 +32,6 @@ def create_v1_from_v0(old_sub):
     # Make a copy to avoid mutating the existing subscriber object so it can be
     # re-used for other parts of the migration.
     new_sub = copy.deepcopy(old_sub)
-    print(old_sub)
 
     # Remove old PDN info
     del new_sub['pdn']
