@@ -21,7 +21,10 @@ def migrate_all_subscribers(mycol):
 
             #Write back to MongoDB
             myquery = { "imsi": str(imsi) }
-            newvalues = { "$set": new_subscriber }
+            newvalues = {
+                "$set": new_subscriber,
+                "$unset": {"pdn": 1}
+                }
             mycol.update_one(myquery, newvalues)
             print("Updated OK")
 
