@@ -67,15 +67,10 @@ sgwc:
 #
 #  <SGWU_SELECTION_MODE - EPC only>
 #
-# o Round-Robin
-#   (note that round robin can be disabled for a particular node
-#     by setting flag 'rr' to 0)
-#
 #  sgwu:
 #    pfcp:
 #      - addr: 127.0.0.6
 #      - addr: 127.0.0.12
-#        rr: 0
 #      - addr: 127.0.0.18
 #
 # o SGWU selection by eNodeB TAC
@@ -125,6 +120,9 @@ sgwu:
 #
 #  o Prefer IPv4 instead of IPv6 for estabishing new GTP connections.
 #      prefer_ipv4: true
+#
+#  o Disable selection of SGW-U PFCP in Round-Robin manner
+#      no_pfcp_rr_select: true
 #
 parameter:
 

@@ -444,6 +444,9 @@ upf:
 #  o Prefer IPv4 instead of IPv6 for estabishing new GTP connections.
 #      prefer_ipv4: true
 #
+#  o Disable selection of UPF PFCP in Round-Robin manner
+#      no_pfcp_rr_select: true
+#
 parameter:
 
 #

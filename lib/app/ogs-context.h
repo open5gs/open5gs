@@ -75,6 +75,8 @@ typedef struct ogs_app_context_s {
 
         int use_openair;
         int no_ipv4v6_local_addr_in_packet_filter;
+
+        int no_pfcp_rr_select;
     } parameter;
 
     struct {

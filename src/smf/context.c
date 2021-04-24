@@ -884,48 +884,32 @@ static ogs_pfcp_node_t *selected_upf_node(
     ogs_assert(current);
     ogs_assert(sess);
 
-    int RR = 0, selected = 0;
+    /* continue search from current position */
+    next = ogs_list_next(current);
+    for (node = next; node; node = ogs_list_next(node)) {
+        if (OGS_FSM_CHECK(&node->sm, smf_pfcp_state_associated) &&
+            compare_ue_info(node, sess) == true) return node;
+    }
+    /* cyclic search from top to current position */
+    for (node = ogs_list_first(&ogs_pfcp_self()->pfcp_peer_list);
+            node != next; node = ogs_list_next(node)) {
+        if (OGS_FSM_CHECK(&node->sm, smf_pfcp_state_associated) &&
+            compare_ue_info(node, sess) == true) return node;
+    }
 
-    while (!selected) {
+    if (ogs_app()->parameter.no_pfcp_rr_select == 0) {
         /* continue search from current position */
         next = ogs_list_next(current);
         for (node = next; node; node = ogs_list_next(node)) {
-            if (!RR) {
-                if (OGS_FSM_CHECK(&node->sm, smf_pfcp_state_associated) &&
-                    compare_ue_info(node, sess) == true) return node;
-            } else {
-                /*
-                 * we are in RR mode - use next PFCP associated
-                 * node that is suited for full list RR
-                 */
-                if (OGS_FSM_CHECK(&node->sm, smf_pfcp_state_associated) &&
-                    node->rr_enable == 1) return node;
-            }
+            if (OGS_FSM_CHECK(&node->sm, smf_pfcp_state_associated))
+                return node;
         }
         /* cyclic search from top to current position */
         for (node = ogs_list_first(&ogs_pfcp_self()->pfcp_peer_list);
                 node != next; node = ogs_list_next(node)) {
-            if (!RR) {
-                if (OGS_FSM_CHECK(&node->sm, smf_pfcp_state_associated) &&
-                    compare_ue_info(node, sess) == true) return node;
-            } else {
-                /*
-                 * we are in RR mode - use next PFCP associated
-                 * node that is suited for full list RR
-                 */
-                if (OGS_FSM_CHECK(&node->sm, smf_pfcp_state_associated) &&
-                    node->rr_enable == 1) return node;
-            }
+            if (OGS_FSM_CHECK(&node->sm, smf_pfcp_state_associated))
+                return node;
         }
-
-        /* if a round robin search has already been carried out */
-        if (RR) break;
-
-        /*
-         * re-run search in round robin mode,
-         * find and use next PFCP associated node
-         */
-        RR = 1;
     }
 
     ogs_error("No UPFs are PFCP associated that are suited to RR");
