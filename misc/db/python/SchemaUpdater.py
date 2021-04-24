@@ -3,9 +3,6 @@
 #Additional functionlality like PCC rules, static assignment etc, not tested. If it's not listed below it's probably not migrated by this script.
 #Written by @nickvsnetworking 30/03/2021
 
-import json
-import sys
-import random, string
 import pymongo
 
 myclient = pymongo.MongoClient("mongodb://localhost:27017/")
