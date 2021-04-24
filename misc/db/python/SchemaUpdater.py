@@ -58,23 +58,48 @@ def create_v1_from_v0(old_sub):
     new_sub['slice'] = []
     new_sub['slice'].append({"sst": 1, "default_indicator" : True, "session" : []})
 
-    i = 0
-    while i < len(old_sub['pdn']):
-        ddn_dict = {}
-        ddn_dict['name'] = old_sub['pdn'][i]['apn']
-        ddn_dict['type'] = old_sub['pdn'][i]['type']
-        ddn_dict['pcc_rule'] = old_sub['pdn'][i]['pcc_rule']
-        ddn_dict['qos'] = old_sub['pdn'][i]['qos']
-        ddn_dict['qos']['index'] = old_sub['pdn'][i]['qos']['qci']
-        ddn_dict['qos']['arp'] = old_sub['pdn'][i]['qos']['arp']
-        ddn_dict['ambr'] = {"uplink": {"value": old_sub['pdn'][i]['ambr']['uplink'], "unit": 0}, "downlink": {"value": old_sub['pdn'][i]['ambr']['downlink'], "unit": 0}}
-        i += 1
-        new_sub['slice'][0]['session'].append(ddn_dict)
+    for pdn_entry in old_sub["pdn"]:
+        session = _create_session_from_pdn(pdn_entry)
+        new_sub['slice'][0]['session'].append(session)
 
     #Add "schema_version" feild
     new_sub['schema_version'] = 1
 
     return new_sub
+
+
+def _create_session_from_pdn(pdn):
+    """Builds a new session object from an existing PDN"""
+    session = {}
+    session['name'] = pdn['apn']
+    session['type'] = pdn['type']
+    session['ambr'] = {
+        "uplink": {
+            "value": pdn['ambr']['uplink'],
+            "unit": 0
+        },
+        "downlink": {
+            "value": pdn['ambr']['downlink'],
+            "unit": 0
+        }
+    }
+
+    if "qos" in pdn:
+        session["qos"] = {
+            "index": pdn["qos"]["qci"],
+            "arp": pdn["qos"]["arp"]
+        }
+    if "smf" in pdn:
+        session["smf"] = pdn["smf"]
+    if "ue" in pdn:
+        session["ue"] = pdn["ue"]
+
+    if ("pcc_rule" in pdn) and (len(pdn['pcc_rule']) != 0):
+        raise NotImplementedError("PCC Rule Migration Not Implemented")
+    else:
+        session["pcc_rule"] = []
+
+    return session
 
 
 if __name__ == "__main__":
