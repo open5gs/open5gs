@@ -8,7 +8,6 @@ class Open5GS:
         self.server = server
         self.port = port
 
-
     def GetSubscribers(self):
         myclient = pymongo.MongoClient("mongodb://" + str(self.server) + ":" + str(self.port) + "/")
         mydb = myclient["open5gs"]
@@ -32,7 +31,6 @@ class Open5GS:
             return x
 
     def AddSubscriber(self, sub_data):
-
         myclient = pymongo.MongoClient("mongodb://" + str(self.server) + ":" + str(self.port) + "/")
         mydb = myclient["open5gs"]
         mycol = mydb["subscribers"]
@@ -51,7 +49,6 @@ class Open5GS:
         x = mycol.update_one(myquery, newvalues)
         print(x)
         return True
-
 
     def DeleteSubscriber(self, imsi):
         myclient = pymongo.MongoClient("mongodb://" + str(self.server) + ":" + str(self.port) + "/")
