@@ -1,4 +1,3 @@
-import mongo
 import pymongo
 import random
 import bson
@@ -7,7 +6,6 @@ class Open5GS:
     def __init__(self, server, port):
         self.server = server
         self.port = port
-
 
     def GetSubscribers(self):
         myclient = pymongo.MongoClient("mongodb://" + str(self.server) + ":" + str(self.port) + "/")
@@ -30,14 +28,12 @@ class Open5GS:
         for x in mydoc:
             print(x)
             return x
-        
 
     def AddSubscriber(self, sub_data):
-
         myclient = pymongo.MongoClient("mongodb://" + str(self.server) + ":" + str(self.port) + "/")
         mydb = myclient["open5gs"]
         mycol = mydb["subscribers"]
-        
+
         x = mycol.insert_one(sub_data)
         print("Added subscriber with Inserted ID : " + str(x.inserted_id))
         return x.inserted_id
@@ -52,7 +48,6 @@ class Open5GS:
         x = mycol.update_one(myquery, newvalues)
         print(x)
         return True
-
 
     def DeleteSubscriber(self, imsi):
         myclient = pymongo.MongoClient("mongodb://" + str(self.server) + ":" + str(self.port) + "/")

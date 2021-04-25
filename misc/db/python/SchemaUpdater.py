@@ -3,66 +3,101 @@
 #Additional functionlality like PCC rules, static assignment etc, not tested. If it's not listed below it's probably not migrated by this script.
 #Written by @nickvsnetworking 30/03/2021
 
-import json
-import sys
-import random, string
-import mongo
+import copy
 import pymongo
 
-myclient = pymongo.MongoClient("mongodb://localhost:27017/")
-mydb = myclient["open5gs"]
-mycol = mydb["subscribers"]
-subs_list = []
-for x in mycol.find():
-    if 'schema_version' not in x:
-        print("Subscriber record "  + str(x['imsi']) + " needs updating")
-        old_template_json = x
-        print(old_template_json)
-        #Set AMBR Values to new format (Old format is in bits per second)
-        try:
-            uplink = old_template_json['ambr']['uplink']
-            old_template_json['ambr']['uplink'] = {}
-            old_template_json['ambr']['uplink']['value'] = uplink
-            old_template_json['ambr']['uplink']['unit'] = 0
-        except Exception as e:
-            print(e)
-            print("Failed to set Uplink AMBR values")
 
-        try:
-            downlink = old_template_json['ambr']['downlink']
-            old_template_json['ambr']['downlink'] = {}
-            old_template_json['ambr']['downlink']['value'] = downlink
-            old_template_json['ambr']['downlink']['unit'] = 0
-        except Exception as e:
-            print(e)
-            print("Failed to set Downlink AMBR values")
+def migrate_all_subscribers(mycol):
+    """Migrates all subscribers in the mycol collection from schema version 0 to version 1
+    """
+    for x in mycol.find():
+        if 'schema_version' not in x:
+            imsi = x['imsi']
+            print("Subscriber record "  + str(imsi) + " needs updating")
 
-        #Propogate APN / DDN Slice Details
-        old_template_json['slice'] = []
-        old_template_json['slice'].append({"sst": 1, "default_indicator" : True, "session" : []})
-        
-        i = 0
-        while i < len(old_template_json['pdn']):    
-            ddn_dict = {}
-            ddn_dict['name'] = old_template_json['pdn'][i]['apn']
-            ddn_dict['type'] = old_template_json['pdn'][i]['type']
-            ddn_dict['pcc_rule'] = old_template_json['pdn'][i]['pcc_rule']
-            ddn_dict['qos'] = old_template_json['pdn'][i]['qos']
-            ddn_dict['qos']['index'] = old_template_json['pdn'][i]['qos']['qci']
-            ddn_dict['qos']['arp'] = old_template_json['pdn'][i]['qos']['arp']
-            ddn_dict['ambr'] = {"uplink": {"value": old_template_json['pdn'][i]['ambr']['uplink'], "unit": 0}, "downlink": {"value": old_template_json['pdn'][i]['ambr']['downlink'], "unit": 0}}
-            i += 1
-            old_template_json['slice'][0]['session'].append(ddn_dict)
-            
-        #Remove old PDN info
-        #del old_template_json['pdn']
+            print("Current value:", x)
+            new_subscriber = create_v1_from_v0(x)
+            print("Migrated value:", new_subscriber)
 
-        #Add "schema_version" feild
-        old_template_json['schema_version'] = 1
+            #Write back to MongoDB
+            myquery = { "imsi": str(imsi) }
+            newvalues = {
+                "$set": new_subscriber,
+                "$unset": {"pdn": 1}
+                }
+            mycol.update_one(myquery, newvalues)
+            print("Updated OK")
 
-        #Write back to MongoDB
-        myquery = { "imsi": str(old_template_json['imsi'])}
-        newvalues = { "$set": old_template_json }
-        mycol.update_one(myquery, newvalues)
-        print("Updated OK")
 
+def create_v1_from_v0(old_sub):
+    """Create a v1 subscriber from an existing v0 subscriber
+    """
+    # Make a copy to avoid mutating the existing subscriber object so it can be
+    # re-used for other parts of the migration.
+    new_sub = copy.deepcopy(old_sub)
+
+    # Remove old PDN info
+    del new_sub['pdn']
+
+    # Set AMBR Values to new format (Old format is in bits per second)
+    new_sub['ambr']['uplink'] = {}
+    new_sub['ambr']['uplink']['value'] = old_sub['ambr']['uplink']
+    new_sub['ambr']['uplink']['unit'] = 0
+
+    new_sub['ambr']['downlink'] = {}
+    new_sub['ambr']['downlink']['value'] = old_sub['ambr']['downlink']
+    new_sub['ambr']['downlink']['unit'] = 0
+
+    #Propogate APN / DDN Slice Details
+    new_sub['slice'] = []
+    new_sub['slice'].append({"sst": 1, "default_indicator" : True, "session" : []})
+
+    for pdn_entry in old_sub["pdn"]:
+        session = _create_session_from_pdn(pdn_entry)
+        new_sub['slice'][0]['session'].append(session)
+
+    #Add "schema_version" feild
+    new_sub['schema_version'] = 1
+
+    return new_sub
+
+
+def _create_session_from_pdn(pdn):
+    """Builds a new session object from an existing PDN"""
+    session = {}
+    session['name'] = pdn['apn']
+    session['type'] = pdn['type']
+    session['ambr'] = {
+        "uplink": {
+            "value": pdn['ambr']['uplink'],
+            "unit": 0
+        },
+        "downlink": {
+            "value": pdn['ambr']['downlink'],
+            "unit": 0
+        }
+    }
+
+    if "qos" in pdn:
+        session["qos"] = {
+            "index": pdn["qos"]["qci"],
+            "arp": pdn["qos"]["arp"]
+        }
+    if "smf" in pdn:
+        session["smf"] = pdn["smf"]
+    if "ue" in pdn:
+        session["ue"] = pdn["ue"]
+
+    if ("pcc_rule" in pdn) and (len(pdn['pcc_rule']) != 0):
+        raise NotImplementedError("PCC Rule Migration Not Implemented")
+    else:
+        session["pcc_rule"] = []
+
+    return session
+
+
+if __name__ == "__main__":
+    myclient = pymongo.MongoClient("mongodb://localhost:27017/")
+    mydb = myclient["open5gs"]
+
+    migrate_all_subscribers(mycol=mydb["subscribers"])
