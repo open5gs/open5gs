@@ -66,7 +66,13 @@ def _create_session_from_pdn(pdn):
     """Builds a new session object from an existing PDN"""
     session = {}
     session['name'] = pdn['apn']
-    session['type'] = pdn['type']
+
+    if pdn['type'] in {1, 2, 3}:
+        session['type'] = pdn['type']
+    else:
+        # Default to IPv4 for old networks being upgraded with an invalid type
+        session['type'] = 1
+
     session['ambr'] = {
         "uplink": {
             "value": pdn['ambr']['uplink'],
