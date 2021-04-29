@@ -856,20 +856,15 @@ char *hss_cx_download_user_data(
     for (i = 0; i < ims_data->num_of_msisdn; i++) {
         char *public_identity = NULL;
 
-        public_identity = ogs_msprintf("tel:%s", ims_data->msisdn[i].bcd);
-        ogs_assert(public_identity);
-        hss_cx_associate_identity(user_name, public_identity);
-        ogs_free(public_identity);
-
-        public_identity = ogs_msprintf("sip:%s", ims_data->msisdn[i].bcd);
-        ogs_assert(public_identity);
-        hss_cx_associate_identity(user_name, public_identity);
-        ogs_free(public_identity);
-
         public_identity = ogs_msprintf(
                 "sip:%s@ims.mnc%03d.mcc%03d.3gppnetwork.org",
                 ims_data->msisdn[i].bcd,
                 ogs_plmn_id_mnc(plmn_id), ogs_plmn_id_mcc(plmn_id));
+        ogs_assert(public_identity);
+        hss_cx_associate_identity(user_name, public_identity);
+        ogs_free(public_identity);
+
+        public_identity = ogs_msprintf("tel:%s", ims_data->msisdn[i].bcd);
         ogs_assert(public_identity);
         hss_cx_associate_identity(user_name, public_identity);
         ogs_free(public_identity);
