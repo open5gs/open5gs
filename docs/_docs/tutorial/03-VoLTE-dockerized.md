@@ -14,42 +14,31 @@ Setup description:
 #### 0. Introduction
 
 This tutorial introduces an install-and-run lab for Open5GS + Kamailio IMS
-VoLTE study, a follow-up project of [Open5GS Tutorial: VoLTE Setup with Kamailio IMS and Open5GS](https://open5gs.org/open5gs/docs/tutorial/02-VoLTE-setup/). 
-The tutorial is based on Herle Supreeth's [docker_open5gs](https://github.com/herlesupreeth/docker_open5gs) and his fork of Open5GS and Kamailio.
+VoLTE study, a follow-up project of [Open5GS Tutorial: VoLTE Setup with Kamailio IMS and Open5GS](https://open5gs.org/open5gs/docs/tutorial/02-VoLTE-setup/).
 
 The main purpose is to save researchers' and students' time to debug for a
 minimum-viable environment before actual study can be proceeded.
 
 **Important notice before you start**
 
-1. Herle Supreeth's fork of Kamailio is used to support IPsec.
 1. Java 7 is downloaded from an alternative location.  You have to agree with
    Oracle's term of service and have an Oracle account, to legally use Java SDK
    7u80.  By using this repo, I assume you have the legal right to use it and
    hold no liability.
 
-You have to prepare IMSI, Ki, OP (yes, not **OPc**), SQN of your SIM cards.
-Even though Open5GS supports OPc, FHoSS merely takes OP.  You may also want to
-disable SQN checking in the SIM card (even though we are not sure whether it is
-effective.)  Check out https://github.com/herlesupreeth/sysmo-usim-tool for a
-slightly modified sysmo-usim-tool.
-
+You have to prepare IMSI, Ki, OP/OPc, SQN of your SIM cards.
 
 #### 1. Prepare SIM cards for VoLTE
 
-**N.B.**
 1. Wrong KIC / KID / KIK bricks your SIM card.
-1. Use MCC = 001, MNC = 01 for a testing network, unless you know your MCC/MNC is supported by Android Carrier Privileges.
+2. Use MCC = 001, MNC = 01 for a test network, unless you know your MCC/MNC is supported by Android Carrier Privileges.
 
-Refer to: https://osmocom.org/projects/cellular-infrastructure/wiki/VoLTE_IMS_Android_Carrier_Privileges
-* gp --key-enc KIC1 --key-mac KID1 --key-dek KIK1 -lvi
-* gp --key-enc KIC1 --key-mac KID1 --key-dek KIK1 --unlock
+Refer to: https://github.com/herlesupreeth/CoIMS_Wiki/blob/master/README.md
+* gp --key-enc <KIC1> --key-mac <KID1> --key-dek <KIK1> -lvi
+* gp --key-enc <KIC1> --key-mac <KID1> --key-dek <KIK1> --unlock
 * gp --install applet.cap
 * gp -a 00A4040009A00000015141434C0000 -a 80E2900033F031E22FE11E4F06FFFFFFFFFFFFC114E46872F28B350B7E1F140DE535C2A8D5804F0BE3E30DD00101DB080000000000000001
-* gp --acr-list
-
-If you use gp.jar from Herle Supreeth's [CoSIM Wiki](https://github.com/herlesupreeth/CoIMS_Wiki), replace `gp --acr-list` with `gp --acr-list-aram`.
-
+* gp --acr-list-aram
 
 #### 2. Build Open5GS, Kamailio with docker-compose
 
@@ -62,54 +51,76 @@ Install docker-compose and make sure it works before going forward.
 Clone the repository and build base docker images of open5gs and Kamailio:
 
 ```
-git clone https://github.com/miaoski/docker_open5gs
+git clone https://github.com/herlesupreeth/docker_open5gs
 cd docker_open5gs/base
 docker build --no-cache --force-rm -t docker_open5gs .
 
 cd ../kamailio_base
 docker build --no-cache --force-rm -t open5gs_kamailio .
-
-cd ..
-docker-compose build --no-cache
-
-# Copy DNS setting to containers.  Do this whenever you change IP in .env
-./copy-env.sh
-
-# Start MySQL and MongoDB first, in order to initialize the databases
-docker-compose up mongo mysql dns
-
-# To start Open5GS core network without IMS
-docker-compose up hss mme pcrf pgw sgw
-
-# To start IMS
-docker-compose up rtpengine fhoss pcscf icscf scscf
-
-# To test whether DNS is properly running
-./test-dns.sh
 ```
 
-You may want to review `.env` for IP allocation.
+#### 3. Configuring your setup
 
+`.env` is the only file most of them need to edit as per their deployment needs
+{: .notice--warning}
 
-#### 3. (Optional) Run srsENB in a separate container
+Edit only the following parameters in `.env` as per your setup
+
+```
+MCC
+MNC
+TEST_NETWORK --> Change this only if it clashes with the internal network at your home/office
+DOCKER_HOST_IP --> This is the IP address of the host running your docker setup
+SGWU_ADVERTISE_IP --> Change this to value of DOCKER_HOST_IP set above only if eNB is not running the same docker network/host
+```
+
+If eNB is NOT running in the same docker network/host as the host running the dockerized Core + IMS then follow the below additional steps
+
+Under `mme` section in docker compose file (`docker-compose.yaml`, `nsa-deploy.yaml`), uncomment the following part
+
+```
+...
+    # ports:
+    #   - "36412:36412/sctp"
+...
+```
+
+Under `sgwu` section in docker compose file (`docker-compose.yaml`, `nsa-deploy.yaml`), uncomment the following part
+
+```
+...
+    # ports:
+    #   - "2152:2152/udp"
+...
+```
+
+#### 4. Building 4G/5G Core component images
+
+```
+cd docker_open5gs
+source .env
+docker-compose build --no-cache
+```
+
+#### 5. (Optional) Run srsENB in a separate container
 
 I use srsENB and USRP B210 in the lab.  Sometimes you may want to restart
 srsENB while keeping the core network running.  It is thus recommended to run
 srsENB separately.
 
-Edit `.env` first to set EARFCN, TX_GAIN, RX_GAIN.  Thereafter,
-
 ```
+cd docker_open5gs
+source .env
 docker-compose -f srsenb.yaml build --no-cache
 docker-compose -f srsenb.yaml up
 ```
 
+#### 6. Configuration and register two UE
 
-#### 4. Configuration and register two UE
-
-The configuration files for each of the Core Network component can be found
-under their respective folder. Edit the .yaml files of the components and run
+If there is a need to change the Core Network component configuration files
+found under their respective folder, make sure to re-compile images using
 `docker-compose build` again.
+{: .notice--warning}
 
 Open (http://<DOCKER_HOST_IP>:3000) in a web browser, where <DOCKER_HOST_IP> is
 the IP of the machine/VM running the open5gs containers. Login with following
@@ -129,14 +140,12 @@ Follow the instructions in [VoLTE Setup](https://open5gs.org/open5gs/docs/tutori
 ![Set both type to IPv4 only](https://raw.githubusercontent.com/miaoski/docker_open5gs/gh-pages/screenshots/subscriber-type-ipv4.png)
 
 For already running systems, copy SQN from Open5GS and type it in FHoSS.  You
-can type SQN in decimal.  FHoSS will automagically convert it to hex.
+can type SQN in decimal. FHoSS will automagically convert it to hex.
 
-Pay special attention to copy/paste.  You might have leading or trailing spaces
+Pay special attention to copy/paste. You might have leading or trailing spaces
 in FHoSS, resulting in failed connections!
 
-
-
-#### 5. Debugging with Wireshark
+#### 7. Debugging with Wireshark
 
 Thanks to Open5GS, the topology is super similar to [SAE on Wikipedia](https://en.wikipedia.org/wiki/System_Architecture_Evolution#/media/File:Evolved_Packet_Core.svg).
 
@@ -174,8 +183,7 @@ order to add xfrm state and policy.
 
 ![401 Unauthorized](https://raw.githubusercontent.com/miaoski/docker_open5gs/gh-pages/screenshots/401-unauthorized.png)
 
-
-#### 6. Successful calls
+#### 8. Successful calls
 
 Herle Supreeth has shared PCAP files of successful calls, including
 - [IPSec UE registration for VoLTE]({{ site.url }}{{ site.baseurl }}/assets/pcapng/ipsec_reg.pcapng)
@@ -230,14 +238,11 @@ Trying, a UE that does not support IPSec is sent a SIP INVITE in clear text:
 
 ![non-ipsec callee](https://raw.githubusercontent.com/miaoski/docker_open5gs/gh-pages/screenshots/ipsec-to-noipsec.png)
 
-
-
-#### 7. Known issues
+#### 9. Known issues
 
 - IPv6 is not supported.
 
-
-#### 8. References
+#### 10. References
 
 - [https://github.com/onmyway133/blog/issues/284](https://github.com/onmyway133/blog/issues/284)
 - [https://realtimecommunication.wordpress.com/2015/05/26/at-your-service/](https://realtimecommunication.wordpress.com/2015/05/26/at-your-service/)
