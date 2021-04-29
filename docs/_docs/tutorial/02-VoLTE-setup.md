@@ -787,6 +787,7 @@ APN Configuration:
 ---------------------------------------------------------------------------------------------------------------------
 | ims      | IPv4 | 5   | 1   | Disabled   | Disabled       | 3850/1530           |                 |               |
 |          |      | 1   | 2   | Enabled    | Enabled        | 128/128             | 128/128         |               |
+|          |      | 2   | 4   | Enabled    | Enabled        | 128/128             | 128/128         |               |
 ---------------------------------------------------------------------------------------------------------------------
 </pre>
 
@@ -1134,10 +1135,10 @@ Associate IMPI(s) to IMPU
 IMPI Identity = 001011234567891@ims.mnc001.mcc001.3gppnetwork.org
 Click Add
 
-2. sip:0198765432100
+2. sip:0198765432100@ims.mnc001.mcc001.3gppnetwork.org
 
 Public User Identity -IMPU-
-Identity = sip:0198765432100
+Identity = sip:0198765432100@ims.mnc001.mcc001.3gppnetwork.org
 Service Profile = default_sp
 Charging-Info Set = default_charging_set
 Can Register = Yes
