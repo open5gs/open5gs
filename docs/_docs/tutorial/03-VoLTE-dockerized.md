@@ -94,7 +94,7 @@ Under `sgwu` section in docker compose file (`docker-compose.yaml`, `nsa-deploy.
 ...
 ```
 
-#### 4. Building 4G/5G Core component images
+#### 4. Building 4G/5G Core + IMS related components images
 
 ```
 cd docker_open5gs
