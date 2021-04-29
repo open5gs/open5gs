@@ -75,9 +75,12 @@ char *ogs_vslprintf(char *str, char *last, const char *format, va_list ap)
 char *ogs_slprintf(char *str, char *last, const char *format, ...)
     OGS_GNUC_PRINTF(3, 4);
 
-char *ogs_strdup(const char *s);
-char *ogs_strndup(const char *s, size_t n);
-void *ogs_memdup(const void *m, size_t n);
+#define ogs_strdup(s) ogs_strdup_debug(s, OGS_FILE_LINE)
+char *ogs_strdup_debug(const char *s, const char *file_line);
+#define ogs_strndup(s, n) ogs_strndup_debug(s, n, OGS_FILE_LINE)
+char *ogs_strndup_debug(const char *s, size_t n, const char *file_line);
+#define ogs_memdup(m, n) ogs_memdup_debug(m, n, OGS_FILE_LINE)
+void *ogs_memdup_debug(const void *m, size_t n, const char *file_line);
 
 char *ogs_cpystrn(char *dst, const char *src, size_t dst_size);
 
@@ -91,10 +94,14 @@ char *ogs_cpystrn(char *dst, const char *src, size_t dst_size);
  *
  * https://github.com/babelouest/orcania.git
  */
-char *ogs_msprintf(const char *message, ...)
-    OGS_GNUC_PRINTF(1, 2);
-char *ogs_mstrcatf(char *source, const char *message, ...)
+#define ogs_msprintf(...) ogs_msprintf_debug(OGS_FILE_LINE, __VA_ARGS__)
+char *ogs_msprintf_debug(const char *file_line, const char *message, ...)
     OGS_GNUC_PRINTF(2, 3);
+#define ogs_mstrcatf(source, ...) \
+    ogs_mstrcatf_debug(source, OGS_FILE_LINE, __VA_ARGS__)
+char *ogs_mstrcatf_debug(
+        char *source, const char *file_line, const char *message, ...)
+    OGS_GNUC_PRINTF(3, 4);
 
 char *ogs_trimwhitespace(char *str);
 

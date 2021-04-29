@@ -464,7 +464,6 @@ static ogs_sbi_session_t *session_add(
 static void session_remove(ogs_sbi_session_t *sbi_sess)
 {
     ogs_sbi_server_t *server = NULL;
-    ogs_poll_t *poll = NULL;
     ogs_pkbuf_t *pkbuf = NULL, *next_pkbuf = NULL;
 
     ogs_assert(sbi_sess);
@@ -475,13 +474,11 @@ static void session_remove(ogs_sbi_session_t *sbi_sess)
 
     stream_remove_all(sbi_sess);
 
-    poll = ogs_pollset_cycle(ogs_app()->pollset, sbi_sess->poll.read);
-    ogs_assert(poll);
-    ogs_pollset_remove(poll);
+    ogs_assert(sbi_sess->poll.read);
+    ogs_pollset_remove(sbi_sess->poll.read);
 
-    poll = ogs_pollset_cycle(ogs_app()->pollset, sbi_sess->poll.write);
-    if (poll)
-        ogs_pollset_remove(poll);
+    if (sbi_sess->poll.write)
+        ogs_pollset_remove(sbi_sess->poll.write);
 
     ogs_list_for_each_safe(&sbi_sess->write_queue, next_pkbuf, pkbuf)
         ogs_pkbuf_free(pkbuf);
@@ -1236,6 +1233,7 @@ static void session_write_callback(short when, ogs_socket_t fd, void *data)
     if (ogs_list_empty(&sbi_sess->write_queue) == true) {
         ogs_assert(sbi_sess->poll.write);
         ogs_pollset_remove(sbi_sess->poll.write);
+        sbi_sess->poll.write = NULL;
         return;
     }
 
@@ -1255,8 +1253,6 @@ static void session_write_to_buffer(
     ogs_sock_t *sock = NULL;
     ogs_socket_t fd = INVALID_SOCKET;
 
-    ogs_poll_t *poll = NULL;
-
     ogs_assert(pkbuf);
 
     ogs_assert(sbi_sess);
@@ -1267,8 +1263,7 @@ static void session_write_to_buffer(
 
     ogs_list_add(&sbi_sess->write_queue, pkbuf);
 
-    poll = ogs_pollset_cycle(ogs_app()->pollset, sbi_sess->poll.write);
-    if (!poll)
+    if (!sbi_sess->poll.write)
         sbi_sess->poll.write = ogs_pollset_add(ogs_app()->pollset,
             OGS_POLLOUT, fd, session_write_callback, sbi_sess);
 }

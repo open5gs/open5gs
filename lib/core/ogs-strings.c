@@ -120,7 +120,7 @@ char *ogs_slprintf(char *str, char *last, const char *format, ...)
     return r;
 }
 
-char *ogs_strdup(const char *s)
+char *ogs_strdup_debug(const char *s, const char *file_line)
 {
     char *res;
     size_t len;
@@ -129,11 +129,11 @@ char *ogs_strdup(const char *s)
         return NULL;
 
     len = strlen(s) + 1;
-    res = ogs_memdup(s, len);
+    res = ogs_memdup_debug(s, len, file_line);
     return res;
 }
 
-char *ogs_strndup(const char *s, size_t n)
+char *ogs_strndup_debug(const char *s, size_t n, const char *file_line)
 {
     char *res;
     const char *end;
@@ -144,20 +144,20 @@ char *ogs_strndup(const char *s, size_t n)
     end = memchr(s, '\0', n);
     if (end != NULL)
         n = end - s;
-    res = ogs_malloc(n + 1);
+    res = ogs_malloc_debug(n + 1, file_line);
     memcpy(res, s, n);
     res[n] = '\0';
     return res;
 }
 
-void *ogs_memdup(const void *m, size_t n)
+void *ogs_memdup_debug(const void *m, size_t n, const char *file_line)
 {
     void *res;
 
     if (m == NULL)
         return NULL;
 
-    res = ogs_malloc(n);
+    res = ogs_malloc_debug(n, file_line);
     memcpy(res, m, n);
     return res;
 }
@@ -195,7 +195,7 @@ char *ogs_cpystrn(char *dst, const char *src, size_t dst_size)
  *
  * https://github.com/babelouest/orcania.git
  */
-char *ogs_msprintf(const char *message, ...)
+char *ogs_msprintf_debug(const char *file_line, const char *message, ...)
 {
     va_list argp, argp_cpy;
     size_t out_len = 0;
@@ -206,7 +206,7 @@ char *ogs_msprintf(const char *message, ...)
                                     in some architectures,
                                     vsnprintf can modify argp */
         out_len = vsnprintf(NULL, 0, message, argp);
-        out = ogs_malloc(out_len + sizeof(char));
+        out = ogs_malloc_debug(out_len + sizeof(char), file_line);
         if (out == NULL) {
             va_end(argp);
             va_end(argp_cpy);
@@ -219,7 +219,8 @@ char *ogs_msprintf(const char *message, ...)
     return out;
 }
 
-char *ogs_mstrcatf(char *source, const char *message, ...)
+char *ogs_mstrcatf_debug(
+        char *source, const char *file_line, const char *message, ...)
 {
     va_list argp, argp_cpy;
     char *out = NULL, *message_formatted = NULL;
@@ -236,7 +237,8 @@ char *ogs_mstrcatf(char *source, const char *message, ...)
             if (message_formatted != NULL) {
                 vsnprintf(message_formatted,
                     (message_formatted_len+sizeof(char)), message, argp_cpy);
-                out = ogs_msprintf("%s%s", source, message_formatted);
+                out = ogs_msprintf_debug(
+                        file_line, "%s%s", source, message_formatted);
                 ogs_free(message_formatted);
                 ogs_free(source);
             }
@@ -248,7 +250,7 @@ char *ogs_mstrcatf(char *source, const char *message, ...)
                                         in some architectures,
                                         vsnprintf can modify argp */
             out_len = vsnprintf(NULL, 0, message, argp);
-            out = ogs_malloc(out_len+sizeof(char));
+            out = ogs_malloc_debug(out_len+sizeof(char), file_line);
             if (out != NULL) {
                 vsnprintf(out, (out_len+sizeof(char)), message, argp_cpy);
             }

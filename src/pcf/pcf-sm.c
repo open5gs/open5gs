@@ -49,6 +49,8 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
     ogs_sbi_object_t *sbi_object = NULL;
     ogs_sbi_xact_t *sbi_xact = NULL;
 
+    OpenAPI_nf_type_e target_nf_type = OpenAPI_nf_type_NULL;
+
     pcf_ue_t *pcf_ue = NULL;
     pcf_sess_t *sess = NULL;
 
@@ -318,14 +320,16 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
 
                     pcf_ue = (pcf_ue_t *)sbi_xact->sbi_object;
                     ogs_assert(pcf_ue);
+
+                    e->sbi.data = sbi_xact->assoc_stream;
+
+                    ogs_sbi_xact_remove(sbi_xact);
+
                     pcf_ue = pcf_ue_cycle(pcf_ue);
                     ogs_assert(pcf_ue);
 
                     e->pcf_ue = pcf_ue;
                     e->sbi.message = &message;
-                    e->sbi.data = sbi_xact->assoc_stream;
-
-                    ogs_sbi_xact_remove(sbi_xact);
 
                     ogs_fsm_dispatch(&pcf_ue->sm, e);
                     if (OGS_FSM_CHECK(&pcf_ue->sm, pcf_am_state_exception)) {
@@ -340,6 +344,11 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
 
                     sess = (pcf_sess_t *)sbi_xact->sbi_object;
                     ogs_assert(sess);
+
+                    e->sbi.data = sbi_xact->assoc_stream;
+
+                    ogs_sbi_xact_remove(sbi_xact);
+
                     sess = pcf_sess_cycle(sess);
                     ogs_assert(sess);
 
@@ -350,9 +359,6 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
 
                     e->sess = sess;
                     e->sbi.message = &message;
-                    e->sbi.data = sbi_xact->assoc_stream;
-
-                    ogs_sbi_xact_remove(sbi_xact);
 
                     ogs_fsm_dispatch(&sess->sm, e);
                     if (OGS_FSM_CHECK(&sess->sm, pcf_am_state_exception)) {
@@ -421,6 +427,14 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
 
             sbi_object = sbi_xact->sbi_object;
             ogs_assert(sbi_object);
+
+            stream = sbi_xact->assoc_stream;
+            ogs_assert(stream);
+
+            target_nf_type = sbi_xact->target_nf_type;
+
+            ogs_sbi_xact_remove(sbi_xact);
+
             ogs_assert(sbi_object->type > OGS_SBI_OBJ_BASE &&
                         sbi_object->type < OGS_SBI_OBJ_TOP);
 
@@ -439,15 +453,9 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
 
             default:
                 ogs_fatal("Not implemented [%s:%d]",
-                    OpenAPI_nf_type_ToString(sbi_xact->target_nf_type),
-                    sbi_object->type);
+                    OpenAPI_nf_type_ToString(target_nf_type), sbi_object->type);
                 ogs_assert_if_reached();
             }
-
-            stream = sbi_xact->assoc_stream;
-            ogs_assert(stream);
-
-            ogs_sbi_xact_remove(sbi_xact);
 
             ogs_error("Cannot receive SBI message");
             ogs_sbi_server_send_error(stream,

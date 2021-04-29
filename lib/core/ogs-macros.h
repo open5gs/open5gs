@@ -202,6 +202,8 @@ static ogs_inline ogs_uint24_t ogs_htobe24(ogs_uint24_t x)
 #define OGS_MAX_FILEPATH_LEN            256
 #define OGS_MAX_IFNAME_LEN              32
 
+#define OGS_FILE_LINE __FILE__ ":" OGS_STRINGIFY(__LINE__)
+
 #ifdef __cplusplus
 }
 #endif

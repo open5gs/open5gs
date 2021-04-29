@@ -71,9 +71,12 @@ static void recalculate_pool_size(void)
 
 #define MAX_NUM_OF_TIMER        16
     self.pool.timer = self.max.ue * MAX_NUM_OF_TIMER;
+    self.pool.message = self.max.ue;
+    self.pool.event = self.max.ue;
+
+    self.pool.packet = self.max.ue * OGS_MAX_NUM_OF_PACKET_BUFFER;
 
     self.pool.nf = self.max.gnb;
-    self.pool.packet = self.max.ue * OGS_MAX_NUM_OF_PACKET_BUFFER;
 
 #define MAX_NUM_OF_SOCKET       4   /* Num of socket per NF */
     self.pool.socket = self.pool.nf * MAX_NUM_OF_SOCKET;
@@ -89,10 +92,7 @@ static void recalculate_pool_size(void)
 #define MAX_NUM_OF_SBI_MESSAGE  4   /* Num of HTTP(s) Request/Response per NF */
 #define MAX_NUM_OF_NF_SUBSCRIPTION  4 /* Num of Subscription per NF */
     self.pool.nf_service = self.pool.nf * MAX_NUM_OF_NF_SERVICE;
-    self.pool.sbi_message = self.pool.nf * MAX_NUM_OF_SBI_MESSAGE;
     self.pool.nf_subscription = self.pool.nf * MAX_NUM_OF_NF_SUBSCRIPTION;
-
-    self.pool.event = self.max.ue;
 
 #define MAX_CSMAP_POOL          128
     self.pool.csmap = MAX_CSMAP_POOL;   /* Num of TAI-LAI Mapping Table */

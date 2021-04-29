@@ -50,6 +50,8 @@ typedef struct ogs_pkbuf_s {
     unsigned char *tail;
     unsigned char *data;
     unsigned char *end;
+
+    const char *file_line;
     
     ogs_pkbuf_pool_t *pool;
 } ogs_pkbuf_t;
@@ -74,7 +76,10 @@ void ogs_pkbuf_default_destroy(void);
 ogs_pkbuf_pool_t *ogs_pkbuf_pool_create(ogs_pkbuf_config_t *config);
 void ogs_pkbuf_pool_destroy(ogs_pkbuf_pool_t *pool);
 
-ogs_pkbuf_t *ogs_pkbuf_alloc(ogs_pkbuf_pool_t *pool, unsigned int size);
+#define ogs_pkbuf_alloc(pool, size) \
+    ogs_pkbuf_alloc_debug(pool, size, OGS_FILE_LINE)
+ogs_pkbuf_t *ogs_pkbuf_alloc_debug(
+        ogs_pkbuf_pool_t *pool, unsigned int size, const char *file_line);
 void ogs_pkbuf_free(ogs_pkbuf_t *pkbuf);
 
 void *ogs_pkbuf_put_data(

@@ -68,6 +68,7 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
     int state = AMF_CREATE_SM_CONTEXT_NO_STATE;
     ogs_sbi_stream_t *stream = NULL;
     ogs_sbi_request_t *sbi_request = NULL;
+    OpenAPI_nf_type_e target_nf_type = OpenAPI_nf_type_NULL;
 
     ogs_sbi_nf_instance_t *nf_instance = NULL;
     ogs_sbi_subscription_t *subscription = NULL;
@@ -345,17 +346,21 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
 
             amf_ue = (amf_ue_t *)sbi_xact->sbi_object;
             ogs_assert(amf_ue);
-            amf_ue = amf_ue_cycle(amf_ue);
-            ogs_assert(amf_ue);
-
-            ogs_assert(OGS_FSM_STATE(&amf_ue->sm));
-
-            e->amf_ue = amf_ue;
-            e->sbi.message = &sbi_message;;
 
             ogs_sbi_xact_remove(sbi_xact);
 
-            ogs_fsm_dispatch(&amf_ue->sm, e);
+            amf_ue = amf_ue_cycle(amf_ue);
+
+            if (amf_ue) {
+                ogs_assert(OGS_FSM_STATE(&amf_ue->sm));
+
+                e->amf_ue = amf_ue;
+                e->sbi.message = &sbi_message;;
+
+                ogs_fsm_dispatch(&amf_ue->sm, e);
+            } else {
+                ogs_error("UE(amf_ue) Context has already been removed");
+            }
             break;
 
         CASE(OGS_SBI_SERVICE_NAME_NSMF_PDUSESSION)
@@ -364,6 +369,11 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
 
             sess = (amf_sess_t *)sbi_xact->sbi_object;
             ogs_assert(sess);
+
+            state = sbi_xact->state;
+
+            ogs_sbi_xact_remove(sbi_xact);
+
             sess = amf_sess_cycle(sess);
 
             /*
@@ -400,10 +410,6 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
             e->amf_ue = amf_ue;
             e->sess = sess;
             e->sbi.message = &sbi_message;;
-
-            state = sbi_xact->state;
-
-            ogs_sbi_xact_remove(sbi_xact);
 
             SWITCH(sbi_message.h.resource.component[2])
             CASE(OGS_SBI_RESOURCE_NAME_MODIFY)
@@ -460,6 +466,11 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
 
             sess = (amf_sess_t *)sbi_xact->sbi_object;
             ogs_assert(sess);
+
+            state = sbi_xact->state;
+
+            ogs_sbi_xact_remove(sbi_xact);
+
             sess = amf_sess_cycle(sess);
             ogs_assert(sess);
 
@@ -473,10 +484,6 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
             e->amf_ue = amf_ue;
             e->sess = sess;
             e->sbi.message = &sbi_message;;
-
-            state = sbi_xact->state;
-
-            ogs_sbi_xact_remove(sbi_xact);
 
             amf_nnssf_nsselection_handle_get(sess, &sbi_message);
             break;
@@ -527,6 +534,10 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
             sbi_object = sbi_xact->sbi_object;
             ogs_assert(sbi_object);
 
+            target_nf_type = sbi_xact->target_nf_type;
+
+            ogs_sbi_xact_remove(sbi_xact);
+
             ogs_assert(sbi_object->type > OGS_SBI_OBJ_BASE &&
                         sbi_object->type < OGS_SBI_OBJ_TOP);
 
@@ -556,12 +567,9 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
 
             default:
                 ogs_fatal("Not implemented [%s:%d]",
-                    OpenAPI_nf_type_ToString(sbi_xact->target_nf_type),
-                    sbi_object->type);
+                    OpenAPI_nf_type_ToString(target_nf_type), sbi_object->type);
                 ogs_assert_if_reached();
             }
-
-            ogs_sbi_xact_remove(sbi_xact);
             break;
 
         default:

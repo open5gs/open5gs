@@ -403,8 +403,10 @@ ogs_sbi_response_t *ogs_sbi_build_response(
 int ogs_sbi_parse_response(
         ogs_sbi_message_t *message, ogs_sbi_response_t *response);
 
-void ogs_sbi_header_set(ogs_hash_t *ht, const void *key, const void *val);
-void *ogs_sbi_header_get(ogs_hash_t *ht, const void *key);
+#define ogs_sbi_header_set(ht, key, val) \
+    ogs_hash_set(ht, ogs_strdup(key), strlen(key), ogs_strdup(val))
+#define ogs_sbi_header_get(ht, key) \
+    ogs_hash_get(ht, key, strlen(key))
 
 ogs_pkbuf_t *ogs_sbi_find_part_by_content_id(
         ogs_sbi_message_t *message, char *content_id);

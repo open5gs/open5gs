@@ -124,12 +124,6 @@ void ogs_pollset_remove(ogs_poll_t *poll)
     ogs_pool_free(&pollset->pool, poll);
 }
 
-ogs_poll_t *ogs_pollset_cycle(ogs_pollset_t *pollset, ogs_poll_t *poll)
-{
-    ogs_assert(pollset);
-    return ogs_pool_cycle(&pollset->pool, poll);
-}
-
 void *ogs_pollset_self_handler_data(void)
 {
     return &self_handler_data;

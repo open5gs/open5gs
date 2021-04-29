@@ -402,7 +402,7 @@ static void notify_connection(void *cls,
             *socket_context = poll.read;
             break;
         case MHD_CONNECTION_NOTIFY_CLOSED:
-            poll.read = ogs_pollset_cycle(ogs_app()->pollset, *socket_context);
+            poll.read = *socket_context;
             if (poll.read)
                 ogs_pollset_remove(poll.read);
             break;
@@ -535,12 +535,10 @@ static void notify_completed(
         enum MHD_RequestTerminationCode toe)
 {
     ogs_sbi_request_t *request = *con_cls;
-    ogs_poll_t *poll = NULL;
 
     ogs_assert(request);
-    poll = ogs_pollset_cycle(ogs_app()->pollset, request->poll.write);
-    if (poll)
-        ogs_pollset_remove(poll);
+    if (request->poll.write)
+        ogs_pollset_remove(request->poll.write);
 
     ogs_sbi_request_free(request);
 }

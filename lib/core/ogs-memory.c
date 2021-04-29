@@ -22,7 +22,7 @@
 #undef OGS_LOG_DOMAIN
 #define OGS_LOG_DOMAIN __ogs_mem_domain
 
-void *ogs_malloc(size_t size)
+void *ogs_malloc_debug(size_t size, const char *file_line)
 {
     size_t headroom = 0;
     ogs_pkbuf_t *pkbuf = NULL;
@@ -30,7 +30,7 @@ void *ogs_malloc(size_t size)
     ogs_assert(size);
 
     headroom = sizeof(ogs_pkbuf_t *);
-    pkbuf = ogs_pkbuf_alloc(NULL, headroom + size);
+    pkbuf = ogs_pkbuf_alloc_debug(NULL, headroom + size, file_line);
     ogs_assert(pkbuf);
     ogs_pkbuf_reserve(pkbuf, headroom);
     memcpy(pkbuf->head, &pkbuf, headroom);
@@ -54,18 +54,18 @@ void ogs_free(void *ptr)
     ogs_pkbuf_free(pkbuf);
 }
 
-void *ogs_calloc(size_t nmemb, size_t size)
+void *ogs_calloc_debug(size_t nmemb, size_t size, const char *file_line)
 {
     void *ptr = NULL;
 
-    ptr = ogs_malloc(nmemb * size);
+    ptr = ogs_malloc_debug(nmemb * size, file_line);
     ogs_assert(ptr);
 
     memset(ptr, 0, nmemb * size);
     return ptr;
 }
 
-void *ogs_realloc(void *ptr, size_t size)
+void *ogs_realloc_debug(void *ptr, size_t size, const char *file_line)
 {
     size_t headroom = 0;
     ogs_pkbuf_t *pkbuf = NULL;
@@ -89,7 +89,7 @@ void *ogs_realloc(void *ptr, size_t size)
     if (size > (cluster->size - headroom)) {
         void *new = NULL;
 
-        new = ogs_malloc(size);
+        new = ogs_malloc_debug(size, file_line);
         ogs_assert(new);
         memcpy(new, ptr, pkbuf->len);
 

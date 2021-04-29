@@ -54,10 +54,18 @@ ogs_hash_t *ogs_hash_make(void);
 ogs_hash_t *ogs_hash_make_custom(ogs_hashfunc_t ogs_hash_func);
 void ogs_hash_destroy(ogs_hash_t *ht);
 
-void ogs_hash_set(ogs_hash_t *ht, const void *key, int klen, const void *val);
-void *ogs_hash_get(ogs_hash_t *ht, const void *key, int klen);
-void *ogs_hash_get_or_set(ogs_hash_t *ht, 
-        const void *key, int klen, const void *val);
+#define ogs_hash_set(ht, key, klen, val) \
+    ogs_hash_set_debug(ht, key, klen, val, OGS_FILE_LINE)
+void ogs_hash_set_debug(ogs_hash_t *ht,
+        const void *key, int klen, const void *val, const char *file_line);
+#define ogs_hash_get(ht, key, klen) \
+    ogs_hash_get_debug(ht, key, klen, OGS_FILE_LINE)
+void *ogs_hash_get_debug(ogs_hash_t *ht,
+        const void *key, int klen, const char *file_line);
+#define ogs_hash_get_or_set(ht, key, klen, val) \
+    ogs_hash_get_or_set_debug(ht, key, klen, val, OGS_FILE_LINE)
+void *ogs_hash_get_or_set_debug(ogs_hash_t *ht,
+        const void *key, int klen, const void *val, const char *file_line);
 
 ogs_hash_index_t *ogs_hash_first(ogs_hash_t *ht);
 ogs_hash_index_t *ogs_hash_next(ogs_hash_index_t *hi);

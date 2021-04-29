@@ -117,12 +117,13 @@ typedef struct ogs_app_context_s {
         uint64_t tunnel;
         uint64_t nf_service;
         uint64_t nf_subscription;
-        uint64_t sbi_message;
 
         uint64_t csmap;
 
+        uint64_t message;
         uint64_t event;
         uint64_t timer;
+
         uint64_t socket;
         uint64_t gtp_xact;
         uint64_t gtp_node;

@@ -44,10 +44,13 @@ extern "C" {
         memcpy((__dST), (__sRC), sizeof(*(__sRC))*sizeof(uint8_t)); \
     } while(0)
 
-void *ogs_malloc(size_t size);
+#define ogs_malloc(size) ogs_malloc_debug(size, OGS_FILE_LINE)
+void *ogs_malloc_debug(size_t size, const char *file_line);
 void ogs_free(void *ptr);
-void *ogs_calloc(size_t nmemb, size_t size);
-void *ogs_realloc(void *ptr, size_t size);
+#define ogs_calloc(nmemb, size) ogs_calloc_debug(nmemb, size, OGS_FILE_LINE)
+void *ogs_calloc_debug(size_t nmemb, size_t size, const char *file_line);
+#define ogs_realloc(ptr, size) ogs_realloc_debug(ptr, size, OGS_FILE_LINE)
+void *ogs_realloc_debug(void *ptr, size_t size, const char *file_line);
 
 #ifdef __cplusplus
 }

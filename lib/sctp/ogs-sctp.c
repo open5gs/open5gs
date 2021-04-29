@@ -76,15 +76,12 @@ int ogs_sctp_senddata(ogs_sock_t *sock,
 
 void ogs_sctp_write_to_buffer(ogs_sctp_sock_t *sctp, ogs_pkbuf_t *pkbuf)
 {
-    ogs_poll_t *poll = NULL;
-
     ogs_assert(sctp);
     ogs_assert(pkbuf);
 
     ogs_list_add(&sctp->write_queue, pkbuf);
 
-    poll = ogs_pollset_cycle(ogs_app()->pollset, sctp->poll.write);
-    if (!poll) {
+    if (!sctp->poll.write) {
         ogs_assert(sctp->sock);
         sctp->poll.write = ogs_pollset_add(ogs_app()->pollset,
             OGS_POLLOUT, sctp->sock->fd, sctp_write_callback, sctp);
@@ -100,6 +97,7 @@ static void sctp_write_callback(short when, ogs_socket_t fd, void *data)
     if (ogs_list_empty(&sctp->write_queue) == true) {
         ogs_assert(sctp->poll.write);
         ogs_pollset_remove(sctp->poll.write);
+        sctp->poll.write = NULL;
         return;
     }
 
@@ -113,7 +111,6 @@ static void sctp_write_callback(short when, ogs_socket_t fd, void *data)
 
 void ogs_sctp_flush_and_destroy(ogs_sctp_sock_t *sctp)
 {
-    ogs_poll_t *poll = NULL;
     ogs_pkbuf_t *pkbuf = NULL, *next_pkbuf = NULL;
 
     ogs_assert(sctp);
@@ -122,13 +119,11 @@ void ogs_sctp_flush_and_destroy(ogs_sctp_sock_t *sctp)
     ogs_free(sctp->addr);
 
     if (sctp->type == SOCK_STREAM) {
-        poll = ogs_pollset_cycle(ogs_app()->pollset, sctp->poll.read);
-        ogs_assert(poll);
-        ogs_pollset_remove(poll);
+        ogs_assert(sctp->poll.read);
+        ogs_pollset_remove(sctp->poll.read);
 
-        poll = ogs_pollset_cycle(ogs_app()->pollset, sctp->poll.write);
-        if (poll)
-            ogs_pollset_remove(poll);
+        if (sctp->poll.write)
+            ogs_pollset_remove(sctp->poll.write);
 
         ogs_sctp_destroy(sctp->sock);
 

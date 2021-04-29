@@ -97,7 +97,7 @@ void ogs_pkbuf_default_init(ogs_pkbuf_config_t *config)
     config->cluster_512_pool = 4096;
     config->cluster_1024_pool = 1024;
     config->cluster_2048_pool = 512;
-    config->cluster_8192_pool = 128;
+    config->cluster_8192_pool = 512;
     config->cluster_big_pool = 8;
 }
 
@@ -143,11 +143,29 @@ ogs_pkbuf_pool_t *ogs_pkbuf_pool_create(ogs_pkbuf_config_t *config)
     return pool;
 }
 
+#define ogs_pkbuf_pool_final(pool) do { \
+    if (((pool)->size != (pool)->avail)) { \
+        int i; \
+        ogs_error("%d in '%s[%d]' were not released.", \
+                (pool)->size - (pool)->avail, (pool)->name, (pool)->size); \
+        for (i = 0; i < (pool)->size; i++) { \
+            ogs_pkbuf_t *pkbuf = (pool)->index[i]; \
+            if (pkbuf) { \
+                ogs_log_print(OGS_LOG_ERROR, "SIZE[%d] is not freed. (%s)\n", \
+                        pkbuf->len, pkbuf->file_line); \
+            } \
+        } \
+    } \
+    free((pool)->free); \
+    free((pool)->array); \
+    free((pool)->index); \
+} while (0)
+
 void ogs_pkbuf_pool_destroy(ogs_pkbuf_pool_t *pool)
 {
     ogs_assert(pool);
 
-    ogs_pool_final(&pool->pkbuf);
+    ogs_pkbuf_pool_final(&pool->pkbuf);
     ogs_pool_final(&pool->cluster);
 
     ogs_pool_final(&pool->cluster_128);
@@ -163,7 +181,8 @@ void ogs_pkbuf_pool_destroy(ogs_pkbuf_pool_t *pool)
     ogs_pool_free(&pkbuf_pool, pool);
 }
 
-ogs_pkbuf_t *ogs_pkbuf_alloc(ogs_pkbuf_pool_t *pool, unsigned int size)
+ogs_pkbuf_t *ogs_pkbuf_alloc_debug(
+        ogs_pkbuf_pool_t *pool, unsigned int size, const char *file_line)
 {
     ogs_pkbuf_t *pkbuf = NULL;
     ogs_cluster_t *cluster = NULL;
@@ -198,6 +217,8 @@ ogs_pkbuf_t *ogs_pkbuf_alloc(ogs_pkbuf_pool_t *pool, unsigned int size)
     pkbuf->head = cluster->buffer;
     pkbuf->tail = cluster->buffer;
     pkbuf->end = cluster->buffer + size;
+
+    pkbuf->file_line = file_line; /* For debug */
 
     pkbuf->pool = pool;
 

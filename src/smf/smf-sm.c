@@ -518,6 +518,12 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
 
             sess = (smf_sess_t *)sbi_xact->sbi_object;
             ogs_assert(sess);
+
+            e->sbi.data = sbi_xact->assoc_stream;
+            e->sbi.state = sbi_xact->state;
+
+            ogs_sbi_xact_remove(sbi_xact);
+
             sess = smf_sess_cycle(sess);
             ogs_assert(sess);
             smf_ue = sess->smf_ue;
@@ -528,10 +534,6 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
 
             e->sess = sess;
             e->sbi.message = &sbi_message;
-            e->sbi.data = sbi_xact->assoc_stream;
-            e->sbi.state = sbi_xact->state;
-
-            ogs_sbi_xact_remove(sbi_xact);
 
             ogs_fsm_dispatch(&sess->sm, e);
             if (OGS_FSM_CHECK(&sess->sm, smf_gsm_state_exception)) {
