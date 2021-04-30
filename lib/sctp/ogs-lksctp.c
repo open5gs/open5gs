@@ -468,14 +468,23 @@ static int set_paddrparams(ogs_sock_t *sock)
         return OGS_ERROR;
     }
 
+#if !defined(__FreeBSD__)
     ogs_debug("OLD spp_flags = 0x%x hbinter = %d pathmax = %d, sackdelay = %d",
             paddrparams.spp_flags,
             paddrparams.spp_hbinterval,
             paddrparams.spp_pathmaxrxt,
             paddrparams.spp_sackdelay);
+#else
+    ogs_debug("OLD spp_flags = 0x%x hbinter = %d pathmax = %d",
+            paddrparams.spp_flags,
+            paddrparams.spp_hbinterval,
+            paddrparams.spp_pathmaxrxt);
+#endif
 
     paddrparams.spp_hbinterval = ogs_app()->sctp.heartbit_interval;
+#if !defined(__FreeBSD__)
     paddrparams.spp_sackdelay = ogs_app()->sctp.sack_delay;
+#endif
 
 #ifdef DISABLE_SCTP_EVENT_WORKAROUND
     if (setsockopt(sock->fd, IPPROTO_SCTP, SCTP_PEER_ADDR_PARAMS,
@@ -491,11 +500,18 @@ static int set_paddrparams(ogs_sock_t *sock)
     }
 #endif
 
+#if !defined(__FreeBSD__)
     ogs_debug("NEW spp_flags = 0x%x hbinter = %d pathmax = %d, sackdelay = %d",
             paddrparams.spp_flags,
             paddrparams.spp_hbinterval,
             paddrparams.spp_pathmaxrxt,
             paddrparams.spp_sackdelay);
+#else
+    ogs_debug("NEW spp_flags = 0x%x hbinter = %d pathmax = %d",
+            paddrparams.spp_flags,
+            paddrparams.spp_hbinterval,
+            paddrparams.spp_pathmaxrxt);
+#endif
 
     return OGS_OK;
 }
