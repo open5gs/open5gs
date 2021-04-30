@@ -170,14 +170,10 @@ struct ether_addr * ether_aton(const char *a);
 
 #define ICMP6_MAXTYPE   201
 #define __u6_addr       in6_u
-#if !defined(__GLIBC__)
-#define in6_u __in6_union /* Adding support for musl libc netinet */
-#define __u6_addr32     s6_addr32
-#else
 #define in6_u __in6_u   /* missing type for ipv6 (linux 2.6.28) */
-#define __u6_addr32     u6_addr32
-#endif
 
+
+#define __u6_addr32     u6_addr32
 /* on freebsd sys/socket.h pf specific */
 #define NET_RT_IFLIST   3               /* survey interface list */
 
