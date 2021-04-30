@@ -109,8 +109,10 @@ extern "C" {
 
 #elif defined(__FreeBSD__)
 #include <sys/endian.h>
-#elif ! defined(__GLIBC__)
+
+#elif defined(__linux__)
 #include <endian.h>
+
 #endif
 
 #ifndef WORDS_BIGENDIAN

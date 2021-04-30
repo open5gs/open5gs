@@ -25,6 +25,7 @@ head_inline: "<style> ul { padding-bottom: 1em; } </style>"
   - [MacOSX(Apple Silicon)](platform/05-macosx-apple-silicon)
   - [MacOSX(Intel)](platform/06-macosx-intel)
   - [FreeBSD](platform/07-freebsd)
+  - [Alpine](platform/08-alpine)
   
 - Hardware Specific Notes
   - [eNodeBs/gNodeBs tested on Open5GS](hardware/01-genodebs)

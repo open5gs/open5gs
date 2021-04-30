@@ -71,8 +71,13 @@
 static __inline time_t
 _long_to_time(long tlong)
 {
-    if (sizeof(long) == sizeof(u_int32_t))
-        return((time_t)(u_int32_t)(tlong));
+#if 0 /* modified by acetcom */
+    if (sizeof(long) == sizeof(__int32_t))
+        return((time_t)(__int32_t)(tlong));
+#else
+    if (sizeof(long) == sizeof(int32_t))
+        return((time_t)(int32_t)(tlong));
+#endif
     return((time_t)tlong);
 }
 

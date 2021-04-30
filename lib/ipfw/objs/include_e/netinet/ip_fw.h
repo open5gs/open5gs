@@ -517,19 +517,20 @@ typedef struct	_ipfw_insn_nat {
  	struct cfg_nat *nat;	
 } ipfw_insn_nat;
 
-#if !defined(__GLIBC__) /* Adding support for musl libc netint */
 /* Apply ipv6 mask on ipv6 addr */
-#define APPLY_MASK(addr,mask)                          \
-    (addr)->__u6_addr.__s6_addr32[0] &= (mask)->__u6_addr.__s6_addr32[0]; \
-    (addr)->__u6_addr.__s6_addr32[1] &= (mask)->__u6_addr.__s6_addr32[1]; \
-    (addr)->__u6_addr.__s6_addr32[2] &= (mask)->__u6_addr.__s6_addr32[2]; \
-    (addr)->__u6_addr.__s6_addr32[3] &= (mask)->__u6_addr.__s6_addr32[3];
-#else
+#if 0 /* modified by acetcom */
 #define APPLY_MASK(addr,mask)                          \
     (addr)->__u6_addr.__u6_addr32[0] &= (mask)->__u6_addr.__u6_addr32[0]; \
     (addr)->__u6_addr.__u6_addr32[1] &= (mask)->__u6_addr.__u6_addr32[1]; \
     (addr)->__u6_addr.__u6_addr32[2] &= (mask)->__u6_addr.__u6_addr32[2]; \
     (addr)->__u6_addr.__u6_addr32[3] &= (mask)->__u6_addr.__u6_addr32[3];
+#else
+#define APPLY_MASK(addr,mask)                          \
+    do { \
+        int i; \
+        for (i = 0; i < 16; i++) \
+            (addr)->s6_addr[i] &= (mask)->s6_addr[i]; \
+    } while(0);
 #endif
 
 /* Structure for ipv6 */
