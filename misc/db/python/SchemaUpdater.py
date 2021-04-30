@@ -39,14 +39,14 @@ def create_v1_from_v0(old_sub):
     # Remove old PDN info
     del new_sub['pdn']
 
-    # Set AMBR Values to new format (Old format is in bits per second)
+    # Set AMBR Values to new format (Old format is in kbps per second)
     new_sub['ambr']['uplink'] = {}
     new_sub['ambr']['uplink']['value'] = old_sub['ambr']['uplink']
-    new_sub['ambr']['uplink']['unit'] = 0
+    new_sub['ambr']['uplink']['unit'] = 1
 
     new_sub['ambr']['downlink'] = {}
     new_sub['ambr']['downlink']['value'] = old_sub['ambr']['downlink']
-    new_sub['ambr']['downlink']['unit'] = 0
+    new_sub['ambr']['downlink']['unit'] = 1
 
     #Propogate APN / DDN Slice Details
     new_sub['slice'] = []
@@ -66,15 +66,21 @@ def _create_session_from_pdn(pdn):
     """Builds a new session object from an existing PDN"""
     session = {}
     session['name'] = pdn['apn']
-    session['type'] = pdn['type']
+
+    if pdn['type'] in {1, 2, 3}:
+        session['type'] = pdn['type']
+    else:
+        # Default to IPv4 for old networks being upgraded with an invalid type
+        session['type'] = 1
+
     session['ambr'] = {
         "uplink": {
             "value": pdn['ambr']['uplink'],
-            "unit": 0
+            "unit": 1
         },
         "downlink": {
             "value": pdn['ambr']['downlink'],
-            "unit": 0
+            "unit": 1
         }
     }
 
