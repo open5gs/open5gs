@@ -55,6 +55,9 @@
 #undef OGS_LOG_DOMAIN
 #define OGS_LOG_DOMAIN __ogs_sock_domain
 
+/* If you want to use getnameinfo,
+ * you need to consider DNS query delay (about 10 seconds) */
+#if 0
 int ogs_getnameinfo(
     char *hostname, socklen_t hostname_len, ogs_sockaddr_t *addr, int flags)
 {
@@ -65,6 +68,7 @@ int ogs_getnameinfo(
             hostname, hostname_len,
             NULL, 0, flags != 0 ? flags : NI_NAMEREQD);
 }
+#endif
 
 int ogs_getaddrinfo(ogs_sockaddr_t **sa_list, 
         int family, const char *hostname, uint16_t port, int flags)
@@ -121,16 +125,25 @@ int ogs_addaddrinfo(ogs_sockaddr_t **sa_list,
         while(prev->next) prev = prev->next;
     }
     for (ai = ai_list; ai; ai = ai->ai_next) {
-        ogs_sockaddr_t *new;
+        ogs_sockaddr_t *new, tmp;
         if (ai->ai_family != AF_INET && ai->ai_family != AF_INET6)
             continue;
 
         new = ogs_calloc(1, sizeof(ogs_sockaddr_t));
         memcpy(&new->sa, ai->ai_addr, ai->ai_addrlen);
         new->ogs_sin_port = htobe16(port);
-        if (hostname)
-            new->hostname = ogs_strdup(hostname);
-        ogs_trace("addr:%s, port:%d", OGS_ADDR(new, buf), port);
+
+        if (hostname) {
+            if (ogs_inet_pton(ai->ai_family, hostname, &tmp) == OGS_OK) {
+                /* It's a valid IP address */
+                ogs_debug("addr:%s, port:%d", OGS_ADDR(new, buf), port);
+            } else {
+                /* INVALID IP address! We assume it is a hostname */
+                new->hostname = ogs_strdup(hostname);
+                ogs_assert(new->hostname);
+                ogs_debug("name:%s, port:%d", new->hostname, port);
+            }
+        }
 
         if (!prev)
             *sa_list = new;
@@ -597,19 +610,7 @@ int ogs_ipsubnet(ogs_ipsubnet_t *ipsub,
 
 char *ogs_gethostname(ogs_sockaddr_t *addr)
 {
-    int rv;
-    char hostname[OGS_MAX_FQDN_LEN];
-
-    ogs_assert(addr);
-
-    if (!addr->hostname)
-        return NULL;
-
-    rv = ogs_getnameinfo(hostname, OGS_MAX_FQDN_LEN, addr, 0);
-    if (rv == OGS_OK && strcmp(addr->hostname, hostname) == 0)
-        return addr->hostname;
-
-    return NULL;
+    return addr->hostname;
 }
 
 char *ogs_ipstrdup(ogs_sockaddr_t *addr)

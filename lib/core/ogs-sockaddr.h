@@ -77,9 +77,6 @@ typedef struct ogs_ipsubnet_s {
     uint32_t mask[4];
 } ogs_ipsubnet_t;
 
-int ogs_getnameinfo(
-    char *hostname, socklen_t hostname_len, ogs_sockaddr_t *addr, int flags);
-
 int ogs_getaddrinfo(ogs_sockaddr_t **sa_list, 
         int family, const char *hostname, uint16_t port, int flags);
 int ogs_freeaddrinfo(ogs_sockaddr_t *sa_list);
