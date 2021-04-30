@@ -165,7 +165,7 @@ ogs_sbi_client_t *ogs_sbi_client_find(ogs_sockaddr_t *addr)
 }
 
 #define mycase(code) \
-  case code: s = __STRING(code)
+  case code: s = (code)
 
 static void mcode_or_die(const char *where, CURLMcode code)
 {

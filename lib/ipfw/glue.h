@@ -71,8 +71,8 @@
 static __inline time_t
 _long_to_time(long tlong)
 {
-    if (sizeof(long) == sizeof(__int32_t))
-        return((time_t)(__int32_t)(tlong));
+    if (sizeof(long) == sizeof(u_int32_t))
+        return((time_t)(u_int32_t)(tlong));
     return((time_t)tlong);
 }
 
@@ -165,10 +165,14 @@ struct ether_addr * ether_aton(const char *a);
 
 #define ICMP6_MAXTYPE   201
 #define __u6_addr       in6_u
+#if !defined(__GLIBC__)
+#define in6_u __in6_union /* Adding support for musl libc netinet */
+#define __u6_addr32     s6_addr32
+#else
 #define in6_u __in6_u   /* missing type for ipv6 (linux 2.6.28) */
-
-
 #define __u6_addr32     u6_addr32
+#endif
+
 /* on freebsd sys/socket.h pf specific */
 #define NET_RT_IFLIST   3               /* survey interface list */
 
