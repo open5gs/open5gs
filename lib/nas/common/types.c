@@ -72,6 +72,7 @@ static uint8_t nas_ambr_from_kbps(
      * giving a range of 256 Mbps to 65280 Mbps.  */
     if (input > (65200*1024)) {
         ogs_error("Overflow : %ldkbps > 65200Mbps", (long)input);
+        *br = 0xff;
         *extended2 = 0b11111110;
         length = ogs_max(length, 3);
 
@@ -79,6 +80,7 @@ static uint8_t nas_ambr_from_kbps(
     }
     else if (input >= (256*1024) && input <= (65200*1024)) {
         *extended2 = input / (256*1024);
+        *br = 0xff;
         length = ogs_max(length, 3);
 
         input %= (256*1024);
