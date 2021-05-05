@@ -7,32 +7,44 @@ Docker running example
   $ docker-compose run dev
 
 * Runtime
+  ```
   $ docker-compose \
     -f docker-compose.yml -f docker-compose.run.yml run run
+  ```
 
 * Test
+  ```
   $ docker-compose \
     -f docker-compose.yml -f docker-compose.test.yml run test
+  ```
 
 * Test(ubuntu:artful)
+  ```
   $ TAG=eoan docker-compose build
   $ TAG=eoan docker-compose \
     -f docker-compose.yml -f docker-compose.test.yml run test
+  ```
 
 * Development(fedora:latest)
+  ```
   $ DIST=fedora docker-compose build
   $ DIST=fedora docker-compose run dev
+  ```
 
 * Runtime(debian:jessie)
+  ```
   $ DIST=debian TAG=stretch docker-compose build
   $ DIST=debian TAG=stretch docker-compose 
     -f docker-compose.yml -f docker-compose.run.yml run run
+  ```
 
 * All Test with All Environment
-  $ ./check.sh
+  
+  `$ ./check.sh`
 
 * Run WebUI 
-  $ docker-compose up -d
+  
+  `$ docker-compose up -d`
 
 For OpenSUSE Build Service Release
 ===========================================
