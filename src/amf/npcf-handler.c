@@ -96,8 +96,7 @@ int amf_npcf_am_policy_control_handle_create(
 
     OpenAPI_list_for_each(PolicyAssociation->triggers, node) {
         if (node->data) {
-            OpenAPI_request_trigger_e trigger =
-                (OpenAPI_request_trigger_e)node->data;
+            OpenAPI_request_trigger_e trigger = (intptr_t)node->data;
             OpenAPI_ambr_t *UeAmbr = NULL;
 
             switch (trigger) {

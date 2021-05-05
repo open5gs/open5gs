@@ -139,7 +139,7 @@ cJSON *OpenAPI_smf_info_convertToJSON(OpenAPI_smf_info_t *smf_info)
         }
         OpenAPI_lnode_t *access_type_node;
         OpenAPI_list_for_each(smf_info->access_type, access_type_node) {
-            if (cJSON_AddStringToObject(access_type, "", OpenAPI_access_type_ToString((OpenAPI_access_type_e)access_type_node->data)) == NULL) {
+            if (cJSON_AddStringToObject(access_type, "", OpenAPI_access_type_ToString((intptr_t)access_type_node->data)) == NULL) {
                 ogs_error("OpenAPI_smf_info_convertToJSON() failed [access_type]");
                 goto end;
             }

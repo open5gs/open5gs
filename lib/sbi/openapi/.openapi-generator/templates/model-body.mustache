@@ -386,7 +386,7 @@ cJSON *OpenAPI_{{classname}}_convertToJSON(OpenAPI_{{classname}}_t *{{classname}
                     OpenAPI_lnode_t *{{{name}}}_node;
                     if ({{{classname}}}->{{{name}}}) {
                         OpenAPI_list_for_each({{classname}}->{{{name}}}, {{{name}}}_node) {
-                            cJSON *itemLocal = OpenAPI_{{complexType}}_convertToJSON({{#isEnum}}{{#items}}(OpenAPI_{{classVarName}}_{{name}}_e){{/items}}{{/isEnum}}{{{name}}}_node->data);
+                            cJSON *itemLocal = OpenAPI_{{complexType}}_convertToJSON({{#isEnum}}{{#items}}(intptr_t){{/items}}{{/isEnum}}{{{name}}}_node->data);
                             if (itemLocal == NULL) {
                                 ogs_error("OpenAPI_{{classname}}_convertToJSON() failed [{{{name}}}]");
                                 goto end;
@@ -403,7 +403,7 @@ cJSON *OpenAPI_{{classname}}_convertToJSON(OpenAPI_{{classname}}_t *{{classname}
                     }
                     OpenAPI_lnode_t *{{{name}}}_node;
                     OpenAPI_list_for_each({{classname}}->{{{name}}}, {{{name}}}_node) {
-                        if (cJSON_AddStringToObject({{{name}}}, "", OpenAPI_{{{complexType}}}_ToString((OpenAPI_{{{complexType}}}_e){{{name}}}_node->data)) == NULL) {
+                        if (cJSON_AddStringToObject({{{name}}}, "", OpenAPI_{{{complexType}}}_ToString((intptr_t){{{name}}}_node->data)) == NULL) {
                             ogs_error("OpenAPI_{{classname}}_convertToJSON() failed [{{{name}}}]");
                             goto end;
                         }

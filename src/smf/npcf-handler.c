@@ -115,7 +115,7 @@ bool smf_npcf_smpolicycontrol_handle_create(
     OpenAPI_list_for_each(SmPolicyDecision->policy_ctrl_req_triggers, node) {
         if (node->data) {
             OpenAPI_policy_control_request_trigger_e trigger_id =
-                (OpenAPI_policy_control_request_trigger_e)node->data;
+                (intptr_t)node->data;
 
             ogs_assert(trigger_id < MAX_TRIGGER_ID);
             trigger_results[trigger_id] = true;

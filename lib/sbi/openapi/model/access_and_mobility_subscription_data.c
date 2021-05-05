@@ -269,7 +269,7 @@ cJSON *OpenAPI_access_and_mobility_subscription_data_convertToJSON(OpenAPI_acces
         }
         OpenAPI_lnode_t *rat_restrictions_node;
         OpenAPI_list_for_each(access_and_mobility_subscription_data->rat_restrictions, rat_restrictions_node) {
-            if (cJSON_AddStringToObject(rat_restrictions, "", OpenAPI_rat_type_ToString((OpenAPI_rat_type_e)rat_restrictions_node->data)) == NULL) {
+            if (cJSON_AddStringToObject(rat_restrictions, "", OpenAPI_rat_type_ToString((intptr_t)rat_restrictions_node->data)) == NULL) {
                 ogs_error("OpenAPI_access_and_mobility_subscription_data_convertToJSON() failed [rat_restrictions]");
                 goto end;
             }
@@ -317,7 +317,7 @@ cJSON *OpenAPI_access_and_mobility_subscription_data_convertToJSON(OpenAPI_acces
         }
         OpenAPI_lnode_t *core_network_type_restrictions_node;
         OpenAPI_list_for_each(access_and_mobility_subscription_data->core_network_type_restrictions, core_network_type_restrictions_node) {
-            if (cJSON_AddStringToObject(core_network_type_restrictions, "", OpenAPI_core_network_type_ToString((OpenAPI_core_network_type_e)core_network_type_restrictions_node->data)) == NULL) {
+            if (cJSON_AddStringToObject(core_network_type_restrictions, "", OpenAPI_core_network_type_ToString((intptr_t)core_network_type_restrictions_node->data)) == NULL) {
                 ogs_error("OpenAPI_access_and_mobility_subscription_data_convertToJSON() failed [core_network_type_restrictions]");
                 goto end;
             }
@@ -401,7 +401,7 @@ cJSON *OpenAPI_access_and_mobility_subscription_data_convertToJSON(OpenAPI_acces
         }
         OpenAPI_lnode_t *sor_update_indicator_list_node;
         OpenAPI_list_for_each(access_and_mobility_subscription_data->sor_update_indicator_list, sor_update_indicator_list_node) {
-            if (cJSON_AddStringToObject(sor_update_indicator_list, "", OpenAPI_sor_update_indicator_ToString((OpenAPI_sor_update_indicator_e)sor_update_indicator_list_node->data)) == NULL) {
+            if (cJSON_AddStringToObject(sor_update_indicator_list, "", OpenAPI_sor_update_indicator_ToString((intptr_t)sor_update_indicator_list_node->data)) == NULL) {
                 ogs_error("OpenAPI_access_and_mobility_subscription_data_convertToJSON() failed [sor_update_indicator_list]");
                 goto end;
             }
@@ -596,7 +596,7 @@ cJSON *OpenAPI_access_and_mobility_subscription_data_convertToJSON(OpenAPI_acces
         }
         OpenAPI_lnode_t *primary_rat_restrictions_node;
         OpenAPI_list_for_each(access_and_mobility_subscription_data->primary_rat_restrictions, primary_rat_restrictions_node) {
-            if (cJSON_AddStringToObject(primary_rat_restrictions, "", OpenAPI_rat_type_ToString((OpenAPI_rat_type_e)primary_rat_restrictions_node->data)) == NULL) {
+            if (cJSON_AddStringToObject(primary_rat_restrictions, "", OpenAPI_rat_type_ToString((intptr_t)primary_rat_restrictions_node->data)) == NULL) {
                 ogs_error("OpenAPI_access_and_mobility_subscription_data_convertToJSON() failed [primary_rat_restrictions]");
                 goto end;
             }
@@ -611,7 +611,7 @@ cJSON *OpenAPI_access_and_mobility_subscription_data_convertToJSON(OpenAPI_acces
         }
         OpenAPI_lnode_t *secondary_rat_restrictions_node;
         OpenAPI_list_for_each(access_and_mobility_subscription_data->secondary_rat_restrictions, secondary_rat_restrictions_node) {
-            if (cJSON_AddStringToObject(secondary_rat_restrictions, "", OpenAPI_rat_type_ToString((OpenAPI_rat_type_e)secondary_rat_restrictions_node->data)) == NULL) {
+            if (cJSON_AddStringToObject(secondary_rat_restrictions, "", OpenAPI_rat_type_ToString((intptr_t)secondary_rat_restrictions_node->data)) == NULL) {
                 ogs_error("OpenAPI_access_and_mobility_subscription_data_convertToJSON() failed [secondary_rat_restrictions]");
                 goto end;
             }

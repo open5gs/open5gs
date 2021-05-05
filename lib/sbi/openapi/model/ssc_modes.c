@@ -56,7 +56,7 @@ cJSON *OpenAPI_ssc_modes_convertToJSON(OpenAPI_ssc_modes_t *ssc_modes)
         }
         OpenAPI_lnode_t *allowed_ssc_modes_node;
         OpenAPI_list_for_each(ssc_modes->allowed_ssc_modes, allowed_ssc_modes_node) {
-            if (cJSON_AddStringToObject(allowed_ssc_modes, "", OpenAPI_ssc_mode_ToString((OpenAPI_ssc_mode_e)allowed_ssc_modes_node->data)) == NULL) {
+            if (cJSON_AddStringToObject(allowed_ssc_modes, "", OpenAPI_ssc_mode_ToString((intptr_t)allowed_ssc_modes_node->data)) == NULL) {
                 ogs_error("OpenAPI_ssc_modes_convertToJSON() failed [allowed_ssc_modes]");
                 goto end;
             }

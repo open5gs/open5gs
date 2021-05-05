@@ -87,7 +87,7 @@ cJSON *OpenAPI_lmf_info_convertToJSON(OpenAPI_lmf_info_t *lmf_info)
         }
         OpenAPI_lnode_t *serving_access_types_node;
         OpenAPI_list_for_each(lmf_info->serving_access_types, serving_access_types_node) {
-            if (cJSON_AddStringToObject(serving_access_types, "", OpenAPI_access_type_ToString((OpenAPI_access_type_e)serving_access_types_node->data)) == NULL) {
+            if (cJSON_AddStringToObject(serving_access_types, "", OpenAPI_access_type_ToString((intptr_t)serving_access_types_node->data)) == NULL) {
                 ogs_error("OpenAPI_lmf_info_convertToJSON() failed [serving_access_types]");
                 goto end;
             }
@@ -102,7 +102,7 @@ cJSON *OpenAPI_lmf_info_convertToJSON(OpenAPI_lmf_info_t *lmf_info)
         }
         OpenAPI_lnode_t *serving_an_node_types_node;
         OpenAPI_list_for_each(lmf_info->serving_an_node_types, serving_an_node_types_node) {
-            if (cJSON_AddStringToObject(serving_an_node_types, "", OpenAPI_an_node_type_ToString((OpenAPI_an_node_type_e)serving_an_node_types_node->data)) == NULL) {
+            if (cJSON_AddStringToObject(serving_an_node_types, "", OpenAPI_an_node_type_ToString((intptr_t)serving_an_node_types_node->data)) == NULL) {
                 ogs_error("OpenAPI_lmf_info_convertToJSON() failed [serving_an_node_types]");
                 goto end;
             }
@@ -117,7 +117,7 @@ cJSON *OpenAPI_lmf_info_convertToJSON(OpenAPI_lmf_info_t *lmf_info)
         }
         OpenAPI_lnode_t *serving_rat_types_node;
         OpenAPI_list_for_each(lmf_info->serving_rat_types, serving_rat_types_node) {
-            if (cJSON_AddStringToObject(serving_rat_types, "", OpenAPI_rat_type_ToString((OpenAPI_rat_type_e)serving_rat_types_node->data)) == NULL) {
+            if (cJSON_AddStringToObject(serving_rat_types, "", OpenAPI_rat_type_ToString((intptr_t)serving_rat_types_node->data)) == NULL) {
                 ogs_error("OpenAPI_lmf_info_convertToJSON() failed [serving_rat_types]");
                 goto end;
             }

@@ -195,7 +195,7 @@ cJSON *OpenAPI_sm_policy_update_context_data_convertToJSON(OpenAPI_sm_policy_upd
         }
         OpenAPI_lnode_t *rep_policy_ctrl_req_triggers_node;
         OpenAPI_list_for_each(sm_policy_update_context_data->rep_policy_ctrl_req_triggers, rep_policy_ctrl_req_triggers_node) {
-            if (cJSON_AddStringToObject(rep_policy_ctrl_req_triggers, "", OpenAPI_policy_control_request_trigger_ToString((OpenAPI_policy_control_request_trigger_e)rep_policy_ctrl_req_triggers_node->data)) == NULL) {
+            if (cJSON_AddStringToObject(rep_policy_ctrl_req_triggers, "", OpenAPI_policy_control_request_trigger_ToString((intptr_t)rep_policy_ctrl_req_triggers_node->data)) == NULL) {
                 ogs_error("OpenAPI_sm_policy_update_context_data_convertToJSON() failed [rep_policy_ctrl_req_triggers]");
                 goto end;
             }

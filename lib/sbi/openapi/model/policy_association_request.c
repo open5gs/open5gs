@@ -199,7 +199,7 @@ cJSON *OpenAPI_policy_association_request_convertToJSON(OpenAPI_policy_associati
         }
         OpenAPI_lnode_t *access_types_node;
         OpenAPI_list_for_each(policy_association_request->access_types, access_types_node) {
-            if (cJSON_AddStringToObject(access_types, "", OpenAPI_access_type_ToString((OpenAPI_access_type_e)access_types_node->data)) == NULL) {
+            if (cJSON_AddStringToObject(access_types, "", OpenAPI_access_type_ToString((intptr_t)access_types_node->data)) == NULL) {
                 ogs_error("OpenAPI_policy_association_request_convertToJSON() failed [access_types]");
                 goto end;
             }
@@ -261,7 +261,7 @@ cJSON *OpenAPI_policy_association_request_convertToJSON(OpenAPI_policy_associati
         }
         OpenAPI_lnode_t *rat_types_node;
         OpenAPI_list_for_each(policy_association_request->rat_types, rat_types_node) {
-            if (cJSON_AddStringToObject(rat_types, "", OpenAPI_rat_type_ToString((OpenAPI_rat_type_e)rat_types_node->data)) == NULL) {
+            if (cJSON_AddStringToObject(rat_types, "", OpenAPI_rat_type_ToString((intptr_t)rat_types_node->data)) == NULL) {
                 ogs_error("OpenAPI_policy_association_request_convertToJSON() failed [rat_types]");
                 goto end;
             }

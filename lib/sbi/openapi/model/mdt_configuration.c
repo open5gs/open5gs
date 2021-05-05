@@ -141,7 +141,7 @@ cJSON *OpenAPI_mdt_configuration_convertToJSON(OpenAPI_mdt_configuration_t *mdt_
         }
         OpenAPI_lnode_t *measurement_lte_list_node;
         OpenAPI_list_for_each(mdt_configuration->measurement_lte_list, measurement_lte_list_node) {
-            if (cJSON_AddStringToObject(measurement_lte_list, "", OpenAPI_measurement_lte_for_mdt_ToString((OpenAPI_measurement_lte_for_mdt_e)measurement_lte_list_node->data)) == NULL) {
+            if (cJSON_AddStringToObject(measurement_lte_list, "", OpenAPI_measurement_lte_for_mdt_ToString((intptr_t)measurement_lte_list_node->data)) == NULL) {
                 ogs_error("OpenAPI_mdt_configuration_convertToJSON() failed [measurement_lte_list]");
                 goto end;
             }
@@ -156,7 +156,7 @@ cJSON *OpenAPI_mdt_configuration_convertToJSON(OpenAPI_mdt_configuration_t *mdt_
         }
         OpenAPI_lnode_t *measurement_nr_list_node;
         OpenAPI_list_for_each(mdt_configuration->measurement_nr_list, measurement_nr_list_node) {
-            if (cJSON_AddStringToObject(measurement_nr_list, "", OpenAPI_measurement_nr_for_mdt_ToString((OpenAPI_measurement_nr_for_mdt_e)measurement_nr_list_node->data)) == NULL) {
+            if (cJSON_AddStringToObject(measurement_nr_list, "", OpenAPI_measurement_nr_for_mdt_ToString((intptr_t)measurement_nr_list_node->data)) == NULL) {
                 ogs_error("OpenAPI_mdt_configuration_convertToJSON() failed [measurement_nr_list]");
                 goto end;
             }
@@ -171,7 +171,7 @@ cJSON *OpenAPI_mdt_configuration_convertToJSON(OpenAPI_mdt_configuration_t *mdt_
         }
         OpenAPI_lnode_t *sensor_measurement_list_node;
         OpenAPI_list_for_each(mdt_configuration->sensor_measurement_list, sensor_measurement_list_node) {
-            if (cJSON_AddStringToObject(sensor_measurement_list, "", OpenAPI_sensor_measurement_ToString((OpenAPI_sensor_measurement_e)sensor_measurement_list_node->data)) == NULL) {
+            if (cJSON_AddStringToObject(sensor_measurement_list, "", OpenAPI_sensor_measurement_ToString((intptr_t)sensor_measurement_list_node->data)) == NULL) {
                 ogs_error("OpenAPI_mdt_configuration_convertToJSON() failed [sensor_measurement_list]");
                 goto end;
             }
@@ -186,7 +186,7 @@ cJSON *OpenAPI_mdt_configuration_convertToJSON(OpenAPI_mdt_configuration_t *mdt_
         }
         OpenAPI_lnode_t *reporting_trigger_list_node;
         OpenAPI_list_for_each(mdt_configuration->reporting_trigger_list, reporting_trigger_list_node) {
-            if (cJSON_AddStringToObject(reporting_trigger_list, "", OpenAPI_reporting_trigger_ToString((OpenAPI_reporting_trigger_e)reporting_trigger_list_node->data)) == NULL) {
+            if (cJSON_AddStringToObject(reporting_trigger_list, "", OpenAPI_reporting_trigger_ToString((intptr_t)reporting_trigger_list_node->data)) == NULL) {
                 ogs_error("OpenAPI_mdt_configuration_convertToJSON() failed [reporting_trigger_list]");
                 goto end;
             }
@@ -250,7 +250,7 @@ cJSON *OpenAPI_mdt_configuration_convertToJSON(OpenAPI_mdt_configuration_t *mdt_
         }
         OpenAPI_lnode_t *event_list_node;
         OpenAPI_list_for_each(mdt_configuration->event_list, event_list_node) {
-            if (cJSON_AddStringToObject(event_list, "", OpenAPI_event_for_mdt_ToString((OpenAPI_event_for_mdt_e)event_list_node->data)) == NULL) {
+            if (cJSON_AddStringToObject(event_list, "", OpenAPI_event_for_mdt_ToString((intptr_t)event_list_node->data)) == NULL) {
                 ogs_error("OpenAPI_mdt_configuration_convertToJSON() failed [event_list]");
                 goto end;
             }

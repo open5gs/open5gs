@@ -48,7 +48,7 @@ cJSON *OpenAPI_lcs_mo_data_convertToJSON(OpenAPI_lcs_mo_data_t *lcs_mo_data)
     }
     OpenAPI_lnode_t *allowed_service_classes_node;
     OpenAPI_list_for_each(lcs_mo_data->allowed_service_classes, allowed_service_classes_node) {
-        if (cJSON_AddStringToObject(allowed_service_classes, "", OpenAPI_lcs_mo_service_class_ToString((OpenAPI_lcs_mo_service_class_e)allowed_service_classes_node->data)) == NULL) {
+        if (cJSON_AddStringToObject(allowed_service_classes, "", OpenAPI_lcs_mo_service_class_ToString((intptr_t)allowed_service_classes_node->data)) == NULL) {
             ogs_error("OpenAPI_lcs_mo_data_convertToJSON() failed [allowed_service_classes]");
             goto end;
         }

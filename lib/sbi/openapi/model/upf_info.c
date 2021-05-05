@@ -158,7 +158,7 @@ cJSON *OpenAPI_upf_info_convertToJSON(OpenAPI_upf_info_t *upf_info)
         }
         OpenAPI_lnode_t *pdu_session_types_node;
         OpenAPI_list_for_each(upf_info->pdu_session_types, pdu_session_types_node) {
-            if (cJSON_AddStringToObject(pdu_session_types, "", OpenAPI_pdu_session_type_ToString((OpenAPI_pdu_session_type_e)pdu_session_types_node->data)) == NULL) {
+            if (cJSON_AddStringToObject(pdu_session_types, "", OpenAPI_pdu_session_type_ToString((intptr_t)pdu_session_types_node->data)) == NULL) {
                 ogs_error("OpenAPI_upf_info_convertToJSON() failed [pdu_session_types]");
                 goto end;
             }

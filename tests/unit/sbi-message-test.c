@@ -248,12 +248,12 @@ static void sbi_message_test2(abts_case *tc, void *data)
 
     entry = smf_info2->access_type->first;
     ABTS_PTR_NOTNULL(tc, entry);
-    access_type = (OpenAPI_access_type_e)entry->data;
+    access_type = (intptr_t)entry->data;
     ABTS_INT_EQUAL(tc, OpenAPI_access_type_3GPP_ACCESS, access_type);
 
     entry = entry->next;
     ABTS_PTR_NOTNULL(tc, entry);
-    access_type = (OpenAPI_access_type_e)entry->data;
+    access_type = (intptr_t)entry->data;
     ABTS_INT_EQUAL(tc, OpenAPI_access_type_NON_3GPP_ACCESS, access_type);
 
     OpenAPI_list_free(smf_info1->s_nssai_smf_info_list);

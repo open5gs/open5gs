@@ -72,7 +72,7 @@ cJSON *OpenAPI_requested_rule_data_convertToJSON(OpenAPI_requested_rule_data_t *
     }
     OpenAPI_lnode_t *req_data_node;
     OpenAPI_list_for_each(requested_rule_data->req_data, req_data_node) {
-        if (cJSON_AddStringToObject(req_data, "", OpenAPI_requested_rule_data_type_ToString((OpenAPI_requested_rule_data_type_e)req_data_node->data)) == NULL) {
+        if (cJSON_AddStringToObject(req_data, "", OpenAPI_requested_rule_data_type_ToString((intptr_t)req_data_node->data)) == NULL) {
             ogs_error("OpenAPI_requested_rule_data_convertToJSON() failed [req_data]");
             goto end;
         }

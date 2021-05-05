@@ -97,7 +97,7 @@ cJSON *OpenAPI_datalink_reporting_configuration_convertToJSON(OpenAPI_datalink_r
         }
         OpenAPI_lnode_t *ddd_status_list_node;
         OpenAPI_list_for_each(datalink_reporting_configuration->ddd_status_list, ddd_status_list_node) {
-            if (cJSON_AddStringToObject(ddd_status_list, "", OpenAPI_dl_data_delivery_status_ToString((OpenAPI_dl_data_delivery_status_e)ddd_status_list_node->data)) == NULL) {
+            if (cJSON_AddStringToObject(ddd_status_list, "", OpenAPI_dl_data_delivery_status_ToString((intptr_t)ddd_status_list_node->data)) == NULL) {
                 ogs_error("OpenAPI_datalink_reporting_configuration_convertToJSON() failed [ddd_status_list]");
                 goto end;
             }

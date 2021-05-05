@@ -265,7 +265,7 @@ cJSON *OpenAPI_access_and_mobility_data_convertToJSON(OpenAPI_access_and_mobilit
         }
         OpenAPI_lnode_t *rat_type_node;
         OpenAPI_list_for_each(access_and_mobility_data->rat_type, rat_type_node) {
-            if (cJSON_AddStringToObject(rat_type, "", OpenAPI_rat_type_ToString((OpenAPI_rat_type_e)rat_type_node->data)) == NULL) {
+            if (cJSON_AddStringToObject(rat_type, "", OpenAPI_rat_type_ToString((intptr_t)rat_type_node->data)) == NULL) {
                 ogs_error("OpenAPI_access_and_mobility_data_convertToJSON() failed [rat_type]");
                 goto end;
             }

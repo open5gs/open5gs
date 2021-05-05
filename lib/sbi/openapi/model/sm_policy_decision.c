@@ -405,7 +405,7 @@ cJSON *OpenAPI_sm_policy_decision_convertToJSON(OpenAPI_sm_policy_decision_t *sm
         }
         OpenAPI_lnode_t *policy_ctrl_req_triggers_node;
         OpenAPI_list_for_each(sm_policy_decision->policy_ctrl_req_triggers, policy_ctrl_req_triggers_node) {
-            if (cJSON_AddStringToObject(policy_ctrl_req_triggers, "", OpenAPI_policy_control_request_trigger_ToString((OpenAPI_policy_control_request_trigger_e)policy_ctrl_req_triggers_node->data)) == NULL) {
+            if (cJSON_AddStringToObject(policy_ctrl_req_triggers, "", OpenAPI_policy_control_request_trigger_ToString((intptr_t)policy_ctrl_req_triggers_node->data)) == NULL) {
                 ogs_error("OpenAPI_sm_policy_decision_convertToJSON() failed [policy_ctrl_req_triggers]");
                 goto end;
             }

@@ -82,7 +82,7 @@ cJSON *OpenAPI_non_ue_n2_info_subscription_create_data_convertToJSON(OpenAPI_non
         }
         OpenAPI_lnode_t *an_type_list_node;
         OpenAPI_list_for_each(non_ue_n2_info_subscription_create_data->an_type_list, an_type_list_node) {
-            if (cJSON_AddStringToObject(an_type_list, "", OpenAPI_access_type_ToString((OpenAPI_access_type_e)an_type_list_node->data)) == NULL) {
+            if (cJSON_AddStringToObject(an_type_list, "", OpenAPI_access_type_ToString((intptr_t)an_type_list_node->data)) == NULL) {
                 ogs_error("OpenAPI_non_ue_n2_info_subscription_create_data_convertToJSON() failed [an_type_list]");
                 goto end;
             }

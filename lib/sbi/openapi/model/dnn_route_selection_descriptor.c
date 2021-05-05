@@ -60,7 +60,7 @@ cJSON *OpenAPI_dnn_route_selection_descriptor_convertToJSON(OpenAPI_dnn_route_se
         }
         OpenAPI_lnode_t *ssc_modes_node;
         OpenAPI_list_for_each(dnn_route_selection_descriptor->ssc_modes, ssc_modes_node) {
-            if (cJSON_AddStringToObject(ssc_modes, "", OpenAPI_ssc_mode_ToString((OpenAPI_ssc_mode_e)ssc_modes_node->data)) == NULL) {
+            if (cJSON_AddStringToObject(ssc_modes, "", OpenAPI_ssc_mode_ToString((intptr_t)ssc_modes_node->data)) == NULL) {
                 ogs_error("OpenAPI_dnn_route_selection_descriptor_convertToJSON() failed [ssc_modes]");
                 goto end;
             }
@@ -75,7 +75,7 @@ cJSON *OpenAPI_dnn_route_selection_descriptor_convertToJSON(OpenAPI_dnn_route_se
         }
         OpenAPI_lnode_t *pdu_sess_types_node;
         OpenAPI_list_for_each(dnn_route_selection_descriptor->pdu_sess_types, pdu_sess_types_node) {
-            if (cJSON_AddStringToObject(pdu_sess_types, "", OpenAPI_pdu_session_type_ToString((OpenAPI_pdu_session_type_e)pdu_sess_types_node->data)) == NULL) {
+            if (cJSON_AddStringToObject(pdu_sess_types, "", OpenAPI_pdu_session_type_ToString((intptr_t)pdu_sess_types_node->data)) == NULL) {
                 ogs_error("OpenAPI_dnn_route_selection_descriptor_convertToJSON() failed [pdu_sess_types]");
                 goto end;
             }

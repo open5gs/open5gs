@@ -578,7 +578,7 @@ cJSON *OpenAPI_nf_profile_convertToJSON(OpenAPI_nf_profile_t *nf_profile)
         }
         OpenAPI_lnode_t *allowed_nf_types_node;
         OpenAPI_list_for_each(nf_profile->allowed_nf_types, allowed_nf_types_node) {
-            if (cJSON_AddStringToObject(allowed_nf_types, "", OpenAPI_nf_type_ToString((OpenAPI_nf_type_e)allowed_nf_types_node->data)) == NULL) {
+            if (cJSON_AddStringToObject(allowed_nf_types, "", OpenAPI_nf_type_ToString((intptr_t)allowed_nf_types_node->data)) == NULL) {
                 ogs_error("OpenAPI_nf_profile_convertToJSON() failed [allowed_nf_types]");
                 goto end;
             }

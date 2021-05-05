@@ -82,7 +82,7 @@ cJSON *OpenAPI_policy_update_convertToJSON(OpenAPI_policy_update_t *policy_updat
         }
         OpenAPI_lnode_t *triggers_node;
         OpenAPI_list_for_each(policy_update->triggers, triggers_node) {
-            if (cJSON_AddStringToObject(triggers, "", OpenAPI_request_trigger_ToString((OpenAPI_request_trigger_e)triggers_node->data)) == NULL) {
+            if (cJSON_AddStringToObject(triggers, "", OpenAPI_request_trigger_ToString((intptr_t)triggers_node->data)) == NULL) {
                 ogs_error("OpenAPI_policy_update_convertToJSON() failed [triggers]");
                 goto end;
             }

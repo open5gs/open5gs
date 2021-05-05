@@ -76,7 +76,7 @@ cJSON *OpenAPI_qos_monitoring_data_convertToJSON(OpenAPI_qos_monitoring_data_t *
         }
         OpenAPI_lnode_t *req_qos_mon_params_node;
         OpenAPI_list_for_each(qos_monitoring_data->req_qos_mon_params, req_qos_mon_params_node) {
-            if (cJSON_AddStringToObject(req_qos_mon_params, "", OpenAPI_requested_qos_monitoring_parameter_ToString((OpenAPI_requested_qos_monitoring_parameter_e)req_qos_mon_params_node->data)) == NULL) {
+            if (cJSON_AddStringToObject(req_qos_mon_params, "", OpenAPI_requested_qos_monitoring_parameter_ToString((intptr_t)req_qos_mon_params_node->data)) == NULL) {
                 ogs_error("OpenAPI_qos_monitoring_data_convertToJSON() failed [req_qos_mon_params]");
                 goto end;
             }
@@ -91,7 +91,7 @@ cJSON *OpenAPI_qos_monitoring_data_convertToJSON(OpenAPI_qos_monitoring_data_t *
         }
         OpenAPI_lnode_t *rep_freqs_node;
         OpenAPI_list_for_each(qos_monitoring_data->rep_freqs, rep_freqs_node) {
-            if (cJSON_AddStringToObject(rep_freqs, "", OpenAPI_reporting_frequency_ToString((OpenAPI_reporting_frequency_e)rep_freqs_node->data)) == NULL) {
+            if (cJSON_AddStringToObject(rep_freqs, "", OpenAPI_reporting_frequency_ToString((intptr_t)rep_freqs_node->data)) == NULL) {
                 ogs_error("OpenAPI_qos_monitoring_data_convertToJSON() failed [rep_freqs]");
                 goto end;
             }

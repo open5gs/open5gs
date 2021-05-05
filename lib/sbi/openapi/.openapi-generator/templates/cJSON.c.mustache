@@ -146,9 +146,18 @@ static void *internal_realloc(void *pointer, size_t size)
 #endif
 #else
 #include "ogs-core.h"
-#define internal_malloc ogs_malloc
-#define internal_free ogs_free
-#define internal_realloc ogs_realloc
+static void *internal_malloc(size_t size)
+{
+    return ogs_malloc(size);
+}
+static void internal_free(void *pointer)
+{
+    ogs_free(pointer);
+}
+static void *internal_realloc(void *pointer, size_t size)
+{
+    return ogs_realloc(pointer, size);
+}
 #endif
 
 static internal_hooks global_hooks = { internal_malloc, internal_free, internal_realloc };

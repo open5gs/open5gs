@@ -147,7 +147,7 @@ cJSON *OpenAPI_subscription_data_convertToJSON(OpenAPI_subscription_data_t *subs
         }
         OpenAPI_lnode_t *req_notif_events_node;
         OpenAPI_list_for_each(subscription_data->req_notif_events, req_notif_events_node) {
-            if (cJSON_AddStringToObject(req_notif_events, "", OpenAPI_notification_event_type_ToString((OpenAPI_notification_event_type_e)req_notif_events_node->data)) == NULL) {
+            if (cJSON_AddStringToObject(req_notif_events, "", OpenAPI_notification_event_type_ToString((intptr_t)req_notif_events_node->data)) == NULL) {
                 ogs_error("OpenAPI_subscription_data_convertToJSON() failed [req_notif_events]");
                 goto end;
             }

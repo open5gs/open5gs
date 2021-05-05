@@ -370,7 +370,7 @@ cJSON *OpenAPI_ue_context_convertToJSON(OpenAPI_ue_context_t *ue_context)
         }
         OpenAPI_lnode_t *am_policy_req_trigger_list_node;
         OpenAPI_list_for_each(ue_context->am_policy_req_trigger_list, am_policy_req_trigger_list_node) {
-            if (cJSON_AddStringToObject(am_policy_req_trigger_list, "", OpenAPI_policy_req_trigger_ToString((OpenAPI_policy_req_trigger_e)am_policy_req_trigger_list_node->data)) == NULL) {
+            if (cJSON_AddStringToObject(am_policy_req_trigger_list, "", OpenAPI_policy_req_trigger_ToString((intptr_t)am_policy_req_trigger_list_node->data)) == NULL) {
                 ogs_error("OpenAPI_ue_context_convertToJSON() failed [am_policy_req_trigger_list]");
                 goto end;
             }
@@ -392,7 +392,7 @@ cJSON *OpenAPI_ue_context_convertToJSON(OpenAPI_ue_context_t *ue_context)
         }
         OpenAPI_lnode_t *ue_policy_req_trigger_list_node;
         OpenAPI_list_for_each(ue_context->ue_policy_req_trigger_list, ue_policy_req_trigger_list_node) {
-            if (cJSON_AddStringToObject(ue_policy_req_trigger_list, "", OpenAPI_policy_req_trigger_ToString((OpenAPI_policy_req_trigger_e)ue_policy_req_trigger_list_node->data)) == NULL) {
+            if (cJSON_AddStringToObject(ue_policy_req_trigger_list, "", OpenAPI_policy_req_trigger_ToString((intptr_t)ue_policy_req_trigger_list_node->data)) == NULL) {
                 ogs_error("OpenAPI_ue_context_convertToJSON() failed [ue_policy_req_trigger_list]");
                 goto end;
             }
@@ -414,7 +414,7 @@ cJSON *OpenAPI_ue_context_convertToJSON(OpenAPI_ue_context_t *ue_context)
         }
         OpenAPI_lnode_t *restricted_rat_list_node;
         OpenAPI_list_for_each(ue_context->restricted_rat_list, restricted_rat_list_node) {
-            if (cJSON_AddStringToObject(restricted_rat_list, "", OpenAPI_rat_type_ToString((OpenAPI_rat_type_e)restricted_rat_list_node->data)) == NULL) {
+            if (cJSON_AddStringToObject(restricted_rat_list, "", OpenAPI_rat_type_ToString((intptr_t)restricted_rat_list_node->data)) == NULL) {
                 ogs_error("OpenAPI_ue_context_convertToJSON() failed [restricted_rat_list]");
                 goto end;
             }
@@ -462,7 +462,7 @@ cJSON *OpenAPI_ue_context_convertToJSON(OpenAPI_ue_context_t *ue_context)
         }
         OpenAPI_lnode_t *restricted_core_nw_type_list_node;
         OpenAPI_list_for_each(ue_context->restricted_core_nw_type_list, restricted_core_nw_type_list_node) {
-            if (cJSON_AddStringToObject(restricted_core_nw_type_list, "", OpenAPI_core_network_type_ToString((OpenAPI_core_network_type_e)restricted_core_nw_type_list_node->data)) == NULL) {
+            if (cJSON_AddStringToObject(restricted_core_nw_type_list, "", OpenAPI_core_network_type_ToString((intptr_t)restricted_core_nw_type_list_node->data)) == NULL) {
                 ogs_error("OpenAPI_ue_context_convertToJSON() failed [restricted_core_nw_type_list]");
                 goto end;
             }
@@ -610,7 +610,7 @@ cJSON *OpenAPI_ue_context_convertToJSON(OpenAPI_ue_context_t *ue_context)
         }
         OpenAPI_lnode_t *restricted_primary_rat_list_node;
         OpenAPI_list_for_each(ue_context->restricted_primary_rat_list, restricted_primary_rat_list_node) {
-            if (cJSON_AddStringToObject(restricted_primary_rat_list, "", OpenAPI_rat_type_ToString((OpenAPI_rat_type_e)restricted_primary_rat_list_node->data)) == NULL) {
+            if (cJSON_AddStringToObject(restricted_primary_rat_list, "", OpenAPI_rat_type_ToString((intptr_t)restricted_primary_rat_list_node->data)) == NULL) {
                 ogs_error("OpenAPI_ue_context_convertToJSON() failed [restricted_primary_rat_list]");
                 goto end;
             }
@@ -625,7 +625,7 @@ cJSON *OpenAPI_ue_context_convertToJSON(OpenAPI_ue_context_t *ue_context)
         }
         OpenAPI_lnode_t *restricted_secondary_rat_list_node;
         OpenAPI_list_for_each(ue_context->restricted_secondary_rat_list, restricted_secondary_rat_list_node) {
-            if (cJSON_AddStringToObject(restricted_secondary_rat_list, "", OpenAPI_rat_type_ToString((OpenAPI_rat_type_e)restricted_secondary_rat_list_node->data)) == NULL) {
+            if (cJSON_AddStringToObject(restricted_secondary_rat_list, "", OpenAPI_rat_type_ToString((intptr_t)restricted_secondary_rat_list_node->data)) == NULL) {
                 ogs_error("OpenAPI_ue_context_convertToJSON() failed [restricted_secondary_rat_list]");
                 goto end;
             }
