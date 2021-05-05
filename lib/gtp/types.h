@@ -312,27 +312,37 @@ int16_t ogs_gtp_build_tft(
 /* 8.21 User Location Information (ULI) */
 #define OGS_GTP_MAX_ULI_LEN sizeof(ogs_gtp_uli_t)
 typedef struct ogs_gtp_uli_cgi_s {
-    ogs_plmn_id_t plmn_id;
+    ogs_nas_plmn_id_t nas_plmn_id;
     uint16_t lac;
     uint16_t ci;
 } __attribute__ ((packed)) ogs_gtp_uli_cgi_t;
 
 typedef struct ogs_gtp_uli_sai_s {
-    ogs_plmn_id_t plmn_id;
+    ogs_nas_plmn_id_t nas_plmn_id;
     uint16_t lac;
     uint16_t sac;
 } __attribute__ ((packed)) ogs_gtp_uli_sai_t;
 
 typedef struct ogs_gtp_uli_rai_s {
-    ogs_plmn_id_t plmn_id;
+    ogs_nas_plmn_id_t nas_plmn_id;
     uint16_t lac;
     uint16_t rac;
 } __attribute__ ((packed)) ogs_gtp_uli_rai_t;
 
 typedef struct ogs_gtp_uli_lai_s {
-    ogs_plmn_id_t plmn_id;
+    ogs_nas_plmn_id_t nas_plmn_id;
     uint16_t lac;
 } __attribute__ ((packed)) ogs_gtp_uli_lai_t;
+
+typedef struct ogs_gtp_uli_tai_s {
+    ogs_nas_plmn_id_t nas_plmn_id;
+    uint16_t tac;
+} __attribute__ ((packed)) ogs_gtp_uli_tai_t;
+
+typedef struct ogs_gtp_uli_e_cgi_s {
+    ogs_nas_plmn_id_t nas_plmn_id;
+    uint32_t cell_id;
+} __attribute__ ((packed)) ogs_gtp_uli_e_cgi_t;
 
 typedef struct ogs_gtp_uli_s {
     struct {
@@ -347,8 +357,8 @@ typedef struct ogs_gtp_uli_s {
     ogs_gtp_uli_cgi_t cgi;
     ogs_gtp_uli_sai_t sai;
     ogs_gtp_uli_rai_t rai;
-    ogs_eps_tai_t tai;
-    ogs_e_cgi_t e_cgi;
+    ogs_gtp_uli_tai_t tai;
+    ogs_gtp_uli_e_cgi_t e_cgi;
     ogs_gtp_uli_lai_t lai;
 } ogs_gtp_uli_t;
 

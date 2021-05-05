@@ -71,9 +71,9 @@ static void gtp_message_test1(abts_case *tc, void *data)
     memset(&uli, 0, sizeof(ogs_gtp_uli_t));
     uli.flags.e_cgi = 1;
     uli.flags.tai = 1;
-    ogs_plmn_id_build(&uli.tai.plmn_id, 555, 10, 2);
+    ogs_plmn_id_build(&uli.tai.nas_plmn_id, 555, 10, 2);
     uli.tai.tac = 4130;
-    ogs_plmn_id_build(&uli.e_cgi.plmn_id, 555, 10, 2);
+    ogs_plmn_id_build(&uli.e_cgi.nas_plmn_id, 555, 10, 2);
     uli.e_cgi.cell_id = 105729;
     req.user_location_information.presence = 1;
     size = ogs_gtp_build_uli(&req.user_location_information, &uli, 

@@ -23,6 +23,7 @@
 #include "ogs-core.h"
 #include "ipfw/ogs-ipfw.h"
 #include "ogs-app.h"
+#include "ogs-nas-common.h"
 
 #define OGS_GTPV1_U_UDP_PORT            2152
 #define OGS_GTPV2_C_UDP_PORT            2123

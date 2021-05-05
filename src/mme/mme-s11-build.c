@@ -77,18 +77,17 @@ ogs_pkbuf_t *mme_s11_build_create_session_request(
     memset(&uli, 0, sizeof(ogs_gtp_uli_t));
     uli.flags.e_cgi = 1;
     uli.flags.tai = 1;
-    memcpy(&uli.tai.plmn_id, &mme_ue->tai.plmn_id, sizeof(uli.tai.plmn_id));
+    ogs_nas_from_plmn_id(&uli.tai.nas_plmn_id, &mme_ue->tai.plmn_id);
     uli.tai.tac = mme_ue->tai.tac;
-    memcpy(&uli.e_cgi.plmn_id, &mme_ue->e_cgi.plmn_id, 
-            sizeof(uli.e_cgi.plmn_id));
+    ogs_nas_from_plmn_id(&uli.e_cgi.nas_plmn_id, &mme_ue->e_cgi.plmn_id);
     uli.e_cgi.cell_id = mme_ue->e_cgi.cell_id;
     req->user_location_information.presence = 1;
     ogs_gtp_build_uli(&req->user_location_information, &uli, 
             uli_buf, OGS_GTP_MAX_ULI_LEN);
 
     req->serving_network.presence = 1;
-    req->serving_network.data = &mme_ue->tai.plmn_id;
-    req->serving_network.len = sizeof(mme_ue->tai.plmn_id);
+    req->serving_network.data = &uli.tai.nas_plmn_id;
+    req->serving_network.len = sizeof(uli.tai.nas_plmn_id);
 
     req->rat_type.presence = 1;
     req->rat_type.u8 = OGS_GTP_RAT_TYPE_EUTRAN;
@@ -318,10 +317,9 @@ ogs_pkbuf_t *mme_s11_build_modify_bearer_request(
         memset(&uli, 0, sizeof(ogs_gtp_uli_t));
         uli.flags.e_cgi = 1;
         uli.flags.tai = 1;
-        memcpy(&uli.tai.plmn_id, &mme_ue->tai.plmn_id, sizeof(uli.tai.plmn_id));
+        ogs_nas_from_plmn_id(&uli.tai.nas_plmn_id, &mme_ue->tai.plmn_id);
         uli.tai.tac = mme_ue->tai.tac;
-        memcpy(&uli.e_cgi.plmn_id, &mme_ue->e_cgi.plmn_id, 
-                sizeof(uli.e_cgi.plmn_id));
+        ogs_nas_from_plmn_id(&uli.e_cgi.nas_plmn_id, &mme_ue->e_cgi.plmn_id);
         uli.e_cgi.cell_id = mme_ue->e_cgi.cell_id;
         req->user_location_information.presence = 1;
         ogs_gtp_build_uli(&req->user_location_information, &uli, 
@@ -364,9 +362,9 @@ ogs_pkbuf_t *mme_s11_build_delete_session_request(
     memset(&uli, 0, sizeof(ogs_gtp_uli_t));
     uli.flags.e_cgi = 1;
     uli.flags.tai = 1;
-    memcpy(&uli.tai.plmn_id, &mme_ue->tai.plmn_id, sizeof(uli.tai.plmn_id));
+    ogs_nas_from_plmn_id(&uli.tai.nas_plmn_id, &mme_ue->tai.plmn_id);
     uli.tai.tac = mme_ue->tai.tac;
-    memcpy(&uli.e_cgi.plmn_id, &mme_ue->e_cgi.plmn_id, sizeof(uli.tai.plmn_id));
+    ogs_nas_from_plmn_id(&uli.e_cgi.nas_plmn_id, &mme_ue->e_cgi.plmn_id);
     uli.e_cgi.cell_id = mme_ue->e_cgi.cell_id;
     req->user_location_information.presence = 1;
     ogs_gtp_build_uli(&req->user_location_information, &uli,
@@ -453,10 +451,9 @@ ogs_pkbuf_t *mme_s11_build_create_bearer_response(
     memset(&uli, 0, sizeof(ogs_gtp_uli_t));
     uli.flags.e_cgi = 1;
     uli.flags.tai = 1;
-    memcpy(&uli.tai.plmn_id, &mme_ue->tai.plmn_id, sizeof(uli.tai.plmn_id));
+    ogs_nas_from_plmn_id(&uli.tai.nas_plmn_id, &mme_ue->tai.plmn_id);
     uli.tai.tac = mme_ue->tai.tac;
-    memcpy(&uli.e_cgi.plmn_id, &mme_ue->e_cgi.plmn_id, 
-            sizeof(uli.e_cgi.plmn_id));
+    ogs_nas_from_plmn_id(&uli.e_cgi.nas_plmn_id, &mme_ue->e_cgi.plmn_id);
     uli.e_cgi.cell_id = mme_ue->e_cgi.cell_id;
     rsp->user_location_information.presence = 1;
     ogs_gtp_build_uli(&rsp->user_location_information, &uli, 
@@ -530,10 +527,9 @@ ogs_pkbuf_t *mme_s11_build_update_bearer_response(
     memset(&uli, 0, sizeof(ogs_gtp_uli_t));
     uli.flags.e_cgi = 1;
     uli.flags.tai = 1;
-    memcpy(&uli.tai.plmn_id, &mme_ue->tai.plmn_id, sizeof(uli.tai.plmn_id));
+    ogs_nas_from_plmn_id(&uli.tai.nas_plmn_id, &mme_ue->tai.plmn_id);
     uli.tai.tac = mme_ue->tai.tac;
-    memcpy(&uli.e_cgi.plmn_id, &mme_ue->e_cgi.plmn_id, 
-            sizeof(uli.e_cgi.plmn_id));
+    ogs_nas_from_plmn_id(&uli.e_cgi.nas_plmn_id, &mme_ue->e_cgi.plmn_id);
     uli.e_cgi.cell_id = mme_ue->e_cgi.cell_id;
     rsp->user_location_information.presence = 1;
     ogs_gtp_build_uli(&rsp->user_location_information, &uli, 
@@ -607,10 +603,9 @@ ogs_pkbuf_t *mme_s11_build_delete_bearer_response(
     memset(&uli, 0, sizeof(ogs_gtp_uli_t));
     uli.flags.e_cgi = 1;
     uli.flags.tai = 1;
-    memcpy(&uli.tai.plmn_id, &mme_ue->tai.plmn_id, sizeof(uli.tai.plmn_id));
+    ogs_nas_from_plmn_id(&uli.tai.nas_plmn_id, &mme_ue->tai.plmn_id);
     uli.tai.tac = mme_ue->tai.tac;
-    memcpy(&uli.e_cgi.plmn_id, &mme_ue->e_cgi.plmn_id, 
-            sizeof(uli.e_cgi.plmn_id));
+    ogs_nas_from_plmn_id(&uli.e_cgi.nas_plmn_id, &mme_ue->e_cgi.plmn_id);
     uli.e_cgi.cell_id = mme_ue->e_cgi.cell_id;
     rsp->user_location_information.presence = 1;
     ogs_gtp_build_uli(&rsp->user_location_information, &uli, 

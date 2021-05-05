@@ -203,11 +203,17 @@ void sgwc_s11_handle_create_session_request(
     /* Set User Location Information */
     decoded = ogs_gtp_parse_uli(&uli, &req->user_location_information);
     ogs_assert(req->user_location_information.len == decoded);
-    memcpy(&sgwc_ue->e_tai.plmn_id, &uli.tai.plmn_id, sizeof(uli.tai.plmn_id));
+    ogs_nas_to_plmn_id(&sgwc_ue->e_tai.plmn_id, &uli.tai.nas_plmn_id);
     sgwc_ue->e_tai.tac = uli.tai.tac;
-    memcpy(&sgwc_ue->e_cgi.plmn_id,
-            &uli.e_cgi.plmn_id, sizeof(uli.e_cgi.plmn_id));
+    ogs_nas_to_plmn_id(&sgwc_ue->e_cgi.plmn_id, &uli.e_cgi.nas_plmn_id);
     sgwc_ue->e_cgi.cell_id = uli.e_cgi.cell_id;
+
+    ogs_debug("    TAI[PLMN_ID:%06x,TAC:%d]",
+            ogs_plmn_id_hexdump(&sgwc_ue->e_tai.plmn_id),
+            sgwc_ue->e_tai.tac);
+    ogs_debug("    E_CGI[PLMN_ID:%06x,CELL_ID:%d]",
+            ogs_plmn_id_hexdump(&sgwc_ue->e_cgi.plmn_id),
+            sgwc_ue->e_cgi.cell_id);
 
     /* Select SGW-U based on UE Location Information */
     sgwc_sess_select_sgwu(sess);
@@ -352,11 +358,9 @@ void sgwc_s11_handle_modify_bearer_request(
         decoded = ogs_gtp_parse_uli(
                 &uli, &req->user_location_information);
         ogs_assert(req->user_location_information.len == decoded);
-        memcpy(&sgwc_ue->e_tai.plmn_id, &uli.tai.plmn_id,
-                sizeof(uli.tai.plmn_id));
+        ogs_nas_to_plmn_id(&sgwc_ue->e_tai.plmn_id, &uli.tai.nas_plmn_id);
         sgwc_ue->e_tai.tac = uli.tai.tac;
-        memcpy(&sgwc_ue->e_cgi.plmn_id, &uli.e_cgi.plmn_id,
-                sizeof(uli.e_cgi.plmn_id));
+        ogs_nas_to_plmn_id(&sgwc_ue->e_cgi.plmn_id, &uli.e_cgi.nas_plmn_id);
         sgwc_ue->e_cgi.cell_id = uli.e_cgi.cell_id;
         ogs_debug("    TAI[PLMN_ID:%06x,TAC:%d]",
                 ogs_plmn_id_hexdump(&sgwc_ue->e_tai.plmn_id),
@@ -620,10 +624,9 @@ void sgwc_s11_handle_create_bearer_response(
 
     decoded = ogs_gtp_parse_uli(&uli, &rsp->user_location_information);
     ogs_assert(rsp->user_location_information.len == decoded);
-    memcpy(&sgwc_ue->e_tai.plmn_id, &uli.tai.plmn_id, sizeof(uli.tai.plmn_id));
+    ogs_nas_to_plmn_id(&sgwc_ue->e_tai.plmn_id, &uli.tai.nas_plmn_id);
     sgwc_ue->e_tai.tac = uli.tai.tac;
-    memcpy(&sgwc_ue->e_cgi.plmn_id,
-            &uli.e_cgi.plmn_id, sizeof(uli.e_cgi.plmn_id));
+    ogs_nas_to_plmn_id(&sgwc_ue->e_cgi.plmn_id, &uli.e_cgi.nas_plmn_id);
     sgwc_ue->e_cgi.cell_id = uli.e_cgi.cell_id;
 
     ogs_debug("    TAI[PLMN_ID:%06x,TAC:%d]",
