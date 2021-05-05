@@ -464,7 +464,8 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
                 ret = fd_msg_avp_new(
                         ogs_diam_gx_apn_aggregate_max_bitrate_ul, 0, &avpch1);
                 ogs_assert(ret == 0);
-                val.u32 = gx_message.session_data.session.ambr.uplink;
+                val.u32 = ogs_uint64_to_uint32(
+                            gx_message.session_data.session.ambr.uplink);
                 ret = fd_msg_avp_setvalue (avpch1, &val);
                 ogs_assert(ret == 0);
                 ret = fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1);
@@ -475,7 +476,8 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
                 ret = fd_msg_avp_new(
                         ogs_diam_gx_apn_aggregate_max_bitrate_dl, 0, &avpch1);
                 ogs_assert(ret == 0);
-                val.u32 = gx_message.session_data.session.ambr.downlink;
+                val.u32 = ogs_uint64_to_uint32(
+                            gx_message.session_data.session.ambr.downlink);
                 ret = fd_msg_avp_setvalue (avpch1, &val);
                 ogs_assert(ret == 0);
                 ret = fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1);
@@ -1299,7 +1301,7 @@ static int encode_pcc_rule_definition(
         ret = fd_msg_avp_new(
                 ogs_diam_gx_max_requested_bandwidth_ul, 0, &avpch3);
         ogs_assert(ret == 0);
-        val.u32 = pcc_rule->qos.mbr.uplink;
+        val.u32 = ogs_uint64_to_uint32(pcc_rule->qos.mbr.uplink);
         ret = fd_msg_avp_setvalue (avpch3, &val);
         ogs_assert(ret == 0);
         ret = fd_msg_avp_add (avpch2, MSG_BRW_LAST_CHILD, avpch3);
@@ -1310,7 +1312,7 @@ static int encode_pcc_rule_definition(
         ret = fd_msg_avp_new(
                 ogs_diam_gx_max_requested_bandwidth_dl, 0, &avpch3);
         ogs_assert(ret == 0);
-        val.u32 = pcc_rule->qos.mbr.downlink;
+        val.u32 = ogs_uint64_to_uint32(pcc_rule->qos.mbr.downlink);
         ret = fd_msg_avp_setvalue (avpch3, &val);
         ogs_assert(ret == 0);
         ret = fd_msg_avp_add (avpch2, MSG_BRW_LAST_CHILD, avpch3);
@@ -1320,7 +1322,7 @@ static int encode_pcc_rule_definition(
     if (pcc_rule->qos.gbr.uplink) {
         ret = fd_msg_avp_new(ogs_diam_gx_guaranteed_bitrate_ul, 0, &avpch3);
         ogs_assert(ret == 0);
-        val.u32 = pcc_rule->qos.gbr.uplink;
+        val.u32 = ogs_uint64_to_uint32(pcc_rule->qos.gbr.uplink);
         ret = fd_msg_avp_setvalue (avpch3, &val);
         ogs_assert(ret == 0);
         ret = fd_msg_avp_add (avpch2, MSG_BRW_LAST_CHILD, avpch3);
@@ -1330,7 +1332,7 @@ static int encode_pcc_rule_definition(
     if (pcc_rule->qos.gbr.downlink) {
         ret = fd_msg_avp_new(ogs_diam_gx_guaranteed_bitrate_dl, 0, &avpch3);
         ogs_assert(ret == 0);
-        val.u32 = pcc_rule->qos.gbr.downlink;
+        val.u32 = ogs_uint64_to_uint32(pcc_rule->qos.gbr.downlink);
         ret = fd_msg_avp_setvalue (avpch3, &val);
         ogs_assert(ret == 0);
         ret = fd_msg_avp_add (avpch2, MSG_BRW_LAST_CHILD, avpch3);

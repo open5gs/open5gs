@@ -208,6 +208,8 @@ static ogs_inline ogs_uint24_t ogs_htobe24(ogs_uint24_t x)
 
 #define OGS_FILE_LINE __FILE__ ":" OGS_STRINGIFY(__LINE__)
 
+#define ogs_uint64_to_uint32(x) ((x >= 0xffffffffUL) ? 0xffffffffU : x)
+
 #ifdef __cplusplus
 }
 #endif

@@ -439,7 +439,7 @@ static int hss_ogs_diam_s6a_ulr_cb( struct msg **msg, struct avp *avp,
         ret = fd_msg_avp_new(
                 ogs_diam_s6a_max_bandwidth_ul, 0, &avp_max_bandwidth_ul);
         ogs_assert(ret == 0);
-        val.u32 = subscription_data.ambr.uplink;
+        val.u32 = ogs_uint64_to_uint32(subscription_data.ambr.uplink);
         ret = fd_msg_avp_setvalue(avp_max_bandwidth_ul, &val);
         ogs_assert(ret == 0);
         ret = fd_msg_avp_add(
@@ -448,7 +448,7 @@ static int hss_ogs_diam_s6a_ulr_cb( struct msg **msg, struct avp *avp,
         ret = fd_msg_avp_new(
                 ogs_diam_s6a_max_bandwidth_dl, 0, &avp_max_bandwidth_dl);
         ogs_assert(ret == 0);
-        val.u32 = subscription_data.ambr.downlink;
+        val.u32 = ogs_uint64_to_uint32(subscription_data.ambr.downlink);
         ret = fd_msg_avp_setvalue(avp_max_bandwidth_dl, &val);
         ogs_assert(ret == 0);
         ret = fd_msg_avp_add(
@@ -706,7 +706,7 @@ static int hss_ogs_diam_s6a_ulr_cb( struct msg **msg, struct avp *avp,
                 ret = fd_msg_avp_new(ogs_diam_s6a_max_bandwidth_ul, 0,
                             &avp_max_bandwidth_ul);
                 ogs_assert(ret == 0);
-                val.u32 = session->ambr.uplink;
+                val.u32 = ogs_uint64_to_uint32(session->ambr.uplink);
                 ret = fd_msg_avp_setvalue(avp_max_bandwidth_ul, &val);
                 ogs_assert(ret == 0);
                 ret = fd_msg_avp_add(avp_ambr, MSG_BRW_LAST_CHILD,
@@ -715,7 +715,7 @@ static int hss_ogs_diam_s6a_ulr_cb( struct msg **msg, struct avp *avp,
                 ret = fd_msg_avp_new(ogs_diam_s6a_max_bandwidth_dl, 0,
                             &avp_max_bandwidth_dl);
                 ogs_assert(ret == 0);
-                val.u32 = session->ambr.downlink;
+                val.u32 = ogs_uint64_to_uint32(session->ambr.downlink);
                 ret = fd_msg_avp_setvalue(avp_max_bandwidth_dl, &val);
                 ogs_assert(ret == 0);
                 ret = fd_msg_avp_add(avp_ambr, MSG_BRW_LAST_CHILD,
