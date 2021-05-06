@@ -4,9 +4,9 @@
 #
 # Run as root or insert `sudo -E` before `bash`:
 #
-# curl -sL http://open5gs.org/static/setup_3.x | bash -
+# curl -fsSL https://open5gs.org/open5gs/assets/webui/install | sudo -E bash -
 #   or
-# wget -qO- http://open5gs.org/static/setup_3.x | bash -
+# wget -qO- https://open5gs.org/open5gs/assets/webui/install | sudo -E bash -
 #
 
 PACKAGE="open5gs"

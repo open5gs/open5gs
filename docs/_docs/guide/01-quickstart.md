@@ -164,7 +164,7 @@ The WebUI allows you to interactively edit subscriber data. While it is not esse
     ```bash
     $ sudo apt update
     $ sudo apt install curl
-    $ curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -
+    $ curl -fsSL https://deb.nodesource.com/setup_14.x | sudo -E bash -
     $ sudo apt install nodejs
     ```
 
@@ -177,7 +177,7 @@ The WebUI allows you to interactively edit subscriber data. While it is not esse
 You can now install WebUI of Open5GS.
 
 ```bash
-$ curl -sL {{ site.url }}{{ site.baseurl }}/assets/webui/install | sudo -E bash -
+$ curl -fsSL {{ site.url }}{{ site.baseurl }}/assets/webui/install | sudo -E bash -
 ```
 
 ## 4. Configure Open5GS
@@ -516,6 +516,6 @@ $ sudo rm -Rf /var/log/open5gs
 The WebUI of Open5GS can be removed as follows:
 
 ```bash
-curl -sL {{ site.url }}{{ site.baseurl }}/assets/webui/uninstall | sudo -E bash -
+curl -fsSL {{ site.url }}{{ site.baseurl }}/assets/webui/uninstall | sudo -E bash -
 ```
 

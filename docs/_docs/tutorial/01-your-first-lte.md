@@ -173,9 +173,9 @@ $ sudo apt install open5gs
 The following shows how to install the Web UI of Open5GS.
 
 ```bash
-$ curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -
+$ curl -fsSL https://deb.nodesource.com/setup_14.x | sudo -E bash -
 $ sudo apt install nodejs
-$ curl -sL https://open5gs.org/open5gs/assets/webui/install | sudo -E bash -
+$ curl -fsSL https://open5gs.org/open5gs/assets/webui/install | sudo -E bash -
 ```
 
 ### Configuration & Running

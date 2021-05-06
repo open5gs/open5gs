@@ -375,7 +375,7 @@ $ ./build/tests/app/app ## Both 5G Core and EPC with ./build/configs/sample.yaml
 
 ```bash
 $ sudo apt install curl
-$ curl -sL https://deb.nodesource.com/setup_14.x | sudo -E bash -
+$ curl -fsSL https://deb.nodesource.com/setup_14.x | sudo -E bash -
 $ sudo apt install nodejs
 ```
 
