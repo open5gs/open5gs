@@ -426,7 +426,7 @@ for (k, v) in sorted_type_list:
             f.write("    uint16_t size = 3;\n\n")
         else:
             f.write("    uint16_t size = sizeof(ogs_nas_%s_t);\n\n" % v_lower(k))
-        f.write("    ogs_assert(ogs_pkbuf_pull(pkbuf, size));\n")
+        f.write("    if (ogs_pkbuf_pull(pkbuf, size) == NULL) return -1;\n")
         f.write("    memcpy(%s, pkbuf->data - size, size);\n\n" % v_lower(k))
         if "decode" in type_list[k]:
             f.write("%s" % type_list[k]["decode"])
@@ -457,7 +457,7 @@ for (k, v) in sorted_type_list:
         f.write("    ogs_nas_%s_t *source = (ogs_nas_%s_t *)pkbuf->data;\n\n" % (v_lower(k), v_lower(k)))
         f.write("    %s->length = be16toh(source->length);\n" % v_lower(k))
         f.write("    size = %s->length + sizeof(%s->length);\n\n" % (v_lower(k), v_lower(k)))
-        f.write("    ogs_assert(ogs_pkbuf_pull(pkbuf, size));\n")
+        f.write("    if (ogs_pkbuf_pull(pkbuf, size) == NULL) return -1;\n")
         f.write("    %s->buffer = pkbuf->data - size + sizeof(%s->length);\n\n" % (v_lower(k), v_lower(k)))
         f.write("    ogs_trace(\"  %s - \");\n" % v_upper(k))
         f.write("    ogs_log_hexdump(OGS_LOG_TRACE, (void*)%s->buffer, %s->length);\n\n" % (v_lower(k), v_lower(k)));
@@ -487,7 +487,8 @@ for (k, v) in sorted_type_list:
         f.write("    ogs_nas_%s_t *source = (ogs_nas_%s_t *)pkbuf->data;\n\n" % (v_lower(k), v_lower(k)))
         f.write("    %s->length = source->length;\n" % v_lower(k))
         f.write("    size = %s->length + sizeof(%s->length);\n\n" % (v_lower(k), v_lower(k)))
-        f.write("    ogs_assert(ogs_pkbuf_pull(pkbuf, size));\n")
+        f.write("    if (ogs_pkbuf_pull(pkbuf, size) == NULL) return -1;\n")
+        f.write("    if (sizeof(*%s) < size) return -1;\n" % v_lower(k))
         f.write("    memcpy(%s, pkbuf->data - size, size);\n\n" % v_lower(k))
         if "decode" in type_list[k]:
             f.write("%s" % type_list[k]["decode"])
@@ -676,7 +677,7 @@ for (k, v) in sorted_msg_list:
 
     for ie in [ies for ies in msg_list[k]["ies"] if ies["presence"] == "M"]:
         f.write("    size = ogs_nas_eps_decode_%s(&%s->%s, pkbuf);\n" % (v_lower(ie["type"]), v_lower(k), v_lower(ie["value"])))
-        f.write("    ogs_assert(size >= 0);\n")
+        f.write("    if (size < 0) return size;\n")
         f.write("    decoded += size;\n\n")
 
     optional_fields = False;
@@ -699,7 +700,7 @@ for (k, v) in sorted_msg_list:
             f.write("            decoded--;\n")
             f.write("            ogs_assert(ogs_pkbuf_push(pkbuf, 1));\n")
         f.write("            size = ogs_nas_eps_decode_%s(&%s->%s, pkbuf);\n" % (v_lower(ie["type"]), v_lower(k), v_lower(ie["value"])))
-        f.write("            ogs_assert(size >= 0);\n")
+        f.write("            if (size < 0) return size;\n")
         f.write("            %s->presencemask |= OGS_NAS_EPS_%s_%s_PRESENT;\n" % (v_lower(k), v_upper(k), v_upper(ie["value"])))
         f.write("            decoded += size;\n")
         f.write("            break;\n")
@@ -729,7 +730,7 @@ f.write("""int ogs_nas_emm_decode(ogs_nas_eps_message_t *message, ogs_pkbuf_t *p
     memset(message, 0, sizeof(ogs_nas_eps_message_t));
 
     size = sizeof(ogs_nas_emm_header_t);
-    ogs_assert(ogs_pkbuf_pull(pkbuf, size));
+    if (ogs_pkbuf_pull(pkbuf, size) == NULL) return OGS_ERROR;
     memcpy(&message->emm.h, pkbuf->data - size, size);
     decoded += size;
 
@@ -753,7 +754,7 @@ for (k, v) in sorted_msg_list:
         f.write("    case OGS_NAS_EPS_%s:\n" % v_upper(k))
         if len(msg_list[k]["ies"]) != 0:
             f.write("        size = ogs_nas_eps_decode_%s(message, pkbuf);\n" % v_lower(k))
-            f.write("        ogs_assert(size >= 0);\n")
+            f.write("        if (size < 0) return OGS_ERROR;\n")
             f.write("        decoded += size;\n")
         f.write("        break;\n")
 
@@ -782,7 +783,7 @@ f.write("""int ogs_nas_esm_decode(ogs_nas_eps_message_t *message, ogs_pkbuf_t *p
     memset(message, 0, sizeof(ogs_nas_eps_message_t));
 
     size = sizeof(ogs_nas_esm_header_t);
-    ogs_assert(ogs_pkbuf_pull(pkbuf, size));
+    if (ogs_pkbuf_pull(pkbuf, size) == NULL) return OGS_ERROR;
     memcpy(&message->esm.h, pkbuf->data - size, size);
     decoded += size;
 
@@ -795,7 +796,7 @@ for (k, v) in sorted_msg_list:
         f.write("    case OGS_NAS_EPS_%s:\n" % v_upper(k))
         if len(msg_list[k]["ies"]) != 0:
             f.write("        size = ogs_nas_eps_decode_%s(message, pkbuf);\n" % v_lower(k))
-            f.write("        ogs_assert(size >= 0);\n")
+            f.write("        if (size < 0) return OGS_ERROR;\n")
             f.write("        decoded += size;\n")
         f.write("        break;\n")
 
