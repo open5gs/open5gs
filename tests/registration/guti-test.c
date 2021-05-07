@@ -98,6 +98,7 @@ static void test1_func(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, gmmbuf);
 
     test_ue->registration_request_param.gmm_capability = 1;
+    test_ue->registration_request_param.s1_ue_network_capability = 1;
     test_ue->registration_request_param.requested_nssai = 1;
     test_ue->registration_request_param.last_visited_registered_tai = 1;
     test_ue->registration_request_param.ue_usage_setting = 1;
@@ -273,8 +274,10 @@ static void test1_func(abts_case *tc, void *data)
     nasbuf = testgmm_build_registration_request(test_ue, NULL);
     ABTS_PTR_NOTNULL(tc, nasbuf);
 
+    memset(&test_ue->registration_request_param, 0,
+            sizeof(test_ue->registration_request_param));
     test_ue->registration_request_param.integrity_protected = 1;
-    test_ue->registration_request_param.uplink_data_status = 0;
+    test_ue->registration_request_param.guti = 1;
     gmmbuf = testgmm_build_registration_request(test_ue, nasbuf);
     ABTS_PTR_NOTNULL(tc, gmmbuf);
 
@@ -574,6 +577,7 @@ static void test2_func(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, gmmbuf);
 
     test_ue->registration_request_param.gmm_capability = 1;
+    test_ue->registration_request_param.s1_ue_network_capability = 1;
     test_ue->registration_request_param.requested_nssai = 1;
     test_ue->registration_request_param.last_visited_registered_tai = 1;
     test_ue->registration_request_param.ue_usage_setting = 1;
@@ -749,8 +753,10 @@ static void test2_func(abts_case *tc, void *data)
     nasbuf = testgmm_build_registration_request(test_ue, NULL);
     ABTS_PTR_NOTNULL(tc, nasbuf);
 
+    memset(&test_ue->registration_request_param, 0,
+            sizeof(test_ue->registration_request_param));
     test_ue->registration_request_param.integrity_protected = 1;
-    test_ue->registration_request_param.uplink_data_status = 0;
+    test_ue->registration_request_param.guti = 1;
     gmmbuf = testgmm_build_registration_request(test_ue, nasbuf);
     ABTS_PTR_NOTNULL(tc, gmmbuf);
 

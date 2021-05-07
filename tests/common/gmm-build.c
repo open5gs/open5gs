@@ -144,17 +144,19 @@ ogs_pkbuf_t *testgmm_build_registration_request(
             test_ue->ue_security_capability.eutra_ia;
     }
 
-    registration_request->presencemask |=
+    if (test_ue->registration_request_param.s1_ue_network_capability) {
+        registration_request->presencemask |=
             OGS_NAS_5GS_REGISTRATION_REQUEST_S1_UE_NETWORK_CAPABILITY_PRESENT;
-    s1_ue_network_capability->length = 7;
-    s1_ue_network_capability->eea = test_ue->ue_network_capability.eea;
-    s1_ue_network_capability->eia = test_ue->ue_network_capability.eia;
-    s1_ue_network_capability->uea = 0xc0;
-    s1_ue_network_capability->uia = 0xc0;
-    s1_ue_network_capability->notification_procedure = 1;
-    s1_ue_network_capability->extended_protocol_configuration_options = 1;
-    s1_ue_network_capability->n1_mode = 1;
-    s1_ue_network_capability->dual_connectivity_with_nr = 1;
+        s1_ue_network_capability->length = 7;
+        s1_ue_network_capability->eea = test_ue->ue_network_capability.eea;
+        s1_ue_network_capability->eia = test_ue->ue_network_capability.eia;
+        s1_ue_network_capability->uea = 0xc0;
+        s1_ue_network_capability->uia = 0xc0;
+        s1_ue_network_capability->notification_procedure = 1;
+        s1_ue_network_capability->extended_protocol_configuration_options = 1;
+        s1_ue_network_capability->n1_mode = 1;
+        s1_ue_network_capability->dual_connectivity_with_nr = 1;
+    }
 
     if (test_ue->registration_request_param.requested_nssai) {
         /* Set Requested NSSAI */

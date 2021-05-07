@@ -31,7 +31,14 @@
 static int gmm_handle_nas_message_container(amf_ue_t *amf_ue,
         ogs_nas_message_container_t *nas_message_container);
 
+#define OGS_REGISTRATION_CLEARTEXT_PRESENT \
+        (OGS_NAS_5GS_REGISTRATION_REQUEST_UE_SECURITY_CAPABILITY_PRESENT| \
+        OGS_NAS_5GS_REGISTRATION_REQUEST_UE_STATUS_PRESENT| \
+        OGS_NAS_5GS_REGISTRATION_REQUEST_EPS_NAS_MESSAGE_CONTAINER_PRESENT| \
+        OGS_NAS_5GS_REGISTRATION_REQUEST_NAS_MESSAGE_CONTAINER_PRESENT)
+
 int gmm_handle_registration_request(amf_ue_t *amf_ue,
+        ogs_nas_security_header_type_t h,
         ogs_nas_5gs_registration_request_t *registration_request)
 {
     int served_tai_index = 0;
@@ -55,6 +62,65 @@ int gmm_handle_registration_request(amf_ue_t *amf_ue,
     ogs_assert(mobile_identity);
     ue_security_capability = &registration_request->ue_security_capability;
     ogs_assert(ue_security_capability);
+
+    /*
+     * TS33.501
+     * Ch 6.4.6. Protection of initial NAS message
+     *
+     * If non-cleartext IEs is received, Open5GS will send Registration reject.
+     *
+     * Step 1: The UE shall send the initial NAS message to the AMF.
+     * If the UE has no NAS security context, the initial NAS message
+     * shall only contain the cleartext IEs, i.e. subscription identifiers
+     * (e.g. SUCI or GUTIs), UE security capabilities, ngKSI, indication
+     * that the UE is moving from EPC, Additional GUTI, and IE containing
+     * the TAU Request in the case idle mobility from LTE.
+     *
+     * If the UE has a NAS security context, the message sent shall contain
+     * the information given above in cleartext and the complete initial
+     * NAS message ciphered in a NAS container which is ciphered.
+     * With a NAS security context, the sent message shall also be
+     * integrity protected. In the case that the initial NAS message
+     * was protected and the AMF has the same security context,
+     * then steps 2 to 4 may be omitted In this case the AMF shall
+     * use the complete initial NAS message that is in the NAS container
+     * as the message to respond to.
+     *
+     * TS24.501
+     * Ch 4.4.6 Protection of initial NAS signalling messages
+     *
+     * When the initial NAS message is a REGISTRATION REQUEST message,
+     * the cleartext IEs are:
+     *
+     *   - Extended protocol discriminator;
+     *   - Security header type;
+     *   - Spare half octet;
+     *   - Registration request message identity;
+     *   - 5GS registration type;
+     *   - ngKSI;
+     *   - 5GS mobile identity;
+     *   - UE security capability;
+     *   - Additional GUTI;
+     *   - UE status; and
+     *   - EPS NAS message container.
+     */
+    if (registration_request->presencemask &
+        ~OGS_REGISTRATION_CLEARTEXT_PRESENT) {
+        ogs_error("Non cleartext IEs is included [0x%llx]",
+                (long long)registration_request->presencemask);
+        nas_5gs_send_registration_reject(amf_ue,
+            OGS_5GMM_CAUSE_SEMANTICALLY_INCORRECT_MESSAGE);
+        return OGS_ERROR;
+    }
+
+    if (!h.integrity_protected &&
+        (registration_request->presencemask &
+        OGS_NAS_5GS_REGISTRATION_REQUEST_NAS_MESSAGE_CONTAINER_PRESENT)) {
+        ogs_error("NAS container present without Integrity-protected");
+        nas_5gs_send_registration_reject(amf_ue,
+            OGS_5GMM_CAUSE_SEMANTICALLY_INCORRECT_MESSAGE);
+        return OGS_ERROR;
+    }
 
     if (!mobile_identity->length || !mobile_identity->buffer) {
         ogs_error("No Mobile Identity");
@@ -151,35 +217,11 @@ int gmm_handle_registration_request(amf_ue_t *amf_ue,
     ogs_debug("    SERVED_TAI_INDEX[%d]", served_tai_index);
 
     if (registration_request->presencemask &
-            OGS_NAS_5GS_REGISTRATION_REQUEST_5GMM_CAPABILITY_PRESENT) {
-        ogs_nas_5gmm_capability_t *gmm_capability =
-            &registration_request->gmm_capability;
-
-        amf_ue->gmm_capability.lte_positioning_protocol_capability
-            = gmm_capability->lte_positioning_protocol_capability;
-        amf_ue->gmm_capability.ho_attach = gmm_capability->ho_attach;
-        amf_ue->gmm_capability.s1_mode = gmm_capability->s1_mode;
-            
-        ogs_debug("    5GMM Capability:[LPP:%d, HO_ATTACH:%d, S1_MODE:%d]",
-            amf_ue->gmm_capability.lte_positioning_protocol_capability,
-            amf_ue->gmm_capability.ho_attach,
-            amf_ue->gmm_capability.s1_mode);
-    }
-
-    if (registration_request->presencemask &
             OGS_NAS_5GS_REGISTRATION_REQUEST_UE_SECURITY_CAPABILITY_PRESENT) {
         memcpy(&amf_ue->ue_security_capability,
                 &registration_request->ue_security_capability,
                 registration_request->ue_security_capability.length +
                 sizeof(registration_request->ue_security_capability.length));
-    }
-
-    if (registration_request->presencemask &
-            OGS_NAS_5GS_REGISTRATION_REQUEST_S1_UE_NETWORK_CAPABILITY_PRESENT) {
-        memcpy(&amf_ue->ue_network_capability,
-                &registration_request->s1_ue_network_capability,
-                registration_request->s1_ue_network_capability.length +
-                sizeof(registration_request->s1_ue_network_capability.length));
     }
 
     if (amf_selected_int_algorithm(amf_ue) ==
@@ -224,6 +266,30 @@ int gmm_handle_registration_update(amf_ue_t *amf_ue,
 
         return gmm_handle_nas_message_container(
                 amf_ue, &registration_request->nas_message_container);
+    }
+
+    if (registration_request->presencemask &
+            OGS_NAS_5GS_REGISTRATION_REQUEST_5GMM_CAPABILITY_PRESENT) {
+        ogs_nas_5gmm_capability_t *gmm_capability =
+            &registration_request->gmm_capability;
+
+        amf_ue->gmm_capability.lte_positioning_protocol_capability
+            = gmm_capability->lte_positioning_protocol_capability;
+        amf_ue->gmm_capability.ho_attach = gmm_capability->ho_attach;
+        amf_ue->gmm_capability.s1_mode = gmm_capability->s1_mode;
+
+        ogs_debug("    5GMM Capability:[LPP:%d, HO_ATTACH:%d, S1_MODE:%d]",
+            amf_ue->gmm_capability.lte_positioning_protocol_capability,
+            amf_ue->gmm_capability.ho_attach,
+            amf_ue->gmm_capability.s1_mode);
+    }
+
+    if (registration_request->presencemask &
+            OGS_NAS_5GS_REGISTRATION_REQUEST_S1_UE_NETWORK_CAPABILITY_PRESENT) {
+        memcpy(&amf_ue->ue_network_capability,
+                &registration_request->s1_ue_network_capability,
+                registration_request->s1_ue_network_capability.length +
+                sizeof(registration_request->s1_ue_network_capability.length));
     }
 
     if (registration_request->presencemask &
@@ -615,6 +681,29 @@ int gmm_handle_security_mode_complete(amf_ue_t *amf_ue,
 
     ogs_assert(amf_ue);
     ogs_assert(security_mode_complete);
+
+    /*
+     * TS33.501
+     * Ch 6.4.6. Protection of initial NAS message
+     *
+     * UE should send NAS Container in Security mode complete message.
+     * Otherwise, Open5GS will send Registration reject message.
+     *
+     * Step 4: The UE shall send the NAS Security Mode Complete message
+     * to the network in response to a NAS Security Mode Command message.
+     * The NAS Security Mode Complete message shall be ciphered and
+     * integrity protected. Furthermore the NAS Security Mode Complete message
+     * shall include the complete initial NAS message in a NAS Container
+     * if either requested by the AMF or the UE sent the initial NAS message
+     * unprotected. The AMF shall use the complete initial NAS message
+     * that is in the NAS container as the message to respond to.
+     */
+    if ((security_mode_complete->presencemask &
+        OGS_NAS_5GS_SECURITY_MODE_COMPLETE_NAS_MESSAGE_CONTAINER_PRESENT)
+            == 0) {
+        ogs_error("No NAS Message Container in Security mode complete message");
+        return OGS_ERROR;
+    }
 
     if (security_mode_complete->presencemask &
         OGS_NAS_5GS_SECURITY_MODE_COMPLETE_IMEISV_PRESENT) {

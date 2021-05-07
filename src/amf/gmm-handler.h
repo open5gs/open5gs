@@ -27,6 +27,7 @@ extern "C" {
 #endif
 
 int gmm_handle_registration_request(amf_ue_t *amf_ue,
+        ogs_nas_security_header_type_t h,
         ogs_nas_5gs_registration_request_t *registration_request);
 int gmm_handle_registration_update(amf_ue_t *amf_ue,
         ogs_nas_5gs_registration_request_t *registration_request);

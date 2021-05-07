@@ -123,10 +123,11 @@ typedef struct test_registration_request_param_s {
         uint8_t update_type:1;)
     };
     struct {
-    ED4(uint8_t uplink_data_status:1;,
+    ED5(uint8_t uplink_data_status:1;,
         uint8_t pdu_session_status:1;,
         uint8_t allowed_pdu_session_status:1;,
-        uint8_t spare2:5;)
+        uint8_t s1_ue_network_capability:1;,
+        uint8_t spare2:4;)
     };
     struct {
         uint16_t pdu_session_status;
