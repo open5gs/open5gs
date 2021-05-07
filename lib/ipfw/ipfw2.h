@@ -29,6 +29,8 @@
  * XXX The context is not restored after each line.
  */
 
+#include "ogs-ipfw.h"
+
 struct cmdline_opts {
 	/* boolean options: */
 	int	do_value_as_ip;	/* show table value as IP */

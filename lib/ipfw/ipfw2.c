@@ -3269,8 +3269,16 @@ add_proto0(ipfw_insn *cmd, char *av, u_char *protop)
 
 	proto = strtol(av, &ep, 10);
 	if (*ep != '\0' || proto <= 0) {
+#if 0 /* modified by acetcom */
 		if ((pe = getprotobyname(av)) == NULL)
 			return NULL;
+#else
+		if ((pe = getprotobyname(av)) == NULL) {
+            ogs_fatal("getprotobyname('%s') failed", av);
+            ogs_assert_if_reached();
+			return NULL;
+        }
+#endif
 		proto = pe->p_proto;
 	}
 

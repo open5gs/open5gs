@@ -24,8 +24,6 @@
 #endif
 #endif
 
-#include "ogs-ipfw.h"
-
 #include "ipfw2.h"
 #include "objs/include_e/netinet/ip_fw.h"
 
