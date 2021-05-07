@@ -1755,6 +1755,19 @@ bool amf_pdu_res_setup_req_transfer_needed(amf_ue_t *amf_ue)
     return false;
 }
 
+bool amf_handover_request_transfer_needed(amf_ue_t *amf_ue)
+{
+    amf_sess_t *sess = NULL;
+
+    ogs_assert(amf_ue);
+
+    ogs_list_for_each(&amf_ue->sess_list, sess)
+        if (sess->transfer.handover_request)
+            return true;
+
+    return false;
+}
+
 int amf_find_served_tai(ogs_5gs_tai_t *nr_tai)
 {
     int i = 0, j = 0, k = 0;

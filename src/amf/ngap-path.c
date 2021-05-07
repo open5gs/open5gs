@@ -466,6 +466,7 @@ void ngap_send_handover_request(amf_ue_t *amf_ue)
     ogs_assert(amf_ue);
     source_ue = amf_ue->ran_ue;
     ogs_assert(source_ue);
+
     target_ue = source_ue->target_ue;
     ogs_assert(target_ue);
 

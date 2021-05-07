@@ -162,6 +162,7 @@ struct ran_ue_s {
     /* UE context */
     bool            ue_context_requested;
     bool            initial_context_setup_request_sent;
+    bool            ue_ambr_sent;
 
     /* Handover Info */
     ran_ue_t        *source_ue;
@@ -698,6 +699,9 @@ int amf_sess_xact_state_count(amf_ue_t *amf_ue, int state);
 #define PDU_RES_SETUP_REQ_TRANSFER_NEEDED(__aMF) \
     (amf_pdu_res_setup_req_transfer_needed(__aMF) == true)
 bool amf_pdu_res_setup_req_transfer_needed(amf_ue_t *amf_ue);
+#define HANDOVER_REQUEST_TRANSFER_NEEDED(__aMF) \
+    (amf_handover_request_transfer_needed(__aMF) == true)
+bool amf_handover_request_transfer_needed(amf_ue_t *amf_ue);
 
 int amf_find_served_tai(ogs_5gs_tai_t *nr_tai);
 ogs_s_nssai_t *amf_find_s_nssai(
