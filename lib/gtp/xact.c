@@ -687,7 +687,6 @@ int ogs_gtp_xact_receive(
 
 ogs_gtp_xact_t *ogs_gtp_xact_find(ogs_index_t index)
 {
-    ogs_assert(index);
     return ogs_pool_find(&pool, index);
 }
 

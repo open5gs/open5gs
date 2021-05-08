@@ -3571,6 +3571,13 @@ void ngap_handle_ng_reset(
                             NGAP_CauseRadioNetwork_unknown_local_UE_NGAP_ID);
                     return;
                 }
+            } else {
+                ogs_error("No UE NGAP ID");
+                ngap_send_error_indication(
+                        gnb, NULL, NULL,
+                        NGAP_Cause_PR_protocol,
+                        NGAP_CauseProtocol_semantic_error);
+                return;
             }
 
             ogs_assert(ran_ue);

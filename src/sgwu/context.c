@@ -182,7 +182,6 @@ void sgwu_sess_remove_all(void)
 
 sgwu_sess_t *sgwu_sess_find(uint32_t index)
 {
-    ogs_assert(index);
     return ogs_pool_find(&sgwu_sess_pool, index);
 }
 

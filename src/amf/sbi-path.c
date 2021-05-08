@@ -351,6 +351,7 @@ void amf_sbi_send_deactivate_all_ue_in_gnb(amf_gnb_t *gnb, int state)
                 ran_ue_remove(ran_ue);
             } else {
                 /* At this point, it does not support other action */
+                ogs_fatal("Invalid state [%d]", state);
                 ogs_assert_if_reached();
             }
         }

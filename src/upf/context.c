@@ -201,7 +201,6 @@ void upf_sess_remove_all(void)
 
 upf_sess_t *upf_sess_find(uint32_t index)
 {
-    ogs_assert(index);
     return ogs_pool_find(&upf_sess_pool, index);
 }
 

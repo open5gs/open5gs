@@ -1025,7 +1025,6 @@ ran_ue_t *ran_ue_find_by_ran_ue_ngap_id(
 
 ran_ue_t *ran_ue_find(uint32_t index)
 {
-    ogs_assert(index);
     return ogs_pool_find(&ran_ue_pool, index);
 }
 

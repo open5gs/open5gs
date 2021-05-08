@@ -1446,7 +1446,6 @@ void smf_sess_remove_all(smf_ue_t *smf_ue)
 
 smf_sess_t *smf_sess_find(uint32_t index)
 {
-    ogs_assert(index);
     return ogs_pool_find(&smf_sess_pool, index);
 }
 
@@ -1969,12 +1968,6 @@ void smf_bearer_remove_all(smf_sess_t *sess)
     ogs_assert(sess);
     ogs_list_for_each_safe(&sess->bearer_list, next_bearer, bearer)
         smf_bearer_remove(bearer);
-}
-
-smf_bearer_t *smf_bearer_find(uint32_t index)
-{
-    ogs_assert(index);
-    return ogs_pool_find(&smf_bearer_pool, index);
 }
 
 smf_bearer_t *smf_bearer_find_by_pgw_s5u_teid(

@@ -140,20 +140,23 @@ void udm_state_operational(ogs_fsm_t *s, udm_event_t *e)
                 break;
             }
 
-            SWITCH(message.h.resource.component[2])
+            SWITCH(message.h.resource.component[1])
             CASE(OGS_SBI_RESOURCE_NAME_AUTH_EVENTS)
-                udm_ue = udm_ue_find_by_ctx_id(
-                        message.h.resource.component[2]);
-                break;
-
+                if (message.h.resource.component[2]) {
+                    udm_ue = udm_ue_find_by_ctx_id(
+                            message.h.resource.component[2]);
+                }
             DEFAULT
+            END
+
+            if (!udm_ue) {
                 udm_ue = udm_ue_find_by_suci_or_supi(
                         message.h.resource.component[0]);
                 if (!udm_ue) {
                     udm_ue = udm_ue_add(message.h.resource.component[0]);
                     ogs_assert(udm_ue);
                 }
-            END
+            }
 
             if (!udm_ue) {
                 ogs_error("Not found [%s]", message.h.method);

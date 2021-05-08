@@ -128,7 +128,7 @@ void ngap_recv_handler(ogs_sock_t *sock)
     ogs_pkbuf_put(pkbuf, OGS_MAX_SDU_LEN);
     size = ogs_sctp_recvmsg(
             sock, pkbuf->data, pkbuf->len, &from, &sinfo, &flags);
-    if (size < 0) {
+    if (size < 0 || size >= OGS_MAX_SDU_LEN) {
         ogs_error("ogs_sctp_recvmsg(%d) failed(%d:%s)",
                 size, errno, strerror(errno));
         ogs_pkbuf_free(pkbuf);
@@ -230,6 +230,7 @@ void ngap_recv_handler(ogs_sock_t *sock)
         ngap_event_push(AMF_EVT_NGAP_MESSAGE, sock, addr, pkbuf, 0, 0);
         return;
     } else {
+        ogs_fatal("Invalid flag(0x%x)", flags);
         ogs_assert_if_reached();
     }
 

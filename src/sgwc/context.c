@@ -425,7 +425,6 @@ void sgwc_sess_remove_all(sgwc_ue_t *sgwc_ue)
 
 sgwc_sess_t *sgwc_sess_find(uint32_t index)
 {
-    ogs_assert(index);
     return ogs_pool_find(&sgwc_sess_pool, index);
 }
 

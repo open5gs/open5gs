@@ -717,7 +717,6 @@ int ogs_pfcp_xact_receive(
 
 ogs_pfcp_xact_t *ogs_pfcp_xact_find(ogs_index_t index)
 {
-    ogs_assert(index);
     return ogs_pool_find(&pool, index);
 }
 

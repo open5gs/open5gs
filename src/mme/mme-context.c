@@ -1972,7 +1972,6 @@ enb_ue_t *enb_ue_find_by_enb_ue_s1ap_id(
 
 enb_ue_t *enb_ue_find(uint32_t index)
 {
-    ogs_assert(index);
     return ogs_pool_find(&enb_ue_pool, index);
 }
 
