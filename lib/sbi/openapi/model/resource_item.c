@@ -43,19 +43,11 @@ cJSON *OpenAPI_resource_item_convertToJSON(OpenAPI_resource_item_t *resource_ite
     }
 
     item = cJSON_CreateObject();
-    if (!resource_item->mon_resource_uri) {
-        ogs_error("OpenAPI_resource_item_convertToJSON() failed [mon_resource_uri]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "monResourceUri", resource_item->mon_resource_uri) == NULL) {
         ogs_error("OpenAPI_resource_item_convertToJSON() failed [mon_resource_uri]");
         goto end;
     }
 
-    if (!resource_item->items) {
-        ogs_error("OpenAPI_resource_item_convertToJSON() failed [items]");
-        goto end;
-    }
     cJSON *items = cJSON_AddArrayToObject(item, "items");
     if (items == NULL) {
         ogs_error("OpenAPI_resource_item_convertToJSON() failed [items]");

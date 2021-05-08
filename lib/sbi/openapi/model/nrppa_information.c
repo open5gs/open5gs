@@ -43,19 +43,11 @@ cJSON *OpenAPI_nrppa_information_convertToJSON(OpenAPI_nrppa_information_t *nrpp
     }
 
     item = cJSON_CreateObject();
-    if (!nrppa_information->nf_id) {
-        ogs_error("OpenAPI_nrppa_information_convertToJSON() failed [nf_id]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "nfId", nrppa_information->nf_id) == NULL) {
         ogs_error("OpenAPI_nrppa_information_convertToJSON() failed [nf_id]");
         goto end;
     }
 
-    if (!nrppa_information->nrppa_pdu) {
-        ogs_error("OpenAPI_nrppa_information_convertToJSON() failed [nrppa_pdu]");
-        goto end;
-    }
     cJSON *nrppa_pdu_local_JSON = OpenAPI_n2_info_content_convertToJSON(nrppa_information->nrppa_pdu);
     if (nrppa_pdu_local_JSON == NULL) {
         ogs_error("OpenAPI_nrppa_information_convertToJSON() failed [nrppa_pdu]");

@@ -38,19 +38,11 @@ cJSON *OpenAPI_pppp_to_pdb_convertToJSON(OpenAPI_pppp_to_pdb_t *pppp_to_pdb)
     }
 
     item = cJSON_CreateObject();
-    if (!pppp_to_pdb->pppp) {
-        ogs_error("OpenAPI_pppp_to_pdb_convertToJSON() failed [pppp]");
-        goto end;
-    }
     if (cJSON_AddNumberToObject(item, "pppp", pppp_to_pdb->pppp) == NULL) {
         ogs_error("OpenAPI_pppp_to_pdb_convertToJSON() failed [pppp]");
         goto end;
     }
 
-    if (!pppp_to_pdb->pdb) {
-        ogs_error("OpenAPI_pppp_to_pdb_convertToJSON() failed [pdb]");
-        goto end;
-    }
     if (cJSON_AddNumberToObject(item, "pdb", pppp_to_pdb->pdb) == NULL) {
         ogs_error("OpenAPI_pppp_to_pdb_convertToJSON() failed [pdb]");
         goto end;

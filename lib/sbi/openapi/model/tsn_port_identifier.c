@@ -39,10 +39,6 @@ cJSON *OpenAPI_tsn_port_identifier_convertToJSON(OpenAPI_tsn_port_identifier_t *
     }
 
     item = cJSON_CreateObject();
-    if (!tsn_port_identifier->port_mac) {
-        ogs_error("OpenAPI_tsn_port_identifier_convertToJSON() failed [port_mac]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "portMac", tsn_port_identifier->port_mac) == NULL) {
         ogs_error("OpenAPI_tsn_port_identifier_convertToJSON() failed [port_mac]");
         goto end;

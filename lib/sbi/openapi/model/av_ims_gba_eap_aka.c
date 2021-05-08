@@ -51,55 +51,31 @@ cJSON *OpenAPI_av_ims_gba_eap_aka_convertToJSON(OpenAPI_av_ims_gba_eap_aka_t *av
     }
 
     item = cJSON_CreateObject();
-    if (!av_ims_gba_eap_aka->av_type) {
-        ogs_error("OpenAPI_av_ims_gba_eap_aka_convertToJSON() failed [av_type]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "avType", OpenAPI_hss_av_type_ToString(av_ims_gba_eap_aka->av_type)) == NULL) {
         ogs_error("OpenAPI_av_ims_gba_eap_aka_convertToJSON() failed [av_type]");
         goto end;
     }
 
-    if (!av_ims_gba_eap_aka->rand) {
-        ogs_error("OpenAPI_av_ims_gba_eap_aka_convertToJSON() failed [rand]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "rand", av_ims_gba_eap_aka->rand) == NULL) {
         ogs_error("OpenAPI_av_ims_gba_eap_aka_convertToJSON() failed [rand]");
         goto end;
     }
 
-    if (!av_ims_gba_eap_aka->xres) {
-        ogs_error("OpenAPI_av_ims_gba_eap_aka_convertToJSON() failed [xres]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "xres", av_ims_gba_eap_aka->xres) == NULL) {
         ogs_error("OpenAPI_av_ims_gba_eap_aka_convertToJSON() failed [xres]");
         goto end;
     }
 
-    if (!av_ims_gba_eap_aka->autn) {
-        ogs_error("OpenAPI_av_ims_gba_eap_aka_convertToJSON() failed [autn]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "autn", av_ims_gba_eap_aka->autn) == NULL) {
         ogs_error("OpenAPI_av_ims_gba_eap_aka_convertToJSON() failed [autn]");
         goto end;
     }
 
-    if (!av_ims_gba_eap_aka->ck) {
-        ogs_error("OpenAPI_av_ims_gba_eap_aka_convertToJSON() failed [ck]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "ck", av_ims_gba_eap_aka->ck) == NULL) {
         ogs_error("OpenAPI_av_ims_gba_eap_aka_convertToJSON() failed [ck]");
         goto end;
     }
 
-    if (!av_ims_gba_eap_aka->ik) {
-        ogs_error("OpenAPI_av_ims_gba_eap_aka_convertToJSON() failed [ik]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "ik", av_ims_gba_eap_aka->ik) == NULL) {
         ogs_error("OpenAPI_av_ims_gba_eap_aka_convertToJSON() failed [ik]");
         goto end;

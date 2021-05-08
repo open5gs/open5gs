@@ -71,10 +71,6 @@ cJSON *OpenAPI_vsmf_update_error_convertToJSON(OpenAPI_vsmf_update_error_t *vsmf
     }
 
     item = cJSON_CreateObject();
-    if (!vsmf_update_error->error) {
-        ogs_error("OpenAPI_vsmf_update_error_convertToJSON() failed [error]");
-        goto end;
-    }
     cJSON *error_local_JSON = OpenAPI_problem_details_convertToJSON(vsmf_update_error->error);
     if (error_local_JSON == NULL) {
         ogs_error("OpenAPI_vsmf_update_error_convertToJSON() failed [error]");

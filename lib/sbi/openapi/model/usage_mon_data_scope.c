@@ -43,10 +43,6 @@ cJSON *OpenAPI_usage_mon_data_scope_convertToJSON(OpenAPI_usage_mon_data_scope_t
     }
 
     item = cJSON_CreateObject();
-    if (!usage_mon_data_scope->snssai) {
-        ogs_error("OpenAPI_usage_mon_data_scope_convertToJSON() failed [snssai]");
-        goto end;
-    }
     cJSON *snssai_local_JSON = OpenAPI_snssai_convertToJSON(usage_mon_data_scope->snssai);
     if (snssai_local_JSON == NULL) {
         ogs_error("OpenAPI_usage_mon_data_scope_convertToJSON() failed [snssai]");

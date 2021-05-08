@@ -48,10 +48,6 @@ cJSON *OpenAPI_pdu_session_create_error_convertToJSON(OpenAPI_pdu_session_create
     }
 
     item = cJSON_CreateObject();
-    if (!pdu_session_create_error->error) {
-        ogs_error("OpenAPI_pdu_session_create_error_convertToJSON() failed [error]");
-        goto end;
-    }
     cJSON *error_local_JSON = OpenAPI_problem_details_convertToJSON(pdu_session_create_error->error);
     if (error_local_JSON == NULL) {
         ogs_error("OpenAPI_pdu_session_create_error_convertToJSON() failed [error]");

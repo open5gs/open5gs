@@ -85,10 +85,6 @@ cJSON *OpenAPI_data_filter_convertToJSON(OpenAPI_data_filter_t *data_filter)
     }
 
     item = cJSON_CreateObject();
-    if (!data_filter->data_ind) {
-        ogs_error("OpenAPI_data_filter_convertToJSON() failed [data_ind]");
-        goto end;
-    }
     cJSON *data_ind_local_JSON = OpenAPI_data_ind_convertToJSON(data_filter->data_ind);
     if (data_ind_local_JSON == NULL) {
         ogs_error("OpenAPI_data_filter_convertToJSON() failed [data_ind]");

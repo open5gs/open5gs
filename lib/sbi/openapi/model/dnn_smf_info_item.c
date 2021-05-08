@@ -37,10 +37,6 @@ cJSON *OpenAPI_dnn_smf_info_item_convertToJSON(OpenAPI_dnn_smf_info_item_t *dnn_
     }
 
     item = cJSON_CreateObject();
-    if (!dnn_smf_info_item->dnn) {
-        ogs_error("OpenAPI_dnn_smf_info_item_convertToJSON() failed [dnn]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "dnn", dnn_smf_info_item->dnn) == NULL) {
         ogs_error("OpenAPI_dnn_smf_info_item_convertToJSON() failed [dnn]");
         goto end;

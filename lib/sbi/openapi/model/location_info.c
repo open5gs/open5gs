@@ -63,10 +63,6 @@ cJSON *OpenAPI_location_info_convertToJSON(OpenAPI_location_info_t *location_inf
         }
     }
 
-    if (!location_info->registration_location_info_list) {
-        ogs_error("OpenAPI_location_info_convertToJSON() failed [registration_location_info_list]");
-        goto end;
-    }
     cJSON *registration_location_info_listList = cJSON_AddArrayToObject(item, "registrationLocationInfoList");
     if (registration_location_info_listList == NULL) {
         ogs_error("OpenAPI_location_info_convertToJSON() failed [registration_location_info_list]");

@@ -43,10 +43,6 @@ cJSON *OpenAPI_ecgi_convertToJSON(OpenAPI_ecgi_t *ecgi)
     }
 
     item = cJSON_CreateObject();
-    if (!ecgi->plmn_id) {
-        ogs_error("OpenAPI_ecgi_convertToJSON() failed [plmn_id]");
-        goto end;
-    }
     cJSON *plmn_id_local_JSON = OpenAPI_plmn_id_convertToJSON(ecgi->plmn_id);
     if (plmn_id_local_JSON == NULL) {
         ogs_error("OpenAPI_ecgi_convertToJSON() failed [plmn_id]");
@@ -58,10 +54,6 @@ cJSON *OpenAPI_ecgi_convertToJSON(OpenAPI_ecgi_t *ecgi)
         goto end;
     }
 
-    if (!ecgi->eutra_cell_id) {
-        ogs_error("OpenAPI_ecgi_convertToJSON() failed [eutra_cell_id]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "eutraCellId", ecgi->eutra_cell_id) == NULL) {
         ogs_error("OpenAPI_ecgi_convertToJSON() failed [eutra_cell_id]");
         goto end;

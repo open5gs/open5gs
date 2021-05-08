@@ -37,10 +37,6 @@ cJSON *OpenAPI_pcscf_restoration_notification_convertToJSON(OpenAPI_pcscf_restor
     }
 
     item = cJSON_CreateObject();
-    if (!pcscf_restoration_notification->supi) {
-        ogs_error("OpenAPI_pcscf_restoration_notification_convertToJSON() failed [supi]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "supi", pcscf_restoration_notification->supi) == NULL) {
         ogs_error("OpenAPI_pcscf_restoration_notification_convertToJSON() failed [supi]");
         goto end;

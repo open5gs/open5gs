@@ -189,10 +189,6 @@ cJSON *OpenAPI_policy_association_convertToJSON(OpenAPI_policy_association_t *po
         }
     }
 
-    if (!policy_association->supp_feat) {
-        ogs_error("OpenAPI_policy_association_convertToJSON() failed [supp_feat]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "suppFeat", policy_association->supp_feat) == NULL) {
         ogs_error("OpenAPI_policy_association_convertToJSON() failed [supp_feat]");
         goto end;

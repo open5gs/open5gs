@@ -52,19 +52,11 @@ cJSON *OpenAPI_default_notification_subscription_convertToJSON(OpenAPI_default_n
     }
 
     item = cJSON_CreateObject();
-    if (!default_notification_subscription->notification_type) {
-        ogs_error("OpenAPI_default_notification_subscription_convertToJSON() failed [notification_type]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "notificationType", OpenAPI_notification_type_ToString(default_notification_subscription->notification_type)) == NULL) {
         ogs_error("OpenAPI_default_notification_subscription_convertToJSON() failed [notification_type]");
         goto end;
     }
 
-    if (!default_notification_subscription->callback_uri) {
-        ogs_error("OpenAPI_default_notification_subscription_convertToJSON() failed [callback_uri]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "callbackUri", default_notification_subscription->callback_uri) == NULL) {
         ogs_error("OpenAPI_default_notification_subscription_convertToJSON() failed [callback_uri]");
         goto end;

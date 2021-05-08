@@ -51,10 +51,6 @@ cJSON *OpenAPI_amf_non3_gpp_access_registration_modification_convertToJSON(OpenA
     }
 
     item = cJSON_CreateObject();
-    if (!amf_non3_gpp_access_registration_modification->guami) {
-        ogs_error("OpenAPI_amf_non3_gpp_access_registration_modification_convertToJSON() failed [guami]");
-        goto end;
-    }
     cJSON *guami_local_JSON = OpenAPI_guami_convertToJSON(amf_non3_gpp_access_registration_modification->guami);
     if (guami_local_JSON == NULL) {
         ogs_error("OpenAPI_amf_non3_gpp_access_registration_modification_convertToJSON() failed [guami]");

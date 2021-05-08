@@ -43,10 +43,6 @@ cJSON *OpenAPI_polygon_convertToJSON(OpenAPI_polygon_t *polygon)
     }
 
     item = cJSON_CreateObject();
-    if (!polygon->shape) {
-        ogs_error("OpenAPI_polygon_convertToJSON() failed [shape]");
-        goto end;
-    }
     cJSON *shape_local_JSON = OpenAPI_supported_gad_shapes_convertToJSON(polygon->shape);
     if (shape_local_JSON == NULL) {
         ogs_error("OpenAPI_polygon_convertToJSON() failed [shape]");
@@ -58,10 +54,6 @@ cJSON *OpenAPI_polygon_convertToJSON(OpenAPI_polygon_t *polygon)
         goto end;
     }
 
-    if (!polygon->point_list) {
-        ogs_error("OpenAPI_polygon_convertToJSON() failed [point_list]");
-        goto end;
-    }
     cJSON *point_listList = cJSON_AddArrayToObject(item, "pointList");
     if (point_listList == NULL) {
         ogs_error("OpenAPI_polygon_convertToJSON() failed [point_list]");

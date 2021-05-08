@@ -43,10 +43,6 @@ cJSON *OpenAPI_send_mo_data_req_data_convertToJSON(OpenAPI_send_mo_data_req_data
     }
 
     item = cJSON_CreateObject();
-    if (!send_mo_data_req_data->mo_data) {
-        ogs_error("OpenAPI_send_mo_data_req_data_convertToJSON() failed [mo_data]");
-        goto end;
-    }
     cJSON *mo_data_local_JSON = OpenAPI_ref_to_binary_data_convertToJSON(send_mo_data_req_data->mo_data);
     if (mo_data_local_JSON == NULL) {
         ogs_error("OpenAPI_send_mo_data_req_data_convertToJSON() failed [mo_data]");

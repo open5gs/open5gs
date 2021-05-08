@@ -53,10 +53,6 @@ cJSON *OpenAPI_eap_session_convertToJSON(OpenAPI_eap_session_t *eap_session)
     }
 
     item = cJSON_CreateObject();
-    if (!eap_session->eap_payload) {
-        ogs_error("OpenAPI_eap_session_convertToJSON() failed [eap_payload]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "eapPayload", eap_session->eap_payload) == NULL) {
         ogs_error("OpenAPI_eap_session_convertToJSON() failed [eap_payload]");
         goto end;

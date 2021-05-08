@@ -61,10 +61,6 @@ cJSON *OpenAPI_indirect_data_forwarding_tunnel_info_convertToJSON(OpenAPI_indire
         }
     }
 
-    if (!indirect_data_forwarding_tunnel_info->gtp_teid) {
-        ogs_error("OpenAPI_indirect_data_forwarding_tunnel_info_convertToJSON() failed [gtp_teid]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "gtpTeid", indirect_data_forwarding_tunnel_info->gtp_teid) == NULL) {
         ogs_error("OpenAPI_indirect_data_forwarding_tunnel_info_convertToJSON() failed [gtp_teid]");
         goto end;

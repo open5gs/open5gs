@@ -40,10 +40,6 @@ cJSON *OpenAPI_guami_convertToJSON(OpenAPI_guami_t *guami)
     }
 
     item = cJSON_CreateObject();
-    if (!guami->plmn_id) {
-        ogs_error("OpenAPI_guami_convertToJSON() failed [plmn_id]");
-        goto end;
-    }
     cJSON *plmn_id_local_JSON = OpenAPI_plmn_id_nid_convertToJSON(guami->plmn_id);
     if (plmn_id_local_JSON == NULL) {
         ogs_error("OpenAPI_guami_convertToJSON() failed [plmn_id]");
@@ -55,10 +51,6 @@ cJSON *OpenAPI_guami_convertToJSON(OpenAPI_guami_t *guami)
         goto end;
     }
 
-    if (!guami->amf_id) {
-        ogs_error("OpenAPI_guami_convertToJSON() failed [amf_id]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "amfId", guami->amf_id) == NULL) {
         ogs_error("OpenAPI_guami_convertToJSON() failed [amf_id]");
         goto end;

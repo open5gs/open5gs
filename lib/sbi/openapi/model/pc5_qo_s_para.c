@@ -43,10 +43,6 @@ cJSON *OpenAPI_pc5_qo_s_para_convertToJSON(OpenAPI_pc5_qo_s_para_t *pc5_qo_s_par
     }
 
     item = cJSON_CreateObject();
-    if (!pc5_qo_s_para->pc5_qos_flow_list) {
-        ogs_error("OpenAPI_pc5_qo_s_para_convertToJSON() failed [pc5_qos_flow_list]");
-        goto end;
-    }
     cJSON *pc5_qos_flow_listList = cJSON_AddArrayToObject(item, "pc5QosFlowList");
     if (pc5_qos_flow_listList == NULL) {
         ogs_error("OpenAPI_pc5_qo_s_para_convertToJSON() failed [pc5_qos_flow_list]");

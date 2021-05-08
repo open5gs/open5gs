@@ -37,10 +37,6 @@ cJSON *OpenAPI_sor_update_info_convertToJSON(OpenAPI_sor_update_info_t *sor_upda
     }
 
     item = cJSON_CreateObject();
-    if (!sor_update_info->vplmn_id) {
-        ogs_error("OpenAPI_sor_update_info_convertToJSON() failed [vplmn_id]");
-        goto end;
-    }
     cJSON *vplmn_id_local_JSON = OpenAPI_plmn_id_convertToJSON(sor_update_info->vplmn_id);
     if (vplmn_id_local_JSON == NULL) {
         ogs_error("OpenAPI_sor_update_info_convertToJSON() failed [vplmn_id]");

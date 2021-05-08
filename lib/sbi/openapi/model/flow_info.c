@@ -42,10 +42,6 @@ cJSON *OpenAPI_flow_info_convertToJSON(OpenAPI_flow_info_t *flow_info)
     }
 
     item = cJSON_CreateObject();
-    if (!flow_info->flow_id) {
-        ogs_error("OpenAPI_flow_info_convertToJSON() failed [flow_id]");
-        goto end;
-    }
     if (cJSON_AddNumberToObject(item, "flowId", flow_info->flow_id) == NULL) {
         ogs_error("OpenAPI_flow_info_convertToJSON() failed [flow_id]");
         goto end;

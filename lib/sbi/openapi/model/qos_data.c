@@ -78,10 +78,6 @@ cJSON *OpenAPI_qos_data_convertToJSON(OpenAPI_qos_data_t *qos_data)
     }
 
     item = cJSON_CreateObject();
-    if (!qos_data->qos_id) {
-        ogs_error("OpenAPI_qos_data_convertToJSON() failed [qos_id]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "qosId", qos_data->qos_id) == NULL) {
         ogs_error("OpenAPI_qos_data_convertToJSON() failed [qos_id]");
         goto end;

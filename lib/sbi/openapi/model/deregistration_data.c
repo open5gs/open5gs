@@ -44,10 +44,6 @@ cJSON *OpenAPI_deregistration_data_convertToJSON(OpenAPI_deregistration_data_t *
     }
 
     item = cJSON_CreateObject();
-    if (!deregistration_data->dereg_reason) {
-        ogs_error("OpenAPI_deregistration_data_convertToJSON() failed [dereg_reason]");
-        goto end;
-    }
     cJSON *dereg_reason_local_JSON = OpenAPI_deregistration_reason_convertToJSON(deregistration_data->dereg_reason);
     if (dereg_reason_local_JSON == NULL) {
         ogs_error("OpenAPI_deregistration_data_convertToJSON() failed [dereg_reason]");

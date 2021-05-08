@@ -62,19 +62,11 @@ cJSON *OpenAPI_nf_group_cond_convertToJSON(OpenAPI_nf_group_cond_t *nf_group_con
     }
 
     item = cJSON_CreateObject();
-    if (!nf_group_cond->nf_type) {
-        ogs_error("OpenAPI_nf_group_cond_convertToJSON() failed [nf_type]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "nfType", OpenAPI_nf_typenf_group_cond_ToString(nf_group_cond->nf_type)) == NULL) {
         ogs_error("OpenAPI_nf_group_cond_convertToJSON() failed [nf_type]");
         goto end;
     }
 
-    if (!nf_group_cond->nf_group_id) {
-        ogs_error("OpenAPI_nf_group_cond_convertToJSON() failed [nf_group_id]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "nfGroupId", nf_group_cond->nf_group_id) == NULL) {
         ogs_error("OpenAPI_nf_group_cond_convertToJSON() failed [nf_group_id]");
         goto end;

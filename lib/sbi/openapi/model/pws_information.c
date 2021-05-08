@@ -46,28 +46,16 @@ cJSON *OpenAPI_pws_information_convertToJSON(OpenAPI_pws_information_t *pws_info
     }
 
     item = cJSON_CreateObject();
-    if (!pws_information->message_identifier) {
-        ogs_error("OpenAPI_pws_information_convertToJSON() failed [message_identifier]");
-        goto end;
-    }
     if (cJSON_AddNumberToObject(item, "messageIdentifier", pws_information->message_identifier) == NULL) {
         ogs_error("OpenAPI_pws_information_convertToJSON() failed [message_identifier]");
         goto end;
     }
 
-    if (!pws_information->serial_number) {
-        ogs_error("OpenAPI_pws_information_convertToJSON() failed [serial_number]");
-        goto end;
-    }
     if (cJSON_AddNumberToObject(item, "serialNumber", pws_information->serial_number) == NULL) {
         ogs_error("OpenAPI_pws_information_convertToJSON() failed [serial_number]");
         goto end;
     }
 
-    if (!pws_information->pws_container) {
-        ogs_error("OpenAPI_pws_information_convertToJSON() failed [pws_container]");
-        goto end;
-    }
     cJSON *pws_container_local_JSON = OpenAPI_n2_info_content_convertToJSON(pws_information->pws_container);
     if (pws_container_local_JSON == NULL) {
         ogs_error("OpenAPI_pws_information_convertToJSON() failed [pws_container]");

@@ -39,19 +39,11 @@ cJSON *OpenAPI_ebi_arp_mapping_convertToJSON(OpenAPI_ebi_arp_mapping_t *ebi_arp_
     }
 
     item = cJSON_CreateObject();
-    if (!ebi_arp_mapping->eps_bearer_id) {
-        ogs_error("OpenAPI_ebi_arp_mapping_convertToJSON() failed [eps_bearer_id]");
-        goto end;
-    }
     if (cJSON_AddNumberToObject(item, "epsBearerId", ebi_arp_mapping->eps_bearer_id) == NULL) {
         ogs_error("OpenAPI_ebi_arp_mapping_convertToJSON() failed [eps_bearer_id]");
         goto end;
     }
 
-    if (!ebi_arp_mapping->arp) {
-        ogs_error("OpenAPI_ebi_arp_mapping_convertToJSON() failed [arp]");
-        goto end;
-    }
     cJSON *arp_local_JSON = OpenAPI_arp_convertToJSON(ebi_arp_mapping->arp);
     if (arp_local_JSON == NULL) {
         ogs_error("OpenAPI_ebi_arp_mapping_convertToJSON() failed [arp]");

@@ -47,10 +47,6 @@ cJSON *OpenAPI_ellipsoid_arc_all_of_convertToJSON(OpenAPI_ellipsoid_arc_all_of_t
     }
 
     item = cJSON_CreateObject();
-    if (!ellipsoid_arc_all_of->point) {
-        ogs_error("OpenAPI_ellipsoid_arc_all_of_convertToJSON() failed [point]");
-        goto end;
-    }
     cJSON *point_local_JSON = OpenAPI_geographical_coordinates_convertToJSON(ellipsoid_arc_all_of->point);
     if (point_local_JSON == NULL) {
         ogs_error("OpenAPI_ellipsoid_arc_all_of_convertToJSON() failed [point]");
@@ -62,46 +58,26 @@ cJSON *OpenAPI_ellipsoid_arc_all_of_convertToJSON(OpenAPI_ellipsoid_arc_all_of_t
         goto end;
     }
 
-    if (!ellipsoid_arc_all_of->inner_radius) {
-        ogs_error("OpenAPI_ellipsoid_arc_all_of_convertToJSON() failed [inner_radius]");
-        goto end;
-    }
     if (cJSON_AddNumberToObject(item, "innerRadius", ellipsoid_arc_all_of->inner_radius) == NULL) {
         ogs_error("OpenAPI_ellipsoid_arc_all_of_convertToJSON() failed [inner_radius]");
         goto end;
     }
 
-    if (!ellipsoid_arc_all_of->uncertainty_radius) {
-        ogs_error("OpenAPI_ellipsoid_arc_all_of_convertToJSON() failed [uncertainty_radius]");
-        goto end;
-    }
     if (cJSON_AddNumberToObject(item, "uncertaintyRadius", ellipsoid_arc_all_of->uncertainty_radius) == NULL) {
         ogs_error("OpenAPI_ellipsoid_arc_all_of_convertToJSON() failed [uncertainty_radius]");
         goto end;
     }
 
-    if (!ellipsoid_arc_all_of->offset_angle) {
-        ogs_error("OpenAPI_ellipsoid_arc_all_of_convertToJSON() failed [offset_angle]");
-        goto end;
-    }
     if (cJSON_AddNumberToObject(item, "offsetAngle", ellipsoid_arc_all_of->offset_angle) == NULL) {
         ogs_error("OpenAPI_ellipsoid_arc_all_of_convertToJSON() failed [offset_angle]");
         goto end;
     }
 
-    if (!ellipsoid_arc_all_of->included_angle) {
-        ogs_error("OpenAPI_ellipsoid_arc_all_of_convertToJSON() failed [included_angle]");
-        goto end;
-    }
     if (cJSON_AddNumberToObject(item, "includedAngle", ellipsoid_arc_all_of->included_angle) == NULL) {
         ogs_error("OpenAPI_ellipsoid_arc_all_of_convertToJSON() failed [included_angle]");
         goto end;
     }
 
-    if (!ellipsoid_arc_all_of->confidence) {
-        ogs_error("OpenAPI_ellipsoid_arc_all_of_convertToJSON() failed [confidence]");
-        goto end;
-    }
     if (cJSON_AddNumberToObject(item, "confidence", ellipsoid_arc_all_of->confidence) == NULL) {
         ogs_error("OpenAPI_ellipsoid_arc_all_of_convertToJSON() failed [confidence]");
         goto end;

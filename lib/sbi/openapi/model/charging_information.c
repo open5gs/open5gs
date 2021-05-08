@@ -52,19 +52,11 @@ cJSON *OpenAPI_charging_information_convertToJSON(OpenAPI_charging_information_t
     }
 
     item = cJSON_CreateObject();
-    if (!charging_information->primary_chf_address) {
-        ogs_error("OpenAPI_charging_information_convertToJSON() failed [primary_chf_address]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "primaryChfAddress", charging_information->primary_chf_address) == NULL) {
         ogs_error("OpenAPI_charging_information_convertToJSON() failed [primary_chf_address]");
         goto end;
     }
 
-    if (!charging_information->secondary_chf_address) {
-        ogs_error("OpenAPI_charging_information_convertToJSON() failed [secondary_chf_address]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "secondaryChfAddress", charging_information->secondary_chf_address) == NULL) {
         ogs_error("OpenAPI_charging_information_convertToJSON() failed [secondary_chf_address]");
         goto end;

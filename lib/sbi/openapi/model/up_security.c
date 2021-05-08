@@ -38,19 +38,11 @@ cJSON *OpenAPI_up_security_convertToJSON(OpenAPI_up_security_t *up_security)
     }
 
     item = cJSON_CreateObject();
-    if (!up_security->up_integr) {
-        ogs_error("OpenAPI_up_security_convertToJSON() failed [up_integr]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "upIntegr", OpenAPI_up_integrity_ToString(up_security->up_integr)) == NULL) {
         ogs_error("OpenAPI_up_security_convertToJSON() failed [up_integr]");
         goto end;
     }
 
-    if (!up_security->up_confid) {
-        ogs_error("OpenAPI_up_security_convertToJSON() failed [up_confid]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "upConfid", OpenAPI_up_confidentiality_ToString(up_security->up_confid)) == NULL) {
         ogs_error("OpenAPI_up_security_convertToJSON() failed [up_confid]");
         goto end;

@@ -43,10 +43,6 @@ cJSON *OpenAPI_nidd_information_convertToJSON(OpenAPI_nidd_information_t *nidd_i
     }
 
     item = cJSON_CreateObject();
-    if (!nidd_information->af_id) {
-        ogs_error("OpenAPI_nidd_information_convertToJSON() failed [af_id]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "afId", nidd_information->af_id) == NULL) {
         ogs_error("OpenAPI_nidd_information_convertToJSON() failed [af_id]");
         goto end;

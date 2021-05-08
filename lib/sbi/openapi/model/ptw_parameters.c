@@ -39,19 +39,11 @@ cJSON *OpenAPI_ptw_parameters_convertToJSON(OpenAPI_ptw_parameters_t *ptw_parame
     }
 
     item = cJSON_CreateObject();
-    if (!ptw_parameters->operation_mode) {
-        ogs_error("OpenAPI_ptw_parameters_convertToJSON() failed [operation_mode]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "operationMode", OpenAPI_operation_mode_ToString(ptw_parameters->operation_mode)) == NULL) {
         ogs_error("OpenAPI_ptw_parameters_convertToJSON() failed [operation_mode]");
         goto end;
     }
 
-    if (!ptw_parameters->ptw_value) {
-        ogs_error("OpenAPI_ptw_parameters_convertToJSON() failed [ptw_value]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "ptwValue", ptw_parameters->ptw_value) == NULL) {
         ogs_error("OpenAPI_ptw_parameters_convertToJSON() failed [ptw_value]");
         goto end;

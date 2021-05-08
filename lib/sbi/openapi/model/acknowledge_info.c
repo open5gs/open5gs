@@ -67,10 +67,6 @@ cJSON *OpenAPI_acknowledge_info_convertToJSON(OpenAPI_acknowledge_info_t *acknow
         }
     }
 
-    if (!acknowledge_info->provisioning_time) {
-        ogs_error("OpenAPI_acknowledge_info_convertToJSON() failed [provisioning_time]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "provisioningTime", acknowledge_info->provisioning_time) == NULL) {
         ogs_error("OpenAPI_acknowledge_info_convertToJSON() failed [provisioning_time]");
         goto end;

@@ -57,10 +57,6 @@ cJSON *OpenAPI_ue_context_created_data_convertToJSON(OpenAPI_ue_context_created_
     }
 
     item = cJSON_CreateObject();
-    if (!ue_context_created_data->ue_context) {
-        ogs_error("OpenAPI_ue_context_created_data_convertToJSON() failed [ue_context]");
-        goto end;
-    }
     cJSON *ue_context_local_JSON = OpenAPI_ue_context_convertToJSON(ue_context_created_data->ue_context);
     if (ue_context_local_JSON == NULL) {
         ogs_error("OpenAPI_ue_context_created_data_convertToJSON() failed [ue_context]");
@@ -72,10 +68,6 @@ cJSON *OpenAPI_ue_context_created_data_convertToJSON(OpenAPI_ue_context_created_
         goto end;
     }
 
-    if (!ue_context_created_data->target_to_source_data) {
-        ogs_error("OpenAPI_ue_context_created_data_convertToJSON() failed [target_to_source_data]");
-        goto end;
-    }
     cJSON *target_to_source_data_local_JSON = OpenAPI_n2_info_content_convertToJSON(ue_context_created_data->target_to_source_data);
     if (target_to_source_data_local_JSON == NULL) {
         ogs_error("OpenAPI_ue_context_created_data_convertToJSON() failed [target_to_source_data]");
@@ -87,10 +79,6 @@ cJSON *OpenAPI_ue_context_created_data_convertToJSON(OpenAPI_ue_context_created_
         goto end;
     }
 
-    if (!ue_context_created_data->pdu_session_list) {
-        ogs_error("OpenAPI_ue_context_created_data_convertToJSON() failed [pdu_session_list]");
-        goto end;
-    }
     cJSON *pdu_session_listList = cJSON_AddArrayToObject(item, "pduSessionList");
     if (pdu_session_listList == NULL) {
         ogs_error("OpenAPI_ue_context_created_data_convertToJSON() failed [pdu_session_list]");

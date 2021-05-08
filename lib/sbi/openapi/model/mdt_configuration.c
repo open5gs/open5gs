@@ -104,10 +104,6 @@ cJSON *OpenAPI_mdt_configuration_convertToJSON(OpenAPI_mdt_configuration_t *mdt_
     }
 
     item = cJSON_CreateObject();
-    if (!mdt_configuration->job_type) {
-        ogs_error("OpenAPI_mdt_configuration_convertToJSON() failed [job_type]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "jobType", OpenAPI_job_type_ToString(mdt_configuration->job_type)) == NULL) {
         ogs_error("OpenAPI_mdt_configuration_convertToJSON() failed [job_type]");
         goto end;

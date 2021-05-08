@@ -40,19 +40,11 @@ cJSON *OpenAPI_vendor_specific_feature_convertToJSON(OpenAPI_vendor_specific_fea
     }
 
     item = cJSON_CreateObject();
-    if (!vendor_specific_feature->feature_name) {
-        ogs_error("OpenAPI_vendor_specific_feature_convertToJSON() failed [feature_name]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "featureName", vendor_specific_feature->feature_name) == NULL) {
         ogs_error("OpenAPI_vendor_specific_feature_convertToJSON() failed [feature_name]");
         goto end;
     }
 
-    if (!vendor_specific_feature->feature_version) {
-        ogs_error("OpenAPI_vendor_specific_feature_convertToJSON() failed [feature_version]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "featureVersion", vendor_specific_feature->feature_version) == NULL) {
         ogs_error("OpenAPI_vendor_specific_feature_convertToJSON() failed [feature_version]");
         goto end;

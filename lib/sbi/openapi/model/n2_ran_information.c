@@ -37,10 +37,6 @@ cJSON *OpenAPI_n2_ran_information_convertToJSON(OpenAPI_n2_ran_information_t *n2
     }
 
     item = cJSON_CreateObject();
-    if (!n2_ran_information->n2_info_content) {
-        ogs_error("OpenAPI_n2_ran_information_convertToJSON() failed [n2_info_content]");
-        goto end;
-    }
     cJSON *n2_info_content_local_JSON = OpenAPI_n2_info_content_convertToJSON(n2_ran_information->n2_info_content);
     if (n2_info_content_local_JSON == NULL) {
         ogs_error("OpenAPI_n2_ran_information_convertToJSON() failed [n2_info_content]");

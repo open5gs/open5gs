@@ -43,10 +43,6 @@ cJSON *OpenAPI_route_to_location_convertToJSON(OpenAPI_route_to_location_t *rout
     }
 
     item = cJSON_CreateObject();
-    if (!route_to_location->dnai) {
-        ogs_error("OpenAPI_route_to_location_convertToJSON() failed [dnai]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "dnai", route_to_location->dnai) == NULL) {
         ogs_error("OpenAPI_route_to_location_convertToJSON() failed [dnai]");
         goto end;

@@ -43,10 +43,6 @@ cJSON *OpenAPI_candidate_for_replacement_convertToJSON(OpenAPI_candidate_for_rep
     }
 
     item = cJSON_CreateObject();
-    if (!candidate_for_replacement->snssai) {
-        ogs_error("OpenAPI_candidate_for_replacement_convertToJSON() failed [snssai]");
-        goto end;
-    }
     cJSON *snssai_local_JSON = OpenAPI_snssai_convertToJSON(candidate_for_replacement->snssai);
     if (snssai_local_JSON == NULL) {
         ogs_error("OpenAPI_candidate_for_replacement_convertToJSON() failed [snssai]");

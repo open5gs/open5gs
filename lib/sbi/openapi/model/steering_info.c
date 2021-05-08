@@ -43,10 +43,6 @@ cJSON *OpenAPI_steering_info_convertToJSON(OpenAPI_steering_info_t *steering_inf
     }
 
     item = cJSON_CreateObject();
-    if (!steering_info->plmn_id) {
-        ogs_error("OpenAPI_steering_info_convertToJSON() failed [plmn_id]");
-        goto end;
-    }
     cJSON *plmn_id_local_JSON = OpenAPI_plmn_id_convertToJSON(steering_info->plmn_id);
     if (plmn_id_local_JSON == NULL) {
         ogs_error("OpenAPI_steering_info_convertToJSON() failed [plmn_id]");

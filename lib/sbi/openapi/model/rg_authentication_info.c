@@ -39,10 +39,6 @@ cJSON *OpenAPI_rg_authentication_info_convertToJSON(OpenAPI_rg_authentication_in
     }
 
     item = cJSON_CreateObject();
-    if (!rg_authentication_info->suci) {
-        ogs_error("OpenAPI_rg_authentication_info_convertToJSON() failed [suci]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "suci", rg_authentication_info->suci) == NULL) {
         ogs_error("OpenAPI_rg_authentication_info_convertToJSON() failed [suci]");
         goto end;

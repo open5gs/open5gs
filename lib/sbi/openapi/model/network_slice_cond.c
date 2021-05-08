@@ -46,10 +46,6 @@ cJSON *OpenAPI_network_slice_cond_convertToJSON(OpenAPI_network_slice_cond_t *ne
     }
 
     item = cJSON_CreateObject();
-    if (!network_slice_cond->snssai_list) {
-        ogs_error("OpenAPI_network_slice_cond_convertToJSON() failed [snssai_list]");
-        goto end;
-    }
     cJSON *snssai_listList = cJSON_AddArrayToObject(item, "snssaiList");
     if (snssai_listList == NULL) {
         ogs_error("OpenAPI_network_slice_cond_convertToJSON() failed [snssai_list]");

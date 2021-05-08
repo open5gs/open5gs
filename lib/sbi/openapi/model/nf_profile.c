@@ -347,10 +347,6 @@ cJSON *OpenAPI_nf_profile_convertToJSON(OpenAPI_nf_profile_t *nf_profile)
     }
 
     item = cJSON_CreateObject();
-    if (!nf_profile->nf_instance_id) {
-        ogs_error("OpenAPI_nf_profile_convertToJSON() failed [nf_instance_id]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "nfInstanceId", nf_profile->nf_instance_id) == NULL) {
         ogs_error("OpenAPI_nf_profile_convertToJSON() failed [nf_instance_id]");
         goto end;
@@ -363,19 +359,11 @@ cJSON *OpenAPI_nf_profile_convertToJSON(OpenAPI_nf_profile_t *nf_profile)
         }
     }
 
-    if (!nf_profile->nf_type) {
-        ogs_error("OpenAPI_nf_profile_convertToJSON() failed [nf_type]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "nfType", OpenAPI_nf_type_ToString(nf_profile->nf_type)) == NULL) {
         ogs_error("OpenAPI_nf_profile_convertToJSON() failed [nf_type]");
         goto end;
     }
 
-    if (!nf_profile->nf_status) {
-        ogs_error("OpenAPI_nf_profile_convertToJSON() failed [nf_status]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "nfStatus", OpenAPI_nf_status_ToString(nf_profile->nf_status)) == NULL) {
         ogs_error("OpenAPI_nf_profile_convertToJSON() failed [nf_status]");
         goto end;

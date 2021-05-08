@@ -46,10 +46,6 @@ cJSON *OpenAPI_app_detection_info_convertToJSON(OpenAPI_app_detection_info_t *ap
     }
 
     item = cJSON_CreateObject();
-    if (!app_detection_info->app_id) {
-        ogs_error("OpenAPI_app_detection_info_convertToJSON() failed [app_id]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "appId", app_detection_info->app_id) == NULL) {
         ogs_error("OpenAPI_app_detection_info_convertToJSON() failed [app_id]");
         goto end;

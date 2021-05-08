@@ -37,10 +37,6 @@ cJSON *OpenAPI_trigger_request_convertToJSON(OpenAPI_trigger_request_t *trigger_
     }
 
     item = cJSON_CreateObject();
-    if (!trigger_request->supi) {
-        ogs_error("OpenAPI_trigger_request_convertToJSON() failed [supi]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "supi", trigger_request->supi) == NULL) {
         ogs_error("OpenAPI_trigger_request_convertToJSON() failed [supi]");
         goto end;

@@ -37,10 +37,6 @@ cJSON *OpenAPI_transfer_mt_data_req_data_convertToJSON(OpenAPI_transfer_mt_data_
     }
 
     item = cJSON_CreateObject();
-    if (!transfer_mt_data_req_data->mt_data) {
-        ogs_error("OpenAPI_transfer_mt_data_req_data_convertToJSON() failed [mt_data]");
-        goto end;
-    }
     cJSON *mt_data_local_JSON = OpenAPI_ref_to_binary_data_convertToJSON(transfer_mt_data_req_data->mt_data);
     if (mt_data_local_JSON == NULL) {
         ogs_error("OpenAPI_transfer_mt_data_req_data_convertToJSON() failed [mt_data]");

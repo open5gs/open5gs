@@ -48,10 +48,6 @@ cJSON *OpenAPI_amf_status_info_convertToJSON(OpenAPI_amf_status_info_t *amf_stat
     }
 
     item = cJSON_CreateObject();
-    if (!amf_status_info->guami_list) {
-        ogs_error("OpenAPI_amf_status_info_convertToJSON() failed [guami_list]");
-        goto end;
-    }
     cJSON *guami_listList = cJSON_AddArrayToObject(item, "guamiList");
     if (guami_listList == NULL) {
         ogs_error("OpenAPI_amf_status_info_convertToJSON() failed [guami_list]");
@@ -70,10 +66,6 @@ cJSON *OpenAPI_amf_status_info_convertToJSON(OpenAPI_amf_status_info_t *amf_stat
         }
     }
 
-    if (!amf_status_info->status_change) {
-        ogs_error("OpenAPI_amf_status_info_convertToJSON() failed [status_change]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "statusChange", OpenAPI_status_change_ToString(amf_status_info->status_change)) == NULL) {
         ogs_error("OpenAPI_amf_status_info_convertToJSON() failed [status_change]");
         goto end;

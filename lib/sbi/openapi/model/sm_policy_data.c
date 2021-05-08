@@ -61,10 +61,6 @@ cJSON *OpenAPI_sm_policy_data_convertToJSON(OpenAPI_sm_policy_data_t *sm_policy_
     }
 
     item = cJSON_CreateObject();
-    if (!sm_policy_data->sm_policy_snssai_data) {
-        ogs_error("OpenAPI_sm_policy_data_convertToJSON() failed [sm_policy_snssai_data]");
-        goto end;
-    }
     cJSON *sm_policy_snssai_data = cJSON_AddObjectToObject(item, "smPolicySnssaiData");
     if (sm_policy_snssai_data == NULL) {
         ogs_error("OpenAPI_sm_policy_data_convertToJSON() failed [sm_policy_snssai_data]");

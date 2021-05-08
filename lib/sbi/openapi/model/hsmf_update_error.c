@@ -50,10 +50,6 @@ cJSON *OpenAPI_hsmf_update_error_convertToJSON(OpenAPI_hsmf_update_error_t *hsmf
     }
 
     item = cJSON_CreateObject();
-    if (!hsmf_update_error->error) {
-        ogs_error("OpenAPI_hsmf_update_error_convertToJSON() failed [error]");
-        goto end;
-    }
     cJSON *error_local_JSON = OpenAPI_problem_details_convertToJSON(hsmf_update_error->error);
     if (error_local_JSON == NULL) {
         ogs_error("OpenAPI_hsmf_update_error_convertToJSON() failed [error]");

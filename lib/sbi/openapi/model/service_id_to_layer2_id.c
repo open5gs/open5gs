@@ -43,10 +43,6 @@ cJSON *OpenAPI_service_id_to_layer2_id_convertToJSON(OpenAPI_service_id_to_layer
     }
 
     item = cJSON_CreateObject();
-    if (!service_id_to_layer2_id->ser_ids) {
-        ogs_error("OpenAPI_service_id_to_layer2_id_convertToJSON() failed [ser_ids]");
-        goto end;
-    }
     cJSON *ser_ids = cJSON_AddArrayToObject(item, "serIds");
     if (ser_ids == NULL) {
         ogs_error("OpenAPI_service_id_to_layer2_id_convertToJSON() failed [ser_ids]");
@@ -61,10 +57,6 @@ cJSON *OpenAPI_service_id_to_layer2_id_convertToJSON(OpenAPI_service_id_to_layer
         }
     }
 
-    if (!service_id_to_layer2_id->des_layer2_id) {
-        ogs_error("OpenAPI_service_id_to_layer2_id_convertToJSON() failed [des_layer2_id]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "desLayer2Id", service_id_to_layer2_id->des_layer2_id) == NULL) {
         ogs_error("OpenAPI_service_id_to_layer2_id_convertToJSON() failed [des_layer2_id]");
         goto end;

@@ -42,10 +42,6 @@ cJSON *OpenAPI_allowed_nssai_convertToJSON(OpenAPI_allowed_nssai_t *allowed_nssa
     }
 
     item = cJSON_CreateObject();
-    if (!allowed_nssai->allowed_snssai_list) {
-        ogs_error("OpenAPI_allowed_nssai_convertToJSON() failed [allowed_snssai_list]");
-        goto end;
-    }
     cJSON *allowed_snssai_listList = cJSON_AddArrayToObject(item, "allowedSnssaiList");
     if (allowed_snssai_listList == NULL) {
         ogs_error("OpenAPI_allowed_nssai_convertToJSON() failed [allowed_snssai_list]");
@@ -64,10 +60,6 @@ cJSON *OpenAPI_allowed_nssai_convertToJSON(OpenAPI_allowed_nssai_t *allowed_nssa
         }
     }
 
-    if (!allowed_nssai->access_type) {
-        ogs_error("OpenAPI_allowed_nssai_convertToJSON() failed [access_type]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "accessType", OpenAPI_access_type_ToString(allowed_nssai->access_type)) == NULL) {
         ogs_error("OpenAPI_allowed_nssai_convertToJSON() failed [access_type]");
         goto end;

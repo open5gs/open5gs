@@ -40,28 +40,16 @@ cJSON *OpenAPI_eps_bearer_info_convertToJSON(OpenAPI_eps_bearer_info_t *eps_bear
     }
 
     item = cJSON_CreateObject();
-    if (!eps_bearer_info->ebi) {
-        ogs_error("OpenAPI_eps_bearer_info_convertToJSON() failed [ebi]");
-        goto end;
-    }
     if (cJSON_AddNumberToObject(item, "ebi", eps_bearer_info->ebi) == NULL) {
         ogs_error("OpenAPI_eps_bearer_info_convertToJSON() failed [ebi]");
         goto end;
     }
 
-    if (!eps_bearer_info->pgw_s8u_fteid) {
-        ogs_error("OpenAPI_eps_bearer_info_convertToJSON() failed [pgw_s8u_fteid]");
-        goto end;
-    }
     if (cJSON_AddNumberToObject(item, "pgwS8uFteid", eps_bearer_info->pgw_s8u_fteid) == NULL) {
         ogs_error("OpenAPI_eps_bearer_info_convertToJSON() failed [pgw_s8u_fteid]");
         goto end;
     }
 
-    if (!eps_bearer_info->bearer_level_qo_s) {
-        ogs_error("OpenAPI_eps_bearer_info_convertToJSON() failed [bearer_level_qo_s]");
-        goto end;
-    }
     if (cJSON_AddNumberToObject(item, "bearerLevelQoS", eps_bearer_info->bearer_level_qo_s) == NULL) {
         ogs_error("OpenAPI_eps_bearer_info_convertToJSON() failed [bearer_level_qo_s]");
         goto end;

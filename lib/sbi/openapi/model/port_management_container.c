@@ -39,19 +39,11 @@ cJSON *OpenAPI_port_management_container_convertToJSON(OpenAPI_port_management_c
     }
 
     item = cJSON_CreateObject();
-    if (!port_management_container->port_man_cont) {
-        ogs_error("OpenAPI_port_management_container_convertToJSON() failed [port_man_cont]");
-        goto end;
-    }
     if (cJSON_AddNumberToObject(item, "portManCont", port_management_container->port_man_cont) == NULL) {
         ogs_error("OpenAPI_port_management_container_convertToJSON() failed [port_man_cont]");
         goto end;
     }
 
-    if (!port_management_container->port_identifier) {
-        ogs_error("OpenAPI_port_management_container_convertToJSON() failed [port_identifier]");
-        goto end;
-    }
     cJSON *port_identifier_local_JSON = OpenAPI_tsn_port_identifier_convertToJSON(port_management_container->port_identifier);
     if (port_identifier_local_JSON == NULL) {
         ogs_error("OpenAPI_port_management_container_convertToJSON() failed [port_identifier]");

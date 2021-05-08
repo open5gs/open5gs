@@ -39,10 +39,6 @@ cJSON *OpenAPI_n1_n2_message_transfer_rsp_data_convertToJSON(OpenAPI_n1_n2_messa
     }
 
     item = cJSON_CreateObject();
-    if (!n1_n2_message_transfer_rsp_data->cause) {
-        ogs_error("OpenAPI_n1_n2_message_transfer_rsp_data_convertToJSON() failed [cause]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "cause", OpenAPI_n1_n2_message_transfer_cause_ToString(n1_n2_message_transfer_rsp_data->cause)) == NULL) {
         ogs_error("OpenAPI_n1_n2_message_transfer_rsp_data_convertToJSON() failed [cause]");
         goto end;

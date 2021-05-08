@@ -37,10 +37,6 @@ cJSON *OpenAPI_gad_shape_convertToJSON(OpenAPI_gad_shape_t *gad_shape)
     }
 
     item = cJSON_CreateObject();
-    if (!gad_shape->shape) {
-        ogs_error("OpenAPI_gad_shape_convertToJSON() failed [shape]");
-        goto end;
-    }
     cJSON *shape_local_JSON = OpenAPI_supported_gad_shapes_convertToJSON(gad_shape->shape);
     if (shape_local_JSON == NULL) {
         ogs_error("OpenAPI_gad_shape_convertToJSON() failed [shape]");

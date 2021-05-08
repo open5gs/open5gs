@@ -54,19 +54,11 @@ cJSON *OpenAPI_assigned_ebi_data_convertToJSON(OpenAPI_assigned_ebi_data_t *assi
     }
 
     item = cJSON_CreateObject();
-    if (!assigned_ebi_data->pdu_session_id) {
-        ogs_error("OpenAPI_assigned_ebi_data_convertToJSON() failed [pdu_session_id]");
-        goto end;
-    }
     if (cJSON_AddNumberToObject(item, "pduSessionId", assigned_ebi_data->pdu_session_id) == NULL) {
         ogs_error("OpenAPI_assigned_ebi_data_convertToJSON() failed [pdu_session_id]");
         goto end;
     }
 
-    if (!assigned_ebi_data->assigned_ebi_list) {
-        ogs_error("OpenAPI_assigned_ebi_data_convertToJSON() failed [assigned_ebi_list]");
-        goto end;
-    }
     cJSON *assigned_ebi_listList = cJSON_AddArrayToObject(item, "assignedEbiList");
     if (assigned_ebi_listList == NULL) {
         ogs_error("OpenAPI_assigned_ebi_data_convertToJSON() failed [assigned_ebi_list]");

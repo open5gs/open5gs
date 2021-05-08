@@ -40,10 +40,6 @@ cJSON *OpenAPI_n1_n2_message_transfer_error_convertToJSON(OpenAPI_n1_n2_message_
     }
 
     item = cJSON_CreateObject();
-    if (!n1_n2_message_transfer_error->error) {
-        ogs_error("OpenAPI_n1_n2_message_transfer_error_convertToJSON() failed [error]");
-        goto end;
-    }
     cJSON *error_local_JSON = OpenAPI_problem_details_convertToJSON(n1_n2_message_transfer_error->error);
     if (error_local_JSON == NULL) {
         ogs_error("OpenAPI_n1_n2_message_transfer_error_convertToJSON() failed [error]");

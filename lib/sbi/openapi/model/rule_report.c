@@ -59,10 +59,6 @@ cJSON *OpenAPI_rule_report_convertToJSON(OpenAPI_rule_report_t *rule_report)
     }
 
     item = cJSON_CreateObject();
-    if (!rule_report->pcc_rule_ids) {
-        ogs_error("OpenAPI_rule_report_convertToJSON() failed [pcc_rule_ids]");
-        goto end;
-    }
     cJSON *pcc_rule_ids = cJSON_AddArrayToObject(item, "pccRuleIds");
     if (pcc_rule_ids == NULL) {
         ogs_error("OpenAPI_rule_report_convertToJSON() failed [pcc_rule_ids]");
@@ -77,10 +73,6 @@ cJSON *OpenAPI_rule_report_convertToJSON(OpenAPI_rule_report_t *rule_report)
         }
     }
 
-    if (!rule_report->rule_status) {
-        ogs_error("OpenAPI_rule_report_convertToJSON() failed [rule_status]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "ruleStatus", OpenAPI_rule_status_ToString(rule_report->rule_status)) == NULL) {
         ogs_error("OpenAPI_rule_report_convertToJSON() failed [rule_status]");
         goto end;

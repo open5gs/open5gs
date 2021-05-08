@@ -79,10 +79,6 @@ cJSON *OpenAPI_traffic_control_data_convertToJSON(OpenAPI_traffic_control_data_t
     }
 
     item = cJSON_CreateObject();
-    if (!traffic_control_data->tc_id) {
-        ogs_error("OpenAPI_traffic_control_data_convertToJSON() failed [tc_id]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "tcId", traffic_control_data->tc_id) == NULL) {
         ogs_error("OpenAPI_traffic_control_data_convertToJSON() failed [tc_id]");
         goto end;

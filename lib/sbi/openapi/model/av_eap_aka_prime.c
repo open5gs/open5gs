@@ -51,19 +51,11 @@ cJSON *OpenAPI_av_eap_aka_prime_convertToJSON(OpenAPI_av_eap_aka_prime_t *av_eap
     }
 
     item = cJSON_CreateObject();
-    if (!av_eap_aka_prime->av_type) {
-        ogs_error("OpenAPI_av_eap_aka_prime_convertToJSON() failed [av_type]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "avType", OpenAPI_av_type_ToString(av_eap_aka_prime->av_type)) == NULL) {
         ogs_error("OpenAPI_av_eap_aka_prime_convertToJSON() failed [av_type]");
         goto end;
     }
 
-    if (!av_eap_aka_prime->rand) {
-        ogs_error("OpenAPI_av_eap_aka_prime_convertToJSON() failed [rand]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "rand", av_eap_aka_prime->rand) == NULL) {
         ogs_error("OpenAPI_av_eap_aka_prime_convertToJSON() failed [rand]");
         goto end;
@@ -76,10 +68,6 @@ cJSON *OpenAPI_av_eap_aka_prime_convertToJSON(OpenAPI_av_eap_aka_prime_t *av_eap
         }
     }
 
-    if (!av_eap_aka_prime->autn) {
-        ogs_error("OpenAPI_av_eap_aka_prime_convertToJSON() failed [autn]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "autn", av_eap_aka_prime->autn) == NULL) {
         ogs_error("OpenAPI_av_eap_aka_prime_convertToJSON() failed [autn]");
         goto end;

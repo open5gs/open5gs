@@ -62,10 +62,6 @@ cJSON *OpenAPI_smf_info_convertToJSON(OpenAPI_smf_info_t *smf_info)
     }
 
     item = cJSON_CreateObject();
-    if (!smf_info->s_nssai_smf_info_list) {
-        ogs_error("OpenAPI_smf_info_convertToJSON() failed [s_nssai_smf_info_list]");
-        goto end;
-    }
     cJSON *s_nssai_smf_info_listList = cJSON_AddArrayToObject(item, "sNssaiSmfInfoList");
     if (s_nssai_smf_info_listList == NULL) {
         ogs_error("OpenAPI_smf_info_convertToJSON() failed [s_nssai_smf_info_list]");

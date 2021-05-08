@@ -39,10 +39,6 @@ cJSON *OpenAPI_point_altitude_all_of_convertToJSON(OpenAPI_point_altitude_all_of
     }
 
     item = cJSON_CreateObject();
-    if (!point_altitude_all_of->point) {
-        ogs_error("OpenAPI_point_altitude_all_of_convertToJSON() failed [point]");
-        goto end;
-    }
     cJSON *point_local_JSON = OpenAPI_geographical_coordinates_convertToJSON(point_altitude_all_of->point);
     if (point_local_JSON == NULL) {
         ogs_error("OpenAPI_point_altitude_all_of_convertToJSON() failed [point]");
@@ -54,10 +50,6 @@ cJSON *OpenAPI_point_altitude_all_of_convertToJSON(OpenAPI_point_altitude_all_of
         goto end;
     }
 
-    if (!point_altitude_all_of->altitude) {
-        ogs_error("OpenAPI_point_altitude_all_of_convertToJSON() failed [altitude]");
-        goto end;
-    }
     if (cJSON_AddNumberToObject(item, "altitude", point_altitude_all_of->altitude) == NULL) {
         ogs_error("OpenAPI_point_altitude_all_of_convertToJSON() failed [altitude]");
         goto end;

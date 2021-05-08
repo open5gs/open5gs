@@ -47,10 +47,6 @@ cJSON *OpenAPI_alternative_qos_profile_convertToJSON(OpenAPI_alternative_qos_pro
     }
 
     item = cJSON_CreateObject();
-    if (!alternative_qos_profile->index) {
-        ogs_error("OpenAPI_alternative_qos_profile_convertToJSON() failed [index]");
-        goto end;
-    }
     if (cJSON_AddNumberToObject(item, "index", alternative_qos_profile->index) == NULL) {
         ogs_error("OpenAPI_alternative_qos_profile_convertToJSON() failed [index]");
         goto end;

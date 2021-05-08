@@ -40,10 +40,6 @@ cJSON *OpenAPI_ng_ran_target_id_convertToJSON(OpenAPI_ng_ran_target_id_t *ng_ran
     }
 
     item = cJSON_CreateObject();
-    if (!ng_ran_target_id->ran_node_id) {
-        ogs_error("OpenAPI_ng_ran_target_id_convertToJSON() failed [ran_node_id]");
-        goto end;
-    }
     cJSON *ran_node_id_local_JSON = OpenAPI_global_ran_node_id_convertToJSON(ng_ran_target_id->ran_node_id);
     if (ran_node_id_local_JSON == NULL) {
         ogs_error("OpenAPI_ng_ran_target_id_convertToJSON() failed [ran_node_id]");
@@ -55,10 +51,6 @@ cJSON *OpenAPI_ng_ran_target_id_convertToJSON(OpenAPI_ng_ran_target_id_t *ng_ran
         goto end;
     }
 
-    if (!ng_ran_target_id->tai) {
-        ogs_error("OpenAPI_ng_ran_target_id_convertToJSON() failed [tai]");
-        goto end;
-    }
     cJSON *tai_local_JSON = OpenAPI_tai_convertToJSON(ng_ran_target_id->tai);
     if (tai_local_JSON == NULL) {
         ogs_error("OpenAPI_ng_ran_target_id_convertToJSON() failed [tai]");

@@ -88,10 +88,6 @@ cJSON *OpenAPI_application_data_change_notif_convertToJSON(OpenAPI_application_d
         }
     }
 
-    if (!application_data_change_notif->res_uri) {
-        ogs_error("OpenAPI_application_data_change_notif_convertToJSON() failed [res_uri]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "resUri", application_data_change_notif->res_uri) == NULL) {
         ogs_error("OpenAPI_application_data_change_notif_convertToJSON() failed [res_uri]");
         goto end;

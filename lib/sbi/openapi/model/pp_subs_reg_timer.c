@@ -47,28 +47,16 @@ cJSON *OpenAPI_pp_subs_reg_timer_convertToJSON(OpenAPI_pp_subs_reg_timer_t *pp_s
     }
 
     item = cJSON_CreateObject();
-    if (!pp_subs_reg_timer->subs_reg_timer) {
-        ogs_error("OpenAPI_pp_subs_reg_timer_convertToJSON() failed [subs_reg_timer]");
-        goto end;
-    }
     if (cJSON_AddNumberToObject(item, "subsRegTimer", pp_subs_reg_timer->subs_reg_timer) == NULL) {
         ogs_error("OpenAPI_pp_subs_reg_timer_convertToJSON() failed [subs_reg_timer]");
         goto end;
     }
 
-    if (!pp_subs_reg_timer->af_instance_id) {
-        ogs_error("OpenAPI_pp_subs_reg_timer_convertToJSON() failed [af_instance_id]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "afInstanceId", pp_subs_reg_timer->af_instance_id) == NULL) {
         ogs_error("OpenAPI_pp_subs_reg_timer_convertToJSON() failed [af_instance_id]");
         goto end;
     }
 
-    if (!pp_subs_reg_timer->reference_id) {
-        ogs_error("OpenAPI_pp_subs_reg_timer_convertToJSON() failed [reference_id]");
-        goto end;
-    }
     if (cJSON_AddNumberToObject(item, "referenceId", pp_subs_reg_timer->reference_id) == NULL) {
         ogs_error("OpenAPI_pp_subs_reg_timer_convertToJSON() failed [reference_id]");
         goto end;

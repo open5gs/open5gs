@@ -46,10 +46,6 @@ cJSON *OpenAPI_allowed_snssai_convertToJSON(OpenAPI_allowed_snssai_t *allowed_sn
     }
 
     item = cJSON_CreateObject();
-    if (!allowed_snssai->allowed_snssai) {
-        ogs_error("OpenAPI_allowed_snssai_convertToJSON() failed [allowed_snssai]");
-        goto end;
-    }
     cJSON *allowed_snssai_local_JSON = OpenAPI_snssai_convertToJSON(allowed_snssai->allowed_snssai);
     if (allowed_snssai_local_JSON == NULL) {
         ogs_error("OpenAPI_allowed_snssai_convertToJSON() failed [allowed_snssai]");

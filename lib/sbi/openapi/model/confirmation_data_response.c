@@ -42,10 +42,6 @@ cJSON *OpenAPI_confirmation_data_response_convertToJSON(OpenAPI_confirmation_dat
     }
 
     item = cJSON_CreateObject();
-    if (!confirmation_data_response->auth_result) {
-        ogs_error("OpenAPI_confirmation_data_response_convertToJSON() failed [auth_result]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "authResult", OpenAPI_auth_result_ToString(confirmation_data_response->auth_result)) == NULL) {
         ogs_error("OpenAPI_confirmation_data_response_convertToJSON() failed [auth_result]");
         goto end;

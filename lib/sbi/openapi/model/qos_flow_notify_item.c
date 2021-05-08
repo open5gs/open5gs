@@ -42,19 +42,11 @@ cJSON *OpenAPI_qos_flow_notify_item_convertToJSON(OpenAPI_qos_flow_notify_item_t
     }
 
     item = cJSON_CreateObject();
-    if (!qos_flow_notify_item->qfi) {
-        ogs_error("OpenAPI_qos_flow_notify_item_convertToJSON() failed [qfi]");
-        goto end;
-    }
     if (cJSON_AddNumberToObject(item, "qfi", qos_flow_notify_item->qfi) == NULL) {
         ogs_error("OpenAPI_qos_flow_notify_item_convertToJSON() failed [qfi]");
         goto end;
     }
 
-    if (!qos_flow_notify_item->notification_cause) {
-        ogs_error("OpenAPI_qos_flow_notify_item_convertToJSON() failed [notification_cause]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "notificationCause", OpenAPI_notification_cause_ToString(qos_flow_notify_item->notification_cause)) == NULL) {
         ogs_error("OpenAPI_qos_flow_notify_item_convertToJSON() failed [notification_cause]");
         goto end;

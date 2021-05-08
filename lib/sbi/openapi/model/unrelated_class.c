@@ -46,10 +46,6 @@ cJSON *OpenAPI_unrelated_class_convertToJSON(OpenAPI_unrelated_class_t *unrelate
     }
 
     item = cJSON_CreateObject();
-    if (!unrelated_class->default_unrelated_class) {
-        ogs_error("OpenAPI_unrelated_class_convertToJSON() failed [default_unrelated_class]");
-        goto end;
-    }
     cJSON *default_unrelated_class_local_JSON = OpenAPI_default_unrelated_class_convertToJSON(unrelated_class->default_unrelated_class);
     if (default_unrelated_class_local_JSON == NULL) {
         ogs_error("OpenAPI_unrelated_class_convertToJSON() failed [default_unrelated_class]");

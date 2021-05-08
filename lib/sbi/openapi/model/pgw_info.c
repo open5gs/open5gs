@@ -45,19 +45,11 @@ cJSON *OpenAPI_pgw_info_convertToJSON(OpenAPI_pgw_info_t *pgw_info)
     }
 
     item = cJSON_CreateObject();
-    if (!pgw_info->dnn) {
-        ogs_error("OpenAPI_pgw_info_convertToJSON() failed [dnn]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "dnn", pgw_info->dnn) == NULL) {
         ogs_error("OpenAPI_pgw_info_convertToJSON() failed [dnn]");
         goto end;
     }
 
-    if (!pgw_info->pgw_fqdn) {
-        ogs_error("OpenAPI_pgw_info_convertToJSON() failed [pgw_fqdn]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "pgwFqdn", pgw_info->pgw_fqdn) == NULL) {
         ogs_error("OpenAPI_pgw_info_convertToJSON() failed [pgw_fqdn]");
         goto end;

@@ -42,10 +42,6 @@ cJSON *OpenAPI_slice_info_for_pdu_session_convertToJSON(OpenAPI_slice_info_for_p
     }
 
     item = cJSON_CreateObject();
-    if (!slice_info_for_pdu_session->s_nssai) {
-        ogs_error("OpenAPI_slice_info_for_pdu_session_convertToJSON() failed [s_nssai]");
-        goto end;
-    }
     cJSON *s_nssai_local_JSON = OpenAPI_snssai_convertToJSON(slice_info_for_pdu_session->s_nssai);
     if (s_nssai_local_JSON == NULL) {
         ogs_error("OpenAPI_slice_info_for_pdu_session_convertToJSON() failed [s_nssai]");
@@ -57,10 +53,6 @@ cJSON *OpenAPI_slice_info_for_pdu_session_convertToJSON(OpenAPI_slice_info_for_p
         goto end;
     }
 
-    if (!slice_info_for_pdu_session->roaming_indication) {
-        ogs_error("OpenAPI_slice_info_for_pdu_session_convertToJSON() failed [roaming_indication]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "roamingIndication", OpenAPI_roaming_indication_ToString(slice_info_for_pdu_session->roaming_indication)) == NULL) {
         ogs_error("OpenAPI_slice_info_for_pdu_session_convertToJSON() failed [roaming_indication]");
         goto end;

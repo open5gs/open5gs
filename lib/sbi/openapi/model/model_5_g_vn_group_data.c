@@ -54,19 +54,11 @@ cJSON *OpenAPI_model_5_g_vn_group_data_convertToJSON(OpenAPI_model_5_g_vn_group_
     }
 
     item = cJSON_CreateObject();
-    if (!model_5_g_vn_group_data->dnn) {
-        ogs_error("OpenAPI_model_5_g_vn_group_data_convertToJSON() failed [dnn]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "dnn", model_5_g_vn_group_data->dnn) == NULL) {
         ogs_error("OpenAPI_model_5_g_vn_group_data_convertToJSON() failed [dnn]");
         goto end;
     }
 
-    if (!model_5_g_vn_group_data->s_nssai) {
-        ogs_error("OpenAPI_model_5_g_vn_group_data_convertToJSON() failed [s_nssai]");
-        goto end;
-    }
     cJSON *s_nssai_local_JSON = OpenAPI_snssai_convertToJSON(model_5_g_vn_group_data->s_nssai);
     if (s_nssai_local_JSON == NULL) {
         ogs_error("OpenAPI_model_5_g_vn_group_data_convertToJSON() failed [s_nssai]");

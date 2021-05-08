@@ -37,10 +37,6 @@ cJSON *OpenAPI_nf_service_set_cond_convertToJSON(OpenAPI_nf_service_set_cond_t *
     }
 
     item = cJSON_CreateObject();
-    if (!nf_service_set_cond->nf_service_set_id) {
-        ogs_error("OpenAPI_nf_service_set_cond_convertToJSON() failed [nf_service_set_id]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "nfServiceSetId", nf_service_set_cond->nf_service_set_id) == NULL) {
         ogs_error("OpenAPI_nf_service_set_cond_convertToJSON() failed [nf_service_set_id]");
         goto end;

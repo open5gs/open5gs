@@ -40,10 +40,6 @@ cJSON *OpenAPI_smf_registration_info_convertToJSON(OpenAPI_smf_registration_info
     }
 
     item = cJSON_CreateObject();
-    if (!smf_registration_info->smf_registration_list) {
-        ogs_error("OpenAPI_smf_registration_info_convertToJSON() failed [smf_registration_list]");
-        goto end;
-    }
     cJSON *smf_registration_listList = cJSON_AddArrayToObject(item, "smfRegistrationList");
     if (smf_registration_listList == NULL) {
         ogs_error("OpenAPI_smf_registration_info_convertToJSON() failed [smf_registration_list]");

@@ -41,19 +41,11 @@ cJSON *OpenAPI_subscribed_default_qos_convertToJSON(OpenAPI_subscribed_default_q
     }
 
     item = cJSON_CreateObject();
-    if (!subscribed_default_qos->_5qi) {
-        ogs_error("OpenAPI_subscribed_default_qos_convertToJSON() failed [_5qi]");
-        goto end;
-    }
     if (cJSON_AddNumberToObject(item, "5qi", subscribed_default_qos->_5qi) == NULL) {
         ogs_error("OpenAPI_subscribed_default_qos_convertToJSON() failed [_5qi]");
         goto end;
     }
 
-    if (!subscribed_default_qos->arp) {
-        ogs_error("OpenAPI_subscribed_default_qos_convertToJSON() failed [arp]");
-        goto end;
-    }
     cJSON *arp_local_JSON = OpenAPI_arp_convertToJSON(subscribed_default_qos->arp);
     if (arp_local_JSON == NULL) {
         ogs_error("OpenAPI_subscribed_default_qos_convertToJSON() failed [arp]");

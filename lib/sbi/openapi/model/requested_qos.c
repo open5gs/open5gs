@@ -42,10 +42,6 @@ cJSON *OpenAPI_requested_qos_convertToJSON(OpenAPI_requested_qos_t *requested_qo
     }
 
     item = cJSON_CreateObject();
-    if (!requested_qos->_5qi) {
-        ogs_error("OpenAPI_requested_qos_convertToJSON() failed [_5qi]");
-        goto end;
-    }
     if (cJSON_AddNumberToObject(item, "5qi", requested_qos->_5qi) == NULL) {
         ogs_error("OpenAPI_requested_qos_convertToJSON() failed [_5qi]");
         goto end;

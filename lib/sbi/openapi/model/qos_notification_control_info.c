@@ -48,10 +48,6 @@ cJSON *OpenAPI_qos_notification_control_info_convertToJSON(OpenAPI_qos_notificat
     }
 
     item = cJSON_CreateObject();
-    if (!qos_notification_control_info->ref_pcc_rule_ids) {
-        ogs_error("OpenAPI_qos_notification_control_info_convertToJSON() failed [ref_pcc_rule_ids]");
-        goto end;
-    }
     cJSON *ref_pcc_rule_ids = cJSON_AddArrayToObject(item, "refPccRuleIds");
     if (ref_pcc_rule_ids == NULL) {
         ogs_error("OpenAPI_qos_notification_control_info_convertToJSON() failed [ref_pcc_rule_ids]");
@@ -66,10 +62,6 @@ cJSON *OpenAPI_qos_notification_control_info_convertToJSON(OpenAPI_qos_notificat
         }
     }
 
-    if (!qos_notification_control_info->notif_type) {
-        ogs_error("OpenAPI_qos_notification_control_info_convertToJSON() failed [notif_type]");
-        goto end;
-    }
     cJSON *notif_type_local_JSON = OpenAPI_qos_notif_type_convertToJSON(qos_notification_control_info->notif_type);
     if (notif_type_local_JSON == NULL) {
         ogs_error("OpenAPI_qos_notification_control_info_convertToJSON() failed [notif_type]");

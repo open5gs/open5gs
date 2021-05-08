@@ -55,10 +55,6 @@ cJSON *OpenAPI_dnn_info_convertToJSON(OpenAPI_dnn_info_t *dnn_info)
     }
 
     item = cJSON_CreateObject();
-    if (!dnn_info->dnn) {
-        ogs_error("OpenAPI_dnn_info_convertToJSON() failed [dnn]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "dnn", dnn_info->dnn) == NULL) {
         ogs_error("OpenAPI_dnn_info_convertToJSON() failed [dnn]");
         goto end;

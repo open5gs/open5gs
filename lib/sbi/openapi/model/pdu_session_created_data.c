@@ -140,19 +140,11 @@ cJSON *OpenAPI_pdu_session_created_data_convertToJSON(OpenAPI_pdu_session_create
     }
 
     item = cJSON_CreateObject();
-    if (!pdu_session_created_data->pdu_session_type) {
-        ogs_error("OpenAPI_pdu_session_created_data_convertToJSON() failed [pdu_session_type]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "pduSessionType", OpenAPI_pdu_session_type_ToString(pdu_session_created_data->pdu_session_type)) == NULL) {
         ogs_error("OpenAPI_pdu_session_created_data_convertToJSON() failed [pdu_session_type]");
         goto end;
     }
 
-    if (!pdu_session_created_data->ssc_mode) {
-        ogs_error("OpenAPI_pdu_session_created_data_convertToJSON() failed [ssc_mode]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "sscMode", pdu_session_created_data->ssc_mode) == NULL) {
         ogs_error("OpenAPI_pdu_session_created_data_convertToJSON() failed [ssc_mode]");
         goto end;

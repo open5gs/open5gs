@@ -42,10 +42,6 @@ cJSON *OpenAPI_plmn_ec_info_convertToJSON(OpenAPI_plmn_ec_info_t *plmn_ec_info)
     }
 
     item = cJSON_CreateObject();
-    if (!plmn_ec_info->plmn_id) {
-        ogs_error("OpenAPI_plmn_ec_info_convertToJSON() failed [plmn_id]");
-        goto end;
-    }
     cJSON *plmn_id_local_JSON = OpenAPI_plmn_id_convertToJSON(plmn_ec_info->plmn_id);
     if (plmn_id_local_JSON == NULL) {
         ogs_error("OpenAPI_plmn_ec_info_convertToJSON() failed [plmn_id]");

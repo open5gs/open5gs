@@ -49,10 +49,6 @@ cJSON *OpenAPI_application_data_subs_convertToJSON(OpenAPI_application_data_subs
     }
 
     item = cJSON_CreateObject();
-    if (!application_data_subs->notification_uri) {
-        ogs_error("OpenAPI_application_data_subs_convertToJSON() failed [notification_uri]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "notificationUri", application_data_subs->notification_uri) == NULL) {
         ogs_error("OpenAPI_application_data_subs_convertToJSON() failed [notification_uri]");
         goto end;

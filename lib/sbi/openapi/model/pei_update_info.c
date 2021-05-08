@@ -37,10 +37,6 @@ cJSON *OpenAPI_pei_update_info_convertToJSON(OpenAPI_pei_update_info_t *pei_upda
     }
 
     item = cJSON_CreateObject();
-    if (!pei_update_info->pei) {
-        ogs_error("OpenAPI_pei_update_info_convertToJSON() failed [pei]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "pei", pei_update_info->pei) == NULL) {
         ogs_error("OpenAPI_pei_update_info_convertToJSON() failed [pei]");
         goto end;

@@ -67,10 +67,6 @@ cJSON *OpenAPI_eth_flow_description_convertToJSON(OpenAPI_eth_flow_description_t
         }
     }
 
-    if (!eth_flow_description->eth_type) {
-        ogs_error("OpenAPI_eth_flow_description_convertToJSON() failed [eth_type]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "ethType", eth_flow_description->eth_type) == NULL) {
         ogs_error("OpenAPI_eth_flow_description_convertToJSON() failed [eth_type]");
         goto end;

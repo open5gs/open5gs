@@ -42,10 +42,6 @@ cJSON *OpenAPI_qos_flow_item_convertToJSON(OpenAPI_qos_flow_item_t *qos_flow_ite
     }
 
     item = cJSON_CreateObject();
-    if (!qos_flow_item->qfi) {
-        ogs_error("OpenAPI_qos_flow_item_convertToJSON() failed [qfi]");
-        goto end;
-    }
     if (cJSON_AddNumberToObject(item, "qfi", qos_flow_item->qfi) == NULL) {
         ogs_error("OpenAPI_qos_flow_item_convertToJSON() failed [qfi]");
         goto end;

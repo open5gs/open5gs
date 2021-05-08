@@ -36,10 +36,6 @@ cJSON *OpenAPI_nf_type_cond_convertToJSON(OpenAPI_nf_type_cond_t *nf_type_cond)
     }
 
     item = cJSON_CreateObject();
-    if (!nf_type_cond->nf_type) {
-        ogs_error("OpenAPI_nf_type_cond_convertToJSON() failed [nf_type]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "nfType", OpenAPI_nf_type_ToString(nf_type_cond->nf_type)) == NULL) {
         ogs_error("OpenAPI_nf_type_cond_convertToJSON() failed [nf_type]");
         goto end;

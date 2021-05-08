@@ -94,10 +94,6 @@ cJSON *OpenAPI_dnn_configuration_convertToJSON(OpenAPI_dnn_configuration_t *dnn_
     }
 
     item = cJSON_CreateObject();
-    if (!dnn_configuration->pdu_session_types) {
-        ogs_error("OpenAPI_dnn_configuration_convertToJSON() failed [pdu_session_types]");
-        goto end;
-    }
     cJSON *pdu_session_types_local_JSON = OpenAPI_pdu_session_types_convertToJSON(dnn_configuration->pdu_session_types);
     if (pdu_session_types_local_JSON == NULL) {
         ogs_error("OpenAPI_dnn_configuration_convertToJSON() failed [pdu_session_types]");
@@ -109,10 +105,6 @@ cJSON *OpenAPI_dnn_configuration_convertToJSON(OpenAPI_dnn_configuration_t *dnn_
         goto end;
     }
 
-    if (!dnn_configuration->ssc_modes) {
-        ogs_error("OpenAPI_dnn_configuration_convertToJSON() failed [ssc_modes]");
-        goto end;
-    }
     cJSON *ssc_modes_local_JSON = OpenAPI_ssc_modes_convertToJSON(dnn_configuration->ssc_modes);
     if (ssc_modes_local_JSON == NULL) {
         ogs_error("OpenAPI_dnn_configuration_convertToJSON() failed [ssc_modes]");

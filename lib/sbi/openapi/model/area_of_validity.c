@@ -40,10 +40,6 @@ cJSON *OpenAPI_area_of_validity_convertToJSON(OpenAPI_area_of_validity_t *area_o
     }
 
     item = cJSON_CreateObject();
-    if (!area_of_validity->tai_list) {
-        ogs_error("OpenAPI_area_of_validity_convertToJSON() failed [tai_list]");
-        goto end;
-    }
     cJSON *tai_listList = cJSON_AddArrayToObject(item, "taiList");
     if (tai_listList == NULL) {
         ogs_error("OpenAPI_area_of_validity_convertToJSON() failed [tai_list]");

@@ -56,10 +56,6 @@ cJSON *OpenAPI_dynamic5_qi_convertToJSON(OpenAPI_dynamic5_qi_t *dynamic5_qi)
     }
 
     item = cJSON_CreateObject();
-    if (!dynamic5_qi->resource_type) {
-        ogs_error("OpenAPI_dynamic5_qi_convertToJSON() failed [resource_type]");
-        goto end;
-    }
     cJSON *resource_type_local_JSON = OpenAPI_qos_resource_type_convertToJSON(dynamic5_qi->resource_type);
     if (resource_type_local_JSON == NULL) {
         ogs_error("OpenAPI_dynamic5_qi_convertToJSON() failed [resource_type]");
@@ -71,28 +67,16 @@ cJSON *OpenAPI_dynamic5_qi_convertToJSON(OpenAPI_dynamic5_qi_t *dynamic5_qi)
         goto end;
     }
 
-    if (!dynamic5_qi->priority_level) {
-        ogs_error("OpenAPI_dynamic5_qi_convertToJSON() failed [priority_level]");
-        goto end;
-    }
     if (cJSON_AddNumberToObject(item, "priorityLevel", dynamic5_qi->priority_level) == NULL) {
         ogs_error("OpenAPI_dynamic5_qi_convertToJSON() failed [priority_level]");
         goto end;
     }
 
-    if (!dynamic5_qi->packet_delay_budget) {
-        ogs_error("OpenAPI_dynamic5_qi_convertToJSON() failed [packet_delay_budget]");
-        goto end;
-    }
     if (cJSON_AddNumberToObject(item, "packetDelayBudget", dynamic5_qi->packet_delay_budget) == NULL) {
         ogs_error("OpenAPI_dynamic5_qi_convertToJSON() failed [packet_delay_budget]");
         goto end;
     }
 
-    if (!dynamic5_qi->packet_err_rate) {
-        ogs_error("OpenAPI_dynamic5_qi_convertToJSON() failed [packet_err_rate]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "packetErrRate", dynamic5_qi->packet_err_rate) == NULL) {
         ogs_error("OpenAPI_dynamic5_qi_convertToJSON() failed [packet_err_rate]");
         goto end;

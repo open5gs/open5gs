@@ -85,10 +85,6 @@ cJSON *OpenAPI_upf_info_convertToJSON(OpenAPI_upf_info_t *upf_info)
     }
 
     item = cJSON_CreateObject();
-    if (!upf_info->s_nssai_upf_info_list) {
-        ogs_error("OpenAPI_upf_info_convertToJSON() failed [s_nssai_upf_info_list]");
-        goto end;
-    }
     cJSON *s_nssai_upf_info_listList = cJSON_AddArrayToObject(item, "sNssaiUpfInfoList");
     if (s_nssai_upf_info_listList == NULL) {
         ogs_error("OpenAPI_upf_info_convertToJSON() failed [s_nssai_upf_info_list]");

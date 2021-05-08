@@ -43,10 +43,6 @@ cJSON *OpenAPI_pc5_qos_mapping_convertToJSON(OpenAPI_pc5_qos_mapping_t *pc5_qos_
     }
 
     item = cJSON_CreateObject();
-    if (!pc5_qos_mapping->ser_ids) {
-        ogs_error("OpenAPI_pc5_qos_mapping_convertToJSON() failed [ser_ids]");
-        goto end;
-    }
     cJSON *ser_ids = cJSON_AddArrayToObject(item, "serIds");
     if (ser_ids == NULL) {
         ogs_error("OpenAPI_pc5_qos_mapping_convertToJSON() failed [ser_ids]");

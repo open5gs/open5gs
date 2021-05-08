@@ -239,10 +239,6 @@ cJSON *OpenAPI_pdu_session_create_data_convertToJSON(OpenAPI_pdu_session_create_
         }
     }
 
-    if (!pdu_session_create_data->dnn) {
-        ogs_error("OpenAPI_pdu_session_create_data_convertToJSON() failed [dnn]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "dnn", pdu_session_create_data->dnn) == NULL) {
         ogs_error("OpenAPI_pdu_session_create_data_convertToJSON() failed [dnn]");
         goto end;
@@ -282,10 +278,6 @@ cJSON *OpenAPI_pdu_session_create_data_convertToJSON(OpenAPI_pdu_session_create_
         }
     }
 
-    if (!pdu_session_create_data->serving_network) {
-        ogs_error("OpenAPI_pdu_session_create_data_convertToJSON() failed [serving_network]");
-        goto end;
-    }
     cJSON *serving_network_local_JSON = OpenAPI_plmn_id_nid_convertToJSON(pdu_session_create_data->serving_network);
     if (serving_network_local_JSON == NULL) {
         ogs_error("OpenAPI_pdu_session_create_data_convertToJSON() failed [serving_network]");
@@ -393,10 +385,6 @@ cJSON *OpenAPI_pdu_session_create_data_convertToJSON(OpenAPI_pdu_session_create_
         }
     }
 
-    if (!pdu_session_create_data->an_type) {
-        ogs_error("OpenAPI_pdu_session_create_data_convertToJSON() failed [an_type]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "anType", OpenAPI_access_type_ToString(pdu_session_create_data->an_type)) == NULL) {
         ogs_error("OpenAPI_pdu_session_create_data_convertToJSON() failed [an_type]");
         goto end;

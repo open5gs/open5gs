@@ -44,37 +44,21 @@ cJSON *OpenAPI_volume_timed_report_convertToJSON(OpenAPI_volume_timed_report_t *
     }
 
     item = cJSON_CreateObject();
-    if (!volume_timed_report->start_time_stamp) {
-        ogs_error("OpenAPI_volume_timed_report_convertToJSON() failed [start_time_stamp]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "startTimeStamp", volume_timed_report->start_time_stamp) == NULL) {
         ogs_error("OpenAPI_volume_timed_report_convertToJSON() failed [start_time_stamp]");
         goto end;
     }
 
-    if (!volume_timed_report->end_time_stamp) {
-        ogs_error("OpenAPI_volume_timed_report_convertToJSON() failed [end_time_stamp]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "endTimeStamp", volume_timed_report->end_time_stamp) == NULL) {
         ogs_error("OpenAPI_volume_timed_report_convertToJSON() failed [end_time_stamp]");
         goto end;
     }
 
-    if (!volume_timed_report->downlink_volume) {
-        ogs_error("OpenAPI_volume_timed_report_convertToJSON() failed [downlink_volume]");
-        goto end;
-    }
     if (cJSON_AddNumberToObject(item, "downlinkVolume", volume_timed_report->downlink_volume) == NULL) {
         ogs_error("OpenAPI_volume_timed_report_convertToJSON() failed [downlink_volume]");
         goto end;
     }
 
-    if (!volume_timed_report->uplink_volume) {
-        ogs_error("OpenAPI_volume_timed_report_convertToJSON() failed [uplink_volume]");
-        goto end;
-    }
     if (cJSON_AddNumberToObject(item, "uplinkVolume", volume_timed_report->uplink_volume) == NULL) {
         ogs_error("OpenAPI_volume_timed_report_convertToJSON() failed [uplink_volume]");
         goto end;

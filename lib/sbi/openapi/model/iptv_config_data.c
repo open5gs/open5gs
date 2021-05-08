@@ -94,19 +94,11 @@ cJSON *OpenAPI_iptv_config_data_convertToJSON(OpenAPI_iptv_config_data_t *iptv_c
         }
     }
 
-    if (!iptv_config_data->af_app_id) {
-        ogs_error("OpenAPI_iptv_config_data_convertToJSON() failed [af_app_id]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "afAppId", iptv_config_data->af_app_id) == NULL) {
         ogs_error("OpenAPI_iptv_config_data_convertToJSON() failed [af_app_id]");
         goto end;
     }
 
-    if (!iptv_config_data->multi_acc_ctrls) {
-        ogs_error("OpenAPI_iptv_config_data_convertToJSON() failed [multi_acc_ctrls]");
-        goto end;
-    }
     cJSON *multi_acc_ctrls = cJSON_AddObjectToObject(item, "multiAccCtrls");
     if (multi_acc_ctrls == NULL) {
         ogs_error("OpenAPI_iptv_config_data_convertToJSON() failed [multi_acc_ctrls]");
@@ -126,10 +118,6 @@ cJSON *OpenAPI_iptv_config_data_convertToJSON(OpenAPI_iptv_config_data_t *iptv_c
         }
     }
 
-    if (!iptv_config_data->supp_feat) {
-        ogs_error("OpenAPI_iptv_config_data_convertToJSON() failed [supp_feat]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "suppFeat", iptv_config_data->supp_feat) == NULL) {
         ogs_error("OpenAPI_iptv_config_data_convertToJSON() failed [supp_feat]");
         goto end;

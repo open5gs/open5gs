@@ -37,10 +37,6 @@ cJSON *OpenAPI_bdt_policy_data_patch_convertToJSON(OpenAPI_bdt_policy_data_patch
     }
 
     item = cJSON_CreateObject();
-    if (!bdt_policy_data_patch->bdt_ref_id) {
-        ogs_error("OpenAPI_bdt_policy_data_patch_convertToJSON() failed [bdt_ref_id]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "bdtRefId", bdt_policy_data_patch->bdt_ref_id) == NULL) {
         ogs_error("OpenAPI_bdt_policy_data_patch_convertToJSON() failed [bdt_ref_id]");
         goto end;

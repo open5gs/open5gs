@@ -49,19 +49,11 @@ cJSON *OpenAPI_exposure_data_subscription_convertToJSON(OpenAPI_exposure_data_su
     }
 
     item = cJSON_CreateObject();
-    if (!exposure_data_subscription->notification_uri) {
-        ogs_error("OpenAPI_exposure_data_subscription_convertToJSON() failed [notification_uri]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "notificationUri", exposure_data_subscription->notification_uri) == NULL) {
         ogs_error("OpenAPI_exposure_data_subscription_convertToJSON() failed [notification_uri]");
         goto end;
     }
 
-    if (!exposure_data_subscription->monitored_resource_uris) {
-        ogs_error("OpenAPI_exposure_data_subscription_convertToJSON() failed [monitored_resource_uris]");
-        goto end;
-    }
     cJSON *monitored_resource_uris = cJSON_AddArrayToObject(item, "monitoredResourceUris");
     if (monitored_resource_uris == NULL) {
         ogs_error("OpenAPI_exposure_data_subscription_convertToJSON() failed [monitored_resource_uris]");

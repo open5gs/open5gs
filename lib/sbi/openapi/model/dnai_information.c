@@ -41,10 +41,6 @@ cJSON *OpenAPI_dnai_information_convertToJSON(OpenAPI_dnai_information_t *dnai_i
     }
 
     item = cJSON_CreateObject();
-    if (!dnai_information->dnai) {
-        ogs_error("OpenAPI_dnai_information_convertToJSON() failed [dnai]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "dnai", dnai_information->dnai) == NULL) {
         ogs_error("OpenAPI_dnai_information_convertToJSON() failed [dnai]");
         goto end;

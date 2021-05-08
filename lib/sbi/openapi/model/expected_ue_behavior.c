@@ -43,10 +43,6 @@ cJSON *OpenAPI_expected_ue_behavior_convertToJSON(OpenAPI_expected_ue_behavior_t
     }
 
     item = cJSON_CreateObject();
-    if (!expected_ue_behavior->exp_move_trajectory) {
-        ogs_error("OpenAPI_expected_ue_behavior_convertToJSON() failed [exp_move_trajectory]");
-        goto end;
-    }
     cJSON *exp_move_trajectoryList = cJSON_AddArrayToObject(item, "expMoveTrajectory");
     if (exp_move_trajectoryList == NULL) {
         ogs_error("OpenAPI_expected_ue_behavior_convertToJSON() failed [exp_move_trajectory]");
@@ -65,10 +61,6 @@ cJSON *OpenAPI_expected_ue_behavior_convertToJSON(OpenAPI_expected_ue_behavior_t
         }
     }
 
-    if (!expected_ue_behavior->validity_time) {
-        ogs_error("OpenAPI_expected_ue_behavior_convertToJSON() failed [validity_time]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "validityTime", expected_ue_behavior->validity_time) == NULL) {
         ogs_error("OpenAPI_expected_ue_behavior_convertToJSON() failed [validity_time]");
         goto end;

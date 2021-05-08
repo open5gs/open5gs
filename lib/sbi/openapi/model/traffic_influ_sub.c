@@ -135,10 +135,6 @@ cJSON *OpenAPI_traffic_influ_sub_convertToJSON(OpenAPI_traffic_influ_sub_t *traf
         }
     }
 
-    if (!traffic_influ_sub->notification_uri) {
-        ogs_error("OpenAPI_traffic_influ_sub_convertToJSON() failed [notification_uri]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "notificationUri", traffic_influ_sub->notification_uri) == NULL) {
         ogs_error("OpenAPI_traffic_influ_sub_convertToJSON() failed [notification_uri]");
         goto end;

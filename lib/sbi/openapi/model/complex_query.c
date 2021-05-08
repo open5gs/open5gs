@@ -46,10 +46,6 @@ cJSON *OpenAPI_complex_query_convertToJSON(OpenAPI_complex_query_t *complex_quer
     }
 
     item = cJSON_CreateObject();
-    if (!complex_query->cnf_units) {
-        ogs_error("OpenAPI_complex_query_convertToJSON() failed [cnf_units]");
-        goto end;
-    }
     cJSON *cnf_unitsList = cJSON_AddArrayToObject(item, "cnfUnits");
     if (cnf_unitsList == NULL) {
         ogs_error("OpenAPI_complex_query_convertToJSON() failed [cnf_units]");
@@ -68,10 +64,6 @@ cJSON *OpenAPI_complex_query_convertToJSON(OpenAPI_complex_query_t *complex_quer
         }
     }
 
-    if (!complex_query->dnf_units) {
-        ogs_error("OpenAPI_complex_query_convertToJSON() failed [dnf_units]");
-        goto end;
-    }
     cJSON *dnf_unitsList = cJSON_AddArrayToObject(item, "dnfUnits");
     if (dnf_unitsList == NULL) {
         ogs_error("OpenAPI_complex_query_convertToJSON() failed [dnf_units]");

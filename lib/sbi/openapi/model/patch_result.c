@@ -40,10 +40,6 @@ cJSON *OpenAPI_patch_result_convertToJSON(OpenAPI_patch_result_t *patch_result)
     }
 
     item = cJSON_CreateObject();
-    if (!patch_result->report) {
-        ogs_error("OpenAPI_patch_result_convertToJSON() failed [report]");
-        goto end;
-    }
     cJSON *reportList = cJSON_AddArrayToObject(item, "report");
     if (reportList == NULL) {
         ogs_error("OpenAPI_patch_result_convertToJSON() failed [report]");

@@ -89,19 +89,11 @@ cJSON *OpenAPI_non_ue_n2_info_subscription_create_data_convertToJSON(OpenAPI_non
         }
     }
 
-    if (!non_ue_n2_info_subscription_create_data->n2_information_class) {
-        ogs_error("OpenAPI_non_ue_n2_info_subscription_create_data_convertToJSON() failed [n2_information_class]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "n2InformationClass", OpenAPI_n2_information_class_ToString(non_ue_n2_info_subscription_create_data->n2_information_class)) == NULL) {
         ogs_error("OpenAPI_non_ue_n2_info_subscription_create_data_convertToJSON() failed [n2_information_class]");
         goto end;
     }
 
-    if (!non_ue_n2_info_subscription_create_data->n2_notify_callback_uri) {
-        ogs_error("OpenAPI_non_ue_n2_info_subscription_create_data_convertToJSON() failed [n2_notify_callback_uri]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "n2NotifyCallbackUri", non_ue_n2_info_subscription_create_data->n2_notify_callback_uri) == NULL) {
         ogs_error("OpenAPI_non_ue_n2_info_subscription_create_data_convertToJSON() failed [n2_notify_callback_uri]");
         goto end;

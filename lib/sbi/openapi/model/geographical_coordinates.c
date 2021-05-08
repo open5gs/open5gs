@@ -38,19 +38,11 @@ cJSON *OpenAPI_geographical_coordinates_convertToJSON(OpenAPI_geographical_coord
     }
 
     item = cJSON_CreateObject();
-    if (!geographical_coordinates->lon) {
-        ogs_error("OpenAPI_geographical_coordinates_convertToJSON() failed [lon]");
-        goto end;
-    }
     if (cJSON_AddNumberToObject(item, "lon", geographical_coordinates->lon) == NULL) {
         ogs_error("OpenAPI_geographical_coordinates_convertToJSON() failed [lon]");
         goto end;
     }
 
-    if (!geographical_coordinates->lat) {
-        ogs_error("OpenAPI_geographical_coordinates_convertToJSON() failed [lat]");
-        goto end;
-    }
     if (cJSON_AddNumberToObject(item, "lat", geographical_coordinates->lat) == NULL) {
         ogs_error("OpenAPI_geographical_coordinates_convertToJSON() failed [lat]");
         goto end;

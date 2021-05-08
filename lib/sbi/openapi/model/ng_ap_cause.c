@@ -38,19 +38,11 @@ cJSON *OpenAPI_ng_ap_cause_convertToJSON(OpenAPI_ng_ap_cause_t *ng_ap_cause)
     }
 
     item = cJSON_CreateObject();
-    if (!ng_ap_cause->group) {
-        ogs_error("OpenAPI_ng_ap_cause_convertToJSON() failed [group]");
-        goto end;
-    }
     if (cJSON_AddNumberToObject(item, "group", ng_ap_cause->group) == NULL) {
         ogs_error("OpenAPI_ng_ap_cause_convertToJSON() failed [group]");
         goto end;
     }
 
-    if (!ng_ap_cause->value) {
-        ogs_error("OpenAPI_ng_ap_cause_convertToJSON() failed [value]");
-        goto end;
-    }
     if (cJSON_AddNumberToObject(item, "value", ng_ap_cause->value) == NULL) {
         ogs_error("OpenAPI_ng_ap_cause_convertToJSON() failed [value]");
         goto end;

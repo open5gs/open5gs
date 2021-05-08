@@ -47,19 +47,11 @@ cJSON *OpenAPI_ue_context_transfer_req_data_convertToJSON(OpenAPI_ue_context_tra
     }
 
     item = cJSON_CreateObject();
-    if (!ue_context_transfer_req_data->reason) {
-        ogs_error("OpenAPI_ue_context_transfer_req_data_convertToJSON() failed [reason]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "reason", OpenAPI_transfer_reason_ToString(ue_context_transfer_req_data->reason)) == NULL) {
         ogs_error("OpenAPI_ue_context_transfer_req_data_convertToJSON() failed [reason]");
         goto end;
     }
 
-    if (!ue_context_transfer_req_data->access_type) {
-        ogs_error("OpenAPI_ue_context_transfer_req_data_convertToJSON() failed [access_type]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "accessType", OpenAPI_access_type_ToString(ue_context_transfer_req_data->access_type)) == NULL) {
         ogs_error("OpenAPI_ue_context_transfer_req_data_convertToJSON() failed [access_type]");
         goto end;

@@ -36,10 +36,6 @@ cJSON *OpenAPI_pws_error_data_convertToJSON(OpenAPI_pws_error_data_t *pws_error_
     }
 
     item = cJSON_CreateObject();
-    if (!pws_error_data->namf_cause) {
-        ogs_error("OpenAPI_pws_error_data_convertToJSON() failed [namf_cause]");
-        goto end;
-    }
     if (cJSON_AddNumberToObject(item, "namfCause", pws_error_data->namf_cause) == NULL) {
         ogs_error("OpenAPI_pws_error_data_convertToJSON() failed [namf_cause]");
         goto end;

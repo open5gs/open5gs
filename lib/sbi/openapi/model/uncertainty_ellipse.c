@@ -40,28 +40,16 @@ cJSON *OpenAPI_uncertainty_ellipse_convertToJSON(OpenAPI_uncertainty_ellipse_t *
     }
 
     item = cJSON_CreateObject();
-    if (!uncertainty_ellipse->semi_major) {
-        ogs_error("OpenAPI_uncertainty_ellipse_convertToJSON() failed [semi_major]");
-        goto end;
-    }
     if (cJSON_AddNumberToObject(item, "semiMajor", uncertainty_ellipse->semi_major) == NULL) {
         ogs_error("OpenAPI_uncertainty_ellipse_convertToJSON() failed [semi_major]");
         goto end;
     }
 
-    if (!uncertainty_ellipse->semi_minor) {
-        ogs_error("OpenAPI_uncertainty_ellipse_convertToJSON() failed [semi_minor]");
-        goto end;
-    }
     if (cJSON_AddNumberToObject(item, "semiMinor", uncertainty_ellipse->semi_minor) == NULL) {
         ogs_error("OpenAPI_uncertainty_ellipse_convertToJSON() failed [semi_minor]");
         goto end;
     }
 
-    if (!uncertainty_ellipse->orientation_major) {
-        ogs_error("OpenAPI_uncertainty_ellipse_convertToJSON() failed [orientation_major]");
-        goto end;
-    }
     if (cJSON_AddNumberToObject(item, "orientationMajor", uncertainty_ellipse->orientation_major) == NULL) {
         ogs_error("OpenAPI_uncertainty_ellipse_convertToJSON() failed [orientation_major]");
         goto end;

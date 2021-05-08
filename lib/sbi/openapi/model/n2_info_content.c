@@ -55,10 +55,6 @@ cJSON *OpenAPI_n2_info_content_convertToJSON(OpenAPI_n2_info_content_t *n2_info_
         }
     }
 
-    if (!n2_info_content->ngap_data) {
-        ogs_error("OpenAPI_n2_info_content_convertToJSON() failed [ngap_data]");
-        goto end;
-    }
     cJSON *ngap_data_local_JSON = OpenAPI_ref_to_binary_data_convertToJSON(n2_info_content->ngap_data);
     if (ngap_data_local_JSON == NULL) {
         ogs_error("OpenAPI_n2_info_content_convertToJSON() failed [ngap_data]");

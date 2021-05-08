@@ -37,10 +37,6 @@ cJSON *OpenAPI_lcs_mo_data_convertToJSON(OpenAPI_lcs_mo_data_t *lcs_mo_data)
     }
 
     item = cJSON_CreateObject();
-    if (!lcs_mo_data->allowed_service_classes) {
-        ogs_error("OpenAPI_lcs_mo_data_convertToJSON() failed [allowed_service_classes]");
-        goto end;
-    }
     cJSON *allowed_service_classes = cJSON_AddArrayToObject(item, "allowedServiceClasses");
     if (allowed_service_classes == NULL) {
         ogs_error("OpenAPI_lcs_mo_data_convertToJSON() failed [allowed_service_classes]");

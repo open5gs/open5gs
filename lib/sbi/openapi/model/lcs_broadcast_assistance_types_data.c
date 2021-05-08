@@ -40,10 +40,6 @@ cJSON *OpenAPI_lcs_broadcast_assistance_types_data_convertToJSON(OpenAPI_lcs_bro
     }
 
     item = cJSON_CreateObject();
-    if (!lcs_broadcast_assistance_types_data->location_assistance_type) {
-        ogs_error("OpenAPI_lcs_broadcast_assistance_types_data_convertToJSON() failed [location_assistance_type]");
-        goto end;
-    }
     cJSON *location_assistance_type = cJSON_AddArrayToObject(item, "locationAssistanceType");
     if (location_assistance_type == NULL) {
         ogs_error("OpenAPI_lcs_broadcast_assistance_types_data_convertToJSON() failed [location_assistance_type]");

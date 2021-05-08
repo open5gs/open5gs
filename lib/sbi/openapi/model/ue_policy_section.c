@@ -39,19 +39,11 @@ cJSON *OpenAPI_ue_policy_section_convertToJSON(OpenAPI_ue_policy_section_t *ue_p
     }
 
     item = cJSON_CreateObject();
-    if (!ue_policy_section->ue_policy_section_info) {
-        ogs_error("OpenAPI_ue_policy_section_convertToJSON() failed [ue_policy_section_info]");
-        goto end;
-    }
     if (cJSON_AddNumberToObject(item, "uePolicySectionInfo", ue_policy_section->ue_policy_section_info) == NULL) {
         ogs_error("OpenAPI_ue_policy_section_convertToJSON() failed [ue_policy_section_info]");
         goto end;
     }
 
-    if (!ue_policy_section->upsi) {
-        ogs_error("OpenAPI_ue_policy_section_convertToJSON() failed [upsi]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "upsi", ue_policy_section->upsi) == NULL) {
         ogs_error("OpenAPI_ue_policy_section_convertToJSON() failed [upsi]");
         goto end;

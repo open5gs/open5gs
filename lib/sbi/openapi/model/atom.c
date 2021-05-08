@@ -42,19 +42,11 @@ cJSON *OpenAPI_atom_convertToJSON(OpenAPI_atom_t *atom)
     }
 
     item = cJSON_CreateObject();
-    if (!atom->attr) {
-        ogs_error("OpenAPI_atom_convertToJSON() failed [attr]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "attr", atom->attr) == NULL) {
         ogs_error("OpenAPI_atom_convertToJSON() failed [attr]");
         goto end;
     }
 
-    if (!atom->value) {
-        ogs_error("OpenAPI_atom_convertToJSON() failed [value]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "value", atom->value) == NULL) {
         ogs_error("OpenAPI_atom_convertToJSON() failed [value]");
         goto end;

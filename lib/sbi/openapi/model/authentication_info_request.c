@@ -61,10 +61,6 @@ cJSON *OpenAPI_authentication_info_request_convertToJSON(OpenAPI_authentication_
         }
     }
 
-    if (!authentication_info_request->serving_network_name) {
-        ogs_error("OpenAPI_authentication_info_request_convertToJSON() failed [serving_network_name]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "servingNetworkName", authentication_info_request->serving_network_name) == NULL) {
         ogs_error("OpenAPI_authentication_info_request_convertToJSON() failed [serving_network_name]");
         goto end;
@@ -83,10 +79,6 @@ cJSON *OpenAPI_authentication_info_request_convertToJSON(OpenAPI_authentication_
         }
     }
 
-    if (!authentication_info_request->ausf_instance_id) {
-        ogs_error("OpenAPI_authentication_info_request_convertToJSON() failed [ausf_instance_id]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "ausfInstanceId", authentication_info_request->ausf_instance_id) == NULL) {
         ogs_error("OpenAPI_authentication_info_request_convertToJSON() failed [ausf_instance_id]");
         goto end;

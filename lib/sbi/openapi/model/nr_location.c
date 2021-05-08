@@ -54,10 +54,6 @@ cJSON *OpenAPI_nr_location_convertToJSON(OpenAPI_nr_location_t *nr_location)
     }
 
     item = cJSON_CreateObject();
-    if (!nr_location->tai) {
-        ogs_error("OpenAPI_nr_location_convertToJSON() failed [tai]");
-        goto end;
-    }
     cJSON *tai_local_JSON = OpenAPI_tai_convertToJSON(nr_location->tai);
     if (tai_local_JSON == NULL) {
         ogs_error("OpenAPI_nr_location_convertToJSON() failed [tai]");
@@ -69,10 +65,6 @@ cJSON *OpenAPI_nr_location_convertToJSON(OpenAPI_nr_location_t *nr_location)
         goto end;
     }
 
-    if (!nr_location->ncgi) {
-        ogs_error("OpenAPI_nr_location_convertToJSON() failed [ncgi]");
-        goto end;
-    }
     cJSON *ncgi_local_JSON = OpenAPI_ncgi_convertToJSON(nr_location->ncgi);
     if (ncgi_local_JSON == NULL) {
         ogs_error("OpenAPI_nr_location_convertToJSON() failed [ncgi]");

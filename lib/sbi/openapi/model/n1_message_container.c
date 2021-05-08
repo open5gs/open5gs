@@ -45,19 +45,11 @@ cJSON *OpenAPI_n1_message_container_convertToJSON(OpenAPI_n1_message_container_t
     }
 
     item = cJSON_CreateObject();
-    if (!n1_message_container->n1_message_class) {
-        ogs_error("OpenAPI_n1_message_container_convertToJSON() failed [n1_message_class]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "n1MessageClass", OpenAPI_n1_message_class_ToString(n1_message_container->n1_message_class)) == NULL) {
         ogs_error("OpenAPI_n1_message_container_convertToJSON() failed [n1_message_class]");
         goto end;
     }
 
-    if (!n1_message_container->n1_message_content) {
-        ogs_error("OpenAPI_n1_message_container_convertToJSON() failed [n1_message_content]");
-        goto end;
-    }
     cJSON *n1_message_content_local_JSON = OpenAPI_ref_to_binary_data_convertToJSON(n1_message_container->n1_message_content);
     if (n1_message_content_local_JSON == NULL) {
         ogs_error("OpenAPI_n1_message_container_convertToJSON() failed [n1_message_content]");

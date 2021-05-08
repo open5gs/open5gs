@@ -43,10 +43,6 @@ cJSON *OpenAPI_ddn_failure_sub_info_convertToJSON(OpenAPI_ddn_failure_sub_info_t
     }
 
     item = cJSON_CreateObject();
-    if (!ddn_failure_sub_info->notify_correlation_id) {
-        ogs_error("OpenAPI_ddn_failure_sub_info_convertToJSON() failed [notify_correlation_id]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "notifyCorrelationId", ddn_failure_sub_info->notify_correlation_id) == NULL) {
         ogs_error("OpenAPI_ddn_failure_sub_info_convertToJSON() failed [notify_correlation_id]");
         goto end;

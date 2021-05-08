@@ -47,28 +47,16 @@ cJSON *OpenAPI_pp_maximum_latency_convertToJSON(OpenAPI_pp_maximum_latency_t *pp
     }
 
     item = cJSON_CreateObject();
-    if (!pp_maximum_latency->maximum_latency) {
-        ogs_error("OpenAPI_pp_maximum_latency_convertToJSON() failed [maximum_latency]");
-        goto end;
-    }
     if (cJSON_AddNumberToObject(item, "maximumLatency", pp_maximum_latency->maximum_latency) == NULL) {
         ogs_error("OpenAPI_pp_maximum_latency_convertToJSON() failed [maximum_latency]");
         goto end;
     }
 
-    if (!pp_maximum_latency->af_instance_id) {
-        ogs_error("OpenAPI_pp_maximum_latency_convertToJSON() failed [af_instance_id]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "afInstanceId", pp_maximum_latency->af_instance_id) == NULL) {
         ogs_error("OpenAPI_pp_maximum_latency_convertToJSON() failed [af_instance_id]");
         goto end;
     }
 
-    if (!pp_maximum_latency->reference_id) {
-        ogs_error("OpenAPI_pp_maximum_latency_convertToJSON() failed [reference_id]");
-        goto end;
-    }
     if (cJSON_AddNumberToObject(item, "referenceId", pp_maximum_latency->reference_id) == NULL) {
         ogs_error("OpenAPI_pp_maximum_latency_convertToJSON() failed [reference_id]");
         goto end;

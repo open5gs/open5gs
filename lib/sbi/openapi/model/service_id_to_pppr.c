@@ -42,10 +42,6 @@ cJSON *OpenAPI_service_id_to_pppr_convertToJSON(OpenAPI_service_id_to_pppr_t *se
     }
 
     item = cJSON_CreateObject();
-    if (!service_id_to_pppr->ser_ids) {
-        ogs_error("OpenAPI_service_id_to_pppr_convertToJSON() failed [ser_ids]");
-        goto end;
-    }
     cJSON *ser_ids = cJSON_AddArrayToObject(item, "serIds");
     if (ser_ids == NULL) {
         ogs_error("OpenAPI_service_id_to_pppr_convertToJSON() failed [ser_ids]");
@@ -60,10 +56,6 @@ cJSON *OpenAPI_service_id_to_pppr_convertToJSON(OpenAPI_service_id_to_pppr_t *se
         }
     }
 
-    if (!service_id_to_pppr->pppr) {
-        ogs_error("OpenAPI_service_id_to_pppr_convertToJSON() failed [pppr]");
-        goto end;
-    }
     if (cJSON_AddNumberToObject(item, "pppr", service_id_to_pppr->pppr) == NULL) {
         ogs_error("OpenAPI_service_id_to_pppr_convertToJSON() failed [pppr]");
         goto end;

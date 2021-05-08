@@ -63,10 +63,6 @@ cJSON *OpenAPI_ue_context_create_data_convertToJSON(OpenAPI_ue_context_create_da
     }
 
     item = cJSON_CreateObject();
-    if (!ue_context_create_data->ue_context) {
-        ogs_error("OpenAPI_ue_context_create_data_convertToJSON() failed [ue_context]");
-        goto end;
-    }
     cJSON *ue_context_local_JSON = OpenAPI_ue_context_convertToJSON(ue_context_create_data->ue_context);
     if (ue_context_local_JSON == NULL) {
         ogs_error("OpenAPI_ue_context_create_data_convertToJSON() failed [ue_context]");
@@ -78,10 +74,6 @@ cJSON *OpenAPI_ue_context_create_data_convertToJSON(OpenAPI_ue_context_create_da
         goto end;
     }
 
-    if (!ue_context_create_data->target_id) {
-        ogs_error("OpenAPI_ue_context_create_data_convertToJSON() failed [target_id]");
-        goto end;
-    }
     cJSON *target_id_local_JSON = OpenAPI_ng_ran_target_id_convertToJSON(ue_context_create_data->target_id);
     if (target_id_local_JSON == NULL) {
         ogs_error("OpenAPI_ue_context_create_data_convertToJSON() failed [target_id]");
@@ -93,10 +85,6 @@ cJSON *OpenAPI_ue_context_create_data_convertToJSON(OpenAPI_ue_context_create_da
         goto end;
     }
 
-    if (!ue_context_create_data->source_to_target_data) {
-        ogs_error("OpenAPI_ue_context_create_data_convertToJSON() failed [source_to_target_data]");
-        goto end;
-    }
     cJSON *source_to_target_data_local_JSON = OpenAPI_n2_info_content_convertToJSON(ue_context_create_data->source_to_target_data);
     if (source_to_target_data_local_JSON == NULL) {
         ogs_error("OpenAPI_ue_context_create_data_convertToJSON() failed [source_to_target_data]");
@@ -108,10 +96,6 @@ cJSON *OpenAPI_ue_context_create_data_convertToJSON(OpenAPI_ue_context_create_da
         goto end;
     }
 
-    if (!ue_context_create_data->pdu_session_list) {
-        ogs_error("OpenAPI_ue_context_create_data_convertToJSON() failed [pdu_session_list]");
-        goto end;
-    }
     cJSON *pdu_session_listList = cJSON_AddArrayToObject(item, "pduSessionList");
     if (pdu_session_listList == NULL) {
         ogs_error("OpenAPI_ue_context_create_data_convertToJSON() failed [pdu_session_list]");

@@ -43,10 +43,6 @@ cJSON *OpenAPI_plmn_rat_served_convertToJSON(OpenAPI_plmn_rat_served_t *plmn_rat
     }
 
     item = cJSON_CreateObject();
-    if (!plmn_rat_served->plmn) {
-        ogs_error("OpenAPI_plmn_rat_served_convertToJSON() failed [plmn]");
-        goto end;
-    }
     cJSON *plmn_local_JSON = OpenAPI_plmn_id_convertToJSON(plmn_rat_served->plmn);
     if (plmn_local_JSON == NULL) {
         ogs_error("OpenAPI_plmn_rat_served_convertToJSON() failed [plmn]");
@@ -58,10 +54,6 @@ cJSON *OpenAPI_plmn_rat_served_convertToJSON(OpenAPI_plmn_rat_served_t *plmn_rat
         goto end;
     }
 
-    if (!plmn_rat_served->rats) {
-        ogs_error("OpenAPI_plmn_rat_served_convertToJSON() failed [rats]");
-        goto end;
-    }
     cJSON *ratsList = cJSON_AddArrayToObject(item, "rats");
     if (ratsList == NULL) {
         ogs_error("OpenAPI_plmn_rat_served_convertToJSON() failed [rats]");

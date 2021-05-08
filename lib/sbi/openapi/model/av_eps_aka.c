@@ -48,46 +48,26 @@ cJSON *OpenAPI_av_eps_aka_convertToJSON(OpenAPI_av_eps_aka_t *av_eps_aka)
     }
 
     item = cJSON_CreateObject();
-    if (!av_eps_aka->av_type) {
-        ogs_error("OpenAPI_av_eps_aka_convertToJSON() failed [av_type]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "avType", OpenAPI_hss_av_type_ToString(av_eps_aka->av_type)) == NULL) {
         ogs_error("OpenAPI_av_eps_aka_convertToJSON() failed [av_type]");
         goto end;
     }
 
-    if (!av_eps_aka->rand) {
-        ogs_error("OpenAPI_av_eps_aka_convertToJSON() failed [rand]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "rand", av_eps_aka->rand) == NULL) {
         ogs_error("OpenAPI_av_eps_aka_convertToJSON() failed [rand]");
         goto end;
     }
 
-    if (!av_eps_aka->xres) {
-        ogs_error("OpenAPI_av_eps_aka_convertToJSON() failed [xres]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "xres", av_eps_aka->xres) == NULL) {
         ogs_error("OpenAPI_av_eps_aka_convertToJSON() failed [xres]");
         goto end;
     }
 
-    if (!av_eps_aka->autn) {
-        ogs_error("OpenAPI_av_eps_aka_convertToJSON() failed [autn]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "autn", av_eps_aka->autn) == NULL) {
         ogs_error("OpenAPI_av_eps_aka_convertToJSON() failed [autn]");
         goto end;
     }
 
-    if (!av_eps_aka->kasme) {
-        ogs_error("OpenAPI_av_eps_aka_convertToJSON() failed [kasme]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "kasme", av_eps_aka->kasme) == NULL) {
         ogs_error("OpenAPI_av_eps_aka_convertToJSON() failed [kasme]");
         goto end;

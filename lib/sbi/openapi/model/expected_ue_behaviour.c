@@ -70,19 +70,11 @@ cJSON *OpenAPI_expected_ue_behaviour_convertToJSON(OpenAPI_expected_ue_behaviour
     }
 
     item = cJSON_CreateObject();
-    if (!expected_ue_behaviour->af_instance_id) {
-        ogs_error("OpenAPI_expected_ue_behaviour_convertToJSON() failed [af_instance_id]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "afInstanceId", expected_ue_behaviour->af_instance_id) == NULL) {
         ogs_error("OpenAPI_expected_ue_behaviour_convertToJSON() failed [af_instance_id]");
         goto end;
     }
 
-    if (!expected_ue_behaviour->reference_id) {
-        ogs_error("OpenAPI_expected_ue_behaviour_convertToJSON() failed [reference_id]");
-        goto end;
-    }
     if (cJSON_AddNumberToObject(item, "referenceId", expected_ue_behaviour->reference_id) == NULL) {
         ogs_error("OpenAPI_expected_ue_behaviour_convertToJSON() failed [reference_id]");
         goto end;

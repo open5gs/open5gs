@@ -44,10 +44,6 @@ cJSON *OpenAPI_steering_mode_convertToJSON(OpenAPI_steering_mode_t *steering_mod
     }
 
     item = cJSON_CreateObject();
-    if (!steering_mode->steer_mode_value) {
-        ogs_error("OpenAPI_steering_mode_convertToJSON() failed [steer_mode_value]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "steerModeValue", OpenAPI_steer_mode_value_ToString(steering_mode->steer_mode_value)) == NULL) {
         ogs_error("OpenAPI_steering_mode_convertToJSON() failed [steer_mode_value]");
         goto end;

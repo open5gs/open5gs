@@ -38,10 +38,6 @@ cJSON *OpenAPI_additional_access_info_convertToJSON(OpenAPI_additional_access_in
     }
 
     item = cJSON_CreateObject();
-    if (!additional_access_info->access_type) {
-        ogs_error("OpenAPI_additional_access_info_convertToJSON() failed [access_type]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "accessType", OpenAPI_access_type_ToString(additional_access_info->access_type)) == NULL) {
         ogs_error("OpenAPI_additional_access_info_convertToJSON() failed [access_type]");
         goto end;

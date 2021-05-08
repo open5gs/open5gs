@@ -43,10 +43,6 @@ cJSON *OpenAPI_dnn_route_selection_descriptor_convertToJSON(OpenAPI_dnn_route_se
     }
 
     item = cJSON_CreateObject();
-    if (!dnn_route_selection_descriptor->dnn) {
-        ogs_error("OpenAPI_dnn_route_selection_descriptor_convertToJSON() failed [dnn]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "dnn", dnn_route_selection_descriptor->dnn) == NULL) {
         ogs_error("OpenAPI_dnn_route_selection_descriptor_convertToJSON() failed [dnn]");
         goto end;

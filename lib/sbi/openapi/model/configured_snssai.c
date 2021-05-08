@@ -40,10 +40,6 @@ cJSON *OpenAPI_configured_snssai_convertToJSON(OpenAPI_configured_snssai_t *conf
     }
 
     item = cJSON_CreateObject();
-    if (!configured_snssai->configured_snssai) {
-        ogs_error("OpenAPI_configured_snssai_convertToJSON() failed [configured_snssai]");
-        goto end;
-    }
     cJSON *configured_snssai_local_JSON = OpenAPI_snssai_convertToJSON(configured_snssai->configured_snssai);
     if (configured_snssai_local_JSON == NULL) {
         ogs_error("OpenAPI_configured_snssai_convertToJSON() failed [configured_snssai]");

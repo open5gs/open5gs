@@ -42,10 +42,6 @@ cJSON *OpenAPI_twap_id_convertToJSON(OpenAPI_twap_id_t *twap_id)
     }
 
     item = cJSON_CreateObject();
-    if (!twap_id->ss_id) {
-        ogs_error("OpenAPI_twap_id_convertToJSON() failed [ss_id]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "ssId", twap_id->ss_id) == NULL) {
         ogs_error("OpenAPI_twap_id_convertToJSON() failed [ss_id]");
         goto end;

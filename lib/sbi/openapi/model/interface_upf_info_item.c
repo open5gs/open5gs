@@ -55,10 +55,6 @@ cJSON *OpenAPI_interface_upf_info_item_convertToJSON(OpenAPI_interface_upf_info_
     }
 
     item = cJSON_CreateObject();
-    if (!interface_upf_info_item->interface_type) {
-        ogs_error("OpenAPI_interface_upf_info_item_convertToJSON() failed [interface_type]");
-        goto end;
-    }
     cJSON *interface_type_local_JSON = OpenAPI_up_interface_type_convertToJSON(interface_upf_info_item->interface_type);
     if (interface_type_local_JSON == NULL) {
         ogs_error("OpenAPI_interface_upf_info_item_convertToJSON() failed [interface_type]");

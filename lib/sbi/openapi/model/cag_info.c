@@ -42,10 +42,6 @@ cJSON *OpenAPI_cag_info_convertToJSON(OpenAPI_cag_info_t *cag_info)
     }
 
     item = cJSON_CreateObject();
-    if (!cag_info->allowed_cag_list) {
-        ogs_error("OpenAPI_cag_info_convertToJSON() failed [allowed_cag_list]");
-        goto end;
-    }
     cJSON *allowed_cag_list = cJSON_AddArrayToObject(item, "allowedCagList");
     if (allowed_cag_list == NULL) {
         ogs_error("OpenAPI_cag_info_convertToJSON() failed [allowed_cag_list]");

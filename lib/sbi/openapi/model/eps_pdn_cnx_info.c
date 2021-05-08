@@ -40,10 +40,6 @@ cJSON *OpenAPI_eps_pdn_cnx_info_convertToJSON(OpenAPI_eps_pdn_cnx_info_t *eps_pd
     }
 
     item = cJSON_CreateObject();
-    if (!eps_pdn_cnx_info->pgw_s8c_fteid) {
-        ogs_error("OpenAPI_eps_pdn_cnx_info_convertToJSON() failed [pgw_s8c_fteid]");
-        goto end;
-    }
     if (cJSON_AddNumberToObject(item, "pgwS8cFteid", eps_pdn_cnx_info->pgw_s8c_fteid) == NULL) {
         ogs_error("OpenAPI_eps_pdn_cnx_info_convertToJSON() failed [pgw_s8c_fteid]");
         goto end;

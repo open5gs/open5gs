@@ -48,10 +48,6 @@ cJSON *OpenAPI_secondary_rat_usage_info_convertToJSON(OpenAPI_secondary_rat_usag
     }
 
     item = cJSON_CreateObject();
-    if (!secondary_rat_usage_info->secondary_rat_type) {
-        ogs_error("OpenAPI_secondary_rat_usage_info_convertToJSON() failed [secondary_rat_type]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "secondaryRatType", OpenAPI_rat_type_ToString(secondary_rat_usage_info->secondary_rat_type)) == NULL) {
         ogs_error("OpenAPI_secondary_rat_usage_info_convertToJSON() failed [secondary_rat_type]");
         goto end;

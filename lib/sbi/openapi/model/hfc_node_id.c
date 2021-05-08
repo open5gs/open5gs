@@ -37,10 +37,6 @@ cJSON *OpenAPI_hfc_node_id_convertToJSON(OpenAPI_hfc_node_id_t *hfc_node_id)
     }
 
     item = cJSON_CreateObject();
-    if (!hfc_node_id->hfc_n_id) {
-        ogs_error("OpenAPI_hfc_node_id_convertToJSON() failed [hfc_n_id]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "hfcNId", hfc_node_id->hfc_n_id) == NULL) {
         ogs_error("OpenAPI_hfc_node_id_convertToJSON() failed [hfc_n_id]");
         goto end;

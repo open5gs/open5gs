@@ -80,10 +80,6 @@ cJSON *OpenAPI_sor_info_convertToJSON(OpenAPI_sor_info_t *sor_info)
         }
     }
 
-    if (!sor_info->provisioning_time) {
-        ogs_error("OpenAPI_sor_info_convertToJSON() failed [provisioning_time]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "provisioningTime", sor_info->provisioning_time) == NULL) {
         ogs_error("OpenAPI_sor_info_convertToJSON() failed [provisioning_time]");
         goto end;

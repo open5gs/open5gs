@@ -77,10 +77,6 @@ cJSON *OpenAPI_sdm_subscription_convertToJSON(OpenAPI_sdm_subscription_t *sdm_su
     }
 
     item = cJSON_CreateObject();
-    if (!sdm_subscription->nf_instance_id) {
-        ogs_error("OpenAPI_sdm_subscription_convertToJSON() failed [nf_instance_id]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "nfInstanceId", sdm_subscription->nf_instance_id) == NULL) {
         ogs_error("OpenAPI_sdm_subscription_convertToJSON() failed [nf_instance_id]");
         goto end;
@@ -100,10 +96,6 @@ cJSON *OpenAPI_sdm_subscription_convertToJSON(OpenAPI_sdm_subscription_t *sdm_su
         }
     }
 
-    if (!sdm_subscription->callback_reference) {
-        ogs_error("OpenAPI_sdm_subscription_convertToJSON() failed [callback_reference]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "callbackReference", sdm_subscription->callback_reference) == NULL) {
         ogs_error("OpenAPI_sdm_subscription_convertToJSON() failed [callback_reference]");
         goto end;
@@ -116,10 +108,6 @@ cJSON *OpenAPI_sdm_subscription_convertToJSON(OpenAPI_sdm_subscription_t *sdm_su
         }
     }
 
-    if (!sdm_subscription->monitored_resource_uris) {
-        ogs_error("OpenAPI_sdm_subscription_convertToJSON() failed [monitored_resource_uris]");
-        goto end;
-    }
     cJSON *monitored_resource_uris = cJSON_AddArrayToObject(item, "monitoredResourceUris");
     if (monitored_resource_uris == NULL) {
         ogs_error("OpenAPI_sdm_subscription_convertToJSON() failed [monitored_resource_uris]");

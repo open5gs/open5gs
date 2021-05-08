@@ -37,10 +37,6 @@ cJSON *OpenAPI_point_all_of_convertToJSON(OpenAPI_point_all_of_t *point_all_of)
     }
 
     item = cJSON_CreateObject();
-    if (!point_all_of->point) {
-        ogs_error("OpenAPI_point_all_of_convertToJSON() failed [point]");
-        goto end;
-    }
     cJSON *point_local_JSON = OpenAPI_geographical_coordinates_convertToJSON(point_all_of->point);
     if (point_local_JSON == NULL) {
         ogs_error("OpenAPI_point_all_of_convertToJSON() failed [point]");

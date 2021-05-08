@@ -101,10 +101,6 @@ cJSON *OpenAPI_n2_information_transfer_req_data_convertToJSON(OpenAPI_n2_informa
         }
     }
 
-    if (!n2_information_transfer_req_data->n2_information) {
-        ogs_error("OpenAPI_n2_information_transfer_req_data_convertToJSON() failed [n2_information]");
-        goto end;
-    }
     cJSON *n2_information_local_JSON = OpenAPI_n2_info_container_convertToJSON(n2_information_transfer_req_data->n2_information);
     if (n2_information_local_JSON == NULL) {
         ogs_error("OpenAPI_n2_information_transfer_req_data_convertToJSON() failed [n2_information]");

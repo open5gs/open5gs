@@ -43,10 +43,6 @@ cJSON *OpenAPI_authorization_data_convertToJSON(OpenAPI_authorization_data_t *au
     }
 
     item = cJSON_CreateObject();
-    if (!authorization_data->authorization_data) {
-        ogs_error("OpenAPI_authorization_data_convertToJSON() failed [authorization_data]");
-        goto end;
-    }
     cJSON *authorization_dataList = cJSON_AddArrayToObject(item, "authorizationData");
     if (authorization_dataList == NULL) {
         ogs_error("OpenAPI_authorization_data_convertToJSON() failed [authorization_data]");

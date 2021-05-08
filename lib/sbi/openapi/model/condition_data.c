@@ -47,10 +47,6 @@ cJSON *OpenAPI_condition_data_convertToJSON(OpenAPI_condition_data_t *condition_
     }
 
     item = cJSON_CreateObject();
-    if (!condition_data->cond_id) {
-        ogs_error("OpenAPI_condition_data_convertToJSON() failed [cond_id]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "condId", condition_data->cond_id) == NULL) {
         ogs_error("OpenAPI_condition_data_convertToJSON() failed [cond_id]");
         goto end;

@@ -87,10 +87,6 @@ cJSON *OpenAPI_registration_context_container_convertToJSON(OpenAPI_registration
     }
 
     item = cJSON_CreateObject();
-    if (!registration_context_container->ue_context) {
-        ogs_error("OpenAPI_registration_context_container_convertToJSON() failed [ue_context]");
-        goto end;
-    }
     cJSON *ue_context_local_JSON = OpenAPI_ue_context_convertToJSON(registration_context_container->ue_context);
     if (ue_context_local_JSON == NULL) {
         ogs_error("OpenAPI_registration_context_container_convertToJSON() failed [ue_context]");
@@ -109,28 +105,16 @@ cJSON *OpenAPI_registration_context_container_convertToJSON(OpenAPI_registration
         }
     }
 
-    if (!registration_context_container->an_type) {
-        ogs_error("OpenAPI_registration_context_container_convertToJSON() failed [an_type]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "anType", OpenAPI_access_type_ToString(registration_context_container->an_type)) == NULL) {
         ogs_error("OpenAPI_registration_context_container_convertToJSON() failed [an_type]");
         goto end;
     }
 
-    if (!registration_context_container->an_n2_ap_id) {
-        ogs_error("OpenAPI_registration_context_container_convertToJSON() failed [an_n2_ap_id]");
-        goto end;
-    }
     if (cJSON_AddNumberToObject(item, "anN2ApId", registration_context_container->an_n2_ap_id) == NULL) {
         ogs_error("OpenAPI_registration_context_container_convertToJSON() failed [an_n2_ap_id]");
         goto end;
     }
 
-    if (!registration_context_container->ran_node_id) {
-        ogs_error("OpenAPI_registration_context_container_convertToJSON() failed [ran_node_id]");
-        goto end;
-    }
     cJSON *ran_node_id_local_JSON = OpenAPI_global_ran_node_id_convertToJSON(registration_context_container->ran_node_id);
     if (ran_node_id_local_JSON == NULL) {
         ogs_error("OpenAPI_registration_context_container_convertToJSON() failed [ran_node_id]");
@@ -142,19 +126,11 @@ cJSON *OpenAPI_registration_context_container_convertToJSON(OpenAPI_registration
         goto end;
     }
 
-    if (!registration_context_container->initial_amf_name) {
-        ogs_error("OpenAPI_registration_context_container_convertToJSON() failed [initial_amf_name]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "initialAmfName", registration_context_container->initial_amf_name) == NULL) {
         ogs_error("OpenAPI_registration_context_container_convertToJSON() failed [initial_amf_name]");
         goto end;
     }
 
-    if (!registration_context_container->user_location) {
-        ogs_error("OpenAPI_registration_context_container_convertToJSON() failed [user_location]");
-        goto end;
-    }
     cJSON *user_location_local_JSON = OpenAPI_user_location_convertToJSON(registration_context_container->user_location);
     if (user_location_local_JSON == NULL) {
         ogs_error("OpenAPI_registration_context_container_convertToJSON() failed [user_location]");

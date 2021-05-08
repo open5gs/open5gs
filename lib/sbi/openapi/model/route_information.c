@@ -56,10 +56,6 @@ cJSON *OpenAPI_route_information_convertToJSON(OpenAPI_route_information_t *rout
         }
     }
 
-    if (!route_information->port_number) {
-        ogs_error("OpenAPI_route_information_convertToJSON() failed [port_number]");
-        goto end;
-    }
     if (cJSON_AddNumberToObject(item, "portNumber", route_information->port_number) == NULL) {
         ogs_error("OpenAPI_route_information_convertToJSON() failed [port_number]");
         goto end;

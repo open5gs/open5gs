@@ -43,10 +43,6 @@ cJSON *OpenAPI_limit_id_to_monitoring_key_convertToJSON(OpenAPI_limit_id_to_moni
     }
 
     item = cJSON_CreateObject();
-    if (!limit_id_to_monitoring_key->limit_id) {
-        ogs_error("OpenAPI_limit_id_to_monitoring_key_convertToJSON() failed [limit_id]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "limitId", limit_id_to_monitoring_key->limit_id) == NULL) {
         ogs_error("OpenAPI_limit_id_to_monitoring_key_convertToJSON() failed [limit_id]");
         goto end;

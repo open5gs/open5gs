@@ -46,10 +46,6 @@ cJSON *OpenAPI_registration_location_info_convertToJSON(OpenAPI_registration_loc
     }
 
     item = cJSON_CreateObject();
-    if (!registration_location_info->amf_instance_id) {
-        ogs_error("OpenAPI_registration_location_info_convertToJSON() failed [amf_instance_id]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "amfInstanceId", registration_location_info->amf_instance_id) == NULL) {
         ogs_error("OpenAPI_registration_location_info_convertToJSON() failed [amf_instance_id]");
         goto end;
@@ -81,10 +77,6 @@ cJSON *OpenAPI_registration_location_info_convertToJSON(OpenAPI_registration_loc
         }
     }
 
-    if (!registration_location_info->access_type_list) {
-        ogs_error("OpenAPI_registration_location_info_convertToJSON() failed [access_type_list]");
-        goto end;
-    }
     cJSON *access_type_list = cJSON_AddArrayToObject(item, "accessTypeList");
     if (access_type_list == NULL) {
         ogs_error("OpenAPI_registration_location_info_convertToJSON() failed [access_type_list]");

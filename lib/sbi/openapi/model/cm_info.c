@@ -39,10 +39,6 @@ cJSON *OpenAPI_cm_info_convertToJSON(OpenAPI_cm_info_t *cm_info)
     }
 
     item = cJSON_CreateObject();
-    if (!cm_info->cm_state) {
-        ogs_error("OpenAPI_cm_info_convertToJSON() failed [cm_state]");
-        goto end;
-    }
     cJSON *cm_state_local_JSON = OpenAPI_cm_state_convertToJSON(cm_info->cm_state);
     if (cm_state_local_JSON == NULL) {
         ogs_error("OpenAPI_cm_info_convertToJSON() failed [cm_state]");
@@ -54,10 +50,6 @@ cJSON *OpenAPI_cm_info_convertToJSON(OpenAPI_cm_info_t *cm_info)
         goto end;
     }
 
-    if (!cm_info->access_type) {
-        ogs_error("OpenAPI_cm_info_convertToJSON() failed [access_type]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "accessType", OpenAPI_access_type_ToString(cm_info->access_type)) == NULL) {
         ogs_error("OpenAPI_cm_info_convertToJSON() failed [access_type]");
         goto end;

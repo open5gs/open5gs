@@ -76,10 +76,6 @@ cJSON *OpenAPI_smf_registration_convertToJSON(OpenAPI_smf_registration_t *smf_re
     }
 
     item = cJSON_CreateObject();
-    if (!smf_registration->smf_instance_id) {
-        ogs_error("OpenAPI_smf_registration_convertToJSON() failed [smf_instance_id]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "smfInstanceId", smf_registration->smf_instance_id) == NULL) {
         ogs_error("OpenAPI_smf_registration_convertToJSON() failed [smf_instance_id]");
         goto end;
@@ -99,19 +95,11 @@ cJSON *OpenAPI_smf_registration_convertToJSON(OpenAPI_smf_registration_t *smf_re
         }
     }
 
-    if (!smf_registration->pdu_session_id) {
-        ogs_error("OpenAPI_smf_registration_convertToJSON() failed [pdu_session_id]");
-        goto end;
-    }
     if (cJSON_AddNumberToObject(item, "pduSessionId", smf_registration->pdu_session_id) == NULL) {
         ogs_error("OpenAPI_smf_registration_convertToJSON() failed [pdu_session_id]");
         goto end;
     }
 
-    if (!smf_registration->single_nssai) {
-        ogs_error("OpenAPI_smf_registration_convertToJSON() failed [single_nssai]");
-        goto end;
-    }
     cJSON *single_nssai_local_JSON = OpenAPI_snssai_convertToJSON(smf_registration->single_nssai);
     if (single_nssai_local_JSON == NULL) {
         ogs_error("OpenAPI_smf_registration_convertToJSON() failed [single_nssai]");
@@ -144,10 +132,6 @@ cJSON *OpenAPI_smf_registration_convertToJSON(OpenAPI_smf_registration_t *smf_re
         }
     }
 
-    if (!smf_registration->plmn_id) {
-        ogs_error("OpenAPI_smf_registration_convertToJSON() failed [plmn_id]");
-        goto end;
-    }
     cJSON *plmn_id_local_JSON = OpenAPI_plmn_id_convertToJSON(smf_registration->plmn_id);
     if (plmn_id_local_JSON == NULL) {
         ogs_error("OpenAPI_smf_registration_convertToJSON() failed [plmn_id]");

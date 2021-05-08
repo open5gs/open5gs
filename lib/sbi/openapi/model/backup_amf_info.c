@@ -43,10 +43,6 @@ cJSON *OpenAPI_backup_amf_info_convertToJSON(OpenAPI_backup_amf_info_t *backup_a
     }
 
     item = cJSON_CreateObject();
-    if (!backup_amf_info->backup_amf) {
-        ogs_error("OpenAPI_backup_amf_info_convertToJSON() failed [backup_amf]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "backupAmf", backup_amf_info->backup_amf) == NULL) {
         ogs_error("OpenAPI_backup_amf_info_convertToJSON() failed [backup_amf]");
         goto end;

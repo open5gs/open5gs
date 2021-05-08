@@ -89,10 +89,6 @@ cJSON *OpenAPI_session_management_subscription_data_convertToJSON(OpenAPI_sessio
     }
 
     item = cJSON_CreateObject();
-    if (!session_management_subscription_data->single_nssai) {
-        ogs_error("OpenAPI_session_management_subscription_data_convertToJSON() failed [single_nssai]");
-        goto end;
-    }
     cJSON *single_nssai_local_JSON = OpenAPI_snssai_convertToJSON(session_management_subscription_data->single_nssai);
     if (single_nssai_local_JSON == NULL) {
         ogs_error("OpenAPI_session_management_subscription_data_convertToJSON() failed [single_nssai]");

@@ -47,10 +47,6 @@ cJSON *OpenAPI_ext_snssai_convertToJSON(OpenAPI_ext_snssai_t *ext_snssai)
     }
 
     item = cJSON_CreateObject();
-    if (!ext_snssai->sst) {
-        ogs_error("OpenAPI_ext_snssai_convertToJSON() failed [sst]");
-        goto end;
-    }
     if (cJSON_AddNumberToObject(item, "sst", ext_snssai->sst) == NULL) {
         ogs_error("OpenAPI_ext_snssai_convertToJSON() failed [sst]");
         goto end;

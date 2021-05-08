@@ -41,10 +41,6 @@ cJSON *OpenAPI_rg_auth_ctx_convertToJSON(OpenAPI_rg_auth_ctx_t *rg_auth_ctx)
     }
 
     item = cJSON_CreateObject();
-    if (!rg_auth_ctx->auth_result) {
-        ogs_error("OpenAPI_rg_auth_ctx_convertToJSON() failed [auth_result]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "authResult", OpenAPI_auth_result_ToString(rg_auth_ctx->auth_result)) == NULL) {
         ogs_error("OpenAPI_rg_auth_ctx_convertToJSON() failed [auth_result]");
         goto end;

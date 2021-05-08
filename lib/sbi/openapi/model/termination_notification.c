@@ -39,19 +39,11 @@ cJSON *OpenAPI_termination_notification_convertToJSON(OpenAPI_termination_notifi
     }
 
     item = cJSON_CreateObject();
-    if (!termination_notification->resource_uri) {
-        ogs_error("OpenAPI_termination_notification_convertToJSON() failed [resource_uri]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "resourceUri", termination_notification->resource_uri) == NULL) {
         ogs_error("OpenAPI_termination_notification_convertToJSON() failed [resource_uri]");
         goto end;
     }
 
-    if (!termination_notification->cause) {
-        ogs_error("OpenAPI_termination_notification_convertToJSON() failed [cause]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "cause", OpenAPI_sm_policy_association_release_cause_ToString(termination_notification->cause)) == NULL) {
         ogs_error("OpenAPI_termination_notification_convertToJSON() failed [cause]");
         goto end;

@@ -39,10 +39,6 @@ cJSON *OpenAPI_ladn_info_convertToJSON(OpenAPI_ladn_info_t *ladn_info)
     }
 
     item = cJSON_CreateObject();
-    if (!ladn_info->ladn) {
-        ogs_error("OpenAPI_ladn_info_convertToJSON() failed [ladn]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "ladn", ladn_info->ladn) == NULL) {
         ogs_error("OpenAPI_ladn_info_convertToJSON() failed [ladn]");
         goto end;

@@ -63,10 +63,6 @@ cJSON *OpenAPI_sm_context_status_notification_convertToJSON(OpenAPI_sm_context_s
     }
 
     item = cJSON_CreateObject();
-    if (!sm_context_status_notification->status_info) {
-        ogs_error("OpenAPI_sm_context_status_notification_convertToJSON() failed [status_info]");
-        goto end;
-    }
     cJSON *status_info_local_JSON = OpenAPI_status_info_convertToJSON(sm_context_status_notification->status_info);
     if (status_info_local_JSON == NULL) {
         ogs_error("OpenAPI_sm_context_status_notification_convertToJSON() failed [status_info]");

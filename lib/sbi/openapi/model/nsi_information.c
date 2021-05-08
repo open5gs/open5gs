@@ -46,10 +46,6 @@ cJSON *OpenAPI_nsi_information_convertToJSON(OpenAPI_nsi_information_t *nsi_info
     }
 
     item = cJSON_CreateObject();
-    if (!nsi_information->nrf_id) {
-        ogs_error("OpenAPI_nsi_information_convertToJSON() failed [nrf_id]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "nrfId", nsi_information->nrf_id) == NULL) {
         ogs_error("OpenAPI_nsi_information_convertToJSON() failed [nrf_id]");
         goto end;

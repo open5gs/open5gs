@@ -225,17 +225,14 @@ struct amf_ue_s {
         /* InitialUEMessage or UplinkNASTrasnport */
         NGAP_ProcedureCode_t ngapProcedureCode;
 
-        union {
-            struct {
-            ED3(uint8_t tsc:1;,
-                uint8_t ksi:3;,
-                uint8_t value:4;)
-            };
-            ogs_nas_5gs_registration_type_t registration;
-            ogs_nas_de_registration_type_t de_registration;
+        struct {
+        ED3(uint8_t tsc:1;,
+            uint8_t ksi:3;,
+            uint8_t spare:4;)
+        } amf, ue;
 
-            uint8_t data;
-        };
+        ogs_nas_5gs_registration_type_t registration;
+        ogs_nas_de_registration_type_t de_registration;
 
         struct {
         ED4(uint8_t uplink_data_status:1;,
@@ -301,15 +298,7 @@ struct amf_ue_s {
     ((__aMF) && \
     ((__aMF)->security_context_available == 1) && \
      ((__aMF)->mac_failed == 0) && \
-     ((__aMF)->nas.ksi != OGS_NAS_KSI_NO_KEY_IS_AVAILABLE))
-#define CLEAR_SECURITY_CONTEXT(__aMF) \
-    do { \
-        ogs_assert((__aMF)); \
-        (__aMF)->security_context_available = 0; \
-        (__aMF)->mac_failed = 0; \
-        (__aMF)->nas.tsc = 0; \
-        (__aMF)->nas.ksi = 0; \
-    } while(0)
+     ((__aMF)->nas.ue.ksi != OGS_NAS_KSI_NO_KEY_IS_AVAILABLE))
     int             security_context_available;
     int             mac_failed;
 

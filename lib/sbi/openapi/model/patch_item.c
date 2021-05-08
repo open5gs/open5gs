@@ -45,19 +45,11 @@ cJSON *OpenAPI_patch_item_convertToJSON(OpenAPI_patch_item_t *patch_item)
     }
 
     item = cJSON_CreateObject();
-    if (!patch_item->op) {
-        ogs_error("OpenAPI_patch_item_convertToJSON() failed [op]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "op", OpenAPI_patch_operation_ToString(patch_item->op)) == NULL) {
         ogs_error("OpenAPI_patch_item_convertToJSON() failed [op]");
         goto end;
     }
 
-    if (!patch_item->path) {
-        ogs_error("OpenAPI_patch_item_convertToJSON() failed [path]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "path", patch_item->path) == NULL) {
         ogs_error("OpenAPI_patch_item_convertToJSON() failed [path]");
         goto end;

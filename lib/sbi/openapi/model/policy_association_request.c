@@ -127,10 +127,6 @@ cJSON *OpenAPI_policy_association_request_convertToJSON(OpenAPI_policy_associati
     }
 
     item = cJSON_CreateObject();
-    if (!policy_association_request->notification_uri) {
-        ogs_error("OpenAPI_policy_association_request_convertToJSON() failed [notification_uri]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "notificationUri", policy_association_request->notification_uri) == NULL) {
         ogs_error("OpenAPI_policy_association_request_convertToJSON() failed [notification_uri]");
         goto end;
@@ -168,10 +164,6 @@ cJSON *OpenAPI_policy_association_request_convertToJSON(OpenAPI_policy_associati
         }
     }
 
-    if (!policy_association_request->supi) {
-        ogs_error("OpenAPI_policy_association_request_convertToJSON() failed [supi]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "supi", policy_association_request->supi) == NULL) {
         ogs_error("OpenAPI_policy_association_request_convertToJSON() failed [supi]");
         goto end;
@@ -436,10 +428,6 @@ cJSON *OpenAPI_policy_association_request_convertToJSON(OpenAPI_policy_associati
         }
     }
 
-    if (!policy_association_request->supp_feat) {
-        ogs_error("OpenAPI_policy_association_request_convertToJSON() failed [supp_feat]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "suppFeat", policy_association_request->supp_feat) == NULL) {
         ogs_error("OpenAPI_policy_association_request_convertToJSON() failed [supp_feat]");
         goto end;

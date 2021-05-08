@@ -43,10 +43,6 @@ cJSON *OpenAPI_plmn_route_selection_descriptor_convertToJSON(OpenAPI_plmn_route_
     }
 
     item = cJSON_CreateObject();
-    if (!plmn_route_selection_descriptor->serving_plmn) {
-        ogs_error("OpenAPI_plmn_route_selection_descriptor_convertToJSON() failed [serving_plmn]");
-        goto end;
-    }
     cJSON *serving_plmn_local_JSON = OpenAPI_plmn_id_convertToJSON(plmn_route_selection_descriptor->serving_plmn);
     if (serving_plmn_local_JSON == NULL) {
         ogs_error("OpenAPI_plmn_route_selection_descriptor_convertToJSON() failed [serving_plmn]");

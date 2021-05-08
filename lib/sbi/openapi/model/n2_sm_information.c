@@ -47,10 +47,6 @@ cJSON *OpenAPI_n2_sm_information_convertToJSON(OpenAPI_n2_sm_information_t *n2_s
     }
 
     item = cJSON_CreateObject();
-    if (!n2_sm_information->pdu_session_id) {
-        ogs_error("OpenAPI_n2_sm_information_convertToJSON() failed [pdu_session_id]");
-        goto end;
-    }
     if (cJSON_AddNumberToObject(item, "pduSessionId", n2_sm_information->pdu_session_id) == NULL) {
         ogs_error("OpenAPI_n2_sm_information_convertToJSON() failed [pdu_session_id]");
         goto end;

@@ -40,19 +40,11 @@ cJSON *OpenAPI_time_window_convertToJSON(OpenAPI_time_window_t *time_window)
     }
 
     item = cJSON_CreateObject();
-    if (!time_window->start_time) {
-        ogs_error("OpenAPI_time_window_convertToJSON() failed [start_time]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "startTime", time_window->start_time) == NULL) {
         ogs_error("OpenAPI_time_window_convertToJSON() failed [start_time]");
         goto end;
     }
 
-    if (!time_window->stop_time) {
-        ogs_error("OpenAPI_time_window_convertToJSON() failed [stop_time]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "stopTime", time_window->stop_time) == NULL) {
         ogs_error("OpenAPI_time_window_convertToJSON() failed [stop_time]");
         goto end;

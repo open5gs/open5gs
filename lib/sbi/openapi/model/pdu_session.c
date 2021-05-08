@@ -46,28 +46,16 @@ cJSON *OpenAPI_pdu_session_convertToJSON(OpenAPI_pdu_session_t *pdu_session)
     }
 
     item = cJSON_CreateObject();
-    if (!pdu_session->dnn) {
-        ogs_error("OpenAPI_pdu_session_convertToJSON() failed [dnn]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "dnn", pdu_session->dnn) == NULL) {
         ogs_error("OpenAPI_pdu_session_convertToJSON() failed [dnn]");
         goto end;
     }
 
-    if (!pdu_session->smf_instance_id) {
-        ogs_error("OpenAPI_pdu_session_convertToJSON() failed [smf_instance_id]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "smfInstanceId", pdu_session->smf_instance_id) == NULL) {
         ogs_error("OpenAPI_pdu_session_convertToJSON() failed [smf_instance_id]");
         goto end;
     }
 
-    if (!pdu_session->plmn_id) {
-        ogs_error("OpenAPI_pdu_session_convertToJSON() failed [plmn_id]");
-        goto end;
-    }
     cJSON *plmn_id_local_JSON = OpenAPI_plmn_id_convertToJSON(pdu_session->plmn_id);
     if (plmn_id_local_JSON == NULL) {
         ogs_error("OpenAPI_pdu_session_convertToJSON() failed [plmn_id]");

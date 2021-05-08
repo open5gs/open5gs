@@ -38,19 +38,11 @@ cJSON *OpenAPI_nas_security_mode_convertToJSON(OpenAPI_nas_security_mode_t *nas_
     }
 
     item = cJSON_CreateObject();
-    if (!nas_security_mode->integrity_algorithm) {
-        ogs_error("OpenAPI_nas_security_mode_convertToJSON() failed [integrity_algorithm]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "integrityAlgorithm", OpenAPI_integrity_algorithm_ToString(nas_security_mode->integrity_algorithm)) == NULL) {
         ogs_error("OpenAPI_nas_security_mode_convertToJSON() failed [integrity_algorithm]");
         goto end;
     }
 
-    if (!nas_security_mode->ciphering_algorithm) {
-        ogs_error("OpenAPI_nas_security_mode_convertToJSON() failed [ciphering_algorithm]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "cipheringAlgorithm", OpenAPI_ciphering_algorithm_ToString(nas_security_mode->ciphering_algorithm)) == NULL) {
         ogs_error("OpenAPI_nas_security_mode_convertToJSON() failed [ciphering_algorithm]");
         goto end;

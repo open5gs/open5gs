@@ -172,10 +172,6 @@ cJSON *OpenAPI_sm_policy_context_data_convertToJSON(OpenAPI_sm_policy_context_da
         }
     }
 
-    if (!sm_policy_context_data->supi) {
-        ogs_error("OpenAPI_sm_policy_context_data_convertToJSON() failed [supi]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "supi", sm_policy_context_data->supi) == NULL) {
         ogs_error("OpenAPI_sm_policy_context_data_convertToJSON() failed [supi]");
         goto end;
@@ -197,19 +193,11 @@ cJSON *OpenAPI_sm_policy_context_data_convertToJSON(OpenAPI_sm_policy_context_da
         }
     }
 
-    if (!sm_policy_context_data->pdu_session_id) {
-        ogs_error("OpenAPI_sm_policy_context_data_convertToJSON() failed [pdu_session_id]");
-        goto end;
-    }
     if (cJSON_AddNumberToObject(item, "pduSessionId", sm_policy_context_data->pdu_session_id) == NULL) {
         ogs_error("OpenAPI_sm_policy_context_data_convertToJSON() failed [pdu_session_id]");
         goto end;
     }
 
-    if (!sm_policy_context_data->pdu_session_type) {
-        ogs_error("OpenAPI_sm_policy_context_data_convertToJSON() failed [pdu_session_type]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "pduSessionType", OpenAPI_pdu_session_type_ToString(sm_policy_context_data->pdu_session_type)) == NULL) {
         ogs_error("OpenAPI_sm_policy_context_data_convertToJSON() failed [pdu_session_type]");
         goto end;
@@ -222,10 +210,6 @@ cJSON *OpenAPI_sm_policy_context_data_convertToJSON(OpenAPI_sm_policy_context_da
         }
     }
 
-    if (!sm_policy_context_data->dnn) {
-        ogs_error("OpenAPI_sm_policy_context_data_convertToJSON() failed [dnn]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "dnn", sm_policy_context_data->dnn) == NULL) {
         ogs_error("OpenAPI_sm_policy_context_data_convertToJSON() failed [dnn]");
         goto end;
@@ -238,10 +222,6 @@ cJSON *OpenAPI_sm_policy_context_data_convertToJSON(OpenAPI_sm_policy_context_da
         }
     }
 
-    if (!sm_policy_context_data->notification_uri) {
-        ogs_error("OpenAPI_sm_policy_context_data_convertToJSON() failed [notification_uri]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "notificationUri", sm_policy_context_data->notification_uri) == NULL) {
         ogs_error("OpenAPI_sm_policy_context_data_convertToJSON() failed [notification_uri]");
         goto end;
@@ -416,10 +396,6 @@ cJSON *OpenAPI_sm_policy_context_data_convertToJSON(OpenAPI_sm_policy_context_da
         }
     }
 
-    if (!sm_policy_context_data->slice_info) {
-        ogs_error("OpenAPI_sm_policy_context_data_convertToJSON() failed [slice_info]");
-        goto end;
-    }
     cJSON *slice_info_local_JSON = OpenAPI_snssai_convertToJSON(sm_policy_context_data->slice_info);
     if (slice_info_local_JSON == NULL) {
         ogs_error("OpenAPI_sm_policy_context_data_convertToJSON() failed [slice_info]");

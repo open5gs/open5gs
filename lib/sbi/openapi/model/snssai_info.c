@@ -40,10 +40,6 @@ cJSON *OpenAPI_snssai_info_convertToJSON(OpenAPI_snssai_info_t *snssai_info)
     }
 
     item = cJSON_CreateObject();
-    if (!snssai_info->dnn_infos) {
-        ogs_error("OpenAPI_snssai_info_convertToJSON() failed [dnn_infos]");
-        goto end;
-    }
     cJSON *dnn_infosList = cJSON_AddArrayToObject(item, "dnnInfos");
     if (dnn_infosList == NULL) {
         ogs_error("OpenAPI_snssai_info_convertToJSON() failed [dnn_infos]");

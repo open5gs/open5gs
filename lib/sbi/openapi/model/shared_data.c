@@ -73,10 +73,6 @@ cJSON *OpenAPI_shared_data_convertToJSON(OpenAPI_shared_data_t *shared_data)
     }
 
     item = cJSON_CreateObject();
-    if (!shared_data->shared_data_id) {
-        ogs_error("OpenAPI_shared_data_convertToJSON() failed [shared_data_id]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "sharedDataId", shared_data->shared_data_id) == NULL) {
         ogs_error("OpenAPI_shared_data_convertToJSON() failed [shared_data_id]");
         goto end;

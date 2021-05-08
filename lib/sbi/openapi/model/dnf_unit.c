@@ -40,10 +40,6 @@ cJSON *OpenAPI_dnf_unit_convertToJSON(OpenAPI_dnf_unit_t *dnf_unit)
     }
 
     item = cJSON_CreateObject();
-    if (!dnf_unit->dnf_unit) {
-        ogs_error("OpenAPI_dnf_unit_convertToJSON() failed [dnf_unit]");
-        goto end;
-    }
     cJSON *dnf_unitList = cJSON_AddArrayToObject(item, "dnfUnit");
     if (dnf_unitList == NULL) {
         ogs_error("OpenAPI_dnf_unit_convertToJSON() failed [dnf_unit]");

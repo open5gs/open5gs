@@ -64,10 +64,6 @@ cJSON *OpenAPI_usage_monitoring_data_convertToJSON(OpenAPI_usage_monitoring_data
     }
 
     item = cJSON_CreateObject();
-    if (!usage_monitoring_data->um_id) {
-        ogs_error("OpenAPI_usage_monitoring_data_convertToJSON() failed [um_id]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "umId", usage_monitoring_data->um_id) == NULL) {
         ogs_error("OpenAPI_usage_monitoring_data_convertToJSON() failed [um_id]");
         goto end;

@@ -58,10 +58,6 @@ cJSON *OpenAPI_global_ran_node_id_convertToJSON(OpenAPI_global_ran_node_id_t *gl
     }
 
     item = cJSON_CreateObject();
-    if (!global_ran_node_id->plmn_id) {
-        ogs_error("OpenAPI_global_ran_node_id_convertToJSON() failed [plmn_id]");
-        goto end;
-    }
     cJSON *plmn_id_local_JSON = OpenAPI_plmn_id_convertToJSON(global_ran_node_id->plmn_id);
     if (plmn_id_local_JSON == NULL) {
         ogs_error("OpenAPI_global_ran_node_id_convertToJSON() failed [plmn_id]");

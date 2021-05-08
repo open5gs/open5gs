@@ -40,10 +40,6 @@ cJSON *OpenAPI_guami_list_cond_convertToJSON(OpenAPI_guami_list_cond_t *guami_li
     }
 
     item = cJSON_CreateObject();
-    if (!guami_list_cond->guami_list) {
-        ogs_error("OpenAPI_guami_list_cond_convertToJSON() failed [guami_list]");
-        goto end;
-    }
     cJSON *guami_listList = cJSON_AddArrayToObject(item, "guamiList");
     if (guami_listList == NULL) {
         ogs_error("OpenAPI_guami_list_cond_convertToJSON() failed [guami_list]");

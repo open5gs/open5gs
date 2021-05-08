@@ -38,19 +38,11 @@ cJSON *OpenAPI_ng_ksi_convertToJSON(OpenAPI_ng_ksi_t *ng_ksi)
     }
 
     item = cJSON_CreateObject();
-    if (!ng_ksi->tsc) {
-        ogs_error("OpenAPI_ng_ksi_convertToJSON() failed [tsc]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "tsc", OpenAPI_sc_type_ToString(ng_ksi->tsc)) == NULL) {
         ogs_error("OpenAPI_ng_ksi_convertToJSON() failed [tsc]");
         goto end;
     }
 
-    if (!ng_ksi->ksi) {
-        ogs_error("OpenAPI_ng_ksi_convertToJSON() failed [ksi]");
-        goto end;
-    }
     if (cJSON_AddNumberToObject(item, "ksi", ng_ksi->ksi) == NULL) {
         ogs_error("OpenAPI_ng_ksi_convertToJSON() failed [ksi]");
         goto end;

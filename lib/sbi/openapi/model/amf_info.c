@@ -73,28 +73,16 @@ cJSON *OpenAPI_amf_info_convertToJSON(OpenAPI_amf_info_t *amf_info)
     }
 
     item = cJSON_CreateObject();
-    if (!amf_info->amf_set_id) {
-        ogs_error("OpenAPI_amf_info_convertToJSON() failed [amf_set_id]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "amfSetId", amf_info->amf_set_id) == NULL) {
         ogs_error("OpenAPI_amf_info_convertToJSON() failed [amf_set_id]");
         goto end;
     }
 
-    if (!amf_info->amf_region_id) {
-        ogs_error("OpenAPI_amf_info_convertToJSON() failed [amf_region_id]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "amfRegionId", amf_info->amf_region_id) == NULL) {
         ogs_error("OpenAPI_amf_info_convertToJSON() failed [amf_region_id]");
         goto end;
     }
 
-    if (!amf_info->guami_list) {
-        ogs_error("OpenAPI_amf_info_convertToJSON() failed [guami_list]");
-        goto end;
-    }
     cJSON *guami_listList = cJSON_AddArrayToObject(item, "guamiList");
     if (guami_listList == NULL) {
         ogs_error("OpenAPI_amf_info_convertToJSON() failed [guami_list]");

@@ -40,10 +40,6 @@ cJSON *OpenAPI_stored_search_result_convertToJSON(OpenAPI_stored_search_result_t
     }
 
     item = cJSON_CreateObject();
-    if (!stored_search_result->nf_instances) {
-        ogs_error("OpenAPI_stored_search_result_convertToJSON() failed [nf_instances]");
-        goto end;
-    }
     cJSON *nf_instancesList = cJSON_AddArrayToObject(item, "nfInstances");
     if (nf_instancesList == NULL) {
         ogs_error("OpenAPI_stored_search_result_convertToJSON() failed [nf_instances]");

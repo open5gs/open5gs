@@ -42,19 +42,11 @@ cJSON *OpenAPI_n4_information_convertToJSON(OpenAPI_n4_information_t *n4_informa
     }
 
     item = cJSON_CreateObject();
-    if (!n4_information->n4_message_type) {
-        ogs_error("OpenAPI_n4_information_convertToJSON() failed [n4_message_type]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "n4MessageType", OpenAPI_n4_message_type_ToString(n4_information->n4_message_type)) == NULL) {
         ogs_error("OpenAPI_n4_information_convertToJSON() failed [n4_message_type]");
         goto end;
     }
 
-    if (!n4_information->n4_message_payload) {
-        ogs_error("OpenAPI_n4_information_convertToJSON() failed [n4_message_payload]");
-        goto end;
-    }
     cJSON *n4_message_payload_local_JSON = OpenAPI_ref_to_binary_data_convertToJSON(n4_information->n4_message_payload);
     if (n4_message_payload_local_JSON == NULL) {
         ogs_error("OpenAPI_n4_information_convertToJSON() failed [n4_message_payload]");

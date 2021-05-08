@@ -58,10 +58,6 @@ cJSON *OpenAPI_qos_monitoring_report_convertToJSON(OpenAPI_qos_monitoring_report
     }
 
     item = cJSON_CreateObject();
-    if (!qos_monitoring_report->ref_pcc_rule_ids) {
-        ogs_error("OpenAPI_qos_monitoring_report_convertToJSON() failed [ref_pcc_rule_ids]");
-        goto end;
-    }
     cJSON *ref_pcc_rule_ids = cJSON_AddArrayToObject(item, "refPccRuleIds");
     if (ref_pcc_rule_ids == NULL) {
         ogs_error("OpenAPI_qos_monitoring_report_convertToJSON() failed [ref_pcc_rule_ids]");

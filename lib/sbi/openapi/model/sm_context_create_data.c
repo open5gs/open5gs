@@ -330,10 +330,6 @@ cJSON *OpenAPI_sm_context_create_data_convertToJSON(OpenAPI_sm_context_create_da
         }
     }
 
-    if (!sm_context_create_data->serving_nf_id) {
-        ogs_error("OpenAPI_sm_context_create_data_convertToJSON() failed [serving_nf_id]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "servingNfId", sm_context_create_data->serving_nf_id) == NULL) {
         ogs_error("OpenAPI_sm_context_create_data_convertToJSON() failed [serving_nf_id]");
         goto end;
@@ -359,10 +355,6 @@ cJSON *OpenAPI_sm_context_create_data_convertToJSON(OpenAPI_sm_context_create_da
         }
     }
 
-    if (!sm_context_create_data->serving_network) {
-        ogs_error("OpenAPI_sm_context_create_data_convertToJSON() failed [serving_network]");
-        goto end;
-    }
     cJSON *serving_network_local_JSON = OpenAPI_plmn_id_nid_convertToJSON(sm_context_create_data->serving_network);
     if (serving_network_local_JSON == NULL) {
         ogs_error("OpenAPI_sm_context_create_data_convertToJSON() failed [serving_network]");
@@ -394,10 +386,6 @@ cJSON *OpenAPI_sm_context_create_data_convertToJSON(OpenAPI_sm_context_create_da
         }
     }
 
-    if (!sm_context_create_data->an_type) {
-        ogs_error("OpenAPI_sm_context_create_data_convertToJSON() failed [an_type]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "anType", OpenAPI_access_type_ToString(sm_context_create_data->an_type)) == NULL) {
         ogs_error("OpenAPI_sm_context_create_data_convertToJSON() failed [an_type]");
         goto end;
@@ -457,10 +445,6 @@ cJSON *OpenAPI_sm_context_create_data_convertToJSON(OpenAPI_sm_context_create_da
         }
     }
 
-    if (!sm_context_create_data->sm_context_status_uri) {
-        ogs_error("OpenAPI_sm_context_create_data_convertToJSON() failed [sm_context_status_uri]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "smContextStatusUri", sm_context_create_data->sm_context_status_uri) == NULL) {
         ogs_error("OpenAPI_sm_context_create_data_convertToJSON() failed [sm_context_status_uri]");
         goto end;

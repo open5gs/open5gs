@@ -40,10 +40,6 @@ cJSON *OpenAPI_amf_status_change_notification_convertToJSON(OpenAPI_amf_status_c
     }
 
     item = cJSON_CreateObject();
-    if (!amf_status_change_notification->amf_status_info_list) {
-        ogs_error("OpenAPI_amf_status_change_notification_convertToJSON() failed [amf_status_info_list]");
-        goto end;
-    }
     cJSON *amf_status_info_listList = cJSON_AddArrayToObject(item, "amfStatusInfoList");
     if (amf_status_info_listList == NULL) {
         ogs_error("OpenAPI_amf_status_change_notification_convertToJSON() failed [amf_status_info_list]");

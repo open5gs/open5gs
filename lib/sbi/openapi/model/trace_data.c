@@ -54,37 +54,21 @@ cJSON *OpenAPI_trace_data_convertToJSON(OpenAPI_trace_data_t *trace_data)
     }
 
     item = cJSON_CreateObject();
-    if (!trace_data->trace_ref) {
-        ogs_error("OpenAPI_trace_data_convertToJSON() failed [trace_ref]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "traceRef", trace_data->trace_ref) == NULL) {
         ogs_error("OpenAPI_trace_data_convertToJSON() failed [trace_ref]");
         goto end;
     }
 
-    if (!trace_data->trace_depth) {
-        ogs_error("OpenAPI_trace_data_convertToJSON() failed [trace_depth]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "traceDepth", OpenAPI_trace_depth_ToString(trace_data->trace_depth)) == NULL) {
         ogs_error("OpenAPI_trace_data_convertToJSON() failed [trace_depth]");
         goto end;
     }
 
-    if (!trace_data->ne_type_list) {
-        ogs_error("OpenAPI_trace_data_convertToJSON() failed [ne_type_list]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "neTypeList", trace_data->ne_type_list) == NULL) {
         ogs_error("OpenAPI_trace_data_convertToJSON() failed [ne_type_list]");
         goto end;
     }
 
-    if (!trace_data->event_list) {
-        ogs_error("OpenAPI_trace_data_convertToJSON() failed [event_list]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "eventList", trace_data->event_list) == NULL) {
         ogs_error("OpenAPI_trace_data_convertToJSON() failed [event_list]");
         goto end;

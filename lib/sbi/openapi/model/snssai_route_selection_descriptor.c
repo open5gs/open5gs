@@ -43,10 +43,6 @@ cJSON *OpenAPI_snssai_route_selection_descriptor_convertToJSON(OpenAPI_snssai_ro
     }
 
     item = cJSON_CreateObject();
-    if (!snssai_route_selection_descriptor->snssai) {
-        ogs_error("OpenAPI_snssai_route_selection_descriptor_convertToJSON() failed [snssai]");
-        goto end;
-    }
     cJSON *snssai_local_JSON = OpenAPI_snssai_convertToJSON(snssai_route_selection_descriptor->snssai);
     if (snssai_local_JSON == NULL) {
         ogs_error("OpenAPI_snssai_route_selection_descriptor_convertToJSON() failed [snssai]");

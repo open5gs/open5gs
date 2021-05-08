@@ -77,10 +77,6 @@ cJSON *OpenAPI_multicast_access_control_convertToJSON(OpenAPI_multicast_access_c
         }
     }
 
-    if (!multicast_access_control->acc_status) {
-        ogs_error("OpenAPI_multicast_access_control_convertToJSON() failed [acc_status]");
-        goto end;
-    }
     cJSON *acc_status_local_JSON = OpenAPI_access_right_status_convertToJSON(multicast_access_control->acc_status);
     if (acc_status_local_JSON == NULL) {
         ogs_error("OpenAPI_multicast_access_control_convertToJSON() failed [acc_status]");

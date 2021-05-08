@@ -48,19 +48,11 @@ cJSON *OpenAPI_change_item_convertToJSON(OpenAPI_change_item_t *change_item)
     }
 
     item = cJSON_CreateObject();
-    if (!change_item->op) {
-        ogs_error("OpenAPI_change_item_convertToJSON() failed [op]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "op", OpenAPI_change_type_ToString(change_item->op)) == NULL) {
         ogs_error("OpenAPI_change_item_convertToJSON() failed [op]");
         goto end;
     }
 
-    if (!change_item->path) {
-        ogs_error("OpenAPI_change_item_convertToJSON() failed [path]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "path", change_item->path) == NULL) {
         ogs_error("OpenAPI_change_item_convertToJSON() failed [path]");
         goto end;

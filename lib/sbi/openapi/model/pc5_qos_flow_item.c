@@ -41,10 +41,6 @@ cJSON *OpenAPI_pc5_qos_flow_item_convertToJSON(OpenAPI_pc5_qos_flow_item_t *pc5_
     }
 
     item = cJSON_CreateObject();
-    if (!pc5_qos_flow_item->pqi) {
-        ogs_error("OpenAPI_pc5_qos_flow_item_convertToJSON() failed [pqi]");
-        goto end;
-    }
     if (cJSON_AddNumberToObject(item, "pqi", pc5_qos_flow_item->pqi) == NULL) {
         ogs_error("OpenAPI_pc5_qos_flow_item_convertToJSON() failed [pqi]");
         goto end;

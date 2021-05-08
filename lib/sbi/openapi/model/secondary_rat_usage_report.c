@@ -42,19 +42,11 @@ cJSON *OpenAPI_secondary_rat_usage_report_convertToJSON(OpenAPI_secondary_rat_us
     }
 
     item = cJSON_CreateObject();
-    if (!secondary_rat_usage_report->secondary_rat_type) {
-        ogs_error("OpenAPI_secondary_rat_usage_report_convertToJSON() failed [secondary_rat_type]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "secondaryRatType", OpenAPI_rat_type_ToString(secondary_rat_usage_report->secondary_rat_type)) == NULL) {
         ogs_error("OpenAPI_secondary_rat_usage_report_convertToJSON() failed [secondary_rat_type]");
         goto end;
     }
 
-    if (!secondary_rat_usage_report->qos_flows_usage_data) {
-        ogs_error("OpenAPI_secondary_rat_usage_report_convertToJSON() failed [qos_flows_usage_data]");
-        goto end;
-    }
     cJSON *qos_flows_usage_dataList = cJSON_AddArrayToObject(item, "qosFlowsUsageData");
     if (qos_flows_usage_dataList == NULL) {
         ogs_error("OpenAPI_secondary_rat_usage_report_convertToJSON() failed [qos_flows_usage_data]");

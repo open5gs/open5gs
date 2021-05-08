@@ -40,10 +40,6 @@ cJSON *OpenAPI_polygon_all_of_convertToJSON(OpenAPI_polygon_all_of_t *polygon_al
     }
 
     item = cJSON_CreateObject();
-    if (!polygon_all_of->point_list) {
-        ogs_error("OpenAPI_polygon_all_of_convertToJSON() failed [point_list]");
-        goto end;
-    }
     cJSON *point_listList = cJSON_AddArrayToObject(item, "pointList");
     if (point_listList == NULL) {
         ogs_error("OpenAPI_polygon_all_of_convertToJSON() failed [point_list]");

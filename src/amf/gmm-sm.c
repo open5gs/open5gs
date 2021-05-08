@@ -218,7 +218,7 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e)
             ogs_info("Service request");
 
             rv = gmm_handle_service_request(
-                    amf_ue, &nas_message->gmm.service_request);
+                    amf_ue, h, &nas_message->gmm.service_request);
             if (rv != OGS_OK) {
                 ogs_error("gmm_handle_service_request() failed");
                 OGS_FSM_TRAN(s, gmm_state_exception);
@@ -480,8 +480,7 @@ void gmm_state_authentication(ogs_fsm_t *s, amf_event_t *e)
 
             case OGS_5GMM_CAUSE_NGKSI_ALREADY_IN_USE:
                 ogs_warn("Authentication failure(ngKSI already in use)");
-                amf_ue_sbi_discover_and_send(OpenAPI_nf_type_AUSF, amf_ue,
-                        authentication_failure_parameter->auts,
+                amf_ue_sbi_discover_and_send(OpenAPI_nf_type_AUSF, amf_ue, NULL,
                         amf_nausf_auth_build_authenticate);
                 return;
 

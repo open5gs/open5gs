@@ -40,19 +40,11 @@ cJSON *OpenAPI_ambr_convertToJSON(OpenAPI_ambr_t *ambr)
     }
 
     item = cJSON_CreateObject();
-    if (!ambr->uplink) {
-        ogs_error("OpenAPI_ambr_convertToJSON() failed [uplink]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "uplink", ambr->uplink) == NULL) {
         ogs_error("OpenAPI_ambr_convertToJSON() failed [uplink]");
         goto end;
     }
 
-    if (!ambr->downlink) {
-        ogs_error("OpenAPI_ambr_convertToJSON() failed [downlink]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "downlink", ambr->downlink) == NULL) {
         ogs_error("OpenAPI_ambr_convertToJSON() failed [downlink]");
         goto end;

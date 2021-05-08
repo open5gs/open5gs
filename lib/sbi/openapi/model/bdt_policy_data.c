@@ -63,10 +63,6 @@ cJSON *OpenAPI_bdt_policy_data_convertToJSON(OpenAPI_bdt_policy_data_t *bdt_poli
         }
     }
 
-    if (!bdt_policy_data->bdt_ref_id) {
-        ogs_error("OpenAPI_bdt_policy_data_convertToJSON() failed [bdt_ref_id]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "bdtRefId", bdt_policy_data->bdt_ref_id) == NULL) {
         ogs_error("OpenAPI_bdt_policy_data_convertToJSON() failed [bdt_ref_id]");
         goto end;

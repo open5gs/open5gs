@@ -61,19 +61,11 @@ cJSON *OpenAPI_transfer_policy_convertToJSON(OpenAPI_transfer_policy_t *transfer
         }
     }
 
-    if (!transfer_policy->rating_group) {
-        ogs_error("OpenAPI_transfer_policy_convertToJSON() failed [rating_group]");
-        goto end;
-    }
     if (cJSON_AddNumberToObject(item, "ratingGroup", transfer_policy->rating_group) == NULL) {
         ogs_error("OpenAPI_transfer_policy_convertToJSON() failed [rating_group]");
         goto end;
     }
 
-    if (!transfer_policy->rec_time_int) {
-        ogs_error("OpenAPI_transfer_policy_convertToJSON() failed [rec_time_int]");
-        goto end;
-    }
     cJSON *rec_time_int_local_JSON = OpenAPI_time_window_convertToJSON(transfer_policy->rec_time_int);
     if (rec_time_int_local_JSON == NULL) {
         ogs_error("OpenAPI_transfer_policy_convertToJSON() failed [rec_time_int]");
@@ -85,10 +77,6 @@ cJSON *OpenAPI_transfer_policy_convertToJSON(OpenAPI_transfer_policy_t *transfer
         goto end;
     }
 
-    if (!transfer_policy->trans_policy_id) {
-        ogs_error("OpenAPI_transfer_policy_convertToJSON() failed [trans_policy_id]");
-        goto end;
-    }
     if (cJSON_AddNumberToObject(item, "transPolicyId", transfer_policy->trans_policy_id) == NULL) {
         ogs_error("OpenAPI_transfer_policy_convertToJSON() failed [trans_policy_id]");
         goto end;

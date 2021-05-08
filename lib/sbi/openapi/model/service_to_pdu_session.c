@@ -56,10 +56,6 @@ cJSON *OpenAPI_service_to_pdu_session_convertToJSON(OpenAPI_service_to_pdu_sessi
     }
 
     item = cJSON_CreateObject();
-    if (!service_to_pdu_session->ser_ids) {
-        ogs_error("OpenAPI_service_to_pdu_session_convertToJSON() failed [ser_ids]");
-        goto end;
-    }
     cJSON *ser_ids = cJSON_AddArrayToObject(item, "serIds");
     if (ser_ids == NULL) {
         ogs_error("OpenAPI_service_to_pdu_session_convertToJSON() failed [ser_ids]");

@@ -45,10 +45,6 @@ cJSON *OpenAPI_point_uncertainty_ellipse_convertToJSON(OpenAPI_point_uncertainty
     }
 
     item = cJSON_CreateObject();
-    if (!point_uncertainty_ellipse->shape) {
-        ogs_error("OpenAPI_point_uncertainty_ellipse_convertToJSON() failed [shape]");
-        goto end;
-    }
     cJSON *shape_local_JSON = OpenAPI_supported_gad_shapes_convertToJSON(point_uncertainty_ellipse->shape);
     if (shape_local_JSON == NULL) {
         ogs_error("OpenAPI_point_uncertainty_ellipse_convertToJSON() failed [shape]");
@@ -60,10 +56,6 @@ cJSON *OpenAPI_point_uncertainty_ellipse_convertToJSON(OpenAPI_point_uncertainty
         goto end;
     }
 
-    if (!point_uncertainty_ellipse->point) {
-        ogs_error("OpenAPI_point_uncertainty_ellipse_convertToJSON() failed [point]");
-        goto end;
-    }
     cJSON *point_local_JSON = OpenAPI_geographical_coordinates_convertToJSON(point_uncertainty_ellipse->point);
     if (point_local_JSON == NULL) {
         ogs_error("OpenAPI_point_uncertainty_ellipse_convertToJSON() failed [point]");
@@ -75,10 +67,6 @@ cJSON *OpenAPI_point_uncertainty_ellipse_convertToJSON(OpenAPI_point_uncertainty
         goto end;
     }
 
-    if (!point_uncertainty_ellipse->uncertainty_ellipse) {
-        ogs_error("OpenAPI_point_uncertainty_ellipse_convertToJSON() failed [uncertainty_ellipse]");
-        goto end;
-    }
     cJSON *uncertainty_ellipse_local_JSON = OpenAPI_uncertainty_ellipse_convertToJSON(point_uncertainty_ellipse->uncertainty_ellipse);
     if (uncertainty_ellipse_local_JSON == NULL) {
         ogs_error("OpenAPI_point_uncertainty_ellipse_convertToJSON() failed [uncertainty_ellipse]");
@@ -90,10 +78,6 @@ cJSON *OpenAPI_point_uncertainty_ellipse_convertToJSON(OpenAPI_point_uncertainty
         goto end;
     }
 
-    if (!point_uncertainty_ellipse->confidence) {
-        ogs_error("OpenAPI_point_uncertainty_ellipse_convertToJSON() failed [confidence]");
-        goto end;
-    }
     if (cJSON_AddNumberToObject(item, "confidence", point_uncertainty_ellipse->confidence) == NULL) {
         ogs_error("OpenAPI_point_uncertainty_ellipse_convertToJSON() failed [confidence]");
         goto end;

@@ -37,10 +37,6 @@ cJSON *OpenAPI_nf_instance_id_cond_convertToJSON(OpenAPI_nf_instance_id_cond_t *
     }
 
     item = cJSON_CreateObject();
-    if (!nf_instance_id_cond->nf_instance_id) {
-        ogs_error("OpenAPI_nf_instance_id_cond_convertToJSON() failed [nf_instance_id]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "nfInstanceId", nf_instance_id_cond->nf_instance_id) == NULL) {
         ogs_error("OpenAPI_nf_instance_id_cond_convertToJSON() failed [nf_instance_id]");
         goto end;

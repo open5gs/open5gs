@@ -42,19 +42,11 @@ cJSON *OpenAPI_plmn_operator_class_convertToJSON(OpenAPI_plmn_operator_class_t *
     }
 
     item = cJSON_CreateObject();
-    if (!plmn_operator_class->lcs_client_class) {
-        ogs_error("OpenAPI_plmn_operator_class_convertToJSON() failed [lcs_client_class]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "lcsClientClass", OpenAPI_lcs_client_class_ToString(plmn_operator_class->lcs_client_class)) == NULL) {
         ogs_error("OpenAPI_plmn_operator_class_convertToJSON() failed [lcs_client_class]");
         goto end;
     }
 
-    if (!plmn_operator_class->lcs_client_ids) {
-        ogs_error("OpenAPI_plmn_operator_class_convertToJSON() failed [lcs_client_ids]");
-        goto end;
-    }
     cJSON *lcs_client_ids = cJSON_AddArrayToObject(item, "lcsClientIds");
     if (lcs_client_ids == NULL) {
         ogs_error("OpenAPI_plmn_operator_class_convertToJSON() failed [lcs_client_ids]");

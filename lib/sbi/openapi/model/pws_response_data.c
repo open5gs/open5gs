@@ -46,28 +46,16 @@ cJSON *OpenAPI_pws_response_data_convertToJSON(OpenAPI_pws_response_data_t *pws_
     }
 
     item = cJSON_CreateObject();
-    if (!pws_response_data->ngap_message_type) {
-        ogs_error("OpenAPI_pws_response_data_convertToJSON() failed [ngap_message_type]");
-        goto end;
-    }
     if (cJSON_AddNumberToObject(item, "ngapMessageType", pws_response_data->ngap_message_type) == NULL) {
         ogs_error("OpenAPI_pws_response_data_convertToJSON() failed [ngap_message_type]");
         goto end;
     }
 
-    if (!pws_response_data->serial_number) {
-        ogs_error("OpenAPI_pws_response_data_convertToJSON() failed [serial_number]");
-        goto end;
-    }
     if (cJSON_AddNumberToObject(item, "serialNumber", pws_response_data->serial_number) == NULL) {
         ogs_error("OpenAPI_pws_response_data_convertToJSON() failed [serial_number]");
         goto end;
     }
 
-    if (!pws_response_data->message_identifier) {
-        ogs_error("OpenAPI_pws_response_data_convertToJSON() failed [message_identifier]");
-        goto end;
-    }
     if (cJSON_AddNumberToObject(item, "messageIdentifier", pws_response_data->message_identifier) == NULL) {
         ogs_error("OpenAPI_pws_response_data_convertToJSON() failed [message_identifier]");
         goto end;

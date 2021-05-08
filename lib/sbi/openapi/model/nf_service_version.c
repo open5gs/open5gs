@@ -43,19 +43,11 @@ cJSON *OpenAPI_nf_service_version_convertToJSON(OpenAPI_nf_service_version_t *nf
     }
 
     item = cJSON_CreateObject();
-    if (!nf_service_version->api_version_in_uri) {
-        ogs_error("OpenAPI_nf_service_version_convertToJSON() failed [api_version_in_uri]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "apiVersionInUri", nf_service_version->api_version_in_uri) == NULL) {
         ogs_error("OpenAPI_nf_service_version_convertToJSON() failed [api_version_in_uri]");
         goto end;
     }
 
-    if (!nf_service_version->api_full_version) {
-        ogs_error("OpenAPI_nf_service_version_convertToJSON() failed [api_full_version]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "apiFullVersion", nf_service_version->api_full_version) == NULL) {
         ogs_error("OpenAPI_nf_service_version_convertToJSON() failed [api_full_version]");
         goto end;

@@ -42,10 +42,6 @@ cJSON *OpenAPI_amf_event_mode_convertToJSON(OpenAPI_amf_event_mode_t *amf_event_
     }
 
     item = cJSON_CreateObject();
-    if (!amf_event_mode->trigger) {
-        ogs_error("OpenAPI_amf_event_mode_convertToJSON() failed [trigger]");
-        goto end;
-    }
     cJSON *trigger_local_JSON = OpenAPI_amf_event_trigger_convertToJSON(amf_event_mode->trigger);
     if (trigger_local_JSON == NULL) {
         ogs_error("OpenAPI_amf_event_mode_convertToJSON() failed [trigger]");

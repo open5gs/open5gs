@@ -56,10 +56,6 @@ cJSON *OpenAPI_ue_context_release_convertToJSON(OpenAPI_ue_context_release_t *ue
         }
     }
 
-    if (!ue_context_release->ngap_cause) {
-        ogs_error("OpenAPI_ue_context_release_convertToJSON() failed [ngap_cause]");
-        goto end;
-    }
     cJSON *ngap_cause_local_JSON = OpenAPI_ng_ap_cause_convertToJSON(ue_context_release->ngap_cause);
     if (ngap_cause_local_JSON == NULL) {
         ogs_error("OpenAPI_ue_context_release_convertToJSON() failed [ngap_cause]");

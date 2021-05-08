@@ -40,10 +40,6 @@ cJSON *OpenAPI_slrb_configurations_convertToJSON(OpenAPI_slrb_configurations_t *
     }
 
     item = cJSON_CreateObject();
-    if (!slrb_configurations->pc5_qos_para) {
-        ogs_error("OpenAPI_slrb_configurations_convertToJSON() failed [pc5_qos_para]");
-        goto end;
-    }
     cJSON *pc5_qos_para_local_JSON = OpenAPI_pc5_qo_s_para_convertToJSON(slrb_configurations->pc5_qos_para);
     if (pc5_qos_para_local_JSON == NULL) {
         ogs_error("OpenAPI_slrb_configurations_convertToJSON() failed [pc5_qos_para]");
@@ -55,10 +51,6 @@ cJSON *OpenAPI_slrb_configurations_convertToJSON(OpenAPI_slrb_configurations_t *
         goto end;
     }
 
-    if (!slrb_configurations->slrb) {
-        ogs_error("OpenAPI_slrb_configurations_convertToJSON() failed [slrb]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "slrb", slrb_configurations->slrb) == NULL) {
         ogs_error("OpenAPI_slrb_configurations_convertToJSON() failed [slrb]");
         goto end;

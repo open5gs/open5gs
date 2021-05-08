@@ -65,10 +65,6 @@ cJSON *OpenAPI_policy_update_convertToJSON(OpenAPI_policy_update_t *policy_updat
     }
 
     item = cJSON_CreateObject();
-    if (!policy_update->resource_uri) {
-        ogs_error("OpenAPI_policy_update_convertToJSON() failed [resource_uri]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "resourceUri", policy_update->resource_uri) == NULL) {
         ogs_error("OpenAPI_policy_update_convertToJSON() failed [resource_uri]");
         goto end;

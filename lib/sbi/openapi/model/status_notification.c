@@ -43,10 +43,6 @@ cJSON *OpenAPI_status_notification_convertToJSON(OpenAPI_status_notification_t *
     }
 
     item = cJSON_CreateObject();
-    if (!status_notification->status_info) {
-        ogs_error("OpenAPI_status_notification_convertToJSON() failed [status_info]");
-        goto end;
-    }
     cJSON *status_info_local_JSON = OpenAPI_status_info_convertToJSON(status_notification->status_info);
     if (status_info_local_JSON == NULL) {
         ogs_error("OpenAPI_status_notification_convertToJSON() failed [status_info]");

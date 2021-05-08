@@ -44,10 +44,6 @@ cJSON *OpenAPI_up_security_info_convertToJSON(OpenAPI_up_security_info_t *up_sec
     }
 
     item = cJSON_CreateObject();
-    if (!up_security_info->up_security) {
-        ogs_error("OpenAPI_up_security_info_convertToJSON() failed [up_security]");
-        goto end;
-    }
     cJSON *up_security_local_JSON = OpenAPI_up_security_convertToJSON(up_security_info->up_security);
     if (up_security_local_JSON == NULL) {
         ogs_error("OpenAPI_up_security_info_convertToJSON() failed [up_security]");

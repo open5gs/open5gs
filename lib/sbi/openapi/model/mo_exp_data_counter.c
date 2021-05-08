@@ -39,10 +39,6 @@ cJSON *OpenAPI_mo_exp_data_counter_convertToJSON(OpenAPI_mo_exp_data_counter_t *
     }
 
     item = cJSON_CreateObject();
-    if (!mo_exp_data_counter->counter) {
-        ogs_error("OpenAPI_mo_exp_data_counter_convertToJSON() failed [counter]");
-        goto end;
-    }
     if (cJSON_AddNumberToObject(item, "counter", mo_exp_data_counter->counter) == NULL) {
         ogs_error("OpenAPI_mo_exp_data_counter_convertToJSON() failed [counter]");
         goto end;

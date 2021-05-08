@@ -69,10 +69,6 @@ cJSON *OpenAPI_n2_information_notification_convertToJSON(OpenAPI_n2_information_
     }
 
     item = cJSON_CreateObject();
-    if (!n2_information_notification->n2_notify_subscription_id) {
-        ogs_error("OpenAPI_n2_information_notification_convertToJSON() failed [n2_notify_subscription_id]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "n2NotifySubscriptionId", n2_information_notification->n2_notify_subscription_id) == NULL) {
         ogs_error("OpenAPI_n2_information_notification_convertToJSON() failed [n2_notify_subscription_id]");
         goto end;

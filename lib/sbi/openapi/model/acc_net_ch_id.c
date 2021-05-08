@@ -44,10 +44,6 @@ cJSON *OpenAPI_acc_net_ch_id_convertToJSON(OpenAPI_acc_net_ch_id_t *acc_net_ch_i
     }
 
     item = cJSON_CreateObject();
-    if (!acc_net_ch_id->acc_net_cha_id_value) {
-        ogs_error("OpenAPI_acc_net_ch_id_convertToJSON() failed [acc_net_cha_id_value]");
-        goto end;
-    }
     if (cJSON_AddNumberToObject(item, "accNetChaIdValue", acc_net_ch_id->acc_net_cha_id_value) == NULL) {
         ogs_error("OpenAPI_acc_net_ch_id_convertToJSON() failed [acc_net_cha_id_value]");
         goto end;

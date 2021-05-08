@@ -57,19 +57,11 @@ cJSON *OpenAPI_bdt_data_convertToJSON(OpenAPI_bdt_data_t *bdt_data)
     }
 
     item = cJSON_CreateObject();
-    if (!bdt_data->asp_id) {
-        ogs_error("OpenAPI_bdt_data_convertToJSON() failed [asp_id]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "aspId", bdt_data->asp_id) == NULL) {
         ogs_error("OpenAPI_bdt_data_convertToJSON() failed [asp_id]");
         goto end;
     }
 
-    if (!bdt_data->trans_policy) {
-        ogs_error("OpenAPI_bdt_data_convertToJSON() failed [trans_policy]");
-        goto end;
-    }
     cJSON *trans_policy_local_JSON = OpenAPI_transfer_policy_convertToJSON(bdt_data->trans_policy);
     if (trans_policy_local_JSON == NULL) {
         ogs_error("OpenAPI_bdt_data_convertToJSON() failed [trans_policy]");

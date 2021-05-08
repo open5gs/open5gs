@@ -37,10 +37,6 @@ cJSON *OpenAPI_amf_dereg_info_convertToJSON(OpenAPI_amf_dereg_info_t *amf_dereg_
     }
 
     item = cJSON_CreateObject();
-    if (!amf_dereg_info->dereg_reason) {
-        ogs_error("OpenAPI_amf_dereg_info_convertToJSON() failed [dereg_reason]");
-        goto end;
-    }
     cJSON *dereg_reason_local_JSON = OpenAPI_deregistration_reason_convertToJSON(amf_dereg_info->dereg_reason);
     if (dereg_reason_local_JSON == NULL) {
         ogs_error("OpenAPI_amf_dereg_info_convertToJSON() failed [dereg_reason]");

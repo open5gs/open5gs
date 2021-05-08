@@ -75,10 +75,6 @@ cJSON *OpenAPI_mm_context_convertToJSON(OpenAPI_mm_context_t *mm_context)
     }
 
     item = cJSON_CreateObject();
-    if (!mm_context->access_type) {
-        ogs_error("OpenAPI_mm_context_convertToJSON() failed [access_type]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "accessType", OpenAPI_access_type_ToString(mm_context->access_type)) == NULL) {
         ogs_error("OpenAPI_mm_context_convertToJSON() failed [access_type]");
         goto end;

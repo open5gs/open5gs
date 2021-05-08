@@ -58,10 +58,6 @@ cJSON *OpenAPI_smsf_registration_convertToJSON(OpenAPI_smsf_registration_t *smsf
     }
 
     item = cJSON_CreateObject();
-    if (!smsf_registration->smsf_instance_id) {
-        ogs_error("OpenAPI_smsf_registration_convertToJSON() failed [smsf_instance_id]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "smsfInstanceId", smsf_registration->smsf_instance_id) == NULL) {
         ogs_error("OpenAPI_smsf_registration_convertToJSON() failed [smsf_instance_id]");
         goto end;
@@ -81,10 +77,6 @@ cJSON *OpenAPI_smsf_registration_convertToJSON(OpenAPI_smsf_registration_t *smsf
         }
     }
 
-    if (!smsf_registration->plmn_id) {
-        ogs_error("OpenAPI_smsf_registration_convertToJSON() failed [plmn_id]");
-        goto end;
-    }
     cJSON *plmn_id_local_JSON = OpenAPI_plmn_id_convertToJSON(smsf_registration->plmn_id);
     if (plmn_id_local_JSON == NULL) {
         ogs_error("OpenAPI_smsf_registration_convertToJSON() failed [plmn_id]");

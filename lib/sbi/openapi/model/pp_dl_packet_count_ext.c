@@ -45,19 +45,11 @@ cJSON *OpenAPI_pp_dl_packet_count_ext_convertToJSON(OpenAPI_pp_dl_packet_count_e
     }
 
     item = cJSON_CreateObject();
-    if (!pp_dl_packet_count_ext->af_instance_id) {
-        ogs_error("OpenAPI_pp_dl_packet_count_ext_convertToJSON() failed [af_instance_id]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "afInstanceId", pp_dl_packet_count_ext->af_instance_id) == NULL) {
         ogs_error("OpenAPI_pp_dl_packet_count_ext_convertToJSON() failed [af_instance_id]");
         goto end;
     }
 
-    if (!pp_dl_packet_count_ext->reference_id) {
-        ogs_error("OpenAPI_pp_dl_packet_count_ext_convertToJSON() failed [reference_id]");
-        goto end;
-    }
     if (cJSON_AddNumberToObject(item, "referenceId", pp_dl_packet_count_ext->reference_id) == NULL) {
         ogs_error("OpenAPI_pp_dl_packet_count_ext_convertToJSON() failed [reference_id]");
         goto end;

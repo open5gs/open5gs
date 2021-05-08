@@ -45,19 +45,11 @@ cJSON *OpenAPI_sor_data_convertToJSON(OpenAPI_sor_data_t *sor_data)
     }
 
     item = cJSON_CreateObject();
-    if (!sor_data->provisioning_time) {
-        ogs_error("OpenAPI_sor_data_convertToJSON() failed [provisioning_time]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "provisioningTime", sor_data->provisioning_time) == NULL) {
         ogs_error("OpenAPI_sor_data_convertToJSON() failed [provisioning_time]");
         goto end;
     }
 
-    if (!sor_data->ue_update_status) {
-        ogs_error("OpenAPI_sor_data_convertToJSON() failed [ue_update_status]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "ueUpdateStatus", OpenAPI_ue_update_status_ToString(sor_data->ue_update_status)) == NULL) {
         ogs_error("OpenAPI_sor_data_convertToJSON() failed [ue_update_status]");
         goto end;

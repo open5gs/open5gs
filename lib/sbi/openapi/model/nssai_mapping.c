@@ -40,10 +40,6 @@ cJSON *OpenAPI_nssai_mapping_convertToJSON(OpenAPI_nssai_mapping_t *nssai_mappin
     }
 
     item = cJSON_CreateObject();
-    if (!nssai_mapping->mapped_snssai) {
-        ogs_error("OpenAPI_nssai_mapping_convertToJSON() failed [mapped_snssai]");
-        goto end;
-    }
     cJSON *mapped_snssai_local_JSON = OpenAPI_snssai_convertToJSON(nssai_mapping->mapped_snssai);
     if (mapped_snssai_local_JSON == NULL) {
         ogs_error("OpenAPI_nssai_mapping_convertToJSON() failed [mapped_snssai]");
@@ -55,10 +51,6 @@ cJSON *OpenAPI_nssai_mapping_convertToJSON(OpenAPI_nssai_mapping_t *nssai_mappin
         goto end;
     }
 
-    if (!nssai_mapping->h_snssai) {
-        ogs_error("OpenAPI_nssai_mapping_convertToJSON() failed [h_snssai]");
-        goto end;
-    }
     cJSON *h_snssai_local_JSON = OpenAPI_snssai_convertToJSON(nssai_mapping->h_snssai);
     if (h_snssai_local_JSON == NULL) {
         ogs_error("OpenAPI_nssai_mapping_convertToJSON() failed [h_snssai]");

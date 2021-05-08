@@ -53,10 +53,6 @@ cJSON *OpenAPI_upu_info_convertToJSON(OpenAPI_upu_info_t *upu_info)
     }
 
     item = cJSON_CreateObject();
-    if (!upu_info->upu_data_list) {
-        ogs_error("OpenAPI_upu_info_convertToJSON() failed [upu_data_list]");
-        goto end;
-    }
     cJSON *upu_data_listList = cJSON_AddArrayToObject(item, "upuDataList");
     if (upu_data_listList == NULL) {
         ogs_error("OpenAPI_upu_info_convertToJSON() failed [upu_data_list]");
@@ -99,10 +95,6 @@ cJSON *OpenAPI_upu_info_convertToJSON(OpenAPI_upu_info_t *upu_info)
         }
     }
 
-    if (!upu_info->provisioning_time) {
-        ogs_error("OpenAPI_upu_info_convertToJSON() failed [provisioning_time]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "provisioningTime", upu_info->provisioning_time) == NULL) {
         ogs_error("OpenAPI_upu_info_convertToJSON() failed [provisioning_time]");
         goto end;

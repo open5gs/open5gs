@@ -50,10 +50,6 @@ cJSON *OpenAPI_sm_context_update_error_convertToJSON(OpenAPI_sm_context_update_e
     }
 
     item = cJSON_CreateObject();
-    if (!sm_context_update_error->error) {
-        ogs_error("OpenAPI_sm_context_update_error_convertToJSON() failed [error]");
-        goto end;
-    }
     cJSON *error_local_JSON = OpenAPI_ext_problem_details_convertToJSON(sm_context_update_error->error);
     if (error_local_JSON == NULL) {
         ogs_error("OpenAPI_sm_context_update_error_convertToJSON() failed [error]");

@@ -49,19 +49,11 @@ cJSON *OpenAPI_pfd_data_for_app_ext_convertToJSON(OpenAPI_pfd_data_for_app_ext_t
     }
 
     item = cJSON_CreateObject();
-    if (!pfd_data_for_app_ext->application_id) {
-        ogs_error("OpenAPI_pfd_data_for_app_ext_convertToJSON() failed [application_id]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "applicationId", pfd_data_for_app_ext->application_id) == NULL) {
         ogs_error("OpenAPI_pfd_data_for_app_ext_convertToJSON() failed [application_id]");
         goto end;
     }
 
-    if (!pfd_data_for_app_ext->pfds) {
-        ogs_error("OpenAPI_pfd_data_for_app_ext_convertToJSON() failed [pfds]");
-        goto end;
-    }
     cJSON *pfdsList = cJSON_AddArrayToObject(item, "pfds");
     if (pfdsList == NULL) {
         ogs_error("OpenAPI_pfd_data_for_app_ext_convertToJSON() failed [pfds]");

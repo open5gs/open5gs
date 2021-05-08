@@ -48,10 +48,6 @@ cJSON *OpenAPI_n2_info_container_convertToJSON(OpenAPI_n2_info_container_t *n2_i
     }
 
     item = cJSON_CreateObject();
-    if (!n2_info_container->n2_information_class) {
-        ogs_error("OpenAPI_n2_info_container_convertToJSON() failed [n2_information_class]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "n2InformationClass", OpenAPI_n2_information_class_ToString(n2_info_container->n2_information_class)) == NULL) {
         ogs_error("OpenAPI_n2_info_container_convertToJSON() failed [n2_information_class]");
         goto end;

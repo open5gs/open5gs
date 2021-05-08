@@ -45,10 +45,6 @@ cJSON *OpenAPI_privacy_parameter_convertToJSON(OpenAPI_privacy_parameter_t *priv
     }
 
     item = cJSON_CreateObject();
-    if (!privacy_parameter->ser_ids) {
-        ogs_error("OpenAPI_privacy_parameter_convertToJSON() failed [ser_ids]");
-        goto end;
-    }
     cJSON *ser_ids = cJSON_AddArrayToObject(item, "serIds");
     if (ser_ids == NULL) {
         ogs_error("OpenAPI_privacy_parameter_convertToJSON() failed [ser_ids]");
@@ -63,19 +59,11 @@ cJSON *OpenAPI_privacy_parameter_convertToJSON(OpenAPI_privacy_parameter_t *priv
         }
     }
 
-    if (!privacy_parameter->geographical_area) {
-        ogs_error("OpenAPI_privacy_parameter_convertToJSON() failed [geographical_area]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "geographicalArea", privacy_parameter->geographical_area) == NULL) {
         ogs_error("OpenAPI_privacy_parameter_convertToJSON() failed [geographical_area]");
         goto end;
     }
 
-    if (!privacy_parameter->timer) {
-        ogs_error("OpenAPI_privacy_parameter_convertToJSON() failed [timer]");
-        goto end;
-    }
     if (cJSON_AddNumberToObject(item, "timer", privacy_parameter->timer) == NULL) {
         ogs_error("OpenAPI_privacy_parameter_convertToJSON() failed [timer]");
         goto end;

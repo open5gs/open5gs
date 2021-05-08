@@ -122,10 +122,6 @@ cJSON *OpenAPI_vsmf_update_data_convertToJSON(OpenAPI_vsmf_update_data_t *vsmf_u
     }
 
     item = cJSON_CreateObject();
-    if (!vsmf_update_data->request_indication) {
-        ogs_error("OpenAPI_vsmf_update_data_convertToJSON() failed [request_indication]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "requestIndication", OpenAPI_request_indication_ToString(vsmf_update_data->request_indication)) == NULL) {
         ogs_error("OpenAPI_vsmf_update_data_convertToJSON() failed [request_indication]");
         goto end;

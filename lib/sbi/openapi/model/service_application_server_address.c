@@ -76,10 +76,6 @@ cJSON *OpenAPI_service_application_server_address_convertToJSON(OpenAPI_service_
     }
 
     item = cJSON_CreateObject();
-    if (!service_application_server_address->ser_ids) {
-        ogs_error("OpenAPI_service_application_server_address_convertToJSON() failed [ser_ids]");
-        goto end;
-    }
     cJSON *ser_ids = cJSON_AddArrayToObject(item, "serIds");
     if (ser_ids == NULL) {
         ogs_error("OpenAPI_service_application_server_address_convertToJSON() failed [ser_ids]");
@@ -165,10 +161,6 @@ cJSON *OpenAPI_service_application_server_address_convertToJSON(OpenAPI_service_
         }
     }
 
-    if (!service_application_server_address->plmns) {
-        ogs_error("OpenAPI_service_application_server_address_convertToJSON() failed [plmns]");
-        goto end;
-    }
     cJSON *plmnsList = cJSON_AddArrayToObject(item, "plmns");
     if (plmnsList == NULL) {
         ogs_error("OpenAPI_service_application_server_address_convertToJSON() failed [plmns]");

@@ -43,19 +43,11 @@ cJSON *OpenAPI_amf_subscription_info_convertToJSON(OpenAPI_amf_subscription_info
     }
 
     item = cJSON_CreateObject();
-    if (!amf_subscription_info->amf_instance_id) {
-        ogs_error("OpenAPI_amf_subscription_info_convertToJSON() failed [amf_instance_id]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "amfInstanceId", amf_subscription_info->amf_instance_id) == NULL) {
         ogs_error("OpenAPI_amf_subscription_info_convertToJSON() failed [amf_instance_id]");
         goto end;
     }
 
-    if (!amf_subscription_info->subscription_id) {
-        ogs_error("OpenAPI_amf_subscription_info_convertToJSON() failed [subscription_id]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "subscriptionId", amf_subscription_info->subscription_id) == NULL) {
         ogs_error("OpenAPI_amf_subscription_info_convertToJSON() failed [subscription_id]");
         goto end;

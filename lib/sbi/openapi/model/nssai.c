@@ -67,10 +67,6 @@ cJSON *OpenAPI_nssai_convertToJSON(OpenAPI_nssai_t *nssai)
         }
     }
 
-    if (!nssai->default_single_nssais) {
-        ogs_error("OpenAPI_nssai_convertToJSON() failed [default_single_nssais]");
-        goto end;
-    }
     cJSON *default_single_nssaisList = cJSON_AddArrayToObject(item, "defaultSingleNssais");
     if (default_single_nssaisList == NULL) {
         ogs_error("OpenAPI_nssai_convertToJSON() failed [default_single_nssais]");

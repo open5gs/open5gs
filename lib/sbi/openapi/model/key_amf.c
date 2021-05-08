@@ -39,19 +39,11 @@ cJSON *OpenAPI_key_amf_convertToJSON(OpenAPI_key_amf_t *key_amf)
     }
 
     item = cJSON_CreateObject();
-    if (!key_amf->key_type) {
-        ogs_error("OpenAPI_key_amf_convertToJSON() failed [key_type]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "keyType", OpenAPI_key_amf_type_ToString(key_amf->key_type)) == NULL) {
         ogs_error("OpenAPI_key_amf_convertToJSON() failed [key_type]");
         goto end;
     }
 
-    if (!key_amf->key_val) {
-        ogs_error("OpenAPI_key_amf_convertToJSON() failed [key_val]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "keyVal", key_amf->key_val) == NULL) {
         ogs_error("OpenAPI_key_amf_convertToJSON() failed [key_val]");
         goto end;

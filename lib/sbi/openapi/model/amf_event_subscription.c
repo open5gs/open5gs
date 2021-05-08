@@ -72,10 +72,6 @@ cJSON *OpenAPI_amf_event_subscription_convertToJSON(OpenAPI_amf_event_subscripti
     }
 
     item = cJSON_CreateObject();
-    if (!amf_event_subscription->event_list) {
-        ogs_error("OpenAPI_amf_event_subscription_convertToJSON() failed [event_list]");
-        goto end;
-    }
     cJSON *event_listList = cJSON_AddArrayToObject(item, "eventList");
     if (event_listList == NULL) {
         ogs_error("OpenAPI_amf_event_subscription_convertToJSON() failed [event_list]");
@@ -94,28 +90,16 @@ cJSON *OpenAPI_amf_event_subscription_convertToJSON(OpenAPI_amf_event_subscripti
         }
     }
 
-    if (!amf_event_subscription->event_notify_uri) {
-        ogs_error("OpenAPI_amf_event_subscription_convertToJSON() failed [event_notify_uri]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "eventNotifyUri", amf_event_subscription->event_notify_uri) == NULL) {
         ogs_error("OpenAPI_amf_event_subscription_convertToJSON() failed [event_notify_uri]");
         goto end;
     }
 
-    if (!amf_event_subscription->notify_correlation_id) {
-        ogs_error("OpenAPI_amf_event_subscription_convertToJSON() failed [notify_correlation_id]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "notifyCorrelationId", amf_event_subscription->notify_correlation_id) == NULL) {
         ogs_error("OpenAPI_amf_event_subscription_convertToJSON() failed [notify_correlation_id]");
         goto end;
     }
 
-    if (!amf_event_subscription->nf_id) {
-        ogs_error("OpenAPI_amf_event_subscription_convertToJSON() failed [nf_id]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "nfId", amf_event_subscription->nf_id) == NULL) {
         ogs_error("OpenAPI_amf_event_subscription_convertToJSON() failed [nf_id]");
         goto end;

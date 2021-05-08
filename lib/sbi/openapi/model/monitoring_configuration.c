@@ -69,10 +69,6 @@ cJSON *OpenAPI_monitoring_configuration_convertToJSON(OpenAPI_monitoring_configu
     }
 
     item = cJSON_CreateObject();
-    if (!monitoring_configuration->event_type) {
-        ogs_error("OpenAPI_monitoring_configuration_convertToJSON() failed [event_type]");
-        goto end;
-    }
     cJSON *event_type_local_JSON = OpenAPI_event_type_convertToJSON(monitoring_configuration->event_type);
     if (event_type_local_JSON == NULL) {
         ogs_error("OpenAPI_monitoring_configuration_convertToJSON() failed [event_type]");

@@ -45,10 +45,6 @@ cJSON *OpenAPI_authentication_info_result_convertToJSON(OpenAPI_authentication_i
     }
 
     item = cJSON_CreateObject();
-    if (!authentication_info_result->auth_type) {
-        ogs_error("OpenAPI_authentication_info_result_convertToJSON() failed [auth_type]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "authType", OpenAPI_auth_type_ToString(authentication_info_result->auth_type)) == NULL) {
         ogs_error("OpenAPI_authentication_info_result_convertToJSON() failed [auth_type]");
         goto end;

@@ -57,10 +57,6 @@ cJSON *OpenAPI_ue_initiated_resource_request_convertToJSON(OpenAPI_ue_initiated_
         }
     }
 
-    if (!ue_initiated_resource_request->rule_op) {
-        ogs_error("OpenAPI_ue_initiated_resource_request_convertToJSON() failed [rule_op]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "ruleOp", OpenAPI_rule_operation_ToString(ue_initiated_resource_request->rule_op)) == NULL) {
         ogs_error("OpenAPI_ue_initiated_resource_request_convertToJSON() failed [rule_op]");
         goto end;
@@ -73,10 +69,6 @@ cJSON *OpenAPI_ue_initiated_resource_request_convertToJSON(OpenAPI_ue_initiated_
         }
     }
 
-    if (!ue_initiated_resource_request->pack_filt_info) {
-        ogs_error("OpenAPI_ue_initiated_resource_request_convertToJSON() failed [pack_filt_info]");
-        goto end;
-    }
     cJSON *pack_filt_infoList = cJSON_AddArrayToObject(item, "packFiltInfo");
     if (pack_filt_infoList == NULL) {
         ogs_error("OpenAPI_ue_initiated_resource_request_convertToJSON() failed [pack_filt_info]");

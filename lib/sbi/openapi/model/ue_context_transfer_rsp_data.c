@@ -46,10 +46,6 @@ cJSON *OpenAPI_ue_context_transfer_rsp_data_convertToJSON(OpenAPI_ue_context_tra
     }
 
     item = cJSON_CreateObject();
-    if (!ue_context_transfer_rsp_data->ue_context) {
-        ogs_error("OpenAPI_ue_context_transfer_rsp_data_convertToJSON() failed [ue_context]");
-        goto end;
-    }
     cJSON *ue_context_local_JSON = OpenAPI_ue_context_convertToJSON(ue_context_transfer_rsp_data->ue_context);
     if (ue_context_local_JSON == NULL) {
         ogs_error("OpenAPI_ue_context_transfer_rsp_data_convertToJSON() failed [ue_context]");

@@ -43,19 +43,11 @@ cJSON *OpenAPI_plmn_id_nid_convertToJSON(OpenAPI_plmn_id_nid_t *plmn_id_nid)
     }
 
     item = cJSON_CreateObject();
-    if (!plmn_id_nid->mcc) {
-        ogs_error("OpenAPI_plmn_id_nid_convertToJSON() failed [mcc]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "mcc", plmn_id_nid->mcc) == NULL) {
         ogs_error("OpenAPI_plmn_id_nid_convertToJSON() failed [mcc]");
         goto end;
     }
 
-    if (!plmn_id_nid->mnc) {
-        ogs_error("OpenAPI_plmn_id_nid_convertToJSON() failed [mnc]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "mnc", plmn_id_nid->mnc) == NULL) {
         ogs_error("OpenAPI_plmn_id_nid_convertToJSON() failed [mnc]");
         goto end;

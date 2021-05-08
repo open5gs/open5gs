@@ -50,10 +50,6 @@ cJSON *OpenAPI_id_translation_result_convertToJSON(OpenAPI_id_translation_result
         }
     }
 
-    if (!id_translation_result->supi) {
-        ogs_error("OpenAPI_id_translation_result_convertToJSON() failed [supi]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "supi", id_translation_result->supi) == NULL) {
         ogs_error("OpenAPI_id_translation_result_convertToJSON() failed [supi]");
         goto end;

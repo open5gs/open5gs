@@ -40,19 +40,11 @@ cJSON *OpenAPI_resynchronization_info_convertToJSON(OpenAPI_resynchronization_in
     }
 
     item = cJSON_CreateObject();
-    if (!resynchronization_info->rand) {
-        ogs_error("OpenAPI_resynchronization_info_convertToJSON() failed [rand]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "rand", resynchronization_info->rand) == NULL) {
         ogs_error("OpenAPI_resynchronization_info_convertToJSON() failed [rand]");
         goto end;
     }
 
-    if (!resynchronization_info->auts) {
-        ogs_error("OpenAPI_resynchronization_info_convertToJSON() failed [auts]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "auts", resynchronization_info->auts) == NULL) {
         ogs_error("OpenAPI_resynchronization_info_convertToJSON() failed [auts]");
         goto end;

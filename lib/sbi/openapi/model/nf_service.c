@@ -163,28 +163,16 @@ cJSON *OpenAPI_nf_service_convertToJSON(OpenAPI_nf_service_t *nf_service)
     }
 
     item = cJSON_CreateObject();
-    if (!nf_service->service_instance_id) {
-        ogs_error("OpenAPI_nf_service_convertToJSON() failed [service_instance_id]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "serviceInstanceId", nf_service->service_instance_id) == NULL) {
         ogs_error("OpenAPI_nf_service_convertToJSON() failed [service_instance_id]");
         goto end;
     }
 
-    if (!nf_service->service_name) {
-        ogs_error("OpenAPI_nf_service_convertToJSON() failed [service_name]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "serviceName", nf_service->service_name) == NULL) {
         ogs_error("OpenAPI_nf_service_convertToJSON() failed [service_name]");
         goto end;
     }
 
-    if (!nf_service->versions) {
-        ogs_error("OpenAPI_nf_service_convertToJSON() failed [versions]");
-        goto end;
-    }
     cJSON *versionsList = cJSON_AddArrayToObject(item, "versions");
     if (versionsList == NULL) {
         ogs_error("OpenAPI_nf_service_convertToJSON() failed [versions]");
@@ -203,19 +191,11 @@ cJSON *OpenAPI_nf_service_convertToJSON(OpenAPI_nf_service_t *nf_service)
         }
     }
 
-    if (!nf_service->scheme) {
-        ogs_error("OpenAPI_nf_service_convertToJSON() failed [scheme]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "scheme", OpenAPI_uri_scheme_ToString(nf_service->scheme)) == NULL) {
         ogs_error("OpenAPI_nf_service_convertToJSON() failed [scheme]");
         goto end;
     }
 
-    if (!nf_service->nf_service_status) {
-        ogs_error("OpenAPI_nf_service_convertToJSON() failed [nf_service_status]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "nfServiceStatus", OpenAPI_nf_service_status_ToString(nf_service->nf_service_status)) == NULL) {
         ogs_error("OpenAPI_nf_service_convertToJSON() failed [nf_service_status]");
         goto end;

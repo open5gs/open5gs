@@ -51,10 +51,6 @@ cJSON *OpenAPI_partial_success_report_convertToJSON(OpenAPI_partial_success_repo
     }
 
     item = cJSON_CreateObject();
-    if (!partial_success_report->failure_cause) {
-        ogs_error("OpenAPI_partial_success_report_convertToJSON() failed [failure_cause]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "failureCause", OpenAPI_failure_cause_ToString(partial_success_report->failure_cause)) == NULL) {
         ogs_error("OpenAPI_partial_success_report_convertToJSON() failed [failure_cause]");
         goto end;

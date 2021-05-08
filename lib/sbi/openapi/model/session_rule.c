@@ -78,10 +78,6 @@ cJSON *OpenAPI_session_rule_convertToJSON(OpenAPI_session_rule_t *session_rule)
         }
     }
 
-    if (!session_rule->sess_rule_id) {
-        ogs_error("OpenAPI_session_rule_convertToJSON() failed [sess_rule_id]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "sessRuleId", session_rule->sess_rule_id) == NULL) {
         ogs_error("OpenAPI_session_rule_convertToJSON() failed [sess_rule_id]");
         goto end;

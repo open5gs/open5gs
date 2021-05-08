@@ -68,10 +68,6 @@ cJSON *OpenAPI_subscription_data_subscriptions_convertToJSON(OpenAPI_subscriptio
         }
     }
 
-    if (!subscription_data_subscriptions->callback_reference) {
-        ogs_error("OpenAPI_subscription_data_subscriptions_convertToJSON() failed [callback_reference]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "callbackReference", subscription_data_subscriptions->callback_reference) == NULL) {
         ogs_error("OpenAPI_subscription_data_subscriptions_convertToJSON() failed [callback_reference]");
         goto end;
@@ -84,10 +80,6 @@ cJSON *OpenAPI_subscription_data_subscriptions_convertToJSON(OpenAPI_subscriptio
         }
     }
 
-    if (!subscription_data_subscriptions->monitored_resource_uris) {
-        ogs_error("OpenAPI_subscription_data_subscriptions_convertToJSON() failed [monitored_resource_uris]");
-        goto end;
-    }
     cJSON *monitored_resource_uris = cJSON_AddArrayToObject(item, "monitoredResourceUris");
     if (monitored_resource_uris == NULL) {
         ogs_error("OpenAPI_subscription_data_subscriptions_convertToJSON() failed [monitored_resource_uris]");

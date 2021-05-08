@@ -39,19 +39,11 @@ cJSON *OpenAPI_cag_ack_data_convertToJSON(OpenAPI_cag_ack_data_t *cag_ack_data)
     }
 
     item = cJSON_CreateObject();
-    if (!cag_ack_data->provisioning_time) {
-        ogs_error("OpenAPI_cag_ack_data_convertToJSON() failed [provisioning_time]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "provisioningTime", cag_ack_data->provisioning_time) == NULL) {
         ogs_error("OpenAPI_cag_ack_data_convertToJSON() failed [provisioning_time]");
         goto end;
     }
 
-    if (!cag_ack_data->ue_update_status) {
-        ogs_error("OpenAPI_cag_ack_data_convertToJSON() failed [ue_update_status]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "ueUpdateStatus", OpenAPI_ue_update_status_ToString(cag_ack_data->ue_update_status)) == NULL) {
         ogs_error("OpenAPI_cag_ack_data_convertToJSON() failed [ue_update_status]");
         goto end;

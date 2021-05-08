@@ -45,10 +45,6 @@ cJSON *OpenAPI_service_id_to_frequency_convertToJSON(OpenAPI_service_id_to_frequ
     }
 
     item = cJSON_CreateObject();
-    if (!service_id_to_frequency->ser_ids) {
-        ogs_error("OpenAPI_service_id_to_frequency_convertToJSON() failed [ser_ids]");
-        goto end;
-    }
     cJSON *ser_ids = cJSON_AddArrayToObject(item, "serIds");
     if (ser_ids == NULL) {
         ogs_error("OpenAPI_service_id_to_frequency_convertToJSON() failed [ser_ids]");
@@ -63,10 +59,6 @@ cJSON *OpenAPI_service_id_to_frequency_convertToJSON(OpenAPI_service_id_to_frequ
         }
     }
 
-    if (!service_id_to_frequency->frequency) {
-        ogs_error("OpenAPI_service_id_to_frequency_convertToJSON() failed [frequency]");
-        goto end;
-    }
     if (cJSON_AddNumberToObject(item, "frequency", service_id_to_frequency->frequency) == NULL) {
         ogs_error("OpenAPI_service_id_to_frequency_convertToJSON() failed [frequency]");
         goto end;

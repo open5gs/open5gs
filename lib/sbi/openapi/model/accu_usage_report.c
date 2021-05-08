@@ -53,10 +53,6 @@ cJSON *OpenAPI_accu_usage_report_convertToJSON(OpenAPI_accu_usage_report_t *accu
     }
 
     item = cJSON_CreateObject();
-    if (!accu_usage_report->ref_um_ids) {
-        ogs_error("OpenAPI_accu_usage_report_convertToJSON() failed [ref_um_ids]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "refUmIds", accu_usage_report->ref_um_ids) == NULL) {
         ogs_error("OpenAPI_accu_usage_report_convertToJSON() failed [ref_um_ids]");
         goto end;

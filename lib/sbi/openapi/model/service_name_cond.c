@@ -37,10 +37,6 @@ cJSON *OpenAPI_service_name_cond_convertToJSON(OpenAPI_service_name_cond_t *serv
     }
 
     item = cJSON_CreateObject();
-    if (!service_name_cond->service_name) {
-        ogs_error("OpenAPI_service_name_cond_convertToJSON() failed [service_name]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "serviceName", service_name_cond->service_name) == NULL) {
         ogs_error("OpenAPI_service_name_cond_convertToJSON() failed [service_name]");
         goto end;

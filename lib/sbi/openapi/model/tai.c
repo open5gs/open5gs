@@ -43,10 +43,6 @@ cJSON *OpenAPI_tai_convertToJSON(OpenAPI_tai_t *tai)
     }
 
     item = cJSON_CreateObject();
-    if (!tai->plmn_id) {
-        ogs_error("OpenAPI_tai_convertToJSON() failed [plmn_id]");
-        goto end;
-    }
     cJSON *plmn_id_local_JSON = OpenAPI_plmn_id_convertToJSON(tai->plmn_id);
     if (plmn_id_local_JSON == NULL) {
         ogs_error("OpenAPI_tai_convertToJSON() failed [plmn_id]");
@@ -58,10 +54,6 @@ cJSON *OpenAPI_tai_convertToJSON(OpenAPI_tai_t *tai)
         goto end;
     }
 
-    if (!tai->tac) {
-        ogs_error("OpenAPI_tai_convertToJSON() failed [tac]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "tac", tai->tac) == NULL) {
         ogs_error("OpenAPI_tai_convertToJSON() failed [tac]");
         goto end;

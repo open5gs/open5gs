@@ -40,10 +40,6 @@ cJSON *OpenAPI_invalid_param_convertToJSON(OpenAPI_invalid_param_t *invalid_para
     }
 
     item = cJSON_CreateObject();
-    if (!invalid_param->param) {
-        ogs_error("OpenAPI_invalid_param_convertToJSON() failed [param]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "param", invalid_param->param) == NULL) {
         ogs_error("OpenAPI_invalid_param_convertToJSON() failed [param]");
         goto end;

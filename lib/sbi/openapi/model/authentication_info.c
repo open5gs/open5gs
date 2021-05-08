@@ -58,19 +58,11 @@ cJSON *OpenAPI_authentication_info_convertToJSON(OpenAPI_authentication_info_t *
     }
 
     item = cJSON_CreateObject();
-    if (!authentication_info->supi_or_suci) {
-        ogs_error("OpenAPI_authentication_info_convertToJSON() failed [supi_or_suci]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "supiOrSuci", authentication_info->supi_or_suci) == NULL) {
         ogs_error("OpenAPI_authentication_info_convertToJSON() failed [supi_or_suci]");
         goto end;
     }
 
-    if (!authentication_info->serving_network_name) {
-        ogs_error("OpenAPI_authentication_info_convertToJSON() failed [serving_network_name]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "servingNetworkName", authentication_info->serving_network_name) == NULL) {
         ogs_error("OpenAPI_authentication_info_convertToJSON() failed [serving_network_name]");
         goto end;

@@ -39,19 +39,11 @@ cJSON *OpenAPI_nssai_ack_data_convertToJSON(OpenAPI_nssai_ack_data_t *nssai_ack_
     }
 
     item = cJSON_CreateObject();
-    if (!nssai_ack_data->provisioning_time) {
-        ogs_error("OpenAPI_nssai_ack_data_convertToJSON() failed [provisioning_time]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "provisioningTime", nssai_ack_data->provisioning_time) == NULL) {
         ogs_error("OpenAPI_nssai_ack_data_convertToJSON() failed [provisioning_time]");
         goto end;
     }
 
-    if (!nssai_ack_data->ue_update_status) {
-        ogs_error("OpenAPI_nssai_ack_data_convertToJSON() failed [ue_update_status]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "ueUpdateStatus", OpenAPI_ue_update_status_ToString(nssai_ack_data->ue_update_status)) == NULL) {
         ogs_error("OpenAPI_nssai_ack_data_convertToJSON() failed [ue_update_status]");
         goto end;

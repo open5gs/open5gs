@@ -46,19 +46,11 @@ cJSON *OpenAPI_radio_parameter_not_served_convertToJSON(OpenAPI_radio_parameter_
     }
 
     item = cJSON_CreateObject();
-    if (!radio_parameter_not_served->radio_params) {
-        ogs_error("OpenAPI_radio_parameter_not_served_convertToJSON() failed [radio_params]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "radioParams", radio_parameter_not_served->radio_params) == NULL) {
         ogs_error("OpenAPI_radio_parameter_not_served_convertToJSON() failed [radio_params]");
         goto end;
     }
 
-    if (!radio_parameter_not_served->rat) {
-        ogs_error("OpenAPI_radio_parameter_not_served_convertToJSON() failed [rat]");
-        goto end;
-    }
     cJSON *rat_local_JSON = OpenAPI_v2x_rat_type_convertToJSON(radio_parameter_not_served->rat);
     if (rat_local_JSON == NULL) {
         ogs_error("OpenAPI_radio_parameter_not_served_convertToJSON() failed [rat]");
@@ -70,19 +62,11 @@ cJSON *OpenAPI_radio_parameter_not_served_convertToJSON(OpenAPI_radio_parameter_
         goto end;
     }
 
-    if (!radio_parameter_not_served->geographical_area) {
-        ogs_error("OpenAPI_radio_parameter_not_served_convertToJSON() failed [geographical_area]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "geographicalArea", radio_parameter_not_served->geographical_area) == NULL) {
         ogs_error("OpenAPI_radio_parameter_not_served_convertToJSON() failed [geographical_area]");
         goto end;
     }
 
-    if (!radio_parameter_not_served->oper_managed) {
-        ogs_error("OpenAPI_radio_parameter_not_served_convertToJSON() failed [oper_managed]");
-        goto end;
-    }
     cJSON *oper_managed_local_JSON = OpenAPI_operator_managed_convertToJSON(radio_parameter_not_served->oper_managed);
     if (oper_managed_local_JSON == NULL) {
         ogs_error("OpenAPI_radio_parameter_not_served_convertToJSON() failed [oper_managed]");

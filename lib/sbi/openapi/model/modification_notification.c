@@ -40,10 +40,6 @@ cJSON *OpenAPI_modification_notification_convertToJSON(OpenAPI_modification_noti
     }
 
     item = cJSON_CreateObject();
-    if (!modification_notification->notify_items) {
-        ogs_error("OpenAPI_modification_notification_convertToJSON() failed [notify_items]");
-        goto end;
-    }
     cJSON *notify_itemsList = cJSON_AddArrayToObject(item, "notifyItems");
     if (notify_itemsList == NULL) {
         ogs_error("OpenAPI_modification_notification_convertToJSON() failed [notify_items]");

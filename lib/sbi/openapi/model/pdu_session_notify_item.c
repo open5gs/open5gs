@@ -36,10 +36,6 @@ cJSON *OpenAPI_pdu_session_notify_item_convertToJSON(OpenAPI_pdu_session_notify_
     }
 
     item = cJSON_CreateObject();
-    if (!pdu_session_notify_item->notification_cause) {
-        ogs_error("OpenAPI_pdu_session_notify_item_convertToJSON() failed [notification_cause]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "notificationCause", OpenAPI_notification_cause_ToString(pdu_session_notify_item->notification_cause)) == NULL) {
         ogs_error("OpenAPI_pdu_session_notify_item_convertToJSON() failed [notification_cause]");
         goto end;

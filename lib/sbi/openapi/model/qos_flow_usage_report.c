@@ -46,46 +46,26 @@ cJSON *OpenAPI_qos_flow_usage_report_convertToJSON(OpenAPI_qos_flow_usage_report
     }
 
     item = cJSON_CreateObject();
-    if (!qos_flow_usage_report->qfi) {
-        ogs_error("OpenAPI_qos_flow_usage_report_convertToJSON() failed [qfi]");
-        goto end;
-    }
     if (cJSON_AddNumberToObject(item, "qfi", qos_flow_usage_report->qfi) == NULL) {
         ogs_error("OpenAPI_qos_flow_usage_report_convertToJSON() failed [qfi]");
         goto end;
     }
 
-    if (!qos_flow_usage_report->start_time_stamp) {
-        ogs_error("OpenAPI_qos_flow_usage_report_convertToJSON() failed [start_time_stamp]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "startTimeStamp", qos_flow_usage_report->start_time_stamp) == NULL) {
         ogs_error("OpenAPI_qos_flow_usage_report_convertToJSON() failed [start_time_stamp]");
         goto end;
     }
 
-    if (!qos_flow_usage_report->end_time_stamp) {
-        ogs_error("OpenAPI_qos_flow_usage_report_convertToJSON() failed [end_time_stamp]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "endTimeStamp", qos_flow_usage_report->end_time_stamp) == NULL) {
         ogs_error("OpenAPI_qos_flow_usage_report_convertToJSON() failed [end_time_stamp]");
         goto end;
     }
 
-    if (!qos_flow_usage_report->downlink_volume) {
-        ogs_error("OpenAPI_qos_flow_usage_report_convertToJSON() failed [downlink_volume]");
-        goto end;
-    }
     if (cJSON_AddNumberToObject(item, "downlinkVolume", qos_flow_usage_report->downlink_volume) == NULL) {
         ogs_error("OpenAPI_qos_flow_usage_report_convertToJSON() failed [downlink_volume]");
         goto end;
     }
 
-    if (!qos_flow_usage_report->uplink_volume) {
-        ogs_error("OpenAPI_qos_flow_usage_report_convertToJSON() failed [uplink_volume]");
-        goto end;
-    }
     if (cJSON_AddNumberToObject(item, "uplinkVolume", qos_flow_usage_report->uplink_volume) == NULL) {
         ogs_error("OpenAPI_qos_flow_usage_report_convertToJSON() failed [uplink_volume]");
         goto end;

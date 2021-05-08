@@ -37,10 +37,6 @@ cJSON *OpenAPI_confirmation_data_convertToJSON(OpenAPI_confirmation_data_t *conf
     }
 
     item = cJSON_CreateObject();
-    if (!confirmation_data->res_star) {
-        ogs_error("OpenAPI_confirmation_data_convertToJSON() failed [res_star]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "resStar", confirmation_data->res_star) == NULL) {
         ogs_error("OpenAPI_confirmation_data_convertToJSON() failed [res_star]");
         goto end;

@@ -104,10 +104,6 @@ cJSON *OpenAPI_sm_policy_dnn_data_convertToJSON(OpenAPI_sm_policy_dnn_data_t *sm
     }
 
     item = cJSON_CreateObject();
-    if (!sm_policy_dnn_data->dnn) {
-        ogs_error("OpenAPI_sm_policy_dnn_data_convertToJSON() failed [dnn]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "dnn", sm_policy_dnn_data->dnn) == NULL) {
         ogs_error("OpenAPI_sm_policy_dnn_data_convertToJSON() failed [dnn]");
         goto end;

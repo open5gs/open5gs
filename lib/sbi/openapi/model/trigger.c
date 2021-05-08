@@ -48,10 +48,6 @@ cJSON *OpenAPI_trigger_convertToJSON(OpenAPI_trigger_t *trigger)
     }
 
     item = cJSON_CreateObject();
-    if (!trigger->trigger_type) {
-        ogs_error("OpenAPI_trigger_convertToJSON() failed [trigger_type]");
-        goto end;
-    }
     cJSON *trigger_type_local_JSON = OpenAPI_trigger_type_convertToJSON(trigger->trigger_type);
     if (trigger_type_local_JSON == NULL) {
         ogs_error("OpenAPI_trigger_convertToJSON() failed [trigger_type]");
@@ -63,10 +59,6 @@ cJSON *OpenAPI_trigger_convertToJSON(OpenAPI_trigger_t *trigger)
         goto end;
     }
 
-    if (!trigger->trigger_category) {
-        ogs_error("OpenAPI_trigger_convertToJSON() failed [trigger_category]");
-        goto end;
-    }
     cJSON *trigger_category_local_JSON = OpenAPI_trigger_category_convertToJSON(trigger->trigger_category);
     if (trigger_category_local_JSON == NULL) {
         ogs_error("OpenAPI_trigger_convertToJSON() failed [trigger_category]");

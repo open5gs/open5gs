@@ -48,19 +48,11 @@ cJSON *OpenAPI_av5_g_he_aka_convertToJSON(OpenAPI_av5_g_he_aka_t *av5_g_he_aka)
     }
 
     item = cJSON_CreateObject();
-    if (!av5_g_he_aka->av_type) {
-        ogs_error("OpenAPI_av5_g_he_aka_convertToJSON() failed [av_type]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "avType", OpenAPI_av_type_ToString(av5_g_he_aka->av_type)) == NULL) {
         ogs_error("OpenAPI_av5_g_he_aka_convertToJSON() failed [av_type]");
         goto end;
     }
 
-    if (!av5_g_he_aka->rand) {
-        ogs_error("OpenAPI_av5_g_he_aka_convertToJSON() failed [rand]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "rand", av5_g_he_aka->rand) == NULL) {
         ogs_error("OpenAPI_av5_g_he_aka_convertToJSON() failed [rand]");
         goto end;
@@ -73,10 +65,6 @@ cJSON *OpenAPI_av5_g_he_aka_convertToJSON(OpenAPI_av5_g_he_aka_t *av5_g_he_aka)
         }
     }
 
-    if (!av5_g_he_aka->autn) {
-        ogs_error("OpenAPI_av5_g_he_aka_convertToJSON() failed [autn]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "autn", av5_g_he_aka->autn) == NULL) {
         ogs_error("OpenAPI_av5_g_he_aka_convertToJSON() failed [autn]");
         goto end;

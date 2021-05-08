@@ -39,10 +39,6 @@ cJSON *OpenAPI_suggested_packet_num_dl_convertToJSON(OpenAPI_suggested_packet_nu
     }
 
     item = cJSON_CreateObject();
-    if (!suggested_packet_num_dl->suggested_packet_num_dl) {
-        ogs_error("OpenAPI_suggested_packet_num_dl_convertToJSON() failed [suggested_packet_num_dl]");
-        goto end;
-    }
     if (cJSON_AddNumberToObject(item, "suggestedPacketNumDl", suggested_packet_num_dl->suggested_packet_num_dl) == NULL) {
         ogs_error("OpenAPI_suggested_packet_num_dl_convertToJSON() failed [suggested_packet_num_dl]");
         goto end;

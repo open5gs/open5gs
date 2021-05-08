@@ -52,19 +52,11 @@ cJSON *OpenAPI_qos_characteristics_convertToJSON(OpenAPI_qos_characteristics_t *
     }
 
     item = cJSON_CreateObject();
-    if (!qos_characteristics->_5qi) {
-        ogs_error("OpenAPI_qos_characteristics_convertToJSON() failed [_5qi]");
-        goto end;
-    }
     if (cJSON_AddNumberToObject(item, "5qi", qos_characteristics->_5qi) == NULL) {
         ogs_error("OpenAPI_qos_characteristics_convertToJSON() failed [_5qi]");
         goto end;
     }
 
-    if (!qos_characteristics->resource_type) {
-        ogs_error("OpenAPI_qos_characteristics_convertToJSON() failed [resource_type]");
-        goto end;
-    }
     cJSON *resource_type_local_JSON = OpenAPI_qos_resource_type_convertToJSON(qos_characteristics->resource_type);
     if (resource_type_local_JSON == NULL) {
         ogs_error("OpenAPI_qos_characteristics_convertToJSON() failed [resource_type]");
@@ -76,28 +68,16 @@ cJSON *OpenAPI_qos_characteristics_convertToJSON(OpenAPI_qos_characteristics_t *
         goto end;
     }
 
-    if (!qos_characteristics->priority_level) {
-        ogs_error("OpenAPI_qos_characteristics_convertToJSON() failed [priority_level]");
-        goto end;
-    }
     if (cJSON_AddNumberToObject(item, "priorityLevel", qos_characteristics->priority_level) == NULL) {
         ogs_error("OpenAPI_qos_characteristics_convertToJSON() failed [priority_level]");
         goto end;
     }
 
-    if (!qos_characteristics->packet_delay_budget) {
-        ogs_error("OpenAPI_qos_characteristics_convertToJSON() failed [packet_delay_budget]");
-        goto end;
-    }
     if (cJSON_AddNumberToObject(item, "packetDelayBudget", qos_characteristics->packet_delay_budget) == NULL) {
         ogs_error("OpenAPI_qos_characteristics_convertToJSON() failed [packet_delay_budget]");
         goto end;
     }
 
-    if (!qos_characteristics->packet_error_rate) {
-        ogs_error("OpenAPI_qos_characteristics_convertToJSON() failed [packet_error_rate]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "packetErrorRate", qos_characteristics->packet_error_rate) == NULL) {
         ogs_error("OpenAPI_qos_characteristics_convertToJSON() failed [packet_error_rate]");
         goto end;

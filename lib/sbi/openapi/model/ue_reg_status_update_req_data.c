@@ -50,10 +50,6 @@ cJSON *OpenAPI_ue_reg_status_update_req_data_convertToJSON(OpenAPI_ue_reg_status
     }
 
     item = cJSON_CreateObject();
-    if (!ue_reg_status_update_req_data->transfer_status) {
-        ogs_error("OpenAPI_ue_reg_status_update_req_data_convertToJSON() failed [transfer_status]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "transferStatus", OpenAPI_ue_context_transfer_status_ToString(ue_reg_status_update_req_data->transfer_status)) == NULL) {
         ogs_error("OpenAPI_ue_reg_status_update_req_data_convertToJSON() failed [transfer_status]");
         goto end;

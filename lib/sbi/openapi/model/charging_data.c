@@ -62,10 +62,6 @@ cJSON *OpenAPI_charging_data_convertToJSON(OpenAPI_charging_data_t *charging_dat
     }
 
     item = cJSON_CreateObject();
-    if (!charging_data->chg_id) {
-        ogs_error("OpenAPI_charging_data_convertToJSON() failed [chg_id]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "chgId", charging_data->chg_id) == NULL) {
         ogs_error("OpenAPI_charging_data_convertToJSON() failed [chg_id]");
         goto end;

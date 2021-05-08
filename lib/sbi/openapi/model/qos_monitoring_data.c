@@ -59,10 +59,6 @@ cJSON *OpenAPI_qos_monitoring_data_convertToJSON(OpenAPI_qos_monitoring_data_t *
     }
 
     item = cJSON_CreateObject();
-    if (!qos_monitoring_data->qm_id) {
-        ogs_error("OpenAPI_qos_monitoring_data_convertToJSON() failed [qm_id]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "qmId", qos_monitoring_data->qm_id) == NULL) {
         ogs_error("OpenAPI_qos_monitoring_data_convertToJSON() failed [qm_id]");
         goto end;

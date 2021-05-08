@@ -43,19 +43,11 @@ cJSON *OpenAPI_notification_item_convertToJSON(OpenAPI_notification_item_t *noti
     }
 
     item = cJSON_CreateObject();
-    if (!notification_item->resource_id) {
-        ogs_error("OpenAPI_notification_item_convertToJSON() failed [resource_id]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "resourceId", notification_item->resource_id) == NULL) {
         ogs_error("OpenAPI_notification_item_convertToJSON() failed [resource_id]");
         goto end;
     }
 
-    if (!notification_item->notif_items) {
-        ogs_error("OpenAPI_notification_item_convertToJSON() failed [notif_items]");
-        goto end;
-    }
     cJSON *notif_itemsList = cJSON_AddArrayToObject(item, "notifItems");
     if (notif_itemsList == NULL) {
         ogs_error("OpenAPI_notification_item_convertToJSON() failed [notif_items]");

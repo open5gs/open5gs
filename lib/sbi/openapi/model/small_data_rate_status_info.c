@@ -43,10 +43,6 @@ cJSON *OpenAPI_small_data_rate_status_info_convertToJSON(OpenAPI_small_data_rate
     }
 
     item = cJSON_CreateObject();
-    if (!small_data_rate_status_info->snssai) {
-        ogs_error("OpenAPI_small_data_rate_status_info_convertToJSON() failed [snssai]");
-        goto end;
-    }
     cJSON *snssai_local_JSON = OpenAPI_snssai_convertToJSON(small_data_rate_status_info->snssai);
     if (snssai_local_JSON == NULL) {
         ogs_error("OpenAPI_small_data_rate_status_info_convertToJSON() failed [snssai]");
@@ -58,19 +54,11 @@ cJSON *OpenAPI_small_data_rate_status_info_convertToJSON(OpenAPI_small_data_rate
         goto end;
     }
 
-    if (!small_data_rate_status_info->dnn) {
-        ogs_error("OpenAPI_small_data_rate_status_info_convertToJSON() failed [dnn]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "Dnn", small_data_rate_status_info->dnn) == NULL) {
         ogs_error("OpenAPI_small_data_rate_status_info_convertToJSON() failed [dnn]");
         goto end;
     }
 
-    if (!small_data_rate_status_info->small_data_rate_status) {
-        ogs_error("OpenAPI_small_data_rate_status_info_convertToJSON() failed [small_data_rate_status]");
-        goto end;
-    }
     cJSON *small_data_rate_status_local_JSON = OpenAPI_small_data_rate_status_convertToJSON(small_data_rate_status_info->small_data_rate_status);
     if (small_data_rate_status_local_JSON == NULL) {
         ogs_error("OpenAPI_small_data_rate_status_info_convertToJSON() failed [small_data_rate_status]");

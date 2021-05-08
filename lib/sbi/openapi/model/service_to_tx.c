@@ -46,10 +46,6 @@ cJSON *OpenAPI_service_to_tx_convertToJSON(OpenAPI_service_to_tx_t *service_to_t
     }
 
     item = cJSON_CreateObject();
-    if (!service_to_tx->ser_ids) {
-        ogs_error("OpenAPI_service_to_tx_convertToJSON() failed [ser_ids]");
-        goto end;
-    }
     cJSON *ser_ids = cJSON_AddArrayToObject(item, "serIds");
     if (ser_ids == NULL) {
         ogs_error("OpenAPI_service_to_tx_convertToJSON() failed [ser_ids]");
@@ -64,19 +60,11 @@ cJSON *OpenAPI_service_to_tx_convertToJSON(OpenAPI_service_to_tx_t *service_to_t
         }
     }
 
-    if (!service_to_tx->tx_profile) {
-        ogs_error("OpenAPI_service_to_tx_convertToJSON() failed [tx_profile]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "txProfile", service_to_tx->tx_profile) == NULL) {
         ogs_error("OpenAPI_service_to_tx_convertToJSON() failed [tx_profile]");
         goto end;
     }
 
-    if (!service_to_tx->rat) {
-        ogs_error("OpenAPI_service_to_tx_convertToJSON() failed [rat]");
-        goto end;
-    }
     cJSON *rat_local_JSON = OpenAPI_v2x_rat_type_convertToJSON(service_to_tx->rat);
     if (rat_local_JSON == NULL) {
         ogs_error("OpenAPI_service_to_tx_convertToJSON() failed [rat]");

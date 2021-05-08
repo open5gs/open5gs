@@ -40,10 +40,6 @@ cJSON *OpenAPI_point_convertToJSON(OpenAPI_point_t *point)
     }
 
     item = cJSON_CreateObject();
-    if (!point->shape) {
-        ogs_error("OpenAPI_point_convertToJSON() failed [shape]");
-        goto end;
-    }
     cJSON *shape_local_JSON = OpenAPI_supported_gad_shapes_convertToJSON(point->shape);
     if (shape_local_JSON == NULL) {
         ogs_error("OpenAPI_point_convertToJSON() failed [shape]");
@@ -55,10 +51,6 @@ cJSON *OpenAPI_point_convertToJSON(OpenAPI_point_t *point)
         goto end;
     }
 
-    if (!point->point) {
-        ogs_error("OpenAPI_point_convertToJSON() failed [point]");
-        goto end;
-    }
     cJSON *point_local_JSON = OpenAPI_geographical_coordinates_convertToJSON(point->point);
     if (point_local_JSON == NULL) {
         ogs_error("OpenAPI_point_convertToJSON() failed [point]");

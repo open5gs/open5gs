@@ -52,10 +52,6 @@ cJSON *OpenAPI_af_event_exposure_data_convertToJSON(OpenAPI_af_event_exposure_da
     }
 
     item = cJSON_CreateObject();
-    if (!af_event_exposure_data->af_events) {
-        ogs_error("OpenAPI_af_event_exposure_data_convertToJSON() failed [af_events]");
-        goto end;
-    }
     cJSON *af_eventsList = cJSON_AddArrayToObject(item, "afEvents");
     if (af_eventsList == NULL) {
         ogs_error("OpenAPI_af_event_exposure_data_convertToJSON() failed [af_events]");

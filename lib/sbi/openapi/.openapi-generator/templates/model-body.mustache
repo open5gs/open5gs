@@ -227,14 +227,6 @@ cJSON *OpenAPI_{{classname}}_convertToJSON(OpenAPI_{{classname}}_t *{{classname}
 
     item = cJSON_CreateObject();
 {{#vars}}
-    {{#required}}
-        {{^isBoolean}}
-            if (!{{{classname}}}->{{{name}}}) {
-                ogs_error("OpenAPI_{{classname}}_convertToJSON() failed [{{{name}}}]");
-                goto end;
-            }
-        {{/isBoolean}}
-    {{/required}}
     {{^required}}
         if ({{{classname}}}->{{{name}}}) {
     {{/required}}

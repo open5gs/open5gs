@@ -147,10 +147,6 @@ cJSON *OpenAPI_pcc_rule_convertToJSON(OpenAPI_pcc_rule_t *pcc_rule)
         }
     }
 
-    if (!pcc_rule->pcc_rule_id) {
-        ogs_error("OpenAPI_pcc_rule_convertToJSON() failed [pcc_rule_id]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "pccRuleId", pcc_rule->pcc_rule_id) == NULL) {
         ogs_error("OpenAPI_pcc_rule_convertToJSON() failed [pcc_rule_id]");
         goto end;

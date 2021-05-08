@@ -40,19 +40,11 @@ cJSON *OpenAPI_eps_iwk_pgw_convertToJSON(OpenAPI_eps_iwk_pgw_t *eps_iwk_pgw)
     }
 
     item = cJSON_CreateObject();
-    if (!eps_iwk_pgw->pgw_fqdn) {
-        ogs_error("OpenAPI_eps_iwk_pgw_convertToJSON() failed [pgw_fqdn]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "pgwFqdn", eps_iwk_pgw->pgw_fqdn) == NULL) {
         ogs_error("OpenAPI_eps_iwk_pgw_convertToJSON() failed [pgw_fqdn]");
         goto end;
     }
 
-    if (!eps_iwk_pgw->smf_instance_id) {
-        ogs_error("OpenAPI_eps_iwk_pgw_convertToJSON() failed [smf_instance_id]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "smfInstanceId", eps_iwk_pgw->smf_instance_id) == NULL) {
         ogs_error("OpenAPI_eps_iwk_pgw_convertToJSON() failed [smf_instance_id]");
         goto end;

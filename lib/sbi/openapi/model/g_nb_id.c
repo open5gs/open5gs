@@ -39,19 +39,11 @@ cJSON *OpenAPI_g_nb_id_convertToJSON(OpenAPI_g_nb_id_t *g_nb_id)
     }
 
     item = cJSON_CreateObject();
-    if (!g_nb_id->bit_length) {
-        ogs_error("OpenAPI_g_nb_id_convertToJSON() failed [bit_length]");
-        goto end;
-    }
     if (cJSON_AddNumberToObject(item, "bitLength", g_nb_id->bit_length) == NULL) {
         ogs_error("OpenAPI_g_nb_id_convertToJSON() failed [bit_length]");
         goto end;
     }
 
-    if (!g_nb_id->g_nb_value) {
-        ogs_error("OpenAPI_g_nb_id_convertToJSON() failed [g_nb_value]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "gNBValue", g_nb_id->g_nb_value) == NULL) {
         ogs_error("OpenAPI_g_nb_id_convertToJSON() failed [g_nb_value]");
         goto end;

@@ -31,12 +31,6 @@
 static int gmm_handle_nas_message_container(amf_ue_t *amf_ue,
         ogs_nas_message_container_t *nas_message_container);
 
-#define OGS_REGISTRATION_CLEARTEXT_PRESENT \
-        (OGS_NAS_5GS_REGISTRATION_REQUEST_UE_SECURITY_CAPABILITY_PRESENT| \
-        OGS_NAS_5GS_REGISTRATION_REQUEST_UE_STATUS_PRESENT| \
-        OGS_NAS_5GS_REGISTRATION_REQUEST_EPS_NAS_MESSAGE_CONTAINER_PRESENT| \
-        OGS_NAS_5GS_REGISTRATION_REQUEST_NAS_MESSAGE_CONTAINER_PRESENT)
-
 int gmm_handle_registration_request(amf_ue_t *amf_ue,
         ogs_nas_security_header_type_t h,
         ogs_nas_5gs_registration_request_t *registration_request)
@@ -105,6 +99,13 @@ int gmm_handle_registration_request(amf_ue_t *amf_ue,
      *   - UE status; and
      *   - EPS NAS message container.
      */
+
+#define OGS_REGISTRATION_CLEARTEXT_PRESENT \
+        (OGS_NAS_5GS_REGISTRATION_REQUEST_UE_SECURITY_CAPABILITY_PRESENT| \
+        OGS_NAS_5GS_REGISTRATION_REQUEST_UE_STATUS_PRESENT| \
+        OGS_NAS_5GS_REGISTRATION_REQUEST_EPS_NAS_MESSAGE_CONTAINER_PRESENT| \
+        OGS_NAS_5GS_REGISTRATION_REQUEST_NAS_MESSAGE_CONTAINER_PRESENT)
+
     if (registration_request->presencemask &
         ~OGS_REGISTRATION_CLEARTEXT_PRESENT) {
         ogs_error("Non cleartext IEs is included [0x%llx]",
@@ -173,9 +174,19 @@ int gmm_handle_registration_request(amf_ue_t *amf_ue,
     memcpy(&amf_ue->nas.registration, registration_type,
             sizeof(ogs_nas_5gs_registration_type_t));
     amf_ue->nas.message_type = OGS_NAS_5GS_REGISTRATION_REQUEST;
-    ogs_debug("    OGS_NAS_5GS TYPE[%d] TSC[%d] KSI[%d] REGISTRATION[0x%x]",
-            amf_ue->nas.message_type,
-            amf_ue->nas.tsc, amf_ue->nas.ksi, amf_ue->nas.data);
+
+    amf_ue->nas.ue.tsc = registration_type->tsc;
+    amf_ue->nas.ue.ksi = registration_type->ksi;
+    ogs_debug("    OLD TSC[UE:%d,AMF:%d] KSI[UE:%d,AMF:%d]",
+            amf_ue->nas.ue.tsc, amf_ue->nas.amf.tsc,
+            amf_ue->nas.ue.ksi, amf_ue->nas.amf.ksi);
+    if (amf_ue->nas.ue.ksi < OGS_NAS_KSI_NO_KEY_IS_AVAILABLE) {
+        amf_ue->nas.amf.tsc = amf_ue->nas.ue.tsc;
+        amf_ue->nas.amf.ksi = amf_ue->nas.ue.ksi;
+    }
+    ogs_debug("    NEW TSC[UE:%d,AMF:%d] KSI[UE:%d,AMF:%d]",
+            amf_ue->nas.ue.tsc, amf_ue->nas.amf.tsc,
+            amf_ue->nas.ue.ksi, amf_ue->nas.amf.ksi);
     /*
      * REGISTRATION_REQUEST
      * SERVICE_REQUEST
@@ -399,6 +410,7 @@ int gmm_handle_registration_update(amf_ue_t *amf_ue,
 }
 
 int gmm_handle_service_request(amf_ue_t *amf_ue,
+        ogs_nas_security_header_type_t h,
         ogs_nas_5gs_service_request_t *service_request)
 {
     int served_tai_index = 0;
@@ -413,12 +425,55 @@ int gmm_handle_service_request(amf_ue_t *amf_ue,
     ngksi = &service_request->ngksi;
     ogs_assert(ngksi);
 
+    /*
+     * TS24.501
+     * Ch 4.4.6 Protection of initial NAS signalling messages
+     *
+     * When the initial NAS message is a SERVICE REQUEST message,
+     * the cleartext IEs are:
+     *
+     *   - Extended protocol discriminator;
+     *   - Security header type;
+     *   - Spare half octet;
+     *   - ngKSI;
+     *   - Service request message identity;
+     *   - Service type; and
+     *   - 5G-S-TMSI.
+     */
+#define OGS_SERVICE_CLEARTEXT_PRESENT \
+        (OGS_NAS_5GS_SERVICE_REQUEST_NAS_MESSAGE_CONTAINER_PRESENT)
+
+    if (service_request->presencemask & ~OGS_SERVICE_CLEARTEXT_PRESENT) {
+        ogs_error("Non cleartext IEs is included [0x%llx]",
+                (long long)service_request->presencemask);
+        nas_5gs_send_service_reject(amf_ue,
+            OGS_5GMM_CAUSE_SEMANTICALLY_INCORRECT_MESSAGE);
+        return OGS_ERROR;
+    }
+
+    if (!h.integrity_protected &&
+        (service_request->presencemask &
+        OGS_NAS_5GS_SERVICE_REQUEST_NAS_MESSAGE_CONTAINER_PRESENT)) {
+        ogs_error("NAS container present without Integrity-protected");
+        nas_5gs_send_service_reject(amf_ue,
+            OGS_5GMM_CAUSE_SEMANTICALLY_INCORRECT_MESSAGE);
+        return OGS_ERROR;
+    }
+
     amf_ue->nas.message_type = OGS_NAS_5GS_SERVICE_REQUEST;
-    amf_ue->nas.tsc = ngksi->tsc;
-    amf_ue->nas.ksi = ngksi->value;
-    ogs_debug("    OGS_NAS_5GS TYPE[%d] TSC[%d] KSI[%d] SERVICE[0x%x]",
-            amf_ue->nas.message_type,
-            amf_ue->nas.tsc, amf_ue->nas.ksi, amf_ue->nas.data);
+
+    amf_ue->nas.ue.tsc = ngksi->tsc;
+    amf_ue->nas.ue.ksi = ngksi->value;
+    ogs_debug("    OLD TSC[UE:%d,AMF:%d] KSI[UE:%d,AMF:%d]",
+            amf_ue->nas.ue.tsc, amf_ue->nas.amf.tsc,
+            amf_ue->nas.ue.ksi, amf_ue->nas.amf.ksi);
+    if (amf_ue->nas.ue.ksi < OGS_NAS_KSI_NO_KEY_IS_AVAILABLE) {
+        amf_ue->nas.amf.tsc = amf_ue->nas.ue.tsc;
+        amf_ue->nas.amf.ksi = amf_ue->nas.ue.ksi;
+    }
+    ogs_debug("    NEW TSC[UE:%d,AMF:%d] KSI[UE:%d,AMF:%d]",
+            amf_ue->nas.ue.tsc, amf_ue->nas.amf.tsc,
+            amf_ue->nas.ue.ksi, amf_ue->nas.amf.ksi);
 
     /*
      * REGISTRATION_REQUEST
@@ -579,16 +634,23 @@ int gmm_handle_deregistration_request(amf_ue_t *amf_ue,
 
     de_registration_type = &deregistration_request->de_registration_type;
 
-    /* Set 5GS Attach Type */
+    /* Set 5GS De-registration Type */
     memcpy(&amf_ue->nas.de_registration,
             de_registration_type, sizeof(ogs_nas_de_registration_type_t));
     amf_ue->nas.message_type = OGS_NAS_5GS_DEREGISTRATION_REQUEST;
-    amf_ue->nas.tsc = de_registration_type->tsc;
-    amf_ue->nas.ksi = de_registration_type->ksi;
-    ogs_debug("[%s]    OGS_NAS_5GS TYPE[%d] TSC[%d] KSI[%d] "
-            "DEREGISTRATION[0x%x]",
-            amf_ue->suci, amf_ue->nas.message_type,
-            amf_ue->nas.tsc, amf_ue->nas.ksi, amf_ue->nas.data);
+
+    amf_ue->nas.ue.tsc = de_registration_type->tsc;
+    amf_ue->nas.ue.ksi = de_registration_type->ksi;
+    ogs_debug("    OLD TSC[UE:%d,AMF:%d] KSI[UE:%d,AMF:%d]",
+            amf_ue->nas.ue.tsc, amf_ue->nas.amf.tsc,
+            amf_ue->nas.ue.ksi, amf_ue->nas.amf.ksi);
+    if (amf_ue->nas.ue.ksi < OGS_NAS_KSI_NO_KEY_IS_AVAILABLE) {
+        amf_ue->nas.amf.tsc = amf_ue->nas.ue.tsc;
+        amf_ue->nas.amf.ksi = amf_ue->nas.ue.ksi;
+    }
+    ogs_debug("    NEW TSC[UE:%d,AMF:%d] KSI[UE:%d,AMF:%d]",
+            amf_ue->nas.ue.tsc, amf_ue->nas.amf.tsc,
+            amf_ue->nas.ue.ksi, amf_ue->nas.amf.ksi);
 
     if (deregistration_request->de_registration_type.switch_off)
         ogs_debug("    Switch-Off");

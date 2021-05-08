@@ -99,28 +99,16 @@ cJSON *OpenAPI_pdu_session_context_convertToJSON(OpenAPI_pdu_session_context_t *
     }
 
     item = cJSON_CreateObject();
-    if (!pdu_session_context->pdu_session_id) {
-        ogs_error("OpenAPI_pdu_session_context_convertToJSON() failed [pdu_session_id]");
-        goto end;
-    }
     if (cJSON_AddNumberToObject(item, "pduSessionId", pdu_session_context->pdu_session_id) == NULL) {
         ogs_error("OpenAPI_pdu_session_context_convertToJSON() failed [pdu_session_id]");
         goto end;
     }
 
-    if (!pdu_session_context->sm_context_ref) {
-        ogs_error("OpenAPI_pdu_session_context_convertToJSON() failed [sm_context_ref]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "smContextRef", pdu_session_context->sm_context_ref) == NULL) {
         ogs_error("OpenAPI_pdu_session_context_convertToJSON() failed [sm_context_ref]");
         goto end;
     }
 
-    if (!pdu_session_context->s_nssai) {
-        ogs_error("OpenAPI_pdu_session_context_convertToJSON() failed [s_nssai]");
-        goto end;
-    }
     cJSON *s_nssai_local_JSON = OpenAPI_snssai_convertToJSON(pdu_session_context->s_nssai);
     if (s_nssai_local_JSON == NULL) {
         ogs_error("OpenAPI_pdu_session_context_convertToJSON() failed [s_nssai]");
@@ -132,19 +120,11 @@ cJSON *OpenAPI_pdu_session_context_convertToJSON(OpenAPI_pdu_session_context_t *
         goto end;
     }
 
-    if (!pdu_session_context->dnn) {
-        ogs_error("OpenAPI_pdu_session_context_convertToJSON() failed [dnn]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "dnn", pdu_session_context->dnn) == NULL) {
         ogs_error("OpenAPI_pdu_session_context_convertToJSON() failed [dnn]");
         goto end;
     }
 
-    if (!pdu_session_context->access_type) {
-        ogs_error("OpenAPI_pdu_session_context_convertToJSON() failed [access_type]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "accessType", OpenAPI_access_type_ToString(pdu_session_context->access_type)) == NULL) {
         ogs_error("OpenAPI_pdu_session_context_convertToJSON() failed [access_type]");
         goto end;

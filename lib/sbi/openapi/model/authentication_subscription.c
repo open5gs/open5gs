@@ -66,10 +66,6 @@ cJSON *OpenAPI_authentication_subscription_convertToJSON(OpenAPI_authentication_
     }
 
     item = cJSON_CreateObject();
-    if (!authentication_subscription->authentication_method) {
-        ogs_error("OpenAPI_authentication_subscription_convertToJSON() failed [authentication_method]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "authenticationMethod", OpenAPI_auth_method_ToString(authentication_subscription->authentication_method)) == NULL) {
         ogs_error("OpenAPI_authentication_subscription_convertToJSON() failed [authentication_method]");
         goto end;

@@ -48,10 +48,6 @@ cJSON *OpenAPI_sm_context_retrieved_data_convertToJSON(OpenAPI_sm_context_retrie
     }
 
     item = cJSON_CreateObject();
-    if (!sm_context_retrieved_data->ue_eps_pdn_connection) {
-        ogs_error("OpenAPI_sm_context_retrieved_data_convertToJSON() failed [ue_eps_pdn_connection]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "ueEpsPdnConnection", sm_context_retrieved_data->ue_eps_pdn_connection) == NULL) {
         ogs_error("OpenAPI_sm_context_retrieved_data_convertToJSON() failed [ue_eps_pdn_connection]");
         goto end;

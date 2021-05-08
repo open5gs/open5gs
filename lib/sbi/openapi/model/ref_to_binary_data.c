@@ -37,10 +37,6 @@ cJSON *OpenAPI_ref_to_binary_data_convertToJSON(OpenAPI_ref_to_binary_data_t *re
     }
 
     item = cJSON_CreateObject();
-    if (!ref_to_binary_data->content_id) {
-        ogs_error("OpenAPI_ref_to_binary_data_convertToJSON() failed [content_id]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "contentId", ref_to_binary_data->content_id) == NULL) {
         ogs_error("OpenAPI_ref_to_binary_data_convertToJSON() failed [content_id]");
         goto end;

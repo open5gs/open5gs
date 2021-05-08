@@ -43,10 +43,6 @@ cJSON *OpenAPI_ncgi_convertToJSON(OpenAPI_ncgi_t *ncgi)
     }
 
     item = cJSON_CreateObject();
-    if (!ncgi->plmn_id) {
-        ogs_error("OpenAPI_ncgi_convertToJSON() failed [plmn_id]");
-        goto end;
-    }
     cJSON *plmn_id_local_JSON = OpenAPI_plmn_id_convertToJSON(ncgi->plmn_id);
     if (plmn_id_local_JSON == NULL) {
         ogs_error("OpenAPI_ncgi_convertToJSON() failed [plmn_id]");
@@ -58,10 +54,6 @@ cJSON *OpenAPI_ncgi_convertToJSON(OpenAPI_ncgi_t *ncgi)
         goto end;
     }
 
-    if (!ncgi->nr_cell_id) {
-        ogs_error("OpenAPI_ncgi_convertToJSON() failed [nr_cell_id]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "nrCellId", ncgi->nr_cell_id) == NULL) {
         ogs_error("OpenAPI_ncgi_convertToJSON() failed [nr_cell_id]");
         goto end;

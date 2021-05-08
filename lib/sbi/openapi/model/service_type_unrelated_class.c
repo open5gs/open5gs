@@ -55,10 +55,6 @@ cJSON *OpenAPI_service_type_unrelated_class_convertToJSON(OpenAPI_service_type_u
     }
 
     item = cJSON_CreateObject();
-    if (!service_type_unrelated_class->service_type) {
-        ogs_error("OpenAPI_service_type_unrelated_class_convertToJSON() failed [service_type]");
-        goto end;
-    }
     if (cJSON_AddNumberToObject(item, "serviceType", service_type_unrelated_class->service_type) == NULL) {
         ogs_error("OpenAPI_service_type_unrelated_class_convertToJSON() failed [service_type]");
         goto end;

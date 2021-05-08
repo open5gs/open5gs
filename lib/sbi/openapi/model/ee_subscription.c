@@ -68,19 +68,11 @@ cJSON *OpenAPI_ee_subscription_convertToJSON(OpenAPI_ee_subscription_t *ee_subsc
     }
 
     item = cJSON_CreateObject();
-    if (!ee_subscription->callback_reference) {
-        ogs_error("OpenAPI_ee_subscription_convertToJSON() failed [callback_reference]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "callbackReference", ee_subscription->callback_reference) == NULL) {
         ogs_error("OpenAPI_ee_subscription_convertToJSON() failed [callback_reference]");
         goto end;
     }
 
-    if (!ee_subscription->monitoring_configurations) {
-        ogs_error("OpenAPI_ee_subscription_convertToJSON() failed [monitoring_configurations]");
-        goto end;
-    }
     cJSON *monitoring_configurations = cJSON_AddObjectToObject(item, "monitoringConfigurations");
     if (monitoring_configurations == NULL) {
         ogs_error("OpenAPI_ee_subscription_convertToJSON() failed [monitoring_configurations]");

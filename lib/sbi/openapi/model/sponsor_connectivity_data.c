@@ -40,10 +40,6 @@ cJSON *OpenAPI_sponsor_connectivity_data_convertToJSON(OpenAPI_sponsor_connectiv
     }
 
     item = cJSON_CreateObject();
-    if (!sponsor_connectivity_data->asp_ids) {
-        ogs_error("OpenAPI_sponsor_connectivity_data_convertToJSON() failed [asp_ids]");
-        goto end;
-    }
     cJSON *asp_ids = cJSON_AddArrayToObject(item, "aspIds");
     if (asp_ids == NULL) {
         ogs_error("OpenAPI_sponsor_connectivity_data_convertToJSON() failed [asp_ids]");

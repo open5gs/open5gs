@@ -43,10 +43,6 @@ cJSON *OpenAPI_amf_status_change_subscription_data_convertToJSON(OpenAPI_amf_sta
     }
 
     item = cJSON_CreateObject();
-    if (!amf_status_change_subscription_data->amf_status_uri) {
-        ogs_error("OpenAPI_amf_status_change_subscription_data_convertToJSON() failed [amf_status_uri]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "amfStatusUri", amf_status_change_subscription_data->amf_status_uri) == NULL) {
         ogs_error("OpenAPI_amf_status_change_subscription_data_convertToJSON() failed [amf_status_uri]");
         goto end;

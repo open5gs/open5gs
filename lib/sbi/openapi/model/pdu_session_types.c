@@ -39,10 +39,6 @@ cJSON *OpenAPI_pdu_session_types_convertToJSON(OpenAPI_pdu_session_types_t *pdu_
     }
 
     item = cJSON_CreateObject();
-    if (!pdu_session_types->default_session_type) {
-        ogs_error("OpenAPI_pdu_session_types_convertToJSON() failed [default_session_type]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "defaultSessionType", OpenAPI_pdu_session_type_ToString(pdu_session_types->default_session_type)) == NULL) {
         ogs_error("OpenAPI_pdu_session_types_convertToJSON() failed [default_session_type]");
         goto end;

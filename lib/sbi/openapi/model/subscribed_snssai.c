@@ -39,10 +39,6 @@ cJSON *OpenAPI_subscribed_snssai_convertToJSON(OpenAPI_subscribed_snssai_t *subs
     }
 
     item = cJSON_CreateObject();
-    if (!subscribed_snssai->subscribed_snssai) {
-        ogs_error("OpenAPI_subscribed_snssai_convertToJSON() failed [subscribed_snssai]");
-        goto end;
-    }
     cJSON *subscribed_snssai_local_JSON = OpenAPI_snssai_convertToJSON(subscribed_snssai->subscribed_snssai);
     if (subscribed_snssai_local_JSON == NULL) {
         ogs_error("OpenAPI_subscribed_snssai_convertToJSON() failed [subscribed_snssai]");

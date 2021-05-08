@@ -40,10 +40,6 @@ cJSON *OpenAPI_assign_ebi_error_convertToJSON(OpenAPI_assign_ebi_error_t *assign
     }
 
     item = cJSON_CreateObject();
-    if (!assign_ebi_error->error) {
-        ogs_error("OpenAPI_assign_ebi_error_convertToJSON() failed [error]");
-        goto end;
-    }
     cJSON *error_local_JSON = OpenAPI_problem_details_convertToJSON(assign_ebi_error->error);
     if (error_local_JSON == NULL) {
         ogs_error("OpenAPI_assign_ebi_error_convertToJSON() failed [error]");
@@ -55,10 +51,6 @@ cJSON *OpenAPI_assign_ebi_error_convertToJSON(OpenAPI_assign_ebi_error_t *assign
         goto end;
     }
 
-    if (!assign_ebi_error->failure_details) {
-        ogs_error("OpenAPI_assign_ebi_error_convertToJSON() failed [failure_details]");
-        goto end;
-    }
     cJSON *failure_details_local_JSON = OpenAPI_assign_ebi_failed_convertToJSON(assign_ebi_error->failure_details);
     if (failure_details_local_JSON == NULL) {
         ogs_error("OpenAPI_assign_ebi_error_convertToJSON() failed [failure_details]");

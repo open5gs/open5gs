@@ -40,19 +40,11 @@ cJSON *OpenAPI_network_node_diameter_address_convertToJSON(OpenAPI_network_node_
     }
 
     item = cJSON_CreateObject();
-    if (!network_node_diameter_address->name) {
-        ogs_error("OpenAPI_network_node_diameter_address_convertToJSON() failed [name]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "name", network_node_diameter_address->name) == NULL) {
         ogs_error("OpenAPI_network_node_diameter_address_convertToJSON() failed [name]");
         goto end;
     }
 
-    if (!network_node_diameter_address->realm) {
-        ogs_error("OpenAPI_network_node_diameter_address_convertToJSON() failed [realm]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "realm", network_node_diameter_address->realm) == NULL) {
         ogs_error("OpenAPI_network_node_diameter_address_convertToJSON() failed [realm]");
         goto end;

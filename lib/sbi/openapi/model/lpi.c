@@ -39,10 +39,6 @@ cJSON *OpenAPI_lpi_convertToJSON(OpenAPI_lpi_t *lpi)
     }
 
     item = cJSON_CreateObject();
-    if (!lpi->location_privacy_ind) {
-        ogs_error("OpenAPI_lpi_convertToJSON() failed [location_privacy_ind]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "locationPrivacyInd", OpenAPI_location_privacy_ind_ToString(lpi->location_privacy_ind)) == NULL) {
         ogs_error("OpenAPI_lpi_convertToJSON() failed [location_privacy_ind]");
         goto end;

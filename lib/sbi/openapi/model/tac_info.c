@@ -40,10 +40,6 @@ cJSON *OpenAPI_tac_info_convertToJSON(OpenAPI_tac_info_t *tac_info)
     }
 
     item = cJSON_CreateObject();
-    if (!tac_info->tac_list) {
-        ogs_error("OpenAPI_tac_info_convertToJSON() failed [tac_list]");
-        goto end;
-    }
     cJSON *tac_list = cJSON_AddArrayToObject(item, "tacList");
     if (tac_list == NULL) {
         ogs_error("OpenAPI_tac_info_convertToJSON() failed [tac_list]");

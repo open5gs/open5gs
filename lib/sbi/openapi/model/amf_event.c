@@ -59,10 +59,6 @@ cJSON *OpenAPI_amf_event_convertToJSON(OpenAPI_amf_event_t *amf_event)
     }
 
     item = cJSON_CreateObject();
-    if (!amf_event->type) {
-        ogs_error("OpenAPI_amf_event_convertToJSON() failed [type]");
-        goto end;
-    }
     cJSON *type_local_JSON = OpenAPI_amf_event_type_convertToJSON(amf_event->type);
     if (type_local_JSON == NULL) {
         ogs_error("OpenAPI_amf_event_convertToJSON() failed [type]");

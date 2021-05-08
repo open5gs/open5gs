@@ -57,19 +57,11 @@ cJSON *OpenAPI_authentication_vector_convertToJSON(OpenAPI_authentication_vector
     }
 
     item = cJSON_CreateObject();
-    if (!authentication_vector->av_type) {
-        ogs_error("OpenAPI_authentication_vector_convertToJSON() failed [av_type]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "avType", OpenAPI_av_type_ToString(authentication_vector->av_type)) == NULL) {
         ogs_error("OpenAPI_authentication_vector_convertToJSON() failed [av_type]");
         goto end;
     }
 
-    if (!authentication_vector->rand) {
-        ogs_error("OpenAPI_authentication_vector_convertToJSON() failed [rand]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "rand", authentication_vector->rand) == NULL) {
         ogs_error("OpenAPI_authentication_vector_convertToJSON() failed [rand]");
         goto end;
@@ -82,10 +74,6 @@ cJSON *OpenAPI_authentication_vector_convertToJSON(OpenAPI_authentication_vector
         }
     }
 
-    if (!authentication_vector->autn) {
-        ogs_error("OpenAPI_authentication_vector_convertToJSON() failed [autn]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "autn", authentication_vector->autn) == NULL) {
         ogs_error("OpenAPI_authentication_vector_convertToJSON() failed [autn]");
         goto end;

@@ -153,28 +153,16 @@ cJSON *OpenAPI_sm_context_convertToJSON(OpenAPI_sm_context_t *sm_context)
     }
 
     item = cJSON_CreateObject();
-    if (!sm_context->pdu_session_id) {
-        ogs_error("OpenAPI_sm_context_convertToJSON() failed [pdu_session_id]");
-        goto end;
-    }
     if (cJSON_AddNumberToObject(item, "pduSessionId", sm_context->pdu_session_id) == NULL) {
         ogs_error("OpenAPI_sm_context_convertToJSON() failed [pdu_session_id]");
         goto end;
     }
 
-    if (!sm_context->dnn) {
-        ogs_error("OpenAPI_sm_context_convertToJSON() failed [dnn]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "dnn", sm_context->dnn) == NULL) {
         ogs_error("OpenAPI_sm_context_convertToJSON() failed [dnn]");
         goto end;
     }
 
-    if (!sm_context->s_nssai) {
-        ogs_error("OpenAPI_sm_context_convertToJSON() failed [s_nssai]");
-        goto end;
-    }
     cJSON *s_nssai_local_JSON = OpenAPI_snssai_convertToJSON(sm_context->s_nssai);
     if (s_nssai_local_JSON == NULL) {
         ogs_error("OpenAPI_sm_context_convertToJSON() failed [s_nssai]");
@@ -199,10 +187,6 @@ cJSON *OpenAPI_sm_context_convertToJSON(OpenAPI_sm_context_t *sm_context)
         }
     }
 
-    if (!sm_context->pdu_session_type) {
-        ogs_error("OpenAPI_sm_context_convertToJSON() failed [pdu_session_type]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "pduSessionType", OpenAPI_pdu_session_type_ToString(sm_context->pdu_session_type)) == NULL) {
         ogs_error("OpenAPI_sm_context_convertToJSON() failed [pdu_session_type]");
         goto end;
@@ -278,10 +262,6 @@ cJSON *OpenAPI_sm_context_convertToJSON(OpenAPI_sm_context_t *sm_context)
         }
     }
 
-    if (!sm_context->session_ambr) {
-        ogs_error("OpenAPI_sm_context_convertToJSON() failed [session_ambr]");
-        goto end;
-    }
     cJSON *session_ambr_local_JSON = OpenAPI_ambr_convertToJSON(sm_context->session_ambr);
     if (session_ambr_local_JSON == NULL) {
         ogs_error("OpenAPI_sm_context_convertToJSON() failed [session_ambr]");
@@ -293,10 +273,6 @@ cJSON *OpenAPI_sm_context_convertToJSON(OpenAPI_sm_context_t *sm_context)
         goto end;
     }
 
-    if (!sm_context->qos_flows_list) {
-        ogs_error("OpenAPI_sm_context_convertToJSON() failed [qos_flows_list]");
-        goto end;
-    }
     cJSON *qos_flows_listList = cJSON_AddArrayToObject(item, "qosFlowsList");
     if (qos_flows_listList == NULL) {
         ogs_error("OpenAPI_sm_context_convertToJSON() failed [qos_flows_list]");

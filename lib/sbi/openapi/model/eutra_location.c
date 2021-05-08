@@ -59,10 +59,6 @@ cJSON *OpenAPI_eutra_location_convertToJSON(OpenAPI_eutra_location_t *eutra_loca
     }
 
     item = cJSON_CreateObject();
-    if (!eutra_location->tai) {
-        ogs_error("OpenAPI_eutra_location_convertToJSON() failed [tai]");
-        goto end;
-    }
     cJSON *tai_local_JSON = OpenAPI_tai_convertToJSON(eutra_location->tai);
     if (tai_local_JSON == NULL) {
         ogs_error("OpenAPI_eutra_location_convertToJSON() failed [tai]");
@@ -74,10 +70,6 @@ cJSON *OpenAPI_eutra_location_convertToJSON(OpenAPI_eutra_location_t *eutra_loca
         goto end;
     }
 
-    if (!eutra_location->ecgi) {
-        ogs_error("OpenAPI_eutra_location_convertToJSON() failed [ecgi]");
-        goto end;
-    }
     cJSON *ecgi_local_JSON = OpenAPI_ecgi_convertToJSON(eutra_location->ecgi);
     if (ecgi_local_JSON == NULL) {
         ogs_error("OpenAPI_eutra_location_convertToJSON() failed [ecgi]");

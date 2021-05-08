@@ -50,19 +50,11 @@ cJSON *OpenAPI_notification_data_convertToJSON(OpenAPI_notification_data_t *noti
     }
 
     item = cJSON_CreateObject();
-    if (!notification_data->event) {
-        ogs_error("OpenAPI_notification_data_convertToJSON() failed [event]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "event", OpenAPI_notification_event_type_ToString(notification_data->event)) == NULL) {
         ogs_error("OpenAPI_notification_data_convertToJSON() failed [event]");
         goto end;
     }
 
-    if (!notification_data->nf_instance_uri) {
-        ogs_error("OpenAPI_notification_data_convertToJSON() failed [nf_instance_uri]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "nfInstanceUri", notification_data->nf_instance_uri) == NULL) {
         ogs_error("OpenAPI_notification_data_convertToJSON() failed [nf_instance_uri]");
         goto end;

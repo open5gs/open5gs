@@ -40,10 +40,6 @@ cJSON *OpenAPI_sm_policy_control_convertToJSON(OpenAPI_sm_policy_control_t *sm_p
     }
 
     item = cJSON_CreateObject();
-    if (!sm_policy_control->context) {
-        ogs_error("OpenAPI_sm_policy_control_convertToJSON() failed [context]");
-        goto end;
-    }
     cJSON *context_local_JSON = OpenAPI_sm_policy_context_data_convertToJSON(sm_policy_control->context);
     if (context_local_JSON == NULL) {
         ogs_error("OpenAPI_sm_policy_control_convertToJSON() failed [context]");
@@ -55,10 +51,6 @@ cJSON *OpenAPI_sm_policy_control_convertToJSON(OpenAPI_sm_policy_control_t *sm_p
         goto end;
     }
 
-    if (!sm_policy_control->policy) {
-        ogs_error("OpenAPI_sm_policy_control_convertToJSON() failed [policy]");
-        goto end;
-    }
     cJSON *policy_local_JSON = OpenAPI_sm_policy_decision_convertToJSON(sm_policy_control->policy);
     if (policy_local_JSON == NULL) {
         ogs_error("OpenAPI_sm_policy_control_convertToJSON() failed [policy]");

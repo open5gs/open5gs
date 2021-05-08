@@ -61,7 +61,8 @@ static void test1_func(abts_case *tc, void *data)
 
     test_ue->nr_cgi.cell_id = 0x40001;
 
-    test_ue->nas.registration.type = OGS_NAS_KSI_NO_KEY_IS_AVAILABLE;
+    test_ue->nas.registration.tsc = 0;
+    test_ue->nas.registration.ksi = OGS_NAS_KSI_NO_KEY_IS_AVAILABLE;
     test_ue->nas.registration.follow_on_request = 1;
     test_ue->nas.registration.value = OGS_NAS_5GS_REGISTRATION_TYPE_INITIAL;
 
@@ -457,7 +458,8 @@ static void test2_func(abts_case *tc, void *data)
 
     test_ue->nr_cgi.cell_id = 0x40001;
 
-    test_ue->nas.registration.type = OGS_NAS_KSI_NO_KEY_IS_AVAILABLE;
+    test_ue->nas.registration.tsc = 0;
+    test_ue->nas.registration.ksi = OGS_NAS_KSI_NO_KEY_IS_AVAILABLE;
     test_ue->nas.registration.follow_on_request = 1;
     test_ue->nas.registration.value = OGS_NAS_5GS_REGISTRATION_TYPE_INITIAL;
 
@@ -704,7 +706,8 @@ static void test3_func(abts_case *tc, void *data)
 
     test_ue->nr_cgi.cell_id = 0x40001;
 
-    test_ue->nas.registration.type = OGS_NAS_KSI_NO_KEY_IS_AVAILABLE;
+    test_ue->nas.registration.tsc = 0;
+    test_ue->nas.registration.ksi = OGS_NAS_KSI_NO_KEY_IS_AVAILABLE;
     test_ue->nas.registration.follow_on_request = 1;
     test_ue->nas.registration.value = OGS_NAS_5GS_REGISTRATION_TYPE_INITIAL;
 
@@ -942,13 +945,20 @@ static void test3_func(abts_case *tc, void *data)
      * Service request
      *  - Uplink Data Status
      */
-    test_ue->service_request_param.integrity_protected = 1;
-    test_ue->service_request_param.ciphered = 1;
+    test_ue->service_request_param.integrity_protected = 0;
+    test_ue->service_request_param.ciphered = 0;
     test_ue->service_request_param.uplink_data_status = 1;
     test_ue->service_request_param.psimask.uplink_data_status = 1 << sess->psi;
-    gmmbuf = testgmm_build_service_request(
+    nasbuf = testgmm_build_service_request(
             test_ue, OGS_NAS_SERVICE_TYPE_DATA, NULL);
-    ABTS_PTR_NOTNULL(tc, gmmbuf);
+    ABTS_PTR_NOTNULL(tc, nasbuf);
+
+    memset(&test_ue->service_request_param, 0,
+            sizeof(test_ue->service_request_param));
+    test_ue->service_request_param.integrity_protected = 1;
+    test_ue->service_request_param.ciphered = 1;
+    gmmbuf = testgmm_build_service_request(
+            test_ue, OGS_NAS_SERVICE_TYPE_DATA, nasbuf);
 
     sendbuf = testngap_build_uplink_nas_transport(test_ue, gmmbuf);
     ABTS_PTR_NOTNULL(tc, sendbuf);
@@ -1063,7 +1073,8 @@ static void test4_func(abts_case *tc, void *data)
 
     test_ue->nr_cgi.cell_id = 0x40001;
 
-    test_ue->nas.registration.type = OGS_NAS_KSI_NO_KEY_IS_AVAILABLE;
+    test_ue->nas.registration.tsc = 0;
+    test_ue->nas.registration.ksi = OGS_NAS_KSI_NO_KEY_IS_AVAILABLE;
     test_ue->nas.registration.follow_on_request = 1;
     test_ue->nas.registration.value = OGS_NAS_5GS_REGISTRATION_TYPE_INITIAL;
 
@@ -1361,14 +1372,21 @@ static void test4_func(abts_case *tc, void *data)
          * Service request
          *  - Uplink Data Status
          */
-        test_ue->service_request_param.integrity_protected = 1;
-        test_ue->service_request_param.ciphered = 1;
+        test_ue->service_request_param.integrity_protected = 0;
+        test_ue->service_request_param.ciphered = 0;
         test_ue->service_request_param.pdu_session_status = 1;
         test_ue->service_request_param.psimask.pdu_session_status =
             1 << sess->psi;
-        gmmbuf = testgmm_build_service_request(
+        nasbuf = testgmm_build_service_request(
                 test_ue, OGS_NAS_SERVICE_TYPE_SIGNALLING, NULL);
-        ABTS_PTR_NOTNULL(tc, gmmbuf);
+        ABTS_PTR_NOTNULL(tc, nasbuf);
+
+        memset(&test_ue->service_request_param, 0,
+                sizeof(test_ue->service_request_param));
+        test_ue->service_request_param.integrity_protected = 1;
+        test_ue->service_request_param.ciphered = 1;
+        gmmbuf = testgmm_build_service_request(
+                test_ue, OGS_NAS_SERVICE_TYPE_SIGNALLING, nasbuf);
 
         sendbuf = testngap_build_uplink_nas_transport(test_ue, gmmbuf);
         ABTS_PTR_NOTNULL(tc, sendbuf);
@@ -1412,14 +1430,21 @@ static void test4_func(abts_case *tc, void *data)
          * Service request
          *  - Uplink Data Status
          */
-        test_ue->service_request_param.integrity_protected = 1;
-        test_ue->service_request_param.ciphered = 1;
+        test_ue->service_request_param.integrity_protected = 0;
+        test_ue->service_request_param.ciphered = 0;
         test_ue->service_request_param.pdu_session_status = 1;
         test_ue->service_request_param.psimask.pdu_session_status =
             1 << sess->psi;
-        gmmbuf = testgmm_build_service_request(
+        nasbuf = testgmm_build_service_request(
                 test_ue, OGS_NAS_SERVICE_TYPE_SIGNALLING, NULL);
-        ABTS_PTR_NOTNULL(tc, gmmbuf);
+        ABTS_PTR_NOTNULL(tc, nasbuf);
+
+        memset(&test_ue->service_request_param, 0,
+                sizeof(test_ue->service_request_param));
+        test_ue->service_request_param.integrity_protected = 1;
+        test_ue->service_request_param.ciphered = 1;
+        gmmbuf = testgmm_build_service_request(
+                test_ue, OGS_NAS_SERVICE_TYPE_SIGNALLING, nasbuf);
 
         sendbuf = testngap_build_uplink_nas_transport(test_ue, gmmbuf);
         ABTS_PTR_NOTNULL(tc, sendbuf);
@@ -1515,7 +1540,8 @@ static void test5_func(abts_case *tc, void *data)
 
     test_ue->nr_cgi.cell_id = 0x40001;
 
-    test_ue->nas.registration.type = OGS_NAS_KSI_NO_KEY_IS_AVAILABLE;
+    test_ue->nas.registration.tsc = 0;
+    test_ue->nas.registration.ksi = OGS_NAS_KSI_NO_KEY_IS_AVAILABLE;
     test_ue->nas.registration.follow_on_request = 1;
     test_ue->nas.registration.value = OGS_NAS_5GS_REGISTRATION_TYPE_INITIAL;
 
@@ -1873,7 +1899,8 @@ static void test6_func(abts_case *tc, void *data)
 
     test_ue->nr_cgi.cell_id = 0x40001;
 
-    test_ue->nas.registration.type = OGS_NAS_KSI_NO_KEY_IS_AVAILABLE;
+    test_ue->nas.registration.tsc = 0;
+    test_ue->nas.registration.ksi = OGS_NAS_KSI_NO_KEY_IS_AVAILABLE;
     test_ue->nas.registration.follow_on_request = 1;
     test_ue->nas.registration.value = OGS_NAS_5GS_REGISTRATION_TYPE_INITIAL;
 

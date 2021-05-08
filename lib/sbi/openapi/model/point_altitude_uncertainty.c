@@ -49,10 +49,6 @@ cJSON *OpenAPI_point_altitude_uncertainty_convertToJSON(OpenAPI_point_altitude_u
     }
 
     item = cJSON_CreateObject();
-    if (!point_altitude_uncertainty->shape) {
-        ogs_error("OpenAPI_point_altitude_uncertainty_convertToJSON() failed [shape]");
-        goto end;
-    }
     cJSON *shape_local_JSON = OpenAPI_supported_gad_shapes_convertToJSON(point_altitude_uncertainty->shape);
     if (shape_local_JSON == NULL) {
         ogs_error("OpenAPI_point_altitude_uncertainty_convertToJSON() failed [shape]");
@@ -64,10 +60,6 @@ cJSON *OpenAPI_point_altitude_uncertainty_convertToJSON(OpenAPI_point_altitude_u
         goto end;
     }
 
-    if (!point_altitude_uncertainty->point) {
-        ogs_error("OpenAPI_point_altitude_uncertainty_convertToJSON() failed [point]");
-        goto end;
-    }
     cJSON *point_local_JSON = OpenAPI_geographical_coordinates_convertToJSON(point_altitude_uncertainty->point);
     if (point_local_JSON == NULL) {
         ogs_error("OpenAPI_point_altitude_uncertainty_convertToJSON() failed [point]");
@@ -79,19 +71,11 @@ cJSON *OpenAPI_point_altitude_uncertainty_convertToJSON(OpenAPI_point_altitude_u
         goto end;
     }
 
-    if (!point_altitude_uncertainty->altitude) {
-        ogs_error("OpenAPI_point_altitude_uncertainty_convertToJSON() failed [altitude]");
-        goto end;
-    }
     if (cJSON_AddNumberToObject(item, "altitude", point_altitude_uncertainty->altitude) == NULL) {
         ogs_error("OpenAPI_point_altitude_uncertainty_convertToJSON() failed [altitude]");
         goto end;
     }
 
-    if (!point_altitude_uncertainty->uncertainty_ellipse) {
-        ogs_error("OpenAPI_point_altitude_uncertainty_convertToJSON() failed [uncertainty_ellipse]");
-        goto end;
-    }
     cJSON *uncertainty_ellipse_local_JSON = OpenAPI_uncertainty_ellipse_convertToJSON(point_altitude_uncertainty->uncertainty_ellipse);
     if (uncertainty_ellipse_local_JSON == NULL) {
         ogs_error("OpenAPI_point_altitude_uncertainty_convertToJSON() failed [uncertainty_ellipse]");
@@ -103,19 +87,11 @@ cJSON *OpenAPI_point_altitude_uncertainty_convertToJSON(OpenAPI_point_altitude_u
         goto end;
     }
 
-    if (!point_altitude_uncertainty->uncertainty_altitude) {
-        ogs_error("OpenAPI_point_altitude_uncertainty_convertToJSON() failed [uncertainty_altitude]");
-        goto end;
-    }
     if (cJSON_AddNumberToObject(item, "uncertaintyAltitude", point_altitude_uncertainty->uncertainty_altitude) == NULL) {
         ogs_error("OpenAPI_point_altitude_uncertainty_convertToJSON() failed [uncertainty_altitude]");
         goto end;
     }
 
-    if (!point_altitude_uncertainty->confidence) {
-        ogs_error("OpenAPI_point_altitude_uncertainty_convertToJSON() failed [confidence]");
-        goto end;
-    }
     if (cJSON_AddNumberToObject(item, "confidence", point_altitude_uncertainty->confidence) == NULL) {
         ogs_error("OpenAPI_point_altitude_uncertainty_convertToJSON() failed [confidence]");
         goto end;

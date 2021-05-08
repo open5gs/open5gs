@@ -42,10 +42,6 @@ cJSON *OpenAPI_smf_change_info_convertToJSON(OpenAPI_smf_change_info_t *smf_chan
     }
 
     item = cJSON_CreateObject();
-    if (!smf_change_info->pdu_session_id_list) {
-        ogs_error("OpenAPI_smf_change_info_convertToJSON() failed [pdu_session_id_list]");
-        goto end;
-    }
     cJSON *pdu_session_id_list = cJSON_AddArrayToObject(item, "pduSessionIdList");
     if (pdu_session_id_list == NULL) {
         ogs_error("OpenAPI_smf_change_info_convertToJSON() failed [pdu_session_id_list]");
@@ -60,10 +56,6 @@ cJSON *OpenAPI_smf_change_info_convertToJSON(OpenAPI_smf_change_info_t *smf_chan
         }
     }
 
-    if (!smf_change_info->smf_change_ind) {
-        ogs_error("OpenAPI_smf_change_info_convertToJSON() failed [smf_change_ind]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "smfChangeInd", OpenAPI_smf_change_indication_ToString(smf_change_info->smf_change_ind)) == NULL) {
         ogs_error("OpenAPI_smf_change_info_convertToJSON() failed [smf_change_ind]");
         goto end;

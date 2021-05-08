@@ -42,10 +42,6 @@ cJSON *OpenAPI_non_ue_n2_info_subscription_created_data_convertToJSON(OpenAPI_no
     }
 
     item = cJSON_CreateObject();
-    if (!non_ue_n2_info_subscription_created_data->n2_notify_subscription_id) {
-        ogs_error("OpenAPI_non_ue_n2_info_subscription_created_data_convertToJSON() failed [n2_notify_subscription_id]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "n2NotifySubscriptionId", non_ue_n2_info_subscription_created_data->n2_notify_subscription_id) == NULL) {
         ogs_error("OpenAPI_non_ue_n2_info_subscription_created_data_convertToJSON() failed [n2_notify_subscription_id]");
         goto end;

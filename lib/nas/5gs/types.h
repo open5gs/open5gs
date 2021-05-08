@@ -229,7 +229,8 @@ ED3(uint8_t spare:4;,
 typedef struct ogs_nas_5gs_registration_type_s {
     union {
         struct {
-        ED3(uint8_t type:4;,
+        ED4(uint8_t tsc:1;,
+            uint8_t ksi:3;,
             uint8_t follow_on_request:1;,
             uint8_t value:3;)
         };

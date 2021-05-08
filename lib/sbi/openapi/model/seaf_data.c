@@ -49,10 +49,6 @@ cJSON *OpenAPI_seaf_data_convertToJSON(OpenAPI_seaf_data_t *seaf_data)
     }
 
     item = cJSON_CreateObject();
-    if (!seaf_data->ng_ksi) {
-        ogs_error("OpenAPI_seaf_data_convertToJSON() failed [ng_ksi]");
-        goto end;
-    }
     cJSON *ng_ksi_local_JSON = OpenAPI_ng_ksi_convertToJSON(seaf_data->ng_ksi);
     if (ng_ksi_local_JSON == NULL) {
         ogs_error("OpenAPI_seaf_data_convertToJSON() failed [ng_ksi]");
@@ -64,10 +60,6 @@ cJSON *OpenAPI_seaf_data_convertToJSON(OpenAPI_seaf_data_t *seaf_data)
         goto end;
     }
 
-    if (!seaf_data->key_amf) {
-        ogs_error("OpenAPI_seaf_data_convertToJSON() failed [key_amf]");
-        goto end;
-    }
     cJSON *key_amf_local_JSON = OpenAPI_key_amf_convertToJSON(seaf_data->key_amf);
     if (key_amf_local_JSON == NULL) {
         ogs_error("OpenAPI_seaf_data_convertToJSON() failed [key_amf]");

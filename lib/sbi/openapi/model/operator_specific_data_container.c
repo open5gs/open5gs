@@ -68,10 +68,6 @@ cJSON *OpenAPI_operator_specific_data_container_convertToJSON(OpenAPI_operator_s
     }
 
     item = cJSON_CreateObject();
-    if (!operator_specific_data_container->data_type) {
-        ogs_error("OpenAPI_operator_specific_data_container_convertToJSON() failed [data_type]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "dataType", OpenAPI_data_typeoperator_specific_data_container_ToString(operator_specific_data_container->data_type)) == NULL) {
         ogs_error("OpenAPI_operator_specific_data_container_convertToJSON() failed [data_type]");
         goto end;
@@ -84,10 +80,6 @@ cJSON *OpenAPI_operator_specific_data_container_convertToJSON(OpenAPI_operator_s
         }
     }
 
-    if (!operator_specific_data_container->value) {
-        ogs_error("OpenAPI_operator_specific_data_container_convertToJSON() failed [value]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "value", operator_specific_data_container->value) == NULL) {
         ogs_error("OpenAPI_operator_specific_data_container_convertToJSON() failed [value]");
         goto end;

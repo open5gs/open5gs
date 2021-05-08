@@ -96,10 +96,6 @@ cJSON *OpenAPI_subscription_data_convertToJSON(OpenAPI_subscription_data_t *subs
     }
 
     item = cJSON_CreateObject();
-    if (!subscription_data->nf_status_notification_uri) {
-        ogs_error("OpenAPI_subscription_data_convertToJSON() failed [nf_status_notification_uri]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "nfStatusNotificationUri", subscription_data->nf_status_notification_uri) == NULL) {
         ogs_error("OpenAPI_subscription_data_convertToJSON() failed [nf_status_notification_uri]");
         goto end;

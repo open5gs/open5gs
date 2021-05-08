@@ -37,10 +37,6 @@ cJSON *OpenAPI_report_item_convertToJSON(OpenAPI_report_item_t *report_item)
     }
 
     item = cJSON_CreateObject();
-    if (!report_item->path) {
-        ogs_error("OpenAPI_report_item_convertToJSON() failed [path]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "path", report_item->path) == NULL) {
         ogs_error("OpenAPI_report_item_convertToJSON() failed [path]");
         goto end;

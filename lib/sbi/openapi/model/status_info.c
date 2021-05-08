@@ -43,10 +43,6 @@ cJSON *OpenAPI_status_info_convertToJSON(OpenAPI_status_info_t *status_info)
     }
 
     item = cJSON_CreateObject();
-    if (!status_info->resource_status) {
-        ogs_error("OpenAPI_status_info_convertToJSON() failed [resource_status]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "resourceStatus", OpenAPI_resource_status_ToString(status_info->resource_status)) == NULL) {
         ogs_error("OpenAPI_status_info_convertToJSON() failed [resource_status]");
         goto end;

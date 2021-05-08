@@ -40,28 +40,16 @@ cJSON *OpenAPI_arp_convertToJSON(OpenAPI_arp_t *arp)
     }
 
     item = cJSON_CreateObject();
-    if (!arp->priority_level) {
-        ogs_error("OpenAPI_arp_convertToJSON() failed [priority_level]");
-        goto end;
-    }
     if (cJSON_AddNumberToObject(item, "priorityLevel", arp->priority_level) == NULL) {
         ogs_error("OpenAPI_arp_convertToJSON() failed [priority_level]");
         goto end;
     }
 
-    if (!arp->preempt_cap) {
-        ogs_error("OpenAPI_arp_convertToJSON() failed [preempt_cap]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "preemptCap", OpenAPI_preemption_capability_ToString(arp->preempt_cap)) == NULL) {
         ogs_error("OpenAPI_arp_convertToJSON() failed [preempt_cap]");
         goto end;
     }
 
-    if (!arp->preempt_vuln) {
-        ogs_error("OpenAPI_arp_convertToJSON() failed [preempt_vuln]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "preemptVuln", OpenAPI_preemption_vulnerability_ToString(arp->preempt_vuln)) == NULL) {
         ogs_error("OpenAPI_arp_convertToJSON() failed [preempt_vuln]");
         goto end;

@@ -42,10 +42,6 @@ cJSON *OpenAPI_n2_information_transfer_rsp_data_convertToJSON(OpenAPI_n2_informa
     }
 
     item = cJSON_CreateObject();
-    if (!n2_information_transfer_rsp_data->result) {
-        ogs_error("OpenAPI_n2_information_transfer_rsp_data_convertToJSON() failed [result]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "result", OpenAPI_n2_information_transfer_result_ToString(n2_information_transfer_rsp_data->result)) == NULL) {
         ogs_error("OpenAPI_n2_information_transfer_rsp_data_convertToJSON() failed [result]");
         goto end;

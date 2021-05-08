@@ -39,19 +39,11 @@ cJSON *OpenAPI_n1_n2_msg_txfr_failure_notification_convertToJSON(OpenAPI_n1_n2_m
     }
 
     item = cJSON_CreateObject();
-    if (!n1_n2_msg_txfr_failure_notification->cause) {
-        ogs_error("OpenAPI_n1_n2_msg_txfr_failure_notification_convertToJSON() failed [cause]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "cause", OpenAPI_n1_n2_message_transfer_cause_ToString(n1_n2_msg_txfr_failure_notification->cause)) == NULL) {
         ogs_error("OpenAPI_n1_n2_msg_txfr_failure_notification_convertToJSON() failed [cause]");
         goto end;
     }
 
-    if (!n1_n2_msg_txfr_failure_notification->n1n2_msg_data_uri) {
-        ogs_error("OpenAPI_n1_n2_msg_txfr_failure_notification_convertToJSON() failed [n1n2_msg_data_uri]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "n1n2MsgDataUri", n1_n2_msg_txfr_failure_notification->n1n2_msg_data_uri) == NULL) {
         ogs_error("OpenAPI_n1_n2_msg_txfr_failure_notification_convertToJSON() failed [n1n2_msg_data_uri]");
         goto end;

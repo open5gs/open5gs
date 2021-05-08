@@ -85,10 +85,6 @@ cJSON *OpenAPI_amf_non3_gpp_access_registration_convertToJSON(OpenAPI_amf_non3_g
     }
 
     item = cJSON_CreateObject();
-    if (!amf_non3_gpp_access_registration->amf_instance_id) {
-        ogs_error("OpenAPI_amf_non3_gpp_access_registration_convertToJSON() failed [amf_instance_id]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "amfInstanceId", amf_non3_gpp_access_registration->amf_instance_id) == NULL) {
         ogs_error("OpenAPI_amf_non3_gpp_access_registration_convertToJSON() failed [amf_instance_id]");
         goto end;
@@ -115,10 +111,6 @@ cJSON *OpenAPI_amf_non3_gpp_access_registration_convertToJSON(OpenAPI_amf_non3_g
         }
     }
 
-    if (!amf_non3_gpp_access_registration->ims_vo_ps) {
-        ogs_error("OpenAPI_amf_non3_gpp_access_registration_convertToJSON() failed [ims_vo_ps]");
-        goto end;
-    }
     cJSON *ims_vo_ps_local_JSON = OpenAPI_ims_vo_ps_convertToJSON(amf_non3_gpp_access_registration->ims_vo_ps);
     if (ims_vo_ps_local_JSON == NULL) {
         ogs_error("OpenAPI_amf_non3_gpp_access_registration_convertToJSON() failed [ims_vo_ps]");
@@ -130,10 +122,6 @@ cJSON *OpenAPI_amf_non3_gpp_access_registration_convertToJSON(OpenAPI_amf_non3_g
         goto end;
     }
 
-    if (!amf_non3_gpp_access_registration->dereg_callback_uri) {
-        ogs_error("OpenAPI_amf_non3_gpp_access_registration_convertToJSON() failed [dereg_callback_uri]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "deregCallbackUri", amf_non3_gpp_access_registration->dereg_callback_uri) == NULL) {
         ogs_error("OpenAPI_amf_non3_gpp_access_registration_convertToJSON() failed [dereg_callback_uri]");
         goto end;
@@ -160,10 +148,6 @@ cJSON *OpenAPI_amf_non3_gpp_access_registration_convertToJSON(OpenAPI_amf_non3_g
         }
     }
 
-    if (!amf_non3_gpp_access_registration->guami) {
-        ogs_error("OpenAPI_amf_non3_gpp_access_registration_convertToJSON() failed [guami]");
-        goto end;
-    }
     cJSON *guami_local_JSON = OpenAPI_guami_convertToJSON(amf_non3_gpp_access_registration->guami);
     if (guami_local_JSON == NULL) {
         ogs_error("OpenAPI_amf_non3_gpp_access_registration_convertToJSON() failed [guami]");
@@ -195,10 +179,6 @@ cJSON *OpenAPI_amf_non3_gpp_access_registration_convertToJSON(OpenAPI_amf_non3_g
         }
     }
 
-    if (!amf_non3_gpp_access_registration->rat_type) {
-        ogs_error("OpenAPI_amf_non3_gpp_access_registration_convertToJSON() failed [rat_type]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "ratType", OpenAPI_rat_type_ToString(amf_non3_gpp_access_registration->rat_type)) == NULL) {
         ogs_error("OpenAPI_amf_non3_gpp_access_registration_convertToJSON() failed [rat_type]");
         goto end;

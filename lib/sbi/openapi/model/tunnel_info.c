@@ -59,10 +59,6 @@ cJSON *OpenAPI_tunnel_info_convertToJSON(OpenAPI_tunnel_info_t *tunnel_info)
         }
     }
 
-    if (!tunnel_info->gtp_teid) {
-        ogs_error("OpenAPI_tunnel_info_convertToJSON() failed [gtp_teid]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "gtpTeid", tunnel_info->gtp_teid) == NULL) {
         ogs_error("OpenAPI_tunnel_info_convertToJSON() failed [gtp_teid]");
         goto end;

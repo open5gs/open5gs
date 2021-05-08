@@ -47,28 +47,16 @@ cJSON *OpenAPI_pp_maximum_response_time_convertToJSON(OpenAPI_pp_maximum_respons
     }
 
     item = cJSON_CreateObject();
-    if (!pp_maximum_response_time->maximum_response_time) {
-        ogs_error("OpenAPI_pp_maximum_response_time_convertToJSON() failed [maximum_response_time]");
-        goto end;
-    }
     if (cJSON_AddNumberToObject(item, "maximumResponseTime", pp_maximum_response_time->maximum_response_time) == NULL) {
         ogs_error("OpenAPI_pp_maximum_response_time_convertToJSON() failed [maximum_response_time]");
         goto end;
     }
 
-    if (!pp_maximum_response_time->af_instance_id) {
-        ogs_error("OpenAPI_pp_maximum_response_time_convertToJSON() failed [af_instance_id]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "afInstanceId", pp_maximum_response_time->af_instance_id) == NULL) {
         ogs_error("OpenAPI_pp_maximum_response_time_convertToJSON() failed [af_instance_id]");
         goto end;
     }
 
-    if (!pp_maximum_response_time->reference_id) {
-        ogs_error("OpenAPI_pp_maximum_response_time_convertToJSON() failed [reference_id]");
-        goto end;
-    }
     if (cJSON_AddNumberToObject(item, "referenceId", pp_maximum_response_time->reference_id) == NULL) {
         ogs_error("OpenAPI_pp_maximum_response_time_convertToJSON() failed [reference_id]");
         goto end;

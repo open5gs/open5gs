@@ -48,19 +48,11 @@ cJSON *OpenAPI_ec_restriction_convertToJSON(OpenAPI_ec_restriction_t *ec_restric
     }
 
     item = cJSON_CreateObject();
-    if (!ec_restriction->af_instance_id) {
-        ogs_error("OpenAPI_ec_restriction_convertToJSON() failed [af_instance_id]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "afInstanceId", ec_restriction->af_instance_id) == NULL) {
         ogs_error("OpenAPI_ec_restriction_convertToJSON() failed [af_instance_id]");
         goto end;
     }
 
-    if (!ec_restriction->reference_id) {
-        ogs_error("OpenAPI_ec_restriction_convertToJSON() failed [reference_id]");
-        goto end;
-    }
     if (cJSON_AddNumberToObject(item, "referenceId", ec_restriction->reference_id) == NULL) {
         ogs_error("OpenAPI_ec_restriction_convertToJSON() failed [reference_id]");
         goto end;

@@ -58,19 +58,11 @@ cJSON *OpenAPI_hss_authentication_info_request_convertToJSON(OpenAPI_hss_authent
         }
     }
 
-    if (!hss_authentication_info_request->hss_auth_type) {
-        ogs_error("OpenAPI_hss_authentication_info_request_convertToJSON() failed [hss_auth_type]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "hssAuthType", OpenAPI_hss_auth_type_ToString(hss_authentication_info_request->hss_auth_type)) == NULL) {
         ogs_error("OpenAPI_hss_authentication_info_request_convertToJSON() failed [hss_auth_type]");
         goto end;
     }
 
-    if (!hss_authentication_info_request->num_of_requested_vectors) {
-        ogs_error("OpenAPI_hss_authentication_info_request_convertToJSON() failed [num_of_requested_vectors]");
-        goto end;
-    }
     if (cJSON_AddNumberToObject(item, "numOfRequestedVectors", hss_authentication_info_request->num_of_requested_vectors) == NULL) {
         ogs_error("OpenAPI_hss_authentication_info_request_convertToJSON() failed [num_of_requested_vectors]");
         goto end;

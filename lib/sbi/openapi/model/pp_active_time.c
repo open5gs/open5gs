@@ -47,28 +47,16 @@ cJSON *OpenAPI_pp_active_time_convertToJSON(OpenAPI_pp_active_time_t *pp_active_
     }
 
     item = cJSON_CreateObject();
-    if (!pp_active_time->active_time) {
-        ogs_error("OpenAPI_pp_active_time_convertToJSON() failed [active_time]");
-        goto end;
-    }
     if (cJSON_AddNumberToObject(item, "activeTime", pp_active_time->active_time) == NULL) {
         ogs_error("OpenAPI_pp_active_time_convertToJSON() failed [active_time]");
         goto end;
     }
 
-    if (!pp_active_time->af_instance_id) {
-        ogs_error("OpenAPI_pp_active_time_convertToJSON() failed [af_instance_id]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "afInstanceId", pp_active_time->af_instance_id) == NULL) {
         ogs_error("OpenAPI_pp_active_time_convertToJSON() failed [af_instance_id]");
         goto end;
     }
 
-    if (!pp_active_time->reference_id) {
-        ogs_error("OpenAPI_pp_active_time_convertToJSON() failed [reference_id]");
-        goto end;
-    }
     if (cJSON_AddNumberToObject(item, "referenceId", pp_active_time->reference_id) == NULL) {
         ogs_error("OpenAPI_pp_active_time_convertToJSON() failed [reference_id]");
         goto end;

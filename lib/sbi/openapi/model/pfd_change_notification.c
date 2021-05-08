@@ -47,10 +47,6 @@ cJSON *OpenAPI_pfd_change_notification_convertToJSON(OpenAPI_pfd_change_notifica
     }
 
     item = cJSON_CreateObject();
-    if (!pfd_change_notification->application_id) {
-        ogs_error("OpenAPI_pfd_change_notification_convertToJSON() failed [application_id]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "applicationId", pfd_change_notification->application_id) == NULL) {
         ogs_error("OpenAPI_pfd_change_notification_convertToJSON() failed [application_id]");
         goto end;

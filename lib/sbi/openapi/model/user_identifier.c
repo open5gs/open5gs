@@ -43,10 +43,6 @@ cJSON *OpenAPI_user_identifier_convertToJSON(OpenAPI_user_identifier_t *user_ide
     }
 
     item = cJSON_CreateObject();
-    if (!user_identifier->supi) {
-        ogs_error("OpenAPI_user_identifier_convertToJSON() failed [supi]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "supi", user_identifier->supi) == NULL) {
         ogs_error("OpenAPI_user_identifier_convertToJSON() failed [supi]");
         goto end;

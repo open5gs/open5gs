@@ -58,37 +58,21 @@ cJSON *OpenAPI_gbr_qos_flow_information_convertToJSON(OpenAPI_gbr_qos_flow_infor
     }
 
     item = cJSON_CreateObject();
-    if (!gbr_qos_flow_information->max_fbr_dl) {
-        ogs_error("OpenAPI_gbr_qos_flow_information_convertToJSON() failed [max_fbr_dl]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "maxFbrDl", gbr_qos_flow_information->max_fbr_dl) == NULL) {
         ogs_error("OpenAPI_gbr_qos_flow_information_convertToJSON() failed [max_fbr_dl]");
         goto end;
     }
 
-    if (!gbr_qos_flow_information->max_fbr_ul) {
-        ogs_error("OpenAPI_gbr_qos_flow_information_convertToJSON() failed [max_fbr_ul]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "maxFbrUl", gbr_qos_flow_information->max_fbr_ul) == NULL) {
         ogs_error("OpenAPI_gbr_qos_flow_information_convertToJSON() failed [max_fbr_ul]");
         goto end;
     }
 
-    if (!gbr_qos_flow_information->gua_fbr_dl) {
-        ogs_error("OpenAPI_gbr_qos_flow_information_convertToJSON() failed [gua_fbr_dl]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "guaFbrDl", gbr_qos_flow_information->gua_fbr_dl) == NULL) {
         ogs_error("OpenAPI_gbr_qos_flow_information_convertToJSON() failed [gua_fbr_dl]");
         goto end;
     }
 
-    if (!gbr_qos_flow_information->gua_fbr_ul) {
-        ogs_error("OpenAPI_gbr_qos_flow_information_convertToJSON() failed [gua_fbr_ul]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "guaFbrUl", gbr_qos_flow_information->gua_fbr_ul) == NULL) {
         ogs_error("OpenAPI_gbr_qos_flow_information_convertToJSON() failed [gua_fbr_ul]");
         goto end;

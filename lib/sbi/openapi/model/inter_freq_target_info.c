@@ -42,10 +42,6 @@ cJSON *OpenAPI_inter_freq_target_info_convertToJSON(OpenAPI_inter_freq_target_in
     }
 
     item = cJSON_CreateObject();
-    if (!inter_freq_target_info->dl_carrier_freq) {
-        ogs_error("OpenAPI_inter_freq_target_info_convertToJSON() failed [dl_carrier_freq]");
-        goto end;
-    }
     if (cJSON_AddNumberToObject(item, "dlCarrierFreq", inter_freq_target_info->dl_carrier_freq) == NULL) {
         ogs_error("OpenAPI_inter_freq_target_info_convertToJSON() failed [dl_carrier_freq]");
         goto end;

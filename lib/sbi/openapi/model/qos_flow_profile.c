@@ -56,10 +56,6 @@ cJSON *OpenAPI_qos_flow_profile_convertToJSON(OpenAPI_qos_flow_profile_t *qos_fl
     }
 
     item = cJSON_CreateObject();
-    if (!qos_flow_profile->_5qi) {
-        ogs_error("OpenAPI_qos_flow_profile_convertToJSON() failed [_5qi]");
-        goto end;
-    }
     if (cJSON_AddNumberToObject(item, "5qi", qos_flow_profile->_5qi) == NULL) {
         ogs_error("OpenAPI_qos_flow_profile_convertToJSON() failed [_5qi]");
         goto end;

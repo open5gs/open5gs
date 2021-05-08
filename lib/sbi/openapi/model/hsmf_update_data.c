@@ -205,10 +205,6 @@ cJSON *OpenAPI_hsmf_update_data_convertToJSON(OpenAPI_hsmf_update_data_t *hsmf_u
     }
 
     item = cJSON_CreateObject();
-    if (!hsmf_update_data->request_indication) {
-        ogs_error("OpenAPI_hsmf_update_data_convertToJSON() failed [request_indication]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "requestIndication", OpenAPI_request_indication_ToString(hsmf_update_data->request_indication)) == NULL) {
         ogs_error("OpenAPI_hsmf_update_data_convertToJSON() failed [request_indication]");
         goto end;

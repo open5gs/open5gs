@@ -39,10 +39,6 @@ cJSON *OpenAPI_ssc_modes_convertToJSON(OpenAPI_ssc_modes_t *ssc_modes)
     }
 
     item = cJSON_CreateObject();
-    if (!ssc_modes->default_ssc_mode) {
-        ogs_error("OpenAPI_ssc_modes_convertToJSON() failed [default_ssc_mode]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "defaultSscMode", OpenAPI_ssc_mode_ToString(ssc_modes->default_ssc_mode)) == NULL) {
         ogs_error("OpenAPI_ssc_modes_convertToJSON() failed [default_ssc_mode]");
         goto end;

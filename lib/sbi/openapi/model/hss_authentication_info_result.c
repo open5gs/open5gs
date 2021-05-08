@@ -47,10 +47,6 @@ cJSON *OpenAPI_hss_authentication_info_result_convertToJSON(OpenAPI_hss_authenti
         }
     }
 
-    if (!hss_authentication_info_result->hss_authentication_vectors) {
-        ogs_error("OpenAPI_hss_authentication_info_result_convertToJSON() failed [hss_authentication_vectors]");
-        goto end;
-    }
     cJSON *hss_authentication_vectors_local_JSON = OpenAPI_hss_authentication_vectors_convertToJSON(hss_authentication_info_result->hss_authentication_vectors);
     if (hss_authentication_vectors_local_JSON == NULL) {
         ogs_error("OpenAPI_hss_authentication_info_result_convertToJSON() failed [hss_authentication_vectors]");

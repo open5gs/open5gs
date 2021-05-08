@@ -51,10 +51,6 @@ cJSON *OpenAPI_assign_ebi_data_convertToJSON(OpenAPI_assign_ebi_data_t *assign_e
     }
 
     item = cJSON_CreateObject();
-    if (!assign_ebi_data->pdu_session_id) {
-        ogs_error("OpenAPI_assign_ebi_data_convertToJSON() failed [pdu_session_id]");
-        goto end;
-    }
     if (cJSON_AddNumberToObject(item, "pduSessionId", assign_ebi_data->pdu_session_id) == NULL) {
         ogs_error("OpenAPI_assign_ebi_data_convertToJSON() failed [pdu_session_id]");
         goto end;

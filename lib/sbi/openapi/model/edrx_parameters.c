@@ -39,19 +39,11 @@ cJSON *OpenAPI_edrx_parameters_convertToJSON(OpenAPI_edrx_parameters_t *edrx_par
     }
 
     item = cJSON_CreateObject();
-    if (!edrx_parameters->rat_type) {
-        ogs_error("OpenAPI_edrx_parameters_convertToJSON() failed [rat_type]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "ratType", OpenAPI_rat_type_ToString(edrx_parameters->rat_type)) == NULL) {
         ogs_error("OpenAPI_edrx_parameters_convertToJSON() failed [rat_type]");
         goto end;
     }
 
-    if (!edrx_parameters->edrx_value) {
-        ogs_error("OpenAPI_edrx_parameters_convertToJSON() failed [edrx_value]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "edrxValue", edrx_parameters->edrx_value) == NULL) {
         ogs_error("OpenAPI_edrx_parameters_convertToJSON() failed [edrx_value]");
         goto end;

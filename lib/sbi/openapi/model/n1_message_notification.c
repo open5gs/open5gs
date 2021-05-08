@@ -56,10 +56,6 @@ cJSON *OpenAPI_n1_message_notification_convertToJSON(OpenAPI_n1_message_notifica
         }
     }
 
-    if (!n1_message_notification->n1_message_container) {
-        ogs_error("OpenAPI_n1_message_notification_convertToJSON() failed [n1_message_container]");
-        goto end;
-    }
     cJSON *n1_message_container_local_JSON = OpenAPI_n1_message_container_convertToJSON(n1_message_notification->n1_message_container);
     if (n1_message_container_local_JSON == NULL) {
         ogs_error("OpenAPI_n1_message_notification_convertToJSON() failed [n1_message_container]");

@@ -60,10 +60,6 @@ cJSON *OpenAPI_usage_mon_data_limit_convertToJSON(OpenAPI_usage_mon_data_limit_t
     }
 
     item = cJSON_CreateObject();
-    if (!usage_mon_data_limit->limit_id) {
-        ogs_error("OpenAPI_usage_mon_data_limit_convertToJSON() failed [limit_id]");
-        goto end;
-    }
     if (cJSON_AddStringToObject(item, "limitId", usage_mon_data_limit->limit_id) == NULL) {
         ogs_error("OpenAPI_usage_mon_data_limit_convertToJSON() failed [limit_id]");
         goto end;

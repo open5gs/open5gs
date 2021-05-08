@@ -39,10 +39,6 @@ cJSON *OpenAPI_time_period_convertToJSON(OpenAPI_time_period_t *time_period)
     }
 
     item = cJSON_CreateObject();
-    if (!time_period->period) {
-        ogs_error("OpenAPI_time_period_convertToJSON() failed [period]");
-        goto end;
-    }
     cJSON *period_local_JSON = OpenAPI_periodicity_convertToJSON(time_period->period);
     if (period_local_JSON == NULL) {
         ogs_error("OpenAPI_time_period_convertToJSON() failed [period]");
