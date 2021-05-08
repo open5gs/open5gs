@@ -41,24 +41,26 @@ co(function* () {
     /* other options */
   })
 
-  Account.count((err, count) => {
-    if (err) {
-      console.error(err);
-      throw err;
-    }
+  if (dev) {
+    Account.count((err, count) => {
+      if (err) {
+        console.error(err);
+        throw err;
+      }
 
-    if (!count) {
-      const newAccount = new Account();
-      newAccount.username = 'admin';
-      newAccount.roles = [ 'admin' ];
-      Account.register(newAccount, '1423', err => {
-        if (err) {
-          console.error(err);
-          throw err;
-        }
-      })
-    }
-  })
+      if (!count) {
+        const newAccount = new Account();
+        newAccount.username = 'admin';
+        newAccount.roles = [ 'admin' ];
+        Account.register(newAccount, '1423', err => {
+          if (err) {
+            console.error(err);
+            throw err;
+          }
+        })
+      }
+    })
+  }
 
   const server = express();
   
