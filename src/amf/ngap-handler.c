@@ -2008,6 +2008,13 @@ void ngap_handle_path_switch_request(
     ogs_debug("    IP[%s] RAN_ID[%d]",
             OGS_ADDR(gnb->sctp.addr, buf), gnb->gnb_id);
 
+    if (!RAN_UE_NGAP_ID) {
+        ogs_error("No RAN_UE_NGAP_ID");
+        ngap_send_error_indication(gnb, NULL, NULL,
+                NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
+        return;
+    }
+
     if (!AMF_UE_NGAP_ID) {
         ogs_error("No AMF_UE_NGAP_ID");
         ngap_send_error_indication(gnb, (uint32_t *)RAN_UE_NGAP_ID, NULL,
@@ -2564,6 +2571,13 @@ void ngap_handle_handover_request_ack(
 
     ogs_debug("    IP[%s] RAN_ID[%d]",
             OGS_ADDR(gnb->sctp.addr, buf), gnb->gnb_id);
+
+    if (!RAN_UE_NGAP_ID) {
+        ogs_error("No RAN_UE_NGAP_ID");
+        ngap_send_error_indication(gnb, NULL, NULL,
+                NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
+        return;
+    }
 
     if (!AMF_UE_NGAP_ID) {
         ogs_error("No AMF_UE_NGAP_ID");
