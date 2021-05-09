@@ -10,9 +10,9 @@ head_inline: "<style> .blue { color: blue; } </style>"
   }
 </style>
 
-#### MME Diameter Error using v2.2.x
+#### MME sends Attach reject(EMM-Cause:15) with Diameter error(Result-Code:3002)
 
-If you see the Attach reject [EMM_CAUSE:15] with Diameter Error [Result-Code:3002], it means that you may use the old format DB schema.
+If you see the Attach reject(EMM-Cause:15] with Diameter error(Result-Code:3002), it means that HSS is not running.
 
 ```
 ...
@@ -29,6 +29,64 @@ If you see the Attach reject [EMM_CAUSE:15] with Diameter Error [Result-Code:300
 05/08 18:22:23.612: [mme] INFO:     IMSI[001010123456792] (../src/mme/s1ap-handler.c:1332)
 05/08 18:22:23.612: [mme] INFO: [Removed] Number of eNB-UEs is now 0 (../src/mme/mme-context.c:3228)
 ...
+```
+
+Please check the status of HSS and restart it.
+```
+$ sudo systemctl status open5gs-hssd.service
+● open5gs-hssd.service - Open5GS HSS Daemon
+     Loaded: loaded (/lib/systemd/system/open5gs-hssd.service; disabled; vendor preset: enabled)
+     Active: inactive (dead)
+sudo systemctl status open5gs-hssd.service
+● open5gs-hssd.service - Open5GS HSS Daemon
+     Loaded: loaded (/lib/systemd/system/open5gs-hssd.service; disabled; vendor preset: enabled)
+     Active: active (running) since Sun 2021-05-09 18:36:49 KST; 1s ago
+   Main PID: 6011 (open5gs-hssd)
+      Tasks: 37 (limit: 19047)
+     Memory: 14.6M
+     CGroup: /system.slice/open5gs-hssd.service
+             └─6011 /usr/bin/open5gs-hssd -c /etc/open5gs/hss.yaml
+
+May 09 18:36:49 open5gs systemd[1]: Started Open5GS HSS Daemon.
+May 09 18:36:49 open5gs open5gs-hssd[6011]: Open5GS daemon v2.2.7
+May 09 18:36:49 open5gs open5gs-hssd[6011]: 05/09 18:36:49.987: [app] INFO: Configuration: '/etc/ope>
+May 09 18:36:49 open5gs open5gs-hssd[6011]: 05/09 18:36:49.987: [app] INFO: File Logging: '/var/log/>
+May 09 18:36:49 open5gs open5gs-hssd[6011]: 05/09 18:36:49.994: [dbi] INFO: MongoDB URI: 'mongodb://>
+May 09 18:36:50 open5gs open5gs-hssd[6011]: 05/09 18:36:50.116: [app] INFO: HSS initialize...done
+```
+
+#### MME Diameter-Error with HSS-crash using v2.2.x package
+
+If the following MME log occurs while connecting to the UE, it means that you may use the old format DB schema.
+
+```
+04/14 20:14:21.981: [diam] ERROR: pid:PSM/hss.localdomain in fd_psm_change_state@p_psm.c:287: 'STATE_OPEN' -> 'STATE_CLOSED' 'hss.localdomain'
+((null):0)
+04/14 20:14:21.982: [diam] ERROR: pid:PSM/hss.localdomain in md_hook_cb_tree@dbg_msg_dumps.c:89: FAILOVER from 'hss.localdomain':
+((null):0)
+04/14 20:14:21.982: [diam] ERROR: pid:PSM/hss.localdomain in md_hook_cb_tree@dbg_msg_dumps.c:90: 'Update-Location-Request'
+((null):0)
+```
+
+In this case, the HSS may crash as shown below.
+
+```
+04/12 10:13:45.025: [app] INFO: Configuration: '/home/open5gs/install/etc/open5gs/hss.yaml' (../lib/app/ogs-init.c:129)
+04/12 10:13:45.025: [app] INFO: File Logging: '/home/open5gs/install/var/log/open5gs/hss.log' (../lib/app/ogs-init.c:132)
+04/12 10:13:45.028: [dbi] INFO: MongoDB URI: 'mongodb://localhost/open5gs' (../lib/dbi/ogs-mongoc.c:129)
+04/12 10:13:45.068: [diam] INFO: CONNECTED TO 'mme.epc.mnc001.mcc001.3gppnetwork.org' (SCTP,soc#17): (../lib/diameter/common/logger.c:108)
+04/12 10:13:45.069: [app] INFO: HSS initialize...done (../src/hss/app-init.c:31)
+04/12 10:14:27.167: [core] FATAL: ogs_slice_find_by_s_nssai: Assertion `num_of_slice_data' failed. (../lib/core/ogs-3gpp-types.c:529)
+04/12 10:14:27.168: [core] FATAL: backtrace() returned 10 addresses (../lib/core/ogs-abort.c:37)
+/home/open5gs/install/lib/x86_64-linux-gnu/libogscore.so.2(ogs_slice_find_by_s_nssai+0xd2) [0x7f3b720a126e]
+./install/bin/open5gs-hssd(+0xd12e) [0x55a57bb6f12e]
+/home/open5gs/install/lib/x86_64-linux-gnu/libfdproto.so.7(fd_disp_call_cb_int+0x270) [0x7f3b7135acb3]
+/home/open5gs/install/lib/x86_64-linux-gnu/libfdproto.so.7(fd_msg_dispatch+0xdca) [0x7f3b7137442f]
+home/open5gs/install/lib/x86_64-linux-gnu/libfdcore.so.7(+0x67c3c) [0x7f3b715f9c3c]
+/home/open5gs/install/lib/x86_64-linux-gnu/libfdcore.so.7(+0x6ca99) [0x7f3b715fea99]
+/open5gs/install/lib/x86_64-linux-gnu/libfdcore.so.7(+0x6cd06) [0x7f3b715fed06]
+/lib/x86_64-linux-gnu/libpthread.so.0(+0x76db) [0x7f3b70d016db]
+/lib/x86_64-linux-gnu/libc.so.6(clone+0x3f) [0x7f3b70a2a71f]
 ```
 
 At this time, you need to check the DB schema is in the form below by using the command the below.
@@ -98,7 +156,7 @@ $ mongo
 }
 ```
 
-If you see below, you are using the old format DB schema. Therefore, MME sends Attach Reject [EMM_CAUSE:15] with Diameter Error [Result-Code: 3002] and it does not work properly.
+If you see below, you are using the old format DB schema.
 
 ```
 $ mongo
@@ -147,7 +205,7 @@ $ mongo
 
 If you are using old format DB schema, please perform the following step.
 
-1. Delete all DB subscriber info
+1. First of all, it is recommended to use the following command to remove all existing subscription DB.
 ```
 $ mongo
 > use open5gs
@@ -155,13 +213,12 @@ switched to db open5gs
 > db.subscribers.drop()
 true
 ```
-2. WebUI logout
-3. Install new WebUI with the following command.
+2. Then, if you are using a version of WebUI prior to v2.1.7, you need to do a WebUI logout from your web browser.
+3. Finally, install the latest version of WebUI with the following command.
 ```
 $ curl -fsSL https://open5gs.org/open5gs/assets/webui/install | sudo -E bash -
 ```
-
-4. Log in to the new WebUI and add new subscriber information.
+4. Log in to the new WebUI and add new subscriber information using your web browser.
 5. Make sure it is a new DB schema as below:
 ```
 $ mongo
@@ -178,52 +235,6 @@ $ mongo
 ...
 }
 ```
-
-#### HSS crash using v2.2.x
-
-If the following MME log occurs while connecting to the UE, it means that the Open5GS upgrade was not properly performed.
-
-```
-04/14 20:14:21.981: [diam] ERROR: pid:PSM/hss.localdomain in fd_psm_change_state@p_psm.c:287: 'STATE_OPEN' -> 'STATE_CLOSED' 'hss.localdomain'
-((null):0)
-04/14 20:14:21.982: [diam] ERROR: pid:PSM/hss.localdomain in md_hook_cb_tree@dbg_msg_dumps.c:89: FAILOVER from 'hss.localdomain':
-((null):0)
-04/14 20:14:21.982: [diam] ERROR: pid:PSM/hss.localdomain in md_hook_cb_tree@dbg_msg_dumps.c:90: 'Update-Location-Request'
-((null):0)
-```
-
-In this case, the HSS may crash as shown below.
-
-```
-04/12 10:13:45.025: [app] INFO: Configuration: '/home/open5gs/install/etc/open5gs/hss.yaml' (../lib/app/ogs-init.c:129)
-04/12 10:13:45.025: [app] INFO: File Logging: '/home/open5gs/install/var/log/open5gs/hss.log' (../lib/app/ogs-init.c:132)
-04/12 10:13:45.028: [dbi] INFO: MongoDB URI: 'mongodb://localhost/open5gs' (../lib/dbi/ogs-mongoc.c:129)
-04/12 10:13:45.068: [diam] INFO: CONNECTED TO 'mme.epc.mnc001.mcc001.3gppnetwork.org' (SCTP,soc#17): (../lib/diameter/common/logger.c:108)
-04/12 10:13:45.069: [app] INFO: HSS initialize...done (../src/hss/app-init.c:31)
-04/12 10:14:27.167: [core] FATAL: ogs_slice_find_by_s_nssai: Assertion `num_of_slice_data' failed. (../lib/core/ogs-3gpp-types.c:529)
-04/12 10:14:27.168: [core] FATAL: backtrace() returned 10 addresses (../lib/core/ogs-abort.c:37)
-/home/open5gs/install/lib/x86_64-linux-gnu/libogscore.so.2(ogs_slice_find_by_s_nssai+0xd2) [0x7f3b720a126e]
-./install/bin/open5gs-hssd(+0xd12e) [0x55a57bb6f12e]
-/home/open5gs/install/lib/x86_64-linux-gnu/libfdproto.so.7(fd_disp_call_cb_int+0x270) [0x7f3b7135acb3]
-/home/open5gs/install/lib/x86_64-linux-gnu/libfdproto.so.7(fd_msg_dispatch+0xdca) [0x7f3b7137442f]
-home/open5gs/install/lib/x86_64-linux-gnu/libfdcore.so.7(+0x67c3c) [0x7f3b715f9c3c]
-/home/open5gs/install/lib/x86_64-linux-gnu/libfdcore.so.7(+0x6ca99) [0x7f3b715fea99]
-/open5gs/install/lib/x86_64-linux-gnu/libfdcore.so.7(+0x6cd06) [0x7f3b715fed06]
-/lib/x86_64-linux-gnu/libpthread.so.0(+0x76db) [0x7f3b70d016db]
-/lib/x86_64-linux-gnu/libc.so.6(clone+0x3f) [0x7f3b70a2a71f]
-```
-
-First of all, it is recommended to use the following command to remove all existing subscription DB.
-
-```
-$ mongo
-> use open5gs
-switched to db open5gs
-> db.subscribers.drop()
-true
-```
-
-Then, if you are using a version of WebUI prior to v2.1.7, you need to log out. Finally, install the latest version of WebUI and add subscriber information.
 
 If the above problem still occurs, we recommend that you delete all Open5GS and start from scratch.
 
