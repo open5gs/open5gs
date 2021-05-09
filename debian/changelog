@@ -1,3 +1,21 @@
+open5gs (2.2.8) unstable; urgency=medium
+
+  * Security Protection
+
+ -- Sukchan Lee <acetcom@gmail.com>  Sun, 09 May 2021 11:23:01 +0900
+
+open5gs (2.2.8~bionic) bionic; urgency=medium
+
+  * Security Protection
+
+ -- Sukchan Lee <acetcom@gmail.com>  Sun, 09 May 2021 11:22:02 +0900
+
+open5gs (2.2.8~focal) focal; urgency=medium
+
+  * Security Protection
+
+ -- Sukchan Lee <acetcom@gmail.com>  Sun, 09 May 2021 11:20:13 +0900
+
 open5gs (2.2.7) unstable; urgency=medium
 
   * Bug Fixed

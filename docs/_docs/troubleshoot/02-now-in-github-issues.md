@@ -147,14 +147,22 @@ $ mongo
 
 If you are using old format DB schema, please perform the following step.
 
-1. WebUI logout
-2. Install new WebUI with the following command.
+1. Delete all DB subscriber info
+```
+$ mongo
+> use open5gs
+switched to db open5gs
+> db.subscribers.drop()
+true
+```
+2. WebUI logout
+3. Install new WebUI with the following command.
 ```
 $ curl -fsSL https://open5gs.org/open5gs/assets/webui/install | sudo -E bash -
 ```
 
-3. Log in to the new WebUI and add new subscriber information.
-4. Make sure it is a new DB schema as below:
+4. Log in to the new WebUI and add new subscriber information.
+5. Make sure it is a new DB schema as below:
 ```
 $ mongo
 > use open5gs
