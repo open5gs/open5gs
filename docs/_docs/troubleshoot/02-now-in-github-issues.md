@@ -10,6 +10,167 @@ head_inline: "<style> .blue { color: blue; } </style>"
   }
 </style>
 
+#### MME Diameter Error using v2.2.x
+
+If you see the Attach reject [EMM_CAUSE:15] with Diameter Error [Result-Code:3002], it means that you may use the old format DB schema.
+
+```
+...
+5/08 18:22:23.584: [diam] ERROR: pid:Routing-OUT (0x563969fc2060) in md_hook_cb_tree@dbg_msg_dumps.c:113:         AVP: 'Vendor-Specific-Application-Id'(260) l=8 f=-M val=(grouped)
+ ((null):0)
+05/08 18:22:23.584: [diam] ERROR: pid:Routing-OUT (0x563969fc2060) in md_hook_cb_tree@dbg_msg_dumps.c:113:            AVP: 'Vendor-Id'(266) l=12 f=-M val=10415 (0x28af)
+ ((null):0)
+05/08 18:22:23.584: [diam] ERROR: pid:Routing-OUT (0x563969fc2060) in md_hook_cb_tree@dbg_msg_dumps.c:113:            AVP: 'Auth-Application-Id'(258) l=12 f=-M val=16777251 (0x1000023)
+ ((null):0)
+05/08 18:22:23.584: [mme] INFO:     Result Code: 3002 (../src/mme/mme-fd-path.c:301)
+05/08 18:22:23.585: [mme] INFO: [001010123456792] Attach reject [EMM_CAUSE:15] (../src/mme/mme-sm.c:448)
+05/08 18:22:23.612: [mme] INFO: UE Context Release [Action:3] (../src/mme/s1ap-handler.c:1328)
+05/08 18:22:23.612: [mme] INFO:     ENB_UE_S1AP_ID[1] MME_UE_S1AP_ID[1] (../src/mme/s1ap-handler.c:1330)
+05/08 18:22:23.612: [mme] INFO:     IMSI[001010123456792] (../src/mme/s1ap-handler.c:1332)
+05/08 18:22:23.612: [mme] INFO: [Removed] Number of eNB-UEs is now 0 (../src/mme/mme-context.c:3228)
+...
+```
+
+At this time, you need to check the DB schema is in the form below by using the command the below.
+
+```
+$ mongo
+> use open5gs
+> db.subscribers.find().pretty()
+{
+	"_id" : ObjectId("60969fe79459f8b40d8d3f68"),
+	"imsi" : "901700000000001",
+	"__v" : 0,
+	"access_restriction_data" : 32,
+	"ambr" : {
+		"uplink" : {
+			"value" : 1,
+			"unit" : 3
+		},
+		"downlink" : {
+			"value" : 1,
+			"unit" : 3
+		}
+	},
+	"network_access_mode" : 2,
+	"security" : {
+		"k" : "465b5ce8b199b49faa5f0a2ee238a6bc",
+		"amf" : "8000",
+		"op" : null,
+		"opc" : "e8ed289deba952e4283b54e88e6183ca",
+		"sqn" : NumberLong(97)
+	},
+	"slice" : [
+		{
+			"sst" : 1,
+			"default_indicator" : true,
+			"_id" : ObjectId("60969fe7de8743b3c7b1a973"),
+			"session" : [
+				{
+					"name" : "internet",
+					"type" : 3,
+					"_id" : ObjectId("60969fe7de8743b3c7b1a974"),
+					"pcc_rule" : [ ],
+					"ambr" : {
+						"uplink" : {
+							"value" : 1,
+							"unit" : 3
+						},
+						"downlink" : {
+							"value" : 1,
+							"unit" : 3
+						}
+					},
+					"qos" : {
+						"index" : 9,
+						"arp" : {
+							"priority_level" : 8,
+							"pre_emption_capability" : 1,
+							"pre_emption_vulnerability" : 1
+						}
+					}
+				}
+			]
+		}
+	],
+	"subscribed_rau_tau_timer" : 12,
+	"subscriber_status" : 0
+}
+```
+
+If you see below, you are using the old format DB schema. Therefore, MME sends Attach Reject [EMM_CAUSE:15] with Diameter Error [Result-Code: 3002] and it does not work properly.
+
+```
+$ mongo
+> use open5gs
+> db.subscribers.find().pretty()
+{
+	"_id" : ObjectId("609715fda08851a0744e6ae7"),
+	"imsi" : "901700000021309",
+	"__v" : 0,
+	"access_restriction_data" : 32,
+	"ambr" : {
+		"downlink" : NumberLong(1024000),
+		"uplink" : NumberLong(1024000)
+	},
+	"network_access_mode" : 2,
+	"pdn" : [
+		{
+			"apn" : "internet",
+			"_id" : ObjectId("609715fd455bcd38c884ce85"),
+			"pcc_rule" : [ ],
+			"ambr" : {
+				"downlink" : NumberLong(1024000),
+				"uplink" : NumberLong(1024000)
+			},
+			"qos" : {
+				"qci" : 9,
+				"arp" : {
+					"priority_level" : 8,
+					"pre_emption_vulnerability" : 1,
+					"pre_emption_capability" : 0
+				}
+			},
+			"type" : 0
+		}
+	],
+	"security" : {
+		"k" : "70D49A71DD1A2B806A25ABE0EF749F1E",
+		"amf" : "8000",
+		"op" : null,
+		"opc" : "6F1BF53D624B3A43AF6592854E2444C7"
+	},
+	"subscribed_rau_tau_timer" : 12,
+	"subscriber_status" : 0
+}
+```
+
+If you are using old format DB schema, please perform the following step.
+
+1. WebUI logout
+2. Install new WebUI with the following command.
+```
+$ curl -fsSL https://open5gs.org/open5gs/assets/webui/install | sudo -E bash -
+```
+
+3. Log in to the new WebUI and add new subscriber information.
+4. Make sure it is a new DB schema as below:
+```
+$ mongo
+> use open5gs
+> db.subscribers.find().pretty()
+{
+...
+	"slice" : [
+		{
+			"sst" : 1,
+			"default_indicator" : true,
+			"_id" : ObjectId("60969fe7de8743b3c7b1a973"),
+			"session" : [
+...
+}
+```
+
 #### HSS crash using v2.2.x
 
 If the following MME log occurs while connecting to the UE, it means that the Open5GS upgrade was not properly performed.
