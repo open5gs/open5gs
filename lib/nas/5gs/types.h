@@ -80,10 +80,28 @@ int ogs_nas_parse_s_nssai(
  * O TLV 3-15 */
 typedef struct ogs_nas_5gmm_capability_s {
     uint8_t length;
-ED4(uint8_t spare:5;,
+ED8(uint8_t service_gap_control:1;,
+    uint8_t iphc_cp_ciot_5gs_optimization:1;,
+    uint8_t n3_data_trasfer:1;,
+    uint8_t cp_ciot_5gs_optimization:1;,
+    uint8_t restrict_on_use_of_enhanced_coverage_support:1;,
     uint8_t lte_positioning_protocol_capability:1;,
     uint8_t ho_attach:1;,
     uint8_t s1_mode:1;)
+ED8(uint8_t radio_capability_signalling_optimization_capability:1;,
+    uint8_t nssaa:1;,
+    uint8_t lcs_5g_notification_mechanisms_capability:1;,
+    uint8_t v2x_communication_over_nr_pc5_capability:1;,
+    uint8_t v2x_communication_over_e_utra_pc5_capability:1;,
+    uint8_t v2x_capability:1;,
+    uint8_t up_ciot_5gs_optimization:1;,
+    uint8_t srvcc_5g_capability:1;)
+ED5(uint8_t spare4:4;,
+    uint8_t ethernet_header_compression_cp_ciot_5gs_optimization:1;,
+    uint8_t multiple_user_plane_resource_support:1;,
+    uint8_t wusa_information_reception_capability:1;,
+    uint8_t closed_access_group_capability:1;)
+    uint8_t spare[10];
 } __attribute__ ((packed)) ogs_nas_5gmm_capability_t;
 
 /* 9.11.3.2 5GMM cause
