@@ -116,6 +116,40 @@ index 67ad9db5..1adbdde6 100644
                 return per_put_few_bits(po, length-1, 7) ? -1 : 0;
         } else {
 
+Fix NGAP_RANNodeNameUTF8String.c/NGAP_AMFNameUTF8String.c
+===========================================
+diff --git a/lib/asn1c/ngap/NGAP_RANNodeNameUTF8String.c b/lib/asn1c/ngap/NGAP_RANNodeNameUTF8String.c
+index 9e469f7f..79ebd028 100644
+--- a/lib/asn1c/ngap/NGAP_RANNodeNameUTF8String.c
++++ b/lib/asn1c/ngap/NGAP_RANNodeNameUTF8String.c
+@@ -46,7 +46,11 @@ NGAP_RANNodeNameUTF8String_constraint(const asn_TYPE_descriptor_t *td, const voi
+ #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+ asn_per_constraints_t asn_PER_type_NGAP_RANNodeNameUTF8String_constr_1 CC_NOTUSED = {
+        { APC_UNCONSTRAINED,    -1, -1,  0,  0 },
++#if 0 /* modified by acetcom */
+        { APC_UNCONSTRAINED,    -1, -1,  0,  0 },
++#else
++       { APC_CONSTRAINED | APC_EXTENSIBLE,  8,  8,  1,  150 }  /* (SIZE(1..150,...)) */,
++#endif
+        0, 0    /* No PER value map */
+ };
+ #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+diff --git a/lib/asn1c/ngap/NGAP_AMFNameUTF8String.c b/lib/asn1c/ngap/NGAP_AMFNameUTF8String.c
+index 1df33a4d..a74f97ea 100644
+--- a/lib/asn1c/ngap/NGAP_AMFNameUTF8String.c
++++ b/lib/asn1c/ngap/NGAP_AMFNameUTF8String.c
+@@ -46,7 +46,11 @@ NGAP_AMFNameUTF8String_constraint(const asn_TYPE_descriptor_t *td, const void *s
+ #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+ asn_per_constraints_t asn_PER_type_NGAP_AMFNameUTF8String_constr_1 CC_NOTUSED = {
+        { APC_UNCONSTRAINED,    -1, -1,  0,  0 },
++#if 0 /* modified by acetcom */
+        { APC_UNCONSTRAINED,    -1, -1,  0,  0 },
++#else
++       { APC_CONSTRAINED | APC_EXTENSIBLE,  8,  8,  1,  150 }  /* (SIZE(1..150,...)) */,
++#endif
+        0, 0    /* No PER value map */
+ };
+ #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
 
 Fix NGAP_ProtocolExtensionField.c
 ===========================================

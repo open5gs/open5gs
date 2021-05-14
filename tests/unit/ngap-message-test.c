@@ -114,6 +114,76 @@ static void ngap_message_test2(abts_case *tc, void *data)
     ogs_pkbuf_free(pkbuf);
 }
 
+static void ngap_message_test3(abts_case *tc, void *data)
+{
+    /* NGReset */
+    const char *payload =
+        "0015004200000500 1b00090009f10728 000800000052400b 0400354720674e42"
+        "2d43550066000d00 000000010009f107 0000000800154001 0001114009403035"
+        "484c41423032";
+
+    ogs_ngap_message_t message;
+    ogs_pkbuf_t *pkbuf;
+    int result;
+    char hexbuf[OGS_MAX_SDU_LEN];
+
+    ogs_ngap_message_t *struct_ptr = NULL;
+    size_t struct_size;
+    asn_dec_rval_t dec_ret = {0};
+
+    pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
+    ogs_assert(pkbuf);
+    ogs_pkbuf_put_data(pkbuf,
+            OGS_HEX(payload, strlen(payload), hexbuf), 70);
+
+    struct_ptr = &message;
+    struct_size = sizeof(ogs_ngap_message_t);
+
+    memset(struct_ptr, 0, struct_size);
+    dec_ret = aper_decode(NULL, &asn_DEF_NGAP_NGAP_PDU, (void **)&struct_ptr,
+            pkbuf->data, pkbuf->len, 0, 0);
+    ABTS_INT_EQUAL(tc, 0, dec_ret.code);
+    ABTS_INT_EQUAL(tc, 560, dec_ret.consumed);
+
+    ogs_ngap_free(&message);
+    ogs_pkbuf_free(pkbuf);
+}
+
+static void ngap_message_test4(abts_case *tc, void *data)
+{
+    /* NGReset */
+    const char *payload =
+        "0015003f00000500 1b00080045f01000 0000040052400903 0035484c41423032"
+        "0066000d00000062 280045f010000000 0800154001400111 4009203035484c41"
+        "423032";
+
+    ogs_ngap_message_t message;
+    ogs_pkbuf_t *pkbuf;
+    int result;
+    char hexbuf[OGS_MAX_SDU_LEN];
+
+    ogs_ngap_message_t *struct_ptr = NULL;
+    size_t struct_size;
+    asn_dec_rval_t dec_ret = {0};
+
+    pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
+    ogs_assert(pkbuf);
+    ogs_pkbuf_put_data(pkbuf,
+            OGS_HEX(payload, strlen(payload), hexbuf), 67);
+
+    struct_ptr = &message;
+    struct_size = sizeof(ogs_ngap_message_t);
+
+    memset(struct_ptr, 0, struct_size);
+    dec_ret = aper_decode(NULL, &asn_DEF_NGAP_NGAP_PDU, (void **)&struct_ptr,
+            pkbuf->data, pkbuf->len, 0, 0);
+    ABTS_INT_EQUAL(tc, 0, dec_ret.code);
+    ABTS_INT_EQUAL(tc, 536, dec_ret.consumed);
+
+    ogs_ngap_free(&message);
+    ogs_pkbuf_free(pkbuf);
+}
+
 abts_suite *test_ngap_message(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
@@ -122,6 +192,8 @@ abts_suite *test_ngap_message(abts_suite *suite)
 
     abts_run_test(suite, ngap_message_test1, NULL);
     abts_run_test(suite, ngap_message_test2, NULL);
+    abts_run_test(suite, ngap_message_test3, NULL);
+    abts_run_test(suite, ngap_message_test4, NULL);
 
     return suite;
 }
