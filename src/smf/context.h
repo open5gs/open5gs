@@ -134,6 +134,8 @@ ED3(uint8_t spare:2;,
     uint8_t direction:2;,
     uint8_t identifier:4;)
 
+    uint8_t precedence;
+
     uint8_t *identifier_node;      /* Pool-Node for Identifier */
 
     ogs_ipfw_rule_t ipfw_rule;
