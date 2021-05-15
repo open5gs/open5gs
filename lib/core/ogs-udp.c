@@ -35,7 +35,6 @@ ogs_sock_t *ogs_udp_socket(int family, ogs_socknode_t *node)
 
 ogs_sock_t *ogs_udp_server(ogs_socknode_t *node)
 {
-    int rv;
     ogs_sock_t *new = NULL;
     ogs_sockaddr_t *addr;
     char buf[OGS_ADDRSTRLEN];
@@ -47,9 +46,6 @@ ogs_sock_t *ogs_udp_server(ogs_socknode_t *node)
     while (addr) {
         new = ogs_udp_socket(addr->ogs_sa_family, node);
         if (new) {
-            rv = ogs_listen_reusable(new->fd);
-            ogs_assert(rv == OGS_OK);
-
             if (ogs_sock_bind(new, addr) == OGS_OK) {
                 ogs_debug("udp_server() [%s]:%d",
                         OGS_ADDR(addr, buf), OGS_PORT(addr));
