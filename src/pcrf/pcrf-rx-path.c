@@ -93,7 +93,7 @@ static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
     int rv;
     int ret;
     int len;
-    char *from_str, *to_str, *rx_flow;
+    char *from_str, *to_str, *rx_flow, *to_port, *to_ip, *from_ip, *from_port;
 
 	struct msg *ans, *qry;
     struct avp *avpch1, *avpch2, *avpch3;
@@ -285,7 +285,7 @@ static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
                             /* IE (IPV4-local-addr field ) is not supported on
                              * the LTE pre release-11 UEs. In order for the call
                              * to work the local address in packet filter must
-                             * be replaced by any.
+                             * be replaced by 'any local port'.
                              */
                             if (ogs_app()->
                                 parameter.no_ipv4v6_local_addr_in_packet_filter
@@ -296,6 +296,10 @@ static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
 
                                 from_str = NULL;
                                 to_str = NULL;
+                                to_ip = NULL;
+                                to_port = NULL;
+                                from_ip = NULL;
+                                from_port = NULL;
                                 from_str = strstr(rx_flow, "from");
                                 ogs_assert(from_str);
                                 to_str = strstr(rx_flow, "to");
@@ -304,24 +308,67 @@ static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
                                 if (!strncmp(rx_flow,
                                         "permit out", strlen("permit out"))) {
 
-                                    flow->description = ogs_malloc(len
-                                        - strlen(to_str) + strlen("to any")+1);
+                                    to_ip = strstr(to_str, " ");
+                                    if (to_ip != NULL) {
+                                        // Exclude the starting whitespace
+                                        to_ip += 1;
+
+                                        to_port = strstr(to_ip, " ");
+                                        // Test for no port
+                                        if (to_port != NULL) {
+                                            flow->description = ogs_malloc(len
+                                                - strlen(to_str) + strlen("to any")
+                                                + strlen(to_port) + 1);
+                                        } else {
+                                            flow->description = ogs_malloc(len
+                                                - strlen(to_str) + strlen("to any") + 1);
+                                        }
+                                    }
 
                                     strncat(flow->description,
                                         rx_flow,
                                         len - strlen(to_str));
                                     strcat(flow->description, "to any");
+                                    if (to_port != NULL) {
+                                        strncat(flow->description,
+                                            to_port, strlen(to_port));
+                                    }
                                 } else if (!strncmp(rx_flow,
                                             "permit in", strlen("permit in"))) {
 
-                                    flow->description = ogs_malloc(
-                                        len - strlen(from_str) + strlen(to_str)
-                                        + strlen("from any ")+1);
+                                    from_ip = strstr(from_str, " ");
+                                    if (from_ip != NULL) {
+                                        // Exclude the starting whitespace
+                                        from_ip += 1;
+
+                                        from_port = strstr(from_ip, " ");
+                                        // Test for no port + whether from_port is at "to"
+                                        // without any from port
+                                        if (from_port != NULL &&
+                                            strncmp(from_port, " to", 3)) {
+                                            flow->description = ogs_malloc(
+                                                len - strlen(from_str) + strlen(to_str)
+                                                + strlen("from any") + 1
+                                                + (strlen(from_port) - strlen(to_str)));
+                                        } else {
+                                            flow->description = ogs_malloc(
+                                                len - strlen(from_str) + strlen(to_str)
+                                                + strlen("from any ") + 1);
+                                        }
+                                    }
 
                                     strncat(flow->description,
                                         rx_flow,
                                         len - strlen(from_str));
-                                    strcat(flow->description, "from any ");
+                                    if (from_port != NULL &&
+                                        strncmp(from_port, " to", 3)) {
+                                        strcat(flow->description, "from any");
+                                        strncat(flow->description,
+                                            from_port,
+                                            strlen(from_port) - strlen(to_str));
+                                    } else {
+                                        strcat(flow->description, "from any ");
+                                    }
                                     strncat(flow->description,
                                         to_str,
                                         strlen(to_str));
