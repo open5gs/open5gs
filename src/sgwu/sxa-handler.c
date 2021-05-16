@@ -152,8 +152,9 @@ void sgwu_sxa_handle_session_establishment_request(
         }
     }
 
-    sgwu_pfcp_send_session_establishment_response(
-            xact, sess, created_pdr, num_of_created_pdr);
+    ogs_assert(OGS_OK ==
+        sgwu_pfcp_send_session_establishment_response(
+            xact, sess, created_pdr, num_of_created_pdr));
     return;
 
 cleanup:
@@ -357,8 +358,9 @@ void sgwu_sxa_handle_session_modification_request(
         }
     }
 
-    sgwu_pfcp_send_session_modification_response(
-            xact, sess, created_pdr, num_of_created_pdr);
+    ogs_assert(OGS_OK ==
+        sgwu_pfcp_send_session_modification_response(
+            xact, sess, created_pdr, num_of_created_pdr));
     return;
 
 cleanup:

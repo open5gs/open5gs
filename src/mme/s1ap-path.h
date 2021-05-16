@@ -46,50 +46,50 @@ int s1ap_send_to_nas(enb_ue_t *enb_ue,
         S1AP_ProcedureCode_t procedureCode, S1AP_NAS_PDU_t *nasPdu);
 int s1ap_send_to_esm(mme_ue_t *mme_ue, ogs_pkbuf_t *esmbuf, uint8_t nas_type);
 
-void s1ap_send_s1_setup_response(mme_enb_t *enb);
-void s1ap_send_s1_setup_failure(
+int s1ap_send_s1_setup_response(mme_enb_t *enb);
+int s1ap_send_s1_setup_failure(
         mme_enb_t *enb, S1AP_Cause_PR group, long cause);
 
-void s1ap_send_initial_context_setup_request(mme_ue_t *mme_ue);
-void s1ap_send_ue_context_modification_request(mme_ue_t *mme_ue);
-void s1ap_send_ue_context_release_command(
+int s1ap_send_initial_context_setup_request(mme_ue_t *mme_ue);
+int s1ap_send_ue_context_modification_request(mme_ue_t *mme_ue);
+int s1ap_send_ue_context_release_command(
     enb_ue_t *enb_ue, S1AP_Cause_PR group, long cause,
     uint8_t action, ogs_time_t duration);
 
 void s1ap_send_paging(mme_ue_t *mme_ue, S1AP_CNDomain_t cn_domain);
 
-void s1ap_send_mme_configuration_transfer(
+int s1ap_send_mme_configuration_transfer(
         mme_enb_t *target_enb,
         S1AP_SONConfigurationTransfer_t *SONConfigurationTransfer);
 
-void s1ap_send_e_rab_modification_confirm(mme_ue_t *mme_ue);
+int s1ap_send_e_rab_modification_confirm(mme_ue_t *mme_ue);
 
-void s1ap_send_path_switch_ack(mme_ue_t *mme_ue);
+int s1ap_send_path_switch_ack(mme_ue_t *mme_ue);
 
-void s1ap_send_handover_command(enb_ue_t *source_ue);
-void s1ap_send_handover_preparation_failure(
+int s1ap_send_handover_command(enb_ue_t *source_ue);
+int s1ap_send_handover_preparation_failure(
         enb_ue_t *source_ue, S1AP_Cause_PR group, long cause);
 
-void s1ap_send_handover_request(
+int s1ap_send_handover_request(
         enb_ue_t *source_ue, mme_enb_t *target_enb,
         S1AP_HandoverType_t *handovertype, S1AP_Cause_t *cause,
         S1AP_Source_ToTarget_TransparentContainer_t
             *source_totarget_transparentContainer);
 
-void s1ap_send_handover_cancel_ack(enb_ue_t *source_ue);
+int s1ap_send_handover_cancel_ack(enb_ue_t *source_ue);
 
-void s1ap_send_mme_status_transfer(
+int s1ap_send_mme_status_transfer(
         enb_ue_t *target_ue,
         S1AP_ENB_StatusTransfer_TransparentContainer_t
             *enb_statustransfer_transparentContainer);
-void s1ap_send_error_indication(
+int s1ap_send_error_indication(
         mme_enb_t *enb,
         S1AP_MME_UE_S1AP_ID_t *mme_ue_s1ap_id,
         S1AP_ENB_UE_S1AP_ID_t *enb_ue_s1ap_id,
         S1AP_Cause_PR group, long cause);
-void s1ap_send_error_indication2(
+int s1ap_send_error_indication2(
         mme_ue_t *mme_ue, S1AP_Cause_PR group, long cause);
-void s1ap_send_s1_reset_ack(
+int s1ap_send_s1_reset_ack(
         mme_enb_t *enb,
         S1AP_UE_associatedLogicalS1_ConnectionListRes_t *partOfS1_Interface);
 

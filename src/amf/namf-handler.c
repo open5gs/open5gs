@@ -287,7 +287,8 @@ int amf_namf_comm_handle_n1_n2_message_transfer(
                 ngap_send_paging(amf_ue);
 
             } else if (CM_CONNECTED(amf_ue)) {
-                ngap_send_pdu_resource_setup_request(sess, n2buf);
+                ogs_assert(OGS_OK ==
+                    ngap_send_pdu_resource_setup_request(sess, n2buf));
 
             } else {
 

@@ -273,7 +273,7 @@ void smf_gtp_close(void)
     ogs_socknode_remove_all(&ogs_gtp_self()->gtpu_list);
 }
 
-void smf_gtp_send_create_session_response(
+int smf_gtp_send_create_session_response(
         smf_sess_t *sess, ogs_gtp_xact_t *xact)
 {
     int rv;
@@ -288,16 +288,18 @@ void smf_gtp_send_create_session_response(
     h.teid = sess->sgw_s5c_teid;
 
     pkbuf = smf_s5c_build_create_session_response(h.type, sess);
-    ogs_expect_or_return(pkbuf);
+    ogs_expect_or_return_val(pkbuf, OGS_ERROR);
 
     rv = ogs_gtp_xact_update_tx(xact, &h, pkbuf);
-    ogs_expect_or_return(rv == OGS_OK);
+    ogs_expect_or_return_val(rv == OGS_OK, OGS_ERROR);
 
     rv = ogs_gtp_xact_commit(xact);
     ogs_expect(rv == OGS_OK);
+
+    return rv;
 }
 
-void smf_gtp_send_delete_session_response(
+int smf_gtp_send_delete_session_response(
         smf_sess_t *sess, ogs_gtp_xact_t *xact)
 {
     int rv;
@@ -312,13 +314,15 @@ void smf_gtp_send_delete_session_response(
     h.teid = sess->sgw_s5c_teid;
 
     pkbuf = smf_s5c_build_delete_session_response(h.type, sess);
-    ogs_expect_or_return(pkbuf);
+    ogs_expect_or_return_val(pkbuf, OGS_ERROR);
 
     rv = ogs_gtp_xact_update_tx(xact, &h, pkbuf);
-    ogs_expect_or_return(rv == OGS_OK);
+    ogs_expect_or_return_val(rv == OGS_OK, OGS_ERROR);
 
     rv = ogs_gtp_xact_commit(xact);
     ogs_expect(rv == OGS_OK);
+
+    return rv;
 }
 
 static bool check_if_router_solicit(ogs_pkbuf_t *pkbuf)

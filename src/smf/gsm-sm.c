@@ -231,8 +231,9 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
             break;
 
         case OGS_NAS_5GS_PDU_SESSION_RELEASE_REQUEST:
-            smf_5gc_pfcp_send_session_deletion_request(
-                    sess, stream, OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED);
+            ogs_assert(OGS_OK ==
+                smf_5gc_pfcp_send_session_deletion_request(
+                    sess, stream, OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED));
             break;
 
         case OGS_NAS_5GS_PDU_SESSION_RELEASE_COMPLETE:

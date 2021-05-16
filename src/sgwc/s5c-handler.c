@@ -48,8 +48,9 @@ static void bearer_timeout(ogs_gtp_xact_t *xact, void *data)
             ogs_warn("[%s] Bearer has already been removed", sgwc_ue->imsi_bcd);
             break;
         }
-        sgwc_pfcp_send_bearer_modification_request(
-                bearer, NULL, NULL, OGS_PFCP_MODIFY_REMOVE);
+        ogs_assert(OGS_OK ==
+            sgwc_pfcp_send_bearer_modification_request(
+                bearer, NULL, NULL, OGS_PFCP_MODIFY_REMOVE));
         break;
     default:
         ogs_error("GTP Timeout : IMSI[%s] Message-Type[%d]",
@@ -179,7 +180,8 @@ void sgwc_s5c_handle_create_session_response(
     }
 
     if (cause_value != OGS_GTP_CAUSE_REQUEST_ACCEPTED) {
-        sgwc_pfcp_send_session_deletion_request(sess, NULL, NULL);
+        ogs_assert(OGS_OK ==
+            sgwc_pfcp_send_session_deletion_request(sess, NULL, NULL));
         ogs_gtp_send_error_message(
                 s11_xact, sgwc_ue ? sgwc_ue->mme_s11_teid : 0,
                 OGS_GTP_CREATE_SESSION_RESPONSE_TYPE, cause_value);
@@ -225,9 +227,10 @@ void sgwc_s5c_handle_create_session_response(
     ogs_debug("    SGW_S5U_TEID[%d] PGW_S5U_TEID[%d]",
         ul_tunnel->local_teid, ul_tunnel->remote_teid);
 
-    sgwc_pfcp_send_bearer_modification_request(
+    ogs_assert(OGS_OK ==
+        sgwc_pfcp_send_bearer_modification_request(
             bearer, s11_xact, gtpbuf,
-            OGS_PFCP_MODIFY_UL_ONLY|OGS_PFCP_MODIFY_ACTIVATE);
+            OGS_PFCP_MODIFY_UL_ONLY|OGS_PFCP_MODIFY_ACTIVATE));
 }
 
 void sgwc_s5c_handle_delete_session_response(
@@ -276,7 +279,8 @@ void sgwc_s5c_handle_delete_session_response(
     }
 
     if (cause_value != OGS_GTP_CAUSE_REQUEST_ACCEPTED) {
-        sgwc_pfcp_send_session_deletion_request(sess, NULL, NULL);
+        ogs_assert(OGS_OK ==
+            sgwc_pfcp_send_session_deletion_request(sess, NULL, NULL));
         ogs_gtp_send_error_message(
                 s11_xact, sgwc_ue ? sgwc_ue->mme_s11_teid : 0,
                 OGS_GTP_DELETE_SESSION_RESPONSE_TYPE, cause_value);
@@ -289,7 +293,8 @@ void sgwc_s5c_handle_delete_session_response(
     ogs_debug("    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]",
         sess->sgw_s5c_teid, sess->pgw_s5c_teid);
 
-    sgwc_pfcp_send_session_deletion_request(sess, s11_xact, gtpbuf);
+    ogs_assert(OGS_OK ==
+        sgwc_pfcp_send_session_deletion_request(sess, s11_xact, gtpbuf));
 }
 
 void sgwc_s5c_handle_create_bearer_request(
@@ -381,9 +386,10 @@ void sgwc_s5c_handle_create_bearer_request(
         &far->outer_header_creation, &far->outer_header_creation_len);
     far->outer_header_creation.teid = ul_tunnel->remote_teid;
 
-    sgwc_pfcp_send_bearer_modification_request(
+    ogs_assert(OGS_OK ==
+        sgwc_pfcp_send_bearer_modification_request(
             bearer, s5c_xact, gtpbuf,
-            OGS_PFCP_MODIFY_UL_ONLY|OGS_PFCP_MODIFY_CREATE);
+            OGS_PFCP_MODIFY_UL_ONLY|OGS_PFCP_MODIFY_CREATE));
 }
 
 void sgwc_s5c_handle_update_bearer_request(

@@ -344,8 +344,9 @@ void smf_s5c_handle_create_bearer_response(
     }
 
     if (cause_value != OGS_GTP_CAUSE_REQUEST_ACCEPTED) {
-        smf_epc_pfcp_send_bearer_modification_request(
-                bearer, OGS_PFCP_MODIFY_REMOVE);
+        ogs_assert(OGS_OK ==
+            smf_epc_pfcp_send_bearer_modification_request(
+                bearer, OGS_PFCP_MODIFY_REMOVE));
         return;
     }
 
@@ -380,8 +381,9 @@ void smf_s5c_handle_create_bearer_response(
         &dl_far->outer_header_creation, &dl_far->outer_header_creation_len);
     dl_far->outer_header_creation.teid = bearer->sgw_s5u_teid;
 
-    smf_epc_pfcp_send_bearer_modification_request(
-            bearer, OGS_PFCP_MODIFY_ACTIVATE);
+    ogs_assert(OGS_OK ==
+        smf_epc_pfcp_send_bearer_modification_request(
+            bearer, OGS_PFCP_MODIFY_ACTIVATE));
 }
 
 void smf_s5c_handle_update_bearer_response(
@@ -506,7 +508,8 @@ void smf_s5c_handle_update_bearer_response(
     }
 
     if (pfcp_flags)
-        smf_epc_pfcp_send_bearer_modification_request(bearer, pfcp_flags);
+        ogs_assert(OGS_OK ==
+            smf_epc_pfcp_send_bearer_modification_request(bearer, pfcp_flags));
 }
 
 void smf_s5c_handle_delete_bearer_response(
@@ -577,8 +580,9 @@ void smf_s5c_handle_delete_bearer_response(
     ogs_debug("Delete Bearer Response : SGW[0x%x] --> SMF[0x%x]",
             sess->sgw_s5c_teid, sess->smf_n4_teid);
 
-    smf_epc_pfcp_send_bearer_modification_request(
-            bearer, OGS_PFCP_MODIFY_REMOVE);
+    ogs_assert(OGS_OK ==
+        smf_epc_pfcp_send_bearer_modification_request(
+            bearer, OGS_PFCP_MODIFY_REMOVE));
 }
 
 static int reconfigure_packet_filter(smf_pf_t *pf, ogs_gtp_tft_t *tft, int i)

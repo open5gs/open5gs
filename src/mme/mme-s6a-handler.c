@@ -44,7 +44,8 @@ void mme_s6a_handle_aia(mme_ue_t *mme_ue,
     if (mme_ue->nas_eps.ksi == OGS_NAS_KSI_NO_KEY_IS_AVAILABLE)
         mme_ue->nas_eps.ksi = 0;
 
-    nas_eps_send_authentication_request(mme_ue);
+    ogs_assert(OGS_OK ==
+        nas_eps_send_authentication_request(mme_ue));
 }
 
 void mme_s6a_handle_ula(mme_ue_t *mme_ue,

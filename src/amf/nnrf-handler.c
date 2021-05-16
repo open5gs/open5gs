@@ -276,8 +276,9 @@ void amf_nnrf_handle_nf_discover(
             ogs_assert(amf_ue);
             ogs_error("[%s] (NF discover) No [%s]", amf_ue->suci,
                     OpenAPI_nf_type_ToString(xact->target_nf_type));
-            nas_5gs_send_gmm_reject_from_sbi(amf_ue,
-                    OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT);
+            ogs_assert(OGS_OK ==
+                nas_5gs_send_gmm_reject_from_sbi(amf_ue,
+                    OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT));
             break;
         case OGS_SBI_OBJ_SESS_TYPE:
             sess = (amf_sess_t *)sbi_object;
@@ -285,12 +286,14 @@ void amf_nnrf_handle_nf_discover(
             ogs_error("[%d:%d] (NF discover) No [%s]", sess->psi, sess->pti,
                     OpenAPI_nf_type_ToString(xact->target_nf_type));
             if (sess->payload_container_type) {
-                nas_5gs_send_back_5gsm_message_from_sbi(sess,
-                        OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT);
+                ogs_assert(OGS_OK ==
+                    nas_5gs_send_back_5gsm_message_from_sbi(sess,
+                        OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT));
             } else {
-                ngap_send_error_indication2(amf_ue,
+                ogs_assert(OGS_OK ==
+                    ngap_send_error_indication2(amf_ue,
                         NGAP_Cause_PR_transport,
-                        NGAP_CauseTransport_transport_resource_unavailable);
+                        NGAP_CauseTransport_transport_resource_unavailable));
             }
             break;
         default:

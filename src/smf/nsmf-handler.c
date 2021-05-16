@@ -347,10 +347,11 @@ bool smf_nsmf_handle_update_sm_context(
         /*********************************************************
          * Handle DEACTIVATED
          ********************************************************/
-            smf_5gc_pfcp_send_session_modification_request(
+            ogs_assert(OGS_OK ==
+                smf_5gc_pfcp_send_session_modification_request(
                     sess, stream,
                     OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_DEACTIVATE,
-                    0);
+                    0));
 
         } else if (SmContextUpdateData->up_cnx_state ==
                 OpenAPI_up_cnx_state_ACTIVATING) {
@@ -481,11 +482,12 @@ bool smf_nsmf_handle_update_sm_context(
             }
 
             if (far_update) {
-                smf_5gc_pfcp_send_session_modification_request(
+                ogs_assert(OGS_OK ==
+                    smf_5gc_pfcp_send_session_modification_request(
                         sess, stream,
                         OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_ACTIVATE|
                         OGS_PFCP_MODIFY_N2_HANDOVER|OGS_PFCP_MODIFY_END_MARKER,
-                        0);
+                        0));
             } else {
                 char *strerror = ogs_msprintf(
                         "[%s:%d] No FAR Update", smf_ue->supi, sess->psi);
@@ -513,11 +515,12 @@ bool smf_nsmf_handle_update_sm_context(
             }
 
             if (smf_sess_have_indirect_data_forwarding(sess) == true) {
-                smf_5gc_pfcp_send_session_modification_request(
+                ogs_assert(OGS_OK ==
+                    smf_5gc_pfcp_send_session_modification_request(
                         sess, stream,
                         OGS_PFCP_MODIFY_INDIRECT|OGS_PFCP_MODIFY_REMOVE|
                         OGS_PFCP_MODIFY_HANDOVER_CANCEL,
-                        0);
+                        0));
             } else {
                 smf_sbi_send_sm_context_updated_data_ho_state(
                         sess, stream, OpenAPI_ho_state_CANCELLED);
@@ -536,8 +539,9 @@ bool smf_nsmf_handle_update_sm_context(
             return false;
         }
     } else if (SmContextUpdateData->release) {
-        smf_5gc_pfcp_send_session_deletion_request(sess, stream,
-                OGS_PFCP_DELETE_TRIGGER_AMF_UPDATE_SM_CONTEXT);
+        ogs_assert(OGS_OK ==
+            smf_5gc_pfcp_send_session_deletion_request(sess, stream,
+                OGS_PFCP_DELETE_TRIGGER_AMF_UPDATE_SM_CONTEXT));
     } else {
         ogs_error("[%s:%d] No UpdateData", smf_ue->supi, sess->psi);
         smf_sbi_send_sm_context_update_error(stream,
@@ -585,8 +589,9 @@ bool smf_nsmf_handle_release_sm_context(
         }
     }
 
-    smf_5gc_pfcp_send_session_deletion_request(sess, stream,
-            OGS_PFCP_DELETE_TRIGGER_AMF_RELEASE_SM_CONTEXT);
+    ogs_assert(OGS_OK ==
+        smf_5gc_pfcp_send_session_deletion_request(sess, stream,
+            OGS_PFCP_DELETE_TRIGGER_AMF_RELEASE_SM_CONTEXT));
 
     return true;
 }

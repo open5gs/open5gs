@@ -339,10 +339,11 @@ void smf_5gc_n4_handle_session_modification_response(
         } else if (flags & OGS_PFCP_MODIFY_N2_HANDOVER) {
 
             if (smf_sess_have_indirect_data_forwarding(sess) == true) {
-                smf_5gc_pfcp_send_session_modification_request(
+                ogs_assert(OGS_OK ==
+                    smf_5gc_pfcp_send_session_modification_request(
                         sess, stream,
                         OGS_PFCP_MODIFY_INDIRECT|OGS_PFCP_MODIFY_REMOVE,
-                        ogs_app()->time.handover.duration);
+                        ogs_app()->time.handover.duration));
             }
 
             smf_sbi_send_sm_context_updated_data_ho_state(
@@ -392,10 +393,11 @@ void smf_5gc_n4_handle_session_modification_response(
             if (flags & OGS_PFCP_MODIFY_CREATE) {
                 smf_sess_create_indirect_data_forwarding(sess);
 
-                smf_5gc_pfcp_send_session_modification_request(
+                ogs_assert(OGS_OK ==
+                    smf_5gc_pfcp_send_session_modification_request(
                         sess, stream,
                         OGS_PFCP_MODIFY_INDIRECT|OGS_PFCP_MODIFY_CREATE,
-                        0);
+                        0));
             } else if (flags & OGS_PFCP_MODIFY_HANDOVER_CANCEL) {
                 smf_sbi_send_sm_context_updated_data_ho_state(
                         sess, stream, OpenAPI_ho_state_CANCELLED);
@@ -621,7 +623,8 @@ void smf_epc_n4_handle_session_establishment_response(
     ogs_assert(up_f_seid);
     sess->upf_n4_seid = be64toh(up_f_seid->seid);
 
-    smf_gtp_send_create_session_response(sess, gtp_xact);
+    ogs_assert(OGS_OK ==
+        smf_gtp_send_create_session_response(sess, gtp_xact));
 
     smf_bearer_binding(sess);
 }
@@ -758,7 +761,8 @@ void smf_epc_n4_handle_session_deletion_response(
 
     ogs_assert(sess);
 
-    smf_gtp_send_delete_session_response(sess, gtp_xact);
+    ogs_assert(OGS_OK ==
+        smf_gtp_send_delete_session_response(sess, gtp_xact));
 
     SMF_SESS_CLEAR(sess);
 }
@@ -862,8 +866,9 @@ void smf_n4_handle_session_report_request(
                     cause_value, 0);
         }
 
-        smf_pfcp_send_session_report_response(
-                pfcp_xact, sess, OGS_PFCP_CAUSE_REQUEST_ACCEPTED);
+        ogs_assert(OGS_OK ==
+            smf_pfcp_send_session_report_response(
+                pfcp_xact, sess, OGS_PFCP_CAUSE_REQUEST_ACCEPTED));
 
         if (sess->paging.ue_requested_pdu_session_establishment_done == true) {
             smf_n1_n2_message_transfer_param_t param;
@@ -885,23 +890,26 @@ void smf_n4_handle_session_report_request(
         smf_sess_t *error_indication_session = NULL;
         ogs_assert(smf_ue);
 
-        smf_pfcp_send_session_report_response(
-                pfcp_xact, sess, OGS_PFCP_CAUSE_REQUEST_ACCEPTED);
+        ogs_assert(OGS_OK ==
+            smf_pfcp_send_session_report_response(
+                pfcp_xact, sess, OGS_PFCP_CAUSE_REQUEST_ACCEPTED));
 
         error_indication_session = smf_sess_find_by_error_indication_report(
                 smf_ue, &pfcp_req->error_indication_report);
 
         if (!error_indication_session) return;
 
-        smf_5gc_pfcp_send_session_modification_request(
+        ogs_assert(OGS_OK ==
+            smf_5gc_pfcp_send_session_modification_request(
                 error_indication_session, NULL,
                 OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_DEACTIVATE|
                 OGS_PFCP_MODIFY_ERROR_INDICATION,
-                0);
+                0));
 
     } else {
         ogs_error("Not supported Report Type[%d]", report_type.value);
-        smf_pfcp_send_session_report_response(
-                pfcp_xact, sess, OGS_PFCP_CAUSE_SYSTEM_FAILURE);
+        ogs_assert(OGS_OK ==
+            smf_pfcp_send_session_report_response(
+                pfcp_xact, sess, OGS_PFCP_CAUSE_SYSTEM_FAILURE));
     }
 }

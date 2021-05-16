@@ -208,44 +208,6 @@ ogs_pkbuf_t *smf_n4_build_session_modification_request(
 
     }
 
-#if 0
-    i = 0;
-    ogs_list_for_each(&sess->bearer_list, qos_flow) {
-        if (modify_flags & OGS_PFCP_MODIFY_ACTIVATE) {
-
-            /* Update FAR - Only DL */
-            if (qos_flow->dl_far) {
-                if (qos_flow->dl_far->apply_action &
-                        OGS_PFCP_APPLY_ACTION_FORW) {
-
-                    if (modify_flags & OGS_PFCP_MODIFY_END_MARKER) {
-                        qos_flow->dl_far->
-                            smreq_flags.send_end_marker_packets = 1;
-                    }
-
-                    ogs_fatal("FAR = %d", qos_flow->dl_far->id);
-
-                    ogs_pfcp_build_update_far_activate(
-                            &req->update_far[i], i, qos_flow->dl_far);
-
-                    /* Clear all FAR flags */
-                    qos_flow->dl_far->smreq_flags.value = 0;
-
-                    i++;
-                }
-            }
-
-        } else if (modify_flags & OGS_PFCP_MODIFY_DEACTIVATE) {
-            if (qos_flow->dl_far) {
-                ogs_pfcp_build_update_far_deactivate(
-                        &req->update_far[i], i, qos_flow->dl_far);
-                ogs_error("FAR = %d", qos_flow->dl_far->id);
-                i++;
-            }
-        }
-    }
-#endif
-
     pfcp_message.h.type = type;
     pkbuf = ogs_pfcp_build_msg(&pfcp_message);
 

@@ -159,7 +159,7 @@ static void bearer_timeout(ogs_gtp_xact_t *xact, void *data)
     }
 }
 
-void sgwc_gtp_send_downlink_data_notification(
+int sgwc_gtp_send_downlink_data_notification(
     uint8_t cause_value, sgwc_bearer_t *bearer)
 {
     int rv;
@@ -189,12 +189,14 @@ void sgwc_gtp_send_downlink_data_notification(
     h.teid = sgwc_ue->mme_s11_teid;
 
     pkbuf = sgwc_s11_build_downlink_data_notification(cause_value, bearer);
-    ogs_expect_or_return(pkbuf);
+    ogs_expect_or_return_val(pkbuf, OGS_ERROR);
 
     gtp_xact = ogs_gtp_xact_local_create(
             sgwc_ue->gnode, &h, pkbuf, bearer_timeout, bearer);
-    ogs_expect_or_return(gtp_xact);
+    ogs_expect_or_return_val(gtp_xact, OGS_ERROR);
 
     rv = ogs_gtp_xact_commit(gtp_xact);
     ogs_expect(rv == OGS_OK);
+
+    return rv;
 }

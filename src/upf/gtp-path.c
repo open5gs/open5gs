@@ -119,7 +119,8 @@ static void _gtpv1_tun_recv_cb(short when, ogs_socket_t fd, void *data)
         if (pdr->qer && pdr->qer->qfi)
             report.downlink_data.qfi = pdr->qer->qfi; /* for 5GC */
 
-        upf_pfcp_send_session_report_request(sess, &report);
+        ogs_assert(OGS_OK ==
+            upf_pfcp_send_session_report_request(sess, &report));
     }
 
 cleanup:
@@ -243,7 +244,8 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
                 sess = UPF_SESS(far->sess);
                 ogs_assert(sess);
 
-                upf_pfcp_send_session_report_request(sess, &report);
+                ogs_assert(OGS_OK ==
+                    upf_pfcp_send_session_report_request(sess, &report));
             }
 
         } else {
@@ -353,7 +355,8 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
                 if (pdr->qer && pdr->qer->qfi)
                     report.downlink_data.qfi = pdr->qer->qfi; /* for 5GC */
 
-                upf_pfcp_send_session_report_request(sess, &report);
+                ogs_assert(OGS_OK ==
+                    upf_pfcp_send_session_report_request(sess, &report));
             }
 
         } else if (far->dst_if == OGS_PFCP_INTERFACE_CP_FUNCTION) {

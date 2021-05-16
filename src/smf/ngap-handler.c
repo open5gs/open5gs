@@ -138,9 +138,10 @@ int ngap_handle_pdu_session_resource_setup_response_transfer(
     }
 
     if (far_update) {
-        smf_5gc_pfcp_send_session_modification_request(
+        ogs_assert(OGS_OK ==
+            smf_5gc_pfcp_send_session_modification_request(
                 sess, stream, OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_ACTIVATE,
-                0);
+                0));
     } else {
         /* ACTIVATED Is NOT Included in RESPONSE */
         smf_sbi_send_http_status_no_content(stream);
@@ -223,8 +224,9 @@ int ngap_handle_pdu_session_resource_modify_response_transfer(
             &dl_far->outer_header_creation_len);
     dl_far->outer_header_creation.teid = sess->gnb_n3_teid;
 
-    smf_5gc_pfcp_send_qos_flow_modification_request(
-            qos_flow, stream, OGS_PFCP_MODIFY_ACTIVATE);
+    ogs_assert(OGS_OK ==
+        smf_5gc_pfcp_send_qos_flow_modification_request(
+            qos_flow, stream, OGS_PFCP_MODIFY_ACTIVATE));
 
     rv = OGS_OK;
 
@@ -341,11 +343,12 @@ int ngap_handle_path_switch_request_transfer(
     }
 
     if (far_update) {
-        smf_5gc_pfcp_send_session_modification_request(
+        ogs_assert(OGS_OK ==
+            smf_5gc_pfcp_send_session_modification_request(
                 sess, stream,
                 OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_ACTIVATE|
                 OGS_PFCP_MODIFY_XN_HANDOVER|OGS_PFCP_MODIFY_END_MARKER,
-                0);
+                0));
     } else {
         /* ACTIVATED Is NOT Included in RESPONSE */
         smf_sbi_send_http_status_no_content(stream);
@@ -534,7 +537,8 @@ int ngap_handle_handover_request_ack(
             ogs_error("We found redundant INDIRECT Tunnel");
             ogs_error("It will be automatically removed");
 
-            smf_5gc_pfcp_send_session_modification_request(
+            ogs_assert(OGS_OK ==
+                smf_5gc_pfcp_send_session_modification_request(
                     sess, stream,
                     OGS_PFCP_MODIFY_INDIRECT|
                     /*
@@ -550,15 +554,16 @@ int ngap_handle_handover_request_ack(
                      * ...
                      */
                     OGS_PFCP_MODIFY_REMOVE|OGS_PFCP_MODIFY_CREATE,
-                    0);
+                    0));
         } else {
 
             smf_sess_create_indirect_data_forwarding(sess);
 
-            smf_5gc_pfcp_send_session_modification_request(
+            ogs_assert(OGS_OK ==
+                smf_5gc_pfcp_send_session_modification_request(
                     sess, stream,
                     OGS_PFCP_MODIFY_INDIRECT|OGS_PFCP_MODIFY_CREATE,
-                    0);
+                    0));
         }
     } else {
         ogs_pkbuf_t *n2smbuf = ngap_build_handover_command_transfer(sess);

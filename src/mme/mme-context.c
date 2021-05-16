@@ -2857,9 +2857,10 @@ mme_bearer_t *mme_bearer_find_or_add_by_message(
         bearer = mme_bearer_find_by_ue_ebi(mme_ue, ebi);
         if (!bearer) {
             ogs_error("No Bearer : EBI[%d]", ebi);
-            nas_eps_send_attach_reject(mme_ue,
-                EMM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED,
-                ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
+            ogs_assert(OGS_OK ==
+                nas_eps_send_attach_reject(mme_ue,
+                    EMM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED,
+                    ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED));
             return NULL;
         }
 
@@ -2868,9 +2869,10 @@ mme_bearer_t *mme_bearer_find_or_add_by_message(
 
     if (pti == OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED) {
         ogs_error("Both PTI[%d] and EBI[%d] are 0", pti, ebi);
-        nas_eps_send_attach_reject(mme_ue,
-            EMM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED,
-            ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
+        ogs_assert(OGS_OK ==
+            nas_eps_send_attach_reject(mme_ue,
+                EMM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED,
+                ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED));
         return NULL;
     }
 
@@ -2885,9 +2887,10 @@ mme_bearer_t *mme_bearer_find_or_add_by_message(
         if (!bearer) {
             ogs_error("No Bearer : Linked-EBI[%d]", 
                     linked_eps_bearer_identity->eps_bearer_identity);
-            nas_eps_send_attach_reject(mme_ue,
-                EMM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED,
-                ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
+            ogs_assert(OGS_OK ==
+                nas_eps_send_attach_reject(mme_ue,
+                    EMM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED,
+                    ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED));
             return NULL;
         }
     } else if (message->esm.h.message_type ==
@@ -2903,8 +2906,9 @@ mme_bearer_t *mme_bearer_find_or_add_by_message(
         if (!bearer) {
             ogs_error("No Bearer : Linked-EBI[%d]", 
                     linked_eps_bearer_identity->eps_bearer_identity);
-            nas_eps_send_bearer_resource_allocation_reject(
-                    mme_ue, pti, ESM_CAUSE_INVALID_EPS_BEARER_IDENTITY);
+            ogs_assert(OGS_OK ==
+                nas_eps_send_bearer_resource_allocation_reject(
+                    mme_ue, pti, ESM_CAUSE_INVALID_EPS_BEARER_IDENTITY));
             return NULL;
         }
 
@@ -2921,8 +2925,9 @@ mme_bearer_t *mme_bearer_find_or_add_by_message(
         if (!bearer) {
             ogs_error("No Bearer : Linked-EBI[%d]",
                     linked_eps_bearer_identity->eps_bearer_identity);
-            nas_eps_send_bearer_resource_modification_reject(
-                    mme_ue, pti, ESM_CAUSE_INVALID_EPS_BEARER_IDENTITY);
+            ogs_assert(OGS_OK ==
+                nas_eps_send_bearer_resource_modification_reject(
+                    mme_ue, pti, ESM_CAUSE_INVALID_EPS_BEARER_IDENTITY));
             return NULL;
         }
     }
@@ -2956,9 +2961,10 @@ mme_bearer_t *mme_bearer_find_or_add_by_message(
         if (!sess) {
             ogs_error("No Session : ESM message type[%d], PTI[%d]",
                     message->esm.h.message_type, pti);
-            nas_eps_send_attach_reject(mme_ue,
-                EMM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED,
-                ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
+            ogs_assert(OGS_OK ==
+                nas_eps_send_attach_reject(mme_ue,
+                    EMM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED,
+                    ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED));
             return NULL;
         }
     }

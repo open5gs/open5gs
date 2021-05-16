@@ -140,7 +140,8 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
                 sess = SGWU_SESS(far->sess);
                 ogs_assert(sess);
 
-                sgwu_pfcp_send_session_report_request(sess, &report);
+                ogs_assert(OGS_OK ==
+                    sgwu_pfcp_send_session_report_request(sess, &report));
             }
 
         } else {
@@ -216,7 +217,8 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
             report.downlink_data.pdr_id = pdr->id;
             report.downlink_data.qfi = qfi; /* for 5GC */
 
-            sgwu_pfcp_send_session_report_request(sess, &report);
+            ogs_assert(OGS_OK ==
+                sgwu_pfcp_send_session_report_request(sess, &report));
         }
     } else {
         ogs_error("[DROP] Invalid GTPU Type [%d]", gtp_h->type);

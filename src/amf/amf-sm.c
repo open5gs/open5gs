@@ -546,8 +546,9 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
                 amf_ue = (amf_ue_t *)sbi_object;
                 ogs_assert(amf_ue);
                 ogs_error("[%s] Cannot receive SBI message", amf_ue->suci);
-                nas_5gs_send_gmm_reject_from_sbi(amf_ue,
-                        OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT);
+                ogs_assert(OGS_OK ==
+                    nas_5gs_send_gmm_reject_from_sbi(amf_ue,
+                        OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT));
                 break;
 
             case OGS_SBI_OBJ_SESS_TYPE:
@@ -556,12 +557,15 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
                 ogs_error("[%d:%d] Cannot receive SBI message",
                         sess->psi, sess->pti);
                 if (sess->payload_container_type) {
-                    nas_5gs_send_back_5gsm_message_from_sbi(sess,
-                            OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT);
+                    ogs_assert(OGS_OK ==
+                        nas_5gs_send_back_5gsm_message_from_sbi(sess,
+                            OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT));
                 } else {
-                    ngap_send_error_indication2(amf_ue,
+                    ogs_assert(OGS_OK ==
+                        ngap_send_error_indication2(amf_ue,
                             NGAP_Cause_PR_transport,
-                            NGAP_CauseTransport_transport_resource_unavailable);
+                            NGAP_CauseTransport_transport_resource_unavailable)
+                    );
                 }
                 break;
 
@@ -665,9 +669,10 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
             ogs_fsm_dispatch(&gnb->sm, e);
         } else {
             ogs_error("Cannot decode NGAP message");
-            ngap_send_error_indication(
+            ogs_assert(OGS_OK ==
+                ngap_send_error_indication(
                     gnb, NULL, NULL, NGAP_Cause_PR_protocol, 
-                    NGAP_CauseProtocol_abstract_syntax_error_falsely_constructed_message);
+                    NGAP_CauseProtocol_abstract_syntax_error_falsely_constructed_message));
         }
 
         ogs_ngap_free(&ngap_message);
@@ -772,9 +777,10 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
                 /* De-associate NG with NAS/EMM */
                 ran_ue_deassociate(amf_ue->ran_ue);
 
-                ngap_send_ran_ue_context_release_command(amf_ue->ran_ue,
+                ogs_assert(OGS_OK ==
+                    ngap_send_ran_ue_context_release_command(amf_ue->ran_ue,
                         NGAP_Cause_PR_nas, NGAP_CauseNas_normal_release,
-                        NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE, 0);
+                        NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE, 0));
             }
             amf_ue_associate_ran_ue(amf_ue, ran_ue);
         }

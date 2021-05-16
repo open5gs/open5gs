@@ -487,7 +487,8 @@ bool smf_npcf_smpolicycontrol_handle_create(
     cp2up_pdr->precedence = OGS_PFCP_CP2UP_PDR_PRECEDENCE;
     up2cp_pdr->precedence = OGS_PFCP_UP2CP_PDR_PRECEDENCE;
 
-    smf_5gc_pfcp_send_session_establishment_request(sess, stream);
+    ogs_assert(OGS_OK ==
+        smf_5gc_pfcp_send_session_establishment_request(sess, stream));
 
     return true;
 

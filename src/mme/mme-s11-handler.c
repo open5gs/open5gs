@@ -168,8 +168,9 @@ void mme_s11_handle_create_session_response(
     if (cause_value != OGS_GTP_CAUSE_REQUEST_ACCEPTED) {
         if (sess && SESSION_CONTEXT_IN_ATTACH(sess)) {
             ogs_error("[%s] Attach reject", mme_ue->imsi_bcd);
-            nas_eps_send_attach_reject(mme_ue,
-                EMM_CAUSE_NETWORK_FAILURE, ESM_CAUSE_NETWORK_FAILURE);
+            ogs_assert(OGS_OK ==
+                nas_eps_send_attach_reject(mme_ue,
+                    EMM_CAUSE_NETWORK_FAILURE, ESM_CAUSE_NETWORK_FAILURE));
         }
         mme_send_delete_session_or_mme_ue_context_release(mme_ue);
         return;
@@ -236,16 +237,19 @@ void mme_s11_handle_create_session_response(
         if (csmap) {
             ogs_assert(OGS_PDU_SESSION_TYPE_IS_VALID(
                         session->paa.session_type));
-            sgsap_send_location_update_request(mme_ue);
+            ogs_assert(OGS_OK ==
+                sgsap_send_location_update_request(mme_ue));
         } else {
             ogs_assert(OGS_PDU_SESSION_TYPE_IS_VALID(
                         session->paa.session_type));
-            nas_eps_send_attach_accept(mme_ue);
+            ogs_assert(OGS_OK ==
+                nas_eps_send_attach_accept(mme_ue));
         }
 
     } else {
         ogs_assert(OGS_PDU_SESSION_TYPE_IS_VALID(session->paa.session_type));
-        nas_eps_send_activate_default_bearer_context_request(bearer);
+        ogs_assert(OGS_OK ==
+            nas_eps_send_activate_default_bearer_context_request(bearer));
     }
 }
 
@@ -293,11 +297,13 @@ void mme_s11_handle_modify_bearer_response(
             mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
 
     GTP_COUNTER_CHECK(mme_ue, GTP_COUNTER_MODIFY_BEARER_BY_PATH_SWITCH,
-        s1ap_send_path_switch_ack(mme_ue);
+        ogs_assert(OGS_OK ==
+            s1ap_send_path_switch_ack(mme_ue));
     );
 
     GTP_COUNTER_CHECK(mme_ue, GTP_COUNTER_MODIFY_BEARER_BY_E_RAB_MODIFICATION,
-        s1ap_send_e_rab_modification_confirm(mme_ue);
+        ogs_assert(OGS_OK ==
+            s1ap_send_e_rab_modification_confirm(mme_ue));
     );
 }
 
@@ -344,7 +350,8 @@ void mme_s11_handle_delete_session_response(
 
     } else if (action == OGS_GTP_DELETE_SEND_DETACH_ACCEPT) {
         if (mme_sess_count(mme_ue) == 1) /* Last Session */ {
-            nas_eps_send_detach_accept(mme_ue);
+            ogs_assert(OGS_OK ==
+                nas_eps_send_detach_accept(mme_ue));
         }
 
     } else if (action ==
@@ -352,7 +359,8 @@ void mme_s11_handle_delete_session_response(
         mme_bearer_t *bearer = mme_default_bearer_in_sess(sess);
         ogs_expect_or_return(bearer);
 
-        nas_eps_send_deactivate_bearer_context_request(bearer);
+        ogs_assert(OGS_OK ==
+            nas_eps_send_deactivate_bearer_context_request(bearer));
 
         /*
          * mme_sess_remove() should not be called here.
@@ -368,9 +376,10 @@ void mme_s11_handle_delete_session_response(
 
             enb_ue = enb_ue_cycle(mme_ue->enb_ue);
             if (enb_ue) {
-                s1ap_send_ue_context_release_command(enb_ue,
+                ogs_assert(OGS_OK ==
+                    s1ap_send_ue_context_release_command(enb_ue,
                     S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
-                    S1AP_UE_CTX_REL_UE_CONTEXT_REMOVE, 0);
+                    S1AP_UE_CTX_REL_UE_CONTEXT_REMOVE, 0));
             } else
                 ogs_warn("ENB-S1 Context has already been removed");
         }
@@ -381,9 +390,10 @@ void mme_s11_handle_delete_session_response(
                     &mme_ue->pdn_connectivity_request);
             if (rv != OGS_OK) {
                 ogs_error("nas_eps_send_emm_to_esm() failed");
-                nas_eps_send_attach_reject(mme_ue,
-                    EMM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED,
-                    ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
+                ogs_assert(OGS_OK ==
+                    nas_eps_send_attach_reject(mme_ue,
+                        EMM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED,
+                        ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED));
             }
         }
 
@@ -524,7 +534,8 @@ void mme_s11_handle_create_bearer_request(
         if (ECM_IDLE(mme_ue)) {
             s1ap_send_paging(mme_ue, S1AP_CNDomain_ps);
         } else {
-            nas_eps_send_activate_dedicated_bearer_context_request(bearer);
+            ogs_assert(OGS_OK ==
+                nas_eps_send_activate_dedicated_bearer_context_request(bearer));
         }
     } else {
         /*
@@ -629,9 +640,10 @@ void mme_s11_handle_update_bearer_request(
         if (ECM_IDLE(mme_ue)) {
             s1ap_send_paging(mme_ue, S1AP_CNDomain_ps);
         } else {
-            nas_eps_send_modify_bearer_context_request(bearer,
+            ogs_assert(OGS_OK ==
+                nas_eps_send_modify_bearer_context_request(bearer,
                     req->bearer_contexts.bearer_level_qos.presence,
-                    req->bearer_contexts.tft.presence);
+                    req->bearer_contexts.tft.presence));
         }
     } else {
         ogs_warn("[IGNORE] Update Bearer Request : "
@@ -639,12 +651,14 @@ void mme_s11_handle_update_bearer_request(
 
         if (xact->xid & OGS_GTP_CMD_XACT_ID) {
             /* MME received Bearer Resource Modification Request */
-            nas_eps_send_bearer_resource_modification_reject(
-                    mme_ue, sess->pti, ESM_CAUSE_SERVICE_OPTION_NOT_SUPPORTED);
+            ogs_assert(OGS_OK ==
+                nas_eps_send_bearer_resource_modification_reject(
+                    mme_ue, sess->pti, ESM_CAUSE_SERVICE_OPTION_NOT_SUPPORTED));
         }
 
-        mme_gtp_send_update_bearer_response(
-                bearer, OGS_GTP_CAUSE_REQUEST_ACCEPTED);
+        ogs_assert(OGS_OK ==
+            mme_gtp_send_update_bearer_response(
+                bearer, OGS_GTP_CAUSE_REQUEST_ACCEPTED));
     }
 }
 
@@ -710,7 +724,8 @@ void mme_s11_handle_delete_bearer_request(
     if (ECM_IDLE(mme_ue)) {
         s1ap_send_paging(mme_ue, S1AP_CNDomain_ps);
     } else {
-        nas_eps_send_deactivate_bearer_context_request(bearer);
+        ogs_assert(OGS_OK ==
+            nas_eps_send_deactivate_bearer_context_request(bearer));
     }
 }
 
@@ -763,9 +778,10 @@ void mme_s11_handle_release_access_bearers_response(
     if (action == OGS_GTP_RELEASE_SEND_UE_CONTEXT_RELEASE_COMMAND) {
         enb_ue = enb_ue_cycle(mme_ue->enb_ue);
         if (enb_ue) {
-            s1ap_send_ue_context_release_command(enb_ue,
+            ogs_assert(OGS_OK ==
+                s1ap_send_ue_context_release_command(enb_ue,
                     S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
-                    S1AP_UE_CTX_REL_S1_REMOVE_AND_UNLINK, 0);
+                    S1AP_UE_CTX_REL_S1_REMOVE_AND_UNLINK, 0));
         } else {
             ogs_warn("ENB-S1 Context has already been removed");
         }
@@ -805,7 +821,8 @@ void mme_s11_handle_release_access_bearers_response(
             enb_ue_remove(enb_ue);
 
             if (ogs_list_count(&enb->enb_ue_list) == 0)
-                s1ap_send_s1_reset_ack(enb, NULL);
+                ogs_assert(OGS_OK ==
+                    s1ap_send_s1_reset_ack(enb, NULL));
         } else {
             ogs_warn("ENB-S1 Context has already been removed");
         }
@@ -964,12 +981,14 @@ void mme_s11_handle_downlink_data_notification(
             enb_ue_t *enb_ue = enb_ue_cycle(mme_ue->enb_ue);
             ogs_assert(enb_ue);
 
-            s1ap_send_ue_context_release_command(enb_ue,
+            ogs_assert(OGS_OK ==
+                s1ap_send_ue_context_release_command(enb_ue,
                     S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
-                    S1AP_UE_CTX_REL_S1_PAGING, 0);
+                    S1AP_UE_CTX_REL_S1_PAGING, 0));
         } else {
-            mme_gtp_send_downlink_data_notification_ack(
-                    bearer, OGS_GTP_CAUSE_UE_ALREADY_RE_ATTACHED);
+            ogs_assert(OGS_OK ==
+                mme_gtp_send_downlink_data_notification_ack(
+                    bearer, OGS_GTP_CAUSE_UE_ALREADY_RE_ATTACHED));
         }
     }
 }
@@ -1048,7 +1067,8 @@ void mme_s11_handle_create_indirect_data_forwarding_tunnel_response(
     source_ue = enb_ue_cycle(mme_ue->enb_ue);
     ogs_assert(source_ue);
 
-    s1ap_send_handover_command(source_ue);
+    ogs_assert(OGS_OK ==
+        s1ap_send_handover_command(source_ue));
 }
 
 void mme_s11_handle_delete_indirect_data_forwarding_tunnel_response(
@@ -1097,7 +1117,8 @@ void mme_s11_handle_delete_indirect_data_forwarding_tunnel_response(
     if (action == OGS_GTP_DELETE_INDIRECT_HANDOVER_COMPLETE) {
         /* Nothing to do */
     } else if (action == OGS_GTP_DELETE_INDIRECT_HANDOVER_CANCEL) {
-        s1ap_send_handover_cancel_ack(mme_ue->enb_ue);
+        ogs_assert(OGS_OK ==
+            s1ap_send_handover_cancel_ack(mme_ue->enb_ue));
     } else {
         ogs_fatal("Invalid action = %d", action);
         ogs_assert_if_reached();
@@ -1139,8 +1160,9 @@ void mme_s11_handle_bearer_resource_failure_indication(
     ogs_debug("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
             mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
 
-    nas_eps_send_bearer_resource_modification_reject(
-            mme_ue, sess->pti, esm_cause_from_gtp(cause_value));
+    ogs_assert(OGS_OK ==
+        nas_eps_send_bearer_resource_modification_reject(
+            mme_ue, sess->pti, esm_cause_from_gtp(cause_value)));
 
     if (cause_value == OGS_GTP_CAUSE_CONTEXT_NOT_FOUND) {
         ogs_warn("No Bearer");

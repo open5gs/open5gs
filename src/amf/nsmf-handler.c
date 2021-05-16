@@ -38,8 +38,9 @@ int amf_nsmf_pdusession_handle_create_sm_context(
 
         if (!recvmsg->http.location) {
             ogs_error("[%d:%d] No http.location", sess->psi, sess->pti);
-            nas_5gs_send_back_5gsm_message_from_sbi(sess,
-                    OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR);
+            ogs_assert(OGS_OK ==
+                nas_5gs_send_back_5gsm_message_from_sbi(sess,
+                    OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR));
             return OGS_ERROR;
         }
 
@@ -50,8 +51,9 @@ int amf_nsmf_pdusession_handle_create_sm_context(
         if (rv != OGS_OK) {
             ogs_error("[%d:%d] Cannot parse http.location [%s]",
                     sess->psi, sess->pti, recvmsg->http.location);
-            nas_5gs_send_back_5gsm_message_from_sbi(sess,
-                    OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR);
+            ogs_assert(OGS_OK ==
+                nas_5gs_send_back_5gsm_message_from_sbi(sess,
+                    OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR));
             return OGS_ERROR;
         }
 
@@ -60,8 +62,9 @@ int amf_nsmf_pdusession_handle_create_sm_context(
                     sess->psi, sess->pti, recvmsg->http.location);
 
             ogs_sbi_header_free(&header);
-            nas_5gs_send_back_5gsm_message_from_sbi(sess,
-                    OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR);
+            ogs_assert(OGS_OK ==
+                nas_5gs_send_back_5gsm_message_from_sbi(sess,
+                    OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR));
             return OGS_ERROR;
         }
 
@@ -87,8 +90,9 @@ int amf_nsmf_pdusession_handle_create_sm_context(
                         sess->psi, sess->pti);
 
                 ogs_sbi_header_free(&header);
-                nas_5gs_send_back_5gsm_message_from_sbi(sess,
-                        OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR);
+                ogs_assert(OGS_OK ==
+                    nas_5gs_send_back_5gsm_message_from_sbi(sess,
+                        OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR));
                 return OGS_ERROR;
             }
         }
@@ -107,12 +111,16 @@ int amf_nsmf_pdusession_handle_create_sm_context(
         SmContextCreateError = recvmsg->SmContextCreateError;
         if (!SmContextCreateError) {
             ogs_error("[%d:%d] No SmContextCreateError", sess->psi, sess->pti);
-            nas_5gs_send_back_5gsm_message_from_sbi(sess, recvmsg->res_status);
+            ogs_assert(OGS_OK ==
+                nas_5gs_send_back_5gsm_message_from_sbi(
+                    sess, recvmsg->res_status));
             return OGS_ERROR;
         }
         if (!SmContextCreateError->error) {
             ogs_error("[%d:%d] No Error", sess->psi, sess->pti);
-            nas_5gs_send_back_5gsm_message_from_sbi(sess, recvmsg->res_status);
+            ogs_assert(OGS_OK ==
+                nas_5gs_send_back_5gsm_message_from_sbi(
+                    sess, recvmsg->res_status));
             return OGS_ERROR;
         }
 
@@ -127,14 +135,17 @@ int amf_nsmf_pdusession_handle_create_sm_context(
                  */
                 n1smbuf = ogs_pkbuf_copy(n1smbuf);
                 ogs_assert(n1smbuf);
-                nas_5gs_send_gsm_reject_from_sbi(sess,
-                    OGS_NAS_PAYLOAD_CONTAINER_N1_SM_INFORMATION,
-                    n1smbuf, recvmsg->res_status);
+                ogs_assert(OGS_OK ==
+                    nas_5gs_send_gsm_reject_from_sbi(sess,
+                        OGS_NAS_PAYLOAD_CONTAINER_N1_SM_INFORMATION,
+                        n1smbuf, recvmsg->res_status));
                 return OGS_ERROR;
             }
         }
 
-        nas_5gs_send_back_5gsm_message_from_sbi(sess, recvmsg->res_status);
+        ogs_assert(OGS_OK ==
+            nas_5gs_send_back_5gsm_message_from_sbi(
+                sess, recvmsg->res_status));
         return OGS_ERROR;
     }
 
@@ -199,7 +210,8 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                             AMF_UPDATE_SM_CONTEXT_REGISTRATION_REQUEST)) {
 
                         CLEAR_AMF_UE_TIMER(amf_ue->t3550);
-                        nas_5gs_send_registration_accept(amf_ue);
+                        ogs_assert(OGS_OK ==
+                            nas_5gs_send_registration_accept(amf_ue));
 
                         AMF_UE_CLEAR_N2_TRANSFER(
                                 amf_ue, pdu_session_resource_setup_request);
@@ -213,7 +225,8 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                                 AMF_RELEASE_SM_CONTEXT_SERVICE_ACCEPT) &&
                         SESSION_SYNC_DONE(amf_ue,
                                 AMF_UPDATE_SM_CONTEXT_SERVICE_REQUEST)) {
-                        nas_5gs_send_service_accept(amf_ue);
+                        ogs_assert(OGS_OK ==
+                            nas_5gs_send_service_accept(amf_ue));
 
                         AMF_UE_CLEAR_N2_TRANSFER(
                                 amf_ue, pdu_session_resource_setup_request);
@@ -224,7 +237,8 @@ int amf_nsmf_pdusession_handle_update_sm_context(
 
                     if (SESSION_SYNC_DONE(amf_ue,
                                 AMF_UPDATE_SM_CONTEXT_HANDOVER_REQUIRED)) {
-                        ngap_send_handover_request(amf_ue);
+                        ogs_assert(OGS_OK ==
+                            ngap_send_handover_request(amf_ue));
 
                         AMF_UE_CLEAR_N2_TRANSFER(amf_ue, handover_request);
                     }
@@ -238,16 +252,18 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                 if (!n1smbuf) {
                     ogs_error("[%s:%d] No N1 SM Content [%s]",
                             amf_ue->supi, sess->psi, n1SmMsg->content_id);
-                    nas_5gs_send_back_5gsm_message(sess,
-                            OGS_5GMM_CAUSE_SEMANTICALLY_INCORRECT_MESSAGE);
+                    ogs_assert(OGS_OK ==
+                        nas_5gs_send_back_5gsm_message(sess,
+                            OGS_5GMM_CAUSE_SEMANTICALLY_INCORRECT_MESSAGE));
                     return OGS_ERROR;
                 }
 
                 if (!n2smbuf) {
                     ogs_error("[%s:%d] No N2 SM Content",
                             amf_ue->supi, sess->psi);
-                    nas_5gs_send_back_5gsm_message(sess,
-                            OGS_5GMM_CAUSE_SEMANTICALLY_INCORRECT_MESSAGE);
+                    ogs_assert(OGS_OK ==
+                        nas_5gs_send_back_5gsm_message(sess,
+                            OGS_5GMM_CAUSE_SEMANTICALLY_INCORRECT_MESSAGE));
                     return OGS_ERROR;
                 }
 
@@ -261,16 +277,19 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                 n2smbuf = ogs_pkbuf_copy(n2smbuf);
                 ogs_assert(n2smbuf);
 
-                nas_send_pdu_session_release_command(sess, n1smbuf, n2smbuf);
+                ogs_assert(OGS_OK ==
+                    nas_send_pdu_session_release_command(
+                        sess, n1smbuf, n2smbuf));
                 break;
 
             case OpenAPI_n2_sm_info_type_PATH_SWITCH_REQ_ACK:
                 if (!n2smbuf) {
                     ogs_error("[%s:%d] No N2 SM Content",
                             amf_ue->supi, sess->psi);
-                    ngap_send_error_indication2(amf_ue,
+                    ogs_assert(OGS_OK ==
+                        ngap_send_error_indication2(amf_ue,
                             NGAP_Cause_PR_protocol,
-                            NGAP_CauseProtocol_semantic_error);
+                            NGAP_CauseProtocol_semantic_error));
                     return OGS_ERROR;
                 }
 
@@ -279,7 +298,8 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                         ogs_pkbuf_copy(n2smbuf));
 
                 if (SESSION_SYNC_DONE(amf_ue, state)) {
-                    ngap_send_path_switch_ack(sess);
+                    ogs_assert(OGS_OK ==
+                        ngap_send_path_switch_ack(sess));
 
                     AMF_UE_CLEAR_N2_TRANSFER(amf_ue, path_switch_request_ack);
                 }
@@ -289,9 +309,10 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                 if (!n2smbuf) {
                     ogs_error("[%s:%d] No N2 SM Content",
                             amf_ue->supi, sess->psi);
-                    ngap_send_error_indication2(amf_ue,
+                    ogs_assert(OGS_OK ==
+                        ngap_send_error_indication2(amf_ue,
                             NGAP_Cause_PR_protocol,
-                            NGAP_CauseProtocol_semantic_error);
+                            NGAP_CauseProtocol_semantic_error));
                     return OGS_ERROR;
                 }
 
@@ -299,7 +320,8 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                         sess, handover_command, ogs_pkbuf_copy(n2smbuf));
 
                 if (SESSION_SYNC_DONE(amf_ue, state)) {
-                    ngap_send_handover_command(amf_ue);
+                    ogs_assert(OGS_OK ==
+                        ngap_send_handover_command(amf_ue));
 
                     AMF_UE_CLEAR_N2_TRANSFER(amf_ue, handover_command);
                 }
@@ -308,8 +330,10 @@ int amf_nsmf_pdusession_handle_update_sm_context(
             default:
                 ogs_error("Not implemented [%d]",
                         SmContextUpdatedData->n2_sm_info_type);
-                ngap_send_error_indication2(amf_ue,
-                    NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
+                ogs_assert(OGS_OK ==
+                    ngap_send_error_indication2(amf_ue,
+                        NGAP_Cause_PR_protocol,
+                        NGAP_CauseProtocol_semantic_error));
             }
 
         } else {
@@ -350,9 +374,11 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                 if (SESSION_SYNC_DONE(amf_ue, state)) {
                     ogs_assert(amf_ue->deactivation.group);
 
-                    ngap_send_amf_ue_context_release_command(amf_ue,
-                        amf_ue->deactivation.group, amf_ue->deactivation.cause,
-                        NGAP_UE_CTX_REL_NG_REMOVE_AND_UNLINK, 0);
+                    ogs_assert(OGS_OK ==
+                        ngap_send_amf_ue_context_release_command(amf_ue,
+                            amf_ue->deactivation.group,
+                            amf_ue->deactivation.cause,
+                            NGAP_UE_CTX_REL_NG_REMOVE_AND_UNLINK, 0));
                 }
 
             } else if (state == AMF_UPDATE_SM_CONTEXT_REGISTRATION_REQUEST) {
@@ -429,10 +455,11 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                     target_ue = source_ue->target_ue;
                     ogs_assert(target_ue);
 
-                    ngap_send_ran_ue_context_release_command(target_ue,
+                    ogs_assert(OGS_OK ==
+                        ngap_send_ran_ue_context_release_command(target_ue,
                             NGAP_Cause_PR_radioNetwork,
                             NGAP_CauseRadioNetwork_handover_cancelled,
-                            NGAP_UE_CTX_REL_NG_HANDOVER_CANCEL, 0);
+                            NGAP_UE_CTX_REL_NG_HANDOVER_CANCEL, 0));
                 }
 
             } else if (state == AMF_UPDATE_SM_CONTEXT_HANDOVER_NOTIFY) {
@@ -468,7 +495,8 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                         ran_ue_remove(ran_ue);
 
                         if (ogs_list_count(&gnb->ran_ue_list) == 0)
-                            ngap_send_ng_reset_ack(gnb, NULL);
+                            ogs_assert(OGS_OK ==
+                                ngap_send_ng_reset_ack(gnb, NULL));
 
                     } else {
                         ogs_warn("[%s] RAN-NG Context has already been removed",
@@ -552,15 +580,17 @@ int amf_nsmf_pdusession_handle_update_sm_context(
         if (!SmContextUpdateError) {
             ogs_error("[%d:%d] No SmContextUpdateError [%d]",
                     sess->psi, sess->pti, recvmsg->res_status);
-            ngap_send_error_indication2(amf_ue,
-                    NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
+            ogs_assert(OGS_OK ==
+                ngap_send_error_indication2(amf_ue,
+                    NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error));
             return OGS_ERROR;
         }
         if (!SmContextUpdateError->error) {
             ogs_error("[%d:%d] No Error [%d]",
                     sess->psi, sess->pti, recvmsg->res_status);
-            ngap_send_error_indication2(amf_ue,
-                    NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
+            ogs_assert(OGS_OK ==
+                ngap_send_error_indication2(amf_ue,
+                    NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error));
             return OGS_ERROR;
         }
 
@@ -575,9 +605,10 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                  */
                 n1smbuf = ogs_pkbuf_copy(n1smbuf);
                 ogs_assert(n1smbuf);
-                nas_5gs_send_gsm_reject_from_sbi(sess,
-                    OGS_NAS_PAYLOAD_CONTAINER_N1_SM_INFORMATION,
-                    n1smbuf, recvmsg->res_status);
+                ogs_assert(OGS_OK ==
+                    nas_5gs_send_gsm_reject_from_sbi(sess,
+                        OGS_NAS_PAYLOAD_CONTAINER_N1_SM_INFORMATION,
+                        n1smbuf, recvmsg->res_status));
                 return OGS_ERROR;
             }
         }
@@ -586,8 +617,9 @@ int amf_nsmf_pdusession_handle_update_sm_context(
         n2SmInfo = SmContextUpdateError->n2_sm_info;
         if (!n2SmInfo || !n2SmInfo->content_id) {
             ogs_error("[%d:%d] No N2 SM Message", sess->psi, sess->pti);
-            ngap_send_error_indication2(amf_ue,
-                    NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
+            ogs_assert(OGS_OK ==
+                ngap_send_error_indication2(amf_ue,
+                    NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error));
             return OGS_ERROR;
         }
 
@@ -596,16 +628,18 @@ int amf_nsmf_pdusession_handle_update_sm_context(
         if (!n2smbuf) {
             ogs_error("[%d:%d] No N2 SM Content [%s]",
                     sess->psi, sess->pti, n2SmInfo->content_id);
-            ngap_send_error_indication2(amf_ue,
-                    NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
+            ogs_assert(OGS_OK ==
+                ngap_send_error_indication2(amf_ue,
+                    NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error));
             return OGS_ERROR;
         }
 #endif
 
         ogs_error("[%d:%d] HTTP response error [%d]",
                 sess->psi, sess->pti, recvmsg->res_status);
-        ngap_send_error_indication2(amf_ue,
-                NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
+        ogs_assert(OGS_OK ==
+            ngap_send_error_indication2(amf_ue,
+                NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error));
 
         return OGS_ERROR;
     }
@@ -635,7 +669,8 @@ int amf_nsmf_pdusession_handle_release_sm_context(amf_sess_t *sess, int state)
                 amf_ue, AMF_UPDATE_SM_CONTEXT_REGISTRATION_REQUEST))
 
             CLEAR_AMF_UE_TIMER(amf_ue->t3550);
-            nas_5gs_send_registration_accept(amf_ue);
+            ogs_assert(OGS_OK ==
+                nas_5gs_send_registration_accept(amf_ue));
 
     } else if (state == AMF_RELEASE_SM_CONTEXT_SERVICE_ACCEPT) {
         /*
@@ -645,7 +680,8 @@ int amf_nsmf_pdusession_handle_release_sm_context(amf_sess_t *sess, int state)
          */
         if (SESSION_SYNC_DONE(amf_ue, AMF_RELEASE_SM_CONTEXT_SERVICE_ACCEPT) &&
             SESSION_SYNC_DONE(amf_ue, AMF_UPDATE_SM_CONTEXT_SERVICE_REQUEST))
-            nas_5gs_send_service_accept(amf_ue);
+            ogs_assert(OGS_OK ==
+                nas_5gs_send_service_accept(amf_ue));
 
     } else {
 
@@ -658,9 +694,10 @@ int amf_nsmf_pdusession_handle_release_sm_context(amf_sess_t *sess, int state)
                  * 3. UE Context release command
                  * 4. UE Context release complete
                  */
-                ngap_send_amf_ue_context_release_command(amf_ue,
+                ogs_assert(OGS_OK ==
+                    ngap_send_amf_ue_context_release_command(amf_ue,
                         NGAP_Cause_PR_nas, NGAP_CauseNas_normal_release,
-                        NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE, 0);
+                        NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE, 0));
 
             } else if (state == AMF_RELEASE_SM_CONTEXT_REGISTRATION_ACCEPT) {
 
@@ -694,7 +731,8 @@ int amf_nsmf_pdusession_handle_release_sm_context(amf_sess_t *sess, int state)
                      * 7. UEContextReleaseComplete
                      */
 
-                    nas_5gs_send_de_registration_accept(amf_ue);
+                    ogs_assert(OGS_OK ==
+                        nas_5gs_send_de_registration_accept(amf_ue));
 
                 } else if (OGS_FSM_CHECK(&amf_ue->sm, gmm_state_registered)) {
                     /*
@@ -715,9 +753,10 @@ int amf_nsmf_pdusession_handle_release_sm_context(amf_sess_t *sess, int state)
                      * 3. UE Context release command
                      * 4. UE Context release complete
                      */
-                    ngap_send_amf_ue_context_release_command(amf_ue,
+                    ogs_assert(OGS_OK ==
+                        ngap_send_amf_ue_context_release_command(amf_ue,
                             NGAP_Cause_PR_nas, NGAP_CauseNas_normal_release,
-                            NGAP_UE_CTX_REL_UE_CONTEXT_REMOVE, 0);
+                            NGAP_UE_CTX_REL_UE_CONTEXT_REMOVE, 0));
 
                 } else if (OGS_FSM_CHECK(&amf_ue->sm,
                                 gmm_state_initial_context_setup)) {

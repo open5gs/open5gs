@@ -29,16 +29,16 @@ extern "C" {
 int upf_pfcp_open(void);
 void upf_pfcp_close(void);
 
-void upf_pfcp_send_session_establishment_response(
+int upf_pfcp_send_session_establishment_response(
         ogs_pfcp_xact_t *xact, upf_sess_t *sess,
         ogs_pfcp_pdr_t *created_pdr[], int num_of_created_pdr);
-void upf_pfcp_send_session_modification_response(
+int upf_pfcp_send_session_modification_response(
         ogs_pfcp_xact_t *xact, upf_sess_t *sess,
         ogs_pfcp_pdr_t *created_pdr[], int num_of_created_pdr);
-void upf_pfcp_send_session_deletion_response(ogs_pfcp_xact_t *xact,
+int upf_pfcp_send_session_deletion_response(ogs_pfcp_xact_t *xact,
         upf_sess_t *sess);
 
-void upf_pfcp_send_session_report_request(
+int upf_pfcp_send_session_report_request(
         upf_sess_t *sess, ogs_pfcp_user_plane_report_t *report);
 
 #ifdef __cplusplus

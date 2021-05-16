@@ -117,10 +117,12 @@ void esm_state_inactive(ogs_fsm_t *s, mme_event_t *e)
             ogs_debug("    IMSI[%s] PTI[%d] EBI[%d]",
                     mme_ue->imsi_bcd, sess->pti, bearer->ebi);
             if (MME_HAVE_SGW_S1U_PATH(sess)) {
-                mme_gtp_send_delete_session_request(sess,
-                    OGS_GTP_DELETE_SEND_DEACTIVATE_BEARER_CONTEXT_REQUEST);
+                ogs_assert(OGS_OK ==
+                    mme_gtp_send_delete_session_request(sess,
+                    OGS_GTP_DELETE_SEND_DEACTIVATE_BEARER_CONTEXT_REQUEST));
             } else {
-                nas_eps_send_deactivate_bearer_context_request(bearer);
+                ogs_assert(OGS_OK ==
+                    nas_eps_send_deactivate_bearer_context_request(bearer));
             }
             OGS_FSM_TRAN(s, esm_state_pdn_will_disconnect);
             break;
@@ -134,26 +136,30 @@ void esm_state_inactive(ogs_fsm_t *s, mme_event_t *e)
             h.type = e->nas_type;
             if (h.integrity_protected == 0) {
                 ogs_error("[%s] No Integrity Protected", mme_ue->imsi_bcd);
-                nas_eps_send_attach_reject(mme_ue,
-                    EMM_CAUSE_SECURITY_MODE_REJECTED_UNSPECIFIED,
-                    ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
+                ogs_assert(OGS_OK ==
+                    nas_eps_send_attach_reject(mme_ue,
+                        EMM_CAUSE_SECURITY_MODE_REJECTED_UNSPECIFIED,
+                        ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED));
                 ogs_assert(mme_ue->enb_ue);
-                s1ap_send_ue_context_release_command(mme_ue->enb_ue,
+                ogs_assert(OGS_OK ==
+                    s1ap_send_ue_context_release_command(mme_ue->enb_ue,
                         S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
-                        S1AP_UE_CTX_REL_UE_CONTEXT_REMOVE, 0);
+                        S1AP_UE_CTX_REL_UE_CONTEXT_REMOVE, 0));
                 OGS_FSM_TRAN(s, &esm_state_exception);
                 break;
             }
 
             if (!SECURITY_CONTEXT_IS_VALID(mme_ue)) {
                 ogs_warn("[%s] No Security Context", mme_ue->imsi_bcd);
-                nas_eps_send_attach_reject(mme_ue,
-                    EMM_CAUSE_SECURITY_MODE_REJECTED_UNSPECIFIED,
-                    ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
+                ogs_assert(OGS_OK ==
+                    nas_eps_send_attach_reject(mme_ue,
+                        EMM_CAUSE_SECURITY_MODE_REJECTED_UNSPECIFIED,
+                        ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED));
                 ogs_assert(mme_ue->enb_ue);
-                s1ap_send_ue_context_release_command(mme_ue->enb_ue,
+                ogs_assert(OGS_OK ==
+                    s1ap_send_ue_context_release_command(mme_ue->enb_ue,
                         S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
-                        S1AP_UE_CTX_REL_UE_CONTEXT_REMOVE, 0);
+                        S1AP_UE_CTX_REL_UE_CONTEXT_REMOVE, 0));
                 OGS_FSM_TRAN(s, &esm_state_exception);
                 break;
             }
@@ -172,7 +178,8 @@ void esm_state_inactive(ogs_fsm_t *s, mme_event_t *e)
             /* Check if Initial Context Setup Response or 
              *          E-RAB Setup Response is received */
             if (MME_HAVE_ENB_S1U_PATH(bearer)) {
-                mme_gtp_send_modify_bearer_request(bearer, 0);
+                ogs_assert(OGS_OK ==
+                    mme_gtp_send_modify_bearer_request(bearer, 0));
             }
 
             nas_eps_send_activate_all_dedicated_bearers(bearer);
@@ -185,8 +192,9 @@ void esm_state_inactive(ogs_fsm_t *s, mme_event_t *e)
             /* Check if Initial Context Setup Response or 
              *          E-RAB Setup Response is received */
             if (MME_HAVE_ENB_S1U_PATH(bearer)) {
-                mme_gtp_send_create_bearer_response(
-                        bearer, OGS_GTP_CAUSE_REQUEST_ACCEPTED);
+                ogs_assert(OGS_OK ==
+                    mme_gtp_send_create_bearer_response(
+                        bearer, OGS_GTP_CAUSE_REQUEST_ACCEPTED));
             }
 
             OGS_FSM_TRAN(s, esm_state_active);
@@ -198,9 +206,10 @@ void esm_state_inactive(ogs_fsm_t *s, mme_event_t *e)
             activate_dedicated_eps_bearer_context_reject =
                 &message->esm.activate_dedicated_eps_bearer_context_reject;
             ogs_assert(activate_dedicated_eps_bearer_context_reject);
-            mme_gtp_send_create_bearer_response(bearer,
+            ogs_assert(OGS_OK ==
+                mme_gtp_send_create_bearer_response(bearer,
                 gtp_cause_from_esm(
-                    activate_dedicated_eps_bearer_context_reject->esm_cause));
+                    activate_dedicated_eps_bearer_context_reject->esm_cause)));
             OGS_FSM_TRAN(s, esm_state_bearer_deactivated);
             break;
         default:
@@ -218,11 +227,13 @@ void esm_state_inactive(ogs_fsm_t *s, mme_event_t *e)
                         mme_ue->imsi_bcd);
                 OGS_FSM_TRAN(&bearer->sm, &esm_state_exception);
 
-                nas_eps_send_pdn_connectivity_reject(sess,
-                    ESM_CAUSE_ESM_INFORMATION_NOT_RECEIVED);
+                ogs_assert(OGS_OK ==
+                    nas_eps_send_pdn_connectivity_reject(sess,
+                        ESM_CAUSE_ESM_INFORMATION_NOT_RECEIVED));
             } else {
                 bearer->t3489.retry_count++;
-                nas_eps_send_esm_information_request(bearer);
+                ogs_assert(OGS_OK ==
+                    nas_eps_send_esm_information_request(bearer));
             }
             break;
         default:
@@ -285,10 +296,12 @@ void esm_state_active(ogs_fsm_t *s, mme_event_t *e)
             ogs_debug("    IMSI[%s] PTI[%d] EBI[%d]",
                     mme_ue->imsi_bcd, sess->pti, bearer->ebi);
             if (MME_HAVE_SGW_S1U_PATH(sess)) {
-                mme_gtp_send_delete_session_request(sess,
-                    OGS_GTP_DELETE_SEND_DEACTIVATE_BEARER_CONTEXT_REQUEST);
+                ogs_assert(OGS_OK ==
+                    mme_gtp_send_delete_session_request(sess,
+                    OGS_GTP_DELETE_SEND_DEACTIVATE_BEARER_CONTEXT_REQUEST));
             } else {
-                nas_eps_send_deactivate_bearer_context_request(bearer);
+                ogs_assert(OGS_OK ==
+                    nas_eps_send_deactivate_bearer_context_request(bearer));
             }
             OGS_FSM_TRAN(s, esm_state_pdn_will_disconnect);
             break;
@@ -297,16 +310,18 @@ void esm_state_active(ogs_fsm_t *s, mme_event_t *e)
             ogs_debug("    IMSI[%s] PTI[%d] EBI[%d]",
                     mme_ue->imsi_bcd, sess->pti, bearer->ebi);
 
-            mme_gtp_send_update_bearer_response(
-                    bearer, OGS_GTP_CAUSE_REQUEST_ACCEPTED);
+            ogs_assert(OGS_OK ==
+                mme_gtp_send_update_bearer_response(
+                    bearer, OGS_GTP_CAUSE_REQUEST_ACCEPTED));
             break;
         case OGS_NAS_EPS_DEACTIVATE_EPS_BEARER_CONTEXT_ACCEPT:
             ogs_debug("Deactivate EPS bearer "
                     "context accept");
             ogs_debug("    IMSI[%s] PTI[%d] EBI[%d]",
                     mme_ue->imsi_bcd, sess->pti, bearer->ebi);
-            mme_gtp_send_delete_bearer_response(
-                    bearer, OGS_GTP_CAUSE_REQUEST_ACCEPTED);
+            ogs_assert(OGS_OK ==
+                mme_gtp_send_delete_bearer_response(
+                    bearer, OGS_GTP_CAUSE_REQUEST_ACCEPTED));
             OGS_FSM_TRAN(s, esm_state_bearer_deactivated);
             break;
         case OGS_NAS_EPS_BEARER_RESOURCE_ALLOCATION_REQUEST:

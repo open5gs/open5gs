@@ -157,8 +157,9 @@ void upf_n4_handle_session_establishment_request(
         }
     }
 
-    upf_pfcp_send_session_establishment_response(
-            xact, sess, created_pdr, num_of_created_pdr);
+    ogs_assert(OGS_OK ==
+        upf_pfcp_send_session_establishment_response(
+            xact, sess, created_pdr, num_of_created_pdr));
     return;
 
 cleanup:
@@ -370,8 +371,9 @@ void upf_n4_handle_session_modification_request(
         }
     }
 
-    upf_pfcp_send_session_modification_response(
-            xact, sess, created_pdr, num_of_created_pdr);
+    ogs_assert(OGS_OK ==
+        upf_pfcp_send_session_modification_response(
+            xact, sess, created_pdr, num_of_created_pdr));
     return;
 
 cleanup:

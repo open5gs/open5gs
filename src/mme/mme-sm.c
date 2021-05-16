@@ -239,9 +239,10 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
             ogs_fsm_dispatch(&enb->sm, e);
         } else {
             ogs_warn("Cannot decode S1AP message");
-            s1ap_send_error_indication(
+            ogs_assert(OGS_OK ==
+                s1ap_send_error_indication(
                     enb, NULL, NULL, S1AP_Cause_PR_protocol, 
-                    S1AP_CauseProtocol_abstract_syntax_error_falsely_constructed_message);
+                    S1AP_CauseProtocol_abstract_syntax_error_falsely_constructed_message));
         }
 
         ogs_s1ap_free(&s1ap_message);
@@ -330,9 +331,10 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
                 /* De-associate S1 with NAS/EMM */
                 enb_ue_deassociate(mme_ue->enb_ue);
 
-                s1ap_send_ue_context_release_command(mme_ue->enb_ue,
+                ogs_assert(OGS_OK ==
+                    s1ap_send_ue_context_release_command(mme_ue->enb_ue,
                         S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
-                        S1AP_UE_CTX_REL_S1_CONTEXT_REMOVE, 0);
+                        S1AP_UE_CTX_REL_S1_CONTEXT_REMOVE, 0));
             }
             mme_ue_associate_enb_ue(mme_ue, enb_ue);
         }
@@ -446,15 +448,17 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
 
             ogs_info("[%s] Attach reject [EMM_CAUSE:%d]",
                     mme_ue->imsi_bcd, emm_cause);
-            nas_eps_send_attach_reject(mme_ue,
-                emm_cause, ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
+            ogs_assert(OGS_OK ==
+                nas_eps_send_attach_reject(mme_ue,
+                    emm_cause, ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED));
 
             enb_ue = enb_ue_cycle(mme_ue->enb_ue);
             ogs_assert(enb_ue);
 
-            s1ap_send_ue_context_release_command(enb_ue,
+            ogs_assert(OGS_OK ==
+                s1ap_send_ue_context_release_command(enb_ue,
                     S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
-                    S1AP_UE_CTX_REL_UE_CONTEXT_REMOVE, 0);
+                    S1AP_UE_CTX_REL_UE_CONTEXT_REMOVE, 0));
 
             ogs_subscription_data_free(
                     &s6a_message->ula_message.subscription_data);
@@ -474,13 +478,15 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
                         &mme_ue->pdn_connectivity_request);
                 if (rv != OGS_OK) {
                     ogs_error("nas_eps_send_emm_to_esm() failed");
-                    nas_eps_send_attach_reject(mme_ue,
+                    ogs_assert(OGS_OK ==
+                        nas_eps_send_attach_reject(mme_ue,
                         EMM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED,
-                        ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
+                        ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED));
                 }
             } else if (mme_ue->nas_eps.type == MME_EPS_TYPE_TAU_REQUEST) {
-                nas_eps_send_tau_accept(mme_ue,
-                        S1AP_ProcedureCode_id_InitialContextSetup);
+                ogs_assert(OGS_OK ==
+                    nas_eps_send_tau_accept(mme_ue,
+                        S1AP_ProcedureCode_id_InitialContextSetup));
             } else if (mme_ue->nas_eps.type == MME_EPS_TYPE_SERVICE_REQUEST) {
                 ogs_error("[%s] Service request", mme_ue->imsi_bcd);
             } else if (mme_ue->nas_eps.type ==

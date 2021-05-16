@@ -81,7 +81,8 @@ static void sess_timeout(ogs_gtp_xact_t *xact, void *data)
                     sgwc_ue->imsi_bcd);
             break;
         }
-        sgwc_pfcp_send_session_deletion_request(sess, NULL, NULL);
+        ogs_assert(OGS_OK ==
+            sgwc_pfcp_send_session_deletion_request(sess, NULL, NULL));
         break;
     default:
         ogs_error("GTP Timeout : IMSI[%s] Message-Type[%d]",
@@ -112,9 +113,10 @@ static void bearer_timeout(ogs_gtp_xact_t *xact, void *data)
             ogs_warn("[%s] Bearer has already been removed", sgwc_ue->imsi_bcd);
             break;
         }
-        sgwc_pfcp_send_bearer_modification_request(
+        ogs_assert(OGS_OK ==
+            sgwc_pfcp_send_bearer_modification_request(
                 bearer, NULL, NULL,
-                OGS_PFCP_MODIFY_UL_ONLY|OGS_PFCP_MODIFY_REMOVE);
+                OGS_PFCP_MODIFY_UL_ONLY|OGS_PFCP_MODIFY_REMOVE));
         break;
     default:
         ogs_error("GTP Timeout : IMSI[%s] Message-Type[%d]",
@@ -962,8 +964,9 @@ void sgwc_sxa_handle_session_modification_response(
                 bearer = pfcp_xact->assoc_xact;
                 ogs_assert(bearer);
 
-                sgwc_gtp_send_downlink_data_notification(
-                    OGS_GTP_CAUSE_ERROR_INDICATION_RECEIVED, bearer);
+                ogs_assert(OGS_OK ==
+                    sgwc_gtp_send_downlink_data_notification(
+                        OGS_GTP_CAUSE_ERROR_INDICATION_RECEIVED, bearer));
 
             } else {
                 ogs_gtp_release_access_bearers_response_t *gtp_rsp = NULL;
@@ -1123,8 +1126,9 @@ void sgwc_sxa_handle_session_report_request(
         return;
     }
 
-    sgwc_pfcp_send_session_report_response(
-            pfcp_xact, sess, OGS_PFCP_CAUSE_REQUEST_ACCEPTED);
+    ogs_assert(OGS_OK ==
+        sgwc_pfcp_send_session_report_response(
+            pfcp_xact, sess, OGS_PFCP_CAUSE_REQUEST_ACCEPTED));
 
     report_type.value = pfcp_req->report_type.u8;
 
@@ -1145,8 +1149,9 @@ void sgwc_sxa_handle_session_report_request(
             ogs_list_for_each(&bearer->tunnel_list, tunnel) {
                 ogs_assert(tunnel->pdr);
                 if (tunnel->pdr->id == pdr_id) {
-                    sgwc_gtp_send_downlink_data_notification(
-                        OGS_GTP_CAUSE_INVALID_VALUE, bearer);
+                    ogs_assert(OGS_OK ==
+                        sgwc_gtp_send_downlink_data_notification(
+                            OGS_GTP_CAUSE_INVALID_VALUE, bearer));
                     return;
                 }
             }
@@ -1164,13 +1169,14 @@ void sgwc_sxa_handle_session_report_request(
 
             sess->state.release_access_bearers = false;
 
-            sgwc_pfcp_send_sess_modification_request(sess,
-            /* We only use the `assoc_xact` parameter temporarily here
-             * to pass the `bearer` context. */
+            ogs_assert(OGS_OK ==
+                sgwc_pfcp_send_sess_modification_request(sess,
+                /* We only use the `assoc_xact` parameter temporarily here
+                 * to pass the `bearer` context. */
                     (ogs_gtp_xact_t *)bearer,
                     NULL,
                     OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_DEACTIVATE|
-                    OGS_PFCP_MODIFY_ERROR_INDICATION);
+                    OGS_PFCP_MODIFY_ERROR_INDICATION));
         }
 
     } else {

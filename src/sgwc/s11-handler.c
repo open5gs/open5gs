@@ -43,7 +43,8 @@ static void sess_timeout(ogs_gtp_xact_t *xact, void *data)
                     sgwc_ue->imsi_bcd);
             break;
         }
-        sgwc_pfcp_send_session_deletion_request(sess, NULL, NULL);
+        ogs_assert(OGS_OK ==
+            sgwc_pfcp_send_session_deletion_request(sess, NULL, NULL));
         break;
     default:
         ogs_error("GTP Timeout : IMSI[%s] Message-Type[%d]",
@@ -262,7 +263,8 @@ void sgwc_s11_handle_create_session_request(
     ogs_debug("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
         sgwc_ue->mme_s11_teid, sgwc_ue->sgw_s11_teid);
 
-    sgwc_pfcp_send_session_establishment_request(sess, s11_xact, gtpbuf);
+    ogs_assert(OGS_OK ==
+        sgwc_pfcp_send_session_establishment_request(sess, s11_xact, gtpbuf));
 }
 
 void sgwc_s11_handle_modify_bearer_request(
@@ -403,8 +405,9 @@ void sgwc_s11_handle_modify_bearer_request(
     ogs_debug("    ENB_S1U_TEID[%d] SGW_S1U_TEID[%d]",
         dl_tunnel->remote_teid, dl_tunnel->local_teid);
 
-    sgwc_pfcp_send_bearer_modification_request(
-            bearer, s11_xact, gtpbuf, flags);
+    ogs_assert(OGS_OK ==
+        sgwc_pfcp_send_bearer_modification_request(
+            bearer, s11_xact, gtpbuf, flags));
 }
 
 void sgwc_s11_handle_delete_session_request(
@@ -577,9 +580,10 @@ void sgwc_s11_handle_create_bearer_response(
     }
 
     if (cause_value != OGS_GTP_CAUSE_REQUEST_ACCEPTED) {
-        sgwc_pfcp_send_bearer_modification_request(
+        ogs_assert(OGS_OK ==
+            sgwc_pfcp_send_bearer_modification_request(
                 bearer, NULL, NULL,
-                OGS_PFCP_MODIFY_UL_ONLY|OGS_PFCP_MODIFY_REMOVE);
+                OGS_PFCP_MODIFY_UL_ONLY|OGS_PFCP_MODIFY_REMOVE));
         ogs_gtp_send_error_message(s5c_xact, sess ? sess->pgw_s5c_teid : 0,
                 OGS_GTP_CREATE_BEARER_RESPONSE_TYPE, cause_value);
         return;
@@ -636,9 +640,10 @@ void sgwc_s11_handle_create_bearer_response(
             ogs_plmn_id_hexdump(&sgwc_ue->e_cgi.plmn_id),
             sgwc_ue->e_cgi.cell_id);
 
-    sgwc_pfcp_send_bearer_modification_request(
+    ogs_assert(OGS_OK ==
+        sgwc_pfcp_send_bearer_modification_request(
             bearer, s5c_xact, gtpbuf,
-            OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_CREATE);
+            OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_CREATE));
 }
 
 void sgwc_s11_handle_update_bearer_response(
@@ -824,8 +829,9 @@ void sgwc_s11_handle_delete_bearer_response(
     ogs_debug("    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]",
         sess->sgw_s5c_teid, sess->pgw_s5c_teid);
 
-    sgwc_pfcp_send_bearer_modification_request(
-            bearer, s5c_xact, gtpbuf, OGS_PFCP_MODIFY_REMOVE);
+    ogs_assert(OGS_OK ==
+        sgwc_pfcp_send_bearer_modification_request(
+            bearer, s5c_xact, gtpbuf, OGS_PFCP_MODIFY_REMOVE));
 }
 
 void sgwc_s11_handle_release_access_bearers_request(
@@ -867,9 +873,10 @@ void sgwc_s11_handle_release_access_bearers_request(
     ogs_list_for_each(&sgwc_ue->sess_list, sess) {
 
         sess->state.release_access_bearers = false;
-        sgwc_pfcp_send_sess_modification_request(
+        ogs_assert(OGS_OK ==
+            sgwc_pfcp_send_sess_modification_request(
                 sess, s11_xact, gtpbuf,
-                OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_DEACTIVATE);
+                OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_DEACTIVATE));
     }
 }
 
@@ -1042,9 +1049,10 @@ void sgwc_s11_handle_create_indirect_data_forwarding_tunnel_request(
     ogs_list_for_each(&sgwc_ue->sess_list, sess) {
 
         sess->state.create_indirect_tunnel = false;
-        sgwc_pfcp_send_sess_modification_request(
+        ogs_assert(OGS_OK ==
+            sgwc_pfcp_send_sess_modification_request(
                 sess, s11_xact, gtpbuf,
-                OGS_PFCP_MODIFY_INDIRECT|OGS_PFCP_MODIFY_CREATE);
+                OGS_PFCP_MODIFY_INDIRECT|OGS_PFCP_MODIFY_CREATE));
     }
 }
 
@@ -1084,9 +1092,10 @@ void sgwc_s11_handle_delete_indirect_data_forwarding_tunnel_request(
     ogs_list_for_each(&sgwc_ue->sess_list, sess) {
 
         sess->state.delete_indirect_tunnel = false;
-        sgwc_pfcp_send_sess_modification_request(
+        ogs_assert(OGS_OK ==
+            sgwc_pfcp_send_sess_modification_request(
                 sess, s11_xact, gtpbuf,
-                OGS_PFCP_MODIFY_INDIRECT| OGS_PFCP_MODIFY_REMOVE);
+                OGS_PFCP_MODIFY_INDIRECT| OGS_PFCP_MODIFY_REMOVE));
     }
 }
 

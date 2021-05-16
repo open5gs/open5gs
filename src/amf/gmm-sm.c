@@ -139,7 +139,8 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e)
 
             if (!AMF_UE_HAVE_SUCI(amf_ue)) {
                 CLEAR_AMF_UE_TIMER(amf_ue->t3570);
-                nas_5gs_send_identity_request(amf_ue);
+                ogs_assert(OGS_OK ==
+                    nas_5gs_send_identity_request(amf_ue));
                 break;
             }
 
@@ -192,7 +193,8 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e)
                     }
 
                     CLEAR_AMF_UE_TIMER(amf_ue->t3550);
-                    nas_5gs_send_registration_accept(amf_ue);
+                    ogs_assert(OGS_OK ==
+                        nas_5gs_send_registration_accept(amf_ue));
                 }
 
                 if (amf_ue->next.m_tmsi)
@@ -227,16 +229,20 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e)
 
             if (!AMF_UE_HAVE_SUCI(amf_ue)) {
                 ogs_info("Service request : Unknown UE");
-                nas_5gs_send_service_reject(amf_ue,
-                OGS_5GMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
+                ogs_assert(OGS_OK ==
+                    nas_5gs_send_service_reject(amf_ue,
+                    OGS_5GMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK)
+                );
                 OGS_FSM_TRAN(s, gmm_state_exception);
                 break;
             }
 
             if (!h.integrity_protected || !SECURITY_CONTEXT_IS_VALID(amf_ue)) {
                 ogs_error("No Security Context");
-                nas_5gs_send_service_reject(amf_ue,
-                OGS_5GMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
+                ogs_assert(OGS_OK ==
+                    nas_5gs_send_service_reject(amf_ue,
+                    OGS_5GMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK)
+                );
                 OGS_FSM_TRAN(s, gmm_state_exception);
                 break;
             }
@@ -376,7 +382,8 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e)
                  * If t3555 is timeout, the saved pkbuf is used.
                  * In this case, ack should be set to 1 for timer expiration
                  */
-                nas_5gs_send_configuration_update_command(amf_ue, NULL);
+                ogs_assert(OGS_OK ==
+                    nas_5gs_send_configuration_update_command(amf_ue, NULL));
             }
             break;
 
@@ -389,7 +396,8 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e)
                 OGS_FSM_TRAN(&amf_ue->sm, &gmm_state_exception);
             } else {
                 amf_ue->t3570.retry_count++;
-                nas_5gs_send_identity_request(amf_ue);
+                ogs_assert(OGS_OK ==
+                    nas_5gs_send_identity_request(amf_ue));
             }
             break;
 
@@ -451,7 +459,8 @@ void gmm_state_authentication(ogs_fsm_t *s, amf_event_t *e)
                     amf_ue, &nas_message->gmm.authentication_response);
 
             if (rv != OGS_OK) {
-                nas_5gs_send_authentication_reject(amf_ue);
+                ogs_assert(OGS_OK ==
+                    nas_5gs_send_authentication_reject(amf_ue));
                 OGS_FSM_TRAN(&amf_ue->sm, &gmm_state_exception);
             }
             break;
@@ -503,7 +512,8 @@ void gmm_state_authentication(ogs_fsm_t *s, amf_event_t *e)
                 break;
             }
 
-            nas_5gs_send_authentication_reject(amf_ue);
+            ogs_assert(OGS_OK ==
+                nas_5gs_send_authentication_reject(amf_ue));
             OGS_FSM_TRAN(&amf_ue->sm, &gmm_state_exception);
 
             break;
@@ -547,11 +557,13 @@ void gmm_state_authentication(ogs_fsm_t *s, amf_event_t *e)
                     amf_timer_cfg(AMF_TIMER_T3560)->max_count) {
                 ogs_warn("[%s] Retransmission failed. Stop retransmission",
                         amf_ue->suci);
-                nas_5gs_send_authentication_reject(amf_ue);
+                ogs_assert(OGS_OK ==
+                    nas_5gs_send_authentication_reject(amf_ue));
                 OGS_FSM_TRAN(&amf_ue->sm, &gmm_state_exception);
             } else {
                 amf_ue->t3560.retry_count++;
-                nas_5gs_send_authentication_request(amf_ue);
+                ogs_assert(OGS_OK ==
+                    nas_5gs_send_authentication_request(amf_ue));
             }
             break;
         default:
@@ -581,8 +593,9 @@ void gmm_state_authentication(ogs_fsm_t *s, amf_event_t *e)
                         ogs_error("[%s] HTTP response error [%d]",
                             amf_ue->suci, sbi_message->res_status);
                     }
-                    nas_5gs_send_gmm_reject_from_sbi(
-                            amf_ue, sbi_message->res_status);
+                    ogs_assert(OGS_OK ==
+                        nas_5gs_send_gmm_reject_from_sbi(
+                            amf_ue, sbi_message->res_status));
                     OGS_FSM_TRAN(&amf_ue->sm, &gmm_state_exception);
                     break;
                 }
@@ -594,7 +607,8 @@ void gmm_state_authentication(ogs_fsm_t *s, amf_event_t *e)
                     if (rv != OGS_OK) {
                         ogs_error("[%s] Cannot handle SBI message",
                                 amf_ue->suci);
-                        nas_5gs_send_authentication_reject(amf_ue);
+                        ogs_assert(OGS_OK ==
+                            nas_5gs_send_authentication_reject(amf_ue));
                         OGS_FSM_TRAN(&amf_ue->sm, &gmm_state_exception);
                     }
                     break;
@@ -604,7 +618,8 @@ void gmm_state_authentication(ogs_fsm_t *s, amf_event_t *e)
                     if (rv != OGS_OK) {
                         ogs_error("[%s] Cannot handle SBI message",
                                 amf_ue->suci);
-                        nas_5gs_send_authentication_reject(amf_ue);
+                        ogs_assert(OGS_OK ==
+                            nas_5gs_send_authentication_reject(amf_ue));
                         OGS_FSM_TRAN(&amf_ue->sm, &gmm_state_exception);
                     } else {
                         OGS_FSM_TRAN(&amf_ue->sm, &gmm_state_security_mode);
@@ -654,7 +669,8 @@ void gmm_state_security_mode(ogs_fsm_t *s, amf_event_t *e)
     switch (e->id) {
     case OGS_FSM_ENTRY_SIG:
         CLEAR_AMF_UE_TIMER(amf_ue->t3560);
-        nas_5gs_send_security_mode_command(amf_ue);
+        ogs_assert(OGS_OK ==
+            nas_5gs_send_security_mode_command(amf_ue));
         break;
     case OGS_FSM_EXIT_SIG:
         break;
@@ -676,16 +692,18 @@ void gmm_state_security_mode(ogs_fsm_t *s, amf_event_t *e)
                 ogs_error("[%s] Security-mode : No Integrity Protected",
                         amf_ue->supi);
 
-                nas_5gs_send_gmm_reject(amf_ue,
-                    OGS_5GMM_CAUSE_SECURITY_MODE_REJECTED_UNSPECIFIED);
+                ogs_assert(OGS_OK ==
+                    nas_5gs_send_gmm_reject(amf_ue,
+                        OGS_5GMM_CAUSE_SECURITY_MODE_REJECTED_UNSPECIFIED));
                 OGS_FSM_TRAN(s, &gmm_state_exception);
                 break;
             }
 
             if (!SECURITY_CONTEXT_IS_VALID(amf_ue)) {
                 ogs_warn("[%s] No Security Context", amf_ue->supi);
-                nas_5gs_send_gmm_reject(amf_ue,
-                    OGS_5GMM_CAUSE_SECURITY_MODE_REJECTED_UNSPECIFIED);
+                ogs_assert(OGS_OK ==
+                    nas_5gs_send_gmm_reject(amf_ue,
+                        OGS_5GMM_CAUSE_SECURITY_MODE_REJECTED_UNSPECIFIED));
                 OGS_FSM_TRAN(s, &gmm_state_exception);
                 break;
             }
@@ -694,8 +712,9 @@ void gmm_state_security_mode(ogs_fsm_t *s, amf_event_t *e)
                     amf_ue, &nas_message->gmm.security_mode_complete);
             if (rv != OGS_OK) {
                 ogs_error("[%s] Cannot handle NAS message", amf_ue->suci);
-                nas_5gs_send_gmm_reject(amf_ue,
-                    OGS_5GMM_CAUSE_5GS_SERVICES_NOT_ALLOWED);
+                ogs_assert(OGS_OK ==
+                    nas_5gs_send_gmm_reject(amf_ue,
+                        OGS_5GMM_CAUSE_5GS_SERVICES_NOT_ALLOWED));
                 OGS_FSM_TRAN(s, gmm_state_exception);
                 break;
             }
@@ -744,8 +763,10 @@ void gmm_state_security_mode(ogs_fsm_t *s, amf_event_t *e)
 
         case OGS_NAS_5GS_SERVICE_REQUEST:
             ogs_info("[%s] Service request", amf_ue->supi);
-            nas_5gs_send_service_reject(amf_ue,
-                OGS_5GMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
+            ogs_assert(OGS_OK ==
+                nas_5gs_send_service_reject(amf_ue,
+                    OGS_5GMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK)
+            );
             OGS_FSM_TRAN(s, &gmm_state_exception);
             break;
 
@@ -774,12 +795,14 @@ void gmm_state_security_mode(ogs_fsm_t *s, amf_event_t *e)
             if (amf_ue->t3560.retry_count >=
                     amf_timer_cfg(AMF_TIMER_T3560)->max_count) {
                 ogs_warn("[%s] Retransmission failed. Stop", amf_ue->supi);
-                nas_5gs_send_gmm_reject(amf_ue,
-                    OGS_5GMM_CAUSE_SECURITY_MODE_REJECTED_UNSPECIFIED);
+                ogs_assert(OGS_OK ==
+                    nas_5gs_send_gmm_reject(amf_ue,
+                        OGS_5GMM_CAUSE_SECURITY_MODE_REJECTED_UNSPECIFIED));
                 OGS_FSM_TRAN(&amf_ue->sm, &gmm_state_exception);
             } else {
                 amf_ue->t3560.retry_count++;
-                nas_5gs_send_security_mode_command(amf_ue);
+                ogs_assert(OGS_OK ==
+                    nas_5gs_send_security_mode_command(amf_ue));
             }
             break;
         default:
@@ -842,8 +865,9 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
                     sbi_message->res_status != OGS_SBI_HTTP_STATUS_OK) {
                     ogs_error("[%s] HTTP response error [%d]",
                             amf_ue->supi, sbi_message->res_status);
-                    nas_5gs_send_gmm_reject(
-                            amf_ue, OGS_5GMM_CAUSE_5GS_SERVICES_NOT_ALLOWED);
+                    ogs_assert(OGS_OK ==
+                        nas_5gs_send_gmm_reject(
+                            amf_ue, OGS_5GMM_CAUSE_5GS_SERVICES_NOT_ALLOWED));
                     OGS_FSM_TRAN(&amf_ue->sm, &gmm_state_exception);
                     break;
                 }
@@ -878,8 +902,9 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
                 if (sbi_message->res_status != OGS_SBI_HTTP_STATUS_OK) {
                     ogs_error("[%s] HTTP response error [%d]",
                             amf_ue->supi, sbi_message->res_status);
-                    nas_5gs_send_gmm_reject(
-                            amf_ue, OGS_5GMM_CAUSE_5GS_SERVICES_NOT_ALLOWED);
+                    ogs_assert(OGS_OK ==
+                        nas_5gs_send_gmm_reject(
+                            amf_ue, OGS_5GMM_CAUSE_5GS_SERVICES_NOT_ALLOWED));
                     OGS_FSM_TRAN(&amf_ue->sm, &gmm_state_exception);
                     break;
                 }
@@ -888,8 +913,9 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
                 if (rv != OGS_OK) {
                     ogs_error("[%s] amf_nudm_sdm_handle_provisioned(%s) failed",
                             amf_ue->supi, sbi_message->h.resource.component[1]);
-                    nas_5gs_send_gmm_reject(
-                            amf_ue, OGS_5GMM_CAUSE_5GS_SERVICES_NOT_ALLOWED);
+                    ogs_assert(OGS_OK ==
+                        nas_5gs_send_gmm_reject(
+                            amf_ue, OGS_5GMM_CAUSE_5GS_SERVICES_NOT_ALLOWED));
                     OGS_FSM_TRAN(&amf_ue->sm, &gmm_state_exception);
                     break;
                 }
@@ -917,7 +943,8 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
                 ogs_assert(amf_ue->nas.message_type ==
                         OGS_NAS_5GS_REGISTRATION_REQUEST);
                 CLEAR_AMF_UE_TIMER(amf_ue->t3550);
-                nas_5gs_send_registration_accept(amf_ue);
+                ogs_assert(OGS_OK ==
+                    nas_5gs_send_registration_accept(amf_ue));
 
                 if (!amf_ue->next.m_tmsi)
                     OGS_FSM_TRAN(s, &gmm_state_registered);
@@ -982,7 +1009,8 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
              */
             memset(&param, 0, sizeof(param));
             param.nitz = 1;
-            nas_5gs_send_configuration_update_command(amf_ue, &param);
+            ogs_assert(OGS_OK ==
+                nas_5gs_send_configuration_update_command(amf_ue, &param));
 
             OGS_FSM_TRAN(s, &gmm_state_registered);
             break;
@@ -1008,8 +1036,10 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
 
         case OGS_NAS_5GS_SERVICE_REQUEST:
             ogs_info("[%s] Service request", amf_ue->supi);
-            nas_5gs_send_service_reject(amf_ue,
-                OGS_5GMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
+            ogs_assert(OGS_OK ==
+                nas_5gs_send_service_reject(amf_ue,
+                    OGS_5GMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK)
+            );
             OGS_FSM_TRAN(s, &gmm_state_exception);
             break;
 
@@ -1042,7 +1072,8 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
                 OGS_FSM_TRAN(&amf_ue->sm, &gmm_state_exception);
             } else {
                 amf_ue->t3550.retry_count++;
-                nas_5gs_send_registration_accept(amf_ue);
+                ogs_assert(OGS_OK ==
+                    nas_5gs_send_registration_accept(amf_ue));
             }
             break;
         default:
@@ -1089,9 +1120,10 @@ void gmm_state_exception(ogs_fsm_t *s, amf_event_t *e)
                 amf_ue, AMF_RELEASE_SM_CONTEXT_NO_STATE);
 
         if (ogs_list_count(&amf_ue->sess_list) == 0)
-            ngap_send_amf_ue_context_release_command(amf_ue,
+            ogs_assert(OGS_OK ==
+                ngap_send_amf_ue_context_release_command(amf_ue,
                     NGAP_Cause_PR_nas, NGAP_CauseNas_normal_release,
-                    NGAP_UE_CTX_REL_UE_CONTEXT_REMOVE, 0);
+                    NGAP_UE_CTX_REL_UE_CONTEXT_REMOVE, 0));
         break;
     case OGS_FSM_EXIT_SIG:
         break;
@@ -1121,7 +1153,8 @@ void gmm_state_exception(ogs_fsm_t *s, amf_event_t *e)
 
             if (!AMF_UE_HAVE_SUCI(amf_ue)) {
                 CLEAR_AMF_UE_TIMER(amf_ue->t3570);
-                nas_5gs_send_identity_request(amf_ue);
+                ogs_assert(OGS_OK ==
+                    nas_5gs_send_identity_request(amf_ue));
 
                 OGS_FSM_TRAN(s, &gmm_state_de_registered);
                 break;
@@ -1176,7 +1209,8 @@ void gmm_state_exception(ogs_fsm_t *s, amf_event_t *e)
                     }
 
                     CLEAR_AMF_UE_TIMER(amf_ue->t3550);
-                    nas_5gs_send_registration_accept(amf_ue);
+                    ogs_assert(OGS_OK ==
+                        nas_5gs_send_registration_accept(amf_ue));
                 }
 
                 if (amf_ue->next.m_tmsi)

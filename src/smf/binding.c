@@ -45,8 +45,9 @@ static void bearer_timeout(ogs_gtp_xact_t *xact, void *data)
             ogs_warn("[%s] Bearer has already been removed", smf_ue->imsi_bcd);
             break;
         }
-        smf_epc_pfcp_send_bearer_modification_request(
-                bearer, OGS_PFCP_MODIFY_REMOVE);
+        ogs_assert(OGS_OK ==
+            smf_epc_pfcp_send_bearer_modification_request(
+                bearer, OGS_PFCP_MODIFY_REMOVE));
         break;
     case OGS_GTP_UPDATE_BEARER_REQUEST_TYPE:
         ogs_error("[%s] No Update Bearer Response", smf_ue->imsi_bcd);
@@ -57,8 +58,10 @@ static void bearer_timeout(ogs_gtp_xact_t *xact, void *data)
             ogs_warn("[%s] Bearer has already been removed", smf_ue->imsi_bcd);
             break;
         }
-        smf_epc_pfcp_send_bearer_modification_request(
-                bearer, OGS_PFCP_MODIFY_REMOVE);
+
+        ogs_assert(OGS_OK ==
+            smf_epc_pfcp_send_bearer_modification_request(
+                bearer, OGS_PFCP_MODIFY_REMOVE));
         break;
     default:
         ogs_error("GTP Timeout : IMSI[%s] Message-Type[%d]",
@@ -314,8 +317,9 @@ void smf_bearer_binding(smf_sess_t *sess)
                     qer->gbr.downlink = bearer->qos.gbr.downlink;
                 }
 
-                smf_epc_pfcp_send_bearer_modification_request(
-                        bearer, OGS_PFCP_MODIFY_CREATE);
+                ogs_assert(OGS_OK ==
+                    smf_epc_pfcp_send_bearer_modification_request(
+                        bearer, OGS_PFCP_MODIFY_CREATE));
 
             } else {
                 ogs_gtp_tft_t tft;
@@ -595,8 +599,9 @@ void smf_qos_flow_binding(smf_sess_t *sess, ogs_sbi_stream_t *stream)
                     qer->gbr.downlink = qos_flow->qos.gbr.downlink;
                 }
 
-                smf_5gc_pfcp_send_qos_flow_modification_request(
-                        qos_flow, NULL, OGS_PFCP_MODIFY_CREATE);
+                ogs_assert(OGS_OK ==
+                    smf_5gc_pfcp_send_qos_flow_modification_request(
+                        qos_flow, NULL, OGS_PFCP_MODIFY_CREATE));
 
             } else {
                 ogs_fatal("Update Qos Flow Not Implemented");
