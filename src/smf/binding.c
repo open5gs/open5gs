@@ -95,7 +95,7 @@ static void encode_traffic_flow_template(
     while (pf) {
         tft->pf[i].direction = pf->direction;
         tft->pf[i].identifier = pf->identifier - 1;
-        tft->pf[i].precedence = pf->precedence;
+        tft->pf[i].precedence = pf->precedence - 1;
 
         ogs_pf_content_from_ipfw_rule(
                 pf->direction, &tft->pf[i].content, &pf->ipfw_rule);
@@ -119,9 +119,6 @@ void smf_bearer_binding(smf_sess_t *sess)
         ogs_gtp_header_t h;
         ogs_pkbuf_t *pkbuf = NULL;
         smf_bearer_t *bearer = NULL;
-
-        int total_num_of_pcc_rules = 0;
-        smf_bearer_t *pf_bearer = NULL;
 
         ogs_pcc_rule_t *pcc_rule = &sess->pcc_rule[i];
         int bearer_created = 0;
@@ -243,11 +240,6 @@ void smf_bearer_binding(smf_sess_t *sess)
             dl_pdr->num_of_flow = 0;
             ul_pdr->num_of_flow = 0;
 
-            // Compute total number of PCC rules for per DNN (used to set precedence)
-            ogs_list_for_each(&sess->bearer_list, pf_bearer) {
-                total_num_of_pcc_rules += ogs_list_count(&pf_bearer->pf_list);
-            }
-
             for (j = 0; j < pcc_rule->num_of_flow; j++) {
                 ogs_flow_t *flow = &pcc_rule->flow[j];
                 smf_pf_t *pf = NULL;
@@ -271,7 +263,6 @@ void smf_bearer_binding(smf_sess_t *sess)
 
                 pf->direction = flow->direction;
                 pf->flow_description = ogs_strdup(flow->description);
-                pf->precedence = total_num_of_pcc_rules + j;
 
                 rv = ogs_ipfw_compile_rule(
                         &pf->ipfw_rule, pf->flow_description);

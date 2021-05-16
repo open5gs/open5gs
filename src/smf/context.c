@@ -958,6 +958,7 @@ smf_sess_t *smf_sess_add_by_apn(smf_ue_t *smf_ue, char *apn)
 
     ogs_pfcp_pool_init(&sess->pfcp);
     smf_qfi_pool_init(sess);
+    smf_pf_precedence_pool_init(sess);
 
     sess->index = ogs_pool_index(&smf_sess_pool, sess);
     ogs_assert(sess->index > 0 && sess->index <= ogs_app()->pool.sess);
@@ -1072,6 +1073,7 @@ smf_sess_t *smf_sess_add_by_psi(smf_ue_t *smf_ue, uint8_t psi)
 
     ogs_pfcp_pool_init(&sess->pfcp);
     smf_qfi_pool_init(sess);
+    smf_pf_precedence_pool_init(sess);
 
     sess->index = ogs_pool_index(&smf_sess_pool, sess);
     ogs_assert(sess->index > 0 && sess->index <= ogs_app()->pool.sess);
@@ -1428,6 +1430,7 @@ void smf_sess_remove(smf_sess_t *sess)
 
     ogs_pfcp_pool_final(&sess->pfcp);
     smf_qfi_pool_final(sess);
+    smf_pf_precedence_pool_final(sess);
 
     ogs_pool_free(&smf_sess_pool, sess);
 
@@ -2102,9 +2105,12 @@ void smf_sess_select_nf(smf_sess_t *sess, OpenAPI_nf_type_e nf_type)
 
 smf_pf_t *smf_pf_add(smf_bearer_t *bearer)
 {
+    smf_sess_t *sess = NULL;
     smf_pf_t *pf = NULL;
 
     ogs_assert(bearer);
+    sess = bearer->sess;
+    ogs_assert(sess);
 
     ogs_pool_alloc(&smf_pf_pool, &pf);
     ogs_assert(pf);
@@ -2113,10 +2119,16 @@ smf_pf_t *smf_pf_add(smf_bearer_t *bearer)
     ogs_pool_alloc(&bearer->pf_identifier_pool, &pf->identifier_node);
     ogs_assert(pf->identifier_node);
 
-    pf->index = *(pf->identifier_node);
-    ogs_assert(pf->index > 0 && pf->index <= OGS_MAX_NUM_OF_PF);
+    pf->identifier = *(pf->identifier_node);
+    ogs_assert(pf->identifier > 0 && pf->identifier <= OGS_MAX_NUM_OF_PF);
 
-    pf->identifier = pf->index;
+    ogs_pool_alloc(&sess->pf_precedence_pool, &pf->precedence_node);
+    ogs_assert(pf->precedence_node);
+
+    pf->precedence = *(pf->precedence_node);
+    ogs_assert(pf->precedence > 0 && pf->precedence <=
+            (OGS_MAX_NUM_OF_BEARER * OGS_MAX_NUM_OF_PF));
+
     pf->bearer = bearer;
 
     ogs_list_add(&bearer->pf_list, pf);
@@ -2128,6 +2140,7 @@ int smf_pf_remove(smf_pf_t *pf)
 {
     ogs_assert(pf);
     ogs_assert(pf->bearer);
+    ogs_assert(pf->bearer->sess);
 
     ogs_list_remove(&pf->bearer->pf_list, pf);
     if (pf->flow_description)
@@ -2135,6 +2148,9 @@ int smf_pf_remove(smf_pf_t *pf)
 
     if (pf->identifier_node)
         ogs_pool_free(&pf->bearer->pf_identifier_pool, pf->identifier_node);
+    if (pf->precedence_node)
+        ogs_pool_free(
+                &pf->bearer->sess->pf_precedence_pool, pf->precedence_node);
 
     ogs_pool_free(&smf_pf_pool, pf);
 
@@ -2385,6 +2401,27 @@ void smf_pf_identifier_pool_final(smf_bearer_t *bearer)
     ogs_assert(bearer);
 
     ogs_index_final(&bearer->pf_identifier_pool);
+}
+
+void smf_pf_precedence_pool_init(smf_sess_t *sess)
+{
+    int i;
+
+    ogs_assert(sess);
+
+    ogs_index_init(&sess->pf_precedence_pool,
+            OGS_MAX_NUM_OF_BEARER * OGS_MAX_NUM_OF_PF);
+
+    for (i = 1; i <= OGS_MAX_NUM_OF_BEARER * OGS_MAX_NUM_OF_PF; i++) {
+        sess->pf_precedence_pool.array[i-1] = i;
+    }
+}
+
+void smf_pf_precedence_pool_final(smf_sess_t *sess)
+{
+    ogs_assert(sess);
+
+    ogs_index_final(&sess->pf_precedence_pool);
 }
 
 static void stats_add_smf_session(void)

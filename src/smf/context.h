@@ -128,15 +128,16 @@ typedef struct smf_sess_s smf_sess_t;
 
 typedef struct smf_pf_s {
     ogs_lnode_t     lnode;
-    uint32_t        index;
 
 ED3(uint8_t spare:2;,
     uint8_t direction:2;,
     uint8_t identifier:4;)
 
-    uint8_t precedence;
+    uint8_t precedence;             /* Only used in EPC */
+    uint8_t epc_precedence;         /* Only used in EPC */
 
-    uint8_t *identifier_node;      /* Pool-Node for Identifier */
+    uint8_t *identifier_node;       /* Pool-Node for Identifier */
+    uint8_t *precedence_node;       /* Pool-Node for Precedence */
 
     ogs_ipfw_rule_t ipfw_rule;
     char *flow_description;
@@ -173,8 +174,6 @@ typedef struct smf_bearer_s {
 
     OGS_POOL(pf_identifier_pool, uint8_t);
 
-    /* Packet Filter Identifier Generator(1~15) */
-    uint8_t         pf_identifier;
     /* Packet Filter List */
     ogs_list_t      pf_list;
 
@@ -205,6 +204,8 @@ typedef struct smf_sess_s {
     ogs_ip_t        gnb_n3_ip;      /* gNB-N3 IPv4/IPv6 */
 
     char            *gx_sid;        /* Gx Session ID */
+
+    OGS_POOL(pf_precedence_pool, uint8_t);
 
 #define CLEAR_QOS_FLOW_ID(__sESS) \
     do { \
@@ -416,6 +417,9 @@ void smf_qfi_pool_final(smf_sess_t *sess);
 
 void smf_pf_identifier_pool_init(smf_bearer_t *bearer);
 void smf_pf_identifier_pool_final(smf_bearer_t *bearer);
+
+void smf_pf_precedence_pool_init(smf_sess_t *sess);
+void smf_pf_precedence_pool_final(smf_sess_t *sess);
 
 #ifdef __cplusplus
 }
