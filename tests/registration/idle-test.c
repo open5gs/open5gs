@@ -945,20 +945,13 @@ static void test3_func(abts_case *tc, void *data)
      * Service request
      *  - Uplink Data Status
      */
-    test_ue->service_request_param.integrity_protected = 0;
-    test_ue->service_request_param.ciphered = 0;
-    test_ue->service_request_param.uplink_data_status = 1;
-    test_ue->service_request_param.psimask.uplink_data_status = 1 << sess->psi;
-    nasbuf = testgmm_build_service_request(
-            test_ue, OGS_NAS_SERVICE_TYPE_DATA, NULL);
-    ABTS_PTR_NOTNULL(tc, nasbuf);
-
-    memset(&test_ue->service_request_param, 0,
-            sizeof(test_ue->service_request_param));
     test_ue->service_request_param.integrity_protected = 1;
     test_ue->service_request_param.ciphered = 1;
+    test_ue->service_request_param.uplink_data_status = 1;
+    test_ue->service_request_param.psimask.uplink_data_status = 1 << sess->psi;
     gmmbuf = testgmm_build_service_request(
-            test_ue, OGS_NAS_SERVICE_TYPE_DATA, nasbuf);
+            test_ue, OGS_NAS_SERVICE_TYPE_DATA, NULL);
+    ABTS_PTR_NOTNULL(tc, gmmbuf);
 
     sendbuf = testngap_build_uplink_nas_transport(test_ue, gmmbuf);
     ABTS_PTR_NOTNULL(tc, sendbuf);
@@ -1372,22 +1365,15 @@ static void test4_func(abts_case *tc, void *data)
          * Service request
          *  - Uplink Data Status
          */
-        test_ue->service_request_param.integrity_protected = 0;
-        test_ue->service_request_param.ciphered = 0;
+        test_ue->service_request_param.integrity_protected = 1;
+        test_ue->service_request_param.ciphered = 1;
         test_ue->service_request_param.pdu_session_status = 1;
         test_ue->service_request_param.psimask.pdu_session_status =
             1 << sess->psi;
-        nasbuf = testgmm_build_service_request(
-                test_ue, OGS_NAS_SERVICE_TYPE_SIGNALLING, NULL);
-        ABTS_PTR_NOTNULL(tc, nasbuf);
-
-        memset(&test_ue->service_request_param, 0,
-                sizeof(test_ue->service_request_param));
-        test_ue->service_request_param.integrity_protected = 1;
-        test_ue->service_request_param.ciphered = 1;
         gmmbuf = testgmm_build_service_request(
-                test_ue, OGS_NAS_SERVICE_TYPE_SIGNALLING, nasbuf);
+                test_ue, OGS_NAS_SERVICE_TYPE_SIGNALLING, NULL);
 
+        ABTS_PTR_NOTNULL(tc, nasbuf);
         sendbuf = testngap_build_uplink_nas_transport(test_ue, gmmbuf);
         ABTS_PTR_NOTNULL(tc, sendbuf);
         rv = testgnb_ngap_send(ngap, sendbuf);

@@ -122,7 +122,6 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e)
         ogs_assert(ran_ue);
 
         h.type = e->nas.type;
-        amf_ue->nas.ngapProcedureCode = e->ngap.code;
 
         xact_count = amf_sess_xact_count(amf_ue);
 
@@ -130,7 +129,8 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e)
         case OGS_NAS_5GS_REGISTRATION_REQUEST:
             ogs_info("Registration request");
             rv = gmm_handle_registration_request(
-                    amf_ue, h, &nas_message->gmm.registration_request);
+                    amf_ue, h, e->ngap.code,
+                    &nas_message->gmm.registration_request);
             if (rv != OGS_OK) {
                 ogs_error("gmm_handle_registration_request() failed");
                 OGS_FSM_TRAN(s, gmm_state_exception);
@@ -220,7 +220,7 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e)
             ogs_info("Service request");
 
             rv = gmm_handle_service_request(
-                    amf_ue, h, &nas_message->gmm.service_request);
+                    amf_ue, h, e->ngap.code, &nas_message->gmm.service_request);
             if (rv != OGS_OK) {
                 ogs_error("gmm_handle_service_request() failed");
                 OGS_FSM_TRAN(s, gmm_state_exception);
@@ -451,7 +451,6 @@ void gmm_state_authentication(ogs_fsm_t *s, amf_event_t *e)
         ogs_assert(nas_message);
 
         h.type = e->nas.type;
-        amf_ue->nas.ngapProcedureCode = e->ngap.code;
 
         switch (nas_message->gmm.h.message_type) {
         case OGS_NAS_5GS_AUTHENTICATION_RESPONSE:
@@ -520,9 +519,11 @@ void gmm_state_authentication(ogs_fsm_t *s, amf_event_t *e)
         case OGS_NAS_5GS_REGISTRATION_REQUEST:
             ogs_warn("Registration request");
             rv = gmm_handle_registration_request(
-                    amf_ue, h, &nas_message->gmm.registration_request);
+                    amf_ue, h, e->ngap.code,
+                    &nas_message->gmm.registration_request);
             if (rv != OGS_OK) {
-                ogs_error("[%s] Cannot handle NAS message", amf_ue->suci);
+                ogs_error("[%s] gmm_handle_registration_request() failed",
+                            amf_ue->suci);
                 OGS_FSM_TRAN(s, gmm_state_exception);
                 break;
             }
@@ -679,7 +680,6 @@ void gmm_state_security_mode(ogs_fsm_t *s, amf_event_t *e)
         ogs_assert(nas_message);
 
         h.type = e->nas.type;
-        amf_ue->nas.ngapProcedureCode = e->ngap.code;
 
         switch (nas_message->gmm.h.message_type) {
         case OGS_NAS_5GS_SECURITY_MODE_COMPLETE:
@@ -748,7 +748,8 @@ void gmm_state_security_mode(ogs_fsm_t *s, amf_event_t *e)
         case OGS_NAS_5GS_REGISTRATION_REQUEST:
             ogs_warn("Registration request");
             rv = gmm_handle_registration_request(
-                    amf_ue, h, &nas_message->gmm.registration_request);
+                    amf_ue, h, e->ngap.code,
+                    &nas_message->gmm.registration_request);
             if (rv != OGS_OK) {
                 ogs_error("[%s] Cannot handle NAS message", amf_ue->suci);
                 OGS_FSM_TRAN(s, gmm_state_exception);
@@ -968,7 +969,6 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
         ogs_assert(nas_message);
 
         h.type = e->nas.type;
-        amf_ue->nas.ngapProcedureCode = e->ngap.code;
 
         switch (nas_message->gmm.h.message_type) {
         case OGS_NAS_5GS_REGISTRATION_COMPLETE:
@@ -1018,7 +1018,8 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
         case OGS_NAS_5GS_REGISTRATION_REQUEST:
             ogs_warn("Registration request");
             rv = gmm_handle_registration_request(
-                    amf_ue, h, &nas_message->gmm.registration_request);
+                    amf_ue, h, e->ngap.code,
+                    &nas_message->gmm.registration_request);
             if (rv != OGS_OK) {
                 ogs_error("[%s] Cannot handle NAS message", amf_ue->suci);
                 OGS_FSM_TRAN(s, gmm_state_exception);
@@ -1136,7 +1137,6 @@ void gmm_state_exception(ogs_fsm_t *s, amf_event_t *e)
         ogs_assert(ran_ue);
 
         h.type = e->nas.type;
-        amf_ue->nas.ngapProcedureCode = e->ngap.code;
 
         xact_count = amf_sess_xact_count(amf_ue);
 
@@ -1144,7 +1144,8 @@ void gmm_state_exception(ogs_fsm_t *s, amf_event_t *e)
         case OGS_NAS_5GS_REGISTRATION_REQUEST:
             ogs_info("Registration request");
             rv = gmm_handle_registration_request(
-                    amf_ue, h, &nas_message->gmm.registration_request);
+                    amf_ue, h, e->ngap.code,
+                    &nas_message->gmm.registration_request);
             if (rv != OGS_OK) {
                 ogs_error("gmm_handle_registration_request() failed");
                 OGS_FSM_TRAN(s, gmm_state_exception);

@@ -222,9 +222,6 @@ struct amf_ue_s {
         uint8_t message_type; /* Type of last specific NAS message received */
         int access_type; /* 3GPP or Non-3GPP */
 
-        /* InitialUEMessage or UplinkNASTrasnport */
-        NGAP_ProcedureCode_t ngapProcedureCode;
-
         struct {
         ED3(uint8_t tsc:1;,
             uint8_t ksi:3;,

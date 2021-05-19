@@ -32,7 +32,7 @@ static int gmm_handle_nas_message_container(amf_ue_t *amf_ue,
         ogs_nas_message_container_t *nas_message_container);
 
 int gmm_handle_registration_request(amf_ue_t *amf_ue,
-        ogs_nas_security_header_type_t h,
+        ogs_nas_security_header_type_t h, NGAP_ProcedureCode_t ngap_code,
         ogs_nas_5gs_registration_request_t *registration_request)
 {
     int served_tai_index = 0;
@@ -106,7 +106,8 @@ int gmm_handle_registration_request(amf_ue_t *amf_ue,
         OGS_NAS_5GS_REGISTRATION_REQUEST_EPS_NAS_MESSAGE_CONTAINER_PRESENT| \
         OGS_NAS_5GS_REGISTRATION_REQUEST_NAS_MESSAGE_CONTAINER_PRESENT)
 
-    if (registration_request->presencemask &
+    if (ngap_code == NGAP_ProcedureCode_id_InitialUEMessage &&
+        registration_request->presencemask &
         ~OGS_REGISTRATION_CLEARTEXT_PRESENT) {
         ogs_error("Non cleartext IEs is included [0x%llx]",
                 (long long)registration_request->presencemask);
@@ -417,7 +418,7 @@ int gmm_handle_registration_update(amf_ue_t *amf_ue,
 }
 
 int gmm_handle_service_request(amf_ue_t *amf_ue,
-        ogs_nas_security_header_type_t h,
+        ogs_nas_security_header_type_t h, NGAP_ProcedureCode_t ngap_code,
         ogs_nas_5gs_service_request_t *service_request)
 {
     int served_tai_index = 0;
@@ -450,7 +451,8 @@ int gmm_handle_service_request(amf_ue_t *amf_ue,
 #define OGS_SERVICE_CLEARTEXT_PRESENT \
         (OGS_NAS_5GS_SERVICE_REQUEST_NAS_MESSAGE_CONTAINER_PRESENT)
 
-    if (service_request->presencemask & ~OGS_SERVICE_CLEARTEXT_PRESENT) {
+    if (ngap_code == NGAP_ProcedureCode_id_InitialUEMessage &&
+        service_request->presencemask & ~OGS_SERVICE_CLEARTEXT_PRESENT) {
         ogs_error("Non cleartext IEs is included [0x%llx]",
                 (long long)service_request->presencemask);
         ogs_assert(OGS_OK ==
