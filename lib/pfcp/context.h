@@ -289,6 +289,8 @@ typedef struct ogs_pfcp_dev_s {
 
     ogs_sockaddr_t  *link_local_addr;
     ogs_poll_t      *poll;
+    bool            is_tap;
+    uint8_t         mac_addr[6];
 } ogs_pfcp_dev_t;
 
 typedef struct ogs_pfcp_subnet_s {
