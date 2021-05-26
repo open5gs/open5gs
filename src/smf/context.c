@@ -2177,6 +2177,21 @@ smf_pf_t *smf_pf_find_by_id(smf_bearer_t *bearer, uint8_t id)
     return NULL;
 }
 
+smf_pf_t *smf_pf_find_by_flow(
+    smf_bearer_t *bearer, uint8_t direction, char *flow_description)
+{
+    smf_pf_t *pf = NULL;
+
+    ogs_list_for_each(&bearer->pf_list, pf) {
+        if ((pf->direction == direction) &&
+            (!strcmp(pf->flow_description, flow_description))) {
+            return pf;
+        }
+    }
+
+    return NULL;
+}
+
 smf_pf_t *smf_pf_first(smf_bearer_t *bearer)
 {
     return ogs_list_first(&bearer->pf_list);
