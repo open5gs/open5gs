@@ -128,6 +128,7 @@ typedef struct smf_sess_s smf_sess_t;
 
 typedef struct smf_pf_s {
     ogs_lnode_t     lnode;
+    ogs_lnode_t     to_add_node;
 
 ED3(uint8_t spare:2;,
     uint8_t direction:2;,
@@ -176,6 +177,7 @@ typedef struct smf_bearer_s {
 
     /* Packet Filter List */
     ogs_list_t      pf_list;
+    ogs_list_t      pf_to_add_list;
 
     smf_sess_t      *sess;
 } smf_bearer_t;

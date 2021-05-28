@@ -82,13 +82,13 @@ static void bearer_timeout(ogs_gtp_xact_t *xact, void *data)
  * TFT : Local <UE_IP> <UE_PORT> REMOTE <P-CSCF_RTP_IP> <P-CSCF_RTP_PORT>
  */
 static void encode_traffic_flow_template(
-        ogs_gtp_tft_t *tft, ogs_list_t *pf_list, uint8_t tft_operation_code)
+        ogs_gtp_tft_t *tft, smf_bearer_t *bearer, uint8_t tft_operation_code)
 {
     int i;
     smf_pf_t *pf = NULL;
 
     ogs_assert(tft);
-    ogs_assert(pf_list);
+    ogs_assert(bearer);
 
     memset(tft, 0, sizeof(*tft));
     tft->code = tft_operation_code;
@@ -96,11 +96,11 @@ static void encode_traffic_flow_template(
     i = 0;
     if (tft_operation_code != OGS_GTP_TFT_CODE_DELETE_EXISTING_TFT &&
         tft_operation_code != OGS_GTP_TFT_CODE_NO_TFT_OPERATION) {
-        pf = ogs_list_first(pf_list);
-        while (pf) {
+        ogs_list_for_each_entry(&bearer->pf_to_add_list, pf, to_add_node) {
             tft->pf[i].identifier = pf->identifier - 1;
 
-            /* Deletion of packet filters from existing requires only the identifier */
+            /* Deletion of packet filters
+             * from existing requires only the identifier */
             if (tft_operation_code !=
                 OGS_GTP_TFT_CODE_DELETE_PACKET_FILTERS_FROM_EXISTING) {
 
@@ -112,8 +112,6 @@ static void encode_traffic_flow_template(
             }
 
             i++;
-
-            pf = ogs_list_next(pf);
         }
     }
     tft->num_of_packet_filter = i;
@@ -144,9 +142,6 @@ void smf_bearer_binding(smf_sess_t *sess)
 
         if (pcc_rule->type == OGS_PCC_RULE_TYPE_INSTALL) {
             ogs_pfcp_pdr_t *dl_pdr = NULL, *ul_pdr = NULL;
-
-            ogs_list_t pf_to_add_list;
-            ogs_list_init(&pf_to_add_list);
 
             bearer = smf_bearer_find_by_pcc_rule_name(sess, pcc_rule->name);
             if (!bearer) {
@@ -248,12 +243,19 @@ void smf_bearer_binding(smf_sess_t *sess)
             dl_pdr->num_of_flow = 0;
             ul_pdr->num_of_flow = 0;
 
+            ogs_list_init(&bearer->pf_to_add_list);
+
             for (j = 0; j < pcc_rule->num_of_flow; j++) {
                 ogs_flow_t *flow = &pcc_rule->flow[j];
                 smf_pf_t *pf = NULL;
 
                 ogs_expect_or_return(flow);
                 ogs_expect_or_return(flow->description);
+
+                if (smf_pf_find_by_flow(
+                    bearer, flow->direction, flow->description) != NULL) {
+                    continue;
+                }
 
                 if (flow->direction == OGS_FLOW_DOWNLINK_ONLY) {
                     dl_pdr->flow_description[dl_pdr->num_of_flow++] =
@@ -264,11 +266,6 @@ void smf_bearer_binding(smf_sess_t *sess)
                 } else {
                     ogs_error("Flow Bidirectional is not supported[%d]",
                             flow->direction);
-                }
-
-                if (smf_pf_find_by_flow(
-                    bearer, flow->direction, flow->description) != NULL) {
-                    continue;
                 }
 
                 pf = smf_pf_add(bearer);
@@ -303,7 +300,7 @@ void smf_bearer_binding(smf_sess_t *sess)
                     break;
                 }
 
-                ogs_list_add(&pf_to_add_list, pf);
+                ogs_list_add(&bearer->pf_to_add_list, &pf->to_add_node);
             }
 
             if (bearer_created == 1) {
@@ -339,10 +336,8 @@ void smf_bearer_binding(smf_sess_t *sess)
                 memset(&tft, 0, sizeof tft);
                 if (pcc_rule->num_of_flow)
                     encode_traffic_flow_template(
-                        &tft, &pf_to_add_list,
+                        &tft, bearer,
                         OGS_GTP_TFT_CODE_ADD_PACKET_FILTERS_TO_EXISTING_TFT);
-
-                ogs_list_empty(&pf_to_add_list);
 
                 memset(&h, 0, sizeof(ogs_gtp_header_t));
                 h.type = OGS_GTP_UPDATE_BEARER_REQUEST_TYPE;
@@ -416,7 +411,7 @@ void smf_gtp_send_create_bearer_request(smf_bearer_t *bearer)
     h.teid = sess->sgw_s5c_teid;
 
     memset(&tft, 0, sizeof tft);
-    encode_traffic_flow_template(&tft, &bearer->pf_list, OGS_GTP_TFT_CODE_CREATE_NEW_TFT);
+    encode_traffic_flow_template(&tft, bearer, OGS_GTP_TFT_CODE_CREATE_NEW_TFT);
 
     pkbuf = smf_s5c_build_create_bearer_request(h.type, bearer, &tft);
     ogs_expect_or_return(pkbuf);
@@ -455,9 +450,6 @@ void smf_qos_flow_binding(smf_sess_t *sess, ogs_sbi_stream_t *stream)
 
         if (pcc_rule->type == OGS_PCC_RULE_TYPE_INSTALL) {
             ogs_pfcp_pdr_t *dl_pdr = NULL, *ul_pdr = NULL;
-
-            ogs_list_t pf_to_add_list;
-            ogs_list_init(&pf_to_add_list);
 
             qos_flow = smf_qos_flow_find_by_pcc_rule_id(sess, pcc_rule->id);
             if (!qos_flow) {
@@ -537,12 +529,19 @@ void smf_qos_flow_binding(smf_sess_t *sess, ogs_sbi_stream_t *stream)
             dl_pdr->num_of_flow = 0;
             ul_pdr->num_of_flow = 0;
 
+            ogs_list_init(&qos_flow->pf_to_add_list);
+
             for (j = 0; j < pcc_rule->num_of_flow; j++) {
                 ogs_flow_t *flow = &pcc_rule->flow[j];
                 smf_pf_t *pf = NULL;
 
                 ogs_expect_or_return(flow);
                 ogs_expect_or_return(flow->description);
+
+                if (smf_pf_find_by_flow(
+                    qos_flow, flow->direction, flow->description) != NULL) {
+                    continue;
+                }
 
                 if (flow->direction == OGS_FLOW_DOWNLINK_ONLY) {
                     dl_pdr->flow_description[dl_pdr->num_of_flow++] =
@@ -553,11 +552,6 @@ void smf_qos_flow_binding(smf_sess_t *sess, ogs_sbi_stream_t *stream)
                 } else {
                     ogs_error("Flow Bidirectional is not supported[%d]",
                             flow->direction);
-                }
-
-                if (smf_pf_find_by_flow(
-                    qos_flow, flow->direction, flow->description) != NULL) {
-                    continue;
                 }
 
                 pf = smf_pf_add(qos_flow);
@@ -592,7 +586,7 @@ void smf_qos_flow_binding(smf_sess_t *sess, ogs_sbi_stream_t *stream)
                     break;
                 }
 
-                ogs_list_add(&pf_to_add_list, pf);
+                ogs_list_add(&qos_flow->pf_to_add_list, &pf->to_add_node);
             }
 
             if (qos_flow_created == 1) {
@@ -631,10 +625,8 @@ void smf_qos_flow_binding(smf_sess_t *sess, ogs_sbi_stream_t *stream)
                 memset(&tft, 0, sizeof tft);
                 if (pcc_rule->num_of_flow)
                     encode_traffic_flow_template(
-                        &tft, &pf_to_add_list,
+                        &tft, qos_flow,
                         OGS_GTP_TFT_CODE_ADD_PACKET_FILTERS_TO_EXISTING_TFT);
-
-                ogs_list_empty(&pf_to_add_list);
 
                 memset(&h, 0, sizeof(ogs_gtp_header_t));
                 h.type = OGS_GTP_UPDATE_BEARER_REQUEST_TYPE;
