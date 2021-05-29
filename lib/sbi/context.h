@@ -271,6 +271,8 @@ ogs_sbi_client_t *ogs_sbi_client_find_by_service_name(
 
 bool ogs_sbi_client_associate(ogs_sbi_nf_instance_t *nf_instance);
 
+OpenAPI_uri_scheme_e ogs_sbi_default_uri_scheme(void);
+
 #define OGS_SBI_NF_INSTANCE(__sBIObject, __nFType) \
     (((__sBIObject)->nf_type_array)[__nFType].nf_instance)
 

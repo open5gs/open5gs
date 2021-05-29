@@ -190,3 +190,56 @@ void pcf_sess_sbi_discover_and_send(OpenAPI_nf_type_e target_nf_type,
         return;
     }
 }
+
+static int client_notify_cb(ogs_sbi_response_t *response, void *data)
+{
+    int rv;
+
+    ogs_sbi_message_t message;
+
+    ogs_assert(response);
+
+    rv = ogs_sbi_parse_response(&message, response);
+    if (rv != OGS_OK) {
+        ogs_error("cannot parse HTTP response");
+        ogs_sbi_message_free(&message);
+        ogs_sbi_response_free(response);
+        return OGS_ERROR;
+    }
+
+    if (message.res_status != OGS_SBI_HTTP_STATUS_NO_CONTENT)
+        ogs_error("SmContextStatusNotification failed [%d]",
+                message.res_status);
+
+    ogs_sbi_message_free(&message);
+    ogs_sbi_response_free(response);
+    return OGS_OK;
+}
+
+void pcf_sbi_send_am_policy_control_notify(pcf_ue_t *pcf_ue)
+{
+    ogs_sbi_request_t *request = NULL;
+    ogs_sbi_client_t *client = NULL;
+
+    ogs_assert(pcf_ue);
+    client = pcf_ue->namf.client;
+    ogs_assert(client);
+
+    request = pcf_namf_callback_build_am_policy_control(pcf_ue, NULL);
+    ogs_assert(request);
+    ogs_sbi_client_send_request(client, client_notify_cb, request, NULL);
+}
+
+void pcf_sbi_send_smpolicycontrol_notify(pcf_sess_t *sess)
+{
+    ogs_sbi_request_t *request = NULL;
+    ogs_sbi_client_t *client = NULL;
+
+    ogs_assert(sess);
+    client = sess->nsmf.client;
+    ogs_assert(client);
+
+    request = pcf_nsmf_callback_build_smpolicycontrol(sess, NULL);
+    ogs_assert(request);
+    ogs_sbi_client_send_request(client, client_notify_cb, request, NULL);
+}

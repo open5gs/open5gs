@@ -17,16 +17,11 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_flow_status_s OpenAPI_flow_status_t;
-typedef struct OpenAPI_flow_status_s {
-} OpenAPI_flow_status_t;
+typedef enum { OpenAPI_flow_status_NULL = 0, OpenAPI_flow_status_ENABLED_UPLINK, OpenAPI_flow_status_ENABLED_DOWNLINK, OpenAPI_flow_status_ENABLED, OpenAPI_flow_status_DISABLED, OpenAPI_flow_status_REMOVED } OpenAPI_flow_status_e;
 
-OpenAPI_flow_status_t *OpenAPI_flow_status_create(
-    );
-void OpenAPI_flow_status_free(OpenAPI_flow_status_t *flow_status);
-OpenAPI_flow_status_t *OpenAPI_flow_status_parseFromJSON(cJSON *flow_statusJSON);
-cJSON *OpenAPI_flow_status_convertToJSON(OpenAPI_flow_status_t *flow_status);
-OpenAPI_flow_status_t *OpenAPI_flow_status_copy(OpenAPI_flow_status_t *dst, OpenAPI_flow_status_t *src);
+char* OpenAPI_flow_status_ToString(OpenAPI_flow_status_e flow_status);
+
+OpenAPI_flow_status_e OpenAPI_flow_status_FromString(char* flow_status);
 
 #ifdef __cplusplus
 }

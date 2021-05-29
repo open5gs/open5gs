@@ -152,9 +152,15 @@ void ogs_sbi_message_free(ogs_sbi_message_t *message)
         OpenAPI_sm_policy_decision_free(message->SmPolicyDecision);
     if (message->SmPolicyData)
         OpenAPI_sm_policy_data_free(message->SmPolicyData);
+    if (message->SmPolicyDeleteData)
+        OpenAPI_sm_policy_delete_data_free(message->SmPolicyDeleteData);
     if (message->AuthorizedNetworkSliceInfo)
         OpenAPI_authorized_network_slice_info_free(
                 message->AuthorizedNetworkSliceInfo);
+    if (message->PcfBinding)
+        OpenAPI_pcf_binding_free(message->PcfBinding);
+    if (message->AppSessionContext)
+        OpenAPI_app_session_context_free(message->AppSessionContext);
 
     for (i = 0; i < message->num_of_part; i++) {
         if (message->part[i].pkbuf)
@@ -367,6 +373,14 @@ ogs_sbi_request_t *ogs_sbi_build_request(ogs_sbi_message_t *message)
         if (sNSSAI.sd)
             ogs_free(sNSSAI.sd);
     }
+    if (message->param.ipv4addr) {
+        ogs_sbi_header_set(request->http.params,
+                OGS_SBI_PARAM_IPV4ADDR, message->param.ipv4addr);
+    }
+    if (message->param.ipv6prefix) {
+        ogs_sbi_header_set(request->http.params,
+                OGS_SBI_PARAM_IPV6PREFIX, message->param.ipv6prefix);
+    }
 
     build_content(&request->http, message);
 
@@ -522,6 +536,10 @@ int ogs_sbi_parse_request(
                     cJSON_Delete(item);
                 }
             }
+        } else if (!strcmp(ogs_hash_this_key(hi), OGS_SBI_PARAM_IPV4ADDR)) {
+            message->param.ipv4addr = ogs_hash_this_val(hi);
+        } else if (!strcmp(ogs_hash_this_key(hi), OGS_SBI_PARAM_IPV6PREFIX)) {
+            message->param.ipv6prefix = ogs_hash_this_val(hi);
         }
     }
 
@@ -831,9 +849,20 @@ static char *build_json(ogs_sbi_message_t *message)
     } else if (message->SmPolicyData) {
         item = OpenAPI_sm_policy_data_convertToJSON(message->SmPolicyData);
         ogs_assert(item);
+    } else if (message->SmPolicyDeleteData) {
+        item = OpenAPI_sm_policy_delete_data_convertToJSON(
+                message->SmPolicyDeleteData);
+        ogs_assert(item);
     } else if (message->AuthorizedNetworkSliceInfo) {
         item = OpenAPI_authorized_network_slice_info_convertToJSON(
                 message->AuthorizedNetworkSliceInfo);
+        ogs_assert(item);
+    } else if (message->PcfBinding) {
+        item = OpenAPI_pcf_binding_convertToJSON(message->PcfBinding);
+        ogs_assert(item);
+    } else if (message->AppSessionContext) {
+        item = OpenAPI_app_session_context_convertToJSON(
+                message->AppSessionContext);
         ogs_assert(item);
     }
 
@@ -1436,20 +1465,42 @@ static int parse_json(ogs_sbi_message_t *message,
         CASE(OGS_SBI_SERVICE_NAME_NPCF_SMPOLICYCONTROL)
             SWITCH(message->h.resource.component[0])
             CASE(OGS_SBI_RESOURCE_NAME_SM_POLICIES)
-                if (message->res_status == 0) {
-                    message->SmPolicyContextData =
-                        OpenAPI_sm_policy_context_data_parseFromJSON(item);
-                    if (!message->SmPolicyContextData) {
-                        rv = OGS_ERROR;
-                        ogs_error("JSON parse error");
+                if (!message->h.resource.component[1]) {
+                    if (message->res_status == 0) {
+                        message->SmPolicyContextData =
+                            OpenAPI_sm_policy_context_data_parseFromJSON(item);
+                        if (!message->SmPolicyContextData) {
+                            rv = OGS_ERROR;
+                            ogs_error("JSON parse error");
+                        }
+                    } else if (message->res_status ==
+                            OGS_SBI_HTTP_STATUS_CREATED) {
+                        message->SmPolicyDecision =
+                            OpenAPI_sm_policy_decision_parseFromJSON(item);
+                        if (!message->SmPolicyDecision) {
+                            rv = OGS_ERROR;
+                            ogs_error("JSON parse error");
+                        }
                     }
-                } else if (message->res_status == OGS_SBI_HTTP_STATUS_CREATED) {
-                    message->SmPolicyDecision =
-                        OpenAPI_sm_policy_decision_parseFromJSON(item);
-                    if (!message->SmPolicyDecision) {
+                } else {
+                    SWITCH(message->h.resource.component[2])
+                    CASE(OGS_SBI_RESOURCE_NAME_DELETE)
+                        if (message->res_status == 0) {
+                            message->SmPolicyDeleteData =
+                                OpenAPI_sm_policy_delete_data_parseFromJSON(
+                                        item);
+                            if (!message->SmPolicyDeleteData) {
+                                rv = OGS_ERROR;
+                                ogs_error("JSON parse error");
+                            }
+                        }
+                        break;
+                    DEFAULT
                         rv = OGS_ERROR;
-                        ogs_error("JSON parse error");
-                    }
+                        ogs_error("Unknown resource name [%s]",
+                                message->h.resource.component[2]);
+                    END
+                    break;
                 }
                 break;
 
@@ -1473,6 +1524,108 @@ static int parse_json(ogs_sbi_message_t *message,
                     }
                 }
                 break;
+
+            DEFAULT
+                rv = OGS_ERROR;
+                ogs_error("Unknown resource name [%s]",
+                        message->h.resource.component[0]);
+            END
+            break;
+
+        CASE(OGS_SBI_SERVICE_NAME_NBSF_MANAGEMENT)
+            SWITCH(message->h.resource.component[0])
+            CASE(OGS_SBI_RESOURCE_NAME_PCF_BINDINGS)
+                if (message->h.resource.component[1]) {
+                    SWITCH(message->h.method)
+                    CASE(OGS_SBI_HTTP_METHOD_PATCH)
+                        if (message->res_status == OGS_SBI_HTTP_STATUS_OK) {
+                            message->PcfBinding =
+                                OpenAPI_pcf_binding_parseFromJSON(item);
+                            if (!message->PcfBinding) {
+                                rv = OGS_ERROR;
+                                ogs_error("JSON parse error");
+                            }
+                        }
+                        break;
+                    CASE(OGS_SBI_HTTP_METHOD_DELETE)
+                        break;
+                    DEFAULT
+                        rv = OGS_ERROR;
+                        ogs_error("Unknown method [%s]", message->h.method);
+                    END
+                    break;
+                } else {
+                    SWITCH(message->h.method)
+                    CASE(OGS_SBI_HTTP_METHOD_POST)
+                        if (message->res_status == 0 ||
+                            message->res_status ==
+                                OGS_SBI_HTTP_STATUS_CREATED) {
+                            message->PcfBinding =
+                                OpenAPI_pcf_binding_parseFromJSON(item);
+                            if (!message->PcfBinding) {
+                                rv = OGS_ERROR;
+                                ogs_error("JSON parse error");
+                            }
+                        }
+                        break;
+
+                    CASE(OGS_SBI_HTTP_METHOD_GET)
+                        if (message->res_status == OGS_SBI_HTTP_STATUS_OK) {
+                            message->PcfBinding =
+                                OpenAPI_pcf_binding_parseFromJSON(item);
+                            if (!message->PcfBinding) {
+                                rv = OGS_ERROR;
+                                ogs_error("JSON parse error");
+                            }
+                        }
+                        break;
+                    DEFAULT
+                        rv = OGS_ERROR;
+                        ogs_error("Unknown method [%s]", message->h.method);
+                    END
+                    break;
+                }
+
+            DEFAULT
+                rv = OGS_ERROR;
+                ogs_error("Unknown resource name [%s]",
+                        message->h.resource.component[0]);
+            END
+            break;
+
+        CASE(OGS_SBI_SERVICE_NAME_NPCF_POLICYAUTHORIZATION)
+            SWITCH(message->h.resource.component[0])
+            CASE(OGS_SBI_RESOURCE_NAME_APP_SESSIONS)
+                if (message->h.resource.component[1]) {
+                    SWITCH(message->h.method)
+                    CASE(OGS_SBI_HTTP_METHOD_DELETE)
+                        break;
+                    DEFAULT
+                        rv = OGS_ERROR;
+                        ogs_error("Unknown method [%s]", message->h.method);
+                    END
+                    break;
+                } else {
+                    SWITCH(message->h.method)
+                    CASE(OGS_SBI_HTTP_METHOD_POST)
+                        if (message->res_status == 0 ||
+                            message->res_status ==
+                                OGS_SBI_HTTP_STATUS_CREATED) {
+                            message->AppSessionContext =
+                                OpenAPI_app_session_context_parseFromJSON(item);
+                            if (!message->AppSessionContext) {
+                                rv = OGS_ERROR;
+                                ogs_error("JSON parse error");
+                            }
+                        }
+                        break;
+
+                    DEFAULT
+                        rv = OGS_ERROR;
+                        ogs_error("Unknown method [%s]", message->h.method);
+                    END
+                    break;
+                }
 
             DEFAULT
                 rv = OGS_ERROR;

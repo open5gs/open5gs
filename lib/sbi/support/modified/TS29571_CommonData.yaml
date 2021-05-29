@@ -790,22 +790,22 @@ components:
         - $ref: '#/components/schemas/SscMode'
         - $ref: '#/components/schemas/NullValue'
     DnaiChangeType:
-      anyOf:
-      - type: string
+#      anyOf:
+#      - type: string
         enum:
           - EARLY
           - EARLY_LATE
           - LATE
         type: string
-        description: >
-          This string provides forward-compatibility with future
-          extensions to the enumeration but is not used to encode
-          content defined in the present version of this API.
-      description: >
-        Possible values are
-        - EARLY: Early notification of UP path reconfiguration.
-        - EARLY_LATE: Early and late notification of UP path reconfiguration. This value shall only be present in the subscription to the DNAI change event.
-        - LATE: Late notification of UP path reconfiguration.
+#        description: >
+#          This string provides forward-compatibility with future
+#          extensions to the enumeration but is not used to encode
+#          content defined in the present version of this API.
+#      description: >
+#        Possible values are
+#        - EARLY: Early notification of UP path reconfiguration.
+#        - EARLY_LATE: Early and late notification of UP path reconfiguration. This value shall only be present in the subscription to the DNAI change event.
+#        - LATE: Late notification of UP path reconfiguration.
     DnaiChangeTypeRm:
       anyOf:
         - $ref: '#/components/schemas/DnaiChangeType'

@@ -861,7 +861,7 @@ int gmm_handle_ul_nas_transport(amf_ue_t *amf_ue,
 {
     ogs_slice_data_t *selected_slice = NULL;
     amf_sess_t *sess = NULL;
-    amf_nsmf_pdusession_update_sm_context_param_t param;
+    amf_nsmf_pdusession_sm_context_param_t param;
 
     ogs_nas_payload_container_type_t *payload_container_type = NULL;
     ogs_nas_payload_container_t *payload_container = NULL;

@@ -1777,17 +1777,17 @@ components:
 # ENUMS:
 
     ImsVoPs:
-      anyOf:
-        - type: string
+#      anyOf:
+#        - type: string
           enum:
           - HOMOGENEOUS_SUPPORT
           - HOMOGENEOUS_NON_SUPPORT
           - NON_HOMOGENEOUS_OR_UNKNOWN
-        - type: string
+          type: string
 
     DeregistrationReason:
-      anyOf:
-        - type: string
+#      anyOf:
+#        - type: string
           enum:
           - UE_INITIAL_REGISTRATION
           - UE_REGISTRATION_AREA_CHANGE
@@ -1796,23 +1796,23 @@ components:
           - 5GS_TO_EPS_MOBILITY_UE_INITIAL_REGISTRATION
           - REREGISTRATION_REQUIRED
           - SMF_CONTEXT_TRANSFERRED
-        - type: string
+          type: string
 
     RegistrationReason:
-      anyOf:
-        - type: string
+#      anyOf:
+#        - type: string
           enum:
           - SMF_CONTEXT_TRANSFERRED
-        - type: string
+          type: string
 
     RegistrationDataSetName:
-      anyOf:
-        - type: string
+#      anyOf:
+#        - type: string
           enum:
           - AMF_3GPP
           - AMF_NON_3GPP
           - SMF_PDU_SESSIONS
           - SMSF_3GPP
           - SMSF_NON_3GPP
-        - type: string
+          type: string
 

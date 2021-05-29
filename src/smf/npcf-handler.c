@@ -24,7 +24,8 @@
 #include "nas-path.h"
 
 bool smf_npcf_smpolicycontrol_handle_create(
-        smf_sess_t *sess, ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg)
+        smf_sess_t *sess, ogs_sbi_stream_t *stream, int state,
+        ogs_sbi_message_t *recvmsg)
 {
     int rv;
     char buf1[OGS_ADDRSTRLEN];
@@ -404,9 +405,6 @@ bool smf_npcf_smpolicycontrol_handle_create(
     up2cp_far = sess->up2cp_far;
     ogs_assert(up2cp_far);
 
-    /* Set UE IP Address to the Default DL PDR */
-    smf_sess_set_ue_ip(sess);
-
     ogs_pfcp_paa_to_ue_ip_addr(&sess->session.paa,
             &dl_pdr->ue_ip_addr, &dl_pdr->ue_ip_addr_len);
     dl_pdr->ue_ip_addr.sd = OGS_PFCP_UE_IP_DST;
@@ -501,4 +499,18 @@ cleanup:
     ogs_free(strerror);
 
     return false;
+}
+
+bool smf_npcf_smpolicycontrol_handle_delete(
+        smf_sess_t *sess, ogs_sbi_stream_t *stream, int state,
+        ogs_sbi_message_t *recvmsg)
+{
+    int trigger = state;
+
+    ogs_assert(trigger);
+
+    ogs_assert(OGS_OK ==
+        smf_5gc_pfcp_send_session_deletion_request(sess, stream, trigger));
+
+    return true;
 }

@@ -53,6 +53,7 @@ The Open5GS 5G SA Core contains the following functions:
 * UDR - Unified Data Repository
 * PCF - Policy and Charging Function
 * NSSF - Network Slice Selection Function
+* BSF - Binding Support Function
 
 The 5G SA core works in a different way to the 4G core - it uses a **Service Based Architecture** (SBI). **Control plane** functions are configured to register with the NRF, and the NRF then helps them discover the other core functions. Running through the other functions: The AMF handles connection and mobility management; a subset of what the 4G MME is tasked with. gNBs (5G basestations) connect to the AMF. The UDM, AUSF and UDR carry out similar operations as the 4G HSS, generating SIM authentication vectors and holding the subscriber profile. Session management is all handled by the SMF (previously the responsibility of the 4G MME/ SGWC/ PGWC). The NSSF provides a way to select the network slice. Finally there is the PCF, used for charging and enforcing subscriber policies.
 
@@ -221,6 +222,7 @@ AUSF-sbi  = 127.0.0.11:7777 for 5G SBI
 UDM-sbi   = 127.0.0.12:7777 for 5G SBI
 PCF-sbi   = 127.0.0.13:7777 for 5G SBI
 NSSF-sbi  = 127.0.0.14:7777 for 5G SBI
+BSF-sbi   = 127.0.0.15:7777 for 5G SBI
 UDR-sbi   = 127.0.0.20:7777 for 5G SBI
 ```
 
@@ -467,6 +469,7 @@ $ sudo systemctl stop open5gs-ausfd
 $ sudo systemctl stop open5gs-udmd
 $ sudo systemctl stop open5gs-pcfd
 $ sudo systemctl stop open5gs-nssfd
+$ sudo systemctl stop open5gs-bsfd
 $ sudo systemctl stop open5gs-udrd
 $ sudo systemctl stop open5gs-webui
 ```
@@ -485,6 +488,7 @@ $ sudo systemctl restart open5gs-ausfd
 $ sudo systemctl restart open5gs-udmd
 $ sudo systemctl restart open5gs-pcfd
 $ sudo systemctl restart open5gs-nssfd
+$ sudo systemctl restart open5gs-bsfd
 $ sudo systemctl restart open5gs-udrd
 $ sudo systemctl restart open5gs-webui
 ```

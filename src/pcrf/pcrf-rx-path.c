@@ -103,6 +103,9 @@ static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
     size_t sidlen;
 
     ogs_diam_rx_message_t rx_message;
+    ogs_media_component_t *media_component = NULL;
+    ogs_media_sub_component_t *sub = NULL;
+    ogs_flow_t *flow = NULL;
 
     char buf[OGS_ADDRSTRLEN];
     os0_t gx_sid = NULL;
@@ -218,9 +221,8 @@ static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
             break;
         /* Gwt Media-Component-Description */
         case OGS_DIAM_RX_AVP_CODE_MEDIA_COMPONENT_DESCRIPTION:
-        {
-            ogs_diam_rx_media_component_t *media_component = &rx_message.
-                    media_component[rx_message.num_of_media_component];
+            media_component = &rx_message.ims_data.
+                    media_component[rx_message.ims_data.num_of_media_component];
 
             ret = fd_msg_browse(avpch1, MSG_BRW_FIRST_CHILD, &avpch2, NULL);
             ogs_assert(ret == 0);
@@ -257,10 +259,11 @@ static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
                     media_component->min_requested_bandwidth_ul =
                         hdr->avp_value->i32;
                     break;
+                case OGS_DIAM_RX_AVP_CODE_FLOW_STATUS:
+                    media_component->flow_status = hdr->avp_value->i32;
+                    break;
                 case OGS_DIAM_RX_AVP_CODE_MEDIA_SUB_COMPONENT:
-                {
-                    ogs_diam_rx_media_sub_component_t *sub = &media_component->
-                        sub[media_component->num_of_sub];
+                    sub = &media_component->sub[media_component->num_of_sub];
 
                     ret = fd_msg_browse(avpch2, MSG_BRW_FIRST_CHILD,
                             &avpch3, NULL);
@@ -278,9 +281,7 @@ static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
                                 hdr->avp_value->i32;
                             break;
                         case OGS_DIAM_RX_AVP_CODE_FLOW_DESCRIPTION:
-                        {
-                            ogs_flow_t *flow = &sub->flow
-                                [sub->num_of_flow];
+                            flow = &sub->flow[sub->num_of_flow];
 
                             /* IE (IPV4-local-addr field ) is not supported on
                              * the LTE pre release-11 UEs. In order for the call
@@ -384,7 +385,6 @@ static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
 
                             sub->num_of_flow++;
                             break;
-                        }
                         default:
                             ogs_error("Not supported(%d)",
                                     hdr->avp_code);
@@ -395,7 +395,6 @@ static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
 
                     media_component->num_of_sub++;
                     break;
-                }
                 default:
                     ogs_warn("Not supported(%d)", hdr->avp_code);
                     break;
@@ -404,9 +403,8 @@ static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
                 fd_msg_browse(avpch2, MSG_BRW_NEXT, &avpch2, NULL);
             }
 
-            rx_message.num_of_media_component++;
+            rx_message.ims_data.num_of_media_component++;
             break;
-        }
         default:
             ogs_warn("Not supported(%d)", hdr->avp_code);
             break;
@@ -467,7 +465,7 @@ static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
 	ogs_diam_logger_self()->stats.nb_echoed++;
 	ogs_assert(pthread_mutex_unlock(&ogs_diam_logger_self()->stats_lock) == 0);
 
-    ogs_diam_rx_message_free(&rx_message);
+    ogs_ims_data_free(&rx_message.ims_data);
     
     return 0;
 
@@ -493,7 +491,7 @@ out:
     ogs_assert(ret == 0);
 
     state_cleanup(sess_data, NULL, NULL);
-    ogs_diam_rx_message_free(&rx_message);
+    ogs_ims_data_free(&rx_message.ims_data);
 
     return 0;
 }
@@ -788,7 +786,7 @@ static int pcrf_rx_str_cb( struct msg **msg, struct avp *avp,
 	ogs_assert(pthread_mutex_unlock(&ogs_diam_logger_self()->stats_lock) == 0);
 
     state_cleanup(sess_data, NULL, NULL);
-    ogs_diam_rx_message_free(&rx_message);
+    ogs_ims_data_free(&rx_message.ims_data);
     
     return 0;
 
@@ -816,7 +814,7 @@ out:
     ogs_debug("[PCRF] Session-Termination-Answer");
 
     state_cleanup(sess_data, NULL, NULL);
-    ogs_diam_rx_message_free(&rx_message);
+    ogs_ims_data_free(&rx_message.ims_data);
 
     return 0;
 }

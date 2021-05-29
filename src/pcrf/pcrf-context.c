@@ -265,7 +265,7 @@ int pcrf_context_parse_config(void)
 int pcrf_db_qos_data(
         char *imsi_bcd, char *apn, ogs_session_data_t *session_data)
 {
-    int rv;
+    int rv, i;
     char *supi = NULL;
     ogs_s_nssai_t s_nssai;
 
@@ -282,6 +282,12 @@ int pcrf_db_qos_data(
     s_nssai.sd.v = OGS_S_NSSAI_NO_SD_VALUE;
 
     rv = ogs_dbi_session_data(supi, &s_nssai, apn, session_data);
+
+    /* For EPC, we need to inialize Flow-Status in Pcc-Rule */
+    for (i = 0; i < session_data->num_of_pcc_rule; i++) {
+        ogs_pcc_rule_t *pcc_rule = &session_data->pcc_rule[i];
+        pcc_rule->flow_status = OGS_DIAM_RX_FLOW_STATUS_ENABLED;
+    }
 
     ogs_free(supi);
     ogs_thread_mutex_unlock(&self.db_lock);

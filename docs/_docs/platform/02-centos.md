@@ -325,7 +325,7 @@ $ cd ../
 $ ls install/bin
 open5gs-amfd   open5gs-hssd  open5gs-nrfd   open5gs-sgwcd  open5gs-smfd  open5gs-udrd
 open5gs-ausfd  open5gs-mmed  open5gs-pcrfd  open5gs-sgwud  open5gs-udmd  open5gs-pcfd
-open5gs-upfd   open5gs-nssfd
+open5gs-upfd   open5gs-nssfd open5gs-bsfd
 ```
 
 ## Building WebUI of Open5GS

@@ -329,6 +329,14 @@ Open5GS daemon v2.1.0
 08/21 22:56:02.155: [app] INFO: NSSF initialize...done (../src/nssfd/app.c:31)
 08/21 22:56:02.155: [sbi] INFO: sbi_server() [127.0.0.12]:7777 (../lib/sbi/server.c:298)
 
+$ ./install/bin/open5gs-bsfd
+Open5GS daemon v2.1.0
+
+08/21 22:56:02.154: [app] INFO: Configuration: '/home/acetcom/Documents/git/open5gs/install/etc/open5gs/bsf.yaml' (../src/main.c:54)
+08/21 22:56:02.154: [app] INFO: File Logging: '/home/acetcom/Documents/git/open5gs/install/var/log/open5gs/bsf.log' (../src/main.c:57)
+08/21 22:56:02.155: [app] INFO: BSF initialize...done (../src/bsf/app.c:31)
+08/21 22:56:02.155: [sbi] INFO: sbi_server() [127.0.0.12]:7777 (../lib/sbi/server.c:298)
+
 $ ./install/bin/open5gs-udrd
 Open5GS daemon v2.1.0
 

@@ -48,6 +48,7 @@ void pcf_am_state_exception(ogs_fsm_t *s, pcf_event_t *e);
 void pcf_sm_state_initial(ogs_fsm_t *s, pcf_event_t *e);
 void pcf_sm_state_final(ogs_fsm_t *s, pcf_event_t *e);
 void pcf_sm_state_operational(ogs_fsm_t *s, pcf_event_t *e);
+void pcf_sm_state_deleted(ogs_fsm_t *s, pcf_event_t *e);
 void pcf_sm_state_exception(ogs_fsm_t *s, pcf_event_t *e);
 
 #define pcf_sm_debug(__pe) \

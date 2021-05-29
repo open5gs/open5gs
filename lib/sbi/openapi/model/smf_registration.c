@@ -17,7 +17,7 @@ OpenAPI_smf_registration_t *OpenAPI_smf_registration_create(
     char *pgw_fqdn,
     int epdg_ind,
     char *dereg_callback_uri,
-    OpenAPI_registration_reason_t *registration_reason,
+    OpenAPI_registration_reason_e registration_reason,
     char *registration_time,
     OpenAPI_context_info_t *context_info
     )
@@ -60,7 +60,6 @@ void OpenAPI_smf_registration_free(OpenAPI_smf_registration_t *smf_registration)
     OpenAPI_plmn_id_free(smf_registration->plmn_id);
     ogs_free(smf_registration->pgw_fqdn);
     ogs_free(smf_registration->dereg_callback_uri);
-    OpenAPI_registration_reason_free(smf_registration->registration_reason);
     ogs_free(smf_registration->registration_time);
     OpenAPI_context_info_free(smf_registration->context_info);
     ogs_free(smf_registration);
@@ -165,13 +164,7 @@ cJSON *OpenAPI_smf_registration_convertToJSON(OpenAPI_smf_registration_t *smf_re
     }
 
     if (smf_registration->registration_reason) {
-        cJSON *registration_reason_local_JSON = OpenAPI_registration_reason_convertToJSON(smf_registration->registration_reason);
-        if (registration_reason_local_JSON == NULL) {
-            ogs_error("OpenAPI_smf_registration_convertToJSON() failed [registration_reason]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "registrationReason", registration_reason_local_JSON);
-        if (item->child == NULL) {
+        if (cJSON_AddStringToObject(item, "registrationReason", OpenAPI_registration_reason_ToString(smf_registration->registration_reason)) == NULL) {
             ogs_error("OpenAPI_smf_registration_convertToJSON() failed [registration_reason]");
             goto end;
         }
@@ -322,9 +315,13 @@ OpenAPI_smf_registration_t *OpenAPI_smf_registration_parseFromJSON(cJSON *smf_re
 
     cJSON *registration_reason = cJSON_GetObjectItemCaseSensitive(smf_registrationJSON, "registrationReason");
 
-    OpenAPI_registration_reason_t *registration_reason_local_nonprim = NULL;
+    OpenAPI_registration_reason_e registration_reasonVariable;
     if (registration_reason) {
-        registration_reason_local_nonprim = OpenAPI_registration_reason_parseFromJSON(registration_reason);
+        if (!cJSON_IsString(registration_reason)) {
+            ogs_error("OpenAPI_smf_registration_parseFromJSON() failed [registration_reason]");
+            goto end;
+        }
+        registration_reasonVariable = OpenAPI_registration_reason_FromString(registration_reason->valuestring);
     }
 
     cJSON *registration_time = cJSON_GetObjectItemCaseSensitive(smf_registrationJSON, "registrationTime");
@@ -356,7 +353,7 @@ OpenAPI_smf_registration_t *OpenAPI_smf_registration_parseFromJSON(cJSON *smf_re
         pgw_fqdn ? ogs_strdup(pgw_fqdn->valuestring) : NULL,
         epdg_ind ? epdg_ind->valueint : 0,
         dereg_callback_uri ? ogs_strdup(dereg_callback_uri->valuestring) : NULL,
-        registration_reason ? registration_reason_local_nonprim : NULL,
+        registration_reason ? registration_reasonVariable : 0,
         registration_time ? ogs_strdup(registration_time->valuestring) : NULL,
         context_info ? context_info_local_nonprim : NULL
         );

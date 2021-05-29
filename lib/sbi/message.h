@@ -143,10 +143,20 @@ extern "C" {
 #define OGS_SBI_RESOURCE_NAME_POLICIES              "policies"
 #define OGS_SBI_SERVICE_NAME_NPCF_SMPOLICYCONTROL   "npcf-smpolicycontrol"
 #define OGS_SBI_RESOURCE_NAME_SM_POLICIES           "sm-policies"
+#define OGS_SBI_RESOURCE_NAME_DELETE                "delete"
+#define OGS_SBI_SERVICE_NAME_NPCF_POLICYAUTHORIZATION \
+                                                    "npcf-policyauthorization"
+#define OGS_SBI_RESOURCE_NAME_APP_SESSIONS          "app-sessions"
+#define OGS_SBI_RESOURCE_NAME_NOTIFY                "notify"
 
 #define OGS_SBI_SERVICE_NAME_NNSSF_NSSELECTION      "nnssf-nsselection"
 #define OGS_SBI_RESOURCE_NAME_NETWORK_SLICE_INFORMATION \
                                                     "network-slice-information"
+
+#define OGS_SBI_SERVICE_NAME_NBSF_MANAGEMENT        "nbsf-management"
+#define OGS_SBI_RESOURCE_NAME_PCF_BINDINGS          "pcfBindings"
+
+#define OGS_SBI_SERVICE_NAME_NAF_EVENTEXPOSURE      "naf-eventexposure"
 
 #define OGS_SBI_FEATURES_IS_SET(__fEATURES, __n) \
     (__fEATURES & (1 << ((__n)-1)))
@@ -199,6 +209,41 @@ extern "C" {
 #define OGS_SBI_NPCF_SMPOLICYCONTROL_DDN_EVENT_POLICY_CONTROL 37
 #define OGS_SBI_NPCF_SMPOLICYCONTROL_REALLOCATION_OF_CREDIT 38
 
+#define OGS_SBI_NPCF_POLICYAUTHORIZATION_INFLUENCE_ON_TRAFFIC_ROUTING 1
+#define OGS_SBI_NPCF_POLICYAUTHORIZATION_SPONSORED_CONNECTIVITY 2
+#define OGS_SBI_NPCF_POLICYAUTHORIZATION_MEDIA_COMPONENT_VERSIONING 3
+#define OGS_SBI_NPCF_POLICYAUTHORIZATION_URLLC 4
+#define OGS_SBI_NPCF_POLICYAUTHORIZATION_IMS_SBI 5
+#define OGS_SBI_NPCF_POLICYAUTHORIZATION_NETLOC 6
+#define OGS_SBI_NPCF_POLICYAUTHORIZATION_PROV_AF_SIGNAL_FLOW 7
+#define OGS_SBI_NPCF_POLICYAUTHORIZATION_RESOURCE_SHARING 8
+#define OGS_SBI_NPCF_POLICYAUTHORIZATION_MCPTT 9
+#define OGS_SBI_NPCF_POLICYAUTHORIZATION_MCVIDEO 10
+#define OGS_SBI_NPCF_POLICYAUTHORIZATION_PRIORITY_SHARING 11
+#define OGS_SBI_NPCF_POLICYAUTHORIZATION_MCPTT_PREEMPTION 12
+#define OGS_SBI_NPCF_POLICYAUTHORIZATION_MAC_ADDRESS_RANGE 13
+#define OGS_SBI_NPCF_POLICYAUTHORIZATION_RAN_NAS_CAUSE 14
+#define OGS_SBI_NPCF_POLICYAUTHORIZATION_ENHANCED_SUBSCRIPTION_TO_NOTIFICATION 15
+#define OGS_SBI_NPCF_POLICYAUTHORIZATION_QOS_MONITORING 16
+#define OGS_SBI_NPCF_POLICYAUTHORIZATION_AUTHORIZATION_WITH_REQUIRED_QOS 17
+#define OGS_SBI_NPCF_POLICYAUTHORIZATION_TIME_SENSITIVE_NETWORKING 18
+#define OGS_SBI_NPCF_POLICYAUTHORIZATION_PCSCF_RESTORATION_ENHANCEMENT 19
+#define OGS_SBI_NPCF_POLICYAUTHORIZATION_CHEM 20
+#define OGS_SBI_NPCF_POLICYAUTHORIZATION_FLUS 21
+#define OGS_SBI_NPCF_POLICYAUTHORIZATION_EPS_FALLBACK_REPORT 22
+#define OGS_SBI_NPCF_POLICYAUTHORIZATION_ATSSS 23
+#define OGS_SBI_NPCF_POLICYAUTHORIZATION_QOS_HINT 24
+#define OGS_SBI_NPCF_POLICYAUTHORIZATION_REALLOCATION_OF_CREDIT 25
+#define OGS_SBI_NPCF_POLICYAUTHORIZATION_ES3XX 26
+#define OGS_SBI_NPCF_POLICYAUTHORIZATION_DISABLE_UE_NOTIFICATION 27
+#define OGS_SBI_NPCF_POLICYAUTHORIZATION_PATCH_CORRECTION 28
+
+#define OGS_SBI_NBSF_MANAGEMENT_MULTI_UE_ADDR 1
+#define OGS_SBI_NBSF_MANAGEMENT_BINDING_UPDATE 2
+#define OGS_SBI_NBSF_MANAGEMENT_SAME_PCF 3
+#define OGS_SBI_NBSF_MANAGEMENT_ES3XX 4
+#define OGS_SBI_NBSF_MANAGEMENT_EXTENDED_SAME_PCF 5
+
 #define OGS_SBI_PARAM_NF_ID                         "nf-id"
 #define OGS_SBI_PARAM_NF_TYPE                       "nf-type"
 #define OGS_SBI_PARAM_TARGET_NF_TYPE                "target-nf-type"
@@ -210,6 +255,8 @@ extern "C" {
 #define OGS_SBI_PARAM_SNSSAI                        "snssai"
 #define OGS_SBI_PARAM_SLICE_INFO_REQUEST_FOR_PDU_SESSION \
         "slice-info-request-for-pdu-session"
+#define OGS_SBI_PARAM_IPV4ADDR                      "ipv4Addr"
+#define OGS_SBI_PARAM_IPV6PREFIX                    "ipv6Prefix"
 
 #define OGS_SBI_ACCEPT                              "Accept"
 #define OGS_SBI_ACCEPT_ENCODING                     "Accept-Encoding"
@@ -300,6 +347,9 @@ typedef struct ogs_sbi_message_s {
         bool snssai_presence;
         bool slice_info_request_for_pdu_session_presence;
         OpenAPI_roaming_indication_e roaming_indication;
+
+        char *ipv4addr;
+        char *ipv6prefix;
     } param;
 
     int res_status;
@@ -341,11 +391,16 @@ typedef struct ogs_sbi_message_s {
     OpenAPI_sm_context_status_notification_t *SmContextStatusNotification;
     OpenAPI_policy_association_request_t *PolicyAssociationRequest;
     OpenAPI_policy_association_t *PolicyAssociation;
+    OpenAPI_policy_update_t *PolicyUpdate;
     OpenAPI_am_policy_data_t *AmPolicyData;
     OpenAPI_sm_policy_context_data_t *SmPolicyContextData;
     OpenAPI_sm_policy_decision_t *SmPolicyDecision;
     OpenAPI_sm_policy_data_t *SmPolicyData;
+    OpenAPI_sm_policy_delete_data_t *SmPolicyDeleteData;
+    OpenAPI_sm_policy_notification_t *SmPolicyNotification;
     OpenAPI_authorized_network_slice_info_t *AuthorizedNetworkSliceInfo;
+    OpenAPI_pcf_binding_t *PcfBinding;
+    OpenAPI_app_session_context_t *AppSessionContext;
 
     ogs_sbi_links_t *links;
 

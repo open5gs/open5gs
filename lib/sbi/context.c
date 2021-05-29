@@ -1080,6 +1080,11 @@ bool ogs_sbi_client_associate(ogs_sbi_nf_instance_t *nf_instance)
     return true;
 }
 
+OpenAPI_uri_scheme_e ogs_sbi_default_uri_scheme(void)
+{
+    return OpenAPI_uri_scheme_http;
+}
+
 ogs_sbi_client_t *ogs_sbi_client_find_by_service_name(
         ogs_sbi_nf_instance_t *nf_instance, char *name, char *version)
 {

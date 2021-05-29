@@ -44,7 +44,7 @@ typedef struct OpenAPI_traffic_influ_data_s {
     struct OpenAPI_network_area_info_2_s *nw_area_info;
     char *up_path_chg_notif_uri;
     OpenAPI_list_t *subscribed_events;
-    struct OpenAPI_dnai_change_type_s *dnai_chg_type;
+    OpenAPI_dnai_change_type_e dnai_chg_type;
     int af_ack_ind;
     int addr_preser_ind;
     char *supported_features;
@@ -68,7 +68,7 @@ OpenAPI_traffic_influ_data_t *OpenAPI_traffic_influ_data_create(
     OpenAPI_network_area_info_2_t *nw_area_info,
     char *up_path_chg_notif_uri,
     OpenAPI_list_t *subscribed_events,
-    OpenAPI_dnai_change_type_t *dnai_chg_type,
+    OpenAPI_dnai_change_type_e dnai_chg_type,
     int af_ack_ind,
     int addr_preser_ind,
     char *supported_features

@@ -148,33 +148,6 @@ static void handle_smf_info(
             nf_info->smf.num_of_nr_tai_range++;
         }
     }
-
-#if 0
-    ogs_sbi_smf_info_t *smf_info = &nf_info->smf;
-    int i, j;
-    for (i = 0; i < smf_info->num_of_slice; i++) {
-        ogs_fatal("%d, %x", smf_info->slice[i].s_nssai.sst,
-                smf_info->slice[i].s_nssai.sd.v);
-        for (j = 0; j < smf_info->slice[i].num_of_dnn; j++)
-            ogs_fatal("   %s", smf_info->slice[i].dnn[j]);
-    }
-    for (i = 0; i < smf_info->num_of_nr_tai; i++) {
-        ogs_fatal("%d, %d, %x",
-                ogs_plmn_id_mcc(&smf_info->nr_tai[i].plmn_id),
-                ogs_plmn_id_mnc(&smf_info->nr_tai[i].plmn_id),
-                smf_info->nr_tai[i].tac.v);
-    }
-    for (i = 0; i < smf_info->num_of_nr_tai_range; i++) {
-        ogs_fatal("%d, %d",
-                ogs_plmn_id_mcc(&smf_info->nr_tai[i].plmn_id),
-                ogs_plmn_id_mnc(&smf_info->nr_tai[i].plmn_id));
-        for (j = 0; j < smf_info->nr_tai_range[i].num_of_tac_range; j++) {
-            ogs_fatal("   %d-%d",
-                smf_info->nr_tai_range[i].start[j].v,
-                smf_info->nr_tai_range[i].end[j].v);
-        }
-    }
-#endif
 }
 
 bool ogs_sbi_nnrf_handle_nf_profile(ogs_sbi_nf_instance_t *nf_instance,

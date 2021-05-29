@@ -144,7 +144,7 @@ int ngap_handle_pdu_session_resource_setup_response_transfer(
                 0));
     } else {
         /* ACTIVATED Is NOT Included in RESPONSE */
-        smf_sbi_send_http_status_no_content(stream);
+        ogs_sbi_send_http_status_no_content(stream);
     }
 
     rv = OGS_OK;
@@ -351,7 +351,7 @@ int ngap_handle_path_switch_request_transfer(
                 0));
     } else {
         /* ACTIVATED Is NOT Included in RESPONSE */
-        smf_sbi_send_http_status_no_content(stream);
+        ogs_sbi_send_http_status_no_content(stream);
     }
 
     rv = OGS_OK;

@@ -347,11 +347,20 @@ bool smf_nsmf_handle_update_sm_context(
         /*********************************************************
          * Handle DEACTIVATED
          ********************************************************/
-            ogs_assert(OGS_OK ==
-                smf_5gc_pfcp_send_session_modification_request(
-                    sess, stream,
-                    OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_DEACTIVATE,
-                    0));
+            if (ogs_list_count(&sess->bearer_list) == 0) {
+                /* If there is no Qos-Flow,
+                 * we assume that there is no PFCP context in the UPF.
+                 *
+                 * PFCP deactivation is skipped. */
+                smf_sbi_send_sm_context_updated_data_up_cnx_state(
+                        sess, stream, OpenAPI_up_cnx_state_DEACTIVATED);
+            } else {
+                ogs_assert(OGS_OK ==
+                    smf_5gc_pfcp_send_session_modification_request(
+                        sess, stream,
+                        OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_DEACTIVATE,
+                        0));
+            }
 
         } else if (SmContextUpdateData->up_cnx_state ==
                 OpenAPI_up_cnx_state_ACTIVATING) {
@@ -539,9 +548,16 @@ bool smf_nsmf_handle_update_sm_context(
             return false;
         }
     } else if (SmContextUpdateData->release) {
-        ogs_assert(OGS_OK ==
-            smf_5gc_pfcp_send_session_deletion_request(sess, stream,
-                OGS_PFCP_DELETE_TRIGGER_AMF_UPDATE_SM_CONTEXT));
+        smf_npcf_smpolicycontrol_param_t param;
+
+        memset(&param, 0, sizeof(param));
+
+        param.ue_location = true;
+        param.ue_timezone = true;
+
+        smf_sbi_discover_and_send(OpenAPI_nf_type_PCF, sess, stream,
+                OGS_PFCP_DELETE_TRIGGER_AMF_UPDATE_SM_CONTEXT, &param,
+                smf_npcf_smpolicycontrol_build_delete);
     } else {
         ogs_error("[%s:%d] No UpdateData", smf_ue->supi, sess->psi);
         smf_sbi_send_sm_context_update_error(stream,
@@ -556,11 +572,15 @@ bool smf_nsmf_handle_update_sm_context(
 bool smf_nsmf_handle_release_sm_context(
     smf_sess_t *sess, ogs_sbi_stream_t *stream, ogs_sbi_message_t *message)
 {
+    smf_npcf_smpolicycontrol_param_t param;
+
     OpenAPI_sm_context_release_data_t *SmContextReleaseData = NULL;
 
     ogs_assert(stream);
     ogs_assert(message);
     ogs_assert(sess);
+
+    memset(&param, 0, sizeof(param));
 
     SmContextReleaseData = message->SmContextReleaseData;
     if (SmContextReleaseData) {
@@ -586,12 +606,24 @@ bool smf_nsmf_handle_release_sm_context(
                     ogs_plmn_id_hexdump(&sess->nr_cgi.plmn_id),
                     (long long)sess->nr_cgi.cell_id);
             }
+
+            param.ue_location = true;
+            param.ue_timezone = true;
         }
+
+        if (SmContextReleaseData->ng_ap_cause) {
+            param.ran_nas_release.ngap_cause.group =
+                SmContextReleaseData->ng_ap_cause->group;
+            param.ran_nas_release.ngap_cause.value =
+                SmContextReleaseData->ng_ap_cause->value;
+        }
+        param.ran_nas_release.gmm_cause =
+            SmContextReleaseData->_5g_mm_cause_value;
     }
 
-    ogs_assert(OGS_OK ==
-        smf_5gc_pfcp_send_session_deletion_request(sess, stream,
-            OGS_PFCP_DELETE_TRIGGER_AMF_RELEASE_SM_CONTEXT));
+    smf_sbi_discover_and_send(OpenAPI_nf_type_PCF, sess, stream,
+            OGS_PFCP_DELETE_TRIGGER_AMF_RELEASE_SM_CONTEXT, &param,
+            smf_npcf_smpolicycontrol_build_delete);
 
     return true;
 }

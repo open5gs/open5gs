@@ -28,6 +28,8 @@
 extern "C" {
 #endif
 
+
+/* The ogs_msisdn_data_s structure is always used with the db library. */
 typedef struct ogs_msisdn_data_s {
     struct {
         uint8_t buf[OGS_MAX_IMSI_LEN];
@@ -45,15 +47,6 @@ typedef struct ogs_msisdn_data_s {
 
 int ogs_dbi_msisdn_data(
         char *imsi_or_msisdn_bcd, ogs_msisdn_data_t *msisdn_data);
-
-typedef struct ogs_ims_data_s {
-    int num_of_msisdn;
-    struct {
-        uint8_t buf[OGS_MAX_MSISDN_LEN];
-        int len;
-        char bcd[OGS_MAX_MSISDN_BCD_LEN+1];
-    } msisdn[OGS_MAX_NUM_OF_MSISDN];
-} ogs_ims_data_t;
 
 int ogs_dbi_ims_data(char *supi, ogs_ims_data_t *ims_data);
 

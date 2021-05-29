@@ -202,9 +202,10 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
 #if 0
             CASE(OGS_SBI_RESOURCE_NAME_DEREG_NOTIFY)
                 break;
-            CASE(OGS_SBI_RESOURCE_NAME_AM_POLICY_NOTIFY)
-                break;
 #endif
+            CASE(OGS_SBI_RESOURCE_NAME_AM_POLICY_NOTIFY)
+                ogs_sbi_send_http_status_no_content(stream);
+                break;
 
             DEFAULT
                 ogs_error("Invalid resource name [%s]",

@@ -65,8 +65,13 @@
 #include "model/sm_policy_context_data.h"
 #include "model/sm_policy_decision.h"
 #include "model/sm_policy_data.h"
+#include "model/sm_policy_delete_data.h"
 #include "model/slice_info_for_pdu_session.h"
 #include "model/authorized_network_slice_info.h"
+#include "model/pcf_binding.h"
+#include "model/app_session_context.h"
+#include "model/policy_update.h"
+#include "model/sm_policy_notification.h"
 
 #include "custom/links.h"
 

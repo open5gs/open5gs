@@ -213,3 +213,17 @@ void ogs_nnrf_disc_send_nf_discover(ogs_sbi_nf_instance_t *nf_instance,
     ogs_assert(request);
     ogs_sbi_client_send_request(client, client->cb, request, data);
 }
+
+void ogs_sbi_send_response(ogs_sbi_stream_t *stream, int status)
+{
+    ogs_sbi_message_t sendmsg;
+    ogs_sbi_response_t *response = NULL;
+
+    ogs_assert(stream);
+
+    memset(&sendmsg, 0, sizeof(sendmsg));
+
+    response = ogs_sbi_build_response(&sendmsg, status);
+    ogs_assert(response);
+    ogs_sbi_server_send_response(stream, response);
+}

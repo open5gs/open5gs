@@ -22,7 +22,7 @@ OpenAPI_traffic_influ_data_t *OpenAPI_traffic_influ_data_create(
     OpenAPI_network_area_info_2_t *nw_area_info,
     char *up_path_chg_notif_uri,
     OpenAPI_list_t *subscribed_events,
-    OpenAPI_dnai_change_type_t *dnai_chg_type,
+    OpenAPI_dnai_change_type_e dnai_chg_type,
     int af_ack_ind,
     int addr_preser_ind,
     char *supported_features
@@ -93,7 +93,6 @@ void OpenAPI_traffic_influ_data_free(OpenAPI_traffic_influ_data_t *traffic_influ
         OpenAPI_subscribed_event_free(node->data);
     }
     OpenAPI_list_free(traffic_influ_data->subscribed_events);
-    OpenAPI_dnai_change_type_free(traffic_influ_data->dnai_chg_type);
     ogs_free(traffic_influ_data->supported_features);
     ogs_free(traffic_influ_data);
 }
@@ -305,13 +304,7 @@ cJSON *OpenAPI_traffic_influ_data_convertToJSON(OpenAPI_traffic_influ_data_t *tr
     }
 
     if (traffic_influ_data->dnai_chg_type) {
-        cJSON *dnai_chg_type_local_JSON = OpenAPI_dnai_change_type_convertToJSON(traffic_influ_data->dnai_chg_type);
-        if (dnai_chg_type_local_JSON == NULL) {
-            ogs_error("OpenAPI_traffic_influ_data_convertToJSON() failed [dnai_chg_type]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "dnaiChgType", dnai_chg_type_local_JSON);
-        if (item->child == NULL) {
+        if (cJSON_AddStringToObject(item, "dnaiChgType", OpenAPI_dnai_change_type_ToString(traffic_influ_data->dnai_chg_type)) == NULL) {
             ogs_error("OpenAPI_traffic_influ_data_convertToJSON() failed [dnai_chg_type]");
             goto end;
         }
@@ -566,9 +559,13 @@ OpenAPI_traffic_influ_data_t *OpenAPI_traffic_influ_data_parseFromJSON(cJSON *tr
 
     cJSON *dnai_chg_type = cJSON_GetObjectItemCaseSensitive(traffic_influ_dataJSON, "dnaiChgType");
 
-    OpenAPI_dnai_change_type_t *dnai_chg_type_local_nonprim = NULL;
+    OpenAPI_dnai_change_type_e dnai_chg_typeVariable;
     if (dnai_chg_type) {
-        dnai_chg_type_local_nonprim = OpenAPI_dnai_change_type_parseFromJSON(dnai_chg_type);
+        if (!cJSON_IsString(dnai_chg_type)) {
+            ogs_error("OpenAPI_traffic_influ_data_parseFromJSON() failed [dnai_chg_type]");
+            goto end;
+        }
+        dnai_chg_typeVariable = OpenAPI_dnai_change_type_FromString(dnai_chg_type->valuestring);
     }
 
     cJSON *af_ack_ind = cJSON_GetObjectItemCaseSensitive(traffic_influ_dataJSON, "afAckInd");
@@ -616,7 +613,7 @@ OpenAPI_traffic_influ_data_t *OpenAPI_traffic_influ_data_parseFromJSON(cJSON *tr
         nw_area_info ? nw_area_info_local_nonprim : NULL,
         up_path_chg_notif_uri ? ogs_strdup(up_path_chg_notif_uri->valuestring) : NULL,
         subscribed_events ? subscribed_eventsList : NULL,
-        dnai_chg_type ? dnai_chg_type_local_nonprim : NULL,
+        dnai_chg_type ? dnai_chg_typeVariable : 0,
         af_ack_ind ? af_ack_ind->valueint : 0,
         addr_preser_ind ? addr_preser_ind->valueint : 0,
         supported_features ? ogs_strdup(supported_features->valuestring) : NULL

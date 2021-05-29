@@ -5,7 +5,7 @@
 #include "deregistration_data.h"
 
 OpenAPI_deregistration_data_t *OpenAPI_deregistration_data_create(
-    OpenAPI_deregistration_reason_t *dereg_reason,
+    OpenAPI_deregistration_reason_e dereg_reason,
     OpenAPI_access_type_e access_type,
     int pdu_session_id,
     char *new_smf_instance_id
@@ -29,7 +29,6 @@ void OpenAPI_deregistration_data_free(OpenAPI_deregistration_data_t *deregistrat
         return;
     }
     OpenAPI_lnode_t *node;
-    OpenAPI_deregistration_reason_free(deregistration_data->dereg_reason);
     ogs_free(deregistration_data->new_smf_instance_id);
     ogs_free(deregistration_data);
 }
@@ -44,13 +43,7 @@ cJSON *OpenAPI_deregistration_data_convertToJSON(OpenAPI_deregistration_data_t *
     }
 
     item = cJSON_CreateObject();
-    cJSON *dereg_reason_local_JSON = OpenAPI_deregistration_reason_convertToJSON(deregistration_data->dereg_reason);
-    if (dereg_reason_local_JSON == NULL) {
-        ogs_error("OpenAPI_deregistration_data_convertToJSON() failed [dereg_reason]");
-        goto end;
-    }
-    cJSON_AddItemToObject(item, "deregReason", dereg_reason_local_JSON);
-    if (item->child == NULL) {
+    if (cJSON_AddStringToObject(item, "deregReason", OpenAPI_deregistration_reason_ToString(deregistration_data->dereg_reason)) == NULL) {
         ogs_error("OpenAPI_deregistration_data_convertToJSON() failed [dereg_reason]");
         goto end;
     }
@@ -89,9 +82,13 @@ OpenAPI_deregistration_data_t *OpenAPI_deregistration_data_parseFromJSON(cJSON *
         goto end;
     }
 
-    OpenAPI_deregistration_reason_t *dereg_reason_local_nonprim = NULL;
+    OpenAPI_deregistration_reason_e dereg_reasonVariable;
 
-    dereg_reason_local_nonprim = OpenAPI_deregistration_reason_parseFromJSON(dereg_reason);
+    if (!cJSON_IsString(dereg_reason)) {
+        ogs_error("OpenAPI_deregistration_data_parseFromJSON() failed [dereg_reason]");
+        goto end;
+    }
+    dereg_reasonVariable = OpenAPI_deregistration_reason_FromString(dereg_reason->valuestring);
 
     cJSON *access_type = cJSON_GetObjectItemCaseSensitive(deregistration_dataJSON, "accessType");
 
@@ -123,7 +120,7 @@ OpenAPI_deregistration_data_t *OpenAPI_deregistration_data_parseFromJSON(cJSON *
     }
 
     deregistration_data_local_var = OpenAPI_deregistration_data_create (
-        dereg_reason_local_nonprim,
+        dereg_reasonVariable,
         access_type ? access_typeVariable : 0,
         pdu_session_id ? pdu_session_id->valuedouble : 0,
         new_smf_instance_id ? ogs_strdup(new_smf_instance_id->valuestring) : NULL

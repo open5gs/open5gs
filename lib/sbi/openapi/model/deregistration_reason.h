@@ -17,16 +17,11 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_deregistration_reason_s OpenAPI_deregistration_reason_t;
-typedef struct OpenAPI_deregistration_reason_s {
-} OpenAPI_deregistration_reason_t;
+typedef enum { OpenAPI_deregistration_reason_NULL = 0, OpenAPI_deregistration_reason_UE_INITIAL_REGISTRATION, OpenAPI_deregistration_reason_UE_REGISTRATION_AREA_CHANGE, OpenAPI_deregistration_reason_SUBSCRIPTION_WITHDRAWN, OpenAPI_deregistration_reason__5GS_TO_EPS_MOBILITY, OpenAPI_deregistration_reason__5GS_TO_EPS_MOBILITY_UE_INITIAL_REGISTRATION, OpenAPI_deregistration_reason_REREGISTRATION_REQUIRED, OpenAPI_deregistration_reason_SMF_CONTEXT_TRANSFERRED } OpenAPI_deregistration_reason_e;
 
-OpenAPI_deregistration_reason_t *OpenAPI_deregistration_reason_create(
-    );
-void OpenAPI_deregistration_reason_free(OpenAPI_deregistration_reason_t *deregistration_reason);
-OpenAPI_deregistration_reason_t *OpenAPI_deregistration_reason_parseFromJSON(cJSON *deregistration_reasonJSON);
-cJSON *OpenAPI_deregistration_reason_convertToJSON(OpenAPI_deregistration_reason_t *deregistration_reason);
-OpenAPI_deregistration_reason_t *OpenAPI_deregistration_reason_copy(OpenAPI_deregistration_reason_t *dst, OpenAPI_deregistration_reason_t *src);
+char* OpenAPI_deregistration_reason_ToString(OpenAPI_deregistration_reason_e deregistration_reason);
+
+OpenAPI_deregistration_reason_e OpenAPI_deregistration_reason_FromString(char* deregistration_reason);
 
 #ifdef __cplusplus
 }

@@ -737,7 +737,7 @@ bool udr_nudr_dr_handle_subscription_provisioned(
                         ogs_ipv4_to_string(session->ue_ip.addr);
                 if (session->ue_ip.ipv6)
                     ipAddress->ipv6_addr =
-                        ogs_ipv6_to_string(session->ue_ip.addr6);
+                        ogs_ipv6addr_to_string(session->ue_ip.addr6);
 
                 if (ipAddress->ipv4_addr || ipAddress->ipv6_addr)
                     OpenAPI_list_add(staticIpAddress, ipAddress);

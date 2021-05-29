@@ -106,29 +106,3 @@ int ogs_diam_rx_init(void)
 
     return 0;
 }
-
-void ogs_diam_rx_message_free(ogs_diam_rx_message_t *rx_message)
-{
-    int i, j, k;
-
-    ogs_assert(rx_message);
-
-    for (i = 0; i < rx_message->num_of_media_component; i++) {
-        ogs_diam_rx_media_component_t *media_component =
-            &rx_message->media_component[i];
-
-        for (j = 0; j < media_component->num_of_sub; j++) {
-            ogs_diam_rx_media_sub_component_t *sub = &media_component->sub[j];
-
-            for (k = 0; k < sub->num_of_flow; k++) {
-                ogs_flow_t *flow = &sub->flow[k];
-
-                if (flow->description) {
-                    ogs_free(flow->description);
-                }
-                else
-                    ogs_assert_if_reached();
-            }
-        }
-    }
-}

@@ -462,7 +462,7 @@ char *ogs_ipv4_to_string(uint32_t addr)
     return (char*)OGS_INET_NTOP(&addr, buf);
 }
 
-char *ogs_ipv6_to_string(uint8_t *addr6)
+char *ogs_ipv6addr_to_string(uint8_t *addr6)
 {
     char *buf = NULL;
     ogs_assert(addr6);
@@ -471,6 +471,96 @@ char *ogs_ipv6_to_string(uint8_t *addr6)
     ogs_assert(buf);
 
     return (char *)OGS_INET6_NTOP(addr6, buf);
+}
+
+char *ogs_ipv6prefix_to_string(uint8_t *addr6, uint8_t prefixlen)
+{
+    char *buf = NULL;
+    uint8_t tmp[OGS_IPV6_LEN];
+    ogs_assert(addr6);
+
+    memset(tmp, 0, OGS_IPV6_LEN);
+    memcpy(tmp, addr6, prefixlen >> 3);
+
+    buf = ogs_calloc(1, OGS_ADDRSTRLEN);
+    ogs_assert(buf);
+
+    if (OGS_INET6_NTOP(tmp, buf) == NULL) {
+        ogs_fatal("Invalid IPv6 address");
+        ogs_log_hexdump(OGS_LOG_FATAL, addr6, OGS_IPV6_LEN);
+        ogs_assert_if_reached();
+    }
+    return ogs_mstrcatf(buf, "/%d", prefixlen);
+}
+
+int ogs_ipv4_from_string(uint32_t *addr, char *string)
+{
+    int rv;
+    ogs_sockaddr_t tmp;
+
+    ogs_assert(addr);
+    ogs_assert(string);
+
+    rv = ogs_inet_pton(AF_INET, string, &tmp);
+    if (rv != OGS_OK) {
+        ogs_error("Invalid IPv4 string = %s", string);
+        return OGS_ERROR;
+    }
+
+    *addr = tmp.sin.sin_addr.s_addr;
+
+    return OGS_OK;
+}
+
+int ogs_ipv6addr_from_string(uint8_t *addr6, char *string)
+{
+    int rv;
+    ogs_sockaddr_t tmp;
+
+    ogs_assert(addr6);
+    ogs_assert(string);
+
+    rv = ogs_inet_pton(AF_INET6, string, &tmp);
+    if (rv != OGS_OK) {
+        ogs_error("Invalid IPv6 string = %s", string);
+        return OGS_ERROR;
+    }
+
+    memcpy(addr6, tmp.sin6.sin6_addr.s6_addr, OGS_IPV6_LEN);
+
+    return OGS_OK;
+}
+
+int ogs_ipv6prefix_from_string(uint8_t *addr6, uint8_t *prefixlen, char *string)
+{
+    int rv;
+    ogs_sockaddr_t tmp;
+    char *v = NULL, *pv = NULL, *ipstr = NULL, *mask_or_numbits = NULL;
+
+    ogs_assert(addr6);
+    ogs_assert(prefixlen);
+    ogs_assert(string);
+    pv = v = ogs_strdup(string);
+    ogs_assert(v);
+
+    ipstr = strsep(&v, "/");
+    if (ipstr)
+        mask_or_numbits = v;
+
+    if (!ipstr || !mask_or_numbits) {
+        ogs_error("Invalid IPv6 Prefix string = %s", v);
+        ogs_free(v);
+        return OGS_ERROR;
+    }
+
+    rv = ogs_inet_pton(AF_INET6, ipstr, &tmp);
+    ogs_expect_or_return_val(rv == OGS_OK, rv);
+
+    memcpy(addr6, tmp.sin6.sin6_addr.s6_addr, OGS_IPV6_LEN);
+    *prefixlen = atoi(mask_or_numbits);
+
+    ogs_free(pv);
+    return OGS_OK;
 }
 
 int ogs_sockaddr_to_user_plane_ip_resource_info(
@@ -573,4 +663,28 @@ void ogs_session_data_free(ogs_session_data_t *session_data)
 
     for (i = 0; i < session_data->num_of_pcc_rule; i++)
         OGS_PCC_RULE_FREE(&session_data->pcc_rule[i]);
+}
+
+void ogs_ims_data_free(ogs_ims_data_t *ims_data)
+{
+    int i, j, k;
+
+    ogs_assert(ims_data);
+
+    for (i = 0; i < ims_data->num_of_media_component; i++) {
+        ogs_media_component_t *media_component = &ims_data->media_component[i];
+
+        for (j = 0; j < media_component->num_of_sub; j++) {
+            ogs_media_sub_component_t *sub = &media_component->sub[j];
+
+            for (k = 0; k < sub->num_of_flow; k++) {
+                ogs_flow_t *flow = &sub->flow[k];
+
+                if (flow->description) {
+                    ogs_free(flow->description);
+                } else
+                    ogs_assert_if_reached();
+            }
+        }
+    }
 }

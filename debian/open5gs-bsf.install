@@ -1,0 +1,3 @@
+usr/bin/open5gs-bsfd
+configs/open5gs/bsf.yaml etc/open5gs
+configs/systemd/open5gs-bsfd.service lib/systemd/system

@@ -1519,8 +1519,8 @@ components:
 # ENUMERATIONS DATA TYPES
 #
     MediaType:
-      anyOf:
-        - type: string
+#      anyOf:
+#        - type: string
           enum:
             - AUDIO
             - VIDEO
@@ -1530,11 +1530,11 @@ components:
             - TEXT
             - MESSAGE
             - OTHER
-        - type: string
+          type: string
 #
     ReservPriority:
-      anyOf:
-        - type: string
+#      anyOf:
+#        - type: string
           enum:
             - PRIO_1
             - PRIO_2
@@ -1552,24 +1552,24 @@ components:
             - PRIO_14
             - PRIO_15
             - PRIO_16
-        - type: string
+          type: string
 #        
     ServAuthInfo:
-      anyOf:
-      - type: string
+#      anyOf:
+#      - type: string
         enum:
           - TP_NOT_KNOWN
           - TP_EXPIRED
           - TP_NOT_YET_OCURRED
-      - type: string
+        type: string
 #      
     SponsoringStatus:
-      anyOf:
-      - type: string
+#      anyOf:
+#      - type: string
         enum:
           - SPONSOR_DISABLED
           - SPONSOR_ENABLED
-      - type: string
+        type: string
 #        
     AfEvent:
       anyOf:
@@ -1592,14 +1592,14 @@ components:
       - type: string
 #        
     AfNotifMethod:
-      anyOf:
-      - type: string
+#      anyOf:
+#      - type: string
         enum:
           - EVENT_DETECTION
           - ONE_TIME
           - PERIODIC
           - PDU_SESSION_RELEASE
-      - type: string
+        type: string
 #        
     QosNotifType:
       anyOf:
@@ -1610,91 +1610,91 @@ components:
       - type: string
 #        
     TerminationCause:
-      anyOf:
-      - type: string
+#      anyOf:
+#      - type: string
         enum:
           - ALL_SDF_DEACTIVATION
           - PDU_SESSION_TERMINATION
           - PS_TO_CS_HO
-      - type: string
+        type: string
 #        
     MediaComponentResourcesStatus:
-      anyOf:
-      - type: string
+#      anyOf:
+#      - type: string
         enum:
           - ACTIVE
           - INACTIVE
-      - type: string
+        type: string
 #
 #
     FlowUsage:
-      anyOf:
-      - type: string
+#      anyOf:
+#      - type: string
         enum:
           - NO_INFO
           - RTCP
           - AF_SIGNALLING
-      - type: string
+        type: string
 
 
     FlowStatus:
-      anyOf:
-      - type: string
+#      anyOf:
+#      - type: string
         enum:
           - ENABLED-UPLINK
           - ENABLED-DOWNLINK
           - ENABLED
           - DISABLED
           - REMOVED
-      - type: string
+        type: string
 #        
     RequiredAccessInfo:
-      anyOf:
-      - type: string
+#      anyOf:
+#      - type: string
         enum:
           - USER_LOCATION
           - UE_TIME_ZONE
-      - type: string
+        type: string
 #        
     SipForkingIndication:
-      anyOf:
-        - type: string
+#      anyOf:
+#        - type: string
           enum:
             - SINGLE_DIALOGUE
             - SEVERAL_DIALOGUES
-        - type: string
+          type: string
 #
     AfRequestedData:
-      anyOf:
-        - type: string
+#      anyOf:
+#        - type: string
           enum:
             - UE_IDENTITY
-        - type: string
+          type: string
 #        
     ServiceInfoStatus:
-      anyOf:
-        - type: string
+#      anyOf:
+#        - type: string
           enum:
             - FINAL
             - PRELIMINARY
-        - type: string
+          type: string
 #        
     PreemptionControlInformation:
-      anyOf:
-        - type: string
+#      anyOf:
+#        - type: string
           enum:
             - MOST_RECENT
             - LEAST_RECENT
             - HIGHEST_BW
-        - type: string
+          type: string
 #        
     PrioritySharingIndicator:
-      anyOf:
-        - type: string
+#      anyOf:
+#        - type: string
           enum:
             - ENABLED
             - DISABLED
-        - type: string
+          type: string
 #        
     PreemptionControlInformationRm:
       anyOf:

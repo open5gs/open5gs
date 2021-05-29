@@ -351,7 +351,7 @@ void smf_5gc_n4_handle_session_modification_response(
 
         } else {
             sess->paging.ue_requested_pdu_session_establishment_done = true;
-            smf_sbi_send_http_status_no_content(stream);
+            ogs_sbi_send_http_status_no_content(stream);
         }
 
     } else if (flags & OGS_PFCP_MODIFY_DEACTIVATE) {
@@ -876,8 +876,7 @@ void smf_n4_handle_session_report_request(
             memset(&param, 0, sizeof(param));
             param.state = SMF_NETWORK_TRIGGERED_SERVICE_REQUEST;
             param.n2smbuf =
-                ngap_build_pdu_session_resource_setup_request_transfer(
-                        sess);
+                ngap_build_pdu_session_resource_setup_request_transfer(sess);
             ogs_assert(param.n2smbuf);
 
             param.n1n2_failure_txf_notif_uri = true;

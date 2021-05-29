@@ -7,7 +7,7 @@
 OpenAPI_up_path_chg_event_t *OpenAPI_up_path_chg_event_create(
     char *notification_uri,
     char *notif_corre_id,
-    OpenAPI_dnai_change_type_t *dnai_chg_type,
+    OpenAPI_dnai_change_type_e dnai_chg_type,
     int af_ack_ind
     )
 {
@@ -31,7 +31,6 @@ void OpenAPI_up_path_chg_event_free(OpenAPI_up_path_chg_event_t *up_path_chg_eve
     OpenAPI_lnode_t *node;
     ogs_free(up_path_chg_event->notification_uri);
     ogs_free(up_path_chg_event->notif_corre_id);
-    OpenAPI_dnai_change_type_free(up_path_chg_event->dnai_chg_type);
     ogs_free(up_path_chg_event);
 }
 
@@ -55,13 +54,7 @@ cJSON *OpenAPI_up_path_chg_event_convertToJSON(OpenAPI_up_path_chg_event_t *up_p
         goto end;
     }
 
-    cJSON *dnai_chg_type_local_JSON = OpenAPI_dnai_change_type_convertToJSON(up_path_chg_event->dnai_chg_type);
-    if (dnai_chg_type_local_JSON == NULL) {
-        ogs_error("OpenAPI_up_path_chg_event_convertToJSON() failed [dnai_chg_type]");
-        goto end;
-    }
-    cJSON_AddItemToObject(item, "dnaiChgType", dnai_chg_type_local_JSON);
-    if (item->child == NULL) {
+    if (cJSON_AddStringToObject(item, "dnaiChgType", OpenAPI_dnai_change_type_ToString(up_path_chg_event->dnai_chg_type)) == NULL) {
         ogs_error("OpenAPI_up_path_chg_event_convertToJSON() failed [dnai_chg_type]");
         goto end;
     }
@@ -110,9 +103,13 @@ OpenAPI_up_path_chg_event_t *OpenAPI_up_path_chg_event_parseFromJSON(cJSON *up_p
         goto end;
     }
 
-    OpenAPI_dnai_change_type_t *dnai_chg_type_local_nonprim = NULL;
+    OpenAPI_dnai_change_type_e dnai_chg_typeVariable;
 
-    dnai_chg_type_local_nonprim = OpenAPI_dnai_change_type_parseFromJSON(dnai_chg_type);
+    if (!cJSON_IsString(dnai_chg_type)) {
+        ogs_error("OpenAPI_up_path_chg_event_parseFromJSON() failed [dnai_chg_type]");
+        goto end;
+    }
+    dnai_chg_typeVariable = OpenAPI_dnai_change_type_FromString(dnai_chg_type->valuestring);
 
     cJSON *af_ack_ind = cJSON_GetObjectItemCaseSensitive(up_path_chg_eventJSON, "afAckInd");
 
@@ -126,7 +123,7 @@ OpenAPI_up_path_chg_event_t *OpenAPI_up_path_chg_event_parseFromJSON(cJSON *up_p
     up_path_chg_event_local_var = OpenAPI_up_path_chg_event_create (
         ogs_strdup(notification_uri->valuestring),
         ogs_strdup(notif_corre_id->valuestring),
-        dnai_chg_type_local_nonprim,
+        dnai_chg_typeVariable,
         af_ack_ind ? af_ack_ind->valueint : 0
         );
 

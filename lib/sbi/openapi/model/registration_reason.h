@@ -17,16 +17,11 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_registration_reason_s OpenAPI_registration_reason_t;
-typedef struct OpenAPI_registration_reason_s {
-} OpenAPI_registration_reason_t;
+typedef enum { OpenAPI_registration_reason_NULL = 0, OpenAPI_registration_reason_SMF_CONTEXT_TRANSFERRED } OpenAPI_registration_reason_e;
 
-OpenAPI_registration_reason_t *OpenAPI_registration_reason_create(
-    );
-void OpenAPI_registration_reason_free(OpenAPI_registration_reason_t *registration_reason);
-OpenAPI_registration_reason_t *OpenAPI_registration_reason_parseFromJSON(cJSON *registration_reasonJSON);
-cJSON *OpenAPI_registration_reason_convertToJSON(OpenAPI_registration_reason_t *registration_reason);
-OpenAPI_registration_reason_t *OpenAPI_registration_reason_copy(OpenAPI_registration_reason_t *dst, OpenAPI_registration_reason_t *src);
+char* OpenAPI_registration_reason_ToString(OpenAPI_registration_reason_e registration_reason);
+
+OpenAPI_registration_reason_e OpenAPI_registration_reason_FromString(char* registration_reason);
 
 #ifdef __cplusplus
 }

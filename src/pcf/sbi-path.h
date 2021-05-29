@@ -22,13 +22,12 @@
 
 #include "nnrf-build.h"
 #include "nudr-build.h"
+#include "nbsf-build.h"
+#include "namf-build.h"
+#include "nsmf-build.h"
 
 #ifdef __cplusplus
 extern "C" {
-#endif
-
-#if 0
-#include "nudr-build.h"
 #endif
 
 int pcf_sbi_open(void);
@@ -43,6 +42,9 @@ void pcf_ue_sbi_discover_and_send(OpenAPI_nf_type_e target_nf_type,
 void pcf_sess_sbi_discover_and_send(OpenAPI_nf_type_e target_nf_type,
         pcf_sess_t *sess, ogs_sbi_stream_t *stream, void *data,
         ogs_sbi_request_t *(*build)(pcf_sess_t *sess, void *data));
+
+void pcf_sbi_send_am_policy_control_notify(pcf_ue_t *pcf_ue);
+void pcf_sbi_send_smpolicycontrol_notify(pcf_sess_t *sess);
 
 #ifdef __cplusplus
 }

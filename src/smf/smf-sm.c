@@ -374,19 +374,16 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
                 smf_namf_comm_handler_n1_n2_message_transfer_failure_notify(
                         stream, &sbi_message);
                 break;
+            CASE(OGS_SBI_RESOURCE_NAME_SM_POLICY_NOTIFY)
+                ogs_sbi_send_http_status_no_content(stream);
+                break;
             DEFAULT
-                SWITCH(sbi_message.h.resource.component[1])
-                CASE(OGS_SBI_RESOURCE_NAME_SM_POLICY_NOTIFY)
-                    /* TODO */
-
-                DEFAULT
-                    ogs_error("Invalid resource name [%s]",
-                            sbi_message.h.resource.component[1]);
-                    ogs_sbi_server_send_error(stream,
-                            OGS_SBI_HTTP_STATUS_BAD_REQUEST, &sbi_message,
-                            "Invalid resource name",
-                            sbi_message.h.resource.component[1]);
-                END
+                ogs_error("Invalid resource name [%s]",
+                        sbi_message.h.resource.component[0]);
+                ogs_sbi_server_send_error(stream,
+                        OGS_SBI_HTTP_STATUS_BAD_REQUEST, &sbi_message,
+                        "Invalid resource name",
+                        sbi_message.h.resource.component[0]);
             END
             break;
 

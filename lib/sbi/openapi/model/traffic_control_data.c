@@ -6,7 +6,7 @@
 
 OpenAPI_traffic_control_data_t *OpenAPI_traffic_control_data_create(
     char *tc_id,
-    OpenAPI_flow_status_t *flow_status,
+    OpenAPI_flow_status_e flow_status,
     OpenAPI_redirect_information_t *redirect_info,
     OpenAPI_list_t *add_redirect_info,
     int mute_notif,
@@ -50,7 +50,6 @@ void OpenAPI_traffic_control_data_free(OpenAPI_traffic_control_data_t *traffic_c
     }
     OpenAPI_lnode_t *node;
     ogs_free(traffic_control_data->tc_id);
-    OpenAPI_flow_status_free(traffic_control_data->flow_status);
     OpenAPI_redirect_information_free(traffic_control_data->redirect_info);
     OpenAPI_list_for_each(traffic_control_data->add_redirect_info, node) {
         OpenAPI_redirect_information_free(node->data);
@@ -85,13 +84,7 @@ cJSON *OpenAPI_traffic_control_data_convertToJSON(OpenAPI_traffic_control_data_t
     }
 
     if (traffic_control_data->flow_status) {
-        cJSON *flow_status_local_JSON = OpenAPI_flow_status_convertToJSON(traffic_control_data->flow_status);
-        if (flow_status_local_JSON == NULL) {
-            ogs_error("OpenAPI_traffic_control_data_convertToJSON() failed [flow_status]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "flowStatus", flow_status_local_JSON);
-        if (item->child == NULL) {
+        if (cJSON_AddStringToObject(item, "flowStatus", OpenAPI_flow_status_ToString(traffic_control_data->flow_status)) == NULL) {
             ogs_error("OpenAPI_traffic_control_data_convertToJSON() failed [flow_status]");
             goto end;
         }
@@ -258,9 +251,13 @@ OpenAPI_traffic_control_data_t *OpenAPI_traffic_control_data_parseFromJSON(cJSON
 
     cJSON *flow_status = cJSON_GetObjectItemCaseSensitive(traffic_control_dataJSON, "flowStatus");
 
-    OpenAPI_flow_status_t *flow_status_local_nonprim = NULL;
+    OpenAPI_flow_status_e flow_statusVariable;
     if (flow_status) {
-        flow_status_local_nonprim = OpenAPI_flow_status_parseFromJSON(flow_status);
+        if (!cJSON_IsString(flow_status)) {
+            ogs_error("OpenAPI_traffic_control_data_parseFromJSON() failed [flow_status]");
+            goto end;
+        }
+        flow_statusVariable = OpenAPI_flow_status_FromString(flow_status->valuestring);
     }
 
     cJSON *redirect_info = cJSON_GetObjectItemCaseSensitive(traffic_control_dataJSON, "redirectInfo");
@@ -393,7 +390,7 @@ OpenAPI_traffic_control_data_t *OpenAPI_traffic_control_data_parseFromJSON(cJSON
 
     traffic_control_data_local_var = OpenAPI_traffic_control_data_create (
         ogs_strdup(tc_id->valuestring),
-        flow_status ? flow_status_local_nonprim : NULL,
+        flow_status ? flow_statusVariable : 0,
         redirect_info ? redirect_info_local_nonprim : NULL,
         add_redirect_info ? add_redirect_infoList : NULL,
         mute_notif ? mute_notif->valueint : 0,

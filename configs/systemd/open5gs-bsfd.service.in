@@ -1,0 +1,18 @@
+[Unit]
+Description=Open5GS BSF Daemon
+Wants=mongodb.service mongod.service
+
+[Service]
+Type=simple
+
+User=open5gs
+Group=open5gs
+
+Restart=always
+ExecStart=@bindir@/open5gs-bsfd -c @sysconfdir@/open5gs/bsf.yaml
+RestartSec=2
+RestartPreventExitStatus=1
+ExecReload=/bin/kill -HUP $MAINPID
+
+[Install]
+WantedBy=multi-user.target

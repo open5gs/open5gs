@@ -26,7 +26,7 @@
 extern "C" {
 #endif
 
-typedef struct amf_nsmf_pdusession_update_sm_context_param_s {
+typedef struct amf_nsmf_pdusession_sm_context_param_s {
     ogs_pkbuf_t *n1smbuf;
     ogs_pkbuf_t *n2smbuf;
     OpenAPI_n2_sm_info_type_e n2SmInfoType;
@@ -46,11 +46,12 @@ typedef struct amf_nsmf_pdusession_update_sm_context_param_s {
 
     int release;
     OpenAPI_cause_e cause;
+    int gmm_cause;
 
     OpenAPI_ho_state_e hoState;
     OpenAPI_ng_ran_target_id_t *targetId;
     NGAP_TargetID_t *TargetID;
-} amf_nsmf_pdusession_update_sm_context_param_t;
+} amf_nsmf_pdusession_sm_context_param_t;
 
 ogs_sbi_request_t *amf_nsmf_pdusession_build_create_sm_context(
         amf_sess_t *sess, void *data);

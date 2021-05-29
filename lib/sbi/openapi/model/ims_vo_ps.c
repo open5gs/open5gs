@@ -4,82 +4,27 @@
 #include <stdio.h>
 #include "ims_vo_ps.h"
 
-OpenAPI_ims_vo_ps_t *OpenAPI_ims_vo_ps_create(
-    )
+char* OpenAPI_ims_vo_ps_ToString(OpenAPI_ims_vo_ps_e ims_vo_ps)
 {
-    OpenAPI_ims_vo_ps_t *ims_vo_ps_local_var = OpenAPI_malloc(sizeof(OpenAPI_ims_vo_ps_t));
-    if (!ims_vo_ps_local_var) {
-        return NULL;
-    }
-
-    return ims_vo_ps_local_var;
+    const char *ims_vo_psArray[] =  { "NULL", "HOMOGENEOUS_SUPPORT", "HOMOGENEOUS_NON_SUPPORT", "NON_HOMOGENEOUS_OR_UNKNOWN" };
+    size_t sizeofArray = sizeof(ims_vo_psArray) / sizeof(ims_vo_psArray[0]);
+    if (ims_vo_ps < sizeofArray)
+        return (char *)ims_vo_psArray[ims_vo_ps];
+    else
+        return (char *)"Unknown";
 }
 
-void OpenAPI_ims_vo_ps_free(OpenAPI_ims_vo_ps_t *ims_vo_ps)
+OpenAPI_ims_vo_ps_e OpenAPI_ims_vo_ps_FromString(char* ims_vo_ps)
 {
-    if (NULL == ims_vo_ps) {
-        return;
+    int stringToReturn = 0;
+    const char *ims_vo_psArray[] =  { "NULL", "HOMOGENEOUS_SUPPORT", "HOMOGENEOUS_NON_SUPPORT", "NON_HOMOGENEOUS_OR_UNKNOWN" };
+    size_t sizeofArray = sizeof(ims_vo_psArray) / sizeof(ims_vo_psArray[0]);
+    while (stringToReturn < sizeofArray) {
+        if (strcmp(ims_vo_ps, ims_vo_psArray[stringToReturn]) == 0) {
+            return stringToReturn;
+        }
+        stringToReturn++;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(ims_vo_ps);
-}
-
-cJSON *OpenAPI_ims_vo_ps_convertToJSON(OpenAPI_ims_vo_ps_t *ims_vo_ps)
-{
-    cJSON *item = NULL;
-
-    if (ims_vo_ps == NULL) {
-        ogs_error("OpenAPI_ims_vo_ps_convertToJSON() failed [ImsVoPs]");
-        return NULL;
-    }
-
-    item = cJSON_CreateObject();
-end:
-    return item;
-}
-
-OpenAPI_ims_vo_ps_t *OpenAPI_ims_vo_ps_parseFromJSON(cJSON *ims_vo_psJSON)
-{
-    OpenAPI_ims_vo_ps_t *ims_vo_ps_local_var = NULL;
-    ims_vo_ps_local_var = OpenAPI_ims_vo_ps_create (
-        );
-
-    return ims_vo_ps_local_var;
-end:
-    return NULL;
-}
-
-OpenAPI_ims_vo_ps_t *OpenAPI_ims_vo_ps_copy(OpenAPI_ims_vo_ps_t *dst, OpenAPI_ims_vo_ps_t *src)
-{
-    cJSON *item = NULL;
-    char *content = NULL;
-
-    ogs_assert(src);
-    item = OpenAPI_ims_vo_ps_convertToJSON(src);
-    if (!item) {
-        ogs_error("OpenAPI_ims_vo_ps_convertToJSON() failed");
-        return NULL;
-    }
-
-    content = cJSON_Print(item);
-    cJSON_Delete(item);
-
-    if (!content) {
-        ogs_error("cJSON_Print() failed");
-        return NULL;
-    }
-
-    item = cJSON_Parse(content);
-    ogs_free(content);
-    if (!item) {
-        ogs_error("cJSON_Parse() failed");
-        return NULL;
-    }
-
-    OpenAPI_ims_vo_ps_free(dst);
-    dst = OpenAPI_ims_vo_ps_parseFromJSON(item);
-    cJSON_Delete(item);
-
-    return dst;
+    return 0;
 }
 

@@ -757,7 +757,7 @@ void ngap_handle_initial_context_setup_response(
     ran_ue_t *ran_ue = NULL;
     amf_sess_t *sess = NULL;
     uint64_t amf_ue_ngap_id;
-    amf_nsmf_pdusession_update_sm_context_param_t param;
+    amf_nsmf_pdusession_sm_context_param_t param;
 
     bool paging_ongoing = false;
 
@@ -1390,7 +1390,7 @@ void ngap_handle_pdu_session_resource_setup_response(
     amf_ue_t *amf_ue = NULL;
     ran_ue_t *ran_ue = NULL;
     uint64_t amf_ue_ngap_id;
-    amf_nsmf_pdusession_update_sm_context_param_t param;
+    amf_nsmf_pdusession_sm_context_param_t param;
 
     NGAP_SuccessfulOutcome_t *successfulOutcome = NULL;
     NGAP_PDUSessionResourceSetupResponse_t *PDUSessionResourceSetupResponse;
@@ -1563,7 +1563,7 @@ void ngap_handle_pdu_session_resource_modify_response(
     amf_ue_t *amf_ue = NULL;
     ran_ue_t *ran_ue = NULL;
     uint64_t amf_ue_ngap_id;
-    amf_nsmf_pdusession_update_sm_context_param_t param;
+    amf_nsmf_pdusession_sm_context_param_t param;
 
     NGAP_SuccessfulOutcome_t *successfulOutcome = NULL;
     NGAP_PDUSessionResourceModifyResponse_t *PDUSessionResourceModifyResponse;
@@ -1736,7 +1736,7 @@ void ngap_handle_pdu_session_resource_release_response(
     amf_ue_t *amf_ue = NULL;
     ran_ue_t *ran_ue = NULL;
     uint64_t amf_ue_ngap_id;
-    amf_nsmf_pdusession_update_sm_context_param_t param;
+    amf_nsmf_pdusession_sm_context_param_t param;
 
     NGAP_SuccessfulOutcome_t *successfulOutcome = NULL;
     NGAP_PDUSessionResourceReleaseResponse_t
@@ -2058,7 +2058,7 @@ void ngap_handle_path_switch_request(
     NGAP_PDUSessionResourceToBeSwitchedDLItem_t *PDUSessionItem = NULL;
     OCTET_STRING_t *transfer = NULL;
 
-    amf_nsmf_pdusession_update_sm_context_param_t param;
+    amf_nsmf_pdusession_sm_context_param_t param;
 
     ogs_assert(gnb);
     ogs_assert(gnb->sctp.sock);
@@ -2354,7 +2354,7 @@ void ngap_handle_handover_required(
     NGAP_SourceToTarget_TransparentContainer_t
         *SourceToTarget_TransparentContainer = NULL;
 
-    amf_nsmf_pdusession_update_sm_context_param_t param;
+    amf_nsmf_pdusession_sm_context_param_t param;
 
     ogs_assert(gnb);
     ogs_assert(gnb->sctp.sock);
@@ -2646,7 +2646,7 @@ void ngap_handle_handover_request_ack(
     amf_ue_t *amf_ue = NULL;
     ran_ue_t *source_ue = NULL, *target_ue = NULL;
     uint64_t amf_ue_ngap_id;
-    amf_nsmf_pdusession_update_sm_context_param_t param;
+    amf_nsmf_pdusession_sm_context_param_t param;
 
     NGAP_SuccessfulOutcome_t *successfulOutcome = NULL;
     NGAP_HandoverRequestAcknowledge_t *HandoverRequestAcknowledge = NULL;
@@ -2981,7 +2981,7 @@ void ngap_handle_handover_cancel(
     amf_sess_t *sess = NULL;
     ran_ue_t *source_ue = NULL, *target_ue = NULL;
     uint64_t amf_ue_ngap_id;
-    amf_nsmf_pdusession_update_sm_context_param_t param;
+    amf_nsmf_pdusession_sm_context_param_t param;
 
     NGAP_InitiatingMessage_t *initiatingMessage = NULL;
     NGAP_HandoverCancel_t *HandoverCancel = NULL;
@@ -3226,7 +3226,7 @@ void ngap_handle_handover_notification(
     amf_sess_t *sess = NULL;
     ran_ue_t *source_ue = NULL, *target_ue = NULL;
     uint64_t amf_ue_ngap_id;
-    amf_nsmf_pdusession_update_sm_context_param_t param;
+    amf_nsmf_pdusession_sm_context_param_t param;
 
     NGAP_InitiatingMessage_t *initiatingMessage = NULL;
     NGAP_HandoverNotify_t *HandoverNotify = NULL;

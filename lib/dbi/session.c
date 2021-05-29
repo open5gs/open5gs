@@ -479,7 +479,6 @@ done:
                 ogs_assert(pcc_rule->id);
 
                 pcc_rule->precedence = pcc_rule_index+1;
-                pcc_rule->flow_status = OGS_FLOW_STATUS_ENABLED;
                 pcc_rule_index++;
             }
             session_data->num_of_pcc_rule = pcc_rule_index;

@@ -63,11 +63,11 @@ static void pcrf_gx_raa_cb(void *data, struct msg **msg);
 static int encode_pcc_rule_definition(
         struct avp *avp, ogs_pcc_rule_t *pcc_rule, int flow_presence);
 static int matched_flow(ogs_pcc_rule_t *pcc_rule,
-        ogs_diam_rx_media_component_t *media_component);
+        ogs_media_component_t *media_component);
 static int install_flow(ogs_pcc_rule_t *pcc_rule,
-        ogs_diam_rx_media_component_t *media_component);
+        ogs_media_component_t *media_component);
 static int update_qos(ogs_pcc_rule_t *pcc_rule,
-        ogs_diam_rx_media_component_t *media_component);
+        ogs_media_component_t *media_component);
 
 static __inline__ struct sess_state *new_state(os0_t sid)
 {
@@ -733,13 +733,13 @@ int pcrf_gx_send_rar(
         }
 
         /* Match Media-Component with PCC Rule */
-        for (i = 0; i < rx_message->num_of_media_component; i++) {
+        for (i = 0; i < rx_message->ims_data.num_of_media_component; i++) {
             int flow_presence = 0;
             ogs_pcc_rule_t *pcc_rule = NULL;
             ogs_pcc_rule_t *db_pcc_rule = NULL;
             uint8_t qos_index = 0;
-            ogs_diam_rx_media_component_t *media_component =
-                &rx_message->media_component[i];
+            ogs_media_component_t *media_component =
+                &rx_message->ims_data.media_component[i];
 
             if (media_component->media_component_number == 0) {
                 continue;
@@ -853,9 +853,7 @@ int pcrf_gx_send_rar(
                         ogs_error("install_flow() failed");
                         goto out;
                     }
-
                 }
-
             }
 
             /* Update QoS */
@@ -1401,7 +1399,7 @@ static int flow_rx_to_gx(ogs_flow_t *rx_flow, ogs_flow_t *gx_flow)
 }
 
 static int matched_flow(ogs_pcc_rule_t *pcc_rule,
-        ogs_diam_rx_media_component_t *media_component)
+        ogs_media_component_t *media_component)
 {
     int rv;
     int i, j, k;
@@ -1412,7 +1410,7 @@ static int matched_flow(ogs_pcc_rule_t *pcc_rule,
     ogs_assert(media_component);
 
     for (i = 0; i < media_component->num_of_sub; i++) {
-        ogs_diam_rx_media_sub_component_t *sub = &media_component->sub[i];
+        ogs_media_sub_component_t *sub = &media_component->sub[i];
 
         if (sub->flow_number == 0) {
             continue;
@@ -1429,7 +1427,7 @@ static int matched_flow(ogs_pcc_rule_t *pcc_rule,
     }
 
     for (i = 0; i < media_component->num_of_sub; i++) {
-        ogs_diam_rx_media_sub_component_t *sub = &media_component->sub[i];
+        ogs_media_sub_component_t *sub = &media_component->sub[i];
 
         if (sub->flow_number == 0) {
             continue;
@@ -1462,7 +1460,7 @@ static int matched_flow(ogs_pcc_rule_t *pcc_rule,
 }
 
 static int install_flow(ogs_pcc_rule_t *pcc_rule,
-        ogs_diam_rx_media_component_t *media_component)
+        ogs_media_component_t *media_component)
 {
     int rv;
     int i, j;
@@ -1477,7 +1475,7 @@ static int install_flow(ogs_pcc_rule_t *pcc_rule,
     pcc_rule->num_of_flow = 0;
 
     for (i = 0; i < media_component->num_of_sub; i++) {
-        ogs_diam_rx_media_sub_component_t *sub = &media_component->sub[i];
+        ogs_media_sub_component_t *sub = &media_component->sub[i];
 
         if (sub->flow_number == 0) {
             continue;
@@ -1502,7 +1500,7 @@ static int install_flow(ogs_pcc_rule_t *pcc_rule,
 }
 
 static int update_qos(ogs_pcc_rule_t *pcc_rule,
-        ogs_diam_rx_media_component_t *media_component)
+        ogs_media_component_t *media_component)
 {
     int rv;
     int i, j;
@@ -1516,7 +1514,7 @@ static int update_qos(ogs_pcc_rule_t *pcc_rule,
     pcc_rule->qos.gbr.uplink = 0;
 
     for (i = 0; i < media_component->num_of_sub; i++) {
-        ogs_diam_rx_media_sub_component_t *sub = &media_component->sub[i];
+        ogs_media_sub_component_t *sub = &media_component->sub[i];
 
         if (sub->flow_number == 0) {
             continue;

@@ -4,82 +4,27 @@
 #include <stdio.h>
 #include "deregistration_reason.h"
 
-OpenAPI_deregistration_reason_t *OpenAPI_deregistration_reason_create(
-    )
+char* OpenAPI_deregistration_reason_ToString(OpenAPI_deregistration_reason_e deregistration_reason)
 {
-    OpenAPI_deregistration_reason_t *deregistration_reason_local_var = OpenAPI_malloc(sizeof(OpenAPI_deregistration_reason_t));
-    if (!deregistration_reason_local_var) {
-        return NULL;
-    }
-
-    return deregistration_reason_local_var;
+    const char *deregistration_reasonArray[] =  { "NULL", "UE_INITIAL_REGISTRATION", "UE_REGISTRATION_AREA_CHANGE", "SUBSCRIPTION_WITHDRAWN", "_5GS_TO_EPS_MOBILITY", "_5GS_TO_EPS_MOBILITY_UE_INITIAL_REGISTRATION", "REREGISTRATION_REQUIRED", "SMF_CONTEXT_TRANSFERRED" };
+    size_t sizeofArray = sizeof(deregistration_reasonArray) / sizeof(deregistration_reasonArray[0]);
+    if (deregistration_reason < sizeofArray)
+        return (char *)deregistration_reasonArray[deregistration_reason];
+    else
+        return (char *)"Unknown";
 }
 
-void OpenAPI_deregistration_reason_free(OpenAPI_deregistration_reason_t *deregistration_reason)
+OpenAPI_deregistration_reason_e OpenAPI_deregistration_reason_FromString(char* deregistration_reason)
 {
-    if (NULL == deregistration_reason) {
-        return;
+    int stringToReturn = 0;
+    const char *deregistration_reasonArray[] =  { "NULL", "UE_INITIAL_REGISTRATION", "UE_REGISTRATION_AREA_CHANGE", "SUBSCRIPTION_WITHDRAWN", "_5GS_TO_EPS_MOBILITY", "_5GS_TO_EPS_MOBILITY_UE_INITIAL_REGISTRATION", "REREGISTRATION_REQUIRED", "SMF_CONTEXT_TRANSFERRED" };
+    size_t sizeofArray = sizeof(deregistration_reasonArray) / sizeof(deregistration_reasonArray[0]);
+    while (stringToReturn < sizeofArray) {
+        if (strcmp(deregistration_reason, deregistration_reasonArray[stringToReturn]) == 0) {
+            return stringToReturn;
+        }
+        stringToReturn++;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(deregistration_reason);
-}
-
-cJSON *OpenAPI_deregistration_reason_convertToJSON(OpenAPI_deregistration_reason_t *deregistration_reason)
-{
-    cJSON *item = NULL;
-
-    if (deregistration_reason == NULL) {
-        ogs_error("OpenAPI_deregistration_reason_convertToJSON() failed [DeregistrationReason]");
-        return NULL;
-    }
-
-    item = cJSON_CreateObject();
-end:
-    return item;
-}
-
-OpenAPI_deregistration_reason_t *OpenAPI_deregistration_reason_parseFromJSON(cJSON *deregistration_reasonJSON)
-{
-    OpenAPI_deregistration_reason_t *deregistration_reason_local_var = NULL;
-    deregistration_reason_local_var = OpenAPI_deregistration_reason_create (
-        );
-
-    return deregistration_reason_local_var;
-end:
-    return NULL;
-}
-
-OpenAPI_deregistration_reason_t *OpenAPI_deregistration_reason_copy(OpenAPI_deregistration_reason_t *dst, OpenAPI_deregistration_reason_t *src)
-{
-    cJSON *item = NULL;
-    char *content = NULL;
-
-    ogs_assert(src);
-    item = OpenAPI_deregistration_reason_convertToJSON(src);
-    if (!item) {
-        ogs_error("OpenAPI_deregistration_reason_convertToJSON() failed");
-        return NULL;
-    }
-
-    content = cJSON_Print(item);
-    cJSON_Delete(item);
-
-    if (!content) {
-        ogs_error("cJSON_Print() failed");
-        return NULL;
-    }
-
-    item = cJSON_Parse(content);
-    ogs_free(content);
-    if (!item) {
-        ogs_error("cJSON_Parse() failed");
-        return NULL;
-    }
-
-    OpenAPI_deregistration_reason_free(dst);
-    dst = OpenAPI_deregistration_reason_parseFromJSON(item);
-    cJSON_Delete(item);
-
-    return dst;
+    return 0;
 }
 

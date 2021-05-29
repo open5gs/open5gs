@@ -18,21 +18,26 @@
  */
 
 #include "test-app.h"
+#include "af/init.h"
 
 abts_suite *test_qos_flow(abts_suite *suite);
 abts_suite *test_session(abts_suite *suite);
+abts_suite *test_af(abts_suite *suite);
 
 const struct testlist {
     abts_suite *(*func)(abts_suite *suite);
 } alltests[] = {
     {test_qos_flow},
     {test_session},
+    {test_af},
     {NULL},
 };
 
 static void terminate(void)
 {
     ogs_msleep(50);
+
+    af_terminate();
 
     test_child_terminate();
     app_terminate();
@@ -50,6 +55,9 @@ static void initialize(const char *const argv[])
     test_5gc_init();
 
     rv = app_initialize(argv);
+    ogs_assert(rv == OGS_OK);
+
+    rv = af_initialize();
     ogs_assert(rv == OGS_OK);
 }
 

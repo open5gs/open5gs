@@ -35,7 +35,7 @@ typedef struct OpenAPI_smf_registration_s {
     char *pgw_fqdn;
     int epdg_ind;
     char *dereg_callback_uri;
-    struct OpenAPI_registration_reason_s *registration_reason;
+    OpenAPI_registration_reason_e registration_reason;
     char *registration_time;
     struct OpenAPI_context_info_s *context_info;
 } OpenAPI_smf_registration_t;
@@ -53,7 +53,7 @@ OpenAPI_smf_registration_t *OpenAPI_smf_registration_create(
     char *pgw_fqdn,
     int epdg_ind,
     char *dereg_callback_uri,
-    OpenAPI_registration_reason_t *registration_reason,
+    OpenAPI_registration_reason_e registration_reason,
     char *registration_time,
     OpenAPI_context_info_t *context_info
     );

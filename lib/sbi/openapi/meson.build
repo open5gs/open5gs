@@ -779,6 +779,63 @@ libsbi_openapi_sources = files('''
     model/w_agf_info.c
     model/wireline_area.c
     model/wireline_service_area_restriction.c
+
+    model/acceptable_service_info.c
+    model/access_net_charging_identifier.c
+    model/accumulated_usage.c
+    model/af_event_notification.c
+    model/af_event_subscription.c
+    model/af_notif_method.c
+    model/af_requested_data.c
+    model/af_routing_requirement.c
+    model/af_routing_requirement_rm.c
+    model/app_session_context.c
+    model/app_session_context_req_data.c
+    model/app_session_context_resp_data.c
+    model/app_session_context_update_data.c
+    model/binding_level.c
+    model/binding_resp.c
+    model/events_notification.c
+    model/events_subsc_req_data.c
+    model/events_subsc_req_data_rm.c
+    model/extended_problem_details.c
+    model/extended_problem_details_all_of.c
+    model/flow_usage.c
+    model/flows.c
+    model/media_component.c
+    model/media_component_resources_status.c
+    model/media_component_rm.c
+    model/media_sub_component.c
+    model/media_sub_component_rm.c
+    model/media_type.c
+    model/new_tsn_bridge.c
+    model/out_of_credit_information.c
+    model/parameter_combination.c
+    model/pcf_binding.c
+    model/pcf_binding_patch.c
+    model/pcscf_restoration_request_data.c
+    model/preemption_capability_rm.c
+    model/preemption_control_information.c
+    model/preemption_control_information_rm.c
+    model/preemption_vulnerability_rm.c
+    model/priority_sharing_indicator.c
+    model/qos_monitoring_information.c
+    model/qos_monitoring_information_rm.c
+    model/required_access_info.c
+    model/reserv_priority.c
+    model/resources_allocation_info.c
+    model/serv_auth_info.c
+    model/service_info_status.c
+    model/sip_forking_indication.c
+    model/spatial_validity.c
+    model/spatial_validity_rm.c
+    model/sponsoring_status.c
+    model/termination_cause.c
+    model/termination_info.c
+    model/tsn_qos_container.c
+    model/tsn_qos_container_rm.c
+    model/ue_identity_info.c
+    model/usage_threshold_rm.c
 '''.split())
 
 libsbi_openapi_inc = include_directories('.')

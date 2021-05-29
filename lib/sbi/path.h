@@ -43,6 +43,10 @@ void ogs_nnrf_nfm_send_nf_status_unsubscribe(
 void ogs_nnrf_disc_send_nf_discover(ogs_sbi_nf_instance_t *nf_instance,
         OpenAPI_nf_type_e target_nf_type, void *data);
 
+#define ogs_sbi_send_http_status_no_content(__sTREAM) \
+        ogs_sbi_send_response(__sTREAM, OGS_SBI_HTTP_STATUS_NO_CONTENT);
+void ogs_sbi_send_response(ogs_sbi_stream_t *stream, int status);
+
 #ifdef __cplusplus
 }
 #endif

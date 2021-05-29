@@ -81,6 +81,9 @@ void pcf_terminate(void);
 int nssf_initialize(void);
 void nssf_terminate(void);
 
+int bsf_initialize(void);
+void bsf_terminate(void);
+
 int upf_initialize(void);
 void upf_terminate(void);
 

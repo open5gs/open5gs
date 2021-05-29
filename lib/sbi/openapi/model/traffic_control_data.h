@@ -27,7 +27,7 @@ extern "C" {
 typedef struct OpenAPI_traffic_control_data_s OpenAPI_traffic_control_data_t;
 typedef struct OpenAPI_traffic_control_data_s {
     char *tc_id;
-    struct OpenAPI_flow_status_s *flow_status;
+    OpenAPI_flow_status_e flow_status;
     struct OpenAPI_redirect_information_s *redirect_info;
     OpenAPI_list_t *add_redirect_info;
     int mute_notif;
@@ -44,7 +44,7 @@ typedef struct OpenAPI_traffic_control_data_s {
 
 OpenAPI_traffic_control_data_t *OpenAPI_traffic_control_data_create(
     char *tc_id,
-    OpenAPI_flow_status_t *flow_status,
+    OpenAPI_flow_status_e flow_status,
     OpenAPI_redirect_information_t *redirect_info,
     OpenAPI_list_t *add_redirect_info,
     int mute_notif,

@@ -11,13 +11,13 @@ $ npm install @openapitools/openapi-generator-cli -g
 - VERSION: 4.3.1-SNAPSHOT
 $ git clone https://github.com/OpenAPITools/openapi-generator.git
 $ cd openapi-generator
-$ git checkoutt 15d58dc89b11d17f52c2daadfae9736e442f3b1a
+$ git checkout 15d58dc89b11d17f52c2daadfae9736e442f3b1a
 $ mvn clean package
 
 - VERSION: 0.69.1
 $ git clone https://github.com/uncrustify/uncrustify.git
 $ cd uncrustify
-$ git tag uncrustify-0.69.1
+$ git checkout uncrustify-0.69.1
 $ mkdir build
 $ cd build
 $ cmake ..

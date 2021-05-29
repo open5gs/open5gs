@@ -280,6 +280,7 @@ $ sudo pkill -9 open5gs-ausfd
 $ sudo pkill -9 open5gs-udmd
 $ sudo pkill -9 open5gs-pcfd
 $ sudo pkill -9 open5gs-nssfd
+$ sudo pkill -9 open5gs-bsfd
 $ sudo pkill -9 open5gs-udrd
 ```
 
@@ -413,6 +414,7 @@ $ open5gs-ausfd
 $ open5gs-udmd
 $ open5gs-pcfd
 $ open5gs-nssfd
+$ open5gs-bsfd
 $ open5gs-udrd
 ```
 
@@ -618,6 +620,7 @@ $ sudo pkill -9 open5gs-ausfd
 $ sudo pkill -9 open5gs-udmd
 $ sudo pkill -9 open5gs-pcfd
 $ sudo pkill -9 open5gs-nssfd
+$ sudo pkill -9 open5gs-bsfd
 $ sudo pkill -9 open5gs-udrd
 ```
 
@@ -1078,6 +1081,7 @@ Currently, the number of UE is limited to `128*128`.
 * UDM : 127.0.0.12
 * PCF : 127.0.0.13
 * NSSF : 127.0.0.14
+* BSF : 127.0.0.15
 * UDR : 127.0.0.20
 ```
 

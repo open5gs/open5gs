@@ -9,7 +9,7 @@ OpenAPI_amf3_gpp_access_registration_t *OpenAPI_amf3_gpp_access_registration_cre
     char *supported_features,
     int purge_flag,
     char *pei,
-    OpenAPI_ims_vo_ps_t *ims_vo_ps,
+    OpenAPI_ims_vo_ps_e ims_vo_ps,
     char *dereg_callback_uri,
     char *amf_service_name_dereg,
     char *pcscf_restoration_callback_uri,
@@ -68,7 +68,6 @@ void OpenAPI_amf3_gpp_access_registration_free(OpenAPI_amf3_gpp_access_registrat
     ogs_free(amf3_gpp_access_registration->amf_instance_id);
     ogs_free(amf3_gpp_access_registration->supported_features);
     ogs_free(amf3_gpp_access_registration->pei);
-    OpenAPI_ims_vo_ps_free(amf3_gpp_access_registration->ims_vo_ps);
     ogs_free(amf3_gpp_access_registration->dereg_callback_uri);
     ogs_free(amf3_gpp_access_registration->amf_service_name_dereg);
     ogs_free(amf3_gpp_access_registration->pcscf_restoration_callback_uri);
@@ -123,13 +122,7 @@ cJSON *OpenAPI_amf3_gpp_access_registration_convertToJSON(OpenAPI_amf3_gpp_acces
     }
 
     if (amf3_gpp_access_registration->ims_vo_ps) {
-        cJSON *ims_vo_ps_local_JSON = OpenAPI_ims_vo_ps_convertToJSON(amf3_gpp_access_registration->ims_vo_ps);
-        if (ims_vo_ps_local_JSON == NULL) {
-            ogs_error("OpenAPI_amf3_gpp_access_registration_convertToJSON() failed [ims_vo_ps]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "imsVoPs", ims_vo_ps_local_JSON);
-        if (item->child == NULL) {
+        if (cJSON_AddStringToObject(item, "imsVoPs", OpenAPI_ims_vo_ps_ToString(amf3_gpp_access_registration->ims_vo_ps)) == NULL) {
             ogs_error("OpenAPI_amf3_gpp_access_registration_convertToJSON() failed [ims_vo_ps]");
             goto end;
         }
@@ -333,9 +326,13 @@ OpenAPI_amf3_gpp_access_registration_t *OpenAPI_amf3_gpp_access_registration_par
 
     cJSON *ims_vo_ps = cJSON_GetObjectItemCaseSensitive(amf3_gpp_access_registrationJSON, "imsVoPs");
 
-    OpenAPI_ims_vo_ps_t *ims_vo_ps_local_nonprim = NULL;
+    OpenAPI_ims_vo_ps_e ims_vo_psVariable;
     if (ims_vo_ps) {
-        ims_vo_ps_local_nonprim = OpenAPI_ims_vo_ps_parseFromJSON(ims_vo_ps);
+        if (!cJSON_IsString(ims_vo_ps)) {
+            ogs_error("OpenAPI_amf3_gpp_access_registration_parseFromJSON() failed [ims_vo_ps]");
+            goto end;
+        }
+        ims_vo_psVariable = OpenAPI_ims_vo_ps_FromString(ims_vo_ps->valuestring);
     }
 
     cJSON *dereg_callback_uri = cJSON_GetObjectItemCaseSensitive(amf3_gpp_access_registrationJSON, "deregCallbackUri");
@@ -513,7 +510,7 @@ OpenAPI_amf3_gpp_access_registration_t *OpenAPI_amf3_gpp_access_registration_par
         supported_features ? ogs_strdup(supported_features->valuestring) : NULL,
         purge_flag ? purge_flag->valueint : 0,
         pei ? ogs_strdup(pei->valuestring) : NULL,
-        ims_vo_ps ? ims_vo_ps_local_nonprim : NULL,
+        ims_vo_ps ? ims_vo_psVariable : 0,
         ogs_strdup(dereg_callback_uri->valuestring),
         amf_service_name_dereg ? ogs_strdup(amf_service_name_dereg->valuestring) : NULL,
         pcscf_restoration_callback_uri ? ogs_strdup(pcscf_restoration_callback_uri->valuestring) : NULL,

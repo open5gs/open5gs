@@ -199,6 +199,7 @@ ogs_uint24_t ogs_s_nssai_sd_from_string(const char *hex);
 #define OGS_IPV4_LEN                        4
 #define OGS_IPV6_LEN                        16
 #define OGS_IPV6_DEFAULT_PREFIX_LEN         64
+#define OGS_IPV6_128_PREFIX_LEN             128
 #define OGS_IPV4V6_LEN                      20
 typedef struct ogs_ip_s {
     uint32_t addr;
@@ -212,8 +213,14 @@ ED3(uint8_t ipv4:1;,
 int ogs_ip_to_sockaddr(ogs_ip_t *ip, uint16_t port, ogs_sockaddr_t **list);
 void ogs_sockaddr_to_ip(
         ogs_sockaddr_t *addr, ogs_sockaddr_t *addr6, ogs_ip_t *ip);
+
 char *ogs_ipv4_to_string(uint32_t addr);
-char *ogs_ipv6_to_string(uint8_t *addr6);
+char *ogs_ipv6addr_to_string(uint8_t *addr6);
+char *ogs_ipv6prefix_to_string(uint8_t *addr6, uint8_t prefixlen);
+int ogs_ipv4_from_string(uint32_t *addr, char *string);
+int ogs_ipv6addr_from_string(uint8_t *addr6, char *string);
+int ogs_ipv6prefix_from_string(
+        uint8_t *addr6, uint8_t *prefixlen, char *string);
 
 /**************************************************
  * 8.14 PDN Address Allocation (PAA) */
@@ -314,8 +321,7 @@ typedef struct ogs_flow_s {
 
 #define OGS_FLOW_FREE(__fLOW) \
     do { \
-        if ((__fLOW)->description) \
-        { \
+        if ((__fLOW)->description) { \
             ogs_free((__fLOW)->description); \
         } \
         else \
@@ -337,11 +343,6 @@ typedef struct ogs_pcc_rule_s {
     ogs_flow_t flow[OGS_MAX_NUM_OF_FLOW];
     int num_of_flow;
 
-#define OGS_FLOW_STATUS_ENABLED_UPLINK          0
-#define OGS_FLOW_STATUS_ENABLED_DOWNLINK        1
-#define OGS_FLOW_STATUS_ENABLED                 2
-#define OGS_FLOW_STATUS_DISABLED                3
-#define OGS_FLOW_STATUS_REMOVE                  4
     int flow_status;
     uint32_t precedence;
         
@@ -623,6 +624,46 @@ typedef struct ogs_session_data_s {
 } ogs_session_data_t;
 
 void ogs_session_data_free(ogs_session_data_t *session_data);
+
+typedef struct ogs_media_sub_component_s {
+    uint32_t            flow_number;
+    uint32_t            flow_usage;
+    ogs_flow_t          flow[OGS_MAX_NUM_OF_FLOW];
+    int                 num_of_flow;
+} ogs_media_sub_component_t;
+
+typedef struct ogs_media_component_s {
+    uint32_t            media_component_number;
+    uint32_t            media_type;
+
+    uint64_t            max_requested_bandwidth_dl;
+    uint64_t            max_requested_bandwidth_ul;
+    uint64_t            min_requested_bandwidth_dl;
+    uint64_t            min_requested_bandwidth_ul;
+    uint64_t            rr_bandwidth;
+    uint64_t            rs_bandwidth;
+
+    int                 flow_status;
+
+#define OGS_MAX_NUM_OF_MEDIA_SUB_COMPONENT     8
+    ogs_media_sub_component_t sub[OGS_MAX_NUM_OF_MEDIA_SUB_COMPONENT];
+    int                 num_of_sub;
+} ogs_media_component_t;
+
+typedef struct ogs_ims_data_s {
+    int num_of_msisdn;
+    struct {
+        uint8_t buf[OGS_MAX_MSISDN_LEN];
+        int len;
+        char bcd[OGS_MAX_MSISDN_BCD_LEN+1];
+    } msisdn[OGS_MAX_NUM_OF_MSISDN];
+
+#define OGS_MAX_NUM_OF_MEDIA_COMPONENT 16
+    ogs_media_component_t media_component[OGS_MAX_NUM_OF_MEDIA_COMPONENT];
+    int num_of_media_component;
+} ogs_ims_data_t;
+
+void ogs_ims_data_free(ogs_ims_data_t *ims_data);
 
 #ifdef __cplusplus
 }

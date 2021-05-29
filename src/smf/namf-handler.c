@@ -214,6 +214,6 @@ bool smf_namf_comm_handler_n1_n2_message_transfer_failure_notify(
      * Procedure for pause of charging at SMF is specified in clause 4.4.4.
      */
 
-    smf_sbi_send_http_status_no_content(stream);
+    ogs_sbi_send_http_status_no_content(stream);
     return true;
 }

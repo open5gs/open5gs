@@ -241,6 +241,9 @@ bool smf_nudm_sdm_handle_get(smf_sess_t *sess, ogs_sbi_stream_t *stream,
         return false;
     }
 
+    /* Set UE IP Address to the Default DL PDR */
+    smf_sess_set_ue_ip(sess);
+
     /*********************************************************************
      * Send HTTP_STATUS_CREATED(/nsmf-pdusession/v1/sm-context) to the AMF
      *********************************************************************/
@@ -257,6 +260,7 @@ bool smf_nudm_sdm_handle_get(smf_sess_t *sess, ogs_sbi_stream_t *stream,
     header.resource.component[1] = sess->sm_context_ref;
 
     sendmsg.http.location = ogs_sbi_server_uri(server, &header);
+    ogs_assert(sendmsg.http.location);
 
     sendmsg.SmContextCreatedData = &SmContextCreatedData;
 
@@ -266,8 +270,8 @@ bool smf_nudm_sdm_handle_get(smf_sess_t *sess, ogs_sbi_stream_t *stream,
 
     ogs_free(sendmsg.http.location);
 
-    smf_sbi_discover_and_send(OpenAPI_nf_type_PCF, sess, stream, NULL,
-            smf_npcf_smpolicycontrol_build_create);
+    smf_sbi_discover_and_send(OpenAPI_nf_type_PCF, sess, stream,
+            0, NULL, smf_npcf_smpolicycontrol_build_create);
 
     return true;
 

@@ -32,7 +32,7 @@ OpenAPI_nf_profile_t *ogs_nnrf_nfm_build_nf_profile(
 
     int i = 0;
     int fqdn_len;
-    char fqdn[OGS_MAX_FQDN_LEN+1];
+    char fqdn[OGS_MAX_FQDN_LEN];
 
     ogs_assert(nf_instance);
 

@@ -22,14 +22,14 @@ typedef struct OpenAPI_up_path_chg_event_s OpenAPI_up_path_chg_event_t;
 typedef struct OpenAPI_up_path_chg_event_s {
     char *notification_uri;
     char *notif_corre_id;
-    struct OpenAPI_dnai_change_type_s *dnai_chg_type;
+    OpenAPI_dnai_change_type_e dnai_chg_type;
     int af_ack_ind;
 } OpenAPI_up_path_chg_event_t;
 
 OpenAPI_up_path_chg_event_t *OpenAPI_up_path_chg_event_create(
     char *notification_uri,
     char *notif_corre_id,
-    OpenAPI_dnai_change_type_t *dnai_chg_type,
+    OpenAPI_dnai_change_type_e dnai_chg_type,
     int af_ack_ind
     );
 void OpenAPI_up_path_chg_event_free(OpenAPI_up_path_chg_event_t *up_path_chg_event);

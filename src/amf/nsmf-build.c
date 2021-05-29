@@ -159,7 +159,7 @@ ogs_sbi_request_t *amf_nsmf_pdusession_build_create_sm_context(
 ogs_sbi_request_t *amf_nsmf_pdusession_build_update_sm_context(
         amf_sess_t *sess, void *data)
 {
-    amf_nsmf_pdusession_update_sm_context_param_t *param = data;
+    amf_nsmf_pdusession_sm_context_param_t *param = data;
     ogs_sbi_message_t message;
     ogs_sbi_request_t *request = NULL;
 
@@ -274,12 +274,15 @@ ogs_sbi_request_t *amf_nsmf_pdusession_build_update_sm_context(
 ogs_sbi_request_t *amf_nsmf_pdusession_build_release_sm_context(
         amf_sess_t *sess, void *data)
 {
+    amf_nsmf_pdusession_sm_context_param_t *param = data;
+
     ogs_sbi_message_t message;
     ogs_sbi_request_t *request = NULL;
 
     amf_ue_t *amf_ue = NULL;
 
     OpenAPI_sm_context_release_data_t SmContextReleaseData;
+    OpenAPI_ng_ap_cause_t ngApCause;
     OpenAPI_user_location_t ueLocation;
 
     ogs_assert(sess);
@@ -297,6 +300,19 @@ ogs_sbi_request_t *amf_nsmf_pdusession_build_release_sm_context(
     message.h.resource.component[2] = (char *)OGS_SBI_RESOURCE_NAME_RELEASE;
 
     memset(&SmContextReleaseData, 0, sizeof(SmContextReleaseData));
+
+    if (param) {
+        SmContextReleaseData.cause = param->cause;
+
+        if (param->ngApCause.group) {
+            SmContextReleaseData.ng_ap_cause = &ngApCause;
+            memset(&ngApCause, 0, sizeof(ngApCause));
+            ngApCause.group = param->ngApCause.group;
+            ngApCause.value = param->ngApCause.value;
+        }
+
+        SmContextReleaseData._5g_mm_cause_value = param->gmm_cause;
+    }
 
     memset(&ueLocation, 0, sizeof(ueLocation));
     ueLocation.nr_location = ogs_sbi_build_nr_location(

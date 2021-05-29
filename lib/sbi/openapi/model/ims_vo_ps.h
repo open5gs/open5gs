@@ -17,16 +17,11 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_ims_vo_ps_s OpenAPI_ims_vo_ps_t;
-typedef struct OpenAPI_ims_vo_ps_s {
-} OpenAPI_ims_vo_ps_t;
+typedef enum { OpenAPI_ims_vo_ps_NULL = 0, OpenAPI_ims_vo_ps_HOMOGENEOUS_SUPPORT, OpenAPI_ims_vo_ps_HOMOGENEOUS_NON_SUPPORT, OpenAPI_ims_vo_ps_NON_HOMOGENEOUS_OR_UNKNOWN } OpenAPI_ims_vo_ps_e;
 
-OpenAPI_ims_vo_ps_t *OpenAPI_ims_vo_ps_create(
-    );
-void OpenAPI_ims_vo_ps_free(OpenAPI_ims_vo_ps_t *ims_vo_ps);
-OpenAPI_ims_vo_ps_t *OpenAPI_ims_vo_ps_parseFromJSON(cJSON *ims_vo_psJSON);
-cJSON *OpenAPI_ims_vo_ps_convertToJSON(OpenAPI_ims_vo_ps_t *ims_vo_ps);
-OpenAPI_ims_vo_ps_t *OpenAPI_ims_vo_ps_copy(OpenAPI_ims_vo_ps_t *dst, OpenAPI_ims_vo_ps_t *src);
+char* OpenAPI_ims_vo_ps_ToString(OpenAPI_ims_vo_ps_e ims_vo_ps);
+
+OpenAPI_ims_vo_ps_e OpenAPI_ims_vo_ps_FromString(char* ims_vo_ps);
 
 #ifdef __cplusplus
 }

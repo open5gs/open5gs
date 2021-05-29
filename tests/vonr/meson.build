@@ -19,6 +19,7 @@ test5gc_vonr_sources = files('''
     abts-main.c
     qos-flow-test.c
     session-test.c
+    af-test.c
 '''.split())
 
 test5gc_vonr_exe = executable('vonr',

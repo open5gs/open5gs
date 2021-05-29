@@ -26,7 +26,7 @@ typedef struct OpenAPI_amf3_gpp_access_registration_modification_s {
     struct OpenAPI_guami_s *guami;
     int purge_flag;
     char *pei;
-    struct OpenAPI_ims_vo_ps_s *ims_vo_ps;
+    OpenAPI_ims_vo_ps_e ims_vo_ps;
     OpenAPI_list_t *backup_amf_info;
     struct OpenAPI_eps_interworking_info_s *eps_interworking_info;
     int ue_srvcc_capability;
@@ -37,7 +37,7 @@ OpenAPI_amf3_gpp_access_registration_modification_t *OpenAPI_amf3_gpp_access_reg
     OpenAPI_guami_t *guami,
     int purge_flag,
     char *pei,
-    OpenAPI_ims_vo_ps_t *ims_vo_ps,
+    OpenAPI_ims_vo_ps_e ims_vo_ps,
     OpenAPI_list_t *backup_amf_info,
     OpenAPI_eps_interworking_info_t *eps_interworking_info,
     int ue_srvcc_capability,

@@ -332,6 +332,9 @@ int ogs_app_context_parse_config(void)
                 } else if (!strcmp(parameter_key, "no_nssf")) {
                     self.parameter.no_nssf =
                         ogs_yaml_iter_bool(&parameter_iter);
+                } else if (!strcmp(parameter_key, "no_bsf")) {
+                    self.parameter.no_bsf =
+                        ogs_yaml_iter_bool(&parameter_iter);
                 } else if (!strcmp(parameter_key, "no_udr")) {
                     self.parameter.no_udr =
                         ogs_yaml_iter_bool(&parameter_iter);

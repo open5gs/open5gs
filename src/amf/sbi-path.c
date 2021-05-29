@@ -282,7 +282,7 @@ void amf_sess_sbi_discover_by_nsi(
 
 void amf_sbi_send_activating_session(amf_sess_t *sess, int state)
 {
-    amf_nsmf_pdusession_update_sm_context_param_t param;
+    amf_nsmf_pdusession_sm_context_param_t param;
 
     ogs_assert(sess);
 
@@ -297,7 +297,7 @@ void amf_sbi_send_activating_session(amf_sess_t *sess, int state)
 void amf_sbi_send_deactivate_session(
         amf_sess_t *sess, int state, int group, int cause)
 {
-    amf_nsmf_pdusession_update_sm_context_param_t param;
+    amf_nsmf_pdusession_sm_context_param_t param;
 
     ogs_assert(sess);
 

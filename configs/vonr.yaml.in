@@ -11,6 +11,7 @@ parameter:
 #    no_udm: true
 #    no_pcf: true
 #    no_nssf: true
+#    no_bsf: true
 #    no_udr: true
 #    no_mme: true
 #    no_sgwc: true
@@ -218,6 +219,16 @@ nssf:
         port: 7777
         s_nssai:
           sst: 1
+
+bsf:
+    sbi:
+      - addr: 127.0.0.15
+        port: 7777
+
+af:
+    sbi:
+      - addr: 127.0.0.16
+        port: 7777
 
 udr:
     sbi:

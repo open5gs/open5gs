@@ -30,7 +30,7 @@ typedef struct OpenAPI_amf3_gpp_access_registration_s {
     char *supported_features;
     int purge_flag;
     char *pei;
-    struct OpenAPI_ims_vo_ps_s *ims_vo_ps;
+    OpenAPI_ims_vo_ps_e ims_vo_ps;
     char *dereg_callback_uri;
     char *amf_service_name_dereg;
     char *pcscf_restoration_callback_uri;
@@ -55,7 +55,7 @@ OpenAPI_amf3_gpp_access_registration_t *OpenAPI_amf3_gpp_access_registration_cre
     char *supported_features,
     int purge_flag,
     char *pei,
-    OpenAPI_ims_vo_ps_t *ims_vo_ps,
+    OpenAPI_ims_vo_ps_e ims_vo_ps,
     char *dereg_callback_uri,
     char *amf_service_name_dereg,
     char *pcscf_restoration_callback_uri,

@@ -22,6 +22,7 @@
 
 #include "npcf-handler.h"
 #include "nudr-handler.h"
+#include "nbsf-handler.h"
 
 void pcf_sm_state_initial(ogs_fsm_t *s, pcf_event_t *e)
 {
@@ -66,23 +67,63 @@ void pcf_sm_state_operational(ogs_fsm_t *s, pcf_event_t *e)
         stream = e->sbi.data;
         ogs_assert(stream);
 
-        SWITCH(message->h.method)
-        CASE(OGS_SBI_HTTP_METHOD_POST)
-            handled = pcf_npcf_smpolicycontrtol_handle_create(
-                    sess, stream, message);
-            if (!handled) {
-                ogs_error("[%s:%d] Cannot handle SBI message",
-                        pcf_ue->supi, sess->psi);
-                OGS_FSM_TRAN(s, pcf_sm_state_exception);
+        SWITCH(message->h.service.name)
+        CASE(OGS_SBI_SERVICE_NAME_NPCF_SMPOLICYCONTROL)
+            if (!message->h.resource.component[1]) {
+                handled = pcf_npcf_smpolicycontrtol_handle_create(
+                        sess, stream, message);
+                if (!handled) {
+                    ogs_error("[%s:%d] "
+                            "pcf_npcf_smpolicycontrtol_handle_create() failed",
+                            pcf_ue->supi, sess->psi);
+                    OGS_FSM_TRAN(s, pcf_sm_state_exception);
+                }
+            } else {
+                SWITCH(message->h.resource.component[2])
+                CASE(OGS_SBI_RESOURCE_NAME_DELETE)
+                    handled = pcf_npcf_smpolicycontrtol_handle_delete(
+                            sess, stream, message);
+                    if (!handled) {
+                        ogs_error("[%s:%d] "
+                            "pcf_npcf_smpolicycontrtol_handle_delete() failed",
+                            pcf_ue->supi, sess->psi);
+                        OGS_FSM_TRAN(s, pcf_sm_state_exception);
+                    }
+                    break;
+
+                DEFAULT
+                    ogs_error("[%s:%d] Invalid HTTP URI [%s]",
+                            pcf_ue->supi, sess->psi, message->h.uri);
+                    ogs_sbi_server_send_error(stream,
+                            OGS_SBI_HTTP_STATUS_FORBIDDEN, message,
+                            "Invalid HTTP method", message->h.uri);
+                END
+            }
+            break;
+
+        CASE(OGS_SBI_SERVICE_NAME_NPCF_POLICYAUTHORIZATION)
+            if (!message->h.resource.component[1]) {
+                handled = pcf_npcf_policyauthorization_handle_create(
+                        sess, stream, message);
+            } else {
+                SWITCH(message->h.resource.component[2])
+                CASE(OGS_SBI_RESOURCE_NAME_DELETE)
+                    ogs_fatal("TODO");
+                    break;
+                DEFAULT
+                    ogs_error("[%s:%d] Invalid HTTP URI [%s]",
+                            pcf_ue->supi, sess->psi, message->h.uri);
+                    ogs_sbi_server_send_error(stream,
+                            OGS_SBI_HTTP_STATUS_FORBIDDEN, message,
+                            "Invalid HTTP method", message->h.uri);
+                END
             }
             break;
 
         DEFAULT
-            ogs_error("[%s:%d] Invalid HTTP method [%s]",
-                    pcf_ue->supi, sess->psi, message->h.method);
-            ogs_sbi_server_send_error(stream,
-                    OGS_SBI_HTTP_STATUS_FORBIDDEN, message,
-                    "Invalid HTTP method", message->h.method);
+            ogs_error("[%s:%d] Invalid API name [%s]",
+                        pcf_ue->supi, sess->psi, message->h.service.name);
+            ogs_assert_if_reached();
         END
         break;
 
@@ -132,13 +173,89 @@ void pcf_sm_state_operational(ogs_fsm_t *s, pcf_event_t *e)
             END
             break;
 
+        CASE(OGS_SBI_SERVICE_NAME_NBSF_MANAGEMENT)
+            SWITCH(message->h.resource.component[0])
+            CASE(OGS_SBI_RESOURCE_NAME_PCF_BINDINGS)
+                if (message->h.resource.component[1]) {
+                    SWITCH(message->h.method)
+                    CASE(OGS_SBI_HTTP_METHOD_DELETE)
+                        if (message->res_status !=
+                                OGS_SBI_HTTP_STATUS_NO_CONTENT) {
+                            ogs_error("[%s:%d] HTTP response error [%d]",
+                                pcf_ue->supi, sess->psi, message->res_status);
+                            ogs_sbi_server_send_error(stream,
+                                message->res_status,
+                                NULL, "HTTP response error", pcf_ue->supi);
+                            OGS_FSM_TRAN(s, pcf_sm_state_exception);
+                            break;
+                        }
+
+                        pcf_nbsf_management_handle_de_register(
+                                sess, stream, message);
+                        OGS_FSM_TRAN(s, pcf_sm_state_deleted);
+                        break;
+                    DEFAULT
+                        ogs_error("[%s:%d] Unknown method [%s]",
+                                pcf_ue->supi, sess->psi, message->h.method);
+                        ogs_assert_if_reached();
+                    END
+                    break;
+                } else {
+                    SWITCH(message->h.method)
+                    CASE(OGS_SBI_HTTP_METHOD_POST)
+                        pcf_nbsf_management_handle_register(
+                                sess, stream, message);
+                        break;
+                    DEFAULT
+                        ogs_error("[%s:%d] Unknown method [%s]",
+                                pcf_ue->supi, sess->psi, message->h.method);
+                        ogs_assert_if_reached();
+                    END
+                }
+                break;
+
+            DEFAULT
+                ogs_error("[%s:%d] Invalid resource name [%s]",
+                        pcf_ue->supi, sess->psi,
+                        message->h.resource.component[0]);
+                ogs_assert_if_reached();
+            END
+            break;
+
         DEFAULT
             ogs_error("[%s:%d] Invalid API name [%s]",
                         pcf_ue->supi, sess->psi, message->h.service.name);
-            ogs_sbi_server_send_error(stream,
-                    OGS_SBI_HTTP_STATUS_BAD_REQUEST, message,
-                    "Invalid API name", message->h.resource.component[0]);
+            ogs_assert_if_reached();
         END
+        break;
+
+    default:
+        ogs_error("[%s:%d] Unknown event %s",
+                pcf_ue->supi, sess->psi, pcf_event_get_name(e));
+        break;
+    }
+}
+
+void pcf_sm_state_deleted(ogs_fsm_t *s, pcf_event_t *e)
+{
+    pcf_ue_t *pcf_ue = NULL;
+    pcf_sess_t *sess = NULL;
+
+    ogs_assert(s);
+    ogs_assert(e);
+
+    pcf_sm_debug(e);
+
+    sess = e->sess;
+    ogs_assert(sess);
+    pcf_ue = sess->pcf_ue;
+    ogs_assert(pcf_ue);
+
+    switch (e->id) {
+    case OGS_FSM_ENTRY_SIG:
+        break;
+
+    case OGS_FSM_EXIT_SIG:
         break;
 
     default:
