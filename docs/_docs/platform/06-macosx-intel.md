@@ -103,6 +103,10 @@ Install Meson using Homebrew.
 $ brew install meson
 ```
 
+Install libtins.
+
+Follow the instructions at https://libtins.github.io to install libtins.
+
 Git clone.
 
 ```bash
