@@ -66,30 +66,44 @@ libupf_sources = files('''
     pfcp-path.c
     n4-build.c
     n4-handler.c
-    arp-nd.h
 '''.split())
 
-tins_dep = cc.find_library('tins', required : true)
+libtins_dep = dependency('libtins',
+    version: ['>=3.4'],
+    fallback: ['libtins', 'libtins_dep'])
+
 libarp_nd = static_library('arp_nd',
     sources : files('''
-    arp-nd.cpp
-    arp-nd.h
+      arp-nd.cpp
+      arp-nd.h
     '''.split()),
-    dependencies : tins_dep,
+    dependencies : libtins_dep,
     install : false)
-libarp_nd_dep = declare_dependency(link_with : libarp_nd, dependencies : tins_dep)
+libarp_nd_dep = declare_dependency(
+    link_with : libarp_nd,
+    dependencies : libtins_dep)
 
 libupf = static_library('upf',
     sources : libupf_sources,
     dependencies : [
-        libapp_dep, libdiameter_gx_dep, libgtp_dep, libpfcp_dep, libtun_dep, libarp_nd_dep,
+        libapp_dep,
+        libdiameter_gx_dep,
+        libgtp_dep,
+        libpfcp_dep,
+        libtun_dep,
+        libarp_nd_dep,
     ],
     install : false)
 
 libupf_dep = declare_dependency(
     link_with : libupf,
     dependencies : [
-        libapp_dep, libdiameter_gx_dep, libgtp_dep, libpfcp_dep, libtun_dep, libarp_nd_dep,
+        libapp_dep,
+        libdiameter_gx_dep,
+        libgtp_dep,
+        libpfcp_dep,
+        libtun_dep,
+        libarp_nd_dep,
     ])
 
 upf_sources = files('''

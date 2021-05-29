@@ -89,7 +89,7 @@ $ sudo pfctl -e -f /etc/pf.anchors/org.open5gs
 
 Install the depedencies for building the source code.
 ```bash
-$ brew install mongo-c-driver gnutls libgcrypt libidn libyaml libmicrohttpd nghttp2 pkg-config bison libusrsctp
+$ brew install mongo-c-driver gnutls libgcrypt libidn libyaml libmicrohttpd nghttp2 pkg-config bison libusrsctp libtins
 ```
 
 Configure Homebrew PATH
@@ -97,16 +97,13 @@ Configure Homebrew PATH
 $ export PATH="/opt/homebrew/opt/bison/bin:/opt/homebrew/bin:$PATH"
 $ export LIBRARY_PATH=/opt/homebrew/lib
 $ export C_INCLUDE_PATH=/opt/homebrew/include
+$ export CPLUS_INCLUDE_PATH=/opt/homebrew/include
 ```
 
 Install Meson using Homebrew.
 ```bash
 $ brew install meson
 ```
-
-Install libtins.
-
-Follow the instructions at https://libtins.github.io to install libtins.
 
 Git clone.
 

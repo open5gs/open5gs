@@ -1,0 +1,4 @@
+[wrap-git]
+directory = libtins
+url = https://github.com/open5gs/libtins.git
+revision = r4.3

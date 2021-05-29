@@ -28,6 +28,7 @@ RUN apt-get update && \
         libmicrohttpd-dev \
         libcurl4-gnutls-dev \
         libnghttp2-dev \
+        libtins-dev \
         iproute2 \
         ca-certificates \
         netbase \

@@ -39,11 +39,12 @@ extern "C" {
 
 void set_source_mac(uint8_t *data);
 bool is_arp_req(uint8_t *data, uint len);
-bool arp_reply(uint8_t *reply_data, uint8_t *request_data, uint len, const uint8_t *mac);
+bool arp_reply(uint8_t *reply_data, uint8_t *request_data, uint len,
+        const uint8_t *mac);
 bool is_nd_req(uint8_t *data, uint len);
-bool nd_reply(uint8_t *reply_data, uint8_t *request_data, uint len, const uint8_t *mac);
+bool nd_reply(uint8_t *reply_data, uint8_t *request_data, uint len,
+        const uint8_t *mac);
 
 #ifdef __cplusplus
 }
 #endif
-

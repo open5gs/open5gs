@@ -121,10 +121,6 @@ $ export LIBRARY_PATH=/usr/local/lib
 $ export C_INCLUDE_PATH=/usr/local/include
 ```
 
-Install libtins.
-
-Follow the instructions at https://libtins.github.io to install libtins.
-
 Git clone.
 
 ```bash

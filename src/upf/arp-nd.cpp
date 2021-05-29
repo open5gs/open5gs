@@ -27,12 +27,14 @@
 using namespace::Tins;
 
 
-void _serialize_reply(uint8_t *reply_data, EthernetII &reply) {
+void _serialize_reply(uint8_t *reply_data, EthernetII &reply)
+{
     PDU::serialization_type serialized = reply.serialize();
     memcpy(reply_data, serialized.data(), reply.size());
 }
 
-bool _parse_arp(EthernetII &pdu) {
+bool _parse_arp(EthernetII &pdu)
+{
     if (pdu.payload_type() == ETHERTYPE_ARP) {
         const ARP& arp = pdu.rfind_pdu<ARP>();
         return arp.opcode() == ARP::REQUEST && pdu.dst_addr().is_broadcast();
@@ -46,7 +48,9 @@ bool is_arp_req(uint8_t *data, uint len)
     return _parse_arp(pdu);
 }
 
-bool arp_reply(uint8_t *reply_data, uint8_t *request_data, uint len, const uint8_t *mac) {
+bool arp_reply(uint8_t *reply_data, uint8_t *request_data, uint len,
+        const uint8_t *mac)
+{
     EthernetII pdu(request_data, len);
     if (_parse_arp(pdu)) {
         HWAddress<ETHER_ADDR_LEN> source_mac(mac);
@@ -62,7 +66,8 @@ bool arp_reply(uint8_t *reply_data, uint8_t *request_data, uint len, const uint8
     return false;
 }
 
-bool _parse_nd(EthernetII &pdu) {
+bool _parse_nd(EthernetII &pdu)
+{
     if (pdu.payload_type() == ETHERTYPE_IPV6) {
         const ICMPv6& icmp6 = pdu.rfind_pdu<ICMPv6>();
         return icmp6.type() == ICMPv6::NEIGHBOUR_SOLICIT;
@@ -79,7 +84,9 @@ bool is_nd_req(uint8_t *data, uint len)
     return false;
 }
 
-bool nd_reply(uint8_t *reply_data, uint8_t *request_data, uint len, const uint8_t *mac) {
+bool nd_reply(uint8_t *reply_data, uint8_t *request_data, uint len,
+        const uint8_t *mac)
+{
     EthernetII pdu(request_data, len);
     if (_parse_nd(pdu)) {
         HWAddress<ETHER_ADDR_LEN> source_mac(mac);

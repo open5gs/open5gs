@@ -9,9 +9,6 @@ TAG=bionic docker-compose -f docker-compose.yml -f docker-compose.test.yml run -
 DIST=fedora TAG=32 docker-compose build
 DIST=fedora TAG=32 docker-compose -f docker-compose.yml -f docker-compose.test.yml run --rm test
 
-DIST=centos docker-compose build
-DIST=centos docker-compose -f docker-compose.yml -f docker-compose.test.yml run --rm test
-
 DIST=debian docker-compose build
 DIST=debian docker-compose -f docker-compose.yml -f docker-compose.test.yml run --rm test
 

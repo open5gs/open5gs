@@ -8,6 +8,7 @@ RUN dnf -y install \
         python3 \
         ninja-build \
         gcc \
+        gcc-c++ \
         flex \
         bison \
         git \
