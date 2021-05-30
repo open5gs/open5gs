@@ -96,8 +96,7 @@ ogs_sbi_context_t *ogs_sbi_self(void)
 
 static int ogs_sbi_context_prepare(void)
 {
-    self.http_port = OGS_SBI_HTTP_PORT;
-    self.https_port = OGS_SBI_HTTPS_PORT;
+    self.sbi_port = OGS_SBI_HTTP_PORT;
 
     self.content_encoding = "gzip";
 
@@ -153,7 +152,7 @@ int ogs_sbi_context_parse_config(const char *local, const char *remote)
                         const char *key = NULL;
                         const char *pem = NULL;
 
-                        uint16_t port = self.http_port;
+                        uint16_t port = self.sbi_port;
                         const char *dev = NULL;
                         ogs_sockaddr_t *addr = NULL;
 
@@ -233,10 +232,8 @@ int ogs_sbi_context_parse_config(const char *local, const char *remote)
                                         YAML_SEQUENCE_NODE);
                             } else if (!strcmp(sbi_key, "port")) {
                                 const char *v = ogs_yaml_iter_value(&sbi_iter);
-                                if (v) {
+                                if (v)
                                     port = atoi(v);
-                                    self.http_port = port;
-                                }
                             } else if (!strcmp(sbi_key, "dev")) {
                                 dev = ogs_yaml_iter_value(&sbi_iter);
                             } else if (!strcmp(sbi_key, "tls")) {
@@ -335,7 +332,7 @@ int ogs_sbi_context_parse_config(const char *local, const char *remote)
                         rv = ogs_socknode_probe(
                             ogs_app()->parameter.no_ipv4 ? NULL : &list,
                             ogs_app()->parameter.no_ipv6 ? NULL : &list6,
-                            NULL, self.http_port);
+                            NULL, self.sbi_port);
                         ogs_assert(rv == OGS_OK);
 
                         node = ogs_list_first(&list);
@@ -364,7 +361,7 @@ int ogs_sbi_context_parse_config(const char *local, const char *remote)
                         int family = AF_UNSPEC;
                         int i, num = 0;
                         const char *hostname[OGS_MAX_NUM_OF_HOSTNAME];
-                        uint16_t port = self.http_port;
+                        uint16_t port = self.sbi_port;
                         const char *key = NULL;
                         const char *pem = NULL;
 
@@ -942,7 +939,7 @@ static ogs_sbi_client_t *find_client_by_fqdn(char *fqdn, int port)
     ogs_sbi_client_t *client = NULL;
 
     rv = ogs_getaddrinfo(&addr, AF_UNSPEC, fqdn,
-            port ? port : OGS_SBI_HTTPS_PORT, 0);
+            port ? port : ogs_sbi_self()->sbi_port, 0);
     if (rv != OGS_OK) {
         ogs_error("Invalid NFProfile.fqdn");
         return NULL;

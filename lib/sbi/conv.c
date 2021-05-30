@@ -46,7 +46,11 @@ char *ogs_uridup(bool https, ogs_sockaddr_t *addr, ogs_sbi_header_t *h)
         p = ogs_slprintf(p, last, "%s", OGS_ADDR(addr, buf));
 
     /* Port number */
-    if (OGS_PORT(addr) != OGS_SBI_HTTP_PORT) {
+    if ((https == true && OGS_PORT(addr) == OGS_SBI_HTTPS_PORT)) {
+        /* No Port in URI */
+    } else if (OGS_PORT(addr) == OGS_SBI_HTTP_PORT) {
+        /* No Port in URI */
+    } else {
         p = ogs_slprintf(p, last, ":%d", OGS_PORT(addr));
     }
 

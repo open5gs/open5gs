@@ -108,7 +108,7 @@ int nssf_context_parse_config(void)
                         int family = AF_UNSPEC;
                         int i, num = 0;
                         const char *hostname[OGS_MAX_NUM_OF_HOSTNAME];
-                        uint16_t port = ogs_sbi_self()->http_port;
+                        uint16_t port = ogs_sbi_self()->sbi_port;
                         const char *dev = NULL;
                         ogs_sockaddr_t *addr = NULL;
                         const char *key = NULL, *pem = NULL;

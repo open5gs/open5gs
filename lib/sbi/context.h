@@ -36,8 +36,7 @@ typedef struct ogs_sbi_client_s ogs_sbi_client_t;
 typedef struct ogs_sbi_smf_info_s ogs_sbi_smf_info_t;
 
 typedef struct ogs_sbi_context_s {
-    uint32_t            http_port;      /* SBI HTTP local port */
-    uint32_t            https_port;     /* SBI HTTPS local port */
+    uint32_t            sbi_port;       /* SBI local port */
 
     ogs_list_t          server_list;
     ogs_list_t          client_list;

@@ -267,7 +267,7 @@ static ogs_sbi_client_t *find_client_by_fqdn(char *fqdn, int port)
     ogs_sbi_client_t *client = NULL;
 
     rv = ogs_getaddrinfo(&addr, AF_UNSPEC, fqdn,
-            port ? port : OGS_SBI_HTTPS_PORT, 0);
+            port ? port : ogs_sbi_self()->sbi_port, 0);
     if (rv != OGS_OK) {
         ogs_error("Invalid NFProfile.fqdn");
         return NULL;

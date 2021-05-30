@@ -248,7 +248,7 @@ bool ogs_sbi_nnrf_handle_nf_profile(ogs_sbi_nf_instance_t *nf_instance,
         if (nf_instance->num_of_ipv4 < OGS_SBI_MAX_NUM_OF_IP_ADDRESS) {
 
             rv = ogs_getaddrinfo(&addr, AF_UNSPEC,
-                    node->data, OGS_SBI_HTTPS_PORT, 0);
+                    node->data, ogs_sbi_self()->sbi_port, 0);
             if (rv != OGS_OK) continue;
 
             nf_instance->ipv4[nf_instance->num_of_ipv4] = addr;
@@ -263,7 +263,7 @@ bool ogs_sbi_nnrf_handle_nf_profile(ogs_sbi_nf_instance_t *nf_instance,
         if (nf_instance->num_of_ipv6 < OGS_SBI_MAX_NUM_OF_IP_ADDRESS) {
 
             rv = ogs_getaddrinfo(&addr, AF_UNSPEC,
-                    node->data, OGS_SBI_HTTPS_PORT, 0);
+                    node->data, ogs_sbi_self()->sbi_port, 0);
             if (rv != OGS_OK) continue;
 
             nf_instance->ipv6[nf_instance->num_of_ipv6] = addr;
