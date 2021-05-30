@@ -129,13 +129,11 @@ void sgwu_sxa_handle_session_establishment_request(
                         else
                             pdr->f_teid.teid = pdr->index;
                     } else {
-                        ogs_assert(
-                                ogs_gtp_self()->gtpu_addr ||
-                                ogs_gtp_self()->gtpu_addr6);
-                        ogs_pfcp_sockaddr_to_f_teid(
+                        ogs_assert(OGS_OK ==
+                            ogs_pfcp_sockaddr_to_f_teid(
                                 ogs_gtp_self()->gtpu_addr,
                                 ogs_gtp_self()->gtpu_addr6,
-                                &pdr->f_teid, &pdr->f_teid_len);
+                                &pdr->f_teid, &pdr->f_teid_len));
                         pdr->f_teid.teid = pdr->index;
                     }
                 }
@@ -335,13 +333,11 @@ void sgwu_sxa_handle_session_modification_request(
                         else
                             pdr->f_teid.teid = pdr->index;
                     } else {
-                        ogs_assert(
-                                ogs_gtp_self()->gtpu_addr ||
-                                ogs_gtp_self()->gtpu_addr6);
-                        ogs_pfcp_sockaddr_to_f_teid(
+                        ogs_assert(OGS_OK ==
+                            ogs_pfcp_sockaddr_to_f_teid(
                                 ogs_gtp_self()->gtpu_addr,
                                 ogs_gtp_self()->gtpu_addr6,
-                                &pdr->f_teid, &pdr->f_teid_len);
+                                &pdr->f_teid, &pdr->f_teid_len));
                         pdr->f_teid.teid = pdr->index;
                     }
                 }

@@ -37,7 +37,6 @@ bool smf_npcf_smpolicycontrol_handle_create(
     smf_ue_t *smf_ue = NULL;
 
     smf_bearer_t *qos_flow = NULL;
-    ogs_gtpu_resource_t *resource = NULL;
     ogs_pfcp_pdr_t *dl_pdr = NULL;
     ogs_pfcp_pdr_t *ul_pdr = NULL;
     ogs_pfcp_pdr_t *cp2up_pdr = NULL;
@@ -439,6 +438,14 @@ bool smf_npcf_smpolicycontrol_handle_create(
         up2cp_pdr->f_teid.choose_id = OGS_PFCP_DEFAULT_CHOOSE_ID;
         up2cp_pdr->f_teid_len = 2;
     } else {
+        char buf[OGS_ADDRSTRLEN];
+        ogs_gtpu_resource_t *resource = NULL;
+        ogs_sockaddr_t *addr = sess->pfcp_node->sa_list;
+        ogs_assert(addr);
+
+        ogs_error("F-TEID allocation/release not supported with peer [%s]:%d",
+                OGS_ADDR(addr, buf), OGS_PORT(addr));
+
         resource = ogs_pfcp_find_gtpu_resource(
                 &sess->pfcp_node->gtpu_resource_list,
                 sess->session.name, OGS_PFCP_INTERFACE_ACCESS);
@@ -462,20 +469,22 @@ bool smf_npcf_smpolicycontrol_handle_create(
             sess->upf_n3_teid = sess->index;
         }
 
-        ogs_assert(sess->upf_n3_addr || sess->upf_n3_addr6);
-
-        ogs_pfcp_sockaddr_to_f_teid(sess->upf_n3_addr, sess->upf_n3_addr6,
-                &ul_pdr->f_teid, &ul_pdr->f_teid_len);
+        ogs_assert(OGS_OK ==
+            ogs_pfcp_sockaddr_to_f_teid(
+                sess->upf_n3_addr, sess->upf_n3_addr6,
+                &ul_pdr->f_teid, &ul_pdr->f_teid_len));
         ul_pdr->f_teid.teid = sess->upf_n3_teid;
 
-        ogs_assert(ogs_gtp_self()->gtpu_addr || ogs_gtp_self()->gtpu_addr6);
-        ogs_pfcp_sockaddr_to_f_teid(
+        ogs_assert(OGS_OK ==
+            ogs_pfcp_sockaddr_to_f_teid(
                 ogs_gtp_self()->gtpu_addr, ogs_gtp_self()->gtpu_addr6,
-                &cp2up_pdr->f_teid, &cp2up_pdr->f_teid_len);
+                &cp2up_pdr->f_teid, &cp2up_pdr->f_teid_len));
         cp2up_pdr->f_teid.teid = sess->index;
 
-        ogs_pfcp_sockaddr_to_f_teid(sess->upf_n3_addr, sess->upf_n3_addr6,
-                &up2cp_pdr->f_teid, &up2cp_pdr->f_teid_len);
+        ogs_assert(OGS_OK ==
+            ogs_pfcp_sockaddr_to_f_teid(
+                sess->upf_n3_addr, sess->upf_n3_addr6,
+                &up2cp_pdr->f_teid, &up2cp_pdr->f_teid_len));
         up2cp_pdr->f_teid.teid = sess->upf_n3_teid;
     }
 

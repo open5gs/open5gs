@@ -197,7 +197,15 @@ void smf_gx_handle_cca_initial_request(
         up2cp_pdr->f_teid.choose_id = OGS_PFCP_DEFAULT_CHOOSE_ID;
         up2cp_pdr->f_teid_len = 2;
     } else {
-        ogs_gtpu_resource_t *resource = ogs_pfcp_find_gtpu_resource(
+        char buf[OGS_ADDRSTRLEN];
+        ogs_gtpu_resource_t *resource = NULL;
+        ogs_sockaddr_t *addr = sess->pfcp_node->sa_list;
+        ogs_assert(addr);
+
+        ogs_error("F-TEID allocation/release not supported with peer [%s]:%d",
+                OGS_ADDR(addr, buf), OGS_PORT(addr));
+
+        resource = ogs_pfcp_find_gtpu_resource(
                 &sess->pfcp_node->gtpu_resource_list,
                 sess->session.name, OGS_PFCP_INTERFACE_ACCESS);
         if (resource) {
@@ -221,19 +229,22 @@ void smf_gx_handle_cca_initial_request(
             bearer->pgw_s5u_teid = bearer->index;
         }
 
-        ogs_assert(bearer->pgw_s5u_addr || bearer->pgw_s5u_addr6);
-        ogs_pfcp_sockaddr_to_f_teid(bearer->pgw_s5u_addr, bearer->pgw_s5u_addr6,
-                &ul_pdr->f_teid, &ul_pdr->f_teid_len);
+        ogs_assert(OGS_OK ==
+            ogs_pfcp_sockaddr_to_f_teid(
+                bearer->pgw_s5u_addr, bearer->pgw_s5u_addr6,
+                &ul_pdr->f_teid, &ul_pdr->f_teid_len));
         ul_pdr->f_teid.teid = bearer->pgw_s5u_teid;
 
-        ogs_assert(ogs_gtp_self()->gtpu_addr || ogs_gtp_self()->gtpu_addr6);
-        ogs_pfcp_sockaddr_to_f_teid(
+        ogs_assert(OGS_OK ==
+            ogs_pfcp_sockaddr_to_f_teid(
                 ogs_gtp_self()->gtpu_addr, ogs_gtp_self()->gtpu_addr6,
-                &cp2up_pdr->f_teid, &cp2up_pdr->f_teid_len);
+                &cp2up_pdr->f_teid, &cp2up_pdr->f_teid_len));
         cp2up_pdr->f_teid.teid = bearer->index;
 
-        ogs_pfcp_sockaddr_to_f_teid(sess->upf_n3_addr, sess->upf_n3_addr6,
-                &up2cp_pdr->f_teid, &up2cp_pdr->f_teid_len);
+        ogs_assert(OGS_OK ==
+            ogs_pfcp_sockaddr_to_f_teid(
+                bearer->pgw_s5u_addr, bearer->pgw_s5u_addr6,
+                &up2cp_pdr->f_teid, &up2cp_pdr->f_teid_len));
         up2cp_pdr->f_teid.teid = bearer->pgw_s5u_teid;
     }
 

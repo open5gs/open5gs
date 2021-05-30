@@ -180,8 +180,8 @@ int ogs_pfcp_sockaddr_to_f_teid(
 {
     const int hdr_len = 5;
 
-    ogs_assert(addr || addr6);
-    ogs_assert(f_teid);
+    ogs_expect_or_return_val(addr || addr6, OGS_ERROR);
+    ogs_expect_or_return_val(f_teid, OGS_ERROR);
     memset(f_teid, 0, sizeof *f_teid);
 
     if (addr && addr6) {
@@ -201,7 +201,7 @@ int ogs_pfcp_sockaddr_to_f_teid(
         memcpy(f_teid->addr6, addr6->sin6.sin6_addr.s6_addr, OGS_IPV6_LEN);
         *len = OGS_IPV6_LEN + hdr_len;
     } else
-        ogs_assert_if_reached();
+        ogs_expect_or_return_val(0, OGS_ERROR);
 
     return OGS_OK;
 }

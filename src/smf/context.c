@@ -1669,11 +1669,17 @@ void smf_sess_create_indirect_data_forwarding(smf_sess_t *sess)
             pdr->f_teid.choose_id = OGS_PFCP_INDIRECT_DATA_FORWARDING_CHOOSE_ID;
             pdr->f_teid_len = 2;
         } else {
-            ogs_assert(sess->upf_n3_addr || sess->upf_n3_addr6);
+            char buf[OGS_ADDRSTRLEN];
+            ogs_sockaddr_t *addr = sess->pfcp_node->sa_list;
+            ogs_assert(addr);
 
-            ogs_pfcp_sockaddr_to_f_teid(
+            ogs_error("F-TEID allocation/release not supported "
+                        "with peer [%s]:%d",
+                        OGS_ADDR(addr, buf), OGS_PORT(addr));
+            ogs_assert(OGS_OK ==
+                ogs_pfcp_sockaddr_to_f_teid(
                     sess->upf_n3_addr, sess->upf_n3_addr6,
-                    &pdr->f_teid, &pdr->f_teid_len);
+                    &pdr->f_teid, &pdr->f_teid_len));
             pdr->f_teid.teid = sess->upf_n3_teid;
         }
 
