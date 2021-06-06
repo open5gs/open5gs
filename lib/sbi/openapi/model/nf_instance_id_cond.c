@@ -62,7 +62,7 @@ OpenAPI_nf_instance_id_cond_t *OpenAPI_nf_instance_id_cond_parseFromJSON(cJSON *
     }
 
     nf_instance_id_cond_local_var = OpenAPI_nf_instance_id_cond_create (
-        ogs_strdup(nf_instance_id->valuestring)
+        ogs_strdup_or_assert(nf_instance_id->valuestring)
         );
 
     return nf_instance_id_cond_local_var;

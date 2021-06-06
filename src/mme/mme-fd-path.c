@@ -844,6 +844,7 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
                         session->name = ogs_strndup(
                                         (char*)hdr->avp_value->os.data,
                                         hdr->avp_value->os.len);
+                        ogs_assert(session->name);
                     } else {
                         ogs_error("no_Service-Selection");
                         error++;

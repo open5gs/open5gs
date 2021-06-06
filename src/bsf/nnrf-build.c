@@ -43,7 +43,7 @@ ogs_sbi_request_t *bsf_nnrf_nfm_build_register(
     message.http.content_encoding = (char*)ogs_sbi_self()->content_encoding;
 
     NFProfile = ogs_nnrf_nfm_build_nf_profile(nf_instance);
-    ogs_assert(NFProfile);
+    ogs_expect_or_return_val(NFProfile, NULL);
 
     message.NFProfile = NFProfile;
 

@@ -85,8 +85,11 @@ void ogs_pfcp_context_init(void)
     ogs_pool_init(&ogs_pfcp_subnet_pool, OGS_MAX_NUM_OF_SUBNET);
 
     self.object_teid_hash = ogs_hash_make();
+    ogs_assert(self.object_teid_hash);
     self.far_f_teid_hash = ogs_hash_make();
+    ogs_assert(self.far_f_teid_hash);
     self.far_teid_hash = ogs_hash_make();
+    ogs_assert(self.far_teid_hash);
 
     context_initialized = 1;
 }
@@ -676,7 +679,7 @@ ogs_pfcp_node_t *ogs_pfcp_node_add(
     ogs_assert(list);
     ogs_assert(addr);
 
-    ogs_copyaddrinfo(&new, addr);
+    ogs_assert(OGS_OK == ogs_copyaddrinfo(&new, addr));
     node = ogs_pfcp_node_new(new);
 
     ogs_assert(node);
@@ -752,7 +755,7 @@ ogs_gtpu_resource_t *ogs_pfcp_find_gtpu_resource(ogs_list_t *list,
     return NULL;
 }
 
-void ogs_pfcp_setup_far_gtpu_node(ogs_pfcp_far_t *far)
+int ogs_pfcp_setup_far_gtpu_node(ogs_pfcp_far_t *far)
 {
     int rv;
     ogs_ip_t ip;
@@ -763,23 +766,25 @@ void ogs_pfcp_setup_far_gtpu_node(ogs_pfcp_far_t *far)
     ogs_pfcp_outer_header_creation_to_ip(&far->outer_header_creation, &ip);
 
     /* No Outer Header Creation */
-    if (ip.len == 0) return;
+    if (ip.len == 0) return OGS_DONE;
 
     gnode = ogs_gtp_node_find_by_ip(&ogs_gtp_self()->gtpu_peer_list, &ip);
     if (!gnode) {
         gnode = ogs_gtp_node_add_by_ip(
             &ogs_gtp_self()->gtpu_peer_list, &ip, ogs_gtp_self()->gtpu_port);
-        ogs_assert(gnode);
+        ogs_expect_or_return_val(gnode, OGS_ERROR);
 
         rv = ogs_gtp_connect(
                 ogs_gtp_self()->gtpu_sock, ogs_gtp_self()->gtpu_sock6, gnode);
-        ogs_assert(rv == OGS_OK);
+        ogs_expect_or_return_val(rv == OGS_OK, rv);
     }
 
     OGS_SETUP_GTP_NODE(far, gnode);
+
+    return OGS_OK;
 }
 
-void ogs_pfcp_setup_pdr_gtpu_node(ogs_pfcp_pdr_t *pdr)
+int ogs_pfcp_setup_pdr_gtpu_node(ogs_pfcp_pdr_t *pdr)
 {
     int rv;
     ogs_ip_t ip;
@@ -788,22 +793,25 @@ void ogs_pfcp_setup_pdr_gtpu_node(ogs_pfcp_pdr_t *pdr)
     ogs_assert(pdr);
 
     /* No F-TEID */
-    if (pdr->f_teid_len == 0) return;
+    if (pdr->f_teid_len == 0) return OGS_DONE;
 
-    ogs_pfcp_f_teid_to_ip(&pdr->f_teid, &ip);
+    rv = ogs_pfcp_f_teid_to_ip(&pdr->f_teid, &ip);
+    ogs_expect_or_return_val(rv == OGS_OK, rv);
 
     gnode = ogs_gtp_node_find_by_ip(&ogs_gtp_self()->gtpu_peer_list, &ip);
     if (!gnode) {
         gnode = ogs_gtp_node_add_by_ip(
             &ogs_gtp_self()->gtpu_peer_list, &ip, ogs_gtp_self()->gtpu_port);
-        ogs_assert(gnode);
+        ogs_expect_or_return_val(gnode, OGS_ERROR);
 
         rv = ogs_gtp_connect(
                 ogs_gtp_self()->gtpu_sock, ogs_gtp_self()->gtpu_sock6, gnode);
-        ogs_assert(rv == OGS_OK);
+        ogs_expect_or_return_val(rv == OGS_OK, rv);
     }
 
     OGS_SETUP_GTP_NODE(pdr, gnode);
+
+    return OGS_OK;
 }
 
 void ogs_pfcp_sess_clear(ogs_pfcp_sess_t *sess)
@@ -1577,8 +1585,8 @@ ogs_pfcp_ue_ip_t *ogs_pfcp_ue_ip_alloc(
     } else if (family == AF_INET6) {
         maxbytes = 16;
     } else {
-        ogs_fatal("Invalid family[%d]", family);
-        ogs_assert_if_reached();
+        ogs_error("Invalid family[%d]", family);
+        return NULL;
     }
 
     if (dnn)
@@ -1596,22 +1604,22 @@ ogs_pfcp_ue_ip_t *ogs_pfcp_ue_ip_alloc(
         else if (family == AF_INET6)
             ogs_error("     - addr: 2001:230:cafe::1/48");
 
-        ogs_assert_if_reached();
         return NULL;
     }
 
     /* if assigning a static IP, do so. If not, assign dynamically! */
     if (memcmp(addr, zero, maxbytes) != 0) {
         ue_ip = ogs_calloc(1, sizeof(ogs_pfcp_ue_ip_t));
+        ogs_expect_or_return_val(ue_ip, NULL);
 
         ue_ip->subnet = subnet;
         ue_ip->static_ip = true;
         memcpy(ue_ip->addr, addr, maxbytes);
     } else {
         ogs_pool_alloc(&subnet->pool, &ue_ip);
+        ogs_expect(ue_ip);
     }
 
-    ogs_assert(ue_ip);
     return ue_ip;
 }
 

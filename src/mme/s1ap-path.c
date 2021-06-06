@@ -334,7 +334,7 @@ int s1ap_send_ue_context_release_command(
     return rv;
 }
 
-void s1ap_send_paging(mme_ue_t *mme_ue, S1AP_CNDomain_t cn_domain)
+int s1ap_send_paging(mme_ue_t *mme_ue, S1AP_CNDomain_t cn_domain)
 {
     ogs_pkbuf_t *s1apbuf = NULL;
     mme_enb_t *enb = NULL;
@@ -352,14 +352,14 @@ void s1ap_send_paging(mme_ue_t *mme_ue, S1AP_CNDomain_t cn_domain)
                     s1apbuf = mme_ue->t3413.pkbuf;
                 } else {
                     s1apbuf = s1ap_build_paging(mme_ue, cn_domain);
-                    ogs_expect_or_return(s1apbuf);
+                    ogs_expect_or_return_val(s1apbuf, OGS_ERROR);
                 }
 
                 mme_ue->t3413.pkbuf = ogs_pkbuf_copy(s1apbuf);
-                ogs_assert(mme_ue->t3413.pkbuf);
+                ogs_expect_or_return_val(mme_ue->t3413.pkbuf, OGS_ERROR);
 
                 rv = s1ap_send_to_enb(enb, s1apbuf, mme_ue->enb_ostream_id);
-                ogs_expect(rv == OGS_OK);
+                ogs_expect_or_return_val(rv == OGS_OK, rv);
             }
         }
     }
@@ -367,6 +367,8 @@ void s1ap_send_paging(mme_ue_t *mme_ue, S1AP_CNDomain_t cn_domain)
     /* Start T3413 */
     ogs_timer_start(mme_ue->t3413.timer, 
             mme_timer_cfg(MME_TIMER_T3413)->duration);
+
+    return OGS_OK;
 }
 
 int s1ap_send_mme_configuration_transfer(

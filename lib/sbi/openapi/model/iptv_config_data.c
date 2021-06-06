@@ -215,13 +215,13 @@ OpenAPI_iptv_config_data_t *OpenAPI_iptv_config_data_parseFromJSON(cJSON *iptv_c
     }
 
     iptv_config_data_local_var = OpenAPI_iptv_config_data_create (
-        supi ? ogs_strdup(supi->valuestring) : NULL,
-        inter_group_id ? ogs_strdup(inter_group_id->valuestring) : NULL,
-        dnn ? ogs_strdup(dnn->valuestring) : NULL,
+        supi ? ogs_strdup_or_assert(supi->valuestring) : NULL,
+        inter_group_id ? ogs_strdup_or_assert(inter_group_id->valuestring) : NULL,
+        dnn ? ogs_strdup_or_assert(dnn->valuestring) : NULL,
         snssai ? snssai_local_nonprim : NULL,
-        ogs_strdup(af_app_id->valuestring),
+        ogs_strdup_or_assert(af_app_id->valuestring),
         multi_acc_ctrlsList,
-        ogs_strdup(supp_feat->valuestring)
+        ogs_strdup_or_assert(supp_feat->valuestring)
         );
 
     return iptv_config_data_local_var;

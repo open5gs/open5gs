@@ -31,7 +31,7 @@ ogs_pkbuf_t *smf_n4_build_session_establishment_request(
     ogs_pfcp_far_t *far = NULL;
     ogs_pfcp_urr_t *urr = NULL;
     ogs_pfcp_qer_t *qer = NULL;
-    int i;
+    int i, rv;
 
     ogs_pfcp_node_id_t node_id;
     ogs_pfcp_f_seid_t f_seid;
@@ -44,18 +44,20 @@ ogs_pkbuf_t *smf_n4_build_session_establishment_request(
     memset(&pfcp_message, 0, sizeof(ogs_pfcp_message_t));
 
     /* Node ID */
-    ogs_pfcp_sockaddr_to_node_id(
+    rv = ogs_pfcp_sockaddr_to_node_id(
             ogs_pfcp_self()->pfcp_addr, ogs_pfcp_self()->pfcp_addr6,
             ogs_app()->parameter.prefer_ipv4,
             &node_id, &len);
+    ogs_expect_or_return_val(rv == OGS_OK, NULL);
     req->node_id.presence = 1;
     req->node_id.data = &node_id;
     req->node_id.len = len;
 
     /* F-SEID */
-    ogs_pfcp_sockaddr_to_f_seid(
+    rv = ogs_pfcp_sockaddr_to_f_seid(
             ogs_pfcp_self()->pfcp_addr, ogs_pfcp_self()->pfcp_addr6,
             &f_seid, &len);
+    ogs_expect_or_return_val(rv == OGS_OK, NULL);
     f_seid.seid = htobe64(sess->smf_n4_seid);
     req->cp_f_seid.presence = 1;
     req->cp_f_seid.data = &f_seid;

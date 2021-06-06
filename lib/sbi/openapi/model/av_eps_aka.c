@@ -144,10 +144,10 @@ OpenAPI_av_eps_aka_t *OpenAPI_av_eps_aka_parseFromJSON(cJSON *av_eps_akaJSON)
 
     av_eps_aka_local_var = OpenAPI_av_eps_aka_create (
         av_typeVariable,
-        ogs_strdup(rand->valuestring),
-        ogs_strdup(xres->valuestring),
-        ogs_strdup(autn->valuestring),
-        ogs_strdup(kasme->valuestring)
+        ogs_strdup_or_assert(rand->valuestring),
+        ogs_strdup_or_assert(xres->valuestring),
+        ogs_strdup_or_assert(autn->valuestring),
+        ogs_strdup_or_assert(kasme->valuestring)
         );
 
     return av_eps_aka_local_var;

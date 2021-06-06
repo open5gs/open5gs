@@ -118,10 +118,10 @@ OpenAPI_ip_multicast_address_info_t *OpenAPI_ip_multicast_address_info_parseFrom
     }
 
     ip_multicast_address_info_local_var = OpenAPI_ip_multicast_address_info_create (
-        src_ipv4_addr ? ogs_strdup(src_ipv4_addr->valuestring) : NULL,
-        ipv4_mul_addr ? ogs_strdup(ipv4_mul_addr->valuestring) : NULL,
-        src_ipv6_addr ? ogs_strdup(src_ipv6_addr->valuestring) : NULL,
-        ipv6_mul_addr ? ogs_strdup(ipv6_mul_addr->valuestring) : NULL
+        src_ipv4_addr ? ogs_strdup_or_assert(src_ipv4_addr->valuestring) : NULL,
+        ipv4_mul_addr ? ogs_strdup_or_assert(ipv4_mul_addr->valuestring) : NULL,
+        src_ipv6_addr ? ogs_strdup_or_assert(src_ipv6_addr->valuestring) : NULL,
+        ipv6_mul_addr ? ogs_strdup_or_assert(ipv6_mul_addr->valuestring) : NULL
         );
 
     return ip_multicast_address_info_local_var;

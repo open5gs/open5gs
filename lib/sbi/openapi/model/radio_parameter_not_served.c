@@ -130,9 +130,9 @@ OpenAPI_radio_parameter_not_served_t *OpenAPI_radio_parameter_not_served_parseFr
     oper_managed_local_nonprim = OpenAPI_operator_managed_parseFromJSON(oper_managed);
 
     radio_parameter_not_served_local_var = OpenAPI_radio_parameter_not_served_create (
-        ogs_strdup(radio_params->valuestring),
+        ogs_strdup_or_assert(radio_params->valuestring),
         rat_local_nonprim,
-        ogs_strdup(geographical_area->valuestring),
+        ogs_strdup_or_assert(geographical_area->valuestring),
         oper_managed_local_nonprim
         );
 

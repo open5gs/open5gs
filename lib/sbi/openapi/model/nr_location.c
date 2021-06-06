@@ -191,9 +191,9 @@ OpenAPI_nr_location_t *OpenAPI_nr_location_parseFromJSON(cJSON *nr_locationJSON)
         tai_local_nonprim,
         ncgi_local_nonprim,
         age_of_location_information ? age_of_location_information->valuedouble : 0,
-        ue_location_timestamp ? ogs_strdup(ue_location_timestamp->valuestring) : NULL,
-        geographical_information ? ogs_strdup(geographical_information->valuestring) : NULL,
-        geodetic_information ? ogs_strdup(geodetic_information->valuestring) : NULL,
+        ue_location_timestamp ? ogs_strdup_or_assert(ue_location_timestamp->valuestring) : NULL,
+        geographical_information ? ogs_strdup_or_assert(geographical_information->valuestring) : NULL,
+        geodetic_information ? ogs_strdup_or_assert(geodetic_information->valuestring) : NULL,
         global_gnb_id ? global_gnb_id_local_nonprim : NULL
         );
 

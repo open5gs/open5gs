@@ -123,8 +123,8 @@ OpenAPI_pgw_info_t *OpenAPI_pgw_info_parseFromJSON(cJSON *pgw_infoJSON)
     }
 
     pgw_info_local_var = OpenAPI_pgw_info_create (
-        ogs_strdup(dnn->valuestring),
-        ogs_strdup(pgw_fqdn->valuestring),
+        ogs_strdup_or_assert(dnn->valuestring),
+        ogs_strdup_or_assert(pgw_fqdn->valuestring),
         plmn_id ? plmn_id_local_nonprim : NULL,
         epdg_ind ? epdg_ind->valueint : 0
         );

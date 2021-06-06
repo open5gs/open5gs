@@ -69,13 +69,16 @@ ogs_sbi_request_t *smf_npcf_smpolicycontrol_build_create(
     SmPolicyContextData.notification_uri = ogs_sbi_server_uri(server, &header);
     ogs_assert(SmPolicyContextData.notification_uri);
 
-    if (sess->ipv4)
+    if (sess->ipv4) {
         SmPolicyContextData.ipv4_address =
                 ogs_ipv4_to_string(sess->ipv4->addr[0]);
+        ogs_expect_or_return_val(SmPolicyContextData.ipv4_address, NULL);
+    }
 
     if (sess->ipv6) {
         SmPolicyContextData.ipv6_address_prefix = ogs_ipv6prefix_to_string(
                 (uint8_t *)sess->ipv6->addr, OGS_IPV6_128_PREFIX_LEN);
+        ogs_expect_or_return_val(SmPolicyContextData.ipv6_address_prefix, NULL);
     }
 
     memset(&SubsSessAmbr, 0, sizeof(SubsSessAmbr));
@@ -121,6 +124,7 @@ ogs_sbi_request_t *smf_npcf_smpolicycontrol_build_create(
     if (sess->smpolicycontrol_features) {
         SmPolicyContextData.supp_feat =
             ogs_uint64_to_string(sess->smpolicycontrol_features);
+        ogs_expect_or_return_val(SmPolicyContextData.supp_feat, NULL);
     }
 
     memset(&sNssai, 0, sizeof(sNssai));
@@ -131,7 +135,7 @@ ogs_sbi_request_t *smf_npcf_smpolicycontrol_build_create(
     message.SmPolicyContextData = &SmPolicyContextData;
 
     request = ogs_sbi_build_request(&message);
-    ogs_assert(request);
+    ogs_expect(request);
 
     ogs_free(SmPolicyContextData.notification_uri);
     if (SmPolicyContextData.gpsi)
@@ -219,27 +223,31 @@ ogs_sbi_request_t *smf_npcf_smpolicycontrol_build_delete(
         if (param->ue_location) {
             ueLocation.nr_location = ogs_sbi_build_nr_location(
                     &sess->nr_tai, &sess->nr_cgi);
-            ogs_assert(ueLocation.nr_location);
+            ogs_expect_or_return_val(ueLocation.nr_location, NULL);
             ueLocation.nr_location->ue_location_timestamp =
                 ogs_sbi_gmtime_string(sess->ue_location_timestamp);
+            ogs_expect_or_return_val(
+                    ueLocation.nr_location->ue_location_timestamp, NULL);
 
             SmPolicyDeleteData.user_location_info = &ueLocation;
         }
         if (param->ue_timezone) {
             SmPolicyDeleteData.ue_time_zone =
                 ogs_sbi_timezone_string(ogs_timezone());
+            ogs_expect_or_return_val(SmPolicyDeleteData.ue_time_zone, NULL);
         }
     }
 
     SmPolicyDeleteData.serving_network =
         ogs_sbi_build_plmn_id_nid(&sess->plmn_id);
+    ogs_expect_or_return_val(SmPolicyDeleteData.serving_network, NULL);
 
     SmPolicyDeleteData.ran_nas_rel_causes = ranNasRelCauseList;
 
     message.SmPolicyDeleteData = &SmPolicyDeleteData;
 
     request = ogs_sbi_build_request(&message);
-    ogs_assert(request);
+    ogs_expect(request);
 
     if (ueLocation.nr_location) {
         if (ueLocation.nr_location->ue_location_timestamp)

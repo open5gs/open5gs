@@ -190,10 +190,10 @@ char *ogs_uint64_to_string(uint64_t x)
     char *str, *p;
 
     str = ogs_uint64_to_0string(x);
-    ogs_assert(str);
+    ogs_expect_or_return_val(str, NULL);
 
     p = ogs_left_trimcharacter(str, '0');
-    ogs_assert(p);
+    ogs_expect_or_return_val(p, NULL);
 
     ogs_free(str);
     return ogs_strdup(p);

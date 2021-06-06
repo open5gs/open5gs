@@ -242,12 +242,12 @@ OpenAPI_nef_info_t *OpenAPI_nef_info_parseFromJSON(cJSON *nef_infoJSON)
                 ogs_error("OpenAPI_nef_info_parseFromJSON() failed [served_fqdn_list]");
                 goto end;
             }
-            OpenAPI_list_add(served_fqdn_listList, ogs_strdup(served_fqdn_list_local->valuestring));
+            OpenAPI_list_add(served_fqdn_listList, ogs_strdup_or_assert(served_fqdn_list_local->valuestring));
         }
     }
 
     nef_info_local_var = OpenAPI_nef_info_create (
-        nef_id ? ogs_strdup(nef_id->valuestring) : NULL,
+        nef_id ? ogs_strdup_or_assert(nef_id->valuestring) : NULL,
         pfd_data ? pfd_data_local_nonprim : NULL,
         af_ee_data ? af_ee_data_local_nonprim : NULL,
         gpsi_ranges ? gpsi_rangesList : NULL,

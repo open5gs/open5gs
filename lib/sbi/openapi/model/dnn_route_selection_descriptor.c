@@ -142,7 +142,7 @@ OpenAPI_dnn_route_selection_descriptor_t *OpenAPI_dnn_route_selection_descriptor
     }
 
     dnn_route_selection_descriptor_local_var = OpenAPI_dnn_route_selection_descriptor_create (
-        ogs_strdup(dnn->valuestring),
+        ogs_strdup_or_assert(dnn->valuestring),
         ssc_modes ? ssc_modesList : NULL,
         pdu_sess_types ? pdu_sess_typesList : NULL
         );

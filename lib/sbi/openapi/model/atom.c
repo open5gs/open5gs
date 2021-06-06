@@ -100,8 +100,8 @@ OpenAPI_atom_t *OpenAPI_atom_parseFromJSON(cJSON *atomJSON)
     }
 
     atom_local_var = OpenAPI_atom_create (
-        ogs_strdup(attr->valuestring),
-        ogs_strdup(value->valuestring),
+        ogs_strdup_or_assert(attr->valuestring),
+        ogs_strdup_or_assert(value->valuestring),
         negative ? negative->valueint : 0
         );
 

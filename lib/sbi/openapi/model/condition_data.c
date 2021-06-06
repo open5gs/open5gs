@@ -140,9 +140,9 @@ OpenAPI_condition_data_t *OpenAPI_condition_data_parseFromJSON(cJSON *condition_
     }
 
     condition_data_local_var = OpenAPI_condition_data_create (
-        ogs_strdup(cond_id->valuestring),
-        activation_time ? ogs_strdup(activation_time->valuestring) : NULL,
-        deactivation_time ? ogs_strdup(deactivation_time->valuestring) : NULL,
+        ogs_strdup_or_assert(cond_id->valuestring),
+        activation_time ? ogs_strdup_or_assert(activation_time->valuestring) : NULL,
+        deactivation_time ? ogs_strdup_or_assert(deactivation_time->valuestring) : NULL,
         access_type ? access_typeVariable : 0,
         rat_type ? rat_typeVariable : 0
         );

@@ -174,6 +174,7 @@ bool smf_nsmf_handle_create_sm_context(
         ogs_free(sess->sm_context_status_uri);
     sess->sm_context_status_uri =
         ogs_strdup(SmContextCreateData->sm_context_status_uri);
+    ogs_assert(sess->sm_context_status_uri);
 
     client = ogs_sbi_client_find(addr);
     if (!client) {
@@ -187,11 +188,13 @@ bool smf_nsmf_handle_create_sm_context(
     if (SmContextCreateData->dnn) {
         if (sess->session.name) ogs_free(sess->session.name);
         sess->session.name = ogs_strdup(SmContextCreateData->dnn);
+        ogs_assert(sess->session.name);
     }
 
     if (SmContextCreateData->pcf_id) {
         if (sess->pcf_id) ogs_free(sess->pcf_id);
         sess->pcf_id = ogs_strdup(SmContextCreateData->pcf_id);
+        ogs_assert(sess->pcf_id);
     }
 
     /*
@@ -434,7 +437,7 @@ bool smf_nsmf_handle_update_sm_context(
 
             response = ogs_sbi_build_response(&sendmsg, OGS_SBI_HTTP_STATUS_OK);
             ogs_assert(response);
-            ogs_sbi_server_send_response(stream, response);
+            ogs_assert(true == ogs_sbi_server_send_response(stream, response));
 
             for (i = 0; i < sendmsg.num_of_part; i++)
                 if (sendmsg.part[i].pkbuf)
@@ -481,10 +484,11 @@ bool smf_nsmf_handle_update_sm_context(
                     }
 
                     dl_far->apply_action = OGS_PFCP_APPLY_ACTION_FORW;
-                    ogs_pfcp_ip_to_outer_header_creation(
+                    ogs_assert(OGS_OK ==
+                        ogs_pfcp_ip_to_outer_header_creation(
                             &sess->gnb_n3_ip,
                             &dl_far->outer_header_creation,
-                            &dl_far->outer_header_creation_len);
+                            &dl_far->outer_header_creation_len));
                     dl_far->outer_header_creation.teid = sess->gnb_n3_teid;
                 }
                 dl_far->handover.prepared = false;
@@ -555,9 +559,10 @@ bool smf_nsmf_handle_update_sm_context(
         param.ue_location = true;
         param.ue_timezone = true;
 
-        smf_sbi_discover_and_send(OpenAPI_nf_type_PCF, sess, stream,
+        ogs_assert(true ==
+            smf_sbi_discover_and_send(OpenAPI_nf_type_PCF, sess, stream,
                 OGS_PFCP_DELETE_TRIGGER_AMF_UPDATE_SM_CONTEXT, &param,
-                smf_npcf_smpolicycontrol_build_delete);
+                smf_npcf_smpolicycontrol_build_delete));
     } else {
         ogs_error("[%s:%d] No UpdateData", smf_ue->supi, sess->psi);
         smf_sbi_send_sm_context_update_error(stream,
@@ -621,9 +626,10 @@ bool smf_nsmf_handle_release_sm_context(
             SmContextReleaseData->_5g_mm_cause_value;
     }
 
-    smf_sbi_discover_and_send(OpenAPI_nf_type_PCF, sess, stream,
+    ogs_assert(true ==
+        smf_sbi_discover_and_send(OpenAPI_nf_type_PCF, sess, stream,
             OGS_PFCP_DELETE_TRIGGER_AMF_RELEASE_SM_CONTEXT, &param,
-            smf_npcf_smpolicycontrol_build_delete);
+            smf_npcf_smpolicycontrol_build_delete));
 
     return true;
 }

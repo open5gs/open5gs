@@ -207,9 +207,10 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e)
                 amf_sbi_send_release_all_sessions(
                         amf_ue, AMF_RELEASE_SM_CONTEXT_NO_STATE);
                 if (amf_sess_xact_count(amf_ue) == xact_count) {
-                    amf_ue_sbi_discover_and_send(
+                    ogs_assert(true ==
+                        amf_ue_sbi_discover_and_send(
                             OpenAPI_nf_type_AUSF, amf_ue, NULL,
-                            amf_nausf_auth_build_authenticate);
+                            amf_nausf_auth_build_authenticate));
                 }
 
                 OGS_FSM_TRAN(s, &gmm_state_authentication);
@@ -278,8 +279,10 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e)
             amf_sbi_send_release_all_sessions(
                         amf_ue, AMF_RELEASE_SM_CONTEXT_NO_STATE);
             if (amf_sess_xact_count(amf_ue) == xact_count) {
-                amf_ue_sbi_discover_and_send(OpenAPI_nf_type_AUSF, amf_ue, NULL,
-                        amf_nausf_auth_build_authenticate);
+                ogs_assert(true ==
+                    amf_ue_sbi_discover_and_send(
+                        OpenAPI_nf_type_AUSF, amf_ue, NULL,
+                        amf_nausf_auth_build_authenticate));
             }
 
             OGS_FSM_TRAN(s, &gmm_state_authentication);
@@ -345,8 +348,10 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e)
 
                 ogs_list_for_each(&amf_ue->sess_list, sess) {
                     if (sess->paging.ongoing == true) {
-                        amf_sbi_send_n1_n2_failure_notify(
-                            sess, OpenAPI_n1_n2_message_transfer_cause_UE_NOT_RESPONDING);
+                        ogs_assert(true ==
+                            amf_sbi_send_n1_n2_failure_notify(
+                                sess,
+                                OpenAPI_n1_n2_message_transfer_cause_UE_NOT_RESPONDING));
                     }
                 }
 
@@ -363,7 +368,7 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e)
             } else {
                 amf_ue->t3513.retry_count++;
                 /* If t3513 is timeout, the saved pkbuf is used.  */
-                ngap_send_paging(amf_ue);
+                ogs_assert(OGS_OK == ngap_send_paging(amf_ue));
             }
             break;
 
@@ -488,8 +493,10 @@ void gmm_state_authentication(ogs_fsm_t *s, amf_event_t *e)
 
             case OGS_5GMM_CAUSE_NGKSI_ALREADY_IN_USE:
                 ogs_warn("Authentication failure(ngKSI already in use)");
-                amf_ue_sbi_discover_and_send(OpenAPI_nf_type_AUSF, amf_ue, NULL,
-                        amf_nausf_auth_build_authenticate);
+                ogs_assert(true ==
+                    amf_ue_sbi_discover_and_send(
+                        OpenAPI_nf_type_AUSF, amf_ue, NULL,
+                        amf_nausf_auth_build_authenticate));
                 return;
 
             case OGS_5GMM_CAUSE_SYNCH_FAILURE:
@@ -499,9 +506,10 @@ void gmm_state_authentication(ogs_fsm_t *s, amf_event_t *e)
                             authentication_failure_parameter->length);
                     break;
                 }
-                amf_ue_sbi_discover_and_send(OpenAPI_nf_type_AUSF, amf_ue,
+                ogs_assert(true ==
+                    amf_ue_sbi_discover_and_send(OpenAPI_nf_type_AUSF, amf_ue,
                         authentication_failure_parameter->auts,
-                        amf_nausf_auth_build_authenticate);
+                        amf_nausf_auth_build_authenticate));
                 return;
 
             default:
@@ -528,8 +536,9 @@ void gmm_state_authentication(ogs_fsm_t *s, amf_event_t *e)
                 break;
             }
 
-            amf_ue_sbi_discover_and_send(OpenAPI_nf_type_AUSF, amf_ue, NULL,
-                    amf_nausf_auth_build_authenticate);
+            ogs_assert(true ==
+                amf_ue_sbi_discover_and_send(OpenAPI_nf_type_AUSF, amf_ue, NULL,
+                    amf_nausf_auth_build_authenticate));
             break;
 
         case OGS_NAS_5GS_5GMM_STATUS:
@@ -725,8 +734,9 @@ void gmm_state_security_mode(ogs_fsm_t *s, amf_event_t *e)
             ogs_kdf_nh_gnb(amf_ue->kamf, amf_ue->kgnb, amf_ue->nh);
             amf_ue->nhcc = 1;
 
-            amf_ue_sbi_discover_and_send(OpenAPI_nf_type_UDM, amf_ue, NULL,
-                    amf_nudm_uecm_build_registration);
+            ogs_assert(true ==
+                amf_ue_sbi_discover_and_send(OpenAPI_nf_type_UDM, amf_ue, NULL,
+                    amf_nudm_uecm_build_registration));
 
             if (amf_ue->nas.message_type == OGS_NAS_5GS_REGISTRATION_REQUEST) {
                 OGS_FSM_TRAN(s, &gmm_state_initial_context_setup);
@@ -756,8 +766,9 @@ void gmm_state_security_mode(ogs_fsm_t *s, amf_event_t *e)
                 break;
             }
 
-            amf_ue_sbi_discover_and_send(OpenAPI_nf_type_AUSF, amf_ue, NULL,
-                    amf_nausf_auth_build_authenticate);
+            ogs_assert(true ==
+                amf_ue_sbi_discover_and_send(OpenAPI_nf_type_AUSF, amf_ue, NULL,
+                    amf_nausf_auth_build_authenticate));
 
             OGS_FSM_TRAN(s, &gmm_state_authentication);
             break;
@@ -875,9 +886,11 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
 
                 SWITCH(sbi_message->h.method)
                 CASE(OGS_SBI_HTTP_METHOD_PUT)
-                    amf_ue_sbi_discover_and_send(OpenAPI_nf_type_UDM, amf_ue,
+                    ogs_assert(true ==
+                        amf_ue_sbi_discover_and_send(
+                            OpenAPI_nf_type_UDM, amf_ue,
                             (char *)OGS_SBI_RESOURCE_NAME_AM_DATA,
-                            amf_nudm_sdm_build_get);
+                            amf_nudm_sdm_build_get));
                     break;
 
                 DEFAULT
@@ -1029,8 +1042,10 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
             amf_sbi_send_release_all_sessions(
                         amf_ue, AMF_RELEASE_SM_CONTEXT_NO_STATE);
             if (amf_sess_xact_count(amf_ue) == xact_count) {
-                amf_ue_sbi_discover_and_send(OpenAPI_nf_type_AUSF, amf_ue, NULL,
-                        amf_nausf_auth_build_authenticate);
+                ogs_assert(true ==
+                    amf_ue_sbi_discover_and_send(
+                        OpenAPI_nf_type_AUSF, amf_ue, NULL,
+                        amf_nausf_auth_build_authenticate));
             }
             OGS_FSM_TRAN(s, &gmm_state_authentication);
             break;
@@ -1224,9 +1239,10 @@ void gmm_state_exception(ogs_fsm_t *s, amf_event_t *e)
                 amf_sbi_send_release_all_sessions(
                         amf_ue, AMF_RELEASE_SM_CONTEXT_NO_STATE);
                 if (amf_sess_xact_count(amf_ue) == xact_count) {
-                    amf_ue_sbi_discover_and_send(
+                    ogs_assert(true ==
+                        amf_ue_sbi_discover_and_send(
                             OpenAPI_nf_type_AUSF, amf_ue, NULL,
-                            amf_nausf_auth_build_authenticate);
+                            amf_nausf_auth_build_authenticate));
                 }
 
                 OGS_FSM_TRAN(s, &gmm_state_authentication);

@@ -217,13 +217,13 @@ OpenAPI_usage_mon_data_limit_t *OpenAPI_usage_mon_data_limit_parseFromJSON(cJSON
     }
 
     usage_mon_data_limit_local_var = OpenAPI_usage_mon_data_limit_create (
-        ogs_strdup(limit_id->valuestring),
+        ogs_strdup_or_assert(limit_id->valuestring),
         scopes ? scopesList : NULL,
         um_level ? um_level_local_nonprim : NULL,
-        start_date ? ogs_strdup(start_date->valuestring) : NULL,
-        end_date ? ogs_strdup(end_date->valuestring) : NULL,
+        start_date ? ogs_strdup_or_assert(start_date->valuestring) : NULL,
+        end_date ? ogs_strdup_or_assert(end_date->valuestring) : NULL,
         usage_limit ? usage_limit_local_nonprim : NULL,
-        reset_period ? ogs_strdup(reset_period->valuestring) : NULL
+        reset_period ? ogs_strdup_or_assert(reset_period->valuestring) : NULL
         );
 
     return usage_mon_data_limit_local_var;

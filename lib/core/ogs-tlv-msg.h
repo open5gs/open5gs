@@ -141,6 +141,7 @@ typedef struct ogs_tlv_int32_s {
         (__dST)->presence = (__sRC)->presence; \
         (__dST)->len = (__sRC)->len; \
         (__dST)->data = ogs_calloc((__dST)->len, sizeof(uint8_t)); \
+        ogs_assert((__dST)->data); \
         memcpy((__dST)->data, (__sRC)->data, (__dST)->len); \
     } while(0)
 typedef struct ogs_tlv_octet_s {

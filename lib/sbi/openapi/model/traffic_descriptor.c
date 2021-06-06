@@ -133,7 +133,7 @@ OpenAPI_traffic_descriptor_t *OpenAPI_traffic_descriptor_parseFromJSON(cJSON *tr
     }
 
     traffic_descriptor_local_var = OpenAPI_traffic_descriptor_create (
-        dnn ? ogs_strdup(dnn->valuestring) : NULL,
+        dnn ? ogs_strdup_or_assert(dnn->valuestring) : NULL,
         s_nssai ? s_nssai_local_nonprim : NULL,
         ddd_traffic_descriptor_list ? ddd_traffic_descriptor_listList : NULL
         );

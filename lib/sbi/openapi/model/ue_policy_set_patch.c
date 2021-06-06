@@ -172,7 +172,7 @@ OpenAPI_ue_policy_set_patch_t *OpenAPI_ue_policy_set_patch_parseFromJSON(cJSON *
                 ogs_error("OpenAPI_ue_policy_set_patch_parseFromJSON() failed [upsis]");
                 goto end;
             }
-            OpenAPI_list_add(upsisList, ogs_strdup(upsis_local->valuestring));
+            OpenAPI_list_add(upsisList, ogs_strdup_or_assert(upsis_local->valuestring));
         }
     }
 
@@ -210,7 +210,7 @@ OpenAPI_ue_policy_set_patch_t *OpenAPI_ue_policy_set_patch_parseFromJSON(cJSON *
                 ogs_error("OpenAPI_ue_policy_set_patch_parseFromJSON() failed [os_ids]");
                 goto end;
             }
-            OpenAPI_list_add(os_idsList, ogs_strdup(os_ids_local->valuestring));
+            OpenAPI_list_add(os_idsList, ogs_strdup_or_assert(os_ids_local->valuestring));
         }
     }
 
@@ -218,7 +218,7 @@ OpenAPI_ue_policy_set_patch_t *OpenAPI_ue_policy_set_patch_parseFromJSON(cJSON *
         ue_policy_sections ? ue_policy_sectionsList : NULL,
         upsis ? upsisList : NULL,
         andsp_ind ? andsp_ind->valueint : 0,
-        pei ? ogs_strdup(pei->valuestring) : NULL,
+        pei ? ogs_strdup_or_assert(pei->valuestring) : NULL,
         os_ids ? os_idsList : NULL
         );
 

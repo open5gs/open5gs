@@ -101,11 +101,11 @@ OpenAPI_resource_item_t *OpenAPI_resource_item_parseFromJSON(cJSON *resource_ite
             ogs_error("OpenAPI_resource_item_parseFromJSON() failed [items]");
             goto end;
         }
-        OpenAPI_list_add(itemsList, ogs_strdup(items_local->valuestring));
+        OpenAPI_list_add(itemsList, ogs_strdup_or_assert(items_local->valuestring));
     }
 
     resource_item_local_var = OpenAPI_resource_item_create (
-        ogs_strdup(mon_resource_uri->valuestring),
+        ogs_strdup_or_assert(mon_resource_uri->valuestring),
         itemsList
         );
 

@@ -176,7 +176,7 @@ OpenAPI_notification_data_t *OpenAPI_notification_data_parseFromJSON(cJSON *noti
 
     notification_data_local_var = OpenAPI_notification_data_create (
         eventVariable,
-        ogs_strdup(nf_instance_uri->valuestring),
+        ogs_strdup_or_assert(nf_instance_uri->valuestring),
         nf_profile ? nf_profile_local_nonprim : NULL,
         profile_changes ? profile_changesList : NULL,
         condition_event ? condition_eventVariable : 0

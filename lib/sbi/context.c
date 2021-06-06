@@ -638,11 +638,17 @@ void ogs_sbi_nf_service_add_version(ogs_sbi_nf_service_t *nf_service,
     if (nf_service->num_of_version < OGS_SBI_MAX_NUM_OF_SERVICE_VERSION) {
         nf_service->versions[nf_service->num_of_version].in_uri =
             ogs_strdup(in_uri);
+        ogs_assert(nf_service->versions[nf_service->num_of_version].in_uri);
         nf_service->versions[nf_service->num_of_version].full =
             ogs_strdup(full);
-        if (expiry)
+        ogs_assert(nf_service->versions[nf_service->num_of_version].full);
+        if (expiry) {
             nf_service->versions[nf_service->num_of_version].expiry =
                 ogs_strdup(expiry);
+            ogs_assert(
+                nf_service->versions[nf_service->num_of_version].expiry);
+                    
+        }
         nf_service->num_of_version++;
     }
 }
@@ -839,7 +845,7 @@ void ogs_sbi_nf_instance_build_default(
 
         if (nf_instance->num_of_ipv4 < OGS_SBI_MAX_NUM_OF_IP_ADDRESS) {
             ogs_sockaddr_t *addr = NULL;
-            ogs_copyaddrinfo(&addr, advertise);
+            ogs_assert(OGS_OK == ogs_copyaddrinfo(&addr, advertise));
             ogs_assert(addr);
 
             if (addr->ogs_sa_family == AF_INET) {
@@ -904,7 +910,7 @@ ogs_sbi_nf_service_t *ogs_sbi_nf_service_build_default(
         if (nf_service->num_of_addr < OGS_SBI_MAX_NUM_OF_IP_ADDRESS) {
             int port = 0;
             ogs_sockaddr_t *addr = NULL;
-            ogs_copyaddrinfo(&addr, advertise);
+            ogs_assert(OGS_OK == ogs_copyaddrinfo(&addr, advertise));
             ogs_assert(addr);
 
             port = OGS_PORT(addr);
@@ -1132,18 +1138,27 @@ ogs_sbi_xact_t *ogs_sbi_xact_add(
     ogs_assert(sbi_object);
 
     ogs_pool_alloc(&xact_pool, &xact);
-    if (!xact) return NULL;
+    ogs_expect_or_return_val(xact, NULL);
     memset(xact, 0, sizeof(ogs_sbi_xact_t));
 
     xact->target_nf_type = target_nf_type;
     xact->sbi_object = sbi_object;
 
     xact->request = (*build)(context, data);
-    ogs_assert(xact->request);
+    if (!xact->request) {
+        ogs_error("SBI build failed");
+        ogs_pool_free(&xact_pool, xact);
+        return NULL;
+    }
 
     xact->t_response = ogs_timer_add(
             ogs_app()->timer_mgr, timer_cb, xact);
-    ogs_assert(xact->t_response);
+    if (!xact->t_response) {
+        ogs_error("ogs_timer_add() failed");
+        ogs_sbi_request_free(xact->request);
+        ogs_pool_free(&xact_pool, xact);
+        return NULL;
+    }
 
     ogs_timer_start(xact->t_response,
             ogs_app()->time.message.sbi.client_wait_duration);

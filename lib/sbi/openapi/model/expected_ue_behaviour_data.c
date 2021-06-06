@@ -260,7 +260,7 @@ OpenAPI_expected_ue_behaviour_data_t *OpenAPI_expected_ue_behaviour_data_parseFr
         expected_umts ? expected_umtsList : NULL,
         traffic_profile ? traffic_profileVariable : 0,
         battery_indication ? battery_indication_local_nonprim : NULL,
-        validity_time ? ogs_strdup(validity_time->valuestring) : NULL
+        validity_time ? ogs_strdup_or_assert(validity_time->valuestring) : NULL
         );
 
     return expected_ue_behaviour_data_local_var;

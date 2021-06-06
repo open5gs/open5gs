@@ -319,7 +319,7 @@ OpenAPI_policy_association_t *OpenAPI_policy_association_parseFromJSON(cJSON *po
         ue_ambr ? ue_ambr_local_nonprim : NULL,
         rg_tmbr ? rg_tmbr_local_nonprim : NULL,
         pras ? prasList : NULL,
-        ogs_strdup(supp_feat->valuestring)
+        ogs_strdup_or_assert(supp_feat->valuestring)
         );
 
     return policy_association_local_var;

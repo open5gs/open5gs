@@ -82,8 +82,8 @@ OpenAPI_resynchronization_info_t *OpenAPI_resynchronization_info_parseFromJSON(c
     }
 
     resynchronization_info_local_var = OpenAPI_resynchronization_info_create (
-        ogs_strdup(rand->valuestring),
-        ogs_strdup(auts->valuestring)
+        ogs_strdup_or_assert(rand->valuestring),
+        ogs_strdup_or_assert(auts->valuestring)
         );
 
     return resynchronization_info_local_var;

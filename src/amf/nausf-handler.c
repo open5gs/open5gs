@@ -95,6 +95,7 @@ int amf_nausf_auth_handle_authenticate(
         ogs_free(amf_ue->confirmation_url_for_5g_aka);
     amf_ue->confirmation_url_for_5g_aka =
         ogs_strdup(LinksValueSchemeValue->href);
+    ogs_assert(amf_ue->confirmation_url_for_5g_aka);
 
     ogs_ascii_to_hex(AV5G_AKA->rand, strlen(AV5G_AKA->rand),
         amf_ue->rand, sizeof(amf_ue->rand));

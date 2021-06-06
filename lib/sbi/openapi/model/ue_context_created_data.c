@@ -230,7 +230,7 @@ OpenAPI_ue_context_created_data_t *OpenAPI_ue_context_created_data_parseFromJSON
         target_to_source_data_local_nonprim,
         pdu_session_listList,
         failed_session_list ? failed_session_listList : NULL,
-        supported_features ? ogs_strdup(supported_features->valuestring) : NULL,
+        supported_features ? ogs_strdup_or_assert(supported_features->valuestring) : NULL,
         pcf_reselected_ind ? pcf_reselected_ind->valueint : 0
         );
 

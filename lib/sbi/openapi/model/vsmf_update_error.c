@@ -329,13 +329,13 @@ OpenAPI_vsmf_update_error_t *OpenAPI_vsmf_update_error_parseFromJSON(cJSON *vsmf
     vsmf_update_error_local_var = OpenAPI_vsmf_update_error_create (
         error_local_nonprim,
         pti ? pti->valuedouble : 0,
-        n1sm_cause ? ogs_strdup(n1sm_cause->valuestring) : NULL,
+        n1sm_cause ? ogs_strdup_or_assert(n1sm_cause->valuestring) : NULL,
         n1_sm_info_from_ue ? n1_sm_info_from_ue_local_nonprim : NULL,
         unknown_n1_sm_info ? unknown_n1_sm_info_local_nonprim : NULL,
         failed_to_assign_ebi_list ? failed_to_assign_ebi_listList : NULL,
         ng_ap_cause ? ng_ap_cause_local_nonprim : NULL,
         _5g_mm_cause_value ? _5g_mm_cause_value->valuedouble : 0,
-        recovery_time ? ogs_strdup(recovery_time->valuestring) : NULL,
+        recovery_time ? ogs_strdup_or_assert(recovery_time->valuestring) : NULL,
         n4_info ? n4_info_local_nonprim : NULL,
         n4_info_ext1 ? n4_info_ext1_local_nonprim : NULL,
         n4_info_ext2 ? n4_info_ext2_local_nonprim : NULL

@@ -101,7 +101,7 @@ OpenAPI_identity_data_t *OpenAPI_identity_data_parseFromJSON(cJSON *identity_dat
                 ogs_error("OpenAPI_identity_data_parseFromJSON() failed [supi_list]");
                 goto end;
             }
-            OpenAPI_list_add(supi_listList, ogs_strdup(supi_list_local->valuestring));
+            OpenAPI_list_add(supi_listList, ogs_strdup_or_assert(supi_list_local->valuestring));
         }
     }
 
@@ -121,7 +121,7 @@ OpenAPI_identity_data_t *OpenAPI_identity_data_parseFromJSON(cJSON *identity_dat
                 ogs_error("OpenAPI_identity_data_parseFromJSON() failed [gpsi_list]");
                 goto end;
             }
-            OpenAPI_list_add(gpsi_listList, ogs_strdup(gpsi_list_local->valuestring));
+            OpenAPI_list_add(gpsi_listList, ogs_strdup_or_assert(gpsi_list_local->valuestring));
         }
     }
 

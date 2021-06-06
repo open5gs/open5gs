@@ -132,7 +132,7 @@ bool pcf_nudr_dr_handle_query_am_data(
         response = ogs_sbi_build_response(
                 &sendmsg, OGS_SBI_HTTP_STATUS_CREATED);
         ogs_assert(response);
-        ogs_sbi_server_send_response(stream, response);
+        ogs_assert(true == ogs_sbi_server_send_response(stream, response));
 
         ogs_free(sendmsg.http.location);
 
@@ -158,7 +158,8 @@ cleanup:
     ogs_assert(strerror);
     ogs_assert(status);
     ogs_error("%s", strerror);
-    ogs_sbi_server_send_error(stream, status, recvmsg, strerror, NULL);
+    ogs_assert(true ==
+        ogs_sbi_server_send_error(stream, status, recvmsg, strerror, NULL));
     ogs_free(strerror);
 
     ogs_subscription_data_free(&subscription_data);
@@ -192,8 +193,10 @@ bool pcf_nudr_dr_handle_query_sm_data(
             goto cleanup;
         }
 
-        pcf_sess_sbi_discover_and_send(OpenAPI_nf_type_BSF, sess, stream, NULL,
-                pcf_nbsf_management_build_register);
+        ogs_assert(true ==
+            pcf_sess_sbi_discover_and_send(
+                OpenAPI_nf_type_BSF, sess, stream, NULL,
+                pcf_nbsf_management_build_register));
 
         return true;
 
@@ -206,7 +209,8 @@ cleanup:
     ogs_assert(strerror);
     ogs_assert(status);
     ogs_error("%s", strerror);
-    ogs_sbi_server_send_error(stream, status, recvmsg, strerror, NULL);
+    ogs_assert(true ==
+        ogs_sbi_server_send_error(stream, status, recvmsg, strerror, NULL));
     ogs_free(strerror);
 
     return false;

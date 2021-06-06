@@ -41,9 +41,13 @@ void af_context_init(void)
     ogs_pool_init(&af_sess_pool, ogs_app()->pool.sess);
 
     self.supi_hash = ogs_hash_make();
+    ogs_assert(self.supi_hash);
     self.ipv4_hash = ogs_hash_make();
+    ogs_assert(self.ipv4_hash);
     self.ipv6_hash = ogs_hash_make();
+    ogs_assert(self.ipv6_hash);
     self.pcf_app_session_id_hash = ogs_hash_make();
+    ogs_assert(self.pcf_app_session_id_hash);
 
     context_initialized = 1;
 }
@@ -134,6 +138,7 @@ af_sess_t *af_sess_add_by_ue_address(ogs_ip_t *ue_address)
 
     sess->af_app_session_id = ogs_msprintf("%d",
             (int)ogs_pool_index(&af_sess_pool, sess));
+    ogs_assert(sess->af_app_session_id);
 
     if (ue_address->ipv4) {
         sess->ipv4addr = ogs_ipv4_to_string(ue_address->addr);
@@ -145,6 +150,7 @@ af_sess_t *af_sess_add_by_ue_address(ogs_ip_t *ue_address)
         ogs_expect_or_return_val(sess->ipv6addr, NULL);
         sess->ipv6prefix = ogs_ipv6prefix_to_string(
                 ue_address->addr6, OGS_IPV6_128_PREFIX_LEN);
+        ogs_expect_or_return_val(sess->ipv6prefix, NULL);
     }
 
     OGS_SBI_FEATURES_SET(sess->policyauthorization_features,

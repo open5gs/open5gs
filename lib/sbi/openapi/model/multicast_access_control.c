@@ -142,10 +142,10 @@ OpenAPI_multicast_access_control_t *OpenAPI_multicast_access_control_parseFromJS
     acc_status_local_nonprim = OpenAPI_access_right_status_parseFromJSON(acc_status);
 
     multicast_access_control_local_var = OpenAPI_multicast_access_control_create (
-        src_ipv4_addr ? ogs_strdup(src_ipv4_addr->valuestring) : NULL,
-        src_ipv6_addr ? ogs_strdup(src_ipv6_addr->valuestring) : NULL,
-        multicast_v4_addr ? ogs_strdup(multicast_v4_addr->valuestring) : NULL,
-        multicast_v6_addr ? ogs_strdup(multicast_v6_addr->valuestring) : NULL,
+        src_ipv4_addr ? ogs_strdup_or_assert(src_ipv4_addr->valuestring) : NULL,
+        src_ipv6_addr ? ogs_strdup_or_assert(src_ipv6_addr->valuestring) : NULL,
+        multicast_v4_addr ? ogs_strdup_or_assert(multicast_v4_addr->valuestring) : NULL,
+        multicast_v6_addr ? ogs_strdup_or_assert(multicast_v6_addr->valuestring) : NULL,
         acc_status_local_nonprim
         );
 

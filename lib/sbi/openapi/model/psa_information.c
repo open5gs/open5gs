@@ -119,7 +119,7 @@ OpenAPI_psa_information_t *OpenAPI_psa_information_parseFromJSON(cJSON *psa_info
                 ogs_error("OpenAPI_psa_information_parseFromJSON() failed [dnai_list]");
                 goto end;
             }
-            OpenAPI_list_add(dnai_listList, ogs_strdup(dnai_list_local->valuestring));
+            OpenAPI_list_add(dnai_listList, ogs_strdup_or_assert(dnai_list_local->valuestring));
         }
     }
 
@@ -144,8 +144,8 @@ OpenAPI_psa_information_t *OpenAPI_psa_information_parseFromJSON(cJSON *psa_info
     psa_information_local_var = OpenAPI_psa_information_create (
         psa_ind ? psa_indVariable : 0,
         dnai_list ? dnai_listList : NULL,
-        ue_ipv6_prefix ? ogs_strdup(ue_ipv6_prefix->valuestring) : NULL,
-        psa_upf_id ? ogs_strdup(psa_upf_id->valuestring) : NULL
+        ue_ipv6_prefix ? ogs_strdup_or_assert(ue_ipv6_prefix->valuestring) : NULL,
+        psa_upf_id ? ogs_strdup_or_assert(psa_upf_id->valuestring) : NULL
         );
 
     return psa_information_local_var;

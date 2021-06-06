@@ -80,8 +80,8 @@ OpenAPI_amf_cond_t *OpenAPI_amf_cond_parseFromJSON(cJSON *amf_condJSON)
     }
 
     amf_cond_local_var = OpenAPI_amf_cond_create (
-        amf_set_id ? ogs_strdup(amf_set_id->valuestring) : NULL,
-        amf_region_id ? ogs_strdup(amf_region_id->valuestring) : NULL
+        amf_set_id ? ogs_strdup_or_assert(amf_set_id->valuestring) : NULL,
+        amf_region_id ? ogs_strdup_or_assert(amf_region_id->valuestring) : NULL
         );
 
     return amf_cond_local_var;

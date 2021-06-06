@@ -62,10 +62,16 @@ void smf_context_init(void)
     ogs_pool_init(&smf_pf_pool, ogs_app()->pool.bearer * OGS_MAX_NUM_OF_PF);
 
     self.supi_hash = ogs_hash_make();
+    ogs_assert(self.supi_hash);
     self.imsi_hash = ogs_hash_make();
+    ogs_assert(self.imsi_hash);
     self.ipv4_hash = ogs_hash_make();
+    ogs_assert(self.ipv4_hash);
     self.ipv6_hash = ogs_hash_make();
+    ogs_assert(self.ipv6_hash);
     self.n1n2message_hash = ogs_hash_make();
+    ogs_assert(self.n1n2message_hash);
+
 
     context_initialized = 1;
 }
@@ -534,9 +540,13 @@ int smf_context_parse_config(void)
                                         ogs_assert(num_of_dnn <
                                                 OGS_MAX_NUM_OF_DNN);
 
-                                        for (i = 0; i < num_of_dnn; i++)
+                                        for (i = 0; i < num_of_dnn; i++) {
                                             smf_info->slice[num_of_slice].
                                                 dnn[i] = ogs_strdup(dnn[i]);
+                                            ogs_assert(
+                                                smf_info->slice[num_of_slice].
+                                                    dnn[i]);
+                                        }
 
                                         smf_info->slice[num_of_slice].
                                             num_of_dnn = num_of_dnn;
@@ -1551,8 +1561,10 @@ smf_bearer_t *smf_qos_flow_add(smf_sess_t *sess)
 
     dl_pdr->src_if = OGS_PFCP_INTERFACE_CORE;
 
-    if (sess->session.name)
+    if (sess->session.name) {
         dl_pdr->apn = ogs_strdup(sess->session.name);
+        ogs_assert(dl_pdr->apn);
+    }
 
     ul_pdr = ogs_pfcp_pdr_add(&sess->pfcp);
     ogs_assert(ul_pdr);
@@ -1560,8 +1572,10 @@ smf_bearer_t *smf_qos_flow_add(smf_sess_t *sess)
 
     ul_pdr->src_if = OGS_PFCP_INTERFACE_ACCESS;
 
-    if (sess->session.name)
+    if (sess->session.name) {
         ul_pdr->apn = ogs_strdup(sess->session.name);
+        ogs_assert(ul_pdr->apn);
+    }
 
     ul_pdr->outer_header_removal_len = 1;
     if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV4) {
@@ -1683,10 +1697,11 @@ void smf_sess_create_indirect_data_forwarding(smf_sess_t *sess)
             pdr->f_teid.teid = sess->upf_n3_teid;
         }
 
-        ogs_pfcp_ip_to_outer_header_creation(
-                &sess->handover.gnb_dl_ip,
-                &far->outer_header_creation,
-                &far->outer_header_creation_len);
+        ogs_assert(OGS_OK ==
+            ogs_pfcp_ip_to_outer_header_creation(
+                    &sess->handover.gnb_dl_ip,
+                    &far->outer_header_creation,
+                    &far->outer_header_creation_len));
         far->outer_header_creation.teid = sess->handover.gnb_dl_teid;
 
         /* Indirect Data Forwarding PDRs is set to highest precedence
@@ -1881,6 +1896,7 @@ smf_bearer_t *smf_bearer_add(smf_sess_t *sess)
 
     ogs_assert(sess->session.name);
     dl_pdr->apn = ogs_strdup(sess->session.name);
+    ogs_assert(dl_pdr->apn);
 
     ul_pdr = ogs_pfcp_pdr_add(&sess->pfcp);
     ogs_assert(ul_pdr);
@@ -1890,6 +1906,7 @@ smf_bearer_t *smf_bearer_add(smf_sess_t *sess)
 
     ogs_assert(sess->session.name);
     ul_pdr->apn = ogs_strdup(sess->session.name);
+    ogs_assert(ul_pdr->apn);
 
     ul_pdr->outer_header_removal_len = 1;
     if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV4) {

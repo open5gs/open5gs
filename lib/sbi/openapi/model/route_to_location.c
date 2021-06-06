@@ -104,9 +104,9 @@ OpenAPI_route_to_location_t *OpenAPI_route_to_location_parseFromJSON(cJSON *rout
     }
 
     route_to_location_local_var = OpenAPI_route_to_location_create (
-        ogs_strdup(dnai->valuestring),
+        ogs_strdup_or_assert(dnai->valuestring),
         route_info ? route_info_local_nonprim : NULL,
-        route_prof_id ? ogs_strdup(route_prof_id->valuestring) : NULL
+        route_prof_id ? ogs_strdup_or_assert(route_prof_id->valuestring) : NULL
         );
 
     return route_to_location_local_var;

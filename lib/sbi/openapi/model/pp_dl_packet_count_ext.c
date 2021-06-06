@@ -119,10 +119,10 @@ OpenAPI_pp_dl_packet_count_ext_t *OpenAPI_pp_dl_packet_count_ext_parseFromJSON(c
     }
 
     pp_dl_packet_count_ext_local_var = OpenAPI_pp_dl_packet_count_ext_create (
-        ogs_strdup(af_instance_id->valuestring),
+        ogs_strdup_or_assert(af_instance_id->valuestring),
         reference_id->valuedouble,
-        validity_time ? ogs_strdup(validity_time->valuestring) : NULL,
-        mtc_provider_information ? ogs_strdup(mtc_provider_information->valuestring) : NULL
+        validity_time ? ogs_strdup_or_assert(validity_time->valuestring) : NULL,
+        mtc_provider_information ? ogs_strdup_or_assert(mtc_provider_information->valuestring) : NULL
         );
 
     return pp_dl_packet_count_ext_local_var;

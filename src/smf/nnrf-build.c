@@ -82,7 +82,7 @@ ogs_sbi_request_t *smf_nnrf_nfm_build_register(
         }
 
         SmfInfo = ogs_calloc(1, sizeof(*SmfInfo));
-        ogs_assert(SmfInfo);
+        ogs_expect_or_return_val(SmfInfo, NULL);
 
         sNssaiSmfInfoList = OpenAPI_list_create();
         ogs_assert(sNssaiSmfInfoList);
@@ -93,7 +93,7 @@ ogs_sbi_request_t *smf_nnrf_nfm_build_register(
 
             for (j = 0; j < nf_info->smf.slice[i].num_of_dnn; j++) {
                 DnnSmfInfoItem = ogs_calloc(1, sizeof(*DnnSmfInfoItem));
-                ogs_assert(DnnSmfInfoItem);
+                ogs_expect_or_return_val(DnnSmfInfoItem, NULL);
                 DnnSmfInfoItem->dnn = nf_info->smf.slice[i].dnn[j];
 
                 OpenAPI_list_add(DnnSmfInfoList, DnnSmfInfoItem);
@@ -102,18 +102,18 @@ ogs_sbi_request_t *smf_nnrf_nfm_build_register(
             if (!DnnSmfInfoList->count) {
                 OpenAPI_list_free(DnnSmfInfoList);
 
-                ogs_fatal("CHECK CONFIGURATION: No DNN");
-                ogs_assert_if_reached();
+                ogs_error("CHECK CONFIGURATION: No DNN");
+                ogs_expect_or_return_val(0, NULL);
             }
 
             sNssaiSmfInfoItem = ogs_calloc(1, sizeof(*sNssaiSmfInfoItem));
-            ogs_assert(sNssaiSmfInfoItem);
+            ogs_expect_or_return_val(sNssaiSmfInfoItem, NULL);
 
             sNssaiSmfInfoItem->dnn_smf_info_list = DnnSmfInfoList;
 
             sNssaiSmfInfoItem->s_nssai = sNssai =
                 ogs_calloc(1, sizeof(*sNssai));
-            ogs_assert(sNssai);
+            ogs_expect_or_return_val(sNssai, NULL);
             sNssai->sst = nf_info->smf.slice[i].s_nssai.sst;
             sNssai->sd =
                 ogs_s_nssai_sd_to_string(nf_info->smf.slice[i].s_nssai.sd);
@@ -131,10 +131,12 @@ ogs_sbi_request_t *smf_nnrf_nfm_build_register(
 
         for (i = 0; i < nf_info->smf.num_of_nr_tai; i++) {
             TaiItem = ogs_calloc(1, sizeof(*TaiItem));
-            ogs_assert(TaiItem);
+            ogs_expect_or_return_val(TaiItem, NULL);
             TaiItem->plmn_id = ogs_sbi_build_plmn_id(
                     &nf_info->smf.nr_tai[i].plmn_id);
+            ogs_expect_or_return_val(TaiItem->plmn_id, NULL);
             TaiItem->tac = ogs_uint24_to_0string(nf_info->smf.nr_tai[i].tac);
+            ogs_expect_or_return_val(TaiItem->tac, NULL);
 
             OpenAPI_list_add(TaiList, TaiItem);
         }
@@ -154,14 +156,14 @@ ogs_sbi_request_t *smf_nnrf_nfm_build_register(
             for (j = 0;
                     j < nf_info->smf.nr_tai_range[i].num_of_tac_range; j++) {
                 TacRangeItem = ogs_calloc(1, sizeof(*TacRangeItem));
-                ogs_assert(TacRangeItem);
+                ogs_expect_or_return_val(TacRangeItem, NULL);
 
                 TacRangeItem->start = ogs_uint24_to_0string(
                         nf_info->smf.nr_tai_range[i].start[j]);
-                ogs_assert(TacRangeItem->start);
+                ogs_expect_or_return_val(TacRangeItem->start, NULL);
                 TacRangeItem->end =
                     ogs_uint24_to_0string(nf_info->smf.nr_tai_range[i].end[j]);
-                ogs_assert(TacRangeItem->end);
+                ogs_expect_or_return_val(TacRangeItem->end, NULL);
 
                 OpenAPI_list_add(TacRangeList, TacRangeItem);
             }
@@ -169,15 +171,16 @@ ogs_sbi_request_t *smf_nnrf_nfm_build_register(
             if (!TacRangeList->count) {
                 OpenAPI_list_free(TacRangeList);
 
-                ogs_fatal("CHECK CONFIGURATION: No Start/End in TacRange");
-                ogs_assert_if_reached();
+                ogs_error("CHECK CONFIGURATION: No Start/End in TacRange");
+                ogs_expect_or_return_val(0, NULL);
             }
 
             TaiRangeItem = ogs_calloc(1, sizeof(*TaiRangeItem));
-            ogs_assert(TaiRangeItem);
+            ogs_expect_or_return_val(TaiRangeItem, NULL);
 
             TaiRangeItem->plmn_id = ogs_sbi_build_plmn_id(
                     &nf_info->smf.nr_tai_range[i].plmn_id);
+            ogs_expect_or_return_val(TaiRangeItem->plmn_id, NULL);
 
             TaiRangeItem->tac_range_list = TacRangeList;
 
@@ -197,7 +200,7 @@ ogs_sbi_request_t *smf_nnrf_nfm_build_register(
     }
 
     NFProfile = ogs_nnrf_nfm_build_nf_profile(nf_instance);
-    ogs_assert(NFProfile);
+    ogs_expect_or_return_val(NFProfile, NULL);
 
     if (SmfInfoList->count == 1) {
         NFProfile->smf_info = SmfInfo;

@@ -284,7 +284,7 @@ int amf_namf_comm_handle_n1_n2_message_transfer(
                 AMF_SESS_STORE_N2_TRANSFER(
                         sess, pdu_session_resource_setup_request, n2buf);
 
-                ngap_send_paging(amf_ue);
+                ogs_assert(OGS_OK == ngap_send_paging(amf_ue));
 
             } else if (CM_CONNECTED(amf_ue)) {
                 ogs_assert(OGS_OK ==
@@ -371,7 +371,7 @@ int amf_namf_comm_handle_n1_n2_message_transfer(
 
     response = ogs_sbi_build_response(&sendmsg, status);
     ogs_assert(response);
-    ogs_sbi_server_send_response(stream, response);
+    ogs_assert(true == ogs_sbi_server_send_response(stream, response));
 
     if (sendmsg.http.location)
         ogs_free(sendmsg.http.location);
@@ -474,7 +474,7 @@ cleanup:
 
     response = ogs_sbi_build_response(&sendmsg, status);
     ogs_assert(response);
-    ogs_sbi_server_send_response(stream, response);
+    ogs_assert(true == ogs_sbi_server_send_response(stream, response));
 
     return OGS_OK;
 }

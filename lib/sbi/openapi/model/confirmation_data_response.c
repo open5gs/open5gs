@@ -102,8 +102,8 @@ OpenAPI_confirmation_data_response_t *OpenAPI_confirmation_data_response_parseFr
 
     confirmation_data_response_local_var = OpenAPI_confirmation_data_response_create (
         auth_resultVariable,
-        supi ? ogs_strdup(supi->valuestring) : NULL,
-        kseaf ? ogs_strdup(kseaf->valuestring) : NULL
+        supi ? ogs_strdup_or_assert(supi->valuestring) : NULL,
+        kseaf ? ogs_strdup_or_assert(kseaf->valuestring) : NULL
         );
 
     return confirmation_data_response_local_var;

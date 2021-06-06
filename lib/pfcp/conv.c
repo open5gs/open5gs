@@ -65,7 +65,7 @@ int ogs_pfcp_sockaddr_to_node_id(
         node_id->addr = addr->sin.sin_addr.s_addr;
         *len = OGS_IPV4_LEN + hdr_len;
     } else {
-        ogs_assert_if_reached();
+        ogs_error("No IPv4 or IPv6");
         return OGS_ERROR;
     }
 
@@ -81,12 +81,12 @@ int ogs_pfcp_f_seid_to_sockaddr(
     ogs_assert(list);
 
     addr = ogs_calloc(1, sizeof(ogs_sockaddr_t));
-    ogs_assert(addr);
+    ogs_expect_or_return_val(addr, OGS_ERROR);
     addr->ogs_sa_family = AF_INET;
     addr->ogs_sin_port = htobe16(port);
 
     addr6 = ogs_calloc(1, sizeof(ogs_sockaddr_t));
-    ogs_assert(addr6);
+    ogs_expect_or_return_val(addr6, OGS_ERROR);
     addr6->ogs_sa_family = AF_INET6;
     addr6->ogs_sin_port = htobe16(port);
 
@@ -110,7 +110,8 @@ int ogs_pfcp_f_seid_to_sockaddr(
     } else {
         ogs_free(addr);
         ogs_free(addr6);
-        ogs_assert_if_reached();
+        ogs_error("No IPv4 or IPv6");
+        return OGS_ERROR;
     }
 
     return OGS_OK;
@@ -142,8 +143,10 @@ int ogs_pfcp_sockaddr_to_f_seid(
         f_seid->ipv6 = 1;
         memcpy(f_seid->addr6, addr6->sin6.sin6_addr.s6_addr, OGS_IPV6_LEN);
         *len = OGS_IPV6_LEN + hdr_len;
-    } else
-        ogs_assert_if_reached();
+    } else {
+        ogs_error("No IPv4 or IPv6");
+        return OGS_ERROR;
+    }
 
     return OGS_OK;
 }
@@ -168,8 +171,10 @@ int ogs_pfcp_f_seid_to_ip(ogs_pfcp_f_seid_t *f_seid, ogs_ip_t *ip)
     } else if (ip->ipv6) {
         memcpy(ip->addr6, f_seid->addr6, OGS_IPV6_LEN);
         ip->len = OGS_IPV6_LEN;
-    } else
-        ogs_assert_if_reached();
+    } else {
+        ogs_error("No IPv4 or IPv6");
+        return OGS_ERROR;
+    }
 
     return OGS_OK;
 }
@@ -200,8 +205,10 @@ int ogs_pfcp_sockaddr_to_f_teid(
         f_teid->ipv6 = 1;
         memcpy(f_teid->addr6, addr6->sin6.sin6_addr.s6_addr, OGS_IPV6_LEN);
         *len = OGS_IPV6_LEN + hdr_len;
-    } else
-        ogs_expect_or_return_val(0, OGS_ERROR);
+    } else {
+        ogs_error("No IPv4 or IPv6");
+        return OGS_ERROR;
+    }
 
     return OGS_OK;
 }
@@ -219,25 +226,28 @@ int ogs_pfcp_f_teid_to_sockaddr(
 
     if (f_teid->ipv4 && f_teid->ipv6) {
         *addr = ogs_calloc(1, sizeof(**addr));
-        ogs_assert(*addr);
+        ogs_expect_or_return_val(*addr, OGS_ERROR);
         (*addr)->sin.sin_addr.s_addr = f_teid->both.addr;
         (*addr)->ogs_sa_family = AF_INET;
 
         *addr6 = ogs_calloc(1, sizeof(**addr6));
-        ogs_assert(*addr6);
+        ogs_expect_or_return_val(*addr6, OGS_ERROR);
         memcpy((*addr6)->sin6.sin6_addr.s6_addr,
                 f_teid->both.addr6, OGS_IPV6_LEN);
         (*addr6)->ogs_sa_family = AF_INET6;
     } else if (f_teid->ipv4) {
         *addr = ogs_calloc(1, sizeof(**addr));
-        ogs_assert(*addr);
+        ogs_expect_or_return_val(*addr, OGS_ERROR);
         (*addr)->sin.sin_addr.s_addr = f_teid->addr;
         (*addr)->ogs_sa_family = AF_INET;
     } else if (f_teid->ipv6) {
         *addr6 = ogs_calloc(1, sizeof(**addr6));
-        ogs_assert(*addr6);
+        ogs_expect_or_return_val(*addr6, OGS_ERROR);
         memcpy((*addr6)->sin6.sin6_addr.s6_addr, f_teid->addr6, OGS_IPV6_LEN);
         (*addr6)->ogs_sa_family = AF_INET6;
+    } else {
+        ogs_error("No IPv4 or IPv6");
+        return OGS_ERROR;
     }
 
     return OGS_OK;
@@ -263,8 +273,10 @@ int ogs_pfcp_f_teid_to_ip(ogs_pfcp_f_teid_t *f_teid, ogs_ip_t *ip)
     } else if (ip->ipv6) {
         memcpy(ip->addr6, f_teid->addr6, OGS_IPV6_LEN);
         ip->len = OGS_IPV6_LEN;
-    } else
-        ogs_assert_if_reached();
+    } else {
+        ogs_error("No IPv4 or IPv6");
+        return OGS_ERROR;
+    }
 
     return OGS_OK;
 }
@@ -295,8 +307,10 @@ int ogs_pfcp_user_plane_ip_resource_info_to_f_teid(
         f_teid->ipv6 = 1;
         memcpy(f_teid->addr6, info->addr6, OGS_IPV6_LEN);
         *len = OGS_IPV6_LEN + hdr_len;
-    } else
-        ogs_assert_if_reached();
+    } else {
+        ogs_error("No IPv4 or IPv6");
+        return OGS_ERROR;
+    }
 
     return OGS_OK;
 }
@@ -327,8 +341,10 @@ int ogs_pfcp_paa_to_ue_ip_addr(
         addr->ipv6 = 1;
         memcpy(addr->addr6, paa->addr6, OGS_IPV6_LEN);
         *len = OGS_IPV6_LEN + hdr_len;
-    } else
-        ogs_assert_if_reached();
+    } else {
+        ogs_error("No IPv4 or IPv6");
+        return OGS_ERROR;
+    }
 
     return OGS_OK;
 }
@@ -358,13 +374,15 @@ int ogs_pfcp_ip_to_outer_header_creation(ogs_ip_t *ip,
         outer_header_creation->gtpu6 = 1;
         memcpy(outer_header_creation->addr6, ip->addr6, OGS_IPV6_LEN);
         *len = OGS_IPV6_LEN + hdr_len;
-    } else
-        ogs_assert_if_reached();
+    } else {
+        ogs_error("No IPv4 or IPv6");
+        return OGS_ERROR;
+    }
 
     return OGS_OK;
 }
 
-int ogs_pfcp_outer_header_creation_to_ip(
+void ogs_pfcp_outer_header_creation_to_ip(
         ogs_pfcp_outer_header_creation_t *outer_header_creation, ogs_ip_t *ip)
 {
     ogs_assert(outer_header_creation);
@@ -393,8 +411,5 @@ int ogs_pfcp_outer_header_creation_to_ip(
         ip->ipv6 = 1;
         ip->len = OGS_IPV6_LEN;
         memcpy(ip->addr6, outer_header_creation->addr6, OGS_IPV6_LEN);
-    } else
-        return OGS_ERROR;
-
-    return OGS_OK;
+    }
 }

@@ -68,7 +68,7 @@ ogs_sbi_client_t *ogs_sbi_client_add(ogs_sockaddr_t *addr);
 void ogs_sbi_client_remove(ogs_sbi_client_t *client);
 ogs_sbi_client_t *ogs_sbi_client_find(ogs_sockaddr_t *addr);
 
-void ogs_sbi_client_send_request(
+bool ogs_sbi_client_send_request(
         ogs_sbi_client_t *client, ogs_sbi_client_cb_f client_cb,
         ogs_sbi_request_t *request, void *data);
 

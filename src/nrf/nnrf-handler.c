@@ -35,8 +35,9 @@ bool nrf_nnrf_handle_nf_register(ogs_sbi_nf_instance_t *nf_instance,
     NFProfile = recvmsg->NFProfile;
     if (!NFProfile) {
         ogs_error("No NFProfile");
-        ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                recvmsg, "No NFProfile", NULL);
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                recvmsg, "No NFProfile", NULL));
         return false;
     }
 
@@ -98,7 +99,7 @@ bool nrf_nnrf_handle_nf_register(ogs_sbi_nf_instance_t *nf_instance,
     }
 
     ogs_assert(response);
-    ogs_sbi_server_send_response(stream, response);
+    ogs_assert(true == ogs_sbi_server_send_response(stream, response));
 
     return true;
 }
@@ -122,17 +123,20 @@ bool nrf_nnrf_handle_nf_update(ogs_sbi_nf_instance_t *nf_instance,
     CASE(OGS_SBI_HTTP_METHOD_PATCH)
         PatchItemList = recvmsg->PatchItemList;
         if (!PatchItemList) {
-            ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                    recvmsg, "No PatchItemList Array", NULL);
+            ogs_assert(true ==
+                ogs_sbi_server_send_error(
+                    stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                    recvmsg, "No PatchItemList Array", NULL));
             return false;
         }
 
         OpenAPI_list_for_each(PatchItemList, node) {
             OpenAPI_patch_item_t *patch_item = node->data;
             if (!patch_item) {
-                ogs_sbi_server_send_error(stream,
+                ogs_assert(true ==
+                    ogs_sbi_server_send_error(stream,
                         OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                        recvmsg, "No PatchItemList", NULL);
+                        recvmsg, "No PatchItemList", NULL));
                 return false;
             }
         }
@@ -140,7 +144,7 @@ bool nrf_nnrf_handle_nf_update(ogs_sbi_nf_instance_t *nf_instance,
         response = ogs_sbi_build_response(
                 recvmsg, OGS_SBI_HTTP_STATUS_NO_CONTENT);
         ogs_assert(response);
-        ogs_sbi_server_send_response(stream, response);
+        ogs_assert(true == ogs_sbi_server_send_response(stream, response));
         break;
 
     DEFAULT
@@ -171,14 +175,17 @@ bool nrf_nnrf_handle_nf_status_subscribe(
 
     SubscriptionData = recvmsg->SubscriptionData;
     if (!SubscriptionData) {
-        ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                recvmsg, "No SubscriptionData", NULL);
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                recvmsg, "No SubscriptionData", NULL));
         return false;
     }
 
     if (!SubscriptionData->nf_status_notification_uri) {
-        ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                recvmsg, "No SubscriptionData", "NFStatusNotificationURL");
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(
+                stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                recvmsg, "No SubscriptionData", "NFStatusNotificationURL"));
         return false;
     }
 
@@ -190,9 +197,11 @@ bool nrf_nnrf_handle_nf_status_subscribe(
     ogs_sbi_subscription_set_id(subscription, id);
     ogs_assert(subscription->id);
 
-    if (SubscriptionData->req_nf_instance_id)
+    if (SubscriptionData->req_nf_instance_id) {
         subscription->req_nf_instance_id =
             ogs_strdup(SubscriptionData->req_nf_instance_id);
+        ogs_expect_or_return_val(subscription->req_nf_instance_id, NULL);
+    }
 
     if (SubscriptionData->subscription_id) {
         ogs_warn("[%s] NF should not send SubscriptionID",
@@ -200,6 +209,7 @@ bool nrf_nnrf_handle_nf_status_subscribe(
         ogs_free(SubscriptionData->subscription_id);
     }
     SubscriptionData->subscription_id = ogs_strdup(subscription->id);
+    ogs_expect_or_return_val(SubscriptionData->subscription_id, NULL);
 
     SubscrCond = SubscriptionData->subscr_cond;
     if (SubscrCond) {
@@ -212,8 +222,10 @@ bool nrf_nnrf_handle_nf_status_subscribe(
 
     addr = ogs_sbi_getaddr_from_uri(subscription->notification_uri);
     if (!addr) {
-        ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                recvmsg, "Invalid URI", subscription->notification_uri);
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(
+                stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                recvmsg, "Invalid URI", subscription->notification_uri));
         ogs_sbi_subscription_remove(subscription);
         return false;
     }
@@ -231,6 +243,7 @@ bool nrf_nnrf_handle_nf_status_subscribe(
         SubscriptionData->validity_time = ogs_sbi_localtime_string(
             ogs_time_now() + ogs_time_from_sec(
                 subscription->time.validity_duration));
+        ogs_assert(SubscriptionData->validity_time);
 
         subscription->t_validity = ogs_timer_add(ogs_app()->timer_mgr,
             nrf_timer_subscription_validity, subscription);
@@ -244,7 +257,7 @@ bool nrf_nnrf_handle_nf_status_subscribe(
 
     response = ogs_sbi_build_response(recvmsg, status);
     ogs_assert(response);
-    ogs_sbi_server_send_response(stream, response);
+    ogs_assert(true == ogs_sbi_server_send_response(stream, response));
 
     return true;
 }
@@ -264,12 +277,13 @@ bool nrf_nnrf_handle_nf_status_unsubscribe(
         response = ogs_sbi_build_response(
                 recvmsg, OGS_SBI_HTTP_STATUS_NO_CONTENT);
         ogs_assert(response);
-        ogs_sbi_server_send_response(stream, response);
+        ogs_assert(true == ogs_sbi_server_send_response(stream, response));
     } else {
         ogs_error("Not found [%s]", recvmsg->h.resource.component[1]);
-        ogs_sbi_server_send_error(stream,
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(stream,
                 OGS_SBI_HTTP_STATUS_NOT_FOUND,
-                recvmsg, "Not found", recvmsg->h.resource.component[1]);
+                recvmsg, "Not found", recvmsg->h.resource.component[1]));
     }
 
     return true;
@@ -308,8 +322,9 @@ bool nrf_nnrf_handle_nf_list_retrieval(
 
         if (!recvmsg->param.limit ||
              (recvmsg->param.limit && i < recvmsg->param.limit)) {
-            OpenAPI_list_add(links->items,
-                ogs_msprintf("%s/%s", links->self, nf_instance->id));
+            char *str = ogs_msprintf("%s/%s", links->self, nf_instance->id);
+            ogs_assert(str);
+            OpenAPI_list_add(links->items, str);
         }
 
         i++;
@@ -323,7 +338,7 @@ bool nrf_nnrf_handle_nf_list_retrieval(
 
     response = ogs_sbi_build_response(&sendmsg, OGS_SBI_HTTP_STATUS_OK);
     ogs_assert(response);
-    ogs_sbi_server_send_response(stream, response);
+    ogs_assert(true == ogs_sbi_server_send_response(stream, response));
 
     OpenAPI_list_for_each(links->items, node) {
         if (!node->data) continue;
@@ -350,9 +365,10 @@ bool nrf_nnrf_handle_nf_profile_retrieval(
     nf_instance = ogs_sbi_nf_instance_find(recvmsg->h.resource.component[1]);
     if (!nf_instance) {
         ogs_error("Not found [%s]", recvmsg->h.resource.component[1]);
-        ogs_sbi_server_send_error(stream,
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(stream,
                 OGS_SBI_HTTP_STATUS_NOT_FOUND,
-                recvmsg, "Not found", recvmsg->h.resource.component[1]);
+                recvmsg, "Not found", recvmsg->h.resource.component[1]));
         return false;
     }
 
@@ -363,7 +379,7 @@ bool nrf_nnrf_handle_nf_profile_retrieval(
 
     response = ogs_sbi_build_response(&sendmsg, OGS_SBI_HTTP_STATUS_OK);
     ogs_assert(response);
-    ogs_sbi_server_send_response(stream, response);
+    ogs_assert(true == ogs_sbi_server_send_response(stream, response));
 
     return true;
 }
@@ -383,14 +399,16 @@ bool nrf_nnrf_handle_nf_discover(
 
     if (!recvmsg->param.target_nf_type) {
         ogs_error("No target-nf-type [%s]", recvmsg->h.uri);
-        ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                recvmsg, "No target-nf-type", NULL);
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                recvmsg, "No target-nf-type", NULL));
         return false;
     }
     if (!recvmsg->param.requester_nf_type) {
         ogs_error("No requester-nf-type [%s]", recvmsg->h.uri);
-        ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                recvmsg, "No requester-nf-type", NULL);
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                recvmsg, "No requester-nf-type", NULL));
         return false;
     }
 
@@ -438,10 +456,11 @@ bool nrf_nnrf_handle_nf_discover(
     sendmsg.SearchResult = SearchResult;
     sendmsg.http.cache_control =
         ogs_msprintf("max-age=%d", SearchResult->validity_period);
+    ogs_assert(sendmsg.http.cache_control);
 
     response = ogs_sbi_build_response(&sendmsg, OGS_SBI_HTTP_STATUS_OK);
     ogs_assert(response);
-    ogs_sbi_server_send_response(stream, response);
+    ogs_assert(true == ogs_sbi_server_send_response(stream, response));
 
     OpenAPI_list_free(SearchResult->nf_instances);
 

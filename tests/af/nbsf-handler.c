@@ -110,11 +110,13 @@ void af_nbsf_management_handle_pcf_binding(
         if (sess->supi)
             ogs_free(sess->supi);
         sess->supi = ogs_strdup(PcfBinding->supi);
+        ogs_assert(sess->supi);
     }
     if (PcfBinding->gpsi) {
         if (sess->gpsi)
             ogs_free(sess->gpsi);
         sess->gpsi = ogs_strdup(PcfBinding->gpsi);
+        ogs_assert(sess->gpsi);
     }
 
     af_sess_associate_pcf_client(sess);

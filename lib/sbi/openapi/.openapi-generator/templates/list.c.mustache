@@ -6,6 +6,7 @@
 static OpenAPI_lnode_t *listEntry_create(void *data)
 {
     OpenAPI_lnode_t *created = ogs_malloc(sizeof(OpenAPI_lnode_t));
+    ogs_assert(created);
 
     if (created == NULL) {
         // TODO Malloc Failure
@@ -29,6 +30,7 @@ void OpenAPI_lnode_print(OpenAPI_lnode_t *listEntry, void *additionalData)
 OpenAPI_list_t *OpenAPI_list_create(void)
 {
     OpenAPI_list_t *createdList = ogs_malloc(sizeof(OpenAPI_list_t));
+    ogs_assert(createdList);
 
     if (createdList == NULL) {
         // TODO Malloc Failure

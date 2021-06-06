@@ -121,8 +121,8 @@ OpenAPI_up_path_chg_event_t *OpenAPI_up_path_chg_event_parseFromJSON(cJSON *up_p
     }
 
     up_path_chg_event_local_var = OpenAPI_up_path_chg_event_create (
-        ogs_strdup(notification_uri->valuestring),
-        ogs_strdup(notif_corre_id->valuestring),
+        ogs_strdup_or_assert(notification_uri->valuestring),
+        ogs_strdup_or_assert(notif_corre_id->valuestring),
         dnai_chg_typeVariable,
         af_ack_ind ? af_ack_ind->valueint : 0
         );

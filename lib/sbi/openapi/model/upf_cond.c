@@ -105,7 +105,7 @@ OpenAPI_upf_cond_t *OpenAPI_upf_cond_parseFromJSON(cJSON *upf_condJSON)
                 ogs_error("OpenAPI_upf_cond_parseFromJSON() failed [smf_serving_area]");
                 goto end;
             }
-            OpenAPI_list_add(smf_serving_areaList, ogs_strdup(smf_serving_area_local->valuestring));
+            OpenAPI_list_add(smf_serving_areaList, ogs_strdup_or_assert(smf_serving_area_local->valuestring));
         }
     }
 

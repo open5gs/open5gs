@@ -719,8 +719,9 @@ int gmm_handle_authentication_response(amf_ue_t *amf_ue,
     memcpy(amf_ue->xres_star, authentication_response_parameter->res,
             authentication_response_parameter->length);
 
-    amf_ue_sbi_discover_and_send(OpenAPI_nf_type_AUSF, amf_ue, NULL,
-            amf_nausf_auth_build_authenticate_confirmation);
+    ogs_assert(true ==
+        amf_ue_sbi_discover_and_send(OpenAPI_nf_type_AUSF, amf_ue, NULL,
+                amf_nausf_auth_build_authenticate_confirmation));
 
     return OGS_OK;
 }
@@ -832,6 +833,7 @@ int gmm_handle_security_mode_complete(amf_ue_t *amf_ue,
                 if (amf_ue->pei)
                     ogs_free(amf_ue->pei);
                 amf_ue->pei = ogs_msprintf("imeisv-%s", amf_ue->imeisv_bcd);
+                ogs_assert(amf_ue->pei);
             } else {
                 ogs_error("[%s] Unknown IMEISV Length [%d]",
                         amf_ue->supi, imeisv->length);
@@ -999,11 +1001,13 @@ int gmm_handle_ul_nas_transport(amf_ue_t *amf_ue,
                 if (sess->dnn)
                     ogs_free(sess->dnn);
                 sess->dnn = ogs_strdup(dnn->value);
+                ogs_assert(sess->dnn);
             }
 
             if (!sess->dnn) {
                 if (selected_slice->num_of_session) {
                     sess->dnn = ogs_strdup(selected_slice->session[0].name);
+                    ogs_assert(sess->dnn);
                 }
             }
 
@@ -1030,12 +1034,14 @@ int gmm_handle_ul_nas_transport(amf_ue_t *amf_ue,
                 }
 
                 if (nf_instance) {
-                    amf_sess_sbi_discover_and_send(OpenAPI_nf_type_SMF,
+                    ogs_assert(true ==
+                        amf_sess_sbi_discover_and_send(OpenAPI_nf_type_SMF,
                             sess, AMF_CREATE_SM_CONTEXT_NO_STATE, NULL,
-                            amf_nsmf_pdusession_build_create_sm_context);
+                            amf_nsmf_pdusession_build_create_sm_context));
                 } else {
-                    amf_sess_sbi_discover_and_send(OpenAPI_nf_type_NSSF,
-                            sess, 0, NULL, amf_nnssf_nsselection_build_get);
+                    ogs_assert(true ==
+                        amf_sess_sbi_discover_and_send(OpenAPI_nf_type_NSSF,
+                            sess, 0, NULL, amf_nnssf_nsselection_build_get));
                 }
 
             } else {
@@ -1044,9 +1050,10 @@ int gmm_handle_ul_nas_transport(amf_ue_t *amf_ue,
                 param.release = 1;
                 param.cause = OpenAPI_cause_REL_DUE_TO_DUPLICATE_SESSION_ID;
 
-                amf_sess_sbi_discover_and_send(OpenAPI_nf_type_SMF,
+                ogs_assert(true ==
+                    amf_sess_sbi_discover_and_send(OpenAPI_nf_type_SMF,
                         sess, AMF_UPDATE_SM_CONTEXT_DUPLICATED_PDU_SESSION_ID,
-                        &param, amf_nsmf_pdusession_build_update_sm_context);
+                        &param, amf_nsmf_pdusession_build_update_sm_context));
             }
 
         } else {
@@ -1069,9 +1076,10 @@ int gmm_handle_ul_nas_transport(amf_ue_t *amf_ue,
                 param.ue_timezone = true;
             }
 
-            amf_sess_sbi_discover_and_send(OpenAPI_nf_type_SMF,
+            ogs_assert(true ==
+                amf_sess_sbi_discover_and_send(OpenAPI_nf_type_SMF,
                     sess, AMF_UPDATE_SM_CONTEXT_N1_RELEASED, &param,
-                    amf_nsmf_pdusession_build_update_sm_context);
+                    amf_nsmf_pdusession_build_update_sm_context));
 
             if (gsm_header->message_type ==
                     OGS_NAS_5GS_PDU_SESSION_RELEASE_COMPLETE) {

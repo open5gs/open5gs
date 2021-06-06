@@ -112,7 +112,7 @@ static char *url_decode(const char *str)
 {
     if (str != NULL) {
         char *pstr = (char*)str;
-        char *buf = ogs_malloc(strlen(str) + 1);
+        char *buf = ogs_malloc_or_assert(strlen(str) + 1);
         char *pbuf = buf;
         while (*pstr) {
             if (*pstr == '%') {
@@ -404,11 +404,11 @@ char *ogs_sbi_s_nssai_to_string(ogs_s_nssai_t *s_nssai)
     sNSSAI.sd = ogs_s_nssai_sd_to_string(s_nssai->sd);
 
     item = OpenAPI_snssai_convertToJSON(&sNSSAI);
-    ogs_assert(item);
+    ogs_expect_or_return_val(item, NULL);
     if (sNSSAI.sd) ogs_free(sNSSAI.sd);
 
     v = cJSON_Print(item);
-    ogs_assert(v);
+    ogs_expect(v);
     cJSON_Delete(item);
 
     return v;
@@ -446,12 +446,12 @@ OpenAPI_plmn_id_t *ogs_sbi_build_plmn_id(ogs_plmn_id_t *plmn_id)
     ogs_assert(plmn_id);
 
     PlmnId = ogs_calloc(1, sizeof(*PlmnId));
-    ogs_assert(PlmnId);
+    ogs_expect_or_return_val(PlmnId, NULL);
 
     PlmnId->mcc = ogs_plmn_id_mcc_string(plmn_id);
-    ogs_assert(PlmnId->mcc);
+    ogs_expect_or_return_val(PlmnId->mcc, NULL);
     PlmnId->mnc = ogs_plmn_id_mnc_string(plmn_id);
-    ogs_assert(PlmnId->mnc);
+    ogs_expect_or_return_val(PlmnId->mnc, NULL);
 
     return PlmnId;
 }
@@ -489,12 +489,12 @@ OpenAPI_plmn_id_nid_t *ogs_sbi_build_plmn_id_nid(ogs_plmn_id_t *plmn_id)
     ogs_assert(plmn_id);
 
     PlmnIdNid = ogs_calloc(1, sizeof(*PlmnIdNid));
-    ogs_assert(PlmnIdNid);
+    ogs_expect_or_return_val(PlmnIdNid, NULL);
 
     PlmnIdNid->mcc = ogs_plmn_id_mcc_string(plmn_id);
-    ogs_assert(PlmnIdNid->mcc);
+    ogs_expect_or_return_val(PlmnIdNid->mcc, NULL);
     PlmnIdNid->mnc = ogs_plmn_id_mnc_string(plmn_id);
-    ogs_assert(PlmnIdNid->mnc);
+    ogs_expect_or_return_val(PlmnIdNid->mnc, NULL);
 
     return PlmnIdNid;
 }
@@ -537,9 +537,9 @@ OpenAPI_guami_t *ogs_sbi_build_guami(ogs_guami_t *guami)
     ogs_assert(Guami);
 
     Guami->plmn_id = ogs_sbi_build_plmn_id_nid(&guami->plmn_id);
-    ogs_assert(Guami->plmn_id);
+    ogs_expect_or_return_val(Guami->plmn_id, NULL);
     Guami->amf_id = ogs_amf_id_to_string(&guami->amf_id);
-    ogs_assert(Guami->amf_id);
+    ogs_expect_or_return_val(Guami->amf_id, NULL);
 
     return Guami;
 }
@@ -579,17 +579,21 @@ OpenAPI_nr_location_t *ogs_sbi_build_nr_location(
     ogs_assert(nr_cgi);
 
     Tai = ogs_calloc(1, sizeof(*Tai));
-    ogs_assert(Tai);
+    ogs_expect_or_return_val(Tai, NULL);
     Tai->plmn_id = ogs_sbi_build_plmn_id(&tai->plmn_id);
+    ogs_expect_or_return_val(Tai->plmn_id, NULL);
     Tai->tac = ogs_uint24_to_0string(tai->tac);
+    ogs_expect_or_return_val(Tai->tac, NULL);
 
     Ncgi = ogs_calloc(1, sizeof(*Ncgi));
-    ogs_assert(Ncgi);
+    ogs_expect_or_return_val(Ncgi, NULL);
     Ncgi->plmn_id = ogs_sbi_build_plmn_id(&nr_cgi->plmn_id);
+    ogs_expect_or_return_val(Ncgi->plmn_id, NULL);
     Ncgi->nr_cell_id = ogs_uint36_to_0string(nr_cgi->cell_id);
+    ogs_expect_or_return_val(Ncgi->nr_cell_id, NULL);
 
     NrLocation = ogs_calloc(1, sizeof(*NrLocation));
-    ogs_assert(NrLocation);
+    ogs_expect_or_return_val(NrLocation, NULL);
     NrLocation->tai = Tai;
     NrLocation->ncgi = Ncgi;
 

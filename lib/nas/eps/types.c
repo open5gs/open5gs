@@ -19,7 +19,7 @@
 
 #include "ogs-nas-eps.h"
 
-void ogs_nas_tai_list_build(ogs_nas_tracking_area_identity_list_t *target,
+int ogs_nas_tai_list_build(ogs_nas_tracking_area_identity_list_t *target,
         ogs_eps_tai0_list_t *source0, ogs_eps_tai2_list_t *source2)
 {
     int i = 0, j = 0, size = 0;
@@ -53,9 +53,9 @@ void ogs_nas_tai_list_build(ogs_nas_tracking_area_identity_list_t *target,
 
         size = (1 + 3 + 2 * source0->tai[i].num);
         if ((target->length + size) > OGS_NAS_EPS_MAX_TAI_LIST_LEN) {
-            ogs_warn("Overflow: Ignore remained TAI LIST(length:%d, size:%d)",
+            ogs_error("Overflow: Ignore remained TAI LIST(length:%d, size:%d)",
                     target->length, size);
-            return;
+            return OGS_ERROR;
         }
         memcpy(target->buffer + target->length, &target0.tai[i], size);
         target->length += size;
@@ -74,9 +74,9 @@ void ogs_nas_tai_list_build(ogs_nas_tracking_area_identity_list_t *target,
 
         size = (1 + (3 + 2) * source2->num);
         if ((target->length + size) > OGS_NAS_EPS_MAX_TAI_LIST_LEN) {
-            ogs_warn("Overflow: Ignore remained TAI LIST(length:%d, size:%d)",
+            ogs_error("Overflow: Ignore remained TAI LIST(length:%d, size:%d)",
                     target->length, size);
-            return;
+            return OGS_ERROR;
         }
         for (i = 0; i < source2->num; i++) {
             memcpy(&target2.tai[i].plmn_id,
@@ -88,4 +88,6 @@ void ogs_nas_tai_list_build(ogs_nas_tracking_area_identity_list_t *target,
         memcpy(target->buffer + target->length, &target2, size);
         target->length += size;
     }
+
+    return OGS_OK;
 }

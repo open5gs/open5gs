@@ -150,7 +150,7 @@ OpenAPI_udsf_info_t *OpenAPI_udsf_info_parseFromJSON(cJSON *udsf_infoJSON)
     }
 
     udsf_info_local_var = OpenAPI_udsf_info_create (
-        group_id ? ogs_strdup(group_id->valuestring) : NULL,
+        group_id ? ogs_strdup_or_assert(group_id->valuestring) : NULL,
         supi_ranges ? supi_rangesList : NULL,
         storage_id_ranges ? storage_id_rangesList : NULL
         );

@@ -128,8 +128,8 @@ OpenAPI_v2x_subscription_data_t *OpenAPI_v2x_subscription_data_parseFromJSON(cJS
     v2x_subscription_data_local_var = OpenAPI_v2x_subscription_data_create (
         nr_v2x_services_auth ? nr_v2x_services_auth_local_nonprim : NULL,
         lte_v2x_services_auth ? lte_v2x_services_auth_local_nonprim : NULL,
-        nr_ue_pc5_ambr ? ogs_strdup(nr_ue_pc5_ambr->valuestring) : NULL,
-        lte_pc5_ambr ? ogs_strdup(lte_pc5_ambr->valuestring) : NULL
+        nr_ue_pc5_ambr ? ogs_strdup_or_assert(nr_ue_pc5_ambr->valuestring) : NULL,
+        lte_pc5_ambr ? ogs_strdup_or_assert(lte_pc5_ambr->valuestring) : NULL
         );
 
     return v2x_subscription_data_local_var;

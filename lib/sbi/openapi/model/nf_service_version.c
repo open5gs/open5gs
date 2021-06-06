@@ -101,9 +101,9 @@ OpenAPI_nf_service_version_t *OpenAPI_nf_service_version_parseFromJSON(cJSON *nf
     }
 
     nf_service_version_local_var = OpenAPI_nf_service_version_create (
-        ogs_strdup(api_version_in_uri->valuestring),
-        ogs_strdup(api_full_version->valuestring),
-        expiry ? ogs_strdup(expiry->valuestring) : NULL
+        ogs_strdup_or_assert(api_version_in_uri->valuestring),
+        ogs_strdup_or_assert(api_full_version->valuestring),
+        expiry ? ogs_strdup_or_assert(expiry->valuestring) : NULL
         );
 
     return nf_service_version_local_var;

@@ -51,6 +51,7 @@ void sgwc_context_init(void)
     ogs_pool_init(&sgwc_tunnel_pool, ogs_app()->pool.tunnel);
 
     self.imsi_ue_hash = ogs_hash_make();
+    ogs_assert(self.imsi_ue_hash);
 
     ogs_list_init(&self.sgw_ue_list);
 
@@ -675,8 +676,10 @@ sgwc_tunnel_t *sgwc_tunnel_add(
     ogs_assert(pdr);
     pdr->src_if = src_if;
 
-    if (sess->session.name)
+    if (sess->session.name) {
         pdr->apn = ogs_strdup(sess->session.name);
+        ogs_assert(pdr->apn);
+    }
 
     pdr->outer_header_removal_len = 1;
     if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV4) {
@@ -728,9 +731,13 @@ sgwc_tunnel_t *sgwc_tunnel_add(
                 tunnel->local_teid = tunnel->index;
         } else {
             if (sess->pfcp_node->addr.ogs_sa_family == AF_INET)
-                ogs_copyaddrinfo(&tunnel->local_addr, &sess->pfcp_node->addr);
+                ogs_assert(OGS_OK ==
+                    ogs_copyaddrinfo(
+                        &tunnel->local_addr, &sess->pfcp_node->addr));
             else if (sess->pfcp_node->addr.ogs_sa_family == AF_INET6)
-                ogs_copyaddrinfo(&tunnel->local_addr6, &sess->pfcp_node->addr);
+                ogs_assert(OGS_OK ==
+                    ogs_copyaddrinfo(
+                        &tunnel->local_addr6, &sess->pfcp_node->addr));
             else
                 ogs_assert_if_reached();
 

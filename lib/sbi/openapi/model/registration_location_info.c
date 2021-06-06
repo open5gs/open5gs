@@ -149,7 +149,7 @@ OpenAPI_registration_location_info_t *OpenAPI_registration_location_info_parseFr
     }
 
     registration_location_info_local_var = OpenAPI_registration_location_info_create (
-        ogs_strdup(amf_instance_id->valuestring),
+        ogs_strdup_or_assert(amf_instance_id->valuestring),
         plmn_id ? plmn_id_local_nonprim : NULL,
         vgmlc_address ? vgmlc_address_local_nonprim : NULL,
         access_type_listList

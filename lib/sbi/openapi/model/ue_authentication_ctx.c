@@ -162,7 +162,7 @@ OpenAPI_ue_authentication_ctx_t *OpenAPI_ue_authentication_ctx_parseFromJSON(cJS
         auth_typeVariable,
         _5g_auth_data_local_nonprim,
         _linksList,
-        serving_network_name ? ogs_strdup(serving_network_name->valuestring) : NULL
+        serving_network_name ? ogs_strdup_or_assert(serving_network_name->valuestring) : NULL
         );
 
     return ue_authentication_ctx_local_var;

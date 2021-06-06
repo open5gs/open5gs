@@ -125,9 +125,9 @@ OpenAPI_authentication_info_result_t *OpenAPI_authentication_info_result_parseFr
 
     authentication_info_result_local_var = OpenAPI_authentication_info_result_create (
         auth_typeVariable,
-        supported_features ? ogs_strdup(supported_features->valuestring) : NULL,
+        supported_features ? ogs_strdup_or_assert(supported_features->valuestring) : NULL,
         authentication_vector ? authentication_vector_local_nonprim : NULL,
-        supi ? ogs_strdup(supi->valuestring) : NULL
+        supi ? ogs_strdup_or_assert(supi->valuestring) : NULL
         );
 
     return authentication_info_result_local_var;

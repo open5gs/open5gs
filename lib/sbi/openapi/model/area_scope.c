@@ -152,7 +152,7 @@ OpenAPI_area_scope_t *OpenAPI_area_scope_parseFromJSON(cJSON *area_scopeJSON)
                 ogs_error("OpenAPI_area_scope_parseFromJSON() failed [eutra_cell_id_list]");
                 goto end;
             }
-            OpenAPI_list_add(eutra_cell_id_listList, ogs_strdup(eutra_cell_id_list_local->valuestring));
+            OpenAPI_list_add(eutra_cell_id_listList, ogs_strdup_or_assert(eutra_cell_id_list_local->valuestring));
         }
     }
 
@@ -172,7 +172,7 @@ OpenAPI_area_scope_t *OpenAPI_area_scope_parseFromJSON(cJSON *area_scopeJSON)
                 ogs_error("OpenAPI_area_scope_parseFromJSON() failed [nr_cell_id_list]");
                 goto end;
             }
-            OpenAPI_list_add(nr_cell_id_listList, ogs_strdup(nr_cell_id_list_local->valuestring));
+            OpenAPI_list_add(nr_cell_id_listList, ogs_strdup_or_assert(nr_cell_id_list_local->valuestring));
         }
     }
 
@@ -192,7 +192,7 @@ OpenAPI_area_scope_t *OpenAPI_area_scope_parseFromJSON(cJSON *area_scopeJSON)
                 ogs_error("OpenAPI_area_scope_parseFromJSON() failed [tac_list]");
                 goto end;
             }
-            OpenAPI_list_add(tac_listList, ogs_strdup(tac_list_local->valuestring));
+            OpenAPI_list_add(tac_listList, ogs_strdup_or_assert(tac_list_local->valuestring));
         }
     }
 

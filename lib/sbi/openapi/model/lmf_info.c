@@ -231,7 +231,7 @@ OpenAPI_lmf_info_t *OpenAPI_lmf_info_parseFromJSON(cJSON *lmf_infoJSON)
 
     lmf_info_local_var = OpenAPI_lmf_info_create (
         serving_client_types ? serving_client_typesList : NULL,
-        lmf_id ? ogs_strdup(lmf_id->valuestring) : NULL,
+        lmf_id ? ogs_strdup_or_assert(lmf_id->valuestring) : NULL,
         serving_access_types ? serving_access_typesList : NULL,
         serving_an_node_types ? serving_an_node_typesList : NULL,
         serving_rat_types ? serving_rat_typesList : NULL

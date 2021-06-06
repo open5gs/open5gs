@@ -64,7 +64,7 @@ ogs_sbi_request_t *af_npcf_policyauthorization_build_create(
     memset(&AscReqData, 0, sizeof(AscReqData));
 
     server = ogs_list_first(&ogs_sbi_self()->server_list);
-    ogs_assert(server);
+    ogs_expect_or_return_val(server, NULL);
 
     memset(&header, 0, sizeof(header));
     header.service.name = (char *)OGS_SBI_SERVICE_NAME_NPCF_POLICYAUTHORIZATION;
@@ -73,7 +73,7 @@ ogs_sbi_request_t *af_npcf_policyauthorization_build_create(
     header.resource.component[1] = (char *)sess->af_app_session_id;
     header.resource.component[2] = (char *)OGS_SBI_RESOURCE_NAME_NOTIFY;
     AscReqData.notif_uri = ogs_sbi_server_uri(server, &header);
-    ogs_assert(AscReqData.notif_uri);
+    ogs_expect_or_return_val(AscReqData.notif_uri, NULL);
 
     AscReqData.supp_feat =
         ogs_uint64_to_string(sess->policyauthorization_features);
@@ -104,7 +104,7 @@ ogs_sbi_request_t *af_npcf_policyauthorization_build_create(
     ogs_assert(MediaComponentList);
 
     MediaComponent = ogs_calloc(1, sizeof(*MediaComponent));
-    ogs_assert(MediaComponent);
+    ogs_expect_or_return_val(MediaComponent, NULL);
 
     MediaComponent->med_comp_n = (++i);
     MediaComponent->f_status = OpenAPI_flow_status_ENABLED;
@@ -138,6 +138,7 @@ ogs_sbi_request_t *af_npcf_policyauthorization_build_create(
     MediaComponentMap = OpenAPI_map_create(
             ogs_msprintf("%d", MediaComponent->med_comp_n), MediaComponent);
     ogs_assert(MediaComponentMap);
+    ogs_assert(MediaComponentMap->key);
 
     OpenAPI_list_add(MediaComponentList, MediaComponentMap);
 
@@ -150,7 +151,7 @@ ogs_sbi_request_t *af_npcf_policyauthorization_build_create(
 
     /* Sub Component #1 */
     SubComponent = ogs_calloc(1, sizeof(*SubComponent));
-    ogs_assert(SubComponent);
+    ogs_expect_or_return_val(SubComponent, NULL);
 
     SubComponent->f_num = (++j);
     SubComponent->flow_usage = OpenAPI_flow_usage_NO_INFO;
@@ -158,6 +159,7 @@ ogs_sbi_request_t *af_npcf_policyauthorization_build_create(
     SubComponentMap = OpenAPI_map_create(
             ogs_msprintf("%d", SubComponent->f_num), SubComponent);
     ogs_assert(SubComponentMap);
+    ogs_assert(SubComponentMap->key);
 
     OpenAPI_list_add(SubComponentList, SubComponentMap);
 
@@ -173,7 +175,7 @@ ogs_sbi_request_t *af_npcf_policyauthorization_build_create(
 
     /* Sub Component #2 */
     SubComponent = ogs_calloc(1, sizeof(*SubComponent));
-    ogs_assert(SubComponent);
+    ogs_expect_or_return_val(SubComponent, NULL);
 
     SubComponent->f_num = (++j);
     SubComponent->flow_usage = OpenAPI_flow_usage_NO_INFO;
@@ -181,6 +183,7 @@ ogs_sbi_request_t *af_npcf_policyauthorization_build_create(
     SubComponentMap = OpenAPI_map_create(
             ogs_msprintf("%d", SubComponent->f_num), SubComponent);
     ogs_assert(SubComponentMap);
+    ogs_assert(SubComponentMap->key);
 
     OpenAPI_list_add(SubComponentList, SubComponentMap);
 
@@ -198,7 +201,7 @@ ogs_sbi_request_t *af_npcf_policyauthorization_build_create(
     MediaComponent->med_sub_comps = SubComponentList;
 
     request = ogs_sbi_build_request(&message);
-    ogs_assert(request);
+    ogs_expect_or_return_val(request, NULL);
 
     ogs_free(AscReqData.notif_uri);
 

@@ -34,10 +34,12 @@ OpenAPI_nf_profile_t *ogs_nnrf_nfm_build_nf_profile(
     int fqdn_len;
     char fqdn[OGS_MAX_FQDN_LEN];
 
+    char *ipstr = NULL;
+
     ogs_assert(nf_instance);
 
     NFProfile = ogs_calloc(1, sizeof(*NFProfile));
-    ogs_assert(NFProfile);
+    ogs_expect_or_return_val(NFProfile, NULL);
 
 	NFProfile->nf_instance_id = nf_instance->id;
 	NFProfile->nf_type = nf_instance->nf_type;
@@ -58,6 +60,7 @@ OpenAPI_nf_profile_t *ogs_nnrf_nfm_build_nf_profile(
         fqdn_len = ogs_fqdn_build(fqdn,
                 nf_instance->fqdn, strlen(nf_instance->fqdn));
         NFProfile->fqdn = ogs_memdup(fqdn, fqdn_len);
+        ogs_expect_or_return_val(NFProfile->fqdn, NULL);
 
         ogs_trace("FQDN[%s]", nf_instance->fqdn);
     }
@@ -74,7 +77,9 @@ OpenAPI_nf_profile_t *ogs_nnrf_nfm_build_nf_profile(
                     htobe32(nf_instance->ipv4[i]->sin.sin_addr.s_addr),
                     nf_instance->ipv4[i]->ogs_sin_port);
             ogs_assert(nf_instance->ipv4[i]->ogs_sa_family == AF_INET);
-            OpenAPI_list_add(Ipv4AddrList, ogs_ipstrdup(nf_instance->ipv4[i]));
+            ipstr = ogs_ipstrdup(nf_instance->ipv4[i]);
+            ogs_expect_or_return_val(ipstr, NULL);
+            OpenAPI_list_add(Ipv4AddrList, ipstr);
         }
     }
     for (i = 0; i < nf_instance->num_of_ipv6; i++) {
@@ -83,7 +88,9 @@ OpenAPI_nf_profile_t *ogs_nnrf_nfm_build_nf_profile(
                     nf_instance->ipv6[i]->ogs_sa_family,
                     nf_instance->ipv6[i]->ogs_sin_port);
             ogs_assert(nf_instance->ipv6[i]->ogs_sa_family == AF_INET6);
-            OpenAPI_list_add(Ipv6AddrList, ogs_ipstrdup(nf_instance->ipv6[i]));
+            ipstr = ogs_ipstrdup(nf_instance->ipv6[i]);
+            ogs_expect_or_return_val(ipstr, NULL);
+            OpenAPI_list_add(Ipv6AddrList, ipstr);
         }
     }
 
@@ -105,9 +112,11 @@ OpenAPI_nf_profile_t *ogs_nnrf_nfm_build_nf_profile(
         OpenAPI_list_t *IpEndPointList = NULL;
 
         NFService = ogs_calloc(1, sizeof(*NFService));
-        ogs_assert(NFService);
+        ogs_expect_or_return_val(NFService, NULL);
         NFService->service_instance_id = ogs_strdup(nf_service->id);
+        ogs_expect_or_return_val(NFService->service_instance_id, NULL);
         NFService->service_name = ogs_strdup(nf_service->name);
+        ogs_expect_or_return_val(NFService->service_name, NULL);
 
         VersionList = OpenAPI_list_create();
         ogs_assert(VersionList);
@@ -116,16 +125,25 @@ OpenAPI_nf_profile_t *ogs_nnrf_nfm_build_nf_profile(
             OpenAPI_nf_service_version_t *NFServiceVersion = NULL;
 
             NFServiceVersion = ogs_calloc(1, sizeof(*NFServiceVersion));
-            ogs_assert(NFServiceVersion);
-            if (nf_service->versions[i].in_uri)
+            ogs_expect_or_return_val(NFServiceVersion, NULL);
+            if (nf_service->versions[i].in_uri) {
                 NFServiceVersion->api_version_in_uri =
                     ogs_strdup(nf_service->versions[i].in_uri);
-            if (nf_service->versions[i].full)
+                ogs_expect_or_return_val(
+                    NFServiceVersion->api_version_in_uri, NULL);
+            }
+            if (nf_service->versions[i].full) {
                 NFServiceVersion->api_full_version =
                     ogs_strdup(nf_service->versions[i].full);
-            if (nf_service->versions[i].expiry)
+                ogs_expect_or_return_val(
+                    NFServiceVersion->api_full_version, NULL);
+            }
+            if (nf_service->versions[i].expiry) {
                 NFServiceVersion->expiry =
                     ogs_strdup(nf_service->versions[i].expiry);
+                ogs_expect_or_return_val(
+                    NFServiceVersion->expiry, NULL);
+            }
 
             OpenAPI_list_add(VersionList, NFServiceVersion);
         }
@@ -141,6 +159,7 @@ OpenAPI_nf_profile_t *ogs_nnrf_nfm_build_nf_profile(
             fqdn_len = ogs_fqdn_build(fqdn,
                     nf_service->fqdn, strlen(nf_service->fqdn));
             NFService->fqdn = ogs_memdup(fqdn, fqdn_len);
+            ogs_expect_or_return_val(NFService->fqdn, NULL);
         }
 
         IpEndPointList = OpenAPI_list_create();
@@ -157,9 +176,15 @@ OpenAPI_nf_profile_t *ogs_nnrf_nfm_build_nf_profile(
 
             if (ipv4 || ipv6) {
                 IpEndPoint = ogs_calloc(1, sizeof(*IpEndPoint));
-                ogs_assert(IpEndPoint);
-                if (ipv4) IpEndPoint->ipv4_address = ogs_ipstrdup(ipv4);
-                if (ipv6) IpEndPoint->ipv6_address = ogs_ipstrdup(ipv6);
+                ogs_expect_or_return_val(IpEndPoint, NULL);
+                if (ipv4) {
+                    IpEndPoint->ipv4_address = ogs_ipstrdup(ipv4);
+                    ogs_expect_or_return_val(IpEndPoint->ipv4_address, NULL);
+                }
+                if (ipv6) {
+                    IpEndPoint->ipv6_address = ogs_ipstrdup(ipv6);
+                    ogs_expect_or_return_val(IpEndPoint->ipv6_address, NULL);
+                }
                 IpEndPoint->port = nf_service->addr[i].port;
                 OpenAPI_list_add(IpEndPointList, IpEndPoint);
             }
@@ -318,10 +343,10 @@ ogs_sbi_request_t *ogs_nnrf_nfm_build_status_subscribe(
         (char *)OGS_SBI_RESOURCE_NAME_SUBSCRIPTIONS;
 
     SubscriptionData = ogs_calloc(1, sizeof(*SubscriptionData));
-    ogs_assert(SubscriptionData);
+    ogs_expect_or_return_val(SubscriptionData, NULL);
 
     server = ogs_list_first(&ogs_sbi_self()->server_list);
-    ogs_assert(server);
+    ogs_expect_or_return_val(server, NULL);
 
     memset(&header, 0, sizeof(header));
     header.service.name = (char *)OGS_SBI_SERVICE_NAME_NNRF_NFM;
@@ -330,7 +355,8 @@ ogs_sbi_request_t *ogs_nnrf_nfm_build_status_subscribe(
             (char *)OGS_SBI_RESOURCE_NAME_NF_STATUS_NOTIFY;
     SubscriptionData->nf_status_notification_uri =
                         ogs_sbi_server_uri(server, &header);
-    ogs_assert(SubscriptionData->nf_status_notification_uri);
+    ogs_expect_or_return_val(
+            SubscriptionData->nf_status_notification_uri, NULL);
 
 	SubscriptionData->req_nf_type = subscription->req_nf_type;
     SubscriptionData->req_nf_instance_id = subscription->req_nf_instance_id;

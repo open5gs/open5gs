@@ -219,6 +219,7 @@ static void security_test6(abts_case *tc, void *data)
     ogs_pkbuf_t *pkbuf = NULL;
 
     m = ogs_calloc(m_len, sizeof(uint8_t));
+    ABTS_PTR_NOTNULL(tc, m);
     memcpy(m, &count, sizeof(uint32_t));
     m[4] = ((0x1a << 3) | (1 << 2));
     memcpy(m+8, OGS_HEX(_message, strlen(_message), message), msg_len);

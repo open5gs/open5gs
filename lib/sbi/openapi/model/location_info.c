@@ -149,10 +149,10 @@ OpenAPI_location_info_t *OpenAPI_location_info_parseFromJSON(cJSON *location_inf
     }
 
     location_info_local_var = OpenAPI_location_info_create (
-        supi ? ogs_strdup(supi->valuestring) : NULL,
-        gpsi ? ogs_strdup(gpsi->valuestring) : NULL,
+        supi ? ogs_strdup_or_assert(supi->valuestring) : NULL,
+        gpsi ? ogs_strdup_or_assert(gpsi->valuestring) : NULL,
         registration_location_info_listList,
-        supported_features ? ogs_strdup(supported_features->valuestring) : NULL
+        supported_features ? ogs_strdup_or_assert(supported_features->valuestring) : NULL
         );
 
     return location_info_local_var;

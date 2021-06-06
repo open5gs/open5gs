@@ -99,12 +99,12 @@ OpenAPI_ue_id_t *OpenAPI_ue_id_parseFromJSON(cJSON *ue_idJSON)
                 ogs_error("OpenAPI_ue_id_parseFromJSON() failed [gpsi_list]");
                 goto end;
             }
-            OpenAPI_list_add(gpsi_listList, ogs_strdup(gpsi_list_local->valuestring));
+            OpenAPI_list_add(gpsi_listList, ogs_strdup_or_assert(gpsi_list_local->valuestring));
         }
     }
 
     ue_id_local_var = OpenAPI_ue_id_create (
-        ogs_strdup(supi->valuestring),
+        ogs_strdup_or_assert(supi->valuestring),
         gpsi_list ? gpsi_listList : NULL
         );
 

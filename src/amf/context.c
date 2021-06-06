@@ -66,10 +66,15 @@ void amf_context_init(void)
     ogs_list_init(&self.amf_ue_list);
 
     self.gnb_addr_hash = ogs_hash_make();
+    ogs_assert(self.gnb_addr_hash);
     self.gnb_id_hash = ogs_hash_make();
+    ogs_assert(self.gnb_id_hash);
     self.guti_ue_hash = ogs_hash_make();
+    ogs_assert(self.guti_ue_hash);
     self.suci_hash = ogs_hash_make();
+    ogs_assert(self.suci_hash);
     self.supi_hash = ogs_hash_make();
+    ogs_assert(self.supi_hash);
 
     context_initialized = 1;
 }

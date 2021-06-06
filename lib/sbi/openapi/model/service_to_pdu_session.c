@@ -147,7 +147,7 @@ OpenAPI_service_to_pdu_session_t *OpenAPI_service_to_pdu_session_parseFromJSON(c
             ogs_error("OpenAPI_service_to_pdu_session_parseFromJSON() failed [ser_ids]");
             goto end;
         }
-        OpenAPI_list_add(ser_idsList, ogs_strdup(ser_ids_local->valuestring));
+        OpenAPI_list_add(ser_idsList, ogs_strdup_or_assert(ser_ids_local->valuestring));
     }
 
     cJSON *pdu_session_type = cJSON_GetObjectItemCaseSensitive(service_to_pdu_sessionJSON, "pduSessionType");
@@ -211,7 +211,7 @@ OpenAPI_service_to_pdu_session_t *OpenAPI_service_to_pdu_session_parseFromJSON(c
                 ogs_error("OpenAPI_service_to_pdu_session_parseFromJSON() failed [dnns]");
                 goto end;
             }
-            OpenAPI_list_add(dnnsList, ogs_strdup(dnns_local->valuestring));
+            OpenAPI_list_add(dnnsList, ogs_strdup_or_assert(dnns_local->valuestring));
         }
     }
 

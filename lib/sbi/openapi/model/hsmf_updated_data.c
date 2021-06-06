@@ -240,7 +240,7 @@ OpenAPI_hsmf_updated_data_t *OpenAPI_hsmf_updated_data_parseFromJSON(cJSON *hsmf
                 ogs_error("OpenAPI_hsmf_updated_data_parseFromJSON() failed [dnai_list]");
                 goto end;
             }
-            OpenAPI_list_add(dnai_listList, ogs_strdup(dnai_list_local->valuestring));
+            OpenAPI_list_add(dnai_listList, ogs_strdup_or_assert(dnai_list_local->valuestring));
         }
     }
 
@@ -304,7 +304,7 @@ OpenAPI_hsmf_updated_data_t *OpenAPI_hsmf_updated_data_parseFromJSON(cJSON *hsmf
         n4_info_ext1 ? n4_info_ext1_local_nonprim : NULL,
         n4_info_ext2 ? n4_info_ext2_local_nonprim : NULL,
         dnai_list ? dnai_listList : NULL,
-        supported_features ? ogs_strdup(supported_features->valuestring) : NULL,
+        supported_features ? ogs_strdup_or_assert(supported_features->valuestring) : NULL,
         roaming_charging_profile ? roaming_charging_profile_local_nonprim : NULL,
         up_security ? up_security_local_nonprim : NULL,
         max_integrity_protected_data_rate_ul ? max_integrity_protected_data_rate_ulVariable : 0,

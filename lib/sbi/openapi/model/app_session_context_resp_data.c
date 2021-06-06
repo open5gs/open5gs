@@ -132,7 +132,7 @@ OpenAPI_app_session_context_resp_data_t *OpenAPI_app_session_context_resp_data_p
     app_session_context_resp_data_local_var = OpenAPI_app_session_context_resp_data_create (
         serv_auth_info ? serv_auth_infoVariable : 0,
         ue_ids ? ue_idsList : NULL,
-        supp_feat ? ogs_strdup(supp_feat->valuestring) : NULL
+        supp_feat ? ogs_strdup_or_assert(supp_feat->valuestring) : NULL
         );
 
     return app_session_context_resp_data_local_var;

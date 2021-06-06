@@ -141,10 +141,10 @@ OpenAPI_change_item_t *OpenAPI_change_item_parseFromJSON(cJSON *change_itemJSON)
 
     change_item_local_var = OpenAPI_change_item_create (
         opVariable,
-        ogs_strdup(path->valuestring),
-        from ? ogs_strdup(from->valuestring) : NULL,
-        orig_value ? ogs_strdup(orig_value->valuestring) : NULL,
-        new_value ? ogs_strdup(new_value->valuestring) : NULL
+        ogs_strdup_or_assert(path->valuestring),
+        from ? ogs_strdup_or_assert(from->valuestring) : NULL,
+        orig_value ? ogs_strdup_or_assert(orig_value->valuestring) : NULL,
+        new_value ? ogs_strdup_or_assert(new_value->valuestring) : NULL
         );
 
     return change_item_local_var;

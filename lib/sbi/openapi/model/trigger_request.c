@@ -62,7 +62,7 @@ OpenAPI_trigger_request_t *OpenAPI_trigger_request_parseFromJSON(cJSON *trigger_
     }
 
     trigger_request_local_var = OpenAPI_trigger_request_create (
-        ogs_strdup(supi->valuestring)
+        ogs_strdup_or_assert(supi->valuestring)
         );
 
     return trigger_request_local_var;

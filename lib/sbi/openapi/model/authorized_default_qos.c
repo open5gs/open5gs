@@ -254,10 +254,10 @@ OpenAPI_authorized_default_qos_t *OpenAPI_authorized_default_qos_parseFromJSON(c
         priority_level ? priority_level->valuedouble : 0,
         aver_window ? aver_window->valuedouble : 0,
         max_data_burst_vol ? max_data_burst_vol->valuedouble : 0,
-        maxbr_ul ? ogs_strdup(maxbr_ul->valuestring) : NULL,
-        maxbr_dl ? ogs_strdup(maxbr_dl->valuestring) : NULL,
-        gbr_ul ? ogs_strdup(gbr_ul->valuestring) : NULL,
-        gbr_dl ? ogs_strdup(gbr_dl->valuestring) : NULL,
+        maxbr_ul ? ogs_strdup_or_assert(maxbr_ul->valuestring) : NULL,
+        maxbr_dl ? ogs_strdup_or_assert(maxbr_dl->valuestring) : NULL,
+        gbr_ul ? ogs_strdup_or_assert(gbr_ul->valuestring) : NULL,
+        gbr_dl ? ogs_strdup_or_assert(gbr_dl->valuestring) : NULL,
         qnc ? qnc->valueint : 0,
         ext_max_data_burst_vol ? ext_max_data_burst_vol->valuedouble : 0
         );

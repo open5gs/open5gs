@@ -81,7 +81,7 @@ OpenAPI_mo_exp_data_counter_t *OpenAPI_mo_exp_data_counter_parseFromJSON(cJSON *
 
     mo_exp_data_counter_local_var = OpenAPI_mo_exp_data_counter_create (
         counter->valuedouble,
-        time_stamp ? ogs_strdup(time_stamp->valuestring) : NULL
+        time_stamp ? ogs_strdup_or_assert(time_stamp->valuestring) : NULL
         );
 
     return mo_exp_data_counter_local_var;

@@ -92,9 +92,10 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
 
         DEFAULT
             ogs_error("Invalid API name [%s]", sbi_message->h.service.name);
-            ogs_sbi_server_send_error(stream,
+            ogs_assert(true ==
+                ogs_sbi_server_send_error(stream,
                     OGS_SBI_HTTP_STATUS_BAD_REQUEST, sbi_message,
-                    "Invalid API name", sbi_message->h.service.name);
+                    "Invalid API name", sbi_message->h.service.name));
         END
         break;
 
@@ -120,8 +121,10 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                     ogs_assert(strerror);
 
                     ogs_error("%s", strerror);
-                    ogs_sbi_server_send_error(stream, sbi_message->res_status,
-                        sbi_message, strerror, NULL);
+                    ogs_assert(true ==
+                        ogs_sbi_server_send_error(
+                            stream, sbi_message->res_status,
+                            sbi_message, strerror, NULL));
                     ogs_free(strerror);
 
                     OGS_FSM_TRAN(s, smf_gsm_state_exception);
@@ -141,9 +144,10 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                 ogs_assert(strerror);
 
                 ogs_error("%s", strerror);
-                ogs_sbi_server_send_error(stream,
+                ogs_assert(true ==
+                    ogs_sbi_server_send_error(stream,
                         OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                        sbi_message, strerror, NULL);
+                        sbi_message, strerror, NULL));
                 ogs_free(strerror);
                 OGS_FSM_TRAN(s, smf_gsm_state_exception);
             END
@@ -167,9 +171,10 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                         ogs_assert(strerror);
 
                         ogs_error("%s", strerror);
-                        ogs_sbi_server_send_error(stream,
+                        ogs_assert(true ==
+                            ogs_sbi_server_send_error(stream,
                                 sbi_message->res_status,
-                                sbi_message, strerror, NULL);
+                                sbi_message, strerror, NULL));
                         ogs_free(strerror);
                         break;
                     }
@@ -188,9 +193,10 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                             ogs_assert(strerror);
 
                             ogs_error("%s", strerror);
-                            ogs_sbi_server_send_error(stream,
+                            ogs_assert(true ==
+                                ogs_sbi_server_send_error(stream,
                                     sbi_message->res_status,
-                                    sbi_message, strerror, NULL);
+                                    sbi_message, strerror, NULL));
                             ogs_free(strerror);
                             break;
                         }
@@ -207,9 +213,10 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                         ogs_assert(strerror);
 
                         ogs_error("%s", strerror);
-                        ogs_sbi_server_send_error(stream,
+                        ogs_assert(true ==
+                            ogs_sbi_server_send_error(stream,
                                 OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                                sbi_message, strerror, NULL);
+                                sbi_message, strerror, NULL));
                         ogs_free(strerror);
                     END
                 }
@@ -222,9 +229,10 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                 ogs_assert(strerror);
 
                 ogs_error("%s", strerror);
-                ogs_sbi_server_send_error(stream,
+                ogs_assert(true ==
+                    ogs_sbi_server_send_error(stream,
                         OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                        sbi_message, strerror, NULL);
+                        sbi_message, strerror, NULL));
                 ogs_free(strerror);
             END
             break;
@@ -273,7 +281,7 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
             break;
 
         case OGS_NAS_5GS_PDU_SESSION_MODIFICATION_COMPLETE:
-            ogs_sbi_send_http_status_no_content(stream);
+            ogs_assert(true == ogs_sbi_send_http_status_no_content(stream));
             break;
 
         case OGS_NAS_5GS_PDU_SESSION_RELEASE_REQUEST:
@@ -288,14 +296,15 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                 param.ran_nas_release.ngap_cause.value =
                     NGAP_CauseNas_normal_release;
 
-                smf_sbi_discover_and_send(OpenAPI_nf_type_PCF, sess, stream,
+                ogs_assert(true ==
+                    smf_sbi_discover_and_send(OpenAPI_nf_type_PCF, sess, stream,
                         OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED, &param,
-                        smf_npcf_smpolicycontrol_build_delete);
+                        smf_npcf_smpolicycontrol_build_delete));
             }
             break;
 
         case OGS_NAS_5GS_PDU_SESSION_RELEASE_COMPLETE:
-            ogs_sbi_send_http_status_no_content(stream);
+            ogs_assert(true == ogs_sbi_send_http_status_no_content(stream));
 
             /*
              * Race condition for PDU session release complete
@@ -320,8 +329,9 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
             ogs_assert(strerror);
 
             ogs_error("%s", strerror);
-            ogs_sbi_server_send_error(stream,
-                    OGS_SBI_HTTP_STATUS_BAD_REQUEST, NULL, strerror, NULL);
+            ogs_assert(true ==
+                ogs_sbi_server_send_error(stream,
+                    OGS_SBI_HTTP_STATUS_BAD_REQUEST, NULL, strerror, NULL));
             ogs_free(strerror);
         }
         break;
@@ -365,12 +375,12 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
             sess->ngap_state.pdu_session_resource_release = SMF_NGAP_STATE_NONE;
 
             if (ngap_state == SMF_NGAP_STATE_DELETE_TRIGGER_UE_REQUESTED) {
-                ogs_sbi_send_http_status_no_content(stream);
+                ogs_assert(true == ogs_sbi_send_http_status_no_content(stream));
             } else if (ngap_state ==
                     SMF_NGAP_STATE_ERROR_INDICATION_RECEIVED_FROM_5G_AN) {
                 smf_n1_n2_message_transfer_param_t param;
 
-                ogs_sbi_send_http_status_no_content(stream);
+                ogs_assert(true == ogs_sbi_send_http_status_no_content(stream));
 
                 memset(&param, 0, sizeof(param));
                 param.state = SMF_NETWORK_TRIGGERED_SERVICE_REQUEST;

@@ -389,13 +389,13 @@ OpenAPI_traffic_control_data_t *OpenAPI_traffic_control_data_parseFromJSON(cJSON
     }
 
     traffic_control_data_local_var = OpenAPI_traffic_control_data_create (
-        ogs_strdup(tc_id->valuestring),
+        ogs_strdup_or_assert(tc_id->valuestring),
         flow_status ? flow_statusVariable : 0,
         redirect_info ? redirect_info_local_nonprim : NULL,
         add_redirect_info ? add_redirect_infoList : NULL,
         mute_notif ? mute_notif->valueint : 0,
-        traffic_steering_pol_id_dl ? ogs_strdup(traffic_steering_pol_id_dl->valuestring) : NULL,
-        traffic_steering_pol_id_ul ? ogs_strdup(traffic_steering_pol_id_ul->valuestring) : NULL,
+        traffic_steering_pol_id_dl ? ogs_strdup_or_assert(traffic_steering_pol_id_dl->valuestring) : NULL,
+        traffic_steering_pol_id_ul ? ogs_strdup_or_assert(traffic_steering_pol_id_ul->valuestring) : NULL,
         route_to_locs ? route_to_locsList : NULL,
         traff_corre_ind ? traff_corre_ind->valueint : 0,
         up_path_chg_event ? up_path_chg_event_local_nonprim : NULL,

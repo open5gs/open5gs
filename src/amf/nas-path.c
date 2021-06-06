@@ -85,7 +85,7 @@ int nas_5gs_send_registration_accept(amf_ue_t *amf_ue)
         }
 
         amf_ue->t3550.pkbuf = ogs_pkbuf_copy(gmmbuf);
-        ogs_assert(amf_ue->t3550.pkbuf);
+        ogs_expect_or_return_val(amf_ue->t3550.pkbuf, OGS_ERROR);
         ogs_timer_start(amf_ue->t3550.timer,
                 amf_timer_cfg(AMF_TIMER_T3550)->duration);
     } else {
@@ -294,7 +294,7 @@ int nas_5gs_send_identity_request(amf_ue_t *amf_ue)
     }
 
     amf_ue->t3570.pkbuf = ogs_pkbuf_copy(gmmbuf);
-    ogs_assert(amf_ue->t3570.pkbuf);
+    ogs_expect_or_return_val(amf_ue->t3570.pkbuf, OGS_ERROR);
     ogs_timer_start(amf_ue->t3570.timer,
             amf_timer_cfg(AMF_TIMER_T3570)->duration);
 
@@ -322,7 +322,7 @@ int nas_5gs_send_authentication_request(amf_ue_t *amf_ue)
     }
 
     amf_ue->t3560.pkbuf = ogs_pkbuf_copy(gmmbuf);
-    ogs_assert(amf_ue->t3560.pkbuf);
+    ogs_expect_or_return_val(amf_ue->t3560.pkbuf, OGS_ERROR);
     ogs_timer_start(amf_ue->t3560.timer,
             amf_timer_cfg(AMF_TIMER_T3560)->duration);
 
@@ -368,7 +368,7 @@ int nas_5gs_send_security_mode_command(amf_ue_t *amf_ue)
     }
 
     amf_ue->t3560.pkbuf = ogs_pkbuf_copy(gmmbuf);
-    ogs_assert(amf_ue->t3560.pkbuf);
+    ogs_expect_or_return_val(amf_ue->t3560.pkbuf, OGS_ERROR);
     ogs_timer_start(amf_ue->t3560.timer,
             amf_timer_cfg(AMF_TIMER_T3560)->duration);
 
@@ -393,7 +393,7 @@ int nas_5gs_send_configuration_update_command(
         ogs_expect_or_return_val(gmmbuf, OGS_ERROR);
 
         amf_ue->t3555.pkbuf = ogs_pkbuf_copy(gmmbuf);
-        ogs_assert(amf_ue->t3555.pkbuf);
+        ogs_expect_or_return_val(amf_ue->t3555.pkbuf, OGS_ERROR);
         ogs_timer_start(amf_ue->t3555.timer,
                 amf_timer_cfg(AMF_TIMER_T3555)->duration);
 
@@ -404,7 +404,7 @@ int nas_5gs_send_configuration_update_command(
 
         if (param->acknowledgement_requested) {
             amf_ue->t3555.pkbuf = ogs_pkbuf_copy(gmmbuf);
-            ogs_assert(amf_ue->t3555.pkbuf);
+            ogs_expect_or_return_val(amf_ue->t3555.pkbuf, OGS_ERROR);
             ogs_timer_start(amf_ue->t3555.timer,
                     amf_timer_cfg(AMF_TIMER_T3555)->duration);
         }
@@ -578,7 +578,7 @@ int nas_5gs_send_back_5gsm_message(
     ogs_assert(sess->payload_container);
 
     pbuf = ogs_pkbuf_copy(sess->payload_container);
-    ogs_assert(pbuf);
+    ogs_expect_or_return_val(pbuf, OGS_ERROR);
 
     rv = nas_5gs_send_gsm_reject(sess, sess->payload_container_type, pbuf,
             cause, AMF_NAS_BACKOFF_TIME);

@@ -103,8 +103,8 @@ OpenAPI_parameter_combination_t *OpenAPI_parameter_combination_parseFromJSON(cJS
     }
 
     parameter_combination_local_var = OpenAPI_parameter_combination_create (
-        supi ? ogs_strdup(supi->valuestring) : NULL,
-        dnn ? ogs_strdup(dnn->valuestring) : NULL,
+        supi ? ogs_strdup_or_assert(supi->valuestring) : NULL,
+        dnn ? ogs_strdup_or_assert(dnn->valuestring) : NULL,
         snssai ? snssai_local_nonprim : NULL
         );
 

@@ -157,7 +157,7 @@ OpenAPI_vn_group_data_t *OpenAPI_vn_group_data_parseFromJSON(cJSON *vn_group_dat
 
     vn_group_data_local_var = OpenAPI_vn_group_data_create (
         pdu_session_types ? pdu_session_types_local_nonprim : NULL,
-        dnn ? ogs_strdup(dnn->valuestring) : NULL,
+        dnn ? ogs_strdup_or_assert(dnn->valuestring) : NULL,
         single_nssai ? single_nssai_local_nonprim : NULL,
         app_descriptors ? app_descriptorsList : NULL
         );

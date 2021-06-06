@@ -100,9 +100,9 @@ OpenAPI_user_identifier_t *OpenAPI_user_identifier_parseFromJSON(cJSON *user_ide
     }
 
     user_identifier_local_var = OpenAPI_user_identifier_create (
-        ogs_strdup(supi->valuestring),
-        gpsi ? ogs_strdup(gpsi->valuestring) : NULL,
-        validity_time ? ogs_strdup(validity_time->valuestring) : NULL
+        ogs_strdup_or_assert(supi->valuestring),
+        gpsi ? ogs_strdup_or_assert(gpsi->valuestring) : NULL,
+        validity_time ? ogs_strdup_or_assert(validity_time->valuestring) : NULL
         );
 
     return user_identifier_local_var;

@@ -149,9 +149,10 @@ void smf_s5c_handle_create_session_request(
     /* UE IP Address */
     ogs_assert(req->pdn_address_allocation.data);
     sess->session.session_type = req->pdn_type.u8;
-    ogs_gtp_paa_to_ip(
+    rv = ogs_gtp_paa_to_ip(
             (ogs_paa_t *)req->pdn_address_allocation.data,
             &sess->session.ue_ip);
+    ogs_assert(rv == OGS_OK);
 
     smf_sess_set_ue_ip(sess);
 
@@ -377,8 +378,11 @@ void smf_s5c_handle_create_bearer_response(
 
     dl_far->apply_action = OGS_PFCP_APPLY_ACTION_FORW;
 
-    ogs_pfcp_ip_to_outer_header_creation(&bearer->sgw_s5u_ip,
-        &dl_far->outer_header_creation, &dl_far->outer_header_creation_len);
+    ogs_assert(OGS_OK ==
+        ogs_pfcp_ip_to_outer_header_creation(
+            &bearer->sgw_s5u_ip,
+            &dl_far->outer_header_creation,
+            &dl_far->outer_header_creation_len));
     dl_far->outer_header_creation.teid = bearer->sgw_s5u_teid;
 
     ogs_assert(OGS_OK ==
@@ -811,9 +815,11 @@ void smf_s5c_handle_bearer_resource_command(
                     ogs_ipfw_copy_and_swap(&tmp, &pf->ipfw_rule);
                     pf->flow_description =
                         ogs_ipfw_encode_flow_description(&tmp);
+                    ogs_assert(pf->flow_description);
                 } else {
                     pf->flow_description =
                         ogs_ipfw_encode_flow_description(&pf->ipfw_rule);
+                    ogs_assert(pf->flow_description);
                 }
             }
 
@@ -878,9 +884,11 @@ void smf_s5c_handle_bearer_resource_command(
                 ogs_ipfw_copy_and_swap(&tmp, &pf->ipfw_rule);
                 pf->flow_description =
                     ogs_ipfw_encode_flow_description(&tmp);
+                ogs_assert(pf->flow_description);
             } else {
                 pf->flow_description =
                     ogs_ipfw_encode_flow_description(&pf->ipfw_rule);
+                ogs_assert(pf->flow_description);
             }
 
             tft_update = 1;

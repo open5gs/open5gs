@@ -62,7 +62,7 @@ OpenAPI_confirmation_data_t *OpenAPI_confirmation_data_parseFromJSON(cJSON *conf
     }
 
     confirmation_data_local_var = OpenAPI_confirmation_data_create (
-        ogs_strdup(res_star->valuestring)
+        ogs_strdup_or_assert(res_star->valuestring)
         );
 
     return confirmation_data_local_var;

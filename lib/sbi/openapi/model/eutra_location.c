@@ -233,9 +233,9 @@ OpenAPI_eutra_location_t *OpenAPI_eutra_location_parseFromJSON(cJSON *eutra_loca
         ecgi_local_nonprim,
         ignore_ecgi ? ignore_ecgi->valueint : 0,
         age_of_location_information ? age_of_location_information->valuedouble : 0,
-        ue_location_timestamp ? ogs_strdup(ue_location_timestamp->valuestring) : NULL,
-        geographical_information ? ogs_strdup(geographical_information->valuestring) : NULL,
-        geodetic_information ? ogs_strdup(geodetic_information->valuestring) : NULL,
+        ue_location_timestamp ? ogs_strdup_or_assert(ue_location_timestamp->valuestring) : NULL,
+        geographical_information ? ogs_strdup_or_assert(geographical_information->valuestring) : NULL,
+        geodetic_information ? ogs_strdup_or_assert(geodetic_information->valuestring) : NULL,
         global_ngenb_id ? global_ngenb_id_local_nonprim : NULL,
         global_e_nb_id ? global_e_nb_id_local_nonprim : NULL
         );

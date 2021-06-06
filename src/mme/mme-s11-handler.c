@@ -532,7 +532,7 @@ void mme_s11_handle_create_bearer_request(
 
     if (OGS_FSM_CHECK(&default_bearer->sm, esm_state_active)) {
         if (ECM_IDLE(mme_ue)) {
-            s1ap_send_paging(mme_ue, S1AP_CNDomain_ps);
+            ogs_assert(OGS_OK == s1ap_send_paging(mme_ue, S1AP_CNDomain_ps));
         } else {
             ogs_assert(OGS_OK ==
                 nas_eps_send_activate_dedicated_bearer_context_request(bearer));
@@ -638,7 +638,7 @@ void mme_s11_handle_update_bearer_request(
     if (req->bearer_contexts.bearer_level_qos.presence == 1 ||
         req->bearer_contexts.tft.presence == 1) {
         if (ECM_IDLE(mme_ue)) {
-            s1ap_send_paging(mme_ue, S1AP_CNDomain_ps);
+            ogs_assert(OGS_OK == s1ap_send_paging(mme_ue, S1AP_CNDomain_ps));
         } else {
             ogs_assert(OGS_OK ==
                 nas_eps_send_modify_bearer_context_request(bearer,
@@ -722,7 +722,7 @@ void mme_s11_handle_delete_bearer_request(
     bearer->xact = xact;
 
     if (ECM_IDLE(mme_ue)) {
-        s1ap_send_paging(mme_ue, S1AP_CNDomain_ps);
+        ogs_assert(OGS_OK == s1ap_send_paging(mme_ue, S1AP_CNDomain_ps));
     } else {
         ogs_assert(OGS_OK ==
             nas_eps_send_deactivate_bearer_context_request(bearer));
@@ -945,7 +945,7 @@ void mme_s11_handle_downlink_data_notification(
  * before step 9, the MME shall not send S1 interface paging messages
  */
     if (ECM_IDLE(mme_ue)) {
-        s1ap_send_paging(mme_ue, S1AP_CNDomain_ps);
+        ogs_assert(OGS_OK == s1ap_send_paging(mme_ue, S1AP_CNDomain_ps));
 
     } else if (ECM_CONNECTED(mme_ue)) {
         if (cause_value == OGS_GTP_CAUSE_ERROR_INDICATION_RECEIVED) {
@@ -1052,7 +1052,7 @@ void mme_s11_handle_create_indirect_data_forwarding_tunnel_response(
 
             bearer->sgw_dl_teid = be32toh(teid->teid);
             rv = ogs_gtp_f_teid_to_ip(teid, &bearer->sgw_dl_ip);
-            ogs_expect_or_return(rv == OGS_OK);
+            ogs_assert(rv == OGS_OK);
         }
         if (rsp->bearer_contexts[i].s2b_u_epdg_f_teid_5.presence) {
             teid = rsp->bearer_contexts[i].s2b_u_epdg_f_teid_5.data;
@@ -1060,7 +1060,7 @@ void mme_s11_handle_create_indirect_data_forwarding_tunnel_response(
 
             bearer->sgw_ul_teid = be32toh(teid->teid);
             rv = ogs_gtp_f_teid_to_ip(teid, &bearer->sgw_ul_ip);
-            ogs_expect_or_return(rv == OGS_OK);
+            ogs_assert(rv == OGS_OK);
         }
     }
 

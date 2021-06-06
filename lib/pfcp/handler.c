@@ -19,15 +19,20 @@
 
 #include "ogs-pfcp.h"
 
-void ogs_pfcp_handle_heartbeat_request(
+bool ogs_pfcp_handle_heartbeat_request(
         ogs_pfcp_node_t *node, ogs_pfcp_xact_t *xact, 
         ogs_pfcp_heartbeat_request_t *req)
 {
+    int rv;
     ogs_assert(xact);
-    ogs_pfcp_send_heartbeat_response(xact);
+
+    rv = ogs_pfcp_send_heartbeat_response(xact);
+    ogs_expect_or_return_val(rv == OGS_OK, false);
+
+    return true;
 }
 
-void ogs_pfcp_handle_heartbeat_response(
+bool ogs_pfcp_handle_heartbeat_response(
         ogs_pfcp_node_t *node, ogs_pfcp_xact_t *xact, 
         ogs_pfcp_heartbeat_response_t *rsp)
 {
@@ -36,9 +41,11 @@ void ogs_pfcp_handle_heartbeat_response(
 
     ogs_timer_start(node->t_no_heartbeat,
             ogs_app()->time.message.pfcp.no_heartbeat_duration);
+
+    return true;
 }
 
-void ogs_pfcp_cp_handle_association_setup_request(
+bool ogs_pfcp_cp_handle_association_setup_request(
         ogs_pfcp_node_t *node, ogs_pfcp_xact_t *xact, 
         ogs_pfcp_association_setup_request_t *req)
 {
@@ -81,9 +88,11 @@ void ogs_pfcp_cp_handle_association_setup_request(
         ogs_error("F-TEID allocation/release not supported with peer [%s]:%d",
                 OGS_ADDR(addr, buf), OGS_PORT(addr));
     }
+
+    return true;
 }
 
-void ogs_pfcp_cp_handle_association_setup_response(
+bool ogs_pfcp_cp_handle_association_setup_response(
         ogs_pfcp_node_t *node, ogs_pfcp_xact_t *xact, 
         ogs_pfcp_association_setup_response_t *rsp)
 {
@@ -125,9 +134,11 @@ void ogs_pfcp_cp_handle_association_setup_response(
         ogs_error("F-TEID allocation/release not supported with peer [%s]:%d",
                 OGS_ADDR(addr, buf), OGS_PORT(addr));
     }
+
+    return true;
 }
 
-void ogs_pfcp_up_handle_association_setup_request(
+bool ogs_pfcp_up_handle_association_setup_request(
         ogs_pfcp_node_t *node, ogs_pfcp_xact_t *xact,
         ogs_pfcp_association_setup_request_t *req)
 {
@@ -139,9 +150,11 @@ void ogs_pfcp_up_handle_association_setup_request(
         ogs_pfcp_self()->cp_function_features.octet5 =
             req->cp_function_features.u8;
     }
+
+    return true;
 }
 
-void ogs_pfcp_up_handle_association_setup_response(
+bool ogs_pfcp_up_handle_association_setup_response(
         ogs_pfcp_node_t *node, ogs_pfcp_xact_t *xact,
         ogs_pfcp_association_setup_response_t *rsp)
 {
@@ -152,9 +165,11 @@ void ogs_pfcp_up_handle_association_setup_response(
         ogs_pfcp_self()->cp_function_features.octet5 =
             rsp->cp_function_features.u8;
     }
+
+    return true;
 }
 
-void ogs_pfcp_up_handle_pdr(
+bool ogs_pfcp_up_handle_pdr(
         ogs_pfcp_pdr_t *pdr, ogs_pkbuf_t *recvbuf,
         ogs_pfcp_user_plane_report_t *report)
 {
@@ -172,12 +187,7 @@ void ogs_pfcp_up_handle_pdr(
     memset(report, 0, sizeof(*report));
 
     sendbuf = ogs_pkbuf_copy(recvbuf);
-    if (!sendbuf) {
-        ogs_fatal("Not enough packet buffer");
-        ogs_assert_if_reached();
-
-        return;
-    }
+    ogs_expect_or_return_val(sendbuf, false);
 
     buffering = false;
 
@@ -214,9 +224,11 @@ void ogs_pfcp_up_handle_pdr(
             ogs_pkbuf_free(sendbuf);
         }
     }
+
+    return true;
 }
 
-void ogs_pfcp_up_handle_error_indication(
+bool ogs_pfcp_up_handle_error_indication(
         ogs_pfcp_far_t *far, ogs_pfcp_user_plane_report_t *report)
 {
     uint16_t len;
@@ -244,10 +256,12 @@ void ogs_pfcp_up_handle_error_indication(
                 far->hash.f_teid.key.addr, len);
     } else {
         ogs_error("Invalid Length [%d]", len);
-        return;
+        return false;
     }
 
     report->type.error_indication_report = 1;
+
+    return true;
 }
 
 ogs_pfcp_pdr_t *ogs_pfcp_handle_create_pdr(ogs_pfcp_sess_t *sess,
@@ -350,6 +364,7 @@ ogs_pfcp_pdr_t *ogs_pfcp_handle_create_pdr(ogs_pfcp_sess_t *sess,
 
             flow_description = ogs_malloc(
                     sdf_filter.flow_description_len+1);
+            ogs_assert(flow_description);
             ogs_cpystrn(flow_description,
                     sdf_filter.flow_description,
                     sdf_filter.flow_description_len+1);
@@ -408,6 +423,7 @@ ogs_pfcp_pdr_t *ogs_pfcp_handle_create_pdr(ogs_pfcp_sess_t *sess,
             message->pdi.network_instance.len);
 
         pdr->dnn = ogs_strdup(dnn);
+        ogs_assert(pdr->dnn);
     }
 
     pdr->chid = false;
@@ -593,6 +609,7 @@ ogs_pfcp_pdr_t *ogs_pfcp_handle_update_pdr(ogs_pfcp_sess_t *sess,
 
                 flow_description = ogs_malloc(
                         sdf_filter.flow_description_len+1);
+                ogs_assert(flow_description);
                 ogs_cpystrn(flow_description,
                         sdf_filter.flow_description,
                         sdf_filter.flow_description_len+1);
@@ -648,6 +665,7 @@ ogs_pfcp_pdr_t *ogs_pfcp_handle_update_pdr(ogs_pfcp_sess_t *sess,
             if (pdr->dnn)
                 ogs_free(pdr->dnn);
             pdr->dnn = ogs_strdup(dnn);
+            ogs_assert(pdr->dnn);
         }
 
         if (message->pdi.local_f_teid.presence) {

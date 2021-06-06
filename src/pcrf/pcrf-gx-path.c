@@ -77,12 +77,12 @@ static __inline__ struct sess_state *new_state(os0_t sid)
 
     ogs_thread_mutex_lock(&sess_state_mutex);
     ogs_pool_alloc(&sess_state_pool, &new);
-    ogs_assert(new);
+    ogs_expect_or_return_val(new, NULL);
     memset(new, 0, sizeof(*new));
     ogs_thread_mutex_unlock(&sess_state_mutex);
 
     new->sid = (os0_t)ogs_strdup((char *)sid);
-    ogs_assert(new->sid);
+    ogs_expect_or_return_val(new->sid, NULL);
 
     ogs_list_init(&new->rx_list);
 
@@ -98,12 +98,12 @@ static struct rx_sess_state *add_rx_state(struct sess_state *gx, os0_t sid)
 
     ogs_thread_mutex_lock(&sess_state_mutex);
     ogs_pool_alloc(&rx_sess_state_pool, &new);
-    ogs_assert(new);
+    ogs_expect_or_return_val(new, NULL);
     memset(new, 0, sizeof(*new));
     ogs_thread_mutex_unlock(&sess_state_mutex);
 
     new->sid = (os0_t)ogs_strdup((char *)sid);
-    ogs_assert(new->sid);
+    ogs_expect_or_return_val(new->sid, NULL);
 
     new->gx = gx;
 
@@ -1366,6 +1366,7 @@ static int flow_rx_to_gx(ogs_flow_t *rx_flow, ogs_flow_t *gx_flow)
                 "permit out", strlen("permit out"))) {
         gx_flow->direction = OGS_FLOW_DOWNLINK_ONLY;
         gx_flow->description = ogs_strdup(rx_flow->description);
+        ogs_assert(gx_flow->description);
 
     } else if (!strncmp(rx_flow->description,
                 "permit in", strlen("permit in"))) {
@@ -1375,6 +1376,7 @@ static int flow_rx_to_gx(ogs_flow_t *rx_flow, ogs_flow_t *gx_flow)
          * 'permit out' in Gx Diameter */
         len = strlen(rx_flow->description)+2;
         gx_flow->description = ogs_malloc(len);
+        ogs_assert(gx_flow->description);
         strcpy(gx_flow->description, "permit out");
         from_str = strstr(&rx_flow->description[strlen("permit in")], "from");
         ogs_assert(from_str);

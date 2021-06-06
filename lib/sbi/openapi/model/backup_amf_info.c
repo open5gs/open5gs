@@ -111,7 +111,7 @@ OpenAPI_backup_amf_info_t *OpenAPI_backup_amf_info_parseFromJSON(cJSON *backup_a
     }
 
     backup_amf_info_local_var = OpenAPI_backup_amf_info_create (
-        ogs_strdup(backup_amf->valuestring),
+        ogs_strdup_or_assert(backup_amf->valuestring),
         guami_list ? guami_listList : NULL
         );
 

@@ -111,7 +111,7 @@ OpenAPI_small_data_rate_status_info_t *OpenAPI_small_data_rate_status_info_parse
 
     small_data_rate_status_info_local_var = OpenAPI_small_data_rate_status_info_create (
         snssai_local_nonprim,
-        ogs_strdup(dnn->valuestring),
+        ogs_strdup_or_assert(dnn->valuestring),
         small_data_rate_status_local_nonprim
         );
 

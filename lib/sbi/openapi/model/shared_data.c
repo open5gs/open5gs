@@ -310,7 +310,7 @@ OpenAPI_shared_data_t *OpenAPI_shared_data_parseFromJSON(cJSON *shared_dataJSON)
     }
 
     shared_data_local_var = OpenAPI_shared_data_create (
-        ogs_strdup(shared_data_id->valuestring),
+        ogs_strdup_or_assert(shared_data_id->valuestring),
         shared_am_data ? shared_am_data_local_nonprim : NULL,
         shared_sms_subs_data ? shared_sms_subs_data_local_nonprim : NULL,
         shared_sms_mng_subs_data ? shared_sms_mng_subs_data_local_nonprim : NULL,

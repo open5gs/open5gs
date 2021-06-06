@@ -51,7 +51,7 @@ bool bsf_nbsf_management_handle_pcf_binding(
             response = ogs_sbi_build_response(
                     &sendmsg, OGS_SBI_HTTP_STATUS_NO_CONTENT);
             ogs_assert(response);
-            ogs_sbi_server_send_response(stream, response);
+            ogs_assert(true == ogs_sbi_server_send_response(stream, response));
 
             ogs_free(sendmsg.http.location);
 
@@ -109,6 +109,7 @@ bool bsf_nbsf_management_handle_pcf_binding(
                 if (sess->pcf_fqdn)
                     ogs_free(sess->pcf_fqdn);
                 sess->pcf_fqdn = ogs_strdup(fqdn);
+                ogs_assert(sess->pcf_fqdn);
             }
 
             PcfIpEndPointList = RecvPcfBinding->pcf_ip_end_points;
@@ -195,7 +196,7 @@ bool bsf_nbsf_management_handle_pcf_binding(
             response = ogs_sbi_build_response(
                     &sendmsg, OGS_SBI_HTTP_STATUS_CREATED);
             ogs_assert(response);
-            ogs_sbi_server_send_response(stream, response);
+            ogs_assert(true == ogs_sbi_server_send_response(stream, response));
 
             ogs_free(sendmsg.http.location);
             break;
@@ -219,6 +220,7 @@ bool bsf_nbsf_management_handle_pcf_binding(
                     fqdn_len = ogs_fqdn_build(fqdn,
                             sess->pcf_fqdn, strlen(sess->pcf_fqdn));
                     SendPcfBinding.pcf_fqdn = ogs_memdup(fqdn, fqdn_len);
+                    ogs_assert(SendPcfBinding.pcf_fqdn);
                 }
 
                 for (i = 0; i < sess->num_of_pcf_ip; i++) {
@@ -227,7 +229,7 @@ bool bsf_nbsf_management_handle_pcf_binding(
                     ogs_assert(sess->pcf_ip[i].addr || sess->pcf_ip[i].addr6);
 
                     PcfIpEndPoint = ogs_calloc(1, sizeof(*PcfIpEndPoint));
-                    ogs_assert(PcfIpEndPoint);
+                    ogs_expect_or_return_val(PcfIpEndPoint, NULL);
                     PcfIpEndPoint->ipv4_address = sess->pcf_ip[i].addr;
                     PcfIpEndPoint->ipv6_address = sess->pcf_ip[i].addr6;
                     PcfIpEndPoint->port = sess->pcf_ip[i].port;
@@ -247,7 +249,8 @@ bool bsf_nbsf_management_handle_pcf_binding(
                             &sendmsg, OGS_SBI_HTTP_STATUS_OK);
                 ogs_assert(response);
 
-                ogs_sbi_server_send_response(stream, response);
+                ogs_assert(true ==
+                        ogs_sbi_server_send_response(stream, response));
 
                 OpenAPI_list_for_each(SendPcfBinding.pcf_ip_end_points, node) {
                     OpenAPI_ip_end_point_t *PcfIpEndPoint = node->data;
@@ -264,7 +267,8 @@ bool bsf_nbsf_management_handle_pcf_binding(
                             &sendmsg, OGS_SBI_HTTP_STATUS_NO_CONTENT);
                 ogs_assert(response);
 
-                ogs_sbi_server_send_response(stream, response);
+                ogs_assert(true ==
+                    ogs_sbi_server_send_response(stream, response));
             }
             break;
 
@@ -282,7 +286,8 @@ cleanup:
     ogs_assert(strerror);
     ogs_assert(status);
     ogs_error("%s", strerror);
-    ogs_sbi_server_send_error(stream, status, recvmsg, strerror, NULL);
+    ogs_assert(true ==
+        ogs_sbi_server_send_error(stream, status, recvmsg, strerror, NULL));
     ogs_free(strerror);
 
     return false;

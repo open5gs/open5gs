@@ -29,11 +29,11 @@ extern "C" {
 int bsf_sbi_open(void);
 void bsf_sbi_close(void);
 
-void bsf_nnrf_nfm_send_nf_register(ogs_sbi_nf_instance_t *nf_instance);
+bool bsf_nnrf_nfm_send_nf_register(ogs_sbi_nf_instance_t *nf_instance);
 
-void bsf_sbi_send(ogs_sbi_nf_instance_t *nf_instance, ogs_sbi_xact_t *xact);
+bool bsf_sbi_send(ogs_sbi_nf_instance_t *nf_instance, ogs_sbi_xact_t *xact);
 
-void bsf_sbi_discover_and_send(OpenAPI_nf_type_e target_nf_type,
+bool bsf_sbi_discover_and_send(OpenAPI_nf_type_e target_nf_type,
         bsf_sess_t *sess, ogs_sbi_stream_t *stream, void *data,
         ogs_sbi_request_t *(*build)(bsf_sess_t *sess, void *data));
 

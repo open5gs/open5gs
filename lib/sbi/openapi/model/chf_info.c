@@ -211,7 +211,7 @@ OpenAPI_chf_info_t *OpenAPI_chf_info_parseFromJSON(cJSON *chf_infoJSON)
         supi_range_list ? supi_range_listList : NULL,
         gpsi_range_list ? gpsi_range_listList : NULL,
         plmn_range_list ? plmn_range_listList : NULL,
-        group_id ? ogs_strdup(group_id->valuestring) : NULL
+        group_id ? ogs_strdup_or_assert(group_id->valuestring) : NULL
         );
 
     return chf_info_local_var;

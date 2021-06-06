@@ -87,7 +87,7 @@ OpenAPI_slrb_configurations_t *OpenAPI_slrb_configurations_parseFromJSON(cJSON *
 
     slrb_configurations_local_var = OpenAPI_slrb_configurations_create (
         pc5_qos_para_local_nonprim,
-        ogs_strdup(slrb->valuestring)
+        ogs_strdup_or_assert(slrb->valuestring)
         );
 
     return slrb_configurations_local_var;

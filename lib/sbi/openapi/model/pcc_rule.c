@@ -446,7 +446,7 @@ OpenAPI_pcc_rule_t *OpenAPI_pcc_rule_parseFromJSON(cJSON *pcc_ruleJSON)
                 ogs_error("OpenAPI_pcc_rule_parseFromJSON() failed [ref_qos_data]");
                 goto end;
             }
-            OpenAPI_list_add(ref_qos_dataList, ogs_strdup(ref_qos_data_local->valuestring));
+            OpenAPI_list_add(ref_qos_dataList, ogs_strdup_or_assert(ref_qos_data_local->valuestring));
         }
     }
 
@@ -466,7 +466,7 @@ OpenAPI_pcc_rule_t *OpenAPI_pcc_rule_parseFromJSON(cJSON *pcc_ruleJSON)
                 ogs_error("OpenAPI_pcc_rule_parseFromJSON() failed [ref_alt_qos_params]");
                 goto end;
             }
-            OpenAPI_list_add(ref_alt_qos_paramsList, ogs_strdup(ref_alt_qos_params_local->valuestring));
+            OpenAPI_list_add(ref_alt_qos_paramsList, ogs_strdup_or_assert(ref_alt_qos_params_local->valuestring));
         }
     }
 
@@ -486,7 +486,7 @@ OpenAPI_pcc_rule_t *OpenAPI_pcc_rule_parseFromJSON(cJSON *pcc_ruleJSON)
                 ogs_error("OpenAPI_pcc_rule_parseFromJSON() failed [ref_tc_data]");
                 goto end;
             }
-            OpenAPI_list_add(ref_tc_dataList, ogs_strdup(ref_tc_data_local->valuestring));
+            OpenAPI_list_add(ref_tc_dataList, ogs_strdup_or_assert(ref_tc_data_local->valuestring));
         }
     }
 
@@ -506,7 +506,7 @@ OpenAPI_pcc_rule_t *OpenAPI_pcc_rule_parseFromJSON(cJSON *pcc_ruleJSON)
                 ogs_error("OpenAPI_pcc_rule_parseFromJSON() failed [ref_chg_data]");
                 goto end;
             }
-            OpenAPI_list_add(ref_chg_dataList, ogs_strdup(ref_chg_data_local->valuestring));
+            OpenAPI_list_add(ref_chg_dataList, ogs_strdup_or_assert(ref_chg_data_local->valuestring));
         }
     }
 
@@ -526,7 +526,7 @@ OpenAPI_pcc_rule_t *OpenAPI_pcc_rule_parseFromJSON(cJSON *pcc_ruleJSON)
                 ogs_error("OpenAPI_pcc_rule_parseFromJSON() failed [ref_chg_n3g_data]");
                 goto end;
             }
-            OpenAPI_list_add(ref_chg_n3g_dataList, ogs_strdup(ref_chg_n3g_data_local->valuestring));
+            OpenAPI_list_add(ref_chg_n3g_dataList, ogs_strdup_or_assert(ref_chg_n3g_data_local->valuestring));
         }
     }
 
@@ -546,7 +546,7 @@ OpenAPI_pcc_rule_t *OpenAPI_pcc_rule_parseFromJSON(cJSON *pcc_ruleJSON)
                 ogs_error("OpenAPI_pcc_rule_parseFromJSON() failed [ref_um_data]");
                 goto end;
             }
-            OpenAPI_list_add(ref_um_dataList, ogs_strdup(ref_um_data_local->valuestring));
+            OpenAPI_list_add(ref_um_dataList, ogs_strdup_or_assert(ref_um_data_local->valuestring));
         }
     }
 
@@ -566,7 +566,7 @@ OpenAPI_pcc_rule_t *OpenAPI_pcc_rule_parseFromJSON(cJSON *pcc_ruleJSON)
                 ogs_error("OpenAPI_pcc_rule_parseFromJSON() failed [ref_um_n3g_data]");
                 goto end;
             }
-            OpenAPI_list_add(ref_um_n3g_dataList, ogs_strdup(ref_um_n3g_data_local->valuestring));
+            OpenAPI_list_add(ref_um_n3g_dataList, ogs_strdup_or_assert(ref_um_n3g_data_local->valuestring));
         }
     }
 
@@ -595,7 +595,7 @@ OpenAPI_pcc_rule_t *OpenAPI_pcc_rule_parseFromJSON(cJSON *pcc_ruleJSON)
                 ogs_error("OpenAPI_pcc_rule_parseFromJSON() failed [ref_qos_mon]");
                 goto end;
             }
-            OpenAPI_list_add(ref_qos_monList, ogs_strdup(ref_qos_mon_local->valuestring));
+            OpenAPI_list_add(ref_qos_monList, ogs_strdup_or_assert(ref_qos_mon_local->valuestring));
         }
     }
 
@@ -624,9 +624,9 @@ OpenAPI_pcc_rule_t *OpenAPI_pcc_rule_parseFromJSON(cJSON *pcc_ruleJSON)
 
     pcc_rule_local_var = OpenAPI_pcc_rule_create (
         flow_infos ? flow_infosList : NULL,
-        app_id ? ogs_strdup(app_id->valuestring) : NULL,
+        app_id ? ogs_strdup_or_assert(app_id->valuestring) : NULL,
         cont_ver ? cont_ver->valuedouble : 0,
-        ogs_strdup(pcc_rule_id->valuestring),
+        ogs_strdup_or_assert(pcc_rule_id->valuestring),
         precedence ? precedence->valuedouble : 0,
         af_sig_protocol ? af_sig_protocolVariable : 0,
         app_reloc ? app_reloc->valueint : 0,
@@ -637,7 +637,7 @@ OpenAPI_pcc_rule_t *OpenAPI_pcc_rule_parseFromJSON(cJSON *pcc_ruleJSON)
         ref_chg_n3g_data ? ref_chg_n3g_dataList : NULL,
         ref_um_data ? ref_um_dataList : NULL,
         ref_um_n3g_data ? ref_um_n3g_dataList : NULL,
-        ref_cond_data ? ogs_strdup(ref_cond_data->valuestring) : NULL,
+        ref_cond_data ? ogs_strdup_or_assert(ref_cond_data->valuestring) : NULL,
         ref_qos_mon ? ref_qos_monList : NULL,
         addr_preser_ind ? addr_preser_ind->valueint : 0,
         tscai_input_dl ? tscai_input_dl_local_nonprim : NULL,

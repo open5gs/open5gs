@@ -80,8 +80,8 @@ OpenAPI_app_descriptor_t *OpenAPI_app_descriptor_parseFromJSON(cJSON *app_descri
     }
 
     app_descriptor_local_var = OpenAPI_app_descriptor_create (
-        os_id ? ogs_strdup(os_id->valuestring) : NULL,
-        app_id ? ogs_strdup(app_id->valuestring) : NULL
+        os_id ? ogs_strdup_or_assert(os_id->valuestring) : NULL,
+        app_id ? ogs_strdup_or_assert(app_id->valuestring) : NULL
         );
 
     return app_descriptor_local_var;

@@ -101,9 +101,10 @@ void ausf_ue_state_operational(ogs_fsm_t *s, ausf_event_t *e)
         DEFAULT
             ogs_error("[%s] Invalid HTTP method [%s]",
                     ausf_ue->suci, message->h.method);
-            ogs_sbi_server_send_error(stream,
+            ogs_assert(true ==
+                ogs_sbi_server_send_error(stream,
                     OGS_SBI_HTTP_STATUS_FORBIDDEN, message,
-                    "Invalid HTTP method", message->h.method);
+                    "Invalid HTTP method", message->h.method));
         END
 
         break;
@@ -128,9 +129,10 @@ void ausf_ue_state_operational(ogs_fsm_t *s, ausf_event_t *e)
                     ogs_error("[%s] HTTP response error [%d]",
                         ausf_ue->suci, message->res_status);
                 }
-                ogs_sbi_server_send_error(
-                    stream, message->res_status,
-                    NULL, "HTTP response error", ausf_ue->suci);
+                ogs_assert(true ==
+                    ogs_sbi_server_send_error(
+                        stream, message->res_status,
+                        NULL, "HTTP response error", ausf_ue->suci));
                 break;
             }
 

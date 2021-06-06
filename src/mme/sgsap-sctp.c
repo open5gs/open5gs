@@ -54,6 +54,7 @@ ogs_sock_t *sgsap_client(mme_vlr_t *vlr)
         vlr->addr = &sock->remote_addr;
         vlr->poll = ogs_pollset_add(ogs_app()->pollset,
                 OGS_POLLIN, sock->fd, lksctp_recv_handler, sock);
+        ogs_assert(vlr->poll);
 #endif
         ogs_info("sgsap client() [%s]:%d",
                 OGS_ADDR(vlr->addr, buf), OGS_PORT(vlr->addr));

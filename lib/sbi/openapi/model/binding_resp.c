@@ -110,7 +110,7 @@ OpenAPI_binding_resp_t *OpenAPI_binding_resp_parseFromJSON(cJSON *binding_respJS
     }
 
     binding_resp_local_var = OpenAPI_binding_resp_create (
-        pcf_sm_fqdn ? ogs_strdup(pcf_sm_fqdn->valuestring) : NULL,
+        pcf_sm_fqdn ? ogs_strdup_or_assert(pcf_sm_fqdn->valuestring) : NULL,
         pcf_sm_ip_end_points ? pcf_sm_ip_end_pointsList : NULL
         );
 

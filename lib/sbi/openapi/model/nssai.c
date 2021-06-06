@@ -231,10 +231,10 @@ OpenAPI_nssai_t *OpenAPI_nssai_parseFromJSON(cJSON *nssaiJSON)
     }
 
     nssai_local_var = OpenAPI_nssai_create (
-        supported_features ? ogs_strdup(supported_features->valuestring) : NULL,
+        supported_features ? ogs_strdup_or_assert(supported_features->valuestring) : NULL,
         default_single_nssaisList,
         single_nssais ? single_nssaisList : NULL,
-        provisioning_time ? ogs_strdup(provisioning_time->valuestring) : NULL,
+        provisioning_time ? ogs_strdup_or_assert(provisioning_time->valuestring) : NULL,
         additional_snssai_data ? additional_snssai_dataList : NULL
         );
 

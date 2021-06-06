@@ -330,11 +330,13 @@ void sgsap_handle_paging_request(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
         if (ECM_IDLE(mme_ue)) {
             if (CS_CALL_SERVICE_INDICATOR(mme_ue)) {
                 /* UE will respond Extended Service Request in PS CNDomain*/
-                s1ap_send_paging(mme_ue, S1AP_CNDomain_cs);
+                ogs_assert(OGS_OK ==
+                    s1ap_send_paging(mme_ue, S1AP_CNDomain_cs));
 
             } else if (SMS_SERVICE_INDICATOR(mme_ue)) {
                 /* UE will respond Service Request in PS CNDomain*/
-                s1ap_send_paging(mme_ue, S1AP_CNDomain_ps);
+                ogs_assert(OGS_OK ==
+                    s1ap_send_paging(mme_ue, S1AP_CNDomain_ps));
             } else
                 goto paging_reject;
 

@@ -113,7 +113,7 @@ void af_sbi_close(void)
     ogs_sbi_server_stop_all();
 }
 
-void af_nnrf_nfm_send_nf_register(ogs_sbi_nf_instance_t *nf_instance)
+bool af_nnrf_nfm_send_nf_register(ogs_sbi_nf_instance_t *nf_instance)
 {
     ogs_sbi_request_t *request = NULL;
     ogs_sbi_client_t *client = NULL;
@@ -123,11 +123,9 @@ void af_nnrf_nfm_send_nf_register(ogs_sbi_nf_instance_t *nf_instance)
     ogs_assert(client);
 
     request = af_nnrf_nfm_build_register(nf_instance);
-    if (!request) {
-        ogs_error("af_nnrf_nfm_send_nf_register() failed");
-        return;
-    }
-    ogs_sbi_client_send_request(client, client->cb, request, nf_instance);
+    ogs_expect_or_return_val(request, false);
+    return ogs_sbi_client_send_request(
+            client, client->cb, request, nf_instance);
 }
 
 void af_sbi_send(ogs_sbi_nf_instance_t *nf_instance, ogs_sbi_xact_t *xact)

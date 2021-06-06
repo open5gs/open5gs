@@ -121,7 +121,7 @@ OpenAPI_exposure_data_subscription_t *OpenAPI_exposure_data_subscription_parseFr
             ogs_error("OpenAPI_exposure_data_subscription_parseFromJSON() failed [monitored_resource_uris]");
             goto end;
         }
-        OpenAPI_list_add(monitored_resource_urisList, ogs_strdup(monitored_resource_uris_local->valuestring));
+        OpenAPI_list_add(monitored_resource_urisList, ogs_strdup_or_assert(monitored_resource_uris_local->valuestring));
     }
 
     cJSON *expiry = cJSON_GetObjectItemCaseSensitive(exposure_data_subscriptionJSON, "expiry");
@@ -143,10 +143,10 @@ OpenAPI_exposure_data_subscription_t *OpenAPI_exposure_data_subscription_parseFr
     }
 
     exposure_data_subscription_local_var = OpenAPI_exposure_data_subscription_create (
-        ogs_strdup(notification_uri->valuestring),
+        ogs_strdup_or_assert(notification_uri->valuestring),
         monitored_resource_urisList,
-        expiry ? ogs_strdup(expiry->valuestring) : NULL,
-        supported_features ? ogs_strdup(supported_features->valuestring) : NULL
+        expiry ? ogs_strdup_or_assert(expiry->valuestring) : NULL,
+        supported_features ? ogs_strdup_or_assert(supported_features->valuestring) : NULL
         );
 
     return exposure_data_subscription_local_var;

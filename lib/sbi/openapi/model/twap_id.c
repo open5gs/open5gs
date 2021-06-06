@@ -99,8 +99,8 @@ OpenAPI_twap_id_t *OpenAPI_twap_id_parseFromJSON(cJSON *twap_idJSON)
     }
 
     twap_id_local_var = OpenAPI_twap_id_create (
-        ogs_strdup(ss_id->valuestring),
-        bss_id ? ogs_strdup(bss_id->valuestring) : NULL,
+        ogs_strdup_or_assert(ss_id->valuestring),
+        bss_id ? ogs_strdup_or_assert(bss_id->valuestring) : NULL,
         civic_address ? civic_address->valueint : 0
         );
 

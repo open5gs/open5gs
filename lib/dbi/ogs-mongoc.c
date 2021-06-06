@@ -57,6 +57,7 @@ static char *masked_db_uri(const char *db_uri)
     ogs_assert(db_uri);
 
     tmp = ogs_strdup(db_uri);
+    ogs_assert(tmp);
 
     memset(array, 0, sizeof(array));
     array[0] = strtok_r(tmp, "@", &saveptr);

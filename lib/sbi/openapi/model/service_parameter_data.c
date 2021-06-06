@@ -263,17 +263,17 @@ OpenAPI_service_parameter_data_t *OpenAPI_service_parameter_data_parseFromJSON(c
     }
 
     service_parameter_data_local_var = OpenAPI_service_parameter_data_create (
-        app_id ? ogs_strdup(app_id->valuestring) : NULL,
-        dnn ? ogs_strdup(dnn->valuestring) : NULL,
+        app_id ? ogs_strdup_or_assert(app_id->valuestring) : NULL,
+        dnn ? ogs_strdup_or_assert(dnn->valuestring) : NULL,
         snssai ? snssai_local_nonprim : NULL,
-        inter_group_id ? ogs_strdup(inter_group_id->valuestring) : NULL,
-        supi ? ogs_strdup(supi->valuestring) : NULL,
-        ipv4_addr ? ogs_strdup(ipv4_addr->valuestring) : NULL,
-        ipv6_addr ? ogs_strdup(ipv6_addr->valuestring) : NULL,
-        mac_addr ? ogs_strdup(mac_addr->valuestring) : NULL,
+        inter_group_id ? ogs_strdup_or_assert(inter_group_id->valuestring) : NULL,
+        supi ? ogs_strdup_or_assert(supi->valuestring) : NULL,
+        ipv4_addr ? ogs_strdup_or_assert(ipv4_addr->valuestring) : NULL,
+        ipv6_addr ? ogs_strdup_or_assert(ipv6_addr->valuestring) : NULL,
+        mac_addr ? ogs_strdup_or_assert(mac_addr->valuestring) : NULL,
         param_over_pc5 ? param_over_pc5_local_nonprim : NULL,
         param_over_uu ? param_over_uu_local_nonprim : NULL,
-        supp_feat ? ogs_strdup(supp_feat->valuestring) : NULL
+        supp_feat ? ogs_strdup_or_assert(supp_feat->valuestring) : NULL
         );
 
     return service_parameter_data_local_var;

@@ -82,7 +82,7 @@ OpenAPI_g_nb_id_t *OpenAPI_g_nb_id_parseFromJSON(cJSON *g_nb_idJSON)
 
     g_nb_id_local_var = OpenAPI_g_nb_id_create (
         bit_length->valuedouble,
-        ogs_strdup(g_nb_value->valuestring)
+        ogs_strdup_or_assert(g_nb_value->valuestring)
         );
 
     return g_nb_id_local_var;

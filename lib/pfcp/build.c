@@ -59,17 +59,18 @@ ogs_pkbuf_t *ogs_pfcp_cp_build_association_setup_request(uint8_t type)
     ogs_pfcp_association_setup_request_t *req = NULL;
 
     ogs_pfcp_node_id_t node_id;
-    int node_id_len = 0;
+    int node_id_len = 0, rv;
 
     ogs_debug("Association Setup Request");
 
     req = &pfcp_message.pfcp_association_setup_request;
     memset(&pfcp_message, 0, sizeof(ogs_pfcp_message_t));
 
-    ogs_pfcp_sockaddr_to_node_id(
+    rv = ogs_pfcp_sockaddr_to_node_id(
             ogs_pfcp_self()->pfcp_addr, ogs_pfcp_self()->pfcp_addr6,
             ogs_app()->parameter.prefer_ipv4,
             &node_id, &node_id_len);
+    ogs_expect_or_return_val(rv == OGS_OK, NULL);
     req->node_id.presence = 1;
     req->node_id.data = &node_id;
     req->node_id.len = node_id_len;
@@ -91,17 +92,18 @@ ogs_pkbuf_t *ogs_pfcp_cp_build_association_setup_response(uint8_t type,
     ogs_pfcp_association_setup_response_t *rsp = NULL;
 
     ogs_pfcp_node_id_t node_id;
-    int node_id_len = 0;
+    int node_id_len = 0, rv;
 
     ogs_debug("Association Setup Response");
 
     rsp = &pfcp_message.pfcp_association_setup_response;
     memset(&pfcp_message, 0, sizeof(ogs_pfcp_message_t));
 
-    ogs_pfcp_sockaddr_to_node_id(
+    rv = ogs_pfcp_sockaddr_to_node_id(
             ogs_pfcp_self()->pfcp_addr, ogs_pfcp_self()->pfcp_addr6,
             ogs_app()->parameter.prefer_ipv4,
             &node_id, &node_id_len);
+    ogs_expect_or_return_val(rv == OGS_OK, NULL);
     rsp->node_id.presence = 1;
     rsp->node_id.data = &node_id;
     rsp->node_id.len = node_id_len;
@@ -130,17 +132,18 @@ ogs_pkbuf_t *ogs_pfcp_up_build_association_setup_request(uint8_t type)
     ogs_gtpu_resource_t *resource = NULL;
     char infobuf[OGS_MAX_NUM_OF_GTPU_RESOURCE]
                 [OGS_MAX_USER_PLANE_IP_RESOURCE_INFO_LEN];
-    int i = 0;
+    int i = 0, rv;
 
     ogs_debug("Association Setup Request");
 
     req = &pfcp_message.pfcp_association_setup_request;
     memset(&pfcp_message, 0, sizeof(ogs_pfcp_message_t));
 
-    ogs_pfcp_sockaddr_to_node_id(
+    rv = ogs_pfcp_sockaddr_to_node_id(
             ogs_pfcp_self()->pfcp_addr, ogs_pfcp_self()->pfcp_addr6,
             ogs_app()->parameter.prefer_ipv4,
             &node_id, &node_id_len);
+    ogs_expect_or_return_val(rv == OGS_OK, NULL);
     req->node_id.presence = 1;
     req->node_id.data = &node_id;
     req->node_id.len = node_id_len;
@@ -185,17 +188,18 @@ ogs_pkbuf_t *ogs_pfcp_up_build_association_setup_response(uint8_t type,
     ogs_gtpu_resource_t *resource = NULL;
     char infobuf[OGS_MAX_NUM_OF_GTPU_RESOURCE]
                 [OGS_MAX_USER_PLANE_IP_RESOURCE_INFO_LEN];
-    int i = 0;
+    int i = 0, rv;
 
     ogs_debug("Association Setup Response");
 
     rsp = &pfcp_message.pfcp_association_setup_response;
     memset(&pfcp_message, 0, sizeof(ogs_pfcp_message_t));
 
-    ogs_pfcp_sockaddr_to_node_id(
+    rv = ogs_pfcp_sockaddr_to_node_id(
             ogs_pfcp_self()->pfcp_addr, ogs_pfcp_self()->pfcp_addr6,
             ogs_app()->parameter.prefer_ipv4,
             &node_id, &node_id_len);
+    ogs_expect_or_return_val(rv == OGS_OK, NULL);
     rsp->node_id.presence = 1;
     rsp->node_id.data = &node_id;
     rsp->node_id.len = node_id_len;
@@ -299,6 +303,7 @@ void ogs_pfcp_build_create_pdr(
 
         message->pdi.sdf_filter[j].presence = 1;
         pdrbuf[i].sdf_filter[j] = ogs_calloc(1, len);
+        ogs_assert(pdrbuf[i].sdf_filter[j]);
         ogs_pfcp_build_sdf_filter(&message->pdi.sdf_filter[j],
                 &pfcp_sdf_filter[j], pdrbuf[i].sdf_filter[j], len);
     }
@@ -404,6 +409,7 @@ void ogs_pfcp_build_update_pdr(
 
         message->pdi.sdf_filter[j].presence = 1;
         pdrbuf[i].sdf_filter[j] = ogs_calloc(1, len);
+        ogs_assert(pdrbuf[i].sdf_filter[j]);
         ogs_pfcp_build_sdf_filter(&message->pdi.sdf_filter[j],
                 &pfcp_sdf_filter[j], pdrbuf[i].sdf_filter[j], len);
     }

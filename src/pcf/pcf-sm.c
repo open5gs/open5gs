@@ -75,15 +75,19 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
         if (rv != OGS_OK) {
             /* 'message' buffer is released in ogs_sbi_parse_request() */
             ogs_error("cannot parse HTTP message");
-            ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                    NULL, "cannot parse HTTP message", NULL);
+            ogs_assert(true ==
+                ogs_sbi_server_send_error(
+                    stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                    NULL, "cannot parse HTTP message", NULL));
             break;
         }
 
         if (strcmp(message.h.api.version, OGS_SBI_API_V1) != 0) {
             ogs_error("Not supported version [%s]", message.h.api.version);
-            ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                    &message, "Not supported version", NULL);
+            ogs_assert(true ==
+                ogs_sbi_server_send_error(
+                    stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                    &message, "Not supported version", NULL));
             ogs_sbi_message_free(&message);
             break;
         }
@@ -100,19 +104,21 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
 
                 DEFAULT
                     ogs_error("Invalid HTTP method [%s]", message.h.method);
-                    ogs_sbi_server_send_error(stream,
+                    ogs_assert(true ==
+                        ogs_sbi_server_send_error(stream,
                             OGS_SBI_HTTP_STATUS_FORBIDDEN, &message,
-                            "Invalid HTTP method", message.h.method);
+                            "Invalid HTTP method", message.h.method));
                 END
                 break;
 
             DEFAULT
                 ogs_error("Invalid resource name [%s]",
                         message.h.resource.component[0]);
-                ogs_sbi_server_send_error(stream,
+                ogs_assert(true ==
+                    ogs_sbi_server_send_error(stream,
                         OGS_SBI_HTTP_STATUS_BAD_REQUEST, &message,
                         "Unknown resource name",
-                        message.h.resource.component[0]);
+                        message.h.resource.component[0]));
             END
             break;
 
@@ -136,9 +142,10 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
 
             if (!pcf_ue) {
                 ogs_error("Not found [%s]", message.h.method);
-                ogs_sbi_server_send_error(stream,
+                ogs_assert(true ==
+                    ogs_sbi_server_send_error(stream,
                     OGS_SBI_HTTP_STATUS_NOT_FOUND,
-                    &message, "Not found", message.h.method);
+                    &message, "Not found", message.h.method));
                 break;
             }
 
@@ -186,9 +193,10 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
 
             if (!sess) {
                 ogs_error("Not found [%s]", message.h.uri);
-                ogs_sbi_server_send_error(stream,
-                    OGS_SBI_HTTP_STATUS_NOT_FOUND,
-                    &message, "Not found", message.h.uri);
+                ogs_assert(true ==
+                    ogs_sbi_server_send_error(stream,
+                        OGS_SBI_HTTP_STATUS_NOT_FOUND,
+                        &message, "Not found", message.h.uri));
                 break;
             }
 
@@ -233,9 +241,10 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
 
             if (!sess) {
                 ogs_error("Not found [%s]", message.h.uri);
-                ogs_sbi_server_send_error(stream,
-                    OGS_SBI_HTTP_STATUS_NOT_FOUND,
-                    &message, "Not found", message.h.uri);
+                ogs_assert(true ==
+                    ogs_sbi_server_send_error(stream,
+                        OGS_SBI_HTTP_STATUS_NOT_FOUND,
+                        &message, "Not found", message.h.uri));
                 break;
             }
 
@@ -253,9 +262,10 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
 
         DEFAULT
             ogs_error("Invalid API name [%s]", message.h.service.name);
-            ogs_sbi_server_send_error(stream,
+            ogs_assert(true ==
+                ogs_sbi_server_send_error(stream,
                     OGS_SBI_HTTP_STATUS_BAD_REQUEST, &message,
-                    "Invalid API name", message.h.service.name);
+                    "Invalid API name", message.h.service.name));
         END
 
         /* In lib/sbi/server.c, notify_completed() releases 'request' buffer. */
@@ -511,9 +521,10 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
             subscription = e->sbi.data;
             ogs_assert(subscription);
 
-            ogs_nnrf_nfm_send_nf_status_subscribe(subscription->client,
+            ogs_assert(true ==
+                ogs_nnrf_nfm_send_nf_status_subscribe(subscription->client,
                     pcf_self()->nf_type, subscription->req_nf_instance_id,
-                    subscription->subscr_cond.nf_type);
+                    subscription->subscr_cond.nf_type));
 
             ogs_info("[%s] Subscription validity expired", subscription->id);
             ogs_sbi_subscription_remove(subscription);
@@ -556,9 +567,10 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
             }
 
             ogs_error("Cannot receive SBI message");
-            ogs_sbi_server_send_error(stream,
+            ogs_assert(true ==
+                ogs_sbi_server_send_error(stream,
                     OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT, NULL,
-                    "Cannot receive SBI message", NULL);
+                    "Cannot receive SBI message", NULL));
             break;
 
         default:

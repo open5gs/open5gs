@@ -102,7 +102,7 @@ OpenAPI_sm_policy_dnn_data_patch_t *OpenAPI_sm_policy_dnn_data_patch_parseFromJS
     }
 
     sm_policy_dnn_data_patch_local_var = OpenAPI_sm_policy_dnn_data_patch_create (
-        ogs_strdup(dnn->valuestring),
+        ogs_strdup_or_assert(dnn->valuestring),
         bdt_ref_ids ? bdt_ref_idsList : NULL
         );
 

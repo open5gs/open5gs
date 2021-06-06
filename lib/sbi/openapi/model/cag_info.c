@@ -90,7 +90,7 @@ OpenAPI_cag_info_t *OpenAPI_cag_info_parseFromJSON(cJSON *cag_infoJSON)
             ogs_error("OpenAPI_cag_info_parseFromJSON() failed [allowed_cag_list]");
             goto end;
         }
-        OpenAPI_list_add(allowed_cag_listList, ogs_strdup(allowed_cag_list_local->valuestring));
+        OpenAPI_list_add(allowed_cag_listList, ogs_strdup_or_assert(allowed_cag_list_local->valuestring));
     }
 
     cJSON *cag_only_indicator = cJSON_GetObjectItemCaseSensitive(cag_infoJSON, "cagOnlyIndicator");

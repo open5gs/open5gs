@@ -45,6 +45,7 @@ void sgwu_context_init(void)
     ogs_pool_init(&sgwu_sess_pool, ogs_app()->pool.sess);
 
     self.sess_hash = ogs_hash_make();
+    ogs_assert(self.sess_hash);
 
     context_initialized = 1;
 }

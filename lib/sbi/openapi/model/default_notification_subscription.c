@@ -170,7 +170,7 @@ OpenAPI_default_notification_subscription_t *OpenAPI_default_notification_subscr
                 ogs_error("OpenAPI_default_notification_subscription_parseFromJSON() failed [versions]");
                 goto end;
             }
-            OpenAPI_list_add(versionsList, ogs_strdup(versions_local->valuestring));
+            OpenAPI_list_add(versionsList, ogs_strdup_or_assert(versions_local->valuestring));
         }
     }
 
@@ -185,11 +185,11 @@ OpenAPI_default_notification_subscription_t *OpenAPI_default_notification_subscr
 
     default_notification_subscription_local_var = OpenAPI_default_notification_subscription_create (
         notification_typeVariable,
-        ogs_strdup(callback_uri->valuestring),
+        ogs_strdup_or_assert(callback_uri->valuestring),
         n1_message_class ? n1_message_classVariable : 0,
         n2_information_class ? n2_information_classVariable : 0,
         versions ? versionsList : NULL,
-        binding ? ogs_strdup(binding->valuestring) : NULL
+        binding ? ogs_strdup_or_assert(binding->valuestring) : NULL
         );
 
     return default_notification_subscription_local_var;

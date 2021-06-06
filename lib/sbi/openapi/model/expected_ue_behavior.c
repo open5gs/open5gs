@@ -113,7 +113,7 @@ OpenAPI_expected_ue_behavior_t *OpenAPI_expected_ue_behavior_parseFromJSON(cJSON
 
     expected_ue_behavior_local_var = OpenAPI_expected_ue_behavior_create (
         exp_move_trajectoryList,
-        ogs_strdup(validity_time->valuestring)
+        ogs_strdup_or_assert(validity_time->valuestring)
         );
 
     return expected_ue_behavior_local_var;

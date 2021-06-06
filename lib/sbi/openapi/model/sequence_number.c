@@ -160,7 +160,7 @@ OpenAPI_sequence_number_t *OpenAPI_sequence_number_parseFromJSON(cJSON *sequence
 
     sequence_number_local_var = OpenAPI_sequence_number_create (
         sqn_scheme ? sqn_schemeVariable : 0,
-        sqn ? ogs_strdup(sqn->valuestring) : NULL,
+        sqn ? ogs_strdup_or_assert(sqn->valuestring) : NULL,
         last_indexes ? last_indexesList : NULL,
         ind_length ? ind_length->valuedouble : 0,
         dif_sign ? dif_signVariable : 0

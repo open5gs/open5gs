@@ -6,6 +6,7 @@
 OpenAPI_object_t *OpenAPI_object_create(void)
 {
     OpenAPI_object_t *object = ogs_malloc(sizeof(OpenAPI_object_t));
+    ogs_assert(object);
 
     return object;
 }

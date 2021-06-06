@@ -257,7 +257,7 @@ OpenAPI_udr_info_t *OpenAPI_udr_info_parseFromJSON(cJSON *udr_infoJSON)
     }
 
     udr_info_local_var = OpenAPI_udr_info_create (
-        group_id ? ogs_strdup(group_id->valuestring) : NULL,
+        group_id ? ogs_strdup_or_assert(group_id->valuestring) : NULL,
         supi_ranges ? supi_rangesList : NULL,
         gpsi_ranges ? gpsi_rangesList : NULL,
         external_group_identifiers_ranges ? external_group_identifiers_rangesList : NULL,

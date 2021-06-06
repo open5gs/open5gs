@@ -185,7 +185,7 @@ OpenAPI_subscription_data_subscriptions_t *OpenAPI_subscription_data_subscriptio
             ogs_error("OpenAPI_subscription_data_subscriptions_parseFromJSON() failed [monitored_resource_uris]");
             goto end;
         }
-        OpenAPI_list_add(monitored_resource_urisList, ogs_strdup(monitored_resource_uris_local->valuestring));
+        OpenAPI_list_add(monitored_resource_urisList, ogs_strdup_or_assert(monitored_resource_uris_local->valuestring));
     }
 
     cJSON *expiry = cJSON_GetObjectItemCaseSensitive(subscription_data_subscriptionsJSON, "expiry");
@@ -223,14 +223,14 @@ OpenAPI_subscription_data_subscriptions_t *OpenAPI_subscription_data_subscriptio
     }
 
     subscription_data_subscriptions_local_var = OpenAPI_subscription_data_subscriptions_create (
-        ue_id ? ogs_strdup(ue_id->valuestring) : NULL,
-        ogs_strdup(callback_reference->valuestring),
-        original_callback_reference ? ogs_strdup(original_callback_reference->valuestring) : NULL,
+        ue_id ? ogs_strdup_or_assert(ue_id->valuestring) : NULL,
+        ogs_strdup_or_assert(callback_reference->valuestring),
+        original_callback_reference ? ogs_strdup_or_assert(original_callback_reference->valuestring) : NULL,
         monitored_resource_urisList,
-        expiry ? ogs_strdup(expiry->valuestring) : NULL,
+        expiry ? ogs_strdup_or_assert(expiry->valuestring) : NULL,
         sdm_subscription ? sdm_subscription_local_nonprim : NULL,
-        subscription_id ? ogs_strdup(subscription_id->valuestring) : NULL,
-        supported_features ? ogs_strdup(supported_features->valuestring) : NULL
+        subscription_id ? ogs_strdup_or_assert(subscription_id->valuestring) : NULL,
+        supported_features ? ogs_strdup_or_assert(supported_features->valuestring) : NULL
         );
 
     return subscription_data_subscriptions_local_var;

@@ -112,7 +112,7 @@ OpenAPI_pc5_qo_s_para_t *OpenAPI_pc5_qo_s_para_parseFromJSON(cJSON *pc5_qo_s_par
 
     pc5_qo_s_para_local_var = OpenAPI_pc5_qo_s_para_create (
         pc5_qos_flow_listList,
-        pc5_link_ambr ? ogs_strdup(pc5_link_ambr->valuestring) : NULL
+        pc5_link_ambr ? ogs_strdup_or_assert(pc5_link_ambr->valuestring) : NULL
         );
 
     return pc5_qo_s_para_local_var;

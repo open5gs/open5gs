@@ -80,7 +80,7 @@ OpenAPI_tsn_port_identifier_t *OpenAPI_tsn_port_identifier_parseFromJSON(cJSON *
     }
 
     tsn_port_identifier_local_var = OpenAPI_tsn_port_identifier_create (
-        ogs_strdup(port_mac->valuestring),
+        ogs_strdup_or_assert(port_mac->valuestring),
         port_number ? port_number->valuedouble : 0
         );
 

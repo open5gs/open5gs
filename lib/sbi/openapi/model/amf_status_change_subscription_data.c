@@ -111,7 +111,7 @@ OpenAPI_amf_status_change_subscription_data_t *OpenAPI_amf_status_change_subscri
     }
 
     amf_status_change_subscription_data_local_var = OpenAPI_amf_status_change_subscription_data_create (
-        ogs_strdup(amf_status_uri->valuestring),
+        ogs_strdup_or_assert(amf_status_uri->valuestring),
         guami_list ? guami_listList : NULL
         );
 

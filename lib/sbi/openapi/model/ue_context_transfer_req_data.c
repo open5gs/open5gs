@@ -153,7 +153,7 @@ OpenAPI_ue_context_transfer_req_data_t *OpenAPI_ue_context_transfer_req_data_par
         access_typeVariable,
         plmn_id ? plmn_id_local_nonprim : NULL,
         reg_request ? reg_request_local_nonprim : NULL,
-        supported_features ? ogs_strdup(supported_features->valuestring) : NULL
+        supported_features ? ogs_strdup_or_assert(supported_features->valuestring) : NULL
         );
 
     return ue_context_transfer_req_data_local_var;

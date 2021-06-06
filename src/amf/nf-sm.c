@@ -109,7 +109,7 @@ void amf_nf_state_will_register(ogs_fsm_t *s, amf_event_t *e)
             ogs_timer_start(nf_instance->t_registration_interval,
                 ogs_app()->time.message.sbi.nf_register_interval);
 
-        amf_nnrf_nfm_send_nf_register(nf_instance);
+        ogs_assert(true == amf_nnrf_nfm_send_nf_register(nf_instance));
         break;
 
     case OGS_FSM_EXIT_SIG:
@@ -164,7 +164,7 @@ void amf_nf_state_will_register(ogs_fsm_t *s, amf_event_t *e)
                 ogs_timer_start(nf_instance->t_registration_interval,
                     ogs_app()->time.message.sbi.nf_register_interval);
 
-            amf_nnrf_nfm_send_nf_register(nf_instance);
+            ogs_assert(true == amf_nnrf_nfm_send_nf_register(nf_instance));
             break;
 
         default:
@@ -210,16 +210,21 @@ void amf_nf_state_registered(ogs_fsm_t *s, amf_event_t *e)
                         ogs_app()->time.nf_instance.no_heartbeat_margin));
             }
 
-            ogs_nnrf_nfm_send_nf_status_subscribe(client,
-                    amf_self()->nf_type, nf_instance->id, OpenAPI_nf_type_AUSF);
-            ogs_nnrf_nfm_send_nf_status_subscribe(client,
-                    amf_self()->nf_type, nf_instance->id, OpenAPI_nf_type_UDM);
-            ogs_nnrf_nfm_send_nf_status_subscribe(client,
-                    amf_self()->nf_type, nf_instance->id, OpenAPI_nf_type_PCF);
-            ogs_nnrf_nfm_send_nf_status_subscribe(client,
-                    amf_self()->nf_type, nf_instance->id, OpenAPI_nf_type_SMF);
-            ogs_nnrf_nfm_send_nf_status_subscribe(client,
-                    amf_self()->nf_type, nf_instance->id, OpenAPI_nf_type_NSSF);
+            ogs_assert(true ==
+                ogs_nnrf_nfm_send_nf_status_subscribe(client,
+                amf_self()->nf_type, nf_instance->id, OpenAPI_nf_type_AUSF));
+            ogs_assert(true ==
+                ogs_nnrf_nfm_send_nf_status_subscribe(client,
+                amf_self()->nf_type, nf_instance->id, OpenAPI_nf_type_UDM));
+            ogs_assert(true ==
+                ogs_nnrf_nfm_send_nf_status_subscribe(client,
+                amf_self()->nf_type, nf_instance->id, OpenAPI_nf_type_PCF));
+            ogs_assert(true ==
+                ogs_nnrf_nfm_send_nf_status_subscribe(client,
+                amf_self()->nf_type, nf_instance->id, OpenAPI_nf_type_SMF));
+            ogs_assert(true ==
+                ogs_nnrf_nfm_send_nf_status_subscribe(client,
+                amf_self()->nf_type, nf_instance->id, OpenAPI_nf_type_NSSF));
         }
 
         break;
@@ -234,7 +239,8 @@ void amf_nf_state_registered(ogs_fsm_t *s, amf_event_t *e)
             }
 
             if (!OGS_FSM_CHECK(&nf_instance->sm, amf_nf_state_exception)) {
-                ogs_nnrf_nfm_send_nf_de_register(nf_instance);
+                ogs_assert(true ==
+                        ogs_nnrf_nfm_send_nf_de_register(nf_instance));
             }
         }
         break;
@@ -284,7 +290,7 @@ void amf_nf_state_registered(ogs_fsm_t *s, amf_event_t *e)
                 ogs_timer_start(nf_instance->t_heartbeat_interval,
                     ogs_time_from_sec(nf_instance->time.heartbeat_interval));
 
-            ogs_nnrf_nfm_send_nf_update(nf_instance);
+            ogs_assert(true == ogs_nnrf_nfm_send_nf_update(nf_instance));
             break;
 
         case AMF_TIMER_NF_INSTANCE_NO_HEARTBEAT:

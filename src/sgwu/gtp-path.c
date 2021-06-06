@@ -71,6 +71,7 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
 
         ogs_debug("[RECV] Echo Request from [%s]", OGS_ADDR(&from, buf));
         echo_rsp = ogs_gtp_handle_echo_req(pkbuf);
+        ogs_expect(echo_rsp);
         if (echo_rsp) {
             ssize_t sent;
 
@@ -133,7 +134,8 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
 
         far = ogs_pfcp_far_find_by_error_indication(pkbuf);
         if (far) {
-            ogs_pfcp_up_handle_error_indication(far, &report);
+            ogs_assert(true ==
+                ogs_pfcp_up_handle_error_indication(far, &report));
 
             if (report.type.error_indication_report) {
                 ogs_assert(far->sess);
@@ -206,7 +208,7 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
         }
 
         ogs_assert(pdr);
-        ogs_pfcp_up_handle_pdr(pdr, pkbuf, &report);
+        ogs_assert(true == ogs_pfcp_up_handle_pdr(pdr, pkbuf, &report));
 
         if (report.type.downlink_data_report) {
             ogs_assert(pdr->sess);

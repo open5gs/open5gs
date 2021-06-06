@@ -132,9 +132,9 @@ OpenAPI_smf_selection_subscription_data_t *OpenAPI_smf_selection_subscription_da
     }
 
     smf_selection_subscription_data_local_var = OpenAPI_smf_selection_subscription_data_create (
-        supported_features ? ogs_strdup(supported_features->valuestring) : NULL,
+        supported_features ? ogs_strdup_or_assert(supported_features->valuestring) : NULL,
         subscribed_snssai_infos ? subscribed_snssai_infosList : NULL,
-        shared_snssai_infos_id ? ogs_strdup(shared_snssai_infos_id->valuestring) : NULL
+        shared_snssai_infos_id ? ogs_strdup_or_assert(shared_snssai_infos_id->valuestring) : NULL
         );
 
     return smf_selection_subscription_data_local_var;

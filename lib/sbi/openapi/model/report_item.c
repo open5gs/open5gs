@@ -62,7 +62,7 @@ OpenAPI_report_item_t *OpenAPI_report_item_parseFromJSON(cJSON *report_itemJSON)
     }
 
     report_item_local_var = OpenAPI_report_item_create (
-        ogs_strdup(path->valuestring)
+        ogs_strdup_or_assert(path->valuestring)
         );
 
     return report_item_local_var;

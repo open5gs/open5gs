@@ -267,16 +267,16 @@ OpenAPI_n3ga_location_t *OpenAPI_n3ga_location_parseFromJSON(cJSON *n3ga_locatio
 
     n3ga_location_local_var = OpenAPI_n3ga_location_create (
         n3gpp_tai ? n3gpp_tai_local_nonprim : NULL,
-        n3_iwf_id ? ogs_strdup(n3_iwf_id->valuestring) : NULL,
-        ue_ipv4_addr ? ogs_strdup(ue_ipv4_addr->valuestring) : NULL,
-        ue_ipv6_addr ? ogs_strdup(ue_ipv6_addr->valuestring) : NULL,
+        n3_iwf_id ? ogs_strdup_or_assert(n3_iwf_id->valuestring) : NULL,
+        ue_ipv4_addr ? ogs_strdup_or_assert(ue_ipv4_addr->valuestring) : NULL,
+        ue_ipv6_addr ? ogs_strdup_or_assert(ue_ipv6_addr->valuestring) : NULL,
         port_number ? port_number->valuedouble : 0,
         tnap_id ? tnap_id_local_nonprim : NULL,
         twap_id ? twap_id_local_nonprim : NULL,
         hfc_node_id ? hfc_node_id_local_nonprim : NULL,
         gli ? gli->valueint : 0,
         w5gban_line_type ? w5gban_line_typeVariable : 0,
-        gci ? ogs_strdup(gci->valuestring) : NULL
+        gci ? ogs_strdup_or_assert(gci->valuestring) : NULL
         );
 
     return n3ga_location_local_var;

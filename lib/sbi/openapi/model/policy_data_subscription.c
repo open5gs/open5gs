@@ -166,7 +166,7 @@ OpenAPI_policy_data_subscription_t *OpenAPI_policy_data_subscription_parseFromJS
             ogs_error("OpenAPI_policy_data_subscription_parseFromJSON() failed [monitored_resource_uris]");
             goto end;
         }
-        OpenAPI_list_add(monitored_resource_urisList, ogs_strdup(monitored_resource_uris_local->valuestring));
+        OpenAPI_list_add(monitored_resource_urisList, ogs_strdup_or_assert(monitored_resource_uris_local->valuestring));
     }
 
     cJSON *mon_res_items = cJSON_GetObjectItemCaseSensitive(policy_data_subscriptionJSON, "monResItems");
@@ -211,12 +211,12 @@ OpenAPI_policy_data_subscription_t *OpenAPI_policy_data_subscription_parseFromJS
     }
 
     policy_data_subscription_local_var = OpenAPI_policy_data_subscription_create (
-        ogs_strdup(notification_uri->valuestring),
-        notif_id ? ogs_strdup(notif_id->valuestring) : NULL,
+        ogs_strdup_or_assert(notification_uri->valuestring),
+        notif_id ? ogs_strdup_or_assert(notif_id->valuestring) : NULL,
         monitored_resource_urisList,
         mon_res_items ? mon_res_itemsList : NULL,
-        expiry ? ogs_strdup(expiry->valuestring) : NULL,
-        supported_features ? ogs_strdup(supported_features->valuestring) : NULL
+        expiry ? ogs_strdup_or_assert(expiry->valuestring) : NULL,
+        supported_features ? ogs_strdup_or_assert(supported_features->valuestring) : NULL
         );
 
     return policy_data_subscription_local_var;

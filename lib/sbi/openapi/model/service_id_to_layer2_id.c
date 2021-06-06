@@ -89,7 +89,7 @@ OpenAPI_service_id_to_layer2_id_t *OpenAPI_service_id_to_layer2_id_parseFromJSON
             ogs_error("OpenAPI_service_id_to_layer2_id_parseFromJSON() failed [ser_ids]");
             goto end;
         }
-        OpenAPI_list_add(ser_idsList, ogs_strdup(ser_ids_local->valuestring));
+        OpenAPI_list_add(ser_idsList, ogs_strdup_or_assert(ser_ids_local->valuestring));
     }
 
     cJSON *des_layer2_id = cJSON_GetObjectItemCaseSensitive(service_id_to_layer2_idJSON, "desLayer2Id");
@@ -106,7 +106,7 @@ OpenAPI_service_id_to_layer2_id_t *OpenAPI_service_id_to_layer2_id_parseFromJSON
 
     service_id_to_layer2_id_local_var = OpenAPI_service_id_to_layer2_id_create (
         ser_idsList,
-        ogs_strdup(des_layer2_id->valuestring)
+        ogs_strdup_or_assert(des_layer2_id->valuestring)
         );
 
     return service_id_to_layer2_id_local_var;

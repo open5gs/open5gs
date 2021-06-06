@@ -287,7 +287,7 @@ OpenAPI_policy_update_t *OpenAPI_policy_update_parseFromJSON(cJSON *policy_updat
     }
 
     policy_update_local_var = OpenAPI_policy_update_create (
-        ogs_strdup(resource_uri->valuestring),
+        ogs_strdup_or_assert(resource_uri->valuestring),
         triggers ? triggersList : NULL,
         serv_area_res ? serv_area_res_local_nonprim : NULL,
         wl_serv_area_res ? wl_serv_area_res_local_nonprim : NULL,

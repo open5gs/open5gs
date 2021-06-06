@@ -225,7 +225,7 @@ int sgwc_pfcp_send_session_establishment_request(
     xact->assoc_xact = gtp_xact;
     if (gtpbuf) {
         xact->gtpbuf = ogs_pkbuf_copy(gtpbuf);
-        ogs_assert(xact->gtpbuf);
+        ogs_expect_or_return_val(xact->gtpbuf, OGS_ERROR);
     }
 
     rv = ogs_pfcp_xact_commit(xact);
@@ -259,7 +259,7 @@ int sgwc_pfcp_send_sess_modification_request(
     xact->modify_flags = flags | OGS_PFCP_MODIFY_SESSION;
     if (gtpbuf) {
         xact->gtpbuf = ogs_pkbuf_copy(gtpbuf);
-        ogs_assert(xact->gtpbuf);
+        ogs_expect_or_return_val(xact->gtpbuf, OGS_ERROR);
     }
 
     rv = ogs_pfcp_xact_commit(xact);
@@ -296,7 +296,7 @@ int sgwc_pfcp_send_bearer_modification_request(
     xact->modify_flags = flags;
     if (gtpbuf) {
         xact->gtpbuf = ogs_pkbuf_copy(gtpbuf);
-        ogs_assert(xact->gtpbuf);
+        ogs_expect_or_return_val(xact->gtpbuf, OGS_ERROR);
     }
 
     rv = ogs_pfcp_xact_commit(xact);
@@ -328,7 +328,7 @@ int sgwc_pfcp_send_session_deletion_request(
     xact->assoc_xact = gtp_xact;
     if (gtpbuf) {
         xact->gtpbuf = ogs_pkbuf_copy(gtpbuf);
-        ogs_assert(xact->gtpbuf);
+        ogs_expect_or_return_val(xact->gtpbuf, OGS_ERROR);
     }
 
     rv = ogs_pfcp_xact_commit(xact);

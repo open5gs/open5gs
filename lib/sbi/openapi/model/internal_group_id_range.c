@@ -99,9 +99,9 @@ OpenAPI_internal_group_id_range_t *OpenAPI_internal_group_id_range_parseFromJSON
     }
 
     internal_group_id_range_local_var = OpenAPI_internal_group_id_range_create (
-        start ? ogs_strdup(start->valuestring) : NULL,
-        end ? ogs_strdup(end->valuestring) : NULL,
-        pattern ? ogs_strdup(pattern->valuestring) : NULL
+        start ? ogs_strdup_or_assert(start->valuestring) : NULL,
+        end ? ogs_strdup_or_assert(end->valuestring) : NULL,
+        pattern ? ogs_strdup_or_assert(pattern->valuestring) : NULL
         );
 
     return internal_group_id_range_local_var;

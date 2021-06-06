@@ -45,8 +45,11 @@ void upf_context_init(void)
     ogs_pool_init(&upf_sess_pool, ogs_app()->pool.sess);
 
     self.sess_hash = ogs_hash_make();
+    ogs_assert(self.sess_hash);
     self.ipv4_hash = ogs_hash_make();
+    ogs_assert(self.ipv4_hash);
     self.ipv6_hash = ogs_hash_make();
+    ogs_assert(self.ipv6_hash);
 
     context_initialized = 1;
 }

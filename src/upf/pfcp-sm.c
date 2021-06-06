@@ -189,12 +189,14 @@ void upf_pfcp_state_associated(ogs_fsm_t *s, upf_event_t *e)
 
         switch (message->h.type) {
         case OGS_PFCP_HEARTBEAT_REQUEST_TYPE:
-            ogs_pfcp_handle_heartbeat_request(node, xact,
-                    &message->pfcp_heartbeat_request);
+            ogs_assert(true ==
+                ogs_pfcp_handle_heartbeat_request(node, xact,
+                    &message->pfcp_heartbeat_request));
             break;
         case OGS_PFCP_HEARTBEAT_RESPONSE_TYPE:
-            ogs_pfcp_handle_heartbeat_response(node, xact,
-                    &message->pfcp_heartbeat_response);
+            ogs_assert(true ==
+                ogs_pfcp_handle_heartbeat_response(node, xact,
+                    &message->pfcp_heartbeat_response));
             break;
         case OGS_PFCP_ASSOCIATION_SETUP_REQUEST_TYPE:
             ogs_warn("PFCP[REQ] has already been associated");
@@ -241,7 +243,8 @@ void upf_pfcp_state_associated(ogs_fsm_t *s, upf_event_t *e)
             node = e->pfcp_node;
             ogs_assert(node);
 
-            ogs_pfcp_send_heartbeat_request(node, node_timeout);
+            ogs_assert(OGS_OK ==
+                ogs_pfcp_send_heartbeat_request(node, node_timeout));
             break;
         default:
             ogs_error("Unknown timer[%s:%d]",

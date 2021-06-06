@@ -135,7 +135,7 @@ OpenAPI_small_data_rate_status_t *OpenAPI_small_data_rate_status_parseFromJSON(c
     small_data_rate_status_local_var = OpenAPI_small_data_rate_status_create (
         remain_packets_ul ? remain_packets_ul->valuedouble : 0,
         remain_packets_dl ? remain_packets_dl->valuedouble : 0,
-        validity_time ? ogs_strdup(validity_time->valuestring) : NULL,
+        validity_time ? ogs_strdup_or_assert(validity_time->valuestring) : NULL,
         remain_ex_reports_ul ? remain_ex_reports_ul->valuedouble : 0,
         remain_ex_reports_dl ? remain_ex_reports_dl->valuedouble : 0
         );

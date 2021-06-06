@@ -967,7 +967,7 @@ OpenAPI_sm_policy_decision_t *OpenAPI_sm_policy_decision_parseFromJSON(cJSON *sm
         qos_mon_decs ? qos_mon_decsList : NULL,
         reflective_qo_s_timer ? reflective_qo_s_timer->valuedouble : 0,
         conds ? condsList : NULL,
-        revalidation_time ? ogs_strdup(revalidation_time->valuestring) : NULL,
+        revalidation_time ? ogs_strdup_or_assert(revalidation_time->valuestring) : NULL,
         offline ? offline->valueint : 0,
         online ? online->valueint : 0,
         policy_ctrl_req_triggers ? policy_ctrl_req_triggersList : NULL,
@@ -978,7 +978,7 @@ OpenAPI_sm_policy_decision_t *OpenAPI_sm_policy_decision_parseFromJSON(cJSON *sm
         ipv6_index ? ipv6_index->valuedouble : 0,
         qos_flow_usage ? qos_flow_usageVariable : 0,
         rel_cause ? rel_causeVariable : 0,
-        supp_feat ? ogs_strdup(supp_feat->valuestring) : NULL,
+        supp_feat ? ogs_strdup_or_assert(supp_feat->valuestring) : NULL,
         tsn_port_man_cont_dstt ? tsn_port_man_cont_dstt_local_nonprim : NULL,
         tsn_port_man_cont_nwtts ? tsn_port_man_cont_nwttsList : NULL
         );

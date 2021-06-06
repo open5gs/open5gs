@@ -31,10 +31,7 @@ ogs_pkbuf_t *ogs_ngap_encode(ogs_ngap_message_t *message)
         asn_fprint(stdout, &asn_DEF_NGAP_NGAP_PDU, message);
 
     pkbuf = ogs_asn_encode(&asn_DEF_NGAP_NGAP_PDU, message);
-    if (pkbuf == NULL) {
-        ogs_error("Failed to encode NGAP-PDU");
-        return NULL;
-    }
+    ogs_expect_or_return_val(pkbuf, NULL);
 
     return pkbuf;
 }

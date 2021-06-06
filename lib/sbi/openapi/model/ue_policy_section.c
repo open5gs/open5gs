@@ -82,7 +82,7 @@ OpenAPI_ue_policy_section_t *OpenAPI_ue_policy_section_parseFromJSON(cJSON *ue_p
 
     ue_policy_section_local_var = OpenAPI_ue_policy_section_create (
         ue_policy_section_info->valueint,
-        ogs_strdup(upsi->valuestring)
+        ogs_strdup_or_assert(upsi->valuestring)
         );
 
     return ue_policy_section_local_var;

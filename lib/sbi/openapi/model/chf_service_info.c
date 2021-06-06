@@ -80,8 +80,8 @@ OpenAPI_chf_service_info_t *OpenAPI_chf_service_info_parseFromJSON(cJSON *chf_se
     }
 
     chf_service_info_local_var = OpenAPI_chf_service_info_create (
-        primary_chf_service_instance ? ogs_strdup(primary_chf_service_instance->valuestring) : NULL,
-        secondary_chf_service_instance ? ogs_strdup(secondary_chf_service_instance->valuestring) : NULL
+        primary_chf_service_instance ? ogs_strdup_or_assert(primary_chf_service_instance->valuestring) : NULL,
+        secondary_chf_service_instance ? ogs_strdup_or_assert(secondary_chf_service_instance->valuestring) : NULL
         );
 
     return chf_service_info_local_var;

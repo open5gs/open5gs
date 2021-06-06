@@ -191,9 +191,9 @@ OpenAPI_upu_info_t *OpenAPI_upu_info_parseFromJSON(cJSON *upu_infoJSON)
         upu_data_listList,
         upu_reg_ind->valueint,
         upu_ack_ind->valueint,
-        upu_mac_iausf ? ogs_strdup(upu_mac_iausf->valuestring) : NULL,
-        counter_upu ? ogs_strdup(counter_upu->valuestring) : NULL,
-        ogs_strdup(provisioning_time->valuestring)
+        upu_mac_iausf ? ogs_strdup_or_assert(upu_mac_iausf->valuestring) : NULL,
+        counter_upu ? ogs_strdup_or_assert(counter_upu->valuestring) : NULL,
+        ogs_strdup_or_assert(provisioning_time->valuestring)
         );
 
     return upu_info_local_var;

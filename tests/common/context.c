@@ -798,9 +798,11 @@ void test_ue_set_mobile_identity_suci(test_ue_t *test_ue,
     if (test_ue->supi)
         ogs_free(test_ue->supi);
     test_ue->supi = ogs_supi_from_suci(test_ue->suci);
+    ogs_assert(test_ue->supi);
     if (test_ue->imsi)
         ogs_free(test_ue->imsi);
     test_ue->imsi = ogs_id_get_value(test_ue->supi);
+    ogs_assert(test_ue->imsi);
 }
 
 static void test_ue_set_mobile_identity_imsi(test_ue_t *test_ue)

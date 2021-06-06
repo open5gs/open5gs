@@ -191,10 +191,10 @@ OpenAPI_search_result_t *OpenAPI_search_result_parseFromJSON(cJSON *search_resul
     search_result_local_var = OpenAPI_search_result_create (
         validity_period ? validity_period->valuedouble : 0,
         nf_instancesList,
-        search_id ? ogs_strdup(search_id->valuestring) : NULL,
+        search_id ? ogs_strdup_or_assert(search_id->valuestring) : NULL,
         num_nf_inst_complete ? num_nf_inst_complete->valuedouble : 0,
         preferred_search ? preferred_search_local_nonprim : NULL,
-        nrf_supported_features ? ogs_strdup(nrf_supported_features->valuestring) : NULL
+        nrf_supported_features ? ogs_strdup_or_assert(nrf_supported_features->valuestring) : NULL
         );
 
     return search_result_local_var;

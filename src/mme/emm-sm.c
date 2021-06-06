@@ -606,7 +606,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
                  * We don't have to set CNDomain.
                  * So, we just set CNDomain to 0
                  */
-                s1ap_send_paging(mme_ue, 0);
+                ogs_assert(OGS_OK == s1ap_send_paging(mme_ue, 0));
             }
             break;
 

@@ -112,7 +112,7 @@ OpenAPI_notification_item_t *OpenAPI_notification_item_parseFromJSON(cJSON *noti
     }
 
     notification_item_local_var = OpenAPI_notification_item_create (
-        ogs_strdup(resource_id->valuestring),
+        ogs_strdup_or_assert(resource_id->valuestring),
         notif_itemsList
         );
 

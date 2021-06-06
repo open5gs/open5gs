@@ -596,27 +596,27 @@ OpenAPI_traffic_influ_data_t *OpenAPI_traffic_influ_data_parseFromJSON(cJSON *tr
     }
 
     traffic_influ_data_local_var = OpenAPI_traffic_influ_data_create (
-        up_path_chg_notif_corre_id ? ogs_strdup(up_path_chg_notif_corre_id->valuestring) : NULL,
+        up_path_chg_notif_corre_id ? ogs_strdup_or_assert(up_path_chg_notif_corre_id->valuestring) : NULL,
         app_relo_ind ? app_relo_ind->valueint : 0,
-        af_app_id ? ogs_strdup(af_app_id->valuestring) : NULL,
-        dnn ? ogs_strdup(dnn->valuestring) : NULL,
+        af_app_id ? ogs_strdup_or_assert(af_app_id->valuestring) : NULL,
+        dnn ? ogs_strdup_or_assert(dnn->valuestring) : NULL,
         eth_traffic_filters ? eth_traffic_filtersList : NULL,
         snssai ? snssai_local_nonprim : NULL,
-        inter_group_id ? ogs_strdup(inter_group_id->valuestring) : NULL,
-        supi ? ogs_strdup(supi->valuestring) : NULL,
+        inter_group_id ? ogs_strdup_or_assert(inter_group_id->valuestring) : NULL,
+        supi ? ogs_strdup_or_assert(supi->valuestring) : NULL,
         traffic_filters ? traffic_filtersList : NULL,
         traffic_routes ? traffic_routesList : NULL,
         traff_corre_ind ? traff_corre_ind->valueint : 0,
-        valid_start_time ? ogs_strdup(valid_start_time->valuestring) : NULL,
-        valid_end_time ? ogs_strdup(valid_end_time->valuestring) : NULL,
+        valid_start_time ? ogs_strdup_or_assert(valid_start_time->valuestring) : NULL,
+        valid_end_time ? ogs_strdup_or_assert(valid_end_time->valuestring) : NULL,
         temp_validities ? temp_validitiesList : NULL,
         nw_area_info ? nw_area_info_local_nonprim : NULL,
-        up_path_chg_notif_uri ? ogs_strdup(up_path_chg_notif_uri->valuestring) : NULL,
+        up_path_chg_notif_uri ? ogs_strdup_or_assert(up_path_chg_notif_uri->valuestring) : NULL,
         subscribed_events ? subscribed_eventsList : NULL,
         dnai_chg_type ? dnai_chg_typeVariable : 0,
         af_ack_ind ? af_ack_ind->valueint : 0,
         addr_preser_ind ? addr_preser_ind->valueint : 0,
-        supported_features ? ogs_strdup(supported_features->valuestring) : NULL
+        supported_features ? ogs_strdup_or_assert(supported_features->valuestring) : NULL
         );
 
     return traffic_influ_data_local_var;

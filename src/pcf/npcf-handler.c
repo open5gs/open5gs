@@ -39,29 +39,33 @@ bool pcf_npcf_am_policy_contrtol_handle_create(pcf_ue_t *pcf_ue,
     PolicyAssociationRequest = message->PolicyAssociationRequest;
     if (!PolicyAssociationRequest) {
         ogs_error("[%s] No PolicyAssociationRequest", pcf_ue->supi);
-        ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                message, "[%s] No PolicyAssociationRequest", pcf_ue->supi);
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                message, "[%s] No PolicyAssociationRequest", pcf_ue->supi));
         return false;
     }
 
     if (!PolicyAssociationRequest->notification_uri) {
         ogs_error("[%s] No notificationUri", pcf_ue->supi);
-        ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                message, "No notificationUri", pcf_ue->supi);
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                message, "No notificationUri", pcf_ue->supi));
         return false;
     }
 
     if (!PolicyAssociationRequest->supi) {
         ogs_error("[%s] No supi", pcf_ue->supi);
-        ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                message, "No supi", pcf_ue->supi);
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                message, "No supi", pcf_ue->supi));
         return false;
     }
 
     if (!PolicyAssociationRequest->supp_feat) {
         ogs_error("[%s] No suppFeat", pcf_ue->supi);
-        ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                message, "No suppFeat", pcf_ue->supi);
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                message, "No suppFeat", pcf_ue->supi));
         return false;
     }
 
@@ -69,8 +73,9 @@ bool pcf_npcf_am_policy_contrtol_handle_create(pcf_ue_t *pcf_ue,
     if (!addr) {
         ogs_error("[%s] Invalid URI [%s]",
                 pcf_ue->supi, PolicyAssociationRequest->notification_uri);
-        ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                message, "[%s] Invalid URI", pcf_ue->supi);
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                message, "[%s] Invalid URI", pcf_ue->supi));
         return false;
     }
 
@@ -78,6 +83,7 @@ bool pcf_npcf_am_policy_contrtol_handle_create(pcf_ue_t *pcf_ue,
         ogs_free(pcf_ue->notification_uri);
     pcf_ue->notification_uri = ogs_strdup(
             PolicyAssociationRequest->notification_uri);
+    ogs_assert(pcf_ue->notification_uri);
 
     client = ogs_sbi_client_find(addr);
     if (!client) {
@@ -101,6 +107,7 @@ bool pcf_npcf_am_policy_contrtol_handle_create(pcf_ue_t *pcf_ue,
     if (pcf_ue->pei)
         ogs_free(pcf_ue->pei);
     pcf_ue->pei = ogs_strdup(PolicyAssociationRequest->pei);
+    ogs_assert(pcf_ue->pei);
 
     Guami = PolicyAssociationRequest->guami;
     if (Guami && Guami->amf_id &&
@@ -120,8 +127,9 @@ bool pcf_npcf_am_policy_contrtol_handle_create(pcf_ue_t *pcf_ue,
         pcf_ue->subscribed_ue_ambr = OpenAPI_ambr_copy(
                 pcf_ue->subscribed_ue_ambr, PolicyAssociationRequest->ue_ambr);
 
-    pcf_ue_sbi_discover_and_send(OpenAPI_nf_type_UDR, pcf_ue, stream, NULL,
-            pcf_nudr_dr_build_query_am_data);
+    ogs_assert(true ==
+        pcf_ue_sbi_discover_and_send(OpenAPI_nf_type_UDR, pcf_ue, stream, NULL,
+            pcf_nudr_dr_build_query_am_data));
 
     return true;
 }
@@ -234,10 +242,12 @@ bool pcf_npcf_smpolicycontrtol_handle_create(pcf_sess_t *sess,
     if (sess->dnn)
         ogs_free(sess->dnn);
     sess->dnn = ogs_strdup(SmPolicyContextData->dnn);
+    ogs_assert(sess->dnn);
 
     if (sess->notification_uri)
         ogs_free(sess->notification_uri);
     sess->notification_uri = ogs_strdup(SmPolicyContextData->notification_uri);
+    ogs_assert(sess->notification_uri);
 
     client = ogs_sbi_client_find(addr);
     if (!client) {
@@ -267,8 +277,9 @@ bool pcf_npcf_smpolicycontrtol_handle_create(pcf_sess_t *sess,
         sess->subscribed_default_qos = OpenAPI_subscribed_default_qos_copy(
             sess->subscribed_default_qos, SmPolicyContextData->subs_def_qos);
 
-    pcf_sess_sbi_discover_and_send(OpenAPI_nf_type_UDR, sess, stream, NULL,
-            pcf_nudr_dr_build_query_sm_data);
+    ogs_assert(true ==
+        pcf_sess_sbi_discover_and_send(OpenAPI_nf_type_UDR, sess, stream, NULL,
+            pcf_nudr_dr_build_query_sm_data));
 
     return true;
 
@@ -276,7 +287,8 @@ cleanup:
     ogs_assert(status);
     ogs_assert(strerror);
     ogs_error("%s", strerror);
-    ogs_sbi_server_send_error(stream, status, message, strerror, NULL);
+    ogs_assert(true ==
+        ogs_sbi_server_send_error(stream, status, message, strerror, NULL));
     ogs_free(strerror);
 
     return false;
@@ -304,8 +316,9 @@ bool pcf_npcf_smpolicycontrtol_handle_delete(pcf_sess_t *sess,
         goto cleanup;
     }
 
-    pcf_sess_sbi_discover_and_send(OpenAPI_nf_type_BSF, sess, stream, NULL,
-            pcf_nbsf_management_build_de_register);
+    ogs_assert(true ==
+        pcf_sess_sbi_discover_and_send(OpenAPI_nf_type_BSF, sess, stream, NULL,
+            pcf_nbsf_management_build_de_register));
 
     return true;
 
@@ -313,7 +326,8 @@ cleanup:
     ogs_assert(status);
     ogs_assert(strerror);
     ogs_error("%s", strerror);
-    ogs_sbi_server_send_error(stream, status, message, strerror, NULL);
+    ogs_assert(true ==
+        ogs_sbi_server_send_error(stream, status, message, strerror, NULL));
     ogs_free(strerror);
 
     return false;
@@ -473,13 +487,13 @@ bool pcf_npcf_policyauthorization_handle_create(pcf_sess_t *sess,
 
     response = ogs_sbi_build_response(&sendmsg, OGS_SBI_HTTP_STATUS_CREATED);
     ogs_assert(response);
-    ogs_sbi_server_send_response(stream, response);
+    ogs_assert(true == ogs_sbi_server_send_response(stream, response));
 
     ogs_free(sendmsg.http.location);
 
 #if 0
-    pcf_sbi_send_smpolicycontrol_notify(sess);
-    pcf_sbi_send_am_policy_control_notify(pcf_ue);
+    ogs_assert(true == pcf_sbi_send_smpolicycontrol_notify(sess));
+    ogs_assert(true == pcf_sbi_send_am_policy_control_notify(pcf_ue));
 #endif
 
     ogs_ims_data_free(&ims_data);
@@ -490,7 +504,8 @@ cleanup:
     ogs_assert(status);
     ogs_assert(strerror);
     ogs_error("%s", strerror);
-    ogs_sbi_server_send_error(stream, status, recvmsg, strerror, NULL);
+    ogs_assert(true ==
+        ogs_sbi_server_send_error(stream, status, recvmsg, strerror, NULL));
     ogs_free(strerror);
 
     ogs_ims_data_free(&ims_data);

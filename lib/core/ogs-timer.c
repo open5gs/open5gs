@@ -55,7 +55,7 @@ static void add_timer_node(
 ogs_timer_mgr_t *ogs_timer_mgr_create(unsigned int capacity)
 {
     ogs_timer_mgr_t *manager = ogs_calloc(1, sizeof *manager);
-    ogs_assert(manager);
+    ogs_expect_or_return_val(manager, NULL);
 
     ogs_pool_init(&manager->pool, capacity);
 

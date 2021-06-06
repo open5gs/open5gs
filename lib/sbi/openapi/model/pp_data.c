@@ -219,11 +219,11 @@ OpenAPI_pp_data_t *OpenAPI_pp_data_parseFromJSON(cJSON *pp_dataJSON)
 
     pp_data_local_var = OpenAPI_pp_data_create (
         communication_characteristics ? communication_characteristics_local_nonprim : NULL,
-        supported_features ? ogs_strdup(supported_features->valuestring) : NULL,
+        supported_features ? ogs_strdup_or_assert(supported_features->valuestring) : NULL,
         expected_ue_behaviour_parameters ? expected_ue_behaviour_parameters_local_nonprim : NULL,
         ec_restriction ? ec_restriction_local_nonprim : NULL,
         acs_info ? acs_info_local_nonprim : NULL,
-        stn_sr ? ogs_strdup(stn_sr->valuestring) : NULL,
+        stn_sr ? ogs_strdup_or_assert(stn_sr->valuestring) : NULL,
         lcs_privacy ? lcs_privacy_local_nonprim : NULL,
         sor_info ? sor_info_local_nonprim : NULL
         );

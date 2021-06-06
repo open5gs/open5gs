@@ -325,8 +325,8 @@ OpenAPI_monitoring_configuration_t *OpenAPI_monitoring_configuration_parseFromJS
         suggested_packet_num_dl ? suggested_packet_num_dl->valuedouble : 0,
         pdu_session_status_cfg ? pdu_session_status_cfg_local_nonprim : NULL,
         reachability_for_sms_cfg ? reachability_for_sms_cfg_local_nonprim : NULL,
-        mtc_provider_information ? ogs_strdup(mtc_provider_information->valuestring) : NULL,
-        af_id ? ogs_strdup(af_id->valuestring) : NULL
+        mtc_provider_information ? ogs_strdup_or_assert(mtc_provider_information->valuestring) : NULL,
+        af_id ? ogs_strdup_or_assert(af_id->valuestring) : NULL
         );
 
     return monitoring_configuration_local_var;

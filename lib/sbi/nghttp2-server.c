@@ -33,7 +33,7 @@ static int server_start(ogs_sbi_server_t *server,
         int (*cb)(ogs_sbi_request_t *request, void *data));
 static void server_stop(ogs_sbi_server_t *server);
 
-static void server_send_response(
+static bool server_send_response(
         ogs_sbi_stream_t *stream, ogs_sbi_response_t *response);
 
 static ogs_sbi_server_t *server_from_stream(ogs_sbi_stream_t *data);
@@ -282,7 +282,7 @@ static ssize_t response_read_callback(nghttp2_session *session,
     return response->http.content_length;
 }
 
-static void server_send_response(
+static bool server_send_response(
         ogs_sbi_stream_t *stream, ogs_sbi_response_t *response)
 {
     ogs_sbi_session_t *sbi_sess = NULL;
@@ -318,11 +318,11 @@ static void server_send_response(
         nvlen++;
 
     nva = ogs_calloc(nvlen, sizeof(nghttp2_nv));
-    ogs_assert(nva);
+    ogs_expect_or_return_val(nva, false);
 
     i = 0;
 
-    ogs_assert(response->status < 600);
+    ogs_expect_or_return_val(response->status < 600, false);
     ogs_assert(strlen(status_string[response->status]) == 3);
     add_header(&nva[i++], ":status", status_string[response->status]);
 
@@ -375,6 +375,8 @@ static void server_send_response(
 
     ogs_sbi_response_free(response);
     ogs_free(nva);
+
+    return true;
 }
 
 static ogs_sbi_server_t *server_from_stream(ogs_sbi_stream_t *stream)
@@ -397,11 +399,11 @@ static ogs_sbi_stream_t *stream_add(
     ogs_assert(sbi_sess);
 
     ogs_pool_alloc(&stream_pool, &stream);
-    ogs_assert(stream);
+    ogs_expect_or_return_val(stream, NULL);
     memset(stream, 0, sizeof(ogs_sbi_stream_t));
 
     stream->request = ogs_sbi_request_new();
-    ogs_assert(stream->request);
+    ogs_expect_or_return_val(stream->request, NULL);
 
     stream->stream_id = stream_id;
     sbi_sess->last_stream_id = stream_id;
@@ -446,14 +448,14 @@ static ogs_sbi_session_t *session_add(
     ogs_assert(sock);
 
     ogs_pool_alloc(&session_pool, &sbi_sess);
-    ogs_assert(sbi_sess);
+    ogs_expect_or_return_val(sbi_sess, NULL);
     memset(sbi_sess, 0, sizeof(ogs_sbi_session_t));
 
     sbi_sess->server = server;
     sbi_sess->sock = sock;
 
     sbi_sess->addr = ogs_calloc(1, sizeof(ogs_sockaddr_t));
-    ogs_assert(sbi_sess->addr);
+    ogs_expect_or_return_val(sbi_sess->addr, NULL);
     memcpy(sbi_sess->addr, &sock->remote_addr, sizeof(ogs_sockaddr_t));
 
     ogs_list_add(&server->session_list, sbi_sess);
@@ -770,9 +772,10 @@ static int on_frame_recv(nghttp2_session *session,
 
             if (server->cb(request, stream) != OGS_OK) {
                 ogs_warn("server callback error");
-                ogs_sbi_server_send_error(stream,
+                ogs_assert(true ==
+                    ogs_sbi_server_send_error(stream,
                         OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR, NULL,
-                        "server callback error", NULL);
+                        "server callback error", NULL));
 
                 return 0;
             }
@@ -896,6 +899,7 @@ static int on_header(nghttp2_session *session, const nghttp2_frame *frame,
 
         ogs_assert(request->h.method == NULL);
         request->h.method = ogs_strdup(valuestr);
+        ogs_assert(request->h.method);
 
     } else {
 
@@ -1263,7 +1267,9 @@ static void session_write_to_buffer(
 
     ogs_list_add(&sbi_sess->write_queue, pkbuf);
 
-    if (!sbi_sess->poll.write)
+    if (!sbi_sess->poll.write) {
         sbi_sess->poll.write = ogs_pollset_add(ogs_app()->pollset,
             OGS_POLLOUT, fd, session_write_callback, sbi_sess);
+        ogs_assert(sbi_sess->poll.write);
+    }
 }

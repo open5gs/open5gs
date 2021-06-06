@@ -351,7 +351,7 @@ OpenAPI_subscription_data_subscr_cond_t *OpenAPI_subscription_data_subscr_cond_p
                 ogs_error("OpenAPI_subscription_data_subscr_cond_parseFromJSON() failed [nsi_list]");
                 goto end;
             }
-            OpenAPI_list_add(nsi_listList, ogs_strdup(nsi_list_local->valuestring));
+            OpenAPI_list_add(nsi_listList, ogs_strdup_or_assert(nsi_list_local->valuestring));
         }
     }
 
@@ -398,7 +398,7 @@ OpenAPI_subscription_data_subscr_cond_t *OpenAPI_subscription_data_subscr_cond_p
                 ogs_error("OpenAPI_subscription_data_subscr_cond_parseFromJSON() failed [smf_serving_area]");
                 goto end;
             }
-            OpenAPI_list_add(smf_serving_areaList, ogs_strdup(smf_serving_area_local->valuestring));
+            OpenAPI_list_add(smf_serving_areaList, ogs_strdup_or_assert(smf_serving_area_local->valuestring));
         }
     }
 
@@ -426,17 +426,17 @@ OpenAPI_subscription_data_subscr_cond_t *OpenAPI_subscription_data_subscr_cond_p
     }
 
     subscription_data_subscr_cond_local_var = OpenAPI_subscription_data_subscr_cond_create (
-        nf_instance_id ? ogs_strdup(nf_instance_id->valuestring) : NULL,
+        nf_instance_id ? ogs_strdup_or_assert(nf_instance_id->valuestring) : NULL,
         nf_type ? nf_typeVariable : 0,
-        service_name ? ogs_strdup(service_name->valuestring) : NULL,
-        amf_set_id ? ogs_strdup(amf_set_id->valuestring) : NULL,
-        amf_region_id ? ogs_strdup(amf_region_id->valuestring) : NULL,
+        service_name ? ogs_strdup_or_assert(service_name->valuestring) : NULL,
+        amf_set_id ? ogs_strdup_or_assert(amf_set_id->valuestring) : NULL,
+        amf_region_id ? ogs_strdup_or_assert(amf_region_id->valuestring) : NULL,
         guami_list ? guami_listList : NULL,
         snssai_list ? snssai_listList : NULL,
         nsi_list ? nsi_listList : NULL,
-        nf_group_id ? ogs_strdup(nf_group_id->valuestring) : NULL,
-        nf_set_id ? ogs_strdup(nf_set_id->valuestring) : NULL,
-        nf_service_set_id ? ogs_strdup(nf_service_set_id->valuestring) : NULL,
+        nf_group_id ? ogs_strdup_or_assert(nf_group_id->valuestring) : NULL,
+        nf_set_id ? ogs_strdup_or_assert(nf_set_id->valuestring) : NULL,
+        nf_service_set_id ? ogs_strdup_or_assert(nf_service_set_id->valuestring) : NULL,
         smf_serving_area ? smf_serving_areaList : NULL,
         tai_list ? tai_listList : NULL
         );

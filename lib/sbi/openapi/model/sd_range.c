@@ -80,8 +80,8 @@ OpenAPI_sd_range_t *OpenAPI_sd_range_parseFromJSON(cJSON *sd_rangeJSON)
     }
 
     sd_range_local_var = OpenAPI_sd_range_create (
-        start ? ogs_strdup(start->valuestring) : NULL,
-        end ? ogs_strdup(end->valuestring) : NULL
+        start ? ogs_strdup_or_assert(start->valuestring) : NULL,
+        end ? ogs_strdup_or_assert(end->valuestring) : NULL
         );
 
     return sd_range_local_var;

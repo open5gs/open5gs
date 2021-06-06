@@ -128,28 +128,31 @@ void nrf_nf_state_will_register(ogs_fsm_t *s, nrf_event_t *e)
                 DEFAULT
                     ogs_error("[%s] Invalid HTTP method [%s]",
                             nf_instance->id, message->h.method);
-                    ogs_sbi_server_send_error(stream,
+                    ogs_assert(true ==
+                        ogs_sbi_server_send_error(stream,
                             OGS_SBI_HTTP_STATUS_MEHTOD_NOT_ALLOWED, message,
-                            "Invalid HTTP method", message->h.method);
+                            "Invalid HTTP method", message->h.method));
                 END
                 break;
 
             DEFAULT
                 ogs_error("[%s] Invalid resource name [%s]",
                         nf_instance->id, message->h.resource.component[0]);
-                ogs_sbi_server_send_error(stream,
+                ogs_assert(true ==
+                    ogs_sbi_server_send_error(stream,
                         OGS_SBI_HTTP_STATUS_MEHTOD_NOT_ALLOWED, message,
                         "Invalid resource name",
-                        message->h.resource.component[0]);
+                        message->h.resource.component[0]));
             END
             break;
 
         DEFAULT
             ogs_error("[%s] Invalid API name [%s]",
                     nf_instance->id, message->h.service.name);
-            ogs_sbi_server_send_error(stream,
+            ogs_assert(true ==
+                ogs_sbi_server_send_error(stream,
                     OGS_SBI_HTTP_STATUS_MEHTOD_NOT_ALLOWED, message,
-                    "Invalid resource name", message->h.service.name);
+                    "Invalid resource name", message->h.service.name));
         END
 
         OGS_FSM_TRAN(s, nrf_nf_state_registered);
@@ -158,9 +161,10 @@ void nrf_nf_state_will_register(ogs_fsm_t *s, nrf_event_t *e)
     default:
         ogs_error("[%s] Unknown event %s",
                 nf_instance->id, nrf_event_get_name(e));
-        ogs_sbi_server_send_error(stream,
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(stream,
                 OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR,
-                message, "Unknown event", nrf_event_get_name(e));
+                message, "Unknown event", nrf_event_get_name(e)));
         OGS_FSM_TRAN(s, nrf_nf_state_exception);
         break;
     }
@@ -194,8 +198,9 @@ void nrf_nf_state_registered(ogs_fsm_t *s, nrf_event_t *e)
                         ogs_app()->time.nf_instance.no_heartbeat_margin));
         }
 
-        nrf_nnrf_nfm_send_nf_status_notify_all(
-                OpenAPI_notification_event_type_NF_REGISTERED, nf_instance);
+        ogs_assert(true ==
+            nrf_nnrf_nfm_send_nf_status_notify_all(
+                OpenAPI_notification_event_type_NF_REGISTERED, nf_instance));
         break;
 
     case OGS_FSM_EXIT_SIG:
@@ -204,8 +209,9 @@ void nrf_nf_state_registered(ogs_fsm_t *s, nrf_event_t *e)
             ogs_timer_stop(nf_instance->t_no_heartbeat);
         }
 
-        nrf_nnrf_nfm_send_nf_status_notify_all(
-                OpenAPI_notification_event_type_NF_DEREGISTERED, nf_instance);
+        ogs_assert(true ==
+            nrf_nnrf_nfm_send_nf_status_notify_all(
+                OpenAPI_notification_event_type_NF_DEREGISTERED, nf_instance));
         break;
 
     case NRF_EVT_SBI_SERVER:
@@ -241,44 +247,49 @@ void nrf_nf_state_registered(ogs_fsm_t *s, nrf_event_t *e)
                     response = ogs_sbi_build_response(
                             message, OGS_SBI_HTTP_STATUS_NO_CONTENT);
                     ogs_assert(response);
-                    ogs_sbi_server_send_response(stream, response);
+                    ogs_assert(true ==
+                            ogs_sbi_server_send_response(stream, response));
                     OGS_FSM_TRAN(s, nrf_nf_state_de_registered);
                     break;
 
                 DEFAULT
                     ogs_error("[%s] Invalid HTTP method [%s]",
                             nf_instance->id, message->h.method);
-                    ogs_sbi_server_send_error(stream,
+                    ogs_assert(true ==
+                        ogs_sbi_server_send_error(stream,
                             OGS_SBI_HTTP_STATUS_MEHTOD_NOT_ALLOWED, message,
-                            "Invalid HTTP method", message->h.method);
+                            "Invalid HTTP method", message->h.method));
                 END
                 break;
 
             DEFAULT
                 ogs_error("[%s] Invalid resource name [%s]",
                         nf_instance->id, message->h.resource.component[0]);
-                ogs_sbi_server_send_error(stream,
+                ogs_assert(true ==
+                    ogs_sbi_server_send_error(stream,
                         OGS_SBI_HTTP_STATUS_MEHTOD_NOT_ALLOWED, message,
                         "Invalid resource name",
-                        message->h.resource.component[0]);
+                        message->h.resource.component[0]));
             END
             break;
 
         DEFAULT
             ogs_error("[%s] Invalid API name [%s]",
                     nf_instance->id, message->h.service.name);
-            ogs_sbi_server_send_error(stream,
+            ogs_assert(true ==
+                ogs_sbi_server_send_error(stream,
                     OGS_SBI_HTTP_STATUS_MEHTOD_NOT_ALLOWED, message,
-                    "Invalid resource name", message->h.service.name);
+                    "Invalid resource name", message->h.service.name));
         END
         break;
 
     default:
         ogs_error("[%s] Unknown event %s",
                 nf_instance->id, nrf_event_get_name(e));
-        ogs_sbi_server_send_error(stream,
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(stream,
                 OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR,
-                message, "Unknown event", nrf_event_get_name(e));
+                message, "Unknown event", nrf_event_get_name(e)));
         OGS_FSM_TRAN(s, nrf_nf_state_exception);
         break;
     }

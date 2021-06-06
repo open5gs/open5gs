@@ -97,7 +97,7 @@ OpenAPI_pc5_qos_mapping_t *OpenAPI_pc5_qos_mapping_parseFromJSON(cJSON *pc5_qos_
             ogs_error("OpenAPI_pc5_qos_mapping_parseFromJSON() failed [ser_ids]");
             goto end;
         }
-        OpenAPI_list_add(ser_idsList, ogs_strdup(ser_ids_local->valuestring));
+        OpenAPI_list_add(ser_idsList, ogs_strdup_or_assert(ser_ids_local->valuestring));
     }
 
     cJSON *pc5_qo_s_flow_param = cJSON_GetObjectItemCaseSensitive(pc5_qos_mappingJSON, "pc5QoSFlowParam");

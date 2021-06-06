@@ -117,10 +117,10 @@ OpenAPI_ddd_traffic_descriptor_t *OpenAPI_ddd_traffic_descriptor_parseFromJSON(c
     }
 
     ddd_traffic_descriptor_local_var = OpenAPI_ddd_traffic_descriptor_create (
-        ipv4_addr ? ogs_strdup(ipv4_addr->valuestring) : NULL,
-        ipv6_addr ? ogs_strdup(ipv6_addr->valuestring) : NULL,
+        ipv4_addr ? ogs_strdup_or_assert(ipv4_addr->valuestring) : NULL,
+        ipv6_addr ? ogs_strdup_or_assert(ipv6_addr->valuestring) : NULL,
         port_number ? port_number->valuedouble : 0,
-        mac_addr ? ogs_strdup(mac_addr->valuestring) : NULL
+        mac_addr ? ogs_strdup_or_assert(mac_addr->valuestring) : NULL
         );
 
     return ddd_traffic_descriptor_local_var;

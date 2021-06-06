@@ -173,13 +173,14 @@ void smf_5gc_n4_handle_session_establishment_response(
                 if (sess->upf_n3_addr6)
                     ogs_freeaddrinfo(sess->upf_n3_addr6);
 
-                ogs_pfcp_f_teid_to_sockaddr(
+                ogs_assert(OGS_OK ==
+                    ogs_pfcp_f_teid_to_sockaddr(
                         &pdr->f_teid, pdr->f_teid_len,
-                        &sess->upf_n3_addr, &sess->upf_n3_addr6);
+                        &sess->upf_n3_addr, &sess->upf_n3_addr6));
                 sess->upf_n3_teid = pdr->f_teid.teid;
             }
         } else if (pdr->src_if == OGS_PFCP_INTERFACE_CP_FUNCTION) {
-            ogs_pfcp_setup_pdr_gtpu_node(pdr);
+            ogs_assert(OGS_ERROR != ogs_pfcp_setup_pdr_gtpu_node(pdr));
         }
     }
 
@@ -284,9 +285,10 @@ void smf_5gc_n4_handle_session_modification_response(
                         if (sess->upf_n3_addr6)
                             ogs_freeaddrinfo(sess->upf_n3_addr6);
 
-                        ogs_pfcp_f_teid_to_sockaddr(
+                        ogs_assert(OGS_OK ==
+                            ogs_pfcp_f_teid_to_sockaddr(
                                 &pdr->f_teid, pdr->f_teid_len,
-                                &sess->upf_n3_addr, &sess->upf_n3_addr6);
+                                &sess->upf_n3_addr, &sess->upf_n3_addr6));
                         sess->upf_n3_teid = pdr->f_teid.teid;
                     } else if (far->dst_if == OGS_PFCP_INTERFACE_ACCESS) {
                         if (sess->handover.upf_dl_addr)
@@ -294,15 +296,16 @@ void smf_5gc_n4_handle_session_modification_response(
                         if (sess->handover.upf_dl_addr6)
                             ogs_freeaddrinfo(sess->handover.upf_dl_addr6);
 
-                        ogs_pfcp_f_teid_to_sockaddr(
+                        ogs_assert(OGS_OK ==
+                            ogs_pfcp_f_teid_to_sockaddr(
                                 &pdr->f_teid, pdr->f_teid_len,
                                 &sess->handover.upf_dl_addr,
-                                &sess->handover.upf_dl_addr6);
+                                &sess->handover.upf_dl_addr6));
                         sess->handover.upf_dl_teid = pdr->f_teid.teid;
                     }
                 }
             } else if (pdr->src_if == OGS_PFCP_INTERFACE_CP_FUNCTION) {
-                ogs_pfcp_setup_pdr_gtpu_node(pdr);
+                ogs_assert(OGS_ERROR != ogs_pfcp_setup_pdr_gtpu_node(pdr));
             }
         }
 
@@ -351,7 +354,7 @@ void smf_5gc_n4_handle_session_modification_response(
 
         } else {
             sess->paging.ue_requested_pdu_session_establishment_done = true;
-            ogs_sbi_send_http_status_no_content(stream);
+            ogs_assert(true == ogs_sbi_send_http_status_no_content(stream));
         }
 
     } else if (flags & OGS_PFCP_MODIFY_DEACTIVATE) {
@@ -471,7 +474,8 @@ void smf_5gc_n4_handle_session_deletion_response(
     if (status != OGS_SBI_HTTP_STATUS_OK) {
         char *strerror = ogs_msprintf(
                 "PFCP Cause [%d] : Not Accepted", rsp->cause.u8);
-        ogs_sbi_server_send_error(stream, status, NULL, NULL, NULL);
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(stream, status, NULL, NULL, NULL));
         ogs_free(strerror);
         return;
     }
@@ -499,7 +503,7 @@ void smf_5gc_n4_handle_session_deletion_response(
         response = ogs_sbi_build_response(
                 &sendmsg, OGS_SBI_HTTP_STATUS_NO_CONTENT);
         ogs_assert(response);
-        ogs_sbi_server_send_response(stream, response);
+        ogs_assert(true == ogs_sbi_server_send_response(stream, response));
 
         SMF_SESS_CLEAR(sess);
     }
@@ -586,14 +590,15 @@ void smf_epc_n4_handle_session_establishment_response(
                         if (bearer->pgw_s5u_addr)
                             ogs_freeaddrinfo(bearer->pgw_s5u_addr6);
 
-                        ogs_pfcp_f_teid_to_sockaddr(
+                        ogs_assert(OGS_OK ==
+                            ogs_pfcp_f_teid_to_sockaddr(
                                 &pdr->f_teid, pdr->f_teid_len,
-                                &bearer->pgw_s5u_addr, &bearer->pgw_s5u_addr6);
+                                &bearer->pgw_s5u_addr, &bearer->pgw_s5u_addr6));
                         bearer->pgw_s5u_teid = pdr->f_teid.teid;
                     }
                 }
             } else if (pdr->src_if == OGS_PFCP_INTERFACE_CP_FUNCTION) {
-                ogs_pfcp_setup_pdr_gtpu_node(pdr);
+                ogs_assert(OGS_ERROR != ogs_pfcp_setup_pdr_gtpu_node(pdr));
             }
         }
 
@@ -695,13 +700,14 @@ void smf_epc_n4_handle_session_modification_response(
                 if (bearer->pgw_s5u_addr)
                     ogs_freeaddrinfo(bearer->pgw_s5u_addr6);
 
-                ogs_pfcp_f_teid_to_sockaddr(
+                ogs_assert(OGS_OK ==
+                    ogs_pfcp_f_teid_to_sockaddr(
                         &pdr->f_teid, pdr->f_teid_len,
-                        &bearer->pgw_s5u_addr, &bearer->pgw_s5u_addr6);
+                        &bearer->pgw_s5u_addr, &bearer->pgw_s5u_addr6));
                 bearer->pgw_s5u_teid = pdr->f_teid.teid;
             }
         } else if (pdr->src_if == OGS_PFCP_INTERFACE_CP_FUNCTION) {
-            ogs_pfcp_setup_pdr_gtpu_node(pdr);
+            ogs_assert(OGS_ERROR != ogs_pfcp_setup_pdr_gtpu_node(pdr));
         }
     }
 
@@ -714,7 +720,7 @@ void smf_epc_n4_handle_session_modification_response(
         smf_bearer_remove(bearer);
 
     } else if (flags & OGS_PFCP_MODIFY_CREATE) {
-        smf_gtp_send_create_bearer_request(bearer);
+        ogs_assert(OGS_OK == smf_gtp_send_create_bearer_request(bearer));
 
     } else if (flags & OGS_PFCP_MODIFY_ACTIVATE) {
         /* Nothing */

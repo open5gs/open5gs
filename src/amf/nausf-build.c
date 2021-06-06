@@ -50,6 +50,7 @@ ogs_sbi_request_t *amf_nausf_auth_build_authenticate(
     AuthenticationInfo.supi_or_suci = amf_ue->suci;
     AuthenticationInfo.serving_network_name =
         ogs_serving_network_name_from_plmn_id(&amf_ue->nr_tai.plmn_id);
+    ogs_expect_or_return_val(AuthenticationInfo.serving_network_name, NULL);
 
     if (auts) {
         memset(&ResynchronizationInfo, 0, sizeof(ResynchronizationInfo));
@@ -67,7 +68,7 @@ ogs_sbi_request_t *amf_nausf_auth_build_authenticate(
     message.AuthenticationInfo = &AuthenticationInfo;
 
     request = ogs_sbi_build_request(&message);
-    ogs_assert(request);
+    ogs_expect(request);
 
     ogs_free(AuthenticationInfo.serving_network_name);
 
@@ -92,7 +93,7 @@ ogs_sbi_request_t *amf_nausf_auth_build_authenticate_confirmation(
     message.h.uri = amf_ue->confirmation_url_for_5g_aka;
 
     ConfirmationData = ogs_calloc(1, sizeof(*ConfirmationData));
-    ogs_assert(ConfirmationData);
+    ogs_expect_or_return_val(ConfirmationData, NULL);
 
     ogs_hex_to_ascii(amf_ue->xres_star, sizeof(amf_ue->xres_star),
             xres_star_string, sizeof(xres_star_string));
@@ -102,7 +103,7 @@ ogs_sbi_request_t *amf_nausf_auth_build_authenticate_confirmation(
     message.ConfirmationData = ConfirmationData;
 
     request = ogs_sbi_build_request(&message);
-    ogs_assert(request);
+    ogs_expect(request);
 
     ogs_free(ConfirmationData);
 

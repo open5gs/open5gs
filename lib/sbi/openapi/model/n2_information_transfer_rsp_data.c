@@ -107,7 +107,7 @@ OpenAPI_n2_information_transfer_rsp_data_t *OpenAPI_n2_information_transfer_rsp_
     n2_information_transfer_rsp_data_local_var = OpenAPI_n2_information_transfer_rsp_data_create (
         resultVariable,
         pws_rsp_data ? pws_rsp_data_local_nonprim : NULL,
-        supported_features ? ogs_strdup(supported_features->valuestring) : NULL
+        supported_features ? ogs_strdup_or_assert(supported_features->valuestring) : NULL
         );
 
     return n2_information_transfer_rsp_data_local_var;

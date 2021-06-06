@@ -141,7 +141,7 @@ OpenAPI_model_5_g_vn_group_configuration_t *OpenAPI_model_5_g_vn_group_configura
                 ogs_error("OpenAPI_model_5_g_vn_group_configuration_parseFromJSON() failed [members]");
                 goto end;
             }
-            OpenAPI_list_add(membersList, ogs_strdup(members_local->valuestring));
+            OpenAPI_list_add(membersList, ogs_strdup_or_assert(members_local->valuestring));
         }
     }
 
@@ -185,9 +185,9 @@ OpenAPI_model_5_g_vn_group_configuration_t *OpenAPI_model_5_g_vn_group_configura
         _5g_vn_group_data ? _5g_vn_group_data_local_nonprim : NULL,
         members ? membersList : NULL,
         reference_id ? reference_id->valuedouble : 0,
-        af_instance_id ? ogs_strdup(af_instance_id->valuestring) : NULL,
-        internal_group_identifier ? ogs_strdup(internal_group_identifier->valuestring) : NULL,
-        mtc_provider_information ? ogs_strdup(mtc_provider_information->valuestring) : NULL
+        af_instance_id ? ogs_strdup_or_assert(af_instance_id->valuestring) : NULL,
+        internal_group_identifier ? ogs_strdup_or_assert(internal_group_identifier->valuestring) : NULL,
+        mtc_provider_information ? ogs_strdup_or_assert(mtc_provider_information->valuestring) : NULL
         );
 
     return model_5_g_vn_group_configuration_local_var;

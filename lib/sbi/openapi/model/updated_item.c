@@ -82,8 +82,8 @@ OpenAPI_updated_item_t *OpenAPI_updated_item_parseFromJSON(cJSON *updated_itemJS
     }
 
     updated_item_local_var = OpenAPI_updated_item_create (
-        ogs_strdup(item->valuestring),
-        ogs_strdup(value->valuestring)
+        ogs_strdup_or_assert(item->valuestring),
+        ogs_strdup_or_assert(value->valuestring)
         );
 
     return updated_item_local_var;

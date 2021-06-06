@@ -113,7 +113,7 @@ void bsf_sbi_close(void)
     ogs_sbi_server_stop_all();
 }
 
-void bsf_nnrf_nfm_send_nf_register(ogs_sbi_nf_instance_t *nf_instance)
+bool bsf_nnrf_nfm_send_nf_register(ogs_sbi_nf_instance_t *nf_instance)
 {
     ogs_sbi_request_t *request = NULL;
     ogs_sbi_client_t *client = NULL;
@@ -123,19 +123,18 @@ void bsf_nnrf_nfm_send_nf_register(ogs_sbi_nf_instance_t *nf_instance)
     ogs_assert(client);
 
     request = bsf_nnrf_nfm_build_register(nf_instance);
-    if (!request) {
-        ogs_error("bsf_nnrf_nfm_send_nf_register() failed");
-        return;
-    }
-    ogs_sbi_client_send_request(client, client->cb, request, nf_instance);
+    ogs_expect_or_return_val(request, false);
+
+    return ogs_sbi_client_send_request(
+            client, client->cb, request, nf_instance);
 }
 
-void bsf_sbi_send(ogs_sbi_nf_instance_t *nf_instance, ogs_sbi_xact_t *xact)
+bool bsf_sbi_send(ogs_sbi_nf_instance_t *nf_instance, ogs_sbi_xact_t *xact)
 {
-    ogs_sbi_send(nf_instance, client_cb, xact);
+    return ogs_sbi_send(nf_instance, client_cb, xact);
 }
 
-void bsf_sbi_discover_and_send(OpenAPI_nf_type_e target_nf_type,
+bool bsf_sbi_discover_and_send(OpenAPI_nf_type_e target_nf_type,
         bsf_sess_t *sess, ogs_sbi_stream_t *stream, void *data,
         ogs_sbi_request_t *(*build)(bsf_sess_t *sess, void *data))
 {
@@ -152,10 +151,11 @@ void bsf_sbi_discover_and_send(OpenAPI_nf_type_e target_nf_type,
             bsf_timer_sbi_client_wait_expire);
     if (!xact) {
         ogs_error("bsf_sbi_discover_and_send() failed");
-        ogs_sbi_server_send_error(stream,
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(stream,
                 OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT, NULL,
-                "Cannot discover", sess->dnn);
-        return;
+                "Cannot discover", sess->dnn));
+        return false;
     }
 
     xact->assoc_stream = stream;
@@ -163,11 +163,15 @@ void bsf_sbi_discover_and_send(OpenAPI_nf_type_e target_nf_type,
     if (ogs_sbi_discover_and_send(xact,
             (ogs_fsm_handler_t)bsf_nf_state_registered, client_cb) != true) {
         ogs_error("bsf_sbi_discover_and_send() failed");
-        ogs_sbi_server_send_error(stream,
+        ogs_sbi_xact_remove(xact);
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(stream,
                 OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT, NULL,
-                "Cannot discover", sess->dnn);
-        return;
+                "Cannot discover", sess->dnn));
+        return false;
     }
+
+    return true;
 }
 
 void bsf_sbi_send_response(ogs_sbi_stream_t *stream, int status)
@@ -181,5 +185,5 @@ void bsf_sbi_send_response(ogs_sbi_stream_t *stream, int status)
 
     response = ogs_sbi_build_response(&sendmsg, status);
     ogs_assert(response);
-    ogs_sbi_server_send_response(stream, response);
+    ogs_assert(true == ogs_sbi_server_send_response(stream, response));
 }

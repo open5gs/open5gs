@@ -115,7 +115,7 @@ void smf_sbi_close(void)
     ogs_sbi_server_stop_all();
 }
 
-void smf_nnrf_nfm_send_nf_register(ogs_sbi_nf_instance_t *nf_instance)
+bool smf_nnrf_nfm_send_nf_register(ogs_sbi_nf_instance_t *nf_instance)
 {
     ogs_sbi_request_t *request = NULL;
     ogs_sbi_client_t *client = NULL;
@@ -125,19 +125,17 @@ void smf_nnrf_nfm_send_nf_register(ogs_sbi_nf_instance_t *nf_instance)
     ogs_assert(client);
 
     request = smf_nnrf_nfm_build_register(nf_instance);
-    if (!request) {
-        ogs_error("smf_nnrf_nfm_send_nf_register() failed");
-        return;
-    }
-    ogs_sbi_client_send_request(client, client->cb, request, nf_instance);
+    ogs_expect_or_return_val(request, false);
+    return ogs_sbi_client_send_request(
+            client, client->cb, request, nf_instance);
 }
 
-void smf_sbi_send(ogs_sbi_nf_instance_t *nf_instance, ogs_sbi_xact_t *xact)
+bool smf_sbi_send(ogs_sbi_nf_instance_t *nf_instance, ogs_sbi_xact_t *xact)
 {
-    ogs_sbi_send(nf_instance, client_cb, xact);
+    return ogs_sbi_send(nf_instance, client_cb, xact);
 }
 
-void smf_sbi_discover_and_send(OpenAPI_nf_type_e target_nf_type,
+bool smf_sbi_discover_and_send(OpenAPI_nf_type_e target_nf_type,
         smf_sess_t *sess, ogs_sbi_stream_t *stream, int state, void *data,
         ogs_sbi_request_t *(*build)(smf_sess_t *sess, void *data))
 {
@@ -158,10 +156,11 @@ void smf_sbi_discover_and_send(OpenAPI_nf_type_e target_nf_type,
             smf_timer_sbi_client_wait_expire);
     if (!xact) {
         ogs_error("smf_sbi_discover_and_send() failed");
-        ogs_sbi_server_send_error(stream,
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(stream,
                 OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT, NULL,
-                "Cannot discover", smf_ue->supi);
-        return;
+                "Cannot discover", smf_ue->supi));
+        return false;
     }
 
     xact->state = state;
@@ -170,11 +169,15 @@ void smf_sbi_discover_and_send(OpenAPI_nf_type_e target_nf_type,
     if (ogs_sbi_discover_and_send(xact,
             (ogs_fsm_handler_t)smf_nf_state_registered, client_cb) != true) {
         ogs_error("smf_sbi_discover_and_send() failed");
-        ogs_sbi_server_send_error(stream,
+        ogs_sbi_xact_remove(xact);
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(stream,
                 OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT, NULL,
-                "Cannot discover", smf_ue->supi);
-        return;
+                "Cannot discover", smf_ue->supi));
+        return false;
     }
+
+    return true;
 }
 
 void smf_namf_comm_send_n1_n2_message_transfer(
@@ -241,8 +244,7 @@ void smf_sbi_send_sm_context_create_error(
 
     response = ogs_sbi_build_response(&sendmsg, problem.status);
     ogs_assert(response);
-
-    ogs_sbi_server_send_response(stream, response);
+    ogs_assert(true == ogs_sbi_server_send_response(stream, response));
 
     if (n1smbuf)
         ogs_pkbuf_free(n1smbuf);
@@ -314,8 +316,7 @@ void smf_sbi_send_sm_context_updated_data(
 
     response = ogs_sbi_build_response(&sendmsg, OGS_SBI_HTTP_STATUS_OK);
     ogs_assert(response);
-
-    ogs_sbi_server_send_response(stream, response);
+    ogs_assert(true == ogs_sbi_server_send_response(stream, response));
 
     for (i = 0; i < sendmsg.num_of_part; i++)
         ogs_pkbuf_free(sendmsg.part[i].pkbuf);
@@ -371,8 +372,7 @@ void smf_sbi_send_sm_context_update_error(
 
     response = ogs_sbi_build_response(&sendmsg, problem.status);
     ogs_assert(response);
-
-    ogs_sbi_server_send_response(stream, response);
+    ogs_assert(true == ogs_sbi_server_send_response(stream, response));
 
     if (n1smbuf)
         ogs_pkbuf_free(n1smbuf);
@@ -406,7 +406,7 @@ static int client_notify_cb(ogs_sbi_response_t *response, void *data)
     return OGS_OK;
 }
 
-void smf_sbi_send_sm_context_status_notify(smf_sess_t *sess)
+bool smf_sbi_send_sm_context_status_notify(smf_sess_t *sess)
 {
     ogs_sbi_request_t *request = NULL;
     ogs_sbi_client_t *client = NULL;
@@ -416,6 +416,6 @@ void smf_sbi_send_sm_context_status_notify(smf_sess_t *sess)
     ogs_assert(client);
 
     request = smf_namf_callback_build_sm_context_status(sess, NULL);
-    ogs_assert(request);
-    ogs_sbi_client_send_request(client, client_notify_cb, request, NULL);
+    ogs_expect_or_return_val(request, false);
+    return ogs_sbi_client_send_request(client, client_notify_cb, request, NULL);
 }

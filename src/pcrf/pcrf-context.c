@@ -51,6 +51,7 @@ void pcrf_context_init(void)
 
     ogs_thread_mutex_init(&self.hash_lock);
     self.ip_hash = ogs_hash_make();
+    ogs_assert(self.ip_hash);
 
     context_initialized = 1;
 }

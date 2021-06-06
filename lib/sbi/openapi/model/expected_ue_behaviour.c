@@ -319,7 +319,7 @@ OpenAPI_expected_ue_behaviour_t *OpenAPI_expected_ue_behaviour_parseFromJSON(cJS
     }
 
     expected_ue_behaviour_local_var = OpenAPI_expected_ue_behaviour_create (
-        ogs_strdup(af_instance_id->valuestring),
+        ogs_strdup_or_assert(af_instance_id->valuestring),
         reference_id->valuedouble,
         stationary_indication ? stationary_indication_local_nonprim : NULL,
         communication_duration_time ? communication_duration_time->valuedouble : 0,
@@ -329,8 +329,8 @@ OpenAPI_expected_ue_behaviour_t *OpenAPI_expected_ue_behaviour_parseFromJSON(cJS
         expected_umts ? expected_umtsList : NULL,
         traffic_profile ? traffic_profile_local_nonprim : NULL,
         battery_indication ? battery_indication_local_nonprim : NULL,
-        validity_time ? ogs_strdup(validity_time->valuestring) : NULL,
-        mtc_provider_information ? ogs_strdup(mtc_provider_information->valuestring) : NULL
+        validity_time ? ogs_strdup_or_assert(validity_time->valuestring) : NULL,
+        mtc_provider_information ? ogs_strdup_or_assert(mtc_provider_information->valuestring) : NULL
         );
 
     return expected_ue_behaviour_local_var;

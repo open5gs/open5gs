@@ -62,7 +62,7 @@ OpenAPI_hfc_node_id_t *OpenAPI_hfc_node_id_parseFromJSON(cJSON *hfc_node_idJSON)
     }
 
     hfc_node_id_local_var = OpenAPI_hfc_node_id_create (
-        ogs_strdup(hfc_n_id->valuestring)
+        ogs_strdup_or_assert(hfc_n_id->valuestring)
         );
 
     return hfc_node_id_local_var;

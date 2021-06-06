@@ -85,7 +85,7 @@ OpenAPI_trace_data_response_t *OpenAPI_trace_data_response_parseFromJSON(cJSON *
 
     trace_data_response_local_var = OpenAPI_trace_data_response_create (
         trace_data ? trace_data_local_nonprim : NULL,
-        shared_trace_data_id ? ogs_strdup(shared_trace_data_id->valuestring) : NULL
+        shared_trace_data_id ? ogs_strdup_or_assert(shared_trace_data_id->valuestring) : NULL
         );
 
     return trace_data_response_local_var;

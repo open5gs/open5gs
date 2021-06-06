@@ -163,9 +163,10 @@ int amf_nudm_sdm_handle_provisioned(
             return OGS_ERROR;
         }
 
-        amf_ue_sbi_discover_and_send(OpenAPI_nf_type_UDM, amf_ue,
-            (char *)OGS_SBI_RESOURCE_NAME_SMF_SELECT_DATA,
-            amf_nudm_sdm_build_get);
+        ogs_assert(true ==
+            amf_ue_sbi_discover_and_send(OpenAPI_nf_type_UDM, amf_ue,
+                (char *)OGS_SBI_RESOURCE_NAME_SMF_SELECT_DATA,
+                amf_nudm_sdm_build_get));
         break;
 
     CASE(OGS_SBI_RESOURCE_NAME_SMF_SELECT_DATA)
@@ -231,14 +232,16 @@ int amf_nudm_sdm_handle_provisioned(
                 }
             }
         }
-        amf_ue_sbi_discover_and_send(OpenAPI_nf_type_UDM, amf_ue,
-            (char *)OGS_SBI_RESOURCE_NAME_UE_CONTEXT_IN_SMF_DATA,
-            amf_nudm_sdm_build_get);
+        ogs_assert(true ==
+            amf_ue_sbi_discover_and_send(OpenAPI_nf_type_UDM, amf_ue,
+                (char *)OGS_SBI_RESOURCE_NAME_UE_CONTEXT_IN_SMF_DATA,
+                amf_nudm_sdm_build_get));
         break;
 
     CASE(OGS_SBI_RESOURCE_NAME_UE_CONTEXT_IN_SMF_DATA)
-        amf_ue_sbi_discover_and_send(OpenAPI_nf_type_PCF, amf_ue,
-            NULL, amf_npcf_am_policy_control_build_create);
+        ogs_assert(true ==
+            amf_ue_sbi_discover_and_send(OpenAPI_nf_type_PCF, amf_ue,
+                NULL, amf_npcf_am_policy_control_build_create));
         break;
 
     DEFAULT

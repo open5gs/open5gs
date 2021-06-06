@@ -198,7 +198,7 @@ OpenAPI_dnn_info_t *OpenAPI_dnn_info_parseFromJSON(cJSON *dnn_infoJSON)
                 ogs_error("OpenAPI_dnn_info_parseFromJSON() failed [smf_list]");
                 goto end;
             }
-            OpenAPI_list_add(smf_listList, ogs_strdup(smf_list_local->valuestring));
+            OpenAPI_list_add(smf_listList, ogs_strdup_or_assert(smf_list_local->valuestring));
         }
     }
 
@@ -212,7 +212,7 @@ OpenAPI_dnn_info_t *OpenAPI_dnn_info_parseFromJSON(cJSON *dnn_infoJSON)
     }
 
     dnn_info_local_var = OpenAPI_dnn_info_create (
-        ogs_strdup(dnn->valuestring),
+        ogs_strdup_or_assert(dnn->valuestring),
         default_dnn_indicator ? default_dnn_indicator->valueint : 0,
         lbo_roaming_allowed ? lbo_roaming_allowed->valueint : 0,
         iwk_eps_ind ? iwk_eps_ind->valueint : 0,

@@ -119,7 +119,7 @@ void pcf_sbi_close(void)
     ogs_sbi_server_stop_all();
 }
 
-void pcf_nnrf_nfm_send_nf_register(ogs_sbi_nf_instance_t *nf_instance)
+bool pcf_nnrf_nfm_send_nf_register(ogs_sbi_nf_instance_t *nf_instance)
 {
     ogs_sbi_request_t *request = NULL;
     ogs_sbi_client_t *client = NULL;
@@ -129,16 +129,15 @@ void pcf_nnrf_nfm_send_nf_register(ogs_sbi_nf_instance_t *nf_instance)
     ogs_assert(client);
 
     request = pcf_nnrf_nfm_build_register(nf_instance);
-    if (!request) {
-        ogs_error("ogs_nnrf_nfm_send_nf_register() failed");
-        return;
-    }
-    ogs_sbi_client_send_request(client, client->cb, request, nf_instance);
+    ogs_expect_or_return_val(request, false);
+
+    return ogs_sbi_client_send_request(
+            client, client->cb, request, nf_instance);
 }
 
-void pcf_sbi_send(ogs_sbi_nf_instance_t *nf_instance, ogs_sbi_xact_t *xact)
+bool pcf_sbi_send(ogs_sbi_nf_instance_t *nf_instance, ogs_sbi_xact_t *xact)
 {
-    ogs_sbi_send(nf_instance, client_cb, xact);
+    return ogs_sbi_send(nf_instance, client_cb, xact);
 }
 
 static bool pcf_sbi_discover_and_send(OpenAPI_nf_type_e target_nf_type,
@@ -155,40 +154,52 @@ static bool pcf_sbi_discover_and_send(OpenAPI_nf_type_e target_nf_type,
     xact = ogs_sbi_xact_add(target_nf_type, sbi_object,
                             build, context, data,
                             pcf_timer_sbi_client_wait_expire);
-    if (!xact) return false;
+    ogs_expect_or_return_val(xact, false);
 
     xact->assoc_stream = stream;
 
-    return ogs_sbi_discover_and_send(xact,
-            (ogs_fsm_handler_t)pcf_nf_state_registered, client_cb);
+    if (ogs_sbi_discover_and_send(xact,
+            (ogs_fsm_handler_t)pcf_nf_state_registered, client_cb) != true) {
+        ogs_error("ogs_sbi_discover_and_send() failed");
+        ogs_sbi_xact_remove(xact);
+        return false;
+    }
+
+    return true;
 }
 
-void pcf_ue_sbi_discover_and_send(OpenAPI_nf_type_e target_nf_type,
+bool pcf_ue_sbi_discover_and_send(OpenAPI_nf_type_e target_nf_type,
         pcf_ue_t *pcf_ue, ogs_sbi_stream_t *stream, void *data,
         ogs_sbi_request_t *(*build)(pcf_ue_t *pcf_ue, void *data))
 {
     if (pcf_sbi_discover_and_send(target_nf_type, &pcf_ue->sbi, stream,
                 (ogs_sbi_build_f)build, pcf_ue, data) != true) {
         ogs_error("pcf_ue_sbi_discover_and_send() failed");
-        ogs_sbi_server_send_error(stream,
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(stream,
                 OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT, NULL,
-                "Cannot discover", pcf_ue->supi);
-        return;
+                "Cannot discover", pcf_ue->supi));
+        return false;
     }
+
+    return true;
 }
 
-void pcf_sess_sbi_discover_and_send(OpenAPI_nf_type_e target_nf_type,
+bool pcf_sess_sbi_discover_and_send(OpenAPI_nf_type_e target_nf_type,
         pcf_sess_t *sess, ogs_sbi_stream_t *stream, void *data,
         ogs_sbi_request_t *(*build)(pcf_sess_t *sess, void *data))
 {
     if (pcf_sbi_discover_and_send(target_nf_type, &sess->sbi, stream,
                 (ogs_sbi_build_f)build, sess, data) != true) {
         ogs_error("pcf_sess_sbi_discover_and_send() failed");
-        ogs_sbi_server_send_error(stream,
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(stream,
                 OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT, NULL,
-                "Cannot discover", NULL);
-        return;
+                "Cannot discover", NULL));
+        return false;
     }
+
+    return true;
 }
 
 static int client_notify_cb(ogs_sbi_response_t *response, void *data)
@@ -216,7 +227,7 @@ static int client_notify_cb(ogs_sbi_response_t *response, void *data)
     return OGS_OK;
 }
 
-void pcf_sbi_send_am_policy_control_notify(pcf_ue_t *pcf_ue)
+bool pcf_sbi_send_am_policy_control_notify(pcf_ue_t *pcf_ue)
 {
     ogs_sbi_request_t *request = NULL;
     ogs_sbi_client_t *client = NULL;
@@ -226,11 +237,11 @@ void pcf_sbi_send_am_policy_control_notify(pcf_ue_t *pcf_ue)
     ogs_assert(client);
 
     request = pcf_namf_callback_build_am_policy_control(pcf_ue, NULL);
-    ogs_assert(request);
-    ogs_sbi_client_send_request(client, client_notify_cb, request, NULL);
+    ogs_expect_or_return_val(request, false);
+    return ogs_sbi_client_send_request(client, client_notify_cb, request, NULL);
 }
 
-void pcf_sbi_send_smpolicycontrol_notify(pcf_sess_t *sess)
+bool pcf_sbi_send_smpolicycontrol_notify(pcf_sess_t *sess)
 {
     ogs_sbi_request_t *request = NULL;
     ogs_sbi_client_t *client = NULL;
@@ -240,6 +251,6 @@ void pcf_sbi_send_smpolicycontrol_notify(pcf_sess_t *sess)
     ogs_assert(client);
 
     request = pcf_nsmf_callback_build_smpolicycontrol(sess, NULL);
-    ogs_assert(request);
-    ogs_sbi_client_send_request(client, client_notify_cb, request, NULL);
+    ogs_expect_or_return_val(request, false);
+    return ogs_sbi_client_send_request(client, client_notify_cb, request, NULL);
 }

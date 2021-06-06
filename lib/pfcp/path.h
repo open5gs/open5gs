@@ -64,22 +64,22 @@ int ogs_pfcp_sendto(ogs_pfcp_node_t *node, ogs_pkbuf_t *pkbuf);
 
 ogs_pkbuf_t *ogs_pfcp_handle_echo_req(ogs_pkbuf_t *pkt);
 
-void ogs_pfcp_send_heartbeat_request(ogs_pfcp_node_t *node,
+int ogs_pfcp_send_heartbeat_request(ogs_pfcp_node_t *node,
         void (*cb)(ogs_pfcp_xact_t *xact, void *data));
-void ogs_pfcp_send_heartbeat_response(ogs_pfcp_xact_t *xact);
+int ogs_pfcp_send_heartbeat_response(ogs_pfcp_xact_t *xact);
 
-void ogs_pfcp_cp_send_association_setup_request(ogs_pfcp_node_t *node,
+int ogs_pfcp_cp_send_association_setup_request(ogs_pfcp_node_t *node,
         void (*cb)(ogs_pfcp_xact_t *xact, void *data));
-void ogs_pfcp_cp_send_association_setup_response(ogs_pfcp_xact_t *xact,
+int ogs_pfcp_cp_send_association_setup_response(ogs_pfcp_xact_t *xact,
         uint8_t cause);
 
-void ogs_pfcp_up_send_association_setup_request(ogs_pfcp_node_t *node,
+int ogs_pfcp_up_send_association_setup_request(ogs_pfcp_node_t *node,
         void (*cb)(ogs_pfcp_xact_t *xact, void *data));
-void ogs_pfcp_up_send_association_setup_response(ogs_pfcp_xact_t *xact,
+int ogs_pfcp_up_send_association_setup_response(ogs_pfcp_xact_t *xact,
         uint8_t cause);
 
 void ogs_pfcp_send_g_pdu(ogs_pfcp_pdr_t *pdr, ogs_pkbuf_t *sendbuf);
-void ogs_pfcp_send_end_marker(ogs_pfcp_pdr_t *pdr);
+int ogs_pfcp_send_end_marker(ogs_pfcp_pdr_t *pdr);
 
 void ogs_pfcp_send_buffered_packet(ogs_pfcp_pdr_t *pdr);
 

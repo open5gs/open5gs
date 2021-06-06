@@ -271,7 +271,7 @@ OpenAPI_udm_info_t *OpenAPI_udm_info_parseFromJSON(cJSON *udm_infoJSON)
                 ogs_error("OpenAPI_udm_info_parseFromJSON() failed [routing_indicators]");
                 goto end;
             }
-            OpenAPI_list_add(routing_indicatorsList, ogs_strdup(routing_indicators_local->valuestring));
+            OpenAPI_list_add(routing_indicatorsList, ogs_strdup_or_assert(routing_indicators_local->valuestring));
         }
     }
 
@@ -299,7 +299,7 @@ OpenAPI_udm_info_t *OpenAPI_udm_info_parseFromJSON(cJSON *udm_infoJSON)
     }
 
     udm_info_local_var = OpenAPI_udm_info_create (
-        group_id ? ogs_strdup(group_id->valuestring) : NULL,
+        group_id ? ogs_strdup_or_assert(group_id->valuestring) : NULL,
         supi_ranges ? supi_rangesList : NULL,
         gpsi_ranges ? gpsi_rangesList : NULL,
         external_group_identifiers_ranges ? external_group_identifiers_rangesList : NULL,

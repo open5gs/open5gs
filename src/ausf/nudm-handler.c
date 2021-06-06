@@ -60,9 +60,10 @@ bool ausf_nudm_ueau_handle_get(ausf_ue_t *ausf_ue,
     AuthenticationInfoResult = recvmsg->AuthenticationInfoResult;
     if (!AuthenticationInfoResult) {
         ogs_error("[%s] No AuthenticationInfoResult", ausf_ue->suci);
-        ogs_sbi_server_send_error(stream,
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(stream,
                 OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR,
-                recvmsg, "No AuthenticationInfoResult", ausf_ue->suci);
+                recvmsg, "No AuthenticationInfoResult", ausf_ue->suci));
         return false;
     }
 
@@ -71,9 +72,10 @@ bool ausf_nudm_ueau_handle_get(ausf_ue_t *ausf_ue,
             OpenAPI_auth_type_5G_AKA) {
         ogs_error("[%s] Not supported Auth Method [%d]",
             ausf_ue->suci, AuthenticationInfoResult->auth_type);
-        ogs_sbi_server_send_error(stream,
-            OGS_SBI_HTTP_STATUS_NOT_IMPLEMENTED,
-            recvmsg, "Not supported Auth Method", ausf_ue->suci);
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(stream,
+                OGS_SBI_HTTP_STATUS_NOT_IMPLEMENTED,
+                recvmsg, "Not supported Auth Method", ausf_ue->suci));
         return false;
     }
 
@@ -81,51 +83,57 @@ bool ausf_nudm_ueau_handle_get(ausf_ue_t *ausf_ue,
         AuthenticationInfoResult->authentication_vector;
     if (!AuthenticationVector) {
         ogs_error("[%s] No AuthenticationVector", ausf_ue->suci);
-        ogs_sbi_server_send_error(stream,
-            OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR,
-            recvmsg, "No AuthenticationVector", ausf_ue->suci);
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(stream,
+                OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR,
+                recvmsg, "No AuthenticationVector", ausf_ue->suci));
         return false;
     }
 
     if (AuthenticationVector->av_type != OpenAPI_av_type_5G_HE_AKA) {
         ogs_error("[%s] Not supported Auth Method [%d]",
             ausf_ue->suci, AuthenticationVector->av_type);
-        ogs_sbi_server_send_error(stream,
-            OGS_SBI_HTTP_STATUS_FORBIDDEN,
-            recvmsg, "Not supported Auth Method", ausf_ue->suci);
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(stream,
+                OGS_SBI_HTTP_STATUS_FORBIDDEN,
+                recvmsg, "Not supported Auth Method", ausf_ue->suci));
         return false;
     }
 
     if (!AuthenticationVector->rand) {
         ogs_error("[%s] No AuthenticationVector.rand", ausf_ue->suci);
-        ogs_sbi_server_send_error(stream,
-            OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR,
-            recvmsg, "No AuthenticationVector.rand", ausf_ue->suci);
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(stream,
+                OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR,
+                recvmsg, "No AuthenticationVector.rand", ausf_ue->suci));
         return false;
     }
 
     if (!AuthenticationVector->xres_star) {
         ogs_error("[%s] No AuthenticationVector.xresStar",
                 ausf_ue->suci);
-        ogs_sbi_server_send_error(stream,
-            OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR,
-            recvmsg, "No AuthenticationVector.xresStar", ausf_ue->suci);
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(stream,
+                OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR,
+                recvmsg, "No AuthenticationVector.xresStar", ausf_ue->suci));
         return false;
     }
 
     if (!AuthenticationVector->autn) {
         ogs_error("[%s] No AuthenticationVector.autn", ausf_ue->suci);
-        ogs_sbi_server_send_error(stream,
-            OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR,
-            recvmsg, "No AuthenticationVector.autn", ausf_ue->suci);
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(stream,
+                OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR,
+                recvmsg, "No AuthenticationVector.autn", ausf_ue->suci));
         return false;
     }
 
     if (!AuthenticationVector->kausf) {
         ogs_error("[%s] No AuthenticationVector.kausf", ausf_ue->suci);
-        ogs_sbi_server_send_error(stream,
-            OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR,
-            recvmsg, "No AuthenticationVector.kausf", ausf_ue->suci);
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(stream,
+                OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR,
+                recvmsg, "No AuthenticationVector.kausf", ausf_ue->suci));
         return false;
     }
 
@@ -195,7 +203,7 @@ bool ausf_nudm_ueau_handle_get(ausf_ue_t *ausf_ue,
     response = ogs_sbi_build_response(&sendmsg,
         OGS_SBI_HTTP_STATUS_CREATED);
     ogs_assert(response);
-    ogs_sbi_server_send_response(stream, response);
+    ogs_assert(true == ogs_sbi_server_send_response(stream, response));
 
     OpenAPI_list_free(UeAuthenticationCtx._links);
     OpenAPI_map_free(LinksValueScheme);
@@ -225,21 +233,24 @@ bool ausf_nudm_ueau_handle_result_confirmation_inform(ausf_ue_t *ausf_ue,
     AuthEvent = recvmsg->AuthEvent;
     if (!AuthEvent) {
         ogs_error("[%s] No AuthEvent", ausf_ue->suci);
-        ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                recvmsg, "No AuthEvent", ausf_ue->suci);
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                    recvmsg, "No AuthEvent", ausf_ue->suci));
         return false;
     }
 
     if (!recvmsg->http.location) {
         ogs_error("[%s] No Location", ausf_ue->suci);
-        ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                recvmsg, "No Location", ausf_ue->suci);
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                    recvmsg, "No Location", ausf_ue->suci));
         return false;
     }
 
     if (ausf_ue->auth_events_url)
         ogs_free(ausf_ue->auth_events_url);
     ausf_ue->auth_events_url = ogs_strdup(recvmsg->http.location);
+    ogs_assert(ausf_ue->auth_events_url);
 
     memset(&ConfirmationDataResponse, 0, sizeof(ConfirmationDataResponse));
 
@@ -263,7 +274,7 @@ bool ausf_nudm_ueau_handle_result_confirmation_inform(ausf_ue_t *ausf_ue,
 
     response = ogs_sbi_build_response(&sendmsg, OGS_SBI_HTTP_STATUS_OK);
     ogs_assert(response);
-    ogs_sbi_server_send_response(stream, response);
+    ogs_assert(true == ogs_sbi_server_send_response(stream, response));
 
     return true;
 }

@@ -103,7 +103,7 @@ OpenAPI_service_to_tx_t *OpenAPI_service_to_tx_parseFromJSON(cJSON *service_to_t
             ogs_error("OpenAPI_service_to_tx_parseFromJSON() failed [ser_ids]");
             goto end;
         }
-        OpenAPI_list_add(ser_idsList, ogs_strdup(ser_ids_local->valuestring));
+        OpenAPI_list_add(ser_idsList, ogs_strdup_or_assert(ser_ids_local->valuestring));
     }
 
     cJSON *tx_profile = cJSON_GetObjectItemCaseSensitive(service_to_txJSON, "txProfile");
@@ -130,7 +130,7 @@ OpenAPI_service_to_tx_t *OpenAPI_service_to_tx_parseFromJSON(cJSON *service_to_t
 
     service_to_tx_local_var = OpenAPI_service_to_tx_create (
         ser_idsList,
-        ogs_strdup(tx_profile->valuestring),
+        ogs_strdup_or_assert(tx_profile->valuestring),
         rat_local_nonprim
         );
 

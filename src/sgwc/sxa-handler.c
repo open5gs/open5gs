@@ -211,7 +211,7 @@ void sgwc_sxa_handle_session_establishment_response(
             ogs_assert(far);
 
             if (pdr->src_if == OGS_PFCP_INTERFACE_CP_FUNCTION)
-                ogs_pfcp_setup_pdr_gtpu_node(pdr);
+                ogs_assert(OGS_ERROR != ogs_pfcp_setup_pdr_gtpu_node(pdr));
 
             if (far->dst_if == OGS_PFCP_INTERFACE_CP_FUNCTION)
                 ogs_pfcp_far_teid_hash_set(far);
@@ -226,9 +226,10 @@ void sgwc_sxa_handle_session_establishment_response(
                     if (tunnel->local_addr6)
                         ogs_freeaddrinfo(tunnel->local_addr6);
 
-                    ogs_pfcp_f_teid_to_sockaddr(
+                    ogs_assert(OGS_OK ==
+                        ogs_pfcp_f_teid_to_sockaddr(
                             &pdr->f_teid, pdr->f_teid_len,
-                            &tunnel->local_addr, &tunnel->local_addr6);
+                            &tunnel->local_addr, &tunnel->local_addr6));
                     tunnel->local_teid = pdr->f_teid.teid;
                 }
             }
@@ -430,7 +431,7 @@ void sgwc_sxa_handle_session_modification_response(
             ogs_assert(far);
 
             if (pdr->src_if == OGS_PFCP_INTERFACE_CP_FUNCTION)
-                ogs_pfcp_setup_pdr_gtpu_node(pdr);
+                ogs_assert(OGS_ERROR != ogs_pfcp_setup_pdr_gtpu_node(pdr));
 
             if (far->dst_if == OGS_PFCP_INTERFACE_CP_FUNCTION)
                 ogs_pfcp_far_teid_hash_set(far);
@@ -445,9 +446,10 @@ void sgwc_sxa_handle_session_modification_response(
                     if (tunnel->local_addr6)
                         ogs_freeaddrinfo(tunnel->local_addr6);
 
-                    ogs_pfcp_f_teid_to_sockaddr(
+                    ogs_assert(OGS_OK ==
+                        ogs_pfcp_f_teid_to_sockaddr(
                             &pdr->f_teid, pdr->f_teid_len,
-                            &tunnel->local_addr, &tunnel->local_addr6);
+                            &tunnel->local_addr, &tunnel->local_addr6));
                     tunnel->local_teid = pdr->f_teid.teid;
                 }
             }
@@ -630,7 +632,7 @@ void sgwc_sxa_handle_session_modification_response(
             rv = ogs_gtp_sockaddr_to_f_teid(
                     ul_tunnel->local_addr, ul_tunnel->local_addr6,
                     &sgw_s1u_teid, &len);
-            ogs_expect(rv == OGS_OK);
+            ogs_assert(rv == OGS_OK);
             gtp_req->bearer_contexts.s1_u_enodeb_f_teid.presence = 1;
             gtp_req->bearer_contexts.s1_u_enodeb_f_teid.data = &sgw_s1u_teid;
             gtp_req->bearer_contexts.s1_u_enodeb_f_teid.len = len;
@@ -677,7 +679,7 @@ void sgwc_sxa_handle_session_modification_response(
             rv = ogs_gtp_sockaddr_to_f_teid(
                     dl_tunnel->local_addr, dl_tunnel->local_addr6,
                     &sgw_s5u_teid, &len);
-            ogs_expect(rv == OGS_OK);
+            ogs_assert(rv == OGS_OK);
             gtp_rsp->bearer_contexts.s5_s8_u_sgw_f_teid.presence = 1;
             gtp_rsp->bearer_contexts.s5_s8_u_sgw_f_teid.data = &sgw_s5u_teid;
             gtp_rsp->bearer_contexts.s5_s8_u_sgw_f_teid.len = len;
@@ -766,7 +768,7 @@ void sgwc_sxa_handle_session_modification_response(
                             rv = ogs_gtp_sockaddr_to_f_teid(
                                 tunnel->local_addr, tunnel->local_addr6,
                                 &rsp_dl_teid[i], &len);
-                            ogs_expect(rv == OGS_OK);
+                            ogs_assert(rv == OGS_OK);
                             gtp_rsp->bearer_contexts[i].
                                 s4_u_sgsn_f_teid.presence = 1;
                             gtp_rsp->bearer_contexts[i].
@@ -787,7 +789,7 @@ void sgwc_sxa_handle_session_modification_response(
                             rv = ogs_gtp_sockaddr_to_f_teid(
                                 tunnel->local_addr, tunnel->local_addr6,
                                 &rsp_ul_teid[i], &len);
-                            ogs_expect(rv == OGS_OK);
+                            ogs_assert(rv == OGS_OK);
                             gtp_rsp->bearer_contexts[i].
                                 s2b_u_epdg_f_teid_5.presence = 1;
                             gtp_rsp->bearer_contexts[i].
@@ -853,7 +855,7 @@ void sgwc_sxa_handle_session_modification_response(
             rv = ogs_gtp_sockaddr_to_f_teid(
                     ogs_gtp_self()->gtpc_addr, ogs_gtp_self()->gtpc_addr6,
                     &sgw_s11_teid, &len);
-            ogs_expect(rv == OGS_OK);
+            ogs_assert(rv == OGS_OK);
             gtp_rsp->sender_f_teid_for_control_plane.presence = 1;
             gtp_rsp->sender_f_teid_for_control_plane.data = &sgw_s11_teid;
             gtp_rsp->sender_f_teid_for_control_plane.len = len;
@@ -866,7 +868,7 @@ void sgwc_sxa_handle_session_modification_response(
             rv = ogs_gtp_sockaddr_to_f_teid(
                 ul_tunnel->local_addr, ul_tunnel->local_addr6,
                 &sgw_s1u_teid, &len);
-            ogs_expect(rv == OGS_OK);
+            ogs_assert(rv == OGS_OK);
             gtp_rsp->bearer_contexts_created.s1_u_enodeb_f_teid.presence = 1;
             gtp_rsp->bearer_contexts_created.s1_u_enodeb_f_teid.data =
                 &sgw_s1u_teid;

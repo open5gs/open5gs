@@ -84,7 +84,7 @@ OpenAPI_n1_n2_msg_txfr_failure_notification_t *OpenAPI_n1_n2_msg_txfr_failure_no
 
     n1_n2_msg_txfr_failure_notification_local_var = OpenAPI_n1_n2_msg_txfr_failure_notification_create (
         causeVariable,
-        ogs_strdup(n1n2_msg_data_uri->valuestring)
+        ogs_strdup_or_assert(n1n2_msg_data_uri->valuestring)
         );
 
     return n1_n2_msg_txfr_failure_notification_local_var;

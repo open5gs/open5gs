@@ -44,13 +44,23 @@ extern "C" {
         memcpy((__dST), (__sRC), sizeof(*(__sRC))*sizeof(uint8_t)); \
     } while(0)
 
-#define ogs_malloc(size) ogs_malloc_debug(size, OGS_FILE_LINE)
-void *ogs_malloc_debug(size_t size, const char *file_line);
+#define ogs_malloc(size) ogs_malloc_debug(size, OGS_FILE_LINE, false)
+#define ogs_malloc_or_assert(size) \
+    ogs_malloc_debug(size, OGS_FILE_LINE, true)
+void *ogs_malloc_debug(size_t size, const char *file_line, bool abort);
 void ogs_free(void *ptr);
-#define ogs_calloc(nmemb, size) ogs_calloc_debug(nmemb, size, OGS_FILE_LINE)
-void *ogs_calloc_debug(size_t nmemb, size_t size, const char *file_line);
-#define ogs_realloc(ptr, size) ogs_realloc_debug(ptr, size, OGS_FILE_LINE)
-void *ogs_realloc_debug(void *ptr, size_t size, const char *file_line);
+#define ogs_calloc(nmemb, size) \
+    ogs_calloc_debug(nmemb, size, OGS_FILE_LINE, false)
+#define ogs_calloc_or_assert(nmemb, size) \
+    ogs_calloc_debug(nmemb, size, OGS_FILE_LINE, true)
+void *ogs_calloc_debug(
+        size_t nmemb, size_t size, const char *file_line, bool abort);
+#define ogs_realloc(ptr, size) \
+    ogs_realloc_debug(ptr, size, OGS_FILE_LINE, false)
+#define ogs_realloc_or_assert(ptr, size) \
+    ogs_realloc_debug(ptr, size, OGS_FILE_LINE, true)
+void *ogs_realloc_debug(
+        void *ptr, size_t size, const char *file_line, bool abort);
 
 #ifdef __cplusplus
 }

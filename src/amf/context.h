@@ -509,7 +509,9 @@ typedef struct amf_sess_s {
         AMF_SESS_CLEAR_PAGING_INFO(__sESS) \
         (__sESS)->paging.ongoing = true; \
         ((__sESS)->paging.location) = ogs_strdup(__lOCATION); \
+        ogs_assert((__sESS)->paging.location); \
         ((__sESS)->paging.n1n2_failure_txf_notif_uri) = ogs_strdup(__uRI); \
+        ogs_assert((__sESS)->paging.n1n2_failure_txf_notif_uri); \
     } while(0);
 #define AMF_SESS_CLEAR_PAGING_INFO(__sESS) \
     do { \

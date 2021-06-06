@@ -322,7 +322,7 @@ OpenAPI_scp_info_t *OpenAPI_scp_info_parseFromJSON(cJSON *scp_infoJSON)
                 ogs_error("OpenAPI_scp_info_parseFromJSON() failed [address_domains]");
                 goto end;
             }
-            OpenAPI_list_add(address_domainsList, ogs_strdup(address_domains_local->valuestring));
+            OpenAPI_list_add(address_domainsList, ogs_strdup_or_assert(address_domains_local->valuestring));
         }
     }
 
@@ -342,7 +342,7 @@ OpenAPI_scp_info_t *OpenAPI_scp_info_parseFromJSON(cJSON *scp_infoJSON)
                 ogs_error("OpenAPI_scp_info_parseFromJSON() failed [ipv4_addresses]");
                 goto end;
             }
-            OpenAPI_list_add(ipv4_addressesList, ogs_strdup(ipv4_addresses_local->valuestring));
+            OpenAPI_list_add(ipv4_addressesList, ogs_strdup_or_assert(ipv4_addresses_local->valuestring));
         }
     }
 
@@ -362,7 +362,7 @@ OpenAPI_scp_info_t *OpenAPI_scp_info_parseFromJSON(cJSON *scp_infoJSON)
                 ogs_error("OpenAPI_scp_info_parseFromJSON() failed [ipv6_prefixes]");
                 goto end;
             }
-            OpenAPI_list_add(ipv6_prefixesList, ogs_strdup(ipv6_prefixes_local->valuestring));
+            OpenAPI_list_add(ipv6_prefixesList, ogs_strdup_or_assert(ipv6_prefixes_local->valuestring));
         }
     }
 
@@ -428,7 +428,7 @@ OpenAPI_scp_info_t *OpenAPI_scp_info_parseFromJSON(cJSON *scp_infoJSON)
                 ogs_error("OpenAPI_scp_info_parseFromJSON() failed [served_nf_set_id_list]");
                 goto end;
             }
-            OpenAPI_list_add(served_nf_set_id_listList, ogs_strdup(served_nf_set_id_list_local->valuestring));
+            OpenAPI_list_add(served_nf_set_id_listList, ogs_strdup_or_assert(served_nf_set_id_list_local->valuestring));
         }
     }
 
@@ -457,7 +457,7 @@ OpenAPI_scp_info_t *OpenAPI_scp_info_parseFromJSON(cJSON *scp_infoJSON)
 
     scp_info_local_var = OpenAPI_scp_info_create (
         scp_domain_info_list ? scp_domain_info_listList : NULL,
-        scp_prefix ? ogs_strdup(scp_prefix->valuestring) : NULL,
+        scp_prefix ? ogs_strdup_or_assert(scp_prefix->valuestring) : NULL,
         scp_ports ? scp_portsList : NULL,
         address_domains ? address_domainsList : NULL,
         ipv4_addresses ? ipv4_addressesList : NULL,

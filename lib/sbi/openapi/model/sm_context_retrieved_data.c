@@ -149,7 +149,7 @@ OpenAPI_sm_context_retrieved_data_t *OpenAPI_sm_context_retrieved_data_parseFrom
     }
 
     sm_context_retrieved_data_local_var = OpenAPI_sm_context_retrieved_data_create (
-        ogs_strdup(ue_eps_pdn_connection->valuestring),
+        ogs_strdup_or_assert(ue_eps_pdn_connection->valuestring),
         sm_context ? sm_context_local_nonprim : NULL,
         small_data_rate_status ? small_data_rate_status_local_nonprim : NULL,
         apn_rate_status ? apn_rate_status_local_nonprim : NULL,

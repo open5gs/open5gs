@@ -8,7 +8,7 @@
 extern "C" {
 #endif
 
-#define OpenAPI_malloc(__sIZE) __sIZE == 0 ? NULL : ogs_malloc(__sIZE)
+#define OpenAPI_malloc(__sIZE) __sIZE == 0 ? NULL : ogs_malloc_or_assert(__sIZE)
 
 typedef struct OpenAPI_list_s OpenAPI_list_t;
 

@@ -100,9 +100,9 @@ OpenAPI_nidd_information_t *OpenAPI_nidd_information_parseFromJSON(cJSON *nidd_i
     }
 
     nidd_information_local_var = OpenAPI_nidd_information_create (
-        ogs_strdup(af_id->valuestring),
-        gpsi ? ogs_strdup(gpsi->valuestring) : NULL,
-        ext_group_id ? ogs_strdup(ext_group_id->valuestring) : NULL
+        ogs_strdup_or_assert(af_id->valuestring),
+        gpsi ? ogs_strdup_or_assert(gpsi->valuestring) : NULL,
+        ext_group_id ? ogs_strdup_or_assert(ext_group_id->valuestring) : NULL
         );
 
     return nidd_information_local_var;

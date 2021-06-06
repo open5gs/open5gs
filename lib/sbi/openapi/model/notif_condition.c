@@ -101,7 +101,7 @@ OpenAPI_notif_condition_t *OpenAPI_notif_condition_parseFromJSON(cJSON *notif_co
                 ogs_error("OpenAPI_notif_condition_parseFromJSON() failed [monitored_attributes]");
                 goto end;
             }
-            OpenAPI_list_add(monitored_attributesList, ogs_strdup(monitored_attributes_local->valuestring));
+            OpenAPI_list_add(monitored_attributesList, ogs_strdup_or_assert(monitored_attributes_local->valuestring));
         }
     }
 
@@ -121,7 +121,7 @@ OpenAPI_notif_condition_t *OpenAPI_notif_condition_parseFromJSON(cJSON *notif_co
                 ogs_error("OpenAPI_notif_condition_parseFromJSON() failed [unmonitored_attributes]");
                 goto end;
             }
-            OpenAPI_list_add(unmonitored_attributesList, ogs_strdup(unmonitored_attributes_local->valuestring));
+            OpenAPI_list_add(unmonitored_attributesList, ogs_strdup_or_assert(unmonitored_attributes_local->valuestring));
         }
     }
 

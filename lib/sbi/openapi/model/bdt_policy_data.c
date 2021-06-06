@@ -142,10 +142,10 @@ OpenAPI_bdt_policy_data_t *OpenAPI_bdt_policy_data_parseFromJSON(cJSON *bdt_poli
     }
 
     bdt_policy_data_local_var = OpenAPI_bdt_policy_data_create (
-        inter_group_id ? ogs_strdup(inter_group_id->valuestring) : NULL,
-        supi ? ogs_strdup(supi->valuestring) : NULL,
-        ogs_strdup(bdt_ref_id->valuestring),
-        dnn ? ogs_strdup(dnn->valuestring) : NULL,
+        inter_group_id ? ogs_strdup_or_assert(inter_group_id->valuestring) : NULL,
+        supi ? ogs_strdup_or_assert(supi->valuestring) : NULL,
+        ogs_strdup_or_assert(bdt_ref_id->valuestring),
+        dnn ? ogs_strdup_or_assert(dnn->valuestring) : NULL,
         snssai ? snssai_local_nonprim : NULL
         );
 

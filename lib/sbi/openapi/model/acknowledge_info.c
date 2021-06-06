@@ -119,10 +119,10 @@ OpenAPI_acknowledge_info_t *OpenAPI_acknowledge_info_parseFromJSON(cJSON *acknow
     }
 
     acknowledge_info_local_var = OpenAPI_acknowledge_info_create (
-        sor_mac_iue ? ogs_strdup(sor_mac_iue->valuestring) : NULL,
-        upu_mac_iue ? ogs_strdup(upu_mac_iue->valuestring) : NULL,
-        secured_packet ? ogs_strdup(secured_packet->valuestring) : NULL,
-        ogs_strdup(provisioning_time->valuestring)
+        sor_mac_iue ? ogs_strdup_or_assert(sor_mac_iue->valuestring) : NULL,
+        upu_mac_iue ? ogs_strdup_or_assert(upu_mac_iue->valuestring) : NULL,
+        secured_packet ? ogs_strdup_or_assert(secured_packet->valuestring) : NULL,
+        ogs_strdup_or_assert(provisioning_time->valuestring)
         );
 
     return acknowledge_info_local_var;

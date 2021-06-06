@@ -88,7 +88,7 @@ OpenAPI_service_id_to_pppr_t *OpenAPI_service_id_to_pppr_parseFromJSON(cJSON *se
             ogs_error("OpenAPI_service_id_to_pppr_parseFromJSON() failed [ser_ids]");
             goto end;
         }
-        OpenAPI_list_add(ser_idsList, ogs_strdup(ser_ids_local->valuestring));
+        OpenAPI_list_add(ser_idsList, ogs_strdup_or_assert(ser_ids_local->valuestring));
     }
 
     cJSON *pppr = cJSON_GetObjectItemCaseSensitive(service_id_to_ppprJSON, "pppr");

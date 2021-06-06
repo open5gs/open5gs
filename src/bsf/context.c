@@ -42,7 +42,9 @@ void bsf_context_init(void)
     ogs_pool_init(&bsf_sess_pool, ogs_app()->pool.sess);
 
     self.ipv4addr_hash = ogs_hash_make();
+    ogs_assert(self.ipv4addr_hash);
     self.ipv6prefix_hash = ogs_hash_make();
+    ogs_assert(self.ipv6prefix_hash);
 
     context_initialized = 1;
 }
@@ -316,7 +318,7 @@ bsf_sess_t *bsf_sess_find_by_ipv6prefix(char *ipv6prefix_string)
 
     rv = ogs_ipv6prefix_from_string(
             ipv6prefix.addr6, &ipv6prefix.len, ipv6prefix_string);
-    ogs_expect_or_return_val(rv == OGS_OK, NULL);
+    ogs_assert(rv == OGS_OK);
 
     ogs_assert(ipv6prefix.len == OGS_IPV6_128_PREFIX_LEN);
 

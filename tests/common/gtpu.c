@@ -29,14 +29,18 @@ ogs_socknode_t *test_gtpu_server(int index, int family)
 
     if (index == 1) {
         if (family == AF_INET6)
-            ogs_copyaddrinfo(&addr, test_self()->gnb1_addr6);
+            ogs_assert(OGS_OK ==
+                ogs_copyaddrinfo(&addr, test_self()->gnb1_addr6));
         else
-            ogs_copyaddrinfo(&addr, test_self()->gnb1_addr);
+            ogs_assert(OGS_OK ==
+                ogs_copyaddrinfo(&addr, test_self()->gnb1_addr));
     } else if (index == 2) {
         if (family == AF_INET6)
-            ogs_copyaddrinfo(&addr, test_self()->gnb2_addr6);
+            ogs_assert(OGS_OK ==
+                ogs_copyaddrinfo(&addr, test_self()->gnb2_addr6));
         else
-            ogs_copyaddrinfo(&addr, test_self()->gnb2_addr);
+            ogs_assert(OGS_OK ==
+                ogs_copyaddrinfo(&addr, test_self()->gnb2_addr));
     } else
         ogs_assert_if_reached();
 

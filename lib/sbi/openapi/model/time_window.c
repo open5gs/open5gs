@@ -82,8 +82,8 @@ OpenAPI_time_window_t *OpenAPI_time_window_parseFromJSON(cJSON *time_windowJSON)
     }
 
     time_window_local_var = OpenAPI_time_window_create (
-        ogs_strdup(start_time->valuestring),
-        ogs_strdup(stop_time->valuestring)
+        ogs_strdup_or_assert(start_time->valuestring),
+        ogs_strdup_or_assert(stop_time->valuestring)
         );
 
     return time_window_local_var;

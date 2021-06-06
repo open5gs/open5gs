@@ -61,7 +61,7 @@ OpenAPI_pfd_data_for_app_ext_all_of_t *OpenAPI_pfd_data_for_app_ext_all_of_parse
     }
 
     pfd_data_for_app_ext_all_of_local_var = OpenAPI_pfd_data_for_app_ext_all_of_create (
-        supp_feat ? ogs_strdup(supp_feat->valuestring) : NULL
+        supp_feat ? ogs_strdup_or_assert(supp_feat->valuestring) : NULL
         );
 
     return pfd_data_for_app_ext_all_of_local_var;

@@ -306,7 +306,7 @@ OpenAPI_pdu_session_management_data_t *OpenAPI_pdu_session_management_data_parse
                 ogs_error("OpenAPI_pdu_session_management_data_parseFromJSON() failed [ipv6_prefix]");
                 goto end;
             }
-            OpenAPI_list_add(ipv6_prefixList, ogs_strdup(ipv6_prefix_local->valuestring));
+            OpenAPI_list_add(ipv6_prefixList, ogs_strdup_or_assert(ipv6_prefix_local->valuestring));
         }
     }
 
@@ -326,7 +326,7 @@ OpenAPI_pdu_session_management_data_t *OpenAPI_pdu_session_management_data_parse
                 ogs_error("OpenAPI_pdu_session_management_data_parseFromJSON() failed [ipv6_addrs]");
                 goto end;
             }
-            OpenAPI_list_add(ipv6_addrsList, ogs_strdup(ipv6_addrs_local->valuestring));
+            OpenAPI_list_add(ipv6_addrsList, ogs_strdup_or_assert(ipv6_addrs_local->valuestring));
         }
     }
 
@@ -370,17 +370,17 @@ OpenAPI_pdu_session_management_data_t *OpenAPI_pdu_session_management_data_parse
 
     pdu_session_management_data_local_var = OpenAPI_pdu_session_management_data_create (
         pdu_session_status ? pdu_session_status_local_nonprim : NULL,
-        pdu_session_status_ts ? ogs_strdup(pdu_session_status_ts->valuestring) : NULL,
-        dnai ? ogs_strdup(dnai->valuestring) : NULL,
-        dnai_ts ? ogs_strdup(dnai_ts->valuestring) : NULL,
+        pdu_session_status_ts ? ogs_strdup_or_assert(pdu_session_status_ts->valuestring) : NULL,
+        dnai ? ogs_strdup_or_assert(dnai->valuestring) : NULL,
+        dnai_ts ? ogs_strdup_or_assert(dnai_ts->valuestring) : NULL,
         n6_traffic_routing_info ? n6_traffic_routing_infoList : NULL,
-        n6_traffic_routing_info_ts ? ogs_strdup(n6_traffic_routing_info_ts->valuestring) : NULL,
-        ipv4_addr ? ogs_strdup(ipv4_addr->valuestring) : NULL,
+        n6_traffic_routing_info_ts ? ogs_strdup_or_assert(n6_traffic_routing_info_ts->valuestring) : NULL,
+        ipv4_addr ? ogs_strdup_or_assert(ipv4_addr->valuestring) : NULL,
         ipv6_prefix ? ipv6_prefixList : NULL,
         ipv6_addrs ? ipv6_addrsList : NULL,
         pdu_sess_type ? pdu_sess_typeVariable : 0,
-        ip_addr_ts ? ogs_strdup(ip_addr_ts->valuestring) : NULL,
-        dnn ? ogs_strdup(dnn->valuestring) : NULL,
+        ip_addr_ts ? ogs_strdup_or_assert(ip_addr_ts->valuestring) : NULL,
+        dnn ? ogs_strdup_or_assert(dnn->valuestring) : NULL,
         pdu_session_id ? pdu_session_id->valuedouble : 0
         );
 

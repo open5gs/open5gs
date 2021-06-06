@@ -274,16 +274,16 @@ OpenAPI_ee_subscription_t *OpenAPI_ee_subscription_parseFromJSON(cJSON *ee_subsc
     }
 
     ee_subscription_local_var = OpenAPI_ee_subscription_create (
-        ogs_strdup(callback_reference->valuestring),
+        ogs_strdup_or_assert(callback_reference->valuestring),
         monitoring_configurationsList,
         reporting_options ? reporting_options_local_nonprim : NULL,
-        supported_features ? ogs_strdup(supported_features->valuestring) : NULL,
-        subscription_id ? ogs_strdup(subscription_id->valuestring) : NULL,
+        supported_features ? ogs_strdup_or_assert(supported_features->valuestring) : NULL,
+        subscription_id ? ogs_strdup_or_assert(subscription_id->valuestring) : NULL,
         context_info ? context_info_local_nonprim : NULL,
         epc_applied_ind ? epc_applied_ind->valueint : 0,
-        scef_diam_host ? ogs_strdup(scef_diam_host->valuestring) : NULL,
-        scef_diam_realm ? ogs_strdup(scef_diam_realm->valuestring) : NULL,
-        notify_correlation_id ? ogs_strdup(notify_correlation_id->valuestring) : NULL
+        scef_diam_host ? ogs_strdup_or_assert(scef_diam_host->valuestring) : NULL,
+        scef_diam_realm ? ogs_strdup_or_assert(scef_diam_realm->valuestring) : NULL,
+        notify_correlation_id ? ogs_strdup_or_assert(notify_correlation_id->valuestring) : NULL
         );
 
     return ee_subscription_local_var;

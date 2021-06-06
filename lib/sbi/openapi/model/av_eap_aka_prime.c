@@ -161,11 +161,11 @@ OpenAPI_av_eap_aka_prime_t *OpenAPI_av_eap_aka_prime_parseFromJSON(cJSON *av_eap
 
     av_eap_aka_prime_local_var = OpenAPI_av_eap_aka_prime_create (
         av_typeVariable,
-        ogs_strdup(rand->valuestring),
-        xres ? ogs_strdup(xres->valuestring) : NULL,
-        ogs_strdup(autn->valuestring),
-        ck_prime ? ogs_strdup(ck_prime->valuestring) : NULL,
-        ik_prime ? ogs_strdup(ik_prime->valuestring) : NULL
+        ogs_strdup_or_assert(rand->valuestring),
+        xres ? ogs_strdup_or_assert(xres->valuestring) : NULL,
+        ogs_strdup_or_assert(autn->valuestring),
+        ck_prime ? ogs_strdup_or_assert(ck_prime->valuestring) : NULL,
+        ik_prime ? ogs_strdup_or_assert(ik_prime->valuestring) : NULL
         );
 
     return av_eap_aka_prime_local_var;

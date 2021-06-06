@@ -105,9 +105,9 @@ OpenAPI_nrppa_information_t *OpenAPI_nrppa_information_parseFromJSON(cJSON *nrpp
     }
 
     nrppa_information_local_var = OpenAPI_nrppa_information_create (
-        ogs_strdup(nf_id->valuestring),
+        ogs_strdup_or_assert(nf_id->valuestring),
         nrppa_pdu_local_nonprim,
-        service_instance_id ? ogs_strdup(service_instance_id->valuestring) : NULL
+        service_instance_id ? ogs_strdup_or_assert(service_instance_id->valuestring) : NULL
         );
 
     return nrppa_information_local_var;

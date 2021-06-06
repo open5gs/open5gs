@@ -227,10 +227,10 @@ OpenAPI_gbr_qos_flow_information_t *OpenAPI_gbr_qos_flow_information_parseFromJS
     }
 
     gbr_qos_flow_information_local_var = OpenAPI_gbr_qos_flow_information_create (
-        ogs_strdup(max_fbr_dl->valuestring),
-        ogs_strdup(max_fbr_ul->valuestring),
-        ogs_strdup(gua_fbr_dl->valuestring),
-        ogs_strdup(gua_fbr_ul->valuestring),
+        ogs_strdup_or_assert(max_fbr_dl->valuestring),
+        ogs_strdup_or_assert(max_fbr_ul->valuestring),
+        ogs_strdup_or_assert(gua_fbr_dl->valuestring),
+        ogs_strdup_or_assert(gua_fbr_ul->valuestring),
         notif_control ? notif_controlVariable : 0,
         max_packet_loss_rate_dl ? max_packet_loss_rate_dl->valuedouble : 0,
         max_packet_loss_rate_ul ? max_packet_loss_rate_ul->valuedouble : 0,

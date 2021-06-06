@@ -169,7 +169,7 @@ OpenAPI_dnn_upf_info_item_t *OpenAPI_dnn_upf_info_item_parseFromJSON(cJSON *dnn_
                 ogs_error("OpenAPI_dnn_upf_info_item_parseFromJSON() failed [dnai_list]");
                 goto end;
             }
-            OpenAPI_list_add(dnai_listList, ogs_strdup(dnai_list_local->valuestring));
+            OpenAPI_list_add(dnai_listList, ogs_strdup_or_assert(dnai_list_local->valuestring));
         }
     }
 
@@ -242,7 +242,7 @@ OpenAPI_dnn_upf_info_item_t *OpenAPI_dnn_upf_info_item_parseFromJSON(cJSON *dnn_
     }
 
     dnn_upf_info_item_local_var = OpenAPI_dnn_upf_info_item_create (
-        ogs_strdup(dnn->valuestring),
+        ogs_strdup_or_assert(dnn->valuestring),
         dnai_list ? dnai_listList : NULL,
         pdu_session_types ? pdu_session_typesList : NULL,
         ipv4_address_ranges ? ipv4_address_rangesList : NULL,

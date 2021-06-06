@@ -106,8 +106,8 @@ OpenAPI_tai_t *OpenAPI_tai_parseFromJSON(cJSON *taiJSON)
 
     tai_local_var = OpenAPI_tai_create (
         plmn_id_local_nonprim,
-        ogs_strdup(tac->valuestring),
-        nid ? ogs_strdup(nid->valuestring) : NULL
+        ogs_strdup_or_assert(tac->valuestring),
+        nid ? ogs_strdup_or_assert(nid->valuestring) : NULL
         );
 
     return tai_local_var;

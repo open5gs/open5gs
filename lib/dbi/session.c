@@ -452,6 +452,7 @@ done:
                                     utf8 = bson_iter_utf8(
                                             &child8_iter, &length);
                                     flow->description = ogs_malloc(length+1);
+                                    ogs_assert(flow->description);
                                     ogs_cpystrn((char*)flow->description,
                                         utf8, length+1);
                                 }

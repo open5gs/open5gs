@@ -145,7 +145,7 @@ OpenAPI_interface_upf_info_item_t *OpenAPI_interface_upf_info_item_parseFromJSON
                 ogs_error("OpenAPI_interface_upf_info_item_parseFromJSON() failed [ipv4_endpoint_addresses]");
                 goto end;
             }
-            OpenAPI_list_add(ipv4_endpoint_addressesList, ogs_strdup(ipv4_endpoint_addresses_local->valuestring));
+            OpenAPI_list_add(ipv4_endpoint_addressesList, ogs_strdup_or_assert(ipv4_endpoint_addresses_local->valuestring));
         }
     }
 
@@ -165,7 +165,7 @@ OpenAPI_interface_upf_info_item_t *OpenAPI_interface_upf_info_item_parseFromJSON
                 ogs_error("OpenAPI_interface_upf_info_item_parseFromJSON() failed [ipv6_endpoint_addresses]");
                 goto end;
             }
-            OpenAPI_list_add(ipv6_endpoint_addressesList, ogs_strdup(ipv6_endpoint_addresses_local->valuestring));
+            OpenAPI_list_add(ipv6_endpoint_addressesList, ogs_strdup_or_assert(ipv6_endpoint_addresses_local->valuestring));
         }
     }
 
@@ -191,8 +191,8 @@ OpenAPI_interface_upf_info_item_t *OpenAPI_interface_upf_info_item_parseFromJSON
         interface_type_local_nonprim,
         ipv4_endpoint_addresses ? ipv4_endpoint_addressesList : NULL,
         ipv6_endpoint_addresses ? ipv6_endpoint_addressesList : NULL,
-        endpoint_fqdn ? ogs_strdup(endpoint_fqdn->valuestring) : NULL,
-        network_instance ? ogs_strdup(network_instance->valuestring) : NULL
+        endpoint_fqdn ? ogs_strdup_or_assert(endpoint_fqdn->valuestring) : NULL,
+        network_instance ? ogs_strdup_or_assert(network_instance->valuestring) : NULL
         );
 
     return interface_upf_info_item_local_var;

@@ -120,7 +120,7 @@ int ogs_pfcp_sendto(ogs_pfcp_node_t *node, ogs_pkbuf_t *pkbuf)
     return OGS_OK;
 }
 
-void ogs_pfcp_send_heartbeat_request(ogs_pfcp_node_t *node,
+int ogs_pfcp_send_heartbeat_request(ogs_pfcp_node_t *node,
         void (*cb)(ogs_pfcp_xact_t *xact, void *data))
 {
     int rv;
@@ -135,16 +135,18 @@ void ogs_pfcp_send_heartbeat_request(ogs_pfcp_node_t *node,
     h.seid = 0;
 
     pkbuf = ogs_pfcp_build_heartbeat_request(h.type);
-    ogs_expect_or_return(pkbuf);
+    ogs_expect_or_return_val(pkbuf, OGS_ERROR);
 
     xact = ogs_pfcp_xact_local_create(node, &h, pkbuf, cb, node);
-    ogs_expect_or_return(xact);
+    ogs_expect_or_return_val(xact, OGS_ERROR);
 
     rv = ogs_pfcp_xact_commit(xact);
     ogs_expect(rv == OGS_OK);
+
+    return rv;
 }
 
-void ogs_pfcp_send_heartbeat_response(ogs_pfcp_xact_t *xact)
+int ogs_pfcp_send_heartbeat_response(ogs_pfcp_xact_t *xact)
 {
     int rv;
     ogs_pkbuf_t *pkbuf = NULL;
@@ -157,16 +159,18 @@ void ogs_pfcp_send_heartbeat_response(ogs_pfcp_xact_t *xact)
     h.seid = 0;
 
     pkbuf = ogs_pfcp_build_heartbeat_response(h.type);
-    ogs_expect_or_return(pkbuf);
+    ogs_expect_or_return_val(pkbuf, OGS_ERROR);
 
     rv = ogs_pfcp_xact_update_tx(xact, &h, pkbuf);
-    ogs_expect_or_return(rv == OGS_OK);
+    ogs_expect_or_return_val(rv == OGS_OK, OGS_ERROR);
 
     rv = ogs_pfcp_xact_commit(xact);
     ogs_expect(rv == OGS_OK);
+
+    return rv;
 }
 
-void ogs_pfcp_cp_send_association_setup_request(ogs_pfcp_node_t *node,
+int ogs_pfcp_cp_send_association_setup_request(ogs_pfcp_node_t *node,
         void (*cb)(ogs_pfcp_xact_t *xact, void *data))
 {
     int rv;
@@ -181,16 +185,18 @@ void ogs_pfcp_cp_send_association_setup_request(ogs_pfcp_node_t *node,
     h.seid = 0;
 
     pkbuf = ogs_pfcp_cp_build_association_setup_request(h.type);
-    ogs_expect_or_return(pkbuf);
+    ogs_expect_or_return_val(pkbuf, OGS_ERROR);
 
     xact = ogs_pfcp_xact_local_create(node, &h, pkbuf, cb, node);
-    ogs_expect_or_return(xact);
+    ogs_expect_or_return_val(xact, OGS_ERROR);
 
     rv = ogs_pfcp_xact_commit(xact);
     ogs_expect(rv == OGS_OK);
+
+    return rv;
 }
 
-void ogs_pfcp_cp_send_association_setup_response(ogs_pfcp_xact_t *xact,
+int ogs_pfcp_cp_send_association_setup_response(ogs_pfcp_xact_t *xact,
         uint8_t cause)
 {
     int rv;
@@ -204,16 +210,18 @@ void ogs_pfcp_cp_send_association_setup_response(ogs_pfcp_xact_t *xact,
     h.seid = 0;
 
     pkbuf = ogs_pfcp_cp_build_association_setup_response(h.type, cause);
-    ogs_expect_or_return(pkbuf);
+    ogs_expect_or_return_val(pkbuf, OGS_ERROR);
 
     rv = ogs_pfcp_xact_update_tx(xact, &h, pkbuf);
-    ogs_expect_or_return(rv == OGS_OK);
+    ogs_expect_or_return_val(rv == OGS_OK, OGS_ERROR);
 
     rv = ogs_pfcp_xact_commit(xact);
     ogs_expect(rv == OGS_OK);
+
+    return rv;
 }
 
-void ogs_pfcp_up_send_association_setup_request(ogs_pfcp_node_t *node,
+int ogs_pfcp_up_send_association_setup_request(ogs_pfcp_node_t *node,
         void (*cb)(ogs_pfcp_xact_t *xact, void *data))
 {
     int rv;
@@ -228,16 +236,18 @@ void ogs_pfcp_up_send_association_setup_request(ogs_pfcp_node_t *node,
     h.seid = 0;
 
     pkbuf = ogs_pfcp_up_build_association_setup_request(h.type);
-    ogs_expect_or_return(pkbuf);
+    ogs_expect_or_return_val(pkbuf, OGS_ERROR);
 
     xact = ogs_pfcp_xact_local_create(node, &h, pkbuf, cb, node);
-    ogs_expect_or_return(xact);
+    ogs_expect_or_return_val(xact, OGS_ERROR);
 
     rv = ogs_pfcp_xact_commit(xact);
     ogs_expect(rv == OGS_OK);
+
+    return rv;
 }
 
-void ogs_pfcp_up_send_association_setup_response(ogs_pfcp_xact_t *xact,
+int ogs_pfcp_up_send_association_setup_response(ogs_pfcp_xact_t *xact,
         uint8_t cause)
 {
     int rv;
@@ -251,13 +261,15 @@ void ogs_pfcp_up_send_association_setup_response(ogs_pfcp_xact_t *xact,
     h.seid = 0;
 
     pkbuf = ogs_pfcp_up_build_association_setup_response(h.type, cause);
-    ogs_expect_or_return(pkbuf);
+    ogs_expect_or_return_val(pkbuf, OGS_ERROR);
 
     rv = ogs_pfcp_xact_update_tx(xact, &h, pkbuf);
-    ogs_expect_or_return(rv == OGS_OK);
+    ogs_expect_or_return_val(rv == OGS_OK, OGS_ERROR);
 
     rv = ogs_pfcp_xact_commit(xact);
     ogs_expect(rv == OGS_OK);
+
+    return rv;
 }
 
 void ogs_pfcp_send_g_pdu(ogs_pfcp_pdr_t *pdr, ogs_pkbuf_t *sendbuf)
@@ -299,7 +311,7 @@ void ogs_pfcp_send_g_pdu(ogs_pfcp_pdr_t *pdr, ogs_pkbuf_t *sendbuf)
     ogs_gtp_send_user_plane(gnode, &gtp_hdesc, &ext_hdesc, sendbuf);
 }
 
-void ogs_pfcp_send_end_marker(ogs_pfcp_pdr_t *pdr)
+int ogs_pfcp_send_end_marker(ogs_pfcp_pdr_t *pdr)
 {
     ogs_gtp_node_t *gnode = NULL;
     ogs_pfcp_far_t *far = NULL;
@@ -316,15 +328,15 @@ void ogs_pfcp_send_end_marker(ogs_pfcp_pdr_t *pdr)
     gnode = far->gnode;
     if (!gnode) {
         ogs_error("No GTP Node Setup");
-        return;
+        return OGS_DONE;
     }
     if (!gnode->sock) {
         ogs_error("No GTP Socket Setup");
-        return;
+        return OGS_DONE;
     }
 
     sendbuf = ogs_pkbuf_alloc(NULL, OGS_GTPV1U_5GC_HEADER_LEN);
-    ogs_assert(sendbuf);
+    ogs_expect_or_return_val(sendbuf, OGS_ERROR);
     ogs_pkbuf_reserve(sendbuf, OGS_GTPV1U_5GC_HEADER_LEN);
 
     memset(&gtp_hdesc, 0, sizeof(gtp_hdesc));
@@ -336,6 +348,8 @@ void ogs_pfcp_send_end_marker(ogs_pfcp_pdr_t *pdr)
         ext_hdesc.qos_flow_identifier = pdr->qer->qfi;
 
     ogs_gtp_send_user_plane(gnode, &gtp_hdesc, &ext_hdesc, sendbuf);
+
+    return OGS_OK;
 }
 
 void ogs_pfcp_send_buffered_packet(ogs_pfcp_pdr_t *pdr)

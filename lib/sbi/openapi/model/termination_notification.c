@@ -83,7 +83,7 @@ OpenAPI_termination_notification_t *OpenAPI_termination_notification_parseFromJS
     causeVariable = OpenAPI_sm_policy_association_release_cause_FromString(cause->valuestring);
 
     termination_notification_local_var = OpenAPI_termination_notification_create (
-        ogs_strdup(resource_uri->valuestring),
+        ogs_strdup_or_assert(resource_uri->valuestring),
         causeVariable
         );
 

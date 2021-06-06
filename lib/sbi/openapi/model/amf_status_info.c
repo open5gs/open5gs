@@ -153,8 +153,8 @@ OpenAPI_amf_status_info_t *OpenAPI_amf_status_info_parseFromJSON(cJSON *amf_stat
     amf_status_info_local_var = OpenAPI_amf_status_info_create (
         guami_listList,
         status_changeVariable,
-        target_amf_removal ? ogs_strdup(target_amf_removal->valuestring) : NULL,
-        target_amf_failure ? ogs_strdup(target_amf_failure->valuestring) : NULL
+        target_amf_removal ? ogs_strdup_or_assert(target_amf_removal->valuestring) : NULL,
+        target_amf_failure ? ogs_strdup_or_assert(target_amf_failure->valuestring) : NULL
         );
 
     return amf_status_info_local_var;

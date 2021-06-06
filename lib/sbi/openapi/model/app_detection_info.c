@@ -130,8 +130,8 @@ OpenAPI_app_detection_info_t *OpenAPI_app_detection_info_parseFromJSON(cJSON *ap
     }
 
     app_detection_info_local_var = OpenAPI_app_detection_info_create (
-        ogs_strdup(app_id->valuestring),
-        instance_id ? ogs_strdup(instance_id->valuestring) : NULL,
+        ogs_strdup_or_assert(app_id->valuestring),
+        instance_id ? ogs_strdup_or_assert(instance_id->valuestring) : NULL,
         sdf_descriptions ? sdf_descriptionsList : NULL
         );
 

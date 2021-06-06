@@ -61,7 +61,7 @@ OpenAPI_pdu_session_status_cfg_t *OpenAPI_pdu_session_status_cfg_parseFromJSON(c
     }
 
     pdu_session_status_cfg_local_var = OpenAPI_pdu_session_status_cfg_create (
-        dnn ? ogs_strdup(dnn->valuestring) : NULL
+        dnn ? ogs_strdup_or_assert(dnn->valuestring) : NULL
         );
 
     return pdu_session_status_cfg_local_var;

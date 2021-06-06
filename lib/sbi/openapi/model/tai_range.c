@@ -137,7 +137,7 @@ OpenAPI_tai_range_t *OpenAPI_tai_range_parseFromJSON(cJSON *tai_rangeJSON)
     tai_range_local_var = OpenAPI_tai_range_create (
         plmn_id_local_nonprim,
         tac_range_listList,
-        nid ? ogs_strdup(nid->valuestring) : NULL
+        nid ? ogs_strdup_or_assert(nid->valuestring) : NULL
         );
 
     return tai_range_local_var;

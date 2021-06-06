@@ -296,7 +296,7 @@ void zuc_eea3(u8* CK, u32 COUNT, u32 BEARER, u32 DIRECTION,
 	u32 lastbits = (8-(LENGTH%8))%8;
     
 	L 	= (LENGTH+31)/32;
-	z 	= (u32 *) ogs_malloc(L*sizeof(u32));
+	z 	= (u32 *) ogs_malloc_or_assert(L*sizeof(u32));
     
 	L8 	= (LENGTH+7)/8;
 	
@@ -387,7 +387,7 @@ void zuc_eia3(u8* IK, u32 COUNT, u32 BEARER, u32 DIRECTION,
 	
 	N	= LENGTH + 64;
 	L	= (N + 31) / 32;
-	z	= (u32 *) ogs_malloc(L*sizeof(u32));
+	z	= (u32 *) ogs_malloc_or_assert(L*sizeof(u32));
 	ZUC(IK, IV, z, L);
 	
 	T = 0;

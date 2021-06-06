@@ -107,7 +107,7 @@ OpenAPI_nf_group_cond_t *OpenAPI_nf_group_cond_parseFromJSON(cJSON *nf_group_con
 
     nf_group_cond_local_var = OpenAPI_nf_group_cond_create (
         nf_typeVariable,
-        ogs_strdup(nf_group_id->valuestring)
+        ogs_strdup_or_assert(nf_group_id->valuestring)
         );
 
     return nf_group_cond_local_var;

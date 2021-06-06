@@ -98,7 +98,7 @@ OpenAPI_service_id_to_frequency_t *OpenAPI_service_id_to_frequency_parseFromJSON
             ogs_error("OpenAPI_service_id_to_frequency_parseFromJSON() failed [ser_ids]");
             goto end;
         }
-        OpenAPI_list_add(ser_idsList, ogs_strdup(ser_ids_local->valuestring));
+        OpenAPI_list_add(ser_idsList, ogs_strdup_or_assert(ser_ids_local->valuestring));
     }
 
     cJSON *frequency = cJSON_GetObjectItemCaseSensitive(service_id_to_frequencyJSON, "frequency");
@@ -125,7 +125,7 @@ OpenAPI_service_id_to_frequency_t *OpenAPI_service_id_to_frequency_parseFromJSON
     service_id_to_frequency_local_var = OpenAPI_service_id_to_frequency_create (
         ser_idsList,
         frequency->valuedouble,
-        geographical_area ? ogs_strdup(geographical_area->valuestring) : NULL
+        geographical_area ? ogs_strdup_or_assert(geographical_area->valuestring) : NULL
         );
 
     return service_id_to_frequency_local_var;

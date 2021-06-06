@@ -63,6 +63,9 @@ static void handle_smf_info(
                     ogs_assert(dnn_index < OGS_MAX_NUM_OF_DNN);
                     nf_info->smf.slice[nf_info->smf.num_of_slice].
                         dnn[dnn_index] = ogs_strdup(DnnSmfInfoItem->dnn);
+                    ogs_assert(
+                        nf_info->smf.slice[nf_info->smf.num_of_slice].
+                            dnn[dnn_index]);
                     nf_info->smf.slice[nf_info->smf.num_of_slice].
                         num_of_dnn++;
                 }
@@ -165,32 +168,40 @@ bool ogs_sbi_nnrf_handle_nf_profile(ogs_sbi_nf_instance_t *nf_instance,
     if (!NFProfile) {
         ogs_error("No NFProfile");
         if (stream)
-            ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                        message, "No NFProfile", NULL);
+            ogs_assert(true ==
+                ogs_sbi_server_send_error(
+                    stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                    message, "No NFProfile", NULL));
         return false;
     }
 
     if (!NFProfile->nf_instance_id) {
         ogs_error("No NFProfile.NFInstanceId");
         if (stream)
-            ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                        message, "NFProfile", "No NFInstanceId");
+            ogs_assert(true ==
+                ogs_sbi_server_send_error(
+                    stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                    message, "NFProfile", "No NFInstanceId"));
         return false;
     }
 
     if (!NFProfile->nf_type) {
         ogs_error("No NFProfile.NFType");
         if (stream)
-            ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                        message, "NFProfile", "No NFType");
+            ogs_assert(true ==
+                ogs_sbi_server_send_error(
+                    stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                    message, "NFProfile", "No NFType"));
         return false;
     }
 
     if (!NFProfile->nf_status) {
         ogs_error("No NFProfile.NFStatus");
         if (stream)
-            ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                message, "NFProfile", "No NFStatus");
+            ogs_assert(true ==
+                ogs_sbi_server_send_error(
+                    stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                    message, "NFProfile", "No NFStatus"));
         return false;
     }
 

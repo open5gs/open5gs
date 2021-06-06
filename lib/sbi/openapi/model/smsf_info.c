@@ -86,7 +86,7 @@ OpenAPI_smsf_info_t *OpenAPI_smsf_info_parseFromJSON(cJSON *smsf_infoJSON)
     plmn_id_local_nonprim = OpenAPI_plmn_id_parseFromJSON(plmn_id);
 
     smsf_info_local_var = OpenAPI_smsf_info_create (
-        ogs_strdup(smsf_instance_id->valuestring),
+        ogs_strdup_or_assert(smsf_instance_id->valuestring),
         plmn_id_local_nonprim
         );
 

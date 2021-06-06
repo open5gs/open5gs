@@ -81,8 +81,8 @@ OpenAPI_ue_n1_n2_info_subscription_created_data_t *OpenAPI_ue_n1_n2_info_subscri
     }
 
     ue_n1_n2_info_subscription_created_data_local_var = OpenAPI_ue_n1_n2_info_subscription_created_data_create (
-        ogs_strdup(n1n2_notify_subscription_id->valuestring),
-        supported_features ? ogs_strdup(supported_features->valuestring) : NULL
+        ogs_strdup_or_assert(n1n2_notify_subscription_id->valuestring),
+        supported_features ? ogs_strdup_or_assert(supported_features->valuestring) : NULL
         );
 
     return ue_n1_n2_info_subscription_created_data_local_var;

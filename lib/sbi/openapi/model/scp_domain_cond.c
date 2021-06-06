@@ -79,7 +79,7 @@ OpenAPI_scp_domain_cond_t *OpenAPI_scp_domain_cond_parseFromJSON(cJSON *scp_doma
                 ogs_error("OpenAPI_scp_domain_cond_parseFromJSON() failed [scp_domains]");
                 goto end;
             }
-            OpenAPI_list_add(scp_domainsList, ogs_strdup(scp_domains_local->valuestring));
+            OpenAPI_list_add(scp_domainsList, ogs_strdup_or_assert(scp_domains_local->valuestring));
         }
     }
 

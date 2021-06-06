@@ -235,7 +235,7 @@ OpenAPI_dynamic5_qi_t *OpenAPI_dynamic5_qi_parseFromJSON(cJSON *dynamic5_qiJSON)
         resource_type_local_nonprim,
         priority_level->valuedouble,
         packet_delay_budget->valuedouble,
-        ogs_strdup(packet_err_rate->valuestring),
+        ogs_strdup_or_assert(packet_err_rate->valuestring),
         aver_window ? aver_window->valuedouble : 0,
         max_data_burst_vol ? max_data_burst_vol->valuedouble : 0,
         ext_max_data_burst_vol ? ext_max_data_burst_vol->valuedouble : 0,

@@ -80,8 +80,8 @@ OpenAPI_valid_time_period_t *OpenAPI_valid_time_period_parseFromJSON(cJSON *vali
     }
 
     valid_time_period_local_var = OpenAPI_valid_time_period_create (
-        start_time ? ogs_strdup(start_time->valuestring) : NULL,
-        end_time ? ogs_strdup(end_time->valuestring) : NULL
+        start_time ? ogs_strdup_or_assert(start_time->valuestring) : NULL,
+        end_time ? ogs_strdup_or_assert(end_time->valuestring) : NULL
         );
 
     return valid_time_period_local_var;

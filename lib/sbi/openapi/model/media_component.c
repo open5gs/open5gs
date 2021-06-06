@@ -473,7 +473,7 @@ OpenAPI_media_component_t *OpenAPI_media_component_parseFromJSON(cJSON *media_co
                 ogs_error("OpenAPI_media_component_parseFromJSON() failed [alt_ser_reqs]");
                 goto end;
             }
-            OpenAPI_list_add(alt_ser_reqsList, ogs_strdup(alt_ser_reqs_local->valuestring));
+            OpenAPI_list_add(alt_ser_reqsList, ogs_strdup_or_assert(alt_ser_reqs_local->valuestring));
         }
     }
 
@@ -502,7 +502,7 @@ OpenAPI_media_component_t *OpenAPI_media_component_parseFromJSON(cJSON *media_co
                 ogs_error("OpenAPI_media_component_parseFromJSON() failed [codecs]");
                 goto end;
             }
-            OpenAPI_list_add(codecsList, ogs_strdup(codecs_local->valuestring));
+            OpenAPI_list_add(codecsList, ogs_strdup_or_assert(codecs_local->valuestring));
         }
     }
 
@@ -782,35 +782,35 @@ OpenAPI_media_component_t *OpenAPI_media_component_parseFromJSON(cJSON *media_co
     }
 
     media_component_local_var = OpenAPI_media_component_create (
-        af_app_id ? ogs_strdup(af_app_id->valuestring) : NULL,
+        af_app_id ? ogs_strdup_or_assert(af_app_id->valuestring) : NULL,
         af_rout_req ? af_rout_req_local_nonprim : NULL,
-        qos_reference ? ogs_strdup(qos_reference->valuestring) : NULL,
+        qos_reference ? ogs_strdup_or_assert(qos_reference->valuestring) : NULL,
         alt_ser_reqs ? alt_ser_reqsList : NULL,
         cont_ver ? cont_ver->valuedouble : 0,
         codecs ? codecsList : NULL,
         des_max_latency ? des_max_latency->valuedouble : 0,
         des_max_loss ? des_max_loss->valuedouble : 0,
-        flus_id ? ogs_strdup(flus_id->valuestring) : NULL,
+        flus_id ? ogs_strdup_or_assert(flus_id->valuestring) : NULL,
         f_status ? f_statusVariable : 0,
-        mar_bw_dl ? ogs_strdup(mar_bw_dl->valuestring) : NULL,
-        mar_bw_ul ? ogs_strdup(mar_bw_ul->valuestring) : NULL,
+        mar_bw_dl ? ogs_strdup_or_assert(mar_bw_dl->valuestring) : NULL,
+        mar_bw_ul ? ogs_strdup_or_assert(mar_bw_ul->valuestring) : NULL,
         max_packet_loss_rate_dl ? max_packet_loss_rate_dl->valuedouble : 0,
         max_packet_loss_rate_ul ? max_packet_loss_rate_ul->valuedouble : 0,
-        max_supp_bw_dl ? ogs_strdup(max_supp_bw_dl->valuestring) : NULL,
-        max_supp_bw_ul ? ogs_strdup(max_supp_bw_ul->valuestring) : NULL,
+        max_supp_bw_dl ? ogs_strdup_or_assert(max_supp_bw_dl->valuestring) : NULL,
+        max_supp_bw_ul ? ogs_strdup_or_assert(max_supp_bw_ul->valuestring) : NULL,
         med_comp_n->valuedouble,
         med_sub_comps ? med_sub_compsList : NULL,
         med_type ? med_typeVariable : 0,
-        min_des_bw_dl ? ogs_strdup(min_des_bw_dl->valuestring) : NULL,
-        min_des_bw_ul ? ogs_strdup(min_des_bw_ul->valuestring) : NULL,
-        mir_bw_dl ? ogs_strdup(mir_bw_dl->valuestring) : NULL,
-        mir_bw_ul ? ogs_strdup(mir_bw_ul->valuestring) : NULL,
+        min_des_bw_dl ? ogs_strdup_or_assert(min_des_bw_dl->valuestring) : NULL,
+        min_des_bw_ul ? ogs_strdup_or_assert(min_des_bw_ul->valuestring) : NULL,
+        mir_bw_dl ? ogs_strdup_or_assert(mir_bw_dl->valuestring) : NULL,
+        mir_bw_ul ? ogs_strdup_or_assert(mir_bw_ul->valuestring) : NULL,
         preempt_cap ? preempt_capVariable : 0,
         preempt_vuln ? preempt_vulnVariable : 0,
         prio_sharing_ind ? prio_sharing_indVariable : 0,
         res_prio ? res_prioVariable : 0,
-        rr_bw ? ogs_strdup(rr_bw->valuestring) : NULL,
-        rs_bw ? ogs_strdup(rs_bw->valuestring) : NULL,
+        rr_bw ? ogs_strdup_or_assert(rr_bw->valuestring) : NULL,
+        rs_bw ? ogs_strdup_or_assert(rs_bw->valuestring) : NULL,
         sharing_key_dl ? sharing_key_dl->valuedouble : 0,
         sharing_key_ul ? sharing_key_ul->valuedouble : 0,
         tsn_qos ? tsn_qos_local_nonprim : NULL,

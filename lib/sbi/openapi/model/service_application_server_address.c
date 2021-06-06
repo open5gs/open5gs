@@ -213,7 +213,7 @@ OpenAPI_service_application_server_address_t *OpenAPI_service_application_server
             ogs_error("OpenAPI_service_application_server_address_parseFromJSON() failed [ser_ids]");
             goto end;
         }
-        OpenAPI_list_add(ser_idsList, ogs_strdup(ser_ids_local->valuestring));
+        OpenAPI_list_add(ser_idsList, ogs_strdup_or_assert(ser_ids_local->valuestring));
     }
 
     cJSON *fqdn = cJSON_GetObjectItemCaseSensitive(service_application_server_addressJSON, "fqdn");
@@ -241,7 +241,7 @@ OpenAPI_service_application_server_address_t *OpenAPI_service_application_server
                 ogs_error("OpenAPI_service_application_server_address_parseFromJSON() failed [ipv4_addrs]");
                 goto end;
             }
-            OpenAPI_list_add(ipv4_addrsList, ogs_strdup(ipv4_addrs_local->valuestring));
+            OpenAPI_list_add(ipv4_addrsList, ogs_strdup_or_assert(ipv4_addrs_local->valuestring));
         }
     }
 
@@ -261,7 +261,7 @@ OpenAPI_service_application_server_address_t *OpenAPI_service_application_server
                 ogs_error("OpenAPI_service_application_server_address_parseFromJSON() failed [ipv6_addrs]");
                 goto end;
             }
-            OpenAPI_list_add(ipv6_addrsList, ogs_strdup(ipv6_addrs_local->valuestring));
+            OpenAPI_list_add(ipv6_addrsList, ogs_strdup_or_assert(ipv6_addrs_local->valuestring));
         }
     }
 
@@ -342,13 +342,13 @@ OpenAPI_service_application_server_address_t *OpenAPI_service_application_server
 
     service_application_server_address_local_var = OpenAPI_service_application_server_address_create (
         ser_idsList,
-        fqdn ? ogs_strdup(fqdn->valuestring) : NULL,
+        fqdn ? ogs_strdup_or_assert(fqdn->valuestring) : NULL,
         ipv4_addrs ? ipv4_addrsList : NULL,
         ipv6_addrs ? ipv6_addrsList : NULL,
         udp_port_numbers ? udp_port_numbersList : NULL,
         tcp_port_numbers ? tcp_port_numbersList : NULL,
         plmnsList,
-        geopraphical_area ? ogs_strdup(geopraphical_area->valuestring) : NULL
+        geopraphical_area ? ogs_strdup_or_assert(geopraphical_area->valuestring) : NULL
         );
 
     return service_application_server_address_local_var;

@@ -100,9 +100,9 @@ OpenAPI_id_translation_result_t *OpenAPI_id_translation_result_parseFromJSON(cJS
     }
 
     id_translation_result_local_var = OpenAPI_id_translation_result_create (
-        supported_features ? ogs_strdup(supported_features->valuestring) : NULL,
-        ogs_strdup(supi->valuestring),
-        gpsi ? ogs_strdup(gpsi->valuestring) : NULL
+        supported_features ? ogs_strdup_or_assert(supported_features->valuestring) : NULL,
+        ogs_strdup_or_assert(supi->valuestring),
+        gpsi ? ogs_strdup_or_assert(gpsi->valuestring) : NULL
         );
 
     return id_translation_result_local_var;

@@ -182,11 +182,11 @@ OpenAPI_ue_n1_n2_info_subscription_create_data_t *OpenAPI_ue_n1_n2_info_subscrip
 
     ue_n1_n2_info_subscription_create_data_local_var = OpenAPI_ue_n1_n2_info_subscription_create_data_create (
         n2_information_class ? n2_information_classVariable : 0,
-        n2_notify_callback_uri ? ogs_strdup(n2_notify_callback_uri->valuestring) : NULL,
+        n2_notify_callback_uri ? ogs_strdup_or_assert(n2_notify_callback_uri->valuestring) : NULL,
         n1_message_class ? n1_message_classVariable : 0,
-        n1_notify_callback_uri ? ogs_strdup(n1_notify_callback_uri->valuestring) : NULL,
-        nf_id ? ogs_strdup(nf_id->valuestring) : NULL,
-        supported_features ? ogs_strdup(supported_features->valuestring) : NULL,
+        n1_notify_callback_uri ? ogs_strdup_or_assert(n1_notify_callback_uri->valuestring) : NULL,
+        nf_id ? ogs_strdup_or_assert(nf_id->valuestring) : NULL,
+        supported_features ? ogs_strdup_or_assert(supported_features->valuestring) : NULL,
         old_guami ? old_guami_local_nonprim : NULL
         );
 

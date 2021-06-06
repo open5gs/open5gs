@@ -170,8 +170,8 @@ OpenAPI_tsn_bridge_info_t *OpenAPI_tsn_bridge_info_parseFromJSON(cJSON *tsn_brid
     }
 
     tsn_bridge_info_local_var = OpenAPI_tsn_bridge_info_create (
-        bridge_name ? ogs_strdup(bridge_name->valuestring) : NULL,
-        bridge_mac ? ogs_strdup(bridge_mac->valuestring) : NULL,
+        bridge_name ? ogs_strdup_or_assert(bridge_name->valuestring) : NULL,
+        bridge_mac ? ogs_strdup_or_assert(bridge_mac->valuestring) : NULL,
         nwtt_ports ? nwtt_portsList : NULL,
         dstt_port ? dstt_port_local_nonprim : NULL,
         dstt_resid_time ? dstt_resid_time->valuedouble : 0

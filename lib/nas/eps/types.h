@@ -552,7 +552,7 @@ typedef struct ogs_nas_tracking_area_identity_list_s {
     uint8_t buffer[OGS_NAS_EPS_MAX_TAI_LIST_LEN];
 } __attribute__ ((packed)) ogs_nas_tracking_area_identity_list_t;
 
-void ogs_nas_tai_list_build(ogs_nas_tracking_area_identity_list_t *target,
+int ogs_nas_tai_list_build(ogs_nas_tracking_area_identity_list_t *target,
         ogs_eps_tai0_list_t *source0, ogs_eps_tai2_list_t *source2);
 
 

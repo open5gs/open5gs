@@ -211,13 +211,13 @@ OpenAPI_bdt_data_t *OpenAPI_bdt_data_parseFromJSON(cJSON *bdt_dataJSON)
     }
 
     bdt_data_local_var = OpenAPI_bdt_data_create (
-        ogs_strdup(asp_id->valuestring),
+        ogs_strdup_or_assert(asp_id->valuestring),
         trans_policy_local_nonprim,
-        bdt_ref_id ? ogs_strdup(bdt_ref_id->valuestring) : NULL,
+        bdt_ref_id ? ogs_strdup_or_assert(bdt_ref_id->valuestring) : NULL,
         nw_area_info ? nw_area_info_local_nonprim : NULL,
         num_of_ues ? num_of_ues->valuedouble : 0,
         vol_per_ue ? vol_per_ue_local_nonprim : NULL,
-        dnn ? ogs_strdup(dnn->valuestring) : NULL,
+        dnn ? ogs_strdup_or_assert(dnn->valuestring) : NULL,
         snssai ? snssai_local_nonprim : NULL
         );
 

@@ -76,9 +76,10 @@ void pcf_am_state_operational(ogs_fsm_t *s, pcf_event_t *e)
         DEFAULT
             ogs_error("[%s] Invalid HTTP method [%s]",
                     pcf_ue->supi, message->h.method);
-            ogs_sbi_server_send_error(stream,
+            ogs_assert(true ==
+                ogs_sbi_server_send_error(stream,
                     OGS_SBI_HTTP_STATUS_FORBIDDEN, message,
-                    "Invalid HTTP method", message->h.method);
+                    "Invalid HTTP method", message->h.method));
         END
         break;
 
@@ -104,8 +105,10 @@ void pcf_am_state_operational(ogs_fsm_t *s, pcf_event_t *e)
                             ogs_error("[%s] HTTP response error [%d]",
                                 pcf_ue->supi, message->res_status);
                         }
-                        ogs_sbi_server_send_error(stream, message->res_status,
-                            NULL, "HTTP response error", pcf_ue->supi);
+                        ogs_assert(true ==
+                            ogs_sbi_server_send_error(
+                                stream, message->res_status,
+                                NULL, "HTTP response error", pcf_ue->supi));
                         break;
                     }
 
@@ -129,9 +132,10 @@ void pcf_am_state_operational(ogs_fsm_t *s, pcf_event_t *e)
         DEFAULT
             ogs_error("[%s] Invalid API name [%s]",
                     pcf_ue->supi, message->h.service.name);
-            ogs_sbi_server_send_error(stream,
+            ogs_assert(true ==
+                ogs_sbi_server_send_error(stream,
                     OGS_SBI_HTTP_STATUS_BAD_REQUEST, message,
-                    "Invalid API name", message->h.resource.component[0]);
+                    "Invalid API name", message->h.resource.component[0]));
         END
         break;
 

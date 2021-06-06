@@ -107,7 +107,7 @@ OpenAPI_acc_net_ch_id_t *OpenAPI_acc_net_ch_id_parseFromJSON(cJSON *acc_net_ch_i
                 ogs_error("OpenAPI_acc_net_ch_id_parseFromJSON() failed [ref_pcc_rule_ids]");
                 goto end;
             }
-            OpenAPI_list_add(ref_pcc_rule_idsList, ogs_strdup(ref_pcc_rule_ids_local->valuestring));
+            OpenAPI_list_add(ref_pcc_rule_idsList, ogs_strdup_or_assert(ref_pcc_rule_ids_local->valuestring));
         }
     }
 

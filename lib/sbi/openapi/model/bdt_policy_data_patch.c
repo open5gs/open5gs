@@ -62,7 +62,7 @@ OpenAPI_bdt_policy_data_patch_t *OpenAPI_bdt_policy_data_patch_parseFromJSON(cJS
     }
 
     bdt_policy_data_patch_local_var = OpenAPI_bdt_policy_data_patch_create (
-        ogs_strdup(bdt_ref_id->valuestring)
+        ogs_strdup_or_assert(bdt_ref_id->valuestring)
         );
 
     return bdt_policy_data_patch_local_var;

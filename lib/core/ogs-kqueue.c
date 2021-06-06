@@ -68,6 +68,7 @@ static void kqueue_init(ogs_pollset_t *pollset)
 
 	context->change_list = ogs_calloc(
         pollset->capacity, sizeof(struct kevent));
+    ogs_assert(context->change_list);
 	context->event_list = ogs_calloc(
         pollset->capacity, sizeof(struct kevent));
 	ogs_assert(context->change_list);

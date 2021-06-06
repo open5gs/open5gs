@@ -100,7 +100,7 @@ ogs_sbi_client_t *ogs_sbi_client_add(ogs_sockaddr_t *addr)
 
     ogs_trace("ogs_sbi_client_add()");
 
-    ogs_copyaddrinfo(&client->node.addr, addr);
+    ogs_assert(OGS_OK == ogs_copyaddrinfo(&client->node.addr, addr));
 
     ogs_list_init(&client->connection_list);
 
@@ -220,9 +220,11 @@ static char *add_params_to_uri(CURL *easy, char *uri, ogs_hash_t *params)
 
         if (!has_params) {
             uri = ogs_mstrcatf(uri, "%s%s=%s", fp, key_esc, val_esc);
+            ogs_expect(uri);
             has_params = 1;
         } else {
             uri = ogs_mstrcatf(uri, "%s%s=%s", np, key_esc, val_esc);
+            ogs_expect(uri);
         }
 
         curl_free(val_esc);
@@ -247,7 +249,7 @@ static connection_t *connection_add(
     ogs_assert(request->h.method);
 
     ogs_pool_alloc(&connection_pool, &conn);
-    ogs_assert(conn);
+    ogs_expect_or_return_val(conn, NULL);
     memset(conn, 0, sizeof(connection_t));
 
     conn->client = client;
@@ -255,18 +257,19 @@ static connection_t *connection_add(
     conn->data = data;
 
     conn->method = ogs_strdup(request->h.method);
+    ogs_expect_or_return_val(conn->method, NULL);
 
     conn->num_of_header = ogs_hash_count(request->http.headers);
     if (conn->num_of_header) {
         conn->headers = ogs_calloc(conn->num_of_header, sizeof(char *));
-        ogs_assert(conn->headers);
+        ogs_expect_or_return_val(conn->headers, NULL);
         for (hi = ogs_hash_first(request->http.headers), i = 0;
                 hi && i < conn->num_of_header; hi = ogs_hash_next(hi), i++) {
             const char *key = ogs_hash_this_key(hi);
             char *val = ogs_hash_this_val(hi);
 
             conn->headers[i] = ogs_msprintf("%s: %s", key, val);
-            ogs_assert(conn->headers[i]);
+            ogs_expect_or_return_val(conn->headers[i], NULL);
             conn->header_list = curl_slist_append(
                     conn->header_list, conn->headers[i]);
         }
@@ -274,7 +277,7 @@ static connection_t *connection_add(
 
     conn->timer = ogs_timer_add(
             ogs_app()->timer_mgr, connection_timer_expired, conn);
-    ogs_assert(conn->timer);
+    ogs_expect_or_return_val(conn->timer, NULL);
 
     ogs_list_add(&client->connection_list, conn);
 
@@ -321,6 +324,7 @@ static connection_t *connection_add(
     if (ogs_hash_count(request->http.params)) {
         request->h.uri = add_params_to_uri(conn->easy,
                             request->h.uri, request->http.params);
+        ogs_expect_or_return_val(request->h.uri, NULL);
     }
 
     curl_easy_setopt(conn->easy, CURLOPT_URL, request->h.uri);
@@ -438,15 +442,22 @@ static void check_multi_info(ogs_sbi_client_t *client)
 
                 ogs_assert(conn->method);
                 response->h.method = ogs_strdup(conn->method);
+                ogs_assert(response->h.method);
 
                 /* remove https://localhost:8000 */
                 response->h.uri = ogs_strdup(url);
+                ogs_assert(response->h.uri);
 
                 ogs_debug("[%d:%s] %s",
                         response->status, response->h.method, response->h.uri);
 
-                response->http.content = ogs_memdup(conn->memory, conn->size);
-                response->http.content_length = conn->size;
+                if (conn->memory) {
+                    response->http.content =
+                        ogs_memdup(conn->memory, conn->size);
+                    ogs_assert(response->http.content);
+                    response->http.content_length = conn->size;
+                    ogs_assert(response->http.content_length);
+                }
 
                 ogs_debug("RECEIVED[%d]", (int)response->http.content_length);
                 if (response->http.content_length && response->http.content)
@@ -473,7 +484,7 @@ static void check_multi_info(ogs_sbi_client_t *client)
     }
 }
 
-void ogs_sbi_client_send_request(
+bool ogs_sbi_client_send_request(
         ogs_sbi_client_t *client, ogs_sbi_client_cb_f client_cb,
         ogs_sbi_request_t *request, void *data)
 {
@@ -488,9 +499,11 @@ void ogs_sbi_client_send_request(
     ogs_debug("[%s] %s", request->h.method, request->h.uri);
 
     conn = connection_add(client, client_cb, request, data);
-    ogs_assert(conn);
+    ogs_expect_or_return_val(conn, false);
 
     ogs_sbi_request_free(request);
+
+    return true;
 }
 
 static size_t write_cb(void *contents, size_t size, size_t nmemb, void *data)
@@ -503,7 +516,7 @@ static size_t write_cb(void *contents, size_t size, size_t nmemb, void *data)
     ogs_assert(conn);
 
     realsize = size * nmemb;
-    ptr = ogs_realloc(conn->memory, conn->size + realsize + 1);
+    ptr = ogs_realloc_or_assert(conn->memory, conn->size + realsize + 1);
     if(!ptr) {
         ogs_fatal("not enough memory (realloc returned NULL)");
         return 0;
@@ -532,6 +545,7 @@ static size_t header_cb(void *ptr, size_t size, size_t nmemb, void *data)
             /* Only copy http://xxx/xxx/xxx" from 'ptr' string */
             conn->location = ogs_memdup(
                     (char *)ptr + strlen(OGS_SBI_LOCATION) + 2, len+1);
+            ogs_assert(conn->location);
             conn->location[len] = 0;
         }
     }
@@ -585,6 +599,7 @@ static void sock_set(sockinfo_t *sockinfo, curl_socket_t s,
 
     sockinfo->poll = ogs_pollset_add(
             ogs_app()->pollset, kind, s, event_cb, sockinfo);
+    ogs_assert(sockinfo->poll);
 }
 
 /* Initialize a new sockinfo_t structure */

@@ -106,8 +106,8 @@ OpenAPI_ecgi_t *OpenAPI_ecgi_parseFromJSON(cJSON *ecgiJSON)
 
     ecgi_local_var = OpenAPI_ecgi_create (
         plmn_id_local_nonprim,
-        ogs_strdup(eutra_cell_id->valuestring),
-        nid ? ogs_strdup(nid->valuestring) : NULL
+        ogs_strdup_or_assert(eutra_cell_id->valuestring),
+        nid ? ogs_strdup_or_assert(nid->valuestring) : NULL
         );
 
     return ecgi_local_var;

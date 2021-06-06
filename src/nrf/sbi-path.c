@@ -80,7 +80,7 @@ void nrf_sbi_close(void)
     ogs_sbi_server_stop_all();
 }
 
-void nrf_nnrf_nfm_send_nf_status_notify(ogs_sbi_subscription_t *subscription,
+bool nrf_nnrf_nfm_send_nf_status_notify(ogs_sbi_subscription_t *subscription,
         OpenAPI_notification_event_type_e event,
         ogs_sbi_nf_instance_t *nf_instance)
 {
@@ -93,11 +93,12 @@ void nrf_nnrf_nfm_send_nf_status_notify(ogs_sbi_subscription_t *subscription,
 
     request = nrf_nnrf_nfm_build_nf_status_notify(
             client, subscription, event, nf_instance);
-    ogs_assert(request);
-    ogs_sbi_client_send_request(client, client_notify_cb, request, NULL);
+    ogs_expect_or_return_val(request, false);
+
+    return ogs_sbi_client_send_request(client, client_notify_cb, request, NULL);
 }
 
-void nrf_nnrf_nfm_send_nf_status_notify_all(
+bool nrf_nnrf_nfm_send_nf_status_notify_all(
         OpenAPI_notification_event_type_e event,
         ogs_sbi_nf_instance_t *nf_instance)
 {
@@ -114,6 +115,11 @@ void nrf_nnrf_nfm_send_nf_status_notify_all(
             subscription->subscr_cond.nf_type != nf_instance->nf_type)
             continue;
 
-        nrf_nnrf_nfm_send_nf_status_notify(subscription, event, nf_instance);
+        ogs_expect_or_return_val(true ==
+            nrf_nnrf_nfm_send_nf_status_notify(
+                subscription, event, nf_instance),
+            false);
     }
+
+    return true;
 }

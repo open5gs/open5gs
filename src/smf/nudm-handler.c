@@ -230,6 +230,7 @@ bool smf_nudm_sdm_handle_get(smf_sess_t *sess, ogs_sbi_stream_t *stream,
             /* Succeeded to get PDU Session */
             if (!sess->session.name)
                 sess->session.name = ogs_strdup(dnnConfigurationMap->key);
+            ogs_assert(sess->session.name);
 
             break;
         }
@@ -238,6 +239,7 @@ bool smf_nudm_sdm_handle_get(smf_sess_t *sess, ogs_sbi_stream_t *stream,
     if (!sess->session.name) {
         strerror = ogs_msprintf("[%s:%d] No dnnConfiguration",
                 smf_ue->supi, sess->psi);
+        ogs_assert(strerror);
         return false;
     }
 
@@ -266,12 +268,13 @@ bool smf_nudm_sdm_handle_get(smf_sess_t *sess, ogs_sbi_stream_t *stream,
 
     response = ogs_sbi_build_response(&sendmsg, OGS_SBI_HTTP_STATUS_CREATED);
     ogs_assert(response);
-    ogs_sbi_server_send_response(stream, response);
+    ogs_assert(true == ogs_sbi_server_send_response(stream, response));
 
     ogs_free(sendmsg.http.location);
 
-    smf_sbi_discover_and_send(OpenAPI_nf_type_PCF, sess, stream,
-            0, NULL, smf_npcf_smpolicycontrol_build_create);
+    ogs_assert(true ==
+        smf_sbi_discover_and_send(OpenAPI_nf_type_PCF, sess, stream,
+            0, NULL, smf_npcf_smpolicycontrol_build_create));
 
     return true;
 
@@ -279,8 +282,9 @@ cleanup:
     ogs_assert(strerror);
 
     ogs_error("%s", strerror);
-    ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-            recvmsg, strerror, NULL);
+    ogs_assert(true ==
+        ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+            recvmsg, strerror, NULL));
     ogs_free(strerror);
 
     return false;

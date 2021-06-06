@@ -76,6 +76,7 @@ int amf_nnssf_nsselection_handle_get(
     if (sess->nssf.nrf.id)
         ogs_free(sess->nssf.nrf.id);
     sess->nssf.nrf.id = ogs_strdup(NsiInformation->nrf_id);
+    ogs_assert(sess->nssf.nrf.id);
 
     addr = ogs_sbi_getaddr_from_uri(NsiInformation->nrf_id);
     if (!addr) {
@@ -105,9 +106,10 @@ int amf_nnssf_nsselection_handle_get(
         if (sess->nssf.nsi_id)
             ogs_free(sess->nssf.nsi_id);
         sess->nssf.nsi_id = ogs_strdup(NsiInformation->nsi_id);
+        ogs_assert(sess->nssf.nsi_id);
     }
 
-    amf_sess_sbi_discover_by_nsi(OpenAPI_nf_type_SMF, sess);
+    ogs_assert(true == amf_sess_sbi_discover_by_nsi(OpenAPI_nf_type_SMF, sess));
 
     return OGS_OK;
 }

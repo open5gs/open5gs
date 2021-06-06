@@ -119,10 +119,10 @@ OpenAPI_nsi_information_t *OpenAPI_nsi_information_parseFromJSON(cJSON *nsi_info
     }
 
     nsi_information_local_var = OpenAPI_nsi_information_create (
-        ogs_strdup(nrf_id->valuestring),
-        nsi_id ? ogs_strdup(nsi_id->valuestring) : NULL,
-        nrf_nf_mgt_uri ? ogs_strdup(nrf_nf_mgt_uri->valuestring) : NULL,
-        nrf_access_token_uri ? ogs_strdup(nrf_access_token_uri->valuestring) : NULL
+        ogs_strdup_or_assert(nrf_id->valuestring),
+        nsi_id ? ogs_strdup_or_assert(nsi_id->valuestring) : NULL,
+        nrf_nf_mgt_uri ? ogs_strdup_or_assert(nrf_nf_mgt_uri->valuestring) : NULL,
+        nrf_access_token_uri ? ogs_strdup_or_assert(nrf_access_token_uri->valuestring) : NULL
         );
 
     return nsi_information_local_var;

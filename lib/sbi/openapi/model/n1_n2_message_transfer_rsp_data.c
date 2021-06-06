@@ -83,7 +83,7 @@ OpenAPI_n1_n2_message_transfer_rsp_data_t *OpenAPI_n1_n2_message_transfer_rsp_da
 
     n1_n2_message_transfer_rsp_data_local_var = OpenAPI_n1_n2_message_transfer_rsp_data_create (
         causeVariable,
-        supported_features ? ogs_strdup(supported_features->valuestring) : NULL
+        supported_features ? ogs_strdup_or_assert(supported_features->valuestring) : NULL
         );
 
     return n1_n2_message_transfer_rsp_data_local_var;

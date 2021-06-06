@@ -28,12 +28,12 @@ int ogs_gtp_f_teid_to_sockaddr(
     ogs_assert(list);
 
     addr = ogs_calloc(1, sizeof(ogs_sockaddr_t));
-    ogs_assert(addr);
+    ogs_expect_or_return_val(addr, OGS_ERROR);
     addr->ogs_sa_family = AF_INET;
     addr->ogs_sin_port = htobe16(port);
 
     addr6 = ogs_calloc(1, sizeof(ogs_sockaddr_t));
-    ogs_assert(addr6);
+    ogs_expect_or_return_val(addr6, OGS_ERROR);
     addr6->ogs_sa_family = AF_INET6;
     addr6->ogs_sin_port = htobe16(port);
 
@@ -57,7 +57,8 @@ int ogs_gtp_f_teid_to_sockaddr(
     } else {
         ogs_free(addr);
         ogs_free(addr6);
-        ogs_assert_if_reached();
+        ogs_error("No IPv4 or IPv6");
+        return OGS_ERROR;
     }
 
     return OGS_OK;
@@ -84,8 +85,10 @@ int ogs_gtp_sockaddr_to_f_teid(ogs_sockaddr_t *addr, ogs_sockaddr_t *addr6,
         f_teid->ipv6 = 1;
         memcpy(f_teid->addr6, addr6->sin6.sin6_addr.s6_addr, OGS_IPV6_LEN);
         *len = OGS_GTP_F_TEID_IPV6_LEN;
-    } else
-        ogs_assert_if_reached();
+    } else {
+        ogs_error("No IPv4 or IPv6");
+        return OGS_ERROR;
+    }
 
     return OGS_OK;
 }
@@ -110,8 +113,10 @@ int ogs_gtp_f_teid_to_ip(ogs_gtp_f_teid_t *f_teid, ogs_ip_t *ip)
     } else if (ip->ipv6) {
         memcpy(ip->addr6, f_teid->addr6, OGS_IPV6_LEN);
         ip->len = OGS_IPV6_LEN;
-    } else
+    } else {
+        ogs_error("No IPv4 or IPv6");
         return OGS_ERROR;
+    }
 
     return OGS_OK;
 }
@@ -134,8 +139,10 @@ int ogs_gtp_ip_to_f_teid(ogs_ip_t *ip, ogs_gtp_f_teid_t *f_teid, int *len)
     } else if (f_teid->ipv6) {
         memcpy(f_teid->addr6, ip->addr6, OGS_IPV6_LEN);
         *len = OGS_GTP_F_TEID_IPV6_LEN;
-    } else
-        ogs_assert_if_reached();
+    } else {
+        ogs_error("No IPv4 or IPv6");
+        return OGS_ERROR;
+    }
 
     return OGS_OK;
 }
@@ -160,8 +167,10 @@ int ogs_gtp_paa_to_ip(ogs_paa_t *paa, ogs_ip_t *ip)
         ip->ipv4 = 0;
         ip->ipv6 = 1;
         memcpy(ip->addr6, paa->addr6, OGS_IPV6_LEN);
-    } else
-        ogs_assert_if_reached();
+    } else {
+        ogs_error("No IPv4 or IPv6");
+        return OGS_ERROR;
+    }
 
     return OGS_OK;
 }

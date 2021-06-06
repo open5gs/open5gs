@@ -130,6 +130,7 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
 
         ogs_debug("[RECV] Echo Request from [%s]", OGS_ADDR(&from, buf));
         echo_rsp = ogs_gtp_handle_echo_req(pkbuf);
+        ogs_expect(echo_rsp);
         if (echo_rsp) {
             ssize_t sent;
 

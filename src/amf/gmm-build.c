@@ -97,9 +97,10 @@ ogs_pkbuf_t *gmm_build_registration_accept(amf_ue_t *amf_ue)
     ogs_assert(served_tai_index >= 0 &&
             served_tai_index < OGS_MAX_NUM_OF_SERVED_TAI);
 
-    ogs_nas_5gs_tai_list_build(&registration_accept->tai_list,
+    ogs_assert(OGS_OK ==
+        ogs_nas_5gs_tai_list_build(&registration_accept->tai_list,
             &amf_self()->served_tai[served_tai_index].list0,
-            &amf_self()->served_tai[served_tai_index].list2);
+            &amf_self()->served_tai[served_tai_index].list2));
 
     /* Set Allowed NSSAI */
     ogs_assert(amf_ue->allowed_nssai.num_of_s_nssai);

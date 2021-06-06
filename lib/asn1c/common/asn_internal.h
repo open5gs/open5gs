@@ -41,9 +41,9 @@ int get_asn1c_environment_version(void);	/* Run-time version */
 #define	FREEMEM(ptr)		free(ptr)
 #else
 #include "ogs-core.h"
-#define        CALLOC(nmemb, size)     ogs_calloc(nmemb, size)
-#define        MALLOC(size)            ogs_malloc(size)
-#define        REALLOC(oldptr, size)   ogs_realloc(oldptr, size)
+#define        CALLOC(nmemb, size)     ogs_calloc_or_assert(nmemb, size)
+#define        MALLOC(size)            ogs_malloc_or_assert(size)
+#define        REALLOC(oldptr, size)   ogs_realloc_or_assert(oldptr, size)
 #define        FREEMEM(ptr)            ogs_free(ptr)
 #endif
 

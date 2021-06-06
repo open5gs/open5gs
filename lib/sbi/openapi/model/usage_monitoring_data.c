@@ -280,17 +280,17 @@ OpenAPI_usage_monitoring_data_t *OpenAPI_usage_monitoring_data_parseFromJSON(cJS
                 ogs_error("OpenAPI_usage_monitoring_data_parseFromJSON() failed [ex_usage_pcc_rule_ids]");
                 goto end;
             }
-            OpenAPI_list_add(ex_usage_pcc_rule_idsList, ogs_strdup(ex_usage_pcc_rule_ids_local->valuestring));
+            OpenAPI_list_add(ex_usage_pcc_rule_idsList, ogs_strdup_or_assert(ex_usage_pcc_rule_ids_local->valuestring));
         }
     }
 
     usage_monitoring_data_local_var = OpenAPI_usage_monitoring_data_create (
-        ogs_strdup(um_id->valuestring),
+        ogs_strdup_or_assert(um_id->valuestring),
         volume_threshold ? volume_threshold->valuedouble : 0,
         volume_threshold_uplink ? volume_threshold_uplink->valuedouble : 0,
         volume_threshold_downlink ? volume_threshold_downlink->valuedouble : 0,
         time_threshold ? time_threshold->valuedouble : 0,
-        monitoring_time ? ogs_strdup(monitoring_time->valuestring) : NULL,
+        monitoring_time ? ogs_strdup_or_assert(monitoring_time->valuestring) : NULL,
         next_vol_threshold ? next_vol_threshold->valuedouble : 0,
         next_vol_threshold_uplink ? next_vol_threshold_uplink->valuedouble : 0,
         next_vol_threshold_downlink ? next_vol_threshold_downlink->valuedouble : 0,

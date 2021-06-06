@@ -102,7 +102,7 @@ OpenAPI_ip_sm_gw_registration_t *OpenAPI_ip_sm_gw_registration_parseFromJSON(cJS
     }
 
     ip_sm_gw_registration_local_var = OpenAPI_ip_sm_gw_registration_create (
-        ip_sm_gw_map_address ? ogs_strdup(ip_sm_gw_map_address->valuestring) : NULL,
+        ip_sm_gw_map_address ? ogs_strdup_or_assert(ip_sm_gw_map_address->valuestring) : NULL,
         ip_sm_gw_diameter_address ? ip_sm_gw_diameter_address_local_nonprim : NULL,
         unri_indicator ? unri_indicator->valueint : 0
         );

@@ -151,8 +151,8 @@ OpenAPI_v2x_context_t *OpenAPI_v2x_context_parseFromJSON(cJSON *v2x_contextJSON)
     v2x_context_local_var = OpenAPI_v2x_context_create (
         nr_v2x_services_auth ? nr_v2x_services_auth_local_nonprim : NULL,
         lte_v2x_services_auth ? lte_v2x_services_auth_local_nonprim : NULL,
-        nr_ue_sidelink_ambr ? ogs_strdup(nr_ue_sidelink_ambr->valuestring) : NULL,
-        lte_ue_sidelink_ambr ? ogs_strdup(lte_ue_sidelink_ambr->valuestring) : NULL,
+        nr_ue_sidelink_ambr ? ogs_strdup_or_assert(nr_ue_sidelink_ambr->valuestring) : NULL,
+        lte_ue_sidelink_ambr ? ogs_strdup_or_assert(lte_ue_sidelink_ambr->valuestring) : NULL,
         pc5_qo_s_para ? pc5_qo_s_para_local_nonprim : NULL
         );
 

@@ -100,6 +100,7 @@ int amf_nsmf_pdusession_handle_create_sm_context(
         if (sess->sm_context_ref)
             ogs_free(sess->sm_context_ref);
         sess->sm_context_ref = ogs_strdup(message.h.resource.component[1]);
+        ogs_assert(sess->sm_context_ref);
 
         ogs_sbi_header_free(&header);
 
@@ -714,9 +715,10 @@ int amf_nsmf_pdusession_handle_release_sm_context(amf_sess_t *sess, int state)
 
                 if (OGS_FSM_CHECK(&amf_ue->sm, gmm_state_authentication)) {
 
-                    amf_ue_sbi_discover_and_send(
+                    ogs_assert(true ==
+                        amf_ue_sbi_discover_and_send(
                             OpenAPI_nf_type_AUSF, amf_ue, NULL,
-                            amf_nausf_auth_build_authenticate);
+                            amf_nausf_auth_build_authenticate));
 
                 } else if (OGS_FSM_CHECK(&amf_ue->sm,
                             gmm_state_de_registered)) {

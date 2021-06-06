@@ -157,7 +157,7 @@ OpenAPI_application_data_change_notif_t *OpenAPI_application_data_change_notif_p
         iptv_config_data ? iptv_config_data_local_nonprim : NULL,
         pfd_data ? pfd_data_local_nonprim : NULL,
         bdt_policy_data ? bdt_policy_data_local_nonprim : NULL,
-        ogs_strdup(res_uri->valuestring),
+        ogs_strdup_or_assert(res_uri->valuestring),
         ser_param_data ? ser_param_data_local_nonprim : NULL
         );
 

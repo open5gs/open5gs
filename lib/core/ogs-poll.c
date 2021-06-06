@@ -35,7 +35,7 @@ bool ogs_pollset_actions_initialized = false;
 ogs_pollset_t *ogs_pollset_create(unsigned int capacity)
 {
     ogs_pollset_t *pollset = ogs_calloc(1, sizeof *pollset);
-    ogs_assert(pollset);
+    ogs_expect_or_return_val(pollset, NULL);
 
     pollset->capacity = capacity;
 

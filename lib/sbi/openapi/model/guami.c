@@ -87,7 +87,7 @@ OpenAPI_guami_t *OpenAPI_guami_parseFromJSON(cJSON *guamiJSON)
 
     guami_local_var = OpenAPI_guami_create (
         plmn_id_local_nonprim,
-        ogs_strdup(amf_id->valuestring)
+        ogs_strdup_or_assert(amf_id->valuestring)
         );
 
     return guami_local_var;

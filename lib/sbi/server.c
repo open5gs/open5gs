@@ -63,7 +63,7 @@ ogs_sbi_server_t *ogs_sbi_server_add(ogs_sockaddr_t *addr)
     ogs_assert(server);
     memset(server, 0, sizeof(ogs_sbi_server_t));
 
-    ogs_copyaddrinfo(&server->node.addr, addr);
+    ogs_assert(OGS_OK == ogs_copyaddrinfo(&server->node.addr, addr));
 
     ogs_list_add(&ogs_sbi_self()->server_list, server);
 
@@ -100,7 +100,7 @@ void ogs_sbi_server_set_advertise(
     ogs_assert(server);
     ogs_assert(advertise);
 
-    ogs_copyaddrinfo(&addr, advertise);
+    ogs_assert(OGS_OK == ogs_copyaddrinfo(&addr, advertise));
     if (family != AF_UNSPEC)
         ogs_filteraddrinfo(&addr, family);
 
@@ -128,13 +128,13 @@ void ogs_sbi_server_stop_all(void)
         ogs_sbi_server_actions.stop(server);
 }
 
-void ogs_sbi_server_send_response(
+bool ogs_sbi_server_send_response(
         ogs_sbi_stream_t *stream, ogs_sbi_response_t *response)
 {
-    ogs_sbi_server_actions.send_response(stream, response);
+    return ogs_sbi_server_actions.send_response(stream, response);
 }
 
-void ogs_sbi_server_send_problem(
+bool ogs_sbi_server_send_problem(
         ogs_sbi_stream_t *stream, OpenAPI_problem_details_t *problem)
 {
     ogs_sbi_message_t message;
@@ -152,9 +152,11 @@ void ogs_sbi_server_send_problem(
     ogs_assert(response);
 
     ogs_sbi_server_send_response(stream, response);
+
+    return true;
 }
 
-void ogs_sbi_server_send_error(ogs_sbi_stream_t *stream,
+bool ogs_sbi_server_send_error(ogs_sbi_stream_t *stream,
         int status, ogs_sbi_message_t *message,
         const char *title, const char *detail)
 {
@@ -167,6 +169,7 @@ void ogs_sbi_server_send_error(ogs_sbi_stream_t *stream,
     if (message) {
         problem.type = ogs_msprintf("/%s/%s",
                 message->h.service.name, message->h.api.version);
+        ogs_expect_or_return_val(problem.type, false);
         if (message->h.resource.component[1])
             problem.instance = ogs_msprintf("/%s/%s",
                     message->h.resource.component[0],
@@ -174,6 +177,7 @@ void ogs_sbi_server_send_error(ogs_sbi_stream_t *stream,
         else
             problem.instance =
                     ogs_msprintf("/%s", message->h.resource.component[0]);
+        ogs_expect_or_return_val(problem.instance, NULL);
     }
     problem.status = status;
     problem.title = (char*)title;
@@ -185,6 +189,8 @@ void ogs_sbi_server_send_error(ogs_sbi_stream_t *stream,
         ogs_free(problem.type);
     if (problem.instance)
         ogs_free(problem.instance);
+
+    return true;
 }
 
 ogs_sbi_server_t *ogs_sbi_server_from_stream(ogs_sbi_stream_t *stream)

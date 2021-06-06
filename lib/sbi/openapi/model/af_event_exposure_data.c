@@ -151,7 +151,7 @@ OpenAPI_af_event_exposure_data_t *OpenAPI_af_event_exposure_data_parseFromJSON(c
                 ogs_error("OpenAPI_af_event_exposure_data_parseFromJSON() failed [af_ids]");
                 goto end;
             }
-            OpenAPI_list_add(af_idsList, ogs_strdup(af_ids_local->valuestring));
+            OpenAPI_list_add(af_idsList, ogs_strdup_or_assert(af_ids_local->valuestring));
         }
     }
 
@@ -171,7 +171,7 @@ OpenAPI_af_event_exposure_data_t *OpenAPI_af_event_exposure_data_parseFromJSON(c
                 ogs_error("OpenAPI_af_event_exposure_data_parseFromJSON() failed [app_ids]");
                 goto end;
             }
-            OpenAPI_list_add(app_idsList, ogs_strdup(app_ids_local->valuestring));
+            OpenAPI_list_add(app_idsList, ogs_strdup_or_assert(app_ids_local->valuestring));
         }
     }
 

@@ -180,13 +180,13 @@ OpenAPI_trace_data_t *OpenAPI_trace_data_parseFromJSON(cJSON *trace_dataJSON)
     }
 
     trace_data_local_var = OpenAPI_trace_data_create (
-        ogs_strdup(trace_ref->valuestring),
+        ogs_strdup_or_assert(trace_ref->valuestring),
         trace_depthVariable,
-        ogs_strdup(ne_type_list->valuestring),
-        ogs_strdup(event_list->valuestring),
-        collection_entity_ipv4_addr ? ogs_strdup(collection_entity_ipv4_addr->valuestring) : NULL,
-        collection_entity_ipv6_addr ? ogs_strdup(collection_entity_ipv6_addr->valuestring) : NULL,
-        interface_list ? ogs_strdup(interface_list->valuestring) : NULL
+        ogs_strdup_or_assert(ne_type_list->valuestring),
+        ogs_strdup_or_assert(event_list->valuestring),
+        collection_entity_ipv4_addr ? ogs_strdup_or_assert(collection_entity_ipv4_addr->valuestring) : NULL,
+        collection_entity_ipv6_addr ? ogs_strdup_or_assert(collection_entity_ipv6_addr->valuestring) : NULL,
+        interface_list ? ogs_strdup_or_assert(interface_list->valuestring) : NULL
         );
 
     return trace_data_local_var;

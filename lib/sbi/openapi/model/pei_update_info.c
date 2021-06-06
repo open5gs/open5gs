@@ -62,7 +62,7 @@ OpenAPI_pei_update_info_t *OpenAPI_pei_update_info_parseFromJSON(cJSON *pei_upda
     }
 
     pei_update_info_local_var = OpenAPI_pei_update_info_create (
-        ogs_strdup(pei->valuestring)
+        ogs_strdup_or_assert(pei->valuestring)
         );
 
     return pei_update_info_local_var;

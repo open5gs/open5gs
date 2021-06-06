@@ -112,7 +112,7 @@ static int epoll_add(ogs_poll_t *poll)
     map = ogs_hash_get(context->map_hash, &poll->fd, sizeof(poll->fd));
     if (!map) {
         map = ogs_calloc(1, sizeof(*map));
-        ogs_assert(map);
+        ogs_expect_or_return_val(map, OGS_ERROR);
 
         op = EPOLL_CTL_ADD;
         ogs_hash_set(context->map_hash, &poll->fd, sizeof(poll->fd), map);

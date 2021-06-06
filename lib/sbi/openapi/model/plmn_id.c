@@ -82,8 +82,8 @@ OpenAPI_plmn_id_t *OpenAPI_plmn_id_parseFromJSON(cJSON *plmn_idJSON)
     }
 
     plmn_id_local_var = OpenAPI_plmn_id_create (
-        ogs_strdup(mcc->valuestring),
-        ogs_strdup(mnc->valuestring)
+        ogs_strdup_or_assert(mcc->valuestring),
+        ogs_strdup_or_assert(mnc->valuestring)
         );
 
     return plmn_id_local_var;

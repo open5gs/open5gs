@@ -137,7 +137,7 @@ OpenAPI_plmn_snssai_t *OpenAPI_plmn_snssai_parseFromJSON(cJSON *plmn_snssaiJSON)
     plmn_snssai_local_var = OpenAPI_plmn_snssai_create (
         plmn_id_local_nonprim,
         s_nssai_listList,
-        nid ? ogs_strdup(nid->valuestring) : NULL
+        nid ? ogs_strdup_or_assert(nid->valuestring) : NULL
         );
 
     return plmn_snssai_local_var;

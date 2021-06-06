@@ -120,8 +120,8 @@ OpenAPI_volume_timed_report_t *OpenAPI_volume_timed_report_parseFromJSON(cJSON *
     }
 
     volume_timed_report_local_var = OpenAPI_volume_timed_report_create (
-        ogs_strdup(start_time_stamp->valuestring),
-        ogs_strdup(end_time_stamp->valuestring),
+        ogs_strdup_or_assert(start_time_stamp->valuestring),
+        ogs_strdup_or_assert(end_time_stamp->valuestring),
         downlink_volume->valuedouble,
         uplink_volume->valuedouble
         );

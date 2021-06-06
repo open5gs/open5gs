@@ -291,7 +291,7 @@ OpenAPI_session_management_subscription_data_t *OpenAPI_session_management_subsc
                 ogs_error("OpenAPI_session_management_subscription_data_parseFromJSON() failed [internal_group_ids]");
                 goto end;
             }
-            OpenAPI_list_add(internal_group_idsList, ogs_strdup(internal_group_ids_local->valuestring));
+            OpenAPI_list_add(internal_group_idsList, ogs_strdup_or_assert(internal_group_ids_local->valuestring));
         }
     }
 
@@ -408,13 +408,13 @@ OpenAPI_session_management_subscription_data_t *OpenAPI_session_management_subsc
         dnn_configurations ? dnn_configurationsList : NULL,
         internal_group_ids ? internal_group_idsList : NULL,
         shared_vn_group_data_ids ? shared_vn_group_data_idsList : NULL,
-        shared_dnn_configurations_id ? ogs_strdup(shared_dnn_configurations_id->valuestring) : NULL,
+        shared_dnn_configurations_id ? ogs_strdup_or_assert(shared_dnn_configurations_id->valuestring) : NULL,
         odb_packet_services ? odb_packet_servicesVariable : 0,
         trace_data ? trace_data_local_nonprim : NULL,
-        shared_trace_data_id ? ogs_strdup(shared_trace_data_id->valuestring) : NULL,
+        shared_trace_data_id ? ogs_strdup_or_assert(shared_trace_data_id->valuestring) : NULL,
         expected_ue_behaviours_list ? expected_ue_behaviours_listList : NULL,
         suggested_packet_num_dl_list ? suggested_packet_num_dl_listList : NULL,
-        _3gpp_charging_characteristics ? ogs_strdup(_3gpp_charging_characteristics->valuestring) : NULL
+        _3gpp_charging_characteristics ? ogs_strdup_or_assert(_3gpp_charging_characteristics->valuestring) : NULL
         );
 
     return session_management_subscription_data_local_var;

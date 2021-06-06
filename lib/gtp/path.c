@@ -253,7 +253,7 @@ ogs_pkbuf_t *ogs_gtp_handle_echo_req(ogs_pkbuf_t *pkb)
 
     pkb_resp = ogs_pkbuf_alloc(NULL,
             100 /* enough for ECHO_RSP; use smaller buffer */);
-    ogs_assert(pkb_resp);
+    ogs_expect_or_return_val(pkb_resp, NULL);
     ogs_pkbuf_put(pkb_resp, 100);
     gtph_resp = (ogs_gtp_header_t *)pkb_resp->data;
 

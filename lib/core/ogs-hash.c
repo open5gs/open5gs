@@ -61,7 +61,7 @@ struct ogs_hash_t {
 
 static ogs_hash_entry_t **alloc_array(ogs_hash_t *ht, unsigned int max)
 {
-   return ogs_calloc(1, sizeof(*ht->array) * (max + 1));
+   return ogs_calloc_or_assert(1, sizeof(*ht->array) * (max + 1));
 }
 
 ogs_hash_t *ogs_hash_make()
@@ -70,6 +70,7 @@ ogs_hash_t *ogs_hash_make()
     ogs_time_t now = ogs_get_monotonic_time();
 
     ht = ogs_malloc(sizeof(ogs_hash_t));
+    ogs_expect_or_return_val(ht, NULL);
 
     ht->free = NULL;
     ht->count = 0;
@@ -85,6 +86,7 @@ ogs_hash_t *ogs_hash_make()
 ogs_hash_t *ogs_hash_make_custom(ogs_hashfunc_t hash_func)
 {
     ogs_hash_t *ht = ogs_hash_make();
+    ogs_expect_or_return_val(ht, NULL);
     ht->hash_func = hash_func;
     return ht;
 }
@@ -283,7 +285,7 @@ static ogs_hash_entry_t **find_entry(ogs_hash_t *ht,
     if ((he = ht->free) != NULL)
         ht->free = he->next;
     else
-        he = ogs_malloc_debug(sizeof(*he), file_line);
+        he = ogs_malloc_debug(sizeof(*he), file_line, true);
     he->next = NULL;
     he->hash = hash;
     he->key  = key;

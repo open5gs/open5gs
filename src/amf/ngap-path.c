@@ -352,7 +352,7 @@ int ngap_send_amf_ue_context_release_command(
     return OGS_OK;
 }
 
-void ngap_send_paging(amf_ue_t *amf_ue)
+int ngap_send_paging(amf_ue_t *amf_ue)
 {
     ogs_pkbuf_t *ngapbuf = NULL;
     amf_gnb_t *gnb = NULL;
@@ -370,14 +370,14 @@ void ngap_send_paging(amf_ue_t *amf_ue)
                         ngapbuf = amf_ue->t3513.pkbuf;
                     } else {
                         ngapbuf = ngap_build_paging(amf_ue);
-                        ogs_expect_or_return(ngapbuf);
+                        ogs_expect_or_return_val(ngapbuf, OGS_ERROR);
                     }
 
                     amf_ue->t3513.pkbuf = ogs_pkbuf_copy(ngapbuf);
-                    ogs_assert(amf_ue->t3513.pkbuf);
+                    ogs_expect_or_return_val(amf_ue->t3513.pkbuf, OGS_ERROR);
 
                     rv = ngap_send_to_gnb(gnb, ngapbuf, amf_ue->gnb_ostream_id);
-                    ogs_expect(rv == OGS_OK);
+                    ogs_expect_or_return_val(rv == OGS_OK, rv);
                 }
             }
         }
@@ -386,6 +386,8 @@ void ngap_send_paging(amf_ue_t *amf_ue)
     /* Start T3513 */
     ogs_timer_start(amf_ue->t3513.timer, 
             amf_timer_cfg(AMF_TIMER_T3513)->duration);
+
+    return OGS_OK;
 }
 
 int ngap_send_pdu_resource_setup_request(

@@ -55,7 +55,7 @@ int ogs_pfcp_paa_to_ue_ip_addr(
 
 int ogs_pfcp_ip_to_outer_header_creation(ogs_ip_t *ip,
     ogs_pfcp_outer_header_creation_t *outer_header_creation, int *len);
-int ogs_pfcp_outer_header_creation_to_ip(
+void ogs_pfcp_outer_header_creation_to_ip(
     ogs_pfcp_outer_header_creation_t *outer_header_creation, ogs_ip_t *ip);
 
 #ifdef __cplusplus

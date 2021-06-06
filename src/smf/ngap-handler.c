@@ -122,10 +122,11 @@ int ngap_handle_pdu_session_resource_setup_response_transfer(
                 }
 
                 dl_far->apply_action = OGS_PFCP_APPLY_ACTION_FORW;
-                ogs_pfcp_ip_to_outer_header_creation(
-                        &sess->gnb_n3_ip,
-                        &dl_far->outer_header_creation,
-                        &dl_far->outer_header_creation_len);
+                ogs_assert(OGS_OK ==
+                    ogs_pfcp_ip_to_outer_header_creation(
+                            &sess->gnb_n3_ip,
+                            &dl_far->outer_header_creation,
+                            &dl_far->outer_header_creation_len));
                 dl_far->outer_header_creation.teid = sess->gnb_n3_teid;
             } else {
                 ogs_error("[%s:%d] No QoS flow", smf_ue->supi, sess->psi);
@@ -144,7 +145,7 @@ int ngap_handle_pdu_session_resource_setup_response_transfer(
                 0));
     } else {
         /* ACTIVATED Is NOT Included in RESPONSE */
-        ogs_sbi_send_http_status_no_content(stream);
+        ogs_assert(true == ogs_sbi_send_http_status_no_content(stream));
     }
 
     rv = OGS_OK;
@@ -218,10 +219,11 @@ int ngap_handle_pdu_session_resource_modify_response_transfer(
     ogs_assert(dl_far);
 
     dl_far->apply_action = OGS_PFCP_APPLY_ACTION_FORW;
-    ogs_pfcp_ip_to_outer_header_creation(
+    ogs_assert(OGS_OK ==
+        ogs_pfcp_ip_to_outer_header_creation(
             &sess->gnb_n3_ip,
             &dl_far->outer_header_creation,
-            &dl_far->outer_header_creation_len);
+            &dl_far->outer_header_creation_len));
     dl_far->outer_header_creation.teid = sess->gnb_n3_teid;
 
     ogs_assert(OGS_OK ==
@@ -327,10 +329,11 @@ int ngap_handle_path_switch_request_transfer(
                 }
 
                 dl_far->apply_action = OGS_PFCP_APPLY_ACTION_FORW;
-                ogs_pfcp_ip_to_outer_header_creation(
+                ogs_assert(OGS_OK ==
+                    ogs_pfcp_ip_to_outer_header_creation(
                         &sess->gnb_n3_ip,
                         &dl_far->outer_header_creation,
-                        &dl_far->outer_header_creation_len);
+                        &dl_far->outer_header_creation_len));
                 dl_far->outer_header_creation.teid = sess->gnb_n3_teid;
             } else {
                 ogs_error("[%s:%d] No QoS flow", smf_ue->supi, sess->psi);
@@ -351,7 +354,7 @@ int ngap_handle_path_switch_request_transfer(
                 0));
     } else {
         /* ACTIVATED Is NOT Included in RESPONSE */
-        ogs_sbi_send_http_status_no_content(stream);
+        ogs_assert(true == ogs_sbi_send_http_status_no_content(stream));
     }
 
     rv = OGS_OK;

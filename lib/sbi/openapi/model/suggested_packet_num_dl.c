@@ -81,7 +81,7 @@ OpenAPI_suggested_packet_num_dl_t *OpenAPI_suggested_packet_num_dl_parseFromJSON
 
     suggested_packet_num_dl_local_var = OpenAPI_suggested_packet_num_dl_create (
         suggested_packet_num_dl->valuedouble,
-        validity_time ? ogs_strdup(validity_time->valuestring) : NULL
+        validity_time ? ogs_strdup_or_assert(validity_time->valuestring) : NULL
         );
 
     return suggested_packet_num_dl_local_var;

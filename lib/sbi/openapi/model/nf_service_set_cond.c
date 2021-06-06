@@ -62,7 +62,7 @@ OpenAPI_nf_service_set_cond_t *OpenAPI_nf_service_set_cond_parseFromJSON(cJSON *
     }
 
     nf_service_set_cond_local_var = OpenAPI_nf_service_set_cond_create (
-        ogs_strdup(nf_service_set_id->valuestring)
+        ogs_strdup_or_assert(nf_service_set_id->valuestring)
         );
 
     return nf_service_set_cond_local_var;

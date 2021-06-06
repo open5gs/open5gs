@@ -111,7 +111,7 @@ OpenAPI_ddn_failure_sub_info_t *OpenAPI_ddn_failure_sub_info_parseFromJSON(cJSON
     }
 
     ddn_failure_sub_info_local_var = OpenAPI_ddn_failure_sub_info_create (
-        ogs_strdup(notify_correlation_id->valuestring),
+        ogs_strdup_or_assert(notify_correlation_id->valuestring),
         ddd_traffic_descriptor_list ? ddd_traffic_descriptor_listList : NULL
         );
 

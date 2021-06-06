@@ -31,11 +31,11 @@ static void test2_func(abts_case *tc, void *data)
 {
     char *ptr = ogs_calloc(2, 10);
     int i;
+    ABTS_PTR_NOTNULL(tc, ptr);
     for (i = 0; i < 2*10; i++)
     {
         ABTS_INT_EQUAL(tc, 0, ptr[i]);
     }
-    ABTS_PTR_NOTNULL(tc, ptr);
     ogs_free(ptr);
 }
 

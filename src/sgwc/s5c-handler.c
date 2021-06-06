@@ -211,8 +211,9 @@ void sgwc_s5c_handle_create_session_response(
 
     far->apply_action = OGS_PFCP_APPLY_ACTION_FORW;
 
-    ogs_pfcp_ip_to_outer_header_creation(&ul_tunnel->remote_ip,
-        &far->outer_header_creation, &far->outer_header_creation_len);
+    ogs_assert(OGS_OK ==
+        ogs_pfcp_ip_to_outer_header_creation(&ul_tunnel->remote_ip,
+            &far->outer_header_creation, &far->outer_header_creation_len));
     far->outer_header_creation.teid = ul_tunnel->remote_teid;
 
     /* Receive Control Plane(UL) : PGW-S5C */
@@ -382,8 +383,9 @@ void sgwc_s5c_handle_create_bearer_request(
 
     far->apply_action = OGS_PFCP_APPLY_ACTION_FORW;
 
-    ogs_pfcp_ip_to_outer_header_creation(&ul_tunnel->remote_ip,
-        &far->outer_header_creation, &far->outer_header_creation_len);
+    ogs_assert(OGS_OK ==
+        ogs_pfcp_ip_to_outer_header_creation(&ul_tunnel->remote_ip,
+            &far->outer_header_creation, &far->outer_header_creation_len));
     far->outer_header_creation.teid = ul_tunnel->remote_teid;
 
     ogs_assert(OGS_OK ==

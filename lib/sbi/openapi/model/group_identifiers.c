@@ -129,8 +129,8 @@ OpenAPI_group_identifiers_t *OpenAPI_group_identifiers_parseFromJSON(cJSON *grou
     }
 
     group_identifiers_local_var = OpenAPI_group_identifiers_create (
-        ext_group_id ? ogs_strdup(ext_group_id->valuestring) : NULL,
-        int_group_id ? ogs_strdup(int_group_id->valuestring) : NULL,
+        ext_group_id ? ogs_strdup_or_assert(ext_group_id->valuestring) : NULL,
+        int_group_id ? ogs_strdup_or_assert(int_group_id->valuestring) : NULL,
         ue_id_list ? ue_id_listList : NULL
         );
 

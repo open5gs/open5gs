@@ -251,7 +251,7 @@ OpenAPI_sm_context_release_data_t *OpenAPI_sm_context_release_data_parseFromJSON
         ng_ap_cause ? ng_ap_cause_local_nonprim : NULL,
         _5g_mm_cause_value ? _5g_mm_cause_value->valuedouble : 0,
         ue_location ? ue_location_local_nonprim : NULL,
-        ue_time_zone ? ogs_strdup(ue_time_zone->valuestring) : NULL,
+        ue_time_zone ? ogs_strdup_or_assert(ue_time_zone->valuestring) : NULL,
         add_ue_location ? add_ue_location_local_nonprim : NULL,
         vsmf_release_only ? vsmf_release_only->valueint : 0,
         n2_sm_info ? n2_sm_info_local_nonprim : NULL,

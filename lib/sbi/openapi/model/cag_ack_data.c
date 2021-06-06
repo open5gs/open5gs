@@ -83,7 +83,7 @@ OpenAPI_cag_ack_data_t *OpenAPI_cag_ack_data_parseFromJSON(cJSON *cag_ack_dataJS
     ue_update_statusVariable = OpenAPI_ue_update_status_FromString(ue_update_status->valuestring);
 
     cag_ack_data_local_var = OpenAPI_cag_ack_data_create (
-        ogs_strdup(provisioning_time->valuestring),
+        ogs_strdup_or_assert(provisioning_time->valuestring),
         ue_update_statusVariable
         );
 

@@ -100,9 +100,13 @@ void mme_context_init()
     ogs_pool_init(&self.m_tmsi, ogs_app()->max.ue);
 
     self.enb_addr_hash = ogs_hash_make();
+    ogs_assert(self.enb_addr_hash);
     self.enb_id_hash = ogs_hash_make();
+    ogs_assert(self.enb_id_hash);
     self.imsi_ue_hash = ogs_hash_make();
+    ogs_assert(self.imsi_ue_hash);
     self.guti_ue_hash = ogs_hash_make();
+    ogs_assert(self.guti_ue_hash);
 
     ogs_list_init(&self.mme_ue_list);
 

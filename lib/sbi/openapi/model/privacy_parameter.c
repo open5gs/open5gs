@@ -96,7 +96,7 @@ OpenAPI_privacy_parameter_t *OpenAPI_privacy_parameter_parseFromJSON(cJSON *priv
             ogs_error("OpenAPI_privacy_parameter_parseFromJSON() failed [ser_ids]");
             goto end;
         }
-        OpenAPI_list_add(ser_idsList, ogs_strdup(ser_ids_local->valuestring));
+        OpenAPI_list_add(ser_idsList, ogs_strdup_or_assert(ser_ids_local->valuestring));
     }
 
     cJSON *geographical_area = cJSON_GetObjectItemCaseSensitive(privacy_parameterJSON, "geographicalArea");
@@ -125,7 +125,7 @@ OpenAPI_privacy_parameter_t *OpenAPI_privacy_parameter_parseFromJSON(cJSON *priv
 
     privacy_parameter_local_var = OpenAPI_privacy_parameter_create (
         ser_idsList,
-        ogs_strdup(geographical_area->valuestring),
+        ogs_strdup_or_assert(geographical_area->valuestring),
         timer->valuedouble
         );
 

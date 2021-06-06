@@ -123,7 +123,7 @@ OpenAPI_deregistration_data_t *OpenAPI_deregistration_data_parseFromJSON(cJSON *
         dereg_reasonVariable,
         access_type ? access_typeVariable : 0,
         pdu_session_id ? pdu_session_id->valuedouble : 0,
-        new_smf_instance_id ? ogs_strdup(new_smf_instance_id->valuestring) : NULL
+        new_smf_instance_id ? ogs_strdup_or_assert(new_smf_instance_id->valuestring) : NULL
         );
 
     return deregistration_data_local_var;

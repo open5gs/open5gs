@@ -237,12 +237,12 @@ OpenAPI_events_subsc_req_data_t *OpenAPI_events_subsc_req_data_parseFromJSON(cJS
 
     events_subsc_req_data_local_var = OpenAPI_events_subsc_req_data_create (
         eventsList,
-        notif_uri ? ogs_strdup(notif_uri->valuestring) : NULL,
+        notif_uri ? ogs_strdup_or_assert(notif_uri->valuestring) : NULL,
         req_qos_mon_params ? req_qos_mon_paramsList : NULL,
         qos_mon ? qos_mon_local_nonprim : NULL,
         req_ani ? req_aniVariable : 0,
         usg_thres ? usg_thres_local_nonprim : NULL,
-        notif_corre_id ? ogs_strdup(notif_corre_id->valuestring) : NULL
+        notif_corre_id ? ogs_strdup_or_assert(notif_corre_id->valuestring) : NULL
         );
 
     return events_subsc_req_data_local_var;

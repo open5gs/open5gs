@@ -412,21 +412,21 @@ OpenAPI_amf_non3_gpp_access_registration_t *OpenAPI_amf_non3_gpp_access_registra
     }
 
     amf_non3_gpp_access_registration_local_var = OpenAPI_amf_non3_gpp_access_registration_create (
-        ogs_strdup(amf_instance_id->valuestring),
-        supported_features ? ogs_strdup(supported_features->valuestring) : NULL,
+        ogs_strdup_or_assert(amf_instance_id->valuestring),
+        supported_features ? ogs_strdup_or_assert(supported_features->valuestring) : NULL,
         purge_flag ? purge_flag->valueint : 0,
-        pei ? ogs_strdup(pei->valuestring) : NULL,
+        pei ? ogs_strdup_or_assert(pei->valuestring) : NULL,
         ims_vo_psVariable,
-        ogs_strdup(dereg_callback_uri->valuestring),
-        amf_service_name_dereg ? ogs_strdup(amf_service_name_dereg->valuestring) : NULL,
-        pcscf_restoration_callback_uri ? ogs_strdup(pcscf_restoration_callback_uri->valuestring) : NULL,
-        amf_service_name_pcscf_rest ? ogs_strdup(amf_service_name_pcscf_rest->valuestring) : NULL,
+        ogs_strdup_or_assert(dereg_callback_uri->valuestring),
+        amf_service_name_dereg ? ogs_strdup_or_assert(amf_service_name_dereg->valuestring) : NULL,
+        pcscf_restoration_callback_uri ? ogs_strdup_or_assert(pcscf_restoration_callback_uri->valuestring) : NULL,
+        amf_service_name_pcscf_rest ? ogs_strdup_or_assert(amf_service_name_pcscf_rest->valuestring) : NULL,
         guami_local_nonprim,
         backup_amf_info ? backup_amf_infoList : NULL,
         rat_typeVariable,
         urrp_indicator ? urrp_indicator->valueint : 0,
-        amf_ee_subscription_id ? ogs_strdup(amf_ee_subscription_id->valuestring) : NULL,
-        registration_time ? ogs_strdup(registration_time->valuestring) : NULL,
+        amf_ee_subscription_id ? ogs_strdup_or_assert(amf_ee_subscription_id->valuestring) : NULL,
+        registration_time ? ogs_strdup_or_assert(registration_time->valuestring) : NULL,
         vgmlc_address ? vgmlc_address_local_nonprim : NULL,
         context_info ? context_info_local_nonprim : NULL
         );

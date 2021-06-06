@@ -61,7 +61,7 @@ OpenAPI_links_value_schema_t *OpenAPI_links_value_schema_parseFromJSON(cJSON *li
     }
 
     links_value_schema_local_var = OpenAPI_links_value_schema_create (
-        href ? ogs_strdup(href->valuestring) : NULL
+        href ? ogs_strdup_or_assert(href->valuestring) : NULL
         );
 
     return links_value_schema_local_var;

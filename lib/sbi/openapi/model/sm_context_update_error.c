@@ -176,7 +176,7 @@ OpenAPI_sm_context_update_error_t *OpenAPI_sm_context_update_error_parseFromJSON
         n2_sm_info ? n2_sm_info_local_nonprim : NULL,
         n2_sm_info_type ? n2_sm_info_typeVariable : 0,
         up_cnx_state ? up_cnx_stateVariable : 0,
-        recovery_time ? ogs_strdup(recovery_time->valuestring) : NULL
+        recovery_time ? ogs_strdup_or_assert(recovery_time->valuestring) : NULL
         );
 
     return sm_context_update_error_local_var;

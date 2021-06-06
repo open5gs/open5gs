@@ -170,7 +170,7 @@ OpenAPI_authentication_info_request_t *OpenAPI_authentication_info_request_parse
                 ogs_error("OpenAPI_authentication_info_request_parseFromJSON() failed [cell_cag_info]");
                 goto end;
             }
-            OpenAPI_list_add(cell_cag_infoList, ogs_strdup(cell_cag_info_local->valuestring));
+            OpenAPI_list_add(cell_cag_infoList, ogs_strdup_or_assert(cell_cag_info_local->valuestring));
         }
     }
 
@@ -184,10 +184,10 @@ OpenAPI_authentication_info_request_t *OpenAPI_authentication_info_request_parse
     }
 
     authentication_info_request_local_var = OpenAPI_authentication_info_request_create (
-        supported_features ? ogs_strdup(supported_features->valuestring) : NULL,
-        ogs_strdup(serving_network_name->valuestring),
+        supported_features ? ogs_strdup_or_assert(supported_features->valuestring) : NULL,
+        ogs_strdup_or_assert(serving_network_name->valuestring),
         resynchronization_info ? resynchronization_info_local_nonprim : NULL,
-        ogs_strdup(ausf_instance_id->valuestring),
+        ogs_strdup_or_assert(ausf_instance_id->valuestring),
         cell_cag_info ? cell_cag_infoList : NULL,
         n5gc_ind ? n5gc_ind->valueint : 0
         );

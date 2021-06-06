@@ -103,7 +103,7 @@ OpenAPI_candidate_for_replacement_t *OpenAPI_candidate_for_replacement_parseFrom
                 ogs_error("OpenAPI_candidate_for_replacement_parseFromJSON() failed [dnns]");
                 goto end;
             }
-            OpenAPI_list_add(dnnsList, ogs_strdup(dnns_local->valuestring));
+            OpenAPI_list_add(dnnsList, ogs_strdup_or_assert(dnns_local->valuestring));
         }
     }
 

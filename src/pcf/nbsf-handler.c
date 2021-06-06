@@ -110,6 +110,7 @@ bool pcf_nbsf_management_handle_register(
     if (sess->binding_id)
         ogs_free(sess->binding_id);
     sess->binding_id = ogs_strdup(message.h.resource.component[1]);
+    ogs_assert(sess->binding_id);
 
     ogs_sbi_header_free(&header);
 
@@ -385,6 +386,7 @@ bool pcf_nbsf_management_handle_register(
     if (sess->smpolicycontrol_features) {
         SmPolicyDecision.supp_feat =
             ogs_uint64_to_string(sess->smpolicycontrol_features);
+        ogs_assert(SmPolicyDecision.supp_feat);
     }
 
     memset(&header, 0, sizeof(header));
@@ -400,7 +402,7 @@ bool pcf_nbsf_management_handle_register(
     response = ogs_sbi_build_response(
             &sendmsg, OGS_SBI_HTTP_STATUS_CREATED);
     ogs_assert(response);
-    ogs_sbi_server_send_response(stream, response);
+    ogs_assert(true == ogs_sbi_server_send_response(stream, response));
 
     ogs_free(sendmsg.http.location);
 
@@ -478,7 +480,8 @@ cleanup:
     ogs_assert(strerror);
     ogs_assert(status);
     ogs_error("%s", strerror);
-    ogs_sbi_server_send_error(stream, status, recvmsg, strerror, NULL);
+    ogs_assert(true ==
+        ogs_sbi_server_send_error(stream, status, recvmsg, strerror, NULL));
     ogs_free(strerror);
 
     ogs_session_data_free(&session_data);
@@ -500,7 +503,7 @@ bool pcf_nbsf_management_handle_de_register(
     response = ogs_sbi_build_response(
             &sendmsg, OGS_SBI_HTTP_STATUS_NO_CONTENT);
     ogs_assert(response);
-    ogs_sbi_server_send_response(stream, response);
+    ogs_assert(true == ogs_sbi_server_send_response(stream, response));
 
     return true;
 }

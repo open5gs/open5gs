@@ -24,31 +24,31 @@
 extern "C" {
 #endif
 
-void ogs_pfcp_handle_heartbeat_request(
+bool ogs_pfcp_handle_heartbeat_request(
         ogs_pfcp_node_t *node, ogs_pfcp_xact_t *xact,
         ogs_pfcp_heartbeat_request_t *req);
-void ogs_pfcp_handle_heartbeat_response(
+bool ogs_pfcp_handle_heartbeat_response(
         ogs_pfcp_node_t *node, ogs_pfcp_xact_t *xact,
         ogs_pfcp_heartbeat_response_t *req);
 
-void ogs_pfcp_cp_handle_association_setup_request(
+bool ogs_pfcp_cp_handle_association_setup_request(
         ogs_pfcp_node_t *node, ogs_pfcp_xact_t *xact,
         ogs_pfcp_association_setup_request_t *req);
-void ogs_pfcp_cp_handle_association_setup_response(
+bool ogs_pfcp_cp_handle_association_setup_response(
         ogs_pfcp_node_t *node, ogs_pfcp_xact_t *xact,
         ogs_pfcp_association_setup_response_t *req);
 
-void ogs_pfcp_up_handle_association_setup_request(
+bool ogs_pfcp_up_handle_association_setup_request(
         ogs_pfcp_node_t *node, ogs_pfcp_xact_t *xact,
         ogs_pfcp_association_setup_request_t *req);
-void ogs_pfcp_up_handle_association_setup_response(
+bool ogs_pfcp_up_handle_association_setup_response(
         ogs_pfcp_node_t *node, ogs_pfcp_xact_t *xact,
         ogs_pfcp_association_setup_response_t *req);
 
-void ogs_pfcp_up_handle_pdr(
+bool ogs_pfcp_up_handle_pdr(
         ogs_pfcp_pdr_t *pdr, ogs_pkbuf_t *recvbuf,
         ogs_pfcp_user_plane_report_t *report);
-void ogs_pfcp_up_handle_error_indication(
+bool ogs_pfcp_up_handle_error_indication(
         ogs_pfcp_far_t *far, ogs_pfcp_user_plane_report_t *report);
 
 ogs_pfcp_pdr_t *ogs_pfcp_handle_create_pdr(ogs_pfcp_sess_t *sess,

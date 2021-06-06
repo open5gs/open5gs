@@ -50,11 +50,11 @@ static __inline__ struct sess_state *new_state(os0_t sid)
 
     ogs_thread_mutex_lock(&sess_state_mutex);
     ogs_pool_alloc(&sess_state_pool, &new);
-    ogs_assert(new);
+    ogs_expect_or_return_val(new, NULL);
     ogs_thread_mutex_unlock(&sess_state_mutex);
 
     new->gx_sid = (os0_t)ogs_strdup((char *)sid);
-    ogs_assert(new->gx_sid);
+    ogs_expect_or_return_val(new->gx_sid, NULL);
 
     return new;
 }
@@ -1169,6 +1169,7 @@ static int decode_pcc_rule_definition(
                 ret = fd_msg_avp_hdr(avpch3, &hdr);
                 ogs_assert(ret == 0);
                 flow->description = ogs_malloc(hdr->avp_value->os.len+1);
+                ogs_assert(flow->description);
                 ogs_cpystrn(flow->description,
                     (char*)hdr->avp_value->os.data,
                     hdr->avp_value->os.len+1);

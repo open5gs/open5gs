@@ -62,7 +62,7 @@ OpenAPI_service_name_cond_t *OpenAPI_service_name_cond_parseFromJSON(cJSON *serv
     }
 
     service_name_cond_local_var = OpenAPI_service_name_cond_create (
-        ogs_strdup(service_name->valuestring)
+        ogs_strdup_or_assert(service_name->valuestring)
         );
 
     return service_name_cond_local_var;

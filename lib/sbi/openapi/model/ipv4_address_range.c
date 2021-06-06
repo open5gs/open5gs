@@ -80,8 +80,8 @@ OpenAPI_ipv4_address_range_t *OpenAPI_ipv4_address_range_parseFromJSON(cJSON *ip
     }
 
     ipv4_address_range_local_var = OpenAPI_ipv4_address_range_create (
-        start ? ogs_strdup(start->valuestring) : NULL,
-        end ? ogs_strdup(end->valuestring) : NULL
+        start ? ogs_strdup_or_assert(start->valuestring) : NULL,
+        end ? ogs_strdup_or_assert(end->valuestring) : NULL
         );
 
     return ipv4_address_range_local_var;

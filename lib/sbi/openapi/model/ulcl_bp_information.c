@@ -61,7 +61,7 @@ OpenAPI_ulcl_bp_information_t *OpenAPI_ulcl_bp_information_parseFromJSON(cJSON *
     }
 
     ulcl_bp_information_local_var = OpenAPI_ulcl_bp_information_create (
-        ulcl_bp_upf_id ? ogs_strdup(ulcl_bp_upf_id->valuestring) : NULL
+        ulcl_bp_upf_id ? ogs_strdup_or_assert(ulcl_bp_upf_id->valuestring) : NULL
         );
 
     return ulcl_bp_information_local_var;

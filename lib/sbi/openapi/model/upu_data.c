@@ -121,10 +121,10 @@ OpenAPI_upu_data_t *OpenAPI_upu_data_parseFromJSON(cJSON *upu_dataJSON)
     }
 
     upu_data_local_var = OpenAPI_upu_data_create (
-        ogs_strdup(provisioning_time->valuestring),
+        ogs_strdup_or_assert(provisioning_time->valuestring),
         ue_update_statusVariable,
-        upu_xmac_iue ? ogs_strdup(upu_xmac_iue->valuestring) : NULL,
-        upu_mac_iue ? ogs_strdup(upu_mac_iue->valuestring) : NULL
+        upu_xmac_iue ? ogs_strdup_or_assert(upu_xmac_iue->valuestring) : NULL,
+        upu_mac_iue ? ogs_strdup_or_assert(upu_mac_iue->valuestring) : NULL
         );
 
     return upu_data_local_var;

@@ -30,10 +30,10 @@ extern "C" {
 int ausf_sbi_open(void);
 void ausf_sbi_close(void);
 
-void ausf_nnrf_nfm_send_nf_register(ogs_sbi_nf_instance_t *nf_instance);
+bool ausf_nnrf_nfm_send_nf_register(ogs_sbi_nf_instance_t *nf_instance);
 
-void ausf_sbi_send(ogs_sbi_nf_instance_t *nf_instance, ogs_sbi_xact_t *xact);
-void ausf_sbi_discover_and_send(OpenAPI_nf_type_e target_nf_type,
+bool ausf_sbi_send(ogs_sbi_nf_instance_t *nf_instance, ogs_sbi_xact_t *xact);
+bool ausf_sbi_discover_and_send(OpenAPI_nf_type_e target_nf_type,
         ausf_ue_t *ausf_ue, ogs_sbi_stream_t *stream, void *data,
         ogs_sbi_request_t *(*build)(ausf_ue_t *ausf_ue, void *data));
 

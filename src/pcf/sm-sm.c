@@ -94,9 +94,10 @@ void pcf_sm_state_operational(ogs_fsm_t *s, pcf_event_t *e)
                 DEFAULT
                     ogs_error("[%s:%d] Invalid HTTP URI [%s]",
                             pcf_ue->supi, sess->psi, message->h.uri);
-                    ogs_sbi_server_send_error(stream,
+                    ogs_assert(true ==
+                        ogs_sbi_server_send_error(stream,
                             OGS_SBI_HTTP_STATUS_FORBIDDEN, message,
-                            "Invalid HTTP method", message->h.uri);
+                            "Invalid HTTP method", message->h.uri));
                 END
             }
             break;
@@ -113,9 +114,10 @@ void pcf_sm_state_operational(ogs_fsm_t *s, pcf_event_t *e)
                 DEFAULT
                     ogs_error("[%s:%d] Invalid HTTP URI [%s]",
                             pcf_ue->supi, sess->psi, message->h.uri);
-                    ogs_sbi_server_send_error(stream,
+                    ogs_assert(true ==
+                        ogs_sbi_server_send_error(stream,
                             OGS_SBI_HTTP_STATUS_FORBIDDEN, message,
-                            "Invalid HTTP method", message->h.uri);
+                            "Invalid HTTP method", message->h.uri));
                 END
             }
             break;
@@ -149,8 +151,10 @@ void pcf_sm_state_operational(ogs_fsm_t *s, pcf_event_t *e)
                             ogs_error("[%s:%d] HTTP response error [%d]",
                                 pcf_ue->supi, sess->psi, message->res_status);
                         }
-                        ogs_sbi_server_send_error(stream, message->res_status,
-                            NULL, "HTTP response error", pcf_ue->supi);
+                        ogs_assert(true ==
+                            ogs_sbi_server_send_error(
+                                stream, message->res_status,
+                                NULL, "HTTP response error", pcf_ue->supi));
                         break;
                     }
 
@@ -183,9 +187,10 @@ void pcf_sm_state_operational(ogs_fsm_t *s, pcf_event_t *e)
                                 OGS_SBI_HTTP_STATUS_NO_CONTENT) {
                             ogs_error("[%s:%d] HTTP response error [%d]",
                                 pcf_ue->supi, sess->psi, message->res_status);
-                            ogs_sbi_server_send_error(stream,
-                                message->res_status,
-                                NULL, "HTTP response error", pcf_ue->supi);
+                            ogs_assert(true ==
+                                ogs_sbi_server_send_error(stream,
+                                    message->res_status,
+                                    NULL, "HTTP response error", pcf_ue->supi));
                             OGS_FSM_TRAN(s, pcf_sm_state_exception);
                             break;
                         }

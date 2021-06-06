@@ -35,7 +35,7 @@ static int server_start(ogs_sbi_server_t *server,
         int (*cb)(ogs_sbi_request_t *request, void *data));
 static void server_stop(ogs_sbi_server_t *server);
 
-static void server_send_response(
+static bool server_send_response(
         ogs_sbi_stream_t *stream, ogs_sbi_response_t *response);
 
 static ogs_sbi_server_t *server_from_stream(ogs_sbi_stream_t *stream);
@@ -289,7 +289,7 @@ static void server_stop(ogs_sbi_server_t *server)
     }
 }
 
-static void server_send_response(
+static bool server_send_response(
         ogs_sbi_stream_t *stream, ogs_sbi_response_t *response)
 {
     int ret;
@@ -355,10 +355,12 @@ static void server_send_response(
 
     ret = MHD_queue_response(connection, status, mhd_response);
     if (ret != MHD_YES) {
-        ogs_fatal("MHD_queue_response_error [%d]", ret);
-        ogs_assert_if_reached();
+        ogs_error("MHD_queue_response_error [%d]", ret);
+        return false;
     }
     MHD_destroy_response(mhd_response);
+
+    return true;
 }
 
 static void run(short when, ogs_socket_t fd, void *data)
@@ -460,7 +462,9 @@ static _MHD_Result access_handler(
                 (MHD_KeyValueIterator)get_values, request->http.headers);
 
         request->h.method = ogs_strdup(method);
+        ogs_assert(request->h.method);
         request->h.uri = ogs_strdup(url);
+        ogs_assert(request->h.uri);
 
         if (ogs_sbi_header_get(request->http.headers, "Content-Length") ||
             ogs_sbi_header_get(request->http.headers, "Transfer-Encoding")) {
@@ -514,9 +518,10 @@ suspend:
     if (server->cb) {
         if (server->cb(request, sbi_sess) != OGS_OK) {
             ogs_warn("server callback error");
-            ogs_sbi_server_send_error((ogs_sbi_stream_t *)sbi_sess,
-                    OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR, NULL,
-                    "server callback error", NULL);
+            ogs_assert(true ==
+                    ogs_sbi_server_send_error((ogs_sbi_stream_t *)sbi_sess,
+                        OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR, NULL,
+                        "server callback error", NULL));
 
             return MHD_YES;
         }

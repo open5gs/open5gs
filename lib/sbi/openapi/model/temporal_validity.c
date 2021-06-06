@@ -80,8 +80,8 @@ OpenAPI_temporal_validity_t *OpenAPI_temporal_validity_parseFromJSON(cJSON *temp
     }
 
     temporal_validity_local_var = OpenAPI_temporal_validity_create (
-        start_time ? ogs_strdup(start_time->valuestring) : NULL,
-        stop_time ? ogs_strdup(stop_time->valuestring) : NULL
+        start_time ? ogs_strdup_or_assert(start_time->valuestring) : NULL,
+        stop_time ? ogs_strdup_or_assert(stop_time->valuestring) : NULL
         );
 
     return temporal_validity_local_var;

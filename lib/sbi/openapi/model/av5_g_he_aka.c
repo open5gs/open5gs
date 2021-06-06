@@ -142,10 +142,10 @@ OpenAPI_av5_g_he_aka_t *OpenAPI_av5_g_he_aka_parseFromJSON(cJSON *av5_g_he_akaJS
 
     av5_g_he_aka_local_var = OpenAPI_av5_g_he_aka_create (
         av_typeVariable,
-        ogs_strdup(rand->valuestring),
-        xres_star ? ogs_strdup(xres_star->valuestring) : NULL,
-        ogs_strdup(autn->valuestring),
-        kausf ? ogs_strdup(kausf->valuestring) : NULL
+        ogs_strdup_or_assert(rand->valuestring),
+        xres_star ? ogs_strdup_or_assert(xres_star->valuestring) : NULL,
+        ogs_strdup_or_assert(autn->valuestring),
+        kausf ? ogs_strdup_or_assert(kausf->valuestring) : NULL
         );
 
     return av5_g_he_aka_local_var;

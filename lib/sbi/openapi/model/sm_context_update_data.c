@@ -984,7 +984,7 @@ OpenAPI_sm_context_update_data_t *OpenAPI_sm_context_update_data_parseFromJSON(c
                 ogs_error("OpenAPI_sm_context_update_data_parseFromJSON() failed [eps_bearer_setup]");
                 goto end;
             }
-            OpenAPI_list_add(eps_bearer_setupList, ogs_strdup(eps_bearer_setup_local->valuestring));
+            OpenAPI_list_add(eps_bearer_setupList, ogs_strdup_or_assert(eps_bearer_setup_local->valuestring));
         }
     }
 
@@ -1182,7 +1182,7 @@ OpenAPI_sm_context_update_data_t *OpenAPI_sm_context_update_data_parseFromJSON(c
                 ogs_error("OpenAPI_sm_context_update_data_parseFromJSON() failed [forwarding_bearer_contexts]");
                 goto end;
             }
-            OpenAPI_list_add(forwarding_bearer_contextsList, ogs_strdup(forwarding_bearer_contexts_local->valuestring));
+            OpenAPI_list_add(forwarding_bearer_contextsList, ogs_strdup_or_assert(forwarding_bearer_contexts_local->valuestring));
         }
     }
 
@@ -1194,8 +1194,8 @@ OpenAPI_sm_context_update_data_t *OpenAPI_sm_context_update_data_parseFromJSON(c
     }
 
     sm_context_update_data_local_var = OpenAPI_sm_context_update_data_create (
-        pei ? ogs_strdup(pei->valuestring) : NULL,
-        serving_nf_id ? ogs_strdup(serving_nf_id->valuestring) : NULL,
+        pei ? ogs_strdup_or_assert(pei->valuestring) : NULL,
+        serving_nf_id ? ogs_strdup_or_assert(serving_nf_id->valuestring) : NULL,
         guami ? guami_local_nonprim : NULL,
         serving_network ? serving_network_local_nonprim : NULL,
         backup_amf_info ? backup_amf_infoList : NULL,
@@ -1205,7 +1205,7 @@ OpenAPI_sm_context_update_data_t *OpenAPI_sm_context_update_data_parseFromJSON(c
         rat_type ? rat_typeVariable : 0,
         presence_in_ladn ? presence_in_ladnVariable : 0,
         ue_location ? ue_location_local_nonprim : NULL,
-        ue_time_zone ? ogs_strdup(ue_time_zone->valuestring) : NULL,
+        ue_time_zone ? ogs_strdup_or_assert(ue_time_zone->valuestring) : NULL,
         add_ue_location ? add_ue_location_local_nonprim : NULL,
         up_cnx_state ? up_cnx_stateVariable : 0,
         ho_state ? ho_stateVariable : 0,
@@ -1215,8 +1215,8 @@ OpenAPI_sm_context_update_data_t *OpenAPI_sm_context_update_data_parseFromJSON(c
         n2_sm_info ? n2_sm_info_local_nonprim : NULL,
         n2_sm_info_type ? n2_sm_info_typeVariable : 0,
         target_id ? target_id_local_nonprim : NULL,
-        target_serving_nf_id ? ogs_strdup(target_serving_nf_id->valuestring) : NULL,
-        sm_context_status_uri ? ogs_strdup(sm_context_status_uri->valuestring) : NULL,
+        target_serving_nf_id ? ogs_strdup_or_assert(target_serving_nf_id->valuestring) : NULL,
+        sm_context_status_uri ? ogs_strdup_or_assert(sm_context_status_uri->valuestring) : NULL,
         data_forwarding ? data_forwarding->valueint : 0,
         n9_forwarding_tunnel ? n9_forwarding_tunnel_local_nonprim : NULL,
         n9_dl_forwarding_tnl_list ? n9_dl_forwarding_tnl_listList : NULL,
@@ -1237,7 +1237,7 @@ OpenAPI_sm_context_update_data_t *OpenAPI_sm_context_update_data_parseFromJSON(c
         ma_nw_upgrade_ind ? ma_nw_upgrade_ind->valueint : 0,
         ma_request_ind ? ma_request_ind->valueint : 0,
         exemption_ind ? exemption_ind_local_nonprim : NULL,
-        supported_features ? ogs_strdup(supported_features->valuestring) : NULL,
+        supported_features ? ogs_strdup_or_assert(supported_features->valuestring) : NULL,
         mo_exp_data_counter ? mo_exp_data_counter_local_nonprim : NULL,
         extended_nas_sm_timer_ind ? extended_nas_sm_timer_ind->valueint : 0,
         forwarding_f_teid ? forwarding_f_teid->valueint : 0,

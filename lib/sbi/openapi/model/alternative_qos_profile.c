@@ -137,10 +137,10 @@ OpenAPI_alternative_qos_profile_t *OpenAPI_alternative_qos_profile_parseFromJSON
 
     alternative_qos_profile_local_var = OpenAPI_alternative_qos_profile_create (
         index->valuedouble,
-        gua_fbr_dl ? ogs_strdup(gua_fbr_dl->valuestring) : NULL,
-        gua_fbr_ul ? ogs_strdup(gua_fbr_ul->valuestring) : NULL,
+        gua_fbr_dl ? ogs_strdup_or_assert(gua_fbr_dl->valuestring) : NULL,
+        gua_fbr_ul ? ogs_strdup_or_assert(gua_fbr_ul->valuestring) : NULL,
         packet_delay_budget ? packet_delay_budget->valuedouble : 0,
-        packet_err_rate ? ogs_strdup(packet_err_rate->valuestring) : NULL
+        packet_err_rate ? ogs_strdup_or_assert(packet_err_rate->valuestring) : NULL
         );
 
     return alternative_qos_profile_local_var;

@@ -69,7 +69,8 @@ static uint16_t _get_eth_type(uint8_t *data, uint len) {
     return 0;
 }
 
-static void _gtpv1_tun_recv_common_cb(short when, ogs_socket_t fd, bool has_eth, void *data)
+static void _gtpv1_tun_recv_common_cb(
+        short when, ogs_socket_t fd, bool has_eth, void *data)
 {
     ogs_pkbuf_t *recvbuf = NULL;
 
@@ -95,17 +96,20 @@ static void _gtpv1_tun_recv_common_cb(short when, ogs_socket_t fd, bool has_eth,
                 ogs_assert(replybuf);
                 ogs_pkbuf_reserve(replybuf, OGS_TUN_MAX_HEADROOM);
                 ogs_pkbuf_put(replybuf, OGS_MAX_PKT_LEN-OGS_TUN_MAX_HEADROOM);
-                arp_reply(replybuf->data, recvbuf->data, recvbuf->len, proxy_mac_addr);
+                arp_reply(replybuf->data, recvbuf->data, recvbuf->len,
+                            proxy_mac_addr);
                 ogs_debug("[SEND] reply to ARP request");
             } else {
                 goto cleanup;
             }
-        } else if (eth_type == ETHERTYPE_IPV6 && is_nd_req(recvbuf->data, recvbuf->len)) {
+        } else if (eth_type == ETHERTYPE_IPV6 &&
+                    is_nd_req(recvbuf->data, recvbuf->len)) {
             replybuf = ogs_pkbuf_alloc(packet_pool, OGS_MAX_PKT_LEN);
             ogs_assert(replybuf);
             ogs_pkbuf_reserve(replybuf, OGS_TUN_MAX_HEADROOM);
             ogs_pkbuf_put(replybuf, OGS_MAX_PKT_LEN-OGS_TUN_MAX_HEADROOM);
-            nd_reply(replybuf->data, recvbuf->data, recvbuf->len, proxy_mac_addr);
+            nd_reply(replybuf->data, recvbuf->data, recvbuf->len,
+                        proxy_mac_addr);
             ogs_debug("[SEND] reply to ND solicit");
         }
         if (replybuf) {
@@ -167,7 +171,7 @@ static void _gtpv1_tun_recv_common_cb(short when, ogs_socket_t fd, bool has_eth,
         goto cleanup;
     }
 
-    ogs_pfcp_up_handle_pdr(pdr, recvbuf, &report);
+    ogs_assert(true == ogs_pfcp_up_handle_pdr(pdr, recvbuf, &report));
 
     if (report.type.downlink_data_report) {
         ogs_assert(pdr->sess);
@@ -186,11 +190,13 @@ cleanup:
     ogs_pkbuf_free(recvbuf);
 }
 
-static void _gtpv1_tun_recv_cb(short when, ogs_socket_t fd, void *data) {
+static void _gtpv1_tun_recv_cb(short when, ogs_socket_t fd, void *data)
+{
     _gtpv1_tun_recv_common_cb(when, fd, false, data);
 }
 
-static void _gtpv1_tun_recv_eth_cb(short when, ogs_socket_t fd, void *data) {
+static void _gtpv1_tun_recv_eth_cb(short when, ogs_socket_t fd, void *data)
+{
     _gtpv1_tun_recv_common_cb(when, fd, true, data);
 }
 
@@ -242,6 +248,7 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
 
         ogs_debug("[RECV] Echo Request from [%s]", OGS_ADDR(&from, buf));
         echo_rsp = ogs_gtp_handle_echo_req(pkbuf);
+        ogs_expect(echo_rsp);
         if (echo_rsp) {
             ssize_t sent;
 
@@ -304,7 +311,8 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
 
         far = ogs_pfcp_far_find_by_error_indication(pkbuf);
         if (far) {
-            ogs_pfcp_up_handle_error_indication(far, &report);
+            ogs_assert(true ==
+                ogs_pfcp_up_handle_error_indication(far, &report));
 
             if (report.type.error_indication_report) {
                 ogs_assert(far->sess);
@@ -431,7 +439,7 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
                 ogs_warn("ogs_tun_write() failed");
 
         } else if (far->dst_if == OGS_PFCP_INTERFACE_ACCESS) {
-            ogs_pfcp_up_handle_pdr(pdr, pkbuf, &report);
+            ogs_assert(true == ogs_pfcp_up_handle_pdr(pdr, pkbuf, &report));
 
             if (report.type.downlink_data_report) {
                 ogs_error("Indirect Data Fowarding Buffered");
@@ -457,7 +465,7 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
                 goto cleanup;
             }
 
-            ogs_pfcp_up_handle_pdr(pdr, pkbuf, &report);
+            ogs_assert(true == ogs_pfcp_up_handle_pdr(pdr, pkbuf, &report));
 
             ogs_assert(report.type.downlink_data_report == 0);
 
@@ -565,9 +573,11 @@ int upf_gtp_open(void)
             _get_dev_mac_addr(dev->ifname, dev->mac_addr);
             dev->poll = ogs_pollset_add(ogs_app()->pollset,
                     OGS_POLLIN, dev->fd, _gtpv1_tun_recv_eth_cb, NULL);
+            ogs_assert(dev->poll);
         } else {
             dev->poll = ogs_pollset_add(ogs_app()->pollset,
                     OGS_POLLIN, dev->fd, _gtpv1_tun_recv_cb, NULL);
+            ogs_assert(dev->poll);
         }
 
         ogs_assert(dev->poll);
@@ -641,7 +651,8 @@ static void upf_gtp_handle_multicast(ogs_pkbuf_t *recvbuf)
 
                     ogs_list_for_each(&sess->pfcp.pdr_list, pdr) {
                         if (pdr->src_if == OGS_PFCP_INTERFACE_CORE) {
-                            ogs_pfcp_up_handle_pdr(pdr, recvbuf, &report);
+                            ogs_assert(true ==
+                                ogs_pfcp_up_handle_pdr(pdr, recvbuf, &report));
                             break;
                         }
                     }

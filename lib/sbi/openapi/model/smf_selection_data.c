@@ -181,7 +181,7 @@ OpenAPI_smf_selection_data_t *OpenAPI_smf_selection_data_parseFromJSON(cJSON *sm
         candidates ? candidatesList : NULL,
         snssai ? snssai_local_nonprim : NULL,
         mapping_snssai ? mapping_snssai_local_nonprim : NULL,
-        dnn ? ogs_strdup(dnn->valuestring) : NULL
+        dnn ? ogs_strdup_or_assert(dnn->valuestring) : NULL
         );
 
     return smf_selection_data_local_var;

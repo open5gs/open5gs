@@ -172,22 +172,25 @@ bool smf_namf_comm_handler_n1_n2_message_transfer_failure_notify(
     N1N2MsgTxfrFailureNotification = recvmsg->N1N2MsgTxfrFailureNotification;
     if (!N1N2MsgTxfrFailureNotification) {
         ogs_error("No N1N2MsgTxfrFailureNotification");
-        ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-            recvmsg, "No N1N2MsgTxfrFailureNotification", NULL);
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                recvmsg, "No N1N2MsgTxfrFailureNotification", NULL));
         return false;
     }
 
     if (!N1N2MsgTxfrFailureNotification->cause) {
         ogs_error("No Cause");
-        ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-            recvmsg, "No Cause", NULL);
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                recvmsg, "No Cause", NULL));
         return false;
     }
 
     if (!N1N2MsgTxfrFailureNotification->n1n2_msg_data_uri) {
         ogs_error("No n1n2MsgDataUri");
-        ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-            recvmsg, "No n1n2MsgDataUri", NULL);
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                recvmsg, "No n1n2MsgDataUri", NULL));
         return false;
     }
 
@@ -195,8 +198,10 @@ bool smf_namf_comm_handler_n1_n2_message_transfer_failure_notify(
         N1N2MsgTxfrFailureNotification->n1n2_msg_data_uri);
     if (!sess) {
         ogs_error("Not found");
-        ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_NOT_FOUND,
-            recvmsg, N1N2MsgTxfrFailureNotification->n1n2_msg_data_uri, NULL);
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_NOT_FOUND,
+                recvmsg, N1N2MsgTxfrFailureNotification->n1n2_msg_data_uri,
+                NULL));
         return false;
     }
 
@@ -214,6 +219,6 @@ bool smf_namf_comm_handler_n1_n2_message_transfer_failure_notify(
      * Procedure for pause of charging at SMF is specified in clause 4.4.4.
      */
 
-    ogs_sbi_send_http_status_no_content(stream);
+    ogs_assert(true == ogs_sbi_send_http_status_no_content(stream));
     return true;
 }

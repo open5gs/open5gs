@@ -173,7 +173,7 @@ OpenAPI_ue_initiated_resource_request_t *OpenAPI_ue_initiated_resource_request_p
     }
 
     ue_initiated_resource_request_local_var = OpenAPI_ue_initiated_resource_request_create (
-        pcc_rule_id ? ogs_strdup(pcc_rule_id->valuestring) : NULL,
+        pcc_rule_id ? ogs_strdup_or_assert(pcc_rule_id->valuestring) : NULL,
         rule_opVariable,
         precedence ? precedence->valuedouble : 0,
         pack_filt_infoList,

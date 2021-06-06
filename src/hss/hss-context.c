@@ -101,8 +101,11 @@ void hss_context_init(void)
     ogs_pool_init(&impu_pool, ogs_app()->pool.impu);
 
     self.imsi_hash = ogs_hash_make();
+    ogs_assert(self.imsi_hash);
     self.impi_hash = ogs_hash_make();
+    ogs_assert(self.impi_hash);
     self.impu_hash = ogs_hash_make();
+    ogs_assert(self.impu_hash);
 
     ogs_thread_mutex_init(&self.db_lock);
     ogs_thread_mutex_init(&self.cx_lock);

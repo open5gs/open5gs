@@ -398,7 +398,7 @@ OpenAPI_policy_data_change_notification_t *OpenAPI_policy_data_change_notificati
                 ogs_error("OpenAPI_policy_data_change_notification_parseFromJSON() failed [del_resources]");
                 goto end;
             }
-            OpenAPI_list_add(del_resourcesList, ogs_strdup(del_resources_local->valuestring));
+            OpenAPI_list_add(del_resourcesList, ogs_strdup_or_assert(del_resources_local->valuestring));
         }
     }
 
@@ -443,13 +443,13 @@ OpenAPI_policy_data_change_notification_t *OpenAPI_policy_data_change_notificati
         sponsor_connectivity_data ? sponsor_connectivity_data_local_nonprim : NULL,
         bdt_data ? bdt_data_local_nonprim : NULL,
         op_spec_data ? op_spec_data_local_nonprim : NULL,
-        ue_id ? ogs_strdup(ue_id->valuestring) : NULL,
-        sponsor_id ? ogs_strdup(sponsor_id->valuestring) : NULL,
-        bdt_ref_id ? ogs_strdup(bdt_ref_id->valuestring) : NULL,
-        usage_mon_id ? ogs_strdup(usage_mon_id->valuestring) : NULL,
+        ue_id ? ogs_strdup_or_assert(ue_id->valuestring) : NULL,
+        sponsor_id ? ogs_strdup_or_assert(sponsor_id->valuestring) : NULL,
+        bdt_ref_id ? ogs_strdup_or_assert(bdt_ref_id->valuestring) : NULL,
+        usage_mon_id ? ogs_strdup_or_assert(usage_mon_id->valuestring) : NULL,
         plmn_id ? plmn_id_local_nonprim : NULL,
         del_resources ? del_resourcesList : NULL,
-        notif_id ? ogs_strdup(notif_id->valuestring) : NULL,
+        notif_id ? ogs_strdup_or_assert(notif_id->valuestring) : NULL,
         reported_fragments ? reported_fragmentsList : NULL
         );
 

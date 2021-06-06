@@ -172,11 +172,11 @@ OpenAPI_eap_session_t *OpenAPI_eap_session_parseFromJSON(cJSON *eap_sessionJSON)
     }
 
     eap_session_local_var = OpenAPI_eap_session_create (
-        ogs_strdup(eap_payload->valuestring),
-        k_seaf ? ogs_strdup(k_seaf->valuestring) : NULL,
+        ogs_strdup_or_assert(eap_payload->valuestring),
+        k_seaf ? ogs_strdup_or_assert(k_seaf->valuestring) : NULL,
         _links ? _linksList : NULL,
         auth_result ? auth_resultVariable : 0,
-        supi ? ogs_strdup(supi->valuestring) : NULL
+        supi ? ogs_strdup_or_assert(supi->valuestring) : NULL
         );
 
     return eap_session_local_var;

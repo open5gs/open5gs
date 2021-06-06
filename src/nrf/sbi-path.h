@@ -30,10 +30,10 @@ extern "C" {
 int nrf_sbi_open(void);
 void nrf_sbi_close(void);
 
-void nrf_nnrf_nfm_send_nf_status_notify(ogs_sbi_subscription_t *subscription,
+bool nrf_nnrf_nfm_send_nf_status_notify(ogs_sbi_subscription_t *subscription,
         OpenAPI_notification_event_type_e event,
         ogs_sbi_nf_instance_t *nf_instance);
-void nrf_nnrf_nfm_send_nf_status_notify_all(
+bool nrf_nnrf_nfm_send_nf_status_notify_all(
         OpenAPI_notification_event_type_e event,
         ogs_sbi_nf_instance_t *nf_instance);
 

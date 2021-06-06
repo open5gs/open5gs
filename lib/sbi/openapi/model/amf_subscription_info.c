@@ -101,9 +101,9 @@ OpenAPI_amf_subscription_info_t *OpenAPI_amf_subscription_info_parseFromJSON(cJS
     }
 
     amf_subscription_info_local_var = OpenAPI_amf_subscription_info_create (
-        ogs_strdup(amf_instance_id->valuestring),
-        ogs_strdup(subscription_id->valuestring),
-        subs_change_notify_correlation_id ? ogs_strdup(subs_change_notify_correlation_id->valuestring) : NULL
+        ogs_strdup_or_assert(amf_instance_id->valuestring),
+        ogs_strdup_or_assert(subscription_id->valuestring),
+        subs_change_notify_correlation_id ? ogs_strdup_or_assert(subs_change_notify_correlation_id->valuestring) : NULL
         );
 
     return amf_subscription_info_local_var;

@@ -40,7 +40,9 @@ void udm_context_init(void)
 
     ogs_list_init(&self.udm_ue_list);
     self.suci_hash = ogs_hash_make();
+    ogs_assert(self.suci_hash);
     self.supi_hash = ogs_hash_make();
+    ogs_assert(self.supi_hash);
 
     context_initialized = 1;
 }

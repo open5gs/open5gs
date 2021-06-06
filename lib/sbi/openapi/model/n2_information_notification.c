@@ -295,16 +295,16 @@ OpenAPI_n2_information_notification_t *OpenAPI_n2_information_notification_parse
     }
 
     n2_information_notification_local_var = OpenAPI_n2_information_notification_create (
-        ogs_strdup(n2_notify_subscription_id->valuestring),
+        ogs_strdup_or_assert(n2_notify_subscription_id->valuestring),
         n2_info_container ? n2_info_container_local_nonprim : NULL,
         to_release_session_list ? to_release_session_listList : NULL,
-        lcs_correlation_id ? ogs_strdup(lcs_correlation_id->valuestring) : NULL,
+        lcs_correlation_id ? ogs_strdup_or_assert(lcs_correlation_id->valuestring) : NULL,
         notify_reason ? notify_reasonVariable : 0,
         smf_change_info_list ? smf_change_info_listList : NULL,
         ran_node_id ? ran_node_id_local_nonprim : NULL,
-        initial_amf_name ? ogs_strdup(initial_amf_name->valuestring) : NULL,
-        an_n2_i_pv4_addr ? ogs_strdup(an_n2_i_pv4_addr->valuestring) : NULL,
-        an_n2_i_pv6_addr ? ogs_strdup(an_n2_i_pv6_addr->valuestring) : NULL
+        initial_amf_name ? ogs_strdup_or_assert(initial_amf_name->valuestring) : NULL,
+        an_n2_i_pv4_addr ? ogs_strdup_or_assert(an_n2_i_pv4_addr->valuestring) : NULL,
+        an_n2_i_pv6_addr ? ogs_strdup_or_assert(an_n2_i_pv6_addr->valuestring) : NULL
         );
 
     return n2_information_notification_local_var;

@@ -26,7 +26,7 @@ ogs_pkbuf_t *gsm_build_pdu_session_establishment_accept(smf_sess_t *sess)
 {
     ogs_pkbuf_t *pkbuf = NULL;
     smf_bearer_t *qos_flow = NULL;
-    int num_of_param;
+    int num_of_param, rv;
 
     ogs_nas_5gs_message_t message;
     ogs_nas_5gs_pdu_session_establishment_accept_t *
@@ -131,8 +131,9 @@ ogs_pkbuf_t *gsm_build_pdu_session_establishment_accept(smf_sess_t *sess)
     qos_rule[0].flow.segregation = 0;
     qos_rule[0].flow.identifier = qos_flow->qfi;
 
-    ogs_nas_build_qos_rules(authorized_qos_rules, qos_rule, 1);
-    ogs_assert(authorized_qos_rules->length);
+    rv = ogs_nas_build_qos_rules(authorized_qos_rules, qos_rule, 1);
+    ogs_expect_or_return_val(rv == OGS_OK, NULL);
+    ogs_expect_or_return_val(authorized_qos_rules->length, NULL);
 
     /* Session-AMBR */
     session_ambr->length = 6;
@@ -156,7 +157,7 @@ ogs_pkbuf_t *gsm_build_pdu_session_establishment_accept(smf_sess_t *sess)
     } else if (pdu_address->pdn_type == OGS_PDU_SESSION_TYPE_IPV4V6) {
         pdu_address->both.addr = sess->session.paa.both.addr;
         memcpy(pdu_address->both.addr6,
-                sess->session.paa.both.addr6+(OGS_IPV6_LEN>>1), OGS_IPV6_LEN>>1);
+            sess->session.paa.both.addr6+(OGS_IPV6_LEN>>1), OGS_IPV6_LEN>>1);
         pdu_address->length = OGS_NAS_PDU_ADDRESS_IPV4V6_LEN;
     } else {
         ogs_error("Unexpected PDN Type %u", pdu_address->pdn_type);
@@ -200,9 +201,10 @@ ogs_pkbuf_t *gsm_build_pdu_session_establishment_accept(smf_sess_t *sess)
 
     pdu_session_establishment_accept->presencemask |=
         OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_ACCEPT_AUTHORIZED_QOS_FLOW_DESCRIPTIONS_PRESENT;
-    ogs_nas_build_qos_flow_descriptions(
+    rv = ogs_nas_build_qos_flow_descriptions(
             authorized_qos_flow_descriptions, qos_flow_description, 1);
-    ogs_assert(authorized_qos_flow_descriptions->length);
+    ogs_expect_or_return_val(rv == OGS_OK, NULL);
+    ogs_expect_or_return_val(authorized_qos_flow_descriptions->length, NULL);
 
     /* Extended protocol configuration options */
     if (sess->nas.ue_pco.buffer && sess->nas.ue_pco.length) {
@@ -279,7 +281,7 @@ ogs_pkbuf_t *gsm_build_qos_flow_modification_command(
     ogs_pkbuf_t *pkbuf = NULL;
     smf_sess_t *sess = NULL;
     ogs_pfcp_pdr_t *dl_pdr = NULL;
-    int num_of_param;
+    int num_of_param, rv;
 
     ogs_nas_5gs_message_t message;
     ogs_nas_5gs_pdu_session_modification_command_t
@@ -327,8 +329,9 @@ ogs_pkbuf_t *gsm_build_qos_flow_modification_command(
 
     pdu_session_modification_command->presencemask |=
         OGS_NAS_5GS_PDU_SESSION_MODIFICATION_COMMAND_AUTHORIZED_QOS_RULES_PRESENT;
-    ogs_nas_build_qos_rules(authorized_qos_rules, qos_rule, 1);
-    ogs_assert(authorized_qos_rules->length);
+    rv = ogs_nas_build_qos_rules(authorized_qos_rules, qos_rule, 1);
+    ogs_expect_or_return_val(rv == OGS_OK, NULL);
+    ogs_expect_or_return_val(authorized_qos_rules->length, NULL);
 
     /* QoS flow descriptions */
     memset(&qos_flow_description, 0, sizeof(qos_flow_description));
@@ -390,9 +393,10 @@ ogs_pkbuf_t *gsm_build_qos_flow_modification_command(
 
     pdu_session_modification_command->presencemask |=
         OGS_NAS_5GS_PDU_SESSION_MODIFICATION_COMMAND_AUTHORIZED_QOS_FLOW_DESCRIPTIONS_PRESENT;
-    ogs_nas_build_qos_flow_descriptions(
+    rv = ogs_nas_build_qos_flow_descriptions(
             authorized_qos_flow_descriptions, qos_flow_description, 1);
-    ogs_assert(authorized_qos_flow_descriptions->length);
+    ogs_expect_or_return_val(rv == OGS_OK, NULL);
+    ogs_expect_or_return_val(authorized_qos_flow_descriptions->length, NULL);
 
     pkbuf = ogs_nas_5gs_plain_encode(&message);
     ogs_assert(pkbuf);

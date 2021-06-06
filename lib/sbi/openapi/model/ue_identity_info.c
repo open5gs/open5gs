@@ -99,9 +99,9 @@ OpenAPI_ue_identity_info_t *OpenAPI_ue_identity_info_parseFromJSON(cJSON *ue_ide
     }
 
     ue_identity_info_local_var = OpenAPI_ue_identity_info_create (
-        gpsi ? ogs_strdup(gpsi->valuestring) : NULL,
-        pei ? ogs_strdup(pei->valuestring) : NULL,
-        supi ? ogs_strdup(supi->valuestring) : NULL
+        gpsi ? ogs_strdup_or_assert(gpsi->valuestring) : NULL,
+        pei ? ogs_strdup_or_assert(pei->valuestring) : NULL,
+        supi ? ogs_strdup_or_assert(supi->valuestring) : NULL
         );
 
     return ue_identity_info_local_var;

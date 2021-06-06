@@ -14,10 +14,10 @@ $ cd openapi-generator
 $ git checkout 15d58dc89b11d17f52c2daadfae9736e442f3b1a
 $ mvn clean package
 
-- VERSION: 0.69.1
+- VERSION: 0.66.1
 $ git clone https://github.com/uncrustify/uncrustify.git
 $ cd uncrustify
-$ git checkout uncrustify-0.69.1
+$ git checkout uncrustify-0.66.1
 $ mkdir build
 $ cd build
 $ cmake ..

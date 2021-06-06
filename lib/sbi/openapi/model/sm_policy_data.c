@@ -221,7 +221,7 @@ OpenAPI_sm_policy_data_t *OpenAPI_sm_policy_data_parseFromJSON(cJSON *sm_policy_
         sm_policy_snssai_dataList,
         um_data_limits ? um_data_limitsList : NULL,
         um_data ? um_dataList : NULL,
-        supp_feat ? ogs_strdup(supp_feat->valuestring) : NULL
+        supp_feat ? ogs_strdup_or_assert(supp_feat->valuestring) : NULL
         );
 
     return sm_policy_data_local_var;

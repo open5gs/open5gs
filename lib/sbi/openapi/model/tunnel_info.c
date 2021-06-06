@@ -120,9 +120,9 @@ OpenAPI_tunnel_info_t *OpenAPI_tunnel_info_parseFromJSON(cJSON *tunnel_infoJSON)
     }
 
     tunnel_info_local_var = OpenAPI_tunnel_info_create (
-        ipv4_addr ? ogs_strdup(ipv4_addr->valuestring) : NULL,
-        ipv6_addr ? ogs_strdup(ipv6_addr->valuestring) : NULL,
-        ogs_strdup(gtp_teid->valuestring),
+        ipv4_addr ? ogs_strdup_or_assert(ipv4_addr->valuestring) : NULL,
+        ipv6_addr ? ogs_strdup_or_assert(ipv6_addr->valuestring) : NULL,
+        ogs_strdup_or_assert(gtp_teid->valuestring),
         an_type ? an_typeVariable : 0
         );
 

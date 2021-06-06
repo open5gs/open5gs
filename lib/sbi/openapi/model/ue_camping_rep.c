@@ -175,7 +175,7 @@ OpenAPI_ue_camping_rep_t *OpenAPI_ue_camping_rep_parseFromJSON(cJSON *ue_camping
         serv_nf_id ? serv_nf_id_local_nonprim : NULL,
         serving_network ? serving_network_local_nonprim : NULL,
         user_location_info ? user_location_info_local_nonprim : NULL,
-        ue_time_zone ? ogs_strdup(ue_time_zone->valuestring) : NULL
+        ue_time_zone ? ogs_strdup_or_assert(ue_time_zone->valuestring) : NULL
         );
 
     return ue_camping_rep_local_var;

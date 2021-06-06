@@ -164,11 +164,11 @@ OpenAPI_av_ims_gba_eap_aka_t *OpenAPI_av_ims_gba_eap_aka_parseFromJSON(cJSON *av
 
     av_ims_gba_eap_aka_local_var = OpenAPI_av_ims_gba_eap_aka_create (
         av_typeVariable,
-        ogs_strdup(rand->valuestring),
-        ogs_strdup(xres->valuestring),
-        ogs_strdup(autn->valuestring),
-        ogs_strdup(ck->valuestring),
-        ogs_strdup(ik->valuestring)
+        ogs_strdup_or_assert(rand->valuestring),
+        ogs_strdup_or_assert(xres->valuestring),
+        ogs_strdup_or_assert(autn->valuestring),
+        ogs_strdup_or_assert(ck->valuestring),
+        ogs_strdup_or_assert(ik->valuestring)
         );
 
     return av_ims_gba_eap_aka_local_var;

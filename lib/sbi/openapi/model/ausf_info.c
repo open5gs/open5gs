@@ -147,12 +147,12 @@ OpenAPI_ausf_info_t *OpenAPI_ausf_info_parseFromJSON(cJSON *ausf_infoJSON)
                 ogs_error("OpenAPI_ausf_info_parseFromJSON() failed [routing_indicators]");
                 goto end;
             }
-            OpenAPI_list_add(routing_indicatorsList, ogs_strdup(routing_indicators_local->valuestring));
+            OpenAPI_list_add(routing_indicatorsList, ogs_strdup_or_assert(routing_indicators_local->valuestring));
         }
     }
 
     ausf_info_local_var = OpenAPI_ausf_info_create (
-        group_id ? ogs_strdup(group_id->valuestring) : NULL,
+        group_id ? ogs_strdup_or_assert(group_id->valuestring) : NULL,
         supi_ranges ? supi_rangesList : NULL,
         routing_indicators ? routing_indicatorsList : NULL
         );

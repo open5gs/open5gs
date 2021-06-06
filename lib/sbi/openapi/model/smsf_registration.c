@@ -208,13 +208,13 @@ OpenAPI_smsf_registration_t *OpenAPI_smsf_registration_parseFromJSON(cJSON *smsf
     }
 
     smsf_registration_local_var = OpenAPI_smsf_registration_create (
-        ogs_strdup(smsf_instance_id->valuestring),
-        smsf_set_id ? ogs_strdup(smsf_set_id->valuestring) : NULL,
-        supported_features ? ogs_strdup(supported_features->valuestring) : NULL,
+        ogs_strdup_or_assert(smsf_instance_id->valuestring),
+        smsf_set_id ? ogs_strdup_or_assert(smsf_set_id->valuestring) : NULL,
+        supported_features ? ogs_strdup_or_assert(supported_features->valuestring) : NULL,
         plmn_id_local_nonprim,
-        smsf_map_address ? ogs_strdup(smsf_map_address->valuestring) : NULL,
+        smsf_map_address ? ogs_strdup_or_assert(smsf_map_address->valuestring) : NULL,
         smsf_diameter_address ? smsf_diameter_address_local_nonprim : NULL,
-        registration_time ? ogs_strdup(registration_time->valuestring) : NULL,
+        registration_time ? ogs_strdup_or_assert(registration_time->valuestring) : NULL,
         context_info ? context_info_local_nonprim : NULL
         );
 

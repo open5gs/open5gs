@@ -34,10 +34,10 @@ extern "C" {
 int amf_sbi_open(void);
 void amf_sbi_close(void);
 
-void amf_nnrf_nfm_send_nf_register(ogs_sbi_nf_instance_t *nf_instance);
+bool amf_nnrf_nfm_send_nf_register(ogs_sbi_nf_instance_t *nf_instance);
 
-void amf_sbi_send(ogs_sbi_nf_instance_t *nf_instance, ogs_sbi_xact_t *xact);
-void amf_ue_sbi_discover_and_send(OpenAPI_nf_type_e target_nf_type,
+bool amf_sbi_send(ogs_sbi_nf_instance_t *nf_instance, ogs_sbi_xact_t *xact);
+bool amf_ue_sbi_discover_and_send(OpenAPI_nf_type_e target_nf_type,
         amf_ue_t *amf_ue, void *data,
         ogs_sbi_request_t *(*build)(amf_ue_t *amf_ue, void *data));
 
@@ -62,11 +62,11 @@ void amf_ue_sbi_discover_and_send(OpenAPI_nf_type_e target_nf_type,
 #define AMF_REMOVE_S1_CONTEXT_BY_LO_CONNREFUSED     51
 #define AMF_REMOVE_S1_CONTEXT_BY_RESET_ALL          52
 #define AMF_REMOVE_S1_CONTEXT_BY_RESET_PARTIAL      53
-void amf_sess_sbi_discover_and_send(OpenAPI_nf_type_e target_nf_type,
+bool amf_sess_sbi_discover_and_send(OpenAPI_nf_type_e target_nf_type,
         amf_sess_t *sess, int state, void *data,
         ogs_sbi_request_t *(*build)(amf_sess_t *sess, void *data));
 
-void amf_sess_sbi_discover_by_nsi(
+bool amf_sess_sbi_discover_by_nsi(
         OpenAPI_nf_type_e target_nf_type, amf_sess_t *sess);
 
 void amf_sbi_send_activating_session(amf_sess_t *sess, int state);
@@ -80,7 +80,7 @@ void amf_sbi_send_deactivate_all_ue_in_gnb(amf_gnb_t *gnb, int state);
 void amf_sbi_send_release_session(amf_sess_t *sess, int state);
 void amf_sbi_send_release_all_sessions(amf_ue_t *amf_ue, int state);
 
-void amf_sbi_send_n1_n2_failure_notify(
+bool amf_sbi_send_n1_n2_failure_notify(
         amf_sess_t *sess, OpenAPI_n1_n2_message_transfer_cause_e cause);
 
 #ifdef __cplusplus

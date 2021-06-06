@@ -465,7 +465,7 @@ OpenAPI_sm_context_updated_data_t *OpenAPI_sm_context_updated_data_parseFromJSON
                 ogs_error("OpenAPI_sm_context_updated_data_parseFromJSON() failed [eps_bearer_setup]");
                 goto end;
             }
-            OpenAPI_list_add(eps_bearer_setupList, ogs_strdup(eps_bearer_setup_local->valuestring));
+            OpenAPI_list_add(eps_bearer_setupList, ogs_strdup_or_assert(eps_bearer_setup_local->valuestring));
         }
     }
 
@@ -578,7 +578,7 @@ OpenAPI_sm_context_updated_data_t *OpenAPI_sm_context_updated_data_parseFromJSON
                 ogs_error("OpenAPI_sm_context_updated_data_parseFromJSON() failed [forwarding_bearer_contexts]");
                 goto end;
             }
-            OpenAPI_list_add(forwarding_bearer_contextsList, ogs_strdup(forwarding_bearer_contexts_local->valuestring));
+            OpenAPI_list_add(forwarding_bearer_contextsList, ogs_strdup_or_assert(forwarding_bearer_contexts_local->valuestring));
         }
     }
 
@@ -615,11 +615,11 @@ OpenAPI_sm_context_updated_data_t *OpenAPI_sm_context_updated_data_parseFromJSON
         n3_ul_forwarding_tnl_list ? n3_ul_forwarding_tnl_listList : NULL,
         cause ? causeVariable : 0,
         ma_accepted_ind ? ma_accepted_ind->valueint : 0,
-        supported_features ? ogs_strdup(supported_features->valuestring) : NULL,
+        supported_features ? ogs_strdup_or_assert(supported_features->valuestring) : NULL,
         forwarding_f_teid ? forwarding_f_teid->valueint : 0,
         forwarding_bearer_contexts ? forwarding_bearer_contextsList : NULL,
-        selected_smf_id ? ogs_strdup(selected_smf_id->valuestring) : NULL,
-        selected_old_smf_id ? ogs_strdup(selected_old_smf_id->valuestring) : NULL
+        selected_smf_id ? ogs_strdup_or_assert(selected_smf_id->valuestring) : NULL,
+        selected_old_smf_id ? ogs_strdup_or_assert(selected_old_smf_id->valuestring) : NULL
         );
 
     return sm_context_updated_data_local_var;

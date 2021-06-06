@@ -84,7 +84,7 @@ OpenAPI_ptw_parameters_t *OpenAPI_ptw_parameters_parseFromJSON(cJSON *ptw_parame
 
     ptw_parameters_local_var = OpenAPI_ptw_parameters_create (
         operation_modeVariable,
-        ogs_strdup(ptw_value->valuestring)
+        ogs_strdup_or_assert(ptw_value->valuestring)
         );
 
     return ptw_parameters_local_var;

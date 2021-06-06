@@ -103,7 +103,7 @@ OpenAPI_ue_context_release_t *OpenAPI_ue_context_release_parseFromJSON(cJSON *ue
     ngap_cause_local_nonprim = OpenAPI_ng_ap_cause_parseFromJSON(ngap_cause);
 
     ue_context_release_local_var = OpenAPI_ue_context_release_create (
-        supi ? ogs_strdup(supi->valuestring) : NULL,
+        supi ? ogs_strdup_or_assert(supi->valuestring) : NULL,
         unauthenticated_supi ? unauthenticated_supi->valueint : 0,
         ngap_cause_local_nonprim
         );

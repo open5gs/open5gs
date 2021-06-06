@@ -165,7 +165,7 @@ OpenAPI_seaf_data_t *OpenAPI_seaf_data_parseFromJSON(cJSON *seaf_dataJSON)
     seaf_data_local_var = OpenAPI_seaf_data_create (
         ng_ksi_local_nonprim,
         key_amf_local_nonprim,
-        nh ? ogs_strdup(nh->valuestring) : NULL,
+        nh ? ogs_strdup_or_assert(nh->valuestring) : NULL,
         ncc ? ncc->valuedouble : 0,
         key_amf_change_ind ? key_amf_change_ind->valueint : 0,
         key_amf_h_derivation_ind ? key_amf_h_derivation_ind->valueint : 0

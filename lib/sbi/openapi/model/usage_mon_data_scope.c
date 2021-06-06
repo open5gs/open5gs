@@ -103,7 +103,7 @@ OpenAPI_usage_mon_data_scope_t *OpenAPI_usage_mon_data_scope_parseFromJSON(cJSON
                 ogs_error("OpenAPI_usage_mon_data_scope_parseFromJSON() failed [dnn]");
                 goto end;
             }
-            OpenAPI_list_add(dnnList, ogs_strdup(dnn_local->valuestring));
+            OpenAPI_list_add(dnnList, ogs_strdup_or_assert(dnn_local->valuestring));
         }
     }
 

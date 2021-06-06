@@ -303,7 +303,7 @@ typedef struct ogs_nas_5gs_tracking_area_identity_list_s {
     uint8_t buffer[OGS_NAS_5GS_MAX_TAI_LIST_LEN];
 } __attribute__ ((packed)) ogs_nas_5gs_tracking_area_identity_list_t;
 
-void ogs_nas_5gs_tai_list_build(
+int ogs_nas_5gs_tai_list_build(
         ogs_nas_5gs_tracking_area_identity_list_t *target,
         ogs_5gs_tai0_list_t *source0, ogs_5gs_tai2_list_t *source2);
 
@@ -798,7 +798,7 @@ typedef struct ogs_nas_qos_flow_descriptions_s {
     void *buffer;
 } ogs_nas_qos_flow_descriptions_t;
 
-void ogs_nas_build_qos_flow_descriptions(
+int ogs_nas_build_qos_flow_descriptions(
     ogs_nas_qos_flow_descriptions_t *flow_descriptions,
     ogs_nas_qos_flow_description_t *flow_description,
     int num_of_flow_description);
@@ -856,7 +856,7 @@ typedef struct ogs_nas_qos_rules_s {
     void *buffer;
 } __attribute__ ((packed)) ogs_nas_qos_rules_t;
 
-void ogs_nas_build_qos_rules(ogs_nas_qos_rules_t *rules,
+int ogs_nas_build_qos_rules(ogs_nas_qos_rules_t *rules,
         ogs_nas_qos_rule_t *rule, int num_of_rule);
 
 /* 9.11.4.15 SM PDU DN request container

@@ -26,7 +26,7 @@ ogs_pkbuf_t *sgwu_sxa_build_session_establishment_response(uint8_t type,
     ogs_pfcp_session_establishment_response_t *rsp = NULL;
     ogs_pkbuf_t *pkbuf = NULL;
 
-    int i = 0;
+    int i = 0, rv;
 
     ogs_pfcp_node_id_t node_id;
     ogs_pfcp_f_seid_t f_seid;
@@ -38,10 +38,11 @@ ogs_pkbuf_t *sgwu_sxa_build_session_establishment_response(uint8_t type,
     memset(&pfcp_message, 0, sizeof(ogs_pfcp_message_t));
 
     /* Node ID */
-    ogs_pfcp_sockaddr_to_node_id(
+    rv = ogs_pfcp_sockaddr_to_node_id(
             ogs_pfcp_self()->pfcp_addr, ogs_pfcp_self()->pfcp_addr6,
             ogs_app()->parameter.prefer_ipv4,
             &node_id, &len);
+    ogs_expect_or_return_val(rv == OGS_OK, NULL);
     rsp->node_id.presence = 1;
     rsp->node_id.data = &node_id;
     rsp->node_id.len = len;
@@ -51,9 +52,10 @@ ogs_pkbuf_t *sgwu_sxa_build_session_establishment_response(uint8_t type,
     rsp->cause.u8 = OGS_PFCP_CAUSE_REQUEST_ACCEPTED;
 
     /* F-SEID */
-    ogs_pfcp_sockaddr_to_f_seid(
+    rv = ogs_pfcp_sockaddr_to_f_seid(
             ogs_pfcp_self()->pfcp_addr, ogs_pfcp_self()->pfcp_addr6,
             &f_seid, &len);
+    ogs_expect_or_return_val(rv == OGS_OK, NULL);
     f_seid.seid = htobe64(sess->sgwu_sxa_seid);
     rsp->up_f_seid.presence = 1;
     rsp->up_f_seid.data = &f_seid;

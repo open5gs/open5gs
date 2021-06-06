@@ -84,7 +84,7 @@ OpenAPI_key_amf_t *OpenAPI_key_amf_parseFromJSON(cJSON *key_amfJSON)
 
     key_amf_local_var = OpenAPI_key_amf_create (
         key_typeVariable,
-        ogs_strdup(key_val->valuestring)
+        ogs_strdup_or_assert(key_val->valuestring)
         );
 
     return key_amf_local_var;

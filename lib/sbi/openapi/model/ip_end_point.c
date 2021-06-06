@@ -118,8 +118,8 @@ OpenAPI_ip_end_point_t *OpenAPI_ip_end_point_parseFromJSON(cJSON *ip_end_pointJS
     }
 
     ip_end_point_local_var = OpenAPI_ip_end_point_create (
-        ipv4_address ? ogs_strdup(ipv4_address->valuestring) : NULL,
-        ipv6_address ? ogs_strdup(ipv6_address->valuestring) : NULL,
+        ipv4_address ? ogs_strdup_or_assert(ipv4_address->valuestring) : NULL,
+        ipv6_address ? ogs_strdup_or_assert(ipv6_address->valuestring) : NULL,
         transport ? transportVariable : 0,
         port ? port->valuedouble : 0
         );

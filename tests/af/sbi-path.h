@@ -31,7 +31,7 @@ extern "C" {
 int af_sbi_open(void);
 void af_sbi_close(void);
 
-void af_nnrf_nfm_send_nf_register(ogs_sbi_nf_instance_t *nf_instance);
+bool af_nnrf_nfm_send_nf_register(ogs_sbi_nf_instance_t *nf_instance);
 
 void af_sbi_send(ogs_sbi_nf_instance_t *nf_instance, ogs_sbi_xact_t *xact);
 

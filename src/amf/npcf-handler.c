@@ -99,6 +99,7 @@ int amf_npcf_am_policy_control_handle_create(
     if (amf_ue->policy_association_id)
         ogs_free(amf_ue->policy_association_id);
     amf_ue->policy_association_id = ogs_strdup(message.h.resource.component[1]);
+    ogs_assert(amf_ue->policy_association_id);
 
     OpenAPI_list_for_each(PolicyAssociation->triggers, node) {
         if (node->data) {

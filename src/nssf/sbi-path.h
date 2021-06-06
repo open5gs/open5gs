@@ -29,7 +29,7 @@ extern "C" {
 int nssf_sbi_open(void);
 void nssf_sbi_close(void);
 
-void nssf_nnrf_nfm_send_nf_register(ogs_sbi_nf_instance_t *nf_instance);
+bool nssf_nnrf_nfm_send_nf_register(ogs_sbi_nf_instance_t *nf_instance);
 
 #ifdef __cplusplus
 }

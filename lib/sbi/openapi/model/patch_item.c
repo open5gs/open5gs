@@ -122,9 +122,9 @@ OpenAPI_patch_item_t *OpenAPI_patch_item_parseFromJSON(cJSON *patch_itemJSON)
 
     patch_item_local_var = OpenAPI_patch_item_create (
         opVariable,
-        ogs_strdup(path->valuestring),
-        from ? ogs_strdup(from->valuestring) : NULL,
-        value ? ogs_strdup(value->valuestring) : NULL
+        ogs_strdup_or_assert(path->valuestring),
+        from ? ogs_strdup_or_assert(from->valuestring) : NULL,
+        value ? ogs_strdup_or_assert(value->valuestring) : NULL
         );
 
     return patch_item_local_var;

@@ -88,7 +88,7 @@ OpenAPI_requested_usage_data_t *OpenAPI_requested_usage_data_parseFromJSON(cJSON
                 ogs_error("OpenAPI_requested_usage_data_parseFromJSON() failed [ref_um_ids]");
                 goto end;
             }
-            OpenAPI_list_add(ref_um_idsList, ogs_strdup(ref_um_ids_local->valuestring));
+            OpenAPI_list_add(ref_um_idsList, ogs_strdup_or_assert(ref_um_ids_local->valuestring));
         }
     }
 

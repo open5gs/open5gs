@@ -153,7 +153,7 @@ OpenAPI_lcs_client_group_external_t *OpenAPI_lcs_client_group_external_parseFrom
     }
 
     lcs_client_group_external_local_var = OpenAPI_lcs_client_group_external_create (
-        lcs_client_group_id ? ogs_strdup(lcs_client_group_id->valuestring) : NULL,
+        lcs_client_group_id ? ogs_strdup_or_assert(lcs_client_group_id->valuestring) : NULL,
         allowed_geographic_area ? allowed_geographic_areaList : NULL,
         privacy_check_related_action ? privacy_check_related_actionVariable : 0,
         valid_time_period ? valid_time_period_local_nonprim : NULL

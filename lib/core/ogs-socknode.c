@@ -39,7 +39,7 @@ ogs_socknode_t *ogs_socknode_new(ogs_sockaddr_t *addr)
     ogs_assert(addr);
 
     node = ogs_calloc(1, sizeof(ogs_socknode_t));
-    ogs_assert(node);
+    ogs_expect_or_return_val(node, NULL);
 
     node->addr = addr;
 
@@ -71,12 +71,13 @@ ogs_socknode_t *ogs_socknode_add(
     ogs_assert(list);
     ogs_assert(addr);
 
-    ogs_copyaddrinfo(&dup, addr);
+    ogs_assert(OGS_OK == ogs_copyaddrinfo(&dup, addr));
     if (family != AF_UNSPEC)
         ogs_filteraddrinfo(&dup, family);
 
     if (dup) {
         node = ogs_socknode_new(dup);
+        ogs_assert(node);
         ogs_list_add(list, node);
     }
 

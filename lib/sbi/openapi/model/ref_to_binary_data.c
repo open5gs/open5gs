@@ -62,7 +62,7 @@ OpenAPI_ref_to_binary_data_t *OpenAPI_ref_to_binary_data_parseFromJSON(cJSON *re
     }
 
     ref_to_binary_data_local_var = OpenAPI_ref_to_binary_data_create (
-        ogs_strdup(content_id->valuestring)
+        ogs_strdup_or_assert(content_id->valuestring)
         );
 
     return ref_to_binary_data_local_var;

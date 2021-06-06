@@ -107,7 +107,7 @@ OpenAPI_serving_nf_identity_t *OpenAPI_serving_nf_identity_parseFromJSON(cJSON *
     }
 
     serving_nf_identity_local_var = OpenAPI_serving_nf_identity_create (
-        serv_nf_inst_id ? ogs_strdup(serv_nf_inst_id->valuestring) : NULL,
+        serv_nf_inst_id ? ogs_strdup_or_assert(serv_nf_inst_id->valuestring) : NULL,
         guami ? guami_local_nonprim : NULL,
         an_gw_addr ? an_gw_addr_local_nonprim : NULL
         );

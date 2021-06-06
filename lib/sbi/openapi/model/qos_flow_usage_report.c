@@ -140,8 +140,8 @@ OpenAPI_qos_flow_usage_report_t *OpenAPI_qos_flow_usage_report_parseFromJSON(cJS
 
     qos_flow_usage_report_local_var = OpenAPI_qos_flow_usage_report_create (
         qfi->valuedouble,
-        ogs_strdup(start_time_stamp->valuestring),
-        ogs_strdup(end_time_stamp->valuestring),
+        ogs_strdup_or_assert(start_time_stamp->valuestring),
+        ogs_strdup_or_assert(end_time_stamp->valuestring),
         downlink_volume->valuedouble,
         uplink_volume->valuedouble
         );

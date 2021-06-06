@@ -105,7 +105,7 @@ OpenAPI_amf_event_mode_t *OpenAPI_amf_event_mode_parseFromJSON(cJSON *amf_event_
     amf_event_mode_local_var = OpenAPI_amf_event_mode_create (
         trigger_local_nonprim,
         max_reports ? max_reports->valuedouble : 0,
-        expiry ? ogs_strdup(expiry->valuestring) : NULL
+        expiry ? ogs_strdup_or_assert(expiry->valuestring) : NULL
         );
 
     return amf_event_mode_local_var;

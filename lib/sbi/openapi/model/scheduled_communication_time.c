@@ -123,8 +123,8 @@ OpenAPI_scheduled_communication_time_t *OpenAPI_scheduled_communication_time_par
 
     scheduled_communication_time_local_var = OpenAPI_scheduled_communication_time_create (
         days_of_week ? days_of_weekList : NULL,
-        time_of_day_start ? ogs_strdup(time_of_day_start->valuestring) : NULL,
-        time_of_day_end ? ogs_strdup(time_of_day_end->valuestring) : NULL
+        time_of_day_start ? ogs_strdup_or_assert(time_of_day_start->valuestring) : NULL,
+        time_of_day_end ? ogs_strdup_or_assert(time_of_day_end->valuestring) : NULL
         );
 
     return scheduled_communication_time_local_var;

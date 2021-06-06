@@ -53,7 +53,7 @@ typedef struct ogs_sbi_server_actions_s {
             int (*cb)(ogs_sbi_request_t *request, void *data));
     void (*stop)(ogs_sbi_server_t *server);
 
-    void (*send_response)(
+    bool (*send_response)(
             ogs_sbi_stream_t *stream, ogs_sbi_response_t *response);
 
     ogs_sbi_server_t *(*from_stream)(ogs_sbi_stream_t *stream);
@@ -73,12 +73,12 @@ int ogs_sbi_server_start_all(
         int (*cb)(ogs_sbi_request_t *request, void *data));
 void ogs_sbi_server_stop_all(void);
 
-void ogs_sbi_server_send_response(
+bool ogs_sbi_server_send_response(
         ogs_sbi_stream_t *stream, ogs_sbi_response_t *response);
-void ogs_sbi_server_send_error(ogs_sbi_stream_t *stream,
+bool ogs_sbi_server_send_error(ogs_sbi_stream_t *stream,
         int status, ogs_sbi_message_t *message,
         const char *title, const char *detail);
-void ogs_sbi_server_send_problem(
+bool ogs_sbi_server_send_problem(
         ogs_sbi_stream_t *stream, OpenAPI_problem_details_t *problem);
 
 ogs_sbi_server_t *ogs_sbi_server_from_stream(ogs_sbi_stream_t *stream);

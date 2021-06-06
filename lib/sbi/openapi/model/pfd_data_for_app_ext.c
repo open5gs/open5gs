@@ -150,10 +150,10 @@ OpenAPI_pfd_data_for_app_ext_t *OpenAPI_pfd_data_for_app_ext_parseFromJSON(cJSON
     }
 
     pfd_data_for_app_ext_local_var = OpenAPI_pfd_data_for_app_ext_create (
-        ogs_strdup(application_id->valuestring),
+        ogs_strdup_or_assert(application_id->valuestring),
         pfdsList,
-        caching_time ? ogs_strdup(caching_time->valuestring) : NULL,
-        supp_feat ? ogs_strdup(supp_feat->valuestring) : NULL
+        caching_time ? ogs_strdup_or_assert(caching_time->valuestring) : NULL,
+        supp_feat ? ogs_strdup_or_assert(supp_feat->valuestring) : NULL
         );
 
     return pfd_data_for_app_ext_local_var;

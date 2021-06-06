@@ -98,12 +98,12 @@ OpenAPI_sdm_subs_modification_t *OpenAPI_sdm_subs_modification_parseFromJSON(cJS
                 ogs_error("OpenAPI_sdm_subs_modification_parseFromJSON() failed [monitored_resource_uris]");
                 goto end;
             }
-            OpenAPI_list_add(monitored_resource_urisList, ogs_strdup(monitored_resource_uris_local->valuestring));
+            OpenAPI_list_add(monitored_resource_urisList, ogs_strdup_or_assert(monitored_resource_uris_local->valuestring));
         }
     }
 
     sdm_subs_modification_local_var = OpenAPI_sdm_subs_modification_create (
-        expires ? ogs_strdup(expires->valuestring) : NULL,
+        expires ? ogs_strdup_or_assert(expires->valuestring) : NULL,
         monitored_resource_uris ? monitored_resource_urisList : NULL
         );
 

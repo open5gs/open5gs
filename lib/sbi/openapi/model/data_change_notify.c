@@ -183,7 +183,7 @@ OpenAPI_data_change_notify_t *OpenAPI_data_change_notify_parseFromJSON(cJSON *da
                 ogs_error("OpenAPI_data_change_notify_parseFromJSON() failed [original_callback_reference]");
                 goto end;
             }
-            OpenAPI_list_add(original_callback_referenceList, ogs_strdup(original_callback_reference_local->valuestring));
+            OpenAPI_list_add(original_callback_referenceList, ogs_strdup_or_assert(original_callback_reference_local->valuestring));
         }
     }
 
@@ -274,7 +274,7 @@ OpenAPI_data_change_notify_t *OpenAPI_data_change_notify_parseFromJSON(cJSON *da
 
     data_change_notify_local_var = OpenAPI_data_change_notify_create (
         original_callback_reference ? original_callback_referenceList : NULL,
-        ue_id ? ogs_strdup(ue_id->valuestring) : NULL,
+        ue_id ? ogs_strdup_or_assert(ue_id->valuestring) : NULL,
         notify_items ? notify_itemsList : NULL,
         sdm_subscription ? sdm_subscription_local_nonprim : NULL,
         additional_sdm_subscriptions ? additional_sdm_subscriptionsList : NULL,

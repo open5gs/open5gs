@@ -51,12 +51,12 @@ static __inline__ struct sess_state *new_state(os0_t sid)
 
     ogs_thread_mutex_lock(&sess_state_mutex);
     ogs_pool_alloc(&sess_state_pool, &new);
-    ogs_assert(new);
+    ogs_expect_or_return_val(new, NULL);
     memset(new, 0, sizeof(*new));
     ogs_thread_mutex_unlock(&sess_state_mutex);
 
     new->rx_sid = (os0_t)ogs_strdup((char *)sid);
-    ogs_assert(new->rx_sid);
+    ogs_expect_or_return_val(new->rx_sid, NULL);
 
     return new;
 }
@@ -318,11 +318,15 @@ static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
                                         // Test for no port
                                         if (to_port != NULL) {
                                             flow->description = ogs_malloc(len
-                                                - strlen(to_str) + strlen("to any")
+                                                - strlen(to_str) +
+                                                strlen("to any")
                                                 + strlen(to_port) + 1);
+                                            ogs_assert(flow->description);
                                         } else {
                                             flow->description = ogs_malloc(len
-                                                - strlen(to_str) + strlen("to any") + 1);
+                                                - strlen(to_str) +
+                                                strlen("to any") + 1);
+                                            ogs_assert(flow->description);
                                         }
                                     }
 
@@ -339,22 +343,28 @@ static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
 
                                     from_ip = strstr(from_str, " ");
                                     if (from_ip != NULL) {
-                                        // Exclude the starting whitespace
+                                        /* Exclude the starting whitespace */
                                         from_ip += 1;
 
                                         from_port = strstr(from_ip, " ");
-                                        // Test for no port + whether from_port is at "to"
-                                        // without any from port
+                                        /* Test for no port +
+                                         * whether from_port is at "to"
+                                         * without any from port */
                                         if (from_port != NULL &&
                                             strncmp(from_port, " to", 3)) {
                                             flow->description = ogs_malloc(
-                                                len - strlen(from_str) + strlen(to_str)
+                                                len - strlen(from_str) +
+                                                strlen(to_str)
                                                 + strlen("from any") + 1
-                                                + (strlen(from_port) - strlen(to_str)));
+                                                + (strlen(from_port) -
+                                                    strlen(to_str)));
+                                            ogs_assert(flow->description);
                                         } else {
                                             flow->description = ogs_malloc(
-                                                len - strlen(from_str) + strlen(to_str)
+                                                len - strlen(from_str) +
+                                                strlen(to_str)
                                                 + strlen("from any ") + 1);
+                                            ogs_assert(flow->description);
                                         }
                                     }
 
@@ -377,6 +387,7 @@ static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
                             } else {
                                 flow->description = ogs_malloc(
                                     hdr->avp_value->os.len+1);
+                                ogs_assert(flow->description);
                                 ogs_cpystrn(
                                     flow->description,
                                     (char*)hdr->avp_value->os.data,

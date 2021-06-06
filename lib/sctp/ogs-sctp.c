@@ -85,6 +85,7 @@ void ogs_sctp_write_to_buffer(ogs_sctp_sock_t *sctp, ogs_pkbuf_t *pkbuf)
         ogs_assert(sctp->sock);
         sctp->poll.write = ogs_pollset_add(ogs_app()->pollset,
             OGS_POLLOUT, sctp->sock->fd, sctp_write_callback, sctp);
+        ogs_assert(sctp->poll.write);
     }
 }
 

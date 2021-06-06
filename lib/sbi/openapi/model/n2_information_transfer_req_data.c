@@ -207,7 +207,7 @@ OpenAPI_n2_information_transfer_req_data_t *OpenAPI_n2_information_transfer_req_
         rat_selector ? rat_selectorVariable : 0,
         global_ran_node_list ? global_ran_node_listList : NULL,
         n2_information_local_nonprim,
-        supported_features ? ogs_strdup(supported_features->valuestring) : NULL
+        supported_features ? ogs_strdup_or_assert(supported_features->valuestring) : NULL
         );
 
     return n2_information_transfer_req_data_local_var;

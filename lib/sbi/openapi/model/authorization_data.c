@@ -112,7 +112,7 @@ OpenAPI_authorization_data_t *OpenAPI_authorization_data_parseFromJSON(cJSON *au
 
     authorization_data_local_var = OpenAPI_authorization_data_create (
         authorization_dataList,
-        validity_time ? ogs_strdup(validity_time->valuestring) : NULL
+        validity_time ? ogs_strdup_or_assert(validity_time->valuestring) : NULL
         );
 
     return authorization_data_local_var;

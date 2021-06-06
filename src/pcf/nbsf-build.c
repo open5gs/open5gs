@@ -57,19 +57,20 @@ ogs_sbi_request_t *pcf_nbsf_management_build_register(
     PcfBinding.ipv4_addr = sess->ipv4addr_string;
     PcfBinding.ipv6_prefix = sess->ipv6prefix_string;
 
-    ogs_assert(sess->dnn);
+    ogs_expect_or_return_val(sess->dnn, NULL);
     PcfBinding.dnn = sess->dnn;
 
     nf_instance = ogs_sbi_nf_instance_find(ogs_sbi_self()->nf_instance_id);
-    ogs_assert(nf_instance);
+    ogs_expect_or_return_val(nf_instance, NULL);
     nf_service = ogs_list_first(&nf_instance->nf_service_list);
-    ogs_assert(nf_service);
+    ogs_expect_or_return_val(nf_service, NULL);
 
     if (strlen(nf_service->fqdn)) {
         memset(fqdn, 0, sizeof(fqdn));
         fqdn_len = ogs_fqdn_build(fqdn,
                 nf_service->fqdn, strlen(nf_service->fqdn));
         PcfBinding.pcf_fqdn = ogs_memdup(fqdn, fqdn_len);
+        ogs_expect_or_return_val(PcfBinding.pcf_fqdn, NULL);
     }
 
     PcfIpEndPointList = OpenAPI_list_create();
@@ -86,9 +87,16 @@ ogs_sbi_request_t *pcf_nbsf_management_build_register(
 
         if (ipv4 || ipv6) {
             IpEndPoint = ogs_calloc(1, sizeof(*IpEndPoint));
-            ogs_assert(IpEndPoint);
-            if (ipv4) IpEndPoint->ipv4_address = ogs_ipstrdup(ipv4);
-            if (ipv6) IpEndPoint->ipv6_address = ogs_ipstrdup(ipv6);
+            ogs_expect_or_return_val(IpEndPoint, NULL);
+            if (ipv4) {
+                IpEndPoint->ipv4_address = ogs_ipstrdup(ipv4);
+                ogs_expect_or_return_val(IpEndPoint->ipv4_address, NULL);
+            }
+            if (ipv6) {
+                IpEndPoint->ipv6_address = ogs_ipstrdup(ipv6);
+                ogs_expect_or_return_val(IpEndPoint->ipv6_address, NULL);
+
+            }
             IpEndPoint->port = nf_service->addr[i].port;
             OpenAPI_list_add(PcfIpEndPointList, IpEndPoint);
         }
@@ -99,7 +107,7 @@ ogs_sbi_request_t *pcf_nbsf_management_build_register(
     else
         OpenAPI_list_free(PcfIpEndPointList);
 
-    ogs_assert(sess->s_nssai.sst);
+    ogs_expect_or_return_val(sess->s_nssai.sst, NULL);
     memset(&sNssai, 0, sizeof(sNssai));
     sNssai.sst = sess->s_nssai.sst;
     sNssai.sd = ogs_s_nssai_sd_to_string(sess->s_nssai.sd);
@@ -107,12 +115,13 @@ ogs_sbi_request_t *pcf_nbsf_management_build_register(
 
     if (sess->management_features) {
         PcfBinding.supp_feat = ogs_uint64_to_string(sess->management_features);
+        ogs_expect_or_return_val(PcfBinding.supp_feat, NULL);
     }
 
     message.PcfBinding = &PcfBinding;
 
     request = ogs_sbi_build_request(&message);
-    ogs_assert(request);
+    ogs_expect(request);
     
     if (sNssai.sd)
         ogs_free(sNssai.sd);
@@ -159,7 +168,7 @@ ogs_sbi_request_t *pcf_nbsf_management_build_de_register(
     message.h.resource.component[1] = sess->binding_id;
 
     request = ogs_sbi_build_request(&message);
-    ogs_assert(request);
+    ogs_expect(request);
 
     return request;
 }

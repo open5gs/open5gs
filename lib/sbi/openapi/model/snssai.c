@@ -81,7 +81,7 @@ OpenAPI_snssai_t *OpenAPI_snssai_parseFromJSON(cJSON *snssaiJSON)
 
     snssai_local_var = OpenAPI_snssai_create (
         sst->valuedouble,
-        sd ? ogs_strdup(sd->valuestring) : NULL
+        sd ? ogs_strdup_or_assert(sd->valuestring) : NULL
         );
 
     return snssai_local_var;

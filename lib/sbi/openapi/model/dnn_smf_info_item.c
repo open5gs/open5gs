@@ -62,7 +62,7 @@ OpenAPI_dnn_smf_info_item_t *OpenAPI_dnn_smf_info_item_parseFromJSON(cJSON *dnn_
     }
 
     dnn_smf_info_item_local_var = OpenAPI_dnn_smf_info_item_create (
-        ogs_strdup(dnn->valuestring)
+        ogs_strdup_or_assert(dnn->valuestring)
         );
 
     return dnn_smf_info_item_local_var;

@@ -169,9 +169,9 @@ OpenAPI_scp_domain_info_t *OpenAPI_scp_domain_info_parseFromJSON(cJSON *scp_doma
     }
 
     scp_domain_info_local_var = OpenAPI_scp_domain_info_create (
-        scp_fqdn ? ogs_strdup(scp_fqdn->valuestring) : NULL,
+        scp_fqdn ? ogs_strdup_or_assert(scp_fqdn->valuestring) : NULL,
         scp_ip_end_points ? scp_ip_end_pointsList : NULL,
-        scp_prefix ? ogs_strdup(scp_prefix->valuestring) : NULL,
+        scp_prefix ? ogs_strdup_or_assert(scp_prefix->valuestring) : NULL,
         scp_ports ? scp_portsList : NULL
         );
 

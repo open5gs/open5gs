@@ -267,7 +267,7 @@ OpenAPI_charging_data_t *OpenAPI_charging_data_parseFromJSON(cJSON *charging_dat
     }
 
     charging_data_local_var = OpenAPI_charging_data_create (
-        ogs_strdup(chg_id->valuestring),
+        ogs_strdup_or_assert(chg_id->valuestring),
         metering_method ? metering_methodVariable : 0,
         offline ? offline->valueint : 0,
         online ? online->valueint : 0,
@@ -275,10 +275,10 @@ OpenAPI_charging_data_t *OpenAPI_charging_data_parseFromJSON(cJSON *charging_dat
         rating_group ? rating_group->valuedouble : 0,
         reporting_level ? reporting_levelVariable : 0,
         service_id ? service_id->valuedouble : 0,
-        sponsor_id ? ogs_strdup(sponsor_id->valuestring) : NULL,
-        app_svc_prov_id ? ogs_strdup(app_svc_prov_id->valuestring) : NULL,
+        sponsor_id ? ogs_strdup_or_assert(sponsor_id->valuestring) : NULL,
+        app_svc_prov_id ? ogs_strdup_or_assert(app_svc_prov_id->valuestring) : NULL,
         af_charging_identifier ? af_charging_identifier->valuedouble : 0,
-        af_charg_id ? ogs_strdup(af_charg_id->valuestring) : NULL
+        af_charg_id ? ogs_strdup_or_assert(af_charg_id->valuestring) : NULL
         );
 
     return charging_data_local_var;

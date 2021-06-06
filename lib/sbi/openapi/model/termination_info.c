@@ -84,7 +84,7 @@ OpenAPI_termination_info_t *OpenAPI_termination_info_parseFromJSON(cJSON *termin
 
     termination_info_local_var = OpenAPI_termination_info_create (
         term_causeVariable,
-        ogs_strdup(res_uri->valuestring)
+        ogs_strdup_or_assert(res_uri->valuestring)
         );
 
     return termination_info_local_var;

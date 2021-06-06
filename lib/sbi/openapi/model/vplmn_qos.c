@@ -185,10 +185,10 @@ OpenAPI_vplmn_qos_t *OpenAPI_vplmn_qos_parseFromJSON(cJSON *vplmn_qosJSON)
         _5qi ? _5qi->valuedouble : 0,
         arp ? arp_local_nonprim : NULL,
         session_ambr ? session_ambr_local_nonprim : NULL,
-        max_fbr_dl ? ogs_strdup(max_fbr_dl->valuestring) : NULL,
-        max_fbr_ul ? ogs_strdup(max_fbr_ul->valuestring) : NULL,
-        gua_fbr_dl ? ogs_strdup(gua_fbr_dl->valuestring) : NULL,
-        gua_fbr_ul ? ogs_strdup(gua_fbr_ul->valuestring) : NULL
+        max_fbr_dl ? ogs_strdup_or_assert(max_fbr_dl->valuestring) : NULL,
+        max_fbr_ul ? ogs_strdup_or_assert(max_fbr_ul->valuestring) : NULL,
+        gua_fbr_dl ? ogs_strdup_or_assert(gua_fbr_dl->valuestring) : NULL,
+        gua_fbr_ul ? ogs_strdup_or_assert(gua_fbr_ul->valuestring) : NULL
         );
 
     return vplmn_qos_local_var;

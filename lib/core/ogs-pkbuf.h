@@ -84,7 +84,9 @@ void ogs_pkbuf_free(ogs_pkbuf_t *pkbuf);
 
 void *ogs_pkbuf_put_data(
         ogs_pkbuf_t *pkbuf, const void *data, unsigned int len);
-ogs_pkbuf_t *ogs_pkbuf_copy(ogs_pkbuf_t *pkbuf);
+#define ogs_pkbuf_copy(pkbuf) \
+    ogs_pkbuf_copy_debug(pkbuf, OGS_FILE_LINE)
+ogs_pkbuf_t *ogs_pkbuf_copy_debug(ogs_pkbuf_t *pkbuf, const char *file_line);
 
 static ogs_inline int ogs_pkbuf_tailroom(const ogs_pkbuf_t *pkbuf)
 {

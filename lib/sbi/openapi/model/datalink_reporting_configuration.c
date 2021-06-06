@@ -174,7 +174,7 @@ OpenAPI_datalink_reporting_configuration_t *OpenAPI_datalink_reporting_configura
 
     datalink_reporting_configuration_local_var = OpenAPI_datalink_reporting_configuration_create (
         ddd_traffic_des ? ddd_traffic_desList : NULL,
-        dnn ? ogs_strdup(dnn->valuestring) : NULL,
+        dnn ? ogs_strdup_or_assert(dnn->valuestring) : NULL,
         slice ? slice_local_nonprim : NULL,
         ddd_status_list ? ddd_status_listList : NULL
         );

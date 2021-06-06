@@ -61,7 +61,7 @@ OpenAPI_options_response_t *OpenAPI_options_response_parseFromJSON(cJSON *option
     }
 
     options_response_local_var = OpenAPI_options_response_create (
-        supported_features ? ogs_strdup(supported_features->valuestring) : NULL
+        supported_features ? ogs_strdup_or_assert(supported_features->valuestring) : NULL
         );
 
     return options_response_local_var;

@@ -111,7 +111,7 @@ OpenAPI_n2_interface_amf_info_t *OpenAPI_n2_interface_amf_info_parseFromJSON(cJS
                 ogs_error("OpenAPI_n2_interface_amf_info_parseFromJSON() failed [ipv4_endpoint_address]");
                 goto end;
             }
-            OpenAPI_list_add(ipv4_endpoint_addressList, ogs_strdup(ipv4_endpoint_address_local->valuestring));
+            OpenAPI_list_add(ipv4_endpoint_addressList, ogs_strdup_or_assert(ipv4_endpoint_address_local->valuestring));
         }
     }
 
@@ -131,7 +131,7 @@ OpenAPI_n2_interface_amf_info_t *OpenAPI_n2_interface_amf_info_parseFromJSON(cJS
                 ogs_error("OpenAPI_n2_interface_amf_info_parseFromJSON() failed [ipv6_endpoint_address]");
                 goto end;
             }
-            OpenAPI_list_add(ipv6_endpoint_addressList, ogs_strdup(ipv6_endpoint_address_local->valuestring));
+            OpenAPI_list_add(ipv6_endpoint_addressList, ogs_strdup_or_assert(ipv6_endpoint_address_local->valuestring));
         }
     }
 
@@ -147,7 +147,7 @@ OpenAPI_n2_interface_amf_info_t *OpenAPI_n2_interface_amf_info_parseFromJSON(cJS
     n2_interface_amf_info_local_var = OpenAPI_n2_interface_amf_info_create (
         ipv4_endpoint_address ? ipv4_endpoint_addressList : NULL,
         ipv6_endpoint_address ? ipv6_endpoint_addressList : NULL,
-        amf_name ? ogs_strdup(amf_name->valuestring) : NULL
+        amf_name ? ogs_strdup_or_assert(amf_name->valuestring) : NULL
         );
 
     return n2_interface_amf_info_local_var;

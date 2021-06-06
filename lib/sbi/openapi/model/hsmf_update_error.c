@@ -165,10 +165,10 @@ OpenAPI_hsmf_update_error_t *OpenAPI_hsmf_update_error_parseFromJSON(cJSON *hsmf
     hsmf_update_error_local_var = OpenAPI_hsmf_update_error_create (
         error_local_nonprim,
         pti ? pti->valuedouble : 0,
-        n1sm_cause ? ogs_strdup(n1sm_cause->valuestring) : NULL,
+        n1sm_cause ? ogs_strdup_or_assert(n1sm_cause->valuestring) : NULL,
         n1_sm_info_to_ue ? n1_sm_info_to_ue_local_nonprim : NULL,
         back_off_timer ? back_off_timer->valuedouble : 0,
-        recovery_time ? ogs_strdup(recovery_time->valuestring) : NULL
+        recovery_time ? ogs_strdup_or_assert(recovery_time->valuestring) : NULL
         );
 
     return hsmf_update_error_local_var;

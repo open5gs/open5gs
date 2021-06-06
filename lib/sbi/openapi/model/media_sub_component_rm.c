@@ -247,7 +247,7 @@ OpenAPI_media_sub_component_rm_t *OpenAPI_media_sub_component_rm_parseFromJSON(c
                 ogs_error("OpenAPI_media_sub_component_rm_parseFromJSON() failed [f_descs]");
                 goto end;
             }
-            OpenAPI_list_add(f_descsList, ogs_strdup(f_descs_local->valuestring));
+            OpenAPI_list_add(f_descsList, ogs_strdup_or_assert(f_descs_local->valuestring));
         }
     }
 
@@ -320,9 +320,9 @@ OpenAPI_media_sub_component_rm_t *OpenAPI_media_sub_component_rm_parseFromJSON(c
         f_num->valuedouble,
         f_descs ? f_descsList : NULL,
         f_status ? f_statusVariable : 0,
-        mar_bw_dl ? ogs_strdup(mar_bw_dl->valuestring) : NULL,
-        mar_bw_ul ? ogs_strdup(mar_bw_ul->valuestring) : NULL,
-        tos_tr_cl ? ogs_strdup(tos_tr_cl->valuestring) : NULL,
+        mar_bw_dl ? ogs_strdup_or_assert(mar_bw_dl->valuestring) : NULL,
+        mar_bw_ul ? ogs_strdup_or_assert(mar_bw_ul->valuestring) : NULL,
+        tos_tr_cl ? ogs_strdup_or_assert(tos_tr_cl->valuestring) : NULL,
         flow_usage ? flow_usageVariable : 0,
         tscai_input_dl ? tscai_input_dl_local_nonprim : NULL,
         tscai_input_ul ? tscai_input_ul_local_nonprim : NULL

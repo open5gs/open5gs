@@ -113,7 +113,7 @@ int nas_eps_send_attach_accept(mme_ue_t *mme_ue)
 
     CLEAR_MME_UE_TIMER(mme_ue->t3450);
     mme_ue->t3450.pkbuf = ogs_pkbuf_copy(emmbuf);
-    ogs_assert(mme_ue->t3450.pkbuf);
+    ogs_expect_or_return_val(mme_ue->t3450.pkbuf, OGS_ERROR);
     ogs_timer_start(mme_ue->t3450.timer,
             mme_timer_cfg(MME_TIMER_T3450)->duration);
 
@@ -170,7 +170,7 @@ int nas_eps_send_identity_request(mme_ue_t *mme_ue)
     }
 
     mme_ue->t3470.pkbuf = ogs_pkbuf_copy(emmbuf);
-    ogs_assert(mme_ue->t3470.pkbuf);
+    ogs_expect_or_return_val(mme_ue->t3470.pkbuf, OGS_ERROR);
     ogs_timer_start(mme_ue->t3470.timer, 
             mme_timer_cfg(MME_TIMER_T3470)->duration);
 
@@ -198,7 +198,7 @@ int nas_eps_send_authentication_request(mme_ue_t *mme_ue)
     }
 
     mme_ue->t3460.pkbuf = ogs_pkbuf_copy(emmbuf);
-    ogs_assert(mme_ue->t3460.pkbuf);
+    ogs_expect_or_return_val(mme_ue->t3460.pkbuf, OGS_ERROR);
     ogs_timer_start(mme_ue->t3460.timer, 
             mme_timer_cfg(MME_TIMER_T3460)->duration);
 
@@ -226,7 +226,7 @@ int nas_eps_send_security_mode_command(mme_ue_t *mme_ue)
     }
 
     mme_ue->t3460.pkbuf = ogs_pkbuf_copy(emmbuf);
-    ogs_assert(mme_ue->t3460.pkbuf);
+    ogs_expect_or_return_val(mme_ue->t3460.pkbuf, OGS_ERROR);
     ogs_timer_start(mme_ue->t3460.timer, 
             mme_timer_cfg(MME_TIMER_T3460)->duration);
 
@@ -331,7 +331,7 @@ int nas_eps_send_esm_information_request(mme_bearer_t *bearer)
     }
 
     bearer->t3489.pkbuf = ogs_pkbuf_copy(esmbuf);
-    ogs_assert(bearer->t3489.pkbuf);
+    ogs_expect_or_return_val(bearer->t3489.pkbuf, OGS_ERROR);
     ogs_timer_start(bearer->t3489.timer, 
             mme_timer_cfg(MME_TIMER_T3489)->duration);
 
@@ -512,7 +512,7 @@ int nas_eps_send_tau_accept(
     if (mme_ue->next.m_tmsi) {
         CLEAR_MME_UE_TIMER(mme_ue->t3450);
         mme_ue->t3450.pkbuf = ogs_pkbuf_copy(emmbuf);
-        ogs_assert(mme_ue->t3450.pkbuf);
+        ogs_expect_or_return_val(mme_ue->t3450.pkbuf, OGS_ERROR);
         ogs_timer_start(mme_ue->t3450.timer,
                 mme_timer_cfg(MME_TIMER_T3450)->duration);
     }

@@ -34,11 +34,11 @@ extern "C" {
 int smf_sbi_open(void);
 void smf_sbi_close(void);
 
-void smf_nnrf_nfm_send_nf_register(ogs_sbi_nf_instance_t *nf_instance);
+bool smf_nnrf_nfm_send_nf_register(ogs_sbi_nf_instance_t *nf_instance);
 
-void smf_sbi_send(ogs_sbi_nf_instance_t *nf_instance, ogs_sbi_xact_t *xact);
+bool smf_sbi_send(ogs_sbi_nf_instance_t *nf_instance, ogs_sbi_xact_t *xact);
 
-void smf_sbi_discover_and_send(OpenAPI_nf_type_e target_nf_type,
+bool smf_sbi_discover_and_send(OpenAPI_nf_type_e target_nf_type,
         smf_sess_t *sess, ogs_sbi_stream_t *stream, int state, void *data,
         ogs_sbi_request_t *(*build)(smf_sess_t *sess, void *data));
 
@@ -78,7 +78,7 @@ void smf_sbi_send_sm_context_update_error(
         int status, const char *title, const char *detail,
         ogs_pkbuf_t *n1smbuf, ogs_pkbuf_t *n2smbuf);
 
-void smf_sbi_send_sm_context_status_notify(smf_sess_t *sess);
+bool smf_sbi_send_sm_context_status_notify(smf_sess_t *sess);
 
 #ifdef __cplusplus
 }

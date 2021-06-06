@@ -159,7 +159,7 @@ OpenAPI_parameter_over_uu_t *OpenAPI_parameter_over_uu_parseFromJSON(cJSON *para
     }
 
     parameter_over_uu_local_var = OpenAPI_parameter_over_uu_create (
-        expiry ? ogs_strdup(expiry->valuestring) : NULL,
+        expiry ? ogs_strdup_or_assert(expiry->valuestring) : NULL,
         ser_to_pdu_sess ? ser_to_pdu_sessList : NULL,
         ser_to_app_addr ? ser_to_app_addrList : NULL
         );

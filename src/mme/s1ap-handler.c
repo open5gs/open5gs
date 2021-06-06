@@ -1456,7 +1456,7 @@ void s1ap_handle_ue_context_release_action(enb_ue_t *enb_ue)
         ogs_expect_or_return(mme_ue);
         mme_ue_deassociate(mme_ue);
 
-        s1ap_send_paging(mme_ue, S1AP_CNDomain_ps);
+        ogs_assert(OGS_OK == s1ap_send_paging(mme_ue, S1AP_CNDomain_ps));
         break;
     default:
         ogs_error("Invalid Action[%d]", enb_ue->ue_ctx_rel_action);

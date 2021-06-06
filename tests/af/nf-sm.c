@@ -109,7 +109,7 @@ void af_nf_state_will_register(ogs_fsm_t *s, af_event_t *e)
             ogs_timer_start(nf_instance->t_registration_interval,
                 ogs_app()->time.message.sbi.nf_register_interval);
 
-        af_nnrf_nfm_send_nf_register(nf_instance);
+        ogs_assert(true == af_nnrf_nfm_send_nf_register(nf_instance));
         break;
 
     case OGS_FSM_EXIT_SIG:
@@ -164,7 +164,7 @@ void af_nf_state_will_register(ogs_fsm_t *s, af_event_t *e)
                 ogs_timer_start(nf_instance->t_registration_interval,
                     ogs_app()->time.message.sbi.nf_register_interval);
 
-            af_nnrf_nfm_send_nf_register(nf_instance);
+            ogs_assert(true == af_nnrf_nfm_send_nf_register(nf_instance));
             break;
 
         default:
@@ -211,8 +211,9 @@ void af_nf_state_registered(ogs_fsm_t *s, af_event_t *e)
                         ogs_app()->time.nf_instance.no_heartbeat_margin));
             }
 
-            ogs_nnrf_nfm_send_nf_status_subscribe(client,
-                    af_self()->nf_type, nf_instance->id, OpenAPI_nf_type_BSF);
+            ogs_assert(true ==
+                ogs_nnrf_nfm_send_nf_status_subscribe(client,
+                    af_self()->nf_type, nf_instance->id, OpenAPI_nf_type_BSF));
         }
 
         break;
@@ -227,7 +228,8 @@ void af_nf_state_registered(ogs_fsm_t *s, af_event_t *e)
             }
 
             if (!OGS_FSM_CHECK(&nf_instance->sm, af_nf_state_exception)) {
-                ogs_nnrf_nfm_send_nf_de_register(nf_instance);
+                ogs_assert(true ==
+                    ogs_nnrf_nfm_send_nf_de_register(nf_instance));
             }
         }
         break;
@@ -277,7 +279,7 @@ void af_nf_state_registered(ogs_fsm_t *s, af_event_t *e)
                 ogs_timer_start(nf_instance->t_heartbeat_interval,
                     ogs_time_from_sec(nf_instance->time.heartbeat_interval));
 
-            ogs_nnrf_nfm_send_nf_update(nf_instance);
+            ogs_assert(true == ogs_nnrf_nfm_send_nf_update(nf_instance));
             break;
 
         case AF_TIMER_NF_INSTANCE_NO_HEARTBEAT:

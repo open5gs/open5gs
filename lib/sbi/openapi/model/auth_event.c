@@ -160,11 +160,11 @@ OpenAPI_auth_event_t *OpenAPI_auth_event_parseFromJSON(cJSON *auth_eventJSON)
     }
 
     auth_event_local_var = OpenAPI_auth_event_create (
-        ogs_strdup(nf_instance_id->valuestring),
+        ogs_strdup_or_assert(nf_instance_id->valuestring),
         success->valueint,
-        ogs_strdup(time_stamp->valuestring),
+        ogs_strdup_or_assert(time_stamp->valuestring),
         auth_typeVariable,
-        ogs_strdup(serving_network_name->valuestring),
+        ogs_strdup_or_assert(serving_network_name->valuestring),
         auth_removal_ind ? auth_removal_ind->valueint : 0
         );
 

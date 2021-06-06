@@ -193,12 +193,14 @@ void smf_bearer_binding(smf_sess_t *sess)
                             bearer->pgw_s5u_teid = bearer->index;
                     } else {
                         if (sess->pfcp_node->addr.ogs_sa_family == AF_INET)
-                            ogs_copyaddrinfo(&bearer->pgw_s5u_addr,
-                                    &sess->pfcp_node->addr);
+                            ogs_assert(OGS_OK ==
+                                ogs_copyaddrinfo(&bearer->pgw_s5u_addr,
+                                    &sess->pfcp_node->addr));
                         else if (sess->pfcp_node->addr.ogs_sa_family ==
                                 AF_INET6)
-                            ogs_copyaddrinfo(&bearer->pgw_s5u_addr6,
-                                    &sess->pfcp_node->addr);
+                            ogs_assert(OGS_OK ==
+                                ogs_copyaddrinfo(&bearer->pgw_s5u_addr6,
+                                    &sess->pfcp_node->addr));
                         else
                             ogs_assert_if_reached();
 
@@ -282,6 +284,7 @@ void smf_bearer_binding(smf_sess_t *sess)
 
                 pf->direction = flow->direction;
                 pf->flow_description = ogs_strdup(flow->description);
+                ogs_assert(pf->flow_description);
 
                 rv = ogs_ipfw_compile_rule(
                         &pf->ipfw_rule, pf->flow_description);
@@ -401,7 +404,7 @@ void smf_bearer_binding(smf_sess_t *sess)
     }
 }
 
-void smf_gtp_send_create_bearer_request(smf_bearer_t *bearer)
+int smf_gtp_send_create_bearer_request(smf_bearer_t *bearer)
 {
     int rv;
 
@@ -423,14 +426,16 @@ void smf_gtp_send_create_bearer_request(smf_bearer_t *bearer)
     encode_traffic_flow_template(&tft, bearer, OGS_GTP_TFT_CODE_CREATE_NEW_TFT);
 
     pkbuf = smf_s5c_build_create_bearer_request(h.type, bearer, &tft);
-    ogs_expect_or_return(pkbuf);
+    ogs_expect_or_return_val(pkbuf, OGS_ERROR);
 
     xact = ogs_gtp_xact_local_create(
             sess->gnode, &h, pkbuf, bearer_timeout, bearer);
-    ogs_expect_or_return(xact);
+    ogs_expect_or_return_val(xact, OGS_ERROR);
 
     rv = ogs_gtp_xact_commit(xact);
     ogs_expect(rv == OGS_OK);
+
+    return rv;
 }
 
 void smf_qos_flow_binding(smf_sess_t *sess, ogs_sbi_stream_t *stream)
@@ -576,6 +581,7 @@ void smf_qos_flow_binding(smf_sess_t *sess, ogs_sbi_stream_t *stream)
 
                 pf->direction = flow->direction;
                 pf->flow_description = ogs_strdup(flow->description);
+                ogs_assert(pf->flow_description);
 
                 rv = ogs_ipfw_compile_rule(
                         &pf->ipfw_rule, pf->flow_description);

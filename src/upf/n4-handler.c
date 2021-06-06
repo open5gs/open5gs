@@ -82,7 +82,7 @@ void upf_n4_handle_session_establishment_request(
 
     /* Setup GTP Node */
     ogs_list_for_each(&sess->pfcp.far_list, far) {
-        ogs_pfcp_setup_far_gtpu_node(far);
+        ogs_assert(OGS_ERROR != ogs_pfcp_setup_far_gtpu_node(far));
         if (far->gnode)
             ogs_pfcp_far_f_teid_hash_set(far);
     }
@@ -125,8 +125,9 @@ void upf_n4_handle_session_establishment_request(
                             &ogs_gtp_self()->gtpu_resource_list,
                             pdr->dnn, OGS_PFCP_INTERFACE_ACCESS);
                     if (resource) {
-                        ogs_pfcp_user_plane_ip_resource_info_to_f_teid(
-                            &resource->info, &pdr->f_teid, &pdr->f_teid_len);
+                        ogs_assert(OGS_OK ==
+                            ogs_pfcp_user_plane_ip_resource_info_to_f_teid(
+                            &resource->info, &pdr->f_teid, &pdr->f_teid_len));
                         if (resource->info.teidri)
                             pdr->f_teid.teid = OGS_PFCP_GTPU_INDEX_TO_TEID(
                                     pdr->index, resource->info.teidri,
@@ -240,7 +241,7 @@ void upf_n4_handle_session_modification_request(
     ogs_list_for_each(&sess->pfcp.pdr_list, pdr) {
         far = pdr->far;
         if (far && far->smreq_flags.send_end_marker_packets)
-            ogs_pfcp_send_end_marker(pdr);
+            ogs_assert(OGS_ERROR != ogs_pfcp_send_end_marker(pdr));
     }
     /* Clear PFCPSMReq-Flags */
     ogs_list_for_each(&sess->pfcp.far_list, far)
@@ -298,7 +299,7 @@ void upf_n4_handle_session_modification_request(
 
     /* Setup GTP Node */
     ogs_list_for_each(&sess->pfcp.far_list, far) {
-        ogs_pfcp_setup_far_gtpu_node(far);
+        ogs_assert(OGS_ERROR != ogs_pfcp_setup_far_gtpu_node(far));
         if (far->gnode)
             ogs_pfcp_far_f_teid_hash_set(far);
     }
@@ -337,8 +338,9 @@ void upf_n4_handle_session_modification_request(
                             &ogs_gtp_self()->gtpu_resource_list,
                             pdr->dnn, OGS_PFCP_INTERFACE_ACCESS);
                     if (resource) {
-                        ogs_pfcp_user_plane_ip_resource_info_to_f_teid(
-                            &resource->info, &pdr->f_teid, &pdr->f_teid_len);
+                        ogs_assert(OGS_OK ==
+                            ogs_pfcp_user_plane_ip_resource_info_to_f_teid(
+                            &resource->info, &pdr->f_teid, &pdr->f_teid_len));
                         if (resource->info.teidri)
                             pdr->f_teid.teid = OGS_PFCP_GTPU_INDEX_TO_TEID(
                                     pdr->index, resource->info.teidri,

@@ -153,8 +153,11 @@ void smf_gx_handle_cca_initial_request(
     dl_far->apply_action = OGS_PFCP_APPLY_ACTION_FORW;
 
     /* Set Outer Header Creation to the Default DL FAR */
-    ogs_pfcp_ip_to_outer_header_creation(&bearer->sgw_s5u_ip,
-        &dl_far->outer_header_creation, &dl_far->outer_header_creation_len);
+    ogs_assert(OGS_OK ==
+        ogs_pfcp_ip_to_outer_header_creation(
+            &bearer->sgw_s5u_ip,
+            &dl_far->outer_header_creation,
+            &dl_far->outer_header_creation_len));
     dl_far->outer_header_creation.teid = bearer->sgw_s5u_teid;
 
     /* Setup PDR */
@@ -168,17 +171,19 @@ void smf_gx_handle_cca_initial_request(
     ogs_assert(up2cp_pdr);
 
     /* Set UE IP Address to the Default DL PDR */
-    ogs_pfcp_paa_to_ue_ip_addr(&sess->session.paa,
-            &dl_pdr->ue_ip_addr, &dl_pdr->ue_ip_addr_len);
+    ogs_assert(OGS_OK ==
+        ogs_pfcp_paa_to_ue_ip_addr(&sess->session.paa,
+            &dl_pdr->ue_ip_addr, &dl_pdr->ue_ip_addr_len));
     dl_pdr->ue_ip_addr.sd = OGS_PFCP_UE_IP_DST;
 
     /* Set UE-to-CP Flow-Description and Outer-Header-Creation */
     up2cp_pdr->flow_description[up2cp_pdr->num_of_flow++] =
         (char *)"permit out 58 from ff02::2/128 to assigned";
-    ogs_pfcp_ip_to_outer_header_creation(
+    ogs_assert(OGS_OK ==
+        ogs_pfcp_ip_to_outer_header_creation(
             &ogs_gtp_self()->gtpu_ip,
             &up2cp_far->outer_header_creation,
-            &up2cp_far->outer_header_creation_len);
+            &up2cp_far->outer_header_creation_len));
     up2cp_far->outer_header_creation.teid = sess->index;
 
     /* Set F-TEID */
@@ -219,10 +224,13 @@ void smf_gx_handle_cca_initial_request(
                 bearer->pgw_s5u_teid = bearer->index;
         } else {
             if (sess->pfcp_node->addr.ogs_sa_family == AF_INET)
-                ogs_copyaddrinfo(&bearer->pgw_s5u_addr, &sess->pfcp_node->addr);
+                ogs_assert(OGS_OK ==
+                    ogs_copyaddrinfo(
+                        &bearer->pgw_s5u_addr, &sess->pfcp_node->addr));
             else if (sess->pfcp_node->addr.ogs_sa_family == AF_INET6)
-                ogs_copyaddrinfo(
-                        &bearer->pgw_s5u_addr6, &sess->pfcp_node->addr);
+                ogs_assert(OGS_OK ==
+                    ogs_copyaddrinfo(
+                        &bearer->pgw_s5u_addr6, &sess->pfcp_node->addr));
             else
                 ogs_assert_if_reached();
 

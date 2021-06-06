@@ -1213,7 +1213,7 @@ OpenAPI_sm_context_create_data_t *OpenAPI_sm_context_create_data_parseFromJSON(c
                 ogs_error("OpenAPI_sm_context_create_data_parseFromJSON() failed [additional_hsmf_uri]");
                 goto end;
             }
-            OpenAPI_list_add(additional_hsmf_uriList, ogs_strdup(additional_hsmf_uri_local->valuestring));
+            OpenAPI_list_add(additional_hsmf_uriList, ogs_strdup_or_assert(additional_hsmf_uri_local->valuestring));
         }
     }
 
@@ -1233,7 +1233,7 @@ OpenAPI_sm_context_create_data_t *OpenAPI_sm_context_create_data_parseFromJSON(c
                 ogs_error("OpenAPI_sm_context_create_data_parseFromJSON() failed [additional_hsmf_id]");
                 goto end;
             }
-            OpenAPI_list_add(additional_hsmf_idList, ogs_strdup(additional_hsmf_id_local->valuestring));
+            OpenAPI_list_add(additional_hsmf_idList, ogs_strdup_or_assert(additional_hsmf_id_local->valuestring));
         }
     }
 
@@ -1253,7 +1253,7 @@ OpenAPI_sm_context_create_data_t *OpenAPI_sm_context_create_data_parseFromJSON(c
                 ogs_error("OpenAPI_sm_context_create_data_parseFromJSON() failed [additional_smf_uri]");
                 goto end;
             }
-            OpenAPI_list_add(additional_smf_uriList, ogs_strdup(additional_smf_uri_local->valuestring));
+            OpenAPI_list_add(additional_smf_uriList, ogs_strdup_or_assert(additional_smf_uri_local->valuestring));
         }
     }
 
@@ -1273,7 +1273,7 @@ OpenAPI_sm_context_create_data_t *OpenAPI_sm_context_create_data_parseFromJSON(c
                 ogs_error("OpenAPI_sm_context_create_data_parseFromJSON() failed [additional_smf_id]");
                 goto end;
             }
-            OpenAPI_list_add(additional_smf_idList, ogs_strdup(additional_smf_id_local->valuestring));
+            OpenAPI_list_add(additional_smf_idList, ogs_strdup_or_assert(additional_smf_id_local->valuestring));
         }
     }
 
@@ -1702,18 +1702,18 @@ OpenAPI_sm_context_create_data_t *OpenAPI_sm_context_create_data_parseFromJSON(c
     }
 
     sm_context_create_data_local_var = OpenAPI_sm_context_create_data_create (
-        supi ? ogs_strdup(supi->valuestring) : NULL,
+        supi ? ogs_strdup_or_assert(supi->valuestring) : NULL,
         unauthenticated_supi ? unauthenticated_supi->valueint : 0,
-        pei ? ogs_strdup(pei->valuestring) : NULL,
-        gpsi ? ogs_strdup(gpsi->valuestring) : NULL,
+        pei ? ogs_strdup_or_assert(pei->valuestring) : NULL,
+        gpsi ? ogs_strdup_or_assert(gpsi->valuestring) : NULL,
         pdu_session_id ? pdu_session_id->valuedouble : 0,
-        dnn ? ogs_strdup(dnn->valuestring) : NULL,
-        selected_dnn ? ogs_strdup(selected_dnn->valuestring) : NULL,
+        dnn ? ogs_strdup_or_assert(dnn->valuestring) : NULL,
+        selected_dnn ? ogs_strdup_or_assert(selected_dnn->valuestring) : NULL,
         s_nssai ? s_nssai_local_nonprim : NULL,
         hplmn_snssai ? hplmn_snssai_local_nonprim : NULL,
-        ogs_strdup(serving_nf_id->valuestring),
+        ogs_strdup_or_assert(serving_nf_id->valuestring),
         guami ? guami_local_nonprim : NULL,
-        service_name ? ogs_strdup(service_name->valuestring) : NULL,
+        service_name ? ogs_strdup_or_assert(service_name->valuestring) : NULL,
         serving_network_local_nonprim,
         request_type ? request_typeVariable : 0,
         n1_sm_msg ? n1_sm_msg_local_nonprim : NULL,
@@ -1722,36 +1722,36 @@ OpenAPI_sm_context_create_data_t *OpenAPI_sm_context_create_data_parseFromJSON(c
         rat_type ? rat_typeVariable : 0,
         presence_in_ladn ? presence_in_ladnVariable : 0,
         ue_location ? ue_location_local_nonprim : NULL,
-        ue_time_zone ? ogs_strdup(ue_time_zone->valuestring) : NULL,
+        ue_time_zone ? ogs_strdup_or_assert(ue_time_zone->valuestring) : NULL,
         add_ue_location ? add_ue_location_local_nonprim : NULL,
-        ogs_strdup(sm_context_status_uri->valuestring),
-        h_smf_uri ? ogs_strdup(h_smf_uri->valuestring) : NULL,
-        h_smf_id ? ogs_strdup(h_smf_id->valuestring) : NULL,
-        smf_uri ? ogs_strdup(smf_uri->valuestring) : NULL,
-        smf_id ? ogs_strdup(smf_id->valuestring) : NULL,
+        ogs_strdup_or_assert(sm_context_status_uri->valuestring),
+        h_smf_uri ? ogs_strdup_or_assert(h_smf_uri->valuestring) : NULL,
+        h_smf_id ? ogs_strdup_or_assert(h_smf_id->valuestring) : NULL,
+        smf_uri ? ogs_strdup_or_assert(smf_uri->valuestring) : NULL,
+        smf_id ? ogs_strdup_or_assert(smf_id->valuestring) : NULL,
         additional_hsmf_uri ? additional_hsmf_uriList : NULL,
         additional_hsmf_id ? additional_hsmf_idList : NULL,
         additional_smf_uri ? additional_smf_uriList : NULL,
         additional_smf_id ? additional_smf_idList : NULL,
         old_pdu_session_id ? old_pdu_session_id->valuedouble : 0,
         pdu_sessions_activate_list ? pdu_sessions_activate_listList : NULL,
-        ue_eps_pdn_connection ? ogs_strdup(ue_eps_pdn_connection->valuestring) : NULL,
+        ue_eps_pdn_connection ? ogs_strdup_or_assert(ue_eps_pdn_connection->valuestring) : NULL,
         ho_state ? ho_stateVariable : 0,
-        pcf_id ? ogs_strdup(pcf_id->valuestring) : NULL,
-        pcf_group_id ? ogs_strdup(pcf_group_id->valuestring) : NULL,
-        pcf_set_id ? ogs_strdup(pcf_set_id->valuestring) : NULL,
-        nrf_uri ? ogs_strdup(nrf_uri->valuestring) : NULL,
-        supported_features ? ogs_strdup(supported_features->valuestring) : NULL,
+        pcf_id ? ogs_strdup_or_assert(pcf_id->valuestring) : NULL,
+        pcf_group_id ? ogs_strdup_or_assert(pcf_group_id->valuestring) : NULL,
+        pcf_set_id ? ogs_strdup_or_assert(pcf_set_id->valuestring) : NULL,
+        nrf_uri ? ogs_strdup_or_assert(nrf_uri->valuestring) : NULL,
+        supported_features ? ogs_strdup_or_assert(supported_features->valuestring) : NULL,
         sel_mode ? sel_modeVariable : 0,
         backup_amf_info ? backup_amf_infoList : NULL,
         trace_data ? trace_data_local_nonprim : NULL,
-        udm_group_id ? ogs_strdup(udm_group_id->valuestring) : NULL,
-        routing_indicator ? ogs_strdup(routing_indicator->valuestring) : NULL,
+        udm_group_id ? ogs_strdup_or_assert(udm_group_id->valuestring) : NULL,
+        routing_indicator ? ogs_strdup_or_assert(routing_indicator->valuestring) : NULL,
         eps_interworking_ind ? eps_interworking_indVariable : 0,
         indirect_forwarding_flag ? indirect_forwarding_flag->valueint : 0,
         direct_forwarding_flag ? direct_forwarding_flag->valueint : 0,
         target_id ? target_id_local_nonprim : NULL,
-        eps_bearer_ctx_status ? ogs_strdup(eps_bearer_ctx_status->valuestring) : NULL,
+        eps_bearer_ctx_status ? ogs_strdup_or_assert(eps_bearer_ctx_status->valuestring) : NULL,
         cp_ciot_enabled ? cp_ciot_enabled->valueint : 0,
         cp_only_ind ? cp_only_ind->valueint : 0,
         invoke_nef ? invoke_nef->valueint : 0,
@@ -1761,10 +1761,10 @@ OpenAPI_sm_context_create_data_t *OpenAPI_sm_context_create_data_parseFromJSON(c
         n2_sm_info_type ? n2_sm_info_typeVariable : 0,
         n2_sm_info_ext1 ? n2_sm_info_ext1_local_nonprim : NULL,
         n2_sm_info_type_ext1 ? n2_sm_info_type_ext1Variable : 0,
-        sm_context_ref ? ogs_strdup(sm_context_ref->valuestring) : NULL,
-        sm_context_smf_id ? ogs_strdup(sm_context_smf_id->valuestring) : NULL,
-        sm_context_smf_set_id ? ogs_strdup(sm_context_smf_set_id->valuestring) : NULL,
-        sm_context_smf_service_set_id ? ogs_strdup(sm_context_smf_service_set_id->valuestring) : NULL,
+        sm_context_ref ? ogs_strdup_or_assert(sm_context_ref->valuestring) : NULL,
+        sm_context_smf_id ? ogs_strdup_or_assert(sm_context_smf_id->valuestring) : NULL,
+        sm_context_smf_set_id ? ogs_strdup_or_assert(sm_context_smf_set_id->valuestring) : NULL,
+        sm_context_smf_service_set_id ? ogs_strdup_or_assert(sm_context_smf_service_set_id->valuestring) : NULL,
         sm_context_smf_binding ? sm_context_smf_bindingVariable : 0,
         up_cnx_state ? up_cnx_stateVariable : 0,
         small_data_rate_status ? small_data_rate_status_local_nonprim : NULL,
@@ -1773,8 +1773,8 @@ OpenAPI_sm_context_create_data_t *OpenAPI_sm_context_create_data_parseFromJSON(c
         dl_data_waiting_ind ? dl_data_waiting_ind->valueint : 0,
         ddn_failure_subs ? ddn_failure_subs_local_nonprim : NULL,
         smf_transfer_ind ? smf_transfer_ind->valueint : 0,
-        old_smf_id ? ogs_strdup(old_smf_id->valuestring) : NULL,
-        old_sm_context_ref ? ogs_strdup(old_sm_context_ref->valuestring) : NULL,
+        old_smf_id ? ogs_strdup_or_assert(old_smf_id->valuestring) : NULL,
+        old_sm_context_ref ? ogs_strdup_or_assert(old_sm_context_ref->valuestring) : NULL,
         w_agf_info ? w_agf_info_local_nonprim : NULL,
         tngf_info ? tngf_info_local_nonprim : NULL,
         twif_info ? twif_info_local_nonprim : NULL

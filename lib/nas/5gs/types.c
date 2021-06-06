@@ -19,7 +19,7 @@
 
 #include "ogs-nas-5gs.h"
 
-void ogs_nas_5gs_tai_list_build(
+int ogs_nas_5gs_tai_list_build(
         ogs_nas_5gs_tracking_area_identity_list_t *target,
         ogs_5gs_tai0_list_t *source0, ogs_5gs_tai2_list_t *source2)
 {
@@ -54,9 +54,9 @@ void ogs_nas_5gs_tai_list_build(
 
         size = (1 + 3 + 3 * source0->tai[i].num);
         if ((target->length + size) > OGS_NAS_5GS_MAX_TAI_LIST_LEN) {
-            ogs_warn("Overflow: Ignore remained TAI LIST(length:%d, size:%d)",
+            ogs_error("Overflow: Ignore remained TAI LIST(length:%d, size:%d)",
                     target->length, size);
-            return;
+            return OGS_ERROR;
         }
         memcpy(target->buffer + target->length, &target0.tai[i], size);
         target->length += size;
@@ -75,9 +75,9 @@ void ogs_nas_5gs_tai_list_build(
 
         size = (1 + (3 + 3) * source2->num);
         if ((target->length + size) > OGS_NAS_5GS_MAX_TAI_LIST_LEN) {
-            ogs_warn("Overflow: Ignore remained TAI LIST(length:%d, size:%d)",
+            ogs_error("Overflow: Ignore remained TAI LIST(length:%d, size:%d)",
                     target->length, size);
-            return;
+            return OGS_ERROR;
         }
         for (i = 0; i < source2->num; i++) {
             memcpy(&target2.tai[i].plmn_id,
@@ -89,6 +89,8 @@ void ogs_nas_5gs_tai_list_build(
         memcpy(target->buffer + target->length, &target2, size);
         target->length += size;
     }
+
+    return OGS_OK;
 }
 
 void ogs_nas_build_s_nssai(
@@ -329,7 +331,7 @@ int ogs_nas_parse_rejected_nssai(
     if (!rejected_nssai->length) {
         ogs_error("No NSSAI [%p:%d]",
                 rejected_nssai->buffer, rejected_nssai->length);
-        return OGS_ERROR;
+        return 0;
     }
 
     i = 0;
@@ -366,7 +368,7 @@ int ogs_nas_parse_rejected_nssai(
     return i;
 }
 
-void ogs_nas_build_qos_flow_descriptions(
+int ogs_nas_build_qos_flow_descriptions(
     ogs_nas_qos_flow_descriptions_t *flow_descriptions,
     ogs_nas_qos_flow_description_t *flow_description,
     int num_of_flow_description)
@@ -381,7 +383,7 @@ void ogs_nas_build_qos_flow_descriptions(
     ogs_assert(num_of_flow_description);
 
     buffer = ogs_calloc(1, OGS_NAS_MAX_QOS_FLOW_DESCRIPTIONS_LEN);
-    ogs_assert(buffer);
+    ogs_expect_or_return_val(buffer, OGS_ERROR);
     length = 0;
 
     for (i = 0; i < num_of_flow_description; i++) {
@@ -438,9 +440,11 @@ void ogs_nas_build_qos_flow_descriptions(
 
     flow_descriptions->buffer = buffer;
     flow_descriptions->length = length;
+
+    return OGS_OK;
 }
 
-void ogs_nas_build_qos_rules(ogs_nas_qos_rules_t *rules,
+int ogs_nas_build_qos_rules(ogs_nas_qos_rules_t *rules,
         ogs_nas_qos_rule_t *rule, int num_of_rule)
 {
     int i, j, k;
@@ -453,6 +457,7 @@ void ogs_nas_build_qos_rules(ogs_nas_qos_rules_t *rules,
     ogs_assert(num_of_rule);
 
     buffer = ogs_calloc(1, OGS_NAS_MAX_QOS_RULES_LEN);
+    ogs_expect_or_return_val(buffer, OGS_ERROR);
     ogs_assert(buffer);
     length = 0;
 
@@ -636,4 +641,6 @@ void ogs_nas_build_qos_rules(ogs_nas_qos_rules_t *rules,
 
     rules->buffer = buffer;
     rules->length = length;
+
+    return OGS_OK;
 }

@@ -61,6 +61,7 @@ extern "C" {
         OGS_NAS_CLEAR_DATA(__dST); \
         (__dST)->length = (__sRC)->length; \
         (__dST)->buffer = ogs_calloc((__dST)->length, sizeof(uint8_t)); \
+        ogs_assert((__dST)->buffer); \
         memcpy((__dST)->buffer, (__sRC)->buffer, (__dST)->length); \
     } while(0)
 

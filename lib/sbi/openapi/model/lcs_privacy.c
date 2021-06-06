@@ -121,10 +121,10 @@ OpenAPI_lcs_privacy_t *OpenAPI_lcs_privacy_parseFromJSON(cJSON *lcs_privacyJSON)
     }
 
     lcs_privacy_local_var = OpenAPI_lcs_privacy_create (
-        af_instance_id ? ogs_strdup(af_instance_id->valuestring) : NULL,
+        af_instance_id ? ogs_strdup_or_assert(af_instance_id->valuestring) : NULL,
         reference_id ? reference_id->valuedouble : 0,
         lpi ? lpi_local_nonprim : NULL,
-        mtc_provider_information ? ogs_strdup(mtc_provider_information->valuestring) : NULL
+        mtc_provider_information ? ogs_strdup_or_assert(mtc_provider_information->valuestring) : NULL
         );
 
     return lcs_privacy_local_var;

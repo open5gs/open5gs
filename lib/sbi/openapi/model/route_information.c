@@ -99,8 +99,8 @@ OpenAPI_route_information_t *OpenAPI_route_information_parseFromJSON(cJSON *rout
     }
 
     route_information_local_var = OpenAPI_route_information_create (
-        ipv4_addr ? ogs_strdup(ipv4_addr->valuestring) : NULL,
-        ipv6_addr ? ogs_strdup(ipv6_addr->valuestring) : NULL,
+        ipv4_addr ? ogs_strdup_or_assert(ipv4_addr->valuestring) : NULL,
+        ipv6_addr ? ogs_strdup_or_assert(ipv6_addr->valuestring) : NULL,
         port_number->valuedouble
         );
 

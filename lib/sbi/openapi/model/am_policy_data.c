@@ -131,7 +131,7 @@ OpenAPI_am_policy_data_t *OpenAPI_am_policy_data_parseFromJSON(cJSON *am_policy_
                 ogs_error("OpenAPI_am_policy_data_parseFromJSON() failed [subsc_cats]");
                 goto end;
             }
-            OpenAPI_list_add(subsc_catsList, ogs_strdup(subsc_cats_local->valuestring));
+            OpenAPI_list_add(subsc_catsList, ogs_strdup_or_assert(subsc_cats_local->valuestring));
         }
     }
 

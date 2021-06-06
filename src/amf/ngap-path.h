@@ -61,7 +61,7 @@ int ngap_send_amf_ue_context_release_command(
     amf_ue_t *amf_ue, NGAP_Cause_PR group, long cause,
     uint8_t action, ogs_time_t delay);
 
-void ngap_send_paging(amf_ue_t *amf_ue);
+int ngap_send_paging(amf_ue_t *amf_ue);
 int ngap_send_pdu_resource_setup_request(
         amf_sess_t *sess, ogs_pkbuf_t *n2smbuf);
 

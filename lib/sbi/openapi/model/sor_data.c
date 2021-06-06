@@ -121,10 +121,10 @@ OpenAPI_sor_data_t *OpenAPI_sor_data_parseFromJSON(cJSON *sor_dataJSON)
     }
 
     sor_data_local_var = OpenAPI_sor_data_create (
-        ogs_strdup(provisioning_time->valuestring),
+        ogs_strdup_or_assert(provisioning_time->valuestring),
         ue_update_statusVariable,
-        sor_xmac_iue ? ogs_strdup(sor_xmac_iue->valuestring) : NULL,
-        sor_mac_iue ? ogs_strdup(sor_mac_iue->valuestring) : NULL
+        sor_xmac_iue ? ogs_strdup_or_assert(sor_xmac_iue->valuestring) : NULL,
+        sor_mac_iue ? ogs_strdup_or_assert(sor_mac_iue->valuestring) : NULL
         );
 
     return sor_data_local_var;

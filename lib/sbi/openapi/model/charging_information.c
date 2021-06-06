@@ -158,12 +158,12 @@ OpenAPI_charging_information_t *OpenAPI_charging_information_parseFromJSON(cJSON
     }
 
     charging_information_local_var = OpenAPI_charging_information_create (
-        ogs_strdup(primary_chf_address->valuestring),
-        ogs_strdup(secondary_chf_address->valuestring),
-        primary_chf_set_id ? ogs_strdup(primary_chf_set_id->valuestring) : NULL,
-        primary_chf_instance_id ? ogs_strdup(primary_chf_instance_id->valuestring) : NULL,
-        secondary_chf_set_id ? ogs_strdup(secondary_chf_set_id->valuestring) : NULL,
-        secondary_chf_instance_id ? ogs_strdup(secondary_chf_instance_id->valuestring) : NULL
+        ogs_strdup_or_assert(primary_chf_address->valuestring),
+        ogs_strdup_or_assert(secondary_chf_address->valuestring),
+        primary_chf_set_id ? ogs_strdup_or_assert(primary_chf_set_id->valuestring) : NULL,
+        primary_chf_instance_id ? ogs_strdup_or_assert(primary_chf_instance_id->valuestring) : NULL,
+        secondary_chf_set_id ? ogs_strdup_or_assert(secondary_chf_set_id->valuestring) : NULL,
+        secondary_chf_instance_id ? ogs_strdup_or_assert(secondary_chf_instance_id->valuestring) : NULL
         );
 
     return charging_information_local_var;

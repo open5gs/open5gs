@@ -127,8 +127,8 @@ OpenAPI_n1_message_container_t *OpenAPI_n1_message_container_parseFromJSON(cJSON
     n1_message_container_local_var = OpenAPI_n1_message_container_create (
         n1_message_classVariable,
         n1_message_content_local_nonprim,
-        nf_id ? ogs_strdup(nf_id->valuestring) : NULL,
-        service_instance_id ? ogs_strdup(service_instance_id->valuestring) : NULL
+        nf_id ? ogs_strdup_or_assert(nf_id->valuestring) : NULL,
+        service_instance_id ? ogs_strdup_or_assert(service_instance_id->valuestring) : NULL
         );
 
     return n1_message_container_local_var;

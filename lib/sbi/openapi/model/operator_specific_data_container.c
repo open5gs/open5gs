@@ -145,9 +145,9 @@ OpenAPI_operator_specific_data_container_t *OpenAPI_operator_specific_data_conta
 
     operator_specific_data_container_local_var = OpenAPI_operator_specific_data_container_create (
         data_typeVariable,
-        data_type_definition ? ogs_strdup(data_type_definition->valuestring) : NULL,
-        ogs_strdup(value->valuestring),
-        supported_features ? ogs_strdup(supported_features->valuestring) : NULL
+        data_type_definition ? ogs_strdup_or_assert(data_type_definition->valuestring) : NULL,
+        ogs_strdup_or_assert(value->valuestring),
+        supported_features ? ogs_strdup_or_assert(supported_features->valuestring) : NULL
         );
 
     return operator_specific_data_container_local_var;

@@ -102,9 +102,9 @@ OpenAPI_av5g_aka_t *OpenAPI_av5g_aka_parseFromJSON(cJSON *av5g_akaJSON)
     }
 
     av5g_aka_local_var = OpenAPI_av5g_aka_create (
-        ogs_strdup(rand->valuestring),
-        ogs_strdup(hxres_star->valuestring),
-        ogs_strdup(autn->valuestring)
+        ogs_strdup_or_assert(rand->valuestring),
+        ogs_strdup_or_assert(hxres_star->valuestring),
+        ogs_strdup_or_assert(autn->valuestring)
         );
 
     return av5g_aka_local_var;

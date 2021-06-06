@@ -80,8 +80,8 @@ OpenAPI_pc5_flow_bit_rates_t *OpenAPI_pc5_flow_bit_rates_parseFromJSON(cJSON *pc
     }
 
     pc5_flow_bit_rates_local_var = OpenAPI_pc5_flow_bit_rates_create (
-        gua_fbr ? ogs_strdup(gua_fbr->valuestring) : NULL,
-        max_fbr ? ogs_strdup(max_fbr->valuestring) : NULL
+        gua_fbr ? ogs_strdup_or_assert(gua_fbr->valuestring) : NULL,
+        max_fbr ? ogs_strdup_or_assert(max_fbr->valuestring) : NULL
         );
 
     return pc5_flow_bit_rates_local_var;

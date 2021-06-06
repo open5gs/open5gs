@@ -60,7 +60,7 @@ ogs_sbi_request_t *ausf_nudm_ueau_build_get(ausf_ue_t *ausf_ue, void *data)
     message.AuthenticationInfoRequest = &AuthenticationInfoRequest;
 
     request = ogs_sbi_build_request(&message);
-    ogs_assert(request);
+    ogs_expect_or_return_val(request, NULL);
 
     return request;
 }
@@ -83,9 +83,10 @@ ogs_sbi_request_t *ausf_nudm_ueau_build_result_confirmation_inform(
     message.h.resource.component[1] = (char *)OGS_SBI_RESOURCE_NAME_AUTH_EVENTS;
 
     AuthEvent = ogs_calloc(1, sizeof(*AuthEvent));
-    ogs_assert(AuthEvent);
+    ogs_expect_or_return_val(AuthEvent, NULL);
 
     AuthEvent->time_stamp = ogs_sbi_localtime_string(ogs_time_now());
+    ogs_expect_or_return_val(AuthEvent->time_stamp, NULL);
 
     AuthEvent->nf_instance_id = ogs_sbi_self()->nf_instance_id;
     if (ausf_ue->auth_result == OpenAPI_auth_result_AUTHENTICATION_SUCCESS)
@@ -98,7 +99,7 @@ ogs_sbi_request_t *ausf_nudm_ueau_build_result_confirmation_inform(
     message.AuthEvent = AuthEvent;
 
     request = ogs_sbi_build_request(&message);
-    ogs_assert(request);
+    ogs_expect_or_return_val(request, NULL);
 
     if (AuthEvent->time_stamp)
         ogs_free(AuthEvent->time_stamp);

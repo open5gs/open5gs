@@ -204,14 +204,14 @@ OpenAPI_authentication_info_t *OpenAPI_authentication_info_parseFromJSON(cJSON *
     }
 
     authentication_info_local_var = OpenAPI_authentication_info_create (
-        ogs_strdup(supi_or_suci->valuestring),
-        ogs_strdup(serving_network_name->valuestring),
+        ogs_strdup_or_assert(supi_or_suci->valuestring),
+        ogs_strdup_or_assert(serving_network_name->valuestring),
         resynchronization_info ? resynchronization_info_local_nonprim : NULL,
-        pei ? ogs_strdup(pei->valuestring) : NULL,
+        pei ? ogs_strdup_or_assert(pei->valuestring) : NULL,
         trace_data ? trace_data_local_nonprim : NULL,
-        udm_group_id ? ogs_strdup(udm_group_id->valuestring) : NULL,
-        routing_indicator ? ogs_strdup(routing_indicator->valuestring) : NULL,
-        cag_id ? ogs_strdup(cag_id->valuestring) : NULL
+        udm_group_id ? ogs_strdup_or_assert(udm_group_id->valuestring) : NULL,
+        routing_indicator ? ogs_strdup_or_assert(routing_indicator->valuestring) : NULL,
+        cag_id ? ogs_strdup_or_assert(cag_id->valuestring) : NULL
         );
 
     return authentication_info_local_var;

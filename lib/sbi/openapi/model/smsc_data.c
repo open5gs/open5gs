@@ -84,7 +84,7 @@ OpenAPI_smsc_data_t *OpenAPI_smsc_data_parseFromJSON(cJSON *smsc_dataJSON)
     }
 
     smsc_data_local_var = OpenAPI_smsc_data_create (
-        smsc_map_address ? ogs_strdup(smsc_map_address->valuestring) : NULL,
+        smsc_map_address ? ogs_strdup_or_assert(smsc_map_address->valuestring) : NULL,
         smsc_diameter_address ? smsc_diameter_address_local_nonprim : NULL
         );
 

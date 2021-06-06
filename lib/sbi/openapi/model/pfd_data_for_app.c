@@ -131,9 +131,9 @@ OpenAPI_pfd_data_for_app_t *OpenAPI_pfd_data_for_app_parseFromJSON(cJSON *pfd_da
     }
 
     pfd_data_for_app_local_var = OpenAPI_pfd_data_for_app_create (
-        ogs_strdup(application_id->valuestring),
+        ogs_strdup_or_assert(application_id->valuestring),
         pfdsList,
-        caching_time ? ogs_strdup(caching_time->valuestring) : NULL
+        caching_time ? ogs_strdup_or_assert(caching_time->valuestring) : NULL
         );
 
     return pfd_data_for_app_local_var;

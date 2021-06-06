@@ -396,8 +396,9 @@ void sgwc_s11_handle_modify_bearer_request(
 
     far->apply_action = OGS_PFCP_APPLY_ACTION_FORW;
 
-    ogs_pfcp_ip_to_outer_header_creation(&dl_tunnel->remote_ip,
-        &far->outer_header_creation, &far->outer_header_creation_len);
+    ogs_assert(OGS_OK ==
+        ogs_pfcp_ip_to_outer_header_creation(&dl_tunnel->remote_ip,
+            &far->outer_header_creation, &far->outer_header_creation_len));
     far->outer_header_creation.teid = dl_tunnel->remote_teid;
 
     ogs_debug("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
@@ -622,8 +623,9 @@ void sgwc_s11_handle_create_bearer_response(
 
     far->apply_action = OGS_PFCP_APPLY_ACTION_FORW;
 
-    ogs_pfcp_ip_to_outer_header_creation(&dl_tunnel->remote_ip,
-        &far->outer_header_creation, &far->outer_header_creation_len);
+    ogs_assert(OGS_OK ==
+        ogs_pfcp_ip_to_outer_header_creation(&dl_tunnel->remote_ip,
+            &far->outer_header_creation, &far->outer_header_creation_len));
     far->outer_header_creation.teid = dl_tunnel->remote_teid;
 
     decoded = ogs_gtp_parse_uli(&uli, &rsp->user_location_information);
@@ -1005,8 +1007,11 @@ void sgwc_s11_handle_create_indirect_data_forwarding_tunnel_request(
 
             far->apply_action = OGS_PFCP_APPLY_ACTION_FORW;
 
-            ogs_pfcp_ip_to_outer_header_creation(&tunnel->remote_ip,
-                &far->outer_header_creation, &far->outer_header_creation_len);
+            ogs_assert(OGS_OK ==
+                ogs_pfcp_ip_to_outer_header_creation(
+                    &tunnel->remote_ip,
+                    &far->outer_header_creation,
+                    &far->outer_header_creation_len));
             far->outer_header_creation.teid = tunnel->remote_teid;
 
             ogs_debug("    SGW_DL_TEID[%d] ENB_DL_TEID[%d]",
@@ -1037,8 +1042,11 @@ void sgwc_s11_handle_create_indirect_data_forwarding_tunnel_request(
 
             far->apply_action = OGS_PFCP_APPLY_ACTION_FORW;
 
-            ogs_pfcp_ip_to_outer_header_creation(&tunnel->remote_ip,
-                &far->outer_header_creation, &far->outer_header_creation_len);
+            ogs_assert(OGS_OK ==
+                ogs_pfcp_ip_to_outer_header_creation(
+                    &tunnel->remote_ip,
+                    &far->outer_header_creation,
+                    &far->outer_header_creation_len));
             far->outer_header_creation.teid = tunnel->remote_teid;
 
             ogs_debug("    SGW_UL_TEID[%d] ENB_UL_TEID[%d]",

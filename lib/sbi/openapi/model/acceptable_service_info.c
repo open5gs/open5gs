@@ -133,8 +133,8 @@ OpenAPI_acceptable_service_info_t *OpenAPI_acceptable_service_info_parseFromJSON
 
     acceptable_service_info_local_var = OpenAPI_acceptable_service_info_create (
         acc_bw_med_comps ? acc_bw_med_compsList : NULL,
-        mar_bw_ul ? ogs_strdup(mar_bw_ul->valuestring) : NULL,
-        mar_bw_dl ? ogs_strdup(mar_bw_dl->valuestring) : NULL
+        mar_bw_ul ? ogs_strdup_or_assert(mar_bw_ul->valuestring) : NULL,
+        mar_bw_dl ? ogs_strdup_or_assert(mar_bw_dl->valuestring) : NULL
         );
 
     return acceptable_service_info_local_var;

@@ -257,7 +257,7 @@ OpenAPI_hss_info_t *OpenAPI_hss_info_parseFromJSON(cJSON *hss_infoJSON)
     }
 
     hss_info_local_var = OpenAPI_hss_info_create (
-        group_id ? ogs_strdup(group_id->valuestring) : NULL,
+        group_id ? ogs_strdup_or_assert(group_id->valuestring) : NULL,
         imsi_ranges ? imsi_rangesList : NULL,
         ims_private_identity_ranges ? ims_private_identity_rangesList : NULL,
         ims_public_identity_ranges ? ims_public_identity_rangesList : NULL,

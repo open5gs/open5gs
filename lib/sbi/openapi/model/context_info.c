@@ -79,7 +79,7 @@ OpenAPI_context_info_t *OpenAPI_context_info_parseFromJSON(cJSON *context_infoJS
                 ogs_error("OpenAPI_context_info_parseFromJSON() failed [orig_headers]");
                 goto end;
             }
-            OpenAPI_list_add(orig_headersList, ogs_strdup(orig_headers_local->valuestring));
+            OpenAPI_list_add(orig_headersList, ogs_strdup_or_assert(orig_headers_local->valuestring));
         }
     }
 

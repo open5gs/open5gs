@@ -139,10 +139,10 @@ OpenAPI_pp_maximum_response_time_t *OpenAPI_pp_maximum_response_time_parseFromJS
 
     pp_maximum_response_time_local_var = OpenAPI_pp_maximum_response_time_create (
         maximum_response_time->valuedouble,
-        ogs_strdup(af_instance_id->valuestring),
+        ogs_strdup_or_assert(af_instance_id->valuestring),
         reference_id->valuedouble,
-        validity_time ? ogs_strdup(validity_time->valuestring) : NULL,
-        mtc_provider_information ? ogs_strdup(mtc_provider_information->valuestring) : NULL
+        validity_time ? ogs_strdup_or_assert(validity_time->valuestring) : NULL,
+        mtc_provider_information ? ogs_strdup_or_assert(mtc_provider_information->valuestring) : NULL
         );
 
     return pp_maximum_response_time_local_var;
