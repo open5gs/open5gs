@@ -109,7 +109,6 @@ https://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/Debian
 https://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/Raspbian_10/
 https://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/xUbuntu_18.04/
 https://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/xUbuntu_19.04/
-https://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/xUbuntu_19.10/
 https://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/xUbuntu_20.04/
 https://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/xUbuntu_20.10/
 https://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/xUbuntu_21.04/
@@ -147,9 +146,9 @@ https://download.opensuse.org/repositories/network:/osmocom:/nightly/Debian_Unst
 https://download.opensuse.org/repositories/network:/osmocom:/nightly/Raspbian_10/
 https://download.opensuse.org/repositories/network:/osmocom:/nightly/xUbuntu_18.04/
 https://download.opensuse.org/repositories/network:/osmocom:/nightly/xUbuntu_19.04/
-https://download.opensuse.org/repositories/network:/osmocom:/nightly/xUbuntu_19.10/
 https://download.opensuse.org/repositories/network:/osmocom:/nightly/xUbuntu_20.04/
 https://download.opensuse.org/repositories/network:/osmocom:/nightly/xUbuntu_20.10/
+https://download.opensuse.org/repositories/network:/osmocom:/nightly/xUbuntu_21.04/
 ```
 
 
