@@ -639,6 +639,8 @@ ogs_pkbuf_t *ogs_pfcp_build_session_report_request(
     ogs_pfcp_message_t pfcp_message;
     ogs_pfcp_session_report_request_t *req = NULL;
 
+    ogs_pfcp_downlink_data_service_information_t info;
+
     ogs_assert(report);
 
     ogs_debug("PFCP session report request");
@@ -650,7 +652,6 @@ ogs_pkbuf_t *ogs_pfcp_build_session_report_request(
     req->report_type.u8 = report->type.value;
 
     if (report->downlink_data.pdr_id) {
-        ogs_pfcp_downlink_data_service_information_t info;
         int info_len = 0;
 
         req->downlink_data_report.presence = 1;

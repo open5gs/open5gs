@@ -870,6 +870,7 @@ void smf_n4_handle_session_report_request(
             ogs_pfcp_send_error_message(pfcp_xact, 0,
                     OGS_PFCP_SESSION_REPORT_RESPONSE_TYPE,
                     cause_value, 0);
+            return;
         }
 
         ogs_assert(OGS_OK ==
