@@ -42,6 +42,8 @@ ogs_pkbuf_t *mme_s11_build_create_session_request(
     struct timeval now;
     struct tm time_exp;
     char apn[OGS_MAX_APN_LEN];
+	
+    ogs_gtp_indication_t indication;
 
     ogs_assert(sess);
     session = sess->session;
@@ -91,6 +93,14 @@ ogs_pkbuf_t *mme_s11_build_create_session_request(
 
     req->rat_type.presence = 1;
     req->rat_type.u8 = OGS_GTP_RAT_TYPE_EUTRAN;
+	
+    if(session->session_type == OGS_PDU_SESSION_TYPE_IPV4V6) {
+	    memset(&indication, 0, sizeof(ogs_gtp_indication_t));
+	    indication.daf = 1;
+	    req->indication_flags.presence = 1;
+	    req->indication_flags.data = &indication;
+	    req->indication_flags.len = sizeof(ogs_gtp_indication_t);
+    }
 
     memset(&mme_s11_teid, 0, sizeof(ogs_gtp_f_teid_t));
     mme_s11_teid.interface_type = OGS_GTP_F_TEID_S11_MME_GTP_C;
