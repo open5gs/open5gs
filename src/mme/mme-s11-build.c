@@ -94,7 +94,7 @@ ogs_pkbuf_t *mme_s11_build_create_session_request(
     req->rat_type.presence = 1;
     req->rat_type.u8 = OGS_GTP_RAT_TYPE_EUTRAN;
 	
-    if(session->session_type == OGS_PDU_SESSION_TYPE_IPV4V6) {
+    if(session->session_type == OGS_PDU_SESSION_TYPE_IPV4V6 && sess->request_type.type == OGS_NAS_EPS_PDN_TYPE_IPV4V6) {
 	    memset(&indication, 0, sizeof(ogs_gtp_indication_t));
 	    indication.daf = 1;
 	    req->indication_flags.presence = 1;
