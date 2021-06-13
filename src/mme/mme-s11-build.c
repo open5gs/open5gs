@@ -93,14 +93,6 @@ ogs_pkbuf_t *mme_s11_build_create_session_request(
 
     req->rat_type.presence = 1;
     req->rat_type.u8 = OGS_GTP_RAT_TYPE_EUTRAN;
-	
-    if(session->session_type == OGS_PDU_SESSION_TYPE_IPV4V6 && sess->request_type.type == OGS_NAS_EPS_PDN_TYPE_IPV4V6) {
-	    memset(&indication, 0, sizeof(ogs_gtp_indication_t));
-	    indication.daf = 1;
-	    req->indication_flags.presence = 1;
-	    req->indication_flags.data = &indication;
-	    req->indication_flags.len = sizeof(ogs_gtp_indication_t);
-    }
 
     memset(&mme_s11_teid, 0, sizeof(ogs_gtp_f_teid_t));
     mme_s11_teid.interface_type = OGS_GTP_F_TEID_S11_MME_GTP_C;
@@ -202,6 +194,14 @@ ogs_pkbuf_t *mme_s11_build_create_session_request(
 	    uint8_t addr[16];
 	    memcpy(&addr, session->paa.both.addr6, OGS_IPV6_LEN);
 	    memcpy(session->paa.addr6, &addr, OGS_IPV6_LEN);
+    }
+
+    if (req->pdn_type.u8 == OGS_PDU_SESSION_TYPE_IPV4V6) {
+	    memset(&indication, 0, sizeof(ogs_gtp_indication_t));
+	    indication.daf = 1;
+	    req->indication_flags.presence = 1;
+	    req->indication_flags.data = &indication;
+	    req->indication_flags.len = sizeof(ogs_gtp_indication_t);
     }
 
     session->paa.session_type = req->pdn_type.u8;
