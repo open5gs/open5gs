@@ -159,7 +159,7 @@ ogs_pfcp_rule_t *ogs_pfcp_pdr_rule_find_by_packet(
             ogs_error("Invalid packet [IP version:%d, Packet Length:%d]",
                     ip_h->ip_v, pkbuf->len);
             ogs_log_hexdump(OGS_LOG_ERROR, pkbuf->data, pkbuf->len);
-            return NULL;
+            continue;
         }
 
         ogs_debug("PROTO:%d SRC:%08x %08x %08x %08x",
