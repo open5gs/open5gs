@@ -107,7 +107,6 @@ bool pcf_npcf_am_policy_contrtol_handle_create(pcf_ue_t *pcf_ue,
     if (pcf_ue->pei)
         ogs_free(pcf_ue->pei);
     pcf_ue->pei = ogs_strdup(PolicyAssociationRequest->pei);
-    ogs_assert(pcf_ue->pei);
 
     Guami = PolicyAssociationRequest->guami;
     if (Guami && Guami->amf_id &&
