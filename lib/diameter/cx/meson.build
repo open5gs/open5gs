@@ -17,7 +17,6 @@
 
 libdiameter_cx_sources = files('''
     ogs-diameter-cx.h
-    
     message.h
 
     dict.c

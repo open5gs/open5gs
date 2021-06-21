@@ -22,6 +22,7 @@
 
 #include "ogs-diameter-s6a.h"
 #include "ogs-diameter-cx.h"
+#include "ogs-diameter-swx.h"
 #include "ogs-dbi.h"
 #include "ogs-app.h"
 

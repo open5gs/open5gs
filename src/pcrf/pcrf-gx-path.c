@@ -358,18 +358,18 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
     }
 
     /* Get IMSI + APN */
-    ret = fd_msg_search_avp(qry, ogs_diam_gx_subscription_id, &avp);
+    ret = fd_msg_search_avp(qry, ogs_diam_subscription_id, &avp);
     ogs_assert(ret == 0);
     if (avp) {
         ret = fd_msg_avp_hdr(avp, &hdr);
         ogs_assert(ret == 0);
-        ret = fd_avp_search_avp(avp, ogs_diam_gx_subscription_id_type, &avpch1);
+        ret = fd_avp_search_avp(avp, ogs_diam_subscription_id_type, &avpch1);
         ogs_assert(ret == 0);
         if (avpch1) {
             ret = fd_msg_avp_hdr(avpch1, &hdr);
             ogs_assert(ret == 0);
             if (hdr->avp_value->i32 !=
-                    OGS_DIAM_GX_SUBSCRIPTION_ID_TYPE_END_USER_IMSI) {
+                    OGS_DIAM_SUBSCRIPTION_ID_TYPE_END_USER_IMSI) {
                 ogs_error("Not implemented Subscription-Id-Type(%d)",
                         hdr->avp_value->i32);
                 result_code = OGS_DIAM_AVP_UNSUPPORTED;
@@ -380,7 +380,7 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
             result_code = OGS_DIAM_MISSING_AVP;
             goto out;
         }
-        ret = fd_avp_search_avp(avp, ogs_diam_gx_subscription_id_data, &avpch1);
+        ret = fd_avp_search_avp(avp, ogs_diam_subscription_id_data, &avpch1);
         ogs_assert(ret == 0);
         if (avpch1) {
             ret = fd_msg_avp_hdr(avpch1, &hdr);

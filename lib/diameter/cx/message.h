@@ -42,7 +42,6 @@ extern struct dict_object *ogs_diam_cx_cmd_lir;
 extern struct dict_object *ogs_diam_cx_cmd_lia;
 
 extern struct dict_object *ogs_diam_cx_public_identity;
-extern struct dict_object *ogs_diam_cx_visited_network_identifier;
 extern struct dict_object *ogs_diam_cx_server_name;
 
 extern struct dict_object *ogs_diam_cx_sip_number_auth_items;

@@ -179,7 +179,7 @@ void test_cx_send_uar(test_ue_t *test_ue, int id_type)
     ogs_assert(ret == 0);
 
     /* Set the Visited-Network-Identifier AVP */
-    ret = fd_msg_avp_new(ogs_diam_cx_visited_network_identifier, 0, &avp);
+    ret = fd_msg_avp_new(ogs_diam_visited_network_identifier, 0, &avp);
     ogs_assert(ret == 0);
     val.os.data = (unsigned char *)(fd_g_config->cnf_diamrlm);
     val.os.len  = strlen(fd_g_config->cnf_diamrlm);

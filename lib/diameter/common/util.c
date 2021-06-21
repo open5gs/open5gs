@@ -19,10 +19,10 @@
 
 #include "ogs-diameter-common.h"
 
-bool ogs_diam_peer_connected(void)
+bool ogs_diam_app_connected(uint32_t app_id)
 {
-    struct fd_list *li;
-    bool connected = false;
+    struct fd_list *li = NULL;
+    struct fd_app *found = NULL;
 
 	CHECK_POSIX( pthread_rwlock_rdlock(&fd_g_peers_rw) );
     for (li = fd_g_peers.next; li != &fd_g_peers; li = li->next) {
@@ -35,13 +35,19 @@ bool ogs_diam_peer_connected(void)
 
         if (state == STATE_OPEN) {
             ogs_debug("'%s' STATE is OPEN", p->info.pi_diamid);
-            connected = true;
+
+            /* Check if the remote peer advertised the message's appli */
+            fd_app_check(&p->info.runtime.pir_apps, app_id, &found);
+
+            if (found) break;
         } else {
             ogs_debug("'%s' STATE[%d] is NOT open ", p->info.pi_diamid, state);
         }
     }
 	CHECK_POSIX( pthread_rwlock_unlock(&fd_g_peers_rw) );
 
-    return connected;
+    if (found)
+        return true;
+    else
+        return false;
 }
-

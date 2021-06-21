@@ -140,6 +140,9 @@ int pcrf_context_parse_config(void)
                             } else if (!strcmp(fd_key, "listen_on")) {
                                 self.diam_config->cnf_addr = 
                                     ogs_yaml_iter_value(&fd_iter);
+                            } else if (!strcmp(fd_key, "no_fwd")) {
+                                self.diam_config->cnf_flags.no_fwd =
+                                    ogs_yaml_iter_bool(&fd_iter);
                             } else if (!strcmp(fd_key, "load_extension")) {
                                 ogs_yaml_iter_t ext_array, ext_iter;
                                 ogs_yaml_iter_recurse(&fd_iter, &ext_array);

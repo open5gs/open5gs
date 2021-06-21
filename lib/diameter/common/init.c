@@ -57,6 +57,16 @@ int ogs_diam_init(int mode, const char *conffile, ogs_diam_config_t *fd_config)
     /* Initialize FD logger */
     CHECK_FCT_DO( ogs_diam_logger_init(mode), goto error );
 
+    return 0;
+error:
+	CHECK_FCT_DO( fd_core_shutdown(),  );
+	CHECK_FCT_DO( fd_core_wait_shutdown_complete(),  );
+
+	return -1;
+}
+
+int ogs_diam_start(void)
+{
 	/* Start the servers */
 	CHECK_FCT_DO( fd_core_start(), goto error );
 

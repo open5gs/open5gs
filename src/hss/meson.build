@@ -21,21 +21,32 @@ libhss_sources = files('''
 
     hss-init.c
     hss-context.c
+
     hss-s6a-path.c
     hss-cx-path.c
+    hss-swx-path.c
+
     hss-fd-path.c
 '''.split())
 
 libhss = static_library('hss',
     sources : libhss_sources,
-    dependencies : [libapp_dep, libcrypt_dep, libdbi_dep,
-                    libdiameter_s6a_dep, libdiameter_cx_dep],
+    dependencies : [libapp_dep,
+                    libcrypt_dep,
+                    libdbi_dep,
+                    libdiameter_s6a_dep,
+                    libdiameter_cx_dep,
+                    libdiameter_swx_dep],
     install : false)
 
 libhss_dep = declare_dependency(
     link_with : libhss,
-    dependencies : [libapp_dep, libcrypt_dep, libdbi_dep,
-                    libdiameter_s6a_dep, libdiameter_cx_dep])
+    dependencies : [libapp_dep,
+                    libcrypt_dep,
+                    libdbi_dep,
+                    libdiameter_s6a_dep,
+                    libdiameter_cx_dep,
+                    libdiameter_swx_dep])
 
 hss_sources = files('''
     app-init.c

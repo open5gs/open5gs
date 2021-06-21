@@ -30,7 +30,7 @@ static struct disp_hdl *hdl_s6a_air = NULL;
 static struct disp_hdl *hdl_s6a_ulr = NULL;
 
 /* Default callback for the application. */
-static int hss_ogs_diam_s6a_fb_cb(struct msg **msg, struct avp *avp, 
+static int hss_ogs_diam_s6a_fb_cb(struct msg **msg, struct avp *avp,
         struct session *session, void *opaque, enum disp_action *act)
 {
 	/* This CB should never be called */
@@ -153,7 +153,7 @@ static int hss_ogs_diam_s6a_air_cb( struct msg **msg, struct avp *avp,
         goto out;
     }
 
-    ret = fd_msg_search_avp(qry, ogs_diam_s6a_visited_plmn_id, &avp);
+    ret = fd_msg_search_avp(qry, ogs_diam_visited_plmn_id, &avp);
     ogs_assert(ret == 0);
     ret = fd_msg_avp_hdr(avp, &hdr);
     ogs_assert(ret == 0);
@@ -220,7 +220,7 @@ static int hss_ogs_diam_s6a_air_cb( struct msg **msg, struct avp *avp,
     /* Set the Auth-Session-State AVP */
     ret = fd_msg_avp_new(ogs_diam_auth_session_state, 0, &avp);
     ogs_assert(ret == 0);
-    val.i32 = 1;
+    val.i32 = OGS_DIAM_AUTH_SESSION_NO_STATE_MAINTAINED;
     ret = fd_msg_avp_setvalue(avp, &val);
     ogs_assert(ret == 0);
     ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
@@ -251,7 +251,7 @@ out:
     /* Set the Auth-Session-State AVP */
     ret = fd_msg_avp_new(ogs_diam_auth_session_state, 0, &avp);
     ogs_assert(ret == 0);
-    val.i32 = 1;
+    val.i32 = OGS_DIAM_AUTH_SESSION_NO_STATE_MAINTAINED;
     ret = fd_msg_avp_setvalue(avp, &val);
     ogs_assert(ret == 0);
     ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
@@ -269,7 +269,7 @@ out:
 }
 
 /* Callback for incoming Update-Location-Request messages */
-static int hss_ogs_diam_s6a_ulr_cb( struct msg **msg, struct avp *avp, 
+static int hss_ogs_diam_s6a_ulr_cb( struct msg **msg, struct avp *avp,
         struct session *session, void *opaque, enum disp_action *act)
 {
     int ret;
@@ -316,7 +316,7 @@ static int hss_ogs_diam_s6a_ulr_cb( struct msg **msg, struct avp *avp,
         goto out;
     }
 
-    ret = fd_msg_search_avp(qry, ogs_diam_s6a_visited_plmn_id, &avp);
+    ret = fd_msg_search_avp(qry, ogs_diam_visited_plmn_id, &avp);
     ogs_assert(ret == 0);
     ret = fd_msg_avp_hdr(avp, &hdr);
     ogs_assert(ret == 0);
@@ -331,7 +331,7 @@ static int hss_ogs_diam_s6a_ulr_cb( struct msg **msg, struct avp *avp,
     /* Set the Auth-Session-State AVP */
     ret = fd_msg_avp_new(ogs_diam_auth_session_state, 0, &avp);
     ogs_assert(ret == 0);
-    val.i32 = 1;
+    val.i32 = OGS_DIAM_AUTH_SESSION_NO_STATE_MAINTAINED;
     ret = fd_msg_avp_setvalue(avp, &val);
     ogs_assert(ret == 0);
     ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
@@ -410,7 +410,7 @@ static int hss_ogs_diam_s6a_ulr_cb( struct msg **msg, struct avp *avp,
             val.i32 = subscription_data.access_restriction_data;
             ret = fd_msg_avp_setvalue( avp_access_restriction_data, &val);
             ogs_assert(ret == 0);
-            ret = fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD, 
+            ret = fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD,
                     avp_access_restriction_data);
             ogs_assert(ret == 0);
         }
@@ -520,6 +520,8 @@ static int hss_ogs_diam_s6a_ulr_cb( struct msg **msg, struct avp *avp,
             struct avp *allocation_retention_priority, *priority_level;
             struct avp *pre_emption_capability, *pre_emption_vulnerability;
             struct avp *mip6_agent_info, *mip_home_agent_address;
+            struct avp *pdn_gw_allocation_type;
+            struct avp *vplmn_dynamic_address_allowed;
 
             ogs_session_t *session = &slice_data->session[i];
             ogs_assert(session);
@@ -583,7 +585,7 @@ static int hss_ogs_diam_s6a_ulr_cb( struct msg **msg, struct avp *avp,
             }
 
             /* Set Service-Selection */
-            ret = fd_msg_avp_new(ogs_diam_s6a_service_selection, 0,
+            ret = fd_msg_avp_new(ogs_diam_service_selection, 0,
                     &service_selection);
             ogs_assert(ret == 0);
             ogs_assert(session->name);
@@ -606,7 +608,7 @@ static int hss_ogs_diam_s6a_ulr_cb( struct msg **msg, struct avp *avp,
             val.i32 = session->qos.index;
             ret = fd_msg_avp_setvalue(qos_class_identifier, &val);
             ogs_assert(ret == 0);
-            ret = fd_msg_avp_add(eps_subscribed_qos_profile, 
+            ret = fd_msg_avp_add(eps_subscribed_qos_profile,
                     MSG_BRW_LAST_CHILD, qos_class_identifier);
             ogs_assert(ret == 0);
 
@@ -694,10 +696,35 @@ static int hss_ogs_diam_s6a_ulr_cb( struct msg **msg, struct avp *avp,
                     ogs_assert(ret == 0);
                 }
 
-                ret = fd_msg_avp_add(apn_configuration, 
+                ret = fd_msg_avp_add(apn_configuration,
                         MSG_BRW_LAST_CHILD, mip6_agent_info);
                 ogs_assert(ret == 0);
+
+                ret = fd_msg_avp_new(ogs_diam_s6a_pdn_gw_allocation_type, 0,
+                            &pdn_gw_allocation_type);
+                ogs_assert(ret == 0);
+
+                val.u32 = OGS_DIAM_S6A_PDN_GW_ALLOCATION_DYNAMIC;
+                ret = fd_msg_avp_setvalue(pdn_gw_allocation_type, &val);
+                ogs_assert(ret == 0);
+
+                ret = fd_msg_avp_add(apn_configuration,
+                        MSG_BRW_LAST_CHILD, pdn_gw_allocation_type);
+                ogs_assert(ret == 0);
             }
+
+            /* Set VPLMN-Dynamic-Address-Allowed */
+            ret = fd_msg_avp_new(ogs_diam_s6a_vplmn_dynamic_address_allowed, 0,
+                    &vplmn_dynamic_address_allowed);
+            ogs_assert(ret == 0);
+
+            val.u32 = OGS_DIAM_S6A_VPLMN_DYNAMIC_ADDRESS_ALLOWED;
+            ret = fd_msg_avp_setvalue(vplmn_dynamic_address_allowed, &val);
+            ogs_assert(ret == 0);
+
+            ret = fd_msg_avp_add(apn_configuration,
+                    MSG_BRW_LAST_CHILD, vplmn_dynamic_address_allowed);
+            ogs_assert(ret == 0);
 
             /* Set AMBR */
             if (session->ambr.downlink || session->ambr.uplink) {
@@ -722,7 +749,7 @@ static int hss_ogs_diam_s6a_ulr_cb( struct msg **msg, struct avp *avp,
                             avp_max_bandwidth_dl);
                 ogs_assert(ret == 0);
 
-                ret = fd_msg_avp_add(apn_configuration, 
+                ret = fd_msg_avp_add(apn_configuration,
                         MSG_BRW_LAST_CHILD, avp_ambr);
                 ogs_assert(ret == 0);
             }
@@ -766,7 +793,7 @@ out:
     /* Set the Auth-Session-State AVP */
     ret = fd_msg_avp_new(ogs_diam_auth_session_state, 0, &avp);
     ogs_assert(ret == 0);
-    val.i32 = 1;
+    val.i32 = OGS_DIAM_AUTH_SESSION_NO_STATE_MAINTAINED;
     ret = fd_msg_avp_setvalue(avp, &val);
     ogs_assert(ret == 0);
     ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
@@ -810,7 +837,7 @@ int hss_s6a_init(void)
 
 	/* Specific handler for Location-Update-Request */
 	data.command = ogs_diam_s6a_cmd_ulr;
-	ret = fd_disp_register(hss_ogs_diam_s6a_ulr_cb, DISP_HOW_CC, &data, NULL, 
+	ret = fd_disp_register(hss_ogs_diam_s6a_ulr_cb, DISP_HOW_CC, &data, NULL,
                 &hdl_s6a_ulr);
     ogs_assert(ret == 0);
 

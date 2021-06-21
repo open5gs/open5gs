@@ -628,8 +628,30 @@ void smf_epc_n4_handle_session_establishment_response(
     ogs_assert(up_f_seid);
     sess->upf_n4_seid = be64toh(up_f_seid->seid);
 
-    ogs_assert(OGS_OK ==
-        smf_gtp_send_create_session_response(sess, gtp_xact));
+    ogs_assert(OGS_OK == smf_gtp_send_create_session_response(sess, gtp_xact));
+
+    if (sess->gtp_rat_type == OGS_GTP_RAT_TYPE_WLAN) {
+        smf_ue_t *smf_ue = NULL;
+        smf_sess_t *eutran_sess = NULL;
+
+        smf_ue = sess->smf_ue;
+        ogs_assert(smf_ue);
+
+        ogs_assert(sess->session.name);
+        eutran_sess = smf_sess_find_by_apn(
+                smf_ue, sess->session.name, OGS_GTP_RAT_TYPE_EUTRAN);
+        if (eutran_sess) {
+            smf_bearer_t *eutran_linked_bearer =
+                ogs_list_first(&eutran_sess->bearer_list);
+            ogs_assert(eutran_linked_bearer);
+
+            ogs_assert(OGS_OK ==
+                smf_gtp_send_delete_bearer_request(
+                    eutran_linked_bearer,
+                    OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED,
+                    OGS_GTP_CAUSE_RAT_CHANGED_FROM_3GPP_TO_NON_3GPP));
+        }
+    }
 
     smf_bearer_binding(sess);
 }
@@ -738,7 +760,6 @@ void smf_epc_n4_handle_session_deletion_response(
     ogs_assert(rsp);
 
     gtp_xact = xact->assoc_xact;
-    ogs_assert(gtp_xact);
 
     ogs_pfcp_xact_commit(xact);
 
@@ -760,15 +781,36 @@ void smf_epc_n4_handle_session_deletion_response(
     }
 
     if (cause_value != OGS_GTP_CAUSE_REQUEST_ACCEPTED) {
-        ogs_gtp_send_error_message(gtp_xact, sess ? sess->sgw_s5c_teid : 0,
-                OGS_GTP_DELETE_SESSION_RESPONSE_TYPE, cause_value);
+        if (gtp_xact)
+            ogs_gtp_send_error_message(gtp_xact, sess ? sess->sgw_s5c_teid : 0,
+                    OGS_GTP_DELETE_SESSION_RESPONSE_TYPE, cause_value);
         return;
     }
 
     ogs_assert(sess);
 
-    ogs_assert(OGS_OK ==
-        smf_gtp_send_delete_session_response(sess, gtp_xact));
+    if (gtp_xact) {
+        /*
+         * 1. MME sends Delete Session Request to SGW/SMF.
+         * 2. SMF sends Delete Session Response to SGW/MME.
+         */
+        ogs_assert(OGS_OK ==
+                smf_gtp_send_delete_session_response(sess, gtp_xact));
+    } else {
+        /*
+         * 1. SMF sends Delete Bearer Request(DEFAULT BEARER) to SGW/MME.
+         * 2. MME sends Delete Bearer Response to SGW/SMF.
+         *
+         * OR
+         *
+         * 1. SMF sends Delete Bearer Request(DEFAULT BEARER) to ePDG.
+         * 2. ePDG sends Delete Bearer Response(DEFAULT BEARER) to SMF.
+         *
+         * Note that the following messages are not processed here.
+         * - Bearer Resource Command
+         * - Delete Bearer Request/Response with DEDICATED BEARER.
+         */
+    }
 
     SMF_SESS_CLEAR(sess);
 }

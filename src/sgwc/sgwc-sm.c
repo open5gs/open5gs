@@ -272,6 +272,10 @@ void sgwc_state_operational(ogs_fsm_t *s, sgwc_event_t *e)
             sgwc_s5c_handle_delete_session_response(
                     sess, gtp_xact, recvbuf, &gtp_message);
             break;
+        case OGS_GTP_MODIFY_BEARER_RESPONSE_TYPE:
+            sgwc_s5c_handle_modify_bearer_response(
+                    sess, gtp_xact, recvbuf, &gtp_message);
+            break;
         case OGS_GTP_CREATE_BEARER_REQUEST_TYPE:
             sgwc_s5c_handle_create_bearer_request(
                     sess, gtp_xact, recvbuf, &gtp_message);

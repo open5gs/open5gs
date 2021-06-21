@@ -96,14 +96,14 @@ def output_header_to_file(f):
     f.write(" ******************************************************************************/\n\n")
 
 def usage():
-    print "Python generating NAS Message encoder/decoder v%s" % (version)
-    print "Usage: python nas-message.py [options]"
-    print "Available options:"
-    print "-d        Enable script debug"
-    print "-f [file] Input file to parse"
-    print "-o [dir]  Output files to given directory"
-    print "-c [dir]  Cache files to given directory"
-    print "-h        Print this help and return"
+    print("Python generating NAS Message encoder/decoder v%s" % (version))
+    print("Usage: python nas-message.py [options]")
+    print("Available options:")
+    print("-d        Enable script debug")
+    print("-f [file] Input file to parse")
+    print("-o [dir]  Output files to given directory")
+    print("-c [dir]  Cache files to given directory")
+    print("-h        Print this help and return")
 
 def v_upper(v):
     return re.sub('_TO_UE', '', re.sub('_FROM_UE', '', re.sub('\'', '_', re.sub('/', '_', re.sub('-', '_', re.sub(' ', '_', v)))).upper()))
@@ -115,13 +115,13 @@ def get_value(v):
     return re.sub('5gs_', '', re.sub('5g_', '', re.sub('5gsm', 'gsm', re.sub('5gmm', 'gmm', re.sub('\'', '_', re.sub('/', '_', re.sub('-', '_', re.sub(' ', '_', v)))).lower()))))
 
 def get_cells(cells):
-    iei = cells[0].text.encode('ascii', 'ignore')
-    value = re.sub("\s*$", "", re.sub("\s*\n*\s*\([^\)]*\)*", "", re.sub("'s", "", cells[1].text))).encode('ascii', 'ignore')
-    type = re.sub("^NAS ", "", re.sub("'s", "", re.sub('\s*\n\s*[a-zA-Z0-9.]*', '', cells[2].text))).encode('ascii', 'ignore')
-    reference = re.sub('[a-zA-Z0-9\'\-\s]*\n\s*', '', cells[2].text).encode('ascii', 'ignore')
-    presence = cells[3].text.encode('ascii', 'ignore')
-    format = cells[4].text.encode('ascii', 'ignore')
-    length = cells[5].text.encode('ascii', 'ignore')
+    iei = cells[0].text
+    value = re.sub("\s*$", "", re.sub("\s*\n*\s*\([^\)]*\)*", "", re.sub("'s", "", cells[1].text)))
+    type = re.sub("^NAS ", "", re.sub("'s", "", re.sub('\s*\n\s*[a-zA-Z0-9.]*', '', cells[2].text)))
+    reference = re.sub('[a-zA-Z0-9\'\-\s]*\n\s*', '', cells[2].text)
+    presence = cells[3].text
+    format = cells[4].text
+    length = cells[5].text
 
 # Spec errata - workaround
     if (type == "Request type" and value == "Request type"):
@@ -264,8 +264,8 @@ for key in msg_list.keys():
     d_info("[" + key + "]")
     cachefile = cachedir + "nas-msg-" + msg_list[key]["type"] + ".py"
     if os.path.isfile(cachefile) and os.access(cachefile, os.R_OK):
-        execfile(cachefile)
-        print "Read from " + cachefile
+        exec(open(cachefile).read())
+        print("Read from " + cachefile)
     else:
         document = Document(filename)
         f = open(cachefile, 'w') 
@@ -326,8 +326,8 @@ for (k, v) in sorted_msg_list:
 d_info("[Type List]")
 typefile = currentdir + "type-list.py"
 if os.path.isfile(typefile) and os.access(typefile, os.R_OK):
-    execfile(typefile)
-    print "Read from " + typefile
+    exec(open(typefile).read())
+    print("Read from " + typefile)
 
 tmp = [(k, v["reference"]) for k, v in type_list.items()]
 sorted_type_list = sorted(tmp, key=lambda tup: tup[1])

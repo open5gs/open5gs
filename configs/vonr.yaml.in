@@ -24,6 +24,7 @@ mme:
       identity: mme.localdomain
       realm: localdomain
       listen_on: 127.0.0.2
+      no_fwd: true
       load_extension:
         - module: @freediameter_extensions_builddir@/dbg_msg_dumps.fdx
           conf: 0x8888
@@ -93,6 +94,7 @@ smf:
       identity: smf.localdomain
       realm: localdomain
       listen_on: 127.0.0.4
+      no_fwd: true
       load_extension:
         - module: @freediameter_extensions_builddir@/dbg_msg_dumps.fdx
           conf: 0x8888
@@ -156,6 +158,7 @@ hss:
       identity: hss.localdomain
       realm: localdomain
       listen_on: 127.0.0.8
+      no_fwd: true
       load_extension:
         - module: @freediameter_extensions_builddir@/dbg_msg_dumps.fdx
           conf: 0x8888
@@ -173,6 +176,7 @@ pcrf:
       identity: pcrf.localdomain
       realm: localdomain
       listen_on: 127.0.0.9
+      no_fwd: true
       load_extension:
         - module: @freediameter_extensions_builddir@/dbg_msg_dumps.fdx
           conf: 0x8888

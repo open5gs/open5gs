@@ -115,19 +115,6 @@ extern struct dict_object *ogs_diam_rx_framed_ipv6_prefix;
 #define OGS_DIAM_RX_IP_CAN_TYPE_3GPP_EPS            5
 #define OGS_DIAM_RX_IP_CAN_TYPE_Non_3GPP_EPS        6
 extern struct dict_object *ogs_diam_rx_ip_can_type;
-#define OGS_DIAM_RX_RAT_TYPE_WLAN                   0
-#define OGS_DIAM_RX_RAT_TYPE_VIRTUAL                1 
-#define OGS_DIAM_RX_RAT_TYPE_UTRAN                  1000
-#define OGS_DIAM_RX_RAT_TYPE_GERAN                  1001
-#define OGS_DIAM_RX_RAT_TYPE_GAN                    1002
-#define OGS_DIAM_RX_RAT_TYPE_HSPA_EVOLUTION         1003
-#define OGS_DIAM_RX_RAT_TYPE_EUTRAN                 1004
-#define OGS_DIAM_RX_RAT_TYPE_EUTRAN_NB_IoT          1005
-#define OGS_DIAM_RX_RAT_TYPE_CDMA2000_1X            2000
-#define OGS_DIAM_RX_RAT_TYPE_HRPD                   2001
-#define OGS_DIAM_RX_RAT_TYPE_UMB                    2002
-#define OGS_DIAM_RX_RAT_TYPE_EHRPD                  2003
-extern struct dict_object *ogs_diam_rx_rat_type;
 #define OGS_DIAM_RX_ABORT_CAUSE_BEARER_RELEASED                         0
 #define OGS_DIAM_RX_ABORT_CAUSE_INSUFFICIENT_SERVER_RESOURCES           1
 #define OGS_DIAM_RX_ABORT_CAUSE_INSUFFICIENT_BEARER_RESOURCES           2

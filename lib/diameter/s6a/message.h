@@ -62,6 +62,12 @@ extern "C" {
 #define OGS_DIAM_S6A_UE_SRVCC_NOT_SUPPORTED             (0)
 #define OGS_DIAM_S6A_UE_SRVCC_SUPPORTED                 (1)
 
+#define OGS_DIAM_S6A_PDN_GW_ALLOCATION_STATIC           (0)
+#define OGS_DIAM_S6A_PDN_GW_ALLOCATION_DYNAMIC          (1)
+
+#define OGS_DIAM_S6A_VPLMN_DYNAMIC_ADDRESS_NOTALLOWED   (0)
+#define OGS_DIAM_S6A_VPLMN_DYNAMIC_ADDRESS_ALLOWED      (1)
+
 extern struct dict_object *ogs_diam_s6a_application;
 
 extern struct dict_object *ogs_diam_s6a_cmd_air;
@@ -71,8 +77,6 @@ extern struct dict_object *ogs_diam_s6a_cmd_ula;
 extern struct dict_object *ogs_diam_s6a_cmd_pur;
 extern struct dict_object *ogs_diam_s6a_cmd_pua;
 
-extern struct dict_object *ogs_diam_s6a_visited_plmn_id;
-extern struct dict_object *ogs_diam_s6a_rat_type;
 extern struct dict_object *ogs_diam_s6a_ulr_flags;
 extern struct dict_object *ogs_diam_s6a_ula_flags;
 extern struct dict_object *ogs_diam_s6a_subscription_data;
@@ -81,7 +85,6 @@ extern struct dict_object *ogs_diam_s6a_number_of_requested_vectors;
 extern struct dict_object *ogs_diam_s6a_immediate_response_preferred;
 extern struct dict_object *ogs_diam_s6a_authentication_info;
 extern struct dict_object *ogs_diam_s6a_re_synchronization_info;
-extern struct dict_object *ogs_diam_s6a_service_selection;
 extern struct dict_object *ogs_diam_s6a_ue_srvcc_capability;
 extern struct dict_object *ogs_diam_s6a_e_utran_vector;
 extern struct dict_object *ogs_diam_s6a_rand;
@@ -107,6 +110,8 @@ extern struct dict_object *ogs_diam_s6a_allocation_retention_priority;
 extern struct dict_object *ogs_diam_s6a_priority_level;
 extern struct dict_object *ogs_diam_s6a_pre_emption_capability;
 extern struct dict_object *ogs_diam_s6a_pre_emption_vulnerability;
+extern struct dict_object *ogs_diam_s6a_pdn_gw_allocation_type;
+extern struct dict_object *ogs_diam_s6a_vplmn_dynamic_address_allowed;
 
 extern struct dict_object *ogs_diam_s6a_terminal_information;
 extern struct dict_object *ogs_diam_s6a_imei;

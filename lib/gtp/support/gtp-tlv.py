@@ -80,14 +80,14 @@ def output_header_to_file(f):
     f.write(" ******************************************************************************/\n\n")
 
 def usage():
-    print "Python generating TLV build/parser for GTPv2-C v%s" % (version)
-    print "Usage: python gtp-tlv.py [options]"
-    print "Available options:"
-    print "-d        Enable script debug"
-    print "-f [file] Input file to parse"
-    print "-o [dir]  Output files to given directory"
-    print "-c [dir]  Cache files to given directory"
-    print "-h        Print this help and return"
+    print("Python generating TLV build/parser for GTPv2-C v%s" % (version))
+    print("Usage: python gtp-tlv.py [options]")
+    print("Available options:")
+    print("-d        Enable script debug")
+    print("-f [file] Input file to parse")
+    print("-o [dir]  Output files to given directory")
+    print("-c [dir]  Cache files to given directory")
+    print("-h        Print this help and return")
 
 def v_upper(v):
     return re.sub('3GPP', '', re.sub('\'', '_', re.sub('/', '_', re.sub('-', '_', re.sub(' ', '_', v)))).upper())
@@ -96,10 +96,10 @@ def v_lower(v):
     return re.sub('3gpp', '', re.sub('\'', '_', re.sub('/', '_', re.sub('-', '_', re.sub(' ', '_', v)))).lower())
 
 def get_cells(cells):
-    instance = cells[4].text.encode('ascii', 'ignore')
+    instance = cells[4].text
     if instance.isdigit() is not True:
         return None
-    ie_type = re.sub('\s*$', '', re.sub('\s*\n*\s*\([A-z]*\s*NOTE.*\)*', '', cells[3].text.encode('ascii', 'ignore')))
+    ie_type = re.sub('\s*$', '', re.sub('\s*\n*\s*\([A-z]*\s*NOTE.*\)*', '', cells[3].text))
     if ie_type.find('LDN') != -1:
         ie_type = 'LDN'
     elif ie_type.find('APCO') != -1:
@@ -119,10 +119,10 @@ def get_cells(cells):
     if ie_type not in type_list.keys():
         assert False, "Unknown IE type : [" \
                 + cells[3].text + "]" + "(" + ie_type + ")"
-    presence = cells[1].text.encode('ascii', 'ignore')
+    presence = cells[1].text
     presence = re.sub('\n', '', presence);
-    ie_value = re.sub('\s*\n*\s*\([^\)]*\)*', '', cells[0].text).encode('ascii', 'ignore')
-    comment = cells[2].text.encode('ascii', 'ignore')
+    ie_value = re.sub('\s*\n*\s*\([^\)]*\)*', '', cells[0].text)
+    comment = cells[2].text.encode('ascii', 'ignore').decode('utf-8')
     comment = re.sub('\n|\"|\'|\\\\', '', comment);
 
     if int(instance) > int(type_list[ie_type]["max_instance"]):
@@ -163,15 +163,15 @@ for o, a in opts:
         sys.exit(2)
 
 if os.path.isfile(filename) and os.access(filename, os.R_OK):
-    file = open(filename, 'r') 
+    file = open(filename, 'r')
 else:
     d_error("Cannot find file : " + filename)
 
 d_info("[Message List]")
 cachefile = cachedir + 'tlv-msg-list.py'
 if os.path.isfile(cachefile) and os.access(cachefile, os.R_OK):
-    execfile(cachefile)
-    print "Read from " + cachefile
+    exec(open(cachefile).read())
+    print("Read from " + cachefile)
 else:
     document = Document(filename)
     f = open(cachefile, 'w') 
@@ -184,8 +184,8 @@ else:
             d_print("Table Index = %d\n" % i)
 
     for row in msg_table.rows[2:-4]:
-        key = row.cells[1].text.encode('ascii', 'ignore')
-        type = row.cells[0].text.encode('ascii', 'ignore')
+        key = row.cells[1].text
+        type = row.cells[0].text
         if type.isdigit() is False:
             continue
         if int(type) in range(128, 160):
@@ -202,8 +202,8 @@ else:
 d_info("[IE Type List]")
 cachefile = cachedir + 'tlv-type-list.py'
 if os.path.isfile(cachefile) and os.access(cachefile, os.R_OK):
-    execfile(cachefile)
-    print "Read from " + cachefile
+    exec(open(cachefile).read())
+    print("Read from " + cachefile)
 else:
     document = Document(filename)
     f = open(cachefile, 'w') 
@@ -216,7 +216,7 @@ else:
             d_print("Table Index = %d\n" % i)
 
     for row in ie_table.rows[1:-5]:
-        key = row.cells[1].text.encode('ascii', 'ignore')
+        key = row.cells[1].text
         if key.find('Reserved') != -1:
             continue
         if key.find('MM Context') != -1:
@@ -234,10 +234,10 @@ else:
         elif key.find('Procedure Transaction ID') != -1:
             key = 'PTI'
         else:
-            key = re.sub('.*\(', '', row.cells[1].text.encode('ascii', 'ignore'))
+            key = re.sub('.*\(', '', row.cells[1].text)
             key = re.sub('\)', '', key)
             key = re.sub('\s*$', '', key)
-        type = row.cells[0].text.encode('ascii', 'ignore')
+        type = row.cells[0].text
         type_list[key] = { "type": type , "max_instance" : "0" }
         write_file(f, "type_list[\"" + key + "\"] = { \"type\" : \"" + type)
         write_file(f, "\", \"max_instance\" : \"0\" }\n")
@@ -247,8 +247,8 @@ type_list['MM Context'] = { "type": "107", "max_instance" : "0" }
 d_info("[Group IE List]")
 cachefile = cachedir + 'tlv-group-list.py'
 if os.path.isfile(cachefile) and os.access(cachefile, os.R_OK):
-    execfile(cachefile)
-    print "Read from " + cachefile
+    exec(open(cachefile).read())
+    print("Read from " + cachefile)
 else:
     document = Document(filename)
     f = open(cachefile, 'w') 
@@ -262,8 +262,8 @@ else:
 
             if len(re.findall('\d+', row.cells[2].text)) == 0:
                 continue;
-            ie_type = re.findall('\d+', row.cells[2].text)[0].encode('ascii', 'ignore')
-            ie_name = re.sub('\s*IE Type.*', '', row.cells[2].text.encode('ascii', 'ignore'))
+            ie_type = re.findall('\d+', row.cells[2].text)[0]
+            ie_name = re.sub('\s*IE Type.*', '', row.cells[2].text)
 
             if ie_name not in group_list.keys():
                 ies = []
@@ -347,8 +347,8 @@ for key in msg_list.keys():
         d_info("[" + key + "]")
         cachefile = cachedir + "tlv-msg-" + msg_list[key]["type"] + ".py"
         if os.path.isfile(cachefile) and os.access(cachefile, os.R_OK):
-            execfile(cachefile)
-            print "Read from " + cachefile
+            exec(open(cachefile).read())
+            print("Read from " + cachefile)
         else:
             document = Document(filename)
             f = open(cachefile, 'w') 
@@ -375,6 +375,7 @@ for key in msg_list.keys():
 type_list["Recovery"]["size"] = 1                       # Type : 3
 type_list["EBI"]["size"] = 1                            # Type : 73
 type_list["RAT Type"]["size"] = 1                       # Type : 82
+type_list["Charging ID"]["size"] = 4                    # Type : 94
 type_list["PDN Type"]["size"] = 1                       # Type : 99
 type_list["PTI"]["size"] = 1                            # Type : 100
 type_list["Port Number"]["size"] = 2                    # Type : 126

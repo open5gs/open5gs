@@ -32,8 +32,6 @@ extern "C" {
 #define TEST_ENB_IPV4           "127.0.0.5"
 #define TEST_AMF_IPV4           TEST_MME_IPV4
 #define TEST_GNB_IPV4           TEST_ENB_IPV4
-#define TEST_UPF_IPV4           "127.0.0.4"
-#define TEST_SGWU_IPV4          "127.0.0.7"
 
 #define TEST_PING_IPV4          "10.45.0.1"
 #define TEST_PING_IPV6          "2001:230:cafe::1"
@@ -42,6 +40,10 @@ extern "C" {
 
 #define TEST_MSISDN             "491725670014"
 #define TEST_ADDITIONAL_MSISDN  "491725670015"
+
+#define TEST_HSS_IDENTITY "hss.localdomain"
+#define TEST_PCRF_IDENTITY "pcrf.localdomain"
+#define TEST_SMF_IDENTITY "smf.localdomain"
 
 typedef struct test_context_s {
     uint16_t        ngap_port;      /* Default NGAP Port */
@@ -53,13 +55,16 @@ typedef struct test_context_s {
     uint16_t        s1ap_port;      /* Default S1AP Port */
     ogs_list_t      s1ap_list;      /* MME S1AP IPv4 Server List */
     ogs_list_t      s1ap_list6;     /* MME S1AP IPv6 Server List */
-    ogs_sockaddr_t  *s1ap_addr;     /* MME GTPC IPv4 Address */
-    ogs_sockaddr_t  *s1ap_addr6;    /* MME GTPC IPv6 Address */
+    ogs_sockaddr_t  *s1ap_addr;     /* MME S1AP IPv4 Address */
+    ogs_sockaddr_t  *s1ap_addr6;    /* MME S1AP IPv6 Address */
 
     ogs_sockaddr_t  *gnb1_addr;
     ogs_sockaddr_t  *gnb1_addr6;
     ogs_sockaddr_t  *gnb2_addr;
     ogs_sockaddr_t  *gnb2_addr6;
+
+    uint32_t        gtpc_port;      /* SMF GTPC local port */
+    ogs_list_t      gtpc_list;      /* SMF GTPC Client List */
 
     /* 5G PLMN Support */
     uint8_t num_of_plmn_support;
@@ -264,14 +269,12 @@ typedef struct test_pdu_session_establishment_param_s {
 typedef struct test_pdn_connectivity_param_s {
     union {
         struct {
-        ED8(uint8_t eit:1;,
+        ED6(uint8_t eit:1;,
             uint8_t eit_no_required:1;,
             uint8_t apn:1;,
             uint8_t pco:1;,
             uint8_t integrity_protected:1;,
-            uint8_t ciphered:1;,
-            uint8_t spare6:1;,
-            uint8_t spare7:1;)
+            uint8_t request_type:3;)
         };
         uint8_t value;
     };
@@ -304,6 +307,9 @@ typedef struct test_ue_s {
     char *imsi;
     char *suci; /* TS33.501 : SUCI */
     char *supi; /* TS33.501 : SUPI */
+
+    uint8_t imsi_buf[OGS_MAX_IMSI_LEN];
+    int imsi_len;
 
     ogs_nas_5gs_mobile_identity_suci_t mobile_identity_suci;
     ogs_nas_mobile_identity_imeisv_t mobile_identity_imeisv;
@@ -432,6 +438,10 @@ typedef struct test_sess_s {
         char *apn;
     };
 
+    /* RAT Type */
+    uint8_t gtp_rat_type;
+    OpenAPI_rat_type_e sbi_rat_type;
+
     ogs_ip_t ue_ip;
 
     ogs_ip_t upf_n3_ip;             /* UPF-N3 IPv4/IPv6 */
@@ -453,6 +463,11 @@ typedef struct test_sess_s {
         uint32_t upf_dl_teid;
         ogs_ip_t upf_dl_ip;
     } handover;
+
+    /* ePDG */
+    uint32_t epdg_s2b_c_teid;
+    uint32_t smf_s2b_c_teid;
+    ogs_gtp_node_t *gnode;
 
     ogs_list_t bearer_list;
 
@@ -494,11 +509,13 @@ void test_ue_remove_all(void);
 
 test_sess_t *test_sess_add_by_dnn_and_psi(
         test_ue_t *test_ue, char *dnn, uint8_t psi);
-test_sess_t *test_sess_add_by_apn(test_ue_t *test_ue, char *apn);
+test_sess_t *test_sess_add_by_apn(
+        test_ue_t *test_ue, char *apn, uint8_t rat_type);
 void test_sess_remove(test_sess_t *sess);
 void test_sess_remove_all(test_ue_t *test_ue);
 
-test_sess_t *test_sess_find_by_apn(test_ue_t *test_ue, char *apn);
+test_sess_t *test_sess_find_by_apn(
+        test_ue_t *test_ue, char *apn, uint8_t rat_type);
 test_sess_t *test_sess_find_by_psi(test_ue_t *test_ue, uint8_t psi);
 
 test_bearer_t *test_bearer_add(test_sess_t *sess, uint8_t ebi);
@@ -519,6 +536,7 @@ bson_t *test_db_new_qos_flow(test_ue_t *test_ue);
 bson_t *test_db_new_session(test_ue_t *test_ue);
 bson_t *test_db_new_ims(test_ue_t *test_ue);
 bson_t *test_db_new_slice(test_ue_t *test_ue);
+bson_t *test_db_new_non3gpp(test_ue_t *test_ue);
 
 #ifdef __cplusplus
 }

@@ -43,9 +43,12 @@ typedef struct ogs_diam_config_s {
     /* the local port for Diameter/TLS (default: 5658) in host byte order */
     uint16_t cnf_port_tls;
 
-	struct {
-		unsigned no_sctp: 1;	/* disable the use of SCTP */
-	} cnf_flags;
+    struct {
+        /* the peer does not relay messages (0xffffff app id) */
+        unsigned no_fwd: 1;
+        /* disable the use of SCTP */
+        unsigned no_sctp: 1;
+    } cnf_flags;
 
 #define MAX_NUM_OF_FD_EXTENSION 32
     struct {
@@ -66,10 +69,11 @@ typedef struct ogs_diam_config_s {
 } ogs_diam_config_t;
 
 int ogs_diam_init(int mode, const char *conffile, ogs_diam_config_t *fd_config);
+int ogs_diam_start(void);
 void ogs_diam_final(void);
 
 int ogs_diam_config_init(ogs_diam_config_t *fd_config);
-bool ogs_diam_peer_connected(void);
+bool ogs_diam_app_connected(uint32_t app_id);
 
 int fd_avp_search_avp ( struct avp * groupedavp, 
         struct dict_object * what, struct avp ** avp );

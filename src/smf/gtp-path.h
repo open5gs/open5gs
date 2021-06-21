@@ -34,6 +34,9 @@ int smf_gtp_send_create_session_response(
 int smf_gtp_send_delete_session_response(
         smf_sess_t *sess, ogs_gtp_xact_t *xact);
 
+int smf_gtp_send_delete_bearer_request(
+        smf_bearer_t *bearer, uint8_t pti, uint8_t cause_value);
+
 #ifdef __cplusplus
 }
 #endif

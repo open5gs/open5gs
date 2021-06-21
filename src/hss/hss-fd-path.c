@@ -34,6 +34,11 @@ int hss_fd_init(void)
     ogs_assert(rv == OGS_OK);
     rv = hss_cx_init();
     ogs_assert(rv == OGS_OK);
+    rv = hss_swx_init();
+    ogs_assert(rv == OGS_OK);
+
+    rv = ogs_diam_start();
+    ogs_assert(rv == 0);
 
 	return OGS_OK;
 }
@@ -42,6 +47,7 @@ void hss_fd_final(void)
 {
     hss_s6a_final();
     hss_cx_final();
+    hss_swx_final();
 
     ogs_diam_final();
 }

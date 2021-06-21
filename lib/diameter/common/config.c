@@ -66,6 +66,9 @@ static int diam_config_apply(ogs_diam_config_t *fd_config)
     if (fd_config->cnf_flags.no_sctp)
         fd_g_config->cnf_flags.no_sctp = fd_config->cnf_flags.no_sctp;
 
+    if (fd_config->cnf_flags.no_fwd)
+        fd_g_config->cnf_flags.no_fwd = fd_config->cnf_flags.no_fwd;
+
     /********************************************************************
      * Diameter Client
      */

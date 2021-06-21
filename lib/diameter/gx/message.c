@@ -32,16 +32,12 @@ struct dict_object *ogs_diam_gx_cmd_raa = NULL;
 struct dict_object *ogs_diam_gx_cc_request_type = NULL;
 struct dict_object *ogs_diam_gx_cc_request_number = NULL;
 struct dict_object *ogs_diam_gx_network_request_support = NULL;
-struct dict_object *ogs_diam_gx_subscription_id = NULL;
-struct dict_object *ogs_diam_gx_subscription_id_type = NULL;
-struct dict_object *ogs_diam_gx_subscription_id_data = NULL;
 struct dict_object *ogs_diam_gx_supported_features = NULL;
 struct dict_object *ogs_diam_gx_feature_list_id = NULL;
 struct dict_object *ogs_diam_gx_feature_list = NULL;
 struct dict_object *ogs_diam_gx_framed_ip_address = NULL;
 struct dict_object *ogs_diam_gx_framed_ipv6_prefix = NULL;
 struct dict_object *ogs_diam_gx_ip_can_type = NULL;
-struct dict_object *ogs_diam_gx_rat_type = NULL;
 struct dict_object *ogs_diam_gx_qos_information = NULL;
 struct dict_object *ogs_diam_gx_qos_class_identifier = NULL;
 struct dict_object *ogs_diam_gx_max_requested_bandwidth_ul = NULL;
@@ -82,6 +78,14 @@ struct dict_object *ogs_diam_gx_codec_data = NULL;
 struct dict_object *ogs_diam_gx_media_sub_component = NULL;
 struct dict_object *ogs_diam_gx_flow_number = NULL;
 struct dict_object *ogs_diam_gx_flow_usage = NULL;
+struct dict_object *ogs_diam_gx_3gpp_sgsn_mcc_mnc = NULL;
+struct dict_object *ogs_diam_gx_an_gw_address = NULL;
+struct dict_object *ogs_diam_gx_online = NULL;
+struct dict_object *ogs_diam_gx_offline = NULL;
+struct dict_object *ogs_diam_gx_access_network_charging_address = NULL;
+struct dict_object *ogs_diam_gx_access_network_charging_identifier_gx = NULL;
+struct dict_object *ogs_diam_gx_access_network_charging_identifier_value = NULL;
+struct dict_object *ogs_diam_gx_an_trusted = NULL;
 
 extern int ogs_dict_gx_entry(char *conffile);
 
@@ -101,16 +105,12 @@ int ogs_diam_gx_init(void)
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "CC-Request-Type", &ogs_diam_gx_cc_request_type);
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "CC-Request-Number", &ogs_diam_gx_cc_request_number);
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Network-Request-Support", &ogs_diam_gx_network_request_support);
-    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Subscription-Id", &ogs_diam_gx_subscription_id);
-    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Subscription-Id-Type", &ogs_diam_gx_subscription_id_type);
-    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Subscription-Id-Data", &ogs_diam_gx_subscription_id_data);
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Supported-Features", &ogs_diam_gx_supported_features);
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Feature-List-ID", &ogs_diam_gx_feature_list_id);
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Feature-List", &ogs_diam_gx_feature_list);
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Framed-IP-Address", &ogs_diam_gx_framed_ip_address);
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Framed-IPv6-Prefix", &ogs_diam_gx_framed_ipv6_prefix);
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "IP-CAN-Type", &ogs_diam_gx_ip_can_type);
-    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "RAT-Type", &ogs_diam_gx_rat_type);
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "QoS-Information", &ogs_diam_gx_qos_information);
 	CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "QoS-Class-Identifier" , &ogs_diam_gx_qos_class_identifier);
 	CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Max-Requested-Bandwidth-UL" , &ogs_diam_gx_max_requested_bandwidth_ul);
@@ -154,6 +154,14 @@ int ogs_diam_gx_init(void)
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Media-Sub-Component", &ogs_diam_gx_media_sub_component);
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Flow-Number", &ogs_diam_gx_flow_number);
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Flow-Usage", &ogs_diam_gx_flow_usage);
+    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "3GPP-SGSN-MCC-MNC", &ogs_diam_gx_3gpp_sgsn_mcc_mnc);
+    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "AN-GW-Address", &ogs_diam_gx_an_gw_address);
+    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Online", &ogs_diam_gx_online);
+    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Offline", &ogs_diam_gx_offline);
+    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Access-Network-Charging-Address", &ogs_diam_gx_access_network_charging_address);
+    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Access-Network-Charging-Identifier-Gx", &ogs_diam_gx_access_network_charging_identifier_gx);
+    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Access-Network-Charging-Identifier-Value", &ogs_diam_gx_access_network_charging_identifier_value);
+    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "AN-Trusted", &ogs_diam_gx_an_trusted);
 
     return 0;
 }

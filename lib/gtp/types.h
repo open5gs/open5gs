@@ -69,7 +69,7 @@ typedef struct ogs_gtp_extension_header_s {
 } __attribute__ ((packed)) ogs_gtp_extension_header_t;
 
 /* 8.4 Cause */
-#define OGS_GTP_CAUSE_INVALID_VALUE 0
+#define OGS_GTP_CAUSE_UNDEFINED_VALUE 0
 #define OGS_GTP_CAUSE_LOCAL_DETACH 2
 #define OGS_GTP_CAUSE_COMPLETE_DETACH_3
 #define OGS_GTP_CAUSE_RAT_CHANGED_FROM_3GPP_TO_NON_3GPP 4

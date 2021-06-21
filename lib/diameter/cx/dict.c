@@ -151,8 +151,10 @@ int ogs_dict_cx_entry(char *conffile)
   {
     struct dict_object * vendor;
     CHECK_FCT(fd_dict_search(fd_g_config->cnf_dict, DICT_VENDOR, VENDOR_BY_NAME, "3GPP", &vendor, ENOENT));
-    struct dict_application_data app_data = { 16777216, "Cx" };
-    CHECK_FCT(fd_dict_new(fd_g_config->cnf_dict, DICT_APPLICATION, &app_data, vendor, NULL));
+    struct dict_application_data cx = { 16777216, "Cx" };
+    struct dict_application_data swx = { 16777265, "SWx" };
+    CHECK_FCT(fd_dict_new(fd_g_config->cnf_dict, DICT_APPLICATION, &cx, vendor, NULL));
+    CHECK_FCT(fd_dict_new(fd_g_config->cnf_dict, DICT_APPLICATION, &swx, vendor, NULL));
   }
 
   }
@@ -312,10 +314,18 @@ int ogs_dict_cx_entry(char *conffile)
         {  {                      .avp_name = "Destination-Host" }, RULE_OPTIONAL, -1, 1 },
         {  {                      .avp_name = "User-Name" }, RULE_REQUIRED, -1, 1 },
         {  { .avp_vendor = 10415, .avp_name = "Supported-Features" }, RULE_OPTIONAL, -1, -1 },
+#if 0 /* modified by acetcom */
         {  { .avp_vendor = 10415, .avp_name = "Public-Identity" }, RULE_REQUIRED, -1, 1 },
+#else
+        {  { .avp_vendor = 10415, .avp_name = "Public-Identity" }, RULE_OPTIONAL, -1, 1 },
+#endif
         {  { .avp_vendor = 10415, .avp_name = "SIP-Auth-Data-Item" }, RULE_REQUIRED, -1, 1 },
         {  { .avp_vendor = 10415, .avp_name = "SIP-Number-Auth-Items" }, RULE_REQUIRED, -1, 1 },
+#if 0 /* modified by acetcom */
         {  { .avp_vendor = 10415, .avp_name = "Server-Name" }, RULE_REQUIRED, -1, 1 },
+#else
+        {  { .avp_vendor = 10415, .avp_name = "Server-Name" }, RULE_OPTIONAL, -1, 1 },
+#endif
         {  {                      .avp_name = "Proxy-Info" }, RULE_OPTIONAL, -1, -1 },
         {  {                      .avp_name = "Route-Record" }, RULE_OPTIONAL, -1, -1 },
       };
@@ -380,9 +390,17 @@ int ogs_dict_cx_entry(char *conffile)
         {  { .avp_vendor = 10415, .avp_name = "Supported-Features" }, RULE_OPTIONAL, -1, -1 },
         {  { .avp_vendor = 10415, .avp_name = "Public-Identity" }, RULE_OPTIONAL, -1, -1 },
         {  { .avp_vendor = 10415, .avp_name = "Wildcarded-Public-Identity" }, RULE_OPTIONAL, -1, 1 },
+#if 0 /* modified by acetcom */
         {  { .avp_vendor = 10415, .avp_name = "Server-Name" }, RULE_REQUIRED, -1, 1 },
+#else
+        {  { .avp_vendor = 10415, .avp_name = "Server-Name" }, RULE_OPTIONAL, -1, 1 },
+#endif
         {  { .avp_vendor = 10415, .avp_name = "Server-Assignment-Type" }, RULE_REQUIRED, -1, 1 },
+#if 0 /* modified by acetcom */
         {  { .avp_vendor = 10415, .avp_name = "User-Data-Already-Available" }, RULE_REQUIRED, -1, 1 },
+#else
+        {  { .avp_vendor = 10415, .avp_name = "User-Data-Already-Available" }, RULE_OPTIONAL, -1, 1 },
+#endif
         {  { .avp_vendor = 10415, .avp_name = "SCSCF-Restoration-Info" }, RULE_OPTIONAL, -1, 1 },
         {  { .avp_vendor = 10415, .avp_name = "Multiple-Registration-Indication" }, RULE_OPTIONAL, -1, 1 },
         {  { .avp_vendor = 10415, .avp_name = "Session-Priority" }, RULE_OPTIONAL, -1, 1 },

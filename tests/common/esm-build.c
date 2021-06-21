@@ -55,12 +55,8 @@ ogs_pkbuf_t *testesm_build_pdn_connectivity_request(test_sess_t *sess)
     memset(&message, 0, sizeof(message));
 
     if (sess->pdn_connectivity_param.integrity_protected) {
-        if (sess->pdn_connectivity_param.ciphered)
-            message.h.security_header_type =
-                OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
-        else
-            message.h.security_header_type =
-                OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED;
+        message.h.security_header_type =
+            OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED;
         message.h.protocol_discriminator = OGS_NAS_PROTOCOL_DISCRIMINATOR_EMM;
     }
 
@@ -69,7 +65,8 @@ ogs_pkbuf_t *testesm_build_pdn_connectivity_request(test_sess_t *sess)
     message.esm.h.message_type = OGS_NAS_EPS_PDN_CONNECTIVITY_REQUEST;
 
     request_type->type = OGS_NAS_EPS_PDN_TYPE_IPV4V6;
-    request_type->value = OGS_NAS_5GS_REQUEST_TYPE_INITIAL;
+    request_type->value = sess->pdn_connectivity_param.request_type;
+    ogs_assert(request_type->value);
 
     if (sess->pdn_connectivity_param.apn) {
         pdn_connectivity_request->presencemask |=

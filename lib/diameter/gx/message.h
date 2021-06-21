@@ -54,13 +54,6 @@ extern struct dict_object *ogs_diam_gx_cmd_raa;
 extern struct dict_object *ogs_diam_gx_cc_request_type;
 extern struct dict_object *ogs_diam_gx_cc_request_number;
 extern struct dict_object *ogs_diam_gx_network_request_support;
-extern struct dict_object *ogs_diam_gx_subscription_id;
-#define OGS_DIAM_GX_SUBSCRIPTION_ID_TYPE_END_USER_E164      0
-#define OGS_DIAM_GX_SUBSCRIPTION_ID_TYPE_END_USER_IMSI      1
-#define OGS_DIAM_GX_SUBSCRIPTION_ID_TYPE_END_USER_SIP_URI   2
-#define OGS_DIAM_GX_SUBSCRIPTION_ID_TYPE_END_USER_NAI       3
-extern struct dict_object *ogs_diam_gx_subscription_id_type;
-extern struct dict_object *ogs_diam_gx_subscription_id_data;
 extern struct dict_object *ogs_diam_gx_supported_features;
 extern struct dict_object *ogs_diam_gx_feature_list_id;
 extern struct dict_object *ogs_diam_gx_feature_list;
@@ -72,21 +65,8 @@ extern struct dict_object *ogs_diam_gx_framed_ipv6_prefix;
 #define OGS_DIAM_GX_IP_CAN_TYPE_WiMAX                       3
 #define OGS_DIAM_GX_IP_CAN_TYPE_3GPP2                       4
 #define OGS_DIAM_GX_IP_CAN_TYPE_3GPP_EPS                    5
-#define OGS_DIAM_GX_IP_CAN_TYPE_Non_3GPP_EPS                6
+#define OGS_DIAM_GX_IP_CAN_TYPE_NON_3GPP_EPS                6
 extern struct dict_object *ogs_diam_gx_ip_can_type;
-#define OGS_DIAM_GX_RAT_TYPE_WLAN                           0
-#define OGS_DIAM_GX_RAT_TYPE_VIRTUAL                        1 
-#define OGS_DIAM_GX_RAT_TYPE_UTRAN                          1000
-#define OGS_DIAM_GX_RAT_TYPE_GERAN                          1001
-#define OGS_DIAM_GX_RAT_TYPE_GAN                            1002
-#define OGS_DIAM_GX_RAT_TYPE_HSPA_EVOLUTION                 1003
-#define OGS_DIAM_GX_RAT_TYPE_EUTRAN                         1004
-#define OGS_DIAM_GX_RAT_TYPE_EUTRAN_NB_IoT                  1005
-#define OGS_DIAM_GX_RAT_TYPE_CDMA2000_1X                    2000
-#define OGS_DIAM_GX_RAT_TYPE_HRPD                           2001
-#define OGS_DIAM_GX_RAT_TYPE_UMB                            2002
-#define OGS_DIAM_GX_RAT_TYPE_EHRPD                          2003
-extern struct dict_object *ogs_diam_gx_rat_type;
 extern struct dict_object *ogs_diam_gx_qos_information;
 extern struct dict_object *ogs_diam_gx_qos_class_identifier;
 extern struct dict_object *ogs_diam_gx_max_requested_bandwidth_ul;
@@ -128,6 +108,20 @@ extern struct dict_object *ogs_diam_gx_codec_data;
 extern struct dict_object *ogs_diam_gx_media_sub_component;
 extern struct dict_object *ogs_diam_gx_flow_number;
 extern struct dict_object *ogs_diam_gx_flow_usage;
+extern struct dict_object *ogs_diam_gx_3gpp_sgsn_mcc_mnc;
+extern struct dict_object *ogs_diam_gx_an_gw_address;
+#define OGS_DIAM_GX_DISABLE_ONLINE 0
+#define OGS_DIAM_GX_ENABLE_ONLINE 1
+extern struct dict_object *ogs_diam_gx_online;
+#define OGS_DIAM_GX_DISABLE_OFFLINE 0
+#define OGS_DIAM_GX_ENABLE_OFFLINE 1
+extern struct dict_object *ogs_diam_gx_offline;
+extern struct dict_object *ogs_diam_gx_access_network_charging_address;
+extern struct dict_object *ogs_diam_gx_access_network_charging_identifier_gx;
+extern struct dict_object *ogs_diam_gx_access_network_charging_identifier_value;
+#define OGS_DIAM_GX_AN_TRUSTED 0
+#define OGS_DIAM_GX_AN_UNTRUSTED 1
+extern struct dict_object *ogs_diam_gx_an_trusted;
 
 typedef struct ogs_diam_gx_message_s {
 #define OGS_DIAM_GX_CMD_CODE_CREDIT_CONTROL                         272

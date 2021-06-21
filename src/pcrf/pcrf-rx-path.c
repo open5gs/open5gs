@@ -149,7 +149,7 @@ static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
     /* Set the Auth-Request-Type AVP */
     ret = fd_msg_avp_new(ogs_diam_auth_request_type, 0, &avp);
     ogs_assert(ret == 0);
-    val.i32 = 1;
+    val.i32 = OGS_DIAM_AUTH_REQUEST_TYPE_AUTHENTICATE_ONLY;
     ret = fd_msg_avp_setvalue(avp, &val);
     ogs_assert(ret == 0);
     ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
@@ -448,9 +448,9 @@ static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
     ogs_assert(ret == 0);
 
     /* Set RAT-Type */
-    ret = fd_msg_avp_new(ogs_diam_rx_rat_type, 0, &avp);
+    ret = fd_msg_avp_new(ogs_diam_rat_type, 0, &avp);
     ogs_assert(ret == 0);
-    val.i32 = OGS_DIAM_RX_RAT_TYPE_EUTRAN;
+    val.i32 = OGS_DIAM_RAT_TYPE_EUTRAN;
     ret = fd_msg_avp_setvalue(avp, &val);
     ogs_assert(ret == 0);
     ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
@@ -743,7 +743,7 @@ static int pcrf_rx_str_cb( struct msg **msg, struct avp *avp,
     /* Set the Auth-Request-Type AVP */
     ret = fd_msg_avp_new(ogs_diam_auth_request_type, 0, &avp);
     ogs_assert(ret == 0);
-    val.i32 = 1;
+    val.i32 = OGS_DIAM_AUTH_REQUEST_TYPE_AUTHENTICATE_ONLY;
     ret = fd_msg_avp_setvalue(avp, &val);
     ogs_assert(ret == 0);
     ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);

@@ -31,6 +31,7 @@ static void test_diam_config(void)
     diam_config.cnf_port = DIAMETER_PORT;
     diam_config.cnf_port_tls = DIAMETER_SECURE_PORT;
     diam_config.cnf_flags.no_sctp = 1;
+    diam_config.cnf_flags.no_fwd = 1;
     diam_config.cnf_addr = "127.0.0.1";
 
     diam_config.ext[diam_config.num_of_ext].module =
@@ -76,6 +77,9 @@ int test_fd_init(void)
 
     test_rx_init();
     test_cx_init();
+
+    ret = ogs_diam_start();
+    ogs_assert(ret == 0);
 
 	return 0;
 }

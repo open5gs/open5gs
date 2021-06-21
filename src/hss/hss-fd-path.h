@@ -31,6 +31,8 @@ int hss_s6a_init(void);
 void hss_s6a_final(void);
 int hss_cx_init(void);
 void hss_cx_final(void);
+int hss_swx_init(void);
+void hss_swx_final(void);
 
 #ifdef __cplusplus
 }
