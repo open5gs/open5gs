@@ -28,7 +28,7 @@ int nas_5gs_send_to_gnb(amf_ue_t *amf_ue, ogs_pkbuf_t *pkbuf)
 
     ogs_assert(amf_ue);
     ran_ue = ran_ue_cycle(amf_ue->ran_ue);
-    ogs_assert(ran_ue);
+    ogs_expect_or_return_val(ran_ue, OGS_ERROR);
 
     return ngap_send_to_ran_ue(ran_ue, pkbuf);
 }
@@ -71,7 +71,7 @@ int nas_5gs_send_registration_accept(amf_ue_t *amf_ue)
 
     ogs_assert(amf_ue);
     ran_ue = ran_ue_cycle(amf_ue->ran_ue);
-    ogs_assert(ran_ue);
+    ogs_expect_or_return_val(ran_ue, OGS_ERROR);
 
     ogs_debug("[%s] Registration accept", amf_ue->supi);
 
@@ -173,7 +173,7 @@ int nas_5gs_send_service_accept(amf_ue_t *amf_ue)
 
     ogs_assert(amf_ue);
     ran_ue = ran_ue_cycle(amf_ue->ran_ue);
-    ogs_assert(ran_ue);
+    ogs_expect_or_return_val(ran_ue, OGS_ERROR);
 
     ogs_debug("[%s] Service accept", amf_ue->supi);
 
@@ -254,7 +254,7 @@ int nas_5gs_send_de_registration_accept(amf_ue_t *amf_ue)
 
     ogs_assert(amf_ue);
     ran_ue = ran_ue_cycle(amf_ue->ran_ue);
-    ogs_assert(ran_ue);
+    ogs_expect_or_return_val(ran_ue, OGS_ERROR);
 
     ogs_debug("[%s] De-registration accept", amf_ue->supi);
 

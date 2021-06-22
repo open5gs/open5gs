@@ -957,8 +957,7 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
                 ogs_assert(amf_ue->nas.message_type ==
                         OGS_NAS_5GS_REGISTRATION_REQUEST);
                 CLEAR_AMF_UE_TIMER(amf_ue->t3550);
-                ogs_assert(OGS_OK ==
-                    nas_5gs_send_registration_accept(amf_ue));
+                ogs_assert(OGS_OK == nas_5gs_send_registration_accept(amf_ue));
 
                 if (!amf_ue->next.m_tmsi)
                     OGS_FSM_TRAN(s, &gmm_state_registered);

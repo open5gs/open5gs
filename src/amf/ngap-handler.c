@@ -1328,8 +1328,10 @@ void ngap_handle_ue_context_release_action(ran_ue_t *ran_ue)
     ogs_info("UE Context Release [Action:%d]", ran_ue->ue_ctx_rel_action);
     ogs_info("    RAN_UE_NGAP_ID[%d] AMF_UE_NGAP_ID[%lld]",
             ran_ue->ran_ue_ngap_id, (long long)ran_ue->amf_ue_ngap_id);
-    if (amf_ue)
+    if (amf_ue) {
         ogs_info("    SUCI[%s]", amf_ue->suci ? amf_ue->suci : "Unknown");
+        CLEAR_AMF_UE_ALL_TIMERS(amf_ue);
+    }
 
     switch (ran_ue->ue_ctx_rel_action) {
     case NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE:

@@ -32,7 +32,7 @@ int nas_eps_send_to_enb(mme_ue_t *mme_ue, ogs_pkbuf_t *pkbuf)
 
     ogs_assert(mme_ue);
     enb_ue = enb_ue_cycle(mme_ue->enb_ue);
-    ogs_assert(enb_ue);
+    ogs_expect_or_return_val(enb_ue, OGS_ERROR);
 
     return s1ap_send_to_enb_ue(enb_ue, pkbuf);
 }
@@ -263,7 +263,7 @@ int nas_eps_send_detach_accept(mme_ue_t *mme_ue)
 
     ogs_assert(mme_ue);
     enb_ue = enb_ue_cycle(mme_ue->enb_ue);
-    ogs_assert(enb_ue);
+    ogs_expect_or_return_val(enb_ue, OGS_ERROR);
 
     ogs_debug("[%s] Detach accept", mme_ue->imsi_bcd);
 
