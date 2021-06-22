@@ -316,8 +316,8 @@ void ngap_handle_ng_setup_request(amf_gnb_t *gnb, ogs_ngap_message_t *message)
         ogs_warn("NG-Setup failure:");
         ogs_warn("    Cannot find S_NSSAI. "
                     "Check 'amf.plmn_support.s_nssai' configuration");
-        group = NGAP_Cause_PR_misc;
-        cause = NGAP_CauseMisc_unknown_PLMN;
+        group = NGAP_Cause_PR_radioNetwork;
+        cause = NGAP_CauseRadioNetwork_slice_not_supported;
 
         ogs_assert(OGS_OK ==
             ngap_send_ng_setup_failure(gnb, group, cause));
@@ -3593,8 +3593,8 @@ void ngap_handle_ran_configuration_update(
             ogs_warn("RANConfigurationUpdate failure:");
             ogs_warn("    Cannot find S_NSSAI. "
                         "Check 'amf.plmn_support.s_nssai' configuration");
-            group = NGAP_Cause_PR_misc;
-            cause = NGAP_CauseMisc_unknown_PLMN;
+            group = NGAP_Cause_PR_radioNetwork;
+            cause = NGAP_CauseRadioNetwork_slice_not_supported;
 
             ogs_assert(OGS_OK ==
                 ngap_send_ran_configuration_update_failure(gnb, group, cause));
