@@ -136,6 +136,7 @@ static void diam_log_func(int printlevel, const char *format, va_list ap)
         break;
     case FD_LOG_FATAL:
         diam_log_printf(OGS_LOG_FATAL, "%s\n", buffer);
+        exit(1);
         break;
     default:
         diam_log_printf(OGS_LOG_ERROR, "[%d] %s\n", printlevel, buffer);
