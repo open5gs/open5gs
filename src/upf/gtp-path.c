@@ -96,9 +96,10 @@ static void _gtpv1_tun_recv_common_cb(
                 ogs_assert(replybuf);
                 ogs_pkbuf_reserve(replybuf, OGS_TUN_MAX_HEADROOM);
                 ogs_pkbuf_put(replybuf, OGS_MAX_PKT_LEN-OGS_TUN_MAX_HEADROOM);
-                arp_reply(replybuf->data, recvbuf->data, recvbuf->len,
-                            proxy_mac_addr);
-                ogs_debug("[SEND] reply to ARP request");
+                uint8_t size = arp_reply(replybuf->data, recvbuf->data, recvbuf->len,
+                    proxy_mac_addr);
+                ogs_pkbuf_trim(replybuf, size);
+                ogs_info("[SEND] reply to ARP request: %u", size);
             } else {
                 goto cleanup;
             }
@@ -108,9 +109,10 @@ static void _gtpv1_tun_recv_common_cb(
             ogs_assert(replybuf);
             ogs_pkbuf_reserve(replybuf, OGS_TUN_MAX_HEADROOM);
             ogs_pkbuf_put(replybuf, OGS_MAX_PKT_LEN-OGS_TUN_MAX_HEADROOM);
-            nd_reply(replybuf->data, recvbuf->data, recvbuf->len,
-                        proxy_mac_addr);
-            ogs_debug("[SEND] reply to ND solicit");
+            uint8_t size = nd_reply(replybuf->data, recvbuf->data, recvbuf->len,
+                proxy_mac_addr);
+            ogs_pkbuf_trim(replybuf, size);
+            ogs_info("[SEND] reply to ND solicit: %u", size);
         }
         if (replybuf) {
             if (ogs_tun_write(fd, replybuf) != OGS_OK)
