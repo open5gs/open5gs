@@ -21,7 +21,6 @@ extern "C" {
 
 /* Dependencies */
 typedef enum NGAP_ResetType_PR {
-	NGAP_ResetType_PR_NOTHING,	/* No components present */
 	NGAP_ResetType_PR_nG_Interface,
 	NGAP_ResetType_PR_partOfNG_Interface,
 	NGAP_ResetType_PR_choice_Extensions
