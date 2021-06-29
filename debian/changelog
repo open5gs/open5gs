@@ -1,3 +1,9 @@
+open5gs (2.3.1~focal) focal; urgency=medium
+
+  * Support ePDG Interface
+
+ -- Sukchan Lee <acetcom@gmail.com>  Tue, 29 Jun 2021 09:55:40 +0900
+
 open5gs (2.3.0) unstable; urgency=medium
 
   * Bug Fixed
