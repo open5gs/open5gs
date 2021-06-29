@@ -1,8 +1,26 @@
+open5gs (2.3.1) unstable; urgency=medium
+
+  * Support ePDG Interface
+
+ -- Sukchan Lee <acetcom@gmail.com>  Tue, 29 Jun 2021 22:12:11 +0900
+
+open5gs (2.3.1~hirsute) hirsute; urgency=medium
+
+  * Support ePDG Interface
+
+ -- Sukchan Lee <acetcom@gmail.com>  Tue, 29 Jun 2021 22:11:04 +0900
+
+open5gs (2.3.1~bionic) bionic; urgency=medium
+
+  * Support ePDG Interface
+
+ -- Sukchan Lee <acetcom@gmail.com>  Tue, 29 Jun 2021 22:10:02 +0900
+
 open5gs (2.3.1~focal) focal; urgency=medium
 
   * Support ePDG Interface
 
- -- Sukchan Lee <acetcom@gmail.com>  Tue, 29 Jun 2021 09:55:40 +0900
+ -- Sukchan Lee <acetcom@gmail.com>  Tue, 29 Jun 2021 22:08:55 +0900
 
 open5gs (2.3.0) unstable; urgency=medium
 
