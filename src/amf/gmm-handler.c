@@ -211,7 +211,27 @@ int gmm_handle_registration_request(amf_ue_t *amf_ue,
         amf_ue->nhcc = 1;
     }
 
-    /* Create New GUTI */
+    /*
+     * TS24.501
+     * 5.3.3 Temporary identities
+     *
+     * The AMF shall assign a new 5G-GUTI for a particular UE:
+     *
+     * a) during a successful initial registration procedure;
+     * b) during a successful registration procedure
+     *    for mobility registration update; and
+     * c) after a successful service request procedure invoked
+     *    as a response to a paging request from the network and
+     *    before the release of the N1 NAS signalling connection
+     *    as specified in subclause 5.4.4.1.
+     *
+     * The AMF should assign a new 5G-GUTI for a particular UE
+     * during a successful registration procedure
+     * for periodic registration update.
+     *
+     * The AMF may assign a new 5G-GUTI at any time for a particular UE
+     * by performing the generic UE configuration update procedure.
+     */
     amf_ue_new_guti(amf_ue);
 
     ogs_debug("    OLD TAI[PLMN_ID:%06x,TAC:%d]",

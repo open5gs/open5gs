@@ -305,7 +305,27 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e)
         case OGS_NAS_5GS_CONFIGURATION_UPDATE_COMPLETE:
             ogs_debug("[%s] Configuration update complete", amf_ue->supi);
 
-            /* Confirm GUTI */
+            /*
+             * TS24.501
+             * 5.3.3 Temporary identities
+             *
+             * The AMF shall assign a new 5G-GUTI for a particular UE:
+             *
+             * a) during a successful initial registration procedure;
+             * b) during a successful registration procedure
+             *    for mobility registration update; and
+             * c) after a successful service request procedure invoked
+             *    as a response to a paging request from the network and
+             *    before the release of the N1 NAS signalling connection
+             *    as specified in subclause 5.4.4.1.
+             *
+             * The AMF should assign a new 5G-GUTI for a particular UE
+             * during a successful registration procedure
+             * for periodic registration update.
+             *
+             * The AMF may assign a new 5G-GUTI at any time for a particular UE
+             * by performing the generic UE configuration update procedure.
+             */
             if (amf_ue->next.m_tmsi) {
                 amf_ue_confirm_guti(amf_ue);
             } else {
@@ -988,7 +1008,27 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
 
             CLEAR_AMF_UE_TIMER(amf_ue->t3550);
 
-            /* Confirm GUTI */
+            /*
+             * TS24.501
+             * 5.3.3 Temporary identities
+             *
+             * The AMF shall assign a new 5G-GUTI for a particular UE:
+             *
+             * a) during a successful initial registration procedure;
+             * b) during a successful registration procedure
+             *    for mobility registration update; and
+             * c) after a successful service request procedure invoked
+             *    as a response to a paging request from the network and
+             *    before the release of the N1 NAS signalling connection
+             *    as specified in subclause 5.4.4.1.
+             *
+             * The AMF should assign a new 5G-GUTI for a particular UE
+             * during a successful registration procedure
+             * for periodic registration update.
+             *
+             * The AMF may assign a new 5G-GUTI at any time for a particular UE
+             * by performing the generic UE configuration update procedure.
+             */
             if (amf_ue->next.m_tmsi) {
                 amf_ue_confirm_guti(amf_ue);
             } else {
