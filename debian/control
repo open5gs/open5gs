@@ -218,7 +218,7 @@ Multi-Arch: same
 Depends: ${shlibs:Depends},
          ${misc:Depends},
          open5gs-common (= ${binary:Version})
-Description: PCF (Policy Control Function)
+Description: BSF (Binding Support Function)
  Open5GS is a C-language implementation of 5G Core and EPC
  Packet Core, i.e. the core network of an NR/LTE network (Release-16)
  .
