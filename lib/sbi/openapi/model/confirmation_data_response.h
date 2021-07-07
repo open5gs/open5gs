@@ -1,7 +1,7 @@
 /*
  * confirmation_data_response.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_confirmation_data_response_H_
@@ -29,7 +29,7 @@ OpenAPI_confirmation_data_response_t *OpenAPI_confirmation_data_response_create(
     OpenAPI_auth_result_e auth_result,
     char *supi,
     char *kseaf
-    );
+);
 void OpenAPI_confirmation_data_response_free(OpenAPI_confirmation_data_response_t *confirmation_data_response);
 OpenAPI_confirmation_data_response_t *OpenAPI_confirmation_data_response_parseFromJSON(cJSON *confirmation_data_responseJSON);
 cJSON *OpenAPI_confirmation_data_response_convertToJSON(OpenAPI_confirmation_data_response_t *confirmation_data_response);

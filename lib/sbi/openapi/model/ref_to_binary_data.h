@@ -1,7 +1,7 @@
 /*
  * ref_to_binary_data.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_ref_to_binary_data_H_
@@ -24,7 +24,7 @@ typedef struct OpenAPI_ref_to_binary_data_s {
 
 OpenAPI_ref_to_binary_data_t *OpenAPI_ref_to_binary_data_create(
     char *content_id
-    );
+);
 void OpenAPI_ref_to_binary_data_free(OpenAPI_ref_to_binary_data_t *ref_to_binary_data);
 OpenAPI_ref_to_binary_data_t *OpenAPI_ref_to_binary_data_parseFromJSON(cJSON *ref_to_binary_dataJSON);
 cJSON *OpenAPI_ref_to_binary_data_convertToJSON(OpenAPI_ref_to_binary_data_t *ref_to_binary_data);

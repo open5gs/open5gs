@@ -6,7 +6,7 @@
 
 OpenAPI_tac_info_t *OpenAPI_tac_info_create(
     OpenAPI_list_t *tac_list
-    )
+)
 {
     OpenAPI_tac_info_t *tac_info_local_var = OpenAPI_malloc(sizeof(OpenAPI_tac_info_t));
     if (!tac_info_local_var) {
@@ -48,11 +48,11 @@ cJSON *OpenAPI_tac_info_convertToJSON(OpenAPI_tac_info_t *tac_info)
 
     OpenAPI_lnode_t *tac_list_node;
     OpenAPI_list_for_each(tac_info->tac_list, tac_list_node)  {
-        if (cJSON_AddStringToObject(tac_list, "", (char*)tac_list_node->data) == NULL) {
-            ogs_error("OpenAPI_tac_info_convertToJSON() failed [tac_list]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(tac_list, "", (char*)tac_list_node->data) == NULL) {
+        ogs_error("OpenAPI_tac_info_convertToJSON() failed [tac_list]");
+        goto end;
     }
+                    }
 
 end:
     return item;
@@ -68,7 +68,7 @@ OpenAPI_tac_info_t *OpenAPI_tac_info_parseFromJSON(cJSON *tac_infoJSON)
     }
 
     OpenAPI_list_t *tac_listList;
-
+    
     cJSON *tac_list_local;
     if (!cJSON_IsArray(tac_list)) {
         ogs_error("OpenAPI_tac_info_parseFromJSON() failed [tac_list]");
@@ -77,16 +77,16 @@ OpenAPI_tac_info_t *OpenAPI_tac_info_parseFromJSON(cJSON *tac_infoJSON)
     tac_listList = OpenAPI_list_create();
 
     cJSON_ArrayForEach(tac_list_local, tac_list) {
-        if (!cJSON_IsString(tac_list_local)) {
-            ogs_error("OpenAPI_tac_info_parseFromJSON() failed [tac_list]");
-            goto end;
-        }
-        OpenAPI_list_add(tac_listList, ogs_strdup_or_assert(tac_list_local->valuestring));
+    if (!cJSON_IsString(tac_list_local)) {
+        ogs_error("OpenAPI_tac_info_parseFromJSON() failed [tac_list]");
+        goto end;
     }
+    OpenAPI_list_add(tac_listList , ogs_strdup_or_assert(tac_list_local->valuestring));
+                    }
 
     tac_info_local_var = OpenAPI_tac_info_create (
         tac_listList
-        );
+    );
 
     return tac_info_local_var;
 end:

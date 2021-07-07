@@ -1,7 +1,7 @@
 /*
  * tunnel_info.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_tunnel_info_H_
@@ -31,7 +31,7 @@ OpenAPI_tunnel_info_t *OpenAPI_tunnel_info_create(
     char *ipv6_addr,
     char *gtp_teid,
     OpenAPI_access_type_e an_type
-    );
+);
 void OpenAPI_tunnel_info_free(OpenAPI_tunnel_info_t *tunnel_info);
 OpenAPI_tunnel_info_t *OpenAPI_tunnel_info_parseFromJSON(cJSON *tunnel_infoJSON);
 cJSON *OpenAPI_tunnel_info_convertToJSON(OpenAPI_tunnel_info_t *tunnel_info);

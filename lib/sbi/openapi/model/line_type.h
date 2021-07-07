@@ -1,7 +1,7 @@
 /*
  * line_type.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_line_type_H_

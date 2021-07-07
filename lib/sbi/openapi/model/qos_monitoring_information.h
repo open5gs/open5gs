@@ -28,7 +28,7 @@ OpenAPI_qos_monitoring_information_t *OpenAPI_qos_monitoring_information_create(
     int rep_thresh_dl,
     int rep_thresh_ul,
     int rep_thresh_rp
-    );
+);
 void OpenAPI_qos_monitoring_information_free(OpenAPI_qos_monitoring_information_t *qos_monitoring_information);
 OpenAPI_qos_monitoring_information_t *OpenAPI_qos_monitoring_information_parseFromJSON(cJSON *qos_monitoring_informationJSON);
 cJSON *OpenAPI_qos_monitoring_information_convertToJSON(OpenAPI_qos_monitoring_information_t *qos_monitoring_information);

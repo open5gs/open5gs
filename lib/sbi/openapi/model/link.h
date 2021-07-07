@@ -1,7 +1,7 @@
 /*
  * link.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_link_H_
@@ -24,7 +24,7 @@ typedef struct OpenAPI_link_s {
 
 OpenAPI_link_t *OpenAPI_link_create(
     char *href
-    );
+);
 void OpenAPI_link_free(OpenAPI_link_t *link);
 OpenAPI_link_t *OpenAPI_link_parseFromJSON(cJSON *linkJSON);
 cJSON *OpenAPI_link_convertToJSON(OpenAPI_link_t *link);

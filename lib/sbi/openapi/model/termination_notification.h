@@ -1,7 +1,7 @@
 /*
  * termination_notification.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_termination_notification_H_
@@ -27,7 +27,7 @@ typedef struct OpenAPI_termination_notification_s {
 OpenAPI_termination_notification_t *OpenAPI_termination_notification_create(
     char *resource_uri,
     OpenAPI_sm_policy_association_release_cause_e cause
-    );
+);
 void OpenAPI_termination_notification_free(OpenAPI_termination_notification_t *termination_notification);
 OpenAPI_termination_notification_t *OpenAPI_termination_notification_parseFromJSON(cJSON *termination_notificationJSON);
 cJSON *OpenAPI_termination_notification_convertToJSON(OpenAPI_termination_notification_t *termination_notification);

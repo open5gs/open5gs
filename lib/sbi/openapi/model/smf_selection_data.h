@@ -1,7 +1,7 @@
 /*
  * smf_selection_data.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_smf_selection_data_H_
@@ -34,7 +34,7 @@ OpenAPI_smf_selection_data_t *OpenAPI_smf_selection_data_create(
     OpenAPI_snssai_t *snssai,
     OpenAPI_snssai_t *mapping_snssai,
     char *dnn
-    );
+);
 void OpenAPI_smf_selection_data_free(OpenAPI_smf_selection_data_t *smf_selection_data);
 OpenAPI_smf_selection_data_t *OpenAPI_smf_selection_data_parseFromJSON(cJSON *smf_selection_dataJSON);
 cJSON *OpenAPI_smf_selection_data_convertToJSON(OpenAPI_smf_selection_data_t *smf_selection_data);

@@ -1,7 +1,7 @@
 /*
  * problem_details.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_problem_details_H_
@@ -12,6 +12,8 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+#include "access_token_err.h"
+#include "access_token_req.h"
 #include "invalid_param.h"
 
 #ifdef __cplusplus
@@ -28,7 +30,9 @@ typedef struct OpenAPI_problem_details_s {
     char *cause;
     OpenAPI_list_t *invalid_params;
     char *supported_features;
-    char *target_scp;
+    struct OpenAPI_access_token_err_s *access_token_error;
+    struct OpenAPI_access_token_req_s *access_token_request;
+    char *nrf_id;
 } OpenAPI_problem_details_t;
 
 OpenAPI_problem_details_t *OpenAPI_problem_details_create(
@@ -40,8 +44,10 @@ OpenAPI_problem_details_t *OpenAPI_problem_details_create(
     char *cause,
     OpenAPI_list_t *invalid_params,
     char *supported_features,
-    char *target_scp
-    );
+    OpenAPI_access_token_err_t *access_token_error,
+    OpenAPI_access_token_req_t *access_token_request,
+    char *nrf_id
+);
 void OpenAPI_problem_details_free(OpenAPI_problem_details_t *problem_details);
 OpenAPI_problem_details_t *OpenAPI_problem_details_parseFromJSON(cJSON *problem_detailsJSON);
 cJSON *OpenAPI_problem_details_convertToJSON(OpenAPI_problem_details_t *problem_details);

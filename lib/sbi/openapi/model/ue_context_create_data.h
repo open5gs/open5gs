@@ -1,7 +1,7 @@
 /*
  * ue_context_create_data.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_ue_context_create_data_H_
@@ -16,6 +16,7 @@
 #include "n2_sm_information.h"
 #include "ng_ap_cause.h"
 #include "ng_ran_target_id.h"
+#include "plmn_id_nid.h"
 #include "ue_context.h"
 
 #ifdef __cplusplus
@@ -28,11 +29,11 @@ typedef struct OpenAPI_ue_context_create_data_s {
     struct OpenAPI_ng_ran_target_id_s *target_id;
     struct OpenAPI_n2_info_content_s *source_to_target_data;
     OpenAPI_list_t *pdu_session_list;
-    char mme_control_fteid;
     char *n2_notify_uri;
     struct OpenAPI_n2_info_content_s *ue_radio_capability;
     struct OpenAPI_ng_ap_cause_s *ngap_cause;
     char *supported_features;
+    struct OpenAPI_plmn_id_nid_s *serving_network;
 } OpenAPI_ue_context_create_data_t;
 
 OpenAPI_ue_context_create_data_t *OpenAPI_ue_context_create_data_create(
@@ -40,12 +41,12 @@ OpenAPI_ue_context_create_data_t *OpenAPI_ue_context_create_data_create(
     OpenAPI_ng_ran_target_id_t *target_id,
     OpenAPI_n2_info_content_t *source_to_target_data,
     OpenAPI_list_t *pdu_session_list,
-    char mme_control_fteid,
     char *n2_notify_uri,
     OpenAPI_n2_info_content_t *ue_radio_capability,
     OpenAPI_ng_ap_cause_t *ngap_cause,
-    char *supported_features
-    );
+    char *supported_features,
+    OpenAPI_plmn_id_nid_t *serving_network
+);
 void OpenAPI_ue_context_create_data_free(OpenAPI_ue_context_create_data_t *ue_context_create_data);
 OpenAPI_ue_context_create_data_t *OpenAPI_ue_context_create_data_parseFromJSON(cJSON *ue_context_create_dataJSON);
 cJSON *OpenAPI_ue_context_create_data_convertToJSON(OpenAPI_ue_context_create_data_t *ue_context_create_data);

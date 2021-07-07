@@ -1,7 +1,7 @@
 /*
  * status_change.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_status_change_H_

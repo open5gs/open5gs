@@ -6,7 +6,7 @@
 
 OpenAPI_lcs_broadcast_assistance_types_data_t *OpenAPI_lcs_broadcast_assistance_types_data_create(
     OpenAPI_list_t *location_assistance_type
-    )
+)
 {
     OpenAPI_lcs_broadcast_assistance_types_data_t *lcs_broadcast_assistance_types_data_local_var = OpenAPI_malloc(sizeof(OpenAPI_lcs_broadcast_assistance_types_data_t));
     if (!lcs_broadcast_assistance_types_data_local_var) {
@@ -48,7 +48,7 @@ cJSON *OpenAPI_lcs_broadcast_assistance_types_data_convertToJSON(OpenAPI_lcs_bro
 
     OpenAPI_lnode_t *location_assistance_type_node;
     OpenAPI_list_for_each(lcs_broadcast_assistance_types_data->location_assistance_type, location_assistance_type_node)  {
-    }
+                    }
 
 end:
     return item;
@@ -64,7 +64,7 @@ OpenAPI_lcs_broadcast_assistance_types_data_t *OpenAPI_lcs_broadcast_assistance_
     }
 
     OpenAPI_list_t *location_assistance_typeList;
-
+    
     cJSON *location_assistance_type_local;
     if (!cJSON_IsArray(location_assistance_type)) {
         ogs_error("OpenAPI_lcs_broadcast_assistance_types_data_parseFromJSON() failed [location_assistance_type]");
@@ -73,11 +73,11 @@ OpenAPI_lcs_broadcast_assistance_types_data_t *OpenAPI_lcs_broadcast_assistance_
     location_assistance_typeList = OpenAPI_list_create();
 
     cJSON_ArrayForEach(location_assistance_type_local, location_assistance_type) {
-    }
+                    }
 
     lcs_broadcast_assistance_types_data_local_var = OpenAPI_lcs_broadcast_assistance_types_data_create (
         location_assistance_typeList
-        );
+    );
 
     return lcs_broadcast_assistance_types_data_local_var;
 end:

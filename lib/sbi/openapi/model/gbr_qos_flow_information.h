@@ -1,7 +1,7 @@
 /*
  * gbr_qos_flow_information.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_gbr_qos_flow_information_H_
@@ -40,7 +40,7 @@ OpenAPI_gbr_qos_flow_information_t *OpenAPI_gbr_qos_flow_information_create(
     int max_packet_loss_rate_dl,
     int max_packet_loss_rate_ul,
     OpenAPI_list_t *alternative_qos_profile_list
-    );
+);
 void OpenAPI_gbr_qos_flow_information_free(OpenAPI_gbr_qos_flow_information_t *gbr_qos_flow_information);
 OpenAPI_gbr_qos_flow_information_t *OpenAPI_gbr_qos_flow_information_parseFromJSON(cJSON *gbr_qos_flow_informationJSON);
 cJSON *OpenAPI_gbr_qos_flow_information_convertToJSON(OpenAPI_gbr_qos_flow_information_t *gbr_qos_flow_information);

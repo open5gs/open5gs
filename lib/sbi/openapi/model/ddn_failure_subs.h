@@ -1,7 +1,7 @@
 /*
  * ddn_failure_subs.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_ddn_failure_subs_H_
@@ -27,7 +27,7 @@ typedef struct OpenAPI_ddn_failure_subs_s {
 OpenAPI_ddn_failure_subs_t *OpenAPI_ddn_failure_subs_create(
     int ddn_failure_subs_ind,
     OpenAPI_list_t *ddn_failure_subs_info_list
-    );
+);
 void OpenAPI_ddn_failure_subs_free(OpenAPI_ddn_failure_subs_t *ddn_failure_subs);
 OpenAPI_ddn_failure_subs_t *OpenAPI_ddn_failure_subs_parseFromJSON(cJSON *ddn_failure_subsJSON);
 cJSON *OpenAPI_ddn_failure_subs_convertToJSON(OpenAPI_ddn_failure_subs_t *ddn_failure_subs);

@@ -1,7 +1,7 @@
 /*
  * metering_method.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_metering_method_H_

@@ -1,7 +1,7 @@
 /*
  * nf_status.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_nf_status_H_

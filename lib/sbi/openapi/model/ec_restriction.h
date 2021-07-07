@@ -1,7 +1,7 @@
 /*
  * ec_restriction.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_ec_restriction_H_
@@ -31,7 +31,7 @@ OpenAPI_ec_restriction_t *OpenAPI_ec_restriction_create(
     int reference_id,
     OpenAPI_list_t *plmn_ec_infos,
     char *mtc_provider_information
-    );
+);
 void OpenAPI_ec_restriction_free(OpenAPI_ec_restriction_t *ec_restriction);
 OpenAPI_ec_restriction_t *OpenAPI_ec_restriction_parseFromJSON(cJSON *ec_restrictionJSON);
 cJSON *OpenAPI_ec_restriction_convertToJSON(OpenAPI_ec_restriction_t *ec_restriction);

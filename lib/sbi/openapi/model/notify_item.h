@@ -1,7 +1,7 @@
 /*
  * notify_item.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_notify_item_H_
@@ -27,7 +27,7 @@ typedef struct OpenAPI_notify_item_s {
 OpenAPI_notify_item_t *OpenAPI_notify_item_create(
     char *resource_id,
     OpenAPI_list_t *changes
-    );
+);
 void OpenAPI_notify_item_free(OpenAPI_notify_item_t *notify_item);
 OpenAPI_notify_item_t *OpenAPI_notify_item_parseFromJSON(cJSON *notify_itemJSON);
 cJSON *OpenAPI_notify_item_convertToJSON(OpenAPI_notify_item_t *notify_item);

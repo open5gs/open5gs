@@ -1,7 +1,7 @@
 /*
  * event_for_mdt.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_event_for_mdt_H_

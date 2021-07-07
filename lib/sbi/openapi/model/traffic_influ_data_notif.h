@@ -1,7 +1,7 @@
 /*
  * traffic_influ_data_notif.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_traffic_influ_data_notif_H_
@@ -27,7 +27,7 @@ typedef struct OpenAPI_traffic_influ_data_notif_s {
 OpenAPI_traffic_influ_data_notif_t *OpenAPI_traffic_influ_data_notif_create(
     char *res_uri,
     OpenAPI_traffic_influ_data_t *traffic_influ_data
-    );
+);
 void OpenAPI_traffic_influ_data_notif_free(OpenAPI_traffic_influ_data_notif_t *traffic_influ_data_notif);
 OpenAPI_traffic_influ_data_notif_t *OpenAPI_traffic_influ_data_notif_parseFromJSON(cJSON *traffic_influ_data_notifJSON);
 cJSON *OpenAPI_traffic_influ_data_notif_convertToJSON(OpenAPI_traffic_influ_data_notif_t *traffic_influ_data_notif);

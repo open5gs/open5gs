@@ -1,7 +1,7 @@
 /*
  * report_interval_nr_mdt.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_report_interval_nr_mdt_H_

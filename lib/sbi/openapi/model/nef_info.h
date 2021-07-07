@@ -37,7 +37,7 @@ OpenAPI_nef_info_t *OpenAPI_nef_info_create(
     OpenAPI_list_t *gpsi_ranges,
     OpenAPI_list_t *external_group_identifiers_ranges,
     OpenAPI_list_t *served_fqdn_list
-    );
+);
 void OpenAPI_nef_info_free(OpenAPI_nef_info_t *nef_info);
 OpenAPI_nef_info_t *OpenAPI_nef_info_parseFromJSON(cJSON *nef_infoJSON);
 cJSON *OpenAPI_nef_info_convertToJSON(OpenAPI_nef_info_t *nef_info);

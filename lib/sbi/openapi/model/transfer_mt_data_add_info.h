@@ -1,7 +1,7 @@
 /*
  * transfer_mt_data_add_info.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_transfer_mt_data_add_info_H_
@@ -24,7 +24,7 @@ typedef struct OpenAPI_transfer_mt_data_add_info_s {
 
 OpenAPI_transfer_mt_data_add_info_t *OpenAPI_transfer_mt_data_add_info_create(
     int max_waiting_time
-    );
+);
 void OpenAPI_transfer_mt_data_add_info_free(OpenAPI_transfer_mt_data_add_info_t *transfer_mt_data_add_info);
 OpenAPI_transfer_mt_data_add_info_t *OpenAPI_transfer_mt_data_add_info_parseFromJSON(cJSON *transfer_mt_data_add_infoJSON);
 cJSON *OpenAPI_transfer_mt_data_add_info_convertToJSON(OpenAPI_transfer_mt_data_add_info_t *transfer_mt_data_add_info);

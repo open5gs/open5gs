@@ -1,7 +1,7 @@
 /*
  * access_tech.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_access_tech_H_
@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+#include "access_tech_any_of.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -22,7 +23,7 @@ typedef struct OpenAPI_access_tech_s {
 } OpenAPI_access_tech_t;
 
 OpenAPI_access_tech_t *OpenAPI_access_tech_create(
-    );
+);
 void OpenAPI_access_tech_free(OpenAPI_access_tech_t *access_tech);
 OpenAPI_access_tech_t *OpenAPI_access_tech_parseFromJSON(cJSON *access_techJSON);
 cJSON *OpenAPI_access_tech_convertToJSON(OpenAPI_access_tech_t *access_tech);

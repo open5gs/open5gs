@@ -1,7 +1,7 @@
 /*
  * ip_sm_gw_registration.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_ip_sm_gw_registration_H_
@@ -29,7 +29,7 @@ OpenAPI_ip_sm_gw_registration_t *OpenAPI_ip_sm_gw_registration_create(
     char *ip_sm_gw_map_address,
     OpenAPI_network_node_diameter_address_t *ip_sm_gw_diameter_address,
     int unri_indicator
-    );
+);
 void OpenAPI_ip_sm_gw_registration_free(OpenAPI_ip_sm_gw_registration_t *ip_sm_gw_registration);
 OpenAPI_ip_sm_gw_registration_t *OpenAPI_ip_sm_gw_registration_parseFromJSON(cJSON *ip_sm_gw_registrationJSON);
 cJSON *OpenAPI_ip_sm_gw_registration_convertToJSON(OpenAPI_ip_sm_gw_registration_t *ip_sm_gw_registration);

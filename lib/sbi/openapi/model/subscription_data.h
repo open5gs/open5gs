@@ -62,7 +62,7 @@ OpenAPI_subscription_data_t *OpenAPI_subscription_data_create(
     OpenAPI_list_t *req_plmn_list,
     OpenAPI_list_t *req_snpn_list,
     OpenAPI_list_t *serving_scope
-    );
+);
 void OpenAPI_subscription_data_free(OpenAPI_subscription_data_t *subscription_data);
 OpenAPI_subscription_data_t *OpenAPI_subscription_data_parseFromJSON(cJSON *subscription_dataJSON);
 cJSON *OpenAPI_subscription_data_convertToJSON(OpenAPI_subscription_data_t *subscription_data);

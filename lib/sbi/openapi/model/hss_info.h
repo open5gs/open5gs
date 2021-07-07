@@ -34,7 +34,7 @@ OpenAPI_hss_info_t *OpenAPI_hss_info_create(
     OpenAPI_list_t *ims_private_identity_ranges,
     OpenAPI_list_t *ims_public_identity_ranges,
     OpenAPI_list_t *msisdn_ranges
-    );
+);
 void OpenAPI_hss_info_free(OpenAPI_hss_info_t *hss_info);
 OpenAPI_hss_info_t *OpenAPI_hss_info_parseFromJSON(cJSON *hss_infoJSON);
 cJSON *OpenAPI_hss_info_convertToJSON(OpenAPI_hss_info_t *hss_info);

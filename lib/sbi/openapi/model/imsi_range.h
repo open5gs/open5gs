@@ -28,7 +28,7 @@ OpenAPI_imsi_range_t *OpenAPI_imsi_range_create(
     char *start,
     char *end,
     char *pattern
-    );
+);
 void OpenAPI_imsi_range_free(OpenAPI_imsi_range_t *imsi_range);
 OpenAPI_imsi_range_t *OpenAPI_imsi_range_parseFromJSON(cJSON *imsi_rangeJSON);
 cJSON *OpenAPI_imsi_range_convertToJSON(OpenAPI_imsi_range_t *imsi_range);

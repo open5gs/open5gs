@@ -1,7 +1,7 @@
 /*
  * edrx_parameters.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_edrx_parameters_H_
@@ -27,7 +27,7 @@ typedef struct OpenAPI_edrx_parameters_s {
 OpenAPI_edrx_parameters_t *OpenAPI_edrx_parameters_create(
     OpenAPI_rat_type_e rat_type,
     char *edrx_value
-    );
+);
 void OpenAPI_edrx_parameters_free(OpenAPI_edrx_parameters_t *edrx_parameters);
 OpenAPI_edrx_parameters_t *OpenAPI_edrx_parameters_parseFromJSON(cJSON *edrx_parametersJSON);
 cJSON *OpenAPI_edrx_parameters_convertToJSON(OpenAPI_edrx_parameters_t *edrx_parameters);

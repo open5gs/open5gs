@@ -1,7 +1,7 @@
 /*
  * upu_info.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_upu_info_H_
@@ -12,7 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
-#include "upu_data_2.h"
+#include "upu_data_1.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -35,7 +35,7 @@ OpenAPI_upu_info_t *OpenAPI_upu_info_create(
     char *upu_mac_iausf,
     char *counter_upu,
     char *provisioning_time
-    );
+);
 void OpenAPI_upu_info_free(OpenAPI_upu_info_t *upu_info);
 OpenAPI_upu_info_t *OpenAPI_upu_info_parseFromJSON(cJSON *upu_infoJSON);
 cJSON *OpenAPI_upu_info_convertToJSON(OpenAPI_upu_info_t *upu_info);

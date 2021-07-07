@@ -7,7 +7,7 @@
 OpenAPI_guami_t *OpenAPI_guami_create(
     OpenAPI_plmn_id_nid_t *plmn_id,
     char *amf_id
-    )
+)
 {
     OpenAPI_guami_t *guami_local_var = OpenAPI_malloc(sizeof(OpenAPI_guami_t));
     if (!guami_local_var) {
@@ -70,7 +70,7 @@ OpenAPI_guami_t *OpenAPI_guami_parseFromJSON(cJSON *guamiJSON)
     }
 
     OpenAPI_plmn_id_nid_t *plmn_id_local_nonprim = NULL;
-
+    
     plmn_id_local_nonprim = OpenAPI_plmn_id_nid_parseFromJSON(plmn_id);
 
     cJSON *amf_id = cJSON_GetObjectItemCaseSensitive(guamiJSON, "amfId");
@@ -79,7 +79,7 @@ OpenAPI_guami_t *OpenAPI_guami_parseFromJSON(cJSON *guamiJSON)
         goto end;
     }
 
-
+    
     if (!cJSON_IsString(amf_id)) {
         ogs_error("OpenAPI_guami_parseFromJSON() failed [amf_id]");
         goto end;
@@ -88,7 +88,7 @@ OpenAPI_guami_t *OpenAPI_guami_parseFromJSON(cJSON *guamiJSON)
     guami_local_var = OpenAPI_guami_create (
         plmn_id_local_nonprim,
         ogs_strdup_or_assert(amf_id->valuestring)
-        );
+    );
 
     return guami_local_var;
 end:

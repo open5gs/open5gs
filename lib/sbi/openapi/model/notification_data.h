@@ -36,7 +36,7 @@ OpenAPI_notification_data_t *OpenAPI_notification_data_create(
     OpenAPI_nf_profile_t *nf_profile,
     OpenAPI_list_t *profile_changes,
     OpenAPI_condition_event_type_e condition_event
-    );
+);
 void OpenAPI_notification_data_free(OpenAPI_notification_data_t *notification_data);
 OpenAPI_notification_data_t *OpenAPI_notification_data_parseFromJSON(cJSON *notification_dataJSON);
 cJSON *OpenAPI_notification_data_convertToJSON(OpenAPI_notification_data_t *notification_data);

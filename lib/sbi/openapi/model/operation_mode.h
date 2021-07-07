@@ -1,7 +1,7 @@
 /*
  * operation_mode.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_operation_mode_H_

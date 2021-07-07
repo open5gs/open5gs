@@ -1,7 +1,7 @@
 /*
  * scheduled_communication_time.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_scheduled_communication_time_H_
@@ -28,7 +28,7 @@ OpenAPI_scheduled_communication_time_t *OpenAPI_scheduled_communication_time_cre
     OpenAPI_list_t *days_of_week,
     char *time_of_day_start,
     char *time_of_day_end
-    );
+);
 void OpenAPI_scheduled_communication_time_free(OpenAPI_scheduled_communication_time_t *scheduled_communication_time);
 OpenAPI_scheduled_communication_time_t *OpenAPI_scheduled_communication_time_parseFromJSON(cJSON *scheduled_communication_timeJSON);
 cJSON *OpenAPI_scheduled_communication_time_convertToJSON(OpenAPI_scheduled_communication_time_t *scheduled_communication_time);

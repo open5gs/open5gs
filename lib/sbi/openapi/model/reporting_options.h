@@ -1,7 +1,7 @@
 /*
  * reporting_options.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_reporting_options_H_
@@ -35,7 +35,7 @@ OpenAPI_reporting_options_t *OpenAPI_reporting_options_create(
     int sampling_ratio,
     int guard_time,
     int report_period
-    );
+);
 void OpenAPI_reporting_options_free(OpenAPI_reporting_options_t *reporting_options);
 OpenAPI_reporting_options_t *OpenAPI_reporting_options_parseFromJSON(cJSON *reporting_optionsJSON);
 cJSON *OpenAPI_reporting_options_convertToJSON(OpenAPI_reporting_options_t *reporting_options);

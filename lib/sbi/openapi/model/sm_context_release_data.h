@@ -1,7 +1,7 @@
 /*
  * sm_context_release_data.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_sm_context_release_data_H_
@@ -47,7 +47,7 @@ OpenAPI_sm_context_release_data_t *OpenAPI_sm_context_release_data_create(
     OpenAPI_ref_to_binary_data_t *n2_sm_info,
     OpenAPI_n2_sm_info_type_e n2_sm_info_type,
     int ismf_release_only
-    );
+);
 void OpenAPI_sm_context_release_data_free(OpenAPI_sm_context_release_data_t *sm_context_release_data);
 OpenAPI_sm_context_release_data_t *OpenAPI_sm_context_release_data_parseFromJSON(cJSON *sm_context_release_dataJSON);
 cJSON *OpenAPI_sm_context_release_data_convertToJSON(OpenAPI_sm_context_release_data_t *sm_context_release_data);

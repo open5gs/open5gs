@@ -35,7 +35,7 @@ OpenAPI_pcscf_restoration_request_data_t *OpenAPI_pcscf_restoration_request_data
     char *supi,
     char *ue_ipv4,
     char *ue_ipv6
-    );
+);
 void OpenAPI_pcscf_restoration_request_data_free(OpenAPI_pcscf_restoration_request_data_t *pcscf_restoration_request_data);
 OpenAPI_pcscf_restoration_request_data_t *OpenAPI_pcscf_restoration_request_data_parseFromJSON(cJSON *pcscf_restoration_request_dataJSON);
 cJSON *OpenAPI_pcscf_restoration_request_data_convertToJSON(OpenAPI_pcscf_restoration_request_data_t *pcscf_restoration_request_data);

@@ -6,15 +6,15 @@
 
 OpenAPI_port_management_container_t *OpenAPI_port_management_container_create(
     char port_man_cont,
-    OpenAPI_tsn_port_identifier_t *port_identifier
-    )
+    int port_num
+)
 {
     OpenAPI_port_management_container_t *port_management_container_local_var = OpenAPI_malloc(sizeof(OpenAPI_port_management_container_t));
     if (!port_management_container_local_var) {
         return NULL;
     }
     port_management_container_local_var->port_man_cont = port_man_cont;
-    port_management_container_local_var->port_identifier = port_identifier;
+    port_management_container_local_var->port_num = port_num;
 
     return port_management_container_local_var;
 }
@@ -25,7 +25,6 @@ void OpenAPI_port_management_container_free(OpenAPI_port_management_container_t 
         return;
     }
     OpenAPI_lnode_t *node;
-    OpenAPI_tsn_port_identifier_free(port_management_container->port_identifier);
     ogs_free(port_management_container);
 }
 
@@ -44,14 +43,8 @@ cJSON *OpenAPI_port_management_container_convertToJSON(OpenAPI_port_management_c
         goto end;
     }
 
-    cJSON *port_identifier_local_JSON = OpenAPI_tsn_port_identifier_convertToJSON(port_management_container->port_identifier);
-    if (port_identifier_local_JSON == NULL) {
-        ogs_error("OpenAPI_port_management_container_convertToJSON() failed [port_identifier]");
-        goto end;
-    }
-    cJSON_AddItemToObject(item, "portIdentifier", port_identifier_local_JSON);
-    if (item->child == NULL) {
-        ogs_error("OpenAPI_port_management_container_convertToJSON() failed [port_identifier]");
+    if (cJSON_AddNumberToObject(item, "portNum", port_management_container->port_num) == NULL) {
+        ogs_error("OpenAPI_port_management_container_convertToJSON() failed [port_num]");
         goto end;
     }
 
@@ -68,26 +61,28 @@ OpenAPI_port_management_container_t *OpenAPI_port_management_container_parseFrom
         goto end;
     }
 
-
+    
     if (!cJSON_IsNumber(port_man_cont)) {
         ogs_error("OpenAPI_port_management_container_parseFromJSON() failed [port_man_cont]");
         goto end;
     }
 
-    cJSON *port_identifier = cJSON_GetObjectItemCaseSensitive(port_management_containerJSON, "portIdentifier");
-    if (!port_identifier) {
-        ogs_error("OpenAPI_port_management_container_parseFromJSON() failed [port_identifier]");
+    cJSON *port_num = cJSON_GetObjectItemCaseSensitive(port_management_containerJSON, "portNum");
+    if (!port_num) {
+        ogs_error("OpenAPI_port_management_container_parseFromJSON() failed [port_num]");
         goto end;
     }
 
-    OpenAPI_tsn_port_identifier_t *port_identifier_local_nonprim = NULL;
-
-    port_identifier_local_nonprim = OpenAPI_tsn_port_identifier_parseFromJSON(port_identifier);
+    
+    if (!cJSON_IsNumber(port_num)) {
+        ogs_error("OpenAPI_port_management_container_parseFromJSON() failed [port_num]");
+        goto end;
+    }
 
     port_management_container_local_var = OpenAPI_port_management_container_create (
         port_man_cont->valueint,
-        port_identifier_local_nonprim
-        );
+        port_num->valuedouble
+    );
 
     return port_management_container_local_var;
 end:

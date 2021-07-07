@@ -5,7 +5,7 @@
 #include "hss_authentication_vectors.h"
 
 OpenAPI_hss_authentication_vectors_t *OpenAPI_hss_authentication_vectors_create(
-    )
+)
 {
     OpenAPI_hss_authentication_vectors_t *hss_authentication_vectors_local_var = OpenAPI_malloc(sizeof(OpenAPI_hss_authentication_vectors_t));
     if (!hss_authentication_vectors_local_var) {
@@ -42,7 +42,7 @@ OpenAPI_hss_authentication_vectors_t *OpenAPI_hss_authentication_vectors_parseFr
 {
     OpenAPI_hss_authentication_vectors_t *hss_authentication_vectors_local_var = NULL;
     hss_authentication_vectors_local_var = OpenAPI_hss_authentication_vectors_create (
-        );
+    );
 
     return hss_authentication_vectors_local_var;
 end:

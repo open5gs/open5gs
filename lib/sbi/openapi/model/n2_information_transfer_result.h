@@ -1,7 +1,7 @@
 /*
  * n2_information_transfer_result.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_n2_information_transfer_result_H_

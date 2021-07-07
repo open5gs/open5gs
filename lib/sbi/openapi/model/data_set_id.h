@@ -1,7 +1,7 @@
 /*
  * data_set_id.h
  *
- * Types of data sets stored in UDR
+ * 
  */
 
 #ifndef _OpenAPI_data_set_id_H_
@@ -17,16 +17,11 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_data_set_id_s OpenAPI_data_set_id_t;
-typedef struct OpenAPI_data_set_id_s {
-} OpenAPI_data_set_id_t;
+typedef enum { OpenAPI_data_set_id_NULL = 0, OpenAPI_data_set_id_SUBSCRIPTION, OpenAPI_data_set_id_POLICY, OpenAPI_data_set_id_EXPOSURE, OpenAPI_data_set_id_APPLICATION } OpenAPI_data_set_id_e;
 
-OpenAPI_data_set_id_t *OpenAPI_data_set_id_create(
-    );
-void OpenAPI_data_set_id_free(OpenAPI_data_set_id_t *data_set_id);
-OpenAPI_data_set_id_t *OpenAPI_data_set_id_parseFromJSON(cJSON *data_set_idJSON);
-cJSON *OpenAPI_data_set_id_convertToJSON(OpenAPI_data_set_id_t *data_set_id);
-OpenAPI_data_set_id_t *OpenAPI_data_set_id_copy(OpenAPI_data_set_id_t *dst, OpenAPI_data_set_id_t *src);
+char* OpenAPI_data_set_id_ToString(OpenAPI_data_set_id_e data_set_id);
+
+OpenAPI_data_set_id_e OpenAPI_data_set_id_FromString(char* data_set_id);
 
 #ifdef __cplusplus
 }

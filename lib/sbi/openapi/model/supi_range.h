@@ -28,7 +28,7 @@ OpenAPI_supi_range_t *OpenAPI_supi_range_create(
     char *start,
     char *end,
     char *pattern
-    );
+);
 void OpenAPI_supi_range_free(OpenAPI_supi_range_t *supi_range);
 OpenAPI_supi_range_t *OpenAPI_supi_range_parseFromJSON(cJSON *supi_rangeJSON);
 cJSON *OpenAPI_supi_range_convertToJSON(OpenAPI_supi_range_t *supi_range);

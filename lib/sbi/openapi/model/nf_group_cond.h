@@ -31,7 +31,7 @@ typedef struct OpenAPI_nf_group_cond_s {
 OpenAPI_nf_group_cond_t *OpenAPI_nf_group_cond_create(
     OpenAPI_nf_group_cond_nf_type_e nf_type,
     char *nf_group_id
-    );
+);
 void OpenAPI_nf_group_cond_free(OpenAPI_nf_group_cond_t *nf_group_cond);
 OpenAPI_nf_group_cond_t *OpenAPI_nf_group_cond_parseFromJSON(cJSON *nf_group_condJSON);
 cJSON *OpenAPI_nf_group_cond_convertToJSON(OpenAPI_nf_group_cond_t *nf_group_cond);

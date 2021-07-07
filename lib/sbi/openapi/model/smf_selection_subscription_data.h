@@ -1,7 +1,7 @@
 /*
  * smf_selection_subscription_data.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_smf_selection_subscription_data_H_
@@ -29,7 +29,7 @@ OpenAPI_smf_selection_subscription_data_t *OpenAPI_smf_selection_subscription_da
     char *supported_features,
     OpenAPI_list_t* subscribed_snssai_infos,
     char *shared_snssai_infos_id
-    );
+);
 void OpenAPI_smf_selection_subscription_data_free(OpenAPI_smf_selection_subscription_data_t *smf_selection_subscription_data);
 OpenAPI_smf_selection_subscription_data_t *OpenAPI_smf_selection_subscription_data_parseFromJSON(cJSON *smf_selection_subscription_dataJSON);
 cJSON *OpenAPI_smf_selection_subscription_data_convertToJSON(OpenAPI_smf_selection_subscription_data_t *smf_selection_subscription_data);

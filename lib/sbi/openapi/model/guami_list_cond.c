@@ -6,7 +6,7 @@
 
 OpenAPI_guami_list_cond_t *OpenAPI_guami_list_cond_create(
     OpenAPI_list_t *guami_list
-    )
+)
 {
     OpenAPI_guami_list_cond_t *guami_list_cond_local_var = OpenAPI_malloc(sizeof(OpenAPI_guami_list_cond_t));
     if (!guami_list_cond_local_var) {
@@ -72,9 +72,9 @@ OpenAPI_guami_list_cond_t *OpenAPI_guami_list_cond_parseFromJSON(cJSON *guami_li
     }
 
     OpenAPI_list_t *guami_listList;
-
+    
     cJSON *guami_list_local_nonprimitive;
-    if (!cJSON_IsArray(guami_list)) {
+    if (!cJSON_IsArray(guami_list)){
         ogs_error("OpenAPI_guami_list_cond_parseFromJSON() failed [guami_list]");
         goto end;
     }
@@ -93,7 +93,7 @@ OpenAPI_guami_list_cond_t *OpenAPI_guami_list_cond_parseFromJSON(cJSON *guami_li
 
     guami_list_cond_local_var = OpenAPI_guami_list_cond_create (
         guami_listList
-        );
+    );
 
     return guami_list_cond_local_var;
 end:

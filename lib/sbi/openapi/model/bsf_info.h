@@ -32,7 +32,7 @@ OpenAPI_bsf_info_t *OpenAPI_bsf_info_create(
     OpenAPI_list_t *ip_domain_list,
     OpenAPI_list_t *ipv4_address_ranges,
     OpenAPI_list_t *ipv6_prefix_ranges
-    );
+);
 void OpenAPI_bsf_info_free(OpenAPI_bsf_info_t *bsf_info);
 OpenAPI_bsf_info_t *OpenAPI_bsf_info_parseFromJSON(cJSON *bsf_infoJSON);
 cJSON *OpenAPI_bsf_info_convertToJSON(OpenAPI_bsf_info_t *bsf_info);

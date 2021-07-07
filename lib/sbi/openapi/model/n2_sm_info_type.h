@@ -1,7 +1,7 @@
 /*
  * n2_sm_info_type.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_n2_sm_info_type_H_

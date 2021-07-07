@@ -6,7 +6,7 @@
 
 OpenAPI_spatial_validity_rm_t *OpenAPI_spatial_validity_rm_create(
     OpenAPI_list_t* presence_info_list
-    )
+)
 {
     OpenAPI_spatial_validity_rm_t *spatial_validity_rm_local_var = OpenAPI_malloc(sizeof(OpenAPI_spatial_validity_rm_t));
     if (!spatial_validity_rm_local_var) {
@@ -52,14 +52,14 @@ cJSON *OpenAPI_spatial_validity_rm_convertToJSON(OpenAPI_spatial_validity_rm_t *
     if (spatial_validity_rm->presence_info_list) {
         OpenAPI_list_for_each(spatial_validity_rm->presence_info_list, presence_info_list_node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)presence_info_list_node->data;
-            cJSON *itemLocal = OpenAPI_presence_info_convertToJSON(localKeyValue->value);
-            if (itemLocal == NULL) {
-                ogs_error("OpenAPI_spatial_validity_rm_convertToJSON() failed [presence_info_list]");
-                goto end;
-            }
-            cJSON_AddItemToObject(presence_info_list, localKeyValue->key, itemLocal);
+        cJSON *itemLocal = OpenAPI_presence_info_convertToJSON(localKeyValue->value);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_spatial_validity_rm_convertToJSON() failed [presence_info_list]");
+            goto end;
         }
-    }
+        cJSON_AddItemToObject(presence_info_list, localKeyValue->key, itemLocal);
+            }
+        }
 
 end:
     return item;
@@ -75,7 +75,7 @@ OpenAPI_spatial_validity_rm_t *OpenAPI_spatial_validity_rm_parseFromJSON(cJSON *
     }
 
     OpenAPI_list_t *presence_info_listList;
-
+    
     cJSON *presence_info_list_local_map;
     if (!cJSON_IsObject(presence_info_list)) {
         ogs_error("OpenAPI_spatial_validity_rm_parseFromJSON() failed [presence_info_list]");
@@ -91,12 +91,12 @@ OpenAPI_spatial_validity_rm_t *OpenAPI_spatial_validity_rm_parseFromJSON(cJSON *
         }
         localMapKeyPair = OpenAPI_map_create(
             localMapObject->string, OpenAPI_presence_info_parseFromJSON(localMapObject));
-        OpenAPI_list_add(presence_info_listList, localMapKeyPair);
+        OpenAPI_list_add(presence_info_listList , localMapKeyPair);
     }
 
     spatial_validity_rm_local_var = OpenAPI_spatial_validity_rm_create (
         presence_info_listList
-        );
+    );
 
     return spatial_validity_rm_local_var;
 end:

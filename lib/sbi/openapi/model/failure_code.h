@@ -1,7 +1,7 @@
 /*
  * failure_code.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_failure_code_H_

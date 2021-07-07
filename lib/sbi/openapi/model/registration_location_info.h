@@ -1,7 +1,7 @@
 /*
  * registration_location_info.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_registration_location_info_H_
@@ -33,7 +33,7 @@ OpenAPI_registration_location_info_t *OpenAPI_registration_location_info_create(
     OpenAPI_plmn_id_t *plmn_id,
     OpenAPI_vgmlc_address_t *vgmlc_address,
     OpenAPI_list_t *access_type_list
-    );
+);
 void OpenAPI_registration_location_info_free(OpenAPI_registration_location_info_t *registration_location_info);
 OpenAPI_registration_location_info_t *OpenAPI_registration_location_info_parseFromJSON(cJSON *registration_location_infoJSON);
 cJSON *OpenAPI_registration_location_info_convertToJSON(OpenAPI_registration_location_info_t *registration_location_info);

@@ -1,7 +1,7 @@
 /*
  * inline_response_200.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_inline_response_200_H_
@@ -25,7 +25,7 @@ typedef struct OpenAPI_inline_response_200_s {
 
 OpenAPI_inline_response_200_t *OpenAPI_inline_response_200_create(
     OpenAPI_list_t* _links
-    );
+);
 void OpenAPI_inline_response_200_free(OpenAPI_inline_response_200_t *inline_response_200);
 OpenAPI_inline_response_200_t *OpenAPI_inline_response_200_parseFromJSON(cJSON *inline_response_200JSON);
 cJSON *OpenAPI_inline_response_200_convertToJSON(OpenAPI_inline_response_200_t *inline_response_200);

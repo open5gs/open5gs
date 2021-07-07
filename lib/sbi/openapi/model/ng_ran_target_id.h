@@ -1,7 +1,7 @@
 /*
  * ng_ran_target_id.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_ng_ran_target_id_H_
@@ -28,7 +28,7 @@ typedef struct OpenAPI_ng_ran_target_id_s {
 OpenAPI_ng_ran_target_id_t *OpenAPI_ng_ran_target_id_create(
     OpenAPI_global_ran_node_id_t *ran_node_id,
     OpenAPI_tai_t *tai
-    );
+);
 void OpenAPI_ng_ran_target_id_free(OpenAPI_ng_ran_target_id_t *ng_ran_target_id);
 OpenAPI_ng_ran_target_id_t *OpenAPI_ng_ran_target_id_parseFromJSON(cJSON *ng_ran_target_idJSON);
 cJSON *OpenAPI_ng_ran_target_id_convertToJSON(OpenAPI_ng_ran_target_id_t *ng_ran_target_id);

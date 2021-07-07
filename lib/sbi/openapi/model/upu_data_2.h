@@ -1,7 +1,7 @@
 /*
  * upu_data_2.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_upu_data_2_H_
@@ -29,7 +29,7 @@ OpenAPI_upu_data_2_t *OpenAPI_upu_data_2_create(
     char *sec_packet,
     OpenAPI_list_t *default_conf_nssai,
     char *routing_id
-    );
+);
 void OpenAPI_upu_data_2_free(OpenAPI_upu_data_2_t *upu_data_2);
 OpenAPI_upu_data_2_t *OpenAPI_upu_data_2_parseFromJSON(cJSON *upu_data_2JSON);
 cJSON *OpenAPI_upu_data_2_convertToJSON(OpenAPI_upu_data_2_t *upu_data_2);

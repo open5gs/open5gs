@@ -1,7 +1,7 @@
 /*
  * dynamic5_qi.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_dynamic5_qi_H_
@@ -20,7 +20,7 @@ extern "C" {
 
 typedef struct OpenAPI_dynamic5_qi_s OpenAPI_dynamic5_qi_t;
 typedef struct OpenAPI_dynamic5_qi_s {
-    struct OpenAPI_qos_resource_type_s *resource_type;
+    OpenAPI_qos_resource_type_e resource_type;
     int priority_level;
     int packet_delay_budget;
     char *packet_err_rate;
@@ -33,7 +33,7 @@ typedef struct OpenAPI_dynamic5_qi_s {
 } OpenAPI_dynamic5_qi_t;
 
 OpenAPI_dynamic5_qi_t *OpenAPI_dynamic5_qi_create(
-    OpenAPI_qos_resource_type_t *resource_type,
+    OpenAPI_qos_resource_type_e resource_type,
     int priority_level,
     int packet_delay_budget,
     char *packet_err_rate,
@@ -43,7 +43,7 @@ OpenAPI_dynamic5_qi_t *OpenAPI_dynamic5_qi_create(
     int ext_packet_del_budget,
     int cn_packet_delay_budget_dl,
     int cn_packet_delay_budget_ul
-    );
+);
 void OpenAPI_dynamic5_qi_free(OpenAPI_dynamic5_qi_t *dynamic5_qi);
 OpenAPI_dynamic5_qi_t *OpenAPI_dynamic5_qi_parseFromJSON(cJSON *dynamic5_qiJSON);
 cJSON *OpenAPI_dynamic5_qi_convertToJSON(OpenAPI_dynamic5_qi_t *dynamic5_qi);

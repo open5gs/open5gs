@@ -1,7 +1,7 @@
 /*
  * qos_flow_usage_report.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_qos_flow_usage_report_H_
@@ -32,7 +32,7 @@ OpenAPI_qos_flow_usage_report_t *OpenAPI_qos_flow_usage_report_create(
     char *end_time_stamp,
     long downlink_volume,
     long uplink_volume
-    );
+);
 void OpenAPI_qos_flow_usage_report_free(OpenAPI_qos_flow_usage_report_t *qos_flow_usage_report);
 OpenAPI_qos_flow_usage_report_t *OpenAPI_qos_flow_usage_report_parseFromJSON(cJSON *qos_flow_usage_reportJSON);
 cJSON *OpenAPI_qos_flow_usage_report_convertToJSON(OpenAPI_qos_flow_usage_report_t *qos_flow_usage_report);

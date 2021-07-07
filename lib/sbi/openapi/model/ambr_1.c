@@ -1,0 +1,127 @@
+
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+#include "ambr_1.h"
+
+OpenAPI_ambr_1_t *OpenAPI_ambr_1_create(
+    char *uplink,
+    char *downlink
+)
+{
+    OpenAPI_ambr_1_t *ambr_1_local_var = OpenAPI_malloc(sizeof(OpenAPI_ambr_1_t));
+    if (!ambr_1_local_var) {
+        return NULL;
+    }
+    ambr_1_local_var->uplink = uplink;
+    ambr_1_local_var->downlink = downlink;
+
+    return ambr_1_local_var;
+}
+
+void OpenAPI_ambr_1_free(OpenAPI_ambr_1_t *ambr_1)
+{
+    if (NULL == ambr_1) {
+        return;
+    }
+    OpenAPI_lnode_t *node;
+    ogs_free(ambr_1->uplink);
+    ogs_free(ambr_1->downlink);
+    ogs_free(ambr_1);
+}
+
+cJSON *OpenAPI_ambr_1_convertToJSON(OpenAPI_ambr_1_t *ambr_1)
+{
+    cJSON *item = NULL;
+
+    if (ambr_1 == NULL) {
+        ogs_error("OpenAPI_ambr_1_convertToJSON() failed [Ambr_1]");
+        return NULL;
+    }
+
+    item = cJSON_CreateObject();
+    if (cJSON_AddStringToObject(item, "uplink", ambr_1->uplink) == NULL) {
+        ogs_error("OpenAPI_ambr_1_convertToJSON() failed [uplink]");
+        goto end;
+    }
+
+    if (cJSON_AddStringToObject(item, "downlink", ambr_1->downlink) == NULL) {
+        ogs_error("OpenAPI_ambr_1_convertToJSON() failed [downlink]");
+        goto end;
+    }
+
+end:
+    return item;
+}
+
+OpenAPI_ambr_1_t *OpenAPI_ambr_1_parseFromJSON(cJSON *ambr_1JSON)
+{
+    OpenAPI_ambr_1_t *ambr_1_local_var = NULL;
+    cJSON *uplink = cJSON_GetObjectItemCaseSensitive(ambr_1JSON, "uplink");
+    if (!uplink) {
+        ogs_error("OpenAPI_ambr_1_parseFromJSON() failed [uplink]");
+        goto end;
+    }
+
+    
+    if (!cJSON_IsString(uplink)) {
+        ogs_error("OpenAPI_ambr_1_parseFromJSON() failed [uplink]");
+        goto end;
+    }
+
+    cJSON *downlink = cJSON_GetObjectItemCaseSensitive(ambr_1JSON, "downlink");
+    if (!downlink) {
+        ogs_error("OpenAPI_ambr_1_parseFromJSON() failed [downlink]");
+        goto end;
+    }
+
+    
+    if (!cJSON_IsString(downlink)) {
+        ogs_error("OpenAPI_ambr_1_parseFromJSON() failed [downlink]");
+        goto end;
+    }
+
+    ambr_1_local_var = OpenAPI_ambr_1_create (
+        ogs_strdup_or_assert(uplink->valuestring),
+        ogs_strdup_or_assert(downlink->valuestring)
+    );
+
+    return ambr_1_local_var;
+end:
+    return NULL;
+}
+
+OpenAPI_ambr_1_t *OpenAPI_ambr_1_copy(OpenAPI_ambr_1_t *dst, OpenAPI_ambr_1_t *src)
+{
+    cJSON *item = NULL;
+    char *content = NULL;
+
+    ogs_assert(src);
+    item = OpenAPI_ambr_1_convertToJSON(src);
+    if (!item) {
+        ogs_error("OpenAPI_ambr_1_convertToJSON() failed");
+        return NULL;
+    }
+
+    content = cJSON_Print(item);
+    cJSON_Delete(item);
+
+    if (!content) {
+        ogs_error("cJSON_Print() failed");
+        return NULL;
+    }
+
+    item = cJSON_Parse(content);
+    ogs_free(content);
+    if (!item) {
+        ogs_error("cJSON_Parse() failed");
+        return NULL;
+    }
+
+    OpenAPI_ambr_1_free(dst);
+    dst = OpenAPI_ambr_1_parseFromJSON(item);
+    cJSON_Delete(item);
+
+    return dst;
+}
+

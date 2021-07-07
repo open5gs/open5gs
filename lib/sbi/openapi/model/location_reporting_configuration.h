@@ -1,7 +1,7 @@
 /*
  * location_reporting_configuration.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_location_reporting_configuration_H_
@@ -31,7 +31,7 @@ OpenAPI_location_reporting_configuration_t *OpenAPI_location_reporting_configura
     int one_time,
     OpenAPI_location_accuracy_t *accuracy,
     OpenAPI_location_accuracy_t *n3gpp_accuracy
-    );
+);
 void OpenAPI_location_reporting_configuration_free(OpenAPI_location_reporting_configuration_t *location_reporting_configuration);
 OpenAPI_location_reporting_configuration_t *OpenAPI_location_reporting_configuration_parseFromJSON(cJSON *location_reporting_configurationJSON);
 cJSON *OpenAPI_location_reporting_configuration_convertToJSON(OpenAPI_location_reporting_configuration_t *location_reporting_configuration);

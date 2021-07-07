@@ -6,7 +6,7 @@
 
 OpenAPI_cnf_unit_t *OpenAPI_cnf_unit_create(
     OpenAPI_list_t *cnf_unit
-    )
+)
 {
     OpenAPI_cnf_unit_t *cnf_unit_local_var = OpenAPI_malloc(sizeof(OpenAPI_cnf_unit_t));
     if (!cnf_unit_local_var) {
@@ -72,9 +72,9 @@ OpenAPI_cnf_unit_t *OpenAPI_cnf_unit_parseFromJSON(cJSON *cnf_unitJSON)
     }
 
     OpenAPI_list_t *cnf_unitList;
-
+    
     cJSON *cnf_unit_local_nonprimitive;
-    if (!cJSON_IsArray(cnf_unit)) {
+    if (!cJSON_IsArray(cnf_unit)){
         ogs_error("OpenAPI_cnf_unit_parseFromJSON() failed [cnf_unit]");
         goto end;
     }
@@ -93,7 +93,7 @@ OpenAPI_cnf_unit_t *OpenAPI_cnf_unit_parseFromJSON(cJSON *cnf_unitJSON)
 
     cnf_unit_local_var = OpenAPI_cnf_unit_create (
         cnf_unitList
-        );
+    );
 
     return cnf_unit_local_var;
 end:

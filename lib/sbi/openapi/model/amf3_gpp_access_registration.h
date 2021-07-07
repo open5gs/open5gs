@@ -1,7 +1,7 @@
 /*
  * amf3_gpp_access_registration.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_amf3_gpp_access_registration_H_
@@ -48,6 +48,7 @@ typedef struct OpenAPI_amf3_gpp_access_registration_s {
     struct OpenAPI_vgmlc_address_s *vgmlc_address;
     struct OpenAPI_context_info_s *context_info;
     int no_ee_subscription_ind;
+    char *supi;
 } OpenAPI_amf3_gpp_access_registration_t;
 
 OpenAPI_amf3_gpp_access_registration_t *OpenAPI_amf3_gpp_access_registration_create(
@@ -72,8 +73,9 @@ OpenAPI_amf3_gpp_access_registration_t *OpenAPI_amf3_gpp_access_registration_cre
     char *registration_time,
     OpenAPI_vgmlc_address_t *vgmlc_address,
     OpenAPI_context_info_t *context_info,
-    int no_ee_subscription_ind
-    );
+    int no_ee_subscription_ind,
+    char *supi
+);
 void OpenAPI_amf3_gpp_access_registration_free(OpenAPI_amf3_gpp_access_registration_t *amf3_gpp_access_registration);
 OpenAPI_amf3_gpp_access_registration_t *OpenAPI_amf3_gpp_access_registration_parseFromJSON(cJSON *amf3_gpp_access_registrationJSON);
 cJSON *OpenAPI_amf3_gpp_access_registration_convertToJSON(OpenAPI_amf3_gpp_access_registration_t *amf3_gpp_access_registration);

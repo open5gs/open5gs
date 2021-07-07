@@ -1,7 +1,7 @@
 /*
  * sc_type.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_sc_type_H_

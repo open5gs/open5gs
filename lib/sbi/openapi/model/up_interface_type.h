@@ -1,7 +1,7 @@
 /*
  * up_interface_type.h
  *
- * Types of User-Plane interfaces of the UPF
+ * 
  */
 
 #ifndef _OpenAPI_up_interface_type_H_
@@ -17,16 +17,11 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_up_interface_type_s OpenAPI_up_interface_type_t;
-typedef struct OpenAPI_up_interface_type_s {
-} OpenAPI_up_interface_type_t;
+typedef enum { OpenAPI_up_interface_type_NULL = 0, OpenAPI_up_interface_type_N3, OpenAPI_up_interface_type_N6, OpenAPI_up_interface_type_N9, OpenAPI_up_interface_type_DATA_FORWARDING } OpenAPI_up_interface_type_e;
 
-OpenAPI_up_interface_type_t *OpenAPI_up_interface_type_create(
-    );
-void OpenAPI_up_interface_type_free(OpenAPI_up_interface_type_t *up_interface_type);
-OpenAPI_up_interface_type_t *OpenAPI_up_interface_type_parseFromJSON(cJSON *up_interface_typeJSON);
-cJSON *OpenAPI_up_interface_type_convertToJSON(OpenAPI_up_interface_type_t *up_interface_type);
-OpenAPI_up_interface_type_t *OpenAPI_up_interface_type_copy(OpenAPI_up_interface_type_t *dst, OpenAPI_up_interface_type_t *src);
+char* OpenAPI_up_interface_type_ToString(OpenAPI_up_interface_type_e up_interface_type);
+
+OpenAPI_up_interface_type_e OpenAPI_up_interface_type_FromString(char* up_interface_type);
 
 #ifdef __cplusplus
 }

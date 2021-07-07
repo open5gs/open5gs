@@ -1,7 +1,7 @@
 /*
  * accu_usage_report.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_accu_usage_report_H_
@@ -40,7 +40,7 @@ OpenAPI_accu_usage_report_t *OpenAPI_accu_usage_report_create(
     long next_vol_usage_uplink,
     long next_vol_usage_downlink,
     int next_time_usage
-    );
+);
 void OpenAPI_accu_usage_report_free(OpenAPI_accu_usage_report_t *accu_usage_report);
 OpenAPI_accu_usage_report_t *OpenAPI_accu_usage_report_parseFromJSON(cJSON *accu_usage_reportJSON);
 cJSON *OpenAPI_accu_usage_report_convertToJSON(OpenAPI_accu_usage_report_t *accu_usage_report);

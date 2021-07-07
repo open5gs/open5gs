@@ -1,7 +1,7 @@
 /*
  * notification_control.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_notification_control_H_

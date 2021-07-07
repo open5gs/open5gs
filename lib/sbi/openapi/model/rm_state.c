@@ -5,7 +5,7 @@
 #include "rm_state.h"
 
 OpenAPI_rm_state_t *OpenAPI_rm_state_create(
-    )
+)
 {
     OpenAPI_rm_state_t *rm_state_local_var = OpenAPI_malloc(sizeof(OpenAPI_rm_state_t));
     if (!rm_state_local_var) {
@@ -42,7 +42,7 @@ OpenAPI_rm_state_t *OpenAPI_rm_state_parseFromJSON(cJSON *rm_stateJSON)
 {
     OpenAPI_rm_state_t *rm_state_local_var = NULL;
     rm_state_local_var = OpenAPI_rm_state_create (
-        );
+    );
 
     return rm_state_local_var;
 end:

@@ -1,7 +1,7 @@
 /*
  * mdt_configuration.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_mdt_configuration_H_
@@ -61,6 +61,7 @@ typedef struct OpenAPI_mdt_configuration_s {
     OpenAPI_logging_duration_mdt_e logging_duration;
     OpenAPI_logging_duration_nr_mdt_e logging_duration_nr;
     OpenAPI_positioning_method_mdt_e positioning_method;
+    OpenAPI_list_t *add_positioning_method_list;
     OpenAPI_collection_period_rmm_lte_mdt_e collection_period_rmm_lte;
     OpenAPI_collection_period_rmm_nr_mdt_e collection_period_rmm_nr;
     OpenAPI_measurement_period_lte_mdt_e measurement_period_lte;
@@ -90,13 +91,14 @@ OpenAPI_mdt_configuration_t *OpenAPI_mdt_configuration_create(
     OpenAPI_logging_duration_mdt_e logging_duration,
     OpenAPI_logging_duration_nr_mdt_e logging_duration_nr,
     OpenAPI_positioning_method_mdt_e positioning_method,
+    OpenAPI_list_t *add_positioning_method_list,
     OpenAPI_collection_period_rmm_lte_mdt_e collection_period_rmm_lte,
     OpenAPI_collection_period_rmm_nr_mdt_e collection_period_rmm_nr,
     OpenAPI_measurement_period_lte_mdt_e measurement_period_lte,
     OpenAPI_list_t *mdt_allowed_plmn_id_list,
     OpenAPI_list_t *mbsfn_area_list,
     OpenAPI_list_t *inter_freq_target_list
-    );
+);
 void OpenAPI_mdt_configuration_free(OpenAPI_mdt_configuration_t *mdt_configuration);
 OpenAPI_mdt_configuration_t *OpenAPI_mdt_configuration_parseFromJSON(cJSON *mdt_configurationJSON);
 cJSON *OpenAPI_mdt_configuration_convertToJSON(OpenAPI_mdt_configuration_t *mdt_configuration);

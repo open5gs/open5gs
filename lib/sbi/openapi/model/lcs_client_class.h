@@ -1,7 +1,7 @@
 /*
  * lcs_client_class.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_lcs_client_class_H_

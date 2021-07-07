@@ -40,7 +40,7 @@ OpenAPI_smf_info_t *OpenAPI_smf_info_create(
     OpenAPI_list_t *access_type,
     int priority,
     int vsmf_support_ind
-    );
+);
 void OpenAPI_smf_info_free(OpenAPI_smf_info_t *smf_info);
 OpenAPI_smf_info_t *OpenAPI_smf_info_parseFromJSON(cJSON *smf_infoJSON);
 cJSON *OpenAPI_smf_info_convertToJSON(OpenAPI_smf_info_t *smf_info);

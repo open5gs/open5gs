@@ -29,7 +29,7 @@ OpenAPI_acceptable_service_info_t *OpenAPI_acceptable_service_info_create(
     OpenAPI_list_t* acc_bw_med_comps,
     char *mar_bw_ul,
     char *mar_bw_dl
-    );
+);
 void OpenAPI_acceptable_service_info_free(OpenAPI_acceptable_service_info_t *acceptable_service_info);
 OpenAPI_acceptable_service_info_t *OpenAPI_acceptable_service_info_parseFromJSON(cJSON *acceptable_service_infoJSON);
 cJSON *OpenAPI_acceptable_service_info_convertToJSON(OpenAPI_acceptable_service_info_t *acceptable_service_info);

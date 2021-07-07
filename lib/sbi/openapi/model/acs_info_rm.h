@@ -1,7 +1,7 @@
 /*
  * acs_info_rm.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_acs_info_rm_H_
@@ -30,7 +30,7 @@ OpenAPI_acs_info_rm_t *OpenAPI_acs_info_rm_create(
     char *acs_url,
     char *acs_ipv4_addr,
     char *acs_ipv6_addr
-    );
+);
 void OpenAPI_acs_info_rm_free(OpenAPI_acs_info_rm_t *acs_info_rm);
 OpenAPI_acs_info_rm_t *OpenAPI_acs_info_rm_parseFromJSON(cJSON *acs_info_rmJSON);
 cJSON *OpenAPI_acs_info_rm_convertToJSON(OpenAPI_acs_info_rm_t *acs_info_rm);

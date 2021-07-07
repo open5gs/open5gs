@@ -1,7 +1,7 @@
 /*
  * allowed_nssai.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_allowed_nssai_H_
@@ -28,7 +28,7 @@ typedef struct OpenAPI_allowed_nssai_s {
 OpenAPI_allowed_nssai_t *OpenAPI_allowed_nssai_create(
     OpenAPI_list_t *allowed_snssai_list,
     OpenAPI_access_type_e access_type
-    );
+);
 void OpenAPI_allowed_nssai_free(OpenAPI_allowed_nssai_t *allowed_nssai);
 OpenAPI_allowed_nssai_t *OpenAPI_allowed_nssai_parseFromJSON(cJSON *allowed_nssaiJSON);
 cJSON *OpenAPI_allowed_nssai_convertToJSON(OpenAPI_allowed_nssai_t *allowed_nssai);

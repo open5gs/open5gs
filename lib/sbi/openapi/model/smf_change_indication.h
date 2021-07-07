@@ -1,7 +1,7 @@
 /*
  * smf_change_indication.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_smf_change_indication_H_

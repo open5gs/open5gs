@@ -1,7 +1,7 @@
 /*
  * pcscf_restoration_notification.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_pcscf_restoration_notification_H_
@@ -24,7 +24,7 @@ typedef struct OpenAPI_pcscf_restoration_notification_s {
 
 OpenAPI_pcscf_restoration_notification_t *OpenAPI_pcscf_restoration_notification_create(
     char *supi
-    );
+);
 void OpenAPI_pcscf_restoration_notification_free(OpenAPI_pcscf_restoration_notification_t *pcscf_restoration_notification);
 OpenAPI_pcscf_restoration_notification_t *OpenAPI_pcscf_restoration_notification_parseFromJSON(cJSON *pcscf_restoration_notificationJSON);
 cJSON *OpenAPI_pcscf_restoration_notification_convertToJSON(OpenAPI_pcscf_restoration_notification_t *pcscf_restoration_notification);

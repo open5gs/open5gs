@@ -1,7 +1,7 @@
 /*
  * area_of_validity.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_area_of_validity_H_
@@ -25,7 +25,7 @@ typedef struct OpenAPI_area_of_validity_s {
 
 OpenAPI_area_of_validity_t *OpenAPI_area_of_validity_create(
     OpenAPI_list_t *tai_list
-    );
+);
 void OpenAPI_area_of_validity_free(OpenAPI_area_of_validity_t *area_of_validity);
 OpenAPI_area_of_validity_t *OpenAPI_area_of_validity_parseFromJSON(cJSON *area_of_validityJSON);
 cJSON *OpenAPI_area_of_validity_convertToJSON(OpenAPI_area_of_validity_t *area_of_validity);

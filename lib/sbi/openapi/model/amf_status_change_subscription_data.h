@@ -1,7 +1,7 @@
 /*
  * amf_status_change_subscription_data.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_amf_status_change_subscription_data_H_
@@ -27,7 +27,7 @@ typedef struct OpenAPI_amf_status_change_subscription_data_s {
 OpenAPI_amf_status_change_subscription_data_t *OpenAPI_amf_status_change_subscription_data_create(
     char *amf_status_uri,
     OpenAPI_list_t *guami_list
-    );
+);
 void OpenAPI_amf_status_change_subscription_data_free(OpenAPI_amf_status_change_subscription_data_t *amf_status_change_subscription_data);
 OpenAPI_amf_status_change_subscription_data_t *OpenAPI_amf_status_change_subscription_data_parseFromJSON(cJSON *amf_status_change_subscription_dataJSON);
 cJSON *OpenAPI_amf_status_change_subscription_data_convertToJSON(OpenAPI_amf_status_change_subscription_data_t *amf_status_change_subscription_data);

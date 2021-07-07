@@ -1,7 +1,7 @@
 /*
  * pp_dl_packet_count_ext.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_pp_dl_packet_count_ext_H_
@@ -30,7 +30,7 @@ OpenAPI_pp_dl_packet_count_ext_t *OpenAPI_pp_dl_packet_count_ext_create(
     int reference_id,
     char *validity_time,
     char *mtc_provider_information
-    );
+);
 void OpenAPI_pp_dl_packet_count_ext_free(OpenAPI_pp_dl_packet_count_ext_t *pp_dl_packet_count_ext);
 OpenAPI_pp_dl_packet_count_ext_t *OpenAPI_pp_dl_packet_count_ext_parseFromJSON(cJSON *pp_dl_packet_count_extJSON);
 cJSON *OpenAPI_pp_dl_packet_count_ext_convertToJSON(OpenAPI_pp_dl_packet_count_ext_t *pp_dl_packet_count_ext);

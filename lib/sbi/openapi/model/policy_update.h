@@ -1,7 +1,7 @@
 /*
  * policy_update.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_policy_update_H_
@@ -32,7 +32,6 @@ typedef struct OpenAPI_policy_update_s {
     int rfsp;
     struct OpenAPI_smf_selection_data_s *smf_sel_info;
     struct OpenAPI_ambr_s *ue_ambr;
-    struct OpenAPI_ambr_s *rg_tmbr;
     OpenAPI_list_t* pras;
 } OpenAPI_policy_update_t;
 
@@ -44,9 +43,8 @@ OpenAPI_policy_update_t *OpenAPI_policy_update_create(
     int rfsp,
     OpenAPI_smf_selection_data_t *smf_sel_info,
     OpenAPI_ambr_t *ue_ambr,
-    OpenAPI_ambr_t *rg_tmbr,
     OpenAPI_list_t* pras
-    );
+);
 void OpenAPI_policy_update_free(OpenAPI_policy_update_t *policy_update);
 OpenAPI_policy_update_t *OpenAPI_policy_update_parseFromJSON(cJSON *policy_updateJSON);
 cJSON *OpenAPI_policy_update_convertToJSON(OpenAPI_policy_update_t *policy_update);

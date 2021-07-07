@@ -1,7 +1,7 @@
 /*
  * traffic_influ_data_patch.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_traffic_influ_data_patch_H_
@@ -14,7 +14,7 @@
 #include "../include/binary.h"
 #include "eth_flow_description.h"
 #include "flow_info.h"
-#include "network_area_info_2.h"
+#include "network_area_info_1.h"
 #include "route_to_location.h"
 #include "snssai.h"
 #include "temporal_validity.h"
@@ -38,8 +38,9 @@ typedef struct OpenAPI_traffic_influ_data_patch_s {
     char *valid_start_time;
     char *valid_end_time;
     OpenAPI_list_t *temp_validities;
-    struct OpenAPI_network_area_info_2_s *nw_area_info;
+    struct OpenAPI_network_area_info_1_s *nw_area_info;
     char *up_path_chg_notif_uri;
+    OpenAPI_list_t *headers;
     int af_ack_ind;
     int addr_preser_ind;
 } OpenAPI_traffic_influ_data_patch_t;
@@ -58,11 +59,12 @@ OpenAPI_traffic_influ_data_patch_t *OpenAPI_traffic_influ_data_patch_create(
     char *valid_start_time,
     char *valid_end_time,
     OpenAPI_list_t *temp_validities,
-    OpenAPI_network_area_info_2_t *nw_area_info,
+    OpenAPI_network_area_info_1_t *nw_area_info,
     char *up_path_chg_notif_uri,
+    OpenAPI_list_t *headers,
     int af_ack_ind,
     int addr_preser_ind
-    );
+);
 void OpenAPI_traffic_influ_data_patch_free(OpenAPI_traffic_influ_data_patch_t *traffic_influ_data_patch);
 OpenAPI_traffic_influ_data_patch_t *OpenAPI_traffic_influ_data_patch_parseFromJSON(cJSON *traffic_influ_data_patchJSON);
 cJSON *OpenAPI_traffic_influ_data_patch_convertToJSON(OpenAPI_traffic_influ_data_patch_t *traffic_influ_data_patch);

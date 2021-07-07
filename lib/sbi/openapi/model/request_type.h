@@ -1,7 +1,7 @@
 /*
  * request_type.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_request_type_H_

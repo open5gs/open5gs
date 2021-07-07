@@ -24,7 +24,7 @@ typedef struct OpenAPI_options_response_s {
 
 OpenAPI_options_response_t *OpenAPI_options_response_create(
     char *supported_features
-    );
+);
 void OpenAPI_options_response_free(OpenAPI_options_response_t *options_response);
 OpenAPI_options_response_t *OpenAPI_options_response_parseFromJSON(cJSON *options_responseJSON);
 cJSON *OpenAPI_options_response_convertToJSON(OpenAPI_options_response_t *options_response);

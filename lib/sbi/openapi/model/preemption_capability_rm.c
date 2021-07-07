@@ -5,7 +5,7 @@
 #include "preemption_capability_rm.h"
 
 OpenAPI_preemption_capability_rm_t *OpenAPI_preemption_capability_rm_create(
-    )
+)
 {
     OpenAPI_preemption_capability_rm_t *preemption_capability_rm_local_var = OpenAPI_malloc(sizeof(OpenAPI_preemption_capability_rm_t));
     if (!preemption_capability_rm_local_var) {
@@ -42,7 +42,7 @@ OpenAPI_preemption_capability_rm_t *OpenAPI_preemption_capability_rm_parseFromJS
 {
     OpenAPI_preemption_capability_rm_t *preemption_capability_rm_local_var = NULL;
     preemption_capability_rm_local_var = OpenAPI_preemption_capability_rm_create (
-        );
+    );
 
     return preemption_capability_rm_local_var;
 end:

@@ -1,7 +1,7 @@
 /*
  * transfer_reason.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_transfer_reason_H_

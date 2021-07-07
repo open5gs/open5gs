@@ -1,7 +1,7 @@
 /*
  * amf_event_type.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_amf_event_type_H_
@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+#include "amf_event_type_any_of.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -22,7 +23,7 @@ typedef struct OpenAPI_amf_event_type_s {
 } OpenAPI_amf_event_type_t;
 
 OpenAPI_amf_event_type_t *OpenAPI_amf_event_type_create(
-    );
+);
 void OpenAPI_amf_event_type_free(OpenAPI_amf_event_type_t *amf_event_type);
 OpenAPI_amf_event_type_t *OpenAPI_amf_event_type_parseFromJSON(cJSON *amf_event_typeJSON);
 cJSON *OpenAPI_amf_event_type_convertToJSON(OpenAPI_amf_event_type_t *amf_event_type);

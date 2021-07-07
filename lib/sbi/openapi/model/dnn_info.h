@@ -1,7 +1,7 @@
 /*
  * dnn_info.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_dnn_info_H_
@@ -38,7 +38,7 @@ OpenAPI_dnn_info_t *OpenAPI_dnn_info_create(
     int invoke_nef_ind,
     OpenAPI_list_t *smf_list,
     int same_smf_ind
-    );
+);
 void OpenAPI_dnn_info_free(OpenAPI_dnn_info_t *dnn_info);
 OpenAPI_dnn_info_t *OpenAPI_dnn_info_parseFromJSON(cJSON *dnn_infoJSON);
 cJSON *OpenAPI_dnn_info_convertToJSON(OpenAPI_dnn_info_t *dnn_info);

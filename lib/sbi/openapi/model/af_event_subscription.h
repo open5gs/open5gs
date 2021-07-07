@@ -21,18 +21,18 @@ extern "C" {
 
 typedef struct OpenAPI_af_event_subscription_s OpenAPI_af_event_subscription_t;
 typedef struct OpenAPI_af_event_subscription_s {
-    struct OpenAPI_af_event_s *event;
+    OpenAPI_af_event_e event;
     OpenAPI_af_notif_method_e notif_method;
     int rep_period;
     int wait_time;
 } OpenAPI_af_event_subscription_t;
 
 OpenAPI_af_event_subscription_t *OpenAPI_af_event_subscription_create(
-    OpenAPI_af_event_t *event,
+    OpenAPI_af_event_e event,
     OpenAPI_af_notif_method_e notif_method,
     int rep_period,
     int wait_time
-    );
+);
 void OpenAPI_af_event_subscription_free(OpenAPI_af_event_subscription_t *af_event_subscription);
 OpenAPI_af_event_subscription_t *OpenAPI_af_event_subscription_parseFromJSON(cJSON *af_event_subscriptionJSON);
 cJSON *OpenAPI_af_event_subscription_convertToJSON(OpenAPI_af_event_subscription_t *af_event_subscription);

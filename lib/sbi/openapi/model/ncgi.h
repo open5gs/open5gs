@@ -1,7 +1,7 @@
 /*
  * ncgi.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_ncgi_H_
@@ -29,7 +29,7 @@ OpenAPI_ncgi_t *OpenAPI_ncgi_create(
     OpenAPI_plmn_id_t *plmn_id,
     char *nr_cell_id,
     char *nid
-    );
+);
 void OpenAPI_ncgi_free(OpenAPI_ncgi_t *ncgi);
 OpenAPI_ncgi_t *OpenAPI_ncgi_parseFromJSON(cJSON *ncgiJSON);
 cJSON *OpenAPI_ncgi_convertToJSON(OpenAPI_ncgi_t *ncgi);

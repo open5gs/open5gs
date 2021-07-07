@@ -1,7 +1,7 @@
 /*
  * mdt_user_consent.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_mdt_user_consent_H_

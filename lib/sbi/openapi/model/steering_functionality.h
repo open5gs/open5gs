@@ -1,7 +1,7 @@
 /*
  * steering_functionality.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_steering_functionality_H_

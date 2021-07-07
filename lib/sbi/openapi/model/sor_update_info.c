@@ -6,7 +6,7 @@
 
 OpenAPI_sor_update_info_t *OpenAPI_sor_update_info_create(
     OpenAPI_plmn_id_t *vplmn_id
-    )
+)
 {
     OpenAPI_sor_update_info_t *sor_update_info_local_var = OpenAPI_malloc(sizeof(OpenAPI_sor_update_info_t));
     if (!sor_update_info_local_var) {
@@ -62,12 +62,12 @@ OpenAPI_sor_update_info_t *OpenAPI_sor_update_info_parseFromJSON(cJSON *sor_upda
     }
 
     OpenAPI_plmn_id_t *vplmn_id_local_nonprim = NULL;
-
+    
     vplmn_id_local_nonprim = OpenAPI_plmn_id_parseFromJSON(vplmn_id);
 
     sor_update_info_local_var = OpenAPI_sor_update_info_create (
         vplmn_id_local_nonprim
-        );
+    );
 
     return sor_update_info_local_var;
 end:

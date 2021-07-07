@@ -1,7 +1,7 @@
 /*
  * communication_characteristics.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_communication_characteristics_H_
@@ -39,7 +39,7 @@ OpenAPI_communication_characteristics_t *OpenAPI_communication_characteristics_c
     OpenAPI_pp_dl_packet_count_ext_t *pp_dl_packet_count_ext,
     OpenAPI_pp_maximum_response_time_t *pp_maximum_response_time,
     OpenAPI_pp_maximum_latency_t *pp_maximum_latency
-    );
+);
 void OpenAPI_communication_characteristics_free(OpenAPI_communication_characteristics_t *communication_characteristics);
 OpenAPI_communication_characteristics_t *OpenAPI_communication_characteristics_parseFromJSON(cJSON *communication_characteristicsJSON);
 cJSON *OpenAPI_communication_characteristics_convertToJSON(OpenAPI_communication_characteristics_t *communication_characteristics);

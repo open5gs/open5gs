@@ -5,7 +5,7 @@
 #include "event_id.h"
 
 OpenAPI_event_id_t *OpenAPI_event_id_create(
-    )
+)
 {
     OpenAPI_event_id_t *event_id_local_var = OpenAPI_malloc(sizeof(OpenAPI_event_id_t));
     if (!event_id_local_var) {
@@ -42,7 +42,7 @@ OpenAPI_event_id_t *OpenAPI_event_id_parseFromJSON(cJSON *event_idJSON)
 {
     OpenAPI_event_id_t *event_id_local_var = NULL;
     event_id_local_var = OpenAPI_event_id_create (
-        );
+    );
 
     return event_id_local_var;
 end:

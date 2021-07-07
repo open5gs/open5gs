@@ -1,7 +1,7 @@
 /*
  * pdu_session_created_data.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_pdu_session_created_data_H_
@@ -19,6 +19,7 @@
 #include "max_integrity_protected_data_rate.h"
 #include "pdu_session_type.h"
 #include "qos_flow_setup_item.h"
+#include "redundant_pdu_session_information.h"
 #include "ref_to_binary_data.h"
 #include "roaming_charging_profile.h"
 #include "snssai.h"
@@ -67,6 +68,7 @@ typedef struct OpenAPI_pdu_session_created_data_s {
     char *ue_ipv6_interface_id;
     int ipv6_index;
     struct OpenAPI_ip_address_s *dn_aaa_address;
+    struct OpenAPI_redundant_pdu_session_information_s *redundant_pdu_session_info;
 } OpenAPI_pdu_session_created_data_t;
 
 OpenAPI_pdu_session_created_data_t *OpenAPI_pdu_session_created_data_create(
@@ -105,8 +107,9 @@ OpenAPI_pdu_session_created_data_t *OpenAPI_pdu_session_created_data_create(
     int small_data_rate_control_enabled,
     char *ue_ipv6_interface_id,
     int ipv6_index,
-    OpenAPI_ip_address_t *dn_aaa_address
-    );
+    OpenAPI_ip_address_t *dn_aaa_address,
+    OpenAPI_redundant_pdu_session_information_t *redundant_pdu_session_info
+);
 void OpenAPI_pdu_session_created_data_free(OpenAPI_pdu_session_created_data_t *pdu_session_created_data);
 OpenAPI_pdu_session_created_data_t *OpenAPI_pdu_session_created_data_parseFromJSON(cJSON *pdu_session_created_dataJSON);
 cJSON *OpenAPI_pdu_session_created_data_convertToJSON(OpenAPI_pdu_session_created_data_t *pdu_session_created_data);

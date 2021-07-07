@@ -1,7 +1,7 @@
 /*
  * charging_information.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_charging_information_H_
@@ -34,7 +34,7 @@ OpenAPI_charging_information_t *OpenAPI_charging_information_create(
     char *primary_chf_instance_id,
     char *secondary_chf_set_id,
     char *secondary_chf_instance_id
-    );
+);
 void OpenAPI_charging_information_free(OpenAPI_charging_information_t *charging_information);
 OpenAPI_charging_information_t *OpenAPI_charging_information_parseFromJSON(cJSON *charging_informationJSON);
 cJSON *OpenAPI_charging_information_convertToJSON(OpenAPI_charging_information_t *charging_information);

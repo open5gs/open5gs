@@ -27,7 +27,7 @@ typedef struct OpenAPI_notification_item_s {
 OpenAPI_notification_item_t *OpenAPI_notification_item_create(
     char *resource_id,
     OpenAPI_list_t *notif_items
-    );
+);
 void OpenAPI_notification_item_free(OpenAPI_notification_item_t *notification_item);
 OpenAPI_notification_item_t *OpenAPI_notification_item_parseFromJSON(cJSON *notification_itemJSON);
 cJSON *OpenAPI_notification_item_convertToJSON(OpenAPI_notification_item_t *notification_item);

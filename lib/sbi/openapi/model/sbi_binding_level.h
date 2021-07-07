@@ -1,7 +1,7 @@
 /*
  * sbi_binding_level.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_sbi_binding_level_H_
@@ -17,7 +17,7 @@
 extern "C" {
 #endif
 
-typedef enum { OpenAPI_sbi_binding_level_NULL = 0, OpenAPI_sbi_binding_level_NF_INSTANCE_BINDING, OpenAPI_sbi_binding_level_NF_SET_BINDING, OpenAPI_sbi_binding_level_NF_SERVICE_SET_BINDING } OpenAPI_sbi_binding_level_e;
+typedef enum { OpenAPI_sbi_binding_level_NULL = 0, OpenAPI_sbi_binding_level_NF_INSTANCE_BINDING, OpenAPI_sbi_binding_level_NF_SET_BINDING, OpenAPI_sbi_binding_level_NF_SERVICE_SET_BINDING, OpenAPI_sbi_binding_level_NF_SERVICE_INSTANCE_BINDING } OpenAPI_sbi_binding_level_e;
 
 char* OpenAPI_sbi_binding_level_ToString(OpenAPI_sbi_binding_level_e sbi_binding_level);
 

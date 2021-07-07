@@ -1,7 +1,7 @@
 /*
  * pp_active_time.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_pp_active_time_H_
@@ -32,7 +32,7 @@ OpenAPI_pp_active_time_t *OpenAPI_pp_active_time_create(
     int reference_id,
     char *validity_time,
     char *mtc_provider_information
-    );
+);
 void OpenAPI_pp_active_time_free(OpenAPI_pp_active_time_t *pp_active_time);
 OpenAPI_pp_active_time_t *OpenAPI_pp_active_time_parseFromJSON(cJSON *pp_active_timeJSON);
 cJSON *OpenAPI_pp_active_time_convertToJSON(OpenAPI_pp_active_time_t *pp_active_time);

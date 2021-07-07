@@ -1,7 +1,7 @@
 /*
  * frame_route_info.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_frame_route_info_H_
@@ -26,7 +26,7 @@ typedef struct OpenAPI_frame_route_info_s {
 OpenAPI_frame_route_info_t *OpenAPI_frame_route_info_create(
     char *ipv4_mask,
     char *ipv6_prefix
-    );
+);
 void OpenAPI_frame_route_info_free(OpenAPI_frame_route_info_t *frame_route_info);
 OpenAPI_frame_route_info_t *OpenAPI_frame_route_info_parseFromJSON(cJSON *frame_route_infoJSON);
 cJSON *OpenAPI_frame_route_info_convertToJSON(OpenAPI_frame_route_info_t *frame_route_info);

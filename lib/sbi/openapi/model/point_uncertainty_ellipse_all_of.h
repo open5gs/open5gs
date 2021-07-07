@@ -1,7 +1,7 @@
 /*
  * point_uncertainty_ellipse_all_of.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_point_uncertainty_ellipse_all_of_H_
@@ -30,7 +30,7 @@ OpenAPI_point_uncertainty_ellipse_all_of_t *OpenAPI_point_uncertainty_ellipse_al
     OpenAPI_geographical_coordinates_t *point,
     OpenAPI_uncertainty_ellipse_t *uncertainty_ellipse,
     int confidence
-    );
+);
 void OpenAPI_point_uncertainty_ellipse_all_of_free(OpenAPI_point_uncertainty_ellipse_all_of_t *point_uncertainty_ellipse_all_of);
 OpenAPI_point_uncertainty_ellipse_all_of_t *OpenAPI_point_uncertainty_ellipse_all_of_parseFromJSON(cJSON *point_uncertainty_ellipse_all_ofJSON);
 cJSON *OpenAPI_point_uncertainty_ellipse_all_of_convertToJSON(OpenAPI_point_uncertainty_ellipse_all_of_t *point_uncertainty_ellipse_all_of);

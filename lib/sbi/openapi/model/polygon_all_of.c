@@ -6,7 +6,7 @@
 
 OpenAPI_polygon_all_of_t *OpenAPI_polygon_all_of_create(
     OpenAPI_list_t *point_list
-    )
+)
 {
     OpenAPI_polygon_all_of_t *polygon_all_of_local_var = OpenAPI_malloc(sizeof(OpenAPI_polygon_all_of_t));
     if (!polygon_all_of_local_var) {
@@ -72,9 +72,9 @@ OpenAPI_polygon_all_of_t *OpenAPI_polygon_all_of_parseFromJSON(cJSON *polygon_al
     }
 
     OpenAPI_list_t *point_listList;
-
+    
     cJSON *point_list_local_nonprimitive;
-    if (!cJSON_IsArray(point_list)) {
+    if (!cJSON_IsArray(point_list)){
         ogs_error("OpenAPI_polygon_all_of_parseFromJSON() failed [point_list]");
         goto end;
     }
@@ -93,7 +93,7 @@ OpenAPI_polygon_all_of_t *OpenAPI_polygon_all_of_parseFromJSON(cJSON *polygon_al
 
     polygon_all_of_local_var = OpenAPI_polygon_all_of_create (
         point_listList
-        );
+    );
 
     return polygon_all_of_local_var;
 end:

@@ -6,7 +6,7 @@
 
 OpenAPI_amf_dereg_info_t *OpenAPI_amf_dereg_info_create(
     OpenAPI_deregistration_reason_e dereg_reason
-    )
+)
 {
     OpenAPI_amf_dereg_info_t *amf_dereg_info_local_var = OpenAPI_malloc(sizeof(OpenAPI_amf_dereg_info_t));
     if (!amf_dereg_info_local_var) {
@@ -55,7 +55,7 @@ OpenAPI_amf_dereg_info_t *OpenAPI_amf_dereg_info_parseFromJSON(cJSON *amf_dereg_
     }
 
     OpenAPI_deregistration_reason_e dereg_reasonVariable;
-
+    
     if (!cJSON_IsString(dereg_reason)) {
         ogs_error("OpenAPI_amf_dereg_info_parseFromJSON() failed [dereg_reason]");
         goto end;
@@ -64,7 +64,7 @@ OpenAPI_amf_dereg_info_t *OpenAPI_amf_dereg_info_parseFromJSON(cJSON *amf_dereg_
 
     amf_dereg_info_local_var = OpenAPI_amf_dereg_info_create (
         dereg_reasonVariable
-        );
+    );
 
     return amf_dereg_info_local_var;
 end:

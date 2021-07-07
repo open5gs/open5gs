@@ -1,7 +1,7 @@
 /*
  * partial_record_method.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_partial_record_method_H_
@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+#include "partial_record_method_any_of.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -22,7 +23,7 @@ typedef struct OpenAPI_partial_record_method_s {
 } OpenAPI_partial_record_method_t;
 
 OpenAPI_partial_record_method_t *OpenAPI_partial_record_method_create(
-    );
+);
 void OpenAPI_partial_record_method_free(OpenAPI_partial_record_method_t *partial_record_method);
 OpenAPI_partial_record_method_t *OpenAPI_partial_record_method_parseFromJSON(cJSON *partial_record_methodJSON);
 cJSON *OpenAPI_partial_record_method_convertToJSON(OpenAPI_partial_record_method_t *partial_record_method);

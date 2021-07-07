@@ -1,7 +1,7 @@
 /*
  * pdu_session_status_cfg.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_pdu_session_status_cfg_H_
@@ -24,7 +24,7 @@ typedef struct OpenAPI_pdu_session_status_cfg_s {
 
 OpenAPI_pdu_session_status_cfg_t *OpenAPI_pdu_session_status_cfg_create(
     char *dnn
-    );
+);
 void OpenAPI_pdu_session_status_cfg_free(OpenAPI_pdu_session_status_cfg_t *pdu_session_status_cfg);
 OpenAPI_pdu_session_status_cfg_t *OpenAPI_pdu_session_status_cfg_parseFromJSON(cJSON *pdu_session_status_cfgJSON);
 cJSON *OpenAPI_pdu_session_status_cfg_convertToJSON(OpenAPI_pdu_session_status_cfg_t *pdu_session_status_cfg);

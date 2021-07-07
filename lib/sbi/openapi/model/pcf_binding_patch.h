@@ -1,7 +1,7 @@
 /*
  * pcf_binding_patch.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_pcf_binding_patch_H_
@@ -45,7 +45,7 @@ OpenAPI_pcf_binding_patch_t *OpenAPI_pcf_binding_patch_create(
     OpenAPI_list_t *pcf_ip_end_points,
     char *pcf_diam_host,
     char *pcf_diam_realm
-    );
+);
 void OpenAPI_pcf_binding_patch_free(OpenAPI_pcf_binding_patch_t *pcf_binding_patch);
 OpenAPI_pcf_binding_patch_t *OpenAPI_pcf_binding_patch_parseFromJSON(cJSON *pcf_binding_patchJSON);
 cJSON *OpenAPI_pcf_binding_patch_convertToJSON(OpenAPI_pcf_binding_patch_t *pcf_binding_patch);

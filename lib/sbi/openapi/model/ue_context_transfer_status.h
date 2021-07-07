@@ -1,7 +1,7 @@
 /*
  * ue_context_transfer_status.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_ue_context_transfer_status_H_

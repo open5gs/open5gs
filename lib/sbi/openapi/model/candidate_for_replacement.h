@@ -1,7 +1,7 @@
 /*
  * candidate_for_replacement.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_candidate_for_replacement_H_
@@ -27,7 +27,7 @@ typedef struct OpenAPI_candidate_for_replacement_s {
 OpenAPI_candidate_for_replacement_t *OpenAPI_candidate_for_replacement_create(
     OpenAPI_snssai_t *snssai,
     OpenAPI_list_t *dnns
-    );
+);
 void OpenAPI_candidate_for_replacement_free(OpenAPI_candidate_for_replacement_t *candidate_for_replacement);
 OpenAPI_candidate_for_replacement_t *OpenAPI_candidate_for_replacement_parseFromJSON(cJSON *candidate_for_replacementJSON);
 cJSON *OpenAPI_candidate_for_replacement_convertToJSON(OpenAPI_candidate_for_replacement_t *candidate_for_replacement);

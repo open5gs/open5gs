@@ -25,7 +25,7 @@ typedef struct OpenAPI_nf_info_s {
 
 OpenAPI_nf_info_t *OpenAPI_nf_info_create(
     OpenAPI_nf_type_e nf_type
-    );
+);
 void OpenAPI_nf_info_free(OpenAPI_nf_info_t *nf_info);
 OpenAPI_nf_info_t *OpenAPI_nf_info_parseFromJSON(cJSON *nf_infoJSON);
 cJSON *OpenAPI_nf_info_convertToJSON(OpenAPI_nf_info_t *nf_info);

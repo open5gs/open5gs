@@ -28,7 +28,7 @@ OpenAPI_identity_range_t *OpenAPI_identity_range_create(
     char *start,
     char *end,
     char *pattern
-    );
+);
 void OpenAPI_identity_range_free(OpenAPI_identity_range_t *identity_range);
 OpenAPI_identity_range_t *OpenAPI_identity_range_parseFromJSON(cJSON *identity_rangeJSON);
 cJSON *OpenAPI_identity_range_convertToJSON(OpenAPI_identity_range_t *identity_range);

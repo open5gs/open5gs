@@ -1,7 +1,7 @@
 /*
  * pdu_session_create_data.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_pdu_session_create_data_H_
@@ -167,7 +167,7 @@ OpenAPI_pdu_session_create_data_t *OpenAPI_pdu_session_create_data_create(
     int dl_serving_plmn_rate_ctl,
     OpenAPI_up_security_info_t *up_security_info,
     OpenAPI_vplmn_qos_t *vplmn_qos
-    );
+);
 void OpenAPI_pdu_session_create_data_free(OpenAPI_pdu_session_create_data_t *pdu_session_create_data);
 OpenAPI_pdu_session_create_data_t *OpenAPI_pdu_session_create_data_parseFromJSON(cJSON *pdu_session_create_dataJSON);
 cJSON *OpenAPI_pdu_session_create_data_convertToJSON(OpenAPI_pdu_session_create_data_t *pdu_session_create_data);

@@ -8,7 +8,7 @@ OpenAPI_uncertainty_ellipse_t *OpenAPI_uncertainty_ellipse_create(
     float semi_major,
     float semi_minor,
     int orientation_major
-    )
+)
 {
     OpenAPI_uncertainty_ellipse_t *uncertainty_ellipse_local_var = OpenAPI_malloc(sizeof(OpenAPI_uncertainty_ellipse_t));
     if (!uncertainty_ellipse_local_var) {
@@ -68,7 +68,7 @@ OpenAPI_uncertainty_ellipse_t *OpenAPI_uncertainty_ellipse_parseFromJSON(cJSON *
         goto end;
     }
 
-
+    
     if (!cJSON_IsNumber(semi_major)) {
         ogs_error("OpenAPI_uncertainty_ellipse_parseFromJSON() failed [semi_major]");
         goto end;
@@ -80,7 +80,7 @@ OpenAPI_uncertainty_ellipse_t *OpenAPI_uncertainty_ellipse_parseFromJSON(cJSON *
         goto end;
     }
 
-
+    
     if (!cJSON_IsNumber(semi_minor)) {
         ogs_error("OpenAPI_uncertainty_ellipse_parseFromJSON() failed [semi_minor]");
         goto end;
@@ -92,7 +92,7 @@ OpenAPI_uncertainty_ellipse_t *OpenAPI_uncertainty_ellipse_parseFromJSON(cJSON *
         goto end;
     }
 
-
+    
     if (!cJSON_IsNumber(orientation_major)) {
         ogs_error("OpenAPI_uncertainty_ellipse_parseFromJSON() failed [orientation_major]");
         goto end;
@@ -102,7 +102,7 @@ OpenAPI_uncertainty_ellipse_t *OpenAPI_uncertainty_ellipse_parseFromJSON(cJSON *
         semi_major->valuedouble,
         semi_minor->valuedouble,
         orientation_major->valuedouble
-        );
+    );
 
     return uncertainty_ellipse_local_var;
 end:

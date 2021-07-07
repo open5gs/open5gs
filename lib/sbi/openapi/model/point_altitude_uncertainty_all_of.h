@@ -1,7 +1,7 @@
 /*
  * point_altitude_uncertainty_all_of.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_point_altitude_uncertainty_all_of_H_
@@ -34,7 +34,7 @@ OpenAPI_point_altitude_uncertainty_all_of_t *OpenAPI_point_altitude_uncertainty_
     OpenAPI_uncertainty_ellipse_t *uncertainty_ellipse,
     float uncertainty_altitude,
     int confidence
-    );
+);
 void OpenAPI_point_altitude_uncertainty_all_of_free(OpenAPI_point_altitude_uncertainty_all_of_t *point_altitude_uncertainty_all_of);
 OpenAPI_point_altitude_uncertainty_all_of_t *OpenAPI_point_altitude_uncertainty_all_of_parseFromJSON(cJSON *point_altitude_uncertainty_all_ofJSON);
 cJSON *OpenAPI_point_altitude_uncertainty_all_of_convertToJSON(OpenAPI_point_altitude_uncertainty_all_of_t *point_altitude_uncertainty_all_of);

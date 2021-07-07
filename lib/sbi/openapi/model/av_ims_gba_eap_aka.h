@@ -1,7 +1,7 @@
 /*
  * av_ims_gba_eap_aka.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_av_ims_gba_eap_aka_H_
@@ -35,7 +35,7 @@ OpenAPI_av_ims_gba_eap_aka_t *OpenAPI_av_ims_gba_eap_aka_create(
     char *autn,
     char *ck,
     char *ik
-    );
+);
 void OpenAPI_av_ims_gba_eap_aka_free(OpenAPI_av_ims_gba_eap_aka_t *av_ims_gba_eap_aka);
 OpenAPI_av_ims_gba_eap_aka_t *OpenAPI_av_ims_gba_eap_aka_parseFromJSON(cJSON *av_ims_gba_eap_akaJSON);
 cJSON *OpenAPI_av_ims_gba_eap_aka_convertToJSON(OpenAPI_av_ims_gba_eap_aka_t *av_ims_gba_eap_aka);

@@ -6,7 +6,7 @@
 
 OpenAPI_nf_instance_id_list_cond_t *OpenAPI_nf_instance_id_list_cond_create(
     OpenAPI_list_t *nf_instance_id_list
-    )
+)
 {
     OpenAPI_nf_instance_id_list_cond_t *nf_instance_id_list_cond_local_var = OpenAPI_malloc(sizeof(OpenAPI_nf_instance_id_list_cond_t));
     if (!nf_instance_id_list_cond_local_var) {
@@ -48,11 +48,11 @@ cJSON *OpenAPI_nf_instance_id_list_cond_convertToJSON(OpenAPI_nf_instance_id_lis
 
     OpenAPI_lnode_t *nf_instance_id_list_node;
     OpenAPI_list_for_each(nf_instance_id_list_cond->nf_instance_id_list, nf_instance_id_list_node)  {
-        if (cJSON_AddStringToObject(nf_instance_id_list, "", (char*)nf_instance_id_list_node->data) == NULL) {
-            ogs_error("OpenAPI_nf_instance_id_list_cond_convertToJSON() failed [nf_instance_id_list]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(nf_instance_id_list, "", (char*)nf_instance_id_list_node->data) == NULL) {
+        ogs_error("OpenAPI_nf_instance_id_list_cond_convertToJSON() failed [nf_instance_id_list]");
+        goto end;
     }
+                    }
 
 end:
     return item;
@@ -68,7 +68,7 @@ OpenAPI_nf_instance_id_list_cond_t *OpenAPI_nf_instance_id_list_cond_parseFromJS
     }
 
     OpenAPI_list_t *nf_instance_id_listList;
-
+    
     cJSON *nf_instance_id_list_local;
     if (!cJSON_IsArray(nf_instance_id_list)) {
         ogs_error("OpenAPI_nf_instance_id_list_cond_parseFromJSON() failed [nf_instance_id_list]");
@@ -77,16 +77,16 @@ OpenAPI_nf_instance_id_list_cond_t *OpenAPI_nf_instance_id_list_cond_parseFromJS
     nf_instance_id_listList = OpenAPI_list_create();
 
     cJSON_ArrayForEach(nf_instance_id_list_local, nf_instance_id_list) {
-        if (!cJSON_IsString(nf_instance_id_list_local)) {
-            ogs_error("OpenAPI_nf_instance_id_list_cond_parseFromJSON() failed [nf_instance_id_list]");
-            goto end;
-        }
-        OpenAPI_list_add(nf_instance_id_listList, ogs_strdup_or_assert(nf_instance_id_list_local->valuestring));
+    if (!cJSON_IsString(nf_instance_id_list_local)) {
+        ogs_error("OpenAPI_nf_instance_id_list_cond_parseFromJSON() failed [nf_instance_id_list]");
+        goto end;
     }
+    OpenAPI_list_add(nf_instance_id_listList , ogs_strdup_or_assert(nf_instance_id_list_local->valuestring));
+                    }
 
     nf_instance_id_list_cond_local_var = OpenAPI_nf_instance_id_list_cond_create (
         nf_instance_id_listList
-        );
+    );
 
     return nf_instance_id_list_cond_local_var;
 end:

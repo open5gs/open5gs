@@ -1,7 +1,7 @@
 /*
  * secondary_rat_usage_info.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_secondary_rat_usage_info_H_
@@ -31,7 +31,7 @@ OpenAPI_secondary_rat_usage_info_t *OpenAPI_secondary_rat_usage_info_create(
     OpenAPI_rat_type_e secondary_rat_type,
     OpenAPI_list_t *qos_flows_usage_data,
     OpenAPI_list_t *pdu_session_usage_data
-    );
+);
 void OpenAPI_secondary_rat_usage_info_free(OpenAPI_secondary_rat_usage_info_t *secondary_rat_usage_info);
 OpenAPI_secondary_rat_usage_info_t *OpenAPI_secondary_rat_usage_info_parseFromJSON(cJSON *secondary_rat_usage_infoJSON);
 cJSON *OpenAPI_secondary_rat_usage_info_convertToJSON(OpenAPI_secondary_rat_usage_info_t *secondary_rat_usage_info);

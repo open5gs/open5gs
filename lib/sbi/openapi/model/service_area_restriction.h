@@ -1,7 +1,7 @@
 /*
  * service_area_restriction.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_service_area_restriction_H_
@@ -23,16 +23,16 @@ typedef struct OpenAPI_service_area_restriction_s OpenAPI_service_area_restricti
 typedef struct OpenAPI_service_area_restriction_s {
     OpenAPI_restriction_type_e restriction_type;
     OpenAPI_list_t *areas;
-    int max_num_of_t_as;
-    int max_num_of_t_as_for_not_allowed_areas;
+    int max_num_of_tas;
+    int max_num_of_tas_for_not_allowed_areas;
 } OpenAPI_service_area_restriction_t;
 
 OpenAPI_service_area_restriction_t *OpenAPI_service_area_restriction_create(
     OpenAPI_restriction_type_e restriction_type,
     OpenAPI_list_t *areas,
-    int max_num_of_t_as,
-    int max_num_of_t_as_for_not_allowed_areas
-    );
+    int max_num_of_tas,
+    int max_num_of_tas_for_not_allowed_areas
+);
 void OpenAPI_service_area_restriction_free(OpenAPI_service_area_restriction_t *service_area_restriction);
 OpenAPI_service_area_restriction_t *OpenAPI_service_area_restriction_parseFromJSON(cJSON *service_area_restrictionJSON);
 cJSON *OpenAPI_service_area_restriction_convertToJSON(OpenAPI_service_area_restriction_t *service_area_restriction);

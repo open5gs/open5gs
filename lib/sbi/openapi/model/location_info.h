@@ -1,7 +1,7 @@
 /*
  * location_info.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_location_info_H_
@@ -31,7 +31,7 @@ OpenAPI_location_info_t *OpenAPI_location_info_create(
     char *gpsi,
     OpenAPI_list_t *registration_location_info_list,
     char *supported_features
-    );
+);
 void OpenAPI_location_info_free(OpenAPI_location_info_t *location_info);
 OpenAPI_location_info_t *OpenAPI_location_info_parseFromJSON(cJSON *location_infoJSON);
 cJSON *OpenAPI_location_info_convertToJSON(OpenAPI_location_info_t *location_info);

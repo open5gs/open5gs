@@ -31,7 +31,7 @@ OpenAPI_qos_monitoring_report_t *OpenAPI_qos_monitoring_report_create(
     OpenAPI_list_t *ul_delays,
     OpenAPI_list_t *dl_delays,
     OpenAPI_list_t *rt_delays
-    );
+);
 void OpenAPI_qos_monitoring_report_free(OpenAPI_qos_monitoring_report_t *qos_monitoring_report);
 OpenAPI_qos_monitoring_report_t *OpenAPI_qos_monitoring_report_parseFromJSON(cJSON *qos_monitoring_reportJSON);
 cJSON *OpenAPI_qos_monitoring_report_convertToJSON(OpenAPI_qos_monitoring_report_t *qos_monitoring_report);

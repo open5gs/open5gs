@@ -1,7 +1,7 @@
 /*
  * serving_nf_identity.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_serving_nf_identity_H_
@@ -30,7 +30,7 @@ OpenAPI_serving_nf_identity_t *OpenAPI_serving_nf_identity_create(
     char *serv_nf_inst_id,
     OpenAPI_guami_t *guami,
     OpenAPI_an_gw_address_t *an_gw_addr
-    );
+);
 void OpenAPI_serving_nf_identity_free(OpenAPI_serving_nf_identity_t *serving_nf_identity);
 OpenAPI_serving_nf_identity_t *OpenAPI_serving_nf_identity_parseFromJSON(cJSON *serving_nf_identityJSON);
 cJSON *OpenAPI_serving_nf_identity_convertToJSON(OpenAPI_serving_nf_identity_t *serving_nf_identity);

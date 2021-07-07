@@ -1,7 +1,7 @@
 /*
  * plmn_ec_info.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_plmn_ec_info_H_
@@ -30,7 +30,7 @@ OpenAPI_plmn_ec_info_t *OpenAPI_plmn_ec_info_create(
     OpenAPI_plmn_id_t *plmn_id,
     OpenAPI_ec_restriction_data_wb_t *ec_restriction_data_wb,
     int ec_restriction_data_nb
-    );
+);
 void OpenAPI_plmn_ec_info_free(OpenAPI_plmn_ec_info_t *plmn_ec_info);
 OpenAPI_plmn_ec_info_t *OpenAPI_plmn_ec_info_parseFromJSON(cJSON *plmn_ec_infoJSON);
 cJSON *OpenAPI_plmn_ec_info_convertToJSON(OpenAPI_plmn_ec_info_t *plmn_ec_info);

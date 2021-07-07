@@ -1,7 +1,7 @@
 /*
  * expected_ue_behaviour.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_expected_ue_behaviour_H_
@@ -52,7 +52,7 @@ OpenAPI_expected_ue_behaviour_t *OpenAPI_expected_ue_behaviour_create(
     OpenAPI_battery_indication_rm_t *battery_indication,
     char *validity_time,
     char *mtc_provider_information
-    );
+);
 void OpenAPI_expected_ue_behaviour_free(OpenAPI_expected_ue_behaviour_t *expected_ue_behaviour);
 OpenAPI_expected_ue_behaviour_t *OpenAPI_expected_ue_behaviour_parseFromJSON(cJSON *expected_ue_behaviourJSON);
 cJSON *OpenAPI_expected_ue_behaviour_convertToJSON(OpenAPI_expected_ue_behaviour_t *expected_ue_behaviour);

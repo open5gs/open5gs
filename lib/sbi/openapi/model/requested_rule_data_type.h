@@ -1,7 +1,7 @@
 /*
  * requested_rule_data_type.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_requested_rule_data_type_H_

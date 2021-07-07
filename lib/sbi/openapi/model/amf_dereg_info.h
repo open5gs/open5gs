@@ -1,7 +1,7 @@
 /*
  * amf_dereg_info.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_amf_dereg_info_H_
@@ -25,7 +25,7 @@ typedef struct OpenAPI_amf_dereg_info_s {
 
 OpenAPI_amf_dereg_info_t *OpenAPI_amf_dereg_info_create(
     OpenAPI_deregistration_reason_e dereg_reason
-    );
+);
 void OpenAPI_amf_dereg_info_free(OpenAPI_amf_dereg_info_t *amf_dereg_info);
 OpenAPI_amf_dereg_info_t *OpenAPI_amf_dereg_info_parseFromJSON(cJSON *amf_dereg_infoJSON);
 cJSON *OpenAPI_amf_dereg_info_convertToJSON(OpenAPI_amf_dereg_info_t *amf_dereg_info);

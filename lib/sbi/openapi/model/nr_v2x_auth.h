@@ -1,7 +1,7 @@
 /*
  * nr_v2x_auth.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_nr_v2x_auth_H_
@@ -27,7 +27,7 @@ typedef struct OpenAPI_nr_v2x_auth_s {
 OpenAPI_nr_v2x_auth_t *OpenAPI_nr_v2x_auth_create(
     OpenAPI_ue_auth_e vehicle_ue_auth,
     OpenAPI_ue_auth_e pedestrian_ue_auth
-    );
+);
 void OpenAPI_nr_v2x_auth_free(OpenAPI_nr_v2x_auth_t *nr_v2x_auth);
 OpenAPI_nr_v2x_auth_t *OpenAPI_nr_v2x_auth_parseFromJSON(cJSON *nr_v2x_authJSON);
 cJSON *OpenAPI_nr_v2x_auth_convertToJSON(OpenAPI_nr_v2x_auth_t *nr_v2x_auth);

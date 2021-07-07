@@ -1,7 +1,7 @@
 /*
  * amf_event.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_amf_event_H_
@@ -15,6 +15,7 @@
 #include "amf_event_area.h"
 #include "amf_event_type.h"
 #include "location_filter.h"
+#include "reachability_filter.h"
 #include "traffic_descriptor.h"
 
 #ifdef __cplusplus
@@ -29,6 +30,10 @@ typedef struct OpenAPI_amf_event_s {
     OpenAPI_list_t *location_filter_list;
     int ref_id;
     OpenAPI_list_t *traffic_descriptor_list;
+    int report_ue_reachable;
+    struct OpenAPI_reachability_filter_s *reachability_filter;
+    int max_reports;
+    int max_response_time;
 } OpenAPI_amf_event_t;
 
 OpenAPI_amf_event_t *OpenAPI_amf_event_create(
@@ -37,8 +42,12 @@ OpenAPI_amf_event_t *OpenAPI_amf_event_create(
     OpenAPI_list_t *area_list,
     OpenAPI_list_t *location_filter_list,
     int ref_id,
-    OpenAPI_list_t *traffic_descriptor_list
-    );
+    OpenAPI_list_t *traffic_descriptor_list,
+    int report_ue_reachable,
+    OpenAPI_reachability_filter_t *reachability_filter,
+    int max_reports,
+    int max_response_time
+);
 void OpenAPI_amf_event_free(OpenAPI_amf_event_t *amf_event);
 OpenAPI_amf_event_t *OpenAPI_amf_event_parseFromJSON(cJSON *amf_eventJSON);
 cJSON *OpenAPI_amf_event_convertToJSON(OpenAPI_amf_event_t *amf_event);

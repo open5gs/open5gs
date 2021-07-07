@@ -1,7 +1,7 @@
 /*
  * snssai_info.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_snssai_info_H_
@@ -25,7 +25,7 @@ typedef struct OpenAPI_snssai_info_s {
 
 OpenAPI_snssai_info_t *OpenAPI_snssai_info_create(
     OpenAPI_list_t *dnn_infos
-    );
+);
 void OpenAPI_snssai_info_free(OpenAPI_snssai_info_t *snssai_info);
 OpenAPI_snssai_info_t *OpenAPI_snssai_info_parseFromJSON(cJSON *snssai_infoJSON);
 cJSON *OpenAPI_snssai_info_convertToJSON(OpenAPI_snssai_info_t *snssai_info);

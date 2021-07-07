@@ -1,7 +1,7 @@
 /*
  * volume_timed_report.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_volume_timed_report_H_
@@ -30,7 +30,7 @@ OpenAPI_volume_timed_report_t *OpenAPI_volume_timed_report_create(
     char *end_time_stamp,
     long downlink_volume,
     long uplink_volume
-    );
+);
 void OpenAPI_volume_timed_report_free(OpenAPI_volume_timed_report_t *volume_timed_report);
 OpenAPI_volume_timed_report_t *OpenAPI_volume_timed_report_parseFromJSON(cJSON *volume_timed_reportJSON);
 cJSON *OpenAPI_volume_timed_report_convertToJSON(OpenAPI_volume_timed_report_t *volume_timed_report);

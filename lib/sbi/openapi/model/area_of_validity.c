@@ -6,7 +6,7 @@
 
 OpenAPI_area_of_validity_t *OpenAPI_area_of_validity_create(
     OpenAPI_list_t *tai_list
-    )
+)
 {
     OpenAPI_area_of_validity_t *area_of_validity_local_var = OpenAPI_malloc(sizeof(OpenAPI_area_of_validity_t));
     if (!area_of_validity_local_var) {
@@ -72,9 +72,9 @@ OpenAPI_area_of_validity_t *OpenAPI_area_of_validity_parseFromJSON(cJSON *area_o
     }
 
     OpenAPI_list_t *tai_listList;
-
+    
     cJSON *tai_list_local_nonprimitive;
-    if (!cJSON_IsArray(tai_list)) {
+    if (!cJSON_IsArray(tai_list)){
         ogs_error("OpenAPI_area_of_validity_parseFromJSON() failed [tai_list]");
         goto end;
     }
@@ -93,7 +93,7 @@ OpenAPI_area_of_validity_t *OpenAPI_area_of_validity_parseFromJSON(cJSON *area_o
 
     area_of_validity_local_var = OpenAPI_area_of_validity_create (
         tai_listList
-        );
+    );
 
     return area_of_validity_local_var;
 end:

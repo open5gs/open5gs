@@ -1,7 +1,7 @@
 /*
  * mbsfn_area.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_mbsfn_area_H_
@@ -26,7 +26,7 @@ typedef struct OpenAPI_mbsfn_area_s {
 OpenAPI_mbsfn_area_t *OpenAPI_mbsfn_area_create(
     int mbsfn_area_id,
     int carrier_frequency
-    );
+);
 void OpenAPI_mbsfn_area_free(OpenAPI_mbsfn_area_t *mbsfn_area);
 OpenAPI_mbsfn_area_t *OpenAPI_mbsfn_area_parseFromJSON(cJSON *mbsfn_areaJSON);
 cJSON *OpenAPI_mbsfn_area_convertToJSON(OpenAPI_mbsfn_area_t *mbsfn_area);

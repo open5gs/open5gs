@@ -1,7 +1,7 @@
 /*
  * area_scope.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_area_scope_H_
@@ -31,7 +31,7 @@ OpenAPI_area_scope_t *OpenAPI_area_scope_create(
     OpenAPI_list_t *nr_cell_id_list,
     OpenAPI_list_t *tac_list,
     OpenAPI_list_t* tac_info_per_plmn
-    );
+);
 void OpenAPI_area_scope_free(OpenAPI_area_scope_t *area_scope);
 OpenAPI_area_scope_t *OpenAPI_area_scope_parseFromJSON(cJSON *area_scopeJSON);
 cJSON *OpenAPI_area_scope_convertToJSON(OpenAPI_area_scope_t *area_scope);

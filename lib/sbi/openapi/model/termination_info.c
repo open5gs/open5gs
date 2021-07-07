@@ -7,7 +7,7 @@
 OpenAPI_termination_info_t *OpenAPI_termination_info_create(
     OpenAPI_termination_cause_e term_cause,
     char *res_uri
-    )
+)
 {
     OpenAPI_termination_info_t *termination_info_local_var = OpenAPI_malloc(sizeof(OpenAPI_termination_info_t));
     if (!termination_info_local_var) {
@@ -63,7 +63,7 @@ OpenAPI_termination_info_t *OpenAPI_termination_info_parseFromJSON(cJSON *termin
     }
 
     OpenAPI_termination_cause_e term_causeVariable;
-
+    
     if (!cJSON_IsString(term_cause)) {
         ogs_error("OpenAPI_termination_info_parseFromJSON() failed [term_cause]");
         goto end;
@@ -76,7 +76,7 @@ OpenAPI_termination_info_t *OpenAPI_termination_info_parseFromJSON(cJSON *termin
         goto end;
     }
 
-
+    
     if (!cJSON_IsString(res_uri)) {
         ogs_error("OpenAPI_termination_info_parseFromJSON() failed [res_uri]");
         goto end;
@@ -85,7 +85,7 @@ OpenAPI_termination_info_t *OpenAPI_termination_info_parseFromJSON(cJSON *termin
     termination_info_local_var = OpenAPI_termination_info_create (
         term_causeVariable,
         ogs_strdup_or_assert(res_uri->valuestring)
-        );
+    );
 
     return termination_info_local_var;
 end:

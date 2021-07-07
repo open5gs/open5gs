@@ -1,7 +1,7 @@
 /*
  * registration_context_container.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_registration_context_container_H_
@@ -14,8 +14,12 @@
 #include "../include/binary.h"
 #include "access_type.h"
 #include "allowed_nssai.h"
+#include "ce_mode_b_ind.h"
 #include "configured_snssai.h"
 #include "global_ran_node_id.h"
+#include "lte_m_ind.h"
+#include "npn_access_info.h"
+#include "plmn_id.h"
 #include "snssai.h"
 #include "ue_context.h"
 #include "user_location.h"
@@ -36,12 +40,18 @@ typedef struct OpenAPI_registration_context_container_s {
     char *rrc_est_cause;
     int ue_context_request;
     int initial_amf_n2_ap_id;
-    char *an_n2_i_pv4_addr;
-    char *an_n2_i_pv6_addr;
+    char *an_n2_ipv4_addr;
+    char *an_n2_ipv6_addr;
     struct OpenAPI_allowed_nssai_s *allowed_nssai;
     OpenAPI_list_t *configured_nssai;
     OpenAPI_list_t *rejected_nssai_in_plmn;
     OpenAPI_list_t *rejected_nssai_in_ta;
+    struct OpenAPI_plmn_id_s *selected_plmn_id;
+    int iab_node_ind;
+    struct OpenAPI_ce_mode_b_ind_s *ce_mode_b_ind;
+    struct OpenAPI_lte_m_ind_s *lte_m_ind;
+    int authenticated_ind;
+    struct OpenAPI_npn_access_info_s *npn_access_info;
 } OpenAPI_registration_context_container_t;
 
 OpenAPI_registration_context_container_t *OpenAPI_registration_context_container_create(
@@ -55,13 +65,19 @@ OpenAPI_registration_context_container_t *OpenAPI_registration_context_container
     char *rrc_est_cause,
     int ue_context_request,
     int initial_amf_n2_ap_id,
-    char *an_n2_i_pv4_addr,
-    char *an_n2_i_pv6_addr,
+    char *an_n2_ipv4_addr,
+    char *an_n2_ipv6_addr,
     OpenAPI_allowed_nssai_t *allowed_nssai,
     OpenAPI_list_t *configured_nssai,
     OpenAPI_list_t *rejected_nssai_in_plmn,
-    OpenAPI_list_t *rejected_nssai_in_ta
-    );
+    OpenAPI_list_t *rejected_nssai_in_ta,
+    OpenAPI_plmn_id_t *selected_plmn_id,
+    int iab_node_ind,
+    OpenAPI_ce_mode_b_ind_t *ce_mode_b_ind,
+    OpenAPI_lte_m_ind_t *lte_m_ind,
+    int authenticated_ind,
+    OpenAPI_npn_access_info_t *npn_access_info
+);
 void OpenAPI_registration_context_container_free(OpenAPI_registration_context_container_t *registration_context_container);
 OpenAPI_registration_context_container_t *OpenAPI_registration_context_container_parseFromJSON(cJSON *registration_context_containerJSON);
 cJSON *OpenAPI_registration_context_container_convertToJSON(OpenAPI_registration_context_container_t *registration_context_container);

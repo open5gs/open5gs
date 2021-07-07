@@ -1,7 +1,7 @@
 /*
  * ue_id.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_ue_id_H_
@@ -26,7 +26,7 @@ typedef struct OpenAPI_ue_id_s {
 OpenAPI_ue_id_t *OpenAPI_ue_id_create(
     char *supi,
     OpenAPI_list_t *gpsi_list
-    );
+);
 void OpenAPI_ue_id_free(OpenAPI_ue_id_t *ue_id);
 OpenAPI_ue_id_t *OpenAPI_ue_id_parseFromJSON(cJSON *ue_idJSON);
 cJSON *OpenAPI_ue_id_convertToJSON(OpenAPI_ue_id_t *ue_id);

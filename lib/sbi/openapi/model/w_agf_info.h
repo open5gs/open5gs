@@ -28,7 +28,7 @@ OpenAPI_w_agf_info_t *OpenAPI_w_agf_info_create(
     OpenAPI_list_t *ipv4_endpoint_addresses,
     OpenAPI_list_t *ipv6_endpoint_addresses,
     char *endpoint_fqdn
-    );
+);
 void OpenAPI_w_agf_info_free(OpenAPI_w_agf_info_t *w_agf_info);
 OpenAPI_w_agf_info_t *OpenAPI_w_agf_info_parseFromJSON(cJSON *w_agf_infoJSON);
 cJSON *OpenAPI_w_agf_info_convertToJSON(OpenAPI_w_agf_info_t *w_agf_info);

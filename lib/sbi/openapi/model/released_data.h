@@ -1,7 +1,7 @@
 /*
  * released_data.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_released_data_H_
@@ -35,7 +35,7 @@ OpenAPI_released_data_t *OpenAPI_released_data_create(
     OpenAPI_n4_information_t *n4_info,
     OpenAPI_n4_information_t *n4_info_ext1,
     OpenAPI_n4_information_t *n4_info_ext2
-    );
+);
 void OpenAPI_released_data_free(OpenAPI_released_data_t *released_data);
 OpenAPI_released_data_t *OpenAPI_released_data_parseFromJSON(cJSON *released_dataJSON);
 cJSON *OpenAPI_released_data_convertToJSON(OpenAPI_released_data_t *released_data);

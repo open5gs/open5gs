@@ -1,7 +1,7 @@
 /*
  * rule_report.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_rule_report_H_
@@ -38,7 +38,7 @@ OpenAPI_rule_report_t *OpenAPI_rule_report_create(
     OpenAPI_failure_code_e failure_code,
     OpenAPI_final_unit_action_t *fin_unit_act,
     OpenAPI_list_t *ran_nas_rel_causes
-    );
+);
 void OpenAPI_rule_report_free(OpenAPI_rule_report_t *rule_report);
 OpenAPI_rule_report_t *OpenAPI_rule_report_parseFromJSON(cJSON *rule_reportJSON);
 cJSON *OpenAPI_rule_report_convertToJSON(OpenAPI_rule_report_t *rule_report);

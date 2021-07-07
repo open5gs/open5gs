@@ -26,7 +26,7 @@ typedef struct OpenAPI_limit_id_to_monitoring_key_s {
 OpenAPI_limit_id_to_monitoring_key_t *OpenAPI_limit_id_to_monitoring_key_create(
     char *limit_id,
     OpenAPI_list_t *monkey
-    );
+);
 void OpenAPI_limit_id_to_monitoring_key_free(OpenAPI_limit_id_to_monitoring_key_t *limit_id_to_monitoring_key);
 OpenAPI_limit_id_to_monitoring_key_t *OpenAPI_limit_id_to_monitoring_key_parseFromJSON(cJSON *limit_id_to_monitoring_keyJSON);
 cJSON *OpenAPI_limit_id_to_monitoring_key_convertToJSON(OpenAPI_limit_id_to_monitoring_key_t *limit_id_to_monitoring_key);

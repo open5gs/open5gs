@@ -1,7 +1,7 @@
 /*
  * ue_context_transfer_req_data.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_ue_context_transfer_req_data_H_
@@ -36,7 +36,7 @@ OpenAPI_ue_context_transfer_req_data_t *OpenAPI_ue_context_transfer_req_data_cre
     OpenAPI_plmn_id_t *plmn_id,
     OpenAPI_n1_message_container_t *reg_request,
     char *supported_features
-    );
+);
 void OpenAPI_ue_context_transfer_req_data_free(OpenAPI_ue_context_transfer_req_data_t *ue_context_transfer_req_data);
 OpenAPI_ue_context_transfer_req_data_t *OpenAPI_ue_context_transfer_req_data_parseFromJSON(cJSON *ue_context_transfer_req_dataJSON);
 cJSON *OpenAPI_ue_context_transfer_req_data_convertToJSON(OpenAPI_ue_context_transfer_req_data_t *ue_context_transfer_req_data);

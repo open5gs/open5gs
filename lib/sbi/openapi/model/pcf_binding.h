@@ -1,7 +1,7 @@
 /*
  * pcf_binding.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_pcf_binding_H_
@@ -74,7 +74,7 @@ OpenAPI_pcf_binding_t *OpenAPI_pcf_binding_create(
     OpenAPI_binding_level_e bind_level,
     OpenAPI_list_t *ipv4_frame_route_list,
     OpenAPI_list_t *ipv6_frame_route_list
-    );
+);
 void OpenAPI_pcf_binding_free(OpenAPI_pcf_binding_t *pcf_binding);
 OpenAPI_pcf_binding_t *OpenAPI_pcf_binding_parseFromJSON(cJSON *pcf_bindingJSON);
 cJSON *OpenAPI_pcf_binding_convertToJSON(OpenAPI_pcf_binding_t *pcf_binding);

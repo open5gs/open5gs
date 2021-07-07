@@ -1,7 +1,7 @@
 /*
  * dnn_route_selection_descriptor.h
  *
- * Contains the route selector parameters (PDU session types and SSC modes) per DNN
+ * Contains the route selector parameters (PDU session types, SSC modes and ATSSS information) per DNN
  */
 
 #ifndef _OpenAPI_dnn_route_selection_descriptor_H_
@@ -24,13 +24,15 @@ typedef struct OpenAPI_dnn_route_selection_descriptor_s {
     char *dnn;
     OpenAPI_list_t *ssc_modes;
     OpenAPI_list_t *pdu_sess_types;
+    int atsss_info;
 } OpenAPI_dnn_route_selection_descriptor_t;
 
 OpenAPI_dnn_route_selection_descriptor_t *OpenAPI_dnn_route_selection_descriptor_create(
     char *dnn,
     OpenAPI_list_t *ssc_modes,
-    OpenAPI_list_t *pdu_sess_types
-    );
+    OpenAPI_list_t *pdu_sess_types,
+    int atsss_info
+);
 void OpenAPI_dnn_route_selection_descriptor_free(OpenAPI_dnn_route_selection_descriptor_t *dnn_route_selection_descriptor);
 OpenAPI_dnn_route_selection_descriptor_t *OpenAPI_dnn_route_selection_descriptor_parseFromJSON(cJSON *dnn_route_selection_descriptorJSON);
 cJSON *OpenAPI_dnn_route_selection_descriptor_convertToJSON(OpenAPI_dnn_route_selection_descriptor_t *dnn_route_selection_descriptor);

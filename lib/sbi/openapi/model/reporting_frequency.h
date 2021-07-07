@@ -1,7 +1,7 @@
 /*
  * reporting_frequency.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_reporting_frequency_H_

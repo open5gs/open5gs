@@ -1,7 +1,7 @@
 /*
  * sm_context_create_data.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_sm_context_create_data_H_
@@ -119,6 +119,7 @@ typedef struct OpenAPI_sm_context_create_data_s {
     struct OpenAPI_w_agf_info_s *w_agf_info;
     struct OpenAPI_tngf_info_s *tngf_info;
     struct OpenAPI_twif_info_s *twif_info;
+    int ran_unchanged_ind;
 } OpenAPI_sm_context_create_data_t;
 
 OpenAPI_sm_context_create_data_t *OpenAPI_sm_context_create_data_create(
@@ -197,8 +198,9 @@ OpenAPI_sm_context_create_data_t *OpenAPI_sm_context_create_data_create(
     char *old_sm_context_ref,
     OpenAPI_w_agf_info_t *w_agf_info,
     OpenAPI_tngf_info_t *tngf_info,
-    OpenAPI_twif_info_t *twif_info
-    );
+    OpenAPI_twif_info_t *twif_info,
+    int ran_unchanged_ind
+);
 void OpenAPI_sm_context_create_data_free(OpenAPI_sm_context_create_data_t *sm_context_create_data);
 OpenAPI_sm_context_create_data_t *OpenAPI_sm_context_create_data_parseFromJSON(cJSON *sm_context_create_dataJSON);
 cJSON *OpenAPI_sm_context_create_data_convertToJSON(OpenAPI_sm_context_create_data_t *sm_context_create_data);

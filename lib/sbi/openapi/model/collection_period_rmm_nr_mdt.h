@@ -1,7 +1,7 @@
 /*
  * collection_period_rmm_nr_mdt.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_collection_period_rmm_nr_mdt_H_

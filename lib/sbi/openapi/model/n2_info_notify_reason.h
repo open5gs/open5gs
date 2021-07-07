@@ -1,7 +1,7 @@
 /*
  * n2_info_notify_reason.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_n2_info_notify_reason_H_

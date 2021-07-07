@@ -5,7 +5,7 @@
 #include "stationary_indication_rm.h"
 
 OpenAPI_stationary_indication_rm_t *OpenAPI_stationary_indication_rm_create(
-    )
+)
 {
     OpenAPI_stationary_indication_rm_t *stationary_indication_rm_local_var = OpenAPI_malloc(sizeof(OpenAPI_stationary_indication_rm_t));
     if (!stationary_indication_rm_local_var) {
@@ -42,7 +42,7 @@ OpenAPI_stationary_indication_rm_t *OpenAPI_stationary_indication_rm_parseFromJS
 {
     OpenAPI_stationary_indication_rm_t *stationary_indication_rm_local_var = NULL;
     stationary_indication_rm_local_var = OpenAPI_stationary_indication_rm_create (
-        );
+    );
 
     return stationary_indication_rm_local_var;
 end:

@@ -7,7 +7,7 @@
 OpenAPI_expected_ue_behavior_t *OpenAPI_expected_ue_behavior_create(
     OpenAPI_list_t *exp_move_trajectory,
     char *validity_time
-    )
+)
 {
     OpenAPI_expected_ue_behavior_t *expected_ue_behavior_local_var = OpenAPI_malloc(sizeof(OpenAPI_expected_ue_behavior_t));
     if (!expected_ue_behavior_local_var) {
@@ -80,9 +80,9 @@ OpenAPI_expected_ue_behavior_t *OpenAPI_expected_ue_behavior_parseFromJSON(cJSON
     }
 
     OpenAPI_list_t *exp_move_trajectoryList;
-
+    
     cJSON *exp_move_trajectory_local_nonprimitive;
-    if (!cJSON_IsArray(exp_move_trajectory)) {
+    if (!cJSON_IsArray(exp_move_trajectory)){
         ogs_error("OpenAPI_expected_ue_behavior_parseFromJSON() failed [exp_move_trajectory]");
         goto end;
     }
@@ -105,7 +105,7 @@ OpenAPI_expected_ue_behavior_t *OpenAPI_expected_ue_behavior_parseFromJSON(cJSON
         goto end;
     }
 
-
+    
     if (!cJSON_IsString(validity_time)) {
         ogs_error("OpenAPI_expected_ue_behavior_parseFromJSON() failed [validity_time]");
         goto end;
@@ -114,7 +114,7 @@ OpenAPI_expected_ue_behavior_t *OpenAPI_expected_ue_behavior_parseFromJSON(cJSON
     expected_ue_behavior_local_var = OpenAPI_expected_ue_behavior_create (
         exp_move_trajectoryList,
         ogs_strdup_or_assert(validity_time->valuestring)
-        );
+    );
 
     return expected_ue_behavior_local_var;
 end:

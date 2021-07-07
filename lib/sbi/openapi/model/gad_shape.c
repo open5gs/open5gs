@@ -6,7 +6,7 @@
 
 OpenAPI_gad_shape_t *OpenAPI_gad_shape_create(
     OpenAPI_supported_gad_shapes_t *shape
-    )
+)
 {
     OpenAPI_gad_shape_t *gad_shape_local_var = OpenAPI_malloc(sizeof(OpenAPI_gad_shape_t));
     if (!gad_shape_local_var) {
@@ -62,12 +62,12 @@ OpenAPI_gad_shape_t *OpenAPI_gad_shape_parseFromJSON(cJSON *gad_shapeJSON)
     }
 
     OpenAPI_supported_gad_shapes_t *shape_local_nonprim = NULL;
-
+    
     shape_local_nonprim = OpenAPI_supported_gad_shapes_parseFromJSON(shape);
 
     gad_shape_local_var = OpenAPI_gad_shape_create (
         shape_local_nonprim
-        );
+    );
 
     return gad_shape_local_var;
 end:

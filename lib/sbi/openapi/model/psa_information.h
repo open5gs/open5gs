@@ -1,7 +1,7 @@
 /*
  * psa_information.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_psa_information_H_
@@ -31,7 +31,7 @@ OpenAPI_psa_information_t *OpenAPI_psa_information_create(
     OpenAPI_list_t *dnai_list,
     char *ue_ipv6_prefix,
     char *psa_upf_id
-    );
+);
 void OpenAPI_psa_information_free(OpenAPI_psa_information_t *psa_information);
 OpenAPI_psa_information_t *OpenAPI_psa_information_parseFromJSON(cJSON *psa_informationJSON);
 cJSON *OpenAPI_psa_information_convertToJSON(OpenAPI_psa_information_t *psa_information);

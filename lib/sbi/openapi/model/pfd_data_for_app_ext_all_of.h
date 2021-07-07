@@ -1,7 +1,7 @@
 /*
  * pfd_data_for_app_ext_all_of.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_pfd_data_for_app_ext_all_of_H_
@@ -24,7 +24,7 @@ typedef struct OpenAPI_pfd_data_for_app_ext_all_of_s {
 
 OpenAPI_pfd_data_for_app_ext_all_of_t *OpenAPI_pfd_data_for_app_ext_all_of_create(
     char *supp_feat
-    );
+);
 void OpenAPI_pfd_data_for_app_ext_all_of_free(OpenAPI_pfd_data_for_app_ext_all_of_t *pfd_data_for_app_ext_all_of);
 OpenAPI_pfd_data_for_app_ext_all_of_t *OpenAPI_pfd_data_for_app_ext_all_of_parseFromJSON(cJSON *pfd_data_for_app_ext_all_ofJSON);
 cJSON *OpenAPI_pfd_data_for_app_ext_all_of_convertToJSON(OpenAPI_pfd_data_for_app_ext_all_of_t *pfd_data_for_app_ext_all_of);

@@ -6,7 +6,7 @@
 
 OpenAPI_report_item_t *OpenAPI_report_item_create(
     char *path
-    )
+)
 {
     OpenAPI_report_item_t *report_item_local_var = OpenAPI_malloc(sizeof(OpenAPI_report_item_t));
     if (!report_item_local_var) {
@@ -55,7 +55,7 @@ OpenAPI_report_item_t *OpenAPI_report_item_parseFromJSON(cJSON *report_itemJSON)
         goto end;
     }
 
-
+    
     if (!cJSON_IsString(path)) {
         ogs_error("OpenAPI_report_item_parseFromJSON() failed [path]");
         goto end;
@@ -63,7 +63,7 @@ OpenAPI_report_item_t *OpenAPI_report_item_parseFromJSON(cJSON *report_itemJSON)
 
     report_item_local_var = OpenAPI_report_item_create (
         ogs_strdup_or_assert(path->valuestring)
-        );
+    );
 
     return report_item_local_var;
 end:

@@ -1,7 +1,7 @@
 /*
  * assign_ebi_data.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_assign_ebi_data_H_
@@ -32,7 +32,7 @@ OpenAPI_assign_ebi_data_t *OpenAPI_assign_ebi_data_create(
     OpenAPI_list_t *arp_list,
     OpenAPI_list_t *released_ebi_list,
     OpenAPI_guami_t *old_guami
-    );
+);
 void OpenAPI_assign_ebi_data_free(OpenAPI_assign_ebi_data_t *assign_ebi_data);
 OpenAPI_assign_ebi_data_t *OpenAPI_assign_ebi_data_parseFromJSON(cJSON *assign_ebi_dataJSON);
 cJSON *OpenAPI_assign_ebi_data_convertToJSON(OpenAPI_assign_ebi_data_t *assign_ebi_data);

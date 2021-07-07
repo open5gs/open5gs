@@ -1,7 +1,7 @@
 /*
  * null_value.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_null_value_H_

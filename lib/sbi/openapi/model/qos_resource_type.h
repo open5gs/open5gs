@@ -1,7 +1,7 @@
 /*
  * qos_resource_type.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_qos_resource_type_H_
@@ -17,16 +17,11 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_qos_resource_type_s OpenAPI_qos_resource_type_t;
-typedef struct OpenAPI_qos_resource_type_s {
-} OpenAPI_qos_resource_type_t;
+typedef enum { OpenAPI_qos_resource_type_NULL = 0, OpenAPI_qos_resource_type_NON_GBR, OpenAPI_qos_resource_type_NON_CRITICAL_GBR, OpenAPI_qos_resource_type_CRITICAL_GBR } OpenAPI_qos_resource_type_e;
 
-OpenAPI_qos_resource_type_t *OpenAPI_qos_resource_type_create(
-    );
-void OpenAPI_qos_resource_type_free(OpenAPI_qos_resource_type_t *qos_resource_type);
-OpenAPI_qos_resource_type_t *OpenAPI_qos_resource_type_parseFromJSON(cJSON *qos_resource_typeJSON);
-cJSON *OpenAPI_qos_resource_type_convertToJSON(OpenAPI_qos_resource_type_t *qos_resource_type);
-OpenAPI_qos_resource_type_t *OpenAPI_qos_resource_type_copy(OpenAPI_qos_resource_type_t *dst, OpenAPI_qos_resource_type_t *src);
+char* OpenAPI_qos_resource_type_ToString(OpenAPI_qos_resource_type_e qos_resource_type);
+
+OpenAPI_qos_resource_type_e OpenAPI_qos_resource_type_FromString(char* qos_resource_type);
 
 #ifdef __cplusplus
 }

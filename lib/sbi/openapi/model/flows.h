@@ -28,7 +28,7 @@ OpenAPI_flows_t *OpenAPI_flows_create(
     OpenAPI_list_t *cont_vers,
     OpenAPI_list_t *f_nums,
     int med_comp_n
-    );
+);
 void OpenAPI_flows_free(OpenAPI_flows_t *flows);
 OpenAPI_flows_t *OpenAPI_flows_parseFromJSON(cJSON *flowsJSON);
 cJSON *OpenAPI_flows_convertToJSON(OpenAPI_flows_t *flows);

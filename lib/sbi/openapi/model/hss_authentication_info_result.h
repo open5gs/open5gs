@@ -1,7 +1,7 @@
 /*
  * hss_authentication_info_result.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_hss_authentication_info_result_H_
@@ -27,7 +27,7 @@ typedef struct OpenAPI_hss_authentication_info_result_s {
 OpenAPI_hss_authentication_info_result_t *OpenAPI_hss_authentication_info_result_create(
     char *supported_features,
     OpenAPI_hss_authentication_vectors_t *hss_authentication_vectors
-    );
+);
 void OpenAPI_hss_authentication_info_result_free(OpenAPI_hss_authentication_info_result_t *hss_authentication_info_result);
 OpenAPI_hss_authentication_info_result_t *OpenAPI_hss_authentication_info_result_parseFromJSON(cJSON *hss_authentication_info_resultJSON);
 cJSON *OpenAPI_hss_authentication_info_result_convertToJSON(OpenAPI_hss_authentication_info_result_t *hss_authentication_info_result);

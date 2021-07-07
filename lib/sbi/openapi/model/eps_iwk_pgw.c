@@ -7,7 +7,7 @@
 OpenAPI_eps_iwk_pgw_t *OpenAPI_eps_iwk_pgw_create(
     char *pgw_fqdn,
     char *smf_instance_id
-    )
+)
 {
     OpenAPI_eps_iwk_pgw_t *eps_iwk_pgw_local_var = OpenAPI_malloc(sizeof(OpenAPI_eps_iwk_pgw_t));
     if (!eps_iwk_pgw_local_var) {
@@ -63,7 +63,7 @@ OpenAPI_eps_iwk_pgw_t *OpenAPI_eps_iwk_pgw_parseFromJSON(cJSON *eps_iwk_pgwJSON)
         goto end;
     }
 
-
+    
     if (!cJSON_IsString(pgw_fqdn)) {
         ogs_error("OpenAPI_eps_iwk_pgw_parseFromJSON() failed [pgw_fqdn]");
         goto end;
@@ -75,7 +75,7 @@ OpenAPI_eps_iwk_pgw_t *OpenAPI_eps_iwk_pgw_parseFromJSON(cJSON *eps_iwk_pgwJSON)
         goto end;
     }
 
-
+    
     if (!cJSON_IsString(smf_instance_id)) {
         ogs_error("OpenAPI_eps_iwk_pgw_parseFromJSON() failed [smf_instance_id]");
         goto end;
@@ -84,7 +84,7 @@ OpenAPI_eps_iwk_pgw_t *OpenAPI_eps_iwk_pgw_parseFromJSON(cJSON *eps_iwk_pgwJSON)
     eps_iwk_pgw_local_var = OpenAPI_eps_iwk_pgw_create (
         ogs_strdup_or_assert(pgw_fqdn->valuestring),
         ogs_strdup_or_assert(smf_instance_id->valuestring)
-        );
+    );
 
     return eps_iwk_pgw_local_var;
 end:

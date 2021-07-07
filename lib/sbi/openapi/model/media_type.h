@@ -1,7 +1,7 @@
 /*
  * media_type.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_media_type_H_

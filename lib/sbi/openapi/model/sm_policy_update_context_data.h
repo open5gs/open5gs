@@ -1,7 +1,7 @@
 /*
  * sm_policy_update_context_data.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_sm_policy_update_context_data_H_
@@ -19,11 +19,15 @@
 #include "ambr.h"
 #include "app_detection_info.h"
 #include "atsss_capability.h"
+#include "bridge_management_container.h"
 #include "credit_management_status.h"
+#include "ddd_traffic_descriptor.h"
+#include "dl_data_delivery_status.h"
 #include "ip_multicast_address_info.h"
 #include "ma_pdu_indication.h"
 #include "plmn_id_nid.h"
 #include "policy_control_request_trigger.h"
+#include "policy_decision_failure_code.h"
 #include "port_management_container.h"
 #include "presence_info.h"
 #include "qos_flow_usage.h"
@@ -38,6 +42,7 @@
 #include "tsn_bridge_info.h"
 #include "ue_initiated_resource_request.h"
 #include "user_location.h"
+#include "vplmn_qos.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -66,6 +71,7 @@ typedef struct OpenAPI_sm_policy_update_context_data_s {
     struct OpenAPI_ambr_s *subs_sess_ambr;
     char *auth_prof_index;
     struct OpenAPI_subscribed_default_qos_s *subs_def_qos;
+    struct OpenAPI_vplmn_qos_s *vplmn_qos;
     int num_of_pack_filter;
     OpenAPI_list_t *accu_usage_reports;
     int _3gpp_ps_data_off_status;
@@ -85,9 +91,15 @@ typedef struct OpenAPI_sm_policy_update_context_data_s {
     OpenAPI_ma_pdu_indication_e ma_pdu_ind;
     struct OpenAPI_atsss_capability_s *atsss_capab;
     struct OpenAPI_tsn_bridge_info_s *tsn_bridge_info;
+    struct OpenAPI_bridge_management_container_s *tsn_bridge_man_cont;
     struct OpenAPI_port_management_container_s *tsn_port_man_cont_dstt;
     OpenAPI_list_t *tsn_port_man_cont_nwtts;
     OpenAPI_list_t *mul_addr_infos;
+    OpenAPI_list_t *policy_dec_failure_reports;
+    OpenAPI_list_t *traffic_descriptors;
+    char *pcc_rule_id;
+    OpenAPI_list_t *inter_grp_ids;
+    OpenAPI_list_t *types_of_notif;
 } OpenAPI_sm_policy_update_context_data_t;
 
 OpenAPI_sm_policy_update_context_data_t *OpenAPI_sm_policy_update_context_data_create(
@@ -112,6 +124,7 @@ OpenAPI_sm_policy_update_context_data_t *OpenAPI_sm_policy_update_context_data_c
     OpenAPI_ambr_t *subs_sess_ambr,
     char *auth_prof_index,
     OpenAPI_subscribed_default_qos_t *subs_def_qos,
+    OpenAPI_vplmn_qos_t *vplmn_qos,
     int num_of_pack_filter,
     OpenAPI_list_t *accu_usage_reports,
     int _3gpp_ps_data_off_status,
@@ -131,10 +144,16 @@ OpenAPI_sm_policy_update_context_data_t *OpenAPI_sm_policy_update_context_data_c
     OpenAPI_ma_pdu_indication_e ma_pdu_ind,
     OpenAPI_atsss_capability_t *atsss_capab,
     OpenAPI_tsn_bridge_info_t *tsn_bridge_info,
+    OpenAPI_bridge_management_container_t *tsn_bridge_man_cont,
     OpenAPI_port_management_container_t *tsn_port_man_cont_dstt,
     OpenAPI_list_t *tsn_port_man_cont_nwtts,
-    OpenAPI_list_t *mul_addr_infos
-    );
+    OpenAPI_list_t *mul_addr_infos,
+    OpenAPI_list_t *policy_dec_failure_reports,
+    OpenAPI_list_t *traffic_descriptors,
+    char *pcc_rule_id,
+    OpenAPI_list_t *inter_grp_ids,
+    OpenAPI_list_t *types_of_notif
+);
 void OpenAPI_sm_policy_update_context_data_free(OpenAPI_sm_policy_update_context_data_t *sm_policy_update_context_data);
 OpenAPI_sm_policy_update_context_data_t *OpenAPI_sm_policy_update_context_data_parseFromJSON(cJSON *sm_policy_update_context_dataJSON);
 cJSON *OpenAPI_sm_policy_update_context_data_convertToJSON(OpenAPI_sm_policy_update_context_data_t *sm_policy_update_context_data);

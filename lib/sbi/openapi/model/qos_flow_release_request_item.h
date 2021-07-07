@@ -1,7 +1,7 @@
 /*
  * qos_flow_release_request_item.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_qos_flow_release_request_item_H_
@@ -28,7 +28,7 @@ OpenAPI_qos_flow_release_request_item_t *OpenAPI_qos_flow_release_request_item_c
     int qfi,
     char qos_rules,
     char qos_flow_description
-    );
+);
 void OpenAPI_qos_flow_release_request_item_free(OpenAPI_qos_flow_release_request_item_t *qos_flow_release_request_item);
 OpenAPI_qos_flow_release_request_item_t *OpenAPI_qos_flow_release_request_item_parseFromJSON(cJSON *qos_flow_release_request_itemJSON);
 cJSON *OpenAPI_qos_flow_release_request_item_convertToJSON(OpenAPI_qos_flow_release_request_item_t *qos_flow_release_request_item);

@@ -1,7 +1,7 @@
 /*
  * roaming_indication.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_roaming_indication_H_

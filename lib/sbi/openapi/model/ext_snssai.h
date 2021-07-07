@@ -1,7 +1,7 @@
 /*
  * ext_snssai.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_ext_snssai_H_
@@ -33,7 +33,7 @@ OpenAPI_ext_snssai_t *OpenAPI_ext_snssai_create(
     char *sd,
     OpenAPI_list_t *sd_ranges,
     int wildcard_sd
-    );
+);
 void OpenAPI_ext_snssai_free(OpenAPI_ext_snssai_t *ext_snssai);
 OpenAPI_ext_snssai_t *OpenAPI_ext_snssai_parseFromJSON(cJSON *ext_snssaiJSON);
 cJSON *OpenAPI_ext_snssai_convertToJSON(OpenAPI_ext_snssai_t *ext_snssai);

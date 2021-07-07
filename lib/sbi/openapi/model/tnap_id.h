@@ -1,7 +1,7 @@
 /*
  * tnap_id.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_tnap_id_H_
@@ -28,7 +28,7 @@ OpenAPI_tnap_id_t *OpenAPI_tnap_id_create(
     char *ss_id,
     char *bss_id,
     char civic_address
-    );
+);
 void OpenAPI_tnap_id_free(OpenAPI_tnap_id_t *tnap_id);
 OpenAPI_tnap_id_t *OpenAPI_tnap_id_parseFromJSON(cJSON *tnap_idJSON);
 cJSON *OpenAPI_tnap_id_convertToJSON(OpenAPI_tnap_id_t *tnap_id);

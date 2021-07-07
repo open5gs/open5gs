@@ -1,7 +1,7 @@
 /*
  * usage_threshold_rm.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_usage_threshold_rm_H_
@@ -30,7 +30,7 @@ OpenAPI_usage_threshold_rm_t *OpenAPI_usage_threshold_rm_create(
     long total_volume,
     long downlink_volume,
     long uplink_volume
-    );
+);
 void OpenAPI_usage_threshold_rm_free(OpenAPI_usage_threshold_rm_t *usage_threshold_rm);
 OpenAPI_usage_threshold_rm_t *OpenAPI_usage_threshold_rm_parseFromJSON(cJSON *usage_threshold_rmJSON);
 cJSON *OpenAPI_usage_threshold_rm_convertToJSON(OpenAPI_usage_threshold_rm_t *usage_threshold_rm);

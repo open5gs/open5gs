@@ -9,7 +9,7 @@ OpenAPI_patch_item_t *OpenAPI_patch_item_create(
     char *path,
     char *from,
     char *value
-    )
+)
 {
     OpenAPI_patch_item_t *patch_item_local_var = OpenAPI_malloc(sizeof(OpenAPI_patch_item_t));
     if (!patch_item_local_var) {
@@ -56,17 +56,17 @@ cJSON *OpenAPI_patch_item_convertToJSON(OpenAPI_patch_item_t *patch_item)
     }
 
     if (patch_item->from) {
-        if (cJSON_AddStringToObject(item, "from", patch_item->from) == NULL) {
-            ogs_error("OpenAPI_patch_item_convertToJSON() failed [from]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "from", patch_item->from) == NULL) {
+        ogs_error("OpenAPI_patch_item_convertToJSON() failed [from]");
+        goto end;
+    }
     }
 
     if (patch_item->value) {
-        if (cJSON_AddStringToObject(item, "value", patch_item->value) == NULL) {
-            ogs_error("OpenAPI_patch_item_convertToJSON() failed [value]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "value", patch_item->value) == NULL) {
+        ogs_error("OpenAPI_patch_item_convertToJSON() failed [value]");
+        goto end;
+    }
     }
 
 end:
@@ -83,7 +83,7 @@ OpenAPI_patch_item_t *OpenAPI_patch_item_parseFromJSON(cJSON *patch_itemJSON)
     }
 
     OpenAPI_patch_operation_e opVariable;
-
+    
     if (!cJSON_IsString(op)) {
         ogs_error("OpenAPI_patch_item_parseFromJSON() failed [op]");
         goto end;
@@ -96,7 +96,7 @@ OpenAPI_patch_item_t *OpenAPI_patch_item_parseFromJSON(cJSON *patch_itemJSON)
         goto end;
     }
 
-
+    
     if (!cJSON_IsString(path)) {
         ogs_error("OpenAPI_patch_item_parseFromJSON() failed [path]");
         goto end;
@@ -104,28 +104,28 @@ OpenAPI_patch_item_t *OpenAPI_patch_item_parseFromJSON(cJSON *patch_itemJSON)
 
     cJSON *from = cJSON_GetObjectItemCaseSensitive(patch_itemJSON, "from");
 
-    if (from) {
-        if (!cJSON_IsString(from)) {
-            ogs_error("OpenAPI_patch_item_parseFromJSON() failed [from]");
-            goto end;
-        }
+    if (from) { 
+    if (!cJSON_IsString(from)) {
+        ogs_error("OpenAPI_patch_item_parseFromJSON() failed [from]");
+        goto end;
     }
+}
 
     cJSON *value = cJSON_GetObjectItemCaseSensitive(patch_itemJSON, "value");
 
-    if (value) {
-        if (!cJSON_IsString(value)) {
-            ogs_error("OpenAPI_patch_item_parseFromJSON() failed [value]");
-            goto end;
-        }
+    if (value) { 
+    if (!cJSON_IsString(value)) {
+        ogs_error("OpenAPI_patch_item_parseFromJSON() failed [value]");
+        goto end;
     }
+}
 
     patch_item_local_var = OpenAPI_patch_item_create (
         opVariable,
         ogs_strdup_or_assert(path->valuestring),
         from ? ogs_strdup_or_assert(from->valuestring) : NULL,
         value ? ogs_strdup_or_assert(value->valuestring) : NULL
-        );
+    );
 
     return patch_item_local_var;
 end:

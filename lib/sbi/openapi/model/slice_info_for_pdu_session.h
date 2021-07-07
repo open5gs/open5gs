@@ -1,7 +1,7 @@
 /*
  * slice_info_for_pdu_session.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_slice_info_for_pdu_session_H_
@@ -30,7 +30,7 @@ OpenAPI_slice_info_for_pdu_session_t *OpenAPI_slice_info_for_pdu_session_create(
     OpenAPI_snssai_t *s_nssai,
     OpenAPI_roaming_indication_e roaming_indication,
     OpenAPI_snssai_t *home_snssai
-    );
+);
 void OpenAPI_slice_info_for_pdu_session_free(OpenAPI_slice_info_for_pdu_session_t *slice_info_for_pdu_session);
 OpenAPI_slice_info_for_pdu_session_t *OpenAPI_slice_info_for_pdu_session_parseFromJSON(cJSON *slice_info_for_pdu_sessionJSON);
 cJSON *OpenAPI_slice_info_for_pdu_session_convertToJSON(OpenAPI_slice_info_for_pdu_session_t *slice_info_for_pdu_session);

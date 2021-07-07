@@ -1,7 +1,7 @@
 /*
  * acknowledge_info.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_acknowledge_info_H_
@@ -23,14 +23,16 @@ typedef struct OpenAPI_acknowledge_info_s {
     char *upu_mac_iue;
     char *secured_packet;
     char *provisioning_time;
+    int ue_not_reachable;
 } OpenAPI_acknowledge_info_t;
 
 OpenAPI_acknowledge_info_t *OpenAPI_acknowledge_info_create(
     char *sor_mac_iue,
     char *upu_mac_iue,
     char *secured_packet,
-    char *provisioning_time
-    );
+    char *provisioning_time,
+    int ue_not_reachable
+);
 void OpenAPI_acknowledge_info_free(OpenAPI_acknowledge_info_t *acknowledge_info);
 OpenAPI_acknowledge_info_t *OpenAPI_acknowledge_info_parseFromJSON(cJSON *acknowledge_infoJSON);
 cJSON *OpenAPI_acknowledge_info_convertToJSON(OpenAPI_acknowledge_info_t *acknowledge_info);

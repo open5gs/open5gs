@@ -1,7 +1,7 @@
 /*
  * auth_type.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_auth_type_H_

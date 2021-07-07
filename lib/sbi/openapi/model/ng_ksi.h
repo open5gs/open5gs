@@ -1,7 +1,7 @@
 /*
  * ng_ksi.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_ng_ksi_H_
@@ -27,7 +27,7 @@ typedef struct OpenAPI_ng_ksi_s {
 OpenAPI_ng_ksi_t *OpenAPI_ng_ksi_create(
     OpenAPI_sc_type_e tsc,
     int ksi
-    );
+);
 void OpenAPI_ng_ksi_free(OpenAPI_ng_ksi_t *ng_ksi);
 OpenAPI_ng_ksi_t *OpenAPI_ng_ksi_parseFromJSON(cJSON *ng_ksiJSON);
 cJSON *OpenAPI_ng_ksi_convertToJSON(OpenAPI_ng_ksi_t *ng_ksi);

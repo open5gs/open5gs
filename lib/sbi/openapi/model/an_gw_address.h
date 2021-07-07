@@ -26,7 +26,7 @@ typedef struct OpenAPI_an_gw_address_s {
 OpenAPI_an_gw_address_t *OpenAPI_an_gw_address_create(
     char *an_gw_ipv4_addr,
     char *an_gw_ipv6_addr
-    );
+);
 void OpenAPI_an_gw_address_free(OpenAPI_an_gw_address_t *an_gw_address);
 OpenAPI_an_gw_address_t *OpenAPI_an_gw_address_parseFromJSON(cJSON *an_gw_addressJSON);
 cJSON *OpenAPI_an_gw_address_convertToJSON(OpenAPI_an_gw_address_t *an_gw_address);

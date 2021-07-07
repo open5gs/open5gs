@@ -1,7 +1,7 @@
 /*
  * event_report_mode.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_event_report_mode_H_
@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+#include "event_report_mode_any_of.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -22,7 +23,7 @@ typedef struct OpenAPI_event_report_mode_s {
 } OpenAPI_event_report_mode_t;
 
 OpenAPI_event_report_mode_t *OpenAPI_event_report_mode_create(
-    );
+);
 void OpenAPI_event_report_mode_free(OpenAPI_event_report_mode_t *event_report_mode);
 OpenAPI_event_report_mode_t *OpenAPI_event_report_mode_parseFromJSON(cJSON *event_report_modeJSON);
 cJSON *OpenAPI_event_report_mode_convertToJSON(OpenAPI_event_report_mode_t *event_report_mode);

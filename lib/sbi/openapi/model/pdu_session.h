@@ -1,7 +1,7 @@
 /*
  * pdu_session.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_pdu_session_H_
@@ -32,7 +32,7 @@ OpenAPI_pdu_session_t *OpenAPI_pdu_session_create(
     char *smf_instance_id,
     OpenAPI_plmn_id_t *plmn_id,
     OpenAPI_snssai_t *single_nssai
-    );
+);
 void OpenAPI_pdu_session_free(OpenAPI_pdu_session_t *pdu_session);
 OpenAPI_pdu_session_t *OpenAPI_pdu_session_parseFromJSON(cJSON *pdu_sessionJSON);
 cJSON *OpenAPI_pdu_session_convertToJSON(OpenAPI_pdu_session_t *pdu_session);

@@ -1,7 +1,7 @@
 /*
  * cn_assisted_ran_para.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_cn_assisted_ran_para_H_
@@ -41,7 +41,7 @@ OpenAPI_cn_assisted_ran_para_t *OpenAPI_cn_assisted_ran_para_create(
     OpenAPI_scheduled_communication_type_e scheduled_communication_type,
     OpenAPI_traffic_profile_e traffic_profile,
     OpenAPI_battery_indication_t *battery_indication
-    );
+);
 void OpenAPI_cn_assisted_ran_para_free(OpenAPI_cn_assisted_ran_para_t *cn_assisted_ran_para);
 OpenAPI_cn_assisted_ran_para_t *OpenAPI_cn_assisted_ran_para_parseFromJSON(cJSON *cn_assisted_ran_paraJSON);
 cJSON *OpenAPI_cn_assisted_ran_para_convertToJSON(OpenAPI_cn_assisted_ran_para_t *cn_assisted_ran_para);

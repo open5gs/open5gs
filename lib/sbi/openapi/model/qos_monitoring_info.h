@@ -1,7 +1,7 @@
 /*
  * qos_monitoring_info.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_qos_monitoring_info_H_
@@ -24,7 +24,7 @@ typedef struct OpenAPI_qos_monitoring_info_s {
 
 OpenAPI_qos_monitoring_info_t *OpenAPI_qos_monitoring_info_create(
     int qos_monitoring_ind
-    );
+);
 void OpenAPI_qos_monitoring_info_free(OpenAPI_qos_monitoring_info_t *qos_monitoring_info);
 OpenAPI_qos_monitoring_info_t *OpenAPI_qos_monitoring_info_parseFromJSON(cJSON *qos_monitoring_infoJSON);
 cJSON *OpenAPI_qos_monitoring_info_convertToJSON(OpenAPI_qos_monitoring_info_t *qos_monitoring_info);

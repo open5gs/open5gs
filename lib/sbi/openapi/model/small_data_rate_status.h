@@ -1,7 +1,7 @@
 /*
  * small_data_rate_status.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_small_data_rate_status_H_
@@ -32,7 +32,7 @@ OpenAPI_small_data_rate_status_t *OpenAPI_small_data_rate_status_create(
     char *validity_time,
     int remain_ex_reports_ul,
     int remain_ex_reports_dl
-    );
+);
 void OpenAPI_small_data_rate_status_free(OpenAPI_small_data_rate_status_t *small_data_rate_status);
 OpenAPI_small_data_rate_status_t *OpenAPI_small_data_rate_status_parseFromJSON(cJSON *small_data_rate_statusJSON);
 cJSON *OpenAPI_small_data_rate_status_convertToJSON(OpenAPI_small_data_rate_status_t *small_data_rate_status);

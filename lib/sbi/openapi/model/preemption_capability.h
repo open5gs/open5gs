@@ -1,7 +1,7 @@
 /*
  * preemption_capability.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_preemption_capability_H_

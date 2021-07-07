@@ -34,7 +34,7 @@ OpenAPI_nwdaf_info_t *OpenAPI_nwdaf_info_create(
     OpenAPI_list_t *nwdaf_events,
     OpenAPI_list_t *tai_list,
     OpenAPI_list_t *tai_range_list
-    );
+);
 void OpenAPI_nwdaf_info_free(OpenAPI_nwdaf_info_t *nwdaf_info);
 OpenAPI_nwdaf_info_t *OpenAPI_nwdaf_info_parseFromJSON(cJSON *nwdaf_infoJSON);
 cJSON *OpenAPI_nwdaf_info_convertToJSON(OpenAPI_nwdaf_info_t *nwdaf_info);

@@ -29,7 +29,7 @@ OpenAPI_af_event_exposure_data_t *OpenAPI_af_event_exposure_data_create(
     OpenAPI_list_t *af_events,
     OpenAPI_list_t *af_ids,
     OpenAPI_list_t *app_ids
-    );
+);
 void OpenAPI_af_event_exposure_data_free(OpenAPI_af_event_exposure_data_t *af_event_exposure_data);
 OpenAPI_af_event_exposure_data_t *OpenAPI_af_event_exposure_data_parseFromJSON(cJSON *af_event_exposure_dataJSON);
 cJSON *OpenAPI_af_event_exposure_data_convertToJSON(OpenAPI_af_event_exposure_data_t *af_event_exposure_data);

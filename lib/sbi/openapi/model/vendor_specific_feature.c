@@ -7,7 +7,7 @@
 OpenAPI_vendor_specific_feature_t *OpenAPI_vendor_specific_feature_create(
     char *feature_name,
     char *feature_version
-    )
+)
 {
     OpenAPI_vendor_specific_feature_t *vendor_specific_feature_local_var = OpenAPI_malloc(sizeof(OpenAPI_vendor_specific_feature_t));
     if (!vendor_specific_feature_local_var) {
@@ -63,7 +63,7 @@ OpenAPI_vendor_specific_feature_t *OpenAPI_vendor_specific_feature_parseFromJSON
         goto end;
     }
 
-
+    
     if (!cJSON_IsString(feature_name)) {
         ogs_error("OpenAPI_vendor_specific_feature_parseFromJSON() failed [feature_name]");
         goto end;
@@ -75,7 +75,7 @@ OpenAPI_vendor_specific_feature_t *OpenAPI_vendor_specific_feature_parseFromJSON
         goto end;
     }
 
-
+    
     if (!cJSON_IsString(feature_version)) {
         ogs_error("OpenAPI_vendor_specific_feature_parseFromJSON() failed [feature_version]");
         goto end;
@@ -84,7 +84,7 @@ OpenAPI_vendor_specific_feature_t *OpenAPI_vendor_specific_feature_parseFromJSON
     vendor_specific_feature_local_var = OpenAPI_vendor_specific_feature_create (
         ogs_strdup_or_assert(feature_name->valuestring),
         ogs_strdup_or_assert(feature_version->valuestring)
-        );
+    );
 
     return vendor_specific_feature_local_var;
 end:

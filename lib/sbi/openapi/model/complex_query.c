@@ -7,7 +7,7 @@
 OpenAPI_complex_query_t *OpenAPI_complex_query_create(
     OpenAPI_list_t *cnf_units,
     OpenAPI_list_t *dnf_units
-    )
+)
 {
     OpenAPI_complex_query_t *complex_query_local_var = OpenAPI_malloc(sizeof(OpenAPI_complex_query_t));
     if (!complex_query_local_var) {
@@ -96,9 +96,9 @@ OpenAPI_complex_query_t *OpenAPI_complex_query_parseFromJSON(cJSON *complex_quer
     }
 
     OpenAPI_list_t *cnf_unitsList;
-
+    
     cJSON *cnf_units_local_nonprimitive;
-    if (!cJSON_IsArray(cnf_units)) {
+    if (!cJSON_IsArray(cnf_units)){
         ogs_error("OpenAPI_complex_query_parseFromJSON() failed [cnf_units]");
         goto end;
     }
@@ -122,9 +122,9 @@ OpenAPI_complex_query_t *OpenAPI_complex_query_parseFromJSON(cJSON *complex_quer
     }
 
     OpenAPI_list_t *dnf_unitsList;
-
+    
     cJSON *dnf_units_local_nonprimitive;
-    if (!cJSON_IsArray(dnf_units)) {
+    if (!cJSON_IsArray(dnf_units)){
         ogs_error("OpenAPI_complex_query_parseFromJSON() failed [dnf_units]");
         goto end;
     }
@@ -144,7 +144,7 @@ OpenAPI_complex_query_t *OpenAPI_complex_query_parseFromJSON(cJSON *complex_quer
     complex_query_local_var = OpenAPI_complex_query_create (
         cnf_unitsList,
         dnf_unitsList
-        );
+    );
 
     return complex_query_local_var;
 end:

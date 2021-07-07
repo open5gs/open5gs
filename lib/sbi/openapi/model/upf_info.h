@@ -60,7 +60,7 @@ OpenAPI_upf_info_t *OpenAPI_upf_info_create(
     int redundant_gtpu,
     int ipups,
     int data_forwarding
-    );
+);
 void OpenAPI_upf_info_free(OpenAPI_upf_info_t *upf_info);
 OpenAPI_upf_info_t *OpenAPI_upf_info_parseFromJSON(cJSON *upf_infoJSON);
 cJSON *OpenAPI_upf_info_convertToJSON(OpenAPI_upf_info_t *upf_info);

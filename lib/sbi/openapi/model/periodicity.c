@@ -5,7 +5,7 @@
 #include "periodicity.h"
 
 OpenAPI_periodicity_t *OpenAPI_periodicity_create(
-    )
+)
 {
     OpenAPI_periodicity_t *periodicity_local_var = OpenAPI_malloc(sizeof(OpenAPI_periodicity_t));
     if (!periodicity_local_var) {
@@ -42,7 +42,7 @@ OpenAPI_periodicity_t *OpenAPI_periodicity_parseFromJSON(cJSON *periodicityJSON)
 {
     OpenAPI_periodicity_t *periodicity_local_var = NULL;
     periodicity_local_var = OpenAPI_periodicity_create (
-        );
+    );
 
     return periodicity_local_var;
 end:

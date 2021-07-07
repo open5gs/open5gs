@@ -27,7 +27,7 @@ typedef struct OpenAPI_time_period_s {
 OpenAPI_time_period_t *OpenAPI_time_period_create(
     OpenAPI_periodicity_t *period,
     int max_num_period
-    );
+);
 void OpenAPI_time_period_free(OpenAPI_time_period_t *time_period);
 OpenAPI_time_period_t *OpenAPI_time_period_parseFromJSON(cJSON *time_periodJSON);
 cJSON *OpenAPI_time_period_convertToJSON(OpenAPI_time_period_t *time_period);

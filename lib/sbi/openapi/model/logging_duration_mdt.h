@@ -1,7 +1,7 @@
 /*
  * logging_duration_mdt.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_logging_duration_mdt_H_

@@ -36,7 +36,7 @@ OpenAPI_lmf_info_t *OpenAPI_lmf_info_create(
     OpenAPI_list_t *serving_access_types,
     OpenAPI_list_t *serving_an_node_types,
     OpenAPI_list_t *serving_rat_types
-    );
+);
 void OpenAPI_lmf_info_free(OpenAPI_lmf_info_t *lmf_info);
 OpenAPI_lmf_info_t *OpenAPI_lmf_info_parseFromJSON(cJSON *lmf_infoJSON);
 cJSON *OpenAPI_lmf_info_convertToJSON(OpenAPI_lmf_info_t *lmf_info);

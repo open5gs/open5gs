@@ -1,7 +1,7 @@
 /*
  * policy_association.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_policy_association_H_
@@ -33,7 +33,6 @@ typedef struct OpenAPI_policy_association_s {
     int rfsp;
     struct OpenAPI_smf_selection_data_s *smf_sel_info;
     struct OpenAPI_ambr_s *ue_ambr;
-    struct OpenAPI_ambr_s *rg_tmbr;
     OpenAPI_list_t* pras;
     char *supp_feat;
 } OpenAPI_policy_association_t;
@@ -46,10 +45,9 @@ OpenAPI_policy_association_t *OpenAPI_policy_association_create(
     int rfsp,
     OpenAPI_smf_selection_data_t *smf_sel_info,
     OpenAPI_ambr_t *ue_ambr,
-    OpenAPI_ambr_t *rg_tmbr,
     OpenAPI_list_t* pras,
     char *supp_feat
-    );
+);
 void OpenAPI_policy_association_free(OpenAPI_policy_association_t *policy_association);
 OpenAPI_policy_association_t *OpenAPI_policy_association_parseFromJSON(cJSON *policy_associationJSON);
 cJSON *OpenAPI_policy_association_convertToJSON(OpenAPI_policy_association_t *policy_association);

@@ -1,7 +1,7 @@
 /*
  * presence_info_rm.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_presence_info_rm_H_
@@ -43,7 +43,7 @@ OpenAPI_presence_info_rm_t *OpenAPI_presence_info_rm_create(
     OpenAPI_list_t *ncgi_list,
     OpenAPI_list_t *global_ran_node_id_list,
     OpenAPI_list_t *globale_nb_id_list
-    );
+);
 void OpenAPI_presence_info_rm_free(OpenAPI_presence_info_rm_t *presence_info_rm);
 OpenAPI_presence_info_rm_t *OpenAPI_presence_info_rm_parseFromJSON(cJSON *presence_info_rmJSON);
 cJSON *OpenAPI_presence_info_rm_convertToJSON(OpenAPI_presence_info_rm_t *presence_info_rm);

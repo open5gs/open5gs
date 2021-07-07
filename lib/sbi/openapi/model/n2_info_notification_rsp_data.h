@@ -1,7 +1,7 @@
 /*
  * n2_info_notification_rsp_data.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_n2_info_notification_rsp_data_H_
@@ -25,7 +25,7 @@ typedef struct OpenAPI_n2_info_notification_rsp_data_s {
 
 OpenAPI_n2_info_notification_rsp_data_t *OpenAPI_n2_info_notification_rsp_data_create(
     OpenAPI_n2_info_content_t *n2_info_content
-    );
+);
 void OpenAPI_n2_info_notification_rsp_data_free(OpenAPI_n2_info_notification_rsp_data_t *n2_info_notification_rsp_data);
 OpenAPI_n2_info_notification_rsp_data_t *OpenAPI_n2_info_notification_rsp_data_parseFromJSON(cJSON *n2_info_notification_rsp_dataJSON);
 cJSON *OpenAPI_n2_info_notification_rsp_data_convertToJSON(OpenAPI_n2_info_notification_rsp_data_t *n2_info_notification_rsp_data);

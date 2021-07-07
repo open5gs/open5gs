@@ -1,7 +1,7 @@
 /*
  * mo_exp_data_counter.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_mo_exp_data_counter_H_
@@ -26,7 +26,7 @@ typedef struct OpenAPI_mo_exp_data_counter_s {
 OpenAPI_mo_exp_data_counter_t *OpenAPI_mo_exp_data_counter_create(
     int counter,
     char *time_stamp
-    );
+);
 void OpenAPI_mo_exp_data_counter_free(OpenAPI_mo_exp_data_counter_t *mo_exp_data_counter);
 OpenAPI_mo_exp_data_counter_t *OpenAPI_mo_exp_data_counter_parseFromJSON(cJSON *mo_exp_data_counterJSON);
 cJSON *OpenAPI_mo_exp_data_counter_convertToJSON(OpenAPI_mo_exp_data_counter_t *mo_exp_data_counter);

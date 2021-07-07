@@ -1,7 +1,7 @@
 /*
  * association_type.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_association_type_H_
@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+#include "association_type_any_of.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -22,7 +23,7 @@ typedef struct OpenAPI_association_type_s {
 } OpenAPI_association_type_t;
 
 OpenAPI_association_type_t *OpenAPI_association_type_create(
-    );
+);
 void OpenAPI_association_type_free(OpenAPI_association_type_t *association_type);
 OpenAPI_association_type_t *OpenAPI_association_type_parseFromJSON(cJSON *association_typeJSON);
 cJSON *OpenAPI_association_type_convertToJSON(OpenAPI_association_type_t *association_type);

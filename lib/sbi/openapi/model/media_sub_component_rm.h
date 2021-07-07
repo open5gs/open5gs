@@ -16,7 +16,6 @@
 #include "eth_flow_description.h"
 #include "flow_status.h"
 #include "flow_usage.h"
-#include "tscai_input_container.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -33,8 +32,6 @@ typedef struct OpenAPI_media_sub_component_rm_s {
     char *mar_bw_ul;
     char *tos_tr_cl;
     OpenAPI_flow_usage_e flow_usage;
-    struct OpenAPI_tscai_input_container_s *tscai_input_dl;
-    struct OpenAPI_tscai_input_container_s *tscai_input_ul;
 } OpenAPI_media_sub_component_rm_t;
 
 OpenAPI_media_sub_component_rm_t *OpenAPI_media_sub_component_rm_create(
@@ -46,10 +43,8 @@ OpenAPI_media_sub_component_rm_t *OpenAPI_media_sub_component_rm_create(
     char *mar_bw_dl,
     char *mar_bw_ul,
     char *tos_tr_cl,
-    OpenAPI_flow_usage_e flow_usage,
-    OpenAPI_tscai_input_container_t *tscai_input_dl,
-    OpenAPI_tscai_input_container_t *tscai_input_ul
-    );
+    OpenAPI_flow_usage_e flow_usage
+);
 void OpenAPI_media_sub_component_rm_free(OpenAPI_media_sub_component_rm_t *media_sub_component_rm);
 OpenAPI_media_sub_component_rm_t *OpenAPI_media_sub_component_rm_parseFromJSON(cJSON *media_sub_component_rmJSON);
 cJSON *OpenAPI_media_sub_component_rm_convertToJSON(OpenAPI_media_sub_component_rm_t *media_sub_component_rm);

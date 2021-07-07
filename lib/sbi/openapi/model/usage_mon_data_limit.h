@@ -39,7 +39,7 @@ OpenAPI_usage_mon_data_limit_t *OpenAPI_usage_mon_data_limit_create(
     char *end_date,
     OpenAPI_usage_threshold_t *usage_limit,
     char *reset_period
-    );
+);
 void OpenAPI_usage_mon_data_limit_free(OpenAPI_usage_mon_data_limit_t *usage_mon_data_limit);
 OpenAPI_usage_mon_data_limit_t *OpenAPI_usage_mon_data_limit_parseFromJSON(cJSON *usage_mon_data_limitJSON);
 cJSON *OpenAPI_usage_mon_data_limit_convertToJSON(OpenAPI_usage_mon_data_limit_t *usage_mon_data_limit);

@@ -25,7 +25,7 @@ typedef struct OpenAPI_spatial_validity_s {
 
 OpenAPI_spatial_validity_t *OpenAPI_spatial_validity_create(
     OpenAPI_list_t* presence_info_list
-    );
+);
 void OpenAPI_spatial_validity_free(OpenAPI_spatial_validity_t *spatial_validity);
 OpenAPI_spatial_validity_t *OpenAPI_spatial_validity_parseFromJSON(cJSON *spatial_validityJSON);
 cJSON *OpenAPI_spatial_validity_convertToJSON(OpenAPI_spatial_validity_t *spatial_validity);

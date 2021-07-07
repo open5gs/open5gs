@@ -1,7 +1,7 @@
 /*
  * pdu_session_types.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_pdu_session_types_H_
@@ -27,7 +27,7 @@ typedef struct OpenAPI_pdu_session_types_s {
 OpenAPI_pdu_session_types_t *OpenAPI_pdu_session_types_create(
     OpenAPI_pdu_session_type_e default_session_type,
     OpenAPI_list_t *allowed_session_types
-    );
+);
 void OpenAPI_pdu_session_types_free(OpenAPI_pdu_session_types_t *pdu_session_types);
 OpenAPI_pdu_session_types_t *OpenAPI_pdu_session_types_parseFromJSON(cJSON *pdu_session_typesJSON);
 cJSON *OpenAPI_pdu_session_types_convertToJSON(OpenAPI_pdu_session_types_t *pdu_session_types);

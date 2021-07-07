@@ -1,7 +1,7 @@
 /*
  * reachability_for_sms_configuration.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_reachability_for_sms_configuration_H_
@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+#include "reachability_for_sms_configuration_any_of.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -22,7 +23,7 @@ typedef struct OpenAPI_reachability_for_sms_configuration_s {
 } OpenAPI_reachability_for_sms_configuration_t;
 
 OpenAPI_reachability_for_sms_configuration_t *OpenAPI_reachability_for_sms_configuration_create(
-    );
+);
 void OpenAPI_reachability_for_sms_configuration_free(OpenAPI_reachability_for_sms_configuration_t *reachability_for_sms_configuration);
 OpenAPI_reachability_for_sms_configuration_t *OpenAPI_reachability_for_sms_configuration_parseFromJSON(cJSON *reachability_for_sms_configurationJSON);
 cJSON *OpenAPI_reachability_for_sms_configuration_convertToJSON(OpenAPI_reachability_for_sms_configuration_t *reachability_for_sms_configuration);

@@ -26,7 +26,7 @@ typedef struct OpenAPI_ipv4_address_range_s {
 OpenAPI_ipv4_address_range_t *OpenAPI_ipv4_address_range_create(
     char *start,
     char *end
-    );
+);
 void OpenAPI_ipv4_address_range_free(OpenAPI_ipv4_address_range_t *ipv4_address_range);
 OpenAPI_ipv4_address_range_t *OpenAPI_ipv4_address_range_parseFromJSON(cJSON *ipv4_address_rangeJSON);
 cJSON *OpenAPI_ipv4_address_range_convertToJSON(OpenAPI_ipv4_address_range_t *ipv4_address_range);

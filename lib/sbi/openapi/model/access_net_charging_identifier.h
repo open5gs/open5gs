@@ -27,7 +27,7 @@ typedef struct OpenAPI_access_net_charging_identifier_s {
 OpenAPI_access_net_charging_identifier_t *OpenAPI_access_net_charging_identifier_create(
     int acc_net_cha_id_value,
     OpenAPI_list_t *flows
-    );
+);
 void OpenAPI_access_net_charging_identifier_free(OpenAPI_access_net_charging_identifier_t *access_net_charging_identifier);
 OpenAPI_access_net_charging_identifier_t *OpenAPI_access_net_charging_identifier_parseFromJSON(cJSON *access_net_charging_identifierJSON);
 cJSON *OpenAPI_access_net_charging_identifier_convertToJSON(OpenAPI_access_net_charging_identifier_t *access_net_charging_identifier);

@@ -1,7 +1,7 @@
 /*
  * binding_resp.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_binding_resp_H_
@@ -27,7 +27,7 @@ typedef struct OpenAPI_binding_resp_s {
 OpenAPI_binding_resp_t *OpenAPI_binding_resp_create(
     char *pcf_sm_fqdn,
     OpenAPI_list_t *pcf_sm_ip_end_points
-    );
+);
 void OpenAPI_binding_resp_free(OpenAPI_binding_resp_t *binding_resp);
 OpenAPI_binding_resp_t *OpenAPI_binding_resp_parseFromJSON(cJSON *binding_respJSON);
 cJSON *OpenAPI_binding_resp_convertToJSON(OpenAPI_binding_resp_t *binding_resp);

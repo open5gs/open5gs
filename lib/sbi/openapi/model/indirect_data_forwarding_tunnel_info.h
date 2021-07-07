@@ -1,7 +1,7 @@
 /*
  * indirect_data_forwarding_tunnel_info.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_indirect_data_forwarding_tunnel_info_H_
@@ -32,7 +32,7 @@ OpenAPI_indirect_data_forwarding_tunnel_info_t *OpenAPI_indirect_data_forwarding
     char *gtp_teid,
     int drb_id,
     int additional_tnl_nb
-    );
+);
 void OpenAPI_indirect_data_forwarding_tunnel_info_free(OpenAPI_indirect_data_forwarding_tunnel_info_t *indirect_data_forwarding_tunnel_info);
 OpenAPI_indirect_data_forwarding_tunnel_info_t *OpenAPI_indirect_data_forwarding_tunnel_info_parseFromJSON(cJSON *indirect_data_forwarding_tunnel_infoJSON);
 cJSON *OpenAPI_indirect_data_forwarding_tunnel_info_convertToJSON(OpenAPI_indirect_data_forwarding_tunnel_info_t *indirect_data_forwarding_tunnel_info);

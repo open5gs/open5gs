@@ -1,7 +1,7 @@
 /*
  * configured_snssai.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_configured_snssai_H_
@@ -27,7 +27,7 @@ typedef struct OpenAPI_configured_snssai_s {
 OpenAPI_configured_snssai_t *OpenAPI_configured_snssai_create(
     OpenAPI_snssai_t *configured_snssai,
     OpenAPI_snssai_t *mapped_home_snssai
-    );
+);
 void OpenAPI_configured_snssai_free(OpenAPI_configured_snssai_t *configured_snssai);
 OpenAPI_configured_snssai_t *OpenAPI_configured_snssai_parseFromJSON(cJSON *configured_snssaiJSON);
 cJSON *OpenAPI_configured_snssai_convertToJSON(OpenAPI_configured_snssai_t *configured_snssai);

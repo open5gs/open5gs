@@ -5,7 +5,7 @@
 #include "reachability_for_sms_configuration.h"
 
 OpenAPI_reachability_for_sms_configuration_t *OpenAPI_reachability_for_sms_configuration_create(
-    )
+)
 {
     OpenAPI_reachability_for_sms_configuration_t *reachability_for_sms_configuration_local_var = OpenAPI_malloc(sizeof(OpenAPI_reachability_for_sms_configuration_t));
     if (!reachability_for_sms_configuration_local_var) {
@@ -42,7 +42,7 @@ OpenAPI_reachability_for_sms_configuration_t *OpenAPI_reachability_for_sms_confi
 {
     OpenAPI_reachability_for_sms_configuration_t *reachability_for_sms_configuration_local_var = NULL;
     reachability_for_sms_configuration_local_var = OpenAPI_reachability_for_sms_configuration_create (
-        );
+    );
 
     return reachability_for_sms_configuration_local_var;
 end:

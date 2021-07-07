@@ -1,7 +1,7 @@
 /*
  * smsf_registration.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_smsf_registration_H_
@@ -41,7 +41,7 @@ OpenAPI_smsf_registration_t *OpenAPI_smsf_registration_create(
     OpenAPI_network_node_diameter_address_t *smsf_diameter_address,
     char *registration_time,
     OpenAPI_context_info_t *context_info
-    );
+);
 void OpenAPI_smsf_registration_free(OpenAPI_smsf_registration_t *smsf_registration);
 OpenAPI_smsf_registration_t *OpenAPI_smsf_registration_parseFromJSON(cJSON *smsf_registrationJSON);
 cJSON *OpenAPI_smsf_registration_convertToJSON(OpenAPI_smsf_registration_t *smsf_registration);

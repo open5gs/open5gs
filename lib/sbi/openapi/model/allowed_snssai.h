@@ -1,7 +1,7 @@
 /*
  * allowed_snssai.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_allowed_snssai_H_
@@ -30,7 +30,7 @@ OpenAPI_allowed_snssai_t *OpenAPI_allowed_snssai_create(
     OpenAPI_snssai_t *allowed_snssai,
     OpenAPI_list_t *nsi_information_list,
     OpenAPI_snssai_t *mapped_home_snssai
-    );
+);
 void OpenAPI_allowed_snssai_free(OpenAPI_allowed_snssai_t *allowed_snssai);
 OpenAPI_allowed_snssai_t *OpenAPI_allowed_snssai_parseFromJSON(cJSON *allowed_snssaiJSON);
 cJSON *OpenAPI_allowed_snssai_convertToJSON(OpenAPI_allowed_snssai_t *allowed_snssai);

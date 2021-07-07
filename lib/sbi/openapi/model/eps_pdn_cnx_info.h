@@ -1,7 +1,7 @@
 /*
  * eps_pdn_cnx_info.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_eps_pdn_cnx_info_H_
@@ -28,7 +28,7 @@ OpenAPI_eps_pdn_cnx_info_t *OpenAPI_eps_pdn_cnx_info_create(
     char pgw_s8c_fteid,
     char pgw_node_name,
     int linked_bearer_id
-    );
+);
 void OpenAPI_eps_pdn_cnx_info_free(OpenAPI_eps_pdn_cnx_info_t *eps_pdn_cnx_info);
 OpenAPI_eps_pdn_cnx_info_t *OpenAPI_eps_pdn_cnx_info_parseFromJSON(cJSON *eps_pdn_cnx_infoJSON);
 cJSON *OpenAPI_eps_pdn_cnx_info_convertToJSON(OpenAPI_eps_pdn_cnx_info_t *eps_pdn_cnx_info);

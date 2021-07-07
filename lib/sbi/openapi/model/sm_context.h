@@ -1,7 +1,7 @@
 /*
  * sm_context.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_sm_context_H_
@@ -21,6 +21,8 @@
 #include "max_integrity_protected_data_rate.h"
 #include "pdu_session_type.h"
 #include "qos_flow_setup_item.h"
+#include "qos_flow_tunnel.h"
+#include "redundant_pdu_session_information.h"
 #include "roaming_charging_profile.h"
 #include "sbi_binding_level.h"
 #include "snssai.h"
@@ -35,6 +37,7 @@ typedef struct OpenAPI_sm_context_s OpenAPI_sm_context_t;
 typedef struct OpenAPI_sm_context_s {
     int pdu_session_id;
     char *dnn;
+    char *selected_dnn;
     struct OpenAPI_snssai_s *s_nssai;
     struct OpenAPI_snssai_s *hplmn_snssai;
     OpenAPI_pdu_session_type_e pdu_session_type;
@@ -68,17 +71,23 @@ typedef struct OpenAPI_sm_context_s {
     char *recovery_time;
     int forwarding_ind;
     struct OpenAPI_tunnel_info_s *psa_tunnel_info;
-    char *home_provided_charging_id;
+    char *charging_id;
     struct OpenAPI_charging_information_s *charging_info;
     struct OpenAPI_roaming_charging_profile_s *roaming_charging_profile;
     int nef_ext_buf_support_ind;
     int ipv6_index;
     struct OpenAPI_ip_address_s *dn_aaa_address;
+    struct OpenAPI_redundant_pdu_session_information_s *redundant_pdu_session_info;
+    struct OpenAPI_qos_flow_tunnel_s *ran_tunnel_info;
+    OpenAPI_list_t *add_ran_tunnel_info;
+    struct OpenAPI_qos_flow_tunnel_s *red_ran_tunnel_info;
+    OpenAPI_list_t *add_red_ran_tunnel_info;
 } OpenAPI_sm_context_t;
 
 OpenAPI_sm_context_t *OpenAPI_sm_context_create(
     int pdu_session_id,
     char *dnn,
+    char *selected_dnn,
     OpenAPI_snssai_t *s_nssai,
     OpenAPI_snssai_t *hplmn_snssai,
     OpenAPI_pdu_session_type_e pdu_session_type,
@@ -112,13 +121,18 @@ OpenAPI_sm_context_t *OpenAPI_sm_context_create(
     char *recovery_time,
     int forwarding_ind,
     OpenAPI_tunnel_info_t *psa_tunnel_info,
-    char *home_provided_charging_id,
+    char *charging_id,
     OpenAPI_charging_information_t *charging_info,
     OpenAPI_roaming_charging_profile_t *roaming_charging_profile,
     int nef_ext_buf_support_ind,
     int ipv6_index,
-    OpenAPI_ip_address_t *dn_aaa_address
-    );
+    OpenAPI_ip_address_t *dn_aaa_address,
+    OpenAPI_redundant_pdu_session_information_t *redundant_pdu_session_info,
+    OpenAPI_qos_flow_tunnel_t *ran_tunnel_info,
+    OpenAPI_list_t *add_ran_tunnel_info,
+    OpenAPI_qos_flow_tunnel_t *red_ran_tunnel_info,
+    OpenAPI_list_t *add_red_ran_tunnel_info
+);
 void OpenAPI_sm_context_free(OpenAPI_sm_context_t *sm_context);
 OpenAPI_sm_context_t *OpenAPI_sm_context_parseFromJSON(cJSON *sm_contextJSON);
 cJSON *OpenAPI_sm_context_convertToJSON(OpenAPI_sm_context_t *sm_context);

@@ -1,7 +1,7 @@
 /*
  * provisioned_data_sets.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_provisioned_data_sets_H_
@@ -52,7 +52,7 @@ OpenAPI_provisioned_data_sets_t *OpenAPI_provisioned_data_sets_create(
     OpenAPI_lcs_mo_data_t *lcs_mo_data,
     OpenAPI_lcs_broadcast_assistance_types_data_t *lcs_bca_data,
     OpenAPI_v2x_subscription_data_t *v2x_data
-    );
+);
 void OpenAPI_provisioned_data_sets_free(OpenAPI_provisioned_data_sets_t *provisioned_data_sets);
 OpenAPI_provisioned_data_sets_t *OpenAPI_provisioned_data_sets_parseFromJSON(cJSON *provisioned_data_setsJSON);
 cJSON *OpenAPI_provisioned_data_sets_convertToJSON(OpenAPI_provisioned_data_sets_t *provisioned_data_sets);

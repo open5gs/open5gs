@@ -1,7 +1,7 @@
 /*
  * n2_info_content.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_n2_info_content_H_
@@ -30,7 +30,7 @@ OpenAPI_n2_info_content_t *OpenAPI_n2_info_content_create(
     int ngap_message_type,
     OpenAPI_ngap_ie_type_e ngap_ie_type,
     OpenAPI_ref_to_binary_data_t *ngap_data
-    );
+);
 void OpenAPI_n2_info_content_free(OpenAPI_n2_info_content_t *n2_info_content);
 OpenAPI_n2_info_content_t *OpenAPI_n2_info_content_parseFromJSON(cJSON *n2_info_contentJSON);
 cJSON *OpenAPI_n2_info_content_convertToJSON(OpenAPI_n2_info_content_t *n2_info_content);

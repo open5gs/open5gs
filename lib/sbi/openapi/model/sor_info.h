@@ -1,7 +1,7 @@
 /*
  * sor_info.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_sor_info_H_
@@ -33,7 +33,7 @@ OpenAPI_sor_info_t *OpenAPI_sor_info_create(
     char *sor_mac_iausf,
     char *countersor,
     char *provisioning_time
-    );
+);
 void OpenAPI_sor_info_free(OpenAPI_sor_info_t *sor_info);
 OpenAPI_sor_info_t *OpenAPI_sor_info_parseFromJSON(cJSON *sor_infoJSON);
 cJSON *OpenAPI_sor_info_convertToJSON(OpenAPI_sor_info_t *sor_info);

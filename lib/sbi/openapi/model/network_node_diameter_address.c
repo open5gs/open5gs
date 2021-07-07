@@ -7,7 +7,7 @@
 OpenAPI_network_node_diameter_address_t *OpenAPI_network_node_diameter_address_create(
     char *name,
     char *realm
-    )
+)
 {
     OpenAPI_network_node_diameter_address_t *network_node_diameter_address_local_var = OpenAPI_malloc(sizeof(OpenAPI_network_node_diameter_address_t));
     if (!network_node_diameter_address_local_var) {
@@ -63,7 +63,7 @@ OpenAPI_network_node_diameter_address_t *OpenAPI_network_node_diameter_address_p
         goto end;
     }
 
-
+    
     if (!cJSON_IsString(name)) {
         ogs_error("OpenAPI_network_node_diameter_address_parseFromJSON() failed [name]");
         goto end;
@@ -75,7 +75,7 @@ OpenAPI_network_node_diameter_address_t *OpenAPI_network_node_diameter_address_p
         goto end;
     }
 
-
+    
     if (!cJSON_IsString(realm)) {
         ogs_error("OpenAPI_network_node_diameter_address_parseFromJSON() failed [realm]");
         goto end;
@@ -84,7 +84,7 @@ OpenAPI_network_node_diameter_address_t *OpenAPI_network_node_diameter_address_p
     network_node_diameter_address_local_var = OpenAPI_network_node_diameter_address_create (
         ogs_strdup_or_assert(name->valuestring),
         ogs_strdup_or_assert(realm->valuestring)
-        );
+    );
 
     return network_node_diameter_address_local_var;
 end:

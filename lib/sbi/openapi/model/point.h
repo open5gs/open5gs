@@ -1,7 +1,7 @@
 /*
  * point.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_point_H_
@@ -30,7 +30,7 @@ typedef struct OpenAPI_point_s {
 OpenAPI_point_t *OpenAPI_point_create(
     OpenAPI_supported_gad_shapes_t *shape,
     OpenAPI_geographical_coordinates_t *point
-    );
+);
 void OpenAPI_point_free(OpenAPI_point_t *point);
 OpenAPI_point_t *OpenAPI_point_parseFromJSON(cJSON *pointJSON);
 cJSON *OpenAPI_point_convertToJSON(OpenAPI_point_t *point);

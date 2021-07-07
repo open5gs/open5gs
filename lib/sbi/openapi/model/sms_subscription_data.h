@@ -1,7 +1,7 @@
 /*
  * sms_subscription_data.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_sms_subscription_data_H_
@@ -26,7 +26,7 @@ typedef struct OpenAPI_sms_subscription_data_s {
 OpenAPI_sms_subscription_data_t *OpenAPI_sms_subscription_data_create(
     int sms_subscribed,
     char *shared_sms_subs_data_id
-    );
+);
 void OpenAPI_sms_subscription_data_free(OpenAPI_sms_subscription_data_t *sms_subscription_data);
 OpenAPI_sms_subscription_data_t *OpenAPI_sms_subscription_data_parseFromJSON(cJSON *sms_subscription_dataJSON);
 cJSON *OpenAPI_sms_subscription_data_convertToJSON(OpenAPI_sms_subscription_data_t *sms_subscription_data);

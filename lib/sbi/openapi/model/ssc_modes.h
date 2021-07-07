@@ -1,7 +1,7 @@
 /*
  * ssc_modes.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_ssc_modes_H_
@@ -27,7 +27,7 @@ typedef struct OpenAPI_ssc_modes_s {
 OpenAPI_ssc_modes_t *OpenAPI_ssc_modes_create(
     OpenAPI_ssc_mode_e default_ssc_mode,
     OpenAPI_list_t *allowed_ssc_modes
-    );
+);
 void OpenAPI_ssc_modes_free(OpenAPI_ssc_modes_t *ssc_modes);
 OpenAPI_ssc_modes_t *OpenAPI_ssc_modes_parseFromJSON(cJSON *ssc_modesJSON);
 cJSON *OpenAPI_ssc_modes_convertToJSON(OpenAPI_ssc_modes_t *ssc_modes);

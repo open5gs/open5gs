@@ -1,7 +1,7 @@
 /*
  * error_report.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_error_report_H_
@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+#include "policy_decision_failure_code.h"
 #include "problem_details.h"
 #include "rule_report.h"
 #include "session_rule_report.h"
@@ -25,13 +26,17 @@ typedef struct OpenAPI_error_report_s {
     struct OpenAPI_problem_details_s *error;
     OpenAPI_list_t *rule_reports;
     OpenAPI_list_t *sess_rule_reports;
+    OpenAPI_list_t *pol_dec_failure_reports;
+    char *alt_qos_param_id;
 } OpenAPI_error_report_t;
 
 OpenAPI_error_report_t *OpenAPI_error_report_create(
     OpenAPI_problem_details_t *error,
     OpenAPI_list_t *rule_reports,
-    OpenAPI_list_t *sess_rule_reports
-    );
+    OpenAPI_list_t *sess_rule_reports,
+    OpenAPI_list_t *pol_dec_failure_reports,
+    char *alt_qos_param_id
+);
 void OpenAPI_error_report_free(OpenAPI_error_report_t *error_report);
 OpenAPI_error_report_t *OpenAPI_error_report_parseFromJSON(cJSON *error_reportJSON);
 cJSON *OpenAPI_error_report_convertToJSON(OpenAPI_error_report_t *error_report);

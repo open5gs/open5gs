@@ -1,7 +1,7 @@
 /*
  * alternative_qos_profile.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_alternative_qos_profile_H_
@@ -32,7 +32,7 @@ OpenAPI_alternative_qos_profile_t *OpenAPI_alternative_qos_profile_create(
     char *gua_fbr_ul,
     int packet_delay_budget,
     char *packet_err_rate
-    );
+);
 void OpenAPI_alternative_qos_profile_free(OpenAPI_alternative_qos_profile_t *alternative_qos_profile);
 OpenAPI_alternative_qos_profile_t *OpenAPI_alternative_qos_profile_parseFromJSON(cJSON *alternative_qos_profileJSON);
 cJSON *OpenAPI_alternative_qos_profile_convertToJSON(OpenAPI_alternative_qos_profile_t *alternative_qos_profile);

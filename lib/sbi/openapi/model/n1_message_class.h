@@ -1,7 +1,7 @@
 /*
  * n1_message_class.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_n1_message_class_H_

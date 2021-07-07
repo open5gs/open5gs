@@ -5,7 +5,7 @@
 #include "preemption_control_information_rm.h"
 
 OpenAPI_preemption_control_information_rm_t *OpenAPI_preemption_control_information_rm_create(
-    )
+)
 {
     OpenAPI_preemption_control_information_rm_t *preemption_control_information_rm_local_var = OpenAPI_malloc(sizeof(OpenAPI_preemption_control_information_rm_t));
     if (!preemption_control_information_rm_local_var) {
@@ -42,7 +42,7 @@ OpenAPI_preemption_control_information_rm_t *OpenAPI_preemption_control_informat
 {
     OpenAPI_preemption_control_information_rm_t *preemption_control_information_rm_local_var = NULL;
     preemption_control_information_rm_local_var = OpenAPI_preemption_control_information_rm_create (
-        );
+    );
 
     return preemption_control_information_rm_local_var;
 end:

@@ -16,7 +16,7 @@
 #include "bdt_data.h"
 #include "notification_item.h"
 #include "operator_specific_data_container.h"
-#include "plmn_id.h"
+#include "plmn_id_1.h"
 #include "sm_policy_data.h"
 #include "sponsor_connectivity_data.h"
 #include "ue_policy_set.h"
@@ -36,11 +36,12 @@ typedef struct OpenAPI_policy_data_change_notification_s {
     struct OpenAPI_sponsor_connectivity_data_s *sponsor_connectivity_data;
     struct OpenAPI_bdt_data_s *bdt_data;
     struct OpenAPI_operator_specific_data_container_s *op_spec_data;
+    OpenAPI_list_t* op_spec_data_map;
     char *ue_id;
     char *sponsor_id;
     char *bdt_ref_id;
     char *usage_mon_id;
-    struct OpenAPI_plmn_id_s *plmn_id;
+    struct OpenAPI_plmn_id_1_s *plmn_id;
     OpenAPI_list_t *del_resources;
     char *notif_id;
     OpenAPI_list_t *reported_fragments;
@@ -55,15 +56,16 @@ OpenAPI_policy_data_change_notification_t *OpenAPI_policy_data_change_notificati
     OpenAPI_sponsor_connectivity_data_t *sponsor_connectivity_data,
     OpenAPI_bdt_data_t *bdt_data,
     OpenAPI_operator_specific_data_container_t *op_spec_data,
+    OpenAPI_list_t* op_spec_data_map,
     char *ue_id,
     char *sponsor_id,
     char *bdt_ref_id,
     char *usage_mon_id,
-    OpenAPI_plmn_id_t *plmn_id,
+    OpenAPI_plmn_id_1_t *plmn_id,
     OpenAPI_list_t *del_resources,
     char *notif_id,
     OpenAPI_list_t *reported_fragments
-    );
+);
 void OpenAPI_policy_data_change_notification_free(OpenAPI_policy_data_change_notification_t *policy_data_change_notification);
 OpenAPI_policy_data_change_notification_t *OpenAPI_policy_data_change_notification_parseFromJSON(cJSON *policy_data_change_notificationJSON);
 cJSON *OpenAPI_policy_data_change_notification_convertToJSON(OpenAPI_policy_data_change_notification_t *policy_data_change_notification);

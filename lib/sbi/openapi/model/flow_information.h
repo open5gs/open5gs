@@ -1,7 +1,7 @@
 /*
  * flow_information.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_flow_information_H_
@@ -40,7 +40,7 @@ OpenAPI_flow_information_t *OpenAPI_flow_information_create(
     char *spi,
     char *flow_label,
     OpenAPI_flow_direction_e flow_direction
-    );
+);
 void OpenAPI_flow_information_free(OpenAPI_flow_information_t *flow_information);
 OpenAPI_flow_information_t *OpenAPI_flow_information_parseFromJSON(cJSON *flow_informationJSON);
 cJSON *OpenAPI_flow_information_convertToJSON(OpenAPI_flow_information_t *flow_information);

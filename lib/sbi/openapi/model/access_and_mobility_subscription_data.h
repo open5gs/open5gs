@@ -1,7 +1,7 @@
 /*
  * access_and_mobility_subscription_data.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_access_and_mobility_subscription_data_H_
@@ -28,7 +28,7 @@
 #include "service_area_restriction.h"
 #include "sor_info.h"
 #include "sor_update_indicator.h"
-#include "trace_data.h"
+#include "trace_data_1.h"
 #include "upu_info.h"
 #include "wireline_area.h"
 #include "wireline_service_area_restriction.h"
@@ -67,13 +67,13 @@ typedef struct OpenAPI_access_and_mobility_subscription_data_s {
     int service_gap_time;
     OpenAPI_mdt_user_consent_e mdt_user_consent;
     struct OpenAPI_mdt_configuration_s *mdt_configuration;
-    struct OpenAPI_trace_data_s *trace_data;
+    struct OpenAPI_trace_data_1_s *trace_data;
     struct OpenAPI_cag_data_s *cag_data;
     char *stn_sr;
     char *c_msisdn;
-    int nb_io_t_ue_priority;
+    int nb_io_tue_priority;
     int nssai_inclusion_allowed;
-    char rg_wireline_characteristics;
+    char *rg_wireline_characteristics;
     struct OpenAPI_ec_restriction_data_wb_s *ec_restriction_data_wb;
     int ec_restriction_data_nb;
     struct OpenAPI_expected_ue_behaviour_data_s *expected_ue_behaviour_list;
@@ -115,13 +115,13 @@ OpenAPI_access_and_mobility_subscription_data_t *OpenAPI_access_and_mobility_sub
     int service_gap_time,
     OpenAPI_mdt_user_consent_e mdt_user_consent,
     OpenAPI_mdt_configuration_t *mdt_configuration,
-    OpenAPI_trace_data_t *trace_data,
+    OpenAPI_trace_data_1_t *trace_data,
     OpenAPI_cag_data_t *cag_data,
     char *stn_sr,
     char *c_msisdn,
-    int nb_io_t_ue_priority,
+    int nb_io_tue_priority,
     int nssai_inclusion_allowed,
-    char rg_wireline_characteristics,
+    char *rg_wireline_characteristics,
     OpenAPI_ec_restriction_data_wb_t *ec_restriction_data_wb,
     int ec_restriction_data_nb,
     OpenAPI_expected_ue_behaviour_data_t *expected_ue_behaviour_list,
@@ -132,7 +132,7 @@ OpenAPI_access_and_mobility_subscription_data_t *OpenAPI_access_and_mobility_sub
     int iab_operation_allowed,
     OpenAPI_list_t *wireline_forbidden_areas,
     OpenAPI_wireline_service_area_restriction_t *wireline_service_area_restriction
-    );
+);
 void OpenAPI_access_and_mobility_subscription_data_free(OpenAPI_access_and_mobility_subscription_data_t *access_and_mobility_subscription_data);
 OpenAPI_access_and_mobility_subscription_data_t *OpenAPI_access_and_mobility_subscription_data_parseFromJSON(cJSON *access_and_mobility_subscription_dataJSON);
 cJSON *OpenAPI_access_and_mobility_subscription_data_convertToJSON(OpenAPI_access_and_mobility_subscription_data_t *access_and_mobility_subscription_data);

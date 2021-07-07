@@ -1,7 +1,7 @@
 /*
  * node_type.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_node_type_H_

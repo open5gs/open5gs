@@ -1,7 +1,7 @@
 /*
  * nas_security_mode.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_nas_security_mode_H_
@@ -28,7 +28,7 @@ typedef struct OpenAPI_nas_security_mode_s {
 OpenAPI_nas_security_mode_t *OpenAPI_nas_security_mode_create(
     OpenAPI_integrity_algorithm_e integrity_algorithm,
     OpenAPI_ciphering_algorithm_e ciphering_algorithm
-    );
+);
 void OpenAPI_nas_security_mode_free(OpenAPI_nas_security_mode_t *nas_security_mode);
 OpenAPI_nas_security_mode_t *OpenAPI_nas_security_mode_parseFromJSON(cJSON *nas_security_modeJSON);
 cJSON *OpenAPI_nas_security_mode_convertToJSON(OpenAPI_nas_security_mode_t *nas_security_mode);

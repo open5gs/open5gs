@@ -1,7 +1,7 @@
 /*
  * max_integrity_protected_data_rate.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_max_integrity_protected_data_rate_H_

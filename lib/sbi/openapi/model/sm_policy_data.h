@@ -33,7 +33,7 @@ OpenAPI_sm_policy_data_t *OpenAPI_sm_policy_data_create(
     OpenAPI_list_t* um_data_limits,
     OpenAPI_list_t* um_data,
     char *supp_feat
-    );
+);
 void OpenAPI_sm_policy_data_free(OpenAPI_sm_policy_data_t *sm_policy_data);
 OpenAPI_sm_policy_data_t *OpenAPI_sm_policy_data_parseFromJSON(cJSON *sm_policy_dataJSON);
 cJSON *OpenAPI_sm_policy_data_convertToJSON(OpenAPI_sm_policy_data_t *sm_policy_data);

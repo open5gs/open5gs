@@ -6,7 +6,7 @@
 
 OpenAPI_transfer_mt_data_req_data_t *OpenAPI_transfer_mt_data_req_data_create(
     OpenAPI_ref_to_binary_data_t *mt_data
-    )
+)
 {
     OpenAPI_transfer_mt_data_req_data_t *transfer_mt_data_req_data_local_var = OpenAPI_malloc(sizeof(OpenAPI_transfer_mt_data_req_data_t));
     if (!transfer_mt_data_req_data_local_var) {
@@ -62,12 +62,12 @@ OpenAPI_transfer_mt_data_req_data_t *OpenAPI_transfer_mt_data_req_data_parseFrom
     }
 
     OpenAPI_ref_to_binary_data_t *mt_data_local_nonprim = NULL;
-
+    
     mt_data_local_nonprim = OpenAPI_ref_to_binary_data_parseFromJSON(mt_data);
 
     transfer_mt_data_req_data_local_var = OpenAPI_transfer_mt_data_req_data_create (
         mt_data_local_nonprim
-        );
+    );
 
     return transfer_mt_data_req_data_local_var;
 end:

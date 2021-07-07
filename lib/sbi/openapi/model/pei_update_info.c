@@ -6,7 +6,7 @@
 
 OpenAPI_pei_update_info_t *OpenAPI_pei_update_info_create(
     char *pei
-    )
+)
 {
     OpenAPI_pei_update_info_t *pei_update_info_local_var = OpenAPI_malloc(sizeof(OpenAPI_pei_update_info_t));
     if (!pei_update_info_local_var) {
@@ -55,7 +55,7 @@ OpenAPI_pei_update_info_t *OpenAPI_pei_update_info_parseFromJSON(cJSON *pei_upda
         goto end;
     }
 
-
+    
     if (!cJSON_IsString(pei)) {
         ogs_error("OpenAPI_pei_update_info_parseFromJSON() failed [pei]");
         goto end;
@@ -63,7 +63,7 @@ OpenAPI_pei_update_info_t *OpenAPI_pei_update_info_parseFromJSON(cJSON *pei_upda
 
     pei_update_info_local_var = OpenAPI_pei_update_info_create (
         ogs_strdup_or_assert(pei->valuestring)
-        );
+    );
 
     return pei_update_info_local_var;
 end:

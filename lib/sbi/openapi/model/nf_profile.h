@@ -183,7 +183,7 @@ OpenAPI_nf_profile_t *OpenAPI_nf_profile_create(
     OpenAPI_list_t* service_set_recovery_time_list,
     OpenAPI_list_t *scp_domains,
     OpenAPI_scp_info_t *scp_info
-    );
+);
 void OpenAPI_nf_profile_free(OpenAPI_nf_profile_t *nf_profile);
 OpenAPI_nf_profile_t *OpenAPI_nf_profile_parseFromJSON(cJSON *nf_profileJSON);
 cJSON *OpenAPI_nf_profile_convertToJSON(OpenAPI_nf_profile_t *nf_profile);

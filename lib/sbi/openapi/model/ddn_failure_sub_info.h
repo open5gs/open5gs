@@ -1,7 +1,7 @@
 /*
  * ddn_failure_sub_info.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_ddn_failure_sub_info_H_
@@ -27,7 +27,7 @@ typedef struct OpenAPI_ddn_failure_sub_info_s {
 OpenAPI_ddn_failure_sub_info_t *OpenAPI_ddn_failure_sub_info_create(
     char *notify_correlation_id,
     OpenAPI_list_t *ddd_traffic_descriptor_list
-    );
+);
 void OpenAPI_ddn_failure_sub_info_free(OpenAPI_ddn_failure_sub_info_t *ddn_failure_sub_info);
 OpenAPI_ddn_failure_sub_info_t *OpenAPI_ddn_failure_sub_info_parseFromJSON(cJSON *ddn_failure_sub_infoJSON);
 cJSON *OpenAPI_ddn_failure_sub_info_convertToJSON(OpenAPI_ddn_failure_sub_info_t *ddn_failure_sub_info);

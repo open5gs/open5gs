@@ -1,7 +1,7 @@
 /*
  * transport_protocol.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_transport_protocol_H_

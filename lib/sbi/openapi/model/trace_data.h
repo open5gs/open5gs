@@ -1,7 +1,7 @@
 /*
  * trace_data.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_trace_data_H_
@@ -37,7 +37,7 @@ OpenAPI_trace_data_t *OpenAPI_trace_data_create(
     char *collection_entity_ipv4_addr,
     char *collection_entity_ipv6_addr,
     char *interface_list
-    );
+);
 void OpenAPI_trace_data_free(OpenAPI_trace_data_t *trace_data);
 OpenAPI_trace_data_t *OpenAPI_trace_data_parseFromJSON(cJSON *trace_dataJSON);
 cJSON *OpenAPI_trace_data_convertToJSON(OpenAPI_trace_data_t *trace_data);

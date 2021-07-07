@@ -7,7 +7,7 @@
 OpenAPI_ue_policy_section_t *OpenAPI_ue_policy_section_create(
     char ue_policy_section_info,
     char *upsi
-    )
+)
 {
     OpenAPI_ue_policy_section_t *ue_policy_section_local_var = OpenAPI_malloc(sizeof(OpenAPI_ue_policy_section_t));
     if (!ue_policy_section_local_var) {
@@ -62,7 +62,7 @@ OpenAPI_ue_policy_section_t *OpenAPI_ue_policy_section_parseFromJSON(cJSON *ue_p
         goto end;
     }
 
-
+    
     if (!cJSON_IsNumber(ue_policy_section_info)) {
         ogs_error("OpenAPI_ue_policy_section_parseFromJSON() failed [ue_policy_section_info]");
         goto end;
@@ -74,7 +74,7 @@ OpenAPI_ue_policy_section_t *OpenAPI_ue_policy_section_parseFromJSON(cJSON *ue_p
         goto end;
     }
 
-
+    
     if (!cJSON_IsString(upsi)) {
         ogs_error("OpenAPI_ue_policy_section_parseFromJSON() failed [upsi]");
         goto end;
@@ -83,7 +83,7 @@ OpenAPI_ue_policy_section_t *OpenAPI_ue_policy_section_parseFromJSON(cJSON *ue_p
     ue_policy_section_local_var = OpenAPI_ue_policy_section_create (
         ue_policy_section_info->valueint,
         ogs_strdup_or_assert(upsi->valuestring)
-        );
+    );
 
     return ue_policy_section_local_var;
 end:

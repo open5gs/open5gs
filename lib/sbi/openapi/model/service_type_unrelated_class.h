@@ -1,7 +1,7 @@
 /*
  * service_type_unrelated_class.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_service_type_unrelated_class_H_
@@ -38,7 +38,7 @@ OpenAPI_service_type_unrelated_class_t *OpenAPI_service_type_unrelated_class_cre
     OpenAPI_code_word_ind_e code_word_ind,
     OpenAPI_valid_time_period_t *valid_time_period,
     OpenAPI_list_t *code_word_list
-    );
+);
 void OpenAPI_service_type_unrelated_class_free(OpenAPI_service_type_unrelated_class_t *service_type_unrelated_class);
 OpenAPI_service_type_unrelated_class_t *OpenAPI_service_type_unrelated_class_parseFromJSON(cJSON *service_type_unrelated_classJSON);
 cJSON *OpenAPI_service_type_unrelated_class_convertToJSON(OpenAPI_service_type_unrelated_class_t *service_type_unrelated_class);

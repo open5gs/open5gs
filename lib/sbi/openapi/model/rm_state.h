@@ -1,7 +1,7 @@
 /*
  * rm_state.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_rm_state_H_
@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+#include "rm_state_any_of.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -22,7 +23,7 @@ typedef struct OpenAPI_rm_state_s {
 } OpenAPI_rm_state_t;
 
 OpenAPI_rm_state_t *OpenAPI_rm_state_create(
-    );
+);
 void OpenAPI_rm_state_free(OpenAPI_rm_state_t *rm_state);
 OpenAPI_rm_state_t *OpenAPI_rm_state_parseFromJSON(cJSON *rm_stateJSON);
 cJSON *OpenAPI_rm_state_convertToJSON(OpenAPI_rm_state_t *rm_state);

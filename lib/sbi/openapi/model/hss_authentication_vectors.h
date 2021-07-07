@@ -1,7 +1,7 @@
 /*
  * hss_authentication_vectors.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_hss_authentication_vectors_H_
@@ -22,7 +22,7 @@ typedef struct OpenAPI_hss_authentication_vectors_s {
 } OpenAPI_hss_authentication_vectors_t;
 
 OpenAPI_hss_authentication_vectors_t *OpenAPI_hss_authentication_vectors_create(
-    );
+);
 void OpenAPI_hss_authentication_vectors_free(OpenAPI_hss_authentication_vectors_t *hss_authentication_vectors);
 OpenAPI_hss_authentication_vectors_t *OpenAPI_hss_authentication_vectors_parseFromJSON(cJSON *hss_authentication_vectorsJSON);
 cJSON *OpenAPI_hss_authentication_vectors_convertToJSON(OpenAPI_hss_authentication_vectors_t *hss_authentication_vectors);

@@ -1,7 +1,7 @@
 /*
  * wireline_area.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_wireline_area_H_
@@ -30,7 +30,7 @@ OpenAPI_wireline_area_t *OpenAPI_wireline_area_create(
     OpenAPI_list_t *hfc_n_ids,
     char *area_code_b,
     char *area_code_c
-    );
+);
 void OpenAPI_wireline_area_free(OpenAPI_wireline_area_t *wireline_area);
 OpenAPI_wireline_area_t *OpenAPI_wireline_area_parseFromJSON(cJSON *wireline_areaJSON);
 cJSON *OpenAPI_wireline_area_convertToJSON(OpenAPI_wireline_area_t *wireline_area);

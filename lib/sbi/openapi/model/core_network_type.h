@@ -1,7 +1,7 @@
 /*
  * core_network_type.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_core_network_type_H_

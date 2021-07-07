@@ -1,7 +1,7 @@
 /*
  * key_amf_type.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_key_amf_type_H_

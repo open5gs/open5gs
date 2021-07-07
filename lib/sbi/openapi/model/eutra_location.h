@@ -1,7 +1,7 @@
 /*
  * eutra_location.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_eutra_location_H_
@@ -23,6 +23,7 @@ extern "C" {
 typedef struct OpenAPI_eutra_location_s OpenAPI_eutra_location_t;
 typedef struct OpenAPI_eutra_location_s {
     struct OpenAPI_tai_s *tai;
+    int ignore_tai;
     struct OpenAPI_ecgi_s *ecgi;
     int ignore_ecgi;
     int age_of_location_information;
@@ -30,11 +31,12 @@ typedef struct OpenAPI_eutra_location_s {
     char *geographical_information;
     char *geodetic_information;
     struct OpenAPI_global_ran_node_id_s *global_ngenb_id;
-    struct OpenAPI_global_ran_node_id_s *global_e_nb_id;
+    struct OpenAPI_global_ran_node_id_s *global_enb_id;
 } OpenAPI_eutra_location_t;
 
 OpenAPI_eutra_location_t *OpenAPI_eutra_location_create(
     OpenAPI_tai_t *tai,
+    int ignore_tai,
     OpenAPI_ecgi_t *ecgi,
     int ignore_ecgi,
     int age_of_location_information,
@@ -42,8 +44,8 @@ OpenAPI_eutra_location_t *OpenAPI_eutra_location_create(
     char *geographical_information,
     char *geodetic_information,
     OpenAPI_global_ran_node_id_t *global_ngenb_id,
-    OpenAPI_global_ran_node_id_t *global_e_nb_id
-    );
+    OpenAPI_global_ran_node_id_t *global_enb_id
+);
 void OpenAPI_eutra_location_free(OpenAPI_eutra_location_t *eutra_location);
 OpenAPI_eutra_location_t *OpenAPI_eutra_location_parseFromJSON(cJSON *eutra_locationJSON);
 cJSON *OpenAPI_eutra_location_convertToJSON(OpenAPI_eutra_location_t *eutra_location);

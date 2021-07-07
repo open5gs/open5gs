@@ -1,7 +1,7 @@
 /*
  * termination_cause.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_termination_cause_H_

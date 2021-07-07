@@ -1,7 +1,7 @@
 /*
  * ho_state.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_ho_state_H_

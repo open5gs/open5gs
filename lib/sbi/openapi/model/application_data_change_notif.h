@@ -36,7 +36,7 @@ OpenAPI_application_data_change_notif_t *OpenAPI_application_data_change_notif_c
     OpenAPI_bdt_policy_data_t *bdt_policy_data,
     char *res_uri,
     OpenAPI_service_parameter_data_t *ser_param_data
-    );
+);
 void OpenAPI_application_data_change_notif_free(OpenAPI_application_data_change_notif_t *application_data_change_notif);
 OpenAPI_application_data_change_notif_t *OpenAPI_application_data_change_notif_parseFromJSON(cJSON *application_data_change_notifJSON);
 cJSON *OpenAPI_application_data_change_notif_convertToJSON(OpenAPI_application_data_change_notif_t *application_data_change_notif);

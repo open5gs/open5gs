@@ -1,7 +1,7 @@
 /*
  * reflective_qo_s_attribute.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_reflective_qo_s_attribute_H_

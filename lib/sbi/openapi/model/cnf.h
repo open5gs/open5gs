@@ -1,7 +1,7 @@
 /*
  * cnf.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_cnf_H_
@@ -25,7 +25,7 @@ typedef struct OpenAPI_cnf_s {
 
 OpenAPI_cnf_t *OpenAPI_cnf_create(
     OpenAPI_list_t *cnf_units
-    );
+);
 void OpenAPI_cnf_free(OpenAPI_cnf_t *cnf);
 OpenAPI_cnf_t *OpenAPI_cnf_parseFromJSON(cJSON *cnfJSON);
 cJSON *OpenAPI_cnf_convertToJSON(OpenAPI_cnf_t *cnf);

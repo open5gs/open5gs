@@ -6,7 +6,7 @@
 
 OpenAPI_lcs_mo_data_t *OpenAPI_lcs_mo_data_create(
     OpenAPI_list_t *allowed_service_classes
-    )
+)
 {
     OpenAPI_lcs_mo_data_t *lcs_mo_data_local_var = OpenAPI_malloc(sizeof(OpenAPI_lcs_mo_data_t));
     if (!lcs_mo_data_local_var) {
@@ -64,7 +64,7 @@ OpenAPI_lcs_mo_data_t *OpenAPI_lcs_mo_data_parseFromJSON(cJSON *lcs_mo_dataJSON)
     }
 
     OpenAPI_list_t *allowed_service_classesList;
-
+    
     cJSON *allowed_service_classes_local_nonprimitive;
     if (!cJSON_IsArray(allowed_service_classes)) {
         ogs_error("OpenAPI_lcs_mo_data_parseFromJSON() failed [allowed_service_classes]");
@@ -74,7 +74,7 @@ OpenAPI_lcs_mo_data_t *OpenAPI_lcs_mo_data_parseFromJSON(cJSON *lcs_mo_dataJSON)
     allowed_service_classesList = OpenAPI_list_create();
 
     cJSON_ArrayForEach(allowed_service_classes_local_nonprimitive, allowed_service_classes ) {
-        if (!cJSON_IsString(allowed_service_classes_local_nonprimitive)) {
+        if (!cJSON_IsString(allowed_service_classes_local_nonprimitive)){
             ogs_error("OpenAPI_lcs_mo_data_parseFromJSON() failed [allowed_service_classes]");
             goto end;
         }
@@ -84,7 +84,7 @@ OpenAPI_lcs_mo_data_t *OpenAPI_lcs_mo_data_parseFromJSON(cJSON *lcs_mo_dataJSON)
 
     lcs_mo_data_local_var = OpenAPI_lcs_mo_data_create (
         allowed_service_classesList
-        );
+    );
 
     return lcs_mo_data_local_var;
 end:

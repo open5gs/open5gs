@@ -1,7 +1,7 @@
 /*
  * arp.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_arp_H_
@@ -30,7 +30,7 @@ OpenAPI_arp_t *OpenAPI_arp_create(
     int priority_level,
     OpenAPI_preemption_capability_e preempt_cap,
     OpenAPI_preemption_vulnerability_e preempt_vuln
-    );
+);
 void OpenAPI_arp_free(OpenAPI_arp_t *arp);
 OpenAPI_arp_t *OpenAPI_arp_parseFromJSON(cJSON *arpJSON);
 cJSON *OpenAPI_arp_convertToJSON(OpenAPI_arp_t *arp);

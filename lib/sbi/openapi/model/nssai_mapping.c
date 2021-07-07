@@ -7,7 +7,7 @@
 OpenAPI_nssai_mapping_t *OpenAPI_nssai_mapping_create(
     OpenAPI_snssai_t *mapped_snssai,
     OpenAPI_snssai_t *h_snssai
-    )
+)
 {
     OpenAPI_nssai_mapping_t *nssai_mapping_local_var = OpenAPI_malloc(sizeof(OpenAPI_nssai_mapping_t));
     if (!nssai_mapping_local_var) {
@@ -76,7 +76,7 @@ OpenAPI_nssai_mapping_t *OpenAPI_nssai_mapping_parseFromJSON(cJSON *nssai_mappin
     }
 
     OpenAPI_snssai_t *mapped_snssai_local_nonprim = NULL;
-
+    
     mapped_snssai_local_nonprim = OpenAPI_snssai_parseFromJSON(mapped_snssai);
 
     cJSON *h_snssai = cJSON_GetObjectItemCaseSensitive(nssai_mappingJSON, "hSnssai");
@@ -86,13 +86,13 @@ OpenAPI_nssai_mapping_t *OpenAPI_nssai_mapping_parseFromJSON(cJSON *nssai_mappin
     }
 
     OpenAPI_snssai_t *h_snssai_local_nonprim = NULL;
-
+    
     h_snssai_local_nonprim = OpenAPI_snssai_parseFromJSON(h_snssai);
 
     nssai_mapping_local_var = OpenAPI_nssai_mapping_create (
         mapped_snssai_local_nonprim,
         h_snssai_local_nonprim
-        );
+    );
 
     return nssai_mapping_local_var;
 end:

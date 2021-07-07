@@ -1,7 +1,7 @@
 /*
  * notification_cause.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_notification_cause_H_

@@ -1,7 +1,7 @@
 /*
  * ee_subscription.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_ee_subscription_H_
@@ -45,7 +45,7 @@ OpenAPI_ee_subscription_t *OpenAPI_ee_subscription_create(
     char *scef_diam_host,
     char *scef_diam_realm,
     char *notify_correlation_id
-    );
+);
 void OpenAPI_ee_subscription_free(OpenAPI_ee_subscription_t *ee_subscription);
 OpenAPI_ee_subscription_t *OpenAPI_ee_subscription_parseFromJSON(cJSON *ee_subscriptionJSON);
 cJSON *OpenAPI_ee_subscription_convertToJSON(OpenAPI_ee_subscription_t *ee_subscription);

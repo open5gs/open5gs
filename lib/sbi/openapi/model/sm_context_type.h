@@ -1,7 +1,7 @@
 /*
  * sm_context_type.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_sm_context_type_H_

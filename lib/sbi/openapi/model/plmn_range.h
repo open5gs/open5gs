@@ -28,7 +28,7 @@ OpenAPI_plmn_range_t *OpenAPI_plmn_range_create(
     char *start,
     char *end,
     char *pattern
-    );
+);
 void OpenAPI_plmn_range_free(OpenAPI_plmn_range_t *plmn_range);
 OpenAPI_plmn_range_t *OpenAPI_plmn_range_parseFromJSON(cJSON *plmn_rangeJSON);
 cJSON *OpenAPI_plmn_range_convertToJSON(OpenAPI_plmn_range_t *plmn_range);

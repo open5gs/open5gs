@@ -1,7 +1,7 @@
 /*
  * apn_rate_status.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_apn_rate_status_H_
@@ -32,7 +32,7 @@ OpenAPI_apn_rate_status_t *OpenAPI_apn_rate_status_create(
     char *validity_time,
     int remain_ex_reports_ul,
     int remain_ex_reports_dl
-    );
+);
 void OpenAPI_apn_rate_status_free(OpenAPI_apn_rate_status_t *apn_rate_status);
 OpenAPI_apn_rate_status_t *OpenAPI_apn_rate_status_parseFromJSON(cJSON *apn_rate_statusJSON);
 cJSON *OpenAPI_apn_rate_status_convertToJSON(OpenAPI_apn_rate_status_t *apn_rate_status);

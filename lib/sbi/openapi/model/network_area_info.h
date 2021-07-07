@@ -34,7 +34,7 @@ OpenAPI_network_area_info_t *OpenAPI_network_area_info_create(
     OpenAPI_list_t *ncgis,
     OpenAPI_list_t *g_ran_node_ids,
     OpenAPI_list_t *tais
-    );
+);
 void OpenAPI_network_area_info_free(OpenAPI_network_area_info_t *network_area_info);
 OpenAPI_network_area_info_t *OpenAPI_network_area_info_parseFromJSON(cJSON *network_area_infoJSON);
 cJSON *OpenAPI_network_area_info_convertToJSON(OpenAPI_network_area_info_t *network_area_info);

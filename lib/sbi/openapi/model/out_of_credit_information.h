@@ -28,7 +28,7 @@ typedef struct OpenAPI_out_of_credit_information_s {
 OpenAPI_out_of_credit_information_t *OpenAPI_out_of_credit_information_create(
     OpenAPI_final_unit_action_t *fin_unit_act,
     OpenAPI_list_t *flows
-    );
+);
 void OpenAPI_out_of_credit_information_free(OpenAPI_out_of_credit_information_t *out_of_credit_information);
 OpenAPI_out_of_credit_information_t *OpenAPI_out_of_credit_information_parseFromJSON(cJSON *out_of_credit_informationJSON);
 cJSON *OpenAPI_out_of_credit_information_convertToJSON(OpenAPI_out_of_credit_information_t *out_of_credit_information);

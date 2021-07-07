@@ -1,7 +1,7 @@
 /*
  * id_translation_result.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_id_translation_result_H_
@@ -28,7 +28,7 @@ OpenAPI_id_translation_result_t *OpenAPI_id_translation_result_create(
     char *supported_features,
     char *supi,
     char *gpsi
-    );
+);
 void OpenAPI_id_translation_result_free(OpenAPI_id_translation_result_t *id_translation_result);
 OpenAPI_id_translation_result_t *OpenAPI_id_translation_result_parseFromJSON(cJSON *id_translation_resultJSON);
 cJSON *OpenAPI_id_translation_result_convertToJSON(OpenAPI_id_translation_result_t *id_translation_result);

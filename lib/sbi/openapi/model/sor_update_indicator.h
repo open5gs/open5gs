@@ -1,7 +1,7 @@
 /*
  * sor_update_indicator.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_sor_update_indicator_H_

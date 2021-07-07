@@ -10,7 +10,7 @@ OpenAPI_point_altitude_uncertainty_all_of_t *OpenAPI_point_altitude_uncertainty_
     OpenAPI_uncertainty_ellipse_t *uncertainty_ellipse,
     float uncertainty_altitude,
     int confidence
-    )
+)
 {
     OpenAPI_point_altitude_uncertainty_all_of_t *point_altitude_uncertainty_all_of_local_var = OpenAPI_malloc(sizeof(OpenAPI_point_altitude_uncertainty_all_of_t));
     if (!point_altitude_uncertainty_all_of_local_var) {
@@ -97,7 +97,7 @@ OpenAPI_point_altitude_uncertainty_all_of_t *OpenAPI_point_altitude_uncertainty_
     }
 
     OpenAPI_geographical_coordinates_t *point_local_nonprim = NULL;
-
+    
     point_local_nonprim = OpenAPI_geographical_coordinates_parseFromJSON(point);
 
     cJSON *altitude = cJSON_GetObjectItemCaseSensitive(point_altitude_uncertainty_all_ofJSON, "altitude");
@@ -106,7 +106,7 @@ OpenAPI_point_altitude_uncertainty_all_of_t *OpenAPI_point_altitude_uncertainty_
         goto end;
     }
 
-
+    
     if (!cJSON_IsNumber(altitude)) {
         ogs_error("OpenAPI_point_altitude_uncertainty_all_of_parseFromJSON() failed [altitude]");
         goto end;
@@ -119,7 +119,7 @@ OpenAPI_point_altitude_uncertainty_all_of_t *OpenAPI_point_altitude_uncertainty_
     }
 
     OpenAPI_uncertainty_ellipse_t *uncertainty_ellipse_local_nonprim = NULL;
-
+    
     uncertainty_ellipse_local_nonprim = OpenAPI_uncertainty_ellipse_parseFromJSON(uncertainty_ellipse);
 
     cJSON *uncertainty_altitude = cJSON_GetObjectItemCaseSensitive(point_altitude_uncertainty_all_ofJSON, "uncertaintyAltitude");
@@ -128,7 +128,7 @@ OpenAPI_point_altitude_uncertainty_all_of_t *OpenAPI_point_altitude_uncertainty_
         goto end;
     }
 
-
+    
     if (!cJSON_IsNumber(uncertainty_altitude)) {
         ogs_error("OpenAPI_point_altitude_uncertainty_all_of_parseFromJSON() failed [uncertainty_altitude]");
         goto end;
@@ -140,7 +140,7 @@ OpenAPI_point_altitude_uncertainty_all_of_t *OpenAPI_point_altitude_uncertainty_
         goto end;
     }
 
-
+    
     if (!cJSON_IsNumber(confidence)) {
         ogs_error("OpenAPI_point_altitude_uncertainty_all_of_parseFromJSON() failed [confidence]");
         goto end;
@@ -152,7 +152,7 @@ OpenAPI_point_altitude_uncertainty_all_of_t *OpenAPI_point_altitude_uncertainty_
         uncertainty_ellipse_local_nonprim,
         uncertainty_altitude->valuedouble,
         confidence->valuedouble
-        );
+    );
 
     return point_altitude_uncertainty_all_of_local_var;
 end:

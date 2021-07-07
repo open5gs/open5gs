@@ -1,7 +1,7 @@
 /*
  * lcs_privacy.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_lcs_privacy_H_
@@ -31,7 +31,7 @@ OpenAPI_lcs_privacy_t *OpenAPI_lcs_privacy_create(
     int reference_id,
     OpenAPI_lpi_t *lpi,
     char *mtc_provider_information
-    );
+);
 void OpenAPI_lcs_privacy_free(OpenAPI_lcs_privacy_t *lcs_privacy);
 OpenAPI_lcs_privacy_t *OpenAPI_lcs_privacy_parseFromJSON(cJSON *lcs_privacyJSON);
 cJSON *OpenAPI_lcs_privacy_convertToJSON(OpenAPI_lcs_privacy_t *lcs_privacy);

@@ -1,7 +1,7 @@
 /*
  * hsmf_update_data.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_hsmf_update_data_H_
@@ -15,6 +15,7 @@
 #include "access_type.h"
 #include "cause.h"
 #include "eps_interworking_indication.h"
+#include "guami.h"
 #include "ma_release_indication.h"
 #include "mo_exp_data_counter.h"
 #include "n4_information.h"
@@ -99,6 +100,8 @@ typedef struct OpenAPI_hsmf_update_data_s {
     struct OpenAPI_vplmn_qos_s *vplmn_qos;
     struct OpenAPI_security_result_s *security_result;
     struct OpenAPI_up_security_info_s *up_security_info;
+    char *amf_nf_id;
+    struct OpenAPI_guami_s *guami;
 } OpenAPI_hsmf_update_data_t;
 
 OpenAPI_hsmf_update_data_t *OpenAPI_hsmf_update_data_create(
@@ -155,8 +158,10 @@ OpenAPI_hsmf_update_data_t *OpenAPI_hsmf_update_data_create(
     OpenAPI_mo_exp_data_counter_t *mo_exp_data_counter,
     OpenAPI_vplmn_qos_t *vplmn_qos,
     OpenAPI_security_result_t *security_result,
-    OpenAPI_up_security_info_t *up_security_info
-    );
+    OpenAPI_up_security_info_t *up_security_info,
+    char *amf_nf_id,
+    OpenAPI_guami_t *guami
+);
 void OpenAPI_hsmf_update_data_free(OpenAPI_hsmf_update_data_t *hsmf_update_data);
 OpenAPI_hsmf_update_data_t *OpenAPI_hsmf_update_data_parseFromJSON(cJSON *hsmf_update_dataJSON);
 cJSON *OpenAPI_hsmf_update_data_convertToJSON(OpenAPI_hsmf_update_data_t *hsmf_update_data);

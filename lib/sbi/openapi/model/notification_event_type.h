@@ -1,7 +1,7 @@
 /*
  * notification_event_type.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_notification_event_type_H_

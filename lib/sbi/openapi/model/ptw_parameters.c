@@ -7,7 +7,7 @@
 OpenAPI_ptw_parameters_t *OpenAPI_ptw_parameters_create(
     OpenAPI_operation_mode_e operation_mode,
     char *ptw_value
-    )
+)
 {
     OpenAPI_ptw_parameters_t *ptw_parameters_local_var = OpenAPI_malloc(sizeof(OpenAPI_ptw_parameters_t));
     if (!ptw_parameters_local_var) {
@@ -63,7 +63,7 @@ OpenAPI_ptw_parameters_t *OpenAPI_ptw_parameters_parseFromJSON(cJSON *ptw_parame
     }
 
     OpenAPI_operation_mode_e operation_modeVariable;
-
+    
     if (!cJSON_IsString(operation_mode)) {
         ogs_error("OpenAPI_ptw_parameters_parseFromJSON() failed [operation_mode]");
         goto end;
@@ -76,7 +76,7 @@ OpenAPI_ptw_parameters_t *OpenAPI_ptw_parameters_parseFromJSON(cJSON *ptw_parame
         goto end;
     }
 
-
+    
     if (!cJSON_IsString(ptw_value)) {
         ogs_error("OpenAPI_ptw_parameters_parseFromJSON() failed [ptw_value]");
         goto end;
@@ -85,7 +85,7 @@ OpenAPI_ptw_parameters_t *OpenAPI_ptw_parameters_parseFromJSON(cJSON *ptw_parame
     ptw_parameters_local_var = OpenAPI_ptw_parameters_create (
         operation_modeVariable,
         ogs_strdup_or_assert(ptw_value->valuestring)
-        );
+    );
 
     return ptw_parameters_local_var;
 end:

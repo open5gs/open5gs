@@ -30,7 +30,7 @@ OpenAPI_tai_range_t *OpenAPI_tai_range_create(
     OpenAPI_plmn_id_t *plmn_id,
     OpenAPI_list_t *tac_range_list,
     char *nid
-    );
+);
 void OpenAPI_tai_range_free(OpenAPI_tai_range_t *tai_range);
 OpenAPI_tai_range_t *OpenAPI_tai_range_parseFromJSON(cJSON *tai_rangeJSON);
 cJSON *OpenAPI_tai_range_convertToJSON(OpenAPI_tai_range_t *tai_range);

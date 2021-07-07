@@ -1,0 +1,417 @@
+openapi: 3.0.0
+info:
+  title: Nnef_PFDmanagement Service API
+  version: 1.1.2
+  description: |
+    Packet Flow Description Management Service.
+    © 2021, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+#
+externalDocs:
+  description: 3GPP TS 29.551 v16.8.0, 5G System; Packet Flow Description Management Service
+  url: 'http://www.3gpp.org/ftp/Specs/archive/29_series/29.551/'
+#
+servers:
+  - url: '{apiRoot}/nnef-pfdmanagement/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in subclause 4.4 of 3GPP TS 29.501
+security:
+  - {}
+  - oAuth2ClientCredentials:
+    - nnef-pfdmanagement
+paths:
+  /applications:
+    get:
+      summary: Retrieve PFDs for all applications or for one or multiple applications with query parameter.
+      tags:
+        - PFD of applications
+      operationId: Nnef_PFDmanagement_AllFetch
+      parameters:
+          - name: application-ids
+            description: The required application identifier(s) for the returned PFDs.
+            in: query
+            required: true
+            schema:
+              type: array
+              items:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/ApplicationId'
+              minItems: 1
+          - name: supported-features
+            in: query
+            description: To filter irrelevant responses related to unsupported features
+            schema:
+               $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      responses:
+        '200':
+          description: The PFDs for one or more application identifier(s) in the request URI are returned.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PfdDataForApp'
+                minItems: 0
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/406'
+        '414':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/414'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+  
+  /applications/{appId}:
+    get:
+      summary: Retrieve the PFD for an application.
+      tags:
+        - Individual application PFD
+      operationId: Nnef_PFDmanagement_IndAppFetch
+      parameters:
+        - name: appId
+          description: The required application identifier(s) for the returned PFDs.
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: supported-features
+          in: query
+          description: To filter irrelevant responses related to unsupported features
+          schema:
+             $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      responses:
+        '200':
+          description: A representation of PFDs for an application in the request URI is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PfdDataForApp'
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '414':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/414'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+  
+  /subscriptions:
+    post:
+      summary: Subscribe the notification of PFD changes.
+      tags: 
+        - PFD subscriptions
+      operationId: Nnef_PFDmanagement_CreateSubscr
+      requestBody:
+        description: a PfdSubscription resource to be created.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PfdSubscription'
+      callbacks:
+        PfdChangeNotification:
+          '{request.body#/notifyUri}':
+            post:
+              summary: Notification of PFD change.
+              tags:
+                - PfdChangeNotification data
+              operationId: Nnef_PFDmanagement_Notify
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/PfdChangeNotification'
+                      minItems: 1
+              responses:
+                '200':
+                  description: The PFD operation in the notification is performed and the PfdChangeReport indicates failure reason.
+                  content:
+                    application/json:
+                      schema:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/PfdChangeReport'
+                        minItems: 1
+                '204':
+                  description: The PFD operation in the notification is performed successfully.
+                '307':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+                  
+            
+      responses:
+        '201':
+          description: The creation of a PfdSubscription resource is confirmed and a representation of that resource is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PfdSubscription'
+          headers:
+            Location:
+              description: 'Contains the URI of the newly created resource, according to the structure: {apiRoot}/nnef-pfdmanagement/v1/subscriptions/{subscriptionId}'
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+      
+  /subscriptions/{subscriptionId}:
+    put:
+      summary: Updates/replaces an existing subscription resource
+      tags:
+        - Individual PFD subscription
+      operationId: Nnef_PFDmanagement_ModifySubscr
+      parameters:
+        - name: subscriptionId
+          description: Identify the subscription.
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Parameters to update/replace the existing subscription
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PfdSubscription'
+      responses:
+        '200':
+          description: OK (Successful update of the subscription)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PfdSubscription'
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+    delete:
+      summary: Delete a subscription of PFD change notification.
+      tags:
+        - Individual PFD subscription
+      operationId: Nnef_PFDmanagement_Unsubscribe
+      parameters:
+        - name: subscriptionId
+          description: Identify the subscription.
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: The PfdSubscription resource matching the subscriptionId was deleted successfully.
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{nrfApiRoot}/oauth2/token'
+          scopes:
+            nnef-pfdmanagement: Access to the Nnef_PFDmanagement API
+  schemas:
+#
+# STRUCTURED DATA TYPES
+#
+    PfdContent:
+      type: object
+      properties:
+        pfdId:
+          type: string
+          description: Identifies a PDF of an application identifier.
+        flowDescriptions:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          description: Represents a 3-tuple with protocol, server ip and server port for UL/DL application traffic.
+        urls:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          description: Indicates a URL or a regular expression which is used to match the significant parts of the URL.
+        domainNames:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          description: Indicates an FQDN or a regular expression as a domain name matching criteria.
+        dnProtocol:
+          $ref: 'TS29122_PfdManagement.yaml#/components/schemas/DomainNameProtocol'
+
+
+    PfdDataForApp:
+      type: object
+      properties:
+        applicationId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/ApplicationId'
+        pfds:
+          type: array
+          items:
+            $ref: '#/components/schemas/PfdContent'
+          minItems: 1
+        cachingTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+      required:
+        - applicationId
+        - pfds
+    
+    PfdSubscription:
+      type: object
+      properties:
+        applicationIds:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/ApplicationId'
+          minItems: 1
+        notifyUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        supportedFeatures:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - notifyUri
+        - supportedFeatures
+        
+    PfdChangeNotification:
+      type: object
+      properties:
+        applicationId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/ApplicationId'
+        removalFlag:
+          type: boolean
+          default: false
+        partialFlag:
+          type: boolean
+          default: false
+        pfds:
+          type: array
+          items:
+            $ref: '#/components/schemas/PfdContent'
+          minItems: 1
+      required:
+        - applicationId
+
+    PfdChangeReport:
+      type: object
+      properties:
+        pfdError:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+        applicationId:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/ApplicationId'
+          minItems: 1
+      required:
+        - pfdError
+        - applicationId

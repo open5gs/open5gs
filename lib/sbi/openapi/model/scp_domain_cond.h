@@ -24,7 +24,7 @@ typedef struct OpenAPI_scp_domain_cond_s {
 
 OpenAPI_scp_domain_cond_t *OpenAPI_scp_domain_cond_create(
     OpenAPI_list_t *scp_domains
-    );
+);
 void OpenAPI_scp_domain_cond_free(OpenAPI_scp_domain_cond_t *scp_domain_cond);
 OpenAPI_scp_domain_cond_t *OpenAPI_scp_domain_cond_parseFromJSON(cJSON *scp_domain_condJSON);
 cJSON *OpenAPI_scp_domain_cond_convertToJSON(OpenAPI_scp_domain_cond_t *scp_domain_cond);

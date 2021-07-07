@@ -1,7 +1,7 @@
 /*
  * cag_data.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_cag_data_H_
@@ -27,7 +27,7 @@ typedef struct OpenAPI_cag_data_s {
 OpenAPI_cag_data_t *OpenAPI_cag_data_create(
     OpenAPI_list_t* cag_infos,
     char *provisioning_time
-    );
+);
 void OpenAPI_cag_data_free(OpenAPI_cag_data_t *cag_data);
 OpenAPI_cag_data_t *OpenAPI_cag_data_parseFromJSON(cJSON *cag_dataJSON);
 cJSON *OpenAPI_cag_data_convertToJSON(OpenAPI_cag_data_t *cag_data);

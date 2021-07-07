@@ -6,7 +6,7 @@
 
 OpenAPI_pws_error_data_t *OpenAPI_pws_error_data_create(
     int namf_cause
-    )
+)
 {
     OpenAPI_pws_error_data_t *pws_error_data_local_var = OpenAPI_malloc(sizeof(OpenAPI_pws_error_data_t));
     if (!pws_error_data_local_var) {
@@ -54,7 +54,7 @@ OpenAPI_pws_error_data_t *OpenAPI_pws_error_data_parseFromJSON(cJSON *pws_error_
         goto end;
     }
 
-
+    
     if (!cJSON_IsNumber(namf_cause)) {
         ogs_error("OpenAPI_pws_error_data_parseFromJSON() failed [namf_cause]");
         goto end;
@@ -62,7 +62,7 @@ OpenAPI_pws_error_data_t *OpenAPI_pws_error_data_parseFromJSON(cJSON *pws_error_
 
     pws_error_data_local_var = OpenAPI_pws_error_data_create (
         namf_cause->valuedouble
-        );
+    );
 
     return pws_error_data_local_var;
 end:

@@ -1,7 +1,7 @@
 /*
  * assign_ebi_failed.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_assign_ebi_failed_H_
@@ -27,7 +27,7 @@ typedef struct OpenAPI_assign_ebi_failed_s {
 OpenAPI_assign_ebi_failed_t *OpenAPI_assign_ebi_failed_create(
     int pdu_session_id,
     OpenAPI_list_t *failed_arp_list
-    );
+);
 void OpenAPI_assign_ebi_failed_free(OpenAPI_assign_ebi_failed_t *assign_ebi_failed);
 OpenAPI_assign_ebi_failed_t *OpenAPI_assign_ebi_failed_parseFromJSON(cJSON *assign_ebi_failedJSON);
 cJSON *OpenAPI_assign_ebi_failed_convertToJSON(OpenAPI_assign_ebi_failed_t *assign_ebi_failed);

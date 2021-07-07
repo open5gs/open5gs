@@ -1,7 +1,7 @@
 /*
  * usage_monitoring_data.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_usage_monitoring_data_H_
@@ -46,7 +46,7 @@ OpenAPI_usage_monitoring_data_t *OpenAPI_usage_monitoring_data_create(
     int next_time_threshold,
     int inactivity_time,
     OpenAPI_list_t *ex_usage_pcc_rule_ids
-    );
+);
 void OpenAPI_usage_monitoring_data_free(OpenAPI_usage_monitoring_data_t *usage_monitoring_data);
 OpenAPI_usage_monitoring_data_t *OpenAPI_usage_monitoring_data_parseFromJSON(cJSON *usage_monitoring_dataJSON);
 cJSON *OpenAPI_usage_monitoring_data_convertToJSON(OpenAPI_usage_monitoring_data_t *usage_monitoring_data);

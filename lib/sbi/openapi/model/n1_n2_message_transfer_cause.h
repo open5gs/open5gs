@@ -1,7 +1,7 @@
 /*
  * n1_n2_message_transfer_cause.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_n1_n2_message_transfer_cause_H_

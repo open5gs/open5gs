@@ -1,7 +1,7 @@
 /*
  * deregistration_reason.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_deregistration_reason_H_

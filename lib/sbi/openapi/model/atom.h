@@ -1,7 +1,7 @@
 /*
  * atom.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_atom_H_
@@ -28,7 +28,7 @@ OpenAPI_atom_t *OpenAPI_atom_create(
     char *attr,
     char *value,
     int negative
-    );
+);
 void OpenAPI_atom_free(OpenAPI_atom_t *atom);
 OpenAPI_atom_t *OpenAPI_atom_parseFromJSON(cJSON *atomJSON);
 cJSON *OpenAPI_atom_convertToJSON(OpenAPI_atom_t *atom);

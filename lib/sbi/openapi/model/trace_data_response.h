@@ -1,7 +1,7 @@
 /*
  * trace_data_response.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_trace_data_response_H_
@@ -27,7 +27,7 @@ typedef struct OpenAPI_trace_data_response_s {
 OpenAPI_trace_data_response_t *OpenAPI_trace_data_response_create(
     OpenAPI_trace_data_t *trace_data,
     char *shared_trace_data_id
-    );
+);
 void OpenAPI_trace_data_response_free(OpenAPI_trace_data_response_t *trace_data_response);
 OpenAPI_trace_data_response_t *OpenAPI_trace_data_response_parseFromJSON(cJSON *trace_data_responseJSON);
 cJSON *OpenAPI_trace_data_response_convertToJSON(OpenAPI_trace_data_response_t *trace_data_response);

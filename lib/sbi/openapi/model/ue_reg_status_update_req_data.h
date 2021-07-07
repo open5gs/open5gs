@@ -1,7 +1,7 @@
 /*
  * ue_reg_status_update_req_data.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_ue_reg_status_update_req_data_H_
@@ -32,7 +32,7 @@ OpenAPI_ue_reg_status_update_req_data_t *OpenAPI_ue_reg_status_update_req_data_c
     OpenAPI_list_t *to_release_session_list,
     int pcf_reselected_ind,
     OpenAPI_list_t *smf_change_info_list
-    );
+);
 void OpenAPI_ue_reg_status_update_req_data_free(OpenAPI_ue_reg_status_update_req_data_t *ue_reg_status_update_req_data);
 OpenAPI_ue_reg_status_update_req_data_t *OpenAPI_ue_reg_status_update_req_data_parseFromJSON(cJSON *ue_reg_status_update_req_dataJSON);
 cJSON *OpenAPI_ue_reg_status_update_req_data_convertToJSON(OpenAPI_ue_reg_status_update_req_data_t *ue_reg_status_update_req_data);

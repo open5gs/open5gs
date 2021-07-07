@@ -5,7 +5,7 @@
 #include "steering_container.h"
 
 OpenAPI_steering_container_t *OpenAPI_steering_container_create(
-    )
+)
 {
     OpenAPI_steering_container_t *steering_container_local_var = OpenAPI_malloc(sizeof(OpenAPI_steering_container_t));
     if (!steering_container_local_var) {
@@ -42,7 +42,7 @@ OpenAPI_steering_container_t *OpenAPI_steering_container_parseFromJSON(cJSON *st
 {
     OpenAPI_steering_container_t *steering_container_local_var = NULL;
     steering_container_local_var = OpenAPI_steering_container_create (
-        );
+    );
 
     return steering_container_local_var;
 end:

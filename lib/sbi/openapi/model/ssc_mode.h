@@ -1,7 +1,7 @@
 /*
  * ssc_mode.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_ssc_mode_H_

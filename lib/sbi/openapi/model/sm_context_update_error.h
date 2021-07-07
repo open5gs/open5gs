@@ -1,7 +1,7 @@
 /*
  * sm_context_update_error.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_sm_context_update_error_H_
@@ -38,7 +38,7 @@ OpenAPI_sm_context_update_error_t *OpenAPI_sm_context_update_error_create(
     OpenAPI_n2_sm_info_type_e n2_sm_info_type,
     OpenAPI_up_cnx_state_e up_cnx_state,
     char *recovery_time
-    );
+);
 void OpenAPI_sm_context_update_error_free(OpenAPI_sm_context_update_error_t *sm_context_update_error);
 OpenAPI_sm_context_update_error_t *OpenAPI_sm_context_update_error_parseFromJSON(cJSON *sm_context_update_errorJSON);
 cJSON *OpenAPI_sm_context_update_error_convertToJSON(OpenAPI_sm_context_update_error_t *sm_context_update_error);

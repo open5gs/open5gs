@@ -1,7 +1,7 @@
 /*
  * sign.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_sign_H_

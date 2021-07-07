@@ -1,7 +1,7 @@
 /*
  * qos_monitoring_data.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_qos_monitoring_data_H_
@@ -44,7 +44,7 @@ OpenAPI_qos_monitoring_data_t *OpenAPI_qos_monitoring_data_create(
     int rep_period,
     char *notify_uri,
     char *notify_corre_id
-    );
+);
 void OpenAPI_qos_monitoring_data_free(OpenAPI_qos_monitoring_data_t *qos_monitoring_data);
 OpenAPI_qos_monitoring_data_t *OpenAPI_qos_monitoring_data_parseFromJSON(cJSON *qos_monitoring_dataJSON);
 cJSON *OpenAPI_qos_monitoring_data_convertToJSON(OpenAPI_qos_monitoring_data_t *qos_monitoring_data);

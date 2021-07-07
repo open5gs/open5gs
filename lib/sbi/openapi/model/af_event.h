@@ -1,7 +1,7 @@
 /*
  * af_event.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_af_event_H_
@@ -17,16 +17,11 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_af_event_s OpenAPI_af_event_t;
-typedef struct OpenAPI_af_event_s {
-} OpenAPI_af_event_t;
+typedef enum { OpenAPI_af_event_NULL = 0, OpenAPI_af_event_SVC_EXPERIENCE, OpenAPI_af_event_UE_MOBILITY, OpenAPI_af_event_UE_COMM, OpenAPI_af_event_EXCEPTIONS } OpenAPI_af_event_e;
 
-OpenAPI_af_event_t *OpenAPI_af_event_create(
-    );
-void OpenAPI_af_event_free(OpenAPI_af_event_t *af_event);
-OpenAPI_af_event_t *OpenAPI_af_event_parseFromJSON(cJSON *af_eventJSON);
-cJSON *OpenAPI_af_event_convertToJSON(OpenAPI_af_event_t *af_event);
-OpenAPI_af_event_t *OpenAPI_af_event_copy(OpenAPI_af_event_t *dst, OpenAPI_af_event_t *src);
+char* OpenAPI_af_event_ToString(OpenAPI_af_event_e af_event);
+
+OpenAPI_af_event_e OpenAPI_af_event_FromString(char* af_event);
 
 #ifdef __cplusplus
 }

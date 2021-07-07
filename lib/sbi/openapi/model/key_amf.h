@@ -1,7 +1,7 @@
 /*
  * key_amf.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_key_amf_H_
@@ -27,7 +27,7 @@ typedef struct OpenAPI_key_amf_s {
 OpenAPI_key_amf_t *OpenAPI_key_amf_create(
     OpenAPI_key_amf_type_e key_type,
     char *key_val
-    );
+);
 void OpenAPI_key_amf_free(OpenAPI_key_amf_t *key_amf);
 OpenAPI_key_amf_t *OpenAPI_key_amf_parseFromJSON(cJSON *key_amfJSON);
 cJSON *OpenAPI_key_amf_convertToJSON(OpenAPI_key_amf_t *key_amf);

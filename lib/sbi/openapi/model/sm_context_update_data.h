@@ -1,7 +1,7 @@
 /*
  * sm_context_update_data.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_sm_context_update_data_H_
@@ -143,7 +143,7 @@ OpenAPI_sm_context_update_data_t *OpenAPI_sm_context_update_data_create(
     char forwarding_f_teid,
     OpenAPI_list_t *forwarding_bearer_contexts,
     OpenAPI_ddn_failure_subs_t *ddn_failure_subs
-    );
+);
 void OpenAPI_sm_context_update_data_free(OpenAPI_sm_context_update_data_t *sm_context_update_data);
 OpenAPI_sm_context_update_data_t *OpenAPI_sm_context_update_data_parseFromJSON(cJSON *sm_context_update_dataJSON);
 cJSON *OpenAPI_sm_context_update_data_convertToJSON(OpenAPI_sm_context_update_data_t *sm_context_update_data);

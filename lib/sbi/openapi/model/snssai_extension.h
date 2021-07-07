@@ -27,7 +27,7 @@ typedef struct OpenAPI_snssai_extension_s {
 OpenAPI_snssai_extension_t *OpenAPI_snssai_extension_create(
     OpenAPI_list_t *sd_ranges,
     int wildcard_sd
-    );
+);
 void OpenAPI_snssai_extension_free(OpenAPI_snssai_extension_t *snssai_extension);
 OpenAPI_snssai_extension_t *OpenAPI_snssai_extension_parseFromJSON(cJSON *snssai_extensionJSON);
 cJSON *OpenAPI_snssai_extension_convertToJSON(OpenAPI_snssai_extension_t *snssai_extension);

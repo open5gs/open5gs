@@ -1,7 +1,7 @@
 /*
  * eps_bearer_info.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_eps_bearer_info_H_
@@ -28,7 +28,7 @@ OpenAPI_eps_bearer_info_t *OpenAPI_eps_bearer_info_create(
     int ebi,
     char pgw_s8u_fteid,
     char bearer_level_qo_s
-    );
+);
 void OpenAPI_eps_bearer_info_free(OpenAPI_eps_bearer_info_t *eps_bearer_info);
 OpenAPI_eps_bearer_info_t *OpenAPI_eps_bearer_info_parseFromJSON(cJSON *eps_bearer_infoJSON);
 cJSON *OpenAPI_eps_bearer_info_convertToJSON(OpenAPI_eps_bearer_info_t *eps_bearer_info);

@@ -1,7 +1,7 @@
 /*
  * up_security_info.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_up_security_info_H_
@@ -33,7 +33,7 @@ OpenAPI_up_security_info_t *OpenAPI_up_security_info_create(
     OpenAPI_max_integrity_protected_data_rate_e max_integrity_protected_data_rate_ul,
     OpenAPI_max_integrity_protected_data_rate_e max_integrity_protected_data_rate_dl,
     OpenAPI_security_result_t *security_result
-    );
+);
 void OpenAPI_up_security_info_free(OpenAPI_up_security_info_t *up_security_info);
 OpenAPI_up_security_info_t *OpenAPI_up_security_info_parseFromJSON(cJSON *up_security_infoJSON);
 cJSON *OpenAPI_up_security_info_convertToJSON(OpenAPI_up_security_info_t *up_security_info);

@@ -1,7 +1,7 @@
 /*
  * loss_connectivity_cfg.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_loss_connectivity_cfg_H_
@@ -24,7 +24,7 @@ typedef struct OpenAPI_loss_connectivity_cfg_s {
 
 OpenAPI_loss_connectivity_cfg_t *OpenAPI_loss_connectivity_cfg_create(
     int max_detection_time
-    );
+);
 void OpenAPI_loss_connectivity_cfg_free(OpenAPI_loss_connectivity_cfg_t *loss_connectivity_cfg);
 OpenAPI_loss_connectivity_cfg_t *OpenAPI_loss_connectivity_cfg_parseFromJSON(cJSON *loss_connectivity_cfgJSON);
 cJSON *OpenAPI_loss_connectivity_cfg_convertToJSON(OpenAPI_loss_connectivity_cfg_t *loss_connectivity_cfg);

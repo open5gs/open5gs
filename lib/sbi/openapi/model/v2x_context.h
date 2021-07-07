@@ -1,7 +1,7 @@
 /*
  * v2x_context.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_v2x_context_H_
@@ -35,7 +35,7 @@ OpenAPI_v2x_context_t *OpenAPI_v2x_context_create(
     char *nr_ue_sidelink_ambr,
     char *lte_ue_sidelink_ambr,
     OpenAPI_pc5_qo_s_para_t *pc5_qo_s_para
-    );
+);
 void OpenAPI_v2x_context_free(OpenAPI_v2x_context_t *v2x_context);
 OpenAPI_v2x_context_t *OpenAPI_v2x_context_parseFromJSON(cJSON *v2x_contextJSON);
 cJSON *OpenAPI_v2x_context_convertToJSON(OpenAPI_v2x_context_t *v2x_context);

@@ -1,7 +1,7 @@
 /*
  * redirect_information.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_redirect_information_H_
@@ -29,7 +29,7 @@ OpenAPI_redirect_information_t *OpenAPI_redirect_information_create(
     int redirect_enabled,
     OpenAPI_redirect_address_type_e redirect_address_type,
     char *redirect_server_address
-    );
+);
 void OpenAPI_redirect_information_free(OpenAPI_redirect_information_t *redirect_information);
 OpenAPI_redirect_information_t *OpenAPI_redirect_information_parseFromJSON(cJSON *redirect_informationJSON);
 cJSON *OpenAPI_redirect_information_convertToJSON(OpenAPI_redirect_information_t *redirect_information);

@@ -1,7 +1,7 @@
 /*
  * civic_address.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_civic_address_H_
@@ -50,6 +50,9 @@ typedef struct OpenAPI_civic_address_s {
     char *rdsubbr;
     char *prm;
     char *pom;
+    char *usage_rules;
+    char *method;
+    char *provided_by;
 } OpenAPI_civic_address_t;
 
 OpenAPI_civic_address_t *OpenAPI_civic_address_create(
@@ -83,8 +86,11 @@ OpenAPI_civic_address_t *OpenAPI_civic_address_create(
     char *rdbr,
     char *rdsubbr,
     char *prm,
-    char *pom
-    );
+    char *pom,
+    char *usage_rules,
+    char *method,
+    char *provided_by
+);
 void OpenAPI_civic_address_free(OpenAPI_civic_address_t *civic_address);
 OpenAPI_civic_address_t *OpenAPI_civic_address_parseFromJSON(cJSON *civic_addressJSON);
 cJSON *OpenAPI_civic_address_convertToJSON(OpenAPI_civic_address_t *civic_address);

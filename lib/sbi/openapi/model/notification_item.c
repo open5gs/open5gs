@@ -7,7 +7,7 @@
 OpenAPI_notification_item_t *OpenAPI_notification_item_create(
     char *resource_id,
     OpenAPI_list_t *notif_items
-    )
+)
 {
     OpenAPI_notification_item_t *notification_item_local_var = OpenAPI_malloc(sizeof(OpenAPI_notification_item_t));
     if (!notification_item_local_var) {
@@ -79,7 +79,7 @@ OpenAPI_notification_item_t *OpenAPI_notification_item_parseFromJSON(cJSON *noti
         goto end;
     }
 
-
+    
     if (!cJSON_IsString(resource_id)) {
         ogs_error("OpenAPI_notification_item_parseFromJSON() failed [resource_id]");
         goto end;
@@ -92,9 +92,9 @@ OpenAPI_notification_item_t *OpenAPI_notification_item_parseFromJSON(cJSON *noti
     }
 
     OpenAPI_list_t *notif_itemsList;
-
+    
     cJSON *notif_items_local_nonprimitive;
-    if (!cJSON_IsArray(notif_items)) {
+    if (!cJSON_IsArray(notif_items)){
         ogs_error("OpenAPI_notification_item_parseFromJSON() failed [notif_items]");
         goto end;
     }
@@ -114,7 +114,7 @@ OpenAPI_notification_item_t *OpenAPI_notification_item_parseFromJSON(cJSON *noti
     notification_item_local_var = OpenAPI_notification_item_create (
         ogs_strdup_or_assert(resource_id->valuestring),
         notif_itemsList
-        );
+    );
 
     return notification_item_local_var;
 end:

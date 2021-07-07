@@ -8,7 +8,7 @@ OpenAPI_point_uncertainty_ellipse_all_of_t *OpenAPI_point_uncertainty_ellipse_al
     OpenAPI_geographical_coordinates_t *point,
     OpenAPI_uncertainty_ellipse_t *uncertainty_ellipse,
     int confidence
-    )
+)
 {
     OpenAPI_point_uncertainty_ellipse_all_of_t *point_uncertainty_ellipse_all_of_local_var = OpenAPI_malloc(sizeof(OpenAPI_point_uncertainty_ellipse_all_of_t));
     if (!point_uncertainty_ellipse_all_of_local_var) {
@@ -83,7 +83,7 @@ OpenAPI_point_uncertainty_ellipse_all_of_t *OpenAPI_point_uncertainty_ellipse_al
     }
 
     OpenAPI_geographical_coordinates_t *point_local_nonprim = NULL;
-
+    
     point_local_nonprim = OpenAPI_geographical_coordinates_parseFromJSON(point);
 
     cJSON *uncertainty_ellipse = cJSON_GetObjectItemCaseSensitive(point_uncertainty_ellipse_all_ofJSON, "uncertaintyEllipse");
@@ -93,7 +93,7 @@ OpenAPI_point_uncertainty_ellipse_all_of_t *OpenAPI_point_uncertainty_ellipse_al
     }
 
     OpenAPI_uncertainty_ellipse_t *uncertainty_ellipse_local_nonprim = NULL;
-
+    
     uncertainty_ellipse_local_nonprim = OpenAPI_uncertainty_ellipse_parseFromJSON(uncertainty_ellipse);
 
     cJSON *confidence = cJSON_GetObjectItemCaseSensitive(point_uncertainty_ellipse_all_ofJSON, "confidence");
@@ -102,7 +102,7 @@ OpenAPI_point_uncertainty_ellipse_all_of_t *OpenAPI_point_uncertainty_ellipse_al
         goto end;
     }
 
-
+    
     if (!cJSON_IsNumber(confidence)) {
         ogs_error("OpenAPI_point_uncertainty_ellipse_all_of_parseFromJSON() failed [confidence]");
         goto end;
@@ -112,7 +112,7 @@ OpenAPI_point_uncertainty_ellipse_all_of_t *OpenAPI_point_uncertainty_ellipse_al
         point_local_nonprim,
         uncertainty_ellipse_local_nonprim,
         confidence->valuedouble
-        );
+    );
 
     return point_uncertainty_ellipse_all_of_local_var;
 end:

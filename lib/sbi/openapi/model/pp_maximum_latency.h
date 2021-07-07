@@ -1,7 +1,7 @@
 /*
  * pp_maximum_latency.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_pp_maximum_latency_H_
@@ -32,7 +32,7 @@ OpenAPI_pp_maximum_latency_t *OpenAPI_pp_maximum_latency_create(
     int reference_id,
     char *validity_time,
     char *mtc_provider_information
-    );
+);
 void OpenAPI_pp_maximum_latency_free(OpenAPI_pp_maximum_latency_t *pp_maximum_latency);
 OpenAPI_pp_maximum_latency_t *OpenAPI_pp_maximum_latency_parseFromJSON(cJSON *pp_maximum_latencyJSON);
 cJSON *OpenAPI_pp_maximum_latency_convertToJSON(OpenAPI_pp_maximum_latency_t *pp_maximum_latency);

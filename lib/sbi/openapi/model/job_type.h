@@ -1,7 +1,7 @@
 /*
  * job_type.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_job_type_H_

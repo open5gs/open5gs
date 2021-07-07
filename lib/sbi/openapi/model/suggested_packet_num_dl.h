@@ -1,7 +1,7 @@
 /*
  * suggested_packet_num_dl.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_suggested_packet_num_dl_H_
@@ -26,7 +26,7 @@ typedef struct OpenAPI_suggested_packet_num_dl_s {
 OpenAPI_suggested_packet_num_dl_t *OpenAPI_suggested_packet_num_dl_create(
     int suggested_packet_num_dl,
     char *validity_time
-    );
+);
 void OpenAPI_suggested_packet_num_dl_free(OpenAPI_suggested_packet_num_dl_t *suggested_packet_num_dl);
 OpenAPI_suggested_packet_num_dl_t *OpenAPI_suggested_packet_num_dl_parseFromJSON(cJSON *suggested_packet_num_dlJSON);
 cJSON *OpenAPI_suggested_packet_num_dl_convertToJSON(OpenAPI_suggested_packet_num_dl_t *suggested_packet_num_dl);

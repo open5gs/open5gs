@@ -1,7 +1,7 @@
 /*
  * smf_registration.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_smf_registration_H_
@@ -56,7 +56,7 @@ OpenAPI_smf_registration_t *OpenAPI_smf_registration_create(
     OpenAPI_registration_reason_e registration_reason,
     char *registration_time,
     OpenAPI_context_info_t *context_info
-    );
+);
 void OpenAPI_smf_registration_free(OpenAPI_smf_registration_t *smf_registration);
 OpenAPI_smf_registration_t *OpenAPI_smf_registration_parseFromJSON(cJSON *smf_registrationJSON);
 cJSON *OpenAPI_smf_registration_convertToJSON(OpenAPI_smf_registration_t *smf_registration);

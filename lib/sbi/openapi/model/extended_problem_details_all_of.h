@@ -1,7 +1,7 @@
 /*
  * extended_problem_details_all_of.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_extended_problem_details_all_of_H_
@@ -25,7 +25,7 @@ typedef struct OpenAPI_extended_problem_details_all_of_s {
 
 OpenAPI_extended_problem_details_all_of_t *OpenAPI_extended_problem_details_all_of_create(
     OpenAPI_acceptable_service_info_t *acceptable_serv_info
-    );
+);
 void OpenAPI_extended_problem_details_all_of_free(OpenAPI_extended_problem_details_all_of_t *extended_problem_details_all_of);
 OpenAPI_extended_problem_details_all_of_t *OpenAPI_extended_problem_details_all_of_parseFromJSON(cJSON *extended_problem_details_all_ofJSON);
 cJSON *OpenAPI_extended_problem_details_all_of_convertToJSON(OpenAPI_extended_problem_details_all_of_t *extended_problem_details_all_of);

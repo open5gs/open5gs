@@ -4,82 +4,27 @@
 #include <stdio.h>
 #include "up_interface_type.h"
 
-OpenAPI_up_interface_type_t *OpenAPI_up_interface_type_create(
-    )
+char* OpenAPI_up_interface_type_ToString(OpenAPI_up_interface_type_e up_interface_type)
 {
-    OpenAPI_up_interface_type_t *up_interface_type_local_var = OpenAPI_malloc(sizeof(OpenAPI_up_interface_type_t));
-    if (!up_interface_type_local_var) {
-        return NULL;
-    }
-
-    return up_interface_type_local_var;
+    const char *up_interface_typeArray[] =  { "NULL", "N3", "N6", "N9", "DATA_FORWARDING" };
+    size_t sizeofArray = sizeof(up_interface_typeArray) / sizeof(up_interface_typeArray[0]);
+    if (up_interface_type < sizeofArray)
+        return (char *)up_interface_typeArray[up_interface_type];
+    else
+        return (char *)"Unknown";
 }
 
-void OpenAPI_up_interface_type_free(OpenAPI_up_interface_type_t *up_interface_type)
+OpenAPI_up_interface_type_e OpenAPI_up_interface_type_FromString(char* up_interface_type)
 {
-    if (NULL == up_interface_type) {
-        return;
+    int stringToReturn = 0;
+    const char *up_interface_typeArray[] =  { "NULL", "N3", "N6", "N9", "DATA_FORWARDING" };
+    size_t sizeofArray = sizeof(up_interface_typeArray) / sizeof(up_interface_typeArray[0]);
+    while (stringToReturn < sizeofArray) {
+        if (strcmp(up_interface_type, up_interface_typeArray[stringToReturn]) == 0) {
+            return stringToReturn;
+        }
+        stringToReturn++;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(up_interface_type);
-}
-
-cJSON *OpenAPI_up_interface_type_convertToJSON(OpenAPI_up_interface_type_t *up_interface_type)
-{
-    cJSON *item = NULL;
-
-    if (up_interface_type == NULL) {
-        ogs_error("OpenAPI_up_interface_type_convertToJSON() failed [UPInterfaceType]");
-        return NULL;
-    }
-
-    item = cJSON_CreateObject();
-end:
-    return item;
-}
-
-OpenAPI_up_interface_type_t *OpenAPI_up_interface_type_parseFromJSON(cJSON *up_interface_typeJSON)
-{
-    OpenAPI_up_interface_type_t *up_interface_type_local_var = NULL;
-    up_interface_type_local_var = OpenAPI_up_interface_type_create (
-        );
-
-    return up_interface_type_local_var;
-end:
-    return NULL;
-}
-
-OpenAPI_up_interface_type_t *OpenAPI_up_interface_type_copy(OpenAPI_up_interface_type_t *dst, OpenAPI_up_interface_type_t *src)
-{
-    cJSON *item = NULL;
-    char *content = NULL;
-
-    ogs_assert(src);
-    item = OpenAPI_up_interface_type_convertToJSON(src);
-    if (!item) {
-        ogs_error("OpenAPI_up_interface_type_convertToJSON() failed");
-        return NULL;
-    }
-
-    content = cJSON_Print(item);
-    cJSON_Delete(item);
-
-    if (!content) {
-        ogs_error("cJSON_Print() failed");
-        return NULL;
-    }
-
-    item = cJSON_Parse(content);
-    ogs_free(content);
-    if (!item) {
-        ogs_error("cJSON_Parse() failed");
-        return NULL;
-    }
-
-    OpenAPI_up_interface_type_free(dst);
-    dst = OpenAPI_up_interface_type_parseFromJSON(item);
-    cJSON_Delete(item);
-
-    return dst;
+    return 0;
 }
 

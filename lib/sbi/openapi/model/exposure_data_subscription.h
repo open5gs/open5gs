@@ -1,7 +1,7 @@
 /*
  * exposure_data_subscription.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_exposure_data_subscription_H_
@@ -30,7 +30,7 @@ OpenAPI_exposure_data_subscription_t *OpenAPI_exposure_data_subscription_create(
     OpenAPI_list_t *monitored_resource_uris,
     char *expiry,
     char *supported_features
-    );
+);
 void OpenAPI_exposure_data_subscription_free(OpenAPI_exposure_data_subscription_t *exposure_data_subscription);
 OpenAPI_exposure_data_subscription_t *OpenAPI_exposure_data_subscription_parseFromJSON(cJSON *exposure_data_subscriptionJSON);
 cJSON *OpenAPI_exposure_data_subscription_convertToJSON(OpenAPI_exposure_data_subscription_t *exposure_data_subscription);

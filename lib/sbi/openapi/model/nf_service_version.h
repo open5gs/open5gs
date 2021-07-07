@@ -28,7 +28,7 @@ OpenAPI_nf_service_version_t *OpenAPI_nf_service_version_create(
     char *api_version_in_uri,
     char *api_full_version,
     char *expiry
-    );
+);
 void OpenAPI_nf_service_version_free(OpenAPI_nf_service_version_t *nf_service_version);
 OpenAPI_nf_service_version_t *OpenAPI_nf_service_version_parseFromJSON(cJSON *nf_service_versionJSON);
 cJSON *OpenAPI_nf_service_version_convertToJSON(OpenAPI_nf_service_version_t *nf_service_version);

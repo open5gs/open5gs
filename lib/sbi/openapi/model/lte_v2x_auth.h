@@ -1,7 +1,7 @@
 /*
  * lte_v2x_auth.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_lte_v2x_auth_H_
@@ -27,7 +27,7 @@ typedef struct OpenAPI_lte_v2x_auth_s {
 OpenAPI_lte_v2x_auth_t *OpenAPI_lte_v2x_auth_create(
     OpenAPI_ue_auth_e vehicle_ue_auth,
     OpenAPI_ue_auth_e pedestrian_ue_auth
-    );
+);
 void OpenAPI_lte_v2x_auth_free(OpenAPI_lte_v2x_auth_t *lte_v2x_auth);
 OpenAPI_lte_v2x_auth_t *OpenAPI_lte_v2x_auth_parseFromJSON(cJSON *lte_v2x_authJSON);
 cJSON *OpenAPI_lte_v2x_auth_convertToJSON(OpenAPI_lte_v2x_auth_t *lte_v2x_auth);

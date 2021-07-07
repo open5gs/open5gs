@@ -24,7 +24,7 @@ typedef struct OpenAPI_sponsor_connectivity_data_s {
 
 OpenAPI_sponsor_connectivity_data_t *OpenAPI_sponsor_connectivity_data_create(
     OpenAPI_list_t *asp_ids
-    );
+);
 void OpenAPI_sponsor_connectivity_data_free(OpenAPI_sponsor_connectivity_data_t *sponsor_connectivity_data);
 OpenAPI_sponsor_connectivity_data_t *OpenAPI_sponsor_connectivity_data_parseFromJSON(cJSON *sponsor_connectivity_dataJSON);
 cJSON *OpenAPI_sponsor_connectivity_data_convertToJSON(OpenAPI_sponsor_connectivity_data_t *sponsor_connectivity_data);

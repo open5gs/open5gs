@@ -1,7 +1,7 @@
 /*
  * nssai.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_nssai_H_
@@ -34,7 +34,7 @@ OpenAPI_nssai_t *OpenAPI_nssai_create(
     OpenAPI_list_t *single_nssais,
     char *provisioning_time,
     OpenAPI_list_t* additional_snssai_data
-    );
+);
 void OpenAPI_nssai_free(OpenAPI_nssai_t *nssai);
 OpenAPI_nssai_t *OpenAPI_nssai_parseFromJSON(cJSON *nssaiJSON);
 cJSON *OpenAPI_nssai_convertToJSON(OpenAPI_nssai_t *nssai);

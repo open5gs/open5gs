@@ -1,7 +1,7 @@
 /*
  * non_ue_n2_info_subscription_create_data.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_non_ue_n2_info_subscription_create_data_H_
@@ -37,7 +37,7 @@ OpenAPI_non_ue_n2_info_subscription_create_data_t *OpenAPI_non_ue_n2_info_subscr
     char *n2_notify_callback_uri,
     char *nf_id,
     char *supported_features
-    );
+);
 void OpenAPI_non_ue_n2_info_subscription_create_data_free(OpenAPI_non_ue_n2_info_subscription_create_data_t *non_ue_n2_info_subscription_create_data);
 OpenAPI_non_ue_n2_info_subscription_create_data_t *OpenAPI_non_ue_n2_info_subscription_create_data_parseFromJSON(cJSON *non_ue_n2_info_subscription_create_dataJSON);
 cJSON *OpenAPI_non_ue_n2_info_subscription_create_data_convertToJSON(OpenAPI_non_ue_n2_info_subscription_create_data_t *non_ue_n2_info_subscription_create_data);
