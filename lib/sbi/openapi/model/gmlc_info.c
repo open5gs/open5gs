@@ -88,7 +88,7 @@ OpenAPI_gmlc_info_t *OpenAPI_gmlc_info_parseFromJSON(cJSON *gmlc_infoJSON)
 
         OpenAPI_list_add(serving_client_typesList, serving_client_typesItem);
     }
-}
+    }
 
     gmlc_info_local_var = OpenAPI_gmlc_info_create (
         serving_client_types ? serving_client_typesList : NULL

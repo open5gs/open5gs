@@ -108,7 +108,7 @@ OpenAPI_backup_amf_info_t *OpenAPI_backup_amf_info_parseFromJSON(cJSON *backup_a
 
         OpenAPI_list_add(guami_listList, guami_listItem);
     }
-}
+    }
 
     backup_amf_info_local_var = OpenAPI_backup_amf_info_create (
         ogs_strdup_or_assert(backup_amf->valuestring),

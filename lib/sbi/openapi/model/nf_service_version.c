@@ -98,7 +98,7 @@ OpenAPI_nf_service_version_t *OpenAPI_nf_service_version_parseFromJSON(cJSON *nf
         ogs_error("OpenAPI_nf_service_version_parseFromJSON() failed [expiry]");
         goto end;
     }
-}
+    }
 
     nf_service_version_local_var = OpenAPI_nf_service_version_create (
         ogs_strdup_or_assert(api_version_in_uri->valuestring),

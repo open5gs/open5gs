@@ -57,7 +57,7 @@ OpenAPI_qos_monitoring_info_t *OpenAPI_qos_monitoring_info_parseFromJSON(cJSON *
         ogs_error("OpenAPI_qos_monitoring_info_parseFromJSON() failed [qos_monitoring_ind]");
         goto end;
     }
-}
+    }
 
     qos_monitoring_info_local_var = OpenAPI_qos_monitoring_info_create (
         qos_monitoring_ind ? qos_monitoring_ind->valueint : 0

@@ -163,7 +163,7 @@ OpenAPI_service_type_unrelated_class_1_t *OpenAPI_service_type_unrelated_class_1
 
         OpenAPI_list_add(allowed_geographic_areaList, allowed_geographic_areaItem);
     }
-}
+    }
 
     cJSON *privacy_check_related_action = cJSON_GetObjectItemCaseSensitive(service_type_unrelated_class_1JSON, "privacyCheckRelatedAction");
 
@@ -174,7 +174,7 @@ OpenAPI_service_type_unrelated_class_1_t *OpenAPI_service_type_unrelated_class_1
         goto end;
     }
     privacy_check_related_actionVariable = OpenAPI_privacy_check_related_action_FromString(privacy_check_related_action->valuestring);
-}
+    }
 
     cJSON *code_word_ind = cJSON_GetObjectItemCaseSensitive(service_type_unrelated_class_1JSON, "codeWordInd");
 
@@ -185,14 +185,14 @@ OpenAPI_service_type_unrelated_class_1_t *OpenAPI_service_type_unrelated_class_1
         goto end;
     }
     code_word_indVariable = OpenAPI_code_word_ind_FromString(code_word_ind->valuestring);
-}
+    }
 
     cJSON *valid_time_period = cJSON_GetObjectItemCaseSensitive(service_type_unrelated_class_1JSON, "validTimePeriod");
 
     OpenAPI_valid_time_period_1_t *valid_time_period_local_nonprim = NULL;
     if (valid_time_period) { 
     valid_time_period_local_nonprim = OpenAPI_valid_time_period_1_parseFromJSON(valid_time_period);
-}
+    }
 
     cJSON *code_word_list = cJSON_GetObjectItemCaseSensitive(service_type_unrelated_class_1JSON, "codeWordList");
 
@@ -212,7 +212,7 @@ OpenAPI_service_type_unrelated_class_1_t *OpenAPI_service_type_unrelated_class_1
     }
     OpenAPI_list_add(code_word_listList , ogs_strdup_or_assert(code_word_list_local->valuestring));
                     }
-}
+    }
 
     service_type_unrelated_class_1_local_var = OpenAPI_service_type_unrelated_class_1_create (
         service_type->valuedouble,

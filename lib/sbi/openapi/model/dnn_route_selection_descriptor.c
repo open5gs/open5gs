@@ -126,7 +126,7 @@ OpenAPI_dnn_route_selection_descriptor_t *OpenAPI_dnn_route_selection_descriptor
 
         OpenAPI_list_add(ssc_modesList, (void *)OpenAPI_ssc_mode_FromString(ssc_modes_local_nonprimitive->valuestring));
     }
-}
+    }
 
     cJSON *pdu_sess_types = cJSON_GetObjectItemCaseSensitive(dnn_route_selection_descriptorJSON, "pduSessTypes");
 
@@ -148,7 +148,7 @@ OpenAPI_dnn_route_selection_descriptor_t *OpenAPI_dnn_route_selection_descriptor
 
         OpenAPI_list_add(pdu_sess_typesList, (void *)OpenAPI_pdu_session_type_FromString(pdu_sess_types_local_nonprimitive->valuestring));
     }
-}
+    }
 
     cJSON *atsss_info = cJSON_GetObjectItemCaseSensitive(dnn_route_selection_descriptorJSON, "atsssInfo");
 
@@ -157,7 +157,7 @@ OpenAPI_dnn_route_selection_descriptor_t *OpenAPI_dnn_route_selection_descriptor
         ogs_error("OpenAPI_dnn_route_selection_descriptor_parseFromJSON() failed [atsss_info]");
         goto end;
     }
-}
+    }
 
     dnn_route_selection_descriptor_local_var = OpenAPI_dnn_route_selection_descriptor_create (
         ogs_strdup_or_assert(dnn->valuestring),

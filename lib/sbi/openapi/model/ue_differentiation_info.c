@@ -128,7 +128,7 @@ OpenAPI_ue_differentiation_info_t *OpenAPI_ue_differentiation_info_parseFromJSON
         goto end;
     }
     periodic_com_indVariable = OpenAPI_periodic_communication_indicator_FromString(periodic_com_ind->valuestring);
-}
+    }
 
     cJSON *periodic_time = cJSON_GetObjectItemCaseSensitive(ue_differentiation_infoJSON, "periodicTime");
 
@@ -137,14 +137,14 @@ OpenAPI_ue_differentiation_info_t *OpenAPI_ue_differentiation_info_parseFromJSON
         ogs_error("OpenAPI_ue_differentiation_info_parseFromJSON() failed [periodic_time]");
         goto end;
     }
-}
+    }
 
     cJSON *scheduled_com_time = cJSON_GetObjectItemCaseSensitive(ue_differentiation_infoJSON, "scheduledComTime");
 
     OpenAPI_scheduled_communication_time_t *scheduled_com_time_local_nonprim = NULL;
     if (scheduled_com_time) { 
     scheduled_com_time_local_nonprim = OpenAPI_scheduled_communication_time_parseFromJSON(scheduled_com_time);
-}
+    }
 
     cJSON *stationary_ind = cJSON_GetObjectItemCaseSensitive(ue_differentiation_infoJSON, "stationaryInd");
 
@@ -155,7 +155,7 @@ OpenAPI_ue_differentiation_info_t *OpenAPI_ue_differentiation_info_parseFromJSON
         goto end;
     }
     stationary_indVariable = OpenAPI_stationary_indication_FromString(stationary_ind->valuestring);
-}
+    }
 
     cJSON *traffic_profile = cJSON_GetObjectItemCaseSensitive(ue_differentiation_infoJSON, "trafficProfile");
 
@@ -166,14 +166,14 @@ OpenAPI_ue_differentiation_info_t *OpenAPI_ue_differentiation_info_parseFromJSON
         goto end;
     }
     traffic_profileVariable = OpenAPI_traffic_profile_FromString(traffic_profile->valuestring);
-}
+    }
 
     cJSON *battery_ind = cJSON_GetObjectItemCaseSensitive(ue_differentiation_infoJSON, "batteryInd");
 
     OpenAPI_battery_indication_t *battery_ind_local_nonprim = NULL;
     if (battery_ind) { 
     battery_ind_local_nonprim = OpenAPI_battery_indication_parseFromJSON(battery_ind);
-}
+    }
 
     cJSON *validity_time = cJSON_GetObjectItemCaseSensitive(ue_differentiation_infoJSON, "validityTime");
 
@@ -182,7 +182,7 @@ OpenAPI_ue_differentiation_info_t *OpenAPI_ue_differentiation_info_parseFromJSON
         ogs_error("OpenAPI_ue_differentiation_info_parseFromJSON() failed [validity_time]");
         goto end;
     }
-}
+    }
 
     ue_differentiation_info_local_var = OpenAPI_ue_differentiation_info_create (
         periodic_com_ind ? periodic_com_indVariable : 0,

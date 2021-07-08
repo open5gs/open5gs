@@ -97,7 +97,7 @@ OpenAPI_smf_selection_subscription_data_1_t *OpenAPI_smf_selection_subscription_
         ogs_error("OpenAPI_smf_selection_subscription_data_1_parseFromJSON() failed [supported_features]");
         goto end;
     }
-}
+    }
 
     cJSON *subscribed_snssai_infos = cJSON_GetObjectItemCaseSensitive(smf_selection_subscription_data_1JSON, "subscribedSnssaiInfos");
 
@@ -120,7 +120,7 @@ OpenAPI_smf_selection_subscription_data_1_t *OpenAPI_smf_selection_subscription_
             localMapObject->string, OpenAPI_snssai_info_parseFromJSON(localMapObject));
         OpenAPI_list_add(subscribed_snssai_infosList , localMapKeyPair);
     }
-}
+    }
 
     cJSON *shared_snssai_infos_id = cJSON_GetObjectItemCaseSensitive(smf_selection_subscription_data_1JSON, "sharedSnssaiInfosId");
 
@@ -129,7 +129,7 @@ OpenAPI_smf_selection_subscription_data_1_t *OpenAPI_smf_selection_subscription_
         ogs_error("OpenAPI_smf_selection_subscription_data_1_parseFromJSON() failed [shared_snssai_infos_id]");
         goto end;
     }
-}
+    }
 
     smf_selection_subscription_data_1_local_var = OpenAPI_smf_selection_subscription_data_1_create (
         supported_features ? ogs_strdup_or_assert(supported_features->valuestring) : NULL,

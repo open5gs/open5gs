@@ -169,7 +169,7 @@ OpenAPI_partial_success_report_t *OpenAPI_partial_success_report_parseFromJSON(c
 
         OpenAPI_list_add(rule_reportsList, rule_reportsItem);
     }
-}
+    }
 
     cJSON *sess_rule_reports = cJSON_GetObjectItemCaseSensitive(partial_success_reportJSON, "sessRuleReports");
 
@@ -192,14 +192,14 @@ OpenAPI_partial_success_report_t *OpenAPI_partial_success_report_parseFromJSON(c
 
         OpenAPI_list_add(sess_rule_reportsList, sess_rule_reportsItem);
     }
-}
+    }
 
     cJSON *ue_camping_rep = cJSON_GetObjectItemCaseSensitive(partial_success_reportJSON, "ueCampingRep");
 
     OpenAPI_ue_camping_rep_t *ue_camping_rep_local_nonprim = NULL;
     if (ue_camping_rep) { 
     ue_camping_rep_local_nonprim = OpenAPI_ue_camping_rep_parseFromJSON(ue_camping_rep);
-}
+    }
 
     cJSON *policy_dec_failure_reports = cJSON_GetObjectItemCaseSensitive(partial_success_reportJSON, "policyDecFailureReports");
 
@@ -221,7 +221,7 @@ OpenAPI_partial_success_report_t *OpenAPI_partial_success_report_parseFromJSON(c
 
         OpenAPI_list_add(policy_dec_failure_reportsList, (void *)OpenAPI_policy_decision_failure_code_FromString(policy_dec_failure_reports_local_nonprimitive->valuestring));
     }
-}
+    }
 
     partial_success_report_local_var = OpenAPI_partial_success_report_create (
         failure_causeVariable,

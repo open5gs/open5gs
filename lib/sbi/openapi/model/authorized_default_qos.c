@@ -149,14 +149,14 @@ OpenAPI_authorized_default_qos_t *OpenAPI_authorized_default_qos_parseFromJSON(c
         ogs_error("OpenAPI_authorized_default_qos_parseFromJSON() failed [_5qi]");
         goto end;
     }
-}
+    }
 
     cJSON *arp = cJSON_GetObjectItemCaseSensitive(authorized_default_qosJSON, "arp");
 
     OpenAPI_arp_t *arp_local_nonprim = NULL;
     if (arp) { 
     arp_local_nonprim = OpenAPI_arp_parseFromJSON(arp);
-}
+    }
 
     cJSON *priority_level = cJSON_GetObjectItemCaseSensitive(authorized_default_qosJSON, "priorityLevel");
 
@@ -165,7 +165,7 @@ OpenAPI_authorized_default_qos_t *OpenAPI_authorized_default_qos_parseFromJSON(c
         ogs_error("OpenAPI_authorized_default_qos_parseFromJSON() failed [priority_level]");
         goto end;
     }
-}
+    }
 
     cJSON *aver_window = cJSON_GetObjectItemCaseSensitive(authorized_default_qosJSON, "averWindow");
 
@@ -174,7 +174,7 @@ OpenAPI_authorized_default_qos_t *OpenAPI_authorized_default_qos_parseFromJSON(c
         ogs_error("OpenAPI_authorized_default_qos_parseFromJSON() failed [aver_window]");
         goto end;
     }
-}
+    }
 
     cJSON *max_data_burst_vol = cJSON_GetObjectItemCaseSensitive(authorized_default_qosJSON, "maxDataBurstVol");
 
@@ -183,7 +183,7 @@ OpenAPI_authorized_default_qos_t *OpenAPI_authorized_default_qos_parseFromJSON(c
         ogs_error("OpenAPI_authorized_default_qos_parseFromJSON() failed [max_data_burst_vol]");
         goto end;
     }
-}
+    }
 
     cJSON *maxbr_ul = cJSON_GetObjectItemCaseSensitive(authorized_default_qosJSON, "maxbrUl");
 
@@ -192,7 +192,7 @@ OpenAPI_authorized_default_qos_t *OpenAPI_authorized_default_qos_parseFromJSON(c
         ogs_error("OpenAPI_authorized_default_qos_parseFromJSON() failed [maxbr_ul]");
         goto end;
     }
-}
+    }
 
     cJSON *maxbr_dl = cJSON_GetObjectItemCaseSensitive(authorized_default_qosJSON, "maxbrDl");
 
@@ -201,7 +201,7 @@ OpenAPI_authorized_default_qos_t *OpenAPI_authorized_default_qos_parseFromJSON(c
         ogs_error("OpenAPI_authorized_default_qos_parseFromJSON() failed [maxbr_dl]");
         goto end;
     }
-}
+    }
 
     cJSON *gbr_ul = cJSON_GetObjectItemCaseSensitive(authorized_default_qosJSON, "gbrUl");
 
@@ -210,7 +210,7 @@ OpenAPI_authorized_default_qos_t *OpenAPI_authorized_default_qos_parseFromJSON(c
         ogs_error("OpenAPI_authorized_default_qos_parseFromJSON() failed [gbr_ul]");
         goto end;
     }
-}
+    }
 
     cJSON *gbr_dl = cJSON_GetObjectItemCaseSensitive(authorized_default_qosJSON, "gbrDl");
 
@@ -219,7 +219,7 @@ OpenAPI_authorized_default_qos_t *OpenAPI_authorized_default_qos_parseFromJSON(c
         ogs_error("OpenAPI_authorized_default_qos_parseFromJSON() failed [gbr_dl]");
         goto end;
     }
-}
+    }
 
     cJSON *ext_max_data_burst_vol = cJSON_GetObjectItemCaseSensitive(authorized_default_qosJSON, "extMaxDataBurstVol");
 
@@ -228,7 +228,7 @@ OpenAPI_authorized_default_qos_t *OpenAPI_authorized_default_qos_parseFromJSON(c
         ogs_error("OpenAPI_authorized_default_qos_parseFromJSON() failed [ext_max_data_burst_vol]");
         goto end;
     }
-}
+    }
 
     authorized_default_qos_local_var = OpenAPI_authorized_default_qos_create (
         _5qi ? _5qi->valuedouble : 0,

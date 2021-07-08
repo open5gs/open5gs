@@ -150,7 +150,7 @@ OpenAPI_af_routing_requirement_t *OpenAPI_af_routing_requirement_parseFromJSON(c
         ogs_error("OpenAPI_af_routing_requirement_parseFromJSON() failed [app_reloc]");
         goto end;
     }
-}
+    }
 
     cJSON *route_to_locs = cJSON_GetObjectItemCaseSensitive(af_routing_requirementJSON, "routeToLocs");
 
@@ -173,14 +173,14 @@ OpenAPI_af_routing_requirement_t *OpenAPI_af_routing_requirement_parseFromJSON(c
 
         OpenAPI_list_add(route_to_locsList, route_to_locsItem);
     }
-}
+    }
 
     cJSON *sp_val = cJSON_GetObjectItemCaseSensitive(af_routing_requirementJSON, "spVal");
 
     OpenAPI_spatial_validity_t *sp_val_local_nonprim = NULL;
     if (sp_val) { 
     sp_val_local_nonprim = OpenAPI_spatial_validity_parseFromJSON(sp_val);
-}
+    }
 
     cJSON *temp_vals = cJSON_GetObjectItemCaseSensitive(af_routing_requirementJSON, "tempVals");
 
@@ -203,14 +203,14 @@ OpenAPI_af_routing_requirement_t *OpenAPI_af_routing_requirement_parseFromJSON(c
 
         OpenAPI_list_add(temp_valsList, temp_valsItem);
     }
-}
+    }
 
     cJSON *up_path_chg_sub = cJSON_GetObjectItemCaseSensitive(af_routing_requirementJSON, "upPathChgSub");
 
     OpenAPI_up_path_chg_event_t *up_path_chg_sub_local_nonprim = NULL;
     if (up_path_chg_sub) { 
     up_path_chg_sub_local_nonprim = OpenAPI_up_path_chg_event_parseFromJSON(up_path_chg_sub);
-}
+    }
 
     cJSON *addr_preser_ind = cJSON_GetObjectItemCaseSensitive(af_routing_requirementJSON, "addrPreserInd");
 
@@ -219,7 +219,7 @@ OpenAPI_af_routing_requirement_t *OpenAPI_af_routing_requirement_parseFromJSON(c
         ogs_error("OpenAPI_af_routing_requirement_parseFromJSON() failed [addr_preser_ind]");
         goto end;
     }
-}
+    }
 
     af_routing_requirement_local_var = OpenAPI_af_routing_requirement_create (
         app_reloc ? app_reloc->valueint : 0,

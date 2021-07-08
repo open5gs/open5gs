@@ -154,7 +154,7 @@ OpenAPI_udr_info_t *OpenAPI_udr_info_parseFromJSON(cJSON *udr_infoJSON)
         ogs_error("OpenAPI_udr_info_parseFromJSON() failed [group_id]");
         goto end;
     }
-}
+    }
 
     cJSON *supi_ranges = cJSON_GetObjectItemCaseSensitive(udr_infoJSON, "supiRanges");
 
@@ -177,7 +177,7 @@ OpenAPI_udr_info_t *OpenAPI_udr_info_parseFromJSON(cJSON *udr_infoJSON)
 
         OpenAPI_list_add(supi_rangesList, supi_rangesItem);
     }
-}
+    }
 
     cJSON *gpsi_ranges = cJSON_GetObjectItemCaseSensitive(udr_infoJSON, "gpsiRanges");
 
@@ -200,7 +200,7 @@ OpenAPI_udr_info_t *OpenAPI_udr_info_parseFromJSON(cJSON *udr_infoJSON)
 
         OpenAPI_list_add(gpsi_rangesList, gpsi_rangesItem);
     }
-}
+    }
 
     cJSON *external_group_identifiers_ranges = cJSON_GetObjectItemCaseSensitive(udr_infoJSON, "externalGroupIdentifiersRanges");
 
@@ -223,7 +223,7 @@ OpenAPI_udr_info_t *OpenAPI_udr_info_parseFromJSON(cJSON *udr_infoJSON)
 
         OpenAPI_list_add(external_group_identifiers_rangesList, external_group_identifiers_rangesItem);
     }
-}
+    }
 
     cJSON *supported_data_sets = cJSON_GetObjectItemCaseSensitive(udr_infoJSON, "supportedDataSets");
 
@@ -245,7 +245,7 @@ OpenAPI_udr_info_t *OpenAPI_udr_info_parseFromJSON(cJSON *udr_infoJSON)
 
         OpenAPI_list_add(supported_data_setsList, (void *)OpenAPI_data_set_id_FromString(supported_data_sets_local_nonprimitive->valuestring));
     }
-}
+    }
 
     udr_info_local_var = OpenAPI_udr_info_create (
         group_id ? ogs_strdup_or_assert(group_id->valuestring) : NULL,

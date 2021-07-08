@@ -58,7 +58,7 @@ OpenAPI_options_response_t *OpenAPI_options_response_parseFromJSON(cJSON *option
         ogs_error("OpenAPI_options_response_parseFromJSON() failed [supported_features]");
         goto end;
     }
-}
+    }
 
     options_response_local_var = OpenAPI_options_response_create (
         supported_features ? ogs_strdup_or_assert(supported_features->valuestring) : NULL

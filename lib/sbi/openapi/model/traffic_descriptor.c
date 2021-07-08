@@ -100,14 +100,14 @@ OpenAPI_traffic_descriptor_t *OpenAPI_traffic_descriptor_parseFromJSON(cJSON *tr
         ogs_error("OpenAPI_traffic_descriptor_parseFromJSON() failed [dnn]");
         goto end;
     }
-}
+    }
 
     cJSON *s_nssai = cJSON_GetObjectItemCaseSensitive(traffic_descriptorJSON, "sNssai");
 
     OpenAPI_snssai_t *s_nssai_local_nonprim = NULL;
     if (s_nssai) { 
     s_nssai_local_nonprim = OpenAPI_snssai_parseFromJSON(s_nssai);
-}
+    }
 
     cJSON *ddd_traffic_descriptor_list = cJSON_GetObjectItemCaseSensitive(traffic_descriptorJSON, "dddTrafficDescriptorList");
 
@@ -130,7 +130,7 @@ OpenAPI_traffic_descriptor_t *OpenAPI_traffic_descriptor_parseFromJSON(cJSON *tr
 
         OpenAPI_list_add(ddd_traffic_descriptor_listList, ddd_traffic_descriptor_listItem);
     }
-}
+    }
 
     traffic_descriptor_local_var = OpenAPI_traffic_descriptor_create (
         dnn ? ogs_strdup_or_assert(dnn->valuestring) : NULL,

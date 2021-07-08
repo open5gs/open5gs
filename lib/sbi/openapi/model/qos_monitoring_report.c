@@ -154,7 +154,7 @@ OpenAPI_qos_monitoring_report_t *OpenAPI_qos_monitoring_report_parseFromJSON(cJS
 
         OpenAPI_list_add(flowsList, flowsItem);
     }
-}
+    }
 
     cJSON *ul_delays = cJSON_GetObjectItemCaseSensitive(qos_monitoring_reportJSON, "ulDelays");
 
@@ -174,7 +174,7 @@ OpenAPI_qos_monitoring_report_t *OpenAPI_qos_monitoring_report_parseFromJSON(cJS
     }
     OpenAPI_list_add(ul_delaysList , &ul_delays_local->valuedouble);
                     }
-}
+    }
 
     cJSON *dl_delays = cJSON_GetObjectItemCaseSensitive(qos_monitoring_reportJSON, "dlDelays");
 
@@ -194,7 +194,7 @@ OpenAPI_qos_monitoring_report_t *OpenAPI_qos_monitoring_report_parseFromJSON(cJS
     }
     OpenAPI_list_add(dl_delaysList , &dl_delays_local->valuedouble);
                     }
-}
+    }
 
     cJSON *rt_delays = cJSON_GetObjectItemCaseSensitive(qos_monitoring_reportJSON, "rtDelays");
 
@@ -214,7 +214,7 @@ OpenAPI_qos_monitoring_report_t *OpenAPI_qos_monitoring_report_parseFromJSON(cJS
     }
     OpenAPI_list_add(rt_delaysList , &rt_delays_local->valuedouble);
                     }
-}
+    }
 
     qos_monitoring_report_local_var = OpenAPI_qos_monitoring_report_create (
         flows ? flowsList : NULL,

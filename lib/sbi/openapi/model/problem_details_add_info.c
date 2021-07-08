@@ -57,7 +57,7 @@ OpenAPI_problem_details_add_info_t *OpenAPI_problem_details_add_info_parseFromJS
         ogs_error("OpenAPI_problem_details_add_info_parseFromJSON() failed [remote_error]");
         goto end;
     }
-}
+    }
 
     problem_details_add_info_local_var = OpenAPI_problem_details_add_info_create (
         remote_error ? remote_error->valueint : 0

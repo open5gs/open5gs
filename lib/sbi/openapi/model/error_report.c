@@ -142,7 +142,7 @@ OpenAPI_error_report_t *OpenAPI_error_report_parseFromJSON(cJSON *error_reportJS
     OpenAPI_problem_details_t *error_local_nonprim = NULL;
     if (error) { 
     error_local_nonprim = OpenAPI_problem_details_parseFromJSON(error);
-}
+    }
 
     cJSON *rule_reports = cJSON_GetObjectItemCaseSensitive(error_reportJSON, "ruleReports");
 
@@ -165,7 +165,7 @@ OpenAPI_error_report_t *OpenAPI_error_report_parseFromJSON(cJSON *error_reportJS
 
         OpenAPI_list_add(rule_reportsList, rule_reportsItem);
     }
-}
+    }
 
     cJSON *sess_rule_reports = cJSON_GetObjectItemCaseSensitive(error_reportJSON, "sessRuleReports");
 
@@ -188,7 +188,7 @@ OpenAPI_error_report_t *OpenAPI_error_report_parseFromJSON(cJSON *error_reportJS
 
         OpenAPI_list_add(sess_rule_reportsList, sess_rule_reportsItem);
     }
-}
+    }
 
     cJSON *pol_dec_failure_reports = cJSON_GetObjectItemCaseSensitive(error_reportJSON, "polDecFailureReports");
 
@@ -210,7 +210,7 @@ OpenAPI_error_report_t *OpenAPI_error_report_parseFromJSON(cJSON *error_reportJS
 
         OpenAPI_list_add(pol_dec_failure_reportsList, (void *)OpenAPI_policy_decision_failure_code_FromString(pol_dec_failure_reports_local_nonprimitive->valuestring));
     }
-}
+    }
 
     cJSON *alt_qos_param_id = cJSON_GetObjectItemCaseSensitive(error_reportJSON, "altQosParamId");
 
@@ -219,7 +219,7 @@ OpenAPI_error_report_t *OpenAPI_error_report_parseFromJSON(cJSON *error_reportJS
         ogs_error("OpenAPI_error_report_parseFromJSON() failed [alt_qos_param_id]");
         goto end;
     }
-}
+    }
 
     error_report_local_var = OpenAPI_error_report_create (
         error ? error_local_nonprim : NULL,

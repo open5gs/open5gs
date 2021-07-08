@@ -118,7 +118,7 @@ OpenAPI_up_path_chg_event_t *OpenAPI_up_path_chg_event_parseFromJSON(cJSON *up_p
         ogs_error("OpenAPI_up_path_chg_event_parseFromJSON() failed [af_ack_ind]");
         goto end;
     }
-}
+    }
 
     up_path_chg_event_local_var = OpenAPI_up_path_chg_event_create (
         ogs_strdup_or_assert(notification_uri->valuestring),

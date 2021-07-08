@@ -132,14 +132,14 @@ OpenAPI_flow_information_t *OpenAPI_flow_information_parseFromJSON(cJSON *flow_i
         ogs_error("OpenAPI_flow_information_parseFromJSON() failed [flow_description]");
         goto end;
     }
-}
+    }
 
     cJSON *eth_flow_description = cJSON_GetObjectItemCaseSensitive(flow_informationJSON, "ethFlowDescription");
 
     OpenAPI_eth_flow_description_t *eth_flow_description_local_nonprim = NULL;
     if (eth_flow_description) { 
     eth_flow_description_local_nonprim = OpenAPI_eth_flow_description_parseFromJSON(eth_flow_description);
-}
+    }
 
     cJSON *pack_filt_id = cJSON_GetObjectItemCaseSensitive(flow_informationJSON, "packFiltId");
 
@@ -148,7 +148,7 @@ OpenAPI_flow_information_t *OpenAPI_flow_information_parseFromJSON(cJSON *flow_i
         ogs_error("OpenAPI_flow_information_parseFromJSON() failed [pack_filt_id]");
         goto end;
     }
-}
+    }
 
     cJSON *packet_filter_usage = cJSON_GetObjectItemCaseSensitive(flow_informationJSON, "packetFilterUsage");
 
@@ -157,7 +157,7 @@ OpenAPI_flow_information_t *OpenAPI_flow_information_parseFromJSON(cJSON *flow_i
         ogs_error("OpenAPI_flow_information_parseFromJSON() failed [packet_filter_usage]");
         goto end;
     }
-}
+    }
 
     cJSON *tos_traffic_class = cJSON_GetObjectItemCaseSensitive(flow_informationJSON, "tosTrafficClass");
 
@@ -166,7 +166,7 @@ OpenAPI_flow_information_t *OpenAPI_flow_information_parseFromJSON(cJSON *flow_i
         ogs_error("OpenAPI_flow_information_parseFromJSON() failed [tos_traffic_class]");
         goto end;
     }
-}
+    }
 
     cJSON *spi = cJSON_GetObjectItemCaseSensitive(flow_informationJSON, "spi");
 
@@ -175,7 +175,7 @@ OpenAPI_flow_information_t *OpenAPI_flow_information_parseFromJSON(cJSON *flow_i
         ogs_error("OpenAPI_flow_information_parseFromJSON() failed [spi]");
         goto end;
     }
-}
+    }
 
     cJSON *flow_label = cJSON_GetObjectItemCaseSensitive(flow_informationJSON, "flowLabel");
 
@@ -184,7 +184,7 @@ OpenAPI_flow_information_t *OpenAPI_flow_information_parseFromJSON(cJSON *flow_i
         ogs_error("OpenAPI_flow_information_parseFromJSON() failed [flow_label]");
         goto end;
     }
-}
+    }
 
     cJSON *flow_direction = cJSON_GetObjectItemCaseSensitive(flow_informationJSON, "flowDirection");
 
@@ -195,7 +195,7 @@ OpenAPI_flow_information_t *OpenAPI_flow_information_parseFromJSON(cJSON *flow_i
         goto end;
     }
     flow_directionVariable = OpenAPI_flow_direction_FromString(flow_direction->valuestring);
-}
+    }
 
     flow_information_local_var = OpenAPI_flow_information_create (
         flow_description ? ogs_strdup_or_assert(flow_description->valuestring) : NULL,

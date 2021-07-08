@@ -98,7 +98,7 @@ OpenAPI_nsi_information_t *OpenAPI_nsi_information_parseFromJSON(cJSON *nsi_info
         ogs_error("OpenAPI_nsi_information_parseFromJSON() failed [nsi_id]");
         goto end;
     }
-}
+    }
 
     cJSON *nrf_nf_mgt_uri = cJSON_GetObjectItemCaseSensitive(nsi_informationJSON, "nrfNfMgtUri");
 
@@ -107,7 +107,7 @@ OpenAPI_nsi_information_t *OpenAPI_nsi_information_parseFromJSON(cJSON *nsi_info
         ogs_error("OpenAPI_nsi_information_parseFromJSON() failed [nrf_nf_mgt_uri]");
         goto end;
     }
-}
+    }
 
     cJSON *nrf_access_token_uri = cJSON_GetObjectItemCaseSensitive(nsi_informationJSON, "nrfAccessTokenUri");
 
@@ -116,7 +116,7 @@ OpenAPI_nsi_information_t *OpenAPI_nsi_information_parseFromJSON(cJSON *nsi_info
         ogs_error("OpenAPI_nsi_information_parseFromJSON() failed [nrf_access_token_uri]");
         goto end;
     }
-}
+    }
 
     nsi_information_local_var = OpenAPI_nsi_information_create (
         ogs_strdup_or_assert(nrf_id->valuestring),

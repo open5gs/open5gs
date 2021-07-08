@@ -107,7 +107,7 @@ OpenAPI_access_net_charging_identifier_t *OpenAPI_access_net_charging_identifier
 
         OpenAPI_list_add(flowsList, flowsItem);
     }
-}
+    }
 
     access_net_charging_identifier_local_var = OpenAPI_access_net_charging_identifier_create (
         acc_net_cha_id_value->valuedouble,

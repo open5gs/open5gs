@@ -161,7 +161,7 @@ OpenAPI_pcf_info_t *OpenAPI_pcf_info_parseFromJSON(cJSON *pcf_infoJSON)
         ogs_error("OpenAPI_pcf_info_parseFromJSON() failed [group_id]");
         goto end;
     }
-}
+    }
 
     cJSON *dnn_list = cJSON_GetObjectItemCaseSensitive(pcf_infoJSON, "dnnList");
 
@@ -181,7 +181,7 @@ OpenAPI_pcf_info_t *OpenAPI_pcf_info_parseFromJSON(cJSON *pcf_infoJSON)
     }
     OpenAPI_list_add(dnn_listList , ogs_strdup_or_assert(dnn_list_local->valuestring));
                     }
-}
+    }
 
     cJSON *supi_ranges = cJSON_GetObjectItemCaseSensitive(pcf_infoJSON, "supiRanges");
 
@@ -204,7 +204,7 @@ OpenAPI_pcf_info_t *OpenAPI_pcf_info_parseFromJSON(cJSON *pcf_infoJSON)
 
         OpenAPI_list_add(supi_rangesList, supi_rangesItem);
     }
-}
+    }
 
     cJSON *gpsi_ranges = cJSON_GetObjectItemCaseSensitive(pcf_infoJSON, "gpsiRanges");
 
@@ -227,7 +227,7 @@ OpenAPI_pcf_info_t *OpenAPI_pcf_info_parseFromJSON(cJSON *pcf_infoJSON)
 
         OpenAPI_list_add(gpsi_rangesList, gpsi_rangesItem);
     }
-}
+    }
 
     cJSON *rx_diam_host = cJSON_GetObjectItemCaseSensitive(pcf_infoJSON, "rxDiamHost");
 
@@ -236,7 +236,7 @@ OpenAPI_pcf_info_t *OpenAPI_pcf_info_parseFromJSON(cJSON *pcf_infoJSON)
         ogs_error("OpenAPI_pcf_info_parseFromJSON() failed [rx_diam_host]");
         goto end;
     }
-}
+    }
 
     cJSON *rx_diam_realm = cJSON_GetObjectItemCaseSensitive(pcf_infoJSON, "rxDiamRealm");
 
@@ -245,7 +245,7 @@ OpenAPI_pcf_info_t *OpenAPI_pcf_info_parseFromJSON(cJSON *pcf_infoJSON)
         ogs_error("OpenAPI_pcf_info_parseFromJSON() failed [rx_diam_realm]");
         goto end;
     }
-}
+    }
 
     cJSON *v2x_support_ind = cJSON_GetObjectItemCaseSensitive(pcf_infoJSON, "v2xSupportInd");
 
@@ -254,7 +254,7 @@ OpenAPI_pcf_info_t *OpenAPI_pcf_info_parseFromJSON(cJSON *pcf_infoJSON)
         ogs_error("OpenAPI_pcf_info_parseFromJSON() failed [v2x_support_ind]");
         goto end;
     }
-}
+    }
 
     pcf_info_local_var = OpenAPI_pcf_info_create (
         group_id ? ogs_strdup_or_assert(group_id->valuestring) : NULL,

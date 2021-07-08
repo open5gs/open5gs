@@ -132,7 +132,7 @@ OpenAPI_plmn_snssai_t *OpenAPI_plmn_snssai_parseFromJSON(cJSON *plmn_snssaiJSON)
         ogs_error("OpenAPI_plmn_snssai_parseFromJSON() failed [nid]");
         goto end;
     }
-}
+    }
 
     plmn_snssai_local_var = OpenAPI_plmn_snssai_create (
         plmn_id_local_nonprim,

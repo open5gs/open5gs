@@ -105,14 +105,14 @@ OpenAPI_authentication_info_result_t *OpenAPI_authentication_info_result_parseFr
         ogs_error("OpenAPI_authentication_info_result_parseFromJSON() failed [supported_features]");
         goto end;
     }
-}
+    }
 
     cJSON *authentication_vector = cJSON_GetObjectItemCaseSensitive(authentication_info_resultJSON, "authenticationVector");
 
     OpenAPI_authentication_vector_t *authentication_vector_local_nonprim = NULL;
     if (authentication_vector) { 
     authentication_vector_local_nonprim = OpenAPI_authentication_vector_parseFromJSON(authentication_vector);
-}
+    }
 
     cJSON *supi = cJSON_GetObjectItemCaseSensitive(authentication_info_resultJSON, "supi");
 
@@ -121,7 +121,7 @@ OpenAPI_authentication_info_result_t *OpenAPI_authentication_info_result_parseFr
         ogs_error("OpenAPI_authentication_info_result_parseFromJSON() failed [supi]");
         goto end;
     }
-}
+    }
 
     authentication_info_result_local_var = OpenAPI_authentication_info_result_create (
         auth_typeVariable,

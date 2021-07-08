@@ -185,7 +185,7 @@ OpenAPI_sm_policy_delete_data_t *OpenAPI_sm_policy_delete_data_parseFromJSON(cJS
     OpenAPI_user_location_t *user_location_info_local_nonprim = NULL;
     if (user_location_info) { 
     user_location_info_local_nonprim = OpenAPI_user_location_parseFromJSON(user_location_info);
-}
+    }
 
     cJSON *ue_time_zone = cJSON_GetObjectItemCaseSensitive(sm_policy_delete_dataJSON, "ueTimeZone");
 
@@ -194,14 +194,14 @@ OpenAPI_sm_policy_delete_data_t *OpenAPI_sm_policy_delete_data_parseFromJSON(cJS
         ogs_error("OpenAPI_sm_policy_delete_data_parseFromJSON() failed [ue_time_zone]");
         goto end;
     }
-}
+    }
 
     cJSON *serving_network = cJSON_GetObjectItemCaseSensitive(sm_policy_delete_dataJSON, "servingNetwork");
 
     OpenAPI_plmn_id_nid_t *serving_network_local_nonprim = NULL;
     if (serving_network) { 
     serving_network_local_nonprim = OpenAPI_plmn_id_nid_parseFromJSON(serving_network);
-}
+    }
 
     cJSON *user_location_info_time = cJSON_GetObjectItemCaseSensitive(sm_policy_delete_dataJSON, "userLocationInfoTime");
 
@@ -210,7 +210,7 @@ OpenAPI_sm_policy_delete_data_t *OpenAPI_sm_policy_delete_data_parseFromJSON(cJS
         ogs_error("OpenAPI_sm_policy_delete_data_parseFromJSON() failed [user_location_info_time]");
         goto end;
     }
-}
+    }
 
     cJSON *ran_nas_rel_causes = cJSON_GetObjectItemCaseSensitive(sm_policy_delete_dataJSON, "ranNasRelCauses");
 
@@ -233,7 +233,7 @@ OpenAPI_sm_policy_delete_data_t *OpenAPI_sm_policy_delete_data_parseFromJSON(cJS
 
         OpenAPI_list_add(ran_nas_rel_causesList, ran_nas_rel_causesItem);
     }
-}
+    }
 
     cJSON *accu_usage_reports = cJSON_GetObjectItemCaseSensitive(sm_policy_delete_dataJSON, "accuUsageReports");
 
@@ -256,7 +256,7 @@ OpenAPI_sm_policy_delete_data_t *OpenAPI_sm_policy_delete_data_parseFromJSON(cJS
 
         OpenAPI_list_add(accu_usage_reportsList, accu_usage_reportsItem);
     }
-}
+    }
 
     cJSON *pdu_sess_rel_cause = cJSON_GetObjectItemCaseSensitive(sm_policy_delete_dataJSON, "pduSessRelCause");
 
@@ -267,7 +267,7 @@ OpenAPI_sm_policy_delete_data_t *OpenAPI_sm_policy_delete_data_parseFromJSON(cJS
         goto end;
     }
     pdu_sess_rel_causeVariable = OpenAPI_pdu_session_rel_cause_FromString(pdu_sess_rel_cause->valuestring);
-}
+    }
 
     cJSON *qos_mon_reports = cJSON_GetObjectItemCaseSensitive(sm_policy_delete_dataJSON, "qosMonReports");
 
@@ -290,7 +290,7 @@ OpenAPI_sm_policy_delete_data_t *OpenAPI_sm_policy_delete_data_parseFromJSON(cJS
 
         OpenAPI_list_add(qos_mon_reportsList, qos_mon_reportsItem);
     }
-}
+    }
 
     sm_policy_delete_data_local_var = OpenAPI_sm_policy_delete_data_create (
         user_location_info ? user_location_info_local_nonprim : NULL,

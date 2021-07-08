@@ -173,7 +173,7 @@ OpenAPI_qos_characteristics_t *OpenAPI_qos_characteristics_parseFromJSON(cJSON *
         ogs_error("OpenAPI_qos_characteristics_parseFromJSON() failed [averaging_window]");
         goto end;
     }
-}
+    }
 
     cJSON *max_data_burst_vol = cJSON_GetObjectItemCaseSensitive(qos_characteristicsJSON, "maxDataBurstVol");
 
@@ -182,7 +182,7 @@ OpenAPI_qos_characteristics_t *OpenAPI_qos_characteristics_parseFromJSON(cJSON *
         ogs_error("OpenAPI_qos_characteristics_parseFromJSON() failed [max_data_burst_vol]");
         goto end;
     }
-}
+    }
 
     cJSON *ext_max_data_burst_vol = cJSON_GetObjectItemCaseSensitive(qos_characteristicsJSON, "extMaxDataBurstVol");
 
@@ -191,7 +191,7 @@ OpenAPI_qos_characteristics_t *OpenAPI_qos_characteristics_parseFromJSON(cJSON *
         ogs_error("OpenAPI_qos_characteristics_parseFromJSON() failed [ext_max_data_burst_vol]");
         goto end;
     }
-}
+    }
 
     qos_characteristics_local_var = OpenAPI_qos_characteristics_create (
         _5qi->valuedouble,

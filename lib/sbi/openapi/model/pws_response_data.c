@@ -145,7 +145,7 @@ OpenAPI_pws_response_data_t *OpenAPI_pws_response_data_parseFromJSON(cJSON *pws_
 
         OpenAPI_list_add(unknown_tai_listList, unknown_tai_listItem);
     }
-}
+    }
 
     pws_response_data_local_var = OpenAPI_pws_response_data_create (
         ngap_message_type->valuedouble,

@@ -86,7 +86,7 @@ OpenAPI_n1_n2_message_transfer_error_t *OpenAPI_n1_n2_message_transfer_error_par
     OpenAPI_n1_n2_msg_txfr_err_detail_t *err_info_local_nonprim = NULL;
     if (err_info) { 
     err_info_local_nonprim = OpenAPI_n1_n2_msg_txfr_err_detail_parseFromJSON(err_info);
-}
+    }
 
     n1_n2_message_transfer_error_local_var = OpenAPI_n1_n2_message_transfer_error_create (
         error_local_nonprim,

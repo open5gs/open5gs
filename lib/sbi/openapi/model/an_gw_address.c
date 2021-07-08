@@ -68,7 +68,7 @@ OpenAPI_an_gw_address_t *OpenAPI_an_gw_address_parseFromJSON(cJSON *an_gw_addres
         ogs_error("OpenAPI_an_gw_address_parseFromJSON() failed [an_gw_ipv4_addr]");
         goto end;
     }
-}
+    }
 
     cJSON *an_gw_ipv6_addr = cJSON_GetObjectItemCaseSensitive(an_gw_addressJSON, "anGwIpv6Addr");
 
@@ -77,7 +77,7 @@ OpenAPI_an_gw_address_t *OpenAPI_an_gw_address_parseFromJSON(cJSON *an_gw_addres
         ogs_error("OpenAPI_an_gw_address_parseFromJSON() failed [an_gw_ipv6_addr]");
         goto end;
     }
-}
+    }
 
     an_gw_address_local_var = OpenAPI_an_gw_address_create (
         an_gw_ipv4_addr ? ogs_strdup_or_assert(an_gw_ipv4_addr->valuestring) : NULL,

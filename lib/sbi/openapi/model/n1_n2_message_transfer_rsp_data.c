@@ -79,7 +79,7 @@ OpenAPI_n1_n2_message_transfer_rsp_data_t *OpenAPI_n1_n2_message_transfer_rsp_da
         ogs_error("OpenAPI_n1_n2_message_transfer_rsp_data_parseFromJSON() failed [supported_features]");
         goto end;
     }
-}
+    }
 
     n1_n2_message_transfer_rsp_data_local_var = OpenAPI_n1_n2_message_transfer_rsp_data_create (
         causeVariable,

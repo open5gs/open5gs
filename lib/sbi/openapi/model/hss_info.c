@@ -162,7 +162,7 @@ OpenAPI_hss_info_t *OpenAPI_hss_info_parseFromJSON(cJSON *hss_infoJSON)
         ogs_error("OpenAPI_hss_info_parseFromJSON() failed [group_id]");
         goto end;
     }
-}
+    }
 
     cJSON *imsi_ranges = cJSON_GetObjectItemCaseSensitive(hss_infoJSON, "imsiRanges");
 
@@ -185,7 +185,7 @@ OpenAPI_hss_info_t *OpenAPI_hss_info_parseFromJSON(cJSON *hss_infoJSON)
 
         OpenAPI_list_add(imsi_rangesList, imsi_rangesItem);
     }
-}
+    }
 
     cJSON *ims_private_identity_ranges = cJSON_GetObjectItemCaseSensitive(hss_infoJSON, "imsPrivateIdentityRanges");
 
@@ -208,7 +208,7 @@ OpenAPI_hss_info_t *OpenAPI_hss_info_parseFromJSON(cJSON *hss_infoJSON)
 
         OpenAPI_list_add(ims_private_identity_rangesList, ims_private_identity_rangesItem);
     }
-}
+    }
 
     cJSON *ims_public_identity_ranges = cJSON_GetObjectItemCaseSensitive(hss_infoJSON, "imsPublicIdentityRanges");
 
@@ -231,7 +231,7 @@ OpenAPI_hss_info_t *OpenAPI_hss_info_parseFromJSON(cJSON *hss_infoJSON)
 
         OpenAPI_list_add(ims_public_identity_rangesList, ims_public_identity_rangesItem);
     }
-}
+    }
 
     cJSON *msisdn_ranges = cJSON_GetObjectItemCaseSensitive(hss_infoJSON, "msisdnRanges");
 
@@ -254,7 +254,7 @@ OpenAPI_hss_info_t *OpenAPI_hss_info_parseFromJSON(cJSON *hss_infoJSON)
 
         OpenAPI_list_add(msisdn_rangesList, msisdn_rangesItem);
     }
-}
+    }
 
     hss_info_local_var = OpenAPI_hss_info_create (
         group_id ? ogs_strdup_or_assert(group_id->valuestring) : NULL,

@@ -75,7 +75,7 @@ OpenAPI_qos_monitoring_information_rm_t *OpenAPI_qos_monitoring_information_rm_p
         ogs_error("OpenAPI_qos_monitoring_information_rm_parseFromJSON() failed [rep_thresh_dl]");
         goto end;
     }
-}
+    }
 
     cJSON *rep_thresh_ul = cJSON_GetObjectItemCaseSensitive(qos_monitoring_information_rmJSON, "repThreshUl");
 
@@ -84,7 +84,7 @@ OpenAPI_qos_monitoring_information_rm_t *OpenAPI_qos_monitoring_information_rm_p
         ogs_error("OpenAPI_qos_monitoring_information_rm_parseFromJSON() failed [rep_thresh_ul]");
         goto end;
     }
-}
+    }
 
     cJSON *rep_thresh_rp = cJSON_GetObjectItemCaseSensitive(qos_monitoring_information_rmJSON, "repThreshRp");
 
@@ -93,7 +93,7 @@ OpenAPI_qos_monitoring_information_rm_t *OpenAPI_qos_monitoring_information_rm_p
         ogs_error("OpenAPI_qos_monitoring_information_rm_parseFromJSON() failed [rep_thresh_rp]");
         goto end;
     }
-}
+    }
 
     qos_monitoring_information_rm_local_var = OpenAPI_qos_monitoring_information_rm_create (
         rep_thresh_dl ? rep_thresh_dl->valuedouble : 0,

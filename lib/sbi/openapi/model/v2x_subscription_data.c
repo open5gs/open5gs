@@ -98,14 +98,14 @@ OpenAPI_v2x_subscription_data_t *OpenAPI_v2x_subscription_data_parseFromJSON(cJS
     OpenAPI_nr_v2x_auth_t *nr_v2x_services_auth_local_nonprim = NULL;
     if (nr_v2x_services_auth) { 
     nr_v2x_services_auth_local_nonprim = OpenAPI_nr_v2x_auth_parseFromJSON(nr_v2x_services_auth);
-}
+    }
 
     cJSON *lte_v2x_services_auth = cJSON_GetObjectItemCaseSensitive(v2x_subscription_dataJSON, "lteV2xServicesAuth");
 
     OpenAPI_lte_v2x_auth_t *lte_v2x_services_auth_local_nonprim = NULL;
     if (lte_v2x_services_auth) { 
     lte_v2x_services_auth_local_nonprim = OpenAPI_lte_v2x_auth_parseFromJSON(lte_v2x_services_auth);
-}
+    }
 
     cJSON *nr_ue_pc5_ambr = cJSON_GetObjectItemCaseSensitive(v2x_subscription_dataJSON, "nrUePc5Ambr");
 
@@ -114,7 +114,7 @@ OpenAPI_v2x_subscription_data_t *OpenAPI_v2x_subscription_data_parseFromJSON(cJS
         ogs_error("OpenAPI_v2x_subscription_data_parseFromJSON() failed [nr_ue_pc5_ambr]");
         goto end;
     }
-}
+    }
 
     cJSON *lte_pc5_ambr = cJSON_GetObjectItemCaseSensitive(v2x_subscription_dataJSON, "ltePc5Ambr");
 
@@ -123,7 +123,7 @@ OpenAPI_v2x_subscription_data_t *OpenAPI_v2x_subscription_data_parseFromJSON(cJS
         ogs_error("OpenAPI_v2x_subscription_data_parseFromJSON() failed [lte_pc5_ambr]");
         goto end;
     }
-}
+    }
 
     v2x_subscription_data_local_var = OpenAPI_v2x_subscription_data_create (
         nr_v2x_services_auth ? nr_v2x_services_auth_local_nonprim : NULL,

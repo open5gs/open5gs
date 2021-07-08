@@ -107,7 +107,7 @@ OpenAPI_slice_info_for_pdu_session_t *OpenAPI_slice_info_for_pdu_session_parseFr
     OpenAPI_snssai_t *home_snssai_local_nonprim = NULL;
     if (home_snssai) { 
     home_snssai_local_nonprim = OpenAPI_snssai_parseFromJSON(home_snssai);
-}
+    }
 
     slice_info_for_pdu_session_local_var = OpenAPI_slice_info_for_pdu_session_create (
         s_nssai_local_nonprim,

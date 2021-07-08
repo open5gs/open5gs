@@ -88,7 +88,7 @@ OpenAPI_ip_multicast_address_info_t *OpenAPI_ip_multicast_address_info_parseFrom
         ogs_error("OpenAPI_ip_multicast_address_info_parseFromJSON() failed [src_ipv4_addr]");
         goto end;
     }
-}
+    }
 
     cJSON *ipv4_mul_addr = cJSON_GetObjectItemCaseSensitive(ip_multicast_address_infoJSON, "ipv4MulAddr");
 
@@ -97,7 +97,7 @@ OpenAPI_ip_multicast_address_info_t *OpenAPI_ip_multicast_address_info_parseFrom
         ogs_error("OpenAPI_ip_multicast_address_info_parseFromJSON() failed [ipv4_mul_addr]");
         goto end;
     }
-}
+    }
 
     cJSON *src_ipv6_addr = cJSON_GetObjectItemCaseSensitive(ip_multicast_address_infoJSON, "srcIpv6Addr");
 
@@ -106,7 +106,7 @@ OpenAPI_ip_multicast_address_info_t *OpenAPI_ip_multicast_address_info_parseFrom
         ogs_error("OpenAPI_ip_multicast_address_info_parseFromJSON() failed [src_ipv6_addr]");
         goto end;
     }
-}
+    }
 
     cJSON *ipv6_mul_addr = cJSON_GetObjectItemCaseSensitive(ip_multicast_address_infoJSON, "ipv6MulAddr");
 
@@ -115,7 +115,7 @@ OpenAPI_ip_multicast_address_info_t *OpenAPI_ip_multicast_address_info_parseFrom
         ogs_error("OpenAPI_ip_multicast_address_info_parseFromJSON() failed [ipv6_mul_addr]");
         goto end;
     }
-}
+    }
 
     ip_multicast_address_info_local_var = OpenAPI_ip_multicast_address_info_create (
         src_ipv4_addr ? ogs_strdup_or_assert(src_ipv4_addr->valuestring) : NULL,

@@ -57,7 +57,7 @@ OpenAPI_retrieve_data_t *OpenAPI_retrieve_data_parseFromJSON(cJSON *retrieve_dat
         ogs_error("OpenAPI_retrieve_data_parseFromJSON() failed [small_data_rate_status_req]");
         goto end;
     }
-}
+    }
 
     retrieve_data_local_var = OpenAPI_retrieve_data_create (
         small_data_rate_status_req ? small_data_rate_status_req->valueint : 0

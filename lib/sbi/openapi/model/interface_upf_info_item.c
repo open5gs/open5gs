@@ -144,7 +144,7 @@ OpenAPI_interface_upf_info_item_t *OpenAPI_interface_upf_info_item_parseFromJSON
     }
     OpenAPI_list_add(ipv4_endpoint_addressesList , ogs_strdup_or_assert(ipv4_endpoint_addresses_local->valuestring));
                     }
-}
+    }
 
     cJSON *ipv6_endpoint_addresses = cJSON_GetObjectItemCaseSensitive(interface_upf_info_itemJSON, "ipv6EndpointAddresses");
 
@@ -164,7 +164,7 @@ OpenAPI_interface_upf_info_item_t *OpenAPI_interface_upf_info_item_parseFromJSON
     }
     OpenAPI_list_add(ipv6_endpoint_addressesList , ogs_strdup_or_assert(ipv6_endpoint_addresses_local->valuestring));
                     }
-}
+    }
 
     cJSON *endpoint_fqdn = cJSON_GetObjectItemCaseSensitive(interface_upf_info_itemJSON, "endpointFqdn");
 
@@ -173,7 +173,7 @@ OpenAPI_interface_upf_info_item_t *OpenAPI_interface_upf_info_item_parseFromJSON
         ogs_error("OpenAPI_interface_upf_info_item_parseFromJSON() failed [endpoint_fqdn]");
         goto end;
     }
-}
+    }
 
     cJSON *network_instance = cJSON_GetObjectItemCaseSensitive(interface_upf_info_itemJSON, "networkInstance");
 
@@ -182,7 +182,7 @@ OpenAPI_interface_upf_info_item_t *OpenAPI_interface_upf_info_item_parseFromJSON
         ogs_error("OpenAPI_interface_upf_info_item_parseFromJSON() failed [network_instance]");
         goto end;
     }
-}
+    }
 
     interface_upf_info_item_local_var = OpenAPI_interface_upf_info_item_create (
         interface_typeVariable,

@@ -175,7 +175,7 @@ OpenAPI_eutra_location_t *OpenAPI_eutra_location_parseFromJSON(cJSON *eutra_loca
         ogs_error("OpenAPI_eutra_location_parseFromJSON() failed [ignore_tai]");
         goto end;
     }
-}
+    }
 
     cJSON *ecgi = cJSON_GetObjectItemCaseSensitive(eutra_locationJSON, "ecgi");
     if (!ecgi) {
@@ -194,7 +194,7 @@ OpenAPI_eutra_location_t *OpenAPI_eutra_location_parseFromJSON(cJSON *eutra_loca
         ogs_error("OpenAPI_eutra_location_parseFromJSON() failed [ignore_ecgi]");
         goto end;
     }
-}
+    }
 
     cJSON *age_of_location_information = cJSON_GetObjectItemCaseSensitive(eutra_locationJSON, "ageOfLocationInformation");
 
@@ -203,7 +203,7 @@ OpenAPI_eutra_location_t *OpenAPI_eutra_location_parseFromJSON(cJSON *eutra_loca
         ogs_error("OpenAPI_eutra_location_parseFromJSON() failed [age_of_location_information]");
         goto end;
     }
-}
+    }
 
     cJSON *ue_location_timestamp = cJSON_GetObjectItemCaseSensitive(eutra_locationJSON, "ueLocationTimestamp");
 
@@ -212,7 +212,7 @@ OpenAPI_eutra_location_t *OpenAPI_eutra_location_parseFromJSON(cJSON *eutra_loca
         ogs_error("OpenAPI_eutra_location_parseFromJSON() failed [ue_location_timestamp]");
         goto end;
     }
-}
+    }
 
     cJSON *geographical_information = cJSON_GetObjectItemCaseSensitive(eutra_locationJSON, "geographicalInformation");
 
@@ -221,7 +221,7 @@ OpenAPI_eutra_location_t *OpenAPI_eutra_location_parseFromJSON(cJSON *eutra_loca
         ogs_error("OpenAPI_eutra_location_parseFromJSON() failed [geographical_information]");
         goto end;
     }
-}
+    }
 
     cJSON *geodetic_information = cJSON_GetObjectItemCaseSensitive(eutra_locationJSON, "geodeticInformation");
 
@@ -230,21 +230,21 @@ OpenAPI_eutra_location_t *OpenAPI_eutra_location_parseFromJSON(cJSON *eutra_loca
         ogs_error("OpenAPI_eutra_location_parseFromJSON() failed [geodetic_information]");
         goto end;
     }
-}
+    }
 
     cJSON *global_ngenb_id = cJSON_GetObjectItemCaseSensitive(eutra_locationJSON, "globalNgenbId");
 
     OpenAPI_global_ran_node_id_t *global_ngenb_id_local_nonprim = NULL;
     if (global_ngenb_id) { 
     global_ngenb_id_local_nonprim = OpenAPI_global_ran_node_id_parseFromJSON(global_ngenb_id);
-}
+    }
 
     cJSON *global_enb_id = cJSON_GetObjectItemCaseSensitive(eutra_locationJSON, "globalENbId");
 
     OpenAPI_global_ran_node_id_t *global_enb_id_local_nonprim = NULL;
     if (global_enb_id) { 
     global_enb_id_local_nonprim = OpenAPI_global_ran_node_id_parseFromJSON(global_enb_id);
-}
+    }
 
     eutra_location_local_var = OpenAPI_eutra_location_create (
         tai_local_nonprim,

@@ -170,7 +170,7 @@ OpenAPI_chf_info_t *OpenAPI_chf_info_parseFromJSON(cJSON *chf_infoJSON)
 
         OpenAPI_list_add(supi_range_listList, supi_range_listItem);
     }
-}
+    }
 
     cJSON *gpsi_range_list = cJSON_GetObjectItemCaseSensitive(chf_infoJSON, "gpsiRangeList");
 
@@ -193,7 +193,7 @@ OpenAPI_chf_info_t *OpenAPI_chf_info_parseFromJSON(cJSON *chf_infoJSON)
 
         OpenAPI_list_add(gpsi_range_listList, gpsi_range_listItem);
     }
-}
+    }
 
     cJSON *plmn_range_list = cJSON_GetObjectItemCaseSensitive(chf_infoJSON, "plmnRangeList");
 
@@ -216,7 +216,7 @@ OpenAPI_chf_info_t *OpenAPI_chf_info_parseFromJSON(cJSON *chf_infoJSON)
 
         OpenAPI_list_add(plmn_range_listList, plmn_range_listItem);
     }
-}
+    }
 
     cJSON *group_id = cJSON_GetObjectItemCaseSensitive(chf_infoJSON, "groupId");
 
@@ -225,7 +225,7 @@ OpenAPI_chf_info_t *OpenAPI_chf_info_parseFromJSON(cJSON *chf_infoJSON)
         ogs_error("OpenAPI_chf_info_parseFromJSON() failed [group_id]");
         goto end;
     }
-}
+    }
 
     cJSON *primary_chf_instance = cJSON_GetObjectItemCaseSensitive(chf_infoJSON, "primaryChfInstance");
 
@@ -234,7 +234,7 @@ OpenAPI_chf_info_t *OpenAPI_chf_info_parseFromJSON(cJSON *chf_infoJSON)
         ogs_error("OpenAPI_chf_info_parseFromJSON() failed [primary_chf_instance]");
         goto end;
     }
-}
+    }
 
     cJSON *secondary_chf_instance = cJSON_GetObjectItemCaseSensitive(chf_infoJSON, "secondaryChfInstance");
 
@@ -243,7 +243,7 @@ OpenAPI_chf_info_t *OpenAPI_chf_info_parseFromJSON(cJSON *chf_infoJSON)
         ogs_error("OpenAPI_chf_info_parseFromJSON() failed [secondary_chf_instance]");
         goto end;
     }
-}
+    }
 
     chf_info_local_var = OpenAPI_chf_info_create (
         supi_range_list ? supi_range_listList : NULL,

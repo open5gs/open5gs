@@ -189,7 +189,7 @@ OpenAPI_authentication_info_t *OpenAPI_authentication_info_parseFromJSON(cJSON *
     OpenAPI_resynchronization_info_t *resynchronization_info_local_nonprim = NULL;
     if (resynchronization_info) { 
     resynchronization_info_local_nonprim = OpenAPI_resynchronization_info_parseFromJSON(resynchronization_info);
-}
+    }
 
     cJSON *pei = cJSON_GetObjectItemCaseSensitive(authentication_infoJSON, "pei");
 
@@ -198,14 +198,14 @@ OpenAPI_authentication_info_t *OpenAPI_authentication_info_parseFromJSON(cJSON *
         ogs_error("OpenAPI_authentication_info_parseFromJSON() failed [pei]");
         goto end;
     }
-}
+    }
 
     cJSON *trace_data = cJSON_GetObjectItemCaseSensitive(authentication_infoJSON, "traceData");
 
     OpenAPI_trace_data_t *trace_data_local_nonprim = NULL;
     if (trace_data) { 
     trace_data_local_nonprim = OpenAPI_trace_data_parseFromJSON(trace_data);
-}
+    }
 
     cJSON *udm_group_id = cJSON_GetObjectItemCaseSensitive(authentication_infoJSON, "udmGroupId");
 
@@ -214,7 +214,7 @@ OpenAPI_authentication_info_t *OpenAPI_authentication_info_parseFromJSON(cJSON *
         ogs_error("OpenAPI_authentication_info_parseFromJSON() failed [udm_group_id]");
         goto end;
     }
-}
+    }
 
     cJSON *routing_indicator = cJSON_GetObjectItemCaseSensitive(authentication_infoJSON, "routingIndicator");
 
@@ -223,7 +223,7 @@ OpenAPI_authentication_info_t *OpenAPI_authentication_info_parseFromJSON(cJSON *
         ogs_error("OpenAPI_authentication_info_parseFromJSON() failed [routing_indicator]");
         goto end;
     }
-}
+    }
 
     cJSON *cell_cag_info = cJSON_GetObjectItemCaseSensitive(authentication_infoJSON, "cellCagInfo");
 
@@ -243,7 +243,7 @@ OpenAPI_authentication_info_t *OpenAPI_authentication_info_parseFromJSON(cJSON *
     }
     OpenAPI_list_add(cell_cag_infoList , ogs_strdup_or_assert(cell_cag_info_local->valuestring));
                     }
-}
+    }
 
     cJSON *n5gc_ind = cJSON_GetObjectItemCaseSensitive(authentication_infoJSON, "n5gcInd");
 
@@ -252,7 +252,7 @@ OpenAPI_authentication_info_t *OpenAPI_authentication_info_parseFromJSON(cJSON *
         ogs_error("OpenAPI_authentication_info_parseFromJSON() failed [n5gc_ind]");
         goto end;
     }
-}
+    }
 
     cJSON *supported_features = cJSON_GetObjectItemCaseSensitive(authentication_infoJSON, "supportedFeatures");
 
@@ -261,7 +261,7 @@ OpenAPI_authentication_info_t *OpenAPI_authentication_info_parseFromJSON(cJSON *
         ogs_error("OpenAPI_authentication_info_parseFromJSON() failed [supported_features]");
         goto end;
     }
-}
+    }
 
     authentication_info_local_var = OpenAPI_authentication_info_create (
         ogs_strdup_or_assert(supi_or_suci->valuestring),

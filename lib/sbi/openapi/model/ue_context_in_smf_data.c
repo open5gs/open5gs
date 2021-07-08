@@ -133,7 +133,7 @@ OpenAPI_ue_context_in_smf_data_t *OpenAPI_ue_context_in_smf_data_parseFromJSON(c
             localMapObject->string, OpenAPI_pdu_session_parseFromJSON(localMapObject));
         OpenAPI_list_add(pdu_sessionsList , localMapKeyPair);
     }
-}
+    }
 
     cJSON *pgw_info = cJSON_GetObjectItemCaseSensitive(ue_context_in_smf_dataJSON, "pgwInfo");
 
@@ -156,14 +156,14 @@ OpenAPI_ue_context_in_smf_data_t *OpenAPI_ue_context_in_smf_data_parseFromJSON(c
 
         OpenAPI_list_add(pgw_infoList, pgw_infoItem);
     }
-}
+    }
 
     cJSON *emergency_info = cJSON_GetObjectItemCaseSensitive(ue_context_in_smf_dataJSON, "emergencyInfo");
 
     OpenAPI_emergency_info_t *emergency_info_local_nonprim = NULL;
     if (emergency_info) { 
     emergency_info_local_nonprim = OpenAPI_emergency_info_parseFromJSON(emergency_info);
-}
+    }
 
     ue_context_in_smf_data_local_var = OpenAPI_ue_context_in_smf_data_create (
         pdu_sessions ? pdu_sessionsList : NULL,

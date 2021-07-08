@@ -273,7 +273,7 @@ OpenAPI_session_management_subscription_data_t *OpenAPI_session_management_subsc
             localMapObject->string, OpenAPI_dnn_configuration_parseFromJSON(localMapObject));
         OpenAPI_list_add(dnn_configurationsList , localMapKeyPair);
     }
-}
+    }
 
     cJSON *internal_group_ids = cJSON_GetObjectItemCaseSensitive(session_management_subscription_dataJSON, "internalGroupIds");
 
@@ -293,7 +293,7 @@ OpenAPI_session_management_subscription_data_t *OpenAPI_session_management_subsc
     }
     OpenAPI_list_add(internal_group_idsList , ogs_strdup_or_assert(internal_group_ids_local->valuestring));
                     }
-}
+    }
 
     cJSON *shared_vn_group_data_ids = cJSON_GetObjectItemCaseSensitive(session_management_subscription_dataJSON, "sharedVnGroupDataIds");
 
@@ -310,7 +310,7 @@ OpenAPI_session_management_subscription_data_t *OpenAPI_session_management_subsc
         cJSON *localMapObject = shared_vn_group_data_ids_local_map;
         OpenAPI_list_add(shared_vn_group_data_idsList , localMapKeyPair);
     }
-}
+    }
 
     cJSON *shared_dnn_configurations_id = cJSON_GetObjectItemCaseSensitive(session_management_subscription_dataJSON, "sharedDnnConfigurationsId");
 
@@ -319,7 +319,7 @@ OpenAPI_session_management_subscription_data_t *OpenAPI_session_management_subsc
         ogs_error("OpenAPI_session_management_subscription_data_parseFromJSON() failed [shared_dnn_configurations_id]");
         goto end;
     }
-}
+    }
 
     cJSON *odb_packet_services = cJSON_GetObjectItemCaseSensitive(session_management_subscription_dataJSON, "odbPacketServices");
 
@@ -330,14 +330,14 @@ OpenAPI_session_management_subscription_data_t *OpenAPI_session_management_subsc
         goto end;
     }
     odb_packet_servicesVariable = OpenAPI_odb_packet_services_FromString(odb_packet_services->valuestring);
-}
+    }
 
     cJSON *trace_data = cJSON_GetObjectItemCaseSensitive(session_management_subscription_dataJSON, "traceData");
 
     OpenAPI_trace_data_1_t *trace_data_local_nonprim = NULL;
     if (trace_data) { 
     trace_data_local_nonprim = OpenAPI_trace_data_1_parseFromJSON(trace_data);
-}
+    }
 
     cJSON *shared_trace_data_id = cJSON_GetObjectItemCaseSensitive(session_management_subscription_dataJSON, "sharedTraceDataId");
 
@@ -346,7 +346,7 @@ OpenAPI_session_management_subscription_data_t *OpenAPI_session_management_subsc
         ogs_error("OpenAPI_session_management_subscription_data_parseFromJSON() failed [shared_trace_data_id]");
         goto end;
     }
-}
+    }
 
     cJSON *expected_ue_behaviours_list = cJSON_GetObjectItemCaseSensitive(session_management_subscription_dataJSON, "expectedUeBehavioursList");
 
@@ -369,7 +369,7 @@ OpenAPI_session_management_subscription_data_t *OpenAPI_session_management_subsc
             localMapObject->string, OpenAPI_expected_ue_behaviour_data_parseFromJSON(localMapObject));
         OpenAPI_list_add(expected_ue_behaviours_listList , localMapKeyPair);
     }
-}
+    }
 
     cJSON *suggested_packet_num_dl_list = cJSON_GetObjectItemCaseSensitive(session_management_subscription_dataJSON, "suggestedPacketNumDlList");
 
@@ -392,7 +392,7 @@ OpenAPI_session_management_subscription_data_t *OpenAPI_session_management_subsc
             localMapObject->string, OpenAPI_suggested_packet_num_dl_parseFromJSON(localMapObject));
         OpenAPI_list_add(suggested_packet_num_dl_listList , localMapKeyPair);
     }
-}
+    }
 
     cJSON *_3gpp_charging_characteristics = cJSON_GetObjectItemCaseSensitive(session_management_subscription_dataJSON, "3gppChargingCharacteristics");
 
@@ -401,7 +401,7 @@ OpenAPI_session_management_subscription_data_t *OpenAPI_session_management_subsc
         ogs_error("OpenAPI_session_management_subscription_data_parseFromJSON() failed [_3gpp_charging_characteristics]");
         goto end;
     }
-}
+    }
 
     session_management_subscription_data_local_var = OpenAPI_session_management_subscription_data_create (
         single_nssai_local_nonprim,

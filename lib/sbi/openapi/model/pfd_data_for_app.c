@@ -128,7 +128,7 @@ OpenAPI_pfd_data_for_app_t *OpenAPI_pfd_data_for_app_parseFromJSON(cJSON *pfd_da
         ogs_error("OpenAPI_pfd_data_for_app_parseFromJSON() failed [caching_time]");
         goto end;
     }
-}
+    }
 
     pfd_data_for_app_local_var = OpenAPI_pfd_data_for_app_create (
         ogs_strdup_or_assert(application_id->valuestring),

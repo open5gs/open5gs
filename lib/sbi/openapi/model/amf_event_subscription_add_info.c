@@ -90,7 +90,7 @@ OpenAPI_amf_event_subscription_add_info_t *OpenAPI_amf_event_subscription_add_in
     }
     OpenAPI_list_add(binding_infoList , ogs_strdup_or_assert(binding_info_local->valuestring));
                     }
-}
+    }
 
     cJSON *subscribing_nf_type = cJSON_GetObjectItemCaseSensitive(amf_event_subscription_add_infoJSON, "subscribingNfType");
 
@@ -101,7 +101,7 @@ OpenAPI_amf_event_subscription_add_info_t *OpenAPI_amf_event_subscription_add_in
         goto end;
     }
     subscribing_nf_typeVariable = OpenAPI_nf_type_FromString(subscribing_nf_type->valuestring);
-}
+    }
 
     amf_event_subscription_add_info_local_var = OpenAPI_amf_event_subscription_add_info_create (
         binding_info ? binding_infoList : NULL,

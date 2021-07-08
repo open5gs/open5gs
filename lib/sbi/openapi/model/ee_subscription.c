@@ -210,7 +210,7 @@ OpenAPI_ee_subscription_t *OpenAPI_ee_subscription_parseFromJSON(cJSON *ee_subsc
     OpenAPI_reporting_options_t *reporting_options_local_nonprim = NULL;
     if (reporting_options) { 
     reporting_options_local_nonprim = OpenAPI_reporting_options_parseFromJSON(reporting_options);
-}
+    }
 
     cJSON *supported_features = cJSON_GetObjectItemCaseSensitive(ee_subscriptionJSON, "supportedFeatures");
 
@@ -219,7 +219,7 @@ OpenAPI_ee_subscription_t *OpenAPI_ee_subscription_parseFromJSON(cJSON *ee_subsc
         ogs_error("OpenAPI_ee_subscription_parseFromJSON() failed [supported_features]");
         goto end;
     }
-}
+    }
 
     cJSON *subscription_id = cJSON_GetObjectItemCaseSensitive(ee_subscriptionJSON, "subscriptionId");
 
@@ -228,14 +228,14 @@ OpenAPI_ee_subscription_t *OpenAPI_ee_subscription_parseFromJSON(cJSON *ee_subsc
         ogs_error("OpenAPI_ee_subscription_parseFromJSON() failed [subscription_id]");
         goto end;
     }
-}
+    }
 
     cJSON *context_info = cJSON_GetObjectItemCaseSensitive(ee_subscriptionJSON, "contextInfo");
 
     OpenAPI_context_info_t *context_info_local_nonprim = NULL;
     if (context_info) { 
     context_info_local_nonprim = OpenAPI_context_info_parseFromJSON(context_info);
-}
+    }
 
     cJSON *epc_applied_ind = cJSON_GetObjectItemCaseSensitive(ee_subscriptionJSON, "epcAppliedInd");
 
@@ -244,7 +244,7 @@ OpenAPI_ee_subscription_t *OpenAPI_ee_subscription_parseFromJSON(cJSON *ee_subsc
         ogs_error("OpenAPI_ee_subscription_parseFromJSON() failed [epc_applied_ind]");
         goto end;
     }
-}
+    }
 
     cJSON *scef_diam_host = cJSON_GetObjectItemCaseSensitive(ee_subscriptionJSON, "scefDiamHost");
 
@@ -253,7 +253,7 @@ OpenAPI_ee_subscription_t *OpenAPI_ee_subscription_parseFromJSON(cJSON *ee_subsc
         ogs_error("OpenAPI_ee_subscription_parseFromJSON() failed [scef_diam_host]");
         goto end;
     }
-}
+    }
 
     cJSON *scef_diam_realm = cJSON_GetObjectItemCaseSensitive(ee_subscriptionJSON, "scefDiamRealm");
 
@@ -262,7 +262,7 @@ OpenAPI_ee_subscription_t *OpenAPI_ee_subscription_parseFromJSON(cJSON *ee_subsc
         ogs_error("OpenAPI_ee_subscription_parseFromJSON() failed [scef_diam_realm]");
         goto end;
     }
-}
+    }
 
     cJSON *notify_correlation_id = cJSON_GetObjectItemCaseSensitive(ee_subscriptionJSON, "notifyCorrelationId");
 
@@ -271,7 +271,7 @@ OpenAPI_ee_subscription_t *OpenAPI_ee_subscription_parseFromJSON(cJSON *ee_subsc
         ogs_error("OpenAPI_ee_subscription_parseFromJSON() failed [notify_correlation_id]");
         goto end;
     }
-}
+    }
 
     ee_subscription_local_var = OpenAPI_ee_subscription_create (
         ogs_strdup_or_assert(callback_reference->valuestring),

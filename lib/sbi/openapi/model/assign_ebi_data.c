@@ -145,7 +145,7 @@ OpenAPI_assign_ebi_data_t *OpenAPI_assign_ebi_data_parseFromJSON(cJSON *assign_e
 
         OpenAPI_list_add(arp_listList, arp_listItem);
     }
-}
+    }
 
     cJSON *released_ebi_list = cJSON_GetObjectItemCaseSensitive(assign_ebi_dataJSON, "releasedEbiList");
 
@@ -165,14 +165,14 @@ OpenAPI_assign_ebi_data_t *OpenAPI_assign_ebi_data_parseFromJSON(cJSON *assign_e
     }
     OpenAPI_list_add(released_ebi_listList , &released_ebi_list_local->valuedouble);
                     }
-}
+    }
 
     cJSON *old_guami = cJSON_GetObjectItemCaseSensitive(assign_ebi_dataJSON, "oldGuami");
 
     OpenAPI_guami_t *old_guami_local_nonprim = NULL;
     if (old_guami) { 
     old_guami_local_nonprim = OpenAPI_guami_parseFromJSON(old_guami);
-}
+    }
 
     assign_ebi_data_local_var = OpenAPI_assign_ebi_data_create (
         pdu_session_id->valuedouble,

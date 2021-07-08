@@ -126,7 +126,7 @@ OpenAPI_pp_active_time_t *OpenAPI_pp_active_time_parseFromJSON(cJSON *pp_active_
         ogs_error("OpenAPI_pp_active_time_parseFromJSON() failed [validity_time]");
         goto end;
     }
-}
+    }
 
     cJSON *mtc_provider_information = cJSON_GetObjectItemCaseSensitive(pp_active_timeJSON, "mtcProviderInformation");
 
@@ -135,7 +135,7 @@ OpenAPI_pp_active_time_t *OpenAPI_pp_active_time_parseFromJSON(cJSON *pp_active_
         ogs_error("OpenAPI_pp_active_time_parseFromJSON() failed [mtc_provider_information]");
         goto end;
     }
-}
+    }
 
     pp_active_time_local_var = OpenAPI_pp_active_time_create (
         active_time->valuedouble,

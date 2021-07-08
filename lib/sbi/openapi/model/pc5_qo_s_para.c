@@ -108,7 +108,7 @@ OpenAPI_pc5_qo_s_para_t *OpenAPI_pc5_qo_s_para_parseFromJSON(cJSON *pc5_qo_s_par
         ogs_error("OpenAPI_pc5_qo_s_para_parseFromJSON() failed [pc5_link_ambr]");
         goto end;
     }
-}
+    }
 
     pc5_qo_s_para_local_var = OpenAPI_pc5_qo_s_para_create (
         pc5_qos_flow_listList,

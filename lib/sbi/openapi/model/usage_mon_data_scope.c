@@ -105,7 +105,7 @@ OpenAPI_usage_mon_data_scope_t *OpenAPI_usage_mon_data_scope_parseFromJSON(cJSON
     }
     OpenAPI_list_add(dnnList , ogs_strdup_or_assert(dnn_local->valuestring));
                     }
-}
+    }
 
     usage_mon_data_scope_local_var = OpenAPI_usage_mon_data_scope_create (
         snssai_local_nonprim,

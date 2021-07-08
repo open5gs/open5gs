@@ -123,7 +123,7 @@ OpenAPI_wireline_area_t *OpenAPI_wireline_area_parseFromJSON(cJSON *wireline_are
     }
     OpenAPI_list_add(global_line_idsList , ogs_strdup_or_assert(global_line_ids_local->valuestring));
                     }
-}
+    }
 
     cJSON *hfc_n_ids = cJSON_GetObjectItemCaseSensitive(wireline_areaJSON, "hfcNIds");
 
@@ -143,7 +143,7 @@ OpenAPI_wireline_area_t *OpenAPI_wireline_area_parseFromJSON(cJSON *wireline_are
     }
     OpenAPI_list_add(hfc_n_idsList , ogs_strdup_or_assert(hfc_n_ids_local->valuestring));
                     }
-}
+    }
 
     cJSON *area_code_b = cJSON_GetObjectItemCaseSensitive(wireline_areaJSON, "areaCodeB");
 
@@ -152,7 +152,7 @@ OpenAPI_wireline_area_t *OpenAPI_wireline_area_parseFromJSON(cJSON *wireline_are
         ogs_error("OpenAPI_wireline_area_parseFromJSON() failed [area_code_b]");
         goto end;
     }
-}
+    }
 
     cJSON *area_code_c = cJSON_GetObjectItemCaseSensitive(wireline_areaJSON, "areaCodeC");
 
@@ -161,7 +161,7 @@ OpenAPI_wireline_area_t *OpenAPI_wireline_area_parseFromJSON(cJSON *wireline_are
         ogs_error("OpenAPI_wireline_area_parseFromJSON() failed [area_code_c]");
         goto end;
     }
-}
+    }
 
     wireline_area_local_var = OpenAPI_wireline_area_create (
         global_line_ids ? global_line_idsList : NULL,

@@ -102,7 +102,7 @@ OpenAPI_ncgi_1_t *OpenAPI_ncgi_1_parseFromJSON(cJSON *ncgi_1JSON)
         ogs_error("OpenAPI_ncgi_1_parseFromJSON() failed [nid]");
         goto end;
     }
-}
+    }
 
     ncgi_1_local_var = OpenAPI_ncgi_1_create (
         plmn_id_local_nonprim,

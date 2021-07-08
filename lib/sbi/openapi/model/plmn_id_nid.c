@@ -98,7 +98,7 @@ OpenAPI_plmn_id_nid_t *OpenAPI_plmn_id_nid_parseFromJSON(cJSON *plmn_id_nidJSON)
         ogs_error("OpenAPI_plmn_id_nid_parseFromJSON() failed [nid]");
         goto end;
     }
-}
+    }
 
     plmn_id_nid_local_var = OpenAPI_plmn_id_nid_create (
         ogs_strdup_or_assert(mcc->valuestring),

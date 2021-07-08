@@ -90,7 +90,7 @@ OpenAPI_pc5_qos_flow_item_t *OpenAPI_pc5_qos_flow_item_parseFromJSON(cJSON *pc5_
     OpenAPI_pc5_flow_bit_rates_t *pc5_flow_bit_rates_local_nonprim = NULL;
     if (pc5_flow_bit_rates) { 
     pc5_flow_bit_rates_local_nonprim = OpenAPI_pc5_flow_bit_rates_parseFromJSON(pc5_flow_bit_rates);
-}
+    }
 
     cJSON *range = cJSON_GetObjectItemCaseSensitive(pc5_qos_flow_itemJSON, "range");
 
@@ -99,7 +99,7 @@ OpenAPI_pc5_qos_flow_item_t *OpenAPI_pc5_qos_flow_item_parseFromJSON(cJSON *pc5_
         ogs_error("OpenAPI_pc5_qos_flow_item_parseFromJSON() failed [range]");
         goto end;
     }
-}
+    }
 
     pc5_qos_flow_item_local_var = OpenAPI_pc5_qos_flow_item_create (
         pqi->valuedouble,

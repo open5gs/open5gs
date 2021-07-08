@@ -375,7 +375,7 @@ OpenAPI_pcf_binding_t *OpenAPI_pcf_binding_parseFromJSON(cJSON *pcf_bindingJSON)
         ogs_error("OpenAPI_pcf_binding_parseFromJSON() failed [supi]");
         goto end;
     }
-}
+    }
 
     cJSON *gpsi = cJSON_GetObjectItemCaseSensitive(pcf_bindingJSON, "gpsi");
 
@@ -384,7 +384,7 @@ OpenAPI_pcf_binding_t *OpenAPI_pcf_binding_parseFromJSON(cJSON *pcf_bindingJSON)
         ogs_error("OpenAPI_pcf_binding_parseFromJSON() failed [gpsi]");
         goto end;
     }
-}
+    }
 
     cJSON *ipv4_addr = cJSON_GetObjectItemCaseSensitive(pcf_bindingJSON, "ipv4Addr");
 
@@ -393,7 +393,7 @@ OpenAPI_pcf_binding_t *OpenAPI_pcf_binding_parseFromJSON(cJSON *pcf_bindingJSON)
         ogs_error("OpenAPI_pcf_binding_parseFromJSON() failed [ipv4_addr]");
         goto end;
     }
-}
+    }
 
     cJSON *ipv6_prefix = cJSON_GetObjectItemCaseSensitive(pcf_bindingJSON, "ipv6Prefix");
 
@@ -402,7 +402,7 @@ OpenAPI_pcf_binding_t *OpenAPI_pcf_binding_parseFromJSON(cJSON *pcf_bindingJSON)
         ogs_error("OpenAPI_pcf_binding_parseFromJSON() failed [ipv6_prefix]");
         goto end;
     }
-}
+    }
 
     cJSON *add_ipv6_prefixes = cJSON_GetObjectItemCaseSensitive(pcf_bindingJSON, "addIpv6Prefixes");
 
@@ -422,7 +422,7 @@ OpenAPI_pcf_binding_t *OpenAPI_pcf_binding_parseFromJSON(cJSON *pcf_bindingJSON)
     }
     OpenAPI_list_add(add_ipv6_prefixesList , ogs_strdup_or_assert(add_ipv6_prefixes_local->valuestring));
                     }
-}
+    }
 
     cJSON *ip_domain = cJSON_GetObjectItemCaseSensitive(pcf_bindingJSON, "ipDomain");
 
@@ -431,7 +431,7 @@ OpenAPI_pcf_binding_t *OpenAPI_pcf_binding_parseFromJSON(cJSON *pcf_bindingJSON)
         ogs_error("OpenAPI_pcf_binding_parseFromJSON() failed [ip_domain]");
         goto end;
     }
-}
+    }
 
     cJSON *mac_addr48 = cJSON_GetObjectItemCaseSensitive(pcf_bindingJSON, "macAddr48");
 
@@ -440,7 +440,7 @@ OpenAPI_pcf_binding_t *OpenAPI_pcf_binding_parseFromJSON(cJSON *pcf_bindingJSON)
         ogs_error("OpenAPI_pcf_binding_parseFromJSON() failed [mac_addr48]");
         goto end;
     }
-}
+    }
 
     cJSON *add_mac_addrs = cJSON_GetObjectItemCaseSensitive(pcf_bindingJSON, "addMacAddrs");
 
@@ -460,7 +460,7 @@ OpenAPI_pcf_binding_t *OpenAPI_pcf_binding_parseFromJSON(cJSON *pcf_bindingJSON)
     }
     OpenAPI_list_add(add_mac_addrsList , ogs_strdup_or_assert(add_mac_addrs_local->valuestring));
                     }
-}
+    }
 
     cJSON *dnn = cJSON_GetObjectItemCaseSensitive(pcf_bindingJSON, "dnn");
     if (!dnn) {
@@ -481,7 +481,7 @@ OpenAPI_pcf_binding_t *OpenAPI_pcf_binding_parseFromJSON(cJSON *pcf_bindingJSON)
         ogs_error("OpenAPI_pcf_binding_parseFromJSON() failed [pcf_fqdn]");
         goto end;
     }
-}
+    }
 
     cJSON *pcf_ip_end_points = cJSON_GetObjectItemCaseSensitive(pcf_bindingJSON, "pcfIpEndPoints");
 
@@ -504,7 +504,7 @@ OpenAPI_pcf_binding_t *OpenAPI_pcf_binding_parseFromJSON(cJSON *pcf_bindingJSON)
 
         OpenAPI_list_add(pcf_ip_end_pointsList, pcf_ip_end_pointsItem);
     }
-}
+    }
 
     cJSON *pcf_diam_host = cJSON_GetObjectItemCaseSensitive(pcf_bindingJSON, "pcfDiamHost");
 
@@ -513,7 +513,7 @@ OpenAPI_pcf_binding_t *OpenAPI_pcf_binding_parseFromJSON(cJSON *pcf_bindingJSON)
         ogs_error("OpenAPI_pcf_binding_parseFromJSON() failed [pcf_diam_host]");
         goto end;
     }
-}
+    }
 
     cJSON *pcf_diam_realm = cJSON_GetObjectItemCaseSensitive(pcf_bindingJSON, "pcfDiamRealm");
 
@@ -522,7 +522,7 @@ OpenAPI_pcf_binding_t *OpenAPI_pcf_binding_parseFromJSON(cJSON *pcf_bindingJSON)
         ogs_error("OpenAPI_pcf_binding_parseFromJSON() failed [pcf_diam_realm]");
         goto end;
     }
-}
+    }
 
     cJSON *pcf_sm_fqdn = cJSON_GetObjectItemCaseSensitive(pcf_bindingJSON, "pcfSmFqdn");
 
@@ -531,7 +531,7 @@ OpenAPI_pcf_binding_t *OpenAPI_pcf_binding_parseFromJSON(cJSON *pcf_bindingJSON)
         ogs_error("OpenAPI_pcf_binding_parseFromJSON() failed [pcf_sm_fqdn]");
         goto end;
     }
-}
+    }
 
     cJSON *pcf_sm_ip_end_points = cJSON_GetObjectItemCaseSensitive(pcf_bindingJSON, "pcfSmIpEndPoints");
 
@@ -554,7 +554,7 @@ OpenAPI_pcf_binding_t *OpenAPI_pcf_binding_parseFromJSON(cJSON *pcf_bindingJSON)
 
         OpenAPI_list_add(pcf_sm_ip_end_pointsList, pcf_sm_ip_end_pointsItem);
     }
-}
+    }
 
     cJSON *snssai = cJSON_GetObjectItemCaseSensitive(pcf_bindingJSON, "snssai");
     if (!snssai) {
@@ -573,7 +573,7 @@ OpenAPI_pcf_binding_t *OpenAPI_pcf_binding_parseFromJSON(cJSON *pcf_bindingJSON)
         ogs_error("OpenAPI_pcf_binding_parseFromJSON() failed [supp_feat]");
         goto end;
     }
-}
+    }
 
     cJSON *pcf_id = cJSON_GetObjectItemCaseSensitive(pcf_bindingJSON, "pcfId");
 
@@ -582,7 +582,7 @@ OpenAPI_pcf_binding_t *OpenAPI_pcf_binding_parseFromJSON(cJSON *pcf_bindingJSON)
         ogs_error("OpenAPI_pcf_binding_parseFromJSON() failed [pcf_id]");
         goto end;
     }
-}
+    }
 
     cJSON *pcf_set_id = cJSON_GetObjectItemCaseSensitive(pcf_bindingJSON, "pcfSetId");
 
@@ -591,7 +591,7 @@ OpenAPI_pcf_binding_t *OpenAPI_pcf_binding_parseFromJSON(cJSON *pcf_bindingJSON)
         ogs_error("OpenAPI_pcf_binding_parseFromJSON() failed [pcf_set_id]");
         goto end;
     }
-}
+    }
 
     cJSON *recovery_time = cJSON_GetObjectItemCaseSensitive(pcf_bindingJSON, "recoveryTime");
 
@@ -600,14 +600,14 @@ OpenAPI_pcf_binding_t *OpenAPI_pcf_binding_parseFromJSON(cJSON *pcf_bindingJSON)
         ogs_error("OpenAPI_pcf_binding_parseFromJSON() failed [recovery_time]");
         goto end;
     }
-}
+    }
 
     cJSON *para_com = cJSON_GetObjectItemCaseSensitive(pcf_bindingJSON, "paraCom");
 
     OpenAPI_parameter_combination_t *para_com_local_nonprim = NULL;
     if (para_com) { 
     para_com_local_nonprim = OpenAPI_parameter_combination_parseFromJSON(para_com);
-}
+    }
 
     cJSON *bind_level = cJSON_GetObjectItemCaseSensitive(pcf_bindingJSON, "bindLevel");
 
@@ -618,7 +618,7 @@ OpenAPI_pcf_binding_t *OpenAPI_pcf_binding_parseFromJSON(cJSON *pcf_bindingJSON)
         goto end;
     }
     bind_levelVariable = OpenAPI_binding_level_FromString(bind_level->valuestring);
-}
+    }
 
     cJSON *ipv4_frame_route_list = cJSON_GetObjectItemCaseSensitive(pcf_bindingJSON, "ipv4FrameRouteList");
 
@@ -638,7 +638,7 @@ OpenAPI_pcf_binding_t *OpenAPI_pcf_binding_parseFromJSON(cJSON *pcf_bindingJSON)
     }
     OpenAPI_list_add(ipv4_frame_route_listList , ogs_strdup_or_assert(ipv4_frame_route_list_local->valuestring));
                     }
-}
+    }
 
     cJSON *ipv6_frame_route_list = cJSON_GetObjectItemCaseSensitive(pcf_bindingJSON, "ipv6FrameRouteList");
 
@@ -658,7 +658,7 @@ OpenAPI_pcf_binding_t *OpenAPI_pcf_binding_parseFromJSON(cJSON *pcf_bindingJSON)
     }
     OpenAPI_list_add(ipv6_frame_route_listList , ogs_strdup_or_assert(ipv6_frame_route_list_local->valuestring));
                     }
-}
+    }
 
     pcf_binding_local_var = OpenAPI_pcf_binding_create (
         supi ? ogs_strdup_or_assert(supi->valuestring) : NULL,

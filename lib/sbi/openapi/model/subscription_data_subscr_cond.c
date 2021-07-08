@@ -249,7 +249,7 @@ OpenAPI_subscription_data_subscr_cond_t *OpenAPI_subscription_data_subscr_cond_p
         ogs_error("OpenAPI_subscription_data_subscr_cond_parseFromJSON() failed [nf_instance_id]");
         goto end;
     }
-}
+    }
 
     cJSON *nf_type = cJSON_GetObjectItemCaseSensitive(subscription_data_subscr_condJSON, "nfType");
 
@@ -260,7 +260,7 @@ OpenAPI_subscription_data_subscr_cond_t *OpenAPI_subscription_data_subscr_cond_p
         goto end;
     }
     nf_typeVariable = OpenAPI_nf_type_FromString(nf_type->valuestring);
-}
+    }
 
     cJSON *service_name = cJSON_GetObjectItemCaseSensitive(subscription_data_subscr_condJSON, "serviceName");
 
@@ -269,7 +269,7 @@ OpenAPI_subscription_data_subscr_cond_t *OpenAPI_subscription_data_subscr_cond_p
         ogs_error("OpenAPI_subscription_data_subscr_cond_parseFromJSON() failed [service_name]");
         goto end;
     }
-}
+    }
 
     cJSON *amf_set_id = cJSON_GetObjectItemCaseSensitive(subscription_data_subscr_condJSON, "amfSetId");
 
@@ -278,7 +278,7 @@ OpenAPI_subscription_data_subscr_cond_t *OpenAPI_subscription_data_subscr_cond_p
         ogs_error("OpenAPI_subscription_data_subscr_cond_parseFromJSON() failed [amf_set_id]");
         goto end;
     }
-}
+    }
 
     cJSON *amf_region_id = cJSON_GetObjectItemCaseSensitive(subscription_data_subscr_condJSON, "amfRegionId");
 
@@ -287,7 +287,7 @@ OpenAPI_subscription_data_subscr_cond_t *OpenAPI_subscription_data_subscr_cond_p
         ogs_error("OpenAPI_subscription_data_subscr_cond_parseFromJSON() failed [amf_region_id]");
         goto end;
     }
-}
+    }
 
     cJSON *guami_list = cJSON_GetObjectItemCaseSensitive(subscription_data_subscr_condJSON, "guamiList");
 
@@ -310,7 +310,7 @@ OpenAPI_subscription_data_subscr_cond_t *OpenAPI_subscription_data_subscr_cond_p
 
         OpenAPI_list_add(guami_listList, guami_listItem);
     }
-}
+    }
 
     cJSON *snssai_list = cJSON_GetObjectItemCaseSensitive(subscription_data_subscr_condJSON, "snssaiList");
 
@@ -333,7 +333,7 @@ OpenAPI_subscription_data_subscr_cond_t *OpenAPI_subscription_data_subscr_cond_p
 
         OpenAPI_list_add(snssai_listList, snssai_listItem);
     }
-}
+    }
 
     cJSON *nsi_list = cJSON_GetObjectItemCaseSensitive(subscription_data_subscr_condJSON, "nsiList");
 
@@ -353,7 +353,7 @@ OpenAPI_subscription_data_subscr_cond_t *OpenAPI_subscription_data_subscr_cond_p
     }
     OpenAPI_list_add(nsi_listList , ogs_strdup_or_assert(nsi_list_local->valuestring));
                     }
-}
+    }
 
     cJSON *nf_group_id = cJSON_GetObjectItemCaseSensitive(subscription_data_subscr_condJSON, "nfGroupId");
 
@@ -362,7 +362,7 @@ OpenAPI_subscription_data_subscr_cond_t *OpenAPI_subscription_data_subscr_cond_p
         ogs_error("OpenAPI_subscription_data_subscr_cond_parseFromJSON() failed [nf_group_id]");
         goto end;
     }
-}
+    }
 
     cJSON *nf_set_id = cJSON_GetObjectItemCaseSensitive(subscription_data_subscr_condJSON, "nfSetId");
 
@@ -371,7 +371,7 @@ OpenAPI_subscription_data_subscr_cond_t *OpenAPI_subscription_data_subscr_cond_p
         ogs_error("OpenAPI_subscription_data_subscr_cond_parseFromJSON() failed [nf_set_id]");
         goto end;
     }
-}
+    }
 
     cJSON *nf_service_set_id = cJSON_GetObjectItemCaseSensitive(subscription_data_subscr_condJSON, "nfServiceSetId");
 
@@ -380,7 +380,7 @@ OpenAPI_subscription_data_subscr_cond_t *OpenAPI_subscription_data_subscr_cond_p
         ogs_error("OpenAPI_subscription_data_subscr_cond_parseFromJSON() failed [nf_service_set_id]");
         goto end;
     }
-}
+    }
 
     cJSON *smf_serving_area = cJSON_GetObjectItemCaseSensitive(subscription_data_subscr_condJSON, "smfServingArea");
 
@@ -400,7 +400,7 @@ OpenAPI_subscription_data_subscr_cond_t *OpenAPI_subscription_data_subscr_cond_p
     }
     OpenAPI_list_add(smf_serving_areaList , ogs_strdup_or_assert(smf_serving_area_local->valuestring));
                     }
-}
+    }
 
     cJSON *tai_list = cJSON_GetObjectItemCaseSensitive(subscription_data_subscr_condJSON, "taiList");
 
@@ -423,7 +423,7 @@ OpenAPI_subscription_data_subscr_cond_t *OpenAPI_subscription_data_subscr_cond_p
 
         OpenAPI_list_add(tai_listList, tai_listItem);
     }
-}
+    }
 
     subscription_data_subscr_cond_local_var = OpenAPI_subscription_data_subscr_cond_create (
         nf_instance_id ? ogs_strdup_or_assert(nf_instance_id->valuestring) : NULL,

@@ -122,7 +122,7 @@ OpenAPI_hss_authentication_info_request_t *OpenAPI_hss_authentication_info_reque
         ogs_error("OpenAPI_hss_authentication_info_request_parseFromJSON() failed [supported_features]");
         goto end;
     }
-}
+    }
 
     cJSON *hss_auth_type = cJSON_GetObjectItemCaseSensitive(hss_authentication_info_requestJSON, "hssAuthType");
     if (!hss_auth_type) {
@@ -159,21 +159,21 @@ OpenAPI_hss_authentication_info_request_t *OpenAPI_hss_authentication_info_reque
         goto end;
     }
     requesting_node_typeVariable = OpenAPI_node_type_FromString(requesting_node_type->valuestring);
-}
+    }
 
     cJSON *serving_network_id = cJSON_GetObjectItemCaseSensitive(hss_authentication_info_requestJSON, "servingNetworkId");
 
     OpenAPI_plmn_id_t *serving_network_id_local_nonprim = NULL;
     if (serving_network_id) { 
     serving_network_id_local_nonprim = OpenAPI_plmn_id_parseFromJSON(serving_network_id);
-}
+    }
 
     cJSON *resynchronization_info = cJSON_GetObjectItemCaseSensitive(hss_authentication_info_requestJSON, "resynchronizationInfo");
 
     OpenAPI_resynchronization_info_t *resynchronization_info_local_nonprim = NULL;
     if (resynchronization_info) { 
     resynchronization_info_local_nonprim = OpenAPI_resynchronization_info_parseFromJSON(resynchronization_info);
-}
+    }
 
     cJSON *an_id = cJSON_GetObjectItemCaseSensitive(hss_authentication_info_requestJSON, "anId");
 
@@ -184,7 +184,7 @@ OpenAPI_hss_authentication_info_request_t *OpenAPI_hss_authentication_info_reque
         goto end;
     }
     an_idVariable = OpenAPI_access_network_id_FromString(an_id->valuestring);
-}
+    }
 
     hss_authentication_info_request_local_var = OpenAPI_hss_authentication_info_request_create (
         supported_features ? ogs_strdup_or_assert(supported_features->valuestring) : NULL,

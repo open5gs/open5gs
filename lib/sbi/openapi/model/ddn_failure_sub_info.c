@@ -108,7 +108,7 @@ OpenAPI_ddn_failure_sub_info_t *OpenAPI_ddn_failure_sub_info_parseFromJSON(cJSON
 
         OpenAPI_list_add(ddd_traffic_descriptor_listList, ddd_traffic_descriptor_listItem);
     }
-}
+    }
 
     ddn_failure_sub_info_local_var = OpenAPI_ddn_failure_sub_info_create (
         ogs_strdup_or_assert(notify_correlation_id->valuestring),

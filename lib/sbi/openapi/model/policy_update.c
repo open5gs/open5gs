@@ -201,21 +201,21 @@ OpenAPI_policy_update_t *OpenAPI_policy_update_parseFromJSON(cJSON *policy_updat
 
         OpenAPI_list_add(triggersList, (void *)OpenAPI_request_trigger_FromString(triggers_local_nonprimitive->valuestring));
     }
-}
+    }
 
     cJSON *serv_area_res = cJSON_GetObjectItemCaseSensitive(policy_updateJSON, "servAreaRes");
 
     OpenAPI_service_area_restriction_t *serv_area_res_local_nonprim = NULL;
     if (serv_area_res) { 
     serv_area_res_local_nonprim = OpenAPI_service_area_restriction_parseFromJSON(serv_area_res);
-}
+    }
 
     cJSON *wl_serv_area_res = cJSON_GetObjectItemCaseSensitive(policy_updateJSON, "wlServAreaRes");
 
     OpenAPI_wireline_service_area_restriction_t *wl_serv_area_res_local_nonprim = NULL;
     if (wl_serv_area_res) { 
     wl_serv_area_res_local_nonprim = OpenAPI_wireline_service_area_restriction_parseFromJSON(wl_serv_area_res);
-}
+    }
 
     cJSON *rfsp = cJSON_GetObjectItemCaseSensitive(policy_updateJSON, "rfsp");
 
@@ -224,21 +224,21 @@ OpenAPI_policy_update_t *OpenAPI_policy_update_parseFromJSON(cJSON *policy_updat
         ogs_error("OpenAPI_policy_update_parseFromJSON() failed [rfsp]");
         goto end;
     }
-}
+    }
 
     cJSON *smf_sel_info = cJSON_GetObjectItemCaseSensitive(policy_updateJSON, "smfSelInfo");
 
     OpenAPI_smf_selection_data_t *smf_sel_info_local_nonprim = NULL;
     if (smf_sel_info) { 
     smf_sel_info_local_nonprim = OpenAPI_smf_selection_data_parseFromJSON(smf_sel_info);
-}
+    }
 
     cJSON *ue_ambr = cJSON_GetObjectItemCaseSensitive(policy_updateJSON, "ueAmbr");
 
     OpenAPI_ambr_t *ue_ambr_local_nonprim = NULL;
     if (ue_ambr) { 
     ue_ambr_local_nonprim = OpenAPI_ambr_parseFromJSON(ue_ambr);
-}
+    }
 
     cJSON *pras = cJSON_GetObjectItemCaseSensitive(policy_updateJSON, "pras");
 
@@ -261,7 +261,7 @@ OpenAPI_policy_update_t *OpenAPI_policy_update_parseFromJSON(cJSON *policy_updat
             localMapObject->string, OpenAPI_presence_info_rm_parseFromJSON(localMapObject));
         OpenAPI_list_add(prasList , localMapKeyPair);
     }
-}
+    }
 
     policy_update_local_var = OpenAPI_policy_update_create (
         ogs_strdup_or_assert(resource_uri->valuestring),

@@ -87,7 +87,7 @@ OpenAPI_non_ue_n2_info_subscription_created_data_t *OpenAPI_non_ue_n2_info_subsc
         ogs_error("OpenAPI_non_ue_n2_info_subscription_created_data_parseFromJSON() failed [supported_features]");
         goto end;
     }
-}
+    }
 
     cJSON *n2_information_class = cJSON_GetObjectItemCaseSensitive(non_ue_n2_info_subscription_created_dataJSON, "n2InformationClass");
 
@@ -98,7 +98,7 @@ OpenAPI_non_ue_n2_info_subscription_created_data_t *OpenAPI_non_ue_n2_info_subsc
         goto end;
     }
     n2_information_classVariable = OpenAPI_n2_information_class_FromString(n2_information_class->valuestring);
-}
+    }
 
     non_ue_n2_info_subscription_created_data_local_var = OpenAPI_non_ue_n2_info_subscription_created_data_create (
         ogs_strdup_or_assert(n2_notify_subscription_id->valuestring),

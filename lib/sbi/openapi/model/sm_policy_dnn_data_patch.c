@@ -99,7 +99,7 @@ OpenAPI_sm_policy_dnn_data_patch_t *OpenAPI_sm_policy_dnn_data_patch_parseFromJS
         cJSON *localMapObject = bdt_ref_ids_local_map;
         OpenAPI_list_add(bdt_ref_idsList , localMapKeyPair);
     }
-}
+    }
 
     sm_policy_dnn_data_patch_local_var = OpenAPI_sm_policy_dnn_data_patch_create (
         ogs_strdup_or_assert(dnn->valuestring),

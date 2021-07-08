@@ -128,14 +128,14 @@ OpenAPI_pdu_session_tsn_bridge_t *OpenAPI_pdu_session_tsn_bridge_parseFromJSON(c
     OpenAPI_bridge_management_container_t *tsn_bridge_man_cont_local_nonprim = NULL;
     if (tsn_bridge_man_cont) { 
     tsn_bridge_man_cont_local_nonprim = OpenAPI_bridge_management_container_parseFromJSON(tsn_bridge_man_cont);
-}
+    }
 
     cJSON *tsn_port_man_cont_dstt = cJSON_GetObjectItemCaseSensitive(pdu_session_tsn_bridgeJSON, "tsnPortManContDstt");
 
     OpenAPI_port_management_container_t *tsn_port_man_cont_dstt_local_nonprim = NULL;
     if (tsn_port_man_cont_dstt) { 
     tsn_port_man_cont_dstt_local_nonprim = OpenAPI_port_management_container_parseFromJSON(tsn_port_man_cont_dstt);
-}
+    }
 
     cJSON *tsn_port_man_cont_nwtts = cJSON_GetObjectItemCaseSensitive(pdu_session_tsn_bridgeJSON, "tsnPortManContNwtts");
 
@@ -158,7 +158,7 @@ OpenAPI_pdu_session_tsn_bridge_t *OpenAPI_pdu_session_tsn_bridge_parseFromJSON(c
 
         OpenAPI_list_add(tsn_port_man_cont_nwttsList, tsn_port_man_cont_nwttsItem);
     }
-}
+    }
 
     pdu_session_tsn_bridge_local_var = OpenAPI_pdu_session_tsn_bridge_create (
         tsn_bridge_info_local_nonprim,

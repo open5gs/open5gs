@@ -172,7 +172,7 @@ OpenAPI_charging_data_t *OpenAPI_charging_data_parseFromJSON(cJSON *charging_dat
         goto end;
     }
     metering_methodVariable = OpenAPI_metering_method_FromString(metering_method->valuestring);
-}
+    }
 
     cJSON *offline = cJSON_GetObjectItemCaseSensitive(charging_dataJSON, "offline");
 
@@ -181,7 +181,7 @@ OpenAPI_charging_data_t *OpenAPI_charging_data_parseFromJSON(cJSON *charging_dat
         ogs_error("OpenAPI_charging_data_parseFromJSON() failed [offline]");
         goto end;
     }
-}
+    }
 
     cJSON *online = cJSON_GetObjectItemCaseSensitive(charging_dataJSON, "online");
 
@@ -190,7 +190,7 @@ OpenAPI_charging_data_t *OpenAPI_charging_data_parseFromJSON(cJSON *charging_dat
         ogs_error("OpenAPI_charging_data_parseFromJSON() failed [online]");
         goto end;
     }
-}
+    }
 
     cJSON *sdf_handl = cJSON_GetObjectItemCaseSensitive(charging_dataJSON, "sdfHandl");
 
@@ -199,7 +199,7 @@ OpenAPI_charging_data_t *OpenAPI_charging_data_parseFromJSON(cJSON *charging_dat
         ogs_error("OpenAPI_charging_data_parseFromJSON() failed [sdf_handl]");
         goto end;
     }
-}
+    }
 
     cJSON *rating_group = cJSON_GetObjectItemCaseSensitive(charging_dataJSON, "ratingGroup");
 
@@ -208,7 +208,7 @@ OpenAPI_charging_data_t *OpenAPI_charging_data_parseFromJSON(cJSON *charging_dat
         ogs_error("OpenAPI_charging_data_parseFromJSON() failed [rating_group]");
         goto end;
     }
-}
+    }
 
     cJSON *reporting_level = cJSON_GetObjectItemCaseSensitive(charging_dataJSON, "reportingLevel");
 
@@ -219,7 +219,7 @@ OpenAPI_charging_data_t *OpenAPI_charging_data_parseFromJSON(cJSON *charging_dat
         goto end;
     }
     reporting_levelVariable = OpenAPI_reporting_level_FromString(reporting_level->valuestring);
-}
+    }
 
     cJSON *service_id = cJSON_GetObjectItemCaseSensitive(charging_dataJSON, "serviceId");
 
@@ -228,7 +228,7 @@ OpenAPI_charging_data_t *OpenAPI_charging_data_parseFromJSON(cJSON *charging_dat
         ogs_error("OpenAPI_charging_data_parseFromJSON() failed [service_id]");
         goto end;
     }
-}
+    }
 
     cJSON *sponsor_id = cJSON_GetObjectItemCaseSensitive(charging_dataJSON, "sponsorId");
 
@@ -237,7 +237,7 @@ OpenAPI_charging_data_t *OpenAPI_charging_data_parseFromJSON(cJSON *charging_dat
         ogs_error("OpenAPI_charging_data_parseFromJSON() failed [sponsor_id]");
         goto end;
     }
-}
+    }
 
     cJSON *app_svc_prov_id = cJSON_GetObjectItemCaseSensitive(charging_dataJSON, "appSvcProvId");
 
@@ -246,7 +246,7 @@ OpenAPI_charging_data_t *OpenAPI_charging_data_parseFromJSON(cJSON *charging_dat
         ogs_error("OpenAPI_charging_data_parseFromJSON() failed [app_svc_prov_id]");
         goto end;
     }
-}
+    }
 
     cJSON *af_charging_identifier = cJSON_GetObjectItemCaseSensitive(charging_dataJSON, "afChargingIdentifier");
 
@@ -255,7 +255,7 @@ OpenAPI_charging_data_t *OpenAPI_charging_data_parseFromJSON(cJSON *charging_dat
         ogs_error("OpenAPI_charging_data_parseFromJSON() failed [af_charging_identifier]");
         goto end;
     }
-}
+    }
 
     cJSON *af_charg_id = cJSON_GetObjectItemCaseSensitive(charging_dataJSON, "afChargId");
 
@@ -264,7 +264,7 @@ OpenAPI_charging_data_t *OpenAPI_charging_data_parseFromJSON(cJSON *charging_dat
         ogs_error("OpenAPI_charging_data_parseFromJSON() failed [af_charg_id]");
         goto end;
     }
-}
+    }
 
     charging_data_local_var = OpenAPI_charging_data_create (
         ogs_strdup_or_assert(chg_id->valuestring),

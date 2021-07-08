@@ -78,7 +78,7 @@ OpenAPI_confirmation_data_t *OpenAPI_confirmation_data_parseFromJSON(cJSON *conf
         ogs_error("OpenAPI_confirmation_data_parseFromJSON() failed [supported_features]");
         goto end;
     }
-}
+    }
 
     confirmation_data_local_var = OpenAPI_confirmation_data_create (
         ogs_strdup_or_assert(res_star->valuestring),

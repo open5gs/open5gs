@@ -181,7 +181,7 @@ OpenAPI_dynamic5_qi_t *OpenAPI_dynamic5_qi_parseFromJSON(cJSON *dynamic5_qiJSON)
         ogs_error("OpenAPI_dynamic5_qi_parseFromJSON() failed [aver_window]");
         goto end;
     }
-}
+    }
 
     cJSON *max_data_burst_vol = cJSON_GetObjectItemCaseSensitive(dynamic5_qiJSON, "maxDataBurstVol");
 
@@ -190,7 +190,7 @@ OpenAPI_dynamic5_qi_t *OpenAPI_dynamic5_qi_parseFromJSON(cJSON *dynamic5_qiJSON)
         ogs_error("OpenAPI_dynamic5_qi_parseFromJSON() failed [max_data_burst_vol]");
         goto end;
     }
-}
+    }
 
     cJSON *ext_max_data_burst_vol = cJSON_GetObjectItemCaseSensitive(dynamic5_qiJSON, "extMaxDataBurstVol");
 
@@ -199,7 +199,7 @@ OpenAPI_dynamic5_qi_t *OpenAPI_dynamic5_qi_parseFromJSON(cJSON *dynamic5_qiJSON)
         ogs_error("OpenAPI_dynamic5_qi_parseFromJSON() failed [ext_max_data_burst_vol]");
         goto end;
     }
-}
+    }
 
     cJSON *ext_packet_del_budget = cJSON_GetObjectItemCaseSensitive(dynamic5_qiJSON, "extPacketDelBudget");
 
@@ -208,7 +208,7 @@ OpenAPI_dynamic5_qi_t *OpenAPI_dynamic5_qi_parseFromJSON(cJSON *dynamic5_qiJSON)
         ogs_error("OpenAPI_dynamic5_qi_parseFromJSON() failed [ext_packet_del_budget]");
         goto end;
     }
-}
+    }
 
     cJSON *cn_packet_delay_budget_dl = cJSON_GetObjectItemCaseSensitive(dynamic5_qiJSON, "cnPacketDelayBudgetDl");
 
@@ -217,7 +217,7 @@ OpenAPI_dynamic5_qi_t *OpenAPI_dynamic5_qi_parseFromJSON(cJSON *dynamic5_qiJSON)
         ogs_error("OpenAPI_dynamic5_qi_parseFromJSON() failed [cn_packet_delay_budget_dl]");
         goto end;
     }
-}
+    }
 
     cJSON *cn_packet_delay_budget_ul = cJSON_GetObjectItemCaseSensitive(dynamic5_qiJSON, "cnPacketDelayBudgetUl");
 
@@ -226,7 +226,7 @@ OpenAPI_dynamic5_qi_t *OpenAPI_dynamic5_qi_parseFromJSON(cJSON *dynamic5_qiJSON)
         ogs_error("OpenAPI_dynamic5_qi_parseFromJSON() failed [cn_packet_delay_budget_ul]");
         goto end;
     }
-}
+    }
 
     dynamic5_qi_local_var = OpenAPI_dynamic5_qi_create (
         resource_typeVariable,

@@ -220,7 +220,7 @@ OpenAPI_n2_information_notification_t *OpenAPI_n2_information_notification_parse
     OpenAPI_n2_info_container_t *n2_info_container_local_nonprim = NULL;
     if (n2_info_container) { 
     n2_info_container_local_nonprim = OpenAPI_n2_info_container_parseFromJSON(n2_info_container);
-}
+    }
 
     cJSON *to_release_session_list = cJSON_GetObjectItemCaseSensitive(n2_information_notificationJSON, "toReleaseSessionList");
 
@@ -240,7 +240,7 @@ OpenAPI_n2_information_notification_t *OpenAPI_n2_information_notification_parse
     }
     OpenAPI_list_add(to_release_session_listList , &to_release_session_list_local->valuedouble);
                     }
-}
+    }
 
     cJSON *lcs_correlation_id = cJSON_GetObjectItemCaseSensitive(n2_information_notificationJSON, "lcsCorrelationId");
 
@@ -249,7 +249,7 @@ OpenAPI_n2_information_notification_t *OpenAPI_n2_information_notification_parse
         ogs_error("OpenAPI_n2_information_notification_parseFromJSON() failed [lcs_correlation_id]");
         goto end;
     }
-}
+    }
 
     cJSON *notify_reason = cJSON_GetObjectItemCaseSensitive(n2_information_notificationJSON, "notifyReason");
 
@@ -260,7 +260,7 @@ OpenAPI_n2_information_notification_t *OpenAPI_n2_information_notification_parse
         goto end;
     }
     notify_reasonVariable = OpenAPI_n2_info_notify_reason_FromString(notify_reason->valuestring);
-}
+    }
 
     cJSON *smf_change_info_list = cJSON_GetObjectItemCaseSensitive(n2_information_notificationJSON, "smfChangeInfoList");
 
@@ -283,14 +283,14 @@ OpenAPI_n2_information_notification_t *OpenAPI_n2_information_notification_parse
 
         OpenAPI_list_add(smf_change_info_listList, smf_change_info_listItem);
     }
-}
+    }
 
     cJSON *ran_node_id = cJSON_GetObjectItemCaseSensitive(n2_information_notificationJSON, "ranNodeId");
 
     OpenAPI_global_ran_node_id_t *ran_node_id_local_nonprim = NULL;
     if (ran_node_id) { 
     ran_node_id_local_nonprim = OpenAPI_global_ran_node_id_parseFromJSON(ran_node_id);
-}
+    }
 
     cJSON *initial_amf_name = cJSON_GetObjectItemCaseSensitive(n2_information_notificationJSON, "initialAmfName");
 
@@ -299,7 +299,7 @@ OpenAPI_n2_information_notification_t *OpenAPI_n2_information_notification_parse
         ogs_error("OpenAPI_n2_information_notification_parseFromJSON() failed [initial_amf_name]");
         goto end;
     }
-}
+    }
 
     cJSON *an_n2_ipv4_addr = cJSON_GetObjectItemCaseSensitive(n2_information_notificationJSON, "anN2IPv4Addr");
 
@@ -308,7 +308,7 @@ OpenAPI_n2_information_notification_t *OpenAPI_n2_information_notification_parse
         ogs_error("OpenAPI_n2_information_notification_parseFromJSON() failed [an_n2_ipv4_addr]");
         goto end;
     }
-}
+    }
 
     cJSON *an_n2_ipv6_addr = cJSON_GetObjectItemCaseSensitive(n2_information_notificationJSON, "anN2IPv6Addr");
 
@@ -317,14 +317,14 @@ OpenAPI_n2_information_notification_t *OpenAPI_n2_information_notification_parse
         ogs_error("OpenAPI_n2_information_notification_parseFromJSON() failed [an_n2_ipv6_addr]");
         goto end;
     }
-}
+    }
 
     cJSON *guami = cJSON_GetObjectItemCaseSensitive(n2_information_notificationJSON, "guami");
 
     OpenAPI_guami_t *guami_local_nonprim = NULL;
     if (guami) { 
     guami_local_nonprim = OpenAPI_guami_parseFromJSON(guami);
-}
+    }
 
     cJSON *notify_source_ng_ran = cJSON_GetObjectItemCaseSensitive(n2_information_notificationJSON, "notifySourceNgRan");
 
@@ -333,7 +333,7 @@ OpenAPI_n2_information_notification_t *OpenAPI_n2_information_notification_parse
         ogs_error("OpenAPI_n2_information_notification_parseFromJSON() failed [notify_source_ng_ran]");
         goto end;
     }
-}
+    }
 
     n2_information_notification_local_var = OpenAPI_n2_information_notification_create (
         ogs_strdup_or_assert(n2_notify_subscription_id->valuestring),

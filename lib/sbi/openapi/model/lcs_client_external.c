@@ -113,7 +113,7 @@ OpenAPI_lcs_client_external_t *OpenAPI_lcs_client_external_parseFromJSON(cJSON *
 
         OpenAPI_list_add(allowed_geographic_areaList, allowed_geographic_areaItem);
     }
-}
+    }
 
     cJSON *privacy_check_related_action = cJSON_GetObjectItemCaseSensitive(lcs_client_externalJSON, "privacyCheckRelatedAction");
 
@@ -124,14 +124,14 @@ OpenAPI_lcs_client_external_t *OpenAPI_lcs_client_external_parseFromJSON(cJSON *
         goto end;
     }
     privacy_check_related_actionVariable = OpenAPI_privacy_check_related_action_FromString(privacy_check_related_action->valuestring);
-}
+    }
 
     cJSON *valid_time_period = cJSON_GetObjectItemCaseSensitive(lcs_client_externalJSON, "validTimePeriod");
 
     OpenAPI_valid_time_period_t *valid_time_period_local_nonprim = NULL;
     if (valid_time_period) { 
     valid_time_period_local_nonprim = OpenAPI_valid_time_period_parseFromJSON(valid_time_period);
-}
+    }
 
     lcs_client_external_local_var = OpenAPI_lcs_client_external_create (
         allowed_geographic_area ? allowed_geographic_areaList : NULL,

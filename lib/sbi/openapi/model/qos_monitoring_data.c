@@ -215,7 +215,7 @@ OpenAPI_qos_monitoring_data_t *OpenAPI_qos_monitoring_data_parseFromJSON(cJSON *
         ogs_error("OpenAPI_qos_monitoring_data_parseFromJSON() failed [rep_thresh_dl]");
         goto end;
     }
-}
+    }
 
     cJSON *rep_thresh_ul = cJSON_GetObjectItemCaseSensitive(qos_monitoring_dataJSON, "repThreshUl");
 
@@ -224,7 +224,7 @@ OpenAPI_qos_monitoring_data_t *OpenAPI_qos_monitoring_data_parseFromJSON(cJSON *
         ogs_error("OpenAPI_qos_monitoring_data_parseFromJSON() failed [rep_thresh_ul]");
         goto end;
     }
-}
+    }
 
     cJSON *rep_thresh_rp = cJSON_GetObjectItemCaseSensitive(qos_monitoring_dataJSON, "repThreshRp");
 
@@ -233,7 +233,7 @@ OpenAPI_qos_monitoring_data_t *OpenAPI_qos_monitoring_data_parseFromJSON(cJSON *
         ogs_error("OpenAPI_qos_monitoring_data_parseFromJSON() failed [rep_thresh_rp]");
         goto end;
     }
-}
+    }
 
     cJSON *wait_time = cJSON_GetObjectItemCaseSensitive(qos_monitoring_dataJSON, "waitTime");
 
@@ -242,7 +242,7 @@ OpenAPI_qos_monitoring_data_t *OpenAPI_qos_monitoring_data_parseFromJSON(cJSON *
         ogs_error("OpenAPI_qos_monitoring_data_parseFromJSON() failed [wait_time]");
         goto end;
     }
-}
+    }
 
     cJSON *rep_period = cJSON_GetObjectItemCaseSensitive(qos_monitoring_dataJSON, "repPeriod");
 
@@ -251,7 +251,7 @@ OpenAPI_qos_monitoring_data_t *OpenAPI_qos_monitoring_data_parseFromJSON(cJSON *
         ogs_error("OpenAPI_qos_monitoring_data_parseFromJSON() failed [rep_period]");
         goto end;
     }
-}
+    }
 
     cJSON *notify_uri = cJSON_GetObjectItemCaseSensitive(qos_monitoring_dataJSON, "notifyUri");
 
@@ -260,7 +260,7 @@ OpenAPI_qos_monitoring_data_t *OpenAPI_qos_monitoring_data_parseFromJSON(cJSON *
         ogs_error("OpenAPI_qos_monitoring_data_parseFromJSON() failed [notify_uri]");
         goto end;
     }
-}
+    }
 
     cJSON *notify_corre_id = cJSON_GetObjectItemCaseSensitive(qos_monitoring_dataJSON, "notifyCorreId");
 
@@ -269,7 +269,7 @@ OpenAPI_qos_monitoring_data_t *OpenAPI_qos_monitoring_data_parseFromJSON(cJSON *
         ogs_error("OpenAPI_qos_monitoring_data_parseFromJSON() failed [notify_corre_id]");
         goto end;
     }
-}
+    }
 
     qos_monitoring_data_local_var = OpenAPI_qos_monitoring_data_create (
         ogs_strdup_or_assert(qm_id->valuestring),

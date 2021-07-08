@@ -128,7 +128,7 @@ OpenAPI_charging_information_t *OpenAPI_charging_information_parseFromJSON(cJSON
         ogs_error("OpenAPI_charging_information_parseFromJSON() failed [primary_chf_set_id]");
         goto end;
     }
-}
+    }
 
     cJSON *primary_chf_instance_id = cJSON_GetObjectItemCaseSensitive(charging_informationJSON, "primaryChfInstanceId");
 
@@ -137,7 +137,7 @@ OpenAPI_charging_information_t *OpenAPI_charging_information_parseFromJSON(cJSON
         ogs_error("OpenAPI_charging_information_parseFromJSON() failed [primary_chf_instance_id]");
         goto end;
     }
-}
+    }
 
     cJSON *secondary_chf_set_id = cJSON_GetObjectItemCaseSensitive(charging_informationJSON, "secondaryChfSetId");
 
@@ -146,7 +146,7 @@ OpenAPI_charging_information_t *OpenAPI_charging_information_parseFromJSON(cJSON
         ogs_error("OpenAPI_charging_information_parseFromJSON() failed [secondary_chf_set_id]");
         goto end;
     }
-}
+    }
 
     cJSON *secondary_chf_instance_id = cJSON_GetObjectItemCaseSensitive(charging_informationJSON, "secondaryChfInstanceId");
 
@@ -155,7 +155,7 @@ OpenAPI_charging_information_t *OpenAPI_charging_information_parseFromJSON(cJSON
         ogs_error("OpenAPI_charging_information_parseFromJSON() failed [secondary_chf_instance_id]");
         goto end;
     }
-}
+    }
 
     charging_information_local_var = OpenAPI_charging_information_create (
         ogs_strdup_or_assert(primary_chf_address->valuestring),

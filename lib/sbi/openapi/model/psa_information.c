@@ -101,7 +101,7 @@ OpenAPI_psa_information_t *OpenAPI_psa_information_parseFromJSON(cJSON *psa_info
         goto end;
     }
     psa_indVariable = OpenAPI_psa_indication_FromString(psa_ind->valuestring);
-}
+    }
 
     cJSON *dnai_list = cJSON_GetObjectItemCaseSensitive(psa_informationJSON, "dnaiList");
 
@@ -121,7 +121,7 @@ OpenAPI_psa_information_t *OpenAPI_psa_information_parseFromJSON(cJSON *psa_info
     }
     OpenAPI_list_add(dnai_listList , ogs_strdup_or_assert(dnai_list_local->valuestring));
                     }
-}
+    }
 
     cJSON *ue_ipv6_prefix = cJSON_GetObjectItemCaseSensitive(psa_informationJSON, "ueIpv6Prefix");
 
@@ -130,7 +130,7 @@ OpenAPI_psa_information_t *OpenAPI_psa_information_parseFromJSON(cJSON *psa_info
         ogs_error("OpenAPI_psa_information_parseFromJSON() failed [ue_ipv6_prefix]");
         goto end;
     }
-}
+    }
 
     cJSON *psa_upf_id = cJSON_GetObjectItemCaseSensitive(psa_informationJSON, "psaUpfId");
 
@@ -139,7 +139,7 @@ OpenAPI_psa_information_t *OpenAPI_psa_information_parseFromJSON(cJSON *psa_info
         ogs_error("OpenAPI_psa_information_parseFromJSON() failed [psa_upf_id]");
         goto end;
     }
-}
+    }
 
     psa_information_local_var = OpenAPI_psa_information_create (
         psa_ind ? psa_indVariable : 0,

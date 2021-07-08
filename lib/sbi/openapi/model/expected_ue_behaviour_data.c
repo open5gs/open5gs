@@ -163,7 +163,7 @@ OpenAPI_expected_ue_behaviour_data_t *OpenAPI_expected_ue_behaviour_data_parseFr
         goto end;
     }
     stationary_indicationVariable = OpenAPI_stationary_indication_FromString(stationary_indication->valuestring);
-}
+    }
 
     cJSON *communication_duration_time = cJSON_GetObjectItemCaseSensitive(expected_ue_behaviour_dataJSON, "communicationDurationTime");
 
@@ -172,7 +172,7 @@ OpenAPI_expected_ue_behaviour_data_t *OpenAPI_expected_ue_behaviour_data_parseFr
         ogs_error("OpenAPI_expected_ue_behaviour_data_parseFromJSON() failed [communication_duration_time]");
         goto end;
     }
-}
+    }
 
     cJSON *periodic_time = cJSON_GetObjectItemCaseSensitive(expected_ue_behaviour_dataJSON, "periodicTime");
 
@@ -181,14 +181,14 @@ OpenAPI_expected_ue_behaviour_data_t *OpenAPI_expected_ue_behaviour_data_parseFr
         ogs_error("OpenAPI_expected_ue_behaviour_data_parseFromJSON() failed [periodic_time]");
         goto end;
     }
-}
+    }
 
     cJSON *scheduled_communication_time = cJSON_GetObjectItemCaseSensitive(expected_ue_behaviour_dataJSON, "scheduledCommunicationTime");
 
     OpenAPI_scheduled_communication_time_t *scheduled_communication_time_local_nonprim = NULL;
     if (scheduled_communication_time) { 
     scheduled_communication_time_local_nonprim = OpenAPI_scheduled_communication_time_parseFromJSON(scheduled_communication_time);
-}
+    }
 
     cJSON *scheduled_communication_type = cJSON_GetObjectItemCaseSensitive(expected_ue_behaviour_dataJSON, "scheduledCommunicationType");
 
@@ -199,7 +199,7 @@ OpenAPI_expected_ue_behaviour_data_t *OpenAPI_expected_ue_behaviour_data_parseFr
         goto end;
     }
     scheduled_communication_typeVariable = OpenAPI_scheduled_communication_type_FromString(scheduled_communication_type->valuestring);
-}
+    }
 
     cJSON *expected_umts = cJSON_GetObjectItemCaseSensitive(expected_ue_behaviour_dataJSON, "expectedUmts");
 
@@ -222,7 +222,7 @@ OpenAPI_expected_ue_behaviour_data_t *OpenAPI_expected_ue_behaviour_data_parseFr
 
         OpenAPI_list_add(expected_umtsList, expected_umtsItem);
     }
-}
+    }
 
     cJSON *traffic_profile = cJSON_GetObjectItemCaseSensitive(expected_ue_behaviour_dataJSON, "trafficProfile");
 
@@ -233,14 +233,14 @@ OpenAPI_expected_ue_behaviour_data_t *OpenAPI_expected_ue_behaviour_data_parseFr
         goto end;
     }
     traffic_profileVariable = OpenAPI_traffic_profile_FromString(traffic_profile->valuestring);
-}
+    }
 
     cJSON *battery_indication = cJSON_GetObjectItemCaseSensitive(expected_ue_behaviour_dataJSON, "batteryIndication");
 
     OpenAPI_battery_indication_t *battery_indication_local_nonprim = NULL;
     if (battery_indication) { 
     battery_indication_local_nonprim = OpenAPI_battery_indication_parseFromJSON(battery_indication);
-}
+    }
 
     cJSON *validity_time = cJSON_GetObjectItemCaseSensitive(expected_ue_behaviour_dataJSON, "validityTime");
 
@@ -249,7 +249,7 @@ OpenAPI_expected_ue_behaviour_data_t *OpenAPI_expected_ue_behaviour_data_parseFr
         ogs_error("OpenAPI_expected_ue_behaviour_data_parseFromJSON() failed [validity_time]");
         goto end;
     }
-}
+    }
 
     expected_ue_behaviour_data_local_var = OpenAPI_expected_ue_behaviour_data_create (
         stationary_indication ? stationary_indicationVariable : 0,

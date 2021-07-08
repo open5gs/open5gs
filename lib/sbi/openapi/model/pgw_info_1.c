@@ -111,7 +111,7 @@ OpenAPI_pgw_info_1_t *OpenAPI_pgw_info_1_parseFromJSON(cJSON *pgw_info_1JSON)
     OpenAPI_plmn_id_1_t *plmn_id_local_nonprim = NULL;
     if (plmn_id) { 
     plmn_id_local_nonprim = OpenAPI_plmn_id_1_parseFromJSON(plmn_id);
-}
+    }
 
     cJSON *epdg_ind = cJSON_GetObjectItemCaseSensitive(pgw_info_1JSON, "epdgInd");
 
@@ -120,7 +120,7 @@ OpenAPI_pgw_info_1_t *OpenAPI_pgw_info_1_parseFromJSON(cJSON *pgw_info_1JSON)
         ogs_error("OpenAPI_pgw_info_1_parseFromJSON() failed [epdg_ind]");
         goto end;
     }
-}
+    }
 
     pgw_info_1_local_var = OpenAPI_pgw_info_1_create (
         ogs_strdup_or_assert(dnn->valuestring),

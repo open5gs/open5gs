@@ -155,7 +155,7 @@ OpenAPI_bsf_info_t *OpenAPI_bsf_info_parseFromJSON(cJSON *bsf_infoJSON)
     }
     OpenAPI_list_add(dnn_listList , ogs_strdup_or_assert(dnn_list_local->valuestring));
                     }
-}
+    }
 
     cJSON *ip_domain_list = cJSON_GetObjectItemCaseSensitive(bsf_infoJSON, "ipDomainList");
 
@@ -175,7 +175,7 @@ OpenAPI_bsf_info_t *OpenAPI_bsf_info_parseFromJSON(cJSON *bsf_infoJSON)
     }
     OpenAPI_list_add(ip_domain_listList , ogs_strdup_or_assert(ip_domain_list_local->valuestring));
                     }
-}
+    }
 
     cJSON *ipv4_address_ranges = cJSON_GetObjectItemCaseSensitive(bsf_infoJSON, "ipv4AddressRanges");
 
@@ -198,7 +198,7 @@ OpenAPI_bsf_info_t *OpenAPI_bsf_info_parseFromJSON(cJSON *bsf_infoJSON)
 
         OpenAPI_list_add(ipv4_address_rangesList, ipv4_address_rangesItem);
     }
-}
+    }
 
     cJSON *ipv6_prefix_ranges = cJSON_GetObjectItemCaseSensitive(bsf_infoJSON, "ipv6PrefixRanges");
 
@@ -221,7 +221,7 @@ OpenAPI_bsf_info_t *OpenAPI_bsf_info_parseFromJSON(cJSON *bsf_infoJSON)
 
         OpenAPI_list_add(ipv6_prefix_rangesList, ipv6_prefix_rangesItem);
     }
-}
+    }
 
     bsf_info_local_var = OpenAPI_bsf_info_create (
         dnn_list ? dnn_listList : NULL,

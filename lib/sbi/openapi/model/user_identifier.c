@@ -88,7 +88,7 @@ OpenAPI_user_identifier_t *OpenAPI_user_identifier_parseFromJSON(cJSON *user_ide
         ogs_error("OpenAPI_user_identifier_parseFromJSON() failed [gpsi]");
         goto end;
     }
-}
+    }
 
     cJSON *validity_time = cJSON_GetObjectItemCaseSensitive(user_identifierJSON, "validityTime");
 
@@ -97,7 +97,7 @@ OpenAPI_user_identifier_t *OpenAPI_user_identifier_parseFromJSON(cJSON *user_ide
         ogs_error("OpenAPI_user_identifier_parseFromJSON() failed [validity_time]");
         goto end;
     }
-}
+    }
 
     user_identifier_local_var = OpenAPI_user_identifier_create (
         ogs_strdup_or_assert(supi->valuestring),

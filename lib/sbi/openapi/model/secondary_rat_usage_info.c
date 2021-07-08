@@ -135,7 +135,7 @@ OpenAPI_secondary_rat_usage_info_t *OpenAPI_secondary_rat_usage_info_parseFromJS
 
         OpenAPI_list_add(qos_flows_usage_dataList, qos_flows_usage_dataItem);
     }
-}
+    }
 
     cJSON *pdu_session_usage_data = cJSON_GetObjectItemCaseSensitive(secondary_rat_usage_infoJSON, "pduSessionUsageData");
 
@@ -158,7 +158,7 @@ OpenAPI_secondary_rat_usage_info_t *OpenAPI_secondary_rat_usage_info_parseFromJS
 
         OpenAPI_list_add(pdu_session_usage_dataList, pdu_session_usage_dataItem);
     }
-}
+    }
 
     secondary_rat_usage_info_local_var = OpenAPI_secondary_rat_usage_info_create (
         secondary_rat_typeVariable,

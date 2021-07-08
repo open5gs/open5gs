@@ -81,7 +81,7 @@ OpenAPI_scp_domain_cond_t *OpenAPI_scp_domain_cond_parseFromJSON(cJSON *scp_doma
     }
     OpenAPI_list_add(scp_domainsList , ogs_strdup_or_assert(scp_domains_local->valuestring));
                     }
-}
+    }
 
     scp_domain_cond_local_var = OpenAPI_scp_domain_cond_create (
         scp_domains ? scp_domainsList : NULL

@@ -67,7 +67,7 @@ OpenAPI_sms_subscription_data_1_t *OpenAPI_sms_subscription_data_1_parseFromJSON
         ogs_error("OpenAPI_sms_subscription_data_1_parseFromJSON() failed [sms_subscribed]");
         goto end;
     }
-}
+    }
 
     cJSON *shared_sms_subs_data_id = cJSON_GetObjectItemCaseSensitive(sms_subscription_data_1JSON, "sharedSmsSubsDataId");
 
@@ -76,7 +76,7 @@ OpenAPI_sms_subscription_data_1_t *OpenAPI_sms_subscription_data_1_parseFromJSON
         ogs_error("OpenAPI_sms_subscription_data_1_parseFromJSON() failed [shared_sms_subs_data_id]");
         goto end;
     }
-}
+    }
 
     sms_subscription_data_1_local_var = OpenAPI_sms_subscription_data_1_create (
         sms_subscribed ? sms_subscribed->valueint : 0,

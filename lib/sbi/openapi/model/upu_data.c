@@ -109,7 +109,7 @@ OpenAPI_upu_data_t *OpenAPI_upu_data_parseFromJSON(cJSON *upu_dataJSON)
         ogs_error("OpenAPI_upu_data_parseFromJSON() failed [upu_xmac_iue]");
         goto end;
     }
-}
+    }
 
     cJSON *upu_mac_iue = cJSON_GetObjectItemCaseSensitive(upu_dataJSON, "upuMacIue");
 
@@ -118,7 +118,7 @@ OpenAPI_upu_data_t *OpenAPI_upu_data_parseFromJSON(cJSON *upu_dataJSON)
         ogs_error("OpenAPI_upu_data_parseFromJSON() failed [upu_mac_iue]");
         goto end;
     }
-}
+    }
 
     upu_data_local_var = OpenAPI_upu_data_create (
         ogs_strdup_or_assert(provisioning_time->valuestring),

@@ -95,7 +95,7 @@ OpenAPI_app_session_context_resp_data_t *OpenAPI_app_session_context_resp_data_p
         goto end;
     }
     serv_auth_infoVariable = OpenAPI_serv_auth_info_FromString(serv_auth_info->valuestring);
-}
+    }
 
     cJSON *ue_ids = cJSON_GetObjectItemCaseSensitive(app_session_context_resp_dataJSON, "ueIds");
 
@@ -118,7 +118,7 @@ OpenAPI_app_session_context_resp_data_t *OpenAPI_app_session_context_resp_data_p
 
         OpenAPI_list_add(ue_idsList, ue_idsItem);
     }
-}
+    }
 
     cJSON *supp_feat = cJSON_GetObjectItemCaseSensitive(app_session_context_resp_dataJSON, "suppFeat");
 
@@ -127,7 +127,7 @@ OpenAPI_app_session_context_resp_data_t *OpenAPI_app_session_context_resp_data_p
         ogs_error("OpenAPI_app_session_context_resp_data_parseFromJSON() failed [supp_feat]");
         goto end;
     }
-}
+    }
 
     app_session_context_resp_data_local_var = OpenAPI_app_session_context_resp_data_create (
         serv_auth_info ? serv_auth_infoVariable : 0,

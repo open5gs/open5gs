@@ -127,7 +127,7 @@ OpenAPI_av_eap_aka_prime_t *OpenAPI_av_eap_aka_prime_parseFromJSON(cJSON *av_eap
         ogs_error("OpenAPI_av_eap_aka_prime_parseFromJSON() failed [xres]");
         goto end;
     }
-}
+    }
 
     cJSON *autn = cJSON_GetObjectItemCaseSensitive(av_eap_aka_primeJSON, "autn");
     if (!autn) {
@@ -148,7 +148,7 @@ OpenAPI_av_eap_aka_prime_t *OpenAPI_av_eap_aka_prime_parseFromJSON(cJSON *av_eap
         ogs_error("OpenAPI_av_eap_aka_prime_parseFromJSON() failed [ck_prime]");
         goto end;
     }
-}
+    }
 
     cJSON *ik_prime = cJSON_GetObjectItemCaseSensitive(av_eap_aka_primeJSON, "ikPrime");
 
@@ -157,7 +157,7 @@ OpenAPI_av_eap_aka_prime_t *OpenAPI_av_eap_aka_prime_parseFromJSON(cJSON *av_eap
         ogs_error("OpenAPI_av_eap_aka_prime_parseFromJSON() failed [ik_prime]");
         goto end;
     }
-}
+    }
 
     av_eap_aka_prime_local_var = OpenAPI_av_eap_aka_prime_create (
         av_typeVariable,

@@ -135,14 +135,14 @@ OpenAPI_communication_characteristics_t *OpenAPI_communication_characteristics_p
     OpenAPI_pp_subs_reg_timer_t *pp_subs_reg_timer_local_nonprim = NULL;
     if (pp_subs_reg_timer) { 
     pp_subs_reg_timer_local_nonprim = OpenAPI_pp_subs_reg_timer_parseFromJSON(pp_subs_reg_timer);
-}
+    }
 
     cJSON *pp_active_time = cJSON_GetObjectItemCaseSensitive(communication_characteristicsJSON, "ppActiveTime");
 
     OpenAPI_pp_active_time_t *pp_active_time_local_nonprim = NULL;
     if (pp_active_time) { 
     pp_active_time_local_nonprim = OpenAPI_pp_active_time_parseFromJSON(pp_active_time);
-}
+    }
 
     cJSON *pp_dl_packet_count = cJSON_GetObjectItemCaseSensitive(communication_characteristicsJSON, "ppDlPacketCount");
 
@@ -151,28 +151,28 @@ OpenAPI_communication_characteristics_t *OpenAPI_communication_characteristics_p
         ogs_error("OpenAPI_communication_characteristics_parseFromJSON() failed [pp_dl_packet_count]");
         goto end;
     }
-}
+    }
 
     cJSON *pp_dl_packet_count_ext = cJSON_GetObjectItemCaseSensitive(communication_characteristicsJSON, "ppDlPacketCountExt");
 
     OpenAPI_pp_dl_packet_count_ext_t *pp_dl_packet_count_ext_local_nonprim = NULL;
     if (pp_dl_packet_count_ext) { 
     pp_dl_packet_count_ext_local_nonprim = OpenAPI_pp_dl_packet_count_ext_parseFromJSON(pp_dl_packet_count_ext);
-}
+    }
 
     cJSON *pp_maximum_response_time = cJSON_GetObjectItemCaseSensitive(communication_characteristicsJSON, "ppMaximumResponseTime");
 
     OpenAPI_pp_maximum_response_time_t *pp_maximum_response_time_local_nonprim = NULL;
     if (pp_maximum_response_time) { 
     pp_maximum_response_time_local_nonprim = OpenAPI_pp_maximum_response_time_parseFromJSON(pp_maximum_response_time);
-}
+    }
 
     cJSON *pp_maximum_latency = cJSON_GetObjectItemCaseSensitive(communication_characteristicsJSON, "ppMaximumLatency");
 
     OpenAPI_pp_maximum_latency_t *pp_maximum_latency_local_nonprim = NULL;
     if (pp_maximum_latency) { 
     pp_maximum_latency_local_nonprim = OpenAPI_pp_maximum_latency_parseFromJSON(pp_maximum_latency);
-}
+    }
 
     communication_characteristics_local_var = OpenAPI_communication_characteristics_create (
         pp_subs_reg_timer ? pp_subs_reg_timer_local_nonprim : NULL,

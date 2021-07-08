@@ -194,7 +194,7 @@ OpenAPI_transfer_mt_data_error_t *OpenAPI_transfer_mt_data_error_parseFromJSON(c
         ogs_error("OpenAPI_transfer_mt_data_error_parseFromJSON() failed [type]");
         goto end;
     }
-}
+    }
 
     cJSON *title = cJSON_GetObjectItemCaseSensitive(transfer_mt_data_errorJSON, "title");
 
@@ -203,7 +203,7 @@ OpenAPI_transfer_mt_data_error_t *OpenAPI_transfer_mt_data_error_parseFromJSON(c
         ogs_error("OpenAPI_transfer_mt_data_error_parseFromJSON() failed [title]");
         goto end;
     }
-}
+    }
 
     cJSON *status = cJSON_GetObjectItemCaseSensitive(transfer_mt_data_errorJSON, "status");
 
@@ -212,7 +212,7 @@ OpenAPI_transfer_mt_data_error_t *OpenAPI_transfer_mt_data_error_parseFromJSON(c
         ogs_error("OpenAPI_transfer_mt_data_error_parseFromJSON() failed [status]");
         goto end;
     }
-}
+    }
 
     cJSON *detail = cJSON_GetObjectItemCaseSensitive(transfer_mt_data_errorJSON, "detail");
 
@@ -221,7 +221,7 @@ OpenAPI_transfer_mt_data_error_t *OpenAPI_transfer_mt_data_error_parseFromJSON(c
         ogs_error("OpenAPI_transfer_mt_data_error_parseFromJSON() failed [detail]");
         goto end;
     }
-}
+    }
 
     cJSON *instance = cJSON_GetObjectItemCaseSensitive(transfer_mt_data_errorJSON, "instance");
 
@@ -230,7 +230,7 @@ OpenAPI_transfer_mt_data_error_t *OpenAPI_transfer_mt_data_error_parseFromJSON(c
         ogs_error("OpenAPI_transfer_mt_data_error_parseFromJSON() failed [instance]");
         goto end;
     }
-}
+    }
 
     cJSON *cause = cJSON_GetObjectItemCaseSensitive(transfer_mt_data_errorJSON, "cause");
 
@@ -239,7 +239,7 @@ OpenAPI_transfer_mt_data_error_t *OpenAPI_transfer_mt_data_error_parseFromJSON(c
         ogs_error("OpenAPI_transfer_mt_data_error_parseFromJSON() failed [cause]");
         goto end;
     }
-}
+    }
 
     cJSON *invalid_params = cJSON_GetObjectItemCaseSensitive(transfer_mt_data_errorJSON, "invalidParams");
 
@@ -262,7 +262,7 @@ OpenAPI_transfer_mt_data_error_t *OpenAPI_transfer_mt_data_error_parseFromJSON(c
 
         OpenAPI_list_add(invalid_paramsList, invalid_paramsItem);
     }
-}
+    }
 
     cJSON *supported_features = cJSON_GetObjectItemCaseSensitive(transfer_mt_data_errorJSON, "supportedFeatures");
 
@@ -271,21 +271,21 @@ OpenAPI_transfer_mt_data_error_t *OpenAPI_transfer_mt_data_error_parseFromJSON(c
         ogs_error("OpenAPI_transfer_mt_data_error_parseFromJSON() failed [supported_features]");
         goto end;
     }
-}
+    }
 
     cJSON *access_token_error = cJSON_GetObjectItemCaseSensitive(transfer_mt_data_errorJSON, "accessTokenError");
 
     OpenAPI_access_token_err_t *access_token_error_local_nonprim = NULL;
     if (access_token_error) { 
     access_token_error_local_nonprim = OpenAPI_access_token_err_parseFromJSON(access_token_error);
-}
+    }
 
     cJSON *access_token_request = cJSON_GetObjectItemCaseSensitive(transfer_mt_data_errorJSON, "accessTokenRequest");
 
     OpenAPI_access_token_req_t *access_token_request_local_nonprim = NULL;
     if (access_token_request) { 
     access_token_request_local_nonprim = OpenAPI_access_token_req_parseFromJSON(access_token_request);
-}
+    }
 
     cJSON *nrf_id = cJSON_GetObjectItemCaseSensitive(transfer_mt_data_errorJSON, "nrfId");
 
@@ -294,7 +294,7 @@ OpenAPI_transfer_mt_data_error_t *OpenAPI_transfer_mt_data_error_parseFromJSON(c
         ogs_error("OpenAPI_transfer_mt_data_error_parseFromJSON() failed [nrf_id]");
         goto end;
     }
-}
+    }
 
     cJSON *max_waiting_time = cJSON_GetObjectItemCaseSensitive(transfer_mt_data_errorJSON, "maxWaitingTime");
 
@@ -303,7 +303,7 @@ OpenAPI_transfer_mt_data_error_t *OpenAPI_transfer_mt_data_error_parseFromJSON(c
         ogs_error("OpenAPI_transfer_mt_data_error_parseFromJSON() failed [max_waiting_time]");
         goto end;
     }
-}
+    }
 
     transfer_mt_data_error_local_var = OpenAPI_transfer_mt_data_error_create (
         type ? ogs_strdup_or_assert(type->valuestring) : NULL,

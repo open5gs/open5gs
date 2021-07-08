@@ -109,7 +109,7 @@ OpenAPI_lcs_client_group_external_t *OpenAPI_lcs_client_group_external_parseFrom
         ogs_error("OpenAPI_lcs_client_group_external_parseFromJSON() failed [lcs_client_group_id]");
         goto end;
     }
-}
+    }
 
     cJSON *allowed_geographic_area = cJSON_GetObjectItemCaseSensitive(lcs_client_group_externalJSON, "allowedGeographicArea");
 
@@ -132,7 +132,7 @@ OpenAPI_lcs_client_group_external_t *OpenAPI_lcs_client_group_external_parseFrom
 
         OpenAPI_list_add(allowed_geographic_areaList, allowed_geographic_areaItem);
     }
-}
+    }
 
     cJSON *privacy_check_related_action = cJSON_GetObjectItemCaseSensitive(lcs_client_group_externalJSON, "privacyCheckRelatedAction");
 
@@ -143,14 +143,14 @@ OpenAPI_lcs_client_group_external_t *OpenAPI_lcs_client_group_external_parseFrom
         goto end;
     }
     privacy_check_related_actionVariable = OpenAPI_privacy_check_related_action_FromString(privacy_check_related_action->valuestring);
-}
+    }
 
     cJSON *valid_time_period = cJSON_GetObjectItemCaseSensitive(lcs_client_group_externalJSON, "validTimePeriod");
 
     OpenAPI_valid_time_period_t *valid_time_period_local_nonprim = NULL;
     if (valid_time_period) { 
     valid_time_period_local_nonprim = OpenAPI_valid_time_period_parseFromJSON(valid_time_period);
-}
+    }
 
     lcs_client_group_external_local_var = OpenAPI_lcs_client_group_external_create (
         lcs_client_group_id ? ogs_strdup_or_assert(lcs_client_group_id->valuestring) : NULL,

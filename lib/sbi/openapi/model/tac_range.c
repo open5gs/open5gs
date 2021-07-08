@@ -78,7 +78,7 @@ OpenAPI_tac_range_t *OpenAPI_tac_range_parseFromJSON(cJSON *tac_rangeJSON)
         ogs_error("OpenAPI_tac_range_parseFromJSON() failed [start]");
         goto end;
     }
-}
+    }
 
     cJSON *end = cJSON_GetObjectItemCaseSensitive(tac_rangeJSON, "end");
 
@@ -87,7 +87,7 @@ OpenAPI_tac_range_t *OpenAPI_tac_range_parseFromJSON(cJSON *tac_rangeJSON)
         ogs_error("OpenAPI_tac_range_parseFromJSON() failed [end]");
         goto end;
     }
-}
+    }
 
     cJSON *pattern = cJSON_GetObjectItemCaseSensitive(tac_rangeJSON, "pattern");
 
@@ -96,7 +96,7 @@ OpenAPI_tac_range_t *OpenAPI_tac_range_parseFromJSON(cJSON *tac_rangeJSON)
         ogs_error("OpenAPI_tac_range_parseFromJSON() failed [pattern]");
         goto end;
     }
-}
+    }
 
     tac_range_local_var = OpenAPI_tac_range_create (
         start ? ogs_strdup_or_assert(start->valuestring) : NULL,

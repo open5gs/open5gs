@@ -151,7 +151,7 @@ OpenAPI_trigger_t *OpenAPI_trigger_parseFromJSON(cJSON *triggerJSON)
         ogs_error("OpenAPI_trigger_parseFromJSON() failed [time_limit]");
         goto end;
     }
-}
+    }
 
     cJSON *volume_limit = cJSON_GetObjectItemCaseSensitive(triggerJSON, "volumeLimit");
 
@@ -160,7 +160,7 @@ OpenAPI_trigger_t *OpenAPI_trigger_parseFromJSON(cJSON *triggerJSON)
         ogs_error("OpenAPI_trigger_parseFromJSON() failed [volume_limit]");
         goto end;
     }
-}
+    }
 
     cJSON *volume_limit64 = cJSON_GetObjectItemCaseSensitive(triggerJSON, "volumeLimit64");
 
@@ -169,7 +169,7 @@ OpenAPI_trigger_t *OpenAPI_trigger_parseFromJSON(cJSON *triggerJSON)
         ogs_error("OpenAPI_trigger_parseFromJSON() failed [volume_limit64]");
         goto end;
     }
-}
+    }
 
     cJSON *event_limit = cJSON_GetObjectItemCaseSensitive(triggerJSON, "eventLimit");
 
@@ -178,7 +178,7 @@ OpenAPI_trigger_t *OpenAPI_trigger_parseFromJSON(cJSON *triggerJSON)
         ogs_error("OpenAPI_trigger_parseFromJSON() failed [event_limit]");
         goto end;
     }
-}
+    }
 
     cJSON *max_number_ofccc = cJSON_GetObjectItemCaseSensitive(triggerJSON, "maxNumberOfccc");
 
@@ -187,7 +187,7 @@ OpenAPI_trigger_t *OpenAPI_trigger_parseFromJSON(cJSON *triggerJSON)
         ogs_error("OpenAPI_trigger_parseFromJSON() failed [max_number_ofccc]");
         goto end;
     }
-}
+    }
 
     cJSON *tariff_time_change = cJSON_GetObjectItemCaseSensitive(triggerJSON, "tariffTimeChange");
 
@@ -196,7 +196,7 @@ OpenAPI_trigger_t *OpenAPI_trigger_parseFromJSON(cJSON *triggerJSON)
         ogs_error("OpenAPI_trigger_parseFromJSON() failed [tariff_time_change]");
         goto end;
     }
-}
+    }
 
     trigger_local_var = OpenAPI_trigger_create (
         trigger_type_local_nonprim,

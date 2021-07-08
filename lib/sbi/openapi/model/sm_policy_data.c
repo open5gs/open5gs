@@ -183,7 +183,7 @@ OpenAPI_sm_policy_data_t *OpenAPI_sm_policy_data_parseFromJSON(cJSON *sm_policy_
             localMapObject->string, OpenAPI_usage_mon_data_limit_parseFromJSON(localMapObject));
         OpenAPI_list_add(um_data_limitsList , localMapKeyPair);
     }
-}
+    }
 
     cJSON *um_data = cJSON_GetObjectItemCaseSensitive(sm_policy_dataJSON, "umData");
 
@@ -206,7 +206,7 @@ OpenAPI_sm_policy_data_t *OpenAPI_sm_policy_data_parseFromJSON(cJSON *sm_policy_
             localMapObject->string, OpenAPI_usage_mon_data_parseFromJSON(localMapObject));
         OpenAPI_list_add(um_dataList , localMapKeyPair);
     }
-}
+    }
 
     cJSON *supp_feat = cJSON_GetObjectItemCaseSensitive(sm_policy_dataJSON, "suppFeat");
 
@@ -215,7 +215,7 @@ OpenAPI_sm_policy_data_t *OpenAPI_sm_policy_data_parseFromJSON(cJSON *sm_policy_
         ogs_error("OpenAPI_sm_policy_data_parseFromJSON() failed [supp_feat]");
         goto end;
     }
-}
+    }
 
     sm_policy_data_local_var = OpenAPI_sm_policy_data_create (
         sm_policy_snssai_dataList,

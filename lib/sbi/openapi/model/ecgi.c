@@ -102,7 +102,7 @@ OpenAPI_ecgi_t *OpenAPI_ecgi_parseFromJSON(cJSON *ecgiJSON)
         ogs_error("OpenAPI_ecgi_parseFromJSON() failed [nid]");
         goto end;
     }
-}
+    }
 
     ecgi_local_var = OpenAPI_ecgi_create (
         plmn_id_local_nonprim,

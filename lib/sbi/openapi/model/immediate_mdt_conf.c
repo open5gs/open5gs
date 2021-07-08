@@ -313,7 +313,7 @@ OpenAPI_immediate_mdt_conf_t *OpenAPI_immediate_mdt_conf_parseFromJSON(cJSON *im
 
         OpenAPI_list_add(measurement_lte_listList, (void *)OpenAPI_measurement_lte_for_mdt_FromString(measurement_lte_list_local_nonprimitive->valuestring));
     }
-}
+    }
 
     cJSON *measurement_nr_list = cJSON_GetObjectItemCaseSensitive(immediate_mdt_confJSON, "measurementNrList");
 
@@ -335,7 +335,7 @@ OpenAPI_immediate_mdt_conf_t *OpenAPI_immediate_mdt_conf_parseFromJSON(cJSON *im
 
         OpenAPI_list_add(measurement_nr_listList, (void *)OpenAPI_measurement_nr_for_mdt_FromString(measurement_nr_list_local_nonprimitive->valuestring));
     }
-}
+    }
 
     cJSON *reporting_trigger_list = cJSON_GetObjectItemCaseSensitive(immediate_mdt_confJSON, "reportingTriggerList");
 
@@ -357,7 +357,7 @@ OpenAPI_immediate_mdt_conf_t *OpenAPI_immediate_mdt_conf_parseFromJSON(cJSON *im
 
         OpenAPI_list_add(reporting_trigger_listList, (void *)OpenAPI_reporting_trigger_FromString(reporting_trigger_list_local_nonprimitive->valuestring));
     }
-}
+    }
 
     cJSON *report_interval = cJSON_GetObjectItemCaseSensitive(immediate_mdt_confJSON, "reportInterval");
 
@@ -368,7 +368,7 @@ OpenAPI_immediate_mdt_conf_t *OpenAPI_immediate_mdt_conf_parseFromJSON(cJSON *im
         goto end;
     }
     report_intervalVariable = OpenAPI_report_interval_mdt_FromString(report_interval->valuestring);
-}
+    }
 
     cJSON *report_interval_nr = cJSON_GetObjectItemCaseSensitive(immediate_mdt_confJSON, "reportIntervalNr");
 
@@ -379,7 +379,7 @@ OpenAPI_immediate_mdt_conf_t *OpenAPI_immediate_mdt_conf_parseFromJSON(cJSON *im
         goto end;
     }
     report_interval_nrVariable = OpenAPI_report_interval_nr_mdt_FromString(report_interval_nr->valuestring);
-}
+    }
 
     cJSON *report_amount = cJSON_GetObjectItemCaseSensitive(immediate_mdt_confJSON, "reportAmount");
 
@@ -390,7 +390,7 @@ OpenAPI_immediate_mdt_conf_t *OpenAPI_immediate_mdt_conf_parseFromJSON(cJSON *im
         goto end;
     }
     report_amountVariable = OpenAPI_report_amount_mdt_FromString(report_amount->valuestring);
-}
+    }
 
     cJSON *event_threshold_rsrp = cJSON_GetObjectItemCaseSensitive(immediate_mdt_confJSON, "eventThresholdRsrp");
 
@@ -399,7 +399,7 @@ OpenAPI_immediate_mdt_conf_t *OpenAPI_immediate_mdt_conf_parseFromJSON(cJSON *im
         ogs_error("OpenAPI_immediate_mdt_conf_parseFromJSON() failed [event_threshold_rsrp]");
         goto end;
     }
-}
+    }
 
     cJSON *event_threshold_rsrq = cJSON_GetObjectItemCaseSensitive(immediate_mdt_confJSON, "eventThresholdRsrq");
 
@@ -408,7 +408,7 @@ OpenAPI_immediate_mdt_conf_t *OpenAPI_immediate_mdt_conf_parseFromJSON(cJSON *im
         ogs_error("OpenAPI_immediate_mdt_conf_parseFromJSON() failed [event_threshold_rsrq]");
         goto end;
     }
-}
+    }
 
     cJSON *event_threshold_rsrp_nr = cJSON_GetObjectItemCaseSensitive(immediate_mdt_confJSON, "eventThresholdRsrpNr");
 
@@ -417,7 +417,7 @@ OpenAPI_immediate_mdt_conf_t *OpenAPI_immediate_mdt_conf_parseFromJSON(cJSON *im
         ogs_error("OpenAPI_immediate_mdt_conf_parseFromJSON() failed [event_threshold_rsrp_nr]");
         goto end;
     }
-}
+    }
 
     cJSON *event_threshold_rsrq_nr = cJSON_GetObjectItemCaseSensitive(immediate_mdt_confJSON, "eventThresholdRsrqNr");
 
@@ -426,7 +426,7 @@ OpenAPI_immediate_mdt_conf_t *OpenAPI_immediate_mdt_conf_parseFromJSON(cJSON *im
         ogs_error("OpenAPI_immediate_mdt_conf_parseFromJSON() failed [event_threshold_rsrq_nr]");
         goto end;
     }
-}
+    }
 
     cJSON *collection_period_rmm_lte = cJSON_GetObjectItemCaseSensitive(immediate_mdt_confJSON, "collectionPeriodRmmLte");
 
@@ -437,7 +437,7 @@ OpenAPI_immediate_mdt_conf_t *OpenAPI_immediate_mdt_conf_parseFromJSON(cJSON *im
         goto end;
     }
     collection_period_rmm_lteVariable = OpenAPI_collection_period_rmm_lte_mdt_FromString(collection_period_rmm_lte->valuestring);
-}
+    }
 
     cJSON *collection_period_rmm_nr = cJSON_GetObjectItemCaseSensitive(immediate_mdt_confJSON, "collectionPeriodRmmNr");
 
@@ -448,7 +448,7 @@ OpenAPI_immediate_mdt_conf_t *OpenAPI_immediate_mdt_conf_parseFromJSON(cJSON *im
         goto end;
     }
     collection_period_rmm_nrVariable = OpenAPI_collection_period_rmm_nr_mdt_FromString(collection_period_rmm_nr->valuestring);
-}
+    }
 
     cJSON *measurement_period_lte = cJSON_GetObjectItemCaseSensitive(immediate_mdt_confJSON, "measurementPeriodLte");
 
@@ -459,14 +459,14 @@ OpenAPI_immediate_mdt_conf_t *OpenAPI_immediate_mdt_conf_parseFromJSON(cJSON *im
         goto end;
     }
     measurement_period_lteVariable = OpenAPI_measurement_period_lte_mdt_FromString(measurement_period_lte->valuestring);
-}
+    }
 
     cJSON *area_scope = cJSON_GetObjectItemCaseSensitive(immediate_mdt_confJSON, "areaScope");
 
     OpenAPI_area_scope_t *area_scope_local_nonprim = NULL;
     if (area_scope) { 
     area_scope_local_nonprim = OpenAPI_area_scope_parseFromJSON(area_scope);
-}
+    }
 
     cJSON *positioning_method = cJSON_GetObjectItemCaseSensitive(immediate_mdt_confJSON, "positioningMethod");
 
@@ -477,7 +477,7 @@ OpenAPI_immediate_mdt_conf_t *OpenAPI_immediate_mdt_conf_parseFromJSON(cJSON *im
         goto end;
     }
     positioning_methodVariable = OpenAPI_positioning_method_mdt_FromString(positioning_method->valuestring);
-}
+    }
 
     cJSON *add_positioning_method_list = cJSON_GetObjectItemCaseSensitive(immediate_mdt_confJSON, "addPositioningMethodList");
 
@@ -499,7 +499,7 @@ OpenAPI_immediate_mdt_conf_t *OpenAPI_immediate_mdt_conf_parseFromJSON(cJSON *im
 
         OpenAPI_list_add(add_positioning_method_listList, (void *)OpenAPI_positioning_method_mdt_FromString(add_positioning_method_list_local_nonprimitive->valuestring));
     }
-}
+    }
 
     cJSON *mdt_allowed_plmn_id_list = cJSON_GetObjectItemCaseSensitive(immediate_mdt_confJSON, "mdtAllowedPlmnIdList");
 
@@ -522,7 +522,7 @@ OpenAPI_immediate_mdt_conf_t *OpenAPI_immediate_mdt_conf_parseFromJSON(cJSON *im
 
         OpenAPI_list_add(mdt_allowed_plmn_id_listList, mdt_allowed_plmn_id_listItem);
     }
-}
+    }
 
     cJSON *sensor_measurement_list = cJSON_GetObjectItemCaseSensitive(immediate_mdt_confJSON, "sensorMeasurementList");
 
@@ -544,7 +544,7 @@ OpenAPI_immediate_mdt_conf_t *OpenAPI_immediate_mdt_conf_parseFromJSON(cJSON *im
 
         OpenAPI_list_add(sensor_measurement_listList, (void *)OpenAPI_sensor_measurement_FromString(sensor_measurement_list_local_nonprimitive->valuestring));
     }
-}
+    }
 
     immediate_mdt_conf_local_var = OpenAPI_immediate_mdt_conf_create (
         job_typeVariable,

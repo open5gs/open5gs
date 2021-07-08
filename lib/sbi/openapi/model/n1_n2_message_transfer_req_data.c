@@ -253,21 +253,21 @@ OpenAPI_n1_n2_message_transfer_req_data_t *OpenAPI_n1_n2_message_transfer_req_da
     OpenAPI_n1_message_container_t *n1_message_container_local_nonprim = NULL;
     if (n1_message_container) { 
     n1_message_container_local_nonprim = OpenAPI_n1_message_container_parseFromJSON(n1_message_container);
-}
+    }
 
     cJSON *n2_info_container = cJSON_GetObjectItemCaseSensitive(n1_n2_message_transfer_req_dataJSON, "n2InfoContainer");
 
     OpenAPI_n2_info_container_t *n2_info_container_local_nonprim = NULL;
     if (n2_info_container) { 
     n2_info_container_local_nonprim = OpenAPI_n2_info_container_parseFromJSON(n2_info_container);
-}
+    }
 
     cJSON *mt_data = cJSON_GetObjectItemCaseSensitive(n1_n2_message_transfer_req_dataJSON, "mtData");
 
     OpenAPI_ref_to_binary_data_t *mt_data_local_nonprim = NULL;
     if (mt_data) { 
     mt_data_local_nonprim = OpenAPI_ref_to_binary_data_parseFromJSON(mt_data);
-}
+    }
 
     cJSON *skip_ind = cJSON_GetObjectItemCaseSensitive(n1_n2_message_transfer_req_dataJSON, "skipInd");
 
@@ -276,7 +276,7 @@ OpenAPI_n1_n2_message_transfer_req_data_t *OpenAPI_n1_n2_message_transfer_req_da
         ogs_error("OpenAPI_n1_n2_message_transfer_req_data_parseFromJSON() failed [skip_ind]");
         goto end;
     }
-}
+    }
 
     cJSON *last_msg_indication = cJSON_GetObjectItemCaseSensitive(n1_n2_message_transfer_req_dataJSON, "lastMsgIndication");
 
@@ -285,7 +285,7 @@ OpenAPI_n1_n2_message_transfer_req_data_t *OpenAPI_n1_n2_message_transfer_req_da
         ogs_error("OpenAPI_n1_n2_message_transfer_req_data_parseFromJSON() failed [last_msg_indication]");
         goto end;
     }
-}
+    }
 
     cJSON *pdu_session_id = cJSON_GetObjectItemCaseSensitive(n1_n2_message_transfer_req_dataJSON, "pduSessionId");
 
@@ -294,7 +294,7 @@ OpenAPI_n1_n2_message_transfer_req_data_t *OpenAPI_n1_n2_message_transfer_req_da
         ogs_error("OpenAPI_n1_n2_message_transfer_req_data_parseFromJSON() failed [pdu_session_id]");
         goto end;
     }
-}
+    }
 
     cJSON *lcs_correlation_id = cJSON_GetObjectItemCaseSensitive(n1_n2_message_transfer_req_dataJSON, "lcsCorrelationId");
 
@@ -303,7 +303,7 @@ OpenAPI_n1_n2_message_transfer_req_data_t *OpenAPI_n1_n2_message_transfer_req_da
         ogs_error("OpenAPI_n1_n2_message_transfer_req_data_parseFromJSON() failed [lcs_correlation_id]");
         goto end;
     }
-}
+    }
 
     cJSON *ppi = cJSON_GetObjectItemCaseSensitive(n1_n2_message_transfer_req_dataJSON, "ppi");
 
@@ -312,14 +312,14 @@ OpenAPI_n1_n2_message_transfer_req_data_t *OpenAPI_n1_n2_message_transfer_req_da
         ogs_error("OpenAPI_n1_n2_message_transfer_req_data_parseFromJSON() failed [ppi]");
         goto end;
     }
-}
+    }
 
     cJSON *arp = cJSON_GetObjectItemCaseSensitive(n1_n2_message_transfer_req_dataJSON, "arp");
 
     OpenAPI_arp_t *arp_local_nonprim = NULL;
     if (arp) { 
     arp_local_nonprim = OpenAPI_arp_parseFromJSON(arp);
-}
+    }
 
     cJSON *_5qi = cJSON_GetObjectItemCaseSensitive(n1_n2_message_transfer_req_dataJSON, "5qi");
 
@@ -328,7 +328,7 @@ OpenAPI_n1_n2_message_transfer_req_data_t *OpenAPI_n1_n2_message_transfer_req_da
         ogs_error("OpenAPI_n1_n2_message_transfer_req_data_parseFromJSON() failed [_5qi]");
         goto end;
     }
-}
+    }
 
     cJSON *n1n2_failure_txf_notif_uri = cJSON_GetObjectItemCaseSensitive(n1_n2_message_transfer_req_dataJSON, "n1n2FailureTxfNotifURI");
 
@@ -337,7 +337,7 @@ OpenAPI_n1_n2_message_transfer_req_data_t *OpenAPI_n1_n2_message_transfer_req_da
         ogs_error("OpenAPI_n1_n2_message_transfer_req_data_parseFromJSON() failed [n1n2_failure_txf_notif_uri]");
         goto end;
     }
-}
+    }
 
     cJSON *smf_reallocation_ind = cJSON_GetObjectItemCaseSensitive(n1_n2_message_transfer_req_dataJSON, "smfReallocationInd");
 
@@ -346,14 +346,14 @@ OpenAPI_n1_n2_message_transfer_req_data_t *OpenAPI_n1_n2_message_transfer_req_da
         ogs_error("OpenAPI_n1_n2_message_transfer_req_data_parseFromJSON() failed [smf_reallocation_ind]");
         goto end;
     }
-}
+    }
 
     cJSON *area_of_validity = cJSON_GetObjectItemCaseSensitive(n1_n2_message_transfer_req_dataJSON, "areaOfValidity");
 
     OpenAPI_area_of_validity_t *area_of_validity_local_nonprim = NULL;
     if (area_of_validity) { 
     area_of_validity_local_nonprim = OpenAPI_area_of_validity_parseFromJSON(area_of_validity);
-}
+    }
 
     cJSON *supported_features = cJSON_GetObjectItemCaseSensitive(n1_n2_message_transfer_req_dataJSON, "supportedFeatures");
 
@@ -362,14 +362,14 @@ OpenAPI_n1_n2_message_transfer_req_data_t *OpenAPI_n1_n2_message_transfer_req_da
         ogs_error("OpenAPI_n1_n2_message_transfer_req_data_parseFromJSON() failed [supported_features]");
         goto end;
     }
-}
+    }
 
     cJSON *old_guami = cJSON_GetObjectItemCaseSensitive(n1_n2_message_transfer_req_dataJSON, "oldGuami");
 
     OpenAPI_guami_t *old_guami_local_nonprim = NULL;
     if (old_guami) { 
     old_guami_local_nonprim = OpenAPI_guami_parseFromJSON(old_guami);
-}
+    }
 
     cJSON *ma_accepted_ind = cJSON_GetObjectItemCaseSensitive(n1_n2_message_transfer_req_dataJSON, "maAcceptedInd");
 
@@ -378,7 +378,7 @@ OpenAPI_n1_n2_message_transfer_req_data_t *OpenAPI_n1_n2_message_transfer_req_da
         ogs_error("OpenAPI_n1_n2_message_transfer_req_data_parseFromJSON() failed [ma_accepted_ind]");
         goto end;
     }
-}
+    }
 
     cJSON *ext_buf_support = cJSON_GetObjectItemCaseSensitive(n1_n2_message_transfer_req_dataJSON, "extBufSupport");
 
@@ -387,7 +387,7 @@ OpenAPI_n1_n2_message_transfer_req_data_t *OpenAPI_n1_n2_message_transfer_req_da
         ogs_error("OpenAPI_n1_n2_message_transfer_req_data_parseFromJSON() failed [ext_buf_support]");
         goto end;
     }
-}
+    }
 
     cJSON *target_access = cJSON_GetObjectItemCaseSensitive(n1_n2_message_transfer_req_dataJSON, "targetAccess");
 
@@ -398,7 +398,7 @@ OpenAPI_n1_n2_message_transfer_req_data_t *OpenAPI_n1_n2_message_transfer_req_da
         goto end;
     }
     target_accessVariable = OpenAPI_access_type_FromString(target_access->valuestring);
-}
+    }
 
     n1_n2_message_transfer_req_data_local_var = OpenAPI_n1_n2_message_transfer_req_data_create (
         n1_message_container ? n1_message_container_local_nonprim : NULL,

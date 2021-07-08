@@ -109,7 +109,7 @@ OpenAPI_af_external_t *OpenAPI_af_external_parseFromJSON(cJSON *af_externalJSON)
         ogs_error("OpenAPI_af_external_parseFromJSON() failed [af_id]");
         goto end;
     }
-}
+    }
 
     cJSON *allowed_geographic_area = cJSON_GetObjectItemCaseSensitive(af_externalJSON, "allowedGeographicArea");
 
@@ -132,7 +132,7 @@ OpenAPI_af_external_t *OpenAPI_af_external_parseFromJSON(cJSON *af_externalJSON)
 
         OpenAPI_list_add(allowed_geographic_areaList, allowed_geographic_areaItem);
     }
-}
+    }
 
     cJSON *privacy_check_related_action = cJSON_GetObjectItemCaseSensitive(af_externalJSON, "privacyCheckRelatedAction");
 
@@ -143,14 +143,14 @@ OpenAPI_af_external_t *OpenAPI_af_external_parseFromJSON(cJSON *af_externalJSON)
         goto end;
     }
     privacy_check_related_actionVariable = OpenAPI_privacy_check_related_action_FromString(privacy_check_related_action->valuestring);
-}
+    }
 
     cJSON *valid_time_period = cJSON_GetObjectItemCaseSensitive(af_externalJSON, "validTimePeriod");
 
     OpenAPI_valid_time_period_t *valid_time_period_local_nonprim = NULL;
     if (valid_time_period) { 
     valid_time_period_local_nonprim = OpenAPI_valid_time_period_parseFromJSON(valid_time_period);
-}
+    }
 
     af_external_local_var = OpenAPI_af_external_create (
         af_id ? ogs_strdup_or_assert(af_id->valuestring) : NULL,

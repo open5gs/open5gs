@@ -111,7 +111,7 @@ OpenAPI_acceptable_service_info_t *OpenAPI_acceptable_service_info_parseFromJSON
             localMapObject->string, OpenAPI_media_component_parseFromJSON(localMapObject));
         OpenAPI_list_add(acc_bw_med_compsList , localMapKeyPair);
     }
-}
+    }
 
     cJSON *mar_bw_ul = cJSON_GetObjectItemCaseSensitive(acceptable_service_infoJSON, "marBwUl");
 
@@ -120,7 +120,7 @@ OpenAPI_acceptable_service_info_t *OpenAPI_acceptable_service_info_parseFromJSON
         ogs_error("OpenAPI_acceptable_service_info_parseFromJSON() failed [mar_bw_ul]");
         goto end;
     }
-}
+    }
 
     cJSON *mar_bw_dl = cJSON_GetObjectItemCaseSensitive(acceptable_service_infoJSON, "marBwDl");
 
@@ -129,7 +129,7 @@ OpenAPI_acceptable_service_info_t *OpenAPI_acceptable_service_info_parseFromJSON
         ogs_error("OpenAPI_acceptable_service_info_parseFromJSON() failed [mar_bw_dl]");
         goto end;
     }
-}
+    }
 
     acceptable_service_info_local_var = OpenAPI_acceptable_service_info_create (
         acc_bw_med_comps ? acc_bw_med_compsList : NULL,

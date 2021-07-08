@@ -226,21 +226,21 @@ OpenAPI_ue_context_relocate_data_t *OpenAPI_ue_context_relocate_data_parseFromJS
 
         OpenAPI_list_add(pdu_session_listList, pdu_session_listItem);
     }
-}
+    }
 
     cJSON *ue_radio_capability = cJSON_GetObjectItemCaseSensitive(ue_context_relocate_dataJSON, "ueRadioCapability");
 
     OpenAPI_n2_info_content_t *ue_radio_capability_local_nonprim = NULL;
     if (ue_radio_capability) { 
     ue_radio_capability_local_nonprim = OpenAPI_n2_info_content_parseFromJSON(ue_radio_capability);
-}
+    }
 
     cJSON *ngap_cause = cJSON_GetObjectItemCaseSensitive(ue_context_relocate_dataJSON, "ngapCause");
 
     OpenAPI_ng_ap_cause_t *ngap_cause_local_nonprim = NULL;
     if (ngap_cause) { 
     ngap_cause_local_nonprim = OpenAPI_ng_ap_cause_parseFromJSON(ngap_cause);
-}
+    }
 
     cJSON *supported_features = cJSON_GetObjectItemCaseSensitive(ue_context_relocate_dataJSON, "supportedFeatures");
 
@@ -249,7 +249,7 @@ OpenAPI_ue_context_relocate_data_t *OpenAPI_ue_context_relocate_data_parseFromJS
         ogs_error("OpenAPI_ue_context_relocate_data_parseFromJSON() failed [supported_features]");
         goto end;
     }
-}
+    }
 
     ue_context_relocate_data_local_var = OpenAPI_ue_context_relocate_data_create (
         ue_context_local_nonprim,

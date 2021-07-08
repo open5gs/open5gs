@@ -75,7 +75,7 @@ OpenAPI_atsss_capability_t *OpenAPI_atsss_capability_parseFromJSON(cJSON *atsss_
         ogs_error("OpenAPI_atsss_capability_parseFromJSON() failed [atsss_ll]");
         goto end;
     }
-}
+    }
 
     cJSON *mptcp = cJSON_GetObjectItemCaseSensitive(atsss_capabilityJSON, "mptcp");
 
@@ -84,7 +84,7 @@ OpenAPI_atsss_capability_t *OpenAPI_atsss_capability_parseFromJSON(cJSON *atsss_
         ogs_error("OpenAPI_atsss_capability_parseFromJSON() failed [mptcp]");
         goto end;
     }
-}
+    }
 
     cJSON *rtt_without_pmf = cJSON_GetObjectItemCaseSensitive(atsss_capabilityJSON, "rttWithoutPmf");
 
@@ -93,7 +93,7 @@ OpenAPI_atsss_capability_t *OpenAPI_atsss_capability_parseFromJSON(cJSON *atsss_
         ogs_error("OpenAPI_atsss_capability_parseFromJSON() failed [rtt_without_pmf]");
         goto end;
     }
-}
+    }
 
     atsss_capability_local_var = OpenAPI_atsss_capability_create (
         atsss_ll ? atsss_ll->valueint : 0,

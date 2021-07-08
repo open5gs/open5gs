@@ -62,7 +62,7 @@ OpenAPI_extended_problem_details_all_of_t *OpenAPI_extended_problem_details_all_
     OpenAPI_acceptable_service_info_t *acceptable_serv_info_local_nonprim = NULL;
     if (acceptable_serv_info) { 
     acceptable_serv_info_local_nonprim = OpenAPI_acceptable_service_info_parseFromJSON(acceptable_serv_info);
-}
+    }
 
     extended_problem_details_all_of_local_var = OpenAPI_extended_problem_details_all_of_create (
         acceptable_serv_info ? acceptable_serv_info_local_nonprim : NULL

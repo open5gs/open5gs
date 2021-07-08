@@ -86,7 +86,7 @@ OpenAPI_inline_object_4_t *OpenAPI_inline_object_4_parseFromJSON(cJSON *inline_o
     OpenAPI_n2_information_notification_t *json_data_local_nonprim = NULL;
     if (json_data) { 
     json_data_local_nonprim = OpenAPI_n2_information_notification_parseFromJSON(json_data);
-}
+    }
 
     cJSON *binary_data_n1_message = cJSON_GetObjectItemCaseSensitive(inline_object_4JSON, "binaryDataN1Message");
 
@@ -101,7 +101,7 @@ OpenAPI_inline_object_4_t *OpenAPI_inline_object_4_parseFromJSON(cJSON *inline_o
         ogs_error("OpenAPI_inline_object_4_parseFromJSON() failed [binary_data_n1_message]");
         goto end;
     }
-}
+    }
 
     cJSON *binary_data_n2_information = cJSON_GetObjectItemCaseSensitive(inline_object_4JSON, "binaryDataN2Information");
 
@@ -116,7 +116,7 @@ OpenAPI_inline_object_4_t *OpenAPI_inline_object_4_parseFromJSON(cJSON *inline_o
         ogs_error("OpenAPI_inline_object_4_parseFromJSON() failed [binary_data_n2_information]");
         goto end;
     }
-}
+    }
 
     inline_object_4_local_var = OpenAPI_inline_object_4_create (
         json_data ? json_data_local_nonprim : NULL,

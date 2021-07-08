@@ -96,7 +96,7 @@ OpenAPI_transfer_policy_t *OpenAPI_transfer_policy_parseFromJSON(cJSON *transfer
         ogs_error("OpenAPI_transfer_policy_parseFromJSON() failed [max_bit_rate_dl]");
         goto end;
     }
-}
+    }
 
     cJSON *max_bit_rate_ul = cJSON_GetObjectItemCaseSensitive(transfer_policyJSON, "maxBitRateUl");
 
@@ -105,7 +105,7 @@ OpenAPI_transfer_policy_t *OpenAPI_transfer_policy_parseFromJSON(cJSON *transfer
         ogs_error("OpenAPI_transfer_policy_parseFromJSON() failed [max_bit_rate_ul]");
         goto end;
     }
-}
+    }
 
     cJSON *rating_group = cJSON_GetObjectItemCaseSensitive(transfer_policyJSON, "ratingGroup");
     if (!rating_group) {

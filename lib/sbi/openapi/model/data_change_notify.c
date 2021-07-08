@@ -185,7 +185,7 @@ OpenAPI_data_change_notify_t *OpenAPI_data_change_notify_parseFromJSON(cJSON *da
     }
     OpenAPI_list_add(original_callback_referenceList , ogs_strdup_or_assert(original_callback_reference_local->valuestring));
                     }
-}
+    }
 
     cJSON *ue_id = cJSON_GetObjectItemCaseSensitive(data_change_notifyJSON, "ueId");
 
@@ -194,7 +194,7 @@ OpenAPI_data_change_notify_t *OpenAPI_data_change_notify_parseFromJSON(cJSON *da
         ogs_error("OpenAPI_data_change_notify_parseFromJSON() failed [ue_id]");
         goto end;
     }
-}
+    }
 
     cJSON *notify_items = cJSON_GetObjectItemCaseSensitive(data_change_notifyJSON, "notifyItems");
 
@@ -217,14 +217,14 @@ OpenAPI_data_change_notify_t *OpenAPI_data_change_notify_parseFromJSON(cJSON *da
 
         OpenAPI_list_add(notify_itemsList, notify_itemsItem);
     }
-}
+    }
 
     cJSON *sdm_subscription = cJSON_GetObjectItemCaseSensitive(data_change_notifyJSON, "sdmSubscription");
 
     OpenAPI_sdm_subscription_1_t *sdm_subscription_local_nonprim = NULL;
     if (sdm_subscription) { 
     sdm_subscription_local_nonprim = OpenAPI_sdm_subscription_1_parseFromJSON(sdm_subscription);
-}
+    }
 
     cJSON *additional_sdm_subscriptions = cJSON_GetObjectItemCaseSensitive(data_change_notifyJSON, "additionalSdmSubscriptions");
 
@@ -247,7 +247,7 @@ OpenAPI_data_change_notify_t *OpenAPI_data_change_notify_parseFromJSON(cJSON *da
 
         OpenAPI_list_add(additional_sdm_subscriptionsList, additional_sdm_subscriptionsItem);
     }
-}
+    }
 
     cJSON *subscription_data_subscriptions = cJSON_GetObjectItemCaseSensitive(data_change_notifyJSON, "subscriptionDataSubscriptions");
 
@@ -270,7 +270,7 @@ OpenAPI_data_change_notify_t *OpenAPI_data_change_notify_parseFromJSON(cJSON *da
 
         OpenAPI_list_add(subscription_data_subscriptionsList, subscription_data_subscriptionsItem);
     }
-}
+    }
 
     data_change_notify_local_var = OpenAPI_data_change_notify_create (
         original_callback_reference ? original_callback_referenceList : NULL,

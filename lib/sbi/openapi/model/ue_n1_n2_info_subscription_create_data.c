@@ -124,7 +124,7 @@ OpenAPI_ue_n1_n2_info_subscription_create_data_t *OpenAPI_ue_n1_n2_info_subscrip
         goto end;
     }
     n2_information_classVariable = OpenAPI_n2_information_class_FromString(n2_information_class->valuestring);
-}
+    }
 
     cJSON *n2_notify_callback_uri = cJSON_GetObjectItemCaseSensitive(ue_n1_n2_info_subscription_create_dataJSON, "n2NotifyCallbackUri");
 
@@ -133,7 +133,7 @@ OpenAPI_ue_n1_n2_info_subscription_create_data_t *OpenAPI_ue_n1_n2_info_subscrip
         ogs_error("OpenAPI_ue_n1_n2_info_subscription_create_data_parseFromJSON() failed [n2_notify_callback_uri]");
         goto end;
     }
-}
+    }
 
     cJSON *n1_message_class = cJSON_GetObjectItemCaseSensitive(ue_n1_n2_info_subscription_create_dataJSON, "n1MessageClass");
 
@@ -144,7 +144,7 @@ OpenAPI_ue_n1_n2_info_subscription_create_data_t *OpenAPI_ue_n1_n2_info_subscrip
         goto end;
     }
     n1_message_classVariable = OpenAPI_n1_message_class_FromString(n1_message_class->valuestring);
-}
+    }
 
     cJSON *n1_notify_callback_uri = cJSON_GetObjectItemCaseSensitive(ue_n1_n2_info_subscription_create_dataJSON, "n1NotifyCallbackUri");
 
@@ -153,7 +153,7 @@ OpenAPI_ue_n1_n2_info_subscription_create_data_t *OpenAPI_ue_n1_n2_info_subscrip
         ogs_error("OpenAPI_ue_n1_n2_info_subscription_create_data_parseFromJSON() failed [n1_notify_callback_uri]");
         goto end;
     }
-}
+    }
 
     cJSON *nf_id = cJSON_GetObjectItemCaseSensitive(ue_n1_n2_info_subscription_create_dataJSON, "nfId");
 
@@ -162,7 +162,7 @@ OpenAPI_ue_n1_n2_info_subscription_create_data_t *OpenAPI_ue_n1_n2_info_subscrip
         ogs_error("OpenAPI_ue_n1_n2_info_subscription_create_data_parseFromJSON() failed [nf_id]");
         goto end;
     }
-}
+    }
 
     cJSON *supported_features = cJSON_GetObjectItemCaseSensitive(ue_n1_n2_info_subscription_create_dataJSON, "supportedFeatures");
 
@@ -171,14 +171,14 @@ OpenAPI_ue_n1_n2_info_subscription_create_data_t *OpenAPI_ue_n1_n2_info_subscrip
         ogs_error("OpenAPI_ue_n1_n2_info_subscription_create_data_parseFromJSON() failed [supported_features]");
         goto end;
     }
-}
+    }
 
     cJSON *old_guami = cJSON_GetObjectItemCaseSensitive(ue_n1_n2_info_subscription_create_dataJSON, "oldGuami");
 
     OpenAPI_guami_t *old_guami_local_nonprim = NULL;
     if (old_guami) { 
     old_guami_local_nonprim = OpenAPI_guami_parseFromJSON(old_guami);
-}
+    }
 
     ue_n1_n2_info_subscription_create_data_local_var = OpenAPI_ue_n1_n2_info_subscription_create_data_create (
         n2_information_class ? n2_information_classVariable : 0,

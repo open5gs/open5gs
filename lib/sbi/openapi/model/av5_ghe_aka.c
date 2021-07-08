@@ -117,7 +117,7 @@ OpenAPI_av5_ghe_aka_t *OpenAPI_av5_ghe_aka_parseFromJSON(cJSON *av5_ghe_akaJSON)
         ogs_error("OpenAPI_av5_ghe_aka_parseFromJSON() failed [xres_star]");
         goto end;
     }
-}
+    }
 
     cJSON *autn = cJSON_GetObjectItemCaseSensitive(av5_ghe_akaJSON, "autn");
     if (!autn) {
@@ -138,7 +138,7 @@ OpenAPI_av5_ghe_aka_t *OpenAPI_av5_ghe_aka_parseFromJSON(cJSON *av5_ghe_akaJSON)
         ogs_error("OpenAPI_av5_ghe_aka_parseFromJSON() failed [kausf]");
         goto end;
     }
-}
+    }
 
     av5_ghe_aka_local_var = OpenAPI_av5_ghe_aka_create (
         av_typeVariable,

@@ -100,7 +100,7 @@ OpenAPI_flow_info_t *OpenAPI_flow_info_parseFromJSON(cJSON *flow_infoJSON)
     }
     OpenAPI_list_add(flow_descriptionsList , ogs_strdup_or_assert(flow_descriptions_local->valuestring));
                     }
-}
+    }
 
     flow_info_local_var = OpenAPI_flow_info_create (
         flow_id->valuedouble,

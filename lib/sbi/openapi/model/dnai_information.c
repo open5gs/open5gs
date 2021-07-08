@@ -86,7 +86,7 @@ OpenAPI_dnai_information_t *OpenAPI_dnai_information_parseFromJSON(cJSON *dnai_i
         ogs_error("OpenAPI_dnai_information_parseFromJSON() failed [no_dnai_change_ind]");
         goto end;
     }
-}
+    }
 
     cJSON *no_local_psa_change_ind = cJSON_GetObjectItemCaseSensitive(dnai_informationJSON, "noLocalPsaChangeInd");
 
@@ -95,7 +95,7 @@ OpenAPI_dnai_information_t *OpenAPI_dnai_information_parseFromJSON(cJSON *dnai_i
         ogs_error("OpenAPI_dnai_information_parseFromJSON() failed [no_local_psa_change_ind]");
         goto end;
     }
-}
+    }
 
     dnai_information_local_var = OpenAPI_dnai_information_create (
         ogs_strdup_or_assert(dnai->valuestring),

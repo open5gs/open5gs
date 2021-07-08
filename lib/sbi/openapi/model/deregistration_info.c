@@ -78,7 +78,7 @@ OpenAPI_deregistration_info_t *OpenAPI_deregistration_info_parseFromJSON(cJSON *
         ogs_error("OpenAPI_deregistration_info_parseFromJSON() failed [supported_features]");
         goto end;
     }
-}
+    }
 
     deregistration_info_local_var = OpenAPI_deregistration_info_create (
         ogs_strdup_or_assert(supi->valuestring),

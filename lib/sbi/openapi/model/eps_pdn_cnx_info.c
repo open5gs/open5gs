@@ -85,7 +85,7 @@ OpenAPI_eps_pdn_cnx_info_t *OpenAPI_eps_pdn_cnx_info_parseFromJSON(cJSON *eps_pd
         ogs_error("OpenAPI_eps_pdn_cnx_info_parseFromJSON() failed [pgw_node_name]");
         goto end;
     }
-}
+    }
 
     cJSON *linked_bearer_id = cJSON_GetObjectItemCaseSensitive(eps_pdn_cnx_infoJSON, "linkedBearerId");
 
@@ -94,7 +94,7 @@ OpenAPI_eps_pdn_cnx_info_t *OpenAPI_eps_pdn_cnx_info_parseFromJSON(cJSON *eps_pd
         ogs_error("OpenAPI_eps_pdn_cnx_info_parseFromJSON() failed [linked_bearer_id]");
         goto end;
     }
-}
+    }
 
     eps_pdn_cnx_info_local_var = OpenAPI_eps_pdn_cnx_info_create (
         pgw_s8c_fteid->valueint,

@@ -104,14 +104,14 @@ OpenAPI_lcs_privacy_data_1_t *OpenAPI_lcs_privacy_data_1_parseFromJSON(cJSON *lc
     OpenAPI_lpi_1_t *lpi_local_nonprim = NULL;
     if (lpi) { 
     lpi_local_nonprim = OpenAPI_lpi_1_parseFromJSON(lpi);
-}
+    }
 
     cJSON *unrelated_class = cJSON_GetObjectItemCaseSensitive(lcs_privacy_data_1JSON, "unrelatedClass");
 
     OpenAPI_unrelated_class_1_t *unrelated_class_local_nonprim = NULL;
     if (unrelated_class) { 
     unrelated_class_local_nonprim = OpenAPI_unrelated_class_1_parseFromJSON(unrelated_class);
-}
+    }
 
     cJSON *plmn_operator_classes = cJSON_GetObjectItemCaseSensitive(lcs_privacy_data_1JSON, "plmnOperatorClasses");
 
@@ -134,7 +134,7 @@ OpenAPI_lcs_privacy_data_1_t *OpenAPI_lcs_privacy_data_1_parseFromJSON(cJSON *lc
 
         OpenAPI_list_add(plmn_operator_classesList, plmn_operator_classesItem);
     }
-}
+    }
 
     lcs_privacy_data_1_local_var = OpenAPI_lcs_privacy_data_1_create (
         lpi ? lpi_local_nonprim : NULL,

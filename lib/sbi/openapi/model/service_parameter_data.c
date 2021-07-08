@@ -183,7 +183,7 @@ OpenAPI_service_parameter_data_t *OpenAPI_service_parameter_data_parseFromJSON(c
         ogs_error("OpenAPI_service_parameter_data_parseFromJSON() failed [app_id]");
         goto end;
     }
-}
+    }
 
     cJSON *dnn = cJSON_GetObjectItemCaseSensitive(service_parameter_dataJSON, "dnn");
 
@@ -192,14 +192,14 @@ OpenAPI_service_parameter_data_t *OpenAPI_service_parameter_data_parseFromJSON(c
         ogs_error("OpenAPI_service_parameter_data_parseFromJSON() failed [dnn]");
         goto end;
     }
-}
+    }
 
     cJSON *snssai = cJSON_GetObjectItemCaseSensitive(service_parameter_dataJSON, "snssai");
 
     OpenAPI_snssai_t *snssai_local_nonprim = NULL;
     if (snssai) { 
     snssai_local_nonprim = OpenAPI_snssai_parseFromJSON(snssai);
-}
+    }
 
     cJSON *inter_group_id = cJSON_GetObjectItemCaseSensitive(service_parameter_dataJSON, "interGroupId");
 
@@ -208,7 +208,7 @@ OpenAPI_service_parameter_data_t *OpenAPI_service_parameter_data_parseFromJSON(c
         ogs_error("OpenAPI_service_parameter_data_parseFromJSON() failed [inter_group_id]");
         goto end;
     }
-}
+    }
 
     cJSON *supi = cJSON_GetObjectItemCaseSensitive(service_parameter_dataJSON, "supi");
 
@@ -217,7 +217,7 @@ OpenAPI_service_parameter_data_t *OpenAPI_service_parameter_data_parseFromJSON(c
         ogs_error("OpenAPI_service_parameter_data_parseFromJSON() failed [supi]");
         goto end;
     }
-}
+    }
 
     cJSON *ue_ipv4 = cJSON_GetObjectItemCaseSensitive(service_parameter_dataJSON, "ueIpv4");
 
@@ -226,7 +226,7 @@ OpenAPI_service_parameter_data_t *OpenAPI_service_parameter_data_parseFromJSON(c
         ogs_error("OpenAPI_service_parameter_data_parseFromJSON() failed [ue_ipv4]");
         goto end;
     }
-}
+    }
 
     cJSON *ue_ipv6 = cJSON_GetObjectItemCaseSensitive(service_parameter_dataJSON, "ueIpv6");
 
@@ -235,7 +235,7 @@ OpenAPI_service_parameter_data_t *OpenAPI_service_parameter_data_parseFromJSON(c
         ogs_error("OpenAPI_service_parameter_data_parseFromJSON() failed [ue_ipv6]");
         goto end;
     }
-}
+    }
 
     cJSON *ue_mac = cJSON_GetObjectItemCaseSensitive(service_parameter_dataJSON, "ueMac");
 
@@ -244,7 +244,7 @@ OpenAPI_service_parameter_data_t *OpenAPI_service_parameter_data_parseFromJSON(c
         ogs_error("OpenAPI_service_parameter_data_parseFromJSON() failed [ue_mac]");
         goto end;
     }
-}
+    }
 
     cJSON *any_ue_ind = cJSON_GetObjectItemCaseSensitive(service_parameter_dataJSON, "anyUeInd");
 
@@ -253,7 +253,7 @@ OpenAPI_service_parameter_data_t *OpenAPI_service_parameter_data_parseFromJSON(c
         ogs_error("OpenAPI_service_parameter_data_parseFromJSON() failed [any_ue_ind]");
         goto end;
     }
-}
+    }
 
     cJSON *param_over_pc5 = cJSON_GetObjectItemCaseSensitive(service_parameter_dataJSON, "paramOverPc5");
 
@@ -262,7 +262,7 @@ OpenAPI_service_parameter_data_t *OpenAPI_service_parameter_data_parseFromJSON(c
         ogs_error("OpenAPI_service_parameter_data_parseFromJSON() failed [param_over_pc5]");
         goto end;
     }
-}
+    }
 
     cJSON *param_over_uu = cJSON_GetObjectItemCaseSensitive(service_parameter_dataJSON, "paramOverUu");
 
@@ -271,7 +271,7 @@ OpenAPI_service_parameter_data_t *OpenAPI_service_parameter_data_parseFromJSON(c
         ogs_error("OpenAPI_service_parameter_data_parseFromJSON() failed [param_over_uu]");
         goto end;
     }
-}
+    }
 
     cJSON *supp_feat = cJSON_GetObjectItemCaseSensitive(service_parameter_dataJSON, "suppFeat");
 
@@ -280,7 +280,7 @@ OpenAPI_service_parameter_data_t *OpenAPI_service_parameter_data_parseFromJSON(c
         ogs_error("OpenAPI_service_parameter_data_parseFromJSON() failed [supp_feat]");
         goto end;
     }
-}
+    }
 
     cJSON *res_uri = cJSON_GetObjectItemCaseSensitive(service_parameter_dataJSON, "resUri");
 
@@ -289,7 +289,7 @@ OpenAPI_service_parameter_data_t *OpenAPI_service_parameter_data_parseFromJSON(c
         ogs_error("OpenAPI_service_parameter_data_parseFromJSON() failed [res_uri]");
         goto end;
     }
-}
+    }
 
     service_parameter_data_local_var = OpenAPI_service_parameter_data_create (
         app_id ? ogs_strdup_or_assert(app_id->valuestring) : NULL,

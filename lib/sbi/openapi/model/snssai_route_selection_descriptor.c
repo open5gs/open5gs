@@ -112,7 +112,7 @@ OpenAPI_snssai_route_selection_descriptor_t *OpenAPI_snssai_route_selection_desc
 
         OpenAPI_list_add(dnn_route_sel_descsList, dnn_route_sel_descsItem);
     }
-}
+    }
 
     snssai_route_selection_descriptor_local_var = OpenAPI_snssai_route_selection_descriptor_create (
         snssai_local_nonprim,

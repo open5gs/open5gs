@@ -109,7 +109,7 @@ OpenAPI_patch_item_t *OpenAPI_patch_item_parseFromJSON(cJSON *patch_itemJSON)
         ogs_error("OpenAPI_patch_item_parseFromJSON() failed [from]");
         goto end;
     }
-}
+    }
 
     cJSON *value = cJSON_GetObjectItemCaseSensitive(patch_itemJSON, "value");
 
@@ -118,7 +118,7 @@ OpenAPI_patch_item_t *OpenAPI_patch_item_parseFromJSON(cJSON *patch_itemJSON)
         ogs_error("OpenAPI_patch_item_parseFromJSON() failed [value]");
         goto end;
     }
-}
+    }
 
     patch_item_local_var = OpenAPI_patch_item_create (
         opVariable,

@@ -181,7 +181,7 @@ OpenAPI_usage_monitoring_data_t *OpenAPI_usage_monitoring_data_parseFromJSON(cJS
         ogs_error("OpenAPI_usage_monitoring_data_parseFromJSON() failed [volume_threshold]");
         goto end;
     }
-}
+    }
 
     cJSON *volume_threshold_uplink = cJSON_GetObjectItemCaseSensitive(usage_monitoring_dataJSON, "volumeThresholdUplink");
 
@@ -190,7 +190,7 @@ OpenAPI_usage_monitoring_data_t *OpenAPI_usage_monitoring_data_parseFromJSON(cJS
         ogs_error("OpenAPI_usage_monitoring_data_parseFromJSON() failed [volume_threshold_uplink]");
         goto end;
     }
-}
+    }
 
     cJSON *volume_threshold_downlink = cJSON_GetObjectItemCaseSensitive(usage_monitoring_dataJSON, "volumeThresholdDownlink");
 
@@ -199,7 +199,7 @@ OpenAPI_usage_monitoring_data_t *OpenAPI_usage_monitoring_data_parseFromJSON(cJS
         ogs_error("OpenAPI_usage_monitoring_data_parseFromJSON() failed [volume_threshold_downlink]");
         goto end;
     }
-}
+    }
 
     cJSON *time_threshold = cJSON_GetObjectItemCaseSensitive(usage_monitoring_dataJSON, "timeThreshold");
 
@@ -208,7 +208,7 @@ OpenAPI_usage_monitoring_data_t *OpenAPI_usage_monitoring_data_parseFromJSON(cJS
         ogs_error("OpenAPI_usage_monitoring_data_parseFromJSON() failed [time_threshold]");
         goto end;
     }
-}
+    }
 
     cJSON *monitoring_time = cJSON_GetObjectItemCaseSensitive(usage_monitoring_dataJSON, "monitoringTime");
 
@@ -217,7 +217,7 @@ OpenAPI_usage_monitoring_data_t *OpenAPI_usage_monitoring_data_parseFromJSON(cJS
         ogs_error("OpenAPI_usage_monitoring_data_parseFromJSON() failed [monitoring_time]");
         goto end;
     }
-}
+    }
 
     cJSON *next_vol_threshold = cJSON_GetObjectItemCaseSensitive(usage_monitoring_dataJSON, "nextVolThreshold");
 
@@ -226,7 +226,7 @@ OpenAPI_usage_monitoring_data_t *OpenAPI_usage_monitoring_data_parseFromJSON(cJS
         ogs_error("OpenAPI_usage_monitoring_data_parseFromJSON() failed [next_vol_threshold]");
         goto end;
     }
-}
+    }
 
     cJSON *next_vol_threshold_uplink = cJSON_GetObjectItemCaseSensitive(usage_monitoring_dataJSON, "nextVolThresholdUplink");
 
@@ -235,7 +235,7 @@ OpenAPI_usage_monitoring_data_t *OpenAPI_usage_monitoring_data_parseFromJSON(cJS
         ogs_error("OpenAPI_usage_monitoring_data_parseFromJSON() failed [next_vol_threshold_uplink]");
         goto end;
     }
-}
+    }
 
     cJSON *next_vol_threshold_downlink = cJSON_GetObjectItemCaseSensitive(usage_monitoring_dataJSON, "nextVolThresholdDownlink");
 
@@ -244,7 +244,7 @@ OpenAPI_usage_monitoring_data_t *OpenAPI_usage_monitoring_data_parseFromJSON(cJS
         ogs_error("OpenAPI_usage_monitoring_data_parseFromJSON() failed [next_vol_threshold_downlink]");
         goto end;
     }
-}
+    }
 
     cJSON *next_time_threshold = cJSON_GetObjectItemCaseSensitive(usage_monitoring_dataJSON, "nextTimeThreshold");
 
@@ -253,7 +253,7 @@ OpenAPI_usage_monitoring_data_t *OpenAPI_usage_monitoring_data_parseFromJSON(cJS
         ogs_error("OpenAPI_usage_monitoring_data_parseFromJSON() failed [next_time_threshold]");
         goto end;
     }
-}
+    }
 
     cJSON *inactivity_time = cJSON_GetObjectItemCaseSensitive(usage_monitoring_dataJSON, "inactivityTime");
 
@@ -262,7 +262,7 @@ OpenAPI_usage_monitoring_data_t *OpenAPI_usage_monitoring_data_parseFromJSON(cJS
         ogs_error("OpenAPI_usage_monitoring_data_parseFromJSON() failed [inactivity_time]");
         goto end;
     }
-}
+    }
 
     cJSON *ex_usage_pcc_rule_ids = cJSON_GetObjectItemCaseSensitive(usage_monitoring_dataJSON, "exUsagePccRuleIds");
 
@@ -282,7 +282,7 @@ OpenAPI_usage_monitoring_data_t *OpenAPI_usage_monitoring_data_parseFromJSON(cJS
     }
     OpenAPI_list_add(ex_usage_pcc_rule_idsList , ogs_strdup_or_assert(ex_usage_pcc_rule_ids_local->valuestring));
                     }
-}
+    }
 
     usage_monitoring_data_local_var = OpenAPI_usage_monitoring_data_create (
         ogs_strdup_or_assert(um_id->valuestring),

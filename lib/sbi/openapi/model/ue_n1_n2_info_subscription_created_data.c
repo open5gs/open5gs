@@ -78,7 +78,7 @@ OpenAPI_ue_n1_n2_info_subscription_created_data_t *OpenAPI_ue_n1_n2_info_subscri
         ogs_error("OpenAPI_ue_n1_n2_info_subscription_created_data_parseFromJSON() failed [supported_features]");
         goto end;
     }
-}
+    }
 
     ue_n1_n2_info_subscription_created_data_local_var = OpenAPI_ue_n1_n2_info_subscription_created_data_create (
         ogs_strdup_or_assert(n1n2_notify_subscription_id->valuestring),

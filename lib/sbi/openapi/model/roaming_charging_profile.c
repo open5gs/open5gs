@@ -104,14 +104,14 @@ OpenAPI_roaming_charging_profile_t *OpenAPI_roaming_charging_profile_parseFromJS
 
         OpenAPI_list_add(triggersList, triggersItem);
     }
-}
+    }
 
     cJSON *partial_record_method = cJSON_GetObjectItemCaseSensitive(roaming_charging_profileJSON, "partialRecordMethod");
 
     OpenAPI_partial_record_method_t *partial_record_method_local_nonprim = NULL;
     if (partial_record_method) { 
     partial_record_method_local_nonprim = OpenAPI_partial_record_method_parseFromJSON(partial_record_method);
-}
+    }
 
     roaming_charging_profile_local_var = OpenAPI_roaming_charging_profile_create (
         triggers ? triggersList : NULL,

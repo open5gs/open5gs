@@ -77,7 +77,7 @@ OpenAPI_mo_exp_data_counter_t *OpenAPI_mo_exp_data_counter_parseFromJSON(cJSON *
         ogs_error("OpenAPI_mo_exp_data_counter_parseFromJSON() failed [time_stamp]");
         goto end;
     }
-}
+    }
 
     mo_exp_data_counter_local_var = OpenAPI_mo_exp_data_counter_create (
         counter->valuedouble,

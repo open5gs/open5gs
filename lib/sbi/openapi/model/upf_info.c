@@ -319,7 +319,7 @@ OpenAPI_upf_info_t *OpenAPI_upf_info_parseFromJSON(cJSON *upf_infoJSON)
     }
     OpenAPI_list_add(smf_serving_areaList , ogs_strdup_or_assert(smf_serving_area_local->valuestring));
                     }
-}
+    }
 
     cJSON *interface_upf_info_list = cJSON_GetObjectItemCaseSensitive(upf_infoJSON, "interfaceUpfInfoList");
 
@@ -342,7 +342,7 @@ OpenAPI_upf_info_t *OpenAPI_upf_info_parseFromJSON(cJSON *upf_infoJSON)
 
         OpenAPI_list_add(interface_upf_info_listList, interface_upf_info_listItem);
     }
-}
+    }
 
     cJSON *iwk_eps_ind = cJSON_GetObjectItemCaseSensitive(upf_infoJSON, "iwkEpsInd");
 
@@ -351,7 +351,7 @@ OpenAPI_upf_info_t *OpenAPI_upf_info_parseFromJSON(cJSON *upf_infoJSON)
         ogs_error("OpenAPI_upf_info_parseFromJSON() failed [iwk_eps_ind]");
         goto end;
     }
-}
+    }
 
     cJSON *pdu_session_types = cJSON_GetObjectItemCaseSensitive(upf_infoJSON, "pduSessionTypes");
 
@@ -373,14 +373,14 @@ OpenAPI_upf_info_t *OpenAPI_upf_info_parseFromJSON(cJSON *upf_infoJSON)
 
         OpenAPI_list_add(pdu_session_typesList, (void *)OpenAPI_pdu_session_type_FromString(pdu_session_types_local_nonprimitive->valuestring));
     }
-}
+    }
 
     cJSON *atsss_capability = cJSON_GetObjectItemCaseSensitive(upf_infoJSON, "atsssCapability");
 
     OpenAPI_atsss_capability_t *atsss_capability_local_nonprim = NULL;
     if (atsss_capability) { 
     atsss_capability_local_nonprim = OpenAPI_atsss_capability_parseFromJSON(atsss_capability);
-}
+    }
 
     cJSON *ue_ip_addr_ind = cJSON_GetObjectItemCaseSensitive(upf_infoJSON, "ueIpAddrInd");
 
@@ -389,7 +389,7 @@ OpenAPI_upf_info_t *OpenAPI_upf_info_parseFromJSON(cJSON *upf_infoJSON)
         ogs_error("OpenAPI_upf_info_parseFromJSON() failed [ue_ip_addr_ind]");
         goto end;
     }
-}
+    }
 
     cJSON *tai_list = cJSON_GetObjectItemCaseSensitive(upf_infoJSON, "taiList");
 
@@ -412,28 +412,28 @@ OpenAPI_upf_info_t *OpenAPI_upf_info_parseFromJSON(cJSON *upf_infoJSON)
 
         OpenAPI_list_add(tai_listList, tai_listItem);
     }
-}
+    }
 
     cJSON *w_agf_info = cJSON_GetObjectItemCaseSensitive(upf_infoJSON, "wAgfInfo");
 
     OpenAPI_w_agf_info_t *w_agf_info_local_nonprim = NULL;
     if (w_agf_info) { 
     w_agf_info_local_nonprim = OpenAPI_w_agf_info_parseFromJSON(w_agf_info);
-}
+    }
 
     cJSON *tngf_info = cJSON_GetObjectItemCaseSensitive(upf_infoJSON, "tngfInfo");
 
     OpenAPI_tngf_info_t *tngf_info_local_nonprim = NULL;
     if (tngf_info) { 
     tngf_info_local_nonprim = OpenAPI_tngf_info_parseFromJSON(tngf_info);
-}
+    }
 
     cJSON *twif_info = cJSON_GetObjectItemCaseSensitive(upf_infoJSON, "twifInfo");
 
     OpenAPI_twif_info_t *twif_info_local_nonprim = NULL;
     if (twif_info) { 
     twif_info_local_nonprim = OpenAPI_twif_info_parseFromJSON(twif_info);
-}
+    }
 
     cJSON *priority = cJSON_GetObjectItemCaseSensitive(upf_infoJSON, "priority");
 
@@ -442,7 +442,7 @@ OpenAPI_upf_info_t *OpenAPI_upf_info_parseFromJSON(cJSON *upf_infoJSON)
         ogs_error("OpenAPI_upf_info_parseFromJSON() failed [priority]");
         goto end;
     }
-}
+    }
 
     cJSON *redundant_gtpu = cJSON_GetObjectItemCaseSensitive(upf_infoJSON, "redundantGtpu");
 
@@ -451,7 +451,7 @@ OpenAPI_upf_info_t *OpenAPI_upf_info_parseFromJSON(cJSON *upf_infoJSON)
         ogs_error("OpenAPI_upf_info_parseFromJSON() failed [redundant_gtpu]");
         goto end;
     }
-}
+    }
 
     cJSON *ipups = cJSON_GetObjectItemCaseSensitive(upf_infoJSON, "ipups");
 
@@ -460,7 +460,7 @@ OpenAPI_upf_info_t *OpenAPI_upf_info_parseFromJSON(cJSON *upf_infoJSON)
         ogs_error("OpenAPI_upf_info_parseFromJSON() failed [ipups]");
         goto end;
     }
-}
+    }
 
     cJSON *data_forwarding = cJSON_GetObjectItemCaseSensitive(upf_infoJSON, "dataForwarding");
 
@@ -469,7 +469,7 @@ OpenAPI_upf_info_t *OpenAPI_upf_info_parseFromJSON(cJSON *upf_infoJSON)
         ogs_error("OpenAPI_upf_info_parseFromJSON() failed [data_forwarding]");
         goto end;
     }
-}
+    }
 
     upf_info_local_var = OpenAPI_upf_info_create (
         s_nssai_upf_info_listList,

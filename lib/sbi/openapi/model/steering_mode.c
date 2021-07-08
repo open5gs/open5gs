@@ -114,14 +114,14 @@ OpenAPI_steering_mode_t *OpenAPI_steering_mode_parseFromJSON(cJSON *steering_mod
         goto end;
     }
     activeVariable = OpenAPI_access_type_FromString(active->valuestring);
-}
+    }
 
     cJSON *standby = cJSON_GetObjectItemCaseSensitive(steering_modeJSON, "standby");
 
     OpenAPI_access_type_rm_t *standby_local_nonprim = NULL;
     if (standby) { 
     standby_local_nonprim = OpenAPI_access_type_rm_parseFromJSON(standby);
-}
+    }
 
     cJSON *_3g_load = cJSON_GetObjectItemCaseSensitive(steering_modeJSON, "3gLoad");
 
@@ -130,7 +130,7 @@ OpenAPI_steering_mode_t *OpenAPI_steering_mode_parseFromJSON(cJSON *steering_mod
         ogs_error("OpenAPI_steering_mode_parseFromJSON() failed [_3g_load]");
         goto end;
     }
-}
+    }
 
     cJSON *prio_acc = cJSON_GetObjectItemCaseSensitive(steering_modeJSON, "prioAcc");
 
@@ -141,7 +141,7 @@ OpenAPI_steering_mode_t *OpenAPI_steering_mode_parseFromJSON(cJSON *steering_mod
         goto end;
     }
     prio_accVariable = OpenAPI_access_type_FromString(prio_acc->valuestring);
-}
+    }
 
     steering_mode_local_var = OpenAPI_steering_mode_create (
         steer_mode_valueVariable,

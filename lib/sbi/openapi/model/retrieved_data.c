@@ -62,7 +62,7 @@ OpenAPI_retrieved_data_t *OpenAPI_retrieved_data_parseFromJSON(cJSON *retrieved_
     OpenAPI_small_data_rate_status_t *small_data_rate_status_local_nonprim = NULL;
     if (small_data_rate_status) { 
     small_data_rate_status_local_nonprim = OpenAPI_small_data_rate_status_parseFromJSON(small_data_rate_status);
-}
+    }
 
     retrieved_data_local_var = OpenAPI_retrieved_data_create (
         small_data_rate_status ? small_data_rate_status_local_nonprim : NULL

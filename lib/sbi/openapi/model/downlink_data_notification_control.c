@@ -97,7 +97,7 @@ OpenAPI_downlink_data_notification_control_t *OpenAPI_downlink_data_notification
 
         OpenAPI_list_add(notif_ctrl_indsList, (void *)OpenAPI_notification_control_indication_FromString(notif_ctrl_inds_local_nonprimitive->valuestring));
     }
-}
+    }
 
     cJSON *types_of_notif = cJSON_GetObjectItemCaseSensitive(downlink_data_notification_controlJSON, "typesOfNotif");
 
@@ -119,7 +119,7 @@ OpenAPI_downlink_data_notification_control_t *OpenAPI_downlink_data_notification
 
         OpenAPI_list_add(types_of_notifList, (void *)OpenAPI_dl_data_delivery_status_FromString(types_of_notif_local_nonprimitive->valuestring));
     }
-}
+    }
 
     downlink_data_notification_control_local_var = OpenAPI_downlink_data_notification_control_create (
         notif_ctrl_inds ? notif_ctrl_indsList : NULL,

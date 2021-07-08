@@ -107,7 +107,7 @@ OpenAPI_packet_filter_info_t *OpenAPI_packet_filter_info_parseFromJSON(cJSON *pa
         ogs_error("OpenAPI_packet_filter_info_parseFromJSON() failed [pack_filt_id]");
         goto end;
     }
-}
+    }
 
     cJSON *pack_filt_cont = cJSON_GetObjectItemCaseSensitive(packet_filter_infoJSON, "packFiltCont");
 
@@ -116,7 +116,7 @@ OpenAPI_packet_filter_info_t *OpenAPI_packet_filter_info_parseFromJSON(cJSON *pa
         ogs_error("OpenAPI_packet_filter_info_parseFromJSON() failed [pack_filt_cont]");
         goto end;
     }
-}
+    }
 
     cJSON *tos_traffic_class = cJSON_GetObjectItemCaseSensitive(packet_filter_infoJSON, "tosTrafficClass");
 
@@ -125,7 +125,7 @@ OpenAPI_packet_filter_info_t *OpenAPI_packet_filter_info_parseFromJSON(cJSON *pa
         ogs_error("OpenAPI_packet_filter_info_parseFromJSON() failed [tos_traffic_class]");
         goto end;
     }
-}
+    }
 
     cJSON *spi = cJSON_GetObjectItemCaseSensitive(packet_filter_infoJSON, "spi");
 
@@ -134,7 +134,7 @@ OpenAPI_packet_filter_info_t *OpenAPI_packet_filter_info_parseFromJSON(cJSON *pa
         ogs_error("OpenAPI_packet_filter_info_parseFromJSON() failed [spi]");
         goto end;
     }
-}
+    }
 
     cJSON *flow_label = cJSON_GetObjectItemCaseSensitive(packet_filter_infoJSON, "flowLabel");
 
@@ -143,7 +143,7 @@ OpenAPI_packet_filter_info_t *OpenAPI_packet_filter_info_parseFromJSON(cJSON *pa
         ogs_error("OpenAPI_packet_filter_info_parseFromJSON() failed [flow_label]");
         goto end;
     }
-}
+    }
 
     cJSON *flow_direction = cJSON_GetObjectItemCaseSensitive(packet_filter_infoJSON, "flowDirection");
 
@@ -154,7 +154,7 @@ OpenAPI_packet_filter_info_t *OpenAPI_packet_filter_info_parseFromJSON(cJSON *pa
         goto end;
     }
     flow_directionVariable = OpenAPI_flow_direction_FromString(flow_direction->valuestring);
-}
+    }
 
     packet_filter_info_local_var = OpenAPI_packet_filter_info_create (
         pack_filt_id ? ogs_strdup_or_assert(pack_filt_id->valuestring) : NULL,

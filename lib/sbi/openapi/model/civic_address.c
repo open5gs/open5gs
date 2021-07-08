@@ -388,7 +388,7 @@ OpenAPI_civic_address_t *OpenAPI_civic_address_parseFromJSON(cJSON *civic_addres
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [country]");
         goto end;
     }
-}
+    }
 
     cJSON *a1 = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "A1");
 
@@ -397,7 +397,7 @@ OpenAPI_civic_address_t *OpenAPI_civic_address_parseFromJSON(cJSON *civic_addres
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [a1]");
         goto end;
     }
-}
+    }
 
     cJSON *a2 = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "A2");
 
@@ -406,7 +406,7 @@ OpenAPI_civic_address_t *OpenAPI_civic_address_parseFromJSON(cJSON *civic_addres
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [a2]");
         goto end;
     }
-}
+    }
 
     cJSON *a3 = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "A3");
 
@@ -415,7 +415,7 @@ OpenAPI_civic_address_t *OpenAPI_civic_address_parseFromJSON(cJSON *civic_addres
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [a3]");
         goto end;
     }
-}
+    }
 
     cJSON *a4 = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "A4");
 
@@ -424,7 +424,7 @@ OpenAPI_civic_address_t *OpenAPI_civic_address_parseFromJSON(cJSON *civic_addres
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [a4]");
         goto end;
     }
-}
+    }
 
     cJSON *a5 = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "A5");
 
@@ -433,7 +433,7 @@ OpenAPI_civic_address_t *OpenAPI_civic_address_parseFromJSON(cJSON *civic_addres
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [a5]");
         goto end;
     }
-}
+    }
 
     cJSON *a6 = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "A6");
 
@@ -442,7 +442,7 @@ OpenAPI_civic_address_t *OpenAPI_civic_address_parseFromJSON(cJSON *civic_addres
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [a6]");
         goto end;
     }
-}
+    }
 
     cJSON *prd = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "PRD");
 
@@ -451,7 +451,7 @@ OpenAPI_civic_address_t *OpenAPI_civic_address_parseFromJSON(cJSON *civic_addres
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [prd]");
         goto end;
     }
-}
+    }
 
     cJSON *pod = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "POD");
 
@@ -460,7 +460,7 @@ OpenAPI_civic_address_t *OpenAPI_civic_address_parseFromJSON(cJSON *civic_addres
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [pod]");
         goto end;
     }
-}
+    }
 
     cJSON *sts = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "STS");
 
@@ -469,7 +469,7 @@ OpenAPI_civic_address_t *OpenAPI_civic_address_parseFromJSON(cJSON *civic_addres
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [sts]");
         goto end;
     }
-}
+    }
 
     cJSON *hno = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "HNO");
 
@@ -478,7 +478,7 @@ OpenAPI_civic_address_t *OpenAPI_civic_address_parseFromJSON(cJSON *civic_addres
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [hno]");
         goto end;
     }
-}
+    }
 
     cJSON *hns = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "HNS");
 
@@ -487,7 +487,7 @@ OpenAPI_civic_address_t *OpenAPI_civic_address_parseFromJSON(cJSON *civic_addres
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [hns]");
         goto end;
     }
-}
+    }
 
     cJSON *lmk = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "LMK");
 
@@ -496,7 +496,7 @@ OpenAPI_civic_address_t *OpenAPI_civic_address_parseFromJSON(cJSON *civic_addres
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [lmk]");
         goto end;
     }
-}
+    }
 
     cJSON *loc = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "LOC");
 
@@ -505,7 +505,7 @@ OpenAPI_civic_address_t *OpenAPI_civic_address_parseFromJSON(cJSON *civic_addres
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [loc]");
         goto end;
     }
-}
+    }
 
     cJSON *nam = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "NAM");
 
@@ -514,7 +514,7 @@ OpenAPI_civic_address_t *OpenAPI_civic_address_parseFromJSON(cJSON *civic_addres
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [nam]");
         goto end;
     }
-}
+    }
 
     cJSON *pc = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "PC");
 
@@ -523,7 +523,7 @@ OpenAPI_civic_address_t *OpenAPI_civic_address_parseFromJSON(cJSON *civic_addres
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [pc]");
         goto end;
     }
-}
+    }
 
     cJSON *bld = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "BLD");
 
@@ -532,7 +532,7 @@ OpenAPI_civic_address_t *OpenAPI_civic_address_parseFromJSON(cJSON *civic_addres
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [bld]");
         goto end;
     }
-}
+    }
 
     cJSON *unit = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "UNIT");
 
@@ -541,7 +541,7 @@ OpenAPI_civic_address_t *OpenAPI_civic_address_parseFromJSON(cJSON *civic_addres
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [unit]");
         goto end;
     }
-}
+    }
 
     cJSON *flr = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "FLR");
 
@@ -550,7 +550,7 @@ OpenAPI_civic_address_t *OpenAPI_civic_address_parseFromJSON(cJSON *civic_addres
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [flr]");
         goto end;
     }
-}
+    }
 
     cJSON *room = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "ROOM");
 
@@ -559,7 +559,7 @@ OpenAPI_civic_address_t *OpenAPI_civic_address_parseFromJSON(cJSON *civic_addres
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [room]");
         goto end;
     }
-}
+    }
 
     cJSON *plc = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "PLC");
 
@@ -568,7 +568,7 @@ OpenAPI_civic_address_t *OpenAPI_civic_address_parseFromJSON(cJSON *civic_addres
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [plc]");
         goto end;
     }
-}
+    }
 
     cJSON *pcn = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "PCN");
 
@@ -577,7 +577,7 @@ OpenAPI_civic_address_t *OpenAPI_civic_address_parseFromJSON(cJSON *civic_addres
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [pcn]");
         goto end;
     }
-}
+    }
 
     cJSON *pobox = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "POBOX");
 
@@ -586,7 +586,7 @@ OpenAPI_civic_address_t *OpenAPI_civic_address_parseFromJSON(cJSON *civic_addres
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [pobox]");
         goto end;
     }
-}
+    }
 
     cJSON *addcode = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "ADDCODE");
 
@@ -595,7 +595,7 @@ OpenAPI_civic_address_t *OpenAPI_civic_address_parseFromJSON(cJSON *civic_addres
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [addcode]");
         goto end;
     }
-}
+    }
 
     cJSON *seat = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "SEAT");
 
@@ -604,7 +604,7 @@ OpenAPI_civic_address_t *OpenAPI_civic_address_parseFromJSON(cJSON *civic_addres
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [seat]");
         goto end;
     }
-}
+    }
 
     cJSON *rd = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "RD");
 
@@ -613,7 +613,7 @@ OpenAPI_civic_address_t *OpenAPI_civic_address_parseFromJSON(cJSON *civic_addres
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [rd]");
         goto end;
     }
-}
+    }
 
     cJSON *rdsec = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "RDSEC");
 
@@ -622,7 +622,7 @@ OpenAPI_civic_address_t *OpenAPI_civic_address_parseFromJSON(cJSON *civic_addres
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [rdsec]");
         goto end;
     }
-}
+    }
 
     cJSON *rdbr = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "RDBR");
 
@@ -631,7 +631,7 @@ OpenAPI_civic_address_t *OpenAPI_civic_address_parseFromJSON(cJSON *civic_addres
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [rdbr]");
         goto end;
     }
-}
+    }
 
     cJSON *rdsubbr = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "RDSUBBR");
 
@@ -640,7 +640,7 @@ OpenAPI_civic_address_t *OpenAPI_civic_address_parseFromJSON(cJSON *civic_addres
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [rdsubbr]");
         goto end;
     }
-}
+    }
 
     cJSON *prm = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "PRM");
 
@@ -649,7 +649,7 @@ OpenAPI_civic_address_t *OpenAPI_civic_address_parseFromJSON(cJSON *civic_addres
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [prm]");
         goto end;
     }
-}
+    }
 
     cJSON *pom = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "POM");
 
@@ -658,7 +658,7 @@ OpenAPI_civic_address_t *OpenAPI_civic_address_parseFromJSON(cJSON *civic_addres
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [pom]");
         goto end;
     }
-}
+    }
 
     cJSON *usage_rules = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "usageRules");
 
@@ -667,7 +667,7 @@ OpenAPI_civic_address_t *OpenAPI_civic_address_parseFromJSON(cJSON *civic_addres
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [usage_rules]");
         goto end;
     }
-}
+    }
 
     cJSON *method = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "method");
 
@@ -676,7 +676,7 @@ OpenAPI_civic_address_t *OpenAPI_civic_address_parseFromJSON(cJSON *civic_addres
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [method]");
         goto end;
     }
-}
+    }
 
     cJSON *provided_by = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "providedBy");
 
@@ -685,7 +685,7 @@ OpenAPI_civic_address_t *OpenAPI_civic_address_parseFromJSON(cJSON *civic_addres
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [provided_by]");
         goto end;
     }
-}
+    }
 
     civic_address_local_var = OpenAPI_civic_address_create (
         country ? ogs_strdup_or_assert(country->valuestring) : NULL,

@@ -93,7 +93,7 @@ OpenAPI_lcs_privacy_t *OpenAPI_lcs_privacy_parseFromJSON(cJSON *lcs_privacyJSON)
         ogs_error("OpenAPI_lcs_privacy_parseFromJSON() failed [af_instance_id]");
         goto end;
     }
-}
+    }
 
     cJSON *reference_id = cJSON_GetObjectItemCaseSensitive(lcs_privacyJSON, "referenceId");
 
@@ -102,14 +102,14 @@ OpenAPI_lcs_privacy_t *OpenAPI_lcs_privacy_parseFromJSON(cJSON *lcs_privacyJSON)
         ogs_error("OpenAPI_lcs_privacy_parseFromJSON() failed [reference_id]");
         goto end;
     }
-}
+    }
 
     cJSON *lpi = cJSON_GetObjectItemCaseSensitive(lcs_privacyJSON, "lpi");
 
     OpenAPI_lpi_t *lpi_local_nonprim = NULL;
     if (lpi) { 
     lpi_local_nonprim = OpenAPI_lpi_parseFromJSON(lpi);
-}
+    }
 
     cJSON *mtc_provider_information = cJSON_GetObjectItemCaseSensitive(lcs_privacyJSON, "mtcProviderInformation");
 
@@ -118,7 +118,7 @@ OpenAPI_lcs_privacy_t *OpenAPI_lcs_privacy_parseFromJSON(cJSON *lcs_privacyJSON)
         ogs_error("OpenAPI_lcs_privacy_parseFromJSON() failed [mtc_provider_information]");
         goto end;
     }
-}
+    }
 
     lcs_privacy_local_var = OpenAPI_lcs_privacy_create (
         af_instance_id ? ogs_strdup_or_assert(af_instance_id->valuestring) : NULL,

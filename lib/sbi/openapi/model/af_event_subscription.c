@@ -98,7 +98,7 @@ OpenAPI_af_event_subscription_t *OpenAPI_af_event_subscription_parseFromJSON(cJS
         goto end;
     }
     notif_methodVariable = OpenAPI_af_notif_method_FromString(notif_method->valuestring);
-}
+    }
 
     cJSON *rep_period = cJSON_GetObjectItemCaseSensitive(af_event_subscriptionJSON, "repPeriod");
 
@@ -107,7 +107,7 @@ OpenAPI_af_event_subscription_t *OpenAPI_af_event_subscription_parseFromJSON(cJS
         ogs_error("OpenAPI_af_event_subscription_parseFromJSON() failed [rep_period]");
         goto end;
     }
-}
+    }
 
     cJSON *wait_time = cJSON_GetObjectItemCaseSensitive(af_event_subscriptionJSON, "waitTime");
 
@@ -116,7 +116,7 @@ OpenAPI_af_event_subscription_t *OpenAPI_af_event_subscription_parseFromJSON(cJS
         ogs_error("OpenAPI_af_event_subscription_parseFromJSON() failed [wait_time]");
         goto end;
     }
-}
+    }
 
     af_event_subscription_local_var = OpenAPI_af_event_subscription_create (
         eventVariable,

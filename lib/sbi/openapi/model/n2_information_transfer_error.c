@@ -86,7 +86,7 @@ OpenAPI_n2_information_transfer_error_t *OpenAPI_n2_information_transfer_error_p
     OpenAPI_pws_error_data_t *pws_error_info_local_nonprim = NULL;
     if (pws_error_info) { 
     pws_error_info_local_nonprim = OpenAPI_pws_error_data_parseFromJSON(pws_error_info);
-}
+    }
 
     n2_information_transfer_error_local_var = OpenAPI_n2_information_transfer_error_create (
         error_local_nonprim,

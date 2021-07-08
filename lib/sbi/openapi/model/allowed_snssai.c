@@ -128,14 +128,14 @@ OpenAPI_allowed_snssai_t *OpenAPI_allowed_snssai_parseFromJSON(cJSON *allowed_sn
 
         OpenAPI_list_add(nsi_information_listList, nsi_information_listItem);
     }
-}
+    }
 
     cJSON *mapped_home_snssai = cJSON_GetObjectItemCaseSensitive(allowed_snssaiJSON, "mappedHomeSnssai");
 
     OpenAPI_snssai_t *mapped_home_snssai_local_nonprim = NULL;
     if (mapped_home_snssai) { 
     mapped_home_snssai_local_nonprim = OpenAPI_snssai_parseFromJSON(mapped_home_snssai);
-}
+    }
 
     allowed_snssai_local_var = OpenAPI_allowed_snssai_create (
         allowed_snssai_local_nonprim,

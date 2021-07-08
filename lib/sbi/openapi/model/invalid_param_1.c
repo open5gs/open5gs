@@ -78,7 +78,7 @@ OpenAPI_invalid_param_1_t *OpenAPI_invalid_param_1_parseFromJSON(cJSON *invalid_
         ogs_error("OpenAPI_invalid_param_1_parseFromJSON() failed [reason]");
         goto end;
     }
-}
+    }
 
     invalid_param_1_local_var = OpenAPI_invalid_param_1_create (
         ogs_strdup_or_assert(param->valuestring),

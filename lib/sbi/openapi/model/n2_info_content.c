@@ -80,7 +80,7 @@ OpenAPI_n2_info_content_t *OpenAPI_n2_info_content_parseFromJSON(cJSON *n2_info_
         ogs_error("OpenAPI_n2_info_content_parseFromJSON() failed [ngap_message_type]");
         goto end;
     }
-}
+    }
 
     cJSON *ngap_ie_type = cJSON_GetObjectItemCaseSensitive(n2_info_contentJSON, "ngapIeType");
 
@@ -91,7 +91,7 @@ OpenAPI_n2_info_content_t *OpenAPI_n2_info_content_parseFromJSON(cJSON *n2_info_
         goto end;
     }
     ngap_ie_typeVariable = OpenAPI_ngap_ie_type_FromString(ngap_ie_type->valuestring);
-}
+    }
 
     cJSON *ngap_data = cJSON_GetObjectItemCaseSensitive(n2_info_contentJSON, "ngapData");
     if (!ngap_data) {

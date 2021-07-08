@@ -108,21 +108,21 @@ OpenAPI_location_reporting_configuration_t *OpenAPI_location_reporting_configura
         ogs_error("OpenAPI_location_reporting_configuration_parseFromJSON() failed [one_time]");
         goto end;
     }
-}
+    }
 
     cJSON *accuracy = cJSON_GetObjectItemCaseSensitive(location_reporting_configurationJSON, "accuracy");
 
     OpenAPI_location_accuracy_t *accuracy_local_nonprim = NULL;
     if (accuracy) { 
     accuracy_local_nonprim = OpenAPI_location_accuracy_parseFromJSON(accuracy);
-}
+    }
 
     cJSON *n3gpp_accuracy = cJSON_GetObjectItemCaseSensitive(location_reporting_configurationJSON, "n3gppAccuracy");
 
     OpenAPI_location_accuracy_t *n3gpp_accuracy_local_nonprim = NULL;
     if (n3gpp_accuracy) { 
     n3gpp_accuracy_local_nonprim = OpenAPI_location_accuracy_parseFromJSON(n3gpp_accuracy);
-}
+    }
 
     location_reporting_configuration_local_var = OpenAPI_location_reporting_configuration_create (
         current_location->valueint,

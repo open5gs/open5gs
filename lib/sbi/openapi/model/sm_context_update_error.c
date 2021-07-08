@@ -130,14 +130,14 @@ OpenAPI_sm_context_update_error_t *OpenAPI_sm_context_update_error_parseFromJSON
     OpenAPI_ref_to_binary_data_t *n1_sm_msg_local_nonprim = NULL;
     if (n1_sm_msg) { 
     n1_sm_msg_local_nonprim = OpenAPI_ref_to_binary_data_parseFromJSON(n1_sm_msg);
-}
+    }
 
     cJSON *n2_sm_info = cJSON_GetObjectItemCaseSensitive(sm_context_update_errorJSON, "n2SmInfo");
 
     OpenAPI_ref_to_binary_data_t *n2_sm_info_local_nonprim = NULL;
     if (n2_sm_info) { 
     n2_sm_info_local_nonprim = OpenAPI_ref_to_binary_data_parseFromJSON(n2_sm_info);
-}
+    }
 
     cJSON *n2_sm_info_type = cJSON_GetObjectItemCaseSensitive(sm_context_update_errorJSON, "n2SmInfoType");
 
@@ -148,7 +148,7 @@ OpenAPI_sm_context_update_error_t *OpenAPI_sm_context_update_error_parseFromJSON
         goto end;
     }
     n2_sm_info_typeVariable = OpenAPI_n2_sm_info_type_FromString(n2_sm_info_type->valuestring);
-}
+    }
 
     cJSON *up_cnx_state = cJSON_GetObjectItemCaseSensitive(sm_context_update_errorJSON, "upCnxState");
 
@@ -159,7 +159,7 @@ OpenAPI_sm_context_update_error_t *OpenAPI_sm_context_update_error_parseFromJSON
         goto end;
     }
     up_cnx_stateVariable = OpenAPI_up_cnx_state_FromString(up_cnx_state->valuestring);
-}
+    }
 
     cJSON *recovery_time = cJSON_GetObjectItemCaseSensitive(sm_context_update_errorJSON, "recoveryTime");
 
@@ -168,7 +168,7 @@ OpenAPI_sm_context_update_error_t *OpenAPI_sm_context_update_error_parseFromJSON
         ogs_error("OpenAPI_sm_context_update_error_parseFromJSON() failed [recovery_time]");
         goto end;
     }
-}
+    }
 
     sm_context_update_error_local_var = OpenAPI_sm_context_update_error_create (
         error_local_nonprim,

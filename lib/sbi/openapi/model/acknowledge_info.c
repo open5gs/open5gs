@@ -95,7 +95,7 @@ OpenAPI_acknowledge_info_t *OpenAPI_acknowledge_info_parseFromJSON(cJSON *acknow
         ogs_error("OpenAPI_acknowledge_info_parseFromJSON() failed [sor_mac_iue]");
         goto end;
     }
-}
+    }
 
     cJSON *upu_mac_iue = cJSON_GetObjectItemCaseSensitive(acknowledge_infoJSON, "upuMacIue");
 
@@ -104,7 +104,7 @@ OpenAPI_acknowledge_info_t *OpenAPI_acknowledge_info_parseFromJSON(cJSON *acknow
         ogs_error("OpenAPI_acknowledge_info_parseFromJSON() failed [upu_mac_iue]");
         goto end;
     }
-}
+    }
 
     cJSON *secured_packet = cJSON_GetObjectItemCaseSensitive(acknowledge_infoJSON, "securedPacket");
 
@@ -113,7 +113,7 @@ OpenAPI_acknowledge_info_t *OpenAPI_acknowledge_info_parseFromJSON(cJSON *acknow
         ogs_error("OpenAPI_acknowledge_info_parseFromJSON() failed [secured_packet]");
         goto end;
     }
-}
+    }
 
     cJSON *provisioning_time = cJSON_GetObjectItemCaseSensitive(acknowledge_infoJSON, "provisioningTime");
     if (!provisioning_time) {
@@ -134,7 +134,7 @@ OpenAPI_acknowledge_info_t *OpenAPI_acknowledge_info_parseFromJSON(cJSON *acknow
         ogs_error("OpenAPI_acknowledge_info_parseFromJSON() failed [ue_not_reachable]");
         goto end;
     }
-}
+    }
 
     acknowledge_info_local_var = OpenAPI_acknowledge_info_create (
         sor_mac_iue ? ogs_strdup_or_assert(sor_mac_iue->valuestring) : NULL,

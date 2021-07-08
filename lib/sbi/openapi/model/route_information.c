@@ -75,7 +75,7 @@ OpenAPI_route_information_t *OpenAPI_route_information_parseFromJSON(cJSON *rout
         ogs_error("OpenAPI_route_information_parseFromJSON() failed [ipv4_addr]");
         goto end;
     }
-}
+    }
 
     cJSON *ipv6_addr = cJSON_GetObjectItemCaseSensitive(route_informationJSON, "ipv6Addr");
 
@@ -84,7 +84,7 @@ OpenAPI_route_information_t *OpenAPI_route_information_parseFromJSON(cJSON *rout
         ogs_error("OpenAPI_route_information_parseFromJSON() failed [ipv6_addr]");
         goto end;
     }
-}
+    }
 
     cJSON *port_number = cJSON_GetObjectItemCaseSensitive(route_informationJSON, "portNumber");
     if (!port_number) {

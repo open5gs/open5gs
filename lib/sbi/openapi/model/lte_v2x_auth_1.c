@@ -68,7 +68,7 @@ OpenAPI_lte_v2x_auth_1_t *OpenAPI_lte_v2x_auth_1_parseFromJSON(cJSON *lte_v2x_au
         goto end;
     }
     vehicle_ue_authVariable = OpenAPI_ue_auth_FromString(vehicle_ue_auth->valuestring);
-}
+    }
 
     cJSON *pedestrian_ue_auth = cJSON_GetObjectItemCaseSensitive(lte_v2x_auth_1JSON, "pedestrianUeAuth");
 
@@ -79,7 +79,7 @@ OpenAPI_lte_v2x_auth_1_t *OpenAPI_lte_v2x_auth_1_parseFromJSON(cJSON *lte_v2x_au
         goto end;
     }
     pedestrian_ue_authVariable = OpenAPI_ue_auth_FromString(pedestrian_ue_auth->valuestring);
-}
+    }
 
     lte_v2x_auth_1_local_var = OpenAPI_lte_v2x_auth_1_create (
         vehicle_ue_auth ? vehicle_ue_authVariable : 0,

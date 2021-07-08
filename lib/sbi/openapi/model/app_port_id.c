@@ -66,7 +66,7 @@ OpenAPI_app_port_id_t *OpenAPI_app_port_id_parseFromJSON(cJSON *app_port_idJSON)
         ogs_error("OpenAPI_app_port_id_parseFromJSON() failed [destination_port]");
         goto end;
     }
-}
+    }
 
     cJSON *originator_port = cJSON_GetObjectItemCaseSensitive(app_port_idJSON, "originatorPort");
 
@@ -75,7 +75,7 @@ OpenAPI_app_port_id_t *OpenAPI_app_port_id_parseFromJSON(cJSON *app_port_idJSON)
         ogs_error("OpenAPI_app_port_id_parseFromJSON() failed [originator_port]");
         goto end;
     }
-}
+    }
 
     app_port_id_local_var = OpenAPI_app_port_id_create (
         destination_port ? destination_port->valuedouble : 0,

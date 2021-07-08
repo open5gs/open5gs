@@ -345,7 +345,7 @@ OpenAPI_pdu_session_context_t *OpenAPI_pdu_session_context_parseFromJSON(cJSON *
         ogs_error("OpenAPI_pdu_session_context_parseFromJSON() failed [selected_dnn]");
         goto end;
     }
-}
+    }
 
     cJSON *access_type = cJSON_GetObjectItemCaseSensitive(pdu_session_contextJSON, "accessType");
     if (!access_type) {
@@ -370,7 +370,7 @@ OpenAPI_pdu_session_context_t *OpenAPI_pdu_session_context_parseFromJSON(cJSON *
         goto end;
     }
     additional_access_typeVariable = OpenAPI_access_type_FromString(additional_access_type->valuestring);
-}
+    }
 
     cJSON *allocated_ebi_list = cJSON_GetObjectItemCaseSensitive(pdu_session_contextJSON, "allocatedEbiList");
 
@@ -393,7 +393,7 @@ OpenAPI_pdu_session_context_t *OpenAPI_pdu_session_context_parseFromJSON(cJSON *
 
         OpenAPI_list_add(allocated_ebi_listList, allocated_ebi_listItem);
     }
-}
+    }
 
     cJSON *hsmf_id = cJSON_GetObjectItemCaseSensitive(pdu_session_contextJSON, "hsmfId");
 
@@ -402,7 +402,7 @@ OpenAPI_pdu_session_context_t *OpenAPI_pdu_session_context_parseFromJSON(cJSON *
         ogs_error("OpenAPI_pdu_session_context_parseFromJSON() failed [hsmf_id]");
         goto end;
     }
-}
+    }
 
     cJSON *hsmf_set_id = cJSON_GetObjectItemCaseSensitive(pdu_session_contextJSON, "hsmfSetId");
 
@@ -411,7 +411,7 @@ OpenAPI_pdu_session_context_t *OpenAPI_pdu_session_context_parseFromJSON(cJSON *
         ogs_error("OpenAPI_pdu_session_context_parseFromJSON() failed [hsmf_set_id]");
         goto end;
     }
-}
+    }
 
     cJSON *hsmf_service_set_id = cJSON_GetObjectItemCaseSensitive(pdu_session_contextJSON, "hsmfServiceSetId");
 
@@ -420,7 +420,7 @@ OpenAPI_pdu_session_context_t *OpenAPI_pdu_session_context_parseFromJSON(cJSON *
         ogs_error("OpenAPI_pdu_session_context_parseFromJSON() failed [hsmf_service_set_id]");
         goto end;
     }
-}
+    }
 
     cJSON *smf_binding = cJSON_GetObjectItemCaseSensitive(pdu_session_contextJSON, "smfBinding");
 
@@ -431,7 +431,7 @@ OpenAPI_pdu_session_context_t *OpenAPI_pdu_session_context_parseFromJSON(cJSON *
         goto end;
     }
     smf_bindingVariable = OpenAPI_sbi_binding_level_FromString(smf_binding->valuestring);
-}
+    }
 
     cJSON *vsmf_id = cJSON_GetObjectItemCaseSensitive(pdu_session_contextJSON, "vsmfId");
 
@@ -440,7 +440,7 @@ OpenAPI_pdu_session_context_t *OpenAPI_pdu_session_context_parseFromJSON(cJSON *
         ogs_error("OpenAPI_pdu_session_context_parseFromJSON() failed [vsmf_id]");
         goto end;
     }
-}
+    }
 
     cJSON *vsmf_set_id = cJSON_GetObjectItemCaseSensitive(pdu_session_contextJSON, "vsmfSetId");
 
@@ -449,7 +449,7 @@ OpenAPI_pdu_session_context_t *OpenAPI_pdu_session_context_parseFromJSON(cJSON *
         ogs_error("OpenAPI_pdu_session_context_parseFromJSON() failed [vsmf_set_id]");
         goto end;
     }
-}
+    }
 
     cJSON *vsmf_service_set_id = cJSON_GetObjectItemCaseSensitive(pdu_session_contextJSON, "vsmfServiceSetId");
 
@@ -458,7 +458,7 @@ OpenAPI_pdu_session_context_t *OpenAPI_pdu_session_context_parseFromJSON(cJSON *
         ogs_error("OpenAPI_pdu_session_context_parseFromJSON() failed [vsmf_service_set_id]");
         goto end;
     }
-}
+    }
 
     cJSON *vsmf_binding = cJSON_GetObjectItemCaseSensitive(pdu_session_contextJSON, "vsmfBinding");
 
@@ -469,7 +469,7 @@ OpenAPI_pdu_session_context_t *OpenAPI_pdu_session_context_parseFromJSON(cJSON *
         goto end;
     }
     vsmf_bindingVariable = OpenAPI_sbi_binding_level_FromString(vsmf_binding->valuestring);
-}
+    }
 
     cJSON *ismf_id = cJSON_GetObjectItemCaseSensitive(pdu_session_contextJSON, "ismfId");
 
@@ -478,7 +478,7 @@ OpenAPI_pdu_session_context_t *OpenAPI_pdu_session_context_parseFromJSON(cJSON *
         ogs_error("OpenAPI_pdu_session_context_parseFromJSON() failed [ismf_id]");
         goto end;
     }
-}
+    }
 
     cJSON *ismf_set_id = cJSON_GetObjectItemCaseSensitive(pdu_session_contextJSON, "ismfSetId");
 
@@ -487,7 +487,7 @@ OpenAPI_pdu_session_context_t *OpenAPI_pdu_session_context_parseFromJSON(cJSON *
         ogs_error("OpenAPI_pdu_session_context_parseFromJSON() failed [ismf_set_id]");
         goto end;
     }
-}
+    }
 
     cJSON *ismf_service_set_id = cJSON_GetObjectItemCaseSensitive(pdu_session_contextJSON, "ismfServiceSetId");
 
@@ -496,7 +496,7 @@ OpenAPI_pdu_session_context_t *OpenAPI_pdu_session_context_parseFromJSON(cJSON *
         ogs_error("OpenAPI_pdu_session_context_parseFromJSON() failed [ismf_service_set_id]");
         goto end;
     }
-}
+    }
 
     cJSON *ismf_binding = cJSON_GetObjectItemCaseSensitive(pdu_session_contextJSON, "ismfBinding");
 
@@ -507,7 +507,7 @@ OpenAPI_pdu_session_context_t *OpenAPI_pdu_session_context_parseFromJSON(cJSON *
         goto end;
     }
     ismf_bindingVariable = OpenAPI_sbi_binding_level_FromString(ismf_binding->valuestring);
-}
+    }
 
     cJSON *ns_instance = cJSON_GetObjectItemCaseSensitive(pdu_session_contextJSON, "nsInstance");
 
@@ -516,7 +516,7 @@ OpenAPI_pdu_session_context_t *OpenAPI_pdu_session_context_parseFromJSON(cJSON *
         ogs_error("OpenAPI_pdu_session_context_parseFromJSON() failed [ns_instance]");
         goto end;
     }
-}
+    }
 
     cJSON *smf_service_instance_id = cJSON_GetObjectItemCaseSensitive(pdu_session_contextJSON, "smfServiceInstanceId");
 
@@ -525,7 +525,7 @@ OpenAPI_pdu_session_context_t *OpenAPI_pdu_session_context_parseFromJSON(cJSON *
         ogs_error("OpenAPI_pdu_session_context_parseFromJSON() failed [smf_service_instance_id]");
         goto end;
     }
-}
+    }
 
     cJSON *ma_pdu_session = cJSON_GetObjectItemCaseSensitive(pdu_session_contextJSON, "maPduSession");
 
@@ -534,14 +534,14 @@ OpenAPI_pdu_session_context_t *OpenAPI_pdu_session_context_parseFromJSON(cJSON *
         ogs_error("OpenAPI_pdu_session_context_parseFromJSON() failed [ma_pdu_session]");
         goto end;
     }
-}
+    }
 
     cJSON *cn_assisted_ran_para = cJSON_GetObjectItemCaseSensitive(pdu_session_contextJSON, "cnAssistedRanPara");
 
     OpenAPI_cn_assisted_ran_para_t *cn_assisted_ran_para_local_nonprim = NULL;
     if (cn_assisted_ran_para) { 
     cn_assisted_ran_para_local_nonprim = OpenAPI_cn_assisted_ran_para_parseFromJSON(cn_assisted_ran_para);
-}
+    }
 
     pdu_session_context_local_var = OpenAPI_pdu_session_context_create (
         pdu_session_id->valuedouble,

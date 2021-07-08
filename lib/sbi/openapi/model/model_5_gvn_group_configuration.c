@@ -123,7 +123,7 @@ OpenAPI_model_5_gvn_group_configuration_t *OpenAPI_model_5_gvn_group_configurati
     OpenAPI_model_5_gvn_group_data_t *_5g_vn_group_data_local_nonprim = NULL;
     if (_5g_vn_group_data) { 
     _5g_vn_group_data_local_nonprim = OpenAPI_model_5_gvn_group_data_parseFromJSON(_5g_vn_group_data);
-}
+    }
 
     cJSON *members = cJSON_GetObjectItemCaseSensitive(model_5_gvn_group_configurationJSON, "members");
 
@@ -143,7 +143,7 @@ OpenAPI_model_5_gvn_group_configuration_t *OpenAPI_model_5_gvn_group_configurati
     }
     OpenAPI_list_add(membersList , ogs_strdup_or_assert(members_local->valuestring));
                     }
-}
+    }
 
     cJSON *reference_id = cJSON_GetObjectItemCaseSensitive(model_5_gvn_group_configurationJSON, "referenceId");
 
@@ -152,7 +152,7 @@ OpenAPI_model_5_gvn_group_configuration_t *OpenAPI_model_5_gvn_group_configurati
         ogs_error("OpenAPI_model_5_gvn_group_configuration_parseFromJSON() failed [reference_id]");
         goto end;
     }
-}
+    }
 
     cJSON *af_instance_id = cJSON_GetObjectItemCaseSensitive(model_5_gvn_group_configurationJSON, "afInstanceId");
 
@@ -161,7 +161,7 @@ OpenAPI_model_5_gvn_group_configuration_t *OpenAPI_model_5_gvn_group_configurati
         ogs_error("OpenAPI_model_5_gvn_group_configuration_parseFromJSON() failed [af_instance_id]");
         goto end;
     }
-}
+    }
 
     cJSON *internal_group_identifier = cJSON_GetObjectItemCaseSensitive(model_5_gvn_group_configurationJSON, "internalGroupIdentifier");
 
@@ -170,7 +170,7 @@ OpenAPI_model_5_gvn_group_configuration_t *OpenAPI_model_5_gvn_group_configurati
         ogs_error("OpenAPI_model_5_gvn_group_configuration_parseFromJSON() failed [internal_group_identifier]");
         goto end;
     }
-}
+    }
 
     cJSON *mtc_provider_information = cJSON_GetObjectItemCaseSensitive(model_5_gvn_group_configurationJSON, "mtcProviderInformation");
 
@@ -179,7 +179,7 @@ OpenAPI_model_5_gvn_group_configuration_t *OpenAPI_model_5_gvn_group_configurati
         ogs_error("OpenAPI_model_5_gvn_group_configuration_parseFromJSON() failed [mtc_provider_information]");
         goto end;
     }
-}
+    }
 
     model_5_gvn_group_configuration_local_var = OpenAPI_model_5_gvn_group_configuration_create (
         _5g_vn_group_data ? _5g_vn_group_data_local_nonprim : NULL,

@@ -62,7 +62,7 @@ OpenAPI_v2x_information_t *OpenAPI_v2x_information_parseFromJSON(cJSON *v2x_info
     OpenAPI_n2_info_content_t *n2_pc5_pol_local_nonprim = NULL;
     if (n2_pc5_pol) { 
     n2_pc5_pol_local_nonprim = OpenAPI_n2_info_content_parseFromJSON(n2_pc5_pol);
-}
+    }
 
     v2x_information_local_var = OpenAPI_v2x_information_create (
         n2_pc5_pol ? n2_pc5_pol_local_nonprim : NULL

@@ -114,7 +114,7 @@ OpenAPI_pcscf_restoration_request_data_t *OpenAPI_pcscf_restoration_request_data
         ogs_error("OpenAPI_pcscf_restoration_request_data_parseFromJSON() failed [dnn]");
         goto end;
     }
-}
+    }
 
     cJSON *ip_domain = cJSON_GetObjectItemCaseSensitive(pcscf_restoration_request_dataJSON, "ipDomain");
 
@@ -123,14 +123,14 @@ OpenAPI_pcscf_restoration_request_data_t *OpenAPI_pcscf_restoration_request_data
         ogs_error("OpenAPI_pcscf_restoration_request_data_parseFromJSON() failed [ip_domain]");
         goto end;
     }
-}
+    }
 
     cJSON *slice_info = cJSON_GetObjectItemCaseSensitive(pcscf_restoration_request_dataJSON, "sliceInfo");
 
     OpenAPI_snssai_t *slice_info_local_nonprim = NULL;
     if (slice_info) { 
     slice_info_local_nonprim = OpenAPI_snssai_parseFromJSON(slice_info);
-}
+    }
 
     cJSON *supi = cJSON_GetObjectItemCaseSensitive(pcscf_restoration_request_dataJSON, "supi");
 
@@ -139,7 +139,7 @@ OpenAPI_pcscf_restoration_request_data_t *OpenAPI_pcscf_restoration_request_data
         ogs_error("OpenAPI_pcscf_restoration_request_data_parseFromJSON() failed [supi]");
         goto end;
     }
-}
+    }
 
     cJSON *ue_ipv4 = cJSON_GetObjectItemCaseSensitive(pcscf_restoration_request_dataJSON, "ueIpv4");
 
@@ -148,7 +148,7 @@ OpenAPI_pcscf_restoration_request_data_t *OpenAPI_pcscf_restoration_request_data
         ogs_error("OpenAPI_pcscf_restoration_request_data_parseFromJSON() failed [ue_ipv4]");
         goto end;
     }
-}
+    }
 
     cJSON *ue_ipv6 = cJSON_GetObjectItemCaseSensitive(pcscf_restoration_request_dataJSON, "ueIpv6");
 
@@ -157,7 +157,7 @@ OpenAPI_pcscf_restoration_request_data_t *OpenAPI_pcscf_restoration_request_data
         ogs_error("OpenAPI_pcscf_restoration_request_data_parseFromJSON() failed [ue_ipv6]");
         goto end;
     }
-}
+    }
 
     pcscf_restoration_request_data_local_var = OpenAPI_pcscf_restoration_request_data_create (
         dnn ? ogs_strdup_or_assert(dnn->valuestring) : NULL,

@@ -90,21 +90,21 @@ OpenAPI_serving_nf_identity_t *OpenAPI_serving_nf_identity_parseFromJSON(cJSON *
         ogs_error("OpenAPI_serving_nf_identity_parseFromJSON() failed [serv_nf_inst_id]");
         goto end;
     }
-}
+    }
 
     cJSON *guami = cJSON_GetObjectItemCaseSensitive(serving_nf_identityJSON, "guami");
 
     OpenAPI_guami_t *guami_local_nonprim = NULL;
     if (guami) { 
     guami_local_nonprim = OpenAPI_guami_parseFromJSON(guami);
-}
+    }
 
     cJSON *an_gw_addr = cJSON_GetObjectItemCaseSensitive(serving_nf_identityJSON, "anGwAddr");
 
     OpenAPI_an_gw_address_t *an_gw_addr_local_nonprim = NULL;
     if (an_gw_addr) { 
     an_gw_addr_local_nonprim = OpenAPI_an_gw_address_parseFromJSON(an_gw_addr);
-}
+    }
 
     serving_nf_identity_local_var = OpenAPI_serving_nf_identity_create (
         serv_nf_inst_id ? ogs_strdup_or_assert(serv_nf_inst_id->valuestring) : NULL,

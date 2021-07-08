@@ -88,7 +88,7 @@ OpenAPI_rg_auth_ctx_t *OpenAPI_rg_auth_ctx_parseFromJSON(cJSON *rg_auth_ctxJSON)
         ogs_error("OpenAPI_rg_auth_ctx_parseFromJSON() failed [supi]");
         goto end;
     }
-}
+    }
 
     cJSON *auth_ind = cJSON_GetObjectItemCaseSensitive(rg_auth_ctxJSON, "authInd");
 
@@ -97,7 +97,7 @@ OpenAPI_rg_auth_ctx_t *OpenAPI_rg_auth_ctx_parseFromJSON(cJSON *rg_auth_ctxJSON)
         ogs_error("OpenAPI_rg_auth_ctx_parseFromJSON() failed [auth_ind]");
         goto end;
     }
-}
+    }
 
     rg_auth_ctx_local_var = OpenAPI_rg_auth_ctx_create (
         auth_resultVariable,

@@ -103,7 +103,7 @@ OpenAPI_identity_data_t *OpenAPI_identity_data_parseFromJSON(cJSON *identity_dat
     }
     OpenAPI_list_add(supi_listList , ogs_strdup_or_assert(supi_list_local->valuestring));
                     }
-}
+    }
 
     cJSON *gpsi_list = cJSON_GetObjectItemCaseSensitive(identity_dataJSON, "gpsiList");
 
@@ -123,7 +123,7 @@ OpenAPI_identity_data_t *OpenAPI_identity_data_parseFromJSON(cJSON *identity_dat
     }
     OpenAPI_list_add(gpsi_listList , ogs_strdup_or_assert(gpsi_list_local->valuestring));
                     }
-}
+    }
 
     identity_data_local_var = OpenAPI_identity_data_create (
         supi_list ? supi_listList : NULL,

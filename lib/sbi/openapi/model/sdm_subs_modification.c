@@ -80,7 +80,7 @@ OpenAPI_sdm_subs_modification_t *OpenAPI_sdm_subs_modification_parseFromJSON(cJS
         ogs_error("OpenAPI_sdm_subs_modification_parseFromJSON() failed [expires]");
         goto end;
     }
-}
+    }
 
     cJSON *monitored_resource_uris = cJSON_GetObjectItemCaseSensitive(sdm_subs_modificationJSON, "monitoredResourceUris");
 
@@ -100,7 +100,7 @@ OpenAPI_sdm_subs_modification_t *OpenAPI_sdm_subs_modification_parseFromJSON(cJS
     }
     OpenAPI_list_add(monitored_resource_urisList , ogs_strdup_or_assert(monitored_resource_uris_local->valuestring));
                     }
-}
+    }
 
     sdm_subs_modification_local_var = OpenAPI_sdm_subs_modification_create (
         expires ? ogs_strdup_or_assert(expires->valuestring) : NULL,

@@ -119,7 +119,7 @@ OpenAPI_change_item_t *OpenAPI_change_item_parseFromJSON(cJSON *change_itemJSON)
         ogs_error("OpenAPI_change_item_parseFromJSON() failed [from]");
         goto end;
     }
-}
+    }
 
     cJSON *orig_value = cJSON_GetObjectItemCaseSensitive(change_itemJSON, "origValue");
 
@@ -128,7 +128,7 @@ OpenAPI_change_item_t *OpenAPI_change_item_parseFromJSON(cJSON *change_itemJSON)
         ogs_error("OpenAPI_change_item_parseFromJSON() failed [orig_value]");
         goto end;
     }
-}
+    }
 
     cJSON *new_value = cJSON_GetObjectItemCaseSensitive(change_itemJSON, "newValue");
 
@@ -137,7 +137,7 @@ OpenAPI_change_item_t *OpenAPI_change_item_parseFromJSON(cJSON *change_itemJSON)
         ogs_error("OpenAPI_change_item_parseFromJSON() failed [new_value]");
         goto end;
     }
-}
+    }
 
     change_item_local_var = OpenAPI_change_item_create (
         opVariable,

@@ -140,7 +140,7 @@ OpenAPI_pfd_content_t *OpenAPI_pfd_content_parseFromJSON(cJSON *pfd_contentJSON)
         ogs_error("OpenAPI_pfd_content_parseFromJSON() failed [pfd_id]");
         goto end;
     }
-}
+    }
 
     cJSON *flow_descriptions = cJSON_GetObjectItemCaseSensitive(pfd_contentJSON, "flowDescriptions");
 
@@ -160,7 +160,7 @@ OpenAPI_pfd_content_t *OpenAPI_pfd_content_parseFromJSON(cJSON *pfd_contentJSON)
     }
     OpenAPI_list_add(flow_descriptionsList , ogs_strdup_or_assert(flow_descriptions_local->valuestring));
                     }
-}
+    }
 
     cJSON *urls = cJSON_GetObjectItemCaseSensitive(pfd_contentJSON, "urls");
 
@@ -180,7 +180,7 @@ OpenAPI_pfd_content_t *OpenAPI_pfd_content_parseFromJSON(cJSON *pfd_contentJSON)
     }
     OpenAPI_list_add(urlsList , ogs_strdup_or_assert(urls_local->valuestring));
                     }
-}
+    }
 
     cJSON *domain_names = cJSON_GetObjectItemCaseSensitive(pfd_contentJSON, "domainNames");
 
@@ -200,14 +200,14 @@ OpenAPI_pfd_content_t *OpenAPI_pfd_content_parseFromJSON(cJSON *pfd_contentJSON)
     }
     OpenAPI_list_add(domain_namesList , ogs_strdup_or_assert(domain_names_local->valuestring));
                     }
-}
+    }
 
     cJSON *dn_protocol = cJSON_GetObjectItemCaseSensitive(pfd_contentJSON, "dnProtocol");
 
     OpenAPI_domain_name_protocol_t *dn_protocol_local_nonprim = NULL;
     if (dn_protocol) { 
     dn_protocol_local_nonprim = OpenAPI_domain_name_protocol_parseFromJSON(dn_protocol);
-}
+    }
 
     pfd_content_local_var = OpenAPI_pfd_content_create (
         pfd_id ? ogs_strdup_or_assert(pfd_id->valuestring) : NULL,

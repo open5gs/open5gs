@@ -137,7 +137,7 @@ OpenAPI_eth_flow_description_t *OpenAPI_eth_flow_description_parseFromJSON(cJSON
         ogs_error("OpenAPI_eth_flow_description_parseFromJSON() failed [dest_mac_addr]");
         goto end;
     }
-}
+    }
 
     cJSON *eth_type = cJSON_GetObjectItemCaseSensitive(eth_flow_descriptionJSON, "ethType");
     if (!eth_type) {
@@ -158,7 +158,7 @@ OpenAPI_eth_flow_description_t *OpenAPI_eth_flow_description_parseFromJSON(cJSON
         ogs_error("OpenAPI_eth_flow_description_parseFromJSON() failed [f_desc]");
         goto end;
     }
-}
+    }
 
     cJSON *f_dir = cJSON_GetObjectItemCaseSensitive(eth_flow_descriptionJSON, "fDir");
 
@@ -169,7 +169,7 @@ OpenAPI_eth_flow_description_t *OpenAPI_eth_flow_description_parseFromJSON(cJSON
         goto end;
     }
     f_dirVariable = OpenAPI_flow_direction_FromString(f_dir->valuestring);
-}
+    }
 
     cJSON *source_mac_addr = cJSON_GetObjectItemCaseSensitive(eth_flow_descriptionJSON, "sourceMacAddr");
 
@@ -178,7 +178,7 @@ OpenAPI_eth_flow_description_t *OpenAPI_eth_flow_description_parseFromJSON(cJSON
         ogs_error("OpenAPI_eth_flow_description_parseFromJSON() failed [source_mac_addr]");
         goto end;
     }
-}
+    }
 
     cJSON *vlan_tags = cJSON_GetObjectItemCaseSensitive(eth_flow_descriptionJSON, "vlanTags");
 
@@ -198,7 +198,7 @@ OpenAPI_eth_flow_description_t *OpenAPI_eth_flow_description_parseFromJSON(cJSON
     }
     OpenAPI_list_add(vlan_tagsList , ogs_strdup_or_assert(vlan_tags_local->valuestring));
                     }
-}
+    }
 
     cJSON *src_mac_addr_end = cJSON_GetObjectItemCaseSensitive(eth_flow_descriptionJSON, "srcMacAddrEnd");
 
@@ -207,7 +207,7 @@ OpenAPI_eth_flow_description_t *OpenAPI_eth_flow_description_parseFromJSON(cJSON
         ogs_error("OpenAPI_eth_flow_description_parseFromJSON() failed [src_mac_addr_end]");
         goto end;
     }
-}
+    }
 
     cJSON *dest_mac_addr_end = cJSON_GetObjectItemCaseSensitive(eth_flow_descriptionJSON, "destMacAddrEnd");
 
@@ -216,7 +216,7 @@ OpenAPI_eth_flow_description_t *OpenAPI_eth_flow_description_parseFromJSON(cJSON
         ogs_error("OpenAPI_eth_flow_description_parseFromJSON() failed [dest_mac_addr_end]");
         goto end;
     }
-}
+    }
 
     eth_flow_description_local_var = OpenAPI_eth_flow_description_create (
         dest_mac_addr ? ogs_strdup_or_assert(dest_mac_addr->valuestring) : NULL,

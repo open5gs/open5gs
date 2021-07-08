@@ -57,7 +57,7 @@ OpenAPI_transfer_mt_data_add_info_t *OpenAPI_transfer_mt_data_add_info_parseFrom
         ogs_error("OpenAPI_transfer_mt_data_add_info_parseFromJSON() failed [max_waiting_time]");
         goto end;
     }
-}
+    }
 
     transfer_mt_data_add_info_local_var = OpenAPI_transfer_mt_data_add_info_create (
         max_waiting_time ? max_waiting_time->valuedouble : 0

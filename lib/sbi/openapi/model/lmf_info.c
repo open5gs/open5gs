@@ -152,7 +152,7 @@ OpenAPI_lmf_info_t *OpenAPI_lmf_info_parseFromJSON(cJSON *lmf_infoJSON)
 
         OpenAPI_list_add(serving_client_typesList, serving_client_typesItem);
     }
-}
+    }
 
     cJSON *lmf_id = cJSON_GetObjectItemCaseSensitive(lmf_infoJSON, "lmfId");
 
@@ -161,7 +161,7 @@ OpenAPI_lmf_info_t *OpenAPI_lmf_info_parseFromJSON(cJSON *lmf_infoJSON)
         ogs_error("OpenAPI_lmf_info_parseFromJSON() failed [lmf_id]");
         goto end;
     }
-}
+    }
 
     cJSON *serving_access_types = cJSON_GetObjectItemCaseSensitive(lmf_infoJSON, "servingAccessTypes");
 
@@ -183,7 +183,7 @@ OpenAPI_lmf_info_t *OpenAPI_lmf_info_parseFromJSON(cJSON *lmf_infoJSON)
 
         OpenAPI_list_add(serving_access_typesList, (void *)OpenAPI_access_type_FromString(serving_access_types_local_nonprimitive->valuestring));
     }
-}
+    }
 
     cJSON *serving_an_node_types = cJSON_GetObjectItemCaseSensitive(lmf_infoJSON, "servingAnNodeTypes");
 
@@ -205,7 +205,7 @@ OpenAPI_lmf_info_t *OpenAPI_lmf_info_parseFromJSON(cJSON *lmf_infoJSON)
 
         OpenAPI_list_add(serving_an_node_typesList, (void *)OpenAPI_an_node_type_FromString(serving_an_node_types_local_nonprimitive->valuestring));
     }
-}
+    }
 
     cJSON *serving_rat_types = cJSON_GetObjectItemCaseSensitive(lmf_infoJSON, "servingRatTypes");
 
@@ -227,7 +227,7 @@ OpenAPI_lmf_info_t *OpenAPI_lmf_info_parseFromJSON(cJSON *lmf_infoJSON)
 
         OpenAPI_list_add(serving_rat_typesList, (void *)OpenAPI_rat_type_FromString(serving_rat_types_local_nonprimitive->valuestring));
     }
-}
+    }
 
     lmf_info_local_var = OpenAPI_lmf_info_create (
         serving_client_types ? serving_client_typesList : NULL,

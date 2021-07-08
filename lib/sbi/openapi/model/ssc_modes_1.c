@@ -100,7 +100,7 @@ OpenAPI_ssc_modes_1_t *OpenAPI_ssc_modes_1_parseFromJSON(cJSON *ssc_modes_1JSON)
 
         OpenAPI_list_add(allowed_ssc_modesList, (void *)OpenAPI_ssc_mode_FromString(allowed_ssc_modes_local_nonprimitive->valuestring));
     }
-}
+    }
 
     ssc_modes_1_local_var = OpenAPI_ssc_modes_1_create (
         default_ssc_modeVariable,

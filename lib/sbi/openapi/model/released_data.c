@@ -126,35 +126,35 @@ OpenAPI_released_data_t *OpenAPI_released_data_parseFromJSON(cJSON *released_dat
     OpenAPI_small_data_rate_status_t *small_data_rate_status_local_nonprim = NULL;
     if (small_data_rate_status) { 
     small_data_rate_status_local_nonprim = OpenAPI_small_data_rate_status_parseFromJSON(small_data_rate_status);
-}
+    }
 
     cJSON *apn_rate_status = cJSON_GetObjectItemCaseSensitive(released_dataJSON, "apnRateStatus");
 
     OpenAPI_apn_rate_status_t *apn_rate_status_local_nonprim = NULL;
     if (apn_rate_status) { 
     apn_rate_status_local_nonprim = OpenAPI_apn_rate_status_parseFromJSON(apn_rate_status);
-}
+    }
 
     cJSON *n4_info = cJSON_GetObjectItemCaseSensitive(released_dataJSON, "n4Info");
 
     OpenAPI_n4_information_t *n4_info_local_nonprim = NULL;
     if (n4_info) { 
     n4_info_local_nonprim = OpenAPI_n4_information_parseFromJSON(n4_info);
-}
+    }
 
     cJSON *n4_info_ext1 = cJSON_GetObjectItemCaseSensitive(released_dataJSON, "n4InfoExt1");
 
     OpenAPI_n4_information_t *n4_info_ext1_local_nonprim = NULL;
     if (n4_info_ext1) { 
     n4_info_ext1_local_nonprim = OpenAPI_n4_information_parseFromJSON(n4_info_ext1);
-}
+    }
 
     cJSON *n4_info_ext2 = cJSON_GetObjectItemCaseSensitive(released_dataJSON, "n4InfoExt2");
 
     OpenAPI_n4_information_t *n4_info_ext2_local_nonprim = NULL;
     if (n4_info_ext2) { 
     n4_info_ext2_local_nonprim = OpenAPI_n4_information_parseFromJSON(n4_info_ext2);
-}
+    }
 
     released_data_local_var = OpenAPI_released_data_create (
         small_data_rate_status ? small_data_rate_status_local_nonprim : NULL,

@@ -92,7 +92,7 @@ OpenAPI_route_to_location_t *OpenAPI_route_to_location_parseFromJSON(cJSON *rout
     OpenAPI_route_information_t *route_info_local_nonprim = NULL;
     if (route_info) { 
     route_info_local_nonprim = OpenAPI_route_information_parseFromJSON(route_info);
-}
+    }
 
     cJSON *route_prof_id = cJSON_GetObjectItemCaseSensitive(route_to_locationJSON, "routeProfId");
 
@@ -101,7 +101,7 @@ OpenAPI_route_to_location_t *OpenAPI_route_to_location_parseFromJSON(cJSON *rout
         ogs_error("OpenAPI_route_to_location_parseFromJSON() failed [route_prof_id]");
         goto end;
     }
-}
+    }
 
     route_to_location_local_var = OpenAPI_route_to_location_create (
         ogs_strdup_or_assert(dnai->valuestring),

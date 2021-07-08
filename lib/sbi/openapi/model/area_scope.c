@@ -154,7 +154,7 @@ OpenAPI_area_scope_t *OpenAPI_area_scope_parseFromJSON(cJSON *area_scopeJSON)
     }
     OpenAPI_list_add(eutra_cell_id_listList , ogs_strdup_or_assert(eutra_cell_id_list_local->valuestring));
                     }
-}
+    }
 
     cJSON *nr_cell_id_list = cJSON_GetObjectItemCaseSensitive(area_scopeJSON, "nrCellIdList");
 
@@ -174,7 +174,7 @@ OpenAPI_area_scope_t *OpenAPI_area_scope_parseFromJSON(cJSON *area_scopeJSON)
     }
     OpenAPI_list_add(nr_cell_id_listList , ogs_strdup_or_assert(nr_cell_id_list_local->valuestring));
                     }
-}
+    }
 
     cJSON *tac_list = cJSON_GetObjectItemCaseSensitive(area_scopeJSON, "tacList");
 
@@ -194,7 +194,7 @@ OpenAPI_area_scope_t *OpenAPI_area_scope_parseFromJSON(cJSON *area_scopeJSON)
     }
     OpenAPI_list_add(tac_listList , ogs_strdup_or_assert(tac_list_local->valuestring));
                     }
-}
+    }
 
     cJSON *tac_info_per_plmn = cJSON_GetObjectItemCaseSensitive(area_scopeJSON, "tacInfoPerPlmn");
 
@@ -217,7 +217,7 @@ OpenAPI_area_scope_t *OpenAPI_area_scope_parseFromJSON(cJSON *area_scopeJSON)
             localMapObject->string, OpenAPI_tac_info_parseFromJSON(localMapObject));
         OpenAPI_list_add(tac_info_per_plmnList , localMapKeyPair);
     }
-}
+    }
 
     area_scope_local_var = OpenAPI_area_scope_create (
         eutra_cell_id_list ? eutra_cell_id_listList : NULL,

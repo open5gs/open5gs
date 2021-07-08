@@ -108,7 +108,7 @@ OpenAPI_authorization_data_t *OpenAPI_authorization_data_parseFromJSON(cJSON *au
         ogs_error("OpenAPI_authorization_data_parseFromJSON() failed [validity_time]");
         goto end;
     }
-}
+    }
 
     authorization_data_local_var = OpenAPI_authorization_data_create (
         authorization_dataList,

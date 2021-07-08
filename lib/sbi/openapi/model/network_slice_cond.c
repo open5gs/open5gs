@@ -131,7 +131,7 @@ OpenAPI_network_slice_cond_t *OpenAPI_network_slice_cond_parseFromJSON(cJSON *ne
     }
     OpenAPI_list_add(nsi_listList , ogs_strdup_or_assert(nsi_list_local->valuestring));
                     }
-}
+    }
 
     network_slice_cond_local_var = OpenAPI_network_slice_cond_create (
         snssai_listList,

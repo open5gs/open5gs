@@ -81,7 +81,7 @@ OpenAPI_subscribed_snssai_t *OpenAPI_subscribed_snssai_parseFromJSON(cJSON *subs
         ogs_error("OpenAPI_subscribed_snssai_parseFromJSON() failed [default_indication]");
         goto end;
     }
-}
+    }
 
     subscribed_snssai_local_var = OpenAPI_subscribed_snssai_create (
         subscribed_snssai_local_nonprim,

@@ -82,7 +82,7 @@ OpenAPI_traffic_influ_data_notif_t *OpenAPI_traffic_influ_data_notif_parseFromJS
     OpenAPI_traffic_influ_data_t *traffic_influ_data_local_nonprim = NULL;
     if (traffic_influ_data) { 
     traffic_influ_data_local_nonprim = OpenAPI_traffic_influ_data_parseFromJSON(traffic_influ_data);
-}
+    }
 
     traffic_influ_data_notif_local_var = OpenAPI_traffic_influ_data_notif_create (
         ogs_strdup_or_assert(res_uri->valuestring),

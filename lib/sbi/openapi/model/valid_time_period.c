@@ -68,7 +68,7 @@ OpenAPI_valid_time_period_t *OpenAPI_valid_time_period_parseFromJSON(cJSON *vali
         ogs_error("OpenAPI_valid_time_period_parseFromJSON() failed [start_time]");
         goto end;
     }
-}
+    }
 
     cJSON *end_time = cJSON_GetObjectItemCaseSensitive(valid_time_periodJSON, "endTime");
 
@@ -77,7 +77,7 @@ OpenAPI_valid_time_period_t *OpenAPI_valid_time_period_parseFromJSON(cJSON *vali
         ogs_error("OpenAPI_valid_time_period_parseFromJSON() failed [end_time]");
         goto end;
     }
-}
+    }
 
     valid_time_period_local_var = OpenAPI_valid_time_period_create (
         start_time ? ogs_strdup_or_assert(start_time->valuestring) : NULL,

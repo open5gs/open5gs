@@ -95,7 +95,7 @@ OpenAPI_resources_allocation_info_t *OpenAPI_resources_allocation_info_parseFrom
         goto end;
     }
     mc_resourc_statusVariable = OpenAPI_media_component_resources_status_FromString(mc_resourc_status->valuestring);
-}
+    }
 
     cJSON *flows = cJSON_GetObjectItemCaseSensitive(resources_allocation_infoJSON, "flows");
 
@@ -118,7 +118,7 @@ OpenAPI_resources_allocation_info_t *OpenAPI_resources_allocation_info_parseFrom
 
         OpenAPI_list_add(flowsList, flowsItem);
     }
-}
+    }
 
     cJSON *alt_ser_req = cJSON_GetObjectItemCaseSensitive(resources_allocation_infoJSON, "altSerReq");
 
@@ -127,7 +127,7 @@ OpenAPI_resources_allocation_info_t *OpenAPI_resources_allocation_info_parseFrom
         ogs_error("OpenAPI_resources_allocation_info_parseFromJSON() failed [alt_ser_req]");
         goto end;
     }
-}
+    }
 
     resources_allocation_info_local_var = OpenAPI_resources_allocation_info_create (
         mc_resourc_status ? mc_resourc_statusVariable : 0,

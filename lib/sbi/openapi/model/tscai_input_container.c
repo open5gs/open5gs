@@ -67,7 +67,7 @@ OpenAPI_tscai_input_container_t *OpenAPI_tscai_input_container_parseFromJSON(cJS
         ogs_error("OpenAPI_tscai_input_container_parseFromJSON() failed [periodicity]");
         goto end;
     }
-}
+    }
 
     cJSON *burst_arrival_time = cJSON_GetObjectItemCaseSensitive(tscai_input_containerJSON, "burstArrivalTime");
 
@@ -76,7 +76,7 @@ OpenAPI_tscai_input_container_t *OpenAPI_tscai_input_container_parseFromJSON(cJS
         ogs_error("OpenAPI_tscai_input_container_parseFromJSON() failed [burst_arrival_time]");
         goto end;
     }
-}
+    }
 
     tscai_input_container_local_var = OpenAPI_tscai_input_container_create (
         periodicity ? periodicity->valuedouble : 0,

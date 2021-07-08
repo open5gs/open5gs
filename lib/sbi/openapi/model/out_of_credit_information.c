@@ -112,7 +112,7 @@ OpenAPI_out_of_credit_information_t *OpenAPI_out_of_credit_information_parseFrom
 
         OpenAPI_list_add(flowsList, flowsItem);
     }
-}
+    }
 
     out_of_credit_information_local_var = OpenAPI_out_of_credit_information_create (
         fin_unit_act_local_nonprim,

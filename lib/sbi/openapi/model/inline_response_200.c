@@ -91,7 +91,7 @@ OpenAPI_inline_response_200_t *OpenAPI_inline_response_200_parseFromJSON(cJSON *
             localMapObject->string, OpenAPI_links_value_schema_parseFromJSON(localMapObject));
         OpenAPI_list_add(_linksList , localMapKeyPair);
     }
-}
+    }
 
     inline_response_200_local_var = OpenAPI_inline_response_200_create (
         _links ? _linksList : NULL

@@ -94,21 +94,21 @@ OpenAPI_user_location_t *OpenAPI_user_location_parseFromJSON(cJSON *user_locatio
     OpenAPI_eutra_location_t *eutra_location_local_nonprim = NULL;
     if (eutra_location) { 
     eutra_location_local_nonprim = OpenAPI_eutra_location_parseFromJSON(eutra_location);
-}
+    }
 
     cJSON *nr_location = cJSON_GetObjectItemCaseSensitive(user_locationJSON, "nrLocation");
 
     OpenAPI_nr_location_t *nr_location_local_nonprim = NULL;
     if (nr_location) { 
     nr_location_local_nonprim = OpenAPI_nr_location_parseFromJSON(nr_location);
-}
+    }
 
     cJSON *n3ga_location = cJSON_GetObjectItemCaseSensitive(user_locationJSON, "n3gaLocation");
 
     OpenAPI_n3ga_location_t *n3ga_location_local_nonprim = NULL;
     if (n3ga_location) { 
     n3ga_location_local_nonprim = OpenAPI_n3ga_location_parseFromJSON(n3ga_location);
-}
+    }
 
     user_location_local_var = OpenAPI_user_location_create (
         eutra_location ? eutra_location_local_nonprim : NULL,

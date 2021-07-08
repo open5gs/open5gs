@@ -179,7 +179,7 @@ OpenAPI_assigned_ebi_data_t *OpenAPI_assigned_ebi_data_parseFromJSON(cJSON *assi
 
         OpenAPI_list_add(failed_arp_listList, failed_arp_listItem);
     }
-}
+    }
 
     cJSON *released_ebi_list = cJSON_GetObjectItemCaseSensitive(assigned_ebi_dataJSON, "releasedEbiList");
 
@@ -199,7 +199,7 @@ OpenAPI_assigned_ebi_data_t *OpenAPI_assigned_ebi_data_parseFromJSON(cJSON *assi
     }
     OpenAPI_list_add(released_ebi_listList , &released_ebi_list_local->valuedouble);
                     }
-}
+    }
 
     assigned_ebi_data_local_var = OpenAPI_assigned_ebi_data_create (
         pdu_session_id->valuedouble,

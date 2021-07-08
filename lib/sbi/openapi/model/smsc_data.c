@@ -74,14 +74,14 @@ OpenAPI_smsc_data_t *OpenAPI_smsc_data_parseFromJSON(cJSON *smsc_dataJSON)
         ogs_error("OpenAPI_smsc_data_parseFromJSON() failed [smsc_map_address]");
         goto end;
     }
-}
+    }
 
     cJSON *smsc_diameter_address = cJSON_GetObjectItemCaseSensitive(smsc_dataJSON, "smscDiameterAddress");
 
     OpenAPI_network_node_diameter_address_1_t *smsc_diameter_address_local_nonprim = NULL;
     if (smsc_diameter_address) { 
     smsc_diameter_address_local_nonprim = OpenAPI_network_node_diameter_address_1_parseFromJSON(smsc_diameter_address);
-}
+    }
 
     smsc_data_local_var = OpenAPI_smsc_data_create (
         smsc_map_address ? ogs_strdup_or_assert(smsc_map_address->valuestring) : NULL,

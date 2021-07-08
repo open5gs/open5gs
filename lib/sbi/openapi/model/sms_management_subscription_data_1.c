@@ -150,7 +150,7 @@ OpenAPI_sms_management_subscription_data_1_t *OpenAPI_sms_management_subscriptio
         ogs_error("OpenAPI_sms_management_subscription_data_1_parseFromJSON() failed [supported_features]");
         goto end;
     }
-}
+    }
 
     cJSON *mt_sms_subscribed = cJSON_GetObjectItemCaseSensitive(sms_management_subscription_data_1JSON, "mtSmsSubscribed");
 
@@ -159,7 +159,7 @@ OpenAPI_sms_management_subscription_data_1_t *OpenAPI_sms_management_subscriptio
         ogs_error("OpenAPI_sms_management_subscription_data_1_parseFromJSON() failed [mt_sms_subscribed]");
         goto end;
     }
-}
+    }
 
     cJSON *mt_sms_barring_all = cJSON_GetObjectItemCaseSensitive(sms_management_subscription_data_1JSON, "mtSmsBarringAll");
 
@@ -168,7 +168,7 @@ OpenAPI_sms_management_subscription_data_1_t *OpenAPI_sms_management_subscriptio
         ogs_error("OpenAPI_sms_management_subscription_data_1_parseFromJSON() failed [mt_sms_barring_all]");
         goto end;
     }
-}
+    }
 
     cJSON *mt_sms_barring_roaming = cJSON_GetObjectItemCaseSensitive(sms_management_subscription_data_1JSON, "mtSmsBarringRoaming");
 
@@ -177,7 +177,7 @@ OpenAPI_sms_management_subscription_data_1_t *OpenAPI_sms_management_subscriptio
         ogs_error("OpenAPI_sms_management_subscription_data_1_parseFromJSON() failed [mt_sms_barring_roaming]");
         goto end;
     }
-}
+    }
 
     cJSON *mo_sms_subscribed = cJSON_GetObjectItemCaseSensitive(sms_management_subscription_data_1JSON, "moSmsSubscribed");
 
@@ -186,7 +186,7 @@ OpenAPI_sms_management_subscription_data_1_t *OpenAPI_sms_management_subscriptio
         ogs_error("OpenAPI_sms_management_subscription_data_1_parseFromJSON() failed [mo_sms_subscribed]");
         goto end;
     }
-}
+    }
 
     cJSON *mo_sms_barring_all = cJSON_GetObjectItemCaseSensitive(sms_management_subscription_data_1JSON, "moSmsBarringAll");
 
@@ -195,7 +195,7 @@ OpenAPI_sms_management_subscription_data_1_t *OpenAPI_sms_management_subscriptio
         ogs_error("OpenAPI_sms_management_subscription_data_1_parseFromJSON() failed [mo_sms_barring_all]");
         goto end;
     }
-}
+    }
 
     cJSON *mo_sms_barring_roaming = cJSON_GetObjectItemCaseSensitive(sms_management_subscription_data_1JSON, "moSmsBarringRoaming");
 
@@ -204,7 +204,7 @@ OpenAPI_sms_management_subscription_data_1_t *OpenAPI_sms_management_subscriptio
         ogs_error("OpenAPI_sms_management_subscription_data_1_parseFromJSON() failed [mo_sms_barring_roaming]");
         goto end;
     }
-}
+    }
 
     cJSON *shared_sms_mng_data_ids = cJSON_GetObjectItemCaseSensitive(sms_management_subscription_data_1JSON, "sharedSmsMngDataIds");
 
@@ -224,14 +224,14 @@ OpenAPI_sms_management_subscription_data_1_t *OpenAPI_sms_management_subscriptio
     }
     OpenAPI_list_add(shared_sms_mng_data_idsList , ogs_strdup_or_assert(shared_sms_mng_data_ids_local->valuestring));
                     }
-}
+    }
 
     cJSON *trace_data = cJSON_GetObjectItemCaseSensitive(sms_management_subscription_data_1JSON, "traceData");
 
     OpenAPI_trace_data_t *trace_data_local_nonprim = NULL;
     if (trace_data) { 
     trace_data_local_nonprim = OpenAPI_trace_data_parseFromJSON(trace_data);
-}
+    }
 
     sms_management_subscription_data_1_local_var = OpenAPI_sms_management_subscription_data_1_create (
         supported_features ? ogs_strdup_or_assert(supported_features->valuestring) : NULL,

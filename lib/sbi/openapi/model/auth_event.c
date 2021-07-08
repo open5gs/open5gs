@@ -157,7 +157,7 @@ OpenAPI_auth_event_t *OpenAPI_auth_event_parseFromJSON(cJSON *auth_eventJSON)
         ogs_error("OpenAPI_auth_event_parseFromJSON() failed [auth_removal_ind]");
         goto end;
     }
-}
+    }
 
     auth_event_local_var = OpenAPI_auth_event_create (
         ogs_strdup_or_assert(nf_instance_id->valuestring),

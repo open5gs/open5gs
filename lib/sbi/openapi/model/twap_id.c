@@ -87,7 +87,7 @@ OpenAPI_twap_id_t *OpenAPI_twap_id_parseFromJSON(cJSON *twap_idJSON)
         ogs_error("OpenAPI_twap_id_parseFromJSON() failed [bss_id]");
         goto end;
     }
-}
+    }
 
     cJSON *civic_address = cJSON_GetObjectItemCaseSensitive(twap_idJSON, "civicAddress");
 
@@ -96,7 +96,7 @@ OpenAPI_twap_id_t *OpenAPI_twap_id_parseFromJSON(cJSON *twap_idJSON)
         ogs_error("OpenAPI_twap_id_parseFromJSON() failed [civic_address]");
         goto end;
     }
-}
+    }
 
     twap_id_local_var = OpenAPI_twap_id_create (
         ogs_strdup_or_assert(ss_id->valuestring),

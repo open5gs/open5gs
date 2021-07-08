@@ -74,7 +74,7 @@ OpenAPI_inline_object_3_t *OpenAPI_inline_object_3_parseFromJSON(cJSON *inline_o
     OpenAPI_n1_message_notification_t *json_data_local_nonprim = NULL;
     if (json_data) { 
     json_data_local_nonprim = OpenAPI_n1_message_notification_parseFromJSON(json_data);
-}
+    }
 
     cJSON *binary_data_n1_message = cJSON_GetObjectItemCaseSensitive(inline_object_3JSON, "binaryDataN1Message");
 
@@ -89,7 +89,7 @@ OpenAPI_inline_object_3_t *OpenAPI_inline_object_3_parseFromJSON(cJSON *inline_o
         ogs_error("OpenAPI_inline_object_3_parseFromJSON() failed [binary_data_n1_message]");
         goto end;
     }
-}
+    }
 
     inline_object_3_local_var = OpenAPI_inline_object_3_create (
         json_data ? json_data_local_nonprim : NULL,

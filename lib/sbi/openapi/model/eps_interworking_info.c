@@ -91,7 +91,7 @@ OpenAPI_eps_interworking_info_t *OpenAPI_eps_interworking_info_parseFromJSON(cJS
             localMapObject->string, OpenAPI_eps_iwk_pgw_parseFromJSON(localMapObject));
         OpenAPI_list_add(eps_iwk_pgwsList , localMapKeyPair);
     }
-}
+    }
 
     eps_interworking_info_local_var = OpenAPI_eps_interworking_info_create (
         eps_iwk_pgws ? eps_iwk_pgwsList : NULL

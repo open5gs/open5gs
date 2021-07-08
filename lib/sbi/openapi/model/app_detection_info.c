@@ -104,7 +104,7 @@ OpenAPI_app_detection_info_t *OpenAPI_app_detection_info_parseFromJSON(cJSON *ap
         ogs_error("OpenAPI_app_detection_info_parseFromJSON() failed [instance_id]");
         goto end;
     }
-}
+    }
 
     cJSON *sdf_descriptions = cJSON_GetObjectItemCaseSensitive(app_detection_infoJSON, "sdfDescriptions");
 
@@ -127,7 +127,7 @@ OpenAPI_app_detection_info_t *OpenAPI_app_detection_info_parseFromJSON(cJSON *ap
 
         OpenAPI_list_add(sdf_descriptionsList, sdf_descriptionsItem);
     }
-}
+    }
 
     app_detection_info_local_var = OpenAPI_app_detection_info_create (
         ogs_strdup_or_assert(app_id->valuestring),

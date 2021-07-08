@@ -113,7 +113,7 @@ OpenAPI_n2_interface_amf_info_t *OpenAPI_n2_interface_amf_info_parseFromJSON(cJS
     }
     OpenAPI_list_add(ipv4_endpoint_addressList , ogs_strdup_or_assert(ipv4_endpoint_address_local->valuestring));
                     }
-}
+    }
 
     cJSON *ipv6_endpoint_address = cJSON_GetObjectItemCaseSensitive(n2_interface_amf_infoJSON, "ipv6EndpointAddress");
 
@@ -133,7 +133,7 @@ OpenAPI_n2_interface_amf_info_t *OpenAPI_n2_interface_amf_info_parseFromJSON(cJS
     }
     OpenAPI_list_add(ipv6_endpoint_addressList , ogs_strdup_or_assert(ipv6_endpoint_address_local->valuestring));
                     }
-}
+    }
 
     cJSON *amf_name = cJSON_GetObjectItemCaseSensitive(n2_interface_amf_infoJSON, "amfName");
 
@@ -142,7 +142,7 @@ OpenAPI_n2_interface_amf_info_t *OpenAPI_n2_interface_amf_info_parseFromJSON(cJS
         ogs_error("OpenAPI_n2_interface_amf_info_parseFromJSON() failed [amf_name]");
         goto end;
     }
-}
+    }
 
     n2_interface_amf_info_local_var = OpenAPI_n2_interface_amf_info_create (
         ipv4_endpoint_address ? ipv4_endpoint_addressList : NULL,

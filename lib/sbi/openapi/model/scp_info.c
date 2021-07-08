@@ -287,7 +287,7 @@ OpenAPI_scp_info_t *OpenAPI_scp_info_parseFromJSON(cJSON *scp_infoJSON)
         cJSON *localMapObject = scp_domain_info_list_local_map;
         OpenAPI_list_add(scp_domain_info_listList , localMapKeyPair);
     }
-}
+    }
 
     cJSON *scp_prefix = cJSON_GetObjectItemCaseSensitive(scp_infoJSON, "scpPrefix");
 
@@ -296,7 +296,7 @@ OpenAPI_scp_info_t *OpenAPI_scp_info_parseFromJSON(cJSON *scp_infoJSON)
         ogs_error("OpenAPI_scp_info_parseFromJSON() failed [scp_prefix]");
         goto end;
     }
-}
+    }
 
     cJSON *scp_ports = cJSON_GetObjectItemCaseSensitive(scp_infoJSON, "scpPorts");
 
@@ -313,7 +313,7 @@ OpenAPI_scp_info_t *OpenAPI_scp_info_parseFromJSON(cJSON *scp_infoJSON)
         cJSON *localMapObject = scp_ports_local_map;
         OpenAPI_list_add(scp_portsList , localMapKeyPair);
     }
-}
+    }
 
     cJSON *address_domains = cJSON_GetObjectItemCaseSensitive(scp_infoJSON, "addressDomains");
 
@@ -333,7 +333,7 @@ OpenAPI_scp_info_t *OpenAPI_scp_info_parseFromJSON(cJSON *scp_infoJSON)
     }
     OpenAPI_list_add(address_domainsList , ogs_strdup_or_assert(address_domains_local->valuestring));
                     }
-}
+    }
 
     cJSON *ipv4_addresses = cJSON_GetObjectItemCaseSensitive(scp_infoJSON, "ipv4Addresses");
 
@@ -353,7 +353,7 @@ OpenAPI_scp_info_t *OpenAPI_scp_info_parseFromJSON(cJSON *scp_infoJSON)
     }
     OpenAPI_list_add(ipv4_addressesList , ogs_strdup_or_assert(ipv4_addresses_local->valuestring));
                     }
-}
+    }
 
     cJSON *ipv6_prefixes = cJSON_GetObjectItemCaseSensitive(scp_infoJSON, "ipv6Prefixes");
 
@@ -373,7 +373,7 @@ OpenAPI_scp_info_t *OpenAPI_scp_info_parseFromJSON(cJSON *scp_infoJSON)
     }
     OpenAPI_list_add(ipv6_prefixesList , ogs_strdup_or_assert(ipv6_prefixes_local->valuestring));
                     }
-}
+    }
 
     cJSON *ipv4_addr_ranges = cJSON_GetObjectItemCaseSensitive(scp_infoJSON, "ipv4AddrRanges");
 
@@ -396,7 +396,7 @@ OpenAPI_scp_info_t *OpenAPI_scp_info_parseFromJSON(cJSON *scp_infoJSON)
 
         OpenAPI_list_add(ipv4_addr_rangesList, ipv4_addr_rangesItem);
     }
-}
+    }
 
     cJSON *ipv6_prefix_ranges = cJSON_GetObjectItemCaseSensitive(scp_infoJSON, "ipv6PrefixRanges");
 
@@ -419,7 +419,7 @@ OpenAPI_scp_info_t *OpenAPI_scp_info_parseFromJSON(cJSON *scp_infoJSON)
 
         OpenAPI_list_add(ipv6_prefix_rangesList, ipv6_prefix_rangesItem);
     }
-}
+    }
 
     cJSON *served_nf_set_id_list = cJSON_GetObjectItemCaseSensitive(scp_infoJSON, "servedNfSetIdList");
 
@@ -439,7 +439,7 @@ OpenAPI_scp_info_t *OpenAPI_scp_info_parseFromJSON(cJSON *scp_infoJSON)
     }
     OpenAPI_list_add(served_nf_set_id_listList , ogs_strdup_or_assert(served_nf_set_id_list_local->valuestring));
                     }
-}
+    }
 
     cJSON *remote_plmn_list = cJSON_GetObjectItemCaseSensitive(scp_infoJSON, "remotePlmnList");
 
@@ -462,7 +462,7 @@ OpenAPI_scp_info_t *OpenAPI_scp_info_parseFromJSON(cJSON *scp_infoJSON)
 
         OpenAPI_list_add(remote_plmn_listList, remote_plmn_listItem);
     }
-}
+    }
 
     cJSON *ip_reachability = cJSON_GetObjectItemCaseSensitive(scp_infoJSON, "ipReachability");
 
@@ -473,7 +473,7 @@ OpenAPI_scp_info_t *OpenAPI_scp_info_parseFromJSON(cJSON *scp_infoJSON)
         goto end;
     }
     ip_reachabilityVariable = OpenAPI_ip_reachability_FromString(ip_reachability->valuestring);
-}
+    }
 
     scp_info_local_var = OpenAPI_scp_info_create (
         scp_domain_info_list ? scp_domain_info_listList : NULL,

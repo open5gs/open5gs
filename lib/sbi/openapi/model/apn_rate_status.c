@@ -94,7 +94,7 @@ OpenAPI_apn_rate_status_t *OpenAPI_apn_rate_status_parseFromJSON(cJSON *apn_rate
         ogs_error("OpenAPI_apn_rate_status_parseFromJSON() failed [remain_packets_ul]");
         goto end;
     }
-}
+    }
 
     cJSON *remain_packets_dl = cJSON_GetObjectItemCaseSensitive(apn_rate_statusJSON, "remainPacketsDl");
 
@@ -103,7 +103,7 @@ OpenAPI_apn_rate_status_t *OpenAPI_apn_rate_status_parseFromJSON(cJSON *apn_rate
         ogs_error("OpenAPI_apn_rate_status_parseFromJSON() failed [remain_packets_dl]");
         goto end;
     }
-}
+    }
 
     cJSON *validity_time = cJSON_GetObjectItemCaseSensitive(apn_rate_statusJSON, "validityTime");
 
@@ -112,7 +112,7 @@ OpenAPI_apn_rate_status_t *OpenAPI_apn_rate_status_parseFromJSON(cJSON *apn_rate
         ogs_error("OpenAPI_apn_rate_status_parseFromJSON() failed [validity_time]");
         goto end;
     }
-}
+    }
 
     cJSON *remain_ex_reports_ul = cJSON_GetObjectItemCaseSensitive(apn_rate_statusJSON, "remainExReportsUl");
 
@@ -121,7 +121,7 @@ OpenAPI_apn_rate_status_t *OpenAPI_apn_rate_status_parseFromJSON(cJSON *apn_rate
         ogs_error("OpenAPI_apn_rate_status_parseFromJSON() failed [remain_ex_reports_ul]");
         goto end;
     }
-}
+    }
 
     cJSON *remain_ex_reports_dl = cJSON_GetObjectItemCaseSensitive(apn_rate_statusJSON, "remainExReportsDl");
 
@@ -130,7 +130,7 @@ OpenAPI_apn_rate_status_t *OpenAPI_apn_rate_status_parseFromJSON(cJSON *apn_rate
         ogs_error("OpenAPI_apn_rate_status_parseFromJSON() failed [remain_ex_reports_dl]");
         goto end;
     }
-}
+    }
 
     apn_rate_status_local_var = OpenAPI_apn_rate_status_create (
         remain_packets_ul ? remain_packets_ul->valuedouble : 0,

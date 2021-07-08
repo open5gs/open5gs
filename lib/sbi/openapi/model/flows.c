@@ -110,7 +110,7 @@ OpenAPI_flows_t *OpenAPI_flows_parseFromJSON(cJSON *flowsJSON)
     }
     OpenAPI_list_add(cont_versList , &cont_vers_local->valuedouble);
                     }
-}
+    }
 
     cJSON *f_nums = cJSON_GetObjectItemCaseSensitive(flowsJSON, "fNums");
 
@@ -130,7 +130,7 @@ OpenAPI_flows_t *OpenAPI_flows_parseFromJSON(cJSON *flowsJSON)
     }
     OpenAPI_list_add(f_numsList , &f_nums_local->valuedouble);
                     }
-}
+    }
 
     cJSON *med_comp_n = cJSON_GetObjectItemCaseSensitive(flowsJSON, "medCompN");
     if (!med_comp_n) {

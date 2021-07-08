@@ -126,7 +126,7 @@ OpenAPI_pp_maximum_latency_t *OpenAPI_pp_maximum_latency_parseFromJSON(cJSON *pp
         ogs_error("OpenAPI_pp_maximum_latency_parseFromJSON() failed [validity_time]");
         goto end;
     }
-}
+    }
 
     cJSON *mtc_provider_information = cJSON_GetObjectItemCaseSensitive(pp_maximum_latencyJSON, "mtcProviderInformation");
 
@@ -135,7 +135,7 @@ OpenAPI_pp_maximum_latency_t *OpenAPI_pp_maximum_latency_parseFromJSON(cJSON *pp
         ogs_error("OpenAPI_pp_maximum_latency_parseFromJSON() failed [mtc_provider_information]");
         goto end;
     }
-}
+    }
 
     pp_maximum_latency_local_var = OpenAPI_pp_maximum_latency_create (
         maximum_latency->valuedouble,

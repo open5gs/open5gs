@@ -83,14 +83,14 @@ OpenAPI_ip_sm_gw_registration_t *OpenAPI_ip_sm_gw_registration_parseFromJSON(cJS
         ogs_error("OpenAPI_ip_sm_gw_registration_parseFromJSON() failed [ip_sm_gw_map_address]");
         goto end;
     }
-}
+    }
 
     cJSON *ip_sm_gw_diameter_address = cJSON_GetObjectItemCaseSensitive(ip_sm_gw_registrationJSON, "ipSmGwDiameterAddress");
 
     OpenAPI_network_node_diameter_address_t *ip_sm_gw_diameter_address_local_nonprim = NULL;
     if (ip_sm_gw_diameter_address) { 
     ip_sm_gw_diameter_address_local_nonprim = OpenAPI_network_node_diameter_address_parseFromJSON(ip_sm_gw_diameter_address);
-}
+    }
 
     cJSON *unri_indicator = cJSON_GetObjectItemCaseSensitive(ip_sm_gw_registrationJSON, "unriIndicator");
 
@@ -99,7 +99,7 @@ OpenAPI_ip_sm_gw_registration_t *OpenAPI_ip_sm_gw_registration_parseFromJSON(cJS
         ogs_error("OpenAPI_ip_sm_gw_registration_parseFromJSON() failed [unri_indicator]");
         goto end;
     }
-}
+    }
 
     ip_sm_gw_registration_local_var = OpenAPI_ip_sm_gw_registration_create (
         ip_sm_gw_map_address ? ogs_strdup_or_assert(ip_sm_gw_map_address->valuestring) : NULL,

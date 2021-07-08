@@ -112,7 +112,7 @@ OpenAPI_steering_info_t *OpenAPI_steering_info_parseFromJSON(cJSON *steering_inf
 
         OpenAPI_list_add(access_tech_listList, access_tech_listItem);
     }
-}
+    }
 
     steering_info_local_var = OpenAPI_steering_info_create (
         plmn_id_local_nonprim,

@@ -68,7 +68,7 @@ OpenAPI_redirect_response_t *OpenAPI_redirect_response_parseFromJSON(cJSON *redi
         ogs_error("OpenAPI_redirect_response_parseFromJSON() failed [cause]");
         goto end;
     }
-}
+    }
 
     cJSON *target_scp = cJSON_GetObjectItemCaseSensitive(redirect_responseJSON, "targetScp");
 
@@ -77,7 +77,7 @@ OpenAPI_redirect_response_t *OpenAPI_redirect_response_parseFromJSON(cJSON *redi
         ogs_error("OpenAPI_redirect_response_parseFromJSON() failed [target_scp]");
         goto end;
     }
-}
+    }
 
     redirect_response_local_var = OpenAPI_redirect_response_create (
         cause ? ogs_strdup_or_assert(cause->valuestring) : NULL,

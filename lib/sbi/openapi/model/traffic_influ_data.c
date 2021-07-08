@@ -377,7 +377,7 @@ OpenAPI_traffic_influ_data_t *OpenAPI_traffic_influ_data_parseFromJSON(cJSON *tr
         ogs_error("OpenAPI_traffic_influ_data_parseFromJSON() failed [up_path_chg_notif_corre_id]");
         goto end;
     }
-}
+    }
 
     cJSON *app_relo_ind = cJSON_GetObjectItemCaseSensitive(traffic_influ_dataJSON, "appReloInd");
 
@@ -386,7 +386,7 @@ OpenAPI_traffic_influ_data_t *OpenAPI_traffic_influ_data_parseFromJSON(cJSON *tr
         ogs_error("OpenAPI_traffic_influ_data_parseFromJSON() failed [app_relo_ind]");
         goto end;
     }
-}
+    }
 
     cJSON *af_app_id = cJSON_GetObjectItemCaseSensitive(traffic_influ_dataJSON, "afAppId");
 
@@ -395,7 +395,7 @@ OpenAPI_traffic_influ_data_t *OpenAPI_traffic_influ_data_parseFromJSON(cJSON *tr
         ogs_error("OpenAPI_traffic_influ_data_parseFromJSON() failed [af_app_id]");
         goto end;
     }
-}
+    }
 
     cJSON *dnn = cJSON_GetObjectItemCaseSensitive(traffic_influ_dataJSON, "dnn");
 
@@ -404,7 +404,7 @@ OpenAPI_traffic_influ_data_t *OpenAPI_traffic_influ_data_parseFromJSON(cJSON *tr
         ogs_error("OpenAPI_traffic_influ_data_parseFromJSON() failed [dnn]");
         goto end;
     }
-}
+    }
 
     cJSON *eth_traffic_filters = cJSON_GetObjectItemCaseSensitive(traffic_influ_dataJSON, "ethTrafficFilters");
 
@@ -427,14 +427,14 @@ OpenAPI_traffic_influ_data_t *OpenAPI_traffic_influ_data_parseFromJSON(cJSON *tr
 
         OpenAPI_list_add(eth_traffic_filtersList, eth_traffic_filtersItem);
     }
-}
+    }
 
     cJSON *snssai = cJSON_GetObjectItemCaseSensitive(traffic_influ_dataJSON, "snssai");
 
     OpenAPI_snssai_t *snssai_local_nonprim = NULL;
     if (snssai) { 
     snssai_local_nonprim = OpenAPI_snssai_parseFromJSON(snssai);
-}
+    }
 
     cJSON *inter_group_id = cJSON_GetObjectItemCaseSensitive(traffic_influ_dataJSON, "interGroupId");
 
@@ -443,7 +443,7 @@ OpenAPI_traffic_influ_data_t *OpenAPI_traffic_influ_data_parseFromJSON(cJSON *tr
         ogs_error("OpenAPI_traffic_influ_data_parseFromJSON() failed [inter_group_id]");
         goto end;
     }
-}
+    }
 
     cJSON *supi = cJSON_GetObjectItemCaseSensitive(traffic_influ_dataJSON, "supi");
 
@@ -452,7 +452,7 @@ OpenAPI_traffic_influ_data_t *OpenAPI_traffic_influ_data_parseFromJSON(cJSON *tr
         ogs_error("OpenAPI_traffic_influ_data_parseFromJSON() failed [supi]");
         goto end;
     }
-}
+    }
 
     cJSON *traffic_filters = cJSON_GetObjectItemCaseSensitive(traffic_influ_dataJSON, "trafficFilters");
 
@@ -475,7 +475,7 @@ OpenAPI_traffic_influ_data_t *OpenAPI_traffic_influ_data_parseFromJSON(cJSON *tr
 
         OpenAPI_list_add(traffic_filtersList, traffic_filtersItem);
     }
-}
+    }
 
     cJSON *traffic_routes = cJSON_GetObjectItemCaseSensitive(traffic_influ_dataJSON, "trafficRoutes");
 
@@ -498,7 +498,7 @@ OpenAPI_traffic_influ_data_t *OpenAPI_traffic_influ_data_parseFromJSON(cJSON *tr
 
         OpenAPI_list_add(traffic_routesList, traffic_routesItem);
     }
-}
+    }
 
     cJSON *traff_corre_ind = cJSON_GetObjectItemCaseSensitive(traffic_influ_dataJSON, "traffCorreInd");
 
@@ -507,7 +507,7 @@ OpenAPI_traffic_influ_data_t *OpenAPI_traffic_influ_data_parseFromJSON(cJSON *tr
         ogs_error("OpenAPI_traffic_influ_data_parseFromJSON() failed [traff_corre_ind]");
         goto end;
     }
-}
+    }
 
     cJSON *valid_start_time = cJSON_GetObjectItemCaseSensitive(traffic_influ_dataJSON, "validStartTime");
 
@@ -516,7 +516,7 @@ OpenAPI_traffic_influ_data_t *OpenAPI_traffic_influ_data_parseFromJSON(cJSON *tr
         ogs_error("OpenAPI_traffic_influ_data_parseFromJSON() failed [valid_start_time]");
         goto end;
     }
-}
+    }
 
     cJSON *valid_end_time = cJSON_GetObjectItemCaseSensitive(traffic_influ_dataJSON, "validEndTime");
 
@@ -525,7 +525,7 @@ OpenAPI_traffic_influ_data_t *OpenAPI_traffic_influ_data_parseFromJSON(cJSON *tr
         ogs_error("OpenAPI_traffic_influ_data_parseFromJSON() failed [valid_end_time]");
         goto end;
     }
-}
+    }
 
     cJSON *temp_validities = cJSON_GetObjectItemCaseSensitive(traffic_influ_dataJSON, "tempValidities");
 
@@ -548,14 +548,14 @@ OpenAPI_traffic_influ_data_t *OpenAPI_traffic_influ_data_parseFromJSON(cJSON *tr
 
         OpenAPI_list_add(temp_validitiesList, temp_validitiesItem);
     }
-}
+    }
 
     cJSON *nw_area_info = cJSON_GetObjectItemCaseSensitive(traffic_influ_dataJSON, "nwAreaInfo");
 
     OpenAPI_network_area_info_1_t *nw_area_info_local_nonprim = NULL;
     if (nw_area_info) { 
     nw_area_info_local_nonprim = OpenAPI_network_area_info_1_parseFromJSON(nw_area_info);
-}
+    }
 
     cJSON *up_path_chg_notif_uri = cJSON_GetObjectItemCaseSensitive(traffic_influ_dataJSON, "upPathChgNotifUri");
 
@@ -564,7 +564,7 @@ OpenAPI_traffic_influ_data_t *OpenAPI_traffic_influ_data_parseFromJSON(cJSON *tr
         ogs_error("OpenAPI_traffic_influ_data_parseFromJSON() failed [up_path_chg_notif_uri]");
         goto end;
     }
-}
+    }
 
     cJSON *headers = cJSON_GetObjectItemCaseSensitive(traffic_influ_dataJSON, "headers");
 
@@ -584,7 +584,7 @@ OpenAPI_traffic_influ_data_t *OpenAPI_traffic_influ_data_parseFromJSON(cJSON *tr
     }
     OpenAPI_list_add(headersList , ogs_strdup_or_assert(headers_local->valuestring));
                     }
-}
+    }
 
     cJSON *subscribed_events = cJSON_GetObjectItemCaseSensitive(traffic_influ_dataJSON, "subscribedEvents");
 
@@ -607,7 +607,7 @@ OpenAPI_traffic_influ_data_t *OpenAPI_traffic_influ_data_parseFromJSON(cJSON *tr
 
         OpenAPI_list_add(subscribed_eventsList, subscribed_eventsItem);
     }
-}
+    }
 
     cJSON *dnai_chg_type = cJSON_GetObjectItemCaseSensitive(traffic_influ_dataJSON, "dnaiChgType");
 
@@ -618,7 +618,7 @@ OpenAPI_traffic_influ_data_t *OpenAPI_traffic_influ_data_parseFromJSON(cJSON *tr
         goto end;
     }
     dnai_chg_typeVariable = OpenAPI_dnai_change_type_FromString(dnai_chg_type->valuestring);
-}
+    }
 
     cJSON *af_ack_ind = cJSON_GetObjectItemCaseSensitive(traffic_influ_dataJSON, "afAckInd");
 
@@ -627,7 +627,7 @@ OpenAPI_traffic_influ_data_t *OpenAPI_traffic_influ_data_parseFromJSON(cJSON *tr
         ogs_error("OpenAPI_traffic_influ_data_parseFromJSON() failed [af_ack_ind]");
         goto end;
     }
-}
+    }
 
     cJSON *addr_preser_ind = cJSON_GetObjectItemCaseSensitive(traffic_influ_dataJSON, "addrPreserInd");
 
@@ -636,7 +636,7 @@ OpenAPI_traffic_influ_data_t *OpenAPI_traffic_influ_data_parseFromJSON(cJSON *tr
         ogs_error("OpenAPI_traffic_influ_data_parseFromJSON() failed [addr_preser_ind]");
         goto end;
     }
-}
+    }
 
     cJSON *supported_features = cJSON_GetObjectItemCaseSensitive(traffic_influ_dataJSON, "supportedFeatures");
 
@@ -645,7 +645,7 @@ OpenAPI_traffic_influ_data_t *OpenAPI_traffic_influ_data_parseFromJSON(cJSON *tr
         ogs_error("OpenAPI_traffic_influ_data_parseFromJSON() failed [supported_features]");
         goto end;
     }
-}
+    }
 
     cJSON *res_uri = cJSON_GetObjectItemCaseSensitive(traffic_influ_dataJSON, "resUri");
 
@@ -654,7 +654,7 @@ OpenAPI_traffic_influ_data_t *OpenAPI_traffic_influ_data_parseFromJSON(cJSON *tr
         ogs_error("OpenAPI_traffic_influ_data_parseFromJSON() failed [res_uri]");
         goto end;
     }
-}
+    }
 
     traffic_influ_data_local_var = OpenAPI_traffic_influ_data_create (
         up_path_chg_notif_corre_id ? ogs_strdup_or_assert(up_path_chg_notif_corre_id->valuestring) : NULL,

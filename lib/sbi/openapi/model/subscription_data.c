@@ -319,14 +319,14 @@ OpenAPI_subscription_data_t *OpenAPI_subscription_data_parseFromJSON(cJSON *subs
         ogs_error("OpenAPI_subscription_data_parseFromJSON() failed [req_nf_instance_id]");
         goto end;
     }
-}
+    }
 
     cJSON *subscr_cond = cJSON_GetObjectItemCaseSensitive(subscription_dataJSON, "subscrCond");
 
     OpenAPI_subscription_data_subscr_cond_t *subscr_cond_local_nonprim = NULL;
     if (subscr_cond) { 
     subscr_cond_local_nonprim = OpenAPI_subscription_data_subscr_cond_parseFromJSON(subscr_cond);
-}
+    }
 
     cJSON *subscription_id = cJSON_GetObjectItemCaseSensitive(subscription_dataJSON, "subscriptionId");
 
@@ -335,7 +335,7 @@ OpenAPI_subscription_data_t *OpenAPI_subscription_data_parseFromJSON(cJSON *subs
         ogs_error("OpenAPI_subscription_data_parseFromJSON() failed [subscription_id]");
         goto end;
     }
-}
+    }
 
     cJSON *validity_time = cJSON_GetObjectItemCaseSensitive(subscription_dataJSON, "validityTime");
 
@@ -344,7 +344,7 @@ OpenAPI_subscription_data_t *OpenAPI_subscription_data_parseFromJSON(cJSON *subs
         ogs_error("OpenAPI_subscription_data_parseFromJSON() failed [validity_time]");
         goto end;
     }
-}
+    }
 
     cJSON *req_notif_events = cJSON_GetObjectItemCaseSensitive(subscription_dataJSON, "reqNotifEvents");
 
@@ -366,14 +366,14 @@ OpenAPI_subscription_data_t *OpenAPI_subscription_data_parseFromJSON(cJSON *subs
 
         OpenAPI_list_add(req_notif_eventsList, (void *)OpenAPI_notification_event_type_FromString(req_notif_events_local_nonprimitive->valuestring));
     }
-}
+    }
 
     cJSON *plmn_id = cJSON_GetObjectItemCaseSensitive(subscription_dataJSON, "plmnId");
 
     OpenAPI_plmn_id_t *plmn_id_local_nonprim = NULL;
     if (plmn_id) { 
     plmn_id_local_nonprim = OpenAPI_plmn_id_parseFromJSON(plmn_id);
-}
+    }
 
     cJSON *nid = cJSON_GetObjectItemCaseSensitive(subscription_dataJSON, "nid");
 
@@ -382,14 +382,14 @@ OpenAPI_subscription_data_t *OpenAPI_subscription_data_parseFromJSON(cJSON *subs
         ogs_error("OpenAPI_subscription_data_parseFromJSON() failed [nid]");
         goto end;
     }
-}
+    }
 
     cJSON *notif_condition = cJSON_GetObjectItemCaseSensitive(subscription_dataJSON, "notifCondition");
 
     OpenAPI_notif_condition_t *notif_condition_local_nonprim = NULL;
     if (notif_condition) { 
     notif_condition_local_nonprim = OpenAPI_notif_condition_parseFromJSON(notif_condition);
-}
+    }
 
     cJSON *req_nf_type = cJSON_GetObjectItemCaseSensitive(subscription_dataJSON, "reqNfType");
 
@@ -400,7 +400,7 @@ OpenAPI_subscription_data_t *OpenAPI_subscription_data_parseFromJSON(cJSON *subs
         goto end;
     }
     req_nf_typeVariable = OpenAPI_nf_type_FromString(req_nf_type->valuestring);
-}
+    }
 
     cJSON *req_nf_fqdn = cJSON_GetObjectItemCaseSensitive(subscription_dataJSON, "reqNfFqdn");
 
@@ -409,7 +409,7 @@ OpenAPI_subscription_data_t *OpenAPI_subscription_data_parseFromJSON(cJSON *subs
         ogs_error("OpenAPI_subscription_data_parseFromJSON() failed [req_nf_fqdn]");
         goto end;
     }
-}
+    }
 
     cJSON *req_snssais = cJSON_GetObjectItemCaseSensitive(subscription_dataJSON, "reqSnssais");
 
@@ -432,7 +432,7 @@ OpenAPI_subscription_data_t *OpenAPI_subscription_data_parseFromJSON(cJSON *subs
 
         OpenAPI_list_add(req_snssaisList, req_snssaisItem);
     }
-}
+    }
 
     cJSON *req_per_plmn_snssais = cJSON_GetObjectItemCaseSensitive(subscription_dataJSON, "reqPerPlmnSnssais");
 
@@ -455,7 +455,7 @@ OpenAPI_subscription_data_t *OpenAPI_subscription_data_parseFromJSON(cJSON *subs
 
         OpenAPI_list_add(req_per_plmn_snssaisList, req_per_plmn_snssaisItem);
     }
-}
+    }
 
     cJSON *req_plmn_list = cJSON_GetObjectItemCaseSensitive(subscription_dataJSON, "reqPlmnList");
 
@@ -478,7 +478,7 @@ OpenAPI_subscription_data_t *OpenAPI_subscription_data_parseFromJSON(cJSON *subs
 
         OpenAPI_list_add(req_plmn_listList, req_plmn_listItem);
     }
-}
+    }
 
     cJSON *req_snpn_list = cJSON_GetObjectItemCaseSensitive(subscription_dataJSON, "reqSnpnList");
 
@@ -501,7 +501,7 @@ OpenAPI_subscription_data_t *OpenAPI_subscription_data_parseFromJSON(cJSON *subs
 
         OpenAPI_list_add(req_snpn_listList, req_snpn_listItem);
     }
-}
+    }
 
     cJSON *serving_scope = cJSON_GetObjectItemCaseSensitive(subscription_dataJSON, "servingScope");
 
@@ -521,7 +521,7 @@ OpenAPI_subscription_data_t *OpenAPI_subscription_data_parseFromJSON(cJSON *subs
     }
     OpenAPI_list_add(serving_scopeList , ogs_strdup_or_assert(serving_scope_local->valuestring));
                     }
-}
+    }
 
     subscription_data_local_var = OpenAPI_subscription_data_create (
         ogs_strdup_or_assert(nf_status_notification_uri->valuestring),

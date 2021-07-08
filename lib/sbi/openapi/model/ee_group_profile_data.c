@@ -121,7 +121,7 @@ OpenAPI_ee_group_profile_data_t *OpenAPI_ee_group_profile_data_parseFromJSON(cJS
 
         OpenAPI_list_add(restricted_event_typesList, restricted_event_typesItem);
     }
-}
+    }
 
     cJSON *allowed_mtc_provider = cJSON_GetObjectItemCaseSensitive(ee_group_profile_dataJSON, "allowedMtcProvider");
 
@@ -138,7 +138,7 @@ OpenAPI_ee_group_profile_data_t *OpenAPI_ee_group_profile_data_parseFromJSON(cJS
         cJSON *localMapObject = allowed_mtc_provider_local_map;
         OpenAPI_list_add(allowed_mtc_providerList , localMapKeyPair);
     }
-}
+    }
 
     cJSON *supported_features = cJSON_GetObjectItemCaseSensitive(ee_group_profile_dataJSON, "supportedFeatures");
 
@@ -147,7 +147,7 @@ OpenAPI_ee_group_profile_data_t *OpenAPI_ee_group_profile_data_parseFromJSON(cJS
         ogs_error("OpenAPI_ee_group_profile_data_parseFromJSON() failed [supported_features]");
         goto end;
     }
-}
+    }
 
     ee_group_profile_data_local_var = OpenAPI_ee_group_profile_data_create (
         restricted_event_types ? restricted_event_typesList : NULL,

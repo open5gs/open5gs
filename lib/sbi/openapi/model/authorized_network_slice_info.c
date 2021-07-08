@@ -264,7 +264,7 @@ OpenAPI_authorized_network_slice_info_t *OpenAPI_authorized_network_slice_info_p
 
         OpenAPI_list_add(allowed_nssai_listList, allowed_nssai_listItem);
     }
-}
+    }
 
     cJSON *configured_nssai = cJSON_GetObjectItemCaseSensitive(authorized_network_slice_infoJSON, "configuredNssai");
 
@@ -287,7 +287,7 @@ OpenAPI_authorized_network_slice_info_t *OpenAPI_authorized_network_slice_info_p
 
         OpenAPI_list_add(configured_nssaiList, configured_nssaiItem);
     }
-}
+    }
 
     cJSON *target_amf_set = cJSON_GetObjectItemCaseSensitive(authorized_network_slice_infoJSON, "targetAmfSet");
 
@@ -296,7 +296,7 @@ OpenAPI_authorized_network_slice_info_t *OpenAPI_authorized_network_slice_info_p
         ogs_error("OpenAPI_authorized_network_slice_info_parseFromJSON() failed [target_amf_set]");
         goto end;
     }
-}
+    }
 
     cJSON *candidate_amf_list = cJSON_GetObjectItemCaseSensitive(authorized_network_slice_infoJSON, "candidateAmfList");
 
@@ -316,7 +316,7 @@ OpenAPI_authorized_network_slice_info_t *OpenAPI_authorized_network_slice_info_p
     }
     OpenAPI_list_add(candidate_amf_listList , ogs_strdup_or_assert(candidate_amf_list_local->valuestring));
                     }
-}
+    }
 
     cJSON *rejected_nssai_in_plmn = cJSON_GetObjectItemCaseSensitive(authorized_network_slice_infoJSON, "rejectedNssaiInPlmn");
 
@@ -339,7 +339,7 @@ OpenAPI_authorized_network_slice_info_t *OpenAPI_authorized_network_slice_info_p
 
         OpenAPI_list_add(rejected_nssai_in_plmnList, rejected_nssai_in_plmnItem);
     }
-}
+    }
 
     cJSON *rejected_nssai_in_ta = cJSON_GetObjectItemCaseSensitive(authorized_network_slice_infoJSON, "rejectedNssaiInTa");
 
@@ -362,14 +362,14 @@ OpenAPI_authorized_network_slice_info_t *OpenAPI_authorized_network_slice_info_p
 
         OpenAPI_list_add(rejected_nssai_in_taList, rejected_nssai_in_taItem);
     }
-}
+    }
 
     cJSON *nsi_information = cJSON_GetObjectItemCaseSensitive(authorized_network_slice_infoJSON, "nsiInformation");
 
     OpenAPI_nsi_information_t *nsi_information_local_nonprim = NULL;
     if (nsi_information) { 
     nsi_information_local_nonprim = OpenAPI_nsi_information_parseFromJSON(nsi_information);
-}
+    }
 
     cJSON *supported_features = cJSON_GetObjectItemCaseSensitive(authorized_network_slice_infoJSON, "supportedFeatures");
 
@@ -378,7 +378,7 @@ OpenAPI_authorized_network_slice_info_t *OpenAPI_authorized_network_slice_info_p
         ogs_error("OpenAPI_authorized_network_slice_info_parseFromJSON() failed [supported_features]");
         goto end;
     }
-}
+    }
 
     cJSON *nrf_amf_set = cJSON_GetObjectItemCaseSensitive(authorized_network_slice_infoJSON, "nrfAmfSet");
 
@@ -387,7 +387,7 @@ OpenAPI_authorized_network_slice_info_t *OpenAPI_authorized_network_slice_info_p
         ogs_error("OpenAPI_authorized_network_slice_info_parseFromJSON() failed [nrf_amf_set]");
         goto end;
     }
-}
+    }
 
     cJSON *nrf_amf_set_nf_mgt_uri = cJSON_GetObjectItemCaseSensitive(authorized_network_slice_infoJSON, "nrfAmfSetNfMgtUri");
 
@@ -396,7 +396,7 @@ OpenAPI_authorized_network_slice_info_t *OpenAPI_authorized_network_slice_info_p
         ogs_error("OpenAPI_authorized_network_slice_info_parseFromJSON() failed [nrf_amf_set_nf_mgt_uri]");
         goto end;
     }
-}
+    }
 
     cJSON *nrf_amf_set_access_token_uri = cJSON_GetObjectItemCaseSensitive(authorized_network_slice_infoJSON, "nrfAmfSetAccessTokenUri");
 
@@ -405,7 +405,7 @@ OpenAPI_authorized_network_slice_info_t *OpenAPI_authorized_network_slice_info_p
         ogs_error("OpenAPI_authorized_network_slice_info_parseFromJSON() failed [nrf_amf_set_access_token_uri]");
         goto end;
     }
-}
+    }
 
     cJSON *target_amf_service_set = cJSON_GetObjectItemCaseSensitive(authorized_network_slice_infoJSON, "targetAmfServiceSet");
 
@@ -414,7 +414,7 @@ OpenAPI_authorized_network_slice_info_t *OpenAPI_authorized_network_slice_info_p
         ogs_error("OpenAPI_authorized_network_slice_info_parseFromJSON() failed [target_amf_service_set]");
         goto end;
     }
-}
+    }
 
     authorized_network_slice_info_local_var = OpenAPI_authorized_network_slice_info_create (
         allowed_nssai_list ? allowed_nssai_listList : NULL,

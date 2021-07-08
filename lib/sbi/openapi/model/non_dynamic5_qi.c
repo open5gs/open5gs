@@ -102,7 +102,7 @@ OpenAPI_non_dynamic5_qi_t *OpenAPI_non_dynamic5_qi_parseFromJSON(cJSON *non_dyna
         ogs_error("OpenAPI_non_dynamic5_qi_parseFromJSON() failed [priority_level]");
         goto end;
     }
-}
+    }
 
     cJSON *aver_window = cJSON_GetObjectItemCaseSensitive(non_dynamic5_qiJSON, "averWindow");
 
@@ -111,7 +111,7 @@ OpenAPI_non_dynamic5_qi_t *OpenAPI_non_dynamic5_qi_parseFromJSON(cJSON *non_dyna
         ogs_error("OpenAPI_non_dynamic5_qi_parseFromJSON() failed [aver_window]");
         goto end;
     }
-}
+    }
 
     cJSON *max_data_burst_vol = cJSON_GetObjectItemCaseSensitive(non_dynamic5_qiJSON, "maxDataBurstVol");
 
@@ -120,7 +120,7 @@ OpenAPI_non_dynamic5_qi_t *OpenAPI_non_dynamic5_qi_parseFromJSON(cJSON *non_dyna
         ogs_error("OpenAPI_non_dynamic5_qi_parseFromJSON() failed [max_data_burst_vol]");
         goto end;
     }
-}
+    }
 
     cJSON *ext_max_data_burst_vol = cJSON_GetObjectItemCaseSensitive(non_dynamic5_qiJSON, "extMaxDataBurstVol");
 
@@ -129,7 +129,7 @@ OpenAPI_non_dynamic5_qi_t *OpenAPI_non_dynamic5_qi_parseFromJSON(cJSON *non_dyna
         ogs_error("OpenAPI_non_dynamic5_qi_parseFromJSON() failed [ext_max_data_burst_vol]");
         goto end;
     }
-}
+    }
 
     cJSON *cn_packet_delay_budget_dl = cJSON_GetObjectItemCaseSensitive(non_dynamic5_qiJSON, "cnPacketDelayBudgetDl");
 
@@ -138,7 +138,7 @@ OpenAPI_non_dynamic5_qi_t *OpenAPI_non_dynamic5_qi_parseFromJSON(cJSON *non_dyna
         ogs_error("OpenAPI_non_dynamic5_qi_parseFromJSON() failed [cn_packet_delay_budget_dl]");
         goto end;
     }
-}
+    }
 
     cJSON *cn_packet_delay_budget_ul = cJSON_GetObjectItemCaseSensitive(non_dynamic5_qiJSON, "cnPacketDelayBudgetUl");
 
@@ -147,7 +147,7 @@ OpenAPI_non_dynamic5_qi_t *OpenAPI_non_dynamic5_qi_parseFromJSON(cJSON *non_dyna
         ogs_error("OpenAPI_non_dynamic5_qi_parseFromJSON() failed [cn_packet_delay_budget_ul]");
         goto end;
     }
-}
+    }
 
     non_dynamic5_qi_local_var = OpenAPI_non_dynamic5_qi_create (
         priority_level ? priority_level->valuedouble : 0,

@@ -178,7 +178,7 @@ OpenAPI_n3ga_location_t *OpenAPI_n3ga_location_parseFromJSON(cJSON *n3ga_locatio
     OpenAPI_tai_t *n3gpp_tai_local_nonprim = NULL;
     if (n3gpp_tai) { 
     n3gpp_tai_local_nonprim = OpenAPI_tai_parseFromJSON(n3gpp_tai);
-}
+    }
 
     cJSON *n3_iwf_id = cJSON_GetObjectItemCaseSensitive(n3ga_locationJSON, "n3IwfId");
 
@@ -187,7 +187,7 @@ OpenAPI_n3ga_location_t *OpenAPI_n3ga_location_parseFromJSON(cJSON *n3ga_locatio
         ogs_error("OpenAPI_n3ga_location_parseFromJSON() failed [n3_iwf_id]");
         goto end;
     }
-}
+    }
 
     cJSON *ue_ipv4_addr = cJSON_GetObjectItemCaseSensitive(n3ga_locationJSON, "ueIpv4Addr");
 
@@ -196,7 +196,7 @@ OpenAPI_n3ga_location_t *OpenAPI_n3ga_location_parseFromJSON(cJSON *n3ga_locatio
         ogs_error("OpenAPI_n3ga_location_parseFromJSON() failed [ue_ipv4_addr]");
         goto end;
     }
-}
+    }
 
     cJSON *ue_ipv6_addr = cJSON_GetObjectItemCaseSensitive(n3ga_locationJSON, "ueIpv6Addr");
 
@@ -205,7 +205,7 @@ OpenAPI_n3ga_location_t *OpenAPI_n3ga_location_parseFromJSON(cJSON *n3ga_locatio
         ogs_error("OpenAPI_n3ga_location_parseFromJSON() failed [ue_ipv6_addr]");
         goto end;
     }
-}
+    }
 
     cJSON *port_number = cJSON_GetObjectItemCaseSensitive(n3ga_locationJSON, "portNumber");
 
@@ -214,28 +214,28 @@ OpenAPI_n3ga_location_t *OpenAPI_n3ga_location_parseFromJSON(cJSON *n3ga_locatio
         ogs_error("OpenAPI_n3ga_location_parseFromJSON() failed [port_number]");
         goto end;
     }
-}
+    }
 
     cJSON *tnap_id = cJSON_GetObjectItemCaseSensitive(n3ga_locationJSON, "tnapId");
 
     OpenAPI_tnap_id_t *tnap_id_local_nonprim = NULL;
     if (tnap_id) { 
     tnap_id_local_nonprim = OpenAPI_tnap_id_parseFromJSON(tnap_id);
-}
+    }
 
     cJSON *twap_id = cJSON_GetObjectItemCaseSensitive(n3ga_locationJSON, "twapId");
 
     OpenAPI_twap_id_t *twap_id_local_nonprim = NULL;
     if (twap_id) { 
     twap_id_local_nonprim = OpenAPI_twap_id_parseFromJSON(twap_id);
-}
+    }
 
     cJSON *hfc_node_id = cJSON_GetObjectItemCaseSensitive(n3ga_locationJSON, "hfcNodeId");
 
     OpenAPI_hfc_node_id_t *hfc_node_id_local_nonprim = NULL;
     if (hfc_node_id) { 
     hfc_node_id_local_nonprim = OpenAPI_hfc_node_id_parseFromJSON(hfc_node_id);
-}
+    }
 
     cJSON *gli = cJSON_GetObjectItemCaseSensitive(n3ga_locationJSON, "gli");
 
@@ -244,7 +244,7 @@ OpenAPI_n3ga_location_t *OpenAPI_n3ga_location_parseFromJSON(cJSON *n3ga_locatio
         ogs_error("OpenAPI_n3ga_location_parseFromJSON() failed [gli]");
         goto end;
     }
-}
+    }
 
     cJSON *w5gban_line_type = cJSON_GetObjectItemCaseSensitive(n3ga_locationJSON, "w5gbanLineType");
 
@@ -255,7 +255,7 @@ OpenAPI_n3ga_location_t *OpenAPI_n3ga_location_parseFromJSON(cJSON *n3ga_locatio
         goto end;
     }
     w5gban_line_typeVariable = OpenAPI_line_type_FromString(w5gban_line_type->valuestring);
-}
+    }
 
     cJSON *gci = cJSON_GetObjectItemCaseSensitive(n3ga_locationJSON, "gci");
 
@@ -264,7 +264,7 @@ OpenAPI_n3ga_location_t *OpenAPI_n3ga_location_parseFromJSON(cJSON *n3ga_locatio
         ogs_error("OpenAPI_n3ga_location_parseFromJSON() failed [gci]");
         goto end;
     }
-}
+    }
 
     n3ga_location_local_var = OpenAPI_n3ga_location_create (
         n3gpp_tai ? n3gpp_tai_local_nonprim : NULL,

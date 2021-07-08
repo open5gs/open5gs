@@ -169,7 +169,7 @@ OpenAPI_pws_information_t *OpenAPI_pws_information_parseFromJSON(cJSON *pws_info
 
         OpenAPI_list_add(bc_empty_area_listList, bc_empty_area_listItem);
     }
-}
+    }
 
     cJSON *send_ran_response = cJSON_GetObjectItemCaseSensitive(pws_informationJSON, "sendRanResponse");
 
@@ -178,7 +178,7 @@ OpenAPI_pws_information_t *OpenAPI_pws_information_parseFromJSON(cJSON *pws_info
         ogs_error("OpenAPI_pws_information_parseFromJSON() failed [send_ran_response]");
         goto end;
     }
-}
+    }
 
     cJSON *omc_id = cJSON_GetObjectItemCaseSensitive(pws_informationJSON, "omcId");
 
@@ -187,7 +187,7 @@ OpenAPI_pws_information_t *OpenAPI_pws_information_parseFromJSON(cJSON *pws_info
         ogs_error("OpenAPI_pws_information_parseFromJSON() failed [omc_id]");
         goto end;
     }
-}
+    }
 
     pws_information_local_var = OpenAPI_pws_information_create (
         message_identifier->valuedouble,

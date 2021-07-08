@@ -85,7 +85,7 @@ OpenAPI_tunnel_info_t *OpenAPI_tunnel_info_parseFromJSON(cJSON *tunnel_infoJSON)
         ogs_error("OpenAPI_tunnel_info_parseFromJSON() failed [ipv4_addr]");
         goto end;
     }
-}
+    }
 
     cJSON *ipv6_addr = cJSON_GetObjectItemCaseSensitive(tunnel_infoJSON, "ipv6Addr");
 
@@ -94,7 +94,7 @@ OpenAPI_tunnel_info_t *OpenAPI_tunnel_info_parseFromJSON(cJSON *tunnel_infoJSON)
         ogs_error("OpenAPI_tunnel_info_parseFromJSON() failed [ipv6_addr]");
         goto end;
     }
-}
+    }
 
     cJSON *gtp_teid = cJSON_GetObjectItemCaseSensitive(tunnel_infoJSON, "gtpTeid");
     if (!gtp_teid) {
@@ -117,7 +117,7 @@ OpenAPI_tunnel_info_t *OpenAPI_tunnel_info_parseFromJSON(cJSON *tunnel_infoJSON)
         goto end;
     }
     an_typeVariable = OpenAPI_access_type_FromString(an_type->valuestring);
-}
+    }
 
     tunnel_info_local_var = OpenAPI_tunnel_info_create (
         ipv4_addr ? ogs_strdup_or_assert(ipv4_addr->valuestring) : NULL,

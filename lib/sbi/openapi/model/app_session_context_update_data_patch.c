@@ -62,7 +62,7 @@ OpenAPI_app_session_context_update_data_patch_t *OpenAPI_app_session_context_upd
     OpenAPI_app_session_context_update_data_t *asc_req_data_local_nonprim = NULL;
     if (asc_req_data) { 
     asc_req_data_local_nonprim = OpenAPI_app_session_context_update_data_parseFromJSON(asc_req_data);
-}
+    }
 
     app_session_context_update_data_patch_local_var = OpenAPI_app_session_context_update_data_patch_create (
         asc_req_data ? asc_req_data_local_nonprim : NULL

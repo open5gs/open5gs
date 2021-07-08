@@ -132,7 +132,7 @@ OpenAPI_tai_range_t *OpenAPI_tai_range_parseFromJSON(cJSON *tai_rangeJSON)
         ogs_error("OpenAPI_tai_range_parseFromJSON() failed [nid]");
         goto end;
     }
-}
+    }
 
     tai_range_local_var = OpenAPI_tai_range_create (
         plmn_id_local_nonprim,

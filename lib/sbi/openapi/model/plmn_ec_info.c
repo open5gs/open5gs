@@ -95,7 +95,7 @@ OpenAPI_plmn_ec_info_t *OpenAPI_plmn_ec_info_parseFromJSON(cJSON *plmn_ec_infoJS
     OpenAPI_ec_restriction_data_wb_t *ec_restriction_data_wb_local_nonprim = NULL;
     if (ec_restriction_data_wb) { 
     ec_restriction_data_wb_local_nonprim = OpenAPI_ec_restriction_data_wb_parseFromJSON(ec_restriction_data_wb);
-}
+    }
 
     cJSON *ec_restriction_data_nb = cJSON_GetObjectItemCaseSensitive(plmn_ec_infoJSON, "ecRestrictionDataNb");
 
@@ -104,7 +104,7 @@ OpenAPI_plmn_ec_info_t *OpenAPI_plmn_ec_info_parseFromJSON(cJSON *plmn_ec_infoJS
         ogs_error("OpenAPI_plmn_ec_info_parseFromJSON() failed [ec_restriction_data_nb]");
         goto end;
     }
-}
+    }
 
     plmn_ec_info_local_var = OpenAPI_plmn_ec_info_create (
         plmn_id_local_nonprim,

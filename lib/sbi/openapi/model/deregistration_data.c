@@ -99,7 +99,7 @@ OpenAPI_deregistration_data_t *OpenAPI_deregistration_data_parseFromJSON(cJSON *
         goto end;
     }
     access_typeVariable = OpenAPI_access_type_FromString(access_type->valuestring);
-}
+    }
 
     cJSON *pdu_session_id = cJSON_GetObjectItemCaseSensitive(deregistration_dataJSON, "pduSessionId");
 
@@ -108,7 +108,7 @@ OpenAPI_deregistration_data_t *OpenAPI_deregistration_data_parseFromJSON(cJSON *
         ogs_error("OpenAPI_deregistration_data_parseFromJSON() failed [pdu_session_id]");
         goto end;
     }
-}
+    }
 
     cJSON *new_smf_instance_id = cJSON_GetObjectItemCaseSensitive(deregistration_dataJSON, "newSmfInstanceId");
 
@@ -117,7 +117,7 @@ OpenAPI_deregistration_data_t *OpenAPI_deregistration_data_parseFromJSON(cJSON *
         ogs_error("OpenAPI_deregistration_data_parseFromJSON() failed [new_smf_instance_id]");
         goto end;
     }
-}
+    }
 
     deregistration_data_local_var = OpenAPI_deregistration_data_create (
         dereg_reasonVariable,

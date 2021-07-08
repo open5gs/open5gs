@@ -81,7 +81,7 @@ OpenAPI_ue_context_release_t *OpenAPI_ue_context_release_parseFromJSON(cJSON *ue
         ogs_error("OpenAPI_ue_context_release_parseFromJSON() failed [supi]");
         goto end;
     }
-}
+    }
 
     cJSON *unauthenticated_supi = cJSON_GetObjectItemCaseSensitive(ue_context_releaseJSON, "unauthenticatedSupi");
 
@@ -90,7 +90,7 @@ OpenAPI_ue_context_release_t *OpenAPI_ue_context_release_parseFromJSON(cJSON *ue
         ogs_error("OpenAPI_ue_context_release_parseFromJSON() failed [unauthenticated_supi]");
         goto end;
     }
-}
+    }
 
     cJSON *ngap_cause = cJSON_GetObjectItemCaseSensitive(ue_context_releaseJSON, "ngapCause");
     if (!ngap_cause) {

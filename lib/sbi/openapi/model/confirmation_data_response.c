@@ -89,7 +89,7 @@ OpenAPI_confirmation_data_response_t *OpenAPI_confirmation_data_response_parseFr
         ogs_error("OpenAPI_confirmation_data_response_parseFromJSON() failed [supi]");
         goto end;
     }
-}
+    }
 
     cJSON *kseaf = cJSON_GetObjectItemCaseSensitive(confirmation_data_responseJSON, "kseaf");
 
@@ -98,7 +98,7 @@ OpenAPI_confirmation_data_response_t *OpenAPI_confirmation_data_response_parseFr
         ogs_error("OpenAPI_confirmation_data_response_parseFromJSON() failed [kseaf]");
         goto end;
     }
-}
+    }
 
     confirmation_data_response_local_var = OpenAPI_confirmation_data_response_create (
         auth_resultVariable,

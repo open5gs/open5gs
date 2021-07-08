@@ -119,7 +119,7 @@ OpenAPI_qos_notification_control_info_t *OpenAPI_qos_notification_control_info_p
 
         OpenAPI_list_add(flowsList, flowsItem);
     }
-}
+    }
 
     cJSON *alt_ser_req = cJSON_GetObjectItemCaseSensitive(qos_notification_control_infoJSON, "altSerReq");
 
@@ -128,7 +128,7 @@ OpenAPI_qos_notification_control_info_t *OpenAPI_qos_notification_control_info_p
         ogs_error("OpenAPI_qos_notification_control_info_parseFromJSON() failed [alt_ser_req]");
         goto end;
     }
-}
+    }
 
     qos_notification_control_info_local_var = OpenAPI_qos_notification_control_info_create (
         notif_typeVariable,

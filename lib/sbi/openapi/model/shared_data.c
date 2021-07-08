@@ -217,21 +217,21 @@ OpenAPI_shared_data_t *OpenAPI_shared_data_parseFromJSON(cJSON *shared_dataJSON)
     OpenAPI_access_and_mobility_subscription_data_1_t *shared_am_data_local_nonprim = NULL;
     if (shared_am_data) { 
     shared_am_data_local_nonprim = OpenAPI_access_and_mobility_subscription_data_1_parseFromJSON(shared_am_data);
-}
+    }
 
     cJSON *shared_sms_subs_data = cJSON_GetObjectItemCaseSensitive(shared_dataJSON, "sharedSmsSubsData");
 
     OpenAPI_sms_subscription_data_1_t *shared_sms_subs_data_local_nonprim = NULL;
     if (shared_sms_subs_data) { 
     shared_sms_subs_data_local_nonprim = OpenAPI_sms_subscription_data_1_parseFromJSON(shared_sms_subs_data);
-}
+    }
 
     cJSON *shared_sms_mng_subs_data = cJSON_GetObjectItemCaseSensitive(shared_dataJSON, "sharedSmsMngSubsData");
 
     OpenAPI_sms_management_subscription_data_1_t *shared_sms_mng_subs_data_local_nonprim = NULL;
     if (shared_sms_mng_subs_data) { 
     shared_sms_mng_subs_data_local_nonprim = OpenAPI_sms_management_subscription_data_1_parseFromJSON(shared_sms_mng_subs_data);
-}
+    }
 
     cJSON *shared_dnn_configurations = cJSON_GetObjectItemCaseSensitive(shared_dataJSON, "sharedDnnConfigurations");
 
@@ -254,14 +254,14 @@ OpenAPI_shared_data_t *OpenAPI_shared_data_parseFromJSON(cJSON *shared_dataJSON)
             localMapObject->string, OpenAPI_dnn_configuration_1_parseFromJSON(localMapObject));
         OpenAPI_list_add(shared_dnn_configurationsList , localMapKeyPair);
     }
-}
+    }
 
     cJSON *shared_trace_data = cJSON_GetObjectItemCaseSensitive(shared_dataJSON, "sharedTraceData");
 
     OpenAPI_trace_data_t *shared_trace_data_local_nonprim = NULL;
     if (shared_trace_data) { 
     shared_trace_data_local_nonprim = OpenAPI_trace_data_parseFromJSON(shared_trace_data);
-}
+    }
 
     cJSON *shared_snssai_infos = cJSON_GetObjectItemCaseSensitive(shared_dataJSON, "sharedSnssaiInfos");
 
@@ -284,7 +284,7 @@ OpenAPI_shared_data_t *OpenAPI_shared_data_parseFromJSON(cJSON *shared_dataJSON)
             localMapObject->string, OpenAPI_snssai_info_parseFromJSON(localMapObject));
         OpenAPI_list_add(shared_snssai_infosList , localMapKeyPair);
     }
-}
+    }
 
     cJSON *shared_vn_group_datas = cJSON_GetObjectItemCaseSensitive(shared_dataJSON, "sharedVnGroupDatas");
 
@@ -307,7 +307,7 @@ OpenAPI_shared_data_t *OpenAPI_shared_data_parseFromJSON(cJSON *shared_dataJSON)
             localMapObject->string, OpenAPI_vn_group_data_parseFromJSON(localMapObject));
         OpenAPI_list_add(shared_vn_group_datasList , localMapKeyPair);
     }
-}
+    }
 
     shared_data_local_var = OpenAPI_shared_data_create (
         ogs_strdup_or_assert(shared_data_id->valuestring),

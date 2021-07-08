@@ -406,7 +406,7 @@ OpenAPI_policy_association_update_request_t *OpenAPI_policy_association_update_r
         ogs_error("OpenAPI_policy_association_update_request_parseFromJSON() failed [notification_uri]");
         goto end;
     }
-}
+    }
 
     cJSON *alt_notif_ipv4_addrs = cJSON_GetObjectItemCaseSensitive(policy_association_update_requestJSON, "altNotifIpv4Addrs");
 
@@ -426,7 +426,7 @@ OpenAPI_policy_association_update_request_t *OpenAPI_policy_association_update_r
     }
     OpenAPI_list_add(alt_notif_ipv4_addrsList , ogs_strdup_or_assert(alt_notif_ipv4_addrs_local->valuestring));
                     }
-}
+    }
 
     cJSON *alt_notif_ipv6_addrs = cJSON_GetObjectItemCaseSensitive(policy_association_update_requestJSON, "altNotifIpv6Addrs");
 
@@ -446,7 +446,7 @@ OpenAPI_policy_association_update_request_t *OpenAPI_policy_association_update_r
     }
     OpenAPI_list_add(alt_notif_ipv6_addrsList , ogs_strdup_or_assert(alt_notif_ipv6_addrs_local->valuestring));
                     }
-}
+    }
 
     cJSON *alt_notif_fqdns = cJSON_GetObjectItemCaseSensitive(policy_association_update_requestJSON, "altNotifFqdns");
 
@@ -466,7 +466,7 @@ OpenAPI_policy_association_update_request_t *OpenAPI_policy_association_update_r
     }
     OpenAPI_list_add(alt_notif_fqdnsList , ogs_strdup_or_assert(alt_notif_fqdns_local->valuestring));
                     }
-}
+    }
 
     cJSON *triggers = cJSON_GetObjectItemCaseSensitive(policy_association_update_requestJSON, "triggers");
 
@@ -488,21 +488,21 @@ OpenAPI_policy_association_update_request_t *OpenAPI_policy_association_update_r
 
         OpenAPI_list_add(triggersList, (void *)OpenAPI_request_trigger_FromString(triggers_local_nonprimitive->valuestring));
     }
-}
+    }
 
     cJSON *serv_area_res = cJSON_GetObjectItemCaseSensitive(policy_association_update_requestJSON, "servAreaRes");
 
     OpenAPI_service_area_restriction_t *serv_area_res_local_nonprim = NULL;
     if (serv_area_res) { 
     serv_area_res_local_nonprim = OpenAPI_service_area_restriction_parseFromJSON(serv_area_res);
-}
+    }
 
     cJSON *wl_serv_area_res = cJSON_GetObjectItemCaseSensitive(policy_association_update_requestJSON, "wlServAreaRes");
 
     OpenAPI_wireline_service_area_restriction_t *wl_serv_area_res_local_nonprim = NULL;
     if (wl_serv_area_res) { 
     wl_serv_area_res_local_nonprim = OpenAPI_wireline_service_area_restriction_parseFromJSON(wl_serv_area_res);
-}
+    }
 
     cJSON *rfsp = cJSON_GetObjectItemCaseSensitive(policy_association_update_requestJSON, "rfsp");
 
@@ -511,21 +511,21 @@ OpenAPI_policy_association_update_request_t *OpenAPI_policy_association_update_r
         ogs_error("OpenAPI_policy_association_update_request_parseFromJSON() failed [rfsp]");
         goto end;
     }
-}
+    }
 
     cJSON *smf_sel_info = cJSON_GetObjectItemCaseSensitive(policy_association_update_requestJSON, "smfSelInfo");
 
     OpenAPI_smf_selection_data_t *smf_sel_info_local_nonprim = NULL;
     if (smf_sel_info) { 
     smf_sel_info_local_nonprim = OpenAPI_smf_selection_data_parseFromJSON(smf_sel_info);
-}
+    }
 
     cJSON *ue_ambr = cJSON_GetObjectItemCaseSensitive(policy_association_update_requestJSON, "ueAmbr");
 
     OpenAPI_ambr_t *ue_ambr_local_nonprim = NULL;
     if (ue_ambr) { 
     ue_ambr_local_nonprim = OpenAPI_ambr_parseFromJSON(ue_ambr);
-}
+    }
 
     cJSON *pra_statuses = cJSON_GetObjectItemCaseSensitive(policy_association_update_requestJSON, "praStatuses");
 
@@ -548,14 +548,14 @@ OpenAPI_policy_association_update_request_t *OpenAPI_policy_association_update_r
             localMapObject->string, OpenAPI_presence_info_parseFromJSON(localMapObject));
         OpenAPI_list_add(pra_statusesList , localMapKeyPair);
     }
-}
+    }
 
     cJSON *user_loc = cJSON_GetObjectItemCaseSensitive(policy_association_update_requestJSON, "userLoc");
 
     OpenAPI_user_location_t *user_loc_local_nonprim = NULL;
     if (user_loc) { 
     user_loc_local_nonprim = OpenAPI_user_location_parseFromJSON(user_loc);
-}
+    }
 
     cJSON *allowed_snssais = cJSON_GetObjectItemCaseSensitive(policy_association_update_requestJSON, "allowedSnssais");
 
@@ -578,7 +578,7 @@ OpenAPI_policy_association_update_request_t *OpenAPI_policy_association_update_r
 
         OpenAPI_list_add(allowed_snssaisList, allowed_snssaisItem);
     }
-}
+    }
 
     cJSON *mapping_snssais = cJSON_GetObjectItemCaseSensitive(policy_association_update_requestJSON, "mappingSnssais");
 
@@ -601,7 +601,7 @@ OpenAPI_policy_association_update_request_t *OpenAPI_policy_association_update_r
 
         OpenAPI_list_add(mapping_snssaisList, mapping_snssaisItem);
     }
-}
+    }
 
     cJSON *access_types = cJSON_GetObjectItemCaseSensitive(policy_association_update_requestJSON, "accessTypes");
 
@@ -623,7 +623,7 @@ OpenAPI_policy_association_update_request_t *OpenAPI_policy_association_update_r
 
         OpenAPI_list_add(access_typesList, (void *)OpenAPI_access_type_FromString(access_types_local_nonprimitive->valuestring));
     }
-}
+    }
 
     cJSON *rat_types = cJSON_GetObjectItemCaseSensitive(policy_association_update_requestJSON, "ratTypes");
 
@@ -645,7 +645,7 @@ OpenAPI_policy_association_update_request_t *OpenAPI_policy_association_update_r
 
         OpenAPI_list_add(rat_typesList, (void *)OpenAPI_rat_type_FromString(rat_types_local_nonprimitive->valuestring));
     }
-}
+    }
 
     cJSON *n3g_allowed_snssais = cJSON_GetObjectItemCaseSensitive(policy_association_update_requestJSON, "n3gAllowedSnssais");
 
@@ -668,21 +668,21 @@ OpenAPI_policy_association_update_request_t *OpenAPI_policy_association_update_r
 
         OpenAPI_list_add(n3g_allowed_snssaisList, n3g_allowed_snssaisItem);
     }
-}
+    }
 
     cJSON *trace_req = cJSON_GetObjectItemCaseSensitive(policy_association_update_requestJSON, "traceReq");
 
     OpenAPI_trace_data_t *trace_req_local_nonprim = NULL;
     if (trace_req) { 
     trace_req_local_nonprim = OpenAPI_trace_data_parseFromJSON(trace_req);
-}
+    }
 
     cJSON *guami = cJSON_GetObjectItemCaseSensitive(policy_association_update_requestJSON, "guami");
 
     OpenAPI_guami_t *guami_local_nonprim = NULL;
     if (guami) { 
     guami_local_nonprim = OpenAPI_guami_parseFromJSON(guami);
-}
+    }
 
     policy_association_update_request_local_var = OpenAPI_policy_association_update_request_create (
         notification_uri ? ogs_strdup_or_assert(notification_uri->valuestring) : NULL,

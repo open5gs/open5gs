@@ -112,7 +112,7 @@ OpenAPI_pfd_change_notification_t *OpenAPI_pfd_change_notification_parseFromJSON
         ogs_error("OpenAPI_pfd_change_notification_parseFromJSON() failed [removal_flag]");
         goto end;
     }
-}
+    }
 
     cJSON *partial_flag = cJSON_GetObjectItemCaseSensitive(pfd_change_notificationJSON, "partialFlag");
 
@@ -121,7 +121,7 @@ OpenAPI_pfd_change_notification_t *OpenAPI_pfd_change_notification_parseFromJSON
         ogs_error("OpenAPI_pfd_change_notification_parseFromJSON() failed [partial_flag]");
         goto end;
     }
-}
+    }
 
     cJSON *pfds = cJSON_GetObjectItemCaseSensitive(pfd_change_notificationJSON, "pfds");
 
@@ -144,7 +144,7 @@ OpenAPI_pfd_change_notification_t *OpenAPI_pfd_change_notification_parseFromJSON
 
         OpenAPI_list_add(pfdsList, pfdsItem);
     }
-}
+    }
 
     pfd_change_notification_local_var = OpenAPI_pfd_change_notification_create (
         ogs_strdup_or_assert(application_id->valuestring),

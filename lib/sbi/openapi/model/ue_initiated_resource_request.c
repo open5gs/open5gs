@@ -114,7 +114,7 @@ OpenAPI_ue_initiated_resource_request_t *OpenAPI_ue_initiated_resource_request_p
         ogs_error("OpenAPI_ue_initiated_resource_request_parseFromJSON() failed [pcc_rule_id]");
         goto end;
     }
-}
+    }
 
     cJSON *rule_op = cJSON_GetObjectItemCaseSensitive(ue_initiated_resource_requestJSON, "ruleOp");
     if (!rule_op) {
@@ -137,7 +137,7 @@ OpenAPI_ue_initiated_resource_request_t *OpenAPI_ue_initiated_resource_request_p
         ogs_error("OpenAPI_ue_initiated_resource_request_parseFromJSON() failed [precedence]");
         goto end;
     }
-}
+    }
 
     cJSON *pack_filt_info = cJSON_GetObjectItemCaseSensitive(ue_initiated_resource_requestJSON, "packFiltInfo");
     if (!pack_filt_info) {
@@ -170,7 +170,7 @@ OpenAPI_ue_initiated_resource_request_t *OpenAPI_ue_initiated_resource_request_p
     OpenAPI_requested_qos_t *req_qos_local_nonprim = NULL;
     if (req_qos) { 
     req_qos_local_nonprim = OpenAPI_requested_qos_parseFromJSON(req_qos);
-}
+    }
 
     ue_initiated_resource_request_local_var = OpenAPI_ue_initiated_resource_request_create (
         pcc_rule_id ? ogs_strdup_or_assert(pcc_rule_id->valuestring) : NULL,

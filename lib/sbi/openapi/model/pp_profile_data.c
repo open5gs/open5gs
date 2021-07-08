@@ -89,7 +89,7 @@ OpenAPI_pp_profile_data_t *OpenAPI_pp_profile_data_parseFromJSON(cJSON *pp_profi
         cJSON *localMapObject = allowed_mtc_providers_local_map;
         OpenAPI_list_add(allowed_mtc_providersList , localMapKeyPair);
     }
-}
+    }
 
     cJSON *supported_features = cJSON_GetObjectItemCaseSensitive(pp_profile_dataJSON, "supportedFeatures");
 
@@ -98,7 +98,7 @@ OpenAPI_pp_profile_data_t *OpenAPI_pp_profile_data_parseFromJSON(cJSON *pp_profi
         ogs_error("OpenAPI_pp_profile_data_parseFromJSON() failed [supported_features]");
         goto end;
     }
-}
+    }
 
     pp_profile_data_local_var = OpenAPI_pp_profile_data_create (
         allowed_mtc_providers ? allowed_mtc_providersList : NULL,

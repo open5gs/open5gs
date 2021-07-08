@@ -86,7 +86,7 @@ OpenAPI_configured_snssai_t *OpenAPI_configured_snssai_parseFromJSON(cJSON *conf
     OpenAPI_snssai_t *mapped_home_snssai_local_nonprim = NULL;
     if (mapped_home_snssai) { 
     mapped_home_snssai_local_nonprim = OpenAPI_snssai_parseFromJSON(mapped_home_snssai);
-}
+    }
 
     configured_snssai_local_var = OpenAPI_configured_snssai_create (
         configured_snssai_local_nonprim,

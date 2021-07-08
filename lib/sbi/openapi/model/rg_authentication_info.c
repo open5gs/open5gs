@@ -97,7 +97,7 @@ OpenAPI_rg_authentication_info_t *OpenAPI_rg_authentication_info_parseFromJSON(c
         ogs_error("OpenAPI_rg_authentication_info_parseFromJSON() failed [supported_features]");
         goto end;
     }
-}
+    }
 
     rg_authentication_info_local_var = OpenAPI_rg_authentication_info_create (
         ogs_strdup_or_assert(suci->valuestring),

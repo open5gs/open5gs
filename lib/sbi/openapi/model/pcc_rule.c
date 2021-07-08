@@ -419,7 +419,7 @@ OpenAPI_pcc_rule_t *OpenAPI_pcc_rule_parseFromJSON(cJSON *pcc_ruleJSON)
 
         OpenAPI_list_add(flow_infosList, flow_infosItem);
     }
-}
+    }
 
     cJSON *app_id = cJSON_GetObjectItemCaseSensitive(pcc_ruleJSON, "appId");
 
@@ -428,7 +428,7 @@ OpenAPI_pcc_rule_t *OpenAPI_pcc_rule_parseFromJSON(cJSON *pcc_ruleJSON)
         ogs_error("OpenAPI_pcc_rule_parseFromJSON() failed [app_id]");
         goto end;
     }
-}
+    }
 
     cJSON *app_descriptor = cJSON_GetObjectItemCaseSensitive(pcc_ruleJSON, "appDescriptor");
 
@@ -437,7 +437,7 @@ OpenAPI_pcc_rule_t *OpenAPI_pcc_rule_parseFromJSON(cJSON *pcc_ruleJSON)
         ogs_error("OpenAPI_pcc_rule_parseFromJSON() failed [app_descriptor]");
         goto end;
     }
-}
+    }
 
     cJSON *cont_ver = cJSON_GetObjectItemCaseSensitive(pcc_ruleJSON, "contVer");
 
@@ -446,7 +446,7 @@ OpenAPI_pcc_rule_t *OpenAPI_pcc_rule_parseFromJSON(cJSON *pcc_ruleJSON)
         ogs_error("OpenAPI_pcc_rule_parseFromJSON() failed [cont_ver]");
         goto end;
     }
-}
+    }
 
     cJSON *pcc_rule_id = cJSON_GetObjectItemCaseSensitive(pcc_ruleJSON, "pccRuleId");
     if (!pcc_rule_id) {
@@ -467,7 +467,7 @@ OpenAPI_pcc_rule_t *OpenAPI_pcc_rule_parseFromJSON(cJSON *pcc_ruleJSON)
         ogs_error("OpenAPI_pcc_rule_parseFromJSON() failed [precedence]");
         goto end;
     }
-}
+    }
 
     cJSON *af_sig_protocol = cJSON_GetObjectItemCaseSensitive(pcc_ruleJSON, "afSigProtocol");
 
@@ -478,7 +478,7 @@ OpenAPI_pcc_rule_t *OpenAPI_pcc_rule_parseFromJSON(cJSON *pcc_ruleJSON)
         goto end;
     }
     af_sig_protocolVariable = OpenAPI_af_sig_protocol_FromString(af_sig_protocol->valuestring);
-}
+    }
 
     cJSON *app_reloc = cJSON_GetObjectItemCaseSensitive(pcc_ruleJSON, "appReloc");
 
@@ -487,7 +487,7 @@ OpenAPI_pcc_rule_t *OpenAPI_pcc_rule_parseFromJSON(cJSON *pcc_ruleJSON)
         ogs_error("OpenAPI_pcc_rule_parseFromJSON() failed [app_reloc]");
         goto end;
     }
-}
+    }
 
     cJSON *ref_qos_data = cJSON_GetObjectItemCaseSensitive(pcc_ruleJSON, "refQosData");
 
@@ -507,7 +507,7 @@ OpenAPI_pcc_rule_t *OpenAPI_pcc_rule_parseFromJSON(cJSON *pcc_ruleJSON)
     }
     OpenAPI_list_add(ref_qos_dataList , ogs_strdup_or_assert(ref_qos_data_local->valuestring));
                     }
-}
+    }
 
     cJSON *ref_alt_qos_params = cJSON_GetObjectItemCaseSensitive(pcc_ruleJSON, "refAltQosParams");
 
@@ -527,7 +527,7 @@ OpenAPI_pcc_rule_t *OpenAPI_pcc_rule_parseFromJSON(cJSON *pcc_ruleJSON)
     }
     OpenAPI_list_add(ref_alt_qos_paramsList , ogs_strdup_or_assert(ref_alt_qos_params_local->valuestring));
                     }
-}
+    }
 
     cJSON *ref_tc_data = cJSON_GetObjectItemCaseSensitive(pcc_ruleJSON, "refTcData");
 
@@ -547,7 +547,7 @@ OpenAPI_pcc_rule_t *OpenAPI_pcc_rule_parseFromJSON(cJSON *pcc_ruleJSON)
     }
     OpenAPI_list_add(ref_tc_dataList , ogs_strdup_or_assert(ref_tc_data_local->valuestring));
                     }
-}
+    }
 
     cJSON *ref_chg_data = cJSON_GetObjectItemCaseSensitive(pcc_ruleJSON, "refChgData");
 
@@ -567,7 +567,7 @@ OpenAPI_pcc_rule_t *OpenAPI_pcc_rule_parseFromJSON(cJSON *pcc_ruleJSON)
     }
     OpenAPI_list_add(ref_chg_dataList , ogs_strdup_or_assert(ref_chg_data_local->valuestring));
                     }
-}
+    }
 
     cJSON *ref_chg_n3g_data = cJSON_GetObjectItemCaseSensitive(pcc_ruleJSON, "refChgN3gData");
 
@@ -587,7 +587,7 @@ OpenAPI_pcc_rule_t *OpenAPI_pcc_rule_parseFromJSON(cJSON *pcc_ruleJSON)
     }
     OpenAPI_list_add(ref_chg_n3g_dataList , ogs_strdup_or_assert(ref_chg_n3g_data_local->valuestring));
                     }
-}
+    }
 
     cJSON *ref_um_data = cJSON_GetObjectItemCaseSensitive(pcc_ruleJSON, "refUmData");
 
@@ -607,7 +607,7 @@ OpenAPI_pcc_rule_t *OpenAPI_pcc_rule_parseFromJSON(cJSON *pcc_ruleJSON)
     }
     OpenAPI_list_add(ref_um_dataList , ogs_strdup_or_assert(ref_um_data_local->valuestring));
                     }
-}
+    }
 
     cJSON *ref_um_n3g_data = cJSON_GetObjectItemCaseSensitive(pcc_ruleJSON, "refUmN3gData");
 
@@ -627,7 +627,7 @@ OpenAPI_pcc_rule_t *OpenAPI_pcc_rule_parseFromJSON(cJSON *pcc_ruleJSON)
     }
     OpenAPI_list_add(ref_um_n3g_dataList , ogs_strdup_or_assert(ref_um_n3g_data_local->valuestring));
                     }
-}
+    }
 
     cJSON *ref_cond_data = cJSON_GetObjectItemCaseSensitive(pcc_ruleJSON, "refCondData");
 
@@ -636,7 +636,7 @@ OpenAPI_pcc_rule_t *OpenAPI_pcc_rule_parseFromJSON(cJSON *pcc_ruleJSON)
         ogs_error("OpenAPI_pcc_rule_parseFromJSON() failed [ref_cond_data]");
         goto end;
     }
-}
+    }
 
     cJSON *ref_qos_mon = cJSON_GetObjectItemCaseSensitive(pcc_ruleJSON, "refQosMon");
 
@@ -656,7 +656,7 @@ OpenAPI_pcc_rule_t *OpenAPI_pcc_rule_parseFromJSON(cJSON *pcc_ruleJSON)
     }
     OpenAPI_list_add(ref_qos_monList , ogs_strdup_or_assert(ref_qos_mon_local->valuestring));
                     }
-}
+    }
 
     cJSON *addr_preser_ind = cJSON_GetObjectItemCaseSensitive(pcc_ruleJSON, "addrPreserInd");
 
@@ -665,35 +665,35 @@ OpenAPI_pcc_rule_t *OpenAPI_pcc_rule_parseFromJSON(cJSON *pcc_ruleJSON)
         ogs_error("OpenAPI_pcc_rule_parseFromJSON() failed [addr_preser_ind]");
         goto end;
     }
-}
+    }
 
     cJSON *tscai_input_dl = cJSON_GetObjectItemCaseSensitive(pcc_ruleJSON, "tscaiInputDl");
 
     OpenAPI_tscai_input_container_t *tscai_input_dl_local_nonprim = NULL;
     if (tscai_input_dl) { 
     tscai_input_dl_local_nonprim = OpenAPI_tscai_input_container_parseFromJSON(tscai_input_dl);
-}
+    }
 
     cJSON *tscai_input_ul = cJSON_GetObjectItemCaseSensitive(pcc_ruleJSON, "tscaiInputUl");
 
     OpenAPI_tscai_input_container_t *tscai_input_ul_local_nonprim = NULL;
     if (tscai_input_ul) { 
     tscai_input_ul_local_nonprim = OpenAPI_tscai_input_container_parseFromJSON(tscai_input_ul);
-}
+    }
 
     cJSON *dd_notif_ctrl = cJSON_GetObjectItemCaseSensitive(pcc_ruleJSON, "ddNotifCtrl");
 
     OpenAPI_downlink_data_notification_control_t *dd_notif_ctrl_local_nonprim = NULL;
     if (dd_notif_ctrl) { 
     dd_notif_ctrl_local_nonprim = OpenAPI_downlink_data_notification_control_parseFromJSON(dd_notif_ctrl);
-}
+    }
 
     cJSON *dd_notif_ctrl2 = cJSON_GetObjectItemCaseSensitive(pcc_ruleJSON, "ddNotifCtrl2");
 
     OpenAPI_downlink_data_notification_control_rm_t *dd_notif_ctrl2_local_nonprim = NULL;
     if (dd_notif_ctrl2) { 
     dd_notif_ctrl2_local_nonprim = OpenAPI_downlink_data_notification_control_rm_parseFromJSON(dd_notif_ctrl2);
-}
+    }
 
     cJSON *dis_ue_notif = cJSON_GetObjectItemCaseSensitive(pcc_ruleJSON, "disUeNotif");
 
@@ -702,7 +702,7 @@ OpenAPI_pcc_rule_t *OpenAPI_pcc_rule_parseFromJSON(cJSON *pcc_ruleJSON)
         ogs_error("OpenAPI_pcc_rule_parseFromJSON() failed [dis_ue_notif]");
         goto end;
     }
-}
+    }
 
     pcc_rule_local_var = OpenAPI_pcc_rule_create (
         flow_infos ? flow_infosList : NULL,

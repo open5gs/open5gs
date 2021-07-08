@@ -112,7 +112,7 @@ OpenAPI_unrelated_class_t *OpenAPI_unrelated_class_parseFromJSON(cJSON *unrelate
     OpenAPI_external_unrelated_class_t *external_unrelated_class_local_nonprim = NULL;
     if (external_unrelated_class) { 
     external_unrelated_class_local_nonprim = OpenAPI_external_unrelated_class_parseFromJSON(external_unrelated_class);
-}
+    }
 
     cJSON *service_type_unrelated_classes = cJSON_GetObjectItemCaseSensitive(unrelated_classJSON, "serviceTypeUnrelatedClasses");
 
@@ -135,7 +135,7 @@ OpenAPI_unrelated_class_t *OpenAPI_unrelated_class_parseFromJSON(cJSON *unrelate
 
         OpenAPI_list_add(service_type_unrelated_classesList, service_type_unrelated_classesItem);
     }
-}
+    }
 
     unrelated_class_local_var = OpenAPI_unrelated_class_create (
         default_unrelated_class_local_nonprim,

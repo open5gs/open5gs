@@ -112,7 +112,7 @@ OpenAPI_ext_snssai_t *OpenAPI_ext_snssai_parseFromJSON(cJSON *ext_snssaiJSON)
         ogs_error("OpenAPI_ext_snssai_parseFromJSON() failed [sd]");
         goto end;
     }
-}
+    }
 
     cJSON *sd_ranges = cJSON_GetObjectItemCaseSensitive(ext_snssaiJSON, "sdRanges");
 
@@ -135,7 +135,7 @@ OpenAPI_ext_snssai_t *OpenAPI_ext_snssai_parseFromJSON(cJSON *ext_snssaiJSON)
 
         OpenAPI_list_add(sd_rangesList, sd_rangesItem);
     }
-}
+    }
 
     cJSON *wildcard_sd = cJSON_GetObjectItemCaseSensitive(ext_snssaiJSON, "wildcardSd");
 
@@ -144,7 +144,7 @@ OpenAPI_ext_snssai_t *OpenAPI_ext_snssai_parseFromJSON(cJSON *ext_snssaiJSON)
         ogs_error("OpenAPI_ext_snssai_parseFromJSON() failed [wildcard_sd]");
         goto end;
     }
-}
+    }
 
     ext_snssai_local_var = OpenAPI_ext_snssai_create (
         sst->valuedouble,

@@ -537,28 +537,28 @@ OpenAPI_pdu_session_created_data_t *OpenAPI_pdu_session_created_data_parseFromJS
     OpenAPI_tunnel_info_t *hcn_tunnel_info_local_nonprim = NULL;
     if (hcn_tunnel_info) { 
     hcn_tunnel_info_local_nonprim = OpenAPI_tunnel_info_parseFromJSON(hcn_tunnel_info);
-}
+    }
 
     cJSON *cn_tunnel_info = cJSON_GetObjectItemCaseSensitive(pdu_session_created_dataJSON, "cnTunnelInfo");
 
     OpenAPI_tunnel_info_t *cn_tunnel_info_local_nonprim = NULL;
     if (cn_tunnel_info) { 
     cn_tunnel_info_local_nonprim = OpenAPI_tunnel_info_parseFromJSON(cn_tunnel_info);
-}
+    }
 
     cJSON *additional_cn_tunnel_info = cJSON_GetObjectItemCaseSensitive(pdu_session_created_dataJSON, "additionalCnTunnelInfo");
 
     OpenAPI_tunnel_info_t *additional_cn_tunnel_info_local_nonprim = NULL;
     if (additional_cn_tunnel_info) { 
     additional_cn_tunnel_info_local_nonprim = OpenAPI_tunnel_info_parseFromJSON(additional_cn_tunnel_info);
-}
+    }
 
     cJSON *session_ambr = cJSON_GetObjectItemCaseSensitive(pdu_session_created_dataJSON, "sessionAmbr");
 
     OpenAPI_ambr_t *session_ambr_local_nonprim = NULL;
     if (session_ambr) { 
     session_ambr_local_nonprim = OpenAPI_ambr_parseFromJSON(session_ambr);
-}
+    }
 
     cJSON *qos_flows_setup_list = cJSON_GetObjectItemCaseSensitive(pdu_session_created_dataJSON, "qosFlowsSetupList");
 
@@ -581,7 +581,7 @@ OpenAPI_pdu_session_created_data_t *OpenAPI_pdu_session_created_data_parseFromJS
 
         OpenAPI_list_add(qos_flows_setup_listList, qos_flows_setup_listItem);
     }
-}
+    }
 
     cJSON *h_smf_instance_id = cJSON_GetObjectItemCaseSensitive(pdu_session_created_dataJSON, "hSmfInstanceId");
 
@@ -590,7 +590,7 @@ OpenAPI_pdu_session_created_data_t *OpenAPI_pdu_session_created_data_parseFromJS
         ogs_error("OpenAPI_pdu_session_created_data_parseFromJSON() failed [h_smf_instance_id]");
         goto end;
     }
-}
+    }
 
     cJSON *smf_instance_id = cJSON_GetObjectItemCaseSensitive(pdu_session_created_dataJSON, "smfInstanceId");
 
@@ -599,7 +599,7 @@ OpenAPI_pdu_session_created_data_t *OpenAPI_pdu_session_created_data_parseFromJS
         ogs_error("OpenAPI_pdu_session_created_data_parseFromJSON() failed [smf_instance_id]");
         goto end;
     }
-}
+    }
 
     cJSON *pdu_session_id = cJSON_GetObjectItemCaseSensitive(pdu_session_created_dataJSON, "pduSessionId");
 
@@ -608,14 +608,14 @@ OpenAPI_pdu_session_created_data_t *OpenAPI_pdu_session_created_data_parseFromJS
         ogs_error("OpenAPI_pdu_session_created_data_parseFromJSON() failed [pdu_session_id]");
         goto end;
     }
-}
+    }
 
     cJSON *s_nssai = cJSON_GetObjectItemCaseSensitive(pdu_session_created_dataJSON, "sNssai");
 
     OpenAPI_snssai_t *s_nssai_local_nonprim = NULL;
     if (s_nssai) { 
     s_nssai_local_nonprim = OpenAPI_snssai_parseFromJSON(s_nssai);
-}
+    }
 
     cJSON *enable_pause_charging = cJSON_GetObjectItemCaseSensitive(pdu_session_created_dataJSON, "enablePauseCharging");
 
@@ -624,7 +624,7 @@ OpenAPI_pdu_session_created_data_t *OpenAPI_pdu_session_created_data_parseFromJS
         ogs_error("OpenAPI_pdu_session_created_data_parseFromJSON() failed [enable_pause_charging]");
         goto end;
     }
-}
+    }
 
     cJSON *ue_ipv4_address = cJSON_GetObjectItemCaseSensitive(pdu_session_created_dataJSON, "ueIpv4Address");
 
@@ -633,7 +633,7 @@ OpenAPI_pdu_session_created_data_t *OpenAPI_pdu_session_created_data_parseFromJS
         ogs_error("OpenAPI_pdu_session_created_data_parseFromJSON() failed [ue_ipv4_address]");
         goto end;
     }
-}
+    }
 
     cJSON *ue_ipv6_prefix = cJSON_GetObjectItemCaseSensitive(pdu_session_created_dataJSON, "ueIpv6Prefix");
 
@@ -642,21 +642,21 @@ OpenAPI_pdu_session_created_data_t *OpenAPI_pdu_session_created_data_parseFromJS
         ogs_error("OpenAPI_pdu_session_created_data_parseFromJSON() failed [ue_ipv6_prefix]");
         goto end;
     }
-}
+    }
 
     cJSON *n1_sm_info_to_ue = cJSON_GetObjectItemCaseSensitive(pdu_session_created_dataJSON, "n1SmInfoToUe");
 
     OpenAPI_ref_to_binary_data_t *n1_sm_info_to_ue_local_nonprim = NULL;
     if (n1_sm_info_to_ue) { 
     n1_sm_info_to_ue_local_nonprim = OpenAPI_ref_to_binary_data_parseFromJSON(n1_sm_info_to_ue);
-}
+    }
 
     cJSON *eps_pdn_cnx_info = cJSON_GetObjectItemCaseSensitive(pdu_session_created_dataJSON, "epsPdnCnxInfo");
 
     OpenAPI_eps_pdn_cnx_info_t *eps_pdn_cnx_info_local_nonprim = NULL;
     if (eps_pdn_cnx_info) { 
     eps_pdn_cnx_info_local_nonprim = OpenAPI_eps_pdn_cnx_info_parseFromJSON(eps_pdn_cnx_info);
-}
+    }
 
     cJSON *eps_bearer_info = cJSON_GetObjectItemCaseSensitive(pdu_session_created_dataJSON, "epsBearerInfo");
 
@@ -679,7 +679,7 @@ OpenAPI_pdu_session_created_data_t *OpenAPI_pdu_session_created_data_parseFromJS
 
         OpenAPI_list_add(eps_bearer_infoList, eps_bearer_infoItem);
     }
-}
+    }
 
     cJSON *supported_features = cJSON_GetObjectItemCaseSensitive(pdu_session_created_dataJSON, "supportedFeatures");
 
@@ -688,7 +688,7 @@ OpenAPI_pdu_session_created_data_t *OpenAPI_pdu_session_created_data_parseFromJS
         ogs_error("OpenAPI_pdu_session_created_data_parseFromJSON() failed [supported_features]");
         goto end;
     }
-}
+    }
 
     cJSON *max_integrity_protected_data_rate = cJSON_GetObjectItemCaseSensitive(pdu_session_created_dataJSON, "maxIntegrityProtectedDataRate");
 
@@ -699,7 +699,7 @@ OpenAPI_pdu_session_created_data_t *OpenAPI_pdu_session_created_data_parseFromJS
         goto end;
     }
     max_integrity_protected_data_rateVariable = OpenAPI_max_integrity_protected_data_rate_FromString(max_integrity_protected_data_rate->valuestring);
-}
+    }
 
     cJSON *max_integrity_protected_data_rate_dl = cJSON_GetObjectItemCaseSensitive(pdu_session_created_dataJSON, "maxIntegrityProtectedDataRateDl");
 
@@ -710,7 +710,7 @@ OpenAPI_pdu_session_created_data_t *OpenAPI_pdu_session_created_data_parseFromJS
         goto end;
     }
     max_integrity_protected_data_rate_dlVariable = OpenAPI_max_integrity_protected_data_rate_FromString(max_integrity_protected_data_rate_dl->valuestring);
-}
+    }
 
     cJSON *always_on_granted = cJSON_GetObjectItemCaseSensitive(pdu_session_created_dataJSON, "alwaysOnGranted");
 
@@ -719,7 +719,7 @@ OpenAPI_pdu_session_created_data_t *OpenAPI_pdu_session_created_data_parseFromJS
         ogs_error("OpenAPI_pdu_session_created_data_parseFromJSON() failed [always_on_granted]");
         goto end;
     }
-}
+    }
 
     cJSON *gpsi = cJSON_GetObjectItemCaseSensitive(pdu_session_created_dataJSON, "gpsi");
 
@@ -728,21 +728,21 @@ OpenAPI_pdu_session_created_data_t *OpenAPI_pdu_session_created_data_parseFromJS
         ogs_error("OpenAPI_pdu_session_created_data_parseFromJSON() failed [gpsi]");
         goto end;
     }
-}
+    }
 
     cJSON *up_security = cJSON_GetObjectItemCaseSensitive(pdu_session_created_dataJSON, "upSecurity");
 
     OpenAPI_up_security_t *up_security_local_nonprim = NULL;
     if (up_security) { 
     up_security_local_nonprim = OpenAPI_up_security_parseFromJSON(up_security);
-}
+    }
 
     cJSON *roaming_charging_profile = cJSON_GetObjectItemCaseSensitive(pdu_session_created_dataJSON, "roamingChargingProfile");
 
     OpenAPI_roaming_charging_profile_t *roaming_charging_profile_local_nonprim = NULL;
     if (roaming_charging_profile) { 
     roaming_charging_profile_local_nonprim = OpenAPI_roaming_charging_profile_parseFromJSON(roaming_charging_profile);
-}
+    }
 
     cJSON *h_smf_service_instance_id = cJSON_GetObjectItemCaseSensitive(pdu_session_created_dataJSON, "hSmfServiceInstanceId");
 
@@ -751,7 +751,7 @@ OpenAPI_pdu_session_created_data_t *OpenAPI_pdu_session_created_data_parseFromJS
         ogs_error("OpenAPI_pdu_session_created_data_parseFromJSON() failed [h_smf_service_instance_id]");
         goto end;
     }
-}
+    }
 
     cJSON *smf_service_instance_id = cJSON_GetObjectItemCaseSensitive(pdu_session_created_dataJSON, "smfServiceInstanceId");
 
@@ -760,7 +760,7 @@ OpenAPI_pdu_session_created_data_t *OpenAPI_pdu_session_created_data_parseFromJS
         ogs_error("OpenAPI_pdu_session_created_data_parseFromJSON() failed [smf_service_instance_id]");
         goto end;
     }
-}
+    }
 
     cJSON *recovery_time = cJSON_GetObjectItemCaseSensitive(pdu_session_created_dataJSON, "recoveryTime");
 
@@ -769,7 +769,7 @@ OpenAPI_pdu_session_created_data_t *OpenAPI_pdu_session_created_data_parseFromJS
         ogs_error("OpenAPI_pdu_session_created_data_parseFromJSON() failed [recovery_time]");
         goto end;
     }
-}
+    }
 
     cJSON *dnai_list = cJSON_GetObjectItemCaseSensitive(pdu_session_created_dataJSON, "dnaiList");
 
@@ -789,7 +789,7 @@ OpenAPI_pdu_session_created_data_t *OpenAPI_pdu_session_created_data_parseFromJS
     }
     OpenAPI_list_add(dnai_listList , ogs_strdup_or_assert(dnai_list_local->valuestring));
                     }
-}
+    }
 
     cJSON *ipv6_multi_homing_ind = cJSON_GetObjectItemCaseSensitive(pdu_session_created_dataJSON, "ipv6MultiHomingInd");
 
@@ -798,7 +798,7 @@ OpenAPI_pdu_session_created_data_t *OpenAPI_pdu_session_created_data_parseFromJS
         ogs_error("OpenAPI_pdu_session_created_data_parseFromJSON() failed [ipv6_multi_homing_ind]");
         goto end;
     }
-}
+    }
 
     cJSON *ma_accepted_ind = cJSON_GetObjectItemCaseSensitive(pdu_session_created_dataJSON, "maAcceptedInd");
 
@@ -807,7 +807,7 @@ OpenAPI_pdu_session_created_data_t *OpenAPI_pdu_session_created_data_parseFromJS
         ogs_error("OpenAPI_pdu_session_created_data_parseFromJSON() failed [ma_accepted_ind]");
         goto end;
     }
-}
+    }
 
     cJSON *home_provided_charging_id = cJSON_GetObjectItemCaseSensitive(pdu_session_created_dataJSON, "homeProvidedChargingId");
 
@@ -816,7 +816,7 @@ OpenAPI_pdu_session_created_data_t *OpenAPI_pdu_session_created_data_parseFromJS
         ogs_error("OpenAPI_pdu_session_created_data_parseFromJSON() failed [home_provided_charging_id]");
         goto end;
     }
-}
+    }
 
     cJSON *nef_ext_buf_support_ind = cJSON_GetObjectItemCaseSensitive(pdu_session_created_dataJSON, "nefExtBufSupportInd");
 
@@ -825,7 +825,7 @@ OpenAPI_pdu_session_created_data_t *OpenAPI_pdu_session_created_data_parseFromJS
         ogs_error("OpenAPI_pdu_session_created_data_parseFromJSON() failed [nef_ext_buf_support_ind]");
         goto end;
     }
-}
+    }
 
     cJSON *small_data_rate_control_enabled = cJSON_GetObjectItemCaseSensitive(pdu_session_created_dataJSON, "smallDataRateControlEnabled");
 
@@ -834,7 +834,7 @@ OpenAPI_pdu_session_created_data_t *OpenAPI_pdu_session_created_data_parseFromJS
         ogs_error("OpenAPI_pdu_session_created_data_parseFromJSON() failed [small_data_rate_control_enabled]");
         goto end;
     }
-}
+    }
 
     cJSON *ue_ipv6_interface_id = cJSON_GetObjectItemCaseSensitive(pdu_session_created_dataJSON, "ueIpv6InterfaceId");
 
@@ -843,7 +843,7 @@ OpenAPI_pdu_session_created_data_t *OpenAPI_pdu_session_created_data_parseFromJS
         ogs_error("OpenAPI_pdu_session_created_data_parseFromJSON() failed [ue_ipv6_interface_id]");
         goto end;
     }
-}
+    }
 
     cJSON *ipv6_index = cJSON_GetObjectItemCaseSensitive(pdu_session_created_dataJSON, "ipv6Index");
 
@@ -852,21 +852,21 @@ OpenAPI_pdu_session_created_data_t *OpenAPI_pdu_session_created_data_parseFromJS
         ogs_error("OpenAPI_pdu_session_created_data_parseFromJSON() failed [ipv6_index]");
         goto end;
     }
-}
+    }
 
     cJSON *dn_aaa_address = cJSON_GetObjectItemCaseSensitive(pdu_session_created_dataJSON, "dnAaaAddress");
 
     OpenAPI_ip_address_t *dn_aaa_address_local_nonprim = NULL;
     if (dn_aaa_address) { 
     dn_aaa_address_local_nonprim = OpenAPI_ip_address_parseFromJSON(dn_aaa_address);
-}
+    }
 
     cJSON *redundant_pdu_session_info = cJSON_GetObjectItemCaseSensitive(pdu_session_created_dataJSON, "redundantPduSessionInfo");
 
     OpenAPI_redundant_pdu_session_information_t *redundant_pdu_session_info_local_nonprim = NULL;
     if (redundant_pdu_session_info) { 
     redundant_pdu_session_info_local_nonprim = OpenAPI_redundant_pdu_session_information_parseFromJSON(redundant_pdu_session_info);
-}
+    }
 
     pdu_session_created_data_local_var = OpenAPI_pdu_session_created_data_create (
         pdu_session_typeVariable,

@@ -142,7 +142,7 @@ OpenAPI_subscription_data_subscriptions_t *OpenAPI_subscription_data_subscriptio
         ogs_error("OpenAPI_subscription_data_subscriptions_parseFromJSON() failed [ue_id]");
         goto end;
     }
-}
+    }
 
     cJSON *callback_reference = cJSON_GetObjectItemCaseSensitive(subscription_data_subscriptionsJSON, "callbackReference");
     if (!callback_reference) {
@@ -163,7 +163,7 @@ OpenAPI_subscription_data_subscriptions_t *OpenAPI_subscription_data_subscriptio
         ogs_error("OpenAPI_subscription_data_subscriptions_parseFromJSON() failed [original_callback_reference]");
         goto end;
     }
-}
+    }
 
     cJSON *monitored_resource_uris = cJSON_GetObjectItemCaseSensitive(subscription_data_subscriptionsJSON, "monitoredResourceUris");
     if (!monitored_resource_uris) {
@@ -195,14 +195,14 @@ OpenAPI_subscription_data_subscriptions_t *OpenAPI_subscription_data_subscriptio
         ogs_error("OpenAPI_subscription_data_subscriptions_parseFromJSON() failed [expiry]");
         goto end;
     }
-}
+    }
 
     cJSON *sdm_subscription = cJSON_GetObjectItemCaseSensitive(subscription_data_subscriptionsJSON, "sdmSubscription");
 
     OpenAPI_sdm_subscription_1_t *sdm_subscription_local_nonprim = NULL;
     if (sdm_subscription) { 
     sdm_subscription_local_nonprim = OpenAPI_sdm_subscription_1_parseFromJSON(sdm_subscription);
-}
+    }
 
     cJSON *subscription_id = cJSON_GetObjectItemCaseSensitive(subscription_data_subscriptionsJSON, "subscriptionId");
 
@@ -211,7 +211,7 @@ OpenAPI_subscription_data_subscriptions_t *OpenAPI_subscription_data_subscriptio
         ogs_error("OpenAPI_subscription_data_subscriptions_parseFromJSON() failed [subscription_id]");
         goto end;
     }
-}
+    }
 
     cJSON *supported_features = cJSON_GetObjectItemCaseSensitive(subscription_data_subscriptionsJSON, "supported-features");
 
@@ -220,7 +220,7 @@ OpenAPI_subscription_data_subscriptions_t *OpenAPI_subscription_data_subscriptio
         ogs_error("OpenAPI_subscription_data_subscriptions_parseFromJSON() failed [supported_features]");
         goto end;
     }
-}
+    }
 
     subscription_data_subscriptions_local_var = OpenAPI_subscription_data_subscriptions_create (
         ue_id ? ogs_strdup_or_assert(ue_id->valuestring) : NULL,

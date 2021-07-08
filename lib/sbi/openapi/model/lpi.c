@@ -83,7 +83,7 @@ OpenAPI_lpi_t *OpenAPI_lpi_parseFromJSON(cJSON *lpiJSON)
     OpenAPI_valid_time_period_t *valid_time_period_local_nonprim = NULL;
     if (valid_time_period) { 
     valid_time_period_local_nonprim = OpenAPI_valid_time_period_parseFromJSON(valid_time_period);
-}
+    }
 
     lpi_local_var = OpenAPI_lpi_create (
         location_privacy_indVariable,

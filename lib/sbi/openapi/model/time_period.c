@@ -81,7 +81,7 @@ OpenAPI_time_period_t *OpenAPI_time_period_parseFromJSON(cJSON *time_periodJSON)
         ogs_error("OpenAPI_time_period_parseFromJSON() failed [max_num_period]");
         goto end;
     }
-}
+    }
 
     time_period_local_var = OpenAPI_time_period_create (
         period_local_nonprim,

@@ -84,7 +84,7 @@ OpenAPI_binding_resp_t *OpenAPI_binding_resp_parseFromJSON(cJSON *binding_respJS
         ogs_error("OpenAPI_binding_resp_parseFromJSON() failed [pcf_sm_fqdn]");
         goto end;
     }
-}
+    }
 
     cJSON *pcf_sm_ip_end_points = cJSON_GetObjectItemCaseSensitive(binding_respJSON, "pcfSmIpEndPoints");
 
@@ -107,7 +107,7 @@ OpenAPI_binding_resp_t *OpenAPI_binding_resp_parseFromJSON(cJSON *binding_respJS
 
         OpenAPI_list_add(pcf_sm_ip_end_pointsList, pcf_sm_ip_end_pointsItem);
     }
-}
+    }
 
     binding_resp_local_var = OpenAPI_binding_resp_create (
         pcf_sm_fqdn ? ogs_strdup_or_assert(pcf_sm_fqdn->valuestring) : NULL,

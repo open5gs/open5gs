@@ -113,7 +113,7 @@ OpenAPI_n1_message_container_t *OpenAPI_n1_message_container_parseFromJSON(cJSON
         ogs_error("OpenAPI_n1_message_container_parseFromJSON() failed [nf_id]");
         goto end;
     }
-}
+    }
 
     cJSON *service_instance_id = cJSON_GetObjectItemCaseSensitive(n1_message_containerJSON, "serviceInstanceId");
 
@@ -122,7 +122,7 @@ OpenAPI_n1_message_container_t *OpenAPI_n1_message_container_parseFromJSON(cJSON
         ogs_error("OpenAPI_n1_message_container_parseFromJSON() failed [service_instance_id]");
         goto end;
     }
-}
+    }
 
     n1_message_container_local_var = OpenAPI_n1_message_container_create (
         n1_message_classVariable,

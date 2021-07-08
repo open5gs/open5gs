@@ -66,7 +66,7 @@ OpenAPI_mme_capabilities_t *OpenAPI_mme_capabilities_parseFromJSON(cJSON *mme_ca
         ogs_error("OpenAPI_mme_capabilities_parseFromJSON() failed [non_ip_supported]");
         goto end;
     }
-}
+    }
 
     cJSON *ethernet_supported = cJSON_GetObjectItemCaseSensitive(mme_capabilitiesJSON, "ethernetSupported");
 
@@ -75,7 +75,7 @@ OpenAPI_mme_capabilities_t *OpenAPI_mme_capabilities_parseFromJSON(cJSON *mme_ca
         ogs_error("OpenAPI_mme_capabilities_parseFromJSON() failed [ethernet_supported]");
         goto end;
     }
-}
+    }
 
     mme_capabilities_local_var = OpenAPI_mme_capabilities_create (
         non_ip_supported ? non_ip_supported->valueint : 0,

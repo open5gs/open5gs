@@ -196,7 +196,7 @@ OpenAPI_rule_report_t *OpenAPI_rule_report_parseFromJSON(cJSON *rule_reportJSON)
     }
     OpenAPI_list_add(cont_versList , &cont_vers_local->valuedouble);
                     }
-}
+    }
 
     cJSON *failure_code = cJSON_GetObjectItemCaseSensitive(rule_reportJSON, "failureCode");
 
@@ -207,14 +207,14 @@ OpenAPI_rule_report_t *OpenAPI_rule_report_parseFromJSON(cJSON *rule_reportJSON)
         goto end;
     }
     failure_codeVariable = OpenAPI_failure_code_FromString(failure_code->valuestring);
-}
+    }
 
     cJSON *fin_unit_act = cJSON_GetObjectItemCaseSensitive(rule_reportJSON, "finUnitAct");
 
     OpenAPI_final_unit_action_t *fin_unit_act_local_nonprim = NULL;
     if (fin_unit_act) { 
     fin_unit_act_local_nonprim = OpenAPI_final_unit_action_parseFromJSON(fin_unit_act);
-}
+    }
 
     cJSON *ran_nas_rel_causes = cJSON_GetObjectItemCaseSensitive(rule_reportJSON, "ranNasRelCauses");
 
@@ -237,7 +237,7 @@ OpenAPI_rule_report_t *OpenAPI_rule_report_parseFromJSON(cJSON *rule_reportJSON)
 
         OpenAPI_list_add(ran_nas_rel_causesList, ran_nas_rel_causesItem);
     }
-}
+    }
 
     rule_report_local_var = OpenAPI_rule_report_create (
         pcc_rule_idsList,

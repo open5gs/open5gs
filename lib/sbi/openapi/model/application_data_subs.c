@@ -128,7 +128,7 @@ OpenAPI_application_data_subs_t *OpenAPI_application_data_subs_parseFromJSON(cJS
 
         OpenAPI_list_add(data_filtersList, data_filtersItem);
     }
-}
+    }
 
     cJSON *expiry = cJSON_GetObjectItemCaseSensitive(application_data_subsJSON, "expiry");
 
@@ -137,7 +137,7 @@ OpenAPI_application_data_subs_t *OpenAPI_application_data_subs_parseFromJSON(cJS
         ogs_error("OpenAPI_application_data_subs_parseFromJSON() failed [expiry]");
         goto end;
     }
-}
+    }
 
     cJSON *supported_features = cJSON_GetObjectItemCaseSensitive(application_data_subsJSON, "supportedFeatures");
 
@@ -146,7 +146,7 @@ OpenAPI_application_data_subs_t *OpenAPI_application_data_subs_parseFromJSON(cJS
         ogs_error("OpenAPI_application_data_subs_parseFromJSON() failed [supported_features]");
         goto end;
     }
-}
+    }
 
     application_data_subs_local_var = OpenAPI_application_data_subs_create (
         ogs_strdup_or_assert(notification_uri->valuestring),

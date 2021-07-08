@@ -88,7 +88,7 @@ OpenAPI_message_waiting_data_t *OpenAPI_message_waiting_data_parseFromJSON(cJSON
 
         OpenAPI_list_add(mwd_listList, mwd_listItem);
     }
-}
+    }
 
     message_waiting_data_local_var = OpenAPI_message_waiting_data_create (
         mwd_list ? mwd_listList : NULL

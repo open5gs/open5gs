@@ -59,7 +59,7 @@ OpenAPI_odb_data_t *OpenAPI_odb_data_parseFromJSON(cJSON *odb_dataJSON)
         goto end;
     }
     roaming_odbVariable = OpenAPI_roaming_odb_FromString(roaming_odb->valuestring);
-}
+    }
 
     odb_data_local_var = OpenAPI_odb_data_create (
         roaming_odb ? roaming_odbVariable : 0

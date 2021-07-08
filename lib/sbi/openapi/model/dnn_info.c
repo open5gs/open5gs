@@ -144,7 +144,7 @@ OpenAPI_dnn_info_t *OpenAPI_dnn_info_parseFromJSON(cJSON *dnn_infoJSON)
         ogs_error("OpenAPI_dnn_info_parseFromJSON() failed [default_dnn_indicator]");
         goto end;
     }
-}
+    }
 
     cJSON *lbo_roaming_allowed = cJSON_GetObjectItemCaseSensitive(dnn_infoJSON, "lboRoamingAllowed");
 
@@ -153,7 +153,7 @@ OpenAPI_dnn_info_t *OpenAPI_dnn_info_parseFromJSON(cJSON *dnn_infoJSON)
         ogs_error("OpenAPI_dnn_info_parseFromJSON() failed [lbo_roaming_allowed]");
         goto end;
     }
-}
+    }
 
     cJSON *iwk_eps_ind = cJSON_GetObjectItemCaseSensitive(dnn_infoJSON, "iwkEpsInd");
 
@@ -162,7 +162,7 @@ OpenAPI_dnn_info_t *OpenAPI_dnn_info_parseFromJSON(cJSON *dnn_infoJSON)
         ogs_error("OpenAPI_dnn_info_parseFromJSON() failed [iwk_eps_ind]");
         goto end;
     }
-}
+    }
 
     cJSON *dnn_barred = cJSON_GetObjectItemCaseSensitive(dnn_infoJSON, "dnnBarred");
 
@@ -171,7 +171,7 @@ OpenAPI_dnn_info_t *OpenAPI_dnn_info_parseFromJSON(cJSON *dnn_infoJSON)
         ogs_error("OpenAPI_dnn_info_parseFromJSON() failed [dnn_barred]");
         goto end;
     }
-}
+    }
 
     cJSON *invoke_nef_ind = cJSON_GetObjectItemCaseSensitive(dnn_infoJSON, "invokeNefInd");
 
@@ -180,7 +180,7 @@ OpenAPI_dnn_info_t *OpenAPI_dnn_info_parseFromJSON(cJSON *dnn_infoJSON)
         ogs_error("OpenAPI_dnn_info_parseFromJSON() failed [invoke_nef_ind]");
         goto end;
     }
-}
+    }
 
     cJSON *smf_list = cJSON_GetObjectItemCaseSensitive(dnn_infoJSON, "smfList");
 
@@ -200,7 +200,7 @@ OpenAPI_dnn_info_t *OpenAPI_dnn_info_parseFromJSON(cJSON *dnn_infoJSON)
     }
     OpenAPI_list_add(smf_listList , ogs_strdup_or_assert(smf_list_local->valuestring));
                     }
-}
+    }
 
     cJSON *same_smf_ind = cJSON_GetObjectItemCaseSensitive(dnn_infoJSON, "sameSmfInd");
 
@@ -209,7 +209,7 @@ OpenAPI_dnn_info_t *OpenAPI_dnn_info_parseFromJSON(cJSON *dnn_infoJSON)
         ogs_error("OpenAPI_dnn_info_parseFromJSON() failed [same_smf_ind]");
         goto end;
     }
-}
+    }
 
     dnn_info_local_var = OpenAPI_dnn_info_create (
         ogs_strdup_or_assert(dnn->valuestring),

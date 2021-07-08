@@ -106,7 +106,7 @@ OpenAPI_alternative_qos_profile_t *OpenAPI_alternative_qos_profile_parseFromJSON
         ogs_error("OpenAPI_alternative_qos_profile_parseFromJSON() failed [gua_fbr_dl]");
         goto end;
     }
-}
+    }
 
     cJSON *gua_fbr_ul = cJSON_GetObjectItemCaseSensitive(alternative_qos_profileJSON, "guaFbrUl");
 
@@ -115,7 +115,7 @@ OpenAPI_alternative_qos_profile_t *OpenAPI_alternative_qos_profile_parseFromJSON
         ogs_error("OpenAPI_alternative_qos_profile_parseFromJSON() failed [gua_fbr_ul]");
         goto end;
     }
-}
+    }
 
     cJSON *packet_delay_budget = cJSON_GetObjectItemCaseSensitive(alternative_qos_profileJSON, "packetDelayBudget");
 
@@ -124,7 +124,7 @@ OpenAPI_alternative_qos_profile_t *OpenAPI_alternative_qos_profile_parseFromJSON
         ogs_error("OpenAPI_alternative_qos_profile_parseFromJSON() failed [packet_delay_budget]");
         goto end;
     }
-}
+    }
 
     cJSON *packet_err_rate = cJSON_GetObjectItemCaseSensitive(alternative_qos_profileJSON, "packetErrRate");
 
@@ -133,7 +133,7 @@ OpenAPI_alternative_qos_profile_t *OpenAPI_alternative_qos_profile_parseFromJSON
         ogs_error("OpenAPI_alternative_qos_profile_parseFromJSON() failed [packet_err_rate]");
         goto end;
     }
-}
+    }
 
     alternative_qos_profile_local_var = OpenAPI_alternative_qos_profile_create (
         index->valuedouble,

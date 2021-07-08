@@ -354,21 +354,21 @@ OpenAPI_dnn_configuration_1_t *OpenAPI_dnn_configuration_1_parseFromJSON(cJSON *
         ogs_error("OpenAPI_dnn_configuration_1_parseFromJSON() failed [iwk_eps_ind]");
         goto end;
     }
-}
+    }
 
     cJSON *_5g_qos_profile = cJSON_GetObjectItemCaseSensitive(dnn_configuration_1JSON, "5gQosProfile");
 
     OpenAPI_subscribed_default_qos_1_t *_5g_qos_profile_local_nonprim = NULL;
     if (_5g_qos_profile) { 
     _5g_qos_profile_local_nonprim = OpenAPI_subscribed_default_qos_1_parseFromJSON(_5g_qos_profile);
-}
+    }
 
     cJSON *session_ambr = cJSON_GetObjectItemCaseSensitive(dnn_configuration_1JSON, "sessionAmbr");
 
     OpenAPI_ambr_1_t *session_ambr_local_nonprim = NULL;
     if (session_ambr) { 
     session_ambr_local_nonprim = OpenAPI_ambr_1_parseFromJSON(session_ambr);
-}
+    }
 
     cJSON *_3gpp_charging_characteristics = cJSON_GetObjectItemCaseSensitive(dnn_configuration_1JSON, "3gppChargingCharacteristics");
 
@@ -377,7 +377,7 @@ OpenAPI_dnn_configuration_1_t *OpenAPI_dnn_configuration_1_parseFromJSON(cJSON *
         ogs_error("OpenAPI_dnn_configuration_1_parseFromJSON() failed [_3gpp_charging_characteristics]");
         goto end;
     }
-}
+    }
 
     cJSON *static_ip_address = cJSON_GetObjectItemCaseSensitive(dnn_configuration_1JSON, "staticIpAddress");
 
@@ -400,14 +400,14 @@ OpenAPI_dnn_configuration_1_t *OpenAPI_dnn_configuration_1_parseFromJSON(cJSON *
 
         OpenAPI_list_add(static_ip_addressList, static_ip_addressItem);
     }
-}
+    }
 
     cJSON *up_security = cJSON_GetObjectItemCaseSensitive(dnn_configuration_1JSON, "upSecurity");
 
     OpenAPI_up_security_1_t *up_security_local_nonprim = NULL;
     if (up_security) { 
     up_security_local_nonprim = OpenAPI_up_security_1_parseFromJSON(up_security);
-}
+    }
 
     cJSON *pdu_session_continuity_ind = cJSON_GetObjectItemCaseSensitive(dnn_configuration_1JSON, "pduSessionContinuityInd");
 
@@ -418,7 +418,7 @@ OpenAPI_dnn_configuration_1_t *OpenAPI_dnn_configuration_1_parseFromJSON(cJSON *
         goto end;
     }
     pdu_session_continuity_indVariable = OpenAPI_pdu_session_continuity_ind_FromString(pdu_session_continuity_ind->valuestring);
-}
+    }
 
     cJSON *nidd_nef_id = cJSON_GetObjectItemCaseSensitive(dnn_configuration_1JSON, "niddNefId");
 
@@ -427,14 +427,14 @@ OpenAPI_dnn_configuration_1_t *OpenAPI_dnn_configuration_1_parseFromJSON(cJSON *
         ogs_error("OpenAPI_dnn_configuration_1_parseFromJSON() failed [nidd_nef_id]");
         goto end;
     }
-}
+    }
 
     cJSON *nidd_info = cJSON_GetObjectItemCaseSensitive(dnn_configuration_1JSON, "niddInfo");
 
     OpenAPI_nidd_information_1_t *nidd_info_local_nonprim = NULL;
     if (nidd_info) { 
     nidd_info_local_nonprim = OpenAPI_nidd_information_1_parseFromJSON(nidd_info);
-}
+    }
 
     cJSON *redundant_session_allowed = cJSON_GetObjectItemCaseSensitive(dnn_configuration_1JSON, "redundantSessionAllowed");
 
@@ -443,14 +443,14 @@ OpenAPI_dnn_configuration_1_t *OpenAPI_dnn_configuration_1_parseFromJSON(cJSON *
         ogs_error("OpenAPI_dnn_configuration_1_parseFromJSON() failed [redundant_session_allowed]");
         goto end;
     }
-}
+    }
 
     cJSON *acs_info = cJSON_GetObjectItemCaseSensitive(dnn_configuration_1JSON, "acsInfo");
 
     OpenAPI_acs_info_1_t *acs_info_local_nonprim = NULL;
     if (acs_info) { 
     acs_info_local_nonprim = OpenAPI_acs_info_1_parseFromJSON(acs_info);
-}
+    }
 
     cJSON *ipv4_frame_route_list = cJSON_GetObjectItemCaseSensitive(dnn_configuration_1JSON, "ipv4FrameRouteList");
 
@@ -473,7 +473,7 @@ OpenAPI_dnn_configuration_1_t *OpenAPI_dnn_configuration_1_parseFromJSON(cJSON *
 
         OpenAPI_list_add(ipv4_frame_route_listList, ipv4_frame_route_listItem);
     }
-}
+    }
 
     cJSON *ipv6_frame_route_list = cJSON_GetObjectItemCaseSensitive(dnn_configuration_1JSON, "ipv6FrameRouteList");
 
@@ -496,7 +496,7 @@ OpenAPI_dnn_configuration_1_t *OpenAPI_dnn_configuration_1_parseFromJSON(cJSON *
 
         OpenAPI_list_add(ipv6_frame_route_listList, ipv6_frame_route_listItem);
     }
-}
+    }
 
     cJSON *atsss_allowed = cJSON_GetObjectItemCaseSensitive(dnn_configuration_1JSON, "atsssAllowed");
 
@@ -505,7 +505,7 @@ OpenAPI_dnn_configuration_1_t *OpenAPI_dnn_configuration_1_parseFromJSON(cJSON *
         ogs_error("OpenAPI_dnn_configuration_1_parseFromJSON() failed [atsss_allowed]");
         goto end;
     }
-}
+    }
 
     cJSON *secondary_auth = cJSON_GetObjectItemCaseSensitive(dnn_configuration_1JSON, "secondaryAuth");
 
@@ -514,7 +514,7 @@ OpenAPI_dnn_configuration_1_t *OpenAPI_dnn_configuration_1_parseFromJSON(cJSON *
         ogs_error("OpenAPI_dnn_configuration_1_parseFromJSON() failed [secondary_auth]");
         goto end;
     }
-}
+    }
 
     cJSON *dn_aaa_ip_address_allocation = cJSON_GetObjectItemCaseSensitive(dnn_configuration_1JSON, "dnAaaIpAddressAllocation");
 
@@ -523,14 +523,14 @@ OpenAPI_dnn_configuration_1_t *OpenAPI_dnn_configuration_1_parseFromJSON(cJSON *
         ogs_error("OpenAPI_dnn_configuration_1_parseFromJSON() failed [dn_aaa_ip_address_allocation]");
         goto end;
     }
-}
+    }
 
     cJSON *dn_aaa_address = cJSON_GetObjectItemCaseSensitive(dnn_configuration_1JSON, "dnAaaAddress");
 
     OpenAPI_ip_address_1_t *dn_aaa_address_local_nonprim = NULL;
     if (dn_aaa_address) { 
     dn_aaa_address_local_nonprim = OpenAPI_ip_address_1_parseFromJSON(dn_aaa_address);
-}
+    }
 
     cJSON *iptv_acc_ctrl_info = cJSON_GetObjectItemCaseSensitive(dnn_configuration_1JSON, "iptvAccCtrlInfo");
 
@@ -539,7 +539,7 @@ OpenAPI_dnn_configuration_1_t *OpenAPI_dnn_configuration_1_parseFromJSON(cJSON *
         ogs_error("OpenAPI_dnn_configuration_1_parseFromJSON() failed [iptv_acc_ctrl_info]");
         goto end;
     }
-}
+    }
 
     dnn_configuration_1_local_var = OpenAPI_dnn_configuration_1_create (
         pdu_session_types_local_nonprim,

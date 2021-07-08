@@ -139,7 +139,7 @@ OpenAPI_amf_status_info_t *OpenAPI_amf_status_info_parseFromJSON(cJSON *amf_stat
         ogs_error("OpenAPI_amf_status_info_parseFromJSON() failed [target_amf_removal]");
         goto end;
     }
-}
+    }
 
     cJSON *target_amf_failure = cJSON_GetObjectItemCaseSensitive(amf_status_infoJSON, "targetAmfFailure");
 
@@ -148,7 +148,7 @@ OpenAPI_amf_status_info_t *OpenAPI_amf_status_info_parseFromJSON(cJSON *amf_stat
         ogs_error("OpenAPI_amf_status_info_parseFromJSON() failed [target_amf_failure]");
         goto end;
     }
-}
+    }
 
     amf_status_info_local_var = OpenAPI_amf_status_info_create (
         guami_listList,

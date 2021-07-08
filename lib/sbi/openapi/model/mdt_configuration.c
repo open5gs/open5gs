@@ -417,14 +417,14 @@ OpenAPI_mdt_configuration_t *OpenAPI_mdt_configuration_parseFromJSON(cJSON *mdt_
         goto end;
     }
     report_typeVariable = OpenAPI_report_type_mdt_FromString(report_type->valuestring);
-}
+    }
 
     cJSON *area_scope = cJSON_GetObjectItemCaseSensitive(mdt_configurationJSON, "areaScope");
 
     OpenAPI_area_scope_t *area_scope_local_nonprim = NULL;
     if (area_scope) { 
     area_scope_local_nonprim = OpenAPI_area_scope_parseFromJSON(area_scope);
-}
+    }
 
     cJSON *measurement_lte_list = cJSON_GetObjectItemCaseSensitive(mdt_configurationJSON, "measurementLteList");
 
@@ -446,7 +446,7 @@ OpenAPI_mdt_configuration_t *OpenAPI_mdt_configuration_parseFromJSON(cJSON *mdt_
 
         OpenAPI_list_add(measurement_lte_listList, (void *)OpenAPI_measurement_lte_for_mdt_FromString(measurement_lte_list_local_nonprimitive->valuestring));
     }
-}
+    }
 
     cJSON *measurement_nr_list = cJSON_GetObjectItemCaseSensitive(mdt_configurationJSON, "measurementNrList");
 
@@ -468,7 +468,7 @@ OpenAPI_mdt_configuration_t *OpenAPI_mdt_configuration_parseFromJSON(cJSON *mdt_
 
         OpenAPI_list_add(measurement_nr_listList, (void *)OpenAPI_measurement_nr_for_mdt_FromString(measurement_nr_list_local_nonprimitive->valuestring));
     }
-}
+    }
 
     cJSON *sensor_measurement_list = cJSON_GetObjectItemCaseSensitive(mdt_configurationJSON, "sensorMeasurementList");
 
@@ -490,7 +490,7 @@ OpenAPI_mdt_configuration_t *OpenAPI_mdt_configuration_parseFromJSON(cJSON *mdt_
 
         OpenAPI_list_add(sensor_measurement_listList, (void *)OpenAPI_sensor_measurement_FromString(sensor_measurement_list_local_nonprimitive->valuestring));
     }
-}
+    }
 
     cJSON *reporting_trigger_list = cJSON_GetObjectItemCaseSensitive(mdt_configurationJSON, "reportingTriggerList");
 
@@ -512,7 +512,7 @@ OpenAPI_mdt_configuration_t *OpenAPI_mdt_configuration_parseFromJSON(cJSON *mdt_
 
         OpenAPI_list_add(reporting_trigger_listList, (void *)OpenAPI_reporting_trigger_FromString(reporting_trigger_list_local_nonprimitive->valuestring));
     }
-}
+    }
 
     cJSON *report_interval = cJSON_GetObjectItemCaseSensitive(mdt_configurationJSON, "reportInterval");
 
@@ -523,7 +523,7 @@ OpenAPI_mdt_configuration_t *OpenAPI_mdt_configuration_parseFromJSON(cJSON *mdt_
         goto end;
     }
     report_intervalVariable = OpenAPI_report_interval_mdt_FromString(report_interval->valuestring);
-}
+    }
 
     cJSON *report_interval_nr = cJSON_GetObjectItemCaseSensitive(mdt_configurationJSON, "reportIntervalNr");
 
@@ -534,7 +534,7 @@ OpenAPI_mdt_configuration_t *OpenAPI_mdt_configuration_parseFromJSON(cJSON *mdt_
         goto end;
     }
     report_interval_nrVariable = OpenAPI_report_interval_nr_mdt_FromString(report_interval_nr->valuestring);
-}
+    }
 
     cJSON *report_amount = cJSON_GetObjectItemCaseSensitive(mdt_configurationJSON, "reportAmount");
 
@@ -545,7 +545,7 @@ OpenAPI_mdt_configuration_t *OpenAPI_mdt_configuration_parseFromJSON(cJSON *mdt_
         goto end;
     }
     report_amountVariable = OpenAPI_report_amount_mdt_FromString(report_amount->valuestring);
-}
+    }
 
     cJSON *event_threshold_rsrp = cJSON_GetObjectItemCaseSensitive(mdt_configurationJSON, "eventThresholdRsrp");
 
@@ -554,7 +554,7 @@ OpenAPI_mdt_configuration_t *OpenAPI_mdt_configuration_parseFromJSON(cJSON *mdt_
         ogs_error("OpenAPI_mdt_configuration_parseFromJSON() failed [event_threshold_rsrp]");
         goto end;
     }
-}
+    }
 
     cJSON *event_threshold_rsrp_nr = cJSON_GetObjectItemCaseSensitive(mdt_configurationJSON, "eventThresholdRsrpNr");
 
@@ -563,7 +563,7 @@ OpenAPI_mdt_configuration_t *OpenAPI_mdt_configuration_parseFromJSON(cJSON *mdt_
         ogs_error("OpenAPI_mdt_configuration_parseFromJSON() failed [event_threshold_rsrp_nr]");
         goto end;
     }
-}
+    }
 
     cJSON *event_threshold_rsrq = cJSON_GetObjectItemCaseSensitive(mdt_configurationJSON, "eventThresholdRsrq");
 
@@ -572,7 +572,7 @@ OpenAPI_mdt_configuration_t *OpenAPI_mdt_configuration_parseFromJSON(cJSON *mdt_
         ogs_error("OpenAPI_mdt_configuration_parseFromJSON() failed [event_threshold_rsrq]");
         goto end;
     }
-}
+    }
 
     cJSON *event_threshold_rsrq_nr = cJSON_GetObjectItemCaseSensitive(mdt_configurationJSON, "eventThresholdRsrqNr");
 
@@ -581,7 +581,7 @@ OpenAPI_mdt_configuration_t *OpenAPI_mdt_configuration_parseFromJSON(cJSON *mdt_
         ogs_error("OpenAPI_mdt_configuration_parseFromJSON() failed [event_threshold_rsrq_nr]");
         goto end;
     }
-}
+    }
 
     cJSON *event_list = cJSON_GetObjectItemCaseSensitive(mdt_configurationJSON, "eventList");
 
@@ -603,7 +603,7 @@ OpenAPI_mdt_configuration_t *OpenAPI_mdt_configuration_parseFromJSON(cJSON *mdt_
 
         OpenAPI_list_add(event_listList, (void *)OpenAPI_event_for_mdt_FromString(event_list_local_nonprimitive->valuestring));
     }
-}
+    }
 
     cJSON *logging_interval = cJSON_GetObjectItemCaseSensitive(mdt_configurationJSON, "loggingInterval");
 
@@ -614,7 +614,7 @@ OpenAPI_mdt_configuration_t *OpenAPI_mdt_configuration_parseFromJSON(cJSON *mdt_
         goto end;
     }
     logging_intervalVariable = OpenAPI_logging_interval_mdt_FromString(logging_interval->valuestring);
-}
+    }
 
     cJSON *logging_interval_nr = cJSON_GetObjectItemCaseSensitive(mdt_configurationJSON, "loggingIntervalNr");
 
@@ -625,7 +625,7 @@ OpenAPI_mdt_configuration_t *OpenAPI_mdt_configuration_parseFromJSON(cJSON *mdt_
         goto end;
     }
     logging_interval_nrVariable = OpenAPI_logging_interval_nr_mdt_FromString(logging_interval_nr->valuestring);
-}
+    }
 
     cJSON *logging_duration = cJSON_GetObjectItemCaseSensitive(mdt_configurationJSON, "loggingDuration");
 
@@ -636,7 +636,7 @@ OpenAPI_mdt_configuration_t *OpenAPI_mdt_configuration_parseFromJSON(cJSON *mdt_
         goto end;
     }
     logging_durationVariable = OpenAPI_logging_duration_mdt_FromString(logging_duration->valuestring);
-}
+    }
 
     cJSON *logging_duration_nr = cJSON_GetObjectItemCaseSensitive(mdt_configurationJSON, "loggingDurationNr");
 
@@ -647,7 +647,7 @@ OpenAPI_mdt_configuration_t *OpenAPI_mdt_configuration_parseFromJSON(cJSON *mdt_
         goto end;
     }
     logging_duration_nrVariable = OpenAPI_logging_duration_nr_mdt_FromString(logging_duration_nr->valuestring);
-}
+    }
 
     cJSON *positioning_method = cJSON_GetObjectItemCaseSensitive(mdt_configurationJSON, "positioningMethod");
 
@@ -658,7 +658,7 @@ OpenAPI_mdt_configuration_t *OpenAPI_mdt_configuration_parseFromJSON(cJSON *mdt_
         goto end;
     }
     positioning_methodVariable = OpenAPI_positioning_method_mdt_FromString(positioning_method->valuestring);
-}
+    }
 
     cJSON *add_positioning_method_list = cJSON_GetObjectItemCaseSensitive(mdt_configurationJSON, "addPositioningMethodList");
 
@@ -680,7 +680,7 @@ OpenAPI_mdt_configuration_t *OpenAPI_mdt_configuration_parseFromJSON(cJSON *mdt_
 
         OpenAPI_list_add(add_positioning_method_listList, (void *)OpenAPI_positioning_method_mdt_FromString(add_positioning_method_list_local_nonprimitive->valuestring));
     }
-}
+    }
 
     cJSON *collection_period_rmm_lte = cJSON_GetObjectItemCaseSensitive(mdt_configurationJSON, "collectionPeriodRmmLte");
 
@@ -691,7 +691,7 @@ OpenAPI_mdt_configuration_t *OpenAPI_mdt_configuration_parseFromJSON(cJSON *mdt_
         goto end;
     }
     collection_period_rmm_lteVariable = OpenAPI_collection_period_rmm_lte_mdt_FromString(collection_period_rmm_lte->valuestring);
-}
+    }
 
     cJSON *collection_period_rmm_nr = cJSON_GetObjectItemCaseSensitive(mdt_configurationJSON, "collectionPeriodRmmNr");
 
@@ -702,7 +702,7 @@ OpenAPI_mdt_configuration_t *OpenAPI_mdt_configuration_parseFromJSON(cJSON *mdt_
         goto end;
     }
     collection_period_rmm_nrVariable = OpenAPI_collection_period_rmm_nr_mdt_FromString(collection_period_rmm_nr->valuestring);
-}
+    }
 
     cJSON *measurement_period_lte = cJSON_GetObjectItemCaseSensitive(mdt_configurationJSON, "measurementPeriodLte");
 
@@ -713,7 +713,7 @@ OpenAPI_mdt_configuration_t *OpenAPI_mdt_configuration_parseFromJSON(cJSON *mdt_
         goto end;
     }
     measurement_period_lteVariable = OpenAPI_measurement_period_lte_mdt_FromString(measurement_period_lte->valuestring);
-}
+    }
 
     cJSON *mdt_allowed_plmn_id_list = cJSON_GetObjectItemCaseSensitive(mdt_configurationJSON, "mdtAllowedPlmnIdList");
 
@@ -736,7 +736,7 @@ OpenAPI_mdt_configuration_t *OpenAPI_mdt_configuration_parseFromJSON(cJSON *mdt_
 
         OpenAPI_list_add(mdt_allowed_plmn_id_listList, mdt_allowed_plmn_id_listItem);
     }
-}
+    }
 
     cJSON *mbsfn_area_list = cJSON_GetObjectItemCaseSensitive(mdt_configurationJSON, "mbsfnAreaList");
 
@@ -759,7 +759,7 @@ OpenAPI_mdt_configuration_t *OpenAPI_mdt_configuration_parseFromJSON(cJSON *mdt_
 
         OpenAPI_list_add(mbsfn_area_listList, mbsfn_area_listItem);
     }
-}
+    }
 
     cJSON *inter_freq_target_list = cJSON_GetObjectItemCaseSensitive(mdt_configurationJSON, "interFreqTargetList");
 
@@ -782,7 +782,7 @@ OpenAPI_mdt_configuration_t *OpenAPI_mdt_configuration_parseFromJSON(cJSON *mdt_
 
         OpenAPI_list_add(inter_freq_target_listList, inter_freq_target_listItem);
     }
-}
+    }
 
     mdt_configuration_local_var = OpenAPI_mdt_configuration_create (
         job_typeVariable,

@@ -119,7 +119,7 @@ OpenAPI_qos_flow_add_modify_request_item_t *OpenAPI_qos_flow_add_modify_request_
         ogs_error("OpenAPI_qos_flow_add_modify_request_item_parseFromJSON() failed [ebi]");
         goto end;
     }
-}
+    }
 
     cJSON *qos_rules = cJSON_GetObjectItemCaseSensitive(qos_flow_add_modify_request_itemJSON, "qosRules");
 
@@ -128,7 +128,7 @@ OpenAPI_qos_flow_add_modify_request_item_t *OpenAPI_qos_flow_add_modify_request_
         ogs_error("OpenAPI_qos_flow_add_modify_request_item_parseFromJSON() failed [qos_rules]");
         goto end;
     }
-}
+    }
 
     cJSON *qos_flow_description = cJSON_GetObjectItemCaseSensitive(qos_flow_add_modify_request_itemJSON, "qosFlowDescription");
 
@@ -137,14 +137,14 @@ OpenAPI_qos_flow_add_modify_request_item_t *OpenAPI_qos_flow_add_modify_request_
         ogs_error("OpenAPI_qos_flow_add_modify_request_item_parseFromJSON() failed [qos_flow_description]");
         goto end;
     }
-}
+    }
 
     cJSON *qos_flow_profile = cJSON_GetObjectItemCaseSensitive(qos_flow_add_modify_request_itemJSON, "qosFlowProfile");
 
     OpenAPI_qos_flow_profile_t *qos_flow_profile_local_nonprim = NULL;
     if (qos_flow_profile) { 
     qos_flow_profile_local_nonprim = OpenAPI_qos_flow_profile_parseFromJSON(qos_flow_profile);
-}
+    }
 
     cJSON *associated_an_type = cJSON_GetObjectItemCaseSensitive(qos_flow_add_modify_request_itemJSON, "associatedAnType");
 
@@ -155,7 +155,7 @@ OpenAPI_qos_flow_add_modify_request_item_t *OpenAPI_qos_flow_add_modify_request_
         goto end;
     }
     associated_an_typeVariable = OpenAPI_qos_flow_access_type_FromString(associated_an_type->valuestring);
-}
+    }
 
     qos_flow_add_modify_request_item_local_var = OpenAPI_qos_flow_add_modify_request_item_create (
         qfi->valuedouble,

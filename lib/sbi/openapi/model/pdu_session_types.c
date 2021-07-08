@@ -100,7 +100,7 @@ OpenAPI_pdu_session_types_t *OpenAPI_pdu_session_types_parseFromJSON(cJSON *pdu_
 
         OpenAPI_list_add(allowed_session_typesList, (void *)OpenAPI_pdu_session_type_FromString(allowed_session_types_local_nonprimitive->valuestring));
     }
-}
+    }
 
     pdu_session_types_local_var = OpenAPI_pdu_session_types_create (
         default_session_typeVariable,

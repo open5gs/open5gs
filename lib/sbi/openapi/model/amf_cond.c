@@ -68,7 +68,7 @@ OpenAPI_amf_cond_t *OpenAPI_amf_cond_parseFromJSON(cJSON *amf_condJSON)
         ogs_error("OpenAPI_amf_cond_parseFromJSON() failed [amf_set_id]");
         goto end;
     }
-}
+    }
 
     cJSON *amf_region_id = cJSON_GetObjectItemCaseSensitive(amf_condJSON, "amfRegionId");
 
@@ -77,7 +77,7 @@ OpenAPI_amf_cond_t *OpenAPI_amf_cond_parseFromJSON(cJSON *amf_condJSON)
         ogs_error("OpenAPI_amf_cond_parseFromJSON() failed [amf_region_id]");
         goto end;
     }
-}
+    }
 
     amf_cond_local_var = OpenAPI_amf_cond_create (
         amf_set_id ? ogs_strdup_or_assert(amf_set_id->valuestring) : NULL,

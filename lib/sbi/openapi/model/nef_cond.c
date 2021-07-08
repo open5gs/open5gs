@@ -239,7 +239,7 @@ OpenAPI_nef_cond_t *OpenAPI_nef_cond_parseFromJSON(cJSON *nef_condJSON)
 
         OpenAPI_list_add(af_eventsList, (void *)OpenAPI_af_event_FromString(af_events_local_nonprimitive->valuestring));
     }
-}
+    }
 
     cJSON *snssai_list = cJSON_GetObjectItemCaseSensitive(nef_condJSON, "snssaiList");
 
@@ -262,14 +262,14 @@ OpenAPI_nef_cond_t *OpenAPI_nef_cond_parseFromJSON(cJSON *nef_condJSON)
 
         OpenAPI_list_add(snssai_listList, snssai_listItem);
     }
-}
+    }
 
     cJSON *pfd_data = cJSON_GetObjectItemCaseSensitive(nef_condJSON, "pfdData");
 
     OpenAPI_pfd_data_t *pfd_data_local_nonprim = NULL;
     if (pfd_data) { 
     pfd_data_local_nonprim = OpenAPI_pfd_data_parseFromJSON(pfd_data);
-}
+    }
 
     cJSON *gpsi_ranges = cJSON_GetObjectItemCaseSensitive(nef_condJSON, "gpsiRanges");
 
@@ -292,7 +292,7 @@ OpenAPI_nef_cond_t *OpenAPI_nef_cond_parseFromJSON(cJSON *nef_condJSON)
 
         OpenAPI_list_add(gpsi_rangesList, gpsi_rangesItem);
     }
-}
+    }
 
     cJSON *external_group_identifiers_ranges = cJSON_GetObjectItemCaseSensitive(nef_condJSON, "externalGroupIdentifiersRanges");
 
@@ -315,7 +315,7 @@ OpenAPI_nef_cond_t *OpenAPI_nef_cond_parseFromJSON(cJSON *nef_condJSON)
 
         OpenAPI_list_add(external_group_identifiers_rangesList, external_group_identifiers_rangesItem);
     }
-}
+    }
 
     cJSON *served_fqdn_list = cJSON_GetObjectItemCaseSensitive(nef_condJSON, "servedFqdnList");
 
@@ -335,7 +335,7 @@ OpenAPI_nef_cond_t *OpenAPI_nef_cond_parseFromJSON(cJSON *nef_condJSON)
     }
     OpenAPI_list_add(served_fqdn_listList , ogs_strdup_or_assert(served_fqdn_list_local->valuestring));
                     }
-}
+    }
 
     nef_cond_local_var = OpenAPI_nef_cond_create (
         condition_typeVariable,

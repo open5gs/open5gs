@@ -79,7 +79,7 @@ OpenAPI_ladn_info_t *OpenAPI_ladn_info_parseFromJSON(cJSON *ladn_infoJSON)
         goto end;
     }
     presenceVariable = OpenAPI_presence_state_FromString(presence->valuestring);
-}
+    }
 
     ladn_info_local_var = OpenAPI_ladn_info_create (
         ogs_strdup_or_assert(ladn->valuestring),

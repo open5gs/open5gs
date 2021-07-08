@@ -147,7 +147,7 @@ OpenAPI_authentication_vector_t *OpenAPI_authentication_vector_parseFromJSON(cJS
         ogs_error("OpenAPI_authentication_vector_parseFromJSON() failed [xres]");
         goto end;
     }
-}
+    }
 
     cJSON *autn = cJSON_GetObjectItemCaseSensitive(authentication_vectorJSON, "autn");
     if (!autn) {
@@ -168,7 +168,7 @@ OpenAPI_authentication_vector_t *OpenAPI_authentication_vector_parseFromJSON(cJS
         ogs_error("OpenAPI_authentication_vector_parseFromJSON() failed [ck_prime]");
         goto end;
     }
-}
+    }
 
     cJSON *ik_prime = cJSON_GetObjectItemCaseSensitive(authentication_vectorJSON, "ikPrime");
 
@@ -177,7 +177,7 @@ OpenAPI_authentication_vector_t *OpenAPI_authentication_vector_parseFromJSON(cJS
         ogs_error("OpenAPI_authentication_vector_parseFromJSON() failed [ik_prime]");
         goto end;
     }
-}
+    }
 
     cJSON *xres_star = cJSON_GetObjectItemCaseSensitive(authentication_vectorJSON, "xresStar");
 
@@ -186,7 +186,7 @@ OpenAPI_authentication_vector_t *OpenAPI_authentication_vector_parseFromJSON(cJS
         ogs_error("OpenAPI_authentication_vector_parseFromJSON() failed [xres_star]");
         goto end;
     }
-}
+    }
 
     cJSON *kausf = cJSON_GetObjectItemCaseSensitive(authentication_vectorJSON, "kausf");
 
@@ -195,7 +195,7 @@ OpenAPI_authentication_vector_t *OpenAPI_authentication_vector_parseFromJSON(cJS
         ogs_error("OpenAPI_authentication_vector_parseFromJSON() failed [kausf]");
         goto end;
     }
-}
+    }
 
     authentication_vector_local_var = OpenAPI_authentication_vector_create (
         av_typeVariable,

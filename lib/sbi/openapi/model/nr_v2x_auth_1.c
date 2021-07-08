@@ -68,7 +68,7 @@ OpenAPI_nr_v2x_auth_1_t *OpenAPI_nr_v2x_auth_1_parseFromJSON(cJSON *nr_v2x_auth_
         goto end;
     }
     vehicle_ue_authVariable = OpenAPI_ue_auth_FromString(vehicle_ue_auth->valuestring);
-}
+    }
 
     cJSON *pedestrian_ue_auth = cJSON_GetObjectItemCaseSensitive(nr_v2x_auth_1JSON, "pedestrianUeAuth");
 
@@ -79,7 +79,7 @@ OpenAPI_nr_v2x_auth_1_t *OpenAPI_nr_v2x_auth_1_parseFromJSON(cJSON *nr_v2x_auth_
         goto end;
     }
     pedestrian_ue_authVariable = OpenAPI_ue_auth_FromString(pedestrian_ue_auth->valuestring);
-}
+    }
 
     nr_v2x_auth_1_local_var = OpenAPI_nr_v2x_auth_1_create (
         vehicle_ue_auth ? vehicle_ue_authVariable : 0,

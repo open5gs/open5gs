@@ -135,7 +135,7 @@ OpenAPI_ue_camping_rep_t *OpenAPI_ue_camping_rep_parseFromJSON(cJSON *ue_camping
         goto end;
     }
     access_typeVariable = OpenAPI_access_type_FromString(access_type->valuestring);
-}
+    }
 
     cJSON *rat_type = cJSON_GetObjectItemCaseSensitive(ue_camping_repJSON, "ratType");
 
@@ -146,28 +146,28 @@ OpenAPI_ue_camping_rep_t *OpenAPI_ue_camping_rep_parseFromJSON(cJSON *ue_camping
         goto end;
     }
     rat_typeVariable = OpenAPI_rat_type_FromString(rat_type->valuestring);
-}
+    }
 
     cJSON *serv_nf_id = cJSON_GetObjectItemCaseSensitive(ue_camping_repJSON, "servNfId");
 
     OpenAPI_serving_nf_identity_t *serv_nf_id_local_nonprim = NULL;
     if (serv_nf_id) { 
     serv_nf_id_local_nonprim = OpenAPI_serving_nf_identity_parseFromJSON(serv_nf_id);
-}
+    }
 
     cJSON *serving_network = cJSON_GetObjectItemCaseSensitive(ue_camping_repJSON, "servingNetwork");
 
     OpenAPI_plmn_id_nid_t *serving_network_local_nonprim = NULL;
     if (serving_network) { 
     serving_network_local_nonprim = OpenAPI_plmn_id_nid_parseFromJSON(serving_network);
-}
+    }
 
     cJSON *user_location_info = cJSON_GetObjectItemCaseSensitive(ue_camping_repJSON, "userLocationInfo");
 
     OpenAPI_user_location_t *user_location_info_local_nonprim = NULL;
     if (user_location_info) { 
     user_location_info_local_nonprim = OpenAPI_user_location_parseFromJSON(user_location_info);
-}
+    }
 
     cJSON *ue_time_zone = cJSON_GetObjectItemCaseSensitive(ue_camping_repJSON, "ueTimeZone");
 
@@ -176,7 +176,7 @@ OpenAPI_ue_camping_rep_t *OpenAPI_ue_camping_rep_parseFromJSON(cJSON *ue_camping
         ogs_error("OpenAPI_ue_camping_rep_parseFromJSON() failed [ue_time_zone]");
         goto end;
     }
-}
+    }
 
     cJSON *net_loc_acc_supp = cJSON_GetObjectItemCaseSensitive(ue_camping_repJSON, "netLocAccSupp");
 
@@ -187,7 +187,7 @@ OpenAPI_ue_camping_rep_t *OpenAPI_ue_camping_rep_parseFromJSON(cJSON *ue_camping
         goto end;
     }
     net_loc_acc_suppVariable = OpenAPI_net_loc_access_support_FromString(net_loc_acc_supp->valuestring);
-}
+    }
 
     ue_camping_rep_local_var = OpenAPI_ue_camping_rep_create (
         access_type ? access_typeVariable : 0,

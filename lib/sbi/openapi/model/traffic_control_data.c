@@ -258,14 +258,14 @@ OpenAPI_traffic_control_data_t *OpenAPI_traffic_control_data_parseFromJSON(cJSON
         goto end;
     }
     flow_statusVariable = OpenAPI_flow_status_FromString(flow_status->valuestring);
-}
+    }
 
     cJSON *redirect_info = cJSON_GetObjectItemCaseSensitive(traffic_control_dataJSON, "redirectInfo");
 
     OpenAPI_redirect_information_t *redirect_info_local_nonprim = NULL;
     if (redirect_info) { 
     redirect_info_local_nonprim = OpenAPI_redirect_information_parseFromJSON(redirect_info);
-}
+    }
 
     cJSON *add_redirect_info = cJSON_GetObjectItemCaseSensitive(traffic_control_dataJSON, "addRedirectInfo");
 
@@ -288,7 +288,7 @@ OpenAPI_traffic_control_data_t *OpenAPI_traffic_control_data_parseFromJSON(cJSON
 
         OpenAPI_list_add(add_redirect_infoList, add_redirect_infoItem);
     }
-}
+    }
 
     cJSON *mute_notif = cJSON_GetObjectItemCaseSensitive(traffic_control_dataJSON, "muteNotif");
 
@@ -297,7 +297,7 @@ OpenAPI_traffic_control_data_t *OpenAPI_traffic_control_data_parseFromJSON(cJSON
         ogs_error("OpenAPI_traffic_control_data_parseFromJSON() failed [mute_notif]");
         goto end;
     }
-}
+    }
 
     cJSON *traffic_steering_pol_id_dl = cJSON_GetObjectItemCaseSensitive(traffic_control_dataJSON, "trafficSteeringPolIdDl");
 
@@ -306,7 +306,7 @@ OpenAPI_traffic_control_data_t *OpenAPI_traffic_control_data_parseFromJSON(cJSON
         ogs_error("OpenAPI_traffic_control_data_parseFromJSON() failed [traffic_steering_pol_id_dl]");
         goto end;
     }
-}
+    }
 
     cJSON *traffic_steering_pol_id_ul = cJSON_GetObjectItemCaseSensitive(traffic_control_dataJSON, "trafficSteeringPolIdUl");
 
@@ -315,7 +315,7 @@ OpenAPI_traffic_control_data_t *OpenAPI_traffic_control_data_parseFromJSON(cJSON
         ogs_error("OpenAPI_traffic_control_data_parseFromJSON() failed [traffic_steering_pol_id_ul]");
         goto end;
     }
-}
+    }
 
     cJSON *route_to_locs = cJSON_GetObjectItemCaseSensitive(traffic_control_dataJSON, "routeToLocs");
 
@@ -338,7 +338,7 @@ OpenAPI_traffic_control_data_t *OpenAPI_traffic_control_data_parseFromJSON(cJSON
 
         OpenAPI_list_add(route_to_locsList, route_to_locsItem);
     }
-}
+    }
 
     cJSON *traff_corre_ind = cJSON_GetObjectItemCaseSensitive(traffic_control_dataJSON, "traffCorreInd");
 
@@ -347,14 +347,14 @@ OpenAPI_traffic_control_data_t *OpenAPI_traffic_control_data_parseFromJSON(cJSON
         ogs_error("OpenAPI_traffic_control_data_parseFromJSON() failed [traff_corre_ind]");
         goto end;
     }
-}
+    }
 
     cJSON *up_path_chg_event = cJSON_GetObjectItemCaseSensitive(traffic_control_dataJSON, "upPathChgEvent");
 
     OpenAPI_up_path_chg_event_t *up_path_chg_event_local_nonprim = NULL;
     if (up_path_chg_event) { 
     up_path_chg_event_local_nonprim = OpenAPI_up_path_chg_event_parseFromJSON(up_path_chg_event);
-}
+    }
 
     cJSON *steer_fun = cJSON_GetObjectItemCaseSensitive(traffic_control_dataJSON, "steerFun");
 
@@ -365,28 +365,28 @@ OpenAPI_traffic_control_data_t *OpenAPI_traffic_control_data_parseFromJSON(cJSON
         goto end;
     }
     steer_funVariable = OpenAPI_steering_functionality_FromString(steer_fun->valuestring);
-}
+    }
 
     cJSON *steer_mode_dl = cJSON_GetObjectItemCaseSensitive(traffic_control_dataJSON, "steerModeDl");
 
     OpenAPI_steering_mode_t *steer_mode_dl_local_nonprim = NULL;
     if (steer_mode_dl) { 
     steer_mode_dl_local_nonprim = OpenAPI_steering_mode_parseFromJSON(steer_mode_dl);
-}
+    }
 
     cJSON *steer_mode_ul = cJSON_GetObjectItemCaseSensitive(traffic_control_dataJSON, "steerModeUl");
 
     OpenAPI_steering_mode_t *steer_mode_ul_local_nonprim = NULL;
     if (steer_mode_ul) { 
     steer_mode_ul_local_nonprim = OpenAPI_steering_mode_parseFromJSON(steer_mode_ul);
-}
+    }
 
     cJSON *mul_acc_ctrl = cJSON_GetObjectItemCaseSensitive(traffic_control_dataJSON, "mulAccCtrl");
 
     OpenAPI_multicast_access_control_t *mul_acc_ctrl_local_nonprim = NULL;
     if (mul_acc_ctrl) { 
     mul_acc_ctrl_local_nonprim = OpenAPI_multicast_access_control_parseFromJSON(mul_acc_ctrl);
-}
+    }
 
     traffic_control_data_local_var = OpenAPI_traffic_control_data_create (
         ogs_strdup_or_assert(tc_id->valuestring),

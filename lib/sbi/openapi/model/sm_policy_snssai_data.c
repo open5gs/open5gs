@@ -115,7 +115,7 @@ OpenAPI_sm_policy_snssai_data_t *OpenAPI_sm_policy_snssai_data_parseFromJSON(cJS
             localMapObject->string, OpenAPI_sm_policy_dnn_data_parseFromJSON(localMapObject));
         OpenAPI_list_add(sm_policy_dnn_dataList , localMapKeyPair);
     }
-}
+    }
 
     sm_policy_snssai_data_local_var = OpenAPI_sm_policy_snssai_data_create (
         snssai_local_nonprim,

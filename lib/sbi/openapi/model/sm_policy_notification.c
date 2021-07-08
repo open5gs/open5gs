@@ -74,14 +74,14 @@ OpenAPI_sm_policy_notification_t *OpenAPI_sm_policy_notification_parseFromJSON(c
         ogs_error("OpenAPI_sm_policy_notification_parseFromJSON() failed [resource_uri]");
         goto end;
     }
-}
+    }
 
     cJSON *sm_policy_decision = cJSON_GetObjectItemCaseSensitive(sm_policy_notificationJSON, "smPolicyDecision");
 
     OpenAPI_sm_policy_decision_t *sm_policy_decision_local_nonprim = NULL;
     if (sm_policy_decision) { 
     sm_policy_decision_local_nonprim = OpenAPI_sm_policy_decision_parseFromJSON(sm_policy_decision);
-}
+    }
 
     sm_policy_notification_local_var = OpenAPI_sm_policy_notification_create (
         resource_uri ? ogs_strdup_or_assert(resource_uri->valuestring) : NULL,

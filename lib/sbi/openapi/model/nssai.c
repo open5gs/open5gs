@@ -147,7 +147,7 @@ OpenAPI_nssai_t *OpenAPI_nssai_parseFromJSON(cJSON *nssaiJSON)
         ogs_error("OpenAPI_nssai_parseFromJSON() failed [supported_features]");
         goto end;
     }
-}
+    }
 
     cJSON *default_single_nssais = cJSON_GetObjectItemCaseSensitive(nssaiJSON, "defaultSingleNssais");
     if (!default_single_nssais) {
@@ -196,7 +196,7 @@ OpenAPI_nssai_t *OpenAPI_nssai_parseFromJSON(cJSON *nssaiJSON)
 
         OpenAPI_list_add(single_nssaisList, single_nssaisItem);
     }
-}
+    }
 
     cJSON *provisioning_time = cJSON_GetObjectItemCaseSensitive(nssaiJSON, "provisioningTime");
 
@@ -205,7 +205,7 @@ OpenAPI_nssai_t *OpenAPI_nssai_parseFromJSON(cJSON *nssaiJSON)
         ogs_error("OpenAPI_nssai_parseFromJSON() failed [provisioning_time]");
         goto end;
     }
-}
+    }
 
     cJSON *additional_snssai_data = cJSON_GetObjectItemCaseSensitive(nssaiJSON, "additionalSnssaiData");
 
@@ -228,7 +228,7 @@ OpenAPI_nssai_t *OpenAPI_nssai_parseFromJSON(cJSON *nssaiJSON)
             localMapObject->string, OpenAPI_additional_snssai_data_parseFromJSON(localMapObject));
         OpenAPI_list_add(additional_snssai_dataList , localMapKeyPair);
     }
-}
+    }
 
     nssai_local_var = OpenAPI_nssai_create (
         supported_features ? ogs_strdup_or_assert(supported_features->valuestring) : NULL,

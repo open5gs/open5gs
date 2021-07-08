@@ -148,14 +148,14 @@ OpenAPI_global_ran_node_id_t *OpenAPI_global_ran_node_id_parseFromJSON(cJSON *gl
         ogs_error("OpenAPI_global_ran_node_id_parseFromJSON() failed [n3_iwf_id]");
         goto end;
     }
-}
+    }
 
     cJSON *g_nb_id = cJSON_GetObjectItemCaseSensitive(global_ran_node_idJSON, "gNbId");
 
     OpenAPI_gnb_id_t *g_nb_id_local_nonprim = NULL;
     if (g_nb_id) { 
     g_nb_id_local_nonprim = OpenAPI_gnb_id_parseFromJSON(g_nb_id);
-}
+    }
 
     cJSON *nge_nb_id = cJSON_GetObjectItemCaseSensitive(global_ran_node_idJSON, "ngeNbId");
 
@@ -164,7 +164,7 @@ OpenAPI_global_ran_node_id_t *OpenAPI_global_ran_node_id_parseFromJSON(cJSON *gl
         ogs_error("OpenAPI_global_ran_node_id_parseFromJSON() failed [nge_nb_id]");
         goto end;
     }
-}
+    }
 
     cJSON *wagf_id = cJSON_GetObjectItemCaseSensitive(global_ran_node_idJSON, "wagfId");
 
@@ -173,7 +173,7 @@ OpenAPI_global_ran_node_id_t *OpenAPI_global_ran_node_id_parseFromJSON(cJSON *gl
         ogs_error("OpenAPI_global_ran_node_id_parseFromJSON() failed [wagf_id]");
         goto end;
     }
-}
+    }
 
     cJSON *tngf_id = cJSON_GetObjectItemCaseSensitive(global_ran_node_idJSON, "tngfId");
 
@@ -182,7 +182,7 @@ OpenAPI_global_ran_node_id_t *OpenAPI_global_ran_node_id_parseFromJSON(cJSON *gl
         ogs_error("OpenAPI_global_ran_node_id_parseFromJSON() failed [tngf_id]");
         goto end;
     }
-}
+    }
 
     cJSON *nid = cJSON_GetObjectItemCaseSensitive(global_ran_node_idJSON, "nid");
 
@@ -191,7 +191,7 @@ OpenAPI_global_ran_node_id_t *OpenAPI_global_ran_node_id_parseFromJSON(cJSON *gl
         ogs_error("OpenAPI_global_ran_node_id_parseFromJSON() failed [nid]");
         goto end;
     }
-}
+    }
 
     cJSON *e_nb_id = cJSON_GetObjectItemCaseSensitive(global_ran_node_idJSON, "eNbId");
 
@@ -200,7 +200,7 @@ OpenAPI_global_ran_node_id_t *OpenAPI_global_ran_node_id_parseFromJSON(cJSON *gl
         ogs_error("OpenAPI_global_ran_node_id_parseFromJSON() failed [e_nb_id]");
         goto end;
     }
-}
+    }
 
     global_ran_node_id_local_var = OpenAPI_global_ran_node_id_create (
         plmn_id_local_nonprim,

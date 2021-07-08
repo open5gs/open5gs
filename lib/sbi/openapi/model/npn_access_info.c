@@ -81,7 +81,7 @@ OpenAPI_npn_access_info_t *OpenAPI_npn_access_info_parseFromJSON(cJSON *npn_acce
     }
     OpenAPI_list_add(cell_cag_infoList , ogs_strdup_or_assert(cell_cag_info_local->valuestring));
                     }
-}
+    }
 
     npn_access_info_local_var = OpenAPI_npn_access_info_create (
         cell_cag_info ? cell_cag_infoList : NULL

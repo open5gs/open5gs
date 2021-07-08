@@ -238,21 +238,21 @@ OpenAPI_ue_context_create_data_t *OpenAPI_ue_context_create_data_parseFromJSON(c
         ogs_error("OpenAPI_ue_context_create_data_parseFromJSON() failed [n2_notify_uri]");
         goto end;
     }
-}
+    }
 
     cJSON *ue_radio_capability = cJSON_GetObjectItemCaseSensitive(ue_context_create_dataJSON, "ueRadioCapability");
 
     OpenAPI_n2_info_content_t *ue_radio_capability_local_nonprim = NULL;
     if (ue_radio_capability) { 
     ue_radio_capability_local_nonprim = OpenAPI_n2_info_content_parseFromJSON(ue_radio_capability);
-}
+    }
 
     cJSON *ngap_cause = cJSON_GetObjectItemCaseSensitive(ue_context_create_dataJSON, "ngapCause");
 
     OpenAPI_ng_ap_cause_t *ngap_cause_local_nonprim = NULL;
     if (ngap_cause) { 
     ngap_cause_local_nonprim = OpenAPI_ng_ap_cause_parseFromJSON(ngap_cause);
-}
+    }
 
     cJSON *supported_features = cJSON_GetObjectItemCaseSensitive(ue_context_create_dataJSON, "supportedFeatures");
 
@@ -261,14 +261,14 @@ OpenAPI_ue_context_create_data_t *OpenAPI_ue_context_create_data_parseFromJSON(c
         ogs_error("OpenAPI_ue_context_create_data_parseFromJSON() failed [supported_features]");
         goto end;
     }
-}
+    }
 
     cJSON *serving_network = cJSON_GetObjectItemCaseSensitive(ue_context_create_dataJSON, "servingNetwork");
 
     OpenAPI_plmn_id_nid_t *serving_network_local_nonprim = NULL;
     if (serving_network) { 
     serving_network_local_nonprim = OpenAPI_plmn_id_nid_parseFromJSON(serving_network);
-}
+    }
 
     ue_context_create_data_local_var = OpenAPI_ue_context_create_data_create (
         ue_context_local_nonprim,

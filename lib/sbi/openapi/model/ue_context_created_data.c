@@ -205,7 +205,7 @@ OpenAPI_ue_context_created_data_t *OpenAPI_ue_context_created_data_parseFromJSON
 
         OpenAPI_list_add(failed_session_listList, failed_session_listItem);
     }
-}
+    }
 
     cJSON *supported_features = cJSON_GetObjectItemCaseSensitive(ue_context_created_dataJSON, "supportedFeatures");
 
@@ -214,7 +214,7 @@ OpenAPI_ue_context_created_data_t *OpenAPI_ue_context_created_data_parseFromJSON
         ogs_error("OpenAPI_ue_context_created_data_parseFromJSON() failed [supported_features]");
         goto end;
     }
-}
+    }
 
     cJSON *pcf_reselected_ind = cJSON_GetObjectItemCaseSensitive(ue_context_created_dataJSON, "pcfReselectedInd");
 
@@ -223,7 +223,7 @@ OpenAPI_ue_context_created_data_t *OpenAPI_ue_context_created_data_parseFromJSON
         ogs_error("OpenAPI_ue_context_created_data_parseFromJSON() failed [pcf_reselected_ind]");
         goto end;
     }
-}
+    }
 
     ue_context_created_data_local_var = OpenAPI_ue_context_created_data_create (
         ue_context_local_nonprim,

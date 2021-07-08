@@ -181,21 +181,21 @@ OpenAPI_slice_info_for_ue_configuration_update_t *OpenAPI_slice_info_for_ue_conf
 
         OpenAPI_list_add(subscribed_nssaiList, subscribed_nssaiItem);
     }
-}
+    }
 
     cJSON *allowed_nssai_current_access = cJSON_GetObjectItemCaseSensitive(slice_info_for_ue_configuration_updateJSON, "allowedNssaiCurrentAccess");
 
     OpenAPI_allowed_nssai_t *allowed_nssai_current_access_local_nonprim = NULL;
     if (allowed_nssai_current_access) { 
     allowed_nssai_current_access_local_nonprim = OpenAPI_allowed_nssai_parseFromJSON(allowed_nssai_current_access);
-}
+    }
 
     cJSON *allowed_nssai_other_access = cJSON_GetObjectItemCaseSensitive(slice_info_for_ue_configuration_updateJSON, "allowedNssaiOtherAccess");
 
     OpenAPI_allowed_nssai_t *allowed_nssai_other_access_local_nonprim = NULL;
     if (allowed_nssai_other_access) { 
     allowed_nssai_other_access_local_nonprim = OpenAPI_allowed_nssai_parseFromJSON(allowed_nssai_other_access);
-}
+    }
 
     cJSON *default_configured_snssai_ind = cJSON_GetObjectItemCaseSensitive(slice_info_for_ue_configuration_updateJSON, "defaultConfiguredSnssaiInd");
 
@@ -204,7 +204,7 @@ OpenAPI_slice_info_for_ue_configuration_update_t *OpenAPI_slice_info_for_ue_conf
         ogs_error("OpenAPI_slice_info_for_ue_configuration_update_parseFromJSON() failed [default_configured_snssai_ind]");
         goto end;
     }
-}
+    }
 
     cJSON *requested_nssai = cJSON_GetObjectItemCaseSensitive(slice_info_for_ue_configuration_updateJSON, "requestedNssai");
 
@@ -227,7 +227,7 @@ OpenAPI_slice_info_for_ue_configuration_update_t *OpenAPI_slice_info_for_ue_conf
 
         OpenAPI_list_add(requested_nssaiList, requested_nssaiItem);
     }
-}
+    }
 
     cJSON *mapping_of_nssai = cJSON_GetObjectItemCaseSensitive(slice_info_for_ue_configuration_updateJSON, "mappingOfNssai");
 
@@ -250,7 +250,7 @@ OpenAPI_slice_info_for_ue_configuration_update_t *OpenAPI_slice_info_for_ue_conf
 
         OpenAPI_list_add(mapping_of_nssaiList, mapping_of_nssaiItem);
     }
-}
+    }
 
     slice_info_for_ue_configuration_update_local_var = OpenAPI_slice_info_for_ue_configuration_update_create (
         subscribed_nssai ? subscribed_nssaiList : NULL,

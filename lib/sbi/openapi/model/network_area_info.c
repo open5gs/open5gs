@@ -166,7 +166,7 @@ OpenAPI_network_area_info_t *OpenAPI_network_area_info_parseFromJSON(cJSON *netw
 
         OpenAPI_list_add(ecgisList, ecgisItem);
     }
-}
+    }
 
     cJSON *ncgis = cJSON_GetObjectItemCaseSensitive(network_area_infoJSON, "ncgis");
 
@@ -189,7 +189,7 @@ OpenAPI_network_area_info_t *OpenAPI_network_area_info_parseFromJSON(cJSON *netw
 
         OpenAPI_list_add(ncgisList, ncgisItem);
     }
-}
+    }
 
     cJSON *g_ran_node_ids = cJSON_GetObjectItemCaseSensitive(network_area_infoJSON, "gRanNodeIds");
 
@@ -212,7 +212,7 @@ OpenAPI_network_area_info_t *OpenAPI_network_area_info_parseFromJSON(cJSON *netw
 
         OpenAPI_list_add(g_ran_node_idsList, g_ran_node_idsItem);
     }
-}
+    }
 
     cJSON *tais = cJSON_GetObjectItemCaseSensitive(network_area_infoJSON, "tais");
 
@@ -235,7 +235,7 @@ OpenAPI_network_area_info_t *OpenAPI_network_area_info_parseFromJSON(cJSON *netw
 
         OpenAPI_list_add(taisList, taisItem);
     }
-}
+    }
 
     network_area_info_local_var = OpenAPI_network_area_info_create (
         ecgis ? ecgisList : NULL,

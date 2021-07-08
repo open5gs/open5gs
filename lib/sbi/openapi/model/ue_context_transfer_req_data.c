@@ -130,14 +130,14 @@ OpenAPI_ue_context_transfer_req_data_t *OpenAPI_ue_context_transfer_req_data_par
     OpenAPI_plmn_id_t *plmn_id_local_nonprim = NULL;
     if (plmn_id) { 
     plmn_id_local_nonprim = OpenAPI_plmn_id_parseFromJSON(plmn_id);
-}
+    }
 
     cJSON *reg_request = cJSON_GetObjectItemCaseSensitive(ue_context_transfer_req_dataJSON, "regRequest");
 
     OpenAPI_n1_message_container_t *reg_request_local_nonprim = NULL;
     if (reg_request) { 
     reg_request_local_nonprim = OpenAPI_n1_message_container_parseFromJSON(reg_request);
-}
+    }
 
     cJSON *supported_features = cJSON_GetObjectItemCaseSensitive(ue_context_transfer_req_dataJSON, "supportedFeatures");
 
@@ -146,7 +146,7 @@ OpenAPI_ue_context_transfer_req_data_t *OpenAPI_ue_context_transfer_req_data_par
         ogs_error("OpenAPI_ue_context_transfer_req_data_parseFromJSON() failed [supported_features]");
         goto end;
     }
-}
+    }
 
     ue_context_transfer_req_data_local_var = OpenAPI_ue_context_transfer_req_data_create (
         reasonVariable,

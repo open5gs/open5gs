@@ -126,7 +126,7 @@ OpenAPI_search_result_t *OpenAPI_search_result_parseFromJSON(cJSON *search_resul
         ogs_error("OpenAPI_search_result_parseFromJSON() failed [validity_period]");
         goto end;
     }
-}
+    }
 
     cJSON *nf_instances = cJSON_GetObjectItemCaseSensitive(search_resultJSON, "nfInstances");
     if (!nf_instances) {
@@ -161,7 +161,7 @@ OpenAPI_search_result_t *OpenAPI_search_result_parseFromJSON(cJSON *search_resul
         ogs_error("OpenAPI_search_result_parseFromJSON() failed [search_id]");
         goto end;
     }
-}
+    }
 
     cJSON *num_nf_inst_complete = cJSON_GetObjectItemCaseSensitive(search_resultJSON, "numNfInstComplete");
 
@@ -170,14 +170,14 @@ OpenAPI_search_result_t *OpenAPI_search_result_parseFromJSON(cJSON *search_resul
         ogs_error("OpenAPI_search_result_parseFromJSON() failed [num_nf_inst_complete]");
         goto end;
     }
-}
+    }
 
     cJSON *preferred_search = cJSON_GetObjectItemCaseSensitive(search_resultJSON, "preferredSearch");
 
     OpenAPI_preferred_search_t *preferred_search_local_nonprim = NULL;
     if (preferred_search) { 
     preferred_search_local_nonprim = OpenAPI_preferred_search_parseFromJSON(preferred_search);
-}
+    }
 
     cJSON *nrf_supported_features = cJSON_GetObjectItemCaseSensitive(search_resultJSON, "nrfSupportedFeatures");
 
@@ -186,7 +186,7 @@ OpenAPI_search_result_t *OpenAPI_search_result_parseFromJSON(cJSON *search_resul
         ogs_error("OpenAPI_search_result_parseFromJSON() failed [nrf_supported_features]");
         goto end;
     }
-}
+    }
 
     search_result_local_var = OpenAPI_search_result_create (
         validity_period ? validity_period->valuedouble : 0,

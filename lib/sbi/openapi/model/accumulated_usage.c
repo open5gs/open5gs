@@ -84,7 +84,7 @@ OpenAPI_accumulated_usage_t *OpenAPI_accumulated_usage_parseFromJSON(cJSON *accu
         ogs_error("OpenAPI_accumulated_usage_parseFromJSON() failed [duration]");
         goto end;
     }
-}
+    }
 
     cJSON *total_volume = cJSON_GetObjectItemCaseSensitive(accumulated_usageJSON, "totalVolume");
 
@@ -93,7 +93,7 @@ OpenAPI_accumulated_usage_t *OpenAPI_accumulated_usage_parseFromJSON(cJSON *accu
         ogs_error("OpenAPI_accumulated_usage_parseFromJSON() failed [total_volume]");
         goto end;
     }
-}
+    }
 
     cJSON *downlink_volume = cJSON_GetObjectItemCaseSensitive(accumulated_usageJSON, "downlinkVolume");
 
@@ -102,7 +102,7 @@ OpenAPI_accumulated_usage_t *OpenAPI_accumulated_usage_parseFromJSON(cJSON *accu
         ogs_error("OpenAPI_accumulated_usage_parseFromJSON() failed [downlink_volume]");
         goto end;
     }
-}
+    }
 
     cJSON *uplink_volume = cJSON_GetObjectItemCaseSensitive(accumulated_usageJSON, "uplinkVolume");
 
@@ -111,7 +111,7 @@ OpenAPI_accumulated_usage_t *OpenAPI_accumulated_usage_parseFromJSON(cJSON *accu
         ogs_error("OpenAPI_accumulated_usage_parseFromJSON() failed [uplink_volume]");
         goto end;
     }
-}
+    }
 
     accumulated_usage_local_var = OpenAPI_accumulated_usage_create (
         duration ? duration->valuedouble : 0,

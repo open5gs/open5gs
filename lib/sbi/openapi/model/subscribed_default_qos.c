@@ -100,7 +100,7 @@ OpenAPI_subscribed_default_qos_t *OpenAPI_subscribed_default_qos_parseFromJSON(c
         ogs_error("OpenAPI_subscribed_default_qos_parseFromJSON() failed [priority_level]");
         goto end;
     }
-}
+    }
 
     subscribed_default_qos_local_var = OpenAPI_subscribed_default_qos_create (
         _5qi->valuedouble,

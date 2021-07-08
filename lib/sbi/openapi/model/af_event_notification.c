@@ -109,7 +109,7 @@ OpenAPI_af_event_notification_t *OpenAPI_af_event_notification_parseFromJSON(cJS
 
         OpenAPI_list_add(flowsList, flowsItem);
     }
-}
+    }
 
     af_event_notification_local_var = OpenAPI_af_event_notification_create (
         eventVariable,

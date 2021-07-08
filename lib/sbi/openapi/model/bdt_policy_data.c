@@ -112,7 +112,7 @@ OpenAPI_bdt_policy_data_t *OpenAPI_bdt_policy_data_parseFromJSON(cJSON *bdt_poli
         ogs_error("OpenAPI_bdt_policy_data_parseFromJSON() failed [inter_group_id]");
         goto end;
     }
-}
+    }
 
     cJSON *supi = cJSON_GetObjectItemCaseSensitive(bdt_policy_dataJSON, "supi");
 
@@ -121,7 +121,7 @@ OpenAPI_bdt_policy_data_t *OpenAPI_bdt_policy_data_parseFromJSON(cJSON *bdt_poli
         ogs_error("OpenAPI_bdt_policy_data_parseFromJSON() failed [supi]");
         goto end;
     }
-}
+    }
 
     cJSON *bdt_ref_id = cJSON_GetObjectItemCaseSensitive(bdt_policy_dataJSON, "bdtRefId");
     if (!bdt_ref_id) {
@@ -142,14 +142,14 @@ OpenAPI_bdt_policy_data_t *OpenAPI_bdt_policy_data_parseFromJSON(cJSON *bdt_poli
         ogs_error("OpenAPI_bdt_policy_data_parseFromJSON() failed [dnn]");
         goto end;
     }
-}
+    }
 
     cJSON *snssai = cJSON_GetObjectItemCaseSensitive(bdt_policy_dataJSON, "snssai");
 
     OpenAPI_snssai_t *snssai_local_nonprim = NULL;
     if (snssai) { 
     snssai_local_nonprim = OpenAPI_snssai_parseFromJSON(snssai);
-}
+    }
 
     cJSON *res_uri = cJSON_GetObjectItemCaseSensitive(bdt_policy_dataJSON, "resUri");
 
@@ -158,7 +158,7 @@ OpenAPI_bdt_policy_data_t *OpenAPI_bdt_policy_data_parseFromJSON(cJSON *bdt_poli
         ogs_error("OpenAPI_bdt_policy_data_parseFromJSON() failed [res_uri]");
         goto end;
     }
-}
+    }
 
     bdt_policy_data_local_var = OpenAPI_bdt_policy_data_create (
         inter_group_id ? ogs_strdup_or_assert(inter_group_id->valuestring) : NULL,

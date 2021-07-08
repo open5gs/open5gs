@@ -117,7 +117,7 @@ OpenAPI_scp_domain_info_t *OpenAPI_scp_domain_info_parseFromJSON(cJSON *scp_doma
         ogs_error("OpenAPI_scp_domain_info_parseFromJSON() failed [scp_fqdn]");
         goto end;
     }
-}
+    }
 
     cJSON *scp_ip_end_points = cJSON_GetObjectItemCaseSensitive(scp_domain_infoJSON, "scpIpEndPoints");
 
@@ -140,7 +140,7 @@ OpenAPI_scp_domain_info_t *OpenAPI_scp_domain_info_parseFromJSON(cJSON *scp_doma
 
         OpenAPI_list_add(scp_ip_end_pointsList, scp_ip_end_pointsItem);
     }
-}
+    }
 
     cJSON *scp_prefix = cJSON_GetObjectItemCaseSensitive(scp_domain_infoJSON, "scpPrefix");
 
@@ -149,7 +149,7 @@ OpenAPI_scp_domain_info_t *OpenAPI_scp_domain_info_parseFromJSON(cJSON *scp_doma
         ogs_error("OpenAPI_scp_domain_info_parseFromJSON() failed [scp_prefix]");
         goto end;
     }
-}
+    }
 
     cJSON *scp_ports = cJSON_GetObjectItemCaseSensitive(scp_domain_infoJSON, "scpPorts");
 
@@ -166,7 +166,7 @@ OpenAPI_scp_domain_info_t *OpenAPI_scp_domain_info_parseFromJSON(cJSON *scp_doma
         cJSON *localMapObject = scp_ports_local_map;
         OpenAPI_list_add(scp_portsList , localMapKeyPair);
     }
-}
+    }
 
     scp_domain_info_local_var = OpenAPI_scp_domain_info_create (
         scp_fqdn ? ogs_strdup_or_assert(scp_fqdn->valuestring) : NULL,

@@ -211,7 +211,7 @@ OpenAPI_amf_event_t *OpenAPI_amf_event_parseFromJSON(cJSON *amf_eventJSON)
         ogs_error("OpenAPI_amf_event_parseFromJSON() failed [immediate_flag]");
         goto end;
     }
-}
+    }
 
     cJSON *area_list = cJSON_GetObjectItemCaseSensitive(amf_eventJSON, "areaList");
 
@@ -234,7 +234,7 @@ OpenAPI_amf_event_t *OpenAPI_amf_event_parseFromJSON(cJSON *amf_eventJSON)
 
         OpenAPI_list_add(area_listList, area_listItem);
     }
-}
+    }
 
     cJSON *location_filter_list = cJSON_GetObjectItemCaseSensitive(amf_eventJSON, "locationFilterList");
 
@@ -257,7 +257,7 @@ OpenAPI_amf_event_t *OpenAPI_amf_event_parseFromJSON(cJSON *amf_eventJSON)
 
         OpenAPI_list_add(location_filter_listList, location_filter_listItem);
     }
-}
+    }
 
     cJSON *ref_id = cJSON_GetObjectItemCaseSensitive(amf_eventJSON, "refId");
 
@@ -266,7 +266,7 @@ OpenAPI_amf_event_t *OpenAPI_amf_event_parseFromJSON(cJSON *amf_eventJSON)
         ogs_error("OpenAPI_amf_event_parseFromJSON() failed [ref_id]");
         goto end;
     }
-}
+    }
 
     cJSON *traffic_descriptor_list = cJSON_GetObjectItemCaseSensitive(amf_eventJSON, "trafficDescriptorList");
 
@@ -289,7 +289,7 @@ OpenAPI_amf_event_t *OpenAPI_amf_event_parseFromJSON(cJSON *amf_eventJSON)
 
         OpenAPI_list_add(traffic_descriptor_listList, traffic_descriptor_listItem);
     }
-}
+    }
 
     cJSON *report_ue_reachable = cJSON_GetObjectItemCaseSensitive(amf_eventJSON, "reportUeReachable");
 
@@ -298,14 +298,14 @@ OpenAPI_amf_event_t *OpenAPI_amf_event_parseFromJSON(cJSON *amf_eventJSON)
         ogs_error("OpenAPI_amf_event_parseFromJSON() failed [report_ue_reachable]");
         goto end;
     }
-}
+    }
 
     cJSON *reachability_filter = cJSON_GetObjectItemCaseSensitive(amf_eventJSON, "reachabilityFilter");
 
     OpenAPI_reachability_filter_t *reachability_filter_local_nonprim = NULL;
     if (reachability_filter) { 
     reachability_filter_local_nonprim = OpenAPI_reachability_filter_parseFromJSON(reachability_filter);
-}
+    }
 
     cJSON *max_reports = cJSON_GetObjectItemCaseSensitive(amf_eventJSON, "maxReports");
 
@@ -314,7 +314,7 @@ OpenAPI_amf_event_t *OpenAPI_amf_event_parseFromJSON(cJSON *amf_eventJSON)
         ogs_error("OpenAPI_amf_event_parseFromJSON() failed [max_reports]");
         goto end;
     }
-}
+    }
 
     cJSON *max_response_time = cJSON_GetObjectItemCaseSensitive(amf_eventJSON, "maxResponseTime");
 
@@ -323,7 +323,7 @@ OpenAPI_amf_event_t *OpenAPI_amf_event_parseFromJSON(cJSON *amf_eventJSON)
         ogs_error("OpenAPI_amf_event_parseFromJSON() failed [max_response_time]");
         goto end;
     }
-}
+    }
 
     amf_event_local_var = OpenAPI_amf_event_create (
         type_local_nonprim,

@@ -144,7 +144,7 @@ OpenAPI_policy_data_subscription_t *OpenAPI_policy_data_subscription_parseFromJS
         ogs_error("OpenAPI_policy_data_subscription_parseFromJSON() failed [notif_id]");
         goto end;
     }
-}
+    }
 
     cJSON *monitored_resource_uris = cJSON_GetObjectItemCaseSensitive(policy_data_subscriptionJSON, "monitoredResourceUris");
     if (!monitored_resource_uris) {
@@ -190,7 +190,7 @@ OpenAPI_policy_data_subscription_t *OpenAPI_policy_data_subscription_parseFromJS
 
         OpenAPI_list_add(mon_res_itemsList, mon_res_itemsItem);
     }
-}
+    }
 
     cJSON *expiry = cJSON_GetObjectItemCaseSensitive(policy_data_subscriptionJSON, "expiry");
 
@@ -199,7 +199,7 @@ OpenAPI_policy_data_subscription_t *OpenAPI_policy_data_subscription_parseFromJS
         ogs_error("OpenAPI_policy_data_subscription_parseFromJSON() failed [expiry]");
         goto end;
     }
-}
+    }
 
     cJSON *supported_features = cJSON_GetObjectItemCaseSensitive(policy_data_subscriptionJSON, "supportedFeatures");
 
@@ -208,7 +208,7 @@ OpenAPI_policy_data_subscription_t *OpenAPI_policy_data_subscription_parseFromJS
         ogs_error("OpenAPI_policy_data_subscription_parseFromJSON() failed [supported_features]");
         goto end;
     }
-}
+    }
 
     policy_data_subscription_local_var = OpenAPI_policy_data_subscription_create (
         ogs_strdup_or_assert(notification_uri->valuestring),

@@ -102,7 +102,7 @@ OpenAPI_nrppa_information_t *OpenAPI_nrppa_information_parseFromJSON(cJSON *nrpp
         ogs_error("OpenAPI_nrppa_information_parseFromJSON() failed [service_instance_id]");
         goto end;
     }
-}
+    }
 
     nrppa_information_local_var = OpenAPI_nrppa_information_create (
         ogs_strdup_or_assert(nf_id->valuestring),

@@ -78,7 +78,7 @@ OpenAPI_vgmlc_address_t *OpenAPI_vgmlc_address_parseFromJSON(cJSON *vgmlc_addres
         ogs_error("OpenAPI_vgmlc_address_parseFromJSON() failed [vgmlc_address_ipv4]");
         goto end;
     }
-}
+    }
 
     cJSON *vgmlc_address_ipv6 = cJSON_GetObjectItemCaseSensitive(vgmlc_addressJSON, "vgmlcAddressIpv6");
 
@@ -87,7 +87,7 @@ OpenAPI_vgmlc_address_t *OpenAPI_vgmlc_address_parseFromJSON(cJSON *vgmlc_addres
         ogs_error("OpenAPI_vgmlc_address_parseFromJSON() failed [vgmlc_address_ipv6]");
         goto end;
     }
-}
+    }
 
     cJSON *vgmlc_fqdn = cJSON_GetObjectItemCaseSensitive(vgmlc_addressJSON, "vgmlcFqdn");
 
@@ -96,7 +96,7 @@ OpenAPI_vgmlc_address_t *OpenAPI_vgmlc_address_parseFromJSON(cJSON *vgmlc_addres
         ogs_error("OpenAPI_vgmlc_address_parseFromJSON() failed [vgmlc_fqdn]");
         goto end;
     }
-}
+    }
 
     vgmlc_address_local_var = OpenAPI_vgmlc_address_create (
         vgmlc_address_ipv4 ? ogs_strdup_or_assert(vgmlc_address_ipv4->valuestring) : NULL,

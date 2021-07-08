@@ -87,7 +87,7 @@ OpenAPI_requested_qos_t *OpenAPI_requested_qos_parseFromJSON(cJSON *requested_qo
         ogs_error("OpenAPI_requested_qos_parseFromJSON() failed [gbr_ul]");
         goto end;
     }
-}
+    }
 
     cJSON *gbr_dl = cJSON_GetObjectItemCaseSensitive(requested_qosJSON, "gbrDl");
 
@@ -96,7 +96,7 @@ OpenAPI_requested_qos_t *OpenAPI_requested_qos_parseFromJSON(cJSON *requested_qo
         ogs_error("OpenAPI_requested_qos_parseFromJSON() failed [gbr_dl]");
         goto end;
     }
-}
+    }
 
     requested_qos_local_var = OpenAPI_requested_qos_create (
         _5qi->valuedouble,

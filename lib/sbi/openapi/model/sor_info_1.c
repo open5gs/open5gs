@@ -97,7 +97,7 @@ OpenAPI_sor_info_1_t *OpenAPI_sor_info_1_parseFromJSON(cJSON *sor_info_1JSON)
     OpenAPI_steering_container_t *steering_container_local_nonprim = NULL;
     if (steering_container) { 
     steering_container_local_nonprim = OpenAPI_steering_container_parseFromJSON(steering_container);
-}
+    }
 
     cJSON *ack_ind = cJSON_GetObjectItemCaseSensitive(sor_info_1JSON, "ackInd");
     if (!ack_ind) {
@@ -118,7 +118,7 @@ OpenAPI_sor_info_1_t *OpenAPI_sor_info_1_parseFromJSON(cJSON *sor_info_1JSON)
         ogs_error("OpenAPI_sor_info_1_parseFromJSON() failed [sor_mac_iausf]");
         goto end;
     }
-}
+    }
 
     cJSON *countersor = cJSON_GetObjectItemCaseSensitive(sor_info_1JSON, "countersor");
 
@@ -127,7 +127,7 @@ OpenAPI_sor_info_1_t *OpenAPI_sor_info_1_parseFromJSON(cJSON *sor_info_1JSON)
         ogs_error("OpenAPI_sor_info_1_parseFromJSON() failed [countersor]");
         goto end;
     }
-}
+    }
 
     cJSON *provisioning_time = cJSON_GetObjectItemCaseSensitive(sor_info_1JSON, "provisioningTime");
     if (!provisioning_time) {

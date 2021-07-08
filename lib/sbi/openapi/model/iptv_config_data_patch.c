@@ -91,7 +91,7 @@ OpenAPI_iptv_config_data_patch_t *OpenAPI_iptv_config_data_patch_parseFromJSON(c
             localMapObject->string, OpenAPI_multicast_access_control_parseFromJSON(localMapObject));
         OpenAPI_list_add(multi_acc_ctrlsList , localMapKeyPair);
     }
-}
+    }
 
     iptv_config_data_patch_local_var = OpenAPI_iptv_config_data_patch_create (
         multi_acc_ctrls ? multi_acc_ctrlsList : NULL

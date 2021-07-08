@@ -72,7 +72,7 @@ OpenAPI_ue_context_cancel_relocate_data_t *OpenAPI_ue_context_cancel_relocate_da
         ogs_error("OpenAPI_ue_context_cancel_relocate_data_parseFromJSON() failed [supi]");
         goto end;
     }
-}
+    }
 
     cJSON *relocation_cancel_request = cJSON_GetObjectItemCaseSensitive(ue_context_cancel_relocate_dataJSON, "relocationCancelRequest");
     if (!relocation_cancel_request) {

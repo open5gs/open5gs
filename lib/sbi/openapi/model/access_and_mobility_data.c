@@ -301,7 +301,7 @@ OpenAPI_access_and_mobility_data_t *OpenAPI_access_and_mobility_data_parseFromJS
     OpenAPI_user_location_t *location_local_nonprim = NULL;
     if (location) { 
     location_local_nonprim = OpenAPI_user_location_parseFromJSON(location);
-}
+    }
 
     cJSON *location_ts = cJSON_GetObjectItemCaseSensitive(access_and_mobility_dataJSON, "locationTs");
 
@@ -310,7 +310,7 @@ OpenAPI_access_and_mobility_data_t *OpenAPI_access_and_mobility_data_parseFromJS
         ogs_error("OpenAPI_access_and_mobility_data_parseFromJSON() failed [location_ts]");
         goto end;
     }
-}
+    }
 
     cJSON *time_zone = cJSON_GetObjectItemCaseSensitive(access_and_mobility_dataJSON, "timeZone");
 
@@ -319,7 +319,7 @@ OpenAPI_access_and_mobility_data_t *OpenAPI_access_and_mobility_data_parseFromJS
         ogs_error("OpenAPI_access_and_mobility_data_parseFromJSON() failed [time_zone]");
         goto end;
     }
-}
+    }
 
     cJSON *time_zone_ts = cJSON_GetObjectItemCaseSensitive(access_and_mobility_dataJSON, "timeZoneTs");
 
@@ -328,7 +328,7 @@ OpenAPI_access_and_mobility_data_t *OpenAPI_access_and_mobility_data_parseFromJS
         ogs_error("OpenAPI_access_and_mobility_data_parseFromJSON() failed [time_zone_ts]");
         goto end;
     }
-}
+    }
 
     cJSON *access_type = cJSON_GetObjectItemCaseSensitive(access_and_mobility_dataJSON, "accessType");
 
@@ -339,7 +339,7 @@ OpenAPI_access_and_mobility_data_t *OpenAPI_access_and_mobility_data_parseFromJS
         goto end;
     }
     access_typeVariable = OpenAPI_access_type_FromString(access_type->valuestring);
-}
+    }
 
     cJSON *reg_states = cJSON_GetObjectItemCaseSensitive(access_and_mobility_dataJSON, "regStates");
 
@@ -362,7 +362,7 @@ OpenAPI_access_and_mobility_data_t *OpenAPI_access_and_mobility_data_parseFromJS
 
         OpenAPI_list_add(reg_statesList, reg_statesItem);
     }
-}
+    }
 
     cJSON *reg_states_ts = cJSON_GetObjectItemCaseSensitive(access_and_mobility_dataJSON, "regStatesTs");
 
@@ -371,7 +371,7 @@ OpenAPI_access_and_mobility_data_t *OpenAPI_access_and_mobility_data_parseFromJS
         ogs_error("OpenAPI_access_and_mobility_data_parseFromJSON() failed [reg_states_ts]");
         goto end;
     }
-}
+    }
 
     cJSON *conn_states = cJSON_GetObjectItemCaseSensitive(access_and_mobility_dataJSON, "connStates");
 
@@ -394,7 +394,7 @@ OpenAPI_access_and_mobility_data_t *OpenAPI_access_and_mobility_data_parseFromJS
 
         OpenAPI_list_add(conn_statesList, conn_statesItem);
     }
-}
+    }
 
     cJSON *conn_states_ts = cJSON_GetObjectItemCaseSensitive(access_and_mobility_dataJSON, "connStatesTs");
 
@@ -403,14 +403,14 @@ OpenAPI_access_and_mobility_data_t *OpenAPI_access_and_mobility_data_parseFromJS
         ogs_error("OpenAPI_access_and_mobility_data_parseFromJSON() failed [conn_states_ts]");
         goto end;
     }
-}
+    }
 
     cJSON *reachability_status = cJSON_GetObjectItemCaseSensitive(access_and_mobility_dataJSON, "reachabilityStatus");
 
     OpenAPI_ue_reachability_t *reachability_status_local_nonprim = NULL;
     if (reachability_status) { 
     reachability_status_local_nonprim = OpenAPI_ue_reachability_parseFromJSON(reachability_status);
-}
+    }
 
     cJSON *reachability_status_ts = cJSON_GetObjectItemCaseSensitive(access_and_mobility_dataJSON, "reachabilityStatusTs");
 
@@ -419,7 +419,7 @@ OpenAPI_access_and_mobility_data_t *OpenAPI_access_and_mobility_data_parseFromJS
         ogs_error("OpenAPI_access_and_mobility_data_parseFromJSON() failed [reachability_status_ts]");
         goto end;
     }
-}
+    }
 
     cJSON *sms_over_nas_status = cJSON_GetObjectItemCaseSensitive(access_and_mobility_dataJSON, "smsOverNasStatus");
 
@@ -430,7 +430,7 @@ OpenAPI_access_and_mobility_data_t *OpenAPI_access_and_mobility_data_parseFromJS
         goto end;
     }
     sms_over_nas_statusVariable = OpenAPI_sms_support_FromString(sms_over_nas_status->valuestring);
-}
+    }
 
     cJSON *sms_over_nas_status_ts = cJSON_GetObjectItemCaseSensitive(access_and_mobility_dataJSON, "smsOverNasStatusTs");
 
@@ -439,7 +439,7 @@ OpenAPI_access_and_mobility_data_t *OpenAPI_access_and_mobility_data_parseFromJS
         ogs_error("OpenAPI_access_and_mobility_data_parseFromJSON() failed [sms_over_nas_status_ts]");
         goto end;
     }
-}
+    }
 
     cJSON *roaming_status = cJSON_GetObjectItemCaseSensitive(access_and_mobility_dataJSON, "roamingStatus");
 
@@ -448,7 +448,7 @@ OpenAPI_access_and_mobility_data_t *OpenAPI_access_and_mobility_data_parseFromJS
         ogs_error("OpenAPI_access_and_mobility_data_parseFromJSON() failed [roaming_status]");
         goto end;
     }
-}
+    }
 
     cJSON *roaming_status_ts = cJSON_GetObjectItemCaseSensitive(access_and_mobility_dataJSON, "roamingStatusTs");
 
@@ -457,14 +457,14 @@ OpenAPI_access_and_mobility_data_t *OpenAPI_access_and_mobility_data_parseFromJS
         ogs_error("OpenAPI_access_and_mobility_data_parseFromJSON() failed [roaming_status_ts]");
         goto end;
     }
-}
+    }
 
     cJSON *current_plmn = cJSON_GetObjectItemCaseSensitive(access_and_mobility_dataJSON, "currentPlmn");
 
     OpenAPI_plmn_id_1_t *current_plmn_local_nonprim = NULL;
     if (current_plmn) { 
     current_plmn_local_nonprim = OpenAPI_plmn_id_1_parseFromJSON(current_plmn);
-}
+    }
 
     cJSON *current_plmn_ts = cJSON_GetObjectItemCaseSensitive(access_and_mobility_dataJSON, "currentPlmnTs");
 
@@ -473,7 +473,7 @@ OpenAPI_access_and_mobility_data_t *OpenAPI_access_and_mobility_data_parseFromJS
         ogs_error("OpenAPI_access_and_mobility_data_parseFromJSON() failed [current_plmn_ts]");
         goto end;
     }
-}
+    }
 
     cJSON *rat_type = cJSON_GetObjectItemCaseSensitive(access_and_mobility_dataJSON, "ratType");
 
@@ -495,7 +495,7 @@ OpenAPI_access_and_mobility_data_t *OpenAPI_access_and_mobility_data_parseFromJS
 
         OpenAPI_list_add(rat_typeList, (void *)OpenAPI_rat_type_FromString(rat_type_local_nonprimitive->valuestring));
     }
-}
+    }
 
     cJSON *rat_types_ts = cJSON_GetObjectItemCaseSensitive(access_and_mobility_dataJSON, "ratTypesTs");
 
@@ -504,7 +504,7 @@ OpenAPI_access_and_mobility_data_t *OpenAPI_access_and_mobility_data_parseFromJS
         ogs_error("OpenAPI_access_and_mobility_data_parseFromJSON() failed [rat_types_ts]");
         goto end;
     }
-}
+    }
 
     cJSON *supp_feat = cJSON_GetObjectItemCaseSensitive(access_and_mobility_dataJSON, "suppFeat");
 
@@ -513,7 +513,7 @@ OpenAPI_access_and_mobility_data_t *OpenAPI_access_and_mobility_data_parseFromJS
         ogs_error("OpenAPI_access_and_mobility_data_parseFromJSON() failed [supp_feat]");
         goto end;
     }
-}
+    }
 
     access_and_mobility_data_local_var = OpenAPI_access_and_mobility_data_create (
         location ? location_local_nonprim : NULL,

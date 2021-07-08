@@ -154,7 +154,7 @@ OpenAPI_smsf_registration_t *OpenAPI_smsf_registration_parseFromJSON(cJSON *smsf
         ogs_error("OpenAPI_smsf_registration_parseFromJSON() failed [smsf_set_id]");
         goto end;
     }
-}
+    }
 
     cJSON *supported_features = cJSON_GetObjectItemCaseSensitive(smsf_registrationJSON, "supportedFeatures");
 
@@ -163,7 +163,7 @@ OpenAPI_smsf_registration_t *OpenAPI_smsf_registration_parseFromJSON(cJSON *smsf
         ogs_error("OpenAPI_smsf_registration_parseFromJSON() failed [supported_features]");
         goto end;
     }
-}
+    }
 
     cJSON *plmn_id = cJSON_GetObjectItemCaseSensitive(smsf_registrationJSON, "plmnId");
     if (!plmn_id) {
@@ -182,14 +182,14 @@ OpenAPI_smsf_registration_t *OpenAPI_smsf_registration_parseFromJSON(cJSON *smsf
         ogs_error("OpenAPI_smsf_registration_parseFromJSON() failed [smsf_map_address]");
         goto end;
     }
-}
+    }
 
     cJSON *smsf_diameter_address = cJSON_GetObjectItemCaseSensitive(smsf_registrationJSON, "smsfDiameterAddress");
 
     OpenAPI_network_node_diameter_address_t *smsf_diameter_address_local_nonprim = NULL;
     if (smsf_diameter_address) { 
     smsf_diameter_address_local_nonprim = OpenAPI_network_node_diameter_address_parseFromJSON(smsf_diameter_address);
-}
+    }
 
     cJSON *registration_time = cJSON_GetObjectItemCaseSensitive(smsf_registrationJSON, "registrationTime");
 
@@ -198,14 +198,14 @@ OpenAPI_smsf_registration_t *OpenAPI_smsf_registration_parseFromJSON(cJSON *smsf
         ogs_error("OpenAPI_smsf_registration_parseFromJSON() failed [registration_time]");
         goto end;
     }
-}
+    }
 
     cJSON *context_info = cJSON_GetObjectItemCaseSensitive(smsf_registrationJSON, "contextInfo");
 
     OpenAPI_context_info_t *context_info_local_nonprim = NULL;
     if (context_info) { 
     context_info_local_nonprim = OpenAPI_context_info_parseFromJSON(context_info);
-}
+    }
 
     smsf_registration_local_var = OpenAPI_smsf_registration_create (
         ogs_strdup_or_assert(smsf_instance_id->valuestring),

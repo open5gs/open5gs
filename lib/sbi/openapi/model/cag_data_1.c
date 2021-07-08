@@ -111,7 +111,7 @@ OpenAPI_cag_data_1_t *OpenAPI_cag_data_1_parseFromJSON(cJSON *cag_data_1JSON)
         ogs_error("OpenAPI_cag_data_1_parseFromJSON() failed [provisioning_time]");
         goto end;
     }
-}
+    }
 
     cag_data_1_local_var = OpenAPI_cag_data_1_create (
         cag_infosList,

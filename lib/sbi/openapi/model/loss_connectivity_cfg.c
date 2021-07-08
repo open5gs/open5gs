@@ -57,7 +57,7 @@ OpenAPI_loss_connectivity_cfg_t *OpenAPI_loss_connectivity_cfg_parseFromJSON(cJS
         ogs_error("OpenAPI_loss_connectivity_cfg_parseFromJSON() failed [max_detection_time]");
         goto end;
     }
-}
+    }
 
     loss_connectivity_cfg_local_var = OpenAPI_loss_connectivity_cfg_create (
         max_detection_time ? max_detection_time->valuedouble : 0

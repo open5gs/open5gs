@@ -109,7 +109,7 @@ OpenAPI_amf_event_mode_t *OpenAPI_amf_event_mode_parseFromJSON(cJSON *amf_event_
         ogs_error("OpenAPI_amf_event_mode_parseFromJSON() failed [max_reports]");
         goto end;
     }
-}
+    }
 
     cJSON *expiry = cJSON_GetObjectItemCaseSensitive(amf_event_modeJSON, "expiry");
 
@@ -118,7 +118,7 @@ OpenAPI_amf_event_mode_t *OpenAPI_amf_event_mode_parseFromJSON(cJSON *amf_event_
         ogs_error("OpenAPI_amf_event_mode_parseFromJSON() failed [expiry]");
         goto end;
     }
-}
+    }
 
     cJSON *rep_period = cJSON_GetObjectItemCaseSensitive(amf_event_modeJSON, "repPeriod");
 
@@ -127,7 +127,7 @@ OpenAPI_amf_event_mode_t *OpenAPI_amf_event_mode_parseFromJSON(cJSON *amf_event_
         ogs_error("OpenAPI_amf_event_mode_parseFromJSON() failed [rep_period]");
         goto end;
     }
-}
+    }
 
     cJSON *samp_ratio = cJSON_GetObjectItemCaseSensitive(amf_event_modeJSON, "sampRatio");
 
@@ -136,7 +136,7 @@ OpenAPI_amf_event_mode_t *OpenAPI_amf_event_mode_parseFromJSON(cJSON *amf_event_
         ogs_error("OpenAPI_amf_event_mode_parseFromJSON() failed [samp_ratio]");
         goto end;
     }
-}
+    }
 
     amf_event_mode_local_var = OpenAPI_amf_event_mode_create (
         trigger_local_nonprim,

@@ -802,7 +802,7 @@ OpenAPI_nrf_info_t *OpenAPI_nrf_info_parseFromJSON(cJSON *nrf_infoJSON)
             localMapObject->string, OpenAPI_udr_info_parseFromJSON(localMapObject));
         OpenAPI_list_add(served_udr_infoList , localMapKeyPair);
     }
-}
+    }
 
     cJSON *served_udr_info_list = cJSON_GetObjectItemCaseSensitive(nrf_infoJSON, "servedUdrInfoList");
 
@@ -819,7 +819,7 @@ OpenAPI_nrf_info_t *OpenAPI_nrf_info_parseFromJSON(cJSON *nrf_infoJSON)
         cJSON *localMapObject = served_udr_info_list_local_map;
         OpenAPI_list_add(served_udr_info_listList , localMapKeyPair);
     }
-}
+    }
 
     cJSON *served_udm_info = cJSON_GetObjectItemCaseSensitive(nrf_infoJSON, "servedUdmInfo");
 
@@ -842,7 +842,7 @@ OpenAPI_nrf_info_t *OpenAPI_nrf_info_parseFromJSON(cJSON *nrf_infoJSON)
             localMapObject->string, OpenAPI_udm_info_parseFromJSON(localMapObject));
         OpenAPI_list_add(served_udm_infoList , localMapKeyPair);
     }
-}
+    }
 
     cJSON *served_udm_info_list = cJSON_GetObjectItemCaseSensitive(nrf_infoJSON, "servedUdmInfoList");
 
@@ -859,7 +859,7 @@ OpenAPI_nrf_info_t *OpenAPI_nrf_info_parseFromJSON(cJSON *nrf_infoJSON)
         cJSON *localMapObject = served_udm_info_list_local_map;
         OpenAPI_list_add(served_udm_info_listList , localMapKeyPair);
     }
-}
+    }
 
     cJSON *served_ausf_info = cJSON_GetObjectItemCaseSensitive(nrf_infoJSON, "servedAusfInfo");
 
@@ -882,7 +882,7 @@ OpenAPI_nrf_info_t *OpenAPI_nrf_info_parseFromJSON(cJSON *nrf_infoJSON)
             localMapObject->string, OpenAPI_ausf_info_parseFromJSON(localMapObject));
         OpenAPI_list_add(served_ausf_infoList , localMapKeyPair);
     }
-}
+    }
 
     cJSON *served_ausf_info_list = cJSON_GetObjectItemCaseSensitive(nrf_infoJSON, "servedAusfInfoList");
 
@@ -899,7 +899,7 @@ OpenAPI_nrf_info_t *OpenAPI_nrf_info_parseFromJSON(cJSON *nrf_infoJSON)
         cJSON *localMapObject = served_ausf_info_list_local_map;
         OpenAPI_list_add(served_ausf_info_listList , localMapKeyPair);
     }
-}
+    }
 
     cJSON *served_amf_info = cJSON_GetObjectItemCaseSensitive(nrf_infoJSON, "servedAmfInfo");
 
@@ -922,7 +922,7 @@ OpenAPI_nrf_info_t *OpenAPI_nrf_info_parseFromJSON(cJSON *nrf_infoJSON)
             localMapObject->string, OpenAPI_amf_info_parseFromJSON(localMapObject));
         OpenAPI_list_add(served_amf_infoList , localMapKeyPair);
     }
-}
+    }
 
     cJSON *served_amf_info_list = cJSON_GetObjectItemCaseSensitive(nrf_infoJSON, "servedAmfInfoList");
 
@@ -939,7 +939,7 @@ OpenAPI_nrf_info_t *OpenAPI_nrf_info_parseFromJSON(cJSON *nrf_infoJSON)
         cJSON *localMapObject = served_amf_info_list_local_map;
         OpenAPI_list_add(served_amf_info_listList , localMapKeyPair);
     }
-}
+    }
 
     cJSON *served_smf_info = cJSON_GetObjectItemCaseSensitive(nrf_infoJSON, "servedSmfInfo");
 
@@ -962,7 +962,7 @@ OpenAPI_nrf_info_t *OpenAPI_nrf_info_parseFromJSON(cJSON *nrf_infoJSON)
             localMapObject->string, OpenAPI_smf_info_parseFromJSON(localMapObject));
         OpenAPI_list_add(served_smf_infoList , localMapKeyPair);
     }
-}
+    }
 
     cJSON *served_smf_info_list = cJSON_GetObjectItemCaseSensitive(nrf_infoJSON, "servedSmfInfoList");
 
@@ -979,7 +979,7 @@ OpenAPI_nrf_info_t *OpenAPI_nrf_info_parseFromJSON(cJSON *nrf_infoJSON)
         cJSON *localMapObject = served_smf_info_list_local_map;
         OpenAPI_list_add(served_smf_info_listList , localMapKeyPair);
     }
-}
+    }
 
     cJSON *served_upf_info = cJSON_GetObjectItemCaseSensitive(nrf_infoJSON, "servedUpfInfo");
 
@@ -1002,7 +1002,7 @@ OpenAPI_nrf_info_t *OpenAPI_nrf_info_parseFromJSON(cJSON *nrf_infoJSON)
             localMapObject->string, OpenAPI_upf_info_parseFromJSON(localMapObject));
         OpenAPI_list_add(served_upf_infoList , localMapKeyPair);
     }
-}
+    }
 
     cJSON *served_upf_info_list = cJSON_GetObjectItemCaseSensitive(nrf_infoJSON, "servedUpfInfoList");
 
@@ -1019,7 +1019,7 @@ OpenAPI_nrf_info_t *OpenAPI_nrf_info_parseFromJSON(cJSON *nrf_infoJSON)
         cJSON *localMapObject = served_upf_info_list_local_map;
         OpenAPI_list_add(served_upf_info_listList , localMapKeyPair);
     }
-}
+    }
 
     cJSON *served_pcf_info = cJSON_GetObjectItemCaseSensitive(nrf_infoJSON, "servedPcfInfo");
 
@@ -1042,7 +1042,7 @@ OpenAPI_nrf_info_t *OpenAPI_nrf_info_parseFromJSON(cJSON *nrf_infoJSON)
             localMapObject->string, OpenAPI_pcf_info_parseFromJSON(localMapObject));
         OpenAPI_list_add(served_pcf_infoList , localMapKeyPair);
     }
-}
+    }
 
     cJSON *served_pcf_info_list = cJSON_GetObjectItemCaseSensitive(nrf_infoJSON, "servedPcfInfoList");
 
@@ -1059,7 +1059,7 @@ OpenAPI_nrf_info_t *OpenAPI_nrf_info_parseFromJSON(cJSON *nrf_infoJSON)
         cJSON *localMapObject = served_pcf_info_list_local_map;
         OpenAPI_list_add(served_pcf_info_listList , localMapKeyPair);
     }
-}
+    }
 
     cJSON *served_bsf_info = cJSON_GetObjectItemCaseSensitive(nrf_infoJSON, "servedBsfInfo");
 
@@ -1082,7 +1082,7 @@ OpenAPI_nrf_info_t *OpenAPI_nrf_info_parseFromJSON(cJSON *nrf_infoJSON)
             localMapObject->string, OpenAPI_bsf_info_parseFromJSON(localMapObject));
         OpenAPI_list_add(served_bsf_infoList , localMapKeyPair);
     }
-}
+    }
 
     cJSON *served_bsf_info_list = cJSON_GetObjectItemCaseSensitive(nrf_infoJSON, "servedBsfInfoList");
 
@@ -1099,7 +1099,7 @@ OpenAPI_nrf_info_t *OpenAPI_nrf_info_parseFromJSON(cJSON *nrf_infoJSON)
         cJSON *localMapObject = served_bsf_info_list_local_map;
         OpenAPI_list_add(served_bsf_info_listList , localMapKeyPair);
     }
-}
+    }
 
     cJSON *served_chf_info = cJSON_GetObjectItemCaseSensitive(nrf_infoJSON, "servedChfInfo");
 
@@ -1122,7 +1122,7 @@ OpenAPI_nrf_info_t *OpenAPI_nrf_info_parseFromJSON(cJSON *nrf_infoJSON)
             localMapObject->string, OpenAPI_chf_info_parseFromJSON(localMapObject));
         OpenAPI_list_add(served_chf_infoList , localMapKeyPair);
     }
-}
+    }
 
     cJSON *served_chf_info_list = cJSON_GetObjectItemCaseSensitive(nrf_infoJSON, "servedChfInfoList");
 
@@ -1139,7 +1139,7 @@ OpenAPI_nrf_info_t *OpenAPI_nrf_info_parseFromJSON(cJSON *nrf_infoJSON)
         cJSON *localMapObject = served_chf_info_list_local_map;
         OpenAPI_list_add(served_chf_info_listList , localMapKeyPair);
     }
-}
+    }
 
     cJSON *served_nef_info = cJSON_GetObjectItemCaseSensitive(nrf_infoJSON, "servedNefInfo");
 
@@ -1162,7 +1162,7 @@ OpenAPI_nrf_info_t *OpenAPI_nrf_info_parseFromJSON(cJSON *nrf_infoJSON)
             localMapObject->string, OpenAPI_nef_info_parseFromJSON(localMapObject));
         OpenAPI_list_add(served_nef_infoList , localMapKeyPair);
     }
-}
+    }
 
     cJSON *served_nwdaf_info = cJSON_GetObjectItemCaseSensitive(nrf_infoJSON, "servedNwdafInfo");
 
@@ -1185,7 +1185,7 @@ OpenAPI_nrf_info_t *OpenAPI_nrf_info_parseFromJSON(cJSON *nrf_infoJSON)
             localMapObject->string, OpenAPI_nwdaf_info_parseFromJSON(localMapObject));
         OpenAPI_list_add(served_nwdaf_infoList , localMapKeyPair);
     }
-}
+    }
 
     cJSON *served_pcscf_info_list = cJSON_GetObjectItemCaseSensitive(nrf_infoJSON, "servedPcscfInfoList");
 
@@ -1202,7 +1202,7 @@ OpenAPI_nrf_info_t *OpenAPI_nrf_info_parseFromJSON(cJSON *nrf_infoJSON)
         cJSON *localMapObject = served_pcscf_info_list_local_map;
         OpenAPI_list_add(served_pcscf_info_listList , localMapKeyPair);
     }
-}
+    }
 
     cJSON *served_gmlc_info = cJSON_GetObjectItemCaseSensitive(nrf_infoJSON, "servedGmlcInfo");
 
@@ -1225,7 +1225,7 @@ OpenAPI_nrf_info_t *OpenAPI_nrf_info_parseFromJSON(cJSON *nrf_infoJSON)
             localMapObject->string, OpenAPI_gmlc_info_parseFromJSON(localMapObject));
         OpenAPI_list_add(served_gmlc_infoList , localMapKeyPair);
     }
-}
+    }
 
     cJSON *served_lmf_info = cJSON_GetObjectItemCaseSensitive(nrf_infoJSON, "servedLmfInfo");
 
@@ -1248,7 +1248,7 @@ OpenAPI_nrf_info_t *OpenAPI_nrf_info_parseFromJSON(cJSON *nrf_infoJSON)
             localMapObject->string, OpenAPI_lmf_info_parseFromJSON(localMapObject));
         OpenAPI_list_add(served_lmf_infoList , localMapKeyPair);
     }
-}
+    }
 
     cJSON *served_nf_info = cJSON_GetObjectItemCaseSensitive(nrf_infoJSON, "servedNfInfo");
 
@@ -1271,7 +1271,7 @@ OpenAPI_nrf_info_t *OpenAPI_nrf_info_parseFromJSON(cJSON *nrf_infoJSON)
             localMapObject->string, OpenAPI_nf_info_parseFromJSON(localMapObject));
         OpenAPI_list_add(served_nf_infoList , localMapKeyPair);
     }
-}
+    }
 
     cJSON *served_hss_info_list = cJSON_GetObjectItemCaseSensitive(nrf_infoJSON, "servedHssInfoList");
 
@@ -1288,7 +1288,7 @@ OpenAPI_nrf_info_t *OpenAPI_nrf_info_parseFromJSON(cJSON *nrf_infoJSON)
         cJSON *localMapObject = served_hss_info_list_local_map;
         OpenAPI_list_add(served_hss_info_listList , localMapKeyPair);
     }
-}
+    }
 
     cJSON *served_udsf_info = cJSON_GetObjectItemCaseSensitive(nrf_infoJSON, "servedUdsfInfo");
 
@@ -1311,7 +1311,7 @@ OpenAPI_nrf_info_t *OpenAPI_nrf_info_parseFromJSON(cJSON *nrf_infoJSON)
             localMapObject->string, OpenAPI_udsf_info_parseFromJSON(localMapObject));
         OpenAPI_list_add(served_udsf_infoList , localMapKeyPair);
     }
-}
+    }
 
     cJSON *served_udsf_info_list = cJSON_GetObjectItemCaseSensitive(nrf_infoJSON, "servedUdsfInfoList");
 
@@ -1328,7 +1328,7 @@ OpenAPI_nrf_info_t *OpenAPI_nrf_info_parseFromJSON(cJSON *nrf_infoJSON)
         cJSON *localMapObject = served_udsf_info_list_local_map;
         OpenAPI_list_add(served_udsf_info_listList , localMapKeyPair);
     }
-}
+    }
 
     cJSON *served_scp_info_list = cJSON_GetObjectItemCaseSensitive(nrf_infoJSON, "servedScpInfoList");
 
@@ -1351,7 +1351,7 @@ OpenAPI_nrf_info_t *OpenAPI_nrf_info_parseFromJSON(cJSON *nrf_infoJSON)
             localMapObject->string, OpenAPI_scp_info_parseFromJSON(localMapObject));
         OpenAPI_list_add(served_scp_info_listList , localMapKeyPair);
     }
-}
+    }
 
     nrf_info_local_var = OpenAPI_nrf_info_create (
         served_udr_info ? served_udr_infoList : NULL,

@@ -108,7 +108,7 @@ OpenAPI_reporting_options_t *OpenAPI_reporting_options_parseFromJSON(cJSON *repo
     OpenAPI_event_report_mode_t *report_mode_local_nonprim = NULL;
     if (report_mode) { 
     report_mode_local_nonprim = OpenAPI_event_report_mode_parseFromJSON(report_mode);
-}
+    }
 
     cJSON *max_num_of_reports = cJSON_GetObjectItemCaseSensitive(reporting_optionsJSON, "maxNumOfReports");
 
@@ -117,7 +117,7 @@ OpenAPI_reporting_options_t *OpenAPI_reporting_options_parseFromJSON(cJSON *repo
         ogs_error("OpenAPI_reporting_options_parseFromJSON() failed [max_num_of_reports]");
         goto end;
     }
-}
+    }
 
     cJSON *expiry = cJSON_GetObjectItemCaseSensitive(reporting_optionsJSON, "expiry");
 
@@ -126,7 +126,7 @@ OpenAPI_reporting_options_t *OpenAPI_reporting_options_parseFromJSON(cJSON *repo
         ogs_error("OpenAPI_reporting_options_parseFromJSON() failed [expiry]");
         goto end;
     }
-}
+    }
 
     cJSON *sampling_ratio = cJSON_GetObjectItemCaseSensitive(reporting_optionsJSON, "samplingRatio");
 
@@ -135,7 +135,7 @@ OpenAPI_reporting_options_t *OpenAPI_reporting_options_parseFromJSON(cJSON *repo
         ogs_error("OpenAPI_reporting_options_parseFromJSON() failed [sampling_ratio]");
         goto end;
     }
-}
+    }
 
     cJSON *guard_time = cJSON_GetObjectItemCaseSensitive(reporting_optionsJSON, "guardTime");
 
@@ -144,7 +144,7 @@ OpenAPI_reporting_options_t *OpenAPI_reporting_options_parseFromJSON(cJSON *repo
         ogs_error("OpenAPI_reporting_options_parseFromJSON() failed [guard_time]");
         goto end;
     }
-}
+    }
 
     cJSON *report_period = cJSON_GetObjectItemCaseSensitive(reporting_optionsJSON, "reportPeriod");
 
@@ -153,7 +153,7 @@ OpenAPI_reporting_options_t *OpenAPI_reporting_options_parseFromJSON(cJSON *repo
         ogs_error("OpenAPI_reporting_options_parseFromJSON() failed [report_period]");
         goto end;
     }
-}
+    }
 
     reporting_options_local_var = OpenAPI_reporting_options_create (
         report_mode ? report_mode_local_nonprim : NULL,

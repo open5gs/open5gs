@@ -102,7 +102,7 @@ OpenAPI_multicast_access_control_t *OpenAPI_multicast_access_control_parseFromJS
         ogs_error("OpenAPI_multicast_access_control_parseFromJSON() failed [src_ipv4_addr]");
         goto end;
     }
-}
+    }
 
     cJSON *src_ipv6_addr = cJSON_GetObjectItemCaseSensitive(multicast_access_controlJSON, "srcIpv6Addr");
 
@@ -111,7 +111,7 @@ OpenAPI_multicast_access_control_t *OpenAPI_multicast_access_control_parseFromJS
         ogs_error("OpenAPI_multicast_access_control_parseFromJSON() failed [src_ipv6_addr]");
         goto end;
     }
-}
+    }
 
     cJSON *multicast_v4_addr = cJSON_GetObjectItemCaseSensitive(multicast_access_controlJSON, "multicastV4Addr");
 
@@ -120,7 +120,7 @@ OpenAPI_multicast_access_control_t *OpenAPI_multicast_access_control_parseFromJS
         ogs_error("OpenAPI_multicast_access_control_parseFromJSON() failed [multicast_v4_addr]");
         goto end;
     }
-}
+    }
 
     cJSON *multicast_v6_addr = cJSON_GetObjectItemCaseSensitive(multicast_access_controlJSON, "multicastV6Addr");
 
@@ -129,7 +129,7 @@ OpenAPI_multicast_access_control_t *OpenAPI_multicast_access_control_parseFromJS
         ogs_error("OpenAPI_multicast_access_control_parseFromJSON() failed [multicast_v6_addr]");
         goto end;
     }
-}
+    }
 
     cJSON *acc_status = cJSON_GetObjectItemCaseSensitive(multicast_access_controlJSON, "accStatus");
     if (!acc_status) {

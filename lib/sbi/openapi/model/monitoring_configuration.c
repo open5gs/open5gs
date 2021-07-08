@@ -224,35 +224,35 @@ OpenAPI_monitoring_configuration_t *OpenAPI_monitoring_configuration_parseFromJS
         ogs_error("OpenAPI_monitoring_configuration_parseFromJSON() failed [immediate_flag]");
         goto end;
     }
-}
+    }
 
     cJSON *location_reporting_configuration = cJSON_GetObjectItemCaseSensitive(monitoring_configurationJSON, "locationReportingConfiguration");
 
     OpenAPI_location_reporting_configuration_t *location_reporting_configuration_local_nonprim = NULL;
     if (location_reporting_configuration) { 
     location_reporting_configuration_local_nonprim = OpenAPI_location_reporting_configuration_parseFromJSON(location_reporting_configuration);
-}
+    }
 
     cJSON *association_type = cJSON_GetObjectItemCaseSensitive(monitoring_configurationJSON, "associationType");
 
     OpenAPI_association_type_t *association_type_local_nonprim = NULL;
     if (association_type) { 
     association_type_local_nonprim = OpenAPI_association_type_parseFromJSON(association_type);
-}
+    }
 
     cJSON *datalink_report_cfg = cJSON_GetObjectItemCaseSensitive(monitoring_configurationJSON, "datalinkReportCfg");
 
     OpenAPI_datalink_reporting_configuration_t *datalink_report_cfg_local_nonprim = NULL;
     if (datalink_report_cfg) { 
     datalink_report_cfg_local_nonprim = OpenAPI_datalink_reporting_configuration_parseFromJSON(datalink_report_cfg);
-}
+    }
 
     cJSON *loss_connectivity_cfg = cJSON_GetObjectItemCaseSensitive(monitoring_configurationJSON, "lossConnectivityCfg");
 
     OpenAPI_loss_connectivity_cfg_t *loss_connectivity_cfg_local_nonprim = NULL;
     if (loss_connectivity_cfg) { 
     loss_connectivity_cfg_local_nonprim = OpenAPI_loss_connectivity_cfg_parseFromJSON(loss_connectivity_cfg);
-}
+    }
 
     cJSON *maximum_latency = cJSON_GetObjectItemCaseSensitive(monitoring_configurationJSON, "maximumLatency");
 
@@ -261,7 +261,7 @@ OpenAPI_monitoring_configuration_t *OpenAPI_monitoring_configuration_parseFromJS
         ogs_error("OpenAPI_monitoring_configuration_parseFromJSON() failed [maximum_latency]");
         goto end;
     }
-}
+    }
 
     cJSON *maximum_response_time = cJSON_GetObjectItemCaseSensitive(monitoring_configurationJSON, "maximumResponseTime");
 
@@ -270,7 +270,7 @@ OpenAPI_monitoring_configuration_t *OpenAPI_monitoring_configuration_parseFromJS
         ogs_error("OpenAPI_monitoring_configuration_parseFromJSON() failed [maximum_response_time]");
         goto end;
     }
-}
+    }
 
     cJSON *suggested_packet_num_dl = cJSON_GetObjectItemCaseSensitive(monitoring_configurationJSON, "suggestedPacketNumDl");
 
@@ -279,21 +279,21 @@ OpenAPI_monitoring_configuration_t *OpenAPI_monitoring_configuration_parseFromJS
         ogs_error("OpenAPI_monitoring_configuration_parseFromJSON() failed [suggested_packet_num_dl]");
         goto end;
     }
-}
+    }
 
     cJSON *pdu_session_status_cfg = cJSON_GetObjectItemCaseSensitive(monitoring_configurationJSON, "pduSessionStatusCfg");
 
     OpenAPI_pdu_session_status_cfg_t *pdu_session_status_cfg_local_nonprim = NULL;
     if (pdu_session_status_cfg) { 
     pdu_session_status_cfg_local_nonprim = OpenAPI_pdu_session_status_cfg_parseFromJSON(pdu_session_status_cfg);
-}
+    }
 
     cJSON *reachability_for_sms_cfg = cJSON_GetObjectItemCaseSensitive(monitoring_configurationJSON, "reachabilityForSmsCfg");
 
     OpenAPI_reachability_for_sms_configuration_t *reachability_for_sms_cfg_local_nonprim = NULL;
     if (reachability_for_sms_cfg) { 
     reachability_for_sms_cfg_local_nonprim = OpenAPI_reachability_for_sms_configuration_parseFromJSON(reachability_for_sms_cfg);
-}
+    }
 
     cJSON *mtc_provider_information = cJSON_GetObjectItemCaseSensitive(monitoring_configurationJSON, "mtcProviderInformation");
 
@@ -302,7 +302,7 @@ OpenAPI_monitoring_configuration_t *OpenAPI_monitoring_configuration_parseFromJS
         ogs_error("OpenAPI_monitoring_configuration_parseFromJSON() failed [mtc_provider_information]");
         goto end;
     }
-}
+    }
 
     cJSON *af_id = cJSON_GetObjectItemCaseSensitive(monitoring_configurationJSON, "afId");
 
@@ -311,7 +311,7 @@ OpenAPI_monitoring_configuration_t *OpenAPI_monitoring_configuration_parseFromJS
         ogs_error("OpenAPI_monitoring_configuration_parseFromJSON() failed [af_id]");
         goto end;
     }
-}
+    }
 
     monitoring_configuration_local_var = OpenAPI_monitoring_configuration_create (
         event_type_local_nonprim,

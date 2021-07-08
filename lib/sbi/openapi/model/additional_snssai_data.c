@@ -57,7 +57,7 @@ OpenAPI_additional_snssai_data_t *OpenAPI_additional_snssai_data_parseFromJSON(c
         ogs_error("OpenAPI_additional_snssai_data_parseFromJSON() failed [required_authn_authz]");
         goto end;
     }
-}
+    }
 
     additional_snssai_data_local_var = OpenAPI_additional_snssai_data_create (
         required_authn_authz ? required_authn_authz->valueint : 0

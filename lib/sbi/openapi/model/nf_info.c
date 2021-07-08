@@ -59,7 +59,7 @@ OpenAPI_nf_info_t *OpenAPI_nf_info_parseFromJSON(cJSON *nf_infoJSON)
         goto end;
     }
     nf_typeVariable = OpenAPI_nf_type_FromString(nf_type->valuestring);
-}
+    }
 
     nf_info_local_var = OpenAPI_nf_info_create (
         nf_type ? nf_typeVariable : 0

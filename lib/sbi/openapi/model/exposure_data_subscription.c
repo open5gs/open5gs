@@ -131,7 +131,7 @@ OpenAPI_exposure_data_subscription_t *OpenAPI_exposure_data_subscription_parseFr
         ogs_error("OpenAPI_exposure_data_subscription_parseFromJSON() failed [expiry]");
         goto end;
     }
-}
+    }
 
     cJSON *supported_features = cJSON_GetObjectItemCaseSensitive(exposure_data_subscriptionJSON, "supportedFeatures");
 
@@ -140,7 +140,7 @@ OpenAPI_exposure_data_subscription_t *OpenAPI_exposure_data_subscription_parseFr
         ogs_error("OpenAPI_exposure_data_subscription_parseFromJSON() failed [supported_features]");
         goto end;
     }
-}
+    }
 
     exposure_data_subscription_local_var = OpenAPI_exposure_data_subscription_create (
         ogs_strdup_or_assert(notification_uri->valuestring),

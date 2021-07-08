@@ -102,7 +102,7 @@ OpenAPI_preferred_search_t *OpenAPI_preferred_search_parseFromJSON(cJSON *prefer
         ogs_error("OpenAPI_preferred_search_parseFromJSON() failed [preferred_tai_match_ind]");
         goto end;
     }
-}
+    }
 
     cJSON *preferred_full_plmn_match_ind = cJSON_GetObjectItemCaseSensitive(preferred_searchJSON, "preferredFullPlmnMatchInd");
 
@@ -111,7 +111,7 @@ OpenAPI_preferred_search_t *OpenAPI_preferred_search_parseFromJSON(cJSON *prefer
         ogs_error("OpenAPI_preferred_search_parseFromJSON() failed [preferred_full_plmn_match_ind]");
         goto end;
     }
-}
+    }
 
     cJSON *preferred_api_versions_match_ind = cJSON_GetObjectItemCaseSensitive(preferred_searchJSON, "preferredApiVersionsMatchInd");
 
@@ -120,7 +120,7 @@ OpenAPI_preferred_search_t *OpenAPI_preferred_search_parseFromJSON(cJSON *prefer
         ogs_error("OpenAPI_preferred_search_parseFromJSON() failed [preferred_api_versions_match_ind]");
         goto end;
     }
-}
+    }
 
     cJSON *other_api_versions_ind = cJSON_GetObjectItemCaseSensitive(preferred_searchJSON, "otherApiVersionsInd");
 
@@ -129,7 +129,7 @@ OpenAPI_preferred_search_t *OpenAPI_preferred_search_parseFromJSON(cJSON *prefer
         ogs_error("OpenAPI_preferred_search_parseFromJSON() failed [other_api_versions_ind]");
         goto end;
     }
-}
+    }
 
     cJSON *preferred_locality_match_ind = cJSON_GetObjectItemCaseSensitive(preferred_searchJSON, "preferredLocalityMatchInd");
 
@@ -138,7 +138,7 @@ OpenAPI_preferred_search_t *OpenAPI_preferred_search_parseFromJSON(cJSON *prefer
         ogs_error("OpenAPI_preferred_search_parseFromJSON() failed [preferred_locality_match_ind]");
         goto end;
     }
-}
+    }
 
     cJSON *other_locality_ind = cJSON_GetObjectItemCaseSensitive(preferred_searchJSON, "otherLocalityInd");
 
@@ -147,7 +147,7 @@ OpenAPI_preferred_search_t *OpenAPI_preferred_search_parseFromJSON(cJSON *prefer
         ogs_error("OpenAPI_preferred_search_parseFromJSON() failed [other_locality_ind]");
         goto end;
     }
-}
+    }
 
     preferred_search_local_var = OpenAPI_preferred_search_create (
         preferred_tai_match_ind ? preferred_tai_match_ind->valueint : 0,

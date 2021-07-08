@@ -108,7 +108,7 @@ OpenAPI_up_security_info_t *OpenAPI_up_security_info_parseFromJSON(cJSON *up_sec
         goto end;
     }
     max_integrity_protected_data_rate_ulVariable = OpenAPI_max_integrity_protected_data_rate_FromString(max_integrity_protected_data_rate_ul->valuestring);
-}
+    }
 
     cJSON *max_integrity_protected_data_rate_dl = cJSON_GetObjectItemCaseSensitive(up_security_infoJSON, "maxIntegrityProtectedDataRateDl");
 
@@ -119,14 +119,14 @@ OpenAPI_up_security_info_t *OpenAPI_up_security_info_parseFromJSON(cJSON *up_sec
         goto end;
     }
     max_integrity_protected_data_rate_dlVariable = OpenAPI_max_integrity_protected_data_rate_FromString(max_integrity_protected_data_rate_dl->valuestring);
-}
+    }
 
     cJSON *security_result = cJSON_GetObjectItemCaseSensitive(up_security_infoJSON, "securityResult");
 
     OpenAPI_security_result_t *security_result_local_nonprim = NULL;
     if (security_result) { 
     security_result_local_nonprim = OpenAPI_security_result_parseFromJSON(security_result);
-}
+    }
 
     up_security_info_local_var = OpenAPI_up_security_info_create (
         up_security_local_nonprim,

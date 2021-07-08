@@ -93,7 +93,7 @@ OpenAPI_n2_information_transfer_rsp_data_t *OpenAPI_n2_information_transfer_rsp_
     OpenAPI_pws_response_data_t *pws_rsp_data_local_nonprim = NULL;
     if (pws_rsp_data) { 
     pws_rsp_data_local_nonprim = OpenAPI_pws_response_data_parseFromJSON(pws_rsp_data);
-}
+    }
 
     cJSON *supported_features = cJSON_GetObjectItemCaseSensitive(n2_information_transfer_rsp_dataJSON, "supportedFeatures");
 
@@ -102,7 +102,7 @@ OpenAPI_n2_information_transfer_rsp_data_t *OpenAPI_n2_information_transfer_rsp_
         ogs_error("OpenAPI_n2_information_transfer_rsp_data_parseFromJSON() failed [supported_features]");
         goto end;
     }
-}
+    }
 
     n2_information_transfer_rsp_data_local_var = OpenAPI_n2_information_transfer_rsp_data_create (
         resultVariable,

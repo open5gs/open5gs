@@ -102,7 +102,7 @@ OpenAPI_tai_t *OpenAPI_tai_parseFromJSON(cJSON *taiJSON)
         ogs_error("OpenAPI_tai_parseFromJSON() failed [nid]");
         goto end;
     }
-}
+    }
 
     tai_local_var = OpenAPI_tai_create (
         plmn_id_local_nonprim,

@@ -230,14 +230,14 @@ OpenAPI_context_data_sets_t *OpenAPI_context_data_sets_parseFromJSON(cJSON *cont
     OpenAPI_amf3_gpp_access_registration_t *amf3_gpp_local_nonprim = NULL;
     if (amf3_gpp) { 
     amf3_gpp_local_nonprim = OpenAPI_amf3_gpp_access_registration_parseFromJSON(amf3_gpp);
-}
+    }
 
     cJSON *amf_non3_gpp = cJSON_GetObjectItemCaseSensitive(context_data_setsJSON, "amfNon3Gpp");
 
     OpenAPI_amf_non3_gpp_access_registration_t *amf_non3_gpp_local_nonprim = NULL;
     if (amf_non3_gpp) { 
     amf_non3_gpp_local_nonprim = OpenAPI_amf_non3_gpp_access_registration_parseFromJSON(amf_non3_gpp);
-}
+    }
 
     cJSON *sdm_subscriptions = cJSON_GetObjectItemCaseSensitive(context_data_setsJSON, "sdmSubscriptions");
 
@@ -260,7 +260,7 @@ OpenAPI_context_data_sets_t *OpenAPI_context_data_sets_parseFromJSON(cJSON *cont
 
         OpenAPI_list_add(sdm_subscriptionsList, sdm_subscriptionsItem);
     }
-}
+    }
 
     cJSON *ee_subscriptions = cJSON_GetObjectItemCaseSensitive(context_data_setsJSON, "eeSubscriptions");
 
@@ -283,21 +283,21 @@ OpenAPI_context_data_sets_t *OpenAPI_context_data_sets_parseFromJSON(cJSON *cont
 
         OpenAPI_list_add(ee_subscriptionsList, ee_subscriptionsItem);
     }
-}
+    }
 
     cJSON *smsf3_gpp_access = cJSON_GetObjectItemCaseSensitive(context_data_setsJSON, "smsf3GppAccess");
 
     OpenAPI_smsf_registration_t *smsf3_gpp_access_local_nonprim = NULL;
     if (smsf3_gpp_access) { 
     smsf3_gpp_access_local_nonprim = OpenAPI_smsf_registration_parseFromJSON(smsf3_gpp_access);
-}
+    }
 
     cJSON *smsf_non3_gpp_access = cJSON_GetObjectItemCaseSensitive(context_data_setsJSON, "smsfNon3GppAccess");
 
     OpenAPI_smsf_registration_t *smsf_non3_gpp_access_local_nonprim = NULL;
     if (smsf_non3_gpp_access) { 
     smsf_non3_gpp_access_local_nonprim = OpenAPI_smsf_registration_parseFromJSON(smsf_non3_gpp_access);
-}
+    }
 
     cJSON *subscription_data_subscriptions = cJSON_GetObjectItemCaseSensitive(context_data_setsJSON, "subscriptionDataSubscriptions");
 
@@ -320,7 +320,7 @@ OpenAPI_context_data_sets_t *OpenAPI_context_data_sets_parseFromJSON(cJSON *cont
 
         OpenAPI_list_add(subscription_data_subscriptionsList, subscription_data_subscriptionsItem);
     }
-}
+    }
 
     cJSON *smf_registrations = cJSON_GetObjectItemCaseSensitive(context_data_setsJSON, "smfRegistrations");
 
@@ -343,14 +343,14 @@ OpenAPI_context_data_sets_t *OpenAPI_context_data_sets_parseFromJSON(cJSON *cont
 
         OpenAPI_list_add(smf_registrationsList, smf_registrationsItem);
     }
-}
+    }
 
     cJSON *ip_sm_gw = cJSON_GetObjectItemCaseSensitive(context_data_setsJSON, "ipSmGw");
 
     OpenAPI_ip_sm_gw_registration_t *ip_sm_gw_local_nonprim = NULL;
     if (ip_sm_gw) { 
     ip_sm_gw_local_nonprim = OpenAPI_ip_sm_gw_registration_parseFromJSON(ip_sm_gw);
-}
+    }
 
     context_data_sets_local_var = OpenAPI_context_data_sets_create (
         amf3_gpp ? amf3_gpp_local_nonprim : NULL,

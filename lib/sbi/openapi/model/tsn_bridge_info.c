@@ -85,7 +85,7 @@ OpenAPI_tsn_bridge_info_t *OpenAPI_tsn_bridge_info_parseFromJSON(cJSON *tsn_brid
         ogs_error("OpenAPI_tsn_bridge_info_parseFromJSON() failed [bridge_id]");
         goto end;
     }
-}
+    }
 
     cJSON *dstt_addr = cJSON_GetObjectItemCaseSensitive(tsn_bridge_infoJSON, "dsttAddr");
 
@@ -94,7 +94,7 @@ OpenAPI_tsn_bridge_info_t *OpenAPI_tsn_bridge_info_parseFromJSON(cJSON *tsn_brid
         ogs_error("OpenAPI_tsn_bridge_info_parseFromJSON() failed [dstt_addr]");
         goto end;
     }
-}
+    }
 
     cJSON *dstt_port_num = cJSON_GetObjectItemCaseSensitive(tsn_bridge_infoJSON, "dsttPortNum");
 
@@ -103,7 +103,7 @@ OpenAPI_tsn_bridge_info_t *OpenAPI_tsn_bridge_info_parseFromJSON(cJSON *tsn_brid
         ogs_error("OpenAPI_tsn_bridge_info_parseFromJSON() failed [dstt_port_num]");
         goto end;
     }
-}
+    }
 
     cJSON *dstt_resid_time = cJSON_GetObjectItemCaseSensitive(tsn_bridge_infoJSON, "dsttResidTime");
 
@@ -112,7 +112,7 @@ OpenAPI_tsn_bridge_info_t *OpenAPI_tsn_bridge_info_parseFromJSON(cJSON *tsn_brid
         ogs_error("OpenAPI_tsn_bridge_info_parseFromJSON() failed [dstt_resid_time]");
         goto end;
     }
-}
+    }
 
     tsn_bridge_info_local_var = OpenAPI_tsn_bridge_info_create (
         bridge_id ? bridge_id->valuedouble : 0,

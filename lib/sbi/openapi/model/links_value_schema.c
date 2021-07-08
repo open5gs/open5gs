@@ -58,7 +58,7 @@ OpenAPI_links_value_schema_t *OpenAPI_links_value_schema_parseFromJSON(cJSON *li
         ogs_error("OpenAPI_links_value_schema_parseFromJSON() failed [href]");
         goto end;
     }
-}
+    }
 
     links_value_schema_local_var = OpenAPI_links_value_schema_create (
         href ? ogs_strdup_or_assert(href->valuestring) : NULL

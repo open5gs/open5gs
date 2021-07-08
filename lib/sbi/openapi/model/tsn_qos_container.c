@@ -75,7 +75,7 @@ OpenAPI_tsn_qos_container_t *OpenAPI_tsn_qos_container_parseFromJSON(cJSON *tsn_
         ogs_error("OpenAPI_tsn_qos_container_parseFromJSON() failed [max_tsc_burst_size]");
         goto end;
     }
-}
+    }
 
     cJSON *tsc_pack_delay = cJSON_GetObjectItemCaseSensitive(tsn_qos_containerJSON, "tscPackDelay");
 
@@ -84,7 +84,7 @@ OpenAPI_tsn_qos_container_t *OpenAPI_tsn_qos_container_parseFromJSON(cJSON *tsn_
         ogs_error("OpenAPI_tsn_qos_container_parseFromJSON() failed [tsc_pack_delay]");
         goto end;
     }
-}
+    }
 
     cJSON *tsc_prio_level = cJSON_GetObjectItemCaseSensitive(tsn_qos_containerJSON, "tscPrioLevel");
 
@@ -93,7 +93,7 @@ OpenAPI_tsn_qos_container_t *OpenAPI_tsn_qos_container_parseFromJSON(cJSON *tsn_
         ogs_error("OpenAPI_tsn_qos_container_parseFromJSON() failed [tsc_prio_level]");
         goto end;
     }
-}
+    }
 
     tsn_qos_container_local_var = OpenAPI_tsn_qos_container_create (
         max_tsc_burst_size ? max_tsc_burst_size->valuedouble : 0,

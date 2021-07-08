@@ -85,7 +85,7 @@ OpenAPI_wireline_service_area_restriction_t *OpenAPI_wireline_service_area_restr
         goto end;
     }
     restriction_typeVariable = OpenAPI_restriction_type_FromString(restriction_type->valuestring);
-}
+    }
 
     cJSON *areas = cJSON_GetObjectItemCaseSensitive(wireline_service_area_restrictionJSON, "areas");
 
@@ -108,7 +108,7 @@ OpenAPI_wireline_service_area_restriction_t *OpenAPI_wireline_service_area_restr
 
         OpenAPI_list_add(areasList, areasItem);
     }
-}
+    }
 
     wireline_service_area_restriction_local_var = OpenAPI_wireline_service_area_restriction_create (
         restriction_type ? restriction_typeVariable : 0,

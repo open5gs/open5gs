@@ -84,7 +84,7 @@ OpenAPI_usage_threshold_rm_t *OpenAPI_usage_threshold_rm_parseFromJSON(cJSON *us
         ogs_error("OpenAPI_usage_threshold_rm_parseFromJSON() failed [duration]");
         goto end;
     }
-}
+    }
 
     cJSON *total_volume = cJSON_GetObjectItemCaseSensitive(usage_threshold_rmJSON, "totalVolume");
 
@@ -93,7 +93,7 @@ OpenAPI_usage_threshold_rm_t *OpenAPI_usage_threshold_rm_parseFromJSON(cJSON *us
         ogs_error("OpenAPI_usage_threshold_rm_parseFromJSON() failed [total_volume]");
         goto end;
     }
-}
+    }
 
     cJSON *downlink_volume = cJSON_GetObjectItemCaseSensitive(usage_threshold_rmJSON, "downlinkVolume");
 
@@ -102,7 +102,7 @@ OpenAPI_usage_threshold_rm_t *OpenAPI_usage_threshold_rm_parseFromJSON(cJSON *us
         ogs_error("OpenAPI_usage_threshold_rm_parseFromJSON() failed [downlink_volume]");
         goto end;
     }
-}
+    }
 
     cJSON *uplink_volume = cJSON_GetObjectItemCaseSensitive(usage_threshold_rmJSON, "uplinkVolume");
 
@@ -111,7 +111,7 @@ OpenAPI_usage_threshold_rm_t *OpenAPI_usage_threshold_rm_parseFromJSON(cJSON *us
         ogs_error("OpenAPI_usage_threshold_rm_parseFromJSON() failed [uplink_volume]");
         goto end;
     }
-}
+    }
 
     usage_threshold_rm_local_var = OpenAPI_usage_threshold_rm_create (
         duration ? duration->valuedouble : 0,

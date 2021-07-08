@@ -90,7 +90,7 @@ OpenAPI_requested_usage_data_t *OpenAPI_requested_usage_data_parseFromJSON(cJSON
     }
     OpenAPI_list_add(ref_um_idsList , ogs_strdup_or_assert(ref_um_ids_local->valuestring));
                     }
-}
+    }
 
     cJSON *all_um_ids = cJSON_GetObjectItemCaseSensitive(requested_usage_dataJSON, "allUmIds");
 
@@ -99,7 +99,7 @@ OpenAPI_requested_usage_data_t *OpenAPI_requested_usage_data_parseFromJSON(cJSON
         ogs_error("OpenAPI_requested_usage_data_parseFromJSON() failed [all_um_ids]");
         goto end;
     }
-}
+    }
 
     requested_usage_data_local_var = OpenAPI_requested_usage_data_create (
         ref_um_ids ? ref_um_idsList : NULL,

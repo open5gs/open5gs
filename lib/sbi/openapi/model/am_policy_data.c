@@ -113,7 +113,7 @@ OpenAPI_am_policy_data_t *OpenAPI_am_policy_data_parseFromJSON(cJSON *am_policy_
             localMapObject->string, OpenAPI_presence_info_parseFromJSON(localMapObject));
         OpenAPI_list_add(pra_infosList , localMapKeyPair);
     }
-}
+    }
 
     cJSON *subsc_cats = cJSON_GetObjectItemCaseSensitive(am_policy_dataJSON, "subscCats");
 
@@ -133,7 +133,7 @@ OpenAPI_am_policy_data_t *OpenAPI_am_policy_data_parseFromJSON(cJSON *am_policy_
     }
     OpenAPI_list_add(subsc_catsList , ogs_strdup_or_assert(subsc_cats_local->valuestring));
                     }
-}
+    }
 
     am_policy_data_local_var = OpenAPI_am_policy_data_create (
         pra_infos ? pra_infosList : NULL,

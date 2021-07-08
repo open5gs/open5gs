@@ -58,7 +58,7 @@ OpenAPI_pdu_session_status_cfg_t *OpenAPI_pdu_session_status_cfg_parseFromJSON(c
         ogs_error("OpenAPI_pdu_session_status_cfg_parseFromJSON() failed [dnn]");
         goto end;
     }
-}
+    }
 
     pdu_session_status_cfg_local_var = OpenAPI_pdu_session_status_cfg_create (
         dnn ? ogs_strdup_or_assert(dnn->valuestring) : NULL

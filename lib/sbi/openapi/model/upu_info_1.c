@@ -164,7 +164,7 @@ OpenAPI_upu_info_1_t *OpenAPI_upu_info_1_parseFromJSON(cJSON *upu_info_1JSON)
         ogs_error("OpenAPI_upu_info_1_parseFromJSON() failed [upu_mac_iausf]");
         goto end;
     }
-}
+    }
 
     cJSON *counter_upu = cJSON_GetObjectItemCaseSensitive(upu_info_1JSON, "counterUpu");
 
@@ -173,7 +173,7 @@ OpenAPI_upu_info_1_t *OpenAPI_upu_info_1_parseFromJSON(cJSON *upu_info_1JSON)
         ogs_error("OpenAPI_upu_info_1_parseFromJSON() failed [counter_upu]");
         goto end;
     }
-}
+    }
 
     cJSON *provisioning_time = cJSON_GetObjectItemCaseSensitive(upu_info_1JSON, "provisioningTime");
     if (!provisioning_time) {

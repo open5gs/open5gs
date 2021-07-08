@@ -138,7 +138,7 @@ OpenAPI_notification_data_t *OpenAPI_notification_data_parseFromJSON(cJSON *noti
     OpenAPI_nf_profile_t *nf_profile_local_nonprim = NULL;
     if (nf_profile) { 
     nf_profile_local_nonprim = OpenAPI_nf_profile_parseFromJSON(nf_profile);
-}
+    }
 
     cJSON *profile_changes = cJSON_GetObjectItemCaseSensitive(notification_dataJSON, "profileChanges");
 
@@ -161,7 +161,7 @@ OpenAPI_notification_data_t *OpenAPI_notification_data_parseFromJSON(cJSON *noti
 
         OpenAPI_list_add(profile_changesList, profile_changesItem);
     }
-}
+    }
 
     cJSON *condition_event = cJSON_GetObjectItemCaseSensitive(notification_dataJSON, "conditionEvent");
 
@@ -172,7 +172,7 @@ OpenAPI_notification_data_t *OpenAPI_notification_data_parseFromJSON(cJSON *noti
         goto end;
     }
     condition_eventVariable = OpenAPI_condition_event_type_FromString(condition_event->valuestring);
-}
+    }
 
     notification_data_local_var = OpenAPI_notification_data_create (
         eventVariable,

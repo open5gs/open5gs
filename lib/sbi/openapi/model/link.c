@@ -58,7 +58,7 @@ OpenAPI_link_t *OpenAPI_link_parseFromJSON(cJSON *linkJSON)
         ogs_error("OpenAPI_link_parseFromJSON() failed [href]");
         goto end;
     }
-}
+    }
 
     link_local_var = OpenAPI_link_create (
         href ? ogs_strdup_or_assert(href->valuestring) : NULL

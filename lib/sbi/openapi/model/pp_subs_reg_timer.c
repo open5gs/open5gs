@@ -126,7 +126,7 @@ OpenAPI_pp_subs_reg_timer_t *OpenAPI_pp_subs_reg_timer_parseFromJSON(cJSON *pp_s
         ogs_error("OpenAPI_pp_subs_reg_timer_parseFromJSON() failed [validity_time]");
         goto end;
     }
-}
+    }
 
     cJSON *mtc_provider_information = cJSON_GetObjectItemCaseSensitive(pp_subs_reg_timerJSON, "mtcProviderInformation");
 
@@ -135,7 +135,7 @@ OpenAPI_pp_subs_reg_timer_t *OpenAPI_pp_subs_reg_timer_parseFromJSON(cJSON *pp_s
         ogs_error("OpenAPI_pp_subs_reg_timer_parseFromJSON() failed [mtc_provider_information]");
         goto end;
     }
-}
+    }
 
     pp_subs_reg_timer_local_var = OpenAPI_pp_subs_reg_timer_create (
         subs_reg_timer->valuedouble,

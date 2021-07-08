@@ -207,7 +207,7 @@ OpenAPI_pcscf_info_t *OpenAPI_pcscf_info_parseFromJSON(cJSON *pcscf_infoJSON)
 
         OpenAPI_list_add(access_typeList, (void *)OpenAPI_access_type_FromString(access_type_local_nonprimitive->valuestring));
     }
-}
+    }
 
     cJSON *dnn_list = cJSON_GetObjectItemCaseSensitive(pcscf_infoJSON, "dnnList");
 
@@ -227,7 +227,7 @@ OpenAPI_pcscf_info_t *OpenAPI_pcscf_info_parseFromJSON(cJSON *pcscf_infoJSON)
     }
     OpenAPI_list_add(dnn_listList , ogs_strdup_or_assert(dnn_list_local->valuestring));
                     }
-}
+    }
 
     cJSON *gm_fqdn = cJSON_GetObjectItemCaseSensitive(pcscf_infoJSON, "gmFqdn");
 
@@ -236,7 +236,7 @@ OpenAPI_pcscf_info_t *OpenAPI_pcscf_info_parseFromJSON(cJSON *pcscf_infoJSON)
         ogs_error("OpenAPI_pcscf_info_parseFromJSON() failed [gm_fqdn]");
         goto end;
     }
-}
+    }
 
     cJSON *gm_ipv4_addresses = cJSON_GetObjectItemCaseSensitive(pcscf_infoJSON, "gmIpv4Addresses");
 
@@ -256,7 +256,7 @@ OpenAPI_pcscf_info_t *OpenAPI_pcscf_info_parseFromJSON(cJSON *pcscf_infoJSON)
     }
     OpenAPI_list_add(gm_ipv4_addressesList , ogs_strdup_or_assert(gm_ipv4_addresses_local->valuestring));
                     }
-}
+    }
 
     cJSON *gm_ipv6_addresses = cJSON_GetObjectItemCaseSensitive(pcscf_infoJSON, "gmIpv6Addresses");
 
@@ -276,7 +276,7 @@ OpenAPI_pcscf_info_t *OpenAPI_pcscf_info_parseFromJSON(cJSON *pcscf_infoJSON)
     }
     OpenAPI_list_add(gm_ipv6_addressesList , ogs_strdup_or_assert(gm_ipv6_addresses_local->valuestring));
                     }
-}
+    }
 
     cJSON *served_ipv4_address_ranges = cJSON_GetObjectItemCaseSensitive(pcscf_infoJSON, "servedIpv4AddressRanges");
 
@@ -299,7 +299,7 @@ OpenAPI_pcscf_info_t *OpenAPI_pcscf_info_parseFromJSON(cJSON *pcscf_infoJSON)
 
         OpenAPI_list_add(served_ipv4_address_rangesList, served_ipv4_address_rangesItem);
     }
-}
+    }
 
     cJSON *served_ipv6_prefix_ranges = cJSON_GetObjectItemCaseSensitive(pcscf_infoJSON, "servedIpv6PrefixRanges");
 
@@ -322,7 +322,7 @@ OpenAPI_pcscf_info_t *OpenAPI_pcscf_info_parseFromJSON(cJSON *pcscf_infoJSON)
 
         OpenAPI_list_add(served_ipv6_prefix_rangesList, served_ipv6_prefix_rangesItem);
     }
-}
+    }
 
     pcscf_info_local_var = OpenAPI_pcscf_info_create (
         access_type ? access_typeList : NULL,

@@ -299,14 +299,14 @@ OpenAPI_app_session_context_update_data_t *OpenAPI_app_session_context_update_da
         ogs_error("OpenAPI_app_session_context_update_data_parseFromJSON() failed [af_app_id]");
         goto end;
     }
-}
+    }
 
     cJSON *af_rout_req = cJSON_GetObjectItemCaseSensitive(app_session_context_update_dataJSON, "afRoutReq");
 
     OpenAPI_af_routing_requirement_rm_t *af_rout_req_local_nonprim = NULL;
     if (af_rout_req) { 
     af_rout_req_local_nonprim = OpenAPI_af_routing_requirement_rm_parseFromJSON(af_rout_req);
-}
+    }
 
     cJSON *asp_id = cJSON_GetObjectItemCaseSensitive(app_session_context_update_dataJSON, "aspId");
 
@@ -315,7 +315,7 @@ OpenAPI_app_session_context_update_data_t *OpenAPI_app_session_context_update_da
         ogs_error("OpenAPI_app_session_context_update_data_parseFromJSON() failed [asp_id]");
         goto end;
     }
-}
+    }
 
     cJSON *bdt_ref_id = cJSON_GetObjectItemCaseSensitive(app_session_context_update_dataJSON, "bdtRefId");
 
@@ -324,14 +324,14 @@ OpenAPI_app_session_context_update_data_t *OpenAPI_app_session_context_update_da
         ogs_error("OpenAPI_app_session_context_update_data_parseFromJSON() failed [bdt_ref_id]");
         goto end;
     }
-}
+    }
 
     cJSON *ev_subsc = cJSON_GetObjectItemCaseSensitive(app_session_context_update_dataJSON, "evSubsc");
 
     OpenAPI_events_subsc_req_data_rm_t *ev_subsc_local_nonprim = NULL;
     if (ev_subsc) { 
     ev_subsc_local_nonprim = OpenAPI_events_subsc_req_data_rm_parseFromJSON(ev_subsc);
-}
+    }
 
     cJSON *mcptt_id = cJSON_GetObjectItemCaseSensitive(app_session_context_update_dataJSON, "mcpttId");
 
@@ -340,7 +340,7 @@ OpenAPI_app_session_context_update_data_t *OpenAPI_app_session_context_update_da
         ogs_error("OpenAPI_app_session_context_update_data_parseFromJSON() failed [mcptt_id]");
         goto end;
     }
-}
+    }
 
     cJSON *mc_video_id = cJSON_GetObjectItemCaseSensitive(app_session_context_update_dataJSON, "mcVideoId");
 
@@ -349,7 +349,7 @@ OpenAPI_app_session_context_update_data_t *OpenAPI_app_session_context_update_da
         ogs_error("OpenAPI_app_session_context_update_data_parseFromJSON() failed [mc_video_id]");
         goto end;
     }
-}
+    }
 
     cJSON *med_components = cJSON_GetObjectItemCaseSensitive(app_session_context_update_dataJSON, "medComponents");
 
@@ -372,7 +372,7 @@ OpenAPI_app_session_context_update_data_t *OpenAPI_app_session_context_update_da
             localMapObject->string, OpenAPI_media_component_rm_parseFromJSON(localMapObject));
         OpenAPI_list_add(med_componentsList , localMapKeyPair);
     }
-}
+    }
 
     cJSON *mps_id = cJSON_GetObjectItemCaseSensitive(app_session_context_update_dataJSON, "mpsId");
 
@@ -381,7 +381,7 @@ OpenAPI_app_session_context_update_data_t *OpenAPI_app_session_context_update_da
         ogs_error("OpenAPI_app_session_context_update_data_parseFromJSON() failed [mps_id]");
         goto end;
     }
-}
+    }
 
     cJSON *mcs_id = cJSON_GetObjectItemCaseSensitive(app_session_context_update_dataJSON, "mcsId");
 
@@ -390,14 +390,14 @@ OpenAPI_app_session_context_update_data_t *OpenAPI_app_session_context_update_da
         ogs_error("OpenAPI_app_session_context_update_data_parseFromJSON() failed [mcs_id]");
         goto end;
     }
-}
+    }
 
     cJSON *preempt_control_info = cJSON_GetObjectItemCaseSensitive(app_session_context_update_dataJSON, "preemptControlInfo");
 
     OpenAPI_preemption_control_information_rm_t *preempt_control_info_local_nonprim = NULL;
     if (preempt_control_info) { 
     preempt_control_info_local_nonprim = OpenAPI_preemption_control_information_rm_parseFromJSON(preempt_control_info);
-}
+    }
 
     cJSON *res_prio = cJSON_GetObjectItemCaseSensitive(app_session_context_update_dataJSON, "resPrio");
 
@@ -408,7 +408,7 @@ OpenAPI_app_session_context_update_data_t *OpenAPI_app_session_context_update_da
         goto end;
     }
     res_prioVariable = OpenAPI_reserv_priority_FromString(res_prio->valuestring);
-}
+    }
 
     cJSON *serv_inf_status = cJSON_GetObjectItemCaseSensitive(app_session_context_update_dataJSON, "servInfStatus");
 
@@ -419,7 +419,7 @@ OpenAPI_app_session_context_update_data_t *OpenAPI_app_session_context_update_da
         goto end;
     }
     serv_inf_statusVariable = OpenAPI_service_info_status_FromString(serv_inf_status->valuestring);
-}
+    }
 
     cJSON *sip_fork_ind = cJSON_GetObjectItemCaseSensitive(app_session_context_update_dataJSON, "sipForkInd");
 
@@ -430,7 +430,7 @@ OpenAPI_app_session_context_update_data_t *OpenAPI_app_session_context_update_da
         goto end;
     }
     sip_fork_indVariable = OpenAPI_sip_forking_indication_FromString(sip_fork_ind->valuestring);
-}
+    }
 
     cJSON *spon_id = cJSON_GetObjectItemCaseSensitive(app_session_context_update_dataJSON, "sponId");
 
@@ -439,7 +439,7 @@ OpenAPI_app_session_context_update_data_t *OpenAPI_app_session_context_update_da
         ogs_error("OpenAPI_app_session_context_update_data_parseFromJSON() failed [spon_id]");
         goto end;
     }
-}
+    }
 
     cJSON *spon_status = cJSON_GetObjectItemCaseSensitive(app_session_context_update_dataJSON, "sponStatus");
 
@@ -450,21 +450,21 @@ OpenAPI_app_session_context_update_data_t *OpenAPI_app_session_context_update_da
         goto end;
     }
     spon_statusVariable = OpenAPI_sponsoring_status_FromString(spon_status->valuestring);
-}
+    }
 
     cJSON *tsn_bridge_man_cont = cJSON_GetObjectItemCaseSensitive(app_session_context_update_dataJSON, "tsnBridgeManCont");
 
     OpenAPI_bridge_management_container_t *tsn_bridge_man_cont_local_nonprim = NULL;
     if (tsn_bridge_man_cont) { 
     tsn_bridge_man_cont_local_nonprim = OpenAPI_bridge_management_container_parseFromJSON(tsn_bridge_man_cont);
-}
+    }
 
     cJSON *tsn_port_man_cont_dstt = cJSON_GetObjectItemCaseSensitive(app_session_context_update_dataJSON, "tsnPortManContDstt");
 
     OpenAPI_port_management_container_t *tsn_port_man_cont_dstt_local_nonprim = NULL;
     if (tsn_port_man_cont_dstt) { 
     tsn_port_man_cont_dstt_local_nonprim = OpenAPI_port_management_container_parseFromJSON(tsn_port_man_cont_dstt);
-}
+    }
 
     cJSON *tsn_port_man_cont_nwtts = cJSON_GetObjectItemCaseSensitive(app_session_context_update_dataJSON, "tsnPortManContNwtts");
 
@@ -487,7 +487,7 @@ OpenAPI_app_session_context_update_data_t *OpenAPI_app_session_context_update_da
 
         OpenAPI_list_add(tsn_port_man_cont_nwttsList, tsn_port_man_cont_nwttsItem);
     }
-}
+    }
 
     app_session_context_update_data_local_var = OpenAPI_app_session_context_update_data_create (
         af_app_id ? ogs_strdup_or_assert(af_app_id->valuestring) : NULL,

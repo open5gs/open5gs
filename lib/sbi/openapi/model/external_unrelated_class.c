@@ -140,7 +140,7 @@ OpenAPI_external_unrelated_class_t *OpenAPI_external_unrelated_class_parseFromJS
 
         OpenAPI_list_add(lcs_client_externalsList, lcs_client_externalsItem);
     }
-}
+    }
 
     cJSON *af_externals = cJSON_GetObjectItemCaseSensitive(external_unrelated_classJSON, "afExternals");
 
@@ -163,7 +163,7 @@ OpenAPI_external_unrelated_class_t *OpenAPI_external_unrelated_class_parseFromJS
 
         OpenAPI_list_add(af_externalsList, af_externalsItem);
     }
-}
+    }
 
     cJSON *lcs_client_group_externals = cJSON_GetObjectItemCaseSensitive(external_unrelated_classJSON, "lcsClientGroupExternals");
 
@@ -186,7 +186,7 @@ OpenAPI_external_unrelated_class_t *OpenAPI_external_unrelated_class_parseFromJS
 
         OpenAPI_list_add(lcs_client_group_externalsList, lcs_client_group_externalsItem);
     }
-}
+    }
 
     external_unrelated_class_local_var = OpenAPI_external_unrelated_class_create (
         lcs_client_externals ? lcs_client_externalsList : NULL,

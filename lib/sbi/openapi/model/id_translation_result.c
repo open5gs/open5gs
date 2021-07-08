@@ -76,7 +76,7 @@ OpenAPI_id_translation_result_t *OpenAPI_id_translation_result_parseFromJSON(cJS
         ogs_error("OpenAPI_id_translation_result_parseFromJSON() failed [supported_features]");
         goto end;
     }
-}
+    }
 
     cJSON *supi = cJSON_GetObjectItemCaseSensitive(id_translation_resultJSON, "supi");
     if (!supi) {
@@ -97,7 +97,7 @@ OpenAPI_id_translation_result_t *OpenAPI_id_translation_result_parseFromJSON(cJS
         ogs_error("OpenAPI_id_translation_result_parseFromJSON() failed [gpsi]");
         goto end;
     }
-}
+    }
 
     id_translation_result_local_var = OpenAPI_id_translation_result_create (
         supported_features ? ogs_strdup_or_assert(supported_features->valuestring) : NULL,

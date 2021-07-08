@@ -771,7 +771,7 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
         ogs_error("OpenAPI_ue_context_parseFromJSON() failed [supi]");
         goto end;
     }
-}
+    }
 
     cJSON *supi_unauth_ind = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "supiUnauthInd");
 
@@ -780,7 +780,7 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
         ogs_error("OpenAPI_ue_context_parseFromJSON() failed [supi_unauth_ind]");
         goto end;
     }
-}
+    }
 
     cJSON *gpsi_list = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "gpsiList");
 
@@ -800,7 +800,7 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
     }
     OpenAPI_list_add(gpsi_listList , ogs_strdup_or_assert(gpsi_list_local->valuestring));
                     }
-}
+    }
 
     cJSON *pei = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "pei");
 
@@ -809,7 +809,7 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
         ogs_error("OpenAPI_ue_context_parseFromJSON() failed [pei]");
         goto end;
     }
-}
+    }
 
     cJSON *udm_group_id = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "udmGroupId");
 
@@ -818,7 +818,7 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
         ogs_error("OpenAPI_ue_context_parseFromJSON() failed [udm_group_id]");
         goto end;
     }
-}
+    }
 
     cJSON *ausf_group_id = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "ausfGroupId");
 
@@ -827,7 +827,7 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
         ogs_error("OpenAPI_ue_context_parseFromJSON() failed [ausf_group_id]");
         goto end;
     }
-}
+    }
 
     cJSON *pcf_group_id = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "pcfGroupId");
 
@@ -836,7 +836,7 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
         ogs_error("OpenAPI_ue_context_parseFromJSON() failed [pcf_group_id]");
         goto end;
     }
-}
+    }
 
     cJSON *routing_indicator = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "routingIndicator");
 
@@ -845,7 +845,7 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
         ogs_error("OpenAPI_ue_context_parseFromJSON() failed [routing_indicator]");
         goto end;
     }
-}
+    }
 
     cJSON *group_list = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "groupList");
 
@@ -865,7 +865,7 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
     }
     OpenAPI_list_add(group_listList , ogs_strdup_or_assert(group_list_local->valuestring));
                     }
-}
+    }
 
     cJSON *drx_parameter = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "drxParameter");
 
@@ -874,7 +874,7 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
         ogs_error("OpenAPI_ue_context_parseFromJSON() failed [drx_parameter]");
         goto end;
     }
-}
+    }
 
     cJSON *sub_rfsp = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "subRfsp");
 
@@ -883,7 +883,7 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
         ogs_error("OpenAPI_ue_context_parseFromJSON() failed [sub_rfsp]");
         goto end;
     }
-}
+    }
 
     cJSON *used_rfsp = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "usedRfsp");
 
@@ -892,14 +892,14 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
         ogs_error("OpenAPI_ue_context_parseFromJSON() failed [used_rfsp]");
         goto end;
     }
-}
+    }
 
     cJSON *sub_ue_ambr = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "subUeAmbr");
 
     OpenAPI_ambr_t *sub_ue_ambr_local_nonprim = NULL;
     if (sub_ue_ambr) { 
     sub_ue_ambr_local_nonprim = OpenAPI_ambr_parseFromJSON(sub_ue_ambr);
-}
+    }
 
     cJSON *smsf_id = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "smsfId");
 
@@ -908,14 +908,14 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
         ogs_error("OpenAPI_ue_context_parseFromJSON() failed [smsf_id]");
         goto end;
     }
-}
+    }
 
     cJSON *seaf_data = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "seafData");
 
     OpenAPI_seaf_data_t *seaf_data_local_nonprim = NULL;
     if (seaf_data) { 
     seaf_data_local_nonprim = OpenAPI_seaf_data_parseFromJSON(seaf_data);
-}
+    }
 
     cJSON *_5g_mm_capability = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "5gMmCapability");
 
@@ -924,7 +924,7 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
         ogs_error("OpenAPI_ue_context_parseFromJSON() failed [_5g_mm_capability]");
         goto end;
     }
-}
+    }
 
     cJSON *pcf_id = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "pcfId");
 
@@ -933,7 +933,7 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
         ogs_error("OpenAPI_ue_context_parseFromJSON() failed [pcf_id]");
         goto end;
     }
-}
+    }
 
     cJSON *pcf_set_id = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "pcfSetId");
 
@@ -942,7 +942,7 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
         ogs_error("OpenAPI_ue_context_parseFromJSON() failed [pcf_set_id]");
         goto end;
     }
-}
+    }
 
     cJSON *pcf_amp_service_set_id = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "pcfAmpServiceSetId");
 
@@ -951,7 +951,7 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
         ogs_error("OpenAPI_ue_context_parseFromJSON() failed [pcf_amp_service_set_id]");
         goto end;
     }
-}
+    }
 
     cJSON *pcf_uep_service_set_id = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "pcfUepServiceSetId");
 
@@ -960,7 +960,7 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
         ogs_error("OpenAPI_ue_context_parseFromJSON() failed [pcf_uep_service_set_id]");
         goto end;
     }
-}
+    }
 
     cJSON *pcf_binding = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "pcfBinding");
 
@@ -971,7 +971,7 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
         goto end;
     }
     pcf_bindingVariable = OpenAPI_sbi_binding_level_FromString(pcf_binding->valuestring);
-}
+    }
 
     cJSON *pcf_am_policy_uri = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "pcfAmPolicyUri");
 
@@ -980,7 +980,7 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
         ogs_error("OpenAPI_ue_context_parseFromJSON() failed [pcf_am_policy_uri]");
         goto end;
     }
-}
+    }
 
     cJSON *am_policy_req_trigger_list = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "amPolicyReqTriggerList");
 
@@ -1002,7 +1002,7 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
 
         OpenAPI_list_add(am_policy_req_trigger_listList, (void *)OpenAPI_policy_req_trigger_FromString(am_policy_req_trigger_list_local_nonprimitive->valuestring));
     }
-}
+    }
 
     cJSON *pcf_ue_policy_uri = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "pcfUePolicyUri");
 
@@ -1011,7 +1011,7 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
         ogs_error("OpenAPI_ue_context_parseFromJSON() failed [pcf_ue_policy_uri]");
         goto end;
     }
-}
+    }
 
     cJSON *ue_policy_req_trigger_list = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "uePolicyReqTriggerList");
 
@@ -1033,7 +1033,7 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
 
         OpenAPI_list_add(ue_policy_req_trigger_listList, (void *)OpenAPI_policy_req_trigger_FromString(ue_policy_req_trigger_list_local_nonprimitive->valuestring));
     }
-}
+    }
 
     cJSON *hpcf_id = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "hpcfId");
 
@@ -1042,7 +1042,7 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
         ogs_error("OpenAPI_ue_context_parseFromJSON() failed [hpcf_id]");
         goto end;
     }
-}
+    }
 
     cJSON *hpcf_set_id = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "hpcfSetId");
 
@@ -1051,7 +1051,7 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
         ogs_error("OpenAPI_ue_context_parseFromJSON() failed [hpcf_set_id]");
         goto end;
     }
-}
+    }
 
     cJSON *restricted_rat_list = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "restrictedRatList");
 
@@ -1073,7 +1073,7 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
 
         OpenAPI_list_add(restricted_rat_listList, (void *)OpenAPI_rat_type_FromString(restricted_rat_list_local_nonprimitive->valuestring));
     }
-}
+    }
 
     cJSON *forbidden_area_list = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "forbiddenAreaList");
 
@@ -1096,14 +1096,14 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
 
         OpenAPI_list_add(forbidden_area_listList, forbidden_area_listItem);
     }
-}
+    }
 
     cJSON *service_area_restriction = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "serviceAreaRestriction");
 
     OpenAPI_service_area_restriction_t *service_area_restriction_local_nonprim = NULL;
     if (service_area_restriction) { 
     service_area_restriction_local_nonprim = OpenAPI_service_area_restriction_parseFromJSON(service_area_restriction);
-}
+    }
 
     cJSON *restricted_core_nw_type_list = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "restrictedCoreNwTypeList");
 
@@ -1125,7 +1125,7 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
 
         OpenAPI_list_add(restricted_core_nw_type_listList, (void *)OpenAPI_core_network_type_FromString(restricted_core_nw_type_list_local_nonprimitive->valuestring));
     }
-}
+    }
 
     cJSON *event_subscription_list = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "eventSubscriptionList");
 
@@ -1148,7 +1148,7 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
 
         OpenAPI_list_add(event_subscription_listList, event_subscription_listItem);
     }
-}
+    }
 
     cJSON *mm_context_list = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "mmContextList");
 
@@ -1171,7 +1171,7 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
 
         OpenAPI_list_add(mm_context_listList, mm_context_listItem);
     }
-}
+    }
 
     cJSON *session_context_list = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "sessionContextList");
 
@@ -1194,14 +1194,14 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
 
         OpenAPI_list_add(session_context_listList, session_context_listItem);
     }
-}
+    }
 
     cJSON *trace_data = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "traceData");
 
     OpenAPI_trace_data_t *trace_data_local_nonprim = NULL;
     if (trace_data) { 
     trace_data_local_nonprim = OpenAPI_trace_data_parseFromJSON(trace_data);
-}
+    }
 
     cJSON *service_gap_expiry_time = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "serviceGapExpiryTime");
 
@@ -1210,7 +1210,7 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
         ogs_error("OpenAPI_ue_context_parseFromJSON() failed [service_gap_expiry_time]");
         goto end;
     }
-}
+    }
 
     cJSON *stn_sr = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "stnSr");
 
@@ -1219,7 +1219,7 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
         ogs_error("OpenAPI_ue_context_parseFromJSON() failed [stn_sr]");
         goto end;
     }
-}
+    }
 
     cJSON *c_msisdn = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "cMsisdn");
 
@@ -1228,7 +1228,7 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
         ogs_error("OpenAPI_ue_context_parseFromJSON() failed [c_msisdn]");
         goto end;
     }
-}
+    }
 
     cJSON *ms_classmark2 = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "msClassmark2");
 
@@ -1237,7 +1237,7 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
         ogs_error("OpenAPI_ue_context_parseFromJSON() failed [ms_classmark2]");
         goto end;
     }
-}
+    }
 
     cJSON *supported_codec_list = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "supportedCodecList");
 
@@ -1252,7 +1252,7 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
 
     cJSON_ArrayForEach(supported_codec_list_local, supported_codec_list) {
                     }
-}
+    }
 
     cJSON *small_data_rate_status_infos = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "smallDataRateStatusInfos");
 
@@ -1275,7 +1275,7 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
 
         OpenAPI_list_add(small_data_rate_status_infosList, small_data_rate_status_infosItem);
     }
-}
+    }
 
     cJSON *restricted_primary_rat_list = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "restrictedPrimaryRatList");
 
@@ -1297,7 +1297,7 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
 
         OpenAPI_list_add(restricted_primary_rat_listList, (void *)OpenAPI_rat_type_FromString(restricted_primary_rat_list_local_nonprimitive->valuestring));
     }
-}
+    }
 
     cJSON *restricted_secondary_rat_list = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "restrictedSecondaryRatList");
 
@@ -1319,14 +1319,14 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
 
         OpenAPI_list_add(restricted_secondary_rat_listList, (void *)OpenAPI_rat_type_FromString(restricted_secondary_rat_list_local_nonprimitive->valuestring));
     }
-}
+    }
 
     cJSON *v2x_context = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "v2xContext");
 
     OpenAPI_v2x_context_t *v2x_context_local_nonprim = NULL;
     if (v2x_context) { 
     v2x_context_local_nonprim = OpenAPI_v2x_context_parseFromJSON(v2x_context);
-}
+    }
 
     cJSON *lte_cat_m_ind = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "lteCatMInd");
 
@@ -1335,21 +1335,21 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
         ogs_error("OpenAPI_ue_context_parseFromJSON() failed [lte_cat_m_ind]");
         goto end;
     }
-}
+    }
 
     cJSON *mo_exp_data_counter = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "moExpDataCounter");
 
     OpenAPI_mo_exp_data_counter_t *mo_exp_data_counter_local_nonprim = NULL;
     if (mo_exp_data_counter) { 
     mo_exp_data_counter_local_nonprim = OpenAPI_mo_exp_data_counter_parseFromJSON(mo_exp_data_counter);
-}
+    }
 
     cJSON *cag_data = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "cagData");
 
     OpenAPI_cag_data_t *cag_data_local_nonprim = NULL;
     if (cag_data) { 
     cag_data_local_nonprim = OpenAPI_cag_data_parseFromJSON(cag_data);
-}
+    }
 
     cJSON *management_mdt_ind = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "managementMdtInd");
 
@@ -1358,21 +1358,21 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
         ogs_error("OpenAPI_ue_context_parseFromJSON() failed [management_mdt_ind]");
         goto end;
     }
-}
+    }
 
     cJSON *immediate_mdt_conf = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "immediateMdtConf");
 
     OpenAPI_immediate_mdt_conf_t *immediate_mdt_conf_local_nonprim = NULL;
     if (immediate_mdt_conf) { 
     immediate_mdt_conf_local_nonprim = OpenAPI_immediate_mdt_conf_parseFromJSON(immediate_mdt_conf);
-}
+    }
 
     cJSON *ec_restriction_data_wb = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "ecRestrictionDataWb");
 
     OpenAPI_ec_restriction_data_wb_t *ec_restriction_data_wb_local_nonprim = NULL;
     if (ec_restriction_data_wb) { 
     ec_restriction_data_wb_local_nonprim = OpenAPI_ec_restriction_data_wb_parseFromJSON(ec_restriction_data_wb);
-}
+    }
 
     cJSON *ec_restriction_data_nb = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "ecRestrictionDataNb");
 
@@ -1381,7 +1381,7 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
         ogs_error("OpenAPI_ue_context_parseFromJSON() failed [ec_restriction_data_nb]");
         goto end;
     }
-}
+    }
 
     cJSON *iab_operation_allowed = cJSON_GetObjectItemCaseSensitive(ue_contextJSON, "iabOperationAllowed");
 
@@ -1390,7 +1390,7 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
         ogs_error("OpenAPI_ue_context_parseFromJSON() failed [iab_operation_allowed]");
         goto end;
     }
-}
+    }
 
     ue_context_local_var = OpenAPI_ue_context_create (
         supi ? ogs_strdup_or_assert(supi->valuestring) : NULL,

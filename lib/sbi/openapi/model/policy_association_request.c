@@ -476,7 +476,7 @@ OpenAPI_policy_association_request_t *OpenAPI_policy_association_request_parseFr
     }
     OpenAPI_list_add(alt_notif_ipv4_addrsList , ogs_strdup_or_assert(alt_notif_ipv4_addrs_local->valuestring));
                     }
-}
+    }
 
     cJSON *alt_notif_ipv6_addrs = cJSON_GetObjectItemCaseSensitive(policy_association_requestJSON, "altNotifIpv6Addrs");
 
@@ -496,7 +496,7 @@ OpenAPI_policy_association_request_t *OpenAPI_policy_association_request_parseFr
     }
     OpenAPI_list_add(alt_notif_ipv6_addrsList , ogs_strdup_or_assert(alt_notif_ipv6_addrs_local->valuestring));
                     }
-}
+    }
 
     cJSON *alt_notif_fqdns = cJSON_GetObjectItemCaseSensitive(policy_association_requestJSON, "altNotifFqdns");
 
@@ -516,7 +516,7 @@ OpenAPI_policy_association_request_t *OpenAPI_policy_association_request_parseFr
     }
     OpenAPI_list_add(alt_notif_fqdnsList , ogs_strdup_or_assert(alt_notif_fqdns_local->valuestring));
                     }
-}
+    }
 
     cJSON *supi = cJSON_GetObjectItemCaseSensitive(policy_association_requestJSON, "supi");
     if (!supi) {
@@ -537,7 +537,7 @@ OpenAPI_policy_association_request_t *OpenAPI_policy_association_request_parseFr
         ogs_error("OpenAPI_policy_association_request_parseFromJSON() failed [gpsi]");
         goto end;
     }
-}
+    }
 
     cJSON *access_type = cJSON_GetObjectItemCaseSensitive(policy_association_requestJSON, "accessType");
 
@@ -548,7 +548,7 @@ OpenAPI_policy_association_request_t *OpenAPI_policy_association_request_parseFr
         goto end;
     }
     access_typeVariable = OpenAPI_access_type_FromString(access_type->valuestring);
-}
+    }
 
     cJSON *access_types = cJSON_GetObjectItemCaseSensitive(policy_association_requestJSON, "accessTypes");
 
@@ -570,7 +570,7 @@ OpenAPI_policy_association_request_t *OpenAPI_policy_association_request_parseFr
 
         OpenAPI_list_add(access_typesList, (void *)OpenAPI_access_type_FromString(access_types_local_nonprimitive->valuestring));
     }
-}
+    }
 
     cJSON *pei = cJSON_GetObjectItemCaseSensitive(policy_association_requestJSON, "pei");
 
@@ -579,14 +579,14 @@ OpenAPI_policy_association_request_t *OpenAPI_policy_association_request_parseFr
         ogs_error("OpenAPI_policy_association_request_parseFromJSON() failed [pei]");
         goto end;
     }
-}
+    }
 
     cJSON *user_loc = cJSON_GetObjectItemCaseSensitive(policy_association_requestJSON, "userLoc");
 
     OpenAPI_user_location_t *user_loc_local_nonprim = NULL;
     if (user_loc) { 
     user_loc_local_nonprim = OpenAPI_user_location_parseFromJSON(user_loc);
-}
+    }
 
     cJSON *time_zone = cJSON_GetObjectItemCaseSensitive(policy_association_requestJSON, "timeZone");
 
@@ -595,14 +595,14 @@ OpenAPI_policy_association_request_t *OpenAPI_policy_association_request_parseFr
         ogs_error("OpenAPI_policy_association_request_parseFromJSON() failed [time_zone]");
         goto end;
     }
-}
+    }
 
     cJSON *serving_plmn = cJSON_GetObjectItemCaseSensitive(policy_association_requestJSON, "servingPlmn");
 
     OpenAPI_plmn_id_nid_t *serving_plmn_local_nonprim = NULL;
     if (serving_plmn) { 
     serving_plmn_local_nonprim = OpenAPI_plmn_id_nid_parseFromJSON(serving_plmn);
-}
+    }
 
     cJSON *rat_type = cJSON_GetObjectItemCaseSensitive(policy_association_requestJSON, "ratType");
 
@@ -613,7 +613,7 @@ OpenAPI_policy_association_request_t *OpenAPI_policy_association_request_parseFr
         goto end;
     }
     rat_typeVariable = OpenAPI_rat_type_FromString(rat_type->valuestring);
-}
+    }
 
     cJSON *rat_types = cJSON_GetObjectItemCaseSensitive(policy_association_requestJSON, "ratTypes");
 
@@ -635,7 +635,7 @@ OpenAPI_policy_association_request_t *OpenAPI_policy_association_request_parseFr
 
         OpenAPI_list_add(rat_typesList, (void *)OpenAPI_rat_type_FromString(rat_types_local_nonprimitive->valuestring));
     }
-}
+    }
 
     cJSON *group_ids = cJSON_GetObjectItemCaseSensitive(policy_association_requestJSON, "groupIds");
 
@@ -655,21 +655,21 @@ OpenAPI_policy_association_request_t *OpenAPI_policy_association_request_parseFr
     }
     OpenAPI_list_add(group_idsList , ogs_strdup_or_assert(group_ids_local->valuestring));
                     }
-}
+    }
 
     cJSON *serv_area_res = cJSON_GetObjectItemCaseSensitive(policy_association_requestJSON, "servAreaRes");
 
     OpenAPI_service_area_restriction_t *serv_area_res_local_nonprim = NULL;
     if (serv_area_res) { 
     serv_area_res_local_nonprim = OpenAPI_service_area_restriction_parseFromJSON(serv_area_res);
-}
+    }
 
     cJSON *wl_serv_area_res = cJSON_GetObjectItemCaseSensitive(policy_association_requestJSON, "wlServAreaRes");
 
     OpenAPI_wireline_service_area_restriction_t *wl_serv_area_res_local_nonprim = NULL;
     if (wl_serv_area_res) { 
     wl_serv_area_res_local_nonprim = OpenAPI_wireline_service_area_restriction_parseFromJSON(wl_serv_area_res);
-}
+    }
 
     cJSON *rfsp = cJSON_GetObjectItemCaseSensitive(policy_association_requestJSON, "rfsp");
 
@@ -678,14 +678,14 @@ OpenAPI_policy_association_request_t *OpenAPI_policy_association_request_parseFr
         ogs_error("OpenAPI_policy_association_request_parseFromJSON() failed [rfsp]");
         goto end;
     }
-}
+    }
 
     cJSON *ue_ambr = cJSON_GetObjectItemCaseSensitive(policy_association_requestJSON, "ueAmbr");
 
     OpenAPI_ambr_t *ue_ambr_local_nonprim = NULL;
     if (ue_ambr) { 
     ue_ambr_local_nonprim = OpenAPI_ambr_parseFromJSON(ue_ambr);
-}
+    }
 
     cJSON *allowed_snssais = cJSON_GetObjectItemCaseSensitive(policy_association_requestJSON, "allowedSnssais");
 
@@ -708,7 +708,7 @@ OpenAPI_policy_association_request_t *OpenAPI_policy_association_request_parseFr
 
         OpenAPI_list_add(allowed_snssaisList, allowed_snssaisItem);
     }
-}
+    }
 
     cJSON *mapping_snssais = cJSON_GetObjectItemCaseSensitive(policy_association_requestJSON, "mappingSnssais");
 
@@ -731,7 +731,7 @@ OpenAPI_policy_association_request_t *OpenAPI_policy_association_request_parseFr
 
         OpenAPI_list_add(mapping_snssaisList, mapping_snssaisItem);
     }
-}
+    }
 
     cJSON *n3g_allowed_snssais = cJSON_GetObjectItemCaseSensitive(policy_association_requestJSON, "n3gAllowedSnssais");
 
@@ -754,14 +754,14 @@ OpenAPI_policy_association_request_t *OpenAPI_policy_association_request_parseFr
 
         OpenAPI_list_add(n3g_allowed_snssaisList, n3g_allowed_snssaisItem);
     }
-}
+    }
 
     cJSON *guami = cJSON_GetObjectItemCaseSensitive(policy_association_requestJSON, "guami");
 
     OpenAPI_guami_t *guami_local_nonprim = NULL;
     if (guami) { 
     guami_local_nonprim = OpenAPI_guami_parseFromJSON(guami);
-}
+    }
 
     cJSON *service_name = cJSON_GetObjectItemCaseSensitive(policy_association_requestJSON, "serviceName");
 
@@ -770,14 +770,14 @@ OpenAPI_policy_association_request_t *OpenAPI_policy_association_request_parseFr
         ogs_error("OpenAPI_policy_association_request_parseFromJSON() failed [service_name]");
         goto end;
     }
-}
+    }
 
     cJSON *trace_req = cJSON_GetObjectItemCaseSensitive(policy_association_requestJSON, "traceReq");
 
     OpenAPI_trace_data_t *trace_req_local_nonprim = NULL;
     if (trace_req) { 
     trace_req_local_nonprim = OpenAPI_trace_data_parseFromJSON(trace_req);
-}
+    }
 
     cJSON *supp_feat = cJSON_GetObjectItemCaseSensitive(policy_association_requestJSON, "suppFeat");
     if (!supp_feat) {

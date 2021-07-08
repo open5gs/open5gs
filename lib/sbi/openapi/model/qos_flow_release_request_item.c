@@ -85,7 +85,7 @@ OpenAPI_qos_flow_release_request_item_t *OpenAPI_qos_flow_release_request_item_p
         ogs_error("OpenAPI_qos_flow_release_request_item_parseFromJSON() failed [qos_rules]");
         goto end;
     }
-}
+    }
 
     cJSON *qos_flow_description = cJSON_GetObjectItemCaseSensitive(qos_flow_release_request_itemJSON, "qosFlowDescription");
 
@@ -94,7 +94,7 @@ OpenAPI_qos_flow_release_request_item_t *OpenAPI_qos_flow_release_request_item_p
         ogs_error("OpenAPI_qos_flow_release_request_item_parseFromJSON() failed [qos_flow_description]");
         goto end;
     }
-}
+    }
 
     qos_flow_release_request_item_local_var = OpenAPI_qos_flow_release_request_item_create (
         qfi->valuedouble,

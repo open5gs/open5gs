@@ -109,7 +109,7 @@ OpenAPI_sor_data_t *OpenAPI_sor_data_parseFromJSON(cJSON *sor_dataJSON)
         ogs_error("OpenAPI_sor_data_parseFromJSON() failed [sor_xmac_iue]");
         goto end;
     }
-}
+    }
 
     cJSON *sor_mac_iue = cJSON_GetObjectItemCaseSensitive(sor_dataJSON, "sorMacIue");
 
@@ -118,7 +118,7 @@ OpenAPI_sor_data_t *OpenAPI_sor_data_parseFromJSON(cJSON *sor_dataJSON)
         ogs_error("OpenAPI_sor_data_parseFromJSON() failed [sor_mac_iue]");
         goto end;
     }
-}
+    }
 
     sor_data_local_var = OpenAPI_sor_data_create (
         ogs_strdup_or_assert(provisioning_time->valuestring),

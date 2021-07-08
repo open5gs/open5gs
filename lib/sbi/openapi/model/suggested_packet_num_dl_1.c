@@ -77,7 +77,7 @@ OpenAPI_suggested_packet_num_dl_1_t *OpenAPI_suggested_packet_num_dl_1_parseFrom
         ogs_error("OpenAPI_suggested_packet_num_dl_1_parseFromJSON() failed [validity_time]");
         goto end;
     }
-}
+    }
 
     suggested_packet_num_dl_1_local_var = OpenAPI_suggested_packet_num_dl_1_create (
         suggested_packet_num_dl->valuedouble,

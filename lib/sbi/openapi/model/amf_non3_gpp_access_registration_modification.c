@@ -126,7 +126,7 @@ OpenAPI_amf_non3_gpp_access_registration_modification_t *OpenAPI_amf_non3_gpp_ac
         ogs_error("OpenAPI_amf_non3_gpp_access_registration_modification_parseFromJSON() failed [purge_flag]");
         goto end;
     }
-}
+    }
 
     cJSON *pei = cJSON_GetObjectItemCaseSensitive(amf_non3_gpp_access_registration_modificationJSON, "pei");
 
@@ -135,7 +135,7 @@ OpenAPI_amf_non3_gpp_access_registration_modification_t *OpenAPI_amf_non3_gpp_ac
         ogs_error("OpenAPI_amf_non3_gpp_access_registration_modification_parseFromJSON() failed [pei]");
         goto end;
     }
-}
+    }
 
     cJSON *ims_vo_ps = cJSON_GetObjectItemCaseSensitive(amf_non3_gpp_access_registration_modificationJSON, "imsVoPs");
 
@@ -146,7 +146,7 @@ OpenAPI_amf_non3_gpp_access_registration_modification_t *OpenAPI_amf_non3_gpp_ac
         goto end;
     }
     ims_vo_psVariable = OpenAPI_ims_vo_ps_FromString(ims_vo_ps->valuestring);
-}
+    }
 
     cJSON *backup_amf_info = cJSON_GetObjectItemCaseSensitive(amf_non3_gpp_access_registration_modificationJSON, "backupAmfInfo");
 
@@ -169,7 +169,7 @@ OpenAPI_amf_non3_gpp_access_registration_modification_t *OpenAPI_amf_non3_gpp_ac
 
         OpenAPI_list_add(backup_amf_infoList, backup_amf_infoItem);
     }
-}
+    }
 
     amf_non3_gpp_access_registration_modification_local_var = OpenAPI_amf_non3_gpp_access_registration_modification_create (
         guami_local_nonprim,

@@ -58,7 +58,7 @@ OpenAPI_pfd_data_for_app_ext_all_of_t *OpenAPI_pfd_data_for_app_ext_all_of_parse
         ogs_error("OpenAPI_pfd_data_for_app_ext_all_of_parseFromJSON() failed [supp_feat]");
         goto end;
     }
-}
+    }
 
     pfd_data_for_app_ext_all_of_local_var = OpenAPI_pfd_data_for_app_ext_all_of_create (
         supp_feat ? ogs_strdup_or_assert(supp_feat->valuestring) : NULL

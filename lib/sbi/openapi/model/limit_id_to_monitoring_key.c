@@ -101,7 +101,7 @@ OpenAPI_limit_id_to_monitoring_key_t *OpenAPI_limit_id_to_monitoring_key_parseFr
     }
     OpenAPI_list_add(monkeyList , ogs_strdup_or_assert(monkey_local->valuestring));
                     }
-}
+    }
 
     limit_id_to_monitoring_key_local_var = OpenAPI_limit_id_to_monitoring_key_create (
         ogs_strdup_or_assert(limit_id->valuestring),

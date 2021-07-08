@@ -151,7 +151,7 @@ OpenAPI_amf3_gpp_access_registration_modification_t *OpenAPI_amf3_gpp_access_reg
         ogs_error("OpenAPI_amf3_gpp_access_registration_modification_parseFromJSON() failed [purge_flag]");
         goto end;
     }
-}
+    }
 
     cJSON *pei = cJSON_GetObjectItemCaseSensitive(amf3_gpp_access_registration_modificationJSON, "pei");
 
@@ -160,7 +160,7 @@ OpenAPI_amf3_gpp_access_registration_modification_t *OpenAPI_amf3_gpp_access_reg
         ogs_error("OpenAPI_amf3_gpp_access_registration_modification_parseFromJSON() failed [pei]");
         goto end;
     }
-}
+    }
 
     cJSON *ims_vo_ps = cJSON_GetObjectItemCaseSensitive(amf3_gpp_access_registration_modificationJSON, "imsVoPs");
 
@@ -171,7 +171,7 @@ OpenAPI_amf3_gpp_access_registration_modification_t *OpenAPI_amf3_gpp_access_reg
         goto end;
     }
     ims_vo_psVariable = OpenAPI_ims_vo_ps_FromString(ims_vo_ps->valuestring);
-}
+    }
 
     cJSON *backup_amf_info = cJSON_GetObjectItemCaseSensitive(amf3_gpp_access_registration_modificationJSON, "backupAmfInfo");
 
@@ -194,14 +194,14 @@ OpenAPI_amf3_gpp_access_registration_modification_t *OpenAPI_amf3_gpp_access_reg
 
         OpenAPI_list_add(backup_amf_infoList, backup_amf_infoItem);
     }
-}
+    }
 
     cJSON *eps_interworking_info = cJSON_GetObjectItemCaseSensitive(amf3_gpp_access_registration_modificationJSON, "epsInterworkingInfo");
 
     OpenAPI_eps_interworking_info_t *eps_interworking_info_local_nonprim = NULL;
     if (eps_interworking_info) { 
     eps_interworking_info_local_nonprim = OpenAPI_eps_interworking_info_parseFromJSON(eps_interworking_info);
-}
+    }
 
     cJSON *ue_srvcc_capability = cJSON_GetObjectItemCaseSensitive(amf3_gpp_access_registration_modificationJSON, "ueSrvccCapability");
 
@@ -210,7 +210,7 @@ OpenAPI_amf3_gpp_access_registration_modification_t *OpenAPI_amf3_gpp_access_reg
         ogs_error("OpenAPI_amf3_gpp_access_registration_modification_parseFromJSON() failed [ue_srvcc_capability]");
         goto end;
     }
-}
+    }
 
     amf3_gpp_access_registration_modification_local_var = OpenAPI_amf3_gpp_access_registration_modification_create (
         guami_local_nonprim,

@@ -137,7 +137,7 @@ OpenAPI_ec_restriction_t *OpenAPI_ec_restriction_parseFromJSON(cJSON *ec_restric
 
         OpenAPI_list_add(plmn_ec_infosList, plmn_ec_infosItem);
     }
-}
+    }
 
     cJSON *mtc_provider_information = cJSON_GetObjectItemCaseSensitive(ec_restrictionJSON, "mtcProviderInformation");
 
@@ -146,7 +146,7 @@ OpenAPI_ec_restriction_t *OpenAPI_ec_restriction_parseFromJSON(cJSON *ec_restric
         ogs_error("OpenAPI_ec_restriction_parseFromJSON() failed [mtc_provider_information]");
         goto end;
     }
-}
+    }
 
     ec_restriction_local_var = OpenAPI_ec_restriction_create (
         ogs_strdup_or_assert(af_instance_id->valuestring),

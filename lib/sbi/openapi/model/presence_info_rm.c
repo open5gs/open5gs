@@ -207,7 +207,7 @@ OpenAPI_presence_info_rm_t *OpenAPI_presence_info_rm_parseFromJSON(cJSON *presen
         ogs_error("OpenAPI_presence_info_rm_parseFromJSON() failed [pra_id]");
         goto end;
     }
-}
+    }
 
     cJSON *additional_pra_id = cJSON_GetObjectItemCaseSensitive(presence_info_rmJSON, "additionalPraId");
 
@@ -216,7 +216,7 @@ OpenAPI_presence_info_rm_t *OpenAPI_presence_info_rm_parseFromJSON(cJSON *presen
         ogs_error("OpenAPI_presence_info_rm_parseFromJSON() failed [additional_pra_id]");
         goto end;
     }
-}
+    }
 
     cJSON *presence_state = cJSON_GetObjectItemCaseSensitive(presence_info_rmJSON, "presenceState");
 
@@ -227,7 +227,7 @@ OpenAPI_presence_info_rm_t *OpenAPI_presence_info_rm_parseFromJSON(cJSON *presen
         goto end;
     }
     presence_stateVariable = OpenAPI_presence_state_FromString(presence_state->valuestring);
-}
+    }
 
     cJSON *tracking_area_list = cJSON_GetObjectItemCaseSensitive(presence_info_rmJSON, "trackingAreaList");
 
@@ -250,7 +250,7 @@ OpenAPI_presence_info_rm_t *OpenAPI_presence_info_rm_parseFromJSON(cJSON *presen
 
         OpenAPI_list_add(tracking_area_listList, tracking_area_listItem);
     }
-}
+    }
 
     cJSON *ecgi_list = cJSON_GetObjectItemCaseSensitive(presence_info_rmJSON, "ecgiList");
 
@@ -273,7 +273,7 @@ OpenAPI_presence_info_rm_t *OpenAPI_presence_info_rm_parseFromJSON(cJSON *presen
 
         OpenAPI_list_add(ecgi_listList, ecgi_listItem);
     }
-}
+    }
 
     cJSON *ncgi_list = cJSON_GetObjectItemCaseSensitive(presence_info_rmJSON, "ncgiList");
 
@@ -296,7 +296,7 @@ OpenAPI_presence_info_rm_t *OpenAPI_presence_info_rm_parseFromJSON(cJSON *presen
 
         OpenAPI_list_add(ncgi_listList, ncgi_listItem);
     }
-}
+    }
 
     cJSON *global_ran_node_id_list = cJSON_GetObjectItemCaseSensitive(presence_info_rmJSON, "globalRanNodeIdList");
 
@@ -319,7 +319,7 @@ OpenAPI_presence_info_rm_t *OpenAPI_presence_info_rm_parseFromJSON(cJSON *presen
 
         OpenAPI_list_add(global_ran_node_id_listList, global_ran_node_id_listItem);
     }
-}
+    }
 
     cJSON *globale_nb_id_list = cJSON_GetObjectItemCaseSensitive(presence_info_rmJSON, "globaleNbIdList");
 
@@ -342,7 +342,7 @@ OpenAPI_presence_info_rm_t *OpenAPI_presence_info_rm_parseFromJSON(cJSON *presen
 
         OpenAPI_list_add(globale_nb_id_listList, globale_nb_id_listItem);
     }
-}
+    }
 
     presence_info_rm_local_var = OpenAPI_presence_info_rm_create (
         pra_id ? ogs_strdup_or_assert(pra_id->valuestring) : NULL,

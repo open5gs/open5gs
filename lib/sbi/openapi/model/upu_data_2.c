@@ -94,7 +94,7 @@ OpenAPI_upu_data_2_t *OpenAPI_upu_data_2_parseFromJSON(cJSON *upu_data_2JSON)
         ogs_error("OpenAPI_upu_data_2_parseFromJSON() failed [sec_packet]");
         goto end;
     }
-}
+    }
 
     cJSON *default_conf_nssai = cJSON_GetObjectItemCaseSensitive(upu_data_2JSON, "defaultConfNssai");
 
@@ -117,7 +117,7 @@ OpenAPI_upu_data_2_t *OpenAPI_upu_data_2_parseFromJSON(cJSON *upu_data_2JSON)
 
         OpenAPI_list_add(default_conf_nssaiList, default_conf_nssaiItem);
     }
-}
+    }
 
     cJSON *routing_id = cJSON_GetObjectItemCaseSensitive(upu_data_2JSON, "routingId");
 
@@ -126,7 +126,7 @@ OpenAPI_upu_data_2_t *OpenAPI_upu_data_2_parseFromJSON(cJSON *upu_data_2JSON)
         ogs_error("OpenAPI_upu_data_2_parseFromJSON() failed [routing_id]");
         goto end;
     }
-}
+    }
 
     upu_data_2_local_var = OpenAPI_upu_data_2_create (
         sec_packet ? ogs_strdup_or_assert(sec_packet->valuestring) : NULL,

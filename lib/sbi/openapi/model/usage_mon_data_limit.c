@@ -173,14 +173,14 @@ OpenAPI_usage_mon_data_limit_t *OpenAPI_usage_mon_data_limit_parseFromJSON(cJSON
             localMapObject->string, OpenAPI_usage_mon_data_scope_parseFromJSON(localMapObject));
         OpenAPI_list_add(scopesList , localMapKeyPair);
     }
-}
+    }
 
     cJSON *um_level = cJSON_GetObjectItemCaseSensitive(usage_mon_data_limitJSON, "umLevel");
 
     OpenAPI_usage_mon_level_t *um_level_local_nonprim = NULL;
     if (um_level) { 
     um_level_local_nonprim = OpenAPI_usage_mon_level_parseFromJSON(um_level);
-}
+    }
 
     cJSON *start_date = cJSON_GetObjectItemCaseSensitive(usage_mon_data_limitJSON, "startDate");
 
@@ -189,7 +189,7 @@ OpenAPI_usage_mon_data_limit_t *OpenAPI_usage_mon_data_limit_parseFromJSON(cJSON
         ogs_error("OpenAPI_usage_mon_data_limit_parseFromJSON() failed [start_date]");
         goto end;
     }
-}
+    }
 
     cJSON *end_date = cJSON_GetObjectItemCaseSensitive(usage_mon_data_limitJSON, "endDate");
 
@@ -198,14 +198,14 @@ OpenAPI_usage_mon_data_limit_t *OpenAPI_usage_mon_data_limit_parseFromJSON(cJSON
         ogs_error("OpenAPI_usage_mon_data_limit_parseFromJSON() failed [end_date]");
         goto end;
     }
-}
+    }
 
     cJSON *usage_limit = cJSON_GetObjectItemCaseSensitive(usage_mon_data_limitJSON, "usageLimit");
 
     OpenAPI_usage_threshold_t *usage_limit_local_nonprim = NULL;
     if (usage_limit) { 
     usage_limit_local_nonprim = OpenAPI_usage_threshold_parseFromJSON(usage_limit);
-}
+    }
 
     cJSON *reset_period = cJSON_GetObjectItemCaseSensitive(usage_mon_data_limitJSON, "resetPeriod");
 
@@ -214,7 +214,7 @@ OpenAPI_usage_mon_data_limit_t *OpenAPI_usage_mon_data_limit_parseFromJSON(cJSON
         ogs_error("OpenAPI_usage_mon_data_limit_parseFromJSON() failed [reset_period]");
         goto end;
     }
-}
+    }
 
     usage_mon_data_limit_local_var = OpenAPI_usage_mon_data_limit_create (
         ogs_strdup_or_assert(limit_id->valuestring),

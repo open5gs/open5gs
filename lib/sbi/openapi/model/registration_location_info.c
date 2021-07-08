@@ -114,14 +114,14 @@ OpenAPI_registration_location_info_t *OpenAPI_registration_location_info_parseFr
     OpenAPI_plmn_id_t *plmn_id_local_nonprim = NULL;
     if (plmn_id) { 
     plmn_id_local_nonprim = OpenAPI_plmn_id_parseFromJSON(plmn_id);
-}
+    }
 
     cJSON *vgmlc_address = cJSON_GetObjectItemCaseSensitive(registration_location_infoJSON, "vgmlcAddress");
 
     OpenAPI_vgmlc_address_t *vgmlc_address_local_nonprim = NULL;
     if (vgmlc_address) { 
     vgmlc_address_local_nonprim = OpenAPI_vgmlc_address_parseFromJSON(vgmlc_address);
-}
+    }
 
     cJSON *access_type_list = cJSON_GetObjectItemCaseSensitive(registration_location_infoJSON, "accessTypeList");
     if (!access_type_list) {

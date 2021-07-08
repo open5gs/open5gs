@@ -194,7 +194,7 @@ OpenAPI_dnn_upf_info_item_t *OpenAPI_dnn_upf_info_item_parseFromJSON(cJSON *dnn_
     }
     OpenAPI_list_add(dnai_listList , ogs_strdup_or_assert(dnai_list_local->valuestring));
                     }
-}
+    }
 
     cJSON *pdu_session_types = cJSON_GetObjectItemCaseSensitive(dnn_upf_info_itemJSON, "pduSessionTypes");
 
@@ -216,7 +216,7 @@ OpenAPI_dnn_upf_info_item_t *OpenAPI_dnn_upf_info_item_parseFromJSON(cJSON *dnn_
 
         OpenAPI_list_add(pdu_session_typesList, (void *)OpenAPI_pdu_session_type_FromString(pdu_session_types_local_nonprimitive->valuestring));
     }
-}
+    }
 
     cJSON *ipv4_address_ranges = cJSON_GetObjectItemCaseSensitive(dnn_upf_info_itemJSON, "ipv4AddressRanges");
 
@@ -239,7 +239,7 @@ OpenAPI_dnn_upf_info_item_t *OpenAPI_dnn_upf_info_item_parseFromJSON(cJSON *dnn_
 
         OpenAPI_list_add(ipv4_address_rangesList, ipv4_address_rangesItem);
     }
-}
+    }
 
     cJSON *ipv6_prefix_ranges = cJSON_GetObjectItemCaseSensitive(dnn_upf_info_itemJSON, "ipv6PrefixRanges");
 
@@ -262,7 +262,7 @@ OpenAPI_dnn_upf_info_item_t *OpenAPI_dnn_upf_info_item_parseFromJSON(cJSON *dnn_
 
         OpenAPI_list_add(ipv6_prefix_rangesList, ipv6_prefix_rangesItem);
     }
-}
+    }
 
     cJSON *dnai_nw_instance_list = cJSON_GetObjectItemCaseSensitive(dnn_upf_info_itemJSON, "dnaiNwInstanceList");
 
@@ -279,7 +279,7 @@ OpenAPI_dnn_upf_info_item_t *OpenAPI_dnn_upf_info_item_parseFromJSON(cJSON *dnn_
         cJSON *localMapObject = dnai_nw_instance_list_local_map;
         OpenAPI_list_add(dnai_nw_instance_listList , localMapKeyPair);
     }
-}
+    }
 
     dnn_upf_info_item_local_var = OpenAPI_dnn_upf_info_item_create (
         ogs_strdup_or_assert(dnn->valuestring),

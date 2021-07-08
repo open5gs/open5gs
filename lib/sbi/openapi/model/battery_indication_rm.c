@@ -75,7 +75,7 @@ OpenAPI_battery_indication_rm_t *OpenAPI_battery_indication_rm_parseFromJSON(cJS
         ogs_error("OpenAPI_battery_indication_rm_parseFromJSON() failed [battery_ind]");
         goto end;
     }
-}
+    }
 
     cJSON *replaceable_ind = cJSON_GetObjectItemCaseSensitive(battery_indication_rmJSON, "replaceableInd");
 
@@ -84,7 +84,7 @@ OpenAPI_battery_indication_rm_t *OpenAPI_battery_indication_rm_parseFromJSON(cJS
         ogs_error("OpenAPI_battery_indication_rm_parseFromJSON() failed [replaceable_ind]");
         goto end;
     }
-}
+    }
 
     cJSON *rechargeable_ind = cJSON_GetObjectItemCaseSensitive(battery_indication_rmJSON, "rechargeableInd");
 
@@ -93,7 +93,7 @@ OpenAPI_battery_indication_rm_t *OpenAPI_battery_indication_rm_parseFromJSON(cJS
         ogs_error("OpenAPI_battery_indication_rm_parseFromJSON() failed [rechargeable_ind]");
         goto end;
     }
-}
+    }
 
     battery_indication_rm_local_var = OpenAPI_battery_indication_rm_create (
         battery_ind ? battery_ind->valueint : 0,

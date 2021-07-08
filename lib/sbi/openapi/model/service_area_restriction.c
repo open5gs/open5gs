@@ -103,7 +103,7 @@ OpenAPI_service_area_restriction_t *OpenAPI_service_area_restriction_parseFromJS
         goto end;
     }
     restriction_typeVariable = OpenAPI_restriction_type_FromString(restriction_type->valuestring);
-}
+    }
 
     cJSON *areas = cJSON_GetObjectItemCaseSensitive(service_area_restrictionJSON, "areas");
 
@@ -126,7 +126,7 @@ OpenAPI_service_area_restriction_t *OpenAPI_service_area_restriction_parseFromJS
 
         OpenAPI_list_add(areasList, areasItem);
     }
-}
+    }
 
     cJSON *max_num_of_tas = cJSON_GetObjectItemCaseSensitive(service_area_restrictionJSON, "maxNumOfTAs");
 
@@ -135,7 +135,7 @@ OpenAPI_service_area_restriction_t *OpenAPI_service_area_restriction_parseFromJS
         ogs_error("OpenAPI_service_area_restriction_parseFromJSON() failed [max_num_of_tas]");
         goto end;
     }
-}
+    }
 
     cJSON *max_num_of_tas_for_not_allowed_areas = cJSON_GetObjectItemCaseSensitive(service_area_restrictionJSON, "maxNumOfTAsForNotAllowedAreas");
 
@@ -144,7 +144,7 @@ OpenAPI_service_area_restriction_t *OpenAPI_service_area_restriction_parseFromJS
         ogs_error("OpenAPI_service_area_restriction_parseFromJSON() failed [max_num_of_tas_for_not_allowed_areas]");
         goto end;
     }
-}
+    }
 
     service_area_restriction_local_var = OpenAPI_service_area_restriction_create (
         restriction_type ? restriction_typeVariable : 0,

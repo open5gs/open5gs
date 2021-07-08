@@ -138,7 +138,7 @@ OpenAPI_pfd_data_for_app_ext_t *OpenAPI_pfd_data_for_app_ext_parseFromJSON(cJSON
         ogs_error("OpenAPI_pfd_data_for_app_ext_parseFromJSON() failed [caching_time]");
         goto end;
     }
-}
+    }
 
     cJSON *supp_feat = cJSON_GetObjectItemCaseSensitive(pfd_data_for_app_extJSON, "suppFeat");
 
@@ -147,7 +147,7 @@ OpenAPI_pfd_data_for_app_ext_t *OpenAPI_pfd_data_for_app_ext_parseFromJSON(cJSON
         ogs_error("OpenAPI_pfd_data_for_app_ext_parseFromJSON() failed [supp_feat]");
         goto end;
     }
-}
+    }
 
     pfd_data_for_app_ext_local_var = OpenAPI_pfd_data_for_app_ext_create (
         ogs_strdup_or_assert(application_id->valuestring),

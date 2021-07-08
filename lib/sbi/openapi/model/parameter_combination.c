@@ -84,7 +84,7 @@ OpenAPI_parameter_combination_t *OpenAPI_parameter_combination_parseFromJSON(cJS
         ogs_error("OpenAPI_parameter_combination_parseFromJSON() failed [supi]");
         goto end;
     }
-}
+    }
 
     cJSON *dnn = cJSON_GetObjectItemCaseSensitive(parameter_combinationJSON, "dnn");
 
@@ -93,14 +93,14 @@ OpenAPI_parameter_combination_t *OpenAPI_parameter_combination_parseFromJSON(cJS
         ogs_error("OpenAPI_parameter_combination_parseFromJSON() failed [dnn]");
         goto end;
     }
-}
+    }
 
     cJSON *snssai = cJSON_GetObjectItemCaseSensitive(parameter_combinationJSON, "snssai");
 
     OpenAPI_snssai_t *snssai_local_nonprim = NULL;
     if (snssai) { 
     snssai_local_nonprim = OpenAPI_snssai_parseFromJSON(snssai);
-}
+    }
 
     parameter_combination_local_var = OpenAPI_parameter_combination_create (
         supi ? ogs_strdup_or_assert(supi->valuestring) : NULL,

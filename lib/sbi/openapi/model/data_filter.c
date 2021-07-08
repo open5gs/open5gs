@@ -263,7 +263,7 @@ OpenAPI_data_filter_t *OpenAPI_data_filter_parseFromJSON(cJSON *data_filterJSON)
     }
     OpenAPI_list_add(dnnsList , ogs_strdup_or_assert(dnns_local->valuestring));
                     }
-}
+    }
 
     cJSON *snssais = cJSON_GetObjectItemCaseSensitive(data_filterJSON, "snssais");
 
@@ -286,7 +286,7 @@ OpenAPI_data_filter_t *OpenAPI_data_filter_parseFromJSON(cJSON *data_filterJSON)
 
         OpenAPI_list_add(snssaisList, snssaisItem);
     }
-}
+    }
 
     cJSON *internal_group_ids = cJSON_GetObjectItemCaseSensitive(data_filterJSON, "internalGroupIds");
 
@@ -306,7 +306,7 @@ OpenAPI_data_filter_t *OpenAPI_data_filter_parseFromJSON(cJSON *data_filterJSON)
     }
     OpenAPI_list_add(internal_group_idsList , ogs_strdup_or_assert(internal_group_ids_local->valuestring));
                     }
-}
+    }
 
     cJSON *supis = cJSON_GetObjectItemCaseSensitive(data_filterJSON, "supis");
 
@@ -326,7 +326,7 @@ OpenAPI_data_filter_t *OpenAPI_data_filter_parseFromJSON(cJSON *data_filterJSON)
     }
     OpenAPI_list_add(supisList , ogs_strdup_or_assert(supis_local->valuestring));
                     }
-}
+    }
 
     cJSON *app_ids = cJSON_GetObjectItemCaseSensitive(data_filterJSON, "appIds");
 
@@ -346,7 +346,7 @@ OpenAPI_data_filter_t *OpenAPI_data_filter_parseFromJSON(cJSON *data_filterJSON)
     }
     OpenAPI_list_add(app_idsList , ogs_strdup_or_assert(app_ids_local->valuestring));
                     }
-}
+    }
 
     cJSON *ue_ipv4s = cJSON_GetObjectItemCaseSensitive(data_filterJSON, "ueIpv4s");
 
@@ -366,7 +366,7 @@ OpenAPI_data_filter_t *OpenAPI_data_filter_parseFromJSON(cJSON *data_filterJSON)
     }
     OpenAPI_list_add(ue_ipv4sList , ogs_strdup_or_assert(ue_ipv4s_local->valuestring));
                     }
-}
+    }
 
     cJSON *ue_ipv6s = cJSON_GetObjectItemCaseSensitive(data_filterJSON, "ueIpv6s");
 
@@ -386,7 +386,7 @@ OpenAPI_data_filter_t *OpenAPI_data_filter_parseFromJSON(cJSON *data_filterJSON)
     }
     OpenAPI_list_add(ue_ipv6sList , ogs_strdup_or_assert(ue_ipv6s_local->valuestring));
                     }
-}
+    }
 
     cJSON *ue_macs = cJSON_GetObjectItemCaseSensitive(data_filterJSON, "ueMacs");
 
@@ -406,7 +406,7 @@ OpenAPI_data_filter_t *OpenAPI_data_filter_parseFromJSON(cJSON *data_filterJSON)
     }
     OpenAPI_list_add(ue_macsList , ogs_strdup_or_assert(ue_macs_local->valuestring));
                     }
-}
+    }
 
     data_filter_local_var = OpenAPI_data_filter_create (
         data_ind_local_nonprim,

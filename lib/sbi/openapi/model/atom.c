@@ -97,7 +97,7 @@ OpenAPI_atom_t *OpenAPI_atom_parseFromJSON(cJSON *atomJSON)
         ogs_error("OpenAPI_atom_parseFromJSON() failed [negative]");
         goto end;
     }
-}
+    }
 
     atom_local_var = OpenAPI_atom_create (
         ogs_strdup_or_assert(attr->valuestring),

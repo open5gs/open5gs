@@ -110,7 +110,7 @@ OpenAPI_sequence_number_t *OpenAPI_sequence_number_parseFromJSON(cJSON *sequence
         goto end;
     }
     sqn_schemeVariable = OpenAPI_sqn_scheme_FromString(sqn_scheme->valuestring);
-}
+    }
 
     cJSON *sqn = cJSON_GetObjectItemCaseSensitive(sequence_numberJSON, "sqn");
 
@@ -119,7 +119,7 @@ OpenAPI_sequence_number_t *OpenAPI_sequence_number_parseFromJSON(cJSON *sequence
         ogs_error("OpenAPI_sequence_number_parseFromJSON() failed [sqn]");
         goto end;
     }
-}
+    }
 
     cJSON *last_indexes = cJSON_GetObjectItemCaseSensitive(sequence_numberJSON, "lastIndexes");
 
@@ -136,7 +136,7 @@ OpenAPI_sequence_number_t *OpenAPI_sequence_number_parseFromJSON(cJSON *sequence
         cJSON *localMapObject = last_indexes_local_map;
         OpenAPI_list_add(last_indexesList , localMapKeyPair);
     }
-}
+    }
 
     cJSON *ind_length = cJSON_GetObjectItemCaseSensitive(sequence_numberJSON, "indLength");
 
@@ -145,7 +145,7 @@ OpenAPI_sequence_number_t *OpenAPI_sequence_number_parseFromJSON(cJSON *sequence
         ogs_error("OpenAPI_sequence_number_parseFromJSON() failed [ind_length]");
         goto end;
     }
-}
+    }
 
     cJSON *dif_sign = cJSON_GetObjectItemCaseSensitive(sequence_numberJSON, "difSign");
 
@@ -156,7 +156,7 @@ OpenAPI_sequence_number_t *OpenAPI_sequence_number_parseFromJSON(cJSON *sequence
         goto end;
     }
     dif_signVariable = OpenAPI_sign_FromString(dif_sign->valuestring);
-}
+    }
 
     sequence_number_local_var = OpenAPI_sequence_number_create (
         sqn_scheme ? sqn_schemeVariable : 0,

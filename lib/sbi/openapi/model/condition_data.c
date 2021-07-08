@@ -106,7 +106,7 @@ OpenAPI_condition_data_t *OpenAPI_condition_data_parseFromJSON(cJSON *condition_
         ogs_error("OpenAPI_condition_data_parseFromJSON() failed [activation_time]");
         goto end;
     }
-}
+    }
 
     cJSON *deactivation_time = cJSON_GetObjectItemCaseSensitive(condition_dataJSON, "deactivationTime");
 
@@ -115,7 +115,7 @@ OpenAPI_condition_data_t *OpenAPI_condition_data_parseFromJSON(cJSON *condition_
         ogs_error("OpenAPI_condition_data_parseFromJSON() failed [deactivation_time]");
         goto end;
     }
-}
+    }
 
     cJSON *access_type = cJSON_GetObjectItemCaseSensitive(condition_dataJSON, "accessType");
 
@@ -126,7 +126,7 @@ OpenAPI_condition_data_t *OpenAPI_condition_data_parseFromJSON(cJSON *condition_
         goto end;
     }
     access_typeVariable = OpenAPI_access_type_FromString(access_type->valuestring);
-}
+    }
 
     cJSON *rat_type = cJSON_GetObjectItemCaseSensitive(condition_dataJSON, "ratType");
 
@@ -137,7 +137,7 @@ OpenAPI_condition_data_t *OpenAPI_condition_data_parseFromJSON(cJSON *condition_
         goto end;
     }
     rat_typeVariable = OpenAPI_rat_type_FromString(rat_type->valuestring);
-}
+    }
 
     condition_data_local_var = OpenAPI_condition_data_create (
         ogs_strdup_or_assert(cond_id->valuestring),

@@ -102,7 +102,7 @@ OpenAPI_location_info_t *OpenAPI_location_info_parseFromJSON(cJSON *location_inf
         ogs_error("OpenAPI_location_info_parseFromJSON() failed [supi]");
         goto end;
     }
-}
+    }
 
     cJSON *gpsi = cJSON_GetObjectItemCaseSensitive(location_infoJSON, "gpsi");
 
@@ -111,7 +111,7 @@ OpenAPI_location_info_t *OpenAPI_location_info_parseFromJSON(cJSON *location_inf
         ogs_error("OpenAPI_location_info_parseFromJSON() failed [gpsi]");
         goto end;
     }
-}
+    }
 
     cJSON *registration_location_info_list = cJSON_GetObjectItemCaseSensitive(location_infoJSON, "registrationLocationInfoList");
     if (!registration_location_info_list) {
@@ -146,7 +146,7 @@ OpenAPI_location_info_t *OpenAPI_location_info_parseFromJSON(cJSON *location_inf
         ogs_error("OpenAPI_location_info_parseFromJSON() failed [supported_features]");
         goto end;
     }
-}
+    }
 
     location_info_local_var = OpenAPI_location_info_create (
         supi ? ogs_strdup_or_assert(supi->valuestring) : NULL,

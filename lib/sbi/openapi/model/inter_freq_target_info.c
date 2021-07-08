@@ -100,7 +100,7 @@ OpenAPI_inter_freq_target_info_t *OpenAPI_inter_freq_target_info_parseFromJSON(c
     }
     OpenAPI_list_add(cell_id_listList , &cell_id_list_local->valuedouble);
                     }
-}
+    }
 
     inter_freq_target_info_local_var = OpenAPI_inter_freq_target_info_create (
         dl_carrier_freq->valuedouble,

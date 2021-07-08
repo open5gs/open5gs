@@ -133,7 +133,7 @@ OpenAPI_problem_details_2_t *OpenAPI_problem_details_2_parseFromJSON(cJSON *prob
         ogs_error("OpenAPI_problem_details_2_parseFromJSON() failed [type]");
         goto end;
     }
-}
+    }
 
     cJSON *title = cJSON_GetObjectItemCaseSensitive(problem_details_2JSON, "title");
 
@@ -142,7 +142,7 @@ OpenAPI_problem_details_2_t *OpenAPI_problem_details_2_parseFromJSON(cJSON *prob
         ogs_error("OpenAPI_problem_details_2_parseFromJSON() failed [title]");
         goto end;
     }
-}
+    }
 
     cJSON *status = cJSON_GetObjectItemCaseSensitive(problem_details_2JSON, "status");
 
@@ -151,7 +151,7 @@ OpenAPI_problem_details_2_t *OpenAPI_problem_details_2_parseFromJSON(cJSON *prob
         ogs_error("OpenAPI_problem_details_2_parseFromJSON() failed [status]");
         goto end;
     }
-}
+    }
 
     cJSON *detail = cJSON_GetObjectItemCaseSensitive(problem_details_2JSON, "detail");
 
@@ -160,7 +160,7 @@ OpenAPI_problem_details_2_t *OpenAPI_problem_details_2_parseFromJSON(cJSON *prob
         ogs_error("OpenAPI_problem_details_2_parseFromJSON() failed [detail]");
         goto end;
     }
-}
+    }
 
     cJSON *instance = cJSON_GetObjectItemCaseSensitive(problem_details_2JSON, "instance");
 
@@ -169,7 +169,7 @@ OpenAPI_problem_details_2_t *OpenAPI_problem_details_2_parseFromJSON(cJSON *prob
         ogs_error("OpenAPI_problem_details_2_parseFromJSON() failed [instance]");
         goto end;
     }
-}
+    }
 
     cJSON *cause = cJSON_GetObjectItemCaseSensitive(problem_details_2JSON, "cause");
 
@@ -178,7 +178,7 @@ OpenAPI_problem_details_2_t *OpenAPI_problem_details_2_parseFromJSON(cJSON *prob
         ogs_error("OpenAPI_problem_details_2_parseFromJSON() failed [cause]");
         goto end;
     }
-}
+    }
 
     cJSON *invalid_params = cJSON_GetObjectItemCaseSensitive(problem_details_2JSON, "invalidParams");
 
@@ -201,7 +201,7 @@ OpenAPI_problem_details_2_t *OpenAPI_problem_details_2_parseFromJSON(cJSON *prob
 
         OpenAPI_list_add(invalid_paramsList, invalid_paramsItem);
     }
-}
+    }
 
     problem_details_2_local_var = OpenAPI_problem_details_2_create (
         type ? ogs_strdup_or_assert(type->valuestring) : NULL,

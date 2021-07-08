@@ -144,7 +144,7 @@ OpenAPI_af_event_exposure_data_t *OpenAPI_af_event_exposure_data_parseFromJSON(c
     }
     OpenAPI_list_add(af_idsList , ogs_strdup_or_assert(af_ids_local->valuestring));
                     }
-}
+    }
 
     cJSON *app_ids = cJSON_GetObjectItemCaseSensitive(af_event_exposure_dataJSON, "appIds");
 
@@ -164,7 +164,7 @@ OpenAPI_af_event_exposure_data_t *OpenAPI_af_event_exposure_data_parseFromJSON(c
     }
     OpenAPI_list_add(app_idsList , ogs_strdup_or_assert(app_ids_local->valuestring));
                     }
-}
+    }
 
     af_event_exposure_data_local_var = OpenAPI_af_event_exposure_data_create (
         af_eventsList,

@@ -107,7 +107,7 @@ OpenAPI_n4_information_t *OpenAPI_n4_information_parseFromJSON(cJSON *n4_informa
     OpenAPI_dnai_information_t *n4_dnai_info_local_nonprim = NULL;
     if (n4_dnai_info) { 
     n4_dnai_info_local_nonprim = OpenAPI_dnai_information_parseFromJSON(n4_dnai_info);
-}
+    }
 
     n4_information_local_var = OpenAPI_n4_information_create (
         n4_message_typeVariable,

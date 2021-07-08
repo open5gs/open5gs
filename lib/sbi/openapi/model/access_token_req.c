@@ -338,7 +338,7 @@ OpenAPI_access_token_req_t *OpenAPI_access_token_req_parseFromJSON(cJSON *access
         goto end;
     }
     nf_typeVariable = OpenAPI_nf_type_FromString(nf_type->valuestring);
-}
+    }
 
     cJSON *target_nf_type = cJSON_GetObjectItemCaseSensitive(access_token_reqJSON, "targetNfType");
 
@@ -349,7 +349,7 @@ OpenAPI_access_token_req_t *OpenAPI_access_token_req_parseFromJSON(cJSON *access
         goto end;
     }
     target_nf_typeVariable = OpenAPI_nf_type_FromString(target_nf_type->valuestring);
-}
+    }
 
     cJSON *scope = cJSON_GetObjectItemCaseSensitive(access_token_reqJSON, "scope");
     if (!scope) {
@@ -370,14 +370,14 @@ OpenAPI_access_token_req_t *OpenAPI_access_token_req_parseFromJSON(cJSON *access
         ogs_error("OpenAPI_access_token_req_parseFromJSON() failed [target_nf_instance_id]");
         goto end;
     }
-}
+    }
 
     cJSON *requester_plmn = cJSON_GetObjectItemCaseSensitive(access_token_reqJSON, "requesterPlmn");
 
     OpenAPI_plmn_id_t *requester_plmn_local_nonprim = NULL;
     if (requester_plmn) { 
     requester_plmn_local_nonprim = OpenAPI_plmn_id_parseFromJSON(requester_plmn);
-}
+    }
 
     cJSON *requester_plmn_list = cJSON_GetObjectItemCaseSensitive(access_token_reqJSON, "requesterPlmnList");
 
@@ -400,7 +400,7 @@ OpenAPI_access_token_req_t *OpenAPI_access_token_req_parseFromJSON(cJSON *access
 
         OpenAPI_list_add(requester_plmn_listList, requester_plmn_listItem);
     }
-}
+    }
 
     cJSON *requester_snssai_list = cJSON_GetObjectItemCaseSensitive(access_token_reqJSON, "requesterSnssaiList");
 
@@ -423,7 +423,7 @@ OpenAPI_access_token_req_t *OpenAPI_access_token_req_parseFromJSON(cJSON *access
 
         OpenAPI_list_add(requester_snssai_listList, requester_snssai_listItem);
     }
-}
+    }
 
     cJSON *requester_fqdn = cJSON_GetObjectItemCaseSensitive(access_token_reqJSON, "requesterFqdn");
 
@@ -432,7 +432,7 @@ OpenAPI_access_token_req_t *OpenAPI_access_token_req_parseFromJSON(cJSON *access
         ogs_error("OpenAPI_access_token_req_parseFromJSON() failed [requester_fqdn]");
         goto end;
     }
-}
+    }
 
     cJSON *requester_snpn_list = cJSON_GetObjectItemCaseSensitive(access_token_reqJSON, "requesterSnpnList");
 
@@ -455,14 +455,14 @@ OpenAPI_access_token_req_t *OpenAPI_access_token_req_parseFromJSON(cJSON *access
 
         OpenAPI_list_add(requester_snpn_listList, requester_snpn_listItem);
     }
-}
+    }
 
     cJSON *target_plmn = cJSON_GetObjectItemCaseSensitive(access_token_reqJSON, "targetPlmn");
 
     OpenAPI_plmn_id_t *target_plmn_local_nonprim = NULL;
     if (target_plmn) { 
     target_plmn_local_nonprim = OpenAPI_plmn_id_parseFromJSON(target_plmn);
-}
+    }
 
     cJSON *target_snssai_list = cJSON_GetObjectItemCaseSensitive(access_token_reqJSON, "targetSnssaiList");
 
@@ -485,7 +485,7 @@ OpenAPI_access_token_req_t *OpenAPI_access_token_req_parseFromJSON(cJSON *access
 
         OpenAPI_list_add(target_snssai_listList, target_snssai_listItem);
     }
-}
+    }
 
     cJSON *target_nsi_list = cJSON_GetObjectItemCaseSensitive(access_token_reqJSON, "targetNsiList");
 
@@ -505,7 +505,7 @@ OpenAPI_access_token_req_t *OpenAPI_access_token_req_parseFromJSON(cJSON *access
     }
     OpenAPI_list_add(target_nsi_listList , ogs_strdup_or_assert(target_nsi_list_local->valuestring));
                     }
-}
+    }
 
     cJSON *target_nf_set_id = cJSON_GetObjectItemCaseSensitive(access_token_reqJSON, "targetNfSetId");
 
@@ -514,7 +514,7 @@ OpenAPI_access_token_req_t *OpenAPI_access_token_req_parseFromJSON(cJSON *access
         ogs_error("OpenAPI_access_token_req_parseFromJSON() failed [target_nf_set_id]");
         goto end;
     }
-}
+    }
 
     cJSON *target_nf_service_set_id = cJSON_GetObjectItemCaseSensitive(access_token_reqJSON, "targetNfServiceSetId");
 
@@ -523,7 +523,7 @@ OpenAPI_access_token_req_t *OpenAPI_access_token_req_parseFromJSON(cJSON *access
         ogs_error("OpenAPI_access_token_req_parseFromJSON() failed [target_nf_service_set_id]");
         goto end;
     }
-}
+    }
 
     access_token_req_local_var = OpenAPI_access_token_req_create (
         grant_typeVariable,

@@ -203,7 +203,7 @@ OpenAPI_nwdaf_cond_t *OpenAPI_nwdaf_cond_parseFromJSON(cJSON *nwdaf_condJSON)
     }
     OpenAPI_list_add(analytics_idsList , ogs_strdup_or_assert(analytics_ids_local->valuestring));
                     }
-}
+    }
 
     cJSON *snssai_list = cJSON_GetObjectItemCaseSensitive(nwdaf_condJSON, "snssaiList");
 
@@ -226,7 +226,7 @@ OpenAPI_nwdaf_cond_t *OpenAPI_nwdaf_cond_parseFromJSON(cJSON *nwdaf_condJSON)
 
         OpenAPI_list_add(snssai_listList, snssai_listItem);
     }
-}
+    }
 
     cJSON *tai_list = cJSON_GetObjectItemCaseSensitive(nwdaf_condJSON, "taiList");
 
@@ -249,7 +249,7 @@ OpenAPI_nwdaf_cond_t *OpenAPI_nwdaf_cond_parseFromJSON(cJSON *nwdaf_condJSON)
 
         OpenAPI_list_add(tai_listList, tai_listItem);
     }
-}
+    }
 
     cJSON *tai_range_list = cJSON_GetObjectItemCaseSensitive(nwdaf_condJSON, "taiRangeList");
 
@@ -272,7 +272,7 @@ OpenAPI_nwdaf_cond_t *OpenAPI_nwdaf_cond_parseFromJSON(cJSON *nwdaf_condJSON)
 
         OpenAPI_list_add(tai_range_listList, tai_range_listItem);
     }
-}
+    }
 
     nwdaf_cond_local_var = OpenAPI_nwdaf_cond_create (
         condition_typeVariable,

@@ -66,7 +66,7 @@ OpenAPI_mbsfn_area_t *OpenAPI_mbsfn_area_parseFromJSON(cJSON *mbsfn_areaJSON)
         ogs_error("OpenAPI_mbsfn_area_parseFromJSON() failed [mbsfn_area_id]");
         goto end;
     }
-}
+    }
 
     cJSON *carrier_frequency = cJSON_GetObjectItemCaseSensitive(mbsfn_areaJSON, "carrierFrequency");
 
@@ -75,7 +75,7 @@ OpenAPI_mbsfn_area_t *OpenAPI_mbsfn_area_parseFromJSON(cJSON *mbsfn_areaJSON)
         ogs_error("OpenAPI_mbsfn_area_parseFromJSON() failed [carrier_frequency]");
         goto end;
     }
-}
+    }
 
     mbsfn_area_local_var = OpenAPI_mbsfn_area_create (
         mbsfn_area_id ? mbsfn_area_id->valuedouble : 0,

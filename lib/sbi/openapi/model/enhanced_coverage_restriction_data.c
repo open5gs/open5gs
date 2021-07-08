@@ -88,7 +88,7 @@ OpenAPI_enhanced_coverage_restriction_data_t *OpenAPI_enhanced_coverage_restrict
 
         OpenAPI_list_add(plmn_ec_info_listList, plmn_ec_info_listItem);
     }
-}
+    }
 
     enhanced_coverage_restriction_data_local_var = OpenAPI_enhanced_coverage_restriction_data_create (
         plmn_ec_info_list ? plmn_ec_info_listList : NULL

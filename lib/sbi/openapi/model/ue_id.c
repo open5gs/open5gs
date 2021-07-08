@@ -101,7 +101,7 @@ OpenAPI_ue_id_t *OpenAPI_ue_id_parseFromJSON(cJSON *ue_idJSON)
     }
     OpenAPI_list_add(gpsi_listList , ogs_strdup_or_assert(gpsi_list_local->valuestring));
                     }
-}
+    }
 
     ue_id_local_var = OpenAPI_ue_id_create (
         ogs_strdup_or_assert(supi->valuestring),

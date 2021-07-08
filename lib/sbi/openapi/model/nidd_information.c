@@ -88,7 +88,7 @@ OpenAPI_nidd_information_t *OpenAPI_nidd_information_parseFromJSON(cJSON *nidd_i
         ogs_error("OpenAPI_nidd_information_parseFromJSON() failed [gpsi]");
         goto end;
     }
-}
+    }
 
     cJSON *ext_group_id = cJSON_GetObjectItemCaseSensitive(nidd_informationJSON, "extGroupId");
 
@@ -97,7 +97,7 @@ OpenAPI_nidd_information_t *OpenAPI_nidd_information_parseFromJSON(cJSON *nidd_i
         ogs_error("OpenAPI_nidd_information_parseFromJSON() failed [ext_group_id]");
         goto end;
     }
-}
+    }
 
     nidd_information_local_var = OpenAPI_nidd_information_create (
         ogs_strdup_or_assert(af_id->valuestring),

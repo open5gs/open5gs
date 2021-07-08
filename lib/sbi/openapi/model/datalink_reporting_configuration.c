@@ -132,7 +132,7 @@ OpenAPI_datalink_reporting_configuration_t *OpenAPI_datalink_reporting_configura
 
         OpenAPI_list_add(ddd_traffic_desList, ddd_traffic_desItem);
     }
-}
+    }
 
     cJSON *dnn = cJSON_GetObjectItemCaseSensitive(datalink_reporting_configurationJSON, "dnn");
 
@@ -141,14 +141,14 @@ OpenAPI_datalink_reporting_configuration_t *OpenAPI_datalink_reporting_configura
         ogs_error("OpenAPI_datalink_reporting_configuration_parseFromJSON() failed [dnn]");
         goto end;
     }
-}
+    }
 
     cJSON *slice = cJSON_GetObjectItemCaseSensitive(datalink_reporting_configurationJSON, "slice");
 
     OpenAPI_snssai_t *slice_local_nonprim = NULL;
     if (slice) { 
     slice_local_nonprim = OpenAPI_snssai_parseFromJSON(slice);
-}
+    }
 
     cJSON *ddd_status_list = cJSON_GetObjectItemCaseSensitive(datalink_reporting_configurationJSON, "dddStatusList");
 
@@ -170,7 +170,7 @@ OpenAPI_datalink_reporting_configuration_t *OpenAPI_datalink_reporting_configura
 
         OpenAPI_list_add(ddd_status_listList, (void *)OpenAPI_dl_data_delivery_status_FromString(ddd_status_list_local_nonprimitive->valuestring));
     }
-}
+    }
 
     datalink_reporting_configuration_local_var = OpenAPI_datalink_reporting_configuration_create (
         ddd_traffic_des ? ddd_traffic_desList : NULL,

@@ -81,7 +81,7 @@ OpenAPI_context_info_t *OpenAPI_context_info_parseFromJSON(cJSON *context_infoJS
     }
     OpenAPI_list_add(orig_headersList , ogs_strdup_or_assert(orig_headers_local->valuestring));
                     }
-}
+    }
 
     context_info_local_var = OpenAPI_context_info_create (
         orig_headers ? orig_headersList : NULL

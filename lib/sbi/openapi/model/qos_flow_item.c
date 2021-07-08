@@ -96,7 +96,7 @@ OpenAPI_qos_flow_item_t *OpenAPI_qos_flow_item_parseFromJSON(cJSON *qos_flow_ite
         goto end;
     }
     causeVariable = OpenAPI_cause_FromString(cause->valuestring);
-}
+    }
 
     cJSON *current_qos_profile_index = cJSON_GetObjectItemCaseSensitive(qos_flow_itemJSON, "currentQosProfileIndex");
 
@@ -105,7 +105,7 @@ OpenAPI_qos_flow_item_t *OpenAPI_qos_flow_item_parseFromJSON(cJSON *qos_flow_ite
         ogs_error("OpenAPI_qos_flow_item_parseFromJSON() failed [current_qos_profile_index]");
         goto end;
     }
-}
+    }
 
     cJSON *null_qo_s_profile_index = cJSON_GetObjectItemCaseSensitive(qos_flow_itemJSON, "nullQoSProfileIndex");
 
@@ -114,7 +114,7 @@ OpenAPI_qos_flow_item_t *OpenAPI_qos_flow_item_parseFromJSON(cJSON *qos_flow_ite
         ogs_error("OpenAPI_qos_flow_item_parseFromJSON() failed [null_qo_s_profile_index]");
         goto end;
     }
-}
+    }
 
     qos_flow_item_local_var = OpenAPI_qos_flow_item_create (
         qfi->valuedouble,

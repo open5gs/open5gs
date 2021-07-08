@@ -147,7 +147,7 @@ OpenAPI_n2_information_transfer_req_data_t *OpenAPI_n2_information_transfer_req_
 
         OpenAPI_list_add(tai_listList, tai_listItem);
     }
-}
+    }
 
     cJSON *rat_selector = cJSON_GetObjectItemCaseSensitive(n2_information_transfer_req_dataJSON, "ratSelector");
 
@@ -158,7 +158,7 @@ OpenAPI_n2_information_transfer_req_data_t *OpenAPI_n2_information_transfer_req_
         goto end;
     }
     rat_selectorVariable = OpenAPI_rat_selector_FromString(rat_selector->valuestring);
-}
+    }
 
     cJSON *global_ran_node_list = cJSON_GetObjectItemCaseSensitive(n2_information_transfer_req_dataJSON, "globalRanNodeList");
 
@@ -181,7 +181,7 @@ OpenAPI_n2_information_transfer_req_data_t *OpenAPI_n2_information_transfer_req_
 
         OpenAPI_list_add(global_ran_node_listList, global_ran_node_listItem);
     }
-}
+    }
 
     cJSON *n2_information = cJSON_GetObjectItemCaseSensitive(n2_information_transfer_req_dataJSON, "n2Information");
     if (!n2_information) {
@@ -200,7 +200,7 @@ OpenAPI_n2_information_transfer_req_data_t *OpenAPI_n2_information_transfer_req_
         ogs_error("OpenAPI_n2_information_transfer_req_data_parseFromJSON() failed [supported_features]");
         goto end;
     }
-}
+    }
 
     n2_information_transfer_req_data_local_var = OpenAPI_n2_information_transfer_req_data_create (
         tai_list ? tai_listList : NULL,

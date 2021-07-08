@@ -141,7 +141,7 @@ OpenAPI_session_rule_report_t *OpenAPI_session_rule_report_parseFromJSON(cJSON *
         goto end;
     }
     sess_rule_failure_codeVariable = OpenAPI_session_rule_failure_code_FromString(sess_rule_failure_code->valuestring);
-}
+    }
 
     cJSON *policy_dec_failure_reports = cJSON_GetObjectItemCaseSensitive(session_rule_reportJSON, "policyDecFailureReports");
 
@@ -163,7 +163,7 @@ OpenAPI_session_rule_report_t *OpenAPI_session_rule_report_parseFromJSON(cJSON *
 
         OpenAPI_list_add(policy_dec_failure_reportsList, (void *)OpenAPI_policy_decision_failure_code_FromString(policy_dec_failure_reports_local_nonprimitive->valuestring));
     }
-}
+    }
 
     session_rule_report_local_var = OpenAPI_session_rule_report_create (
         rule_idsList,

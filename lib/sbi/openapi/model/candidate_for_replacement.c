@@ -105,7 +105,7 @@ OpenAPI_candidate_for_replacement_t *OpenAPI_candidate_for_replacement_parseFrom
     }
     OpenAPI_list_add(dnnsList , ogs_strdup_or_assert(dnns_local->valuestring));
                     }
-}
+    }
 
     candidate_for_replacement_local_var = OpenAPI_candidate_for_replacement_create (
         snssai_local_nonprim,

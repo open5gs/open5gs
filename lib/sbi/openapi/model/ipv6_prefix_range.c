@@ -68,7 +68,7 @@ OpenAPI_ipv6_prefix_range_t *OpenAPI_ipv6_prefix_range_parseFromJSON(cJSON *ipv6
         ogs_error("OpenAPI_ipv6_prefix_range_parseFromJSON() failed [start]");
         goto end;
     }
-}
+    }
 
     cJSON *end = cJSON_GetObjectItemCaseSensitive(ipv6_prefix_rangeJSON, "end");
 
@@ -77,7 +77,7 @@ OpenAPI_ipv6_prefix_range_t *OpenAPI_ipv6_prefix_range_parseFromJSON(cJSON *ipv6
         ogs_error("OpenAPI_ipv6_prefix_range_parseFromJSON() failed [end]");
         goto end;
     }
-}
+    }
 
     ipv6_prefix_range_local_var = OpenAPI_ipv6_prefix_range_create (
         start ? ogs_strdup_or_assert(start->valuestring) : NULL,

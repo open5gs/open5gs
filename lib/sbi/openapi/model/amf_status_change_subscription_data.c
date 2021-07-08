@@ -108,7 +108,7 @@ OpenAPI_amf_status_change_subscription_data_t *OpenAPI_amf_status_change_subscri
 
         OpenAPI_list_add(guami_listList, guami_listItem);
     }
-}
+    }
 
     amf_status_change_subscription_data_local_var = OpenAPI_amf_status_change_subscription_data_create (
         ogs_strdup_or_assert(amf_status_uri->valuestring),

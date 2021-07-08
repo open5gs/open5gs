@@ -80,7 +80,7 @@ OpenAPI_additional_access_info_t *OpenAPI_additional_access_info_parseFromJSON(c
         goto end;
     }
     rat_typeVariable = OpenAPI_rat_type_FromString(rat_type->valuestring);
-}
+    }
 
     additional_access_info_local_var = OpenAPI_additional_access_info_create (
         access_typeVariable,

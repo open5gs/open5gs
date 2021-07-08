@@ -78,7 +78,7 @@ OpenAPI_ue_identity_info_t *OpenAPI_ue_identity_info_parseFromJSON(cJSON *ue_ide
         ogs_error("OpenAPI_ue_identity_info_parseFromJSON() failed [gpsi]");
         goto end;
     }
-}
+    }
 
     cJSON *pei = cJSON_GetObjectItemCaseSensitive(ue_identity_infoJSON, "pei");
 
@@ -87,7 +87,7 @@ OpenAPI_ue_identity_info_t *OpenAPI_ue_identity_info_parseFromJSON(cJSON *ue_ide
         ogs_error("OpenAPI_ue_identity_info_parseFromJSON() failed [pei]");
         goto end;
     }
-}
+    }
 
     cJSON *supi = cJSON_GetObjectItemCaseSensitive(ue_identity_infoJSON, "supi");
 
@@ -96,7 +96,7 @@ OpenAPI_ue_identity_info_t *OpenAPI_ue_identity_info_parseFromJSON(cJSON *ue_ide
         ogs_error("OpenAPI_ue_identity_info_parseFromJSON() failed [supi]");
         goto end;
     }
-}
+    }
 
     ue_identity_info_local_var = OpenAPI_ue_identity_info_create (
         gpsi ? ogs_strdup_or_assert(gpsi->valuestring) : NULL,

@@ -166,7 +166,7 @@ OpenAPI_nwdaf_info_t *OpenAPI_nwdaf_info_parseFromJSON(cJSON *nwdaf_infoJSON)
 
         OpenAPI_list_add(event_idsList, event_idsItem);
     }
-}
+    }
 
     cJSON *nwdaf_events = cJSON_GetObjectItemCaseSensitive(nwdaf_infoJSON, "nwdafEvents");
 
@@ -189,7 +189,7 @@ OpenAPI_nwdaf_info_t *OpenAPI_nwdaf_info_parseFromJSON(cJSON *nwdaf_infoJSON)
 
         OpenAPI_list_add(nwdaf_eventsList, nwdaf_eventsItem);
     }
-}
+    }
 
     cJSON *tai_list = cJSON_GetObjectItemCaseSensitive(nwdaf_infoJSON, "taiList");
 
@@ -212,7 +212,7 @@ OpenAPI_nwdaf_info_t *OpenAPI_nwdaf_info_parseFromJSON(cJSON *nwdaf_infoJSON)
 
         OpenAPI_list_add(tai_listList, tai_listItem);
     }
-}
+    }
 
     cJSON *tai_range_list = cJSON_GetObjectItemCaseSensitive(nwdaf_infoJSON, "taiRangeList");
 
@@ -235,7 +235,7 @@ OpenAPI_nwdaf_info_t *OpenAPI_nwdaf_info_parseFromJSON(cJSON *nwdaf_infoJSON)
 
         OpenAPI_list_add(tai_range_listList, tai_range_listItem);
     }
-}
+    }
 
     nwdaf_info_local_var = OpenAPI_nwdaf_info_create (
         event_ids ? event_idsList : NULL,

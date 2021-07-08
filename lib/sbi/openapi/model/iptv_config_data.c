@@ -149,7 +149,7 @@ OpenAPI_iptv_config_data_t *OpenAPI_iptv_config_data_parseFromJSON(cJSON *iptv_c
         ogs_error("OpenAPI_iptv_config_data_parseFromJSON() failed [supi]");
         goto end;
     }
-}
+    }
 
     cJSON *inter_group_id = cJSON_GetObjectItemCaseSensitive(iptv_config_dataJSON, "interGroupId");
 
@@ -158,7 +158,7 @@ OpenAPI_iptv_config_data_t *OpenAPI_iptv_config_data_parseFromJSON(cJSON *iptv_c
         ogs_error("OpenAPI_iptv_config_data_parseFromJSON() failed [inter_group_id]");
         goto end;
     }
-}
+    }
 
     cJSON *dnn = cJSON_GetObjectItemCaseSensitive(iptv_config_dataJSON, "dnn");
 
@@ -167,14 +167,14 @@ OpenAPI_iptv_config_data_t *OpenAPI_iptv_config_data_parseFromJSON(cJSON *iptv_c
         ogs_error("OpenAPI_iptv_config_data_parseFromJSON() failed [dnn]");
         goto end;
     }
-}
+    }
 
     cJSON *snssai = cJSON_GetObjectItemCaseSensitive(iptv_config_dataJSON, "snssai");
 
     OpenAPI_snssai_t *snssai_local_nonprim = NULL;
     if (snssai) { 
     snssai_local_nonprim = OpenAPI_snssai_parseFromJSON(snssai);
-}
+    }
 
     cJSON *af_app_id = cJSON_GetObjectItemCaseSensitive(iptv_config_dataJSON, "afAppId");
     if (!af_app_id) {
@@ -221,7 +221,7 @@ OpenAPI_iptv_config_data_t *OpenAPI_iptv_config_data_parseFromJSON(cJSON *iptv_c
         ogs_error("OpenAPI_iptv_config_data_parseFromJSON() failed [supp_feat]");
         goto end;
     }
-}
+    }
 
     cJSON *res_uri = cJSON_GetObjectItemCaseSensitive(iptv_config_dataJSON, "resUri");
 
@@ -230,7 +230,7 @@ OpenAPI_iptv_config_data_t *OpenAPI_iptv_config_data_parseFromJSON(cJSON *iptv_c
         ogs_error("OpenAPI_iptv_config_data_parseFromJSON() failed [res_uri]");
         goto end;
     }
-}
+    }
 
     iptv_config_data_local_var = OpenAPI_iptv_config_data_create (
         supi ? ogs_strdup_or_assert(supi->valuestring) : NULL,

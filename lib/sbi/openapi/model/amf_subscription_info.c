@@ -98,7 +98,7 @@ OpenAPI_amf_subscription_info_t *OpenAPI_amf_subscription_info_parseFromJSON(cJS
         ogs_error("OpenAPI_amf_subscription_info_parseFromJSON() failed [subs_change_notify_correlation_id]");
         goto end;
     }
-}
+    }
 
     amf_subscription_info_local_var = OpenAPI_amf_subscription_info_create (
         ogs_strdup_or_assert(amf_instance_id->valuestring),

@@ -68,7 +68,7 @@ OpenAPI_security_result_t *OpenAPI_security_result_parseFromJSON(cJSON *security
         goto end;
     }
     integrity_protection_resultVariable = OpenAPI_protection_result_FromString(integrity_protection_result->valuestring);
-}
+    }
 
     cJSON *confidentiality_protection_result = cJSON_GetObjectItemCaseSensitive(security_resultJSON, "confidentialityProtectionResult");
 
@@ -79,7 +79,7 @@ OpenAPI_security_result_t *OpenAPI_security_result_parseFromJSON(cJSON *security
         goto end;
     }
     confidentiality_protection_resultVariable = OpenAPI_protection_result_FromString(confidentiality_protection_result->valuestring);
-}
+    }
 
     security_result_local_var = OpenAPI_security_result_create (
         integrity_protection_result ? integrity_protection_resultVariable : 0,

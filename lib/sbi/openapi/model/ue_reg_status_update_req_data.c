@@ -137,7 +137,7 @@ OpenAPI_ue_reg_status_update_req_data_t *OpenAPI_ue_reg_status_update_req_data_p
     }
     OpenAPI_list_add(to_release_session_listList , &to_release_session_list_local->valuedouble);
                     }
-}
+    }
 
     cJSON *pcf_reselected_ind = cJSON_GetObjectItemCaseSensitive(ue_reg_status_update_req_dataJSON, "pcfReselectedInd");
 
@@ -146,7 +146,7 @@ OpenAPI_ue_reg_status_update_req_data_t *OpenAPI_ue_reg_status_update_req_data_p
         ogs_error("OpenAPI_ue_reg_status_update_req_data_parseFromJSON() failed [pcf_reselected_ind]");
         goto end;
     }
-}
+    }
 
     cJSON *smf_change_info_list = cJSON_GetObjectItemCaseSensitive(ue_reg_status_update_req_dataJSON, "smfChangeInfoList");
 
@@ -169,7 +169,7 @@ OpenAPI_ue_reg_status_update_req_data_t *OpenAPI_ue_reg_status_update_req_data_p
 
         OpenAPI_list_add(smf_change_info_listList, smf_change_info_listItem);
     }
-}
+    }
 
     ue_reg_status_update_req_data_local_var = OpenAPI_ue_reg_status_update_req_data_create (
         transfer_statusVariable,

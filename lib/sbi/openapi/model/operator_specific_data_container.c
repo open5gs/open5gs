@@ -96,7 +96,7 @@ OpenAPI_operator_specific_data_container_t *OpenAPI_operator_specific_data_conta
         ogs_error("OpenAPI_operator_specific_data_container_parseFromJSON() failed [data_type_definition]");
         goto end;
     }
-}
+    }
 
     cJSON *value = cJSON_GetObjectItemCaseSensitive(operator_specific_data_containerJSON, "value");
     if (!value) {
@@ -117,7 +117,7 @@ OpenAPI_operator_specific_data_container_t *OpenAPI_operator_specific_data_conta
         ogs_error("OpenAPI_operator_specific_data_container_parseFromJSON() failed [supported_features]");
         goto end;
     }
-}
+    }
 
     operator_specific_data_container_local_var = OpenAPI_operator_specific_data_container_create (
         ogs_strdup_or_assert(data_type->valuestring),

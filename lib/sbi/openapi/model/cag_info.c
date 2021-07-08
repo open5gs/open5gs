@@ -100,7 +100,7 @@ OpenAPI_cag_info_t *OpenAPI_cag_info_parseFromJSON(cJSON *cag_infoJSON)
         ogs_error("OpenAPI_cag_info_parseFromJSON() failed [cag_only_indicator]");
         goto end;
     }
-}
+    }
 
     cag_info_local_var = OpenAPI_cag_info_create (
         allowed_cag_listList,

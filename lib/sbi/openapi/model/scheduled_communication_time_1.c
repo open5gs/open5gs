@@ -101,7 +101,7 @@ OpenAPI_scheduled_communication_time_1_t *OpenAPI_scheduled_communication_time_1
     }
     OpenAPI_list_add(days_of_weekList , &days_of_week_local->valuedouble);
                     }
-}
+    }
 
     cJSON *time_of_day_start = cJSON_GetObjectItemCaseSensitive(scheduled_communication_time_1JSON, "timeOfDayStart");
 
@@ -110,7 +110,7 @@ OpenAPI_scheduled_communication_time_1_t *OpenAPI_scheduled_communication_time_1
         ogs_error("OpenAPI_scheduled_communication_time_1_parseFromJSON() failed [time_of_day_start]");
         goto end;
     }
-}
+    }
 
     cJSON *time_of_day_end = cJSON_GetObjectItemCaseSensitive(scheduled_communication_time_1JSON, "timeOfDayEnd");
 
@@ -119,7 +119,7 @@ OpenAPI_scheduled_communication_time_1_t *OpenAPI_scheduled_communication_time_1
         ogs_error("OpenAPI_scheduled_communication_time_1_parseFromJSON() failed [time_of_day_end]");
         goto end;
     }
-}
+    }
 
     scheduled_communication_time_1_local_var = OpenAPI_scheduled_communication_time_1_create (
         days_of_week ? days_of_weekList : NULL,

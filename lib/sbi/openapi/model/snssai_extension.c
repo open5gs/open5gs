@@ -97,7 +97,7 @@ OpenAPI_snssai_extension_t *OpenAPI_snssai_extension_parseFromJSON(cJSON *snssai
 
         OpenAPI_list_add(sd_rangesList, sd_rangesItem);
     }
-}
+    }
 
     cJSON *wildcard_sd = cJSON_GetObjectItemCaseSensitive(snssai_extensionJSON, "wildcardSd");
 
@@ -106,7 +106,7 @@ OpenAPI_snssai_extension_t *OpenAPI_snssai_extension_parseFromJSON(cJSON *snssai
         ogs_error("OpenAPI_snssai_extension_parseFromJSON() failed [wildcard_sd]");
         goto end;
     }
-}
+    }
 
     snssai_extension_local_var = OpenAPI_snssai_extension_create (
         sd_ranges ? sd_rangesList : NULL,

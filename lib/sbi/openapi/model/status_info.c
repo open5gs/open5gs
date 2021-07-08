@@ -105,14 +105,14 @@ OpenAPI_status_info_t *OpenAPI_status_info_parseFromJSON(cJSON *status_infoJSON)
         goto end;
     }
     causeVariable = OpenAPI_cause_FromString(cause->valuestring);
-}
+    }
 
     cJSON *cn_assisted_ran_para = cJSON_GetObjectItemCaseSensitive(status_infoJSON, "cnAssistedRanPara");
 
     OpenAPI_cn_assisted_ran_para_t *cn_assisted_ran_para_local_nonprim = NULL;
     if (cn_assisted_ran_para) { 
     cn_assisted_ran_para_local_nonprim = OpenAPI_cn_assisted_ran_para_parseFromJSON(cn_assisted_ran_para);
-}
+    }
 
     cJSON *an_type = cJSON_GetObjectItemCaseSensitive(status_infoJSON, "anType");
 
@@ -123,7 +123,7 @@ OpenAPI_status_info_t *OpenAPI_status_info_parseFromJSON(cJSON *status_infoJSON)
         goto end;
     }
     an_typeVariable = OpenAPI_access_type_FromString(an_type->valuestring);
-}
+    }
 
     status_info_local_var = OpenAPI_status_info_create (
         resource_statusVariable,

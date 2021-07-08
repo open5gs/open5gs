@@ -68,7 +68,7 @@ OpenAPI_mtc_provider_t *OpenAPI_mtc_provider_parseFromJSON(cJSON *mtc_providerJS
         ogs_error("OpenAPI_mtc_provider_parseFromJSON() failed [mtc_provider_information]");
         goto end;
     }
-}
+    }
 
     cJSON *af_id = cJSON_GetObjectItemCaseSensitive(mtc_providerJSON, "afId");
 
@@ -77,7 +77,7 @@ OpenAPI_mtc_provider_t *OpenAPI_mtc_provider_parseFromJSON(cJSON *mtc_providerJS
         ogs_error("OpenAPI_mtc_provider_parseFromJSON() failed [af_id]");
         goto end;
     }
-}
+    }
 
     mtc_provider_local_var = OpenAPI_mtc_provider_create (
         mtc_provider_information ? ogs_strdup_or_assert(mtc_provider_information->valuestring) : NULL,

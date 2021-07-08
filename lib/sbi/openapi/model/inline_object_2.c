@@ -74,7 +74,7 @@ OpenAPI_inline_object_2_t *OpenAPI_inline_object_2_parseFromJSON(cJSON *inline_o
     OpenAPI_ue_context_cancel_relocate_data_t *json_data_local_nonprim = NULL;
     if (json_data) { 
     json_data_local_nonprim = OpenAPI_ue_context_cancel_relocate_data_parseFromJSON(json_data);
-}
+    }
 
     cJSON *binary_data_gtpc_message = cJSON_GetObjectItemCaseSensitive(inline_object_2JSON, "binaryDataGtpcMessage");
 
@@ -89,7 +89,7 @@ OpenAPI_inline_object_2_t *OpenAPI_inline_object_2_parseFromJSON(cJSON *inline_o
         ogs_error("OpenAPI_inline_object_2_parseFromJSON() failed [binary_data_gtpc_message]");
         goto end;
     }
-}
+    }
 
     inline_object_2_local_var = OpenAPI_inline_object_2_create (
         json_data ? json_data_local_nonprim : NULL,

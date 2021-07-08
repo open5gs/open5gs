@@ -107,7 +107,7 @@ OpenAPI_pp_dl_packet_count_ext_t *OpenAPI_pp_dl_packet_count_ext_parseFromJSON(c
         ogs_error("OpenAPI_pp_dl_packet_count_ext_parseFromJSON() failed [validity_time]");
         goto end;
     }
-}
+    }
 
     cJSON *mtc_provider_information = cJSON_GetObjectItemCaseSensitive(pp_dl_packet_count_extJSON, "mtcProviderInformation");
 
@@ -116,7 +116,7 @@ OpenAPI_pp_dl_packet_count_ext_t *OpenAPI_pp_dl_packet_count_ext_parseFromJSON(c
         ogs_error("OpenAPI_pp_dl_packet_count_ext_parseFromJSON() failed [mtc_provider_information]");
         goto end;
     }
-}
+    }
 
     pp_dl_packet_count_ext_local_var = OpenAPI_pp_dl_packet_count_ext_create (
         ogs_strdup_or_assert(af_instance_id->valuestring),

@@ -128,7 +128,7 @@ OpenAPI_smf_selection_data_t *OpenAPI_smf_selection_data_parseFromJSON(cJSON *sm
         ogs_error("OpenAPI_smf_selection_data_parseFromJSON() failed [unsupp_dnn]");
         goto end;
     }
-}
+    }
 
     cJSON *candidates = cJSON_GetObjectItemCaseSensitive(smf_selection_dataJSON, "candidates");
 
@@ -151,21 +151,21 @@ OpenAPI_smf_selection_data_t *OpenAPI_smf_selection_data_parseFromJSON(cJSON *sm
             localMapObject->string, OpenAPI_candidate_for_replacement_parseFromJSON(localMapObject));
         OpenAPI_list_add(candidatesList , localMapKeyPair);
     }
-}
+    }
 
     cJSON *snssai = cJSON_GetObjectItemCaseSensitive(smf_selection_dataJSON, "snssai");
 
     OpenAPI_snssai_t *snssai_local_nonprim = NULL;
     if (snssai) { 
     snssai_local_nonprim = OpenAPI_snssai_parseFromJSON(snssai);
-}
+    }
 
     cJSON *mapping_snssai = cJSON_GetObjectItemCaseSensitive(smf_selection_dataJSON, "mappingSnssai");
 
     OpenAPI_snssai_t *mapping_snssai_local_nonprim = NULL;
     if (mapping_snssai) { 
     mapping_snssai_local_nonprim = OpenAPI_snssai_parseFromJSON(mapping_snssai);
-}
+    }
 
     cJSON *dnn = cJSON_GetObjectItemCaseSensitive(smf_selection_dataJSON, "dnn");
 
@@ -174,7 +174,7 @@ OpenAPI_smf_selection_data_t *OpenAPI_smf_selection_data_parseFromJSON(cJSON *sm
         ogs_error("OpenAPI_smf_selection_data_parseFromJSON() failed [dnn]");
         goto end;
     }
-}
+    }
 
     smf_selection_data_local_var = OpenAPI_smf_selection_data_create (
         unsupp_dnn ? unsupp_dnn->valueint : 0,

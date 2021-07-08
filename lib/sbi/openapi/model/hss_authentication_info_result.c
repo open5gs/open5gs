@@ -72,7 +72,7 @@ OpenAPI_hss_authentication_info_result_t *OpenAPI_hss_authentication_info_result
         ogs_error("OpenAPI_hss_authentication_info_result_parseFromJSON() failed [supported_features]");
         goto end;
     }
-}
+    }
 
     cJSON *hss_authentication_vectors = cJSON_GetObjectItemCaseSensitive(hss_authentication_info_resultJSON, "hssAuthenticationVectors");
     if (!hss_authentication_vectors) {

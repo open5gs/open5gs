@@ -107,7 +107,7 @@ OpenAPI_udsf_info_t *OpenAPI_udsf_info_parseFromJSON(cJSON *udsf_infoJSON)
         ogs_error("OpenAPI_udsf_info_parseFromJSON() failed [group_id]");
         goto end;
     }
-}
+    }
 
     cJSON *supi_ranges = cJSON_GetObjectItemCaseSensitive(udsf_infoJSON, "supiRanges");
 
@@ -130,7 +130,7 @@ OpenAPI_udsf_info_t *OpenAPI_udsf_info_parseFromJSON(cJSON *udsf_infoJSON)
 
         OpenAPI_list_add(supi_rangesList, supi_rangesItem);
     }
-}
+    }
 
     cJSON *storage_id_ranges = cJSON_GetObjectItemCaseSensitive(udsf_infoJSON, "storageIdRanges");
 
@@ -147,7 +147,7 @@ OpenAPI_udsf_info_t *OpenAPI_udsf_info_parseFromJSON(cJSON *udsf_infoJSON)
         cJSON *localMapObject = storage_id_ranges_local_map;
         OpenAPI_list_add(storage_id_rangesList , localMapKeyPair);
     }
-}
+    }
 
     udsf_info_local_var = OpenAPI_udsf_info_create (
         group_id ? ogs_strdup_or_assert(group_id->valuestring) : NULL,

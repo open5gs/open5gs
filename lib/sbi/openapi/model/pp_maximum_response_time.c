@@ -126,7 +126,7 @@ OpenAPI_pp_maximum_response_time_t *OpenAPI_pp_maximum_response_time_parseFromJS
         ogs_error("OpenAPI_pp_maximum_response_time_parseFromJSON() failed [validity_time]");
         goto end;
     }
-}
+    }
 
     cJSON *mtc_provider_information = cJSON_GetObjectItemCaseSensitive(pp_maximum_response_timeJSON, "mtcProviderInformation");
 
@@ -135,7 +135,7 @@ OpenAPI_pp_maximum_response_time_t *OpenAPI_pp_maximum_response_time_parseFromJS
         ogs_error("OpenAPI_pp_maximum_response_time_parseFromJSON() failed [mtc_provider_information]");
         goto end;
     }
-}
+    }
 
     pp_maximum_response_time_local_var = OpenAPI_pp_maximum_response_time_create (
         maximum_response_time->valuedouble,

@@ -104,21 +104,21 @@ OpenAPI_amf_event_area_t *OpenAPI_amf_event_area_parseFromJSON(cJSON *amf_event_
     OpenAPI_presence_info_t *presence_info_local_nonprim = NULL;
     if (presence_info) { 
     presence_info_local_nonprim = OpenAPI_presence_info_parseFromJSON(presence_info);
-}
+    }
 
     cJSON *ladn_info = cJSON_GetObjectItemCaseSensitive(amf_event_areaJSON, "ladnInfo");
 
     OpenAPI_ladn_info_t *ladn_info_local_nonprim = NULL;
     if (ladn_info) { 
     ladn_info_local_nonprim = OpenAPI_ladn_info_parseFromJSON(ladn_info);
-}
+    }
 
     cJSON *s_nssai = cJSON_GetObjectItemCaseSensitive(amf_event_areaJSON, "sNssai");
 
     OpenAPI_snssai_t *s_nssai_local_nonprim = NULL;
     if (s_nssai) { 
     s_nssai_local_nonprim = OpenAPI_snssai_parseFromJSON(s_nssai);
-}
+    }
 
     cJSON *nsi_id = cJSON_GetObjectItemCaseSensitive(amf_event_areaJSON, "nsiId");
 
@@ -127,7 +127,7 @@ OpenAPI_amf_event_area_t *OpenAPI_amf_event_area_parseFromJSON(cJSON *amf_event_
         ogs_error("OpenAPI_amf_event_area_parseFromJSON() failed [nsi_id]");
         goto end;
     }
-}
+    }
 
     amf_event_area_local_var = OpenAPI_amf_event_area_create (
         presence_info ? presence_info_local_nonprim : NULL,

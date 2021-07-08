@@ -151,7 +151,7 @@ OpenAPI_upf_cond_t *OpenAPI_upf_cond_parseFromJSON(cJSON *upf_condJSON)
     }
     OpenAPI_list_add(smf_serving_areaList , ogs_strdup_or_assert(smf_serving_area_local->valuestring));
                     }
-}
+    }
 
     cJSON *tai_list = cJSON_GetObjectItemCaseSensitive(upf_condJSON, "taiList");
 
@@ -174,7 +174,7 @@ OpenAPI_upf_cond_t *OpenAPI_upf_cond_parseFromJSON(cJSON *upf_condJSON)
 
         OpenAPI_list_add(tai_listList, tai_listItem);
     }
-}
+    }
 
     upf_cond_local_var = OpenAPI_upf_cond_create (
         condition_typeVariable,

@@ -103,7 +103,7 @@ OpenAPI_notif_condition_t *OpenAPI_notif_condition_parseFromJSON(cJSON *notif_co
     }
     OpenAPI_list_add(monitored_attributesList , ogs_strdup_or_assert(monitored_attributes_local->valuestring));
                     }
-}
+    }
 
     cJSON *unmonitored_attributes = cJSON_GetObjectItemCaseSensitive(notif_conditionJSON, "unmonitoredAttributes");
 
@@ -123,7 +123,7 @@ OpenAPI_notif_condition_t *OpenAPI_notif_condition_parseFromJSON(cJSON *notif_co
     }
     OpenAPI_list_add(unmonitored_attributesList , ogs_strdup_or_assert(unmonitored_attributes_local->valuestring));
                     }
-}
+    }
 
     notif_condition_local_var = OpenAPI_notif_condition_create (
         monitored_attributes ? monitored_attributesList : NULL,

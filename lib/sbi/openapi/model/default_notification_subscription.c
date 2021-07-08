@@ -141,7 +141,7 @@ OpenAPI_default_notification_subscription_t *OpenAPI_default_notification_subscr
         goto end;
     }
     n1_message_classVariable = OpenAPI_n1_message_class_FromString(n1_message_class->valuestring);
-}
+    }
 
     cJSON *n2_information_class = cJSON_GetObjectItemCaseSensitive(default_notification_subscriptionJSON, "n2InformationClass");
 
@@ -152,7 +152,7 @@ OpenAPI_default_notification_subscription_t *OpenAPI_default_notification_subscr
         goto end;
     }
     n2_information_classVariable = OpenAPI_n2_information_class_FromString(n2_information_class->valuestring);
-}
+    }
 
     cJSON *versions = cJSON_GetObjectItemCaseSensitive(default_notification_subscriptionJSON, "versions");
 
@@ -172,7 +172,7 @@ OpenAPI_default_notification_subscription_t *OpenAPI_default_notification_subscr
     }
     OpenAPI_list_add(versionsList , ogs_strdup_or_assert(versions_local->valuestring));
                     }
-}
+    }
 
     cJSON *binding = cJSON_GetObjectItemCaseSensitive(default_notification_subscriptionJSON, "binding");
 
@@ -181,7 +181,7 @@ OpenAPI_default_notification_subscription_t *OpenAPI_default_notification_subscr
         ogs_error("OpenAPI_default_notification_subscription_parseFromJSON() failed [binding]");
         goto end;
     }
-}
+    }
 
     default_notification_subscription_local_var = OpenAPI_default_notification_subscription_create (
         notification_typeVariable,

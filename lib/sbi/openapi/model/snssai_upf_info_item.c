@@ -131,7 +131,7 @@ OpenAPI_snssai_upf_info_item_t *OpenAPI_snssai_upf_info_item_parseFromJSON(cJSON
         ogs_error("OpenAPI_snssai_upf_info_item_parseFromJSON() failed [redundant_transport]");
         goto end;
     }
-}
+    }
 
     snssai_upf_info_item_local_var = OpenAPI_snssai_upf_info_item_create (
         s_nssai_local_nonprim,

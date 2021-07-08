@@ -136,7 +136,7 @@ OpenAPI_eap_session_t *OpenAPI_eap_session_parseFromJSON(cJSON *eap_sessionJSON)
         ogs_error("OpenAPI_eap_session_parseFromJSON() failed [k_seaf]");
         goto end;
     }
-}
+    }
 
     cJSON *_links = cJSON_GetObjectItemCaseSensitive(eap_sessionJSON, "_links");
 
@@ -159,7 +159,7 @@ OpenAPI_eap_session_t *OpenAPI_eap_session_parseFromJSON(cJSON *eap_sessionJSON)
             localMapObject->string, OpenAPI_links_value_schema_parseFromJSON(localMapObject));
         OpenAPI_list_add(_linksList , localMapKeyPair);
     }
-}
+    }
 
     cJSON *auth_result = cJSON_GetObjectItemCaseSensitive(eap_sessionJSON, "authResult");
 
@@ -170,7 +170,7 @@ OpenAPI_eap_session_t *OpenAPI_eap_session_parseFromJSON(cJSON *eap_sessionJSON)
         goto end;
     }
     auth_resultVariable = OpenAPI_auth_result_FromString(auth_result->valuestring);
-}
+    }
 
     cJSON *supi = cJSON_GetObjectItemCaseSensitive(eap_sessionJSON, "supi");
 
@@ -179,7 +179,7 @@ OpenAPI_eap_session_t *OpenAPI_eap_session_parseFromJSON(cJSON *eap_sessionJSON)
         ogs_error("OpenAPI_eap_session_parseFromJSON() failed [supi]");
         goto end;
     }
-}
+    }
 
     cJSON *supported_features = cJSON_GetObjectItemCaseSensitive(eap_sessionJSON, "supportedFeatures");
 
@@ -188,7 +188,7 @@ OpenAPI_eap_session_t *OpenAPI_eap_session_parseFromJSON(cJSON *eap_sessionJSON)
         ogs_error("OpenAPI_eap_session_parseFromJSON() failed [supported_features]");
         goto end;
     }
-}
+    }
 
     eap_session_local_var = OpenAPI_eap_session_create (
         ogs_strdup_or_assert(eap_payload->valuestring),

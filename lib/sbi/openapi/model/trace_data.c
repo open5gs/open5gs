@@ -159,7 +159,7 @@ OpenAPI_trace_data_t *OpenAPI_trace_data_parseFromJSON(cJSON *trace_dataJSON)
         ogs_error("OpenAPI_trace_data_parseFromJSON() failed [collection_entity_ipv4_addr]");
         goto end;
     }
-}
+    }
 
     cJSON *collection_entity_ipv6_addr = cJSON_GetObjectItemCaseSensitive(trace_dataJSON, "collectionEntityIpv6Addr");
 
@@ -168,7 +168,7 @@ OpenAPI_trace_data_t *OpenAPI_trace_data_parseFromJSON(cJSON *trace_dataJSON)
         ogs_error("OpenAPI_trace_data_parseFromJSON() failed [collection_entity_ipv6_addr]");
         goto end;
     }
-}
+    }
 
     cJSON *interface_list = cJSON_GetObjectItemCaseSensitive(trace_dataJSON, "interfaceList");
 
@@ -177,7 +177,7 @@ OpenAPI_trace_data_t *OpenAPI_trace_data_parseFromJSON(cJSON *trace_dataJSON)
         ogs_error("OpenAPI_trace_data_parseFromJSON() failed [interface_list]");
         goto end;
     }
-}
+    }
 
     trace_data_local_var = OpenAPI_trace_data_create (
         ogs_strdup_or_assert(trace_ref->valuestring),

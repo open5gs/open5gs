@@ -179,7 +179,7 @@ OpenAPI_traffic_influ_sub_t *OpenAPI_traffic_influ_sub_parseFromJSON(cJSON *traf
     }
     OpenAPI_list_add(dnnsList , ogs_strdup_or_assert(dnns_local->valuestring));
                     }
-}
+    }
 
     cJSON *snssais = cJSON_GetObjectItemCaseSensitive(traffic_influ_subJSON, "snssais");
 
@@ -202,7 +202,7 @@ OpenAPI_traffic_influ_sub_t *OpenAPI_traffic_influ_sub_parseFromJSON(cJSON *traf
 
         OpenAPI_list_add(snssaisList, snssaisItem);
     }
-}
+    }
 
     cJSON *internal_group_ids = cJSON_GetObjectItemCaseSensitive(traffic_influ_subJSON, "internalGroupIds");
 
@@ -222,7 +222,7 @@ OpenAPI_traffic_influ_sub_t *OpenAPI_traffic_influ_sub_parseFromJSON(cJSON *traf
     }
     OpenAPI_list_add(internal_group_idsList , ogs_strdup_or_assert(internal_group_ids_local->valuestring));
                     }
-}
+    }
 
     cJSON *supis = cJSON_GetObjectItemCaseSensitive(traffic_influ_subJSON, "supis");
 
@@ -242,7 +242,7 @@ OpenAPI_traffic_influ_sub_t *OpenAPI_traffic_influ_sub_parseFromJSON(cJSON *traf
     }
     OpenAPI_list_add(supisList , ogs_strdup_or_assert(supis_local->valuestring));
                     }
-}
+    }
 
     cJSON *notification_uri = cJSON_GetObjectItemCaseSensitive(traffic_influ_subJSON, "notificationUri");
     if (!notification_uri) {
@@ -263,7 +263,7 @@ OpenAPI_traffic_influ_sub_t *OpenAPI_traffic_influ_sub_parseFromJSON(cJSON *traf
         ogs_error("OpenAPI_traffic_influ_sub_parseFromJSON() failed [expiry]");
         goto end;
     }
-}
+    }
 
     cJSON *supported_features = cJSON_GetObjectItemCaseSensitive(traffic_influ_subJSON, "supportedFeatures");
 
@@ -272,7 +272,7 @@ OpenAPI_traffic_influ_sub_t *OpenAPI_traffic_influ_sub_parseFromJSON(cJSON *traf
         ogs_error("OpenAPI_traffic_influ_sub_parseFromJSON() failed [supported_features]");
         goto end;
     }
-}
+    }
 
     traffic_influ_sub_local_var = OpenAPI_traffic_influ_sub_create (
         dnns ? dnnsList : NULL,
