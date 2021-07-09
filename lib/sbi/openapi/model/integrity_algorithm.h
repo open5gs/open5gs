@@ -1,7 +1,7 @@
 /*
  * integrity_algorithm.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_integrity_algorithm_H_

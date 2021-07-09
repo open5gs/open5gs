@@ -6,7 +6,7 @@
 
 OpenAPI_options_response_t *OpenAPI_options_response_create(
     char *supported_features
-    )
+)
 {
     OpenAPI_options_response_t *options_response_local_var = OpenAPI_malloc(sizeof(OpenAPI_options_response_t));
     if (!options_response_local_var) {
@@ -38,10 +38,10 @@ cJSON *OpenAPI_options_response_convertToJSON(OpenAPI_options_response_t *option
 
     item = cJSON_CreateObject();
     if (options_response->supported_features) {
-        if (cJSON_AddStringToObject(item, "supportedFeatures", options_response->supported_features) == NULL) {
-            ogs_error("OpenAPI_options_response_convertToJSON() failed [supported_features]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "supportedFeatures", options_response->supported_features) == NULL) {
+        ogs_error("OpenAPI_options_response_convertToJSON() failed [supported_features]");
+        goto end;
+    }
     }
 
 end:
@@ -53,16 +53,16 @@ OpenAPI_options_response_t *OpenAPI_options_response_parseFromJSON(cJSON *option
     OpenAPI_options_response_t *options_response_local_var = NULL;
     cJSON *supported_features = cJSON_GetObjectItemCaseSensitive(options_responseJSON, "supportedFeatures");
 
-    if (supported_features) {
-        if (!cJSON_IsString(supported_features)) {
-            ogs_error("OpenAPI_options_response_parseFromJSON() failed [supported_features]");
-            goto end;
-        }
+    if (supported_features) { 
+    if (!cJSON_IsString(supported_features)) {
+        ogs_error("OpenAPI_options_response_parseFromJSON() failed [supported_features]");
+        goto end;
+    }
     }
 
     options_response_local_var = OpenAPI_options_response_create (
         supported_features ? ogs_strdup_or_assert(supported_features->valuestring) : NULL
-        );
+    );
 
     return options_response_local_var;
 end:

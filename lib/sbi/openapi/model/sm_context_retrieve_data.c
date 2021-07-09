@@ -8,8 +8,9 @@ OpenAPI_sm_context_retrieve_data_t *OpenAPI_sm_context_retrieve_data_create(
     OpenAPI_mme_capabilities_t *target_mme_cap,
     OpenAPI_sm_context_type_e sm_context_type,
     OpenAPI_plmn_id_t *serving_network,
-    OpenAPI_list_t *not_to_transfer_ebi_list
-    )
+    OpenAPI_list_t *not_to_transfer_ebi_list,
+    int ran_unchanged_ind
+)
 {
     OpenAPI_sm_context_retrieve_data_t *sm_context_retrieve_data_local_var = OpenAPI_malloc(sizeof(OpenAPI_sm_context_retrieve_data_t));
     if (!sm_context_retrieve_data_local_var) {
@@ -19,6 +20,7 @@ OpenAPI_sm_context_retrieve_data_t *OpenAPI_sm_context_retrieve_data_create(
     sm_context_retrieve_data_local_var->sm_context_type = sm_context_type;
     sm_context_retrieve_data_local_var->serving_network = serving_network;
     sm_context_retrieve_data_local_var->not_to_transfer_ebi_list = not_to_transfer_ebi_list;
+    sm_context_retrieve_data_local_var->ran_unchanged_ind = ran_unchanged_ind;
 
     return sm_context_retrieve_data_local_var;
 }
@@ -49,52 +51,59 @@ cJSON *OpenAPI_sm_context_retrieve_data_convertToJSON(OpenAPI_sm_context_retriev
 
     item = cJSON_CreateObject();
     if (sm_context_retrieve_data->target_mme_cap) {
-        cJSON *target_mme_cap_local_JSON = OpenAPI_mme_capabilities_convertToJSON(sm_context_retrieve_data->target_mme_cap);
-        if (target_mme_cap_local_JSON == NULL) {
-            ogs_error("OpenAPI_sm_context_retrieve_data_convertToJSON() failed [target_mme_cap]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "targetMmeCap", target_mme_cap_local_JSON);
-        if (item->child == NULL) {
-            ogs_error("OpenAPI_sm_context_retrieve_data_convertToJSON() failed [target_mme_cap]");
-            goto end;
-        }
+    cJSON *target_mme_cap_local_JSON = OpenAPI_mme_capabilities_convertToJSON(sm_context_retrieve_data->target_mme_cap);
+    if (target_mme_cap_local_JSON == NULL) {
+        ogs_error("OpenAPI_sm_context_retrieve_data_convertToJSON() failed [target_mme_cap]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "targetMmeCap", target_mme_cap_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_sm_context_retrieve_data_convertToJSON() failed [target_mme_cap]");
+        goto end;
+    }
     }
 
     if (sm_context_retrieve_data->sm_context_type) {
-        if (cJSON_AddStringToObject(item, "smContextType", OpenAPI_sm_context_type_ToString(sm_context_retrieve_data->sm_context_type)) == NULL) {
-            ogs_error("OpenAPI_sm_context_retrieve_data_convertToJSON() failed [sm_context_type]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "smContextType", OpenAPI_sm_context_type_ToString(sm_context_retrieve_data->sm_context_type)) == NULL) {
+        ogs_error("OpenAPI_sm_context_retrieve_data_convertToJSON() failed [sm_context_type]");
+        goto end;
+    }
     }
 
     if (sm_context_retrieve_data->serving_network) {
-        cJSON *serving_network_local_JSON = OpenAPI_plmn_id_convertToJSON(sm_context_retrieve_data->serving_network);
-        if (serving_network_local_JSON == NULL) {
-            ogs_error("OpenAPI_sm_context_retrieve_data_convertToJSON() failed [serving_network]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "servingNetwork", serving_network_local_JSON);
-        if (item->child == NULL) {
-            ogs_error("OpenAPI_sm_context_retrieve_data_convertToJSON() failed [serving_network]");
-            goto end;
-        }
+    cJSON *serving_network_local_JSON = OpenAPI_plmn_id_convertToJSON(sm_context_retrieve_data->serving_network);
+    if (serving_network_local_JSON == NULL) {
+        ogs_error("OpenAPI_sm_context_retrieve_data_convertToJSON() failed [serving_network]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "servingNetwork", serving_network_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_sm_context_retrieve_data_convertToJSON() failed [serving_network]");
+        goto end;
+    }
     }
 
     if (sm_context_retrieve_data->not_to_transfer_ebi_list) {
-        cJSON *not_to_transfer_ebi_list = cJSON_AddArrayToObject(item, "notToTransferEbiList");
-        if (not_to_transfer_ebi_list == NULL) {
-            ogs_error("OpenAPI_sm_context_retrieve_data_convertToJSON() failed [not_to_transfer_ebi_list]");
-            goto end;
-        }
+    cJSON *not_to_transfer_ebi_list = cJSON_AddArrayToObject(item, "notToTransferEbiList");
+    if (not_to_transfer_ebi_list == NULL) {
+        ogs_error("OpenAPI_sm_context_retrieve_data_convertToJSON() failed [not_to_transfer_ebi_list]");
+        goto end;
+    }
 
-        OpenAPI_lnode_t *not_to_transfer_ebi_list_node;
-        OpenAPI_list_for_each(sm_context_retrieve_data->not_to_transfer_ebi_list, not_to_transfer_ebi_list_node)  {
-            if (cJSON_AddNumberToObject(not_to_transfer_ebi_list, "", *(double *)not_to_transfer_ebi_list_node->data) == NULL) {
-                ogs_error("OpenAPI_sm_context_retrieve_data_convertToJSON() failed [not_to_transfer_ebi_list]");
-                goto end;
-            }
-        }
+    OpenAPI_lnode_t *not_to_transfer_ebi_list_node;
+    OpenAPI_list_for_each(sm_context_retrieve_data->not_to_transfer_ebi_list, not_to_transfer_ebi_list_node)  {
+    if (cJSON_AddNumberToObject(not_to_transfer_ebi_list, "", *(double *)not_to_transfer_ebi_list_node->data) == NULL) {
+        ogs_error("OpenAPI_sm_context_retrieve_data_convertToJSON() failed [not_to_transfer_ebi_list]");
+        goto end;
+    }
+                    }
+    }
+
+    if (sm_context_retrieve_data->ran_unchanged_ind) {
+    if (cJSON_AddBoolToObject(item, "ranUnchangedInd", sm_context_retrieve_data->ran_unchanged_ind) == NULL) {
+        ogs_error("OpenAPI_sm_context_retrieve_data_convertToJSON() failed [ran_unchanged_ind]");
+        goto end;
+    }
     }
 
 end:
@@ -107,54 +116,64 @@ OpenAPI_sm_context_retrieve_data_t *OpenAPI_sm_context_retrieve_data_parseFromJS
     cJSON *target_mme_cap = cJSON_GetObjectItemCaseSensitive(sm_context_retrieve_dataJSON, "targetMmeCap");
 
     OpenAPI_mme_capabilities_t *target_mme_cap_local_nonprim = NULL;
-    if (target_mme_cap) {
-        target_mme_cap_local_nonprim = OpenAPI_mme_capabilities_parseFromJSON(target_mme_cap);
+    if (target_mme_cap) { 
+    target_mme_cap_local_nonprim = OpenAPI_mme_capabilities_parseFromJSON(target_mme_cap);
     }
 
     cJSON *sm_context_type = cJSON_GetObjectItemCaseSensitive(sm_context_retrieve_dataJSON, "smContextType");
 
     OpenAPI_sm_context_type_e sm_context_typeVariable;
-    if (sm_context_type) {
-        if (!cJSON_IsString(sm_context_type)) {
-            ogs_error("OpenAPI_sm_context_retrieve_data_parseFromJSON() failed [sm_context_type]");
-            goto end;
-        }
-        sm_context_typeVariable = OpenAPI_sm_context_type_FromString(sm_context_type->valuestring);
+    if (sm_context_type) { 
+    if (!cJSON_IsString(sm_context_type)) {
+        ogs_error("OpenAPI_sm_context_retrieve_data_parseFromJSON() failed [sm_context_type]");
+        goto end;
+    }
+    sm_context_typeVariable = OpenAPI_sm_context_type_FromString(sm_context_type->valuestring);
     }
 
     cJSON *serving_network = cJSON_GetObjectItemCaseSensitive(sm_context_retrieve_dataJSON, "servingNetwork");
 
     OpenAPI_plmn_id_t *serving_network_local_nonprim = NULL;
-    if (serving_network) {
-        serving_network_local_nonprim = OpenAPI_plmn_id_parseFromJSON(serving_network);
+    if (serving_network) { 
+    serving_network_local_nonprim = OpenAPI_plmn_id_parseFromJSON(serving_network);
     }
 
     cJSON *not_to_transfer_ebi_list = cJSON_GetObjectItemCaseSensitive(sm_context_retrieve_dataJSON, "notToTransferEbiList");
 
     OpenAPI_list_t *not_to_transfer_ebi_listList;
-    if (not_to_transfer_ebi_list) {
-        cJSON *not_to_transfer_ebi_list_local;
-        if (!cJSON_IsArray(not_to_transfer_ebi_list)) {
-            ogs_error("OpenAPI_sm_context_retrieve_data_parseFromJSON() failed [not_to_transfer_ebi_list]");
-            goto end;
-        }
-        not_to_transfer_ebi_listList = OpenAPI_list_create();
+    if (not_to_transfer_ebi_list) { 
+    cJSON *not_to_transfer_ebi_list_local;
+    if (!cJSON_IsArray(not_to_transfer_ebi_list)) {
+        ogs_error("OpenAPI_sm_context_retrieve_data_parseFromJSON() failed [not_to_transfer_ebi_list]");
+        goto end;
+    }
+    not_to_transfer_ebi_listList = OpenAPI_list_create();
 
-        cJSON_ArrayForEach(not_to_transfer_ebi_list_local, not_to_transfer_ebi_list) {
-            if (!cJSON_IsNumber(not_to_transfer_ebi_list_local)) {
-                ogs_error("OpenAPI_sm_context_retrieve_data_parseFromJSON() failed [not_to_transfer_ebi_list]");
-                goto end;
-            }
-            OpenAPI_list_add(not_to_transfer_ebi_listList, &not_to_transfer_ebi_list_local->valuedouble);
-        }
+    cJSON_ArrayForEach(not_to_transfer_ebi_list_local, not_to_transfer_ebi_list) {
+    if (!cJSON_IsNumber(not_to_transfer_ebi_list_local)) {
+        ogs_error("OpenAPI_sm_context_retrieve_data_parseFromJSON() failed [not_to_transfer_ebi_list]");
+        goto end;
+    }
+    OpenAPI_list_add(not_to_transfer_ebi_listList , &not_to_transfer_ebi_list_local->valuedouble);
+                    }
+    }
+
+    cJSON *ran_unchanged_ind = cJSON_GetObjectItemCaseSensitive(sm_context_retrieve_dataJSON, "ranUnchangedInd");
+
+    if (ran_unchanged_ind) { 
+    if (!cJSON_IsBool(ran_unchanged_ind)) {
+        ogs_error("OpenAPI_sm_context_retrieve_data_parseFromJSON() failed [ran_unchanged_ind]");
+        goto end;
+    }
     }
 
     sm_context_retrieve_data_local_var = OpenAPI_sm_context_retrieve_data_create (
         target_mme_cap ? target_mme_cap_local_nonprim : NULL,
         sm_context_type ? sm_context_typeVariable : 0,
         serving_network ? serving_network_local_nonprim : NULL,
-        not_to_transfer_ebi_list ? not_to_transfer_ebi_listList : NULL
-        );
+        not_to_transfer_ebi_list ? not_to_transfer_ebi_listList : NULL,
+        ran_unchanged_ind ? ran_unchanged_ind->valueint : 0
+    );
 
     return sm_context_retrieve_data_local_var;
 end:

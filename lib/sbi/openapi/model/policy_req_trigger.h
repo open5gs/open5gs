@@ -1,7 +1,7 @@
 /*
  * policy_req_trigger.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_policy_req_trigger_H_

@@ -24,7 +24,7 @@ typedef struct OpenAPI_nf_instance_id_cond_s {
 
 OpenAPI_nf_instance_id_cond_t *OpenAPI_nf_instance_id_cond_create(
     char *nf_instance_id
-    );
+);
 void OpenAPI_nf_instance_id_cond_free(OpenAPI_nf_instance_id_cond_t *nf_instance_id_cond);
 OpenAPI_nf_instance_id_cond_t *OpenAPI_nf_instance_id_cond_parseFromJSON(cJSON *nf_instance_id_condJSON);
 cJSON *OpenAPI_nf_instance_id_cond_convertToJSON(OpenAPI_nf_instance_id_cond_t *nf_instance_id_cond);

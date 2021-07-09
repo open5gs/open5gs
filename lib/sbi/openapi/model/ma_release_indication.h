@@ -1,7 +1,7 @@
 /*
  * ma_release_indication.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_ma_release_indication_H_

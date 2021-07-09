@@ -1,7 +1,7 @@
 /*
  * credit_management_status.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_credit_management_status_H_

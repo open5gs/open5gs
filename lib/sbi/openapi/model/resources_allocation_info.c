@@ -6,8 +6,9 @@
 
 OpenAPI_resources_allocation_info_t *OpenAPI_resources_allocation_info_create(
     OpenAPI_media_component_resources_status_e mc_resourc_status,
-    OpenAPI_list_t *flows
-    )
+    OpenAPI_list_t *flows,
+    char *alt_ser_req
+)
 {
     OpenAPI_resources_allocation_info_t *resources_allocation_info_local_var = OpenAPI_malloc(sizeof(OpenAPI_resources_allocation_info_t));
     if (!resources_allocation_info_local_var) {
@@ -15,6 +16,7 @@ OpenAPI_resources_allocation_info_t *OpenAPI_resources_allocation_info_create(
     }
     resources_allocation_info_local_var->mc_resourc_status = mc_resourc_status;
     resources_allocation_info_local_var->flows = flows;
+    resources_allocation_info_local_var->alt_ser_req = alt_ser_req;
 
     return resources_allocation_info_local_var;
 }
@@ -29,6 +31,7 @@ void OpenAPI_resources_allocation_info_free(OpenAPI_resources_allocation_info_t 
         OpenAPI_flows_free(node->data);
     }
     OpenAPI_list_free(resources_allocation_info->flows);
+    ogs_free(resources_allocation_info->alt_ser_req);
     ogs_free(resources_allocation_info);
 }
 
@@ -42,29 +45,38 @@ cJSON *OpenAPI_resources_allocation_info_convertToJSON(OpenAPI_resources_allocat
     }
 
     item = cJSON_CreateObject();
+    if (resources_allocation_info->mc_resourc_status) {
     if (cJSON_AddStringToObject(item, "mcResourcStatus", OpenAPI_media_component_resources_status_ToString(resources_allocation_info->mc_resourc_status)) == NULL) {
         ogs_error("OpenAPI_resources_allocation_info_convertToJSON() failed [mc_resourc_status]");
         goto end;
     }
+    }
 
     if (resources_allocation_info->flows) {
-        cJSON *flowsList = cJSON_AddArrayToObject(item, "flows");
-        if (flowsList == NULL) {
-            ogs_error("OpenAPI_resources_allocation_info_convertToJSON() failed [flows]");
-            goto end;
-        }
+    cJSON *flowsList = cJSON_AddArrayToObject(item, "flows");
+    if (flowsList == NULL) {
+        ogs_error("OpenAPI_resources_allocation_info_convertToJSON() failed [flows]");
+        goto end;
+    }
 
-        OpenAPI_lnode_t *flows_node;
-        if (resources_allocation_info->flows) {
-            OpenAPI_list_for_each(resources_allocation_info->flows, flows_node) {
-                cJSON *itemLocal = OpenAPI_flows_convertToJSON(flows_node->data);
-                if (itemLocal == NULL) {
-                    ogs_error("OpenAPI_resources_allocation_info_convertToJSON() failed [flows]");
-                    goto end;
-                }
-                cJSON_AddItemToArray(flowsList, itemLocal);
+    OpenAPI_lnode_t *flows_node;
+    if (resources_allocation_info->flows) {
+        OpenAPI_list_for_each(resources_allocation_info->flows, flows_node) {
+            cJSON *itemLocal = OpenAPI_flows_convertToJSON(flows_node->data);
+            if (itemLocal == NULL) {
+                ogs_error("OpenAPI_resources_allocation_info_convertToJSON() failed [flows]");
+                goto end;
             }
+            cJSON_AddItemToArray(flowsList, itemLocal);
         }
+    }
+    }
+
+    if (resources_allocation_info->alt_ser_req) {
+    if (cJSON_AddStringToObject(item, "altSerReq", resources_allocation_info->alt_ser_req) == NULL) {
+        ogs_error("OpenAPI_resources_allocation_info_convertToJSON() failed [alt_ser_req]");
+        goto end;
+    }
     }
 
 end:
@@ -75,46 +87,53 @@ OpenAPI_resources_allocation_info_t *OpenAPI_resources_allocation_info_parseFrom
 {
     OpenAPI_resources_allocation_info_t *resources_allocation_info_local_var = NULL;
     cJSON *mc_resourc_status = cJSON_GetObjectItemCaseSensitive(resources_allocation_infoJSON, "mcResourcStatus");
-    if (!mc_resourc_status) {
-        ogs_error("OpenAPI_resources_allocation_info_parseFromJSON() failed [mc_resourc_status]");
-        goto end;
-    }
 
     OpenAPI_media_component_resources_status_e mc_resourc_statusVariable;
-
+    if (mc_resourc_status) { 
     if (!cJSON_IsString(mc_resourc_status)) {
         ogs_error("OpenAPI_resources_allocation_info_parseFromJSON() failed [mc_resourc_status]");
         goto end;
     }
     mc_resourc_statusVariable = OpenAPI_media_component_resources_status_FromString(mc_resourc_status->valuestring);
+    }
 
     cJSON *flows = cJSON_GetObjectItemCaseSensitive(resources_allocation_infoJSON, "flows");
 
     OpenAPI_list_t *flowsList;
-    if (flows) {
-        cJSON *flows_local_nonprimitive;
-        if (!cJSON_IsArray(flows)) {
+    if (flows) { 
+    cJSON *flows_local_nonprimitive;
+    if (!cJSON_IsArray(flows)){
+        ogs_error("OpenAPI_resources_allocation_info_parseFromJSON() failed [flows]");
+        goto end;
+    }
+
+    flowsList = OpenAPI_list_create();
+
+    cJSON_ArrayForEach(flows_local_nonprimitive, flows ) {
+        if (!cJSON_IsObject(flows_local_nonprimitive)) {
             ogs_error("OpenAPI_resources_allocation_info_parseFromJSON() failed [flows]");
             goto end;
         }
+        OpenAPI_flows_t *flowsItem = OpenAPI_flows_parseFromJSON(flows_local_nonprimitive);
 
-        flowsList = OpenAPI_list_create();
+        OpenAPI_list_add(flowsList, flowsItem);
+    }
+    }
 
-        cJSON_ArrayForEach(flows_local_nonprimitive, flows ) {
-            if (!cJSON_IsObject(flows_local_nonprimitive)) {
-                ogs_error("OpenAPI_resources_allocation_info_parseFromJSON() failed [flows]");
-                goto end;
-            }
-            OpenAPI_flows_t *flowsItem = OpenAPI_flows_parseFromJSON(flows_local_nonprimitive);
+    cJSON *alt_ser_req = cJSON_GetObjectItemCaseSensitive(resources_allocation_infoJSON, "altSerReq");
 
-            OpenAPI_list_add(flowsList, flowsItem);
-        }
+    if (alt_ser_req) { 
+    if (!cJSON_IsString(alt_ser_req)) {
+        ogs_error("OpenAPI_resources_allocation_info_parseFromJSON() failed [alt_ser_req]");
+        goto end;
+    }
     }
 
     resources_allocation_info_local_var = OpenAPI_resources_allocation_info_create (
-        mc_resourc_statusVariable,
-        flows ? flowsList : NULL
-        );
+        mc_resourc_status ? mc_resourc_statusVariable : 0,
+        flows ? flowsList : NULL,
+        alt_ser_req ? ogs_strdup_or_assert(alt_ser_req->valuestring) : NULL
+    );
 
     return resources_allocation_info_local_var;
 end:

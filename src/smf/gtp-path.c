@@ -37,10 +37,13 @@
 
 #include "event.h"
 #include "gtp-path.h"
+#include "pfcp-path.h"
 #include "s5c-build.h"
 
 static bool check_if_router_solicit(ogs_pkbuf_t *pkbuf);
 static void send_router_advertisement(smf_sess_t *sess, uint8_t *ip6_dst);
+
+static void bearer_timeout(ogs_gtp_xact_t *xact, void *data);
 
 static void _gtpv2_c_recv_cb(short when, ogs_socket_t fd, void *data)
 {
@@ -326,6 +329,39 @@ int smf_gtp_send_delete_session_response(
     return rv;
 }
 
+int smf_gtp_send_delete_bearer_request(
+        smf_bearer_t *bearer, uint8_t pti, uint8_t cause_value)
+{
+    int rv;
+
+    ogs_gtp_xact_t *xact = NULL;
+    ogs_gtp_header_t h;
+    ogs_pkbuf_t *pkbuf = NULL;
+
+    smf_sess_t *sess = NULL;
+
+    ogs_assert(bearer);
+    sess = bearer->sess;
+    ogs_assert(sess);
+
+    memset(&h, 0, sizeof(ogs_gtp_header_t));
+    h.type = OGS_GTP_DELETE_BEARER_REQUEST_TYPE;
+    h.teid = sess->sgw_s5c_teid;
+
+    pkbuf = smf_s5c_build_delete_bearer_request(
+                h.type, bearer, pti, cause_value);
+    ogs_expect_or_return_val(pkbuf, OGS_ERROR);
+
+    xact = ogs_gtp_xact_local_create(
+            sess->gnode, &h, pkbuf, bearer_timeout, bearer);
+    ogs_expect_or_return_val(xact, OGS_ERROR);
+
+    rv = ogs_gtp_xact_commit(xact);
+    ogs_expect(rv == OGS_OK);
+
+    return rv;
+}
+
 static bool check_if_router_solicit(ogs_pkbuf_t *pkbuf)
 {
     struct ip *ip_h = NULL;
@@ -447,4 +483,38 @@ static void send_router_advertisement(smf_sess_t *sess, uint8_t *ip6_dst)
     }
 
     ogs_pkbuf_free(pkbuf);
+}
+
+static void bearer_timeout(ogs_gtp_xact_t *xact, void *data)
+{
+    smf_bearer_t *bearer = data;
+    smf_sess_t *sess = NULL;
+    smf_ue_t *smf_ue = NULL;
+    uint8_t type = 0;
+
+    ogs_assert(bearer);
+    sess = bearer->sess;
+    ogs_assert(sess);
+    smf_ue = sess->smf_ue;
+    ogs_assert(smf_ue);
+
+    type = xact->seq[0].type;
+
+    switch (type) {
+    case OGS_GTP_DELETE_BEARER_REQUEST_TYPE:
+        ogs_error("[%s] No Delete Bearer Response", smf_ue->imsi_bcd);
+        if (!smf_bearer_cycle(bearer)) {
+            ogs_warn("[%s] Bearer has already been removed", smf_ue->imsi_bcd);
+            break;
+        }
+
+        ogs_assert(OGS_OK ==
+            smf_epc_pfcp_send_bearer_modification_request(
+                bearer, OGS_PFCP_MODIFY_REMOVE));
+        break;
+    default:
+        ogs_error("GTP Timeout : IMSI[%s] Message-Type[%d]",
+                smf_ue->imsi_bcd, type);
+        break;
+    }
 }

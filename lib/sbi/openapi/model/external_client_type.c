@@ -5,7 +5,7 @@
 #include "external_client_type.h"
 
 OpenAPI_external_client_type_t *OpenAPI_external_client_type_create(
-    )
+)
 {
     OpenAPI_external_client_type_t *external_client_type_local_var = OpenAPI_malloc(sizeof(OpenAPI_external_client_type_t));
     if (!external_client_type_local_var) {
@@ -42,7 +42,7 @@ OpenAPI_external_client_type_t *OpenAPI_external_client_type_parseFromJSON(cJSON
 {
     OpenAPI_external_client_type_t *external_client_type_local_var = NULL;
     external_client_type_local_var = OpenAPI_external_client_type_create (
-        );
+    );
 
     return external_client_type_local_var;
 end:

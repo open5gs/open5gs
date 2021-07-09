@@ -31,7 +31,7 @@ OpenAPI_application_data_subs_t *OpenAPI_application_data_subs_create(
     OpenAPI_list_t *data_filters,
     char *expiry,
     char *supported_features
-    );
+);
 void OpenAPI_application_data_subs_free(OpenAPI_application_data_subs_t *application_data_subs);
 OpenAPI_application_data_subs_t *OpenAPI_application_data_subs_parseFromJSON(cJSON *application_data_subsJSON);
 cJSON *OpenAPI_application_data_subs_convertToJSON(OpenAPI_application_data_subs_t *application_data_subs);

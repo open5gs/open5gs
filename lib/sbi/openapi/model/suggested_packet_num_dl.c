@@ -7,7 +7,7 @@
 OpenAPI_suggested_packet_num_dl_t *OpenAPI_suggested_packet_num_dl_create(
     int suggested_packet_num_dl,
     char *validity_time
-    )
+)
 {
     OpenAPI_suggested_packet_num_dl_t *suggested_packet_num_dl_local_var = OpenAPI_malloc(sizeof(OpenAPI_suggested_packet_num_dl_t));
     if (!suggested_packet_num_dl_local_var) {
@@ -45,10 +45,10 @@ cJSON *OpenAPI_suggested_packet_num_dl_convertToJSON(OpenAPI_suggested_packet_nu
     }
 
     if (suggested_packet_num_dl->validity_time) {
-        if (cJSON_AddStringToObject(item, "validityTime", suggested_packet_num_dl->validity_time) == NULL) {
-            ogs_error("OpenAPI_suggested_packet_num_dl_convertToJSON() failed [validity_time]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "validityTime", suggested_packet_num_dl->validity_time) == NULL) {
+        ogs_error("OpenAPI_suggested_packet_num_dl_convertToJSON() failed [validity_time]");
+        goto end;
+    }
     }
 
 end:
@@ -64,7 +64,7 @@ OpenAPI_suggested_packet_num_dl_t *OpenAPI_suggested_packet_num_dl_parseFromJSON
         goto end;
     }
 
-
+    
     if (!cJSON_IsNumber(suggested_packet_num_dl)) {
         ogs_error("OpenAPI_suggested_packet_num_dl_parseFromJSON() failed [suggested_packet_num_dl]");
         goto end;
@@ -72,17 +72,17 @@ OpenAPI_suggested_packet_num_dl_t *OpenAPI_suggested_packet_num_dl_parseFromJSON
 
     cJSON *validity_time = cJSON_GetObjectItemCaseSensitive(suggested_packet_num_dlJSON, "validityTime");
 
-    if (validity_time) {
-        if (!cJSON_IsString(validity_time)) {
-            ogs_error("OpenAPI_suggested_packet_num_dl_parseFromJSON() failed [validity_time]");
-            goto end;
-        }
+    if (validity_time) { 
+    if (!cJSON_IsString(validity_time)) {
+        ogs_error("OpenAPI_suggested_packet_num_dl_parseFromJSON() failed [validity_time]");
+        goto end;
+    }
     }
 
     suggested_packet_num_dl_local_var = OpenAPI_suggested_packet_num_dl_create (
         suggested_packet_num_dl->valuedouble,
         validity_time ? ogs_strdup_or_assert(validity_time->valuestring) : NULL
-        );
+    );
 
     return suggested_packet_num_dl_local_var;
 end:

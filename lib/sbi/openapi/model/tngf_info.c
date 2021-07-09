@@ -8,7 +8,7 @@ OpenAPI_tngf_info_t *OpenAPI_tngf_info_create(
     OpenAPI_list_t *ipv4_endpoint_addresses,
     OpenAPI_list_t *ipv6_endpoint_addresses,
     char *endpoint_fqdn
-    )
+)
 {
     OpenAPI_tngf_info_t *tngf_info_local_var = OpenAPI_malloc(sizeof(OpenAPI_tngf_info_t));
     if (!tngf_info_local_var) {
@@ -50,42 +50,42 @@ cJSON *OpenAPI_tngf_info_convertToJSON(OpenAPI_tngf_info_t *tngf_info)
 
     item = cJSON_CreateObject();
     if (tngf_info->ipv4_endpoint_addresses) {
-        cJSON *ipv4_endpoint_addresses = cJSON_AddArrayToObject(item, "ipv4EndpointAddresses");
-        if (ipv4_endpoint_addresses == NULL) {
-            ogs_error("OpenAPI_tngf_info_convertToJSON() failed [ipv4_endpoint_addresses]");
-            goto end;
-        }
+    cJSON *ipv4_endpoint_addresses = cJSON_AddArrayToObject(item, "ipv4EndpointAddresses");
+    if (ipv4_endpoint_addresses == NULL) {
+        ogs_error("OpenAPI_tngf_info_convertToJSON() failed [ipv4_endpoint_addresses]");
+        goto end;
+    }
 
-        OpenAPI_lnode_t *ipv4_endpoint_addresses_node;
-        OpenAPI_list_for_each(tngf_info->ipv4_endpoint_addresses, ipv4_endpoint_addresses_node)  {
-            if (cJSON_AddStringToObject(ipv4_endpoint_addresses, "", (char*)ipv4_endpoint_addresses_node->data) == NULL) {
-                ogs_error("OpenAPI_tngf_info_convertToJSON() failed [ipv4_endpoint_addresses]");
-                goto end;
-            }
-        }
+    OpenAPI_lnode_t *ipv4_endpoint_addresses_node;
+    OpenAPI_list_for_each(tngf_info->ipv4_endpoint_addresses, ipv4_endpoint_addresses_node)  {
+    if (cJSON_AddStringToObject(ipv4_endpoint_addresses, "", (char*)ipv4_endpoint_addresses_node->data) == NULL) {
+        ogs_error("OpenAPI_tngf_info_convertToJSON() failed [ipv4_endpoint_addresses]");
+        goto end;
+    }
+                    }
     }
 
     if (tngf_info->ipv6_endpoint_addresses) {
-        cJSON *ipv6_endpoint_addresses = cJSON_AddArrayToObject(item, "ipv6EndpointAddresses");
-        if (ipv6_endpoint_addresses == NULL) {
-            ogs_error("OpenAPI_tngf_info_convertToJSON() failed [ipv6_endpoint_addresses]");
-            goto end;
-        }
+    cJSON *ipv6_endpoint_addresses = cJSON_AddArrayToObject(item, "ipv6EndpointAddresses");
+    if (ipv6_endpoint_addresses == NULL) {
+        ogs_error("OpenAPI_tngf_info_convertToJSON() failed [ipv6_endpoint_addresses]");
+        goto end;
+    }
 
-        OpenAPI_lnode_t *ipv6_endpoint_addresses_node;
-        OpenAPI_list_for_each(tngf_info->ipv6_endpoint_addresses, ipv6_endpoint_addresses_node)  {
-            if (cJSON_AddStringToObject(ipv6_endpoint_addresses, "", (char*)ipv6_endpoint_addresses_node->data) == NULL) {
-                ogs_error("OpenAPI_tngf_info_convertToJSON() failed [ipv6_endpoint_addresses]");
-                goto end;
-            }
-        }
+    OpenAPI_lnode_t *ipv6_endpoint_addresses_node;
+    OpenAPI_list_for_each(tngf_info->ipv6_endpoint_addresses, ipv6_endpoint_addresses_node)  {
+    if (cJSON_AddStringToObject(ipv6_endpoint_addresses, "", (char*)ipv6_endpoint_addresses_node->data) == NULL) {
+        ogs_error("OpenAPI_tngf_info_convertToJSON() failed [ipv6_endpoint_addresses]");
+        goto end;
+    }
+                    }
     }
 
     if (tngf_info->endpoint_fqdn) {
-        if (cJSON_AddStringToObject(item, "endpointFqdn", tngf_info->endpoint_fqdn) == NULL) {
-            ogs_error("OpenAPI_tngf_info_convertToJSON() failed [endpoint_fqdn]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "endpointFqdn", tngf_info->endpoint_fqdn) == NULL) {
+        ogs_error("OpenAPI_tngf_info_convertToJSON() failed [endpoint_fqdn]");
+        goto end;
+    }
     }
 
 end:
@@ -98,57 +98,57 @@ OpenAPI_tngf_info_t *OpenAPI_tngf_info_parseFromJSON(cJSON *tngf_infoJSON)
     cJSON *ipv4_endpoint_addresses = cJSON_GetObjectItemCaseSensitive(tngf_infoJSON, "ipv4EndpointAddresses");
 
     OpenAPI_list_t *ipv4_endpoint_addressesList;
-    if (ipv4_endpoint_addresses) {
-        cJSON *ipv4_endpoint_addresses_local;
-        if (!cJSON_IsArray(ipv4_endpoint_addresses)) {
-            ogs_error("OpenAPI_tngf_info_parseFromJSON() failed [ipv4_endpoint_addresses]");
-            goto end;
-        }
-        ipv4_endpoint_addressesList = OpenAPI_list_create();
+    if (ipv4_endpoint_addresses) { 
+    cJSON *ipv4_endpoint_addresses_local;
+    if (!cJSON_IsArray(ipv4_endpoint_addresses)) {
+        ogs_error("OpenAPI_tngf_info_parseFromJSON() failed [ipv4_endpoint_addresses]");
+        goto end;
+    }
+    ipv4_endpoint_addressesList = OpenAPI_list_create();
 
-        cJSON_ArrayForEach(ipv4_endpoint_addresses_local, ipv4_endpoint_addresses) {
-            if (!cJSON_IsString(ipv4_endpoint_addresses_local)) {
-                ogs_error("OpenAPI_tngf_info_parseFromJSON() failed [ipv4_endpoint_addresses]");
-                goto end;
-            }
-            OpenAPI_list_add(ipv4_endpoint_addressesList, ogs_strdup_or_assert(ipv4_endpoint_addresses_local->valuestring));
-        }
+    cJSON_ArrayForEach(ipv4_endpoint_addresses_local, ipv4_endpoint_addresses) {
+    if (!cJSON_IsString(ipv4_endpoint_addresses_local)) {
+        ogs_error("OpenAPI_tngf_info_parseFromJSON() failed [ipv4_endpoint_addresses]");
+        goto end;
+    }
+    OpenAPI_list_add(ipv4_endpoint_addressesList , ogs_strdup_or_assert(ipv4_endpoint_addresses_local->valuestring));
+                    }
     }
 
     cJSON *ipv6_endpoint_addresses = cJSON_GetObjectItemCaseSensitive(tngf_infoJSON, "ipv6EndpointAddresses");
 
     OpenAPI_list_t *ipv6_endpoint_addressesList;
-    if (ipv6_endpoint_addresses) {
-        cJSON *ipv6_endpoint_addresses_local;
-        if (!cJSON_IsArray(ipv6_endpoint_addresses)) {
-            ogs_error("OpenAPI_tngf_info_parseFromJSON() failed [ipv6_endpoint_addresses]");
-            goto end;
-        }
-        ipv6_endpoint_addressesList = OpenAPI_list_create();
+    if (ipv6_endpoint_addresses) { 
+    cJSON *ipv6_endpoint_addresses_local;
+    if (!cJSON_IsArray(ipv6_endpoint_addresses)) {
+        ogs_error("OpenAPI_tngf_info_parseFromJSON() failed [ipv6_endpoint_addresses]");
+        goto end;
+    }
+    ipv6_endpoint_addressesList = OpenAPI_list_create();
 
-        cJSON_ArrayForEach(ipv6_endpoint_addresses_local, ipv6_endpoint_addresses) {
-            if (!cJSON_IsString(ipv6_endpoint_addresses_local)) {
-                ogs_error("OpenAPI_tngf_info_parseFromJSON() failed [ipv6_endpoint_addresses]");
-                goto end;
-            }
-            OpenAPI_list_add(ipv6_endpoint_addressesList, ogs_strdup_or_assert(ipv6_endpoint_addresses_local->valuestring));
-        }
+    cJSON_ArrayForEach(ipv6_endpoint_addresses_local, ipv6_endpoint_addresses) {
+    if (!cJSON_IsString(ipv6_endpoint_addresses_local)) {
+        ogs_error("OpenAPI_tngf_info_parseFromJSON() failed [ipv6_endpoint_addresses]");
+        goto end;
+    }
+    OpenAPI_list_add(ipv6_endpoint_addressesList , ogs_strdup_or_assert(ipv6_endpoint_addresses_local->valuestring));
+                    }
     }
 
     cJSON *endpoint_fqdn = cJSON_GetObjectItemCaseSensitive(tngf_infoJSON, "endpointFqdn");
 
-    if (endpoint_fqdn) {
-        if (!cJSON_IsString(endpoint_fqdn)) {
-            ogs_error("OpenAPI_tngf_info_parseFromJSON() failed [endpoint_fqdn]");
-            goto end;
-        }
+    if (endpoint_fqdn) { 
+    if (!cJSON_IsString(endpoint_fqdn)) {
+        ogs_error("OpenAPI_tngf_info_parseFromJSON() failed [endpoint_fqdn]");
+        goto end;
+    }
     }
 
     tngf_info_local_var = OpenAPI_tngf_info_create (
         ipv4_endpoint_addresses ? ipv4_endpoint_addressesList : NULL,
         ipv6_endpoint_addresses ? ipv6_endpoint_addressesList : NULL,
         endpoint_fqdn ? ogs_strdup_or_assert(endpoint_fqdn->valuestring) : NULL
-        );
+    );
 
     return tngf_info_local_var;
 end:

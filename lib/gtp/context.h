@@ -39,7 +39,6 @@ typedef struct ogs_gtp_context_s {
     ogs_sockaddr_t  *gtpc_addr;     /* GTPC IPv4 Address */
     ogs_sockaddr_t  *gtpc_addr6;    /* GTPC IPv6 Address */
 
-
     ogs_list_t      gtpu_list;      /* GTPU IPv4/IPv6 Server List */
     ogs_sock_t      *gtpu_sock;     /* GTPU IPv4 Socket */
     ogs_sock_t      *gtpu_sock6;    /* GTPU IPv6 Socket */

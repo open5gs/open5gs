@@ -37,7 +37,6 @@ struct dict_object *ogs_diam_cx_cmd_lir = NULL;
 struct dict_object *ogs_diam_cx_cmd_lia = NULL;
 
 struct dict_object *ogs_diam_cx_public_identity = NULL;
-struct dict_object *ogs_diam_cx_visited_network_identifier = NULL;
 struct dict_object *ogs_diam_cx_server_name = NULL;
 
 struct dict_object *ogs_diam_cx_sip_number_auth_items = NULL;
@@ -170,9 +169,6 @@ int ogs_diam_cx_init(void)
 
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS,
             "Public-Identity", &ogs_diam_cx_public_identity);
-    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS,
-            "Visited-Network-Identifier",
-            &ogs_diam_cx_visited_network_identifier);
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS,
             "Server-Name", &ogs_diam_cx_server_name);
 

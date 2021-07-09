@@ -6,7 +6,7 @@
 
 OpenAPI_loss_connectivity_cfg_t *OpenAPI_loss_connectivity_cfg_create(
     int max_detection_time
-    )
+)
 {
     OpenAPI_loss_connectivity_cfg_t *loss_connectivity_cfg_local_var = OpenAPI_malloc(sizeof(OpenAPI_loss_connectivity_cfg_t));
     if (!loss_connectivity_cfg_local_var) {
@@ -37,10 +37,10 @@ cJSON *OpenAPI_loss_connectivity_cfg_convertToJSON(OpenAPI_loss_connectivity_cfg
 
     item = cJSON_CreateObject();
     if (loss_connectivity_cfg->max_detection_time) {
-        if (cJSON_AddNumberToObject(item, "maxDetectionTime", loss_connectivity_cfg->max_detection_time) == NULL) {
-            ogs_error("OpenAPI_loss_connectivity_cfg_convertToJSON() failed [max_detection_time]");
-            goto end;
-        }
+    if (cJSON_AddNumberToObject(item, "maxDetectionTime", loss_connectivity_cfg->max_detection_time) == NULL) {
+        ogs_error("OpenAPI_loss_connectivity_cfg_convertToJSON() failed [max_detection_time]");
+        goto end;
+    }
     }
 
 end:
@@ -52,16 +52,16 @@ OpenAPI_loss_connectivity_cfg_t *OpenAPI_loss_connectivity_cfg_parseFromJSON(cJS
     OpenAPI_loss_connectivity_cfg_t *loss_connectivity_cfg_local_var = NULL;
     cJSON *max_detection_time = cJSON_GetObjectItemCaseSensitive(loss_connectivity_cfgJSON, "maxDetectionTime");
 
-    if (max_detection_time) {
-        if (!cJSON_IsNumber(max_detection_time)) {
-            ogs_error("OpenAPI_loss_connectivity_cfg_parseFromJSON() failed [max_detection_time]");
-            goto end;
-        }
+    if (max_detection_time) { 
+    if (!cJSON_IsNumber(max_detection_time)) {
+        ogs_error("OpenAPI_loss_connectivity_cfg_parseFromJSON() failed [max_detection_time]");
+        goto end;
+    }
     }
 
     loss_connectivity_cfg_local_var = OpenAPI_loss_connectivity_cfg_create (
         max_detection_time ? max_detection_time->valuedouble : 0
-        );
+    );
 
     return loss_connectivity_cfg_local_var;
 end:

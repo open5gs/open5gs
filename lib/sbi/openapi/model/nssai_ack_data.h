@@ -1,7 +1,7 @@
 /*
  * nssai_ack_data.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_nssai_ack_data_H_
@@ -27,7 +27,7 @@ typedef struct OpenAPI_nssai_ack_data_s {
 OpenAPI_nssai_ack_data_t *OpenAPI_nssai_ack_data_create(
     char *provisioning_time,
     OpenAPI_ue_update_status_e ue_update_status
-    );
+);
 void OpenAPI_nssai_ack_data_free(OpenAPI_nssai_ack_data_t *nssai_ack_data);
 OpenAPI_nssai_ack_data_t *OpenAPI_nssai_ack_data_parseFromJSON(cJSON *nssai_ack_dataJSON);
 cJSON *OpenAPI_nssai_ack_data_convertToJSON(OpenAPI_nssai_ack_data_t *nssai_ack_data);

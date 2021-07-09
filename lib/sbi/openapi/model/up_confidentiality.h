@@ -1,7 +1,7 @@
 /*
  * up_confidentiality.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_up_confidentiality_H_

@@ -22,8 +22,10 @@ OpenAPI_qos_data_t *OpenAPI_qos_data_create(
     int max_packet_loss_rate_dl,
     int max_packet_loss_rate_ul,
     int def_qos_flow_indication,
-    int ext_max_data_burst_vol
-    )
+    int ext_max_data_burst_vol,
+    int packet_delay_budget,
+    char *packet_error_rate
+)
 {
     OpenAPI_qos_data_t *qos_data_local_var = OpenAPI_malloc(sizeof(OpenAPI_qos_data_t));
     if (!qos_data_local_var) {
@@ -47,6 +49,8 @@ OpenAPI_qos_data_t *OpenAPI_qos_data_create(
     qos_data_local_var->max_packet_loss_rate_ul = max_packet_loss_rate_ul;
     qos_data_local_var->def_qos_flow_indication = def_qos_flow_indication;
     qos_data_local_var->ext_max_data_burst_vol = ext_max_data_burst_vol;
+    qos_data_local_var->packet_delay_budget = packet_delay_budget;
+    qos_data_local_var->packet_error_rate = packet_error_rate;
 
     return qos_data_local_var;
 }
@@ -65,6 +69,7 @@ void OpenAPI_qos_data_free(OpenAPI_qos_data_t *qos_data)
     OpenAPI_arp_free(qos_data->arp);
     ogs_free(qos_data->sharing_key_dl);
     ogs_free(qos_data->sharing_key_ul);
+    ogs_free(qos_data->packet_error_rate);
     ogs_free(qos_data);
 }
 
@@ -84,128 +89,142 @@ cJSON *OpenAPI_qos_data_convertToJSON(OpenAPI_qos_data_t *qos_data)
     }
 
     if (qos_data->_5qi) {
-        if (cJSON_AddNumberToObject(item, "5qi", qos_data->_5qi) == NULL) {
-            ogs_error("OpenAPI_qos_data_convertToJSON() failed [_5qi]");
-            goto end;
-        }
+    if (cJSON_AddNumberToObject(item, "5qi", qos_data->_5qi) == NULL) {
+        ogs_error("OpenAPI_qos_data_convertToJSON() failed [_5qi]");
+        goto end;
+    }
     }
 
     if (qos_data->maxbr_ul) {
-        if (cJSON_AddStringToObject(item, "maxbrUl", qos_data->maxbr_ul) == NULL) {
-            ogs_error("OpenAPI_qos_data_convertToJSON() failed [maxbr_ul]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "maxbrUl", qos_data->maxbr_ul) == NULL) {
+        ogs_error("OpenAPI_qos_data_convertToJSON() failed [maxbr_ul]");
+        goto end;
+    }
     }
 
     if (qos_data->maxbr_dl) {
-        if (cJSON_AddStringToObject(item, "maxbrDl", qos_data->maxbr_dl) == NULL) {
-            ogs_error("OpenAPI_qos_data_convertToJSON() failed [maxbr_dl]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "maxbrDl", qos_data->maxbr_dl) == NULL) {
+        ogs_error("OpenAPI_qos_data_convertToJSON() failed [maxbr_dl]");
+        goto end;
+    }
     }
 
     if (qos_data->gbr_ul) {
-        if (cJSON_AddStringToObject(item, "gbrUl", qos_data->gbr_ul) == NULL) {
-            ogs_error("OpenAPI_qos_data_convertToJSON() failed [gbr_ul]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "gbrUl", qos_data->gbr_ul) == NULL) {
+        ogs_error("OpenAPI_qos_data_convertToJSON() failed [gbr_ul]");
+        goto end;
+    }
     }
 
     if (qos_data->gbr_dl) {
-        if (cJSON_AddStringToObject(item, "gbrDl", qos_data->gbr_dl) == NULL) {
-            ogs_error("OpenAPI_qos_data_convertToJSON() failed [gbr_dl]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "gbrDl", qos_data->gbr_dl) == NULL) {
+        ogs_error("OpenAPI_qos_data_convertToJSON() failed [gbr_dl]");
+        goto end;
+    }
     }
 
     if (qos_data->arp) {
-        cJSON *arp_local_JSON = OpenAPI_arp_convertToJSON(qos_data->arp);
-        if (arp_local_JSON == NULL) {
-            ogs_error("OpenAPI_qos_data_convertToJSON() failed [arp]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "arp", arp_local_JSON);
-        if (item->child == NULL) {
-            ogs_error("OpenAPI_qos_data_convertToJSON() failed [arp]");
-            goto end;
-        }
+    cJSON *arp_local_JSON = OpenAPI_arp_convertToJSON(qos_data->arp);
+    if (arp_local_JSON == NULL) {
+        ogs_error("OpenAPI_qos_data_convertToJSON() failed [arp]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "arp", arp_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_qos_data_convertToJSON() failed [arp]");
+        goto end;
+    }
     }
 
     if (qos_data->qnc) {
-        if (cJSON_AddBoolToObject(item, "qnc", qos_data->qnc) == NULL) {
-            ogs_error("OpenAPI_qos_data_convertToJSON() failed [qnc]");
-            goto end;
-        }
+    if (cJSON_AddBoolToObject(item, "qnc", qos_data->qnc) == NULL) {
+        ogs_error("OpenAPI_qos_data_convertToJSON() failed [qnc]");
+        goto end;
+    }
     }
 
     if (qos_data->priority_level) {
-        if (cJSON_AddNumberToObject(item, "priorityLevel", qos_data->priority_level) == NULL) {
-            ogs_error("OpenAPI_qos_data_convertToJSON() failed [priority_level]");
-            goto end;
-        }
+    if (cJSON_AddNumberToObject(item, "priorityLevel", qos_data->priority_level) == NULL) {
+        ogs_error("OpenAPI_qos_data_convertToJSON() failed [priority_level]");
+        goto end;
+    }
     }
 
     if (qos_data->aver_window) {
-        if (cJSON_AddNumberToObject(item, "averWindow", qos_data->aver_window) == NULL) {
-            ogs_error("OpenAPI_qos_data_convertToJSON() failed [aver_window]");
-            goto end;
-        }
+    if (cJSON_AddNumberToObject(item, "averWindow", qos_data->aver_window) == NULL) {
+        ogs_error("OpenAPI_qos_data_convertToJSON() failed [aver_window]");
+        goto end;
+    }
     }
 
     if (qos_data->max_data_burst_vol) {
-        if (cJSON_AddNumberToObject(item, "maxDataBurstVol", qos_data->max_data_burst_vol) == NULL) {
-            ogs_error("OpenAPI_qos_data_convertToJSON() failed [max_data_burst_vol]");
-            goto end;
-        }
+    if (cJSON_AddNumberToObject(item, "maxDataBurstVol", qos_data->max_data_burst_vol) == NULL) {
+        ogs_error("OpenAPI_qos_data_convertToJSON() failed [max_data_burst_vol]");
+        goto end;
+    }
     }
 
     if (qos_data->reflective_qos) {
-        if (cJSON_AddBoolToObject(item, "reflectiveQos", qos_data->reflective_qos) == NULL) {
-            ogs_error("OpenAPI_qos_data_convertToJSON() failed [reflective_qos]");
-            goto end;
-        }
+    if (cJSON_AddBoolToObject(item, "reflectiveQos", qos_data->reflective_qos) == NULL) {
+        ogs_error("OpenAPI_qos_data_convertToJSON() failed [reflective_qos]");
+        goto end;
+    }
     }
 
     if (qos_data->sharing_key_dl) {
-        if (cJSON_AddStringToObject(item, "sharingKeyDl", qos_data->sharing_key_dl) == NULL) {
-            ogs_error("OpenAPI_qos_data_convertToJSON() failed [sharing_key_dl]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "sharingKeyDl", qos_data->sharing_key_dl) == NULL) {
+        ogs_error("OpenAPI_qos_data_convertToJSON() failed [sharing_key_dl]");
+        goto end;
+    }
     }
 
     if (qos_data->sharing_key_ul) {
-        if (cJSON_AddStringToObject(item, "sharingKeyUl", qos_data->sharing_key_ul) == NULL) {
-            ogs_error("OpenAPI_qos_data_convertToJSON() failed [sharing_key_ul]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "sharingKeyUl", qos_data->sharing_key_ul) == NULL) {
+        ogs_error("OpenAPI_qos_data_convertToJSON() failed [sharing_key_ul]");
+        goto end;
+    }
     }
 
     if (qos_data->max_packet_loss_rate_dl) {
-        if (cJSON_AddNumberToObject(item, "maxPacketLossRateDl", qos_data->max_packet_loss_rate_dl) == NULL) {
-            ogs_error("OpenAPI_qos_data_convertToJSON() failed [max_packet_loss_rate_dl]");
-            goto end;
-        }
+    if (cJSON_AddNumberToObject(item, "maxPacketLossRateDl", qos_data->max_packet_loss_rate_dl) == NULL) {
+        ogs_error("OpenAPI_qos_data_convertToJSON() failed [max_packet_loss_rate_dl]");
+        goto end;
+    }
     }
 
     if (qos_data->max_packet_loss_rate_ul) {
-        if (cJSON_AddNumberToObject(item, "maxPacketLossRateUl", qos_data->max_packet_loss_rate_ul) == NULL) {
-            ogs_error("OpenAPI_qos_data_convertToJSON() failed [max_packet_loss_rate_ul]");
-            goto end;
-        }
+    if (cJSON_AddNumberToObject(item, "maxPacketLossRateUl", qos_data->max_packet_loss_rate_ul) == NULL) {
+        ogs_error("OpenAPI_qos_data_convertToJSON() failed [max_packet_loss_rate_ul]");
+        goto end;
+    }
     }
 
     if (qos_data->def_qos_flow_indication) {
-        if (cJSON_AddBoolToObject(item, "defQosFlowIndication", qos_data->def_qos_flow_indication) == NULL) {
-            ogs_error("OpenAPI_qos_data_convertToJSON() failed [def_qos_flow_indication]");
-            goto end;
-        }
+    if (cJSON_AddBoolToObject(item, "defQosFlowIndication", qos_data->def_qos_flow_indication) == NULL) {
+        ogs_error("OpenAPI_qos_data_convertToJSON() failed [def_qos_flow_indication]");
+        goto end;
+    }
     }
 
     if (qos_data->ext_max_data_burst_vol) {
-        if (cJSON_AddNumberToObject(item, "extMaxDataBurstVol", qos_data->ext_max_data_burst_vol) == NULL) {
-            ogs_error("OpenAPI_qos_data_convertToJSON() failed [ext_max_data_burst_vol]");
-            goto end;
-        }
+    if (cJSON_AddNumberToObject(item, "extMaxDataBurstVol", qos_data->ext_max_data_burst_vol) == NULL) {
+        ogs_error("OpenAPI_qos_data_convertToJSON() failed [ext_max_data_burst_vol]");
+        goto end;
+    }
+    }
+
+    if (qos_data->packet_delay_budget) {
+    if (cJSON_AddNumberToObject(item, "packetDelayBudget", qos_data->packet_delay_budget) == NULL) {
+        ogs_error("OpenAPI_qos_data_convertToJSON() failed [packet_delay_budget]");
+        goto end;
+    }
+    }
+
+    if (qos_data->packet_error_rate) {
+    if (cJSON_AddStringToObject(item, "packetErrorRate", qos_data->packet_error_rate) == NULL) {
+        ogs_error("OpenAPI_qos_data_convertToJSON() failed [packet_error_rate]");
+        goto end;
+    }
     }
 
 end:
@@ -221,7 +240,7 @@ OpenAPI_qos_data_t *OpenAPI_qos_data_parseFromJSON(cJSON *qos_dataJSON)
         goto end;
     }
 
-
+    
     if (!cJSON_IsString(qos_id)) {
         ogs_error("OpenAPI_qos_data_parseFromJSON() failed [qos_id]");
         goto end;
@@ -229,153 +248,171 @@ OpenAPI_qos_data_t *OpenAPI_qos_data_parseFromJSON(cJSON *qos_dataJSON)
 
     cJSON *_5qi = cJSON_GetObjectItemCaseSensitive(qos_dataJSON, "5qi");
 
-    if (_5qi) {
-        if (!cJSON_IsNumber(_5qi)) {
-            ogs_error("OpenAPI_qos_data_parseFromJSON() failed [_5qi]");
-            goto end;
-        }
+    if (_5qi) { 
+    if (!cJSON_IsNumber(_5qi)) {
+        ogs_error("OpenAPI_qos_data_parseFromJSON() failed [_5qi]");
+        goto end;
+    }
     }
 
     cJSON *maxbr_ul = cJSON_GetObjectItemCaseSensitive(qos_dataJSON, "maxbrUl");
 
-    if (maxbr_ul) {
-        if (!cJSON_IsString(maxbr_ul)) {
-            ogs_error("OpenAPI_qos_data_parseFromJSON() failed [maxbr_ul]");
-            goto end;
-        }
+    if (maxbr_ul) { 
+    if (!cJSON_IsString(maxbr_ul)) {
+        ogs_error("OpenAPI_qos_data_parseFromJSON() failed [maxbr_ul]");
+        goto end;
+    }
     }
 
     cJSON *maxbr_dl = cJSON_GetObjectItemCaseSensitive(qos_dataJSON, "maxbrDl");
 
-    if (maxbr_dl) {
-        if (!cJSON_IsString(maxbr_dl)) {
-            ogs_error("OpenAPI_qos_data_parseFromJSON() failed [maxbr_dl]");
-            goto end;
-        }
+    if (maxbr_dl) { 
+    if (!cJSON_IsString(maxbr_dl)) {
+        ogs_error("OpenAPI_qos_data_parseFromJSON() failed [maxbr_dl]");
+        goto end;
+    }
     }
 
     cJSON *gbr_ul = cJSON_GetObjectItemCaseSensitive(qos_dataJSON, "gbrUl");
 
-    if (gbr_ul) {
-        if (!cJSON_IsString(gbr_ul)) {
-            ogs_error("OpenAPI_qos_data_parseFromJSON() failed [gbr_ul]");
-            goto end;
-        }
+    if (gbr_ul) { 
+    if (!cJSON_IsString(gbr_ul)) {
+        ogs_error("OpenAPI_qos_data_parseFromJSON() failed [gbr_ul]");
+        goto end;
+    }
     }
 
     cJSON *gbr_dl = cJSON_GetObjectItemCaseSensitive(qos_dataJSON, "gbrDl");
 
-    if (gbr_dl) {
-        if (!cJSON_IsString(gbr_dl)) {
-            ogs_error("OpenAPI_qos_data_parseFromJSON() failed [gbr_dl]");
-            goto end;
-        }
+    if (gbr_dl) { 
+    if (!cJSON_IsString(gbr_dl)) {
+        ogs_error("OpenAPI_qos_data_parseFromJSON() failed [gbr_dl]");
+        goto end;
+    }
     }
 
     cJSON *arp = cJSON_GetObjectItemCaseSensitive(qos_dataJSON, "arp");
 
     OpenAPI_arp_t *arp_local_nonprim = NULL;
-    if (arp) {
-        arp_local_nonprim = OpenAPI_arp_parseFromJSON(arp);
+    if (arp) { 
+    arp_local_nonprim = OpenAPI_arp_parseFromJSON(arp);
     }
 
     cJSON *qnc = cJSON_GetObjectItemCaseSensitive(qos_dataJSON, "qnc");
 
-    if (qnc) {
-        if (!cJSON_IsBool(qnc)) {
-            ogs_error("OpenAPI_qos_data_parseFromJSON() failed [qnc]");
-            goto end;
-        }
+    if (qnc) { 
+    if (!cJSON_IsBool(qnc)) {
+        ogs_error("OpenAPI_qos_data_parseFromJSON() failed [qnc]");
+        goto end;
+    }
     }
 
     cJSON *priority_level = cJSON_GetObjectItemCaseSensitive(qos_dataJSON, "priorityLevel");
 
-    if (priority_level) {
-        if (!cJSON_IsNumber(priority_level)) {
-            ogs_error("OpenAPI_qos_data_parseFromJSON() failed [priority_level]");
-            goto end;
-        }
+    if (priority_level) { 
+    if (!cJSON_IsNumber(priority_level)) {
+        ogs_error("OpenAPI_qos_data_parseFromJSON() failed [priority_level]");
+        goto end;
+    }
     }
 
     cJSON *aver_window = cJSON_GetObjectItemCaseSensitive(qos_dataJSON, "averWindow");
 
-    if (aver_window) {
-        if (!cJSON_IsNumber(aver_window)) {
-            ogs_error("OpenAPI_qos_data_parseFromJSON() failed [aver_window]");
-            goto end;
-        }
+    if (aver_window) { 
+    if (!cJSON_IsNumber(aver_window)) {
+        ogs_error("OpenAPI_qos_data_parseFromJSON() failed [aver_window]");
+        goto end;
+    }
     }
 
     cJSON *max_data_burst_vol = cJSON_GetObjectItemCaseSensitive(qos_dataJSON, "maxDataBurstVol");
 
-    if (max_data_burst_vol) {
-        if (!cJSON_IsNumber(max_data_burst_vol)) {
-            ogs_error("OpenAPI_qos_data_parseFromJSON() failed [max_data_burst_vol]");
-            goto end;
-        }
+    if (max_data_burst_vol) { 
+    if (!cJSON_IsNumber(max_data_burst_vol)) {
+        ogs_error("OpenAPI_qos_data_parseFromJSON() failed [max_data_burst_vol]");
+        goto end;
+    }
     }
 
     cJSON *reflective_qos = cJSON_GetObjectItemCaseSensitive(qos_dataJSON, "reflectiveQos");
 
-    if (reflective_qos) {
-        if (!cJSON_IsBool(reflective_qos)) {
-            ogs_error("OpenAPI_qos_data_parseFromJSON() failed [reflective_qos]");
-            goto end;
-        }
+    if (reflective_qos) { 
+    if (!cJSON_IsBool(reflective_qos)) {
+        ogs_error("OpenAPI_qos_data_parseFromJSON() failed [reflective_qos]");
+        goto end;
+    }
     }
 
     cJSON *sharing_key_dl = cJSON_GetObjectItemCaseSensitive(qos_dataJSON, "sharingKeyDl");
 
-    if (sharing_key_dl) {
-        if (!cJSON_IsString(sharing_key_dl)) {
-            ogs_error("OpenAPI_qos_data_parseFromJSON() failed [sharing_key_dl]");
-            goto end;
-        }
+    if (sharing_key_dl) { 
+    if (!cJSON_IsString(sharing_key_dl)) {
+        ogs_error("OpenAPI_qos_data_parseFromJSON() failed [sharing_key_dl]");
+        goto end;
+    }
     }
 
     cJSON *sharing_key_ul = cJSON_GetObjectItemCaseSensitive(qos_dataJSON, "sharingKeyUl");
 
-    if (sharing_key_ul) {
-        if (!cJSON_IsString(sharing_key_ul)) {
-            ogs_error("OpenAPI_qos_data_parseFromJSON() failed [sharing_key_ul]");
-            goto end;
-        }
+    if (sharing_key_ul) { 
+    if (!cJSON_IsString(sharing_key_ul)) {
+        ogs_error("OpenAPI_qos_data_parseFromJSON() failed [sharing_key_ul]");
+        goto end;
+    }
     }
 
     cJSON *max_packet_loss_rate_dl = cJSON_GetObjectItemCaseSensitive(qos_dataJSON, "maxPacketLossRateDl");
 
-    if (max_packet_loss_rate_dl) {
-        if (!cJSON_IsNumber(max_packet_loss_rate_dl)) {
-            ogs_error("OpenAPI_qos_data_parseFromJSON() failed [max_packet_loss_rate_dl]");
-            goto end;
-        }
+    if (max_packet_loss_rate_dl) { 
+    if (!cJSON_IsNumber(max_packet_loss_rate_dl)) {
+        ogs_error("OpenAPI_qos_data_parseFromJSON() failed [max_packet_loss_rate_dl]");
+        goto end;
+    }
     }
 
     cJSON *max_packet_loss_rate_ul = cJSON_GetObjectItemCaseSensitive(qos_dataJSON, "maxPacketLossRateUl");
 
-    if (max_packet_loss_rate_ul) {
-        if (!cJSON_IsNumber(max_packet_loss_rate_ul)) {
-            ogs_error("OpenAPI_qos_data_parseFromJSON() failed [max_packet_loss_rate_ul]");
-            goto end;
-        }
+    if (max_packet_loss_rate_ul) { 
+    if (!cJSON_IsNumber(max_packet_loss_rate_ul)) {
+        ogs_error("OpenAPI_qos_data_parseFromJSON() failed [max_packet_loss_rate_ul]");
+        goto end;
+    }
     }
 
     cJSON *def_qos_flow_indication = cJSON_GetObjectItemCaseSensitive(qos_dataJSON, "defQosFlowIndication");
 
-    if (def_qos_flow_indication) {
-        if (!cJSON_IsBool(def_qos_flow_indication)) {
-            ogs_error("OpenAPI_qos_data_parseFromJSON() failed [def_qos_flow_indication]");
-            goto end;
-        }
+    if (def_qos_flow_indication) { 
+    if (!cJSON_IsBool(def_qos_flow_indication)) {
+        ogs_error("OpenAPI_qos_data_parseFromJSON() failed [def_qos_flow_indication]");
+        goto end;
+    }
     }
 
     cJSON *ext_max_data_burst_vol = cJSON_GetObjectItemCaseSensitive(qos_dataJSON, "extMaxDataBurstVol");
 
-    if (ext_max_data_burst_vol) {
-        if (!cJSON_IsNumber(ext_max_data_burst_vol)) {
-            ogs_error("OpenAPI_qos_data_parseFromJSON() failed [ext_max_data_burst_vol]");
-            goto end;
-        }
+    if (ext_max_data_burst_vol) { 
+    if (!cJSON_IsNumber(ext_max_data_burst_vol)) {
+        ogs_error("OpenAPI_qos_data_parseFromJSON() failed [ext_max_data_burst_vol]");
+        goto end;
+    }
+    }
+
+    cJSON *packet_delay_budget = cJSON_GetObjectItemCaseSensitive(qos_dataJSON, "packetDelayBudget");
+
+    if (packet_delay_budget) { 
+    if (!cJSON_IsNumber(packet_delay_budget)) {
+        ogs_error("OpenAPI_qos_data_parseFromJSON() failed [packet_delay_budget]");
+        goto end;
+    }
+    }
+
+    cJSON *packet_error_rate = cJSON_GetObjectItemCaseSensitive(qos_dataJSON, "packetErrorRate");
+
+    if (packet_error_rate) { 
+    if (!cJSON_IsString(packet_error_rate)) {
+        ogs_error("OpenAPI_qos_data_parseFromJSON() failed [packet_error_rate]");
+        goto end;
+    }
     }
 
     qos_data_local_var = OpenAPI_qos_data_create (
@@ -396,8 +433,10 @@ OpenAPI_qos_data_t *OpenAPI_qos_data_parseFromJSON(cJSON *qos_dataJSON)
         max_packet_loss_rate_dl ? max_packet_loss_rate_dl->valuedouble : 0,
         max_packet_loss_rate_ul ? max_packet_loss_rate_ul->valuedouble : 0,
         def_qos_flow_indication ? def_qos_flow_indication->valueint : 0,
-        ext_max_data_burst_vol ? ext_max_data_burst_vol->valuedouble : 0
-        );
+        ext_max_data_burst_vol ? ext_max_data_burst_vol->valuedouble : 0,
+        packet_delay_budget ? packet_delay_budget->valuedouble : 0,
+        packet_error_rate ? ogs_strdup_or_assert(packet_error_rate->valuestring) : NULL
+    );
 
     return qos_data_local_var;
 end:

@@ -8,7 +8,7 @@ OpenAPI_ecgi_t *OpenAPI_ecgi_create(
     OpenAPI_plmn_id_t *plmn_id,
     char *eutra_cell_id,
     char *nid
-    )
+)
 {
     OpenAPI_ecgi_t *ecgi_local_var = OpenAPI_malloc(sizeof(OpenAPI_ecgi_t));
     if (!ecgi_local_var) {
@@ -60,10 +60,10 @@ cJSON *OpenAPI_ecgi_convertToJSON(OpenAPI_ecgi_t *ecgi)
     }
 
     if (ecgi->nid) {
-        if (cJSON_AddStringToObject(item, "nid", ecgi->nid) == NULL) {
-            ogs_error("OpenAPI_ecgi_convertToJSON() failed [nid]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "nid", ecgi->nid) == NULL) {
+        ogs_error("OpenAPI_ecgi_convertToJSON() failed [nid]");
+        goto end;
+    }
     }
 
 end:
@@ -80,7 +80,7 @@ OpenAPI_ecgi_t *OpenAPI_ecgi_parseFromJSON(cJSON *ecgiJSON)
     }
 
     OpenAPI_plmn_id_t *plmn_id_local_nonprim = NULL;
-
+    
     plmn_id_local_nonprim = OpenAPI_plmn_id_parseFromJSON(plmn_id);
 
     cJSON *eutra_cell_id = cJSON_GetObjectItemCaseSensitive(ecgiJSON, "eutraCellId");
@@ -89,7 +89,7 @@ OpenAPI_ecgi_t *OpenAPI_ecgi_parseFromJSON(cJSON *ecgiJSON)
         goto end;
     }
 
-
+    
     if (!cJSON_IsString(eutra_cell_id)) {
         ogs_error("OpenAPI_ecgi_parseFromJSON() failed [eutra_cell_id]");
         goto end;
@@ -97,18 +97,18 @@ OpenAPI_ecgi_t *OpenAPI_ecgi_parseFromJSON(cJSON *ecgiJSON)
 
     cJSON *nid = cJSON_GetObjectItemCaseSensitive(ecgiJSON, "nid");
 
-    if (nid) {
-        if (!cJSON_IsString(nid)) {
-            ogs_error("OpenAPI_ecgi_parseFromJSON() failed [nid]");
-            goto end;
-        }
+    if (nid) { 
+    if (!cJSON_IsString(nid)) {
+        ogs_error("OpenAPI_ecgi_parseFromJSON() failed [nid]");
+        goto end;
+    }
     }
 
     ecgi_local_var = OpenAPI_ecgi_create (
         plmn_id_local_nonprim,
         ogs_strdup_or_assert(eutra_cell_id->valuestring),
         nid ? ogs_strdup_or_assert(nid->valuestring) : NULL
-        );
+    );
 
     return ecgi_local_var;
 end:

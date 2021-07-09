@@ -1,7 +1,7 @@
 /*
  * retrieve_data.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_retrieve_data_H_
@@ -24,7 +24,7 @@ typedef struct OpenAPI_retrieve_data_s {
 
 OpenAPI_retrieve_data_t *OpenAPI_retrieve_data_create(
     int small_data_rate_status_req
-    );
+);
 void OpenAPI_retrieve_data_free(OpenAPI_retrieve_data_t *retrieve_data);
 OpenAPI_retrieve_data_t *OpenAPI_retrieve_data_parseFromJSON(cJSON *retrieve_dataJSON);
 cJSON *OpenAPI_retrieve_data_convertToJSON(OpenAPI_retrieve_data_t *retrieve_data);

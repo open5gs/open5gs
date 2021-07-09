@@ -1,7 +1,7 @@
 /*
  * charging_data.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_charging_data_H_
@@ -48,7 +48,7 @@ OpenAPI_charging_data_t *OpenAPI_charging_data_create(
     char *app_svc_prov_id,
     int af_charging_identifier,
     char *af_charg_id
-    );
+);
 void OpenAPI_charging_data_free(OpenAPI_charging_data_t *charging_data);
 OpenAPI_charging_data_t *OpenAPI_charging_data_parseFromJSON(cJSON *charging_dataJSON);
 cJSON *OpenAPI_charging_data_convertToJSON(OpenAPI_charging_data_t *charging_data);

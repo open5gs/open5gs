@@ -1,7 +1,7 @@
 /*
  * up_path_chg_event.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_up_path_chg_event_H_
@@ -31,7 +31,7 @@ OpenAPI_up_path_chg_event_t *OpenAPI_up_path_chg_event_create(
     char *notif_corre_id,
     OpenAPI_dnai_change_type_e dnai_chg_type,
     int af_ack_ind
-    );
+);
 void OpenAPI_up_path_chg_event_free(OpenAPI_up_path_chg_event_t *up_path_chg_event);
 OpenAPI_up_path_chg_event_t *OpenAPI_up_path_chg_event_parseFromJSON(cJSON *up_path_chg_eventJSON);
 cJSON *OpenAPI_up_path_chg_event_convertToJSON(OpenAPI_up_path_chg_event_t *up_path_chg_event);

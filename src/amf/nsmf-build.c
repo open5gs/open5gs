@@ -409,7 +409,7 @@ OpenAPI_ng_ran_target_id_t *amf_nsmf_pdusession_build_target_id(
 
     OpenAPI_ng_ran_target_id_t *targetId = NULL;
     OpenAPI_global_ran_node_id_t *ranNodeId = NULL;
-    OpenAPI_g_nb_id_t *gNbId = NULL;
+    OpenAPI_gnb_id_t *gNbId = NULL;
     OpenAPI_tai_t *tai = NULL;
 
     ogs_assert(TargetID);
@@ -484,7 +484,7 @@ void amf_nsmf_pdusession_free_target_id(OpenAPI_ng_ran_target_id_t *targetId)
             if (ranNodeId->plmn_id)
                 OpenAPI_plmn_id_free(ranNodeId->plmn_id);
             if (ranNodeId->g_nb_id) {
-                OpenAPI_g_nb_id_t *gNbId = ranNodeId->g_nb_id;
+                OpenAPI_gnb_id_t *gNbId = ranNodeId->g_nb_id;
                 if (gNbId->g_nb_value)
                     ogs_free(gNbId->g_nb_value);
                 ogs_free(gNbId);

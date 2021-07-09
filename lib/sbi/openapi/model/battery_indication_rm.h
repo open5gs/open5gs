@@ -1,7 +1,7 @@
 /*
  * battery_indication_rm.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_battery_indication_rm_H_
@@ -30,7 +30,7 @@ OpenAPI_battery_indication_rm_t *OpenAPI_battery_indication_rm_create(
     int battery_ind,
     int replaceable_ind,
     int rechargeable_ind
-    );
+);
 void OpenAPI_battery_indication_rm_free(OpenAPI_battery_indication_rm_t *battery_indication_rm);
 OpenAPI_battery_indication_rm_t *OpenAPI_battery_indication_rm_parseFromJSON(cJSON *battery_indication_rmJSON);
 cJSON *OpenAPI_battery_indication_rm_convertToJSON(OpenAPI_battery_indication_rm_t *battery_indication_rm);

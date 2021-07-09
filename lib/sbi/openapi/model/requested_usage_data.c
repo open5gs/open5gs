@@ -7,7 +7,7 @@
 OpenAPI_requested_usage_data_t *OpenAPI_requested_usage_data_create(
     OpenAPI_list_t *ref_um_ids,
     int all_um_ids
-    )
+)
 {
     OpenAPI_requested_usage_data_t *requested_usage_data_local_var = OpenAPI_malloc(sizeof(OpenAPI_requested_usage_data_t));
     if (!requested_usage_data_local_var) {
@@ -43,26 +43,26 @@ cJSON *OpenAPI_requested_usage_data_convertToJSON(OpenAPI_requested_usage_data_t
 
     item = cJSON_CreateObject();
     if (requested_usage_data->ref_um_ids) {
-        cJSON *ref_um_ids = cJSON_AddArrayToObject(item, "refUmIds");
-        if (ref_um_ids == NULL) {
-            ogs_error("OpenAPI_requested_usage_data_convertToJSON() failed [ref_um_ids]");
-            goto end;
-        }
+    cJSON *ref_um_ids = cJSON_AddArrayToObject(item, "refUmIds");
+    if (ref_um_ids == NULL) {
+        ogs_error("OpenAPI_requested_usage_data_convertToJSON() failed [ref_um_ids]");
+        goto end;
+    }
 
-        OpenAPI_lnode_t *ref_um_ids_node;
-        OpenAPI_list_for_each(requested_usage_data->ref_um_ids, ref_um_ids_node)  {
-            if (cJSON_AddStringToObject(ref_um_ids, "", (char*)ref_um_ids_node->data) == NULL) {
-                ogs_error("OpenAPI_requested_usage_data_convertToJSON() failed [ref_um_ids]");
-                goto end;
-            }
-        }
+    OpenAPI_lnode_t *ref_um_ids_node;
+    OpenAPI_list_for_each(requested_usage_data->ref_um_ids, ref_um_ids_node)  {
+    if (cJSON_AddStringToObject(ref_um_ids, "", (char*)ref_um_ids_node->data) == NULL) {
+        ogs_error("OpenAPI_requested_usage_data_convertToJSON() failed [ref_um_ids]");
+        goto end;
+    }
+                    }
     }
 
     if (requested_usage_data->all_um_ids) {
-        if (cJSON_AddBoolToObject(item, "allUmIds", requested_usage_data->all_um_ids) == NULL) {
-            ogs_error("OpenAPI_requested_usage_data_convertToJSON() failed [all_um_ids]");
-            goto end;
-        }
+    if (cJSON_AddBoolToObject(item, "allUmIds", requested_usage_data->all_um_ids) == NULL) {
+        ogs_error("OpenAPI_requested_usage_data_convertToJSON() failed [all_um_ids]");
+        goto end;
+    }
     }
 
 end:
@@ -75,36 +75,36 @@ OpenAPI_requested_usage_data_t *OpenAPI_requested_usage_data_parseFromJSON(cJSON
     cJSON *ref_um_ids = cJSON_GetObjectItemCaseSensitive(requested_usage_dataJSON, "refUmIds");
 
     OpenAPI_list_t *ref_um_idsList;
-    if (ref_um_ids) {
-        cJSON *ref_um_ids_local;
-        if (!cJSON_IsArray(ref_um_ids)) {
-            ogs_error("OpenAPI_requested_usage_data_parseFromJSON() failed [ref_um_ids]");
-            goto end;
-        }
-        ref_um_idsList = OpenAPI_list_create();
+    if (ref_um_ids) { 
+    cJSON *ref_um_ids_local;
+    if (!cJSON_IsArray(ref_um_ids)) {
+        ogs_error("OpenAPI_requested_usage_data_parseFromJSON() failed [ref_um_ids]");
+        goto end;
+    }
+    ref_um_idsList = OpenAPI_list_create();
 
-        cJSON_ArrayForEach(ref_um_ids_local, ref_um_ids) {
-            if (!cJSON_IsString(ref_um_ids_local)) {
-                ogs_error("OpenAPI_requested_usage_data_parseFromJSON() failed [ref_um_ids]");
-                goto end;
-            }
-            OpenAPI_list_add(ref_um_idsList, ogs_strdup_or_assert(ref_um_ids_local->valuestring));
-        }
+    cJSON_ArrayForEach(ref_um_ids_local, ref_um_ids) {
+    if (!cJSON_IsString(ref_um_ids_local)) {
+        ogs_error("OpenAPI_requested_usage_data_parseFromJSON() failed [ref_um_ids]");
+        goto end;
+    }
+    OpenAPI_list_add(ref_um_idsList , ogs_strdup_or_assert(ref_um_ids_local->valuestring));
+                    }
     }
 
     cJSON *all_um_ids = cJSON_GetObjectItemCaseSensitive(requested_usage_dataJSON, "allUmIds");
 
-    if (all_um_ids) {
-        if (!cJSON_IsBool(all_um_ids)) {
-            ogs_error("OpenAPI_requested_usage_data_parseFromJSON() failed [all_um_ids]");
-            goto end;
-        }
+    if (all_um_ids) { 
+    if (!cJSON_IsBool(all_um_ids)) {
+        ogs_error("OpenAPI_requested_usage_data_parseFromJSON() failed [all_um_ids]");
+        goto end;
+    }
     }
 
     requested_usage_data_local_var = OpenAPI_requested_usage_data_create (
         ref_um_ids ? ref_um_idsList : NULL,
         all_um_ids ? all_um_ids->valueint : 0
-        );
+    );
 
     return requested_usage_data_local_var;
 end:

@@ -28,7 +28,7 @@ OpenAPI_tsn_qos_container_t *OpenAPI_tsn_qos_container_create(
     int max_tsc_burst_size,
     int tsc_pack_delay,
     int tsc_prio_level
-    );
+);
 void OpenAPI_tsn_qos_container_free(OpenAPI_tsn_qos_container_t *tsn_qos_container);
 OpenAPI_tsn_qos_container_t *OpenAPI_tsn_qos_container_parseFromJSON(cJSON *tsn_qos_containerJSON);
 cJSON *OpenAPI_tsn_qos_container_convertToJSON(OpenAPI_tsn_qos_container_t *tsn_qos_container);

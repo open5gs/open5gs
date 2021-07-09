@@ -7,7 +7,7 @@
 OpenAPI_an_gw_address_t *OpenAPI_an_gw_address_create(
     char *an_gw_ipv4_addr,
     char *an_gw_ipv6_addr
-    )
+)
 {
     OpenAPI_an_gw_address_t *an_gw_address_local_var = OpenAPI_malloc(sizeof(OpenAPI_an_gw_address_t));
     if (!an_gw_address_local_var) {
@@ -41,17 +41,17 @@ cJSON *OpenAPI_an_gw_address_convertToJSON(OpenAPI_an_gw_address_t *an_gw_addres
 
     item = cJSON_CreateObject();
     if (an_gw_address->an_gw_ipv4_addr) {
-        if (cJSON_AddStringToObject(item, "anGwIpv4Addr", an_gw_address->an_gw_ipv4_addr) == NULL) {
-            ogs_error("OpenAPI_an_gw_address_convertToJSON() failed [an_gw_ipv4_addr]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "anGwIpv4Addr", an_gw_address->an_gw_ipv4_addr) == NULL) {
+        ogs_error("OpenAPI_an_gw_address_convertToJSON() failed [an_gw_ipv4_addr]");
+        goto end;
+    }
     }
 
     if (an_gw_address->an_gw_ipv6_addr) {
-        if (cJSON_AddStringToObject(item, "anGwIpv6Addr", an_gw_address->an_gw_ipv6_addr) == NULL) {
-            ogs_error("OpenAPI_an_gw_address_convertToJSON() failed [an_gw_ipv6_addr]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "anGwIpv6Addr", an_gw_address->an_gw_ipv6_addr) == NULL) {
+        ogs_error("OpenAPI_an_gw_address_convertToJSON() failed [an_gw_ipv6_addr]");
+        goto end;
+    }
     }
 
 end:
@@ -63,26 +63,26 @@ OpenAPI_an_gw_address_t *OpenAPI_an_gw_address_parseFromJSON(cJSON *an_gw_addres
     OpenAPI_an_gw_address_t *an_gw_address_local_var = NULL;
     cJSON *an_gw_ipv4_addr = cJSON_GetObjectItemCaseSensitive(an_gw_addressJSON, "anGwIpv4Addr");
 
-    if (an_gw_ipv4_addr) {
-        if (!cJSON_IsString(an_gw_ipv4_addr)) {
-            ogs_error("OpenAPI_an_gw_address_parseFromJSON() failed [an_gw_ipv4_addr]");
-            goto end;
-        }
+    if (an_gw_ipv4_addr) { 
+    if (!cJSON_IsString(an_gw_ipv4_addr)) {
+        ogs_error("OpenAPI_an_gw_address_parseFromJSON() failed [an_gw_ipv4_addr]");
+        goto end;
+    }
     }
 
     cJSON *an_gw_ipv6_addr = cJSON_GetObjectItemCaseSensitive(an_gw_addressJSON, "anGwIpv6Addr");
 
-    if (an_gw_ipv6_addr) {
-        if (!cJSON_IsString(an_gw_ipv6_addr)) {
-            ogs_error("OpenAPI_an_gw_address_parseFromJSON() failed [an_gw_ipv6_addr]");
-            goto end;
-        }
+    if (an_gw_ipv6_addr) { 
+    if (!cJSON_IsString(an_gw_ipv6_addr)) {
+        ogs_error("OpenAPI_an_gw_address_parseFromJSON() failed [an_gw_ipv6_addr]");
+        goto end;
+    }
     }
 
     an_gw_address_local_var = OpenAPI_an_gw_address_create (
         an_gw_ipv4_addr ? ogs_strdup_or_assert(an_gw_ipv4_addr->valuestring) : NULL,
         an_gw_ipv6_addr ? ogs_strdup_or_assert(an_gw_ipv6_addr->valuestring) : NULL
-        );
+    );
 
     return an_gw_address_local_var;
 end:

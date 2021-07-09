@@ -1,7 +1,7 @@
 /*
  * qos_flow_notify_item.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_qos_flow_notify_item_H_
@@ -31,7 +31,7 @@ OpenAPI_qos_flow_notify_item_t *OpenAPI_qos_flow_notify_item_create(
     OpenAPI_notification_cause_e notification_cause,
     int current_qos_profile_index,
     int null_qo_s_profile_index
-    );
+);
 void OpenAPI_qos_flow_notify_item_free(OpenAPI_qos_flow_notify_item_t *qos_flow_notify_item);
 OpenAPI_qos_flow_notify_item_t *OpenAPI_qos_flow_notify_item_parseFromJSON(cJSON *qos_flow_notify_itemJSON);
 cJSON *OpenAPI_qos_flow_notify_item_convertToJSON(OpenAPI_qos_flow_notify_item_t *qos_flow_notify_item);

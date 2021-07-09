@@ -1,7 +1,7 @@
 /*
  * invalid_param.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_invalid_param_H_
@@ -26,7 +26,7 @@ typedef struct OpenAPI_invalid_param_s {
 OpenAPI_invalid_param_t *OpenAPI_invalid_param_create(
     char *param,
     char *reason
-    );
+);
 void OpenAPI_invalid_param_free(OpenAPI_invalid_param_t *invalid_param);
 OpenAPI_invalid_param_t *OpenAPI_invalid_param_parseFromJSON(cJSON *invalid_paramJSON);
 cJSON *OpenAPI_invalid_param_convertToJSON(OpenAPI_invalid_param_t *invalid_param);

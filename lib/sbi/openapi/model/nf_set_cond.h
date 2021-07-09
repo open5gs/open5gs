@@ -24,7 +24,7 @@ typedef struct OpenAPI_nf_set_cond_s {
 
 OpenAPI_nf_set_cond_t *OpenAPI_nf_set_cond_create(
     char *nf_set_id
-    );
+);
 void OpenAPI_nf_set_cond_free(OpenAPI_nf_set_cond_t *nf_set_cond);
 OpenAPI_nf_set_cond_t *OpenAPI_nf_set_cond_parseFromJSON(cJSON *nf_set_condJSON);
 cJSON *OpenAPI_nf_set_cond_convertToJSON(OpenAPI_nf_set_cond_t *nf_set_cond);

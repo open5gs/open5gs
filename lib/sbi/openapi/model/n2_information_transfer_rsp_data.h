@@ -1,7 +1,7 @@
 /*
  * n2_information_transfer_rsp_data.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_n2_information_transfer_rsp_data_H_
@@ -30,7 +30,7 @@ OpenAPI_n2_information_transfer_rsp_data_t *OpenAPI_n2_information_transfer_rsp_
     OpenAPI_n2_information_transfer_result_e result,
     OpenAPI_pws_response_data_t *pws_rsp_data,
     char *supported_features
-    );
+);
 void OpenAPI_n2_information_transfer_rsp_data_free(OpenAPI_n2_information_transfer_rsp_data_t *n2_information_transfer_rsp_data);
 OpenAPI_n2_information_transfer_rsp_data_t *OpenAPI_n2_information_transfer_rsp_data_parseFromJSON(cJSON *n2_information_transfer_rsp_dataJSON);
 cJSON *OpenAPI_n2_information_transfer_rsp_data_convertToJSON(OpenAPI_n2_information_transfer_rsp_data_t *n2_information_transfer_rsp_data);

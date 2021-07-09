@@ -1,7 +1,7 @@
 /*
  * authorized_network_slice_info.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_authorized_network_slice_info_H_
@@ -50,7 +50,7 @@ OpenAPI_authorized_network_slice_info_t *OpenAPI_authorized_network_slice_info_c
     char *nrf_amf_set_nf_mgt_uri,
     char *nrf_amf_set_access_token_uri,
     char *target_amf_service_set
-    );
+);
 void OpenAPI_authorized_network_slice_info_free(OpenAPI_authorized_network_slice_info_t *authorized_network_slice_info);
 OpenAPI_authorized_network_slice_info_t *OpenAPI_authorized_network_slice_info_parseFromJSON(cJSON *authorized_network_slice_infoJSON);
 cJSON *OpenAPI_authorized_network_slice_info_convertToJSON(OpenAPI_authorized_network_slice_info_t *authorized_network_slice_info);

@@ -1,7 +1,7 @@
 /*
  * dl_data_delivery_status.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_dl_data_delivery_status_H_

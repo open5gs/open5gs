@@ -1,7 +1,7 @@
 /*
  * dnn_configuration.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_dnn_configuration_H_
@@ -48,6 +48,7 @@ typedef struct OpenAPI_dnn_configuration_s {
     int secondary_auth;
     int dn_aaa_ip_address_allocation;
     struct OpenAPI_ip_address_s *dn_aaa_address;
+    char *iptv_acc_ctrl_info;
 } OpenAPI_dnn_configuration_t;
 
 OpenAPI_dnn_configuration_t *OpenAPI_dnn_configuration_create(
@@ -69,8 +70,9 @@ OpenAPI_dnn_configuration_t *OpenAPI_dnn_configuration_create(
     int atsss_allowed,
     int secondary_auth,
     int dn_aaa_ip_address_allocation,
-    OpenAPI_ip_address_t *dn_aaa_address
-    );
+    OpenAPI_ip_address_t *dn_aaa_address,
+    char *iptv_acc_ctrl_info
+);
 void OpenAPI_dnn_configuration_free(OpenAPI_dnn_configuration_t *dnn_configuration);
 OpenAPI_dnn_configuration_t *OpenAPI_dnn_configuration_parseFromJSON(cJSON *dnn_configurationJSON);
 cJSON *OpenAPI_dnn_configuration_convertToJSON(OpenAPI_dnn_configuration_t *dnn_configuration);

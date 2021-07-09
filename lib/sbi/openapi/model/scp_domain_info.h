@@ -31,7 +31,7 @@ OpenAPI_scp_domain_info_t *OpenAPI_scp_domain_info_create(
     OpenAPI_list_t *scp_ip_end_points,
     char *scp_prefix,
     OpenAPI_list_t* scp_ports
-    );
+);
 void OpenAPI_scp_domain_info_free(OpenAPI_scp_domain_info_t *scp_domain_info);
 OpenAPI_scp_domain_info_t *OpenAPI_scp_domain_info_parseFromJSON(cJSON *scp_domain_infoJSON);
 cJSON *OpenAPI_scp_domain_info_convertToJSON(OpenAPI_scp_domain_info_t *scp_domain_info);

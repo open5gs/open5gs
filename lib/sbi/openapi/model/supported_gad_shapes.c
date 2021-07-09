@@ -5,7 +5,7 @@
 #include "supported_gad_shapes.h"
 
 OpenAPI_supported_gad_shapes_t *OpenAPI_supported_gad_shapes_create(
-    )
+)
 {
     OpenAPI_supported_gad_shapes_t *supported_gad_shapes_local_var = OpenAPI_malloc(sizeof(OpenAPI_supported_gad_shapes_t));
     if (!supported_gad_shapes_local_var) {
@@ -42,7 +42,7 @@ OpenAPI_supported_gad_shapes_t *OpenAPI_supported_gad_shapes_parseFromJSON(cJSON
 {
     OpenAPI_supported_gad_shapes_t *supported_gad_shapes_local_var = NULL;
     supported_gad_shapes_local_var = OpenAPI_supported_gad_shapes_create (
-        );
+    );
 
     return supported_gad_shapes_local_var;
 end:

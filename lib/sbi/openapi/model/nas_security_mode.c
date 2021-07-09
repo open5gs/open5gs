@@ -7,7 +7,7 @@
 OpenAPI_nas_security_mode_t *OpenAPI_nas_security_mode_create(
     OpenAPI_integrity_algorithm_e integrity_algorithm,
     OpenAPI_ciphering_algorithm_e ciphering_algorithm
-    )
+)
 {
     OpenAPI_nas_security_mode_t *nas_security_mode_local_var = OpenAPI_malloc(sizeof(OpenAPI_nas_security_mode_t));
     if (!nas_security_mode_local_var) {
@@ -62,7 +62,7 @@ OpenAPI_nas_security_mode_t *OpenAPI_nas_security_mode_parseFromJSON(cJSON *nas_
     }
 
     OpenAPI_integrity_algorithm_e integrity_algorithmVariable;
-
+    
     if (!cJSON_IsString(integrity_algorithm)) {
         ogs_error("OpenAPI_nas_security_mode_parseFromJSON() failed [integrity_algorithm]");
         goto end;
@@ -76,7 +76,7 @@ OpenAPI_nas_security_mode_t *OpenAPI_nas_security_mode_parseFromJSON(cJSON *nas_
     }
 
     OpenAPI_ciphering_algorithm_e ciphering_algorithmVariable;
-
+    
     if (!cJSON_IsString(ciphering_algorithm)) {
         ogs_error("OpenAPI_nas_security_mode_parseFromJSON() failed [ciphering_algorithm]");
         goto end;
@@ -86,7 +86,7 @@ OpenAPI_nas_security_mode_t *OpenAPI_nas_security_mode_parseFromJSON(cJSON *nas_
     nas_security_mode_local_var = OpenAPI_nas_security_mode_create (
         integrity_algorithmVariable,
         ciphering_algorithmVariable
-        );
+    );
 
     return nas_security_mode_local_var;
 end:

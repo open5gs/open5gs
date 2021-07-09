@@ -1,7 +1,7 @@
 /*
  * authentication_subscription.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_authentication_subscription_H_
@@ -48,7 +48,7 @@ OpenAPI_authentication_subscription_t *OpenAPI_authentication_subscription_creat
     OpenAPI_auth_method_e n5gc_auth_method,
     int rg_authentication_ind,
     char *supi
-    );
+);
 void OpenAPI_authentication_subscription_free(OpenAPI_authentication_subscription_t *authentication_subscription);
 OpenAPI_authentication_subscription_t *OpenAPI_authentication_subscription_parseFromJSON(cJSON *authentication_subscriptionJSON);
 cJSON *OpenAPI_authentication_subscription_convertToJSON(OpenAPI_authentication_subscription_t *authentication_subscription);

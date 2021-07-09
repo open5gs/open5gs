@@ -1,7 +1,7 @@
 /*
  * access_type.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_access_type_H_

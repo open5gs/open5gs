@@ -1,7 +1,7 @@
 /*
  * ambr_rm.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_ambr_rm_H_
@@ -28,7 +28,7 @@ typedef struct OpenAPI_ambr_rm_s {
 OpenAPI_ambr_rm_t *OpenAPI_ambr_rm_create(
     char *uplink,
     char *downlink
-    );
+);
 void OpenAPI_ambr_rm_free(OpenAPI_ambr_rm_t *ambr_rm);
 OpenAPI_ambr_rm_t *OpenAPI_ambr_rm_parseFromJSON(cJSON *ambr_rmJSON);
 cJSON *OpenAPI_ambr_rm_convertToJSON(OpenAPI_ambr_rm_t *ambr_rm);

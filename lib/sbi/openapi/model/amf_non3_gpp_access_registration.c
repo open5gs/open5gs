@@ -21,8 +21,10 @@ OpenAPI_amf_non3_gpp_access_registration_t *OpenAPI_amf_non3_gpp_access_registra
     char *amf_ee_subscription_id,
     char *registration_time,
     OpenAPI_vgmlc_address_t *vgmlc_address,
-    OpenAPI_context_info_t *context_info
-    )
+    OpenAPI_context_info_t *context_info,
+    int no_ee_subscription_ind,
+    char *supi
+)
 {
     OpenAPI_amf_non3_gpp_access_registration_t *amf_non3_gpp_access_registration_local_var = OpenAPI_malloc(sizeof(OpenAPI_amf_non3_gpp_access_registration_t));
     if (!amf_non3_gpp_access_registration_local_var) {
@@ -45,6 +47,8 @@ OpenAPI_amf_non3_gpp_access_registration_t *OpenAPI_amf_non3_gpp_access_registra
     amf_non3_gpp_access_registration_local_var->registration_time = registration_time;
     amf_non3_gpp_access_registration_local_var->vgmlc_address = vgmlc_address;
     amf_non3_gpp_access_registration_local_var->context_info = context_info;
+    amf_non3_gpp_access_registration_local_var->no_ee_subscription_ind = no_ee_subscription_ind;
+    amf_non3_gpp_access_registration_local_var->supi = supi;
 
     return amf_non3_gpp_access_registration_local_var;
 }
@@ -71,6 +75,7 @@ void OpenAPI_amf_non3_gpp_access_registration_free(OpenAPI_amf_non3_gpp_access_r
     ogs_free(amf_non3_gpp_access_registration->registration_time);
     OpenAPI_vgmlc_address_free(amf_non3_gpp_access_registration->vgmlc_address);
     OpenAPI_context_info_free(amf_non3_gpp_access_registration->context_info);
+    ogs_free(amf_non3_gpp_access_registration->supi);
     ogs_free(amf_non3_gpp_access_registration);
 }
 
@@ -90,24 +95,24 @@ cJSON *OpenAPI_amf_non3_gpp_access_registration_convertToJSON(OpenAPI_amf_non3_g
     }
 
     if (amf_non3_gpp_access_registration->supported_features) {
-        if (cJSON_AddStringToObject(item, "supportedFeatures", amf_non3_gpp_access_registration->supported_features) == NULL) {
-            ogs_error("OpenAPI_amf_non3_gpp_access_registration_convertToJSON() failed [supported_features]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "supportedFeatures", amf_non3_gpp_access_registration->supported_features) == NULL) {
+        ogs_error("OpenAPI_amf_non3_gpp_access_registration_convertToJSON() failed [supported_features]");
+        goto end;
+    }
     }
 
     if (amf_non3_gpp_access_registration->purge_flag) {
-        if (cJSON_AddBoolToObject(item, "purgeFlag", amf_non3_gpp_access_registration->purge_flag) == NULL) {
-            ogs_error("OpenAPI_amf_non3_gpp_access_registration_convertToJSON() failed [purge_flag]");
-            goto end;
-        }
+    if (cJSON_AddBoolToObject(item, "purgeFlag", amf_non3_gpp_access_registration->purge_flag) == NULL) {
+        ogs_error("OpenAPI_amf_non3_gpp_access_registration_convertToJSON() failed [purge_flag]");
+        goto end;
+    }
     }
 
     if (amf_non3_gpp_access_registration->pei) {
-        if (cJSON_AddStringToObject(item, "pei", amf_non3_gpp_access_registration->pei) == NULL) {
-            ogs_error("OpenAPI_amf_non3_gpp_access_registration_convertToJSON() failed [pei]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "pei", amf_non3_gpp_access_registration->pei) == NULL) {
+        ogs_error("OpenAPI_amf_non3_gpp_access_registration_convertToJSON() failed [pei]");
+        goto end;
+    }
     }
 
     if (cJSON_AddStringToObject(item, "imsVoPs", OpenAPI_ims_vo_ps_ToString(amf_non3_gpp_access_registration->ims_vo_ps)) == NULL) {
@@ -121,24 +126,24 @@ cJSON *OpenAPI_amf_non3_gpp_access_registration_convertToJSON(OpenAPI_amf_non3_g
     }
 
     if (amf_non3_gpp_access_registration->amf_service_name_dereg) {
-        if (cJSON_AddStringToObject(item, "amfServiceNameDereg", amf_non3_gpp_access_registration->amf_service_name_dereg) == NULL) {
-            ogs_error("OpenAPI_amf_non3_gpp_access_registration_convertToJSON() failed [amf_service_name_dereg]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "amfServiceNameDereg", amf_non3_gpp_access_registration->amf_service_name_dereg) == NULL) {
+        ogs_error("OpenAPI_amf_non3_gpp_access_registration_convertToJSON() failed [amf_service_name_dereg]");
+        goto end;
+    }
     }
 
     if (amf_non3_gpp_access_registration->pcscf_restoration_callback_uri) {
-        if (cJSON_AddStringToObject(item, "pcscfRestorationCallbackUri", amf_non3_gpp_access_registration->pcscf_restoration_callback_uri) == NULL) {
-            ogs_error("OpenAPI_amf_non3_gpp_access_registration_convertToJSON() failed [pcscf_restoration_callback_uri]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "pcscfRestorationCallbackUri", amf_non3_gpp_access_registration->pcscf_restoration_callback_uri) == NULL) {
+        ogs_error("OpenAPI_amf_non3_gpp_access_registration_convertToJSON() failed [pcscf_restoration_callback_uri]");
+        goto end;
+    }
     }
 
     if (amf_non3_gpp_access_registration->amf_service_name_pcscf_rest) {
-        if (cJSON_AddStringToObject(item, "amfServiceNamePcscfRest", amf_non3_gpp_access_registration->amf_service_name_pcscf_rest) == NULL) {
-            ogs_error("OpenAPI_amf_non3_gpp_access_registration_convertToJSON() failed [amf_service_name_pcscf_rest]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "amfServiceNamePcscfRest", amf_non3_gpp_access_registration->amf_service_name_pcscf_rest) == NULL) {
+        ogs_error("OpenAPI_amf_non3_gpp_access_registration_convertToJSON() failed [amf_service_name_pcscf_rest]");
+        goto end;
+    }
     }
 
     cJSON *guami_local_JSON = OpenAPI_guami_convertToJSON(amf_non3_gpp_access_registration->guami);
@@ -153,23 +158,23 @@ cJSON *OpenAPI_amf_non3_gpp_access_registration_convertToJSON(OpenAPI_amf_non3_g
     }
 
     if (amf_non3_gpp_access_registration->backup_amf_info) {
-        cJSON *backup_amf_infoList = cJSON_AddArrayToObject(item, "backupAmfInfo");
-        if (backup_amf_infoList == NULL) {
-            ogs_error("OpenAPI_amf_non3_gpp_access_registration_convertToJSON() failed [backup_amf_info]");
-            goto end;
-        }
+    cJSON *backup_amf_infoList = cJSON_AddArrayToObject(item, "backupAmfInfo");
+    if (backup_amf_infoList == NULL) {
+        ogs_error("OpenAPI_amf_non3_gpp_access_registration_convertToJSON() failed [backup_amf_info]");
+        goto end;
+    }
 
-        OpenAPI_lnode_t *backup_amf_info_node;
-        if (amf_non3_gpp_access_registration->backup_amf_info) {
-            OpenAPI_list_for_each(amf_non3_gpp_access_registration->backup_amf_info, backup_amf_info_node) {
-                cJSON *itemLocal = OpenAPI_backup_amf_info_convertToJSON(backup_amf_info_node->data);
-                if (itemLocal == NULL) {
-                    ogs_error("OpenAPI_amf_non3_gpp_access_registration_convertToJSON() failed [backup_amf_info]");
-                    goto end;
-                }
-                cJSON_AddItemToArray(backup_amf_infoList, itemLocal);
+    OpenAPI_lnode_t *backup_amf_info_node;
+    if (amf_non3_gpp_access_registration->backup_amf_info) {
+        OpenAPI_list_for_each(amf_non3_gpp_access_registration->backup_amf_info, backup_amf_info_node) {
+            cJSON *itemLocal = OpenAPI_backup_amf_info_convertToJSON(backup_amf_info_node->data);
+            if (itemLocal == NULL) {
+                ogs_error("OpenAPI_amf_non3_gpp_access_registration_convertToJSON() failed [backup_amf_info]");
+                goto end;
             }
+            cJSON_AddItemToArray(backup_amf_infoList, itemLocal);
         }
+    }
     }
 
     if (cJSON_AddStringToObject(item, "ratType", OpenAPI_rat_type_ToString(amf_non3_gpp_access_registration->rat_type)) == NULL) {
@@ -178,50 +183,64 @@ cJSON *OpenAPI_amf_non3_gpp_access_registration_convertToJSON(OpenAPI_amf_non3_g
     }
 
     if (amf_non3_gpp_access_registration->urrp_indicator) {
-        if (cJSON_AddBoolToObject(item, "urrpIndicator", amf_non3_gpp_access_registration->urrp_indicator) == NULL) {
-            ogs_error("OpenAPI_amf_non3_gpp_access_registration_convertToJSON() failed [urrp_indicator]");
-            goto end;
-        }
+    if (cJSON_AddBoolToObject(item, "urrpIndicator", amf_non3_gpp_access_registration->urrp_indicator) == NULL) {
+        ogs_error("OpenAPI_amf_non3_gpp_access_registration_convertToJSON() failed [urrp_indicator]");
+        goto end;
+    }
     }
 
     if (amf_non3_gpp_access_registration->amf_ee_subscription_id) {
-        if (cJSON_AddStringToObject(item, "amfEeSubscriptionId", amf_non3_gpp_access_registration->amf_ee_subscription_id) == NULL) {
-            ogs_error("OpenAPI_amf_non3_gpp_access_registration_convertToJSON() failed [amf_ee_subscription_id]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "amfEeSubscriptionId", amf_non3_gpp_access_registration->amf_ee_subscription_id) == NULL) {
+        ogs_error("OpenAPI_amf_non3_gpp_access_registration_convertToJSON() failed [amf_ee_subscription_id]");
+        goto end;
+    }
     }
 
     if (amf_non3_gpp_access_registration->registration_time) {
-        if (cJSON_AddStringToObject(item, "registrationTime", amf_non3_gpp_access_registration->registration_time) == NULL) {
-            ogs_error("OpenAPI_amf_non3_gpp_access_registration_convertToJSON() failed [registration_time]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "registrationTime", amf_non3_gpp_access_registration->registration_time) == NULL) {
+        ogs_error("OpenAPI_amf_non3_gpp_access_registration_convertToJSON() failed [registration_time]");
+        goto end;
+    }
     }
 
     if (amf_non3_gpp_access_registration->vgmlc_address) {
-        cJSON *vgmlc_address_local_JSON = OpenAPI_vgmlc_address_convertToJSON(amf_non3_gpp_access_registration->vgmlc_address);
-        if (vgmlc_address_local_JSON == NULL) {
-            ogs_error("OpenAPI_amf_non3_gpp_access_registration_convertToJSON() failed [vgmlc_address]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "vgmlcAddress", vgmlc_address_local_JSON);
-        if (item->child == NULL) {
-            ogs_error("OpenAPI_amf_non3_gpp_access_registration_convertToJSON() failed [vgmlc_address]");
-            goto end;
-        }
+    cJSON *vgmlc_address_local_JSON = OpenAPI_vgmlc_address_convertToJSON(amf_non3_gpp_access_registration->vgmlc_address);
+    if (vgmlc_address_local_JSON == NULL) {
+        ogs_error("OpenAPI_amf_non3_gpp_access_registration_convertToJSON() failed [vgmlc_address]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "vgmlcAddress", vgmlc_address_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_amf_non3_gpp_access_registration_convertToJSON() failed [vgmlc_address]");
+        goto end;
+    }
     }
 
     if (amf_non3_gpp_access_registration->context_info) {
-        cJSON *context_info_local_JSON = OpenAPI_context_info_convertToJSON(amf_non3_gpp_access_registration->context_info);
-        if (context_info_local_JSON == NULL) {
-            ogs_error("OpenAPI_amf_non3_gpp_access_registration_convertToJSON() failed [context_info]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "contextInfo", context_info_local_JSON);
-        if (item->child == NULL) {
-            ogs_error("OpenAPI_amf_non3_gpp_access_registration_convertToJSON() failed [context_info]");
-            goto end;
-        }
+    cJSON *context_info_local_JSON = OpenAPI_context_info_convertToJSON(amf_non3_gpp_access_registration->context_info);
+    if (context_info_local_JSON == NULL) {
+        ogs_error("OpenAPI_amf_non3_gpp_access_registration_convertToJSON() failed [context_info]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "contextInfo", context_info_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_amf_non3_gpp_access_registration_convertToJSON() failed [context_info]");
+        goto end;
+    }
+    }
+
+    if (amf_non3_gpp_access_registration->no_ee_subscription_ind) {
+    if (cJSON_AddBoolToObject(item, "noEeSubscriptionInd", amf_non3_gpp_access_registration->no_ee_subscription_ind) == NULL) {
+        ogs_error("OpenAPI_amf_non3_gpp_access_registration_convertToJSON() failed [no_ee_subscription_ind]");
+        goto end;
+    }
+    }
+
+    if (amf_non3_gpp_access_registration->supi) {
+    if (cJSON_AddStringToObject(item, "supi", amf_non3_gpp_access_registration->supi) == NULL) {
+        ogs_error("OpenAPI_amf_non3_gpp_access_registration_convertToJSON() failed [supi]");
+        goto end;
+    }
     }
 
 end:
@@ -237,7 +256,7 @@ OpenAPI_amf_non3_gpp_access_registration_t *OpenAPI_amf_non3_gpp_access_registra
         goto end;
     }
 
-
+    
     if (!cJSON_IsString(amf_instance_id)) {
         ogs_error("OpenAPI_amf_non3_gpp_access_registration_parseFromJSON() failed [amf_instance_id]");
         goto end;
@@ -245,29 +264,29 @@ OpenAPI_amf_non3_gpp_access_registration_t *OpenAPI_amf_non3_gpp_access_registra
 
     cJSON *supported_features = cJSON_GetObjectItemCaseSensitive(amf_non3_gpp_access_registrationJSON, "supportedFeatures");
 
-    if (supported_features) {
-        if (!cJSON_IsString(supported_features)) {
-            ogs_error("OpenAPI_amf_non3_gpp_access_registration_parseFromJSON() failed [supported_features]");
-            goto end;
-        }
+    if (supported_features) { 
+    if (!cJSON_IsString(supported_features)) {
+        ogs_error("OpenAPI_amf_non3_gpp_access_registration_parseFromJSON() failed [supported_features]");
+        goto end;
+    }
     }
 
     cJSON *purge_flag = cJSON_GetObjectItemCaseSensitive(amf_non3_gpp_access_registrationJSON, "purgeFlag");
 
-    if (purge_flag) {
-        if (!cJSON_IsBool(purge_flag)) {
-            ogs_error("OpenAPI_amf_non3_gpp_access_registration_parseFromJSON() failed [purge_flag]");
-            goto end;
-        }
+    if (purge_flag) { 
+    if (!cJSON_IsBool(purge_flag)) {
+        ogs_error("OpenAPI_amf_non3_gpp_access_registration_parseFromJSON() failed [purge_flag]");
+        goto end;
+    }
     }
 
     cJSON *pei = cJSON_GetObjectItemCaseSensitive(amf_non3_gpp_access_registrationJSON, "pei");
 
-    if (pei) {
-        if (!cJSON_IsString(pei)) {
-            ogs_error("OpenAPI_amf_non3_gpp_access_registration_parseFromJSON() failed [pei]");
-            goto end;
-        }
+    if (pei) { 
+    if (!cJSON_IsString(pei)) {
+        ogs_error("OpenAPI_amf_non3_gpp_access_registration_parseFromJSON() failed [pei]");
+        goto end;
+    }
     }
 
     cJSON *ims_vo_ps = cJSON_GetObjectItemCaseSensitive(amf_non3_gpp_access_registrationJSON, "imsVoPs");
@@ -277,7 +296,7 @@ OpenAPI_amf_non3_gpp_access_registration_t *OpenAPI_amf_non3_gpp_access_registra
     }
 
     OpenAPI_ims_vo_ps_e ims_vo_psVariable;
-
+    
     if (!cJSON_IsString(ims_vo_ps)) {
         ogs_error("OpenAPI_amf_non3_gpp_access_registration_parseFromJSON() failed [ims_vo_ps]");
         goto end;
@@ -290,7 +309,7 @@ OpenAPI_amf_non3_gpp_access_registration_t *OpenAPI_amf_non3_gpp_access_registra
         goto end;
     }
 
-
+    
     if (!cJSON_IsString(dereg_callback_uri)) {
         ogs_error("OpenAPI_amf_non3_gpp_access_registration_parseFromJSON() failed [dereg_callback_uri]");
         goto end;
@@ -298,29 +317,29 @@ OpenAPI_amf_non3_gpp_access_registration_t *OpenAPI_amf_non3_gpp_access_registra
 
     cJSON *amf_service_name_dereg = cJSON_GetObjectItemCaseSensitive(amf_non3_gpp_access_registrationJSON, "amfServiceNameDereg");
 
-    if (amf_service_name_dereg) {
-        if (!cJSON_IsString(amf_service_name_dereg)) {
-            ogs_error("OpenAPI_amf_non3_gpp_access_registration_parseFromJSON() failed [amf_service_name_dereg]");
-            goto end;
-        }
+    if (amf_service_name_dereg) { 
+    if (!cJSON_IsString(amf_service_name_dereg)) {
+        ogs_error("OpenAPI_amf_non3_gpp_access_registration_parseFromJSON() failed [amf_service_name_dereg]");
+        goto end;
+    }
     }
 
     cJSON *pcscf_restoration_callback_uri = cJSON_GetObjectItemCaseSensitive(amf_non3_gpp_access_registrationJSON, "pcscfRestorationCallbackUri");
 
-    if (pcscf_restoration_callback_uri) {
-        if (!cJSON_IsString(pcscf_restoration_callback_uri)) {
-            ogs_error("OpenAPI_amf_non3_gpp_access_registration_parseFromJSON() failed [pcscf_restoration_callback_uri]");
-            goto end;
-        }
+    if (pcscf_restoration_callback_uri) { 
+    if (!cJSON_IsString(pcscf_restoration_callback_uri)) {
+        ogs_error("OpenAPI_amf_non3_gpp_access_registration_parseFromJSON() failed [pcscf_restoration_callback_uri]");
+        goto end;
+    }
     }
 
     cJSON *amf_service_name_pcscf_rest = cJSON_GetObjectItemCaseSensitive(amf_non3_gpp_access_registrationJSON, "amfServiceNamePcscfRest");
 
-    if (amf_service_name_pcscf_rest) {
-        if (!cJSON_IsString(amf_service_name_pcscf_rest)) {
-            ogs_error("OpenAPI_amf_non3_gpp_access_registration_parseFromJSON() failed [amf_service_name_pcscf_rest]");
-            goto end;
-        }
+    if (amf_service_name_pcscf_rest) { 
+    if (!cJSON_IsString(amf_service_name_pcscf_rest)) {
+        ogs_error("OpenAPI_amf_non3_gpp_access_registration_parseFromJSON() failed [amf_service_name_pcscf_rest]");
+        goto end;
+    }
     }
 
     cJSON *guami = cJSON_GetObjectItemCaseSensitive(amf_non3_gpp_access_registrationJSON, "guami");
@@ -330,30 +349,30 @@ OpenAPI_amf_non3_gpp_access_registration_t *OpenAPI_amf_non3_gpp_access_registra
     }
 
     OpenAPI_guami_t *guami_local_nonprim = NULL;
-
+    
     guami_local_nonprim = OpenAPI_guami_parseFromJSON(guami);
 
     cJSON *backup_amf_info = cJSON_GetObjectItemCaseSensitive(amf_non3_gpp_access_registrationJSON, "backupAmfInfo");
 
     OpenAPI_list_t *backup_amf_infoList;
-    if (backup_amf_info) {
-        cJSON *backup_amf_info_local_nonprimitive;
-        if (!cJSON_IsArray(backup_amf_info)) {
+    if (backup_amf_info) { 
+    cJSON *backup_amf_info_local_nonprimitive;
+    if (!cJSON_IsArray(backup_amf_info)){
+        ogs_error("OpenAPI_amf_non3_gpp_access_registration_parseFromJSON() failed [backup_amf_info]");
+        goto end;
+    }
+
+    backup_amf_infoList = OpenAPI_list_create();
+
+    cJSON_ArrayForEach(backup_amf_info_local_nonprimitive, backup_amf_info ) {
+        if (!cJSON_IsObject(backup_amf_info_local_nonprimitive)) {
             ogs_error("OpenAPI_amf_non3_gpp_access_registration_parseFromJSON() failed [backup_amf_info]");
             goto end;
         }
+        OpenAPI_backup_amf_info_t *backup_amf_infoItem = OpenAPI_backup_amf_info_parseFromJSON(backup_amf_info_local_nonprimitive);
 
-        backup_amf_infoList = OpenAPI_list_create();
-
-        cJSON_ArrayForEach(backup_amf_info_local_nonprimitive, backup_amf_info ) {
-            if (!cJSON_IsObject(backup_amf_info_local_nonprimitive)) {
-                ogs_error("OpenAPI_amf_non3_gpp_access_registration_parseFromJSON() failed [backup_amf_info]");
-                goto end;
-            }
-            OpenAPI_backup_amf_info_t *backup_amf_infoItem = OpenAPI_backup_amf_info_parseFromJSON(backup_amf_info_local_nonprimitive);
-
-            OpenAPI_list_add(backup_amf_infoList, backup_amf_infoItem);
-        }
+        OpenAPI_list_add(backup_amf_infoList, backup_amf_infoItem);
+    }
     }
 
     cJSON *rat_type = cJSON_GetObjectItemCaseSensitive(amf_non3_gpp_access_registrationJSON, "ratType");
@@ -363,7 +382,7 @@ OpenAPI_amf_non3_gpp_access_registration_t *OpenAPI_amf_non3_gpp_access_registra
     }
 
     OpenAPI_rat_type_e rat_typeVariable;
-
+    
     if (!cJSON_IsString(rat_type)) {
         ogs_error("OpenAPI_amf_non3_gpp_access_registration_parseFromJSON() failed [rat_type]");
         goto end;
@@ -372,43 +391,61 @@ OpenAPI_amf_non3_gpp_access_registration_t *OpenAPI_amf_non3_gpp_access_registra
 
     cJSON *urrp_indicator = cJSON_GetObjectItemCaseSensitive(amf_non3_gpp_access_registrationJSON, "urrpIndicator");
 
-    if (urrp_indicator) {
-        if (!cJSON_IsBool(urrp_indicator)) {
-            ogs_error("OpenAPI_amf_non3_gpp_access_registration_parseFromJSON() failed [urrp_indicator]");
-            goto end;
-        }
+    if (urrp_indicator) { 
+    if (!cJSON_IsBool(urrp_indicator)) {
+        ogs_error("OpenAPI_amf_non3_gpp_access_registration_parseFromJSON() failed [urrp_indicator]");
+        goto end;
+    }
     }
 
     cJSON *amf_ee_subscription_id = cJSON_GetObjectItemCaseSensitive(amf_non3_gpp_access_registrationJSON, "amfEeSubscriptionId");
 
-    if (amf_ee_subscription_id) {
-        if (!cJSON_IsString(amf_ee_subscription_id)) {
-            ogs_error("OpenAPI_amf_non3_gpp_access_registration_parseFromJSON() failed [amf_ee_subscription_id]");
-            goto end;
-        }
+    if (amf_ee_subscription_id) { 
+    if (!cJSON_IsString(amf_ee_subscription_id)) {
+        ogs_error("OpenAPI_amf_non3_gpp_access_registration_parseFromJSON() failed [amf_ee_subscription_id]");
+        goto end;
+    }
     }
 
     cJSON *registration_time = cJSON_GetObjectItemCaseSensitive(amf_non3_gpp_access_registrationJSON, "registrationTime");
 
-    if (registration_time) {
-        if (!cJSON_IsString(registration_time)) {
-            ogs_error("OpenAPI_amf_non3_gpp_access_registration_parseFromJSON() failed [registration_time]");
-            goto end;
-        }
+    if (registration_time) { 
+    if (!cJSON_IsString(registration_time)) {
+        ogs_error("OpenAPI_amf_non3_gpp_access_registration_parseFromJSON() failed [registration_time]");
+        goto end;
+    }
     }
 
     cJSON *vgmlc_address = cJSON_GetObjectItemCaseSensitive(amf_non3_gpp_access_registrationJSON, "vgmlcAddress");
 
     OpenAPI_vgmlc_address_t *vgmlc_address_local_nonprim = NULL;
-    if (vgmlc_address) {
-        vgmlc_address_local_nonprim = OpenAPI_vgmlc_address_parseFromJSON(vgmlc_address);
+    if (vgmlc_address) { 
+    vgmlc_address_local_nonprim = OpenAPI_vgmlc_address_parseFromJSON(vgmlc_address);
     }
 
     cJSON *context_info = cJSON_GetObjectItemCaseSensitive(amf_non3_gpp_access_registrationJSON, "contextInfo");
 
     OpenAPI_context_info_t *context_info_local_nonprim = NULL;
-    if (context_info) {
-        context_info_local_nonprim = OpenAPI_context_info_parseFromJSON(context_info);
+    if (context_info) { 
+    context_info_local_nonprim = OpenAPI_context_info_parseFromJSON(context_info);
+    }
+
+    cJSON *no_ee_subscription_ind = cJSON_GetObjectItemCaseSensitive(amf_non3_gpp_access_registrationJSON, "noEeSubscriptionInd");
+
+    if (no_ee_subscription_ind) { 
+    if (!cJSON_IsBool(no_ee_subscription_ind)) {
+        ogs_error("OpenAPI_amf_non3_gpp_access_registration_parseFromJSON() failed [no_ee_subscription_ind]");
+        goto end;
+    }
+    }
+
+    cJSON *supi = cJSON_GetObjectItemCaseSensitive(amf_non3_gpp_access_registrationJSON, "supi");
+
+    if (supi) { 
+    if (!cJSON_IsString(supi)) {
+        ogs_error("OpenAPI_amf_non3_gpp_access_registration_parseFromJSON() failed [supi]");
+        goto end;
+    }
     }
 
     amf_non3_gpp_access_registration_local_var = OpenAPI_amf_non3_gpp_access_registration_create (
@@ -428,8 +465,10 @@ OpenAPI_amf_non3_gpp_access_registration_t *OpenAPI_amf_non3_gpp_access_registra
         amf_ee_subscription_id ? ogs_strdup_or_assert(amf_ee_subscription_id->valuestring) : NULL,
         registration_time ? ogs_strdup_or_assert(registration_time->valuestring) : NULL,
         vgmlc_address ? vgmlc_address_local_nonprim : NULL,
-        context_info ? context_info_local_nonprim : NULL
-        );
+        context_info ? context_info_local_nonprim : NULL,
+        no_ee_subscription_ind ? no_ee_subscription_ind->valueint : 0,
+        supi ? ogs_strdup_or_assert(supi->valuestring) : NULL
+    );
 
     return amf_non3_gpp_access_registration_local_var;
 end:

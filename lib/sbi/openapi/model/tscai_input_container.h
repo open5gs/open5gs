@@ -26,7 +26,7 @@ typedef struct OpenAPI_tscai_input_container_s {
 OpenAPI_tscai_input_container_t *OpenAPI_tscai_input_container_create(
     int periodicity,
     char *burst_arrival_time
-    );
+);
 void OpenAPI_tscai_input_container_free(OpenAPI_tscai_input_container_t *tscai_input_container);
 OpenAPI_tscai_input_container_t *OpenAPI_tscai_input_container_parseFromJSON(cJSON *tscai_input_containerJSON);
 cJSON *OpenAPI_tscai_input_container_convertToJSON(OpenAPI_tscai_input_container_t *tscai_input_container);

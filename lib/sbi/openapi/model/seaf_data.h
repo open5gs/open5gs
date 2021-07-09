@@ -1,7 +1,7 @@
 /*
  * seaf_data.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_seaf_data_H_
@@ -36,7 +36,7 @@ OpenAPI_seaf_data_t *OpenAPI_seaf_data_create(
     int ncc,
     int key_amf_change_ind,
     int key_amf_h_derivation_ind
-    );
+);
 void OpenAPI_seaf_data_free(OpenAPI_seaf_data_t *seaf_data);
 OpenAPI_seaf_data_t *OpenAPI_seaf_data_parseFromJSON(cJSON *seaf_dataJSON);
 cJSON *OpenAPI_seaf_data_convertToJSON(OpenAPI_seaf_data_t *seaf_data);

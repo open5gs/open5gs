@@ -9,7 +9,7 @@ OpenAPI_pws_response_data_t *OpenAPI_pws_response_data_create(
     int serial_number,
     int message_identifier,
     OpenAPI_list_t *unknown_tai_list
-    )
+)
 {
     OpenAPI_pws_response_data_t *pws_response_data_local_var = OpenAPI_malloc(sizeof(OpenAPI_pws_response_data_t));
     if (!pws_response_data_local_var) {
@@ -62,23 +62,23 @@ cJSON *OpenAPI_pws_response_data_convertToJSON(OpenAPI_pws_response_data_t *pws_
     }
 
     if (pws_response_data->unknown_tai_list) {
-        cJSON *unknown_tai_listList = cJSON_AddArrayToObject(item, "unknownTaiList");
-        if (unknown_tai_listList == NULL) {
-            ogs_error("OpenAPI_pws_response_data_convertToJSON() failed [unknown_tai_list]");
-            goto end;
-        }
+    cJSON *unknown_tai_listList = cJSON_AddArrayToObject(item, "unknownTaiList");
+    if (unknown_tai_listList == NULL) {
+        ogs_error("OpenAPI_pws_response_data_convertToJSON() failed [unknown_tai_list]");
+        goto end;
+    }
 
-        OpenAPI_lnode_t *unknown_tai_list_node;
-        if (pws_response_data->unknown_tai_list) {
-            OpenAPI_list_for_each(pws_response_data->unknown_tai_list, unknown_tai_list_node) {
-                cJSON *itemLocal = OpenAPI_tai_convertToJSON(unknown_tai_list_node->data);
-                if (itemLocal == NULL) {
-                    ogs_error("OpenAPI_pws_response_data_convertToJSON() failed [unknown_tai_list]");
-                    goto end;
-                }
-                cJSON_AddItemToArray(unknown_tai_listList, itemLocal);
+    OpenAPI_lnode_t *unknown_tai_list_node;
+    if (pws_response_data->unknown_tai_list) {
+        OpenAPI_list_for_each(pws_response_data->unknown_tai_list, unknown_tai_list_node) {
+            cJSON *itemLocal = OpenAPI_tai_convertToJSON(unknown_tai_list_node->data);
+            if (itemLocal == NULL) {
+                ogs_error("OpenAPI_pws_response_data_convertToJSON() failed [unknown_tai_list]");
+                goto end;
             }
+            cJSON_AddItemToArray(unknown_tai_listList, itemLocal);
         }
+    }
     }
 
 end:
@@ -94,7 +94,7 @@ OpenAPI_pws_response_data_t *OpenAPI_pws_response_data_parseFromJSON(cJSON *pws_
         goto end;
     }
 
-
+    
     if (!cJSON_IsNumber(ngap_message_type)) {
         ogs_error("OpenAPI_pws_response_data_parseFromJSON() failed [ngap_message_type]");
         goto end;
@@ -106,7 +106,7 @@ OpenAPI_pws_response_data_t *OpenAPI_pws_response_data_parseFromJSON(cJSON *pws_
         goto end;
     }
 
-
+    
     if (!cJSON_IsNumber(serial_number)) {
         ogs_error("OpenAPI_pws_response_data_parseFromJSON() failed [serial_number]");
         goto end;
@@ -118,7 +118,7 @@ OpenAPI_pws_response_data_t *OpenAPI_pws_response_data_parseFromJSON(cJSON *pws_
         goto end;
     }
 
-
+    
     if (!cJSON_IsNumber(message_identifier)) {
         ogs_error("OpenAPI_pws_response_data_parseFromJSON() failed [message_identifier]");
         goto end;
@@ -127,24 +127,24 @@ OpenAPI_pws_response_data_t *OpenAPI_pws_response_data_parseFromJSON(cJSON *pws_
     cJSON *unknown_tai_list = cJSON_GetObjectItemCaseSensitive(pws_response_dataJSON, "unknownTaiList");
 
     OpenAPI_list_t *unknown_tai_listList;
-    if (unknown_tai_list) {
-        cJSON *unknown_tai_list_local_nonprimitive;
-        if (!cJSON_IsArray(unknown_tai_list)) {
+    if (unknown_tai_list) { 
+    cJSON *unknown_tai_list_local_nonprimitive;
+    if (!cJSON_IsArray(unknown_tai_list)){
+        ogs_error("OpenAPI_pws_response_data_parseFromJSON() failed [unknown_tai_list]");
+        goto end;
+    }
+
+    unknown_tai_listList = OpenAPI_list_create();
+
+    cJSON_ArrayForEach(unknown_tai_list_local_nonprimitive, unknown_tai_list ) {
+        if (!cJSON_IsObject(unknown_tai_list_local_nonprimitive)) {
             ogs_error("OpenAPI_pws_response_data_parseFromJSON() failed [unknown_tai_list]");
             goto end;
         }
+        OpenAPI_tai_t *unknown_tai_listItem = OpenAPI_tai_parseFromJSON(unknown_tai_list_local_nonprimitive);
 
-        unknown_tai_listList = OpenAPI_list_create();
-
-        cJSON_ArrayForEach(unknown_tai_list_local_nonprimitive, unknown_tai_list ) {
-            if (!cJSON_IsObject(unknown_tai_list_local_nonprimitive)) {
-                ogs_error("OpenAPI_pws_response_data_parseFromJSON() failed [unknown_tai_list]");
-                goto end;
-            }
-            OpenAPI_tai_t *unknown_tai_listItem = OpenAPI_tai_parseFromJSON(unknown_tai_list_local_nonprimitive);
-
-            OpenAPI_list_add(unknown_tai_listList, unknown_tai_listItem);
-        }
+        OpenAPI_list_add(unknown_tai_listList, unknown_tai_listItem);
+    }
     }
 
     pws_response_data_local_var = OpenAPI_pws_response_data_create (
@@ -152,7 +152,7 @@ OpenAPI_pws_response_data_t *OpenAPI_pws_response_data_parseFromJSON(cJSON *pws_
         serial_number->valuedouble,
         message_identifier->valuedouble,
         unknown_tai_list ? unknown_tai_listList : NULL
-        );
+    );
 
     return pws_response_data_local_var;
 end:

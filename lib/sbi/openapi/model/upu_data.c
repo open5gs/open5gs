@@ -9,7 +9,7 @@ OpenAPI_upu_data_t *OpenAPI_upu_data_create(
     OpenAPI_ue_update_status_e ue_update_status,
     char *upu_xmac_iue,
     char *upu_mac_iue
-    )
+)
 {
     OpenAPI_upu_data_t *upu_data_local_var = OpenAPI_malloc(sizeof(OpenAPI_upu_data_t));
     if (!upu_data_local_var) {
@@ -56,17 +56,17 @@ cJSON *OpenAPI_upu_data_convertToJSON(OpenAPI_upu_data_t *upu_data)
     }
 
     if (upu_data->upu_xmac_iue) {
-        if (cJSON_AddStringToObject(item, "upuXmacIue", upu_data->upu_xmac_iue) == NULL) {
-            ogs_error("OpenAPI_upu_data_convertToJSON() failed [upu_xmac_iue]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "upuXmacIue", upu_data->upu_xmac_iue) == NULL) {
+        ogs_error("OpenAPI_upu_data_convertToJSON() failed [upu_xmac_iue]");
+        goto end;
+    }
     }
 
     if (upu_data->upu_mac_iue) {
-        if (cJSON_AddStringToObject(item, "upuMacIue", upu_data->upu_mac_iue) == NULL) {
-            ogs_error("OpenAPI_upu_data_convertToJSON() failed [upu_mac_iue]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "upuMacIue", upu_data->upu_mac_iue) == NULL) {
+        ogs_error("OpenAPI_upu_data_convertToJSON() failed [upu_mac_iue]");
+        goto end;
+    }
     }
 
 end:
@@ -82,7 +82,7 @@ OpenAPI_upu_data_t *OpenAPI_upu_data_parseFromJSON(cJSON *upu_dataJSON)
         goto end;
     }
 
-
+    
     if (!cJSON_IsString(provisioning_time)) {
         ogs_error("OpenAPI_upu_data_parseFromJSON() failed [provisioning_time]");
         goto end;
@@ -95,7 +95,7 @@ OpenAPI_upu_data_t *OpenAPI_upu_data_parseFromJSON(cJSON *upu_dataJSON)
     }
 
     OpenAPI_ue_update_status_e ue_update_statusVariable;
-
+    
     if (!cJSON_IsString(ue_update_status)) {
         ogs_error("OpenAPI_upu_data_parseFromJSON() failed [ue_update_status]");
         goto end;
@@ -104,20 +104,20 @@ OpenAPI_upu_data_t *OpenAPI_upu_data_parseFromJSON(cJSON *upu_dataJSON)
 
     cJSON *upu_xmac_iue = cJSON_GetObjectItemCaseSensitive(upu_dataJSON, "upuXmacIue");
 
-    if (upu_xmac_iue) {
-        if (!cJSON_IsString(upu_xmac_iue)) {
-            ogs_error("OpenAPI_upu_data_parseFromJSON() failed [upu_xmac_iue]");
-            goto end;
-        }
+    if (upu_xmac_iue) { 
+    if (!cJSON_IsString(upu_xmac_iue)) {
+        ogs_error("OpenAPI_upu_data_parseFromJSON() failed [upu_xmac_iue]");
+        goto end;
+    }
     }
 
     cJSON *upu_mac_iue = cJSON_GetObjectItemCaseSensitive(upu_dataJSON, "upuMacIue");
 
-    if (upu_mac_iue) {
-        if (!cJSON_IsString(upu_mac_iue)) {
-            ogs_error("OpenAPI_upu_data_parseFromJSON() failed [upu_mac_iue]");
-            goto end;
-        }
+    if (upu_mac_iue) { 
+    if (!cJSON_IsString(upu_mac_iue)) {
+        ogs_error("OpenAPI_upu_data_parseFromJSON() failed [upu_mac_iue]");
+        goto end;
+    }
     }
 
     upu_data_local_var = OpenAPI_upu_data_create (
@@ -125,7 +125,7 @@ OpenAPI_upu_data_t *OpenAPI_upu_data_parseFromJSON(cJSON *upu_dataJSON)
         ue_update_statusVariable,
         upu_xmac_iue ? ogs_strdup_or_assert(upu_xmac_iue->valuestring) : NULL,
         upu_mac_iue ? ogs_strdup_or_assert(upu_mac_iue->valuestring) : NULL
-        );
+    );
 
     return upu_data_local_var;
 end:

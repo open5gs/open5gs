@@ -27,10 +27,11 @@
 using namespace::Tins;
 
 
-void _serialize_reply(uint8_t *reply_data, EthernetII &reply)
+uint8_t _serialize_reply(uint8_t *reply_data, EthernetII &reply)
 {
     PDU::serialization_type serialized = reply.serialize();
-    memcpy(reply_data, serialized.data(), reply.size());
+    memcpy(reply_data, serialized.data(), serialized.size());
+    return serialized.size();
 }
 
 bool _parse_arp(EthernetII &pdu)
@@ -48,7 +49,7 @@ bool is_arp_req(uint8_t *data, uint len)
     return _parse_arp(pdu);
 }
 
-bool arp_reply(uint8_t *reply_data, uint8_t *request_data, uint len,
+uint8_t arp_reply(uint8_t *reply_data, uint8_t *request_data, uint len,
         const uint8_t *mac)
 {
     EthernetII pdu(request_data, len);
@@ -60,10 +61,9 @@ bool arp_reply(uint8_t *reply_data, uint8_t *request_data, uint len,
             arp.target_ip_addr(),
             arp.sender_hw_addr(),
             source_mac);
-        _serialize_reply(reply_data, reply);
-        return true;
+        return _serialize_reply(reply_data, reply);
     }
-    return false;
+    return 0;
 }
 
 bool _parse_nd(EthernetII &pdu)
@@ -84,7 +84,7 @@ bool is_nd_req(uint8_t *data, uint len)
     return false;
 }
 
-bool nd_reply(uint8_t *reply_data, uint8_t *request_data, uint len,
+uint8_t nd_reply(uint8_t *reply_data, uint8_t *request_data, uint len,
         const uint8_t *mac)
 {
     EthernetII pdu(request_data, len);
@@ -96,8 +96,7 @@ bool nd_reply(uint8_t *reply_data, uint8_t *request_data, uint len,
         nd_reply.target_link_layer_addr(source_mac);
         nd_reply.target_addr(icmp6.target_addr());
         reply /= nd_reply;
-        _serialize_reply(reply_data, reply);
-        return true;
+        return _serialize_reply(reply_data, reply);
     }
-    return false;
+    return 0;
 }

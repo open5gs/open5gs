@@ -1,7 +1,7 @@
 /*
  * security_result.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_security_result_H_
@@ -27,7 +27,7 @@ typedef struct OpenAPI_security_result_s {
 OpenAPI_security_result_t *OpenAPI_security_result_create(
     OpenAPI_protection_result_e integrity_protection_result,
     OpenAPI_protection_result_e confidentiality_protection_result
-    );
+);
 void OpenAPI_security_result_free(OpenAPI_security_result_t *security_result);
 OpenAPI_security_result_t *OpenAPI_security_result_parseFromJSON(cJSON *security_resultJSON);
 cJSON *OpenAPI_security_result_convertToJSON(OpenAPI_security_result_t *security_result);

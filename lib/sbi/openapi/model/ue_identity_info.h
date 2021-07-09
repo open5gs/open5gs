@@ -28,7 +28,7 @@ OpenAPI_ue_identity_info_t *OpenAPI_ue_identity_info_create(
     char *gpsi,
     char *pei,
     char *supi
-    );
+);
 void OpenAPI_ue_identity_info_free(OpenAPI_ue_identity_info_t *ue_identity_info);
 OpenAPI_ue_identity_info_t *OpenAPI_ue_identity_info_parseFromJSON(cJSON *ue_identity_infoJSON);
 cJSON *OpenAPI_ue_identity_info_convertToJSON(OpenAPI_ue_identity_info_t *ue_identity_info);

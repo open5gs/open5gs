@@ -1,7 +1,7 @@
 /*
  * ue_context_in_amf_data.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_ue_context_in_amf_data_H_
@@ -25,7 +25,7 @@ typedef struct OpenAPI_ue_context_in_amf_data_s {
 
 OpenAPI_ue_context_in_amf_data_t *OpenAPI_ue_context_in_amf_data_create(
     OpenAPI_eps_interworking_info_t *eps_interworking_info
-    );
+);
 void OpenAPI_ue_context_in_amf_data_free(OpenAPI_ue_context_in_amf_data_t *ue_context_in_amf_data);
 OpenAPI_ue_context_in_amf_data_t *OpenAPI_ue_context_in_amf_data_parseFromJSON(cJSON *ue_context_in_amf_dataJSON);
 cJSON *OpenAPI_ue_context_in_amf_data_convertToJSON(OpenAPI_ue_context_in_amf_data_t *ue_context_in_amf_data);

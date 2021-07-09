@@ -18,7 +18,7 @@ OpenAPI_monitoring_configuration_t *OpenAPI_monitoring_configuration_create(
     OpenAPI_reachability_for_sms_configuration_t *reachability_for_sms_cfg,
     char *mtc_provider_information,
     char *af_id
-    )
+)
 {
     OpenAPI_monitoring_configuration_t *monitoring_configuration_local_var = OpenAPI_malloc(sizeof(OpenAPI_monitoring_configuration_t));
     if (!monitoring_configuration_local_var) {
@@ -81,123 +81,123 @@ cJSON *OpenAPI_monitoring_configuration_convertToJSON(OpenAPI_monitoring_configu
     }
 
     if (monitoring_configuration->immediate_flag) {
-        if (cJSON_AddBoolToObject(item, "immediateFlag", monitoring_configuration->immediate_flag) == NULL) {
-            ogs_error("OpenAPI_monitoring_configuration_convertToJSON() failed [immediate_flag]");
-            goto end;
-        }
+    if (cJSON_AddBoolToObject(item, "immediateFlag", monitoring_configuration->immediate_flag) == NULL) {
+        ogs_error("OpenAPI_monitoring_configuration_convertToJSON() failed [immediate_flag]");
+        goto end;
+    }
     }
 
     if (monitoring_configuration->location_reporting_configuration) {
-        cJSON *location_reporting_configuration_local_JSON = OpenAPI_location_reporting_configuration_convertToJSON(monitoring_configuration->location_reporting_configuration);
-        if (location_reporting_configuration_local_JSON == NULL) {
-            ogs_error("OpenAPI_monitoring_configuration_convertToJSON() failed [location_reporting_configuration]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "locationReportingConfiguration", location_reporting_configuration_local_JSON);
-        if (item->child == NULL) {
-            ogs_error("OpenAPI_monitoring_configuration_convertToJSON() failed [location_reporting_configuration]");
-            goto end;
-        }
+    cJSON *location_reporting_configuration_local_JSON = OpenAPI_location_reporting_configuration_convertToJSON(monitoring_configuration->location_reporting_configuration);
+    if (location_reporting_configuration_local_JSON == NULL) {
+        ogs_error("OpenAPI_monitoring_configuration_convertToJSON() failed [location_reporting_configuration]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "locationReportingConfiguration", location_reporting_configuration_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_monitoring_configuration_convertToJSON() failed [location_reporting_configuration]");
+        goto end;
+    }
     }
 
     if (monitoring_configuration->association_type) {
-        cJSON *association_type_local_JSON = OpenAPI_association_type_convertToJSON(monitoring_configuration->association_type);
-        if (association_type_local_JSON == NULL) {
-            ogs_error("OpenAPI_monitoring_configuration_convertToJSON() failed [association_type]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "associationType", association_type_local_JSON);
-        if (item->child == NULL) {
-            ogs_error("OpenAPI_monitoring_configuration_convertToJSON() failed [association_type]");
-            goto end;
-        }
+    cJSON *association_type_local_JSON = OpenAPI_association_type_convertToJSON(monitoring_configuration->association_type);
+    if (association_type_local_JSON == NULL) {
+        ogs_error("OpenAPI_monitoring_configuration_convertToJSON() failed [association_type]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "associationType", association_type_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_monitoring_configuration_convertToJSON() failed [association_type]");
+        goto end;
+    }
     }
 
     if (monitoring_configuration->datalink_report_cfg) {
-        cJSON *datalink_report_cfg_local_JSON = OpenAPI_datalink_reporting_configuration_convertToJSON(monitoring_configuration->datalink_report_cfg);
-        if (datalink_report_cfg_local_JSON == NULL) {
-            ogs_error("OpenAPI_monitoring_configuration_convertToJSON() failed [datalink_report_cfg]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "datalinkReportCfg", datalink_report_cfg_local_JSON);
-        if (item->child == NULL) {
-            ogs_error("OpenAPI_monitoring_configuration_convertToJSON() failed [datalink_report_cfg]");
-            goto end;
-        }
+    cJSON *datalink_report_cfg_local_JSON = OpenAPI_datalink_reporting_configuration_convertToJSON(monitoring_configuration->datalink_report_cfg);
+    if (datalink_report_cfg_local_JSON == NULL) {
+        ogs_error("OpenAPI_monitoring_configuration_convertToJSON() failed [datalink_report_cfg]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "datalinkReportCfg", datalink_report_cfg_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_monitoring_configuration_convertToJSON() failed [datalink_report_cfg]");
+        goto end;
+    }
     }
 
     if (monitoring_configuration->loss_connectivity_cfg) {
-        cJSON *loss_connectivity_cfg_local_JSON = OpenAPI_loss_connectivity_cfg_convertToJSON(monitoring_configuration->loss_connectivity_cfg);
-        if (loss_connectivity_cfg_local_JSON == NULL) {
-            ogs_error("OpenAPI_monitoring_configuration_convertToJSON() failed [loss_connectivity_cfg]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "lossConnectivityCfg", loss_connectivity_cfg_local_JSON);
-        if (item->child == NULL) {
-            ogs_error("OpenAPI_monitoring_configuration_convertToJSON() failed [loss_connectivity_cfg]");
-            goto end;
-        }
+    cJSON *loss_connectivity_cfg_local_JSON = OpenAPI_loss_connectivity_cfg_convertToJSON(monitoring_configuration->loss_connectivity_cfg);
+    if (loss_connectivity_cfg_local_JSON == NULL) {
+        ogs_error("OpenAPI_monitoring_configuration_convertToJSON() failed [loss_connectivity_cfg]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "lossConnectivityCfg", loss_connectivity_cfg_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_monitoring_configuration_convertToJSON() failed [loss_connectivity_cfg]");
+        goto end;
+    }
     }
 
     if (monitoring_configuration->maximum_latency) {
-        if (cJSON_AddNumberToObject(item, "maximumLatency", monitoring_configuration->maximum_latency) == NULL) {
-            ogs_error("OpenAPI_monitoring_configuration_convertToJSON() failed [maximum_latency]");
-            goto end;
-        }
+    if (cJSON_AddNumberToObject(item, "maximumLatency", monitoring_configuration->maximum_latency) == NULL) {
+        ogs_error("OpenAPI_monitoring_configuration_convertToJSON() failed [maximum_latency]");
+        goto end;
+    }
     }
 
     if (monitoring_configuration->maximum_response_time) {
-        if (cJSON_AddNumberToObject(item, "maximumResponseTime", monitoring_configuration->maximum_response_time) == NULL) {
-            ogs_error("OpenAPI_monitoring_configuration_convertToJSON() failed [maximum_response_time]");
-            goto end;
-        }
+    if (cJSON_AddNumberToObject(item, "maximumResponseTime", monitoring_configuration->maximum_response_time) == NULL) {
+        ogs_error("OpenAPI_monitoring_configuration_convertToJSON() failed [maximum_response_time]");
+        goto end;
+    }
     }
 
     if (monitoring_configuration->suggested_packet_num_dl) {
-        if (cJSON_AddNumberToObject(item, "suggestedPacketNumDl", monitoring_configuration->suggested_packet_num_dl) == NULL) {
-            ogs_error("OpenAPI_monitoring_configuration_convertToJSON() failed [suggested_packet_num_dl]");
-            goto end;
-        }
+    if (cJSON_AddNumberToObject(item, "suggestedPacketNumDl", monitoring_configuration->suggested_packet_num_dl) == NULL) {
+        ogs_error("OpenAPI_monitoring_configuration_convertToJSON() failed [suggested_packet_num_dl]");
+        goto end;
+    }
     }
 
     if (monitoring_configuration->pdu_session_status_cfg) {
-        cJSON *pdu_session_status_cfg_local_JSON = OpenAPI_pdu_session_status_cfg_convertToJSON(monitoring_configuration->pdu_session_status_cfg);
-        if (pdu_session_status_cfg_local_JSON == NULL) {
-            ogs_error("OpenAPI_monitoring_configuration_convertToJSON() failed [pdu_session_status_cfg]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "pduSessionStatusCfg", pdu_session_status_cfg_local_JSON);
-        if (item->child == NULL) {
-            ogs_error("OpenAPI_monitoring_configuration_convertToJSON() failed [pdu_session_status_cfg]");
-            goto end;
-        }
+    cJSON *pdu_session_status_cfg_local_JSON = OpenAPI_pdu_session_status_cfg_convertToJSON(monitoring_configuration->pdu_session_status_cfg);
+    if (pdu_session_status_cfg_local_JSON == NULL) {
+        ogs_error("OpenAPI_monitoring_configuration_convertToJSON() failed [pdu_session_status_cfg]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "pduSessionStatusCfg", pdu_session_status_cfg_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_monitoring_configuration_convertToJSON() failed [pdu_session_status_cfg]");
+        goto end;
+    }
     }
 
     if (monitoring_configuration->reachability_for_sms_cfg) {
-        cJSON *reachability_for_sms_cfg_local_JSON = OpenAPI_reachability_for_sms_configuration_convertToJSON(monitoring_configuration->reachability_for_sms_cfg);
-        if (reachability_for_sms_cfg_local_JSON == NULL) {
-            ogs_error("OpenAPI_monitoring_configuration_convertToJSON() failed [reachability_for_sms_cfg]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "reachabilityForSmsCfg", reachability_for_sms_cfg_local_JSON);
-        if (item->child == NULL) {
-            ogs_error("OpenAPI_monitoring_configuration_convertToJSON() failed [reachability_for_sms_cfg]");
-            goto end;
-        }
+    cJSON *reachability_for_sms_cfg_local_JSON = OpenAPI_reachability_for_sms_configuration_convertToJSON(monitoring_configuration->reachability_for_sms_cfg);
+    if (reachability_for_sms_cfg_local_JSON == NULL) {
+        ogs_error("OpenAPI_monitoring_configuration_convertToJSON() failed [reachability_for_sms_cfg]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "reachabilityForSmsCfg", reachability_for_sms_cfg_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_monitoring_configuration_convertToJSON() failed [reachability_for_sms_cfg]");
+        goto end;
+    }
     }
 
     if (monitoring_configuration->mtc_provider_information) {
-        if (cJSON_AddStringToObject(item, "mtcProviderInformation", monitoring_configuration->mtc_provider_information) == NULL) {
-            ogs_error("OpenAPI_monitoring_configuration_convertToJSON() failed [mtc_provider_information]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "mtcProviderInformation", monitoring_configuration->mtc_provider_information) == NULL) {
+        ogs_error("OpenAPI_monitoring_configuration_convertToJSON() failed [mtc_provider_information]");
+        goto end;
+    }
     }
 
     if (monitoring_configuration->af_id) {
-        if (cJSON_AddStringToObject(item, "afId", monitoring_configuration->af_id) == NULL) {
-            ogs_error("OpenAPI_monitoring_configuration_convertToJSON() failed [af_id]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "afId", monitoring_configuration->af_id) == NULL) {
+        ogs_error("OpenAPI_monitoring_configuration_convertToJSON() failed [af_id]");
+        goto end;
+    }
     }
 
 end:
@@ -214,103 +214,103 @@ OpenAPI_monitoring_configuration_t *OpenAPI_monitoring_configuration_parseFromJS
     }
 
     OpenAPI_event_type_t *event_type_local_nonprim = NULL;
-
+    
     event_type_local_nonprim = OpenAPI_event_type_parseFromJSON(event_type);
 
     cJSON *immediate_flag = cJSON_GetObjectItemCaseSensitive(monitoring_configurationJSON, "immediateFlag");
 
-    if (immediate_flag) {
-        if (!cJSON_IsBool(immediate_flag)) {
-            ogs_error("OpenAPI_monitoring_configuration_parseFromJSON() failed [immediate_flag]");
-            goto end;
-        }
+    if (immediate_flag) { 
+    if (!cJSON_IsBool(immediate_flag)) {
+        ogs_error("OpenAPI_monitoring_configuration_parseFromJSON() failed [immediate_flag]");
+        goto end;
+    }
     }
 
     cJSON *location_reporting_configuration = cJSON_GetObjectItemCaseSensitive(monitoring_configurationJSON, "locationReportingConfiguration");
 
     OpenAPI_location_reporting_configuration_t *location_reporting_configuration_local_nonprim = NULL;
-    if (location_reporting_configuration) {
-        location_reporting_configuration_local_nonprim = OpenAPI_location_reporting_configuration_parseFromJSON(location_reporting_configuration);
+    if (location_reporting_configuration) { 
+    location_reporting_configuration_local_nonprim = OpenAPI_location_reporting_configuration_parseFromJSON(location_reporting_configuration);
     }
 
     cJSON *association_type = cJSON_GetObjectItemCaseSensitive(monitoring_configurationJSON, "associationType");
 
     OpenAPI_association_type_t *association_type_local_nonprim = NULL;
-    if (association_type) {
-        association_type_local_nonprim = OpenAPI_association_type_parseFromJSON(association_type);
+    if (association_type) { 
+    association_type_local_nonprim = OpenAPI_association_type_parseFromJSON(association_type);
     }
 
     cJSON *datalink_report_cfg = cJSON_GetObjectItemCaseSensitive(monitoring_configurationJSON, "datalinkReportCfg");
 
     OpenAPI_datalink_reporting_configuration_t *datalink_report_cfg_local_nonprim = NULL;
-    if (datalink_report_cfg) {
-        datalink_report_cfg_local_nonprim = OpenAPI_datalink_reporting_configuration_parseFromJSON(datalink_report_cfg);
+    if (datalink_report_cfg) { 
+    datalink_report_cfg_local_nonprim = OpenAPI_datalink_reporting_configuration_parseFromJSON(datalink_report_cfg);
     }
 
     cJSON *loss_connectivity_cfg = cJSON_GetObjectItemCaseSensitive(monitoring_configurationJSON, "lossConnectivityCfg");
 
     OpenAPI_loss_connectivity_cfg_t *loss_connectivity_cfg_local_nonprim = NULL;
-    if (loss_connectivity_cfg) {
-        loss_connectivity_cfg_local_nonprim = OpenAPI_loss_connectivity_cfg_parseFromJSON(loss_connectivity_cfg);
+    if (loss_connectivity_cfg) { 
+    loss_connectivity_cfg_local_nonprim = OpenAPI_loss_connectivity_cfg_parseFromJSON(loss_connectivity_cfg);
     }
 
     cJSON *maximum_latency = cJSON_GetObjectItemCaseSensitive(monitoring_configurationJSON, "maximumLatency");
 
-    if (maximum_latency) {
-        if (!cJSON_IsNumber(maximum_latency)) {
-            ogs_error("OpenAPI_monitoring_configuration_parseFromJSON() failed [maximum_latency]");
-            goto end;
-        }
+    if (maximum_latency) { 
+    if (!cJSON_IsNumber(maximum_latency)) {
+        ogs_error("OpenAPI_monitoring_configuration_parseFromJSON() failed [maximum_latency]");
+        goto end;
+    }
     }
 
     cJSON *maximum_response_time = cJSON_GetObjectItemCaseSensitive(monitoring_configurationJSON, "maximumResponseTime");
 
-    if (maximum_response_time) {
-        if (!cJSON_IsNumber(maximum_response_time)) {
-            ogs_error("OpenAPI_monitoring_configuration_parseFromJSON() failed [maximum_response_time]");
-            goto end;
-        }
+    if (maximum_response_time) { 
+    if (!cJSON_IsNumber(maximum_response_time)) {
+        ogs_error("OpenAPI_monitoring_configuration_parseFromJSON() failed [maximum_response_time]");
+        goto end;
+    }
     }
 
     cJSON *suggested_packet_num_dl = cJSON_GetObjectItemCaseSensitive(monitoring_configurationJSON, "suggestedPacketNumDl");
 
-    if (suggested_packet_num_dl) {
-        if (!cJSON_IsNumber(suggested_packet_num_dl)) {
-            ogs_error("OpenAPI_monitoring_configuration_parseFromJSON() failed [suggested_packet_num_dl]");
-            goto end;
-        }
+    if (suggested_packet_num_dl) { 
+    if (!cJSON_IsNumber(suggested_packet_num_dl)) {
+        ogs_error("OpenAPI_monitoring_configuration_parseFromJSON() failed [suggested_packet_num_dl]");
+        goto end;
+    }
     }
 
     cJSON *pdu_session_status_cfg = cJSON_GetObjectItemCaseSensitive(monitoring_configurationJSON, "pduSessionStatusCfg");
 
     OpenAPI_pdu_session_status_cfg_t *pdu_session_status_cfg_local_nonprim = NULL;
-    if (pdu_session_status_cfg) {
-        pdu_session_status_cfg_local_nonprim = OpenAPI_pdu_session_status_cfg_parseFromJSON(pdu_session_status_cfg);
+    if (pdu_session_status_cfg) { 
+    pdu_session_status_cfg_local_nonprim = OpenAPI_pdu_session_status_cfg_parseFromJSON(pdu_session_status_cfg);
     }
 
     cJSON *reachability_for_sms_cfg = cJSON_GetObjectItemCaseSensitive(monitoring_configurationJSON, "reachabilityForSmsCfg");
 
     OpenAPI_reachability_for_sms_configuration_t *reachability_for_sms_cfg_local_nonprim = NULL;
-    if (reachability_for_sms_cfg) {
-        reachability_for_sms_cfg_local_nonprim = OpenAPI_reachability_for_sms_configuration_parseFromJSON(reachability_for_sms_cfg);
+    if (reachability_for_sms_cfg) { 
+    reachability_for_sms_cfg_local_nonprim = OpenAPI_reachability_for_sms_configuration_parseFromJSON(reachability_for_sms_cfg);
     }
 
     cJSON *mtc_provider_information = cJSON_GetObjectItemCaseSensitive(monitoring_configurationJSON, "mtcProviderInformation");
 
-    if (mtc_provider_information) {
-        if (!cJSON_IsString(mtc_provider_information)) {
-            ogs_error("OpenAPI_monitoring_configuration_parseFromJSON() failed [mtc_provider_information]");
-            goto end;
-        }
+    if (mtc_provider_information) { 
+    if (!cJSON_IsString(mtc_provider_information)) {
+        ogs_error("OpenAPI_monitoring_configuration_parseFromJSON() failed [mtc_provider_information]");
+        goto end;
+    }
     }
 
     cJSON *af_id = cJSON_GetObjectItemCaseSensitive(monitoring_configurationJSON, "afId");
 
-    if (af_id) {
-        if (!cJSON_IsString(af_id)) {
-            ogs_error("OpenAPI_monitoring_configuration_parseFromJSON() failed [af_id]");
-            goto end;
-        }
+    if (af_id) { 
+    if (!cJSON_IsString(af_id)) {
+        ogs_error("OpenAPI_monitoring_configuration_parseFromJSON() failed [af_id]");
+        goto end;
+    }
     }
 
     monitoring_configuration_local_var = OpenAPI_monitoring_configuration_create (
@@ -327,7 +327,7 @@ OpenAPI_monitoring_configuration_t *OpenAPI_monitoring_configuration_parseFromJS
         reachability_for_sms_cfg ? reachability_for_sms_cfg_local_nonprim : NULL,
         mtc_provider_information ? ogs_strdup_or_assert(mtc_provider_information->valuestring) : NULL,
         af_id ? ogs_strdup_or_assert(af_id->valuestring) : NULL
-        );
+    );
 
     return monitoring_configuration_local_var;
 end:

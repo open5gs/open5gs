@@ -28,7 +28,7 @@ typedef struct OpenAPI_snssai_smf_info_item_s {
 OpenAPI_snssai_smf_info_item_t *OpenAPI_snssai_smf_info_item_create(
     OpenAPI_snssai_t *s_nssai,
     OpenAPI_list_t *dnn_smf_info_list
-    );
+);
 void OpenAPI_snssai_smf_info_item_free(OpenAPI_snssai_smf_info_item_t *snssai_smf_info_item);
 OpenAPI_snssai_smf_info_item_t *OpenAPI_snssai_smf_info_item_parseFromJSON(cJSON *snssai_smf_info_itemJSON);
 cJSON *OpenAPI_snssai_smf_info_item_convertToJSON(OpenAPI_snssai_smf_info_item_t *snssai_smf_info_item);

@@ -80,7 +80,7 @@ void mme_s6a_send_air(mme_ue_t *mme_ue,
     /* Set the Auth-Session-State AVP */
     ret = fd_msg_avp_new(ogs_diam_auth_session_state, 0, &avp);
     ogs_assert(ret == 0);
-    val.i32 = 1;
+    val.i32 = OGS_DIAM_AUTH_SESSION_NO_STATE_MAINTAINED;
     ret = fd_msg_avp_setvalue(avp, &val);
     ogs_assert(ret == 0);
     ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
@@ -147,7 +147,7 @@ void mme_s6a_send_air(mme_ue_t *mme_ue,
     ogs_assert(ret == 0);
 
     /* Set the Visited-PLMN-Id AVP */
-    ret = fd_msg_avp_new(ogs_diam_s6a_visited_plmn_id, 0, &avp);
+    ret = fd_msg_avp_new(ogs_diam_visited_plmn_id, 0, &avp);
     ogs_assert(ret == 0);
     val.os.data = ogs_nas_from_plmn_id(&nas_plmn_id, &mme_ue->tai.plmn_id);
     val.os.len  = OGS_PLMN_ID_LEN;
@@ -476,7 +476,7 @@ void mme_s6a_send_ulr(mme_ue_t *mme_ue)
     /* Set the Auth-Session-State AVP */
     ret = fd_msg_avp_new(ogs_diam_auth_session_state, 0, &avp);
     ogs_assert(ret == 0);
-    val.i32 = 1;
+    val.i32 = OGS_DIAM_AUTH_SESSION_NO_STATE_MAINTAINED;
     ret = fd_msg_avp_setvalue(avp, &val);
     ogs_assert(ret == 0);
     ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
@@ -534,9 +534,9 @@ void mme_s6a_send_ulr(mme_ue_t *mme_ue)
     }
 
     /* Set the RAT-Type */
-    ret = fd_msg_avp_new(ogs_diam_s6a_rat_type, 0, &avp);
+    ret = fd_msg_avp_new(ogs_diam_rat_type, 0, &avp);
     ogs_assert(ret == 0);
-    val.u32 = OGS_DIAM_S6A_RAT_TYPE_EUTRAN;
+    val.u32 = OGS_DIAM_RAT_TYPE_EUTRAN;
     ret = fd_msg_avp_setvalue(avp, &val);
     ogs_assert(ret == 0);
     ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
@@ -552,7 +552,7 @@ void mme_s6a_send_ulr(mme_ue_t *mme_ue)
     ogs_assert(ret == 0);
 
     /* Set the Visited-PLMN-Id */
-    ret = fd_msg_avp_new(ogs_diam_s6a_visited_plmn_id, 0, &avp);
+    ret = fd_msg_avp_new(ogs_diam_visited_plmn_id, 0, &avp);
     ogs_assert(ret == 0);
     val.os.data = ogs_nas_from_plmn_id(&nas_plmn_id, &mme_ue->tai.plmn_id);
     val.os.len  = OGS_PLMN_ID_LEN;
@@ -837,7 +837,7 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
                         &slice_data->session[slice_data->num_of_session];
                     ogs_assert(session);
                     ret = fd_avp_search_avp(
-                        avpch2, ogs_diam_s6a_service_selection, &avpch3);
+                        avpch2, ogs_diam_service_selection, &avpch3);
                     ogs_assert(ret == 0);
                     if (avpch3) {
                         ret = fd_msg_avp_hdr(avpch3, &hdr);
@@ -1176,6 +1176,9 @@ int mme_fd_init(void)
 
 	/* Advertise the support for the application in the peer */
 	ret = fd_disp_app_support(ogs_diam_s6a_application, ogs_diam_vendor, 1, 0);
+    ogs_assert(ret == 0);
+
+    ret = ogs_diam_start();
     ogs_assert(ret == 0);
 	
 	return 0;

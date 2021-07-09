@@ -1,7 +1,7 @@
 /*
  * pp_subs_reg_timer.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_pp_subs_reg_timer_H_
@@ -32,7 +32,7 @@ OpenAPI_pp_subs_reg_timer_t *OpenAPI_pp_subs_reg_timer_create(
     int reference_id,
     char *validity_time,
     char *mtc_provider_information
-    );
+);
 void OpenAPI_pp_subs_reg_timer_free(OpenAPI_pp_subs_reg_timer_t *pp_subs_reg_timer);
 OpenAPI_pp_subs_reg_timer_t *OpenAPI_pp_subs_reg_timer_parseFromJSON(cJSON *pp_subs_reg_timerJSON);
 cJSON *OpenAPI_pp_subs_reg_timer_convertToJSON(OpenAPI_pp_subs_reg_timer_t *pp_subs_reg_timer);

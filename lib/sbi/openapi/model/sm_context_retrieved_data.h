@@ -1,7 +1,7 @@
 /*
  * sm_context_retrieved_data.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_sm_context_retrieved_data_H_
@@ -35,7 +35,7 @@ OpenAPI_sm_context_retrieved_data_t *OpenAPI_sm_context_retrieved_data_create(
     OpenAPI_small_data_rate_status_t *small_data_rate_status,
     OpenAPI_apn_rate_status_t *apn_rate_status,
     int dl_data_waiting_ind
-    );
+);
 void OpenAPI_sm_context_retrieved_data_free(OpenAPI_sm_context_retrieved_data_t *sm_context_retrieved_data);
 OpenAPI_sm_context_retrieved_data_t *OpenAPI_sm_context_retrieved_data_parseFromJSON(cJSON *sm_context_retrieved_dataJSON);
 cJSON *OpenAPI_sm_context_retrieved_data_convertToJSON(OpenAPI_sm_context_retrieved_data_t *sm_context_retrieved_data);

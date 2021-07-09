@@ -1,7 +1,7 @@
 /*
  * policy_association_request.h
  *
- * Information which the NF service consumer provides when requesting the creation of a policy association. The serviceName property corresponds to the serviceName in the main body of the specification.
+ * Information which the NF service consumer provides when requesting the creation of a policy association. The serviveName property corresponds to the serviceName in the main body of the specification.
  */
 
 #ifndef _OpenAPI_policy_association_request_H_
@@ -33,6 +33,7 @@ typedef struct OpenAPI_policy_association_request_s {
     char *notification_uri;
     OpenAPI_list_t *alt_notif_ipv4_addrs;
     OpenAPI_list_t *alt_notif_ipv6_addrs;
+    OpenAPI_list_t *alt_notif_fqdns;
     char *supi;
     char *gpsi;
     OpenAPI_access_type_e access_type;
@@ -48,7 +49,6 @@ typedef struct OpenAPI_policy_association_request_s {
     struct OpenAPI_wireline_service_area_restriction_s *wl_serv_area_res;
     int rfsp;
     struct OpenAPI_ambr_s *ue_ambr;
-    struct OpenAPI_ambr_s *rg_tmbr;
     OpenAPI_list_t *allowed_snssais;
     OpenAPI_list_t *mapping_snssais;
     OpenAPI_list_t *n3g_allowed_snssais;
@@ -62,6 +62,7 @@ OpenAPI_policy_association_request_t *OpenAPI_policy_association_request_create(
     char *notification_uri,
     OpenAPI_list_t *alt_notif_ipv4_addrs,
     OpenAPI_list_t *alt_notif_ipv6_addrs,
+    OpenAPI_list_t *alt_notif_fqdns,
     char *supi,
     char *gpsi,
     OpenAPI_access_type_e access_type,
@@ -77,7 +78,6 @@ OpenAPI_policy_association_request_t *OpenAPI_policy_association_request_create(
     OpenAPI_wireline_service_area_restriction_t *wl_serv_area_res,
     int rfsp,
     OpenAPI_ambr_t *ue_ambr,
-    OpenAPI_ambr_t *rg_tmbr,
     OpenAPI_list_t *allowed_snssais,
     OpenAPI_list_t *mapping_snssais,
     OpenAPI_list_t *n3g_allowed_snssais,
@@ -85,7 +85,7 @@ OpenAPI_policy_association_request_t *OpenAPI_policy_association_request_create(
     char *service_name,
     OpenAPI_trace_data_t *trace_req,
     char *supp_feat
-    );
+);
 void OpenAPI_policy_association_request_free(OpenAPI_policy_association_request_t *policy_association_request);
 OpenAPI_policy_association_request_t *OpenAPI_policy_association_request_parseFromJSON(cJSON *policy_association_requestJSON);
 cJSON *OpenAPI_policy_association_request_convertToJSON(OpenAPI_policy_association_request_t *policy_association_request);

@@ -42,6 +42,7 @@ example_conf = '''
     slice.yaml
     srslte.yaml
     sample.yaml
+    non3gpp.yaml
 '''.split()
 
 foreach file : example_conf

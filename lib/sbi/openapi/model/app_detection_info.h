@@ -1,7 +1,7 @@
 /*
  * app_detection_info.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_app_detection_info_H_
@@ -29,7 +29,7 @@ OpenAPI_app_detection_info_t *OpenAPI_app_detection_info_create(
     char *app_id,
     char *instance_id,
     OpenAPI_list_t *sdf_descriptions
-    );
+);
 void OpenAPI_app_detection_info_free(OpenAPI_app_detection_info_t *app_detection_info);
 OpenAPI_app_detection_info_t *OpenAPI_app_detection_info_parseFromJSON(cJSON *app_detection_infoJSON);
 cJSON *OpenAPI_app_detection_info_convertToJSON(OpenAPI_app_detection_info_t *app_detection_info);

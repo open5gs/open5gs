@@ -9,7 +9,7 @@ OpenAPI_nsi_information_t *OpenAPI_nsi_information_create(
     char *nsi_id,
     char *nrf_nf_mgt_uri,
     char *nrf_access_token_uri
-    )
+)
 {
     OpenAPI_nsi_information_t *nsi_information_local_var = OpenAPI_malloc(sizeof(OpenAPI_nsi_information_t));
     if (!nsi_information_local_var) {
@@ -52,24 +52,24 @@ cJSON *OpenAPI_nsi_information_convertToJSON(OpenAPI_nsi_information_t *nsi_info
     }
 
     if (nsi_information->nsi_id) {
-        if (cJSON_AddStringToObject(item, "nsiId", nsi_information->nsi_id) == NULL) {
-            ogs_error("OpenAPI_nsi_information_convertToJSON() failed [nsi_id]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "nsiId", nsi_information->nsi_id) == NULL) {
+        ogs_error("OpenAPI_nsi_information_convertToJSON() failed [nsi_id]");
+        goto end;
+    }
     }
 
     if (nsi_information->nrf_nf_mgt_uri) {
-        if (cJSON_AddStringToObject(item, "nrfNfMgtUri", nsi_information->nrf_nf_mgt_uri) == NULL) {
-            ogs_error("OpenAPI_nsi_information_convertToJSON() failed [nrf_nf_mgt_uri]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "nrfNfMgtUri", nsi_information->nrf_nf_mgt_uri) == NULL) {
+        ogs_error("OpenAPI_nsi_information_convertToJSON() failed [nrf_nf_mgt_uri]");
+        goto end;
+    }
     }
 
     if (nsi_information->nrf_access_token_uri) {
-        if (cJSON_AddStringToObject(item, "nrfAccessTokenUri", nsi_information->nrf_access_token_uri) == NULL) {
-            ogs_error("OpenAPI_nsi_information_convertToJSON() failed [nrf_access_token_uri]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "nrfAccessTokenUri", nsi_information->nrf_access_token_uri) == NULL) {
+        ogs_error("OpenAPI_nsi_information_convertToJSON() failed [nrf_access_token_uri]");
+        goto end;
+    }
     }
 
 end:
@@ -85,7 +85,7 @@ OpenAPI_nsi_information_t *OpenAPI_nsi_information_parseFromJSON(cJSON *nsi_info
         goto end;
     }
 
-
+    
     if (!cJSON_IsString(nrf_id)) {
         ogs_error("OpenAPI_nsi_information_parseFromJSON() failed [nrf_id]");
         goto end;
@@ -93,29 +93,29 @@ OpenAPI_nsi_information_t *OpenAPI_nsi_information_parseFromJSON(cJSON *nsi_info
 
     cJSON *nsi_id = cJSON_GetObjectItemCaseSensitive(nsi_informationJSON, "nsiId");
 
-    if (nsi_id) {
-        if (!cJSON_IsString(nsi_id)) {
-            ogs_error("OpenAPI_nsi_information_parseFromJSON() failed [nsi_id]");
-            goto end;
-        }
+    if (nsi_id) { 
+    if (!cJSON_IsString(nsi_id)) {
+        ogs_error("OpenAPI_nsi_information_parseFromJSON() failed [nsi_id]");
+        goto end;
+    }
     }
 
     cJSON *nrf_nf_mgt_uri = cJSON_GetObjectItemCaseSensitive(nsi_informationJSON, "nrfNfMgtUri");
 
-    if (nrf_nf_mgt_uri) {
-        if (!cJSON_IsString(nrf_nf_mgt_uri)) {
-            ogs_error("OpenAPI_nsi_information_parseFromJSON() failed [nrf_nf_mgt_uri]");
-            goto end;
-        }
+    if (nrf_nf_mgt_uri) { 
+    if (!cJSON_IsString(nrf_nf_mgt_uri)) {
+        ogs_error("OpenAPI_nsi_information_parseFromJSON() failed [nrf_nf_mgt_uri]");
+        goto end;
+    }
     }
 
     cJSON *nrf_access_token_uri = cJSON_GetObjectItemCaseSensitive(nsi_informationJSON, "nrfAccessTokenUri");
 
-    if (nrf_access_token_uri) {
-        if (!cJSON_IsString(nrf_access_token_uri)) {
-            ogs_error("OpenAPI_nsi_information_parseFromJSON() failed [nrf_access_token_uri]");
-            goto end;
-        }
+    if (nrf_access_token_uri) { 
+    if (!cJSON_IsString(nrf_access_token_uri)) {
+        ogs_error("OpenAPI_nsi_information_parseFromJSON() failed [nrf_access_token_uri]");
+        goto end;
+    }
     }
 
     nsi_information_local_var = OpenAPI_nsi_information_create (
@@ -123,7 +123,7 @@ OpenAPI_nsi_information_t *OpenAPI_nsi_information_parseFromJSON(cJSON *nsi_info
         nsi_id ? ogs_strdup_or_assert(nsi_id->valuestring) : NULL,
         nrf_nf_mgt_uri ? ogs_strdup_or_assert(nrf_nf_mgt_uri->valuestring) : NULL,
         nrf_access_token_uri ? ogs_strdup_or_assert(nrf_access_token_uri->valuestring) : NULL
-        );
+    );
 
     return nsi_information_local_var;
 end:

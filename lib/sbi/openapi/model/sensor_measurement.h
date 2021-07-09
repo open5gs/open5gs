@@ -1,7 +1,7 @@
 /*
  * sensor_measurement.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_sensor_measurement_H_

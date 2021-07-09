@@ -28,7 +28,7 @@ OpenAPI_twif_info_t *OpenAPI_twif_info_create(
     OpenAPI_list_t *ipv4_endpoint_addresses,
     OpenAPI_list_t *ipv6_endpoint_addresses,
     char *endpoint_fqdn
-    );
+);
 void OpenAPI_twif_info_free(OpenAPI_twif_info_t *twif_info);
 OpenAPI_twif_info_t *OpenAPI_twif_info_parseFromJSON(cJSON *twif_infoJSON);
 cJSON *OpenAPI_twif_info_convertToJSON(OpenAPI_twif_info_t *twif_info);

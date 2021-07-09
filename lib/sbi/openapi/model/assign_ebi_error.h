@@ -1,7 +1,7 @@
 /*
  * assign_ebi_error.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_assign_ebi_error_H_
@@ -28,7 +28,7 @@ typedef struct OpenAPI_assign_ebi_error_s {
 OpenAPI_assign_ebi_error_t *OpenAPI_assign_ebi_error_create(
     OpenAPI_problem_details_t *error,
     OpenAPI_assign_ebi_failed_t *failure_details
-    );
+);
 void OpenAPI_assign_ebi_error_free(OpenAPI_assign_ebi_error_t *assign_ebi_error);
 OpenAPI_assign_ebi_error_t *OpenAPI_assign_ebi_error_parseFromJSON(cJSON *assign_ebi_errorJSON);
 cJSON *OpenAPI_assign_ebi_error_convertToJSON(OpenAPI_assign_ebi_error_t *assign_ebi_error);

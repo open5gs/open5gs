@@ -6,7 +6,7 @@
 
 OpenAPI_odb_data_t *OpenAPI_odb_data_create(
     OpenAPI_roaming_odb_e roaming_odb
-    )
+)
 {
     OpenAPI_odb_data_t *odb_data_local_var = OpenAPI_malloc(sizeof(OpenAPI_odb_data_t));
     if (!odb_data_local_var) {
@@ -37,10 +37,10 @@ cJSON *OpenAPI_odb_data_convertToJSON(OpenAPI_odb_data_t *odb_data)
 
     item = cJSON_CreateObject();
     if (odb_data->roaming_odb) {
-        if (cJSON_AddStringToObject(item, "roamingOdb", OpenAPI_roaming_odb_ToString(odb_data->roaming_odb)) == NULL) {
-            ogs_error("OpenAPI_odb_data_convertToJSON() failed [roaming_odb]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "roamingOdb", OpenAPI_roaming_odb_ToString(odb_data->roaming_odb)) == NULL) {
+        ogs_error("OpenAPI_odb_data_convertToJSON() failed [roaming_odb]");
+        goto end;
+    }
     }
 
 end:
@@ -53,17 +53,17 @@ OpenAPI_odb_data_t *OpenAPI_odb_data_parseFromJSON(cJSON *odb_dataJSON)
     cJSON *roaming_odb = cJSON_GetObjectItemCaseSensitive(odb_dataJSON, "roamingOdb");
 
     OpenAPI_roaming_odb_e roaming_odbVariable;
-    if (roaming_odb) {
-        if (!cJSON_IsString(roaming_odb)) {
-            ogs_error("OpenAPI_odb_data_parseFromJSON() failed [roaming_odb]");
-            goto end;
-        }
-        roaming_odbVariable = OpenAPI_roaming_odb_FromString(roaming_odb->valuestring);
+    if (roaming_odb) { 
+    if (!cJSON_IsString(roaming_odb)) {
+        ogs_error("OpenAPI_odb_data_parseFromJSON() failed [roaming_odb]");
+        goto end;
+    }
+    roaming_odbVariable = OpenAPI_roaming_odb_FromString(roaming_odb->valuestring);
     }
 
     odb_data_local_var = OpenAPI_odb_data_create (
         roaming_odb ? roaming_odbVariable : 0
-        );
+    );
 
     return odb_data_local_var;
 end:

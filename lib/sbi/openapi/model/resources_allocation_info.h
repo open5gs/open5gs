@@ -23,12 +23,14 @@ typedef struct OpenAPI_resources_allocation_info_s OpenAPI_resources_allocation_
 typedef struct OpenAPI_resources_allocation_info_s {
     OpenAPI_media_component_resources_status_e mc_resourc_status;
     OpenAPI_list_t *flows;
+    char *alt_ser_req;
 } OpenAPI_resources_allocation_info_t;
 
 OpenAPI_resources_allocation_info_t *OpenAPI_resources_allocation_info_create(
     OpenAPI_media_component_resources_status_e mc_resourc_status,
-    OpenAPI_list_t *flows
-    );
+    OpenAPI_list_t *flows,
+    char *alt_ser_req
+);
 void OpenAPI_resources_allocation_info_free(OpenAPI_resources_allocation_info_t *resources_allocation_info);
 OpenAPI_resources_allocation_info_t *OpenAPI_resources_allocation_info_parseFromJSON(cJSON *resources_allocation_infoJSON);
 cJSON *OpenAPI_resources_allocation_info_convertToJSON(OpenAPI_resources_allocation_info_t *resources_allocation_info);

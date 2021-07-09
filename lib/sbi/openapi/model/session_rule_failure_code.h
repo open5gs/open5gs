@@ -1,7 +1,7 @@
 /*
  * session_rule_failure_code.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_session_rule_failure_code_H_

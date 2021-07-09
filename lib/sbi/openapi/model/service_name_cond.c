@@ -6,7 +6,7 @@
 
 OpenAPI_service_name_cond_t *OpenAPI_service_name_cond_create(
     char *service_name
-    )
+)
 {
     OpenAPI_service_name_cond_t *service_name_cond_local_var = OpenAPI_malloc(sizeof(OpenAPI_service_name_cond_t));
     if (!service_name_cond_local_var) {
@@ -55,7 +55,7 @@ OpenAPI_service_name_cond_t *OpenAPI_service_name_cond_parseFromJSON(cJSON *serv
         goto end;
     }
 
-
+    
     if (!cJSON_IsString(service_name)) {
         ogs_error("OpenAPI_service_name_cond_parseFromJSON() failed [service_name]");
         goto end;
@@ -63,7 +63,7 @@ OpenAPI_service_name_cond_t *OpenAPI_service_name_cond_parseFromJSON(cJSON *serv
 
     service_name_cond_local_var = OpenAPI_service_name_cond_create (
         ogs_strdup_or_assert(service_name->valuestring)
-        );
+    );
 
     return service_name_cond_local_var;
 end:

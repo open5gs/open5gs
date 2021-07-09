@@ -7,7 +7,7 @@
 OpenAPI_app_descriptor_t *OpenAPI_app_descriptor_create(
     char *os_id,
     char *app_id
-    )
+)
 {
     OpenAPI_app_descriptor_t *app_descriptor_local_var = OpenAPI_malloc(sizeof(OpenAPI_app_descriptor_t));
     if (!app_descriptor_local_var) {
@@ -41,17 +41,17 @@ cJSON *OpenAPI_app_descriptor_convertToJSON(OpenAPI_app_descriptor_t *app_descri
 
     item = cJSON_CreateObject();
     if (app_descriptor->os_id) {
-        if (cJSON_AddStringToObject(item, "osId", app_descriptor->os_id) == NULL) {
-            ogs_error("OpenAPI_app_descriptor_convertToJSON() failed [os_id]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "osId", app_descriptor->os_id) == NULL) {
+        ogs_error("OpenAPI_app_descriptor_convertToJSON() failed [os_id]");
+        goto end;
+    }
     }
 
     if (app_descriptor->app_id) {
-        if (cJSON_AddStringToObject(item, "appId", app_descriptor->app_id) == NULL) {
-            ogs_error("OpenAPI_app_descriptor_convertToJSON() failed [app_id]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "appId", app_descriptor->app_id) == NULL) {
+        ogs_error("OpenAPI_app_descriptor_convertToJSON() failed [app_id]");
+        goto end;
+    }
     }
 
 end:
@@ -63,26 +63,26 @@ OpenAPI_app_descriptor_t *OpenAPI_app_descriptor_parseFromJSON(cJSON *app_descri
     OpenAPI_app_descriptor_t *app_descriptor_local_var = NULL;
     cJSON *os_id = cJSON_GetObjectItemCaseSensitive(app_descriptorJSON, "osId");
 
-    if (os_id) {
-        if (!cJSON_IsString(os_id)) {
-            ogs_error("OpenAPI_app_descriptor_parseFromJSON() failed [os_id]");
-            goto end;
-        }
+    if (os_id) { 
+    if (!cJSON_IsString(os_id)) {
+        ogs_error("OpenAPI_app_descriptor_parseFromJSON() failed [os_id]");
+        goto end;
+    }
     }
 
     cJSON *app_id = cJSON_GetObjectItemCaseSensitive(app_descriptorJSON, "appId");
 
-    if (app_id) {
-        if (!cJSON_IsString(app_id)) {
-            ogs_error("OpenAPI_app_descriptor_parseFromJSON() failed [app_id]");
-            goto end;
-        }
+    if (app_id) { 
+    if (!cJSON_IsString(app_id)) {
+        ogs_error("OpenAPI_app_descriptor_parseFromJSON() failed [app_id]");
+        goto end;
+    }
     }
 
     app_descriptor_local_var = OpenAPI_app_descriptor_create (
         os_id ? ogs_strdup_or_assert(os_id->valuestring) : NULL,
         app_id ? ogs_strdup_or_assert(app_id->valuestring) : NULL
-        );
+    );
 
     return app_descriptor_local_var;
 end:

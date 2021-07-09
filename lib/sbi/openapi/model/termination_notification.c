@@ -7,7 +7,7 @@
 OpenAPI_termination_notification_t *OpenAPI_termination_notification_create(
     char *resource_uri,
     OpenAPI_sm_policy_association_release_cause_e cause
-    )
+)
 {
     OpenAPI_termination_notification_t *termination_notification_local_var = OpenAPI_malloc(sizeof(OpenAPI_termination_notification_t));
     if (!termination_notification_local_var) {
@@ -62,7 +62,7 @@ OpenAPI_termination_notification_t *OpenAPI_termination_notification_parseFromJS
         goto end;
     }
 
-
+    
     if (!cJSON_IsString(resource_uri)) {
         ogs_error("OpenAPI_termination_notification_parseFromJSON() failed [resource_uri]");
         goto end;
@@ -75,7 +75,7 @@ OpenAPI_termination_notification_t *OpenAPI_termination_notification_parseFromJS
     }
 
     OpenAPI_sm_policy_association_release_cause_e causeVariable;
-
+    
     if (!cJSON_IsString(cause)) {
         ogs_error("OpenAPI_termination_notification_parseFromJSON() failed [cause]");
         goto end;
@@ -85,7 +85,7 @@ OpenAPI_termination_notification_t *OpenAPI_termination_notification_parseFromJS
     termination_notification_local_var = OpenAPI_termination_notification_create (
         ogs_strdup_or_assert(resource_uri->valuestring),
         causeVariable
-        );
+    );
 
     return termination_notification_local_var;
 end:

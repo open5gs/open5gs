@@ -1,7 +1,7 @@
 /*
  * nssai_mapping.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_nssai_mapping_H_
@@ -27,7 +27,7 @@ typedef struct OpenAPI_nssai_mapping_s {
 OpenAPI_nssai_mapping_t *OpenAPI_nssai_mapping_create(
     OpenAPI_snssai_t *mapped_snssai,
     OpenAPI_snssai_t *h_snssai
-    );
+);
 void OpenAPI_nssai_mapping_free(OpenAPI_nssai_mapping_t *nssai_mapping);
 OpenAPI_nssai_mapping_t *OpenAPI_nssai_mapping_parseFromJSON(cJSON *nssai_mappingJSON);
 cJSON *OpenAPI_nssai_mapping_convertToJSON(OpenAPI_nssai_mapping_t *nssai_mapping);

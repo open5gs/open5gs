@@ -1,7 +1,7 @@
 /*
  * identity_data.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_identity_data_H_
@@ -26,7 +26,7 @@ typedef struct OpenAPI_identity_data_s {
 OpenAPI_identity_data_t *OpenAPI_identity_data_create(
     OpenAPI_list_t *supi_list,
     OpenAPI_list_t *gpsi_list
-    );
+);
 void OpenAPI_identity_data_free(OpenAPI_identity_data_t *identity_data);
 OpenAPI_identity_data_t *OpenAPI_identity_data_parseFromJSON(cJSON *identity_dataJSON);
 cJSON *OpenAPI_identity_data_convertToJSON(OpenAPI_identity_data_t *identity_data);

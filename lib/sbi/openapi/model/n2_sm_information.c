@@ -9,8 +9,9 @@ OpenAPI_n2_sm_information_t *OpenAPI_n2_sm_information_create(
     OpenAPI_n2_info_content_t *n2_info_content,
     OpenAPI_snssai_t *s_nssai,
     OpenAPI_snssai_t *home_plmn_snssai,
+    OpenAPI_snssai_t *iwk_snssai,
     int subject_to_ho
-    )
+)
 {
     OpenAPI_n2_sm_information_t *n2_sm_information_local_var = OpenAPI_malloc(sizeof(OpenAPI_n2_sm_information_t));
     if (!n2_sm_information_local_var) {
@@ -20,6 +21,7 @@ OpenAPI_n2_sm_information_t *OpenAPI_n2_sm_information_create(
     n2_sm_information_local_var->n2_info_content = n2_info_content;
     n2_sm_information_local_var->s_nssai = s_nssai;
     n2_sm_information_local_var->home_plmn_snssai = home_plmn_snssai;
+    n2_sm_information_local_var->iwk_snssai = iwk_snssai;
     n2_sm_information_local_var->subject_to_ho = subject_to_ho;
 
     return n2_sm_information_local_var;
@@ -34,6 +36,7 @@ void OpenAPI_n2_sm_information_free(OpenAPI_n2_sm_information_t *n2_sm_informati
     OpenAPI_n2_info_content_free(n2_sm_information->n2_info_content);
     OpenAPI_snssai_free(n2_sm_information->s_nssai);
     OpenAPI_snssai_free(n2_sm_information->home_plmn_snssai);
+    OpenAPI_snssai_free(n2_sm_information->iwk_snssai);
     ogs_free(n2_sm_information);
 }
 
@@ -53,49 +56,62 @@ cJSON *OpenAPI_n2_sm_information_convertToJSON(OpenAPI_n2_sm_information_t *n2_s
     }
 
     if (n2_sm_information->n2_info_content) {
-        cJSON *n2_info_content_local_JSON = OpenAPI_n2_info_content_convertToJSON(n2_sm_information->n2_info_content);
-        if (n2_info_content_local_JSON == NULL) {
-            ogs_error("OpenAPI_n2_sm_information_convertToJSON() failed [n2_info_content]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "n2InfoContent", n2_info_content_local_JSON);
-        if (item->child == NULL) {
-            ogs_error("OpenAPI_n2_sm_information_convertToJSON() failed [n2_info_content]");
-            goto end;
-        }
+    cJSON *n2_info_content_local_JSON = OpenAPI_n2_info_content_convertToJSON(n2_sm_information->n2_info_content);
+    if (n2_info_content_local_JSON == NULL) {
+        ogs_error("OpenAPI_n2_sm_information_convertToJSON() failed [n2_info_content]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "n2InfoContent", n2_info_content_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_n2_sm_information_convertToJSON() failed [n2_info_content]");
+        goto end;
+    }
     }
 
     if (n2_sm_information->s_nssai) {
-        cJSON *s_nssai_local_JSON = OpenAPI_snssai_convertToJSON(n2_sm_information->s_nssai);
-        if (s_nssai_local_JSON == NULL) {
-            ogs_error("OpenAPI_n2_sm_information_convertToJSON() failed [s_nssai]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "sNssai", s_nssai_local_JSON);
-        if (item->child == NULL) {
-            ogs_error("OpenAPI_n2_sm_information_convertToJSON() failed [s_nssai]");
-            goto end;
-        }
+    cJSON *s_nssai_local_JSON = OpenAPI_snssai_convertToJSON(n2_sm_information->s_nssai);
+    if (s_nssai_local_JSON == NULL) {
+        ogs_error("OpenAPI_n2_sm_information_convertToJSON() failed [s_nssai]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "sNssai", s_nssai_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_n2_sm_information_convertToJSON() failed [s_nssai]");
+        goto end;
+    }
     }
 
     if (n2_sm_information->home_plmn_snssai) {
-        cJSON *home_plmn_snssai_local_JSON = OpenAPI_snssai_convertToJSON(n2_sm_information->home_plmn_snssai);
-        if (home_plmn_snssai_local_JSON == NULL) {
-            ogs_error("OpenAPI_n2_sm_information_convertToJSON() failed [home_plmn_snssai]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "homePlmnSnssai", home_plmn_snssai_local_JSON);
-        if (item->child == NULL) {
-            ogs_error("OpenAPI_n2_sm_information_convertToJSON() failed [home_plmn_snssai]");
-            goto end;
-        }
+    cJSON *home_plmn_snssai_local_JSON = OpenAPI_snssai_convertToJSON(n2_sm_information->home_plmn_snssai);
+    if (home_plmn_snssai_local_JSON == NULL) {
+        ogs_error("OpenAPI_n2_sm_information_convertToJSON() failed [home_plmn_snssai]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "homePlmnSnssai", home_plmn_snssai_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_n2_sm_information_convertToJSON() failed [home_plmn_snssai]");
+        goto end;
+    }
+    }
+
+    if (n2_sm_information->iwk_snssai) {
+    cJSON *iwk_snssai_local_JSON = OpenAPI_snssai_convertToJSON(n2_sm_information->iwk_snssai);
+    if (iwk_snssai_local_JSON == NULL) {
+        ogs_error("OpenAPI_n2_sm_information_convertToJSON() failed [iwk_snssai]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "iwkSnssai", iwk_snssai_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_n2_sm_information_convertToJSON() failed [iwk_snssai]");
+        goto end;
+    }
     }
 
     if (n2_sm_information->subject_to_ho) {
-        if (cJSON_AddBoolToObject(item, "subjectToHo", n2_sm_information->subject_to_ho) == NULL) {
-            ogs_error("OpenAPI_n2_sm_information_convertToJSON() failed [subject_to_ho]");
-            goto end;
-        }
+    if (cJSON_AddBoolToObject(item, "subjectToHo", n2_sm_information->subject_to_ho) == NULL) {
+        ogs_error("OpenAPI_n2_sm_information_convertToJSON() failed [subject_to_ho]");
+        goto end;
+    }
     }
 
 end:
@@ -111,7 +127,7 @@ OpenAPI_n2_sm_information_t *OpenAPI_n2_sm_information_parseFromJSON(cJSON *n2_s
         goto end;
     }
 
-
+    
     if (!cJSON_IsNumber(pdu_session_id)) {
         ogs_error("OpenAPI_n2_sm_information_parseFromJSON() failed [pdu_session_id]");
         goto end;
@@ -120,31 +136,38 @@ OpenAPI_n2_sm_information_t *OpenAPI_n2_sm_information_parseFromJSON(cJSON *n2_s
     cJSON *n2_info_content = cJSON_GetObjectItemCaseSensitive(n2_sm_informationJSON, "n2InfoContent");
 
     OpenAPI_n2_info_content_t *n2_info_content_local_nonprim = NULL;
-    if (n2_info_content) {
-        n2_info_content_local_nonprim = OpenAPI_n2_info_content_parseFromJSON(n2_info_content);
+    if (n2_info_content) { 
+    n2_info_content_local_nonprim = OpenAPI_n2_info_content_parseFromJSON(n2_info_content);
     }
 
     cJSON *s_nssai = cJSON_GetObjectItemCaseSensitive(n2_sm_informationJSON, "sNssai");
 
     OpenAPI_snssai_t *s_nssai_local_nonprim = NULL;
-    if (s_nssai) {
-        s_nssai_local_nonprim = OpenAPI_snssai_parseFromJSON(s_nssai);
+    if (s_nssai) { 
+    s_nssai_local_nonprim = OpenAPI_snssai_parseFromJSON(s_nssai);
     }
 
     cJSON *home_plmn_snssai = cJSON_GetObjectItemCaseSensitive(n2_sm_informationJSON, "homePlmnSnssai");
 
     OpenAPI_snssai_t *home_plmn_snssai_local_nonprim = NULL;
-    if (home_plmn_snssai) {
-        home_plmn_snssai_local_nonprim = OpenAPI_snssai_parseFromJSON(home_plmn_snssai);
+    if (home_plmn_snssai) { 
+    home_plmn_snssai_local_nonprim = OpenAPI_snssai_parseFromJSON(home_plmn_snssai);
+    }
+
+    cJSON *iwk_snssai = cJSON_GetObjectItemCaseSensitive(n2_sm_informationJSON, "iwkSnssai");
+
+    OpenAPI_snssai_t *iwk_snssai_local_nonprim = NULL;
+    if (iwk_snssai) { 
+    iwk_snssai_local_nonprim = OpenAPI_snssai_parseFromJSON(iwk_snssai);
     }
 
     cJSON *subject_to_ho = cJSON_GetObjectItemCaseSensitive(n2_sm_informationJSON, "subjectToHo");
 
-    if (subject_to_ho) {
-        if (!cJSON_IsBool(subject_to_ho)) {
-            ogs_error("OpenAPI_n2_sm_information_parseFromJSON() failed [subject_to_ho]");
-            goto end;
-        }
+    if (subject_to_ho) { 
+    if (!cJSON_IsBool(subject_to_ho)) {
+        ogs_error("OpenAPI_n2_sm_information_parseFromJSON() failed [subject_to_ho]");
+        goto end;
+    }
     }
 
     n2_sm_information_local_var = OpenAPI_n2_sm_information_create (
@@ -152,8 +175,9 @@ OpenAPI_n2_sm_information_t *OpenAPI_n2_sm_information_parseFromJSON(cJSON *n2_s
         n2_info_content ? n2_info_content_local_nonprim : NULL,
         s_nssai ? s_nssai_local_nonprim : NULL,
         home_plmn_snssai ? home_plmn_snssai_local_nonprim : NULL,
+        iwk_snssai ? iwk_snssai_local_nonprim : NULL,
         subject_to_ho ? subject_to_ho->valueint : 0
-        );
+    );
 
     return n2_sm_information_local_var;
 end:

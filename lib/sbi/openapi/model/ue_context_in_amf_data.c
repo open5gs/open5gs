@@ -6,7 +6,7 @@
 
 OpenAPI_ue_context_in_amf_data_t *OpenAPI_ue_context_in_amf_data_create(
     OpenAPI_eps_interworking_info_t *eps_interworking_info
-    )
+)
 {
     OpenAPI_ue_context_in_amf_data_t *ue_context_in_amf_data_local_var = OpenAPI_malloc(sizeof(OpenAPI_ue_context_in_amf_data_t));
     if (!ue_context_in_amf_data_local_var) {
@@ -38,16 +38,16 @@ cJSON *OpenAPI_ue_context_in_amf_data_convertToJSON(OpenAPI_ue_context_in_amf_da
 
     item = cJSON_CreateObject();
     if (ue_context_in_amf_data->eps_interworking_info) {
-        cJSON *eps_interworking_info_local_JSON = OpenAPI_eps_interworking_info_convertToJSON(ue_context_in_amf_data->eps_interworking_info);
-        if (eps_interworking_info_local_JSON == NULL) {
-            ogs_error("OpenAPI_ue_context_in_amf_data_convertToJSON() failed [eps_interworking_info]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "epsInterworkingInfo", eps_interworking_info_local_JSON);
-        if (item->child == NULL) {
-            ogs_error("OpenAPI_ue_context_in_amf_data_convertToJSON() failed [eps_interworking_info]");
-            goto end;
-        }
+    cJSON *eps_interworking_info_local_JSON = OpenAPI_eps_interworking_info_convertToJSON(ue_context_in_amf_data->eps_interworking_info);
+    if (eps_interworking_info_local_JSON == NULL) {
+        ogs_error("OpenAPI_ue_context_in_amf_data_convertToJSON() failed [eps_interworking_info]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "epsInterworkingInfo", eps_interworking_info_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_ue_context_in_amf_data_convertToJSON() failed [eps_interworking_info]");
+        goto end;
+    }
     }
 
 end:
@@ -60,13 +60,13 @@ OpenAPI_ue_context_in_amf_data_t *OpenAPI_ue_context_in_amf_data_parseFromJSON(c
     cJSON *eps_interworking_info = cJSON_GetObjectItemCaseSensitive(ue_context_in_amf_dataJSON, "epsInterworkingInfo");
 
     OpenAPI_eps_interworking_info_t *eps_interworking_info_local_nonprim = NULL;
-    if (eps_interworking_info) {
-        eps_interworking_info_local_nonprim = OpenAPI_eps_interworking_info_parseFromJSON(eps_interworking_info);
+    if (eps_interworking_info) { 
+    eps_interworking_info_local_nonprim = OpenAPI_eps_interworking_info_parseFromJSON(eps_interworking_info);
     }
 
     ue_context_in_amf_data_local_var = OpenAPI_ue_context_in_amf_data_create (
         eps_interworking_info ? eps_interworking_info_local_nonprim : NULL
-        );
+    );
 
     return ue_context_in_amf_data_local_var;
 end:

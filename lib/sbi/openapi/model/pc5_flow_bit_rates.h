@@ -1,7 +1,7 @@
 /*
  * pc5_flow_bit_rates.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_pc5_flow_bit_rates_H_
@@ -26,7 +26,7 @@ typedef struct OpenAPI_pc5_flow_bit_rates_s {
 OpenAPI_pc5_flow_bit_rates_t *OpenAPI_pc5_flow_bit_rates_create(
     char *gua_fbr,
     char *max_fbr
-    );
+);
 void OpenAPI_pc5_flow_bit_rates_free(OpenAPI_pc5_flow_bit_rates_t *pc5_flow_bit_rates);
 OpenAPI_pc5_flow_bit_rates_t *OpenAPI_pc5_flow_bit_rates_parseFromJSON(cJSON *pc5_flow_bit_ratesJSON);
 cJSON *OpenAPI_pc5_flow_bit_rates_convertToJSON(OpenAPI_pc5_flow_bit_rates_t *pc5_flow_bit_rates);

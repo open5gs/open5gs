@@ -8,7 +8,7 @@ OpenAPI_snssai_upf_info_item_t *OpenAPI_snssai_upf_info_item_create(
     OpenAPI_snssai_t *s_nssai,
     OpenAPI_list_t *dnn_upf_info_list,
     int redundant_transport
-    )
+)
 {
     OpenAPI_snssai_upf_info_item_t *snssai_upf_info_item_local_var = OpenAPI_malloc(sizeof(OpenAPI_snssai_upf_info_item_t));
     if (!snssai_upf_info_item_local_var) {
@@ -75,10 +75,10 @@ cJSON *OpenAPI_snssai_upf_info_item_convertToJSON(OpenAPI_snssai_upf_info_item_t
     }
 
     if (snssai_upf_info_item->redundant_transport) {
-        if (cJSON_AddBoolToObject(item, "redundantTransport", snssai_upf_info_item->redundant_transport) == NULL) {
-            ogs_error("OpenAPI_snssai_upf_info_item_convertToJSON() failed [redundant_transport]");
-            goto end;
-        }
+    if (cJSON_AddBoolToObject(item, "redundantTransport", snssai_upf_info_item->redundant_transport) == NULL) {
+        ogs_error("OpenAPI_snssai_upf_info_item_convertToJSON() failed [redundant_transport]");
+        goto end;
+    }
     }
 
 end:
@@ -95,7 +95,7 @@ OpenAPI_snssai_upf_info_item_t *OpenAPI_snssai_upf_info_item_parseFromJSON(cJSON
     }
 
     OpenAPI_snssai_t *s_nssai_local_nonprim = NULL;
-
+    
     s_nssai_local_nonprim = OpenAPI_snssai_parseFromJSON(s_nssai);
 
     cJSON *dnn_upf_info_list = cJSON_GetObjectItemCaseSensitive(snssai_upf_info_itemJSON, "dnnUpfInfoList");
@@ -105,9 +105,9 @@ OpenAPI_snssai_upf_info_item_t *OpenAPI_snssai_upf_info_item_parseFromJSON(cJSON
     }
 
     OpenAPI_list_t *dnn_upf_info_listList;
-
+    
     cJSON *dnn_upf_info_list_local_nonprimitive;
-    if (!cJSON_IsArray(dnn_upf_info_list)) {
+    if (!cJSON_IsArray(dnn_upf_info_list)){
         ogs_error("OpenAPI_snssai_upf_info_item_parseFromJSON() failed [dnn_upf_info_list]");
         goto end;
     }
@@ -126,18 +126,18 @@ OpenAPI_snssai_upf_info_item_t *OpenAPI_snssai_upf_info_item_parseFromJSON(cJSON
 
     cJSON *redundant_transport = cJSON_GetObjectItemCaseSensitive(snssai_upf_info_itemJSON, "redundantTransport");
 
-    if (redundant_transport) {
-        if (!cJSON_IsBool(redundant_transport)) {
-            ogs_error("OpenAPI_snssai_upf_info_item_parseFromJSON() failed [redundant_transport]");
-            goto end;
-        }
+    if (redundant_transport) { 
+    if (!cJSON_IsBool(redundant_transport)) {
+        ogs_error("OpenAPI_snssai_upf_info_item_parseFromJSON() failed [redundant_transport]");
+        goto end;
+    }
     }
 
     snssai_upf_info_item_local_var = OpenAPI_snssai_upf_info_item_create (
         s_nssai_local_nonprim,
         dnn_upf_info_listList,
         redundant_transport ? redundant_transport->valueint : 0
-        );
+    );
 
     return snssai_upf_info_item_local_var;
 end:

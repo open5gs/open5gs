@@ -8,7 +8,7 @@ OpenAPI_qos_monitoring_information_rm_t *OpenAPI_qos_monitoring_information_rm_c
     int rep_thresh_dl,
     int rep_thresh_ul,
     int rep_thresh_rp
-    )
+)
 {
     OpenAPI_qos_monitoring_information_rm_t *qos_monitoring_information_rm_local_var = OpenAPI_malloc(sizeof(OpenAPI_qos_monitoring_information_rm_t));
     if (!qos_monitoring_information_rm_local_var) {
@@ -41,24 +41,24 @@ cJSON *OpenAPI_qos_monitoring_information_rm_convertToJSON(OpenAPI_qos_monitorin
 
     item = cJSON_CreateObject();
     if (qos_monitoring_information_rm->rep_thresh_dl) {
-        if (cJSON_AddNumberToObject(item, "repThreshDl", qos_monitoring_information_rm->rep_thresh_dl) == NULL) {
-            ogs_error("OpenAPI_qos_monitoring_information_rm_convertToJSON() failed [rep_thresh_dl]");
-            goto end;
-        }
+    if (cJSON_AddNumberToObject(item, "repThreshDl", qos_monitoring_information_rm->rep_thresh_dl) == NULL) {
+        ogs_error("OpenAPI_qos_monitoring_information_rm_convertToJSON() failed [rep_thresh_dl]");
+        goto end;
+    }
     }
 
     if (qos_monitoring_information_rm->rep_thresh_ul) {
-        if (cJSON_AddNumberToObject(item, "repThreshUl", qos_monitoring_information_rm->rep_thresh_ul) == NULL) {
-            ogs_error("OpenAPI_qos_monitoring_information_rm_convertToJSON() failed [rep_thresh_ul]");
-            goto end;
-        }
+    if (cJSON_AddNumberToObject(item, "repThreshUl", qos_monitoring_information_rm->rep_thresh_ul) == NULL) {
+        ogs_error("OpenAPI_qos_monitoring_information_rm_convertToJSON() failed [rep_thresh_ul]");
+        goto end;
+    }
     }
 
     if (qos_monitoring_information_rm->rep_thresh_rp) {
-        if (cJSON_AddNumberToObject(item, "repThreshRp", qos_monitoring_information_rm->rep_thresh_rp) == NULL) {
-            ogs_error("OpenAPI_qos_monitoring_information_rm_convertToJSON() failed [rep_thresh_rp]");
-            goto end;
-        }
+    if (cJSON_AddNumberToObject(item, "repThreshRp", qos_monitoring_information_rm->rep_thresh_rp) == NULL) {
+        ogs_error("OpenAPI_qos_monitoring_information_rm_convertToJSON() failed [rep_thresh_rp]");
+        goto end;
+    }
     }
 
 end:
@@ -70,36 +70,36 @@ OpenAPI_qos_monitoring_information_rm_t *OpenAPI_qos_monitoring_information_rm_p
     OpenAPI_qos_monitoring_information_rm_t *qos_monitoring_information_rm_local_var = NULL;
     cJSON *rep_thresh_dl = cJSON_GetObjectItemCaseSensitive(qos_monitoring_information_rmJSON, "repThreshDl");
 
-    if (rep_thresh_dl) {
-        if (!cJSON_IsNumber(rep_thresh_dl)) {
-            ogs_error("OpenAPI_qos_monitoring_information_rm_parseFromJSON() failed [rep_thresh_dl]");
-            goto end;
-        }
+    if (rep_thresh_dl) { 
+    if (!cJSON_IsNumber(rep_thresh_dl)) {
+        ogs_error("OpenAPI_qos_monitoring_information_rm_parseFromJSON() failed [rep_thresh_dl]");
+        goto end;
+    }
     }
 
     cJSON *rep_thresh_ul = cJSON_GetObjectItemCaseSensitive(qos_monitoring_information_rmJSON, "repThreshUl");
 
-    if (rep_thresh_ul) {
-        if (!cJSON_IsNumber(rep_thresh_ul)) {
-            ogs_error("OpenAPI_qos_monitoring_information_rm_parseFromJSON() failed [rep_thresh_ul]");
-            goto end;
-        }
+    if (rep_thresh_ul) { 
+    if (!cJSON_IsNumber(rep_thresh_ul)) {
+        ogs_error("OpenAPI_qos_monitoring_information_rm_parseFromJSON() failed [rep_thresh_ul]");
+        goto end;
+    }
     }
 
     cJSON *rep_thresh_rp = cJSON_GetObjectItemCaseSensitive(qos_monitoring_information_rmJSON, "repThreshRp");
 
-    if (rep_thresh_rp) {
-        if (!cJSON_IsNumber(rep_thresh_rp)) {
-            ogs_error("OpenAPI_qos_monitoring_information_rm_parseFromJSON() failed [rep_thresh_rp]");
-            goto end;
-        }
+    if (rep_thresh_rp) { 
+    if (!cJSON_IsNumber(rep_thresh_rp)) {
+        ogs_error("OpenAPI_qos_monitoring_information_rm_parseFromJSON() failed [rep_thresh_rp]");
+        goto end;
+    }
     }
 
     qos_monitoring_information_rm_local_var = OpenAPI_qos_monitoring_information_rm_create (
         rep_thresh_dl ? rep_thresh_dl->valuedouble : 0,
         rep_thresh_ul ? rep_thresh_ul->valuedouble : 0,
         rep_thresh_rp ? rep_thresh_rp->valuedouble : 0
-        );
+    );
 
     return qos_monitoring_information_rm_local_var;
 end:

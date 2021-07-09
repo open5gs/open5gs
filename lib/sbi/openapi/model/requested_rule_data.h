@@ -1,7 +1,7 @@
 /*
  * requested_rule_data.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_requested_rule_data_H_
@@ -27,7 +27,7 @@ typedef struct OpenAPI_requested_rule_data_s {
 OpenAPI_requested_rule_data_t *OpenAPI_requested_rule_data_create(
     OpenAPI_list_t *ref_pcc_rule_ids,
     OpenAPI_list_t *req_data
-    );
+);
 void OpenAPI_requested_rule_data_free(OpenAPI_requested_rule_data_t *requested_rule_data);
 OpenAPI_requested_rule_data_t *OpenAPI_requested_rule_data_parseFromJSON(cJSON *requested_rule_dataJSON);
 cJSON *OpenAPI_requested_rule_data_convertToJSON(OpenAPI_requested_rule_data_t *requested_rule_data);

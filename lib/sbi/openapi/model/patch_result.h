@@ -1,7 +1,7 @@
 /*
  * patch_result.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_patch_result_H_
@@ -25,7 +25,7 @@ typedef struct OpenAPI_patch_result_s {
 
 OpenAPI_patch_result_t *OpenAPI_patch_result_create(
     OpenAPI_list_t *report
-    );
+);
 void OpenAPI_patch_result_free(OpenAPI_patch_result_t *patch_result);
 OpenAPI_patch_result_t *OpenAPI_patch_result_parseFromJSON(cJSON *patch_resultJSON);
 cJSON *OpenAPI_patch_result_convertToJSON(OpenAPI_patch_result_t *patch_result);

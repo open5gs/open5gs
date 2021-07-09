@@ -9,7 +9,7 @@ OpenAPI_ip_end_point_t *OpenAPI_ip_end_point_create(
     char *ipv6_address,
     OpenAPI_transport_protocol_e transport,
     int port
-    )
+)
 {
     OpenAPI_ip_end_point_t *ip_end_point_local_var = OpenAPI_malloc(sizeof(OpenAPI_ip_end_point_t));
     if (!ip_end_point_local_var) {
@@ -45,31 +45,31 @@ cJSON *OpenAPI_ip_end_point_convertToJSON(OpenAPI_ip_end_point_t *ip_end_point)
 
     item = cJSON_CreateObject();
     if (ip_end_point->ipv4_address) {
-        if (cJSON_AddStringToObject(item, "ipv4Address", ip_end_point->ipv4_address) == NULL) {
-            ogs_error("OpenAPI_ip_end_point_convertToJSON() failed [ipv4_address]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "ipv4Address", ip_end_point->ipv4_address) == NULL) {
+        ogs_error("OpenAPI_ip_end_point_convertToJSON() failed [ipv4_address]");
+        goto end;
+    }
     }
 
     if (ip_end_point->ipv6_address) {
-        if (cJSON_AddStringToObject(item, "ipv6Address", ip_end_point->ipv6_address) == NULL) {
-            ogs_error("OpenAPI_ip_end_point_convertToJSON() failed [ipv6_address]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "ipv6Address", ip_end_point->ipv6_address) == NULL) {
+        ogs_error("OpenAPI_ip_end_point_convertToJSON() failed [ipv6_address]");
+        goto end;
+    }
     }
 
     if (ip_end_point->transport) {
-        if (cJSON_AddStringToObject(item, "transport", OpenAPI_transport_protocol_ToString(ip_end_point->transport)) == NULL) {
-            ogs_error("OpenAPI_ip_end_point_convertToJSON() failed [transport]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "transport", OpenAPI_transport_protocol_ToString(ip_end_point->transport)) == NULL) {
+        ogs_error("OpenAPI_ip_end_point_convertToJSON() failed [transport]");
+        goto end;
+    }
     }
 
     if (ip_end_point->port) {
-        if (cJSON_AddNumberToObject(item, "port", ip_end_point->port) == NULL) {
-            ogs_error("OpenAPI_ip_end_point_convertToJSON() failed [port]");
-            goto end;
-        }
+    if (cJSON_AddNumberToObject(item, "port", ip_end_point->port) == NULL) {
+        ogs_error("OpenAPI_ip_end_point_convertToJSON() failed [port]");
+        goto end;
+    }
     }
 
 end:
@@ -81,40 +81,40 @@ OpenAPI_ip_end_point_t *OpenAPI_ip_end_point_parseFromJSON(cJSON *ip_end_pointJS
     OpenAPI_ip_end_point_t *ip_end_point_local_var = NULL;
     cJSON *ipv4_address = cJSON_GetObjectItemCaseSensitive(ip_end_pointJSON, "ipv4Address");
 
-    if (ipv4_address) {
-        if (!cJSON_IsString(ipv4_address)) {
-            ogs_error("OpenAPI_ip_end_point_parseFromJSON() failed [ipv4_address]");
-            goto end;
-        }
+    if (ipv4_address) { 
+    if (!cJSON_IsString(ipv4_address)) {
+        ogs_error("OpenAPI_ip_end_point_parseFromJSON() failed [ipv4_address]");
+        goto end;
+    }
     }
 
     cJSON *ipv6_address = cJSON_GetObjectItemCaseSensitive(ip_end_pointJSON, "ipv6Address");
 
-    if (ipv6_address) {
-        if (!cJSON_IsString(ipv6_address)) {
-            ogs_error("OpenAPI_ip_end_point_parseFromJSON() failed [ipv6_address]");
-            goto end;
-        }
+    if (ipv6_address) { 
+    if (!cJSON_IsString(ipv6_address)) {
+        ogs_error("OpenAPI_ip_end_point_parseFromJSON() failed [ipv6_address]");
+        goto end;
+    }
     }
 
     cJSON *transport = cJSON_GetObjectItemCaseSensitive(ip_end_pointJSON, "transport");
 
     OpenAPI_transport_protocol_e transportVariable;
-    if (transport) {
-        if (!cJSON_IsString(transport)) {
-            ogs_error("OpenAPI_ip_end_point_parseFromJSON() failed [transport]");
-            goto end;
-        }
-        transportVariable = OpenAPI_transport_protocol_FromString(transport->valuestring);
+    if (transport) { 
+    if (!cJSON_IsString(transport)) {
+        ogs_error("OpenAPI_ip_end_point_parseFromJSON() failed [transport]");
+        goto end;
+    }
+    transportVariable = OpenAPI_transport_protocol_FromString(transport->valuestring);
     }
 
     cJSON *port = cJSON_GetObjectItemCaseSensitive(ip_end_pointJSON, "port");
 
-    if (port) {
-        if (!cJSON_IsNumber(port)) {
-            ogs_error("OpenAPI_ip_end_point_parseFromJSON() failed [port]");
-            goto end;
-        }
+    if (port) { 
+    if (!cJSON_IsNumber(port)) {
+        ogs_error("OpenAPI_ip_end_point_parseFromJSON() failed [port]");
+        goto end;
+    }
     }
 
     ip_end_point_local_var = OpenAPI_ip_end_point_create (
@@ -122,7 +122,7 @@ OpenAPI_ip_end_point_t *OpenAPI_ip_end_point_parseFromJSON(cJSON *ip_end_pointJS
         ipv6_address ? ogs_strdup_or_assert(ipv6_address->valuestring) : NULL,
         transport ? transportVariable : 0,
         port ? port->valuedouble : 0
-        );
+    );
 
     return ip_end_point_local_var;
 end:

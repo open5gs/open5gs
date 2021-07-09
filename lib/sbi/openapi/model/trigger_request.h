@@ -1,7 +1,7 @@
 /*
  * trigger_request.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_trigger_request_H_
@@ -24,7 +24,7 @@ typedef struct OpenAPI_trigger_request_s {
 
 OpenAPI_trigger_request_t *OpenAPI_trigger_request_create(
     char *supi
-    );
+);
 void OpenAPI_trigger_request_free(OpenAPI_trigger_request_t *trigger_request);
 OpenAPI_trigger_request_t *OpenAPI_trigger_request_parseFromJSON(cJSON *trigger_requestJSON);
 cJSON *OpenAPI_trigger_request_convertToJSON(OpenAPI_trigger_request_t *trigger_request);

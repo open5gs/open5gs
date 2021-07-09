@@ -1,7 +1,7 @@
 /*
  * roaming_charging_profile.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_roaming_charging_profile_H_
@@ -28,7 +28,7 @@ typedef struct OpenAPI_roaming_charging_profile_s {
 OpenAPI_roaming_charging_profile_t *OpenAPI_roaming_charging_profile_create(
     OpenAPI_list_t *triggers,
     OpenAPI_partial_record_method_t *partial_record_method
-    );
+);
 void OpenAPI_roaming_charging_profile_free(OpenAPI_roaming_charging_profile_t *roaming_charging_profile);
 OpenAPI_roaming_charging_profile_t *OpenAPI_roaming_charging_profile_parseFromJSON(cJSON *roaming_charging_profileJSON);
 cJSON *OpenAPI_roaming_charging_profile_convertToJSON(OpenAPI_roaming_charging_profile_t *roaming_charging_profile);

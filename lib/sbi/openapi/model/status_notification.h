@@ -1,7 +1,7 @@
 /*
  * status_notification.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_status_notification_H_
@@ -31,7 +31,7 @@ OpenAPI_status_notification_t *OpenAPI_status_notification_create(
     OpenAPI_status_info_t *status_info,
     OpenAPI_small_data_rate_status_t *small_data_rate_status,
     OpenAPI_apn_rate_status_t *apn_rate_status
-    );
+);
 void OpenAPI_status_notification_free(OpenAPI_status_notification_t *status_notification);
 OpenAPI_status_notification_t *OpenAPI_status_notification_parseFromJSON(cJSON *status_notificationJSON);
 cJSON *OpenAPI_status_notification_convertToJSON(OpenAPI_status_notification_t *status_notification);

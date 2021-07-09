@@ -7,7 +7,7 @@
 OpenAPI_ue_n1_n2_info_subscription_created_data_t *OpenAPI_ue_n1_n2_info_subscription_created_data_create(
     char *n1n2_notify_subscription_id,
     char *supported_features
-    )
+)
 {
     OpenAPI_ue_n1_n2_info_subscription_created_data_t *ue_n1_n2_info_subscription_created_data_local_var = OpenAPI_malloc(sizeof(OpenAPI_ue_n1_n2_info_subscription_created_data_t));
     if (!ue_n1_n2_info_subscription_created_data_local_var) {
@@ -46,10 +46,10 @@ cJSON *OpenAPI_ue_n1_n2_info_subscription_created_data_convertToJSON(OpenAPI_ue_
     }
 
     if (ue_n1_n2_info_subscription_created_data->supported_features) {
-        if (cJSON_AddStringToObject(item, "supportedFeatures", ue_n1_n2_info_subscription_created_data->supported_features) == NULL) {
-            ogs_error("OpenAPI_ue_n1_n2_info_subscription_created_data_convertToJSON() failed [supported_features]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "supportedFeatures", ue_n1_n2_info_subscription_created_data->supported_features) == NULL) {
+        ogs_error("OpenAPI_ue_n1_n2_info_subscription_created_data_convertToJSON() failed [supported_features]");
+        goto end;
+    }
     }
 
 end:
@@ -65,7 +65,7 @@ OpenAPI_ue_n1_n2_info_subscription_created_data_t *OpenAPI_ue_n1_n2_info_subscri
         goto end;
     }
 
-
+    
     if (!cJSON_IsString(n1n2_notify_subscription_id)) {
         ogs_error("OpenAPI_ue_n1_n2_info_subscription_created_data_parseFromJSON() failed [n1n2_notify_subscription_id]");
         goto end;
@@ -73,17 +73,17 @@ OpenAPI_ue_n1_n2_info_subscription_created_data_t *OpenAPI_ue_n1_n2_info_subscri
 
     cJSON *supported_features = cJSON_GetObjectItemCaseSensitive(ue_n1_n2_info_subscription_created_dataJSON, "supportedFeatures");
 
-    if (supported_features) {
-        if (!cJSON_IsString(supported_features)) {
-            ogs_error("OpenAPI_ue_n1_n2_info_subscription_created_data_parseFromJSON() failed [supported_features]");
-            goto end;
-        }
+    if (supported_features) { 
+    if (!cJSON_IsString(supported_features)) {
+        ogs_error("OpenAPI_ue_n1_n2_info_subscription_created_data_parseFromJSON() failed [supported_features]");
+        goto end;
+    }
     }
 
     ue_n1_n2_info_subscription_created_data_local_var = OpenAPI_ue_n1_n2_info_subscription_created_data_create (
         ogs_strdup_or_assert(n1n2_notify_subscription_id->valuestring),
         supported_features ? ogs_strdup_or_assert(supported_features->valuestring) : NULL
-        );
+    );
 
     return ue_n1_n2_info_subscription_created_data_local_var;
 end:

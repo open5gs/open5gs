@@ -6,7 +6,7 @@
 
 OpenAPI_pfd_data_for_app_ext_all_of_t *OpenAPI_pfd_data_for_app_ext_all_of_create(
     char *supp_feat
-    )
+)
 {
     OpenAPI_pfd_data_for_app_ext_all_of_t *pfd_data_for_app_ext_all_of_local_var = OpenAPI_malloc(sizeof(OpenAPI_pfd_data_for_app_ext_all_of_t));
     if (!pfd_data_for_app_ext_all_of_local_var) {
@@ -38,10 +38,10 @@ cJSON *OpenAPI_pfd_data_for_app_ext_all_of_convertToJSON(OpenAPI_pfd_data_for_ap
 
     item = cJSON_CreateObject();
     if (pfd_data_for_app_ext_all_of->supp_feat) {
-        if (cJSON_AddStringToObject(item, "suppFeat", pfd_data_for_app_ext_all_of->supp_feat) == NULL) {
-            ogs_error("OpenAPI_pfd_data_for_app_ext_all_of_convertToJSON() failed [supp_feat]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "suppFeat", pfd_data_for_app_ext_all_of->supp_feat) == NULL) {
+        ogs_error("OpenAPI_pfd_data_for_app_ext_all_of_convertToJSON() failed [supp_feat]");
+        goto end;
+    }
     }
 
 end:
@@ -53,16 +53,16 @@ OpenAPI_pfd_data_for_app_ext_all_of_t *OpenAPI_pfd_data_for_app_ext_all_of_parse
     OpenAPI_pfd_data_for_app_ext_all_of_t *pfd_data_for_app_ext_all_of_local_var = NULL;
     cJSON *supp_feat = cJSON_GetObjectItemCaseSensitive(pfd_data_for_app_ext_all_ofJSON, "suppFeat");
 
-    if (supp_feat) {
-        if (!cJSON_IsString(supp_feat)) {
-            ogs_error("OpenAPI_pfd_data_for_app_ext_all_of_parseFromJSON() failed [supp_feat]");
-            goto end;
-        }
+    if (supp_feat) { 
+    if (!cJSON_IsString(supp_feat)) {
+        ogs_error("OpenAPI_pfd_data_for_app_ext_all_of_parseFromJSON() failed [supp_feat]");
+        goto end;
+    }
     }
 
     pfd_data_for_app_ext_all_of_local_var = OpenAPI_pfd_data_for_app_ext_all_of_create (
         supp_feat ? ogs_strdup_or_assert(supp_feat->valuestring) : NULL
-        );
+    );
 
     return pfd_data_for_app_ext_all_of_local_var;
 end:

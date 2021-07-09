@@ -1,7 +1,7 @@
 /*
  * sms_support.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_sms_support_H_

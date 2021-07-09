@@ -1,7 +1,7 @@
 /*
  * status_info.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_status_info_H_
@@ -34,7 +34,7 @@ OpenAPI_status_info_t *OpenAPI_status_info_create(
     OpenAPI_cause_e cause,
     OpenAPI_cn_assisted_ran_para_t *cn_assisted_ran_para,
     OpenAPI_access_type_e an_type
-    );
+);
 void OpenAPI_status_info_free(OpenAPI_status_info_t *status_info);
 OpenAPI_status_info_t *OpenAPI_status_info_parseFromJSON(cJSON *status_infoJSON);
 cJSON *OpenAPI_status_info_convertToJSON(OpenAPI_status_info_t *status_info);

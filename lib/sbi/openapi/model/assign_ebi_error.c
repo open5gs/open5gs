@@ -7,7 +7,7 @@
 OpenAPI_assign_ebi_error_t *OpenAPI_assign_ebi_error_create(
     OpenAPI_problem_details_t *error,
     OpenAPI_assign_ebi_failed_t *failure_details
-    )
+)
 {
     OpenAPI_assign_ebi_error_t *assign_ebi_error_local_var = OpenAPI_malloc(sizeof(OpenAPI_assign_ebi_error_t));
     if (!assign_ebi_error_local_var) {
@@ -76,7 +76,7 @@ OpenAPI_assign_ebi_error_t *OpenAPI_assign_ebi_error_parseFromJSON(cJSON *assign
     }
 
     OpenAPI_problem_details_t *error_local_nonprim = NULL;
-
+    
     error_local_nonprim = OpenAPI_problem_details_parseFromJSON(error);
 
     cJSON *failure_details = cJSON_GetObjectItemCaseSensitive(assign_ebi_errorJSON, "failureDetails");
@@ -86,13 +86,13 @@ OpenAPI_assign_ebi_error_t *OpenAPI_assign_ebi_error_parseFromJSON(cJSON *assign
     }
 
     OpenAPI_assign_ebi_failed_t *failure_details_local_nonprim = NULL;
-
+    
     failure_details_local_nonprim = OpenAPI_assign_ebi_failed_parseFromJSON(failure_details);
 
     assign_ebi_error_local_var = OpenAPI_assign_ebi_error_create (
         error_local_nonprim,
         failure_details_local_nonprim
-        );
+    );
 
     return assign_ebi_error_local_var;
 end:

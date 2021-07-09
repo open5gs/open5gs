@@ -31,7 +31,7 @@ OpenAPI_app_session_context_t *OpenAPI_app_session_context_create(
     OpenAPI_app_session_context_req_data_t *asc_req_data,
     OpenAPI_app_session_context_resp_data_t *asc_resp_data,
     OpenAPI_events_notification_t *evs_notif
-    );
+);
 void OpenAPI_app_session_context_free(OpenAPI_app_session_context_t *app_session_context);
 OpenAPI_app_session_context_t *OpenAPI_app_session_context_parseFromJSON(cJSON *app_session_contextJSON);
 cJSON *OpenAPI_app_session_context_convertToJSON(OpenAPI_app_session_context_t *app_session_context);

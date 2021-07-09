@@ -33,6 +33,7 @@ typedef struct OpenAPI_media_component_rm_s {
     struct OpenAPI_af_routing_requirement_rm_s *af_rout_req;
     char *qos_reference;
     OpenAPI_list_t *alt_ser_reqs;
+    int dis_ue_notif;
     int cont_ver;
     OpenAPI_list_t *codecs;
     float des_max_latency;
@@ -70,6 +71,7 @@ OpenAPI_media_component_rm_t *OpenAPI_media_component_rm_create(
     OpenAPI_af_routing_requirement_rm_t *af_rout_req,
     char *qos_reference,
     OpenAPI_list_t *alt_ser_reqs,
+    int dis_ue_notif,
     int cont_ver,
     OpenAPI_list_t *codecs,
     float des_max_latency,
@@ -100,7 +102,7 @@ OpenAPI_media_component_rm_t *OpenAPI_media_component_rm_create(
     OpenAPI_tsn_qos_container_rm_t *tsn_qos,
     OpenAPI_tscai_input_container_t *tscai_input_dl,
     OpenAPI_tscai_input_container_t *tscai_input_ul
-    );
+);
 void OpenAPI_media_component_rm_free(OpenAPI_media_component_rm_t *media_component_rm);
 OpenAPI_media_component_rm_t *OpenAPI_media_component_rm_parseFromJSON(cJSON *media_component_rmJSON);
 cJSON *OpenAPI_media_component_rm_convertToJSON(OpenAPI_media_component_rm_t *media_component_rm);

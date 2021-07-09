@@ -1,7 +1,7 @@
 /*
  * point_altitude.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_point_altitude_H_
@@ -32,7 +32,7 @@ OpenAPI_point_altitude_t *OpenAPI_point_altitude_create(
     OpenAPI_supported_gad_shapes_t *shape,
     OpenAPI_geographical_coordinates_t *point,
     double altitude
-    );
+);
 void OpenAPI_point_altitude_free(OpenAPI_point_altitude_t *point_altitude);
 OpenAPI_point_altitude_t *OpenAPI_point_altitude_parseFromJSON(cJSON *point_altitudeJSON);
 cJSON *OpenAPI_point_altitude_convertToJSON(OpenAPI_point_altitude_t *point_altitude);

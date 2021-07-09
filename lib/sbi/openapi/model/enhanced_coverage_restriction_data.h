@@ -1,7 +1,7 @@
 /*
  * enhanced_coverage_restriction_data.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_enhanced_coverage_restriction_data_H_
@@ -25,7 +25,7 @@ typedef struct OpenAPI_enhanced_coverage_restriction_data_s {
 
 OpenAPI_enhanced_coverage_restriction_data_t *OpenAPI_enhanced_coverage_restriction_data_create(
     OpenAPI_list_t *plmn_ec_info_list
-    );
+);
 void OpenAPI_enhanced_coverage_restriction_data_free(OpenAPI_enhanced_coverage_restriction_data_t *enhanced_coverage_restriction_data);
 OpenAPI_enhanced_coverage_restriction_data_t *OpenAPI_enhanced_coverage_restriction_data_parseFromJSON(cJSON *enhanced_coverage_restriction_dataJSON);
 cJSON *OpenAPI_enhanced_coverage_restriction_data_convertToJSON(OpenAPI_enhanced_coverage_restriction_data_t *enhanced_coverage_restriction_data);

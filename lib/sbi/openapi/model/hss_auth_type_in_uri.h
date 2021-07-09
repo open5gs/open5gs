@@ -1,7 +1,7 @@
 /*
  * hss_auth_type_in_uri.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_hss_auth_type_in_uri_H_

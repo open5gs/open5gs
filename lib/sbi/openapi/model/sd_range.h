@@ -26,7 +26,7 @@ typedef struct OpenAPI_sd_range_s {
 OpenAPI_sd_range_t *OpenAPI_sd_range_create(
     char *start,
     char *end
-    );
+);
 void OpenAPI_sd_range_free(OpenAPI_sd_range_t *sd_range);
 OpenAPI_sd_range_t *OpenAPI_sd_range_parseFromJSON(cJSON *sd_rangeJSON);
 cJSON *OpenAPI_sd_range_convertToJSON(OpenAPI_sd_range_t *sd_range);

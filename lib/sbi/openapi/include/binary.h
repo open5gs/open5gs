@@ -15,10 +15,10 @@ typedef struct OpenAPI_binary_s {
 OpenAPI_binary_t *OpenAPI_instantiate_binary_t(char *data, int len);
 
 char *OpenAPI_base64encode(const void *b64_encode_this,
-                           int encode_this_many_bytes);
+    int encode_this_many_bytes);
 
 char *OpenAPI_base64decode(const void *b64_decode_this,
-                           int decode_this_many_bytes, int *decoded_bytes);
+    int decode_this_many_bytes, int *decoded_bytes);
 
 #ifdef __cplusplus
 }

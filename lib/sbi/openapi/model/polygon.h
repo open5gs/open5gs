@@ -1,7 +1,7 @@
 /*
  * polygon.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_polygon_H_
@@ -30,7 +30,7 @@ typedef struct OpenAPI_polygon_s {
 OpenAPI_polygon_t *OpenAPI_polygon_create(
     OpenAPI_supported_gad_shapes_t *shape,
     OpenAPI_list_t *point_list
-    );
+);
 void OpenAPI_polygon_free(OpenAPI_polygon_t *polygon);
 OpenAPI_polygon_t *OpenAPI_polygon_parseFromJSON(cJSON *polygonJSON);
 cJSON *OpenAPI_polygon_convertToJSON(OpenAPI_polygon_t *polygon);

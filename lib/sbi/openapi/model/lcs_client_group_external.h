@@ -1,7 +1,7 @@
 /*
  * lcs_client_group_external.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_lcs_client_group_external_H_
@@ -33,7 +33,7 @@ OpenAPI_lcs_client_group_external_t *OpenAPI_lcs_client_group_external_create(
     OpenAPI_list_t *allowed_geographic_area,
     OpenAPI_privacy_check_related_action_e privacy_check_related_action,
     OpenAPI_valid_time_period_t *valid_time_period
-    );
+);
 void OpenAPI_lcs_client_group_external_free(OpenAPI_lcs_client_group_external_t *lcs_client_group_external);
 OpenAPI_lcs_client_group_external_t *OpenAPI_lcs_client_group_external_parseFromJSON(cJSON *lcs_client_group_externalJSON);
 cJSON *OpenAPI_lcs_client_group_external_convertToJSON(OpenAPI_lcs_client_group_external_t *lcs_client_group_external);

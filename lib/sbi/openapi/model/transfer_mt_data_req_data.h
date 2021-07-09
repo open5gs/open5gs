@@ -1,7 +1,7 @@
 /*
  * transfer_mt_data_req_data.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_transfer_mt_data_req_data_H_
@@ -25,7 +25,7 @@ typedef struct OpenAPI_transfer_mt_data_req_data_s {
 
 OpenAPI_transfer_mt_data_req_data_t *OpenAPI_transfer_mt_data_req_data_create(
     OpenAPI_ref_to_binary_data_t *mt_data
-    );
+);
 void OpenAPI_transfer_mt_data_req_data_free(OpenAPI_transfer_mt_data_req_data_t *transfer_mt_data_req_data);
 OpenAPI_transfer_mt_data_req_data_t *OpenAPI_transfer_mt_data_req_data_parseFromJSON(cJSON *transfer_mt_data_req_dataJSON);
 cJSON *OpenAPI_transfer_mt_data_req_data_convertToJSON(OpenAPI_transfer_mt_data_req_data_t *transfer_mt_data_req_data);

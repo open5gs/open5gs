@@ -1,7 +1,7 @@
 /*
  * steer_mode_value.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_steer_mode_value_H_

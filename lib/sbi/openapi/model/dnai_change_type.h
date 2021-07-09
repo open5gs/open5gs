@@ -1,7 +1,7 @@
 /*
  * dnai_change_type.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_dnai_change_type_H_

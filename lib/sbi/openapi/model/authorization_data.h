@@ -1,7 +1,7 @@
 /*
  * authorization_data.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_authorization_data_H_
@@ -27,7 +27,7 @@ typedef struct OpenAPI_authorization_data_s {
 OpenAPI_authorization_data_t *OpenAPI_authorization_data_create(
     OpenAPI_list_t *authorization_data,
     char *validity_time
-    );
+);
 void OpenAPI_authorization_data_free(OpenAPI_authorization_data_t *authorization_data);
 OpenAPI_authorization_data_t *OpenAPI_authorization_data_parseFromJSON(cJSON *authorization_dataJSON);
 cJSON *OpenAPI_authorization_data_convertToJSON(OpenAPI_authorization_data_t *authorization_data);

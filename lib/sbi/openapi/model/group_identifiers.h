@@ -1,7 +1,7 @@
 /*
  * group_identifiers.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_group_identifiers_H_
@@ -29,7 +29,7 @@ OpenAPI_group_identifiers_t *OpenAPI_group_identifiers_create(
     char *ext_group_id,
     char *int_group_id,
     OpenAPI_list_t *ue_id_list
-    );
+);
 void OpenAPI_group_identifiers_free(OpenAPI_group_identifiers_t *group_identifiers);
 OpenAPI_group_identifiers_t *OpenAPI_group_identifiers_parseFromJSON(cJSON *group_identifiersJSON);
 cJSON *OpenAPI_group_identifiers_convertToJSON(OpenAPI_group_identifiers_t *group_identifiers);

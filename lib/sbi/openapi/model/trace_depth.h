@@ -1,7 +1,7 @@
 /*
  * trace_depth.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_trace_depth_H_

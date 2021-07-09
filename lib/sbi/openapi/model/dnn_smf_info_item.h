@@ -24,7 +24,7 @@ typedef struct OpenAPI_dnn_smf_info_item_s {
 
 OpenAPI_dnn_smf_info_item_t *OpenAPI_dnn_smf_info_item_create(
     char *dnn
-    );
+);
 void OpenAPI_dnn_smf_info_item_free(OpenAPI_dnn_smf_info_item_t *dnn_smf_info_item);
 OpenAPI_dnn_smf_info_item_t *OpenAPI_dnn_smf_info_item_parseFromJSON(cJSON *dnn_smf_info_itemJSON);
 cJSON *OpenAPI_dnn_smf_info_item_convertToJSON(OpenAPI_dnn_smf_info_item_t *dnn_smf_info_item);

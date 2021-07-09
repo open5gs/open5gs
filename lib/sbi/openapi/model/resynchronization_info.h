@@ -1,7 +1,7 @@
 /*
  * resynchronization_info.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_resynchronization_info_H_
@@ -26,7 +26,7 @@ typedef struct OpenAPI_resynchronization_info_s {
 OpenAPI_resynchronization_info_t *OpenAPI_resynchronization_info_create(
     char *rand,
     char *auts
-    );
+);
 void OpenAPI_resynchronization_info_free(OpenAPI_resynchronization_info_t *resynchronization_info);
 OpenAPI_resynchronization_info_t *OpenAPI_resynchronization_info_parseFromJSON(cJSON *resynchronization_infoJSON);
 cJSON *OpenAPI_resynchronization_info_convertToJSON(OpenAPI_resynchronization_info_t *resynchronization_info);

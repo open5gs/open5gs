@@ -7,7 +7,7 @@
 OpenAPI_sd_range_t *OpenAPI_sd_range_create(
     char *start,
     char *end
-    )
+)
 {
     OpenAPI_sd_range_t *sd_range_local_var = OpenAPI_malloc(sizeof(OpenAPI_sd_range_t));
     if (!sd_range_local_var) {
@@ -41,17 +41,17 @@ cJSON *OpenAPI_sd_range_convertToJSON(OpenAPI_sd_range_t *sd_range)
 
     item = cJSON_CreateObject();
     if (sd_range->start) {
-        if (cJSON_AddStringToObject(item, "start", sd_range->start) == NULL) {
-            ogs_error("OpenAPI_sd_range_convertToJSON() failed [start]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "start", sd_range->start) == NULL) {
+        ogs_error("OpenAPI_sd_range_convertToJSON() failed [start]");
+        goto end;
+    }
     }
 
     if (sd_range->end) {
-        if (cJSON_AddStringToObject(item, "end", sd_range->end) == NULL) {
-            ogs_error("OpenAPI_sd_range_convertToJSON() failed [end]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "end", sd_range->end) == NULL) {
+        ogs_error("OpenAPI_sd_range_convertToJSON() failed [end]");
+        goto end;
+    }
     }
 
 end:
@@ -63,26 +63,26 @@ OpenAPI_sd_range_t *OpenAPI_sd_range_parseFromJSON(cJSON *sd_rangeJSON)
     OpenAPI_sd_range_t *sd_range_local_var = NULL;
     cJSON *start = cJSON_GetObjectItemCaseSensitive(sd_rangeJSON, "start");
 
-    if (start) {
-        if (!cJSON_IsString(start)) {
-            ogs_error("OpenAPI_sd_range_parseFromJSON() failed [start]");
-            goto end;
-        }
+    if (start) { 
+    if (!cJSON_IsString(start)) {
+        ogs_error("OpenAPI_sd_range_parseFromJSON() failed [start]");
+        goto end;
+    }
     }
 
     cJSON *end = cJSON_GetObjectItemCaseSensitive(sd_rangeJSON, "end");
 
-    if (end) {
-        if (!cJSON_IsString(end)) {
-            ogs_error("OpenAPI_sd_range_parseFromJSON() failed [end]");
-            goto end;
-        }
+    if (end) { 
+    if (!cJSON_IsString(end)) {
+        ogs_error("OpenAPI_sd_range_parseFromJSON() failed [end]");
+        goto end;
+    }
     }
 
     sd_range_local_var = OpenAPI_sd_range_create (
         start ? ogs_strdup_or_assert(start->valuestring) : NULL,
         end ? ogs_strdup_or_assert(end->valuestring) : NULL
-        );
+    );
 
     return sd_range_local_var;
 end:

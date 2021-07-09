@@ -1,7 +1,7 @@
 /*
  * user_location.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_user_location_H_
@@ -31,7 +31,7 @@ OpenAPI_user_location_t *OpenAPI_user_location_create(
     OpenAPI_eutra_location_t *eutra_location,
     OpenAPI_nr_location_t *nr_location,
     OpenAPI_n3ga_location_t *n3ga_location
-    );
+);
 void OpenAPI_user_location_free(OpenAPI_user_location_t *user_location);
 OpenAPI_user_location_t *OpenAPI_user_location_parseFromJSON(cJSON *user_locationJSON);
 cJSON *OpenAPI_user_location_convertToJSON(OpenAPI_user_location_t *user_location);

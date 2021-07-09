@@ -1,7 +1,7 @@
 /*
  * psa_indication.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_psa_indication_H_

@@ -17,7 +17,7 @@ OpenAPI_vsmf_update_error_t *OpenAPI_vsmf_update_error_create(
     OpenAPI_n4_information_t *n4_info,
     OpenAPI_n4_information_t *n4_info_ext1,
     OpenAPI_n4_information_t *n4_info_ext2
-    )
+)
 {
     OpenAPI_vsmf_update_error_t *vsmf_update_error_local_var = OpenAPI_malloc(sizeof(OpenAPI_vsmf_update_error_t));
     if (!vsmf_update_error_local_var) {
@@ -83,129 +83,129 @@ cJSON *OpenAPI_vsmf_update_error_convertToJSON(OpenAPI_vsmf_update_error_t *vsmf
     }
 
     if (vsmf_update_error->pti) {
-        if (cJSON_AddNumberToObject(item, "pti", vsmf_update_error->pti) == NULL) {
-            ogs_error("OpenAPI_vsmf_update_error_convertToJSON() failed [pti]");
-            goto end;
-        }
+    if (cJSON_AddNumberToObject(item, "pti", vsmf_update_error->pti) == NULL) {
+        ogs_error("OpenAPI_vsmf_update_error_convertToJSON() failed [pti]");
+        goto end;
+    }
     }
 
     if (vsmf_update_error->n1sm_cause) {
-        if (cJSON_AddStringToObject(item, "n1smCause", vsmf_update_error->n1sm_cause) == NULL) {
-            ogs_error("OpenAPI_vsmf_update_error_convertToJSON() failed [n1sm_cause]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "n1smCause", vsmf_update_error->n1sm_cause) == NULL) {
+        ogs_error("OpenAPI_vsmf_update_error_convertToJSON() failed [n1sm_cause]");
+        goto end;
+    }
     }
 
     if (vsmf_update_error->n1_sm_info_from_ue) {
-        cJSON *n1_sm_info_from_ue_local_JSON = OpenAPI_ref_to_binary_data_convertToJSON(vsmf_update_error->n1_sm_info_from_ue);
-        if (n1_sm_info_from_ue_local_JSON == NULL) {
-            ogs_error("OpenAPI_vsmf_update_error_convertToJSON() failed [n1_sm_info_from_ue]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "n1SmInfoFromUe", n1_sm_info_from_ue_local_JSON);
-        if (item->child == NULL) {
-            ogs_error("OpenAPI_vsmf_update_error_convertToJSON() failed [n1_sm_info_from_ue]");
-            goto end;
-        }
+    cJSON *n1_sm_info_from_ue_local_JSON = OpenAPI_ref_to_binary_data_convertToJSON(vsmf_update_error->n1_sm_info_from_ue);
+    if (n1_sm_info_from_ue_local_JSON == NULL) {
+        ogs_error("OpenAPI_vsmf_update_error_convertToJSON() failed [n1_sm_info_from_ue]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "n1SmInfoFromUe", n1_sm_info_from_ue_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_vsmf_update_error_convertToJSON() failed [n1_sm_info_from_ue]");
+        goto end;
+    }
     }
 
     if (vsmf_update_error->unknown_n1_sm_info) {
-        cJSON *unknown_n1_sm_info_local_JSON = OpenAPI_ref_to_binary_data_convertToJSON(vsmf_update_error->unknown_n1_sm_info);
-        if (unknown_n1_sm_info_local_JSON == NULL) {
-            ogs_error("OpenAPI_vsmf_update_error_convertToJSON() failed [unknown_n1_sm_info]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "unknownN1SmInfo", unknown_n1_sm_info_local_JSON);
-        if (item->child == NULL) {
-            ogs_error("OpenAPI_vsmf_update_error_convertToJSON() failed [unknown_n1_sm_info]");
-            goto end;
-        }
+    cJSON *unknown_n1_sm_info_local_JSON = OpenAPI_ref_to_binary_data_convertToJSON(vsmf_update_error->unknown_n1_sm_info);
+    if (unknown_n1_sm_info_local_JSON == NULL) {
+        ogs_error("OpenAPI_vsmf_update_error_convertToJSON() failed [unknown_n1_sm_info]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "unknownN1SmInfo", unknown_n1_sm_info_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_vsmf_update_error_convertToJSON() failed [unknown_n1_sm_info]");
+        goto end;
+    }
     }
 
     if (vsmf_update_error->failed_to_assign_ebi_list) {
-        cJSON *failed_to_assign_ebi_listList = cJSON_AddArrayToObject(item, "failedToAssignEbiList");
-        if (failed_to_assign_ebi_listList == NULL) {
-            ogs_error("OpenAPI_vsmf_update_error_convertToJSON() failed [failed_to_assign_ebi_list]");
-            goto end;
-        }
+    cJSON *failed_to_assign_ebi_listList = cJSON_AddArrayToObject(item, "failedToAssignEbiList");
+    if (failed_to_assign_ebi_listList == NULL) {
+        ogs_error("OpenAPI_vsmf_update_error_convertToJSON() failed [failed_to_assign_ebi_list]");
+        goto end;
+    }
 
-        OpenAPI_lnode_t *failed_to_assign_ebi_list_node;
-        if (vsmf_update_error->failed_to_assign_ebi_list) {
-            OpenAPI_list_for_each(vsmf_update_error->failed_to_assign_ebi_list, failed_to_assign_ebi_list_node) {
-                cJSON *itemLocal = OpenAPI_arp_convertToJSON(failed_to_assign_ebi_list_node->data);
-                if (itemLocal == NULL) {
-                    ogs_error("OpenAPI_vsmf_update_error_convertToJSON() failed [failed_to_assign_ebi_list]");
-                    goto end;
-                }
-                cJSON_AddItemToArray(failed_to_assign_ebi_listList, itemLocal);
+    OpenAPI_lnode_t *failed_to_assign_ebi_list_node;
+    if (vsmf_update_error->failed_to_assign_ebi_list) {
+        OpenAPI_list_for_each(vsmf_update_error->failed_to_assign_ebi_list, failed_to_assign_ebi_list_node) {
+            cJSON *itemLocal = OpenAPI_arp_convertToJSON(failed_to_assign_ebi_list_node->data);
+            if (itemLocal == NULL) {
+                ogs_error("OpenAPI_vsmf_update_error_convertToJSON() failed [failed_to_assign_ebi_list]");
+                goto end;
             }
+            cJSON_AddItemToArray(failed_to_assign_ebi_listList, itemLocal);
         }
+    }
     }
 
     if (vsmf_update_error->ng_ap_cause) {
-        cJSON *ng_ap_cause_local_JSON = OpenAPI_ng_ap_cause_convertToJSON(vsmf_update_error->ng_ap_cause);
-        if (ng_ap_cause_local_JSON == NULL) {
-            ogs_error("OpenAPI_vsmf_update_error_convertToJSON() failed [ng_ap_cause]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "ngApCause", ng_ap_cause_local_JSON);
-        if (item->child == NULL) {
-            ogs_error("OpenAPI_vsmf_update_error_convertToJSON() failed [ng_ap_cause]");
-            goto end;
-        }
+    cJSON *ng_ap_cause_local_JSON = OpenAPI_ng_ap_cause_convertToJSON(vsmf_update_error->ng_ap_cause);
+    if (ng_ap_cause_local_JSON == NULL) {
+        ogs_error("OpenAPI_vsmf_update_error_convertToJSON() failed [ng_ap_cause]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "ngApCause", ng_ap_cause_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_vsmf_update_error_convertToJSON() failed [ng_ap_cause]");
+        goto end;
+    }
     }
 
     if (vsmf_update_error->_5g_mm_cause_value) {
-        if (cJSON_AddNumberToObject(item, "5gMmCauseValue", vsmf_update_error->_5g_mm_cause_value) == NULL) {
-            ogs_error("OpenAPI_vsmf_update_error_convertToJSON() failed [_5g_mm_cause_value]");
-            goto end;
-        }
+    if (cJSON_AddNumberToObject(item, "5gMmCauseValue", vsmf_update_error->_5g_mm_cause_value) == NULL) {
+        ogs_error("OpenAPI_vsmf_update_error_convertToJSON() failed [_5g_mm_cause_value]");
+        goto end;
+    }
     }
 
     if (vsmf_update_error->recovery_time) {
-        if (cJSON_AddStringToObject(item, "recoveryTime", vsmf_update_error->recovery_time) == NULL) {
-            ogs_error("OpenAPI_vsmf_update_error_convertToJSON() failed [recovery_time]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "recoveryTime", vsmf_update_error->recovery_time) == NULL) {
+        ogs_error("OpenAPI_vsmf_update_error_convertToJSON() failed [recovery_time]");
+        goto end;
+    }
     }
 
     if (vsmf_update_error->n4_info) {
-        cJSON *n4_info_local_JSON = OpenAPI_n4_information_convertToJSON(vsmf_update_error->n4_info);
-        if (n4_info_local_JSON == NULL) {
-            ogs_error("OpenAPI_vsmf_update_error_convertToJSON() failed [n4_info]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "n4Info", n4_info_local_JSON);
-        if (item->child == NULL) {
-            ogs_error("OpenAPI_vsmf_update_error_convertToJSON() failed [n4_info]");
-            goto end;
-        }
+    cJSON *n4_info_local_JSON = OpenAPI_n4_information_convertToJSON(vsmf_update_error->n4_info);
+    if (n4_info_local_JSON == NULL) {
+        ogs_error("OpenAPI_vsmf_update_error_convertToJSON() failed [n4_info]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "n4Info", n4_info_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_vsmf_update_error_convertToJSON() failed [n4_info]");
+        goto end;
+    }
     }
 
     if (vsmf_update_error->n4_info_ext1) {
-        cJSON *n4_info_ext1_local_JSON = OpenAPI_n4_information_convertToJSON(vsmf_update_error->n4_info_ext1);
-        if (n4_info_ext1_local_JSON == NULL) {
-            ogs_error("OpenAPI_vsmf_update_error_convertToJSON() failed [n4_info_ext1]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "n4InfoExt1", n4_info_ext1_local_JSON);
-        if (item->child == NULL) {
-            ogs_error("OpenAPI_vsmf_update_error_convertToJSON() failed [n4_info_ext1]");
-            goto end;
-        }
+    cJSON *n4_info_ext1_local_JSON = OpenAPI_n4_information_convertToJSON(vsmf_update_error->n4_info_ext1);
+    if (n4_info_ext1_local_JSON == NULL) {
+        ogs_error("OpenAPI_vsmf_update_error_convertToJSON() failed [n4_info_ext1]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "n4InfoExt1", n4_info_ext1_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_vsmf_update_error_convertToJSON() failed [n4_info_ext1]");
+        goto end;
+    }
     }
 
     if (vsmf_update_error->n4_info_ext2) {
-        cJSON *n4_info_ext2_local_JSON = OpenAPI_n4_information_convertToJSON(vsmf_update_error->n4_info_ext2);
-        if (n4_info_ext2_local_JSON == NULL) {
-            ogs_error("OpenAPI_vsmf_update_error_convertToJSON() failed [n4_info_ext2]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "n4InfoExt2", n4_info_ext2_local_JSON);
-        if (item->child == NULL) {
-            ogs_error("OpenAPI_vsmf_update_error_convertToJSON() failed [n4_info_ext2]");
-            goto end;
-        }
+    cJSON *n4_info_ext2_local_JSON = OpenAPI_n4_information_convertToJSON(vsmf_update_error->n4_info_ext2);
+    if (n4_info_ext2_local_JSON == NULL) {
+        ogs_error("OpenAPI_vsmf_update_error_convertToJSON() failed [n4_info_ext2]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "n4InfoExt2", n4_info_ext2_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_vsmf_update_error_convertToJSON() failed [n4_info_ext2]");
+        goto end;
+    }
     }
 
 end:
@@ -222,108 +222,108 @@ OpenAPI_vsmf_update_error_t *OpenAPI_vsmf_update_error_parseFromJSON(cJSON *vsmf
     }
 
     OpenAPI_problem_details_t *error_local_nonprim = NULL;
-
+    
     error_local_nonprim = OpenAPI_problem_details_parseFromJSON(error);
 
     cJSON *pti = cJSON_GetObjectItemCaseSensitive(vsmf_update_errorJSON, "pti");
 
-    if (pti) {
-        if (!cJSON_IsNumber(pti)) {
-            ogs_error("OpenAPI_vsmf_update_error_parseFromJSON() failed [pti]");
-            goto end;
-        }
+    if (pti) { 
+    if (!cJSON_IsNumber(pti)) {
+        ogs_error("OpenAPI_vsmf_update_error_parseFromJSON() failed [pti]");
+        goto end;
+    }
     }
 
     cJSON *n1sm_cause = cJSON_GetObjectItemCaseSensitive(vsmf_update_errorJSON, "n1smCause");
 
-    if (n1sm_cause) {
-        if (!cJSON_IsString(n1sm_cause)) {
-            ogs_error("OpenAPI_vsmf_update_error_parseFromJSON() failed [n1sm_cause]");
-            goto end;
-        }
+    if (n1sm_cause) { 
+    if (!cJSON_IsString(n1sm_cause)) {
+        ogs_error("OpenAPI_vsmf_update_error_parseFromJSON() failed [n1sm_cause]");
+        goto end;
+    }
     }
 
     cJSON *n1_sm_info_from_ue = cJSON_GetObjectItemCaseSensitive(vsmf_update_errorJSON, "n1SmInfoFromUe");
 
     OpenAPI_ref_to_binary_data_t *n1_sm_info_from_ue_local_nonprim = NULL;
-    if (n1_sm_info_from_ue) {
-        n1_sm_info_from_ue_local_nonprim = OpenAPI_ref_to_binary_data_parseFromJSON(n1_sm_info_from_ue);
+    if (n1_sm_info_from_ue) { 
+    n1_sm_info_from_ue_local_nonprim = OpenAPI_ref_to_binary_data_parseFromJSON(n1_sm_info_from_ue);
     }
 
     cJSON *unknown_n1_sm_info = cJSON_GetObjectItemCaseSensitive(vsmf_update_errorJSON, "unknownN1SmInfo");
 
     OpenAPI_ref_to_binary_data_t *unknown_n1_sm_info_local_nonprim = NULL;
-    if (unknown_n1_sm_info) {
-        unknown_n1_sm_info_local_nonprim = OpenAPI_ref_to_binary_data_parseFromJSON(unknown_n1_sm_info);
+    if (unknown_n1_sm_info) { 
+    unknown_n1_sm_info_local_nonprim = OpenAPI_ref_to_binary_data_parseFromJSON(unknown_n1_sm_info);
     }
 
     cJSON *failed_to_assign_ebi_list = cJSON_GetObjectItemCaseSensitive(vsmf_update_errorJSON, "failedToAssignEbiList");
 
     OpenAPI_list_t *failed_to_assign_ebi_listList;
-    if (failed_to_assign_ebi_list) {
-        cJSON *failed_to_assign_ebi_list_local_nonprimitive;
-        if (!cJSON_IsArray(failed_to_assign_ebi_list)) {
+    if (failed_to_assign_ebi_list) { 
+    cJSON *failed_to_assign_ebi_list_local_nonprimitive;
+    if (!cJSON_IsArray(failed_to_assign_ebi_list)){
+        ogs_error("OpenAPI_vsmf_update_error_parseFromJSON() failed [failed_to_assign_ebi_list]");
+        goto end;
+    }
+
+    failed_to_assign_ebi_listList = OpenAPI_list_create();
+
+    cJSON_ArrayForEach(failed_to_assign_ebi_list_local_nonprimitive, failed_to_assign_ebi_list ) {
+        if (!cJSON_IsObject(failed_to_assign_ebi_list_local_nonprimitive)) {
             ogs_error("OpenAPI_vsmf_update_error_parseFromJSON() failed [failed_to_assign_ebi_list]");
             goto end;
         }
+        OpenAPI_arp_t *failed_to_assign_ebi_listItem = OpenAPI_arp_parseFromJSON(failed_to_assign_ebi_list_local_nonprimitive);
 
-        failed_to_assign_ebi_listList = OpenAPI_list_create();
-
-        cJSON_ArrayForEach(failed_to_assign_ebi_list_local_nonprimitive, failed_to_assign_ebi_list ) {
-            if (!cJSON_IsObject(failed_to_assign_ebi_list_local_nonprimitive)) {
-                ogs_error("OpenAPI_vsmf_update_error_parseFromJSON() failed [failed_to_assign_ebi_list]");
-                goto end;
-            }
-            OpenAPI_arp_t *failed_to_assign_ebi_listItem = OpenAPI_arp_parseFromJSON(failed_to_assign_ebi_list_local_nonprimitive);
-
-            OpenAPI_list_add(failed_to_assign_ebi_listList, failed_to_assign_ebi_listItem);
-        }
+        OpenAPI_list_add(failed_to_assign_ebi_listList, failed_to_assign_ebi_listItem);
+    }
     }
 
     cJSON *ng_ap_cause = cJSON_GetObjectItemCaseSensitive(vsmf_update_errorJSON, "ngApCause");
 
     OpenAPI_ng_ap_cause_t *ng_ap_cause_local_nonprim = NULL;
-    if (ng_ap_cause) {
-        ng_ap_cause_local_nonprim = OpenAPI_ng_ap_cause_parseFromJSON(ng_ap_cause);
+    if (ng_ap_cause) { 
+    ng_ap_cause_local_nonprim = OpenAPI_ng_ap_cause_parseFromJSON(ng_ap_cause);
     }
 
     cJSON *_5g_mm_cause_value = cJSON_GetObjectItemCaseSensitive(vsmf_update_errorJSON, "5gMmCauseValue");
 
-    if (_5g_mm_cause_value) {
-        if (!cJSON_IsNumber(_5g_mm_cause_value)) {
-            ogs_error("OpenAPI_vsmf_update_error_parseFromJSON() failed [_5g_mm_cause_value]");
-            goto end;
-        }
+    if (_5g_mm_cause_value) { 
+    if (!cJSON_IsNumber(_5g_mm_cause_value)) {
+        ogs_error("OpenAPI_vsmf_update_error_parseFromJSON() failed [_5g_mm_cause_value]");
+        goto end;
+    }
     }
 
     cJSON *recovery_time = cJSON_GetObjectItemCaseSensitive(vsmf_update_errorJSON, "recoveryTime");
 
-    if (recovery_time) {
-        if (!cJSON_IsString(recovery_time)) {
-            ogs_error("OpenAPI_vsmf_update_error_parseFromJSON() failed [recovery_time]");
-            goto end;
-        }
+    if (recovery_time) { 
+    if (!cJSON_IsString(recovery_time)) {
+        ogs_error("OpenAPI_vsmf_update_error_parseFromJSON() failed [recovery_time]");
+        goto end;
+    }
     }
 
     cJSON *n4_info = cJSON_GetObjectItemCaseSensitive(vsmf_update_errorJSON, "n4Info");
 
     OpenAPI_n4_information_t *n4_info_local_nonprim = NULL;
-    if (n4_info) {
-        n4_info_local_nonprim = OpenAPI_n4_information_parseFromJSON(n4_info);
+    if (n4_info) { 
+    n4_info_local_nonprim = OpenAPI_n4_information_parseFromJSON(n4_info);
     }
 
     cJSON *n4_info_ext1 = cJSON_GetObjectItemCaseSensitive(vsmf_update_errorJSON, "n4InfoExt1");
 
     OpenAPI_n4_information_t *n4_info_ext1_local_nonprim = NULL;
-    if (n4_info_ext1) {
-        n4_info_ext1_local_nonprim = OpenAPI_n4_information_parseFromJSON(n4_info_ext1);
+    if (n4_info_ext1) { 
+    n4_info_ext1_local_nonprim = OpenAPI_n4_information_parseFromJSON(n4_info_ext1);
     }
 
     cJSON *n4_info_ext2 = cJSON_GetObjectItemCaseSensitive(vsmf_update_errorJSON, "n4InfoExt2");
 
     OpenAPI_n4_information_t *n4_info_ext2_local_nonprim = NULL;
-    if (n4_info_ext2) {
-        n4_info_ext2_local_nonprim = OpenAPI_n4_information_parseFromJSON(n4_info_ext2);
+    if (n4_info_ext2) { 
+    n4_info_ext2_local_nonprim = OpenAPI_n4_information_parseFromJSON(n4_info_ext2);
     }
 
     vsmf_update_error_local_var = OpenAPI_vsmf_update_error_create (
@@ -339,7 +339,7 @@ OpenAPI_vsmf_update_error_t *OpenAPI_vsmf_update_error_parseFromJSON(cJSON *vsmf
         n4_info ? n4_info_local_nonprim : NULL,
         n4_info_ext1 ? n4_info_ext1_local_nonprim : NULL,
         n4_info_ext2 ? n4_info_ext2_local_nonprim : NULL
-        );
+    );
 
     return vsmf_update_error_local_var;
 end:

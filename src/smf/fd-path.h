@@ -31,8 +31,16 @@ typedef struct gtp_xact_s gtp_xact_t;
 int smf_fd_init(void);
 void smf_fd_final(void);
 
+int smf_gx_init(void);
+void smf_gx_final(void);
+int smf_s6b_init(void);
+void smf_s6b_final(void);
+
 void smf_gx_send_ccr(smf_sess_t *sess, ogs_gtp_xact_t *xact,
         uint32_t cc_request_type);
+
+void smf_s6b_send_aar(smf_sess_t *sess, ogs_gtp_xact_t *xact);
+void smf_s6b_send_str(smf_sess_t *sess, ogs_gtp_xact_t *xact, uint32_t cause);
 
 #ifdef __cplusplus
 }

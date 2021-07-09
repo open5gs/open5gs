@@ -6,7 +6,7 @@
 
 OpenAPI_trigger_request_t *OpenAPI_trigger_request_create(
     char *supi
-    )
+)
 {
     OpenAPI_trigger_request_t *trigger_request_local_var = OpenAPI_malloc(sizeof(OpenAPI_trigger_request_t));
     if (!trigger_request_local_var) {
@@ -55,7 +55,7 @@ OpenAPI_trigger_request_t *OpenAPI_trigger_request_parseFromJSON(cJSON *trigger_
         goto end;
     }
 
-
+    
     if (!cJSON_IsString(supi)) {
         ogs_error("OpenAPI_trigger_request_parseFromJSON() failed [supi]");
         goto end;
@@ -63,7 +63,7 @@ OpenAPI_trigger_request_t *OpenAPI_trigger_request_parseFromJSON(cJSON *trigger_
 
     trigger_request_local_var = OpenAPI_trigger_request_create (
         ogs_strdup_or_assert(supi->valuestring)
-        );
+    );
 
     return trigger_request_local_var;
 end:

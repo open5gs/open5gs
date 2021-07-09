@@ -6,7 +6,7 @@
 
 OpenAPI_nf_instance_id_cond_t *OpenAPI_nf_instance_id_cond_create(
     char *nf_instance_id
-    )
+)
 {
     OpenAPI_nf_instance_id_cond_t *nf_instance_id_cond_local_var = OpenAPI_malloc(sizeof(OpenAPI_nf_instance_id_cond_t));
     if (!nf_instance_id_cond_local_var) {
@@ -55,7 +55,7 @@ OpenAPI_nf_instance_id_cond_t *OpenAPI_nf_instance_id_cond_parseFromJSON(cJSON *
         goto end;
     }
 
-
+    
     if (!cJSON_IsString(nf_instance_id)) {
         ogs_error("OpenAPI_nf_instance_id_cond_parseFromJSON() failed [nf_instance_id]");
         goto end;
@@ -63,7 +63,7 @@ OpenAPI_nf_instance_id_cond_t *OpenAPI_nf_instance_id_cond_parseFromJSON(cJSON *
 
     nf_instance_id_cond_local_var = OpenAPI_nf_instance_id_cond_create (
         ogs_strdup_or_assert(nf_instance_id->valuestring)
-        );
+    );
 
     return nf_instance_id_cond_local_var;
 end:

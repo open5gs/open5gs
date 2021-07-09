@@ -7,7 +7,7 @@
 OpenAPI_binding_resp_t *OpenAPI_binding_resp_create(
     char *pcf_sm_fqdn,
     OpenAPI_list_t *pcf_sm_ip_end_points
-    )
+)
 {
     OpenAPI_binding_resp_t *binding_resp_local_var = OpenAPI_malloc(sizeof(OpenAPI_binding_resp_t));
     if (!binding_resp_local_var) {
@@ -44,30 +44,30 @@ cJSON *OpenAPI_binding_resp_convertToJSON(OpenAPI_binding_resp_t *binding_resp)
 
     item = cJSON_CreateObject();
     if (binding_resp->pcf_sm_fqdn) {
-        if (cJSON_AddStringToObject(item, "pcfSmFqdn", binding_resp->pcf_sm_fqdn) == NULL) {
-            ogs_error("OpenAPI_binding_resp_convertToJSON() failed [pcf_sm_fqdn]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "pcfSmFqdn", binding_resp->pcf_sm_fqdn) == NULL) {
+        ogs_error("OpenAPI_binding_resp_convertToJSON() failed [pcf_sm_fqdn]");
+        goto end;
+    }
     }
 
     if (binding_resp->pcf_sm_ip_end_points) {
-        cJSON *pcf_sm_ip_end_pointsList = cJSON_AddArrayToObject(item, "pcfSmIpEndPoints");
-        if (pcf_sm_ip_end_pointsList == NULL) {
-            ogs_error("OpenAPI_binding_resp_convertToJSON() failed [pcf_sm_ip_end_points]");
-            goto end;
-        }
+    cJSON *pcf_sm_ip_end_pointsList = cJSON_AddArrayToObject(item, "pcfSmIpEndPoints");
+    if (pcf_sm_ip_end_pointsList == NULL) {
+        ogs_error("OpenAPI_binding_resp_convertToJSON() failed [pcf_sm_ip_end_points]");
+        goto end;
+    }
 
-        OpenAPI_lnode_t *pcf_sm_ip_end_points_node;
-        if (binding_resp->pcf_sm_ip_end_points) {
-            OpenAPI_list_for_each(binding_resp->pcf_sm_ip_end_points, pcf_sm_ip_end_points_node) {
-                cJSON *itemLocal = OpenAPI_ip_end_point_convertToJSON(pcf_sm_ip_end_points_node->data);
-                if (itemLocal == NULL) {
-                    ogs_error("OpenAPI_binding_resp_convertToJSON() failed [pcf_sm_ip_end_points]");
-                    goto end;
-                }
-                cJSON_AddItemToArray(pcf_sm_ip_end_pointsList, itemLocal);
+    OpenAPI_lnode_t *pcf_sm_ip_end_points_node;
+    if (binding_resp->pcf_sm_ip_end_points) {
+        OpenAPI_list_for_each(binding_resp->pcf_sm_ip_end_points, pcf_sm_ip_end_points_node) {
+            cJSON *itemLocal = OpenAPI_ip_end_point_convertToJSON(pcf_sm_ip_end_points_node->data);
+            if (itemLocal == NULL) {
+                ogs_error("OpenAPI_binding_resp_convertToJSON() failed [pcf_sm_ip_end_points]");
+                goto end;
             }
+            cJSON_AddItemToArray(pcf_sm_ip_end_pointsList, itemLocal);
         }
+    }
     }
 
 end:
@@ -79,40 +79,40 @@ OpenAPI_binding_resp_t *OpenAPI_binding_resp_parseFromJSON(cJSON *binding_respJS
     OpenAPI_binding_resp_t *binding_resp_local_var = NULL;
     cJSON *pcf_sm_fqdn = cJSON_GetObjectItemCaseSensitive(binding_respJSON, "pcfSmFqdn");
 
-    if (pcf_sm_fqdn) {
-        if (!cJSON_IsString(pcf_sm_fqdn)) {
-            ogs_error("OpenAPI_binding_resp_parseFromJSON() failed [pcf_sm_fqdn]");
-            goto end;
-        }
+    if (pcf_sm_fqdn) { 
+    if (!cJSON_IsString(pcf_sm_fqdn)) {
+        ogs_error("OpenAPI_binding_resp_parseFromJSON() failed [pcf_sm_fqdn]");
+        goto end;
+    }
     }
 
     cJSON *pcf_sm_ip_end_points = cJSON_GetObjectItemCaseSensitive(binding_respJSON, "pcfSmIpEndPoints");
 
     OpenAPI_list_t *pcf_sm_ip_end_pointsList;
-    if (pcf_sm_ip_end_points) {
-        cJSON *pcf_sm_ip_end_points_local_nonprimitive;
-        if (!cJSON_IsArray(pcf_sm_ip_end_points)) {
+    if (pcf_sm_ip_end_points) { 
+    cJSON *pcf_sm_ip_end_points_local_nonprimitive;
+    if (!cJSON_IsArray(pcf_sm_ip_end_points)){
+        ogs_error("OpenAPI_binding_resp_parseFromJSON() failed [pcf_sm_ip_end_points]");
+        goto end;
+    }
+
+    pcf_sm_ip_end_pointsList = OpenAPI_list_create();
+
+    cJSON_ArrayForEach(pcf_sm_ip_end_points_local_nonprimitive, pcf_sm_ip_end_points ) {
+        if (!cJSON_IsObject(pcf_sm_ip_end_points_local_nonprimitive)) {
             ogs_error("OpenAPI_binding_resp_parseFromJSON() failed [pcf_sm_ip_end_points]");
             goto end;
         }
+        OpenAPI_ip_end_point_t *pcf_sm_ip_end_pointsItem = OpenAPI_ip_end_point_parseFromJSON(pcf_sm_ip_end_points_local_nonprimitive);
 
-        pcf_sm_ip_end_pointsList = OpenAPI_list_create();
-
-        cJSON_ArrayForEach(pcf_sm_ip_end_points_local_nonprimitive, pcf_sm_ip_end_points ) {
-            if (!cJSON_IsObject(pcf_sm_ip_end_points_local_nonprimitive)) {
-                ogs_error("OpenAPI_binding_resp_parseFromJSON() failed [pcf_sm_ip_end_points]");
-                goto end;
-            }
-            OpenAPI_ip_end_point_t *pcf_sm_ip_end_pointsItem = OpenAPI_ip_end_point_parseFromJSON(pcf_sm_ip_end_points_local_nonprimitive);
-
-            OpenAPI_list_add(pcf_sm_ip_end_pointsList, pcf_sm_ip_end_pointsItem);
-        }
+        OpenAPI_list_add(pcf_sm_ip_end_pointsList, pcf_sm_ip_end_pointsItem);
+    }
     }
 
     binding_resp_local_var = OpenAPI_binding_resp_create (
         pcf_sm_fqdn ? ogs_strdup_or_assert(pcf_sm_fqdn->valuestring) : NULL,
         pcf_sm_ip_end_points ? pcf_sm_ip_end_pointsList : NULL
-        );
+    );
 
     return binding_resp_local_var;
 end:

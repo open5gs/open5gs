@@ -5,7 +5,7 @@
 #include "event_report_mode.h"
 
 OpenAPI_event_report_mode_t *OpenAPI_event_report_mode_create(
-    )
+)
 {
     OpenAPI_event_report_mode_t *event_report_mode_local_var = OpenAPI_malloc(sizeof(OpenAPI_event_report_mode_t));
     if (!event_report_mode_local_var) {
@@ -42,7 +42,7 @@ OpenAPI_event_report_mode_t *OpenAPI_event_report_mode_parseFromJSON(cJSON *even
 {
     OpenAPI_event_report_mode_t *event_report_mode_local_var = NULL;
     event_report_mode_local_var = OpenAPI_event_report_mode_create (
-        );
+    );
 
     return event_report_mode_local_var;
 end:

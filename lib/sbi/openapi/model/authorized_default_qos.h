@@ -1,7 +1,7 @@
 /*
  * authorized_default_qos.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_authorized_default_qos_H_
@@ -29,7 +29,6 @@ typedef struct OpenAPI_authorized_default_qos_s {
     char *maxbr_dl;
     char *gbr_ul;
     char *gbr_dl;
-    int qnc;
     int ext_max_data_burst_vol;
 } OpenAPI_authorized_default_qos_t;
 
@@ -43,9 +42,8 @@ OpenAPI_authorized_default_qos_t *OpenAPI_authorized_default_qos_create(
     char *maxbr_dl,
     char *gbr_ul,
     char *gbr_dl,
-    int qnc,
     int ext_max_data_burst_vol
-    );
+);
 void OpenAPI_authorized_default_qos_free(OpenAPI_authorized_default_qos_t *authorized_default_qos);
 OpenAPI_authorized_default_qos_t *OpenAPI_authorized_default_qos_parseFromJSON(cJSON *authorized_default_qosJSON);
 cJSON *OpenAPI_authorized_default_qos_convertToJSON(OpenAPI_authorized_default_qos_t *authorized_default_qos);

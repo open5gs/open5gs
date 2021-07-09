@@ -1,7 +1,7 @@
 /*
  * ma_pdu_indication.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_ma_pdu_indication_H_

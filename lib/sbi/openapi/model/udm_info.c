@@ -11,7 +11,7 @@ OpenAPI_udm_info_t *OpenAPI_udm_info_create(
     OpenAPI_list_t *external_group_identifiers_ranges,
     OpenAPI_list_t *routing_indicators,
     OpenAPI_list_t *internal_group_identifiers_ranges
-    )
+)
 {
     OpenAPI_udm_info_t *udm_info_local_var = OpenAPI_malloc(sizeof(OpenAPI_udm_info_t));
     if (!udm_info_local_var) {
@@ -68,106 +68,106 @@ cJSON *OpenAPI_udm_info_convertToJSON(OpenAPI_udm_info_t *udm_info)
 
     item = cJSON_CreateObject();
     if (udm_info->group_id) {
-        if (cJSON_AddStringToObject(item, "groupId", udm_info->group_id) == NULL) {
-            ogs_error("OpenAPI_udm_info_convertToJSON() failed [group_id]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "groupId", udm_info->group_id) == NULL) {
+        ogs_error("OpenAPI_udm_info_convertToJSON() failed [group_id]");
+        goto end;
+    }
     }
 
     if (udm_info->supi_ranges) {
-        cJSON *supi_rangesList = cJSON_AddArrayToObject(item, "supiRanges");
-        if (supi_rangesList == NULL) {
-            ogs_error("OpenAPI_udm_info_convertToJSON() failed [supi_ranges]");
-            goto end;
-        }
+    cJSON *supi_rangesList = cJSON_AddArrayToObject(item, "supiRanges");
+    if (supi_rangesList == NULL) {
+        ogs_error("OpenAPI_udm_info_convertToJSON() failed [supi_ranges]");
+        goto end;
+    }
 
-        OpenAPI_lnode_t *supi_ranges_node;
-        if (udm_info->supi_ranges) {
-            OpenAPI_list_for_each(udm_info->supi_ranges, supi_ranges_node) {
-                cJSON *itemLocal = OpenAPI_supi_range_convertToJSON(supi_ranges_node->data);
-                if (itemLocal == NULL) {
-                    ogs_error("OpenAPI_udm_info_convertToJSON() failed [supi_ranges]");
-                    goto end;
-                }
-                cJSON_AddItemToArray(supi_rangesList, itemLocal);
+    OpenAPI_lnode_t *supi_ranges_node;
+    if (udm_info->supi_ranges) {
+        OpenAPI_list_for_each(udm_info->supi_ranges, supi_ranges_node) {
+            cJSON *itemLocal = OpenAPI_supi_range_convertToJSON(supi_ranges_node->data);
+            if (itemLocal == NULL) {
+                ogs_error("OpenAPI_udm_info_convertToJSON() failed [supi_ranges]");
+                goto end;
             }
+            cJSON_AddItemToArray(supi_rangesList, itemLocal);
         }
+    }
     }
 
     if (udm_info->gpsi_ranges) {
-        cJSON *gpsi_rangesList = cJSON_AddArrayToObject(item, "gpsiRanges");
-        if (gpsi_rangesList == NULL) {
-            ogs_error("OpenAPI_udm_info_convertToJSON() failed [gpsi_ranges]");
-            goto end;
-        }
+    cJSON *gpsi_rangesList = cJSON_AddArrayToObject(item, "gpsiRanges");
+    if (gpsi_rangesList == NULL) {
+        ogs_error("OpenAPI_udm_info_convertToJSON() failed [gpsi_ranges]");
+        goto end;
+    }
 
-        OpenAPI_lnode_t *gpsi_ranges_node;
-        if (udm_info->gpsi_ranges) {
-            OpenAPI_list_for_each(udm_info->gpsi_ranges, gpsi_ranges_node) {
-                cJSON *itemLocal = OpenAPI_identity_range_convertToJSON(gpsi_ranges_node->data);
-                if (itemLocal == NULL) {
-                    ogs_error("OpenAPI_udm_info_convertToJSON() failed [gpsi_ranges]");
-                    goto end;
-                }
-                cJSON_AddItemToArray(gpsi_rangesList, itemLocal);
+    OpenAPI_lnode_t *gpsi_ranges_node;
+    if (udm_info->gpsi_ranges) {
+        OpenAPI_list_for_each(udm_info->gpsi_ranges, gpsi_ranges_node) {
+            cJSON *itemLocal = OpenAPI_identity_range_convertToJSON(gpsi_ranges_node->data);
+            if (itemLocal == NULL) {
+                ogs_error("OpenAPI_udm_info_convertToJSON() failed [gpsi_ranges]");
+                goto end;
             }
+            cJSON_AddItemToArray(gpsi_rangesList, itemLocal);
         }
+    }
     }
 
     if (udm_info->external_group_identifiers_ranges) {
-        cJSON *external_group_identifiers_rangesList = cJSON_AddArrayToObject(item, "externalGroupIdentifiersRanges");
-        if (external_group_identifiers_rangesList == NULL) {
-            ogs_error("OpenAPI_udm_info_convertToJSON() failed [external_group_identifiers_ranges]");
-            goto end;
-        }
+    cJSON *external_group_identifiers_rangesList = cJSON_AddArrayToObject(item, "externalGroupIdentifiersRanges");
+    if (external_group_identifiers_rangesList == NULL) {
+        ogs_error("OpenAPI_udm_info_convertToJSON() failed [external_group_identifiers_ranges]");
+        goto end;
+    }
 
-        OpenAPI_lnode_t *external_group_identifiers_ranges_node;
-        if (udm_info->external_group_identifiers_ranges) {
-            OpenAPI_list_for_each(udm_info->external_group_identifiers_ranges, external_group_identifiers_ranges_node) {
-                cJSON *itemLocal = OpenAPI_identity_range_convertToJSON(external_group_identifiers_ranges_node->data);
-                if (itemLocal == NULL) {
-                    ogs_error("OpenAPI_udm_info_convertToJSON() failed [external_group_identifiers_ranges]");
-                    goto end;
-                }
-                cJSON_AddItemToArray(external_group_identifiers_rangesList, itemLocal);
+    OpenAPI_lnode_t *external_group_identifiers_ranges_node;
+    if (udm_info->external_group_identifiers_ranges) {
+        OpenAPI_list_for_each(udm_info->external_group_identifiers_ranges, external_group_identifiers_ranges_node) {
+            cJSON *itemLocal = OpenAPI_identity_range_convertToJSON(external_group_identifiers_ranges_node->data);
+            if (itemLocal == NULL) {
+                ogs_error("OpenAPI_udm_info_convertToJSON() failed [external_group_identifiers_ranges]");
+                goto end;
             }
+            cJSON_AddItemToArray(external_group_identifiers_rangesList, itemLocal);
         }
+    }
     }
 
     if (udm_info->routing_indicators) {
-        cJSON *routing_indicators = cJSON_AddArrayToObject(item, "routingIndicators");
-        if (routing_indicators == NULL) {
-            ogs_error("OpenAPI_udm_info_convertToJSON() failed [routing_indicators]");
-            goto end;
-        }
+    cJSON *routing_indicators = cJSON_AddArrayToObject(item, "routingIndicators");
+    if (routing_indicators == NULL) {
+        ogs_error("OpenAPI_udm_info_convertToJSON() failed [routing_indicators]");
+        goto end;
+    }
 
-        OpenAPI_lnode_t *routing_indicators_node;
-        OpenAPI_list_for_each(udm_info->routing_indicators, routing_indicators_node)  {
-            if (cJSON_AddStringToObject(routing_indicators, "", (char*)routing_indicators_node->data) == NULL) {
-                ogs_error("OpenAPI_udm_info_convertToJSON() failed [routing_indicators]");
-                goto end;
-            }
-        }
+    OpenAPI_lnode_t *routing_indicators_node;
+    OpenAPI_list_for_each(udm_info->routing_indicators, routing_indicators_node)  {
+    if (cJSON_AddStringToObject(routing_indicators, "", (char*)routing_indicators_node->data) == NULL) {
+        ogs_error("OpenAPI_udm_info_convertToJSON() failed [routing_indicators]");
+        goto end;
+    }
+                    }
     }
 
     if (udm_info->internal_group_identifiers_ranges) {
-        cJSON *internal_group_identifiers_rangesList = cJSON_AddArrayToObject(item, "internalGroupIdentifiersRanges");
-        if (internal_group_identifiers_rangesList == NULL) {
-            ogs_error("OpenAPI_udm_info_convertToJSON() failed [internal_group_identifiers_ranges]");
-            goto end;
-        }
+    cJSON *internal_group_identifiers_rangesList = cJSON_AddArrayToObject(item, "internalGroupIdentifiersRanges");
+    if (internal_group_identifiers_rangesList == NULL) {
+        ogs_error("OpenAPI_udm_info_convertToJSON() failed [internal_group_identifiers_ranges]");
+        goto end;
+    }
 
-        OpenAPI_lnode_t *internal_group_identifiers_ranges_node;
-        if (udm_info->internal_group_identifiers_ranges) {
-            OpenAPI_list_for_each(udm_info->internal_group_identifiers_ranges, internal_group_identifiers_ranges_node) {
-                cJSON *itemLocal = OpenAPI_internal_group_id_range_convertToJSON(internal_group_identifiers_ranges_node->data);
-                if (itemLocal == NULL) {
-                    ogs_error("OpenAPI_udm_info_convertToJSON() failed [internal_group_identifiers_ranges]");
-                    goto end;
-                }
-                cJSON_AddItemToArray(internal_group_identifiers_rangesList, itemLocal);
+    OpenAPI_lnode_t *internal_group_identifiers_ranges_node;
+    if (udm_info->internal_group_identifiers_ranges) {
+        OpenAPI_list_for_each(udm_info->internal_group_identifiers_ranges, internal_group_identifiers_ranges_node) {
+            cJSON *itemLocal = OpenAPI_internal_group_id_range_convertToJSON(internal_group_identifiers_ranges_node->data);
+            if (itemLocal == NULL) {
+                ogs_error("OpenAPI_udm_info_convertToJSON() failed [internal_group_identifiers_ranges]");
+                goto end;
             }
+            cJSON_AddItemToArray(internal_group_identifiers_rangesList, itemLocal);
         }
+    }
     }
 
 end:
@@ -179,123 +179,123 @@ OpenAPI_udm_info_t *OpenAPI_udm_info_parseFromJSON(cJSON *udm_infoJSON)
     OpenAPI_udm_info_t *udm_info_local_var = NULL;
     cJSON *group_id = cJSON_GetObjectItemCaseSensitive(udm_infoJSON, "groupId");
 
-    if (group_id) {
-        if (!cJSON_IsString(group_id)) {
-            ogs_error("OpenAPI_udm_info_parseFromJSON() failed [group_id]");
-            goto end;
-        }
+    if (group_id) { 
+    if (!cJSON_IsString(group_id)) {
+        ogs_error("OpenAPI_udm_info_parseFromJSON() failed [group_id]");
+        goto end;
+    }
     }
 
     cJSON *supi_ranges = cJSON_GetObjectItemCaseSensitive(udm_infoJSON, "supiRanges");
 
     OpenAPI_list_t *supi_rangesList;
-    if (supi_ranges) {
-        cJSON *supi_ranges_local_nonprimitive;
-        if (!cJSON_IsArray(supi_ranges)) {
+    if (supi_ranges) { 
+    cJSON *supi_ranges_local_nonprimitive;
+    if (!cJSON_IsArray(supi_ranges)){
+        ogs_error("OpenAPI_udm_info_parseFromJSON() failed [supi_ranges]");
+        goto end;
+    }
+
+    supi_rangesList = OpenAPI_list_create();
+
+    cJSON_ArrayForEach(supi_ranges_local_nonprimitive, supi_ranges ) {
+        if (!cJSON_IsObject(supi_ranges_local_nonprimitive)) {
             ogs_error("OpenAPI_udm_info_parseFromJSON() failed [supi_ranges]");
             goto end;
         }
+        OpenAPI_supi_range_t *supi_rangesItem = OpenAPI_supi_range_parseFromJSON(supi_ranges_local_nonprimitive);
 
-        supi_rangesList = OpenAPI_list_create();
-
-        cJSON_ArrayForEach(supi_ranges_local_nonprimitive, supi_ranges ) {
-            if (!cJSON_IsObject(supi_ranges_local_nonprimitive)) {
-                ogs_error("OpenAPI_udm_info_parseFromJSON() failed [supi_ranges]");
-                goto end;
-            }
-            OpenAPI_supi_range_t *supi_rangesItem = OpenAPI_supi_range_parseFromJSON(supi_ranges_local_nonprimitive);
-
-            OpenAPI_list_add(supi_rangesList, supi_rangesItem);
-        }
+        OpenAPI_list_add(supi_rangesList, supi_rangesItem);
+    }
     }
 
     cJSON *gpsi_ranges = cJSON_GetObjectItemCaseSensitive(udm_infoJSON, "gpsiRanges");
 
     OpenAPI_list_t *gpsi_rangesList;
-    if (gpsi_ranges) {
-        cJSON *gpsi_ranges_local_nonprimitive;
-        if (!cJSON_IsArray(gpsi_ranges)) {
+    if (gpsi_ranges) { 
+    cJSON *gpsi_ranges_local_nonprimitive;
+    if (!cJSON_IsArray(gpsi_ranges)){
+        ogs_error("OpenAPI_udm_info_parseFromJSON() failed [gpsi_ranges]");
+        goto end;
+    }
+
+    gpsi_rangesList = OpenAPI_list_create();
+
+    cJSON_ArrayForEach(gpsi_ranges_local_nonprimitive, gpsi_ranges ) {
+        if (!cJSON_IsObject(gpsi_ranges_local_nonprimitive)) {
             ogs_error("OpenAPI_udm_info_parseFromJSON() failed [gpsi_ranges]");
             goto end;
         }
+        OpenAPI_identity_range_t *gpsi_rangesItem = OpenAPI_identity_range_parseFromJSON(gpsi_ranges_local_nonprimitive);
 
-        gpsi_rangesList = OpenAPI_list_create();
-
-        cJSON_ArrayForEach(gpsi_ranges_local_nonprimitive, gpsi_ranges ) {
-            if (!cJSON_IsObject(gpsi_ranges_local_nonprimitive)) {
-                ogs_error("OpenAPI_udm_info_parseFromJSON() failed [gpsi_ranges]");
-                goto end;
-            }
-            OpenAPI_identity_range_t *gpsi_rangesItem = OpenAPI_identity_range_parseFromJSON(gpsi_ranges_local_nonprimitive);
-
-            OpenAPI_list_add(gpsi_rangesList, gpsi_rangesItem);
-        }
+        OpenAPI_list_add(gpsi_rangesList, gpsi_rangesItem);
+    }
     }
 
     cJSON *external_group_identifiers_ranges = cJSON_GetObjectItemCaseSensitive(udm_infoJSON, "externalGroupIdentifiersRanges");
 
     OpenAPI_list_t *external_group_identifiers_rangesList;
-    if (external_group_identifiers_ranges) {
-        cJSON *external_group_identifiers_ranges_local_nonprimitive;
-        if (!cJSON_IsArray(external_group_identifiers_ranges)) {
+    if (external_group_identifiers_ranges) { 
+    cJSON *external_group_identifiers_ranges_local_nonprimitive;
+    if (!cJSON_IsArray(external_group_identifiers_ranges)){
+        ogs_error("OpenAPI_udm_info_parseFromJSON() failed [external_group_identifiers_ranges]");
+        goto end;
+    }
+
+    external_group_identifiers_rangesList = OpenAPI_list_create();
+
+    cJSON_ArrayForEach(external_group_identifiers_ranges_local_nonprimitive, external_group_identifiers_ranges ) {
+        if (!cJSON_IsObject(external_group_identifiers_ranges_local_nonprimitive)) {
             ogs_error("OpenAPI_udm_info_parseFromJSON() failed [external_group_identifiers_ranges]");
             goto end;
         }
+        OpenAPI_identity_range_t *external_group_identifiers_rangesItem = OpenAPI_identity_range_parseFromJSON(external_group_identifiers_ranges_local_nonprimitive);
 
-        external_group_identifiers_rangesList = OpenAPI_list_create();
-
-        cJSON_ArrayForEach(external_group_identifiers_ranges_local_nonprimitive, external_group_identifiers_ranges ) {
-            if (!cJSON_IsObject(external_group_identifiers_ranges_local_nonprimitive)) {
-                ogs_error("OpenAPI_udm_info_parseFromJSON() failed [external_group_identifiers_ranges]");
-                goto end;
-            }
-            OpenAPI_identity_range_t *external_group_identifiers_rangesItem = OpenAPI_identity_range_parseFromJSON(external_group_identifiers_ranges_local_nonprimitive);
-
-            OpenAPI_list_add(external_group_identifiers_rangesList, external_group_identifiers_rangesItem);
-        }
+        OpenAPI_list_add(external_group_identifiers_rangesList, external_group_identifiers_rangesItem);
+    }
     }
 
     cJSON *routing_indicators = cJSON_GetObjectItemCaseSensitive(udm_infoJSON, "routingIndicators");
 
     OpenAPI_list_t *routing_indicatorsList;
-    if (routing_indicators) {
-        cJSON *routing_indicators_local;
-        if (!cJSON_IsArray(routing_indicators)) {
-            ogs_error("OpenAPI_udm_info_parseFromJSON() failed [routing_indicators]");
-            goto end;
-        }
-        routing_indicatorsList = OpenAPI_list_create();
+    if (routing_indicators) { 
+    cJSON *routing_indicators_local;
+    if (!cJSON_IsArray(routing_indicators)) {
+        ogs_error("OpenAPI_udm_info_parseFromJSON() failed [routing_indicators]");
+        goto end;
+    }
+    routing_indicatorsList = OpenAPI_list_create();
 
-        cJSON_ArrayForEach(routing_indicators_local, routing_indicators) {
-            if (!cJSON_IsString(routing_indicators_local)) {
-                ogs_error("OpenAPI_udm_info_parseFromJSON() failed [routing_indicators]");
-                goto end;
-            }
-            OpenAPI_list_add(routing_indicatorsList, ogs_strdup_or_assert(routing_indicators_local->valuestring));
-        }
+    cJSON_ArrayForEach(routing_indicators_local, routing_indicators) {
+    if (!cJSON_IsString(routing_indicators_local)) {
+        ogs_error("OpenAPI_udm_info_parseFromJSON() failed [routing_indicators]");
+        goto end;
+    }
+    OpenAPI_list_add(routing_indicatorsList , ogs_strdup_or_assert(routing_indicators_local->valuestring));
+                    }
     }
 
     cJSON *internal_group_identifiers_ranges = cJSON_GetObjectItemCaseSensitive(udm_infoJSON, "internalGroupIdentifiersRanges");
 
     OpenAPI_list_t *internal_group_identifiers_rangesList;
-    if (internal_group_identifiers_ranges) {
-        cJSON *internal_group_identifiers_ranges_local_nonprimitive;
-        if (!cJSON_IsArray(internal_group_identifiers_ranges)) {
+    if (internal_group_identifiers_ranges) { 
+    cJSON *internal_group_identifiers_ranges_local_nonprimitive;
+    if (!cJSON_IsArray(internal_group_identifiers_ranges)){
+        ogs_error("OpenAPI_udm_info_parseFromJSON() failed [internal_group_identifiers_ranges]");
+        goto end;
+    }
+
+    internal_group_identifiers_rangesList = OpenAPI_list_create();
+
+    cJSON_ArrayForEach(internal_group_identifiers_ranges_local_nonprimitive, internal_group_identifiers_ranges ) {
+        if (!cJSON_IsObject(internal_group_identifiers_ranges_local_nonprimitive)) {
             ogs_error("OpenAPI_udm_info_parseFromJSON() failed [internal_group_identifiers_ranges]");
             goto end;
         }
+        OpenAPI_internal_group_id_range_t *internal_group_identifiers_rangesItem = OpenAPI_internal_group_id_range_parseFromJSON(internal_group_identifiers_ranges_local_nonprimitive);
 
-        internal_group_identifiers_rangesList = OpenAPI_list_create();
-
-        cJSON_ArrayForEach(internal_group_identifiers_ranges_local_nonprimitive, internal_group_identifiers_ranges ) {
-            if (!cJSON_IsObject(internal_group_identifiers_ranges_local_nonprimitive)) {
-                ogs_error("OpenAPI_udm_info_parseFromJSON() failed [internal_group_identifiers_ranges]");
-                goto end;
-            }
-            OpenAPI_internal_group_id_range_t *internal_group_identifiers_rangesItem = OpenAPI_internal_group_id_range_parseFromJSON(internal_group_identifiers_ranges_local_nonprimitive);
-
-            OpenAPI_list_add(internal_group_identifiers_rangesList, internal_group_identifiers_rangesItem);
-        }
+        OpenAPI_list_add(internal_group_identifiers_rangesList, internal_group_identifiers_rangesItem);
+    }
     }
 
     udm_info_local_var = OpenAPI_udm_info_create (
@@ -305,7 +305,7 @@ OpenAPI_udm_info_t *OpenAPI_udm_info_parseFromJSON(cJSON *udm_infoJSON)
         external_group_identifiers_ranges ? external_group_identifiers_rangesList : NULL,
         routing_indicators ? routing_indicatorsList : NULL,
         internal_group_identifiers_ranges ? internal_group_identifiers_rangesList : NULL
-        );
+    );
 
     return udm_info_local_var;
 end:

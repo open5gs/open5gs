@@ -10,13 +10,15 @@ OpenAPI_service_parameter_data_t *OpenAPI_service_parameter_data_create(
     OpenAPI_snssai_t *snssai,
     char *inter_group_id,
     char *supi,
-    char *ipv4_addr,
-    char *ipv6_addr,
-    char *mac_addr,
-    OpenAPI_parameter_over_pc5_t *param_over_pc5,
-    OpenAPI_parameter_over_uu_t *param_over_uu,
-    char *supp_feat
-    )
+    char *ue_ipv4,
+    char *ue_ipv6,
+    char *ue_mac,
+    int any_ue_ind,
+    char *param_over_pc5,
+    char *param_over_uu,
+    char *supp_feat,
+    char *res_uri
+)
 {
     OpenAPI_service_parameter_data_t *service_parameter_data_local_var = OpenAPI_malloc(sizeof(OpenAPI_service_parameter_data_t));
     if (!service_parameter_data_local_var) {
@@ -27,12 +29,14 @@ OpenAPI_service_parameter_data_t *OpenAPI_service_parameter_data_create(
     service_parameter_data_local_var->snssai = snssai;
     service_parameter_data_local_var->inter_group_id = inter_group_id;
     service_parameter_data_local_var->supi = supi;
-    service_parameter_data_local_var->ipv4_addr = ipv4_addr;
-    service_parameter_data_local_var->ipv6_addr = ipv6_addr;
-    service_parameter_data_local_var->mac_addr = mac_addr;
+    service_parameter_data_local_var->ue_ipv4 = ue_ipv4;
+    service_parameter_data_local_var->ue_ipv6 = ue_ipv6;
+    service_parameter_data_local_var->ue_mac = ue_mac;
+    service_parameter_data_local_var->any_ue_ind = any_ue_ind;
     service_parameter_data_local_var->param_over_pc5 = param_over_pc5;
     service_parameter_data_local_var->param_over_uu = param_over_uu;
     service_parameter_data_local_var->supp_feat = supp_feat;
+    service_parameter_data_local_var->res_uri = res_uri;
 
     return service_parameter_data_local_var;
 }
@@ -48,12 +52,13 @@ void OpenAPI_service_parameter_data_free(OpenAPI_service_parameter_data_t *servi
     OpenAPI_snssai_free(service_parameter_data->snssai);
     ogs_free(service_parameter_data->inter_group_id);
     ogs_free(service_parameter_data->supi);
-    ogs_free(service_parameter_data->ipv4_addr);
-    ogs_free(service_parameter_data->ipv6_addr);
-    ogs_free(service_parameter_data->mac_addr);
-    OpenAPI_parameter_over_pc5_free(service_parameter_data->param_over_pc5);
-    OpenAPI_parameter_over_uu_free(service_parameter_data->param_over_uu);
+    ogs_free(service_parameter_data->ue_ipv4);
+    ogs_free(service_parameter_data->ue_ipv6);
+    ogs_free(service_parameter_data->ue_mac);
+    ogs_free(service_parameter_data->param_over_pc5);
+    ogs_free(service_parameter_data->param_over_uu);
     ogs_free(service_parameter_data->supp_feat);
+    ogs_free(service_parameter_data->res_uri);
     ogs_free(service_parameter_data);
 }
 
@@ -68,98 +73,100 @@ cJSON *OpenAPI_service_parameter_data_convertToJSON(OpenAPI_service_parameter_da
 
     item = cJSON_CreateObject();
     if (service_parameter_data->app_id) {
-        if (cJSON_AddStringToObject(item, "appId", service_parameter_data->app_id) == NULL) {
-            ogs_error("OpenAPI_service_parameter_data_convertToJSON() failed [app_id]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "appId", service_parameter_data->app_id) == NULL) {
+        ogs_error("OpenAPI_service_parameter_data_convertToJSON() failed [app_id]");
+        goto end;
+    }
     }
 
     if (service_parameter_data->dnn) {
-        if (cJSON_AddStringToObject(item, "dnn", service_parameter_data->dnn) == NULL) {
-            ogs_error("OpenAPI_service_parameter_data_convertToJSON() failed [dnn]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "dnn", service_parameter_data->dnn) == NULL) {
+        ogs_error("OpenAPI_service_parameter_data_convertToJSON() failed [dnn]");
+        goto end;
+    }
     }
 
     if (service_parameter_data->snssai) {
-        cJSON *snssai_local_JSON = OpenAPI_snssai_convertToJSON(service_parameter_data->snssai);
-        if (snssai_local_JSON == NULL) {
-            ogs_error("OpenAPI_service_parameter_data_convertToJSON() failed [snssai]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "snssai", snssai_local_JSON);
-        if (item->child == NULL) {
-            ogs_error("OpenAPI_service_parameter_data_convertToJSON() failed [snssai]");
-            goto end;
-        }
+    cJSON *snssai_local_JSON = OpenAPI_snssai_convertToJSON(service_parameter_data->snssai);
+    if (snssai_local_JSON == NULL) {
+        ogs_error("OpenAPI_service_parameter_data_convertToJSON() failed [snssai]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "snssai", snssai_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_service_parameter_data_convertToJSON() failed [snssai]");
+        goto end;
+    }
     }
 
     if (service_parameter_data->inter_group_id) {
-        if (cJSON_AddStringToObject(item, "interGroupId", service_parameter_data->inter_group_id) == NULL) {
-            ogs_error("OpenAPI_service_parameter_data_convertToJSON() failed [inter_group_id]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "interGroupId", service_parameter_data->inter_group_id) == NULL) {
+        ogs_error("OpenAPI_service_parameter_data_convertToJSON() failed [inter_group_id]");
+        goto end;
+    }
     }
 
     if (service_parameter_data->supi) {
-        if (cJSON_AddStringToObject(item, "supi", service_parameter_data->supi) == NULL) {
-            ogs_error("OpenAPI_service_parameter_data_convertToJSON() failed [supi]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "supi", service_parameter_data->supi) == NULL) {
+        ogs_error("OpenAPI_service_parameter_data_convertToJSON() failed [supi]");
+        goto end;
+    }
     }
 
-    if (service_parameter_data->ipv4_addr) {
-        if (cJSON_AddStringToObject(item, "ipv4Addr", service_parameter_data->ipv4_addr) == NULL) {
-            ogs_error("OpenAPI_service_parameter_data_convertToJSON() failed [ipv4_addr]");
-            goto end;
-        }
+    if (service_parameter_data->ue_ipv4) {
+    if (cJSON_AddStringToObject(item, "ueIpv4", service_parameter_data->ue_ipv4) == NULL) {
+        ogs_error("OpenAPI_service_parameter_data_convertToJSON() failed [ue_ipv4]");
+        goto end;
+    }
     }
 
-    if (service_parameter_data->ipv6_addr) {
-        if (cJSON_AddStringToObject(item, "ipv6Addr", service_parameter_data->ipv6_addr) == NULL) {
-            ogs_error("OpenAPI_service_parameter_data_convertToJSON() failed [ipv6_addr]");
-            goto end;
-        }
+    if (service_parameter_data->ue_ipv6) {
+    if (cJSON_AddStringToObject(item, "ueIpv6", service_parameter_data->ue_ipv6) == NULL) {
+        ogs_error("OpenAPI_service_parameter_data_convertToJSON() failed [ue_ipv6]");
+        goto end;
+    }
     }
 
-    if (service_parameter_data->mac_addr) {
-        if (cJSON_AddStringToObject(item, "macAddr", service_parameter_data->mac_addr) == NULL) {
-            ogs_error("OpenAPI_service_parameter_data_convertToJSON() failed [mac_addr]");
-            goto end;
-        }
+    if (service_parameter_data->ue_mac) {
+    if (cJSON_AddStringToObject(item, "ueMac", service_parameter_data->ue_mac) == NULL) {
+        ogs_error("OpenAPI_service_parameter_data_convertToJSON() failed [ue_mac]");
+        goto end;
+    }
+    }
+
+    if (service_parameter_data->any_ue_ind) {
+    if (cJSON_AddBoolToObject(item, "anyUeInd", service_parameter_data->any_ue_ind) == NULL) {
+        ogs_error("OpenAPI_service_parameter_data_convertToJSON() failed [any_ue_ind]");
+        goto end;
+    }
     }
 
     if (service_parameter_data->param_over_pc5) {
-        cJSON *param_over_pc5_local_JSON = OpenAPI_parameter_over_pc5_convertToJSON(service_parameter_data->param_over_pc5);
-        if (param_over_pc5_local_JSON == NULL) {
-            ogs_error("OpenAPI_service_parameter_data_convertToJSON() failed [param_over_pc5]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "paramOverPc5", param_over_pc5_local_JSON);
-        if (item->child == NULL) {
-            ogs_error("OpenAPI_service_parameter_data_convertToJSON() failed [param_over_pc5]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "paramOverPc5", service_parameter_data->param_over_pc5) == NULL) {
+        ogs_error("OpenAPI_service_parameter_data_convertToJSON() failed [param_over_pc5]");
+        goto end;
+    }
     }
 
     if (service_parameter_data->param_over_uu) {
-        cJSON *param_over_uu_local_JSON = OpenAPI_parameter_over_uu_convertToJSON(service_parameter_data->param_over_uu);
-        if (param_over_uu_local_JSON == NULL) {
-            ogs_error("OpenAPI_service_parameter_data_convertToJSON() failed [param_over_uu]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "paramOverUu", param_over_uu_local_JSON);
-        if (item->child == NULL) {
-            ogs_error("OpenAPI_service_parameter_data_convertToJSON() failed [param_over_uu]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "paramOverUu", service_parameter_data->param_over_uu) == NULL) {
+        ogs_error("OpenAPI_service_parameter_data_convertToJSON() failed [param_over_uu]");
+        goto end;
+    }
     }
 
     if (service_parameter_data->supp_feat) {
-        if (cJSON_AddStringToObject(item, "suppFeat", service_parameter_data->supp_feat) == NULL) {
-            ogs_error("OpenAPI_service_parameter_data_convertToJSON() failed [supp_feat]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "suppFeat", service_parameter_data->supp_feat) == NULL) {
+        ogs_error("OpenAPI_service_parameter_data_convertToJSON() failed [supp_feat]");
+        goto end;
+    }
+    }
+
+    if (service_parameter_data->res_uri) {
+    if (cJSON_AddStringToObject(item, "resUri", service_parameter_data->res_uri) == NULL) {
+        ogs_error("OpenAPI_service_parameter_data_convertToJSON() failed [res_uri]");
+        goto end;
+    }
     }
 
 end:
@@ -171,95 +178,117 @@ OpenAPI_service_parameter_data_t *OpenAPI_service_parameter_data_parseFromJSON(c
     OpenAPI_service_parameter_data_t *service_parameter_data_local_var = NULL;
     cJSON *app_id = cJSON_GetObjectItemCaseSensitive(service_parameter_dataJSON, "appId");
 
-    if (app_id) {
-        if (!cJSON_IsString(app_id)) {
-            ogs_error("OpenAPI_service_parameter_data_parseFromJSON() failed [app_id]");
-            goto end;
-        }
+    if (app_id) { 
+    if (!cJSON_IsString(app_id)) {
+        ogs_error("OpenAPI_service_parameter_data_parseFromJSON() failed [app_id]");
+        goto end;
+    }
     }
 
     cJSON *dnn = cJSON_GetObjectItemCaseSensitive(service_parameter_dataJSON, "dnn");
 
-    if (dnn) {
-        if (!cJSON_IsString(dnn)) {
-            ogs_error("OpenAPI_service_parameter_data_parseFromJSON() failed [dnn]");
-            goto end;
-        }
+    if (dnn) { 
+    if (!cJSON_IsString(dnn)) {
+        ogs_error("OpenAPI_service_parameter_data_parseFromJSON() failed [dnn]");
+        goto end;
+    }
     }
 
     cJSON *snssai = cJSON_GetObjectItemCaseSensitive(service_parameter_dataJSON, "snssai");
 
     OpenAPI_snssai_t *snssai_local_nonprim = NULL;
-    if (snssai) {
-        snssai_local_nonprim = OpenAPI_snssai_parseFromJSON(snssai);
+    if (snssai) { 
+    snssai_local_nonprim = OpenAPI_snssai_parseFromJSON(snssai);
     }
 
     cJSON *inter_group_id = cJSON_GetObjectItemCaseSensitive(service_parameter_dataJSON, "interGroupId");
 
-    if (inter_group_id) {
-        if (!cJSON_IsString(inter_group_id)) {
-            ogs_error("OpenAPI_service_parameter_data_parseFromJSON() failed [inter_group_id]");
-            goto end;
-        }
+    if (inter_group_id) { 
+    if (!cJSON_IsString(inter_group_id)) {
+        ogs_error("OpenAPI_service_parameter_data_parseFromJSON() failed [inter_group_id]");
+        goto end;
+    }
     }
 
     cJSON *supi = cJSON_GetObjectItemCaseSensitive(service_parameter_dataJSON, "supi");
 
-    if (supi) {
-        if (!cJSON_IsString(supi)) {
-            ogs_error("OpenAPI_service_parameter_data_parseFromJSON() failed [supi]");
-            goto end;
-        }
+    if (supi) { 
+    if (!cJSON_IsString(supi)) {
+        ogs_error("OpenAPI_service_parameter_data_parseFromJSON() failed [supi]");
+        goto end;
+    }
     }
 
-    cJSON *ipv4_addr = cJSON_GetObjectItemCaseSensitive(service_parameter_dataJSON, "ipv4Addr");
+    cJSON *ue_ipv4 = cJSON_GetObjectItemCaseSensitive(service_parameter_dataJSON, "ueIpv4");
 
-    if (ipv4_addr) {
-        if (!cJSON_IsString(ipv4_addr)) {
-            ogs_error("OpenAPI_service_parameter_data_parseFromJSON() failed [ipv4_addr]");
-            goto end;
-        }
+    if (ue_ipv4) { 
+    if (!cJSON_IsString(ue_ipv4)) {
+        ogs_error("OpenAPI_service_parameter_data_parseFromJSON() failed [ue_ipv4]");
+        goto end;
+    }
     }
 
-    cJSON *ipv6_addr = cJSON_GetObjectItemCaseSensitive(service_parameter_dataJSON, "ipv6Addr");
+    cJSON *ue_ipv6 = cJSON_GetObjectItemCaseSensitive(service_parameter_dataJSON, "ueIpv6");
 
-    if (ipv6_addr) {
-        if (!cJSON_IsString(ipv6_addr)) {
-            ogs_error("OpenAPI_service_parameter_data_parseFromJSON() failed [ipv6_addr]");
-            goto end;
-        }
+    if (ue_ipv6) { 
+    if (!cJSON_IsString(ue_ipv6)) {
+        ogs_error("OpenAPI_service_parameter_data_parseFromJSON() failed [ue_ipv6]");
+        goto end;
+    }
     }
 
-    cJSON *mac_addr = cJSON_GetObjectItemCaseSensitive(service_parameter_dataJSON, "macAddr");
+    cJSON *ue_mac = cJSON_GetObjectItemCaseSensitive(service_parameter_dataJSON, "ueMac");
 
-    if (mac_addr) {
-        if (!cJSON_IsString(mac_addr)) {
-            ogs_error("OpenAPI_service_parameter_data_parseFromJSON() failed [mac_addr]");
-            goto end;
-        }
+    if (ue_mac) { 
+    if (!cJSON_IsString(ue_mac)) {
+        ogs_error("OpenAPI_service_parameter_data_parseFromJSON() failed [ue_mac]");
+        goto end;
+    }
+    }
+
+    cJSON *any_ue_ind = cJSON_GetObjectItemCaseSensitive(service_parameter_dataJSON, "anyUeInd");
+
+    if (any_ue_ind) { 
+    if (!cJSON_IsBool(any_ue_ind)) {
+        ogs_error("OpenAPI_service_parameter_data_parseFromJSON() failed [any_ue_ind]");
+        goto end;
+    }
     }
 
     cJSON *param_over_pc5 = cJSON_GetObjectItemCaseSensitive(service_parameter_dataJSON, "paramOverPc5");
 
-    OpenAPI_parameter_over_pc5_t *param_over_pc5_local_nonprim = NULL;
-    if (param_over_pc5) {
-        param_over_pc5_local_nonprim = OpenAPI_parameter_over_pc5_parseFromJSON(param_over_pc5);
+    if (param_over_pc5) { 
+    if (!cJSON_IsString(param_over_pc5)) {
+        ogs_error("OpenAPI_service_parameter_data_parseFromJSON() failed [param_over_pc5]");
+        goto end;
+    }
     }
 
     cJSON *param_over_uu = cJSON_GetObjectItemCaseSensitive(service_parameter_dataJSON, "paramOverUu");
 
-    OpenAPI_parameter_over_uu_t *param_over_uu_local_nonprim = NULL;
-    if (param_over_uu) {
-        param_over_uu_local_nonprim = OpenAPI_parameter_over_uu_parseFromJSON(param_over_uu);
+    if (param_over_uu) { 
+    if (!cJSON_IsString(param_over_uu)) {
+        ogs_error("OpenAPI_service_parameter_data_parseFromJSON() failed [param_over_uu]");
+        goto end;
+    }
     }
 
     cJSON *supp_feat = cJSON_GetObjectItemCaseSensitive(service_parameter_dataJSON, "suppFeat");
 
-    if (supp_feat) {
-        if (!cJSON_IsString(supp_feat)) {
-            ogs_error("OpenAPI_service_parameter_data_parseFromJSON() failed [supp_feat]");
-            goto end;
-        }
+    if (supp_feat) { 
+    if (!cJSON_IsString(supp_feat)) {
+        ogs_error("OpenAPI_service_parameter_data_parseFromJSON() failed [supp_feat]");
+        goto end;
+    }
+    }
+
+    cJSON *res_uri = cJSON_GetObjectItemCaseSensitive(service_parameter_dataJSON, "resUri");
+
+    if (res_uri) { 
+    if (!cJSON_IsString(res_uri)) {
+        ogs_error("OpenAPI_service_parameter_data_parseFromJSON() failed [res_uri]");
+        goto end;
+    }
     }
 
     service_parameter_data_local_var = OpenAPI_service_parameter_data_create (
@@ -268,13 +297,15 @@ OpenAPI_service_parameter_data_t *OpenAPI_service_parameter_data_parseFromJSON(c
         snssai ? snssai_local_nonprim : NULL,
         inter_group_id ? ogs_strdup_or_assert(inter_group_id->valuestring) : NULL,
         supi ? ogs_strdup_or_assert(supi->valuestring) : NULL,
-        ipv4_addr ? ogs_strdup_or_assert(ipv4_addr->valuestring) : NULL,
-        ipv6_addr ? ogs_strdup_or_assert(ipv6_addr->valuestring) : NULL,
-        mac_addr ? ogs_strdup_or_assert(mac_addr->valuestring) : NULL,
-        param_over_pc5 ? param_over_pc5_local_nonprim : NULL,
-        param_over_uu ? param_over_uu_local_nonprim : NULL,
-        supp_feat ? ogs_strdup_or_assert(supp_feat->valuestring) : NULL
-        );
+        ue_ipv4 ? ogs_strdup_or_assert(ue_ipv4->valuestring) : NULL,
+        ue_ipv6 ? ogs_strdup_or_assert(ue_ipv6->valuestring) : NULL,
+        ue_mac ? ogs_strdup_or_assert(ue_mac->valuestring) : NULL,
+        any_ue_ind ? any_ue_ind->valueint : 0,
+        param_over_pc5 ? ogs_strdup_or_assert(param_over_pc5->valuestring) : NULL,
+        param_over_uu ? ogs_strdup_or_assert(param_over_uu->valuestring) : NULL,
+        supp_feat ? ogs_strdup_or_assert(supp_feat->valuestring) : NULL,
+        res_uri ? ogs_strdup_or_assert(res_uri->valuestring) : NULL
+    );
 
     return service_parameter_data_local_var;
 end:

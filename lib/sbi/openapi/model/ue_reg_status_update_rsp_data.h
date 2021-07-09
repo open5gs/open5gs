@@ -1,7 +1,7 @@
 /*
  * ue_reg_status_update_rsp_data.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_ue_reg_status_update_rsp_data_H_
@@ -24,7 +24,7 @@ typedef struct OpenAPI_ue_reg_status_update_rsp_data_s {
 
 OpenAPI_ue_reg_status_update_rsp_data_t *OpenAPI_ue_reg_status_update_rsp_data_create(
     int reg_status_transfer_complete
-    );
+);
 void OpenAPI_ue_reg_status_update_rsp_data_free(OpenAPI_ue_reg_status_update_rsp_data_t *ue_reg_status_update_rsp_data);
 OpenAPI_ue_reg_status_update_rsp_data_t *OpenAPI_ue_reg_status_update_rsp_data_parseFromJSON(cJSON *ue_reg_status_update_rsp_dataJSON);
 cJSON *OpenAPI_ue_reg_status_update_rsp_data_convertToJSON(OpenAPI_ue_reg_status_update_rsp_data_t *ue_reg_status_update_rsp_data);

@@ -8,7 +8,7 @@ OpenAPI_amf_subscription_info_t *OpenAPI_amf_subscription_info_create(
     char *amf_instance_id,
     char *subscription_id,
     char *subs_change_notify_correlation_id
-    )
+)
 {
     OpenAPI_amf_subscription_info_t *amf_subscription_info_local_var = OpenAPI_malloc(sizeof(OpenAPI_amf_subscription_info_t));
     if (!amf_subscription_info_local_var) {
@@ -54,10 +54,10 @@ cJSON *OpenAPI_amf_subscription_info_convertToJSON(OpenAPI_amf_subscription_info
     }
 
     if (amf_subscription_info->subs_change_notify_correlation_id) {
-        if (cJSON_AddStringToObject(item, "subsChangeNotifyCorrelationId", amf_subscription_info->subs_change_notify_correlation_id) == NULL) {
-            ogs_error("OpenAPI_amf_subscription_info_convertToJSON() failed [subs_change_notify_correlation_id]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "subsChangeNotifyCorrelationId", amf_subscription_info->subs_change_notify_correlation_id) == NULL) {
+        ogs_error("OpenAPI_amf_subscription_info_convertToJSON() failed [subs_change_notify_correlation_id]");
+        goto end;
+    }
     }
 
 end:
@@ -73,7 +73,7 @@ OpenAPI_amf_subscription_info_t *OpenAPI_amf_subscription_info_parseFromJSON(cJS
         goto end;
     }
 
-
+    
     if (!cJSON_IsString(amf_instance_id)) {
         ogs_error("OpenAPI_amf_subscription_info_parseFromJSON() failed [amf_instance_id]");
         goto end;
@@ -85,7 +85,7 @@ OpenAPI_amf_subscription_info_t *OpenAPI_amf_subscription_info_parseFromJSON(cJS
         goto end;
     }
 
-
+    
     if (!cJSON_IsString(subscription_id)) {
         ogs_error("OpenAPI_amf_subscription_info_parseFromJSON() failed [subscription_id]");
         goto end;
@@ -93,18 +93,18 @@ OpenAPI_amf_subscription_info_t *OpenAPI_amf_subscription_info_parseFromJSON(cJS
 
     cJSON *subs_change_notify_correlation_id = cJSON_GetObjectItemCaseSensitive(amf_subscription_infoJSON, "subsChangeNotifyCorrelationId");
 
-    if (subs_change_notify_correlation_id) {
-        if (!cJSON_IsString(subs_change_notify_correlation_id)) {
-            ogs_error("OpenAPI_amf_subscription_info_parseFromJSON() failed [subs_change_notify_correlation_id]");
-            goto end;
-        }
+    if (subs_change_notify_correlation_id) { 
+    if (!cJSON_IsString(subs_change_notify_correlation_id)) {
+        ogs_error("OpenAPI_amf_subscription_info_parseFromJSON() failed [subs_change_notify_correlation_id]");
+        goto end;
+    }
     }
 
     amf_subscription_info_local_var = OpenAPI_amf_subscription_info_create (
         ogs_strdup_or_assert(amf_instance_id->valuestring),
         ogs_strdup_or_assert(subscription_id->valuestring),
         subs_change_notify_correlation_id ? ogs_strdup_or_assert(subs_change_notify_correlation_id->valuestring) : NULL
-        );
+    );
 
     return amf_subscription_info_local_var;
 end:

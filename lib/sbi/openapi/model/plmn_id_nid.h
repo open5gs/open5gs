@@ -1,7 +1,7 @@
 /*
  * plmn_id_nid.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_plmn_id_nid_H_
@@ -28,7 +28,7 @@ OpenAPI_plmn_id_nid_t *OpenAPI_plmn_id_nid_create(
     char *mcc,
     char *mnc,
     char *nid
-    );
+);
 void OpenAPI_plmn_id_nid_free(OpenAPI_plmn_id_nid_t *plmn_id_nid);
 OpenAPI_plmn_id_nid_t *OpenAPI_plmn_id_nid_parseFromJSON(cJSON *plmn_id_nidJSON);
 cJSON *OpenAPI_plmn_id_nid_convertToJSON(OpenAPI_plmn_id_nid_t *plmn_id_nid);

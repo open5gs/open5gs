@@ -5,7 +5,7 @@
 #include "nwdaf_event.h"
 
 OpenAPI_nwdaf_event_t *OpenAPI_nwdaf_event_create(
-    )
+)
 {
     OpenAPI_nwdaf_event_t *nwdaf_event_local_var = OpenAPI_malloc(sizeof(OpenAPI_nwdaf_event_t));
     if (!nwdaf_event_local_var) {
@@ -42,7 +42,7 @@ OpenAPI_nwdaf_event_t *OpenAPI_nwdaf_event_parseFromJSON(cJSON *nwdaf_eventJSON)
 {
     OpenAPI_nwdaf_event_t *nwdaf_event_local_var = NULL;
     nwdaf_event_local_var = OpenAPI_nwdaf_event_create (
-        );
+    );
 
     return nwdaf_event_local_var;
 end:

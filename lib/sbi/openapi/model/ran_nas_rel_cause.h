@@ -1,7 +1,7 @@
 /*
  * ran_nas_rel_cause.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_ran_nas_rel_cause_H_
@@ -23,13 +23,15 @@ typedef struct OpenAPI_ran_nas_rel_cause_s {
     struct OpenAPI_ng_ap_cause_s *ng_ap_cause;
     int _5g_mm_cause;
     int _5g_sm_cause;
+    char *eps_cause;
 } OpenAPI_ran_nas_rel_cause_t;
 
 OpenAPI_ran_nas_rel_cause_t *OpenAPI_ran_nas_rel_cause_create(
     OpenAPI_ng_ap_cause_t *ng_ap_cause,
     int _5g_mm_cause,
-    int _5g_sm_cause
-    );
+    int _5g_sm_cause,
+    char *eps_cause
+);
 void OpenAPI_ran_nas_rel_cause_free(OpenAPI_ran_nas_rel_cause_t *ran_nas_rel_cause);
 OpenAPI_ran_nas_rel_cause_t *OpenAPI_ran_nas_rel_cause_parseFromJSON(cJSON *ran_nas_rel_causeJSON);
 cJSON *OpenAPI_ran_nas_rel_cause_convertToJSON(OpenAPI_ran_nas_rel_cause_t *ran_nas_rel_cause);

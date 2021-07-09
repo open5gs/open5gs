@@ -7,7 +7,7 @@
 OpenAPI_notify_item_t *OpenAPI_notify_item_create(
     char *resource_id,
     OpenAPI_list_t *changes
-    )
+)
 {
     OpenAPI_notify_item_t *notify_item_local_var = OpenAPI_malloc(sizeof(OpenAPI_notify_item_t));
     if (!notify_item_local_var) {
@@ -79,7 +79,7 @@ OpenAPI_notify_item_t *OpenAPI_notify_item_parseFromJSON(cJSON *notify_itemJSON)
         goto end;
     }
 
-
+    
     if (!cJSON_IsString(resource_id)) {
         ogs_error("OpenAPI_notify_item_parseFromJSON() failed [resource_id]");
         goto end;
@@ -92,9 +92,9 @@ OpenAPI_notify_item_t *OpenAPI_notify_item_parseFromJSON(cJSON *notify_itemJSON)
     }
 
     OpenAPI_list_t *changesList;
-
+    
     cJSON *changes_local_nonprimitive;
-    if (!cJSON_IsArray(changes)) {
+    if (!cJSON_IsArray(changes)){
         ogs_error("OpenAPI_notify_item_parseFromJSON() failed [changes]");
         goto end;
     }
@@ -114,7 +114,7 @@ OpenAPI_notify_item_t *OpenAPI_notify_item_parseFromJSON(cJSON *notify_itemJSON)
     notify_item_local_var = OpenAPI_notify_item_create (
         ogs_strdup_or_assert(resource_id->valuestring),
         changesList
-        );
+    );
 
     return notify_item_local_var;
 end:

@@ -1,7 +1,7 @@
 /*
  * subscription_data_subscr_cond.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_subscription_data_subscr_cond_H_
@@ -52,7 +52,7 @@ OpenAPI_subscription_data_subscr_cond_t *OpenAPI_subscription_data_subscr_cond_c
     char *nf_service_set_id,
     OpenAPI_list_t *smf_serving_area,
     OpenAPI_list_t *tai_list
-    );
+);
 void OpenAPI_subscription_data_subscr_cond_free(OpenAPI_subscription_data_subscr_cond_t *subscription_data_subscr_cond);
 OpenAPI_subscription_data_subscr_cond_t *OpenAPI_subscription_data_subscr_cond_parseFromJSON(cJSON *subscription_data_subscr_condJSON);
 cJSON *OpenAPI_subscription_data_subscr_cond_convertToJSON(OpenAPI_subscription_data_subscr_cond_t *subscription_data_subscr_cond);

@@ -6,8 +6,9 @@
 
 OpenAPI_rg_authentication_info_t *OpenAPI_rg_authentication_info_create(
     char *suci,
-    int authenticated_ind
-    )
+    int authenticated_ind,
+    char *supported_features
+)
 {
     OpenAPI_rg_authentication_info_t *rg_authentication_info_local_var = OpenAPI_malloc(sizeof(OpenAPI_rg_authentication_info_t));
     if (!rg_authentication_info_local_var) {
@@ -15,6 +16,7 @@ OpenAPI_rg_authentication_info_t *OpenAPI_rg_authentication_info_create(
     }
     rg_authentication_info_local_var->suci = suci;
     rg_authentication_info_local_var->authenticated_ind = authenticated_ind;
+    rg_authentication_info_local_var->supported_features = supported_features;
 
     return rg_authentication_info_local_var;
 }
@@ -26,6 +28,7 @@ void OpenAPI_rg_authentication_info_free(OpenAPI_rg_authentication_info_t *rg_au
     }
     OpenAPI_lnode_t *node;
     ogs_free(rg_authentication_info->suci);
+    ogs_free(rg_authentication_info->supported_features);
     ogs_free(rg_authentication_info);
 }
 
@@ -49,6 +52,13 @@ cJSON *OpenAPI_rg_authentication_info_convertToJSON(OpenAPI_rg_authentication_in
         goto end;
     }
 
+    if (rg_authentication_info->supported_features) {
+    if (cJSON_AddStringToObject(item, "supportedFeatures", rg_authentication_info->supported_features) == NULL) {
+        ogs_error("OpenAPI_rg_authentication_info_convertToJSON() failed [supported_features]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -62,7 +72,7 @@ OpenAPI_rg_authentication_info_t *OpenAPI_rg_authentication_info_parseFromJSON(c
         goto end;
     }
 
-
+    
     if (!cJSON_IsString(suci)) {
         ogs_error("OpenAPI_rg_authentication_info_parseFromJSON() failed [suci]");
         goto end;
@@ -74,16 +84,26 @@ OpenAPI_rg_authentication_info_t *OpenAPI_rg_authentication_info_parseFromJSON(c
         goto end;
     }
 
-
+    
     if (!cJSON_IsBool(authenticated_ind)) {
         ogs_error("OpenAPI_rg_authentication_info_parseFromJSON() failed [authenticated_ind]");
         goto end;
     }
 
+    cJSON *supported_features = cJSON_GetObjectItemCaseSensitive(rg_authentication_infoJSON, "supportedFeatures");
+
+    if (supported_features) { 
+    if (!cJSON_IsString(supported_features)) {
+        ogs_error("OpenAPI_rg_authentication_info_parseFromJSON() failed [supported_features]");
+        goto end;
+    }
+    }
+
     rg_authentication_info_local_var = OpenAPI_rg_authentication_info_create (
         ogs_strdup_or_assert(suci->valuestring),
-        authenticated_ind->valueint
-        );
+        authenticated_ind->valueint,
+        supported_features ? ogs_strdup_or_assert(supported_features->valuestring) : NULL
+    );
 
     return rg_authentication_info_local_var;
 end:

@@ -1,7 +1,7 @@
 /*
  * modification_notification.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_modification_notification_H_
@@ -25,7 +25,7 @@ typedef struct OpenAPI_modification_notification_s {
 
 OpenAPI_modification_notification_t *OpenAPI_modification_notification_create(
     OpenAPI_list_t *notify_items
-    );
+);
 void OpenAPI_modification_notification_free(OpenAPI_modification_notification_t *modification_notification);
 OpenAPI_modification_notification_t *OpenAPI_modification_notification_parseFromJSON(cJSON *modification_notificationJSON);
 cJSON *OpenAPI_modification_notification_convertToJSON(OpenAPI_modification_notification_t *modification_notification);

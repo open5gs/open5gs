@@ -1,7 +1,7 @@
 /*
  * ue_context.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_ue_context_H_
@@ -13,9 +13,12 @@
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
 #include "ambr.h"
-#include "amf_event_subscription.h"
 #include "area.h"
+#include "cag_data.h"
 #include "core_network_type.h"
+#include "ec_restriction_data_wb.h"
+#include "ext_amf_event_subscription.h"
+#include "immediate_mdt_conf.h"
 #include "mm_context.h"
 #include "mo_exp_data_counter.h"
 #include "pdu_session_context.h"
@@ -40,6 +43,7 @@ typedef struct OpenAPI_ue_context_s {
     char *pei;
     char *udm_group_id;
     char *ausf_group_id;
+    char *pcf_group_id;
     char *routing_indicator;
     OpenAPI_list_t *group_list;
     char drx_parameter;
@@ -59,6 +63,7 @@ typedef struct OpenAPI_ue_context_s {
     char *pcf_ue_policy_uri;
     OpenAPI_list_t *ue_policy_req_trigger_list;
     char *hpcf_id;
+    char *hpcf_set_id;
     OpenAPI_list_t *restricted_rat_list;
     OpenAPI_list_t *forbidden_area_list;
     struct OpenAPI_service_area_restriction_s *service_area_restriction;
@@ -75,9 +80,15 @@ typedef struct OpenAPI_ue_context_s {
     OpenAPI_list_t *small_data_rate_status_infos;
     OpenAPI_list_t *restricted_primary_rat_list;
     OpenAPI_list_t *restricted_secondary_rat_list;
-    OpenAPI_list_t *v2x_context;
+    struct OpenAPI_v2x_context_s *v2x_context;
     int lte_cat_m_ind;
     struct OpenAPI_mo_exp_data_counter_s *mo_exp_data_counter;
+    struct OpenAPI_cag_data_s *cag_data;
+    int management_mdt_ind;
+    struct OpenAPI_immediate_mdt_conf_s *immediate_mdt_conf;
+    struct OpenAPI_ec_restriction_data_wb_s *ec_restriction_data_wb;
+    int ec_restriction_data_nb;
+    int iab_operation_allowed;
 } OpenAPI_ue_context_t;
 
 OpenAPI_ue_context_t *OpenAPI_ue_context_create(
@@ -87,6 +98,7 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_create(
     char *pei,
     char *udm_group_id,
     char *ausf_group_id,
+    char *pcf_group_id,
     char *routing_indicator,
     OpenAPI_list_t *group_list,
     char drx_parameter,
@@ -106,6 +118,7 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_create(
     char *pcf_ue_policy_uri,
     OpenAPI_list_t *ue_policy_req_trigger_list,
     char *hpcf_id,
+    char *hpcf_set_id,
     OpenAPI_list_t *restricted_rat_list,
     OpenAPI_list_t *forbidden_area_list,
     OpenAPI_service_area_restriction_t *service_area_restriction,
@@ -122,10 +135,16 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_create(
     OpenAPI_list_t *small_data_rate_status_infos,
     OpenAPI_list_t *restricted_primary_rat_list,
     OpenAPI_list_t *restricted_secondary_rat_list,
-    OpenAPI_list_t *v2x_context,
+    OpenAPI_v2x_context_t *v2x_context,
     int lte_cat_m_ind,
-    OpenAPI_mo_exp_data_counter_t *mo_exp_data_counter
-    );
+    OpenAPI_mo_exp_data_counter_t *mo_exp_data_counter,
+    OpenAPI_cag_data_t *cag_data,
+    int management_mdt_ind,
+    OpenAPI_immediate_mdt_conf_t *immediate_mdt_conf,
+    OpenAPI_ec_restriction_data_wb_t *ec_restriction_data_wb,
+    int ec_restriction_data_nb,
+    int iab_operation_allowed
+);
 void OpenAPI_ue_context_free(OpenAPI_ue_context_t *ue_context);
 OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON);
 cJSON *OpenAPI_ue_context_convertToJSON(OpenAPI_ue_context_t *ue_context);

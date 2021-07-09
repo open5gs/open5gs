@@ -6,7 +6,7 @@
 
 OpenAPI_sponsor_connectivity_data_t *OpenAPI_sponsor_connectivity_data_create(
     OpenAPI_list_t *asp_ids
-    )
+)
 {
     OpenAPI_sponsor_connectivity_data_t *sponsor_connectivity_data_local_var = OpenAPI_malloc(sizeof(OpenAPI_sponsor_connectivity_data_t));
     if (!sponsor_connectivity_data_local_var) {
@@ -48,11 +48,11 @@ cJSON *OpenAPI_sponsor_connectivity_data_convertToJSON(OpenAPI_sponsor_connectiv
 
     OpenAPI_lnode_t *asp_ids_node;
     OpenAPI_list_for_each(sponsor_connectivity_data->asp_ids, asp_ids_node)  {
-        if (cJSON_AddStringToObject(asp_ids, "", (char*)asp_ids_node->data) == NULL) {
-            ogs_error("OpenAPI_sponsor_connectivity_data_convertToJSON() failed [asp_ids]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(asp_ids, "", (char*)asp_ids_node->data) == NULL) {
+        ogs_error("OpenAPI_sponsor_connectivity_data_convertToJSON() failed [asp_ids]");
+        goto end;
     }
+                    }
 
 end:
     return item;
@@ -68,7 +68,7 @@ OpenAPI_sponsor_connectivity_data_t *OpenAPI_sponsor_connectivity_data_parseFrom
     }
 
     OpenAPI_list_t *asp_idsList;
-
+    
     cJSON *asp_ids_local;
     if (!cJSON_IsArray(asp_ids)) {
         ogs_error("OpenAPI_sponsor_connectivity_data_parseFromJSON() failed [asp_ids]");
@@ -77,16 +77,16 @@ OpenAPI_sponsor_connectivity_data_t *OpenAPI_sponsor_connectivity_data_parseFrom
     asp_idsList = OpenAPI_list_create();
 
     cJSON_ArrayForEach(asp_ids_local, asp_ids) {
-        if (!cJSON_IsString(asp_ids_local)) {
-            ogs_error("OpenAPI_sponsor_connectivity_data_parseFromJSON() failed [asp_ids]");
-            goto end;
-        }
-        OpenAPI_list_add(asp_idsList, ogs_strdup_or_assert(asp_ids_local->valuestring));
+    if (!cJSON_IsString(asp_ids_local)) {
+        ogs_error("OpenAPI_sponsor_connectivity_data_parseFromJSON() failed [asp_ids]");
+        goto end;
     }
+    OpenAPI_list_add(asp_idsList , ogs_strdup_or_assert(asp_ids_local->valuestring));
+                    }
 
     sponsor_connectivity_data_local_var = OpenAPI_sponsor_connectivity_data_create (
         asp_idsList
-        );
+    );
 
     return sponsor_connectivity_data_local_var;
 end:

@@ -1,7 +1,7 @@
 /*
  * hsmf_update_error.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_hsmf_update_error_H_
@@ -36,7 +36,7 @@ OpenAPI_hsmf_update_error_t *OpenAPI_hsmf_update_error_create(
     OpenAPI_ref_to_binary_data_t *n1_sm_info_to_ue,
     int back_off_timer,
     char *recovery_time
-    );
+);
 void OpenAPI_hsmf_update_error_free(OpenAPI_hsmf_update_error_t *hsmf_update_error);
 OpenAPI_hsmf_update_error_t *OpenAPI_hsmf_update_error_parseFromJSON(cJSON *hsmf_update_errorJSON);
 cJSON *OpenAPI_hsmf_update_error_convertToJSON(OpenAPI_hsmf_update_error_t *hsmf_update_error);

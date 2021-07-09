@@ -1,7 +1,7 @@
 /*
  * pc5_qo_s_para.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_pc5_qo_s_para_H_
@@ -27,7 +27,7 @@ typedef struct OpenAPI_pc5_qo_s_para_s {
 OpenAPI_pc5_qo_s_para_t *OpenAPI_pc5_qo_s_para_create(
     OpenAPI_list_t *pc5_qos_flow_list,
     char *pc5_link_ambr
-    );
+);
 void OpenAPI_pc5_qo_s_para_free(OpenAPI_pc5_qo_s_para_t *pc5_qo_s_para);
 OpenAPI_pc5_qo_s_para_t *OpenAPI_pc5_qo_s_para_parseFromJSON(cJSON *pc5_qo_s_paraJSON);
 cJSON *OpenAPI_pc5_qo_s_para_convertToJSON(OpenAPI_pc5_qo_s_para_t *pc5_qo_s_para);

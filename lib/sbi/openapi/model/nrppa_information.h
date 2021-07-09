@@ -1,7 +1,7 @@
 /*
  * nrppa_information.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_nrppa_information_H_
@@ -29,7 +29,7 @@ OpenAPI_nrppa_information_t *OpenAPI_nrppa_information_create(
     char *nf_id,
     OpenAPI_n2_info_content_t *nrppa_pdu,
     char *service_instance_id
-    );
+);
 void OpenAPI_nrppa_information_free(OpenAPI_nrppa_information_t *nrppa_information);
 OpenAPI_nrppa_information_t *OpenAPI_nrppa_information_parseFromJSON(cJSON *nrppa_informationJSON);
 cJSON *OpenAPI_nrppa_information_convertToJSON(OpenAPI_nrppa_information_t *nrppa_information);

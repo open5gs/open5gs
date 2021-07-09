@@ -1,7 +1,7 @@
 /*
  * sponsoring_status.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_sponsoring_status_H_

@@ -1,7 +1,7 @@
 /*
  * authentication_info.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_authentication_info_H_
@@ -28,7 +28,9 @@ typedef struct OpenAPI_authentication_info_s {
     struct OpenAPI_trace_data_s *trace_data;
     char *udm_group_id;
     char *routing_indicator;
-    char *cag_id;
+    OpenAPI_list_t *cell_cag_info;
+    int n5gc_ind;
+    char *supported_features;
 } OpenAPI_authentication_info_t;
 
 OpenAPI_authentication_info_t *OpenAPI_authentication_info_create(
@@ -39,8 +41,10 @@ OpenAPI_authentication_info_t *OpenAPI_authentication_info_create(
     OpenAPI_trace_data_t *trace_data,
     char *udm_group_id,
     char *routing_indicator,
-    char *cag_id
-    );
+    OpenAPI_list_t *cell_cag_info,
+    int n5gc_ind,
+    char *supported_features
+);
 void OpenAPI_authentication_info_free(OpenAPI_authentication_info_t *authentication_info);
 OpenAPI_authentication_info_t *OpenAPI_authentication_info_parseFromJSON(cJSON *authentication_infoJSON);
 cJSON *OpenAPI_authentication_info_convertToJSON(OpenAPI_authentication_info_t *authentication_info);

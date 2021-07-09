@@ -8,7 +8,7 @@ OpenAPI_tnap_id_t *OpenAPI_tnap_id_create(
     char *ss_id,
     char *bss_id,
     char civic_address
-    )
+)
 {
     OpenAPI_tnap_id_t *tnap_id_local_var = OpenAPI_malloc(sizeof(OpenAPI_tnap_id_t));
     if (!tnap_id_local_var) {
@@ -43,24 +43,24 @@ cJSON *OpenAPI_tnap_id_convertToJSON(OpenAPI_tnap_id_t *tnap_id)
 
     item = cJSON_CreateObject();
     if (tnap_id->ss_id) {
-        if (cJSON_AddStringToObject(item, "ssId", tnap_id->ss_id) == NULL) {
-            ogs_error("OpenAPI_tnap_id_convertToJSON() failed [ss_id]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "ssId", tnap_id->ss_id) == NULL) {
+        ogs_error("OpenAPI_tnap_id_convertToJSON() failed [ss_id]");
+        goto end;
+    }
     }
 
     if (tnap_id->bss_id) {
-        if (cJSON_AddStringToObject(item, "bssId", tnap_id->bss_id) == NULL) {
-            ogs_error("OpenAPI_tnap_id_convertToJSON() failed [bss_id]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "bssId", tnap_id->bss_id) == NULL) {
+        ogs_error("OpenAPI_tnap_id_convertToJSON() failed [bss_id]");
+        goto end;
+    }
     }
 
     if (tnap_id->civic_address) {
-        if (cJSON_AddNumberToObject(item, "civicAddress", tnap_id->civic_address) == NULL) {
-            ogs_error("OpenAPI_tnap_id_convertToJSON() failed [civic_address]");
-            goto end;
-        }
+    if (cJSON_AddNumberToObject(item, "civicAddress", tnap_id->civic_address) == NULL) {
+        ogs_error("OpenAPI_tnap_id_convertToJSON() failed [civic_address]");
+        goto end;
+    }
     }
 
 end:
@@ -72,36 +72,36 @@ OpenAPI_tnap_id_t *OpenAPI_tnap_id_parseFromJSON(cJSON *tnap_idJSON)
     OpenAPI_tnap_id_t *tnap_id_local_var = NULL;
     cJSON *ss_id = cJSON_GetObjectItemCaseSensitive(tnap_idJSON, "ssId");
 
-    if (ss_id) {
-        if (!cJSON_IsString(ss_id)) {
-            ogs_error("OpenAPI_tnap_id_parseFromJSON() failed [ss_id]");
-            goto end;
-        }
+    if (ss_id) { 
+    if (!cJSON_IsString(ss_id)) {
+        ogs_error("OpenAPI_tnap_id_parseFromJSON() failed [ss_id]");
+        goto end;
+    }
     }
 
     cJSON *bss_id = cJSON_GetObjectItemCaseSensitive(tnap_idJSON, "bssId");
 
-    if (bss_id) {
-        if (!cJSON_IsString(bss_id)) {
-            ogs_error("OpenAPI_tnap_id_parseFromJSON() failed [bss_id]");
-            goto end;
-        }
+    if (bss_id) { 
+    if (!cJSON_IsString(bss_id)) {
+        ogs_error("OpenAPI_tnap_id_parseFromJSON() failed [bss_id]");
+        goto end;
+    }
     }
 
     cJSON *civic_address = cJSON_GetObjectItemCaseSensitive(tnap_idJSON, "civicAddress");
 
-    if (civic_address) {
-        if (!cJSON_IsNumber(civic_address)) {
-            ogs_error("OpenAPI_tnap_id_parseFromJSON() failed [civic_address]");
-            goto end;
-        }
+    if (civic_address) { 
+    if (!cJSON_IsNumber(civic_address)) {
+        ogs_error("OpenAPI_tnap_id_parseFromJSON() failed [civic_address]");
+        goto end;
+    }
     }
 
     tnap_id_local_var = OpenAPI_tnap_id_create (
         ss_id ? ogs_strdup_or_assert(ss_id->valuestring) : NULL,
         bss_id ? ogs_strdup_or_assert(bss_id->valuestring) : NULL,
         civic_address ? civic_address->valueint : 0
-        );
+    );
 
     return tnap_id_local_var;
 end:

@@ -1,7 +1,7 @@
 /*
  * route_to_location.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_route_to_location_H_
@@ -29,7 +29,7 @@ OpenAPI_route_to_location_t *OpenAPI_route_to_location_create(
     char *dnai,
     OpenAPI_route_information_t *route_info,
     char *route_prof_id
-    );
+);
 void OpenAPI_route_to_location_free(OpenAPI_route_to_location_t *route_to_location);
 OpenAPI_route_to_location_t *OpenAPI_route_to_location_parseFromJSON(cJSON *route_to_locationJSON);
 cJSON *OpenAPI_route_to_location_convertToJSON(OpenAPI_route_to_location_t *route_to_location);

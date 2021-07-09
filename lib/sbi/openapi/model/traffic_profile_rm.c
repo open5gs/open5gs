@@ -5,7 +5,7 @@
 #include "traffic_profile_rm.h"
 
 OpenAPI_traffic_profile_rm_t *OpenAPI_traffic_profile_rm_create(
-    )
+)
 {
     OpenAPI_traffic_profile_rm_t *traffic_profile_rm_local_var = OpenAPI_malloc(sizeof(OpenAPI_traffic_profile_rm_t));
     if (!traffic_profile_rm_local_var) {
@@ -42,7 +42,7 @@ OpenAPI_traffic_profile_rm_t *OpenAPI_traffic_profile_rm_parseFromJSON(cJSON *tr
 {
     OpenAPI_traffic_profile_rm_t *traffic_profile_rm_local_var = NULL;
     traffic_profile_rm_local_var = OpenAPI_traffic_profile_rm_create (
-        );
+    );
 
     return traffic_profile_rm_local_var;
 end:

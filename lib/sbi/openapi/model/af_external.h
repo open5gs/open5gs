@@ -1,7 +1,7 @@
 /*
  * af_external.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_af_external_H_
@@ -33,7 +33,7 @@ OpenAPI_af_external_t *OpenAPI_af_external_create(
     OpenAPI_list_t *allowed_geographic_area,
     OpenAPI_privacy_check_related_action_e privacy_check_related_action,
     OpenAPI_valid_time_period_t *valid_time_period
-    );
+);
 void OpenAPI_af_external_free(OpenAPI_af_external_t *af_external);
 OpenAPI_af_external_t *OpenAPI_af_external_parseFromJSON(cJSON *af_externalJSON);
 cJSON *OpenAPI_af_external_convertToJSON(OpenAPI_af_external_t *af_external);

@@ -13,7 +13,7 @@ OpenAPI_slice_info_for_registration_t *OpenAPI_slice_info_for_registration_creat
     int default_configured_snssai_ind,
     OpenAPI_list_t *mapping_of_nssai,
     int request_mapping
-    )
+)
 {
     OpenAPI_slice_info_for_registration_t *slice_info_for_registration_local_var = OpenAPI_malloc(sizeof(OpenAPI_slice_info_for_registration_t));
     if (!slice_info_for_registration_local_var) {
@@ -69,123 +69,123 @@ cJSON *OpenAPI_slice_info_for_registration_convertToJSON(OpenAPI_slice_info_for_
 
     item = cJSON_CreateObject();
     if (slice_info_for_registration->subscribed_nssai) {
-        cJSON *subscribed_nssaiList = cJSON_AddArrayToObject(item, "subscribedNssai");
-        if (subscribed_nssaiList == NULL) {
-            ogs_error("OpenAPI_slice_info_for_registration_convertToJSON() failed [subscribed_nssai]");
-            goto end;
-        }
+    cJSON *subscribed_nssaiList = cJSON_AddArrayToObject(item, "subscribedNssai");
+    if (subscribed_nssaiList == NULL) {
+        ogs_error("OpenAPI_slice_info_for_registration_convertToJSON() failed [subscribed_nssai]");
+        goto end;
+    }
 
-        OpenAPI_lnode_t *subscribed_nssai_node;
-        if (slice_info_for_registration->subscribed_nssai) {
-            OpenAPI_list_for_each(slice_info_for_registration->subscribed_nssai, subscribed_nssai_node) {
-                cJSON *itemLocal = OpenAPI_subscribed_snssai_convertToJSON(subscribed_nssai_node->data);
-                if (itemLocal == NULL) {
-                    ogs_error("OpenAPI_slice_info_for_registration_convertToJSON() failed [subscribed_nssai]");
-                    goto end;
-                }
-                cJSON_AddItemToArray(subscribed_nssaiList, itemLocal);
+    OpenAPI_lnode_t *subscribed_nssai_node;
+    if (slice_info_for_registration->subscribed_nssai) {
+        OpenAPI_list_for_each(slice_info_for_registration->subscribed_nssai, subscribed_nssai_node) {
+            cJSON *itemLocal = OpenAPI_subscribed_snssai_convertToJSON(subscribed_nssai_node->data);
+            if (itemLocal == NULL) {
+                ogs_error("OpenAPI_slice_info_for_registration_convertToJSON() failed [subscribed_nssai]");
+                goto end;
             }
+            cJSON_AddItemToArray(subscribed_nssaiList, itemLocal);
         }
+    }
     }
 
     if (slice_info_for_registration->allowed_nssai_current_access) {
-        cJSON *allowed_nssai_current_access_local_JSON = OpenAPI_allowed_nssai_convertToJSON(slice_info_for_registration->allowed_nssai_current_access);
-        if (allowed_nssai_current_access_local_JSON == NULL) {
-            ogs_error("OpenAPI_slice_info_for_registration_convertToJSON() failed [allowed_nssai_current_access]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "allowedNssaiCurrentAccess", allowed_nssai_current_access_local_JSON);
-        if (item->child == NULL) {
-            ogs_error("OpenAPI_slice_info_for_registration_convertToJSON() failed [allowed_nssai_current_access]");
-            goto end;
-        }
+    cJSON *allowed_nssai_current_access_local_JSON = OpenAPI_allowed_nssai_convertToJSON(slice_info_for_registration->allowed_nssai_current_access);
+    if (allowed_nssai_current_access_local_JSON == NULL) {
+        ogs_error("OpenAPI_slice_info_for_registration_convertToJSON() failed [allowed_nssai_current_access]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "allowedNssaiCurrentAccess", allowed_nssai_current_access_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_slice_info_for_registration_convertToJSON() failed [allowed_nssai_current_access]");
+        goto end;
+    }
     }
 
     if (slice_info_for_registration->allowed_nssai_other_access) {
-        cJSON *allowed_nssai_other_access_local_JSON = OpenAPI_allowed_nssai_convertToJSON(slice_info_for_registration->allowed_nssai_other_access);
-        if (allowed_nssai_other_access_local_JSON == NULL) {
-            ogs_error("OpenAPI_slice_info_for_registration_convertToJSON() failed [allowed_nssai_other_access]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "allowedNssaiOtherAccess", allowed_nssai_other_access_local_JSON);
-        if (item->child == NULL) {
-            ogs_error("OpenAPI_slice_info_for_registration_convertToJSON() failed [allowed_nssai_other_access]");
-            goto end;
-        }
+    cJSON *allowed_nssai_other_access_local_JSON = OpenAPI_allowed_nssai_convertToJSON(slice_info_for_registration->allowed_nssai_other_access);
+    if (allowed_nssai_other_access_local_JSON == NULL) {
+        ogs_error("OpenAPI_slice_info_for_registration_convertToJSON() failed [allowed_nssai_other_access]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "allowedNssaiOtherAccess", allowed_nssai_other_access_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_slice_info_for_registration_convertToJSON() failed [allowed_nssai_other_access]");
+        goto end;
+    }
     }
 
     if (slice_info_for_registration->s_nssai_for_mapping) {
-        cJSON *s_nssai_for_mappingList = cJSON_AddArrayToObject(item, "sNssaiForMapping");
-        if (s_nssai_for_mappingList == NULL) {
-            ogs_error("OpenAPI_slice_info_for_registration_convertToJSON() failed [s_nssai_for_mapping]");
-            goto end;
-        }
+    cJSON *s_nssai_for_mappingList = cJSON_AddArrayToObject(item, "sNssaiForMapping");
+    if (s_nssai_for_mappingList == NULL) {
+        ogs_error("OpenAPI_slice_info_for_registration_convertToJSON() failed [s_nssai_for_mapping]");
+        goto end;
+    }
 
-        OpenAPI_lnode_t *s_nssai_for_mapping_node;
-        if (slice_info_for_registration->s_nssai_for_mapping) {
-            OpenAPI_list_for_each(slice_info_for_registration->s_nssai_for_mapping, s_nssai_for_mapping_node) {
-                cJSON *itemLocal = OpenAPI_snssai_convertToJSON(s_nssai_for_mapping_node->data);
-                if (itemLocal == NULL) {
-                    ogs_error("OpenAPI_slice_info_for_registration_convertToJSON() failed [s_nssai_for_mapping]");
-                    goto end;
-                }
-                cJSON_AddItemToArray(s_nssai_for_mappingList, itemLocal);
+    OpenAPI_lnode_t *s_nssai_for_mapping_node;
+    if (slice_info_for_registration->s_nssai_for_mapping) {
+        OpenAPI_list_for_each(slice_info_for_registration->s_nssai_for_mapping, s_nssai_for_mapping_node) {
+            cJSON *itemLocal = OpenAPI_snssai_convertToJSON(s_nssai_for_mapping_node->data);
+            if (itemLocal == NULL) {
+                ogs_error("OpenAPI_slice_info_for_registration_convertToJSON() failed [s_nssai_for_mapping]");
+                goto end;
             }
+            cJSON_AddItemToArray(s_nssai_for_mappingList, itemLocal);
         }
+    }
     }
 
     if (slice_info_for_registration->requested_nssai) {
-        cJSON *requested_nssaiList = cJSON_AddArrayToObject(item, "requestedNssai");
-        if (requested_nssaiList == NULL) {
-            ogs_error("OpenAPI_slice_info_for_registration_convertToJSON() failed [requested_nssai]");
-            goto end;
-        }
+    cJSON *requested_nssaiList = cJSON_AddArrayToObject(item, "requestedNssai");
+    if (requested_nssaiList == NULL) {
+        ogs_error("OpenAPI_slice_info_for_registration_convertToJSON() failed [requested_nssai]");
+        goto end;
+    }
 
-        OpenAPI_lnode_t *requested_nssai_node;
-        if (slice_info_for_registration->requested_nssai) {
-            OpenAPI_list_for_each(slice_info_for_registration->requested_nssai, requested_nssai_node) {
-                cJSON *itemLocal = OpenAPI_snssai_convertToJSON(requested_nssai_node->data);
-                if (itemLocal == NULL) {
-                    ogs_error("OpenAPI_slice_info_for_registration_convertToJSON() failed [requested_nssai]");
-                    goto end;
-                }
-                cJSON_AddItemToArray(requested_nssaiList, itemLocal);
+    OpenAPI_lnode_t *requested_nssai_node;
+    if (slice_info_for_registration->requested_nssai) {
+        OpenAPI_list_for_each(slice_info_for_registration->requested_nssai, requested_nssai_node) {
+            cJSON *itemLocal = OpenAPI_snssai_convertToJSON(requested_nssai_node->data);
+            if (itemLocal == NULL) {
+                ogs_error("OpenAPI_slice_info_for_registration_convertToJSON() failed [requested_nssai]");
+                goto end;
             }
+            cJSON_AddItemToArray(requested_nssaiList, itemLocal);
         }
+    }
     }
 
     if (slice_info_for_registration->default_configured_snssai_ind) {
-        if (cJSON_AddBoolToObject(item, "defaultConfiguredSnssaiInd", slice_info_for_registration->default_configured_snssai_ind) == NULL) {
-            ogs_error("OpenAPI_slice_info_for_registration_convertToJSON() failed [default_configured_snssai_ind]");
-            goto end;
-        }
+    if (cJSON_AddBoolToObject(item, "defaultConfiguredSnssaiInd", slice_info_for_registration->default_configured_snssai_ind) == NULL) {
+        ogs_error("OpenAPI_slice_info_for_registration_convertToJSON() failed [default_configured_snssai_ind]");
+        goto end;
+    }
     }
 
     if (slice_info_for_registration->mapping_of_nssai) {
-        cJSON *mapping_of_nssaiList = cJSON_AddArrayToObject(item, "mappingOfNssai");
-        if (mapping_of_nssaiList == NULL) {
-            ogs_error("OpenAPI_slice_info_for_registration_convertToJSON() failed [mapping_of_nssai]");
-            goto end;
-        }
+    cJSON *mapping_of_nssaiList = cJSON_AddArrayToObject(item, "mappingOfNssai");
+    if (mapping_of_nssaiList == NULL) {
+        ogs_error("OpenAPI_slice_info_for_registration_convertToJSON() failed [mapping_of_nssai]");
+        goto end;
+    }
 
-        OpenAPI_lnode_t *mapping_of_nssai_node;
-        if (slice_info_for_registration->mapping_of_nssai) {
-            OpenAPI_list_for_each(slice_info_for_registration->mapping_of_nssai, mapping_of_nssai_node) {
-                cJSON *itemLocal = OpenAPI_mapping_of_snssai_convertToJSON(mapping_of_nssai_node->data);
-                if (itemLocal == NULL) {
-                    ogs_error("OpenAPI_slice_info_for_registration_convertToJSON() failed [mapping_of_nssai]");
-                    goto end;
-                }
-                cJSON_AddItemToArray(mapping_of_nssaiList, itemLocal);
+    OpenAPI_lnode_t *mapping_of_nssai_node;
+    if (slice_info_for_registration->mapping_of_nssai) {
+        OpenAPI_list_for_each(slice_info_for_registration->mapping_of_nssai, mapping_of_nssai_node) {
+            cJSON *itemLocal = OpenAPI_mapping_of_snssai_convertToJSON(mapping_of_nssai_node->data);
+            if (itemLocal == NULL) {
+                ogs_error("OpenAPI_slice_info_for_registration_convertToJSON() failed [mapping_of_nssai]");
+                goto end;
             }
+            cJSON_AddItemToArray(mapping_of_nssaiList, itemLocal);
         }
+    }
     }
 
     if (slice_info_for_registration->request_mapping) {
-        if (cJSON_AddBoolToObject(item, "requestMapping", slice_info_for_registration->request_mapping) == NULL) {
-            ogs_error("OpenAPI_slice_info_for_registration_convertToJSON() failed [request_mapping]");
-            goto end;
-        }
+    if (cJSON_AddBoolToObject(item, "requestMapping", slice_info_for_registration->request_mapping) == NULL) {
+        ogs_error("OpenAPI_slice_info_for_registration_convertToJSON() failed [request_mapping]");
+        goto end;
+    }
     }
 
 end:
@@ -198,125 +198,125 @@ OpenAPI_slice_info_for_registration_t *OpenAPI_slice_info_for_registration_parse
     cJSON *subscribed_nssai = cJSON_GetObjectItemCaseSensitive(slice_info_for_registrationJSON, "subscribedNssai");
 
     OpenAPI_list_t *subscribed_nssaiList;
-    if (subscribed_nssai) {
-        cJSON *subscribed_nssai_local_nonprimitive;
-        if (!cJSON_IsArray(subscribed_nssai)) {
+    if (subscribed_nssai) { 
+    cJSON *subscribed_nssai_local_nonprimitive;
+    if (!cJSON_IsArray(subscribed_nssai)){
+        ogs_error("OpenAPI_slice_info_for_registration_parseFromJSON() failed [subscribed_nssai]");
+        goto end;
+    }
+
+    subscribed_nssaiList = OpenAPI_list_create();
+
+    cJSON_ArrayForEach(subscribed_nssai_local_nonprimitive, subscribed_nssai ) {
+        if (!cJSON_IsObject(subscribed_nssai_local_nonprimitive)) {
             ogs_error("OpenAPI_slice_info_for_registration_parseFromJSON() failed [subscribed_nssai]");
             goto end;
         }
+        OpenAPI_subscribed_snssai_t *subscribed_nssaiItem = OpenAPI_subscribed_snssai_parseFromJSON(subscribed_nssai_local_nonprimitive);
 
-        subscribed_nssaiList = OpenAPI_list_create();
-
-        cJSON_ArrayForEach(subscribed_nssai_local_nonprimitive, subscribed_nssai ) {
-            if (!cJSON_IsObject(subscribed_nssai_local_nonprimitive)) {
-                ogs_error("OpenAPI_slice_info_for_registration_parseFromJSON() failed [subscribed_nssai]");
-                goto end;
-            }
-            OpenAPI_subscribed_snssai_t *subscribed_nssaiItem = OpenAPI_subscribed_snssai_parseFromJSON(subscribed_nssai_local_nonprimitive);
-
-            OpenAPI_list_add(subscribed_nssaiList, subscribed_nssaiItem);
-        }
+        OpenAPI_list_add(subscribed_nssaiList, subscribed_nssaiItem);
+    }
     }
 
     cJSON *allowed_nssai_current_access = cJSON_GetObjectItemCaseSensitive(slice_info_for_registrationJSON, "allowedNssaiCurrentAccess");
 
     OpenAPI_allowed_nssai_t *allowed_nssai_current_access_local_nonprim = NULL;
-    if (allowed_nssai_current_access) {
-        allowed_nssai_current_access_local_nonprim = OpenAPI_allowed_nssai_parseFromJSON(allowed_nssai_current_access);
+    if (allowed_nssai_current_access) { 
+    allowed_nssai_current_access_local_nonprim = OpenAPI_allowed_nssai_parseFromJSON(allowed_nssai_current_access);
     }
 
     cJSON *allowed_nssai_other_access = cJSON_GetObjectItemCaseSensitive(slice_info_for_registrationJSON, "allowedNssaiOtherAccess");
 
     OpenAPI_allowed_nssai_t *allowed_nssai_other_access_local_nonprim = NULL;
-    if (allowed_nssai_other_access) {
-        allowed_nssai_other_access_local_nonprim = OpenAPI_allowed_nssai_parseFromJSON(allowed_nssai_other_access);
+    if (allowed_nssai_other_access) { 
+    allowed_nssai_other_access_local_nonprim = OpenAPI_allowed_nssai_parseFromJSON(allowed_nssai_other_access);
     }
 
     cJSON *s_nssai_for_mapping = cJSON_GetObjectItemCaseSensitive(slice_info_for_registrationJSON, "sNssaiForMapping");
 
     OpenAPI_list_t *s_nssai_for_mappingList;
-    if (s_nssai_for_mapping) {
-        cJSON *s_nssai_for_mapping_local_nonprimitive;
-        if (!cJSON_IsArray(s_nssai_for_mapping)) {
+    if (s_nssai_for_mapping) { 
+    cJSON *s_nssai_for_mapping_local_nonprimitive;
+    if (!cJSON_IsArray(s_nssai_for_mapping)){
+        ogs_error("OpenAPI_slice_info_for_registration_parseFromJSON() failed [s_nssai_for_mapping]");
+        goto end;
+    }
+
+    s_nssai_for_mappingList = OpenAPI_list_create();
+
+    cJSON_ArrayForEach(s_nssai_for_mapping_local_nonprimitive, s_nssai_for_mapping ) {
+        if (!cJSON_IsObject(s_nssai_for_mapping_local_nonprimitive)) {
             ogs_error("OpenAPI_slice_info_for_registration_parseFromJSON() failed [s_nssai_for_mapping]");
             goto end;
         }
+        OpenAPI_snssai_t *s_nssai_for_mappingItem = OpenAPI_snssai_parseFromJSON(s_nssai_for_mapping_local_nonprimitive);
 
-        s_nssai_for_mappingList = OpenAPI_list_create();
-
-        cJSON_ArrayForEach(s_nssai_for_mapping_local_nonprimitive, s_nssai_for_mapping ) {
-            if (!cJSON_IsObject(s_nssai_for_mapping_local_nonprimitive)) {
-                ogs_error("OpenAPI_slice_info_for_registration_parseFromJSON() failed [s_nssai_for_mapping]");
-                goto end;
-            }
-            OpenAPI_snssai_t *s_nssai_for_mappingItem = OpenAPI_snssai_parseFromJSON(s_nssai_for_mapping_local_nonprimitive);
-
-            OpenAPI_list_add(s_nssai_for_mappingList, s_nssai_for_mappingItem);
-        }
+        OpenAPI_list_add(s_nssai_for_mappingList, s_nssai_for_mappingItem);
+    }
     }
 
     cJSON *requested_nssai = cJSON_GetObjectItemCaseSensitive(slice_info_for_registrationJSON, "requestedNssai");
 
     OpenAPI_list_t *requested_nssaiList;
-    if (requested_nssai) {
-        cJSON *requested_nssai_local_nonprimitive;
-        if (!cJSON_IsArray(requested_nssai)) {
+    if (requested_nssai) { 
+    cJSON *requested_nssai_local_nonprimitive;
+    if (!cJSON_IsArray(requested_nssai)){
+        ogs_error("OpenAPI_slice_info_for_registration_parseFromJSON() failed [requested_nssai]");
+        goto end;
+    }
+
+    requested_nssaiList = OpenAPI_list_create();
+
+    cJSON_ArrayForEach(requested_nssai_local_nonprimitive, requested_nssai ) {
+        if (!cJSON_IsObject(requested_nssai_local_nonprimitive)) {
             ogs_error("OpenAPI_slice_info_for_registration_parseFromJSON() failed [requested_nssai]");
             goto end;
         }
+        OpenAPI_snssai_t *requested_nssaiItem = OpenAPI_snssai_parseFromJSON(requested_nssai_local_nonprimitive);
 
-        requested_nssaiList = OpenAPI_list_create();
-
-        cJSON_ArrayForEach(requested_nssai_local_nonprimitive, requested_nssai ) {
-            if (!cJSON_IsObject(requested_nssai_local_nonprimitive)) {
-                ogs_error("OpenAPI_slice_info_for_registration_parseFromJSON() failed [requested_nssai]");
-                goto end;
-            }
-            OpenAPI_snssai_t *requested_nssaiItem = OpenAPI_snssai_parseFromJSON(requested_nssai_local_nonprimitive);
-
-            OpenAPI_list_add(requested_nssaiList, requested_nssaiItem);
-        }
+        OpenAPI_list_add(requested_nssaiList, requested_nssaiItem);
+    }
     }
 
     cJSON *default_configured_snssai_ind = cJSON_GetObjectItemCaseSensitive(slice_info_for_registrationJSON, "defaultConfiguredSnssaiInd");
 
-    if (default_configured_snssai_ind) {
-        if (!cJSON_IsBool(default_configured_snssai_ind)) {
-            ogs_error("OpenAPI_slice_info_for_registration_parseFromJSON() failed [default_configured_snssai_ind]");
-            goto end;
-        }
+    if (default_configured_snssai_ind) { 
+    if (!cJSON_IsBool(default_configured_snssai_ind)) {
+        ogs_error("OpenAPI_slice_info_for_registration_parseFromJSON() failed [default_configured_snssai_ind]");
+        goto end;
+    }
     }
 
     cJSON *mapping_of_nssai = cJSON_GetObjectItemCaseSensitive(slice_info_for_registrationJSON, "mappingOfNssai");
 
     OpenAPI_list_t *mapping_of_nssaiList;
-    if (mapping_of_nssai) {
-        cJSON *mapping_of_nssai_local_nonprimitive;
-        if (!cJSON_IsArray(mapping_of_nssai)) {
+    if (mapping_of_nssai) { 
+    cJSON *mapping_of_nssai_local_nonprimitive;
+    if (!cJSON_IsArray(mapping_of_nssai)){
+        ogs_error("OpenAPI_slice_info_for_registration_parseFromJSON() failed [mapping_of_nssai]");
+        goto end;
+    }
+
+    mapping_of_nssaiList = OpenAPI_list_create();
+
+    cJSON_ArrayForEach(mapping_of_nssai_local_nonprimitive, mapping_of_nssai ) {
+        if (!cJSON_IsObject(mapping_of_nssai_local_nonprimitive)) {
             ogs_error("OpenAPI_slice_info_for_registration_parseFromJSON() failed [mapping_of_nssai]");
             goto end;
         }
+        OpenAPI_mapping_of_snssai_t *mapping_of_nssaiItem = OpenAPI_mapping_of_snssai_parseFromJSON(mapping_of_nssai_local_nonprimitive);
 
-        mapping_of_nssaiList = OpenAPI_list_create();
-
-        cJSON_ArrayForEach(mapping_of_nssai_local_nonprimitive, mapping_of_nssai ) {
-            if (!cJSON_IsObject(mapping_of_nssai_local_nonprimitive)) {
-                ogs_error("OpenAPI_slice_info_for_registration_parseFromJSON() failed [mapping_of_nssai]");
-                goto end;
-            }
-            OpenAPI_mapping_of_snssai_t *mapping_of_nssaiItem = OpenAPI_mapping_of_snssai_parseFromJSON(mapping_of_nssai_local_nonprimitive);
-
-            OpenAPI_list_add(mapping_of_nssaiList, mapping_of_nssaiItem);
-        }
+        OpenAPI_list_add(mapping_of_nssaiList, mapping_of_nssaiItem);
+    }
     }
 
     cJSON *request_mapping = cJSON_GetObjectItemCaseSensitive(slice_info_for_registrationJSON, "requestMapping");
 
-    if (request_mapping) {
-        if (!cJSON_IsBool(request_mapping)) {
-            ogs_error("OpenAPI_slice_info_for_registration_parseFromJSON() failed [request_mapping]");
-            goto end;
-        }
+    if (request_mapping) { 
+    if (!cJSON_IsBool(request_mapping)) {
+        ogs_error("OpenAPI_slice_info_for_registration_parseFromJSON() failed [request_mapping]");
+        goto end;
+    }
     }
 
     slice_info_for_registration_local_var = OpenAPI_slice_info_for_registration_create (
@@ -328,7 +328,7 @@ OpenAPI_slice_info_for_registration_t *OpenAPI_slice_info_for_registration_parse
         default_configured_snssai_ind ? default_configured_snssai_ind->valueint : 0,
         mapping_of_nssai ? mapping_of_nssaiList : NULL,
         request_mapping ? request_mapping->valueint : 0
-        );
+    );
 
     return slice_info_for_registration_local_var;
 end:

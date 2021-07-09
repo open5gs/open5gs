@@ -1,7 +1,7 @@
 /*
  * pws_response_data.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_pws_response_data_H_
@@ -31,7 +31,7 @@ OpenAPI_pws_response_data_t *OpenAPI_pws_response_data_create(
     int serial_number,
     int message_identifier,
     OpenAPI_list_t *unknown_tai_list
-    );
+);
 void OpenAPI_pws_response_data_free(OpenAPI_pws_response_data_t *pws_response_data);
 OpenAPI_pws_response_data_t *OpenAPI_pws_response_data_parseFromJSON(cJSON *pws_response_dataJSON);
 cJSON *OpenAPI_pws_response_data_convertToJSON(OpenAPI_pws_response_data_t *pws_response_data);

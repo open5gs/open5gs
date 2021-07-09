@@ -1,7 +1,7 @@
 /*
  * sm_policy_control.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_sm_policy_control_H_
@@ -28,7 +28,7 @@ typedef struct OpenAPI_sm_policy_control_s {
 OpenAPI_sm_policy_control_t *OpenAPI_sm_policy_control_create(
     OpenAPI_sm_policy_context_data_t *context,
     OpenAPI_sm_policy_decision_t *policy
-    );
+);
 void OpenAPI_sm_policy_control_free(OpenAPI_sm_policy_control_t *sm_policy_control);
 OpenAPI_sm_policy_control_t *OpenAPI_sm_policy_control_parseFromJSON(cJSON *sm_policy_controlJSON);
 cJSON *OpenAPI_sm_policy_control_convertToJSON(OpenAPI_sm_policy_control_t *sm_policy_control);

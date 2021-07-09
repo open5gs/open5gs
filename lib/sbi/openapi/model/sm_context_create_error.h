@@ -1,7 +1,7 @@
 /*
  * sm_context_create_error.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_sm_context_create_error_H_
@@ -35,7 +35,7 @@ OpenAPI_sm_context_create_error_t *OpenAPI_sm_context_create_error_create(
     OpenAPI_ref_to_binary_data_t *n2_sm_info,
     OpenAPI_n2_sm_info_type_e n2_sm_info_type,
     char *recovery_time
-    );
+);
 void OpenAPI_sm_context_create_error_free(OpenAPI_sm_context_create_error_t *sm_context_create_error);
 OpenAPI_sm_context_create_error_t *OpenAPI_sm_context_create_error_parseFromJSON(cJSON *sm_context_create_errorJSON);
 cJSON *OpenAPI_sm_context_create_error_convertToJSON(OpenAPI_sm_context_create_error_t *sm_context_create_error);

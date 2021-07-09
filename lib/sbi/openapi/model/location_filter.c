@@ -5,7 +5,7 @@
 #include "location_filter.h"
 
 OpenAPI_location_filter_t *OpenAPI_location_filter_create(
-    )
+)
 {
     OpenAPI_location_filter_t *location_filter_local_var = OpenAPI_malloc(sizeof(OpenAPI_location_filter_t));
     if (!location_filter_local_var) {
@@ -42,7 +42,7 @@ OpenAPI_location_filter_t *OpenAPI_location_filter_parseFromJSON(cJSON *location
 {
     OpenAPI_location_filter_t *location_filter_local_var = NULL;
     location_filter_local_var = OpenAPI_location_filter_create (
-        );
+    );
 
     return location_filter_local_var;
 end:

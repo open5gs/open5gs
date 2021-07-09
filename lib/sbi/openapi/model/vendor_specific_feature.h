@@ -26,7 +26,7 @@ typedef struct OpenAPI_vendor_specific_feature_s {
 OpenAPI_vendor_specific_feature_t *OpenAPI_vendor_specific_feature_create(
     char *feature_name,
     char *feature_version
-    );
+);
 void OpenAPI_vendor_specific_feature_free(OpenAPI_vendor_specific_feature_t *vendor_specific_feature);
 OpenAPI_vendor_specific_feature_t *OpenAPI_vendor_specific_feature_parseFromJSON(cJSON *vendor_specific_featureJSON);
 cJSON *OpenAPI_vendor_specific_feature_convertToJSON(OpenAPI_vendor_specific_feature_t *vendor_specific_feature);

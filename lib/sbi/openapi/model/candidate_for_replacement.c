@@ -7,7 +7,7 @@
 OpenAPI_candidate_for_replacement_t *OpenAPI_candidate_for_replacement_create(
     OpenAPI_snssai_t *snssai,
     OpenAPI_list_t *dnns
-    )
+)
 {
     OpenAPI_candidate_for_replacement_t *candidate_for_replacement_local_var = OpenAPI_malloc(sizeof(OpenAPI_candidate_for_replacement_t));
     if (!candidate_for_replacement_local_var) {
@@ -55,19 +55,19 @@ cJSON *OpenAPI_candidate_for_replacement_convertToJSON(OpenAPI_candidate_for_rep
     }
 
     if (candidate_for_replacement->dnns) {
-        cJSON *dnns = cJSON_AddArrayToObject(item, "dnns");
-        if (dnns == NULL) {
-            ogs_error("OpenAPI_candidate_for_replacement_convertToJSON() failed [dnns]");
-            goto end;
-        }
+    cJSON *dnns = cJSON_AddArrayToObject(item, "dnns");
+    if (dnns == NULL) {
+        ogs_error("OpenAPI_candidate_for_replacement_convertToJSON() failed [dnns]");
+        goto end;
+    }
 
-        OpenAPI_lnode_t *dnns_node;
-        OpenAPI_list_for_each(candidate_for_replacement->dnns, dnns_node)  {
-            if (cJSON_AddStringToObject(dnns, "", (char*)dnns_node->data) == NULL) {
-                ogs_error("OpenAPI_candidate_for_replacement_convertToJSON() failed [dnns]");
-                goto end;
-            }
-        }
+    OpenAPI_lnode_t *dnns_node;
+    OpenAPI_list_for_each(candidate_for_replacement->dnns, dnns_node)  {
+    if (cJSON_AddStringToObject(dnns, "", (char*)dnns_node->data) == NULL) {
+        ogs_error("OpenAPI_candidate_for_replacement_convertToJSON() failed [dnns]");
+        goto end;
+    }
+                    }
     }
 
 end:
@@ -84,33 +84,33 @@ OpenAPI_candidate_for_replacement_t *OpenAPI_candidate_for_replacement_parseFrom
     }
 
     OpenAPI_snssai_t *snssai_local_nonprim = NULL;
-
+    
     snssai_local_nonprim = OpenAPI_snssai_parseFromJSON(snssai);
 
     cJSON *dnns = cJSON_GetObjectItemCaseSensitive(candidate_for_replacementJSON, "dnns");
 
     OpenAPI_list_t *dnnsList;
-    if (dnns) {
-        cJSON *dnns_local;
-        if (!cJSON_IsArray(dnns)) {
-            ogs_error("OpenAPI_candidate_for_replacement_parseFromJSON() failed [dnns]");
-            goto end;
-        }
-        dnnsList = OpenAPI_list_create();
+    if (dnns) { 
+    cJSON *dnns_local;
+    if (!cJSON_IsArray(dnns)) {
+        ogs_error("OpenAPI_candidate_for_replacement_parseFromJSON() failed [dnns]");
+        goto end;
+    }
+    dnnsList = OpenAPI_list_create();
 
-        cJSON_ArrayForEach(dnns_local, dnns) {
-            if (!cJSON_IsString(dnns_local)) {
-                ogs_error("OpenAPI_candidate_for_replacement_parseFromJSON() failed [dnns]");
-                goto end;
-            }
-            OpenAPI_list_add(dnnsList, ogs_strdup_or_assert(dnns_local->valuestring));
-        }
+    cJSON_ArrayForEach(dnns_local, dnns) {
+    if (!cJSON_IsString(dnns_local)) {
+        ogs_error("OpenAPI_candidate_for_replacement_parseFromJSON() failed [dnns]");
+        goto end;
+    }
+    OpenAPI_list_add(dnnsList , ogs_strdup_or_assert(dnns_local->valuestring));
+                    }
     }
 
     candidate_for_replacement_local_var = OpenAPI_candidate_for_replacement_create (
         snssai_local_nonprim,
         dnns ? dnnsList : NULL
-        );
+    );
 
     return candidate_for_replacement_local_var;
 end:

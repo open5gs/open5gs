@@ -1,7 +1,7 @@
 /*
  * dnf.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_dnf_H_
@@ -25,7 +25,7 @@ typedef struct OpenAPI_dnf_s {
 
 OpenAPI_dnf_t *OpenAPI_dnf_create(
     OpenAPI_list_t *dnf_units
-    );
+);
 void OpenAPI_dnf_free(OpenAPI_dnf_t *dnf);
 OpenAPI_dnf_t *OpenAPI_dnf_parseFromJSON(cJSON *dnfJSON);
 cJSON *OpenAPI_dnf_convertToJSON(OpenAPI_dnf_t *dnf);

@@ -1,7 +1,7 @@
 /*
  * expected_ue_behavior.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_expected_ue_behavior_H_
@@ -27,7 +27,7 @@ typedef struct OpenAPI_expected_ue_behavior_s {
 OpenAPI_expected_ue_behavior_t *OpenAPI_expected_ue_behavior_create(
     OpenAPI_list_t *exp_move_trajectory,
     char *validity_time
-    );
+);
 void OpenAPI_expected_ue_behavior_free(OpenAPI_expected_ue_behavior_t *expected_ue_behavior);
 OpenAPI_expected_ue_behavior_t *OpenAPI_expected_ue_behavior_parseFromJSON(cJSON *expected_ue_behaviorJSON);
 cJSON *OpenAPI_expected_ue_behavior_convertToJSON(OpenAPI_expected_ue_behavior_t *expected_ue_behavior);

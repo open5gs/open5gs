@@ -7,7 +7,7 @@
 OpenAPI_plmn_id_t *OpenAPI_plmn_id_create(
     char *mcc,
     char *mnc
-    )
+)
 {
     OpenAPI_plmn_id_t *plmn_id_local_var = OpenAPI_malloc(sizeof(OpenAPI_plmn_id_t));
     if (!plmn_id_local_var) {
@@ -63,7 +63,7 @@ OpenAPI_plmn_id_t *OpenAPI_plmn_id_parseFromJSON(cJSON *plmn_idJSON)
         goto end;
     }
 
-
+    
     if (!cJSON_IsString(mcc)) {
         ogs_error("OpenAPI_plmn_id_parseFromJSON() failed [mcc]");
         goto end;
@@ -75,7 +75,7 @@ OpenAPI_plmn_id_t *OpenAPI_plmn_id_parseFromJSON(cJSON *plmn_idJSON)
         goto end;
     }
 
-
+    
     if (!cJSON_IsString(mnc)) {
         ogs_error("OpenAPI_plmn_id_parseFromJSON() failed [mnc]");
         goto end;
@@ -84,7 +84,7 @@ OpenAPI_plmn_id_t *OpenAPI_plmn_id_parseFromJSON(cJSON *plmn_idJSON)
     plmn_id_local_var = OpenAPI_plmn_id_create (
         ogs_strdup_or_assert(mcc->valuestring),
         ogs_strdup_or_assert(mnc->valuestring)
-        );
+    );
 
     return plmn_id_local_var;
 end:

@@ -28,6 +28,9 @@ struct dict_object *ogs_diam_origin_realm = NULL;
 struct dict_object *ogs_diam_destination_host = NULL;
 struct dict_object *ogs_diam_destination_realm = NULL;
 struct dict_object *ogs_diam_user_name = NULL;
+struct dict_object *ogs_diam_subscription_id = NULL;
+struct dict_object *ogs_diam_subscription_id_type = NULL;
+struct dict_object *ogs_diam_subscription_id_data = NULL;
 struct dict_object *ogs_diam_auth_session_state = NULL;
 struct dict_object *ogs_diam_auth_application_id = NULL;
 struct dict_object *ogs_diam_auth_request_type = NULL;
@@ -41,6 +44,10 @@ struct dict_object *ogs_diam_mip_home_agent_address = NULL;
 struct dict_object *ogs_diam_authorization_lifetime = NULL;
 struct dict_object *ogs_diam_auth_grace_period = NULL;
 struct dict_object *ogs_diam_session_timeout = NULL;
+struct dict_object *ogs_diam_rat_type = NULL;
+struct dict_object *ogs_diam_service_selection = NULL;
+struct dict_object *ogs_diam_visited_plmn_id = NULL;
+struct dict_object *ogs_diam_visited_network_identifier = NULL;
 
 struct dict_object *ogs_diam_vendor = NULL;
 struct dict_object *ogs_diam_vendor_id = NULL;
@@ -62,6 +69,9 @@ int ogs_diam_message_init()
     CHECK_dict_search( DICT_AVP, AVP_BY_NAME, "Destination-Host", &ogs_diam_destination_host);
     CHECK_dict_search( DICT_AVP, AVP_BY_NAME, "Destination-Realm", &ogs_diam_destination_realm);
     CHECK_dict_search( DICT_AVP, AVP_BY_NAME, "User-Name", &ogs_diam_user_name);
+    CHECK_dict_search( DICT_AVP, AVP_BY_NAME, "Subscription-Id", &ogs_diam_subscription_id);
+    CHECK_dict_search( DICT_AVP, AVP_BY_NAME, "Subscription-Id-Type", &ogs_diam_subscription_id_type);
+    CHECK_dict_search( DICT_AVP, AVP_BY_NAME, "Subscription-Id-Data", &ogs_diam_subscription_id_data);
     CHECK_dict_search( DICT_AVP, AVP_BY_NAME, "Auth-Session-State", &ogs_diam_auth_session_state);
     CHECK_dict_search( DICT_AVP, AVP_BY_NAME, "Auth-Application-Id", &ogs_diam_auth_application_id);
     CHECK_dict_search( DICT_AVP, AVP_BY_NAME, "Auth-Request-Type", &ogs_diam_auth_request_type);
@@ -75,6 +85,10 @@ int ogs_diam_message_init()
     CHECK_dict_search( DICT_AVP, AVP_BY_NAME, "Authorization-Lifetime", &ogs_diam_authorization_lifetime);
     CHECK_dict_search( DICT_AVP, AVP_BY_NAME, "Auth-Grace-Period", &ogs_diam_auth_grace_period);
     CHECK_dict_search( DICT_AVP, AVP_BY_NAME, "Session-Timeout", &ogs_diam_session_timeout);
+    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "RAT-Type", &ogs_diam_rat_type);
+    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Service-Selection", &ogs_diam_service_selection);
+    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Visited-PLMN-Id", &ogs_diam_visited_plmn_id);
+    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Visited-Network-Identifier", &ogs_diam_visited_network_identifier);
 
     return 0;
 }

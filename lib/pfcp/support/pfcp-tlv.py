@@ -80,14 +80,14 @@ def output_header_to_file(f):
     f.write(" ******************************************************************************/\n\n")
 
 def usage():
-    print "Python generating TLV build/parser for PFCP v%s" % (version)
-    print "Usage: python pfcp-tlv.py [options]"
-    print "Available options:"
-    print "-d        Enable script debug"
-    print "-f [file] Input file to parse"
-    print "-o [dir]  Output files to given directory"
-    print "-c [dir]  Cache files to given directory"
-    print "-h        Print this help and return"
+    print("Python generating TLV build/parser for PFCP v%s" % (version))
+    print("Usage: python pfcp-tlv.py [options]")
+    print("Available options:")
+    print("-d        Enable script debug")
+    print("-f [file] Input file to parse")
+    print("-o [dir]  Output files to given directory")
+    print("-c [dir]  Cache files to given directory")
+    print("-h        Print this help and return")
 
 def v_upper(v):
     return re.sub('3GPP', '', re.sub('\'', '_', re.sub('/', '_', re.sub('-', '_', re.sub(' ', '_', v)))).upper())
@@ -96,13 +96,13 @@ def v_lower(v):
     return re.sub('3gpp', '', re.sub('\'', '_', re.sub('/', '_', re.sub('-', '_', re.sub(' ', '_', v)))).lower())
 
 def get_cells(cells):
-    note = cells[0].text.encode('ascii', 'ignore')
+    note = cells[0].text
     if note.find('NOTE') != -1:
         return None
-    comment = cells[2].text.encode('ascii', 'ignore')
+    comment = cells[2].text.encode('ascii', 'ignore').decode('utf-8')
     comment = re.sub('\n|\"|\'|\\\\', '', comment);
     #print comment
-    ie_type = re.sub('\s*$', '', re.sub('\'\s*\n*\s*\(NOTE.*\)*', '', cells[-1].text.encode('ascii', 'ignore')))    
+    ie_type = re.sub('\s*$', '', re.sub('\'\s*\n*\s*\(NOTE.*\)*', '', cells[-1].text))
     
     #if ie_type.find('Usage Report') != -1:
     if ie_type == 'Usage Report':
@@ -136,8 +136,8 @@ def get_cells(cells):
     if ie_type not in type_list.keys():
         assert False, "Unknown IE type : [" \
                 + cells[-1].text + "]" + "(" + ie_type + ")"
-    presence = cells[1].text.encode('ascii', 'ignore')
-    ie_value = re.sub('\s*\n*\s*\([^\)]*\)*', '', cells[0].text).encode('ascii', 'ignore')
+    presence = cells[1].text
+    ie_value = re.sub('\s*\n*\s*\([^\)]*\)*', '', cells[0].text)
     if ie_value[len(ie_value)-1] == ' ':
         ie_value = ie_value[:len(ie_value)-1]
 
@@ -200,8 +200,8 @@ else:
 d_info("[Message List]")
 cachefile = cachedir + 'tlv-msg-list.py'
 if os.path.isfile(cachefile) and os.access(cachefile, os.R_OK):
-    execfile(cachefile)
-    print "Read from " + cachefile
+    exec(open(cachefile).read())
+    print("Read from " + cachefile)
 else:
     document = Document(filename)
     f = open(cachefile, 'w') 
@@ -218,8 +218,8 @@ else:
                 d_print("Table Index = %d\n" % i)
 
     for row in msg_table.rows[2:-3]:
-        key = row.cells[1].text.encode('ascii', 'ignore')
-        type = row.cells[0].text.encode('ascii', 'ignore')
+        key = row.cells[1].text
+        type = row.cells[0].text
         if type.isdigit() is False:
             continue
         if key.find('Reserved') != -1:
@@ -232,8 +232,8 @@ else:
 d_info("[IE Type List]")
 cachefile = cachedir + 'tlv-type-list.py'
 if os.path.isfile(cachefile) and os.access(cachefile, os.R_OK):
-    execfile(cachefile)
-    print "Read from " + cachefile
+    exec(open(cachefile).read())
+    print("Read from " + cachefile)
 else:
     document = Document(filename)
     f = open(cachefile, 'w') 
@@ -250,14 +250,14 @@ else:
                 d_print("Table Index = %d\n" % i)
 
     for row in ie_table.rows[1:-1]:
-        key = row.cells[1].text.encode('ascii', 'ignore')
+        key = row.cells[1].text
         if key.find('Reserved') != -1:
             continue
         key = re.sub('\(', '', key)
         key = re.sub('\)', '', key)
         key = re.sub('\s*$', '', key)
 
-        type = row.cells[0].text.encode('ascii', 'ignore')
+        type = row.cells[0].text
         type_list[key] = { "type": type , "max_tlv_more" : "0" }
         write_file(f, "type_list[\"" + key + "\"] = { \"type\" : \"" + type)
         write_file(f, "\", \"max_tlv_more\" : \"0\" }\n")
@@ -266,8 +266,8 @@ else:
 d_info("[Group IE List]")
 cachefile = cachedir + 'tlv-group-list.py'
 if os.path.isfile(cachefile) and os.access(cachefile, os.R_OK):
-    execfile(cachefile)
-    print "Read from " + cachefile
+    exec(open(cachefile).read())
+    print("Read from " + cachefile)
 else:
     document = Document(filename)
     f = open(cachefile, 'w') 
@@ -298,8 +298,8 @@ else:
 
                 if len(re.findall('\d+', row.cells[num].text)) == 0:
                     continue;
-                ie_type = re.findall('\d+', row.cells[num].text)[-1].encode('ascii', 'ignore')
-                ie_name = re.sub('\s*IE Type.*', '', row.cells[num].text.encode('ascii', 'ignore'))
+                ie_type = re.findall('\d+', row.cells[num].text)[-1]
+                ie_name = re.sub('\s*IE Type.*', '', row.cells[num].text)
 
                 d_print("TYPE:%s NAME:%s\n" % (ie_type, ie_name))
 
@@ -366,8 +366,8 @@ for key in msg_list.keys():
         d_info("[" + key + "]")
         cachefile = cachedir + "tlv-msg-" + msg_list[key]["type"] + ".py"
         if os.path.isfile(cachefile) and os.access(cachefile, os.R_OK):
-            execfile(cachefile)
-            print "Read from " + cachefile
+            exec(open(cachefile).read())
+            print("Read from " + cachefile)
         else:
             document = Document(filename)
             f = open(cachefile, 'w') 

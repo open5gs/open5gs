@@ -1,7 +1,7 @@
 /*
  * hss_av_type.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_hss_av_type_H_

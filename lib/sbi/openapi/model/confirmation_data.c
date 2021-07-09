@@ -5,14 +5,16 @@
 #include "confirmation_data.h"
 
 OpenAPI_confirmation_data_t *OpenAPI_confirmation_data_create(
-    char *res_star
-    )
+    char *res_star,
+    char *supported_features
+)
 {
     OpenAPI_confirmation_data_t *confirmation_data_local_var = OpenAPI_malloc(sizeof(OpenAPI_confirmation_data_t));
     if (!confirmation_data_local_var) {
         return NULL;
     }
     confirmation_data_local_var->res_star = res_star;
+    confirmation_data_local_var->supported_features = supported_features;
 
     return confirmation_data_local_var;
 }
@@ -24,6 +26,7 @@ void OpenAPI_confirmation_data_free(OpenAPI_confirmation_data_t *confirmation_da
     }
     OpenAPI_lnode_t *node;
     ogs_free(confirmation_data->res_star);
+    ogs_free(confirmation_data->supported_features);
     ogs_free(confirmation_data);
 }
 
@@ -42,6 +45,13 @@ cJSON *OpenAPI_confirmation_data_convertToJSON(OpenAPI_confirmation_data_t *conf
         goto end;
     }
 
+    if (confirmation_data->supported_features) {
+    if (cJSON_AddStringToObject(item, "supportedFeatures", confirmation_data->supported_features) == NULL) {
+        ogs_error("OpenAPI_confirmation_data_convertToJSON() failed [supported_features]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -55,15 +65,25 @@ OpenAPI_confirmation_data_t *OpenAPI_confirmation_data_parseFromJSON(cJSON *conf
         goto end;
     }
 
-
+    
     if (!cJSON_IsString(res_star)) {
         ogs_error("OpenAPI_confirmation_data_parseFromJSON() failed [res_star]");
         goto end;
     }
 
+    cJSON *supported_features = cJSON_GetObjectItemCaseSensitive(confirmation_dataJSON, "supportedFeatures");
+
+    if (supported_features) { 
+    if (!cJSON_IsString(supported_features)) {
+        ogs_error("OpenAPI_confirmation_data_parseFromJSON() failed [supported_features]");
+        goto end;
+    }
+    }
+
     confirmation_data_local_var = OpenAPI_confirmation_data_create (
-        ogs_strdup_or_assert(res_star->valuestring)
-        );
+        ogs_strdup_or_assert(res_star->valuestring),
+        supported_features ? ogs_strdup_or_assert(supported_features->valuestring) : NULL
+    );
 
     return confirmation_data_local_var;
 end:

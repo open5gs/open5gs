@@ -1,7 +1,7 @@
 /*
  * ue_context_in_smsf_data.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_ue_context_in_smsf_data_H_
@@ -27,7 +27,7 @@ typedef struct OpenAPI_ue_context_in_smsf_data_s {
 OpenAPI_ue_context_in_smsf_data_t *OpenAPI_ue_context_in_smsf_data_create(
     OpenAPI_smsf_info_t *smsf_info3_gpp_access,
     OpenAPI_smsf_info_t *smsf_info_non3_gpp_access
-    );
+);
 void OpenAPI_ue_context_in_smsf_data_free(OpenAPI_ue_context_in_smsf_data_t *ue_context_in_smsf_data);
 OpenAPI_ue_context_in_smsf_data_t *OpenAPI_ue_context_in_smsf_data_parseFromJSON(cJSON *ue_context_in_smsf_dataJSON);
 cJSON *OpenAPI_ue_context_in_smsf_data_convertToJSON(OpenAPI_ue_context_in_smsf_data_t *ue_context_in_smsf_data);

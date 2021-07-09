@@ -7,7 +7,7 @@
 OpenAPI_requested_rule_data_t *OpenAPI_requested_rule_data_create(
     OpenAPI_list_t *ref_pcc_rule_ids,
     OpenAPI_list_t *req_data
-    )
+)
 {
     OpenAPI_requested_rule_data_t *requested_rule_data_local_var = OpenAPI_malloc(sizeof(OpenAPI_requested_rule_data_t));
     if (!requested_rule_data_local_var) {
@@ -51,11 +51,11 @@ cJSON *OpenAPI_requested_rule_data_convertToJSON(OpenAPI_requested_rule_data_t *
 
     OpenAPI_lnode_t *ref_pcc_rule_ids_node;
     OpenAPI_list_for_each(requested_rule_data->ref_pcc_rule_ids, ref_pcc_rule_ids_node)  {
-        if (cJSON_AddStringToObject(ref_pcc_rule_ids, "", (char*)ref_pcc_rule_ids_node->data) == NULL) {
-            ogs_error("OpenAPI_requested_rule_data_convertToJSON() failed [ref_pcc_rule_ids]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(ref_pcc_rule_ids, "", (char*)ref_pcc_rule_ids_node->data) == NULL) {
+        ogs_error("OpenAPI_requested_rule_data_convertToJSON() failed [ref_pcc_rule_ids]");
+        goto end;
     }
+                    }
 
     cJSON *req_data = cJSON_AddArrayToObject(item, "reqData");
     if (req_data == NULL) {
@@ -84,7 +84,7 @@ OpenAPI_requested_rule_data_t *OpenAPI_requested_rule_data_parseFromJSON(cJSON *
     }
 
     OpenAPI_list_t *ref_pcc_rule_idsList;
-
+    
     cJSON *ref_pcc_rule_ids_local;
     if (!cJSON_IsArray(ref_pcc_rule_ids)) {
         ogs_error("OpenAPI_requested_rule_data_parseFromJSON() failed [ref_pcc_rule_ids]");
@@ -93,12 +93,12 @@ OpenAPI_requested_rule_data_t *OpenAPI_requested_rule_data_parseFromJSON(cJSON *
     ref_pcc_rule_idsList = OpenAPI_list_create();
 
     cJSON_ArrayForEach(ref_pcc_rule_ids_local, ref_pcc_rule_ids) {
-        if (!cJSON_IsString(ref_pcc_rule_ids_local)) {
-            ogs_error("OpenAPI_requested_rule_data_parseFromJSON() failed [ref_pcc_rule_ids]");
-            goto end;
-        }
-        OpenAPI_list_add(ref_pcc_rule_idsList, ogs_strdup_or_assert(ref_pcc_rule_ids_local->valuestring));
+    if (!cJSON_IsString(ref_pcc_rule_ids_local)) {
+        ogs_error("OpenAPI_requested_rule_data_parseFromJSON() failed [ref_pcc_rule_ids]");
+        goto end;
     }
+    OpenAPI_list_add(ref_pcc_rule_idsList , ogs_strdup_or_assert(ref_pcc_rule_ids_local->valuestring));
+                    }
 
     cJSON *req_data = cJSON_GetObjectItemCaseSensitive(requested_rule_dataJSON, "reqData");
     if (!req_data) {
@@ -107,7 +107,7 @@ OpenAPI_requested_rule_data_t *OpenAPI_requested_rule_data_parseFromJSON(cJSON *
     }
 
     OpenAPI_list_t *req_dataList;
-
+    
     cJSON *req_data_local_nonprimitive;
     if (!cJSON_IsArray(req_data)) {
         ogs_error("OpenAPI_requested_rule_data_parseFromJSON() failed [req_data]");
@@ -117,7 +117,7 @@ OpenAPI_requested_rule_data_t *OpenAPI_requested_rule_data_parseFromJSON(cJSON *
     req_dataList = OpenAPI_list_create();
 
     cJSON_ArrayForEach(req_data_local_nonprimitive, req_data ) {
-        if (!cJSON_IsString(req_data_local_nonprimitive)) {
+        if (!cJSON_IsString(req_data_local_nonprimitive)){
             ogs_error("OpenAPI_requested_rule_data_parseFromJSON() failed [req_data]");
             goto end;
         }
@@ -128,7 +128,7 @@ OpenAPI_requested_rule_data_t *OpenAPI_requested_rule_data_parseFromJSON(cJSON *
     requested_rule_data_local_var = OpenAPI_requested_rule_data_create (
         ref_pcc_rule_idsList,
         req_dataList
-        );
+    );
 
     return requested_rule_data_local_var;
 end:

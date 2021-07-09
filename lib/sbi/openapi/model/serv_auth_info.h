@@ -1,7 +1,7 @@
 /*
  * serv_auth_info.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_serv_auth_info_H_

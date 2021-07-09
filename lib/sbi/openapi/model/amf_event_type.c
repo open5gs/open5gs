@@ -5,7 +5,7 @@
 #include "amf_event_type.h"
 
 OpenAPI_amf_event_type_t *OpenAPI_amf_event_type_create(
-    )
+)
 {
     OpenAPI_amf_event_type_t *amf_event_type_local_var = OpenAPI_malloc(sizeof(OpenAPI_amf_event_type_t));
     if (!amf_event_type_local_var) {
@@ -42,7 +42,7 @@ OpenAPI_amf_event_type_t *OpenAPI_amf_event_type_parseFromJSON(cJSON *amf_event_
 {
     OpenAPI_amf_event_type_t *amf_event_type_local_var = NULL;
     amf_event_type_local_var = OpenAPI_amf_event_type_create (
-        );
+    );
 
     return amf_event_type_local_var;
 end:

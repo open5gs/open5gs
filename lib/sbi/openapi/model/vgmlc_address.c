@@ -8,7 +8,7 @@ OpenAPI_vgmlc_address_t *OpenAPI_vgmlc_address_create(
     char *vgmlc_address_ipv4,
     char *vgmlc_address_ipv6,
     char *vgmlc_fqdn
-    )
+)
 {
     OpenAPI_vgmlc_address_t *vgmlc_address_local_var = OpenAPI_malloc(sizeof(OpenAPI_vgmlc_address_t));
     if (!vgmlc_address_local_var) {
@@ -44,24 +44,24 @@ cJSON *OpenAPI_vgmlc_address_convertToJSON(OpenAPI_vgmlc_address_t *vgmlc_addres
 
     item = cJSON_CreateObject();
     if (vgmlc_address->vgmlc_address_ipv4) {
-        if (cJSON_AddStringToObject(item, "vgmlcAddressIpv4", vgmlc_address->vgmlc_address_ipv4) == NULL) {
-            ogs_error("OpenAPI_vgmlc_address_convertToJSON() failed [vgmlc_address_ipv4]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "vgmlcAddressIpv4", vgmlc_address->vgmlc_address_ipv4) == NULL) {
+        ogs_error("OpenAPI_vgmlc_address_convertToJSON() failed [vgmlc_address_ipv4]");
+        goto end;
+    }
     }
 
     if (vgmlc_address->vgmlc_address_ipv6) {
-        if (cJSON_AddStringToObject(item, "vgmlcAddressIpv6", vgmlc_address->vgmlc_address_ipv6) == NULL) {
-            ogs_error("OpenAPI_vgmlc_address_convertToJSON() failed [vgmlc_address_ipv6]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "vgmlcAddressIpv6", vgmlc_address->vgmlc_address_ipv6) == NULL) {
+        ogs_error("OpenAPI_vgmlc_address_convertToJSON() failed [vgmlc_address_ipv6]");
+        goto end;
+    }
     }
 
     if (vgmlc_address->vgmlc_fqdn) {
-        if (cJSON_AddStringToObject(item, "vgmlcFqdn", vgmlc_address->vgmlc_fqdn) == NULL) {
-            ogs_error("OpenAPI_vgmlc_address_convertToJSON() failed [vgmlc_fqdn]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "vgmlcFqdn", vgmlc_address->vgmlc_fqdn) == NULL) {
+        ogs_error("OpenAPI_vgmlc_address_convertToJSON() failed [vgmlc_fqdn]");
+        goto end;
+    }
     }
 
 end:
@@ -73,36 +73,36 @@ OpenAPI_vgmlc_address_t *OpenAPI_vgmlc_address_parseFromJSON(cJSON *vgmlc_addres
     OpenAPI_vgmlc_address_t *vgmlc_address_local_var = NULL;
     cJSON *vgmlc_address_ipv4 = cJSON_GetObjectItemCaseSensitive(vgmlc_addressJSON, "vgmlcAddressIpv4");
 
-    if (vgmlc_address_ipv4) {
-        if (!cJSON_IsString(vgmlc_address_ipv4)) {
-            ogs_error("OpenAPI_vgmlc_address_parseFromJSON() failed [vgmlc_address_ipv4]");
-            goto end;
-        }
+    if (vgmlc_address_ipv4) { 
+    if (!cJSON_IsString(vgmlc_address_ipv4)) {
+        ogs_error("OpenAPI_vgmlc_address_parseFromJSON() failed [vgmlc_address_ipv4]");
+        goto end;
+    }
     }
 
     cJSON *vgmlc_address_ipv6 = cJSON_GetObjectItemCaseSensitive(vgmlc_addressJSON, "vgmlcAddressIpv6");
 
-    if (vgmlc_address_ipv6) {
-        if (!cJSON_IsString(vgmlc_address_ipv6)) {
-            ogs_error("OpenAPI_vgmlc_address_parseFromJSON() failed [vgmlc_address_ipv6]");
-            goto end;
-        }
+    if (vgmlc_address_ipv6) { 
+    if (!cJSON_IsString(vgmlc_address_ipv6)) {
+        ogs_error("OpenAPI_vgmlc_address_parseFromJSON() failed [vgmlc_address_ipv6]");
+        goto end;
+    }
     }
 
     cJSON *vgmlc_fqdn = cJSON_GetObjectItemCaseSensitive(vgmlc_addressJSON, "vgmlcFqdn");
 
-    if (vgmlc_fqdn) {
-        if (!cJSON_IsString(vgmlc_fqdn)) {
-            ogs_error("OpenAPI_vgmlc_address_parseFromJSON() failed [vgmlc_fqdn]");
-            goto end;
-        }
+    if (vgmlc_fqdn) { 
+    if (!cJSON_IsString(vgmlc_fqdn)) {
+        ogs_error("OpenAPI_vgmlc_address_parseFromJSON() failed [vgmlc_fqdn]");
+        goto end;
+    }
     }
 
     vgmlc_address_local_var = OpenAPI_vgmlc_address_create (
         vgmlc_address_ipv4 ? ogs_strdup_or_assert(vgmlc_address_ipv4->valuestring) : NULL,
         vgmlc_address_ipv6 ? ogs_strdup_or_assert(vgmlc_address_ipv6->valuestring) : NULL,
         vgmlc_fqdn ? ogs_strdup_or_assert(vgmlc_fqdn->valuestring) : NULL
-        );
+    );
 
     return vgmlc_address_local_var;
 end:

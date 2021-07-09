@@ -1,7 +1,7 @@
 /*
  * sqn_scheme.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_sqn_scheme_H_

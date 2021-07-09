@@ -42,7 +42,7 @@ ogs_pkbuf_t *sgwc_s11_build_downlink_data_notification(
      * 0 : Reserved. Shall not be sent and
      *     if received the Cause shall be treated as an invalid IE
      */
-    if (cause_value != OGS_GTP_CAUSE_INVALID_VALUE) {
+    if (cause_value != OGS_GTP_CAUSE_UNDEFINED_VALUE) {
         memset(&cause, 0, sizeof(cause));
         cause.value = cause_value;
         noti->cause.presence = 1;

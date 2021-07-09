@@ -6,7 +6,7 @@
 
 OpenAPI_dnn_smf_info_item_t *OpenAPI_dnn_smf_info_item_create(
     char *dnn
-    )
+)
 {
     OpenAPI_dnn_smf_info_item_t *dnn_smf_info_item_local_var = OpenAPI_malloc(sizeof(OpenAPI_dnn_smf_info_item_t));
     if (!dnn_smf_info_item_local_var) {
@@ -55,7 +55,7 @@ OpenAPI_dnn_smf_info_item_t *OpenAPI_dnn_smf_info_item_parseFromJSON(cJSON *dnn_
         goto end;
     }
 
-
+    
     if (!cJSON_IsString(dnn)) {
         ogs_error("OpenAPI_dnn_smf_info_item_parseFromJSON() failed [dnn]");
         goto end;
@@ -63,7 +63,7 @@ OpenAPI_dnn_smf_info_item_t *OpenAPI_dnn_smf_info_item_parseFromJSON(cJSON *dnn_
 
     dnn_smf_info_item_local_var = OpenAPI_dnn_smf_info_item_create (
         ogs_strdup_or_assert(dnn->valuestring)
-        );
+    );
 
     return dnn_smf_info_item_local_var;
 end:

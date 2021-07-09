@@ -1,7 +1,7 @@
 /*
  * amf_status_change_notification.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_amf_status_change_notification_H_
@@ -25,7 +25,7 @@ typedef struct OpenAPI_amf_status_change_notification_s {
 
 OpenAPI_amf_status_change_notification_t *OpenAPI_amf_status_change_notification_create(
     OpenAPI_list_t *amf_status_info_list
-    );
+);
 void OpenAPI_amf_status_change_notification_free(OpenAPI_amf_status_change_notification_t *amf_status_change_notification);
 OpenAPI_amf_status_change_notification_t *OpenAPI_amf_status_change_notification_parseFromJSON(cJSON *amf_status_change_notificationJSON);
 cJSON *OpenAPI_amf_status_change_notification_convertToJSON(OpenAPI_amf_status_change_notification_t *amf_status_change_notification);

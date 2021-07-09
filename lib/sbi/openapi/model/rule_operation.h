@@ -1,7 +1,7 @@
 /*
  * rule_operation.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_rule_operation_H_

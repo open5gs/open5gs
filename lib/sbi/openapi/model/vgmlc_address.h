@@ -1,7 +1,7 @@
 /*
  * vgmlc_address.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_vgmlc_address_H_
@@ -28,7 +28,7 @@ OpenAPI_vgmlc_address_t *OpenAPI_vgmlc_address_create(
     char *vgmlc_address_ipv4,
     char *vgmlc_address_ipv6,
     char *vgmlc_fqdn
-    );
+);
 void OpenAPI_vgmlc_address_free(OpenAPI_vgmlc_address_t *vgmlc_address);
 OpenAPI_vgmlc_address_t *OpenAPI_vgmlc_address_parseFromJSON(cJSON *vgmlc_addressJSON);
 cJSON *OpenAPI_vgmlc_address_convertToJSON(OpenAPI_vgmlc_address_t *vgmlc_address);

@@ -1,7 +1,7 @@
 /*
  * service_parameter_data.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_service_parameter_data_H_
@@ -12,8 +12,6 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
-#include "parameter_over_pc5.h"
-#include "parameter_over_uu.h"
 #include "snssai.h"
 
 #ifdef __cplusplus
@@ -27,12 +25,14 @@ typedef struct OpenAPI_service_parameter_data_s {
     struct OpenAPI_snssai_s *snssai;
     char *inter_group_id;
     char *supi;
-    char *ipv4_addr;
-    char *ipv6_addr;
-    char *mac_addr;
-    struct OpenAPI_parameter_over_pc5_s *param_over_pc5;
-    struct OpenAPI_parameter_over_uu_s *param_over_uu;
+    char *ue_ipv4;
+    char *ue_ipv6;
+    char *ue_mac;
+    int any_ue_ind;
+    char *param_over_pc5;
+    char *param_over_uu;
     char *supp_feat;
+    char *res_uri;
 } OpenAPI_service_parameter_data_t;
 
 OpenAPI_service_parameter_data_t *OpenAPI_service_parameter_data_create(
@@ -41,13 +41,15 @@ OpenAPI_service_parameter_data_t *OpenAPI_service_parameter_data_create(
     OpenAPI_snssai_t *snssai,
     char *inter_group_id,
     char *supi,
-    char *ipv4_addr,
-    char *ipv6_addr,
-    char *mac_addr,
-    OpenAPI_parameter_over_pc5_t *param_over_pc5,
-    OpenAPI_parameter_over_uu_t *param_over_uu,
-    char *supp_feat
-    );
+    char *ue_ipv4,
+    char *ue_ipv6,
+    char *ue_mac,
+    int any_ue_ind,
+    char *param_over_pc5,
+    char *param_over_uu,
+    char *supp_feat,
+    char *res_uri
+);
 void OpenAPI_service_parameter_data_free(OpenAPI_service_parameter_data_t *service_parameter_data);
 OpenAPI_service_parameter_data_t *OpenAPI_service_parameter_data_parseFromJSON(cJSON *service_parameter_dataJSON);
 cJSON *OpenAPI_service_parameter_data_convertToJSON(OpenAPI_service_parameter_data_t *service_parameter_data);

@@ -1,7 +1,7 @@
 /*
  * tac_info.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_tac_info_H_
@@ -24,7 +24,7 @@ typedef struct OpenAPI_tac_info_s {
 
 OpenAPI_tac_info_t *OpenAPI_tac_info_create(
     OpenAPI_list_t *tac_list
-    );
+);
 void OpenAPI_tac_info_free(OpenAPI_tac_info_t *tac_info);
 OpenAPI_tac_info_t *OpenAPI_tac_info_parseFromJSON(cJSON *tac_infoJSON);
 cJSON *OpenAPI_tac_info_convertToJSON(OpenAPI_tac_info_t *tac_info);

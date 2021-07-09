@@ -151,8 +151,10 @@ int ogs_dict_rx_entry(char *conffile)
   {
     struct dict_object * vendor;
     CHECK_FCT(fd_dict_search(fd_g_config->cnf_dict, DICT_VENDOR, VENDOR_BY_NAME, "3GPP", &vendor, ENOENT));
-    struct dict_application_data app_data = { 16777236, "Rx" };
-    CHECK_FCT(fd_dict_new(fd_g_config->cnf_dict, DICT_APPLICATION, &app_data, vendor, NULL));
+    struct dict_application_data rx = { 16777236, "Rx" };
+    struct dict_application_data s6b = { 16777272, "S6b" };
+    CHECK_FCT(fd_dict_new(fd_g_config->cnf_dict, DICT_APPLICATION, &rx, vendor, NULL));
+    CHECK_FCT(fd_dict_new(fd_g_config->cnf_dict, DICT_APPLICATION, &s6b, vendor, NULL));
   }
 
   }

@@ -29,7 +29,7 @@ OpenAPI_ausf_info_t *OpenAPI_ausf_info_create(
     char *group_id,
     OpenAPI_list_t *supi_ranges,
     OpenAPI_list_t *routing_indicators
-    );
+);
 void OpenAPI_ausf_info_free(OpenAPI_ausf_info_t *ausf_info);
 OpenAPI_ausf_info_t *OpenAPI_ausf_info_parseFromJSON(cJSON *ausf_infoJSON);
 cJSON *OpenAPI_ausf_info_convertToJSON(OpenAPI_ausf_info_t *ausf_info);

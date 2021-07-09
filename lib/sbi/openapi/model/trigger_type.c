@@ -5,7 +5,7 @@
 #include "trigger_type.h"
 
 OpenAPI_trigger_type_t *OpenAPI_trigger_type_create(
-    )
+)
 {
     OpenAPI_trigger_type_t *trigger_type_local_var = OpenAPI_malloc(sizeof(OpenAPI_trigger_type_t));
     if (!trigger_type_local_var) {
@@ -42,7 +42,7 @@ OpenAPI_trigger_type_t *OpenAPI_trigger_type_parseFromJSON(cJSON *trigger_typeJS
 {
     OpenAPI_trigger_type_t *trigger_type_local_var = NULL;
     trigger_type_local_var = OpenAPI_trigger_type_create (
-        );
+    );
 
     return trigger_type_local_var;
 end:

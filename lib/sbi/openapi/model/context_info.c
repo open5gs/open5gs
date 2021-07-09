@@ -6,7 +6,7 @@
 
 OpenAPI_context_info_t *OpenAPI_context_info_create(
     OpenAPI_list_t *orig_headers
-    )
+)
 {
     OpenAPI_context_info_t *context_info_local_var = OpenAPI_malloc(sizeof(OpenAPI_context_info_t));
     if (!context_info_local_var) {
@@ -41,19 +41,19 @@ cJSON *OpenAPI_context_info_convertToJSON(OpenAPI_context_info_t *context_info)
 
     item = cJSON_CreateObject();
     if (context_info->orig_headers) {
-        cJSON *orig_headers = cJSON_AddArrayToObject(item, "origHeaders");
-        if (orig_headers == NULL) {
-            ogs_error("OpenAPI_context_info_convertToJSON() failed [orig_headers]");
-            goto end;
-        }
+    cJSON *orig_headers = cJSON_AddArrayToObject(item, "origHeaders");
+    if (orig_headers == NULL) {
+        ogs_error("OpenAPI_context_info_convertToJSON() failed [orig_headers]");
+        goto end;
+    }
 
-        OpenAPI_lnode_t *orig_headers_node;
-        OpenAPI_list_for_each(context_info->orig_headers, orig_headers_node)  {
-            if (cJSON_AddStringToObject(orig_headers, "", (char*)orig_headers_node->data) == NULL) {
-                ogs_error("OpenAPI_context_info_convertToJSON() failed [orig_headers]");
-                goto end;
-            }
-        }
+    OpenAPI_lnode_t *orig_headers_node;
+    OpenAPI_list_for_each(context_info->orig_headers, orig_headers_node)  {
+    if (cJSON_AddStringToObject(orig_headers, "", (char*)orig_headers_node->data) == NULL) {
+        ogs_error("OpenAPI_context_info_convertToJSON() failed [orig_headers]");
+        goto end;
+    }
+                    }
     }
 
 end:
@@ -66,26 +66,26 @@ OpenAPI_context_info_t *OpenAPI_context_info_parseFromJSON(cJSON *context_infoJS
     cJSON *orig_headers = cJSON_GetObjectItemCaseSensitive(context_infoJSON, "origHeaders");
 
     OpenAPI_list_t *orig_headersList;
-    if (orig_headers) {
-        cJSON *orig_headers_local;
-        if (!cJSON_IsArray(orig_headers)) {
-            ogs_error("OpenAPI_context_info_parseFromJSON() failed [orig_headers]");
-            goto end;
-        }
-        orig_headersList = OpenAPI_list_create();
+    if (orig_headers) { 
+    cJSON *orig_headers_local;
+    if (!cJSON_IsArray(orig_headers)) {
+        ogs_error("OpenAPI_context_info_parseFromJSON() failed [orig_headers]");
+        goto end;
+    }
+    orig_headersList = OpenAPI_list_create();
 
-        cJSON_ArrayForEach(orig_headers_local, orig_headers) {
-            if (!cJSON_IsString(orig_headers_local)) {
-                ogs_error("OpenAPI_context_info_parseFromJSON() failed [orig_headers]");
-                goto end;
-            }
-            OpenAPI_list_add(orig_headersList, ogs_strdup_or_assert(orig_headers_local->valuestring));
-        }
+    cJSON_ArrayForEach(orig_headers_local, orig_headers) {
+    if (!cJSON_IsString(orig_headers_local)) {
+        ogs_error("OpenAPI_context_info_parseFromJSON() failed [orig_headers]");
+        goto end;
+    }
+    OpenAPI_list_add(orig_headersList , ogs_strdup_or_assert(orig_headers_local->valuestring));
+                    }
     }
 
     context_info_local_var = OpenAPI_context_info_create (
         orig_headers ? orig_headersList : NULL
-        );
+    );
 
     return context_info_local_var;
 end:

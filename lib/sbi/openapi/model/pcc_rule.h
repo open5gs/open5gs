@@ -1,7 +1,7 @@
 /*
  * pcc_rule.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_pcc_rule_H_
@@ -13,6 +13,8 @@
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
 #include "af_sig_protocol.h"
+#include "downlink_data_notification_control.h"
+#include "downlink_data_notification_control_rm.h"
 #include "flow_information.h"
 #include "tscai_input_container.h"
 
@@ -24,6 +26,7 @@ typedef struct OpenAPI_pcc_rule_s OpenAPI_pcc_rule_t;
 typedef struct OpenAPI_pcc_rule_s {
     OpenAPI_list_t *flow_infos;
     char *app_id;
+    char app_descriptor;
     int cont_ver;
     char *pcc_rule_id;
     int precedence;
@@ -41,11 +44,15 @@ typedef struct OpenAPI_pcc_rule_s {
     int addr_preser_ind;
     struct OpenAPI_tscai_input_container_s *tscai_input_dl;
     struct OpenAPI_tscai_input_container_s *tscai_input_ul;
+    struct OpenAPI_downlink_data_notification_control_s *dd_notif_ctrl;
+    struct OpenAPI_downlink_data_notification_control_rm_s *dd_notif_ctrl2;
+    int dis_ue_notif;
 } OpenAPI_pcc_rule_t;
 
 OpenAPI_pcc_rule_t *OpenAPI_pcc_rule_create(
     OpenAPI_list_t *flow_infos,
     char *app_id,
+    char app_descriptor,
     int cont_ver,
     char *pcc_rule_id,
     int precedence,
@@ -62,8 +69,11 @@ OpenAPI_pcc_rule_t *OpenAPI_pcc_rule_create(
     OpenAPI_list_t *ref_qos_mon,
     int addr_preser_ind,
     OpenAPI_tscai_input_container_t *tscai_input_dl,
-    OpenAPI_tscai_input_container_t *tscai_input_ul
-    );
+    OpenAPI_tscai_input_container_t *tscai_input_ul,
+    OpenAPI_downlink_data_notification_control_t *dd_notif_ctrl,
+    OpenAPI_downlink_data_notification_control_rm_t *dd_notif_ctrl2,
+    int dis_ue_notif
+);
 void OpenAPI_pcc_rule_free(OpenAPI_pcc_rule_t *pcc_rule);
 OpenAPI_pcc_rule_t *OpenAPI_pcc_rule_parseFromJSON(cJSON *pcc_ruleJSON);
 cJSON *OpenAPI_pcc_rule_convertToJSON(OpenAPI_pcc_rule_t *pcc_rule);

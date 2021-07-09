@@ -7,7 +7,7 @@
 OpenAPI_ssc_modes_t *OpenAPI_ssc_modes_create(
     OpenAPI_ssc_mode_e default_ssc_mode,
     OpenAPI_list_t *allowed_ssc_modes
-    )
+)
 {
     OpenAPI_ssc_modes_t *ssc_modes_local_var = OpenAPI_malloc(sizeof(OpenAPI_ssc_modes_t));
     if (!ssc_modes_local_var) {
@@ -45,18 +45,18 @@ cJSON *OpenAPI_ssc_modes_convertToJSON(OpenAPI_ssc_modes_t *ssc_modes)
     }
 
     if (ssc_modes->allowed_ssc_modes) {
-        cJSON *allowed_ssc_modes = cJSON_AddArrayToObject(item, "allowedSscModes");
-        if (allowed_ssc_modes == NULL) {
+    cJSON *allowed_ssc_modes = cJSON_AddArrayToObject(item, "allowedSscModes");
+    if (allowed_ssc_modes == NULL) {
+        ogs_error("OpenAPI_ssc_modes_convertToJSON() failed [allowed_ssc_modes]");
+        goto end;
+    }
+    OpenAPI_lnode_t *allowed_ssc_modes_node;
+    OpenAPI_list_for_each(ssc_modes->allowed_ssc_modes, allowed_ssc_modes_node) {
+        if (cJSON_AddStringToObject(allowed_ssc_modes, "", OpenAPI_ssc_mode_ToString((intptr_t)allowed_ssc_modes_node->data)) == NULL) {
             ogs_error("OpenAPI_ssc_modes_convertToJSON() failed [allowed_ssc_modes]");
             goto end;
         }
-        OpenAPI_lnode_t *allowed_ssc_modes_node;
-        OpenAPI_list_for_each(ssc_modes->allowed_ssc_modes, allowed_ssc_modes_node) {
-            if (cJSON_AddStringToObject(allowed_ssc_modes, "", OpenAPI_ssc_mode_ToString((intptr_t)allowed_ssc_modes_node->data)) == NULL) {
-                ogs_error("OpenAPI_ssc_modes_convertToJSON() failed [allowed_ssc_modes]");
-                goto end;
-            }
-        }
+    }
     }
 
 end:
@@ -73,7 +73,7 @@ OpenAPI_ssc_modes_t *OpenAPI_ssc_modes_parseFromJSON(cJSON *ssc_modesJSON)
     }
 
     OpenAPI_ssc_mode_e default_ssc_modeVariable;
-
+    
     if (!cJSON_IsString(default_ssc_mode)) {
         ogs_error("OpenAPI_ssc_modes_parseFromJSON() failed [default_ssc_mode]");
         goto end;
@@ -83,29 +83,29 @@ OpenAPI_ssc_modes_t *OpenAPI_ssc_modes_parseFromJSON(cJSON *ssc_modesJSON)
     cJSON *allowed_ssc_modes = cJSON_GetObjectItemCaseSensitive(ssc_modesJSON, "allowedSscModes");
 
     OpenAPI_list_t *allowed_ssc_modesList;
-    if (allowed_ssc_modes) {
-        cJSON *allowed_ssc_modes_local_nonprimitive;
-        if (!cJSON_IsArray(allowed_ssc_modes)) {
+    if (allowed_ssc_modes) { 
+    cJSON *allowed_ssc_modes_local_nonprimitive;
+    if (!cJSON_IsArray(allowed_ssc_modes)) {
+        ogs_error("OpenAPI_ssc_modes_parseFromJSON() failed [allowed_ssc_modes]");
+        goto end;
+    }
+
+    allowed_ssc_modesList = OpenAPI_list_create();
+
+    cJSON_ArrayForEach(allowed_ssc_modes_local_nonprimitive, allowed_ssc_modes ) {
+        if (!cJSON_IsString(allowed_ssc_modes_local_nonprimitive)){
             ogs_error("OpenAPI_ssc_modes_parseFromJSON() failed [allowed_ssc_modes]");
             goto end;
         }
 
-        allowed_ssc_modesList = OpenAPI_list_create();
-
-        cJSON_ArrayForEach(allowed_ssc_modes_local_nonprimitive, allowed_ssc_modes ) {
-            if (!cJSON_IsString(allowed_ssc_modes_local_nonprimitive)) {
-                ogs_error("OpenAPI_ssc_modes_parseFromJSON() failed [allowed_ssc_modes]");
-                goto end;
-            }
-
-            OpenAPI_list_add(allowed_ssc_modesList, (void *)OpenAPI_ssc_mode_FromString(allowed_ssc_modes_local_nonprimitive->valuestring));
-        }
+        OpenAPI_list_add(allowed_ssc_modesList, (void *)OpenAPI_ssc_mode_FromString(allowed_ssc_modes_local_nonprimitive->valuestring));
+    }
     }
 
     ssc_modes_local_var = OpenAPI_ssc_modes_create (
         default_ssc_modeVariable,
         allowed_ssc_modes ? allowed_ssc_modesList : NULL
-        );
+    );
 
     return ssc_modes_local_var;
 end:

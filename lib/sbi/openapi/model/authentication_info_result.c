@@ -9,7 +9,7 @@ OpenAPI_authentication_info_result_t *OpenAPI_authentication_info_result_create(
     char *supported_features,
     OpenAPI_authentication_vector_t *authentication_vector,
     char *supi
-    )
+)
 {
     OpenAPI_authentication_info_result_t *authentication_info_result_local_var = OpenAPI_malloc(sizeof(OpenAPI_authentication_info_result_t));
     if (!authentication_info_result_local_var) {
@@ -51,30 +51,30 @@ cJSON *OpenAPI_authentication_info_result_convertToJSON(OpenAPI_authentication_i
     }
 
     if (authentication_info_result->supported_features) {
-        if (cJSON_AddStringToObject(item, "supportedFeatures", authentication_info_result->supported_features) == NULL) {
-            ogs_error("OpenAPI_authentication_info_result_convertToJSON() failed [supported_features]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "supportedFeatures", authentication_info_result->supported_features) == NULL) {
+        ogs_error("OpenAPI_authentication_info_result_convertToJSON() failed [supported_features]");
+        goto end;
+    }
     }
 
     if (authentication_info_result->authentication_vector) {
-        cJSON *authentication_vector_local_JSON = OpenAPI_authentication_vector_convertToJSON(authentication_info_result->authentication_vector);
-        if (authentication_vector_local_JSON == NULL) {
-            ogs_error("OpenAPI_authentication_info_result_convertToJSON() failed [authentication_vector]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "authenticationVector", authentication_vector_local_JSON);
-        if (item->child == NULL) {
-            ogs_error("OpenAPI_authentication_info_result_convertToJSON() failed [authentication_vector]");
-            goto end;
-        }
+    cJSON *authentication_vector_local_JSON = OpenAPI_authentication_vector_convertToJSON(authentication_info_result->authentication_vector);
+    if (authentication_vector_local_JSON == NULL) {
+        ogs_error("OpenAPI_authentication_info_result_convertToJSON() failed [authentication_vector]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "authenticationVector", authentication_vector_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_authentication_info_result_convertToJSON() failed [authentication_vector]");
+        goto end;
+    }
     }
 
     if (authentication_info_result->supi) {
-        if (cJSON_AddStringToObject(item, "supi", authentication_info_result->supi) == NULL) {
-            ogs_error("OpenAPI_authentication_info_result_convertToJSON() failed [supi]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "supi", authentication_info_result->supi) == NULL) {
+        ogs_error("OpenAPI_authentication_info_result_convertToJSON() failed [supi]");
+        goto end;
+    }
     }
 
 end:
@@ -91,7 +91,7 @@ OpenAPI_authentication_info_result_t *OpenAPI_authentication_info_result_parseFr
     }
 
     OpenAPI_auth_type_e auth_typeVariable;
-
+    
     if (!cJSON_IsString(auth_type)) {
         ogs_error("OpenAPI_authentication_info_result_parseFromJSON() failed [auth_type]");
         goto end;
@@ -100,27 +100,27 @@ OpenAPI_authentication_info_result_t *OpenAPI_authentication_info_result_parseFr
 
     cJSON *supported_features = cJSON_GetObjectItemCaseSensitive(authentication_info_resultJSON, "supportedFeatures");
 
-    if (supported_features) {
-        if (!cJSON_IsString(supported_features)) {
-            ogs_error("OpenAPI_authentication_info_result_parseFromJSON() failed [supported_features]");
-            goto end;
-        }
+    if (supported_features) { 
+    if (!cJSON_IsString(supported_features)) {
+        ogs_error("OpenAPI_authentication_info_result_parseFromJSON() failed [supported_features]");
+        goto end;
+    }
     }
 
     cJSON *authentication_vector = cJSON_GetObjectItemCaseSensitive(authentication_info_resultJSON, "authenticationVector");
 
     OpenAPI_authentication_vector_t *authentication_vector_local_nonprim = NULL;
-    if (authentication_vector) {
-        authentication_vector_local_nonprim = OpenAPI_authentication_vector_parseFromJSON(authentication_vector);
+    if (authentication_vector) { 
+    authentication_vector_local_nonprim = OpenAPI_authentication_vector_parseFromJSON(authentication_vector);
     }
 
     cJSON *supi = cJSON_GetObjectItemCaseSensitive(authentication_info_resultJSON, "supi");
 
-    if (supi) {
-        if (!cJSON_IsString(supi)) {
-            ogs_error("OpenAPI_authentication_info_result_parseFromJSON() failed [supi]");
-            goto end;
-        }
+    if (supi) { 
+    if (!cJSON_IsString(supi)) {
+        ogs_error("OpenAPI_authentication_info_result_parseFromJSON() failed [supi]");
+        goto end;
+    }
     }
 
     authentication_info_result_local_var = OpenAPI_authentication_info_result_create (
@@ -128,7 +128,7 @@ OpenAPI_authentication_info_result_t *OpenAPI_authentication_info_result_parseFr
         supported_features ? ogs_strdup_or_assert(supported_features->valuestring) : NULL,
         authentication_vector ? authentication_vector_local_nonprim : NULL,
         supi ? ogs_strdup_or_assert(supi->valuestring) : NULL
-        );
+    );
 
     return authentication_info_result_local_var;
 end:

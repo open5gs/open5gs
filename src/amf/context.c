@@ -1050,6 +1050,28 @@ void amf_ue_new_guti(amf_ue_t *amf_ue)
         return;
     }
 
+    /*
+     * TS24.501
+     * 5.3.3 Temporary identities
+     *
+     * The AMF shall assign a new 5G-GUTI for a particular UE:
+     *
+     * a) during a successful initial registration procedure;
+     * b) during a successful registration procedure
+     *    for mobility registration update; and
+     * c) after a successful service request procedure invoked
+     *    as a response to a paging request from the network and
+     *    before the release of the N1 NAS signalling connection
+     *    as specified in subclause 5.4.4.1.
+     *
+     * The AMF should assign a new 5G-GUTI for a particular UE
+     * during a successful registration procedure
+     * for periodic registration update.
+     *
+     * The AMF may assign a new 5G-GUTI at any time for a particular UE
+     * by performing the generic UE configuration update procedure.
+     */
+
     memset(&amf_ue->next.guti, 0, sizeof(ogs_nas_5gs_guti_t));
 
     ogs_assert(amf_ue->guami);
@@ -1074,6 +1096,28 @@ void amf_ue_confirm_guti(amf_ue_t *amf_ue)
                 &amf_ue->current.guti, sizeof(ogs_nas_5gs_guti_t), NULL);
         ogs_assert(amf_m_tmsi_free(amf_ue->current.m_tmsi) == OGS_OK);
     }
+
+    /*
+     * TS24.501
+     * 5.3.3 Temporary identities
+     *
+     * The AMF shall assign a new 5G-GUTI for a particular UE:
+     *
+     * a) during a successful initial registration procedure;
+     * b) during a successful registration procedure
+     *    for mobility registration update; and
+     * c) after a successful service request procedure invoked
+     *    as a response to a paging request from the network and
+     *    before the release of the N1 NAS signalling connection
+     *    as specified in subclause 5.4.4.1.
+     *
+     * The AMF should assign a new 5G-GUTI for a particular UE
+     * during a successful registration procedure
+     * for periodic registration update.
+     *
+     * The AMF may assign a new 5G-GUTI at any time for a particular UE
+     * by performing the generic UE configuration update procedure.
+     */
 
     /* Copying from Current to Next Guti */
     amf_ue->current.m_tmsi = amf_ue->next.m_tmsi;
@@ -2197,7 +2241,8 @@ void amf_update_allowed_nssai(amf_ue_t *amf_ue)
         for (i = 0; i < amf_ue->num_of_slice; i++) {
             ogs_slice_data_t *slice = &amf_ue->slice[i];
             ogs_nas_s_nssai_ie_t *allowed =
-                &amf_ue->allowed_nssai.s_nssai[i];
+                &amf_ue->allowed_nssai.
+                    s_nssai[amf_ue->allowed_nssai.num_of_s_nssai];
 
             if (slice->default_indicator == true) {
                 allowed->sst = slice->s_nssai.sst;

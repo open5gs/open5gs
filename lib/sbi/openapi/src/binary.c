@@ -7,17 +7,17 @@
 
 OpenAPI_binary_t *OpenAPI_instantiate_binary_t(char *data, int len)
 {
-    OpenAPI_binary_t* ret = malloc(sizeof(OpenAPI_binary_t));
+	OpenAPI_binary_t* ret = malloc(sizeof(OpenAPI_binary_t));
 
-    ret->len=len;
-    ret->data = malloc(len);
-    memcpy(ret->data, data, len);
+	ret->len=len;
+	ret->data = malloc(len);
+	memcpy(ret->data, data, len);
 
-    return ret;
+	return ret;
 }
 
 char *OpenAPI_base64encode(const void *b64_encode_this,
-                           int encode_this_many_bytes)
+    int encode_this_many_bytes)
 {
 #ifdef OPENSSL
     BIO *b64_bio, *mem_bio;      //Declares two OpenSSL BIOs: a base64 filter and a memory BIO.
@@ -41,7 +41,7 @@ char *OpenAPI_base64encode(const void *b64_encode_this,
 }
 
 char *OpenAPI_base64decode(const void *b64_decode_this,
-                           int decode_this_many_bytes, int *decoded_bytes)
+    int decode_this_many_bytes, int *decoded_bytes)
 {
 #ifdef OPENSSL
     BIO *b64_bio, *mem_bio;      //Declares two OpenSSL BIOs: a base64 filter and a memory BIO.
@@ -52,7 +52,7 @@ char *OpenAPI_base64decode(const void *b64_decode_this,
     BIO_push(b64_bio, mem_bio);          //Link the BIOs by creating a filter-source BIO chain.
     BIO_set_flags(b64_bio, BIO_FLAGS_BASE64_NO_NL);          //Don't require trailing newlines.
     int decoded_byte_index = 0;   //Index where the next base64_decoded byte should be written.
-    while ( 0 < BIO_read(b64_bio, base64_decoded+decoded_byte_index, 1) ) { //Read byte-by-byte.
+    while ( 0 < BIO_read(b64_bio, base64_decoded+decoded_byte_index, 1) ){ //Read byte-by-byte.
         decoded_byte_index++; //Increment the index until read of BIO decoded data is complete.
     } //Once we're done reading decoded data, BIO_read returns -1 even though there's no error.
     BIO_free_all(b64_bio);  //Destroys all BIOs in chain, starting with b64 (i.e. the 1st one).

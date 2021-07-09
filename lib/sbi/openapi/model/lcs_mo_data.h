@@ -1,7 +1,7 @@
 /*
  * lcs_mo_data.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_lcs_mo_data_H_
@@ -25,7 +25,7 @@ typedef struct OpenAPI_lcs_mo_data_s {
 
 OpenAPI_lcs_mo_data_t *OpenAPI_lcs_mo_data_create(
     OpenAPI_list_t *allowed_service_classes
-    );
+);
 void OpenAPI_lcs_mo_data_free(OpenAPI_lcs_mo_data_t *lcs_mo_data);
 OpenAPI_lcs_mo_data_t *OpenAPI_lcs_mo_data_parseFromJSON(cJSON *lcs_mo_dataJSON);
 cJSON *OpenAPI_lcs_mo_data_convertToJSON(OpenAPI_lcs_mo_data_t *lcs_mo_data);

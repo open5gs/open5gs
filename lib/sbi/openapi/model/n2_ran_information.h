@@ -1,7 +1,7 @@
 /*
  * n2_ran_information.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_n2_ran_information_H_
@@ -25,7 +25,7 @@ typedef struct OpenAPI_n2_ran_information_s {
 
 OpenAPI_n2_ran_information_t *OpenAPI_n2_ran_information_create(
     OpenAPI_n2_info_content_t *n2_info_content
-    );
+);
 void OpenAPI_n2_ran_information_free(OpenAPI_n2_ran_information_t *n2_ran_information);
 OpenAPI_n2_ran_information_t *OpenAPI_n2_ran_information_parseFromJSON(cJSON *n2_ran_informationJSON);
 cJSON *OpenAPI_n2_ran_information_convertToJSON(OpenAPI_n2_ran_information_t *n2_ran_information);

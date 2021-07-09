@@ -1,7 +1,7 @@
 /*
  * authentication_info_result.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_authentication_info_result_H_
@@ -32,7 +32,7 @@ OpenAPI_authentication_info_result_t *OpenAPI_authentication_info_result_create(
     char *supported_features,
     OpenAPI_authentication_vector_t *authentication_vector,
     char *supi
-    );
+);
 void OpenAPI_authentication_info_result_free(OpenAPI_authentication_info_result_t *authentication_info_result);
 OpenAPI_authentication_info_result_t *OpenAPI_authentication_info_result_parseFromJSON(cJSON *authentication_info_resultJSON);
 cJSON *OpenAPI_authentication_info_result_convertToJSON(OpenAPI_authentication_info_result_t *authentication_info_result);

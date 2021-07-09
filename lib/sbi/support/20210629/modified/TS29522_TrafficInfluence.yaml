@@ -1,0 +1,594 @@
+openapi: 3.0.0
+info:
+  title: 3gpp-traffic-influence
+  version: 1.1.2
+  description: |
+    API for AF traffic influence
+    © 2021, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+externalDocs:
+  description: 3GPP TS 29.522 V16.7.0; 5G System; Network Exposure Function Northbound APIs.
+  url: 'http://www.3gpp.org/ftp/Specs/archive/29_series/29.522/'
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+servers:
+  - url: '{apiRoot}/3gpp-traffic-influence/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in subclause 5.2.4 of 3GPP TS 29.122.
+
+paths:
+  /{afId}/subscriptions:
+    parameters:
+      - name: afId
+        in: path
+        description: Identifier of the AF
+        required: true
+        schema:
+          type: string
+    get:
+      summary: read all of the active subscriptions for the AF
+      tags:
+        - Traffic Influence Subscription
+      responses:
+        '200':
+          description: OK. 
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TrafficInfluSub'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    post:
+      summary: Creates a new subscription resource 
+      tags:
+        - Traffic Influence Subscription
+      requestBody:
+        description: Request to create a new subscription resource
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TrafficInfluSub'
+      callbacks:
+        notificationDestination:
+          '{request.body#/notificationDestination}':
+            post:
+              requestBody:  # contents of the callback message
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/EventNotification'
+              callbacks:
+                afAcknowledgement:
+                  '{request.body#/afAckUri}':
+                    post:
+                      requestBody:  # contents of the callback message
+                        required: true
+                        content:
+                          application/json:
+                            schema:
+                              $ref: '#/components/schemas/AfAckInfo'
+                      responses:
+                        '204':
+                          description: No Content (successful acknowledgement)
+                        '307':
+                          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+                        '308':
+                          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+                        '400':
+                          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                        '401':
+                          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                        '403':
+                          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                        '404':
+                          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                        '411':
+                          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                        '413':
+                          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                        '415':
+                          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                        '429':
+                          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                        '500':
+                          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                        '503':
+                          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                        default:
+                          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+              responses:
+                '204':
+                  description: No Content (successful notification)
+                '307':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+      responses:
+        '201':
+          description: Created (Successful creation of subscription)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrafficInfluSub'
+          headers:
+            Location:
+              description: 'Contains the URI of the newly created resource'
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /{afId}/subscriptions/{subscriptionId}:
+    parameters:
+      - name: afId
+        in: path
+        description: Identifier of the AF
+        required: true
+        schema:
+          type: string
+      - name: subscriptionId
+        in: path
+        description: Identifier of the subscription resource
+        required: true
+        schema:
+          type: string
+    get:
+      summary: read an active subscriptions for the SCS/AS and the subscription Id
+      tags:
+        - Individual Traffic Influence Subscription
+      responses:
+        '200':
+          description: OK (Successful get the active subscription)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrafficInfluSub'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    put:
+      summary: Updates/replaces an existing subscription resource
+      tags:
+        - Individual Traffic Influence Subscription
+      requestBody:
+        description: Parameters to update/replace the existing subscription
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TrafficInfluSub'
+      responses:
+        '200':
+          description: OK (Successful update of the subscription)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrafficInfluSub'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    patch:
+      summary: Updates/replaces an existing subscription resource
+      tags:
+        - Individual Traffic Influence Subscription
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/TrafficInfluSubPatch'
+      responses:
+        '200':
+          description: OK. The subscription was modified successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrafficInfluSub'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    delete:
+      summary: Deletes an already existing subscription
+      tags:
+        - Individual Traffic Influence Subscription
+      responses:
+        '204':
+          description: No Content (Successful deletion of the existing subscription)
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+  schemas: 
+    TrafficInfluSub:
+      type: object
+      properties:
+        afServiceId:
+          type: string
+          description: Identifies a service on behalf of which the AF is issuing the request.
+        afAppId:
+          type: string
+          description: Identifies an application.
+        afTransId:
+          type: string
+          description: Identifies an NEF Northbound interface transaction, generated by the AF.
+        appReloInd:
+          type: boolean
+          description: Identifies whether an application can be relocated once a location of the application has been selected.
+        dnn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+        snssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        externalGroupId:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/ExternalGroupId'
+        anyUeInd:
+          type: boolean
+          description: Identifies whether the AF request applies to any UE. This attribute shall set to "true" if applicable for any UE, otherwise, set to "false".
+        subscribedEvents:
+          type: array
+          items:
+            $ref: '#/components/schemas/SubscribedEvent'
+          minItems: 1
+          description: Identifies the requirement to be notified of the event(s).
+        gpsi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+        ipv4Addr:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Ipv4Addr'
+        ipDomain:
+          type: string
+        ipv6Addr:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Ipv6Addr'
+        macAddr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MacAddr48'
+        dnaiChgType:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DnaiChangeType'
+        notificationDestination:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Link'
+        requestTestNotification:
+          type: boolean
+          description: Set to true by the SCS/AS to request the NEF to send a test notification as defined in subclause 5.2.5.3. Set to false or omitted otherwise.
+        websockNotifConfig:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/WebsockNotifConfig'
+        self:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Link'
+        trafficFilters:
+          type: array
+          items:
+            $ref: 'TS29122_CommonData.yaml#/components/schemas/FlowInfo'
+          minItems: 1
+          description: Identifies IP packet filters.
+        ethTrafficFilters:
+          type: array
+          items:
+            $ref: 'TS29514_Npcf_PolicyAuthorization.yaml#/components/schemas/EthFlowDescription'
+          minItems: 1
+          description: Identifies Ethernet packet filters.
+        trafficRoutes:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/RouteToLocation'
+          minItems: 1
+          description: Identifies the N6 traffic routing requirement.
+        tfcCorrInd:
+          type: boolean
+        tempValidities:
+          type: array
+          items:
+            $ref: 'TS29514_Npcf_PolicyAuthorization.yaml#/components/schemas/TemporalValidity'
+        validGeoZoneIds:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          description: Identifies a geographic zone that the AF request applies only to the traffic of UE(s) located in this specific zone.
+        afAckInd:
+          type: boolean
+        addrPreserInd:
+          type: boolean
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      allOf:
+        - oneOf:
+          - required: [afAppId]
+          - required: [trafficFilters]
+          - required: [ethTrafficFilters]
+        - oneOf:
+          - required: [ipv4Addr]
+          - required: [ipv6Addr]
+          - required: [macAddr]
+          - required: [gpsi]
+          - required: [externalGroupId]
+          - required: [anyUeInd]
+      anyOf:
+        - not:
+            required: [subscribedEvents]
+        - required: [notificationDestination]
+    TrafficInfluSubPatch:
+      type: object
+      properties:
+        appReloInd:
+          type: boolean
+          description: Identifies whether an application can be relocated once a location of the application has been selected.
+          nullable: true
+        trafficFilters:
+          type: array
+          items:
+            $ref: 'TS29122_CommonData.yaml#/components/schemas/FlowInfo'
+          minItems: 1
+          description: Identifies IP packet filters.
+        ethTrafficFilters:
+          type: array
+          items:
+            $ref: 'TS29514_Npcf_PolicyAuthorization.yaml#/components/schemas/EthFlowDescription'
+          minItems: 1
+          description: Identifies Ethernet packet filters.
+        trafficRoutes:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/RouteToLocation'
+          minItems: 1
+          description: Identifies the N6 traffic routing requirement.
+        tfcCorrInd:
+          type: boolean
+          nullable: true
+        tempValidities:
+          type: array
+          items:
+            $ref: 'TS29514_Npcf_PolicyAuthorization.yaml#/components/schemas/TemporalValidity'
+          minItems: 1
+          nullable: true
+        validGeoZoneIds:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          description: Identifies a geographic zone that the AF request applies only to the traffic of UE(s) located in this specific zone.
+          nullable: true
+        afAckInd:
+          type: boolean
+          nullable: true
+        addrPreserInd:
+          type: boolean
+          nullable: true
+    EventNotification:
+      type: object
+      properties:
+        afTransId:
+          type: string
+          description: Identifies an NEF Northbound interface transaction, generated by the AF.
+        dnaiChgType:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DnaiChangeType'
+        sourceTrafficRoute:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/RouteToLocation'
+        subscribedEvent:
+          $ref: '#/components/schemas/SubscribedEvent'
+        targetTrafficRoute:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/RouteToLocation'
+        sourceDnai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnai'
+        targetDnai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnai'
+        gpsi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+        srcUeIpv4Addr:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Ipv4Addr'
+        srcUeIpv6Prefix:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv6Prefix'
+        tgtUeIpv4Addr:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Ipv4Addr'
+        tgtUeIpv6Prefix:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv6Prefix'
+        ueMac:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MacAddr48'
+        afAckUri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Link'
+      required:
+        - dnaiChgType
+        - subscribedEvent
+    AfResultInfo:
+      type: object
+      properties:
+        afStatus:
+          $ref: '#/components/schemas/AfResultStatus'
+        trafficRoute:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/RouteToLocation'
+      required:
+        - afStatus
+    AfAckInfo:
+      type: object
+      properties:
+        afTransId:
+          type: string
+        ackResult:
+          $ref: '#/components/schemas/AfResultInfo'
+        gpsi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+      required:
+        - ackResult
+    SubscribedEvent:
+      anyOf:
+      - type: string
+        enum:
+          - UP_PATH_CHANGE
+      - type: string
+      description: >
+        Possible values are
+        - UP_PATH_CHANGE: The AF requests to be notified when the UP path changes for the PDU session.
+    AfResultStatus:
+      anyOf:
+        - type: string
+          enum:
+            - SUCCESS
+            - TEMPORARY_CONGESTION
+            - RELOC_NO_ALLOWED
+            - OTHER
+        - type: string
+      description: >
+        Possible values are
+        - SUCCESS: The application layer is ready or the relocation is completed.
+        - TEMPORARY_CONGESTION: The application relocation fails due to temporary congestion.
+        - RELOC_NO_ALLOWED: The application relocation fails because application relocation is not allowed.
+        - OTHER: The application relocation fails due to other reason.

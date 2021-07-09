@@ -1,7 +1,7 @@
 /*
  * dnn_selection_mode.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_dnn_selection_mode_H_

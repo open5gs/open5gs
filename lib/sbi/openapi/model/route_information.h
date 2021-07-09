@@ -1,7 +1,7 @@
 /*
  * route_information.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_route_information_H_
@@ -28,7 +28,7 @@ OpenAPI_route_information_t *OpenAPI_route_information_create(
     char *ipv4_addr,
     char *ipv6_addr,
     int port_number
-    );
+);
 void OpenAPI_route_information_free(OpenAPI_route_information_t *route_information);
 OpenAPI_route_information_t *OpenAPI_route_information_parseFromJSON(cJSON *route_informationJSON);
 cJSON *OpenAPI_route_information_convertToJSON(OpenAPI_route_information_t *route_information);

@@ -1,7 +1,7 @@
 /*
  * sequence_number.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_sequence_number_H_
@@ -34,7 +34,7 @@ OpenAPI_sequence_number_t *OpenAPI_sequence_number_create(
     OpenAPI_list_t* last_indexes,
     int ind_length,
     OpenAPI_sign_e dif_sign
-    );
+);
 void OpenAPI_sequence_number_free(OpenAPI_sequence_number_t *sequence_number);
 OpenAPI_sequence_number_t *OpenAPI_sequence_number_parseFromJSON(cJSON *sequence_numberJSON);
 cJSON *OpenAPI_sequence_number_convertToJSON(OpenAPI_sequence_number_t *sequence_number);

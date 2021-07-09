@@ -8,7 +8,7 @@ OpenAPI_nf_service_version_t *OpenAPI_nf_service_version_create(
     char *api_version_in_uri,
     char *api_full_version,
     char *expiry
-    )
+)
 {
     OpenAPI_nf_service_version_t *nf_service_version_local_var = OpenAPI_malloc(sizeof(OpenAPI_nf_service_version_t));
     if (!nf_service_version_local_var) {
@@ -54,10 +54,10 @@ cJSON *OpenAPI_nf_service_version_convertToJSON(OpenAPI_nf_service_version_t *nf
     }
 
     if (nf_service_version->expiry) {
-        if (cJSON_AddStringToObject(item, "expiry", nf_service_version->expiry) == NULL) {
-            ogs_error("OpenAPI_nf_service_version_convertToJSON() failed [expiry]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "expiry", nf_service_version->expiry) == NULL) {
+        ogs_error("OpenAPI_nf_service_version_convertToJSON() failed [expiry]");
+        goto end;
+    }
     }
 
 end:
@@ -73,7 +73,7 @@ OpenAPI_nf_service_version_t *OpenAPI_nf_service_version_parseFromJSON(cJSON *nf
         goto end;
     }
 
-
+    
     if (!cJSON_IsString(api_version_in_uri)) {
         ogs_error("OpenAPI_nf_service_version_parseFromJSON() failed [api_version_in_uri]");
         goto end;
@@ -85,7 +85,7 @@ OpenAPI_nf_service_version_t *OpenAPI_nf_service_version_parseFromJSON(cJSON *nf
         goto end;
     }
 
-
+    
     if (!cJSON_IsString(api_full_version)) {
         ogs_error("OpenAPI_nf_service_version_parseFromJSON() failed [api_full_version]");
         goto end;
@@ -93,18 +93,18 @@ OpenAPI_nf_service_version_t *OpenAPI_nf_service_version_parseFromJSON(cJSON *nf
 
     cJSON *expiry = cJSON_GetObjectItemCaseSensitive(nf_service_versionJSON, "expiry");
 
-    if (expiry) {
-        if (!cJSON_IsString(expiry)) {
-            ogs_error("OpenAPI_nf_service_version_parseFromJSON() failed [expiry]");
-            goto end;
-        }
+    if (expiry) { 
+    if (!cJSON_IsString(expiry)) {
+        ogs_error("OpenAPI_nf_service_version_parseFromJSON() failed [expiry]");
+        goto end;
+    }
     }
 
     nf_service_version_local_var = OpenAPI_nf_service_version_create (
         ogs_strdup_or_assert(api_version_in_uri->valuestring),
         ogs_strdup_or_assert(api_full_version->valuestring),
         expiry ? ogs_strdup_or_assert(expiry->valuestring) : NULL
-        );
+    );
 
     return nf_service_version_local_var;
 end:

@@ -9,8 +9,9 @@ OpenAPI_eap_session_t *OpenAPI_eap_session_create(
     char *k_seaf,
     OpenAPI_list_t* _links,
     OpenAPI_auth_result_e auth_result,
-    char *supi
-    )
+    char *supi,
+    char *supported_features
+)
 {
     OpenAPI_eap_session_t *eap_session_local_var = OpenAPI_malloc(sizeof(OpenAPI_eap_session_t));
     if (!eap_session_local_var) {
@@ -21,6 +22,7 @@ OpenAPI_eap_session_t *OpenAPI_eap_session_create(
     eap_session_local_var->_links = _links;
     eap_session_local_var->auth_result = auth_result;
     eap_session_local_var->supi = supi;
+    eap_session_local_var->supported_features = supported_features;
 
     return eap_session_local_var;
 }
@@ -40,6 +42,7 @@ void OpenAPI_eap_session_free(OpenAPI_eap_session_t *eap_session)
     }
     OpenAPI_list_free(eap_session->_links);
     ogs_free(eap_session->supi);
+    ogs_free(eap_session->supported_features);
     ogs_free(eap_session);
 }
 
@@ -59,45 +62,52 @@ cJSON *OpenAPI_eap_session_convertToJSON(OpenAPI_eap_session_t *eap_session)
     }
 
     if (eap_session->k_seaf) {
-        if (cJSON_AddStringToObject(item, "kSeaf", eap_session->k_seaf) == NULL) {
-            ogs_error("OpenAPI_eap_session_convertToJSON() failed [k_seaf]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "kSeaf", eap_session->k_seaf) == NULL) {
+        ogs_error("OpenAPI_eap_session_convertToJSON() failed [k_seaf]");
+        goto end;
+    }
     }
 
     if (eap_session->_links) {
-        cJSON *_links = cJSON_AddObjectToObject(item, "_links");
-        if (_links == NULL) {
+    cJSON *_links = cJSON_AddObjectToObject(item, "_links");
+    if (_links == NULL) {
+        ogs_error("OpenAPI_eap_session_convertToJSON() failed [_links]");
+        goto end;
+    }
+    cJSON *localMapObject = _links;
+    OpenAPI_lnode_t *_links_node;
+    if (eap_session->_links) {
+        OpenAPI_list_for_each(eap_session->_links, _links_node) {
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)_links_node->data;
+        cJSON *itemLocal = OpenAPI_links_value_schema_convertToJSON(localKeyValue->value);
+        if (itemLocal == NULL) {
             ogs_error("OpenAPI_eap_session_convertToJSON() failed [_links]");
             goto end;
         }
-        cJSON *localMapObject = _links;
-        OpenAPI_lnode_t *_links_node;
-        if (eap_session->_links) {
-            OpenAPI_list_for_each(eap_session->_links, _links_node) {
-                OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)_links_node->data;
-                cJSON *itemLocal = OpenAPI_links_value_schema_convertToJSON(localKeyValue->value);
-                if (itemLocal == NULL) {
-                    ogs_error("OpenAPI_eap_session_convertToJSON() failed [_links]");
-                    goto end;
-                }
-                cJSON_AddItemToObject(_links, localKeyValue->key, itemLocal);
+        cJSON_AddItemToObject(_links, localKeyValue->key, itemLocal);
             }
         }
     }
 
     if (eap_session->auth_result) {
-        if (cJSON_AddStringToObject(item, "authResult", OpenAPI_auth_result_ToString(eap_session->auth_result)) == NULL) {
-            ogs_error("OpenAPI_eap_session_convertToJSON() failed [auth_result]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "authResult", OpenAPI_auth_result_ToString(eap_session->auth_result)) == NULL) {
+        ogs_error("OpenAPI_eap_session_convertToJSON() failed [auth_result]");
+        goto end;
+    }
     }
 
     if (eap_session->supi) {
-        if (cJSON_AddStringToObject(item, "supi", eap_session->supi) == NULL) {
-            ogs_error("OpenAPI_eap_session_convertToJSON() failed [supi]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "supi", eap_session->supi) == NULL) {
+        ogs_error("OpenAPI_eap_session_convertToJSON() failed [supi]");
+        goto end;
+    }
+    }
+
+    if (eap_session->supported_features) {
+    if (cJSON_AddStringToObject(item, "supportedFeatures", eap_session->supported_features) == NULL) {
+        ogs_error("OpenAPI_eap_session_convertToJSON() failed [supported_features]");
+        goto end;
+    }
     }
 
 end:
@@ -113,7 +123,7 @@ OpenAPI_eap_session_t *OpenAPI_eap_session_parseFromJSON(cJSON *eap_sessionJSON)
         goto end;
     }
 
-
+    
     if (!cJSON_IsString(eap_payload)) {
         ogs_error("OpenAPI_eap_session_parseFromJSON() failed [eap_payload]");
         goto end;
@@ -121,54 +131,63 @@ OpenAPI_eap_session_t *OpenAPI_eap_session_parseFromJSON(cJSON *eap_sessionJSON)
 
     cJSON *k_seaf = cJSON_GetObjectItemCaseSensitive(eap_sessionJSON, "kSeaf");
 
-    if (k_seaf) {
-        if (!cJSON_IsString(k_seaf)) {
-            ogs_error("OpenAPI_eap_session_parseFromJSON() failed [k_seaf]");
-            goto end;
-        }
+    if (k_seaf) { 
+    if (!cJSON_IsString(k_seaf)) {
+        ogs_error("OpenAPI_eap_session_parseFromJSON() failed [k_seaf]");
+        goto end;
+    }
     }
 
     cJSON *_links = cJSON_GetObjectItemCaseSensitive(eap_sessionJSON, "_links");
 
     OpenAPI_list_t *_linksList;
-    if (_links) {
-        cJSON *_links_local_map;
-        if (!cJSON_IsObject(_links)) {
+    if (_links) { 
+    cJSON *_links_local_map;
+    if (!cJSON_IsObject(_links)) {
+        ogs_error("OpenAPI_eap_session_parseFromJSON() failed [_links]");
+        goto end;
+    }
+    _linksList = OpenAPI_list_create();
+    OpenAPI_map_t *localMapKeyPair = NULL;
+    cJSON_ArrayForEach(_links_local_map, _links) {
+        cJSON *localMapObject = _links_local_map;
+        if (!cJSON_IsObject(_links_local_map)) {
             ogs_error("OpenAPI_eap_session_parseFromJSON() failed [_links]");
             goto end;
         }
-        _linksList = OpenAPI_list_create();
-        OpenAPI_map_t *localMapKeyPair = NULL;
-        cJSON_ArrayForEach(_links_local_map, _links) {
-            cJSON *localMapObject = _links_local_map;
-            if (!cJSON_IsObject(_links_local_map)) {
-                ogs_error("OpenAPI_eap_session_parseFromJSON() failed [_links]");
-                goto end;
-            }
-            localMapKeyPair = OpenAPI_map_create(
-                localMapObject->string, OpenAPI_links_value_schema_parseFromJSON(localMapObject));
-            OpenAPI_list_add(_linksList, localMapKeyPair);
-        }
+        localMapKeyPair = OpenAPI_map_create(
+            localMapObject->string, OpenAPI_links_value_schema_parseFromJSON(localMapObject));
+        OpenAPI_list_add(_linksList , localMapKeyPair);
+    }
     }
 
     cJSON *auth_result = cJSON_GetObjectItemCaseSensitive(eap_sessionJSON, "authResult");
 
     OpenAPI_auth_result_e auth_resultVariable;
-    if (auth_result) {
-        if (!cJSON_IsString(auth_result)) {
-            ogs_error("OpenAPI_eap_session_parseFromJSON() failed [auth_result]");
-            goto end;
-        }
-        auth_resultVariable = OpenAPI_auth_result_FromString(auth_result->valuestring);
+    if (auth_result) { 
+    if (!cJSON_IsString(auth_result)) {
+        ogs_error("OpenAPI_eap_session_parseFromJSON() failed [auth_result]");
+        goto end;
+    }
+    auth_resultVariable = OpenAPI_auth_result_FromString(auth_result->valuestring);
     }
 
     cJSON *supi = cJSON_GetObjectItemCaseSensitive(eap_sessionJSON, "supi");
 
-    if (supi) {
-        if (!cJSON_IsString(supi)) {
-            ogs_error("OpenAPI_eap_session_parseFromJSON() failed [supi]");
-            goto end;
-        }
+    if (supi) { 
+    if (!cJSON_IsString(supi)) {
+        ogs_error("OpenAPI_eap_session_parseFromJSON() failed [supi]");
+        goto end;
+    }
+    }
+
+    cJSON *supported_features = cJSON_GetObjectItemCaseSensitive(eap_sessionJSON, "supportedFeatures");
+
+    if (supported_features) { 
+    if (!cJSON_IsString(supported_features)) {
+        ogs_error("OpenAPI_eap_session_parseFromJSON() failed [supported_features]");
+        goto end;
+    }
     }
 
     eap_session_local_var = OpenAPI_eap_session_create (
@@ -176,8 +195,9 @@ OpenAPI_eap_session_t *OpenAPI_eap_session_parseFromJSON(cJSON *eap_sessionJSON)
         k_seaf ? ogs_strdup_or_assert(k_seaf->valuestring) : NULL,
         _links ? _linksList : NULL,
         auth_result ? auth_resultVariable : 0,
-        supi ? ogs_strdup_or_assert(supi->valuestring) : NULL
-        );
+        supi ? ogs_strdup_or_assert(supi->valuestring) : NULL,
+        supported_features ? ogs_strdup_or_assert(supported_features->valuestring) : NULL
+    );
 
     return eap_session_local_var;
 end:

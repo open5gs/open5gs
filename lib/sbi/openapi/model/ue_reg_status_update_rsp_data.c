@@ -6,7 +6,7 @@
 
 OpenAPI_ue_reg_status_update_rsp_data_t *OpenAPI_ue_reg_status_update_rsp_data_create(
     int reg_status_transfer_complete
-    )
+)
 {
     OpenAPI_ue_reg_status_update_rsp_data_t *ue_reg_status_update_rsp_data_local_var = OpenAPI_malloc(sizeof(OpenAPI_ue_reg_status_update_rsp_data_t));
     if (!ue_reg_status_update_rsp_data_local_var) {
@@ -54,7 +54,7 @@ OpenAPI_ue_reg_status_update_rsp_data_t *OpenAPI_ue_reg_status_update_rsp_data_p
         goto end;
     }
 
-
+    
     if (!cJSON_IsBool(reg_status_transfer_complete)) {
         ogs_error("OpenAPI_ue_reg_status_update_rsp_data_parseFromJSON() failed [reg_status_transfer_complete]");
         goto end;
@@ -62,7 +62,7 @@ OpenAPI_ue_reg_status_update_rsp_data_t *OpenAPI_ue_reg_status_update_rsp_data_p
 
     ue_reg_status_update_rsp_data_local_var = OpenAPI_ue_reg_status_update_rsp_data_create (
         reg_status_transfer_complete->valueint
-        );
+    );
 
     return ue_reg_status_update_rsp_data_local_var;
 end:

@@ -7,7 +7,7 @@
 OpenAPI_snssai_route_selection_descriptor_t *OpenAPI_snssai_route_selection_descriptor_create(
     OpenAPI_snssai_t *snssai,
     OpenAPI_list_t *dnn_route_sel_descs
-    )
+)
 {
     OpenAPI_snssai_route_selection_descriptor_t *snssai_route_selection_descriptor_local_var = OpenAPI_malloc(sizeof(OpenAPI_snssai_route_selection_descriptor_t));
     if (!snssai_route_selection_descriptor_local_var) {
@@ -55,23 +55,23 @@ cJSON *OpenAPI_snssai_route_selection_descriptor_convertToJSON(OpenAPI_snssai_ro
     }
 
     if (snssai_route_selection_descriptor->dnn_route_sel_descs) {
-        cJSON *dnn_route_sel_descsList = cJSON_AddArrayToObject(item, "dnnRouteSelDescs");
-        if (dnn_route_sel_descsList == NULL) {
-            ogs_error("OpenAPI_snssai_route_selection_descriptor_convertToJSON() failed [dnn_route_sel_descs]");
-            goto end;
-        }
+    cJSON *dnn_route_sel_descsList = cJSON_AddArrayToObject(item, "dnnRouteSelDescs");
+    if (dnn_route_sel_descsList == NULL) {
+        ogs_error("OpenAPI_snssai_route_selection_descriptor_convertToJSON() failed [dnn_route_sel_descs]");
+        goto end;
+    }
 
-        OpenAPI_lnode_t *dnn_route_sel_descs_node;
-        if (snssai_route_selection_descriptor->dnn_route_sel_descs) {
-            OpenAPI_list_for_each(snssai_route_selection_descriptor->dnn_route_sel_descs, dnn_route_sel_descs_node) {
-                cJSON *itemLocal = OpenAPI_dnn_route_selection_descriptor_convertToJSON(dnn_route_sel_descs_node->data);
-                if (itemLocal == NULL) {
-                    ogs_error("OpenAPI_snssai_route_selection_descriptor_convertToJSON() failed [dnn_route_sel_descs]");
-                    goto end;
-                }
-                cJSON_AddItemToArray(dnn_route_sel_descsList, itemLocal);
+    OpenAPI_lnode_t *dnn_route_sel_descs_node;
+    if (snssai_route_selection_descriptor->dnn_route_sel_descs) {
+        OpenAPI_list_for_each(snssai_route_selection_descriptor->dnn_route_sel_descs, dnn_route_sel_descs_node) {
+            cJSON *itemLocal = OpenAPI_dnn_route_selection_descriptor_convertToJSON(dnn_route_sel_descs_node->data);
+            if (itemLocal == NULL) {
+                ogs_error("OpenAPI_snssai_route_selection_descriptor_convertToJSON() failed [dnn_route_sel_descs]");
+                goto end;
             }
+            cJSON_AddItemToArray(dnn_route_sel_descsList, itemLocal);
         }
+    }
     }
 
 end:
@@ -88,36 +88,36 @@ OpenAPI_snssai_route_selection_descriptor_t *OpenAPI_snssai_route_selection_desc
     }
 
     OpenAPI_snssai_t *snssai_local_nonprim = NULL;
-
+    
     snssai_local_nonprim = OpenAPI_snssai_parseFromJSON(snssai);
 
     cJSON *dnn_route_sel_descs = cJSON_GetObjectItemCaseSensitive(snssai_route_selection_descriptorJSON, "dnnRouteSelDescs");
 
     OpenAPI_list_t *dnn_route_sel_descsList;
-    if (dnn_route_sel_descs) {
-        cJSON *dnn_route_sel_descs_local_nonprimitive;
-        if (!cJSON_IsArray(dnn_route_sel_descs)) {
+    if (dnn_route_sel_descs) { 
+    cJSON *dnn_route_sel_descs_local_nonprimitive;
+    if (!cJSON_IsArray(dnn_route_sel_descs)){
+        ogs_error("OpenAPI_snssai_route_selection_descriptor_parseFromJSON() failed [dnn_route_sel_descs]");
+        goto end;
+    }
+
+    dnn_route_sel_descsList = OpenAPI_list_create();
+
+    cJSON_ArrayForEach(dnn_route_sel_descs_local_nonprimitive, dnn_route_sel_descs ) {
+        if (!cJSON_IsObject(dnn_route_sel_descs_local_nonprimitive)) {
             ogs_error("OpenAPI_snssai_route_selection_descriptor_parseFromJSON() failed [dnn_route_sel_descs]");
             goto end;
         }
+        OpenAPI_dnn_route_selection_descriptor_t *dnn_route_sel_descsItem = OpenAPI_dnn_route_selection_descriptor_parseFromJSON(dnn_route_sel_descs_local_nonprimitive);
 
-        dnn_route_sel_descsList = OpenAPI_list_create();
-
-        cJSON_ArrayForEach(dnn_route_sel_descs_local_nonprimitive, dnn_route_sel_descs ) {
-            if (!cJSON_IsObject(dnn_route_sel_descs_local_nonprimitive)) {
-                ogs_error("OpenAPI_snssai_route_selection_descriptor_parseFromJSON() failed [dnn_route_sel_descs]");
-                goto end;
-            }
-            OpenAPI_dnn_route_selection_descriptor_t *dnn_route_sel_descsItem = OpenAPI_dnn_route_selection_descriptor_parseFromJSON(dnn_route_sel_descs_local_nonprimitive);
-
-            OpenAPI_list_add(dnn_route_sel_descsList, dnn_route_sel_descsItem);
-        }
+        OpenAPI_list_add(dnn_route_sel_descsList, dnn_route_sel_descsItem);
+    }
     }
 
     snssai_route_selection_descriptor_local_var = OpenAPI_snssai_route_selection_descriptor_create (
         snssai_local_nonprim,
         dnn_route_sel_descs ? dnn_route_sel_descsList : NULL
-        );
+    );
 
     return snssai_route_selection_descriptor_local_var;
 end:

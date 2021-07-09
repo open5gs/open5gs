@@ -309,7 +309,7 @@ int ngap_send_ran_ue_context_release_command(
 
     ogs_assert(ran_ue);
 
-    ogs_debug("UE Context release command");
+    ogs_debug("UEContextReleaseCommand");
     ogs_debug("    RAN_UE_NGAP_ID[%d] AMF_UE_NGAP_ID[%lld]",
             ran_ue->ran_ue_ngap_id, (long long)ran_ue->amf_ue_ngap_id);
 

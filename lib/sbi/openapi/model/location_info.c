@@ -9,7 +9,7 @@ OpenAPI_location_info_t *OpenAPI_location_info_create(
     char *gpsi,
     OpenAPI_list_t *registration_location_info_list,
     char *supported_features
-    )
+)
 {
     OpenAPI_location_info_t *location_info_local_var = OpenAPI_malloc(sizeof(OpenAPI_location_info_t));
     if (!location_info_local_var) {
@@ -50,17 +50,17 @@ cJSON *OpenAPI_location_info_convertToJSON(OpenAPI_location_info_t *location_inf
 
     item = cJSON_CreateObject();
     if (location_info->supi) {
-        if (cJSON_AddStringToObject(item, "supi", location_info->supi) == NULL) {
-            ogs_error("OpenAPI_location_info_convertToJSON() failed [supi]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "supi", location_info->supi) == NULL) {
+        ogs_error("OpenAPI_location_info_convertToJSON() failed [supi]");
+        goto end;
+    }
     }
 
     if (location_info->gpsi) {
-        if (cJSON_AddStringToObject(item, "gpsi", location_info->gpsi) == NULL) {
-            ogs_error("OpenAPI_location_info_convertToJSON() failed [gpsi]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "gpsi", location_info->gpsi) == NULL) {
+        ogs_error("OpenAPI_location_info_convertToJSON() failed [gpsi]");
+        goto end;
+    }
     }
 
     cJSON *registration_location_info_listList = cJSON_AddArrayToObject(item, "registrationLocationInfoList");
@@ -82,10 +82,10 @@ cJSON *OpenAPI_location_info_convertToJSON(OpenAPI_location_info_t *location_inf
     }
 
     if (location_info->supported_features) {
-        if (cJSON_AddStringToObject(item, "supportedFeatures", location_info->supported_features) == NULL) {
-            ogs_error("OpenAPI_location_info_convertToJSON() failed [supported_features]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "supportedFeatures", location_info->supported_features) == NULL) {
+        ogs_error("OpenAPI_location_info_convertToJSON() failed [supported_features]");
+        goto end;
+    }
     }
 
 end:
@@ -97,20 +97,20 @@ OpenAPI_location_info_t *OpenAPI_location_info_parseFromJSON(cJSON *location_inf
     OpenAPI_location_info_t *location_info_local_var = NULL;
     cJSON *supi = cJSON_GetObjectItemCaseSensitive(location_infoJSON, "supi");
 
-    if (supi) {
-        if (!cJSON_IsString(supi)) {
-            ogs_error("OpenAPI_location_info_parseFromJSON() failed [supi]");
-            goto end;
-        }
+    if (supi) { 
+    if (!cJSON_IsString(supi)) {
+        ogs_error("OpenAPI_location_info_parseFromJSON() failed [supi]");
+        goto end;
+    }
     }
 
     cJSON *gpsi = cJSON_GetObjectItemCaseSensitive(location_infoJSON, "gpsi");
 
-    if (gpsi) {
-        if (!cJSON_IsString(gpsi)) {
-            ogs_error("OpenAPI_location_info_parseFromJSON() failed [gpsi]");
-            goto end;
-        }
+    if (gpsi) { 
+    if (!cJSON_IsString(gpsi)) {
+        ogs_error("OpenAPI_location_info_parseFromJSON() failed [gpsi]");
+        goto end;
+    }
     }
 
     cJSON *registration_location_info_list = cJSON_GetObjectItemCaseSensitive(location_infoJSON, "registrationLocationInfoList");
@@ -120,9 +120,9 @@ OpenAPI_location_info_t *OpenAPI_location_info_parseFromJSON(cJSON *location_inf
     }
 
     OpenAPI_list_t *registration_location_info_listList;
-
+    
     cJSON *registration_location_info_list_local_nonprimitive;
-    if (!cJSON_IsArray(registration_location_info_list)) {
+    if (!cJSON_IsArray(registration_location_info_list)){
         ogs_error("OpenAPI_location_info_parseFromJSON() failed [registration_location_info_list]");
         goto end;
     }
@@ -141,11 +141,11 @@ OpenAPI_location_info_t *OpenAPI_location_info_parseFromJSON(cJSON *location_inf
 
     cJSON *supported_features = cJSON_GetObjectItemCaseSensitive(location_infoJSON, "supportedFeatures");
 
-    if (supported_features) {
-        if (!cJSON_IsString(supported_features)) {
-            ogs_error("OpenAPI_location_info_parseFromJSON() failed [supported_features]");
-            goto end;
-        }
+    if (supported_features) { 
+    if (!cJSON_IsString(supported_features)) {
+        ogs_error("OpenAPI_location_info_parseFromJSON() failed [supported_features]");
+        goto end;
+    }
     }
 
     location_info_local_var = OpenAPI_location_info_create (
@@ -153,7 +153,7 @@ OpenAPI_location_info_t *OpenAPI_location_info_parseFromJSON(cJSON *location_inf
         gpsi ? ogs_strdup_or_assert(gpsi->valuestring) : NULL,
         registration_location_info_listList,
         supported_features ? ogs_strdup_or_assert(supported_features->valuestring) : NULL
-        );
+    );
 
     return location_info_local_var;
 end:

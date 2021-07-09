@@ -6,7 +6,7 @@
 
 OpenAPI_patch_result_t *OpenAPI_patch_result_create(
     OpenAPI_list_t *report
-    )
+)
 {
     OpenAPI_patch_result_t *patch_result_local_var = OpenAPI_malloc(sizeof(OpenAPI_patch_result_t));
     if (!patch_result_local_var) {
@@ -72,9 +72,9 @@ OpenAPI_patch_result_t *OpenAPI_patch_result_parseFromJSON(cJSON *patch_resultJS
     }
 
     OpenAPI_list_t *reportList;
-
+    
     cJSON *report_local_nonprimitive;
-    if (!cJSON_IsArray(report)) {
+    if (!cJSON_IsArray(report)){
         ogs_error("OpenAPI_patch_result_parseFromJSON() failed [report]");
         goto end;
     }
@@ -93,7 +93,7 @@ OpenAPI_patch_result_t *OpenAPI_patch_result_parseFromJSON(cJSON *patch_resultJS
 
     patch_result_local_var = OpenAPI_patch_result_create (
         reportList
-        );
+    );
 
     return patch_result_local_var;
 end:

@@ -8,7 +8,7 @@ OpenAPI_tac_range_t *OpenAPI_tac_range_create(
     char *start,
     char *end,
     char *pattern
-    )
+)
 {
     OpenAPI_tac_range_t *tac_range_local_var = OpenAPI_malloc(sizeof(OpenAPI_tac_range_t));
     if (!tac_range_local_var) {
@@ -44,24 +44,24 @@ cJSON *OpenAPI_tac_range_convertToJSON(OpenAPI_tac_range_t *tac_range)
 
     item = cJSON_CreateObject();
     if (tac_range->start) {
-        if (cJSON_AddStringToObject(item, "start", tac_range->start) == NULL) {
-            ogs_error("OpenAPI_tac_range_convertToJSON() failed [start]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "start", tac_range->start) == NULL) {
+        ogs_error("OpenAPI_tac_range_convertToJSON() failed [start]");
+        goto end;
+    }
     }
 
     if (tac_range->end) {
-        if (cJSON_AddStringToObject(item, "end", tac_range->end) == NULL) {
-            ogs_error("OpenAPI_tac_range_convertToJSON() failed [end]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "end", tac_range->end) == NULL) {
+        ogs_error("OpenAPI_tac_range_convertToJSON() failed [end]");
+        goto end;
+    }
     }
 
     if (tac_range->pattern) {
-        if (cJSON_AddStringToObject(item, "pattern", tac_range->pattern) == NULL) {
-            ogs_error("OpenAPI_tac_range_convertToJSON() failed [pattern]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "pattern", tac_range->pattern) == NULL) {
+        ogs_error("OpenAPI_tac_range_convertToJSON() failed [pattern]");
+        goto end;
+    }
     }
 
 end:
@@ -73,36 +73,36 @@ OpenAPI_tac_range_t *OpenAPI_tac_range_parseFromJSON(cJSON *tac_rangeJSON)
     OpenAPI_tac_range_t *tac_range_local_var = NULL;
     cJSON *start = cJSON_GetObjectItemCaseSensitive(tac_rangeJSON, "start");
 
-    if (start) {
-        if (!cJSON_IsString(start)) {
-            ogs_error("OpenAPI_tac_range_parseFromJSON() failed [start]");
-            goto end;
-        }
+    if (start) { 
+    if (!cJSON_IsString(start)) {
+        ogs_error("OpenAPI_tac_range_parseFromJSON() failed [start]");
+        goto end;
+    }
     }
 
     cJSON *end = cJSON_GetObjectItemCaseSensitive(tac_rangeJSON, "end");
 
-    if (end) {
-        if (!cJSON_IsString(end)) {
-            ogs_error("OpenAPI_tac_range_parseFromJSON() failed [end]");
-            goto end;
-        }
+    if (end) { 
+    if (!cJSON_IsString(end)) {
+        ogs_error("OpenAPI_tac_range_parseFromJSON() failed [end]");
+        goto end;
+    }
     }
 
     cJSON *pattern = cJSON_GetObjectItemCaseSensitive(tac_rangeJSON, "pattern");
 
-    if (pattern) {
-        if (!cJSON_IsString(pattern)) {
-            ogs_error("OpenAPI_tac_range_parseFromJSON() failed [pattern]");
-            goto end;
-        }
+    if (pattern) { 
+    if (!cJSON_IsString(pattern)) {
+        ogs_error("OpenAPI_tac_range_parseFromJSON() failed [pattern]");
+        goto end;
+    }
     }
 
     tac_range_local_var = OpenAPI_tac_range_create (
         start ? ogs_strdup_or_assert(start->valuestring) : NULL,
         end ? ogs_strdup_or_assert(end->valuestring) : NULL,
         pattern ? ogs_strdup_or_assert(pattern->valuestring) : NULL
-        );
+    );
 
     return tac_range_local_var;
 end:

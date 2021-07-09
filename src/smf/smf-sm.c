@@ -135,6 +135,10 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
             smf_s5c_handle_delete_session_request(
                 sess, gtp_xact, &gtp_message.delete_session_request);
             break;
+        case OGS_GTP_MODIFY_BEARER_REQUEST_TYPE:
+            smf_s5c_handle_modify_bearer_request(
+                sess, gtp_xact, &gtp_message.modify_bearer_request);
+            break;
         case OGS_GTP_CREATE_BEARER_RESPONSE_TYPE:
             smf_s5c_handle_create_bearer_response(
                 sess, gtp_xact, &gtp_message.create_bearer_response);

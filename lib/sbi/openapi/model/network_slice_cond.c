@@ -7,7 +7,7 @@
 OpenAPI_network_slice_cond_t *OpenAPI_network_slice_cond_create(
     OpenAPI_list_t *snssai_list,
     OpenAPI_list_t *nsi_list
-    )
+)
 {
     OpenAPI_network_slice_cond_t *network_slice_cond_local_var = OpenAPI_malloc(sizeof(OpenAPI_network_slice_cond_t));
     if (!network_slice_cond_local_var) {
@@ -65,19 +65,19 @@ cJSON *OpenAPI_network_slice_cond_convertToJSON(OpenAPI_network_slice_cond_t *ne
     }
 
     if (network_slice_cond->nsi_list) {
-        cJSON *nsi_list = cJSON_AddArrayToObject(item, "nsiList");
-        if (nsi_list == NULL) {
-            ogs_error("OpenAPI_network_slice_cond_convertToJSON() failed [nsi_list]");
-            goto end;
-        }
+    cJSON *nsi_list = cJSON_AddArrayToObject(item, "nsiList");
+    if (nsi_list == NULL) {
+        ogs_error("OpenAPI_network_slice_cond_convertToJSON() failed [nsi_list]");
+        goto end;
+    }
 
-        OpenAPI_lnode_t *nsi_list_node;
-        OpenAPI_list_for_each(network_slice_cond->nsi_list, nsi_list_node)  {
-            if (cJSON_AddStringToObject(nsi_list, "", (char*)nsi_list_node->data) == NULL) {
-                ogs_error("OpenAPI_network_slice_cond_convertToJSON() failed [nsi_list]");
-                goto end;
-            }
-        }
+    OpenAPI_lnode_t *nsi_list_node;
+    OpenAPI_list_for_each(network_slice_cond->nsi_list, nsi_list_node)  {
+    if (cJSON_AddStringToObject(nsi_list, "", (char*)nsi_list_node->data) == NULL) {
+        ogs_error("OpenAPI_network_slice_cond_convertToJSON() failed [nsi_list]");
+        goto end;
+    }
+                    }
     }
 
 end:
@@ -94,9 +94,9 @@ OpenAPI_network_slice_cond_t *OpenAPI_network_slice_cond_parseFromJSON(cJSON *ne
     }
 
     OpenAPI_list_t *snssai_listList;
-
+    
     cJSON *snssai_list_local_nonprimitive;
-    if (!cJSON_IsArray(snssai_list)) {
+    if (!cJSON_IsArray(snssai_list)){
         ogs_error("OpenAPI_network_slice_cond_parseFromJSON() failed [snssai_list]");
         goto end;
     }
@@ -116,27 +116,27 @@ OpenAPI_network_slice_cond_t *OpenAPI_network_slice_cond_parseFromJSON(cJSON *ne
     cJSON *nsi_list = cJSON_GetObjectItemCaseSensitive(network_slice_condJSON, "nsiList");
 
     OpenAPI_list_t *nsi_listList;
-    if (nsi_list) {
-        cJSON *nsi_list_local;
-        if (!cJSON_IsArray(nsi_list)) {
-            ogs_error("OpenAPI_network_slice_cond_parseFromJSON() failed [nsi_list]");
-            goto end;
-        }
-        nsi_listList = OpenAPI_list_create();
+    if (nsi_list) { 
+    cJSON *nsi_list_local;
+    if (!cJSON_IsArray(nsi_list)) {
+        ogs_error("OpenAPI_network_slice_cond_parseFromJSON() failed [nsi_list]");
+        goto end;
+    }
+    nsi_listList = OpenAPI_list_create();
 
-        cJSON_ArrayForEach(nsi_list_local, nsi_list) {
-            if (!cJSON_IsString(nsi_list_local)) {
-                ogs_error("OpenAPI_network_slice_cond_parseFromJSON() failed [nsi_list]");
-                goto end;
-            }
-            OpenAPI_list_add(nsi_listList, ogs_strdup_or_assert(nsi_list_local->valuestring));
-        }
+    cJSON_ArrayForEach(nsi_list_local, nsi_list) {
+    if (!cJSON_IsString(nsi_list_local)) {
+        ogs_error("OpenAPI_network_slice_cond_parseFromJSON() failed [nsi_list]");
+        goto end;
+    }
+    OpenAPI_list_add(nsi_listList , ogs_strdup_or_assert(nsi_list_local->valuestring));
+                    }
     }
 
     network_slice_cond_local_var = OpenAPI_network_slice_cond_create (
         snssai_listList,
         nsi_list ? nsi_listList : NULL
-        );
+    );
 
     return network_slice_cond_local_var;
 end:

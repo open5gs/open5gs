@@ -1,7 +1,7 @@
 /*
  * small_data_rate_status_info.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_small_data_rate_status_info_H_
@@ -30,7 +30,7 @@ OpenAPI_small_data_rate_status_info_t *OpenAPI_small_data_rate_status_info_creat
     OpenAPI_snssai_t *snssai,
     char *dnn,
     OpenAPI_small_data_rate_status_t *small_data_rate_status
-    );
+);
 void OpenAPI_small_data_rate_status_info_free(OpenAPI_small_data_rate_status_info_t *small_data_rate_status_info);
 OpenAPI_small_data_rate_status_info_t *OpenAPI_small_data_rate_status_info_parseFromJSON(cJSON *small_data_rate_status_infoJSON);
 cJSON *OpenAPI_small_data_rate_status_info_convertToJSON(OpenAPI_small_data_rate_status_info_t *small_data_rate_status_info);

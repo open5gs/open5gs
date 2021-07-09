@@ -1,7 +1,7 @@
 /*
  * pws_error_data.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_pws_error_data_H_
@@ -24,7 +24,7 @@ typedef struct OpenAPI_pws_error_data_s {
 
 OpenAPI_pws_error_data_t *OpenAPI_pws_error_data_create(
     int namf_cause
-    );
+);
 void OpenAPI_pws_error_data_free(OpenAPI_pws_error_data_t *pws_error_data);
 OpenAPI_pws_error_data_t *OpenAPI_pws_error_data_parseFromJSON(cJSON *pws_error_dataJSON);
 cJSON *OpenAPI_pws_error_data_convertToJSON(OpenAPI_pws_error_data_t *pws_error_data);

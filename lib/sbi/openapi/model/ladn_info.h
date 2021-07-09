@@ -1,7 +1,7 @@
 /*
  * ladn_info.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_ladn_info_H_
@@ -27,7 +27,7 @@ typedef struct OpenAPI_ladn_info_s {
 OpenAPI_ladn_info_t *OpenAPI_ladn_info_create(
     char *ladn,
     OpenAPI_presence_state_e presence
-    );
+);
 void OpenAPI_ladn_info_free(OpenAPI_ladn_info_t *ladn_info);
 OpenAPI_ladn_info_t *OpenAPI_ladn_info_parseFromJSON(cJSON *ladn_infoJSON);
 cJSON *OpenAPI_ladn_info_convertToJSON(OpenAPI_ladn_info_t *ladn_info);

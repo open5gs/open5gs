@@ -1,7 +1,7 @@
 /*
  * inline_object_3.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_inline_object_3_H_
@@ -12,7 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
-#include "transfer_mt_data_req_data.h"
+#include "n1_message_notification.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -20,14 +20,14 @@ extern "C" {
 
 typedef struct OpenAPI_inline_object_3_s OpenAPI_inline_object_3_t;
 typedef struct OpenAPI_inline_object_3_s {
-    struct OpenAPI_transfer_mt_data_req_data_s *json_data;
-    OpenAPI_binary_t* binary_mt_data;
+    struct OpenAPI_n1_message_notification_s *json_data;
+    OpenAPI_binary_t* binary_data_n1_message;
 } OpenAPI_inline_object_3_t;
 
 OpenAPI_inline_object_3_t *OpenAPI_inline_object_3_create(
-    OpenAPI_transfer_mt_data_req_data_t *json_data,
-    OpenAPI_binary_t* binary_mt_data
-    );
+    OpenAPI_n1_message_notification_t *json_data,
+    OpenAPI_binary_t* binary_data_n1_message
+);
 void OpenAPI_inline_object_3_free(OpenAPI_inline_object_3_t *inline_object_3);
 OpenAPI_inline_object_3_t *OpenAPI_inline_object_3_parseFromJSON(cJSON *inline_object_3JSON);
 cJSON *OpenAPI_inline_object_3_convertToJSON(OpenAPI_inline_object_3_t *inline_object_3);

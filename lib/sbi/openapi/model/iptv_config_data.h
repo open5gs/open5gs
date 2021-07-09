@@ -1,7 +1,7 @@
 /*
  * iptv_config_data.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_iptv_config_data_H_
@@ -28,6 +28,7 @@ typedef struct OpenAPI_iptv_config_data_s {
     char *af_app_id;
     OpenAPI_list_t* multi_acc_ctrls;
     char *supp_feat;
+    char *res_uri;
 } OpenAPI_iptv_config_data_t;
 
 OpenAPI_iptv_config_data_t *OpenAPI_iptv_config_data_create(
@@ -37,8 +38,9 @@ OpenAPI_iptv_config_data_t *OpenAPI_iptv_config_data_create(
     OpenAPI_snssai_t *snssai,
     char *af_app_id,
     OpenAPI_list_t* multi_acc_ctrls,
-    char *supp_feat
-    );
+    char *supp_feat,
+    char *res_uri
+);
 void OpenAPI_iptv_config_data_free(OpenAPI_iptv_config_data_t *iptv_config_data);
 OpenAPI_iptv_config_data_t *OpenAPI_iptv_config_data_parseFromJSON(cJSON *iptv_config_dataJSON);
 cJSON *OpenAPI_iptv_config_data_convertToJSON(OpenAPI_iptv_config_data_t *iptv_config_data);

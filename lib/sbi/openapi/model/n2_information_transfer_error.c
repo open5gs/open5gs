@@ -6,15 +6,15 @@
 
 OpenAPI_n2_information_transfer_error_t *OpenAPI_n2_information_transfer_error_create(
     OpenAPI_problem_details_t *error,
-    OpenAPI_pws_error_data_t *pwd_error_info
-    )
+    OpenAPI_pws_error_data_t *pws_error_info
+)
 {
     OpenAPI_n2_information_transfer_error_t *n2_information_transfer_error_local_var = OpenAPI_malloc(sizeof(OpenAPI_n2_information_transfer_error_t));
     if (!n2_information_transfer_error_local_var) {
         return NULL;
     }
     n2_information_transfer_error_local_var->error = error;
-    n2_information_transfer_error_local_var->pwd_error_info = pwd_error_info;
+    n2_information_transfer_error_local_var->pws_error_info = pws_error_info;
 
     return n2_information_transfer_error_local_var;
 }
@@ -26,7 +26,7 @@ void OpenAPI_n2_information_transfer_error_free(OpenAPI_n2_information_transfer_
     }
     OpenAPI_lnode_t *node;
     OpenAPI_problem_details_free(n2_information_transfer_error->error);
-    OpenAPI_pws_error_data_free(n2_information_transfer_error->pwd_error_info);
+    OpenAPI_pws_error_data_free(n2_information_transfer_error->pws_error_info);
     ogs_free(n2_information_transfer_error);
 }
 
@@ -51,17 +51,17 @@ cJSON *OpenAPI_n2_information_transfer_error_convertToJSON(OpenAPI_n2_informatio
         goto end;
     }
 
-    if (n2_information_transfer_error->pwd_error_info) {
-        cJSON *pwd_error_info_local_JSON = OpenAPI_pws_error_data_convertToJSON(n2_information_transfer_error->pwd_error_info);
-        if (pwd_error_info_local_JSON == NULL) {
-            ogs_error("OpenAPI_n2_information_transfer_error_convertToJSON() failed [pwd_error_info]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "pwdErrorInfo", pwd_error_info_local_JSON);
-        if (item->child == NULL) {
-            ogs_error("OpenAPI_n2_information_transfer_error_convertToJSON() failed [pwd_error_info]");
-            goto end;
-        }
+    if (n2_information_transfer_error->pws_error_info) {
+    cJSON *pws_error_info_local_JSON = OpenAPI_pws_error_data_convertToJSON(n2_information_transfer_error->pws_error_info);
+    if (pws_error_info_local_JSON == NULL) {
+        ogs_error("OpenAPI_n2_information_transfer_error_convertToJSON() failed [pws_error_info]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "pwsErrorInfo", pws_error_info_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_n2_information_transfer_error_convertToJSON() failed [pws_error_info]");
+        goto end;
+    }
     }
 
 end:
@@ -78,20 +78,20 @@ OpenAPI_n2_information_transfer_error_t *OpenAPI_n2_information_transfer_error_p
     }
 
     OpenAPI_problem_details_t *error_local_nonprim = NULL;
-
+    
     error_local_nonprim = OpenAPI_problem_details_parseFromJSON(error);
 
-    cJSON *pwd_error_info = cJSON_GetObjectItemCaseSensitive(n2_information_transfer_errorJSON, "pwdErrorInfo");
+    cJSON *pws_error_info = cJSON_GetObjectItemCaseSensitive(n2_information_transfer_errorJSON, "pwsErrorInfo");
 
-    OpenAPI_pws_error_data_t *pwd_error_info_local_nonprim = NULL;
-    if (pwd_error_info) {
-        pwd_error_info_local_nonprim = OpenAPI_pws_error_data_parseFromJSON(pwd_error_info);
+    OpenAPI_pws_error_data_t *pws_error_info_local_nonprim = NULL;
+    if (pws_error_info) { 
+    pws_error_info_local_nonprim = OpenAPI_pws_error_data_parseFromJSON(pws_error_info);
     }
 
     n2_information_transfer_error_local_var = OpenAPI_n2_information_transfer_error_create (
         error_local_nonprim,
-        pwd_error_info ? pwd_error_info_local_nonprim : NULL
-        );
+        pws_error_info ? pws_error_info_local_nonprim : NULL
+    );
 
     return n2_information_transfer_error_local_var;
 end:

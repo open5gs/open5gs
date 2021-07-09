@@ -11,10 +11,8 @@ OpenAPI_problem_details_2_t *OpenAPI_problem_details_2_create(
     char *detail,
     char *instance,
     char *cause,
-    OpenAPI_list_t *invalid_params,
-    char *supported_features,
-    char *target_scp
-    )
+    OpenAPI_list_t *invalid_params
+)
 {
     OpenAPI_problem_details_2_t *problem_details_2_local_var = OpenAPI_malloc(sizeof(OpenAPI_problem_details_2_t));
     if (!problem_details_2_local_var) {
@@ -27,8 +25,6 @@ OpenAPI_problem_details_2_t *OpenAPI_problem_details_2_create(
     problem_details_2_local_var->instance = instance;
     problem_details_2_local_var->cause = cause;
     problem_details_2_local_var->invalid_params = invalid_params;
-    problem_details_2_local_var->supported_features = supported_features;
-    problem_details_2_local_var->target_scp = target_scp;
 
     return problem_details_2_local_var;
 }
@@ -45,11 +41,9 @@ void OpenAPI_problem_details_2_free(OpenAPI_problem_details_2_t *problem_details
     ogs_free(problem_details_2->instance);
     ogs_free(problem_details_2->cause);
     OpenAPI_list_for_each(problem_details_2->invalid_params, node) {
-        OpenAPI_invalid_param_free(node->data);
+        OpenAPI_invalid_param_1_free(node->data);
     }
     OpenAPI_list_free(problem_details_2->invalid_params);
-    ogs_free(problem_details_2->supported_features);
-    ogs_free(problem_details_2->target_scp);
     ogs_free(problem_details_2);
 }
 
@@ -64,79 +58,65 @@ cJSON *OpenAPI_problem_details_2_convertToJSON(OpenAPI_problem_details_2_t *prob
 
     item = cJSON_CreateObject();
     if (problem_details_2->type) {
-        if (cJSON_AddStringToObject(item, "type", problem_details_2->type) == NULL) {
-            ogs_error("OpenAPI_problem_details_2_convertToJSON() failed [type]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "type", problem_details_2->type) == NULL) {
+        ogs_error("OpenAPI_problem_details_2_convertToJSON() failed [type]");
+        goto end;
+    }
     }
 
     if (problem_details_2->title) {
-        if (cJSON_AddStringToObject(item, "title", problem_details_2->title) == NULL) {
-            ogs_error("OpenAPI_problem_details_2_convertToJSON() failed [title]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "title", problem_details_2->title) == NULL) {
+        ogs_error("OpenAPI_problem_details_2_convertToJSON() failed [title]");
+        goto end;
+    }
     }
 
     if (problem_details_2->status) {
-        if (cJSON_AddNumberToObject(item, "status", problem_details_2->status) == NULL) {
-            ogs_error("OpenAPI_problem_details_2_convertToJSON() failed [status]");
-            goto end;
-        }
+    if (cJSON_AddNumberToObject(item, "status", problem_details_2->status) == NULL) {
+        ogs_error("OpenAPI_problem_details_2_convertToJSON() failed [status]");
+        goto end;
+    }
     }
 
     if (problem_details_2->detail) {
-        if (cJSON_AddStringToObject(item, "detail", problem_details_2->detail) == NULL) {
-            ogs_error("OpenAPI_problem_details_2_convertToJSON() failed [detail]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "detail", problem_details_2->detail) == NULL) {
+        ogs_error("OpenAPI_problem_details_2_convertToJSON() failed [detail]");
+        goto end;
+    }
     }
 
     if (problem_details_2->instance) {
-        if (cJSON_AddStringToObject(item, "instance", problem_details_2->instance) == NULL) {
-            ogs_error("OpenAPI_problem_details_2_convertToJSON() failed [instance]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "instance", problem_details_2->instance) == NULL) {
+        ogs_error("OpenAPI_problem_details_2_convertToJSON() failed [instance]");
+        goto end;
+    }
     }
 
     if (problem_details_2->cause) {
-        if (cJSON_AddStringToObject(item, "cause", problem_details_2->cause) == NULL) {
-            ogs_error("OpenAPI_problem_details_2_convertToJSON() failed [cause]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "cause", problem_details_2->cause) == NULL) {
+        ogs_error("OpenAPI_problem_details_2_convertToJSON() failed [cause]");
+        goto end;
+    }
     }
 
     if (problem_details_2->invalid_params) {
-        cJSON *invalid_paramsList = cJSON_AddArrayToObject(item, "invalidParams");
-        if (invalid_paramsList == NULL) {
-            ogs_error("OpenAPI_problem_details_2_convertToJSON() failed [invalid_params]");
-            goto end;
-        }
+    cJSON *invalid_paramsList = cJSON_AddArrayToObject(item, "invalidParams");
+    if (invalid_paramsList == NULL) {
+        ogs_error("OpenAPI_problem_details_2_convertToJSON() failed [invalid_params]");
+        goto end;
+    }
 
-        OpenAPI_lnode_t *invalid_params_node;
-        if (problem_details_2->invalid_params) {
-            OpenAPI_list_for_each(problem_details_2->invalid_params, invalid_params_node) {
-                cJSON *itemLocal = OpenAPI_invalid_param_convertToJSON(invalid_params_node->data);
-                if (itemLocal == NULL) {
-                    ogs_error("OpenAPI_problem_details_2_convertToJSON() failed [invalid_params]");
-                    goto end;
-                }
-                cJSON_AddItemToArray(invalid_paramsList, itemLocal);
+    OpenAPI_lnode_t *invalid_params_node;
+    if (problem_details_2->invalid_params) {
+        OpenAPI_list_for_each(problem_details_2->invalid_params, invalid_params_node) {
+            cJSON *itemLocal = OpenAPI_invalid_param_1_convertToJSON(invalid_params_node->data);
+            if (itemLocal == NULL) {
+                ogs_error("OpenAPI_problem_details_2_convertToJSON() failed [invalid_params]");
+                goto end;
             }
+            cJSON_AddItemToArray(invalid_paramsList, itemLocal);
         }
     }
-
-    if (problem_details_2->supported_features) {
-        if (cJSON_AddStringToObject(item, "supportedFeatures", problem_details_2->supported_features) == NULL) {
-            ogs_error("OpenAPI_problem_details_2_convertToJSON() failed [supported_features]");
-            goto end;
-        }
-    }
-
-    if (problem_details_2->target_scp) {
-        if (cJSON_AddStringToObject(item, "targetScp", problem_details_2->target_scp) == NULL) {
-            ogs_error("OpenAPI_problem_details_2_convertToJSON() failed [target_scp]");
-            goto end;
-        }
     }
 
 end:
@@ -148,97 +128,79 @@ OpenAPI_problem_details_2_t *OpenAPI_problem_details_2_parseFromJSON(cJSON *prob
     OpenAPI_problem_details_2_t *problem_details_2_local_var = NULL;
     cJSON *type = cJSON_GetObjectItemCaseSensitive(problem_details_2JSON, "type");
 
-    if (type) {
-        if (!cJSON_IsString(type)) {
-            ogs_error("OpenAPI_problem_details_2_parseFromJSON() failed [type]");
-            goto end;
-        }
+    if (type) { 
+    if (!cJSON_IsString(type)) {
+        ogs_error("OpenAPI_problem_details_2_parseFromJSON() failed [type]");
+        goto end;
+    }
     }
 
     cJSON *title = cJSON_GetObjectItemCaseSensitive(problem_details_2JSON, "title");
 
-    if (title) {
-        if (!cJSON_IsString(title)) {
-            ogs_error("OpenAPI_problem_details_2_parseFromJSON() failed [title]");
-            goto end;
-        }
+    if (title) { 
+    if (!cJSON_IsString(title)) {
+        ogs_error("OpenAPI_problem_details_2_parseFromJSON() failed [title]");
+        goto end;
+    }
     }
 
     cJSON *status = cJSON_GetObjectItemCaseSensitive(problem_details_2JSON, "status");
 
-    if (status) {
-        if (!cJSON_IsNumber(status)) {
-            ogs_error("OpenAPI_problem_details_2_parseFromJSON() failed [status]");
-            goto end;
-        }
+    if (status) { 
+    if (!cJSON_IsNumber(status)) {
+        ogs_error("OpenAPI_problem_details_2_parseFromJSON() failed [status]");
+        goto end;
+    }
     }
 
     cJSON *detail = cJSON_GetObjectItemCaseSensitive(problem_details_2JSON, "detail");
 
-    if (detail) {
-        if (!cJSON_IsString(detail)) {
-            ogs_error("OpenAPI_problem_details_2_parseFromJSON() failed [detail]");
-            goto end;
-        }
+    if (detail) { 
+    if (!cJSON_IsString(detail)) {
+        ogs_error("OpenAPI_problem_details_2_parseFromJSON() failed [detail]");
+        goto end;
+    }
     }
 
     cJSON *instance = cJSON_GetObjectItemCaseSensitive(problem_details_2JSON, "instance");
 
-    if (instance) {
-        if (!cJSON_IsString(instance)) {
-            ogs_error("OpenAPI_problem_details_2_parseFromJSON() failed [instance]");
-            goto end;
-        }
+    if (instance) { 
+    if (!cJSON_IsString(instance)) {
+        ogs_error("OpenAPI_problem_details_2_parseFromJSON() failed [instance]");
+        goto end;
+    }
     }
 
     cJSON *cause = cJSON_GetObjectItemCaseSensitive(problem_details_2JSON, "cause");
 
-    if (cause) {
-        if (!cJSON_IsString(cause)) {
-            ogs_error("OpenAPI_problem_details_2_parseFromJSON() failed [cause]");
-            goto end;
-        }
+    if (cause) { 
+    if (!cJSON_IsString(cause)) {
+        ogs_error("OpenAPI_problem_details_2_parseFromJSON() failed [cause]");
+        goto end;
+    }
     }
 
     cJSON *invalid_params = cJSON_GetObjectItemCaseSensitive(problem_details_2JSON, "invalidParams");
 
     OpenAPI_list_t *invalid_paramsList;
-    if (invalid_params) {
-        cJSON *invalid_params_local_nonprimitive;
-        if (!cJSON_IsArray(invalid_params)) {
+    if (invalid_params) { 
+    cJSON *invalid_params_local_nonprimitive;
+    if (!cJSON_IsArray(invalid_params)){
+        ogs_error("OpenAPI_problem_details_2_parseFromJSON() failed [invalid_params]");
+        goto end;
+    }
+
+    invalid_paramsList = OpenAPI_list_create();
+
+    cJSON_ArrayForEach(invalid_params_local_nonprimitive, invalid_params ) {
+        if (!cJSON_IsObject(invalid_params_local_nonprimitive)) {
             ogs_error("OpenAPI_problem_details_2_parseFromJSON() failed [invalid_params]");
             goto end;
         }
+        OpenAPI_invalid_param_1_t *invalid_paramsItem = OpenAPI_invalid_param_1_parseFromJSON(invalid_params_local_nonprimitive);
 
-        invalid_paramsList = OpenAPI_list_create();
-
-        cJSON_ArrayForEach(invalid_params_local_nonprimitive, invalid_params ) {
-            if (!cJSON_IsObject(invalid_params_local_nonprimitive)) {
-                ogs_error("OpenAPI_problem_details_2_parseFromJSON() failed [invalid_params]");
-                goto end;
-            }
-            OpenAPI_invalid_param_t *invalid_paramsItem = OpenAPI_invalid_param_parseFromJSON(invalid_params_local_nonprimitive);
-
-            OpenAPI_list_add(invalid_paramsList, invalid_paramsItem);
-        }
+        OpenAPI_list_add(invalid_paramsList, invalid_paramsItem);
     }
-
-    cJSON *supported_features = cJSON_GetObjectItemCaseSensitive(problem_details_2JSON, "supportedFeatures");
-
-    if (supported_features) {
-        if (!cJSON_IsString(supported_features)) {
-            ogs_error("OpenAPI_problem_details_2_parseFromJSON() failed [supported_features]");
-            goto end;
-        }
-    }
-
-    cJSON *target_scp = cJSON_GetObjectItemCaseSensitive(problem_details_2JSON, "targetScp");
-
-    if (target_scp) {
-        if (!cJSON_IsString(target_scp)) {
-            ogs_error("OpenAPI_problem_details_2_parseFromJSON() failed [target_scp]");
-            goto end;
-        }
     }
 
     problem_details_2_local_var = OpenAPI_problem_details_2_create (
@@ -248,10 +210,8 @@ OpenAPI_problem_details_2_t *OpenAPI_problem_details_2_parseFromJSON(cJSON *prob
         detail ? ogs_strdup_or_assert(detail->valuestring) : NULL,
         instance ? ogs_strdup_or_assert(instance->valuestring) : NULL,
         cause ? ogs_strdup_or_assert(cause->valuestring) : NULL,
-        invalid_params ? invalid_paramsList : NULL,
-        supported_features ? ogs_strdup_or_assert(supported_features->valuestring) : NULL,
-        target_scp ? ogs_strdup_or_assert(target_scp->valuestring) : NULL
-        );
+        invalid_params ? invalid_paramsList : NULL
+    );
 
     return problem_details_2_local_var;
 end:

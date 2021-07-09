@@ -6,7 +6,7 @@
 
 OpenAPI_n2_ran_information_t *OpenAPI_n2_ran_information_create(
     OpenAPI_n2_info_content_t *n2_info_content
-    )
+)
 {
     OpenAPI_n2_ran_information_t *n2_ran_information_local_var = OpenAPI_malloc(sizeof(OpenAPI_n2_ran_information_t));
     if (!n2_ran_information_local_var) {
@@ -62,12 +62,12 @@ OpenAPI_n2_ran_information_t *OpenAPI_n2_ran_information_parseFromJSON(cJSON *n2
     }
 
     OpenAPI_n2_info_content_t *n2_info_content_local_nonprim = NULL;
-
+    
     n2_info_content_local_nonprim = OpenAPI_n2_info_content_parseFromJSON(n2_info_content);
 
     n2_ran_information_local_var = OpenAPI_n2_ran_information_create (
         n2_info_content_local_nonprim
-        );
+    );
 
     return n2_ran_information_local_var;
 end:

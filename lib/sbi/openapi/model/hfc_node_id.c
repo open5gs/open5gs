@@ -5,14 +5,14 @@
 #include "hfc_node_id.h"
 
 OpenAPI_hfc_node_id_t *OpenAPI_hfc_node_id_create(
-    char *hfc_n_id
-    )
+    char *hfc_nid
+)
 {
     OpenAPI_hfc_node_id_t *hfc_node_id_local_var = OpenAPI_malloc(sizeof(OpenAPI_hfc_node_id_t));
     if (!hfc_node_id_local_var) {
         return NULL;
     }
-    hfc_node_id_local_var->hfc_n_id = hfc_n_id;
+    hfc_node_id_local_var->hfc_nid = hfc_nid;
 
     return hfc_node_id_local_var;
 }
@@ -23,7 +23,7 @@ void OpenAPI_hfc_node_id_free(OpenAPI_hfc_node_id_t *hfc_node_id)
         return;
     }
     OpenAPI_lnode_t *node;
-    ogs_free(hfc_node_id->hfc_n_id);
+    ogs_free(hfc_node_id->hfc_nid);
     ogs_free(hfc_node_id);
 }
 
@@ -37,8 +37,8 @@ cJSON *OpenAPI_hfc_node_id_convertToJSON(OpenAPI_hfc_node_id_t *hfc_node_id)
     }
 
     item = cJSON_CreateObject();
-    if (cJSON_AddStringToObject(item, "hfcNId", hfc_node_id->hfc_n_id) == NULL) {
-        ogs_error("OpenAPI_hfc_node_id_convertToJSON() failed [hfc_n_id]");
+    if (cJSON_AddStringToObject(item, "hfcNId", hfc_node_id->hfc_nid) == NULL) {
+        ogs_error("OpenAPI_hfc_node_id_convertToJSON() failed [hfc_nid]");
         goto end;
     }
 
@@ -49,21 +49,21 @@ end:
 OpenAPI_hfc_node_id_t *OpenAPI_hfc_node_id_parseFromJSON(cJSON *hfc_node_idJSON)
 {
     OpenAPI_hfc_node_id_t *hfc_node_id_local_var = NULL;
-    cJSON *hfc_n_id = cJSON_GetObjectItemCaseSensitive(hfc_node_idJSON, "hfcNId");
-    if (!hfc_n_id) {
-        ogs_error("OpenAPI_hfc_node_id_parseFromJSON() failed [hfc_n_id]");
+    cJSON *hfc_nid = cJSON_GetObjectItemCaseSensitive(hfc_node_idJSON, "hfcNId");
+    if (!hfc_nid) {
+        ogs_error("OpenAPI_hfc_node_id_parseFromJSON() failed [hfc_nid]");
         goto end;
     }
 
-
-    if (!cJSON_IsString(hfc_n_id)) {
-        ogs_error("OpenAPI_hfc_node_id_parseFromJSON() failed [hfc_n_id]");
+    
+    if (!cJSON_IsString(hfc_nid)) {
+        ogs_error("OpenAPI_hfc_node_id_parseFromJSON() failed [hfc_nid]");
         goto end;
     }
 
     hfc_node_id_local_var = OpenAPI_hfc_node_id_create (
-        ogs_strdup_or_assert(hfc_n_id->valuestring)
-        );
+        ogs_strdup_or_assert(hfc_nid->valuestring)
+    );
 
     return hfc_node_id_local_var;
 end:

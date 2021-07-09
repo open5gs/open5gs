@@ -11,7 +11,7 @@ OpenAPI_default_notification_subscription_t *OpenAPI_default_notification_subscr
     OpenAPI_n2_information_class_e n2_information_class,
     OpenAPI_list_t *versions,
     char *binding
-    )
+)
 {
     OpenAPI_default_notification_subscription_t *default_notification_subscription_local_var = OpenAPI_malloc(sizeof(OpenAPI_default_notification_subscription_t));
     if (!default_notification_subscription_local_var) {
@@ -63,40 +63,40 @@ cJSON *OpenAPI_default_notification_subscription_convertToJSON(OpenAPI_default_n
     }
 
     if (default_notification_subscription->n1_message_class) {
-        if (cJSON_AddStringToObject(item, "n1MessageClass", OpenAPI_n1_message_class_ToString(default_notification_subscription->n1_message_class)) == NULL) {
-            ogs_error("OpenAPI_default_notification_subscription_convertToJSON() failed [n1_message_class]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "n1MessageClass", OpenAPI_n1_message_class_ToString(default_notification_subscription->n1_message_class)) == NULL) {
+        ogs_error("OpenAPI_default_notification_subscription_convertToJSON() failed [n1_message_class]");
+        goto end;
+    }
     }
 
     if (default_notification_subscription->n2_information_class) {
-        if (cJSON_AddStringToObject(item, "n2InformationClass", OpenAPI_n2_information_class_ToString(default_notification_subscription->n2_information_class)) == NULL) {
-            ogs_error("OpenAPI_default_notification_subscription_convertToJSON() failed [n2_information_class]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "n2InformationClass", OpenAPI_n2_information_class_ToString(default_notification_subscription->n2_information_class)) == NULL) {
+        ogs_error("OpenAPI_default_notification_subscription_convertToJSON() failed [n2_information_class]");
+        goto end;
+    }
     }
 
     if (default_notification_subscription->versions) {
-        cJSON *versions = cJSON_AddArrayToObject(item, "versions");
-        if (versions == NULL) {
-            ogs_error("OpenAPI_default_notification_subscription_convertToJSON() failed [versions]");
-            goto end;
-        }
+    cJSON *versions = cJSON_AddArrayToObject(item, "versions");
+    if (versions == NULL) {
+        ogs_error("OpenAPI_default_notification_subscription_convertToJSON() failed [versions]");
+        goto end;
+    }
 
-        OpenAPI_lnode_t *versions_node;
-        OpenAPI_list_for_each(default_notification_subscription->versions, versions_node)  {
-            if (cJSON_AddStringToObject(versions, "", (char*)versions_node->data) == NULL) {
-                ogs_error("OpenAPI_default_notification_subscription_convertToJSON() failed [versions]");
-                goto end;
-            }
-        }
+    OpenAPI_lnode_t *versions_node;
+    OpenAPI_list_for_each(default_notification_subscription->versions, versions_node)  {
+    if (cJSON_AddStringToObject(versions, "", (char*)versions_node->data) == NULL) {
+        ogs_error("OpenAPI_default_notification_subscription_convertToJSON() failed [versions]");
+        goto end;
+    }
+                    }
     }
 
     if (default_notification_subscription->binding) {
-        if (cJSON_AddStringToObject(item, "binding", default_notification_subscription->binding) == NULL) {
-            ogs_error("OpenAPI_default_notification_subscription_convertToJSON() failed [binding]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "binding", default_notification_subscription->binding) == NULL) {
+        ogs_error("OpenAPI_default_notification_subscription_convertToJSON() failed [binding]");
+        goto end;
+    }
     }
 
 end:
@@ -113,7 +113,7 @@ OpenAPI_default_notification_subscription_t *OpenAPI_default_notification_subscr
     }
 
     OpenAPI_notification_type_e notification_typeVariable;
-
+    
     if (!cJSON_IsString(notification_type)) {
         ogs_error("OpenAPI_default_notification_subscription_parseFromJSON() failed [notification_type]");
         goto end;
@@ -126,7 +126,7 @@ OpenAPI_default_notification_subscription_t *OpenAPI_default_notification_subscr
         goto end;
     }
 
-
+    
     if (!cJSON_IsString(callback_uri)) {
         ogs_error("OpenAPI_default_notification_subscription_parseFromJSON() failed [callback_uri]");
         goto end;
@@ -135,52 +135,52 @@ OpenAPI_default_notification_subscription_t *OpenAPI_default_notification_subscr
     cJSON *n1_message_class = cJSON_GetObjectItemCaseSensitive(default_notification_subscriptionJSON, "n1MessageClass");
 
     OpenAPI_n1_message_class_e n1_message_classVariable;
-    if (n1_message_class) {
-        if (!cJSON_IsString(n1_message_class)) {
-            ogs_error("OpenAPI_default_notification_subscription_parseFromJSON() failed [n1_message_class]");
-            goto end;
-        }
-        n1_message_classVariable = OpenAPI_n1_message_class_FromString(n1_message_class->valuestring);
+    if (n1_message_class) { 
+    if (!cJSON_IsString(n1_message_class)) {
+        ogs_error("OpenAPI_default_notification_subscription_parseFromJSON() failed [n1_message_class]");
+        goto end;
+    }
+    n1_message_classVariable = OpenAPI_n1_message_class_FromString(n1_message_class->valuestring);
     }
 
     cJSON *n2_information_class = cJSON_GetObjectItemCaseSensitive(default_notification_subscriptionJSON, "n2InformationClass");
 
     OpenAPI_n2_information_class_e n2_information_classVariable;
-    if (n2_information_class) {
-        if (!cJSON_IsString(n2_information_class)) {
-            ogs_error("OpenAPI_default_notification_subscription_parseFromJSON() failed [n2_information_class]");
-            goto end;
-        }
-        n2_information_classVariable = OpenAPI_n2_information_class_FromString(n2_information_class->valuestring);
+    if (n2_information_class) { 
+    if (!cJSON_IsString(n2_information_class)) {
+        ogs_error("OpenAPI_default_notification_subscription_parseFromJSON() failed [n2_information_class]");
+        goto end;
+    }
+    n2_information_classVariable = OpenAPI_n2_information_class_FromString(n2_information_class->valuestring);
     }
 
     cJSON *versions = cJSON_GetObjectItemCaseSensitive(default_notification_subscriptionJSON, "versions");
 
     OpenAPI_list_t *versionsList;
-    if (versions) {
-        cJSON *versions_local;
-        if (!cJSON_IsArray(versions)) {
-            ogs_error("OpenAPI_default_notification_subscription_parseFromJSON() failed [versions]");
-            goto end;
-        }
-        versionsList = OpenAPI_list_create();
+    if (versions) { 
+    cJSON *versions_local;
+    if (!cJSON_IsArray(versions)) {
+        ogs_error("OpenAPI_default_notification_subscription_parseFromJSON() failed [versions]");
+        goto end;
+    }
+    versionsList = OpenAPI_list_create();
 
-        cJSON_ArrayForEach(versions_local, versions) {
-            if (!cJSON_IsString(versions_local)) {
-                ogs_error("OpenAPI_default_notification_subscription_parseFromJSON() failed [versions]");
-                goto end;
-            }
-            OpenAPI_list_add(versionsList, ogs_strdup_or_assert(versions_local->valuestring));
-        }
+    cJSON_ArrayForEach(versions_local, versions) {
+    if (!cJSON_IsString(versions_local)) {
+        ogs_error("OpenAPI_default_notification_subscription_parseFromJSON() failed [versions]");
+        goto end;
+    }
+    OpenAPI_list_add(versionsList , ogs_strdup_or_assert(versions_local->valuestring));
+                    }
     }
 
     cJSON *binding = cJSON_GetObjectItemCaseSensitive(default_notification_subscriptionJSON, "binding");
 
-    if (binding) {
-        if (!cJSON_IsString(binding)) {
-            ogs_error("OpenAPI_default_notification_subscription_parseFromJSON() failed [binding]");
-            goto end;
-        }
+    if (binding) { 
+    if (!cJSON_IsString(binding)) {
+        ogs_error("OpenAPI_default_notification_subscription_parseFromJSON() failed [binding]");
+        goto end;
+    }
     }
 
     default_notification_subscription_local_var = OpenAPI_default_notification_subscription_create (
@@ -190,7 +190,7 @@ OpenAPI_default_notification_subscription_t *OpenAPI_default_notification_subscr
         n2_information_class ? n2_information_classVariable : 0,
         versions ? versionsList : NULL,
         binding ? ogs_strdup_or_assert(binding->valuestring) : NULL
-        );
+    );
 
     return default_notification_subscription_local_var;
 end:

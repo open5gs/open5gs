@@ -10,7 +10,7 @@ OpenAPI_multicast_access_control_t *OpenAPI_multicast_access_control_create(
     char *multicast_v4_addr,
     char *multicast_v6_addr,
     OpenAPI_access_right_status_t *acc_status
-    )
+)
 {
     OpenAPI_multicast_access_control_t *multicast_access_control_local_var = OpenAPI_malloc(sizeof(OpenAPI_multicast_access_control_t));
     if (!multicast_access_control_local_var) {
@@ -50,31 +50,31 @@ cJSON *OpenAPI_multicast_access_control_convertToJSON(OpenAPI_multicast_access_c
 
     item = cJSON_CreateObject();
     if (multicast_access_control->src_ipv4_addr) {
-        if (cJSON_AddStringToObject(item, "srcIpv4Addr", multicast_access_control->src_ipv4_addr) == NULL) {
-            ogs_error("OpenAPI_multicast_access_control_convertToJSON() failed [src_ipv4_addr]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "srcIpv4Addr", multicast_access_control->src_ipv4_addr) == NULL) {
+        ogs_error("OpenAPI_multicast_access_control_convertToJSON() failed [src_ipv4_addr]");
+        goto end;
+    }
     }
 
     if (multicast_access_control->src_ipv6_addr) {
-        if (cJSON_AddStringToObject(item, "srcIpv6Addr", multicast_access_control->src_ipv6_addr) == NULL) {
-            ogs_error("OpenAPI_multicast_access_control_convertToJSON() failed [src_ipv6_addr]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "srcIpv6Addr", multicast_access_control->src_ipv6_addr) == NULL) {
+        ogs_error("OpenAPI_multicast_access_control_convertToJSON() failed [src_ipv6_addr]");
+        goto end;
+    }
     }
 
     if (multicast_access_control->multicast_v4_addr) {
-        if (cJSON_AddStringToObject(item, "multicastV4Addr", multicast_access_control->multicast_v4_addr) == NULL) {
-            ogs_error("OpenAPI_multicast_access_control_convertToJSON() failed [multicast_v4_addr]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "multicastV4Addr", multicast_access_control->multicast_v4_addr) == NULL) {
+        ogs_error("OpenAPI_multicast_access_control_convertToJSON() failed [multicast_v4_addr]");
+        goto end;
+    }
     }
 
     if (multicast_access_control->multicast_v6_addr) {
-        if (cJSON_AddStringToObject(item, "multicastV6Addr", multicast_access_control->multicast_v6_addr) == NULL) {
-            ogs_error("OpenAPI_multicast_access_control_convertToJSON() failed [multicast_v6_addr]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "multicastV6Addr", multicast_access_control->multicast_v6_addr) == NULL) {
+        ogs_error("OpenAPI_multicast_access_control_convertToJSON() failed [multicast_v6_addr]");
+        goto end;
+    }
     }
 
     cJSON *acc_status_local_JSON = OpenAPI_access_right_status_convertToJSON(multicast_access_control->acc_status);
@@ -97,38 +97,38 @@ OpenAPI_multicast_access_control_t *OpenAPI_multicast_access_control_parseFromJS
     OpenAPI_multicast_access_control_t *multicast_access_control_local_var = NULL;
     cJSON *src_ipv4_addr = cJSON_GetObjectItemCaseSensitive(multicast_access_controlJSON, "srcIpv4Addr");
 
-    if (src_ipv4_addr) {
-        if (!cJSON_IsString(src_ipv4_addr)) {
-            ogs_error("OpenAPI_multicast_access_control_parseFromJSON() failed [src_ipv4_addr]");
-            goto end;
-        }
+    if (src_ipv4_addr) { 
+    if (!cJSON_IsString(src_ipv4_addr)) {
+        ogs_error("OpenAPI_multicast_access_control_parseFromJSON() failed [src_ipv4_addr]");
+        goto end;
+    }
     }
 
     cJSON *src_ipv6_addr = cJSON_GetObjectItemCaseSensitive(multicast_access_controlJSON, "srcIpv6Addr");
 
-    if (src_ipv6_addr) {
-        if (!cJSON_IsString(src_ipv6_addr)) {
-            ogs_error("OpenAPI_multicast_access_control_parseFromJSON() failed [src_ipv6_addr]");
-            goto end;
-        }
+    if (src_ipv6_addr) { 
+    if (!cJSON_IsString(src_ipv6_addr)) {
+        ogs_error("OpenAPI_multicast_access_control_parseFromJSON() failed [src_ipv6_addr]");
+        goto end;
+    }
     }
 
     cJSON *multicast_v4_addr = cJSON_GetObjectItemCaseSensitive(multicast_access_controlJSON, "multicastV4Addr");
 
-    if (multicast_v4_addr) {
-        if (!cJSON_IsString(multicast_v4_addr)) {
-            ogs_error("OpenAPI_multicast_access_control_parseFromJSON() failed [multicast_v4_addr]");
-            goto end;
-        }
+    if (multicast_v4_addr) { 
+    if (!cJSON_IsString(multicast_v4_addr)) {
+        ogs_error("OpenAPI_multicast_access_control_parseFromJSON() failed [multicast_v4_addr]");
+        goto end;
+    }
     }
 
     cJSON *multicast_v6_addr = cJSON_GetObjectItemCaseSensitive(multicast_access_controlJSON, "multicastV6Addr");
 
-    if (multicast_v6_addr) {
-        if (!cJSON_IsString(multicast_v6_addr)) {
-            ogs_error("OpenAPI_multicast_access_control_parseFromJSON() failed [multicast_v6_addr]");
-            goto end;
-        }
+    if (multicast_v6_addr) { 
+    if (!cJSON_IsString(multicast_v6_addr)) {
+        ogs_error("OpenAPI_multicast_access_control_parseFromJSON() failed [multicast_v6_addr]");
+        goto end;
+    }
     }
 
     cJSON *acc_status = cJSON_GetObjectItemCaseSensitive(multicast_access_controlJSON, "accStatus");
@@ -138,7 +138,7 @@ OpenAPI_multicast_access_control_t *OpenAPI_multicast_access_control_parseFromJS
     }
 
     OpenAPI_access_right_status_t *acc_status_local_nonprim = NULL;
-
+    
     acc_status_local_nonprim = OpenAPI_access_right_status_parseFromJSON(acc_status);
 
     multicast_access_control_local_var = OpenAPI_multicast_access_control_create (
@@ -147,7 +147,7 @@ OpenAPI_multicast_access_control_t *OpenAPI_multicast_access_control_parseFromJS
         multicast_v4_addr ? ogs_strdup_or_assert(multicast_v4_addr->valuestring) : NULL,
         multicast_v6_addr ? ogs_strdup_or_assert(multicast_v6_addr->valuestring) : NULL,
         acc_status_local_nonprim
-        );
+    );
 
     return multicast_access_control_local_var;
 end:

@@ -1,7 +1,7 @@
 /*
  * context_data_sets.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_context_data_sets_H_
@@ -48,7 +48,7 @@ OpenAPI_context_data_sets_t *OpenAPI_context_data_sets_create(
     OpenAPI_list_t *subscription_data_subscriptions,
     OpenAPI_list_t *smf_registrations,
     OpenAPI_ip_sm_gw_registration_t *ip_sm_gw
-    );
+);
 void OpenAPI_context_data_sets_free(OpenAPI_context_data_sets_t *context_data_sets);
 OpenAPI_context_data_sets_t *OpenAPI_context_data_sets_parseFromJSON(cJSON *context_data_setsJSON);
 cJSON *OpenAPI_context_data_sets_convertToJSON(OpenAPI_context_data_sets_t *context_data_sets);

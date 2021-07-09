@@ -1,7 +1,7 @@
 /*
  * pdu_session_management_data.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_pdu_session_management_data_H_
@@ -35,6 +35,7 @@ typedef struct OpenAPI_pdu_session_management_data_s {
     char *ip_addr_ts;
     char *dnn;
     int pdu_session_id;
+    char *supp_feat;
 } OpenAPI_pdu_session_management_data_t;
 
 OpenAPI_pdu_session_management_data_t *OpenAPI_pdu_session_management_data_create(
@@ -50,8 +51,9 @@ OpenAPI_pdu_session_management_data_t *OpenAPI_pdu_session_management_data_creat
     OpenAPI_pdu_session_type_e pdu_sess_type,
     char *ip_addr_ts,
     char *dnn,
-    int pdu_session_id
-    );
+    int pdu_session_id,
+    char *supp_feat
+);
 void OpenAPI_pdu_session_management_data_free(OpenAPI_pdu_session_management_data_t *pdu_session_management_data);
 OpenAPI_pdu_session_management_data_t *OpenAPI_pdu_session_management_data_parseFromJSON(cJSON *pdu_session_management_dataJSON);
 cJSON *OpenAPI_pdu_session_management_data_convertToJSON(OpenAPI_pdu_session_management_data_t *pdu_session_management_data);

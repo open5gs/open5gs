@@ -31,7 +31,7 @@ OpenAPI_ip_end_point_t *OpenAPI_ip_end_point_create(
     char *ipv6_address,
     OpenAPI_transport_protocol_e transport,
     int port
-    );
+);
 void OpenAPI_ip_end_point_free(OpenAPI_ip_end_point_t *ip_end_point);
 OpenAPI_ip_end_point_t *OpenAPI_ip_end_point_parseFromJSON(cJSON *ip_end_pointJSON);
 cJSON *OpenAPI_ip_end_point_convertToJSON(OpenAPI_ip_end_point_t *ip_end_point);

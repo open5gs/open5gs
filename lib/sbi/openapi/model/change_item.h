@@ -1,7 +1,7 @@
 /*
  * change_item.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_change_item_H_
@@ -33,7 +33,7 @@ OpenAPI_change_item_t *OpenAPI_change_item_create(
     char *from,
     char *orig_value,
     char *new_value
-    );
+);
 void OpenAPI_change_item_free(OpenAPI_change_item_t *change_item);
 OpenAPI_change_item_t *OpenAPI_change_item_parseFromJSON(cJSON *change_itemJSON);
 cJSON *OpenAPI_change_item_convertToJSON(OpenAPI_change_item_t *change_item);

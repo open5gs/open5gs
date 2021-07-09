@@ -30,7 +30,7 @@ OpenAPI_app_session_context_resp_data_t *OpenAPI_app_session_context_resp_data_c
     OpenAPI_serv_auth_info_e serv_auth_info,
     OpenAPI_list_t *ue_ids,
     char *supp_feat
-    );
+);
 void OpenAPI_app_session_context_resp_data_free(OpenAPI_app_session_context_resp_data_t *app_session_context_resp_data);
 OpenAPI_app_session_context_resp_data_t *OpenAPI_app_session_context_resp_data_parseFromJSON(cJSON *app_session_context_resp_dataJSON);
 cJSON *OpenAPI_app_session_context_resp_data_convertToJSON(OpenAPI_app_session_context_resp_data_t *app_session_context_resp_data);

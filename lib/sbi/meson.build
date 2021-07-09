@@ -20,6 +20,7 @@ subdir('openapi')
 libsbi_sources = files('''
     contrib/multipart_parser.c
     custom/links.c
+    custom/ue_authentication_ctx.c
 
     yuarel.c
     conv.c

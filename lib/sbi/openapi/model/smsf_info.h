@@ -1,7 +1,7 @@
 /*
  * smsf_info.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_smsf_info_H_
@@ -27,7 +27,7 @@ typedef struct OpenAPI_smsf_info_s {
 OpenAPI_smsf_info_t *OpenAPI_smsf_info_create(
     char *smsf_instance_id,
     OpenAPI_plmn_id_t *plmn_id
-    );
+);
 void OpenAPI_smsf_info_free(OpenAPI_smsf_info_t *smsf_info);
 OpenAPI_smsf_info_t *OpenAPI_smsf_info_parseFromJSON(cJSON *smsf_infoJSON);
 cJSON *OpenAPI_smsf_info_convertToJSON(OpenAPI_smsf_info_t *smsf_info);

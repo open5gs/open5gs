@@ -10,7 +10,7 @@ OpenAPI_pfd_content_t *OpenAPI_pfd_content_create(
     OpenAPI_list_t *urls,
     OpenAPI_list_t *domain_names,
     OpenAPI_domain_name_protocol_t *dn_protocol
-    )
+)
 {
     OpenAPI_pfd_content_t *pfd_content_local_var = OpenAPI_malloc(sizeof(OpenAPI_pfd_content_t));
     if (!pfd_content_local_var) {
@@ -59,71 +59,71 @@ cJSON *OpenAPI_pfd_content_convertToJSON(OpenAPI_pfd_content_t *pfd_content)
 
     item = cJSON_CreateObject();
     if (pfd_content->pfd_id) {
-        if (cJSON_AddStringToObject(item, "pfdId", pfd_content->pfd_id) == NULL) {
-            ogs_error("OpenAPI_pfd_content_convertToJSON() failed [pfd_id]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "pfdId", pfd_content->pfd_id) == NULL) {
+        ogs_error("OpenAPI_pfd_content_convertToJSON() failed [pfd_id]");
+        goto end;
+    }
     }
 
     if (pfd_content->flow_descriptions) {
-        cJSON *flow_descriptions = cJSON_AddArrayToObject(item, "flowDescriptions");
-        if (flow_descriptions == NULL) {
-            ogs_error("OpenAPI_pfd_content_convertToJSON() failed [flow_descriptions]");
-            goto end;
-        }
+    cJSON *flow_descriptions = cJSON_AddArrayToObject(item, "flowDescriptions");
+    if (flow_descriptions == NULL) {
+        ogs_error("OpenAPI_pfd_content_convertToJSON() failed [flow_descriptions]");
+        goto end;
+    }
 
-        OpenAPI_lnode_t *flow_descriptions_node;
-        OpenAPI_list_for_each(pfd_content->flow_descriptions, flow_descriptions_node)  {
-            if (cJSON_AddStringToObject(flow_descriptions, "", (char*)flow_descriptions_node->data) == NULL) {
-                ogs_error("OpenAPI_pfd_content_convertToJSON() failed [flow_descriptions]");
-                goto end;
-            }
-        }
+    OpenAPI_lnode_t *flow_descriptions_node;
+    OpenAPI_list_for_each(pfd_content->flow_descriptions, flow_descriptions_node)  {
+    if (cJSON_AddStringToObject(flow_descriptions, "", (char*)flow_descriptions_node->data) == NULL) {
+        ogs_error("OpenAPI_pfd_content_convertToJSON() failed [flow_descriptions]");
+        goto end;
+    }
+                    }
     }
 
     if (pfd_content->urls) {
-        cJSON *urls = cJSON_AddArrayToObject(item, "urls");
-        if (urls == NULL) {
-            ogs_error("OpenAPI_pfd_content_convertToJSON() failed [urls]");
-            goto end;
-        }
+    cJSON *urls = cJSON_AddArrayToObject(item, "urls");
+    if (urls == NULL) {
+        ogs_error("OpenAPI_pfd_content_convertToJSON() failed [urls]");
+        goto end;
+    }
 
-        OpenAPI_lnode_t *urls_node;
-        OpenAPI_list_for_each(pfd_content->urls, urls_node)  {
-            if (cJSON_AddStringToObject(urls, "", (char*)urls_node->data) == NULL) {
-                ogs_error("OpenAPI_pfd_content_convertToJSON() failed [urls]");
-                goto end;
-            }
-        }
+    OpenAPI_lnode_t *urls_node;
+    OpenAPI_list_for_each(pfd_content->urls, urls_node)  {
+    if (cJSON_AddStringToObject(urls, "", (char*)urls_node->data) == NULL) {
+        ogs_error("OpenAPI_pfd_content_convertToJSON() failed [urls]");
+        goto end;
+    }
+                    }
     }
 
     if (pfd_content->domain_names) {
-        cJSON *domain_names = cJSON_AddArrayToObject(item, "domainNames");
-        if (domain_names == NULL) {
-            ogs_error("OpenAPI_pfd_content_convertToJSON() failed [domain_names]");
-            goto end;
-        }
+    cJSON *domain_names = cJSON_AddArrayToObject(item, "domainNames");
+    if (domain_names == NULL) {
+        ogs_error("OpenAPI_pfd_content_convertToJSON() failed [domain_names]");
+        goto end;
+    }
 
-        OpenAPI_lnode_t *domain_names_node;
-        OpenAPI_list_for_each(pfd_content->domain_names, domain_names_node)  {
-            if (cJSON_AddStringToObject(domain_names, "", (char*)domain_names_node->data) == NULL) {
-                ogs_error("OpenAPI_pfd_content_convertToJSON() failed [domain_names]");
-                goto end;
-            }
-        }
+    OpenAPI_lnode_t *domain_names_node;
+    OpenAPI_list_for_each(pfd_content->domain_names, domain_names_node)  {
+    if (cJSON_AddStringToObject(domain_names, "", (char*)domain_names_node->data) == NULL) {
+        ogs_error("OpenAPI_pfd_content_convertToJSON() failed [domain_names]");
+        goto end;
+    }
+                    }
     }
 
     if (pfd_content->dn_protocol) {
-        cJSON *dn_protocol_local_JSON = OpenAPI_domain_name_protocol_convertToJSON(pfd_content->dn_protocol);
-        if (dn_protocol_local_JSON == NULL) {
-            ogs_error("OpenAPI_pfd_content_convertToJSON() failed [dn_protocol]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "dnProtocol", dn_protocol_local_JSON);
-        if (item->child == NULL) {
-            ogs_error("OpenAPI_pfd_content_convertToJSON() failed [dn_protocol]");
-            goto end;
-        }
+    cJSON *dn_protocol_local_JSON = OpenAPI_domain_name_protocol_convertToJSON(pfd_content->dn_protocol);
+    if (dn_protocol_local_JSON == NULL) {
+        ogs_error("OpenAPI_pfd_content_convertToJSON() failed [dn_protocol]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "dnProtocol", dn_protocol_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_pfd_content_convertToJSON() failed [dn_protocol]");
+        goto end;
+    }
     }
 
 end:
@@ -135,78 +135,78 @@ OpenAPI_pfd_content_t *OpenAPI_pfd_content_parseFromJSON(cJSON *pfd_contentJSON)
     OpenAPI_pfd_content_t *pfd_content_local_var = NULL;
     cJSON *pfd_id = cJSON_GetObjectItemCaseSensitive(pfd_contentJSON, "pfdId");
 
-    if (pfd_id) {
-        if (!cJSON_IsString(pfd_id)) {
-            ogs_error("OpenAPI_pfd_content_parseFromJSON() failed [pfd_id]");
-            goto end;
-        }
+    if (pfd_id) { 
+    if (!cJSON_IsString(pfd_id)) {
+        ogs_error("OpenAPI_pfd_content_parseFromJSON() failed [pfd_id]");
+        goto end;
+    }
     }
 
     cJSON *flow_descriptions = cJSON_GetObjectItemCaseSensitive(pfd_contentJSON, "flowDescriptions");
 
     OpenAPI_list_t *flow_descriptionsList;
-    if (flow_descriptions) {
-        cJSON *flow_descriptions_local;
-        if (!cJSON_IsArray(flow_descriptions)) {
-            ogs_error("OpenAPI_pfd_content_parseFromJSON() failed [flow_descriptions]");
-            goto end;
-        }
-        flow_descriptionsList = OpenAPI_list_create();
+    if (flow_descriptions) { 
+    cJSON *flow_descriptions_local;
+    if (!cJSON_IsArray(flow_descriptions)) {
+        ogs_error("OpenAPI_pfd_content_parseFromJSON() failed [flow_descriptions]");
+        goto end;
+    }
+    flow_descriptionsList = OpenAPI_list_create();
 
-        cJSON_ArrayForEach(flow_descriptions_local, flow_descriptions) {
-            if (!cJSON_IsString(flow_descriptions_local)) {
-                ogs_error("OpenAPI_pfd_content_parseFromJSON() failed [flow_descriptions]");
-                goto end;
-            }
-            OpenAPI_list_add(flow_descriptionsList, ogs_strdup_or_assert(flow_descriptions_local->valuestring));
-        }
+    cJSON_ArrayForEach(flow_descriptions_local, flow_descriptions) {
+    if (!cJSON_IsString(flow_descriptions_local)) {
+        ogs_error("OpenAPI_pfd_content_parseFromJSON() failed [flow_descriptions]");
+        goto end;
+    }
+    OpenAPI_list_add(flow_descriptionsList , ogs_strdup_or_assert(flow_descriptions_local->valuestring));
+                    }
     }
 
     cJSON *urls = cJSON_GetObjectItemCaseSensitive(pfd_contentJSON, "urls");
 
     OpenAPI_list_t *urlsList;
-    if (urls) {
-        cJSON *urls_local;
-        if (!cJSON_IsArray(urls)) {
-            ogs_error("OpenAPI_pfd_content_parseFromJSON() failed [urls]");
-            goto end;
-        }
-        urlsList = OpenAPI_list_create();
+    if (urls) { 
+    cJSON *urls_local;
+    if (!cJSON_IsArray(urls)) {
+        ogs_error("OpenAPI_pfd_content_parseFromJSON() failed [urls]");
+        goto end;
+    }
+    urlsList = OpenAPI_list_create();
 
-        cJSON_ArrayForEach(urls_local, urls) {
-            if (!cJSON_IsString(urls_local)) {
-                ogs_error("OpenAPI_pfd_content_parseFromJSON() failed [urls]");
-                goto end;
-            }
-            OpenAPI_list_add(urlsList, ogs_strdup_or_assert(urls_local->valuestring));
-        }
+    cJSON_ArrayForEach(urls_local, urls) {
+    if (!cJSON_IsString(urls_local)) {
+        ogs_error("OpenAPI_pfd_content_parseFromJSON() failed [urls]");
+        goto end;
+    }
+    OpenAPI_list_add(urlsList , ogs_strdup_or_assert(urls_local->valuestring));
+                    }
     }
 
     cJSON *domain_names = cJSON_GetObjectItemCaseSensitive(pfd_contentJSON, "domainNames");
 
     OpenAPI_list_t *domain_namesList;
-    if (domain_names) {
-        cJSON *domain_names_local;
-        if (!cJSON_IsArray(domain_names)) {
-            ogs_error("OpenAPI_pfd_content_parseFromJSON() failed [domain_names]");
-            goto end;
-        }
-        domain_namesList = OpenAPI_list_create();
+    if (domain_names) { 
+    cJSON *domain_names_local;
+    if (!cJSON_IsArray(domain_names)) {
+        ogs_error("OpenAPI_pfd_content_parseFromJSON() failed [domain_names]");
+        goto end;
+    }
+    domain_namesList = OpenAPI_list_create();
 
-        cJSON_ArrayForEach(domain_names_local, domain_names) {
-            if (!cJSON_IsString(domain_names_local)) {
-                ogs_error("OpenAPI_pfd_content_parseFromJSON() failed [domain_names]");
-                goto end;
-            }
-            OpenAPI_list_add(domain_namesList, ogs_strdup_or_assert(domain_names_local->valuestring));
-        }
+    cJSON_ArrayForEach(domain_names_local, domain_names) {
+    if (!cJSON_IsString(domain_names_local)) {
+        ogs_error("OpenAPI_pfd_content_parseFromJSON() failed [domain_names]");
+        goto end;
+    }
+    OpenAPI_list_add(domain_namesList , ogs_strdup_or_assert(domain_names_local->valuestring));
+                    }
     }
 
     cJSON *dn_protocol = cJSON_GetObjectItemCaseSensitive(pfd_contentJSON, "dnProtocol");
 
     OpenAPI_domain_name_protocol_t *dn_protocol_local_nonprim = NULL;
-    if (dn_protocol) {
-        dn_protocol_local_nonprim = OpenAPI_domain_name_protocol_parseFromJSON(dn_protocol);
+    if (dn_protocol) { 
+    dn_protocol_local_nonprim = OpenAPI_domain_name_protocol_parseFromJSON(dn_protocol);
     }
 
     pfd_content_local_var = OpenAPI_pfd_content_create (
@@ -215,7 +215,7 @@ OpenAPI_pfd_content_t *OpenAPI_pfd_content_parseFromJSON(cJSON *pfd_contentJSON)
         urls ? urlsList : NULL,
         domain_names ? domain_namesList : NULL,
         dn_protocol ? dn_protocol_local_nonprim : NULL
-        );
+    );
 
     return pfd_content_local_var;
 end:

@@ -5,7 +5,7 @@
 #include "data_ind.h"
 
 OpenAPI_data_ind_t *OpenAPI_data_ind_create(
-    )
+)
 {
     OpenAPI_data_ind_t *data_ind_local_var = OpenAPI_malloc(sizeof(OpenAPI_data_ind_t));
     if (!data_ind_local_var) {
@@ -42,7 +42,7 @@ OpenAPI_data_ind_t *OpenAPI_data_ind_parseFromJSON(cJSON *data_indJSON)
 {
     OpenAPI_data_ind_t *data_ind_local_var = NULL;
     data_ind_local_var = OpenAPI_data_ind_create (
-        );
+    );
 
     return data_ind_local_var;
 end:

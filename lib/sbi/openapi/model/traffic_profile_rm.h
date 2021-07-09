@@ -1,7 +1,7 @@
 /*
  * traffic_profile_rm.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_traffic_profile_rm_H_
@@ -24,7 +24,7 @@ typedef struct OpenAPI_traffic_profile_rm_s {
 } OpenAPI_traffic_profile_rm_t;
 
 OpenAPI_traffic_profile_rm_t *OpenAPI_traffic_profile_rm_create(
-    );
+);
 void OpenAPI_traffic_profile_rm_free(OpenAPI_traffic_profile_rm_t *traffic_profile_rm);
 OpenAPI_traffic_profile_rm_t *OpenAPI_traffic_profile_rm_parseFromJSON(cJSON *traffic_profile_rmJSON);
 cJSON *OpenAPI_traffic_profile_rm_convertToJSON(OpenAPI_traffic_profile_rm_t *traffic_profile_rm);

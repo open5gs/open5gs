@@ -6,7 +6,7 @@
 
 OpenAPI_pdu_session_status_cfg_t *OpenAPI_pdu_session_status_cfg_create(
     char *dnn
-    )
+)
 {
     OpenAPI_pdu_session_status_cfg_t *pdu_session_status_cfg_local_var = OpenAPI_malloc(sizeof(OpenAPI_pdu_session_status_cfg_t));
     if (!pdu_session_status_cfg_local_var) {
@@ -38,10 +38,10 @@ cJSON *OpenAPI_pdu_session_status_cfg_convertToJSON(OpenAPI_pdu_session_status_c
 
     item = cJSON_CreateObject();
     if (pdu_session_status_cfg->dnn) {
-        if (cJSON_AddStringToObject(item, "dnn", pdu_session_status_cfg->dnn) == NULL) {
-            ogs_error("OpenAPI_pdu_session_status_cfg_convertToJSON() failed [dnn]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "dnn", pdu_session_status_cfg->dnn) == NULL) {
+        ogs_error("OpenAPI_pdu_session_status_cfg_convertToJSON() failed [dnn]");
+        goto end;
+    }
     }
 
 end:
@@ -53,16 +53,16 @@ OpenAPI_pdu_session_status_cfg_t *OpenAPI_pdu_session_status_cfg_parseFromJSON(c
     OpenAPI_pdu_session_status_cfg_t *pdu_session_status_cfg_local_var = NULL;
     cJSON *dnn = cJSON_GetObjectItemCaseSensitive(pdu_session_status_cfgJSON, "dnn");
 
-    if (dnn) {
-        if (!cJSON_IsString(dnn)) {
-            ogs_error("OpenAPI_pdu_session_status_cfg_parseFromJSON() failed [dnn]");
-            goto end;
-        }
+    if (dnn) { 
+    if (!cJSON_IsString(dnn)) {
+        ogs_error("OpenAPI_pdu_session_status_cfg_parseFromJSON() failed [dnn]");
+        goto end;
+    }
     }
 
     pdu_session_status_cfg_local_var = OpenAPI_pdu_session_status_cfg_create (
         dnn ? ogs_strdup_or_assert(dnn->valuestring) : NULL
-        );
+    );
 
     return pdu_session_status_cfg_local_var;
 end:

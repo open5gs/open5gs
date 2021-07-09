@@ -1,7 +1,7 @@
 /*
  * cm_info.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_cm_info_H_
@@ -28,7 +28,7 @@ typedef struct OpenAPI_cm_info_s {
 OpenAPI_cm_info_t *OpenAPI_cm_info_create(
     OpenAPI_cm_state_t *cm_state,
     OpenAPI_access_type_e access_type
-    );
+);
 void OpenAPI_cm_info_free(OpenAPI_cm_info_t *cm_info);
 OpenAPI_cm_info_t *OpenAPI_cm_info_parseFromJSON(cJSON *cm_infoJSON);
 cJSON *OpenAPI_cm_info_convertToJSON(OpenAPI_cm_info_t *cm_info);

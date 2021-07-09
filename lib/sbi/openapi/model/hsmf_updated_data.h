@@ -1,7 +1,7 @@
 /*
  * hsmf_updated_data.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_hsmf_updated_data_H_
@@ -12,8 +12,12 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+#include "ambr.h"
+#include "eps_bearer_info.h"
+#include "eps_pdn_cnx_info.h"
 #include "max_integrity_protected_data_rate.h"
 #include "n4_information.h"
+#include "qos_flow_setup_item.h"
 #include "ref_to_binary_data.h"
 #include "roaming_charging_profile.h"
 #include "up_security.h"
@@ -35,6 +39,11 @@ typedef struct OpenAPI_hsmf_updated_data_s {
     OpenAPI_max_integrity_protected_data_rate_e max_integrity_protected_data_rate_ul;
     OpenAPI_max_integrity_protected_data_rate_e max_integrity_protected_data_rate_dl;
     int ipv6_multi_homing_ind;
+    OpenAPI_list_t *qos_flows_setup_list;
+    struct OpenAPI_ambr_s *session_ambr;
+    struct OpenAPI_eps_pdn_cnx_info_s *eps_pdn_cnx_info;
+    OpenAPI_list_t *eps_bearer_info;
+    int pti;
 } OpenAPI_hsmf_updated_data_t;
 
 OpenAPI_hsmf_updated_data_t *OpenAPI_hsmf_updated_data_create(
@@ -48,8 +57,13 @@ OpenAPI_hsmf_updated_data_t *OpenAPI_hsmf_updated_data_create(
     OpenAPI_up_security_t *up_security,
     OpenAPI_max_integrity_protected_data_rate_e max_integrity_protected_data_rate_ul,
     OpenAPI_max_integrity_protected_data_rate_e max_integrity_protected_data_rate_dl,
-    int ipv6_multi_homing_ind
-    );
+    int ipv6_multi_homing_ind,
+    OpenAPI_list_t *qos_flows_setup_list,
+    OpenAPI_ambr_t *session_ambr,
+    OpenAPI_eps_pdn_cnx_info_t *eps_pdn_cnx_info,
+    OpenAPI_list_t *eps_bearer_info,
+    int pti
+);
 void OpenAPI_hsmf_updated_data_free(OpenAPI_hsmf_updated_data_t *hsmf_updated_data);
 OpenAPI_hsmf_updated_data_t *OpenAPI_hsmf_updated_data_parseFromJSON(cJSON *hsmf_updated_dataJSON);
 cJSON *OpenAPI_hsmf_updated_data_convertToJSON(OpenAPI_hsmf_updated_data_t *hsmf_updated_data);

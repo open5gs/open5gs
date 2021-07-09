@@ -8,7 +8,7 @@ OpenAPI_app_detection_info_t *OpenAPI_app_detection_info_create(
     char *app_id,
     char *instance_id,
     OpenAPI_list_t *sdf_descriptions
-    )
+)
 {
     OpenAPI_app_detection_info_t *app_detection_info_local_var = OpenAPI_malloc(sizeof(OpenAPI_app_detection_info_t));
     if (!app_detection_info_local_var) {
@@ -52,30 +52,30 @@ cJSON *OpenAPI_app_detection_info_convertToJSON(OpenAPI_app_detection_info_t *ap
     }
 
     if (app_detection_info->instance_id) {
-        if (cJSON_AddStringToObject(item, "instanceId", app_detection_info->instance_id) == NULL) {
-            ogs_error("OpenAPI_app_detection_info_convertToJSON() failed [instance_id]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "instanceId", app_detection_info->instance_id) == NULL) {
+        ogs_error("OpenAPI_app_detection_info_convertToJSON() failed [instance_id]");
+        goto end;
+    }
     }
 
     if (app_detection_info->sdf_descriptions) {
-        cJSON *sdf_descriptionsList = cJSON_AddArrayToObject(item, "sdfDescriptions");
-        if (sdf_descriptionsList == NULL) {
-            ogs_error("OpenAPI_app_detection_info_convertToJSON() failed [sdf_descriptions]");
-            goto end;
-        }
+    cJSON *sdf_descriptionsList = cJSON_AddArrayToObject(item, "sdfDescriptions");
+    if (sdf_descriptionsList == NULL) {
+        ogs_error("OpenAPI_app_detection_info_convertToJSON() failed [sdf_descriptions]");
+        goto end;
+    }
 
-        OpenAPI_lnode_t *sdf_descriptions_node;
-        if (app_detection_info->sdf_descriptions) {
-            OpenAPI_list_for_each(app_detection_info->sdf_descriptions, sdf_descriptions_node) {
-                cJSON *itemLocal = OpenAPI_flow_information_convertToJSON(sdf_descriptions_node->data);
-                if (itemLocal == NULL) {
-                    ogs_error("OpenAPI_app_detection_info_convertToJSON() failed [sdf_descriptions]");
-                    goto end;
-                }
-                cJSON_AddItemToArray(sdf_descriptionsList, itemLocal);
+    OpenAPI_lnode_t *sdf_descriptions_node;
+    if (app_detection_info->sdf_descriptions) {
+        OpenAPI_list_for_each(app_detection_info->sdf_descriptions, sdf_descriptions_node) {
+            cJSON *itemLocal = OpenAPI_flow_information_convertToJSON(sdf_descriptions_node->data);
+            if (itemLocal == NULL) {
+                ogs_error("OpenAPI_app_detection_info_convertToJSON() failed [sdf_descriptions]");
+                goto end;
             }
+            cJSON_AddItemToArray(sdf_descriptionsList, itemLocal);
         }
+    }
     }
 
 end:
@@ -91,7 +91,7 @@ OpenAPI_app_detection_info_t *OpenAPI_app_detection_info_parseFromJSON(cJSON *ap
         goto end;
     }
 
-
+    
     if (!cJSON_IsString(app_id)) {
         ogs_error("OpenAPI_app_detection_info_parseFromJSON() failed [app_id]");
         goto end;
@@ -99,41 +99,41 @@ OpenAPI_app_detection_info_t *OpenAPI_app_detection_info_parseFromJSON(cJSON *ap
 
     cJSON *instance_id = cJSON_GetObjectItemCaseSensitive(app_detection_infoJSON, "instanceId");
 
-    if (instance_id) {
-        if (!cJSON_IsString(instance_id)) {
-            ogs_error("OpenAPI_app_detection_info_parseFromJSON() failed [instance_id]");
-            goto end;
-        }
+    if (instance_id) { 
+    if (!cJSON_IsString(instance_id)) {
+        ogs_error("OpenAPI_app_detection_info_parseFromJSON() failed [instance_id]");
+        goto end;
+    }
     }
 
     cJSON *sdf_descriptions = cJSON_GetObjectItemCaseSensitive(app_detection_infoJSON, "sdfDescriptions");
 
     OpenAPI_list_t *sdf_descriptionsList;
-    if (sdf_descriptions) {
-        cJSON *sdf_descriptions_local_nonprimitive;
-        if (!cJSON_IsArray(sdf_descriptions)) {
+    if (sdf_descriptions) { 
+    cJSON *sdf_descriptions_local_nonprimitive;
+    if (!cJSON_IsArray(sdf_descriptions)){
+        ogs_error("OpenAPI_app_detection_info_parseFromJSON() failed [sdf_descriptions]");
+        goto end;
+    }
+
+    sdf_descriptionsList = OpenAPI_list_create();
+
+    cJSON_ArrayForEach(sdf_descriptions_local_nonprimitive, sdf_descriptions ) {
+        if (!cJSON_IsObject(sdf_descriptions_local_nonprimitive)) {
             ogs_error("OpenAPI_app_detection_info_parseFromJSON() failed [sdf_descriptions]");
             goto end;
         }
+        OpenAPI_flow_information_t *sdf_descriptionsItem = OpenAPI_flow_information_parseFromJSON(sdf_descriptions_local_nonprimitive);
 
-        sdf_descriptionsList = OpenAPI_list_create();
-
-        cJSON_ArrayForEach(sdf_descriptions_local_nonprimitive, sdf_descriptions ) {
-            if (!cJSON_IsObject(sdf_descriptions_local_nonprimitive)) {
-                ogs_error("OpenAPI_app_detection_info_parseFromJSON() failed [sdf_descriptions]");
-                goto end;
-            }
-            OpenAPI_flow_information_t *sdf_descriptionsItem = OpenAPI_flow_information_parseFromJSON(sdf_descriptions_local_nonprimitive);
-
-            OpenAPI_list_add(sdf_descriptionsList, sdf_descriptionsItem);
-        }
+        OpenAPI_list_add(sdf_descriptionsList, sdf_descriptionsItem);
+    }
     }
 
     app_detection_info_local_var = OpenAPI_app_detection_info_create (
         ogs_strdup_or_assert(app_id->valuestring),
         instance_id ? ogs_strdup_or_assert(instance_id->valuestring) : NULL,
         sdf_descriptions ? sdf_descriptionsList : NULL
-        );
+    );
 
     return app_detection_info_local_var;
 end:

@@ -1,7 +1,7 @@
 /*
  * nsi_information.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_nsi_information_H_
@@ -30,7 +30,7 @@ OpenAPI_nsi_information_t *OpenAPI_nsi_information_create(
     char *nsi_id,
     char *nrf_nf_mgt_uri,
     char *nrf_access_token_uri
-    );
+);
 void OpenAPI_nsi_information_free(OpenAPI_nsi_information_t *nsi_information);
 OpenAPI_nsi_information_t *OpenAPI_nsi_information_parseFromJSON(cJSON *nsi_informationJSON);
 cJSON *OpenAPI_nsi_information_convertToJSON(OpenAPI_nsi_information_t *nsi_information);

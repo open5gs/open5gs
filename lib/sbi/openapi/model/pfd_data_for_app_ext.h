@@ -1,7 +1,7 @@
 /*
  * pfd_data_for_app_ext.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_pfd_data_for_app_ext_H_
@@ -33,7 +33,7 @@ OpenAPI_pfd_data_for_app_ext_t *OpenAPI_pfd_data_for_app_ext_create(
     OpenAPI_list_t *pfds,
     char *caching_time,
     char *supp_feat
-    );
+);
 void OpenAPI_pfd_data_for_app_ext_free(OpenAPI_pfd_data_for_app_ext_t *pfd_data_for_app_ext);
 OpenAPI_pfd_data_for_app_ext_t *OpenAPI_pfd_data_for_app_ext_parseFromJSON(cJSON *pfd_data_for_app_extJSON);
 cJSON *OpenAPI_pfd_data_for_app_ext_convertToJSON(OpenAPI_pfd_data_for_app_ext_t *pfd_data_for_app_ext);

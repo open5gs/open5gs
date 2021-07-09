@@ -1,7 +1,7 @@
 /*
  * logging_interval_nr_mdt.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_logging_interval_nr_mdt_H_

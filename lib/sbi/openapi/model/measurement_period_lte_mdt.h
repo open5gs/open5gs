@@ -1,7 +1,7 @@
 /*
  * measurement_period_lte_mdt.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_measurement_period_lte_mdt_H_

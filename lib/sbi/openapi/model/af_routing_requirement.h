@@ -38,7 +38,7 @@ OpenAPI_af_routing_requirement_t *OpenAPI_af_routing_requirement_create(
     OpenAPI_list_t *temp_vals,
     OpenAPI_up_path_chg_event_t *up_path_chg_sub,
     int addr_preser_ind
-    );
+);
 void OpenAPI_af_routing_requirement_free(OpenAPI_af_routing_requirement_t *af_routing_requirement);
 OpenAPI_af_routing_requirement_t *OpenAPI_af_routing_requirement_parseFromJSON(cJSON *af_routing_requirementJSON);
 cJSON *OpenAPI_af_routing_requirement_convertToJSON(OpenAPI_af_routing_requirement_t *af_routing_requirement);

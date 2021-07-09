@@ -30,7 +30,7 @@ OpenAPI_plmn_snssai_t *OpenAPI_plmn_snssai_create(
     OpenAPI_plmn_id_t *plmn_id,
     OpenAPI_list_t *s_nssai_list,
     char *nid
-    );
+);
 void OpenAPI_plmn_snssai_free(OpenAPI_plmn_snssai_t *plmn_snssai);
 OpenAPI_plmn_snssai_t *OpenAPI_plmn_snssai_parseFromJSON(cJSON *plmn_snssaiJSON);
 cJSON *OpenAPI_plmn_snssai_convertToJSON(OpenAPI_plmn_snssai_t *plmn_snssai);

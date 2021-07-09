@@ -1,7 +1,7 @@
 /*
  * sm_policy_delete_data.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_sm_policy_delete_data_H_
@@ -15,6 +15,7 @@
 #include "accu_usage_report.h"
 #include "pdu_session_rel_cause.h"
 #include "plmn_id_nid.h"
+#include "qos_monitoring_report.h"
 #include "ran_nas_rel_cause.h"
 #include "user_location.h"
 
@@ -31,6 +32,7 @@ typedef struct OpenAPI_sm_policy_delete_data_s {
     OpenAPI_list_t *ran_nas_rel_causes;
     OpenAPI_list_t *accu_usage_reports;
     OpenAPI_pdu_session_rel_cause_e pdu_sess_rel_cause;
+    OpenAPI_list_t *qos_mon_reports;
 } OpenAPI_sm_policy_delete_data_t;
 
 OpenAPI_sm_policy_delete_data_t *OpenAPI_sm_policy_delete_data_create(
@@ -40,8 +42,9 @@ OpenAPI_sm_policy_delete_data_t *OpenAPI_sm_policy_delete_data_create(
     char *user_location_info_time,
     OpenAPI_list_t *ran_nas_rel_causes,
     OpenAPI_list_t *accu_usage_reports,
-    OpenAPI_pdu_session_rel_cause_e pdu_sess_rel_cause
-    );
+    OpenAPI_pdu_session_rel_cause_e pdu_sess_rel_cause,
+    OpenAPI_list_t *qos_mon_reports
+);
 void OpenAPI_sm_policy_delete_data_free(OpenAPI_sm_policy_delete_data_t *sm_policy_delete_data);
 OpenAPI_sm_policy_delete_data_t *OpenAPI_sm_policy_delete_data_parseFromJSON(cJSON *sm_policy_delete_dataJSON);
 cJSON *OpenAPI_sm_policy_delete_data_convertToJSON(OpenAPI_sm_policy_delete_data_t *sm_policy_delete_data);

@@ -1,7 +1,7 @@
 /*
  * traffic_influ_data.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_traffic_influ_data_H_
@@ -15,7 +15,7 @@
 #include "dnai_change_type.h"
 #include "eth_flow_description.h"
 #include "flow_info.h"
-#include "network_area_info_2.h"
+#include "network_area_info_1.h"
 #include "route_to_location.h"
 #include "snssai.h"
 #include "subscribed_event.h"
@@ -41,13 +41,15 @@ typedef struct OpenAPI_traffic_influ_data_s {
     char *valid_start_time;
     char *valid_end_time;
     OpenAPI_list_t *temp_validities;
-    struct OpenAPI_network_area_info_2_s *nw_area_info;
+    struct OpenAPI_network_area_info_1_s *nw_area_info;
     char *up_path_chg_notif_uri;
+    OpenAPI_list_t *headers;
     OpenAPI_list_t *subscribed_events;
     OpenAPI_dnai_change_type_e dnai_chg_type;
     int af_ack_ind;
     int addr_preser_ind;
     char *supported_features;
+    char *res_uri;
 } OpenAPI_traffic_influ_data_t;
 
 OpenAPI_traffic_influ_data_t *OpenAPI_traffic_influ_data_create(
@@ -65,14 +67,16 @@ OpenAPI_traffic_influ_data_t *OpenAPI_traffic_influ_data_create(
     char *valid_start_time,
     char *valid_end_time,
     OpenAPI_list_t *temp_validities,
-    OpenAPI_network_area_info_2_t *nw_area_info,
+    OpenAPI_network_area_info_1_t *nw_area_info,
     char *up_path_chg_notif_uri,
+    OpenAPI_list_t *headers,
     OpenAPI_list_t *subscribed_events,
     OpenAPI_dnai_change_type_e dnai_chg_type,
     int af_ack_ind,
     int addr_preser_ind,
-    char *supported_features
-    );
+    char *supported_features,
+    char *res_uri
+);
 void OpenAPI_traffic_influ_data_free(OpenAPI_traffic_influ_data_t *traffic_influ_data);
 OpenAPI_traffic_influ_data_t *OpenAPI_traffic_influ_data_parseFromJSON(cJSON *traffic_influ_dataJSON);
 cJSON *OpenAPI_traffic_influ_data_convertToJSON(OpenAPI_traffic_influ_data_t *traffic_influ_data);

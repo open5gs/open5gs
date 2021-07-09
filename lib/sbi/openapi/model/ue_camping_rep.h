@@ -1,7 +1,7 @@
 /*
  * ue_camping_rep.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_ue_camping_rep_H_
@@ -13,6 +13,7 @@
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
 #include "access_type.h"
+#include "net_loc_access_support.h"
 #include "plmn_id_nid.h"
 #include "rat_type.h"
 #include "serving_nf_identity.h"
@@ -30,6 +31,7 @@ typedef struct OpenAPI_ue_camping_rep_s {
     struct OpenAPI_plmn_id_nid_s *serving_network;
     struct OpenAPI_user_location_s *user_location_info;
     char *ue_time_zone;
+    OpenAPI_net_loc_access_support_e net_loc_acc_supp;
 } OpenAPI_ue_camping_rep_t;
 
 OpenAPI_ue_camping_rep_t *OpenAPI_ue_camping_rep_create(
@@ -38,8 +40,9 @@ OpenAPI_ue_camping_rep_t *OpenAPI_ue_camping_rep_create(
     OpenAPI_serving_nf_identity_t *serv_nf_id,
     OpenAPI_plmn_id_nid_t *serving_network,
     OpenAPI_user_location_t *user_location_info,
-    char *ue_time_zone
-    );
+    char *ue_time_zone,
+    OpenAPI_net_loc_access_support_e net_loc_acc_supp
+);
 void OpenAPI_ue_camping_rep_free(OpenAPI_ue_camping_rep_t *ue_camping_rep);
 OpenAPI_ue_camping_rep_t *OpenAPI_ue_camping_rep_parseFromJSON(cJSON *ue_camping_repJSON);
 cJSON *OpenAPI_ue_camping_rep_convertToJSON(OpenAPI_ue_camping_rep_t *ue_camping_rep);

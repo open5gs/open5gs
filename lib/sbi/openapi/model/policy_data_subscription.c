@@ -11,7 +11,7 @@ OpenAPI_policy_data_subscription_t *OpenAPI_policy_data_subscription_create(
     OpenAPI_list_t *mon_res_items,
     char *expiry,
     char *supported_features
-    )
+)
 {
     OpenAPI_policy_data_subscription_t *policy_data_subscription_local_var = OpenAPI_malloc(sizeof(OpenAPI_policy_data_subscription_t));
     if (!policy_data_subscription_local_var) {
@@ -64,10 +64,10 @@ cJSON *OpenAPI_policy_data_subscription_convertToJSON(OpenAPI_policy_data_subscr
     }
 
     if (policy_data_subscription->notif_id) {
-        if (cJSON_AddStringToObject(item, "notifId", policy_data_subscription->notif_id) == NULL) {
-            ogs_error("OpenAPI_policy_data_subscription_convertToJSON() failed [notif_id]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "notifId", policy_data_subscription->notif_id) == NULL) {
+        ogs_error("OpenAPI_policy_data_subscription_convertToJSON() failed [notif_id]");
+        goto end;
+    }
     }
 
     cJSON *monitored_resource_uris = cJSON_AddArrayToObject(item, "monitoredResourceUris");
@@ -78,44 +78,44 @@ cJSON *OpenAPI_policy_data_subscription_convertToJSON(OpenAPI_policy_data_subscr
 
     OpenAPI_lnode_t *monitored_resource_uris_node;
     OpenAPI_list_for_each(policy_data_subscription->monitored_resource_uris, monitored_resource_uris_node)  {
-        if (cJSON_AddStringToObject(monitored_resource_uris, "", (char*)monitored_resource_uris_node->data) == NULL) {
-            ogs_error("OpenAPI_policy_data_subscription_convertToJSON() failed [monitored_resource_uris]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(monitored_resource_uris, "", (char*)monitored_resource_uris_node->data) == NULL) {
+        ogs_error("OpenAPI_policy_data_subscription_convertToJSON() failed [monitored_resource_uris]");
+        goto end;
     }
+                    }
 
     if (policy_data_subscription->mon_res_items) {
-        cJSON *mon_res_itemsList = cJSON_AddArrayToObject(item, "monResItems");
-        if (mon_res_itemsList == NULL) {
-            ogs_error("OpenAPI_policy_data_subscription_convertToJSON() failed [mon_res_items]");
-            goto end;
-        }
+    cJSON *mon_res_itemsList = cJSON_AddArrayToObject(item, "monResItems");
+    if (mon_res_itemsList == NULL) {
+        ogs_error("OpenAPI_policy_data_subscription_convertToJSON() failed [mon_res_items]");
+        goto end;
+    }
 
-        OpenAPI_lnode_t *mon_res_items_node;
-        if (policy_data_subscription->mon_res_items) {
-            OpenAPI_list_for_each(policy_data_subscription->mon_res_items, mon_res_items_node) {
-                cJSON *itemLocal = OpenAPI_resource_item_convertToJSON(mon_res_items_node->data);
-                if (itemLocal == NULL) {
-                    ogs_error("OpenAPI_policy_data_subscription_convertToJSON() failed [mon_res_items]");
-                    goto end;
-                }
-                cJSON_AddItemToArray(mon_res_itemsList, itemLocal);
+    OpenAPI_lnode_t *mon_res_items_node;
+    if (policy_data_subscription->mon_res_items) {
+        OpenAPI_list_for_each(policy_data_subscription->mon_res_items, mon_res_items_node) {
+            cJSON *itemLocal = OpenAPI_resource_item_convertToJSON(mon_res_items_node->data);
+            if (itemLocal == NULL) {
+                ogs_error("OpenAPI_policy_data_subscription_convertToJSON() failed [mon_res_items]");
+                goto end;
             }
+            cJSON_AddItemToArray(mon_res_itemsList, itemLocal);
         }
+    }
     }
 
     if (policy_data_subscription->expiry) {
-        if (cJSON_AddStringToObject(item, "expiry", policy_data_subscription->expiry) == NULL) {
-            ogs_error("OpenAPI_policy_data_subscription_convertToJSON() failed [expiry]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "expiry", policy_data_subscription->expiry) == NULL) {
+        ogs_error("OpenAPI_policy_data_subscription_convertToJSON() failed [expiry]");
+        goto end;
+    }
     }
 
     if (policy_data_subscription->supported_features) {
-        if (cJSON_AddStringToObject(item, "supportedFeatures", policy_data_subscription->supported_features) == NULL) {
-            ogs_error("OpenAPI_policy_data_subscription_convertToJSON() failed [supported_features]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "supportedFeatures", policy_data_subscription->supported_features) == NULL) {
+        ogs_error("OpenAPI_policy_data_subscription_convertToJSON() failed [supported_features]");
+        goto end;
+    }
     }
 
 end:
@@ -131,7 +131,7 @@ OpenAPI_policy_data_subscription_t *OpenAPI_policy_data_subscription_parseFromJS
         goto end;
     }
 
-
+    
     if (!cJSON_IsString(notification_uri)) {
         ogs_error("OpenAPI_policy_data_subscription_parseFromJSON() failed [notification_uri]");
         goto end;
@@ -139,11 +139,11 @@ OpenAPI_policy_data_subscription_t *OpenAPI_policy_data_subscription_parseFromJS
 
     cJSON *notif_id = cJSON_GetObjectItemCaseSensitive(policy_data_subscriptionJSON, "notifId");
 
-    if (notif_id) {
-        if (!cJSON_IsString(notif_id)) {
-            ogs_error("OpenAPI_policy_data_subscription_parseFromJSON() failed [notif_id]");
-            goto end;
-        }
+    if (notif_id) { 
+    if (!cJSON_IsString(notif_id)) {
+        ogs_error("OpenAPI_policy_data_subscription_parseFromJSON() failed [notif_id]");
+        goto end;
+    }
     }
 
     cJSON *monitored_resource_uris = cJSON_GetObjectItemCaseSensitive(policy_data_subscriptionJSON, "monitoredResourceUris");
@@ -153,7 +153,7 @@ OpenAPI_policy_data_subscription_t *OpenAPI_policy_data_subscription_parseFromJS
     }
 
     OpenAPI_list_t *monitored_resource_urisList;
-
+    
     cJSON *monitored_resource_uris_local;
     if (!cJSON_IsArray(monitored_resource_uris)) {
         ogs_error("OpenAPI_policy_data_subscription_parseFromJSON() failed [monitored_resource_uris]");
@@ -162,52 +162,52 @@ OpenAPI_policy_data_subscription_t *OpenAPI_policy_data_subscription_parseFromJS
     monitored_resource_urisList = OpenAPI_list_create();
 
     cJSON_ArrayForEach(monitored_resource_uris_local, monitored_resource_uris) {
-        if (!cJSON_IsString(monitored_resource_uris_local)) {
-            ogs_error("OpenAPI_policy_data_subscription_parseFromJSON() failed [monitored_resource_uris]");
-            goto end;
-        }
-        OpenAPI_list_add(monitored_resource_urisList, ogs_strdup_or_assert(monitored_resource_uris_local->valuestring));
+    if (!cJSON_IsString(monitored_resource_uris_local)) {
+        ogs_error("OpenAPI_policy_data_subscription_parseFromJSON() failed [monitored_resource_uris]");
+        goto end;
     }
+    OpenAPI_list_add(monitored_resource_urisList , ogs_strdup_or_assert(monitored_resource_uris_local->valuestring));
+                    }
 
     cJSON *mon_res_items = cJSON_GetObjectItemCaseSensitive(policy_data_subscriptionJSON, "monResItems");
 
     OpenAPI_list_t *mon_res_itemsList;
-    if (mon_res_items) {
-        cJSON *mon_res_items_local_nonprimitive;
-        if (!cJSON_IsArray(mon_res_items)) {
+    if (mon_res_items) { 
+    cJSON *mon_res_items_local_nonprimitive;
+    if (!cJSON_IsArray(mon_res_items)){
+        ogs_error("OpenAPI_policy_data_subscription_parseFromJSON() failed [mon_res_items]");
+        goto end;
+    }
+
+    mon_res_itemsList = OpenAPI_list_create();
+
+    cJSON_ArrayForEach(mon_res_items_local_nonprimitive, mon_res_items ) {
+        if (!cJSON_IsObject(mon_res_items_local_nonprimitive)) {
             ogs_error("OpenAPI_policy_data_subscription_parseFromJSON() failed [mon_res_items]");
             goto end;
         }
+        OpenAPI_resource_item_t *mon_res_itemsItem = OpenAPI_resource_item_parseFromJSON(mon_res_items_local_nonprimitive);
 
-        mon_res_itemsList = OpenAPI_list_create();
-
-        cJSON_ArrayForEach(mon_res_items_local_nonprimitive, mon_res_items ) {
-            if (!cJSON_IsObject(mon_res_items_local_nonprimitive)) {
-                ogs_error("OpenAPI_policy_data_subscription_parseFromJSON() failed [mon_res_items]");
-                goto end;
-            }
-            OpenAPI_resource_item_t *mon_res_itemsItem = OpenAPI_resource_item_parseFromJSON(mon_res_items_local_nonprimitive);
-
-            OpenAPI_list_add(mon_res_itemsList, mon_res_itemsItem);
-        }
+        OpenAPI_list_add(mon_res_itemsList, mon_res_itemsItem);
+    }
     }
 
     cJSON *expiry = cJSON_GetObjectItemCaseSensitive(policy_data_subscriptionJSON, "expiry");
 
-    if (expiry) {
-        if (!cJSON_IsString(expiry)) {
-            ogs_error("OpenAPI_policy_data_subscription_parseFromJSON() failed [expiry]");
-            goto end;
-        }
+    if (expiry) { 
+    if (!cJSON_IsString(expiry)) {
+        ogs_error("OpenAPI_policy_data_subscription_parseFromJSON() failed [expiry]");
+        goto end;
+    }
     }
 
     cJSON *supported_features = cJSON_GetObjectItemCaseSensitive(policy_data_subscriptionJSON, "supportedFeatures");
 
-    if (supported_features) {
-        if (!cJSON_IsString(supported_features)) {
-            ogs_error("OpenAPI_policy_data_subscription_parseFromJSON() failed [supported_features]");
-            goto end;
-        }
+    if (supported_features) { 
+    if (!cJSON_IsString(supported_features)) {
+        ogs_error("OpenAPI_policy_data_subscription_parseFromJSON() failed [supported_features]");
+        goto end;
+    }
     }
 
     policy_data_subscription_local_var = OpenAPI_policy_data_subscription_create (
@@ -217,7 +217,7 @@ OpenAPI_policy_data_subscription_t *OpenAPI_policy_data_subscription_parseFromJS
         mon_res_items ? mon_res_itemsList : NULL,
         expiry ? ogs_strdup_or_assert(expiry->valuestring) : NULL,
         supported_features ? ogs_strdup_or_assert(supported_features->valuestring) : NULL
-        );
+    );
 
     return policy_data_subscription_local_var;
 end:

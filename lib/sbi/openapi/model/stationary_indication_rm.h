@@ -1,7 +1,7 @@
 /*
  * stationary_indication_rm.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_stationary_indication_rm_H_
@@ -24,7 +24,7 @@ typedef struct OpenAPI_stationary_indication_rm_s {
 } OpenAPI_stationary_indication_rm_t;
 
 OpenAPI_stationary_indication_rm_t *OpenAPI_stationary_indication_rm_create(
-    );
+);
 void OpenAPI_stationary_indication_rm_free(OpenAPI_stationary_indication_rm_t *stationary_indication_rm);
 OpenAPI_stationary_indication_rm_t *OpenAPI_stationary_indication_rm_parseFromJSON(cJSON *stationary_indication_rmJSON);
 cJSON *OpenAPI_stationary_indication_rm_convertToJSON(OpenAPI_stationary_indication_rm_t *stationary_indication_rm);

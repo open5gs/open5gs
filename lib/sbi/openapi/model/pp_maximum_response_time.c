@@ -10,7 +10,7 @@ OpenAPI_pp_maximum_response_time_t *OpenAPI_pp_maximum_response_time_create(
     int reference_id,
     char *validity_time,
     char *mtc_provider_information
-    )
+)
 {
     OpenAPI_pp_maximum_response_time_t *pp_maximum_response_time_local_var = OpenAPI_malloc(sizeof(OpenAPI_pp_maximum_response_time_t));
     if (!pp_maximum_response_time_local_var) {
@@ -63,17 +63,17 @@ cJSON *OpenAPI_pp_maximum_response_time_convertToJSON(OpenAPI_pp_maximum_respons
     }
 
     if (pp_maximum_response_time->validity_time) {
-        if (cJSON_AddStringToObject(item, "validityTime", pp_maximum_response_time->validity_time) == NULL) {
-            ogs_error("OpenAPI_pp_maximum_response_time_convertToJSON() failed [validity_time]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "validityTime", pp_maximum_response_time->validity_time) == NULL) {
+        ogs_error("OpenAPI_pp_maximum_response_time_convertToJSON() failed [validity_time]");
+        goto end;
+    }
     }
 
     if (pp_maximum_response_time->mtc_provider_information) {
-        if (cJSON_AddStringToObject(item, "mtcProviderInformation", pp_maximum_response_time->mtc_provider_information) == NULL) {
-            ogs_error("OpenAPI_pp_maximum_response_time_convertToJSON() failed [mtc_provider_information]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "mtcProviderInformation", pp_maximum_response_time->mtc_provider_information) == NULL) {
+        ogs_error("OpenAPI_pp_maximum_response_time_convertToJSON() failed [mtc_provider_information]");
+        goto end;
+    }
     }
 
 end:
@@ -89,7 +89,7 @@ OpenAPI_pp_maximum_response_time_t *OpenAPI_pp_maximum_response_time_parseFromJS
         goto end;
     }
 
-
+    
     if (!cJSON_IsNumber(maximum_response_time)) {
         ogs_error("OpenAPI_pp_maximum_response_time_parseFromJSON() failed [maximum_response_time]");
         goto end;
@@ -101,7 +101,7 @@ OpenAPI_pp_maximum_response_time_t *OpenAPI_pp_maximum_response_time_parseFromJS
         goto end;
     }
 
-
+    
     if (!cJSON_IsString(af_instance_id)) {
         ogs_error("OpenAPI_pp_maximum_response_time_parseFromJSON() failed [af_instance_id]");
         goto end;
@@ -113,7 +113,7 @@ OpenAPI_pp_maximum_response_time_t *OpenAPI_pp_maximum_response_time_parseFromJS
         goto end;
     }
 
-
+    
     if (!cJSON_IsNumber(reference_id)) {
         ogs_error("OpenAPI_pp_maximum_response_time_parseFromJSON() failed [reference_id]");
         goto end;
@@ -121,20 +121,20 @@ OpenAPI_pp_maximum_response_time_t *OpenAPI_pp_maximum_response_time_parseFromJS
 
     cJSON *validity_time = cJSON_GetObjectItemCaseSensitive(pp_maximum_response_timeJSON, "validityTime");
 
-    if (validity_time) {
-        if (!cJSON_IsString(validity_time)) {
-            ogs_error("OpenAPI_pp_maximum_response_time_parseFromJSON() failed [validity_time]");
-            goto end;
-        }
+    if (validity_time) { 
+    if (!cJSON_IsString(validity_time)) {
+        ogs_error("OpenAPI_pp_maximum_response_time_parseFromJSON() failed [validity_time]");
+        goto end;
+    }
     }
 
     cJSON *mtc_provider_information = cJSON_GetObjectItemCaseSensitive(pp_maximum_response_timeJSON, "mtcProviderInformation");
 
-    if (mtc_provider_information) {
-        if (!cJSON_IsString(mtc_provider_information)) {
-            ogs_error("OpenAPI_pp_maximum_response_time_parseFromJSON() failed [mtc_provider_information]");
-            goto end;
-        }
+    if (mtc_provider_information) { 
+    if (!cJSON_IsString(mtc_provider_information)) {
+        ogs_error("OpenAPI_pp_maximum_response_time_parseFromJSON() failed [mtc_provider_information]");
+        goto end;
+    }
     }
 
     pp_maximum_response_time_local_var = OpenAPI_pp_maximum_response_time_create (
@@ -143,7 +143,7 @@ OpenAPI_pp_maximum_response_time_t *OpenAPI_pp_maximum_response_time_parseFromJS
         reference_id->valuedouble,
         validity_time ? ogs_strdup_or_assert(validity_time->valuestring) : NULL,
         mtc_provider_information ? ogs_strdup_or_assert(mtc_provider_information->valuestring) : NULL
-        );
+    );
 
     return pp_maximum_response_time_local_var;
 end:

@@ -7,7 +7,7 @@
 OpenAPI_time_window_t *OpenAPI_time_window_create(
     char *start_time,
     char *stop_time
-    )
+)
 {
     OpenAPI_time_window_t *time_window_local_var = OpenAPI_malloc(sizeof(OpenAPI_time_window_t));
     if (!time_window_local_var) {
@@ -63,7 +63,7 @@ OpenAPI_time_window_t *OpenAPI_time_window_parseFromJSON(cJSON *time_windowJSON)
         goto end;
     }
 
-
+    
     if (!cJSON_IsString(start_time)) {
         ogs_error("OpenAPI_time_window_parseFromJSON() failed [start_time]");
         goto end;
@@ -75,7 +75,7 @@ OpenAPI_time_window_t *OpenAPI_time_window_parseFromJSON(cJSON *time_windowJSON)
         goto end;
     }
 
-
+    
     if (!cJSON_IsString(stop_time)) {
         ogs_error("OpenAPI_time_window_parseFromJSON() failed [stop_time]");
         goto end;
@@ -84,7 +84,7 @@ OpenAPI_time_window_t *OpenAPI_time_window_parseFromJSON(cJSON *time_windowJSON)
     time_window_local_var = OpenAPI_time_window_create (
         ogs_strdup_or_assert(start_time->valuestring),
         ogs_strdup_or_assert(stop_time->valuestring)
-        );
+    );
 
     return time_window_local_var;
 end:

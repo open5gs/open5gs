@@ -1,7 +1,7 @@
 /*
  * authentication_info_request.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_authentication_info_request_H_
@@ -35,7 +35,7 @@ OpenAPI_authentication_info_request_t *OpenAPI_authentication_info_request_creat
     char *ausf_instance_id,
     OpenAPI_list_t *cell_cag_info,
     int n5gc_ind
-    );
+);
 void OpenAPI_authentication_info_request_free(OpenAPI_authentication_info_request_t *authentication_info_request);
 OpenAPI_authentication_info_request_t *OpenAPI_authentication_info_request_parseFromJSON(cJSON *authentication_info_requestJSON);
 cJSON *OpenAPI_authentication_info_request_convertToJSON(OpenAPI_authentication_info_request_t *authentication_info_request);

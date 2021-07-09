@@ -25,7 +25,7 @@ typedef struct OpenAPI_nf_type_cond_s {
 
 OpenAPI_nf_type_cond_t *OpenAPI_nf_type_cond_create(
     OpenAPI_nf_type_e nf_type
-    );
+);
 void OpenAPI_nf_type_cond_free(OpenAPI_nf_type_cond_t *nf_type_cond);
 OpenAPI_nf_type_cond_t *OpenAPI_nf_type_cond_parseFromJSON(cJSON *nf_type_condJSON);
 cJSON *OpenAPI_nf_type_cond_convertToJSON(OpenAPI_nf_type_cond_t *nf_type_cond);

@@ -1,7 +1,7 @@
 /*
  * n1_n2_msg_txfr_failure_notification.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_n1_n2_msg_txfr_failure_notification_H_
@@ -27,7 +27,7 @@ typedef struct OpenAPI_n1_n2_msg_txfr_failure_notification_s {
 OpenAPI_n1_n2_msg_txfr_failure_notification_t *OpenAPI_n1_n2_msg_txfr_failure_notification_create(
     OpenAPI_n1_n2_message_transfer_cause_e cause,
     char *n1n2_msg_data_uri
-    );
+);
 void OpenAPI_n1_n2_msg_txfr_failure_notification_free(OpenAPI_n1_n2_msg_txfr_failure_notification_t *n1_n2_msg_txfr_failure_notification);
 OpenAPI_n1_n2_msg_txfr_failure_notification_t *OpenAPI_n1_n2_msg_txfr_failure_notification_parseFromJSON(cJSON *n1_n2_msg_txfr_failure_notificationJSON);
 cJSON *OpenAPI_n1_n2_msg_txfr_failure_notification_convertToJSON(OpenAPI_n1_n2_msg_txfr_failure_notification_t *n1_n2_msg_txfr_failure_notification);

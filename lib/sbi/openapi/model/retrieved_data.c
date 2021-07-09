@@ -6,7 +6,7 @@
 
 OpenAPI_retrieved_data_t *OpenAPI_retrieved_data_create(
     OpenAPI_small_data_rate_status_t *small_data_rate_status
-    )
+)
 {
     OpenAPI_retrieved_data_t *retrieved_data_local_var = OpenAPI_malloc(sizeof(OpenAPI_retrieved_data_t));
     if (!retrieved_data_local_var) {
@@ -38,16 +38,16 @@ cJSON *OpenAPI_retrieved_data_convertToJSON(OpenAPI_retrieved_data_t *retrieved_
 
     item = cJSON_CreateObject();
     if (retrieved_data->small_data_rate_status) {
-        cJSON *small_data_rate_status_local_JSON = OpenAPI_small_data_rate_status_convertToJSON(retrieved_data->small_data_rate_status);
-        if (small_data_rate_status_local_JSON == NULL) {
-            ogs_error("OpenAPI_retrieved_data_convertToJSON() failed [small_data_rate_status]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "smallDataRateStatus", small_data_rate_status_local_JSON);
-        if (item->child == NULL) {
-            ogs_error("OpenAPI_retrieved_data_convertToJSON() failed [small_data_rate_status]");
-            goto end;
-        }
+    cJSON *small_data_rate_status_local_JSON = OpenAPI_small_data_rate_status_convertToJSON(retrieved_data->small_data_rate_status);
+    if (small_data_rate_status_local_JSON == NULL) {
+        ogs_error("OpenAPI_retrieved_data_convertToJSON() failed [small_data_rate_status]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "smallDataRateStatus", small_data_rate_status_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_retrieved_data_convertToJSON() failed [small_data_rate_status]");
+        goto end;
+    }
     }
 
 end:
@@ -60,13 +60,13 @@ OpenAPI_retrieved_data_t *OpenAPI_retrieved_data_parseFromJSON(cJSON *retrieved_
     cJSON *small_data_rate_status = cJSON_GetObjectItemCaseSensitive(retrieved_dataJSON, "smallDataRateStatus");
 
     OpenAPI_small_data_rate_status_t *small_data_rate_status_local_nonprim = NULL;
-    if (small_data_rate_status) {
-        small_data_rate_status_local_nonprim = OpenAPI_small_data_rate_status_parseFromJSON(small_data_rate_status);
+    if (small_data_rate_status) { 
+    small_data_rate_status_local_nonprim = OpenAPI_small_data_rate_status_parseFromJSON(small_data_rate_status);
     }
 
     retrieved_data_local_var = OpenAPI_retrieved_data_create (
         small_data_rate_status ? small_data_rate_status_local_nonprim : NULL
-        );
+    );
 
     return retrieved_data_local_var;
 end:

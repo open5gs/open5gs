@@ -1,7 +1,7 @@
 /*
  * ellipsoid_arc.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_ellipsoid_arc_H_
@@ -40,7 +40,7 @@ OpenAPI_ellipsoid_arc_t *OpenAPI_ellipsoid_arc_create(
     int offset_angle,
     int included_angle,
     int confidence
-    );
+);
 void OpenAPI_ellipsoid_arc_free(OpenAPI_ellipsoid_arc_t *ellipsoid_arc);
 OpenAPI_ellipsoid_arc_t *OpenAPI_ellipsoid_arc_parseFromJSON(cJSON *ellipsoid_arcJSON);
 cJSON *OpenAPI_ellipsoid_arc_convertToJSON(OpenAPI_ellipsoid_arc_t *ellipsoid_arc);

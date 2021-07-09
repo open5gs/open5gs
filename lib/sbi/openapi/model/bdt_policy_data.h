@@ -1,7 +1,7 @@
 /*
  * bdt_policy_data.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_bdt_policy_data_H_
@@ -25,6 +25,7 @@ typedef struct OpenAPI_bdt_policy_data_s {
     char *bdt_ref_id;
     char *dnn;
     struct OpenAPI_snssai_s *snssai;
+    char *res_uri;
 } OpenAPI_bdt_policy_data_t;
 
 OpenAPI_bdt_policy_data_t *OpenAPI_bdt_policy_data_create(
@@ -32,8 +33,9 @@ OpenAPI_bdt_policy_data_t *OpenAPI_bdt_policy_data_create(
     char *supi,
     char *bdt_ref_id,
     char *dnn,
-    OpenAPI_snssai_t *snssai
-    );
+    OpenAPI_snssai_t *snssai,
+    char *res_uri
+);
 void OpenAPI_bdt_policy_data_free(OpenAPI_bdt_policy_data_t *bdt_policy_data);
 OpenAPI_bdt_policy_data_t *OpenAPI_bdt_policy_data_parseFromJSON(cJSON *bdt_policy_dataJSON);
 cJSON *OpenAPI_bdt_policy_data_convertToJSON(OpenAPI_bdt_policy_data_t *bdt_policy_data);

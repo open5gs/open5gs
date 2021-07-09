@@ -38,6 +38,8 @@ extern "C" {
 #include "ogs-s1ap.h"
 #pragma GCC diagnostic pop
 
+#include "ogs-sbi.h"
+
 #include "core/abts.h"
 
 #define OGS_TEST_INSIDE

@@ -1,7 +1,7 @@
 /*
  * vsmf_updated_data.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_vsmf_updated_data_H_
@@ -64,7 +64,7 @@ OpenAPI_vsmf_updated_data_t *OpenAPI_vsmf_updated_data_create(
     OpenAPI_n4_information_t *n4_info,
     OpenAPI_n4_information_t *n4_info_ext1,
     OpenAPI_n4_information_t *n4_info_ext2
-    );
+);
 void OpenAPI_vsmf_updated_data_free(OpenAPI_vsmf_updated_data_t *vsmf_updated_data);
 OpenAPI_vsmf_updated_data_t *OpenAPI_vsmf_updated_data_parseFromJSON(cJSON *vsmf_updated_dataJSON);
 cJSON *OpenAPI_vsmf_updated_data_convertToJSON(OpenAPI_vsmf_updated_data_t *vsmf_updated_data);

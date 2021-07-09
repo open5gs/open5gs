@@ -7,7 +7,7 @@
 OpenAPI_security_result_t *OpenAPI_security_result_create(
     OpenAPI_protection_result_e integrity_protection_result,
     OpenAPI_protection_result_e confidentiality_protection_result
-    )
+)
 {
     OpenAPI_security_result_t *security_result_local_var = OpenAPI_malloc(sizeof(OpenAPI_security_result_t));
     if (!security_result_local_var) {
@@ -39,17 +39,17 @@ cJSON *OpenAPI_security_result_convertToJSON(OpenAPI_security_result_t *security
 
     item = cJSON_CreateObject();
     if (security_result->integrity_protection_result) {
-        if (cJSON_AddStringToObject(item, "integrityProtectionResult", OpenAPI_protection_result_ToString(security_result->integrity_protection_result)) == NULL) {
-            ogs_error("OpenAPI_security_result_convertToJSON() failed [integrity_protection_result]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "integrityProtectionResult", OpenAPI_protection_result_ToString(security_result->integrity_protection_result)) == NULL) {
+        ogs_error("OpenAPI_security_result_convertToJSON() failed [integrity_protection_result]");
+        goto end;
+    }
     }
 
     if (security_result->confidentiality_protection_result) {
-        if (cJSON_AddStringToObject(item, "confidentialityProtectionResult", OpenAPI_protection_result_ToString(security_result->confidentiality_protection_result)) == NULL) {
-            ogs_error("OpenAPI_security_result_convertToJSON() failed [confidentiality_protection_result]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "confidentialityProtectionResult", OpenAPI_protection_result_ToString(security_result->confidentiality_protection_result)) == NULL) {
+        ogs_error("OpenAPI_security_result_convertToJSON() failed [confidentiality_protection_result]");
+        goto end;
+    }
     }
 
 end:
@@ -62,29 +62,29 @@ OpenAPI_security_result_t *OpenAPI_security_result_parseFromJSON(cJSON *security
     cJSON *integrity_protection_result = cJSON_GetObjectItemCaseSensitive(security_resultJSON, "integrityProtectionResult");
 
     OpenAPI_protection_result_e integrity_protection_resultVariable;
-    if (integrity_protection_result) {
-        if (!cJSON_IsString(integrity_protection_result)) {
-            ogs_error("OpenAPI_security_result_parseFromJSON() failed [integrity_protection_result]");
-            goto end;
-        }
-        integrity_protection_resultVariable = OpenAPI_protection_result_FromString(integrity_protection_result->valuestring);
+    if (integrity_protection_result) { 
+    if (!cJSON_IsString(integrity_protection_result)) {
+        ogs_error("OpenAPI_security_result_parseFromJSON() failed [integrity_protection_result]");
+        goto end;
+    }
+    integrity_protection_resultVariable = OpenAPI_protection_result_FromString(integrity_protection_result->valuestring);
     }
 
     cJSON *confidentiality_protection_result = cJSON_GetObjectItemCaseSensitive(security_resultJSON, "confidentialityProtectionResult");
 
     OpenAPI_protection_result_e confidentiality_protection_resultVariable;
-    if (confidentiality_protection_result) {
-        if (!cJSON_IsString(confidentiality_protection_result)) {
-            ogs_error("OpenAPI_security_result_parseFromJSON() failed [confidentiality_protection_result]");
-            goto end;
-        }
-        confidentiality_protection_resultVariable = OpenAPI_protection_result_FromString(confidentiality_protection_result->valuestring);
+    if (confidentiality_protection_result) { 
+    if (!cJSON_IsString(confidentiality_protection_result)) {
+        ogs_error("OpenAPI_security_result_parseFromJSON() failed [confidentiality_protection_result]");
+        goto end;
+    }
+    confidentiality_protection_resultVariable = OpenAPI_protection_result_FromString(confidentiality_protection_result->valuestring);
     }
 
     security_result_local_var = OpenAPI_security_result_create (
         integrity_protection_result ? integrity_protection_resultVariable : 0,
         confidentiality_protection_result ? confidentiality_protection_resultVariable : 0
-        );
+    );
 
     return security_result_local_var;
 end:

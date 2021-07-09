@@ -1,7 +1,7 @@
 /*
  * rg_auth_ctx.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_rg_auth_ctx_H_
@@ -29,7 +29,7 @@ OpenAPI_rg_auth_ctx_t *OpenAPI_rg_auth_ctx_create(
     OpenAPI_auth_result_e auth_result,
     char *supi,
     int auth_ind
-    );
+);
 void OpenAPI_rg_auth_ctx_free(OpenAPI_rg_auth_ctx_t *rg_auth_ctx);
 OpenAPI_rg_auth_ctx_t *OpenAPI_rg_auth_ctx_parseFromJSON(cJSON *rg_auth_ctxJSON);
 cJSON *OpenAPI_rg_auth_ctx_convertToJSON(OpenAPI_rg_auth_ctx_t *rg_auth_ctx);

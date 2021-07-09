@@ -6,7 +6,7 @@
 
 OpenAPI_n2_info_notification_rsp_data_t *OpenAPI_n2_info_notification_rsp_data_create(
     OpenAPI_n2_info_content_t *n2_info_content
-    )
+)
 {
     OpenAPI_n2_info_notification_rsp_data_t *n2_info_notification_rsp_data_local_var = OpenAPI_malloc(sizeof(OpenAPI_n2_info_notification_rsp_data_t));
     if (!n2_info_notification_rsp_data_local_var) {
@@ -38,16 +38,16 @@ cJSON *OpenAPI_n2_info_notification_rsp_data_convertToJSON(OpenAPI_n2_info_notif
 
     item = cJSON_CreateObject();
     if (n2_info_notification_rsp_data->n2_info_content) {
-        cJSON *n2_info_content_local_JSON = OpenAPI_n2_info_content_convertToJSON(n2_info_notification_rsp_data->n2_info_content);
-        if (n2_info_content_local_JSON == NULL) {
-            ogs_error("OpenAPI_n2_info_notification_rsp_data_convertToJSON() failed [n2_info_content]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "n2InfoContent", n2_info_content_local_JSON);
-        if (item->child == NULL) {
-            ogs_error("OpenAPI_n2_info_notification_rsp_data_convertToJSON() failed [n2_info_content]");
-            goto end;
-        }
+    cJSON *n2_info_content_local_JSON = OpenAPI_n2_info_content_convertToJSON(n2_info_notification_rsp_data->n2_info_content);
+    if (n2_info_content_local_JSON == NULL) {
+        ogs_error("OpenAPI_n2_info_notification_rsp_data_convertToJSON() failed [n2_info_content]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "n2InfoContent", n2_info_content_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_n2_info_notification_rsp_data_convertToJSON() failed [n2_info_content]");
+        goto end;
+    }
     }
 
 end:
@@ -60,13 +60,13 @@ OpenAPI_n2_info_notification_rsp_data_t *OpenAPI_n2_info_notification_rsp_data_p
     cJSON *n2_info_content = cJSON_GetObjectItemCaseSensitive(n2_info_notification_rsp_dataJSON, "n2InfoContent");
 
     OpenAPI_n2_info_content_t *n2_info_content_local_nonprim = NULL;
-    if (n2_info_content) {
-        n2_info_content_local_nonprim = OpenAPI_n2_info_content_parseFromJSON(n2_info_content);
+    if (n2_info_content) { 
+    n2_info_content_local_nonprim = OpenAPI_n2_info_content_parseFromJSON(n2_info_content);
     }
 
     n2_info_notification_rsp_data_local_var = OpenAPI_n2_info_notification_rsp_data_create (
         n2_info_content ? n2_info_content_local_nonprim : NULL
-        );
+    );
 
     return n2_info_notification_rsp_data_local_var;
 end:

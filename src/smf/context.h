@@ -24,6 +24,8 @@
 
 #include "ogs-gtp.h"
 #include "ogs-diameter-gx.h"
+#include "ogs-diameter-rx.h"
+#include "ogs-diameter-s6b.h"
 #include "ogs-pfcp.h"
 #include "ogs-sbi.h"
 #include "ogs-app.h"
@@ -168,8 +170,8 @@ typedef struct smf_bearer_s {
     ogs_ip_t        sgw_s5u_ip;     /* SGW-S5U IPv4/IPv6 */
 
     struct {
-        char            *name;      /* EPC: PCC Rule Name */
-        char            *id;        /* 5GC: PCC Rule Id */
+        char        *name;          /* EPC: PCC Rule Name */
+        char        *id;            /* 5GC: PCC Rule Id */
     } pcc_rule;
     ogs_qos_t       qos;            /* QoS Infomration */
 
@@ -193,7 +195,9 @@ typedef struct smf_sess_s {
     uint64_t        smpolicycontrol_features; /* SBI features */
 
     uint32_t        smf_n4_teid;    /* SMF-N4-TEID is derived from INDEX */
+
     uint32_t        sgw_s5c_teid;   /* SGW-S5C-TEID is received from SGW */
+    ogs_ip_t        sgw_s5c_ip;     /* SGW-S5C IPv4/IPv6 */
 
     uint64_t        smf_n4_seid;    /* SMF SEID is dervied from INDEX */
     uint64_t        upf_n4_seid;    /* UPF SEID is received from Peer */
@@ -206,6 +210,7 @@ typedef struct smf_sess_s {
     ogs_ip_t        gnb_n3_ip;      /* gNB-N3 IPv4/IPv6 */
 
     char            *gx_sid;        /* Gx Session ID */
+    char            *s6b_sid;       /* S6b Session ID */
 
     OGS_POOL(pf_precedence_pool, uint8_t);
 
@@ -237,9 +242,6 @@ typedef struct smf_sess_s {
     ogs_eps_tai_t   e_tai;
     ogs_e_cgi_t     e_cgi;
 
-    /* Rat Type */
-    OpenAPI_rat_type_e rat_type;
-
     /* NR Location */
     ogs_5gs_tai_t   nr_tai;
     ogs_nr_cgi_t    nr_cgi;
@@ -265,6 +267,10 @@ typedef struct smf_sess_s {
 
     ogs_pfcp_ue_ip_t *ipv4;
     ogs_pfcp_ue_ip_t *ipv6;
+
+    /* RAT Type */
+    uint8_t gtp_rat_type;
+    OpenAPI_rat_type_e sbi_rat_type;
 
     struct {
         ogs_tlv_octet_t ue_pco;
@@ -316,6 +322,11 @@ typedef struct smf_sess_s {
         ogs_ip_t gnb_dl_ip;
     } handover;
 
+    /* Charging */
+    struct {
+        uint32_t id;
+    } charging;
+
     /* Data Forwarding between the CP and UP functions */
     ogs_pfcp_pdr_t  *cp2up_pdr;
     ogs_pfcp_pdr_t  *up2cp_pdr;
@@ -344,7 +355,7 @@ smf_ue_t *smf_ue_find_by_supi(char *supi);
 smf_ue_t *smf_ue_find_by_imsi(uint8_t *imsi, int imsi_len);
 
 smf_sess_t *smf_sess_add_by_gtp_message(ogs_gtp_message_t *message);
-smf_sess_t *smf_sess_add_by_apn(smf_ue_t *smf_ue, char *apn);
+smf_sess_t *smf_sess_add_by_apn(smf_ue_t *smf_ue, char *apn, uint8_t rat_type);
 
 smf_sess_t *smf_sess_add_by_sbi_message(ogs_sbi_message_t *message);
 smf_sess_t *smf_sess_add_by_psi(smf_ue_t *smf_ue, uint8_t psi);
@@ -360,8 +371,9 @@ void smf_sess_remove_all(smf_ue_t *smf_ue);
 smf_sess_t *smf_sess_find(uint32_t index);
 smf_sess_t *smf_sess_find_by_teid(uint32_t teid);
 smf_sess_t *smf_sess_find_by_seid(uint64_t seid);
-smf_sess_t *smf_sess_find_by_apn(smf_ue_t *smf_ue, char *apn);
+smf_sess_t *smf_sess_find_by_apn(smf_ue_t *smf_ue, char *apn, uint8_t rat_type);
 smf_sess_t *smf_sess_find_by_psi(smf_ue_t *smf_ue, uint8_t psi);
+smf_sess_t *smf_sess_find_by_charging_id(uint32_t charging_id);
 smf_sess_t *smf_sess_find_by_sm_context_ref(char *sm_context_ref);
 smf_sess_t *smf_sess_find_by_ipv4(uint32_t addr);
 smf_sess_t *smf_sess_find_by_ipv6(uint32_t *addr6);
@@ -394,9 +406,6 @@ smf_bearer_t *smf_bearer_find_by_pcc_rule_name(
 smf_bearer_t *smf_bearer_find_by_pdr_id(
         smf_sess_t *sess, ogs_pfcp_pdr_id_t pdr_id);
 smf_bearer_t *smf_default_bearer_in_sess(smf_sess_t *sess);
-bool smf_bearer_is_default(smf_bearer_t *bearer);
-smf_bearer_t *smf_bearer_first(smf_sess_t *sess);
-smf_bearer_t *smf_bearer_next(smf_bearer_t *bearer);
 
 smf_ue_t *smf_ue_cycle(smf_ue_t *smf_ue);
 smf_sess_t *smf_sess_cycle(smf_sess_t *sess);

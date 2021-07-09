@@ -5,7 +5,7 @@
 #include "partial_record_method.h"
 
 OpenAPI_partial_record_method_t *OpenAPI_partial_record_method_create(
-    )
+)
 {
     OpenAPI_partial_record_method_t *partial_record_method_local_var = OpenAPI_malloc(sizeof(OpenAPI_partial_record_method_t));
     if (!partial_record_method_local_var) {
@@ -42,7 +42,7 @@ OpenAPI_partial_record_method_t *OpenAPI_partial_record_method_parseFromJSON(cJS
 {
     OpenAPI_partial_record_method_t *partial_record_method_local_var = NULL;
     partial_record_method_local_var = OpenAPI_partial_record_method_create (
-        );
+    );
 
     return partial_record_method_local_var;
 end:

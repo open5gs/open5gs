@@ -1,7 +1,7 @@
 /*
  * preemption_control_information_rm.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_preemption_control_information_rm_H_
@@ -24,7 +24,7 @@ typedef struct OpenAPI_preemption_control_information_rm_s {
 } OpenAPI_preemption_control_information_rm_t;
 
 OpenAPI_preemption_control_information_rm_t *OpenAPI_preemption_control_information_rm_create(
-    );
+);
 void OpenAPI_preemption_control_information_rm_free(OpenAPI_preemption_control_information_rm_t *preemption_control_information_rm);
 OpenAPI_preemption_control_information_rm_t *OpenAPI_preemption_control_information_rm_parseFromJSON(cJSON *preemption_control_information_rmJSON);
 cJSON *OpenAPI_preemption_control_information_rm_convertToJSON(OpenAPI_preemption_control_information_rm_t *preemption_control_information_rm);

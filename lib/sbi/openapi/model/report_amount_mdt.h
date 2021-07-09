@@ -1,7 +1,7 @@
 /*
  * report_amount_mdt.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_report_amount_mdt_H_

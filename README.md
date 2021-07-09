@@ -25,29 +25,22 @@ If you find Open5GS useful for work, please consider supporting this Open Source
 <table>
   <tbody>
     <tr>
-      <td align="center" valign="middle" height="100px" width="222px">
+      <td align="center" valign="middle" width="222px">
         <a href="https://www.auctionsoftware.com/" target="_blank">
           <img src="https://open5gs.org/assets/img/asLogonew.png">
         </a>
       </td>
-      <td align="center" valign="middle" height="100px" width="222px">
+      <td align="center" valign="middle" width="222px">
         <a href="https://www.wearetriple.com/" target="_blank">
           <img src="https://open5gs.org/assets/img/triple_logo.png">
         </a>
       </td>
-      <td align="center" valign="middle" height="100px" width="222px">
-        <a href="https://www.accessparks.com/" target="_blank">
-          <img src="https://open5gs.org/assets/img/AccessParks.png">
-        </a>
-      </td>
-    </tr>
-    <tr>
-      <td align="center" valign="middle" height="100px" width="222px">
+      <td align="center" valign="middle" width="222px">
         <a href="https://skylarkwireless.com/" target="_blank">
           <img src="https://open5gs.org/assets/img/SkylarkWireless-420x78-Web2-R.png">
         </a>
       </td>
-      <td align="center" valign="middle" height="100px" width="222px">
+      <td align="center" valign="middle" width="222px">
         <a href="https://sysmocom.de/" target="_blank">
           <img src="https://open5gs.org/assets/img/sysmocom-logo-only.png">
         </a>

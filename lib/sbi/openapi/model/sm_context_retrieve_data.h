@@ -1,7 +1,7 @@
 /*
  * sm_context_retrieve_data.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_sm_context_retrieve_data_H_
@@ -26,14 +26,16 @@ typedef struct OpenAPI_sm_context_retrieve_data_s {
     OpenAPI_sm_context_type_e sm_context_type;
     struct OpenAPI_plmn_id_s *serving_network;
     OpenAPI_list_t *not_to_transfer_ebi_list;
+    int ran_unchanged_ind;
 } OpenAPI_sm_context_retrieve_data_t;
 
 OpenAPI_sm_context_retrieve_data_t *OpenAPI_sm_context_retrieve_data_create(
     OpenAPI_mme_capabilities_t *target_mme_cap,
     OpenAPI_sm_context_type_e sm_context_type,
     OpenAPI_plmn_id_t *serving_network,
-    OpenAPI_list_t *not_to_transfer_ebi_list
-    );
+    OpenAPI_list_t *not_to_transfer_ebi_list,
+    int ran_unchanged_ind
+);
 void OpenAPI_sm_context_retrieve_data_free(OpenAPI_sm_context_retrieve_data_t *sm_context_retrieve_data);
 OpenAPI_sm_context_retrieve_data_t *OpenAPI_sm_context_retrieve_data_parseFromJSON(cJSON *sm_context_retrieve_dataJSON);
 cJSON *OpenAPI_sm_context_retrieve_data_convertToJSON(OpenAPI_sm_context_retrieve_data_t *sm_context_retrieve_data);

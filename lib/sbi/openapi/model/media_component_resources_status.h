@@ -1,7 +1,7 @@
 /*
  * media_component_resources_status.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_media_component_resources_status_H_

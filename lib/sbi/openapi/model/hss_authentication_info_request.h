@@ -1,7 +1,7 @@
 /*
  * hss_authentication_info_request.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_hss_authentication_info_request_H_
@@ -41,7 +41,7 @@ OpenAPI_hss_authentication_info_request_t *OpenAPI_hss_authentication_info_reque
     OpenAPI_plmn_id_t *serving_network_id,
     OpenAPI_resynchronization_info_t *resynchronization_info,
     OpenAPI_access_network_id_e an_id
-    );
+);
 void OpenAPI_hss_authentication_info_request_free(OpenAPI_hss_authentication_info_request_t *hss_authentication_info_request);
 OpenAPI_hss_authentication_info_request_t *OpenAPI_hss_authentication_info_request_parseFromJSON(cJSON *hss_authentication_info_requestJSON);
 cJSON *OpenAPI_hss_authentication_info_request_convertToJSON(OpenAPI_hss_authentication_info_request_t *hss_authentication_info_request);

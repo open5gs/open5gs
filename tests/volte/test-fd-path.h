@@ -26,9 +26,6 @@ extern "C" {
 
 #include "ogs-diameter-rx.h"
 
-#define TEST_HSS_IDENTITY "hss.localdomain"
-#define TEST_PCRF_IDENTITY "pcrf.localdomain"
-
 int test_fd_init(void);
 void test_fd_final(void);
 

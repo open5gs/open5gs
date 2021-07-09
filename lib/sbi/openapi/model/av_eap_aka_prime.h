@@ -1,7 +1,7 @@
 /*
  * av_eap_aka_prime.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_av_eap_aka_prime_H_
@@ -35,7 +35,7 @@ OpenAPI_av_eap_aka_prime_t *OpenAPI_av_eap_aka_prime_create(
     char *autn,
     char *ck_prime,
     char *ik_prime
-    );
+);
 void OpenAPI_av_eap_aka_prime_free(OpenAPI_av_eap_aka_prime_t *av_eap_aka_prime);
 OpenAPI_av_eap_aka_prime_t *OpenAPI_av_eap_aka_prime_parseFromJSON(cJSON *av_eap_aka_primeJSON);
 cJSON *OpenAPI_av_eap_aka_prime_convertToJSON(OpenAPI_av_eap_aka_prime_t *av_eap_aka_prime);

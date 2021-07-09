@@ -6,7 +6,7 @@
 
 OpenAPI_pcscf_restoration_notification_t *OpenAPI_pcscf_restoration_notification_create(
     char *supi
-    )
+)
 {
     OpenAPI_pcscf_restoration_notification_t *pcscf_restoration_notification_local_var = OpenAPI_malloc(sizeof(OpenAPI_pcscf_restoration_notification_t));
     if (!pcscf_restoration_notification_local_var) {
@@ -55,7 +55,7 @@ OpenAPI_pcscf_restoration_notification_t *OpenAPI_pcscf_restoration_notification
         goto end;
     }
 
-
+    
     if (!cJSON_IsString(supi)) {
         ogs_error("OpenAPI_pcscf_restoration_notification_parseFromJSON() failed [supi]");
         goto end;
@@ -63,7 +63,7 @@ OpenAPI_pcscf_restoration_notification_t *OpenAPI_pcscf_restoration_notification
 
     pcscf_restoration_notification_local_var = OpenAPI_pcscf_restoration_notification_create (
         ogs_strdup_or_assert(supi->valuestring)
-        );
+    );
 
     return pcscf_restoration_notification_local_var;
 end:

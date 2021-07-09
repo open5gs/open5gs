@@ -1,7 +1,7 @@
 /*
  * pfd_content.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_pfd_content_H_
@@ -33,7 +33,7 @@ OpenAPI_pfd_content_t *OpenAPI_pfd_content_create(
     OpenAPI_list_t *urls,
     OpenAPI_list_t *domain_names,
     OpenAPI_domain_name_protocol_t *dn_protocol
-    );
+);
 void OpenAPI_pfd_content_free(OpenAPI_pfd_content_t *pfd_content);
 OpenAPI_pfd_content_t *OpenAPI_pfd_content_parseFromJSON(cJSON *pfd_contentJSON);
 cJSON *OpenAPI_pfd_content_convertToJSON(OpenAPI_pfd_content_t *pfd_content);

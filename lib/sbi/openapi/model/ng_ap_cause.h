@@ -1,7 +1,7 @@
 /*
  * ng_ap_cause.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_ng_ap_cause_H_
@@ -26,7 +26,7 @@ typedef struct OpenAPI_ng_ap_cause_s {
 OpenAPI_ng_ap_cause_t *OpenAPI_ng_ap_cause_create(
     int group,
     int value
-    );
+);
 void OpenAPI_ng_ap_cause_free(OpenAPI_ng_ap_cause_t *ng_ap_cause);
 OpenAPI_ng_ap_cause_t *OpenAPI_ng_ap_cause_parseFromJSON(cJSON *ng_ap_causeJSON);
 cJSON *OpenAPI_ng_ap_cause_convertToJSON(OpenAPI_ng_ap_cause_t *ng_ap_cause);

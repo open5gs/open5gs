@@ -14,6 +14,7 @@
 #include "../include/binary.h"
 #include "af_requested_data.h"
 #include "af_routing_requirement.h"
+#include "bridge_management_container.h"
 #include "events_subsc_req_data.h"
 #include "media_component.h"
 #include "port_management_container.h"
@@ -57,6 +58,7 @@ typedef struct OpenAPI_app_session_context_req_data_s {
     char *ue_ipv4;
     char *ue_ipv6;
     char *ue_mac;
+    struct OpenAPI_bridge_management_container_s *tsn_bridge_man_cont;
     struct OpenAPI_port_management_container_s *tsn_port_man_cont_dstt;
     OpenAPI_list_t *tsn_port_man_cont_nwtts;
 } OpenAPI_app_session_context_req_data_t;
@@ -90,9 +92,10 @@ OpenAPI_app_session_context_req_data_t *OpenAPI_app_session_context_req_data_cre
     char *ue_ipv4,
     char *ue_ipv6,
     char *ue_mac,
+    OpenAPI_bridge_management_container_t *tsn_bridge_man_cont,
     OpenAPI_port_management_container_t *tsn_port_man_cont_dstt,
     OpenAPI_list_t *tsn_port_man_cont_nwtts
-    );
+);
 void OpenAPI_app_session_context_req_data_free(OpenAPI_app_session_context_req_data_t *app_session_context_req_data);
 OpenAPI_app_session_context_req_data_t *OpenAPI_app_session_context_req_data_parseFromJSON(cJSON *app_session_context_req_dataJSON);
 cJSON *OpenAPI_app_session_context_req_data_convertToJSON(OpenAPI_app_session_context_req_data_t *app_session_context_req_data);

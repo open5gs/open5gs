@@ -1,7 +1,7 @@
 /*
  * context_info.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_context_info_H_
@@ -24,7 +24,7 @@ typedef struct OpenAPI_context_info_s {
 
 OpenAPI_context_info_t *OpenAPI_context_info_create(
     OpenAPI_list_t *orig_headers
-    );
+);
 void OpenAPI_context_info_free(OpenAPI_context_info_t *context_info);
 OpenAPI_context_info_t *OpenAPI_context_info_parseFromJSON(cJSON *context_infoJSON);
 cJSON *OpenAPI_context_info_convertToJSON(OpenAPI_context_info_t *context_info);

@@ -6,7 +6,7 @@
 
 OpenAPI_nf_type_cond_t *OpenAPI_nf_type_cond_create(
     OpenAPI_nf_type_e nf_type
-    )
+)
 {
     OpenAPI_nf_type_cond_t *nf_type_cond_local_var = OpenAPI_malloc(sizeof(OpenAPI_nf_type_cond_t));
     if (!nf_type_cond_local_var) {
@@ -55,7 +55,7 @@ OpenAPI_nf_type_cond_t *OpenAPI_nf_type_cond_parseFromJSON(cJSON *nf_type_condJS
     }
 
     OpenAPI_nf_type_e nf_typeVariable;
-
+    
     if (!cJSON_IsString(nf_type)) {
         ogs_error("OpenAPI_nf_type_cond_parseFromJSON() failed [nf_type]");
         goto end;
@@ -64,7 +64,7 @@ OpenAPI_nf_type_cond_t *OpenAPI_nf_type_cond_parseFromJSON(cJSON *nf_type_condJS
 
     nf_type_cond_local_var = OpenAPI_nf_type_cond_create (
         nf_typeVariable
-        );
+    );
 
     return nf_type_cond_local_var;
 end:

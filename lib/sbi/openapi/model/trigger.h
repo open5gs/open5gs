@@ -1,7 +1,7 @@
 /*
  * trigger.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_trigger_H_
@@ -26,7 +26,9 @@ typedef struct OpenAPI_trigger_s {
     int time_limit;
     int volume_limit;
     int volume_limit64;
+    int event_limit;
     int max_number_ofccc;
+    char *tariff_time_change;
 } OpenAPI_trigger_t;
 
 OpenAPI_trigger_t *OpenAPI_trigger_create(
@@ -35,8 +37,10 @@ OpenAPI_trigger_t *OpenAPI_trigger_create(
     int time_limit,
     int volume_limit,
     int volume_limit64,
-    int max_number_ofccc
-    );
+    int event_limit,
+    int max_number_ofccc,
+    char *tariff_time_change
+);
 void OpenAPI_trigger_free(OpenAPI_trigger_t *trigger);
 OpenAPI_trigger_t *OpenAPI_trigger_parseFromJSON(cJSON *triggerJSON);
 cJSON *OpenAPI_trigger_convertToJSON(OpenAPI_trigger_t *trigger);

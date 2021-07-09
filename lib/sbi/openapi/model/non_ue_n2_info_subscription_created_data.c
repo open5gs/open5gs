@@ -8,7 +8,7 @@ OpenAPI_non_ue_n2_info_subscription_created_data_t *OpenAPI_non_ue_n2_info_subsc
     char *n2_notify_subscription_id,
     char *supported_features,
     OpenAPI_n2_information_class_e n2_information_class
-    )
+)
 {
     OpenAPI_non_ue_n2_info_subscription_created_data_t *non_ue_n2_info_subscription_created_data_local_var = OpenAPI_malloc(sizeof(OpenAPI_non_ue_n2_info_subscription_created_data_t));
     if (!non_ue_n2_info_subscription_created_data_local_var) {
@@ -48,17 +48,17 @@ cJSON *OpenAPI_non_ue_n2_info_subscription_created_data_convertToJSON(OpenAPI_no
     }
 
     if (non_ue_n2_info_subscription_created_data->supported_features) {
-        if (cJSON_AddStringToObject(item, "supportedFeatures", non_ue_n2_info_subscription_created_data->supported_features) == NULL) {
-            ogs_error("OpenAPI_non_ue_n2_info_subscription_created_data_convertToJSON() failed [supported_features]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "supportedFeatures", non_ue_n2_info_subscription_created_data->supported_features) == NULL) {
+        ogs_error("OpenAPI_non_ue_n2_info_subscription_created_data_convertToJSON() failed [supported_features]");
+        goto end;
+    }
     }
 
     if (non_ue_n2_info_subscription_created_data->n2_information_class) {
-        if (cJSON_AddStringToObject(item, "n2InformationClass", OpenAPI_n2_information_class_ToString(non_ue_n2_info_subscription_created_data->n2_information_class)) == NULL) {
-            ogs_error("OpenAPI_non_ue_n2_info_subscription_created_data_convertToJSON() failed [n2_information_class]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "n2InformationClass", OpenAPI_n2_information_class_ToString(non_ue_n2_info_subscription_created_data->n2_information_class)) == NULL) {
+        ogs_error("OpenAPI_non_ue_n2_info_subscription_created_data_convertToJSON() failed [n2_information_class]");
+        goto end;
+    }
     }
 
 end:
@@ -74,7 +74,7 @@ OpenAPI_non_ue_n2_info_subscription_created_data_t *OpenAPI_non_ue_n2_info_subsc
         goto end;
     }
 
-
+    
     if (!cJSON_IsString(n2_notify_subscription_id)) {
         ogs_error("OpenAPI_non_ue_n2_info_subscription_created_data_parseFromJSON() failed [n2_notify_subscription_id]");
         goto end;
@@ -82,29 +82,29 @@ OpenAPI_non_ue_n2_info_subscription_created_data_t *OpenAPI_non_ue_n2_info_subsc
 
     cJSON *supported_features = cJSON_GetObjectItemCaseSensitive(non_ue_n2_info_subscription_created_dataJSON, "supportedFeatures");
 
-    if (supported_features) {
-        if (!cJSON_IsString(supported_features)) {
-            ogs_error("OpenAPI_non_ue_n2_info_subscription_created_data_parseFromJSON() failed [supported_features]");
-            goto end;
-        }
+    if (supported_features) { 
+    if (!cJSON_IsString(supported_features)) {
+        ogs_error("OpenAPI_non_ue_n2_info_subscription_created_data_parseFromJSON() failed [supported_features]");
+        goto end;
+    }
     }
 
     cJSON *n2_information_class = cJSON_GetObjectItemCaseSensitive(non_ue_n2_info_subscription_created_dataJSON, "n2InformationClass");
 
     OpenAPI_n2_information_class_e n2_information_classVariable;
-    if (n2_information_class) {
-        if (!cJSON_IsString(n2_information_class)) {
-            ogs_error("OpenAPI_non_ue_n2_info_subscription_created_data_parseFromJSON() failed [n2_information_class]");
-            goto end;
-        }
-        n2_information_classVariable = OpenAPI_n2_information_class_FromString(n2_information_class->valuestring);
+    if (n2_information_class) { 
+    if (!cJSON_IsString(n2_information_class)) {
+        ogs_error("OpenAPI_non_ue_n2_info_subscription_created_data_parseFromJSON() failed [n2_information_class]");
+        goto end;
+    }
+    n2_information_classVariable = OpenAPI_n2_information_class_FromString(n2_information_class->valuestring);
     }
 
     non_ue_n2_info_subscription_created_data_local_var = OpenAPI_non_ue_n2_info_subscription_created_data_create (
         ogs_strdup_or_assert(n2_notify_subscription_id->valuestring),
         supported_features ? ogs_strdup_or_assert(supported_features->valuestring) : NULL,
         n2_information_class ? n2_information_classVariable : 0
-        );
+    );
 
     return non_ue_n2_info_subscription_created_data_local_var;
 end:

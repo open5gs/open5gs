@@ -7,7 +7,7 @@
 OpenAPI_hss_authentication_info_result_t *OpenAPI_hss_authentication_info_result_create(
     char *supported_features,
     OpenAPI_hss_authentication_vectors_t *hss_authentication_vectors
-    )
+)
 {
     OpenAPI_hss_authentication_info_result_t *hss_authentication_info_result_local_var = OpenAPI_malloc(sizeof(OpenAPI_hss_authentication_info_result_t));
     if (!hss_authentication_info_result_local_var) {
@@ -41,10 +41,10 @@ cJSON *OpenAPI_hss_authentication_info_result_convertToJSON(OpenAPI_hss_authenti
 
     item = cJSON_CreateObject();
     if (hss_authentication_info_result->supported_features) {
-        if (cJSON_AddStringToObject(item, "supportedFeatures", hss_authentication_info_result->supported_features) == NULL) {
-            ogs_error("OpenAPI_hss_authentication_info_result_convertToJSON() failed [supported_features]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "supportedFeatures", hss_authentication_info_result->supported_features) == NULL) {
+        ogs_error("OpenAPI_hss_authentication_info_result_convertToJSON() failed [supported_features]");
+        goto end;
+    }
     }
 
     cJSON *hss_authentication_vectors_local_JSON = OpenAPI_hss_authentication_vectors_convertToJSON(hss_authentication_info_result->hss_authentication_vectors);
@@ -67,11 +67,11 @@ OpenAPI_hss_authentication_info_result_t *OpenAPI_hss_authentication_info_result
     OpenAPI_hss_authentication_info_result_t *hss_authentication_info_result_local_var = NULL;
     cJSON *supported_features = cJSON_GetObjectItemCaseSensitive(hss_authentication_info_resultJSON, "supportedFeatures");
 
-    if (supported_features) {
-        if (!cJSON_IsString(supported_features)) {
-            ogs_error("OpenAPI_hss_authentication_info_result_parseFromJSON() failed [supported_features]");
-            goto end;
-        }
+    if (supported_features) { 
+    if (!cJSON_IsString(supported_features)) {
+        ogs_error("OpenAPI_hss_authentication_info_result_parseFromJSON() failed [supported_features]");
+        goto end;
+    }
     }
 
     cJSON *hss_authentication_vectors = cJSON_GetObjectItemCaseSensitive(hss_authentication_info_resultJSON, "hssAuthenticationVectors");
@@ -81,13 +81,13 @@ OpenAPI_hss_authentication_info_result_t *OpenAPI_hss_authentication_info_result
     }
 
     OpenAPI_hss_authentication_vectors_t *hss_authentication_vectors_local_nonprim = NULL;
-
+    
     hss_authentication_vectors_local_nonprim = OpenAPI_hss_authentication_vectors_parseFromJSON(hss_authentication_vectors);
 
     hss_authentication_info_result_local_var = OpenAPI_hss_authentication_info_result_create (
         supported_features ? ogs_strdup_or_assert(supported_features->valuestring) : NULL,
         hss_authentication_vectors_local_nonprim
-        );
+    );
 
     return hss_authentication_info_result_local_var;
 end:

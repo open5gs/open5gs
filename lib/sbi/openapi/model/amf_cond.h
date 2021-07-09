@@ -26,7 +26,7 @@ typedef struct OpenAPI_amf_cond_s {
 OpenAPI_amf_cond_t *OpenAPI_amf_cond_create(
     char *amf_set_id,
     char *amf_region_id
-    );
+);
 void OpenAPI_amf_cond_free(OpenAPI_amf_cond_t *amf_cond);
 OpenAPI_amf_cond_t *OpenAPI_amf_cond_parseFromJSON(cJSON *amf_condJSON);
 cJSON *OpenAPI_amf_cond_convertToJSON(OpenAPI_amf_cond_t *amf_cond);

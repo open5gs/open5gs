@@ -10,7 +10,7 @@ OpenAPI_ue_initiated_resource_request_t *OpenAPI_ue_initiated_resource_request_c
     int precedence,
     OpenAPI_list_t *pack_filt_info,
     OpenAPI_requested_qos_t *req_qos
-    )
+)
 {
     OpenAPI_ue_initiated_resource_request_t *ue_initiated_resource_request_local_var = OpenAPI_malloc(sizeof(OpenAPI_ue_initiated_resource_request_t));
     if (!ue_initiated_resource_request_local_var) {
@@ -51,10 +51,10 @@ cJSON *OpenAPI_ue_initiated_resource_request_convertToJSON(OpenAPI_ue_initiated_
 
     item = cJSON_CreateObject();
     if (ue_initiated_resource_request->pcc_rule_id) {
-        if (cJSON_AddStringToObject(item, "pccRuleId", ue_initiated_resource_request->pcc_rule_id) == NULL) {
-            ogs_error("OpenAPI_ue_initiated_resource_request_convertToJSON() failed [pcc_rule_id]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "pccRuleId", ue_initiated_resource_request->pcc_rule_id) == NULL) {
+        ogs_error("OpenAPI_ue_initiated_resource_request_convertToJSON() failed [pcc_rule_id]");
+        goto end;
+    }
     }
 
     if (cJSON_AddStringToObject(item, "ruleOp", OpenAPI_rule_operation_ToString(ue_initiated_resource_request->rule_op)) == NULL) {
@@ -63,10 +63,10 @@ cJSON *OpenAPI_ue_initiated_resource_request_convertToJSON(OpenAPI_ue_initiated_
     }
 
     if (ue_initiated_resource_request->precedence) {
-        if (cJSON_AddNumberToObject(item, "precedence", ue_initiated_resource_request->precedence) == NULL) {
-            ogs_error("OpenAPI_ue_initiated_resource_request_convertToJSON() failed [precedence]");
-            goto end;
-        }
+    if (cJSON_AddNumberToObject(item, "precedence", ue_initiated_resource_request->precedence) == NULL) {
+        ogs_error("OpenAPI_ue_initiated_resource_request_convertToJSON() failed [precedence]");
+        goto end;
+    }
     }
 
     cJSON *pack_filt_infoList = cJSON_AddArrayToObject(item, "packFiltInfo");
@@ -88,16 +88,16 @@ cJSON *OpenAPI_ue_initiated_resource_request_convertToJSON(OpenAPI_ue_initiated_
     }
 
     if (ue_initiated_resource_request->req_qos) {
-        cJSON *req_qos_local_JSON = OpenAPI_requested_qos_convertToJSON(ue_initiated_resource_request->req_qos);
-        if (req_qos_local_JSON == NULL) {
-            ogs_error("OpenAPI_ue_initiated_resource_request_convertToJSON() failed [req_qos]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "reqQos", req_qos_local_JSON);
-        if (item->child == NULL) {
-            ogs_error("OpenAPI_ue_initiated_resource_request_convertToJSON() failed [req_qos]");
-            goto end;
-        }
+    cJSON *req_qos_local_JSON = OpenAPI_requested_qos_convertToJSON(ue_initiated_resource_request->req_qos);
+    if (req_qos_local_JSON == NULL) {
+        ogs_error("OpenAPI_ue_initiated_resource_request_convertToJSON() failed [req_qos]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "reqQos", req_qos_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_ue_initiated_resource_request_convertToJSON() failed [req_qos]");
+        goto end;
+    }
     }
 
 end:
@@ -109,11 +109,11 @@ OpenAPI_ue_initiated_resource_request_t *OpenAPI_ue_initiated_resource_request_p
     OpenAPI_ue_initiated_resource_request_t *ue_initiated_resource_request_local_var = NULL;
     cJSON *pcc_rule_id = cJSON_GetObjectItemCaseSensitive(ue_initiated_resource_requestJSON, "pccRuleId");
 
-    if (pcc_rule_id) {
-        if (!cJSON_IsString(pcc_rule_id)) {
-            ogs_error("OpenAPI_ue_initiated_resource_request_parseFromJSON() failed [pcc_rule_id]");
-            goto end;
-        }
+    if (pcc_rule_id) { 
+    if (!cJSON_IsString(pcc_rule_id)) {
+        ogs_error("OpenAPI_ue_initiated_resource_request_parseFromJSON() failed [pcc_rule_id]");
+        goto end;
+    }
     }
 
     cJSON *rule_op = cJSON_GetObjectItemCaseSensitive(ue_initiated_resource_requestJSON, "ruleOp");
@@ -123,7 +123,7 @@ OpenAPI_ue_initiated_resource_request_t *OpenAPI_ue_initiated_resource_request_p
     }
 
     OpenAPI_rule_operation_e rule_opVariable;
-
+    
     if (!cJSON_IsString(rule_op)) {
         ogs_error("OpenAPI_ue_initiated_resource_request_parseFromJSON() failed [rule_op]");
         goto end;
@@ -132,11 +132,11 @@ OpenAPI_ue_initiated_resource_request_t *OpenAPI_ue_initiated_resource_request_p
 
     cJSON *precedence = cJSON_GetObjectItemCaseSensitive(ue_initiated_resource_requestJSON, "precedence");
 
-    if (precedence) {
-        if (!cJSON_IsNumber(precedence)) {
-            ogs_error("OpenAPI_ue_initiated_resource_request_parseFromJSON() failed [precedence]");
-            goto end;
-        }
+    if (precedence) { 
+    if (!cJSON_IsNumber(precedence)) {
+        ogs_error("OpenAPI_ue_initiated_resource_request_parseFromJSON() failed [precedence]");
+        goto end;
+    }
     }
 
     cJSON *pack_filt_info = cJSON_GetObjectItemCaseSensitive(ue_initiated_resource_requestJSON, "packFiltInfo");
@@ -146,9 +146,9 @@ OpenAPI_ue_initiated_resource_request_t *OpenAPI_ue_initiated_resource_request_p
     }
 
     OpenAPI_list_t *pack_filt_infoList;
-
+    
     cJSON *pack_filt_info_local_nonprimitive;
-    if (!cJSON_IsArray(pack_filt_info)) {
+    if (!cJSON_IsArray(pack_filt_info)){
         ogs_error("OpenAPI_ue_initiated_resource_request_parseFromJSON() failed [pack_filt_info]");
         goto end;
     }
@@ -168,8 +168,8 @@ OpenAPI_ue_initiated_resource_request_t *OpenAPI_ue_initiated_resource_request_p
     cJSON *req_qos = cJSON_GetObjectItemCaseSensitive(ue_initiated_resource_requestJSON, "reqQos");
 
     OpenAPI_requested_qos_t *req_qos_local_nonprim = NULL;
-    if (req_qos) {
-        req_qos_local_nonprim = OpenAPI_requested_qos_parseFromJSON(req_qos);
+    if (req_qos) { 
+    req_qos_local_nonprim = OpenAPI_requested_qos_parseFromJSON(req_qos);
     }
 
     ue_initiated_resource_request_local_var = OpenAPI_ue_initiated_resource_request_create (
@@ -178,7 +178,7 @@ OpenAPI_ue_initiated_resource_request_t *OpenAPI_ue_initiated_resource_request_p
         precedence ? precedence->valuedouble : 0,
         pack_filt_infoList,
         req_qos ? req_qos_local_nonprim : NULL
-        );
+    );
 
     return ue_initiated_resource_request_local_var;
 end:

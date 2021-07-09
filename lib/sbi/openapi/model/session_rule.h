@@ -1,7 +1,7 @@
 /*
  * session_rule.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_session_rule_H_
@@ -36,7 +36,7 @@ OpenAPI_session_rule_t *OpenAPI_session_rule_create(
     char *ref_um_data,
     char *ref_um_n3g_data,
     char *ref_cond_data
-    );
+);
 void OpenAPI_session_rule_free(OpenAPI_session_rule_t *session_rule);
 OpenAPI_session_rule_t *OpenAPI_session_rule_parseFromJSON(cJSON *session_ruleJSON);
 cJSON *OpenAPI_session_rule_convertToJSON(OpenAPI_session_rule_t *session_rule);

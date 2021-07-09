@@ -1,7 +1,7 @@
 /*
  * accumulated_usage.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_accumulated_usage_H_
@@ -30,7 +30,7 @@ OpenAPI_accumulated_usage_t *OpenAPI_accumulated_usage_create(
     long total_volume,
     long downlink_volume,
     long uplink_volume
-    );
+);
 void OpenAPI_accumulated_usage_free(OpenAPI_accumulated_usage_t *accumulated_usage);
 OpenAPI_accumulated_usage_t *OpenAPI_accumulated_usage_parseFromJSON(cJSON *accumulated_usageJSON);
 cJSON *OpenAPI_accumulated_usage_convertToJSON(OpenAPI_accumulated_usage_t *accumulated_usage);

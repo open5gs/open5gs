@@ -42,7 +42,7 @@ OpenAPI_amf_info_t *OpenAPI_amf_info_create(
     OpenAPI_list_t *backup_info_amf_failure,
     OpenAPI_list_t *backup_info_amf_removal,
     OpenAPI_n2_interface_amf_info_t *n2_interface_amf_info
-    );
+);
 void OpenAPI_amf_info_free(OpenAPI_amf_info_t *amf_info);
 OpenAPI_amf_info_t *OpenAPI_amf_info_parseFromJSON(cJSON *amf_infoJSON);
 cJSON *OpenAPI_amf_info_convertToJSON(OpenAPI_amf_info_t *amf_info);

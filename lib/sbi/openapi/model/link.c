@@ -6,7 +6,7 @@
 
 OpenAPI_link_t *OpenAPI_link_create(
     char *href
-    )
+)
 {
     OpenAPI_link_t *link_local_var = OpenAPI_malloc(sizeof(OpenAPI_link_t));
     if (!link_local_var) {
@@ -38,10 +38,10 @@ cJSON *OpenAPI_link_convertToJSON(OpenAPI_link_t *link)
 
     item = cJSON_CreateObject();
     if (link->href) {
-        if (cJSON_AddStringToObject(item, "href", link->href) == NULL) {
-            ogs_error("OpenAPI_link_convertToJSON() failed [href]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "href", link->href) == NULL) {
+        ogs_error("OpenAPI_link_convertToJSON() failed [href]");
+        goto end;
+    }
     }
 
 end:
@@ -53,16 +53,16 @@ OpenAPI_link_t *OpenAPI_link_parseFromJSON(cJSON *linkJSON)
     OpenAPI_link_t *link_local_var = NULL;
     cJSON *href = cJSON_GetObjectItemCaseSensitive(linkJSON, "href");
 
-    if (href) {
-        if (!cJSON_IsString(href)) {
-            ogs_error("OpenAPI_link_parseFromJSON() failed [href]");
-            goto end;
-        }
+    if (href) { 
+    if (!cJSON_IsString(href)) {
+        ogs_error("OpenAPI_link_parseFromJSON() failed [href]");
+        goto end;
+    }
     }
 
     link_local_var = OpenAPI_link_create (
         href ? ogs_strdup_or_assert(href->valuestring) : NULL
-        );
+    );
 
     return link_local_var;
 end:

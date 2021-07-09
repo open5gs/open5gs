@@ -1,7 +1,7 @@
 /*
  * inline_object.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_inline_object_H_
@@ -59,7 +59,7 @@ OpenAPI_inline_object_t *OpenAPI_inline_object_create(
     OpenAPI_binary_t* binary_data_n2_information_ext14,
     OpenAPI_binary_t* binary_data_n2_information_ext15,
     OpenAPI_binary_t* binary_data_n2_information_ext16
-    );
+);
 void OpenAPI_inline_object_free(OpenAPI_inline_object_t *inline_object);
 OpenAPI_inline_object_t *OpenAPI_inline_object_parseFromJSON(cJSON *inline_objectJSON);
 cJSON *OpenAPI_inline_object_convertToJSON(OpenAPI_inline_object_t *inline_object);

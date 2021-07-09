@@ -1,7 +1,7 @@
 /*
  * presence_state.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_presence_state_H_

@@ -7,7 +7,7 @@
 OpenAPI_n1_n2_message_transfer_error_t *OpenAPI_n1_n2_message_transfer_error_create(
     OpenAPI_problem_details_t *error,
     OpenAPI_n1_n2_msg_txfr_err_detail_t *err_info
-    )
+)
 {
     OpenAPI_n1_n2_message_transfer_error_t *n1_n2_message_transfer_error_local_var = OpenAPI_malloc(sizeof(OpenAPI_n1_n2_message_transfer_error_t));
     if (!n1_n2_message_transfer_error_local_var) {
@@ -52,16 +52,16 @@ cJSON *OpenAPI_n1_n2_message_transfer_error_convertToJSON(OpenAPI_n1_n2_message_
     }
 
     if (n1_n2_message_transfer_error->err_info) {
-        cJSON *err_info_local_JSON = OpenAPI_n1_n2_msg_txfr_err_detail_convertToJSON(n1_n2_message_transfer_error->err_info);
-        if (err_info_local_JSON == NULL) {
-            ogs_error("OpenAPI_n1_n2_message_transfer_error_convertToJSON() failed [err_info]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "errInfo", err_info_local_JSON);
-        if (item->child == NULL) {
-            ogs_error("OpenAPI_n1_n2_message_transfer_error_convertToJSON() failed [err_info]");
-            goto end;
-        }
+    cJSON *err_info_local_JSON = OpenAPI_n1_n2_msg_txfr_err_detail_convertToJSON(n1_n2_message_transfer_error->err_info);
+    if (err_info_local_JSON == NULL) {
+        ogs_error("OpenAPI_n1_n2_message_transfer_error_convertToJSON() failed [err_info]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "errInfo", err_info_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_n1_n2_message_transfer_error_convertToJSON() failed [err_info]");
+        goto end;
+    }
     }
 
 end:
@@ -78,20 +78,20 @@ OpenAPI_n1_n2_message_transfer_error_t *OpenAPI_n1_n2_message_transfer_error_par
     }
 
     OpenAPI_problem_details_t *error_local_nonprim = NULL;
-
+    
     error_local_nonprim = OpenAPI_problem_details_parseFromJSON(error);
 
     cJSON *err_info = cJSON_GetObjectItemCaseSensitive(n1_n2_message_transfer_errorJSON, "errInfo");
 
     OpenAPI_n1_n2_msg_txfr_err_detail_t *err_info_local_nonprim = NULL;
-    if (err_info) {
-        err_info_local_nonprim = OpenAPI_n1_n2_msg_txfr_err_detail_parseFromJSON(err_info);
+    if (err_info) { 
+    err_info_local_nonprim = OpenAPI_n1_n2_msg_txfr_err_detail_parseFromJSON(err_info);
     }
 
     n1_n2_message_transfer_error_local_var = OpenAPI_n1_n2_message_transfer_error_create (
         error_local_nonprim,
         err_info ? err_info_local_nonprim : NULL
-        );
+    );
 
     return n1_n2_message_transfer_error_local_var;
 end:

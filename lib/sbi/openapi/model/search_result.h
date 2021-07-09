@@ -36,7 +36,7 @@ OpenAPI_search_result_t *OpenAPI_search_result_create(
     int num_nf_inst_complete,
     OpenAPI_preferred_search_t *preferred_search,
     char *nrf_supported_features
-    );
+);
 void OpenAPI_search_result_free(OpenAPI_search_result_t *search_result);
 OpenAPI_search_result_t *OpenAPI_search_result_parseFromJSON(cJSON *search_resultJSON);
 cJSON *OpenAPI_search_result_convertToJSON(OpenAPI_search_result_t *search_result);

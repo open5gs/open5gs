@@ -47,6 +47,13 @@ extern struct dict_object *ogs_diam_origin_realm;
 extern struct dict_object *ogs_diam_destination_host;
 extern struct dict_object *ogs_diam_destination_realm;
 extern struct dict_object *ogs_diam_user_name;
+extern struct dict_object *ogs_diam_subscription_id;
+#define OGS_DIAM_SUBSCRIPTION_ID_TYPE_END_USER_E164      0
+#define OGS_DIAM_SUBSCRIPTION_ID_TYPE_END_USER_IMSI      1
+#define OGS_DIAM_SUBSCRIPTION_ID_TYPE_END_USER_SIP_URI   2
+#define OGS_DIAM_SUBSCRIPTION_ID_TYPE_END_USER_NAI       3
+extern struct dict_object *ogs_diam_subscription_id_type;
+extern struct dict_object *ogs_diam_subscription_id_data;
 #define OGS_DIAM_AUTH_SESSION_STATE_MAINTAINED                0
 #define OGS_DIAM_AUTH_SESSION_NO_STATE_MAINTAINED             1
 extern struct dict_object *ogs_diam_auth_session_state;
@@ -67,6 +74,22 @@ extern struct dict_object *ogs_diam_mip_home_agent_address;
 extern struct dict_object *ogs_diam_authorization_lifetime;
 extern struct dict_object *ogs_diam_auth_grace_period;
 extern struct dict_object *ogs_diam_session_timeout;
+#define OGS_DIAM_RAT_TYPE_WLAN                              0
+#define OGS_DIAM_RAT_TYPE_VIRTUAL                           1
+#define OGS_DIAM_RAT_TYPE_UTRAN                             1000
+#define OGS_DIAM_RAT_TYPE_GERAN                             1001
+#define OGS_DIAM_RAT_TYPE_GAN                               1002
+#define OGS_DIAM_RAT_TYPE_HSPA_EVOLUTION                    1003
+#define OGS_DIAM_RAT_TYPE_EUTRAN                            1004
+#define OGS_DIAM_RAT_TYPE_EUTRAN_NB_IoT                     1005
+#define OGS_DIAM_RAT_TYPE_CDMA2000_1X                       2000
+#define OGS_DIAM_RAT_TYPE_HRPD                              2001
+#define OGS_DIAM_RAT_TYPE_UMB                               2002
+#define OGS_DIAM_RAT_TYPE_EHRPD                             2003
+extern struct dict_object *ogs_diam_rat_type;
+extern struct dict_object *ogs_diam_service_selection;
+extern struct dict_object *ogs_diam_visited_plmn_id;
+extern struct dict_object *ogs_diam_visited_network_identifier;
 
 extern struct dict_object *ogs_diam_vendor;
 extern struct dict_object *ogs_diam_vendor_id;

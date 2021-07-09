@@ -1,7 +1,7 @@
 /*
  * sm_policy_decision.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_sm_policy_decision_H_
@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+#include "bridge_management_container.h"
 #include "charging_data.h"
 #include "charging_information.h"
 #include "condition_data.h"
@@ -60,8 +61,10 @@ typedef struct OpenAPI_sm_policy_decision_s {
     OpenAPI_qos_flow_usage_e qos_flow_usage;
     OpenAPI_sm_policy_association_release_cause_e rel_cause;
     char *supp_feat;
+    struct OpenAPI_bridge_management_container_s *tsn_bridge_man_cont;
     struct OpenAPI_port_management_container_s *tsn_port_man_cont_dstt;
     OpenAPI_list_t *tsn_port_man_cont_nwtts;
+    int red_sess_indication;
 } OpenAPI_sm_policy_decision_t;
 
 OpenAPI_sm_policy_decision_t *OpenAPI_sm_policy_decision_create(
@@ -89,9 +92,11 @@ OpenAPI_sm_policy_decision_t *OpenAPI_sm_policy_decision_create(
     OpenAPI_qos_flow_usage_e qos_flow_usage,
     OpenAPI_sm_policy_association_release_cause_e rel_cause,
     char *supp_feat,
+    OpenAPI_bridge_management_container_t *tsn_bridge_man_cont,
     OpenAPI_port_management_container_t *tsn_port_man_cont_dstt,
-    OpenAPI_list_t *tsn_port_man_cont_nwtts
-    );
+    OpenAPI_list_t *tsn_port_man_cont_nwtts,
+    int red_sess_indication
+);
 void OpenAPI_sm_policy_decision_free(OpenAPI_sm_policy_decision_t *sm_policy_decision);
 OpenAPI_sm_policy_decision_t *OpenAPI_sm_policy_decision_parseFromJSON(cJSON *sm_policy_decisionJSON);
 cJSON *OpenAPI_sm_policy_decision_convertToJSON(OpenAPI_sm_policy_decision_t *sm_policy_decision);

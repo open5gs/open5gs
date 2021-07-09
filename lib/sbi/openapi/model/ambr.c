@@ -7,7 +7,7 @@
 OpenAPI_ambr_t *OpenAPI_ambr_create(
     char *uplink,
     char *downlink
-    )
+)
 {
     OpenAPI_ambr_t *ambr_local_var = OpenAPI_malloc(sizeof(OpenAPI_ambr_t));
     if (!ambr_local_var) {
@@ -63,7 +63,7 @@ OpenAPI_ambr_t *OpenAPI_ambr_parseFromJSON(cJSON *ambrJSON)
         goto end;
     }
 
-
+    
     if (!cJSON_IsString(uplink)) {
         ogs_error("OpenAPI_ambr_parseFromJSON() failed [uplink]");
         goto end;
@@ -75,7 +75,7 @@ OpenAPI_ambr_t *OpenAPI_ambr_parseFromJSON(cJSON *ambrJSON)
         goto end;
     }
 
-
+    
     if (!cJSON_IsString(downlink)) {
         ogs_error("OpenAPI_ambr_parseFromJSON() failed [downlink]");
         goto end;
@@ -84,7 +84,7 @@ OpenAPI_ambr_t *OpenAPI_ambr_parseFromJSON(cJSON *ambrJSON)
     ambr_local_var = OpenAPI_ambr_create (
         ogs_strdup_or_assert(uplink->valuestring),
         ogs_strdup_or_assert(downlink->valuestring)
-        );
+    );
 
     return ambr_local_var;
 end:

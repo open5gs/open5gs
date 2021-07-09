@@ -1,7 +1,7 @@
 /*
  * requested_qos.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_requested_qos_H_
@@ -28,7 +28,7 @@ OpenAPI_requested_qos_t *OpenAPI_requested_qos_create(
     int _5qi,
     char *gbr_ul,
     char *gbr_dl
-    );
+);
 void OpenAPI_requested_qos_free(OpenAPI_requested_qos_t *requested_qos);
 OpenAPI_requested_qos_t *OpenAPI_requested_qos_parseFromJSON(cJSON *requested_qosJSON);
 cJSON *OpenAPI_requested_qos_convertToJSON(OpenAPI_requested_qos_t *requested_qos);

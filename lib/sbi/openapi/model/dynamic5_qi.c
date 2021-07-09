@@ -5,7 +5,7 @@
 #include "dynamic5_qi.h"
 
 OpenAPI_dynamic5_qi_t *OpenAPI_dynamic5_qi_create(
-    OpenAPI_qos_resource_type_t *resource_type,
+    OpenAPI_qos_resource_type_e resource_type,
     int priority_level,
     int packet_delay_budget,
     char *packet_err_rate,
@@ -15,7 +15,7 @@ OpenAPI_dynamic5_qi_t *OpenAPI_dynamic5_qi_create(
     int ext_packet_del_budget,
     int cn_packet_delay_budget_dl,
     int cn_packet_delay_budget_ul
-    )
+)
 {
     OpenAPI_dynamic5_qi_t *dynamic5_qi_local_var = OpenAPI_malloc(sizeof(OpenAPI_dynamic5_qi_t));
     if (!dynamic5_qi_local_var) {
@@ -41,7 +41,6 @@ void OpenAPI_dynamic5_qi_free(OpenAPI_dynamic5_qi_t *dynamic5_qi)
         return;
     }
     OpenAPI_lnode_t *node;
-    OpenAPI_qos_resource_type_free(dynamic5_qi->resource_type);
     ogs_free(dynamic5_qi->packet_err_rate);
     ogs_free(dynamic5_qi);
 }
@@ -56,13 +55,7 @@ cJSON *OpenAPI_dynamic5_qi_convertToJSON(OpenAPI_dynamic5_qi_t *dynamic5_qi)
     }
 
     item = cJSON_CreateObject();
-    cJSON *resource_type_local_JSON = OpenAPI_qos_resource_type_convertToJSON(dynamic5_qi->resource_type);
-    if (resource_type_local_JSON == NULL) {
-        ogs_error("OpenAPI_dynamic5_qi_convertToJSON() failed [resource_type]");
-        goto end;
-    }
-    cJSON_AddItemToObject(item, "resourceType", resource_type_local_JSON);
-    if (item->child == NULL) {
+    if (cJSON_AddStringToObject(item, "resourceType", OpenAPI_qos_resource_type_ToString(dynamic5_qi->resource_type)) == NULL) {
         ogs_error("OpenAPI_dynamic5_qi_convertToJSON() failed [resource_type]");
         goto end;
     }
@@ -83,45 +76,45 @@ cJSON *OpenAPI_dynamic5_qi_convertToJSON(OpenAPI_dynamic5_qi_t *dynamic5_qi)
     }
 
     if (dynamic5_qi->aver_window) {
-        if (cJSON_AddNumberToObject(item, "averWindow", dynamic5_qi->aver_window) == NULL) {
-            ogs_error("OpenAPI_dynamic5_qi_convertToJSON() failed [aver_window]");
-            goto end;
-        }
+    if (cJSON_AddNumberToObject(item, "averWindow", dynamic5_qi->aver_window) == NULL) {
+        ogs_error("OpenAPI_dynamic5_qi_convertToJSON() failed [aver_window]");
+        goto end;
+    }
     }
 
     if (dynamic5_qi->max_data_burst_vol) {
-        if (cJSON_AddNumberToObject(item, "maxDataBurstVol", dynamic5_qi->max_data_burst_vol) == NULL) {
-            ogs_error("OpenAPI_dynamic5_qi_convertToJSON() failed [max_data_burst_vol]");
-            goto end;
-        }
+    if (cJSON_AddNumberToObject(item, "maxDataBurstVol", dynamic5_qi->max_data_burst_vol) == NULL) {
+        ogs_error("OpenAPI_dynamic5_qi_convertToJSON() failed [max_data_burst_vol]");
+        goto end;
+    }
     }
 
     if (dynamic5_qi->ext_max_data_burst_vol) {
-        if (cJSON_AddNumberToObject(item, "extMaxDataBurstVol", dynamic5_qi->ext_max_data_burst_vol) == NULL) {
-            ogs_error("OpenAPI_dynamic5_qi_convertToJSON() failed [ext_max_data_burst_vol]");
-            goto end;
-        }
+    if (cJSON_AddNumberToObject(item, "extMaxDataBurstVol", dynamic5_qi->ext_max_data_burst_vol) == NULL) {
+        ogs_error("OpenAPI_dynamic5_qi_convertToJSON() failed [ext_max_data_burst_vol]");
+        goto end;
+    }
     }
 
     if (dynamic5_qi->ext_packet_del_budget) {
-        if (cJSON_AddNumberToObject(item, "extPacketDelBudget", dynamic5_qi->ext_packet_del_budget) == NULL) {
-            ogs_error("OpenAPI_dynamic5_qi_convertToJSON() failed [ext_packet_del_budget]");
-            goto end;
-        }
+    if (cJSON_AddNumberToObject(item, "extPacketDelBudget", dynamic5_qi->ext_packet_del_budget) == NULL) {
+        ogs_error("OpenAPI_dynamic5_qi_convertToJSON() failed [ext_packet_del_budget]");
+        goto end;
+    }
     }
 
     if (dynamic5_qi->cn_packet_delay_budget_dl) {
-        if (cJSON_AddNumberToObject(item, "cnPacketDelayBudgetDl", dynamic5_qi->cn_packet_delay_budget_dl) == NULL) {
-            ogs_error("OpenAPI_dynamic5_qi_convertToJSON() failed [cn_packet_delay_budget_dl]");
-            goto end;
-        }
+    if (cJSON_AddNumberToObject(item, "cnPacketDelayBudgetDl", dynamic5_qi->cn_packet_delay_budget_dl) == NULL) {
+        ogs_error("OpenAPI_dynamic5_qi_convertToJSON() failed [cn_packet_delay_budget_dl]");
+        goto end;
+    }
     }
 
     if (dynamic5_qi->cn_packet_delay_budget_ul) {
-        if (cJSON_AddNumberToObject(item, "cnPacketDelayBudgetUl", dynamic5_qi->cn_packet_delay_budget_ul) == NULL) {
-            ogs_error("OpenAPI_dynamic5_qi_convertToJSON() failed [cn_packet_delay_budget_ul]");
-            goto end;
-        }
+    if (cJSON_AddNumberToObject(item, "cnPacketDelayBudgetUl", dynamic5_qi->cn_packet_delay_budget_ul) == NULL) {
+        ogs_error("OpenAPI_dynamic5_qi_convertToJSON() failed [cn_packet_delay_budget_ul]");
+        goto end;
+    }
     }
 
 end:
@@ -137,9 +130,13 @@ OpenAPI_dynamic5_qi_t *OpenAPI_dynamic5_qi_parseFromJSON(cJSON *dynamic5_qiJSON)
         goto end;
     }
 
-    OpenAPI_qos_resource_type_t *resource_type_local_nonprim = NULL;
-
-    resource_type_local_nonprim = OpenAPI_qos_resource_type_parseFromJSON(resource_type);
+    OpenAPI_qos_resource_type_e resource_typeVariable;
+    
+    if (!cJSON_IsString(resource_type)) {
+        ogs_error("OpenAPI_dynamic5_qi_parseFromJSON() failed [resource_type]");
+        goto end;
+    }
+    resource_typeVariable = OpenAPI_qos_resource_type_FromString(resource_type->valuestring);
 
     cJSON *priority_level = cJSON_GetObjectItemCaseSensitive(dynamic5_qiJSON, "priorityLevel");
     if (!priority_level) {
@@ -147,7 +144,7 @@ OpenAPI_dynamic5_qi_t *OpenAPI_dynamic5_qi_parseFromJSON(cJSON *dynamic5_qiJSON)
         goto end;
     }
 
-
+    
     if (!cJSON_IsNumber(priority_level)) {
         ogs_error("OpenAPI_dynamic5_qi_parseFromJSON() failed [priority_level]");
         goto end;
@@ -159,7 +156,7 @@ OpenAPI_dynamic5_qi_t *OpenAPI_dynamic5_qi_parseFromJSON(cJSON *dynamic5_qiJSON)
         goto end;
     }
 
-
+    
     if (!cJSON_IsNumber(packet_delay_budget)) {
         ogs_error("OpenAPI_dynamic5_qi_parseFromJSON() failed [packet_delay_budget]");
         goto end;
@@ -171,7 +168,7 @@ OpenAPI_dynamic5_qi_t *OpenAPI_dynamic5_qi_parseFromJSON(cJSON *dynamic5_qiJSON)
         goto end;
     }
 
-
+    
     if (!cJSON_IsString(packet_err_rate)) {
         ogs_error("OpenAPI_dynamic5_qi_parseFromJSON() failed [packet_err_rate]");
         goto end;
@@ -179,60 +176,60 @@ OpenAPI_dynamic5_qi_t *OpenAPI_dynamic5_qi_parseFromJSON(cJSON *dynamic5_qiJSON)
 
     cJSON *aver_window = cJSON_GetObjectItemCaseSensitive(dynamic5_qiJSON, "averWindow");
 
-    if (aver_window) {
-        if (!cJSON_IsNumber(aver_window)) {
-            ogs_error("OpenAPI_dynamic5_qi_parseFromJSON() failed [aver_window]");
-            goto end;
-        }
+    if (aver_window) { 
+    if (!cJSON_IsNumber(aver_window)) {
+        ogs_error("OpenAPI_dynamic5_qi_parseFromJSON() failed [aver_window]");
+        goto end;
+    }
     }
 
     cJSON *max_data_burst_vol = cJSON_GetObjectItemCaseSensitive(dynamic5_qiJSON, "maxDataBurstVol");
 
-    if (max_data_burst_vol) {
-        if (!cJSON_IsNumber(max_data_burst_vol)) {
-            ogs_error("OpenAPI_dynamic5_qi_parseFromJSON() failed [max_data_burst_vol]");
-            goto end;
-        }
+    if (max_data_burst_vol) { 
+    if (!cJSON_IsNumber(max_data_burst_vol)) {
+        ogs_error("OpenAPI_dynamic5_qi_parseFromJSON() failed [max_data_burst_vol]");
+        goto end;
+    }
     }
 
     cJSON *ext_max_data_burst_vol = cJSON_GetObjectItemCaseSensitive(dynamic5_qiJSON, "extMaxDataBurstVol");
 
-    if (ext_max_data_burst_vol) {
-        if (!cJSON_IsNumber(ext_max_data_burst_vol)) {
-            ogs_error("OpenAPI_dynamic5_qi_parseFromJSON() failed [ext_max_data_burst_vol]");
-            goto end;
-        }
+    if (ext_max_data_burst_vol) { 
+    if (!cJSON_IsNumber(ext_max_data_burst_vol)) {
+        ogs_error("OpenAPI_dynamic5_qi_parseFromJSON() failed [ext_max_data_burst_vol]");
+        goto end;
+    }
     }
 
     cJSON *ext_packet_del_budget = cJSON_GetObjectItemCaseSensitive(dynamic5_qiJSON, "extPacketDelBudget");
 
-    if (ext_packet_del_budget) {
-        if (!cJSON_IsNumber(ext_packet_del_budget)) {
-            ogs_error("OpenAPI_dynamic5_qi_parseFromJSON() failed [ext_packet_del_budget]");
-            goto end;
-        }
+    if (ext_packet_del_budget) { 
+    if (!cJSON_IsNumber(ext_packet_del_budget)) {
+        ogs_error("OpenAPI_dynamic5_qi_parseFromJSON() failed [ext_packet_del_budget]");
+        goto end;
+    }
     }
 
     cJSON *cn_packet_delay_budget_dl = cJSON_GetObjectItemCaseSensitive(dynamic5_qiJSON, "cnPacketDelayBudgetDl");
 
-    if (cn_packet_delay_budget_dl) {
-        if (!cJSON_IsNumber(cn_packet_delay_budget_dl)) {
-            ogs_error("OpenAPI_dynamic5_qi_parseFromJSON() failed [cn_packet_delay_budget_dl]");
-            goto end;
-        }
+    if (cn_packet_delay_budget_dl) { 
+    if (!cJSON_IsNumber(cn_packet_delay_budget_dl)) {
+        ogs_error("OpenAPI_dynamic5_qi_parseFromJSON() failed [cn_packet_delay_budget_dl]");
+        goto end;
+    }
     }
 
     cJSON *cn_packet_delay_budget_ul = cJSON_GetObjectItemCaseSensitive(dynamic5_qiJSON, "cnPacketDelayBudgetUl");
 
-    if (cn_packet_delay_budget_ul) {
-        if (!cJSON_IsNumber(cn_packet_delay_budget_ul)) {
-            ogs_error("OpenAPI_dynamic5_qi_parseFromJSON() failed [cn_packet_delay_budget_ul]");
-            goto end;
-        }
+    if (cn_packet_delay_budget_ul) { 
+    if (!cJSON_IsNumber(cn_packet_delay_budget_ul)) {
+        ogs_error("OpenAPI_dynamic5_qi_parseFromJSON() failed [cn_packet_delay_budget_ul]");
+        goto end;
+    }
     }
 
     dynamic5_qi_local_var = OpenAPI_dynamic5_qi_create (
-        resource_type_local_nonprim,
+        resource_typeVariable,
         priority_level->valuedouble,
         packet_delay_budget->valuedouble,
         ogs_strdup_or_assert(packet_err_rate->valuestring),
@@ -242,7 +239,7 @@ OpenAPI_dynamic5_qi_t *OpenAPI_dynamic5_qi_parseFromJSON(cJSON *dynamic5_qiJSON)
         ext_packet_del_budget ? ext_packet_del_budget->valuedouble : 0,
         cn_packet_delay_budget_dl ? cn_packet_delay_budget_dl->valuedouble : 0,
         cn_packet_delay_budget_ul ? cn_packet_delay_budget_ul->valuedouble : 0
-        );
+    );
 
     return dynamic5_qi_local_var;
 end:

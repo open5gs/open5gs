@@ -1,0 +1,235 @@
+
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+#include "ue_differentiation_info.h"
+
+OpenAPI_ue_differentiation_info_t *OpenAPI_ue_differentiation_info_create(
+    OpenAPI_periodic_communication_indicator_e periodic_com_ind,
+    int periodic_time,
+    OpenAPI_scheduled_communication_time_t *scheduled_com_time,
+    OpenAPI_stationary_indication_e stationary_ind,
+    OpenAPI_traffic_profile_e traffic_profile,
+    OpenAPI_battery_indication_t *battery_ind,
+    char *validity_time
+)
+{
+    OpenAPI_ue_differentiation_info_t *ue_differentiation_info_local_var = OpenAPI_malloc(sizeof(OpenAPI_ue_differentiation_info_t));
+    if (!ue_differentiation_info_local_var) {
+        return NULL;
+    }
+    ue_differentiation_info_local_var->periodic_com_ind = periodic_com_ind;
+    ue_differentiation_info_local_var->periodic_time = periodic_time;
+    ue_differentiation_info_local_var->scheduled_com_time = scheduled_com_time;
+    ue_differentiation_info_local_var->stationary_ind = stationary_ind;
+    ue_differentiation_info_local_var->traffic_profile = traffic_profile;
+    ue_differentiation_info_local_var->battery_ind = battery_ind;
+    ue_differentiation_info_local_var->validity_time = validity_time;
+
+    return ue_differentiation_info_local_var;
+}
+
+void OpenAPI_ue_differentiation_info_free(OpenAPI_ue_differentiation_info_t *ue_differentiation_info)
+{
+    if (NULL == ue_differentiation_info) {
+        return;
+    }
+    OpenAPI_lnode_t *node;
+    OpenAPI_scheduled_communication_time_free(ue_differentiation_info->scheduled_com_time);
+    OpenAPI_battery_indication_free(ue_differentiation_info->battery_ind);
+    ogs_free(ue_differentiation_info->validity_time);
+    ogs_free(ue_differentiation_info);
+}
+
+cJSON *OpenAPI_ue_differentiation_info_convertToJSON(OpenAPI_ue_differentiation_info_t *ue_differentiation_info)
+{
+    cJSON *item = NULL;
+
+    if (ue_differentiation_info == NULL) {
+        ogs_error("OpenAPI_ue_differentiation_info_convertToJSON() failed [UeDifferentiationInfo]");
+        return NULL;
+    }
+
+    item = cJSON_CreateObject();
+    if (ue_differentiation_info->periodic_com_ind) {
+    if (cJSON_AddStringToObject(item, "periodicComInd", OpenAPI_periodic_communication_indicator_ToString(ue_differentiation_info->periodic_com_ind)) == NULL) {
+        ogs_error("OpenAPI_ue_differentiation_info_convertToJSON() failed [periodic_com_ind]");
+        goto end;
+    }
+    }
+
+    if (ue_differentiation_info->periodic_time) {
+    if (cJSON_AddNumberToObject(item, "periodicTime", ue_differentiation_info->periodic_time) == NULL) {
+        ogs_error("OpenAPI_ue_differentiation_info_convertToJSON() failed [periodic_time]");
+        goto end;
+    }
+    }
+
+    if (ue_differentiation_info->scheduled_com_time) {
+    cJSON *scheduled_com_time_local_JSON = OpenAPI_scheduled_communication_time_convertToJSON(ue_differentiation_info->scheduled_com_time);
+    if (scheduled_com_time_local_JSON == NULL) {
+        ogs_error("OpenAPI_ue_differentiation_info_convertToJSON() failed [scheduled_com_time]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "scheduledComTime", scheduled_com_time_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_ue_differentiation_info_convertToJSON() failed [scheduled_com_time]");
+        goto end;
+    }
+    }
+
+    if (ue_differentiation_info->stationary_ind) {
+    if (cJSON_AddStringToObject(item, "stationaryInd", OpenAPI_stationary_indication_ToString(ue_differentiation_info->stationary_ind)) == NULL) {
+        ogs_error("OpenAPI_ue_differentiation_info_convertToJSON() failed [stationary_ind]");
+        goto end;
+    }
+    }
+
+    if (ue_differentiation_info->traffic_profile) {
+    if (cJSON_AddStringToObject(item, "trafficProfile", OpenAPI_traffic_profile_ToString(ue_differentiation_info->traffic_profile)) == NULL) {
+        ogs_error("OpenAPI_ue_differentiation_info_convertToJSON() failed [traffic_profile]");
+        goto end;
+    }
+    }
+
+    if (ue_differentiation_info->battery_ind) {
+    cJSON *battery_ind_local_JSON = OpenAPI_battery_indication_convertToJSON(ue_differentiation_info->battery_ind);
+    if (battery_ind_local_JSON == NULL) {
+        ogs_error("OpenAPI_ue_differentiation_info_convertToJSON() failed [battery_ind]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "batteryInd", battery_ind_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_ue_differentiation_info_convertToJSON() failed [battery_ind]");
+        goto end;
+    }
+    }
+
+    if (ue_differentiation_info->validity_time) {
+    if (cJSON_AddStringToObject(item, "validityTime", ue_differentiation_info->validity_time) == NULL) {
+        ogs_error("OpenAPI_ue_differentiation_info_convertToJSON() failed [validity_time]");
+        goto end;
+    }
+    }
+
+end:
+    return item;
+}
+
+OpenAPI_ue_differentiation_info_t *OpenAPI_ue_differentiation_info_parseFromJSON(cJSON *ue_differentiation_infoJSON)
+{
+    OpenAPI_ue_differentiation_info_t *ue_differentiation_info_local_var = NULL;
+    cJSON *periodic_com_ind = cJSON_GetObjectItemCaseSensitive(ue_differentiation_infoJSON, "periodicComInd");
+
+    OpenAPI_periodic_communication_indicator_e periodic_com_indVariable;
+    if (periodic_com_ind) { 
+    if (!cJSON_IsString(periodic_com_ind)) {
+        ogs_error("OpenAPI_ue_differentiation_info_parseFromJSON() failed [periodic_com_ind]");
+        goto end;
+    }
+    periodic_com_indVariable = OpenAPI_periodic_communication_indicator_FromString(periodic_com_ind->valuestring);
+    }
+
+    cJSON *periodic_time = cJSON_GetObjectItemCaseSensitive(ue_differentiation_infoJSON, "periodicTime");
+
+    if (periodic_time) { 
+    if (!cJSON_IsNumber(periodic_time)) {
+        ogs_error("OpenAPI_ue_differentiation_info_parseFromJSON() failed [periodic_time]");
+        goto end;
+    }
+    }
+
+    cJSON *scheduled_com_time = cJSON_GetObjectItemCaseSensitive(ue_differentiation_infoJSON, "scheduledComTime");
+
+    OpenAPI_scheduled_communication_time_t *scheduled_com_time_local_nonprim = NULL;
+    if (scheduled_com_time) { 
+    scheduled_com_time_local_nonprim = OpenAPI_scheduled_communication_time_parseFromJSON(scheduled_com_time);
+    }
+
+    cJSON *stationary_ind = cJSON_GetObjectItemCaseSensitive(ue_differentiation_infoJSON, "stationaryInd");
+
+    OpenAPI_stationary_indication_e stationary_indVariable;
+    if (stationary_ind) { 
+    if (!cJSON_IsString(stationary_ind)) {
+        ogs_error("OpenAPI_ue_differentiation_info_parseFromJSON() failed [stationary_ind]");
+        goto end;
+    }
+    stationary_indVariable = OpenAPI_stationary_indication_FromString(stationary_ind->valuestring);
+    }
+
+    cJSON *traffic_profile = cJSON_GetObjectItemCaseSensitive(ue_differentiation_infoJSON, "trafficProfile");
+
+    OpenAPI_traffic_profile_e traffic_profileVariable;
+    if (traffic_profile) { 
+    if (!cJSON_IsString(traffic_profile)) {
+        ogs_error("OpenAPI_ue_differentiation_info_parseFromJSON() failed [traffic_profile]");
+        goto end;
+    }
+    traffic_profileVariable = OpenAPI_traffic_profile_FromString(traffic_profile->valuestring);
+    }
+
+    cJSON *battery_ind = cJSON_GetObjectItemCaseSensitive(ue_differentiation_infoJSON, "batteryInd");
+
+    OpenAPI_battery_indication_t *battery_ind_local_nonprim = NULL;
+    if (battery_ind) { 
+    battery_ind_local_nonprim = OpenAPI_battery_indication_parseFromJSON(battery_ind);
+    }
+
+    cJSON *validity_time = cJSON_GetObjectItemCaseSensitive(ue_differentiation_infoJSON, "validityTime");
+
+    if (validity_time) { 
+    if (!cJSON_IsString(validity_time)) {
+        ogs_error("OpenAPI_ue_differentiation_info_parseFromJSON() failed [validity_time]");
+        goto end;
+    }
+    }
+
+    ue_differentiation_info_local_var = OpenAPI_ue_differentiation_info_create (
+        periodic_com_ind ? periodic_com_indVariable : 0,
+        periodic_time ? periodic_time->valuedouble : 0,
+        scheduled_com_time ? scheduled_com_time_local_nonprim : NULL,
+        stationary_ind ? stationary_indVariable : 0,
+        traffic_profile ? traffic_profileVariable : 0,
+        battery_ind ? battery_ind_local_nonprim : NULL,
+        validity_time ? ogs_strdup_or_assert(validity_time->valuestring) : NULL
+    );
+
+    return ue_differentiation_info_local_var;
+end:
+    return NULL;
+}
+
+OpenAPI_ue_differentiation_info_t *OpenAPI_ue_differentiation_info_copy(OpenAPI_ue_differentiation_info_t *dst, OpenAPI_ue_differentiation_info_t *src)
+{
+    cJSON *item = NULL;
+    char *content = NULL;
+
+    ogs_assert(src);
+    item = OpenAPI_ue_differentiation_info_convertToJSON(src);
+    if (!item) {
+        ogs_error("OpenAPI_ue_differentiation_info_convertToJSON() failed");
+        return NULL;
+    }
+
+    content = cJSON_Print(item);
+    cJSON_Delete(item);
+
+    if (!content) {
+        ogs_error("cJSON_Print() failed");
+        return NULL;
+    }
+
+    item = cJSON_Parse(content);
+    ogs_free(content);
+    if (!item) {
+        ogs_error("cJSON_Parse() failed");
+        return NULL;
+    }
+
+    OpenAPI_ue_differentiation_info_free(dst);
+    dst = OpenAPI_ue_differentiation_info_parseFromJSON(item);
+    cJSON_Delete(item);
+
+    return dst;
+}
+

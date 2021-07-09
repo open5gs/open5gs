@@ -1,7 +1,7 @@
 /*
  * authentication_vector.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_authentication_vector_H_
@@ -12,7 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
-#include "av5_g_he_aka.h"
+#include "av5_ghe_aka.h"
 #include "av_eap_aka_prime.h"
 #include "av_type.h"
 
@@ -41,7 +41,7 @@ OpenAPI_authentication_vector_t *OpenAPI_authentication_vector_create(
     char *ik_prime,
     char *xres_star,
     char *kausf
-    );
+);
 void OpenAPI_authentication_vector_free(OpenAPI_authentication_vector_t *authentication_vector);
 OpenAPI_authentication_vector_t *OpenAPI_authentication_vector_parseFromJSON(cJSON *authentication_vectorJSON);
 cJSON *OpenAPI_authentication_vector_convertToJSON(OpenAPI_authentication_vector_t *authentication_vector);

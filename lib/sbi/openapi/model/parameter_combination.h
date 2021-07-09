@@ -1,7 +1,7 @@
 /*
  * parameter_combination.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_parameter_combination_H_
@@ -29,7 +29,7 @@ OpenAPI_parameter_combination_t *OpenAPI_parameter_combination_create(
     char *supi,
     char *dnn,
     OpenAPI_snssai_t *snssai
-    );
+);
 void OpenAPI_parameter_combination_free(OpenAPI_parameter_combination_t *parameter_combination);
 OpenAPI_parameter_combination_t *OpenAPI_parameter_combination_parseFromJSON(cJSON *parameter_combinationJSON);
 cJSON *OpenAPI_parameter_combination_convertToJSON(OpenAPI_parameter_combination_t *parameter_combination);

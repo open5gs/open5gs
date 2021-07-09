@@ -175,6 +175,7 @@ TLS_CA = "@sysconfdir@/freeDiameter/cacert.pem";
 # exchanges.
 # Default: Relaying is enabled.
 #NoRelay;
+NoRelay;
 
 # Number of server threads that can handle incoming messages at the same time.
 # Default: 4

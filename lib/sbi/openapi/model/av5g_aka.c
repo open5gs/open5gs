@@ -8,7 +8,7 @@ OpenAPI_av5g_aka_t *OpenAPI_av5g_aka_create(
     char *rand,
     char *hxres_star,
     char *autn
-    )
+)
 {
     OpenAPI_av5g_aka_t *av5g_aka_local_var = OpenAPI_malloc(sizeof(OpenAPI_av5g_aka_t));
     if (!av5g_aka_local_var) {
@@ -71,7 +71,7 @@ OpenAPI_av5g_aka_t *OpenAPI_av5g_aka_parseFromJSON(cJSON *av5g_akaJSON)
         goto end;
     }
 
-
+    
     if (!cJSON_IsString(rand)) {
         ogs_error("OpenAPI_av5g_aka_parseFromJSON() failed [rand]");
         goto end;
@@ -83,7 +83,7 @@ OpenAPI_av5g_aka_t *OpenAPI_av5g_aka_parseFromJSON(cJSON *av5g_akaJSON)
         goto end;
     }
 
-
+    
     if (!cJSON_IsString(hxres_star)) {
         ogs_error("OpenAPI_av5g_aka_parseFromJSON() failed [hxres_star]");
         goto end;
@@ -95,7 +95,7 @@ OpenAPI_av5g_aka_t *OpenAPI_av5g_aka_parseFromJSON(cJSON *av5g_akaJSON)
         goto end;
     }
 
-
+    
     if (!cJSON_IsString(autn)) {
         ogs_error("OpenAPI_av5g_aka_parseFromJSON() failed [autn]");
         goto end;
@@ -105,7 +105,7 @@ OpenAPI_av5g_aka_t *OpenAPI_av5g_aka_parseFromJSON(cJSON *av5g_akaJSON)
         ogs_strdup_or_assert(rand->valuestring),
         ogs_strdup_or_assert(hxres_star->valuestring),
         ogs_strdup_or_assert(autn->valuestring)
-        );
+    );
 
     return av5g_aka_local_var;
 end:

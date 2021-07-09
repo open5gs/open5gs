@@ -9,12 +9,12 @@ OpenAPI_ue_context_create_data_t *OpenAPI_ue_context_create_data_create(
     OpenAPI_ng_ran_target_id_t *target_id,
     OpenAPI_n2_info_content_t *source_to_target_data,
     OpenAPI_list_t *pdu_session_list,
-    char mme_control_fteid,
     char *n2_notify_uri,
     OpenAPI_n2_info_content_t *ue_radio_capability,
     OpenAPI_ng_ap_cause_t *ngap_cause,
-    char *supported_features
-    )
+    char *supported_features,
+    OpenAPI_plmn_id_nid_t *serving_network
+)
 {
     OpenAPI_ue_context_create_data_t *ue_context_create_data_local_var = OpenAPI_malloc(sizeof(OpenAPI_ue_context_create_data_t));
     if (!ue_context_create_data_local_var) {
@@ -24,11 +24,11 @@ OpenAPI_ue_context_create_data_t *OpenAPI_ue_context_create_data_create(
     ue_context_create_data_local_var->target_id = target_id;
     ue_context_create_data_local_var->source_to_target_data = source_to_target_data;
     ue_context_create_data_local_var->pdu_session_list = pdu_session_list;
-    ue_context_create_data_local_var->mme_control_fteid = mme_control_fteid;
     ue_context_create_data_local_var->n2_notify_uri = n2_notify_uri;
     ue_context_create_data_local_var->ue_radio_capability = ue_radio_capability;
     ue_context_create_data_local_var->ngap_cause = ngap_cause;
     ue_context_create_data_local_var->supported_features = supported_features;
+    ue_context_create_data_local_var->serving_network = serving_network;
 
     return ue_context_create_data_local_var;
 }
@@ -50,6 +50,7 @@ void OpenAPI_ue_context_create_data_free(OpenAPI_ue_context_create_data_t *ue_co
     OpenAPI_n2_info_content_free(ue_context_create_data->ue_radio_capability);
     OpenAPI_ng_ap_cause_free(ue_context_create_data->ngap_cause);
     ogs_free(ue_context_create_data->supported_features);
+    OpenAPI_plmn_id_nid_free(ue_context_create_data->serving_network);
     ogs_free(ue_context_create_data);
 }
 
@@ -114,51 +115,57 @@ cJSON *OpenAPI_ue_context_create_data_convertToJSON(OpenAPI_ue_context_create_da
         }
     }
 
-    if (ue_context_create_data->mme_control_fteid) {
-        if (cJSON_AddNumberToObject(item, "mmeControlFteid", ue_context_create_data->mme_control_fteid) == NULL) {
-            ogs_error("OpenAPI_ue_context_create_data_convertToJSON() failed [mme_control_fteid]");
-            goto end;
-        }
-    }
-
     if (ue_context_create_data->n2_notify_uri) {
-        if (cJSON_AddStringToObject(item, "n2NotifyUri", ue_context_create_data->n2_notify_uri) == NULL) {
-            ogs_error("OpenAPI_ue_context_create_data_convertToJSON() failed [n2_notify_uri]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "n2NotifyUri", ue_context_create_data->n2_notify_uri) == NULL) {
+        ogs_error("OpenAPI_ue_context_create_data_convertToJSON() failed [n2_notify_uri]");
+        goto end;
+    }
     }
 
     if (ue_context_create_data->ue_radio_capability) {
-        cJSON *ue_radio_capability_local_JSON = OpenAPI_n2_info_content_convertToJSON(ue_context_create_data->ue_radio_capability);
-        if (ue_radio_capability_local_JSON == NULL) {
-            ogs_error("OpenAPI_ue_context_create_data_convertToJSON() failed [ue_radio_capability]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "ueRadioCapability", ue_radio_capability_local_JSON);
-        if (item->child == NULL) {
-            ogs_error("OpenAPI_ue_context_create_data_convertToJSON() failed [ue_radio_capability]");
-            goto end;
-        }
+    cJSON *ue_radio_capability_local_JSON = OpenAPI_n2_info_content_convertToJSON(ue_context_create_data->ue_radio_capability);
+    if (ue_radio_capability_local_JSON == NULL) {
+        ogs_error("OpenAPI_ue_context_create_data_convertToJSON() failed [ue_radio_capability]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "ueRadioCapability", ue_radio_capability_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_ue_context_create_data_convertToJSON() failed [ue_radio_capability]");
+        goto end;
+    }
     }
 
     if (ue_context_create_data->ngap_cause) {
-        cJSON *ngap_cause_local_JSON = OpenAPI_ng_ap_cause_convertToJSON(ue_context_create_data->ngap_cause);
-        if (ngap_cause_local_JSON == NULL) {
-            ogs_error("OpenAPI_ue_context_create_data_convertToJSON() failed [ngap_cause]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "ngapCause", ngap_cause_local_JSON);
-        if (item->child == NULL) {
-            ogs_error("OpenAPI_ue_context_create_data_convertToJSON() failed [ngap_cause]");
-            goto end;
-        }
+    cJSON *ngap_cause_local_JSON = OpenAPI_ng_ap_cause_convertToJSON(ue_context_create_data->ngap_cause);
+    if (ngap_cause_local_JSON == NULL) {
+        ogs_error("OpenAPI_ue_context_create_data_convertToJSON() failed [ngap_cause]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "ngapCause", ngap_cause_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_ue_context_create_data_convertToJSON() failed [ngap_cause]");
+        goto end;
+    }
     }
 
     if (ue_context_create_data->supported_features) {
-        if (cJSON_AddStringToObject(item, "supportedFeatures", ue_context_create_data->supported_features) == NULL) {
-            ogs_error("OpenAPI_ue_context_create_data_convertToJSON() failed [supported_features]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "supportedFeatures", ue_context_create_data->supported_features) == NULL) {
+        ogs_error("OpenAPI_ue_context_create_data_convertToJSON() failed [supported_features]");
+        goto end;
+    }
+    }
+
+    if (ue_context_create_data->serving_network) {
+    cJSON *serving_network_local_JSON = OpenAPI_plmn_id_nid_convertToJSON(ue_context_create_data->serving_network);
+    if (serving_network_local_JSON == NULL) {
+        ogs_error("OpenAPI_ue_context_create_data_convertToJSON() failed [serving_network]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "servingNetwork", serving_network_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_ue_context_create_data_convertToJSON() failed [serving_network]");
+        goto end;
+    }
     }
 
 end:
@@ -175,7 +182,7 @@ OpenAPI_ue_context_create_data_t *OpenAPI_ue_context_create_data_parseFromJSON(c
     }
 
     OpenAPI_ue_context_t *ue_context_local_nonprim = NULL;
-
+    
     ue_context_local_nonprim = OpenAPI_ue_context_parseFromJSON(ue_context);
 
     cJSON *target_id = cJSON_GetObjectItemCaseSensitive(ue_context_create_dataJSON, "targetId");
@@ -185,7 +192,7 @@ OpenAPI_ue_context_create_data_t *OpenAPI_ue_context_create_data_parseFromJSON(c
     }
 
     OpenAPI_ng_ran_target_id_t *target_id_local_nonprim = NULL;
-
+    
     target_id_local_nonprim = OpenAPI_ng_ran_target_id_parseFromJSON(target_id);
 
     cJSON *source_to_target_data = cJSON_GetObjectItemCaseSensitive(ue_context_create_dataJSON, "sourceToTargetData");
@@ -195,7 +202,7 @@ OpenAPI_ue_context_create_data_t *OpenAPI_ue_context_create_data_parseFromJSON(c
     }
 
     OpenAPI_n2_info_content_t *source_to_target_data_local_nonprim = NULL;
-
+    
     source_to_target_data_local_nonprim = OpenAPI_n2_info_content_parseFromJSON(source_to_target_data);
 
     cJSON *pdu_session_list = cJSON_GetObjectItemCaseSensitive(ue_context_create_dataJSON, "pduSessionList");
@@ -205,9 +212,9 @@ OpenAPI_ue_context_create_data_t *OpenAPI_ue_context_create_data_parseFromJSON(c
     }
 
     OpenAPI_list_t *pdu_session_listList;
-
+    
     cJSON *pdu_session_list_local_nonprimitive;
-    if (!cJSON_IsArray(pdu_session_list)) {
+    if (!cJSON_IsArray(pdu_session_list)){
         ogs_error("OpenAPI_ue_context_create_data_parseFromJSON() failed [pdu_session_list]");
         goto end;
     }
@@ -224,45 +231,43 @@ OpenAPI_ue_context_create_data_t *OpenAPI_ue_context_create_data_parseFromJSON(c
         OpenAPI_list_add(pdu_session_listList, pdu_session_listItem);
     }
 
-    cJSON *mme_control_fteid = cJSON_GetObjectItemCaseSensitive(ue_context_create_dataJSON, "mmeControlFteid");
-
-    if (mme_control_fteid) {
-        if (!cJSON_IsNumber(mme_control_fteid)) {
-            ogs_error("OpenAPI_ue_context_create_data_parseFromJSON() failed [mme_control_fteid]");
-            goto end;
-        }
-    }
-
     cJSON *n2_notify_uri = cJSON_GetObjectItemCaseSensitive(ue_context_create_dataJSON, "n2NotifyUri");
 
-    if (n2_notify_uri) {
-        if (!cJSON_IsString(n2_notify_uri)) {
-            ogs_error("OpenAPI_ue_context_create_data_parseFromJSON() failed [n2_notify_uri]");
-            goto end;
-        }
+    if (n2_notify_uri) { 
+    if (!cJSON_IsString(n2_notify_uri)) {
+        ogs_error("OpenAPI_ue_context_create_data_parseFromJSON() failed [n2_notify_uri]");
+        goto end;
+    }
     }
 
     cJSON *ue_radio_capability = cJSON_GetObjectItemCaseSensitive(ue_context_create_dataJSON, "ueRadioCapability");
 
     OpenAPI_n2_info_content_t *ue_radio_capability_local_nonprim = NULL;
-    if (ue_radio_capability) {
-        ue_radio_capability_local_nonprim = OpenAPI_n2_info_content_parseFromJSON(ue_radio_capability);
+    if (ue_radio_capability) { 
+    ue_radio_capability_local_nonprim = OpenAPI_n2_info_content_parseFromJSON(ue_radio_capability);
     }
 
     cJSON *ngap_cause = cJSON_GetObjectItemCaseSensitive(ue_context_create_dataJSON, "ngapCause");
 
     OpenAPI_ng_ap_cause_t *ngap_cause_local_nonprim = NULL;
-    if (ngap_cause) {
-        ngap_cause_local_nonprim = OpenAPI_ng_ap_cause_parseFromJSON(ngap_cause);
+    if (ngap_cause) { 
+    ngap_cause_local_nonprim = OpenAPI_ng_ap_cause_parseFromJSON(ngap_cause);
     }
 
     cJSON *supported_features = cJSON_GetObjectItemCaseSensitive(ue_context_create_dataJSON, "supportedFeatures");
 
-    if (supported_features) {
-        if (!cJSON_IsString(supported_features)) {
-            ogs_error("OpenAPI_ue_context_create_data_parseFromJSON() failed [supported_features]");
-            goto end;
-        }
+    if (supported_features) { 
+    if (!cJSON_IsString(supported_features)) {
+        ogs_error("OpenAPI_ue_context_create_data_parseFromJSON() failed [supported_features]");
+        goto end;
+    }
+    }
+
+    cJSON *serving_network = cJSON_GetObjectItemCaseSensitive(ue_context_create_dataJSON, "servingNetwork");
+
+    OpenAPI_plmn_id_nid_t *serving_network_local_nonprim = NULL;
+    if (serving_network) { 
+    serving_network_local_nonprim = OpenAPI_plmn_id_nid_parseFromJSON(serving_network);
     }
 
     ue_context_create_data_local_var = OpenAPI_ue_context_create_data_create (
@@ -270,12 +275,12 @@ OpenAPI_ue_context_create_data_t *OpenAPI_ue_context_create_data_parseFromJSON(c
         target_id_local_nonprim,
         source_to_target_data_local_nonprim,
         pdu_session_listList,
-        mme_control_fteid ? mme_control_fteid->valueint : 0,
         n2_notify_uri ? ogs_strdup_or_assert(n2_notify_uri->valuestring) : NULL,
         ue_radio_capability ? ue_radio_capability_local_nonprim : NULL,
         ngap_cause ? ngap_cause_local_nonprim : NULL,
-        supported_features ? ogs_strdup_or_assert(supported_features->valuestring) : NULL
-        );
+        supported_features ? ogs_strdup_or_assert(supported_features->valuestring) : NULL,
+        serving_network ? serving_network_local_nonprim : NULL
+    );
 
     return ue_context_create_data_local_var;
 end:

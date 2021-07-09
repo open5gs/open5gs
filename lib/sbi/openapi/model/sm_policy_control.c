@@ -7,7 +7,7 @@
 OpenAPI_sm_policy_control_t *OpenAPI_sm_policy_control_create(
     OpenAPI_sm_policy_context_data_t *context,
     OpenAPI_sm_policy_decision_t *policy
-    )
+)
 {
     OpenAPI_sm_policy_control_t *sm_policy_control_local_var = OpenAPI_malloc(sizeof(OpenAPI_sm_policy_control_t));
     if (!sm_policy_control_local_var) {
@@ -76,7 +76,7 @@ OpenAPI_sm_policy_control_t *OpenAPI_sm_policy_control_parseFromJSON(cJSON *sm_p
     }
 
     OpenAPI_sm_policy_context_data_t *context_local_nonprim = NULL;
-
+    
     context_local_nonprim = OpenAPI_sm_policy_context_data_parseFromJSON(context);
 
     cJSON *policy = cJSON_GetObjectItemCaseSensitive(sm_policy_controlJSON, "policy");
@@ -86,13 +86,13 @@ OpenAPI_sm_policy_control_t *OpenAPI_sm_policy_control_parseFromJSON(cJSON *sm_p
     }
 
     OpenAPI_sm_policy_decision_t *policy_local_nonprim = NULL;
-
+    
     policy_local_nonprim = OpenAPI_sm_policy_decision_parseFromJSON(policy);
 
     sm_policy_control_local_var = OpenAPI_sm_policy_control_create (
         context_local_nonprim,
         policy_local_nonprim
-        );
+    );
 
     return sm_policy_control_local_var;
 end:

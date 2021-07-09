@@ -7,7 +7,7 @@
 OpenAPI_n1_n2_message_transfer_rsp_data_t *OpenAPI_n1_n2_message_transfer_rsp_data_create(
     OpenAPI_n1_n2_message_transfer_cause_e cause,
     char *supported_features
-    )
+)
 {
     OpenAPI_n1_n2_message_transfer_rsp_data_t *n1_n2_message_transfer_rsp_data_local_var = OpenAPI_malloc(sizeof(OpenAPI_n1_n2_message_transfer_rsp_data_t));
     if (!n1_n2_message_transfer_rsp_data_local_var) {
@@ -45,10 +45,10 @@ cJSON *OpenAPI_n1_n2_message_transfer_rsp_data_convertToJSON(OpenAPI_n1_n2_messa
     }
 
     if (n1_n2_message_transfer_rsp_data->supported_features) {
-        if (cJSON_AddStringToObject(item, "supportedFeatures", n1_n2_message_transfer_rsp_data->supported_features) == NULL) {
-            ogs_error("OpenAPI_n1_n2_message_transfer_rsp_data_convertToJSON() failed [supported_features]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "supportedFeatures", n1_n2_message_transfer_rsp_data->supported_features) == NULL) {
+        ogs_error("OpenAPI_n1_n2_message_transfer_rsp_data_convertToJSON() failed [supported_features]");
+        goto end;
+    }
     }
 
 end:
@@ -65,7 +65,7 @@ OpenAPI_n1_n2_message_transfer_rsp_data_t *OpenAPI_n1_n2_message_transfer_rsp_da
     }
 
     OpenAPI_n1_n2_message_transfer_cause_e causeVariable;
-
+    
     if (!cJSON_IsString(cause)) {
         ogs_error("OpenAPI_n1_n2_message_transfer_rsp_data_parseFromJSON() failed [cause]");
         goto end;
@@ -74,17 +74,17 @@ OpenAPI_n1_n2_message_transfer_rsp_data_t *OpenAPI_n1_n2_message_transfer_rsp_da
 
     cJSON *supported_features = cJSON_GetObjectItemCaseSensitive(n1_n2_message_transfer_rsp_dataJSON, "supportedFeatures");
 
-    if (supported_features) {
-        if (!cJSON_IsString(supported_features)) {
-            ogs_error("OpenAPI_n1_n2_message_transfer_rsp_data_parseFromJSON() failed [supported_features]");
-            goto end;
-        }
+    if (supported_features) { 
+    if (!cJSON_IsString(supported_features)) {
+        ogs_error("OpenAPI_n1_n2_message_transfer_rsp_data_parseFromJSON() failed [supported_features]");
+        goto end;
+    }
     }
 
     n1_n2_message_transfer_rsp_data_local_var = OpenAPI_n1_n2_message_transfer_rsp_data_create (
         causeVariable,
         supported_features ? ogs_strdup_or_assert(supported_features->valuestring) : NULL
-        );
+    );
 
     return n1_n2_message_transfer_rsp_data_local_var;
 end:

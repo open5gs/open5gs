@@ -1,7 +1,7 @@
 /*
  * scheduled_communication_type.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_scheduled_communication_type_H_

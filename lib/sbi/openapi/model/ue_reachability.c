@@ -5,7 +5,7 @@
 #include "ue_reachability.h"
 
 OpenAPI_ue_reachability_t *OpenAPI_ue_reachability_create(
-    )
+)
 {
     OpenAPI_ue_reachability_t *ue_reachability_local_var = OpenAPI_malloc(sizeof(OpenAPI_ue_reachability_t));
     if (!ue_reachability_local_var) {
@@ -42,7 +42,7 @@ OpenAPI_ue_reachability_t *OpenAPI_ue_reachability_parseFromJSON(cJSON *ue_reach
 {
     OpenAPI_ue_reachability_t *ue_reachability_local_var = NULL;
     ue_reachability_local_var = OpenAPI_ue_reachability_create (
-        );
+    );
 
     return ue_reachability_local_var;
 end:

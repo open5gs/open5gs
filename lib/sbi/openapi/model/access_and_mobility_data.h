@@ -1,7 +1,7 @@
 /*
  * access_and_mobility_data.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_access_and_mobility_data_H_
@@ -14,7 +14,7 @@
 #include "../include/binary.h"
 #include "access_type.h"
 #include "cm_info.h"
-#include "plmn_id.h"
+#include "plmn_id_1.h"
 #include "rat_type.h"
 #include "rm_info.h"
 #include "sms_support.h"
@@ -42,10 +42,11 @@ typedef struct OpenAPI_access_and_mobility_data_s {
     char *sms_over_nas_status_ts;
     int roaming_status;
     char *roaming_status_ts;
-    struct OpenAPI_plmn_id_s *current_plmn;
+    struct OpenAPI_plmn_id_1_s *current_plmn;
     char *current_plmn_ts;
     OpenAPI_list_t *rat_type;
     char *rat_types_ts;
+    char *supp_feat;
 } OpenAPI_access_and_mobility_data_t;
 
 OpenAPI_access_and_mobility_data_t *OpenAPI_access_and_mobility_data_create(
@@ -64,11 +65,12 @@ OpenAPI_access_and_mobility_data_t *OpenAPI_access_and_mobility_data_create(
     char *sms_over_nas_status_ts,
     int roaming_status,
     char *roaming_status_ts,
-    OpenAPI_plmn_id_t *current_plmn,
+    OpenAPI_plmn_id_1_t *current_plmn,
     char *current_plmn_ts,
     OpenAPI_list_t *rat_type,
-    char *rat_types_ts
-    );
+    char *rat_types_ts,
+    char *supp_feat
+);
 void OpenAPI_access_and_mobility_data_free(OpenAPI_access_and_mobility_data_t *access_and_mobility_data);
 OpenAPI_access_and_mobility_data_t *OpenAPI_access_and_mobility_data_parseFromJSON(cJSON *access_and_mobility_dataJSON);
 cJSON *OpenAPI_access_and_mobility_data_convertToJSON(OpenAPI_access_and_mobility_data_t *access_and_mobility_data);

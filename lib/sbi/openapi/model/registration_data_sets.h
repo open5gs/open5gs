@@ -1,7 +1,7 @@
 /*
  * registration_data_sets.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_registration_data_sets_H_
@@ -36,7 +36,7 @@ OpenAPI_registration_data_sets_t *OpenAPI_registration_data_sets_create(
     OpenAPI_smf_registration_info_t *smf_registration,
     OpenAPI_smsf_registration_t *smsf3_gpp,
     OpenAPI_smsf_registration_t *smsf_non3_gpp
-    );
+);
 void OpenAPI_registration_data_sets_free(OpenAPI_registration_data_sets_t *registration_data_sets);
 OpenAPI_registration_data_sets_t *OpenAPI_registration_data_sets_parseFromJSON(cJSON *registration_data_setsJSON);
 cJSON *OpenAPI_registration_data_sets_convertToJSON(OpenAPI_registration_data_sets_t *registration_data_sets);

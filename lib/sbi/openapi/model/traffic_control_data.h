@@ -1,7 +1,7 @@
 /*
  * traffic_control_data.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_traffic_control_data_H_
@@ -57,7 +57,7 @@ OpenAPI_traffic_control_data_t *OpenAPI_traffic_control_data_create(
     OpenAPI_steering_mode_t *steer_mode_dl,
     OpenAPI_steering_mode_t *steer_mode_ul,
     OpenAPI_multicast_access_control_t *mul_acc_ctrl
-    );
+);
 void OpenAPI_traffic_control_data_free(OpenAPI_traffic_control_data_t *traffic_control_data);
 OpenAPI_traffic_control_data_t *OpenAPI_traffic_control_data_parseFromJSON(cJSON *traffic_control_dataJSON);
 cJSON *OpenAPI_traffic_control_data_convertToJSON(OpenAPI_traffic_control_data_t *traffic_control_data);

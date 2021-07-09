@@ -1,7 +1,7 @@
 /*
  * sm_policy_notification.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_sm_policy_notification_H_
@@ -27,7 +27,7 @@ typedef struct OpenAPI_sm_policy_notification_s {
 OpenAPI_sm_policy_notification_t *OpenAPI_sm_policy_notification_create(
     char *resource_uri,
     OpenAPI_sm_policy_decision_t *sm_policy_decision
-    );
+);
 void OpenAPI_sm_policy_notification_free(OpenAPI_sm_policy_notification_t *sm_policy_notification);
 OpenAPI_sm_policy_notification_t *OpenAPI_sm_policy_notification_parseFromJSON(cJSON *sm_policy_notificationJSON);
 cJSON *OpenAPI_sm_policy_notification_convertToJSON(OpenAPI_sm_policy_notification_t *sm_policy_notification);

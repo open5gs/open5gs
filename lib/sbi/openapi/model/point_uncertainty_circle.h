@@ -1,7 +1,7 @@
 /*
  * point_uncertainty_circle.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_point_uncertainty_circle_H_
@@ -32,7 +32,7 @@ OpenAPI_point_uncertainty_circle_t *OpenAPI_point_uncertainty_circle_create(
     OpenAPI_supported_gad_shapes_t *shape,
     OpenAPI_geographical_coordinates_t *point,
     float uncertainty
-    );
+);
 void OpenAPI_point_uncertainty_circle_free(OpenAPI_point_uncertainty_circle_t *point_uncertainty_circle);
 OpenAPI_point_uncertainty_circle_t *OpenAPI_point_uncertainty_circle_parseFromJSON(cJSON *point_uncertainty_circleJSON);
 cJSON *OpenAPI_point_uncertainty_circle_convertToJSON(OpenAPI_point_uncertainty_circle_t *point_uncertainty_circle);

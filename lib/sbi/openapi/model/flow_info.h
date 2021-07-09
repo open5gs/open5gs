@@ -1,7 +1,7 @@
 /*
  * flow_info.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_flow_info_H_
@@ -26,7 +26,7 @@ typedef struct OpenAPI_flow_info_s {
 OpenAPI_flow_info_t *OpenAPI_flow_info_create(
     int flow_id,
     OpenAPI_list_t *flow_descriptions
-    );
+);
 void OpenAPI_flow_info_free(OpenAPI_flow_info_t *flow_info);
 OpenAPI_flow_info_t *OpenAPI_flow_info_parseFromJSON(cJSON *flow_infoJSON);
 cJSON *OpenAPI_flow_info_convertToJSON(OpenAPI_flow_info_t *flow_info);

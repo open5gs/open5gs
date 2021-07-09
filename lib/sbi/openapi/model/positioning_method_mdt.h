@@ -1,7 +1,7 @@
 /*
  * positioning_method_mdt.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_positioning_method_mdt_H_

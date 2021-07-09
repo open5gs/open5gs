@@ -1,7 +1,7 @@
 /*
  * roaming_odb.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_roaming_odb_H_

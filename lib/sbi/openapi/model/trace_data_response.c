@@ -7,7 +7,7 @@
 OpenAPI_trace_data_response_t *OpenAPI_trace_data_response_create(
     OpenAPI_trace_data_t *trace_data,
     char *shared_trace_data_id
-    )
+)
 {
     OpenAPI_trace_data_response_t *trace_data_response_local_var = OpenAPI_malloc(sizeof(OpenAPI_trace_data_response_t));
     if (!trace_data_response_local_var) {
@@ -41,23 +41,23 @@ cJSON *OpenAPI_trace_data_response_convertToJSON(OpenAPI_trace_data_response_t *
 
     item = cJSON_CreateObject();
     if (trace_data_response->trace_data) {
-        cJSON *trace_data_local_JSON = OpenAPI_trace_data_convertToJSON(trace_data_response->trace_data);
-        if (trace_data_local_JSON == NULL) {
-            ogs_error("OpenAPI_trace_data_response_convertToJSON() failed [trace_data]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "traceData", trace_data_local_JSON);
-        if (item->child == NULL) {
-            ogs_error("OpenAPI_trace_data_response_convertToJSON() failed [trace_data]");
-            goto end;
-        }
+    cJSON *trace_data_local_JSON = OpenAPI_trace_data_convertToJSON(trace_data_response->trace_data);
+    if (trace_data_local_JSON == NULL) {
+        ogs_error("OpenAPI_trace_data_response_convertToJSON() failed [trace_data]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "traceData", trace_data_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_trace_data_response_convertToJSON() failed [trace_data]");
+        goto end;
+    }
     }
 
     if (trace_data_response->shared_trace_data_id) {
-        if (cJSON_AddStringToObject(item, "sharedTraceDataId", trace_data_response->shared_trace_data_id) == NULL) {
-            ogs_error("OpenAPI_trace_data_response_convertToJSON() failed [shared_trace_data_id]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "sharedTraceDataId", trace_data_response->shared_trace_data_id) == NULL) {
+        ogs_error("OpenAPI_trace_data_response_convertToJSON() failed [shared_trace_data_id]");
+        goto end;
+    }
     }
 
 end:
@@ -70,23 +70,23 @@ OpenAPI_trace_data_response_t *OpenAPI_trace_data_response_parseFromJSON(cJSON *
     cJSON *trace_data = cJSON_GetObjectItemCaseSensitive(trace_data_responseJSON, "traceData");
 
     OpenAPI_trace_data_t *trace_data_local_nonprim = NULL;
-    if (trace_data) {
-        trace_data_local_nonprim = OpenAPI_trace_data_parseFromJSON(trace_data);
+    if (trace_data) { 
+    trace_data_local_nonprim = OpenAPI_trace_data_parseFromJSON(trace_data);
     }
 
     cJSON *shared_trace_data_id = cJSON_GetObjectItemCaseSensitive(trace_data_responseJSON, "sharedTraceDataId");
 
-    if (shared_trace_data_id) {
-        if (!cJSON_IsString(shared_trace_data_id)) {
-            ogs_error("OpenAPI_trace_data_response_parseFromJSON() failed [shared_trace_data_id]");
-            goto end;
-        }
+    if (shared_trace_data_id) { 
+    if (!cJSON_IsString(shared_trace_data_id)) {
+        ogs_error("OpenAPI_trace_data_response_parseFromJSON() failed [shared_trace_data_id]");
+        goto end;
+    }
     }
 
     trace_data_response_local_var = OpenAPI_trace_data_response_create (
         trace_data ? trace_data_local_nonprim : NULL,
         shared_trace_data_id ? ogs_strdup_or_assert(shared_trace_data_id->valuestring) : NULL
-        );
+    );
 
     return trace_data_response_local_var;
 end:

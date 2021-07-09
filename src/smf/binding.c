@@ -20,6 +20,7 @@
 #include "binding.h"
 #include "s5c-build.h"
 #include "pfcp-path.h"
+#include "gtp-path.h"
 
 #include "ipfw/ipfw2.h"
 
@@ -51,17 +52,6 @@ static void bearer_timeout(ogs_gtp_xact_t *xact, void *data)
         break;
     case OGS_GTP_UPDATE_BEARER_REQUEST_TYPE:
         ogs_error("[%s] No Update Bearer Response", smf_ue->imsi_bcd);
-        break;
-    case OGS_GTP_DELETE_BEARER_REQUEST_TYPE:
-        ogs_error("[%s] No Delete Bearer Response", smf_ue->imsi_bcd);
-        if (!smf_bearer_cycle(bearer)) {
-            ogs_warn("[%s] Bearer has already been removed", smf_ue->imsi_bcd);
-            break;
-        }
-
-        ogs_assert(OGS_OK ==
-            smf_epc_pfcp_send_bearer_modification_request(
-                bearer, OGS_PFCP_MODIFY_REMOVE));
         break;
     default:
         ogs_error("GTP Timeout : IMSI[%s] Message-Type[%d]",
@@ -384,20 +374,10 @@ void smf_bearer_binding(smf_sess_t *sess)
                 continue;
             }
 
-            memset(&h, 0, sizeof(ogs_gtp_header_t));
-            h.type = OGS_GTP_DELETE_BEARER_REQUEST_TYPE;
-            h.teid = sess->sgw_s5c_teid;
-
-            pkbuf = smf_s5c_build_delete_bearer_request(h.type, bearer,
-                    OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED);
-            ogs_expect_or_return(pkbuf);
-
-            xact = ogs_gtp_xact_local_create(
-                    sess->gnode, &h, pkbuf, bearer_timeout, bearer);
-            ogs_expect_or_return(xact);
-
-            rv = ogs_gtp_xact_commit(xact);
-            ogs_expect(rv == OGS_OK);
+            ogs_assert(OGS_OK ==
+                smf_gtp_send_delete_bearer_request(
+                    bearer, OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED,
+                    OGS_GTP_CAUSE_UNDEFINED_VALUE));
         } else {
             ogs_error("Invalid Type[%d]", pcc_rule->type);
         }

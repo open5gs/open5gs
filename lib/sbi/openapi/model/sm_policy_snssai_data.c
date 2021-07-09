@@ -7,7 +7,7 @@
 OpenAPI_sm_policy_snssai_data_t *OpenAPI_sm_policy_snssai_data_create(
     OpenAPI_snssai_t *snssai,
     OpenAPI_list_t* sm_policy_dnn_data
-    )
+)
 {
     OpenAPI_sm_policy_snssai_data_t *sm_policy_snssai_data_local_var = OpenAPI_malloc(sizeof(OpenAPI_sm_policy_snssai_data_t));
     if (!sm_policy_snssai_data_local_var) {
@@ -57,22 +57,22 @@ cJSON *OpenAPI_sm_policy_snssai_data_convertToJSON(OpenAPI_sm_policy_snssai_data
     }
 
     if (sm_policy_snssai_data->sm_policy_dnn_data) {
-        cJSON *sm_policy_dnn_data = cJSON_AddObjectToObject(item, "smPolicyDnnData");
-        if (sm_policy_dnn_data == NULL) {
+    cJSON *sm_policy_dnn_data = cJSON_AddObjectToObject(item, "smPolicyDnnData");
+    if (sm_policy_dnn_data == NULL) {
+        ogs_error("OpenAPI_sm_policy_snssai_data_convertToJSON() failed [sm_policy_dnn_data]");
+        goto end;
+    }
+    cJSON *localMapObject = sm_policy_dnn_data;
+    OpenAPI_lnode_t *sm_policy_dnn_data_node;
+    if (sm_policy_snssai_data->sm_policy_dnn_data) {
+        OpenAPI_list_for_each(sm_policy_snssai_data->sm_policy_dnn_data, sm_policy_dnn_data_node) {
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)sm_policy_dnn_data_node->data;
+        cJSON *itemLocal = OpenAPI_sm_policy_dnn_data_convertToJSON(localKeyValue->value);
+        if (itemLocal == NULL) {
             ogs_error("OpenAPI_sm_policy_snssai_data_convertToJSON() failed [sm_policy_dnn_data]");
             goto end;
         }
-        cJSON *localMapObject = sm_policy_dnn_data;
-        OpenAPI_lnode_t *sm_policy_dnn_data_node;
-        if (sm_policy_snssai_data->sm_policy_dnn_data) {
-            OpenAPI_list_for_each(sm_policy_snssai_data->sm_policy_dnn_data, sm_policy_dnn_data_node) {
-                OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)sm_policy_dnn_data_node->data;
-                cJSON *itemLocal = OpenAPI_sm_policy_dnn_data_convertToJSON(localKeyValue->value);
-                if (itemLocal == NULL) {
-                    ogs_error("OpenAPI_sm_policy_snssai_data_convertToJSON() failed [sm_policy_dnn_data]");
-                    goto end;
-                }
-                cJSON_AddItemToObject(sm_policy_dnn_data, localKeyValue->key, itemLocal);
+        cJSON_AddItemToObject(sm_policy_dnn_data, localKeyValue->key, itemLocal);
             }
         }
     }
@@ -91,36 +91,36 @@ OpenAPI_sm_policy_snssai_data_t *OpenAPI_sm_policy_snssai_data_parseFromJSON(cJS
     }
 
     OpenAPI_snssai_t *snssai_local_nonprim = NULL;
-
+    
     snssai_local_nonprim = OpenAPI_snssai_parseFromJSON(snssai);
 
     cJSON *sm_policy_dnn_data = cJSON_GetObjectItemCaseSensitive(sm_policy_snssai_dataJSON, "smPolicyDnnData");
 
     OpenAPI_list_t *sm_policy_dnn_dataList;
-    if (sm_policy_dnn_data) {
-        cJSON *sm_policy_dnn_data_local_map;
-        if (!cJSON_IsObject(sm_policy_dnn_data)) {
+    if (sm_policy_dnn_data) { 
+    cJSON *sm_policy_dnn_data_local_map;
+    if (!cJSON_IsObject(sm_policy_dnn_data)) {
+        ogs_error("OpenAPI_sm_policy_snssai_data_parseFromJSON() failed [sm_policy_dnn_data]");
+        goto end;
+    }
+    sm_policy_dnn_dataList = OpenAPI_list_create();
+    OpenAPI_map_t *localMapKeyPair = NULL;
+    cJSON_ArrayForEach(sm_policy_dnn_data_local_map, sm_policy_dnn_data) {
+        cJSON *localMapObject = sm_policy_dnn_data_local_map;
+        if (!cJSON_IsObject(sm_policy_dnn_data_local_map)) {
             ogs_error("OpenAPI_sm_policy_snssai_data_parseFromJSON() failed [sm_policy_dnn_data]");
             goto end;
         }
-        sm_policy_dnn_dataList = OpenAPI_list_create();
-        OpenAPI_map_t *localMapKeyPair = NULL;
-        cJSON_ArrayForEach(sm_policy_dnn_data_local_map, sm_policy_dnn_data) {
-            cJSON *localMapObject = sm_policy_dnn_data_local_map;
-            if (!cJSON_IsObject(sm_policy_dnn_data_local_map)) {
-                ogs_error("OpenAPI_sm_policy_snssai_data_parseFromJSON() failed [sm_policy_dnn_data]");
-                goto end;
-            }
-            localMapKeyPair = OpenAPI_map_create(
-                localMapObject->string, OpenAPI_sm_policy_dnn_data_parseFromJSON(localMapObject));
-            OpenAPI_list_add(sm_policy_dnn_dataList, localMapKeyPair);
-        }
+        localMapKeyPair = OpenAPI_map_create(
+            localMapObject->string, OpenAPI_sm_policy_dnn_data_parseFromJSON(localMapObject));
+        OpenAPI_list_add(sm_policy_dnn_dataList , localMapKeyPair);
+    }
     }
 
     sm_policy_snssai_data_local_var = OpenAPI_sm_policy_snssai_data_create (
         snssai_local_nonprim,
         sm_policy_dnn_data ? sm_policy_dnn_dataList : NULL
-        );
+    );
 
     return sm_policy_snssai_data_local_var;
 end:

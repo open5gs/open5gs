@@ -1,7 +1,7 @@
 /*
  * condition_event_type.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_condition_event_type_H_

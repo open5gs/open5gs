@@ -217,6 +217,9 @@ int smf_context_parse_config(void)
                             } else if (!strcmp(fd_key, "listen_on")) {
                                 self.diam_config->cnf_addr = 
                                     ogs_yaml_iter_value(&fd_iter);
+                            } else if (!strcmp(fd_key, "no_fwd")) {
+                                self.diam_config->cnf_flags.no_fwd =
+                                    ogs_yaml_iter_bool(&fd_iter);
                             } else if (!strcmp(fd_key, "load_extension")) {
                                 ogs_yaml_iter_t ext_array, ext_iter;
                                 ogs_yaml_iter_recurse(&fd_iter, &ext_array);
@@ -949,7 +952,7 @@ void smf_sess_select_upf(smf_sess_t *sess)
             OGS_ADDR(&ogs_pfcp_self()->pfcp_node->addr, buf));
 }
 
-smf_sess_t *smf_sess_add_by_apn(smf_ue_t *smf_ue, char *apn)
+smf_sess_t *smf_sess_add_by_apn(smf_ue_t *smf_ue, char *apn, uint8_t rat_type)
 {
     smf_event_t e;
 
@@ -977,12 +980,19 @@ smf_sess_t *smf_sess_add_by_apn(smf_ue_t *smf_ue, char *apn)
     sess->smf_n4_teid = sess->index;
     sess->smf_n4_seid = sess->index;
 
+    /* Set Charging ID */
+    sess->charging.id = sess->index;
+
     /* Create BAR in PFCP Session */
     ogs_pfcp_bar_new(&sess->pfcp);
 
     /* Set APN */
     sess->session.name = ogs_strdup(apn);
     ogs_assert(sess->session.name);
+
+    /* Set RAT-Type */
+    sess->gtp_rat_type = rat_type;
+    ogs_assert(sess->gtp_rat_type);
 
     /* Setup Timer */
     sess->t_release_holding = ogs_timer_add(
@@ -1018,6 +1028,10 @@ smf_sess_t *smf_sess_add_by_gtp_message(ogs_gtp_message_t *message)
         ogs_error("No APN");
         return NULL;
     }
+    if (req->rat_type.presence == 0) {
+        ogs_error("No RAT Type");
+        return NULL;
+    }
 
     ogs_fqdn_parse(apn,
             req->access_point_name.data, req->access_point_name.len);
@@ -1049,14 +1063,14 @@ smf_sess_t *smf_sess_add_by_gtp_message(ogs_gtp_message_t *message)
         ogs_assert(smf_ue);
     }
 
-    sess = smf_sess_find_by_apn(smf_ue, apn);
+    sess = smf_sess_find_by_apn(smf_ue, apn, req->rat_type.u8);
     if (sess) {
         ogs_warn("OLD Session Release [IMSI:%s,APN:%s]",
                 smf_ue->imsi_bcd, sess->session.name);
         smf_sess_remove(sess);
     }
 
-    sess = smf_sess_add_by_apn(smf_ue, apn);
+    sess = smf_sess_add_by_apn(smf_ue, apn, req->rat_type.u8);
     return sess;
 }
 
@@ -1088,6 +1102,7 @@ smf_sess_t *smf_sess_add_by_psi(smf_ue_t *smf_ue, uint8_t psi)
     sess->index = ogs_pool_index(&smf_sess_pool, sess);
     ogs_assert(sess->index > 0 && sess->index <= ogs_app()->pool.sess);
 
+    /* Set SmContextRef in 5GC */
     sess->sm_context_ref = ogs_msprintf("%d",
             (int)ogs_pool_index(&smf_sess_pool, sess));
     ogs_assert(sess->sm_context_ref);
@@ -1107,6 +1122,9 @@ smf_sess_t *smf_sess_add_by_psi(smf_ue_t *smf_ue, uint8_t psi)
     /* Set TEID & SEID */
     sess->smf_n4_teid = sess->index;
     sess->smf_n4_seid = sess->index;
+
+    /* Set Charging Id */
+    sess->charging.id = sess->index;
 
     /* Setup Timer */
     sess->t_release_holding = ogs_timer_add(
@@ -1472,7 +1490,7 @@ smf_sess_t *smf_sess_find_by_seid(uint64_t seid)
     return smf_sess_find(seid);
 }
 
-smf_sess_t *smf_sess_find_by_apn(smf_ue_t *smf_ue, char *apn)
+smf_sess_t *smf_sess_find_by_apn(smf_ue_t *smf_ue, char *apn, uint8_t rat_type)
 {
     smf_sess_t *sess = NULL;
 
@@ -1480,7 +1498,8 @@ smf_sess_t *smf_sess_find_by_apn(smf_ue_t *smf_ue, char *apn)
     ogs_assert(apn);
 
     ogs_list_for_each(&smf_ue->sess_list, sess) {
-        if (!ogs_strcasecmp(sess->session.name, apn))
+        if (ogs_strcasecmp(sess->session.name, apn) == 0 &&
+            sess->gtp_rat_type == rat_type)
             return sess;
     }
 
@@ -1500,6 +1519,12 @@ smf_sess_t *smf_sess_find_by_psi(smf_ue_t *smf_ue, uint8_t psi)
     }
 
     return NULL;
+}
+
+smf_sess_t *smf_sess_find_by_charging_id(uint32_t charging_id)
+{
+    ogs_assert(charging_id);
+    return smf_sess_find(charging_id);
 }
 
 smf_sess_t *smf_sess_find_by_sm_context_ref(char *sm_context_ref)
@@ -2067,32 +2092,8 @@ smf_bearer_t *smf_bearer_find_by_pdr_id(
 
 smf_bearer_t *smf_default_bearer_in_sess(smf_sess_t *sess)
 {
-    return smf_bearer_first(sess);
-}
-
-bool smf_bearer_is_default(smf_bearer_t *bearer)
-{
-    smf_sess_t *sess = NULL;
-    smf_bearer_t *default_bearer = NULL;
-
-    ogs_assert(bearer);
-    sess = bearer->sess;
-    ogs_assert(sess);
-    default_bearer = smf_default_bearer_in_sess(sess);
-    ogs_assert(default_bearer);
-
-    return bearer == default_bearer;
-}
-
-smf_bearer_t *smf_bearer_first(smf_sess_t *sess)
-{
     ogs_assert(sess);
     return ogs_list_first(&sess->bearer_list);
-}
-
-smf_bearer_t *smf_bearer_next(smf_bearer_t *bearer)
-{
-    return ogs_list_next(bearer);
 }
 
 smf_ue_t *smf_ue_cycle(smf_ue_t *smf_ue)

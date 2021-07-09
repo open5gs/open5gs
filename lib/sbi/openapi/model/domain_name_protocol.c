@@ -5,7 +5,7 @@
 #include "domain_name_protocol.h"
 
 OpenAPI_domain_name_protocol_t *OpenAPI_domain_name_protocol_create(
-    )
+)
 {
     OpenAPI_domain_name_protocol_t *domain_name_protocol_local_var = OpenAPI_malloc(sizeof(OpenAPI_domain_name_protocol_t));
     if (!domain_name_protocol_local_var) {
@@ -42,7 +42,7 @@ OpenAPI_domain_name_protocol_t *OpenAPI_domain_name_protocol_parseFromJSON(cJSON
 {
     OpenAPI_domain_name_protocol_t *domain_name_protocol_local_var = NULL;
     domain_name_protocol_local_var = OpenAPI_domain_name_protocol_create (
-        );
+    );
 
     return domain_name_protocol_local_var;
 end:

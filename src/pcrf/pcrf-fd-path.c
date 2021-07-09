@@ -33,6 +33,9 @@ int pcrf_fd_init(void)
     rv = pcrf_rx_init();
     ogs_assert(rv == OGS_OK);
 
+    rv = ogs_diam_start();
+    ogs_assert(rv == 0);
+
 	return OGS_OK;
 }
 

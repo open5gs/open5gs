@@ -1,7 +1,7 @@
 /*
  * pp_data.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_pp_data_H_
@@ -44,7 +44,7 @@ OpenAPI_pp_data_t *OpenAPI_pp_data_create(
     char *stn_sr,
     OpenAPI_lcs_privacy_t *lcs_privacy,
     OpenAPI_sor_info_t *sor_info
-    );
+);
 void OpenAPI_pp_data_free(OpenAPI_pp_data_t *pp_data);
 OpenAPI_pp_data_t *OpenAPI_pp_data_parseFromJSON(cJSON *pp_dataJSON);
 cJSON *OpenAPI_pp_data_convertToJSON(OpenAPI_pp_data_t *pp_data);

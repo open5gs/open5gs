@@ -7,7 +7,7 @@
 OpenAPI_edrx_parameters_t *OpenAPI_edrx_parameters_create(
     OpenAPI_rat_type_e rat_type,
     char *edrx_value
-    )
+)
 {
     OpenAPI_edrx_parameters_t *edrx_parameters_local_var = OpenAPI_malloc(sizeof(OpenAPI_edrx_parameters_t));
     if (!edrx_parameters_local_var) {
@@ -63,7 +63,7 @@ OpenAPI_edrx_parameters_t *OpenAPI_edrx_parameters_parseFromJSON(cJSON *edrx_par
     }
 
     OpenAPI_rat_type_e rat_typeVariable;
-
+    
     if (!cJSON_IsString(rat_type)) {
         ogs_error("OpenAPI_edrx_parameters_parseFromJSON() failed [rat_type]");
         goto end;
@@ -76,7 +76,7 @@ OpenAPI_edrx_parameters_t *OpenAPI_edrx_parameters_parseFromJSON(cJSON *edrx_par
         goto end;
     }
 
-
+    
     if (!cJSON_IsString(edrx_value)) {
         ogs_error("OpenAPI_edrx_parameters_parseFromJSON() failed [edrx_value]");
         goto end;
@@ -85,7 +85,7 @@ OpenAPI_edrx_parameters_t *OpenAPI_edrx_parameters_parseFromJSON(cJSON *edrx_par
     edrx_parameters_local_var = OpenAPI_edrx_parameters_create (
         rat_typeVariable,
         ogs_strdup_or_assert(edrx_value->valuestring)
-        );
+    );
 
     return edrx_parameters_local_var;
 end:

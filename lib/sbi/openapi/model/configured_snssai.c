@@ -7,7 +7,7 @@
 OpenAPI_configured_snssai_t *OpenAPI_configured_snssai_create(
     OpenAPI_snssai_t *configured_snssai,
     OpenAPI_snssai_t *mapped_home_snssai
-    )
+)
 {
     OpenAPI_configured_snssai_t *configured_snssai_local_var = OpenAPI_malloc(sizeof(OpenAPI_configured_snssai_t));
     if (!configured_snssai_local_var) {
@@ -52,16 +52,16 @@ cJSON *OpenAPI_configured_snssai_convertToJSON(OpenAPI_configured_snssai_t *conf
     }
 
     if (configured_snssai->mapped_home_snssai) {
-        cJSON *mapped_home_snssai_local_JSON = OpenAPI_snssai_convertToJSON(configured_snssai->mapped_home_snssai);
-        if (mapped_home_snssai_local_JSON == NULL) {
-            ogs_error("OpenAPI_configured_snssai_convertToJSON() failed [mapped_home_snssai]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "mappedHomeSnssai", mapped_home_snssai_local_JSON);
-        if (item->child == NULL) {
-            ogs_error("OpenAPI_configured_snssai_convertToJSON() failed [mapped_home_snssai]");
-            goto end;
-        }
+    cJSON *mapped_home_snssai_local_JSON = OpenAPI_snssai_convertToJSON(configured_snssai->mapped_home_snssai);
+    if (mapped_home_snssai_local_JSON == NULL) {
+        ogs_error("OpenAPI_configured_snssai_convertToJSON() failed [mapped_home_snssai]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "mappedHomeSnssai", mapped_home_snssai_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_configured_snssai_convertToJSON() failed [mapped_home_snssai]");
+        goto end;
+    }
     }
 
 end:
@@ -78,20 +78,20 @@ OpenAPI_configured_snssai_t *OpenAPI_configured_snssai_parseFromJSON(cJSON *conf
     }
 
     OpenAPI_snssai_t *configured_snssai_local_nonprim = NULL;
-
+    
     configured_snssai_local_nonprim = OpenAPI_snssai_parseFromJSON(configured_snssai);
 
     cJSON *mapped_home_snssai = cJSON_GetObjectItemCaseSensitive(configured_snssaiJSON, "mappedHomeSnssai");
 
     OpenAPI_snssai_t *mapped_home_snssai_local_nonprim = NULL;
-    if (mapped_home_snssai) {
-        mapped_home_snssai_local_nonprim = OpenAPI_snssai_parseFromJSON(mapped_home_snssai);
+    if (mapped_home_snssai) { 
+    mapped_home_snssai_local_nonprim = OpenAPI_snssai_parseFromJSON(mapped_home_snssai);
     }
 
     configured_snssai_local_var = OpenAPI_configured_snssai_create (
         configured_snssai_local_nonprim,
         mapped_home_snssai ? mapped_home_snssai_local_nonprim : NULL
-        );
+    );
 
     return configured_snssai_local_var;
 end:

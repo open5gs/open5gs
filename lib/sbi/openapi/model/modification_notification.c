@@ -6,7 +6,7 @@
 
 OpenAPI_modification_notification_t *OpenAPI_modification_notification_create(
     OpenAPI_list_t *notify_items
-    )
+)
 {
     OpenAPI_modification_notification_t *modification_notification_local_var = OpenAPI_malloc(sizeof(OpenAPI_modification_notification_t));
     if (!modification_notification_local_var) {
@@ -72,9 +72,9 @@ OpenAPI_modification_notification_t *OpenAPI_modification_notification_parseFrom
     }
 
     OpenAPI_list_t *notify_itemsList;
-
+    
     cJSON *notify_items_local_nonprimitive;
-    if (!cJSON_IsArray(notify_items)) {
+    if (!cJSON_IsArray(notify_items)){
         ogs_error("OpenAPI_modification_notification_parseFromJSON() failed [notify_items]");
         goto end;
     }
@@ -93,7 +93,7 @@ OpenAPI_modification_notification_t *OpenAPI_modification_notification_parseFrom
 
     modification_notification_local_var = OpenAPI_modification_notification_create (
         notify_itemsList
-        );
+    );
 
     return modification_notification_local_var;
 end:

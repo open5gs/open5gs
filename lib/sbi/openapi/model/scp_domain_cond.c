@@ -6,7 +6,7 @@
 
 OpenAPI_scp_domain_cond_t *OpenAPI_scp_domain_cond_create(
     OpenAPI_list_t *scp_domains
-    )
+)
 {
     OpenAPI_scp_domain_cond_t *scp_domain_cond_local_var = OpenAPI_malloc(sizeof(OpenAPI_scp_domain_cond_t));
     if (!scp_domain_cond_local_var) {
@@ -41,19 +41,19 @@ cJSON *OpenAPI_scp_domain_cond_convertToJSON(OpenAPI_scp_domain_cond_t *scp_doma
 
     item = cJSON_CreateObject();
     if (scp_domain_cond->scp_domains) {
-        cJSON *scp_domains = cJSON_AddArrayToObject(item, "scpDomains");
-        if (scp_domains == NULL) {
-            ogs_error("OpenAPI_scp_domain_cond_convertToJSON() failed [scp_domains]");
-            goto end;
-        }
+    cJSON *scp_domains = cJSON_AddArrayToObject(item, "scpDomains");
+    if (scp_domains == NULL) {
+        ogs_error("OpenAPI_scp_domain_cond_convertToJSON() failed [scp_domains]");
+        goto end;
+    }
 
-        OpenAPI_lnode_t *scp_domains_node;
-        OpenAPI_list_for_each(scp_domain_cond->scp_domains, scp_domains_node)  {
-            if (cJSON_AddStringToObject(scp_domains, "", (char*)scp_domains_node->data) == NULL) {
-                ogs_error("OpenAPI_scp_domain_cond_convertToJSON() failed [scp_domains]");
-                goto end;
-            }
-        }
+    OpenAPI_lnode_t *scp_domains_node;
+    OpenAPI_list_for_each(scp_domain_cond->scp_domains, scp_domains_node)  {
+    if (cJSON_AddStringToObject(scp_domains, "", (char*)scp_domains_node->data) == NULL) {
+        ogs_error("OpenAPI_scp_domain_cond_convertToJSON() failed [scp_domains]");
+        goto end;
+    }
+                    }
     }
 
 end:
@@ -66,26 +66,26 @@ OpenAPI_scp_domain_cond_t *OpenAPI_scp_domain_cond_parseFromJSON(cJSON *scp_doma
     cJSON *scp_domains = cJSON_GetObjectItemCaseSensitive(scp_domain_condJSON, "scpDomains");
 
     OpenAPI_list_t *scp_domainsList;
-    if (scp_domains) {
-        cJSON *scp_domains_local;
-        if (!cJSON_IsArray(scp_domains)) {
-            ogs_error("OpenAPI_scp_domain_cond_parseFromJSON() failed [scp_domains]");
-            goto end;
-        }
-        scp_domainsList = OpenAPI_list_create();
+    if (scp_domains) { 
+    cJSON *scp_domains_local;
+    if (!cJSON_IsArray(scp_domains)) {
+        ogs_error("OpenAPI_scp_domain_cond_parseFromJSON() failed [scp_domains]");
+        goto end;
+    }
+    scp_domainsList = OpenAPI_list_create();
 
-        cJSON_ArrayForEach(scp_domains_local, scp_domains) {
-            if (!cJSON_IsString(scp_domains_local)) {
-                ogs_error("OpenAPI_scp_domain_cond_parseFromJSON() failed [scp_domains]");
-                goto end;
-            }
-            OpenAPI_list_add(scp_domainsList, ogs_strdup_or_assert(scp_domains_local->valuestring));
-        }
+    cJSON_ArrayForEach(scp_domains_local, scp_domains) {
+    if (!cJSON_IsString(scp_domains_local)) {
+        ogs_error("OpenAPI_scp_domain_cond_parseFromJSON() failed [scp_domains]");
+        goto end;
+    }
+    OpenAPI_list_add(scp_domainsList , ogs_strdup_or_assert(scp_domains_local->valuestring));
+                    }
     }
 
     scp_domain_cond_local_var = OpenAPI_scp_domain_cond_create (
         scp_domains ? scp_domainsList : NULL
-        );
+    );
 
     return scp_domain_cond_local_var;
 end:

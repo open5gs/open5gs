@@ -1,7 +1,7 @@
 /*
  * twap_id.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_twap_id_H_
@@ -28,7 +28,7 @@ OpenAPI_twap_id_t *OpenAPI_twap_id_create(
     char *ss_id,
     char *bss_id,
     char civic_address
-    );
+);
 void OpenAPI_twap_id_free(OpenAPI_twap_id_t *twap_id);
 OpenAPI_twap_id_t *OpenAPI_twap_id_parseFromJSON(cJSON *twap_idJSON);
 cJSON *OpenAPI_twap_id_convertToJSON(OpenAPI_twap_id_t *twap_id);

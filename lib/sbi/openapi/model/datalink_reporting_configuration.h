@@ -1,7 +1,7 @@
 /*
  * datalink_reporting_configuration.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_datalink_reporting_configuration_H_
@@ -33,7 +33,7 @@ OpenAPI_datalink_reporting_configuration_t *OpenAPI_datalink_reporting_configura
     char *dnn,
     OpenAPI_snssai_t *slice,
     OpenAPI_list_t *ddd_status_list
-    );
+);
 void OpenAPI_datalink_reporting_configuration_free(OpenAPI_datalink_reporting_configuration_t *datalink_reporting_configuration);
 OpenAPI_datalink_reporting_configuration_t *OpenAPI_datalink_reporting_configuration_parseFromJSON(cJSON *datalink_reporting_configurationJSON);
 cJSON *OpenAPI_datalink_reporting_configuration_convertToJSON(OpenAPI_datalink_reporting_configuration_t *datalink_reporting_configuration);

@@ -13,7 +13,7 @@ OpenAPI_smsf_registration_t *OpenAPI_smsf_registration_create(
     OpenAPI_network_node_diameter_address_t *smsf_diameter_address,
     char *registration_time,
     OpenAPI_context_info_t *context_info
-    )
+)
 {
     OpenAPI_smsf_registration_t *smsf_registration_local_var = OpenAPI_malloc(sizeof(OpenAPI_smsf_registration_t));
     if (!smsf_registration_local_var) {
@@ -64,17 +64,17 @@ cJSON *OpenAPI_smsf_registration_convertToJSON(OpenAPI_smsf_registration_t *smsf
     }
 
     if (smsf_registration->smsf_set_id) {
-        if (cJSON_AddStringToObject(item, "smsfSetId", smsf_registration->smsf_set_id) == NULL) {
-            ogs_error("OpenAPI_smsf_registration_convertToJSON() failed [smsf_set_id]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "smsfSetId", smsf_registration->smsf_set_id) == NULL) {
+        ogs_error("OpenAPI_smsf_registration_convertToJSON() failed [smsf_set_id]");
+        goto end;
+    }
     }
 
     if (smsf_registration->supported_features) {
-        if (cJSON_AddStringToObject(item, "supportedFeatures", smsf_registration->supported_features) == NULL) {
-            ogs_error("OpenAPI_smsf_registration_convertToJSON() failed [supported_features]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "supportedFeatures", smsf_registration->supported_features) == NULL) {
+        ogs_error("OpenAPI_smsf_registration_convertToJSON() failed [supported_features]");
+        goto end;
+    }
     }
 
     cJSON *plmn_id_local_JSON = OpenAPI_plmn_id_convertToJSON(smsf_registration->plmn_id);
@@ -89,43 +89,43 @@ cJSON *OpenAPI_smsf_registration_convertToJSON(OpenAPI_smsf_registration_t *smsf
     }
 
     if (smsf_registration->smsf_map_address) {
-        if (cJSON_AddStringToObject(item, "smsfMAPAddress", smsf_registration->smsf_map_address) == NULL) {
-            ogs_error("OpenAPI_smsf_registration_convertToJSON() failed [smsf_map_address]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "smsfMAPAddress", smsf_registration->smsf_map_address) == NULL) {
+        ogs_error("OpenAPI_smsf_registration_convertToJSON() failed [smsf_map_address]");
+        goto end;
+    }
     }
 
     if (smsf_registration->smsf_diameter_address) {
-        cJSON *smsf_diameter_address_local_JSON = OpenAPI_network_node_diameter_address_convertToJSON(smsf_registration->smsf_diameter_address);
-        if (smsf_diameter_address_local_JSON == NULL) {
-            ogs_error("OpenAPI_smsf_registration_convertToJSON() failed [smsf_diameter_address]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "smsfDiameterAddress", smsf_diameter_address_local_JSON);
-        if (item->child == NULL) {
-            ogs_error("OpenAPI_smsf_registration_convertToJSON() failed [smsf_diameter_address]");
-            goto end;
-        }
+    cJSON *smsf_diameter_address_local_JSON = OpenAPI_network_node_diameter_address_convertToJSON(smsf_registration->smsf_diameter_address);
+    if (smsf_diameter_address_local_JSON == NULL) {
+        ogs_error("OpenAPI_smsf_registration_convertToJSON() failed [smsf_diameter_address]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "smsfDiameterAddress", smsf_diameter_address_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_smsf_registration_convertToJSON() failed [smsf_diameter_address]");
+        goto end;
+    }
     }
 
     if (smsf_registration->registration_time) {
-        if (cJSON_AddStringToObject(item, "registrationTime", smsf_registration->registration_time) == NULL) {
-            ogs_error("OpenAPI_smsf_registration_convertToJSON() failed [registration_time]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "registrationTime", smsf_registration->registration_time) == NULL) {
+        ogs_error("OpenAPI_smsf_registration_convertToJSON() failed [registration_time]");
+        goto end;
+    }
     }
 
     if (smsf_registration->context_info) {
-        cJSON *context_info_local_JSON = OpenAPI_context_info_convertToJSON(smsf_registration->context_info);
-        if (context_info_local_JSON == NULL) {
-            ogs_error("OpenAPI_smsf_registration_convertToJSON() failed [context_info]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "contextInfo", context_info_local_JSON);
-        if (item->child == NULL) {
-            ogs_error("OpenAPI_smsf_registration_convertToJSON() failed [context_info]");
-            goto end;
-        }
+    cJSON *context_info_local_JSON = OpenAPI_context_info_convertToJSON(smsf_registration->context_info);
+    if (context_info_local_JSON == NULL) {
+        ogs_error("OpenAPI_smsf_registration_convertToJSON() failed [context_info]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "contextInfo", context_info_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_smsf_registration_convertToJSON() failed [context_info]");
+        goto end;
+    }
     }
 
 end:
@@ -141,7 +141,7 @@ OpenAPI_smsf_registration_t *OpenAPI_smsf_registration_parseFromJSON(cJSON *smsf
         goto end;
     }
 
-
+    
     if (!cJSON_IsString(smsf_instance_id)) {
         ogs_error("OpenAPI_smsf_registration_parseFromJSON() failed [smsf_instance_id]");
         goto end;
@@ -149,20 +149,20 @@ OpenAPI_smsf_registration_t *OpenAPI_smsf_registration_parseFromJSON(cJSON *smsf
 
     cJSON *smsf_set_id = cJSON_GetObjectItemCaseSensitive(smsf_registrationJSON, "smsfSetId");
 
-    if (smsf_set_id) {
-        if (!cJSON_IsString(smsf_set_id)) {
-            ogs_error("OpenAPI_smsf_registration_parseFromJSON() failed [smsf_set_id]");
-            goto end;
-        }
+    if (smsf_set_id) { 
+    if (!cJSON_IsString(smsf_set_id)) {
+        ogs_error("OpenAPI_smsf_registration_parseFromJSON() failed [smsf_set_id]");
+        goto end;
+    }
     }
 
     cJSON *supported_features = cJSON_GetObjectItemCaseSensitive(smsf_registrationJSON, "supportedFeatures");
 
-    if (supported_features) {
-        if (!cJSON_IsString(supported_features)) {
-            ogs_error("OpenAPI_smsf_registration_parseFromJSON() failed [supported_features]");
-            goto end;
-        }
+    if (supported_features) { 
+    if (!cJSON_IsString(supported_features)) {
+        ogs_error("OpenAPI_smsf_registration_parseFromJSON() failed [supported_features]");
+        goto end;
+    }
     }
 
     cJSON *plmn_id = cJSON_GetObjectItemCaseSensitive(smsf_registrationJSON, "plmnId");
@@ -172,39 +172,39 @@ OpenAPI_smsf_registration_t *OpenAPI_smsf_registration_parseFromJSON(cJSON *smsf
     }
 
     OpenAPI_plmn_id_t *plmn_id_local_nonprim = NULL;
-
+    
     plmn_id_local_nonprim = OpenAPI_plmn_id_parseFromJSON(plmn_id);
 
     cJSON *smsf_map_address = cJSON_GetObjectItemCaseSensitive(smsf_registrationJSON, "smsfMAPAddress");
 
-    if (smsf_map_address) {
-        if (!cJSON_IsString(smsf_map_address)) {
-            ogs_error("OpenAPI_smsf_registration_parseFromJSON() failed [smsf_map_address]");
-            goto end;
-        }
+    if (smsf_map_address) { 
+    if (!cJSON_IsString(smsf_map_address)) {
+        ogs_error("OpenAPI_smsf_registration_parseFromJSON() failed [smsf_map_address]");
+        goto end;
+    }
     }
 
     cJSON *smsf_diameter_address = cJSON_GetObjectItemCaseSensitive(smsf_registrationJSON, "smsfDiameterAddress");
 
     OpenAPI_network_node_diameter_address_t *smsf_diameter_address_local_nonprim = NULL;
-    if (smsf_diameter_address) {
-        smsf_diameter_address_local_nonprim = OpenAPI_network_node_diameter_address_parseFromJSON(smsf_diameter_address);
+    if (smsf_diameter_address) { 
+    smsf_diameter_address_local_nonprim = OpenAPI_network_node_diameter_address_parseFromJSON(smsf_diameter_address);
     }
 
     cJSON *registration_time = cJSON_GetObjectItemCaseSensitive(smsf_registrationJSON, "registrationTime");
 
-    if (registration_time) {
-        if (!cJSON_IsString(registration_time)) {
-            ogs_error("OpenAPI_smsf_registration_parseFromJSON() failed [registration_time]");
-            goto end;
-        }
+    if (registration_time) { 
+    if (!cJSON_IsString(registration_time)) {
+        ogs_error("OpenAPI_smsf_registration_parseFromJSON() failed [registration_time]");
+        goto end;
+    }
     }
 
     cJSON *context_info = cJSON_GetObjectItemCaseSensitive(smsf_registrationJSON, "contextInfo");
 
     OpenAPI_context_info_t *context_info_local_nonprim = NULL;
-    if (context_info) {
-        context_info_local_nonprim = OpenAPI_context_info_parseFromJSON(context_info);
+    if (context_info) { 
+    context_info_local_nonprim = OpenAPI_context_info_parseFromJSON(context_info);
     }
 
     smsf_registration_local_var = OpenAPI_smsf_registration_create (
@@ -216,7 +216,7 @@ OpenAPI_smsf_registration_t *OpenAPI_smsf_registration_parseFromJSON(cJSON *smsf
         smsf_diameter_address ? smsf_diameter_address_local_nonprim : NULL,
         registration_time ? ogs_strdup_or_assert(registration_time->valuestring) : NULL,
         context_info ? context_info_local_nonprim : NULL
-        );
+    );
 
     return smsf_registration_local_var;
 end:

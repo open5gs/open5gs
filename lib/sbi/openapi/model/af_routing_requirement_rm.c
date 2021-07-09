@@ -11,7 +11,7 @@ OpenAPI_af_routing_requirement_rm_t *OpenAPI_af_routing_requirement_rm_create(
     OpenAPI_list_t *temp_vals,
     OpenAPI_up_path_chg_event_t *up_path_chg_sub,
     int addr_preser_ind
-    )
+)
 {
     OpenAPI_af_routing_requirement_rm_t *af_routing_requirement_rm_local_var = OpenAPI_malloc(sizeof(OpenAPI_af_routing_requirement_rm_t));
     if (!af_routing_requirement_rm_local_var) {
@@ -57,83 +57,83 @@ cJSON *OpenAPI_af_routing_requirement_rm_convertToJSON(OpenAPI_af_routing_requir
 
     item = cJSON_CreateObject();
     if (af_routing_requirement_rm->app_reloc) {
-        if (cJSON_AddBoolToObject(item, "appReloc", af_routing_requirement_rm->app_reloc) == NULL) {
-            ogs_error("OpenAPI_af_routing_requirement_rm_convertToJSON() failed [app_reloc]");
-            goto end;
-        }
+    if (cJSON_AddBoolToObject(item, "appReloc", af_routing_requirement_rm->app_reloc) == NULL) {
+        ogs_error("OpenAPI_af_routing_requirement_rm_convertToJSON() failed [app_reloc]");
+        goto end;
+    }
     }
 
     if (af_routing_requirement_rm->route_to_locs) {
-        cJSON *route_to_locsList = cJSON_AddArrayToObject(item, "routeToLocs");
-        if (route_to_locsList == NULL) {
-            ogs_error("OpenAPI_af_routing_requirement_rm_convertToJSON() failed [route_to_locs]");
-            goto end;
-        }
+    cJSON *route_to_locsList = cJSON_AddArrayToObject(item, "routeToLocs");
+    if (route_to_locsList == NULL) {
+        ogs_error("OpenAPI_af_routing_requirement_rm_convertToJSON() failed [route_to_locs]");
+        goto end;
+    }
 
-        OpenAPI_lnode_t *route_to_locs_node;
-        if (af_routing_requirement_rm->route_to_locs) {
-            OpenAPI_list_for_each(af_routing_requirement_rm->route_to_locs, route_to_locs_node) {
-                cJSON *itemLocal = OpenAPI_route_to_location_convertToJSON(route_to_locs_node->data);
-                if (itemLocal == NULL) {
-                    ogs_error("OpenAPI_af_routing_requirement_rm_convertToJSON() failed [route_to_locs]");
-                    goto end;
-                }
-                cJSON_AddItemToArray(route_to_locsList, itemLocal);
+    OpenAPI_lnode_t *route_to_locs_node;
+    if (af_routing_requirement_rm->route_to_locs) {
+        OpenAPI_list_for_each(af_routing_requirement_rm->route_to_locs, route_to_locs_node) {
+            cJSON *itemLocal = OpenAPI_route_to_location_convertToJSON(route_to_locs_node->data);
+            if (itemLocal == NULL) {
+                ogs_error("OpenAPI_af_routing_requirement_rm_convertToJSON() failed [route_to_locs]");
+                goto end;
             }
+            cJSON_AddItemToArray(route_to_locsList, itemLocal);
         }
+    }
     }
 
     if (af_routing_requirement_rm->sp_val) {
-        cJSON *sp_val_local_JSON = OpenAPI_spatial_validity_rm_convertToJSON(af_routing_requirement_rm->sp_val);
-        if (sp_val_local_JSON == NULL) {
-            ogs_error("OpenAPI_af_routing_requirement_rm_convertToJSON() failed [sp_val]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "spVal", sp_val_local_JSON);
-        if (item->child == NULL) {
-            ogs_error("OpenAPI_af_routing_requirement_rm_convertToJSON() failed [sp_val]");
-            goto end;
-        }
+    cJSON *sp_val_local_JSON = OpenAPI_spatial_validity_rm_convertToJSON(af_routing_requirement_rm->sp_val);
+    if (sp_val_local_JSON == NULL) {
+        ogs_error("OpenAPI_af_routing_requirement_rm_convertToJSON() failed [sp_val]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "spVal", sp_val_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_af_routing_requirement_rm_convertToJSON() failed [sp_val]");
+        goto end;
+    }
     }
 
     if (af_routing_requirement_rm->temp_vals) {
-        cJSON *temp_valsList = cJSON_AddArrayToObject(item, "tempVals");
-        if (temp_valsList == NULL) {
-            ogs_error("OpenAPI_af_routing_requirement_rm_convertToJSON() failed [temp_vals]");
-            goto end;
-        }
+    cJSON *temp_valsList = cJSON_AddArrayToObject(item, "tempVals");
+    if (temp_valsList == NULL) {
+        ogs_error("OpenAPI_af_routing_requirement_rm_convertToJSON() failed [temp_vals]");
+        goto end;
+    }
 
-        OpenAPI_lnode_t *temp_vals_node;
-        if (af_routing_requirement_rm->temp_vals) {
-            OpenAPI_list_for_each(af_routing_requirement_rm->temp_vals, temp_vals_node) {
-                cJSON *itemLocal = OpenAPI_temporal_validity_convertToJSON(temp_vals_node->data);
-                if (itemLocal == NULL) {
-                    ogs_error("OpenAPI_af_routing_requirement_rm_convertToJSON() failed [temp_vals]");
-                    goto end;
-                }
-                cJSON_AddItemToArray(temp_valsList, itemLocal);
+    OpenAPI_lnode_t *temp_vals_node;
+    if (af_routing_requirement_rm->temp_vals) {
+        OpenAPI_list_for_each(af_routing_requirement_rm->temp_vals, temp_vals_node) {
+            cJSON *itemLocal = OpenAPI_temporal_validity_convertToJSON(temp_vals_node->data);
+            if (itemLocal == NULL) {
+                ogs_error("OpenAPI_af_routing_requirement_rm_convertToJSON() failed [temp_vals]");
+                goto end;
             }
+            cJSON_AddItemToArray(temp_valsList, itemLocal);
         }
+    }
     }
 
     if (af_routing_requirement_rm->up_path_chg_sub) {
-        cJSON *up_path_chg_sub_local_JSON = OpenAPI_up_path_chg_event_convertToJSON(af_routing_requirement_rm->up_path_chg_sub);
-        if (up_path_chg_sub_local_JSON == NULL) {
-            ogs_error("OpenAPI_af_routing_requirement_rm_convertToJSON() failed [up_path_chg_sub]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "upPathChgSub", up_path_chg_sub_local_JSON);
-        if (item->child == NULL) {
-            ogs_error("OpenAPI_af_routing_requirement_rm_convertToJSON() failed [up_path_chg_sub]");
-            goto end;
-        }
+    cJSON *up_path_chg_sub_local_JSON = OpenAPI_up_path_chg_event_convertToJSON(af_routing_requirement_rm->up_path_chg_sub);
+    if (up_path_chg_sub_local_JSON == NULL) {
+        ogs_error("OpenAPI_af_routing_requirement_rm_convertToJSON() failed [up_path_chg_sub]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "upPathChgSub", up_path_chg_sub_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_af_routing_requirement_rm_convertToJSON() failed [up_path_chg_sub]");
+        goto end;
+    }
     }
 
     if (af_routing_requirement_rm->addr_preser_ind) {
-        if (cJSON_AddBoolToObject(item, "addrPreserInd", af_routing_requirement_rm->addr_preser_ind) == NULL) {
-            ogs_error("OpenAPI_af_routing_requirement_rm_convertToJSON() failed [addr_preser_ind]");
-            goto end;
-        }
+    if (cJSON_AddBoolToObject(item, "addrPreserInd", af_routing_requirement_rm->addr_preser_ind) == NULL) {
+        ogs_error("OpenAPI_af_routing_requirement_rm_convertToJSON() failed [addr_preser_ind]");
+        goto end;
+    }
     }
 
 end:
@@ -145,80 +145,80 @@ OpenAPI_af_routing_requirement_rm_t *OpenAPI_af_routing_requirement_rm_parseFrom
     OpenAPI_af_routing_requirement_rm_t *af_routing_requirement_rm_local_var = NULL;
     cJSON *app_reloc = cJSON_GetObjectItemCaseSensitive(af_routing_requirement_rmJSON, "appReloc");
 
-    if (app_reloc) {
-        if (!cJSON_IsBool(app_reloc)) {
-            ogs_error("OpenAPI_af_routing_requirement_rm_parseFromJSON() failed [app_reloc]");
-            goto end;
-        }
+    if (app_reloc) { 
+    if (!cJSON_IsBool(app_reloc)) {
+        ogs_error("OpenAPI_af_routing_requirement_rm_parseFromJSON() failed [app_reloc]");
+        goto end;
+    }
     }
 
     cJSON *route_to_locs = cJSON_GetObjectItemCaseSensitive(af_routing_requirement_rmJSON, "routeToLocs");
 
     OpenAPI_list_t *route_to_locsList;
-    if (route_to_locs) {
-        cJSON *route_to_locs_local_nonprimitive;
-        if (!cJSON_IsArray(route_to_locs)) {
+    if (route_to_locs) { 
+    cJSON *route_to_locs_local_nonprimitive;
+    if (!cJSON_IsArray(route_to_locs)){
+        ogs_error("OpenAPI_af_routing_requirement_rm_parseFromJSON() failed [route_to_locs]");
+        goto end;
+    }
+
+    route_to_locsList = OpenAPI_list_create();
+
+    cJSON_ArrayForEach(route_to_locs_local_nonprimitive, route_to_locs ) {
+        if (!cJSON_IsObject(route_to_locs_local_nonprimitive)) {
             ogs_error("OpenAPI_af_routing_requirement_rm_parseFromJSON() failed [route_to_locs]");
             goto end;
         }
+        OpenAPI_route_to_location_t *route_to_locsItem = OpenAPI_route_to_location_parseFromJSON(route_to_locs_local_nonprimitive);
 
-        route_to_locsList = OpenAPI_list_create();
-
-        cJSON_ArrayForEach(route_to_locs_local_nonprimitive, route_to_locs ) {
-            if (!cJSON_IsObject(route_to_locs_local_nonprimitive)) {
-                ogs_error("OpenAPI_af_routing_requirement_rm_parseFromJSON() failed [route_to_locs]");
-                goto end;
-            }
-            OpenAPI_route_to_location_t *route_to_locsItem = OpenAPI_route_to_location_parseFromJSON(route_to_locs_local_nonprimitive);
-
-            OpenAPI_list_add(route_to_locsList, route_to_locsItem);
-        }
+        OpenAPI_list_add(route_to_locsList, route_to_locsItem);
+    }
     }
 
     cJSON *sp_val = cJSON_GetObjectItemCaseSensitive(af_routing_requirement_rmJSON, "spVal");
 
     OpenAPI_spatial_validity_rm_t *sp_val_local_nonprim = NULL;
-    if (sp_val) {
-        sp_val_local_nonprim = OpenAPI_spatial_validity_rm_parseFromJSON(sp_val);
+    if (sp_val) { 
+    sp_val_local_nonprim = OpenAPI_spatial_validity_rm_parseFromJSON(sp_val);
     }
 
     cJSON *temp_vals = cJSON_GetObjectItemCaseSensitive(af_routing_requirement_rmJSON, "tempVals");
 
     OpenAPI_list_t *temp_valsList;
-    if (temp_vals) {
-        cJSON *temp_vals_local_nonprimitive;
-        if (!cJSON_IsArray(temp_vals)) {
+    if (temp_vals) { 
+    cJSON *temp_vals_local_nonprimitive;
+    if (!cJSON_IsArray(temp_vals)){
+        ogs_error("OpenAPI_af_routing_requirement_rm_parseFromJSON() failed [temp_vals]");
+        goto end;
+    }
+
+    temp_valsList = OpenAPI_list_create();
+
+    cJSON_ArrayForEach(temp_vals_local_nonprimitive, temp_vals ) {
+        if (!cJSON_IsObject(temp_vals_local_nonprimitive)) {
             ogs_error("OpenAPI_af_routing_requirement_rm_parseFromJSON() failed [temp_vals]");
             goto end;
         }
+        OpenAPI_temporal_validity_t *temp_valsItem = OpenAPI_temporal_validity_parseFromJSON(temp_vals_local_nonprimitive);
 
-        temp_valsList = OpenAPI_list_create();
-
-        cJSON_ArrayForEach(temp_vals_local_nonprimitive, temp_vals ) {
-            if (!cJSON_IsObject(temp_vals_local_nonprimitive)) {
-                ogs_error("OpenAPI_af_routing_requirement_rm_parseFromJSON() failed [temp_vals]");
-                goto end;
-            }
-            OpenAPI_temporal_validity_t *temp_valsItem = OpenAPI_temporal_validity_parseFromJSON(temp_vals_local_nonprimitive);
-
-            OpenAPI_list_add(temp_valsList, temp_valsItem);
-        }
+        OpenAPI_list_add(temp_valsList, temp_valsItem);
+    }
     }
 
     cJSON *up_path_chg_sub = cJSON_GetObjectItemCaseSensitive(af_routing_requirement_rmJSON, "upPathChgSub");
 
     OpenAPI_up_path_chg_event_t *up_path_chg_sub_local_nonprim = NULL;
-    if (up_path_chg_sub) {
-        up_path_chg_sub_local_nonprim = OpenAPI_up_path_chg_event_parseFromJSON(up_path_chg_sub);
+    if (up_path_chg_sub) { 
+    up_path_chg_sub_local_nonprim = OpenAPI_up_path_chg_event_parseFromJSON(up_path_chg_sub);
     }
 
     cJSON *addr_preser_ind = cJSON_GetObjectItemCaseSensitive(af_routing_requirement_rmJSON, "addrPreserInd");
 
-    if (addr_preser_ind) {
-        if (!cJSON_IsBool(addr_preser_ind)) {
-            ogs_error("OpenAPI_af_routing_requirement_rm_parseFromJSON() failed [addr_preser_ind]");
-            goto end;
-        }
+    if (addr_preser_ind) { 
+    if (!cJSON_IsBool(addr_preser_ind)) {
+        ogs_error("OpenAPI_af_routing_requirement_rm_parseFromJSON() failed [addr_preser_ind]");
+        goto end;
+    }
     }
 
     af_routing_requirement_rm_local_var = OpenAPI_af_routing_requirement_rm_create (
@@ -228,7 +228,7 @@ OpenAPI_af_routing_requirement_rm_t *OpenAPI_af_routing_requirement_rm_parseFrom
         temp_vals ? temp_valsList : NULL,
         up_path_chg_sub ? up_path_chg_sub_local_nonprim : NULL,
         addr_preser_ind ? addr_preser_ind->valueint : 0
-        );
+    );
 
     return af_routing_requirement_rm_local_var;
 end:

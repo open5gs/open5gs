@@ -1,7 +1,7 @@
 /*
  * protection_result.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_protection_result_H_

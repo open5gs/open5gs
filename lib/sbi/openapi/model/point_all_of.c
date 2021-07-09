@@ -6,7 +6,7 @@
 
 OpenAPI_point_all_of_t *OpenAPI_point_all_of_create(
     OpenAPI_geographical_coordinates_t *point
-    )
+)
 {
     OpenAPI_point_all_of_t *point_all_of_local_var = OpenAPI_malloc(sizeof(OpenAPI_point_all_of_t));
     if (!point_all_of_local_var) {
@@ -62,12 +62,12 @@ OpenAPI_point_all_of_t *OpenAPI_point_all_of_parseFromJSON(cJSON *point_all_ofJS
     }
 
     OpenAPI_geographical_coordinates_t *point_local_nonprim = NULL;
-
+    
     point_local_nonprim = OpenAPI_geographical_coordinates_parseFromJSON(point);
 
     point_all_of_local_var = OpenAPI_point_all_of_create (
         point_local_nonprim
-        );
+    );
 
     return point_all_of_local_var;
 end:

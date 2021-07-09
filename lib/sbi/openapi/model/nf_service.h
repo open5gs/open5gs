@@ -12,7 +12,6 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
-#include "chf_service_info.h"
 #include "default_notification_subscription.h"
 #include "ext_snssai.h"
 #include "ip_end_point.h"
@@ -53,7 +52,6 @@ typedef struct OpenAPI_nf_service_s {
     int load;
     char *load_time_stamp;
     char *recovery_time;
-    struct OpenAPI_chf_service_info_s *chf_service_info;
     char *supported_features;
     OpenAPI_list_t *nf_service_set_id_list;
     OpenAPI_list_t *s_nssais;
@@ -86,7 +84,6 @@ OpenAPI_nf_service_t *OpenAPI_nf_service_create(
     int load,
     char *load_time_stamp,
     char *recovery_time,
-    OpenAPI_chf_service_info_t *chf_service_info,
     char *supported_features,
     OpenAPI_list_t *nf_service_set_id_list,
     OpenAPI_list_t *s_nssais,
@@ -94,7 +91,7 @@ OpenAPI_nf_service_t *OpenAPI_nf_service_create(
     char *vendor_id,
     OpenAPI_list_t* supported_vendor_specific_features,
     int oauth2_required
-    );
+);
 void OpenAPI_nf_service_free(OpenAPI_nf_service_t *nf_service);
 OpenAPI_nf_service_t *OpenAPI_nf_service_parseFromJSON(cJSON *nf_serviceJSON);
 cJSON *OpenAPI_nf_service_convertToJSON(OpenAPI_nf_service_t *nf_service);

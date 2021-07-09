@@ -1,7 +1,7 @@
 /*
  * packet_filter_info.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_packet_filter_info_H_
@@ -35,7 +35,7 @@ OpenAPI_packet_filter_info_t *OpenAPI_packet_filter_info_create(
     char *spi,
     char *flow_label,
     OpenAPI_flow_direction_e flow_direction
-    );
+);
 void OpenAPI_packet_filter_info_free(OpenAPI_packet_filter_info_t *packet_filter_info);
 OpenAPI_packet_filter_info_t *OpenAPI_packet_filter_info_parseFromJSON(cJSON *packet_filter_infoJSON);
 cJSON *OpenAPI_packet_filter_info_convertToJSON(OpenAPI_packet_filter_info_t *packet_filter_info);

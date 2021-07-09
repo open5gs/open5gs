@@ -1,7 +1,7 @@
 /*
  * stationary_indication.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_stationary_indication_H_

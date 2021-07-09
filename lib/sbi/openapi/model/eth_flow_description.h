@@ -39,7 +39,7 @@ OpenAPI_eth_flow_description_t *OpenAPI_eth_flow_description_create(
     OpenAPI_list_t *vlan_tags,
     char *src_mac_addr_end,
     char *dest_mac_addr_end
-    );
+);
 void OpenAPI_eth_flow_description_free(OpenAPI_eth_flow_description_t *eth_flow_description);
 OpenAPI_eth_flow_description_t *OpenAPI_eth_flow_description_parseFromJSON(cJSON *eth_flow_descriptionJSON);
 cJSON *OpenAPI_eth_flow_description_convertToJSON(OpenAPI_eth_flow_description_t *eth_flow_description);

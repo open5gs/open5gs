@@ -1,7 +1,7 @@
 /*
  * dnai_information.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_dnai_information_H_
@@ -28,7 +28,7 @@ OpenAPI_dnai_information_t *OpenAPI_dnai_information_create(
     char *dnai,
     int no_dnai_change_ind,
     int no_local_psa_change_ind
-    );
+);
 void OpenAPI_dnai_information_free(OpenAPI_dnai_information_t *dnai_information);
 OpenAPI_dnai_information_t *OpenAPI_dnai_information_parseFromJSON(cJSON *dnai_informationJSON);
 cJSON *OpenAPI_dnai_information_convertToJSON(OpenAPI_dnai_information_t *dnai_information);

@@ -28,7 +28,7 @@ OpenAPI_tac_range_t *OpenAPI_tac_range_create(
     char *start,
     char *end,
     char *pattern
-    );
+);
 void OpenAPI_tac_range_free(OpenAPI_tac_range_t *tac_range);
 OpenAPI_tac_range_t *OpenAPI_tac_range_parseFromJSON(cJSON *tac_rangeJSON);
 cJSON *OpenAPI_tac_range_convertToJSON(OpenAPI_tac_range_t *tac_range);

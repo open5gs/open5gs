@@ -1,7 +1,7 @@
 /*
  * additional_snssai_data.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_additional_snssai_data_H_
@@ -24,7 +24,7 @@ typedef struct OpenAPI_additional_snssai_data_s {
 
 OpenAPI_additional_snssai_data_t *OpenAPI_additional_snssai_data_create(
     int required_authn_authz
-    );
+);
 void OpenAPI_additional_snssai_data_free(OpenAPI_additional_snssai_data_t *additional_snssai_data);
 OpenAPI_additional_snssai_data_t *OpenAPI_additional_snssai_data_parseFromJSON(cJSON *additional_snssai_dataJSON);
 cJSON *OpenAPI_additional_snssai_data_convertToJSON(OpenAPI_additional_snssai_data_t *additional_snssai_data);

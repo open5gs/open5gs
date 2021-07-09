@@ -9,7 +9,7 @@ OpenAPI_pp_dl_packet_count_ext_t *OpenAPI_pp_dl_packet_count_ext_create(
     int reference_id,
     char *validity_time,
     char *mtc_provider_information
-    )
+)
 {
     OpenAPI_pp_dl_packet_count_ext_t *pp_dl_packet_count_ext_local_var = OpenAPI_malloc(sizeof(OpenAPI_pp_dl_packet_count_ext_t));
     if (!pp_dl_packet_count_ext_local_var) {
@@ -56,17 +56,17 @@ cJSON *OpenAPI_pp_dl_packet_count_ext_convertToJSON(OpenAPI_pp_dl_packet_count_e
     }
 
     if (pp_dl_packet_count_ext->validity_time) {
-        if (cJSON_AddStringToObject(item, "validityTime", pp_dl_packet_count_ext->validity_time) == NULL) {
-            ogs_error("OpenAPI_pp_dl_packet_count_ext_convertToJSON() failed [validity_time]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "validityTime", pp_dl_packet_count_ext->validity_time) == NULL) {
+        ogs_error("OpenAPI_pp_dl_packet_count_ext_convertToJSON() failed [validity_time]");
+        goto end;
+    }
     }
 
     if (pp_dl_packet_count_ext->mtc_provider_information) {
-        if (cJSON_AddStringToObject(item, "mtcProviderInformation", pp_dl_packet_count_ext->mtc_provider_information) == NULL) {
-            ogs_error("OpenAPI_pp_dl_packet_count_ext_convertToJSON() failed [mtc_provider_information]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "mtcProviderInformation", pp_dl_packet_count_ext->mtc_provider_information) == NULL) {
+        ogs_error("OpenAPI_pp_dl_packet_count_ext_convertToJSON() failed [mtc_provider_information]");
+        goto end;
+    }
     }
 
 end:
@@ -82,7 +82,7 @@ OpenAPI_pp_dl_packet_count_ext_t *OpenAPI_pp_dl_packet_count_ext_parseFromJSON(c
         goto end;
     }
 
-
+    
     if (!cJSON_IsString(af_instance_id)) {
         ogs_error("OpenAPI_pp_dl_packet_count_ext_parseFromJSON() failed [af_instance_id]");
         goto end;
@@ -94,7 +94,7 @@ OpenAPI_pp_dl_packet_count_ext_t *OpenAPI_pp_dl_packet_count_ext_parseFromJSON(c
         goto end;
     }
 
-
+    
     if (!cJSON_IsNumber(reference_id)) {
         ogs_error("OpenAPI_pp_dl_packet_count_ext_parseFromJSON() failed [reference_id]");
         goto end;
@@ -102,20 +102,20 @@ OpenAPI_pp_dl_packet_count_ext_t *OpenAPI_pp_dl_packet_count_ext_parseFromJSON(c
 
     cJSON *validity_time = cJSON_GetObjectItemCaseSensitive(pp_dl_packet_count_extJSON, "validityTime");
 
-    if (validity_time) {
-        if (!cJSON_IsString(validity_time)) {
-            ogs_error("OpenAPI_pp_dl_packet_count_ext_parseFromJSON() failed [validity_time]");
-            goto end;
-        }
+    if (validity_time) { 
+    if (!cJSON_IsString(validity_time)) {
+        ogs_error("OpenAPI_pp_dl_packet_count_ext_parseFromJSON() failed [validity_time]");
+        goto end;
+    }
     }
 
     cJSON *mtc_provider_information = cJSON_GetObjectItemCaseSensitive(pp_dl_packet_count_extJSON, "mtcProviderInformation");
 
-    if (mtc_provider_information) {
-        if (!cJSON_IsString(mtc_provider_information)) {
-            ogs_error("OpenAPI_pp_dl_packet_count_ext_parseFromJSON() failed [mtc_provider_information]");
-            goto end;
-        }
+    if (mtc_provider_information) { 
+    if (!cJSON_IsString(mtc_provider_information)) {
+        ogs_error("OpenAPI_pp_dl_packet_count_ext_parseFromJSON() failed [mtc_provider_information]");
+        goto end;
+    }
     }
 
     pp_dl_packet_count_ext_local_var = OpenAPI_pp_dl_packet_count_ext_create (
@@ -123,7 +123,7 @@ OpenAPI_pp_dl_packet_count_ext_t *OpenAPI_pp_dl_packet_count_ext_parseFromJSON(c
         reference_id->valuedouble,
         validity_time ? ogs_strdup_or_assert(validity_time->valuestring) : NULL,
         mtc_provider_information ? ogs_strdup_or_assert(mtc_provider_information->valuestring) : NULL
-        );
+    );
 
     return pp_dl_packet_count_ext_local_var;
 end:

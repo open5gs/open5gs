@@ -1,7 +1,7 @@
 /*
  * plmn_id.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_plmn_id_H_
@@ -26,7 +26,7 @@ typedef struct OpenAPI_plmn_id_s {
 OpenAPI_plmn_id_t *OpenAPI_plmn_id_create(
     char *mcc,
     char *mnc
-    );
+);
 void OpenAPI_plmn_id_free(OpenAPI_plmn_id_t *plmn_id);
 OpenAPI_plmn_id_t *OpenAPI_plmn_id_parseFromJSON(cJSON *plmn_idJSON);
 cJSON *OpenAPI_plmn_id_convertToJSON(OpenAPI_plmn_id_t *plmn_id);

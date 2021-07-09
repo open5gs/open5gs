@@ -7,7 +7,7 @@
 OpenAPI_pc5_qo_s_para_t *OpenAPI_pc5_qo_s_para_create(
     OpenAPI_list_t *pc5_qos_flow_list,
     char *pc5_link_ambr
-    )
+)
 {
     OpenAPI_pc5_qo_s_para_t *pc5_qo_s_para_local_var = OpenAPI_malloc(sizeof(OpenAPI_pc5_qo_s_para_t));
     if (!pc5_qo_s_para_local_var) {
@@ -62,10 +62,10 @@ cJSON *OpenAPI_pc5_qo_s_para_convertToJSON(OpenAPI_pc5_qo_s_para_t *pc5_qo_s_par
     }
 
     if (pc5_qo_s_para->pc5_link_ambr) {
-        if (cJSON_AddStringToObject(item, "pc5LinkAmbr", pc5_qo_s_para->pc5_link_ambr) == NULL) {
-            ogs_error("OpenAPI_pc5_qo_s_para_convertToJSON() failed [pc5_link_ambr]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "pc5LinkAmbr", pc5_qo_s_para->pc5_link_ambr) == NULL) {
+        ogs_error("OpenAPI_pc5_qo_s_para_convertToJSON() failed [pc5_link_ambr]");
+        goto end;
+    }
     }
 
 end:
@@ -82,9 +82,9 @@ OpenAPI_pc5_qo_s_para_t *OpenAPI_pc5_qo_s_para_parseFromJSON(cJSON *pc5_qo_s_par
     }
 
     OpenAPI_list_t *pc5_qos_flow_listList;
-
+    
     cJSON *pc5_qos_flow_list_local_nonprimitive;
-    if (!cJSON_IsArray(pc5_qos_flow_list)) {
+    if (!cJSON_IsArray(pc5_qos_flow_list)){
         ogs_error("OpenAPI_pc5_qo_s_para_parseFromJSON() failed [pc5_qos_flow_list]");
         goto end;
     }
@@ -103,17 +103,17 @@ OpenAPI_pc5_qo_s_para_t *OpenAPI_pc5_qo_s_para_parseFromJSON(cJSON *pc5_qo_s_par
 
     cJSON *pc5_link_ambr = cJSON_GetObjectItemCaseSensitive(pc5_qo_s_paraJSON, "pc5LinkAmbr");
 
-    if (pc5_link_ambr) {
-        if (!cJSON_IsString(pc5_link_ambr)) {
-            ogs_error("OpenAPI_pc5_qo_s_para_parseFromJSON() failed [pc5_link_ambr]");
-            goto end;
-        }
+    if (pc5_link_ambr) { 
+    if (!cJSON_IsString(pc5_link_ambr)) {
+        ogs_error("OpenAPI_pc5_qo_s_para_parseFromJSON() failed [pc5_link_ambr]");
+        goto end;
+    }
     }
 
     pc5_qo_s_para_local_var = OpenAPI_pc5_qo_s_para_create (
         pc5_qos_flow_listList,
         pc5_link_ambr ? ogs_strdup_or_assert(pc5_link_ambr->valuestring) : NULL
-        );
+    );
 
     return pc5_qo_s_para_local_var;
 end:

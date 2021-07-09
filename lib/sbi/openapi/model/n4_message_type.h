@@ -1,7 +1,7 @@
 /*
  * n4_message_type.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_n4_message_type_H_

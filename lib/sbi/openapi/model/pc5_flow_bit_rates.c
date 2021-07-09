@@ -7,7 +7,7 @@
 OpenAPI_pc5_flow_bit_rates_t *OpenAPI_pc5_flow_bit_rates_create(
     char *gua_fbr,
     char *max_fbr
-    )
+)
 {
     OpenAPI_pc5_flow_bit_rates_t *pc5_flow_bit_rates_local_var = OpenAPI_malloc(sizeof(OpenAPI_pc5_flow_bit_rates_t));
     if (!pc5_flow_bit_rates_local_var) {
@@ -41,17 +41,17 @@ cJSON *OpenAPI_pc5_flow_bit_rates_convertToJSON(OpenAPI_pc5_flow_bit_rates_t *pc
 
     item = cJSON_CreateObject();
     if (pc5_flow_bit_rates->gua_fbr) {
-        if (cJSON_AddStringToObject(item, "guaFbr", pc5_flow_bit_rates->gua_fbr) == NULL) {
-            ogs_error("OpenAPI_pc5_flow_bit_rates_convertToJSON() failed [gua_fbr]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "guaFbr", pc5_flow_bit_rates->gua_fbr) == NULL) {
+        ogs_error("OpenAPI_pc5_flow_bit_rates_convertToJSON() failed [gua_fbr]");
+        goto end;
+    }
     }
 
     if (pc5_flow_bit_rates->max_fbr) {
-        if (cJSON_AddStringToObject(item, "maxFbr", pc5_flow_bit_rates->max_fbr) == NULL) {
-            ogs_error("OpenAPI_pc5_flow_bit_rates_convertToJSON() failed [max_fbr]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "maxFbr", pc5_flow_bit_rates->max_fbr) == NULL) {
+        ogs_error("OpenAPI_pc5_flow_bit_rates_convertToJSON() failed [max_fbr]");
+        goto end;
+    }
     }
 
 end:
@@ -63,26 +63,26 @@ OpenAPI_pc5_flow_bit_rates_t *OpenAPI_pc5_flow_bit_rates_parseFromJSON(cJSON *pc
     OpenAPI_pc5_flow_bit_rates_t *pc5_flow_bit_rates_local_var = NULL;
     cJSON *gua_fbr = cJSON_GetObjectItemCaseSensitive(pc5_flow_bit_ratesJSON, "guaFbr");
 
-    if (gua_fbr) {
-        if (!cJSON_IsString(gua_fbr)) {
-            ogs_error("OpenAPI_pc5_flow_bit_rates_parseFromJSON() failed [gua_fbr]");
-            goto end;
-        }
+    if (gua_fbr) { 
+    if (!cJSON_IsString(gua_fbr)) {
+        ogs_error("OpenAPI_pc5_flow_bit_rates_parseFromJSON() failed [gua_fbr]");
+        goto end;
+    }
     }
 
     cJSON *max_fbr = cJSON_GetObjectItemCaseSensitive(pc5_flow_bit_ratesJSON, "maxFbr");
 
-    if (max_fbr) {
-        if (!cJSON_IsString(max_fbr)) {
-            ogs_error("OpenAPI_pc5_flow_bit_rates_parseFromJSON() failed [max_fbr]");
-            goto end;
-        }
+    if (max_fbr) { 
+    if (!cJSON_IsString(max_fbr)) {
+        ogs_error("OpenAPI_pc5_flow_bit_rates_parseFromJSON() failed [max_fbr]");
+        goto end;
+    }
     }
 
     pc5_flow_bit_rates_local_var = OpenAPI_pc5_flow_bit_rates_create (
         gua_fbr ? ogs_strdup_or_assert(gua_fbr->valuestring) : NULL,
         max_fbr ? ogs_strdup_or_assert(max_fbr->valuestring) : NULL
-        );
+    );
 
     return pc5_flow_bit_rates_local_var;
 end:

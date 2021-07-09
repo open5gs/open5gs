@@ -5,7 +5,7 @@
 #include "pdu_session_status.h"
 
 OpenAPI_pdu_session_status_t *OpenAPI_pdu_session_status_create(
-    )
+)
 {
     OpenAPI_pdu_session_status_t *pdu_session_status_local_var = OpenAPI_malloc(sizeof(OpenAPI_pdu_session_status_t));
     if (!pdu_session_status_local_var) {
@@ -42,7 +42,7 @@ OpenAPI_pdu_session_status_t *OpenAPI_pdu_session_status_parseFromJSON(cJSON *pd
 {
     OpenAPI_pdu_session_status_t *pdu_session_status_local_var = NULL;
     pdu_session_status_local_var = OpenAPI_pdu_session_status_create (
-        );
+    );
 
     return pdu_session_status_local_var;
 end:

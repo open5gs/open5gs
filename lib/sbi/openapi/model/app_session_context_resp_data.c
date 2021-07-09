@@ -8,7 +8,7 @@ OpenAPI_app_session_context_resp_data_t *OpenAPI_app_session_context_resp_data_c
     OpenAPI_serv_auth_info_e serv_auth_info,
     OpenAPI_list_t *ue_ids,
     char *supp_feat
-    )
+)
 {
     OpenAPI_app_session_context_resp_data_t *app_session_context_resp_data_local_var = OpenAPI_malloc(sizeof(OpenAPI_app_session_context_resp_data_t));
     if (!app_session_context_resp_data_local_var) {
@@ -46,37 +46,37 @@ cJSON *OpenAPI_app_session_context_resp_data_convertToJSON(OpenAPI_app_session_c
 
     item = cJSON_CreateObject();
     if (app_session_context_resp_data->serv_auth_info) {
-        if (cJSON_AddStringToObject(item, "servAuthInfo", OpenAPI_serv_auth_info_ToString(app_session_context_resp_data->serv_auth_info)) == NULL) {
-            ogs_error("OpenAPI_app_session_context_resp_data_convertToJSON() failed [serv_auth_info]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "servAuthInfo", OpenAPI_serv_auth_info_ToString(app_session_context_resp_data->serv_auth_info)) == NULL) {
+        ogs_error("OpenAPI_app_session_context_resp_data_convertToJSON() failed [serv_auth_info]");
+        goto end;
+    }
     }
 
     if (app_session_context_resp_data->ue_ids) {
-        cJSON *ue_idsList = cJSON_AddArrayToObject(item, "ueIds");
-        if (ue_idsList == NULL) {
-            ogs_error("OpenAPI_app_session_context_resp_data_convertToJSON() failed [ue_ids]");
-            goto end;
-        }
+    cJSON *ue_idsList = cJSON_AddArrayToObject(item, "ueIds");
+    if (ue_idsList == NULL) {
+        ogs_error("OpenAPI_app_session_context_resp_data_convertToJSON() failed [ue_ids]");
+        goto end;
+    }
 
-        OpenAPI_lnode_t *ue_ids_node;
-        if (app_session_context_resp_data->ue_ids) {
-            OpenAPI_list_for_each(app_session_context_resp_data->ue_ids, ue_ids_node) {
-                cJSON *itemLocal = OpenAPI_ue_identity_info_convertToJSON(ue_ids_node->data);
-                if (itemLocal == NULL) {
-                    ogs_error("OpenAPI_app_session_context_resp_data_convertToJSON() failed [ue_ids]");
-                    goto end;
-                }
-                cJSON_AddItemToArray(ue_idsList, itemLocal);
+    OpenAPI_lnode_t *ue_ids_node;
+    if (app_session_context_resp_data->ue_ids) {
+        OpenAPI_list_for_each(app_session_context_resp_data->ue_ids, ue_ids_node) {
+            cJSON *itemLocal = OpenAPI_ue_identity_info_convertToJSON(ue_ids_node->data);
+            if (itemLocal == NULL) {
+                ogs_error("OpenAPI_app_session_context_resp_data_convertToJSON() failed [ue_ids]");
+                goto end;
             }
+            cJSON_AddItemToArray(ue_idsList, itemLocal);
         }
+    }
     }
 
     if (app_session_context_resp_data->supp_feat) {
-        if (cJSON_AddStringToObject(item, "suppFeat", app_session_context_resp_data->supp_feat) == NULL) {
-            ogs_error("OpenAPI_app_session_context_resp_data_convertToJSON() failed [supp_feat]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "suppFeat", app_session_context_resp_data->supp_feat) == NULL) {
+        ogs_error("OpenAPI_app_session_context_resp_data_convertToJSON() failed [supp_feat]");
+        goto end;
+    }
     }
 
 end:
@@ -89,51 +89,51 @@ OpenAPI_app_session_context_resp_data_t *OpenAPI_app_session_context_resp_data_p
     cJSON *serv_auth_info = cJSON_GetObjectItemCaseSensitive(app_session_context_resp_dataJSON, "servAuthInfo");
 
     OpenAPI_serv_auth_info_e serv_auth_infoVariable;
-    if (serv_auth_info) {
-        if (!cJSON_IsString(serv_auth_info)) {
-            ogs_error("OpenAPI_app_session_context_resp_data_parseFromJSON() failed [serv_auth_info]");
-            goto end;
-        }
-        serv_auth_infoVariable = OpenAPI_serv_auth_info_FromString(serv_auth_info->valuestring);
+    if (serv_auth_info) { 
+    if (!cJSON_IsString(serv_auth_info)) {
+        ogs_error("OpenAPI_app_session_context_resp_data_parseFromJSON() failed [serv_auth_info]");
+        goto end;
+    }
+    serv_auth_infoVariable = OpenAPI_serv_auth_info_FromString(serv_auth_info->valuestring);
     }
 
     cJSON *ue_ids = cJSON_GetObjectItemCaseSensitive(app_session_context_resp_dataJSON, "ueIds");
 
     OpenAPI_list_t *ue_idsList;
-    if (ue_ids) {
-        cJSON *ue_ids_local_nonprimitive;
-        if (!cJSON_IsArray(ue_ids)) {
+    if (ue_ids) { 
+    cJSON *ue_ids_local_nonprimitive;
+    if (!cJSON_IsArray(ue_ids)){
+        ogs_error("OpenAPI_app_session_context_resp_data_parseFromJSON() failed [ue_ids]");
+        goto end;
+    }
+
+    ue_idsList = OpenAPI_list_create();
+
+    cJSON_ArrayForEach(ue_ids_local_nonprimitive, ue_ids ) {
+        if (!cJSON_IsObject(ue_ids_local_nonprimitive)) {
             ogs_error("OpenAPI_app_session_context_resp_data_parseFromJSON() failed [ue_ids]");
             goto end;
         }
+        OpenAPI_ue_identity_info_t *ue_idsItem = OpenAPI_ue_identity_info_parseFromJSON(ue_ids_local_nonprimitive);
 
-        ue_idsList = OpenAPI_list_create();
-
-        cJSON_ArrayForEach(ue_ids_local_nonprimitive, ue_ids ) {
-            if (!cJSON_IsObject(ue_ids_local_nonprimitive)) {
-                ogs_error("OpenAPI_app_session_context_resp_data_parseFromJSON() failed [ue_ids]");
-                goto end;
-            }
-            OpenAPI_ue_identity_info_t *ue_idsItem = OpenAPI_ue_identity_info_parseFromJSON(ue_ids_local_nonprimitive);
-
-            OpenAPI_list_add(ue_idsList, ue_idsItem);
-        }
+        OpenAPI_list_add(ue_idsList, ue_idsItem);
+    }
     }
 
     cJSON *supp_feat = cJSON_GetObjectItemCaseSensitive(app_session_context_resp_dataJSON, "suppFeat");
 
-    if (supp_feat) {
-        if (!cJSON_IsString(supp_feat)) {
-            ogs_error("OpenAPI_app_session_context_resp_data_parseFromJSON() failed [supp_feat]");
-            goto end;
-        }
+    if (supp_feat) { 
+    if (!cJSON_IsString(supp_feat)) {
+        ogs_error("OpenAPI_app_session_context_resp_data_parseFromJSON() failed [supp_feat]");
+        goto end;
+    }
     }
 
     app_session_context_resp_data_local_var = OpenAPI_app_session_context_resp_data_create (
         serv_auth_info ? serv_auth_infoVariable : 0,
         ue_ids ? ue_idsList : NULL,
         supp_feat ? ogs_strdup_or_assert(supp_feat->valuestring) : NULL
-        );
+    );
 
     return app_session_context_resp_data_local_var;
 end:

@@ -25,7 +25,7 @@ typedef struct OpenAPI_stored_search_result_s {
 
 OpenAPI_stored_search_result_t *OpenAPI_stored_search_result_create(
     OpenAPI_list_t *nf_instances
-    );
+);
 void OpenAPI_stored_search_result_free(OpenAPI_stored_search_result_t *stored_search_result);
 OpenAPI_stored_search_result_t *OpenAPI_stored_search_result_parseFromJSON(cJSON *stored_search_resultJSON);
 cJSON *OpenAPI_stored_search_result_convertToJSON(OpenAPI_stored_search_result_t *stored_search_result);

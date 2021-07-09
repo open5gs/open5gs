@@ -9,8 +9,12 @@ OpenAPI_n1_message_notification_t *OpenAPI_n1_message_notification_create(
     OpenAPI_n1_message_container_t *n1_message_container,
     char *lcs_correlation_id,
     OpenAPI_registration_context_container_t *registration_ctxt_container,
-    char *new_lmf_identification
-    )
+    char *new_lmf_identification,
+    OpenAPI_guami_t *guami,
+    int c_io_t5_gs_optimisation,
+    OpenAPI_ecgi_t *ecgi,
+    OpenAPI_ncgi_t *ncgi
+)
 {
     OpenAPI_n1_message_notification_t *n1_message_notification_local_var = OpenAPI_malloc(sizeof(OpenAPI_n1_message_notification_t));
     if (!n1_message_notification_local_var) {
@@ -21,6 +25,10 @@ OpenAPI_n1_message_notification_t *OpenAPI_n1_message_notification_create(
     n1_message_notification_local_var->lcs_correlation_id = lcs_correlation_id;
     n1_message_notification_local_var->registration_ctxt_container = registration_ctxt_container;
     n1_message_notification_local_var->new_lmf_identification = new_lmf_identification;
+    n1_message_notification_local_var->guami = guami;
+    n1_message_notification_local_var->c_io_t5_gs_optimisation = c_io_t5_gs_optimisation;
+    n1_message_notification_local_var->ecgi = ecgi;
+    n1_message_notification_local_var->ncgi = ncgi;
 
     return n1_message_notification_local_var;
 }
@@ -36,6 +44,9 @@ void OpenAPI_n1_message_notification_free(OpenAPI_n1_message_notification_t *n1_
     ogs_free(n1_message_notification->lcs_correlation_id);
     OpenAPI_registration_context_container_free(n1_message_notification->registration_ctxt_container);
     ogs_free(n1_message_notification->new_lmf_identification);
+    OpenAPI_guami_free(n1_message_notification->guami);
+    OpenAPI_ecgi_free(n1_message_notification->ecgi);
+    OpenAPI_ncgi_free(n1_message_notification->ncgi);
     ogs_free(n1_message_notification);
 }
 
@@ -50,10 +61,10 @@ cJSON *OpenAPI_n1_message_notification_convertToJSON(OpenAPI_n1_message_notifica
 
     item = cJSON_CreateObject();
     if (n1_message_notification->n1_notify_subscription_id) {
-        if (cJSON_AddStringToObject(item, "n1NotifySubscriptionId", n1_message_notification->n1_notify_subscription_id) == NULL) {
-            ogs_error("OpenAPI_n1_message_notification_convertToJSON() failed [n1_notify_subscription_id]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "n1NotifySubscriptionId", n1_message_notification->n1_notify_subscription_id) == NULL) {
+        ogs_error("OpenAPI_n1_message_notification_convertToJSON() failed [n1_notify_subscription_id]");
+        goto end;
+    }
     }
 
     cJSON *n1_message_container_local_JSON = OpenAPI_n1_message_container_convertToJSON(n1_message_notification->n1_message_container);
@@ -68,30 +79,76 @@ cJSON *OpenAPI_n1_message_notification_convertToJSON(OpenAPI_n1_message_notifica
     }
 
     if (n1_message_notification->lcs_correlation_id) {
-        if (cJSON_AddStringToObject(item, "lcsCorrelationId", n1_message_notification->lcs_correlation_id) == NULL) {
-            ogs_error("OpenAPI_n1_message_notification_convertToJSON() failed [lcs_correlation_id]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "lcsCorrelationId", n1_message_notification->lcs_correlation_id) == NULL) {
+        ogs_error("OpenAPI_n1_message_notification_convertToJSON() failed [lcs_correlation_id]");
+        goto end;
+    }
     }
 
     if (n1_message_notification->registration_ctxt_container) {
-        cJSON *registration_ctxt_container_local_JSON = OpenAPI_registration_context_container_convertToJSON(n1_message_notification->registration_ctxt_container);
-        if (registration_ctxt_container_local_JSON == NULL) {
-            ogs_error("OpenAPI_n1_message_notification_convertToJSON() failed [registration_ctxt_container]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "registrationCtxtContainer", registration_ctxt_container_local_JSON);
-        if (item->child == NULL) {
-            ogs_error("OpenAPI_n1_message_notification_convertToJSON() failed [registration_ctxt_container]");
-            goto end;
-        }
+    cJSON *registration_ctxt_container_local_JSON = OpenAPI_registration_context_container_convertToJSON(n1_message_notification->registration_ctxt_container);
+    if (registration_ctxt_container_local_JSON == NULL) {
+        ogs_error("OpenAPI_n1_message_notification_convertToJSON() failed [registration_ctxt_container]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "registrationCtxtContainer", registration_ctxt_container_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_n1_message_notification_convertToJSON() failed [registration_ctxt_container]");
+        goto end;
+    }
     }
 
     if (n1_message_notification->new_lmf_identification) {
-        if (cJSON_AddStringToObject(item, "newLmfIdentification", n1_message_notification->new_lmf_identification) == NULL) {
-            ogs_error("OpenAPI_n1_message_notification_convertToJSON() failed [new_lmf_identification]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "newLmfIdentification", n1_message_notification->new_lmf_identification) == NULL) {
+        ogs_error("OpenAPI_n1_message_notification_convertToJSON() failed [new_lmf_identification]");
+        goto end;
+    }
+    }
+
+    if (n1_message_notification->guami) {
+    cJSON *guami_local_JSON = OpenAPI_guami_convertToJSON(n1_message_notification->guami);
+    if (guami_local_JSON == NULL) {
+        ogs_error("OpenAPI_n1_message_notification_convertToJSON() failed [guami]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "guami", guami_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_n1_message_notification_convertToJSON() failed [guami]");
+        goto end;
+    }
+    }
+
+    if (n1_message_notification->c_io_t5_gs_optimisation) {
+    if (cJSON_AddBoolToObject(item, "cIoT5GSOptimisation", n1_message_notification->c_io_t5_gs_optimisation) == NULL) {
+        ogs_error("OpenAPI_n1_message_notification_convertToJSON() failed [c_io_t5_gs_optimisation]");
+        goto end;
+    }
+    }
+
+    if (n1_message_notification->ecgi) {
+    cJSON *ecgi_local_JSON = OpenAPI_ecgi_convertToJSON(n1_message_notification->ecgi);
+    if (ecgi_local_JSON == NULL) {
+        ogs_error("OpenAPI_n1_message_notification_convertToJSON() failed [ecgi]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "ecgi", ecgi_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_n1_message_notification_convertToJSON() failed [ecgi]");
+        goto end;
+    }
+    }
+
+    if (n1_message_notification->ncgi) {
+    cJSON *ncgi_local_JSON = OpenAPI_ncgi_convertToJSON(n1_message_notification->ncgi);
+    if (ncgi_local_JSON == NULL) {
+        ogs_error("OpenAPI_n1_message_notification_convertToJSON() failed [ncgi]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "ncgi", ncgi_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_n1_message_notification_convertToJSON() failed [ncgi]");
+        goto end;
+    }
     }
 
 end:
@@ -103,11 +160,11 @@ OpenAPI_n1_message_notification_t *OpenAPI_n1_message_notification_parseFromJSON
     OpenAPI_n1_message_notification_t *n1_message_notification_local_var = NULL;
     cJSON *n1_notify_subscription_id = cJSON_GetObjectItemCaseSensitive(n1_message_notificationJSON, "n1NotifySubscriptionId");
 
-    if (n1_notify_subscription_id) {
-        if (!cJSON_IsString(n1_notify_subscription_id)) {
-            ogs_error("OpenAPI_n1_message_notification_parseFromJSON() failed [n1_notify_subscription_id]");
-            goto end;
-        }
+    if (n1_notify_subscription_id) { 
+    if (!cJSON_IsString(n1_notify_subscription_id)) {
+        ogs_error("OpenAPI_n1_message_notification_parseFromJSON() failed [n1_notify_subscription_id]");
+        goto end;
+    }
     }
 
     cJSON *n1_message_container = cJSON_GetObjectItemCaseSensitive(n1_message_notificationJSON, "n1MessageContainer");
@@ -117,32 +174,62 @@ OpenAPI_n1_message_notification_t *OpenAPI_n1_message_notification_parseFromJSON
     }
 
     OpenAPI_n1_message_container_t *n1_message_container_local_nonprim = NULL;
-
+    
     n1_message_container_local_nonprim = OpenAPI_n1_message_container_parseFromJSON(n1_message_container);
 
     cJSON *lcs_correlation_id = cJSON_GetObjectItemCaseSensitive(n1_message_notificationJSON, "lcsCorrelationId");
 
-    if (lcs_correlation_id) {
-        if (!cJSON_IsString(lcs_correlation_id)) {
-            ogs_error("OpenAPI_n1_message_notification_parseFromJSON() failed [lcs_correlation_id]");
-            goto end;
-        }
+    if (lcs_correlation_id) { 
+    if (!cJSON_IsString(lcs_correlation_id)) {
+        ogs_error("OpenAPI_n1_message_notification_parseFromJSON() failed [lcs_correlation_id]");
+        goto end;
+    }
     }
 
     cJSON *registration_ctxt_container = cJSON_GetObjectItemCaseSensitive(n1_message_notificationJSON, "registrationCtxtContainer");
 
     OpenAPI_registration_context_container_t *registration_ctxt_container_local_nonprim = NULL;
-    if (registration_ctxt_container) {
-        registration_ctxt_container_local_nonprim = OpenAPI_registration_context_container_parseFromJSON(registration_ctxt_container);
+    if (registration_ctxt_container) { 
+    registration_ctxt_container_local_nonprim = OpenAPI_registration_context_container_parseFromJSON(registration_ctxt_container);
     }
 
     cJSON *new_lmf_identification = cJSON_GetObjectItemCaseSensitive(n1_message_notificationJSON, "newLmfIdentification");
 
-    if (new_lmf_identification) {
-        if (!cJSON_IsString(new_lmf_identification)) {
-            ogs_error("OpenAPI_n1_message_notification_parseFromJSON() failed [new_lmf_identification]");
-            goto end;
-        }
+    if (new_lmf_identification) { 
+    if (!cJSON_IsString(new_lmf_identification)) {
+        ogs_error("OpenAPI_n1_message_notification_parseFromJSON() failed [new_lmf_identification]");
+        goto end;
+    }
+    }
+
+    cJSON *guami = cJSON_GetObjectItemCaseSensitive(n1_message_notificationJSON, "guami");
+
+    OpenAPI_guami_t *guami_local_nonprim = NULL;
+    if (guami) { 
+    guami_local_nonprim = OpenAPI_guami_parseFromJSON(guami);
+    }
+
+    cJSON *c_io_t5_gs_optimisation = cJSON_GetObjectItemCaseSensitive(n1_message_notificationJSON, "cIoT5GSOptimisation");
+
+    if (c_io_t5_gs_optimisation) { 
+    if (!cJSON_IsBool(c_io_t5_gs_optimisation)) {
+        ogs_error("OpenAPI_n1_message_notification_parseFromJSON() failed [c_io_t5_gs_optimisation]");
+        goto end;
+    }
+    }
+
+    cJSON *ecgi = cJSON_GetObjectItemCaseSensitive(n1_message_notificationJSON, "ecgi");
+
+    OpenAPI_ecgi_t *ecgi_local_nonprim = NULL;
+    if (ecgi) { 
+    ecgi_local_nonprim = OpenAPI_ecgi_parseFromJSON(ecgi);
+    }
+
+    cJSON *ncgi = cJSON_GetObjectItemCaseSensitive(n1_message_notificationJSON, "ncgi");
+
+    OpenAPI_ncgi_t *ncgi_local_nonprim = NULL;
+    if (ncgi) { 
+    ncgi_local_nonprim = OpenAPI_ncgi_parseFromJSON(ncgi);
     }
 
     n1_message_notification_local_var = OpenAPI_n1_message_notification_create (
@@ -150,8 +237,12 @@ OpenAPI_n1_message_notification_t *OpenAPI_n1_message_notification_parseFromJSON
         n1_message_container_local_nonprim,
         lcs_correlation_id ? ogs_strdup_or_assert(lcs_correlation_id->valuestring) : NULL,
         registration_ctxt_container ? registration_ctxt_container_local_nonprim : NULL,
-        new_lmf_identification ? ogs_strdup_or_assert(new_lmf_identification->valuestring) : NULL
-        );
+        new_lmf_identification ? ogs_strdup_or_assert(new_lmf_identification->valuestring) : NULL,
+        guami ? guami_local_nonprim : NULL,
+        c_io_t5_gs_optimisation ? c_io_t5_gs_optimisation->valueint : 0,
+        ecgi ? ecgi_local_nonprim : NULL,
+        ncgi ? ncgi_local_nonprim : NULL
+    );
 
     return n1_message_notification_local_var;
 end:

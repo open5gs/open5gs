@@ -180,8 +180,6 @@ void sgwc_s5c_handle_create_session_response(
     }
 
     if (cause_value != OGS_GTP_CAUSE_REQUEST_ACCEPTED) {
-        ogs_assert(OGS_OK ==
-            sgwc_pfcp_send_session_deletion_request(sess, NULL, NULL));
         ogs_gtp_send_error_message(
                 s11_xact, sgwc_ue ? sgwc_ue->mme_s11_teid : 0,
                 OGS_GTP_CREATE_SESSION_RESPONSE_TYPE, cause_value);
@@ -294,8 +292,83 @@ void sgwc_s5c_handle_delete_session_response(
     ogs_debug("    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]",
         sess->sgw_s5c_teid, sess->pgw_s5c_teid);
 
+    /*
+     * 1. MME sends Delete Session Request to SGW/SMF.
+     * 2. SMF sends Delete Session Response to SGW/MME.
+     */
     ogs_assert(OGS_OK ==
         sgwc_pfcp_send_session_deletion_request(sess, s11_xact, gtpbuf));
+}
+
+void sgwc_s5c_handle_modify_bearer_response(
+        sgwc_sess_t *sess, ogs_gtp_xact_t *s5c_xact,
+        ogs_pkbuf_t *gtpbuf, ogs_gtp_message_t *message)
+{
+    int rv;
+    uint8_t cause_value;
+
+    sgwc_ue_t *sgwc_ue = NULL;
+    ogs_pkbuf_t *pkbuf = NULL;
+
+    ogs_gtp_xact_t *s11_xact = NULL;
+    ogs_gtp_modify_bearer_response_t *rsp = NULL;
+
+    ogs_assert(s5c_xact);
+    s11_xact = s5c_xact->assoc_xact;
+    ogs_assert(s11_xact);
+    ogs_assert(message);
+    rsp = &message->modify_bearer_response;
+    ogs_assert(rsp);
+
+    ogs_debug("Modify Bearer Response");
+
+    cause_value = OGS_GTP_CAUSE_REQUEST_ACCEPTED;
+
+    rv = ogs_gtp_xact_commit(s5c_xact);
+    ogs_expect(rv == OGS_OK);
+
+    if (!sess) {
+        ogs_warn("No Context in TEID");
+        sess = s5c_xact->data;
+        ogs_assert(sess);
+    }
+
+    sgwc_ue = sess->sgwc_ue;
+    ogs_assert(sgwc_ue);
+
+    if (rsp->cause.presence) {
+        ogs_gtp_cause_t *cause = rsp->cause.data;
+        ogs_assert(cause);
+
+        cause_value = cause->value;
+    } else {
+        ogs_error("No Cause");
+        cause_value = OGS_GTP_CAUSE_MANDATORY_IE_MISSING;
+    }
+
+    if (cause_value != OGS_GTP_CAUSE_REQUEST_ACCEPTED) {
+        ogs_gtp_send_error_message(
+                s11_xact, sgwc_ue ? sgwc_ue->mme_s11_teid : 0,
+                OGS_GTP_MODIFY_BEARER_RESPONSE_TYPE, cause_value);
+        return;
+    }
+
+    ogs_debug("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
+        sgwc_ue->mme_s11_teid, sgwc_ue->sgw_s11_teid);
+    ogs_debug("    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]",
+        sess->sgw_s5c_teid, sess->pgw_s5c_teid);
+
+    message->h.type = OGS_GTP_MODIFY_BEARER_RESPONSE_TYPE;
+    message->h.teid = sgwc_ue->mme_s11_teid;
+
+    pkbuf = ogs_gtp_build_msg(message);
+    ogs_expect_or_return(pkbuf);
+
+    rv = ogs_gtp_xact_update_tx(s11_xact, &message->h, pkbuf);
+    ogs_expect_or_return(rv == OGS_OK);
+
+    rv = ogs_gtp_xact_commit(s11_xact);
+    ogs_expect(rv == OGS_OK);
 }
 
 void sgwc_s5c_handle_create_bearer_request(
@@ -516,10 +589,41 @@ void sgwc_s5c_handle_delete_bearer_request(
     }
 
     if (cause_value == OGS_GTP_CAUSE_REQUEST_ACCEPTED) {
-        bearer = sgwc_bearer_find_by_sess_ebi(sess, req->eps_bearer_ids.u8);
+        uint8_t ebi;
+
+        if (req->linked_eps_bearer_id.presence) {
+           /*
+            * << Linked EPS Bearer ID >>
+            *
+            * 1. SMF sends Delete Bearer Request(DEFAULT BEARER) to SGW/MME.
+            * 2. MME sends Delete Bearer Response to SGW/SMF.
+            *
+            * OR
+            *
+            * 1. SMF sends Delete Bearer Request(DEFAULT BEARER) to ePDG.
+            * 2. ePDG sends Delete Bearer Response(DEFAULT BEARER) to SMF.
+            */
+            ebi = req->linked_eps_bearer_id.u8;
+        } else if (req->eps_bearer_ids.presence) {
+           /*
+            * << EPS Bearer IDs >>
+            *
+            * 1. MME sends Bearer Resource Command to SGW/SMF.
+            * 2. SMF sends Delete Bearer Request(DEDICATED BEARER) to SGW/MME.
+            * 3. MME sends Delete Bearer Response(DEDICATED BEARER) to SGW/SMF.
+            *
+            * OR
+            *
+            * 1. SMF sends Delete Bearer Request(DEDICATED BEARER) to SGW/MME.
+            * 2. MME sends Delete Bearer Response(DEDICATED BEARER) to SGW/SMF.
+            */
+            ebi = req->eps_bearer_ids.u8;
+        } else
+            ogs_assert_if_reached();
+
+        bearer = sgwc_bearer_find_by_sess_ebi(sess, ebi);
         if (!bearer)
-            ogs_error("No Context for EPS Bearer ID[%d]",
-                        req->eps_bearer_ids.u8);
+            ogs_error("No Context for EPS Bearer ID[%d]", ebi);
     }
     if (!bearer) {
         ogs_warn("No Context");
@@ -552,12 +656,31 @@ void sgwc_s5c_handle_delete_bearer_request(
 
     s11_xact = s5c_xact->assoc_xact;
     if (!s11_xact) {
+       /*
+        * 1. SMF sends Delete Bearer Request(DEFAULT BEARER) to SGW/MME.
+        * 2. MME sends Delete Bearer Response to SGW/SMF.
+        *
+        * OR
+        *
+        * 1. SMF sends Delete Bearer Request(DEFAULT BEARER) to ePDG.
+        * 2. ePDG sends Delete Bearer Response(DEFAULT BEARER) to SMF.
+        *
+        * OR
+        *
+        * 1. SMF sends Delete Bearer Request(DEDICATED BEARER) to SGW/MME.
+        * 2. MME sends Delete Bearer Response(DEDICATED BEARER) to SGW/SMF.
+        */
         s11_xact = ogs_gtp_xact_local_create(
                 sgwc_ue->gnode, &message->h, pkbuf, bearer_timeout, bearer);
         ogs_expect_or_return(s11_xact);
 
         ogs_gtp_xact_associate(s5c_xact, s11_xact);
     } else {
+       /*
+        * 1. MME sends Bearer Resource Command to SGW/SMF.
+        * 2. SMF sends Delete Bearer Request(DEDICATED BEARER) to SGW/MME.
+        * 3. MME sends Delete Bearer Response(DEDICATED BEARER) to SGW/SMF.
+        */
         rv = ogs_gtp_xact_update_tx(s11_xact, &message->h, pkbuf);
         ogs_expect_or_return(rv == OGS_OK);
     }

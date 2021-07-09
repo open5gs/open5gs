@@ -5,7 +5,7 @@
 #include "association_type.h"
 
 OpenAPI_association_type_t *OpenAPI_association_type_create(
-    )
+)
 {
     OpenAPI_association_type_t *association_type_local_var = OpenAPI_malloc(sizeof(OpenAPI_association_type_t));
     if (!association_type_local_var) {
@@ -42,7 +42,7 @@ OpenAPI_association_type_t *OpenAPI_association_type_parseFromJSON(cJSON *associ
 {
     OpenAPI_association_type_t *association_type_local_var = NULL;
     association_type_local_var = OpenAPI_association_type_create (
-        );
+    );
 
     return association_type_local_var;
 end:

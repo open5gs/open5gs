@@ -8,7 +8,7 @@ OpenAPI_ue_identity_info_t *OpenAPI_ue_identity_info_create(
     char *gpsi,
     char *pei,
     char *supi
-    )
+)
 {
     OpenAPI_ue_identity_info_t *ue_identity_info_local_var = OpenAPI_malloc(sizeof(OpenAPI_ue_identity_info_t));
     if (!ue_identity_info_local_var) {
@@ -44,24 +44,24 @@ cJSON *OpenAPI_ue_identity_info_convertToJSON(OpenAPI_ue_identity_info_t *ue_ide
 
     item = cJSON_CreateObject();
     if (ue_identity_info->gpsi) {
-        if (cJSON_AddStringToObject(item, "gpsi", ue_identity_info->gpsi) == NULL) {
-            ogs_error("OpenAPI_ue_identity_info_convertToJSON() failed [gpsi]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "gpsi", ue_identity_info->gpsi) == NULL) {
+        ogs_error("OpenAPI_ue_identity_info_convertToJSON() failed [gpsi]");
+        goto end;
+    }
     }
 
     if (ue_identity_info->pei) {
-        if (cJSON_AddStringToObject(item, "pei", ue_identity_info->pei) == NULL) {
-            ogs_error("OpenAPI_ue_identity_info_convertToJSON() failed [pei]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "pei", ue_identity_info->pei) == NULL) {
+        ogs_error("OpenAPI_ue_identity_info_convertToJSON() failed [pei]");
+        goto end;
+    }
     }
 
     if (ue_identity_info->supi) {
-        if (cJSON_AddStringToObject(item, "supi", ue_identity_info->supi) == NULL) {
-            ogs_error("OpenAPI_ue_identity_info_convertToJSON() failed [supi]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "supi", ue_identity_info->supi) == NULL) {
+        ogs_error("OpenAPI_ue_identity_info_convertToJSON() failed [supi]");
+        goto end;
+    }
     }
 
 end:
@@ -73,36 +73,36 @@ OpenAPI_ue_identity_info_t *OpenAPI_ue_identity_info_parseFromJSON(cJSON *ue_ide
     OpenAPI_ue_identity_info_t *ue_identity_info_local_var = NULL;
     cJSON *gpsi = cJSON_GetObjectItemCaseSensitive(ue_identity_infoJSON, "gpsi");
 
-    if (gpsi) {
-        if (!cJSON_IsString(gpsi)) {
-            ogs_error("OpenAPI_ue_identity_info_parseFromJSON() failed [gpsi]");
-            goto end;
-        }
+    if (gpsi) { 
+    if (!cJSON_IsString(gpsi)) {
+        ogs_error("OpenAPI_ue_identity_info_parseFromJSON() failed [gpsi]");
+        goto end;
+    }
     }
 
     cJSON *pei = cJSON_GetObjectItemCaseSensitive(ue_identity_infoJSON, "pei");
 
-    if (pei) {
-        if (!cJSON_IsString(pei)) {
-            ogs_error("OpenAPI_ue_identity_info_parseFromJSON() failed [pei]");
-            goto end;
-        }
+    if (pei) { 
+    if (!cJSON_IsString(pei)) {
+        ogs_error("OpenAPI_ue_identity_info_parseFromJSON() failed [pei]");
+        goto end;
+    }
     }
 
     cJSON *supi = cJSON_GetObjectItemCaseSensitive(ue_identity_infoJSON, "supi");
 
-    if (supi) {
-        if (!cJSON_IsString(supi)) {
-            ogs_error("OpenAPI_ue_identity_info_parseFromJSON() failed [supi]");
-            goto end;
-        }
+    if (supi) { 
+    if (!cJSON_IsString(supi)) {
+        ogs_error("OpenAPI_ue_identity_info_parseFromJSON() failed [supi]");
+        goto end;
+    }
     }
 
     ue_identity_info_local_var = OpenAPI_ue_identity_info_create (
         gpsi ? ogs_strdup_or_assert(gpsi->valuestring) : NULL,
         pei ? ogs_strdup_or_assert(pei->valuestring) : NULL,
         supi ? ogs_strdup_or_assert(supi->valuestring) : NULL
-        );
+    );
 
     return ue_identity_info_local_var;
 end:

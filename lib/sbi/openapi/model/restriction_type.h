@@ -1,7 +1,7 @@
 /*
  * restriction_type.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_restriction_type_H_

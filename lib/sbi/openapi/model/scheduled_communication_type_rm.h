@@ -1,7 +1,7 @@
 /*
  * scheduled_communication_type_rm.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_scheduled_communication_type_rm_H_
@@ -24,7 +24,7 @@ typedef struct OpenAPI_scheduled_communication_type_rm_s {
 } OpenAPI_scheduled_communication_type_rm_t;
 
 OpenAPI_scheduled_communication_type_rm_t *OpenAPI_scheduled_communication_type_rm_create(
-    );
+);
 void OpenAPI_scheduled_communication_type_rm_free(OpenAPI_scheduled_communication_type_rm_t *scheduled_communication_type_rm);
 OpenAPI_scheduled_communication_type_rm_t *OpenAPI_scheduled_communication_type_rm_parseFromJSON(cJSON *scheduled_communication_type_rmJSON);
 cJSON *OpenAPI_scheduled_communication_type_rm_convertToJSON(OpenAPI_scheduled_communication_type_rm_t *scheduled_communication_type_rm);

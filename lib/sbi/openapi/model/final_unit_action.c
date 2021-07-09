@@ -5,7 +5,7 @@
 #include "final_unit_action.h"
 
 OpenAPI_final_unit_action_t *OpenAPI_final_unit_action_create(
-    )
+)
 {
     OpenAPI_final_unit_action_t *final_unit_action_local_var = OpenAPI_malloc(sizeof(OpenAPI_final_unit_action_t));
     if (!final_unit_action_local_var) {
@@ -42,7 +42,7 @@ OpenAPI_final_unit_action_t *OpenAPI_final_unit_action_parseFromJSON(cJSON *fina
 {
     OpenAPI_final_unit_action_t *final_unit_action_local_var = NULL;
     final_unit_action_local_var = OpenAPI_final_unit_action_create (
-        );
+    );
 
     return final_unit_action_local_var;
 end:

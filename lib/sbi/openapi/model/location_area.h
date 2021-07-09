@@ -1,7 +1,7 @@
 /*
  * location_area.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_location_area_H_
@@ -31,7 +31,7 @@ OpenAPI_location_area_t *OpenAPI_location_area_create(
     OpenAPI_list_t *geographic_areas,
     OpenAPI_list_t *civic_addresses,
     OpenAPI_network_area_info_t *nw_area_info
-    );
+);
 void OpenAPI_location_area_free(OpenAPI_location_area_t *location_area);
 OpenAPI_location_area_t *OpenAPI_location_area_parseFromJSON(cJSON *location_areaJSON);
 cJSON *OpenAPI_location_area_convertToJSON(OpenAPI_location_area_t *location_area);

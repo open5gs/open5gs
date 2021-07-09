@@ -9,7 +9,7 @@ OpenAPI_ue_context_transfer_rsp_data_t *OpenAPI_ue_context_transfer_rsp_data_cre
     OpenAPI_n2_info_content_t *ue_radio_capability,
     OpenAPI_n2_info_content_t *ue_nbiot_radio_capability,
     char *supported_features
-    )
+)
 {
     OpenAPI_ue_context_transfer_rsp_data_t *ue_context_transfer_rsp_data_local_var = OpenAPI_malloc(sizeof(OpenAPI_ue_context_transfer_rsp_data_t));
     if (!ue_context_transfer_rsp_data_local_var) {
@@ -58,36 +58,36 @@ cJSON *OpenAPI_ue_context_transfer_rsp_data_convertToJSON(OpenAPI_ue_context_tra
     }
 
     if (ue_context_transfer_rsp_data->ue_radio_capability) {
-        cJSON *ue_radio_capability_local_JSON = OpenAPI_n2_info_content_convertToJSON(ue_context_transfer_rsp_data->ue_radio_capability);
-        if (ue_radio_capability_local_JSON == NULL) {
-            ogs_error("OpenAPI_ue_context_transfer_rsp_data_convertToJSON() failed [ue_radio_capability]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "ueRadioCapability", ue_radio_capability_local_JSON);
-        if (item->child == NULL) {
-            ogs_error("OpenAPI_ue_context_transfer_rsp_data_convertToJSON() failed [ue_radio_capability]");
-            goto end;
-        }
+    cJSON *ue_radio_capability_local_JSON = OpenAPI_n2_info_content_convertToJSON(ue_context_transfer_rsp_data->ue_radio_capability);
+    if (ue_radio_capability_local_JSON == NULL) {
+        ogs_error("OpenAPI_ue_context_transfer_rsp_data_convertToJSON() failed [ue_radio_capability]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "ueRadioCapability", ue_radio_capability_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_ue_context_transfer_rsp_data_convertToJSON() failed [ue_radio_capability]");
+        goto end;
+    }
     }
 
     if (ue_context_transfer_rsp_data->ue_nbiot_radio_capability) {
-        cJSON *ue_nbiot_radio_capability_local_JSON = OpenAPI_n2_info_content_convertToJSON(ue_context_transfer_rsp_data->ue_nbiot_radio_capability);
-        if (ue_nbiot_radio_capability_local_JSON == NULL) {
-            ogs_error("OpenAPI_ue_context_transfer_rsp_data_convertToJSON() failed [ue_nbiot_radio_capability]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "ueNbiotRadioCapability", ue_nbiot_radio_capability_local_JSON);
-        if (item->child == NULL) {
-            ogs_error("OpenAPI_ue_context_transfer_rsp_data_convertToJSON() failed [ue_nbiot_radio_capability]");
-            goto end;
-        }
+    cJSON *ue_nbiot_radio_capability_local_JSON = OpenAPI_n2_info_content_convertToJSON(ue_context_transfer_rsp_data->ue_nbiot_radio_capability);
+    if (ue_nbiot_radio_capability_local_JSON == NULL) {
+        ogs_error("OpenAPI_ue_context_transfer_rsp_data_convertToJSON() failed [ue_nbiot_radio_capability]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "ueNbiotRadioCapability", ue_nbiot_radio_capability_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_ue_context_transfer_rsp_data_convertToJSON() failed [ue_nbiot_radio_capability]");
+        goto end;
+    }
     }
 
     if (ue_context_transfer_rsp_data->supported_features) {
-        if (cJSON_AddStringToObject(item, "supportedFeatures", ue_context_transfer_rsp_data->supported_features) == NULL) {
-            ogs_error("OpenAPI_ue_context_transfer_rsp_data_convertToJSON() failed [supported_features]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "supportedFeatures", ue_context_transfer_rsp_data->supported_features) == NULL) {
+        ogs_error("OpenAPI_ue_context_transfer_rsp_data_convertToJSON() failed [supported_features]");
+        goto end;
+    }
     }
 
 end:
@@ -104,30 +104,30 @@ OpenAPI_ue_context_transfer_rsp_data_t *OpenAPI_ue_context_transfer_rsp_data_par
     }
 
     OpenAPI_ue_context_t *ue_context_local_nonprim = NULL;
-
+    
     ue_context_local_nonprim = OpenAPI_ue_context_parseFromJSON(ue_context);
 
     cJSON *ue_radio_capability = cJSON_GetObjectItemCaseSensitive(ue_context_transfer_rsp_dataJSON, "ueRadioCapability");
 
     OpenAPI_n2_info_content_t *ue_radio_capability_local_nonprim = NULL;
-    if (ue_radio_capability) {
-        ue_radio_capability_local_nonprim = OpenAPI_n2_info_content_parseFromJSON(ue_radio_capability);
+    if (ue_radio_capability) { 
+    ue_radio_capability_local_nonprim = OpenAPI_n2_info_content_parseFromJSON(ue_radio_capability);
     }
 
     cJSON *ue_nbiot_radio_capability = cJSON_GetObjectItemCaseSensitive(ue_context_transfer_rsp_dataJSON, "ueNbiotRadioCapability");
 
     OpenAPI_n2_info_content_t *ue_nbiot_radio_capability_local_nonprim = NULL;
-    if (ue_nbiot_radio_capability) {
-        ue_nbiot_radio_capability_local_nonprim = OpenAPI_n2_info_content_parseFromJSON(ue_nbiot_radio_capability);
+    if (ue_nbiot_radio_capability) { 
+    ue_nbiot_radio_capability_local_nonprim = OpenAPI_n2_info_content_parseFromJSON(ue_nbiot_radio_capability);
     }
 
     cJSON *supported_features = cJSON_GetObjectItemCaseSensitive(ue_context_transfer_rsp_dataJSON, "supportedFeatures");
 
-    if (supported_features) {
-        if (!cJSON_IsString(supported_features)) {
-            ogs_error("OpenAPI_ue_context_transfer_rsp_data_parseFromJSON() failed [supported_features]");
-            goto end;
-        }
+    if (supported_features) { 
+    if (!cJSON_IsString(supported_features)) {
+        ogs_error("OpenAPI_ue_context_transfer_rsp_data_parseFromJSON() failed [supported_features]");
+        goto end;
+    }
     }
 
     ue_context_transfer_rsp_data_local_var = OpenAPI_ue_context_transfer_rsp_data_create (
@@ -135,7 +135,7 @@ OpenAPI_ue_context_transfer_rsp_data_t *OpenAPI_ue_context_transfer_rsp_data_par
         ue_radio_capability ? ue_radio_capability_local_nonprim : NULL,
         ue_nbiot_radio_capability ? ue_nbiot_radio_capability_local_nonprim : NULL,
         supported_features ? ogs_strdup_or_assert(supported_features->valuestring) : NULL
-        );
+    );
 
     return ue_context_transfer_rsp_data_local_var;
 end:

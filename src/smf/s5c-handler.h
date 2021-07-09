@@ -37,6 +37,9 @@ void smf_s5c_handle_create_session_request(
 void smf_s5c_handle_delete_session_request(
         smf_sess_t *sess, ogs_gtp_xact_t *xact,
         ogs_gtp_delete_session_request_t *req);
+void smf_s5c_handle_modify_bearer_request(
+        smf_sess_t *sess, ogs_gtp_xact_t *xact,
+        ogs_gtp_modify_bearer_request_t *req);
 void smf_s5c_handle_create_bearer_response(
         smf_sess_t *sess, ogs_gtp_xact_t *xact,
         ogs_gtp_create_bearer_response_t *req);

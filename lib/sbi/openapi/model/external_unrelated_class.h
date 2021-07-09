@@ -1,7 +1,7 @@
 /*
  * external_unrelated_class.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_external_unrelated_class_H_
@@ -31,7 +31,7 @@ OpenAPI_external_unrelated_class_t *OpenAPI_external_unrelated_class_create(
     OpenAPI_list_t *lcs_client_externals,
     OpenAPI_list_t *af_externals,
     OpenAPI_list_t *lcs_client_group_externals
-    );
+);
 void OpenAPI_external_unrelated_class_free(OpenAPI_external_unrelated_class_t *external_unrelated_class);
 OpenAPI_external_unrelated_class_t *OpenAPI_external_unrelated_class_parseFromJSON(cJSON *external_unrelated_classJSON);
 cJSON *OpenAPI_external_unrelated_class_convertToJSON(OpenAPI_external_unrelated_class_t *external_unrelated_class);

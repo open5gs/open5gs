@@ -1,7 +1,7 @@
 /*
  * problem_details_2.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_problem_details_2_H_
@@ -12,7 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
-#include "invalid_param.h"
+#include "invalid_param_1.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -27,8 +27,6 @@ typedef struct OpenAPI_problem_details_2_s {
     char *instance;
     char *cause;
     OpenAPI_list_t *invalid_params;
-    char *supported_features;
-    char *target_scp;
 } OpenAPI_problem_details_2_t;
 
 OpenAPI_problem_details_2_t *OpenAPI_problem_details_2_create(
@@ -38,10 +36,8 @@ OpenAPI_problem_details_2_t *OpenAPI_problem_details_2_create(
     char *detail,
     char *instance,
     char *cause,
-    OpenAPI_list_t *invalid_params,
-    char *supported_features,
-    char *target_scp
-    );
+    OpenAPI_list_t *invalid_params
+);
 void OpenAPI_problem_details_2_free(OpenAPI_problem_details_2_t *problem_details_2);
 OpenAPI_problem_details_2_t *OpenAPI_problem_details_2_parseFromJSON(cJSON *problem_details_2JSON);
 cJSON *OpenAPI_problem_details_2_convertToJSON(OpenAPI_problem_details_2_t *problem_details_2);

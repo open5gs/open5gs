@@ -10,7 +10,7 @@ OpenAPI_ue_context_transfer_req_data_t *OpenAPI_ue_context_transfer_req_data_cre
     OpenAPI_plmn_id_t *plmn_id,
     OpenAPI_n1_message_container_t *reg_request,
     char *supported_features
-    )
+)
 {
     OpenAPI_ue_context_transfer_req_data_t *ue_context_transfer_req_data_local_var = OpenAPI_malloc(sizeof(OpenAPI_ue_context_transfer_req_data_t));
     if (!ue_context_transfer_req_data_local_var) {
@@ -58,36 +58,36 @@ cJSON *OpenAPI_ue_context_transfer_req_data_convertToJSON(OpenAPI_ue_context_tra
     }
 
     if (ue_context_transfer_req_data->plmn_id) {
-        cJSON *plmn_id_local_JSON = OpenAPI_plmn_id_convertToJSON(ue_context_transfer_req_data->plmn_id);
-        if (plmn_id_local_JSON == NULL) {
-            ogs_error("OpenAPI_ue_context_transfer_req_data_convertToJSON() failed [plmn_id]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "plmnId", plmn_id_local_JSON);
-        if (item->child == NULL) {
-            ogs_error("OpenAPI_ue_context_transfer_req_data_convertToJSON() failed [plmn_id]");
-            goto end;
-        }
+    cJSON *plmn_id_local_JSON = OpenAPI_plmn_id_convertToJSON(ue_context_transfer_req_data->plmn_id);
+    if (plmn_id_local_JSON == NULL) {
+        ogs_error("OpenAPI_ue_context_transfer_req_data_convertToJSON() failed [plmn_id]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "plmnId", plmn_id_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_ue_context_transfer_req_data_convertToJSON() failed [plmn_id]");
+        goto end;
+    }
     }
 
     if (ue_context_transfer_req_data->reg_request) {
-        cJSON *reg_request_local_JSON = OpenAPI_n1_message_container_convertToJSON(ue_context_transfer_req_data->reg_request);
-        if (reg_request_local_JSON == NULL) {
-            ogs_error("OpenAPI_ue_context_transfer_req_data_convertToJSON() failed [reg_request]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "regRequest", reg_request_local_JSON);
-        if (item->child == NULL) {
-            ogs_error("OpenAPI_ue_context_transfer_req_data_convertToJSON() failed [reg_request]");
-            goto end;
-        }
+    cJSON *reg_request_local_JSON = OpenAPI_n1_message_container_convertToJSON(ue_context_transfer_req_data->reg_request);
+    if (reg_request_local_JSON == NULL) {
+        ogs_error("OpenAPI_ue_context_transfer_req_data_convertToJSON() failed [reg_request]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "regRequest", reg_request_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_ue_context_transfer_req_data_convertToJSON() failed [reg_request]");
+        goto end;
+    }
     }
 
     if (ue_context_transfer_req_data->supported_features) {
-        if (cJSON_AddStringToObject(item, "supportedFeatures", ue_context_transfer_req_data->supported_features) == NULL) {
-            ogs_error("OpenAPI_ue_context_transfer_req_data_convertToJSON() failed [supported_features]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "supportedFeatures", ue_context_transfer_req_data->supported_features) == NULL) {
+        ogs_error("OpenAPI_ue_context_transfer_req_data_convertToJSON() failed [supported_features]");
+        goto end;
+    }
     }
 
 end:
@@ -104,7 +104,7 @@ OpenAPI_ue_context_transfer_req_data_t *OpenAPI_ue_context_transfer_req_data_par
     }
 
     OpenAPI_transfer_reason_e reasonVariable;
-
+    
     if (!cJSON_IsString(reason)) {
         ogs_error("OpenAPI_ue_context_transfer_req_data_parseFromJSON() failed [reason]");
         goto end;
@@ -118,7 +118,7 @@ OpenAPI_ue_context_transfer_req_data_t *OpenAPI_ue_context_transfer_req_data_par
     }
 
     OpenAPI_access_type_e access_typeVariable;
-
+    
     if (!cJSON_IsString(access_type)) {
         ogs_error("OpenAPI_ue_context_transfer_req_data_parseFromJSON() failed [access_type]");
         goto end;
@@ -128,24 +128,24 @@ OpenAPI_ue_context_transfer_req_data_t *OpenAPI_ue_context_transfer_req_data_par
     cJSON *plmn_id = cJSON_GetObjectItemCaseSensitive(ue_context_transfer_req_dataJSON, "plmnId");
 
     OpenAPI_plmn_id_t *plmn_id_local_nonprim = NULL;
-    if (plmn_id) {
-        plmn_id_local_nonprim = OpenAPI_plmn_id_parseFromJSON(plmn_id);
+    if (plmn_id) { 
+    plmn_id_local_nonprim = OpenAPI_plmn_id_parseFromJSON(plmn_id);
     }
 
     cJSON *reg_request = cJSON_GetObjectItemCaseSensitive(ue_context_transfer_req_dataJSON, "regRequest");
 
     OpenAPI_n1_message_container_t *reg_request_local_nonprim = NULL;
-    if (reg_request) {
-        reg_request_local_nonprim = OpenAPI_n1_message_container_parseFromJSON(reg_request);
+    if (reg_request) { 
+    reg_request_local_nonprim = OpenAPI_n1_message_container_parseFromJSON(reg_request);
     }
 
     cJSON *supported_features = cJSON_GetObjectItemCaseSensitive(ue_context_transfer_req_dataJSON, "supportedFeatures");
 
-    if (supported_features) {
-        if (!cJSON_IsString(supported_features)) {
-            ogs_error("OpenAPI_ue_context_transfer_req_data_parseFromJSON() failed [supported_features]");
-            goto end;
-        }
+    if (supported_features) { 
+    if (!cJSON_IsString(supported_features)) {
+        ogs_error("OpenAPI_ue_context_transfer_req_data_parseFromJSON() failed [supported_features]");
+        goto end;
+    }
     }
 
     ue_context_transfer_req_data_local_var = OpenAPI_ue_context_transfer_req_data_create (
@@ -154,7 +154,7 @@ OpenAPI_ue_context_transfer_req_data_t *OpenAPI_ue_context_transfer_req_data_par
         plmn_id ? plmn_id_local_nonprim : NULL,
         reg_request ? reg_request_local_nonprim : NULL,
         supported_features ? ogs_strdup_or_assert(supported_features->valuestring) : NULL
-        );
+    );
 
     return ue_context_transfer_req_data_local_var;
 end:

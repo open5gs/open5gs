@@ -7,7 +7,7 @@
 OpenAPI_cag_ack_data_t *OpenAPI_cag_ack_data_create(
     char *provisioning_time,
     OpenAPI_ue_update_status_e ue_update_status
-    )
+)
 {
     OpenAPI_cag_ack_data_t *cag_ack_data_local_var = OpenAPI_malloc(sizeof(OpenAPI_cag_ack_data_t));
     if (!cag_ack_data_local_var) {
@@ -62,7 +62,7 @@ OpenAPI_cag_ack_data_t *OpenAPI_cag_ack_data_parseFromJSON(cJSON *cag_ack_dataJS
         goto end;
     }
 
-
+    
     if (!cJSON_IsString(provisioning_time)) {
         ogs_error("OpenAPI_cag_ack_data_parseFromJSON() failed [provisioning_time]");
         goto end;
@@ -75,7 +75,7 @@ OpenAPI_cag_ack_data_t *OpenAPI_cag_ack_data_parseFromJSON(cJSON *cag_ack_dataJS
     }
 
     OpenAPI_ue_update_status_e ue_update_statusVariable;
-
+    
     if (!cJSON_IsString(ue_update_status)) {
         ogs_error("OpenAPI_cag_ack_data_parseFromJSON() failed [ue_update_status]");
         goto end;
@@ -85,7 +85,7 @@ OpenAPI_cag_ack_data_t *OpenAPI_cag_ack_data_parseFromJSON(cJSON *cag_ack_dataJS
     cag_ack_data_local_var = OpenAPI_cag_ack_data_create (
         ogs_strdup_or_assert(provisioning_time->valuestring),
         ue_update_statusVariable
-        );
+    );
 
     return cag_ack_data_local_var;
 end:

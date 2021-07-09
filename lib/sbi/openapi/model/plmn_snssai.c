@@ -8,7 +8,7 @@ OpenAPI_plmn_snssai_t *OpenAPI_plmn_snssai_create(
     OpenAPI_plmn_id_t *plmn_id,
     OpenAPI_list_t *s_nssai_list,
     char *nid
-    )
+)
 {
     OpenAPI_plmn_snssai_t *plmn_snssai_local_var = OpenAPI_malloc(sizeof(OpenAPI_plmn_snssai_t));
     if (!plmn_snssai_local_var) {
@@ -76,10 +76,10 @@ cJSON *OpenAPI_plmn_snssai_convertToJSON(OpenAPI_plmn_snssai_t *plmn_snssai)
     }
 
     if (plmn_snssai->nid) {
-        if (cJSON_AddStringToObject(item, "nid", plmn_snssai->nid) == NULL) {
-            ogs_error("OpenAPI_plmn_snssai_convertToJSON() failed [nid]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "nid", plmn_snssai->nid) == NULL) {
+        ogs_error("OpenAPI_plmn_snssai_convertToJSON() failed [nid]");
+        goto end;
+    }
     }
 
 end:
@@ -96,7 +96,7 @@ OpenAPI_plmn_snssai_t *OpenAPI_plmn_snssai_parseFromJSON(cJSON *plmn_snssaiJSON)
     }
 
     OpenAPI_plmn_id_t *plmn_id_local_nonprim = NULL;
-
+    
     plmn_id_local_nonprim = OpenAPI_plmn_id_parseFromJSON(plmn_id);
 
     cJSON *s_nssai_list = cJSON_GetObjectItemCaseSensitive(plmn_snssaiJSON, "sNssaiList");
@@ -106,9 +106,9 @@ OpenAPI_plmn_snssai_t *OpenAPI_plmn_snssai_parseFromJSON(cJSON *plmn_snssaiJSON)
     }
 
     OpenAPI_list_t *s_nssai_listList;
-
+    
     cJSON *s_nssai_list_local_nonprimitive;
-    if (!cJSON_IsArray(s_nssai_list)) {
+    if (!cJSON_IsArray(s_nssai_list)){
         ogs_error("OpenAPI_plmn_snssai_parseFromJSON() failed [s_nssai_list]");
         goto end;
     }
@@ -127,18 +127,18 @@ OpenAPI_plmn_snssai_t *OpenAPI_plmn_snssai_parseFromJSON(cJSON *plmn_snssaiJSON)
 
     cJSON *nid = cJSON_GetObjectItemCaseSensitive(plmn_snssaiJSON, "nid");
 
-    if (nid) {
-        if (!cJSON_IsString(nid)) {
-            ogs_error("OpenAPI_plmn_snssai_parseFromJSON() failed [nid]");
-            goto end;
-        }
+    if (nid) { 
+    if (!cJSON_IsString(nid)) {
+        ogs_error("OpenAPI_plmn_snssai_parseFromJSON() failed [nid]");
+        goto end;
+    }
     }
 
     plmn_snssai_local_var = OpenAPI_plmn_snssai_create (
         plmn_id_local_nonprim,
         s_nssai_listList,
         nid ? ogs_strdup_or_assert(nid->valuestring) : NULL
-        );
+    );
 
     return plmn_snssai_local_var;
 end:

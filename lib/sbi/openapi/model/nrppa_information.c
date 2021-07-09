@@ -8,7 +8,7 @@ OpenAPI_nrppa_information_t *OpenAPI_nrppa_information_create(
     char *nf_id,
     OpenAPI_n2_info_content_t *nrppa_pdu,
     char *service_instance_id
-    )
+)
 {
     OpenAPI_nrppa_information_t *nrppa_information_local_var = OpenAPI_malloc(sizeof(OpenAPI_nrppa_information_t));
     if (!nrppa_information_local_var) {
@@ -60,10 +60,10 @@ cJSON *OpenAPI_nrppa_information_convertToJSON(OpenAPI_nrppa_information_t *nrpp
     }
 
     if (nrppa_information->service_instance_id) {
-        if (cJSON_AddStringToObject(item, "serviceInstanceId", nrppa_information->service_instance_id) == NULL) {
-            ogs_error("OpenAPI_nrppa_information_convertToJSON() failed [service_instance_id]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "serviceInstanceId", nrppa_information->service_instance_id) == NULL) {
+        ogs_error("OpenAPI_nrppa_information_convertToJSON() failed [service_instance_id]");
+        goto end;
+    }
     }
 
 end:
@@ -79,7 +79,7 @@ OpenAPI_nrppa_information_t *OpenAPI_nrppa_information_parseFromJSON(cJSON *nrpp
         goto end;
     }
 
-
+    
     if (!cJSON_IsString(nf_id)) {
         ogs_error("OpenAPI_nrppa_information_parseFromJSON() failed [nf_id]");
         goto end;
@@ -92,23 +92,23 @@ OpenAPI_nrppa_information_t *OpenAPI_nrppa_information_parseFromJSON(cJSON *nrpp
     }
 
     OpenAPI_n2_info_content_t *nrppa_pdu_local_nonprim = NULL;
-
+    
     nrppa_pdu_local_nonprim = OpenAPI_n2_info_content_parseFromJSON(nrppa_pdu);
 
     cJSON *service_instance_id = cJSON_GetObjectItemCaseSensitive(nrppa_informationJSON, "serviceInstanceId");
 
-    if (service_instance_id) {
-        if (!cJSON_IsString(service_instance_id)) {
-            ogs_error("OpenAPI_nrppa_information_parseFromJSON() failed [service_instance_id]");
-            goto end;
-        }
+    if (service_instance_id) { 
+    if (!cJSON_IsString(service_instance_id)) {
+        ogs_error("OpenAPI_nrppa_information_parseFromJSON() failed [service_instance_id]");
+        goto end;
+    }
     }
 
     nrppa_information_local_var = OpenAPI_nrppa_information_create (
         ogs_strdup_or_assert(nf_id->valuestring),
         nrppa_pdu_local_nonprim,
         service_instance_id ? ogs_strdup_or_assert(service_instance_id->valuestring) : NULL
-        );
+    );
 
     return nrppa_information_local_var;
 end:

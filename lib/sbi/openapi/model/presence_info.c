@@ -13,7 +13,7 @@ OpenAPI_presence_info_t *OpenAPI_presence_info_create(
     OpenAPI_list_t *ncgi_list,
     OpenAPI_list_t *global_ran_node_id_list,
     OpenAPI_list_t *globale_nb_id_list
-    )
+)
 {
     OpenAPI_presence_info_t *presence_info_local_var = OpenAPI_malloc(sizeof(OpenAPI_presence_info_t));
     if (!presence_info_local_var) {
@@ -73,124 +73,124 @@ cJSON *OpenAPI_presence_info_convertToJSON(OpenAPI_presence_info_t *presence_inf
 
     item = cJSON_CreateObject();
     if (presence_info->pra_id) {
-        if (cJSON_AddStringToObject(item, "praId", presence_info->pra_id) == NULL) {
-            ogs_error("OpenAPI_presence_info_convertToJSON() failed [pra_id]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "praId", presence_info->pra_id) == NULL) {
+        ogs_error("OpenAPI_presence_info_convertToJSON() failed [pra_id]");
+        goto end;
+    }
     }
 
     if (presence_info->additional_pra_id) {
-        if (cJSON_AddStringToObject(item, "additionalPraId", presence_info->additional_pra_id) == NULL) {
-            ogs_error("OpenAPI_presence_info_convertToJSON() failed [additional_pra_id]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "additionalPraId", presence_info->additional_pra_id) == NULL) {
+        ogs_error("OpenAPI_presence_info_convertToJSON() failed [additional_pra_id]");
+        goto end;
+    }
     }
 
     if (presence_info->presence_state) {
-        if (cJSON_AddStringToObject(item, "presenceState", OpenAPI_presence_state_ToString(presence_info->presence_state)) == NULL) {
-            ogs_error("OpenAPI_presence_info_convertToJSON() failed [presence_state]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "presenceState", OpenAPI_presence_state_ToString(presence_info->presence_state)) == NULL) {
+        ogs_error("OpenAPI_presence_info_convertToJSON() failed [presence_state]");
+        goto end;
+    }
     }
 
     if (presence_info->tracking_area_list) {
-        cJSON *tracking_area_listList = cJSON_AddArrayToObject(item, "trackingAreaList");
-        if (tracking_area_listList == NULL) {
-            ogs_error("OpenAPI_presence_info_convertToJSON() failed [tracking_area_list]");
-            goto end;
-        }
+    cJSON *tracking_area_listList = cJSON_AddArrayToObject(item, "trackingAreaList");
+    if (tracking_area_listList == NULL) {
+        ogs_error("OpenAPI_presence_info_convertToJSON() failed [tracking_area_list]");
+        goto end;
+    }
 
-        OpenAPI_lnode_t *tracking_area_list_node;
-        if (presence_info->tracking_area_list) {
-            OpenAPI_list_for_each(presence_info->tracking_area_list, tracking_area_list_node) {
-                cJSON *itemLocal = OpenAPI_tai_convertToJSON(tracking_area_list_node->data);
-                if (itemLocal == NULL) {
-                    ogs_error("OpenAPI_presence_info_convertToJSON() failed [tracking_area_list]");
-                    goto end;
-                }
-                cJSON_AddItemToArray(tracking_area_listList, itemLocal);
+    OpenAPI_lnode_t *tracking_area_list_node;
+    if (presence_info->tracking_area_list) {
+        OpenAPI_list_for_each(presence_info->tracking_area_list, tracking_area_list_node) {
+            cJSON *itemLocal = OpenAPI_tai_convertToJSON(tracking_area_list_node->data);
+            if (itemLocal == NULL) {
+                ogs_error("OpenAPI_presence_info_convertToJSON() failed [tracking_area_list]");
+                goto end;
             }
+            cJSON_AddItemToArray(tracking_area_listList, itemLocal);
         }
+    }
     }
 
     if (presence_info->ecgi_list) {
-        cJSON *ecgi_listList = cJSON_AddArrayToObject(item, "ecgiList");
-        if (ecgi_listList == NULL) {
-            ogs_error("OpenAPI_presence_info_convertToJSON() failed [ecgi_list]");
-            goto end;
-        }
+    cJSON *ecgi_listList = cJSON_AddArrayToObject(item, "ecgiList");
+    if (ecgi_listList == NULL) {
+        ogs_error("OpenAPI_presence_info_convertToJSON() failed [ecgi_list]");
+        goto end;
+    }
 
-        OpenAPI_lnode_t *ecgi_list_node;
-        if (presence_info->ecgi_list) {
-            OpenAPI_list_for_each(presence_info->ecgi_list, ecgi_list_node) {
-                cJSON *itemLocal = OpenAPI_ecgi_convertToJSON(ecgi_list_node->data);
-                if (itemLocal == NULL) {
-                    ogs_error("OpenAPI_presence_info_convertToJSON() failed [ecgi_list]");
-                    goto end;
-                }
-                cJSON_AddItemToArray(ecgi_listList, itemLocal);
+    OpenAPI_lnode_t *ecgi_list_node;
+    if (presence_info->ecgi_list) {
+        OpenAPI_list_for_each(presence_info->ecgi_list, ecgi_list_node) {
+            cJSON *itemLocal = OpenAPI_ecgi_convertToJSON(ecgi_list_node->data);
+            if (itemLocal == NULL) {
+                ogs_error("OpenAPI_presence_info_convertToJSON() failed [ecgi_list]");
+                goto end;
             }
+            cJSON_AddItemToArray(ecgi_listList, itemLocal);
         }
+    }
     }
 
     if (presence_info->ncgi_list) {
-        cJSON *ncgi_listList = cJSON_AddArrayToObject(item, "ncgiList");
-        if (ncgi_listList == NULL) {
-            ogs_error("OpenAPI_presence_info_convertToJSON() failed [ncgi_list]");
-            goto end;
-        }
+    cJSON *ncgi_listList = cJSON_AddArrayToObject(item, "ncgiList");
+    if (ncgi_listList == NULL) {
+        ogs_error("OpenAPI_presence_info_convertToJSON() failed [ncgi_list]");
+        goto end;
+    }
 
-        OpenAPI_lnode_t *ncgi_list_node;
-        if (presence_info->ncgi_list) {
-            OpenAPI_list_for_each(presence_info->ncgi_list, ncgi_list_node) {
-                cJSON *itemLocal = OpenAPI_ncgi_convertToJSON(ncgi_list_node->data);
-                if (itemLocal == NULL) {
-                    ogs_error("OpenAPI_presence_info_convertToJSON() failed [ncgi_list]");
-                    goto end;
-                }
-                cJSON_AddItemToArray(ncgi_listList, itemLocal);
+    OpenAPI_lnode_t *ncgi_list_node;
+    if (presence_info->ncgi_list) {
+        OpenAPI_list_for_each(presence_info->ncgi_list, ncgi_list_node) {
+            cJSON *itemLocal = OpenAPI_ncgi_convertToJSON(ncgi_list_node->data);
+            if (itemLocal == NULL) {
+                ogs_error("OpenAPI_presence_info_convertToJSON() failed [ncgi_list]");
+                goto end;
             }
+            cJSON_AddItemToArray(ncgi_listList, itemLocal);
         }
+    }
     }
 
     if (presence_info->global_ran_node_id_list) {
-        cJSON *global_ran_node_id_listList = cJSON_AddArrayToObject(item, "globalRanNodeIdList");
-        if (global_ran_node_id_listList == NULL) {
-            ogs_error("OpenAPI_presence_info_convertToJSON() failed [global_ran_node_id_list]");
-            goto end;
-        }
+    cJSON *global_ran_node_id_listList = cJSON_AddArrayToObject(item, "globalRanNodeIdList");
+    if (global_ran_node_id_listList == NULL) {
+        ogs_error("OpenAPI_presence_info_convertToJSON() failed [global_ran_node_id_list]");
+        goto end;
+    }
 
-        OpenAPI_lnode_t *global_ran_node_id_list_node;
-        if (presence_info->global_ran_node_id_list) {
-            OpenAPI_list_for_each(presence_info->global_ran_node_id_list, global_ran_node_id_list_node) {
-                cJSON *itemLocal = OpenAPI_global_ran_node_id_convertToJSON(global_ran_node_id_list_node->data);
-                if (itemLocal == NULL) {
-                    ogs_error("OpenAPI_presence_info_convertToJSON() failed [global_ran_node_id_list]");
-                    goto end;
-                }
-                cJSON_AddItemToArray(global_ran_node_id_listList, itemLocal);
+    OpenAPI_lnode_t *global_ran_node_id_list_node;
+    if (presence_info->global_ran_node_id_list) {
+        OpenAPI_list_for_each(presence_info->global_ran_node_id_list, global_ran_node_id_list_node) {
+            cJSON *itemLocal = OpenAPI_global_ran_node_id_convertToJSON(global_ran_node_id_list_node->data);
+            if (itemLocal == NULL) {
+                ogs_error("OpenAPI_presence_info_convertToJSON() failed [global_ran_node_id_list]");
+                goto end;
             }
+            cJSON_AddItemToArray(global_ran_node_id_listList, itemLocal);
         }
+    }
     }
 
     if (presence_info->globale_nb_id_list) {
-        cJSON *globale_nb_id_listList = cJSON_AddArrayToObject(item, "globaleNbIdList");
-        if (globale_nb_id_listList == NULL) {
-            ogs_error("OpenAPI_presence_info_convertToJSON() failed [globale_nb_id_list]");
-            goto end;
-        }
+    cJSON *globale_nb_id_listList = cJSON_AddArrayToObject(item, "globaleNbIdList");
+    if (globale_nb_id_listList == NULL) {
+        ogs_error("OpenAPI_presence_info_convertToJSON() failed [globale_nb_id_list]");
+        goto end;
+    }
 
-        OpenAPI_lnode_t *globale_nb_id_list_node;
-        if (presence_info->globale_nb_id_list) {
-            OpenAPI_list_for_each(presence_info->globale_nb_id_list, globale_nb_id_list_node) {
-                cJSON *itemLocal = OpenAPI_global_ran_node_id_convertToJSON(globale_nb_id_list_node->data);
-                if (itemLocal == NULL) {
-                    ogs_error("OpenAPI_presence_info_convertToJSON() failed [globale_nb_id_list]");
-                    goto end;
-                }
-                cJSON_AddItemToArray(globale_nb_id_listList, itemLocal);
+    OpenAPI_lnode_t *globale_nb_id_list_node;
+    if (presence_info->globale_nb_id_list) {
+        OpenAPI_list_for_each(presence_info->globale_nb_id_list, globale_nb_id_list_node) {
+            cJSON *itemLocal = OpenAPI_global_ran_node_id_convertToJSON(globale_nb_id_list_node->data);
+            if (itemLocal == NULL) {
+                ogs_error("OpenAPI_presence_info_convertToJSON() failed [globale_nb_id_list]");
+                goto end;
             }
+            cJSON_AddItemToArray(globale_nb_id_listList, itemLocal);
         }
+    }
     }
 
 end:
@@ -202,146 +202,146 @@ OpenAPI_presence_info_t *OpenAPI_presence_info_parseFromJSON(cJSON *presence_inf
     OpenAPI_presence_info_t *presence_info_local_var = NULL;
     cJSON *pra_id = cJSON_GetObjectItemCaseSensitive(presence_infoJSON, "praId");
 
-    if (pra_id) {
-        if (!cJSON_IsString(pra_id)) {
-            ogs_error("OpenAPI_presence_info_parseFromJSON() failed [pra_id]");
-            goto end;
-        }
+    if (pra_id) { 
+    if (!cJSON_IsString(pra_id)) {
+        ogs_error("OpenAPI_presence_info_parseFromJSON() failed [pra_id]");
+        goto end;
+    }
     }
 
     cJSON *additional_pra_id = cJSON_GetObjectItemCaseSensitive(presence_infoJSON, "additionalPraId");
 
-    if (additional_pra_id) {
-        if (!cJSON_IsString(additional_pra_id)) {
-            ogs_error("OpenAPI_presence_info_parseFromJSON() failed [additional_pra_id]");
-            goto end;
-        }
+    if (additional_pra_id) { 
+    if (!cJSON_IsString(additional_pra_id)) {
+        ogs_error("OpenAPI_presence_info_parseFromJSON() failed [additional_pra_id]");
+        goto end;
+    }
     }
 
     cJSON *presence_state = cJSON_GetObjectItemCaseSensitive(presence_infoJSON, "presenceState");
 
     OpenAPI_presence_state_e presence_stateVariable;
-    if (presence_state) {
-        if (!cJSON_IsString(presence_state)) {
-            ogs_error("OpenAPI_presence_info_parseFromJSON() failed [presence_state]");
-            goto end;
-        }
-        presence_stateVariable = OpenAPI_presence_state_FromString(presence_state->valuestring);
+    if (presence_state) { 
+    if (!cJSON_IsString(presence_state)) {
+        ogs_error("OpenAPI_presence_info_parseFromJSON() failed [presence_state]");
+        goto end;
+    }
+    presence_stateVariable = OpenAPI_presence_state_FromString(presence_state->valuestring);
     }
 
     cJSON *tracking_area_list = cJSON_GetObjectItemCaseSensitive(presence_infoJSON, "trackingAreaList");
 
     OpenAPI_list_t *tracking_area_listList;
-    if (tracking_area_list) {
-        cJSON *tracking_area_list_local_nonprimitive;
-        if (!cJSON_IsArray(tracking_area_list)) {
+    if (tracking_area_list) { 
+    cJSON *tracking_area_list_local_nonprimitive;
+    if (!cJSON_IsArray(tracking_area_list)){
+        ogs_error("OpenAPI_presence_info_parseFromJSON() failed [tracking_area_list]");
+        goto end;
+    }
+
+    tracking_area_listList = OpenAPI_list_create();
+
+    cJSON_ArrayForEach(tracking_area_list_local_nonprimitive, tracking_area_list ) {
+        if (!cJSON_IsObject(tracking_area_list_local_nonprimitive)) {
             ogs_error("OpenAPI_presence_info_parseFromJSON() failed [tracking_area_list]");
             goto end;
         }
+        OpenAPI_tai_t *tracking_area_listItem = OpenAPI_tai_parseFromJSON(tracking_area_list_local_nonprimitive);
 
-        tracking_area_listList = OpenAPI_list_create();
-
-        cJSON_ArrayForEach(tracking_area_list_local_nonprimitive, tracking_area_list ) {
-            if (!cJSON_IsObject(tracking_area_list_local_nonprimitive)) {
-                ogs_error("OpenAPI_presence_info_parseFromJSON() failed [tracking_area_list]");
-                goto end;
-            }
-            OpenAPI_tai_t *tracking_area_listItem = OpenAPI_tai_parseFromJSON(tracking_area_list_local_nonprimitive);
-
-            OpenAPI_list_add(tracking_area_listList, tracking_area_listItem);
-        }
+        OpenAPI_list_add(tracking_area_listList, tracking_area_listItem);
+    }
     }
 
     cJSON *ecgi_list = cJSON_GetObjectItemCaseSensitive(presence_infoJSON, "ecgiList");
 
     OpenAPI_list_t *ecgi_listList;
-    if (ecgi_list) {
-        cJSON *ecgi_list_local_nonprimitive;
-        if (!cJSON_IsArray(ecgi_list)) {
+    if (ecgi_list) { 
+    cJSON *ecgi_list_local_nonprimitive;
+    if (!cJSON_IsArray(ecgi_list)){
+        ogs_error("OpenAPI_presence_info_parseFromJSON() failed [ecgi_list]");
+        goto end;
+    }
+
+    ecgi_listList = OpenAPI_list_create();
+
+    cJSON_ArrayForEach(ecgi_list_local_nonprimitive, ecgi_list ) {
+        if (!cJSON_IsObject(ecgi_list_local_nonprimitive)) {
             ogs_error("OpenAPI_presence_info_parseFromJSON() failed [ecgi_list]");
             goto end;
         }
+        OpenAPI_ecgi_t *ecgi_listItem = OpenAPI_ecgi_parseFromJSON(ecgi_list_local_nonprimitive);
 
-        ecgi_listList = OpenAPI_list_create();
-
-        cJSON_ArrayForEach(ecgi_list_local_nonprimitive, ecgi_list ) {
-            if (!cJSON_IsObject(ecgi_list_local_nonprimitive)) {
-                ogs_error("OpenAPI_presence_info_parseFromJSON() failed [ecgi_list]");
-                goto end;
-            }
-            OpenAPI_ecgi_t *ecgi_listItem = OpenAPI_ecgi_parseFromJSON(ecgi_list_local_nonprimitive);
-
-            OpenAPI_list_add(ecgi_listList, ecgi_listItem);
-        }
+        OpenAPI_list_add(ecgi_listList, ecgi_listItem);
+    }
     }
 
     cJSON *ncgi_list = cJSON_GetObjectItemCaseSensitive(presence_infoJSON, "ncgiList");
 
     OpenAPI_list_t *ncgi_listList;
-    if (ncgi_list) {
-        cJSON *ncgi_list_local_nonprimitive;
-        if (!cJSON_IsArray(ncgi_list)) {
+    if (ncgi_list) { 
+    cJSON *ncgi_list_local_nonprimitive;
+    if (!cJSON_IsArray(ncgi_list)){
+        ogs_error("OpenAPI_presence_info_parseFromJSON() failed [ncgi_list]");
+        goto end;
+    }
+
+    ncgi_listList = OpenAPI_list_create();
+
+    cJSON_ArrayForEach(ncgi_list_local_nonprimitive, ncgi_list ) {
+        if (!cJSON_IsObject(ncgi_list_local_nonprimitive)) {
             ogs_error("OpenAPI_presence_info_parseFromJSON() failed [ncgi_list]");
             goto end;
         }
+        OpenAPI_ncgi_t *ncgi_listItem = OpenAPI_ncgi_parseFromJSON(ncgi_list_local_nonprimitive);
 
-        ncgi_listList = OpenAPI_list_create();
-
-        cJSON_ArrayForEach(ncgi_list_local_nonprimitive, ncgi_list ) {
-            if (!cJSON_IsObject(ncgi_list_local_nonprimitive)) {
-                ogs_error("OpenAPI_presence_info_parseFromJSON() failed [ncgi_list]");
-                goto end;
-            }
-            OpenAPI_ncgi_t *ncgi_listItem = OpenAPI_ncgi_parseFromJSON(ncgi_list_local_nonprimitive);
-
-            OpenAPI_list_add(ncgi_listList, ncgi_listItem);
-        }
+        OpenAPI_list_add(ncgi_listList, ncgi_listItem);
+    }
     }
 
     cJSON *global_ran_node_id_list = cJSON_GetObjectItemCaseSensitive(presence_infoJSON, "globalRanNodeIdList");
 
     OpenAPI_list_t *global_ran_node_id_listList;
-    if (global_ran_node_id_list) {
-        cJSON *global_ran_node_id_list_local_nonprimitive;
-        if (!cJSON_IsArray(global_ran_node_id_list)) {
+    if (global_ran_node_id_list) { 
+    cJSON *global_ran_node_id_list_local_nonprimitive;
+    if (!cJSON_IsArray(global_ran_node_id_list)){
+        ogs_error("OpenAPI_presence_info_parseFromJSON() failed [global_ran_node_id_list]");
+        goto end;
+    }
+
+    global_ran_node_id_listList = OpenAPI_list_create();
+
+    cJSON_ArrayForEach(global_ran_node_id_list_local_nonprimitive, global_ran_node_id_list ) {
+        if (!cJSON_IsObject(global_ran_node_id_list_local_nonprimitive)) {
             ogs_error("OpenAPI_presence_info_parseFromJSON() failed [global_ran_node_id_list]");
             goto end;
         }
+        OpenAPI_global_ran_node_id_t *global_ran_node_id_listItem = OpenAPI_global_ran_node_id_parseFromJSON(global_ran_node_id_list_local_nonprimitive);
 
-        global_ran_node_id_listList = OpenAPI_list_create();
-
-        cJSON_ArrayForEach(global_ran_node_id_list_local_nonprimitive, global_ran_node_id_list ) {
-            if (!cJSON_IsObject(global_ran_node_id_list_local_nonprimitive)) {
-                ogs_error("OpenAPI_presence_info_parseFromJSON() failed [global_ran_node_id_list]");
-                goto end;
-            }
-            OpenAPI_global_ran_node_id_t *global_ran_node_id_listItem = OpenAPI_global_ran_node_id_parseFromJSON(global_ran_node_id_list_local_nonprimitive);
-
-            OpenAPI_list_add(global_ran_node_id_listList, global_ran_node_id_listItem);
-        }
+        OpenAPI_list_add(global_ran_node_id_listList, global_ran_node_id_listItem);
+    }
     }
 
     cJSON *globale_nb_id_list = cJSON_GetObjectItemCaseSensitive(presence_infoJSON, "globaleNbIdList");
 
     OpenAPI_list_t *globale_nb_id_listList;
-    if (globale_nb_id_list) {
-        cJSON *globale_nb_id_list_local_nonprimitive;
-        if (!cJSON_IsArray(globale_nb_id_list)) {
+    if (globale_nb_id_list) { 
+    cJSON *globale_nb_id_list_local_nonprimitive;
+    if (!cJSON_IsArray(globale_nb_id_list)){
+        ogs_error("OpenAPI_presence_info_parseFromJSON() failed [globale_nb_id_list]");
+        goto end;
+    }
+
+    globale_nb_id_listList = OpenAPI_list_create();
+
+    cJSON_ArrayForEach(globale_nb_id_list_local_nonprimitive, globale_nb_id_list ) {
+        if (!cJSON_IsObject(globale_nb_id_list_local_nonprimitive)) {
             ogs_error("OpenAPI_presence_info_parseFromJSON() failed [globale_nb_id_list]");
             goto end;
         }
+        OpenAPI_global_ran_node_id_t *globale_nb_id_listItem = OpenAPI_global_ran_node_id_parseFromJSON(globale_nb_id_list_local_nonprimitive);
 
-        globale_nb_id_listList = OpenAPI_list_create();
-
-        cJSON_ArrayForEach(globale_nb_id_list_local_nonprimitive, globale_nb_id_list ) {
-            if (!cJSON_IsObject(globale_nb_id_list_local_nonprimitive)) {
-                ogs_error("OpenAPI_presence_info_parseFromJSON() failed [globale_nb_id_list]");
-                goto end;
-            }
-            OpenAPI_global_ran_node_id_t *globale_nb_id_listItem = OpenAPI_global_ran_node_id_parseFromJSON(globale_nb_id_list_local_nonprimitive);
-
-            OpenAPI_list_add(globale_nb_id_listList, globale_nb_id_listItem);
-        }
+        OpenAPI_list_add(globale_nb_id_listList, globale_nb_id_listItem);
+    }
     }
 
     presence_info_local_var = OpenAPI_presence_info_create (
@@ -353,7 +353,7 @@ OpenAPI_presence_info_t *OpenAPI_presence_info_parseFromJSON(cJSON *presence_inf
         ncgi_list ? ncgi_listList : NULL,
         global_ran_node_id_list ? global_ran_node_id_listList : NULL,
         globale_nb_id_list ? globale_nb_id_listList : NULL
-        );
+    );
 
     return presence_info_local_var;
 end:

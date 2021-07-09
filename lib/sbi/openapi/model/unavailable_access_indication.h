@@ -1,7 +1,7 @@
 /*
  * unavailable_access_indication.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_unavailable_access_indication_H_

@@ -1,7 +1,7 @@
 /*
  * inline_object_2.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_inline_object_2_H_
@@ -12,7 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
-#include "n2_information_notification.h"
+#include "ue_context_cancel_relocate_data.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -20,16 +20,14 @@ extern "C" {
 
 typedef struct OpenAPI_inline_object_2_s OpenAPI_inline_object_2_t;
 typedef struct OpenAPI_inline_object_2_s {
-    struct OpenAPI_n2_information_notification_s *json_data;
-    OpenAPI_binary_t* binary_data_n1_message;
-    OpenAPI_binary_t* binary_data_n2_information;
+    struct OpenAPI_ue_context_cancel_relocate_data_s *json_data;
+    OpenAPI_binary_t* binary_data_gtpc_message;
 } OpenAPI_inline_object_2_t;
 
 OpenAPI_inline_object_2_t *OpenAPI_inline_object_2_create(
-    OpenAPI_n2_information_notification_t *json_data,
-    OpenAPI_binary_t* binary_data_n1_message,
-    OpenAPI_binary_t* binary_data_n2_information
-    );
+    OpenAPI_ue_context_cancel_relocate_data_t *json_data,
+    OpenAPI_binary_t* binary_data_gtpc_message
+);
 void OpenAPI_inline_object_2_free(OpenAPI_inline_object_2_t *inline_object_2);
 OpenAPI_inline_object_2_t *OpenAPI_inline_object_2_parseFromJSON(cJSON *inline_object_2JSON);
 cJSON *OpenAPI_inline_object_2_convertToJSON(OpenAPI_inline_object_2_t *inline_object_2);

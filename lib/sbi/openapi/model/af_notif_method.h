@@ -1,7 +1,7 @@
 /*
  * af_notif_method.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_af_notif_method_H_

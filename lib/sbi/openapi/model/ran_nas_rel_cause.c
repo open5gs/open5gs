@@ -7,8 +7,9 @@
 OpenAPI_ran_nas_rel_cause_t *OpenAPI_ran_nas_rel_cause_create(
     OpenAPI_ng_ap_cause_t *ng_ap_cause,
     int _5g_mm_cause,
-    int _5g_sm_cause
-    )
+    int _5g_sm_cause,
+    char *eps_cause
+)
 {
     OpenAPI_ran_nas_rel_cause_t *ran_nas_rel_cause_local_var = OpenAPI_malloc(sizeof(OpenAPI_ran_nas_rel_cause_t));
     if (!ran_nas_rel_cause_local_var) {
@@ -17,6 +18,7 @@ OpenAPI_ran_nas_rel_cause_t *OpenAPI_ran_nas_rel_cause_create(
     ran_nas_rel_cause_local_var->ng_ap_cause = ng_ap_cause;
     ran_nas_rel_cause_local_var->_5g_mm_cause = _5g_mm_cause;
     ran_nas_rel_cause_local_var->_5g_sm_cause = _5g_sm_cause;
+    ran_nas_rel_cause_local_var->eps_cause = eps_cause;
 
     return ran_nas_rel_cause_local_var;
 }
@@ -28,6 +30,7 @@ void OpenAPI_ran_nas_rel_cause_free(OpenAPI_ran_nas_rel_cause_t *ran_nas_rel_cau
     }
     OpenAPI_lnode_t *node;
     OpenAPI_ng_ap_cause_free(ran_nas_rel_cause->ng_ap_cause);
+    ogs_free(ran_nas_rel_cause->eps_cause);
     ogs_free(ran_nas_rel_cause);
 }
 
@@ -42,30 +45,37 @@ cJSON *OpenAPI_ran_nas_rel_cause_convertToJSON(OpenAPI_ran_nas_rel_cause_t *ran_
 
     item = cJSON_CreateObject();
     if (ran_nas_rel_cause->ng_ap_cause) {
-        cJSON *ng_ap_cause_local_JSON = OpenAPI_ng_ap_cause_convertToJSON(ran_nas_rel_cause->ng_ap_cause);
-        if (ng_ap_cause_local_JSON == NULL) {
-            ogs_error("OpenAPI_ran_nas_rel_cause_convertToJSON() failed [ng_ap_cause]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "ngApCause", ng_ap_cause_local_JSON);
-        if (item->child == NULL) {
-            ogs_error("OpenAPI_ran_nas_rel_cause_convertToJSON() failed [ng_ap_cause]");
-            goto end;
-        }
+    cJSON *ng_ap_cause_local_JSON = OpenAPI_ng_ap_cause_convertToJSON(ran_nas_rel_cause->ng_ap_cause);
+    if (ng_ap_cause_local_JSON == NULL) {
+        ogs_error("OpenAPI_ran_nas_rel_cause_convertToJSON() failed [ng_ap_cause]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "ngApCause", ng_ap_cause_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_ran_nas_rel_cause_convertToJSON() failed [ng_ap_cause]");
+        goto end;
+    }
     }
 
     if (ran_nas_rel_cause->_5g_mm_cause) {
-        if (cJSON_AddNumberToObject(item, "5gMmCause", ran_nas_rel_cause->_5g_mm_cause) == NULL) {
-            ogs_error("OpenAPI_ran_nas_rel_cause_convertToJSON() failed [_5g_mm_cause]");
-            goto end;
-        }
+    if (cJSON_AddNumberToObject(item, "5gMmCause", ran_nas_rel_cause->_5g_mm_cause) == NULL) {
+        ogs_error("OpenAPI_ran_nas_rel_cause_convertToJSON() failed [_5g_mm_cause]");
+        goto end;
+    }
     }
 
     if (ran_nas_rel_cause->_5g_sm_cause) {
-        if (cJSON_AddNumberToObject(item, "5gSmCause", ran_nas_rel_cause->_5g_sm_cause) == NULL) {
-            ogs_error("OpenAPI_ran_nas_rel_cause_convertToJSON() failed [_5g_sm_cause]");
-            goto end;
-        }
+    if (cJSON_AddNumberToObject(item, "5gSmCause", ran_nas_rel_cause->_5g_sm_cause) == NULL) {
+        ogs_error("OpenAPI_ran_nas_rel_cause_convertToJSON() failed [_5g_sm_cause]");
+        goto end;
+    }
+    }
+
+    if (ran_nas_rel_cause->eps_cause) {
+    if (cJSON_AddStringToObject(item, "epsCause", ran_nas_rel_cause->eps_cause) == NULL) {
+        ogs_error("OpenAPI_ran_nas_rel_cause_convertToJSON() failed [eps_cause]");
+        goto end;
+    }
     }
 
 end:
@@ -78,33 +88,43 @@ OpenAPI_ran_nas_rel_cause_t *OpenAPI_ran_nas_rel_cause_parseFromJSON(cJSON *ran_
     cJSON *ng_ap_cause = cJSON_GetObjectItemCaseSensitive(ran_nas_rel_causeJSON, "ngApCause");
 
     OpenAPI_ng_ap_cause_t *ng_ap_cause_local_nonprim = NULL;
-    if (ng_ap_cause) {
-        ng_ap_cause_local_nonprim = OpenAPI_ng_ap_cause_parseFromJSON(ng_ap_cause);
+    if (ng_ap_cause) { 
+    ng_ap_cause_local_nonprim = OpenAPI_ng_ap_cause_parseFromJSON(ng_ap_cause);
     }
 
     cJSON *_5g_mm_cause = cJSON_GetObjectItemCaseSensitive(ran_nas_rel_causeJSON, "5gMmCause");
 
-    if (_5g_mm_cause) {
-        if (!cJSON_IsNumber(_5g_mm_cause)) {
-            ogs_error("OpenAPI_ran_nas_rel_cause_parseFromJSON() failed [_5g_mm_cause]");
-            goto end;
-        }
+    if (_5g_mm_cause) { 
+    if (!cJSON_IsNumber(_5g_mm_cause)) {
+        ogs_error("OpenAPI_ran_nas_rel_cause_parseFromJSON() failed [_5g_mm_cause]");
+        goto end;
+    }
     }
 
     cJSON *_5g_sm_cause = cJSON_GetObjectItemCaseSensitive(ran_nas_rel_causeJSON, "5gSmCause");
 
-    if (_5g_sm_cause) {
-        if (!cJSON_IsNumber(_5g_sm_cause)) {
-            ogs_error("OpenAPI_ran_nas_rel_cause_parseFromJSON() failed [_5g_sm_cause]");
-            goto end;
-        }
+    if (_5g_sm_cause) { 
+    if (!cJSON_IsNumber(_5g_sm_cause)) {
+        ogs_error("OpenAPI_ran_nas_rel_cause_parseFromJSON() failed [_5g_sm_cause]");
+        goto end;
+    }
+    }
+
+    cJSON *eps_cause = cJSON_GetObjectItemCaseSensitive(ran_nas_rel_causeJSON, "epsCause");
+
+    if (eps_cause) { 
+    if (!cJSON_IsString(eps_cause)) {
+        ogs_error("OpenAPI_ran_nas_rel_cause_parseFromJSON() failed [eps_cause]");
+        goto end;
+    }
     }
 
     ran_nas_rel_cause_local_var = OpenAPI_ran_nas_rel_cause_create (
         ng_ap_cause ? ng_ap_cause_local_nonprim : NULL,
         _5g_mm_cause ? _5g_mm_cause->valuedouble : 0,
-        _5g_sm_cause ? _5g_sm_cause->valuedouble : 0
-        );
+        _5g_sm_cause ? _5g_sm_cause->valuedouble : 0,
+        eps_cause ? ogs_strdup_or_assert(eps_cause->valuestring) : NULL
+    );
 
     return ran_nas_rel_cause_local_var;
 end:

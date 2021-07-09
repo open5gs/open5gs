@@ -21,14 +21,14 @@ extern "C" {
 
 typedef struct OpenAPI_af_event_notification_s OpenAPI_af_event_notification_t;
 typedef struct OpenAPI_af_event_notification_s {
-    struct OpenAPI_af_event_s *event;
+    OpenAPI_af_event_e event;
     OpenAPI_list_t *flows;
 } OpenAPI_af_event_notification_t;
 
 OpenAPI_af_event_notification_t *OpenAPI_af_event_notification_create(
-    OpenAPI_af_event_t *event,
+    OpenAPI_af_event_e event,
     OpenAPI_list_t *flows
-    );
+);
 void OpenAPI_af_event_notification_free(OpenAPI_af_event_notification_t *af_event_notification);
 OpenAPI_af_event_notification_t *OpenAPI_af_event_notification_parseFromJSON(cJSON *af_event_notificationJSON);
 cJSON *OpenAPI_af_event_notification_convertToJSON(OpenAPI_af_event_notification_t *af_event_notification);

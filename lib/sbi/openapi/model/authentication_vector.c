@@ -13,7 +13,7 @@ OpenAPI_authentication_vector_t *OpenAPI_authentication_vector_create(
     char *ik_prime,
     char *xres_star,
     char *kausf
-    )
+)
 {
     OpenAPI_authentication_vector_t *authentication_vector_local_var = OpenAPI_malloc(sizeof(OpenAPI_authentication_vector_t));
     if (!authentication_vector_local_var) {
@@ -68,10 +68,10 @@ cJSON *OpenAPI_authentication_vector_convertToJSON(OpenAPI_authentication_vector
     }
 
     if (authentication_vector->xres) {
-        if (cJSON_AddStringToObject(item, "xres", authentication_vector->xres) == NULL) {
-            ogs_error("OpenAPI_authentication_vector_convertToJSON() failed [xres]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "xres", authentication_vector->xres) == NULL) {
+        ogs_error("OpenAPI_authentication_vector_convertToJSON() failed [xres]");
+        goto end;
+    }
     }
 
     if (cJSON_AddStringToObject(item, "autn", authentication_vector->autn) == NULL) {
@@ -80,31 +80,31 @@ cJSON *OpenAPI_authentication_vector_convertToJSON(OpenAPI_authentication_vector
     }
 
     if (authentication_vector->ck_prime) {
-        if (cJSON_AddStringToObject(item, "ckPrime", authentication_vector->ck_prime) == NULL) {
-            ogs_error("OpenAPI_authentication_vector_convertToJSON() failed [ck_prime]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "ckPrime", authentication_vector->ck_prime) == NULL) {
+        ogs_error("OpenAPI_authentication_vector_convertToJSON() failed [ck_prime]");
+        goto end;
+    }
     }
 
     if (authentication_vector->ik_prime) {
-        if (cJSON_AddStringToObject(item, "ikPrime", authentication_vector->ik_prime) == NULL) {
-            ogs_error("OpenAPI_authentication_vector_convertToJSON() failed [ik_prime]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "ikPrime", authentication_vector->ik_prime) == NULL) {
+        ogs_error("OpenAPI_authentication_vector_convertToJSON() failed [ik_prime]");
+        goto end;
+    }
     }
 
     if (authentication_vector->xres_star) {
-        if (cJSON_AddStringToObject(item, "xresStar", authentication_vector->xres_star) == NULL) {
-            ogs_error("OpenAPI_authentication_vector_convertToJSON() failed [xres_star]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "xresStar", authentication_vector->xres_star) == NULL) {
+        ogs_error("OpenAPI_authentication_vector_convertToJSON() failed [xres_star]");
+        goto end;
+    }
     }
 
     if (authentication_vector->kausf) {
-        if (cJSON_AddStringToObject(item, "kausf", authentication_vector->kausf) == NULL) {
-            ogs_error("OpenAPI_authentication_vector_convertToJSON() failed [kausf]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "kausf", authentication_vector->kausf) == NULL) {
+        ogs_error("OpenAPI_authentication_vector_convertToJSON() failed [kausf]");
+        goto end;
+    }
     }
 
 end:
@@ -121,7 +121,7 @@ OpenAPI_authentication_vector_t *OpenAPI_authentication_vector_parseFromJSON(cJS
     }
 
     OpenAPI_av_type_e av_typeVariable;
-
+    
     if (!cJSON_IsString(av_type)) {
         ogs_error("OpenAPI_authentication_vector_parseFromJSON() failed [av_type]");
         goto end;
@@ -134,7 +134,7 @@ OpenAPI_authentication_vector_t *OpenAPI_authentication_vector_parseFromJSON(cJS
         goto end;
     }
 
-
+    
     if (!cJSON_IsString(rand)) {
         ogs_error("OpenAPI_authentication_vector_parseFromJSON() failed [rand]");
         goto end;
@@ -142,11 +142,11 @@ OpenAPI_authentication_vector_t *OpenAPI_authentication_vector_parseFromJSON(cJS
 
     cJSON *xres = cJSON_GetObjectItemCaseSensitive(authentication_vectorJSON, "xres");
 
-    if (xres) {
-        if (!cJSON_IsString(xres)) {
-            ogs_error("OpenAPI_authentication_vector_parseFromJSON() failed [xres]");
-            goto end;
-        }
+    if (xres) { 
+    if (!cJSON_IsString(xres)) {
+        ogs_error("OpenAPI_authentication_vector_parseFromJSON() failed [xres]");
+        goto end;
+    }
     }
 
     cJSON *autn = cJSON_GetObjectItemCaseSensitive(authentication_vectorJSON, "autn");
@@ -155,7 +155,7 @@ OpenAPI_authentication_vector_t *OpenAPI_authentication_vector_parseFromJSON(cJS
         goto end;
     }
 
-
+    
     if (!cJSON_IsString(autn)) {
         ogs_error("OpenAPI_authentication_vector_parseFromJSON() failed [autn]");
         goto end;
@@ -163,38 +163,38 @@ OpenAPI_authentication_vector_t *OpenAPI_authentication_vector_parseFromJSON(cJS
 
     cJSON *ck_prime = cJSON_GetObjectItemCaseSensitive(authentication_vectorJSON, "ckPrime");
 
-    if (ck_prime) {
-        if (!cJSON_IsString(ck_prime)) {
-            ogs_error("OpenAPI_authentication_vector_parseFromJSON() failed [ck_prime]");
-            goto end;
-        }
+    if (ck_prime) { 
+    if (!cJSON_IsString(ck_prime)) {
+        ogs_error("OpenAPI_authentication_vector_parseFromJSON() failed [ck_prime]");
+        goto end;
+    }
     }
 
     cJSON *ik_prime = cJSON_GetObjectItemCaseSensitive(authentication_vectorJSON, "ikPrime");
 
-    if (ik_prime) {
-        if (!cJSON_IsString(ik_prime)) {
-            ogs_error("OpenAPI_authentication_vector_parseFromJSON() failed [ik_prime]");
-            goto end;
-        }
+    if (ik_prime) { 
+    if (!cJSON_IsString(ik_prime)) {
+        ogs_error("OpenAPI_authentication_vector_parseFromJSON() failed [ik_prime]");
+        goto end;
+    }
     }
 
     cJSON *xres_star = cJSON_GetObjectItemCaseSensitive(authentication_vectorJSON, "xresStar");
 
-    if (xres_star) {
-        if (!cJSON_IsString(xres_star)) {
-            ogs_error("OpenAPI_authentication_vector_parseFromJSON() failed [xres_star]");
-            goto end;
-        }
+    if (xres_star) { 
+    if (!cJSON_IsString(xres_star)) {
+        ogs_error("OpenAPI_authentication_vector_parseFromJSON() failed [xres_star]");
+        goto end;
+    }
     }
 
     cJSON *kausf = cJSON_GetObjectItemCaseSensitive(authentication_vectorJSON, "kausf");
 
-    if (kausf) {
-        if (!cJSON_IsString(kausf)) {
-            ogs_error("OpenAPI_authentication_vector_parseFromJSON() failed [kausf]");
-            goto end;
-        }
+    if (kausf) { 
+    if (!cJSON_IsString(kausf)) {
+        ogs_error("OpenAPI_authentication_vector_parseFromJSON() failed [kausf]");
+        goto end;
+    }
     }
 
     authentication_vector_local_var = OpenAPI_authentication_vector_create (
@@ -206,7 +206,7 @@ OpenAPI_authentication_vector_t *OpenAPI_authentication_vector_parseFromJSON(cJS
         ik_prime ? ogs_strdup_or_assert(ik_prime->valuestring) : NULL,
         xres_star ? ogs_strdup_or_assert(xres_star->valuestring) : NULL,
         kausf ? ogs_strdup_or_assert(kausf->valuestring) : NULL
-        );
+    );
 
     return authentication_vector_local_var;
 end:

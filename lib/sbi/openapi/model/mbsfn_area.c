@@ -7,7 +7,7 @@
 OpenAPI_mbsfn_area_t *OpenAPI_mbsfn_area_create(
     int mbsfn_area_id,
     int carrier_frequency
-    )
+)
 {
     OpenAPI_mbsfn_area_t *mbsfn_area_local_var = OpenAPI_malloc(sizeof(OpenAPI_mbsfn_area_t));
     if (!mbsfn_area_local_var) {
@@ -39,17 +39,17 @@ cJSON *OpenAPI_mbsfn_area_convertToJSON(OpenAPI_mbsfn_area_t *mbsfn_area)
 
     item = cJSON_CreateObject();
     if (mbsfn_area->mbsfn_area_id) {
-        if (cJSON_AddNumberToObject(item, "mbsfnAreaId", mbsfn_area->mbsfn_area_id) == NULL) {
-            ogs_error("OpenAPI_mbsfn_area_convertToJSON() failed [mbsfn_area_id]");
-            goto end;
-        }
+    if (cJSON_AddNumberToObject(item, "mbsfnAreaId", mbsfn_area->mbsfn_area_id) == NULL) {
+        ogs_error("OpenAPI_mbsfn_area_convertToJSON() failed [mbsfn_area_id]");
+        goto end;
+    }
     }
 
     if (mbsfn_area->carrier_frequency) {
-        if (cJSON_AddNumberToObject(item, "carrierFrequency", mbsfn_area->carrier_frequency) == NULL) {
-            ogs_error("OpenAPI_mbsfn_area_convertToJSON() failed [carrier_frequency]");
-            goto end;
-        }
+    if (cJSON_AddNumberToObject(item, "carrierFrequency", mbsfn_area->carrier_frequency) == NULL) {
+        ogs_error("OpenAPI_mbsfn_area_convertToJSON() failed [carrier_frequency]");
+        goto end;
+    }
     }
 
 end:
@@ -61,26 +61,26 @@ OpenAPI_mbsfn_area_t *OpenAPI_mbsfn_area_parseFromJSON(cJSON *mbsfn_areaJSON)
     OpenAPI_mbsfn_area_t *mbsfn_area_local_var = NULL;
     cJSON *mbsfn_area_id = cJSON_GetObjectItemCaseSensitive(mbsfn_areaJSON, "mbsfnAreaId");
 
-    if (mbsfn_area_id) {
-        if (!cJSON_IsNumber(mbsfn_area_id)) {
-            ogs_error("OpenAPI_mbsfn_area_parseFromJSON() failed [mbsfn_area_id]");
-            goto end;
-        }
+    if (mbsfn_area_id) { 
+    if (!cJSON_IsNumber(mbsfn_area_id)) {
+        ogs_error("OpenAPI_mbsfn_area_parseFromJSON() failed [mbsfn_area_id]");
+        goto end;
+    }
     }
 
     cJSON *carrier_frequency = cJSON_GetObjectItemCaseSensitive(mbsfn_areaJSON, "carrierFrequency");
 
-    if (carrier_frequency) {
-        if (!cJSON_IsNumber(carrier_frequency)) {
-            ogs_error("OpenAPI_mbsfn_area_parseFromJSON() failed [carrier_frequency]");
-            goto end;
-        }
+    if (carrier_frequency) { 
+    if (!cJSON_IsNumber(carrier_frequency)) {
+        ogs_error("OpenAPI_mbsfn_area_parseFromJSON() failed [carrier_frequency]");
+        goto end;
+    }
     }
 
     mbsfn_area_local_var = OpenAPI_mbsfn_area_create (
         mbsfn_area_id ? mbsfn_area_id->valuedouble : 0,
         carrier_frequency ? carrier_frequency->valuedouble : 0
-        );
+    );
 
     return mbsfn_area_local_var;
 end:

@@ -1,7 +1,7 @@
 /*
  * sor_data.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_sor_data_H_
@@ -31,7 +31,7 @@ OpenAPI_sor_data_t *OpenAPI_sor_data_create(
     OpenAPI_ue_update_status_e ue_update_status,
     char *sor_xmac_iue,
     char *sor_mac_iue
-    );
+);
 void OpenAPI_sor_data_free(OpenAPI_sor_data_t *sor_data);
 OpenAPI_sor_data_t *OpenAPI_sor_data_parseFromJSON(cJSON *sor_dataJSON);
 cJSON *OpenAPI_sor_data_convertToJSON(OpenAPI_sor_data_t *sor_data);

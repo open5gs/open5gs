@@ -1,7 +1,7 @@
 /*
  * amf_event_mode.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_amf_event_mode_H_
@@ -23,13 +23,17 @@ typedef struct OpenAPI_amf_event_mode_s {
     struct OpenAPI_amf_event_trigger_s *trigger;
     int max_reports;
     char *expiry;
+    int rep_period;
+    int samp_ratio;
 } OpenAPI_amf_event_mode_t;
 
 OpenAPI_amf_event_mode_t *OpenAPI_amf_event_mode_create(
     OpenAPI_amf_event_trigger_t *trigger,
     int max_reports,
-    char *expiry
-    );
+    char *expiry,
+    int rep_period,
+    int samp_ratio
+);
 void OpenAPI_amf_event_mode_free(OpenAPI_amf_event_mode_t *amf_event_mode);
 OpenAPI_amf_event_mode_t *OpenAPI_amf_event_mode_parseFromJSON(cJSON *amf_event_modeJSON);
 cJSON *OpenAPI_amf_event_mode_convertToJSON(OpenAPI_amf_event_mode_t *amf_event_mode);

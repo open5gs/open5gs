@@ -42,7 +42,7 @@ OpenAPI_data_filter_t *OpenAPI_data_filter_create(
     OpenAPI_list_t *ue_ipv4s,
     OpenAPI_list_t *ue_ipv6s,
     OpenAPI_list_t *ue_macs
-    );
+);
 void OpenAPI_data_filter_free(OpenAPI_data_filter_t *data_filter);
 OpenAPI_data_filter_t *OpenAPI_data_filter_parseFromJSON(cJSON *data_filterJSON);
 cJSON *OpenAPI_data_filter_convertToJSON(OpenAPI_data_filter_t *data_filter);

@@ -1,7 +1,7 @@
 /*
  * nidd_information.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_nidd_information_H_
@@ -28,7 +28,7 @@ OpenAPI_nidd_information_t *OpenAPI_nidd_information_create(
     char *af_id,
     char *gpsi,
     char *ext_group_id
-    );
+);
 void OpenAPI_nidd_information_free(OpenAPI_nidd_information_t *nidd_information);
 OpenAPI_nidd_information_t *OpenAPI_nidd_information_parseFromJSON(cJSON *nidd_informationJSON);
 cJSON *OpenAPI_nidd_information_convertToJSON(OpenAPI_nidd_information_t *nidd_information);

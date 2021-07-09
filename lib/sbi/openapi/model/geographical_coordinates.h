@@ -1,7 +1,7 @@
 /*
  * geographical_coordinates.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_geographical_coordinates_H_
@@ -26,7 +26,7 @@ typedef struct OpenAPI_geographical_coordinates_s {
 OpenAPI_geographical_coordinates_t *OpenAPI_geographical_coordinates_create(
     double lon,
     double lat
-    );
+);
 void OpenAPI_geographical_coordinates_free(OpenAPI_geographical_coordinates_t *geographical_coordinates);
 OpenAPI_geographical_coordinates_t *OpenAPI_geographical_coordinates_parseFromJSON(cJSON *geographical_coordinatesJSON);
 cJSON *OpenAPI_geographical_coordinates_convertToJSON(OpenAPI_geographical_coordinates_t *geographical_coordinates);

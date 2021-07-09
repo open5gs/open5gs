@@ -1,7 +1,7 @@
 /*
  * ue_context_transfer_rsp_data.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_ue_context_transfer_rsp_data_H_
@@ -32,7 +32,7 @@ OpenAPI_ue_context_transfer_rsp_data_t *OpenAPI_ue_context_transfer_rsp_data_cre
     OpenAPI_n2_info_content_t *ue_radio_capability,
     OpenAPI_n2_info_content_t *ue_nbiot_radio_capability,
     char *supported_features
-    );
+);
 void OpenAPI_ue_context_transfer_rsp_data_free(OpenAPI_ue_context_transfer_rsp_data_t *ue_context_transfer_rsp_data);
 OpenAPI_ue_context_transfer_rsp_data_t *OpenAPI_ue_context_transfer_rsp_data_parseFromJSON(cJSON *ue_context_transfer_rsp_dataJSON);
 cJSON *OpenAPI_ue_context_transfer_rsp_data_convertToJSON(OpenAPI_ue_context_transfer_rsp_data_t *ue_context_transfer_rsp_data);

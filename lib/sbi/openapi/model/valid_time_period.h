@@ -1,7 +1,7 @@
 /*
  * valid_time_period.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_valid_time_period_H_
@@ -26,7 +26,7 @@ typedef struct OpenAPI_valid_time_period_s {
 OpenAPI_valid_time_period_t *OpenAPI_valid_time_period_create(
     char *start_time,
     char *end_time
-    );
+);
 void OpenAPI_valid_time_period_free(OpenAPI_valid_time_period_t *valid_time_period);
 OpenAPI_valid_time_period_t *OpenAPI_valid_time_period_parseFromJSON(cJSON *valid_time_periodJSON);
 cJSON *OpenAPI_valid_time_period_convertToJSON(OpenAPI_valid_time_period_t *valid_time_period);

@@ -1,7 +1,7 @@
 /*
  * location_privacy_ind.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_location_privacy_ind_H_

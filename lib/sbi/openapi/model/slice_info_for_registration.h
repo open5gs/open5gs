@@ -1,7 +1,7 @@
 /*
  * slice_info_for_registration.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_slice_info_for_registration_H_
@@ -42,7 +42,7 @@ OpenAPI_slice_info_for_registration_t *OpenAPI_slice_info_for_registration_creat
     int default_configured_snssai_ind,
     OpenAPI_list_t *mapping_of_nssai,
     int request_mapping
-    );
+);
 void OpenAPI_slice_info_for_registration_free(OpenAPI_slice_info_for_registration_t *slice_info_for_registration);
 OpenAPI_slice_info_for_registration_t *OpenAPI_slice_info_for_registration_parseFromJSON(cJSON *slice_info_for_registrationJSON);
 cJSON *OpenAPI_slice_info_for_registration_convertToJSON(OpenAPI_slice_info_for_registration_t *slice_info_for_registration);

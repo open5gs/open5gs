@@ -1,7 +1,7 @@
 /*
  * uri_scheme.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_uri_scheme_H_

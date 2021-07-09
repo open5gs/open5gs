@@ -8,7 +8,7 @@ OpenAPI_pfd_data_for_app_t *OpenAPI_pfd_data_for_app_create(
     char *application_id,
     OpenAPI_list_t *pfds,
     char *caching_time
-    )
+)
 {
     OpenAPI_pfd_data_for_app_t *pfd_data_for_app_local_var = OpenAPI_malloc(sizeof(OpenAPI_pfd_data_for_app_t));
     if (!pfd_data_for_app_local_var) {
@@ -70,10 +70,10 @@ cJSON *OpenAPI_pfd_data_for_app_convertToJSON(OpenAPI_pfd_data_for_app_t *pfd_da
     }
 
     if (pfd_data_for_app->caching_time) {
-        if (cJSON_AddStringToObject(item, "cachingTime", pfd_data_for_app->caching_time) == NULL) {
-            ogs_error("OpenAPI_pfd_data_for_app_convertToJSON() failed [caching_time]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "cachingTime", pfd_data_for_app->caching_time) == NULL) {
+        ogs_error("OpenAPI_pfd_data_for_app_convertToJSON() failed [caching_time]");
+        goto end;
+    }
     }
 
 end:
@@ -89,7 +89,7 @@ OpenAPI_pfd_data_for_app_t *OpenAPI_pfd_data_for_app_parseFromJSON(cJSON *pfd_da
         goto end;
     }
 
-
+    
     if (!cJSON_IsString(application_id)) {
         ogs_error("OpenAPI_pfd_data_for_app_parseFromJSON() failed [application_id]");
         goto end;
@@ -102,9 +102,9 @@ OpenAPI_pfd_data_for_app_t *OpenAPI_pfd_data_for_app_parseFromJSON(cJSON *pfd_da
     }
 
     OpenAPI_list_t *pfdsList;
-
+    
     cJSON *pfds_local_nonprimitive;
-    if (!cJSON_IsArray(pfds)) {
+    if (!cJSON_IsArray(pfds)){
         ogs_error("OpenAPI_pfd_data_for_app_parseFromJSON() failed [pfds]");
         goto end;
     }
@@ -123,18 +123,18 @@ OpenAPI_pfd_data_for_app_t *OpenAPI_pfd_data_for_app_parseFromJSON(cJSON *pfd_da
 
     cJSON *caching_time = cJSON_GetObjectItemCaseSensitive(pfd_data_for_appJSON, "cachingTime");
 
-    if (caching_time) {
-        if (!cJSON_IsString(caching_time)) {
-            ogs_error("OpenAPI_pfd_data_for_app_parseFromJSON() failed [caching_time]");
-            goto end;
-        }
+    if (caching_time) { 
+    if (!cJSON_IsString(caching_time)) {
+        ogs_error("OpenAPI_pfd_data_for_app_parseFromJSON() failed [caching_time]");
+        goto end;
+    }
     }
 
     pfd_data_for_app_local_var = OpenAPI_pfd_data_for_app_create (
         ogs_strdup_or_assert(application_id->valuestring),
         pfdsList,
         caching_time ? ogs_strdup_or_assert(caching_time->valuestring) : NULL
-        );
+    );
 
     return pfd_data_for_app_local_var;
 end:

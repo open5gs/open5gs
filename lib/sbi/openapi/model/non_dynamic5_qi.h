@@ -1,7 +1,7 @@
 /*
  * non_dynamic5_qi.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_non_dynamic5_qi_H_
@@ -34,7 +34,7 @@ OpenAPI_non_dynamic5_qi_t *OpenAPI_non_dynamic5_qi_create(
     int ext_max_data_burst_vol,
     int cn_packet_delay_budget_dl,
     int cn_packet_delay_budget_ul
-    );
+);
 void OpenAPI_non_dynamic5_qi_free(OpenAPI_non_dynamic5_qi_t *non_dynamic5_qi);
 OpenAPI_non_dynamic5_qi_t *OpenAPI_non_dynamic5_qi_parseFromJSON(cJSON *non_dynamic5_qiJSON);
 cJSON *OpenAPI_non_dynamic5_qi_convertToJSON(OpenAPI_non_dynamic5_qi_t *non_dynamic5_qi);

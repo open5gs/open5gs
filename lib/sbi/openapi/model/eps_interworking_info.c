@@ -6,7 +6,7 @@
 
 OpenAPI_eps_interworking_info_t *OpenAPI_eps_interworking_info_create(
     OpenAPI_list_t* eps_iwk_pgws
-    )
+)
 {
     OpenAPI_eps_interworking_info_t *eps_interworking_info_local_var = OpenAPI_malloc(sizeof(OpenAPI_eps_interworking_info_t));
     if (!eps_interworking_info_local_var) {
@@ -43,22 +43,22 @@ cJSON *OpenAPI_eps_interworking_info_convertToJSON(OpenAPI_eps_interworking_info
 
     item = cJSON_CreateObject();
     if (eps_interworking_info->eps_iwk_pgws) {
-        cJSON *eps_iwk_pgws = cJSON_AddObjectToObject(item, "epsIwkPgws");
-        if (eps_iwk_pgws == NULL) {
+    cJSON *eps_iwk_pgws = cJSON_AddObjectToObject(item, "epsIwkPgws");
+    if (eps_iwk_pgws == NULL) {
+        ogs_error("OpenAPI_eps_interworking_info_convertToJSON() failed [eps_iwk_pgws]");
+        goto end;
+    }
+    cJSON *localMapObject = eps_iwk_pgws;
+    OpenAPI_lnode_t *eps_iwk_pgws_node;
+    if (eps_interworking_info->eps_iwk_pgws) {
+        OpenAPI_list_for_each(eps_interworking_info->eps_iwk_pgws, eps_iwk_pgws_node) {
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)eps_iwk_pgws_node->data;
+        cJSON *itemLocal = OpenAPI_eps_iwk_pgw_convertToJSON(localKeyValue->value);
+        if (itemLocal == NULL) {
             ogs_error("OpenAPI_eps_interworking_info_convertToJSON() failed [eps_iwk_pgws]");
             goto end;
         }
-        cJSON *localMapObject = eps_iwk_pgws;
-        OpenAPI_lnode_t *eps_iwk_pgws_node;
-        if (eps_interworking_info->eps_iwk_pgws) {
-            OpenAPI_list_for_each(eps_interworking_info->eps_iwk_pgws, eps_iwk_pgws_node) {
-                OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)eps_iwk_pgws_node->data;
-                cJSON *itemLocal = OpenAPI_eps_iwk_pgw_convertToJSON(localKeyValue->value);
-                if (itemLocal == NULL) {
-                    ogs_error("OpenAPI_eps_interworking_info_convertToJSON() failed [eps_iwk_pgws]");
-                    goto end;
-                }
-                cJSON_AddItemToObject(eps_iwk_pgws, localKeyValue->key, itemLocal);
+        cJSON_AddItemToObject(eps_iwk_pgws, localKeyValue->key, itemLocal);
             }
         }
     }
@@ -73,29 +73,29 @@ OpenAPI_eps_interworking_info_t *OpenAPI_eps_interworking_info_parseFromJSON(cJS
     cJSON *eps_iwk_pgws = cJSON_GetObjectItemCaseSensitive(eps_interworking_infoJSON, "epsIwkPgws");
 
     OpenAPI_list_t *eps_iwk_pgwsList;
-    if (eps_iwk_pgws) {
-        cJSON *eps_iwk_pgws_local_map;
-        if (!cJSON_IsObject(eps_iwk_pgws)) {
+    if (eps_iwk_pgws) { 
+    cJSON *eps_iwk_pgws_local_map;
+    if (!cJSON_IsObject(eps_iwk_pgws)) {
+        ogs_error("OpenAPI_eps_interworking_info_parseFromJSON() failed [eps_iwk_pgws]");
+        goto end;
+    }
+    eps_iwk_pgwsList = OpenAPI_list_create();
+    OpenAPI_map_t *localMapKeyPair = NULL;
+    cJSON_ArrayForEach(eps_iwk_pgws_local_map, eps_iwk_pgws) {
+        cJSON *localMapObject = eps_iwk_pgws_local_map;
+        if (!cJSON_IsObject(eps_iwk_pgws_local_map)) {
             ogs_error("OpenAPI_eps_interworking_info_parseFromJSON() failed [eps_iwk_pgws]");
             goto end;
         }
-        eps_iwk_pgwsList = OpenAPI_list_create();
-        OpenAPI_map_t *localMapKeyPair = NULL;
-        cJSON_ArrayForEach(eps_iwk_pgws_local_map, eps_iwk_pgws) {
-            cJSON *localMapObject = eps_iwk_pgws_local_map;
-            if (!cJSON_IsObject(eps_iwk_pgws_local_map)) {
-                ogs_error("OpenAPI_eps_interworking_info_parseFromJSON() failed [eps_iwk_pgws]");
-                goto end;
-            }
-            localMapKeyPair = OpenAPI_map_create(
-                localMapObject->string, OpenAPI_eps_iwk_pgw_parseFromJSON(localMapObject));
-            OpenAPI_list_add(eps_iwk_pgwsList, localMapKeyPair);
-        }
+        localMapKeyPair = OpenAPI_map_create(
+            localMapObject->string, OpenAPI_eps_iwk_pgw_parseFromJSON(localMapObject));
+        OpenAPI_list_add(eps_iwk_pgwsList , localMapKeyPair);
+    }
     }
 
     eps_interworking_info_local_var = OpenAPI_eps_interworking_info_create (
         eps_iwk_pgws ? eps_iwk_pgwsList : NULL
-        );
+    );
 
     return eps_interworking_info_local_var;
 end:

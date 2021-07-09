@@ -5,7 +5,7 @@
 #include "usage_mon_level.h"
 
 OpenAPI_usage_mon_level_t *OpenAPI_usage_mon_level_create(
-    )
+)
 {
     OpenAPI_usage_mon_level_t *usage_mon_level_local_var = OpenAPI_malloc(sizeof(OpenAPI_usage_mon_level_t));
     if (!usage_mon_level_local_var) {
@@ -42,7 +42,7 @@ OpenAPI_usage_mon_level_t *OpenAPI_usage_mon_level_parseFromJSON(cJSON *usage_mo
 {
     OpenAPI_usage_mon_level_t *usage_mon_level_local_var = NULL;
     usage_mon_level_local_var = OpenAPI_usage_mon_level_create (
-        );
+    );
 
     return usage_mon_level_local_var;
 end:

@@ -8,7 +8,7 @@ OpenAPI_identity_range_t *OpenAPI_identity_range_create(
     char *start,
     char *end,
     char *pattern
-    )
+)
 {
     OpenAPI_identity_range_t *identity_range_local_var = OpenAPI_malloc(sizeof(OpenAPI_identity_range_t));
     if (!identity_range_local_var) {
@@ -44,24 +44,24 @@ cJSON *OpenAPI_identity_range_convertToJSON(OpenAPI_identity_range_t *identity_r
 
     item = cJSON_CreateObject();
     if (identity_range->start) {
-        if (cJSON_AddStringToObject(item, "start", identity_range->start) == NULL) {
-            ogs_error("OpenAPI_identity_range_convertToJSON() failed [start]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "start", identity_range->start) == NULL) {
+        ogs_error("OpenAPI_identity_range_convertToJSON() failed [start]");
+        goto end;
+    }
     }
 
     if (identity_range->end) {
-        if (cJSON_AddStringToObject(item, "end", identity_range->end) == NULL) {
-            ogs_error("OpenAPI_identity_range_convertToJSON() failed [end]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "end", identity_range->end) == NULL) {
+        ogs_error("OpenAPI_identity_range_convertToJSON() failed [end]");
+        goto end;
+    }
     }
 
     if (identity_range->pattern) {
-        if (cJSON_AddStringToObject(item, "pattern", identity_range->pattern) == NULL) {
-            ogs_error("OpenAPI_identity_range_convertToJSON() failed [pattern]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "pattern", identity_range->pattern) == NULL) {
+        ogs_error("OpenAPI_identity_range_convertToJSON() failed [pattern]");
+        goto end;
+    }
     }
 
 end:
@@ -73,36 +73,36 @@ OpenAPI_identity_range_t *OpenAPI_identity_range_parseFromJSON(cJSON *identity_r
     OpenAPI_identity_range_t *identity_range_local_var = NULL;
     cJSON *start = cJSON_GetObjectItemCaseSensitive(identity_rangeJSON, "start");
 
-    if (start) {
-        if (!cJSON_IsString(start)) {
-            ogs_error("OpenAPI_identity_range_parseFromJSON() failed [start]");
-            goto end;
-        }
+    if (start) { 
+    if (!cJSON_IsString(start)) {
+        ogs_error("OpenAPI_identity_range_parseFromJSON() failed [start]");
+        goto end;
+    }
     }
 
     cJSON *end = cJSON_GetObjectItemCaseSensitive(identity_rangeJSON, "end");
 
-    if (end) {
-        if (!cJSON_IsString(end)) {
-            ogs_error("OpenAPI_identity_range_parseFromJSON() failed [end]");
-            goto end;
-        }
+    if (end) { 
+    if (!cJSON_IsString(end)) {
+        ogs_error("OpenAPI_identity_range_parseFromJSON() failed [end]");
+        goto end;
+    }
     }
 
     cJSON *pattern = cJSON_GetObjectItemCaseSensitive(identity_rangeJSON, "pattern");
 
-    if (pattern) {
-        if (!cJSON_IsString(pattern)) {
-            ogs_error("OpenAPI_identity_range_parseFromJSON() failed [pattern]");
-            goto end;
-        }
+    if (pattern) { 
+    if (!cJSON_IsString(pattern)) {
+        ogs_error("OpenAPI_identity_range_parseFromJSON() failed [pattern]");
+        goto end;
+    }
     }
 
     identity_range_local_var = OpenAPI_identity_range_create (
         start ? ogs_strdup_or_assert(start->valuestring) : NULL,
         end ? ogs_strdup_or_assert(end->valuestring) : NULL,
         pattern ? ogs_strdup_or_assert(pattern->valuestring) : NULL
-        );
+    );
 
     return identity_range_local_var;
 end:

@@ -1,7 +1,7 @@
 /*
  * monitoring_configuration.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_monitoring_configuration_H_
@@ -55,7 +55,7 @@ OpenAPI_monitoring_configuration_t *OpenAPI_monitoring_configuration_create(
     OpenAPI_reachability_for_sms_configuration_t *reachability_for_sms_cfg,
     char *mtc_provider_information,
     char *af_id
-    );
+);
 void OpenAPI_monitoring_configuration_free(OpenAPI_monitoring_configuration_t *monitoring_configuration);
 OpenAPI_monitoring_configuration_t *OpenAPI_monitoring_configuration_parseFromJSON(cJSON *monitoring_configurationJSON);
 cJSON *OpenAPI_monitoring_configuration_convertToJSON(OpenAPI_monitoring_configuration_t *monitoring_configuration);

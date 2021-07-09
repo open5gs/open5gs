@@ -7,7 +7,7 @@
 OpenAPI_access_net_charging_identifier_t *OpenAPI_access_net_charging_identifier_create(
     int acc_net_cha_id_value,
     OpenAPI_list_t *flows
-    )
+)
 {
     OpenAPI_access_net_charging_identifier_t *access_net_charging_identifier_local_var = OpenAPI_malloc(sizeof(OpenAPI_access_net_charging_identifier_t));
     if (!access_net_charging_identifier_local_var) {
@@ -48,23 +48,23 @@ cJSON *OpenAPI_access_net_charging_identifier_convertToJSON(OpenAPI_access_net_c
     }
 
     if (access_net_charging_identifier->flows) {
-        cJSON *flowsList = cJSON_AddArrayToObject(item, "flows");
-        if (flowsList == NULL) {
-            ogs_error("OpenAPI_access_net_charging_identifier_convertToJSON() failed [flows]");
-            goto end;
-        }
+    cJSON *flowsList = cJSON_AddArrayToObject(item, "flows");
+    if (flowsList == NULL) {
+        ogs_error("OpenAPI_access_net_charging_identifier_convertToJSON() failed [flows]");
+        goto end;
+    }
 
-        OpenAPI_lnode_t *flows_node;
-        if (access_net_charging_identifier->flows) {
-            OpenAPI_list_for_each(access_net_charging_identifier->flows, flows_node) {
-                cJSON *itemLocal = OpenAPI_flows_convertToJSON(flows_node->data);
-                if (itemLocal == NULL) {
-                    ogs_error("OpenAPI_access_net_charging_identifier_convertToJSON() failed [flows]");
-                    goto end;
-                }
-                cJSON_AddItemToArray(flowsList, itemLocal);
+    OpenAPI_lnode_t *flows_node;
+    if (access_net_charging_identifier->flows) {
+        OpenAPI_list_for_each(access_net_charging_identifier->flows, flows_node) {
+            cJSON *itemLocal = OpenAPI_flows_convertToJSON(flows_node->data);
+            if (itemLocal == NULL) {
+                ogs_error("OpenAPI_access_net_charging_identifier_convertToJSON() failed [flows]");
+                goto end;
             }
+            cJSON_AddItemToArray(flowsList, itemLocal);
         }
+    }
     }
 
 end:
@@ -80,7 +80,7 @@ OpenAPI_access_net_charging_identifier_t *OpenAPI_access_net_charging_identifier
         goto end;
     }
 
-
+    
     if (!cJSON_IsNumber(acc_net_cha_id_value)) {
         ogs_error("OpenAPI_access_net_charging_identifier_parseFromJSON() failed [acc_net_cha_id_value]");
         goto end;
@@ -89,30 +89,30 @@ OpenAPI_access_net_charging_identifier_t *OpenAPI_access_net_charging_identifier
     cJSON *flows = cJSON_GetObjectItemCaseSensitive(access_net_charging_identifierJSON, "flows");
 
     OpenAPI_list_t *flowsList;
-    if (flows) {
-        cJSON *flows_local_nonprimitive;
-        if (!cJSON_IsArray(flows)) {
+    if (flows) { 
+    cJSON *flows_local_nonprimitive;
+    if (!cJSON_IsArray(flows)){
+        ogs_error("OpenAPI_access_net_charging_identifier_parseFromJSON() failed [flows]");
+        goto end;
+    }
+
+    flowsList = OpenAPI_list_create();
+
+    cJSON_ArrayForEach(flows_local_nonprimitive, flows ) {
+        if (!cJSON_IsObject(flows_local_nonprimitive)) {
             ogs_error("OpenAPI_access_net_charging_identifier_parseFromJSON() failed [flows]");
             goto end;
         }
+        OpenAPI_flows_t *flowsItem = OpenAPI_flows_parseFromJSON(flows_local_nonprimitive);
 
-        flowsList = OpenAPI_list_create();
-
-        cJSON_ArrayForEach(flows_local_nonprimitive, flows ) {
-            if (!cJSON_IsObject(flows_local_nonprimitive)) {
-                ogs_error("OpenAPI_access_net_charging_identifier_parseFromJSON() failed [flows]");
-                goto end;
-            }
-            OpenAPI_flows_t *flowsItem = OpenAPI_flows_parseFromJSON(flows_local_nonprimitive);
-
-            OpenAPI_list_add(flowsList, flowsItem);
-        }
+        OpenAPI_list_add(flowsList, flowsItem);
+    }
     }
 
     access_net_charging_identifier_local_var = OpenAPI_access_net_charging_identifier_create (
         acc_net_cha_id_value->valuedouble,
         flows ? flowsList : NULL
-        );
+    );
 
     return access_net_charging_identifier_local_var;
 end:

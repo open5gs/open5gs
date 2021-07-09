@@ -9,7 +9,7 @@ OpenAPI_up_path_chg_event_t *OpenAPI_up_path_chg_event_create(
     char *notif_corre_id,
     OpenAPI_dnai_change_type_e dnai_chg_type,
     int af_ack_ind
-    )
+)
 {
     OpenAPI_up_path_chg_event_t *up_path_chg_event_local_var = OpenAPI_malloc(sizeof(OpenAPI_up_path_chg_event_t));
     if (!up_path_chg_event_local_var) {
@@ -60,10 +60,10 @@ cJSON *OpenAPI_up_path_chg_event_convertToJSON(OpenAPI_up_path_chg_event_t *up_p
     }
 
     if (up_path_chg_event->af_ack_ind) {
-        if (cJSON_AddBoolToObject(item, "afAckInd", up_path_chg_event->af_ack_ind) == NULL) {
-            ogs_error("OpenAPI_up_path_chg_event_convertToJSON() failed [af_ack_ind]");
-            goto end;
-        }
+    if (cJSON_AddBoolToObject(item, "afAckInd", up_path_chg_event->af_ack_ind) == NULL) {
+        ogs_error("OpenAPI_up_path_chg_event_convertToJSON() failed [af_ack_ind]");
+        goto end;
+    }
     }
 
 end:
@@ -79,7 +79,7 @@ OpenAPI_up_path_chg_event_t *OpenAPI_up_path_chg_event_parseFromJSON(cJSON *up_p
         goto end;
     }
 
-
+    
     if (!cJSON_IsString(notification_uri)) {
         ogs_error("OpenAPI_up_path_chg_event_parseFromJSON() failed [notification_uri]");
         goto end;
@@ -91,7 +91,7 @@ OpenAPI_up_path_chg_event_t *OpenAPI_up_path_chg_event_parseFromJSON(cJSON *up_p
         goto end;
     }
 
-
+    
     if (!cJSON_IsString(notif_corre_id)) {
         ogs_error("OpenAPI_up_path_chg_event_parseFromJSON() failed [notif_corre_id]");
         goto end;
@@ -104,7 +104,7 @@ OpenAPI_up_path_chg_event_t *OpenAPI_up_path_chg_event_parseFromJSON(cJSON *up_p
     }
 
     OpenAPI_dnai_change_type_e dnai_chg_typeVariable;
-
+    
     if (!cJSON_IsString(dnai_chg_type)) {
         ogs_error("OpenAPI_up_path_chg_event_parseFromJSON() failed [dnai_chg_type]");
         goto end;
@@ -113,11 +113,11 @@ OpenAPI_up_path_chg_event_t *OpenAPI_up_path_chg_event_parseFromJSON(cJSON *up_p
 
     cJSON *af_ack_ind = cJSON_GetObjectItemCaseSensitive(up_path_chg_eventJSON, "afAckInd");
 
-    if (af_ack_ind) {
-        if (!cJSON_IsBool(af_ack_ind)) {
-            ogs_error("OpenAPI_up_path_chg_event_parseFromJSON() failed [af_ack_ind]");
-            goto end;
-        }
+    if (af_ack_ind) { 
+    if (!cJSON_IsBool(af_ack_ind)) {
+        ogs_error("OpenAPI_up_path_chg_event_parseFromJSON() failed [af_ack_ind]");
+        goto end;
+    }
     }
 
     up_path_chg_event_local_var = OpenAPI_up_path_chg_event_create (
@@ -125,7 +125,7 @@ OpenAPI_up_path_chg_event_t *OpenAPI_up_path_chg_event_parseFromJSON(cJSON *up_p
         ogs_strdup_or_assert(notif_corre_id->valuestring),
         dnai_chg_typeVariable,
         af_ack_ind ? af_ack_ind->valueint : 0
-        );
+    );
 
     return up_path_chg_event_local_var;
 end:

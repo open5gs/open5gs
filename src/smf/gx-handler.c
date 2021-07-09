@@ -283,6 +283,12 @@ void smf_gx_handle_cca_termination_request(
     ogs_debug("    SGW_S5C_TEID[0x%x] SMF_N4_TEID[0x%x]",
             sess->sgw_s5c_teid, sess->smf_n4_teid);
 
+    /*
+     * << 'gtp_xact' is NOT NULL >>
+     *
+     * 1. MME sends Delete Session Request to SGW/SMF.
+     * 2. SMF sends Delete Session Response to SGW/MME.
+     */
     ogs_assert(OGS_OK ==
         smf_epc_pfcp_send_session_deletion_request(sess, gtp_xact));
 }

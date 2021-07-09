@@ -26,7 +26,7 @@ typedef struct OpenAPI_notif_condition_s {
 OpenAPI_notif_condition_t *OpenAPI_notif_condition_create(
     OpenAPI_list_t *monitored_attributes,
     OpenAPI_list_t *unmonitored_attributes
-    );
+);
 void OpenAPI_notif_condition_free(OpenAPI_notif_condition_t *notif_condition);
 OpenAPI_notif_condition_t *OpenAPI_notif_condition_parseFromJSON(cJSON *notif_conditionJSON);
 cJSON *OpenAPI_notif_condition_convertToJSON(OpenAPI_notif_condition_t *notif_condition);

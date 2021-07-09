@@ -26,7 +26,7 @@ typedef struct OpenAPI_updated_item_s {
 OpenAPI_updated_item_t *OpenAPI_updated_item_create(
     char *item,
     char *value
-    );
+);
 void OpenAPI_updated_item_free(OpenAPI_updated_item_t *updated_item);
 OpenAPI_updated_item_t *OpenAPI_updated_item_parseFromJSON(cJSON *updated_itemJSON);
 cJSON *OpenAPI_updated_item_convertToJSON(OpenAPI_updated_item_t *updated_item);

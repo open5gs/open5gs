@@ -1,7 +1,7 @@
 /*
  * reporting_level.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_reporting_level_H_

@@ -11,7 +11,7 @@ OpenAPI_reporting_options_t *OpenAPI_reporting_options_create(
     int sampling_ratio,
     int guard_time,
     int report_period
-    )
+)
 {
     OpenAPI_reporting_options_t *reporting_options_local_var = OpenAPI_malloc(sizeof(OpenAPI_reporting_options_t));
     if (!reporting_options_local_var) {
@@ -49,51 +49,51 @@ cJSON *OpenAPI_reporting_options_convertToJSON(OpenAPI_reporting_options_t *repo
 
     item = cJSON_CreateObject();
     if (reporting_options->report_mode) {
-        cJSON *report_mode_local_JSON = OpenAPI_event_report_mode_convertToJSON(reporting_options->report_mode);
-        if (report_mode_local_JSON == NULL) {
-            ogs_error("OpenAPI_reporting_options_convertToJSON() failed [report_mode]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "reportMode", report_mode_local_JSON);
-        if (item->child == NULL) {
-            ogs_error("OpenAPI_reporting_options_convertToJSON() failed [report_mode]");
-            goto end;
-        }
+    cJSON *report_mode_local_JSON = OpenAPI_event_report_mode_convertToJSON(reporting_options->report_mode);
+    if (report_mode_local_JSON == NULL) {
+        ogs_error("OpenAPI_reporting_options_convertToJSON() failed [report_mode]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "reportMode", report_mode_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_reporting_options_convertToJSON() failed [report_mode]");
+        goto end;
+    }
     }
 
     if (reporting_options->max_num_of_reports) {
-        if (cJSON_AddNumberToObject(item, "maxNumOfReports", reporting_options->max_num_of_reports) == NULL) {
-            ogs_error("OpenAPI_reporting_options_convertToJSON() failed [max_num_of_reports]");
-            goto end;
-        }
+    if (cJSON_AddNumberToObject(item, "maxNumOfReports", reporting_options->max_num_of_reports) == NULL) {
+        ogs_error("OpenAPI_reporting_options_convertToJSON() failed [max_num_of_reports]");
+        goto end;
+    }
     }
 
     if (reporting_options->expiry) {
-        if (cJSON_AddStringToObject(item, "expiry", reporting_options->expiry) == NULL) {
-            ogs_error("OpenAPI_reporting_options_convertToJSON() failed [expiry]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "expiry", reporting_options->expiry) == NULL) {
+        ogs_error("OpenAPI_reporting_options_convertToJSON() failed [expiry]");
+        goto end;
+    }
     }
 
     if (reporting_options->sampling_ratio) {
-        if (cJSON_AddNumberToObject(item, "samplingRatio", reporting_options->sampling_ratio) == NULL) {
-            ogs_error("OpenAPI_reporting_options_convertToJSON() failed [sampling_ratio]");
-            goto end;
-        }
+    if (cJSON_AddNumberToObject(item, "samplingRatio", reporting_options->sampling_ratio) == NULL) {
+        ogs_error("OpenAPI_reporting_options_convertToJSON() failed [sampling_ratio]");
+        goto end;
+    }
     }
 
     if (reporting_options->guard_time) {
-        if (cJSON_AddNumberToObject(item, "guardTime", reporting_options->guard_time) == NULL) {
-            ogs_error("OpenAPI_reporting_options_convertToJSON() failed [guard_time]");
-            goto end;
-        }
+    if (cJSON_AddNumberToObject(item, "guardTime", reporting_options->guard_time) == NULL) {
+        ogs_error("OpenAPI_reporting_options_convertToJSON() failed [guard_time]");
+        goto end;
+    }
     }
 
     if (reporting_options->report_period) {
-        if (cJSON_AddNumberToObject(item, "reportPeriod", reporting_options->report_period) == NULL) {
-            ogs_error("OpenAPI_reporting_options_convertToJSON() failed [report_period]");
-            goto end;
-        }
+    if (cJSON_AddNumberToObject(item, "reportPeriod", reporting_options->report_period) == NULL) {
+        ogs_error("OpenAPI_reporting_options_convertToJSON() failed [report_period]");
+        goto end;
+    }
     }
 
 end:
@@ -106,53 +106,53 @@ OpenAPI_reporting_options_t *OpenAPI_reporting_options_parseFromJSON(cJSON *repo
     cJSON *report_mode = cJSON_GetObjectItemCaseSensitive(reporting_optionsJSON, "reportMode");
 
     OpenAPI_event_report_mode_t *report_mode_local_nonprim = NULL;
-    if (report_mode) {
-        report_mode_local_nonprim = OpenAPI_event_report_mode_parseFromJSON(report_mode);
+    if (report_mode) { 
+    report_mode_local_nonprim = OpenAPI_event_report_mode_parseFromJSON(report_mode);
     }
 
     cJSON *max_num_of_reports = cJSON_GetObjectItemCaseSensitive(reporting_optionsJSON, "maxNumOfReports");
 
-    if (max_num_of_reports) {
-        if (!cJSON_IsNumber(max_num_of_reports)) {
-            ogs_error("OpenAPI_reporting_options_parseFromJSON() failed [max_num_of_reports]");
-            goto end;
-        }
+    if (max_num_of_reports) { 
+    if (!cJSON_IsNumber(max_num_of_reports)) {
+        ogs_error("OpenAPI_reporting_options_parseFromJSON() failed [max_num_of_reports]");
+        goto end;
+    }
     }
 
     cJSON *expiry = cJSON_GetObjectItemCaseSensitive(reporting_optionsJSON, "expiry");
 
-    if (expiry) {
-        if (!cJSON_IsString(expiry)) {
-            ogs_error("OpenAPI_reporting_options_parseFromJSON() failed [expiry]");
-            goto end;
-        }
+    if (expiry) { 
+    if (!cJSON_IsString(expiry)) {
+        ogs_error("OpenAPI_reporting_options_parseFromJSON() failed [expiry]");
+        goto end;
+    }
     }
 
     cJSON *sampling_ratio = cJSON_GetObjectItemCaseSensitive(reporting_optionsJSON, "samplingRatio");
 
-    if (sampling_ratio) {
-        if (!cJSON_IsNumber(sampling_ratio)) {
-            ogs_error("OpenAPI_reporting_options_parseFromJSON() failed [sampling_ratio]");
-            goto end;
-        }
+    if (sampling_ratio) { 
+    if (!cJSON_IsNumber(sampling_ratio)) {
+        ogs_error("OpenAPI_reporting_options_parseFromJSON() failed [sampling_ratio]");
+        goto end;
+    }
     }
 
     cJSON *guard_time = cJSON_GetObjectItemCaseSensitive(reporting_optionsJSON, "guardTime");
 
-    if (guard_time) {
-        if (!cJSON_IsNumber(guard_time)) {
-            ogs_error("OpenAPI_reporting_options_parseFromJSON() failed [guard_time]");
-            goto end;
-        }
+    if (guard_time) { 
+    if (!cJSON_IsNumber(guard_time)) {
+        ogs_error("OpenAPI_reporting_options_parseFromJSON() failed [guard_time]");
+        goto end;
+    }
     }
 
     cJSON *report_period = cJSON_GetObjectItemCaseSensitive(reporting_optionsJSON, "reportPeriod");
 
-    if (report_period) {
-        if (!cJSON_IsNumber(report_period)) {
-            ogs_error("OpenAPI_reporting_options_parseFromJSON() failed [report_period]");
-            goto end;
-        }
+    if (report_period) { 
+    if (!cJSON_IsNumber(report_period)) {
+        ogs_error("OpenAPI_reporting_options_parseFromJSON() failed [report_period]");
+        goto end;
+    }
     }
 
     reporting_options_local_var = OpenAPI_reporting_options_create (
@@ -162,7 +162,7 @@ OpenAPI_reporting_options_t *OpenAPI_reporting_options_parseFromJSON(cJSON *repo
         sampling_ratio ? sampling_ratio->valuedouble : 0,
         guard_time ? guard_time->valuedouble : 0,
         report_period ? report_period->valuedouble : 0
-        );
+    );
 
     return reporting_options_local_var;
 end:

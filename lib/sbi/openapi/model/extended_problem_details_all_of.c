@@ -6,7 +6,7 @@
 
 OpenAPI_extended_problem_details_all_of_t *OpenAPI_extended_problem_details_all_of_create(
     OpenAPI_acceptable_service_info_t *acceptable_serv_info
-    )
+)
 {
     OpenAPI_extended_problem_details_all_of_t *extended_problem_details_all_of_local_var = OpenAPI_malloc(sizeof(OpenAPI_extended_problem_details_all_of_t));
     if (!extended_problem_details_all_of_local_var) {
@@ -38,16 +38,16 @@ cJSON *OpenAPI_extended_problem_details_all_of_convertToJSON(OpenAPI_extended_pr
 
     item = cJSON_CreateObject();
     if (extended_problem_details_all_of->acceptable_serv_info) {
-        cJSON *acceptable_serv_info_local_JSON = OpenAPI_acceptable_service_info_convertToJSON(extended_problem_details_all_of->acceptable_serv_info);
-        if (acceptable_serv_info_local_JSON == NULL) {
-            ogs_error("OpenAPI_extended_problem_details_all_of_convertToJSON() failed [acceptable_serv_info]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "acceptableServInfo", acceptable_serv_info_local_JSON);
-        if (item->child == NULL) {
-            ogs_error("OpenAPI_extended_problem_details_all_of_convertToJSON() failed [acceptable_serv_info]");
-            goto end;
-        }
+    cJSON *acceptable_serv_info_local_JSON = OpenAPI_acceptable_service_info_convertToJSON(extended_problem_details_all_of->acceptable_serv_info);
+    if (acceptable_serv_info_local_JSON == NULL) {
+        ogs_error("OpenAPI_extended_problem_details_all_of_convertToJSON() failed [acceptable_serv_info]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "acceptableServInfo", acceptable_serv_info_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_extended_problem_details_all_of_convertToJSON() failed [acceptable_serv_info]");
+        goto end;
+    }
     }
 
 end:
@@ -60,13 +60,13 @@ OpenAPI_extended_problem_details_all_of_t *OpenAPI_extended_problem_details_all_
     cJSON *acceptable_serv_info = cJSON_GetObjectItemCaseSensitive(extended_problem_details_all_ofJSON, "acceptableServInfo");
 
     OpenAPI_acceptable_service_info_t *acceptable_serv_info_local_nonprim = NULL;
-    if (acceptable_serv_info) {
-        acceptable_serv_info_local_nonprim = OpenAPI_acceptable_service_info_parseFromJSON(acceptable_serv_info);
+    if (acceptable_serv_info) { 
+    acceptable_serv_info_local_nonprim = OpenAPI_acceptable_service_info_parseFromJSON(acceptable_serv_info);
     }
 
     extended_problem_details_all_of_local_var = OpenAPI_extended_problem_details_all_of_create (
         acceptable_serv_info ? acceptable_serv_info_local_nonprim : NULL
-        );
+    );
 
     return extended_problem_details_all_of_local_var;
 end:

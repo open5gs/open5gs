@@ -1,7 +1,7 @@
 /*
  * ecgi.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_ecgi_H_
@@ -29,7 +29,7 @@ OpenAPI_ecgi_t *OpenAPI_ecgi_create(
     OpenAPI_plmn_id_t *plmn_id,
     char *eutra_cell_id,
     char *nid
-    );
+);
 void OpenAPI_ecgi_free(OpenAPI_ecgi_t *ecgi);
 OpenAPI_ecgi_t *OpenAPI_ecgi_parseFromJSON(cJSON *ecgiJSON);
 cJSON *OpenAPI_ecgi_convertToJSON(OpenAPI_ecgi_t *ecgi);

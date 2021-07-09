@@ -10,7 +10,7 @@ OpenAPI_released_data_t *OpenAPI_released_data_create(
     OpenAPI_n4_information_t *n4_info,
     OpenAPI_n4_information_t *n4_info_ext1,
     OpenAPI_n4_information_t *n4_info_ext2
-    )
+)
 {
     OpenAPI_released_data_t *released_data_local_var = OpenAPI_malloc(sizeof(OpenAPI_released_data_t));
     if (!released_data_local_var) {
@@ -50,68 +50,68 @@ cJSON *OpenAPI_released_data_convertToJSON(OpenAPI_released_data_t *released_dat
 
     item = cJSON_CreateObject();
     if (released_data->small_data_rate_status) {
-        cJSON *small_data_rate_status_local_JSON = OpenAPI_small_data_rate_status_convertToJSON(released_data->small_data_rate_status);
-        if (small_data_rate_status_local_JSON == NULL) {
-            ogs_error("OpenAPI_released_data_convertToJSON() failed [small_data_rate_status]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "smallDataRateStatus", small_data_rate_status_local_JSON);
-        if (item->child == NULL) {
-            ogs_error("OpenAPI_released_data_convertToJSON() failed [small_data_rate_status]");
-            goto end;
-        }
+    cJSON *small_data_rate_status_local_JSON = OpenAPI_small_data_rate_status_convertToJSON(released_data->small_data_rate_status);
+    if (small_data_rate_status_local_JSON == NULL) {
+        ogs_error("OpenAPI_released_data_convertToJSON() failed [small_data_rate_status]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "smallDataRateStatus", small_data_rate_status_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_released_data_convertToJSON() failed [small_data_rate_status]");
+        goto end;
+    }
     }
 
     if (released_data->apn_rate_status) {
-        cJSON *apn_rate_status_local_JSON = OpenAPI_apn_rate_status_convertToJSON(released_data->apn_rate_status);
-        if (apn_rate_status_local_JSON == NULL) {
-            ogs_error("OpenAPI_released_data_convertToJSON() failed [apn_rate_status]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "apnRateStatus", apn_rate_status_local_JSON);
-        if (item->child == NULL) {
-            ogs_error("OpenAPI_released_data_convertToJSON() failed [apn_rate_status]");
-            goto end;
-        }
+    cJSON *apn_rate_status_local_JSON = OpenAPI_apn_rate_status_convertToJSON(released_data->apn_rate_status);
+    if (apn_rate_status_local_JSON == NULL) {
+        ogs_error("OpenAPI_released_data_convertToJSON() failed [apn_rate_status]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "apnRateStatus", apn_rate_status_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_released_data_convertToJSON() failed [apn_rate_status]");
+        goto end;
+    }
     }
 
     if (released_data->n4_info) {
-        cJSON *n4_info_local_JSON = OpenAPI_n4_information_convertToJSON(released_data->n4_info);
-        if (n4_info_local_JSON == NULL) {
-            ogs_error("OpenAPI_released_data_convertToJSON() failed [n4_info]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "n4Info", n4_info_local_JSON);
-        if (item->child == NULL) {
-            ogs_error("OpenAPI_released_data_convertToJSON() failed [n4_info]");
-            goto end;
-        }
+    cJSON *n4_info_local_JSON = OpenAPI_n4_information_convertToJSON(released_data->n4_info);
+    if (n4_info_local_JSON == NULL) {
+        ogs_error("OpenAPI_released_data_convertToJSON() failed [n4_info]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "n4Info", n4_info_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_released_data_convertToJSON() failed [n4_info]");
+        goto end;
+    }
     }
 
     if (released_data->n4_info_ext1) {
-        cJSON *n4_info_ext1_local_JSON = OpenAPI_n4_information_convertToJSON(released_data->n4_info_ext1);
-        if (n4_info_ext1_local_JSON == NULL) {
-            ogs_error("OpenAPI_released_data_convertToJSON() failed [n4_info_ext1]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "n4InfoExt1", n4_info_ext1_local_JSON);
-        if (item->child == NULL) {
-            ogs_error("OpenAPI_released_data_convertToJSON() failed [n4_info_ext1]");
-            goto end;
-        }
+    cJSON *n4_info_ext1_local_JSON = OpenAPI_n4_information_convertToJSON(released_data->n4_info_ext1);
+    if (n4_info_ext1_local_JSON == NULL) {
+        ogs_error("OpenAPI_released_data_convertToJSON() failed [n4_info_ext1]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "n4InfoExt1", n4_info_ext1_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_released_data_convertToJSON() failed [n4_info_ext1]");
+        goto end;
+    }
     }
 
     if (released_data->n4_info_ext2) {
-        cJSON *n4_info_ext2_local_JSON = OpenAPI_n4_information_convertToJSON(released_data->n4_info_ext2);
-        if (n4_info_ext2_local_JSON == NULL) {
-            ogs_error("OpenAPI_released_data_convertToJSON() failed [n4_info_ext2]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "n4InfoExt2", n4_info_ext2_local_JSON);
-        if (item->child == NULL) {
-            ogs_error("OpenAPI_released_data_convertToJSON() failed [n4_info_ext2]");
-            goto end;
-        }
+    cJSON *n4_info_ext2_local_JSON = OpenAPI_n4_information_convertToJSON(released_data->n4_info_ext2);
+    if (n4_info_ext2_local_JSON == NULL) {
+        ogs_error("OpenAPI_released_data_convertToJSON() failed [n4_info_ext2]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "n4InfoExt2", n4_info_ext2_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_released_data_convertToJSON() failed [n4_info_ext2]");
+        goto end;
+    }
     }
 
 end:
@@ -124,36 +124,36 @@ OpenAPI_released_data_t *OpenAPI_released_data_parseFromJSON(cJSON *released_dat
     cJSON *small_data_rate_status = cJSON_GetObjectItemCaseSensitive(released_dataJSON, "smallDataRateStatus");
 
     OpenAPI_small_data_rate_status_t *small_data_rate_status_local_nonprim = NULL;
-    if (small_data_rate_status) {
-        small_data_rate_status_local_nonprim = OpenAPI_small_data_rate_status_parseFromJSON(small_data_rate_status);
+    if (small_data_rate_status) { 
+    small_data_rate_status_local_nonprim = OpenAPI_small_data_rate_status_parseFromJSON(small_data_rate_status);
     }
 
     cJSON *apn_rate_status = cJSON_GetObjectItemCaseSensitive(released_dataJSON, "apnRateStatus");
 
     OpenAPI_apn_rate_status_t *apn_rate_status_local_nonprim = NULL;
-    if (apn_rate_status) {
-        apn_rate_status_local_nonprim = OpenAPI_apn_rate_status_parseFromJSON(apn_rate_status);
+    if (apn_rate_status) { 
+    apn_rate_status_local_nonprim = OpenAPI_apn_rate_status_parseFromJSON(apn_rate_status);
     }
 
     cJSON *n4_info = cJSON_GetObjectItemCaseSensitive(released_dataJSON, "n4Info");
 
     OpenAPI_n4_information_t *n4_info_local_nonprim = NULL;
-    if (n4_info) {
-        n4_info_local_nonprim = OpenAPI_n4_information_parseFromJSON(n4_info);
+    if (n4_info) { 
+    n4_info_local_nonprim = OpenAPI_n4_information_parseFromJSON(n4_info);
     }
 
     cJSON *n4_info_ext1 = cJSON_GetObjectItemCaseSensitive(released_dataJSON, "n4InfoExt1");
 
     OpenAPI_n4_information_t *n4_info_ext1_local_nonprim = NULL;
-    if (n4_info_ext1) {
-        n4_info_ext1_local_nonprim = OpenAPI_n4_information_parseFromJSON(n4_info_ext1);
+    if (n4_info_ext1) { 
+    n4_info_ext1_local_nonprim = OpenAPI_n4_information_parseFromJSON(n4_info_ext1);
     }
 
     cJSON *n4_info_ext2 = cJSON_GetObjectItemCaseSensitive(released_dataJSON, "n4InfoExt2");
 
     OpenAPI_n4_information_t *n4_info_ext2_local_nonprim = NULL;
-    if (n4_info_ext2) {
-        n4_info_ext2_local_nonprim = OpenAPI_n4_information_parseFromJSON(n4_info_ext2);
+    if (n4_info_ext2) { 
+    n4_info_ext2_local_nonprim = OpenAPI_n4_information_parseFromJSON(n4_info_ext2);
     }
 
     released_data_local_var = OpenAPI_released_data_create (
@@ -162,7 +162,7 @@ OpenAPI_released_data_t *OpenAPI_released_data_parseFromJSON(cJSON *released_dat
         n4_info ? n4_info_local_nonprim : NULL,
         n4_info_ext1 ? n4_info_ext1_local_nonprim : NULL,
         n4_info_ext2 ? n4_info_ext2_local_nonprim : NULL
-        );
+    );
 
     return released_data_local_var;
 end:

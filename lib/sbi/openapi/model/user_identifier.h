@@ -1,7 +1,7 @@
 /*
  * user_identifier.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_user_identifier_H_
@@ -28,7 +28,7 @@ OpenAPI_user_identifier_t *OpenAPI_user_identifier_create(
     char *supi,
     char *gpsi,
     char *validity_time
-    );
+);
 void OpenAPI_user_identifier_free(OpenAPI_user_identifier_t *user_identifier);
 OpenAPI_user_identifier_t *OpenAPI_user_identifier_parseFromJSON(cJSON *user_identifierJSON);
 cJSON *OpenAPI_user_identifier_convertToJSON(OpenAPI_user_identifier_t *user_identifier);

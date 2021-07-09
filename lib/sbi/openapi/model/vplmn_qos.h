@@ -1,7 +1,7 @@
 /*
  * vplmn_qos.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_vplmn_qos_H_
@@ -38,7 +38,7 @@ OpenAPI_vplmn_qos_t *OpenAPI_vplmn_qos_create(
     char *max_fbr_ul,
     char *gua_fbr_dl,
     char *gua_fbr_ul
-    );
+);
 void OpenAPI_vplmn_qos_free(OpenAPI_vplmn_qos_t *vplmn_qos);
 OpenAPI_vplmn_qos_t *OpenAPI_vplmn_qos_parseFromJSON(cJSON *vplmn_qosJSON);
 cJSON *OpenAPI_vplmn_qos_convertToJSON(OpenAPI_vplmn_qos_t *vplmn_qos);

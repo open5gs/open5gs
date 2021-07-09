@@ -507,6 +507,28 @@ int smf_epc_pfcp_send_session_deletion_request(
     ogs_expect_or_return_val(xact, OGS_ERROR);
 
     xact->epc = true; /* EPC PFCP transaction */
+
+    /*
+     * << 'gtp_xact' is NOT NULL >>
+     *
+     * 1. MME sends Delete Session Request to SGW/SMF.
+     * 2. SMF sends Delete Session Response to SGW/MME.
+     *
+     *
+     * << 'gtp_xact' should be NULL >>
+     *
+     * 1. SMF sends Delete Bearer Request(DEFAULT BEARER) to SGW/MME.
+     * 2. MME sends Delete Bearer Response to SGW/SMF.
+     *
+     * OR
+     *
+     * 1. SMF sends Delete Bearer Request(DEFAULT BEARER) to ePDG.
+     * 2. ePDG sends Delete Bearer Response(DEFAULT BEARER) to SMF.
+     *
+     * Note that the following messages are not processed here.
+     * - Bearer Resource Command
+     * - Delete Bearer Request/Response with DEDICATED BEARER.
+     */
     xact->assoc_xact = gtp_xact;
 
     rv = ogs_pfcp_xact_commit(xact);

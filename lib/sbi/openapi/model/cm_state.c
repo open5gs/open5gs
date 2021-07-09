@@ -5,7 +5,7 @@
 #include "cm_state.h"
 
 OpenAPI_cm_state_t *OpenAPI_cm_state_create(
-    )
+)
 {
     OpenAPI_cm_state_t *cm_state_local_var = OpenAPI_malloc(sizeof(OpenAPI_cm_state_t));
     if (!cm_state_local_var) {
@@ -42,7 +42,7 @@ OpenAPI_cm_state_t *OpenAPI_cm_state_parseFromJSON(cJSON *cm_stateJSON)
 {
     OpenAPI_cm_state_t *cm_state_local_var = NULL;
     cm_state_local_var = OpenAPI_cm_state_create (
-        );
+    );
 
     return cm_state_local_var;
 end:

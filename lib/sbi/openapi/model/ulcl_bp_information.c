@@ -6,7 +6,7 @@
 
 OpenAPI_ulcl_bp_information_t *OpenAPI_ulcl_bp_information_create(
     char *ulcl_bp_upf_id
-    )
+)
 {
     OpenAPI_ulcl_bp_information_t *ulcl_bp_information_local_var = OpenAPI_malloc(sizeof(OpenAPI_ulcl_bp_information_t));
     if (!ulcl_bp_information_local_var) {
@@ -38,10 +38,10 @@ cJSON *OpenAPI_ulcl_bp_information_convertToJSON(OpenAPI_ulcl_bp_information_t *
 
     item = cJSON_CreateObject();
     if (ulcl_bp_information->ulcl_bp_upf_id) {
-        if (cJSON_AddStringToObject(item, "ulclBpUpfId", ulcl_bp_information->ulcl_bp_upf_id) == NULL) {
-            ogs_error("OpenAPI_ulcl_bp_information_convertToJSON() failed [ulcl_bp_upf_id]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "ulclBpUpfId", ulcl_bp_information->ulcl_bp_upf_id) == NULL) {
+        ogs_error("OpenAPI_ulcl_bp_information_convertToJSON() failed [ulcl_bp_upf_id]");
+        goto end;
+    }
     }
 
 end:
@@ -53,16 +53,16 @@ OpenAPI_ulcl_bp_information_t *OpenAPI_ulcl_bp_information_parseFromJSON(cJSON *
     OpenAPI_ulcl_bp_information_t *ulcl_bp_information_local_var = NULL;
     cJSON *ulcl_bp_upf_id = cJSON_GetObjectItemCaseSensitive(ulcl_bp_informationJSON, "ulclBpUpfId");
 
-    if (ulcl_bp_upf_id) {
-        if (!cJSON_IsString(ulcl_bp_upf_id)) {
-            ogs_error("OpenAPI_ulcl_bp_information_parseFromJSON() failed [ulcl_bp_upf_id]");
-            goto end;
-        }
+    if (ulcl_bp_upf_id) { 
+    if (!cJSON_IsString(ulcl_bp_upf_id)) {
+        ogs_error("OpenAPI_ulcl_bp_information_parseFromJSON() failed [ulcl_bp_upf_id]");
+        goto end;
+    }
     }
 
     ulcl_bp_information_local_var = OpenAPI_ulcl_bp_information_create (
         ulcl_bp_upf_id ? ogs_strdup_or_assert(ulcl_bp_upf_id->valuestring) : NULL
-        );
+    );
 
     return ulcl_bp_information_local_var;
 end:

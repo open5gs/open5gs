@@ -29,6 +29,7 @@ If you have tested radio hardware from a vendor not listed with Open5GS, please 
  * Baicells Nova 436Q
  * Baicells Nova 227 (EBS & CBRS)
  * Baicells Nova 233
+ * Ericsson BaseBand 6630 (21Q1 Software)
  * Gemtek WLTGFC-101 (S/W version 2.1.1746.1116)
  * Huawei BTS 3900 (S/W version V100R011C10SPC230)
  * NOKIA FW2PC BC28 Flexi Zone G2 Outdoor Micro FDD LTE 700 MHz High Power

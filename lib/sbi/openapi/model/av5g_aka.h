@@ -1,7 +1,7 @@
 /*
  * av5g_aka.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_av5g_aka_H_
@@ -28,7 +28,7 @@ OpenAPI_av5g_aka_t *OpenAPI_av5g_aka_create(
     char *rand,
     char *hxres_star,
     char *autn
-    );
+);
 void OpenAPI_av5g_aka_free(OpenAPI_av5g_aka_t *av5g_aka);
 OpenAPI_av5g_aka_t *OpenAPI_av5g_aka_parseFromJSON(cJSON *av5g_akaJSON);
 cJSON *OpenAPI_av5g_aka_convertToJSON(OpenAPI_av5g_aka_t *av5g_aka);

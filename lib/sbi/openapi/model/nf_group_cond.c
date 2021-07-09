@@ -30,7 +30,7 @@ OpenAPI_nf_group_cond_nf_type_e OpenAPI_nf_typenf_group_cond_FromString(char* nf
 OpenAPI_nf_group_cond_t *OpenAPI_nf_group_cond_create(
     OpenAPI_nf_group_cond_nf_type_e nf_type,
     char *nf_group_id
-    )
+)
 {
     OpenAPI_nf_group_cond_t *nf_group_cond_local_var = OpenAPI_malloc(sizeof(OpenAPI_nf_group_cond_t));
     if (!nf_group_cond_local_var) {
@@ -86,7 +86,7 @@ OpenAPI_nf_group_cond_t *OpenAPI_nf_group_cond_parseFromJSON(cJSON *nf_group_con
     }
 
     OpenAPI_nf_group_cond_nf_type_e nf_typeVariable;
-
+                
     if (!cJSON_IsString(nf_type)) {
         ogs_error("OpenAPI_nf_group_cond_parseFromJSON() failed [nf_type]");
         goto end;
@@ -99,7 +99,7 @@ OpenAPI_nf_group_cond_t *OpenAPI_nf_group_cond_parseFromJSON(cJSON *nf_group_con
         goto end;
     }
 
-
+    
     if (!cJSON_IsString(nf_group_id)) {
         ogs_error("OpenAPI_nf_group_cond_parseFromJSON() failed [nf_group_id]");
         goto end;
@@ -108,7 +108,7 @@ OpenAPI_nf_group_cond_t *OpenAPI_nf_group_cond_parseFromJSON(cJSON *nf_group_con
     nf_group_cond_local_var = OpenAPI_nf_group_cond_create (
         nf_typeVariable,
         ogs_strdup_or_assert(nf_group_id->valuestring)
-        );
+    );
 
     return nf_group_cond_local_var;
 end:

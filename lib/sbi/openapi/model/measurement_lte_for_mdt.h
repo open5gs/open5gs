@@ -1,7 +1,7 @@
 /*
  * measurement_lte_for_mdt.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_measurement_lte_for_mdt_H_

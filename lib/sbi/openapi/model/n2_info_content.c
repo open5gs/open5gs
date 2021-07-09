@@ -8,7 +8,7 @@ OpenAPI_n2_info_content_t *OpenAPI_n2_info_content_create(
     int ngap_message_type,
     OpenAPI_ngap_ie_type_e ngap_ie_type,
     OpenAPI_ref_to_binary_data_t *ngap_data
-    )
+)
 {
     OpenAPI_n2_info_content_t *n2_info_content_local_var = OpenAPI_malloc(sizeof(OpenAPI_n2_info_content_t));
     if (!n2_info_content_local_var) {
@@ -42,17 +42,17 @@ cJSON *OpenAPI_n2_info_content_convertToJSON(OpenAPI_n2_info_content_t *n2_info_
 
     item = cJSON_CreateObject();
     if (n2_info_content->ngap_message_type) {
-        if (cJSON_AddNumberToObject(item, "ngapMessageType", n2_info_content->ngap_message_type) == NULL) {
-            ogs_error("OpenAPI_n2_info_content_convertToJSON() failed [ngap_message_type]");
-            goto end;
-        }
+    if (cJSON_AddNumberToObject(item, "ngapMessageType", n2_info_content->ngap_message_type) == NULL) {
+        ogs_error("OpenAPI_n2_info_content_convertToJSON() failed [ngap_message_type]");
+        goto end;
+    }
     }
 
     if (n2_info_content->ngap_ie_type) {
-        if (cJSON_AddStringToObject(item, "ngapIeType", OpenAPI_ngap_ie_type_ToString(n2_info_content->ngap_ie_type)) == NULL) {
-            ogs_error("OpenAPI_n2_info_content_convertToJSON() failed [ngap_ie_type]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "ngapIeType", OpenAPI_ngap_ie_type_ToString(n2_info_content->ngap_ie_type)) == NULL) {
+        ogs_error("OpenAPI_n2_info_content_convertToJSON() failed [ngap_ie_type]");
+        goto end;
+    }
     }
 
     cJSON *ngap_data_local_JSON = OpenAPI_ref_to_binary_data_convertToJSON(n2_info_content->ngap_data);
@@ -75,22 +75,22 @@ OpenAPI_n2_info_content_t *OpenAPI_n2_info_content_parseFromJSON(cJSON *n2_info_
     OpenAPI_n2_info_content_t *n2_info_content_local_var = NULL;
     cJSON *ngap_message_type = cJSON_GetObjectItemCaseSensitive(n2_info_contentJSON, "ngapMessageType");
 
-    if (ngap_message_type) {
-        if (!cJSON_IsNumber(ngap_message_type)) {
-            ogs_error("OpenAPI_n2_info_content_parseFromJSON() failed [ngap_message_type]");
-            goto end;
-        }
+    if (ngap_message_type) { 
+    if (!cJSON_IsNumber(ngap_message_type)) {
+        ogs_error("OpenAPI_n2_info_content_parseFromJSON() failed [ngap_message_type]");
+        goto end;
+    }
     }
 
     cJSON *ngap_ie_type = cJSON_GetObjectItemCaseSensitive(n2_info_contentJSON, "ngapIeType");
 
     OpenAPI_ngap_ie_type_e ngap_ie_typeVariable;
-    if (ngap_ie_type) {
-        if (!cJSON_IsString(ngap_ie_type)) {
-            ogs_error("OpenAPI_n2_info_content_parseFromJSON() failed [ngap_ie_type]");
-            goto end;
-        }
-        ngap_ie_typeVariable = OpenAPI_ngap_ie_type_FromString(ngap_ie_type->valuestring);
+    if (ngap_ie_type) { 
+    if (!cJSON_IsString(ngap_ie_type)) {
+        ogs_error("OpenAPI_n2_info_content_parseFromJSON() failed [ngap_ie_type]");
+        goto end;
+    }
+    ngap_ie_typeVariable = OpenAPI_ngap_ie_type_FromString(ngap_ie_type->valuestring);
     }
 
     cJSON *ngap_data = cJSON_GetObjectItemCaseSensitive(n2_info_contentJSON, "ngapData");
@@ -100,14 +100,14 @@ OpenAPI_n2_info_content_t *OpenAPI_n2_info_content_parseFromJSON(cJSON *n2_info_
     }
 
     OpenAPI_ref_to_binary_data_t *ngap_data_local_nonprim = NULL;
-
+    
     ngap_data_local_nonprim = OpenAPI_ref_to_binary_data_parseFromJSON(ngap_data);
 
     n2_info_content_local_var = OpenAPI_n2_info_content_create (
         ngap_message_type ? ngap_message_type->valuedouble : 0,
         ngap_ie_type ? ngap_ie_typeVariable : 0,
         ngap_data_local_nonprim
-        );
+    );
 
     return n2_info_content_local_var;
 end:

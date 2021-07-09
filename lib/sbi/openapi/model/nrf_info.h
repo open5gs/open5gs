@@ -96,7 +96,7 @@ OpenAPI_nrf_info_t *OpenAPI_nrf_info_create(
     OpenAPI_list_t* served_udsf_info,
     OpenAPI_list_t* served_udsf_info_list,
     OpenAPI_list_t* served_scp_info_list
-    );
+);
 void OpenAPI_nrf_info_free(OpenAPI_nrf_info_t *nrf_info);
 OpenAPI_nrf_info_t *OpenAPI_nrf_info_parseFromJSON(cJSON *nrf_infoJSON);
 cJSON *OpenAPI_nrf_info_convertToJSON(OpenAPI_nrf_info_t *nrf_info);

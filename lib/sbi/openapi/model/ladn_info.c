@@ -7,7 +7,7 @@
 OpenAPI_ladn_info_t *OpenAPI_ladn_info_create(
     char *ladn,
     OpenAPI_presence_state_e presence
-    )
+)
 {
     OpenAPI_ladn_info_t *ladn_info_local_var = OpenAPI_malloc(sizeof(OpenAPI_ladn_info_t));
     if (!ladn_info_local_var) {
@@ -45,10 +45,10 @@ cJSON *OpenAPI_ladn_info_convertToJSON(OpenAPI_ladn_info_t *ladn_info)
     }
 
     if (ladn_info->presence) {
-        if (cJSON_AddStringToObject(item, "presence", OpenAPI_presence_state_ToString(ladn_info->presence)) == NULL) {
-            ogs_error("OpenAPI_ladn_info_convertToJSON() failed [presence]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "presence", OpenAPI_presence_state_ToString(ladn_info->presence)) == NULL) {
+        ogs_error("OpenAPI_ladn_info_convertToJSON() failed [presence]");
+        goto end;
+    }
     }
 
 end:
@@ -64,7 +64,7 @@ OpenAPI_ladn_info_t *OpenAPI_ladn_info_parseFromJSON(cJSON *ladn_infoJSON)
         goto end;
     }
 
-
+    
     if (!cJSON_IsString(ladn)) {
         ogs_error("OpenAPI_ladn_info_parseFromJSON() failed [ladn]");
         goto end;
@@ -73,18 +73,18 @@ OpenAPI_ladn_info_t *OpenAPI_ladn_info_parseFromJSON(cJSON *ladn_infoJSON)
     cJSON *presence = cJSON_GetObjectItemCaseSensitive(ladn_infoJSON, "presence");
 
     OpenAPI_presence_state_e presenceVariable;
-    if (presence) {
-        if (!cJSON_IsString(presence)) {
-            ogs_error("OpenAPI_ladn_info_parseFromJSON() failed [presence]");
-            goto end;
-        }
-        presenceVariable = OpenAPI_presence_state_FromString(presence->valuestring);
+    if (presence) { 
+    if (!cJSON_IsString(presence)) {
+        ogs_error("OpenAPI_ladn_info_parseFromJSON() failed [presence]");
+        goto end;
+    }
+    presenceVariable = OpenAPI_presence_state_FromString(presence->valuestring);
     }
 
     ladn_info_local_var = OpenAPI_ladn_info_create (
         ogs_strdup_or_assert(ladn->valuestring),
         presence ? presenceVariable : 0
-        );
+    );
 
     return ladn_info_local_var;
 end:

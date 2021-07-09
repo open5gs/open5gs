@@ -1,7 +1,7 @@
 /*
  * traffic_influ_sub.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_traffic_influ_sub_H_
@@ -37,7 +37,7 @@ OpenAPI_traffic_influ_sub_t *OpenAPI_traffic_influ_sub_create(
     char *notification_uri,
     char *expiry,
     char *supported_features
-    );
+);
 void OpenAPI_traffic_influ_sub_free(OpenAPI_traffic_influ_sub_t *traffic_influ_sub);
 OpenAPI_traffic_influ_sub_t *OpenAPI_traffic_influ_sub_parseFromJSON(cJSON *traffic_influ_subJSON);
 cJSON *OpenAPI_traffic_influ_sub_convertToJSON(OpenAPI_traffic_influ_sub_t *traffic_influ_sub);

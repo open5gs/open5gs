@@ -1,7 +1,7 @@
 /*
  * exemption_ind.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_exemption_ind_H_
@@ -28,7 +28,7 @@ OpenAPI_exemption_ind_t *OpenAPI_exemption_ind_create(
     int dnn_congestion,
     int snssai_only_congestion,
     int snssai_dnn_congestion
-    );
+);
 void OpenAPI_exemption_ind_free(OpenAPI_exemption_ind_t *exemption_ind);
 OpenAPI_exemption_ind_t *OpenAPI_exemption_ind_parseFromJSON(cJSON *exemption_indJSON);
 cJSON *OpenAPI_exemption_ind_convertToJSON(OpenAPI_exemption_ind_t *exemption_ind);

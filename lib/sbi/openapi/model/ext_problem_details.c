@@ -13,9 +13,11 @@ OpenAPI_ext_problem_details_t *OpenAPI_ext_problem_details_create(
     char *cause,
     OpenAPI_list_t *invalid_params,
     char *supported_features,
-    char *target_scp,
+    OpenAPI_access_token_err_t *access_token_error,
+    OpenAPI_access_token_req_t *access_token_request,
+    char *nrf_id,
     int remote_error
-    )
+)
 {
     OpenAPI_ext_problem_details_t *ext_problem_details_local_var = OpenAPI_malloc(sizeof(OpenAPI_ext_problem_details_t));
     if (!ext_problem_details_local_var) {
@@ -29,7 +31,9 @@ OpenAPI_ext_problem_details_t *OpenAPI_ext_problem_details_create(
     ext_problem_details_local_var->cause = cause;
     ext_problem_details_local_var->invalid_params = invalid_params;
     ext_problem_details_local_var->supported_features = supported_features;
-    ext_problem_details_local_var->target_scp = target_scp;
+    ext_problem_details_local_var->access_token_error = access_token_error;
+    ext_problem_details_local_var->access_token_request = access_token_request;
+    ext_problem_details_local_var->nrf_id = nrf_id;
     ext_problem_details_local_var->remote_error = remote_error;
 
     return ext_problem_details_local_var;
@@ -51,7 +55,9 @@ void OpenAPI_ext_problem_details_free(OpenAPI_ext_problem_details_t *ext_problem
     }
     OpenAPI_list_free(ext_problem_details->invalid_params);
     ogs_free(ext_problem_details->supported_features);
-    ogs_free(ext_problem_details->target_scp);
+    OpenAPI_access_token_err_free(ext_problem_details->access_token_error);
+    OpenAPI_access_token_req_free(ext_problem_details->access_token_request);
+    ogs_free(ext_problem_details->nrf_id);
     ogs_free(ext_problem_details);
 }
 
@@ -66,86 +72,112 @@ cJSON *OpenAPI_ext_problem_details_convertToJSON(OpenAPI_ext_problem_details_t *
 
     item = cJSON_CreateObject();
     if (ext_problem_details->type) {
-        if (cJSON_AddStringToObject(item, "type", ext_problem_details->type) == NULL) {
-            ogs_error("OpenAPI_ext_problem_details_convertToJSON() failed [type]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "type", ext_problem_details->type) == NULL) {
+        ogs_error("OpenAPI_ext_problem_details_convertToJSON() failed [type]");
+        goto end;
+    }
     }
 
     if (ext_problem_details->title) {
-        if (cJSON_AddStringToObject(item, "title", ext_problem_details->title) == NULL) {
-            ogs_error("OpenAPI_ext_problem_details_convertToJSON() failed [title]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "title", ext_problem_details->title) == NULL) {
+        ogs_error("OpenAPI_ext_problem_details_convertToJSON() failed [title]");
+        goto end;
+    }
     }
 
     if (ext_problem_details->status) {
-        if (cJSON_AddNumberToObject(item, "status", ext_problem_details->status) == NULL) {
-            ogs_error("OpenAPI_ext_problem_details_convertToJSON() failed [status]");
-            goto end;
-        }
+    if (cJSON_AddNumberToObject(item, "status", ext_problem_details->status) == NULL) {
+        ogs_error("OpenAPI_ext_problem_details_convertToJSON() failed [status]");
+        goto end;
+    }
     }
 
     if (ext_problem_details->detail) {
-        if (cJSON_AddStringToObject(item, "detail", ext_problem_details->detail) == NULL) {
-            ogs_error("OpenAPI_ext_problem_details_convertToJSON() failed [detail]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "detail", ext_problem_details->detail) == NULL) {
+        ogs_error("OpenAPI_ext_problem_details_convertToJSON() failed [detail]");
+        goto end;
+    }
     }
 
     if (ext_problem_details->instance) {
-        if (cJSON_AddStringToObject(item, "instance", ext_problem_details->instance) == NULL) {
-            ogs_error("OpenAPI_ext_problem_details_convertToJSON() failed [instance]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "instance", ext_problem_details->instance) == NULL) {
+        ogs_error("OpenAPI_ext_problem_details_convertToJSON() failed [instance]");
+        goto end;
+    }
     }
 
     if (ext_problem_details->cause) {
-        if (cJSON_AddStringToObject(item, "cause", ext_problem_details->cause) == NULL) {
-            ogs_error("OpenAPI_ext_problem_details_convertToJSON() failed [cause]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "cause", ext_problem_details->cause) == NULL) {
+        ogs_error("OpenAPI_ext_problem_details_convertToJSON() failed [cause]");
+        goto end;
+    }
     }
 
     if (ext_problem_details->invalid_params) {
-        cJSON *invalid_paramsList = cJSON_AddArrayToObject(item, "invalidParams");
-        if (invalid_paramsList == NULL) {
-            ogs_error("OpenAPI_ext_problem_details_convertToJSON() failed [invalid_params]");
-            goto end;
-        }
+    cJSON *invalid_paramsList = cJSON_AddArrayToObject(item, "invalidParams");
+    if (invalid_paramsList == NULL) {
+        ogs_error("OpenAPI_ext_problem_details_convertToJSON() failed [invalid_params]");
+        goto end;
+    }
 
-        OpenAPI_lnode_t *invalid_params_node;
-        if (ext_problem_details->invalid_params) {
-            OpenAPI_list_for_each(ext_problem_details->invalid_params, invalid_params_node) {
-                cJSON *itemLocal = OpenAPI_invalid_param_convertToJSON(invalid_params_node->data);
-                if (itemLocal == NULL) {
-                    ogs_error("OpenAPI_ext_problem_details_convertToJSON() failed [invalid_params]");
-                    goto end;
-                }
-                cJSON_AddItemToArray(invalid_paramsList, itemLocal);
+    OpenAPI_lnode_t *invalid_params_node;
+    if (ext_problem_details->invalid_params) {
+        OpenAPI_list_for_each(ext_problem_details->invalid_params, invalid_params_node) {
+            cJSON *itemLocal = OpenAPI_invalid_param_convertToJSON(invalid_params_node->data);
+            if (itemLocal == NULL) {
+                ogs_error("OpenAPI_ext_problem_details_convertToJSON() failed [invalid_params]");
+                goto end;
             }
+            cJSON_AddItemToArray(invalid_paramsList, itemLocal);
         }
+    }
     }
 
     if (ext_problem_details->supported_features) {
-        if (cJSON_AddStringToObject(item, "supportedFeatures", ext_problem_details->supported_features) == NULL) {
-            ogs_error("OpenAPI_ext_problem_details_convertToJSON() failed [supported_features]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "supportedFeatures", ext_problem_details->supported_features) == NULL) {
+        ogs_error("OpenAPI_ext_problem_details_convertToJSON() failed [supported_features]");
+        goto end;
+    }
     }
 
-    if (ext_problem_details->target_scp) {
-        if (cJSON_AddStringToObject(item, "targetScp", ext_problem_details->target_scp) == NULL) {
-            ogs_error("OpenAPI_ext_problem_details_convertToJSON() failed [target_scp]");
-            goto end;
-        }
+    if (ext_problem_details->access_token_error) {
+    cJSON *access_token_error_local_JSON = OpenAPI_access_token_err_convertToJSON(ext_problem_details->access_token_error);
+    if (access_token_error_local_JSON == NULL) {
+        ogs_error("OpenAPI_ext_problem_details_convertToJSON() failed [access_token_error]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "accessTokenError", access_token_error_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_ext_problem_details_convertToJSON() failed [access_token_error]");
+        goto end;
+    }
+    }
+
+    if (ext_problem_details->access_token_request) {
+    cJSON *access_token_request_local_JSON = OpenAPI_access_token_req_convertToJSON(ext_problem_details->access_token_request);
+    if (access_token_request_local_JSON == NULL) {
+        ogs_error("OpenAPI_ext_problem_details_convertToJSON() failed [access_token_request]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "accessTokenRequest", access_token_request_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_ext_problem_details_convertToJSON() failed [access_token_request]");
+        goto end;
+    }
+    }
+
+    if (ext_problem_details->nrf_id) {
+    if (cJSON_AddStringToObject(item, "nrfId", ext_problem_details->nrf_id) == NULL) {
+        ogs_error("OpenAPI_ext_problem_details_convertToJSON() failed [nrf_id]");
+        goto end;
+    }
     }
 
     if (ext_problem_details->remote_error) {
-        if (cJSON_AddBoolToObject(item, "remoteError", ext_problem_details->remote_error) == NULL) {
-            ogs_error("OpenAPI_ext_problem_details_convertToJSON() failed [remote_error]");
-            goto end;
-        }
+    if (cJSON_AddBoolToObject(item, "remoteError", ext_problem_details->remote_error) == NULL) {
+        ogs_error("OpenAPI_ext_problem_details_convertToJSON() failed [remote_error]");
+        goto end;
+    }
     }
 
 end:
@@ -157,106 +189,120 @@ OpenAPI_ext_problem_details_t *OpenAPI_ext_problem_details_parseFromJSON(cJSON *
     OpenAPI_ext_problem_details_t *ext_problem_details_local_var = NULL;
     cJSON *type = cJSON_GetObjectItemCaseSensitive(ext_problem_detailsJSON, "type");
 
-    if (type) {
-        if (!cJSON_IsString(type)) {
-            ogs_error("OpenAPI_ext_problem_details_parseFromJSON() failed [type]");
-            goto end;
-        }
+    if (type) { 
+    if (!cJSON_IsString(type)) {
+        ogs_error("OpenAPI_ext_problem_details_parseFromJSON() failed [type]");
+        goto end;
+    }
     }
 
     cJSON *title = cJSON_GetObjectItemCaseSensitive(ext_problem_detailsJSON, "title");
 
-    if (title) {
-        if (!cJSON_IsString(title)) {
-            ogs_error("OpenAPI_ext_problem_details_parseFromJSON() failed [title]");
-            goto end;
-        }
+    if (title) { 
+    if (!cJSON_IsString(title)) {
+        ogs_error("OpenAPI_ext_problem_details_parseFromJSON() failed [title]");
+        goto end;
+    }
     }
 
     cJSON *status = cJSON_GetObjectItemCaseSensitive(ext_problem_detailsJSON, "status");
 
-    if (status) {
-        if (!cJSON_IsNumber(status)) {
-            ogs_error("OpenAPI_ext_problem_details_parseFromJSON() failed [status]");
-            goto end;
-        }
+    if (status) { 
+    if (!cJSON_IsNumber(status)) {
+        ogs_error("OpenAPI_ext_problem_details_parseFromJSON() failed [status]");
+        goto end;
+    }
     }
 
     cJSON *detail = cJSON_GetObjectItemCaseSensitive(ext_problem_detailsJSON, "detail");
 
-    if (detail) {
-        if (!cJSON_IsString(detail)) {
-            ogs_error("OpenAPI_ext_problem_details_parseFromJSON() failed [detail]");
-            goto end;
-        }
+    if (detail) { 
+    if (!cJSON_IsString(detail)) {
+        ogs_error("OpenAPI_ext_problem_details_parseFromJSON() failed [detail]");
+        goto end;
+    }
     }
 
     cJSON *instance = cJSON_GetObjectItemCaseSensitive(ext_problem_detailsJSON, "instance");
 
-    if (instance) {
-        if (!cJSON_IsString(instance)) {
-            ogs_error("OpenAPI_ext_problem_details_parseFromJSON() failed [instance]");
-            goto end;
-        }
+    if (instance) { 
+    if (!cJSON_IsString(instance)) {
+        ogs_error("OpenAPI_ext_problem_details_parseFromJSON() failed [instance]");
+        goto end;
+    }
     }
 
     cJSON *cause = cJSON_GetObjectItemCaseSensitive(ext_problem_detailsJSON, "cause");
 
-    if (cause) {
-        if (!cJSON_IsString(cause)) {
-            ogs_error("OpenAPI_ext_problem_details_parseFromJSON() failed [cause]");
-            goto end;
-        }
+    if (cause) { 
+    if (!cJSON_IsString(cause)) {
+        ogs_error("OpenAPI_ext_problem_details_parseFromJSON() failed [cause]");
+        goto end;
+    }
     }
 
     cJSON *invalid_params = cJSON_GetObjectItemCaseSensitive(ext_problem_detailsJSON, "invalidParams");
 
     OpenAPI_list_t *invalid_paramsList;
-    if (invalid_params) {
-        cJSON *invalid_params_local_nonprimitive;
-        if (!cJSON_IsArray(invalid_params)) {
+    if (invalid_params) { 
+    cJSON *invalid_params_local_nonprimitive;
+    if (!cJSON_IsArray(invalid_params)){
+        ogs_error("OpenAPI_ext_problem_details_parseFromJSON() failed [invalid_params]");
+        goto end;
+    }
+
+    invalid_paramsList = OpenAPI_list_create();
+
+    cJSON_ArrayForEach(invalid_params_local_nonprimitive, invalid_params ) {
+        if (!cJSON_IsObject(invalid_params_local_nonprimitive)) {
             ogs_error("OpenAPI_ext_problem_details_parseFromJSON() failed [invalid_params]");
             goto end;
         }
+        OpenAPI_invalid_param_t *invalid_paramsItem = OpenAPI_invalid_param_parseFromJSON(invalid_params_local_nonprimitive);
 
-        invalid_paramsList = OpenAPI_list_create();
-
-        cJSON_ArrayForEach(invalid_params_local_nonprimitive, invalid_params ) {
-            if (!cJSON_IsObject(invalid_params_local_nonprimitive)) {
-                ogs_error("OpenAPI_ext_problem_details_parseFromJSON() failed [invalid_params]");
-                goto end;
-            }
-            OpenAPI_invalid_param_t *invalid_paramsItem = OpenAPI_invalid_param_parseFromJSON(invalid_params_local_nonprimitive);
-
-            OpenAPI_list_add(invalid_paramsList, invalid_paramsItem);
-        }
+        OpenAPI_list_add(invalid_paramsList, invalid_paramsItem);
+    }
     }
 
     cJSON *supported_features = cJSON_GetObjectItemCaseSensitive(ext_problem_detailsJSON, "supportedFeatures");
 
-    if (supported_features) {
-        if (!cJSON_IsString(supported_features)) {
-            ogs_error("OpenAPI_ext_problem_details_parseFromJSON() failed [supported_features]");
-            goto end;
-        }
+    if (supported_features) { 
+    if (!cJSON_IsString(supported_features)) {
+        ogs_error("OpenAPI_ext_problem_details_parseFromJSON() failed [supported_features]");
+        goto end;
+    }
     }
 
-    cJSON *target_scp = cJSON_GetObjectItemCaseSensitive(ext_problem_detailsJSON, "targetScp");
+    cJSON *access_token_error = cJSON_GetObjectItemCaseSensitive(ext_problem_detailsJSON, "accessTokenError");
 
-    if (target_scp) {
-        if (!cJSON_IsString(target_scp)) {
-            ogs_error("OpenAPI_ext_problem_details_parseFromJSON() failed [target_scp]");
-            goto end;
-        }
+    OpenAPI_access_token_err_t *access_token_error_local_nonprim = NULL;
+    if (access_token_error) { 
+    access_token_error_local_nonprim = OpenAPI_access_token_err_parseFromJSON(access_token_error);
+    }
+
+    cJSON *access_token_request = cJSON_GetObjectItemCaseSensitive(ext_problem_detailsJSON, "accessTokenRequest");
+
+    OpenAPI_access_token_req_t *access_token_request_local_nonprim = NULL;
+    if (access_token_request) { 
+    access_token_request_local_nonprim = OpenAPI_access_token_req_parseFromJSON(access_token_request);
+    }
+
+    cJSON *nrf_id = cJSON_GetObjectItemCaseSensitive(ext_problem_detailsJSON, "nrfId");
+
+    if (nrf_id) { 
+    if (!cJSON_IsString(nrf_id)) {
+        ogs_error("OpenAPI_ext_problem_details_parseFromJSON() failed [nrf_id]");
+        goto end;
+    }
     }
 
     cJSON *remote_error = cJSON_GetObjectItemCaseSensitive(ext_problem_detailsJSON, "remoteError");
 
-    if (remote_error) {
-        if (!cJSON_IsBool(remote_error)) {
-            ogs_error("OpenAPI_ext_problem_details_parseFromJSON() failed [remote_error]");
-            goto end;
-        }
+    if (remote_error) { 
+    if (!cJSON_IsBool(remote_error)) {
+        ogs_error("OpenAPI_ext_problem_details_parseFromJSON() failed [remote_error]");
+        goto end;
+    }
     }
 
     ext_problem_details_local_var = OpenAPI_ext_problem_details_create (
@@ -268,9 +314,11 @@ OpenAPI_ext_problem_details_t *OpenAPI_ext_problem_details_parseFromJSON(cJSON *
         cause ? ogs_strdup_or_assert(cause->valuestring) : NULL,
         invalid_params ? invalid_paramsList : NULL,
         supported_features ? ogs_strdup_or_assert(supported_features->valuestring) : NULL,
-        target_scp ? ogs_strdup_or_assert(target_scp->valuestring) : NULL,
+        access_token_error ? access_token_error_local_nonprim : NULL,
+        access_token_request ? access_token_request_local_nonprim : NULL,
+        nrf_id ? ogs_strdup_or_assert(nrf_id->valuestring) : NULL,
         remote_error ? remote_error->valueint : 0
-        );
+    );
 
     return ext_problem_details_local_var;
 end:

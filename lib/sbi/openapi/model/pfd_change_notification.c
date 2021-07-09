@@ -9,7 +9,7 @@ OpenAPI_pfd_change_notification_t *OpenAPI_pfd_change_notification_create(
     int removal_flag,
     int partial_flag,
     OpenAPI_list_t *pfds
-    )
+)
 {
     OpenAPI_pfd_change_notification_t *pfd_change_notification_local_var = OpenAPI_malloc(sizeof(OpenAPI_pfd_change_notification_t));
     if (!pfd_change_notification_local_var) {
@@ -53,37 +53,37 @@ cJSON *OpenAPI_pfd_change_notification_convertToJSON(OpenAPI_pfd_change_notifica
     }
 
     if (pfd_change_notification->removal_flag) {
-        if (cJSON_AddBoolToObject(item, "removalFlag", pfd_change_notification->removal_flag) == NULL) {
-            ogs_error("OpenAPI_pfd_change_notification_convertToJSON() failed [removal_flag]");
-            goto end;
-        }
+    if (cJSON_AddBoolToObject(item, "removalFlag", pfd_change_notification->removal_flag) == NULL) {
+        ogs_error("OpenAPI_pfd_change_notification_convertToJSON() failed [removal_flag]");
+        goto end;
+    }
     }
 
     if (pfd_change_notification->partial_flag) {
-        if (cJSON_AddBoolToObject(item, "partialFlag", pfd_change_notification->partial_flag) == NULL) {
-            ogs_error("OpenAPI_pfd_change_notification_convertToJSON() failed [partial_flag]");
-            goto end;
-        }
+    if (cJSON_AddBoolToObject(item, "partialFlag", pfd_change_notification->partial_flag) == NULL) {
+        ogs_error("OpenAPI_pfd_change_notification_convertToJSON() failed [partial_flag]");
+        goto end;
+    }
     }
 
     if (pfd_change_notification->pfds) {
-        cJSON *pfdsList = cJSON_AddArrayToObject(item, "pfds");
-        if (pfdsList == NULL) {
-            ogs_error("OpenAPI_pfd_change_notification_convertToJSON() failed [pfds]");
-            goto end;
-        }
+    cJSON *pfdsList = cJSON_AddArrayToObject(item, "pfds");
+    if (pfdsList == NULL) {
+        ogs_error("OpenAPI_pfd_change_notification_convertToJSON() failed [pfds]");
+        goto end;
+    }
 
-        OpenAPI_lnode_t *pfds_node;
-        if (pfd_change_notification->pfds) {
-            OpenAPI_list_for_each(pfd_change_notification->pfds, pfds_node) {
-                cJSON *itemLocal = OpenAPI_pfd_content_convertToJSON(pfds_node->data);
-                if (itemLocal == NULL) {
-                    ogs_error("OpenAPI_pfd_change_notification_convertToJSON() failed [pfds]");
-                    goto end;
-                }
-                cJSON_AddItemToArray(pfdsList, itemLocal);
+    OpenAPI_lnode_t *pfds_node;
+    if (pfd_change_notification->pfds) {
+        OpenAPI_list_for_each(pfd_change_notification->pfds, pfds_node) {
+            cJSON *itemLocal = OpenAPI_pfd_content_convertToJSON(pfds_node->data);
+            if (itemLocal == NULL) {
+                ogs_error("OpenAPI_pfd_change_notification_convertToJSON() failed [pfds]");
+                goto end;
             }
+            cJSON_AddItemToArray(pfdsList, itemLocal);
         }
+    }
     }
 
 end:
@@ -99,7 +99,7 @@ OpenAPI_pfd_change_notification_t *OpenAPI_pfd_change_notification_parseFromJSON
         goto end;
     }
 
-
+    
     if (!cJSON_IsString(application_id)) {
         ogs_error("OpenAPI_pfd_change_notification_parseFromJSON() failed [application_id]");
         goto end;
@@ -107,43 +107,43 @@ OpenAPI_pfd_change_notification_t *OpenAPI_pfd_change_notification_parseFromJSON
 
     cJSON *removal_flag = cJSON_GetObjectItemCaseSensitive(pfd_change_notificationJSON, "removalFlag");
 
-    if (removal_flag) {
-        if (!cJSON_IsBool(removal_flag)) {
-            ogs_error("OpenAPI_pfd_change_notification_parseFromJSON() failed [removal_flag]");
-            goto end;
-        }
+    if (removal_flag) { 
+    if (!cJSON_IsBool(removal_flag)) {
+        ogs_error("OpenAPI_pfd_change_notification_parseFromJSON() failed [removal_flag]");
+        goto end;
+    }
     }
 
     cJSON *partial_flag = cJSON_GetObjectItemCaseSensitive(pfd_change_notificationJSON, "partialFlag");
 
-    if (partial_flag) {
-        if (!cJSON_IsBool(partial_flag)) {
-            ogs_error("OpenAPI_pfd_change_notification_parseFromJSON() failed [partial_flag]");
-            goto end;
-        }
+    if (partial_flag) { 
+    if (!cJSON_IsBool(partial_flag)) {
+        ogs_error("OpenAPI_pfd_change_notification_parseFromJSON() failed [partial_flag]");
+        goto end;
+    }
     }
 
     cJSON *pfds = cJSON_GetObjectItemCaseSensitive(pfd_change_notificationJSON, "pfds");
 
     OpenAPI_list_t *pfdsList;
-    if (pfds) {
-        cJSON *pfds_local_nonprimitive;
-        if (!cJSON_IsArray(pfds)) {
+    if (pfds) { 
+    cJSON *pfds_local_nonprimitive;
+    if (!cJSON_IsArray(pfds)){
+        ogs_error("OpenAPI_pfd_change_notification_parseFromJSON() failed [pfds]");
+        goto end;
+    }
+
+    pfdsList = OpenAPI_list_create();
+
+    cJSON_ArrayForEach(pfds_local_nonprimitive, pfds ) {
+        if (!cJSON_IsObject(pfds_local_nonprimitive)) {
             ogs_error("OpenAPI_pfd_change_notification_parseFromJSON() failed [pfds]");
             goto end;
         }
+        OpenAPI_pfd_content_t *pfdsItem = OpenAPI_pfd_content_parseFromJSON(pfds_local_nonprimitive);
 
-        pfdsList = OpenAPI_list_create();
-
-        cJSON_ArrayForEach(pfds_local_nonprimitive, pfds ) {
-            if (!cJSON_IsObject(pfds_local_nonprimitive)) {
-                ogs_error("OpenAPI_pfd_change_notification_parseFromJSON() failed [pfds]");
-                goto end;
-            }
-            OpenAPI_pfd_content_t *pfdsItem = OpenAPI_pfd_content_parseFromJSON(pfds_local_nonprimitive);
-
-            OpenAPI_list_add(pfdsList, pfdsItem);
-        }
+        OpenAPI_list_add(pfdsList, pfdsItem);
+    }
     }
 
     pfd_change_notification_local_var = OpenAPI_pfd_change_notification_create (
@@ -151,7 +151,7 @@ OpenAPI_pfd_change_notification_t *OpenAPI_pfd_change_notification_parseFromJSON
         removal_flag ? removal_flag->valueint : 0,
         partial_flag ? partial_flag->valueint : 0,
         pfds ? pfdsList : NULL
-        );
+    );
 
     return pfd_change_notification_local_var;
 end:

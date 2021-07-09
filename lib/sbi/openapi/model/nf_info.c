@@ -6,7 +6,7 @@
 
 OpenAPI_nf_info_t *OpenAPI_nf_info_create(
     OpenAPI_nf_type_e nf_type
-    )
+)
 {
     OpenAPI_nf_info_t *nf_info_local_var = OpenAPI_malloc(sizeof(OpenAPI_nf_info_t));
     if (!nf_info_local_var) {
@@ -37,10 +37,10 @@ cJSON *OpenAPI_nf_info_convertToJSON(OpenAPI_nf_info_t *nf_info)
 
     item = cJSON_CreateObject();
     if (nf_info->nf_type) {
-        if (cJSON_AddStringToObject(item, "nfType", OpenAPI_nf_type_ToString(nf_info->nf_type)) == NULL) {
-            ogs_error("OpenAPI_nf_info_convertToJSON() failed [nf_type]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "nfType", OpenAPI_nf_type_ToString(nf_info->nf_type)) == NULL) {
+        ogs_error("OpenAPI_nf_info_convertToJSON() failed [nf_type]");
+        goto end;
+    }
     }
 
 end:
@@ -53,17 +53,17 @@ OpenAPI_nf_info_t *OpenAPI_nf_info_parseFromJSON(cJSON *nf_infoJSON)
     cJSON *nf_type = cJSON_GetObjectItemCaseSensitive(nf_infoJSON, "nfType");
 
     OpenAPI_nf_type_e nf_typeVariable;
-    if (nf_type) {
-        if (!cJSON_IsString(nf_type)) {
-            ogs_error("OpenAPI_nf_info_parseFromJSON() failed [nf_type]");
-            goto end;
-        }
-        nf_typeVariable = OpenAPI_nf_type_FromString(nf_type->valuestring);
+    if (nf_type) { 
+    if (!cJSON_IsString(nf_type)) {
+        ogs_error("OpenAPI_nf_info_parseFromJSON() failed [nf_type]");
+        goto end;
+    }
+    nf_typeVariable = OpenAPI_nf_type_FromString(nf_type->valuestring);
     }
 
     nf_info_local_var = OpenAPI_nf_info_create (
         nf_type ? nf_typeVariable : 0
-        );
+    );
 
     return nf_info_local_var;
 end:

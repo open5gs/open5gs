@@ -1,7 +1,7 @@
 /*
  * acc_net_ch_id.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_acc_net_ch_id_H_
@@ -28,7 +28,7 @@ OpenAPI_acc_net_ch_id_t *OpenAPI_acc_net_ch_id_create(
     int acc_net_cha_id_value,
     OpenAPI_list_t *ref_pcc_rule_ids,
     int session_ch_scope
-    );
+);
 void OpenAPI_acc_net_ch_id_free(OpenAPI_acc_net_ch_id_t *acc_net_ch_id);
 OpenAPI_acc_net_ch_id_t *OpenAPI_acc_net_ch_id_parseFromJSON(cJSON *acc_net_ch_idJSON);
 cJSON *OpenAPI_acc_net_ch_id_convertToJSON(OpenAPI_acc_net_ch_id_t *acc_net_ch_id);

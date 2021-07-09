@@ -316,8 +316,8 @@ void ngap_handle_ng_setup_request(amf_gnb_t *gnb, ogs_ngap_message_t *message)
         ogs_warn("NG-Setup failure:");
         ogs_warn("    Cannot find S_NSSAI. "
                     "Check 'amf.plmn_support.s_nssai' configuration");
-        group = NGAP_Cause_PR_misc;
-        cause = NGAP_CauseMisc_unknown_PLMN;
+        group = NGAP_Cause_PR_radioNetwork;
+        cause = NGAP_CauseRadioNetwork_slice_not_supported;
 
         ogs_assert(OGS_OK ==
             ngap_send_ng_setup_failure(gnb, group, cause));
@@ -923,7 +923,27 @@ void ngap_handle_initial_context_setup_response(
     if (paging_ongoing == true) {
         gmm_configuration_update_command_param_t param;
 
-        /* Create New GUTI */
+        /*
+         * TS24.501
+         * 5.3.3 Temporary identities
+         *
+         * The AMF shall assign a new 5G-GUTI for a particular UE:
+         *
+         * a) during a successful initial registration procedure;
+         * b) during a successful registration procedure
+         *    for mobility registration update; and
+         * c) after a successful service request procedure invoked
+         *    as a response to a paging request from the network and
+         *    before the release of the N1 NAS signalling connection
+         *    as specified in subclause 5.4.4.1.
+         *
+         * The AMF should assign a new 5G-GUTI for a particular UE
+         * during a successful registration procedure
+         * for periodic registration update.
+         *
+         * The AMF may assign a new 5G-GUTI at any time for a particular UE
+         * by performing the generic UE configuration update procedure.
+         */
         amf_ue_new_guti(amf_ue);
 
         memset(&param, 0, sizeof(param));
@@ -1328,8 +1348,10 @@ void ngap_handle_ue_context_release_action(ran_ue_t *ran_ue)
     ogs_info("UE Context Release [Action:%d]", ran_ue->ue_ctx_rel_action);
     ogs_info("    RAN_UE_NGAP_ID[%d] AMF_UE_NGAP_ID[%lld]",
             ran_ue->ran_ue_ngap_id, (long long)ran_ue->amf_ue_ngap_id);
-    if (amf_ue)
+    if (amf_ue) {
         ogs_info("    SUCI[%s]", amf_ue->suci ? amf_ue->suci : "Unknown");
+        CLEAR_AMF_UE_ALL_TIMERS(amf_ue);
+    }
 
     switch (ran_ue->ue_ctx_rel_action) {
     case NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE:
@@ -3591,8 +3613,8 @@ void ngap_handle_ran_configuration_update(
             ogs_warn("RANConfigurationUpdate failure:");
             ogs_warn("    Cannot find S_NSSAI. "
                         "Check 'amf.plmn_support.s_nssai' configuration");
-            group = NGAP_Cause_PR_misc;
-            cause = NGAP_CauseMisc_unknown_PLMN;
+            group = NGAP_Cause_PR_radioNetwork;
+            cause = NGAP_CauseRadioNetwork_slice_not_supported;
 
             ogs_assert(OGS_OK ==
                 ngap_send_ran_configuration_update_failure(gnb, group, cause));

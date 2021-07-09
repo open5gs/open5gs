@@ -7,7 +7,7 @@
 OpenAPI_sdm_subs_modification_t *OpenAPI_sdm_subs_modification_create(
     char *expires,
     OpenAPI_list_t *monitored_resource_uris
-    )
+)
 {
     OpenAPI_sdm_subs_modification_t *sdm_subs_modification_local_var = OpenAPI_malloc(sizeof(OpenAPI_sdm_subs_modification_t));
     if (!sdm_subs_modification_local_var) {
@@ -44,26 +44,26 @@ cJSON *OpenAPI_sdm_subs_modification_convertToJSON(OpenAPI_sdm_subs_modification
 
     item = cJSON_CreateObject();
     if (sdm_subs_modification->expires) {
-        if (cJSON_AddStringToObject(item, "expires", sdm_subs_modification->expires) == NULL) {
-            ogs_error("OpenAPI_sdm_subs_modification_convertToJSON() failed [expires]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "expires", sdm_subs_modification->expires) == NULL) {
+        ogs_error("OpenAPI_sdm_subs_modification_convertToJSON() failed [expires]");
+        goto end;
+    }
     }
 
     if (sdm_subs_modification->monitored_resource_uris) {
-        cJSON *monitored_resource_uris = cJSON_AddArrayToObject(item, "monitoredResourceUris");
-        if (monitored_resource_uris == NULL) {
-            ogs_error("OpenAPI_sdm_subs_modification_convertToJSON() failed [monitored_resource_uris]");
-            goto end;
-        }
+    cJSON *monitored_resource_uris = cJSON_AddArrayToObject(item, "monitoredResourceUris");
+    if (monitored_resource_uris == NULL) {
+        ogs_error("OpenAPI_sdm_subs_modification_convertToJSON() failed [monitored_resource_uris]");
+        goto end;
+    }
 
-        OpenAPI_lnode_t *monitored_resource_uris_node;
-        OpenAPI_list_for_each(sdm_subs_modification->monitored_resource_uris, monitored_resource_uris_node)  {
-            if (cJSON_AddStringToObject(monitored_resource_uris, "", (char*)monitored_resource_uris_node->data) == NULL) {
-                ogs_error("OpenAPI_sdm_subs_modification_convertToJSON() failed [monitored_resource_uris]");
-                goto end;
-            }
-        }
+    OpenAPI_lnode_t *monitored_resource_uris_node;
+    OpenAPI_list_for_each(sdm_subs_modification->monitored_resource_uris, monitored_resource_uris_node)  {
+    if (cJSON_AddStringToObject(monitored_resource_uris, "", (char*)monitored_resource_uris_node->data) == NULL) {
+        ogs_error("OpenAPI_sdm_subs_modification_convertToJSON() failed [monitored_resource_uris]");
+        goto end;
+    }
+                    }
     }
 
 end:
@@ -75,37 +75,37 @@ OpenAPI_sdm_subs_modification_t *OpenAPI_sdm_subs_modification_parseFromJSON(cJS
     OpenAPI_sdm_subs_modification_t *sdm_subs_modification_local_var = NULL;
     cJSON *expires = cJSON_GetObjectItemCaseSensitive(sdm_subs_modificationJSON, "expires");
 
-    if (expires) {
-        if (!cJSON_IsString(expires)) {
-            ogs_error("OpenAPI_sdm_subs_modification_parseFromJSON() failed [expires]");
-            goto end;
-        }
+    if (expires) { 
+    if (!cJSON_IsString(expires)) {
+        ogs_error("OpenAPI_sdm_subs_modification_parseFromJSON() failed [expires]");
+        goto end;
+    }
     }
 
     cJSON *monitored_resource_uris = cJSON_GetObjectItemCaseSensitive(sdm_subs_modificationJSON, "monitoredResourceUris");
 
     OpenAPI_list_t *monitored_resource_urisList;
-    if (monitored_resource_uris) {
-        cJSON *monitored_resource_uris_local;
-        if (!cJSON_IsArray(monitored_resource_uris)) {
-            ogs_error("OpenAPI_sdm_subs_modification_parseFromJSON() failed [monitored_resource_uris]");
-            goto end;
-        }
-        monitored_resource_urisList = OpenAPI_list_create();
+    if (monitored_resource_uris) { 
+    cJSON *monitored_resource_uris_local;
+    if (!cJSON_IsArray(monitored_resource_uris)) {
+        ogs_error("OpenAPI_sdm_subs_modification_parseFromJSON() failed [monitored_resource_uris]");
+        goto end;
+    }
+    monitored_resource_urisList = OpenAPI_list_create();
 
-        cJSON_ArrayForEach(monitored_resource_uris_local, monitored_resource_uris) {
-            if (!cJSON_IsString(monitored_resource_uris_local)) {
-                ogs_error("OpenAPI_sdm_subs_modification_parseFromJSON() failed [monitored_resource_uris]");
-                goto end;
-            }
-            OpenAPI_list_add(monitored_resource_urisList, ogs_strdup_or_assert(monitored_resource_uris_local->valuestring));
-        }
+    cJSON_ArrayForEach(monitored_resource_uris_local, monitored_resource_uris) {
+    if (!cJSON_IsString(monitored_resource_uris_local)) {
+        ogs_error("OpenAPI_sdm_subs_modification_parseFromJSON() failed [monitored_resource_uris]");
+        goto end;
+    }
+    OpenAPI_list_add(monitored_resource_urisList , ogs_strdup_or_assert(monitored_resource_uris_local->valuestring));
+                    }
     }
 
     sdm_subs_modification_local_var = OpenAPI_sdm_subs_modification_create (
         expires ? ogs_strdup_or_assert(expires->valuestring) : NULL,
         monitored_resource_uris ? monitored_resource_urisList : NULL
-        );
+    );
 
     return sdm_subs_modification_local_var;
 end:

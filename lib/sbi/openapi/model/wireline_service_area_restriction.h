@@ -1,7 +1,7 @@
 /*
  * wireline_service_area_restriction.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_wireline_service_area_restriction_H_
@@ -28,7 +28,7 @@ typedef struct OpenAPI_wireline_service_area_restriction_s {
 OpenAPI_wireline_service_area_restriction_t *OpenAPI_wireline_service_area_restriction_create(
     OpenAPI_restriction_type_e restriction_type,
     OpenAPI_list_t *areas
-    );
+);
 void OpenAPI_wireline_service_area_restriction_free(OpenAPI_wireline_service_area_restriction_t *wireline_service_area_restriction);
 OpenAPI_wireline_service_area_restriction_t *OpenAPI_wireline_service_area_restriction_parseFromJSON(cJSON *wireline_service_area_restrictionJSON);
 cJSON *OpenAPI_wireline_service_area_restriction_convertToJSON(OpenAPI_wireline_service_area_restriction_t *wireline_service_area_restriction);

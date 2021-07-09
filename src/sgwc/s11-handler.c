@@ -772,23 +772,14 @@ void sgwc_s11_handle_delete_bearer_response(
 
     cause_value = OGS_GTP_CAUSE_REQUEST_ACCEPTED;
 
-    rv = ogs_gtp_xact_commit(s11_xact);
-    ogs_expect(rv == OGS_OK);
-
-    if (rsp->bearer_contexts.presence == 0) {
-        ogs_error("No Bearer");
-        cause_value = OGS_GTP_CAUSE_MANDATORY_IE_MISSING;
-    }
-    if (rsp->bearer_contexts.eps_bearer_id.presence == 0) {
-        ogs_error("No EPS Bearer ID");
-        cause_value = OGS_GTP_CAUSE_MANDATORY_IE_MISSING;
-    }
-
     if (s11_xact->xid & OGS_GTP_CMD_XACT_ID)
         /* MME received Bearer Resource Modification Request */
         bearer = s5c_xact->data;
     else
         bearer = s11_xact->data;
+
+    rv = ogs_gtp_xact_commit(s11_xact);
+    ogs_expect(rv == OGS_OK);
 
     ogs_assert(bearer);
     sess = bearer->sess;
@@ -803,37 +794,88 @@ void sgwc_s11_handle_delete_bearer_response(
         cause_value = OGS_GTP_CAUSE_CONTEXT_NOT_FOUND;
     }
 
-    if (rsp->cause.presence) {
-        ogs_gtp_cause_t *cause = rsp->cause.data;
-        ogs_assert(cause);
+    if (rsp->linked_eps_bearer_id.presence) {
+       /*
+        * << Linked EPS Bearer ID >>
+        *
+        * 1. SMF sends Delete Bearer Request(DEFAULT BEARER) to SGW/MME.
+        * 2. MME sends Delete Bearer Response to SGW/SMF.
+        *
+        * OR
+        *
+        * 1. SMF sends Delete Bearer Request(DEFAULT BEARER) to ePDG.
+        * 2. ePDG sends Delete Bearer Response(DEFAULT BEARER) to SMF.
+        */
+        if (rsp->cause.presence) {
+            ogs_gtp_cause_t *cause = rsp->cause.data;
+            ogs_assert(cause);
 
-        cause_value = cause->value;
-        if (cause_value == OGS_GTP_CAUSE_REQUEST_ACCEPTED) {
-            if (rsp->bearer_contexts.cause.presence) {
-                cause = rsp->bearer_contexts.cause.data;
-                ogs_assert(cause);
-
-                cause_value = cause->value;
+            cause_value = cause->value;
+            if (cause_value == OGS_GTP_CAUSE_REQUEST_ACCEPTED) {
             } else {
-                ogs_error("No Cause");
-                cause_value = OGS_GTP_CAUSE_MANDATORY_IE_MISSING;
+                ogs_error("GTP Failed [CAUSE:%d]", cause_value);
             }
         } else {
-            ogs_warn("GTP Failed [CAUSE:%d]", cause_value);
+            ogs_error("No Cause");
+            cause_value = OGS_GTP_CAUSE_MANDATORY_IE_MISSING;
         }
+
+        ogs_assert(OGS_OK ==
+            sgwc_pfcp_send_session_deletion_request(sess, s5c_xact, gtpbuf));
     } else {
-        ogs_error("No Cause");
-        cause_value = OGS_GTP_CAUSE_MANDATORY_IE_MISSING;
+       /*
+        * << EPS Bearer IDs >>
+        *
+        * 1. MME sends Bearer Resource Command to SGW/SMF.
+        * 2. SMF sends Delete Bearer Request(DEDICATED BEARER) to SGW/MME.
+        * 3. MME sends Delete Bearer Response(DEDICATED BEARER) to SGW/SMF.
+        *
+        * OR
+        *
+        * 1. SMF sends Delete Bearer Request(DEDICATED BEARER) to SGW/MME.
+        * 2. MME sends Delete Bearer Response(DEDICATED BEARER) to SGW/SMF.
+        */
+        if (rsp->bearer_contexts.presence == 0) {
+            ogs_error("No Bearer");
+            cause_value = OGS_GTP_CAUSE_MANDATORY_IE_MISSING;
+        }
+        if (rsp->bearer_contexts.eps_bearer_id.presence == 0) {
+            ogs_error("No EPS Bearer ID");
+            cause_value = OGS_GTP_CAUSE_MANDATORY_IE_MISSING;
+        }
+
+        if (rsp->cause.presence) {
+            ogs_gtp_cause_t *cause = rsp->cause.data;
+            ogs_assert(cause);
+
+            cause_value = cause->value;
+            if (cause_value == OGS_GTP_CAUSE_REQUEST_ACCEPTED) {
+                if (rsp->bearer_contexts.cause.presence) {
+                    cause = rsp->bearer_contexts.cause.data;
+                    ogs_assert(cause);
+
+                    cause_value = cause->value;
+                } else {
+                    ogs_error("No Cause");
+                    cause_value = OGS_GTP_CAUSE_MANDATORY_IE_MISSING;
+                }
+            } else {
+                ogs_warn("GTP Failed [CAUSE:%d]", cause_value);
+            }
+        } else {
+            ogs_error("No Cause");
+            cause_value = OGS_GTP_CAUSE_MANDATORY_IE_MISSING;
+        }
+
+        ogs_debug("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
+            sgwc_ue->mme_s11_teid, sgwc_ue->sgw_s11_teid);
+        ogs_debug("    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]",
+            sess->sgw_s5c_teid, sess->pgw_s5c_teid);
+
+        ogs_assert(OGS_OK ==
+            sgwc_pfcp_send_bearer_modification_request(
+                bearer, s5c_xact, gtpbuf, OGS_PFCP_MODIFY_REMOVE));
     }
-
-    ogs_debug("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
-        sgwc_ue->mme_s11_teid, sgwc_ue->sgw_s11_teid);
-    ogs_debug("    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]",
-        sess->sgw_s5c_teid, sess->pgw_s5c_teid);
-
-    ogs_assert(OGS_OK ==
-        sgwc_pfcp_send_bearer_modification_request(
-            bearer, s5c_xact, gtpbuf, OGS_PFCP_MODIFY_REMOVE));
 }
 
 void sgwc_s11_handle_release_access_bearers_request(

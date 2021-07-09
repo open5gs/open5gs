@@ -32,6 +32,9 @@ void sgwc_s5c_handle_create_session_response(
 void sgwc_s5c_handle_delete_session_response(
         sgwc_sess_t *sess, ogs_gtp_xact_t *s5c_xact,
         ogs_pkbuf_t *gtpbuf, ogs_gtp_message_t *message);
+void sgwc_s5c_handle_modify_bearer_response(
+        sgwc_sess_t *sess, ogs_gtp_xact_t *s5c_xact,
+        ogs_pkbuf_t *gtpbuf, ogs_gtp_message_t *message);
 void sgwc_s5c_handle_create_bearer_request(
         sgwc_sess_t *sess, ogs_gtp_xact_t *s5c_xact,
         ogs_pkbuf_t *gtpbuf, ogs_gtp_message_t *message);

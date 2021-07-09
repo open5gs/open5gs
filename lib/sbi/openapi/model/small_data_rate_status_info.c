@@ -8,7 +8,7 @@ OpenAPI_small_data_rate_status_info_t *OpenAPI_small_data_rate_status_info_creat
     OpenAPI_snssai_t *snssai,
     char *dnn,
     OpenAPI_small_data_rate_status_t *small_data_rate_status
-    )
+)
 {
     OpenAPI_small_data_rate_status_info_t *small_data_rate_status_info_local_var = OpenAPI_malloc(sizeof(OpenAPI_small_data_rate_status_info_t));
     if (!small_data_rate_status_info_local_var) {
@@ -84,7 +84,7 @@ OpenAPI_small_data_rate_status_info_t *OpenAPI_small_data_rate_status_info_parse
     }
 
     OpenAPI_snssai_t *snssai_local_nonprim = NULL;
-
+    
     snssai_local_nonprim = OpenAPI_snssai_parseFromJSON(snssai);
 
     cJSON *dnn = cJSON_GetObjectItemCaseSensitive(small_data_rate_status_infoJSON, "Dnn");
@@ -93,7 +93,7 @@ OpenAPI_small_data_rate_status_info_t *OpenAPI_small_data_rate_status_info_parse
         goto end;
     }
 
-
+    
     if (!cJSON_IsString(dnn)) {
         ogs_error("OpenAPI_small_data_rate_status_info_parseFromJSON() failed [dnn]");
         goto end;
@@ -106,14 +106,14 @@ OpenAPI_small_data_rate_status_info_t *OpenAPI_small_data_rate_status_info_parse
     }
 
     OpenAPI_small_data_rate_status_t *small_data_rate_status_local_nonprim = NULL;
-
+    
     small_data_rate_status_local_nonprim = OpenAPI_small_data_rate_status_parseFromJSON(small_data_rate_status);
 
     small_data_rate_status_info_local_var = OpenAPI_small_data_rate_status_info_create (
         snssai_local_nonprim,
         ogs_strdup_or_assert(dnn->valuestring),
         small_data_rate_status_local_nonprim
-        );
+    );
 
     return small_data_rate_status_info_local_var;
 end:

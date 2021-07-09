@@ -8,7 +8,7 @@ OpenAPI_status_notification_t *OpenAPI_status_notification_create(
     OpenAPI_status_info_t *status_info,
     OpenAPI_small_data_rate_status_t *small_data_rate_status,
     OpenAPI_apn_rate_status_t *apn_rate_status
-    )
+)
 {
     OpenAPI_status_notification_t *status_notification_local_var = OpenAPI_malloc(sizeof(OpenAPI_status_notification_t));
     if (!status_notification_local_var) {
@@ -55,29 +55,29 @@ cJSON *OpenAPI_status_notification_convertToJSON(OpenAPI_status_notification_t *
     }
 
     if (status_notification->small_data_rate_status) {
-        cJSON *small_data_rate_status_local_JSON = OpenAPI_small_data_rate_status_convertToJSON(status_notification->small_data_rate_status);
-        if (small_data_rate_status_local_JSON == NULL) {
-            ogs_error("OpenAPI_status_notification_convertToJSON() failed [small_data_rate_status]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "smallDataRateStatus", small_data_rate_status_local_JSON);
-        if (item->child == NULL) {
-            ogs_error("OpenAPI_status_notification_convertToJSON() failed [small_data_rate_status]");
-            goto end;
-        }
+    cJSON *small_data_rate_status_local_JSON = OpenAPI_small_data_rate_status_convertToJSON(status_notification->small_data_rate_status);
+    if (small_data_rate_status_local_JSON == NULL) {
+        ogs_error("OpenAPI_status_notification_convertToJSON() failed [small_data_rate_status]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "smallDataRateStatus", small_data_rate_status_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_status_notification_convertToJSON() failed [small_data_rate_status]");
+        goto end;
+    }
     }
 
     if (status_notification->apn_rate_status) {
-        cJSON *apn_rate_status_local_JSON = OpenAPI_apn_rate_status_convertToJSON(status_notification->apn_rate_status);
-        if (apn_rate_status_local_JSON == NULL) {
-            ogs_error("OpenAPI_status_notification_convertToJSON() failed [apn_rate_status]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "apnRateStatus", apn_rate_status_local_JSON);
-        if (item->child == NULL) {
-            ogs_error("OpenAPI_status_notification_convertToJSON() failed [apn_rate_status]");
-            goto end;
-        }
+    cJSON *apn_rate_status_local_JSON = OpenAPI_apn_rate_status_convertToJSON(status_notification->apn_rate_status);
+    if (apn_rate_status_local_JSON == NULL) {
+        ogs_error("OpenAPI_status_notification_convertToJSON() failed [apn_rate_status]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "apnRateStatus", apn_rate_status_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_status_notification_convertToJSON() failed [apn_rate_status]");
+        goto end;
+    }
     }
 
 end:
@@ -94,28 +94,28 @@ OpenAPI_status_notification_t *OpenAPI_status_notification_parseFromJSON(cJSON *
     }
 
     OpenAPI_status_info_t *status_info_local_nonprim = NULL;
-
+    
     status_info_local_nonprim = OpenAPI_status_info_parseFromJSON(status_info);
 
     cJSON *small_data_rate_status = cJSON_GetObjectItemCaseSensitive(status_notificationJSON, "smallDataRateStatus");
 
     OpenAPI_small_data_rate_status_t *small_data_rate_status_local_nonprim = NULL;
-    if (small_data_rate_status) {
-        small_data_rate_status_local_nonprim = OpenAPI_small_data_rate_status_parseFromJSON(small_data_rate_status);
+    if (small_data_rate_status) { 
+    small_data_rate_status_local_nonprim = OpenAPI_small_data_rate_status_parseFromJSON(small_data_rate_status);
     }
 
     cJSON *apn_rate_status = cJSON_GetObjectItemCaseSensitive(status_notificationJSON, "apnRateStatus");
 
     OpenAPI_apn_rate_status_t *apn_rate_status_local_nonprim = NULL;
-    if (apn_rate_status) {
-        apn_rate_status_local_nonprim = OpenAPI_apn_rate_status_parseFromJSON(apn_rate_status);
+    if (apn_rate_status) { 
+    apn_rate_status_local_nonprim = OpenAPI_apn_rate_status_parseFromJSON(apn_rate_status);
     }
 
     status_notification_local_var = OpenAPI_status_notification_create (
         status_info_local_nonprim,
         small_data_rate_status ? small_data_rate_status_local_nonprim : NULL,
         apn_rate_status ? apn_rate_status_local_nonprim : NULL
-        );
+    );
 
     return status_notification_local_var;
 end:

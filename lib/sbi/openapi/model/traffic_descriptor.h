@@ -1,7 +1,7 @@
 /*
  * traffic_descriptor.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_traffic_descriptor_H_
@@ -30,7 +30,7 @@ OpenAPI_traffic_descriptor_t *OpenAPI_traffic_descriptor_create(
     char *dnn,
     OpenAPI_snssai_t *s_nssai,
     OpenAPI_list_t *ddd_traffic_descriptor_list
-    );
+);
 void OpenAPI_traffic_descriptor_free(OpenAPI_traffic_descriptor_t *traffic_descriptor);
 OpenAPI_traffic_descriptor_t *OpenAPI_traffic_descriptor_parseFromJSON(cJSON *traffic_descriptorJSON);
 cJSON *OpenAPI_traffic_descriptor_convertToJSON(OpenAPI_traffic_descriptor_t *traffic_descriptor);

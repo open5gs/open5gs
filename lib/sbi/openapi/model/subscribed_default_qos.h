@@ -1,7 +1,7 @@
 /*
  * subscribed_default_qos.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_subscribed_default_qos_H_
@@ -29,7 +29,7 @@ OpenAPI_subscribed_default_qos_t *OpenAPI_subscribed_default_qos_create(
     int _5qi,
     OpenAPI_arp_t *arp,
     int priority_level
-    );
+);
 void OpenAPI_subscribed_default_qos_free(OpenAPI_subscribed_default_qos_t *subscribed_default_qos);
 OpenAPI_subscribed_default_qos_t *OpenAPI_subscribed_default_qos_parseFromJSON(cJSON *subscribed_default_qosJSON);
 cJSON *OpenAPI_subscribed_default_qos_convertToJSON(OpenAPI_subscribed_default_qos_t *subscribed_default_qos);

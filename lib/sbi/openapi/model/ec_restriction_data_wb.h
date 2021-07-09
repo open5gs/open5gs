@@ -1,7 +1,7 @@
 /*
  * ec_restriction_data_wb.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_ec_restriction_data_wb_H_
@@ -26,7 +26,7 @@ typedef struct OpenAPI_ec_restriction_data_wb_s {
 OpenAPI_ec_restriction_data_wb_t *OpenAPI_ec_restriction_data_wb_create(
     int ec_mode_a_restricted,
     int ec_mode_b_restricted
-    );
+);
 void OpenAPI_ec_restriction_data_wb_free(OpenAPI_ec_restriction_data_wb_t *ec_restriction_data_wb);
 OpenAPI_ec_restriction_data_wb_t *OpenAPI_ec_restriction_data_wb_parseFromJSON(cJSON *ec_restriction_data_wbJSON);
 cJSON *OpenAPI_ec_restriction_data_wb_convertToJSON(OpenAPI_ec_restriction_data_wb_t *ec_restriction_data_wb);

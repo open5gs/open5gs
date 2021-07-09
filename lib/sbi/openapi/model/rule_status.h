@@ -1,7 +1,7 @@
 /*
  * rule_status.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_rule_status_H_

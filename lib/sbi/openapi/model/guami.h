@@ -1,7 +1,7 @@
 /*
  * guami.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_guami_H_
@@ -27,7 +27,7 @@ typedef struct OpenAPI_guami_s {
 OpenAPI_guami_t *OpenAPI_guami_create(
     OpenAPI_plmn_id_nid_t *plmn_id,
     char *amf_id
-    );
+);
 void OpenAPI_guami_free(OpenAPI_guami_t *guami);
 OpenAPI_guami_t *OpenAPI_guami_parseFromJSON(cJSON *guamiJSON);
 cJSON *OpenAPI_guami_convertToJSON(OpenAPI_guami_t *guami);

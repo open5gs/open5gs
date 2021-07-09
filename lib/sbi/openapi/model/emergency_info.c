@@ -9,7 +9,7 @@ OpenAPI_emergency_info_t *OpenAPI_emergency_info_create(
     OpenAPI_ip_address_t *pgw_ip_address,
     char *smf_instance_id,
     int epdg_ind
-    )
+)
 {
     OpenAPI_emergency_info_t *emergency_info_local_var = OpenAPI_malloc(sizeof(OpenAPI_emergency_info_t));
     if (!emergency_info_local_var) {
@@ -46,37 +46,37 @@ cJSON *OpenAPI_emergency_info_convertToJSON(OpenAPI_emergency_info_t *emergency_
 
     item = cJSON_CreateObject();
     if (emergency_info->pgw_fqdn) {
-        if (cJSON_AddStringToObject(item, "pgwFqdn", emergency_info->pgw_fqdn) == NULL) {
-            ogs_error("OpenAPI_emergency_info_convertToJSON() failed [pgw_fqdn]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "pgwFqdn", emergency_info->pgw_fqdn) == NULL) {
+        ogs_error("OpenAPI_emergency_info_convertToJSON() failed [pgw_fqdn]");
+        goto end;
+    }
     }
 
     if (emergency_info->pgw_ip_address) {
-        cJSON *pgw_ip_address_local_JSON = OpenAPI_ip_address_convertToJSON(emergency_info->pgw_ip_address);
-        if (pgw_ip_address_local_JSON == NULL) {
-            ogs_error("OpenAPI_emergency_info_convertToJSON() failed [pgw_ip_address]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "pgwIpAddress", pgw_ip_address_local_JSON);
-        if (item->child == NULL) {
-            ogs_error("OpenAPI_emergency_info_convertToJSON() failed [pgw_ip_address]");
-            goto end;
-        }
+    cJSON *pgw_ip_address_local_JSON = OpenAPI_ip_address_convertToJSON(emergency_info->pgw_ip_address);
+    if (pgw_ip_address_local_JSON == NULL) {
+        ogs_error("OpenAPI_emergency_info_convertToJSON() failed [pgw_ip_address]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "pgwIpAddress", pgw_ip_address_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_emergency_info_convertToJSON() failed [pgw_ip_address]");
+        goto end;
+    }
     }
 
     if (emergency_info->smf_instance_id) {
-        if (cJSON_AddStringToObject(item, "smfInstanceId", emergency_info->smf_instance_id) == NULL) {
-            ogs_error("OpenAPI_emergency_info_convertToJSON() failed [smf_instance_id]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "smfInstanceId", emergency_info->smf_instance_id) == NULL) {
+        ogs_error("OpenAPI_emergency_info_convertToJSON() failed [smf_instance_id]");
+        goto end;
+    }
     }
 
     if (emergency_info->epdg_ind) {
-        if (cJSON_AddBoolToObject(item, "epdgInd", emergency_info->epdg_ind) == NULL) {
-            ogs_error("OpenAPI_emergency_info_convertToJSON() failed [epdg_ind]");
-            goto end;
-        }
+    if (cJSON_AddBoolToObject(item, "epdgInd", emergency_info->epdg_ind) == NULL) {
+        ogs_error("OpenAPI_emergency_info_convertToJSON() failed [epdg_ind]");
+        goto end;
+    }
     }
 
 end:
@@ -88,36 +88,36 @@ OpenAPI_emergency_info_t *OpenAPI_emergency_info_parseFromJSON(cJSON *emergency_
     OpenAPI_emergency_info_t *emergency_info_local_var = NULL;
     cJSON *pgw_fqdn = cJSON_GetObjectItemCaseSensitive(emergency_infoJSON, "pgwFqdn");
 
-    if (pgw_fqdn) {
-        if (!cJSON_IsString(pgw_fqdn)) {
-            ogs_error("OpenAPI_emergency_info_parseFromJSON() failed [pgw_fqdn]");
-            goto end;
-        }
+    if (pgw_fqdn) { 
+    if (!cJSON_IsString(pgw_fqdn)) {
+        ogs_error("OpenAPI_emergency_info_parseFromJSON() failed [pgw_fqdn]");
+        goto end;
+    }
     }
 
     cJSON *pgw_ip_address = cJSON_GetObjectItemCaseSensitive(emergency_infoJSON, "pgwIpAddress");
 
     OpenAPI_ip_address_t *pgw_ip_address_local_nonprim = NULL;
-    if (pgw_ip_address) {
-        pgw_ip_address_local_nonprim = OpenAPI_ip_address_parseFromJSON(pgw_ip_address);
+    if (pgw_ip_address) { 
+    pgw_ip_address_local_nonprim = OpenAPI_ip_address_parseFromJSON(pgw_ip_address);
     }
 
     cJSON *smf_instance_id = cJSON_GetObjectItemCaseSensitive(emergency_infoJSON, "smfInstanceId");
 
-    if (smf_instance_id) {
-        if (!cJSON_IsString(smf_instance_id)) {
-            ogs_error("OpenAPI_emergency_info_parseFromJSON() failed [smf_instance_id]");
-            goto end;
-        }
+    if (smf_instance_id) { 
+    if (!cJSON_IsString(smf_instance_id)) {
+        ogs_error("OpenAPI_emergency_info_parseFromJSON() failed [smf_instance_id]");
+        goto end;
+    }
     }
 
     cJSON *epdg_ind = cJSON_GetObjectItemCaseSensitive(emergency_infoJSON, "epdgInd");
 
-    if (epdg_ind) {
-        if (!cJSON_IsBool(epdg_ind)) {
-            ogs_error("OpenAPI_emergency_info_parseFromJSON() failed [epdg_ind]");
-            goto end;
-        }
+    if (epdg_ind) { 
+    if (!cJSON_IsBool(epdg_ind)) {
+        ogs_error("OpenAPI_emergency_info_parseFromJSON() failed [epdg_ind]");
+        goto end;
+    }
     }
 
     emergency_info_local_var = OpenAPI_emergency_info_create (
@@ -125,7 +125,7 @@ OpenAPI_emergency_info_t *OpenAPI_emergency_info_parseFromJSON(cJSON *emergency_
         pgw_ip_address ? pgw_ip_address_local_nonprim : NULL,
         smf_instance_id ? ogs_strdup_or_assert(smf_instance_id->valuestring) : NULL,
         epdg_ind ? epdg_ind->valueint : 0
-        );
+    );
 
     return emergency_info_local_var;
 end:

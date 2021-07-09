@@ -1,7 +1,7 @@
 /*
  * condition_data.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_condition_data_H_
@@ -34,7 +34,7 @@ OpenAPI_condition_data_t *OpenAPI_condition_data_create(
     char *deactivation_time,
     OpenAPI_access_type_e access_type,
     OpenAPI_rat_type_e rat_type
-    );
+);
 void OpenAPI_condition_data_free(OpenAPI_condition_data_t *condition_data);
 OpenAPI_condition_data_t *OpenAPI_condition_data_parseFromJSON(cJSON *condition_dataJSON);
 cJSON *OpenAPI_condition_data_convertToJSON(OpenAPI_condition_data_t *condition_data);

@@ -1,7 +1,7 @@
 /*
  * sm_context_status_notification.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_sm_context_status_notification_H_
@@ -31,6 +31,8 @@ typedef struct OpenAPI_sm_context_status_notification_s {
     char *new_smf_set_id;
     char *old_smf_id;
     char *old_sm_context_ref;
+    char *alt_anchor_smf_uri;
+    char *alt_anchor_smf_id;
 } OpenAPI_sm_context_status_notification_t;
 
 OpenAPI_sm_context_status_notification_t *OpenAPI_sm_context_status_notification_create(
@@ -42,8 +44,10 @@ OpenAPI_sm_context_status_notification_t *OpenAPI_sm_context_status_notification
     char *new_smf_id,
     char *new_smf_set_id,
     char *old_smf_id,
-    char *old_sm_context_ref
-    );
+    char *old_sm_context_ref,
+    char *alt_anchor_smf_uri,
+    char *alt_anchor_smf_id
+);
 void OpenAPI_sm_context_status_notification_free(OpenAPI_sm_context_status_notification_t *sm_context_status_notification);
 OpenAPI_sm_context_status_notification_t *OpenAPI_sm_context_status_notification_parseFromJSON(cJSON *sm_context_status_notificationJSON);
 cJSON *OpenAPI_sm_context_status_notification_convertToJSON(OpenAPI_sm_context_status_notification_t *sm_context_status_notification);

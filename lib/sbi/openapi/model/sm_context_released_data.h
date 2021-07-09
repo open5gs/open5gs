@@ -1,7 +1,7 @@
 /*
  * sm_context_released_data.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_sm_context_released_data_H_
@@ -28,7 +28,7 @@ typedef struct OpenAPI_sm_context_released_data_s {
 OpenAPI_sm_context_released_data_t *OpenAPI_sm_context_released_data_create(
     OpenAPI_small_data_rate_status_t *small_data_rate_status,
     OpenAPI_apn_rate_status_t *apn_rate_status
-    );
+);
 void OpenAPI_sm_context_released_data_free(OpenAPI_sm_context_released_data_t *sm_context_released_data);
 OpenAPI_sm_context_released_data_t *OpenAPI_sm_context_released_data_parseFromJSON(cJSON *sm_context_released_dataJSON);
 cJSON *OpenAPI_sm_context_released_data_convertToJSON(OpenAPI_sm_context_released_data_t *sm_context_released_data);

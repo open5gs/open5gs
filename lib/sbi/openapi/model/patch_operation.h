@@ -1,7 +1,7 @@
 /*
  * patch_operation.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_patch_operation_H_

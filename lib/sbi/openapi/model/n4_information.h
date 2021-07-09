@@ -1,7 +1,7 @@
 /*
  * n4_information.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_n4_information_H_
@@ -31,7 +31,7 @@ OpenAPI_n4_information_t *OpenAPI_n4_information_create(
     OpenAPI_n4_message_type_e n4_message_type,
     OpenAPI_ref_to_binary_data_t *n4_message_payload,
     OpenAPI_dnai_information_t *n4_dnai_info
-    );
+);
 void OpenAPI_n4_information_free(OpenAPI_n4_information_t *n4_information);
 OpenAPI_n4_information_t *OpenAPI_n4_information_parseFromJSON(cJSON *n4_informationJSON);
 cJSON *OpenAPI_n4_information_convertToJSON(OpenAPI_n4_information_t *n4_information);

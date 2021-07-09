@@ -7,7 +7,7 @@
 OpenAPI_time_period_t *OpenAPI_time_period_create(
     OpenAPI_periodicity_t *period,
     int max_num_period
-    )
+)
 {
     OpenAPI_time_period_t *time_period_local_var = OpenAPI_malloc(sizeof(OpenAPI_time_period_t));
     if (!time_period_local_var) {
@@ -51,10 +51,10 @@ cJSON *OpenAPI_time_period_convertToJSON(OpenAPI_time_period_t *time_period)
     }
 
     if (time_period->max_num_period) {
-        if (cJSON_AddNumberToObject(item, "maxNumPeriod", time_period->max_num_period) == NULL) {
-            ogs_error("OpenAPI_time_period_convertToJSON() failed [max_num_period]");
-            goto end;
-        }
+    if (cJSON_AddNumberToObject(item, "maxNumPeriod", time_period->max_num_period) == NULL) {
+        ogs_error("OpenAPI_time_period_convertToJSON() failed [max_num_period]");
+        goto end;
+    }
     }
 
 end:
@@ -71,22 +71,22 @@ OpenAPI_time_period_t *OpenAPI_time_period_parseFromJSON(cJSON *time_periodJSON)
     }
 
     OpenAPI_periodicity_t *period_local_nonprim = NULL;
-
+    
     period_local_nonprim = OpenAPI_periodicity_parseFromJSON(period);
 
     cJSON *max_num_period = cJSON_GetObjectItemCaseSensitive(time_periodJSON, "maxNumPeriod");
 
-    if (max_num_period) {
-        if (!cJSON_IsNumber(max_num_period)) {
-            ogs_error("OpenAPI_time_period_parseFromJSON() failed [max_num_period]");
-            goto end;
-        }
+    if (max_num_period) { 
+    if (!cJSON_IsNumber(max_num_period)) {
+        ogs_error("OpenAPI_time_period_parseFromJSON() failed [max_num_period]");
+        goto end;
+    }
     }
 
     time_period_local_var = OpenAPI_time_period_create (
         period_local_nonprim,
         max_num_period ? max_num_period->valuedouble : 0
-        );
+    );
 
     return time_period_local_var;
 end:

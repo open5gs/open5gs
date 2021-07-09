@@ -1,7 +1,7 @@
 /*
  * tai.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_tai_H_
@@ -29,7 +29,7 @@ OpenAPI_tai_t *OpenAPI_tai_create(
     OpenAPI_plmn_id_t *plmn_id,
     char *tac,
     char *nid
-    );
+);
 void OpenAPI_tai_free(OpenAPI_tai_t *tai);
 OpenAPI_tai_t *OpenAPI_tai_parseFromJSON(cJSON *taiJSON);
 cJSON *OpenAPI_tai_convertToJSON(OpenAPI_tai_t *tai);

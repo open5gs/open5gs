@@ -1,7 +1,7 @@
 /*
  * polygon_all_of.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_polygon_all_of_H_
@@ -25,7 +25,7 @@ typedef struct OpenAPI_polygon_all_of_s {
 
 OpenAPI_polygon_all_of_t *OpenAPI_polygon_all_of_create(
     OpenAPI_list_t *point_list
-    );
+);
 void OpenAPI_polygon_all_of_free(OpenAPI_polygon_all_of_t *polygon_all_of);
 OpenAPI_polygon_all_of_t *OpenAPI_polygon_all_of_parseFromJSON(cJSON *polygon_all_ofJSON);
 cJSON *OpenAPI_polygon_all_of_convertToJSON(OpenAPI_polygon_all_of_t *polygon_all_of);

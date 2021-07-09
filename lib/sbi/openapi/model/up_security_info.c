@@ -9,7 +9,7 @@ OpenAPI_up_security_info_t *OpenAPI_up_security_info_create(
     OpenAPI_max_integrity_protected_data_rate_e max_integrity_protected_data_rate_ul,
     OpenAPI_max_integrity_protected_data_rate_e max_integrity_protected_data_rate_dl,
     OpenAPI_security_result_t *security_result
-    )
+)
 {
     OpenAPI_up_security_info_t *up_security_info_local_var = OpenAPI_malloc(sizeof(OpenAPI_up_security_info_t));
     if (!up_security_info_local_var) {
@@ -56,30 +56,30 @@ cJSON *OpenAPI_up_security_info_convertToJSON(OpenAPI_up_security_info_t *up_sec
     }
 
     if (up_security_info->max_integrity_protected_data_rate_ul) {
-        if (cJSON_AddStringToObject(item, "maxIntegrityProtectedDataRateUl", OpenAPI_max_integrity_protected_data_rate_ToString(up_security_info->max_integrity_protected_data_rate_ul)) == NULL) {
-            ogs_error("OpenAPI_up_security_info_convertToJSON() failed [max_integrity_protected_data_rate_ul]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "maxIntegrityProtectedDataRateUl", OpenAPI_max_integrity_protected_data_rate_ToString(up_security_info->max_integrity_protected_data_rate_ul)) == NULL) {
+        ogs_error("OpenAPI_up_security_info_convertToJSON() failed [max_integrity_protected_data_rate_ul]");
+        goto end;
+    }
     }
 
     if (up_security_info->max_integrity_protected_data_rate_dl) {
-        if (cJSON_AddStringToObject(item, "maxIntegrityProtectedDataRateDl", OpenAPI_max_integrity_protected_data_rate_ToString(up_security_info->max_integrity_protected_data_rate_dl)) == NULL) {
-            ogs_error("OpenAPI_up_security_info_convertToJSON() failed [max_integrity_protected_data_rate_dl]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "maxIntegrityProtectedDataRateDl", OpenAPI_max_integrity_protected_data_rate_ToString(up_security_info->max_integrity_protected_data_rate_dl)) == NULL) {
+        ogs_error("OpenAPI_up_security_info_convertToJSON() failed [max_integrity_protected_data_rate_dl]");
+        goto end;
+    }
     }
 
     if (up_security_info->security_result) {
-        cJSON *security_result_local_JSON = OpenAPI_security_result_convertToJSON(up_security_info->security_result);
-        if (security_result_local_JSON == NULL) {
-            ogs_error("OpenAPI_up_security_info_convertToJSON() failed [security_result]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "securityResult", security_result_local_JSON);
-        if (item->child == NULL) {
-            ogs_error("OpenAPI_up_security_info_convertToJSON() failed [security_result]");
-            goto end;
-        }
+    cJSON *security_result_local_JSON = OpenAPI_security_result_convertToJSON(up_security_info->security_result);
+    if (security_result_local_JSON == NULL) {
+        ogs_error("OpenAPI_up_security_info_convertToJSON() failed [security_result]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "securityResult", security_result_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_up_security_info_convertToJSON() failed [security_result]");
+        goto end;
+    }
     }
 
 end:
@@ -96,36 +96,36 @@ OpenAPI_up_security_info_t *OpenAPI_up_security_info_parseFromJSON(cJSON *up_sec
     }
 
     OpenAPI_up_security_t *up_security_local_nonprim = NULL;
-
+    
     up_security_local_nonprim = OpenAPI_up_security_parseFromJSON(up_security);
 
     cJSON *max_integrity_protected_data_rate_ul = cJSON_GetObjectItemCaseSensitive(up_security_infoJSON, "maxIntegrityProtectedDataRateUl");
 
     OpenAPI_max_integrity_protected_data_rate_e max_integrity_protected_data_rate_ulVariable;
-    if (max_integrity_protected_data_rate_ul) {
-        if (!cJSON_IsString(max_integrity_protected_data_rate_ul)) {
-            ogs_error("OpenAPI_up_security_info_parseFromJSON() failed [max_integrity_protected_data_rate_ul]");
-            goto end;
-        }
-        max_integrity_protected_data_rate_ulVariable = OpenAPI_max_integrity_protected_data_rate_FromString(max_integrity_protected_data_rate_ul->valuestring);
+    if (max_integrity_protected_data_rate_ul) { 
+    if (!cJSON_IsString(max_integrity_protected_data_rate_ul)) {
+        ogs_error("OpenAPI_up_security_info_parseFromJSON() failed [max_integrity_protected_data_rate_ul]");
+        goto end;
+    }
+    max_integrity_protected_data_rate_ulVariable = OpenAPI_max_integrity_protected_data_rate_FromString(max_integrity_protected_data_rate_ul->valuestring);
     }
 
     cJSON *max_integrity_protected_data_rate_dl = cJSON_GetObjectItemCaseSensitive(up_security_infoJSON, "maxIntegrityProtectedDataRateDl");
 
     OpenAPI_max_integrity_protected_data_rate_e max_integrity_protected_data_rate_dlVariable;
-    if (max_integrity_protected_data_rate_dl) {
-        if (!cJSON_IsString(max_integrity_protected_data_rate_dl)) {
-            ogs_error("OpenAPI_up_security_info_parseFromJSON() failed [max_integrity_protected_data_rate_dl]");
-            goto end;
-        }
-        max_integrity_protected_data_rate_dlVariable = OpenAPI_max_integrity_protected_data_rate_FromString(max_integrity_protected_data_rate_dl->valuestring);
+    if (max_integrity_protected_data_rate_dl) { 
+    if (!cJSON_IsString(max_integrity_protected_data_rate_dl)) {
+        ogs_error("OpenAPI_up_security_info_parseFromJSON() failed [max_integrity_protected_data_rate_dl]");
+        goto end;
+    }
+    max_integrity_protected_data_rate_dlVariable = OpenAPI_max_integrity_protected_data_rate_FromString(max_integrity_protected_data_rate_dl->valuestring);
     }
 
     cJSON *security_result = cJSON_GetObjectItemCaseSensitive(up_security_infoJSON, "securityResult");
 
     OpenAPI_security_result_t *security_result_local_nonprim = NULL;
-    if (security_result) {
-        security_result_local_nonprim = OpenAPI_security_result_parseFromJSON(security_result);
+    if (security_result) { 
+    security_result_local_nonprim = OpenAPI_security_result_parseFromJSON(security_result);
     }
 
     up_security_info_local_var = OpenAPI_up_security_info_create (
@@ -133,7 +133,7 @@ OpenAPI_up_security_info_t *OpenAPI_up_security_info_parseFromJSON(cJSON *up_sec
         max_integrity_protected_data_rate_ul ? max_integrity_protected_data_rate_ulVariable : 0,
         max_integrity_protected_data_rate_dl ? max_integrity_protected_data_rate_dlVariable : 0,
         security_result ? security_result_local_nonprim : NULL
-        );
+    );
 
     return up_security_info_local_var;
 end:

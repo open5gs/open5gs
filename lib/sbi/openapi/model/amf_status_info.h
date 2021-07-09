@@ -1,7 +1,7 @@
 /*
  * amf_status_info.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_amf_status_info_H_
@@ -32,7 +32,7 @@ OpenAPI_amf_status_info_t *OpenAPI_amf_status_info_create(
     OpenAPI_status_change_e status_change,
     char *target_amf_removal,
     char *target_amf_failure
-    );
+);
 void OpenAPI_amf_status_info_free(OpenAPI_amf_status_info_t *amf_status_info);
 OpenAPI_amf_status_info_t *OpenAPI_amf_status_info_parseFromJSON(cJSON *amf_status_infoJSON);
 cJSON *OpenAPI_amf_status_info_convertToJSON(OpenAPI_amf_status_info_t *amf_status_info);

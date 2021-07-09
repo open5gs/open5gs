@@ -5,7 +5,7 @@
 #include "trigger_category.h"
 
 OpenAPI_trigger_category_t *OpenAPI_trigger_category_create(
-    )
+)
 {
     OpenAPI_trigger_category_t *trigger_category_local_var = OpenAPI_malloc(sizeof(OpenAPI_trigger_category_t));
     if (!trigger_category_local_var) {
@@ -42,7 +42,7 @@ OpenAPI_trigger_category_t *OpenAPI_trigger_category_parseFromJSON(cJSON *trigge
 {
     OpenAPI_trigger_category_t *trigger_category_local_var = NULL;
     trigger_category_local_var = OpenAPI_trigger_category_create (
-        );
+    );
 
     return trigger_category_local_var;
 end:

@@ -1,7 +1,7 @@
 /*
  * av_eps_aka.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_av_eps_aka_H_
@@ -33,7 +33,7 @@ OpenAPI_av_eps_aka_t *OpenAPI_av_eps_aka_create(
     char *xres,
     char *autn,
     char *kasme
-    );
+);
 void OpenAPI_av_eps_aka_free(OpenAPI_av_eps_aka_t *av_eps_aka);
 OpenAPI_av_eps_aka_t *OpenAPI_av_eps_aka_parseFromJSON(cJSON *av_eps_akaJSON);
 cJSON *OpenAPI_av_eps_aka_convertToJSON(OpenAPI_av_eps_aka_t *av_eps_aka);

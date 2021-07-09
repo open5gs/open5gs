@@ -1,7 +1,7 @@
 /*
  * pdu_session_continuity_ind.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_pdu_session_continuity_ind_H_

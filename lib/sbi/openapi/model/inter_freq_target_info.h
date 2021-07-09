@@ -1,7 +1,7 @@
 /*
  * inter_freq_target_info.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_inter_freq_target_info_H_
@@ -26,7 +26,7 @@ typedef struct OpenAPI_inter_freq_target_info_s {
 OpenAPI_inter_freq_target_info_t *OpenAPI_inter_freq_target_info_create(
     int dl_carrier_freq,
     OpenAPI_list_t *cell_id_list
-    );
+);
 void OpenAPI_inter_freq_target_info_free(OpenAPI_inter_freq_target_info_t *inter_freq_target_info);
 OpenAPI_inter_freq_target_info_t *OpenAPI_inter_freq_target_info_parseFromJSON(cJSON *inter_freq_target_infoJSON);
 cJSON *OpenAPI_inter_freq_target_info_convertToJSON(OpenAPI_inter_freq_target_info_t *inter_freq_target_info);

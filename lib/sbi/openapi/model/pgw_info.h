@@ -1,7 +1,7 @@
 /*
  * pgw_info.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_pgw_info_H_
@@ -31,7 +31,7 @@ OpenAPI_pgw_info_t *OpenAPI_pgw_info_create(
     char *pgw_fqdn,
     OpenAPI_plmn_id_t *plmn_id,
     int epdg_ind
-    );
+);
 void OpenAPI_pgw_info_free(OpenAPI_pgw_info_t *pgw_info);
 OpenAPI_pgw_info_t *OpenAPI_pgw_info_parseFromJSON(cJSON *pgw_infoJSON);
 cJSON *OpenAPI_pgw_info_convertToJSON(OpenAPI_pgw_info_t *pgw_info);

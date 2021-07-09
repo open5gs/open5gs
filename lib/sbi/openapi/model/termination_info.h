@@ -27,7 +27,7 @@ typedef struct OpenAPI_termination_info_s {
 OpenAPI_termination_info_t *OpenAPI_termination_info_create(
     OpenAPI_termination_cause_e term_cause,
     char *res_uri
-    );
+);
 void OpenAPI_termination_info_free(OpenAPI_termination_info_t *termination_info);
 OpenAPI_termination_info_t *OpenAPI_termination_info_parseFromJSON(cJSON *termination_infoJSON);
 cJSON *OpenAPI_termination_info_convertToJSON(OpenAPI_termination_info_t *termination_info);

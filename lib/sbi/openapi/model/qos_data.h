@@ -1,7 +1,7 @@
 /*
  * qos_data.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_qos_data_H_
@@ -38,6 +38,8 @@ typedef struct OpenAPI_qos_data_s {
     int max_packet_loss_rate_ul;
     int def_qos_flow_indication;
     int ext_max_data_burst_vol;
+    int packet_delay_budget;
+    char *packet_error_rate;
 } OpenAPI_qos_data_t;
 
 OpenAPI_qos_data_t *OpenAPI_qos_data_create(
@@ -58,8 +60,10 @@ OpenAPI_qos_data_t *OpenAPI_qos_data_create(
     int max_packet_loss_rate_dl,
     int max_packet_loss_rate_ul,
     int def_qos_flow_indication,
-    int ext_max_data_burst_vol
-    );
+    int ext_max_data_burst_vol,
+    int packet_delay_budget,
+    char *packet_error_rate
+);
 void OpenAPI_qos_data_free(OpenAPI_qos_data_t *qos_data);
 OpenAPI_qos_data_t *OpenAPI_qos_data_parseFromJSON(cJSON *qos_dataJSON);
 cJSON *OpenAPI_qos_data_convertToJSON(OpenAPI_qos_data_t *qos_data);

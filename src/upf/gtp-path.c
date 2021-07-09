@@ -89,6 +89,7 @@ static void _gtpv1_tun_recv_common_cb(
     if (has_eth) {
         ogs_pkbuf_t *replybuf = NULL;
         uint16_t eth_type = _get_eth_type(recvbuf->data, recvbuf->len);
+        uint8_t size;
 
         if (eth_type == ETHERTYPE_ARP) {
             if (is_arp_req(recvbuf->data, recvbuf->len)) {
@@ -96,9 +97,10 @@ static void _gtpv1_tun_recv_common_cb(
                 ogs_assert(replybuf);
                 ogs_pkbuf_reserve(replybuf, OGS_TUN_MAX_HEADROOM);
                 ogs_pkbuf_put(replybuf, OGS_MAX_PKT_LEN-OGS_TUN_MAX_HEADROOM);
-                arp_reply(replybuf->data, recvbuf->data, recvbuf->len,
-                            proxy_mac_addr);
-                ogs_debug("[SEND] reply to ARP request");
+                size = arp_reply(replybuf->data, recvbuf->data, recvbuf->len,
+                    proxy_mac_addr);
+                ogs_pkbuf_trim(replybuf, size);
+                ogs_info("[SEND] reply to ARP request: %u", size);
             } else {
                 goto cleanup;
             }
@@ -108,9 +110,10 @@ static void _gtpv1_tun_recv_common_cb(
             ogs_assert(replybuf);
             ogs_pkbuf_reserve(replybuf, OGS_TUN_MAX_HEADROOM);
             ogs_pkbuf_put(replybuf, OGS_MAX_PKT_LEN-OGS_TUN_MAX_HEADROOM);
-            nd_reply(replybuf->data, recvbuf->data, recvbuf->len,
-                        proxy_mac_addr);
-            ogs_debug("[SEND] reply to ND solicit");
+            size = nd_reply(replybuf->data, recvbuf->data, recvbuf->len,
+                proxy_mac_addr);
+            ogs_pkbuf_trim(replybuf, size);
+            ogs_info("[SEND] reply to ND solicit: %u", size);
         }
         if (replybuf) {
             if (ogs_tun_write(fd, replybuf) != OGS_OK)

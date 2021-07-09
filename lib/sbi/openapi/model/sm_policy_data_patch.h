@@ -28,7 +28,7 @@ typedef struct OpenAPI_sm_policy_data_patch_s {
 OpenAPI_sm_policy_data_patch_t *OpenAPI_sm_policy_data_patch_create(
     OpenAPI_list_t* um_data,
     OpenAPI_list_t* sm_policy_snssai_data
-    );
+);
 void OpenAPI_sm_policy_data_patch_free(OpenAPI_sm_policy_data_patch_t *sm_policy_data_patch);
 OpenAPI_sm_policy_data_patch_t *OpenAPI_sm_policy_data_patch_parseFromJSON(cJSON *sm_policy_data_patchJSON);
 cJSON *OpenAPI_sm_policy_data_patch_convertToJSON(OpenAPI_sm_policy_data_patch_t *sm_policy_data_patch);

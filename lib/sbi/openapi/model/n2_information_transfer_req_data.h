@@ -1,7 +1,7 @@
 /*
  * n2_information_transfer_req_data.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_n2_information_transfer_req_data_H_
@@ -36,7 +36,7 @@ OpenAPI_n2_information_transfer_req_data_t *OpenAPI_n2_information_transfer_req_
     OpenAPI_list_t *global_ran_node_list,
     OpenAPI_n2_info_container_t *n2_information,
     char *supported_features
-    );
+);
 void OpenAPI_n2_information_transfer_req_data_free(OpenAPI_n2_information_transfer_req_data_t *n2_information_transfer_req_data);
 OpenAPI_n2_information_transfer_req_data_t *OpenAPI_n2_information_transfer_req_data_parseFromJSON(cJSON *n2_information_transfer_req_dataJSON);
 cJSON *OpenAPI_n2_information_transfer_req_data_convertToJSON(OpenAPI_n2_information_transfer_req_data_t *n2_information_transfer_req_data);

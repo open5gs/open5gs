@@ -1,7 +1,7 @@
 /*
  * nr_location.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_nr_location_H_
@@ -39,7 +39,7 @@ OpenAPI_nr_location_t *OpenAPI_nr_location_create(
     char *geographical_information,
     char *geodetic_information,
     OpenAPI_global_ran_node_id_t *global_gnb_id
-    );
+);
 void OpenAPI_nr_location_free(OpenAPI_nr_location_t *nr_location);
 OpenAPI_nr_location_t *OpenAPI_nr_location_parseFromJSON(cJSON *nr_locationJSON);
 cJSON *OpenAPI_nr_location_convertToJSON(OpenAPI_nr_location_t *nr_location);

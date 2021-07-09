@@ -1,7 +1,7 @@
 /*
  * rat_selector.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_rat_selector_H_

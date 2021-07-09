@@ -6,8 +6,9 @@
 
 OpenAPI_ue_context_create_error_t *OpenAPI_ue_context_create_error_create(
     OpenAPI_problem_details_t *error,
-    OpenAPI_ng_ap_cause_t *ngap_cause
-    )
+    OpenAPI_ng_ap_cause_t *ngap_cause,
+    OpenAPI_n2_info_content_t *target_to_source_failure_data
+)
 {
     OpenAPI_ue_context_create_error_t *ue_context_create_error_local_var = OpenAPI_malloc(sizeof(OpenAPI_ue_context_create_error_t));
     if (!ue_context_create_error_local_var) {
@@ -15,6 +16,7 @@ OpenAPI_ue_context_create_error_t *OpenAPI_ue_context_create_error_create(
     }
     ue_context_create_error_local_var->error = error;
     ue_context_create_error_local_var->ngap_cause = ngap_cause;
+    ue_context_create_error_local_var->target_to_source_failure_data = target_to_source_failure_data;
 
     return ue_context_create_error_local_var;
 }
@@ -27,6 +29,7 @@ void OpenAPI_ue_context_create_error_free(OpenAPI_ue_context_create_error_t *ue_
     OpenAPI_lnode_t *node;
     OpenAPI_problem_details_free(ue_context_create_error->error);
     OpenAPI_ng_ap_cause_free(ue_context_create_error->ngap_cause);
+    OpenAPI_n2_info_content_free(ue_context_create_error->target_to_source_failure_data);
     ogs_free(ue_context_create_error);
 }
 
@@ -52,16 +55,29 @@ cJSON *OpenAPI_ue_context_create_error_convertToJSON(OpenAPI_ue_context_create_e
     }
 
     if (ue_context_create_error->ngap_cause) {
-        cJSON *ngap_cause_local_JSON = OpenAPI_ng_ap_cause_convertToJSON(ue_context_create_error->ngap_cause);
-        if (ngap_cause_local_JSON == NULL) {
-            ogs_error("OpenAPI_ue_context_create_error_convertToJSON() failed [ngap_cause]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "ngapCause", ngap_cause_local_JSON);
-        if (item->child == NULL) {
-            ogs_error("OpenAPI_ue_context_create_error_convertToJSON() failed [ngap_cause]");
-            goto end;
-        }
+    cJSON *ngap_cause_local_JSON = OpenAPI_ng_ap_cause_convertToJSON(ue_context_create_error->ngap_cause);
+    if (ngap_cause_local_JSON == NULL) {
+        ogs_error("OpenAPI_ue_context_create_error_convertToJSON() failed [ngap_cause]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "ngapCause", ngap_cause_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_ue_context_create_error_convertToJSON() failed [ngap_cause]");
+        goto end;
+    }
+    }
+
+    if (ue_context_create_error->target_to_source_failure_data) {
+    cJSON *target_to_source_failure_data_local_JSON = OpenAPI_n2_info_content_convertToJSON(ue_context_create_error->target_to_source_failure_data);
+    if (target_to_source_failure_data_local_JSON == NULL) {
+        ogs_error("OpenAPI_ue_context_create_error_convertToJSON() failed [target_to_source_failure_data]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "targetToSourceFailureData", target_to_source_failure_data_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_ue_context_create_error_convertToJSON() failed [target_to_source_failure_data]");
+        goto end;
+    }
     }
 
 end:
@@ -78,20 +94,28 @@ OpenAPI_ue_context_create_error_t *OpenAPI_ue_context_create_error_parseFromJSON
     }
 
     OpenAPI_problem_details_t *error_local_nonprim = NULL;
-
+    
     error_local_nonprim = OpenAPI_problem_details_parseFromJSON(error);
 
     cJSON *ngap_cause = cJSON_GetObjectItemCaseSensitive(ue_context_create_errorJSON, "ngapCause");
 
     OpenAPI_ng_ap_cause_t *ngap_cause_local_nonprim = NULL;
-    if (ngap_cause) {
-        ngap_cause_local_nonprim = OpenAPI_ng_ap_cause_parseFromJSON(ngap_cause);
+    if (ngap_cause) { 
+    ngap_cause_local_nonprim = OpenAPI_ng_ap_cause_parseFromJSON(ngap_cause);
+    }
+
+    cJSON *target_to_source_failure_data = cJSON_GetObjectItemCaseSensitive(ue_context_create_errorJSON, "targetToSourceFailureData");
+
+    OpenAPI_n2_info_content_t *target_to_source_failure_data_local_nonprim = NULL;
+    if (target_to_source_failure_data) { 
+    target_to_source_failure_data_local_nonprim = OpenAPI_n2_info_content_parseFromJSON(target_to_source_failure_data);
     }
 
     ue_context_create_error_local_var = OpenAPI_ue_context_create_error_create (
         error_local_nonprim,
-        ngap_cause ? ngap_cause_local_nonprim : NULL
-        );
+        ngap_cause ? ngap_cause_local_nonprim : NULL,
+        target_to_source_failure_data ? target_to_source_failure_data_local_nonprim : NULL
+    );
 
     return ue_context_create_error_local_var;
 end:

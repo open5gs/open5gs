@@ -7,7 +7,7 @@
 OpenAPI_sm_policy_notification_t *OpenAPI_sm_policy_notification_create(
     char *resource_uri,
     OpenAPI_sm_policy_decision_t *sm_policy_decision
-    )
+)
 {
     OpenAPI_sm_policy_notification_t *sm_policy_notification_local_var = OpenAPI_malloc(sizeof(OpenAPI_sm_policy_notification_t));
     if (!sm_policy_notification_local_var) {
@@ -41,23 +41,23 @@ cJSON *OpenAPI_sm_policy_notification_convertToJSON(OpenAPI_sm_policy_notificati
 
     item = cJSON_CreateObject();
     if (sm_policy_notification->resource_uri) {
-        if (cJSON_AddStringToObject(item, "resourceUri", sm_policy_notification->resource_uri) == NULL) {
-            ogs_error("OpenAPI_sm_policy_notification_convertToJSON() failed [resource_uri]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(item, "resourceUri", sm_policy_notification->resource_uri) == NULL) {
+        ogs_error("OpenAPI_sm_policy_notification_convertToJSON() failed [resource_uri]");
+        goto end;
+    }
     }
 
     if (sm_policy_notification->sm_policy_decision) {
-        cJSON *sm_policy_decision_local_JSON = OpenAPI_sm_policy_decision_convertToJSON(sm_policy_notification->sm_policy_decision);
-        if (sm_policy_decision_local_JSON == NULL) {
-            ogs_error("OpenAPI_sm_policy_notification_convertToJSON() failed [sm_policy_decision]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "smPolicyDecision", sm_policy_decision_local_JSON);
-        if (item->child == NULL) {
-            ogs_error("OpenAPI_sm_policy_notification_convertToJSON() failed [sm_policy_decision]");
-            goto end;
-        }
+    cJSON *sm_policy_decision_local_JSON = OpenAPI_sm_policy_decision_convertToJSON(sm_policy_notification->sm_policy_decision);
+    if (sm_policy_decision_local_JSON == NULL) {
+        ogs_error("OpenAPI_sm_policy_notification_convertToJSON() failed [sm_policy_decision]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "smPolicyDecision", sm_policy_decision_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_sm_policy_notification_convertToJSON() failed [sm_policy_decision]");
+        goto end;
+    }
     }
 
 end:
@@ -69,24 +69,24 @@ OpenAPI_sm_policy_notification_t *OpenAPI_sm_policy_notification_parseFromJSON(c
     OpenAPI_sm_policy_notification_t *sm_policy_notification_local_var = NULL;
     cJSON *resource_uri = cJSON_GetObjectItemCaseSensitive(sm_policy_notificationJSON, "resourceUri");
 
-    if (resource_uri) {
-        if (!cJSON_IsString(resource_uri)) {
-            ogs_error("OpenAPI_sm_policy_notification_parseFromJSON() failed [resource_uri]");
-            goto end;
-        }
+    if (resource_uri) { 
+    if (!cJSON_IsString(resource_uri)) {
+        ogs_error("OpenAPI_sm_policy_notification_parseFromJSON() failed [resource_uri]");
+        goto end;
+    }
     }
 
     cJSON *sm_policy_decision = cJSON_GetObjectItemCaseSensitive(sm_policy_notificationJSON, "smPolicyDecision");
 
     OpenAPI_sm_policy_decision_t *sm_policy_decision_local_nonprim = NULL;
-    if (sm_policy_decision) {
-        sm_policy_decision_local_nonprim = OpenAPI_sm_policy_decision_parseFromJSON(sm_policy_decision);
+    if (sm_policy_decision) { 
+    sm_policy_decision_local_nonprim = OpenAPI_sm_policy_decision_parseFromJSON(sm_policy_decision);
     }
 
     sm_policy_notification_local_var = OpenAPI_sm_policy_notification_create (
         resource_uri ? ogs_strdup_or_assert(resource_uri->valuestring) : NULL,
         sm_policy_decision ? sm_policy_decision_local_nonprim : NULL
-        );
+    );
 
     return sm_policy_notification_local_var;
 end:

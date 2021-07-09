@@ -1,7 +1,7 @@
 /*
  * reporting_trigger.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_reporting_trigger_H_

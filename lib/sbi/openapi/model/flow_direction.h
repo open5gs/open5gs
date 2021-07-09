@@ -1,7 +1,7 @@
 /*
  * flow_direction.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_flow_direction_H_

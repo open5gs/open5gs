@@ -5,7 +5,7 @@
 #include "subscribed_event.h"
 
 OpenAPI_subscribed_event_t *OpenAPI_subscribed_event_create(
-    )
+)
 {
     OpenAPI_subscribed_event_t *subscribed_event_local_var = OpenAPI_malloc(sizeof(OpenAPI_subscribed_event_t));
     if (!subscribed_event_local_var) {
@@ -42,7 +42,7 @@ OpenAPI_subscribed_event_t *OpenAPI_subscribed_event_parseFromJSON(cJSON *subscr
 {
     OpenAPI_subscribed_event_t *subscribed_event_local_var = NULL;
     subscribed_event_local_var = OpenAPI_subscribed_event_create (
-        );
+    );
 
     return subscribed_event_local_var;
 end:

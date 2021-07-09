@@ -7,7 +7,7 @@
 OpenAPI_point_t *OpenAPI_point_create(
     OpenAPI_supported_gad_shapes_t *shape,
     OpenAPI_geographical_coordinates_t *point
-    )
+)
 {
     OpenAPI_point_t *point_local_var = OpenAPI_malloc(sizeof(OpenAPI_point_t));
     if (!point_local_var) {
@@ -76,7 +76,7 @@ OpenAPI_point_t *OpenAPI_point_parseFromJSON(cJSON *pointJSON)
     }
 
     OpenAPI_supported_gad_shapes_t *shape_local_nonprim = NULL;
-
+    
     shape_local_nonprim = OpenAPI_supported_gad_shapes_parseFromJSON(shape);
 
     cJSON *point = cJSON_GetObjectItemCaseSensitive(pointJSON, "point");
@@ -86,13 +86,13 @@ OpenAPI_point_t *OpenAPI_point_parseFromJSON(cJSON *pointJSON)
     }
 
     OpenAPI_geographical_coordinates_t *point_local_nonprim = NULL;
-
+    
     point_local_nonprim = OpenAPI_geographical_coordinates_parseFromJSON(point);
 
     point_local_var = OpenAPI_point_create (
         shape_local_nonprim,
         point_local_nonprim
-        );
+    );
 
     return point_local_var;
 end:

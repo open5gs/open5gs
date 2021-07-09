@@ -1,7 +1,7 @@
 /*
  * point_uncertainty_circle_all_of.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_point_uncertainty_circle_all_of_H_
@@ -27,7 +27,7 @@ typedef struct OpenAPI_point_uncertainty_circle_all_of_s {
 OpenAPI_point_uncertainty_circle_all_of_t *OpenAPI_point_uncertainty_circle_all_of_create(
     OpenAPI_geographical_coordinates_t *point,
     float uncertainty
-    );
+);
 void OpenAPI_point_uncertainty_circle_all_of_free(OpenAPI_point_uncertainty_circle_all_of_t *point_uncertainty_circle_all_of);
 OpenAPI_point_uncertainty_circle_all_of_t *OpenAPI_point_uncertainty_circle_all_of_parseFromJSON(cJSON *point_uncertainty_circle_all_ofJSON);
 cJSON *OpenAPI_point_uncertainty_circle_all_of_convertToJSON(OpenAPI_point_uncertainty_circle_all_of_t *point_uncertainty_circle_all_of);

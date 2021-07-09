@@ -42,6 +42,7 @@ typedef struct OpenAPI_sm_policy_dnn_data_s {
     int mcs_priority_level;
     OpenAPI_list_t* pra_infos;
     OpenAPI_list_t* bdt_ref_ids;
+    int loc_rout_not_allowed;
 } OpenAPI_sm_policy_dnn_data_t;
 
 OpenAPI_sm_policy_dnn_data_t *OpenAPI_sm_policy_dnn_data_create(
@@ -64,8 +65,9 @@ OpenAPI_sm_policy_dnn_data_t *OpenAPI_sm_policy_dnn_data_create(
     int mps_priority_level,
     int mcs_priority_level,
     OpenAPI_list_t* pra_infos,
-    OpenAPI_list_t* bdt_ref_ids
-    );
+    OpenAPI_list_t* bdt_ref_ids,
+    int loc_rout_not_allowed
+);
 void OpenAPI_sm_policy_dnn_data_free(OpenAPI_sm_policy_dnn_data_t *sm_policy_dnn_data);
 OpenAPI_sm_policy_dnn_data_t *OpenAPI_sm_policy_dnn_data_parseFromJSON(cJSON *sm_policy_dnn_dataJSON);
 cJSON *OpenAPI_sm_policy_dnn_data_convertToJSON(OpenAPI_sm_policy_dnn_data_t *sm_policy_dnn_data);

@@ -1,7 +1,7 @@
 /*
  * up_cnx_state.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_up_cnx_state_H_

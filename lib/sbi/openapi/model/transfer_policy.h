@@ -33,7 +33,7 @@ OpenAPI_transfer_policy_t *OpenAPI_transfer_policy_create(
     int rating_group,
     OpenAPI_time_window_t *rec_time_int,
     int trans_policy_id
-    );
+);
 void OpenAPI_transfer_policy_free(OpenAPI_transfer_policy_t *transfer_policy);
 OpenAPI_transfer_policy_t *OpenAPI_transfer_policy_parseFromJSON(cJSON *transfer_policyJSON);
 cJSON *OpenAPI_transfer_policy_convertToJSON(OpenAPI_transfer_policy_t *transfer_policy);

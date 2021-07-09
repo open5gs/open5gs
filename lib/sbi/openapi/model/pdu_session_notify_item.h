@@ -1,7 +1,7 @@
 /*
  * pdu_session_notify_item.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_pdu_session_notify_item_H_
@@ -25,7 +25,7 @@ typedef struct OpenAPI_pdu_session_notify_item_s {
 
 OpenAPI_pdu_session_notify_item_t *OpenAPI_pdu_session_notify_item_create(
     OpenAPI_notification_cause_e notification_cause
-    );
+);
 void OpenAPI_pdu_session_notify_item_free(OpenAPI_pdu_session_notify_item_t *pdu_session_notify_item);
 OpenAPI_pdu_session_notify_item_t *OpenAPI_pdu_session_notify_item_parseFromJSON(cJSON *pdu_session_notify_itemJSON);
 cJSON *OpenAPI_pdu_session_notify_item_convertToJSON(OpenAPI_pdu_session_notify_item_t *pdu_session_notify_item);

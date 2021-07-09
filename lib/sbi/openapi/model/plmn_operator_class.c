@@ -7,7 +7,7 @@
 OpenAPI_plmn_operator_class_t *OpenAPI_plmn_operator_class_create(
     OpenAPI_lcs_client_class_e lcs_client_class,
     OpenAPI_list_t *lcs_client_ids
-    )
+)
 {
     OpenAPI_plmn_operator_class_t *plmn_operator_class_local_var = OpenAPI_malloc(sizeof(OpenAPI_plmn_operator_class_t));
     if (!plmn_operator_class_local_var) {
@@ -55,11 +55,11 @@ cJSON *OpenAPI_plmn_operator_class_convertToJSON(OpenAPI_plmn_operator_class_t *
 
     OpenAPI_lnode_t *lcs_client_ids_node;
     OpenAPI_list_for_each(plmn_operator_class->lcs_client_ids, lcs_client_ids_node)  {
-        if (cJSON_AddStringToObject(lcs_client_ids, "", (char*)lcs_client_ids_node->data) == NULL) {
-            ogs_error("OpenAPI_plmn_operator_class_convertToJSON() failed [lcs_client_ids]");
-            goto end;
-        }
+    if (cJSON_AddStringToObject(lcs_client_ids, "", (char*)lcs_client_ids_node->data) == NULL) {
+        ogs_error("OpenAPI_plmn_operator_class_convertToJSON() failed [lcs_client_ids]");
+        goto end;
     }
+                    }
 
 end:
     return item;
@@ -75,7 +75,7 @@ OpenAPI_plmn_operator_class_t *OpenAPI_plmn_operator_class_parseFromJSON(cJSON *
     }
 
     OpenAPI_lcs_client_class_e lcs_client_classVariable;
-
+    
     if (!cJSON_IsString(lcs_client_class)) {
         ogs_error("OpenAPI_plmn_operator_class_parseFromJSON() failed [lcs_client_class]");
         goto end;
@@ -89,7 +89,7 @@ OpenAPI_plmn_operator_class_t *OpenAPI_plmn_operator_class_parseFromJSON(cJSON *
     }
 
     OpenAPI_list_t *lcs_client_idsList;
-
+    
     cJSON *lcs_client_ids_local;
     if (!cJSON_IsArray(lcs_client_ids)) {
         ogs_error("OpenAPI_plmn_operator_class_parseFromJSON() failed [lcs_client_ids]");
@@ -98,17 +98,17 @@ OpenAPI_plmn_operator_class_t *OpenAPI_plmn_operator_class_parseFromJSON(cJSON *
     lcs_client_idsList = OpenAPI_list_create();
 
     cJSON_ArrayForEach(lcs_client_ids_local, lcs_client_ids) {
-        if (!cJSON_IsString(lcs_client_ids_local)) {
-            ogs_error("OpenAPI_plmn_operator_class_parseFromJSON() failed [lcs_client_ids]");
-            goto end;
-        }
-        OpenAPI_list_add(lcs_client_idsList, ogs_strdup_or_assert(lcs_client_ids_local->valuestring));
+    if (!cJSON_IsString(lcs_client_ids_local)) {
+        ogs_error("OpenAPI_plmn_operator_class_parseFromJSON() failed [lcs_client_ids]");
+        goto end;
     }
+    OpenAPI_list_add(lcs_client_idsList , ogs_strdup_or_assert(lcs_client_ids_local->valuestring));
+                    }
 
     plmn_operator_class_local_var = OpenAPI_plmn_operator_class_create (
         lcs_client_classVariable,
         lcs_client_idsList
-        );
+    );
 
     return plmn_operator_class_local_var;
 end:

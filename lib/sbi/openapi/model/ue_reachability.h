@@ -1,7 +1,7 @@
 /*
  * ue_reachability.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_ue_reachability_H_
@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+#include "ue_reachability_any_of.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -22,7 +23,7 @@ typedef struct OpenAPI_ue_reachability_s {
 } OpenAPI_ue_reachability_t;
 
 OpenAPI_ue_reachability_t *OpenAPI_ue_reachability_create(
-    );
+);
 void OpenAPI_ue_reachability_free(OpenAPI_ue_reachability_t *ue_reachability);
 OpenAPI_ue_reachability_t *OpenAPI_ue_reachability_parseFromJSON(cJSON *ue_reachabilityJSON);
 cJSON *OpenAPI_ue_reachability_convertToJSON(OpenAPI_ue_reachability_t *ue_reachability);

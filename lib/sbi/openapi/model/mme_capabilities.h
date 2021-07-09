@@ -1,7 +1,7 @@
 /*
  * mme_capabilities.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_mme_capabilities_H_
@@ -26,7 +26,7 @@ typedef struct OpenAPI_mme_capabilities_s {
 OpenAPI_mme_capabilities_t *OpenAPI_mme_capabilities_create(
     int non_ip_supported,
     int ethernet_supported
-    );
+);
 void OpenAPI_mme_capabilities_free(OpenAPI_mme_capabilities_t *mme_capabilities);
 OpenAPI_mme_capabilities_t *OpenAPI_mme_capabilities_parseFromJSON(cJSON *mme_capabilitiesJSON);
 cJSON *OpenAPI_mme_capabilities_convertToJSON(OpenAPI_mme_capabilities_t *mme_capabilities);

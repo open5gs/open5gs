@@ -1,7 +1,7 @@
 /*
  * patch_item.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_patch_item_H_
@@ -31,7 +31,7 @@ OpenAPI_patch_item_t *OpenAPI_patch_item_create(
     char *path,
     char *from,
     char *value
-    );
+);
 void OpenAPI_patch_item_free(OpenAPI_patch_item_t *patch_item);
 OpenAPI_patch_item_t *OpenAPI_patch_item_parseFromJSON(cJSON *patch_itemJSON);
 cJSON *OpenAPI_patch_item_convertToJSON(OpenAPI_patch_item_t *patch_item);

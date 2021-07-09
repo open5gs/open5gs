@@ -1,7 +1,7 @@
 /*
  * n1_message_notification.h
  *
- *
+ * 
  */
 
 #ifndef _OpenAPI_n1_message_notification_H_
@@ -12,7 +12,10 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+#include "ecgi.h"
+#include "guami.h"
 #include "n1_message_container.h"
+#include "ncgi.h"
 #include "registration_context_container.h"
 
 #ifdef __cplusplus
@@ -26,6 +29,10 @@ typedef struct OpenAPI_n1_message_notification_s {
     char *lcs_correlation_id;
     struct OpenAPI_registration_context_container_s *registration_ctxt_container;
     char *new_lmf_identification;
+    struct OpenAPI_guami_s *guami;
+    int c_io_t5_gs_optimisation;
+    struct OpenAPI_ecgi_s *ecgi;
+    struct OpenAPI_ncgi_s *ncgi;
 } OpenAPI_n1_message_notification_t;
 
 OpenAPI_n1_message_notification_t *OpenAPI_n1_message_notification_create(
@@ -33,8 +40,12 @@ OpenAPI_n1_message_notification_t *OpenAPI_n1_message_notification_create(
     OpenAPI_n1_message_container_t *n1_message_container,
     char *lcs_correlation_id,
     OpenAPI_registration_context_container_t *registration_ctxt_container,
-    char *new_lmf_identification
-    );
+    char *new_lmf_identification,
+    OpenAPI_guami_t *guami,
+    int c_io_t5_gs_optimisation,
+    OpenAPI_ecgi_t *ecgi,
+    OpenAPI_ncgi_t *ncgi
+);
 void OpenAPI_n1_message_notification_free(OpenAPI_n1_message_notification_t *n1_message_notification);
 OpenAPI_n1_message_notification_t *OpenAPI_n1_message_notification_parseFromJSON(cJSON *n1_message_notificationJSON);
 cJSON *OpenAPI_n1_message_notification_convertToJSON(OpenAPI_n1_message_notification_t *n1_message_notification);
