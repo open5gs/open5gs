@@ -59,6 +59,10 @@ static int check_signal(int signum)
         ogs_log_cycle();
 
         break;
+    case SIGWINCH:
+        ogs_info("Signal-NUM[%d] received (%s)",
+                signum, ogs_signal_description_get(signum));
+        break;
     default:
         ogs_error("Signal-NUM[%d] received (%s)",
                 signum, ogs_signal_description_get(signum));
