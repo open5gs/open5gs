@@ -26,6 +26,7 @@ char *ogs_uridup(bool https, ogs_sockaddr_t *addr, ogs_sbi_header_t *h)
     char uri[OGS_HUGE_LEN];
     char *p, *last;
     int i;
+    char *hostname = NULL;
 
     ogs_assert(addr);
     ogs_assert(h);
@@ -39,11 +40,16 @@ char *ogs_uridup(bool https, ogs_sockaddr_t *addr, ogs_sbi_header_t *h)
     else
         p = ogs_slprintf(p, last, "http://");
 
-    /* IP address */
-    if (addr->ogs_sa_family == AF_INET6)
-        p = ogs_slprintf(p, last, "[%s]", OGS_ADDR(addr, buf));
-    else
-        p = ogs_slprintf(p, last, "%s", OGS_ADDR(addr, buf));
+    /* Hostname/IP address */
+    hostname = ogs_gethostname(addr);
+    if (hostname) {
+        p = ogs_slprintf(p, last, "%s", hostname);
+    } else {
+        if (addr->ogs_sa_family == AF_INET6)
+            p = ogs_slprintf(p, last, "[%s]", OGS_ADDR(addr, buf));
+        else
+            p = ogs_slprintf(p, last, "%s", OGS_ADDR(addr, buf));
+    }
 
     /* Port number */
     if ((https == true && OGS_PORT(addr) == OGS_SBI_HTTPS_PORT)) {

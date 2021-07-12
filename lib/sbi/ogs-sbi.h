@@ -31,7 +31,6 @@
 #include "model/nf_group_cond.h"
 #include "model/smf_info.h"
 #include "model/problem_details.h"
-#include "model/patch_item.h"
 #include "model/subscription_data.h"
 #include "model/notification_data.h"
 #include "model/search_result.h"
@@ -74,6 +73,7 @@
 
 #include "custom/links.h"
 #include "custom/ue_authentication_ctx.h"
+#include "custom/patch_item.h"
 
 #if defined(__GNUC__)
 #pragma GCC diagnostic pop

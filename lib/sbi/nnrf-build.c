@@ -287,7 +287,9 @@ ogs_sbi_request_t *ogs_nnrf_nfm_build_update(ogs_sbi_nf_instance_t *nf_instance)
     memset(&item, 0, sizeof(item));
     item.op = OpenAPI_patch_operation_replace;
     item.path = (char *)"/nfStatus";
-    item.value = OpenAPI_nf_status_ToString(OpenAPI_nf_status_REGISTERED);
+    item.value = OpenAPI_any_type_create_string(
+        OpenAPI_nf_status_ToString(OpenAPI_nf_status_REGISTERED));
+    ogs_assert(item.value);
 
     OpenAPI_list_add(PatchItemList, &item);
 
@@ -296,6 +298,7 @@ ogs_sbi_request_t *ogs_nnrf_nfm_build_update(ogs_sbi_nf_instance_t *nf_instance)
     request = ogs_sbi_build_request(&message);
 
     OpenAPI_list_free(PatchItemList);
+    OpenAPI_any_type_free(item.value);
 
     return request;
 }

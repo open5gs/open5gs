@@ -136,7 +136,11 @@ bool udr_nudr_dr_handle_subscription_authentication(
             OpenAPI_list_for_each(PatchItemList, node) {
                 if (node->data) {
                     OpenAPI_patch_item_t *patch_item = node->data;
-                    sqn_string = patch_item->value;
+                    if (OpenAPI_IsString(patch_item->value))
+                        sqn_string = patch_item->value->valuestring;
+                    else
+                        ogs_error("Invalid any-type [%d]",
+                                patch_item->value->type);
                 }
             }
 

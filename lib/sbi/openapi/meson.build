@@ -497,7 +497,6 @@ libsbi_openapi_sources = files('''
     model/partial_record_method_any_of.c
     model/partial_record_method.c
     model/partial_success_report.c
-    model/patch_item.c
     model/patch_operation.c
     model/patch_result.c
     model/pc5_flow_bit_rates.c
