@@ -226,7 +226,7 @@ static int hss_ogs_diam_swx_mar_cb( struct msg **msg, struct avp *avp,
 
     /* Set Vendor-Specific-Application-Id AVP */
     ret = ogs_diam_message_vendor_specific_appid_set(
-            ans, OGS_DIAM_CX_APPLICATION_ID);
+            ans, OGS_DIAM_SWX_APPLICATION_ID);
     ogs_assert(ret == 0);
 
     /* Set the Auth-Session-State AVP */
@@ -348,7 +348,7 @@ static int hss_ogs_diam_swx_mar_cb( struct msg **msg, struct avp *avp,
 out:
     /* Set Vendor-Specific-Application-Id AVP */
     ret = ogs_diam_message_vendor_specific_appid_set(
-            ans, OGS_DIAM_CX_APPLICATION_ID);
+            ans, OGS_DIAM_SWX_APPLICATION_ID);
     ogs_assert(ret == 0);
 
 	/* Set the Experimental-Result, Origin-Host and Origin-Realm AVPs */
@@ -431,7 +431,7 @@ static int hss_ogs_diam_swx_sar_cb( struct msg **msg, struct avp *avp,
 
     /* Set Vendor-Specific-Application-Id AVP */
     ret = ogs_diam_message_vendor_specific_appid_set(
-            ans, OGS_DIAM_CX_APPLICATION_ID);
+            ans, OGS_DIAM_SWX_APPLICATION_ID);
     ogs_assert(ret == 0);
 
     /* Set the Auth-Session-State AVP */
@@ -855,7 +855,7 @@ static int hss_ogs_diam_swx_sar_cb( struct msg **msg, struct avp *avp,
 out:
     /* Set Vendor-Specific-Application-Id AVP */
     ret = ogs_diam_message_vendor_specific_appid_set(
-            ans, OGS_DIAM_CX_APPLICATION_ID);
+            ans, OGS_DIAM_SWX_APPLICATION_ID);
     ogs_assert(ret == 0);
 
 	/* Set the Experimental-Result, Origin-Host and Origin-Realm AVPs */
