@@ -524,7 +524,8 @@ void mme_s11_handle_create_bearer_request(
      * If GTP-xact Holding timer is expired,
      * OLD bearer->xact memory will be automatically removed.
      */
-    bearer->xact = xact;
+    bearer->current.xact = xact;
+    bearer->create.xact = xact;
 
     /* Before Activate DEDICATED bearer, check DEFAULT bearer status */
     default_bearer = mme_default_bearer_in_sess(sess);
@@ -607,7 +608,8 @@ void mme_s11_handle_update_bearer_request(
      * If GTP-xact Holding timer is expired,
      * OLD bearer->xact memory will be automatically removed.
      */
-    bearer->xact = xact;
+    bearer->current.xact = xact;
+    bearer->update.xact = xact;
 
     if (req->bearer_contexts.bearer_level_qos.presence == 1) {
         /* Bearer QoS */
@@ -742,7 +744,8 @@ void mme_s11_handle_delete_bearer_request(
      * If GTP-xact Holding timer is expired,
      * OLD bearer->xact memory will be automatically removed.
      */
-    bearer->xact = xact;
+    bearer->current.xact = xact;
+    bearer->delete.xact = xact;
 
     if (ECM_IDLE(mme_ue)) {
         ogs_assert(OGS_OK == s1ap_send_paging(mme_ue, S1AP_CNDomain_ps));
@@ -945,7 +948,8 @@ void mme_s11_handle_downlink_data_notification(
      * If GTP-xact Holding timer is expired,
      * OLD bearer->xact memory will be automatically removed.
      */
-    bearer->xact = xact;
+    bearer->current.xact = xact;
+    bearer->notify.xact = xact;
 
     if (noti->cause.presence) {
         ogs_gtp_cause_t *cause = noti->cause.data;

@@ -337,7 +337,7 @@ int mme_gtp_send_create_bearer_response(
     ogs_assert(bearer);
     mme_ue = bearer->mme_ue;
     ogs_assert(mme_ue);
-    xact = ogs_gtp_xact_cycle(bearer->xact);
+    xact = ogs_gtp_xact_cycle(bearer->create.xact);
     ogs_assert(xact);
 
     memset(&h, 0, sizeof(ogs_gtp_header_t));
@@ -370,7 +370,7 @@ int mme_gtp_send_update_bearer_response(
     ogs_assert(bearer);
     mme_ue = bearer->mme_ue;
     ogs_assert(mme_ue);
-    xact = ogs_gtp_xact_cycle(bearer->xact);
+    xact = ogs_gtp_xact_cycle(bearer->update.xact);
     ogs_assert(xact);
 
     memset(&h, 0, sizeof(ogs_gtp_header_t));
@@ -403,7 +403,7 @@ int mme_gtp_send_delete_bearer_response(
     ogs_assert(bearer);
     mme_ue = bearer->mme_ue;
     ogs_assert(mme_ue);
-    xact = ogs_gtp_xact_cycle(bearer->xact);
+    xact = ogs_gtp_xact_cycle(bearer->delete.xact);
     ogs_assert(xact);
 
     memset(&h, 0, sizeof(ogs_gtp_header_t));
@@ -488,7 +488,7 @@ int mme_gtp_send_downlink_data_notification_ack(
     ogs_pkbuf_t *s11buf = NULL;
 
     ogs_assert(bearer);
-    xact = ogs_gtp_xact_cycle(bearer->xact);
+    xact = ogs_gtp_xact_cycle(bearer->notify.xact);
     ogs_assert(xact);
     mme_ue = bearer->mme_ue;
     ogs_assert(mme_ue);

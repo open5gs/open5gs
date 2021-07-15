@@ -638,7 +638,9 @@ typedef struct mme_bearer_s {
     /* Related Context */
     mme_ue_t        *mme_ue;
     mme_sess_t      *sess;
-    ogs_gtp_xact_t  *xact;
+    struct {
+        ogs_gtp_xact_t  *xact;
+    } create, update, delete, notify, current;
 } mme_bearer_t;
 
 void mme_context_init(void);

@@ -87,7 +87,7 @@ void mme_send_after_paging(mme_ue_t *mme_ue, uint8_t cause_value)
             ogs_gtp_xact_t *xact = NULL;
             uint8_t type;
 
-            xact = ogs_gtp_xact_cycle(bearer->xact);
+            xact = ogs_gtp_xact_cycle(bearer->current.xact);
             if (xact) {
                 /*
                  * It may conflict with GTP transaction already used.
