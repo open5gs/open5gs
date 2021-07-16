@@ -94,6 +94,17 @@ typedef struct ogs_sbi_nf_instance_s {
     int num_of_ipv6;
     ogs_sockaddr_t *ipv6[OGS_SBI_MAX_NUM_OF_IP_ADDRESS];
 
+#define OGS_SBI_MAX_NUM_OF_NF_TYPE 16
+    int num_of_allowed_nf_type;
+    OpenAPI_nf_type_e allowed_nf_types[OGS_SBI_MAX_NUM_OF_NF_TYPE];
+
+#define OGS_SBI_DEFAULT_PRIORITY 0
+#define OGS_SBI_DEFAULT_CAPACITY 100
+#define OGS_SBI_DEFAULT_LOAD 0
+    int priority;
+    int capacity;
+    int load;
+
     ogs_list_t nf_service_list;
 
     void *client;                   /* only used in CLIENT */
@@ -170,6 +181,13 @@ typedef struct ogs_sbi_nf_service_s {
         int port;
     } addr[OGS_SBI_MAX_NUM_OF_IP_ADDRESS];
 
+    int num_of_allowed_nf_type;
+    OpenAPI_nf_type_e allowed_nf_types[OGS_SBI_MAX_NUM_OF_NF_TYPE];
+
+    int priority;
+    int capacity;
+    int load;
+
     /* Related Context */
     ogs_sbi_nf_instance_t *nf_instance;
     void *client;
@@ -238,6 +256,8 @@ ogs_sbi_context_t *ogs_sbi_self(void);
 int ogs_sbi_context_parse_config(const char *local, const char *remote);
 
 ogs_sbi_nf_instance_t *ogs_sbi_nf_instance_add(char *id);
+void ogs_sbi_nf_instance_add_allowed_nf_type(
+        ogs_sbi_nf_instance_t *nf_instance, OpenAPI_nf_type_e allowed_nf_type);
 void ogs_sbi_nf_instance_clear(ogs_sbi_nf_instance_t *nf_instance);
 void ogs_sbi_nf_instance_remove(ogs_sbi_nf_instance_t *nf_instance);
 void ogs_sbi_nf_instance_remove_all(void);
@@ -247,6 +267,8 @@ ogs_sbi_nf_service_t *ogs_sbi_nf_service_add(ogs_sbi_nf_instance_t *nf_instance,
         char *id, char *name, OpenAPI_uri_scheme_e scheme);
 void ogs_sbi_nf_service_add_version(ogs_sbi_nf_service_t *nf_service,
         char *in_uri, char *full, char *expiry);
+void ogs_sbi_nf_service_add_allowed_nf_type(
+        ogs_sbi_nf_service_t *nf_service, OpenAPI_nf_type_e allowed_nf_type);
 void ogs_sbi_nf_service_clear(ogs_sbi_nf_service_t *nf_service);
 void ogs_sbi_nf_service_remove(ogs_sbi_nf_service_t *nf_service);
 void ogs_sbi_nf_service_remove_all(ogs_sbi_nf_instance_t *nf_instance);

@@ -207,7 +207,6 @@ OpenAPI_amf_info_t *OpenAPI_amf_info_parseFromJSON(cJSON *amf_infoJSON)
         goto end;
     }
 
-    
     if (!cJSON_IsString(amf_set_id)) {
         ogs_error("OpenAPI_amf_info_parseFromJSON() failed [amf_set_id]");
         goto end;
@@ -219,7 +218,6 @@ OpenAPI_amf_info_t *OpenAPI_amf_info_parseFromJSON(cJSON *amf_infoJSON)
         goto end;
     }
 
-    
     if (!cJSON_IsString(amf_region_id)) {
         ogs_error("OpenAPI_amf_info_parseFromJSON() failed [amf_region_id]");
         goto end;
@@ -232,7 +230,6 @@ OpenAPI_amf_info_t *OpenAPI_amf_info_parseFromJSON(cJSON *amf_infoJSON)
     }
 
     OpenAPI_list_t *guami_listList;
-    
     cJSON *guami_list_local_nonprimitive;
     if (!cJSON_IsArray(guami_list)){
         ogs_error("OpenAPI_amf_info_parseFromJSON() failed [guami_list]");
@@ -254,7 +251,7 @@ OpenAPI_amf_info_t *OpenAPI_amf_info_parseFromJSON(cJSON *amf_infoJSON)
     cJSON *tai_list = cJSON_GetObjectItemCaseSensitive(amf_infoJSON, "taiList");
 
     OpenAPI_list_t *tai_listList;
-    if (tai_list) { 
+    if (tai_list) {
     cJSON *tai_list_local_nonprimitive;
     if (!cJSON_IsArray(tai_list)){
         ogs_error("OpenAPI_amf_info_parseFromJSON() failed [tai_list]");
@@ -277,7 +274,7 @@ OpenAPI_amf_info_t *OpenAPI_amf_info_parseFromJSON(cJSON *amf_infoJSON)
     cJSON *tai_range_list = cJSON_GetObjectItemCaseSensitive(amf_infoJSON, "taiRangeList");
 
     OpenAPI_list_t *tai_range_listList;
-    if (tai_range_list) { 
+    if (tai_range_list) {
     cJSON *tai_range_list_local_nonprimitive;
     if (!cJSON_IsArray(tai_range_list)){
         ogs_error("OpenAPI_amf_info_parseFromJSON() failed [tai_range_list]");
@@ -300,7 +297,7 @@ OpenAPI_amf_info_t *OpenAPI_amf_info_parseFromJSON(cJSON *amf_infoJSON)
     cJSON *backup_info_amf_failure = cJSON_GetObjectItemCaseSensitive(amf_infoJSON, "backupInfoAmfFailure");
 
     OpenAPI_list_t *backup_info_amf_failureList;
-    if (backup_info_amf_failure) { 
+    if (backup_info_amf_failure) {
     cJSON *backup_info_amf_failure_local_nonprimitive;
     if (!cJSON_IsArray(backup_info_amf_failure)){
         ogs_error("OpenAPI_amf_info_parseFromJSON() failed [backup_info_amf_failure]");
@@ -323,7 +320,7 @@ OpenAPI_amf_info_t *OpenAPI_amf_info_parseFromJSON(cJSON *amf_infoJSON)
     cJSON *backup_info_amf_removal = cJSON_GetObjectItemCaseSensitive(amf_infoJSON, "backupInfoAmfRemoval");
 
     OpenAPI_list_t *backup_info_amf_removalList;
-    if (backup_info_amf_removal) { 
+    if (backup_info_amf_removal) {
     cJSON *backup_info_amf_removal_local_nonprimitive;
     if (!cJSON_IsArray(backup_info_amf_removal)){
         ogs_error("OpenAPI_amf_info_parseFromJSON() failed [backup_info_amf_removal]");
@@ -346,7 +343,7 @@ OpenAPI_amf_info_t *OpenAPI_amf_info_parseFromJSON(cJSON *amf_infoJSON)
     cJSON *n2_interface_amf_info = cJSON_GetObjectItemCaseSensitive(amf_infoJSON, "n2InterfaceAmfInfo");
 
     OpenAPI_n2_interface_amf_info_t *n2_interface_amf_info_local_nonprim = NULL;
-    if (n2_interface_amf_info) { 
+    if (n2_interface_amf_info) {
     n2_interface_amf_info_local_nonprim = OpenAPI_n2_interface_amf_info_parseFromJSON(n2_interface_amf_info);
     }
 

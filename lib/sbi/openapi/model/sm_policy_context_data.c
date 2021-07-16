@@ -9,6 +9,7 @@ OpenAPI_sm_policy_context_data_t *OpenAPI_sm_policy_context_data_create(
     OpenAPI_acc_net_charging_address_t *charg_entity_addr,
     char *gpsi,
     char *supi,
+    bool is_invalid_supi,
     int invalid_supi,
     OpenAPI_list_t *inter_grp_ids,
     int pdu_session_id,
@@ -31,10 +32,15 @@ OpenAPI_sm_policy_context_data_t *OpenAPI_sm_policy_context_data_create(
     char *auth_prof_index,
     OpenAPI_subscribed_default_qos_t *subs_def_qos,
     OpenAPI_vplmn_qos_t *vplmn_qos,
+    bool is_num_of_pack_filter,
     int num_of_pack_filter,
+    bool is_online,
     int online,
+    bool is_offline,
     int offline,
+    bool is__3gpp_ps_data_off_status,
     int _3gpp_ps_data_off_status,
+    bool is_ref_qos_indication,
     int ref_qos_indication,
     OpenAPI_trace_data_t *trace_req,
     OpenAPI_snssai_t *slice_info,
@@ -57,6 +63,7 @@ OpenAPI_sm_policy_context_data_t *OpenAPI_sm_policy_context_data_create(
     sm_policy_context_data_local_var->charg_entity_addr = charg_entity_addr;
     sm_policy_context_data_local_var->gpsi = gpsi;
     sm_policy_context_data_local_var->supi = supi;
+    sm_policy_context_data_local_var->is_invalid_supi = is_invalid_supi;
     sm_policy_context_data_local_var->invalid_supi = invalid_supi;
     sm_policy_context_data_local_var->inter_grp_ids = inter_grp_ids;
     sm_policy_context_data_local_var->pdu_session_id = pdu_session_id;
@@ -79,10 +86,15 @@ OpenAPI_sm_policy_context_data_t *OpenAPI_sm_policy_context_data_create(
     sm_policy_context_data_local_var->auth_prof_index = auth_prof_index;
     sm_policy_context_data_local_var->subs_def_qos = subs_def_qos;
     sm_policy_context_data_local_var->vplmn_qos = vplmn_qos;
+    sm_policy_context_data_local_var->is_num_of_pack_filter = is_num_of_pack_filter;
     sm_policy_context_data_local_var->num_of_pack_filter = num_of_pack_filter;
+    sm_policy_context_data_local_var->is_online = is_online;
     sm_policy_context_data_local_var->online = online;
+    sm_policy_context_data_local_var->is_offline = is_offline;
     sm_policy_context_data_local_var->offline = offline;
+    sm_policy_context_data_local_var->is__3gpp_ps_data_off_status = is__3gpp_ps_data_off_status;
     sm_policy_context_data_local_var->_3gpp_ps_data_off_status = _3gpp_ps_data_off_status;
+    sm_policy_context_data_local_var->is_ref_qos_indication = is_ref_qos_indication;
     sm_policy_context_data_local_var->ref_qos_indication = ref_qos_indication;
     sm_policy_context_data_local_var->trace_req = trace_req;
     sm_policy_context_data_local_var->slice_info = slice_info;
@@ -194,7 +206,7 @@ cJSON *OpenAPI_sm_policy_context_data_convertToJSON(OpenAPI_sm_policy_context_da
         goto end;
     }
 
-    if (sm_policy_context_data->invalid_supi) {
+    if (sm_policy_context_data->is_invalid_supi) {
     if (cJSON_AddBoolToObject(item, "invalidSupi", sm_policy_context_data->invalid_supi) == NULL) {
         ogs_error("OpenAPI_sm_policy_context_data_convertToJSON() failed [invalid_supi]");
         goto end;
@@ -385,35 +397,35 @@ cJSON *OpenAPI_sm_policy_context_data_convertToJSON(OpenAPI_sm_policy_context_da
     }
     }
 
-    if (sm_policy_context_data->num_of_pack_filter) {
+    if (sm_policy_context_data->is_num_of_pack_filter) {
     if (cJSON_AddNumberToObject(item, "numOfPackFilter", sm_policy_context_data->num_of_pack_filter) == NULL) {
         ogs_error("OpenAPI_sm_policy_context_data_convertToJSON() failed [num_of_pack_filter]");
         goto end;
     }
     }
 
-    if (sm_policy_context_data->online) {
+    if (sm_policy_context_data->is_online) {
     if (cJSON_AddBoolToObject(item, "online", sm_policy_context_data->online) == NULL) {
         ogs_error("OpenAPI_sm_policy_context_data_convertToJSON() failed [online]");
         goto end;
     }
     }
 
-    if (sm_policy_context_data->offline) {
+    if (sm_policy_context_data->is_offline) {
     if (cJSON_AddBoolToObject(item, "offline", sm_policy_context_data->offline) == NULL) {
         ogs_error("OpenAPI_sm_policy_context_data_convertToJSON() failed [offline]");
         goto end;
     }
     }
 
-    if (sm_policy_context_data->_3gpp_ps_data_off_status) {
+    if (sm_policy_context_data->is__3gpp_ps_data_off_status) {
     if (cJSON_AddBoolToObject(item, "3gppPsDataOffStatus", sm_policy_context_data->_3gpp_ps_data_off_status) == NULL) {
         ogs_error("OpenAPI_sm_policy_context_data_convertToJSON() failed [_3gpp_ps_data_off_status]");
         goto end;
     }
     }
 
-    if (sm_policy_context_data->ref_qos_indication) {
+    if (sm_policy_context_data->is_ref_qos_indication) {
     if (cJSON_AddBoolToObject(item, "refQosIndication", sm_policy_context_data->ref_qos_indication) == NULL) {
         ogs_error("OpenAPI_sm_policy_context_data_convertToJSON() failed [ref_qos_indication]");
         goto end;
@@ -547,20 +559,20 @@ OpenAPI_sm_policy_context_data_t *OpenAPI_sm_policy_context_data_parseFromJSON(c
     cJSON *acc_net_ch_id = cJSON_GetObjectItemCaseSensitive(sm_policy_context_dataJSON, "accNetChId");
 
     OpenAPI_acc_net_ch_id_t *acc_net_ch_id_local_nonprim = NULL;
-    if (acc_net_ch_id) { 
+    if (acc_net_ch_id) {
     acc_net_ch_id_local_nonprim = OpenAPI_acc_net_ch_id_parseFromJSON(acc_net_ch_id);
     }
 
     cJSON *charg_entity_addr = cJSON_GetObjectItemCaseSensitive(sm_policy_context_dataJSON, "chargEntityAddr");
 
     OpenAPI_acc_net_charging_address_t *charg_entity_addr_local_nonprim = NULL;
-    if (charg_entity_addr) { 
+    if (charg_entity_addr) {
     charg_entity_addr_local_nonprim = OpenAPI_acc_net_charging_address_parseFromJSON(charg_entity_addr);
     }
 
     cJSON *gpsi = cJSON_GetObjectItemCaseSensitive(sm_policy_context_dataJSON, "gpsi");
 
-    if (gpsi) { 
+    if (gpsi) {
     if (!cJSON_IsString(gpsi)) {
         ogs_error("OpenAPI_sm_policy_context_data_parseFromJSON() failed [gpsi]");
         goto end;
@@ -573,7 +585,6 @@ OpenAPI_sm_policy_context_data_t *OpenAPI_sm_policy_context_data_parseFromJSON(c
         goto end;
     }
 
-    
     if (!cJSON_IsString(supi)) {
         ogs_error("OpenAPI_sm_policy_context_data_parseFromJSON() failed [supi]");
         goto end;
@@ -581,7 +592,7 @@ OpenAPI_sm_policy_context_data_t *OpenAPI_sm_policy_context_data_parseFromJSON(c
 
     cJSON *invalid_supi = cJSON_GetObjectItemCaseSensitive(sm_policy_context_dataJSON, "invalidSupi");
 
-    if (invalid_supi) { 
+    if (invalid_supi) {
     if (!cJSON_IsBool(invalid_supi)) {
         ogs_error("OpenAPI_sm_policy_context_data_parseFromJSON() failed [invalid_supi]");
         goto end;
@@ -591,7 +602,7 @@ OpenAPI_sm_policy_context_data_t *OpenAPI_sm_policy_context_data_parseFromJSON(c
     cJSON *inter_grp_ids = cJSON_GetObjectItemCaseSensitive(sm_policy_context_dataJSON, "interGrpIds");
 
     OpenAPI_list_t *inter_grp_idsList;
-    if (inter_grp_ids) { 
+    if (inter_grp_ids) {
     cJSON *inter_grp_ids_local;
     if (!cJSON_IsArray(inter_grp_ids)) {
         ogs_error("OpenAPI_sm_policy_context_data_parseFromJSON() failed [inter_grp_ids]");
@@ -605,7 +616,7 @@ OpenAPI_sm_policy_context_data_t *OpenAPI_sm_policy_context_data_parseFromJSON(c
         goto end;
     }
     OpenAPI_list_add(inter_grp_idsList , ogs_strdup_or_assert(inter_grp_ids_local->valuestring));
-                    }
+    }
     }
 
     cJSON *pdu_session_id = cJSON_GetObjectItemCaseSensitive(sm_policy_context_dataJSON, "pduSessionId");
@@ -614,7 +625,6 @@ OpenAPI_sm_policy_context_data_t *OpenAPI_sm_policy_context_data_parseFromJSON(c
         goto end;
     }
 
-    
     if (!cJSON_IsNumber(pdu_session_id)) {
         ogs_error("OpenAPI_sm_policy_context_data_parseFromJSON() failed [pdu_session_id]");
         goto end;
@@ -627,7 +637,6 @@ OpenAPI_sm_policy_context_data_t *OpenAPI_sm_policy_context_data_parseFromJSON(c
     }
 
     OpenAPI_pdu_session_type_e pdu_session_typeVariable;
-    
     if (!cJSON_IsString(pdu_session_type)) {
         ogs_error("OpenAPI_sm_policy_context_data_parseFromJSON() failed [pdu_session_type]");
         goto end;
@@ -636,7 +645,7 @@ OpenAPI_sm_policy_context_data_t *OpenAPI_sm_policy_context_data_parseFromJSON(c
 
     cJSON *chargingcharacteristics = cJSON_GetObjectItemCaseSensitive(sm_policy_context_dataJSON, "chargingcharacteristics");
 
-    if (chargingcharacteristics) { 
+    if (chargingcharacteristics) {
     if (!cJSON_IsString(chargingcharacteristics)) {
         ogs_error("OpenAPI_sm_policy_context_data_parseFromJSON() failed [chargingcharacteristics]");
         goto end;
@@ -649,7 +658,6 @@ OpenAPI_sm_policy_context_data_t *OpenAPI_sm_policy_context_data_parseFromJSON(c
         goto end;
     }
 
-    
     if (!cJSON_IsString(dnn)) {
         ogs_error("OpenAPI_sm_policy_context_data_parseFromJSON() failed [dnn]");
         goto end;
@@ -658,7 +666,7 @@ OpenAPI_sm_policy_context_data_t *OpenAPI_sm_policy_context_data_parseFromJSON(c
     cJSON *dnn_sel_mode = cJSON_GetObjectItemCaseSensitive(sm_policy_context_dataJSON, "dnnSelMode");
 
     OpenAPI_dnn_selection_mode_e dnn_sel_modeVariable;
-    if (dnn_sel_mode) { 
+    if (dnn_sel_mode) {
     if (!cJSON_IsString(dnn_sel_mode)) {
         ogs_error("OpenAPI_sm_policy_context_data_parseFromJSON() failed [dnn_sel_mode]");
         goto end;
@@ -672,7 +680,6 @@ OpenAPI_sm_policy_context_data_t *OpenAPI_sm_policy_context_data_parseFromJSON(c
         goto end;
     }
 
-    
     if (!cJSON_IsString(notification_uri)) {
         ogs_error("OpenAPI_sm_policy_context_data_parseFromJSON() failed [notification_uri]");
         goto end;
@@ -681,7 +688,7 @@ OpenAPI_sm_policy_context_data_t *OpenAPI_sm_policy_context_data_parseFromJSON(c
     cJSON *access_type = cJSON_GetObjectItemCaseSensitive(sm_policy_context_dataJSON, "accessType");
 
     OpenAPI_access_type_e access_typeVariable;
-    if (access_type) { 
+    if (access_type) {
     if (!cJSON_IsString(access_type)) {
         ogs_error("OpenAPI_sm_policy_context_data_parseFromJSON() failed [access_type]");
         goto end;
@@ -692,7 +699,7 @@ OpenAPI_sm_policy_context_data_t *OpenAPI_sm_policy_context_data_parseFromJSON(c
     cJSON *rat_type = cJSON_GetObjectItemCaseSensitive(sm_policy_context_dataJSON, "ratType");
 
     OpenAPI_rat_type_e rat_typeVariable;
-    if (rat_type) { 
+    if (rat_type) {
     if (!cJSON_IsString(rat_type)) {
         ogs_error("OpenAPI_sm_policy_context_data_parseFromJSON() failed [rat_type]");
         goto end;
@@ -703,27 +710,27 @@ OpenAPI_sm_policy_context_data_t *OpenAPI_sm_policy_context_data_parseFromJSON(c
     cJSON *add_access_info = cJSON_GetObjectItemCaseSensitive(sm_policy_context_dataJSON, "addAccessInfo");
 
     OpenAPI_additional_access_info_t *add_access_info_local_nonprim = NULL;
-    if (add_access_info) { 
+    if (add_access_info) {
     add_access_info_local_nonprim = OpenAPI_additional_access_info_parseFromJSON(add_access_info);
     }
 
     cJSON *serving_network = cJSON_GetObjectItemCaseSensitive(sm_policy_context_dataJSON, "servingNetwork");
 
     OpenAPI_plmn_id_nid_t *serving_network_local_nonprim = NULL;
-    if (serving_network) { 
+    if (serving_network) {
     serving_network_local_nonprim = OpenAPI_plmn_id_nid_parseFromJSON(serving_network);
     }
 
     cJSON *user_location_info = cJSON_GetObjectItemCaseSensitive(sm_policy_context_dataJSON, "userLocationInfo");
 
     OpenAPI_user_location_t *user_location_info_local_nonprim = NULL;
-    if (user_location_info) { 
+    if (user_location_info) {
     user_location_info_local_nonprim = OpenAPI_user_location_parseFromJSON(user_location_info);
     }
 
     cJSON *ue_time_zone = cJSON_GetObjectItemCaseSensitive(sm_policy_context_dataJSON, "ueTimeZone");
 
-    if (ue_time_zone) { 
+    if (ue_time_zone) {
     if (!cJSON_IsString(ue_time_zone)) {
         ogs_error("OpenAPI_sm_policy_context_data_parseFromJSON() failed [ue_time_zone]");
         goto end;
@@ -732,7 +739,7 @@ OpenAPI_sm_policy_context_data_t *OpenAPI_sm_policy_context_data_parseFromJSON(c
 
     cJSON *pei = cJSON_GetObjectItemCaseSensitive(sm_policy_context_dataJSON, "pei");
 
-    if (pei) { 
+    if (pei) {
     if (!cJSON_IsString(pei)) {
         ogs_error("OpenAPI_sm_policy_context_data_parseFromJSON() failed [pei]");
         goto end;
@@ -741,7 +748,7 @@ OpenAPI_sm_policy_context_data_t *OpenAPI_sm_policy_context_data_parseFromJSON(c
 
     cJSON *ipv4_address = cJSON_GetObjectItemCaseSensitive(sm_policy_context_dataJSON, "ipv4Address");
 
-    if (ipv4_address) { 
+    if (ipv4_address) {
     if (!cJSON_IsString(ipv4_address)) {
         ogs_error("OpenAPI_sm_policy_context_data_parseFromJSON() failed [ipv4_address]");
         goto end;
@@ -750,7 +757,7 @@ OpenAPI_sm_policy_context_data_t *OpenAPI_sm_policy_context_data_parseFromJSON(c
 
     cJSON *ipv6_address_prefix = cJSON_GetObjectItemCaseSensitive(sm_policy_context_dataJSON, "ipv6AddressPrefix");
 
-    if (ipv6_address_prefix) { 
+    if (ipv6_address_prefix) {
     if (!cJSON_IsString(ipv6_address_prefix)) {
         ogs_error("OpenAPI_sm_policy_context_data_parseFromJSON() failed [ipv6_address_prefix]");
         goto end;
@@ -759,7 +766,7 @@ OpenAPI_sm_policy_context_data_t *OpenAPI_sm_policy_context_data_parseFromJSON(c
 
     cJSON *ip_domain = cJSON_GetObjectItemCaseSensitive(sm_policy_context_dataJSON, "ipDomain");
 
-    if (ip_domain) { 
+    if (ip_domain) {
     if (!cJSON_IsString(ip_domain)) {
         ogs_error("OpenAPI_sm_policy_context_data_parseFromJSON() failed [ip_domain]");
         goto end;
@@ -769,13 +776,13 @@ OpenAPI_sm_policy_context_data_t *OpenAPI_sm_policy_context_data_parseFromJSON(c
     cJSON *subs_sess_ambr = cJSON_GetObjectItemCaseSensitive(sm_policy_context_dataJSON, "subsSessAmbr");
 
     OpenAPI_ambr_t *subs_sess_ambr_local_nonprim = NULL;
-    if (subs_sess_ambr) { 
+    if (subs_sess_ambr) {
     subs_sess_ambr_local_nonprim = OpenAPI_ambr_parseFromJSON(subs_sess_ambr);
     }
 
     cJSON *auth_prof_index = cJSON_GetObjectItemCaseSensitive(sm_policy_context_dataJSON, "authProfIndex");
 
-    if (auth_prof_index) { 
+    if (auth_prof_index) {
     if (!cJSON_IsString(auth_prof_index)) {
         ogs_error("OpenAPI_sm_policy_context_data_parseFromJSON() failed [auth_prof_index]");
         goto end;
@@ -785,20 +792,20 @@ OpenAPI_sm_policy_context_data_t *OpenAPI_sm_policy_context_data_parseFromJSON(c
     cJSON *subs_def_qos = cJSON_GetObjectItemCaseSensitive(sm_policy_context_dataJSON, "subsDefQos");
 
     OpenAPI_subscribed_default_qos_t *subs_def_qos_local_nonprim = NULL;
-    if (subs_def_qos) { 
+    if (subs_def_qos) {
     subs_def_qos_local_nonprim = OpenAPI_subscribed_default_qos_parseFromJSON(subs_def_qos);
     }
 
     cJSON *vplmn_qos = cJSON_GetObjectItemCaseSensitive(sm_policy_context_dataJSON, "vplmnQos");
 
     OpenAPI_vplmn_qos_t *vplmn_qos_local_nonprim = NULL;
-    if (vplmn_qos) { 
+    if (vplmn_qos) {
     vplmn_qos_local_nonprim = OpenAPI_vplmn_qos_parseFromJSON(vplmn_qos);
     }
 
     cJSON *num_of_pack_filter = cJSON_GetObjectItemCaseSensitive(sm_policy_context_dataJSON, "numOfPackFilter");
 
-    if (num_of_pack_filter) { 
+    if (num_of_pack_filter) {
     if (!cJSON_IsNumber(num_of_pack_filter)) {
         ogs_error("OpenAPI_sm_policy_context_data_parseFromJSON() failed [num_of_pack_filter]");
         goto end;
@@ -807,7 +814,7 @@ OpenAPI_sm_policy_context_data_t *OpenAPI_sm_policy_context_data_parseFromJSON(c
 
     cJSON *online = cJSON_GetObjectItemCaseSensitive(sm_policy_context_dataJSON, "online");
 
-    if (online) { 
+    if (online) {
     if (!cJSON_IsBool(online)) {
         ogs_error("OpenAPI_sm_policy_context_data_parseFromJSON() failed [online]");
         goto end;
@@ -816,7 +823,7 @@ OpenAPI_sm_policy_context_data_t *OpenAPI_sm_policy_context_data_parseFromJSON(c
 
     cJSON *offline = cJSON_GetObjectItemCaseSensitive(sm_policy_context_dataJSON, "offline");
 
-    if (offline) { 
+    if (offline) {
     if (!cJSON_IsBool(offline)) {
         ogs_error("OpenAPI_sm_policy_context_data_parseFromJSON() failed [offline]");
         goto end;
@@ -825,7 +832,7 @@ OpenAPI_sm_policy_context_data_t *OpenAPI_sm_policy_context_data_parseFromJSON(c
 
     cJSON *_3gpp_ps_data_off_status = cJSON_GetObjectItemCaseSensitive(sm_policy_context_dataJSON, "3gppPsDataOffStatus");
 
-    if (_3gpp_ps_data_off_status) { 
+    if (_3gpp_ps_data_off_status) {
     if (!cJSON_IsBool(_3gpp_ps_data_off_status)) {
         ogs_error("OpenAPI_sm_policy_context_data_parseFromJSON() failed [_3gpp_ps_data_off_status]");
         goto end;
@@ -834,7 +841,7 @@ OpenAPI_sm_policy_context_data_t *OpenAPI_sm_policy_context_data_parseFromJSON(c
 
     cJSON *ref_qos_indication = cJSON_GetObjectItemCaseSensitive(sm_policy_context_dataJSON, "refQosIndication");
 
-    if (ref_qos_indication) { 
+    if (ref_qos_indication) {
     if (!cJSON_IsBool(ref_qos_indication)) {
         ogs_error("OpenAPI_sm_policy_context_data_parseFromJSON() failed [ref_qos_indication]");
         goto end;
@@ -844,7 +851,7 @@ OpenAPI_sm_policy_context_data_t *OpenAPI_sm_policy_context_data_parseFromJSON(c
     cJSON *trace_req = cJSON_GetObjectItemCaseSensitive(sm_policy_context_dataJSON, "traceReq");
 
     OpenAPI_trace_data_t *trace_req_local_nonprim = NULL;
-    if (trace_req) { 
+    if (trace_req) {
     trace_req_local_nonprim = OpenAPI_trace_data_parseFromJSON(trace_req);
     }
 
@@ -855,13 +862,12 @@ OpenAPI_sm_policy_context_data_t *OpenAPI_sm_policy_context_data_parseFromJSON(c
     }
 
     OpenAPI_snssai_t *slice_info_local_nonprim = NULL;
-    
     slice_info_local_nonprim = OpenAPI_snssai_parseFromJSON(slice_info);
 
     cJSON *qos_flow_usage = cJSON_GetObjectItemCaseSensitive(sm_policy_context_dataJSON, "qosFlowUsage");
 
     OpenAPI_qos_flow_usage_e qos_flow_usageVariable;
-    if (qos_flow_usage) { 
+    if (qos_flow_usage) {
     if (!cJSON_IsString(qos_flow_usage)) {
         ogs_error("OpenAPI_sm_policy_context_data_parseFromJSON() failed [qos_flow_usage]");
         goto end;
@@ -872,13 +878,13 @@ OpenAPI_sm_policy_context_data_t *OpenAPI_sm_policy_context_data_parseFromJSON(c
     cJSON *serv_nf_id = cJSON_GetObjectItemCaseSensitive(sm_policy_context_dataJSON, "servNfId");
 
     OpenAPI_serving_nf_identity_t *serv_nf_id_local_nonprim = NULL;
-    if (serv_nf_id) { 
+    if (serv_nf_id) {
     serv_nf_id_local_nonprim = OpenAPI_serving_nf_identity_parseFromJSON(serv_nf_id);
     }
 
     cJSON *supp_feat = cJSON_GetObjectItemCaseSensitive(sm_policy_context_dataJSON, "suppFeat");
 
-    if (supp_feat) { 
+    if (supp_feat) {
     if (!cJSON_IsString(supp_feat)) {
         ogs_error("OpenAPI_sm_policy_context_data_parseFromJSON() failed [supp_feat]");
         goto end;
@@ -887,7 +893,7 @@ OpenAPI_sm_policy_context_data_t *OpenAPI_sm_policy_context_data_parseFromJSON(c
 
     cJSON *smf_id = cJSON_GetObjectItemCaseSensitive(sm_policy_context_dataJSON, "smfId");
 
-    if (smf_id) { 
+    if (smf_id) {
     if (!cJSON_IsString(smf_id)) {
         ogs_error("OpenAPI_sm_policy_context_data_parseFromJSON() failed [smf_id]");
         goto end;
@@ -896,7 +902,7 @@ OpenAPI_sm_policy_context_data_t *OpenAPI_sm_policy_context_data_parseFromJSON(c
 
     cJSON *recovery_time = cJSON_GetObjectItemCaseSensitive(sm_policy_context_dataJSON, "recoveryTime");
 
-    if (recovery_time) { 
+    if (recovery_time) {
     if (!cJSON_IsString(recovery_time)) {
         ogs_error("OpenAPI_sm_policy_context_data_parseFromJSON() failed [recovery_time]");
         goto end;
@@ -906,7 +912,7 @@ OpenAPI_sm_policy_context_data_t *OpenAPI_sm_policy_context_data_parseFromJSON(c
     cJSON *ma_pdu_ind = cJSON_GetObjectItemCaseSensitive(sm_policy_context_dataJSON, "maPduInd");
 
     OpenAPI_ma_pdu_indication_e ma_pdu_indVariable;
-    if (ma_pdu_ind) { 
+    if (ma_pdu_ind) {
     if (!cJSON_IsString(ma_pdu_ind)) {
         ogs_error("OpenAPI_sm_policy_context_data_parseFromJSON() failed [ma_pdu_ind]");
         goto end;
@@ -917,14 +923,14 @@ OpenAPI_sm_policy_context_data_t *OpenAPI_sm_policy_context_data_parseFromJSON(c
     cJSON *atsss_capab = cJSON_GetObjectItemCaseSensitive(sm_policy_context_dataJSON, "atsssCapab");
 
     OpenAPI_atsss_capability_t *atsss_capab_local_nonprim = NULL;
-    if (atsss_capab) { 
+    if (atsss_capab) {
     atsss_capab_local_nonprim = OpenAPI_atsss_capability_parseFromJSON(atsss_capab);
     }
 
     cJSON *ipv4_frame_route_list = cJSON_GetObjectItemCaseSensitive(sm_policy_context_dataJSON, "ipv4FrameRouteList");
 
     OpenAPI_list_t *ipv4_frame_route_listList;
-    if (ipv4_frame_route_list) { 
+    if (ipv4_frame_route_list) {
     cJSON *ipv4_frame_route_list_local;
     if (!cJSON_IsArray(ipv4_frame_route_list)) {
         ogs_error("OpenAPI_sm_policy_context_data_parseFromJSON() failed [ipv4_frame_route_list]");
@@ -938,13 +944,13 @@ OpenAPI_sm_policy_context_data_t *OpenAPI_sm_policy_context_data_parseFromJSON(c
         goto end;
     }
     OpenAPI_list_add(ipv4_frame_route_listList , ogs_strdup_or_assert(ipv4_frame_route_list_local->valuestring));
-                    }
+    }
     }
 
     cJSON *ipv6_frame_route_list = cJSON_GetObjectItemCaseSensitive(sm_policy_context_dataJSON, "ipv6FrameRouteList");
 
     OpenAPI_list_t *ipv6_frame_route_listList;
-    if (ipv6_frame_route_list) { 
+    if (ipv6_frame_route_list) {
     cJSON *ipv6_frame_route_list_local;
     if (!cJSON_IsArray(ipv6_frame_route_list)) {
         ogs_error("OpenAPI_sm_policy_context_data_parseFromJSON() failed [ipv6_frame_route_list]");
@@ -958,7 +964,7 @@ OpenAPI_sm_policy_context_data_t *OpenAPI_sm_policy_context_data_parseFromJSON(c
         goto end;
     }
     OpenAPI_list_add(ipv6_frame_route_listList , ogs_strdup_or_assert(ipv6_frame_route_list_local->valuestring));
-                    }
+    }
     }
 
     sm_policy_context_data_local_var = OpenAPI_sm_policy_context_data_create (
@@ -966,8 +972,10 @@ OpenAPI_sm_policy_context_data_t *OpenAPI_sm_policy_context_data_parseFromJSON(c
         charg_entity_addr ? charg_entity_addr_local_nonprim : NULL,
         gpsi ? ogs_strdup_or_assert(gpsi->valuestring) : NULL,
         ogs_strdup_or_assert(supi->valuestring),
+        invalid_supi ? true : false,
         invalid_supi ? invalid_supi->valueint : 0,
         inter_grp_ids ? inter_grp_idsList : NULL,
+        
         pdu_session_id->valuedouble,
         pdu_session_typeVariable,
         chargingcharacteristics ? ogs_strdup_or_assert(chargingcharacteristics->valuestring) : NULL,
@@ -988,10 +996,15 @@ OpenAPI_sm_policy_context_data_t *OpenAPI_sm_policy_context_data_parseFromJSON(c
         auth_prof_index ? ogs_strdup_or_assert(auth_prof_index->valuestring) : NULL,
         subs_def_qos ? subs_def_qos_local_nonprim : NULL,
         vplmn_qos ? vplmn_qos_local_nonprim : NULL,
+        num_of_pack_filter ? true : false,
         num_of_pack_filter ? num_of_pack_filter->valuedouble : 0,
+        online ? true : false,
         online ? online->valueint : 0,
+        offline ? true : false,
         offline ? offline->valueint : 0,
+        _3gpp_ps_data_off_status ? true : false,
         _3gpp_ps_data_off_status ? _3gpp_ps_data_off_status->valueint : 0,
+        ref_qos_indication ? true : false,
         ref_qos_indication ? ref_qos_indication->valueint : 0,
         trace_req ? trace_req_local_nonprim : NULL,
         slice_info_local_nonprim,

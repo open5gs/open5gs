@@ -63,7 +63,6 @@ OpenAPI_termination_info_t *OpenAPI_termination_info_parseFromJSON(cJSON *termin
     }
 
     OpenAPI_termination_cause_e term_causeVariable;
-    
     if (!cJSON_IsString(term_cause)) {
         ogs_error("OpenAPI_termination_info_parseFromJSON() failed [term_cause]");
         goto end;
@@ -76,7 +75,6 @@ OpenAPI_termination_info_t *OpenAPI_termination_info_parseFromJSON(cJSON *termin
         goto end;
     }
 
-    
     if (!cJSON_IsString(res_uri)) {
         ogs_error("OpenAPI_termination_info_parseFromJSON() failed [res_uri]");
         goto end;

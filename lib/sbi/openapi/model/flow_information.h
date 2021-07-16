@@ -24,6 +24,7 @@ typedef struct OpenAPI_flow_information_s {
     char *flow_description;
     struct OpenAPI_eth_flow_description_s *eth_flow_description;
     char *pack_filt_id;
+    bool is_packet_filter_usage;
     int packet_filter_usage;
     char *tos_traffic_class;
     char *spi;
@@ -35,6 +36,7 @@ OpenAPI_flow_information_t *OpenAPI_flow_information_create(
     char *flow_description,
     OpenAPI_eth_flow_description_t *eth_flow_description,
     char *pack_filt_id,
+    bool is_packet_filter_usage,
     int packet_filter_usage,
     char *tos_traffic_class,
     char *spi,

@@ -593,7 +593,6 @@ libsbi_openapi_sources = files('''
     model/priority_sharing_indicator.c
     model/privacy_check_related_action.c
     model/problem_details_1.c
-    model/problem_details_2.c
     model/problem_details_add_info.c
     model/problem_details.c
     model/protection_result.c

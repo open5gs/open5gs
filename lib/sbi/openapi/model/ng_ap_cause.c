@@ -61,7 +61,6 @@ OpenAPI_ng_ap_cause_t *OpenAPI_ng_ap_cause_parseFromJSON(cJSON *ng_ap_causeJSON)
         goto end;
     }
 
-    
     if (!cJSON_IsNumber(group)) {
         ogs_error("OpenAPI_ng_ap_cause_parseFromJSON() failed [group]");
         goto end;
@@ -73,14 +72,15 @@ OpenAPI_ng_ap_cause_t *OpenAPI_ng_ap_cause_parseFromJSON(cJSON *ng_ap_causeJSON)
         goto end;
     }
 
-    
     if (!cJSON_IsNumber(value)) {
         ogs_error("OpenAPI_ng_ap_cause_parseFromJSON() failed [value]");
         goto end;
     }
 
     ng_ap_cause_local_var = OpenAPI_ng_ap_cause_create (
+        
         group->valuedouble,
+        
         value->valuedouble
     );
 

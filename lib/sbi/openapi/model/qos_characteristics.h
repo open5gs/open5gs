@@ -25,8 +25,11 @@ typedef struct OpenAPI_qos_characteristics_s {
     int priority_level;
     int packet_delay_budget;
     char *packet_error_rate;
+    bool is_averaging_window;
     int averaging_window;
+    bool is_max_data_burst_vol;
     int max_data_burst_vol;
+    bool is_ext_max_data_burst_vol;
     int ext_max_data_burst_vol;
 } OpenAPI_qos_characteristics_t;
 
@@ -36,8 +39,11 @@ OpenAPI_qos_characteristics_t *OpenAPI_qos_characteristics_create(
     int priority_level,
     int packet_delay_budget,
     char *packet_error_rate,
+    bool is_averaging_window,
     int averaging_window,
+    bool is_max_data_burst_vol,
     int max_data_burst_vol,
+    bool is_ext_max_data_burst_vol,
     int ext_max_data_burst_vol
 );
 void OpenAPI_qos_characteristics_free(OpenAPI_qos_characteristics_t *qos_characteristics);

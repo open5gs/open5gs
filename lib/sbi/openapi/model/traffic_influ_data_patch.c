@@ -6,6 +6,7 @@
 
 OpenAPI_traffic_influ_data_patch_t *OpenAPI_traffic_influ_data_patch_create(
     char *up_path_chg_notif_corre_id,
+    bool is_app_relo_ind,
     int app_relo_ind,
     char *dnn,
     OpenAPI_list_t *eth_traffic_filters,
@@ -14,6 +15,7 @@ OpenAPI_traffic_influ_data_patch_t *OpenAPI_traffic_influ_data_patch_create(
     char *supi,
     OpenAPI_list_t *traffic_filters,
     OpenAPI_list_t *traffic_routes,
+    bool is_traff_corre_ind,
     int traff_corre_ind,
     char *valid_start_time,
     char *valid_end_time,
@@ -21,7 +23,9 @@ OpenAPI_traffic_influ_data_patch_t *OpenAPI_traffic_influ_data_patch_create(
     OpenAPI_network_area_info_1_t *nw_area_info,
     char *up_path_chg_notif_uri,
     OpenAPI_list_t *headers,
+    bool is_af_ack_ind,
     int af_ack_ind,
+    bool is_addr_preser_ind,
     int addr_preser_ind
 )
 {
@@ -30,6 +34,7 @@ OpenAPI_traffic_influ_data_patch_t *OpenAPI_traffic_influ_data_patch_create(
         return NULL;
     }
     traffic_influ_data_patch_local_var->up_path_chg_notif_corre_id = up_path_chg_notif_corre_id;
+    traffic_influ_data_patch_local_var->is_app_relo_ind = is_app_relo_ind;
     traffic_influ_data_patch_local_var->app_relo_ind = app_relo_ind;
     traffic_influ_data_patch_local_var->dnn = dnn;
     traffic_influ_data_patch_local_var->eth_traffic_filters = eth_traffic_filters;
@@ -38,6 +43,7 @@ OpenAPI_traffic_influ_data_patch_t *OpenAPI_traffic_influ_data_patch_create(
     traffic_influ_data_patch_local_var->supi = supi;
     traffic_influ_data_patch_local_var->traffic_filters = traffic_filters;
     traffic_influ_data_patch_local_var->traffic_routes = traffic_routes;
+    traffic_influ_data_patch_local_var->is_traff_corre_ind = is_traff_corre_ind;
     traffic_influ_data_patch_local_var->traff_corre_ind = traff_corre_ind;
     traffic_influ_data_patch_local_var->valid_start_time = valid_start_time;
     traffic_influ_data_patch_local_var->valid_end_time = valid_end_time;
@@ -45,7 +51,9 @@ OpenAPI_traffic_influ_data_patch_t *OpenAPI_traffic_influ_data_patch_create(
     traffic_influ_data_patch_local_var->nw_area_info = nw_area_info;
     traffic_influ_data_patch_local_var->up_path_chg_notif_uri = up_path_chg_notif_uri;
     traffic_influ_data_patch_local_var->headers = headers;
+    traffic_influ_data_patch_local_var->is_af_ack_ind = is_af_ack_ind;
     traffic_influ_data_patch_local_var->af_ack_ind = af_ack_ind;
+    traffic_influ_data_patch_local_var->is_addr_preser_ind = is_addr_preser_ind;
     traffic_influ_data_patch_local_var->addr_preser_ind = addr_preser_ind;
 
     return traffic_influ_data_patch_local_var;
@@ -106,7 +114,7 @@ cJSON *OpenAPI_traffic_influ_data_patch_convertToJSON(OpenAPI_traffic_influ_data
     }
     }
 
-    if (traffic_influ_data_patch->app_relo_ind) {
+    if (traffic_influ_data_patch->is_app_relo_ind) {
     if (cJSON_AddBoolToObject(item, "appReloInd", traffic_influ_data_patch->app_relo_ind) == NULL) {
         ogs_error("OpenAPI_traffic_influ_data_patch_convertToJSON() failed [app_relo_ind]");
         goto end;
@@ -207,7 +215,7 @@ cJSON *OpenAPI_traffic_influ_data_patch_convertToJSON(OpenAPI_traffic_influ_data
     }
     }
 
-    if (traffic_influ_data_patch->traff_corre_ind) {
+    if (traffic_influ_data_patch->is_traff_corre_ind) {
     if (cJSON_AddBoolToObject(item, "traffCorreInd", traffic_influ_data_patch->traff_corre_ind) == NULL) {
         ogs_error("OpenAPI_traffic_influ_data_patch_convertToJSON() failed [traff_corre_ind]");
         goto end;
@@ -284,14 +292,14 @@ cJSON *OpenAPI_traffic_influ_data_patch_convertToJSON(OpenAPI_traffic_influ_data
                     }
     }
 
-    if (traffic_influ_data_patch->af_ack_ind) {
+    if (traffic_influ_data_patch->is_af_ack_ind) {
     if (cJSON_AddBoolToObject(item, "afAckInd", traffic_influ_data_patch->af_ack_ind) == NULL) {
         ogs_error("OpenAPI_traffic_influ_data_patch_convertToJSON() failed [af_ack_ind]");
         goto end;
     }
     }
 
-    if (traffic_influ_data_patch->addr_preser_ind) {
+    if (traffic_influ_data_patch->is_addr_preser_ind) {
     if (cJSON_AddBoolToObject(item, "addrPreserInd", traffic_influ_data_patch->addr_preser_ind) == NULL) {
         ogs_error("OpenAPI_traffic_influ_data_patch_convertToJSON() failed [addr_preser_ind]");
         goto end;
@@ -307,7 +315,7 @@ OpenAPI_traffic_influ_data_patch_t *OpenAPI_traffic_influ_data_patch_parseFromJS
     OpenAPI_traffic_influ_data_patch_t *traffic_influ_data_patch_local_var = NULL;
     cJSON *up_path_chg_notif_corre_id = cJSON_GetObjectItemCaseSensitive(traffic_influ_data_patchJSON, "upPathChgNotifCorreId");
 
-    if (up_path_chg_notif_corre_id) { 
+    if (up_path_chg_notif_corre_id) {
     if (!cJSON_IsString(up_path_chg_notif_corre_id)) {
         ogs_error("OpenAPI_traffic_influ_data_patch_parseFromJSON() failed [up_path_chg_notif_corre_id]");
         goto end;
@@ -316,7 +324,7 @@ OpenAPI_traffic_influ_data_patch_t *OpenAPI_traffic_influ_data_patch_parseFromJS
 
     cJSON *app_relo_ind = cJSON_GetObjectItemCaseSensitive(traffic_influ_data_patchJSON, "appReloInd");
 
-    if (app_relo_ind) { 
+    if (app_relo_ind) {
     if (!cJSON_IsBool(app_relo_ind)) {
         ogs_error("OpenAPI_traffic_influ_data_patch_parseFromJSON() failed [app_relo_ind]");
         goto end;
@@ -325,7 +333,7 @@ OpenAPI_traffic_influ_data_patch_t *OpenAPI_traffic_influ_data_patch_parseFromJS
 
     cJSON *dnn = cJSON_GetObjectItemCaseSensitive(traffic_influ_data_patchJSON, "dnn");
 
-    if (dnn) { 
+    if (dnn) {
     if (!cJSON_IsString(dnn)) {
         ogs_error("OpenAPI_traffic_influ_data_patch_parseFromJSON() failed [dnn]");
         goto end;
@@ -335,7 +343,7 @@ OpenAPI_traffic_influ_data_patch_t *OpenAPI_traffic_influ_data_patch_parseFromJS
     cJSON *eth_traffic_filters = cJSON_GetObjectItemCaseSensitive(traffic_influ_data_patchJSON, "ethTrafficFilters");
 
     OpenAPI_list_t *eth_traffic_filtersList;
-    if (eth_traffic_filters) { 
+    if (eth_traffic_filters) {
     cJSON *eth_traffic_filters_local_nonprimitive;
     if (!cJSON_IsArray(eth_traffic_filters)){
         ogs_error("OpenAPI_traffic_influ_data_patch_parseFromJSON() failed [eth_traffic_filters]");
@@ -358,13 +366,13 @@ OpenAPI_traffic_influ_data_patch_t *OpenAPI_traffic_influ_data_patch_parseFromJS
     cJSON *snssai = cJSON_GetObjectItemCaseSensitive(traffic_influ_data_patchJSON, "snssai");
 
     OpenAPI_snssai_t *snssai_local_nonprim = NULL;
-    if (snssai) { 
+    if (snssai) {
     snssai_local_nonprim = OpenAPI_snssai_parseFromJSON(snssai);
     }
 
     cJSON *internal_group_id = cJSON_GetObjectItemCaseSensitive(traffic_influ_data_patchJSON, "internalGroupId");
 
-    if (internal_group_id) { 
+    if (internal_group_id) {
     if (!cJSON_IsString(internal_group_id)) {
         ogs_error("OpenAPI_traffic_influ_data_patch_parseFromJSON() failed [internal_group_id]");
         goto end;
@@ -373,7 +381,7 @@ OpenAPI_traffic_influ_data_patch_t *OpenAPI_traffic_influ_data_patch_parseFromJS
 
     cJSON *supi = cJSON_GetObjectItemCaseSensitive(traffic_influ_data_patchJSON, "supi");
 
-    if (supi) { 
+    if (supi) {
     if (!cJSON_IsString(supi)) {
         ogs_error("OpenAPI_traffic_influ_data_patch_parseFromJSON() failed [supi]");
         goto end;
@@ -383,7 +391,7 @@ OpenAPI_traffic_influ_data_patch_t *OpenAPI_traffic_influ_data_patch_parseFromJS
     cJSON *traffic_filters = cJSON_GetObjectItemCaseSensitive(traffic_influ_data_patchJSON, "trafficFilters");
 
     OpenAPI_list_t *traffic_filtersList;
-    if (traffic_filters) { 
+    if (traffic_filters) {
     cJSON *traffic_filters_local_nonprimitive;
     if (!cJSON_IsArray(traffic_filters)){
         ogs_error("OpenAPI_traffic_influ_data_patch_parseFromJSON() failed [traffic_filters]");
@@ -406,7 +414,7 @@ OpenAPI_traffic_influ_data_patch_t *OpenAPI_traffic_influ_data_patch_parseFromJS
     cJSON *traffic_routes = cJSON_GetObjectItemCaseSensitive(traffic_influ_data_patchJSON, "trafficRoutes");
 
     OpenAPI_list_t *traffic_routesList;
-    if (traffic_routes) { 
+    if (traffic_routes) {
     cJSON *traffic_routes_local_nonprimitive;
     if (!cJSON_IsArray(traffic_routes)){
         ogs_error("OpenAPI_traffic_influ_data_patch_parseFromJSON() failed [traffic_routes]");
@@ -428,7 +436,7 @@ OpenAPI_traffic_influ_data_patch_t *OpenAPI_traffic_influ_data_patch_parseFromJS
 
     cJSON *traff_corre_ind = cJSON_GetObjectItemCaseSensitive(traffic_influ_data_patchJSON, "traffCorreInd");
 
-    if (traff_corre_ind) { 
+    if (traff_corre_ind) {
     if (!cJSON_IsBool(traff_corre_ind)) {
         ogs_error("OpenAPI_traffic_influ_data_patch_parseFromJSON() failed [traff_corre_ind]");
         goto end;
@@ -437,7 +445,7 @@ OpenAPI_traffic_influ_data_patch_t *OpenAPI_traffic_influ_data_patch_parseFromJS
 
     cJSON *valid_start_time = cJSON_GetObjectItemCaseSensitive(traffic_influ_data_patchJSON, "validStartTime");
 
-    if (valid_start_time) { 
+    if (valid_start_time) {
     if (!cJSON_IsString(valid_start_time)) {
         ogs_error("OpenAPI_traffic_influ_data_patch_parseFromJSON() failed [valid_start_time]");
         goto end;
@@ -446,7 +454,7 @@ OpenAPI_traffic_influ_data_patch_t *OpenAPI_traffic_influ_data_patch_parseFromJS
 
     cJSON *valid_end_time = cJSON_GetObjectItemCaseSensitive(traffic_influ_data_patchJSON, "validEndTime");
 
-    if (valid_end_time) { 
+    if (valid_end_time) {
     if (!cJSON_IsString(valid_end_time)) {
         ogs_error("OpenAPI_traffic_influ_data_patch_parseFromJSON() failed [valid_end_time]");
         goto end;
@@ -456,7 +464,7 @@ OpenAPI_traffic_influ_data_patch_t *OpenAPI_traffic_influ_data_patch_parseFromJS
     cJSON *temp_validities = cJSON_GetObjectItemCaseSensitive(traffic_influ_data_patchJSON, "tempValidities");
 
     OpenAPI_list_t *temp_validitiesList;
-    if (temp_validities) { 
+    if (temp_validities) {
     cJSON *temp_validities_local_nonprimitive;
     if (!cJSON_IsArray(temp_validities)){
         ogs_error("OpenAPI_traffic_influ_data_patch_parseFromJSON() failed [temp_validities]");
@@ -479,13 +487,13 @@ OpenAPI_traffic_influ_data_patch_t *OpenAPI_traffic_influ_data_patch_parseFromJS
     cJSON *nw_area_info = cJSON_GetObjectItemCaseSensitive(traffic_influ_data_patchJSON, "nwAreaInfo");
 
     OpenAPI_network_area_info_1_t *nw_area_info_local_nonprim = NULL;
-    if (nw_area_info) { 
+    if (nw_area_info) {
     nw_area_info_local_nonprim = OpenAPI_network_area_info_1_parseFromJSON(nw_area_info);
     }
 
     cJSON *up_path_chg_notif_uri = cJSON_GetObjectItemCaseSensitive(traffic_influ_data_patchJSON, "upPathChgNotifUri");
 
-    if (up_path_chg_notif_uri) { 
+    if (up_path_chg_notif_uri) {
     if (!cJSON_IsString(up_path_chg_notif_uri)) {
         ogs_error("OpenAPI_traffic_influ_data_patch_parseFromJSON() failed [up_path_chg_notif_uri]");
         goto end;
@@ -495,7 +503,7 @@ OpenAPI_traffic_influ_data_patch_t *OpenAPI_traffic_influ_data_patch_parseFromJS
     cJSON *headers = cJSON_GetObjectItemCaseSensitive(traffic_influ_data_patchJSON, "headers");
 
     OpenAPI_list_t *headersList;
-    if (headers) { 
+    if (headers) {
     cJSON *headers_local;
     if (!cJSON_IsArray(headers)) {
         ogs_error("OpenAPI_traffic_influ_data_patch_parseFromJSON() failed [headers]");
@@ -509,12 +517,12 @@ OpenAPI_traffic_influ_data_patch_t *OpenAPI_traffic_influ_data_patch_parseFromJS
         goto end;
     }
     OpenAPI_list_add(headersList , ogs_strdup_or_assert(headers_local->valuestring));
-                    }
+    }
     }
 
     cJSON *af_ack_ind = cJSON_GetObjectItemCaseSensitive(traffic_influ_data_patchJSON, "afAckInd");
 
-    if (af_ack_ind) { 
+    if (af_ack_ind) {
     if (!cJSON_IsBool(af_ack_ind)) {
         ogs_error("OpenAPI_traffic_influ_data_patch_parseFromJSON() failed [af_ack_ind]");
         goto end;
@@ -523,7 +531,7 @@ OpenAPI_traffic_influ_data_patch_t *OpenAPI_traffic_influ_data_patch_parseFromJS
 
     cJSON *addr_preser_ind = cJSON_GetObjectItemCaseSensitive(traffic_influ_data_patchJSON, "addrPreserInd");
 
-    if (addr_preser_ind) { 
+    if (addr_preser_ind) {
     if (!cJSON_IsBool(addr_preser_ind)) {
         ogs_error("OpenAPI_traffic_influ_data_patch_parseFromJSON() failed [addr_preser_ind]");
         goto end;
@@ -532,6 +540,7 @@ OpenAPI_traffic_influ_data_patch_t *OpenAPI_traffic_influ_data_patch_parseFromJS
 
     traffic_influ_data_patch_local_var = OpenAPI_traffic_influ_data_patch_create (
         up_path_chg_notif_corre_id ? ogs_strdup_or_assert(up_path_chg_notif_corre_id->valuestring) : NULL,
+        app_relo_ind ? true : false,
         app_relo_ind ? app_relo_ind->valueint : 0,
         dnn ? ogs_strdup_or_assert(dnn->valuestring) : NULL,
         eth_traffic_filters ? eth_traffic_filtersList : NULL,
@@ -540,6 +549,7 @@ OpenAPI_traffic_influ_data_patch_t *OpenAPI_traffic_influ_data_patch_parseFromJS
         supi ? ogs_strdup_or_assert(supi->valuestring) : NULL,
         traffic_filters ? traffic_filtersList : NULL,
         traffic_routes ? traffic_routesList : NULL,
+        traff_corre_ind ? true : false,
         traff_corre_ind ? traff_corre_ind->valueint : 0,
         valid_start_time ? ogs_strdup_or_assert(valid_start_time->valuestring) : NULL,
         valid_end_time ? ogs_strdup_or_assert(valid_end_time->valuestring) : NULL,
@@ -547,7 +557,9 @@ OpenAPI_traffic_influ_data_patch_t *OpenAPI_traffic_influ_data_patch_parseFromJS
         nw_area_info ? nw_area_info_local_nonprim : NULL,
         up_path_chg_notif_uri ? ogs_strdup_or_assert(up_path_chg_notif_uri->valuestring) : NULL,
         headers ? headersList : NULL,
+        af_ack_ind ? true : false,
         af_ack_ind ? af_ack_ind->valueint : 0,
+        addr_preser_ind ? true : false,
         addr_preser_ind ? addr_preser_ind->valueint : 0
     );
 

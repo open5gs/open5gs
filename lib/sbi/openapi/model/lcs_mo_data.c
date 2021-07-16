@@ -64,7 +64,6 @@ OpenAPI_lcs_mo_data_t *OpenAPI_lcs_mo_data_parseFromJSON(cJSON *lcs_mo_dataJSON)
     }
 
     OpenAPI_list_t *allowed_service_classesList;
-    
     cJSON *allowed_service_classes_local_nonprimitive;
     if (!cJSON_IsArray(allowed_service_classes)) {
         ogs_error("OpenAPI_lcs_mo_data_parseFromJSON() failed [allowed_service_classes]");

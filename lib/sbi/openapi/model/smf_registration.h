@@ -29,10 +29,12 @@ typedef struct OpenAPI_smf_registration_s {
     int pdu_session_id;
     struct OpenAPI_snssai_s *single_nssai;
     char *dnn;
+    bool is_emergency_services;
     int emergency_services;
     char *pcscf_restoration_callback_uri;
     struct OpenAPI_plmn_id_s *plmn_id;
     char *pgw_fqdn;
+    bool is_epdg_ind;
     int epdg_ind;
     char *dereg_callback_uri;
     OpenAPI_registration_reason_e registration_reason;
@@ -47,10 +49,12 @@ OpenAPI_smf_registration_t *OpenAPI_smf_registration_create(
     int pdu_session_id,
     OpenAPI_snssai_t *single_nssai,
     char *dnn,
+    bool is_emergency_services,
     int emergency_services,
     char *pcscf_restoration_callback_uri,
     OpenAPI_plmn_id_t *plmn_id,
     char *pgw_fqdn,
+    bool is_epdg_ind,
     int epdg_ind,
     char *dereg_callback_uri,
     OpenAPI_registration_reason_e registration_reason,

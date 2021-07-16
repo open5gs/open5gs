@@ -70,7 +70,7 @@ OpenAPI_enhanced_coverage_restriction_data_t *OpenAPI_enhanced_coverage_restrict
     cJSON *plmn_ec_info_list = cJSON_GetObjectItemCaseSensitive(enhanced_coverage_restriction_dataJSON, "plmnEcInfoList");
 
     OpenAPI_list_t *plmn_ec_info_listList;
-    if (plmn_ec_info_list) { 
+    if (plmn_ec_info_list) {
     cJSON *plmn_ec_info_list_local_nonprimitive;
     if (!cJSON_IsArray(plmn_ec_info_list)){
         ogs_error("OpenAPI_enhanced_coverage_restriction_data_parseFromJSON() failed [plmn_ec_info_list]");

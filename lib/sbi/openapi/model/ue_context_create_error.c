@@ -94,20 +94,19 @@ OpenAPI_ue_context_create_error_t *OpenAPI_ue_context_create_error_parseFromJSON
     }
 
     OpenAPI_problem_details_t *error_local_nonprim = NULL;
-    
     error_local_nonprim = OpenAPI_problem_details_parseFromJSON(error);
 
     cJSON *ngap_cause = cJSON_GetObjectItemCaseSensitive(ue_context_create_errorJSON, "ngapCause");
 
     OpenAPI_ng_ap_cause_t *ngap_cause_local_nonprim = NULL;
-    if (ngap_cause) { 
+    if (ngap_cause) {
     ngap_cause_local_nonprim = OpenAPI_ng_ap_cause_parseFromJSON(ngap_cause);
     }
 
     cJSON *target_to_source_failure_data = cJSON_GetObjectItemCaseSensitive(ue_context_create_errorJSON, "targetToSourceFailureData");
 
     OpenAPI_n2_info_content_t *target_to_source_failure_data_local_nonprim = NULL;
-    if (target_to_source_failure_data) { 
+    if (target_to_source_failure_data) {
     target_to_source_failure_data_local_nonprim = OpenAPI_n2_info_content_parseFromJSON(target_to_source_failure_data);
     }
 

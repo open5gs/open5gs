@@ -70,13 +70,13 @@ OpenAPI_trace_data_response_t *OpenAPI_trace_data_response_parseFromJSON(cJSON *
     cJSON *trace_data = cJSON_GetObjectItemCaseSensitive(trace_data_responseJSON, "traceData");
 
     OpenAPI_trace_data_t *trace_data_local_nonprim = NULL;
-    if (trace_data) { 
+    if (trace_data) {
     trace_data_local_nonprim = OpenAPI_trace_data_parseFromJSON(trace_data);
     }
 
     cJSON *shared_trace_data_id = cJSON_GetObjectItemCaseSensitive(trace_data_responseJSON, "sharedTraceDataId");
 
-    if (shared_trace_data_id) { 
+    if (shared_trace_data_id) {
     if (!cJSON_IsString(shared_trace_data_id)) {
         ogs_error("OpenAPI_trace_data_response_parseFromJSON() failed [shared_trace_data_id]");
         goto end;

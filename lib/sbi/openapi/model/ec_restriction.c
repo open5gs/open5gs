@@ -98,7 +98,6 @@ OpenAPI_ec_restriction_t *OpenAPI_ec_restriction_parseFromJSON(cJSON *ec_restric
         goto end;
     }
 
-    
     if (!cJSON_IsString(af_instance_id)) {
         ogs_error("OpenAPI_ec_restriction_parseFromJSON() failed [af_instance_id]");
         goto end;
@@ -110,7 +109,6 @@ OpenAPI_ec_restriction_t *OpenAPI_ec_restriction_parseFromJSON(cJSON *ec_restric
         goto end;
     }
 
-    
     if (!cJSON_IsNumber(reference_id)) {
         ogs_error("OpenAPI_ec_restriction_parseFromJSON() failed [reference_id]");
         goto end;
@@ -119,7 +117,7 @@ OpenAPI_ec_restriction_t *OpenAPI_ec_restriction_parseFromJSON(cJSON *ec_restric
     cJSON *plmn_ec_infos = cJSON_GetObjectItemCaseSensitive(ec_restrictionJSON, "plmnEcInfos");
 
     OpenAPI_list_t *plmn_ec_infosList;
-    if (plmn_ec_infos) { 
+    if (plmn_ec_infos) {
     cJSON *plmn_ec_infos_local_nonprimitive;
     if (!cJSON_IsArray(plmn_ec_infos)){
         ogs_error("OpenAPI_ec_restriction_parseFromJSON() failed [plmn_ec_infos]");
@@ -141,7 +139,7 @@ OpenAPI_ec_restriction_t *OpenAPI_ec_restriction_parseFromJSON(cJSON *ec_restric
 
     cJSON *mtc_provider_information = cJSON_GetObjectItemCaseSensitive(ec_restrictionJSON, "mtcProviderInformation");
 
-    if (mtc_provider_information) { 
+    if (mtc_provider_information) {
     if (!cJSON_IsString(mtc_provider_information)) {
         ogs_error("OpenAPI_ec_restriction_parseFromJSON() failed [mtc_provider_information]");
         goto end;
@@ -150,6 +148,7 @@ OpenAPI_ec_restriction_t *OpenAPI_ec_restriction_parseFromJSON(cJSON *ec_restric
 
     ec_restriction_local_var = OpenAPI_ec_restriction_create (
         ogs_strdup_or_assert(af_instance_id->valuestring),
+        
         reference_id->valuedouble,
         plmn_ec_infos ? plmn_ec_infosList : NULL,
         mtc_provider_information ? ogs_strdup_or_assert(mtc_provider_information->valuestring) : NULL

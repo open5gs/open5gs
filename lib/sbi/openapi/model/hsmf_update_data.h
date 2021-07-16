@@ -58,7 +58,9 @@ typedef struct OpenAPI_hsmf_update_data_s {
     struct OpenAPI_user_location_s *ue_location;
     char *ue_time_zone;
     struct OpenAPI_user_location_s *add_ue_location;
+    bool is_pause_charging;
     int pause_charging;
+    bool is_pti;
     int pti;
     struct OpenAPI_ref_to_binary_data_s *n1_sm_info_from_ue;
     struct OpenAPI_ref_to_binary_data_s *unknown_n1_sm_info;
@@ -66,18 +68,24 @@ typedef struct OpenAPI_hsmf_update_data_s {
     OpenAPI_list_t *qos_flows_notify_list;
     OpenAPI_list_t *notify_list;
     OpenAPI_list_t *eps_bearer_id;
+    bool is_ho_preparation_indication;
     int ho_preparation_indication;
     OpenAPI_list_t *revoke_ebi_list;
     OpenAPI_cause_e cause;
     struct OpenAPI_ng_ap_cause_s *ng_ap_cause;
+    bool is__5g_mm_cause_value;
     int _5g_mm_cause_value;
+    bool is_always_on_requested;
     int always_on_requested;
     OpenAPI_eps_interworking_indication_e eps_interworking_ind;
     OpenAPI_list_t *secondary_rat_usage_report;
     OpenAPI_list_t *secondary_rat_usage_info;
+    bool is_an_type_can_be_changed;
     int an_type_can_be_changed;
     OpenAPI_ma_release_indication_e ma_release_ind;
+    bool is_ma_nw_upgrade_ind;
     int ma_nw_upgrade_ind;
+    bool is_ma_request_ind;
     int ma_request_ind;
     OpenAPI_unavailable_access_indication_e unavailable_access_ind;
     OpenAPI_list_t *psa_info;
@@ -92,6 +100,7 @@ typedef struct OpenAPI_hsmf_update_data_s {
     char *ismf_pdu_session_uri;
     char *ismf_id;
     char *i_smf_service_instance_id;
+    bool is_dl_serving_plmn_rate_ctl;
     int dl_serving_plmn_rate_ctl;
     OpenAPI_list_t *dnai_list;
     char *supported_features;
@@ -117,7 +126,9 @@ OpenAPI_hsmf_update_data_t *OpenAPI_hsmf_update_data_create(
     OpenAPI_user_location_t *ue_location,
     char *ue_time_zone,
     OpenAPI_user_location_t *add_ue_location,
+    bool is_pause_charging,
     int pause_charging,
+    bool is_pti,
     int pti,
     OpenAPI_ref_to_binary_data_t *n1_sm_info_from_ue,
     OpenAPI_ref_to_binary_data_t *unknown_n1_sm_info,
@@ -125,18 +136,24 @@ OpenAPI_hsmf_update_data_t *OpenAPI_hsmf_update_data_create(
     OpenAPI_list_t *qos_flows_notify_list,
     OpenAPI_list_t *notify_list,
     OpenAPI_list_t *eps_bearer_id,
+    bool is_ho_preparation_indication,
     int ho_preparation_indication,
     OpenAPI_list_t *revoke_ebi_list,
     OpenAPI_cause_e cause,
     OpenAPI_ng_ap_cause_t *ng_ap_cause,
+    bool is__5g_mm_cause_value,
     int _5g_mm_cause_value,
+    bool is_always_on_requested,
     int always_on_requested,
     OpenAPI_eps_interworking_indication_e eps_interworking_ind,
     OpenAPI_list_t *secondary_rat_usage_report,
     OpenAPI_list_t *secondary_rat_usage_info,
+    bool is_an_type_can_be_changed,
     int an_type_can_be_changed,
     OpenAPI_ma_release_indication_e ma_release_ind,
+    bool is_ma_nw_upgrade_ind,
     int ma_nw_upgrade_ind,
+    bool is_ma_request_ind,
     int ma_request_ind,
     OpenAPI_unavailable_access_indication_e unavailable_access_ind,
     OpenAPI_list_t *psa_info,
@@ -151,6 +168,7 @@ OpenAPI_hsmf_update_data_t *OpenAPI_hsmf_update_data_create(
     char *ismf_pdu_session_uri,
     char *ismf_id,
     char *i_smf_service_instance_id,
+    bool is_dl_serving_plmn_rate_ctl,
     int dl_serving_plmn_rate_ctl,
     OpenAPI_list_t *dnai_list,
     char *supported_features,

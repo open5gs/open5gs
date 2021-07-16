@@ -75,7 +75,6 @@ OpenAPI_user_identifier_t *OpenAPI_user_identifier_parseFromJSON(cJSON *user_ide
         goto end;
     }
 
-    
     if (!cJSON_IsString(supi)) {
         ogs_error("OpenAPI_user_identifier_parseFromJSON() failed [supi]");
         goto end;
@@ -83,7 +82,7 @@ OpenAPI_user_identifier_t *OpenAPI_user_identifier_parseFromJSON(cJSON *user_ide
 
     cJSON *gpsi = cJSON_GetObjectItemCaseSensitive(user_identifierJSON, "gpsi");
 
-    if (gpsi) { 
+    if (gpsi) {
     if (!cJSON_IsString(gpsi)) {
         ogs_error("OpenAPI_user_identifier_parseFromJSON() failed [gpsi]");
         goto end;
@@ -92,7 +91,7 @@ OpenAPI_user_identifier_t *OpenAPI_user_identifier_parseFromJSON(cJSON *user_ide
 
     cJSON *validity_time = cJSON_GetObjectItemCaseSensitive(user_identifierJSON, "validityTime");
 
-    if (validity_time) { 
+    if (validity_time) {
     if (!cJSON_IsString(validity_time)) {
         ogs_error("OpenAPI_user_identifier_parseFromJSON() failed [validity_time]");
         goto end;

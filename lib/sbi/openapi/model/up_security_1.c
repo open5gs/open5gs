@@ -62,7 +62,6 @@ OpenAPI_up_security_1_t *OpenAPI_up_security_1_parseFromJSON(cJSON *up_security_
     }
 
     OpenAPI_up_integrity_e up_integrVariable;
-    
     if (!cJSON_IsString(up_integr)) {
         ogs_error("OpenAPI_up_security_1_parseFromJSON() failed [up_integr]");
         goto end;
@@ -76,7 +75,6 @@ OpenAPI_up_security_1_t *OpenAPI_up_security_1_parseFromJSON(cJSON *up_security_
     }
 
     OpenAPI_up_confidentiality_e up_confidVariable;
-    
     if (!cJSON_IsString(up_confid)) {
         ogs_error("OpenAPI_up_security_1_parseFromJSON() failed [up_confid]");
         goto end;

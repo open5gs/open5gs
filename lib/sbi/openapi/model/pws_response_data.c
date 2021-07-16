@@ -94,7 +94,6 @@ OpenAPI_pws_response_data_t *OpenAPI_pws_response_data_parseFromJSON(cJSON *pws_
         goto end;
     }
 
-    
     if (!cJSON_IsNumber(ngap_message_type)) {
         ogs_error("OpenAPI_pws_response_data_parseFromJSON() failed [ngap_message_type]");
         goto end;
@@ -106,7 +105,6 @@ OpenAPI_pws_response_data_t *OpenAPI_pws_response_data_parseFromJSON(cJSON *pws_
         goto end;
     }
 
-    
     if (!cJSON_IsNumber(serial_number)) {
         ogs_error("OpenAPI_pws_response_data_parseFromJSON() failed [serial_number]");
         goto end;
@@ -118,7 +116,6 @@ OpenAPI_pws_response_data_t *OpenAPI_pws_response_data_parseFromJSON(cJSON *pws_
         goto end;
     }
 
-    
     if (!cJSON_IsNumber(message_identifier)) {
         ogs_error("OpenAPI_pws_response_data_parseFromJSON() failed [message_identifier]");
         goto end;
@@ -127,7 +124,7 @@ OpenAPI_pws_response_data_t *OpenAPI_pws_response_data_parseFromJSON(cJSON *pws_
     cJSON *unknown_tai_list = cJSON_GetObjectItemCaseSensitive(pws_response_dataJSON, "unknownTaiList");
 
     OpenAPI_list_t *unknown_tai_listList;
-    if (unknown_tai_list) { 
+    if (unknown_tai_list) {
     cJSON *unknown_tai_list_local_nonprimitive;
     if (!cJSON_IsArray(unknown_tai_list)){
         ogs_error("OpenAPI_pws_response_data_parseFromJSON() failed [unknown_tai_list]");
@@ -148,8 +145,11 @@ OpenAPI_pws_response_data_t *OpenAPI_pws_response_data_parseFromJSON(cJSON *pws_
     }
 
     pws_response_data_local_var = OpenAPI_pws_response_data_create (
+        
         ngap_message_type->valuedouble,
+        
         serial_number->valuedouble,
+        
         message_identifier->valuedouble,
         unknown_tai_list ? unknown_tai_listList : NULL
     );

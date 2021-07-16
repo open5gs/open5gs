@@ -142,7 +142,7 @@ OpenAPI_nssai_1_t *OpenAPI_nssai_1_parseFromJSON(cJSON *nssai_1JSON)
     OpenAPI_nssai_1_t *nssai_1_local_var = NULL;
     cJSON *supported_features = cJSON_GetObjectItemCaseSensitive(nssai_1JSON, "supportedFeatures");
 
-    if (supported_features) { 
+    if (supported_features) {
     if (!cJSON_IsString(supported_features)) {
         ogs_error("OpenAPI_nssai_1_parseFromJSON() failed [supported_features]");
         goto end;
@@ -156,7 +156,6 @@ OpenAPI_nssai_1_t *OpenAPI_nssai_1_parseFromJSON(cJSON *nssai_1JSON)
     }
 
     OpenAPI_list_t *default_single_nssaisList;
-    
     cJSON *default_single_nssais_local_nonprimitive;
     if (!cJSON_IsArray(default_single_nssais)){
         ogs_error("OpenAPI_nssai_1_parseFromJSON() failed [default_single_nssais]");
@@ -178,7 +177,7 @@ OpenAPI_nssai_1_t *OpenAPI_nssai_1_parseFromJSON(cJSON *nssai_1JSON)
     cJSON *single_nssais = cJSON_GetObjectItemCaseSensitive(nssai_1JSON, "singleNssais");
 
     OpenAPI_list_t *single_nssaisList;
-    if (single_nssais) { 
+    if (single_nssais) {
     cJSON *single_nssais_local_nonprimitive;
     if (!cJSON_IsArray(single_nssais)){
         ogs_error("OpenAPI_nssai_1_parseFromJSON() failed [single_nssais]");
@@ -200,7 +199,7 @@ OpenAPI_nssai_1_t *OpenAPI_nssai_1_parseFromJSON(cJSON *nssai_1JSON)
 
     cJSON *provisioning_time = cJSON_GetObjectItemCaseSensitive(nssai_1JSON, "provisioningTime");
 
-    if (provisioning_time) { 
+    if (provisioning_time) {
     if (!cJSON_IsString(provisioning_time)) {
         ogs_error("OpenAPI_nssai_1_parseFromJSON() failed [provisioning_time]");
         goto end;
@@ -210,7 +209,7 @@ OpenAPI_nssai_1_t *OpenAPI_nssai_1_parseFromJSON(cJSON *nssai_1JSON)
     cJSON *additional_snssai_data = cJSON_GetObjectItemCaseSensitive(nssai_1JSON, "additionalSnssaiData");
 
     OpenAPI_list_t *additional_snssai_dataList;
-    if (additional_snssai_data) { 
+    if (additional_snssai_data) {
     cJSON *additional_snssai_data_local_map;
     if (!cJSON_IsObject(additional_snssai_data)) {
         ogs_error("OpenAPI_nssai_1_parseFromJSON() failed [additional_snssai_data]");

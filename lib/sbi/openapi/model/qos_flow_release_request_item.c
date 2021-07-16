@@ -72,7 +72,6 @@ OpenAPI_qos_flow_release_request_item_t *OpenAPI_qos_flow_release_request_item_p
         goto end;
     }
 
-    
     if (!cJSON_IsNumber(qfi)) {
         ogs_error("OpenAPI_qos_flow_release_request_item_parseFromJSON() failed [qfi]");
         goto end;
@@ -80,7 +79,7 @@ OpenAPI_qos_flow_release_request_item_t *OpenAPI_qos_flow_release_request_item_p
 
     cJSON *qos_rules = cJSON_GetObjectItemCaseSensitive(qos_flow_release_request_itemJSON, "qosRules");
 
-    if (qos_rules) { 
+    if (qos_rules) {
     if (!cJSON_IsNumber(qos_rules)) {
         ogs_error("OpenAPI_qos_flow_release_request_item_parseFromJSON() failed [qos_rules]");
         goto end;
@@ -89,7 +88,7 @@ OpenAPI_qos_flow_release_request_item_t *OpenAPI_qos_flow_release_request_item_p
 
     cJSON *qos_flow_description = cJSON_GetObjectItemCaseSensitive(qos_flow_release_request_itemJSON, "qosFlowDescription");
 
-    if (qos_flow_description) { 
+    if (qos_flow_description) {
     if (!cJSON_IsNumber(qos_flow_description)) {
         ogs_error("OpenAPI_qos_flow_release_request_item_parseFromJSON() failed [qos_flow_description]");
         goto end;
@@ -97,6 +96,7 @@ OpenAPI_qos_flow_release_request_item_t *OpenAPI_qos_flow_release_request_item_p
     }
 
     qos_flow_release_request_item_local_var = OpenAPI_qos_flow_release_request_item_create (
+        
         qfi->valuedouble,
         qos_rules ? qos_rules->valueint : 0,
         qos_flow_description ? qos_flow_description->valueint : 0

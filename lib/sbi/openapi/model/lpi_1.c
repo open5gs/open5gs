@@ -71,7 +71,6 @@ OpenAPI_lpi_1_t *OpenAPI_lpi_1_parseFromJSON(cJSON *lpi_1JSON)
     }
 
     OpenAPI_location_privacy_ind_e location_privacy_indVariable;
-    
     if (!cJSON_IsString(location_privacy_ind)) {
         ogs_error("OpenAPI_lpi_1_parseFromJSON() failed [location_privacy_ind]");
         goto end;
@@ -81,7 +80,7 @@ OpenAPI_lpi_1_t *OpenAPI_lpi_1_parseFromJSON(cJSON *lpi_1JSON)
     cJSON *valid_time_period = cJSON_GetObjectItemCaseSensitive(lpi_1JSON, "validTimePeriod");
 
     OpenAPI_valid_time_period_1_t *valid_time_period_local_nonprim = NULL;
-    if (valid_time_period) { 
+    if (valid_time_period) {
     valid_time_period_local_nonprim = OpenAPI_valid_time_period_1_parseFromJSON(valid_time_period);
     }
 

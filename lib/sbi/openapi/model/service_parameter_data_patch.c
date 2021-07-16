@@ -63,7 +63,7 @@ OpenAPI_service_parameter_data_patch_t *OpenAPI_service_parameter_data_patch_par
     OpenAPI_service_parameter_data_patch_t *service_parameter_data_patch_local_var = NULL;
     cJSON *param_over_pc5 = cJSON_GetObjectItemCaseSensitive(service_parameter_data_patchJSON, "paramOverPc5");
 
-    if (param_over_pc5) { 
+    if (param_over_pc5) {
     if (!cJSON_IsString(param_over_pc5)) {
         ogs_error("OpenAPI_service_parameter_data_patch_parseFromJSON() failed [param_over_pc5]");
         goto end;
@@ -72,7 +72,7 @@ OpenAPI_service_parameter_data_patch_t *OpenAPI_service_parameter_data_patch_par
 
     cJSON *param_over_uu = cJSON_GetObjectItemCaseSensitive(service_parameter_data_patchJSON, "paramOverUu");
 
-    if (param_over_uu) { 
+    if (param_over_uu) {
     if (!cJSON_IsString(param_over_uu)) {
         ogs_error("OpenAPI_service_parameter_data_patch_parseFromJSON() failed [param_over_uu]");
         goto end;

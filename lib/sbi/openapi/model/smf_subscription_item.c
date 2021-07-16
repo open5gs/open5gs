@@ -63,7 +63,6 @@ OpenAPI_smf_subscription_item_t *OpenAPI_smf_subscription_item_parseFromJSON(cJS
         goto end;
     }
 
-    
     if (!cJSON_IsString(smf_instance_id)) {
         ogs_error("OpenAPI_smf_subscription_item_parseFromJSON() failed [smf_instance_id]");
         goto end;
@@ -75,7 +74,6 @@ OpenAPI_smf_subscription_item_t *OpenAPI_smf_subscription_item_parseFromJSON(cJS
         goto end;
     }
 
-    
     if (!cJSON_IsString(subscription_id)) {
         ogs_error("OpenAPI_smf_subscription_item_parseFromJSON() failed [subscription_id]");
         goto end;

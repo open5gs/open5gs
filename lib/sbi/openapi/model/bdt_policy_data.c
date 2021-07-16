@@ -107,7 +107,7 @@ OpenAPI_bdt_policy_data_t *OpenAPI_bdt_policy_data_parseFromJSON(cJSON *bdt_poli
     OpenAPI_bdt_policy_data_t *bdt_policy_data_local_var = NULL;
     cJSON *inter_group_id = cJSON_GetObjectItemCaseSensitive(bdt_policy_dataJSON, "interGroupId");
 
-    if (inter_group_id) { 
+    if (inter_group_id) {
     if (!cJSON_IsString(inter_group_id)) {
         ogs_error("OpenAPI_bdt_policy_data_parseFromJSON() failed [inter_group_id]");
         goto end;
@@ -116,7 +116,7 @@ OpenAPI_bdt_policy_data_t *OpenAPI_bdt_policy_data_parseFromJSON(cJSON *bdt_poli
 
     cJSON *supi = cJSON_GetObjectItemCaseSensitive(bdt_policy_dataJSON, "supi");
 
-    if (supi) { 
+    if (supi) {
     if (!cJSON_IsString(supi)) {
         ogs_error("OpenAPI_bdt_policy_data_parseFromJSON() failed [supi]");
         goto end;
@@ -129,7 +129,6 @@ OpenAPI_bdt_policy_data_t *OpenAPI_bdt_policy_data_parseFromJSON(cJSON *bdt_poli
         goto end;
     }
 
-    
     if (!cJSON_IsString(bdt_ref_id)) {
         ogs_error("OpenAPI_bdt_policy_data_parseFromJSON() failed [bdt_ref_id]");
         goto end;
@@ -137,7 +136,7 @@ OpenAPI_bdt_policy_data_t *OpenAPI_bdt_policy_data_parseFromJSON(cJSON *bdt_poli
 
     cJSON *dnn = cJSON_GetObjectItemCaseSensitive(bdt_policy_dataJSON, "dnn");
 
-    if (dnn) { 
+    if (dnn) {
     if (!cJSON_IsString(dnn)) {
         ogs_error("OpenAPI_bdt_policy_data_parseFromJSON() failed [dnn]");
         goto end;
@@ -147,13 +146,13 @@ OpenAPI_bdt_policy_data_t *OpenAPI_bdt_policy_data_parseFromJSON(cJSON *bdt_poli
     cJSON *snssai = cJSON_GetObjectItemCaseSensitive(bdt_policy_dataJSON, "snssai");
 
     OpenAPI_snssai_t *snssai_local_nonprim = NULL;
-    if (snssai) { 
+    if (snssai) {
     snssai_local_nonprim = OpenAPI_snssai_parseFromJSON(snssai);
     }
 
     cJSON *res_uri = cJSON_GetObjectItemCaseSensitive(bdt_policy_dataJSON, "resUri");
 
-    if (res_uri) { 
+    if (res_uri) {
     if (!cJSON_IsString(res_uri)) {
         ogs_error("OpenAPI_bdt_policy_data_parseFromJSON() failed [res_uri]");
         goto end;

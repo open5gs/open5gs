@@ -68,7 +68,6 @@ OpenAPI_nf_instance_id_list_cond_t *OpenAPI_nf_instance_id_list_cond_parseFromJS
     }
 
     OpenAPI_list_t *nf_instance_id_listList;
-    
     cJSON *nf_instance_id_list_local;
     if (!cJSON_IsArray(nf_instance_id_list)) {
         ogs_error("OpenAPI_nf_instance_id_list_cond_parseFromJSON() failed [nf_instance_id_list]");
@@ -82,7 +81,7 @@ OpenAPI_nf_instance_id_list_cond_t *OpenAPI_nf_instance_id_list_cond_parseFromJS
         goto end;
     }
     OpenAPI_list_add(nf_instance_id_listList , ogs_strdup_or_assert(nf_instance_id_list_local->valuestring));
-                    }
+    }
 
     nf_instance_id_list_cond_local_var = OpenAPI_nf_instance_id_list_cond_create (
         nf_instance_id_listList

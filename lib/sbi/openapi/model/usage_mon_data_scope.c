@@ -84,13 +84,12 @@ OpenAPI_usage_mon_data_scope_t *OpenAPI_usage_mon_data_scope_parseFromJSON(cJSON
     }
 
     OpenAPI_snssai_t *snssai_local_nonprim = NULL;
-    
     snssai_local_nonprim = OpenAPI_snssai_parseFromJSON(snssai);
 
     cJSON *dnn = cJSON_GetObjectItemCaseSensitive(usage_mon_data_scopeJSON, "dnn");
 
     OpenAPI_list_t *dnnList;
-    if (dnn) { 
+    if (dnn) {
     cJSON *dnn_local;
     if (!cJSON_IsArray(dnn)) {
         ogs_error("OpenAPI_usage_mon_data_scope_parseFromJSON() failed [dnn]");
@@ -104,7 +103,7 @@ OpenAPI_usage_mon_data_scope_t *OpenAPI_usage_mon_data_scope_parseFromJSON(cJSON
         goto end;
     }
     OpenAPI_list_add(dnnList , ogs_strdup_or_assert(dnn_local->valuestring));
-                    }
+    }
     }
 
     usage_mon_data_scope_local_var = OpenAPI_usage_mon_data_scope_create (

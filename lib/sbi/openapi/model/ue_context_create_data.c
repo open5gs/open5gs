@@ -182,7 +182,6 @@ OpenAPI_ue_context_create_data_t *OpenAPI_ue_context_create_data_parseFromJSON(c
     }
 
     OpenAPI_ue_context_t *ue_context_local_nonprim = NULL;
-    
     ue_context_local_nonprim = OpenAPI_ue_context_parseFromJSON(ue_context);
 
     cJSON *target_id = cJSON_GetObjectItemCaseSensitive(ue_context_create_dataJSON, "targetId");
@@ -192,7 +191,6 @@ OpenAPI_ue_context_create_data_t *OpenAPI_ue_context_create_data_parseFromJSON(c
     }
 
     OpenAPI_ng_ran_target_id_t *target_id_local_nonprim = NULL;
-    
     target_id_local_nonprim = OpenAPI_ng_ran_target_id_parseFromJSON(target_id);
 
     cJSON *source_to_target_data = cJSON_GetObjectItemCaseSensitive(ue_context_create_dataJSON, "sourceToTargetData");
@@ -202,7 +200,6 @@ OpenAPI_ue_context_create_data_t *OpenAPI_ue_context_create_data_parseFromJSON(c
     }
 
     OpenAPI_n2_info_content_t *source_to_target_data_local_nonprim = NULL;
-    
     source_to_target_data_local_nonprim = OpenAPI_n2_info_content_parseFromJSON(source_to_target_data);
 
     cJSON *pdu_session_list = cJSON_GetObjectItemCaseSensitive(ue_context_create_dataJSON, "pduSessionList");
@@ -212,7 +209,6 @@ OpenAPI_ue_context_create_data_t *OpenAPI_ue_context_create_data_parseFromJSON(c
     }
 
     OpenAPI_list_t *pdu_session_listList;
-    
     cJSON *pdu_session_list_local_nonprimitive;
     if (!cJSON_IsArray(pdu_session_list)){
         ogs_error("OpenAPI_ue_context_create_data_parseFromJSON() failed [pdu_session_list]");
@@ -233,7 +229,7 @@ OpenAPI_ue_context_create_data_t *OpenAPI_ue_context_create_data_parseFromJSON(c
 
     cJSON *n2_notify_uri = cJSON_GetObjectItemCaseSensitive(ue_context_create_dataJSON, "n2NotifyUri");
 
-    if (n2_notify_uri) { 
+    if (n2_notify_uri) {
     if (!cJSON_IsString(n2_notify_uri)) {
         ogs_error("OpenAPI_ue_context_create_data_parseFromJSON() failed [n2_notify_uri]");
         goto end;
@@ -243,20 +239,20 @@ OpenAPI_ue_context_create_data_t *OpenAPI_ue_context_create_data_parseFromJSON(c
     cJSON *ue_radio_capability = cJSON_GetObjectItemCaseSensitive(ue_context_create_dataJSON, "ueRadioCapability");
 
     OpenAPI_n2_info_content_t *ue_radio_capability_local_nonprim = NULL;
-    if (ue_radio_capability) { 
+    if (ue_radio_capability) {
     ue_radio_capability_local_nonprim = OpenAPI_n2_info_content_parseFromJSON(ue_radio_capability);
     }
 
     cJSON *ngap_cause = cJSON_GetObjectItemCaseSensitive(ue_context_create_dataJSON, "ngapCause");
 
     OpenAPI_ng_ap_cause_t *ngap_cause_local_nonprim = NULL;
-    if (ngap_cause) { 
+    if (ngap_cause) {
     ngap_cause_local_nonprim = OpenAPI_ng_ap_cause_parseFromJSON(ngap_cause);
     }
 
     cJSON *supported_features = cJSON_GetObjectItemCaseSensitive(ue_context_create_dataJSON, "supportedFeatures");
 
-    if (supported_features) { 
+    if (supported_features) {
     if (!cJSON_IsString(supported_features)) {
         ogs_error("OpenAPI_ue_context_create_data_parseFromJSON() failed [supported_features]");
         goto end;
@@ -266,7 +262,7 @@ OpenAPI_ue_context_create_data_t *OpenAPI_ue_context_create_data_parseFromJSON(c
     cJSON *serving_network = cJSON_GetObjectItemCaseSensitive(ue_context_create_dataJSON, "servingNetwork");
 
     OpenAPI_plmn_id_nid_t *serving_network_local_nonprim = NULL;
-    if (serving_network) { 
+    if (serving_network) {
     serving_network_local_nonprim = OpenAPI_plmn_id_nid_parseFromJSON(serving_network);
     }
 

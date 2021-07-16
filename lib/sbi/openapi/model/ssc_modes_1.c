@@ -73,7 +73,6 @@ OpenAPI_ssc_modes_1_t *OpenAPI_ssc_modes_1_parseFromJSON(cJSON *ssc_modes_1JSON)
     }
 
     OpenAPI_ssc_mode_e default_ssc_modeVariable;
-    
     if (!cJSON_IsString(default_ssc_mode)) {
         ogs_error("OpenAPI_ssc_modes_1_parseFromJSON() failed [default_ssc_mode]");
         goto end;
@@ -83,7 +82,7 @@ OpenAPI_ssc_modes_1_t *OpenAPI_ssc_modes_1_parseFromJSON(cJSON *ssc_modes_1JSON)
     cJSON *allowed_ssc_modes = cJSON_GetObjectItemCaseSensitive(ssc_modes_1JSON, "allowedSscModes");
 
     OpenAPI_list_t *allowed_ssc_modesList;
-    if (allowed_ssc_modes) { 
+    if (allowed_ssc_modes) {
     cJSON *allowed_ssc_modes_local_nonprimitive;
     if (!cJSON_IsArray(allowed_ssc_modes)) {
         ogs_error("OpenAPI_ssc_modes_1_parseFromJSON() failed [allowed_ssc_modes]");

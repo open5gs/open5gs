@@ -294,7 +294,7 @@ OpenAPI_app_session_context_update_data_t *OpenAPI_app_session_context_update_da
     OpenAPI_app_session_context_update_data_t *app_session_context_update_data_local_var = NULL;
     cJSON *af_app_id = cJSON_GetObjectItemCaseSensitive(app_session_context_update_dataJSON, "afAppId");
 
-    if (af_app_id) { 
+    if (af_app_id) {
     if (!cJSON_IsString(af_app_id)) {
         ogs_error("OpenAPI_app_session_context_update_data_parseFromJSON() failed [af_app_id]");
         goto end;
@@ -304,13 +304,13 @@ OpenAPI_app_session_context_update_data_t *OpenAPI_app_session_context_update_da
     cJSON *af_rout_req = cJSON_GetObjectItemCaseSensitive(app_session_context_update_dataJSON, "afRoutReq");
 
     OpenAPI_af_routing_requirement_rm_t *af_rout_req_local_nonprim = NULL;
-    if (af_rout_req) { 
+    if (af_rout_req) {
     af_rout_req_local_nonprim = OpenAPI_af_routing_requirement_rm_parseFromJSON(af_rout_req);
     }
 
     cJSON *asp_id = cJSON_GetObjectItemCaseSensitive(app_session_context_update_dataJSON, "aspId");
 
-    if (asp_id) { 
+    if (asp_id) {
     if (!cJSON_IsString(asp_id)) {
         ogs_error("OpenAPI_app_session_context_update_data_parseFromJSON() failed [asp_id]");
         goto end;
@@ -319,7 +319,7 @@ OpenAPI_app_session_context_update_data_t *OpenAPI_app_session_context_update_da
 
     cJSON *bdt_ref_id = cJSON_GetObjectItemCaseSensitive(app_session_context_update_dataJSON, "bdtRefId");
 
-    if (bdt_ref_id) { 
+    if (bdt_ref_id) {
     if (!cJSON_IsString(bdt_ref_id)) {
         ogs_error("OpenAPI_app_session_context_update_data_parseFromJSON() failed [bdt_ref_id]");
         goto end;
@@ -329,13 +329,13 @@ OpenAPI_app_session_context_update_data_t *OpenAPI_app_session_context_update_da
     cJSON *ev_subsc = cJSON_GetObjectItemCaseSensitive(app_session_context_update_dataJSON, "evSubsc");
 
     OpenAPI_events_subsc_req_data_rm_t *ev_subsc_local_nonprim = NULL;
-    if (ev_subsc) { 
+    if (ev_subsc) {
     ev_subsc_local_nonprim = OpenAPI_events_subsc_req_data_rm_parseFromJSON(ev_subsc);
     }
 
     cJSON *mcptt_id = cJSON_GetObjectItemCaseSensitive(app_session_context_update_dataJSON, "mcpttId");
 
-    if (mcptt_id) { 
+    if (mcptt_id) {
     if (!cJSON_IsString(mcptt_id)) {
         ogs_error("OpenAPI_app_session_context_update_data_parseFromJSON() failed [mcptt_id]");
         goto end;
@@ -344,7 +344,7 @@ OpenAPI_app_session_context_update_data_t *OpenAPI_app_session_context_update_da
 
     cJSON *mc_video_id = cJSON_GetObjectItemCaseSensitive(app_session_context_update_dataJSON, "mcVideoId");
 
-    if (mc_video_id) { 
+    if (mc_video_id) {
     if (!cJSON_IsString(mc_video_id)) {
         ogs_error("OpenAPI_app_session_context_update_data_parseFromJSON() failed [mc_video_id]");
         goto end;
@@ -354,7 +354,7 @@ OpenAPI_app_session_context_update_data_t *OpenAPI_app_session_context_update_da
     cJSON *med_components = cJSON_GetObjectItemCaseSensitive(app_session_context_update_dataJSON, "medComponents");
 
     OpenAPI_list_t *med_componentsList;
-    if (med_components) { 
+    if (med_components) {
     cJSON *med_components_local_map;
     if (!cJSON_IsObject(med_components)) {
         ogs_error("OpenAPI_app_session_context_update_data_parseFromJSON() failed [med_components]");
@@ -376,7 +376,7 @@ OpenAPI_app_session_context_update_data_t *OpenAPI_app_session_context_update_da
 
     cJSON *mps_id = cJSON_GetObjectItemCaseSensitive(app_session_context_update_dataJSON, "mpsId");
 
-    if (mps_id) { 
+    if (mps_id) {
     if (!cJSON_IsString(mps_id)) {
         ogs_error("OpenAPI_app_session_context_update_data_parseFromJSON() failed [mps_id]");
         goto end;
@@ -385,7 +385,7 @@ OpenAPI_app_session_context_update_data_t *OpenAPI_app_session_context_update_da
 
     cJSON *mcs_id = cJSON_GetObjectItemCaseSensitive(app_session_context_update_dataJSON, "mcsId");
 
-    if (mcs_id) { 
+    if (mcs_id) {
     if (!cJSON_IsString(mcs_id)) {
         ogs_error("OpenAPI_app_session_context_update_data_parseFromJSON() failed [mcs_id]");
         goto end;
@@ -395,14 +395,14 @@ OpenAPI_app_session_context_update_data_t *OpenAPI_app_session_context_update_da
     cJSON *preempt_control_info = cJSON_GetObjectItemCaseSensitive(app_session_context_update_dataJSON, "preemptControlInfo");
 
     OpenAPI_preemption_control_information_rm_t *preempt_control_info_local_nonprim = NULL;
-    if (preempt_control_info) { 
+    if (preempt_control_info) {
     preempt_control_info_local_nonprim = OpenAPI_preemption_control_information_rm_parseFromJSON(preempt_control_info);
     }
 
     cJSON *res_prio = cJSON_GetObjectItemCaseSensitive(app_session_context_update_dataJSON, "resPrio");
 
     OpenAPI_reserv_priority_e res_prioVariable;
-    if (res_prio) { 
+    if (res_prio) {
     if (!cJSON_IsString(res_prio)) {
         ogs_error("OpenAPI_app_session_context_update_data_parseFromJSON() failed [res_prio]");
         goto end;
@@ -413,7 +413,7 @@ OpenAPI_app_session_context_update_data_t *OpenAPI_app_session_context_update_da
     cJSON *serv_inf_status = cJSON_GetObjectItemCaseSensitive(app_session_context_update_dataJSON, "servInfStatus");
 
     OpenAPI_service_info_status_e serv_inf_statusVariable;
-    if (serv_inf_status) { 
+    if (serv_inf_status) {
     if (!cJSON_IsString(serv_inf_status)) {
         ogs_error("OpenAPI_app_session_context_update_data_parseFromJSON() failed [serv_inf_status]");
         goto end;
@@ -424,7 +424,7 @@ OpenAPI_app_session_context_update_data_t *OpenAPI_app_session_context_update_da
     cJSON *sip_fork_ind = cJSON_GetObjectItemCaseSensitive(app_session_context_update_dataJSON, "sipForkInd");
 
     OpenAPI_sip_forking_indication_e sip_fork_indVariable;
-    if (sip_fork_ind) { 
+    if (sip_fork_ind) {
     if (!cJSON_IsString(sip_fork_ind)) {
         ogs_error("OpenAPI_app_session_context_update_data_parseFromJSON() failed [sip_fork_ind]");
         goto end;
@@ -434,7 +434,7 @@ OpenAPI_app_session_context_update_data_t *OpenAPI_app_session_context_update_da
 
     cJSON *spon_id = cJSON_GetObjectItemCaseSensitive(app_session_context_update_dataJSON, "sponId");
 
-    if (spon_id) { 
+    if (spon_id) {
     if (!cJSON_IsString(spon_id)) {
         ogs_error("OpenAPI_app_session_context_update_data_parseFromJSON() failed [spon_id]");
         goto end;
@@ -444,7 +444,7 @@ OpenAPI_app_session_context_update_data_t *OpenAPI_app_session_context_update_da
     cJSON *spon_status = cJSON_GetObjectItemCaseSensitive(app_session_context_update_dataJSON, "sponStatus");
 
     OpenAPI_sponsoring_status_e spon_statusVariable;
-    if (spon_status) { 
+    if (spon_status) {
     if (!cJSON_IsString(spon_status)) {
         ogs_error("OpenAPI_app_session_context_update_data_parseFromJSON() failed [spon_status]");
         goto end;
@@ -455,21 +455,21 @@ OpenAPI_app_session_context_update_data_t *OpenAPI_app_session_context_update_da
     cJSON *tsn_bridge_man_cont = cJSON_GetObjectItemCaseSensitive(app_session_context_update_dataJSON, "tsnBridgeManCont");
 
     OpenAPI_bridge_management_container_t *tsn_bridge_man_cont_local_nonprim = NULL;
-    if (tsn_bridge_man_cont) { 
+    if (tsn_bridge_man_cont) {
     tsn_bridge_man_cont_local_nonprim = OpenAPI_bridge_management_container_parseFromJSON(tsn_bridge_man_cont);
     }
 
     cJSON *tsn_port_man_cont_dstt = cJSON_GetObjectItemCaseSensitive(app_session_context_update_dataJSON, "tsnPortManContDstt");
 
     OpenAPI_port_management_container_t *tsn_port_man_cont_dstt_local_nonprim = NULL;
-    if (tsn_port_man_cont_dstt) { 
+    if (tsn_port_man_cont_dstt) {
     tsn_port_man_cont_dstt_local_nonprim = OpenAPI_port_management_container_parseFromJSON(tsn_port_man_cont_dstt);
     }
 
     cJSON *tsn_port_man_cont_nwtts = cJSON_GetObjectItemCaseSensitive(app_session_context_update_dataJSON, "tsnPortManContNwtts");
 
     OpenAPI_list_t *tsn_port_man_cont_nwttsList;
-    if (tsn_port_man_cont_nwtts) { 
+    if (tsn_port_man_cont_nwtts) {
     cJSON *tsn_port_man_cont_nwtts_local_nonprimitive;
     if (!cJSON_IsArray(tsn_port_man_cont_nwtts)){
         ogs_error("OpenAPI_app_session_context_update_data_parseFromJSON() failed [tsn_port_man_cont_nwtts]");

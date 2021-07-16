@@ -6,6 +6,7 @@
 
 OpenAPI_lcs_privacy_t *OpenAPI_lcs_privacy_create(
     char *af_instance_id,
+    bool is_reference_id,
     int reference_id,
     OpenAPI_lpi_t *lpi,
     char *mtc_provider_information
@@ -16,6 +17,7 @@ OpenAPI_lcs_privacy_t *OpenAPI_lcs_privacy_create(
         return NULL;
     }
     lcs_privacy_local_var->af_instance_id = af_instance_id;
+    lcs_privacy_local_var->is_reference_id = is_reference_id;
     lcs_privacy_local_var->reference_id = reference_id;
     lcs_privacy_local_var->lpi = lpi;
     lcs_privacy_local_var->mtc_provider_information = mtc_provider_information;
@@ -52,7 +54,7 @@ cJSON *OpenAPI_lcs_privacy_convertToJSON(OpenAPI_lcs_privacy_t *lcs_privacy)
     }
     }
 
-    if (lcs_privacy->reference_id) {
+    if (lcs_privacy->is_reference_id) {
     if (cJSON_AddNumberToObject(item, "referenceId", lcs_privacy->reference_id) == NULL) {
         ogs_error("OpenAPI_lcs_privacy_convertToJSON() failed [reference_id]");
         goto end;
@@ -88,7 +90,7 @@ OpenAPI_lcs_privacy_t *OpenAPI_lcs_privacy_parseFromJSON(cJSON *lcs_privacyJSON)
     OpenAPI_lcs_privacy_t *lcs_privacy_local_var = NULL;
     cJSON *af_instance_id = cJSON_GetObjectItemCaseSensitive(lcs_privacyJSON, "afInstanceId");
 
-    if (af_instance_id) { 
+    if (af_instance_id) {
     if (!cJSON_IsString(af_instance_id)) {
         ogs_error("OpenAPI_lcs_privacy_parseFromJSON() failed [af_instance_id]");
         goto end;
@@ -97,7 +99,7 @@ OpenAPI_lcs_privacy_t *OpenAPI_lcs_privacy_parseFromJSON(cJSON *lcs_privacyJSON)
 
     cJSON *reference_id = cJSON_GetObjectItemCaseSensitive(lcs_privacyJSON, "referenceId");
 
-    if (reference_id) { 
+    if (reference_id) {
     if (!cJSON_IsNumber(reference_id)) {
         ogs_error("OpenAPI_lcs_privacy_parseFromJSON() failed [reference_id]");
         goto end;
@@ -107,13 +109,13 @@ OpenAPI_lcs_privacy_t *OpenAPI_lcs_privacy_parseFromJSON(cJSON *lcs_privacyJSON)
     cJSON *lpi = cJSON_GetObjectItemCaseSensitive(lcs_privacyJSON, "lpi");
 
     OpenAPI_lpi_t *lpi_local_nonprim = NULL;
-    if (lpi) { 
+    if (lpi) {
     lpi_local_nonprim = OpenAPI_lpi_parseFromJSON(lpi);
     }
 
     cJSON *mtc_provider_information = cJSON_GetObjectItemCaseSensitive(lcs_privacyJSON, "mtcProviderInformation");
 
-    if (mtc_provider_information) { 
+    if (mtc_provider_information) {
     if (!cJSON_IsString(mtc_provider_information)) {
         ogs_error("OpenAPI_lcs_privacy_parseFromJSON() failed [mtc_provider_information]");
         goto end;
@@ -122,6 +124,7 @@ OpenAPI_lcs_privacy_t *OpenAPI_lcs_privacy_parseFromJSON(cJSON *lcs_privacyJSON)
 
     lcs_privacy_local_var = OpenAPI_lcs_privacy_create (
         af_instance_id ? ogs_strdup_or_assert(af_instance_id->valuestring) : NULL,
+        reference_id ? true : false,
         reference_id ? reference_id->valuedouble : 0,
         lpi ? lpi_local_nonprim : NULL,
         mtc_provider_information ? ogs_strdup_or_assert(mtc_provider_information->valuestring) : NULL

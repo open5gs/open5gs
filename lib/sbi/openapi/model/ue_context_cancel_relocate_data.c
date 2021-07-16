@@ -67,7 +67,7 @@ OpenAPI_ue_context_cancel_relocate_data_t *OpenAPI_ue_context_cancel_relocate_da
     OpenAPI_ue_context_cancel_relocate_data_t *ue_context_cancel_relocate_data_local_var = NULL;
     cJSON *supi = cJSON_GetObjectItemCaseSensitive(ue_context_cancel_relocate_dataJSON, "supi");
 
-    if (supi) { 
+    if (supi) {
     if (!cJSON_IsString(supi)) {
         ogs_error("OpenAPI_ue_context_cancel_relocate_data_parseFromJSON() failed [supi]");
         goto end;
@@ -81,7 +81,6 @@ OpenAPI_ue_context_cancel_relocate_data_t *OpenAPI_ue_context_cancel_relocate_da
     }
 
     OpenAPI_ref_to_binary_data_t *relocation_cancel_request_local_nonprim = NULL;
-    
     relocation_cancel_request_local_nonprim = OpenAPI_ref_to_binary_data_parseFromJSON(relocation_cancel_request);
 
     ue_context_cancel_relocate_data_local_var = OpenAPI_ue_context_cancel_relocate_data_create (

@@ -514,9 +514,26 @@ ogs_sbi_nf_instance_t *ogs_sbi_nf_instance_add(char *id)
             ogs_app()->timer_mgr, NULL, nf_instance);
     ogs_assert(nf_instance->t_validity);
 
+    nf_instance->priority = OGS_SBI_DEFAULT_PRIORITY;
+    nf_instance->capacity = OGS_SBI_DEFAULT_CAPACITY;
+    nf_instance->load = OGS_SBI_DEFAULT_LOAD;
+
     ogs_list_add(&ogs_sbi_self()->nf_instance_list, nf_instance);
 
     return nf_instance;
+}
+
+void ogs_sbi_nf_instance_add_allowed_nf_type(
+        ogs_sbi_nf_instance_t *nf_instance, OpenAPI_nf_type_e allowed_nf_type)
+{
+    ogs_assert(nf_instance);
+    ogs_assert(allowed_nf_type);
+
+    if (nf_instance->num_of_allowed_nf_type < OGS_SBI_MAX_NUM_OF_NF_TYPE) {
+        nf_instance->allowed_nf_types[nf_instance->num_of_allowed_nf_type] =
+            allowed_nf_type;
+        nf_instance->num_of_allowed_nf_type++;
+    }
 }
 
 void ogs_sbi_nf_instance_clear(ogs_sbi_nf_instance_t *nf_instance)
@@ -536,6 +553,8 @@ void ogs_sbi_nf_instance_clear(ogs_sbi_nf_instance_t *nf_instance)
             ogs_freeaddrinfo(nf_instance->ipv6[i]);
     }
     nf_instance->num_of_ipv6 = 0;
+
+    nf_instance->num_of_allowed_nf_type = 0;
 }
 
 void ogs_sbi_nf_instance_remove(ogs_sbi_nf_instance_t *nf_instance)
@@ -620,6 +639,10 @@ ogs_sbi_nf_service_t *ogs_sbi_nf_service_add(ogs_sbi_nf_instance_t *nf_instance,
 
     nf_service->status = OpenAPI_nf_service_status_REGISTERED;
 
+    nf_service->priority = OGS_SBI_DEFAULT_PRIORITY;
+    nf_service->capacity = OGS_SBI_DEFAULT_CAPACITY;
+    nf_service->load = OGS_SBI_DEFAULT_LOAD;
+
     nf_service->nf_instance = nf_instance;
 
     ogs_list_add(&nf_instance->nf_service_list, nf_service);
@@ -653,6 +676,19 @@ void ogs_sbi_nf_service_add_version(ogs_sbi_nf_service_t *nf_service,
     }
 }
 
+void ogs_sbi_nf_service_add_allowed_nf_type(
+        ogs_sbi_nf_service_t *nf_service, OpenAPI_nf_type_e allowed_nf_type)
+{
+    ogs_assert(nf_service);
+    ogs_assert(allowed_nf_type);
+
+    if (nf_service->num_of_allowed_nf_type < OGS_SBI_MAX_NUM_OF_NF_TYPE) {
+        nf_service->allowed_nf_types[nf_service->num_of_allowed_nf_type] =
+            allowed_nf_type;
+        nf_service->num_of_allowed_nf_type++;
+    }
+}
+
 void ogs_sbi_nf_service_clear(ogs_sbi_nf_service_t *nf_service)
 {
     ogs_sbi_nf_instance_t *nf_instance = NULL;
@@ -679,6 +715,8 @@ void ogs_sbi_nf_service_clear(ogs_sbi_nf_service_t *nf_service)
             ogs_freeaddrinfo(nf_service->addr[i].ipv6);
     }
     nf_service->num_of_addr = 0;
+
+    nf_service->num_of_allowed_nf_type = 0;
 }
 
 void ogs_sbi_nf_service_remove(ogs_sbi_nf_service_t *nf_service)

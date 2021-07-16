@@ -179,7 +179,7 @@ OpenAPI_udm_info_t *OpenAPI_udm_info_parseFromJSON(cJSON *udm_infoJSON)
     OpenAPI_udm_info_t *udm_info_local_var = NULL;
     cJSON *group_id = cJSON_GetObjectItemCaseSensitive(udm_infoJSON, "groupId");
 
-    if (group_id) { 
+    if (group_id) {
     if (!cJSON_IsString(group_id)) {
         ogs_error("OpenAPI_udm_info_parseFromJSON() failed [group_id]");
         goto end;
@@ -189,7 +189,7 @@ OpenAPI_udm_info_t *OpenAPI_udm_info_parseFromJSON(cJSON *udm_infoJSON)
     cJSON *supi_ranges = cJSON_GetObjectItemCaseSensitive(udm_infoJSON, "supiRanges");
 
     OpenAPI_list_t *supi_rangesList;
-    if (supi_ranges) { 
+    if (supi_ranges) {
     cJSON *supi_ranges_local_nonprimitive;
     if (!cJSON_IsArray(supi_ranges)){
         ogs_error("OpenAPI_udm_info_parseFromJSON() failed [supi_ranges]");
@@ -212,7 +212,7 @@ OpenAPI_udm_info_t *OpenAPI_udm_info_parseFromJSON(cJSON *udm_infoJSON)
     cJSON *gpsi_ranges = cJSON_GetObjectItemCaseSensitive(udm_infoJSON, "gpsiRanges");
 
     OpenAPI_list_t *gpsi_rangesList;
-    if (gpsi_ranges) { 
+    if (gpsi_ranges) {
     cJSON *gpsi_ranges_local_nonprimitive;
     if (!cJSON_IsArray(gpsi_ranges)){
         ogs_error("OpenAPI_udm_info_parseFromJSON() failed [gpsi_ranges]");
@@ -235,7 +235,7 @@ OpenAPI_udm_info_t *OpenAPI_udm_info_parseFromJSON(cJSON *udm_infoJSON)
     cJSON *external_group_identifiers_ranges = cJSON_GetObjectItemCaseSensitive(udm_infoJSON, "externalGroupIdentifiersRanges");
 
     OpenAPI_list_t *external_group_identifiers_rangesList;
-    if (external_group_identifiers_ranges) { 
+    if (external_group_identifiers_ranges) {
     cJSON *external_group_identifiers_ranges_local_nonprimitive;
     if (!cJSON_IsArray(external_group_identifiers_ranges)){
         ogs_error("OpenAPI_udm_info_parseFromJSON() failed [external_group_identifiers_ranges]");
@@ -258,7 +258,7 @@ OpenAPI_udm_info_t *OpenAPI_udm_info_parseFromJSON(cJSON *udm_infoJSON)
     cJSON *routing_indicators = cJSON_GetObjectItemCaseSensitive(udm_infoJSON, "routingIndicators");
 
     OpenAPI_list_t *routing_indicatorsList;
-    if (routing_indicators) { 
+    if (routing_indicators) {
     cJSON *routing_indicators_local;
     if (!cJSON_IsArray(routing_indicators)) {
         ogs_error("OpenAPI_udm_info_parseFromJSON() failed [routing_indicators]");
@@ -272,13 +272,13 @@ OpenAPI_udm_info_t *OpenAPI_udm_info_parseFromJSON(cJSON *udm_infoJSON)
         goto end;
     }
     OpenAPI_list_add(routing_indicatorsList , ogs_strdup_or_assert(routing_indicators_local->valuestring));
-                    }
+    }
     }
 
     cJSON *internal_group_identifiers_ranges = cJSON_GetObjectItemCaseSensitive(udm_infoJSON, "internalGroupIdentifiersRanges");
 
     OpenAPI_list_t *internal_group_identifiers_rangesList;
-    if (internal_group_identifiers_ranges) { 
+    if (internal_group_identifiers_ranges) {
     cJSON *internal_group_identifiers_ranges_local_nonprimitive;
     if (!cJSON_IsArray(internal_group_identifiers_ranges)){
         ogs_error("OpenAPI_udm_info_parseFromJSON() failed [internal_group_identifiers_ranges]");

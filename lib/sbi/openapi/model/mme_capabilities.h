@@ -19,12 +19,16 @@ extern "C" {
 
 typedef struct OpenAPI_mme_capabilities_s OpenAPI_mme_capabilities_t;
 typedef struct OpenAPI_mme_capabilities_s {
+    bool is_non_ip_supported;
     int non_ip_supported;
+    bool is_ethernet_supported;
     int ethernet_supported;
 } OpenAPI_mme_capabilities_t;
 
 OpenAPI_mme_capabilities_t *OpenAPI_mme_capabilities_create(
+    bool is_non_ip_supported,
     int non_ip_supported,
+    bool is_ethernet_supported,
     int ethernet_supported
 );
 void OpenAPI_mme_capabilities_free(OpenAPI_mme_capabilities_t *mme_capabilities);

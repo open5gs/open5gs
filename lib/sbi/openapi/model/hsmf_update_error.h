@@ -22,18 +22,22 @@ extern "C" {
 typedef struct OpenAPI_hsmf_update_error_s OpenAPI_hsmf_update_error_t;
 typedef struct OpenAPI_hsmf_update_error_s {
     struct OpenAPI_problem_details_s *error;
+    bool is_pti;
     int pti;
     char *n1sm_cause;
     struct OpenAPI_ref_to_binary_data_s *n1_sm_info_to_ue;
+    bool is_back_off_timer;
     int back_off_timer;
     char *recovery_time;
 } OpenAPI_hsmf_update_error_t;
 
 OpenAPI_hsmf_update_error_t *OpenAPI_hsmf_update_error_create(
     OpenAPI_problem_details_t *error,
+    bool is_pti,
     int pti,
     char *n1sm_cause,
     OpenAPI_ref_to_binary_data_t *n1_sm_info_to_ue,
+    bool is_back_off_timer,
     int back_off_timer,
     char *recovery_time
 );

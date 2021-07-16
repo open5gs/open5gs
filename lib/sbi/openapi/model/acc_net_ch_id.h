@@ -21,12 +21,14 @@ typedef struct OpenAPI_acc_net_ch_id_s OpenAPI_acc_net_ch_id_t;
 typedef struct OpenAPI_acc_net_ch_id_s {
     int acc_net_cha_id_value;
     OpenAPI_list_t *ref_pcc_rule_ids;
+    bool is_session_ch_scope;
     int session_ch_scope;
 } OpenAPI_acc_net_ch_id_t;
 
 OpenAPI_acc_net_ch_id_t *OpenAPI_acc_net_ch_id_create(
     int acc_net_cha_id_value,
     OpenAPI_list_t *ref_pcc_rule_ids,
+    bool is_session_ch_scope,
     int session_ch_scope
 );
 void OpenAPI_acc_net_ch_id_free(OpenAPI_acc_net_ch_id_t *acc_net_ch_id);

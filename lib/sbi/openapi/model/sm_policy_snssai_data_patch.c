@@ -91,13 +91,12 @@ OpenAPI_sm_policy_snssai_data_patch_t *OpenAPI_sm_policy_snssai_data_patch_parse
     }
 
     OpenAPI_snssai_t *snssai_local_nonprim = NULL;
-    
     snssai_local_nonprim = OpenAPI_snssai_parseFromJSON(snssai);
 
     cJSON *sm_policy_dnn_data = cJSON_GetObjectItemCaseSensitive(sm_policy_snssai_data_patchJSON, "smPolicyDnnData");
 
     OpenAPI_list_t *sm_policy_dnn_dataList;
-    if (sm_policy_dnn_data) { 
+    if (sm_policy_dnn_data) {
     cJSON *sm_policy_dnn_data_local_map;
     if (!cJSON_IsObject(sm_policy_dnn_data)) {
         ogs_error("OpenAPI_sm_policy_snssai_data_patch_parseFromJSON() failed [sm_policy_dnn_data]");

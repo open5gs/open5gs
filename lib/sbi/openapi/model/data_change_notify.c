@@ -170,7 +170,7 @@ OpenAPI_data_change_notify_t *OpenAPI_data_change_notify_parseFromJSON(cJSON *da
     cJSON *original_callback_reference = cJSON_GetObjectItemCaseSensitive(data_change_notifyJSON, "originalCallbackReference");
 
     OpenAPI_list_t *original_callback_referenceList;
-    if (original_callback_reference) { 
+    if (original_callback_reference) {
     cJSON *original_callback_reference_local;
     if (!cJSON_IsArray(original_callback_reference)) {
         ogs_error("OpenAPI_data_change_notify_parseFromJSON() failed [original_callback_reference]");
@@ -184,12 +184,12 @@ OpenAPI_data_change_notify_t *OpenAPI_data_change_notify_parseFromJSON(cJSON *da
         goto end;
     }
     OpenAPI_list_add(original_callback_referenceList , ogs_strdup_or_assert(original_callback_reference_local->valuestring));
-                    }
+    }
     }
 
     cJSON *ue_id = cJSON_GetObjectItemCaseSensitive(data_change_notifyJSON, "ueId");
 
-    if (ue_id) { 
+    if (ue_id) {
     if (!cJSON_IsString(ue_id)) {
         ogs_error("OpenAPI_data_change_notify_parseFromJSON() failed [ue_id]");
         goto end;
@@ -199,7 +199,7 @@ OpenAPI_data_change_notify_t *OpenAPI_data_change_notify_parseFromJSON(cJSON *da
     cJSON *notify_items = cJSON_GetObjectItemCaseSensitive(data_change_notifyJSON, "notifyItems");
 
     OpenAPI_list_t *notify_itemsList;
-    if (notify_items) { 
+    if (notify_items) {
     cJSON *notify_items_local_nonprimitive;
     if (!cJSON_IsArray(notify_items)){
         ogs_error("OpenAPI_data_change_notify_parseFromJSON() failed [notify_items]");
@@ -222,14 +222,14 @@ OpenAPI_data_change_notify_t *OpenAPI_data_change_notify_parseFromJSON(cJSON *da
     cJSON *sdm_subscription = cJSON_GetObjectItemCaseSensitive(data_change_notifyJSON, "sdmSubscription");
 
     OpenAPI_sdm_subscription_1_t *sdm_subscription_local_nonprim = NULL;
-    if (sdm_subscription) { 
+    if (sdm_subscription) {
     sdm_subscription_local_nonprim = OpenAPI_sdm_subscription_1_parseFromJSON(sdm_subscription);
     }
 
     cJSON *additional_sdm_subscriptions = cJSON_GetObjectItemCaseSensitive(data_change_notifyJSON, "additionalSdmSubscriptions");
 
     OpenAPI_list_t *additional_sdm_subscriptionsList;
-    if (additional_sdm_subscriptions) { 
+    if (additional_sdm_subscriptions) {
     cJSON *additional_sdm_subscriptions_local_nonprimitive;
     if (!cJSON_IsArray(additional_sdm_subscriptions)){
         ogs_error("OpenAPI_data_change_notify_parseFromJSON() failed [additional_sdm_subscriptions]");
@@ -252,7 +252,7 @@ OpenAPI_data_change_notify_t *OpenAPI_data_change_notify_parseFromJSON(cJSON *da
     cJSON *subscription_data_subscriptions = cJSON_GetObjectItemCaseSensitive(data_change_notifyJSON, "subscriptionDataSubscriptions");
 
     OpenAPI_list_t *subscription_data_subscriptionsList;
-    if (subscription_data_subscriptions) { 
+    if (subscription_data_subscriptions) {
     cJSON *subscription_data_subscriptions_local_nonprimitive;
     if (!cJSON_IsArray(subscription_data_subscriptions)){
         ogs_error("OpenAPI_data_change_notify_parseFromJSON() failed [subscription_data_subscriptions]");

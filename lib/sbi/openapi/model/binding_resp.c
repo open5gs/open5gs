@@ -79,7 +79,7 @@ OpenAPI_binding_resp_t *OpenAPI_binding_resp_parseFromJSON(cJSON *binding_respJS
     OpenAPI_binding_resp_t *binding_resp_local_var = NULL;
     cJSON *pcf_sm_fqdn = cJSON_GetObjectItemCaseSensitive(binding_respJSON, "pcfSmFqdn");
 
-    if (pcf_sm_fqdn) { 
+    if (pcf_sm_fqdn) {
     if (!cJSON_IsString(pcf_sm_fqdn)) {
         ogs_error("OpenAPI_binding_resp_parseFromJSON() failed [pcf_sm_fqdn]");
         goto end;
@@ -89,7 +89,7 @@ OpenAPI_binding_resp_t *OpenAPI_binding_resp_parseFromJSON(cJSON *binding_respJS
     cJSON *pcf_sm_ip_end_points = cJSON_GetObjectItemCaseSensitive(binding_respJSON, "pcfSmIpEndPoints");
 
     OpenAPI_list_t *pcf_sm_ip_end_pointsList;
-    if (pcf_sm_ip_end_points) { 
+    if (pcf_sm_ip_end_points) {
     cJSON *pcf_sm_ip_end_points_local_nonprimitive;
     if (!cJSON_IsArray(pcf_sm_ip_end_points)){
         ogs_error("OpenAPI_binding_resp_parseFromJSON() failed [pcf_sm_ip_end_points]");

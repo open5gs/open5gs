@@ -22,12 +22,14 @@ typedef struct OpenAPI_ip_sm_gw_registration_s OpenAPI_ip_sm_gw_registration_t;
 typedef struct OpenAPI_ip_sm_gw_registration_s {
     char *ip_sm_gw_map_address;
     struct OpenAPI_network_node_diameter_address_s *ip_sm_gw_diameter_address;
+    bool is_unri_indicator;
     int unri_indicator;
 } OpenAPI_ip_sm_gw_registration_t;
 
 OpenAPI_ip_sm_gw_registration_t *OpenAPI_ip_sm_gw_registration_create(
     char *ip_sm_gw_map_address,
     OpenAPI_network_node_diameter_address_t *ip_sm_gw_diameter_address,
+    bool is_unri_indicator,
     int unri_indicator
 );
 void OpenAPI_ip_sm_gw_registration_free(OpenAPI_ip_sm_gw_registration_t *ip_sm_gw_registration);

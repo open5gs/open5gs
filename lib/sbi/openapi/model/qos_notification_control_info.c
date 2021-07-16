@@ -91,7 +91,6 @@ OpenAPI_qos_notification_control_info_t *OpenAPI_qos_notification_control_info_p
     }
 
     OpenAPI_qos_notif_type_e notif_typeVariable;
-    
     if (!cJSON_IsString(notif_type)) {
         ogs_error("OpenAPI_qos_notification_control_info_parseFromJSON() failed [notif_type]");
         goto end;
@@ -101,7 +100,7 @@ OpenAPI_qos_notification_control_info_t *OpenAPI_qos_notification_control_info_p
     cJSON *flows = cJSON_GetObjectItemCaseSensitive(qos_notification_control_infoJSON, "flows");
 
     OpenAPI_list_t *flowsList;
-    if (flows) { 
+    if (flows) {
     cJSON *flows_local_nonprimitive;
     if (!cJSON_IsArray(flows)){
         ogs_error("OpenAPI_qos_notification_control_info_parseFromJSON() failed [flows]");
@@ -123,7 +122,7 @@ OpenAPI_qos_notification_control_info_t *OpenAPI_qos_notification_control_info_p
 
     cJSON *alt_ser_req = cJSON_GetObjectItemCaseSensitive(qos_notification_control_infoJSON, "altSerReq");
 
-    if (alt_ser_req) { 
+    if (alt_ser_req) {
     if (!cJSON_IsString(alt_ser_req)) {
         ogs_error("OpenAPI_qos_notification_control_info_parseFromJSON() failed [alt_ser_req]");
         goto end;

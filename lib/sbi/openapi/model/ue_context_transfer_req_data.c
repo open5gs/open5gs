@@ -104,7 +104,6 @@ OpenAPI_ue_context_transfer_req_data_t *OpenAPI_ue_context_transfer_req_data_par
     }
 
     OpenAPI_transfer_reason_e reasonVariable;
-    
     if (!cJSON_IsString(reason)) {
         ogs_error("OpenAPI_ue_context_transfer_req_data_parseFromJSON() failed [reason]");
         goto end;
@@ -118,7 +117,6 @@ OpenAPI_ue_context_transfer_req_data_t *OpenAPI_ue_context_transfer_req_data_par
     }
 
     OpenAPI_access_type_e access_typeVariable;
-    
     if (!cJSON_IsString(access_type)) {
         ogs_error("OpenAPI_ue_context_transfer_req_data_parseFromJSON() failed [access_type]");
         goto end;
@@ -128,20 +126,20 @@ OpenAPI_ue_context_transfer_req_data_t *OpenAPI_ue_context_transfer_req_data_par
     cJSON *plmn_id = cJSON_GetObjectItemCaseSensitive(ue_context_transfer_req_dataJSON, "plmnId");
 
     OpenAPI_plmn_id_t *plmn_id_local_nonprim = NULL;
-    if (plmn_id) { 
+    if (plmn_id) {
     plmn_id_local_nonprim = OpenAPI_plmn_id_parseFromJSON(plmn_id);
     }
 
     cJSON *reg_request = cJSON_GetObjectItemCaseSensitive(ue_context_transfer_req_dataJSON, "regRequest");
 
     OpenAPI_n1_message_container_t *reg_request_local_nonprim = NULL;
-    if (reg_request) { 
+    if (reg_request) {
     reg_request_local_nonprim = OpenAPI_n1_message_container_parseFromJSON(reg_request);
     }
 
     cJSON *supported_features = cJSON_GetObjectItemCaseSensitive(ue_context_transfer_req_dataJSON, "supportedFeatures");
 
-    if (supported_features) { 
+    if (supported_features) {
     if (!cJSON_IsString(supported_features)) {
         ogs_error("OpenAPI_ue_context_transfer_req_data_parseFromJSON() failed [supported_features]");
         goto end;

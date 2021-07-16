@@ -138,12 +138,11 @@ OpenAPI_global_ran_node_id_t *OpenAPI_global_ran_node_id_parseFromJSON(cJSON *gl
     }
 
     OpenAPI_plmn_id_t *plmn_id_local_nonprim = NULL;
-    
     plmn_id_local_nonprim = OpenAPI_plmn_id_parseFromJSON(plmn_id);
 
     cJSON *n3_iwf_id = cJSON_GetObjectItemCaseSensitive(global_ran_node_idJSON, "n3IwfId");
 
-    if (n3_iwf_id) { 
+    if (n3_iwf_id) {
     if (!cJSON_IsString(n3_iwf_id)) {
         ogs_error("OpenAPI_global_ran_node_id_parseFromJSON() failed [n3_iwf_id]");
         goto end;
@@ -153,13 +152,13 @@ OpenAPI_global_ran_node_id_t *OpenAPI_global_ran_node_id_parseFromJSON(cJSON *gl
     cJSON *g_nb_id = cJSON_GetObjectItemCaseSensitive(global_ran_node_idJSON, "gNbId");
 
     OpenAPI_gnb_id_t *g_nb_id_local_nonprim = NULL;
-    if (g_nb_id) { 
+    if (g_nb_id) {
     g_nb_id_local_nonprim = OpenAPI_gnb_id_parseFromJSON(g_nb_id);
     }
 
     cJSON *nge_nb_id = cJSON_GetObjectItemCaseSensitive(global_ran_node_idJSON, "ngeNbId");
 
-    if (nge_nb_id) { 
+    if (nge_nb_id) {
     if (!cJSON_IsString(nge_nb_id)) {
         ogs_error("OpenAPI_global_ran_node_id_parseFromJSON() failed [nge_nb_id]");
         goto end;
@@ -168,7 +167,7 @@ OpenAPI_global_ran_node_id_t *OpenAPI_global_ran_node_id_parseFromJSON(cJSON *gl
 
     cJSON *wagf_id = cJSON_GetObjectItemCaseSensitive(global_ran_node_idJSON, "wagfId");
 
-    if (wagf_id) { 
+    if (wagf_id) {
     if (!cJSON_IsString(wagf_id)) {
         ogs_error("OpenAPI_global_ran_node_id_parseFromJSON() failed [wagf_id]");
         goto end;
@@ -177,7 +176,7 @@ OpenAPI_global_ran_node_id_t *OpenAPI_global_ran_node_id_parseFromJSON(cJSON *gl
 
     cJSON *tngf_id = cJSON_GetObjectItemCaseSensitive(global_ran_node_idJSON, "tngfId");
 
-    if (tngf_id) { 
+    if (tngf_id) {
     if (!cJSON_IsString(tngf_id)) {
         ogs_error("OpenAPI_global_ran_node_id_parseFromJSON() failed [tngf_id]");
         goto end;
@@ -186,7 +185,7 @@ OpenAPI_global_ran_node_id_t *OpenAPI_global_ran_node_id_parseFromJSON(cJSON *gl
 
     cJSON *nid = cJSON_GetObjectItemCaseSensitive(global_ran_node_idJSON, "nid");
 
-    if (nid) { 
+    if (nid) {
     if (!cJSON_IsString(nid)) {
         ogs_error("OpenAPI_global_ran_node_id_parseFromJSON() failed [nid]");
         goto end;
@@ -195,7 +194,7 @@ OpenAPI_global_ran_node_id_t *OpenAPI_global_ran_node_id_parseFromJSON(cJSON *gl
 
     cJSON *e_nb_id = cJSON_GetObjectItemCaseSensitive(global_ran_node_idJSON, "eNbId");
 
-    if (e_nb_id) { 
+    if (e_nb_id) {
     if (!cJSON_IsString(e_nb_id)) {
         ogs_error("OpenAPI_global_ran_node_id_parseFromJSON() failed [e_nb_id]");
         goto end;

@@ -73,7 +73,7 @@ OpenAPI_ip_address_1_t *OpenAPI_ip_address_1_parseFromJSON(cJSON *ip_address_1JS
     OpenAPI_ip_address_1_t *ip_address_1_local_var = NULL;
     cJSON *ipv4_addr = cJSON_GetObjectItemCaseSensitive(ip_address_1JSON, "ipv4Addr");
 
-    if (ipv4_addr) { 
+    if (ipv4_addr) {
     if (!cJSON_IsString(ipv4_addr)) {
         ogs_error("OpenAPI_ip_address_1_parseFromJSON() failed [ipv4_addr]");
         goto end;
@@ -82,7 +82,7 @@ OpenAPI_ip_address_1_t *OpenAPI_ip_address_1_parseFromJSON(cJSON *ip_address_1JS
 
     cJSON *ipv6_addr = cJSON_GetObjectItemCaseSensitive(ip_address_1JSON, "ipv6Addr");
 
-    if (ipv6_addr) { 
+    if (ipv6_addr) {
     if (!cJSON_IsString(ipv6_addr)) {
         ogs_error("OpenAPI_ip_address_1_parseFromJSON() failed [ipv6_addr]");
         goto end;
@@ -91,7 +91,7 @@ OpenAPI_ip_address_1_t *OpenAPI_ip_address_1_parseFromJSON(cJSON *ip_address_1JS
 
     cJSON *ipv6_prefix = cJSON_GetObjectItemCaseSensitive(ip_address_1JSON, "ipv6Prefix");
 
-    if (ipv6_prefix) { 
+    if (ipv6_prefix) {
     if (!cJSON_IsString(ipv6_prefix)) {
         ogs_error("OpenAPI_ip_address_1_parseFromJSON() failed [ipv6_prefix]");
         goto end;

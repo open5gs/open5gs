@@ -141,7 +141,6 @@ OpenAPI_partial_success_report_t *OpenAPI_partial_success_report_parseFromJSON(c
     }
 
     OpenAPI_failure_cause_e failure_causeVariable;
-    
     if (!cJSON_IsString(failure_cause)) {
         ogs_error("OpenAPI_partial_success_report_parseFromJSON() failed [failure_cause]");
         goto end;
@@ -151,7 +150,7 @@ OpenAPI_partial_success_report_t *OpenAPI_partial_success_report_parseFromJSON(c
     cJSON *rule_reports = cJSON_GetObjectItemCaseSensitive(partial_success_reportJSON, "ruleReports");
 
     OpenAPI_list_t *rule_reportsList;
-    if (rule_reports) { 
+    if (rule_reports) {
     cJSON *rule_reports_local_nonprimitive;
     if (!cJSON_IsArray(rule_reports)){
         ogs_error("OpenAPI_partial_success_report_parseFromJSON() failed [rule_reports]");
@@ -174,7 +173,7 @@ OpenAPI_partial_success_report_t *OpenAPI_partial_success_report_parseFromJSON(c
     cJSON *sess_rule_reports = cJSON_GetObjectItemCaseSensitive(partial_success_reportJSON, "sessRuleReports");
 
     OpenAPI_list_t *sess_rule_reportsList;
-    if (sess_rule_reports) { 
+    if (sess_rule_reports) {
     cJSON *sess_rule_reports_local_nonprimitive;
     if (!cJSON_IsArray(sess_rule_reports)){
         ogs_error("OpenAPI_partial_success_report_parseFromJSON() failed [sess_rule_reports]");
@@ -197,14 +196,14 @@ OpenAPI_partial_success_report_t *OpenAPI_partial_success_report_parseFromJSON(c
     cJSON *ue_camping_rep = cJSON_GetObjectItemCaseSensitive(partial_success_reportJSON, "ueCampingRep");
 
     OpenAPI_ue_camping_rep_t *ue_camping_rep_local_nonprim = NULL;
-    if (ue_camping_rep) { 
+    if (ue_camping_rep) {
     ue_camping_rep_local_nonprim = OpenAPI_ue_camping_rep_parseFromJSON(ue_camping_rep);
     }
 
     cJSON *policy_dec_failure_reports = cJSON_GetObjectItemCaseSensitive(partial_success_reportJSON, "policyDecFailureReports");
 
     OpenAPI_list_t *policy_dec_failure_reportsList;
-    if (policy_dec_failure_reports) { 
+    if (policy_dec_failure_reports) {
     cJSON *policy_dec_failure_reports_local_nonprimitive;
     if (!cJSON_IsArray(policy_dec_failure_reports)) {
         ogs_error("OpenAPI_partial_success_report_parseFromJSON() failed [policy_dec_failure_reports]");

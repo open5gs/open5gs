@@ -94,20 +94,19 @@ OpenAPI_transfer_mo_data_req_data_t *OpenAPI_transfer_mo_data_req_data_parseFrom
     }
 
     OpenAPI_ref_to_binary_data_t *mo_data_local_nonprim = NULL;
-    
     mo_data_local_nonprim = OpenAPI_ref_to_binary_data_parseFromJSON(mo_data);
 
     cJSON *mo_exp_data_counter = cJSON_GetObjectItemCaseSensitive(transfer_mo_data_req_dataJSON, "moExpDataCounter");
 
     OpenAPI_mo_exp_data_counter_t *mo_exp_data_counter_local_nonprim = NULL;
-    if (mo_exp_data_counter) { 
+    if (mo_exp_data_counter) {
     mo_exp_data_counter_local_nonprim = OpenAPI_mo_exp_data_counter_parseFromJSON(mo_exp_data_counter);
     }
 
     cJSON *ue_location = cJSON_GetObjectItemCaseSensitive(transfer_mo_data_req_dataJSON, "ueLocation");
 
     OpenAPI_user_location_t *ue_location_local_nonprim = NULL;
-    if (ue_location) { 
+    if (ue_location) {
     ue_location_local_nonprim = OpenAPI_user_location_parseFromJSON(ue_location);
     }
 

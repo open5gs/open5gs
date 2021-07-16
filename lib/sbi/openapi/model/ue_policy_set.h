@@ -27,6 +27,7 @@ typedef struct OpenAPI_ue_policy_set_s {
     OpenAPI_list_t* ue_policy_sections;
     OpenAPI_list_t *upsis;
     OpenAPI_list_t* allowed_route_sel_descs;
+    bool is_andsp_ind;
     int andsp_ind;
     char *pei;
     OpenAPI_list_t *os_ids;
@@ -39,6 +40,7 @@ OpenAPI_ue_policy_set_t *OpenAPI_ue_policy_set_create(
     OpenAPI_list_t* ue_policy_sections,
     OpenAPI_list_t *upsis,
     OpenAPI_list_t* allowed_route_sel_descs,
+    bool is_andsp_ind,
     int andsp_ind,
     char *pei,
     OpenAPI_list_t *os_ids,

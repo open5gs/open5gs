@@ -73,7 +73,6 @@ OpenAPI_plmn_id_nid_1_t *OpenAPI_plmn_id_nid_1_parseFromJSON(cJSON *plmn_id_nid_
         goto end;
     }
 
-    
     if (!cJSON_IsString(mcc)) {
         ogs_error("OpenAPI_plmn_id_nid_1_parseFromJSON() failed [mcc]");
         goto end;
@@ -85,7 +84,6 @@ OpenAPI_plmn_id_nid_1_t *OpenAPI_plmn_id_nid_1_parseFromJSON(cJSON *plmn_id_nid_
         goto end;
     }
 
-    
     if (!cJSON_IsString(mnc)) {
         ogs_error("OpenAPI_plmn_id_nid_1_parseFromJSON() failed [mnc]");
         goto end;
@@ -93,7 +91,7 @@ OpenAPI_plmn_id_nid_1_t *OpenAPI_plmn_id_nid_1_parseFromJSON(cJSON *plmn_id_nid_
 
     cJSON *nid = cJSON_GetObjectItemCaseSensitive(plmn_id_nid_1JSON, "nid");
 
-    if (nid) { 
+    if (nid) {
     if (!cJSON_IsString(nid)) {
         ogs_error("OpenAPI_plmn_id_nid_1_parseFromJSON() failed [nid]");
         goto end;

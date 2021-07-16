@@ -183,13 +183,13 @@ OpenAPI_sm_policy_delete_data_t *OpenAPI_sm_policy_delete_data_parseFromJSON(cJS
     cJSON *user_location_info = cJSON_GetObjectItemCaseSensitive(sm_policy_delete_dataJSON, "userLocationInfo");
 
     OpenAPI_user_location_t *user_location_info_local_nonprim = NULL;
-    if (user_location_info) { 
+    if (user_location_info) {
     user_location_info_local_nonprim = OpenAPI_user_location_parseFromJSON(user_location_info);
     }
 
     cJSON *ue_time_zone = cJSON_GetObjectItemCaseSensitive(sm_policy_delete_dataJSON, "ueTimeZone");
 
-    if (ue_time_zone) { 
+    if (ue_time_zone) {
     if (!cJSON_IsString(ue_time_zone)) {
         ogs_error("OpenAPI_sm_policy_delete_data_parseFromJSON() failed [ue_time_zone]");
         goto end;
@@ -199,13 +199,13 @@ OpenAPI_sm_policy_delete_data_t *OpenAPI_sm_policy_delete_data_parseFromJSON(cJS
     cJSON *serving_network = cJSON_GetObjectItemCaseSensitive(sm_policy_delete_dataJSON, "servingNetwork");
 
     OpenAPI_plmn_id_nid_t *serving_network_local_nonprim = NULL;
-    if (serving_network) { 
+    if (serving_network) {
     serving_network_local_nonprim = OpenAPI_plmn_id_nid_parseFromJSON(serving_network);
     }
 
     cJSON *user_location_info_time = cJSON_GetObjectItemCaseSensitive(sm_policy_delete_dataJSON, "userLocationInfoTime");
 
-    if (user_location_info_time) { 
+    if (user_location_info_time) {
     if (!cJSON_IsString(user_location_info_time)) {
         ogs_error("OpenAPI_sm_policy_delete_data_parseFromJSON() failed [user_location_info_time]");
         goto end;
@@ -215,7 +215,7 @@ OpenAPI_sm_policy_delete_data_t *OpenAPI_sm_policy_delete_data_parseFromJSON(cJS
     cJSON *ran_nas_rel_causes = cJSON_GetObjectItemCaseSensitive(sm_policy_delete_dataJSON, "ranNasRelCauses");
 
     OpenAPI_list_t *ran_nas_rel_causesList;
-    if (ran_nas_rel_causes) { 
+    if (ran_nas_rel_causes) {
     cJSON *ran_nas_rel_causes_local_nonprimitive;
     if (!cJSON_IsArray(ran_nas_rel_causes)){
         ogs_error("OpenAPI_sm_policy_delete_data_parseFromJSON() failed [ran_nas_rel_causes]");
@@ -238,7 +238,7 @@ OpenAPI_sm_policy_delete_data_t *OpenAPI_sm_policy_delete_data_parseFromJSON(cJS
     cJSON *accu_usage_reports = cJSON_GetObjectItemCaseSensitive(sm_policy_delete_dataJSON, "accuUsageReports");
 
     OpenAPI_list_t *accu_usage_reportsList;
-    if (accu_usage_reports) { 
+    if (accu_usage_reports) {
     cJSON *accu_usage_reports_local_nonprimitive;
     if (!cJSON_IsArray(accu_usage_reports)){
         ogs_error("OpenAPI_sm_policy_delete_data_parseFromJSON() failed [accu_usage_reports]");
@@ -261,7 +261,7 @@ OpenAPI_sm_policy_delete_data_t *OpenAPI_sm_policy_delete_data_parseFromJSON(cJS
     cJSON *pdu_sess_rel_cause = cJSON_GetObjectItemCaseSensitive(sm_policy_delete_dataJSON, "pduSessRelCause");
 
     OpenAPI_pdu_session_rel_cause_e pdu_sess_rel_causeVariable;
-    if (pdu_sess_rel_cause) { 
+    if (pdu_sess_rel_cause) {
     if (!cJSON_IsString(pdu_sess_rel_cause)) {
         ogs_error("OpenAPI_sm_policy_delete_data_parseFromJSON() failed [pdu_sess_rel_cause]");
         goto end;
@@ -272,7 +272,7 @@ OpenAPI_sm_policy_delete_data_t *OpenAPI_sm_policy_delete_data_parseFromJSON(cJS
     cJSON *qos_mon_reports = cJSON_GetObjectItemCaseSensitive(sm_policy_delete_dataJSON, "qosMonReports");
 
     OpenAPI_list_t *qos_mon_reportsList;
-    if (qos_mon_reports) { 
+    if (qos_mon_reports) {
     cJSON *qos_mon_reports_local_nonprimitive;
     if (!cJSON_IsArray(qos_mon_reports)){
         ogs_error("OpenAPI_sm_policy_delete_data_parseFromJSON() failed [qos_mon_reports]");

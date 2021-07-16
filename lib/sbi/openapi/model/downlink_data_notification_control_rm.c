@@ -80,7 +80,7 @@ OpenAPI_downlink_data_notification_control_rm_t *OpenAPI_downlink_data_notificat
     cJSON *notif_ctrl_inds = cJSON_GetObjectItemCaseSensitive(downlink_data_notification_control_rmJSON, "notifCtrlInds");
 
     OpenAPI_list_t *notif_ctrl_indsList;
-    if (notif_ctrl_inds) { 
+    if (notif_ctrl_inds) {
     cJSON *notif_ctrl_inds_local_nonprimitive;
     if (!cJSON_IsArray(notif_ctrl_inds)) {
         ogs_error("OpenAPI_downlink_data_notification_control_rm_parseFromJSON() failed [notif_ctrl_inds]");
@@ -102,7 +102,7 @@ OpenAPI_downlink_data_notification_control_rm_t *OpenAPI_downlink_data_notificat
     cJSON *types_of_notif = cJSON_GetObjectItemCaseSensitive(downlink_data_notification_control_rmJSON, "typesOfNotif");
 
     OpenAPI_list_t *types_of_notifList;
-    if (types_of_notif) { 
+    if (types_of_notif) {
     cJSON *types_of_notif_local_nonprimitive;
     if (!cJSON_IsArray(types_of_notif)) {
         ogs_error("OpenAPI_downlink_data_notification_control_rm_parseFromJSON() failed [types_of_notif]");

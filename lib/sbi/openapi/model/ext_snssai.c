@@ -8,6 +8,7 @@ OpenAPI_ext_snssai_t *OpenAPI_ext_snssai_create(
     int sst,
     char *sd,
     OpenAPI_list_t *sd_ranges,
+    bool is_wildcard_sd,
     int wildcard_sd
 )
 {
@@ -18,6 +19,7 @@ OpenAPI_ext_snssai_t *OpenAPI_ext_snssai_create(
     ext_snssai_local_var->sst = sst;
     ext_snssai_local_var->sd = sd;
     ext_snssai_local_var->sd_ranges = sd_ranges;
+    ext_snssai_local_var->is_wildcard_sd = is_wildcard_sd;
     ext_snssai_local_var->wildcard_sd = wildcard_sd;
 
     return ext_snssai_local_var;
@@ -79,7 +81,7 @@ cJSON *OpenAPI_ext_snssai_convertToJSON(OpenAPI_ext_snssai_t *ext_snssai)
     }
     }
 
-    if (ext_snssai->wildcard_sd) {
+    if (ext_snssai->is_wildcard_sd) {
     if (cJSON_AddBoolToObject(item, "wildcardSd", ext_snssai->wildcard_sd) == NULL) {
         ogs_error("OpenAPI_ext_snssai_convertToJSON() failed [wildcard_sd]");
         goto end;
@@ -99,7 +101,6 @@ OpenAPI_ext_snssai_t *OpenAPI_ext_snssai_parseFromJSON(cJSON *ext_snssaiJSON)
         goto end;
     }
 
-    
     if (!cJSON_IsNumber(sst)) {
         ogs_error("OpenAPI_ext_snssai_parseFromJSON() failed [sst]");
         goto end;
@@ -107,7 +108,7 @@ OpenAPI_ext_snssai_t *OpenAPI_ext_snssai_parseFromJSON(cJSON *ext_snssaiJSON)
 
     cJSON *sd = cJSON_GetObjectItemCaseSensitive(ext_snssaiJSON, "sd");
 
-    if (sd) { 
+    if (sd) {
     if (!cJSON_IsString(sd)) {
         ogs_error("OpenAPI_ext_snssai_parseFromJSON() failed [sd]");
         goto end;
@@ -117,7 +118,7 @@ OpenAPI_ext_snssai_t *OpenAPI_ext_snssai_parseFromJSON(cJSON *ext_snssaiJSON)
     cJSON *sd_ranges = cJSON_GetObjectItemCaseSensitive(ext_snssaiJSON, "sdRanges");
 
     OpenAPI_list_t *sd_rangesList;
-    if (sd_ranges) { 
+    if (sd_ranges) {
     cJSON *sd_ranges_local_nonprimitive;
     if (!cJSON_IsArray(sd_ranges)){
         ogs_error("OpenAPI_ext_snssai_parseFromJSON() failed [sd_ranges]");
@@ -139,7 +140,7 @@ OpenAPI_ext_snssai_t *OpenAPI_ext_snssai_parseFromJSON(cJSON *ext_snssaiJSON)
 
     cJSON *wildcard_sd = cJSON_GetObjectItemCaseSensitive(ext_snssaiJSON, "wildcardSd");
 
-    if (wildcard_sd) { 
+    if (wildcard_sd) {
     if (!cJSON_IsBool(wildcard_sd)) {
         ogs_error("OpenAPI_ext_snssai_parseFromJSON() failed [wildcard_sd]");
         goto end;
@@ -147,9 +148,11 @@ OpenAPI_ext_snssai_t *OpenAPI_ext_snssai_parseFromJSON(cJSON *ext_snssaiJSON)
     }
 
     ext_snssai_local_var = OpenAPI_ext_snssai_create (
+        
         sst->valuedouble,
         sd ? ogs_strdup_or_assert(sd->valuestring) : NULL,
         sd_ranges ? sd_rangesList : NULL,
+        wildcard_sd ? true : false,
         wildcard_sd ? wildcard_sd->valueint : 0
     );
 

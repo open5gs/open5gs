@@ -63,7 +63,6 @@ OpenAPI_key_amf_t *OpenAPI_key_amf_parseFromJSON(cJSON *key_amfJSON)
     }
 
     OpenAPI_key_amf_type_e key_typeVariable;
-    
     if (!cJSON_IsString(key_type)) {
         ogs_error("OpenAPI_key_amf_parseFromJSON() failed [key_type]");
         goto end;
@@ -76,7 +75,6 @@ OpenAPI_key_amf_t *OpenAPI_key_amf_parseFromJSON(cJSON *key_amfJSON)
         goto end;
     }
 
-    
     if (!cJSON_IsString(key_val)) {
         ogs_error("OpenAPI_key_amf_parseFromJSON() failed [key_val]");
         goto end;

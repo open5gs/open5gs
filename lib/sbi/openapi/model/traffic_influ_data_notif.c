@@ -71,7 +71,6 @@ OpenAPI_traffic_influ_data_notif_t *OpenAPI_traffic_influ_data_notif_parseFromJS
         goto end;
     }
 
-    
     if (!cJSON_IsString(res_uri)) {
         ogs_error("OpenAPI_traffic_influ_data_notif_parseFromJSON() failed [res_uri]");
         goto end;
@@ -80,7 +79,7 @@ OpenAPI_traffic_influ_data_notif_t *OpenAPI_traffic_influ_data_notif_parseFromJS
     cJSON *traffic_influ_data = cJSON_GetObjectItemCaseSensitive(traffic_influ_data_notifJSON, "trafficInfluData");
 
     OpenAPI_traffic_influ_data_t *traffic_influ_data_local_nonprim = NULL;
-    if (traffic_influ_data) { 
+    if (traffic_influ_data) {
     traffic_influ_data_local_nonprim = OpenAPI_traffic_influ_data_parseFromJSON(traffic_influ_data);
     }
 

@@ -202,7 +202,7 @@ OpenAPI_presence_info_rm_t *OpenAPI_presence_info_rm_parseFromJSON(cJSON *presen
     OpenAPI_presence_info_rm_t *presence_info_rm_local_var = NULL;
     cJSON *pra_id = cJSON_GetObjectItemCaseSensitive(presence_info_rmJSON, "praId");
 
-    if (pra_id) { 
+    if (pra_id) {
     if (!cJSON_IsString(pra_id)) {
         ogs_error("OpenAPI_presence_info_rm_parseFromJSON() failed [pra_id]");
         goto end;
@@ -211,7 +211,7 @@ OpenAPI_presence_info_rm_t *OpenAPI_presence_info_rm_parseFromJSON(cJSON *presen
 
     cJSON *additional_pra_id = cJSON_GetObjectItemCaseSensitive(presence_info_rmJSON, "additionalPraId");
 
-    if (additional_pra_id) { 
+    if (additional_pra_id) {
     if (!cJSON_IsString(additional_pra_id)) {
         ogs_error("OpenAPI_presence_info_rm_parseFromJSON() failed [additional_pra_id]");
         goto end;
@@ -221,7 +221,7 @@ OpenAPI_presence_info_rm_t *OpenAPI_presence_info_rm_parseFromJSON(cJSON *presen
     cJSON *presence_state = cJSON_GetObjectItemCaseSensitive(presence_info_rmJSON, "presenceState");
 
     OpenAPI_presence_state_e presence_stateVariable;
-    if (presence_state) { 
+    if (presence_state) {
     if (!cJSON_IsString(presence_state)) {
         ogs_error("OpenAPI_presence_info_rm_parseFromJSON() failed [presence_state]");
         goto end;
@@ -232,7 +232,7 @@ OpenAPI_presence_info_rm_t *OpenAPI_presence_info_rm_parseFromJSON(cJSON *presen
     cJSON *tracking_area_list = cJSON_GetObjectItemCaseSensitive(presence_info_rmJSON, "trackingAreaList");
 
     OpenAPI_list_t *tracking_area_listList;
-    if (tracking_area_list) { 
+    if (tracking_area_list) {
     cJSON *tracking_area_list_local_nonprimitive;
     if (!cJSON_IsArray(tracking_area_list)){
         ogs_error("OpenAPI_presence_info_rm_parseFromJSON() failed [tracking_area_list]");
@@ -255,7 +255,7 @@ OpenAPI_presence_info_rm_t *OpenAPI_presence_info_rm_parseFromJSON(cJSON *presen
     cJSON *ecgi_list = cJSON_GetObjectItemCaseSensitive(presence_info_rmJSON, "ecgiList");
 
     OpenAPI_list_t *ecgi_listList;
-    if (ecgi_list) { 
+    if (ecgi_list) {
     cJSON *ecgi_list_local_nonprimitive;
     if (!cJSON_IsArray(ecgi_list)){
         ogs_error("OpenAPI_presence_info_rm_parseFromJSON() failed [ecgi_list]");
@@ -278,7 +278,7 @@ OpenAPI_presence_info_rm_t *OpenAPI_presence_info_rm_parseFromJSON(cJSON *presen
     cJSON *ncgi_list = cJSON_GetObjectItemCaseSensitive(presence_info_rmJSON, "ncgiList");
 
     OpenAPI_list_t *ncgi_listList;
-    if (ncgi_list) { 
+    if (ncgi_list) {
     cJSON *ncgi_list_local_nonprimitive;
     if (!cJSON_IsArray(ncgi_list)){
         ogs_error("OpenAPI_presence_info_rm_parseFromJSON() failed [ncgi_list]");
@@ -301,7 +301,7 @@ OpenAPI_presence_info_rm_t *OpenAPI_presence_info_rm_parseFromJSON(cJSON *presen
     cJSON *global_ran_node_id_list = cJSON_GetObjectItemCaseSensitive(presence_info_rmJSON, "globalRanNodeIdList");
 
     OpenAPI_list_t *global_ran_node_id_listList;
-    if (global_ran_node_id_list) { 
+    if (global_ran_node_id_list) {
     cJSON *global_ran_node_id_list_local_nonprimitive;
     if (!cJSON_IsArray(global_ran_node_id_list)){
         ogs_error("OpenAPI_presence_info_rm_parseFromJSON() failed [global_ran_node_id_list]");
@@ -324,7 +324,7 @@ OpenAPI_presence_info_rm_t *OpenAPI_presence_info_rm_parseFromJSON(cJSON *presen
     cJSON *globale_nb_id_list = cJSON_GetObjectItemCaseSensitive(presence_info_rmJSON, "globaleNbIdList");
 
     OpenAPI_list_t *globale_nb_id_listList;
-    if (globale_nb_id_list) { 
+    if (globale_nb_id_list) {
     cJSON *globale_nb_id_list_local_nonprimitive;
     if (!cJSON_IsArray(globale_nb_id_list)){
         ogs_error("OpenAPI_presence_info_rm_parseFromJSON() failed [globale_nb_id_list]");

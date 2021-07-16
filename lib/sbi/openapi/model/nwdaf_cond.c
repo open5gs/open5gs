@@ -178,7 +178,6 @@ OpenAPI_nwdaf_cond_t *OpenAPI_nwdaf_cond_parseFromJSON(cJSON *nwdaf_condJSON)
     }
 
     OpenAPI_nwdaf_cond_condition_type_e condition_typeVariable;
-                
     if (!cJSON_IsString(condition_type)) {
         ogs_error("OpenAPI_nwdaf_cond_parseFromJSON() failed [condition_type]");
         goto end;
@@ -188,7 +187,7 @@ OpenAPI_nwdaf_cond_t *OpenAPI_nwdaf_cond_parseFromJSON(cJSON *nwdaf_condJSON)
     cJSON *analytics_ids = cJSON_GetObjectItemCaseSensitive(nwdaf_condJSON, "analyticsIds");
 
     OpenAPI_list_t *analytics_idsList;
-    if (analytics_ids) { 
+    if (analytics_ids) {
     cJSON *analytics_ids_local;
     if (!cJSON_IsArray(analytics_ids)) {
         ogs_error("OpenAPI_nwdaf_cond_parseFromJSON() failed [analytics_ids]");
@@ -202,13 +201,13 @@ OpenAPI_nwdaf_cond_t *OpenAPI_nwdaf_cond_parseFromJSON(cJSON *nwdaf_condJSON)
         goto end;
     }
     OpenAPI_list_add(analytics_idsList , ogs_strdup_or_assert(analytics_ids_local->valuestring));
-                    }
+    }
     }
 
     cJSON *snssai_list = cJSON_GetObjectItemCaseSensitive(nwdaf_condJSON, "snssaiList");
 
     OpenAPI_list_t *snssai_listList;
-    if (snssai_list) { 
+    if (snssai_list) {
     cJSON *snssai_list_local_nonprimitive;
     if (!cJSON_IsArray(snssai_list)){
         ogs_error("OpenAPI_nwdaf_cond_parseFromJSON() failed [snssai_list]");
@@ -231,7 +230,7 @@ OpenAPI_nwdaf_cond_t *OpenAPI_nwdaf_cond_parseFromJSON(cJSON *nwdaf_condJSON)
     cJSON *tai_list = cJSON_GetObjectItemCaseSensitive(nwdaf_condJSON, "taiList");
 
     OpenAPI_list_t *tai_listList;
-    if (tai_list) { 
+    if (tai_list) {
     cJSON *tai_list_local_nonprimitive;
     if (!cJSON_IsArray(tai_list)){
         ogs_error("OpenAPI_nwdaf_cond_parseFromJSON() failed [tai_list]");
@@ -254,7 +253,7 @@ OpenAPI_nwdaf_cond_t *OpenAPI_nwdaf_cond_parseFromJSON(cJSON *nwdaf_condJSON)
     cJSON *tai_range_list = cJSON_GetObjectItemCaseSensitive(nwdaf_condJSON, "taiRangeList");
 
     OpenAPI_list_t *tai_range_listList;
-    if (tai_range_list) { 
+    if (tai_range_list) {
     cJSON *tai_range_list_local_nonprimitive;
     if (!cJSON_IsArray(tai_range_list)){
         ogs_error("OpenAPI_nwdaf_cond_parseFromJSON() failed [tai_range_list]");

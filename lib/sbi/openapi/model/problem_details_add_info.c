@@ -5,6 +5,7 @@
 #include "problem_details_add_info.h"
 
 OpenAPI_problem_details_add_info_t *OpenAPI_problem_details_add_info_create(
+    bool is_remote_error,
     int remote_error
 )
 {
@@ -12,6 +13,7 @@ OpenAPI_problem_details_add_info_t *OpenAPI_problem_details_add_info_create(
     if (!problem_details_add_info_local_var) {
         return NULL;
     }
+    problem_details_add_info_local_var->is_remote_error = is_remote_error;
     problem_details_add_info_local_var->remote_error = remote_error;
 
     return problem_details_add_info_local_var;
@@ -36,7 +38,7 @@ cJSON *OpenAPI_problem_details_add_info_convertToJSON(OpenAPI_problem_details_ad
     }
 
     item = cJSON_CreateObject();
-    if (problem_details_add_info->remote_error) {
+    if (problem_details_add_info->is_remote_error) {
     if (cJSON_AddBoolToObject(item, "remoteError", problem_details_add_info->remote_error) == NULL) {
         ogs_error("OpenAPI_problem_details_add_info_convertToJSON() failed [remote_error]");
         goto end;
@@ -52,7 +54,7 @@ OpenAPI_problem_details_add_info_t *OpenAPI_problem_details_add_info_parseFromJS
     OpenAPI_problem_details_add_info_t *problem_details_add_info_local_var = NULL;
     cJSON *remote_error = cJSON_GetObjectItemCaseSensitive(problem_details_add_infoJSON, "remoteError");
 
-    if (remote_error) { 
+    if (remote_error) {
     if (!cJSON_IsBool(remote_error)) {
         ogs_error("OpenAPI_problem_details_add_info_parseFromJSON() failed [remote_error]");
         goto end;
@@ -60,6 +62,7 @@ OpenAPI_problem_details_add_info_t *OpenAPI_problem_details_add_info_parseFromJS
     }
 
     problem_details_add_info_local_var = OpenAPI_problem_details_add_info_create (
+        remote_error ? true : false,
         remote_error ? remote_error->valueint : 0
     );
 

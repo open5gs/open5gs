@@ -27,6 +27,7 @@ typedef struct OpenAPI_model_5_gvn_group_data_s {
     struct OpenAPI_snssai_s *s_nssai;
     OpenAPI_list_t *pdu_session_types;
     OpenAPI_list_t *app_descriptors;
+    bool is_secondary_auth;
     int secondary_auth;
     struct OpenAPI_ip_address_1_s *dn_aaa_address;
 } OpenAPI_model_5_gvn_group_data_t;
@@ -36,6 +37,7 @@ OpenAPI_model_5_gvn_group_data_t *OpenAPI_model_5_gvn_group_data_create(
     OpenAPI_snssai_t *s_nssai,
     OpenAPI_list_t *pdu_session_types,
     OpenAPI_list_t *app_descriptors,
+    bool is_secondary_auth,
     int secondary_auth,
     OpenAPI_ip_address_1_t *dn_aaa_address
 );

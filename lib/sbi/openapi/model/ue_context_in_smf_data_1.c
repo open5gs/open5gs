@@ -115,7 +115,7 @@ OpenAPI_ue_context_in_smf_data_1_t *OpenAPI_ue_context_in_smf_data_1_parseFromJS
     cJSON *pdu_sessions = cJSON_GetObjectItemCaseSensitive(ue_context_in_smf_data_1JSON, "pduSessions");
 
     OpenAPI_list_t *pdu_sessionsList;
-    if (pdu_sessions) { 
+    if (pdu_sessions) {
     cJSON *pdu_sessions_local_map;
     if (!cJSON_IsObject(pdu_sessions)) {
         ogs_error("OpenAPI_ue_context_in_smf_data_1_parseFromJSON() failed [pdu_sessions]");
@@ -138,7 +138,7 @@ OpenAPI_ue_context_in_smf_data_1_t *OpenAPI_ue_context_in_smf_data_1_parseFromJS
     cJSON *pgw_info = cJSON_GetObjectItemCaseSensitive(ue_context_in_smf_data_1JSON, "pgwInfo");
 
     OpenAPI_list_t *pgw_infoList;
-    if (pgw_info) { 
+    if (pgw_info) {
     cJSON *pgw_info_local_nonprimitive;
     if (!cJSON_IsArray(pgw_info)){
         ogs_error("OpenAPI_ue_context_in_smf_data_1_parseFromJSON() failed [pgw_info]");
@@ -161,7 +161,7 @@ OpenAPI_ue_context_in_smf_data_1_t *OpenAPI_ue_context_in_smf_data_1_parseFromJS
     cJSON *emergency_info = cJSON_GetObjectItemCaseSensitive(ue_context_in_smf_data_1JSON, "emergencyInfo");
 
     OpenAPI_emergency_info_1_t *emergency_info_local_nonprim = NULL;
-    if (emergency_info) { 
+    if (emergency_info) {
     emergency_info_local_nonprim = OpenAPI_emergency_info_1_parseFromJSON(emergency_info);
     }
 

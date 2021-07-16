@@ -80,7 +80,6 @@ OpenAPI_tai_1_t *OpenAPI_tai_1_parseFromJSON(cJSON *tai_1JSON)
     }
 
     OpenAPI_plmn_id_1_t *plmn_id_local_nonprim = NULL;
-    
     plmn_id_local_nonprim = OpenAPI_plmn_id_1_parseFromJSON(plmn_id);
 
     cJSON *tac = cJSON_GetObjectItemCaseSensitive(tai_1JSON, "tac");
@@ -89,7 +88,6 @@ OpenAPI_tai_1_t *OpenAPI_tai_1_parseFromJSON(cJSON *tai_1JSON)
         goto end;
     }
 
-    
     if (!cJSON_IsString(tac)) {
         ogs_error("OpenAPI_tai_1_parseFromJSON() failed [tac]");
         goto end;
@@ -97,7 +95,7 @@ OpenAPI_tai_1_t *OpenAPI_tai_1_parseFromJSON(cJSON *tai_1JSON)
 
     cJSON *nid = cJSON_GetObjectItemCaseSensitive(tai_1JSON, "nid");
 
-    if (nid) { 
+    if (nid) {
     if (!cJSON_IsString(nid)) {
         ogs_error("OpenAPI_tai_1_parseFromJSON() failed [nid]");
         goto end;

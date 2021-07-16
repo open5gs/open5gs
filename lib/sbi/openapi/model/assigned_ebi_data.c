@@ -126,7 +126,6 @@ OpenAPI_assigned_ebi_data_t *OpenAPI_assigned_ebi_data_parseFromJSON(cJSON *assi
         goto end;
     }
 
-    
     if (!cJSON_IsNumber(pdu_session_id)) {
         ogs_error("OpenAPI_assigned_ebi_data_parseFromJSON() failed [pdu_session_id]");
         goto end;
@@ -139,7 +138,6 @@ OpenAPI_assigned_ebi_data_t *OpenAPI_assigned_ebi_data_parseFromJSON(cJSON *assi
     }
 
     OpenAPI_list_t *assigned_ebi_listList;
-    
     cJSON *assigned_ebi_list_local_nonprimitive;
     if (!cJSON_IsArray(assigned_ebi_list)){
         ogs_error("OpenAPI_assigned_ebi_data_parseFromJSON() failed [assigned_ebi_list]");
@@ -161,7 +159,7 @@ OpenAPI_assigned_ebi_data_t *OpenAPI_assigned_ebi_data_parseFromJSON(cJSON *assi
     cJSON *failed_arp_list = cJSON_GetObjectItemCaseSensitive(assigned_ebi_dataJSON, "failedArpList");
 
     OpenAPI_list_t *failed_arp_listList;
-    if (failed_arp_list) { 
+    if (failed_arp_list) {
     cJSON *failed_arp_list_local_nonprimitive;
     if (!cJSON_IsArray(failed_arp_list)){
         ogs_error("OpenAPI_assigned_ebi_data_parseFromJSON() failed [failed_arp_list]");
@@ -184,7 +182,7 @@ OpenAPI_assigned_ebi_data_t *OpenAPI_assigned_ebi_data_parseFromJSON(cJSON *assi
     cJSON *released_ebi_list = cJSON_GetObjectItemCaseSensitive(assigned_ebi_dataJSON, "releasedEbiList");
 
     OpenAPI_list_t *released_ebi_listList;
-    if (released_ebi_list) { 
+    if (released_ebi_list) {
     cJSON *released_ebi_list_local;
     if (!cJSON_IsArray(released_ebi_list)) {
         ogs_error("OpenAPI_assigned_ebi_data_parseFromJSON() failed [released_ebi_list]");
@@ -198,10 +196,11 @@ OpenAPI_assigned_ebi_data_t *OpenAPI_assigned_ebi_data_parseFromJSON(cJSON *assi
         goto end;
     }
     OpenAPI_list_add(released_ebi_listList , &released_ebi_list_local->valuedouble);
-                    }
+    }
     }
 
     assigned_ebi_data_local_var = OpenAPI_assigned_ebi_data_create (
+        
         pdu_session_id->valuedouble,
         assigned_ebi_listList,
         failed_arp_list ? failed_arp_listList : NULL,

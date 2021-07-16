@@ -63,7 +63,7 @@ OpenAPI_pc5_flow_bit_rates_t *OpenAPI_pc5_flow_bit_rates_parseFromJSON(cJSON *pc
     OpenAPI_pc5_flow_bit_rates_t *pc5_flow_bit_rates_local_var = NULL;
     cJSON *gua_fbr = cJSON_GetObjectItemCaseSensitive(pc5_flow_bit_ratesJSON, "guaFbr");
 
-    if (gua_fbr) { 
+    if (gua_fbr) {
     if (!cJSON_IsString(gua_fbr)) {
         ogs_error("OpenAPI_pc5_flow_bit_rates_parseFromJSON() failed [gua_fbr]");
         goto end;
@@ -72,7 +72,7 @@ OpenAPI_pc5_flow_bit_rates_t *OpenAPI_pc5_flow_bit_rates_parseFromJSON(cJSON *pc
 
     cJSON *max_fbr = cJSON_GetObjectItemCaseSensitive(pc5_flow_bit_ratesJSON, "maxFbr");
 
-    if (max_fbr) { 
+    if (max_fbr) {
     if (!cJSON_IsString(max_fbr)) {
         ogs_error("OpenAPI_pc5_flow_bit_rates_parseFromJSON() failed [max_fbr]");
         goto end;

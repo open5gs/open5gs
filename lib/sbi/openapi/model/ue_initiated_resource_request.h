@@ -24,6 +24,7 @@ typedef struct OpenAPI_ue_initiated_resource_request_s OpenAPI_ue_initiated_reso
 typedef struct OpenAPI_ue_initiated_resource_request_s {
     char *pcc_rule_id;
     OpenAPI_rule_operation_e rule_op;
+    bool is_precedence;
     int precedence;
     OpenAPI_list_t *pack_filt_info;
     struct OpenAPI_requested_qos_s *req_qos;
@@ -32,6 +33,7 @@ typedef struct OpenAPI_ue_initiated_resource_request_s {
 OpenAPI_ue_initiated_resource_request_t *OpenAPI_ue_initiated_resource_request_create(
     char *pcc_rule_id,
     OpenAPI_rule_operation_e rule_op,
+    bool is_precedence,
     int precedence,
     OpenAPI_list_t *pack_filt_info,
     OpenAPI_requested_qos_t *req_qos

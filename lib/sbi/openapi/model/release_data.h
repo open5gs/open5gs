@@ -27,6 +27,7 @@ typedef struct OpenAPI_release_data_s OpenAPI_release_data_t;
 typedef struct OpenAPI_release_data_s {
     OpenAPI_cause_e cause;
     struct OpenAPI_ng_ap_cause_s *ng_ap_cause;
+    bool is__5g_mm_cause_value;
     int _5g_mm_cause_value;
     struct OpenAPI_user_location_s *ue_location;
     char *ue_time_zone;
@@ -41,6 +42,7 @@ typedef struct OpenAPI_release_data_s {
 OpenAPI_release_data_t *OpenAPI_release_data_create(
     OpenAPI_cause_e cause,
     OpenAPI_ng_ap_cause_t *ng_ap_cause,
+    bool is__5g_mm_cause_value,
     int _5g_mm_cause_value,
     OpenAPI_user_location_t *ue_location,
     char *ue_time_zone,

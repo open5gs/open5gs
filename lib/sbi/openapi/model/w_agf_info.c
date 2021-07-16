@@ -98,7 +98,7 @@ OpenAPI_w_agf_info_t *OpenAPI_w_agf_info_parseFromJSON(cJSON *w_agf_infoJSON)
     cJSON *ipv4_endpoint_addresses = cJSON_GetObjectItemCaseSensitive(w_agf_infoJSON, "ipv4EndpointAddresses");
 
     OpenAPI_list_t *ipv4_endpoint_addressesList;
-    if (ipv4_endpoint_addresses) { 
+    if (ipv4_endpoint_addresses) {
     cJSON *ipv4_endpoint_addresses_local;
     if (!cJSON_IsArray(ipv4_endpoint_addresses)) {
         ogs_error("OpenAPI_w_agf_info_parseFromJSON() failed [ipv4_endpoint_addresses]");
@@ -112,13 +112,13 @@ OpenAPI_w_agf_info_t *OpenAPI_w_agf_info_parseFromJSON(cJSON *w_agf_infoJSON)
         goto end;
     }
     OpenAPI_list_add(ipv4_endpoint_addressesList , ogs_strdup_or_assert(ipv4_endpoint_addresses_local->valuestring));
-                    }
+    }
     }
 
     cJSON *ipv6_endpoint_addresses = cJSON_GetObjectItemCaseSensitive(w_agf_infoJSON, "ipv6EndpointAddresses");
 
     OpenAPI_list_t *ipv6_endpoint_addressesList;
-    if (ipv6_endpoint_addresses) { 
+    if (ipv6_endpoint_addresses) {
     cJSON *ipv6_endpoint_addresses_local;
     if (!cJSON_IsArray(ipv6_endpoint_addresses)) {
         ogs_error("OpenAPI_w_agf_info_parseFromJSON() failed [ipv6_endpoint_addresses]");
@@ -132,12 +132,12 @@ OpenAPI_w_agf_info_t *OpenAPI_w_agf_info_parseFromJSON(cJSON *w_agf_infoJSON)
         goto end;
     }
     OpenAPI_list_add(ipv6_endpoint_addressesList , ogs_strdup_or_assert(ipv6_endpoint_addresses_local->valuestring));
-                    }
+    }
     }
 
     cJSON *endpoint_fqdn = cJSON_GetObjectItemCaseSensitive(w_agf_infoJSON, "endpointFqdn");
 
-    if (endpoint_fqdn) { 
+    if (endpoint_fqdn) {
     if (!cJSON_IsString(endpoint_fqdn)) {
         ogs_error("OpenAPI_w_agf_info_parseFromJSON() failed [endpoint_fqdn]");
         goto end;

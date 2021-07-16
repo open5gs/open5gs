@@ -97,7 +97,7 @@ OpenAPI_location_info_t *OpenAPI_location_info_parseFromJSON(cJSON *location_inf
     OpenAPI_location_info_t *location_info_local_var = NULL;
     cJSON *supi = cJSON_GetObjectItemCaseSensitive(location_infoJSON, "supi");
 
-    if (supi) { 
+    if (supi) {
     if (!cJSON_IsString(supi)) {
         ogs_error("OpenAPI_location_info_parseFromJSON() failed [supi]");
         goto end;
@@ -106,7 +106,7 @@ OpenAPI_location_info_t *OpenAPI_location_info_parseFromJSON(cJSON *location_inf
 
     cJSON *gpsi = cJSON_GetObjectItemCaseSensitive(location_infoJSON, "gpsi");
 
-    if (gpsi) { 
+    if (gpsi) {
     if (!cJSON_IsString(gpsi)) {
         ogs_error("OpenAPI_location_info_parseFromJSON() failed [gpsi]");
         goto end;
@@ -120,7 +120,6 @@ OpenAPI_location_info_t *OpenAPI_location_info_parseFromJSON(cJSON *location_inf
     }
 
     OpenAPI_list_t *registration_location_info_listList;
-    
     cJSON *registration_location_info_list_local_nonprimitive;
     if (!cJSON_IsArray(registration_location_info_list)){
         ogs_error("OpenAPI_location_info_parseFromJSON() failed [registration_location_info_list]");
@@ -141,7 +140,7 @@ OpenAPI_location_info_t *OpenAPI_location_info_parseFromJSON(cJSON *location_inf
 
     cJSON *supported_features = cJSON_GetObjectItemCaseSensitive(location_infoJSON, "supportedFeatures");
 
-    if (supported_features) { 
+    if (supported_features) {
     if (!cJSON_IsString(supported_features)) {
         ogs_error("OpenAPI_location_info_parseFromJSON() failed [supported_features]");
         goto end;

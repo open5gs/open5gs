@@ -63,7 +63,6 @@ OpenAPI_resynchronization_info_t *OpenAPI_resynchronization_info_parseFromJSON(c
         goto end;
     }
 
-    
     if (!cJSON_IsString(rand)) {
         ogs_error("OpenAPI_resynchronization_info_parseFromJSON() failed [rand]");
         goto end;
@@ -75,7 +74,6 @@ OpenAPI_resynchronization_info_t *OpenAPI_resynchronization_info_parseFromJSON(c
         goto end;
     }
 
-    
     if (!cJSON_IsString(auts)) {
         ogs_error("OpenAPI_resynchronization_info_parseFromJSON() failed [auts]");
         goto end;

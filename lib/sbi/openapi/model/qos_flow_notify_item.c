@@ -7,7 +7,9 @@
 OpenAPI_qos_flow_notify_item_t *OpenAPI_qos_flow_notify_item_create(
     int qfi,
     OpenAPI_notification_cause_e notification_cause,
+    bool is_current_qos_profile_index,
     int current_qos_profile_index,
+    bool is_null_qo_s_profile_index,
     int null_qo_s_profile_index
 )
 {
@@ -17,7 +19,9 @@ OpenAPI_qos_flow_notify_item_t *OpenAPI_qos_flow_notify_item_create(
     }
     qos_flow_notify_item_local_var->qfi = qfi;
     qos_flow_notify_item_local_var->notification_cause = notification_cause;
+    qos_flow_notify_item_local_var->is_current_qos_profile_index = is_current_qos_profile_index;
     qos_flow_notify_item_local_var->current_qos_profile_index = current_qos_profile_index;
+    qos_flow_notify_item_local_var->is_null_qo_s_profile_index = is_null_qo_s_profile_index;
     qos_flow_notify_item_local_var->null_qo_s_profile_index = null_qo_s_profile_index;
 
     return qos_flow_notify_item_local_var;
@@ -52,14 +56,14 @@ cJSON *OpenAPI_qos_flow_notify_item_convertToJSON(OpenAPI_qos_flow_notify_item_t
         goto end;
     }
 
-    if (qos_flow_notify_item->current_qos_profile_index) {
+    if (qos_flow_notify_item->is_current_qos_profile_index) {
     if (cJSON_AddNumberToObject(item, "currentQosProfileIndex", qos_flow_notify_item->current_qos_profile_index) == NULL) {
         ogs_error("OpenAPI_qos_flow_notify_item_convertToJSON() failed [current_qos_profile_index]");
         goto end;
     }
     }
 
-    if (qos_flow_notify_item->null_qo_s_profile_index) {
+    if (qos_flow_notify_item->is_null_qo_s_profile_index) {
     if (cJSON_AddBoolToObject(item, "nullQoSProfileIndex", qos_flow_notify_item->null_qo_s_profile_index) == NULL) {
         ogs_error("OpenAPI_qos_flow_notify_item_convertToJSON() failed [null_qo_s_profile_index]");
         goto end;
@@ -79,7 +83,6 @@ OpenAPI_qos_flow_notify_item_t *OpenAPI_qos_flow_notify_item_parseFromJSON(cJSON
         goto end;
     }
 
-    
     if (!cJSON_IsNumber(qfi)) {
         ogs_error("OpenAPI_qos_flow_notify_item_parseFromJSON() failed [qfi]");
         goto end;
@@ -92,7 +95,6 @@ OpenAPI_qos_flow_notify_item_t *OpenAPI_qos_flow_notify_item_parseFromJSON(cJSON
     }
 
     OpenAPI_notification_cause_e notification_causeVariable;
-    
     if (!cJSON_IsString(notification_cause)) {
         ogs_error("OpenAPI_qos_flow_notify_item_parseFromJSON() failed [notification_cause]");
         goto end;
@@ -101,7 +103,7 @@ OpenAPI_qos_flow_notify_item_t *OpenAPI_qos_flow_notify_item_parseFromJSON(cJSON
 
     cJSON *current_qos_profile_index = cJSON_GetObjectItemCaseSensitive(qos_flow_notify_itemJSON, "currentQosProfileIndex");
 
-    if (current_qos_profile_index) { 
+    if (current_qos_profile_index) {
     if (!cJSON_IsNumber(current_qos_profile_index)) {
         ogs_error("OpenAPI_qos_flow_notify_item_parseFromJSON() failed [current_qos_profile_index]");
         goto end;
@@ -110,7 +112,7 @@ OpenAPI_qos_flow_notify_item_t *OpenAPI_qos_flow_notify_item_parseFromJSON(cJSON
 
     cJSON *null_qo_s_profile_index = cJSON_GetObjectItemCaseSensitive(qos_flow_notify_itemJSON, "nullQoSProfileIndex");
 
-    if (null_qo_s_profile_index) { 
+    if (null_qo_s_profile_index) {
     if (!cJSON_IsBool(null_qo_s_profile_index)) {
         ogs_error("OpenAPI_qos_flow_notify_item_parseFromJSON() failed [null_qo_s_profile_index]");
         goto end;
@@ -118,9 +120,12 @@ OpenAPI_qos_flow_notify_item_t *OpenAPI_qos_flow_notify_item_parseFromJSON(cJSON
     }
 
     qos_flow_notify_item_local_var = OpenAPI_qos_flow_notify_item_create (
+        
         qfi->valuedouble,
         notification_causeVariable,
+        current_qos_profile_index ? true : false,
         current_qos_profile_index ? current_qos_profile_index->valuedouble : 0,
+        null_qo_s_profile_index ? true : false,
         null_qo_s_profile_index ? null_qo_s_profile_index->valueint : 0
     );
 

@@ -244,11 +244,19 @@ bool ogs_sbi_nnrf_handle_nf_profile(ogs_sbi_nf_instance_t *nf_instance,
 
     nf_instance->nf_type = NFProfile->nf_type;
     nf_instance->nf_status = NFProfile->nf_status;
-    nf_instance->time.heartbeat_interval = NFProfile->heart_beat_timer;
+    if (NFProfile->is_heart_beat_timer == true)
+        nf_instance->time.heartbeat_interval = NFProfile->heart_beat_timer;
 
     if (NFProfile->fqdn)
         ogs_fqdn_parse(nf_instance->fqdn,
                 NFProfile->fqdn, strlen(NFProfile->fqdn));
+
+    if (NFProfile->is_priority == true)
+        nf_instance->priority = NFProfile->priority;
+    if (NFProfile->is_capacity == true)
+        nf_instance->capacity = NFProfile->capacity;
+    if (NFProfile->is_load == true)
+        nf_instance->load = NFProfile->load;
 
     /* Only one time handles RegisterNFInstance operation */
     OpenAPI_list_for_each(NFProfile->ipv4_addresses, node) {
@@ -286,6 +294,7 @@ bool ogs_sbi_nnrf_handle_nf_profile(ogs_sbi_nf_instance_t *nf_instance,
         OpenAPI_nf_service_t *NFService = node->data;
         OpenAPI_list_t *VersionList = NULL;
         OpenAPI_list_t *IpEndPointList = NULL;
+        OpenAPI_list_t *AllowedNfTypeList = NULL;
         OpenAPI_lnode_t *node2 = NULL;
 
         if (!NFService) continue;
@@ -294,6 +303,7 @@ bool ogs_sbi_nnrf_handle_nf_profile(ogs_sbi_nf_instance_t *nf_instance,
 
         VersionList = NFService->versions;
         IpEndPointList = NFService->ip_end_points;
+        AllowedNfTypeList = NFService->allowed_nf_types;
 
         nf_service = ogs_sbi_nf_service_find_by_id(nf_instance,
                 NFService->service_instance_id);
@@ -329,14 +339,15 @@ bool ogs_sbi_nnrf_handle_nf_profile(ogs_sbi_nf_instance_t *nf_instance,
             if (!IpEndPoint) continue;
 
             if (nf_service->num_of_addr < OGS_SBI_MAX_NUM_OF_IP_ADDRESS) {
-                port = IpEndPoint->port;
-                if (!port) {
+                if (!IpEndPoint->is_port) {
                     if (nf_service->scheme == OpenAPI_uri_scheme_http)
                         port = OGS_SBI_HTTP_PORT;
                     else if (nf_service->scheme == OpenAPI_uri_scheme_https)
                         port = OGS_SBI_HTTPS_PORT;
                     else
                         continue;
+                } else {
+                    port = IpEndPoint->port;
                 }
 
                 if (IpEndPoint->ipv4_address) {
@@ -361,6 +372,26 @@ bool ogs_sbi_nnrf_handle_nf_profile(ogs_sbi_nf_instance_t *nf_instance,
                 }
             }
         }
+
+        OpenAPI_list_for_each(AllowedNfTypeList, node2) {
+            OpenAPI_nf_type_e AllowedNfType = (OpenAPI_nf_type_e)node2->data;
+
+            if (!AllowedNfType) continue;
+
+            if (nf_service->num_of_allowed_nf_type <
+                    OGS_SBI_MAX_NUM_OF_NF_TYPE) {
+                nf_service->allowed_nf_types[
+                    nf_service->num_of_allowed_nf_type] = AllowedNfType;
+                nf_service->num_of_allowed_nf_type++;
+            }
+        }
+
+        if (NFService->is_priority == true)
+            nf_service->priority = NFService->priority;
+        if (NFService->is_capacity == true)
+            nf_service->capacity = NFService->capacity;
+        if (NFService->is_load == true)
+            nf_service->load = NFService->load;
     }
 
     ogs_sbi_nf_info_remove_all(&nf_instance->nf_info_list);

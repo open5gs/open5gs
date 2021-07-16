@@ -93,7 +93,7 @@ OpenAPI_acceptable_service_info_t *OpenAPI_acceptable_service_info_parseFromJSON
     cJSON *acc_bw_med_comps = cJSON_GetObjectItemCaseSensitive(acceptable_service_infoJSON, "accBwMedComps");
 
     OpenAPI_list_t *acc_bw_med_compsList;
-    if (acc_bw_med_comps) { 
+    if (acc_bw_med_comps) {
     cJSON *acc_bw_med_comps_local_map;
     if (!cJSON_IsObject(acc_bw_med_comps)) {
         ogs_error("OpenAPI_acceptable_service_info_parseFromJSON() failed [acc_bw_med_comps]");
@@ -115,7 +115,7 @@ OpenAPI_acceptable_service_info_t *OpenAPI_acceptable_service_info_parseFromJSON
 
     cJSON *mar_bw_ul = cJSON_GetObjectItemCaseSensitive(acceptable_service_infoJSON, "marBwUl");
 
-    if (mar_bw_ul) { 
+    if (mar_bw_ul) {
     if (!cJSON_IsString(mar_bw_ul)) {
         ogs_error("OpenAPI_acceptable_service_info_parseFromJSON() failed [mar_bw_ul]");
         goto end;
@@ -124,7 +124,7 @@ OpenAPI_acceptable_service_info_t *OpenAPI_acceptable_service_info_parseFromJSON
 
     cJSON *mar_bw_dl = cJSON_GetObjectItemCaseSensitive(acceptable_service_infoJSON, "marBwDl");
 
-    if (mar_bw_dl) { 
+    if (mar_bw_dl) {
     if (!cJSON_IsString(mar_bw_dl)) {
         ogs_error("OpenAPI_acceptable_service_info_parseFromJSON() failed [mar_bw_dl]");
         goto end;

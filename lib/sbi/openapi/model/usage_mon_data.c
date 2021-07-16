@@ -142,7 +142,6 @@ OpenAPI_usage_mon_data_t *OpenAPI_usage_mon_data_parseFromJSON(cJSON *usage_mon_
         goto end;
     }
 
-    
     if (!cJSON_IsString(limit_id)) {
         ogs_error("OpenAPI_usage_mon_data_parseFromJSON() failed [limit_id]");
         goto end;
@@ -151,7 +150,7 @@ OpenAPI_usage_mon_data_t *OpenAPI_usage_mon_data_parseFromJSON(cJSON *usage_mon_
     cJSON *scopes = cJSON_GetObjectItemCaseSensitive(usage_mon_dataJSON, "scopes");
 
     OpenAPI_list_t *scopesList;
-    if (scopes) { 
+    if (scopes) {
     cJSON *scopes_local_map;
     if (!cJSON_IsObject(scopes)) {
         ogs_error("OpenAPI_usage_mon_data_parseFromJSON() failed [scopes]");
@@ -174,27 +173,27 @@ OpenAPI_usage_mon_data_t *OpenAPI_usage_mon_data_parseFromJSON(cJSON *usage_mon_
     cJSON *um_level = cJSON_GetObjectItemCaseSensitive(usage_mon_dataJSON, "umLevel");
 
     OpenAPI_usage_mon_level_t *um_level_local_nonprim = NULL;
-    if (um_level) { 
+    if (um_level) {
     um_level_local_nonprim = OpenAPI_usage_mon_level_parseFromJSON(um_level);
     }
 
     cJSON *allowed_usage = cJSON_GetObjectItemCaseSensitive(usage_mon_dataJSON, "allowedUsage");
 
     OpenAPI_usage_threshold_t *allowed_usage_local_nonprim = NULL;
-    if (allowed_usage) { 
+    if (allowed_usage) {
     allowed_usage_local_nonprim = OpenAPI_usage_threshold_parseFromJSON(allowed_usage);
     }
 
     cJSON *reset_time = cJSON_GetObjectItemCaseSensitive(usage_mon_dataJSON, "resetTime");
 
     OpenAPI_time_period_t *reset_time_local_nonprim = NULL;
-    if (reset_time) { 
+    if (reset_time) {
     reset_time_local_nonprim = OpenAPI_time_period_parseFromJSON(reset_time);
     }
 
     cJSON *supp_feat = cJSON_GetObjectItemCaseSensitive(usage_mon_dataJSON, "suppFeat");
 
-    if (supp_feat) { 
+    if (supp_feat) {
     if (!cJSON_IsString(supp_feat)) {
         ogs_error("OpenAPI_usage_mon_data_parseFromJSON() failed [supp_feat]");
         goto end;

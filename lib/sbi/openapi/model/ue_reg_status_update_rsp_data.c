@@ -54,13 +54,13 @@ OpenAPI_ue_reg_status_update_rsp_data_t *OpenAPI_ue_reg_status_update_rsp_data_p
         goto end;
     }
 
-    
     if (!cJSON_IsBool(reg_status_transfer_complete)) {
         ogs_error("OpenAPI_ue_reg_status_update_rsp_data_parseFromJSON() failed [reg_status_transfer_complete]");
         goto end;
     }
 
     ue_reg_status_update_rsp_data_local_var = OpenAPI_ue_reg_status_update_rsp_data_create (
+        
         reg_status_transfer_complete->valueint
     );
 

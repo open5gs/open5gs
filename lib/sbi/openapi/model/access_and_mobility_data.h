@@ -40,6 +40,7 @@ typedef struct OpenAPI_access_and_mobility_data_s {
     char *reachability_status_ts;
     OpenAPI_sms_support_e sms_over_nas_status;
     char *sms_over_nas_status_ts;
+    bool is_roaming_status;
     int roaming_status;
     char *roaming_status_ts;
     struct OpenAPI_plmn_id_1_s *current_plmn;
@@ -63,6 +64,7 @@ OpenAPI_access_and_mobility_data_t *OpenAPI_access_and_mobility_data_create(
     char *reachability_status_ts,
     OpenAPI_sms_support_e sms_over_nas_status,
     char *sms_over_nas_status_ts,
+    bool is_roaming_status,
     int roaming_status,
     char *roaming_status_ts,
     OpenAPI_plmn_id_1_t *current_plmn,

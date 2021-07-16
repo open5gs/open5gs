@@ -63,7 +63,7 @@ OpenAPI_sd_range_t *OpenAPI_sd_range_parseFromJSON(cJSON *sd_rangeJSON)
     OpenAPI_sd_range_t *sd_range_local_var = NULL;
     cJSON *start = cJSON_GetObjectItemCaseSensitive(sd_rangeJSON, "start");
 
-    if (start) { 
+    if (start) {
     if (!cJSON_IsString(start)) {
         ogs_error("OpenAPI_sd_range_parseFromJSON() failed [start]");
         goto end;
@@ -72,7 +72,7 @@ OpenAPI_sd_range_t *OpenAPI_sd_range_parseFromJSON(cJSON *sd_rangeJSON)
 
     cJSON *end = cJSON_GetObjectItemCaseSensitive(sd_rangeJSON, "end");
 
-    if (end) { 
+    if (end) {
     if (!cJSON_IsString(end)) {
         ogs_error("OpenAPI_sd_range_parseFromJSON() failed [end]");
         goto end;

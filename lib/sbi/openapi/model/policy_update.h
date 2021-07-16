@@ -29,6 +29,7 @@ typedef struct OpenAPI_policy_update_s {
     OpenAPI_list_t *triggers;
     struct OpenAPI_service_area_restriction_s *serv_area_res;
     struct OpenAPI_wireline_service_area_restriction_s *wl_serv_area_res;
+    bool is_rfsp;
     int rfsp;
     struct OpenAPI_smf_selection_data_s *smf_sel_info;
     struct OpenAPI_ambr_s *ue_ambr;
@@ -40,6 +41,7 @@ OpenAPI_policy_update_t *OpenAPI_policy_update_create(
     OpenAPI_list_t *triggers,
     OpenAPI_service_area_restriction_t *serv_area_res,
     OpenAPI_wireline_service_area_restriction_t *wl_serv_area_res,
+    bool is_rfsp,
     int rfsp,
     OpenAPI_smf_selection_data_t *smf_sel_info,
     OpenAPI_ambr_t *ue_ambr,

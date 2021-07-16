@@ -86,7 +86,6 @@ OpenAPI_nf_group_cond_t *OpenAPI_nf_group_cond_parseFromJSON(cJSON *nf_group_con
     }
 
     OpenAPI_nf_group_cond_nf_type_e nf_typeVariable;
-                
     if (!cJSON_IsString(nf_type)) {
         ogs_error("OpenAPI_nf_group_cond_parseFromJSON() failed [nf_type]");
         goto end;
@@ -99,7 +98,6 @@ OpenAPI_nf_group_cond_t *OpenAPI_nf_group_cond_parseFromJSON(cJSON *nf_group_con
         goto end;
     }
 
-    
     if (!cJSON_IsString(nf_group_id)) {
         ogs_error("OpenAPI_nf_group_cond_parseFromJSON() failed [nf_group_id]");
         goto end;

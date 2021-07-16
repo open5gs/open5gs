@@ -383,7 +383,7 @@ OpenAPI_civic_address_t *OpenAPI_civic_address_parseFromJSON(cJSON *civic_addres
     OpenAPI_civic_address_t *civic_address_local_var = NULL;
     cJSON *country = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "country");
 
-    if (country) { 
+    if (country) {
     if (!cJSON_IsString(country)) {
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [country]");
         goto end;
@@ -392,7 +392,7 @@ OpenAPI_civic_address_t *OpenAPI_civic_address_parseFromJSON(cJSON *civic_addres
 
     cJSON *a1 = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "A1");
 
-    if (a1) { 
+    if (a1) {
     if (!cJSON_IsString(a1)) {
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [a1]");
         goto end;
@@ -401,7 +401,7 @@ OpenAPI_civic_address_t *OpenAPI_civic_address_parseFromJSON(cJSON *civic_addres
 
     cJSON *a2 = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "A2");
 
-    if (a2) { 
+    if (a2) {
     if (!cJSON_IsString(a2)) {
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [a2]");
         goto end;
@@ -410,7 +410,7 @@ OpenAPI_civic_address_t *OpenAPI_civic_address_parseFromJSON(cJSON *civic_addres
 
     cJSON *a3 = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "A3");
 
-    if (a3) { 
+    if (a3) {
     if (!cJSON_IsString(a3)) {
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [a3]");
         goto end;
@@ -419,7 +419,7 @@ OpenAPI_civic_address_t *OpenAPI_civic_address_parseFromJSON(cJSON *civic_addres
 
     cJSON *a4 = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "A4");
 
-    if (a4) { 
+    if (a4) {
     if (!cJSON_IsString(a4)) {
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [a4]");
         goto end;
@@ -428,7 +428,7 @@ OpenAPI_civic_address_t *OpenAPI_civic_address_parseFromJSON(cJSON *civic_addres
 
     cJSON *a5 = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "A5");
 
-    if (a5) { 
+    if (a5) {
     if (!cJSON_IsString(a5)) {
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [a5]");
         goto end;
@@ -437,7 +437,7 @@ OpenAPI_civic_address_t *OpenAPI_civic_address_parseFromJSON(cJSON *civic_addres
 
     cJSON *a6 = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "A6");
 
-    if (a6) { 
+    if (a6) {
     if (!cJSON_IsString(a6)) {
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [a6]");
         goto end;
@@ -446,7 +446,7 @@ OpenAPI_civic_address_t *OpenAPI_civic_address_parseFromJSON(cJSON *civic_addres
 
     cJSON *prd = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "PRD");
 
-    if (prd) { 
+    if (prd) {
     if (!cJSON_IsString(prd)) {
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [prd]");
         goto end;
@@ -455,7 +455,7 @@ OpenAPI_civic_address_t *OpenAPI_civic_address_parseFromJSON(cJSON *civic_addres
 
     cJSON *pod = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "POD");
 
-    if (pod) { 
+    if (pod) {
     if (!cJSON_IsString(pod)) {
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [pod]");
         goto end;
@@ -464,7 +464,7 @@ OpenAPI_civic_address_t *OpenAPI_civic_address_parseFromJSON(cJSON *civic_addres
 
     cJSON *sts = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "STS");
 
-    if (sts) { 
+    if (sts) {
     if (!cJSON_IsString(sts)) {
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [sts]");
         goto end;
@@ -473,7 +473,7 @@ OpenAPI_civic_address_t *OpenAPI_civic_address_parseFromJSON(cJSON *civic_addres
 
     cJSON *hno = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "HNO");
 
-    if (hno) { 
+    if (hno) {
     if (!cJSON_IsString(hno)) {
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [hno]");
         goto end;
@@ -482,7 +482,7 @@ OpenAPI_civic_address_t *OpenAPI_civic_address_parseFromJSON(cJSON *civic_addres
 
     cJSON *hns = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "HNS");
 
-    if (hns) { 
+    if (hns) {
     if (!cJSON_IsString(hns)) {
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [hns]");
         goto end;
@@ -491,7 +491,7 @@ OpenAPI_civic_address_t *OpenAPI_civic_address_parseFromJSON(cJSON *civic_addres
 
     cJSON *lmk = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "LMK");
 
-    if (lmk) { 
+    if (lmk) {
     if (!cJSON_IsString(lmk)) {
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [lmk]");
         goto end;
@@ -500,7 +500,7 @@ OpenAPI_civic_address_t *OpenAPI_civic_address_parseFromJSON(cJSON *civic_addres
 
     cJSON *loc = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "LOC");
 
-    if (loc) { 
+    if (loc) {
     if (!cJSON_IsString(loc)) {
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [loc]");
         goto end;
@@ -509,7 +509,7 @@ OpenAPI_civic_address_t *OpenAPI_civic_address_parseFromJSON(cJSON *civic_addres
 
     cJSON *nam = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "NAM");
 
-    if (nam) { 
+    if (nam) {
     if (!cJSON_IsString(nam)) {
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [nam]");
         goto end;
@@ -518,7 +518,7 @@ OpenAPI_civic_address_t *OpenAPI_civic_address_parseFromJSON(cJSON *civic_addres
 
     cJSON *pc = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "PC");
 
-    if (pc) { 
+    if (pc) {
     if (!cJSON_IsString(pc)) {
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [pc]");
         goto end;
@@ -527,7 +527,7 @@ OpenAPI_civic_address_t *OpenAPI_civic_address_parseFromJSON(cJSON *civic_addres
 
     cJSON *bld = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "BLD");
 
-    if (bld) { 
+    if (bld) {
     if (!cJSON_IsString(bld)) {
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [bld]");
         goto end;
@@ -536,7 +536,7 @@ OpenAPI_civic_address_t *OpenAPI_civic_address_parseFromJSON(cJSON *civic_addres
 
     cJSON *unit = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "UNIT");
 
-    if (unit) { 
+    if (unit) {
     if (!cJSON_IsString(unit)) {
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [unit]");
         goto end;
@@ -545,7 +545,7 @@ OpenAPI_civic_address_t *OpenAPI_civic_address_parseFromJSON(cJSON *civic_addres
 
     cJSON *flr = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "FLR");
 
-    if (flr) { 
+    if (flr) {
     if (!cJSON_IsString(flr)) {
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [flr]");
         goto end;
@@ -554,7 +554,7 @@ OpenAPI_civic_address_t *OpenAPI_civic_address_parseFromJSON(cJSON *civic_addres
 
     cJSON *room = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "ROOM");
 
-    if (room) { 
+    if (room) {
     if (!cJSON_IsString(room)) {
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [room]");
         goto end;
@@ -563,7 +563,7 @@ OpenAPI_civic_address_t *OpenAPI_civic_address_parseFromJSON(cJSON *civic_addres
 
     cJSON *plc = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "PLC");
 
-    if (plc) { 
+    if (plc) {
     if (!cJSON_IsString(plc)) {
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [plc]");
         goto end;
@@ -572,7 +572,7 @@ OpenAPI_civic_address_t *OpenAPI_civic_address_parseFromJSON(cJSON *civic_addres
 
     cJSON *pcn = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "PCN");
 
-    if (pcn) { 
+    if (pcn) {
     if (!cJSON_IsString(pcn)) {
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [pcn]");
         goto end;
@@ -581,7 +581,7 @@ OpenAPI_civic_address_t *OpenAPI_civic_address_parseFromJSON(cJSON *civic_addres
 
     cJSON *pobox = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "POBOX");
 
-    if (pobox) { 
+    if (pobox) {
     if (!cJSON_IsString(pobox)) {
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [pobox]");
         goto end;
@@ -590,7 +590,7 @@ OpenAPI_civic_address_t *OpenAPI_civic_address_parseFromJSON(cJSON *civic_addres
 
     cJSON *addcode = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "ADDCODE");
 
-    if (addcode) { 
+    if (addcode) {
     if (!cJSON_IsString(addcode)) {
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [addcode]");
         goto end;
@@ -599,7 +599,7 @@ OpenAPI_civic_address_t *OpenAPI_civic_address_parseFromJSON(cJSON *civic_addres
 
     cJSON *seat = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "SEAT");
 
-    if (seat) { 
+    if (seat) {
     if (!cJSON_IsString(seat)) {
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [seat]");
         goto end;
@@ -608,7 +608,7 @@ OpenAPI_civic_address_t *OpenAPI_civic_address_parseFromJSON(cJSON *civic_addres
 
     cJSON *rd = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "RD");
 
-    if (rd) { 
+    if (rd) {
     if (!cJSON_IsString(rd)) {
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [rd]");
         goto end;
@@ -617,7 +617,7 @@ OpenAPI_civic_address_t *OpenAPI_civic_address_parseFromJSON(cJSON *civic_addres
 
     cJSON *rdsec = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "RDSEC");
 
-    if (rdsec) { 
+    if (rdsec) {
     if (!cJSON_IsString(rdsec)) {
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [rdsec]");
         goto end;
@@ -626,7 +626,7 @@ OpenAPI_civic_address_t *OpenAPI_civic_address_parseFromJSON(cJSON *civic_addres
 
     cJSON *rdbr = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "RDBR");
 
-    if (rdbr) { 
+    if (rdbr) {
     if (!cJSON_IsString(rdbr)) {
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [rdbr]");
         goto end;
@@ -635,7 +635,7 @@ OpenAPI_civic_address_t *OpenAPI_civic_address_parseFromJSON(cJSON *civic_addres
 
     cJSON *rdsubbr = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "RDSUBBR");
 
-    if (rdsubbr) { 
+    if (rdsubbr) {
     if (!cJSON_IsString(rdsubbr)) {
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [rdsubbr]");
         goto end;
@@ -644,7 +644,7 @@ OpenAPI_civic_address_t *OpenAPI_civic_address_parseFromJSON(cJSON *civic_addres
 
     cJSON *prm = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "PRM");
 
-    if (prm) { 
+    if (prm) {
     if (!cJSON_IsString(prm)) {
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [prm]");
         goto end;
@@ -653,7 +653,7 @@ OpenAPI_civic_address_t *OpenAPI_civic_address_parseFromJSON(cJSON *civic_addres
 
     cJSON *pom = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "POM");
 
-    if (pom) { 
+    if (pom) {
     if (!cJSON_IsString(pom)) {
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [pom]");
         goto end;
@@ -662,7 +662,7 @@ OpenAPI_civic_address_t *OpenAPI_civic_address_parseFromJSON(cJSON *civic_addres
 
     cJSON *usage_rules = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "usageRules");
 
-    if (usage_rules) { 
+    if (usage_rules) {
     if (!cJSON_IsString(usage_rules)) {
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [usage_rules]");
         goto end;
@@ -671,7 +671,7 @@ OpenAPI_civic_address_t *OpenAPI_civic_address_parseFromJSON(cJSON *civic_addres
 
     cJSON *method = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "method");
 
-    if (method) { 
+    if (method) {
     if (!cJSON_IsString(method)) {
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [method]");
         goto end;
@@ -680,7 +680,7 @@ OpenAPI_civic_address_t *OpenAPI_civic_address_parseFromJSON(cJSON *civic_addres
 
     cJSON *provided_by = cJSON_GetObjectItemCaseSensitive(civic_addressJSON, "providedBy");
 
-    if (provided_by) { 
+    if (provided_by) {
     if (!cJSON_IsString(provided_by)) {
         ogs_error("OpenAPI_civic_address_parseFromJSON() failed [provided_by]");
         goto end;

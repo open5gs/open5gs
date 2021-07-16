@@ -104,13 +104,12 @@ OpenAPI_allowed_snssai_t *OpenAPI_allowed_snssai_parseFromJSON(cJSON *allowed_sn
     }
 
     OpenAPI_snssai_t *allowed_snssai_local_nonprim = NULL;
-    
     allowed_snssai_local_nonprim = OpenAPI_snssai_parseFromJSON(allowed_snssai);
 
     cJSON *nsi_information_list = cJSON_GetObjectItemCaseSensitive(allowed_snssaiJSON, "nsiInformationList");
 
     OpenAPI_list_t *nsi_information_listList;
-    if (nsi_information_list) { 
+    if (nsi_information_list) {
     cJSON *nsi_information_list_local_nonprimitive;
     if (!cJSON_IsArray(nsi_information_list)){
         ogs_error("OpenAPI_allowed_snssai_parseFromJSON() failed [nsi_information_list]");
@@ -133,7 +132,7 @@ OpenAPI_allowed_snssai_t *OpenAPI_allowed_snssai_parseFromJSON(cJSON *allowed_sn
     cJSON *mapped_home_snssai = cJSON_GetObjectItemCaseSensitive(allowed_snssaiJSON, "mappedHomeSnssai");
 
     OpenAPI_snssai_t *mapped_home_snssai_local_nonprim = NULL;
-    if (mapped_home_snssai) { 
+    if (mapped_home_snssai) {
     mapped_home_snssai_local_nonprim = OpenAPI_snssai_parseFromJSON(mapped_home_snssai);
     }
 

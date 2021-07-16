@@ -73,7 +73,6 @@ OpenAPI_amf_subscription_info_t *OpenAPI_amf_subscription_info_parseFromJSON(cJS
         goto end;
     }
 
-    
     if (!cJSON_IsString(amf_instance_id)) {
         ogs_error("OpenAPI_amf_subscription_info_parseFromJSON() failed [amf_instance_id]");
         goto end;
@@ -85,7 +84,6 @@ OpenAPI_amf_subscription_info_t *OpenAPI_amf_subscription_info_parseFromJSON(cJS
         goto end;
     }
 
-    
     if (!cJSON_IsString(subscription_id)) {
         ogs_error("OpenAPI_amf_subscription_info_parseFromJSON() failed [subscription_id]");
         goto end;
@@ -93,7 +91,7 @@ OpenAPI_amf_subscription_info_t *OpenAPI_amf_subscription_info_parseFromJSON(cJS
 
     cJSON *subs_change_notify_correlation_id = cJSON_GetObjectItemCaseSensitive(amf_subscription_infoJSON, "subsChangeNotifyCorrelationId");
 
-    if (subs_change_notify_correlation_id) { 
+    if (subs_change_notify_correlation_id) {
     if (!cJSON_IsString(subs_change_notify_correlation_id)) {
         ogs_error("OpenAPI_amf_subscription_info_parseFromJSON() failed [subs_change_notify_correlation_id]");
         goto end;

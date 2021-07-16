@@ -85,7 +85,6 @@ OpenAPI_slice_info_for_pdu_session_t *OpenAPI_slice_info_for_pdu_session_parseFr
     }
 
     OpenAPI_snssai_t *s_nssai_local_nonprim = NULL;
-    
     s_nssai_local_nonprim = OpenAPI_snssai_parseFromJSON(s_nssai);
 
     cJSON *roaming_indication = cJSON_GetObjectItemCaseSensitive(slice_info_for_pdu_sessionJSON, "roamingIndication");
@@ -95,7 +94,6 @@ OpenAPI_slice_info_for_pdu_session_t *OpenAPI_slice_info_for_pdu_session_parseFr
     }
 
     OpenAPI_roaming_indication_e roaming_indicationVariable;
-    
     if (!cJSON_IsString(roaming_indication)) {
         ogs_error("OpenAPI_slice_info_for_pdu_session_parseFromJSON() failed [roaming_indication]");
         goto end;
@@ -105,7 +103,7 @@ OpenAPI_slice_info_for_pdu_session_t *OpenAPI_slice_info_for_pdu_session_parseFr
     cJSON *home_snssai = cJSON_GetObjectItemCaseSensitive(slice_info_for_pdu_sessionJSON, "homeSnssai");
 
     OpenAPI_snssai_t *home_snssai_local_nonprim = NULL;
-    if (home_snssai) { 
+    if (home_snssai) {
     home_snssai_local_nonprim = OpenAPI_snssai_parseFromJSON(home_snssai);
     }
 

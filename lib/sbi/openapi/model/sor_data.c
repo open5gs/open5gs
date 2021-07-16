@@ -82,7 +82,6 @@ OpenAPI_sor_data_t *OpenAPI_sor_data_parseFromJSON(cJSON *sor_dataJSON)
         goto end;
     }
 
-    
     if (!cJSON_IsString(provisioning_time)) {
         ogs_error("OpenAPI_sor_data_parseFromJSON() failed [provisioning_time]");
         goto end;
@@ -95,7 +94,6 @@ OpenAPI_sor_data_t *OpenAPI_sor_data_parseFromJSON(cJSON *sor_dataJSON)
     }
 
     OpenAPI_ue_update_status_e ue_update_statusVariable;
-    
     if (!cJSON_IsString(ue_update_status)) {
         ogs_error("OpenAPI_sor_data_parseFromJSON() failed [ue_update_status]");
         goto end;
@@ -104,7 +102,7 @@ OpenAPI_sor_data_t *OpenAPI_sor_data_parseFromJSON(cJSON *sor_dataJSON)
 
     cJSON *sor_xmac_iue = cJSON_GetObjectItemCaseSensitive(sor_dataJSON, "sorXmacIue");
 
-    if (sor_xmac_iue) { 
+    if (sor_xmac_iue) {
     if (!cJSON_IsString(sor_xmac_iue)) {
         ogs_error("OpenAPI_sor_data_parseFromJSON() failed [sor_xmac_iue]");
         goto end;
@@ -113,7 +111,7 @@ OpenAPI_sor_data_t *OpenAPI_sor_data_parseFromJSON(cJSON *sor_dataJSON)
 
     cJSON *sor_mac_iue = cJSON_GetObjectItemCaseSensitive(sor_dataJSON, "sorMacIue");
 
-    if (sor_mac_iue) { 
+    if (sor_mac_iue) {
     if (!cJSON_IsString(sor_mac_iue)) {
         ogs_error("OpenAPI_sor_data_parseFromJSON() failed [sor_mac_iue]");
         goto end;

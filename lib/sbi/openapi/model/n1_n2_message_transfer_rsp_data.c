@@ -65,7 +65,6 @@ OpenAPI_n1_n2_message_transfer_rsp_data_t *OpenAPI_n1_n2_message_transfer_rsp_da
     }
 
     OpenAPI_n1_n2_message_transfer_cause_e causeVariable;
-    
     if (!cJSON_IsString(cause)) {
         ogs_error("OpenAPI_n1_n2_message_transfer_rsp_data_parseFromJSON() failed [cause]");
         goto end;
@@ -74,7 +73,7 @@ OpenAPI_n1_n2_message_transfer_rsp_data_t *OpenAPI_n1_n2_message_transfer_rsp_da
 
     cJSON *supported_features = cJSON_GetObjectItemCaseSensitive(n1_n2_message_transfer_rsp_dataJSON, "supportedFeatures");
 
-    if (supported_features) { 
+    if (supported_features) {
     if (!cJSON_IsString(supported_features)) {
         ogs_error("OpenAPI_n1_n2_message_transfer_rsp_data_parseFromJSON() failed [supported_features]");
         goto end;

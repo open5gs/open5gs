@@ -62,7 +62,7 @@ OpenAPI_nr_v2x_auth_t *OpenAPI_nr_v2x_auth_parseFromJSON(cJSON *nr_v2x_authJSON)
     cJSON *vehicle_ue_auth = cJSON_GetObjectItemCaseSensitive(nr_v2x_authJSON, "vehicleUeAuth");
 
     OpenAPI_ue_auth_e vehicle_ue_authVariable;
-    if (vehicle_ue_auth) { 
+    if (vehicle_ue_auth) {
     if (!cJSON_IsString(vehicle_ue_auth)) {
         ogs_error("OpenAPI_nr_v2x_auth_parseFromJSON() failed [vehicle_ue_auth]");
         goto end;
@@ -73,7 +73,7 @@ OpenAPI_nr_v2x_auth_t *OpenAPI_nr_v2x_auth_parseFromJSON(cJSON *nr_v2x_authJSON)
     cJSON *pedestrian_ue_auth = cJSON_GetObjectItemCaseSensitive(nr_v2x_authJSON, "pedestrianUeAuth");
 
     OpenAPI_ue_auth_e pedestrian_ue_authVariable;
-    if (pedestrian_ue_auth) { 
+    if (pedestrian_ue_auth) {
     if (!cJSON_IsString(pedestrian_ue_auth)) {
         ogs_error("OpenAPI_nr_v2x_auth_parseFromJSON() failed [pedestrian_ue_auth]");
         goto end;

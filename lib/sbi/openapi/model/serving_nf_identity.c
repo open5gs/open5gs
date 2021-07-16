@@ -85,7 +85,7 @@ OpenAPI_serving_nf_identity_t *OpenAPI_serving_nf_identity_parseFromJSON(cJSON *
     OpenAPI_serving_nf_identity_t *serving_nf_identity_local_var = NULL;
     cJSON *serv_nf_inst_id = cJSON_GetObjectItemCaseSensitive(serving_nf_identityJSON, "servNfInstId");
 
-    if (serv_nf_inst_id) { 
+    if (serv_nf_inst_id) {
     if (!cJSON_IsString(serv_nf_inst_id)) {
         ogs_error("OpenAPI_serving_nf_identity_parseFromJSON() failed [serv_nf_inst_id]");
         goto end;
@@ -95,14 +95,14 @@ OpenAPI_serving_nf_identity_t *OpenAPI_serving_nf_identity_parseFromJSON(cJSON *
     cJSON *guami = cJSON_GetObjectItemCaseSensitive(serving_nf_identityJSON, "guami");
 
     OpenAPI_guami_t *guami_local_nonprim = NULL;
-    if (guami) { 
+    if (guami) {
     guami_local_nonprim = OpenAPI_guami_parseFromJSON(guami);
     }
 
     cJSON *an_gw_addr = cJSON_GetObjectItemCaseSensitive(serving_nf_identityJSON, "anGwAddr");
 
     OpenAPI_an_gw_address_t *an_gw_addr_local_nonprim = NULL;
-    if (an_gw_addr) { 
+    if (an_gw_addr) {
     an_gw_addr_local_nonprim = OpenAPI_an_gw_address_parseFromJSON(an_gw_addr);
     }
 

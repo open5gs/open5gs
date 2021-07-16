@@ -72,7 +72,6 @@ OpenAPI_snssai_info_t *OpenAPI_snssai_info_parseFromJSON(cJSON *snssai_infoJSON)
     }
 
     OpenAPI_list_t *dnn_infosList;
-    
     cJSON *dnn_infos_local_nonprimitive;
     if (!cJSON_IsArray(dnn_infos)){
         ogs_error("OpenAPI_snssai_info_parseFromJSON() failed [dnn_infos]");

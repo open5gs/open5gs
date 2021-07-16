@@ -72,14 +72,14 @@ OpenAPI_inline_object_3_t *OpenAPI_inline_object_3_parseFromJSON(cJSON *inline_o
     cJSON *json_data = cJSON_GetObjectItemCaseSensitive(inline_object_3JSON, "jsonData");
 
     OpenAPI_n1_message_notification_t *json_data_local_nonprim = NULL;
-    if (json_data) { 
+    if (json_data) {
     json_data_local_nonprim = OpenAPI_n1_message_notification_parseFromJSON(json_data);
     }
 
     cJSON *binary_data_n1_message = cJSON_GetObjectItemCaseSensitive(inline_object_3JSON, "binaryDataN1Message");
 
     OpenAPI_binary_t* decoded_str_binary_data_n1_message = OpenAPI_malloc(sizeof(OpenAPI_binary_t));
-    if (binary_data_n1_message) { 
+    if (binary_data_n1_message) {
     if (!cJSON_IsString(binary_data_n1_message)) {
         ogs_error("OpenAPI_inline_object_3_parseFromJSON() failed [binary_data_n1_message]");
         goto end;

@@ -55,7 +55,6 @@ OpenAPI_nf_service_set_cond_t *OpenAPI_nf_service_set_cond_parseFromJSON(cJSON *
         goto end;
     }
 
-    
     if (!cJSON_IsString(nf_service_set_id)) {
         ogs_error("OpenAPI_nf_service_set_cond_parseFromJSON() failed [nf_service_set_id]");
         goto end;

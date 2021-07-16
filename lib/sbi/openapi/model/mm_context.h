@@ -31,7 +31,9 @@ typedef struct OpenAPI_mm_context_s {
     OpenAPI_access_type_e access_type;
     struct OpenAPI_nas_security_mode_s *nas_security_mode;
     struct OpenAPI_eps_nas_security_mode_s *eps_nas_security_mode;
+    bool is_nas_downlink_count;
     int nas_downlink_count;
+    bool is_nas_uplink_count;
     int nas_uplink_count;
     char ue_security_capability;
     char s1_ue_network_capability;
@@ -47,6 +49,7 @@ typedef struct OpenAPI_mm_context_s {
     struct OpenAPI_global_ran_node_id_s *n3_iwf_id;
     struct OpenAPI_global_ran_node_id_s *wagf_id;
     struct OpenAPI_global_ran_node_id_s *tngf_id;
+    bool is_an_n2_ap_id;
     int an_n2_ap_id;
     OpenAPI_list_t *nssaa_status_list;
     OpenAPI_list_t *pending_nssai_mapping_list;
@@ -56,7 +59,9 @@ OpenAPI_mm_context_t *OpenAPI_mm_context_create(
     OpenAPI_access_type_e access_type,
     OpenAPI_nas_security_mode_t *nas_security_mode,
     OpenAPI_eps_nas_security_mode_t *eps_nas_security_mode,
+    bool is_nas_downlink_count,
     int nas_downlink_count,
+    bool is_nas_uplink_count,
     int nas_uplink_count,
     char ue_security_capability,
     char s1_ue_network_capability,
@@ -72,6 +77,7 @@ OpenAPI_mm_context_t *OpenAPI_mm_context_create(
     OpenAPI_global_ran_node_id_t *n3_iwf_id,
     OpenAPI_global_ran_node_id_t *wagf_id,
     OpenAPI_global_ran_node_id_t *tngf_id,
+    bool is_an_n2_ap_id,
     int an_n2_ap_id,
     OpenAPI_list_t *nssaa_status_list,
     OpenAPI_list_t *pending_nssai_mapping_list

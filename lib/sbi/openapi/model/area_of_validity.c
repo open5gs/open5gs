@@ -72,7 +72,6 @@ OpenAPI_area_of_validity_t *OpenAPI_area_of_validity_parseFromJSON(cJSON *area_o
     }
 
     OpenAPI_list_t *tai_listList;
-    
     cJSON *tai_list_local_nonprimitive;
     if (!cJSON_IsArray(tai_list)){
         ogs_error("OpenAPI_area_of_validity_parseFromJSON() failed [tai_list]");

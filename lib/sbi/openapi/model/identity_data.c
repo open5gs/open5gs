@@ -88,7 +88,7 @@ OpenAPI_identity_data_t *OpenAPI_identity_data_parseFromJSON(cJSON *identity_dat
     cJSON *supi_list = cJSON_GetObjectItemCaseSensitive(identity_dataJSON, "supiList");
 
     OpenAPI_list_t *supi_listList;
-    if (supi_list) { 
+    if (supi_list) {
     cJSON *supi_list_local;
     if (!cJSON_IsArray(supi_list)) {
         ogs_error("OpenAPI_identity_data_parseFromJSON() failed [supi_list]");
@@ -102,13 +102,13 @@ OpenAPI_identity_data_t *OpenAPI_identity_data_parseFromJSON(cJSON *identity_dat
         goto end;
     }
     OpenAPI_list_add(supi_listList , ogs_strdup_or_assert(supi_list_local->valuestring));
-                    }
+    }
     }
 
     cJSON *gpsi_list = cJSON_GetObjectItemCaseSensitive(identity_dataJSON, "gpsiList");
 
     OpenAPI_list_t *gpsi_listList;
-    if (gpsi_list) { 
+    if (gpsi_list) {
     cJSON *gpsi_list_local;
     if (!cJSON_IsArray(gpsi_list)) {
         ogs_error("OpenAPI_identity_data_parseFromJSON() failed [gpsi_list]");
@@ -122,7 +122,7 @@ OpenAPI_identity_data_t *OpenAPI_identity_data_parseFromJSON(cJSON *identity_dat
         goto end;
     }
     OpenAPI_list_add(gpsi_listList , ogs_strdup_or_assert(gpsi_list_local->valuestring));
-                    }
+    }
     }
 
     identity_data_local_var = OpenAPI_identity_data_create (

@@ -22,7 +22,9 @@ typedef struct OpenAPI_indirect_data_forwarding_tunnel_info_s {
     char *ipv4_addr;
     char *ipv6_addr;
     char *gtp_teid;
+    bool is_drb_id;
     int drb_id;
+    bool is_additional_tnl_nb;
     int additional_tnl_nb;
 } OpenAPI_indirect_data_forwarding_tunnel_info_t;
 
@@ -30,7 +32,9 @@ OpenAPI_indirect_data_forwarding_tunnel_info_t *OpenAPI_indirect_data_forwarding
     char *ipv4_addr,
     char *ipv6_addr,
     char *gtp_teid,
+    bool is_drb_id,
     int drb_id,
+    bool is_additional_tnl_nb,
     int additional_tnl_nb
 );
 void OpenAPI_indirect_data_forwarding_tunnel_info_free(OpenAPI_indirect_data_forwarding_tunnel_info_t *indirect_data_forwarding_tunnel_info);

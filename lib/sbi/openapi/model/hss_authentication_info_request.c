@@ -117,7 +117,7 @@ OpenAPI_hss_authentication_info_request_t *OpenAPI_hss_authentication_info_reque
     OpenAPI_hss_authentication_info_request_t *hss_authentication_info_request_local_var = NULL;
     cJSON *supported_features = cJSON_GetObjectItemCaseSensitive(hss_authentication_info_requestJSON, "supportedFeatures");
 
-    if (supported_features) { 
+    if (supported_features) {
     if (!cJSON_IsString(supported_features)) {
         ogs_error("OpenAPI_hss_authentication_info_request_parseFromJSON() failed [supported_features]");
         goto end;
@@ -131,7 +131,6 @@ OpenAPI_hss_authentication_info_request_t *OpenAPI_hss_authentication_info_reque
     }
 
     OpenAPI_hss_auth_type_e hss_auth_typeVariable;
-    
     if (!cJSON_IsString(hss_auth_type)) {
         ogs_error("OpenAPI_hss_authentication_info_request_parseFromJSON() failed [hss_auth_type]");
         goto end;
@@ -144,7 +143,6 @@ OpenAPI_hss_authentication_info_request_t *OpenAPI_hss_authentication_info_reque
         goto end;
     }
 
-    
     if (!cJSON_IsNumber(num_of_requested_vectors)) {
         ogs_error("OpenAPI_hss_authentication_info_request_parseFromJSON() failed [num_of_requested_vectors]");
         goto end;
@@ -153,7 +151,7 @@ OpenAPI_hss_authentication_info_request_t *OpenAPI_hss_authentication_info_reque
     cJSON *requesting_node_type = cJSON_GetObjectItemCaseSensitive(hss_authentication_info_requestJSON, "requestingNodeType");
 
     OpenAPI_node_type_e requesting_node_typeVariable;
-    if (requesting_node_type) { 
+    if (requesting_node_type) {
     if (!cJSON_IsString(requesting_node_type)) {
         ogs_error("OpenAPI_hss_authentication_info_request_parseFromJSON() failed [requesting_node_type]");
         goto end;
@@ -164,21 +162,21 @@ OpenAPI_hss_authentication_info_request_t *OpenAPI_hss_authentication_info_reque
     cJSON *serving_network_id = cJSON_GetObjectItemCaseSensitive(hss_authentication_info_requestJSON, "servingNetworkId");
 
     OpenAPI_plmn_id_t *serving_network_id_local_nonprim = NULL;
-    if (serving_network_id) { 
+    if (serving_network_id) {
     serving_network_id_local_nonprim = OpenAPI_plmn_id_parseFromJSON(serving_network_id);
     }
 
     cJSON *resynchronization_info = cJSON_GetObjectItemCaseSensitive(hss_authentication_info_requestJSON, "resynchronizationInfo");
 
     OpenAPI_resynchronization_info_t *resynchronization_info_local_nonprim = NULL;
-    if (resynchronization_info) { 
+    if (resynchronization_info) {
     resynchronization_info_local_nonprim = OpenAPI_resynchronization_info_parseFromJSON(resynchronization_info);
     }
 
     cJSON *an_id = cJSON_GetObjectItemCaseSensitive(hss_authentication_info_requestJSON, "anId");
 
     OpenAPI_access_network_id_e an_idVariable;
-    if (an_id) { 
+    if (an_id) {
     if (!cJSON_IsString(an_id)) {
         ogs_error("OpenAPI_hss_authentication_info_request_parseFromJSON() failed [an_id]");
         goto end;
@@ -189,6 +187,7 @@ OpenAPI_hss_authentication_info_request_t *OpenAPI_hss_authentication_info_reque
     hss_authentication_info_request_local_var = OpenAPI_hss_authentication_info_request_create (
         supported_features ? ogs_strdup_or_assert(supported_features->valuestring) : NULL,
         hss_auth_typeVariable,
+        
         num_of_requested_vectors->valuedouble,
         requesting_node_type ? requesting_node_typeVariable : 0,
         serving_network_id ? serving_network_id_local_nonprim : NULL,

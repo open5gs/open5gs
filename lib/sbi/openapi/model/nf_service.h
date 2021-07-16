@@ -47,8 +47,11 @@ typedef struct OpenAPI_nf_service_s {
     OpenAPI_list_t *allowed_nssais;
     OpenAPI_list_t* allowed_operations_per_nf_type;
     OpenAPI_list_t* allowed_operations_per_nf_instance;
+    bool is_priority;
     int priority;
+    bool is_capacity;
     int capacity;
+    bool is_load;
     int load;
     char *load_time_stamp;
     char *recovery_time;
@@ -58,6 +61,7 @@ typedef struct OpenAPI_nf_service_s {
     OpenAPI_list_t *per_plmn_snssai_list;
     char *vendor_id;
     OpenAPI_list_t* supported_vendor_specific_features;
+    bool is_oauth2_required;
     int oauth2_required;
 } OpenAPI_nf_service_t;
 
@@ -79,8 +83,11 @@ OpenAPI_nf_service_t *OpenAPI_nf_service_create(
     OpenAPI_list_t *allowed_nssais,
     OpenAPI_list_t* allowed_operations_per_nf_type,
     OpenAPI_list_t* allowed_operations_per_nf_instance,
+    bool is_priority,
     int priority,
+    bool is_capacity,
     int capacity,
+    bool is_load,
     int load,
     char *load_time_stamp,
     char *recovery_time,
@@ -90,6 +97,7 @@ OpenAPI_nf_service_t *OpenAPI_nf_service_create(
     OpenAPI_list_t *per_plmn_snssai_list,
     char *vendor_id,
     OpenAPI_list_t* supported_vendor_specific_features,
+    bool is_oauth2_required,
     int oauth2_required
 );
 void OpenAPI_nf_service_free(OpenAPI_nf_service_t *nf_service);

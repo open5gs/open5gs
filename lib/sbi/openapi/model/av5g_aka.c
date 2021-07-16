@@ -71,7 +71,6 @@ OpenAPI_av5g_aka_t *OpenAPI_av5g_aka_parseFromJSON(cJSON *av5g_akaJSON)
         goto end;
     }
 
-    
     if (!cJSON_IsString(rand)) {
         ogs_error("OpenAPI_av5g_aka_parseFromJSON() failed [rand]");
         goto end;
@@ -83,7 +82,6 @@ OpenAPI_av5g_aka_t *OpenAPI_av5g_aka_parseFromJSON(cJSON *av5g_akaJSON)
         goto end;
     }
 
-    
     if (!cJSON_IsString(hxres_star)) {
         ogs_error("OpenAPI_av5g_aka_parseFromJSON() failed [hxres_star]");
         goto end;
@@ -95,7 +93,6 @@ OpenAPI_av5g_aka_t *OpenAPI_av5g_aka_parseFromJSON(cJSON *av5g_akaJSON)
         goto end;
     }
 
-    
     if (!cJSON_IsString(autn)) {
         ogs_error("OpenAPI_av5g_aka_parseFromJSON() failed [autn]");
         goto end;

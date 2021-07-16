@@ -65,7 +65,6 @@ OpenAPI_confirmation_data_t *OpenAPI_confirmation_data_parseFromJSON(cJSON *conf
         goto end;
     }
 
-    
     if (!cJSON_IsString(res_star)) {
         ogs_error("OpenAPI_confirmation_data_parseFromJSON() failed [res_star]");
         goto end;
@@ -73,7 +72,7 @@ OpenAPI_confirmation_data_t *OpenAPI_confirmation_data_parseFromJSON(cJSON *conf
 
     cJSON *supported_features = cJSON_GetObjectItemCaseSensitive(confirmation_dataJSON, "supportedFeatures");
 
-    if (supported_features) { 
+    if (supported_features) {
     if (!cJSON_IsString(supported_features)) {
         ogs_error("OpenAPI_confirmation_data_parseFromJSON() failed [supported_features]");
         goto end;

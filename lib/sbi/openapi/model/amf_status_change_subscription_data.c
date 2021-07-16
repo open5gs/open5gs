@@ -81,7 +81,6 @@ OpenAPI_amf_status_change_subscription_data_t *OpenAPI_amf_status_change_subscri
         goto end;
     }
 
-    
     if (!cJSON_IsString(amf_status_uri)) {
         ogs_error("OpenAPI_amf_status_change_subscription_data_parseFromJSON() failed [amf_status_uri]");
         goto end;
@@ -90,7 +89,7 @@ OpenAPI_amf_status_change_subscription_data_t *OpenAPI_amf_status_change_subscri
     cJSON *guami_list = cJSON_GetObjectItemCaseSensitive(amf_status_change_subscription_dataJSON, "guamiList");
 
     OpenAPI_list_t *guami_listList;
-    if (guami_list) { 
+    if (guami_list) {
     cJSON *guami_list_local_nonprimitive;
     if (!cJSON_IsArray(guami_list)){
         ogs_error("OpenAPI_amf_status_change_subscription_data_parseFromJSON() failed [guami_list]");

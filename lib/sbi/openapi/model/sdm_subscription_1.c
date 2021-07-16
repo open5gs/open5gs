@@ -6,6 +6,7 @@
 
 OpenAPI_sdm_subscription_1_t *OpenAPI_sdm_subscription_1_create(
     char *nf_instance_id,
+    bool is_implicit_unsubscribe,
     int implicit_unsubscribe,
     char *expires,
     char *callback_reference,
@@ -15,6 +16,7 @@ OpenAPI_sdm_subscription_1_t *OpenAPI_sdm_subscription_1_create(
     char *dnn,
     char *subscription_id,
     OpenAPI_plmn_id_1_t *plmn_id,
+    bool is_immediate_report,
     int immediate_report,
     OpenAPI_subscription_data_sets_1_t *report,
     char *supported_features,
@@ -26,6 +28,7 @@ OpenAPI_sdm_subscription_1_t *OpenAPI_sdm_subscription_1_create(
         return NULL;
     }
     sdm_subscription_1_local_var->nf_instance_id = nf_instance_id;
+    sdm_subscription_1_local_var->is_implicit_unsubscribe = is_implicit_unsubscribe;
     sdm_subscription_1_local_var->implicit_unsubscribe = implicit_unsubscribe;
     sdm_subscription_1_local_var->expires = expires;
     sdm_subscription_1_local_var->callback_reference = callback_reference;
@@ -35,6 +38,7 @@ OpenAPI_sdm_subscription_1_t *OpenAPI_sdm_subscription_1_create(
     sdm_subscription_1_local_var->dnn = dnn;
     sdm_subscription_1_local_var->subscription_id = subscription_id;
     sdm_subscription_1_local_var->plmn_id = plmn_id;
+    sdm_subscription_1_local_var->is_immediate_report = is_immediate_report;
     sdm_subscription_1_local_var->immediate_report = immediate_report;
     sdm_subscription_1_local_var->report = report;
     sdm_subscription_1_local_var->supported_features = supported_features;
@@ -82,7 +86,7 @@ cJSON *OpenAPI_sdm_subscription_1_convertToJSON(OpenAPI_sdm_subscription_1_t *sd
         goto end;
     }
 
-    if (sdm_subscription_1->implicit_unsubscribe) {
+    if (sdm_subscription_1->is_implicit_unsubscribe) {
     if (cJSON_AddBoolToObject(item, "implicitUnsubscribe", sdm_subscription_1->implicit_unsubscribe) == NULL) {
         ogs_error("OpenAPI_sdm_subscription_1_convertToJSON() failed [implicit_unsubscribe]");
         goto end;
@@ -162,7 +166,7 @@ cJSON *OpenAPI_sdm_subscription_1_convertToJSON(OpenAPI_sdm_subscription_1_t *sd
     }
     }
 
-    if (sdm_subscription_1->immediate_report) {
+    if (sdm_subscription_1->is_immediate_report) {
     if (cJSON_AddBoolToObject(item, "immediateReport", sdm_subscription_1->immediate_report) == NULL) {
         ogs_error("OpenAPI_sdm_subscription_1_convertToJSON() failed [immediate_report]");
         goto end;
@@ -215,7 +219,6 @@ OpenAPI_sdm_subscription_1_t *OpenAPI_sdm_subscription_1_parseFromJSON(cJSON *sd
         goto end;
     }
 
-    
     if (!cJSON_IsString(nf_instance_id)) {
         ogs_error("OpenAPI_sdm_subscription_1_parseFromJSON() failed [nf_instance_id]");
         goto end;
@@ -223,7 +226,7 @@ OpenAPI_sdm_subscription_1_t *OpenAPI_sdm_subscription_1_parseFromJSON(cJSON *sd
 
     cJSON *implicit_unsubscribe = cJSON_GetObjectItemCaseSensitive(sdm_subscription_1JSON, "implicitUnsubscribe");
 
-    if (implicit_unsubscribe) { 
+    if (implicit_unsubscribe) {
     if (!cJSON_IsBool(implicit_unsubscribe)) {
         ogs_error("OpenAPI_sdm_subscription_1_parseFromJSON() failed [implicit_unsubscribe]");
         goto end;
@@ -232,7 +235,7 @@ OpenAPI_sdm_subscription_1_t *OpenAPI_sdm_subscription_1_parseFromJSON(cJSON *sd
 
     cJSON *expires = cJSON_GetObjectItemCaseSensitive(sdm_subscription_1JSON, "expires");
 
-    if (expires) { 
+    if (expires) {
     if (!cJSON_IsString(expires)) {
         ogs_error("OpenAPI_sdm_subscription_1_parseFromJSON() failed [expires]");
         goto end;
@@ -245,7 +248,6 @@ OpenAPI_sdm_subscription_1_t *OpenAPI_sdm_subscription_1_parseFromJSON(cJSON *sd
         goto end;
     }
 
-    
     if (!cJSON_IsString(callback_reference)) {
         ogs_error("OpenAPI_sdm_subscription_1_parseFromJSON() failed [callback_reference]");
         goto end;
@@ -253,7 +255,7 @@ OpenAPI_sdm_subscription_1_t *OpenAPI_sdm_subscription_1_parseFromJSON(cJSON *sd
 
     cJSON *amf_service_name = cJSON_GetObjectItemCaseSensitive(sdm_subscription_1JSON, "amfServiceName");
 
-    if (amf_service_name) { 
+    if (amf_service_name) {
     if (!cJSON_IsString(amf_service_name)) {
         ogs_error("OpenAPI_sdm_subscription_1_parseFromJSON() failed [amf_service_name]");
         goto end;
@@ -267,7 +269,6 @@ OpenAPI_sdm_subscription_1_t *OpenAPI_sdm_subscription_1_parseFromJSON(cJSON *sd
     }
 
     OpenAPI_list_t *monitored_resource_urisList;
-    
     cJSON *monitored_resource_uris_local;
     if (!cJSON_IsArray(monitored_resource_uris)) {
         ogs_error("OpenAPI_sdm_subscription_1_parseFromJSON() failed [monitored_resource_uris]");
@@ -281,18 +282,18 @@ OpenAPI_sdm_subscription_1_t *OpenAPI_sdm_subscription_1_parseFromJSON(cJSON *sd
         goto end;
     }
     OpenAPI_list_add(monitored_resource_urisList , ogs_strdup_or_assert(monitored_resource_uris_local->valuestring));
-                    }
+    }
 
     cJSON *single_nssai = cJSON_GetObjectItemCaseSensitive(sdm_subscription_1JSON, "singleNssai");
 
     OpenAPI_snssai_t *single_nssai_local_nonprim = NULL;
-    if (single_nssai) { 
+    if (single_nssai) {
     single_nssai_local_nonprim = OpenAPI_snssai_parseFromJSON(single_nssai);
     }
 
     cJSON *dnn = cJSON_GetObjectItemCaseSensitive(sdm_subscription_1JSON, "dnn");
 
-    if (dnn) { 
+    if (dnn) {
     if (!cJSON_IsString(dnn)) {
         ogs_error("OpenAPI_sdm_subscription_1_parseFromJSON() failed [dnn]");
         goto end;
@@ -301,7 +302,7 @@ OpenAPI_sdm_subscription_1_t *OpenAPI_sdm_subscription_1_parseFromJSON(cJSON *sd
 
     cJSON *subscription_id = cJSON_GetObjectItemCaseSensitive(sdm_subscription_1JSON, "subscriptionId");
 
-    if (subscription_id) { 
+    if (subscription_id) {
     if (!cJSON_IsString(subscription_id)) {
         ogs_error("OpenAPI_sdm_subscription_1_parseFromJSON() failed [subscription_id]");
         goto end;
@@ -311,13 +312,13 @@ OpenAPI_sdm_subscription_1_t *OpenAPI_sdm_subscription_1_parseFromJSON(cJSON *sd
     cJSON *plmn_id = cJSON_GetObjectItemCaseSensitive(sdm_subscription_1JSON, "plmnId");
 
     OpenAPI_plmn_id_1_t *plmn_id_local_nonprim = NULL;
-    if (plmn_id) { 
+    if (plmn_id) {
     plmn_id_local_nonprim = OpenAPI_plmn_id_1_parseFromJSON(plmn_id);
     }
 
     cJSON *immediate_report = cJSON_GetObjectItemCaseSensitive(sdm_subscription_1JSON, "immediateReport");
 
-    if (immediate_report) { 
+    if (immediate_report) {
     if (!cJSON_IsBool(immediate_report)) {
         ogs_error("OpenAPI_sdm_subscription_1_parseFromJSON() failed [immediate_report]");
         goto end;
@@ -327,13 +328,13 @@ OpenAPI_sdm_subscription_1_t *OpenAPI_sdm_subscription_1_parseFromJSON(cJSON *sd
     cJSON *report = cJSON_GetObjectItemCaseSensitive(sdm_subscription_1JSON, "report");
 
     OpenAPI_subscription_data_sets_1_t *report_local_nonprim = NULL;
-    if (report) { 
+    if (report) {
     report_local_nonprim = OpenAPI_subscription_data_sets_1_parseFromJSON(report);
     }
 
     cJSON *supported_features = cJSON_GetObjectItemCaseSensitive(sdm_subscription_1JSON, "supportedFeatures");
 
-    if (supported_features) { 
+    if (supported_features) {
     if (!cJSON_IsString(supported_features)) {
         ogs_error("OpenAPI_sdm_subscription_1_parseFromJSON() failed [supported_features]");
         goto end;
@@ -343,12 +344,13 @@ OpenAPI_sdm_subscription_1_t *OpenAPI_sdm_subscription_1_parseFromJSON(cJSON *sd
     cJSON *context_info = cJSON_GetObjectItemCaseSensitive(sdm_subscription_1JSON, "contextInfo");
 
     OpenAPI_context_info_t *context_info_local_nonprim = NULL;
-    if (context_info) { 
+    if (context_info) {
     context_info_local_nonprim = OpenAPI_context_info_parseFromJSON(context_info);
     }
 
     sdm_subscription_1_local_var = OpenAPI_sdm_subscription_1_create (
         ogs_strdup_or_assert(nf_instance_id->valuestring),
+        implicit_unsubscribe ? true : false,
         implicit_unsubscribe ? implicit_unsubscribe->valueint : 0,
         expires ? ogs_strdup_or_assert(expires->valuestring) : NULL,
         ogs_strdup_or_assert(callback_reference->valuestring),
@@ -358,6 +360,7 @@ OpenAPI_sdm_subscription_1_t *OpenAPI_sdm_subscription_1_parseFromJSON(cJSON *sd
         dnn ? ogs_strdup_or_assert(dnn->valuestring) : NULL,
         subscription_id ? ogs_strdup_or_assert(subscription_id->valuestring) : NULL,
         plmn_id ? plmn_id_local_nonprim : NULL,
+        immediate_report ? true : false,
         immediate_report ? immediate_report->valueint : 0,
         report ? report_local_nonprim : NULL,
         supported_features ? ogs_strdup_or_assert(supported_features->valuestring) : NULL,

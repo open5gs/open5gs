@@ -24,6 +24,7 @@ typedef struct OpenAPI_sequence_number_s {
     OpenAPI_sqn_scheme_e sqn_scheme;
     char *sqn;
     OpenAPI_list_t* last_indexes;
+    bool is_ind_length;
     int ind_length;
     OpenAPI_sign_e dif_sign;
 } OpenAPI_sequence_number_t;
@@ -32,6 +33,7 @@ OpenAPI_sequence_number_t *OpenAPI_sequence_number_create(
     OpenAPI_sqn_scheme_e sqn_scheme,
     char *sqn,
     OpenAPI_list_t* last_indexes,
+    bool is_ind_length,
     int ind_length,
     OpenAPI_sign_e dif_sign
 );

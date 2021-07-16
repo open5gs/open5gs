@@ -85,7 +85,6 @@ OpenAPI_cag_data_t *OpenAPI_cag_data_parseFromJSON(cJSON *cag_dataJSON)
     }
 
     OpenAPI_list_t *cag_infosList;
-    
     cJSON *cag_infos_local_map;
     if (!cJSON_IsObject(cag_infos)) {
         ogs_error("OpenAPI_cag_data_parseFromJSON() failed [cag_infos]");
@@ -106,7 +105,7 @@ OpenAPI_cag_data_t *OpenAPI_cag_data_parseFromJSON(cJSON *cag_dataJSON)
 
     cJSON *provisioning_time = cJSON_GetObjectItemCaseSensitive(cag_dataJSON, "provisioningTime");
 
-    if (provisioning_time) { 
+    if (provisioning_time) {
     if (!cJSON_IsString(provisioning_time)) {
         ogs_error("OpenAPI_cag_data_parseFromJSON() failed [provisioning_time]");
         goto end;

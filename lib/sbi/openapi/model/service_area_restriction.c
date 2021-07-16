@@ -7,7 +7,9 @@
 OpenAPI_service_area_restriction_t *OpenAPI_service_area_restriction_create(
     OpenAPI_restriction_type_e restriction_type,
     OpenAPI_list_t *areas,
+    bool is_max_num_of_tas,
     int max_num_of_tas,
+    bool is_max_num_of_tas_for_not_allowed_areas,
     int max_num_of_tas_for_not_allowed_areas
 )
 {
@@ -17,7 +19,9 @@ OpenAPI_service_area_restriction_t *OpenAPI_service_area_restriction_create(
     }
     service_area_restriction_local_var->restriction_type = restriction_type;
     service_area_restriction_local_var->areas = areas;
+    service_area_restriction_local_var->is_max_num_of_tas = is_max_num_of_tas;
     service_area_restriction_local_var->max_num_of_tas = max_num_of_tas;
+    service_area_restriction_local_var->is_max_num_of_tas_for_not_allowed_areas = is_max_num_of_tas_for_not_allowed_areas;
     service_area_restriction_local_var->max_num_of_tas_for_not_allowed_areas = max_num_of_tas_for_not_allowed_areas;
 
     return service_area_restriction_local_var;
@@ -73,14 +77,14 @@ cJSON *OpenAPI_service_area_restriction_convertToJSON(OpenAPI_service_area_restr
     }
     }
 
-    if (service_area_restriction->max_num_of_tas) {
+    if (service_area_restriction->is_max_num_of_tas) {
     if (cJSON_AddNumberToObject(item, "maxNumOfTAs", service_area_restriction->max_num_of_tas) == NULL) {
         ogs_error("OpenAPI_service_area_restriction_convertToJSON() failed [max_num_of_tas]");
         goto end;
     }
     }
 
-    if (service_area_restriction->max_num_of_tas_for_not_allowed_areas) {
+    if (service_area_restriction->is_max_num_of_tas_for_not_allowed_areas) {
     if (cJSON_AddNumberToObject(item, "maxNumOfTAsForNotAllowedAreas", service_area_restriction->max_num_of_tas_for_not_allowed_areas) == NULL) {
         ogs_error("OpenAPI_service_area_restriction_convertToJSON() failed [max_num_of_tas_for_not_allowed_areas]");
         goto end;
@@ -97,7 +101,7 @@ OpenAPI_service_area_restriction_t *OpenAPI_service_area_restriction_parseFromJS
     cJSON *restriction_type = cJSON_GetObjectItemCaseSensitive(service_area_restrictionJSON, "restrictionType");
 
     OpenAPI_restriction_type_e restriction_typeVariable;
-    if (restriction_type) { 
+    if (restriction_type) {
     if (!cJSON_IsString(restriction_type)) {
         ogs_error("OpenAPI_service_area_restriction_parseFromJSON() failed [restriction_type]");
         goto end;
@@ -108,7 +112,7 @@ OpenAPI_service_area_restriction_t *OpenAPI_service_area_restriction_parseFromJS
     cJSON *areas = cJSON_GetObjectItemCaseSensitive(service_area_restrictionJSON, "areas");
 
     OpenAPI_list_t *areasList;
-    if (areas) { 
+    if (areas) {
     cJSON *areas_local_nonprimitive;
     if (!cJSON_IsArray(areas)){
         ogs_error("OpenAPI_service_area_restriction_parseFromJSON() failed [areas]");
@@ -130,7 +134,7 @@ OpenAPI_service_area_restriction_t *OpenAPI_service_area_restriction_parseFromJS
 
     cJSON *max_num_of_tas = cJSON_GetObjectItemCaseSensitive(service_area_restrictionJSON, "maxNumOfTAs");
 
-    if (max_num_of_tas) { 
+    if (max_num_of_tas) {
     if (!cJSON_IsNumber(max_num_of_tas)) {
         ogs_error("OpenAPI_service_area_restriction_parseFromJSON() failed [max_num_of_tas]");
         goto end;
@@ -139,7 +143,7 @@ OpenAPI_service_area_restriction_t *OpenAPI_service_area_restriction_parseFromJS
 
     cJSON *max_num_of_tas_for_not_allowed_areas = cJSON_GetObjectItemCaseSensitive(service_area_restrictionJSON, "maxNumOfTAsForNotAllowedAreas");
 
-    if (max_num_of_tas_for_not_allowed_areas) { 
+    if (max_num_of_tas_for_not_allowed_areas) {
     if (!cJSON_IsNumber(max_num_of_tas_for_not_allowed_areas)) {
         ogs_error("OpenAPI_service_area_restriction_parseFromJSON() failed [max_num_of_tas_for_not_allowed_areas]");
         goto end;
@@ -149,7 +153,9 @@ OpenAPI_service_area_restriction_t *OpenAPI_service_area_restriction_parseFromJS
     service_area_restriction_local_var = OpenAPI_service_area_restriction_create (
         restriction_type ? restriction_typeVariable : 0,
         areas ? areasList : NULL,
+        max_num_of_tas ? true : false,
         max_num_of_tas ? max_num_of_tas->valuedouble : 0,
+        max_num_of_tas_for_not_allowed_areas ? true : false,
         max_num_of_tas_for_not_allowed_areas ? max_num_of_tas_for_not_allowed_areas->valuedouble : 0
     );
 

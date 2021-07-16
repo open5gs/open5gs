@@ -98,7 +98,6 @@ OpenAPI_access_token_err_t *OpenAPI_access_token_err_parseFromJSON(cJSON *access
     }
 
     OpenAPI_access_token_err_error_e errorVariable;
-                
     if (!cJSON_IsString(error)) {
         ogs_error("OpenAPI_access_token_err_parseFromJSON() failed [error]");
         goto end;
@@ -107,7 +106,7 @@ OpenAPI_access_token_err_t *OpenAPI_access_token_err_parseFromJSON(cJSON *access
 
     cJSON *error_description = cJSON_GetObjectItemCaseSensitive(access_token_errJSON, "error_description");
 
-    if (error_description) { 
+    if (error_description) {
     if (!cJSON_IsString(error_description)) {
         ogs_error("OpenAPI_access_token_err_parseFromJSON() failed [error_description]");
         goto end;
@@ -116,7 +115,7 @@ OpenAPI_access_token_err_t *OpenAPI_access_token_err_parseFromJSON(cJSON *access
 
     cJSON *error_uri = cJSON_GetObjectItemCaseSensitive(access_token_errJSON, "error_uri");
 
-    if (error_uri) { 
+    if (error_uri) {
     if (!cJSON_IsString(error_uri)) {
         ogs_error("OpenAPI_access_token_err_parseFromJSON() failed [error_uri]");
         goto end;

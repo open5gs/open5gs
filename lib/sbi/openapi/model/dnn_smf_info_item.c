@@ -55,7 +55,6 @@ OpenAPI_dnn_smf_info_item_t *OpenAPI_dnn_smf_info_item_parseFromJSON(cJSON *dnn_
         goto end;
     }
 
-    
     if (!cJSON_IsString(dnn)) {
         ogs_error("OpenAPI_dnn_smf_info_item_parseFromJSON() failed [dnn]");
         goto end;

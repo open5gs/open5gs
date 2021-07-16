@@ -62,7 +62,6 @@ OpenAPI_ue_policy_section_t *OpenAPI_ue_policy_section_parseFromJSON(cJSON *ue_p
         goto end;
     }
 
-    
     if (!cJSON_IsNumber(ue_policy_section_info)) {
         ogs_error("OpenAPI_ue_policy_section_parseFromJSON() failed [ue_policy_section_info]");
         goto end;
@@ -74,7 +73,6 @@ OpenAPI_ue_policy_section_t *OpenAPI_ue_policy_section_parseFromJSON(cJSON *ue_p
         goto end;
     }
 
-    
     if (!cJSON_IsString(upsi)) {
         ogs_error("OpenAPI_ue_policy_section_parseFromJSON() failed [upsi]");
         goto end;

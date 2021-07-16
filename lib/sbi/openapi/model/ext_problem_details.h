@@ -26,6 +26,7 @@ typedef struct OpenAPI_ext_problem_details_s OpenAPI_ext_problem_details_t;
 typedef struct OpenAPI_ext_problem_details_s {
     char *type;
     char *title;
+    bool is_status;
     int status;
     char *detail;
     char *instance;
@@ -35,12 +36,14 @@ typedef struct OpenAPI_ext_problem_details_s {
     struct OpenAPI_access_token_err_s *access_token_error;
     struct OpenAPI_access_token_req_s *access_token_request;
     char *nrf_id;
+    bool is_remote_error;
     int remote_error;
 } OpenAPI_ext_problem_details_t;
 
 OpenAPI_ext_problem_details_t *OpenAPI_ext_problem_details_create(
     char *type,
     char *title,
+    bool is_status,
     int status,
     char *detail,
     char *instance,
@@ -50,6 +53,7 @@ OpenAPI_ext_problem_details_t *OpenAPI_ext_problem_details_create(
     OpenAPI_access_token_err_t *access_token_error,
     OpenAPI_access_token_req_t *access_token_request,
     char *nrf_id,
+    bool is_remote_error,
     int remote_error
 );
 void OpenAPI_ext_problem_details_free(OpenAPI_ext_problem_details_t *ext_problem_details);

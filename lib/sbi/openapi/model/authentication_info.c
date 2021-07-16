@@ -13,6 +13,7 @@ OpenAPI_authentication_info_t *OpenAPI_authentication_info_create(
     char *udm_group_id,
     char *routing_indicator,
     OpenAPI_list_t *cell_cag_info,
+    bool is_n5gc_ind,
     int n5gc_ind,
     char *supported_features
 )
@@ -29,6 +30,7 @@ OpenAPI_authentication_info_t *OpenAPI_authentication_info_create(
     authentication_info_local_var->udm_group_id = udm_group_id;
     authentication_info_local_var->routing_indicator = routing_indicator;
     authentication_info_local_var->cell_cag_info = cell_cag_info;
+    authentication_info_local_var->is_n5gc_ind = is_n5gc_ind;
     authentication_info_local_var->n5gc_ind = n5gc_ind;
     authentication_info_local_var->supported_features = supported_features;
 
@@ -139,7 +141,7 @@ cJSON *OpenAPI_authentication_info_convertToJSON(OpenAPI_authentication_info_t *
                     }
     }
 
-    if (authentication_info->n5gc_ind) {
+    if (authentication_info->is_n5gc_ind) {
     if (cJSON_AddBoolToObject(item, "n5gcInd", authentication_info->n5gc_ind) == NULL) {
         ogs_error("OpenAPI_authentication_info_convertToJSON() failed [n5gc_ind]");
         goto end;
@@ -166,7 +168,6 @@ OpenAPI_authentication_info_t *OpenAPI_authentication_info_parseFromJSON(cJSON *
         goto end;
     }
 
-    
     if (!cJSON_IsString(supi_or_suci)) {
         ogs_error("OpenAPI_authentication_info_parseFromJSON() failed [supi_or_suci]");
         goto end;
@@ -178,7 +179,6 @@ OpenAPI_authentication_info_t *OpenAPI_authentication_info_parseFromJSON(cJSON *
         goto end;
     }
 
-    
     if (!cJSON_IsString(serving_network_name)) {
         ogs_error("OpenAPI_authentication_info_parseFromJSON() failed [serving_network_name]");
         goto end;
@@ -187,13 +187,13 @@ OpenAPI_authentication_info_t *OpenAPI_authentication_info_parseFromJSON(cJSON *
     cJSON *resynchronization_info = cJSON_GetObjectItemCaseSensitive(authentication_infoJSON, "resynchronizationInfo");
 
     OpenAPI_resynchronization_info_t *resynchronization_info_local_nonprim = NULL;
-    if (resynchronization_info) { 
+    if (resynchronization_info) {
     resynchronization_info_local_nonprim = OpenAPI_resynchronization_info_parseFromJSON(resynchronization_info);
     }
 
     cJSON *pei = cJSON_GetObjectItemCaseSensitive(authentication_infoJSON, "pei");
 
-    if (pei) { 
+    if (pei) {
     if (!cJSON_IsString(pei)) {
         ogs_error("OpenAPI_authentication_info_parseFromJSON() failed [pei]");
         goto end;
@@ -203,13 +203,13 @@ OpenAPI_authentication_info_t *OpenAPI_authentication_info_parseFromJSON(cJSON *
     cJSON *trace_data = cJSON_GetObjectItemCaseSensitive(authentication_infoJSON, "traceData");
 
     OpenAPI_trace_data_t *trace_data_local_nonprim = NULL;
-    if (trace_data) { 
+    if (trace_data) {
     trace_data_local_nonprim = OpenAPI_trace_data_parseFromJSON(trace_data);
     }
 
     cJSON *udm_group_id = cJSON_GetObjectItemCaseSensitive(authentication_infoJSON, "udmGroupId");
 
-    if (udm_group_id) { 
+    if (udm_group_id) {
     if (!cJSON_IsString(udm_group_id)) {
         ogs_error("OpenAPI_authentication_info_parseFromJSON() failed [udm_group_id]");
         goto end;
@@ -218,7 +218,7 @@ OpenAPI_authentication_info_t *OpenAPI_authentication_info_parseFromJSON(cJSON *
 
     cJSON *routing_indicator = cJSON_GetObjectItemCaseSensitive(authentication_infoJSON, "routingIndicator");
 
-    if (routing_indicator) { 
+    if (routing_indicator) {
     if (!cJSON_IsString(routing_indicator)) {
         ogs_error("OpenAPI_authentication_info_parseFromJSON() failed [routing_indicator]");
         goto end;
@@ -228,7 +228,7 @@ OpenAPI_authentication_info_t *OpenAPI_authentication_info_parseFromJSON(cJSON *
     cJSON *cell_cag_info = cJSON_GetObjectItemCaseSensitive(authentication_infoJSON, "cellCagInfo");
 
     OpenAPI_list_t *cell_cag_infoList;
-    if (cell_cag_info) { 
+    if (cell_cag_info) {
     cJSON *cell_cag_info_local;
     if (!cJSON_IsArray(cell_cag_info)) {
         ogs_error("OpenAPI_authentication_info_parseFromJSON() failed [cell_cag_info]");
@@ -242,12 +242,12 @@ OpenAPI_authentication_info_t *OpenAPI_authentication_info_parseFromJSON(cJSON *
         goto end;
     }
     OpenAPI_list_add(cell_cag_infoList , ogs_strdup_or_assert(cell_cag_info_local->valuestring));
-                    }
+    }
     }
 
     cJSON *n5gc_ind = cJSON_GetObjectItemCaseSensitive(authentication_infoJSON, "n5gcInd");
 
-    if (n5gc_ind) { 
+    if (n5gc_ind) {
     if (!cJSON_IsBool(n5gc_ind)) {
         ogs_error("OpenAPI_authentication_info_parseFromJSON() failed [n5gc_ind]");
         goto end;
@@ -256,7 +256,7 @@ OpenAPI_authentication_info_t *OpenAPI_authentication_info_parseFromJSON(cJSON *
 
     cJSON *supported_features = cJSON_GetObjectItemCaseSensitive(authentication_infoJSON, "supportedFeatures");
 
-    if (supported_features) { 
+    if (supported_features) {
     if (!cJSON_IsString(supported_features)) {
         ogs_error("OpenAPI_authentication_info_parseFromJSON() failed [supported_features]");
         goto end;
@@ -272,6 +272,7 @@ OpenAPI_authentication_info_t *OpenAPI_authentication_info_parseFromJSON(cJSON *
         udm_group_id ? ogs_strdup_or_assert(udm_group_id->valuestring) : NULL,
         routing_indicator ? ogs_strdup_or_assert(routing_indicator->valuestring) : NULL,
         cell_cag_info ? cell_cag_infoList : NULL,
+        n5gc_ind ? true : false,
         n5gc_ind ? n5gc_ind->valueint : 0,
         supported_features ? ogs_strdup_or_assert(supported_features->valuestring) : NULL
     );

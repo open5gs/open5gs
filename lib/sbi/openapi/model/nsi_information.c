@@ -85,7 +85,6 @@ OpenAPI_nsi_information_t *OpenAPI_nsi_information_parseFromJSON(cJSON *nsi_info
         goto end;
     }
 
-    
     if (!cJSON_IsString(nrf_id)) {
         ogs_error("OpenAPI_nsi_information_parseFromJSON() failed [nrf_id]");
         goto end;
@@ -93,7 +92,7 @@ OpenAPI_nsi_information_t *OpenAPI_nsi_information_parseFromJSON(cJSON *nsi_info
 
     cJSON *nsi_id = cJSON_GetObjectItemCaseSensitive(nsi_informationJSON, "nsiId");
 
-    if (nsi_id) { 
+    if (nsi_id) {
     if (!cJSON_IsString(nsi_id)) {
         ogs_error("OpenAPI_nsi_information_parseFromJSON() failed [nsi_id]");
         goto end;
@@ -102,7 +101,7 @@ OpenAPI_nsi_information_t *OpenAPI_nsi_information_parseFromJSON(cJSON *nsi_info
 
     cJSON *nrf_nf_mgt_uri = cJSON_GetObjectItemCaseSensitive(nsi_informationJSON, "nrfNfMgtUri");
 
-    if (nrf_nf_mgt_uri) { 
+    if (nrf_nf_mgt_uri) {
     if (!cJSON_IsString(nrf_nf_mgt_uri)) {
         ogs_error("OpenAPI_nsi_information_parseFromJSON() failed [nrf_nf_mgt_uri]");
         goto end;
@@ -111,7 +110,7 @@ OpenAPI_nsi_information_t *OpenAPI_nsi_information_parseFromJSON(cJSON *nsi_info
 
     cJSON *nrf_access_token_uri = cJSON_GetObjectItemCaseSensitive(nsi_informationJSON, "nrfAccessTokenUri");
 
-    if (nrf_access_token_uri) { 
+    if (nrf_access_token_uri) {
     if (!cJSON_IsString(nrf_access_token_uri)) {
         ogs_error("OpenAPI_nsi_information_parseFromJSON() failed [nrf_access_token_uri]");
         goto end;

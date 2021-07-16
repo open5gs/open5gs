@@ -25,6 +25,7 @@ typedef struct OpenAPI_sm_context_status_notification_s {
     struct OpenAPI_status_info_s *status_info;
     struct OpenAPI_small_data_rate_status_s *small_data_rate_status;
     struct OpenAPI_apn_rate_status_s *apn_rate_status;
+    bool is_ddn_failure_status;
     int ddn_failure_status;
     OpenAPI_list_t *notify_correlation_ids_forddn_failure;
     char *new_smf_id;
@@ -39,6 +40,7 @@ OpenAPI_sm_context_status_notification_t *OpenAPI_sm_context_status_notification
     OpenAPI_status_info_t *status_info,
     OpenAPI_small_data_rate_status_t *small_data_rate_status,
     OpenAPI_apn_rate_status_t *apn_rate_status,
+    bool is_ddn_failure_status,
     int ddn_failure_status,
     OpenAPI_list_t *notify_correlation_ids_forddn_failure,
     char *new_smf_id,

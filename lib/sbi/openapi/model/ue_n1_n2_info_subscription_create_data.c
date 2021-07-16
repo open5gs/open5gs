@@ -118,7 +118,7 @@ OpenAPI_ue_n1_n2_info_subscription_create_data_t *OpenAPI_ue_n1_n2_info_subscrip
     cJSON *n2_information_class = cJSON_GetObjectItemCaseSensitive(ue_n1_n2_info_subscription_create_dataJSON, "n2InformationClass");
 
     OpenAPI_n2_information_class_e n2_information_classVariable;
-    if (n2_information_class) { 
+    if (n2_information_class) {
     if (!cJSON_IsString(n2_information_class)) {
         ogs_error("OpenAPI_ue_n1_n2_info_subscription_create_data_parseFromJSON() failed [n2_information_class]");
         goto end;
@@ -128,7 +128,7 @@ OpenAPI_ue_n1_n2_info_subscription_create_data_t *OpenAPI_ue_n1_n2_info_subscrip
 
     cJSON *n2_notify_callback_uri = cJSON_GetObjectItemCaseSensitive(ue_n1_n2_info_subscription_create_dataJSON, "n2NotifyCallbackUri");
 
-    if (n2_notify_callback_uri) { 
+    if (n2_notify_callback_uri) {
     if (!cJSON_IsString(n2_notify_callback_uri)) {
         ogs_error("OpenAPI_ue_n1_n2_info_subscription_create_data_parseFromJSON() failed [n2_notify_callback_uri]");
         goto end;
@@ -138,7 +138,7 @@ OpenAPI_ue_n1_n2_info_subscription_create_data_t *OpenAPI_ue_n1_n2_info_subscrip
     cJSON *n1_message_class = cJSON_GetObjectItemCaseSensitive(ue_n1_n2_info_subscription_create_dataJSON, "n1MessageClass");
 
     OpenAPI_n1_message_class_e n1_message_classVariable;
-    if (n1_message_class) { 
+    if (n1_message_class) {
     if (!cJSON_IsString(n1_message_class)) {
         ogs_error("OpenAPI_ue_n1_n2_info_subscription_create_data_parseFromJSON() failed [n1_message_class]");
         goto end;
@@ -148,7 +148,7 @@ OpenAPI_ue_n1_n2_info_subscription_create_data_t *OpenAPI_ue_n1_n2_info_subscrip
 
     cJSON *n1_notify_callback_uri = cJSON_GetObjectItemCaseSensitive(ue_n1_n2_info_subscription_create_dataJSON, "n1NotifyCallbackUri");
 
-    if (n1_notify_callback_uri) { 
+    if (n1_notify_callback_uri) {
     if (!cJSON_IsString(n1_notify_callback_uri)) {
         ogs_error("OpenAPI_ue_n1_n2_info_subscription_create_data_parseFromJSON() failed [n1_notify_callback_uri]");
         goto end;
@@ -157,7 +157,7 @@ OpenAPI_ue_n1_n2_info_subscription_create_data_t *OpenAPI_ue_n1_n2_info_subscrip
 
     cJSON *nf_id = cJSON_GetObjectItemCaseSensitive(ue_n1_n2_info_subscription_create_dataJSON, "nfId");
 
-    if (nf_id) { 
+    if (nf_id) {
     if (!cJSON_IsString(nf_id)) {
         ogs_error("OpenAPI_ue_n1_n2_info_subscription_create_data_parseFromJSON() failed [nf_id]");
         goto end;
@@ -166,7 +166,7 @@ OpenAPI_ue_n1_n2_info_subscription_create_data_t *OpenAPI_ue_n1_n2_info_subscrip
 
     cJSON *supported_features = cJSON_GetObjectItemCaseSensitive(ue_n1_n2_info_subscription_create_dataJSON, "supportedFeatures");
 
-    if (supported_features) { 
+    if (supported_features) {
     if (!cJSON_IsString(supported_features)) {
         ogs_error("OpenAPI_ue_n1_n2_info_subscription_create_data_parseFromJSON() failed [supported_features]");
         goto end;
@@ -176,7 +176,7 @@ OpenAPI_ue_n1_n2_info_subscription_create_data_t *OpenAPI_ue_n1_n2_info_subscrip
     cJSON *old_guami = cJSON_GetObjectItemCaseSensitive(ue_n1_n2_info_subscription_create_dataJSON, "oldGuami");
 
     OpenAPI_guami_t *old_guami_local_nonprim = NULL;
-    if (old_guami) { 
+    if (old_guami) {
     old_guami_local_nonprim = OpenAPI_guami_parseFromJSON(old_guami);
     }
 

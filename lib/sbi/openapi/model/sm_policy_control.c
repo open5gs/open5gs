@@ -76,7 +76,6 @@ OpenAPI_sm_policy_control_t *OpenAPI_sm_policy_control_parseFromJSON(cJSON *sm_p
     }
 
     OpenAPI_sm_policy_context_data_t *context_local_nonprim = NULL;
-    
     context_local_nonprim = OpenAPI_sm_policy_context_data_parseFromJSON(context);
 
     cJSON *policy = cJSON_GetObjectItemCaseSensitive(sm_policy_controlJSON, "policy");
@@ -86,7 +85,6 @@ OpenAPI_sm_policy_control_t *OpenAPI_sm_policy_control_parseFromJSON(cJSON *sm_p
     }
 
     OpenAPI_sm_policy_decision_t *policy_local_nonprim = NULL;
-    
     policy_local_nonprim = OpenAPI_sm_policy_decision_parseFromJSON(policy);
 
     sm_policy_control_local_var = OpenAPI_sm_policy_control_create (

@@ -73,7 +73,6 @@ OpenAPI_nf_service_version_t *OpenAPI_nf_service_version_parseFromJSON(cJSON *nf
         goto end;
     }
 
-    
     if (!cJSON_IsString(api_version_in_uri)) {
         ogs_error("OpenAPI_nf_service_version_parseFromJSON() failed [api_version_in_uri]");
         goto end;
@@ -85,7 +84,6 @@ OpenAPI_nf_service_version_t *OpenAPI_nf_service_version_parseFromJSON(cJSON *nf
         goto end;
     }
 
-    
     if (!cJSON_IsString(api_full_version)) {
         ogs_error("OpenAPI_nf_service_version_parseFromJSON() failed [api_full_version]");
         goto end;
@@ -93,7 +91,7 @@ OpenAPI_nf_service_version_t *OpenAPI_nf_service_version_parseFromJSON(cJSON *nf
 
     cJSON *expiry = cJSON_GetObjectItemCaseSensitive(nf_service_versionJSON, "expiry");
 
-    if (expiry) { 
+    if (expiry) {
     if (!cJSON_IsString(expiry)) {
         ogs_error("OpenAPI_nf_service_version_parseFromJSON() failed [expiry]");
         goto end;

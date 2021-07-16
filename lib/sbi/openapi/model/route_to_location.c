@@ -81,7 +81,6 @@ OpenAPI_route_to_location_t *OpenAPI_route_to_location_parseFromJSON(cJSON *rout
         goto end;
     }
 
-    
     if (!cJSON_IsString(dnai)) {
         ogs_error("OpenAPI_route_to_location_parseFromJSON() failed [dnai]");
         goto end;
@@ -90,13 +89,13 @@ OpenAPI_route_to_location_t *OpenAPI_route_to_location_parseFromJSON(cJSON *rout
     cJSON *route_info = cJSON_GetObjectItemCaseSensitive(route_to_locationJSON, "routeInfo");
 
     OpenAPI_route_information_t *route_info_local_nonprim = NULL;
-    if (route_info) { 
+    if (route_info) {
     route_info_local_nonprim = OpenAPI_route_information_parseFromJSON(route_info);
     }
 
     cJSON *route_prof_id = cJSON_GetObjectItemCaseSensitive(route_to_locationJSON, "routeProfId");
 
-    if (route_prof_id) { 
+    if (route_prof_id) {
     if (!cJSON_IsString(route_prof_id)) {
         ogs_error("OpenAPI_route_to_location_parseFromJSON() failed [route_prof_id]");
         goto end;

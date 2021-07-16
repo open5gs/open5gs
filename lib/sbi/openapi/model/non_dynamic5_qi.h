@@ -19,20 +19,32 @@ extern "C" {
 
 typedef struct OpenAPI_non_dynamic5_qi_s OpenAPI_non_dynamic5_qi_t;
 typedef struct OpenAPI_non_dynamic5_qi_s {
+    bool is_priority_level;
     int priority_level;
+    bool is_aver_window;
     int aver_window;
+    bool is_max_data_burst_vol;
     int max_data_burst_vol;
+    bool is_ext_max_data_burst_vol;
     int ext_max_data_burst_vol;
+    bool is_cn_packet_delay_budget_dl;
     int cn_packet_delay_budget_dl;
+    bool is_cn_packet_delay_budget_ul;
     int cn_packet_delay_budget_ul;
 } OpenAPI_non_dynamic5_qi_t;
 
 OpenAPI_non_dynamic5_qi_t *OpenAPI_non_dynamic5_qi_create(
+    bool is_priority_level,
     int priority_level,
+    bool is_aver_window,
     int aver_window,
+    bool is_max_data_burst_vol,
     int max_data_burst_vol,
+    bool is_ext_max_data_burst_vol,
     int ext_max_data_burst_vol,
+    bool is_cn_packet_delay_budget_dl,
     int cn_packet_delay_budget_dl,
+    bool is_cn_packet_delay_budget_ul,
     int cn_packet_delay_budget_ul
 );
 void OpenAPI_non_dynamic5_qi_free(OpenAPI_non_dynamic5_qi_t *non_dynamic5_qi);

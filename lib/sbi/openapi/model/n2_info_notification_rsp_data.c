@@ -60,7 +60,7 @@ OpenAPI_n2_info_notification_rsp_data_t *OpenAPI_n2_info_notification_rsp_data_p
     cJSON *n2_info_content = cJSON_GetObjectItemCaseSensitive(n2_info_notification_rsp_dataJSON, "n2InfoContent");
 
     OpenAPI_n2_info_content_t *n2_info_content_local_nonprim = NULL;
-    if (n2_info_content) { 
+    if (n2_info_content) {
     n2_info_content_local_nonprim = OpenAPI_n2_info_content_parseFromJSON(n2_info_content);
     }
 

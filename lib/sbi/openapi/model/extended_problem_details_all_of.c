@@ -60,7 +60,7 @@ OpenAPI_extended_problem_details_all_of_t *OpenAPI_extended_problem_details_all_
     cJSON *acceptable_serv_info = cJSON_GetObjectItemCaseSensitive(extended_problem_details_all_ofJSON, "acceptableServInfo");
 
     OpenAPI_acceptable_service_info_t *acceptable_serv_info_local_nonprim = NULL;
-    if (acceptable_serv_info) { 
+    if (acceptable_serv_info) {
     acceptable_serv_info_local_nonprim = OpenAPI_acceptable_service_info_parseFromJSON(acceptable_serv_info);
     }
 

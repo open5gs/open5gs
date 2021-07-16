@@ -96,20 +96,20 @@ OpenAPI_v2x_subscription_data_1_t *OpenAPI_v2x_subscription_data_1_parseFromJSON
     cJSON *nr_v2x_services_auth = cJSON_GetObjectItemCaseSensitive(v2x_subscription_data_1JSON, "nrV2xServicesAuth");
 
     OpenAPI_nr_v2x_auth_1_t *nr_v2x_services_auth_local_nonprim = NULL;
-    if (nr_v2x_services_auth) { 
+    if (nr_v2x_services_auth) {
     nr_v2x_services_auth_local_nonprim = OpenAPI_nr_v2x_auth_1_parseFromJSON(nr_v2x_services_auth);
     }
 
     cJSON *lte_v2x_services_auth = cJSON_GetObjectItemCaseSensitive(v2x_subscription_data_1JSON, "lteV2xServicesAuth");
 
     OpenAPI_lte_v2x_auth_1_t *lte_v2x_services_auth_local_nonprim = NULL;
-    if (lte_v2x_services_auth) { 
+    if (lte_v2x_services_auth) {
     lte_v2x_services_auth_local_nonprim = OpenAPI_lte_v2x_auth_1_parseFromJSON(lte_v2x_services_auth);
     }
 
     cJSON *nr_ue_pc5_ambr = cJSON_GetObjectItemCaseSensitive(v2x_subscription_data_1JSON, "nrUePc5Ambr");
 
-    if (nr_ue_pc5_ambr) { 
+    if (nr_ue_pc5_ambr) {
     if (!cJSON_IsString(nr_ue_pc5_ambr)) {
         ogs_error("OpenAPI_v2x_subscription_data_1_parseFromJSON() failed [nr_ue_pc5_ambr]");
         goto end;
@@ -118,7 +118,7 @@ OpenAPI_v2x_subscription_data_1_t *OpenAPI_v2x_subscription_data_1_parseFromJSON
 
     cJSON *lte_pc5_ambr = cJSON_GetObjectItemCaseSensitive(v2x_subscription_data_1JSON, "ltePc5Ambr");
 
-    if (lte_pc5_ambr) { 
+    if (lte_pc5_ambr) {
     if (!cJSON_IsString(lte_pc5_ambr)) {
         ogs_error("OpenAPI_v2x_subscription_data_1_parseFromJSON() failed [lte_pc5_ambr]");
         goto end;

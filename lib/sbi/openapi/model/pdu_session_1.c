@@ -93,7 +93,6 @@ OpenAPI_pdu_session_1_t *OpenAPI_pdu_session_1_parseFromJSON(cJSON *pdu_session_
         goto end;
     }
 
-    
     if (!cJSON_IsString(dnn)) {
         ogs_error("OpenAPI_pdu_session_1_parseFromJSON() failed [dnn]");
         goto end;
@@ -105,7 +104,6 @@ OpenAPI_pdu_session_1_t *OpenAPI_pdu_session_1_parseFromJSON(cJSON *pdu_session_
         goto end;
     }
 
-    
     if (!cJSON_IsString(smf_instance_id)) {
         ogs_error("OpenAPI_pdu_session_1_parseFromJSON() failed [smf_instance_id]");
         goto end;
@@ -118,13 +116,12 @@ OpenAPI_pdu_session_1_t *OpenAPI_pdu_session_1_parseFromJSON(cJSON *pdu_session_
     }
 
     OpenAPI_plmn_id_1_t *plmn_id_local_nonprim = NULL;
-    
     plmn_id_local_nonprim = OpenAPI_plmn_id_1_parseFromJSON(plmn_id);
 
     cJSON *single_nssai = cJSON_GetObjectItemCaseSensitive(pdu_session_1JSON, "singleNssai");
 
     OpenAPI_snssai_t *single_nssai_local_nonprim = NULL;
-    if (single_nssai) { 
+    if (single_nssai) {
     single_nssai_local_nonprim = OpenAPI_snssai_parseFromJSON(single_nssai);
     }
 

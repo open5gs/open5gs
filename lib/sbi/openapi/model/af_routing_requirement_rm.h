@@ -23,20 +23,24 @@ extern "C" {
 
 typedef struct OpenAPI_af_routing_requirement_rm_s OpenAPI_af_routing_requirement_rm_t;
 typedef struct OpenAPI_af_routing_requirement_rm_s {
+    bool is_app_reloc;
     int app_reloc;
     OpenAPI_list_t *route_to_locs;
     struct OpenAPI_spatial_validity_rm_s *sp_val;
     OpenAPI_list_t *temp_vals;
     struct OpenAPI_up_path_chg_event_s *up_path_chg_sub;
+    bool is_addr_preser_ind;
     int addr_preser_ind;
 } OpenAPI_af_routing_requirement_rm_t;
 
 OpenAPI_af_routing_requirement_rm_t *OpenAPI_af_routing_requirement_rm_create(
+    bool is_app_reloc,
     int app_reloc,
     OpenAPI_list_t *route_to_locs,
     OpenAPI_spatial_validity_rm_t *sp_val,
     OpenAPI_list_t *temp_vals,
     OpenAPI_up_path_chg_event_t *up_path_chg_sub,
+    bool is_addr_preser_ind,
     int addr_preser_ind
 );
 void OpenAPI_af_routing_requirement_rm_free(OpenAPI_af_routing_requirement_rm_t *af_routing_requirement_rm);

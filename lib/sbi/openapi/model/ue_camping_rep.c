@@ -129,7 +129,7 @@ OpenAPI_ue_camping_rep_t *OpenAPI_ue_camping_rep_parseFromJSON(cJSON *ue_camping
     cJSON *access_type = cJSON_GetObjectItemCaseSensitive(ue_camping_repJSON, "accessType");
 
     OpenAPI_access_type_e access_typeVariable;
-    if (access_type) { 
+    if (access_type) {
     if (!cJSON_IsString(access_type)) {
         ogs_error("OpenAPI_ue_camping_rep_parseFromJSON() failed [access_type]");
         goto end;
@@ -140,7 +140,7 @@ OpenAPI_ue_camping_rep_t *OpenAPI_ue_camping_rep_parseFromJSON(cJSON *ue_camping
     cJSON *rat_type = cJSON_GetObjectItemCaseSensitive(ue_camping_repJSON, "ratType");
 
     OpenAPI_rat_type_e rat_typeVariable;
-    if (rat_type) { 
+    if (rat_type) {
     if (!cJSON_IsString(rat_type)) {
         ogs_error("OpenAPI_ue_camping_rep_parseFromJSON() failed [rat_type]");
         goto end;
@@ -151,27 +151,27 @@ OpenAPI_ue_camping_rep_t *OpenAPI_ue_camping_rep_parseFromJSON(cJSON *ue_camping
     cJSON *serv_nf_id = cJSON_GetObjectItemCaseSensitive(ue_camping_repJSON, "servNfId");
 
     OpenAPI_serving_nf_identity_t *serv_nf_id_local_nonprim = NULL;
-    if (serv_nf_id) { 
+    if (serv_nf_id) {
     serv_nf_id_local_nonprim = OpenAPI_serving_nf_identity_parseFromJSON(serv_nf_id);
     }
 
     cJSON *serving_network = cJSON_GetObjectItemCaseSensitive(ue_camping_repJSON, "servingNetwork");
 
     OpenAPI_plmn_id_nid_t *serving_network_local_nonprim = NULL;
-    if (serving_network) { 
+    if (serving_network) {
     serving_network_local_nonprim = OpenAPI_plmn_id_nid_parseFromJSON(serving_network);
     }
 
     cJSON *user_location_info = cJSON_GetObjectItemCaseSensitive(ue_camping_repJSON, "userLocationInfo");
 
     OpenAPI_user_location_t *user_location_info_local_nonprim = NULL;
-    if (user_location_info) { 
+    if (user_location_info) {
     user_location_info_local_nonprim = OpenAPI_user_location_parseFromJSON(user_location_info);
     }
 
     cJSON *ue_time_zone = cJSON_GetObjectItemCaseSensitive(ue_camping_repJSON, "ueTimeZone");
 
-    if (ue_time_zone) { 
+    if (ue_time_zone) {
     if (!cJSON_IsString(ue_time_zone)) {
         ogs_error("OpenAPI_ue_camping_rep_parseFromJSON() failed [ue_time_zone]");
         goto end;
@@ -181,7 +181,7 @@ OpenAPI_ue_camping_rep_t *OpenAPI_ue_camping_rep_parseFromJSON(cJSON *ue_camping
     cJSON *net_loc_acc_supp = cJSON_GetObjectItemCaseSensitive(ue_camping_repJSON, "netLocAccSupp");
 
     OpenAPI_net_loc_access_support_e net_loc_acc_suppVariable;
-    if (net_loc_acc_supp) { 
+    if (net_loc_acc_supp) {
     if (!cJSON_IsString(net_loc_acc_supp)) {
         ogs_error("OpenAPI_ue_camping_rep_parseFromJSON() failed [net_loc_acc_supp]");
         goto end;

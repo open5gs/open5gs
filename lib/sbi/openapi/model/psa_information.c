@@ -95,7 +95,7 @@ OpenAPI_psa_information_t *OpenAPI_psa_information_parseFromJSON(cJSON *psa_info
     cJSON *psa_ind = cJSON_GetObjectItemCaseSensitive(psa_informationJSON, "psaInd");
 
     OpenAPI_psa_indication_e psa_indVariable;
-    if (psa_ind) { 
+    if (psa_ind) {
     if (!cJSON_IsString(psa_ind)) {
         ogs_error("OpenAPI_psa_information_parseFromJSON() failed [psa_ind]");
         goto end;
@@ -106,7 +106,7 @@ OpenAPI_psa_information_t *OpenAPI_psa_information_parseFromJSON(cJSON *psa_info
     cJSON *dnai_list = cJSON_GetObjectItemCaseSensitive(psa_informationJSON, "dnaiList");
 
     OpenAPI_list_t *dnai_listList;
-    if (dnai_list) { 
+    if (dnai_list) {
     cJSON *dnai_list_local;
     if (!cJSON_IsArray(dnai_list)) {
         ogs_error("OpenAPI_psa_information_parseFromJSON() failed [dnai_list]");
@@ -120,12 +120,12 @@ OpenAPI_psa_information_t *OpenAPI_psa_information_parseFromJSON(cJSON *psa_info
         goto end;
     }
     OpenAPI_list_add(dnai_listList , ogs_strdup_or_assert(dnai_list_local->valuestring));
-                    }
+    }
     }
 
     cJSON *ue_ipv6_prefix = cJSON_GetObjectItemCaseSensitive(psa_informationJSON, "ueIpv6Prefix");
 
-    if (ue_ipv6_prefix) { 
+    if (ue_ipv6_prefix) {
     if (!cJSON_IsString(ue_ipv6_prefix)) {
         ogs_error("OpenAPI_psa_information_parseFromJSON() failed [ue_ipv6_prefix]");
         goto end;
@@ -134,7 +134,7 @@ OpenAPI_psa_information_t *OpenAPI_psa_information_parseFromJSON(cJSON *psa_info
 
     cJSON *psa_upf_id = cJSON_GetObjectItemCaseSensitive(psa_informationJSON, "psaUpfId");
 
-    if (psa_upf_id) { 
+    if (psa_upf_id) {
     if (!cJSON_IsString(psa_upf_id)) {
         ogs_error("OpenAPI_psa_information_parseFromJSON() failed [psa_upf_id]");
         goto end;

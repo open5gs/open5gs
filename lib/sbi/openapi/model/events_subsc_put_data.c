@@ -581,7 +581,6 @@ OpenAPI_events_subsc_put_data_t *OpenAPI_events_subsc_put_data_parseFromJSON(cJS
     }
 
     OpenAPI_list_t *eventsList;
-    
     cJSON *events_local_nonprimitive;
     if (!cJSON_IsArray(events)){
         ogs_error("OpenAPI_events_subsc_put_data_parseFromJSON() failed [events]");
@@ -602,7 +601,7 @@ OpenAPI_events_subsc_put_data_t *OpenAPI_events_subsc_put_data_parseFromJSON(cJS
 
     cJSON *notif_uri = cJSON_GetObjectItemCaseSensitive(events_subsc_put_dataJSON, "notifUri");
 
-    if (notif_uri) { 
+    if (notif_uri) {
     if (!cJSON_IsString(notif_uri)) {
         ogs_error("OpenAPI_events_subsc_put_data_parseFromJSON() failed [notif_uri]");
         goto end;
@@ -612,7 +611,7 @@ OpenAPI_events_subsc_put_data_t *OpenAPI_events_subsc_put_data_parseFromJSON(cJS
     cJSON *req_qos_mon_params = cJSON_GetObjectItemCaseSensitive(events_subsc_put_dataJSON, "reqQosMonParams");
 
     OpenAPI_list_t *req_qos_mon_paramsList;
-    if (req_qos_mon_params) { 
+    if (req_qos_mon_params) {
     cJSON *req_qos_mon_params_local_nonprimitive;
     if (!cJSON_IsArray(req_qos_mon_params)) {
         ogs_error("OpenAPI_events_subsc_put_data_parseFromJSON() failed [req_qos_mon_params]");
@@ -634,14 +633,14 @@ OpenAPI_events_subsc_put_data_t *OpenAPI_events_subsc_put_data_parseFromJSON(cJS
     cJSON *qos_mon = cJSON_GetObjectItemCaseSensitive(events_subsc_put_dataJSON, "qosMon");
 
     OpenAPI_qos_monitoring_information_t *qos_mon_local_nonprim = NULL;
-    if (qos_mon) { 
+    if (qos_mon) {
     qos_mon_local_nonprim = OpenAPI_qos_monitoring_information_parseFromJSON(qos_mon);
     }
 
     cJSON *req_anis = cJSON_GetObjectItemCaseSensitive(events_subsc_put_dataJSON, "reqAnis");
 
     OpenAPI_list_t *req_anisList;
-    if (req_anis) { 
+    if (req_anis) {
     cJSON *req_anis_local_nonprimitive;
     if (!cJSON_IsArray(req_anis)) {
         ogs_error("OpenAPI_events_subsc_put_data_parseFromJSON() failed [req_anis]");
@@ -663,13 +662,13 @@ OpenAPI_events_subsc_put_data_t *OpenAPI_events_subsc_put_data_parseFromJSON(cJS
     cJSON *usg_thres = cJSON_GetObjectItemCaseSensitive(events_subsc_put_dataJSON, "usgThres");
 
     OpenAPI_usage_threshold_t *usg_thres_local_nonprim = NULL;
-    if (usg_thres) { 
+    if (usg_thres) {
     usg_thres_local_nonprim = OpenAPI_usage_threshold_parseFromJSON(usg_thres);
     }
 
     cJSON *notif_corre_id = cJSON_GetObjectItemCaseSensitive(events_subsc_put_dataJSON, "notifCorreId");
 
-    if (notif_corre_id) { 
+    if (notif_corre_id) {
     if (!cJSON_IsString(notif_corre_id)) {
         ogs_error("OpenAPI_events_subsc_put_data_parseFromJSON() failed [notif_corre_id]");
         goto end;
@@ -679,7 +678,7 @@ OpenAPI_events_subsc_put_data_t *OpenAPI_events_subsc_put_data_parseFromJSON(cJS
     cJSON *access_type = cJSON_GetObjectItemCaseSensitive(events_subsc_put_dataJSON, "accessType");
 
     OpenAPI_access_type_e access_typeVariable;
-    if (access_type) { 
+    if (access_type) {
     if (!cJSON_IsString(access_type)) {
         ogs_error("OpenAPI_events_subsc_put_data_parseFromJSON() failed [access_type]");
         goto end;
@@ -690,28 +689,28 @@ OpenAPI_events_subsc_put_data_t *OpenAPI_events_subsc_put_data_parseFromJSON(cJS
     cJSON *add_access_info = cJSON_GetObjectItemCaseSensitive(events_subsc_put_dataJSON, "addAccessInfo");
 
     OpenAPI_additional_access_info_t *add_access_info_local_nonprim = NULL;
-    if (add_access_info) { 
+    if (add_access_info) {
     add_access_info_local_nonprim = OpenAPI_additional_access_info_parseFromJSON(add_access_info);
     }
 
     cJSON *rel_access_info = cJSON_GetObjectItemCaseSensitive(events_subsc_put_dataJSON, "relAccessInfo");
 
     OpenAPI_additional_access_info_t *rel_access_info_local_nonprim = NULL;
-    if (rel_access_info) { 
+    if (rel_access_info) {
     rel_access_info_local_nonprim = OpenAPI_additional_access_info_parseFromJSON(rel_access_info);
     }
 
     cJSON *an_charg_addr = cJSON_GetObjectItemCaseSensitive(events_subsc_put_dataJSON, "anChargAddr");
 
     OpenAPI_acc_net_charging_address_t *an_charg_addr_local_nonprim = NULL;
-    if (an_charg_addr) { 
+    if (an_charg_addr) {
     an_charg_addr_local_nonprim = OpenAPI_acc_net_charging_address_parseFromJSON(an_charg_addr);
     }
 
     cJSON *an_charg_ids = cJSON_GetObjectItemCaseSensitive(events_subsc_put_dataJSON, "anChargIds");
 
     OpenAPI_list_t *an_charg_idsList;
-    if (an_charg_ids) { 
+    if (an_charg_ids) {
     cJSON *an_charg_ids_local_nonprimitive;
     if (!cJSON_IsArray(an_charg_ids)){
         ogs_error("OpenAPI_events_subsc_put_data_parseFromJSON() failed [an_charg_ids]");
@@ -734,7 +733,7 @@ OpenAPI_events_subsc_put_data_t *OpenAPI_events_subsc_put_data_parseFromJSON(cJS
     cJSON *an_gw_addr = cJSON_GetObjectItemCaseSensitive(events_subsc_put_dataJSON, "anGwAddr");
 
     OpenAPI_an_gw_address_t *an_gw_addr_local_nonprim = NULL;
-    if (an_gw_addr) { 
+    if (an_gw_addr) {
     an_gw_addr_local_nonprim = OpenAPI_an_gw_address_parseFromJSON(an_gw_addr);
     }
 
@@ -744,7 +743,6 @@ OpenAPI_events_subsc_put_data_t *OpenAPI_events_subsc_put_data_parseFromJSON(cJS
         goto end;
     }
 
-    
     if (!cJSON_IsString(ev_subs_uri)) {
         ogs_error("OpenAPI_events_subsc_put_data_parseFromJSON() failed [ev_subs_uri]");
         goto end;
@@ -757,7 +755,6 @@ OpenAPI_events_subsc_put_data_t *OpenAPI_events_subsc_put_data_parseFromJSON(cJS
     }
 
     OpenAPI_list_t *ev_notifsList;
-    
     cJSON *ev_notifs_local_nonprimitive;
     if (!cJSON_IsArray(ev_notifs)){
         ogs_error("OpenAPI_events_subsc_put_data_parseFromJSON() failed [ev_notifs]");
@@ -779,7 +776,7 @@ OpenAPI_events_subsc_put_data_t *OpenAPI_events_subsc_put_data_parseFromJSON(cJS
     cJSON *failed_resourc_alloc_reports = cJSON_GetObjectItemCaseSensitive(events_subsc_put_dataJSON, "failedResourcAllocReports");
 
     OpenAPI_list_t *failed_resourc_alloc_reportsList;
-    if (failed_resourc_alloc_reports) { 
+    if (failed_resourc_alloc_reports) {
     cJSON *failed_resourc_alloc_reports_local_nonprimitive;
     if (!cJSON_IsArray(failed_resourc_alloc_reports)){
         ogs_error("OpenAPI_events_subsc_put_data_parseFromJSON() failed [failed_resourc_alloc_reports]");
@@ -802,7 +799,7 @@ OpenAPI_events_subsc_put_data_t *OpenAPI_events_subsc_put_data_parseFromJSON(cJS
     cJSON *succ_resourc_alloc_reports = cJSON_GetObjectItemCaseSensitive(events_subsc_put_dataJSON, "succResourcAllocReports");
 
     OpenAPI_list_t *succ_resourc_alloc_reportsList;
-    if (succ_resourc_alloc_reports) { 
+    if (succ_resourc_alloc_reports) {
     cJSON *succ_resourc_alloc_reports_local_nonprimitive;
     if (!cJSON_IsArray(succ_resourc_alloc_reports)){
         ogs_error("OpenAPI_events_subsc_put_data_parseFromJSON() failed [succ_resourc_alloc_reports]");
@@ -825,7 +822,7 @@ OpenAPI_events_subsc_put_data_t *OpenAPI_events_subsc_put_data_parseFromJSON(cJS
     cJSON *no_net_loc_supp = cJSON_GetObjectItemCaseSensitive(events_subsc_put_dataJSON, "noNetLocSupp");
 
     OpenAPI_net_loc_access_support_e no_net_loc_suppVariable;
-    if (no_net_loc_supp) { 
+    if (no_net_loc_supp) {
     if (!cJSON_IsString(no_net_loc_supp)) {
         ogs_error("OpenAPI_events_subsc_put_data_parseFromJSON() failed [no_net_loc_supp]");
         goto end;
@@ -836,7 +833,7 @@ OpenAPI_events_subsc_put_data_t *OpenAPI_events_subsc_put_data_parseFromJSON(cJS
     cJSON *out_of_cred_reports = cJSON_GetObjectItemCaseSensitive(events_subsc_put_dataJSON, "outOfCredReports");
 
     OpenAPI_list_t *out_of_cred_reportsList;
-    if (out_of_cred_reports) { 
+    if (out_of_cred_reports) {
     cJSON *out_of_cred_reports_local_nonprimitive;
     if (!cJSON_IsArray(out_of_cred_reports)){
         ogs_error("OpenAPI_events_subsc_put_data_parseFromJSON() failed [out_of_cred_reports]");
@@ -859,14 +856,14 @@ OpenAPI_events_subsc_put_data_t *OpenAPI_events_subsc_put_data_parseFromJSON(cJS
     cJSON *plmn_id = cJSON_GetObjectItemCaseSensitive(events_subsc_put_dataJSON, "plmnId");
 
     OpenAPI_plmn_id_nid_t *plmn_id_local_nonprim = NULL;
-    if (plmn_id) { 
+    if (plmn_id) {
     plmn_id_local_nonprim = OpenAPI_plmn_id_nid_parseFromJSON(plmn_id);
     }
 
     cJSON *qnc_reports = cJSON_GetObjectItemCaseSensitive(events_subsc_put_dataJSON, "qncReports");
 
     OpenAPI_list_t *qnc_reportsList;
-    if (qnc_reports) { 
+    if (qnc_reports) {
     cJSON *qnc_reports_local_nonprimitive;
     if (!cJSON_IsArray(qnc_reports)){
         ogs_error("OpenAPI_events_subsc_put_data_parseFromJSON() failed [qnc_reports]");
@@ -889,7 +886,7 @@ OpenAPI_events_subsc_put_data_t *OpenAPI_events_subsc_put_data_parseFromJSON(cJS
     cJSON *qos_mon_reports = cJSON_GetObjectItemCaseSensitive(events_subsc_put_dataJSON, "qosMonReports");
 
     OpenAPI_list_t *qos_mon_reportsList;
-    if (qos_mon_reports) { 
+    if (qos_mon_reports) {
     cJSON *qos_mon_reports_local_nonprimitive;
     if (!cJSON_IsArray(qos_mon_reports)){
         ogs_error("OpenAPI_events_subsc_put_data_parseFromJSON() failed [qos_mon_reports]");
@@ -912,7 +909,7 @@ OpenAPI_events_subsc_put_data_t *OpenAPI_events_subsc_put_data_parseFromJSON(cJS
     cJSON *ran_nas_rel_causes = cJSON_GetObjectItemCaseSensitive(events_subsc_put_dataJSON, "ranNasRelCauses");
 
     OpenAPI_list_t *ran_nas_rel_causesList;
-    if (ran_nas_rel_causes) { 
+    if (ran_nas_rel_causes) {
     cJSON *ran_nas_rel_causes_local_nonprimitive;
     if (!cJSON_IsArray(ran_nas_rel_causes)){
         ogs_error("OpenAPI_events_subsc_put_data_parseFromJSON() failed [ran_nas_rel_causes]");
@@ -935,7 +932,7 @@ OpenAPI_events_subsc_put_data_t *OpenAPI_events_subsc_put_data_parseFromJSON(cJS
     cJSON *rat_type = cJSON_GetObjectItemCaseSensitive(events_subsc_put_dataJSON, "ratType");
 
     OpenAPI_rat_type_e rat_typeVariable;
-    if (rat_type) { 
+    if (rat_type) {
     if (!cJSON_IsString(rat_type)) {
         ogs_error("OpenAPI_events_subsc_put_data_parseFromJSON() failed [rat_type]");
         goto end;
@@ -946,13 +943,13 @@ OpenAPI_events_subsc_put_data_t *OpenAPI_events_subsc_put_data_parseFromJSON(cJS
     cJSON *ue_loc = cJSON_GetObjectItemCaseSensitive(events_subsc_put_dataJSON, "ueLoc");
 
     OpenAPI_user_location_t *ue_loc_local_nonprim = NULL;
-    if (ue_loc) { 
+    if (ue_loc) {
     ue_loc_local_nonprim = OpenAPI_user_location_parseFromJSON(ue_loc);
     }
 
     cJSON *ue_time_zone = cJSON_GetObjectItemCaseSensitive(events_subsc_put_dataJSON, "ueTimeZone");
 
-    if (ue_time_zone) { 
+    if (ue_time_zone) {
     if (!cJSON_IsString(ue_time_zone)) {
         ogs_error("OpenAPI_events_subsc_put_data_parseFromJSON() failed [ue_time_zone]");
         goto end;
@@ -962,28 +959,28 @@ OpenAPI_events_subsc_put_data_t *OpenAPI_events_subsc_put_data_parseFromJSON(cJS
     cJSON *usg_rep = cJSON_GetObjectItemCaseSensitive(events_subsc_put_dataJSON, "usgRep");
 
     OpenAPI_accumulated_usage_t *usg_rep_local_nonprim = NULL;
-    if (usg_rep) { 
+    if (usg_rep) {
     usg_rep_local_nonprim = OpenAPI_accumulated_usage_parseFromJSON(usg_rep);
     }
 
     cJSON *tsn_bridge_man_cont = cJSON_GetObjectItemCaseSensitive(events_subsc_put_dataJSON, "tsnBridgeManCont");
 
     OpenAPI_bridge_management_container_t *tsn_bridge_man_cont_local_nonprim = NULL;
-    if (tsn_bridge_man_cont) { 
+    if (tsn_bridge_man_cont) {
     tsn_bridge_man_cont_local_nonprim = OpenAPI_bridge_management_container_parseFromJSON(tsn_bridge_man_cont);
     }
 
     cJSON *tsn_port_man_cont_dstt = cJSON_GetObjectItemCaseSensitive(events_subsc_put_dataJSON, "tsnPortManContDstt");
 
     OpenAPI_port_management_container_t *tsn_port_man_cont_dstt_local_nonprim = NULL;
-    if (tsn_port_man_cont_dstt) { 
+    if (tsn_port_man_cont_dstt) {
     tsn_port_man_cont_dstt_local_nonprim = OpenAPI_port_management_container_parseFromJSON(tsn_port_man_cont_dstt);
     }
 
     cJSON *tsn_port_man_cont_nwtts = cJSON_GetObjectItemCaseSensitive(events_subsc_put_dataJSON, "tsnPortManContNwtts");
 
     OpenAPI_list_t *tsn_port_man_cont_nwttsList;
-    if (tsn_port_man_cont_nwtts) { 
+    if (tsn_port_man_cont_nwtts) {
     cJSON *tsn_port_man_cont_nwtts_local_nonprimitive;
     if (!cJSON_IsArray(tsn_port_man_cont_nwtts)){
         ogs_error("OpenAPI_events_subsc_put_data_parseFromJSON() failed [tsn_port_man_cont_nwtts]");

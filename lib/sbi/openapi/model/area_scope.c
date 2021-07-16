@@ -139,7 +139,7 @@ OpenAPI_area_scope_t *OpenAPI_area_scope_parseFromJSON(cJSON *area_scopeJSON)
     cJSON *eutra_cell_id_list = cJSON_GetObjectItemCaseSensitive(area_scopeJSON, "eutraCellIdList");
 
     OpenAPI_list_t *eutra_cell_id_listList;
-    if (eutra_cell_id_list) { 
+    if (eutra_cell_id_list) {
     cJSON *eutra_cell_id_list_local;
     if (!cJSON_IsArray(eutra_cell_id_list)) {
         ogs_error("OpenAPI_area_scope_parseFromJSON() failed [eutra_cell_id_list]");
@@ -153,13 +153,13 @@ OpenAPI_area_scope_t *OpenAPI_area_scope_parseFromJSON(cJSON *area_scopeJSON)
         goto end;
     }
     OpenAPI_list_add(eutra_cell_id_listList , ogs_strdup_or_assert(eutra_cell_id_list_local->valuestring));
-                    }
+    }
     }
 
     cJSON *nr_cell_id_list = cJSON_GetObjectItemCaseSensitive(area_scopeJSON, "nrCellIdList");
 
     OpenAPI_list_t *nr_cell_id_listList;
-    if (nr_cell_id_list) { 
+    if (nr_cell_id_list) {
     cJSON *nr_cell_id_list_local;
     if (!cJSON_IsArray(nr_cell_id_list)) {
         ogs_error("OpenAPI_area_scope_parseFromJSON() failed [nr_cell_id_list]");
@@ -173,13 +173,13 @@ OpenAPI_area_scope_t *OpenAPI_area_scope_parseFromJSON(cJSON *area_scopeJSON)
         goto end;
     }
     OpenAPI_list_add(nr_cell_id_listList , ogs_strdup_or_assert(nr_cell_id_list_local->valuestring));
-                    }
+    }
     }
 
     cJSON *tac_list = cJSON_GetObjectItemCaseSensitive(area_scopeJSON, "tacList");
 
     OpenAPI_list_t *tac_listList;
-    if (tac_list) { 
+    if (tac_list) {
     cJSON *tac_list_local;
     if (!cJSON_IsArray(tac_list)) {
         ogs_error("OpenAPI_area_scope_parseFromJSON() failed [tac_list]");
@@ -193,13 +193,13 @@ OpenAPI_area_scope_t *OpenAPI_area_scope_parseFromJSON(cJSON *area_scopeJSON)
         goto end;
     }
     OpenAPI_list_add(tac_listList , ogs_strdup_or_assert(tac_list_local->valuestring));
-                    }
+    }
     }
 
     cJSON *tac_info_per_plmn = cJSON_GetObjectItemCaseSensitive(area_scopeJSON, "tacInfoPerPlmn");
 
     OpenAPI_list_t *tac_info_per_plmnList;
-    if (tac_info_per_plmn) { 
+    if (tac_info_per_plmn) {
     cJSON *tac_info_per_plmn_local_map;
     if (!cJSON_IsObject(tac_info_per_plmn)) {
         ogs_error("OpenAPI_area_scope_parseFromJSON() failed [tac_info_per_plmn]");

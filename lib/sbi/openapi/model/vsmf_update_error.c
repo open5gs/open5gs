@@ -6,12 +6,14 @@
 
 OpenAPI_vsmf_update_error_t *OpenAPI_vsmf_update_error_create(
     OpenAPI_problem_details_t *error,
+    bool is_pti,
     int pti,
     char *n1sm_cause,
     OpenAPI_ref_to_binary_data_t *n1_sm_info_from_ue,
     OpenAPI_ref_to_binary_data_t *unknown_n1_sm_info,
     OpenAPI_list_t *failed_to_assign_ebi_list,
     OpenAPI_ng_ap_cause_t *ng_ap_cause,
+    bool is__5g_mm_cause_value,
     int _5g_mm_cause_value,
     char *recovery_time,
     OpenAPI_n4_information_t *n4_info,
@@ -24,12 +26,14 @@ OpenAPI_vsmf_update_error_t *OpenAPI_vsmf_update_error_create(
         return NULL;
     }
     vsmf_update_error_local_var->error = error;
+    vsmf_update_error_local_var->is_pti = is_pti;
     vsmf_update_error_local_var->pti = pti;
     vsmf_update_error_local_var->n1sm_cause = n1sm_cause;
     vsmf_update_error_local_var->n1_sm_info_from_ue = n1_sm_info_from_ue;
     vsmf_update_error_local_var->unknown_n1_sm_info = unknown_n1_sm_info;
     vsmf_update_error_local_var->failed_to_assign_ebi_list = failed_to_assign_ebi_list;
     vsmf_update_error_local_var->ng_ap_cause = ng_ap_cause;
+    vsmf_update_error_local_var->is__5g_mm_cause_value = is__5g_mm_cause_value;
     vsmf_update_error_local_var->_5g_mm_cause_value = _5g_mm_cause_value;
     vsmf_update_error_local_var->recovery_time = recovery_time;
     vsmf_update_error_local_var->n4_info = n4_info;
@@ -82,7 +86,7 @@ cJSON *OpenAPI_vsmf_update_error_convertToJSON(OpenAPI_vsmf_update_error_t *vsmf
         goto end;
     }
 
-    if (vsmf_update_error->pti) {
+    if (vsmf_update_error->is_pti) {
     if (cJSON_AddNumberToObject(item, "pti", vsmf_update_error->pti) == NULL) {
         ogs_error("OpenAPI_vsmf_update_error_convertToJSON() failed [pti]");
         goto end;
@@ -155,7 +159,7 @@ cJSON *OpenAPI_vsmf_update_error_convertToJSON(OpenAPI_vsmf_update_error_t *vsmf
     }
     }
 
-    if (vsmf_update_error->_5g_mm_cause_value) {
+    if (vsmf_update_error->is__5g_mm_cause_value) {
     if (cJSON_AddNumberToObject(item, "5gMmCauseValue", vsmf_update_error->_5g_mm_cause_value) == NULL) {
         ogs_error("OpenAPI_vsmf_update_error_convertToJSON() failed [_5g_mm_cause_value]");
         goto end;
@@ -222,12 +226,11 @@ OpenAPI_vsmf_update_error_t *OpenAPI_vsmf_update_error_parseFromJSON(cJSON *vsmf
     }
 
     OpenAPI_problem_details_t *error_local_nonprim = NULL;
-    
     error_local_nonprim = OpenAPI_problem_details_parseFromJSON(error);
 
     cJSON *pti = cJSON_GetObjectItemCaseSensitive(vsmf_update_errorJSON, "pti");
 
-    if (pti) { 
+    if (pti) {
     if (!cJSON_IsNumber(pti)) {
         ogs_error("OpenAPI_vsmf_update_error_parseFromJSON() failed [pti]");
         goto end;
@@ -236,7 +239,7 @@ OpenAPI_vsmf_update_error_t *OpenAPI_vsmf_update_error_parseFromJSON(cJSON *vsmf
 
     cJSON *n1sm_cause = cJSON_GetObjectItemCaseSensitive(vsmf_update_errorJSON, "n1smCause");
 
-    if (n1sm_cause) { 
+    if (n1sm_cause) {
     if (!cJSON_IsString(n1sm_cause)) {
         ogs_error("OpenAPI_vsmf_update_error_parseFromJSON() failed [n1sm_cause]");
         goto end;
@@ -246,21 +249,21 @@ OpenAPI_vsmf_update_error_t *OpenAPI_vsmf_update_error_parseFromJSON(cJSON *vsmf
     cJSON *n1_sm_info_from_ue = cJSON_GetObjectItemCaseSensitive(vsmf_update_errorJSON, "n1SmInfoFromUe");
 
     OpenAPI_ref_to_binary_data_t *n1_sm_info_from_ue_local_nonprim = NULL;
-    if (n1_sm_info_from_ue) { 
+    if (n1_sm_info_from_ue) {
     n1_sm_info_from_ue_local_nonprim = OpenAPI_ref_to_binary_data_parseFromJSON(n1_sm_info_from_ue);
     }
 
     cJSON *unknown_n1_sm_info = cJSON_GetObjectItemCaseSensitive(vsmf_update_errorJSON, "unknownN1SmInfo");
 
     OpenAPI_ref_to_binary_data_t *unknown_n1_sm_info_local_nonprim = NULL;
-    if (unknown_n1_sm_info) { 
+    if (unknown_n1_sm_info) {
     unknown_n1_sm_info_local_nonprim = OpenAPI_ref_to_binary_data_parseFromJSON(unknown_n1_sm_info);
     }
 
     cJSON *failed_to_assign_ebi_list = cJSON_GetObjectItemCaseSensitive(vsmf_update_errorJSON, "failedToAssignEbiList");
 
     OpenAPI_list_t *failed_to_assign_ebi_listList;
-    if (failed_to_assign_ebi_list) { 
+    if (failed_to_assign_ebi_list) {
     cJSON *failed_to_assign_ebi_list_local_nonprimitive;
     if (!cJSON_IsArray(failed_to_assign_ebi_list)){
         ogs_error("OpenAPI_vsmf_update_error_parseFromJSON() failed [failed_to_assign_ebi_list]");
@@ -283,13 +286,13 @@ OpenAPI_vsmf_update_error_t *OpenAPI_vsmf_update_error_parseFromJSON(cJSON *vsmf
     cJSON *ng_ap_cause = cJSON_GetObjectItemCaseSensitive(vsmf_update_errorJSON, "ngApCause");
 
     OpenAPI_ng_ap_cause_t *ng_ap_cause_local_nonprim = NULL;
-    if (ng_ap_cause) { 
+    if (ng_ap_cause) {
     ng_ap_cause_local_nonprim = OpenAPI_ng_ap_cause_parseFromJSON(ng_ap_cause);
     }
 
     cJSON *_5g_mm_cause_value = cJSON_GetObjectItemCaseSensitive(vsmf_update_errorJSON, "5gMmCauseValue");
 
-    if (_5g_mm_cause_value) { 
+    if (_5g_mm_cause_value) {
     if (!cJSON_IsNumber(_5g_mm_cause_value)) {
         ogs_error("OpenAPI_vsmf_update_error_parseFromJSON() failed [_5g_mm_cause_value]");
         goto end;
@@ -298,7 +301,7 @@ OpenAPI_vsmf_update_error_t *OpenAPI_vsmf_update_error_parseFromJSON(cJSON *vsmf
 
     cJSON *recovery_time = cJSON_GetObjectItemCaseSensitive(vsmf_update_errorJSON, "recoveryTime");
 
-    if (recovery_time) { 
+    if (recovery_time) {
     if (!cJSON_IsString(recovery_time)) {
         ogs_error("OpenAPI_vsmf_update_error_parseFromJSON() failed [recovery_time]");
         goto end;
@@ -308,32 +311,34 @@ OpenAPI_vsmf_update_error_t *OpenAPI_vsmf_update_error_parseFromJSON(cJSON *vsmf
     cJSON *n4_info = cJSON_GetObjectItemCaseSensitive(vsmf_update_errorJSON, "n4Info");
 
     OpenAPI_n4_information_t *n4_info_local_nonprim = NULL;
-    if (n4_info) { 
+    if (n4_info) {
     n4_info_local_nonprim = OpenAPI_n4_information_parseFromJSON(n4_info);
     }
 
     cJSON *n4_info_ext1 = cJSON_GetObjectItemCaseSensitive(vsmf_update_errorJSON, "n4InfoExt1");
 
     OpenAPI_n4_information_t *n4_info_ext1_local_nonprim = NULL;
-    if (n4_info_ext1) { 
+    if (n4_info_ext1) {
     n4_info_ext1_local_nonprim = OpenAPI_n4_information_parseFromJSON(n4_info_ext1);
     }
 
     cJSON *n4_info_ext2 = cJSON_GetObjectItemCaseSensitive(vsmf_update_errorJSON, "n4InfoExt2");
 
     OpenAPI_n4_information_t *n4_info_ext2_local_nonprim = NULL;
-    if (n4_info_ext2) { 
+    if (n4_info_ext2) {
     n4_info_ext2_local_nonprim = OpenAPI_n4_information_parseFromJSON(n4_info_ext2);
     }
 
     vsmf_update_error_local_var = OpenAPI_vsmf_update_error_create (
         error_local_nonprim,
+        pti ? true : false,
         pti ? pti->valuedouble : 0,
         n1sm_cause ? ogs_strdup_or_assert(n1sm_cause->valuestring) : NULL,
         n1_sm_info_from_ue ? n1_sm_info_from_ue_local_nonprim : NULL,
         unknown_n1_sm_info ? unknown_n1_sm_info_local_nonprim : NULL,
         failed_to_assign_ebi_list ? failed_to_assign_ebi_listList : NULL,
         ng_ap_cause ? ng_ap_cause_local_nonprim : NULL,
+        _5g_mm_cause_value ? true : false,
         _5g_mm_cause_value ? _5g_mm_cause_value->valuedouble : 0,
         recovery_time ? ogs_strdup_or_assert(recovery_time->valuestring) : NULL,
         n4_info ? n4_info_local_nonprim : NULL,

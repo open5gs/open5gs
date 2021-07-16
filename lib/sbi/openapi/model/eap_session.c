@@ -123,7 +123,6 @@ OpenAPI_eap_session_t *OpenAPI_eap_session_parseFromJSON(cJSON *eap_sessionJSON)
         goto end;
     }
 
-    
     if (!cJSON_IsString(eap_payload)) {
         ogs_error("OpenAPI_eap_session_parseFromJSON() failed [eap_payload]");
         goto end;
@@ -131,7 +130,7 @@ OpenAPI_eap_session_t *OpenAPI_eap_session_parseFromJSON(cJSON *eap_sessionJSON)
 
     cJSON *k_seaf = cJSON_GetObjectItemCaseSensitive(eap_sessionJSON, "kSeaf");
 
-    if (k_seaf) { 
+    if (k_seaf) {
     if (!cJSON_IsString(k_seaf)) {
         ogs_error("OpenAPI_eap_session_parseFromJSON() failed [k_seaf]");
         goto end;
@@ -141,7 +140,7 @@ OpenAPI_eap_session_t *OpenAPI_eap_session_parseFromJSON(cJSON *eap_sessionJSON)
     cJSON *_links = cJSON_GetObjectItemCaseSensitive(eap_sessionJSON, "_links");
 
     OpenAPI_list_t *_linksList;
-    if (_links) { 
+    if (_links) {
     cJSON *_links_local_map;
     if (!cJSON_IsObject(_links)) {
         ogs_error("OpenAPI_eap_session_parseFromJSON() failed [_links]");
@@ -164,7 +163,7 @@ OpenAPI_eap_session_t *OpenAPI_eap_session_parseFromJSON(cJSON *eap_sessionJSON)
     cJSON *auth_result = cJSON_GetObjectItemCaseSensitive(eap_sessionJSON, "authResult");
 
     OpenAPI_auth_result_e auth_resultVariable;
-    if (auth_result) { 
+    if (auth_result) {
     if (!cJSON_IsString(auth_result)) {
         ogs_error("OpenAPI_eap_session_parseFromJSON() failed [auth_result]");
         goto end;
@@ -174,7 +173,7 @@ OpenAPI_eap_session_t *OpenAPI_eap_session_parseFromJSON(cJSON *eap_sessionJSON)
 
     cJSON *supi = cJSON_GetObjectItemCaseSensitive(eap_sessionJSON, "supi");
 
-    if (supi) { 
+    if (supi) {
     if (!cJSON_IsString(supi)) {
         ogs_error("OpenAPI_eap_session_parseFromJSON() failed [supi]");
         goto end;
@@ -183,7 +182,7 @@ OpenAPI_eap_session_t *OpenAPI_eap_session_parseFromJSON(cJSON *eap_sessionJSON)
 
     cJSON *supported_features = cJSON_GetObjectItemCaseSensitive(eap_sessionJSON, "supportedFeatures");
 
-    if (supported_features) { 
+    if (supported_features) {
     if (!cJSON_IsString(supported_features)) {
         ogs_error("OpenAPI_eap_session_parseFromJSON() failed [supported_features]");
         goto end;

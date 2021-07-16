@@ -60,7 +60,7 @@ OpenAPI_app_session_context_update_data_patch_t *OpenAPI_app_session_context_upd
     cJSON *asc_req_data = cJSON_GetObjectItemCaseSensitive(app_session_context_update_data_patchJSON, "ascReqData");
 
     OpenAPI_app_session_context_update_data_t *asc_req_data_local_nonprim = NULL;
-    if (asc_req_data) { 
+    if (asc_req_data) {
     asc_req_data_local_nonprim = OpenAPI_app_session_context_update_data_parseFromJSON(asc_req_data);
     }
 

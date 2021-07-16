@@ -79,7 +79,6 @@ OpenAPI_allowed_nssai_t *OpenAPI_allowed_nssai_parseFromJSON(cJSON *allowed_nssa
     }
 
     OpenAPI_list_t *allowed_snssai_listList;
-    
     cJSON *allowed_snssai_list_local_nonprimitive;
     if (!cJSON_IsArray(allowed_snssai_list)){
         ogs_error("OpenAPI_allowed_nssai_parseFromJSON() failed [allowed_snssai_list]");
@@ -105,7 +104,6 @@ OpenAPI_allowed_nssai_t *OpenAPI_allowed_nssai_parseFromJSON(cJSON *allowed_nssa
     }
 
     OpenAPI_access_type_e access_typeVariable;
-    
     if (!cJSON_IsString(access_type)) {
         ogs_error("OpenAPI_allowed_nssai_parseFromJSON() failed [access_type]");
         goto end;

@@ -55,7 +55,6 @@ OpenAPI_ref_to_binary_data_t *OpenAPI_ref_to_binary_data_parseFromJSON(cJSON *re
         goto end;
     }
 
-    
     if (!cJSON_IsString(content_id)) {
         ogs_error("OpenAPI_ref_to_binary_data_parseFromJSON() failed [content_id]");
         goto end;

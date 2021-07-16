@@ -86,7 +86,7 @@ OpenAPI_roaming_charging_profile_t *OpenAPI_roaming_charging_profile_parseFromJS
     cJSON *triggers = cJSON_GetObjectItemCaseSensitive(roaming_charging_profileJSON, "triggers");
 
     OpenAPI_list_t *triggersList;
-    if (triggers) { 
+    if (triggers) {
     cJSON *triggers_local_nonprimitive;
     if (!cJSON_IsArray(triggers)){
         ogs_error("OpenAPI_roaming_charging_profile_parseFromJSON() failed [triggers]");
@@ -109,7 +109,7 @@ OpenAPI_roaming_charging_profile_t *OpenAPI_roaming_charging_profile_parseFromJS
     cJSON *partial_record_method = cJSON_GetObjectItemCaseSensitive(roaming_charging_profileJSON, "partialRecordMethod");
 
     OpenAPI_partial_record_method_t *partial_record_method_local_nonprim = NULL;
-    if (partial_record_method) { 
+    if (partial_record_method) {
     partial_record_method_local_nonprim = OpenAPI_partial_record_method_parseFromJSON(partial_record_method);
     }
 

@@ -21,12 +21,14 @@ extern "C" {
 
 typedef struct OpenAPI_n2_info_content_s OpenAPI_n2_info_content_t;
 typedef struct OpenAPI_n2_info_content_s {
+    bool is_ngap_message_type;
     int ngap_message_type;
     OpenAPI_ngap_ie_type_e ngap_ie_type;
     struct OpenAPI_ref_to_binary_data_s *ngap_data;
 } OpenAPI_n2_info_content_t;
 
 OpenAPI_n2_info_content_t *OpenAPI_n2_info_content_create(
+    bool is_ngap_message_type,
     int ngap_message_type,
     OpenAPI_ngap_ie_type_e ngap_ie_type,
     OpenAPI_ref_to_binary_data_t *ngap_data

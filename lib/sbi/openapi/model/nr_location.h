@@ -24,6 +24,7 @@ typedef struct OpenAPI_nr_location_s OpenAPI_nr_location_t;
 typedef struct OpenAPI_nr_location_s {
     struct OpenAPI_tai_s *tai;
     struct OpenAPI_ncgi_s *ncgi;
+    bool is_age_of_location_information;
     int age_of_location_information;
     char *ue_location_timestamp;
     char *geographical_information;
@@ -34,6 +35,7 @@ typedef struct OpenAPI_nr_location_s {
 OpenAPI_nr_location_t *OpenAPI_nr_location_create(
     OpenAPI_tai_t *tai,
     OpenAPI_ncgi_t *ncgi,
+    bool is_age_of_location_information,
     int age_of_location_information,
     char *ue_location_timestamp,
     char *geographical_information,

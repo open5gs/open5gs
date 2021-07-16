@@ -81,7 +81,6 @@ OpenAPI_backup_amf_info_t *OpenAPI_backup_amf_info_parseFromJSON(cJSON *backup_a
         goto end;
     }
 
-    
     if (!cJSON_IsString(backup_amf)) {
         ogs_error("OpenAPI_backup_amf_info_parseFromJSON() failed [backup_amf]");
         goto end;
@@ -90,7 +89,7 @@ OpenAPI_backup_amf_info_t *OpenAPI_backup_amf_info_parseFromJSON(cJSON *backup_a
     cJSON *guami_list = cJSON_GetObjectItemCaseSensitive(backup_amf_infoJSON, "guamiList");
 
     OpenAPI_list_t *guami_listList;
-    if (guami_list) { 
+    if (guami_list) {
     cJSON *guami_list_local_nonprimitive;
     if (!cJSON_IsArray(guami_list)){
         ogs_error("OpenAPI_backup_amf_info_parseFromJSON() failed [guami_list]");

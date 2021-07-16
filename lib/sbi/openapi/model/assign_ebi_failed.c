@@ -80,7 +80,6 @@ OpenAPI_assign_ebi_failed_t *OpenAPI_assign_ebi_failed_parseFromJSON(cJSON *assi
         goto end;
     }
 
-    
     if (!cJSON_IsNumber(pdu_session_id)) {
         ogs_error("OpenAPI_assign_ebi_failed_parseFromJSON() failed [pdu_session_id]");
         goto end;
@@ -89,7 +88,7 @@ OpenAPI_assign_ebi_failed_t *OpenAPI_assign_ebi_failed_parseFromJSON(cJSON *assi
     cJSON *failed_arp_list = cJSON_GetObjectItemCaseSensitive(assign_ebi_failedJSON, "failedArpList");
 
     OpenAPI_list_t *failed_arp_listList;
-    if (failed_arp_list) { 
+    if (failed_arp_list) {
     cJSON *failed_arp_list_local_nonprimitive;
     if (!cJSON_IsArray(failed_arp_list)){
         ogs_error("OpenAPI_assign_ebi_failed_parseFromJSON() failed [failed_arp_list]");
@@ -110,6 +109,7 @@ OpenAPI_assign_ebi_failed_t *OpenAPI_assign_ebi_failed_parseFromJSON(cJSON *assi
     }
 
     assign_ebi_failed_local_var = OpenAPI_assign_ebi_failed_create (
+        
         pdu_session_id->valuedouble,
         failed_arp_list ? failed_arp_listList : NULL
     );

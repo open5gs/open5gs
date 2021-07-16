@@ -53,7 +53,7 @@ OpenAPI_nf_info_t *OpenAPI_nf_info_parseFromJSON(cJSON *nf_infoJSON)
     cJSON *nf_type = cJSON_GetObjectItemCaseSensitive(nf_infoJSON, "nfType");
 
     OpenAPI_nf_type_e nf_typeVariable;
-    if (nf_type) { 
+    if (nf_type) {
     if (!cJSON_IsString(nf_type)) {
         ogs_error("OpenAPI_nf_info_parseFromJSON() failed [nf_type]");
         goto end;

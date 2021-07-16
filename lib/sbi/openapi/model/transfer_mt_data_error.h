@@ -26,6 +26,7 @@ typedef struct OpenAPI_transfer_mt_data_error_s OpenAPI_transfer_mt_data_error_t
 typedef struct OpenAPI_transfer_mt_data_error_s {
     char *type;
     char *title;
+    bool is_status;
     int status;
     char *detail;
     char *instance;
@@ -35,12 +36,14 @@ typedef struct OpenAPI_transfer_mt_data_error_s {
     struct OpenAPI_access_token_err_s *access_token_error;
     struct OpenAPI_access_token_req_s *access_token_request;
     char *nrf_id;
+    bool is_max_waiting_time;
     int max_waiting_time;
 } OpenAPI_transfer_mt_data_error_t;
 
 OpenAPI_transfer_mt_data_error_t *OpenAPI_transfer_mt_data_error_create(
     char *type,
     char *title,
+    bool is_status,
     int status,
     char *detail,
     char *instance,
@@ -50,6 +53,7 @@ OpenAPI_transfer_mt_data_error_t *OpenAPI_transfer_mt_data_error_create(
     OpenAPI_access_token_err_t *access_token_error,
     OpenAPI_access_token_req_t *access_token_request,
     char *nrf_id,
+    bool is_max_waiting_time,
     int max_waiting_time
 );
 void OpenAPI_transfer_mt_data_error_free(OpenAPI_transfer_mt_data_error_t *transfer_mt_data_error);

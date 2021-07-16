@@ -25,27 +25,37 @@ extern "C" {
 typedef struct OpenAPI_amf_event_s OpenAPI_amf_event_t;
 typedef struct OpenAPI_amf_event_s {
     struct OpenAPI_amf_event_type_s *type;
+    bool is_immediate_flag;
     int immediate_flag;
     OpenAPI_list_t *area_list;
     OpenAPI_list_t *location_filter_list;
+    bool is_ref_id;
     int ref_id;
     OpenAPI_list_t *traffic_descriptor_list;
+    bool is_report_ue_reachable;
     int report_ue_reachable;
     struct OpenAPI_reachability_filter_s *reachability_filter;
+    bool is_max_reports;
     int max_reports;
+    bool is_max_response_time;
     int max_response_time;
 } OpenAPI_amf_event_t;
 
 OpenAPI_amf_event_t *OpenAPI_amf_event_create(
     OpenAPI_amf_event_type_t *type,
+    bool is_immediate_flag,
     int immediate_flag,
     OpenAPI_list_t *area_list,
     OpenAPI_list_t *location_filter_list,
+    bool is_ref_id,
     int ref_id,
     OpenAPI_list_t *traffic_descriptor_list,
+    bool is_report_ue_reachable,
     int report_ue_reachable,
     OpenAPI_reachability_filter_t *reachability_filter,
+    bool is_max_reports,
     int max_reports,
+    bool is_max_response_time,
     int max_response_time
 );
 void OpenAPI_amf_event_free(OpenAPI_amf_event_t *amf_event);

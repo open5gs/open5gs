@@ -60,7 +60,7 @@ OpenAPI_retrieved_data_t *OpenAPI_retrieved_data_parseFromJSON(cJSON *retrieved_
     cJSON *small_data_rate_status = cJSON_GetObjectItemCaseSensitive(retrieved_dataJSON, "smallDataRateStatus");
 
     OpenAPI_small_data_rate_status_t *small_data_rate_status_local_nonprim = NULL;
-    if (small_data_rate_status) { 
+    if (small_data_rate_status) {
     small_data_rate_status_local_nonprim = OpenAPI_small_data_rate_status_parseFromJSON(small_data_rate_status);
     }
 

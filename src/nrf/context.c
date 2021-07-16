@@ -75,9 +75,44 @@ static int nrf_context_validation(void)
 int nrf_context_parse_config(void)
 {
     int rv;
+    yaml_document_t *document = NULL;
+    ogs_yaml_iter_t root_iter;
+
+    document = ogs_app()->document;
+    ogs_assert(document);
 
     rv = nrf_context_prepare();
     if (rv != OGS_OK) return rv;
+
+    ogs_yaml_iter_init(&root_iter, document);
+    while (ogs_yaml_iter_next(&root_iter)) {
+        const char *root_key = ogs_yaml_iter_key(&root_iter);
+        ogs_assert(root_key);
+        if (!strcmp(root_key, "time")) {
+            ogs_yaml_iter_t time_iter;
+            ogs_yaml_iter_recurse(&root_iter, &time_iter);
+            while (ogs_yaml_iter_next(&time_iter)) {
+                const char *time_key = ogs_yaml_iter_key(&time_iter);
+                ogs_assert(time_key);
+                if (!strcmp(time_key, "nf_instance")) {
+                    ogs_yaml_iter_t sbi_iter;
+                    ogs_yaml_iter_recurse(&time_iter, &sbi_iter);
+
+                    while (ogs_yaml_iter_next(&sbi_iter)) {
+                        const char *sbi_key =
+                            ogs_yaml_iter_key(&sbi_iter);
+                        ogs_assert(sbi_key);
+
+                        if (!strcmp(sbi_key, "heartbeat")) {
+                            const char *v = ogs_yaml_iter_value(&sbi_iter);
+                            if (v) ogs_app()->time.nf_instance.
+                                    heartbeat_interval = atoi(v);
+                        }
+                    }
+                }
+            }
+        }
+    }
 
     rv = nrf_context_validation();
     if (rv != OGS_OK) return rv;

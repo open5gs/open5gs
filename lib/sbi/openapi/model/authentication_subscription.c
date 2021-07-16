@@ -13,8 +13,10 @@ OpenAPI_authentication_subscription_t *OpenAPI_authentication_subscription_creat
     char *algorithm_id,
     char *enc_opc_key,
     char *enc_topc_key,
+    bool is_vector_generation_in_hss,
     int vector_generation_in_hss,
     OpenAPI_auth_method_e n5gc_auth_method,
+    bool is_rg_authentication_ind,
     int rg_authentication_ind,
     char *supi
 )
@@ -31,8 +33,10 @@ OpenAPI_authentication_subscription_t *OpenAPI_authentication_subscription_creat
     authentication_subscription_local_var->algorithm_id = algorithm_id;
     authentication_subscription_local_var->enc_opc_key = enc_opc_key;
     authentication_subscription_local_var->enc_topc_key = enc_topc_key;
+    authentication_subscription_local_var->is_vector_generation_in_hss = is_vector_generation_in_hss;
     authentication_subscription_local_var->vector_generation_in_hss = vector_generation_in_hss;
     authentication_subscription_local_var->n5gc_auth_method = n5gc_auth_method;
+    authentication_subscription_local_var->is_rg_authentication_ind = is_rg_authentication_ind;
     authentication_subscription_local_var->rg_authentication_ind = rg_authentication_ind;
     authentication_subscription_local_var->supi = supi;
 
@@ -126,7 +130,7 @@ cJSON *OpenAPI_authentication_subscription_convertToJSON(OpenAPI_authentication_
     }
     }
 
-    if (authentication_subscription->vector_generation_in_hss) {
+    if (authentication_subscription->is_vector_generation_in_hss) {
     if (cJSON_AddBoolToObject(item, "vectorGenerationInHss", authentication_subscription->vector_generation_in_hss) == NULL) {
         ogs_error("OpenAPI_authentication_subscription_convertToJSON() failed [vector_generation_in_hss]");
         goto end;
@@ -140,7 +144,7 @@ cJSON *OpenAPI_authentication_subscription_convertToJSON(OpenAPI_authentication_
     }
     }
 
-    if (authentication_subscription->rg_authentication_ind) {
+    if (authentication_subscription->is_rg_authentication_ind) {
     if (cJSON_AddBoolToObject(item, "rgAuthenticationInd", authentication_subscription->rg_authentication_ind) == NULL) {
         ogs_error("OpenAPI_authentication_subscription_convertToJSON() failed [rg_authentication_ind]");
         goto end;
@@ -168,7 +172,6 @@ OpenAPI_authentication_subscription_t *OpenAPI_authentication_subscription_parse
     }
 
     OpenAPI_auth_method_e authentication_methodVariable;
-    
     if (!cJSON_IsString(authentication_method)) {
         ogs_error("OpenAPI_authentication_subscription_parseFromJSON() failed [authentication_method]");
         goto end;
@@ -177,7 +180,7 @@ OpenAPI_authentication_subscription_t *OpenAPI_authentication_subscription_parse
 
     cJSON *enc_permanent_key = cJSON_GetObjectItemCaseSensitive(authentication_subscriptionJSON, "encPermanentKey");
 
-    if (enc_permanent_key) { 
+    if (enc_permanent_key) {
     if (!cJSON_IsString(enc_permanent_key)) {
         ogs_error("OpenAPI_authentication_subscription_parseFromJSON() failed [enc_permanent_key]");
         goto end;
@@ -186,7 +189,7 @@ OpenAPI_authentication_subscription_t *OpenAPI_authentication_subscription_parse
 
     cJSON *protection_parameter_id = cJSON_GetObjectItemCaseSensitive(authentication_subscriptionJSON, "protectionParameterId");
 
-    if (protection_parameter_id) { 
+    if (protection_parameter_id) {
     if (!cJSON_IsString(protection_parameter_id)) {
         ogs_error("OpenAPI_authentication_subscription_parseFromJSON() failed [protection_parameter_id]");
         goto end;
@@ -196,13 +199,13 @@ OpenAPI_authentication_subscription_t *OpenAPI_authentication_subscription_parse
     cJSON *sequence_number = cJSON_GetObjectItemCaseSensitive(authentication_subscriptionJSON, "sequenceNumber");
 
     OpenAPI_sequence_number_t *sequence_number_local_nonprim = NULL;
-    if (sequence_number) { 
+    if (sequence_number) {
     sequence_number_local_nonprim = OpenAPI_sequence_number_parseFromJSON(sequence_number);
     }
 
     cJSON *authentication_management_field = cJSON_GetObjectItemCaseSensitive(authentication_subscriptionJSON, "authenticationManagementField");
 
-    if (authentication_management_field) { 
+    if (authentication_management_field) {
     if (!cJSON_IsString(authentication_management_field)) {
         ogs_error("OpenAPI_authentication_subscription_parseFromJSON() failed [authentication_management_field]");
         goto end;
@@ -211,7 +214,7 @@ OpenAPI_authentication_subscription_t *OpenAPI_authentication_subscription_parse
 
     cJSON *algorithm_id = cJSON_GetObjectItemCaseSensitive(authentication_subscriptionJSON, "algorithmId");
 
-    if (algorithm_id) { 
+    if (algorithm_id) {
     if (!cJSON_IsString(algorithm_id)) {
         ogs_error("OpenAPI_authentication_subscription_parseFromJSON() failed [algorithm_id]");
         goto end;
@@ -220,7 +223,7 @@ OpenAPI_authentication_subscription_t *OpenAPI_authentication_subscription_parse
 
     cJSON *enc_opc_key = cJSON_GetObjectItemCaseSensitive(authentication_subscriptionJSON, "encOpcKey");
 
-    if (enc_opc_key) { 
+    if (enc_opc_key) {
     if (!cJSON_IsString(enc_opc_key)) {
         ogs_error("OpenAPI_authentication_subscription_parseFromJSON() failed [enc_opc_key]");
         goto end;
@@ -229,7 +232,7 @@ OpenAPI_authentication_subscription_t *OpenAPI_authentication_subscription_parse
 
     cJSON *enc_topc_key = cJSON_GetObjectItemCaseSensitive(authentication_subscriptionJSON, "encTopcKey");
 
-    if (enc_topc_key) { 
+    if (enc_topc_key) {
     if (!cJSON_IsString(enc_topc_key)) {
         ogs_error("OpenAPI_authentication_subscription_parseFromJSON() failed [enc_topc_key]");
         goto end;
@@ -238,7 +241,7 @@ OpenAPI_authentication_subscription_t *OpenAPI_authentication_subscription_parse
 
     cJSON *vector_generation_in_hss = cJSON_GetObjectItemCaseSensitive(authentication_subscriptionJSON, "vectorGenerationInHss");
 
-    if (vector_generation_in_hss) { 
+    if (vector_generation_in_hss) {
     if (!cJSON_IsBool(vector_generation_in_hss)) {
         ogs_error("OpenAPI_authentication_subscription_parseFromJSON() failed [vector_generation_in_hss]");
         goto end;
@@ -248,7 +251,7 @@ OpenAPI_authentication_subscription_t *OpenAPI_authentication_subscription_parse
     cJSON *n5gc_auth_method = cJSON_GetObjectItemCaseSensitive(authentication_subscriptionJSON, "n5gcAuthMethod");
 
     OpenAPI_auth_method_e n5gc_auth_methodVariable;
-    if (n5gc_auth_method) { 
+    if (n5gc_auth_method) {
     if (!cJSON_IsString(n5gc_auth_method)) {
         ogs_error("OpenAPI_authentication_subscription_parseFromJSON() failed [n5gc_auth_method]");
         goto end;
@@ -258,7 +261,7 @@ OpenAPI_authentication_subscription_t *OpenAPI_authentication_subscription_parse
 
     cJSON *rg_authentication_ind = cJSON_GetObjectItemCaseSensitive(authentication_subscriptionJSON, "rgAuthenticationInd");
 
-    if (rg_authentication_ind) { 
+    if (rg_authentication_ind) {
     if (!cJSON_IsBool(rg_authentication_ind)) {
         ogs_error("OpenAPI_authentication_subscription_parseFromJSON() failed [rg_authentication_ind]");
         goto end;
@@ -267,7 +270,7 @@ OpenAPI_authentication_subscription_t *OpenAPI_authentication_subscription_parse
 
     cJSON *supi = cJSON_GetObjectItemCaseSensitive(authentication_subscriptionJSON, "supi");
 
-    if (supi) { 
+    if (supi) {
     if (!cJSON_IsString(supi)) {
         ogs_error("OpenAPI_authentication_subscription_parseFromJSON() failed [supi]");
         goto end;
@@ -283,8 +286,10 @@ OpenAPI_authentication_subscription_t *OpenAPI_authentication_subscription_parse
         algorithm_id ? ogs_strdup_or_assert(algorithm_id->valuestring) : NULL,
         enc_opc_key ? ogs_strdup_or_assert(enc_opc_key->valuestring) : NULL,
         enc_topc_key ? ogs_strdup_or_assert(enc_topc_key->valuestring) : NULL,
+        vector_generation_in_hss ? true : false,
         vector_generation_in_hss ? vector_generation_in_hss->valueint : 0,
         n5gc_auth_method ? n5gc_auth_methodVariable : 0,
+        rg_authentication_ind ? true : false,
         rg_authentication_ind ? rg_authentication_ind->valueint : 0,
         supi ? ogs_strdup_or_assert(supi->valuestring) : NULL
     );

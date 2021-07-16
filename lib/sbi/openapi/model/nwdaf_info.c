@@ -148,7 +148,7 @@ OpenAPI_nwdaf_info_t *OpenAPI_nwdaf_info_parseFromJSON(cJSON *nwdaf_infoJSON)
     cJSON *event_ids = cJSON_GetObjectItemCaseSensitive(nwdaf_infoJSON, "eventIds");
 
     OpenAPI_list_t *event_idsList;
-    if (event_ids) { 
+    if (event_ids) {
     cJSON *event_ids_local_nonprimitive;
     if (!cJSON_IsArray(event_ids)){
         ogs_error("OpenAPI_nwdaf_info_parseFromJSON() failed [event_ids]");
@@ -171,7 +171,7 @@ OpenAPI_nwdaf_info_t *OpenAPI_nwdaf_info_parseFromJSON(cJSON *nwdaf_infoJSON)
     cJSON *nwdaf_events = cJSON_GetObjectItemCaseSensitive(nwdaf_infoJSON, "nwdafEvents");
 
     OpenAPI_list_t *nwdaf_eventsList;
-    if (nwdaf_events) { 
+    if (nwdaf_events) {
     cJSON *nwdaf_events_local_nonprimitive;
     if (!cJSON_IsArray(nwdaf_events)){
         ogs_error("OpenAPI_nwdaf_info_parseFromJSON() failed [nwdaf_events]");
@@ -194,7 +194,7 @@ OpenAPI_nwdaf_info_t *OpenAPI_nwdaf_info_parseFromJSON(cJSON *nwdaf_infoJSON)
     cJSON *tai_list = cJSON_GetObjectItemCaseSensitive(nwdaf_infoJSON, "taiList");
 
     OpenAPI_list_t *tai_listList;
-    if (tai_list) { 
+    if (tai_list) {
     cJSON *tai_list_local_nonprimitive;
     if (!cJSON_IsArray(tai_list)){
         ogs_error("OpenAPI_nwdaf_info_parseFromJSON() failed [tai_list]");
@@ -217,7 +217,7 @@ OpenAPI_nwdaf_info_t *OpenAPI_nwdaf_info_parseFromJSON(cJSON *nwdaf_infoJSON)
     cJSON *tai_range_list = cJSON_GetObjectItemCaseSensitive(nwdaf_infoJSON, "taiRangeList");
 
     OpenAPI_list_t *tai_range_listList;
-    if (tai_range_list) { 
+    if (tai_range_list) {
     cJSON *tai_range_list_local_nonprimitive;
     if (!cJSON_IsArray(tai_range_list)){
         ogs_error("OpenAPI_nwdaf_info_parseFromJSON() failed [tai_range_list]");

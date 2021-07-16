@@ -1160,8 +1160,7 @@ smf_sess_t *smf_sess_add_by_sbi_message(ogs_sbi_message_t *message)
         return NULL;
     }
 
-    if (SmContextCreateData->pdu_session_id ==
-            OGS_NAS_PDU_SESSION_IDENTITY_UNASSIGNED) {
+    if (SmContextCreateData->is_pdu_session_id == false) {
         ogs_error("PDU session identitiy is unassigned");
         return NULL;
     }

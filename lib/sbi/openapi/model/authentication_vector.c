@@ -121,7 +121,6 @@ OpenAPI_authentication_vector_t *OpenAPI_authentication_vector_parseFromJSON(cJS
     }
 
     OpenAPI_av_type_e av_typeVariable;
-    
     if (!cJSON_IsString(av_type)) {
         ogs_error("OpenAPI_authentication_vector_parseFromJSON() failed [av_type]");
         goto end;
@@ -134,7 +133,6 @@ OpenAPI_authentication_vector_t *OpenAPI_authentication_vector_parseFromJSON(cJS
         goto end;
     }
 
-    
     if (!cJSON_IsString(rand)) {
         ogs_error("OpenAPI_authentication_vector_parseFromJSON() failed [rand]");
         goto end;
@@ -142,7 +140,7 @@ OpenAPI_authentication_vector_t *OpenAPI_authentication_vector_parseFromJSON(cJS
 
     cJSON *xres = cJSON_GetObjectItemCaseSensitive(authentication_vectorJSON, "xres");
 
-    if (xres) { 
+    if (xres) {
     if (!cJSON_IsString(xres)) {
         ogs_error("OpenAPI_authentication_vector_parseFromJSON() failed [xres]");
         goto end;
@@ -155,7 +153,6 @@ OpenAPI_authentication_vector_t *OpenAPI_authentication_vector_parseFromJSON(cJS
         goto end;
     }
 
-    
     if (!cJSON_IsString(autn)) {
         ogs_error("OpenAPI_authentication_vector_parseFromJSON() failed [autn]");
         goto end;
@@ -163,7 +160,7 @@ OpenAPI_authentication_vector_t *OpenAPI_authentication_vector_parseFromJSON(cJS
 
     cJSON *ck_prime = cJSON_GetObjectItemCaseSensitive(authentication_vectorJSON, "ckPrime");
 
-    if (ck_prime) { 
+    if (ck_prime) {
     if (!cJSON_IsString(ck_prime)) {
         ogs_error("OpenAPI_authentication_vector_parseFromJSON() failed [ck_prime]");
         goto end;
@@ -172,7 +169,7 @@ OpenAPI_authentication_vector_t *OpenAPI_authentication_vector_parseFromJSON(cJS
 
     cJSON *ik_prime = cJSON_GetObjectItemCaseSensitive(authentication_vectorJSON, "ikPrime");
 
-    if (ik_prime) { 
+    if (ik_prime) {
     if (!cJSON_IsString(ik_prime)) {
         ogs_error("OpenAPI_authentication_vector_parseFromJSON() failed [ik_prime]");
         goto end;
@@ -181,7 +178,7 @@ OpenAPI_authentication_vector_t *OpenAPI_authentication_vector_parseFromJSON(cJS
 
     cJSON *xres_star = cJSON_GetObjectItemCaseSensitive(authentication_vectorJSON, "xresStar");
 
-    if (xres_star) { 
+    if (xres_star) {
     if (!cJSON_IsString(xres_star)) {
         ogs_error("OpenAPI_authentication_vector_parseFromJSON() failed [xres_star]");
         goto end;
@@ -190,7 +187,7 @@ OpenAPI_authentication_vector_t *OpenAPI_authentication_vector_parseFromJSON(cJS
 
     cJSON *kausf = cJSON_GetObjectItemCaseSensitive(authentication_vectorJSON, "kausf");
 
-    if (kausf) { 
+    if (kausf) {
     if (!cJSON_IsString(kausf)) {
         ogs_error("OpenAPI_authentication_vector_parseFromJSON() failed [kausf]");
         goto end;

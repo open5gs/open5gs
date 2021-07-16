@@ -96,13 +96,12 @@ OpenAPI_up_security_info_t *OpenAPI_up_security_info_parseFromJSON(cJSON *up_sec
     }
 
     OpenAPI_up_security_t *up_security_local_nonprim = NULL;
-    
     up_security_local_nonprim = OpenAPI_up_security_parseFromJSON(up_security);
 
     cJSON *max_integrity_protected_data_rate_ul = cJSON_GetObjectItemCaseSensitive(up_security_infoJSON, "maxIntegrityProtectedDataRateUl");
 
     OpenAPI_max_integrity_protected_data_rate_e max_integrity_protected_data_rate_ulVariable;
-    if (max_integrity_protected_data_rate_ul) { 
+    if (max_integrity_protected_data_rate_ul) {
     if (!cJSON_IsString(max_integrity_protected_data_rate_ul)) {
         ogs_error("OpenAPI_up_security_info_parseFromJSON() failed [max_integrity_protected_data_rate_ul]");
         goto end;
@@ -113,7 +112,7 @@ OpenAPI_up_security_info_t *OpenAPI_up_security_info_parseFromJSON(cJSON *up_sec
     cJSON *max_integrity_protected_data_rate_dl = cJSON_GetObjectItemCaseSensitive(up_security_infoJSON, "maxIntegrityProtectedDataRateDl");
 
     OpenAPI_max_integrity_protected_data_rate_e max_integrity_protected_data_rate_dlVariable;
-    if (max_integrity_protected_data_rate_dl) { 
+    if (max_integrity_protected_data_rate_dl) {
     if (!cJSON_IsString(max_integrity_protected_data_rate_dl)) {
         ogs_error("OpenAPI_up_security_info_parseFromJSON() failed [max_integrity_protected_data_rate_dl]");
         goto end;
@@ -124,7 +123,7 @@ OpenAPI_up_security_info_t *OpenAPI_up_security_info_parseFromJSON(cJSON *up_sec
     cJSON *security_result = cJSON_GetObjectItemCaseSensitive(up_security_infoJSON, "securityResult");
 
     OpenAPI_security_result_t *security_result_local_nonprim = NULL;
-    if (security_result) { 
+    if (security_result) {
     security_result_local_nonprim = OpenAPI_security_result_parseFromJSON(security_result);
     }
 

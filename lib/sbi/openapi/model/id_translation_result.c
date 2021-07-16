@@ -71,7 +71,7 @@ OpenAPI_id_translation_result_t *OpenAPI_id_translation_result_parseFromJSON(cJS
     OpenAPI_id_translation_result_t *id_translation_result_local_var = NULL;
     cJSON *supported_features = cJSON_GetObjectItemCaseSensitive(id_translation_resultJSON, "supportedFeatures");
 
-    if (supported_features) { 
+    if (supported_features) {
     if (!cJSON_IsString(supported_features)) {
         ogs_error("OpenAPI_id_translation_result_parseFromJSON() failed [supported_features]");
         goto end;
@@ -84,7 +84,6 @@ OpenAPI_id_translation_result_t *OpenAPI_id_translation_result_parseFromJSON(cJS
         goto end;
     }
 
-    
     if (!cJSON_IsString(supi)) {
         ogs_error("OpenAPI_id_translation_result_parseFromJSON() failed [supi]");
         goto end;
@@ -92,7 +91,7 @@ OpenAPI_id_translation_result_t *OpenAPI_id_translation_result_parseFromJSON(cJS
 
     cJSON *gpsi = cJSON_GetObjectItemCaseSensitive(id_translation_resultJSON, "gpsi");
 
-    if (gpsi) { 
+    if (gpsi) {
     if (!cJSON_IsString(gpsi)) {
         ogs_error("OpenAPI_id_translation_result_parseFromJSON() failed [gpsi]");
         goto end;

@@ -27,6 +27,7 @@ typedef struct OpenAPI_sm_context_created_data_s OpenAPI_sm_context_created_data
 typedef struct OpenAPI_sm_context_created_data_s {
     char *h_smf_uri;
     char *smf_uri;
+    bool is_pdu_session_id;
     int pdu_session_id;
     struct OpenAPI_snssai_s *s_nssai;
     OpenAPI_up_cnx_state_e up_cnx_state;
@@ -45,6 +46,7 @@ typedef struct OpenAPI_sm_context_created_data_s {
 OpenAPI_sm_context_created_data_t *OpenAPI_sm_context_created_data_create(
     char *h_smf_uri,
     char *smf_uri,
+    bool is_pdu_session_id,
     int pdu_session_id,
     OpenAPI_snssai_t *s_nssai,
     OpenAPI_up_cnx_state_e up_cnx_state,

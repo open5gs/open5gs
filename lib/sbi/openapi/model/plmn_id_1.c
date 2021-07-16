@@ -63,7 +63,6 @@ OpenAPI_plmn_id_1_t *OpenAPI_plmn_id_1_parseFromJSON(cJSON *plmn_id_1JSON)
         goto end;
     }
 
-    
     if (!cJSON_IsString(mcc)) {
         ogs_error("OpenAPI_plmn_id_1_parseFromJSON() failed [mcc]");
         goto end;
@@ -75,7 +74,6 @@ OpenAPI_plmn_id_1_t *OpenAPI_plmn_id_1_parseFromJSON(cJSON *plmn_id_1JSON)
         goto end;
     }
 
-    
     if (!cJSON_IsString(mnc)) {
         ogs_error("OpenAPI_plmn_id_1_parseFromJSON() failed [mnc]");
         goto end;

@@ -54,13 +54,13 @@ OpenAPI_pws_error_data_t *OpenAPI_pws_error_data_parseFromJSON(cJSON *pws_error_
         goto end;
     }
 
-    
     if (!cJSON_IsNumber(namf_cause)) {
         ogs_error("OpenAPI_pws_error_data_parseFromJSON() failed [namf_cause]");
         goto end;
     }
 
     pws_error_data_local_var = OpenAPI_pws_error_data_create (
+        
         namf_cause->valuedouble
     );
 

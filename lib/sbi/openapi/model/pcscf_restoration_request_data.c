@@ -109,7 +109,7 @@ OpenAPI_pcscf_restoration_request_data_t *OpenAPI_pcscf_restoration_request_data
     OpenAPI_pcscf_restoration_request_data_t *pcscf_restoration_request_data_local_var = NULL;
     cJSON *dnn = cJSON_GetObjectItemCaseSensitive(pcscf_restoration_request_dataJSON, "dnn");
 
-    if (dnn) { 
+    if (dnn) {
     if (!cJSON_IsString(dnn)) {
         ogs_error("OpenAPI_pcscf_restoration_request_data_parseFromJSON() failed [dnn]");
         goto end;
@@ -118,7 +118,7 @@ OpenAPI_pcscf_restoration_request_data_t *OpenAPI_pcscf_restoration_request_data
 
     cJSON *ip_domain = cJSON_GetObjectItemCaseSensitive(pcscf_restoration_request_dataJSON, "ipDomain");
 
-    if (ip_domain) { 
+    if (ip_domain) {
     if (!cJSON_IsString(ip_domain)) {
         ogs_error("OpenAPI_pcscf_restoration_request_data_parseFromJSON() failed [ip_domain]");
         goto end;
@@ -128,13 +128,13 @@ OpenAPI_pcscf_restoration_request_data_t *OpenAPI_pcscf_restoration_request_data
     cJSON *slice_info = cJSON_GetObjectItemCaseSensitive(pcscf_restoration_request_dataJSON, "sliceInfo");
 
     OpenAPI_snssai_t *slice_info_local_nonprim = NULL;
-    if (slice_info) { 
+    if (slice_info) {
     slice_info_local_nonprim = OpenAPI_snssai_parseFromJSON(slice_info);
     }
 
     cJSON *supi = cJSON_GetObjectItemCaseSensitive(pcscf_restoration_request_dataJSON, "supi");
 
-    if (supi) { 
+    if (supi) {
     if (!cJSON_IsString(supi)) {
         ogs_error("OpenAPI_pcscf_restoration_request_data_parseFromJSON() failed [supi]");
         goto end;
@@ -143,7 +143,7 @@ OpenAPI_pcscf_restoration_request_data_t *OpenAPI_pcscf_restoration_request_data
 
     cJSON *ue_ipv4 = cJSON_GetObjectItemCaseSensitive(pcscf_restoration_request_dataJSON, "ueIpv4");
 
-    if (ue_ipv4) { 
+    if (ue_ipv4) {
     if (!cJSON_IsString(ue_ipv4)) {
         ogs_error("OpenAPI_pcscf_restoration_request_data_parseFromJSON() failed [ue_ipv4]");
         goto end;
@@ -152,7 +152,7 @@ OpenAPI_pcscf_restoration_request_data_t *OpenAPI_pcscf_restoration_request_data
 
     cJSON *ue_ipv6 = cJSON_GetObjectItemCaseSensitive(pcscf_restoration_request_dataJSON, "ueIpv6");
 
-    if (ue_ipv6) { 
+    if (ue_ipv6) {
     if (!cJSON_IsString(ue_ipv6)) {
         ogs_error("OpenAPI_pcscf_restoration_request_data_parseFromJSON() failed [ue_ipv6]");
         goto end;

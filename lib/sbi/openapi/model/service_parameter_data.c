@@ -13,6 +13,7 @@ OpenAPI_service_parameter_data_t *OpenAPI_service_parameter_data_create(
     char *ue_ipv4,
     char *ue_ipv6,
     char *ue_mac,
+    bool is_any_ue_ind,
     int any_ue_ind,
     char *param_over_pc5,
     char *param_over_uu,
@@ -32,6 +33,7 @@ OpenAPI_service_parameter_data_t *OpenAPI_service_parameter_data_create(
     service_parameter_data_local_var->ue_ipv4 = ue_ipv4;
     service_parameter_data_local_var->ue_ipv6 = ue_ipv6;
     service_parameter_data_local_var->ue_mac = ue_mac;
+    service_parameter_data_local_var->is_any_ue_ind = is_any_ue_ind;
     service_parameter_data_local_var->any_ue_ind = any_ue_ind;
     service_parameter_data_local_var->param_over_pc5 = param_over_pc5;
     service_parameter_data_local_var->param_over_uu = param_over_uu;
@@ -134,7 +136,7 @@ cJSON *OpenAPI_service_parameter_data_convertToJSON(OpenAPI_service_parameter_da
     }
     }
 
-    if (service_parameter_data->any_ue_ind) {
+    if (service_parameter_data->is_any_ue_ind) {
     if (cJSON_AddBoolToObject(item, "anyUeInd", service_parameter_data->any_ue_ind) == NULL) {
         ogs_error("OpenAPI_service_parameter_data_convertToJSON() failed [any_ue_ind]");
         goto end;
@@ -178,7 +180,7 @@ OpenAPI_service_parameter_data_t *OpenAPI_service_parameter_data_parseFromJSON(c
     OpenAPI_service_parameter_data_t *service_parameter_data_local_var = NULL;
     cJSON *app_id = cJSON_GetObjectItemCaseSensitive(service_parameter_dataJSON, "appId");
 
-    if (app_id) { 
+    if (app_id) {
     if (!cJSON_IsString(app_id)) {
         ogs_error("OpenAPI_service_parameter_data_parseFromJSON() failed [app_id]");
         goto end;
@@ -187,7 +189,7 @@ OpenAPI_service_parameter_data_t *OpenAPI_service_parameter_data_parseFromJSON(c
 
     cJSON *dnn = cJSON_GetObjectItemCaseSensitive(service_parameter_dataJSON, "dnn");
 
-    if (dnn) { 
+    if (dnn) {
     if (!cJSON_IsString(dnn)) {
         ogs_error("OpenAPI_service_parameter_data_parseFromJSON() failed [dnn]");
         goto end;
@@ -197,13 +199,13 @@ OpenAPI_service_parameter_data_t *OpenAPI_service_parameter_data_parseFromJSON(c
     cJSON *snssai = cJSON_GetObjectItemCaseSensitive(service_parameter_dataJSON, "snssai");
 
     OpenAPI_snssai_t *snssai_local_nonprim = NULL;
-    if (snssai) { 
+    if (snssai) {
     snssai_local_nonprim = OpenAPI_snssai_parseFromJSON(snssai);
     }
 
     cJSON *inter_group_id = cJSON_GetObjectItemCaseSensitive(service_parameter_dataJSON, "interGroupId");
 
-    if (inter_group_id) { 
+    if (inter_group_id) {
     if (!cJSON_IsString(inter_group_id)) {
         ogs_error("OpenAPI_service_parameter_data_parseFromJSON() failed [inter_group_id]");
         goto end;
@@ -212,7 +214,7 @@ OpenAPI_service_parameter_data_t *OpenAPI_service_parameter_data_parseFromJSON(c
 
     cJSON *supi = cJSON_GetObjectItemCaseSensitive(service_parameter_dataJSON, "supi");
 
-    if (supi) { 
+    if (supi) {
     if (!cJSON_IsString(supi)) {
         ogs_error("OpenAPI_service_parameter_data_parseFromJSON() failed [supi]");
         goto end;
@@ -221,7 +223,7 @@ OpenAPI_service_parameter_data_t *OpenAPI_service_parameter_data_parseFromJSON(c
 
     cJSON *ue_ipv4 = cJSON_GetObjectItemCaseSensitive(service_parameter_dataJSON, "ueIpv4");
 
-    if (ue_ipv4) { 
+    if (ue_ipv4) {
     if (!cJSON_IsString(ue_ipv4)) {
         ogs_error("OpenAPI_service_parameter_data_parseFromJSON() failed [ue_ipv4]");
         goto end;
@@ -230,7 +232,7 @@ OpenAPI_service_parameter_data_t *OpenAPI_service_parameter_data_parseFromJSON(c
 
     cJSON *ue_ipv6 = cJSON_GetObjectItemCaseSensitive(service_parameter_dataJSON, "ueIpv6");
 
-    if (ue_ipv6) { 
+    if (ue_ipv6) {
     if (!cJSON_IsString(ue_ipv6)) {
         ogs_error("OpenAPI_service_parameter_data_parseFromJSON() failed [ue_ipv6]");
         goto end;
@@ -239,7 +241,7 @@ OpenAPI_service_parameter_data_t *OpenAPI_service_parameter_data_parseFromJSON(c
 
     cJSON *ue_mac = cJSON_GetObjectItemCaseSensitive(service_parameter_dataJSON, "ueMac");
 
-    if (ue_mac) { 
+    if (ue_mac) {
     if (!cJSON_IsString(ue_mac)) {
         ogs_error("OpenAPI_service_parameter_data_parseFromJSON() failed [ue_mac]");
         goto end;
@@ -248,7 +250,7 @@ OpenAPI_service_parameter_data_t *OpenAPI_service_parameter_data_parseFromJSON(c
 
     cJSON *any_ue_ind = cJSON_GetObjectItemCaseSensitive(service_parameter_dataJSON, "anyUeInd");
 
-    if (any_ue_ind) { 
+    if (any_ue_ind) {
     if (!cJSON_IsBool(any_ue_ind)) {
         ogs_error("OpenAPI_service_parameter_data_parseFromJSON() failed [any_ue_ind]");
         goto end;
@@ -257,7 +259,7 @@ OpenAPI_service_parameter_data_t *OpenAPI_service_parameter_data_parseFromJSON(c
 
     cJSON *param_over_pc5 = cJSON_GetObjectItemCaseSensitive(service_parameter_dataJSON, "paramOverPc5");
 
-    if (param_over_pc5) { 
+    if (param_over_pc5) {
     if (!cJSON_IsString(param_over_pc5)) {
         ogs_error("OpenAPI_service_parameter_data_parseFromJSON() failed [param_over_pc5]");
         goto end;
@@ -266,7 +268,7 @@ OpenAPI_service_parameter_data_t *OpenAPI_service_parameter_data_parseFromJSON(c
 
     cJSON *param_over_uu = cJSON_GetObjectItemCaseSensitive(service_parameter_dataJSON, "paramOverUu");
 
-    if (param_over_uu) { 
+    if (param_over_uu) {
     if (!cJSON_IsString(param_over_uu)) {
         ogs_error("OpenAPI_service_parameter_data_parseFromJSON() failed [param_over_uu]");
         goto end;
@@ -275,7 +277,7 @@ OpenAPI_service_parameter_data_t *OpenAPI_service_parameter_data_parseFromJSON(c
 
     cJSON *supp_feat = cJSON_GetObjectItemCaseSensitive(service_parameter_dataJSON, "suppFeat");
 
-    if (supp_feat) { 
+    if (supp_feat) {
     if (!cJSON_IsString(supp_feat)) {
         ogs_error("OpenAPI_service_parameter_data_parseFromJSON() failed [supp_feat]");
         goto end;
@@ -284,7 +286,7 @@ OpenAPI_service_parameter_data_t *OpenAPI_service_parameter_data_parseFromJSON(c
 
     cJSON *res_uri = cJSON_GetObjectItemCaseSensitive(service_parameter_dataJSON, "resUri");
 
-    if (res_uri) { 
+    if (res_uri) {
     if (!cJSON_IsString(res_uri)) {
         ogs_error("OpenAPI_service_parameter_data_parseFromJSON() failed [res_uri]");
         goto end;
@@ -300,6 +302,7 @@ OpenAPI_service_parameter_data_t *OpenAPI_service_parameter_data_parseFromJSON(c
         ue_ipv4 ? ogs_strdup_or_assert(ue_ipv4->valuestring) : NULL,
         ue_ipv6 ? ogs_strdup_or_assert(ue_ipv6->valuestring) : NULL,
         ue_mac ? ogs_strdup_or_assert(ue_mac->valuestring) : NULL,
+        any_ue_ind ? true : false,
         any_ue_ind ? any_ue_ind->valueint : 0,
         param_over_pc5 ? ogs_strdup_or_assert(param_over_pc5->valuestring) : NULL,
         param_over_uu ? ogs_strdup_or_assert(param_over_uu->valuestring) : NULL,

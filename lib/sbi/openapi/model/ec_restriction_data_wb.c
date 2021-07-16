@@ -5,6 +5,7 @@
 #include "ec_restriction_data_wb.h"
 
 OpenAPI_ec_restriction_data_wb_t *OpenAPI_ec_restriction_data_wb_create(
+    bool is_ec_mode_a_restricted,
     int ec_mode_a_restricted,
     int ec_mode_b_restricted
 )
@@ -13,6 +14,7 @@ OpenAPI_ec_restriction_data_wb_t *OpenAPI_ec_restriction_data_wb_create(
     if (!ec_restriction_data_wb_local_var) {
         return NULL;
     }
+    ec_restriction_data_wb_local_var->is_ec_mode_a_restricted = is_ec_mode_a_restricted;
     ec_restriction_data_wb_local_var->ec_mode_a_restricted = ec_mode_a_restricted;
     ec_restriction_data_wb_local_var->ec_mode_b_restricted = ec_mode_b_restricted;
 
@@ -38,7 +40,7 @@ cJSON *OpenAPI_ec_restriction_data_wb_convertToJSON(OpenAPI_ec_restriction_data_
     }
 
     item = cJSON_CreateObject();
-    if (ec_restriction_data_wb->ec_mode_a_restricted) {
+    if (ec_restriction_data_wb->is_ec_mode_a_restricted) {
     if (cJSON_AddBoolToObject(item, "ecModeARestricted", ec_restriction_data_wb->ec_mode_a_restricted) == NULL) {
         ogs_error("OpenAPI_ec_restriction_data_wb_convertToJSON() failed [ec_mode_a_restricted]");
         goto end;
@@ -59,7 +61,7 @@ OpenAPI_ec_restriction_data_wb_t *OpenAPI_ec_restriction_data_wb_parseFromJSON(c
     OpenAPI_ec_restriction_data_wb_t *ec_restriction_data_wb_local_var = NULL;
     cJSON *ec_mode_a_restricted = cJSON_GetObjectItemCaseSensitive(ec_restriction_data_wbJSON, "ecModeARestricted");
 
-    if (ec_mode_a_restricted) { 
+    if (ec_mode_a_restricted) {
     if (!cJSON_IsBool(ec_mode_a_restricted)) {
         ogs_error("OpenAPI_ec_restriction_data_wb_parseFromJSON() failed [ec_mode_a_restricted]");
         goto end;
@@ -72,14 +74,15 @@ OpenAPI_ec_restriction_data_wb_t *OpenAPI_ec_restriction_data_wb_parseFromJSON(c
         goto end;
     }
 
-    
     if (!cJSON_IsBool(ec_mode_b_restricted)) {
         ogs_error("OpenAPI_ec_restriction_data_wb_parseFromJSON() failed [ec_mode_b_restricted]");
         goto end;
     }
 
     ec_restriction_data_wb_local_var = OpenAPI_ec_restriction_data_wb_create (
+        ec_mode_a_restricted ? true : false,
         ec_mode_a_restricted ? ec_mode_a_restricted->valueint : 0,
+        
         ec_mode_b_restricted->valueint
     );
 

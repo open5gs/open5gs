@@ -22,12 +22,14 @@ typedef struct OpenAPI_rg_auth_ctx_s OpenAPI_rg_auth_ctx_t;
 typedef struct OpenAPI_rg_auth_ctx_s {
     OpenAPI_auth_result_e auth_result;
     char *supi;
+    bool is_auth_ind;
     int auth_ind;
 } OpenAPI_rg_auth_ctx_t;
 
 OpenAPI_rg_auth_ctx_t *OpenAPI_rg_auth_ctx_create(
     OpenAPI_auth_result_e auth_result,
     char *supi,
+    bool is_auth_ind,
     int auth_ind
 );
 void OpenAPI_rg_auth_ctx_free(OpenAPI_rg_auth_ctx_t *rg_auth_ctx);

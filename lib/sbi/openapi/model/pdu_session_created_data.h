@@ -41,8 +41,10 @@ typedef struct OpenAPI_pdu_session_created_data_s {
     OpenAPI_list_t *qos_flows_setup_list;
     char *h_smf_instance_id;
     char *smf_instance_id;
+    bool is_pdu_session_id;
     int pdu_session_id;
     struct OpenAPI_snssai_s *s_nssai;
+    bool is_enable_pause_charging;
     int enable_pause_charging;
     char *ue_ipv4_address;
     char *ue_ipv6_prefix;
@@ -52,6 +54,7 @@ typedef struct OpenAPI_pdu_session_created_data_s {
     char *supported_features;
     OpenAPI_max_integrity_protected_data_rate_e max_integrity_protected_data_rate;
     OpenAPI_max_integrity_protected_data_rate_e max_integrity_protected_data_rate_dl;
+    bool is_always_on_granted;
     int always_on_granted;
     char *gpsi;
     struct OpenAPI_up_security_s *up_security;
@@ -60,12 +63,17 @@ typedef struct OpenAPI_pdu_session_created_data_s {
     char *smf_service_instance_id;
     char *recovery_time;
     OpenAPI_list_t *dnai_list;
+    bool is_ipv6_multi_homing_ind;
     int ipv6_multi_homing_ind;
+    bool is_ma_accepted_ind;
     int ma_accepted_ind;
     char *home_provided_charging_id;
+    bool is_nef_ext_buf_support_ind;
     int nef_ext_buf_support_ind;
+    bool is_small_data_rate_control_enabled;
     int small_data_rate_control_enabled;
     char *ue_ipv6_interface_id;
+    bool is_ipv6_index;
     int ipv6_index;
     struct OpenAPI_ip_address_s *dn_aaa_address;
     struct OpenAPI_redundant_pdu_session_information_s *redundant_pdu_session_info;
@@ -81,8 +89,10 @@ OpenAPI_pdu_session_created_data_t *OpenAPI_pdu_session_created_data_create(
     OpenAPI_list_t *qos_flows_setup_list,
     char *h_smf_instance_id,
     char *smf_instance_id,
+    bool is_pdu_session_id,
     int pdu_session_id,
     OpenAPI_snssai_t *s_nssai,
+    bool is_enable_pause_charging,
     int enable_pause_charging,
     char *ue_ipv4_address,
     char *ue_ipv6_prefix,
@@ -92,6 +102,7 @@ OpenAPI_pdu_session_created_data_t *OpenAPI_pdu_session_created_data_create(
     char *supported_features,
     OpenAPI_max_integrity_protected_data_rate_e max_integrity_protected_data_rate,
     OpenAPI_max_integrity_protected_data_rate_e max_integrity_protected_data_rate_dl,
+    bool is_always_on_granted,
     int always_on_granted,
     char *gpsi,
     OpenAPI_up_security_t *up_security,
@@ -100,12 +111,17 @@ OpenAPI_pdu_session_created_data_t *OpenAPI_pdu_session_created_data_create(
     char *smf_service_instance_id,
     char *recovery_time,
     OpenAPI_list_t *dnai_list,
+    bool is_ipv6_multi_homing_ind,
     int ipv6_multi_homing_ind,
+    bool is_ma_accepted_ind,
     int ma_accepted_ind,
     char *home_provided_charging_id,
+    bool is_nef_ext_buf_support_ind,
     int nef_ext_buf_support_ind,
+    bool is_small_data_rate_control_enabled,
     int small_data_rate_control_enabled,
     char *ue_ipv6_interface_id,
+    bool is_ipv6_index,
     int ipv6_index,
     OpenAPI_ip_address_t *dn_aaa_address,
     OpenAPI_redundant_pdu_session_information_t *redundant_pdu_session_info

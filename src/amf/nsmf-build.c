@@ -66,6 +66,7 @@ ogs_sbi_request_t *amf_nsmf_pdusession_build_create_sm_context(
             ogs_expect_or_return_val(SmContextCreateData.gpsi, NULL);
         }
     }
+    SmContextCreateData.is_pdu_session_id = true;
     SmContextCreateData.pdu_session_id = sess->psi;
     ogs_expect_or_return_val(sess->dnn, NULL);
     SmContextCreateData.dnn = sess->dnn;
@@ -260,7 +261,10 @@ ogs_sbi_request_t *amf_nsmf_pdusession_build_update_sm_context(
         ogs_expect_or_return_val(SmContextUpdateData.ue_time_zone, NULL);
     }
 
-    SmContextUpdateData.release = param->release;
+    if (param->release) {
+        SmContextUpdateData.is_release = true;
+        SmContextUpdateData.release = param->release;
+    }
     SmContextUpdateData.cause = param->cause;
 
     request = ogs_sbi_build_request(&message);

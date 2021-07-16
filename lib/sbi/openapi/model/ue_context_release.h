@@ -21,12 +21,14 @@ extern "C" {
 typedef struct OpenAPI_ue_context_release_s OpenAPI_ue_context_release_t;
 typedef struct OpenAPI_ue_context_release_s {
     char *supi;
+    bool is_unauthenticated_supi;
     int unauthenticated_supi;
     struct OpenAPI_ng_ap_cause_s *ngap_cause;
 } OpenAPI_ue_context_release_t;
 
 OpenAPI_ue_context_release_t *OpenAPI_ue_context_release_create(
     char *supi,
+    bool is_unauthenticated_supi,
     int unauthenticated_supi,
     OpenAPI_ng_ap_cause_t *ngap_cause
 );

@@ -55,7 +55,6 @@ OpenAPI_hfc_node_id_t *OpenAPI_hfc_node_id_parseFromJSON(cJSON *hfc_node_idJSON)
         goto end;
     }
 
-    
     if (!cJSON_IsString(hfc_nid)) {
         ogs_error("OpenAPI_hfc_node_id_parseFromJSON() failed [hfc_nid]");
         goto end;

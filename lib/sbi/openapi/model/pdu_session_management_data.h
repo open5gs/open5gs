@@ -34,6 +34,7 @@ typedef struct OpenAPI_pdu_session_management_data_s {
     OpenAPI_pdu_session_type_e pdu_sess_type;
     char *ip_addr_ts;
     char *dnn;
+    bool is_pdu_session_id;
     int pdu_session_id;
     char *supp_feat;
 } OpenAPI_pdu_session_management_data_t;
@@ -51,6 +52,7 @@ OpenAPI_pdu_session_management_data_t *OpenAPI_pdu_session_management_data_creat
     OpenAPI_pdu_session_type_e pdu_sess_type,
     char *ip_addr_ts,
     char *dnn,
+    bool is_pdu_session_id,
     int pdu_session_id,
     char *supp_feat
 );

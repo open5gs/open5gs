@@ -72,7 +72,6 @@ OpenAPI_smf_registration_info_t *OpenAPI_smf_registration_info_parseFromJSON(cJS
     }
 
     OpenAPI_list_t *smf_registration_listList;
-    
     cJSON *smf_registration_list_local_nonprimitive;
     if (!cJSON_IsArray(smf_registration_list)){
         ogs_error("OpenAPI_smf_registration_info_parseFromJSON() failed [smf_registration_list]");

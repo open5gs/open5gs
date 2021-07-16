@@ -57,7 +57,9 @@ typedef struct OpenAPI_sm_context_update_data_s {
     struct OpenAPI_user_location_s *add_ue_location;
     OpenAPI_up_cnx_state_e up_cnx_state;
     OpenAPI_ho_state_e ho_state;
+    bool is_to_be_switched;
     int to_be_switched;
+    bool is_failed_to_be_switched;
     int failed_to_be_switched;
     struct OpenAPI_ref_to_binary_data_s *n1_sm_msg;
     struct OpenAPI_ref_to_binary_data_s *n2_sm_info;
@@ -65,28 +67,35 @@ typedef struct OpenAPI_sm_context_update_data_s {
     struct OpenAPI_ng_ran_target_id_s *target_id;
     char *target_serving_nf_id;
     char *sm_context_status_uri;
+    bool is_data_forwarding;
     int data_forwarding;
     struct OpenAPI_tunnel_info_s *n9_forwarding_tunnel;
     OpenAPI_list_t *n9_dl_forwarding_tnl_list;
     OpenAPI_list_t *n9_ul_forwarding_tnl_list;
     OpenAPI_list_t *eps_bearer_setup;
     OpenAPI_list_t *revoke_ebi_list;
+    bool is_release;
     int release;
     OpenAPI_cause_e cause;
     struct OpenAPI_ng_ap_cause_s *ng_ap_cause;
+    bool is__5g_mm_cause_value;
     int _5g_mm_cause_value;
     struct OpenAPI_snssai_s *s_nssai;
     struct OpenAPI_trace_data_s *trace_data;
     OpenAPI_eps_interworking_indication_e eps_interworking_ind;
+    bool is_an_type_can_be_changed;
     int an_type_can_be_changed;
     struct OpenAPI_ref_to_binary_data_s *n2_sm_info_ext1;
     OpenAPI_n2_sm_info_type_e n2_sm_info_type_ext1;
     OpenAPI_ma_release_indication_e ma_release_ind;
+    bool is_ma_nw_upgrade_ind;
     int ma_nw_upgrade_ind;
+    bool is_ma_request_ind;
     int ma_request_ind;
     struct OpenAPI_exemption_ind_s *exemption_ind;
     char *supported_features;
     struct OpenAPI_mo_exp_data_counter_s *mo_exp_data_counter;
+    bool is_extended_nas_sm_timer_ind;
     int extended_nas_sm_timer_ind;
     char forwarding_f_teid;
     OpenAPI_list_t *forwarding_bearer_contexts;
@@ -109,7 +118,9 @@ OpenAPI_sm_context_update_data_t *OpenAPI_sm_context_update_data_create(
     OpenAPI_user_location_t *add_ue_location,
     OpenAPI_up_cnx_state_e up_cnx_state,
     OpenAPI_ho_state_e ho_state,
+    bool is_to_be_switched,
     int to_be_switched,
+    bool is_failed_to_be_switched,
     int failed_to_be_switched,
     OpenAPI_ref_to_binary_data_t *n1_sm_msg,
     OpenAPI_ref_to_binary_data_t *n2_sm_info,
@@ -117,28 +128,35 @@ OpenAPI_sm_context_update_data_t *OpenAPI_sm_context_update_data_create(
     OpenAPI_ng_ran_target_id_t *target_id,
     char *target_serving_nf_id,
     char *sm_context_status_uri,
+    bool is_data_forwarding,
     int data_forwarding,
     OpenAPI_tunnel_info_t *n9_forwarding_tunnel,
     OpenAPI_list_t *n9_dl_forwarding_tnl_list,
     OpenAPI_list_t *n9_ul_forwarding_tnl_list,
     OpenAPI_list_t *eps_bearer_setup,
     OpenAPI_list_t *revoke_ebi_list,
+    bool is_release,
     int release,
     OpenAPI_cause_e cause,
     OpenAPI_ng_ap_cause_t *ng_ap_cause,
+    bool is__5g_mm_cause_value,
     int _5g_mm_cause_value,
     OpenAPI_snssai_t *s_nssai,
     OpenAPI_trace_data_t *trace_data,
     OpenAPI_eps_interworking_indication_e eps_interworking_ind,
+    bool is_an_type_can_be_changed,
     int an_type_can_be_changed,
     OpenAPI_ref_to_binary_data_t *n2_sm_info_ext1,
     OpenAPI_n2_sm_info_type_e n2_sm_info_type_ext1,
     OpenAPI_ma_release_indication_e ma_release_ind,
+    bool is_ma_nw_upgrade_ind,
     int ma_nw_upgrade_ind,
+    bool is_ma_request_ind,
     int ma_request_ind,
     OpenAPI_exemption_ind_t *exemption_ind,
     char *supported_features,
     OpenAPI_mo_exp_data_counter_t *mo_exp_data_counter,
+    bool is_extended_nas_sm_timer_ind,
     int extended_nas_sm_timer_ind,
     char forwarding_f_teid,
     OpenAPI_list_t *forwarding_bearer_contexts,

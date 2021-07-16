@@ -24,10 +24,15 @@ typedef struct OpenAPI_qos_monitoring_data_s {
     char *qm_id;
     OpenAPI_list_t *req_qos_mon_params;
     OpenAPI_list_t *rep_freqs;
+    bool is_rep_thresh_dl;
     int rep_thresh_dl;
+    bool is_rep_thresh_ul;
     int rep_thresh_ul;
+    bool is_rep_thresh_rp;
     int rep_thresh_rp;
+    bool is_wait_time;
     int wait_time;
+    bool is_rep_period;
     int rep_period;
     char *notify_uri;
     char *notify_corre_id;
@@ -37,10 +42,15 @@ OpenAPI_qos_monitoring_data_t *OpenAPI_qos_monitoring_data_create(
     char *qm_id,
     OpenAPI_list_t *req_qos_mon_params,
     OpenAPI_list_t *rep_freqs,
+    bool is_rep_thresh_dl,
     int rep_thresh_dl,
+    bool is_rep_thresh_ul,
     int rep_thresh_ul,
+    bool is_rep_thresh_rp,
     int rep_thresh_rp,
+    bool is_wait_time,
     int wait_time,
+    bool is_rep_period,
     int rep_period,
     char *notify_uri,
     char *notify_corre_id

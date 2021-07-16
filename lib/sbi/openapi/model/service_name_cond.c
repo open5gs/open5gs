@@ -55,7 +55,6 @@ OpenAPI_service_name_cond_t *OpenAPI_service_name_cond_parseFromJSON(cJSON *serv
         goto end;
     }
 
-    
     if (!cJSON_IsString(service_name)) {
         ogs_error("OpenAPI_service_name_cond_parseFromJSON() failed [service_name]");
         goto end;

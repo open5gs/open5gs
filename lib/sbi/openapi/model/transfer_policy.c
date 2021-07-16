@@ -91,7 +91,7 @@ OpenAPI_transfer_policy_t *OpenAPI_transfer_policy_parseFromJSON(cJSON *transfer
     OpenAPI_transfer_policy_t *transfer_policy_local_var = NULL;
     cJSON *max_bit_rate_dl = cJSON_GetObjectItemCaseSensitive(transfer_policyJSON, "maxBitRateDl");
 
-    if (max_bit_rate_dl) { 
+    if (max_bit_rate_dl) {
     if (!cJSON_IsString(max_bit_rate_dl)) {
         ogs_error("OpenAPI_transfer_policy_parseFromJSON() failed [max_bit_rate_dl]");
         goto end;
@@ -100,7 +100,7 @@ OpenAPI_transfer_policy_t *OpenAPI_transfer_policy_parseFromJSON(cJSON *transfer
 
     cJSON *max_bit_rate_ul = cJSON_GetObjectItemCaseSensitive(transfer_policyJSON, "maxBitRateUl");
 
-    if (max_bit_rate_ul) { 
+    if (max_bit_rate_ul) {
     if (!cJSON_IsString(max_bit_rate_ul)) {
         ogs_error("OpenAPI_transfer_policy_parseFromJSON() failed [max_bit_rate_ul]");
         goto end;
@@ -113,7 +113,6 @@ OpenAPI_transfer_policy_t *OpenAPI_transfer_policy_parseFromJSON(cJSON *transfer
         goto end;
     }
 
-    
     if (!cJSON_IsNumber(rating_group)) {
         ogs_error("OpenAPI_transfer_policy_parseFromJSON() failed [rating_group]");
         goto end;
@@ -126,7 +125,6 @@ OpenAPI_transfer_policy_t *OpenAPI_transfer_policy_parseFromJSON(cJSON *transfer
     }
 
     OpenAPI_time_window_t *rec_time_int_local_nonprim = NULL;
-    
     rec_time_int_local_nonprim = OpenAPI_time_window_parseFromJSON(rec_time_int);
 
     cJSON *trans_policy_id = cJSON_GetObjectItemCaseSensitive(transfer_policyJSON, "transPolicyId");
@@ -135,7 +133,6 @@ OpenAPI_transfer_policy_t *OpenAPI_transfer_policy_parseFromJSON(cJSON *transfer
         goto end;
     }
 
-    
     if (!cJSON_IsNumber(trans_policy_id)) {
         ogs_error("OpenAPI_transfer_policy_parseFromJSON() failed [trans_policy_id]");
         goto end;
@@ -144,8 +141,10 @@ OpenAPI_transfer_policy_t *OpenAPI_transfer_policy_parseFromJSON(cJSON *transfer
     transfer_policy_local_var = OpenAPI_transfer_policy_create (
         max_bit_rate_dl ? ogs_strdup_or_assert(max_bit_rate_dl->valuestring) : NULL,
         max_bit_rate_ul ? ogs_strdup_or_assert(max_bit_rate_ul->valuestring) : NULL,
+        
         rating_group->valuedouble,
         rec_time_int_local_nonprim,
+        
         trans_policy_id->valuedouble
     );
 

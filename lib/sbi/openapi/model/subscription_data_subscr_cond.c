@@ -244,7 +244,7 @@ OpenAPI_subscription_data_subscr_cond_t *OpenAPI_subscription_data_subscr_cond_p
     OpenAPI_subscription_data_subscr_cond_t *subscription_data_subscr_cond_local_var = NULL;
     cJSON *nf_instance_id = cJSON_GetObjectItemCaseSensitive(subscription_data_subscr_condJSON, "nfInstanceId");
 
-    if (nf_instance_id) { 
+    if (nf_instance_id) {
     if (!cJSON_IsString(nf_instance_id)) {
         ogs_error("OpenAPI_subscription_data_subscr_cond_parseFromJSON() failed [nf_instance_id]");
         goto end;
@@ -254,7 +254,7 @@ OpenAPI_subscription_data_subscr_cond_t *OpenAPI_subscription_data_subscr_cond_p
     cJSON *nf_type = cJSON_GetObjectItemCaseSensitive(subscription_data_subscr_condJSON, "nfType");
 
     OpenAPI_nf_type_e nf_typeVariable;
-    if (nf_type) { 
+    if (nf_type) {
     if (!cJSON_IsString(nf_type)) {
         ogs_error("OpenAPI_subscription_data_subscr_cond_parseFromJSON() failed [nf_type]");
         goto end;
@@ -264,7 +264,7 @@ OpenAPI_subscription_data_subscr_cond_t *OpenAPI_subscription_data_subscr_cond_p
 
     cJSON *service_name = cJSON_GetObjectItemCaseSensitive(subscription_data_subscr_condJSON, "serviceName");
 
-    if (service_name) { 
+    if (service_name) {
     if (!cJSON_IsString(service_name)) {
         ogs_error("OpenAPI_subscription_data_subscr_cond_parseFromJSON() failed [service_name]");
         goto end;
@@ -273,7 +273,7 @@ OpenAPI_subscription_data_subscr_cond_t *OpenAPI_subscription_data_subscr_cond_p
 
     cJSON *amf_set_id = cJSON_GetObjectItemCaseSensitive(subscription_data_subscr_condJSON, "amfSetId");
 
-    if (amf_set_id) { 
+    if (amf_set_id) {
     if (!cJSON_IsString(amf_set_id)) {
         ogs_error("OpenAPI_subscription_data_subscr_cond_parseFromJSON() failed [amf_set_id]");
         goto end;
@@ -282,7 +282,7 @@ OpenAPI_subscription_data_subscr_cond_t *OpenAPI_subscription_data_subscr_cond_p
 
     cJSON *amf_region_id = cJSON_GetObjectItemCaseSensitive(subscription_data_subscr_condJSON, "amfRegionId");
 
-    if (amf_region_id) { 
+    if (amf_region_id) {
     if (!cJSON_IsString(amf_region_id)) {
         ogs_error("OpenAPI_subscription_data_subscr_cond_parseFromJSON() failed [amf_region_id]");
         goto end;
@@ -292,7 +292,7 @@ OpenAPI_subscription_data_subscr_cond_t *OpenAPI_subscription_data_subscr_cond_p
     cJSON *guami_list = cJSON_GetObjectItemCaseSensitive(subscription_data_subscr_condJSON, "guamiList");
 
     OpenAPI_list_t *guami_listList;
-    if (guami_list) { 
+    if (guami_list) {
     cJSON *guami_list_local_nonprimitive;
     if (!cJSON_IsArray(guami_list)){
         ogs_error("OpenAPI_subscription_data_subscr_cond_parseFromJSON() failed [guami_list]");
@@ -315,7 +315,7 @@ OpenAPI_subscription_data_subscr_cond_t *OpenAPI_subscription_data_subscr_cond_p
     cJSON *snssai_list = cJSON_GetObjectItemCaseSensitive(subscription_data_subscr_condJSON, "snssaiList");
 
     OpenAPI_list_t *snssai_listList;
-    if (snssai_list) { 
+    if (snssai_list) {
     cJSON *snssai_list_local_nonprimitive;
     if (!cJSON_IsArray(snssai_list)){
         ogs_error("OpenAPI_subscription_data_subscr_cond_parseFromJSON() failed [snssai_list]");
@@ -338,7 +338,7 @@ OpenAPI_subscription_data_subscr_cond_t *OpenAPI_subscription_data_subscr_cond_p
     cJSON *nsi_list = cJSON_GetObjectItemCaseSensitive(subscription_data_subscr_condJSON, "nsiList");
 
     OpenAPI_list_t *nsi_listList;
-    if (nsi_list) { 
+    if (nsi_list) {
     cJSON *nsi_list_local;
     if (!cJSON_IsArray(nsi_list)) {
         ogs_error("OpenAPI_subscription_data_subscr_cond_parseFromJSON() failed [nsi_list]");
@@ -352,12 +352,12 @@ OpenAPI_subscription_data_subscr_cond_t *OpenAPI_subscription_data_subscr_cond_p
         goto end;
     }
     OpenAPI_list_add(nsi_listList , ogs_strdup_or_assert(nsi_list_local->valuestring));
-                    }
+    }
     }
 
     cJSON *nf_group_id = cJSON_GetObjectItemCaseSensitive(subscription_data_subscr_condJSON, "nfGroupId");
 
-    if (nf_group_id) { 
+    if (nf_group_id) {
     if (!cJSON_IsString(nf_group_id)) {
         ogs_error("OpenAPI_subscription_data_subscr_cond_parseFromJSON() failed [nf_group_id]");
         goto end;
@@ -366,7 +366,7 @@ OpenAPI_subscription_data_subscr_cond_t *OpenAPI_subscription_data_subscr_cond_p
 
     cJSON *nf_set_id = cJSON_GetObjectItemCaseSensitive(subscription_data_subscr_condJSON, "nfSetId");
 
-    if (nf_set_id) { 
+    if (nf_set_id) {
     if (!cJSON_IsString(nf_set_id)) {
         ogs_error("OpenAPI_subscription_data_subscr_cond_parseFromJSON() failed [nf_set_id]");
         goto end;
@@ -375,7 +375,7 @@ OpenAPI_subscription_data_subscr_cond_t *OpenAPI_subscription_data_subscr_cond_p
 
     cJSON *nf_service_set_id = cJSON_GetObjectItemCaseSensitive(subscription_data_subscr_condJSON, "nfServiceSetId");
 
-    if (nf_service_set_id) { 
+    if (nf_service_set_id) {
     if (!cJSON_IsString(nf_service_set_id)) {
         ogs_error("OpenAPI_subscription_data_subscr_cond_parseFromJSON() failed [nf_service_set_id]");
         goto end;
@@ -385,7 +385,7 @@ OpenAPI_subscription_data_subscr_cond_t *OpenAPI_subscription_data_subscr_cond_p
     cJSON *smf_serving_area = cJSON_GetObjectItemCaseSensitive(subscription_data_subscr_condJSON, "smfServingArea");
 
     OpenAPI_list_t *smf_serving_areaList;
-    if (smf_serving_area) { 
+    if (smf_serving_area) {
     cJSON *smf_serving_area_local;
     if (!cJSON_IsArray(smf_serving_area)) {
         ogs_error("OpenAPI_subscription_data_subscr_cond_parseFromJSON() failed [smf_serving_area]");
@@ -399,13 +399,13 @@ OpenAPI_subscription_data_subscr_cond_t *OpenAPI_subscription_data_subscr_cond_p
         goto end;
     }
     OpenAPI_list_add(smf_serving_areaList , ogs_strdup_or_assert(smf_serving_area_local->valuestring));
-                    }
+    }
     }
 
     cJSON *tai_list = cJSON_GetObjectItemCaseSensitive(subscription_data_subscr_condJSON, "taiList");
 
     OpenAPI_list_t *tai_listList;
-    if (tai_list) { 
+    if (tai_list) {
     cJSON *tai_list_local_nonprimitive;
     if (!cJSON_IsArray(tai_list)){
         ogs_error("OpenAPI_subscription_data_subscr_cond_parseFromJSON() failed [tai_list]");

@@ -104,20 +104,19 @@ OpenAPI_unrelated_class_1_t *OpenAPI_unrelated_class_1_parseFromJSON(cJSON *unre
     }
 
     OpenAPI_default_unrelated_class_1_t *default_unrelated_class_local_nonprim = NULL;
-    
     default_unrelated_class_local_nonprim = OpenAPI_default_unrelated_class_1_parseFromJSON(default_unrelated_class);
 
     cJSON *external_unrelated_class = cJSON_GetObjectItemCaseSensitive(unrelated_class_1JSON, "externalUnrelatedClass");
 
     OpenAPI_external_unrelated_class_t *external_unrelated_class_local_nonprim = NULL;
-    if (external_unrelated_class) { 
+    if (external_unrelated_class) {
     external_unrelated_class_local_nonprim = OpenAPI_external_unrelated_class_parseFromJSON(external_unrelated_class);
     }
 
     cJSON *service_type_unrelated_classes = cJSON_GetObjectItemCaseSensitive(unrelated_class_1JSON, "serviceTypeUnrelatedClasses");
 
     OpenAPI_list_t *service_type_unrelated_classesList;
-    if (service_type_unrelated_classes) { 
+    if (service_type_unrelated_classes) {
     cJSON *service_type_unrelated_classes_local_nonprimitive;
     if (!cJSON_IsArray(service_type_unrelated_classes)){
         ogs_error("OpenAPI_unrelated_class_1_parseFromJSON() failed [service_type_unrelated_classes]");

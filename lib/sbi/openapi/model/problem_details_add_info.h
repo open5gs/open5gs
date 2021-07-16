@@ -19,10 +19,12 @@ extern "C" {
 
 typedef struct OpenAPI_problem_details_add_info_s OpenAPI_problem_details_add_info_t;
 typedef struct OpenAPI_problem_details_add_info_s {
+    bool is_remote_error;
     int remote_error;
 } OpenAPI_problem_details_add_info_t;
 
 OpenAPI_problem_details_add_info_t *OpenAPI_problem_details_add_info_create(
+    bool is_remote_error,
     int remote_error
 );
 void OpenAPI_problem_details_add_info_free(OpenAPI_problem_details_add_info_t *problem_details_add_info);

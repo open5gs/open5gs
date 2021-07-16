@@ -114,7 +114,7 @@ OpenAPI_datalink_reporting_configuration_t *OpenAPI_datalink_reporting_configura
     cJSON *ddd_traffic_des = cJSON_GetObjectItemCaseSensitive(datalink_reporting_configurationJSON, "dddTrafficDes");
 
     OpenAPI_list_t *ddd_traffic_desList;
-    if (ddd_traffic_des) { 
+    if (ddd_traffic_des) {
     cJSON *ddd_traffic_des_local_nonprimitive;
     if (!cJSON_IsArray(ddd_traffic_des)){
         ogs_error("OpenAPI_datalink_reporting_configuration_parseFromJSON() failed [ddd_traffic_des]");
@@ -136,7 +136,7 @@ OpenAPI_datalink_reporting_configuration_t *OpenAPI_datalink_reporting_configura
 
     cJSON *dnn = cJSON_GetObjectItemCaseSensitive(datalink_reporting_configurationJSON, "dnn");
 
-    if (dnn) { 
+    if (dnn) {
     if (!cJSON_IsString(dnn)) {
         ogs_error("OpenAPI_datalink_reporting_configuration_parseFromJSON() failed [dnn]");
         goto end;
@@ -146,14 +146,14 @@ OpenAPI_datalink_reporting_configuration_t *OpenAPI_datalink_reporting_configura
     cJSON *slice = cJSON_GetObjectItemCaseSensitive(datalink_reporting_configurationJSON, "slice");
 
     OpenAPI_snssai_t *slice_local_nonprim = NULL;
-    if (slice) { 
+    if (slice) {
     slice_local_nonprim = OpenAPI_snssai_parseFromJSON(slice);
     }
 
     cJSON *ddd_status_list = cJSON_GetObjectItemCaseSensitive(datalink_reporting_configurationJSON, "dddStatusList");
 
     OpenAPI_list_t *ddd_status_listList;
-    if (ddd_status_list) { 
+    if (ddd_status_list) {
     cJSON *ddd_status_list_local_nonprimitive;
     if (!cJSON_IsArray(ddd_status_list)) {
         ogs_error("OpenAPI_datalink_reporting_configuration_parseFromJSON() failed [ddd_status_list]");

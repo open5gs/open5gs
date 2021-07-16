@@ -16,6 +16,7 @@ OpenAPI_n2_information_notification_t *OpenAPI_n2_information_notification_creat
     char *an_n2_ipv4_addr,
     char *an_n2_ipv6_addr,
     OpenAPI_guami_t *guami,
+    bool is_notify_source_ng_ran,
     int notify_source_ng_ran
 )
 {
@@ -34,6 +35,7 @@ OpenAPI_n2_information_notification_t *OpenAPI_n2_information_notification_creat
     n2_information_notification_local_var->an_n2_ipv4_addr = an_n2_ipv4_addr;
     n2_information_notification_local_var->an_n2_ipv6_addr = an_n2_ipv6_addr;
     n2_information_notification_local_var->guami = guami;
+    n2_information_notification_local_var->is_notify_source_ng_ran = is_notify_source_ng_ran;
     n2_information_notification_local_var->notify_source_ng_ran = notify_source_ng_ran;
 
     return n2_information_notification_local_var;
@@ -189,7 +191,7 @@ cJSON *OpenAPI_n2_information_notification_convertToJSON(OpenAPI_n2_information_
     }
     }
 
-    if (n2_information_notification->notify_source_ng_ran) {
+    if (n2_information_notification->is_notify_source_ng_ran) {
     if (cJSON_AddBoolToObject(item, "notifySourceNgRan", n2_information_notification->notify_source_ng_ran) == NULL) {
         ogs_error("OpenAPI_n2_information_notification_convertToJSON() failed [notify_source_ng_ran]");
         goto end;
@@ -209,7 +211,6 @@ OpenAPI_n2_information_notification_t *OpenAPI_n2_information_notification_parse
         goto end;
     }
 
-    
     if (!cJSON_IsString(n2_notify_subscription_id)) {
         ogs_error("OpenAPI_n2_information_notification_parseFromJSON() failed [n2_notify_subscription_id]");
         goto end;
@@ -218,14 +219,14 @@ OpenAPI_n2_information_notification_t *OpenAPI_n2_information_notification_parse
     cJSON *n2_info_container = cJSON_GetObjectItemCaseSensitive(n2_information_notificationJSON, "n2InfoContainer");
 
     OpenAPI_n2_info_container_t *n2_info_container_local_nonprim = NULL;
-    if (n2_info_container) { 
+    if (n2_info_container) {
     n2_info_container_local_nonprim = OpenAPI_n2_info_container_parseFromJSON(n2_info_container);
     }
 
     cJSON *to_release_session_list = cJSON_GetObjectItemCaseSensitive(n2_information_notificationJSON, "toReleaseSessionList");
 
     OpenAPI_list_t *to_release_session_listList;
-    if (to_release_session_list) { 
+    if (to_release_session_list) {
     cJSON *to_release_session_list_local;
     if (!cJSON_IsArray(to_release_session_list)) {
         ogs_error("OpenAPI_n2_information_notification_parseFromJSON() failed [to_release_session_list]");
@@ -239,12 +240,12 @@ OpenAPI_n2_information_notification_t *OpenAPI_n2_information_notification_parse
         goto end;
     }
     OpenAPI_list_add(to_release_session_listList , &to_release_session_list_local->valuedouble);
-                    }
+    }
     }
 
     cJSON *lcs_correlation_id = cJSON_GetObjectItemCaseSensitive(n2_information_notificationJSON, "lcsCorrelationId");
 
-    if (lcs_correlation_id) { 
+    if (lcs_correlation_id) {
     if (!cJSON_IsString(lcs_correlation_id)) {
         ogs_error("OpenAPI_n2_information_notification_parseFromJSON() failed [lcs_correlation_id]");
         goto end;
@@ -254,7 +255,7 @@ OpenAPI_n2_information_notification_t *OpenAPI_n2_information_notification_parse
     cJSON *notify_reason = cJSON_GetObjectItemCaseSensitive(n2_information_notificationJSON, "notifyReason");
 
     OpenAPI_n2_info_notify_reason_e notify_reasonVariable;
-    if (notify_reason) { 
+    if (notify_reason) {
     if (!cJSON_IsString(notify_reason)) {
         ogs_error("OpenAPI_n2_information_notification_parseFromJSON() failed [notify_reason]");
         goto end;
@@ -265,7 +266,7 @@ OpenAPI_n2_information_notification_t *OpenAPI_n2_information_notification_parse
     cJSON *smf_change_info_list = cJSON_GetObjectItemCaseSensitive(n2_information_notificationJSON, "smfChangeInfoList");
 
     OpenAPI_list_t *smf_change_info_listList;
-    if (smf_change_info_list) { 
+    if (smf_change_info_list) {
     cJSON *smf_change_info_list_local_nonprimitive;
     if (!cJSON_IsArray(smf_change_info_list)){
         ogs_error("OpenAPI_n2_information_notification_parseFromJSON() failed [smf_change_info_list]");
@@ -288,13 +289,13 @@ OpenAPI_n2_information_notification_t *OpenAPI_n2_information_notification_parse
     cJSON *ran_node_id = cJSON_GetObjectItemCaseSensitive(n2_information_notificationJSON, "ranNodeId");
 
     OpenAPI_global_ran_node_id_t *ran_node_id_local_nonprim = NULL;
-    if (ran_node_id) { 
+    if (ran_node_id) {
     ran_node_id_local_nonprim = OpenAPI_global_ran_node_id_parseFromJSON(ran_node_id);
     }
 
     cJSON *initial_amf_name = cJSON_GetObjectItemCaseSensitive(n2_information_notificationJSON, "initialAmfName");
 
-    if (initial_amf_name) { 
+    if (initial_amf_name) {
     if (!cJSON_IsString(initial_amf_name)) {
         ogs_error("OpenAPI_n2_information_notification_parseFromJSON() failed [initial_amf_name]");
         goto end;
@@ -303,7 +304,7 @@ OpenAPI_n2_information_notification_t *OpenAPI_n2_information_notification_parse
 
     cJSON *an_n2_ipv4_addr = cJSON_GetObjectItemCaseSensitive(n2_information_notificationJSON, "anN2IPv4Addr");
 
-    if (an_n2_ipv4_addr) { 
+    if (an_n2_ipv4_addr) {
     if (!cJSON_IsString(an_n2_ipv4_addr)) {
         ogs_error("OpenAPI_n2_information_notification_parseFromJSON() failed [an_n2_ipv4_addr]");
         goto end;
@@ -312,7 +313,7 @@ OpenAPI_n2_information_notification_t *OpenAPI_n2_information_notification_parse
 
     cJSON *an_n2_ipv6_addr = cJSON_GetObjectItemCaseSensitive(n2_information_notificationJSON, "anN2IPv6Addr");
 
-    if (an_n2_ipv6_addr) { 
+    if (an_n2_ipv6_addr) {
     if (!cJSON_IsString(an_n2_ipv6_addr)) {
         ogs_error("OpenAPI_n2_information_notification_parseFromJSON() failed [an_n2_ipv6_addr]");
         goto end;
@@ -322,13 +323,13 @@ OpenAPI_n2_information_notification_t *OpenAPI_n2_information_notification_parse
     cJSON *guami = cJSON_GetObjectItemCaseSensitive(n2_information_notificationJSON, "guami");
 
     OpenAPI_guami_t *guami_local_nonprim = NULL;
-    if (guami) { 
+    if (guami) {
     guami_local_nonprim = OpenAPI_guami_parseFromJSON(guami);
     }
 
     cJSON *notify_source_ng_ran = cJSON_GetObjectItemCaseSensitive(n2_information_notificationJSON, "notifySourceNgRan");
 
-    if (notify_source_ng_ran) { 
+    if (notify_source_ng_ran) {
     if (!cJSON_IsBool(notify_source_ng_ran)) {
         ogs_error("OpenAPI_n2_information_notification_parseFromJSON() failed [notify_source_ng_ran]");
         goto end;
@@ -347,6 +348,7 @@ OpenAPI_n2_information_notification_t *OpenAPI_n2_information_notification_parse
         an_n2_ipv4_addr ? ogs_strdup_or_assert(an_n2_ipv4_addr->valuestring) : NULL,
         an_n2_ipv6_addr ? ogs_strdup_or_assert(an_n2_ipv6_addr->valuestring) : NULL,
         guami ? guami_local_nonprim : NULL,
+        notify_source_ng_ran ? true : false,
         notify_source_ng_ran ? notify_source_ng_ran->valueint : 0
     );
 

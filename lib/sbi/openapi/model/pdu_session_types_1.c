@@ -73,7 +73,6 @@ OpenAPI_pdu_session_types_1_t *OpenAPI_pdu_session_types_1_parseFromJSON(cJSON *
     }
 
     OpenAPI_pdu_session_type_e default_session_typeVariable;
-    
     if (!cJSON_IsString(default_session_type)) {
         ogs_error("OpenAPI_pdu_session_types_1_parseFromJSON() failed [default_session_type]");
         goto end;
@@ -83,7 +82,7 @@ OpenAPI_pdu_session_types_1_t *OpenAPI_pdu_session_types_1_parseFromJSON(cJSON *
     cJSON *allowed_session_types = cJSON_GetObjectItemCaseSensitive(pdu_session_types_1JSON, "allowedSessionTypes");
 
     OpenAPI_list_t *allowed_session_typesList;
-    if (allowed_session_types) { 
+    if (allowed_session_types) {
     cJSON *allowed_session_types_local_nonprimitive;
     if (!cJSON_IsArray(allowed_session_types)) {
         ogs_error("OpenAPI_pdu_session_types_1_parseFromJSON() failed [allowed_session_types]");

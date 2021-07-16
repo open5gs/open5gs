@@ -160,13 +160,13 @@ OpenAPI_pp_data_t *OpenAPI_pp_data_parseFromJSON(cJSON *pp_dataJSON)
     cJSON *communication_characteristics = cJSON_GetObjectItemCaseSensitive(pp_dataJSON, "communicationCharacteristics");
 
     OpenAPI_communication_characteristics_t *communication_characteristics_local_nonprim = NULL;
-    if (communication_characteristics) { 
+    if (communication_characteristics) {
     communication_characteristics_local_nonprim = OpenAPI_communication_characteristics_parseFromJSON(communication_characteristics);
     }
 
     cJSON *supported_features = cJSON_GetObjectItemCaseSensitive(pp_dataJSON, "supportedFeatures");
 
-    if (supported_features) { 
+    if (supported_features) {
     if (!cJSON_IsString(supported_features)) {
         ogs_error("OpenAPI_pp_data_parseFromJSON() failed [supported_features]");
         goto end;
@@ -176,27 +176,27 @@ OpenAPI_pp_data_t *OpenAPI_pp_data_parseFromJSON(cJSON *pp_dataJSON)
     cJSON *expected_ue_behaviour_parameters = cJSON_GetObjectItemCaseSensitive(pp_dataJSON, "expectedUeBehaviourParameters");
 
     OpenAPI_expected_ue_behaviour_t *expected_ue_behaviour_parameters_local_nonprim = NULL;
-    if (expected_ue_behaviour_parameters) { 
+    if (expected_ue_behaviour_parameters) {
     expected_ue_behaviour_parameters_local_nonprim = OpenAPI_expected_ue_behaviour_parseFromJSON(expected_ue_behaviour_parameters);
     }
 
     cJSON *ec_restriction = cJSON_GetObjectItemCaseSensitive(pp_dataJSON, "ecRestriction");
 
     OpenAPI_ec_restriction_t *ec_restriction_local_nonprim = NULL;
-    if (ec_restriction) { 
+    if (ec_restriction) {
     ec_restriction_local_nonprim = OpenAPI_ec_restriction_parseFromJSON(ec_restriction);
     }
 
     cJSON *acs_info = cJSON_GetObjectItemCaseSensitive(pp_dataJSON, "acsInfo");
 
     OpenAPI_acs_info_rm_t *acs_info_local_nonprim = NULL;
-    if (acs_info) { 
+    if (acs_info) {
     acs_info_local_nonprim = OpenAPI_acs_info_rm_parseFromJSON(acs_info);
     }
 
     cJSON *stn_sr = cJSON_GetObjectItemCaseSensitive(pp_dataJSON, "stnSr");
 
-    if (stn_sr) { 
+    if (stn_sr) {
     if (!cJSON_IsString(stn_sr)) {
         ogs_error("OpenAPI_pp_data_parseFromJSON() failed [stn_sr]");
         goto end;
@@ -206,14 +206,14 @@ OpenAPI_pp_data_t *OpenAPI_pp_data_parseFromJSON(cJSON *pp_dataJSON)
     cJSON *lcs_privacy = cJSON_GetObjectItemCaseSensitive(pp_dataJSON, "lcsPrivacy");
 
     OpenAPI_lcs_privacy_t *lcs_privacy_local_nonprim = NULL;
-    if (lcs_privacy) { 
+    if (lcs_privacy) {
     lcs_privacy_local_nonprim = OpenAPI_lcs_privacy_parseFromJSON(lcs_privacy);
     }
 
     cJSON *sor_info = cJSON_GetObjectItemCaseSensitive(pp_dataJSON, "sorInfo");
 
     OpenAPI_sor_info_t *sor_info_local_nonprim = NULL;
-    if (sor_info) { 
+    if (sor_info) {
     sor_info_local_nonprim = OpenAPI_sor_info_parseFromJSON(sor_info);
     }
 

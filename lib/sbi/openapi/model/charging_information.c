@@ -103,7 +103,6 @@ OpenAPI_charging_information_t *OpenAPI_charging_information_parseFromJSON(cJSON
         goto end;
     }
 
-    
     if (!cJSON_IsString(primary_chf_address)) {
         ogs_error("OpenAPI_charging_information_parseFromJSON() failed [primary_chf_address]");
         goto end;
@@ -115,7 +114,6 @@ OpenAPI_charging_information_t *OpenAPI_charging_information_parseFromJSON(cJSON
         goto end;
     }
 
-    
     if (!cJSON_IsString(secondary_chf_address)) {
         ogs_error("OpenAPI_charging_information_parseFromJSON() failed [secondary_chf_address]");
         goto end;
@@ -123,7 +121,7 @@ OpenAPI_charging_information_t *OpenAPI_charging_information_parseFromJSON(cJSON
 
     cJSON *primary_chf_set_id = cJSON_GetObjectItemCaseSensitive(charging_informationJSON, "primaryChfSetId");
 
-    if (primary_chf_set_id) { 
+    if (primary_chf_set_id) {
     if (!cJSON_IsString(primary_chf_set_id)) {
         ogs_error("OpenAPI_charging_information_parseFromJSON() failed [primary_chf_set_id]");
         goto end;
@@ -132,7 +130,7 @@ OpenAPI_charging_information_t *OpenAPI_charging_information_parseFromJSON(cJSON
 
     cJSON *primary_chf_instance_id = cJSON_GetObjectItemCaseSensitive(charging_informationJSON, "primaryChfInstanceId");
 
-    if (primary_chf_instance_id) { 
+    if (primary_chf_instance_id) {
     if (!cJSON_IsString(primary_chf_instance_id)) {
         ogs_error("OpenAPI_charging_information_parseFromJSON() failed [primary_chf_instance_id]");
         goto end;
@@ -141,7 +139,7 @@ OpenAPI_charging_information_t *OpenAPI_charging_information_parseFromJSON(cJSON
 
     cJSON *secondary_chf_set_id = cJSON_GetObjectItemCaseSensitive(charging_informationJSON, "secondaryChfSetId");
 
-    if (secondary_chf_set_id) { 
+    if (secondary_chf_set_id) {
     if (!cJSON_IsString(secondary_chf_set_id)) {
         ogs_error("OpenAPI_charging_information_parseFromJSON() failed [secondary_chf_set_id]");
         goto end;
@@ -150,7 +148,7 @@ OpenAPI_charging_information_t *OpenAPI_charging_information_parseFromJSON(cJSON
 
     cJSON *secondary_chf_instance_id = cJSON_GetObjectItemCaseSensitive(charging_informationJSON, "secondaryChfInstanceId");
 
-    if (secondary_chf_instance_id) { 
+    if (secondary_chf_instance_id) {
     if (!cJSON_IsString(secondary_chf_instance_id)) {
         ogs_error("OpenAPI_charging_information_parseFromJSON() failed [secondary_chf_instance_id]");
         goto end;

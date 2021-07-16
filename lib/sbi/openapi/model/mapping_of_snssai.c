@@ -76,7 +76,6 @@ OpenAPI_mapping_of_snssai_t *OpenAPI_mapping_of_snssai_parseFromJSON(cJSON *mapp
     }
 
     OpenAPI_snssai_t *serving_snssai_local_nonprim = NULL;
-    
     serving_snssai_local_nonprim = OpenAPI_snssai_parseFromJSON(serving_snssai);
 
     cJSON *home_snssai = cJSON_GetObjectItemCaseSensitive(mapping_of_snssaiJSON, "homeSnssai");
@@ -86,7 +85,6 @@ OpenAPI_mapping_of_snssai_t *OpenAPI_mapping_of_snssai_parseFromJSON(cJSON *mapp
     }
 
     OpenAPI_snssai_t *home_snssai_local_nonprim = NULL;
-    
     home_snssai_local_nonprim = OpenAPI_snssai_parseFromJSON(home_snssai);
 
     mapping_of_snssai_local_var = OpenAPI_mapping_of_snssai_create (

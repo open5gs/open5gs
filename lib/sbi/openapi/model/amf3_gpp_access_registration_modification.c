@@ -6,11 +6,13 @@
 
 OpenAPI_amf3_gpp_access_registration_modification_t *OpenAPI_amf3_gpp_access_registration_modification_create(
     OpenAPI_guami_t *guami,
+    bool is_purge_flag,
     int purge_flag,
     char *pei,
     OpenAPI_ims_vo_ps_e ims_vo_ps,
     OpenAPI_list_t *backup_amf_info,
     OpenAPI_eps_interworking_info_t *eps_interworking_info,
+    bool is_ue_srvcc_capability,
     int ue_srvcc_capability
 )
 {
@@ -19,11 +21,13 @@ OpenAPI_amf3_gpp_access_registration_modification_t *OpenAPI_amf3_gpp_access_reg
         return NULL;
     }
     amf3_gpp_access_registration_modification_local_var->guami = guami;
+    amf3_gpp_access_registration_modification_local_var->is_purge_flag = is_purge_flag;
     amf3_gpp_access_registration_modification_local_var->purge_flag = purge_flag;
     amf3_gpp_access_registration_modification_local_var->pei = pei;
     amf3_gpp_access_registration_modification_local_var->ims_vo_ps = ims_vo_ps;
     amf3_gpp_access_registration_modification_local_var->backup_amf_info = backup_amf_info;
     amf3_gpp_access_registration_modification_local_var->eps_interworking_info = eps_interworking_info;
+    amf3_gpp_access_registration_modification_local_var->is_ue_srvcc_capability = is_ue_srvcc_capability;
     amf3_gpp_access_registration_modification_local_var->ue_srvcc_capability = ue_srvcc_capability;
 
     return amf3_gpp_access_registration_modification_local_var;
@@ -66,7 +70,7 @@ cJSON *OpenAPI_amf3_gpp_access_registration_modification_convertToJSON(OpenAPI_a
         goto end;
     }
 
-    if (amf3_gpp_access_registration_modification->purge_flag) {
+    if (amf3_gpp_access_registration_modification->is_purge_flag) {
     if (cJSON_AddBoolToObject(item, "purgeFlag", amf3_gpp_access_registration_modification->purge_flag) == NULL) {
         ogs_error("OpenAPI_amf3_gpp_access_registration_modification_convertToJSON() failed [purge_flag]");
         goto end;
@@ -120,7 +124,7 @@ cJSON *OpenAPI_amf3_gpp_access_registration_modification_convertToJSON(OpenAPI_a
     }
     }
 
-    if (amf3_gpp_access_registration_modification->ue_srvcc_capability) {
+    if (amf3_gpp_access_registration_modification->is_ue_srvcc_capability) {
     if (cJSON_AddBoolToObject(item, "ueSrvccCapability", amf3_gpp_access_registration_modification->ue_srvcc_capability) == NULL) {
         ogs_error("OpenAPI_amf3_gpp_access_registration_modification_convertToJSON() failed [ue_srvcc_capability]");
         goto end;
@@ -141,12 +145,11 @@ OpenAPI_amf3_gpp_access_registration_modification_t *OpenAPI_amf3_gpp_access_reg
     }
 
     OpenAPI_guami_t *guami_local_nonprim = NULL;
-    
     guami_local_nonprim = OpenAPI_guami_parseFromJSON(guami);
 
     cJSON *purge_flag = cJSON_GetObjectItemCaseSensitive(amf3_gpp_access_registration_modificationJSON, "purgeFlag");
 
-    if (purge_flag) { 
+    if (purge_flag) {
     if (!cJSON_IsBool(purge_flag)) {
         ogs_error("OpenAPI_amf3_gpp_access_registration_modification_parseFromJSON() failed [purge_flag]");
         goto end;
@@ -155,7 +158,7 @@ OpenAPI_amf3_gpp_access_registration_modification_t *OpenAPI_amf3_gpp_access_reg
 
     cJSON *pei = cJSON_GetObjectItemCaseSensitive(amf3_gpp_access_registration_modificationJSON, "pei");
 
-    if (pei) { 
+    if (pei) {
     if (!cJSON_IsString(pei)) {
         ogs_error("OpenAPI_amf3_gpp_access_registration_modification_parseFromJSON() failed [pei]");
         goto end;
@@ -165,7 +168,7 @@ OpenAPI_amf3_gpp_access_registration_modification_t *OpenAPI_amf3_gpp_access_reg
     cJSON *ims_vo_ps = cJSON_GetObjectItemCaseSensitive(amf3_gpp_access_registration_modificationJSON, "imsVoPs");
 
     OpenAPI_ims_vo_ps_e ims_vo_psVariable;
-    if (ims_vo_ps) { 
+    if (ims_vo_ps) {
     if (!cJSON_IsString(ims_vo_ps)) {
         ogs_error("OpenAPI_amf3_gpp_access_registration_modification_parseFromJSON() failed [ims_vo_ps]");
         goto end;
@@ -176,7 +179,7 @@ OpenAPI_amf3_gpp_access_registration_modification_t *OpenAPI_amf3_gpp_access_reg
     cJSON *backup_amf_info = cJSON_GetObjectItemCaseSensitive(amf3_gpp_access_registration_modificationJSON, "backupAmfInfo");
 
     OpenAPI_list_t *backup_amf_infoList;
-    if (backup_amf_info) { 
+    if (backup_amf_info) {
     cJSON *backup_amf_info_local_nonprimitive;
     if (!cJSON_IsArray(backup_amf_info)){
         ogs_error("OpenAPI_amf3_gpp_access_registration_modification_parseFromJSON() failed [backup_amf_info]");
@@ -199,13 +202,13 @@ OpenAPI_amf3_gpp_access_registration_modification_t *OpenAPI_amf3_gpp_access_reg
     cJSON *eps_interworking_info = cJSON_GetObjectItemCaseSensitive(amf3_gpp_access_registration_modificationJSON, "epsInterworkingInfo");
 
     OpenAPI_eps_interworking_info_t *eps_interworking_info_local_nonprim = NULL;
-    if (eps_interworking_info) { 
+    if (eps_interworking_info) {
     eps_interworking_info_local_nonprim = OpenAPI_eps_interworking_info_parseFromJSON(eps_interworking_info);
     }
 
     cJSON *ue_srvcc_capability = cJSON_GetObjectItemCaseSensitive(amf3_gpp_access_registration_modificationJSON, "ueSrvccCapability");
 
-    if (ue_srvcc_capability) { 
+    if (ue_srvcc_capability) {
     if (!cJSON_IsBool(ue_srvcc_capability)) {
         ogs_error("OpenAPI_amf3_gpp_access_registration_modification_parseFromJSON() failed [ue_srvcc_capability]");
         goto end;
@@ -214,11 +217,13 @@ OpenAPI_amf3_gpp_access_registration_modification_t *OpenAPI_amf3_gpp_access_reg
 
     amf3_gpp_access_registration_modification_local_var = OpenAPI_amf3_gpp_access_registration_modification_create (
         guami_local_nonprim,
+        purge_flag ? true : false,
         purge_flag ? purge_flag->valueint : 0,
         pei ? ogs_strdup_or_assert(pei->valuestring) : NULL,
         ims_vo_ps ? ims_vo_psVariable : 0,
         backup_amf_info ? backup_amf_infoList : NULL,
         eps_interworking_info ? eps_interworking_info_local_nonprim : NULL,
+        ue_srvcc_capability ? true : false,
         ue_srvcc_capability ? ue_srvcc_capability->valueint : 0
     );
 

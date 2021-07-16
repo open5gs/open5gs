@@ -170,7 +170,6 @@ OpenAPI_geographic_area_t *OpenAPI_geographic_area_parseFromJSON(cJSON *geograph
     }
 
     OpenAPI_supported_gad_shapes_t *shape_local_nonprim = NULL;
-    
     shape_local_nonprim = OpenAPI_supported_gad_shapes_parseFromJSON(shape);
 
     cJSON *point = cJSON_GetObjectItemCaseSensitive(geographic_areaJSON, "point");
@@ -180,7 +179,6 @@ OpenAPI_geographic_area_t *OpenAPI_geographic_area_parseFromJSON(cJSON *geograph
     }
 
     OpenAPI_geographical_coordinates_t *point_local_nonprim = NULL;
-    
     point_local_nonprim = OpenAPI_geographical_coordinates_parseFromJSON(point);
 
     cJSON *uncertainty = cJSON_GetObjectItemCaseSensitive(geographic_areaJSON, "uncertainty");
@@ -189,7 +187,6 @@ OpenAPI_geographic_area_t *OpenAPI_geographic_area_parseFromJSON(cJSON *geograph
         goto end;
     }
 
-    
     if (!cJSON_IsNumber(uncertainty)) {
         ogs_error("OpenAPI_geographic_area_parseFromJSON() failed [uncertainty]");
         goto end;
@@ -202,7 +199,6 @@ OpenAPI_geographic_area_t *OpenAPI_geographic_area_parseFromJSON(cJSON *geograph
     }
 
     OpenAPI_uncertainty_ellipse_t *uncertainty_ellipse_local_nonprim = NULL;
-    
     uncertainty_ellipse_local_nonprim = OpenAPI_uncertainty_ellipse_parseFromJSON(uncertainty_ellipse);
 
     cJSON *confidence = cJSON_GetObjectItemCaseSensitive(geographic_areaJSON, "confidence");
@@ -211,7 +207,6 @@ OpenAPI_geographic_area_t *OpenAPI_geographic_area_parseFromJSON(cJSON *geograph
         goto end;
     }
 
-    
     if (!cJSON_IsNumber(confidence)) {
         ogs_error("OpenAPI_geographic_area_parseFromJSON() failed [confidence]");
         goto end;
@@ -224,7 +219,6 @@ OpenAPI_geographic_area_t *OpenAPI_geographic_area_parseFromJSON(cJSON *geograph
     }
 
     OpenAPI_list_t *point_listList;
-    
     cJSON *point_list_local_nonprimitive;
     if (!cJSON_IsArray(point_list)){
         ogs_error("OpenAPI_geographic_area_parseFromJSON() failed [point_list]");
@@ -249,7 +243,6 @@ OpenAPI_geographic_area_t *OpenAPI_geographic_area_parseFromJSON(cJSON *geograph
         goto end;
     }
 
-    
     if (!cJSON_IsNumber(altitude)) {
         ogs_error("OpenAPI_geographic_area_parseFromJSON() failed [altitude]");
         goto end;
@@ -261,7 +254,6 @@ OpenAPI_geographic_area_t *OpenAPI_geographic_area_parseFromJSON(cJSON *geograph
         goto end;
     }
 
-    
     if (!cJSON_IsNumber(uncertainty_altitude)) {
         ogs_error("OpenAPI_geographic_area_parseFromJSON() failed [uncertainty_altitude]");
         goto end;
@@ -273,7 +265,6 @@ OpenAPI_geographic_area_t *OpenAPI_geographic_area_parseFromJSON(cJSON *geograph
         goto end;
     }
 
-    
     if (!cJSON_IsNumber(inner_radius)) {
         ogs_error("OpenAPI_geographic_area_parseFromJSON() failed [inner_radius]");
         goto end;
@@ -285,7 +276,6 @@ OpenAPI_geographic_area_t *OpenAPI_geographic_area_parseFromJSON(cJSON *geograph
         goto end;
     }
 
-    
     if (!cJSON_IsNumber(uncertainty_radius)) {
         ogs_error("OpenAPI_geographic_area_parseFromJSON() failed [uncertainty_radius]");
         goto end;
@@ -297,7 +287,6 @@ OpenAPI_geographic_area_t *OpenAPI_geographic_area_parseFromJSON(cJSON *geograph
         goto end;
     }
 
-    
     if (!cJSON_IsNumber(offset_angle)) {
         ogs_error("OpenAPI_geographic_area_parseFromJSON() failed [offset_angle]");
         goto end;
@@ -309,7 +298,6 @@ OpenAPI_geographic_area_t *OpenAPI_geographic_area_parseFromJSON(cJSON *geograph
         goto end;
     }
 
-    
     if (!cJSON_IsNumber(included_angle)) {
         ogs_error("OpenAPI_geographic_area_parseFromJSON() failed [included_angle]");
         goto end;
@@ -318,15 +306,23 @@ OpenAPI_geographic_area_t *OpenAPI_geographic_area_parseFromJSON(cJSON *geograph
     geographic_area_local_var = OpenAPI_geographic_area_create (
         shape_local_nonprim,
         point_local_nonprim,
+        
         uncertainty->valuedouble,
         uncertainty_ellipse_local_nonprim,
+        
         confidence->valuedouble,
         point_listList,
+        
         altitude->valuedouble,
+        
         uncertainty_altitude->valuedouble,
+        
         inner_radius->valuedouble,
+        
         uncertainty_radius->valuedouble,
+        
         offset_angle->valuedouble,
+        
         included_angle->valuedouble
     );
 

@@ -112,13 +112,13 @@ OpenAPI_vn_group_data_t *OpenAPI_vn_group_data_parseFromJSON(cJSON *vn_group_dat
     cJSON *pdu_session_types = cJSON_GetObjectItemCaseSensitive(vn_group_dataJSON, "pduSessionTypes");
 
     OpenAPI_pdu_session_types_1_t *pdu_session_types_local_nonprim = NULL;
-    if (pdu_session_types) { 
+    if (pdu_session_types) {
     pdu_session_types_local_nonprim = OpenAPI_pdu_session_types_1_parseFromJSON(pdu_session_types);
     }
 
     cJSON *dnn = cJSON_GetObjectItemCaseSensitive(vn_group_dataJSON, "dnn");
 
-    if (dnn) { 
+    if (dnn) {
     if (!cJSON_IsString(dnn)) {
         ogs_error("OpenAPI_vn_group_data_parseFromJSON() failed [dnn]");
         goto end;
@@ -128,14 +128,14 @@ OpenAPI_vn_group_data_t *OpenAPI_vn_group_data_parseFromJSON(cJSON *vn_group_dat
     cJSON *single_nssai = cJSON_GetObjectItemCaseSensitive(vn_group_dataJSON, "singleNssai");
 
     OpenAPI_snssai_t *single_nssai_local_nonprim = NULL;
-    if (single_nssai) { 
+    if (single_nssai) {
     single_nssai_local_nonprim = OpenAPI_snssai_parseFromJSON(single_nssai);
     }
 
     cJSON *app_descriptors = cJSON_GetObjectItemCaseSensitive(vn_group_dataJSON, "appDescriptors");
 
     OpenAPI_list_t *app_descriptorsList;
-    if (app_descriptors) { 
+    if (app_descriptors) {
     cJSON *app_descriptors_local_nonprimitive;
     if (!cJSON_IsArray(app_descriptors)){
         ogs_error("OpenAPI_vn_group_data_parseFromJSON() failed [app_descriptors]");

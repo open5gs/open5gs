@@ -53,7 +53,7 @@ OpenAPI_odb_data_t *OpenAPI_odb_data_parseFromJSON(cJSON *odb_dataJSON)
     cJSON *roaming_odb = cJSON_GetObjectItemCaseSensitive(odb_dataJSON, "roamingOdb");
 
     OpenAPI_roaming_odb_e roaming_odbVariable;
-    if (roaming_odb) { 
+    if (roaming_odb) {
     if (!cJSON_IsString(roaming_odb)) {
         ogs_error("OpenAPI_odb_data_parseFromJSON() failed [roaming_odb]");
         goto end;

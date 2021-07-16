@@ -80,7 +80,6 @@ OpenAPI_access_net_charging_identifier_t *OpenAPI_access_net_charging_identifier
         goto end;
     }
 
-    
     if (!cJSON_IsNumber(acc_net_cha_id_value)) {
         ogs_error("OpenAPI_access_net_charging_identifier_parseFromJSON() failed [acc_net_cha_id_value]");
         goto end;
@@ -89,7 +88,7 @@ OpenAPI_access_net_charging_identifier_t *OpenAPI_access_net_charging_identifier
     cJSON *flows = cJSON_GetObjectItemCaseSensitive(access_net_charging_identifierJSON, "flows");
 
     OpenAPI_list_t *flowsList;
-    if (flows) { 
+    if (flows) {
     cJSON *flows_local_nonprimitive;
     if (!cJSON_IsArray(flows)){
         ogs_error("OpenAPI_access_net_charging_identifier_parseFromJSON() failed [flows]");
@@ -110,6 +109,7 @@ OpenAPI_access_net_charging_identifier_t *OpenAPI_access_net_charging_identifier
     }
 
     access_net_charging_identifier_local_var = OpenAPI_access_net_charging_identifier_create (
+        
         acc_net_cha_id_value->valuedouble,
         flows ? flowsList : NULL
     );

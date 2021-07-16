@@ -10,8 +10,10 @@ OpenAPI_slice_info_for_registration_t *OpenAPI_slice_info_for_registration_creat
     OpenAPI_allowed_nssai_t *allowed_nssai_other_access,
     OpenAPI_list_t *s_nssai_for_mapping,
     OpenAPI_list_t *requested_nssai,
+    bool is_default_configured_snssai_ind,
     int default_configured_snssai_ind,
     OpenAPI_list_t *mapping_of_nssai,
+    bool is_request_mapping,
     int request_mapping
 )
 {
@@ -24,8 +26,10 @@ OpenAPI_slice_info_for_registration_t *OpenAPI_slice_info_for_registration_creat
     slice_info_for_registration_local_var->allowed_nssai_other_access = allowed_nssai_other_access;
     slice_info_for_registration_local_var->s_nssai_for_mapping = s_nssai_for_mapping;
     slice_info_for_registration_local_var->requested_nssai = requested_nssai;
+    slice_info_for_registration_local_var->is_default_configured_snssai_ind = is_default_configured_snssai_ind;
     slice_info_for_registration_local_var->default_configured_snssai_ind = default_configured_snssai_ind;
     slice_info_for_registration_local_var->mapping_of_nssai = mapping_of_nssai;
+    slice_info_for_registration_local_var->is_request_mapping = is_request_mapping;
     slice_info_for_registration_local_var->request_mapping = request_mapping;
 
     return slice_info_for_registration_local_var;
@@ -154,7 +158,7 @@ cJSON *OpenAPI_slice_info_for_registration_convertToJSON(OpenAPI_slice_info_for_
     }
     }
 
-    if (slice_info_for_registration->default_configured_snssai_ind) {
+    if (slice_info_for_registration->is_default_configured_snssai_ind) {
     if (cJSON_AddBoolToObject(item, "defaultConfiguredSnssaiInd", slice_info_for_registration->default_configured_snssai_ind) == NULL) {
         ogs_error("OpenAPI_slice_info_for_registration_convertToJSON() failed [default_configured_snssai_ind]");
         goto end;
@@ -181,7 +185,7 @@ cJSON *OpenAPI_slice_info_for_registration_convertToJSON(OpenAPI_slice_info_for_
     }
     }
 
-    if (slice_info_for_registration->request_mapping) {
+    if (slice_info_for_registration->is_request_mapping) {
     if (cJSON_AddBoolToObject(item, "requestMapping", slice_info_for_registration->request_mapping) == NULL) {
         ogs_error("OpenAPI_slice_info_for_registration_convertToJSON() failed [request_mapping]");
         goto end;
@@ -198,7 +202,7 @@ OpenAPI_slice_info_for_registration_t *OpenAPI_slice_info_for_registration_parse
     cJSON *subscribed_nssai = cJSON_GetObjectItemCaseSensitive(slice_info_for_registrationJSON, "subscribedNssai");
 
     OpenAPI_list_t *subscribed_nssaiList;
-    if (subscribed_nssai) { 
+    if (subscribed_nssai) {
     cJSON *subscribed_nssai_local_nonprimitive;
     if (!cJSON_IsArray(subscribed_nssai)){
         ogs_error("OpenAPI_slice_info_for_registration_parseFromJSON() failed [subscribed_nssai]");
@@ -221,21 +225,21 @@ OpenAPI_slice_info_for_registration_t *OpenAPI_slice_info_for_registration_parse
     cJSON *allowed_nssai_current_access = cJSON_GetObjectItemCaseSensitive(slice_info_for_registrationJSON, "allowedNssaiCurrentAccess");
 
     OpenAPI_allowed_nssai_t *allowed_nssai_current_access_local_nonprim = NULL;
-    if (allowed_nssai_current_access) { 
+    if (allowed_nssai_current_access) {
     allowed_nssai_current_access_local_nonprim = OpenAPI_allowed_nssai_parseFromJSON(allowed_nssai_current_access);
     }
 
     cJSON *allowed_nssai_other_access = cJSON_GetObjectItemCaseSensitive(slice_info_for_registrationJSON, "allowedNssaiOtherAccess");
 
     OpenAPI_allowed_nssai_t *allowed_nssai_other_access_local_nonprim = NULL;
-    if (allowed_nssai_other_access) { 
+    if (allowed_nssai_other_access) {
     allowed_nssai_other_access_local_nonprim = OpenAPI_allowed_nssai_parseFromJSON(allowed_nssai_other_access);
     }
 
     cJSON *s_nssai_for_mapping = cJSON_GetObjectItemCaseSensitive(slice_info_for_registrationJSON, "sNssaiForMapping");
 
     OpenAPI_list_t *s_nssai_for_mappingList;
-    if (s_nssai_for_mapping) { 
+    if (s_nssai_for_mapping) {
     cJSON *s_nssai_for_mapping_local_nonprimitive;
     if (!cJSON_IsArray(s_nssai_for_mapping)){
         ogs_error("OpenAPI_slice_info_for_registration_parseFromJSON() failed [s_nssai_for_mapping]");
@@ -258,7 +262,7 @@ OpenAPI_slice_info_for_registration_t *OpenAPI_slice_info_for_registration_parse
     cJSON *requested_nssai = cJSON_GetObjectItemCaseSensitive(slice_info_for_registrationJSON, "requestedNssai");
 
     OpenAPI_list_t *requested_nssaiList;
-    if (requested_nssai) { 
+    if (requested_nssai) {
     cJSON *requested_nssai_local_nonprimitive;
     if (!cJSON_IsArray(requested_nssai)){
         ogs_error("OpenAPI_slice_info_for_registration_parseFromJSON() failed [requested_nssai]");
@@ -280,7 +284,7 @@ OpenAPI_slice_info_for_registration_t *OpenAPI_slice_info_for_registration_parse
 
     cJSON *default_configured_snssai_ind = cJSON_GetObjectItemCaseSensitive(slice_info_for_registrationJSON, "defaultConfiguredSnssaiInd");
 
-    if (default_configured_snssai_ind) { 
+    if (default_configured_snssai_ind) {
     if (!cJSON_IsBool(default_configured_snssai_ind)) {
         ogs_error("OpenAPI_slice_info_for_registration_parseFromJSON() failed [default_configured_snssai_ind]");
         goto end;
@@ -290,7 +294,7 @@ OpenAPI_slice_info_for_registration_t *OpenAPI_slice_info_for_registration_parse
     cJSON *mapping_of_nssai = cJSON_GetObjectItemCaseSensitive(slice_info_for_registrationJSON, "mappingOfNssai");
 
     OpenAPI_list_t *mapping_of_nssaiList;
-    if (mapping_of_nssai) { 
+    if (mapping_of_nssai) {
     cJSON *mapping_of_nssai_local_nonprimitive;
     if (!cJSON_IsArray(mapping_of_nssai)){
         ogs_error("OpenAPI_slice_info_for_registration_parseFromJSON() failed [mapping_of_nssai]");
@@ -312,7 +316,7 @@ OpenAPI_slice_info_for_registration_t *OpenAPI_slice_info_for_registration_parse
 
     cJSON *request_mapping = cJSON_GetObjectItemCaseSensitive(slice_info_for_registrationJSON, "requestMapping");
 
-    if (request_mapping) { 
+    if (request_mapping) {
     if (!cJSON_IsBool(request_mapping)) {
         ogs_error("OpenAPI_slice_info_for_registration_parseFromJSON() failed [request_mapping]");
         goto end;
@@ -325,8 +329,10 @@ OpenAPI_slice_info_for_registration_t *OpenAPI_slice_info_for_registration_parse
         allowed_nssai_other_access ? allowed_nssai_other_access_local_nonprim : NULL,
         s_nssai_for_mapping ? s_nssai_for_mappingList : NULL,
         requested_nssai ? requested_nssaiList : NULL,
+        default_configured_snssai_ind ? true : false,
         default_configured_snssai_ind ? default_configured_snssai_ind->valueint : 0,
         mapping_of_nssai ? mapping_of_nssaiList : NULL,
+        request_mapping ? true : false,
         request_mapping ? request_mapping->valueint : 0
     );
 

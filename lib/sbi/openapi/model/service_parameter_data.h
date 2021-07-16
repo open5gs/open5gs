@@ -28,6 +28,7 @@ typedef struct OpenAPI_service_parameter_data_s {
     char *ue_ipv4;
     char *ue_ipv6;
     char *ue_mac;
+    bool is_any_ue_ind;
     int any_ue_ind;
     char *param_over_pc5;
     char *param_over_uu;
@@ -44,6 +45,7 @@ OpenAPI_service_parameter_data_t *OpenAPI_service_parameter_data_create(
     char *ue_ipv4,
     char *ue_ipv6,
     char *ue_mac,
+    bool is_any_ue_ind,
     int any_ue_ind,
     char *param_over_pc5,
     char *param_over_uu,

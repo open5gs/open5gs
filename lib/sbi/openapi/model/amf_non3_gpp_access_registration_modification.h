@@ -23,6 +23,7 @@ extern "C" {
 typedef struct OpenAPI_amf_non3_gpp_access_registration_modification_s OpenAPI_amf_non3_gpp_access_registration_modification_t;
 typedef struct OpenAPI_amf_non3_gpp_access_registration_modification_s {
     struct OpenAPI_guami_s *guami;
+    bool is_purge_flag;
     int purge_flag;
     char *pei;
     OpenAPI_ims_vo_ps_e ims_vo_ps;
@@ -31,6 +32,7 @@ typedef struct OpenAPI_amf_non3_gpp_access_registration_modification_s {
 
 OpenAPI_amf_non3_gpp_access_registration_modification_t *OpenAPI_amf_non3_gpp_access_registration_modification_create(
     OpenAPI_guami_t *guami,
+    bool is_purge_flag,
     int purge_flag,
     char *pei,
     OpenAPI_ims_vo_ps_e ims_vo_ps,

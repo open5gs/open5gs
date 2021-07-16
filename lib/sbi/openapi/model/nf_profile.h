@@ -50,6 +50,7 @@ typedef struct OpenAPI_nf_profile_s {
     char *nf_instance_name;
     OpenAPI_nf_type_e nf_type;
     OpenAPI_nf_status_e nf_status;
+    bool is_heart_beat_timer;
     int heart_beat_timer;
     OpenAPI_list_t *plmn_list;
     OpenAPI_list_t *snpn_list;
@@ -65,8 +66,11 @@ typedef struct OpenAPI_nf_profile_s {
     OpenAPI_list_t *allowed_nf_types;
     OpenAPI_list_t *allowed_nf_domains;
     OpenAPI_list_t *allowed_nssais;
+    bool is_priority;
     int priority;
+    bool is_capacity;
     int capacity;
+    bool is_load;
     int load;
     char *load_time_stamp;
     char *locality;
@@ -97,17 +101,22 @@ typedef struct OpenAPI_nf_profile_s {
     OpenAPI_list_t* hss_info_list;
     OpenAPI_object_t *custom_info;
     char *recovery_time;
+    bool is_nf_service_persistence;
     int nf_service_persistence;
     OpenAPI_list_t *nf_services;
     OpenAPI_list_t* nf_service_list;
+    bool is_nf_profile_changes_support_ind;
     int nf_profile_changes_support_ind;
+    bool is_nf_profile_changes_ind;
     int nf_profile_changes_ind;
     OpenAPI_list_t *default_notification_subscriptions;
     struct OpenAPI_lmf_info_s *lmf_info;
     struct OpenAPI_gmlc_info_s *gmlc_info;
     OpenAPI_list_t *nf_set_id_list;
     OpenAPI_list_t *serving_scope;
+    bool is_lc_h_support_ind;
     int lc_h_support_ind;
+    bool is_olc_h_support_ind;
     int olc_h_support_ind;
     OpenAPI_list_t* nf_set_recovery_time_list;
     OpenAPI_list_t* service_set_recovery_time_list;
@@ -120,6 +129,7 @@ OpenAPI_nf_profile_t *OpenAPI_nf_profile_create(
     char *nf_instance_name,
     OpenAPI_nf_type_e nf_type,
     OpenAPI_nf_status_e nf_status,
+    bool is_heart_beat_timer,
     int heart_beat_timer,
     OpenAPI_list_t *plmn_list,
     OpenAPI_list_t *snpn_list,
@@ -135,8 +145,11 @@ OpenAPI_nf_profile_t *OpenAPI_nf_profile_create(
     OpenAPI_list_t *allowed_nf_types,
     OpenAPI_list_t *allowed_nf_domains,
     OpenAPI_list_t *allowed_nssais,
+    bool is_priority,
     int priority,
+    bool is_capacity,
     int capacity,
+    bool is_load,
     int load,
     char *load_time_stamp,
     char *locality,
@@ -167,17 +180,22 @@ OpenAPI_nf_profile_t *OpenAPI_nf_profile_create(
     OpenAPI_list_t* hss_info_list,
     OpenAPI_object_t *custom_info,
     char *recovery_time,
+    bool is_nf_service_persistence,
     int nf_service_persistence,
     OpenAPI_list_t *nf_services,
     OpenAPI_list_t* nf_service_list,
+    bool is_nf_profile_changes_support_ind,
     int nf_profile_changes_support_ind,
+    bool is_nf_profile_changes_ind,
     int nf_profile_changes_ind,
     OpenAPI_list_t *default_notification_subscriptions,
     OpenAPI_lmf_info_t *lmf_info,
     OpenAPI_gmlc_info_t *gmlc_info,
     OpenAPI_list_t *nf_set_id_list,
     OpenAPI_list_t *serving_scope,
+    bool is_lc_h_support_ind,
     int lc_h_support_ind,
+    bool is_olc_h_support_ind,
     int olc_h_support_ind,
     OpenAPI_list_t* nf_set_recovery_time_list,
     OpenAPI_list_t* service_set_recovery_time_list,

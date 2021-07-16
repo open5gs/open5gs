@@ -97,6 +97,7 @@ ogs_sbi_request_t *pcf_nbsf_management_build_register(
                 ogs_expect_or_return_val(IpEndPoint->ipv6_address, NULL);
 
             }
+            IpEndPoint->is_port = true;
             IpEndPoint->port = nf_service->addr[i].port;
             OpenAPI_list_add(PcfIpEndPointList, IpEndPoint);
         }

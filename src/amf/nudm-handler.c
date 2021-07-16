@@ -221,8 +221,11 @@ int amf_nudm_sdm_handle_provisioned(
                                         session->name =
                                             ogs_strdup(DnnInfo->dnn);
                                         ogs_assert(session->name);
-                                        session->default_dnn_indicator =
-                                            DnnInfo->default_dnn_indicator;
+                                        if (DnnInfo->is_default_dnn_indicator ==
+                                                true) {
+                                            session->default_dnn_indicator =
+                                                DnnInfo->default_dnn_indicator;
+                                        }
                                         slice->num_of_session++;
                                     }
                                 }

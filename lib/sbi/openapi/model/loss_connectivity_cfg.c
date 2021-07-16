@@ -5,6 +5,7 @@
 #include "loss_connectivity_cfg.h"
 
 OpenAPI_loss_connectivity_cfg_t *OpenAPI_loss_connectivity_cfg_create(
+    bool is_max_detection_time,
     int max_detection_time
 )
 {
@@ -12,6 +13,7 @@ OpenAPI_loss_connectivity_cfg_t *OpenAPI_loss_connectivity_cfg_create(
     if (!loss_connectivity_cfg_local_var) {
         return NULL;
     }
+    loss_connectivity_cfg_local_var->is_max_detection_time = is_max_detection_time;
     loss_connectivity_cfg_local_var->max_detection_time = max_detection_time;
 
     return loss_connectivity_cfg_local_var;
@@ -36,7 +38,7 @@ cJSON *OpenAPI_loss_connectivity_cfg_convertToJSON(OpenAPI_loss_connectivity_cfg
     }
 
     item = cJSON_CreateObject();
-    if (loss_connectivity_cfg->max_detection_time) {
+    if (loss_connectivity_cfg->is_max_detection_time) {
     if (cJSON_AddNumberToObject(item, "maxDetectionTime", loss_connectivity_cfg->max_detection_time) == NULL) {
         ogs_error("OpenAPI_loss_connectivity_cfg_convertToJSON() failed [max_detection_time]");
         goto end;
@@ -52,7 +54,7 @@ OpenAPI_loss_connectivity_cfg_t *OpenAPI_loss_connectivity_cfg_parseFromJSON(cJS
     OpenAPI_loss_connectivity_cfg_t *loss_connectivity_cfg_local_var = NULL;
     cJSON *max_detection_time = cJSON_GetObjectItemCaseSensitive(loss_connectivity_cfgJSON, "maxDetectionTime");
 
-    if (max_detection_time) { 
+    if (max_detection_time) {
     if (!cJSON_IsNumber(max_detection_time)) {
         ogs_error("OpenAPI_loss_connectivity_cfg_parseFromJSON() failed [max_detection_time]");
         goto end;
@@ -60,6 +62,7 @@ OpenAPI_loss_connectivity_cfg_t *OpenAPI_loss_connectivity_cfg_parseFromJSON(cJS
     }
 
     loss_connectivity_cfg_local_var = OpenAPI_loss_connectivity_cfg_create (
+        max_detection_time ? true : false,
         max_detection_time ? max_detection_time->valuedouble : 0
     );
 

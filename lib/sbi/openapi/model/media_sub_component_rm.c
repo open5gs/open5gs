@@ -156,7 +156,7 @@ OpenAPI_media_sub_component_rm_t *OpenAPI_media_sub_component_rm_parseFromJSON(c
     cJSON *af_sig_protocol = cJSON_GetObjectItemCaseSensitive(media_sub_component_rmJSON, "afSigProtocol");
 
     OpenAPI_af_sig_protocol_e af_sig_protocolVariable;
-    if (af_sig_protocol) { 
+    if (af_sig_protocol) {
     if (!cJSON_IsString(af_sig_protocol)) {
         ogs_error("OpenAPI_media_sub_component_rm_parseFromJSON() failed [af_sig_protocol]");
         goto end;
@@ -167,7 +167,7 @@ OpenAPI_media_sub_component_rm_t *OpenAPI_media_sub_component_rm_parseFromJSON(c
     cJSON *ethf_descs = cJSON_GetObjectItemCaseSensitive(media_sub_component_rmJSON, "ethfDescs");
 
     OpenAPI_list_t *ethf_descsList;
-    if (ethf_descs) { 
+    if (ethf_descs) {
     cJSON *ethf_descs_local_nonprimitive;
     if (!cJSON_IsArray(ethf_descs)){
         ogs_error("OpenAPI_media_sub_component_rm_parseFromJSON() failed [ethf_descs]");
@@ -193,7 +193,6 @@ OpenAPI_media_sub_component_rm_t *OpenAPI_media_sub_component_rm_parseFromJSON(c
         goto end;
     }
 
-    
     if (!cJSON_IsNumber(f_num)) {
         ogs_error("OpenAPI_media_sub_component_rm_parseFromJSON() failed [f_num]");
         goto end;
@@ -202,7 +201,7 @@ OpenAPI_media_sub_component_rm_t *OpenAPI_media_sub_component_rm_parseFromJSON(c
     cJSON *f_descs = cJSON_GetObjectItemCaseSensitive(media_sub_component_rmJSON, "fDescs");
 
     OpenAPI_list_t *f_descsList;
-    if (f_descs) { 
+    if (f_descs) {
     cJSON *f_descs_local;
     if (!cJSON_IsArray(f_descs)) {
         ogs_error("OpenAPI_media_sub_component_rm_parseFromJSON() failed [f_descs]");
@@ -216,13 +215,13 @@ OpenAPI_media_sub_component_rm_t *OpenAPI_media_sub_component_rm_parseFromJSON(c
         goto end;
     }
     OpenAPI_list_add(f_descsList , ogs_strdup_or_assert(f_descs_local->valuestring));
-                    }
+    }
     }
 
     cJSON *f_status = cJSON_GetObjectItemCaseSensitive(media_sub_component_rmJSON, "fStatus");
 
     OpenAPI_flow_status_e f_statusVariable;
-    if (f_status) { 
+    if (f_status) {
     if (!cJSON_IsString(f_status)) {
         ogs_error("OpenAPI_media_sub_component_rm_parseFromJSON() failed [f_status]");
         goto end;
@@ -232,7 +231,7 @@ OpenAPI_media_sub_component_rm_t *OpenAPI_media_sub_component_rm_parseFromJSON(c
 
     cJSON *mar_bw_dl = cJSON_GetObjectItemCaseSensitive(media_sub_component_rmJSON, "marBwDl");
 
-    if (mar_bw_dl) { 
+    if (mar_bw_dl) {
     if (!cJSON_IsString(mar_bw_dl)) {
         ogs_error("OpenAPI_media_sub_component_rm_parseFromJSON() failed [mar_bw_dl]");
         goto end;
@@ -241,7 +240,7 @@ OpenAPI_media_sub_component_rm_t *OpenAPI_media_sub_component_rm_parseFromJSON(c
 
     cJSON *mar_bw_ul = cJSON_GetObjectItemCaseSensitive(media_sub_component_rmJSON, "marBwUl");
 
-    if (mar_bw_ul) { 
+    if (mar_bw_ul) {
     if (!cJSON_IsString(mar_bw_ul)) {
         ogs_error("OpenAPI_media_sub_component_rm_parseFromJSON() failed [mar_bw_ul]");
         goto end;
@@ -250,7 +249,7 @@ OpenAPI_media_sub_component_rm_t *OpenAPI_media_sub_component_rm_parseFromJSON(c
 
     cJSON *tos_tr_cl = cJSON_GetObjectItemCaseSensitive(media_sub_component_rmJSON, "tosTrCl");
 
-    if (tos_tr_cl) { 
+    if (tos_tr_cl) {
     if (!cJSON_IsString(tos_tr_cl)) {
         ogs_error("OpenAPI_media_sub_component_rm_parseFromJSON() failed [tos_tr_cl]");
         goto end;
@@ -260,7 +259,7 @@ OpenAPI_media_sub_component_rm_t *OpenAPI_media_sub_component_rm_parseFromJSON(c
     cJSON *flow_usage = cJSON_GetObjectItemCaseSensitive(media_sub_component_rmJSON, "flowUsage");
 
     OpenAPI_flow_usage_e flow_usageVariable;
-    if (flow_usage) { 
+    if (flow_usage) {
     if (!cJSON_IsString(flow_usage)) {
         ogs_error("OpenAPI_media_sub_component_rm_parseFromJSON() failed [flow_usage]");
         goto end;
@@ -271,6 +270,7 @@ OpenAPI_media_sub_component_rm_t *OpenAPI_media_sub_component_rm_parseFromJSON(c
     media_sub_component_rm_local_var = OpenAPI_media_sub_component_rm_create (
         af_sig_protocol ? af_sig_protocolVariable : 0,
         ethf_descs ? ethf_descsList : NULL,
+        
         f_num->valuedouble,
         f_descs ? f_descsList : NULL,
         f_status ? f_statusVariable : 0,

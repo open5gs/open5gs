@@ -114,7 +114,6 @@ OpenAPI_upu_info_t *OpenAPI_upu_info_parseFromJSON(cJSON *upu_infoJSON)
     }
 
     OpenAPI_list_t *upu_data_listList;
-    
     cJSON *upu_data_list_local_nonprimitive;
     if (!cJSON_IsArray(upu_data_list)){
         ogs_error("OpenAPI_upu_info_parseFromJSON() failed [upu_data_list]");
@@ -139,7 +138,6 @@ OpenAPI_upu_info_t *OpenAPI_upu_info_parseFromJSON(cJSON *upu_infoJSON)
         goto end;
     }
 
-    
     if (!cJSON_IsBool(upu_reg_ind)) {
         ogs_error("OpenAPI_upu_info_parseFromJSON() failed [upu_reg_ind]");
         goto end;
@@ -151,7 +149,6 @@ OpenAPI_upu_info_t *OpenAPI_upu_info_parseFromJSON(cJSON *upu_infoJSON)
         goto end;
     }
 
-    
     if (!cJSON_IsBool(upu_ack_ind)) {
         ogs_error("OpenAPI_upu_info_parseFromJSON() failed [upu_ack_ind]");
         goto end;
@@ -159,7 +156,7 @@ OpenAPI_upu_info_t *OpenAPI_upu_info_parseFromJSON(cJSON *upu_infoJSON)
 
     cJSON *upu_mac_iausf = cJSON_GetObjectItemCaseSensitive(upu_infoJSON, "upuMacIausf");
 
-    if (upu_mac_iausf) { 
+    if (upu_mac_iausf) {
     if (!cJSON_IsString(upu_mac_iausf)) {
         ogs_error("OpenAPI_upu_info_parseFromJSON() failed [upu_mac_iausf]");
         goto end;
@@ -168,7 +165,7 @@ OpenAPI_upu_info_t *OpenAPI_upu_info_parseFromJSON(cJSON *upu_infoJSON)
 
     cJSON *counter_upu = cJSON_GetObjectItemCaseSensitive(upu_infoJSON, "counterUpu");
 
-    if (counter_upu) { 
+    if (counter_upu) {
     if (!cJSON_IsString(counter_upu)) {
         ogs_error("OpenAPI_upu_info_parseFromJSON() failed [counter_upu]");
         goto end;
@@ -181,7 +178,6 @@ OpenAPI_upu_info_t *OpenAPI_upu_info_parseFromJSON(cJSON *upu_infoJSON)
         goto end;
     }
 
-    
     if (!cJSON_IsString(provisioning_time)) {
         ogs_error("OpenAPI_upu_info_parseFromJSON() failed [provisioning_time]");
         goto end;
@@ -189,7 +185,9 @@ OpenAPI_upu_info_t *OpenAPI_upu_info_parseFromJSON(cJSON *upu_infoJSON)
 
     upu_info_local_var = OpenAPI_upu_info_create (
         upu_data_listList,
+        
         upu_reg_ind->valueint,
+        
         upu_ack_ind->valueint,
         upu_mac_iausf ? ogs_strdup_or_assert(upu_mac_iausf->valuestring) : NULL,
         counter_upu ? ogs_strdup_or_assert(counter_upu->valuestring) : NULL,

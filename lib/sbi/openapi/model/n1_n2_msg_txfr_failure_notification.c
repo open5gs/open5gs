@@ -63,7 +63,6 @@ OpenAPI_n1_n2_msg_txfr_failure_notification_t *OpenAPI_n1_n2_msg_txfr_failure_no
     }
 
     OpenAPI_n1_n2_message_transfer_cause_e causeVariable;
-    
     if (!cJSON_IsString(cause)) {
         ogs_error("OpenAPI_n1_n2_msg_txfr_failure_notification_parseFromJSON() failed [cause]");
         goto end;
@@ -76,7 +75,6 @@ OpenAPI_n1_n2_msg_txfr_failure_notification_t *OpenAPI_n1_n2_msg_txfr_failure_no
         goto end;
     }
 
-    
     if (!cJSON_IsString(n1n2_msg_data_uri)) {
         ogs_error("OpenAPI_n1_n2_msg_txfr_failure_notification_parseFromJSON() failed [n1n2_msg_data_uri]");
         goto end;

@@ -60,7 +60,7 @@ OpenAPI_ue_context_relocated_data_t *OpenAPI_ue_context_relocated_data_parseFrom
     cJSON *ue_context = cJSON_GetObjectItemCaseSensitive(ue_context_relocated_dataJSON, "ueContext");
 
     OpenAPI_ue_context_t *ue_context_local_nonprim = NULL;
-    if (ue_context) { 
+    if (ue_context) {
     ue_context_local_nonprim = OpenAPI_ue_context_parseFromJSON(ue_context);
     }
 

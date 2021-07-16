@@ -7,6 +7,7 @@
 OpenAPI_subscribed_default_qos_t *OpenAPI_subscribed_default_qos_create(
     int _5qi,
     OpenAPI_arp_t *arp,
+    bool is_priority_level,
     int priority_level
 )
 {
@@ -16,6 +17,7 @@ OpenAPI_subscribed_default_qos_t *OpenAPI_subscribed_default_qos_create(
     }
     subscribed_default_qos_local_var->_5qi = _5qi;
     subscribed_default_qos_local_var->arp = arp;
+    subscribed_default_qos_local_var->is_priority_level = is_priority_level;
     subscribed_default_qos_local_var->priority_level = priority_level;
 
     return subscribed_default_qos_local_var;
@@ -57,7 +59,7 @@ cJSON *OpenAPI_subscribed_default_qos_convertToJSON(OpenAPI_subscribed_default_q
         goto end;
     }
 
-    if (subscribed_default_qos->priority_level) {
+    if (subscribed_default_qos->is_priority_level) {
     if (cJSON_AddNumberToObject(item, "priorityLevel", subscribed_default_qos->priority_level) == NULL) {
         ogs_error("OpenAPI_subscribed_default_qos_convertToJSON() failed [priority_level]");
         goto end;
@@ -77,7 +79,6 @@ OpenAPI_subscribed_default_qos_t *OpenAPI_subscribed_default_qos_parseFromJSON(c
         goto end;
     }
 
-    
     if (!cJSON_IsNumber(_5qi)) {
         ogs_error("OpenAPI_subscribed_default_qos_parseFromJSON() failed [_5qi]");
         goto end;
@@ -90,12 +91,11 @@ OpenAPI_subscribed_default_qos_t *OpenAPI_subscribed_default_qos_parseFromJSON(c
     }
 
     OpenAPI_arp_t *arp_local_nonprim = NULL;
-    
     arp_local_nonprim = OpenAPI_arp_parseFromJSON(arp);
 
     cJSON *priority_level = cJSON_GetObjectItemCaseSensitive(subscribed_default_qosJSON, "priorityLevel");
 
-    if (priority_level) { 
+    if (priority_level) {
     if (!cJSON_IsNumber(priority_level)) {
         ogs_error("OpenAPI_subscribed_default_qos_parseFromJSON() failed [priority_level]");
         goto end;
@@ -103,8 +103,10 @@ OpenAPI_subscribed_default_qos_t *OpenAPI_subscribed_default_qos_parseFromJSON(c
     }
 
     subscribed_default_qos_local_var = OpenAPI_subscribed_default_qos_create (
+        
         _5qi->valuedouble,
         arp_local_nonprim,
+        priority_level ? true : false,
         priority_level ? priority_level->valuedouble : 0
     );
 

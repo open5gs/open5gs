@@ -136,7 +136,7 @@ OpenAPI_qos_monitoring_report_t *OpenAPI_qos_monitoring_report_parseFromJSON(cJS
     cJSON *flows = cJSON_GetObjectItemCaseSensitive(qos_monitoring_reportJSON, "flows");
 
     OpenAPI_list_t *flowsList;
-    if (flows) { 
+    if (flows) {
     cJSON *flows_local_nonprimitive;
     if (!cJSON_IsArray(flows)){
         ogs_error("OpenAPI_qos_monitoring_report_parseFromJSON() failed [flows]");
@@ -159,7 +159,7 @@ OpenAPI_qos_monitoring_report_t *OpenAPI_qos_monitoring_report_parseFromJSON(cJS
     cJSON *ul_delays = cJSON_GetObjectItemCaseSensitive(qos_monitoring_reportJSON, "ulDelays");
 
     OpenAPI_list_t *ul_delaysList;
-    if (ul_delays) { 
+    if (ul_delays) {
     cJSON *ul_delays_local;
     if (!cJSON_IsArray(ul_delays)) {
         ogs_error("OpenAPI_qos_monitoring_report_parseFromJSON() failed [ul_delays]");
@@ -173,13 +173,13 @@ OpenAPI_qos_monitoring_report_t *OpenAPI_qos_monitoring_report_parseFromJSON(cJS
         goto end;
     }
     OpenAPI_list_add(ul_delaysList , &ul_delays_local->valuedouble);
-                    }
+    }
     }
 
     cJSON *dl_delays = cJSON_GetObjectItemCaseSensitive(qos_monitoring_reportJSON, "dlDelays");
 
     OpenAPI_list_t *dl_delaysList;
-    if (dl_delays) { 
+    if (dl_delays) {
     cJSON *dl_delays_local;
     if (!cJSON_IsArray(dl_delays)) {
         ogs_error("OpenAPI_qos_monitoring_report_parseFromJSON() failed [dl_delays]");
@@ -193,13 +193,13 @@ OpenAPI_qos_monitoring_report_t *OpenAPI_qos_monitoring_report_parseFromJSON(cJS
         goto end;
     }
     OpenAPI_list_add(dl_delaysList , &dl_delays_local->valuedouble);
-                    }
+    }
     }
 
     cJSON *rt_delays = cJSON_GetObjectItemCaseSensitive(qos_monitoring_reportJSON, "rtDelays");
 
     OpenAPI_list_t *rt_delaysList;
-    if (rt_delays) { 
+    if (rt_delays) {
     cJSON *rt_delays_local;
     if (!cJSON_IsArray(rt_delays)) {
         ogs_error("OpenAPI_qos_monitoring_report_parseFromJSON() failed [rt_delays]");
@@ -213,7 +213,7 @@ OpenAPI_qos_monitoring_report_t *OpenAPI_qos_monitoring_report_parseFromJSON(cJS
         goto end;
     }
     OpenAPI_list_add(rt_delaysList , &rt_delays_local->valuedouble);
-                    }
+    }
     }
 
     qos_monitoring_report_local_var = OpenAPI_qos_monitoring_report_create (

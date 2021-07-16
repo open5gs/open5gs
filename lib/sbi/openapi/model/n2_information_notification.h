@@ -35,6 +35,7 @@ typedef struct OpenAPI_n2_information_notification_s {
     char *an_n2_ipv4_addr;
     char *an_n2_ipv6_addr;
     struct OpenAPI_guami_s *guami;
+    bool is_notify_source_ng_ran;
     int notify_source_ng_ran;
 } OpenAPI_n2_information_notification_t;
 
@@ -50,6 +51,7 @@ OpenAPI_n2_information_notification_t *OpenAPI_n2_information_notification_creat
     char *an_n2_ipv4_addr,
     char *an_n2_ipv6_addr,
     OpenAPI_guami_t *guami,
+    bool is_notify_source_ng_ran,
     int notify_source_ng_ran
 );
 void OpenAPI_n2_information_notification_free(OpenAPI_n2_information_notification_t *n2_information_notification);

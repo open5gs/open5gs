@@ -76,7 +76,6 @@ OpenAPI_point_t *OpenAPI_point_parseFromJSON(cJSON *pointJSON)
     }
 
     OpenAPI_supported_gad_shapes_t *shape_local_nonprim = NULL;
-    
     shape_local_nonprim = OpenAPI_supported_gad_shapes_parseFromJSON(shape);
 
     cJSON *point = cJSON_GetObjectItemCaseSensitive(pointJSON, "point");
@@ -86,7 +85,6 @@ OpenAPI_point_t *OpenAPI_point_parseFromJSON(cJSON *pointJSON)
     }
 
     OpenAPI_geographical_coordinates_t *point_local_nonprim = NULL;
-    
     point_local_nonprim = OpenAPI_geographical_coordinates_parseFromJSON(point);
 
     point_local_var = OpenAPI_point_create (

@@ -24,6 +24,7 @@ typedef struct OpenAPI_pdu_session_create_error_s {
     struct OpenAPI_problem_details_s *error;
     char *n1sm_cause;
     struct OpenAPI_ref_to_binary_data_s *n1_sm_info_to_ue;
+    bool is_back_off_timer;
     int back_off_timer;
     char *recovery_time;
 } OpenAPI_pdu_session_create_error_t;
@@ -32,6 +33,7 @@ OpenAPI_pdu_session_create_error_t *OpenAPI_pdu_session_create_error_create(
     OpenAPI_problem_details_t *error,
     char *n1sm_cause,
     OpenAPI_ref_to_binary_data_t *n1_sm_info_to_ue,
+    bool is_back_off_timer,
     int back_off_timer,
     char *recovery_time
 );

@@ -31,6 +31,7 @@ typedef struct OpenAPI_dnn_configuration_1_s OpenAPI_dnn_configuration_1_t;
 typedef struct OpenAPI_dnn_configuration_1_s {
     struct OpenAPI_pdu_session_types_1_s *pdu_session_types;
     struct OpenAPI_ssc_modes_1_s *ssc_modes;
+    bool is_iwk_eps_ind;
     int iwk_eps_ind;
     struct OpenAPI_subscribed_default_qos_1_s *_5g_qos_profile;
     struct OpenAPI_ambr_1_s *session_ambr;
@@ -40,12 +41,16 @@ typedef struct OpenAPI_dnn_configuration_1_s {
     OpenAPI_pdu_session_continuity_ind_e pdu_session_continuity_ind;
     char *nidd_nef_id;
     struct OpenAPI_nidd_information_1_s *nidd_info;
+    bool is_redundant_session_allowed;
     int redundant_session_allowed;
     struct OpenAPI_acs_info_1_s *acs_info;
     OpenAPI_list_t *ipv4_frame_route_list;
     OpenAPI_list_t *ipv6_frame_route_list;
+    bool is_atsss_allowed;
     int atsss_allowed;
+    bool is_secondary_auth;
     int secondary_auth;
+    bool is_dn_aaa_ip_address_allocation;
     int dn_aaa_ip_address_allocation;
     struct OpenAPI_ip_address_1_s *dn_aaa_address;
     char *iptv_acc_ctrl_info;
@@ -54,6 +59,7 @@ typedef struct OpenAPI_dnn_configuration_1_s {
 OpenAPI_dnn_configuration_1_t *OpenAPI_dnn_configuration_1_create(
     OpenAPI_pdu_session_types_1_t *pdu_session_types,
     OpenAPI_ssc_modes_1_t *ssc_modes,
+    bool is_iwk_eps_ind,
     int iwk_eps_ind,
     OpenAPI_subscribed_default_qos_1_t *_5g_qos_profile,
     OpenAPI_ambr_1_t *session_ambr,
@@ -63,12 +69,16 @@ OpenAPI_dnn_configuration_1_t *OpenAPI_dnn_configuration_1_create(
     OpenAPI_pdu_session_continuity_ind_e pdu_session_continuity_ind,
     char *nidd_nef_id,
     OpenAPI_nidd_information_1_t *nidd_info,
+    bool is_redundant_session_allowed,
     int redundant_session_allowed,
     OpenAPI_acs_info_1_t *acs_info,
     OpenAPI_list_t *ipv4_frame_route_list,
     OpenAPI_list_t *ipv6_frame_route_list,
+    bool is_atsss_allowed,
     int atsss_allowed,
+    bool is_secondary_auth,
     int secondary_auth,
+    bool is_dn_aaa_ip_address_allocation,
     int dn_aaa_ip_address_allocation,
     OpenAPI_ip_address_1_t *dn_aaa_address,
     char *iptv_acc_ctrl_info

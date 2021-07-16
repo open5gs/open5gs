@@ -87,6 +87,10 @@ int udr_sbi_open(void)
 
         /* Build NF instance information. It will be transmitted to NRF. */
         ogs_sbi_nf_instance_build_default(nf_instance, udr_self()->nf_type);
+        ogs_sbi_nf_instance_add_allowed_nf_type(
+                nf_instance, OpenAPI_nf_type_PCF);
+        ogs_sbi_nf_instance_add_allowed_nf_type(
+                nf_instance, OpenAPI_nf_type_UDM);
 
         /* Build NF service information. It will be transmitted to NRF. */
         service = ogs_sbi_nf_service_build_default(nf_instance,
@@ -94,6 +98,8 @@ int udr_sbi_open(void)
         ogs_assert(service);
         ogs_sbi_nf_service_add_version(service, (char*)OGS_SBI_API_V1,
                 (char*)OGS_SBI_API_V1_0_0, NULL);
+        ogs_sbi_nf_service_add_allowed_nf_type(service, OpenAPI_nf_type_PCF);
+        ogs_sbi_nf_service_add_allowed_nf_type(service, OpenAPI_nf_type_UDM);
 
         /* Client callback is only used when NF sends to NRF */
         client = nf_instance->client;

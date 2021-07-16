@@ -25,6 +25,7 @@ typedef struct OpenAPI_pws_information_s {
     int serial_number;
     struct OpenAPI_n2_info_content_s *pws_container;
     OpenAPI_list_t *bc_empty_area_list;
+    bool is_send_ran_response;
     int send_ran_response;
     char *omc_id;
 } OpenAPI_pws_information_t;
@@ -34,6 +35,7 @@ OpenAPI_pws_information_t *OpenAPI_pws_information_create(
     int serial_number,
     OpenAPI_n2_info_content_t *pws_container,
     OpenAPI_list_t *bc_empty_area_list,
+    bool is_send_ran_response,
     int send_ran_response,
     char *omc_id
 );

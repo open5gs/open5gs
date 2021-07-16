@@ -93,7 +93,6 @@ OpenAPI_condition_data_t *OpenAPI_condition_data_parseFromJSON(cJSON *condition_
         goto end;
     }
 
-    
     if (!cJSON_IsString(cond_id)) {
         ogs_error("OpenAPI_condition_data_parseFromJSON() failed [cond_id]");
         goto end;
@@ -101,7 +100,7 @@ OpenAPI_condition_data_t *OpenAPI_condition_data_parseFromJSON(cJSON *condition_
 
     cJSON *activation_time = cJSON_GetObjectItemCaseSensitive(condition_dataJSON, "activationTime");
 
-    if (activation_time) { 
+    if (activation_time) {
     if (!cJSON_IsString(activation_time)) {
         ogs_error("OpenAPI_condition_data_parseFromJSON() failed [activation_time]");
         goto end;
@@ -110,7 +109,7 @@ OpenAPI_condition_data_t *OpenAPI_condition_data_parseFromJSON(cJSON *condition_
 
     cJSON *deactivation_time = cJSON_GetObjectItemCaseSensitive(condition_dataJSON, "deactivationTime");
 
-    if (deactivation_time) { 
+    if (deactivation_time) {
     if (!cJSON_IsString(deactivation_time)) {
         ogs_error("OpenAPI_condition_data_parseFromJSON() failed [deactivation_time]");
         goto end;
@@ -120,7 +119,7 @@ OpenAPI_condition_data_t *OpenAPI_condition_data_parseFromJSON(cJSON *condition_
     cJSON *access_type = cJSON_GetObjectItemCaseSensitive(condition_dataJSON, "accessType");
 
     OpenAPI_access_type_e access_typeVariable;
-    if (access_type) { 
+    if (access_type) {
     if (!cJSON_IsString(access_type)) {
         ogs_error("OpenAPI_condition_data_parseFromJSON() failed [access_type]");
         goto end;
@@ -131,7 +130,7 @@ OpenAPI_condition_data_t *OpenAPI_condition_data_parseFromJSON(cJSON *condition_
     cJSON *rat_type = cJSON_GetObjectItemCaseSensitive(condition_dataJSON, "ratType");
 
     OpenAPI_rat_type_e rat_typeVariable;
-    if (rat_type) { 
+    if (rat_type) {
     if (!cJSON_IsString(rat_type)) {
         ogs_error("OpenAPI_condition_data_parseFromJSON() failed [rat_type]");
         goto end;

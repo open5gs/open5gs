@@ -8,6 +8,7 @@ OpenAPI_sequence_number_t *OpenAPI_sequence_number_create(
     OpenAPI_sqn_scheme_e sqn_scheme,
     char *sqn,
     OpenAPI_list_t* last_indexes,
+    bool is_ind_length,
     int ind_length,
     OpenAPI_sign_e dif_sign
 )
@@ -19,6 +20,7 @@ OpenAPI_sequence_number_t *OpenAPI_sequence_number_create(
     sequence_number_local_var->sqn_scheme = sqn_scheme;
     sequence_number_local_var->sqn = sqn;
     sequence_number_local_var->last_indexes = last_indexes;
+    sequence_number_local_var->is_ind_length = is_ind_length;
     sequence_number_local_var->ind_length = ind_length;
     sequence_number_local_var->dif_sign = dif_sign;
 
@@ -80,7 +82,7 @@ cJSON *OpenAPI_sequence_number_convertToJSON(OpenAPI_sequence_number_t *sequence
         }
     }
 
-    if (sequence_number->ind_length) {
+    if (sequence_number->is_ind_length) {
     if (cJSON_AddNumberToObject(item, "indLength", sequence_number->ind_length) == NULL) {
         ogs_error("OpenAPI_sequence_number_convertToJSON() failed [ind_length]");
         goto end;
@@ -104,7 +106,7 @@ OpenAPI_sequence_number_t *OpenAPI_sequence_number_parseFromJSON(cJSON *sequence
     cJSON *sqn_scheme = cJSON_GetObjectItemCaseSensitive(sequence_numberJSON, "sqnScheme");
 
     OpenAPI_sqn_scheme_e sqn_schemeVariable;
-    if (sqn_scheme) { 
+    if (sqn_scheme) {
     if (!cJSON_IsString(sqn_scheme)) {
         ogs_error("OpenAPI_sequence_number_parseFromJSON() failed [sqn_scheme]");
         goto end;
@@ -114,7 +116,7 @@ OpenAPI_sequence_number_t *OpenAPI_sequence_number_parseFromJSON(cJSON *sequence
 
     cJSON *sqn = cJSON_GetObjectItemCaseSensitive(sequence_numberJSON, "sqn");
 
-    if (sqn) { 
+    if (sqn) {
     if (!cJSON_IsString(sqn)) {
         ogs_error("OpenAPI_sequence_number_parseFromJSON() failed [sqn]");
         goto end;
@@ -124,7 +126,7 @@ OpenAPI_sequence_number_t *OpenAPI_sequence_number_parseFromJSON(cJSON *sequence
     cJSON *last_indexes = cJSON_GetObjectItemCaseSensitive(sequence_numberJSON, "lastIndexes");
 
     OpenAPI_list_t *last_indexesList;
-    if (last_indexes) { 
+    if (last_indexes) {
     cJSON *last_indexes_local_map;
     if (!cJSON_IsObject(last_indexes)) {
         ogs_error("OpenAPI_sequence_number_parseFromJSON() failed [last_indexes]");
@@ -140,7 +142,7 @@ OpenAPI_sequence_number_t *OpenAPI_sequence_number_parseFromJSON(cJSON *sequence
 
     cJSON *ind_length = cJSON_GetObjectItemCaseSensitive(sequence_numberJSON, "indLength");
 
-    if (ind_length) { 
+    if (ind_length) {
     if (!cJSON_IsNumber(ind_length)) {
         ogs_error("OpenAPI_sequence_number_parseFromJSON() failed [ind_length]");
         goto end;
@@ -150,7 +152,7 @@ OpenAPI_sequence_number_t *OpenAPI_sequence_number_parseFromJSON(cJSON *sequence
     cJSON *dif_sign = cJSON_GetObjectItemCaseSensitive(sequence_numberJSON, "difSign");
 
     OpenAPI_sign_e dif_signVariable;
-    if (dif_sign) { 
+    if (dif_sign) {
     if (!cJSON_IsString(dif_sign)) {
         ogs_error("OpenAPI_sequence_number_parseFromJSON() failed [dif_sign]");
         goto end;
@@ -162,6 +164,7 @@ OpenAPI_sequence_number_t *OpenAPI_sequence_number_parseFromJSON(cJSON *sequence
         sqn_scheme ? sqn_schemeVariable : 0,
         sqn ? ogs_strdup_or_assert(sqn->valuestring) : NULL,
         last_indexes ? last_indexesList : NULL,
+        ind_length ? true : false,
         ind_length ? ind_length->valuedouble : 0,
         dif_sign ? dif_signVariable : 0
     );

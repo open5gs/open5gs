@@ -8,7 +8,9 @@ OpenAPI_mm_context_t *OpenAPI_mm_context_create(
     OpenAPI_access_type_e access_type,
     OpenAPI_nas_security_mode_t *nas_security_mode,
     OpenAPI_eps_nas_security_mode_t *eps_nas_security_mode,
+    bool is_nas_downlink_count,
     int nas_downlink_count,
+    bool is_nas_uplink_count,
     int nas_uplink_count,
     char ue_security_capability,
     char s1_ue_network_capability,
@@ -24,6 +26,7 @@ OpenAPI_mm_context_t *OpenAPI_mm_context_create(
     OpenAPI_global_ran_node_id_t *n3_iwf_id,
     OpenAPI_global_ran_node_id_t *wagf_id,
     OpenAPI_global_ran_node_id_t *tngf_id,
+    bool is_an_n2_ap_id,
     int an_n2_ap_id,
     OpenAPI_list_t *nssaa_status_list,
     OpenAPI_list_t *pending_nssai_mapping_list
@@ -36,7 +39,9 @@ OpenAPI_mm_context_t *OpenAPI_mm_context_create(
     mm_context_local_var->access_type = access_type;
     mm_context_local_var->nas_security_mode = nas_security_mode;
     mm_context_local_var->eps_nas_security_mode = eps_nas_security_mode;
+    mm_context_local_var->is_nas_downlink_count = is_nas_downlink_count;
     mm_context_local_var->nas_downlink_count = nas_downlink_count;
+    mm_context_local_var->is_nas_uplink_count = is_nas_uplink_count;
     mm_context_local_var->nas_uplink_count = nas_uplink_count;
     mm_context_local_var->ue_security_capability = ue_security_capability;
     mm_context_local_var->s1_ue_network_capability = s1_ue_network_capability;
@@ -52,6 +57,7 @@ OpenAPI_mm_context_t *OpenAPI_mm_context_create(
     mm_context_local_var->n3_iwf_id = n3_iwf_id;
     mm_context_local_var->wagf_id = wagf_id;
     mm_context_local_var->tngf_id = tngf_id;
+    mm_context_local_var->is_an_n2_ap_id = is_an_n2_ap_id;
     mm_context_local_var->an_n2_ap_id = an_n2_ap_id;
     mm_context_local_var->nssaa_status_list = nssaa_status_list;
     mm_context_local_var->pending_nssai_mapping_list = pending_nssai_mapping_list;
@@ -141,14 +147,14 @@ cJSON *OpenAPI_mm_context_convertToJSON(OpenAPI_mm_context_t *mm_context)
     }
     }
 
-    if (mm_context->nas_downlink_count) {
+    if (mm_context->is_nas_downlink_count) {
     if (cJSON_AddNumberToObject(item, "nasDownlinkCount", mm_context->nas_downlink_count) == NULL) {
         ogs_error("OpenAPI_mm_context_convertToJSON() failed [nas_downlink_count]");
         goto end;
     }
     }
 
-    if (mm_context->nas_uplink_count) {
+    if (mm_context->is_nas_uplink_count) {
     if (cJSON_AddNumberToObject(item, "nasUplinkCount", mm_context->nas_uplink_count) == NULL) {
         ogs_error("OpenAPI_mm_context_convertToJSON() failed [nas_uplink_count]");
         goto end;
@@ -331,7 +337,7 @@ cJSON *OpenAPI_mm_context_convertToJSON(OpenAPI_mm_context_t *mm_context)
     }
     }
 
-    if (mm_context->an_n2_ap_id) {
+    if (mm_context->is_an_n2_ap_id) {
     if (cJSON_AddNumberToObject(item, "anN2ApId", mm_context->an_n2_ap_id) == NULL) {
         ogs_error("OpenAPI_mm_context_convertToJSON() failed [an_n2_ap_id]");
         goto end;
@@ -392,7 +398,6 @@ OpenAPI_mm_context_t *OpenAPI_mm_context_parseFromJSON(cJSON *mm_contextJSON)
     }
 
     OpenAPI_access_type_e access_typeVariable;
-    
     if (!cJSON_IsString(access_type)) {
         ogs_error("OpenAPI_mm_context_parseFromJSON() failed [access_type]");
         goto end;
@@ -402,20 +407,20 @@ OpenAPI_mm_context_t *OpenAPI_mm_context_parseFromJSON(cJSON *mm_contextJSON)
     cJSON *nas_security_mode = cJSON_GetObjectItemCaseSensitive(mm_contextJSON, "nasSecurityMode");
 
     OpenAPI_nas_security_mode_t *nas_security_mode_local_nonprim = NULL;
-    if (nas_security_mode) { 
+    if (nas_security_mode) {
     nas_security_mode_local_nonprim = OpenAPI_nas_security_mode_parseFromJSON(nas_security_mode);
     }
 
     cJSON *eps_nas_security_mode = cJSON_GetObjectItemCaseSensitive(mm_contextJSON, "epsNasSecurityMode");
 
     OpenAPI_eps_nas_security_mode_t *eps_nas_security_mode_local_nonprim = NULL;
-    if (eps_nas_security_mode) { 
+    if (eps_nas_security_mode) {
     eps_nas_security_mode_local_nonprim = OpenAPI_eps_nas_security_mode_parseFromJSON(eps_nas_security_mode);
     }
 
     cJSON *nas_downlink_count = cJSON_GetObjectItemCaseSensitive(mm_contextJSON, "nasDownlinkCount");
 
-    if (nas_downlink_count) { 
+    if (nas_downlink_count) {
     if (!cJSON_IsNumber(nas_downlink_count)) {
         ogs_error("OpenAPI_mm_context_parseFromJSON() failed [nas_downlink_count]");
         goto end;
@@ -424,7 +429,7 @@ OpenAPI_mm_context_t *OpenAPI_mm_context_parseFromJSON(cJSON *mm_contextJSON)
 
     cJSON *nas_uplink_count = cJSON_GetObjectItemCaseSensitive(mm_contextJSON, "nasUplinkCount");
 
-    if (nas_uplink_count) { 
+    if (nas_uplink_count) {
     if (!cJSON_IsNumber(nas_uplink_count)) {
         ogs_error("OpenAPI_mm_context_parseFromJSON() failed [nas_uplink_count]");
         goto end;
@@ -433,7 +438,7 @@ OpenAPI_mm_context_t *OpenAPI_mm_context_parseFromJSON(cJSON *mm_contextJSON)
 
     cJSON *ue_security_capability = cJSON_GetObjectItemCaseSensitive(mm_contextJSON, "ueSecurityCapability");
 
-    if (ue_security_capability) { 
+    if (ue_security_capability) {
     if (!cJSON_IsNumber(ue_security_capability)) {
         ogs_error("OpenAPI_mm_context_parseFromJSON() failed [ue_security_capability]");
         goto end;
@@ -442,7 +447,7 @@ OpenAPI_mm_context_t *OpenAPI_mm_context_parseFromJSON(cJSON *mm_contextJSON)
 
     cJSON *s1_ue_network_capability = cJSON_GetObjectItemCaseSensitive(mm_contextJSON, "s1UeNetworkCapability");
 
-    if (s1_ue_network_capability) { 
+    if (s1_ue_network_capability) {
     if (!cJSON_IsNumber(s1_ue_network_capability)) {
         ogs_error("OpenAPI_mm_context_parseFromJSON() failed [s1_ue_network_capability]");
         goto end;
@@ -452,7 +457,7 @@ OpenAPI_mm_context_t *OpenAPI_mm_context_parseFromJSON(cJSON *mm_contextJSON)
     cJSON *allowed_nssai = cJSON_GetObjectItemCaseSensitive(mm_contextJSON, "allowedNssai");
 
     OpenAPI_list_t *allowed_nssaiList;
-    if (allowed_nssai) { 
+    if (allowed_nssai) {
     cJSON *allowed_nssai_local_nonprimitive;
     if (!cJSON_IsArray(allowed_nssai)){
         ogs_error("OpenAPI_mm_context_parseFromJSON() failed [allowed_nssai]");
@@ -475,7 +480,7 @@ OpenAPI_mm_context_t *OpenAPI_mm_context_parseFromJSON(cJSON *mm_contextJSON)
     cJSON *nssai_mapping_list = cJSON_GetObjectItemCaseSensitive(mm_contextJSON, "nssaiMappingList");
 
     OpenAPI_list_t *nssai_mapping_listList;
-    if (nssai_mapping_list) { 
+    if (nssai_mapping_list) {
     cJSON *nssai_mapping_list_local_nonprimitive;
     if (!cJSON_IsArray(nssai_mapping_list)){
         ogs_error("OpenAPI_mm_context_parseFromJSON() failed [nssai_mapping_list]");
@@ -498,7 +503,7 @@ OpenAPI_mm_context_t *OpenAPI_mm_context_parseFromJSON(cJSON *mm_contextJSON)
     cJSON *allowed_home_nssai = cJSON_GetObjectItemCaseSensitive(mm_contextJSON, "allowedHomeNssai");
 
     OpenAPI_list_t *allowed_home_nssaiList;
-    if (allowed_home_nssai) { 
+    if (allowed_home_nssai) {
     cJSON *allowed_home_nssai_local_nonprimitive;
     if (!cJSON_IsArray(allowed_home_nssai)){
         ogs_error("OpenAPI_mm_context_parseFromJSON() failed [allowed_home_nssai]");
@@ -521,7 +526,7 @@ OpenAPI_mm_context_t *OpenAPI_mm_context_parseFromJSON(cJSON *mm_contextJSON)
     cJSON *ns_instance_list = cJSON_GetObjectItemCaseSensitive(mm_contextJSON, "nsInstanceList");
 
     OpenAPI_list_t *ns_instance_listList;
-    if (ns_instance_list) { 
+    if (ns_instance_list) {
     cJSON *ns_instance_list_local;
     if (!cJSON_IsArray(ns_instance_list)) {
         ogs_error("OpenAPI_mm_context_parseFromJSON() failed [ns_instance_list]");
@@ -535,26 +540,26 @@ OpenAPI_mm_context_t *OpenAPI_mm_context_parseFromJSON(cJSON *mm_contextJSON)
         goto end;
     }
     OpenAPI_list_add(ns_instance_listList , ogs_strdup_or_assert(ns_instance_list_local->valuestring));
-                    }
+    }
     }
 
     cJSON *expected_u_ebehavior = cJSON_GetObjectItemCaseSensitive(mm_contextJSON, "expectedUEbehavior");
 
     OpenAPI_expected_ue_behavior_t *expected_u_ebehavior_local_nonprim = NULL;
-    if (expected_u_ebehavior) { 
+    if (expected_u_ebehavior) {
     expected_u_ebehavior_local_nonprim = OpenAPI_expected_ue_behavior_parseFromJSON(expected_u_ebehavior);
     }
 
     cJSON *ue_differentiation_info = cJSON_GetObjectItemCaseSensitive(mm_contextJSON, "ueDifferentiationInfo");
 
     OpenAPI_ue_differentiation_info_t *ue_differentiation_info_local_nonprim = NULL;
-    if (ue_differentiation_info) { 
+    if (ue_differentiation_info) {
     ue_differentiation_info_local_nonprim = OpenAPI_ue_differentiation_info_parseFromJSON(ue_differentiation_info);
     }
 
     cJSON *plmn_assi_ue_radio_cap_id = cJSON_GetObjectItemCaseSensitive(mm_contextJSON, "plmnAssiUeRadioCapId");
 
-    if (plmn_assi_ue_radio_cap_id) { 
+    if (plmn_assi_ue_radio_cap_id) {
     if (!cJSON_IsNumber(plmn_assi_ue_radio_cap_id)) {
         ogs_error("OpenAPI_mm_context_parseFromJSON() failed [plmn_assi_ue_radio_cap_id]");
         goto end;
@@ -563,7 +568,7 @@ OpenAPI_mm_context_t *OpenAPI_mm_context_parseFromJSON(cJSON *mm_contextJSON)
 
     cJSON *man_assi_ue_radio_cap_id = cJSON_GetObjectItemCaseSensitive(mm_contextJSON, "manAssiUeRadioCapId");
 
-    if (man_assi_ue_radio_cap_id) { 
+    if (man_assi_ue_radio_cap_id) {
     if (!cJSON_IsNumber(man_assi_ue_radio_cap_id)) {
         ogs_error("OpenAPI_mm_context_parseFromJSON() failed [man_assi_ue_radio_cap_id]");
         goto end;
@@ -572,7 +577,7 @@ OpenAPI_mm_context_t *OpenAPI_mm_context_parseFromJSON(cJSON *mm_contextJSON)
 
     cJSON *ucmf_dic_entry_id = cJSON_GetObjectItemCaseSensitive(mm_contextJSON, "ucmfDicEntryId");
 
-    if (ucmf_dic_entry_id) { 
+    if (ucmf_dic_entry_id) {
     if (!cJSON_IsString(ucmf_dic_entry_id)) {
         ogs_error("OpenAPI_mm_context_parseFromJSON() failed [ucmf_dic_entry_id]");
         goto end;
@@ -582,27 +587,27 @@ OpenAPI_mm_context_t *OpenAPI_mm_context_parseFromJSON(cJSON *mm_contextJSON)
     cJSON *n3_iwf_id = cJSON_GetObjectItemCaseSensitive(mm_contextJSON, "n3IwfId");
 
     OpenAPI_global_ran_node_id_t *n3_iwf_id_local_nonprim = NULL;
-    if (n3_iwf_id) { 
+    if (n3_iwf_id) {
     n3_iwf_id_local_nonprim = OpenAPI_global_ran_node_id_parseFromJSON(n3_iwf_id);
     }
 
     cJSON *wagf_id = cJSON_GetObjectItemCaseSensitive(mm_contextJSON, "wagfId");
 
     OpenAPI_global_ran_node_id_t *wagf_id_local_nonprim = NULL;
-    if (wagf_id) { 
+    if (wagf_id) {
     wagf_id_local_nonprim = OpenAPI_global_ran_node_id_parseFromJSON(wagf_id);
     }
 
     cJSON *tngf_id = cJSON_GetObjectItemCaseSensitive(mm_contextJSON, "tngfId");
 
     OpenAPI_global_ran_node_id_t *tngf_id_local_nonprim = NULL;
-    if (tngf_id) { 
+    if (tngf_id) {
     tngf_id_local_nonprim = OpenAPI_global_ran_node_id_parseFromJSON(tngf_id);
     }
 
     cJSON *an_n2_ap_id = cJSON_GetObjectItemCaseSensitive(mm_contextJSON, "anN2ApId");
 
-    if (an_n2_ap_id) { 
+    if (an_n2_ap_id) {
     if (!cJSON_IsNumber(an_n2_ap_id)) {
         ogs_error("OpenAPI_mm_context_parseFromJSON() failed [an_n2_ap_id]");
         goto end;
@@ -612,7 +617,7 @@ OpenAPI_mm_context_t *OpenAPI_mm_context_parseFromJSON(cJSON *mm_contextJSON)
     cJSON *nssaa_status_list = cJSON_GetObjectItemCaseSensitive(mm_contextJSON, "nssaaStatusList");
 
     OpenAPI_list_t *nssaa_status_listList;
-    if (nssaa_status_list) { 
+    if (nssaa_status_list) {
     cJSON *nssaa_status_list_local_nonprimitive;
     if (!cJSON_IsArray(nssaa_status_list)){
         ogs_error("OpenAPI_mm_context_parseFromJSON() failed [nssaa_status_list]");
@@ -635,7 +640,7 @@ OpenAPI_mm_context_t *OpenAPI_mm_context_parseFromJSON(cJSON *mm_contextJSON)
     cJSON *pending_nssai_mapping_list = cJSON_GetObjectItemCaseSensitive(mm_contextJSON, "pendingNssaiMappingList");
 
     OpenAPI_list_t *pending_nssai_mapping_listList;
-    if (pending_nssai_mapping_list) { 
+    if (pending_nssai_mapping_list) {
     cJSON *pending_nssai_mapping_list_local_nonprimitive;
     if (!cJSON_IsArray(pending_nssai_mapping_list)){
         ogs_error("OpenAPI_mm_context_parseFromJSON() failed [pending_nssai_mapping_list]");
@@ -659,7 +664,9 @@ OpenAPI_mm_context_t *OpenAPI_mm_context_parseFromJSON(cJSON *mm_contextJSON)
         access_typeVariable,
         nas_security_mode ? nas_security_mode_local_nonprim : NULL,
         eps_nas_security_mode ? eps_nas_security_mode_local_nonprim : NULL,
+        nas_downlink_count ? true : false,
         nas_downlink_count ? nas_downlink_count->valuedouble : 0,
+        nas_uplink_count ? true : false,
         nas_uplink_count ? nas_uplink_count->valuedouble : 0,
         ue_security_capability ? ue_security_capability->valueint : 0,
         s1_ue_network_capability ? s1_ue_network_capability->valueint : 0,
@@ -675,6 +682,7 @@ OpenAPI_mm_context_t *OpenAPI_mm_context_parseFromJSON(cJSON *mm_contextJSON)
         n3_iwf_id ? n3_iwf_id_local_nonprim : NULL,
         wagf_id ? wagf_id_local_nonprim : NULL,
         tngf_id ? tngf_id_local_nonprim : NULL,
+        an_n2_ap_id ? true : false,
         an_n2_ap_id ? an_n2_ap_id->valuedouble : 0,
         nssaa_status_list ? nssaa_status_listList : NULL,
         pending_nssai_mapping_list ? pending_nssai_mapping_listList : NULL

@@ -55,7 +55,6 @@ OpenAPI_pcscf_restoration_notification_t *OpenAPI_pcscf_restoration_notification
         goto end;
     }
 
-    
     if (!cJSON_IsString(supi)) {
         ogs_error("OpenAPI_pcscf_restoration_notification_parseFromJSON() failed [supi]");
         goto end;

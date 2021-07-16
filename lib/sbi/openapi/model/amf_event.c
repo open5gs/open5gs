@@ -6,14 +6,19 @@
 
 OpenAPI_amf_event_t *OpenAPI_amf_event_create(
     OpenAPI_amf_event_type_t *type,
+    bool is_immediate_flag,
     int immediate_flag,
     OpenAPI_list_t *area_list,
     OpenAPI_list_t *location_filter_list,
+    bool is_ref_id,
     int ref_id,
     OpenAPI_list_t *traffic_descriptor_list,
+    bool is_report_ue_reachable,
     int report_ue_reachable,
     OpenAPI_reachability_filter_t *reachability_filter,
+    bool is_max_reports,
     int max_reports,
+    bool is_max_response_time,
     int max_response_time
 )
 {
@@ -22,14 +27,19 @@ OpenAPI_amf_event_t *OpenAPI_amf_event_create(
         return NULL;
     }
     amf_event_local_var->type = type;
+    amf_event_local_var->is_immediate_flag = is_immediate_flag;
     amf_event_local_var->immediate_flag = immediate_flag;
     amf_event_local_var->area_list = area_list;
     amf_event_local_var->location_filter_list = location_filter_list;
+    amf_event_local_var->is_ref_id = is_ref_id;
     amf_event_local_var->ref_id = ref_id;
     amf_event_local_var->traffic_descriptor_list = traffic_descriptor_list;
+    amf_event_local_var->is_report_ue_reachable = is_report_ue_reachable;
     amf_event_local_var->report_ue_reachable = report_ue_reachable;
     amf_event_local_var->reachability_filter = reachability_filter;
+    amf_event_local_var->is_max_reports = is_max_reports;
     amf_event_local_var->max_reports = max_reports;
+    amf_event_local_var->is_max_response_time = is_max_response_time;
     amf_event_local_var->max_response_time = max_response_time;
 
     return amf_event_local_var;
@@ -79,7 +89,7 @@ cJSON *OpenAPI_amf_event_convertToJSON(OpenAPI_amf_event_t *amf_event)
         goto end;
     }
 
-    if (amf_event->immediate_flag) {
+    if (amf_event->is_immediate_flag) {
     if (cJSON_AddBoolToObject(item, "immediateFlag", amf_event->immediate_flag) == NULL) {
         ogs_error("OpenAPI_amf_event_convertToJSON() failed [immediate_flag]");
         goto end;
@@ -126,7 +136,7 @@ cJSON *OpenAPI_amf_event_convertToJSON(OpenAPI_amf_event_t *amf_event)
     }
     }
 
-    if (amf_event->ref_id) {
+    if (amf_event->is_ref_id) {
     if (cJSON_AddNumberToObject(item, "refId", amf_event->ref_id) == NULL) {
         ogs_error("OpenAPI_amf_event_convertToJSON() failed [ref_id]");
         goto end;
@@ -153,7 +163,7 @@ cJSON *OpenAPI_amf_event_convertToJSON(OpenAPI_amf_event_t *amf_event)
     }
     }
 
-    if (amf_event->report_ue_reachable) {
+    if (amf_event->is_report_ue_reachable) {
     if (cJSON_AddBoolToObject(item, "reportUeReachable", amf_event->report_ue_reachable) == NULL) {
         ogs_error("OpenAPI_amf_event_convertToJSON() failed [report_ue_reachable]");
         goto end;
@@ -173,14 +183,14 @@ cJSON *OpenAPI_amf_event_convertToJSON(OpenAPI_amf_event_t *amf_event)
     }
     }
 
-    if (amf_event->max_reports) {
+    if (amf_event->is_max_reports) {
     if (cJSON_AddNumberToObject(item, "maxReports", amf_event->max_reports) == NULL) {
         ogs_error("OpenAPI_amf_event_convertToJSON() failed [max_reports]");
         goto end;
     }
     }
 
-    if (amf_event->max_response_time) {
+    if (amf_event->is_max_response_time) {
     if (cJSON_AddNumberToObject(item, "maxResponseTime", amf_event->max_response_time) == NULL) {
         ogs_error("OpenAPI_amf_event_convertToJSON() failed [max_response_time]");
         goto end;
@@ -201,12 +211,11 @@ OpenAPI_amf_event_t *OpenAPI_amf_event_parseFromJSON(cJSON *amf_eventJSON)
     }
 
     OpenAPI_amf_event_type_t *type_local_nonprim = NULL;
-    
     type_local_nonprim = OpenAPI_amf_event_type_parseFromJSON(type);
 
     cJSON *immediate_flag = cJSON_GetObjectItemCaseSensitive(amf_eventJSON, "immediateFlag");
 
-    if (immediate_flag) { 
+    if (immediate_flag) {
     if (!cJSON_IsBool(immediate_flag)) {
         ogs_error("OpenAPI_amf_event_parseFromJSON() failed [immediate_flag]");
         goto end;
@@ -216,7 +225,7 @@ OpenAPI_amf_event_t *OpenAPI_amf_event_parseFromJSON(cJSON *amf_eventJSON)
     cJSON *area_list = cJSON_GetObjectItemCaseSensitive(amf_eventJSON, "areaList");
 
     OpenAPI_list_t *area_listList;
-    if (area_list) { 
+    if (area_list) {
     cJSON *area_list_local_nonprimitive;
     if (!cJSON_IsArray(area_list)){
         ogs_error("OpenAPI_amf_event_parseFromJSON() failed [area_list]");
@@ -239,7 +248,7 @@ OpenAPI_amf_event_t *OpenAPI_amf_event_parseFromJSON(cJSON *amf_eventJSON)
     cJSON *location_filter_list = cJSON_GetObjectItemCaseSensitive(amf_eventJSON, "locationFilterList");
 
     OpenAPI_list_t *location_filter_listList;
-    if (location_filter_list) { 
+    if (location_filter_list) {
     cJSON *location_filter_list_local_nonprimitive;
     if (!cJSON_IsArray(location_filter_list)){
         ogs_error("OpenAPI_amf_event_parseFromJSON() failed [location_filter_list]");
@@ -261,7 +270,7 @@ OpenAPI_amf_event_t *OpenAPI_amf_event_parseFromJSON(cJSON *amf_eventJSON)
 
     cJSON *ref_id = cJSON_GetObjectItemCaseSensitive(amf_eventJSON, "refId");
 
-    if (ref_id) { 
+    if (ref_id) {
     if (!cJSON_IsNumber(ref_id)) {
         ogs_error("OpenAPI_amf_event_parseFromJSON() failed [ref_id]");
         goto end;
@@ -271,7 +280,7 @@ OpenAPI_amf_event_t *OpenAPI_amf_event_parseFromJSON(cJSON *amf_eventJSON)
     cJSON *traffic_descriptor_list = cJSON_GetObjectItemCaseSensitive(amf_eventJSON, "trafficDescriptorList");
 
     OpenAPI_list_t *traffic_descriptor_listList;
-    if (traffic_descriptor_list) { 
+    if (traffic_descriptor_list) {
     cJSON *traffic_descriptor_list_local_nonprimitive;
     if (!cJSON_IsArray(traffic_descriptor_list)){
         ogs_error("OpenAPI_amf_event_parseFromJSON() failed [traffic_descriptor_list]");
@@ -293,7 +302,7 @@ OpenAPI_amf_event_t *OpenAPI_amf_event_parseFromJSON(cJSON *amf_eventJSON)
 
     cJSON *report_ue_reachable = cJSON_GetObjectItemCaseSensitive(amf_eventJSON, "reportUeReachable");
 
-    if (report_ue_reachable) { 
+    if (report_ue_reachable) {
     if (!cJSON_IsBool(report_ue_reachable)) {
         ogs_error("OpenAPI_amf_event_parseFromJSON() failed [report_ue_reachable]");
         goto end;
@@ -303,13 +312,13 @@ OpenAPI_amf_event_t *OpenAPI_amf_event_parseFromJSON(cJSON *amf_eventJSON)
     cJSON *reachability_filter = cJSON_GetObjectItemCaseSensitive(amf_eventJSON, "reachabilityFilter");
 
     OpenAPI_reachability_filter_t *reachability_filter_local_nonprim = NULL;
-    if (reachability_filter) { 
+    if (reachability_filter) {
     reachability_filter_local_nonprim = OpenAPI_reachability_filter_parseFromJSON(reachability_filter);
     }
 
     cJSON *max_reports = cJSON_GetObjectItemCaseSensitive(amf_eventJSON, "maxReports");
 
-    if (max_reports) { 
+    if (max_reports) {
     if (!cJSON_IsNumber(max_reports)) {
         ogs_error("OpenAPI_amf_event_parseFromJSON() failed [max_reports]");
         goto end;
@@ -318,7 +327,7 @@ OpenAPI_amf_event_t *OpenAPI_amf_event_parseFromJSON(cJSON *amf_eventJSON)
 
     cJSON *max_response_time = cJSON_GetObjectItemCaseSensitive(amf_eventJSON, "maxResponseTime");
 
-    if (max_response_time) { 
+    if (max_response_time) {
     if (!cJSON_IsNumber(max_response_time)) {
         ogs_error("OpenAPI_amf_event_parseFromJSON() failed [max_response_time]");
         goto end;
@@ -327,14 +336,19 @@ OpenAPI_amf_event_t *OpenAPI_amf_event_parseFromJSON(cJSON *amf_eventJSON)
 
     amf_event_local_var = OpenAPI_amf_event_create (
         type_local_nonprim,
+        immediate_flag ? true : false,
         immediate_flag ? immediate_flag->valueint : 0,
         area_list ? area_listList : NULL,
         location_filter_list ? location_filter_listList : NULL,
+        ref_id ? true : false,
         ref_id ? ref_id->valuedouble : 0,
         traffic_descriptor_list ? traffic_descriptor_listList : NULL,
+        report_ue_reachable ? true : false,
         report_ue_reachable ? report_ue_reachable->valueint : 0,
         reachability_filter ? reachability_filter_local_nonprim : NULL,
+        max_reports ? true : false,
         max_reports ? max_reports->valuedouble : 0,
+        max_response_time ? true : false,
         max_response_time ? max_response_time->valuedouble : 0
     );
 

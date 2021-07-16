@@ -21,12 +21,14 @@ typedef struct OpenAPI_atom_s OpenAPI_atom_t;
 typedef struct OpenAPI_atom_s {
     char *attr;
     char *value;
+    bool is_negative;
     int negative;
 } OpenAPI_atom_t;
 
 OpenAPI_atom_t *OpenAPI_atom_create(
     char *attr,
     char *value,
+    bool is_negative,
     int negative
 );
 void OpenAPI_atom_free(OpenAPI_atom_t *atom);

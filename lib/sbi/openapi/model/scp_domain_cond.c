@@ -66,7 +66,7 @@ OpenAPI_scp_domain_cond_t *OpenAPI_scp_domain_cond_parseFromJSON(cJSON *scp_doma
     cJSON *scp_domains = cJSON_GetObjectItemCaseSensitive(scp_domain_condJSON, "scpDomains");
 
     OpenAPI_list_t *scp_domainsList;
-    if (scp_domains) { 
+    if (scp_domains) {
     cJSON *scp_domains_local;
     if (!cJSON_IsArray(scp_domains)) {
         ogs_error("OpenAPI_scp_domain_cond_parseFromJSON() failed [scp_domains]");
@@ -80,7 +80,7 @@ OpenAPI_scp_domain_cond_t *OpenAPI_scp_domain_cond_parseFromJSON(cJSON *scp_doma
         goto end;
     }
     OpenAPI_list_add(scp_domainsList , ogs_strdup_or_assert(scp_domains_local->valuestring));
-                    }
+    }
     }
 
     scp_domain_cond_local_var = OpenAPI_scp_domain_cond_create (

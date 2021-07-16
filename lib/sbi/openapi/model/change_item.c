@@ -93,7 +93,6 @@ OpenAPI_change_item_t *OpenAPI_change_item_parseFromJSON(cJSON *change_itemJSON)
     }
 
     OpenAPI_change_type_e opVariable;
-    
     if (!cJSON_IsString(op)) {
         ogs_error("OpenAPI_change_item_parseFromJSON() failed [op]");
         goto end;
@@ -106,7 +105,6 @@ OpenAPI_change_item_t *OpenAPI_change_item_parseFromJSON(cJSON *change_itemJSON)
         goto end;
     }
 
-    
     if (!cJSON_IsString(path)) {
         ogs_error("OpenAPI_change_item_parseFromJSON() failed [path]");
         goto end;
@@ -114,7 +112,7 @@ OpenAPI_change_item_t *OpenAPI_change_item_parseFromJSON(cJSON *change_itemJSON)
 
     cJSON *from = cJSON_GetObjectItemCaseSensitive(change_itemJSON, "from");
 
-    if (from) { 
+    if (from) {
     if (!cJSON_IsString(from)) {
         ogs_error("OpenAPI_change_item_parseFromJSON() failed [from]");
         goto end;
@@ -123,7 +121,7 @@ OpenAPI_change_item_t *OpenAPI_change_item_parseFromJSON(cJSON *change_itemJSON)
 
     cJSON *orig_value = cJSON_GetObjectItemCaseSensitive(change_itemJSON, "origValue");
 
-    if (orig_value) { 
+    if (orig_value) {
     if (!cJSON_IsString(orig_value)) {
         ogs_error("OpenAPI_change_item_parseFromJSON() failed [orig_value]");
         goto end;
@@ -132,7 +130,7 @@ OpenAPI_change_item_t *OpenAPI_change_item_parseFromJSON(cJSON *change_itemJSON)
 
     cJSON *new_value = cJSON_GetObjectItemCaseSensitive(change_itemJSON, "newValue");
 
-    if (new_value) { 
+    if (new_value) {
     if (!cJSON_IsString(new_value)) {
         ogs_error("OpenAPI_change_item_parseFromJSON() failed [new_value]");
         goto end;

@@ -262,49 +262,49 @@ OpenAPI_subscription_data_sets_1_t *OpenAPI_subscription_data_sets_1_parseFromJS
     cJSON *am_data = cJSON_GetObjectItemCaseSensitive(subscription_data_sets_1JSON, "amData");
 
     OpenAPI_access_and_mobility_subscription_data_1_t *am_data_local_nonprim = NULL;
-    if (am_data) { 
+    if (am_data) {
     am_data_local_nonprim = OpenAPI_access_and_mobility_subscription_data_1_parseFromJSON(am_data);
     }
 
     cJSON *smf_sel_data = cJSON_GetObjectItemCaseSensitive(subscription_data_sets_1JSON, "smfSelData");
 
     OpenAPI_smf_selection_subscription_data_1_t *smf_sel_data_local_nonprim = NULL;
-    if (smf_sel_data) { 
+    if (smf_sel_data) {
     smf_sel_data_local_nonprim = OpenAPI_smf_selection_subscription_data_1_parseFromJSON(smf_sel_data);
     }
 
     cJSON *uec_amf_data = cJSON_GetObjectItemCaseSensitive(subscription_data_sets_1JSON, "uecAmfData");
 
     OpenAPI_ue_context_in_amf_data_1_t *uec_amf_data_local_nonprim = NULL;
-    if (uec_amf_data) { 
+    if (uec_amf_data) {
     uec_amf_data_local_nonprim = OpenAPI_ue_context_in_amf_data_1_parseFromJSON(uec_amf_data);
     }
 
     cJSON *uec_smf_data = cJSON_GetObjectItemCaseSensitive(subscription_data_sets_1JSON, "uecSmfData");
 
     OpenAPI_ue_context_in_smf_data_1_t *uec_smf_data_local_nonprim = NULL;
-    if (uec_smf_data) { 
+    if (uec_smf_data) {
     uec_smf_data_local_nonprim = OpenAPI_ue_context_in_smf_data_1_parseFromJSON(uec_smf_data);
     }
 
     cJSON *uec_smsf_data = cJSON_GetObjectItemCaseSensitive(subscription_data_sets_1JSON, "uecSmsfData");
 
     OpenAPI_ue_context_in_smsf_data_1_t *uec_smsf_data_local_nonprim = NULL;
-    if (uec_smsf_data) { 
+    if (uec_smsf_data) {
     uec_smsf_data_local_nonprim = OpenAPI_ue_context_in_smsf_data_1_parseFromJSON(uec_smsf_data);
     }
 
     cJSON *sms_subs_data = cJSON_GetObjectItemCaseSensitive(subscription_data_sets_1JSON, "smsSubsData");
 
     OpenAPI_sms_subscription_data_1_t *sms_subs_data_local_nonprim = NULL;
-    if (sms_subs_data) { 
+    if (sms_subs_data) {
     sms_subs_data_local_nonprim = OpenAPI_sms_subscription_data_1_parseFromJSON(sms_subs_data);
     }
 
     cJSON *sm_data = cJSON_GetObjectItemCaseSensitive(subscription_data_sets_1JSON, "smData");
 
     OpenAPI_list_t *sm_dataList;
-    if (sm_data) { 
+    if (sm_data) {
     cJSON *sm_data_local_nonprimitive;
     if (!cJSON_IsArray(sm_data)){
         ogs_error("OpenAPI_subscription_data_sets_1_parseFromJSON() failed [sm_data]");
@@ -327,42 +327,42 @@ OpenAPI_subscription_data_sets_1_t *OpenAPI_subscription_data_sets_1_parseFromJS
     cJSON *trace_data = cJSON_GetObjectItemCaseSensitive(subscription_data_sets_1JSON, "traceData");
 
     OpenAPI_trace_data_t *trace_data_local_nonprim = NULL;
-    if (trace_data) { 
+    if (trace_data) {
     trace_data_local_nonprim = OpenAPI_trace_data_parseFromJSON(trace_data);
     }
 
     cJSON *sms_mng_data = cJSON_GetObjectItemCaseSensitive(subscription_data_sets_1JSON, "smsMngData");
 
     OpenAPI_sms_management_subscription_data_1_t *sms_mng_data_local_nonprim = NULL;
-    if (sms_mng_data) { 
+    if (sms_mng_data) {
     sms_mng_data_local_nonprim = OpenAPI_sms_management_subscription_data_1_parseFromJSON(sms_mng_data);
     }
 
     cJSON *lcs_privacy_data = cJSON_GetObjectItemCaseSensitive(subscription_data_sets_1JSON, "lcsPrivacyData");
 
     OpenAPI_lcs_privacy_data_1_t *lcs_privacy_data_local_nonprim = NULL;
-    if (lcs_privacy_data) { 
+    if (lcs_privacy_data) {
     lcs_privacy_data_local_nonprim = OpenAPI_lcs_privacy_data_1_parseFromJSON(lcs_privacy_data);
     }
 
     cJSON *lcs_mo_data = cJSON_GetObjectItemCaseSensitive(subscription_data_sets_1JSON, "lcsMoData");
 
     OpenAPI_lcs_mo_data_t *lcs_mo_data_local_nonprim = NULL;
-    if (lcs_mo_data) { 
+    if (lcs_mo_data) {
     lcs_mo_data_local_nonprim = OpenAPI_lcs_mo_data_parseFromJSON(lcs_mo_data);
     }
 
     cJSON *v2x_data = cJSON_GetObjectItemCaseSensitive(subscription_data_sets_1JSON, "v2xData");
 
     OpenAPI_v2x_subscription_data_1_t *v2x_data_local_nonprim = NULL;
-    if (v2x_data) { 
+    if (v2x_data) {
     v2x_data_local_nonprim = OpenAPI_v2x_subscription_data_1_parseFromJSON(v2x_data);
     }
 
     cJSON *lcs_broadcast_assistance_types_data = cJSON_GetObjectItemCaseSensitive(subscription_data_sets_1JSON, "lcsBroadcastAssistanceTypesData");
 
     OpenAPI_lcs_broadcast_assistance_types_data_1_t *lcs_broadcast_assistance_types_data_local_nonprim = NULL;
-    if (lcs_broadcast_assistance_types_data) { 
+    if (lcs_broadcast_assistance_types_data) {
     lcs_broadcast_assistance_types_data_local_nonprim = OpenAPI_lcs_broadcast_assistance_types_data_1_parseFromJSON(lcs_broadcast_assistance_types_data);
     }
 

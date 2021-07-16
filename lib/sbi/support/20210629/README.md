@@ -10,4 +10,7 @@ $ sudo apt install nodejs
 
 * To install OpenAPI Geneator
 $ sudo npm install @openapitools/openapi-generator-cli -g
-$ sudo openapi-generator-cli version-manager set 5.1.1
+
+$ Run generator
+$ openapi-generator-cli version-manager set 5.2.0
+$ ./generator.sh

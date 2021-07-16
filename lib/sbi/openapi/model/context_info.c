@@ -66,7 +66,7 @@ OpenAPI_context_info_t *OpenAPI_context_info_parseFromJSON(cJSON *context_infoJS
     cJSON *orig_headers = cJSON_GetObjectItemCaseSensitive(context_infoJSON, "origHeaders");
 
     OpenAPI_list_t *orig_headersList;
-    if (orig_headers) { 
+    if (orig_headers) {
     cJSON *orig_headers_local;
     if (!cJSON_IsArray(orig_headers)) {
         ogs_error("OpenAPI_context_info_parseFromJSON() failed [orig_headers]");
@@ -80,7 +80,7 @@ OpenAPI_context_info_t *OpenAPI_context_info_parseFromJSON(cJSON *context_infoJS
         goto end;
     }
     OpenAPI_list_add(orig_headersList , ogs_strdup_or_assert(orig_headers_local->valuestring));
-                    }
+    }
     }
 
     context_info_local_var = OpenAPI_context_info_create (

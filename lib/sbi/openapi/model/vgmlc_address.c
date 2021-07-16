@@ -73,7 +73,7 @@ OpenAPI_vgmlc_address_t *OpenAPI_vgmlc_address_parseFromJSON(cJSON *vgmlc_addres
     OpenAPI_vgmlc_address_t *vgmlc_address_local_var = NULL;
     cJSON *vgmlc_address_ipv4 = cJSON_GetObjectItemCaseSensitive(vgmlc_addressJSON, "vgmlcAddressIpv4");
 
-    if (vgmlc_address_ipv4) { 
+    if (vgmlc_address_ipv4) {
     if (!cJSON_IsString(vgmlc_address_ipv4)) {
         ogs_error("OpenAPI_vgmlc_address_parseFromJSON() failed [vgmlc_address_ipv4]");
         goto end;
@@ -82,7 +82,7 @@ OpenAPI_vgmlc_address_t *OpenAPI_vgmlc_address_parseFromJSON(cJSON *vgmlc_addres
 
     cJSON *vgmlc_address_ipv6 = cJSON_GetObjectItemCaseSensitive(vgmlc_addressJSON, "vgmlcAddressIpv6");
 
-    if (vgmlc_address_ipv6) { 
+    if (vgmlc_address_ipv6) {
     if (!cJSON_IsString(vgmlc_address_ipv6)) {
         ogs_error("OpenAPI_vgmlc_address_parseFromJSON() failed [vgmlc_address_ipv6]");
         goto end;
@@ -91,7 +91,7 @@ OpenAPI_vgmlc_address_t *OpenAPI_vgmlc_address_parseFromJSON(cJSON *vgmlc_addres
 
     cJSON *vgmlc_fqdn = cJSON_GetObjectItemCaseSensitive(vgmlc_addressJSON, "vgmlcFqdn");
 
-    if (vgmlc_fqdn) { 
+    if (vgmlc_fqdn) {
     if (!cJSON_IsString(vgmlc_fqdn)) {
         ogs_error("OpenAPI_vgmlc_address_parseFromJSON() failed [vgmlc_fqdn]");
         goto end;

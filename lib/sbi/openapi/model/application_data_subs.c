@@ -101,7 +101,6 @@ OpenAPI_application_data_subs_t *OpenAPI_application_data_subs_parseFromJSON(cJS
         goto end;
     }
 
-    
     if (!cJSON_IsString(notification_uri)) {
         ogs_error("OpenAPI_application_data_subs_parseFromJSON() failed [notification_uri]");
         goto end;
@@ -110,7 +109,7 @@ OpenAPI_application_data_subs_t *OpenAPI_application_data_subs_parseFromJSON(cJS
     cJSON *data_filters = cJSON_GetObjectItemCaseSensitive(application_data_subsJSON, "dataFilters");
 
     OpenAPI_list_t *data_filtersList;
-    if (data_filters) { 
+    if (data_filters) {
     cJSON *data_filters_local_nonprimitive;
     if (!cJSON_IsArray(data_filters)){
         ogs_error("OpenAPI_application_data_subs_parseFromJSON() failed [data_filters]");
@@ -132,7 +131,7 @@ OpenAPI_application_data_subs_t *OpenAPI_application_data_subs_parseFromJSON(cJS
 
     cJSON *expiry = cJSON_GetObjectItemCaseSensitive(application_data_subsJSON, "expiry");
 
-    if (expiry) { 
+    if (expiry) {
     if (!cJSON_IsString(expiry)) {
         ogs_error("OpenAPI_application_data_subs_parseFromJSON() failed [expiry]");
         goto end;
@@ -141,7 +140,7 @@ OpenAPI_application_data_subs_t *OpenAPI_application_data_subs_parseFromJSON(cJS
 
     cJSON *supported_features = cJSON_GetObjectItemCaseSensitive(application_data_subsJSON, "supportedFeatures");
 
-    if (supported_features) { 
+    if (supported_features) {
     if (!cJSON_IsString(supported_features)) {
         ogs_error("OpenAPI_application_data_subs_parseFromJSON() failed [supported_features]");
         goto end;

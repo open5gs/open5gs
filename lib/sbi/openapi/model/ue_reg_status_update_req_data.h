@@ -23,6 +23,7 @@ typedef struct OpenAPI_ue_reg_status_update_req_data_s OpenAPI_ue_reg_status_upd
 typedef struct OpenAPI_ue_reg_status_update_req_data_s {
     OpenAPI_ue_context_transfer_status_e transfer_status;
     OpenAPI_list_t *to_release_session_list;
+    bool is_pcf_reselected_ind;
     int pcf_reselected_ind;
     OpenAPI_list_t *smf_change_info_list;
 } OpenAPI_ue_reg_status_update_req_data_t;
@@ -30,6 +31,7 @@ typedef struct OpenAPI_ue_reg_status_update_req_data_s {
 OpenAPI_ue_reg_status_update_req_data_t *OpenAPI_ue_reg_status_update_req_data_create(
     OpenAPI_ue_context_transfer_status_e transfer_status,
     OpenAPI_list_t *to_release_session_list,
+    bool is_pcf_reselected_ind,
     int pcf_reselected_ind,
     OpenAPI_list_t *smf_change_info_list
 );

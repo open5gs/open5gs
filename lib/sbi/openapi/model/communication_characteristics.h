@@ -26,6 +26,7 @@ typedef struct OpenAPI_communication_characteristics_s OpenAPI_communication_cha
 typedef struct OpenAPI_communication_characteristics_s {
     struct OpenAPI_pp_subs_reg_timer_s *pp_subs_reg_timer;
     struct OpenAPI_pp_active_time_s *pp_active_time;
+    bool is_pp_dl_packet_count;
     int pp_dl_packet_count;
     struct OpenAPI_pp_dl_packet_count_ext_s *pp_dl_packet_count_ext;
     struct OpenAPI_pp_maximum_response_time_s *pp_maximum_response_time;
@@ -35,6 +36,7 @@ typedef struct OpenAPI_communication_characteristics_s {
 OpenAPI_communication_characteristics_t *OpenAPI_communication_characteristics_create(
     OpenAPI_pp_subs_reg_timer_t *pp_subs_reg_timer,
     OpenAPI_pp_active_time_t *pp_active_time,
+    bool is_pp_dl_packet_count,
     int pp_dl_packet_count,
     OpenAPI_pp_dl_packet_count_ext_t *pp_dl_packet_count_ext,
     OpenAPI_pp_maximum_response_time_t *pp_maximum_response_time,

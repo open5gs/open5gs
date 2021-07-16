@@ -76,14 +76,14 @@ OpenAPI_sm_context_released_data_t *OpenAPI_sm_context_released_data_parseFromJS
     cJSON *small_data_rate_status = cJSON_GetObjectItemCaseSensitive(sm_context_released_dataJSON, "smallDataRateStatus");
 
     OpenAPI_small_data_rate_status_t *small_data_rate_status_local_nonprim = NULL;
-    if (small_data_rate_status) { 
+    if (small_data_rate_status) {
     small_data_rate_status_local_nonprim = OpenAPI_small_data_rate_status_parseFromJSON(small_data_rate_status);
     }
 
     cJSON *apn_rate_status = cJSON_GetObjectItemCaseSensitive(sm_context_released_dataJSON, "apnRateStatus");
 
     OpenAPI_apn_rate_status_t *apn_rate_status_local_nonprim = NULL;
-    if (apn_rate_status) { 
+    if (apn_rate_status) {
     apn_rate_status_local_nonprim = OpenAPI_apn_rate_status_parseFromJSON(apn_rate_status);
     }
 

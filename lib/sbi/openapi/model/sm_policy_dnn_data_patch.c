@@ -78,7 +78,6 @@ OpenAPI_sm_policy_dnn_data_patch_t *OpenAPI_sm_policy_dnn_data_patch_parseFromJS
         goto end;
     }
 
-    
     if (!cJSON_IsString(dnn)) {
         ogs_error("OpenAPI_sm_policy_dnn_data_patch_parseFromJSON() failed [dnn]");
         goto end;
@@ -87,7 +86,7 @@ OpenAPI_sm_policy_dnn_data_patch_t *OpenAPI_sm_policy_dnn_data_patch_parseFromJS
     cJSON *bdt_ref_ids = cJSON_GetObjectItemCaseSensitive(sm_policy_dnn_data_patchJSON, "bdtRefIds");
 
     OpenAPI_list_t *bdt_ref_idsList;
-    if (bdt_ref_ids) { 
+    if (bdt_ref_ids) {
     cJSON *bdt_ref_ids_local_map;
     if (!cJSON_IsObject(bdt_ref_ids)) {
         ogs_error("OpenAPI_sm_policy_dnn_data_patch_parseFromJSON() failed [bdt_ref_ids]");

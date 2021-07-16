@@ -8,6 +8,7 @@ OpenAPI_emergency_info_t *OpenAPI_emergency_info_create(
     char *pgw_fqdn,
     OpenAPI_ip_address_t *pgw_ip_address,
     char *smf_instance_id,
+    bool is_epdg_ind,
     int epdg_ind
 )
 {
@@ -18,6 +19,7 @@ OpenAPI_emergency_info_t *OpenAPI_emergency_info_create(
     emergency_info_local_var->pgw_fqdn = pgw_fqdn;
     emergency_info_local_var->pgw_ip_address = pgw_ip_address;
     emergency_info_local_var->smf_instance_id = smf_instance_id;
+    emergency_info_local_var->is_epdg_ind = is_epdg_ind;
     emergency_info_local_var->epdg_ind = epdg_ind;
 
     return emergency_info_local_var;
@@ -72,7 +74,7 @@ cJSON *OpenAPI_emergency_info_convertToJSON(OpenAPI_emergency_info_t *emergency_
     }
     }
 
-    if (emergency_info->epdg_ind) {
+    if (emergency_info->is_epdg_ind) {
     if (cJSON_AddBoolToObject(item, "epdgInd", emergency_info->epdg_ind) == NULL) {
         ogs_error("OpenAPI_emergency_info_convertToJSON() failed [epdg_ind]");
         goto end;
@@ -88,7 +90,7 @@ OpenAPI_emergency_info_t *OpenAPI_emergency_info_parseFromJSON(cJSON *emergency_
     OpenAPI_emergency_info_t *emergency_info_local_var = NULL;
     cJSON *pgw_fqdn = cJSON_GetObjectItemCaseSensitive(emergency_infoJSON, "pgwFqdn");
 
-    if (pgw_fqdn) { 
+    if (pgw_fqdn) {
     if (!cJSON_IsString(pgw_fqdn)) {
         ogs_error("OpenAPI_emergency_info_parseFromJSON() failed [pgw_fqdn]");
         goto end;
@@ -98,13 +100,13 @@ OpenAPI_emergency_info_t *OpenAPI_emergency_info_parseFromJSON(cJSON *emergency_
     cJSON *pgw_ip_address = cJSON_GetObjectItemCaseSensitive(emergency_infoJSON, "pgwIpAddress");
 
     OpenAPI_ip_address_t *pgw_ip_address_local_nonprim = NULL;
-    if (pgw_ip_address) { 
+    if (pgw_ip_address) {
     pgw_ip_address_local_nonprim = OpenAPI_ip_address_parseFromJSON(pgw_ip_address);
     }
 
     cJSON *smf_instance_id = cJSON_GetObjectItemCaseSensitive(emergency_infoJSON, "smfInstanceId");
 
-    if (smf_instance_id) { 
+    if (smf_instance_id) {
     if (!cJSON_IsString(smf_instance_id)) {
         ogs_error("OpenAPI_emergency_info_parseFromJSON() failed [smf_instance_id]");
         goto end;
@@ -113,7 +115,7 @@ OpenAPI_emergency_info_t *OpenAPI_emergency_info_parseFromJSON(cJSON *emergency_
 
     cJSON *epdg_ind = cJSON_GetObjectItemCaseSensitive(emergency_infoJSON, "epdgInd");
 
-    if (epdg_ind) { 
+    if (epdg_ind) {
     if (!cJSON_IsBool(epdg_ind)) {
         ogs_error("OpenAPI_emergency_info_parseFromJSON() failed [epdg_ind]");
         goto end;
@@ -124,6 +126,7 @@ OpenAPI_emergency_info_t *OpenAPI_emergency_info_parseFromJSON(cJSON *emergency_
         pgw_fqdn ? ogs_strdup_or_assert(pgw_fqdn->valuestring) : NULL,
         pgw_ip_address ? pgw_ip_address_local_nonprim : NULL,
         smf_instance_id ? ogs_strdup_or_assert(smf_instance_id->valuestring) : NULL,
+        epdg_ind ? true : false,
         epdg_ind ? epdg_ind->valueint : 0
     );
 

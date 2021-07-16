@@ -22,6 +22,7 @@ typedef struct OpenAPI_alternative_qos_profile_s {
     int index;
     char *gua_fbr_dl;
     char *gua_fbr_ul;
+    bool is_packet_delay_budget;
     int packet_delay_budget;
     char *packet_err_rate;
 } OpenAPI_alternative_qos_profile_t;
@@ -30,6 +31,7 @@ OpenAPI_alternative_qos_profile_t *OpenAPI_alternative_qos_profile_create(
     int index,
     char *gua_fbr_dl,
     char *gua_fbr_ul,
+    bool is_packet_delay_budget,
     int packet_delay_budget,
     char *packet_err_rate
 );

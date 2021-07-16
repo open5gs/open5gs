@@ -81,7 +81,6 @@ OpenAPI_af_event_notification_t *OpenAPI_af_event_notification_parseFromJSON(cJS
     }
 
     OpenAPI_af_event_e eventVariable;
-    
     if (!cJSON_IsString(event)) {
         ogs_error("OpenAPI_af_event_notification_parseFromJSON() failed [event]");
         goto end;
@@ -91,7 +90,7 @@ OpenAPI_af_event_notification_t *OpenAPI_af_event_notification_parseFromJSON(cJS
     cJSON *flows = cJSON_GetObjectItemCaseSensitive(af_event_notificationJSON, "flows");
 
     OpenAPI_list_t *flowsList;
-    if (flows) { 
+    if (flows) {
     cJSON *flows_local_nonprimitive;
     if (!cJSON_IsArray(flows)){
         ogs_error("OpenAPI_af_event_notification_parseFromJSON() failed [flows]");

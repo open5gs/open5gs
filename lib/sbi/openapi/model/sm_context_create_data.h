@@ -44,9 +44,11 @@ extern "C" {
 typedef struct OpenAPI_sm_context_create_data_s OpenAPI_sm_context_create_data_t;
 typedef struct OpenAPI_sm_context_create_data_s {
     char *supi;
+    bool is_unauthenticated_supi;
     int unauthenticated_supi;
     char *pei;
     char *gpsi;
+    bool is_pdu_session_id;
     int pdu_session_id;
     char *dnn;
     char *selected_dnn;
@@ -74,6 +76,7 @@ typedef struct OpenAPI_sm_context_create_data_s {
     OpenAPI_list_t *additional_hsmf_id;
     OpenAPI_list_t *additional_smf_uri;
     OpenAPI_list_t *additional_smf_id;
+    bool is_old_pdu_session_id;
     int old_pdu_session_id;
     OpenAPI_list_t *pdu_sessions_activate_list;
     char *ue_eps_pdn_connection;
@@ -89,14 +92,21 @@ typedef struct OpenAPI_sm_context_create_data_s {
     char *udm_group_id;
     char *routing_indicator;
     OpenAPI_eps_interworking_indication_e eps_interworking_ind;
+    bool is_indirect_forwarding_flag;
     int indirect_forwarding_flag;
+    bool is_direct_forwarding_flag;
     int direct_forwarding_flag;
     struct OpenAPI_ng_ran_target_id_s *target_id;
     char *eps_bearer_ctx_status;
+    bool is_cp_ciot_enabled;
     int cp_ciot_enabled;
+    bool is_cp_only_ind;
     int cp_only_ind;
+    bool is_invoke_nef;
     int invoke_nef;
+    bool is_ma_request_ind;
     int ma_request_ind;
+    bool is_ma_nw_upgrade_ind;
     int ma_nw_upgrade_ind;
     struct OpenAPI_ref_to_binary_data_s *n2_sm_info;
     OpenAPI_n2_sm_info_type_e n2_sm_info_type;
@@ -110,23 +120,29 @@ typedef struct OpenAPI_sm_context_create_data_s {
     OpenAPI_up_cnx_state_e up_cnx_state;
     struct OpenAPI_small_data_rate_status_s *small_data_rate_status;
     struct OpenAPI_apn_rate_status_s *apn_rate_status;
+    bool is_extended_nas_sm_timer_ind;
     int extended_nas_sm_timer_ind;
+    bool is_dl_data_waiting_ind;
     int dl_data_waiting_ind;
     struct OpenAPI_ddn_failure_subs_s *ddn_failure_subs;
+    bool is_smf_transfer_ind;
     int smf_transfer_ind;
     char *old_smf_id;
     char *old_sm_context_ref;
     struct OpenAPI_w_agf_info_s *w_agf_info;
     struct OpenAPI_tngf_info_s *tngf_info;
     struct OpenAPI_twif_info_s *twif_info;
+    bool is_ran_unchanged_ind;
     int ran_unchanged_ind;
 } OpenAPI_sm_context_create_data_t;
 
 OpenAPI_sm_context_create_data_t *OpenAPI_sm_context_create_data_create(
     char *supi,
+    bool is_unauthenticated_supi,
     int unauthenticated_supi,
     char *pei,
     char *gpsi,
+    bool is_pdu_session_id,
     int pdu_session_id,
     char *dnn,
     char *selected_dnn,
@@ -154,6 +170,7 @@ OpenAPI_sm_context_create_data_t *OpenAPI_sm_context_create_data_create(
     OpenAPI_list_t *additional_hsmf_id,
     OpenAPI_list_t *additional_smf_uri,
     OpenAPI_list_t *additional_smf_id,
+    bool is_old_pdu_session_id,
     int old_pdu_session_id,
     OpenAPI_list_t *pdu_sessions_activate_list,
     char *ue_eps_pdn_connection,
@@ -169,14 +186,21 @@ OpenAPI_sm_context_create_data_t *OpenAPI_sm_context_create_data_create(
     char *udm_group_id,
     char *routing_indicator,
     OpenAPI_eps_interworking_indication_e eps_interworking_ind,
+    bool is_indirect_forwarding_flag,
     int indirect_forwarding_flag,
+    bool is_direct_forwarding_flag,
     int direct_forwarding_flag,
     OpenAPI_ng_ran_target_id_t *target_id,
     char *eps_bearer_ctx_status,
+    bool is_cp_ciot_enabled,
     int cp_ciot_enabled,
+    bool is_cp_only_ind,
     int cp_only_ind,
+    bool is_invoke_nef,
     int invoke_nef,
+    bool is_ma_request_ind,
     int ma_request_ind,
+    bool is_ma_nw_upgrade_ind,
     int ma_nw_upgrade_ind,
     OpenAPI_ref_to_binary_data_t *n2_sm_info,
     OpenAPI_n2_sm_info_type_e n2_sm_info_type,
@@ -190,15 +214,19 @@ OpenAPI_sm_context_create_data_t *OpenAPI_sm_context_create_data_create(
     OpenAPI_up_cnx_state_e up_cnx_state,
     OpenAPI_small_data_rate_status_t *small_data_rate_status,
     OpenAPI_apn_rate_status_t *apn_rate_status,
+    bool is_extended_nas_sm_timer_ind,
     int extended_nas_sm_timer_ind,
+    bool is_dl_data_waiting_ind,
     int dl_data_waiting_ind,
     OpenAPI_ddn_failure_subs_t *ddn_failure_subs,
+    bool is_smf_transfer_ind,
     int smf_transfer_ind,
     char *old_smf_id,
     char *old_sm_context_ref,
     OpenAPI_w_agf_info_t *w_agf_info,
     OpenAPI_tngf_info_t *tngf_info,
     OpenAPI_twif_info_t *twif_info,
+    bool is_ran_unchanged_ind,
     int ran_unchanged_ind
 );
 void OpenAPI_sm_context_create_data_free(OpenAPI_sm_context_create_data_t *sm_context_create_data);

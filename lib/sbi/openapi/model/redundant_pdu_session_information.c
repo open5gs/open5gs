@@ -55,7 +55,6 @@ OpenAPI_redundant_pdu_session_information_t *OpenAPI_redundant_pdu_session_infor
     }
 
     OpenAPI_rsn_e rsnVariable;
-    
     if (!cJSON_IsString(rsn)) {
         ogs_error("OpenAPI_redundant_pdu_session_information_parseFromJSON() failed [rsn]");
         goto end;

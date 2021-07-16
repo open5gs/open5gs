@@ -89,7 +89,6 @@ OpenAPI_n1_message_container_t *OpenAPI_n1_message_container_parseFromJSON(cJSON
     }
 
     OpenAPI_n1_message_class_e n1_message_classVariable;
-    
     if (!cJSON_IsString(n1_message_class)) {
         ogs_error("OpenAPI_n1_message_container_parseFromJSON() failed [n1_message_class]");
         goto end;
@@ -103,12 +102,11 @@ OpenAPI_n1_message_container_t *OpenAPI_n1_message_container_parseFromJSON(cJSON
     }
 
     OpenAPI_ref_to_binary_data_t *n1_message_content_local_nonprim = NULL;
-    
     n1_message_content_local_nonprim = OpenAPI_ref_to_binary_data_parseFromJSON(n1_message_content);
 
     cJSON *nf_id = cJSON_GetObjectItemCaseSensitive(n1_message_containerJSON, "nfId");
 
-    if (nf_id) { 
+    if (nf_id) {
     if (!cJSON_IsString(nf_id)) {
         ogs_error("OpenAPI_n1_message_container_parseFromJSON() failed [nf_id]");
         goto end;
@@ -117,7 +115,7 @@ OpenAPI_n1_message_container_t *OpenAPI_n1_message_container_parseFromJSON(cJSON
 
     cJSON *service_instance_id = cJSON_GetObjectItemCaseSensitive(n1_message_containerJSON, "serviceInstanceId");
 
-    if (service_instance_id) { 
+    if (service_instance_id) {
     if (!cJSON_IsString(service_instance_id)) {
         ogs_error("OpenAPI_n1_message_container_parseFromJSON() failed [service_instance_id]");
         goto end;

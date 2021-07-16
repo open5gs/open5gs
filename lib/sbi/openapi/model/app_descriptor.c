@@ -63,7 +63,7 @@ OpenAPI_app_descriptor_t *OpenAPI_app_descriptor_parseFromJSON(cJSON *app_descri
     OpenAPI_app_descriptor_t *app_descriptor_local_var = NULL;
     cJSON *os_id = cJSON_GetObjectItemCaseSensitive(app_descriptorJSON, "osId");
 
-    if (os_id) { 
+    if (os_id) {
     if (!cJSON_IsString(os_id)) {
         ogs_error("OpenAPI_app_descriptor_parseFromJSON() failed [os_id]");
         goto end;
@@ -72,7 +72,7 @@ OpenAPI_app_descriptor_t *OpenAPI_app_descriptor_parseFromJSON(cJSON *app_descri
 
     cJSON *app_id = cJSON_GetObjectItemCaseSensitive(app_descriptorJSON, "appId");
 
-    if (app_id) { 
+    if (app_id) {
     if (!cJSON_IsString(app_id)) {
         ogs_error("OpenAPI_app_descriptor_parseFromJSON() failed [app_id]");
         goto end;

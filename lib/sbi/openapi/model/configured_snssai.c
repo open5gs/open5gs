@@ -78,13 +78,12 @@ OpenAPI_configured_snssai_t *OpenAPI_configured_snssai_parseFromJSON(cJSON *conf
     }
 
     OpenAPI_snssai_t *configured_snssai_local_nonprim = NULL;
-    
     configured_snssai_local_nonprim = OpenAPI_snssai_parseFromJSON(configured_snssai);
 
     cJSON *mapped_home_snssai = cJSON_GetObjectItemCaseSensitive(configured_snssaiJSON, "mappedHomeSnssai");
 
     OpenAPI_snssai_t *mapped_home_snssai_local_nonprim = NULL;
-    if (mapped_home_snssai) { 
+    if (mapped_home_snssai) {
     mapped_home_snssai_local_nonprim = OpenAPI_snssai_parseFromJSON(mapped_home_snssai);
     }
 

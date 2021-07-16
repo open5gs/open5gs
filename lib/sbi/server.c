@@ -179,7 +179,10 @@ bool ogs_sbi_server_send_error(ogs_sbi_stream_t *stream,
                     ogs_msprintf("/%s", message->h.resource.component[0]);
         ogs_expect_or_return_val(problem.instance, NULL);
     }
-    problem.status = status;
+    if (status) {
+        problem.is_status = true;
+        problem.status = status;
+    }
     problem.title = (char*)title;
     problem.detail = (char*)detail;
 

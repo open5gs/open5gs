@@ -78,13 +78,12 @@ OpenAPI_n2_information_transfer_error_t *OpenAPI_n2_information_transfer_error_p
     }
 
     OpenAPI_problem_details_t *error_local_nonprim = NULL;
-    
     error_local_nonprim = OpenAPI_problem_details_parseFromJSON(error);
 
     cJSON *pws_error_info = cJSON_GetObjectItemCaseSensitive(n2_information_transfer_errorJSON, "pwsErrorInfo");
 
     OpenAPI_pws_error_data_t *pws_error_info_local_nonprim = NULL;
-    if (pws_error_info) { 
+    if (pws_error_info) {
     pws_error_info_local_nonprim = OpenAPI_pws_error_data_parseFromJSON(pws_error_info);
     }
 

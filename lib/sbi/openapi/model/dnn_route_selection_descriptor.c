@@ -8,6 +8,7 @@ OpenAPI_dnn_route_selection_descriptor_t *OpenAPI_dnn_route_selection_descriptor
     char *dnn,
     OpenAPI_list_t *ssc_modes,
     OpenAPI_list_t *pdu_sess_types,
+    bool is_atsss_info,
     int atsss_info
 )
 {
@@ -18,6 +19,7 @@ OpenAPI_dnn_route_selection_descriptor_t *OpenAPI_dnn_route_selection_descriptor
     dnn_route_selection_descriptor_local_var->dnn = dnn;
     dnn_route_selection_descriptor_local_var->ssc_modes = ssc_modes;
     dnn_route_selection_descriptor_local_var->pdu_sess_types = pdu_sess_types;
+    dnn_route_selection_descriptor_local_var->is_atsss_info = is_atsss_info;
     dnn_route_selection_descriptor_local_var->atsss_info = atsss_info;
 
     return dnn_route_selection_descriptor_local_var;
@@ -80,7 +82,7 @@ cJSON *OpenAPI_dnn_route_selection_descriptor_convertToJSON(OpenAPI_dnn_route_se
     }
     }
 
-    if (dnn_route_selection_descriptor->atsss_info) {
+    if (dnn_route_selection_descriptor->is_atsss_info) {
     if (cJSON_AddBoolToObject(item, "atsssInfo", dnn_route_selection_descriptor->atsss_info) == NULL) {
         ogs_error("OpenAPI_dnn_route_selection_descriptor_convertToJSON() failed [atsss_info]");
         goto end;
@@ -100,7 +102,6 @@ OpenAPI_dnn_route_selection_descriptor_t *OpenAPI_dnn_route_selection_descriptor
         goto end;
     }
 
-    
     if (!cJSON_IsString(dnn)) {
         ogs_error("OpenAPI_dnn_route_selection_descriptor_parseFromJSON() failed [dnn]");
         goto end;
@@ -109,7 +110,7 @@ OpenAPI_dnn_route_selection_descriptor_t *OpenAPI_dnn_route_selection_descriptor
     cJSON *ssc_modes = cJSON_GetObjectItemCaseSensitive(dnn_route_selection_descriptorJSON, "sscModes");
 
     OpenAPI_list_t *ssc_modesList;
-    if (ssc_modes) { 
+    if (ssc_modes) {
     cJSON *ssc_modes_local_nonprimitive;
     if (!cJSON_IsArray(ssc_modes)) {
         ogs_error("OpenAPI_dnn_route_selection_descriptor_parseFromJSON() failed [ssc_modes]");
@@ -131,7 +132,7 @@ OpenAPI_dnn_route_selection_descriptor_t *OpenAPI_dnn_route_selection_descriptor
     cJSON *pdu_sess_types = cJSON_GetObjectItemCaseSensitive(dnn_route_selection_descriptorJSON, "pduSessTypes");
 
     OpenAPI_list_t *pdu_sess_typesList;
-    if (pdu_sess_types) { 
+    if (pdu_sess_types) {
     cJSON *pdu_sess_types_local_nonprimitive;
     if (!cJSON_IsArray(pdu_sess_types)) {
         ogs_error("OpenAPI_dnn_route_selection_descriptor_parseFromJSON() failed [pdu_sess_types]");
@@ -152,7 +153,7 @@ OpenAPI_dnn_route_selection_descriptor_t *OpenAPI_dnn_route_selection_descriptor
 
     cJSON *atsss_info = cJSON_GetObjectItemCaseSensitive(dnn_route_selection_descriptorJSON, "atsssInfo");
 
-    if (atsss_info) { 
+    if (atsss_info) {
     if (!cJSON_IsBool(atsss_info)) {
         ogs_error("OpenAPI_dnn_route_selection_descriptor_parseFromJSON() failed [atsss_info]");
         goto end;
@@ -163,6 +164,7 @@ OpenAPI_dnn_route_selection_descriptor_t *OpenAPI_dnn_route_selection_descriptor
         ogs_strdup_or_assert(dnn->valuestring),
         ssc_modes ? ssc_modesList : NULL,
         pdu_sess_types ? pdu_sess_typesList : NULL,
+        atsss_info ? true : false,
         atsss_info ? atsss_info->valueint : 0
     );
 

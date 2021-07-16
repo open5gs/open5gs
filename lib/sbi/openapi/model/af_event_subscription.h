@@ -23,14 +23,18 @@ typedef struct OpenAPI_af_event_subscription_s OpenAPI_af_event_subscription_t;
 typedef struct OpenAPI_af_event_subscription_s {
     OpenAPI_af_event_e event;
     OpenAPI_af_notif_method_e notif_method;
+    bool is_rep_period;
     int rep_period;
+    bool is_wait_time;
     int wait_time;
 } OpenAPI_af_event_subscription_t;
 
 OpenAPI_af_event_subscription_t *OpenAPI_af_event_subscription_create(
     OpenAPI_af_event_e event,
     OpenAPI_af_notif_method_e notif_method,
+    bool is_rep_period,
     int rep_period,
+    bool is_wait_time,
     int wait_time
 );
 void OpenAPI_af_event_subscription_free(OpenAPI_af_event_subscription_t *af_event_subscription);

@@ -28,6 +28,7 @@ typedef struct OpenAPI_bdt_data_s {
     struct OpenAPI_transfer_policy_s *trans_policy;
     char *bdt_ref_id;
     struct OpenAPI_network_area_info_1_s *nw_area_info;
+    bool is_num_of_ues;
     int num_of_ues;
     struct OpenAPI_usage_threshold_s *vol_per_ue;
     char *dnn;
@@ -42,6 +43,7 @@ OpenAPI_bdt_data_t *OpenAPI_bdt_data_create(
     OpenAPI_transfer_policy_t *trans_policy,
     char *bdt_ref_id,
     OpenAPI_network_area_info_1_t *nw_area_info,
+    bool is_num_of_ues,
     int num_of_ues,
     OpenAPI_usage_threshold_t *vol_per_ue,
     char *dnn,

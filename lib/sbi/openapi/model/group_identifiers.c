@@ -89,7 +89,7 @@ OpenAPI_group_identifiers_t *OpenAPI_group_identifiers_parseFromJSON(cJSON *grou
     OpenAPI_group_identifiers_t *group_identifiers_local_var = NULL;
     cJSON *ext_group_id = cJSON_GetObjectItemCaseSensitive(group_identifiersJSON, "extGroupId");
 
-    if (ext_group_id) { 
+    if (ext_group_id) {
     if (!cJSON_IsString(ext_group_id)) {
         ogs_error("OpenAPI_group_identifiers_parseFromJSON() failed [ext_group_id]");
         goto end;
@@ -98,7 +98,7 @@ OpenAPI_group_identifiers_t *OpenAPI_group_identifiers_parseFromJSON(cJSON *grou
 
     cJSON *int_group_id = cJSON_GetObjectItemCaseSensitive(group_identifiersJSON, "intGroupId");
 
-    if (int_group_id) { 
+    if (int_group_id) {
     if (!cJSON_IsString(int_group_id)) {
         ogs_error("OpenAPI_group_identifiers_parseFromJSON() failed [int_group_id]");
         goto end;
@@ -108,7 +108,7 @@ OpenAPI_group_identifiers_t *OpenAPI_group_identifiers_parseFromJSON(cJSON *grou
     cJSON *ue_id_list = cJSON_GetObjectItemCaseSensitive(group_identifiersJSON, "ueIdList");
 
     OpenAPI_list_t *ue_id_listList;
-    if (ue_id_list) { 
+    if (ue_id_list) {
     cJSON *ue_id_list_local_nonprimitive;
     if (!cJSON_IsArray(ue_id_list)){
         ogs_error("OpenAPI_group_identifiers_parseFromJSON() failed [ue_id_list]");

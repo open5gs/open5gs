@@ -131,7 +131,6 @@ OpenAPI_policy_data_subscription_t *OpenAPI_policy_data_subscription_parseFromJS
         goto end;
     }
 
-    
     if (!cJSON_IsString(notification_uri)) {
         ogs_error("OpenAPI_policy_data_subscription_parseFromJSON() failed [notification_uri]");
         goto end;
@@ -139,7 +138,7 @@ OpenAPI_policy_data_subscription_t *OpenAPI_policy_data_subscription_parseFromJS
 
     cJSON *notif_id = cJSON_GetObjectItemCaseSensitive(policy_data_subscriptionJSON, "notifId");
 
-    if (notif_id) { 
+    if (notif_id) {
     if (!cJSON_IsString(notif_id)) {
         ogs_error("OpenAPI_policy_data_subscription_parseFromJSON() failed [notif_id]");
         goto end;
@@ -153,7 +152,6 @@ OpenAPI_policy_data_subscription_t *OpenAPI_policy_data_subscription_parseFromJS
     }
 
     OpenAPI_list_t *monitored_resource_urisList;
-    
     cJSON *monitored_resource_uris_local;
     if (!cJSON_IsArray(monitored_resource_uris)) {
         ogs_error("OpenAPI_policy_data_subscription_parseFromJSON() failed [monitored_resource_uris]");
@@ -167,12 +165,12 @@ OpenAPI_policy_data_subscription_t *OpenAPI_policy_data_subscription_parseFromJS
         goto end;
     }
     OpenAPI_list_add(monitored_resource_urisList , ogs_strdup_or_assert(monitored_resource_uris_local->valuestring));
-                    }
+    }
 
     cJSON *mon_res_items = cJSON_GetObjectItemCaseSensitive(policy_data_subscriptionJSON, "monResItems");
 
     OpenAPI_list_t *mon_res_itemsList;
-    if (mon_res_items) { 
+    if (mon_res_items) {
     cJSON *mon_res_items_local_nonprimitive;
     if (!cJSON_IsArray(mon_res_items)){
         ogs_error("OpenAPI_policy_data_subscription_parseFromJSON() failed [mon_res_items]");
@@ -194,7 +192,7 @@ OpenAPI_policy_data_subscription_t *OpenAPI_policy_data_subscription_parseFromJS
 
     cJSON *expiry = cJSON_GetObjectItemCaseSensitive(policy_data_subscriptionJSON, "expiry");
 
-    if (expiry) { 
+    if (expiry) {
     if (!cJSON_IsString(expiry)) {
         ogs_error("OpenAPI_policy_data_subscription_parseFromJSON() failed [expiry]");
         goto end;
@@ -203,7 +201,7 @@ OpenAPI_policy_data_subscription_t *OpenAPI_policy_data_subscription_parseFromJS
 
     cJSON *supported_features = cJSON_GetObjectItemCaseSensitive(policy_data_subscriptionJSON, "supportedFeatures");
 
-    if (supported_features) { 
+    if (supported_features) {
     if (!cJSON_IsString(supported_features)) {
         ogs_error("OpenAPI_policy_data_subscription_parseFromJSON() failed [supported_features]");
         goto end;

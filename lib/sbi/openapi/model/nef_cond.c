@@ -212,7 +212,6 @@ OpenAPI_nef_cond_t *OpenAPI_nef_cond_parseFromJSON(cJSON *nef_condJSON)
     }
 
     OpenAPI_nef_cond_condition_type_e condition_typeVariable;
-                
     if (!cJSON_IsString(condition_type)) {
         ogs_error("OpenAPI_nef_cond_parseFromJSON() failed [condition_type]");
         goto end;
@@ -222,7 +221,7 @@ OpenAPI_nef_cond_t *OpenAPI_nef_cond_parseFromJSON(cJSON *nef_condJSON)
     cJSON *af_events = cJSON_GetObjectItemCaseSensitive(nef_condJSON, "afEvents");
 
     OpenAPI_list_t *af_eventsList;
-    if (af_events) { 
+    if (af_events) {
     cJSON *af_events_local_nonprimitive;
     if (!cJSON_IsArray(af_events)) {
         ogs_error("OpenAPI_nef_cond_parseFromJSON() failed [af_events]");
@@ -244,7 +243,7 @@ OpenAPI_nef_cond_t *OpenAPI_nef_cond_parseFromJSON(cJSON *nef_condJSON)
     cJSON *snssai_list = cJSON_GetObjectItemCaseSensitive(nef_condJSON, "snssaiList");
 
     OpenAPI_list_t *snssai_listList;
-    if (snssai_list) { 
+    if (snssai_list) {
     cJSON *snssai_list_local_nonprimitive;
     if (!cJSON_IsArray(snssai_list)){
         ogs_error("OpenAPI_nef_cond_parseFromJSON() failed [snssai_list]");
@@ -267,14 +266,14 @@ OpenAPI_nef_cond_t *OpenAPI_nef_cond_parseFromJSON(cJSON *nef_condJSON)
     cJSON *pfd_data = cJSON_GetObjectItemCaseSensitive(nef_condJSON, "pfdData");
 
     OpenAPI_pfd_data_t *pfd_data_local_nonprim = NULL;
-    if (pfd_data) { 
+    if (pfd_data) {
     pfd_data_local_nonprim = OpenAPI_pfd_data_parseFromJSON(pfd_data);
     }
 
     cJSON *gpsi_ranges = cJSON_GetObjectItemCaseSensitive(nef_condJSON, "gpsiRanges");
 
     OpenAPI_list_t *gpsi_rangesList;
-    if (gpsi_ranges) { 
+    if (gpsi_ranges) {
     cJSON *gpsi_ranges_local_nonprimitive;
     if (!cJSON_IsArray(gpsi_ranges)){
         ogs_error("OpenAPI_nef_cond_parseFromJSON() failed [gpsi_ranges]");
@@ -297,7 +296,7 @@ OpenAPI_nef_cond_t *OpenAPI_nef_cond_parseFromJSON(cJSON *nef_condJSON)
     cJSON *external_group_identifiers_ranges = cJSON_GetObjectItemCaseSensitive(nef_condJSON, "externalGroupIdentifiersRanges");
 
     OpenAPI_list_t *external_group_identifiers_rangesList;
-    if (external_group_identifiers_ranges) { 
+    if (external_group_identifiers_ranges) {
     cJSON *external_group_identifiers_ranges_local_nonprimitive;
     if (!cJSON_IsArray(external_group_identifiers_ranges)){
         ogs_error("OpenAPI_nef_cond_parseFromJSON() failed [external_group_identifiers_ranges]");
@@ -320,7 +319,7 @@ OpenAPI_nef_cond_t *OpenAPI_nef_cond_parseFromJSON(cJSON *nef_condJSON)
     cJSON *served_fqdn_list = cJSON_GetObjectItemCaseSensitive(nef_condJSON, "servedFqdnList");
 
     OpenAPI_list_t *served_fqdn_listList;
-    if (served_fqdn_list) { 
+    if (served_fqdn_list) {
     cJSON *served_fqdn_list_local;
     if (!cJSON_IsArray(served_fqdn_list)) {
         ogs_error("OpenAPI_nef_cond_parseFromJSON() failed [served_fqdn_list]");
@@ -334,7 +333,7 @@ OpenAPI_nef_cond_t *OpenAPI_nef_cond_parseFromJSON(cJSON *nef_condJSON)
         goto end;
     }
     OpenAPI_list_add(served_fqdn_listList , ogs_strdup_or_assert(served_fqdn_list_local->valuestring));
-                    }
+    }
     }
 
     nef_cond_local_var = OpenAPI_nef_cond_create (

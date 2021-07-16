@@ -126,7 +126,6 @@ OpenAPI_upf_cond_t *OpenAPI_upf_cond_parseFromJSON(cJSON *upf_condJSON)
     }
 
     OpenAPI_upf_cond_condition_type_e condition_typeVariable;
-                
     if (!cJSON_IsString(condition_type)) {
         ogs_error("OpenAPI_upf_cond_parseFromJSON() failed [condition_type]");
         goto end;
@@ -136,7 +135,7 @@ OpenAPI_upf_cond_t *OpenAPI_upf_cond_parseFromJSON(cJSON *upf_condJSON)
     cJSON *smf_serving_area = cJSON_GetObjectItemCaseSensitive(upf_condJSON, "smfServingArea");
 
     OpenAPI_list_t *smf_serving_areaList;
-    if (smf_serving_area) { 
+    if (smf_serving_area) {
     cJSON *smf_serving_area_local;
     if (!cJSON_IsArray(smf_serving_area)) {
         ogs_error("OpenAPI_upf_cond_parseFromJSON() failed [smf_serving_area]");
@@ -150,13 +149,13 @@ OpenAPI_upf_cond_t *OpenAPI_upf_cond_parseFromJSON(cJSON *upf_condJSON)
         goto end;
     }
     OpenAPI_list_add(smf_serving_areaList , ogs_strdup_or_assert(smf_serving_area_local->valuestring));
-                    }
+    }
     }
 
     cJSON *tai_list = cJSON_GetObjectItemCaseSensitive(upf_condJSON, "taiList");
 
     OpenAPI_list_t *tai_listList;
-    if (tai_list) { 
+    if (tai_list) {
     cJSON *tai_list_local_nonprimitive;
     if (!cJSON_IsArray(tai_list)){
         ogs_error("OpenAPI_upf_cond_parseFromJSON() failed [tai_list]");

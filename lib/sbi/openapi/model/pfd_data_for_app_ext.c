@@ -99,7 +99,6 @@ OpenAPI_pfd_data_for_app_ext_t *OpenAPI_pfd_data_for_app_ext_parseFromJSON(cJSON
         goto end;
     }
 
-    
     if (!cJSON_IsString(application_id)) {
         ogs_error("OpenAPI_pfd_data_for_app_ext_parseFromJSON() failed [application_id]");
         goto end;
@@ -112,7 +111,6 @@ OpenAPI_pfd_data_for_app_ext_t *OpenAPI_pfd_data_for_app_ext_parseFromJSON(cJSON
     }
 
     OpenAPI_list_t *pfdsList;
-    
     cJSON *pfds_local_nonprimitive;
     if (!cJSON_IsArray(pfds)){
         ogs_error("OpenAPI_pfd_data_for_app_ext_parseFromJSON() failed [pfds]");
@@ -133,7 +131,7 @@ OpenAPI_pfd_data_for_app_ext_t *OpenAPI_pfd_data_for_app_ext_parseFromJSON(cJSON
 
     cJSON *caching_time = cJSON_GetObjectItemCaseSensitive(pfd_data_for_app_extJSON, "cachingTime");
 
-    if (caching_time) { 
+    if (caching_time) {
     if (!cJSON_IsString(caching_time)) {
         ogs_error("OpenAPI_pfd_data_for_app_ext_parseFromJSON() failed [caching_time]");
         goto end;
@@ -142,7 +140,7 @@ OpenAPI_pfd_data_for_app_ext_t *OpenAPI_pfd_data_for_app_ext_parseFromJSON(cJSON
 
     cJSON *supp_feat = cJSON_GetObjectItemCaseSensitive(pfd_data_for_app_extJSON, "suppFeat");
 
-    if (supp_feat) { 
+    if (supp_feat) {
     if (!cJSON_IsString(supp_feat)) {
         ogs_error("OpenAPI_pfd_data_for_app_ext_parseFromJSON() failed [supp_feat]");
         goto end;

@@ -55,7 +55,6 @@ OpenAPI_amf_dereg_info_t *OpenAPI_amf_dereg_info_parseFromJSON(cJSON *amf_dereg_
     }
 
     OpenAPI_deregistration_reason_e dereg_reasonVariable;
-    
     if (!cJSON_IsString(dereg_reason)) {
         ogs_error("OpenAPI_amf_dereg_info_parseFromJSON() failed [dereg_reason]");
         goto end;

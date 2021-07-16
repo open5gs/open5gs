@@ -41,6 +41,7 @@ typedef struct OpenAPI_sm_policy_context_data_s {
     struct OpenAPI_acc_net_charging_address_s *charg_entity_addr;
     char *gpsi;
     char *supi;
+    bool is_invalid_supi;
     int invalid_supi;
     OpenAPI_list_t *inter_grp_ids;
     int pdu_session_id;
@@ -63,10 +64,15 @@ typedef struct OpenAPI_sm_policy_context_data_s {
     char *auth_prof_index;
     struct OpenAPI_subscribed_default_qos_s *subs_def_qos;
     struct OpenAPI_vplmn_qos_s *vplmn_qos;
+    bool is_num_of_pack_filter;
     int num_of_pack_filter;
+    bool is_online;
     int online;
+    bool is_offline;
     int offline;
+    bool is__3gpp_ps_data_off_status;
     int _3gpp_ps_data_off_status;
+    bool is_ref_qos_indication;
     int ref_qos_indication;
     struct OpenAPI_trace_data_s *trace_req;
     struct OpenAPI_snssai_s *slice_info;
@@ -86,6 +92,7 @@ OpenAPI_sm_policy_context_data_t *OpenAPI_sm_policy_context_data_create(
     OpenAPI_acc_net_charging_address_t *charg_entity_addr,
     char *gpsi,
     char *supi,
+    bool is_invalid_supi,
     int invalid_supi,
     OpenAPI_list_t *inter_grp_ids,
     int pdu_session_id,
@@ -108,10 +115,15 @@ OpenAPI_sm_policy_context_data_t *OpenAPI_sm_policy_context_data_create(
     char *auth_prof_index,
     OpenAPI_subscribed_default_qos_t *subs_def_qos,
     OpenAPI_vplmn_qos_t *vplmn_qos,
+    bool is_num_of_pack_filter,
     int num_of_pack_filter,
+    bool is_online,
     int online,
+    bool is_offline,
     int offline,
+    bool is__3gpp_ps_data_off_status,
     int _3gpp_ps_data_off_status,
+    bool is_ref_qos_indication,
     int ref_qos_indication,
     OpenAPI_trace_data_t *trace_req,
     OpenAPI_snssai_t *slice_info,

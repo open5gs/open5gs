@@ -114,14 +114,14 @@ OpenAPI_session_rule_t *OpenAPI_session_rule_parseFromJSON(cJSON *session_ruleJS
     cJSON *auth_sess_ambr = cJSON_GetObjectItemCaseSensitive(session_ruleJSON, "authSessAmbr");
 
     OpenAPI_ambr_t *auth_sess_ambr_local_nonprim = NULL;
-    if (auth_sess_ambr) { 
+    if (auth_sess_ambr) {
     auth_sess_ambr_local_nonprim = OpenAPI_ambr_parseFromJSON(auth_sess_ambr);
     }
 
     cJSON *auth_def_qos = cJSON_GetObjectItemCaseSensitive(session_ruleJSON, "authDefQos");
 
     OpenAPI_authorized_default_qos_t *auth_def_qos_local_nonprim = NULL;
-    if (auth_def_qos) { 
+    if (auth_def_qos) {
     auth_def_qos_local_nonprim = OpenAPI_authorized_default_qos_parseFromJSON(auth_def_qos);
     }
 
@@ -131,7 +131,6 @@ OpenAPI_session_rule_t *OpenAPI_session_rule_parseFromJSON(cJSON *session_ruleJS
         goto end;
     }
 
-    
     if (!cJSON_IsString(sess_rule_id)) {
         ogs_error("OpenAPI_session_rule_parseFromJSON() failed [sess_rule_id]");
         goto end;
@@ -139,7 +138,7 @@ OpenAPI_session_rule_t *OpenAPI_session_rule_parseFromJSON(cJSON *session_ruleJS
 
     cJSON *ref_um_data = cJSON_GetObjectItemCaseSensitive(session_ruleJSON, "refUmData");
 
-    if (ref_um_data) { 
+    if (ref_um_data) {
     if (!cJSON_IsString(ref_um_data)) {
         ogs_error("OpenAPI_session_rule_parseFromJSON() failed [ref_um_data]");
         goto end;
@@ -148,7 +147,7 @@ OpenAPI_session_rule_t *OpenAPI_session_rule_parseFromJSON(cJSON *session_ruleJS
 
     cJSON *ref_um_n3g_data = cJSON_GetObjectItemCaseSensitive(session_ruleJSON, "refUmN3gData");
 
-    if (ref_um_n3g_data) { 
+    if (ref_um_n3g_data) {
     if (!cJSON_IsString(ref_um_n3g_data)) {
         ogs_error("OpenAPI_session_rule_parseFromJSON() failed [ref_um_n3g_data]");
         goto end;
@@ -157,7 +156,7 @@ OpenAPI_session_rule_t *OpenAPI_session_rule_parseFromJSON(cJSON *session_ruleJS
 
     cJSON *ref_cond_data = cJSON_GetObjectItemCaseSensitive(session_ruleJSON, "refCondData");
 
-    if (ref_cond_data) { 
+    if (ref_cond_data) {
     if (!cJSON_IsString(ref_cond_data)) {
         ogs_error("OpenAPI_session_rule_parseFromJSON() failed [ref_cond_data]");
         goto end;

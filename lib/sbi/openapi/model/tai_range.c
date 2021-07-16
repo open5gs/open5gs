@@ -96,7 +96,6 @@ OpenAPI_tai_range_t *OpenAPI_tai_range_parseFromJSON(cJSON *tai_rangeJSON)
     }
 
     OpenAPI_plmn_id_t *plmn_id_local_nonprim = NULL;
-    
     plmn_id_local_nonprim = OpenAPI_plmn_id_parseFromJSON(plmn_id);
 
     cJSON *tac_range_list = cJSON_GetObjectItemCaseSensitive(tai_rangeJSON, "tacRangeList");
@@ -106,7 +105,6 @@ OpenAPI_tai_range_t *OpenAPI_tai_range_parseFromJSON(cJSON *tai_rangeJSON)
     }
 
     OpenAPI_list_t *tac_range_listList;
-    
     cJSON *tac_range_list_local_nonprimitive;
     if (!cJSON_IsArray(tac_range_list)){
         ogs_error("OpenAPI_tai_range_parseFromJSON() failed [tac_range_list]");
@@ -127,7 +125,7 @@ OpenAPI_tai_range_t *OpenAPI_tai_range_parseFromJSON(cJSON *tai_rangeJSON)
 
     cJSON *nid = cJSON_GetObjectItemCaseSensitive(tai_rangeJSON, "nid");
 
-    if (nid) { 
+    if (nid) {
     if (!cJSON_IsString(nid)) {
         ogs_error("OpenAPI_tai_range_parseFromJSON() failed [nid]");
         goto end;

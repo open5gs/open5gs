@@ -46,6 +46,7 @@ typedef struct OpenAPI_pdu_session_context_s {
     OpenAPI_sbi_binding_level_e ismf_binding;
     char *ns_instance;
     char *smf_service_instance_id;
+    bool is_ma_pdu_session;
     int ma_pdu_session;
     struct OpenAPI_cn_assisted_ran_para_s *cn_assisted_ran_para;
 } OpenAPI_pdu_session_context_t;
@@ -73,6 +74,7 @@ OpenAPI_pdu_session_context_t *OpenAPI_pdu_session_context_create(
     OpenAPI_sbi_binding_level_e ismf_binding,
     char *ns_instance,
     char *smf_service_instance_id,
+    bool is_ma_pdu_session,
     int ma_pdu_session,
     OpenAPI_cn_assisted_ran_para_t *cn_assisted_ran_para
 );

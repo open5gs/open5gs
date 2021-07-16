@@ -19,10 +19,12 @@ extern "C" {
 
 typedef struct OpenAPI_transfer_mt_data_add_info_s OpenAPI_transfer_mt_data_add_info_t;
 typedef struct OpenAPI_transfer_mt_data_add_info_s {
+    bool is_max_waiting_time;
     int max_waiting_time;
 } OpenAPI_transfer_mt_data_add_info_t;
 
 OpenAPI_transfer_mt_data_add_info_t *OpenAPI_transfer_mt_data_add_info_create(
+    bool is_max_waiting_time,
     int max_waiting_time
 );
 void OpenAPI_transfer_mt_data_add_info_free(OpenAPI_transfer_mt_data_add_info_t *transfer_mt_data_add_info);

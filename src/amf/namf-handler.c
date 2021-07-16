@@ -62,11 +62,11 @@ int amf_namf_comm_handle_n1_n2_message_transfer(
         return OGS_ERROR;
     }
 
-    pdu_session_id = N1N2MessageTransferReqData->pdu_session_id;
-    if (pdu_session_id == OGS_NAS_PDU_SESSION_IDENTITY_UNASSIGNED) {
+    if (N1N2MessageTransferReqData->is_pdu_session_id == false) {
         ogs_error("No PDU Session Identity");
         return OGS_ERROR;
     }
+    pdu_session_id = N1N2MessageTransferReqData->pdu_session_id;
 
     supi = recvmsg->h.resource.component[1];
     if (!supi) {
@@ -341,7 +341,8 @@ int amf_namf_comm_handle_n1_n2_message_transfer(
             if (n2buf)
                 ogs_pkbuf_free(n2buf);
 
-            if (N1N2MessageTransferReqData->skip_ind == true) {
+            if (N1N2MessageTransferReqData->is_skip_ind == true &&
+                N1N2MessageTransferReqData->skip_ind == true) {
                 N1N2MessageTransferRspData.cause =
                     OpenAPI_n1_n2_message_transfer_cause_N1_MSG_NOT_TRANSFERRED;
             } else {

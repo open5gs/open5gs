@@ -66,7 +66,7 @@ OpenAPI_npn_access_info_t *OpenAPI_npn_access_info_parseFromJSON(cJSON *npn_acce
     cJSON *cell_cag_info = cJSON_GetObjectItemCaseSensitive(npn_access_infoJSON, "cellCagInfo");
 
     OpenAPI_list_t *cell_cag_infoList;
-    if (cell_cag_info) { 
+    if (cell_cag_info) {
     cJSON *cell_cag_info_local;
     if (!cJSON_IsArray(cell_cag_info)) {
         ogs_error("OpenAPI_npn_access_info_parseFromJSON() failed [cell_cag_info]");
@@ -80,7 +80,7 @@ OpenAPI_npn_access_info_t *OpenAPI_npn_access_info_parseFromJSON(cJSON *npn_acce
         goto end;
     }
     OpenAPI_list_add(cell_cag_infoList , ogs_strdup_or_assert(cell_cag_info_local->valuestring));
-                    }
+    }
     }
 
     npn_access_info_local_var = OpenAPI_npn_access_info_create (

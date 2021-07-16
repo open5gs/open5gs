@@ -108,7 +108,6 @@ OpenAPI_trace_data_t *OpenAPI_trace_data_parseFromJSON(cJSON *trace_dataJSON)
         goto end;
     }
 
-    
     if (!cJSON_IsString(trace_ref)) {
         ogs_error("OpenAPI_trace_data_parseFromJSON() failed [trace_ref]");
         goto end;
@@ -121,7 +120,6 @@ OpenAPI_trace_data_t *OpenAPI_trace_data_parseFromJSON(cJSON *trace_dataJSON)
     }
 
     OpenAPI_trace_depth_e trace_depthVariable;
-    
     if (!cJSON_IsString(trace_depth)) {
         ogs_error("OpenAPI_trace_data_parseFromJSON() failed [trace_depth]");
         goto end;
@@ -134,7 +132,6 @@ OpenAPI_trace_data_t *OpenAPI_trace_data_parseFromJSON(cJSON *trace_dataJSON)
         goto end;
     }
 
-    
     if (!cJSON_IsString(ne_type_list)) {
         ogs_error("OpenAPI_trace_data_parseFromJSON() failed [ne_type_list]");
         goto end;
@@ -146,7 +143,6 @@ OpenAPI_trace_data_t *OpenAPI_trace_data_parseFromJSON(cJSON *trace_dataJSON)
         goto end;
     }
 
-    
     if (!cJSON_IsString(event_list)) {
         ogs_error("OpenAPI_trace_data_parseFromJSON() failed [event_list]");
         goto end;
@@ -154,7 +150,7 @@ OpenAPI_trace_data_t *OpenAPI_trace_data_parseFromJSON(cJSON *trace_dataJSON)
 
     cJSON *collection_entity_ipv4_addr = cJSON_GetObjectItemCaseSensitive(trace_dataJSON, "collectionEntityIpv4Addr");
 
-    if (collection_entity_ipv4_addr) { 
+    if (collection_entity_ipv4_addr) {
     if (!cJSON_IsString(collection_entity_ipv4_addr)) {
         ogs_error("OpenAPI_trace_data_parseFromJSON() failed [collection_entity_ipv4_addr]");
         goto end;
@@ -163,7 +159,7 @@ OpenAPI_trace_data_t *OpenAPI_trace_data_parseFromJSON(cJSON *trace_dataJSON)
 
     cJSON *collection_entity_ipv6_addr = cJSON_GetObjectItemCaseSensitive(trace_dataJSON, "collectionEntityIpv6Addr");
 
-    if (collection_entity_ipv6_addr) { 
+    if (collection_entity_ipv6_addr) {
     if (!cJSON_IsString(collection_entity_ipv6_addr)) {
         ogs_error("OpenAPI_trace_data_parseFromJSON() failed [collection_entity_ipv6_addr]");
         goto end;
@@ -172,7 +168,7 @@ OpenAPI_trace_data_t *OpenAPI_trace_data_parseFromJSON(cJSON *trace_dataJSON)
 
     cJSON *interface_list = cJSON_GetObjectItemCaseSensitive(trace_dataJSON, "interfaceList");
 
-    if (interface_list) { 
+    if (interface_list) {
     if (!cJSON_IsString(interface_list)) {
         ogs_error("OpenAPI_trace_data_parseFromJSON() failed [interface_list]");
         goto end;

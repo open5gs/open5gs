@@ -7,6 +7,7 @@
 OpenAPI_plmn_ec_info_t *OpenAPI_plmn_ec_info_create(
     OpenAPI_plmn_id_t *plmn_id,
     OpenAPI_ec_restriction_data_wb_t *ec_restriction_data_wb,
+    bool is_ec_restriction_data_nb,
     int ec_restriction_data_nb
 )
 {
@@ -16,6 +17,7 @@ OpenAPI_plmn_ec_info_t *OpenAPI_plmn_ec_info_create(
     }
     plmn_ec_info_local_var->plmn_id = plmn_id;
     plmn_ec_info_local_var->ec_restriction_data_wb = ec_restriction_data_wb;
+    plmn_ec_info_local_var->is_ec_restriction_data_nb = is_ec_restriction_data_nb;
     plmn_ec_info_local_var->ec_restriction_data_nb = ec_restriction_data_nb;
 
     return plmn_ec_info_local_var;
@@ -66,7 +68,7 @@ cJSON *OpenAPI_plmn_ec_info_convertToJSON(OpenAPI_plmn_ec_info_t *plmn_ec_info)
     }
     }
 
-    if (plmn_ec_info->ec_restriction_data_nb) {
+    if (plmn_ec_info->is_ec_restriction_data_nb) {
     if (cJSON_AddBoolToObject(item, "ecRestrictionDataNb", plmn_ec_info->ec_restriction_data_nb) == NULL) {
         ogs_error("OpenAPI_plmn_ec_info_convertToJSON() failed [ec_restriction_data_nb]");
         goto end;
@@ -87,19 +89,18 @@ OpenAPI_plmn_ec_info_t *OpenAPI_plmn_ec_info_parseFromJSON(cJSON *plmn_ec_infoJS
     }
 
     OpenAPI_plmn_id_t *plmn_id_local_nonprim = NULL;
-    
     plmn_id_local_nonprim = OpenAPI_plmn_id_parseFromJSON(plmn_id);
 
     cJSON *ec_restriction_data_wb = cJSON_GetObjectItemCaseSensitive(plmn_ec_infoJSON, "ecRestrictionDataWb");
 
     OpenAPI_ec_restriction_data_wb_t *ec_restriction_data_wb_local_nonprim = NULL;
-    if (ec_restriction_data_wb) { 
+    if (ec_restriction_data_wb) {
     ec_restriction_data_wb_local_nonprim = OpenAPI_ec_restriction_data_wb_parseFromJSON(ec_restriction_data_wb);
     }
 
     cJSON *ec_restriction_data_nb = cJSON_GetObjectItemCaseSensitive(plmn_ec_infoJSON, "ecRestrictionDataNb");
 
-    if (ec_restriction_data_nb) { 
+    if (ec_restriction_data_nb) {
     if (!cJSON_IsBool(ec_restriction_data_nb)) {
         ogs_error("OpenAPI_plmn_ec_info_parseFromJSON() failed [ec_restriction_data_nb]");
         goto end;
@@ -109,6 +110,7 @@ OpenAPI_plmn_ec_info_t *OpenAPI_plmn_ec_info_parseFromJSON(cJSON *plmn_ec_infoJS
     plmn_ec_info_local_var = OpenAPI_plmn_ec_info_create (
         plmn_id_local_nonprim,
         ec_restriction_data_wb ? ec_restriction_data_wb_local_nonprim : NULL,
+        ec_restriction_data_nb ? true : false,
         ec_restriction_data_nb ? ec_restriction_data_nb->valueint : 0
     );
 

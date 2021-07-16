@@ -85,7 +85,6 @@ OpenAPI_n4_information_t *OpenAPI_n4_information_parseFromJSON(cJSON *n4_informa
     }
 
     OpenAPI_n4_message_type_e n4_message_typeVariable;
-    
     if (!cJSON_IsString(n4_message_type)) {
         ogs_error("OpenAPI_n4_information_parseFromJSON() failed [n4_message_type]");
         goto end;
@@ -99,13 +98,12 @@ OpenAPI_n4_information_t *OpenAPI_n4_information_parseFromJSON(cJSON *n4_informa
     }
 
     OpenAPI_ref_to_binary_data_t *n4_message_payload_local_nonprim = NULL;
-    
     n4_message_payload_local_nonprim = OpenAPI_ref_to_binary_data_parseFromJSON(n4_message_payload);
 
     cJSON *n4_dnai_info = cJSON_GetObjectItemCaseSensitive(n4_informationJSON, "n4DnaiInfo");
 
     OpenAPI_dnai_information_t *n4_dnai_info_local_nonprim = NULL;
-    if (n4_dnai_info) { 
+    if (n4_dnai_info) {
     n4_dnai_info_local_nonprim = OpenAPI_dnai_information_parseFromJSON(n4_dnai_info);
     }
 

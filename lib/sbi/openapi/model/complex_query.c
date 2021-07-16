@@ -96,7 +96,6 @@ OpenAPI_complex_query_t *OpenAPI_complex_query_parseFromJSON(cJSON *complex_quer
     }
 
     OpenAPI_list_t *cnf_unitsList;
-    
     cJSON *cnf_units_local_nonprimitive;
     if (!cJSON_IsArray(cnf_units)){
         ogs_error("OpenAPI_complex_query_parseFromJSON() failed [cnf_units]");
@@ -122,7 +121,6 @@ OpenAPI_complex_query_t *OpenAPI_complex_query_parseFromJSON(cJSON *complex_quer
     }
 
     OpenAPI_list_t *dnf_unitsList;
-    
     cJSON *dnf_units_local_nonprimitive;
     if (!cJSON_IsArray(dnf_units)){
         ogs_error("OpenAPI_complex_query_parseFromJSON() failed [dnf_units]");

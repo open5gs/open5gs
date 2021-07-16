@@ -22,6 +22,7 @@ extern "C" {
 typedef struct OpenAPI_qos_flow_add_modify_request_item_s OpenAPI_qos_flow_add_modify_request_item_t;
 typedef struct OpenAPI_qos_flow_add_modify_request_item_s {
     int qfi;
+    bool is_ebi;
     int ebi;
     char qos_rules;
     char qos_flow_description;
@@ -31,6 +32,7 @@ typedef struct OpenAPI_qos_flow_add_modify_request_item_s {
 
 OpenAPI_qos_flow_add_modify_request_item_t *OpenAPI_qos_flow_add_modify_request_item_create(
     int qfi,
+    bool is_ebi,
     int ebi,
     char qos_rules,
     char qos_flow_description,

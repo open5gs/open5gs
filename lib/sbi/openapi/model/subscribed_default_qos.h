@@ -22,12 +22,14 @@ typedef struct OpenAPI_subscribed_default_qos_s OpenAPI_subscribed_default_qos_t
 typedef struct OpenAPI_subscribed_default_qos_s {
     int _5qi;
     struct OpenAPI_arp_s *arp;
+    bool is_priority_level;
     int priority_level;
 } OpenAPI_subscribed_default_qos_t;
 
 OpenAPI_subscribed_default_qos_t *OpenAPI_subscribed_default_qos_create(
     int _5qi,
     OpenAPI_arp_t *arp,
+    bool is_priority_level,
     int priority_level
 );
 void OpenAPI_subscribed_default_qos_free(OpenAPI_subscribed_default_qos_t *subscribed_default_qos);

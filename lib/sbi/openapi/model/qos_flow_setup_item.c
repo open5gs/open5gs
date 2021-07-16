@@ -7,6 +7,7 @@
 OpenAPI_qos_flow_setup_item_t *OpenAPI_qos_flow_setup_item_create(
     int qfi,
     char qos_rules,
+    bool is_ebi,
     int ebi,
     char qos_flow_description,
     OpenAPI_qos_flow_profile_t *qos_flow_profile,
@@ -19,6 +20,7 @@ OpenAPI_qos_flow_setup_item_t *OpenAPI_qos_flow_setup_item_create(
     }
     qos_flow_setup_item_local_var->qfi = qfi;
     qos_flow_setup_item_local_var->qos_rules = qos_rules;
+    qos_flow_setup_item_local_var->is_ebi = is_ebi;
     qos_flow_setup_item_local_var->ebi = ebi;
     qos_flow_setup_item_local_var->qos_flow_description = qos_flow_description;
     qos_flow_setup_item_local_var->qos_flow_profile = qos_flow_profile;
@@ -57,7 +59,7 @@ cJSON *OpenAPI_qos_flow_setup_item_convertToJSON(OpenAPI_qos_flow_setup_item_t *
         goto end;
     }
 
-    if (qos_flow_setup_item->ebi) {
+    if (qos_flow_setup_item->is_ebi) {
     if (cJSON_AddNumberToObject(item, "ebi", qos_flow_setup_item->ebi) == NULL) {
         ogs_error("OpenAPI_qos_flow_setup_item_convertToJSON() failed [ebi]");
         goto end;
@@ -104,7 +106,6 @@ OpenAPI_qos_flow_setup_item_t *OpenAPI_qos_flow_setup_item_parseFromJSON(cJSON *
         goto end;
     }
 
-    
     if (!cJSON_IsNumber(qfi)) {
         ogs_error("OpenAPI_qos_flow_setup_item_parseFromJSON() failed [qfi]");
         goto end;
@@ -116,7 +117,6 @@ OpenAPI_qos_flow_setup_item_t *OpenAPI_qos_flow_setup_item_parseFromJSON(cJSON *
         goto end;
     }
 
-    
     if (!cJSON_IsNumber(qos_rules)) {
         ogs_error("OpenAPI_qos_flow_setup_item_parseFromJSON() failed [qos_rules]");
         goto end;
@@ -124,7 +124,7 @@ OpenAPI_qos_flow_setup_item_t *OpenAPI_qos_flow_setup_item_parseFromJSON(cJSON *
 
     cJSON *ebi = cJSON_GetObjectItemCaseSensitive(qos_flow_setup_itemJSON, "ebi");
 
-    if (ebi) { 
+    if (ebi) {
     if (!cJSON_IsNumber(ebi)) {
         ogs_error("OpenAPI_qos_flow_setup_item_parseFromJSON() failed [ebi]");
         goto end;
@@ -133,7 +133,7 @@ OpenAPI_qos_flow_setup_item_t *OpenAPI_qos_flow_setup_item_parseFromJSON(cJSON *
 
     cJSON *qos_flow_description = cJSON_GetObjectItemCaseSensitive(qos_flow_setup_itemJSON, "qosFlowDescription");
 
-    if (qos_flow_description) { 
+    if (qos_flow_description) {
     if (!cJSON_IsNumber(qos_flow_description)) {
         ogs_error("OpenAPI_qos_flow_setup_item_parseFromJSON() failed [qos_flow_description]");
         goto end;
@@ -143,14 +143,14 @@ OpenAPI_qos_flow_setup_item_t *OpenAPI_qos_flow_setup_item_parseFromJSON(cJSON *
     cJSON *qos_flow_profile = cJSON_GetObjectItemCaseSensitive(qos_flow_setup_itemJSON, "qosFlowProfile");
 
     OpenAPI_qos_flow_profile_t *qos_flow_profile_local_nonprim = NULL;
-    if (qos_flow_profile) { 
+    if (qos_flow_profile) {
     qos_flow_profile_local_nonprim = OpenAPI_qos_flow_profile_parseFromJSON(qos_flow_profile);
     }
 
     cJSON *associated_an_type = cJSON_GetObjectItemCaseSensitive(qos_flow_setup_itemJSON, "associatedAnType");
 
     OpenAPI_qos_flow_access_type_e associated_an_typeVariable;
-    if (associated_an_type) { 
+    if (associated_an_type) {
     if (!cJSON_IsString(associated_an_type)) {
         ogs_error("OpenAPI_qos_flow_setup_item_parseFromJSON() failed [associated_an_type]");
         goto end;
@@ -159,8 +159,10 @@ OpenAPI_qos_flow_setup_item_t *OpenAPI_qos_flow_setup_item_parseFromJSON(cJSON *
     }
 
     qos_flow_setup_item_local_var = OpenAPI_qos_flow_setup_item_create (
+        
         qfi->valuedouble,
         qos_rules->valueint,
+        ebi ? true : false,
         ebi ? ebi->valuedouble : 0,
         qos_flow_description ? qos_flow_description->valueint : 0,
         qos_flow_profile ? qos_flow_profile_local_nonprim : NULL,

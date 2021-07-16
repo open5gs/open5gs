@@ -117,7 +117,7 @@ OpenAPI_exposure_data_change_notification_t *OpenAPI_exposure_data_change_notifi
     OpenAPI_exposure_data_change_notification_t *exposure_data_change_notification_local_var = NULL;
     cJSON *ue_id = cJSON_GetObjectItemCaseSensitive(exposure_data_change_notificationJSON, "ueId");
 
-    if (ue_id) { 
+    if (ue_id) {
     if (!cJSON_IsString(ue_id)) {
         ogs_error("OpenAPI_exposure_data_change_notification_parseFromJSON() failed [ue_id]");
         goto end;
@@ -127,14 +127,14 @@ OpenAPI_exposure_data_change_notification_t *OpenAPI_exposure_data_change_notifi
     cJSON *access_and_mobility_data = cJSON_GetObjectItemCaseSensitive(exposure_data_change_notificationJSON, "accessAndMobilityData");
 
     OpenAPI_access_and_mobility_data_t *access_and_mobility_data_local_nonprim = NULL;
-    if (access_and_mobility_data) { 
+    if (access_and_mobility_data) {
     access_and_mobility_data_local_nonprim = OpenAPI_access_and_mobility_data_parseFromJSON(access_and_mobility_data);
     }
 
     cJSON *pdu_session_management_data = cJSON_GetObjectItemCaseSensitive(exposure_data_change_notificationJSON, "pduSessionManagementData");
 
     OpenAPI_list_t *pdu_session_management_dataList;
-    if (pdu_session_management_data) { 
+    if (pdu_session_management_data) {
     cJSON *pdu_session_management_data_local_nonprimitive;
     if (!cJSON_IsArray(pdu_session_management_data)){
         ogs_error("OpenAPI_exposure_data_change_notification_parseFromJSON() failed [pdu_session_management_data]");
@@ -157,7 +157,7 @@ OpenAPI_exposure_data_change_notification_t *OpenAPI_exposure_data_change_notifi
     cJSON *del_resources = cJSON_GetObjectItemCaseSensitive(exposure_data_change_notificationJSON, "delResources");
 
     OpenAPI_list_t *del_resourcesList;
-    if (del_resources) { 
+    if (del_resources) {
     cJSON *del_resources_local;
     if (!cJSON_IsArray(del_resources)) {
         ogs_error("OpenAPI_exposure_data_change_notification_parseFromJSON() failed [del_resources]");
@@ -171,7 +171,7 @@ OpenAPI_exposure_data_change_notification_t *OpenAPI_exposure_data_change_notifi
         goto end;
     }
     OpenAPI_list_add(del_resourcesList , ogs_strdup_or_assert(del_resources_local->valuestring));
-                    }
+    }
     }
 
     exposure_data_change_notification_local_var = OpenAPI_exposure_data_change_notification_create (

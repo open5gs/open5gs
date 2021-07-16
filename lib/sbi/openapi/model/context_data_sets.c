@@ -228,21 +228,21 @@ OpenAPI_context_data_sets_t *OpenAPI_context_data_sets_parseFromJSON(cJSON *cont
     cJSON *amf3_gpp = cJSON_GetObjectItemCaseSensitive(context_data_setsJSON, "amf3Gpp");
 
     OpenAPI_amf3_gpp_access_registration_t *amf3_gpp_local_nonprim = NULL;
-    if (amf3_gpp) { 
+    if (amf3_gpp) {
     amf3_gpp_local_nonprim = OpenAPI_amf3_gpp_access_registration_parseFromJSON(amf3_gpp);
     }
 
     cJSON *amf_non3_gpp = cJSON_GetObjectItemCaseSensitive(context_data_setsJSON, "amfNon3Gpp");
 
     OpenAPI_amf_non3_gpp_access_registration_t *amf_non3_gpp_local_nonprim = NULL;
-    if (amf_non3_gpp) { 
+    if (amf_non3_gpp) {
     amf_non3_gpp_local_nonprim = OpenAPI_amf_non3_gpp_access_registration_parseFromJSON(amf_non3_gpp);
     }
 
     cJSON *sdm_subscriptions = cJSON_GetObjectItemCaseSensitive(context_data_setsJSON, "sdmSubscriptions");
 
     OpenAPI_list_t *sdm_subscriptionsList;
-    if (sdm_subscriptions) { 
+    if (sdm_subscriptions) {
     cJSON *sdm_subscriptions_local_nonprimitive;
     if (!cJSON_IsArray(sdm_subscriptions)){
         ogs_error("OpenAPI_context_data_sets_parseFromJSON() failed [sdm_subscriptions]");
@@ -265,7 +265,7 @@ OpenAPI_context_data_sets_t *OpenAPI_context_data_sets_parseFromJSON(cJSON *cont
     cJSON *ee_subscriptions = cJSON_GetObjectItemCaseSensitive(context_data_setsJSON, "eeSubscriptions");
 
     OpenAPI_list_t *ee_subscriptionsList;
-    if (ee_subscriptions) { 
+    if (ee_subscriptions) {
     cJSON *ee_subscriptions_local_nonprimitive;
     if (!cJSON_IsArray(ee_subscriptions)){
         ogs_error("OpenAPI_context_data_sets_parseFromJSON() failed [ee_subscriptions]");
@@ -288,21 +288,21 @@ OpenAPI_context_data_sets_t *OpenAPI_context_data_sets_parseFromJSON(cJSON *cont
     cJSON *smsf3_gpp_access = cJSON_GetObjectItemCaseSensitive(context_data_setsJSON, "smsf3GppAccess");
 
     OpenAPI_smsf_registration_t *smsf3_gpp_access_local_nonprim = NULL;
-    if (smsf3_gpp_access) { 
+    if (smsf3_gpp_access) {
     smsf3_gpp_access_local_nonprim = OpenAPI_smsf_registration_parseFromJSON(smsf3_gpp_access);
     }
 
     cJSON *smsf_non3_gpp_access = cJSON_GetObjectItemCaseSensitive(context_data_setsJSON, "smsfNon3GppAccess");
 
     OpenAPI_smsf_registration_t *smsf_non3_gpp_access_local_nonprim = NULL;
-    if (smsf_non3_gpp_access) { 
+    if (smsf_non3_gpp_access) {
     smsf_non3_gpp_access_local_nonprim = OpenAPI_smsf_registration_parseFromJSON(smsf_non3_gpp_access);
     }
 
     cJSON *subscription_data_subscriptions = cJSON_GetObjectItemCaseSensitive(context_data_setsJSON, "subscriptionDataSubscriptions");
 
     OpenAPI_list_t *subscription_data_subscriptionsList;
-    if (subscription_data_subscriptions) { 
+    if (subscription_data_subscriptions) {
     cJSON *subscription_data_subscriptions_local_nonprimitive;
     if (!cJSON_IsArray(subscription_data_subscriptions)){
         ogs_error("OpenAPI_context_data_sets_parseFromJSON() failed [subscription_data_subscriptions]");
@@ -325,7 +325,7 @@ OpenAPI_context_data_sets_t *OpenAPI_context_data_sets_parseFromJSON(cJSON *cont
     cJSON *smf_registrations = cJSON_GetObjectItemCaseSensitive(context_data_setsJSON, "smfRegistrations");
 
     OpenAPI_list_t *smf_registrationsList;
-    if (smf_registrations) { 
+    if (smf_registrations) {
     cJSON *smf_registrations_local_nonprimitive;
     if (!cJSON_IsArray(smf_registrations)){
         ogs_error("OpenAPI_context_data_sets_parseFromJSON() failed [smf_registrations]");
@@ -348,7 +348,7 @@ OpenAPI_context_data_sets_t *OpenAPI_context_data_sets_parseFromJSON(cJSON *cont
     cJSON *ip_sm_gw = cJSON_GetObjectItemCaseSensitive(context_data_setsJSON, "ipSmGw");
 
     OpenAPI_ip_sm_gw_registration_t *ip_sm_gw_local_nonprim = NULL;
-    if (ip_sm_gw) { 
+    if (ip_sm_gw) {
     ip_sm_gw_local_nonprim = OpenAPI_ip_sm_gw_registration_parseFromJSON(ip_sm_gw);
     }
 

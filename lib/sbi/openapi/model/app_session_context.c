@@ -92,21 +92,21 @@ OpenAPI_app_session_context_t *OpenAPI_app_session_context_parseFromJSON(cJSON *
     cJSON *asc_req_data = cJSON_GetObjectItemCaseSensitive(app_session_contextJSON, "ascReqData");
 
     OpenAPI_app_session_context_req_data_t *asc_req_data_local_nonprim = NULL;
-    if (asc_req_data) { 
+    if (asc_req_data) {
     asc_req_data_local_nonprim = OpenAPI_app_session_context_req_data_parseFromJSON(asc_req_data);
     }
 
     cJSON *asc_resp_data = cJSON_GetObjectItemCaseSensitive(app_session_contextJSON, "ascRespData");
 
     OpenAPI_app_session_context_resp_data_t *asc_resp_data_local_nonprim = NULL;
-    if (asc_resp_data) { 
+    if (asc_resp_data) {
     asc_resp_data_local_nonprim = OpenAPI_app_session_context_resp_data_parseFromJSON(asc_resp_data);
     }
 
     cJSON *evs_notif = cJSON_GetObjectItemCaseSensitive(app_session_contextJSON, "evsNotif");
 
     OpenAPI_events_notification_t *evs_notif_local_nonprim = NULL;
-    if (evs_notif) { 
+    if (evs_notif) {
     evs_notif_local_nonprim = OpenAPI_events_notification_parseFromJSON(evs_notif);
     }
 

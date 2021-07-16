@@ -9,6 +9,7 @@ OpenAPI_model_5_gvn_group_data_t *OpenAPI_model_5_gvn_group_data_create(
     OpenAPI_snssai_t *s_nssai,
     OpenAPI_list_t *pdu_session_types,
     OpenAPI_list_t *app_descriptors,
+    bool is_secondary_auth,
     int secondary_auth,
     OpenAPI_ip_address_1_t *dn_aaa_address
 )
@@ -21,6 +22,7 @@ OpenAPI_model_5_gvn_group_data_t *OpenAPI_model_5_gvn_group_data_create(
     model_5_gvn_group_data_local_var->s_nssai = s_nssai;
     model_5_gvn_group_data_local_var->pdu_session_types = pdu_session_types;
     model_5_gvn_group_data_local_var->app_descriptors = app_descriptors;
+    model_5_gvn_group_data_local_var->is_secondary_auth = is_secondary_auth;
     model_5_gvn_group_data_local_var->secondary_auth = secondary_auth;
     model_5_gvn_group_data_local_var->dn_aaa_address = dn_aaa_address;
 
@@ -105,7 +107,7 @@ cJSON *OpenAPI_model_5_gvn_group_data_convertToJSON(OpenAPI_model_5_gvn_group_da
     }
     }
 
-    if (model_5_gvn_group_data->secondary_auth) {
+    if (model_5_gvn_group_data->is_secondary_auth) {
     if (cJSON_AddBoolToObject(item, "secondaryAuth", model_5_gvn_group_data->secondary_auth) == NULL) {
         ogs_error("OpenAPI_model_5_gvn_group_data_convertToJSON() failed [secondary_auth]");
         goto end;
@@ -138,7 +140,6 @@ OpenAPI_model_5_gvn_group_data_t *OpenAPI_model_5_gvn_group_data_parseFromJSON(c
         goto end;
     }
 
-    
     if (!cJSON_IsString(dnn)) {
         ogs_error("OpenAPI_model_5_gvn_group_data_parseFromJSON() failed [dnn]");
         goto end;
@@ -151,13 +152,12 @@ OpenAPI_model_5_gvn_group_data_t *OpenAPI_model_5_gvn_group_data_parseFromJSON(c
     }
 
     OpenAPI_snssai_t *s_nssai_local_nonprim = NULL;
-    
     s_nssai_local_nonprim = OpenAPI_snssai_parseFromJSON(s_nssai);
 
     cJSON *pdu_session_types = cJSON_GetObjectItemCaseSensitive(model_5_gvn_group_dataJSON, "pduSessionTypes");
 
     OpenAPI_list_t *pdu_session_typesList;
-    if (pdu_session_types) { 
+    if (pdu_session_types) {
     cJSON *pdu_session_types_local_nonprimitive;
     if (!cJSON_IsArray(pdu_session_types)) {
         ogs_error("OpenAPI_model_5_gvn_group_data_parseFromJSON() failed [pdu_session_types]");
@@ -179,7 +179,7 @@ OpenAPI_model_5_gvn_group_data_t *OpenAPI_model_5_gvn_group_data_parseFromJSON(c
     cJSON *app_descriptors = cJSON_GetObjectItemCaseSensitive(model_5_gvn_group_dataJSON, "appDescriptors");
 
     OpenAPI_list_t *app_descriptorsList;
-    if (app_descriptors) { 
+    if (app_descriptors) {
     cJSON *app_descriptors_local_nonprimitive;
     if (!cJSON_IsArray(app_descriptors)){
         ogs_error("OpenAPI_model_5_gvn_group_data_parseFromJSON() failed [app_descriptors]");
@@ -201,7 +201,7 @@ OpenAPI_model_5_gvn_group_data_t *OpenAPI_model_5_gvn_group_data_parseFromJSON(c
 
     cJSON *secondary_auth = cJSON_GetObjectItemCaseSensitive(model_5_gvn_group_dataJSON, "secondaryAuth");
 
-    if (secondary_auth) { 
+    if (secondary_auth) {
     if (!cJSON_IsBool(secondary_auth)) {
         ogs_error("OpenAPI_model_5_gvn_group_data_parseFromJSON() failed [secondary_auth]");
         goto end;
@@ -211,7 +211,7 @@ OpenAPI_model_5_gvn_group_data_t *OpenAPI_model_5_gvn_group_data_parseFromJSON(c
     cJSON *dn_aaa_address = cJSON_GetObjectItemCaseSensitive(model_5_gvn_group_dataJSON, "dnAaaAddress");
 
     OpenAPI_ip_address_1_t *dn_aaa_address_local_nonprim = NULL;
-    if (dn_aaa_address) { 
+    if (dn_aaa_address) {
     dn_aaa_address_local_nonprim = OpenAPI_ip_address_1_parseFromJSON(dn_aaa_address);
     }
 
@@ -220,6 +220,7 @@ OpenAPI_model_5_gvn_group_data_t *OpenAPI_model_5_gvn_group_data_parseFromJSON(c
         s_nssai_local_nonprim,
         pdu_session_types ? pdu_session_typesList : NULL,
         app_descriptors ? app_descriptorsList : NULL,
+        secondary_auth ? true : false,
         secondary_auth ? secondary_auth->valueint : 0,
         dn_aaa_address ? dn_aaa_address_local_nonprim : NULL
     );

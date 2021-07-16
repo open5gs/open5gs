@@ -26,7 +26,9 @@ extern "C" {
 typedef struct OpenAPI_expected_ue_behaviour_data_s OpenAPI_expected_ue_behaviour_data_t;
 typedef struct OpenAPI_expected_ue_behaviour_data_s {
     OpenAPI_stationary_indication_e stationary_indication;
+    bool is_communication_duration_time;
     int communication_duration_time;
+    bool is_periodic_time;
     int periodic_time;
     struct OpenAPI_scheduled_communication_time_s *scheduled_communication_time;
     OpenAPI_scheduled_communication_type_e scheduled_communication_type;
@@ -38,7 +40,9 @@ typedef struct OpenAPI_expected_ue_behaviour_data_s {
 
 OpenAPI_expected_ue_behaviour_data_t *OpenAPI_expected_ue_behaviour_data_create(
     OpenAPI_stationary_indication_e stationary_indication,
+    bool is_communication_duration_time,
     int communication_duration_time,
+    bool is_periodic_time,
     int periodic_time,
     OpenAPI_scheduled_communication_time_t *scheduled_communication_time,
     OpenAPI_scheduled_communication_type_e scheduled_communication_type,

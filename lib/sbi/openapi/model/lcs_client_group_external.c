@@ -104,7 +104,7 @@ OpenAPI_lcs_client_group_external_t *OpenAPI_lcs_client_group_external_parseFrom
     OpenAPI_lcs_client_group_external_t *lcs_client_group_external_local_var = NULL;
     cJSON *lcs_client_group_id = cJSON_GetObjectItemCaseSensitive(lcs_client_group_externalJSON, "lcsClientGroupId");
 
-    if (lcs_client_group_id) { 
+    if (lcs_client_group_id) {
     if (!cJSON_IsString(lcs_client_group_id)) {
         ogs_error("OpenAPI_lcs_client_group_external_parseFromJSON() failed [lcs_client_group_id]");
         goto end;
@@ -114,7 +114,7 @@ OpenAPI_lcs_client_group_external_t *OpenAPI_lcs_client_group_external_parseFrom
     cJSON *allowed_geographic_area = cJSON_GetObjectItemCaseSensitive(lcs_client_group_externalJSON, "allowedGeographicArea");
 
     OpenAPI_list_t *allowed_geographic_areaList;
-    if (allowed_geographic_area) { 
+    if (allowed_geographic_area) {
     cJSON *allowed_geographic_area_local_nonprimitive;
     if (!cJSON_IsArray(allowed_geographic_area)){
         ogs_error("OpenAPI_lcs_client_group_external_parseFromJSON() failed [allowed_geographic_area]");
@@ -137,7 +137,7 @@ OpenAPI_lcs_client_group_external_t *OpenAPI_lcs_client_group_external_parseFrom
     cJSON *privacy_check_related_action = cJSON_GetObjectItemCaseSensitive(lcs_client_group_externalJSON, "privacyCheckRelatedAction");
 
     OpenAPI_privacy_check_related_action_e privacy_check_related_actionVariable;
-    if (privacy_check_related_action) { 
+    if (privacy_check_related_action) {
     if (!cJSON_IsString(privacy_check_related_action)) {
         ogs_error("OpenAPI_lcs_client_group_external_parseFromJSON() failed [privacy_check_related_action]");
         goto end;
@@ -148,7 +148,7 @@ OpenAPI_lcs_client_group_external_t *OpenAPI_lcs_client_group_external_parseFrom
     cJSON *valid_time_period = cJSON_GetObjectItemCaseSensitive(lcs_client_group_externalJSON, "validTimePeriod");
 
     OpenAPI_valid_time_period_t *valid_time_period_local_nonprim = NULL;
-    if (valid_time_period) { 
+    if (valid_time_period) {
     valid_time_period_local_nonprim = OpenAPI_valid_time_period_parseFromJSON(valid_time_period);
     }
 

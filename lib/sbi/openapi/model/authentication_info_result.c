@@ -91,7 +91,6 @@ OpenAPI_authentication_info_result_t *OpenAPI_authentication_info_result_parseFr
     }
 
     OpenAPI_auth_type_e auth_typeVariable;
-    
     if (!cJSON_IsString(auth_type)) {
         ogs_error("OpenAPI_authentication_info_result_parseFromJSON() failed [auth_type]");
         goto end;
@@ -100,7 +99,7 @@ OpenAPI_authentication_info_result_t *OpenAPI_authentication_info_result_parseFr
 
     cJSON *supported_features = cJSON_GetObjectItemCaseSensitive(authentication_info_resultJSON, "supportedFeatures");
 
-    if (supported_features) { 
+    if (supported_features) {
     if (!cJSON_IsString(supported_features)) {
         ogs_error("OpenAPI_authentication_info_result_parseFromJSON() failed [supported_features]");
         goto end;
@@ -110,13 +109,13 @@ OpenAPI_authentication_info_result_t *OpenAPI_authentication_info_result_parseFr
     cJSON *authentication_vector = cJSON_GetObjectItemCaseSensitive(authentication_info_resultJSON, "authenticationVector");
 
     OpenAPI_authentication_vector_t *authentication_vector_local_nonprim = NULL;
-    if (authentication_vector) { 
+    if (authentication_vector) {
     authentication_vector_local_nonprim = OpenAPI_authentication_vector_parseFromJSON(authentication_vector);
     }
 
     cJSON *supi = cJSON_GetObjectItemCaseSensitive(authentication_info_resultJSON, "supi");
 
-    if (supi) { 
+    if (supi) {
     if (!cJSON_IsString(supi)) {
         ogs_error("OpenAPI_authentication_info_result_parseFromJSON() failed [supi]");
         goto end;

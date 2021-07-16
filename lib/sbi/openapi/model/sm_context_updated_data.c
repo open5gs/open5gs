@@ -14,10 +14,12 @@ OpenAPI_sm_context_updated_data_t *OpenAPI_sm_context_updated_data_create(
     OpenAPI_ref_to_binary_data_t *n2_sm_info,
     OpenAPI_n2_sm_info_type_e n2_sm_info_type,
     OpenAPI_list_t *eps_bearer_setup,
+    bool is_data_forwarding,
     int data_forwarding,
     OpenAPI_list_t *n3_dl_forwarding_tnl_list,
     OpenAPI_list_t *n3_ul_forwarding_tnl_list,
     OpenAPI_cause_e cause,
+    bool is_ma_accepted_ind,
     int ma_accepted_ind,
     char *supported_features,
     char forwarding_f_teid,
@@ -39,10 +41,12 @@ OpenAPI_sm_context_updated_data_t *OpenAPI_sm_context_updated_data_create(
     sm_context_updated_data_local_var->n2_sm_info = n2_sm_info;
     sm_context_updated_data_local_var->n2_sm_info_type = n2_sm_info_type;
     sm_context_updated_data_local_var->eps_bearer_setup = eps_bearer_setup;
+    sm_context_updated_data_local_var->is_data_forwarding = is_data_forwarding;
     sm_context_updated_data_local_var->data_forwarding = data_forwarding;
     sm_context_updated_data_local_var->n3_dl_forwarding_tnl_list = n3_dl_forwarding_tnl_list;
     sm_context_updated_data_local_var->n3_ul_forwarding_tnl_list = n3_ul_forwarding_tnl_list;
     sm_context_updated_data_local_var->cause = cause;
+    sm_context_updated_data_local_var->is_ma_accepted_ind = is_ma_accepted_ind;
     sm_context_updated_data_local_var->ma_accepted_ind = ma_accepted_ind;
     sm_context_updated_data_local_var->supported_features = supported_features;
     sm_context_updated_data_local_var->forwarding_f_teid = forwarding_f_teid;
@@ -224,7 +228,7 @@ cJSON *OpenAPI_sm_context_updated_data_convertToJSON(OpenAPI_sm_context_updated_
                     }
     }
 
-    if (sm_context_updated_data->data_forwarding) {
+    if (sm_context_updated_data->is_data_forwarding) {
     if (cJSON_AddBoolToObject(item, "dataForwarding", sm_context_updated_data->data_forwarding) == NULL) {
         ogs_error("OpenAPI_sm_context_updated_data_convertToJSON() failed [data_forwarding]");
         goto end;
@@ -278,7 +282,7 @@ cJSON *OpenAPI_sm_context_updated_data_convertToJSON(OpenAPI_sm_context_updated_
     }
     }
 
-    if (sm_context_updated_data->ma_accepted_ind) {
+    if (sm_context_updated_data->is_ma_accepted_ind) {
     if (cJSON_AddBoolToObject(item, "maAcceptedInd", sm_context_updated_data->ma_accepted_ind) == NULL) {
         ogs_error("OpenAPI_sm_context_updated_data_convertToJSON() failed [ma_accepted_ind]");
         goto end;
@@ -339,7 +343,7 @@ OpenAPI_sm_context_updated_data_t *OpenAPI_sm_context_updated_data_parseFromJSON
     cJSON *up_cnx_state = cJSON_GetObjectItemCaseSensitive(sm_context_updated_dataJSON, "upCnxState");
 
     OpenAPI_up_cnx_state_e up_cnx_stateVariable;
-    if (up_cnx_state) { 
+    if (up_cnx_state) {
     if (!cJSON_IsString(up_cnx_state)) {
         ogs_error("OpenAPI_sm_context_updated_data_parseFromJSON() failed [up_cnx_state]");
         goto end;
@@ -350,7 +354,7 @@ OpenAPI_sm_context_updated_data_t *OpenAPI_sm_context_updated_data_parseFromJSON
     cJSON *ho_state = cJSON_GetObjectItemCaseSensitive(sm_context_updated_dataJSON, "hoState");
 
     OpenAPI_ho_state_e ho_stateVariable;
-    if (ho_state) { 
+    if (ho_state) {
     if (!cJSON_IsString(ho_state)) {
         ogs_error("OpenAPI_sm_context_updated_data_parseFromJSON() failed [ho_state]");
         goto end;
@@ -361,7 +365,7 @@ OpenAPI_sm_context_updated_data_t *OpenAPI_sm_context_updated_data_parseFromJSON
     cJSON *release_ebi_list = cJSON_GetObjectItemCaseSensitive(sm_context_updated_dataJSON, "releaseEbiList");
 
     OpenAPI_list_t *release_ebi_listList;
-    if (release_ebi_list) { 
+    if (release_ebi_list) {
     cJSON *release_ebi_list_local;
     if (!cJSON_IsArray(release_ebi_list)) {
         ogs_error("OpenAPI_sm_context_updated_data_parseFromJSON() failed [release_ebi_list]");
@@ -375,13 +379,13 @@ OpenAPI_sm_context_updated_data_t *OpenAPI_sm_context_updated_data_parseFromJSON
         goto end;
     }
     OpenAPI_list_add(release_ebi_listList , &release_ebi_list_local->valuedouble);
-                    }
+    }
     }
 
     cJSON *allocated_ebi_list = cJSON_GetObjectItemCaseSensitive(sm_context_updated_dataJSON, "allocatedEbiList");
 
     OpenAPI_list_t *allocated_ebi_listList;
-    if (allocated_ebi_list) { 
+    if (allocated_ebi_list) {
     cJSON *allocated_ebi_list_local_nonprimitive;
     if (!cJSON_IsArray(allocated_ebi_list)){
         ogs_error("OpenAPI_sm_context_updated_data_parseFromJSON() failed [allocated_ebi_list]");
@@ -404,7 +408,7 @@ OpenAPI_sm_context_updated_data_t *OpenAPI_sm_context_updated_data_parseFromJSON
     cJSON *modified_ebi_list = cJSON_GetObjectItemCaseSensitive(sm_context_updated_dataJSON, "modifiedEbiList");
 
     OpenAPI_list_t *modified_ebi_listList;
-    if (modified_ebi_list) { 
+    if (modified_ebi_list) {
     cJSON *modified_ebi_list_local_nonprimitive;
     if (!cJSON_IsArray(modified_ebi_list)){
         ogs_error("OpenAPI_sm_context_updated_data_parseFromJSON() failed [modified_ebi_list]");
@@ -427,21 +431,21 @@ OpenAPI_sm_context_updated_data_t *OpenAPI_sm_context_updated_data_parseFromJSON
     cJSON *n1_sm_msg = cJSON_GetObjectItemCaseSensitive(sm_context_updated_dataJSON, "n1SmMsg");
 
     OpenAPI_ref_to_binary_data_t *n1_sm_msg_local_nonprim = NULL;
-    if (n1_sm_msg) { 
+    if (n1_sm_msg) {
     n1_sm_msg_local_nonprim = OpenAPI_ref_to_binary_data_parseFromJSON(n1_sm_msg);
     }
 
     cJSON *n2_sm_info = cJSON_GetObjectItemCaseSensitive(sm_context_updated_dataJSON, "n2SmInfo");
 
     OpenAPI_ref_to_binary_data_t *n2_sm_info_local_nonprim = NULL;
-    if (n2_sm_info) { 
+    if (n2_sm_info) {
     n2_sm_info_local_nonprim = OpenAPI_ref_to_binary_data_parseFromJSON(n2_sm_info);
     }
 
     cJSON *n2_sm_info_type = cJSON_GetObjectItemCaseSensitive(sm_context_updated_dataJSON, "n2SmInfoType");
 
     OpenAPI_n2_sm_info_type_e n2_sm_info_typeVariable;
-    if (n2_sm_info_type) { 
+    if (n2_sm_info_type) {
     if (!cJSON_IsString(n2_sm_info_type)) {
         ogs_error("OpenAPI_sm_context_updated_data_parseFromJSON() failed [n2_sm_info_type]");
         goto end;
@@ -452,7 +456,7 @@ OpenAPI_sm_context_updated_data_t *OpenAPI_sm_context_updated_data_parseFromJSON
     cJSON *eps_bearer_setup = cJSON_GetObjectItemCaseSensitive(sm_context_updated_dataJSON, "epsBearerSetup");
 
     OpenAPI_list_t *eps_bearer_setupList;
-    if (eps_bearer_setup) { 
+    if (eps_bearer_setup) {
     cJSON *eps_bearer_setup_local;
     if (!cJSON_IsArray(eps_bearer_setup)) {
         ogs_error("OpenAPI_sm_context_updated_data_parseFromJSON() failed [eps_bearer_setup]");
@@ -466,12 +470,12 @@ OpenAPI_sm_context_updated_data_t *OpenAPI_sm_context_updated_data_parseFromJSON
         goto end;
     }
     OpenAPI_list_add(eps_bearer_setupList , ogs_strdup_or_assert(eps_bearer_setup_local->valuestring));
-                    }
+    }
     }
 
     cJSON *data_forwarding = cJSON_GetObjectItemCaseSensitive(sm_context_updated_dataJSON, "dataForwarding");
 
-    if (data_forwarding) { 
+    if (data_forwarding) {
     if (!cJSON_IsBool(data_forwarding)) {
         ogs_error("OpenAPI_sm_context_updated_data_parseFromJSON() failed [data_forwarding]");
         goto end;
@@ -481,7 +485,7 @@ OpenAPI_sm_context_updated_data_t *OpenAPI_sm_context_updated_data_parseFromJSON
     cJSON *n3_dl_forwarding_tnl_list = cJSON_GetObjectItemCaseSensitive(sm_context_updated_dataJSON, "n3DlForwardingTnlList");
 
     OpenAPI_list_t *n3_dl_forwarding_tnl_listList;
-    if (n3_dl_forwarding_tnl_list) { 
+    if (n3_dl_forwarding_tnl_list) {
     cJSON *n3_dl_forwarding_tnl_list_local_nonprimitive;
     if (!cJSON_IsArray(n3_dl_forwarding_tnl_list)){
         ogs_error("OpenAPI_sm_context_updated_data_parseFromJSON() failed [n3_dl_forwarding_tnl_list]");
@@ -504,7 +508,7 @@ OpenAPI_sm_context_updated_data_t *OpenAPI_sm_context_updated_data_parseFromJSON
     cJSON *n3_ul_forwarding_tnl_list = cJSON_GetObjectItemCaseSensitive(sm_context_updated_dataJSON, "n3UlForwardingTnlList");
 
     OpenAPI_list_t *n3_ul_forwarding_tnl_listList;
-    if (n3_ul_forwarding_tnl_list) { 
+    if (n3_ul_forwarding_tnl_list) {
     cJSON *n3_ul_forwarding_tnl_list_local_nonprimitive;
     if (!cJSON_IsArray(n3_ul_forwarding_tnl_list)){
         ogs_error("OpenAPI_sm_context_updated_data_parseFromJSON() failed [n3_ul_forwarding_tnl_list]");
@@ -527,7 +531,7 @@ OpenAPI_sm_context_updated_data_t *OpenAPI_sm_context_updated_data_parseFromJSON
     cJSON *cause = cJSON_GetObjectItemCaseSensitive(sm_context_updated_dataJSON, "cause");
 
     OpenAPI_cause_e causeVariable;
-    if (cause) { 
+    if (cause) {
     if (!cJSON_IsString(cause)) {
         ogs_error("OpenAPI_sm_context_updated_data_parseFromJSON() failed [cause]");
         goto end;
@@ -537,7 +541,7 @@ OpenAPI_sm_context_updated_data_t *OpenAPI_sm_context_updated_data_parseFromJSON
 
     cJSON *ma_accepted_ind = cJSON_GetObjectItemCaseSensitive(sm_context_updated_dataJSON, "maAcceptedInd");
 
-    if (ma_accepted_ind) { 
+    if (ma_accepted_ind) {
     if (!cJSON_IsBool(ma_accepted_ind)) {
         ogs_error("OpenAPI_sm_context_updated_data_parseFromJSON() failed [ma_accepted_ind]");
         goto end;
@@ -546,7 +550,7 @@ OpenAPI_sm_context_updated_data_t *OpenAPI_sm_context_updated_data_parseFromJSON
 
     cJSON *supported_features = cJSON_GetObjectItemCaseSensitive(sm_context_updated_dataJSON, "supportedFeatures");
 
-    if (supported_features) { 
+    if (supported_features) {
     if (!cJSON_IsString(supported_features)) {
         ogs_error("OpenAPI_sm_context_updated_data_parseFromJSON() failed [supported_features]");
         goto end;
@@ -555,7 +559,7 @@ OpenAPI_sm_context_updated_data_t *OpenAPI_sm_context_updated_data_parseFromJSON
 
     cJSON *forwarding_f_teid = cJSON_GetObjectItemCaseSensitive(sm_context_updated_dataJSON, "forwardingFTeid");
 
-    if (forwarding_f_teid) { 
+    if (forwarding_f_teid) {
     if (!cJSON_IsNumber(forwarding_f_teid)) {
         ogs_error("OpenAPI_sm_context_updated_data_parseFromJSON() failed [forwarding_f_teid]");
         goto end;
@@ -565,7 +569,7 @@ OpenAPI_sm_context_updated_data_t *OpenAPI_sm_context_updated_data_parseFromJSON
     cJSON *forwarding_bearer_contexts = cJSON_GetObjectItemCaseSensitive(sm_context_updated_dataJSON, "forwardingBearerContexts");
 
     OpenAPI_list_t *forwarding_bearer_contextsList;
-    if (forwarding_bearer_contexts) { 
+    if (forwarding_bearer_contexts) {
     cJSON *forwarding_bearer_contexts_local;
     if (!cJSON_IsArray(forwarding_bearer_contexts)) {
         ogs_error("OpenAPI_sm_context_updated_data_parseFromJSON() failed [forwarding_bearer_contexts]");
@@ -579,12 +583,12 @@ OpenAPI_sm_context_updated_data_t *OpenAPI_sm_context_updated_data_parseFromJSON
         goto end;
     }
     OpenAPI_list_add(forwarding_bearer_contextsList , ogs_strdup_or_assert(forwarding_bearer_contexts_local->valuestring));
-                    }
+    }
     }
 
     cJSON *selected_smf_id = cJSON_GetObjectItemCaseSensitive(sm_context_updated_dataJSON, "selectedSmfId");
 
-    if (selected_smf_id) { 
+    if (selected_smf_id) {
     if (!cJSON_IsString(selected_smf_id)) {
         ogs_error("OpenAPI_sm_context_updated_data_parseFromJSON() failed [selected_smf_id]");
         goto end;
@@ -593,7 +597,7 @@ OpenAPI_sm_context_updated_data_t *OpenAPI_sm_context_updated_data_parseFromJSON
 
     cJSON *selected_old_smf_id = cJSON_GetObjectItemCaseSensitive(sm_context_updated_dataJSON, "selectedOldSmfId");
 
-    if (selected_old_smf_id) { 
+    if (selected_old_smf_id) {
     if (!cJSON_IsString(selected_old_smf_id)) {
         ogs_error("OpenAPI_sm_context_updated_data_parseFromJSON() failed [selected_old_smf_id]");
         goto end;
@@ -610,10 +614,12 @@ OpenAPI_sm_context_updated_data_t *OpenAPI_sm_context_updated_data_parseFromJSON
         n2_sm_info ? n2_sm_info_local_nonprim : NULL,
         n2_sm_info_type ? n2_sm_info_typeVariable : 0,
         eps_bearer_setup ? eps_bearer_setupList : NULL,
+        data_forwarding ? true : false,
         data_forwarding ? data_forwarding->valueint : 0,
         n3_dl_forwarding_tnl_list ? n3_dl_forwarding_tnl_listList : NULL,
         n3_ul_forwarding_tnl_list ? n3_ul_forwarding_tnl_listList : NULL,
         cause ? causeVariable : 0,
+        ma_accepted_ind ? true : false,
         ma_accepted_ind ? ma_accepted_ind->valueint : 0,
         supported_features ? ogs_strdup_or_assert(supported_features->valuestring) : NULL,
         forwarding_f_teid ? forwarding_f_teid->valueint : 0,

@@ -102,7 +102,7 @@ OpenAPI_packet_filter_info_t *OpenAPI_packet_filter_info_parseFromJSON(cJSON *pa
     OpenAPI_packet_filter_info_t *packet_filter_info_local_var = NULL;
     cJSON *pack_filt_id = cJSON_GetObjectItemCaseSensitive(packet_filter_infoJSON, "packFiltId");
 
-    if (pack_filt_id) { 
+    if (pack_filt_id) {
     if (!cJSON_IsString(pack_filt_id)) {
         ogs_error("OpenAPI_packet_filter_info_parseFromJSON() failed [pack_filt_id]");
         goto end;
@@ -111,7 +111,7 @@ OpenAPI_packet_filter_info_t *OpenAPI_packet_filter_info_parseFromJSON(cJSON *pa
 
     cJSON *pack_filt_cont = cJSON_GetObjectItemCaseSensitive(packet_filter_infoJSON, "packFiltCont");
 
-    if (pack_filt_cont) { 
+    if (pack_filt_cont) {
     if (!cJSON_IsString(pack_filt_cont)) {
         ogs_error("OpenAPI_packet_filter_info_parseFromJSON() failed [pack_filt_cont]");
         goto end;
@@ -120,7 +120,7 @@ OpenAPI_packet_filter_info_t *OpenAPI_packet_filter_info_parseFromJSON(cJSON *pa
 
     cJSON *tos_traffic_class = cJSON_GetObjectItemCaseSensitive(packet_filter_infoJSON, "tosTrafficClass");
 
-    if (tos_traffic_class) { 
+    if (tos_traffic_class) {
     if (!cJSON_IsString(tos_traffic_class)) {
         ogs_error("OpenAPI_packet_filter_info_parseFromJSON() failed [tos_traffic_class]");
         goto end;
@@ -129,7 +129,7 @@ OpenAPI_packet_filter_info_t *OpenAPI_packet_filter_info_parseFromJSON(cJSON *pa
 
     cJSON *spi = cJSON_GetObjectItemCaseSensitive(packet_filter_infoJSON, "spi");
 
-    if (spi) { 
+    if (spi) {
     if (!cJSON_IsString(spi)) {
         ogs_error("OpenAPI_packet_filter_info_parseFromJSON() failed [spi]");
         goto end;
@@ -138,7 +138,7 @@ OpenAPI_packet_filter_info_t *OpenAPI_packet_filter_info_parseFromJSON(cJSON *pa
 
     cJSON *flow_label = cJSON_GetObjectItemCaseSensitive(packet_filter_infoJSON, "flowLabel");
 
-    if (flow_label) { 
+    if (flow_label) {
     if (!cJSON_IsString(flow_label)) {
         ogs_error("OpenAPI_packet_filter_info_parseFromJSON() failed [flow_label]");
         goto end;
@@ -148,7 +148,7 @@ OpenAPI_packet_filter_info_t *OpenAPI_packet_filter_info_parseFromJSON(cJSON *pa
     cJSON *flow_direction = cJSON_GetObjectItemCaseSensitive(packet_filter_infoJSON, "flowDirection");
 
     OpenAPI_flow_direction_e flow_directionVariable;
-    if (flow_direction) { 
+    if (flow_direction) {
     if (!cJSON_IsString(flow_direction)) {
         ogs_error("OpenAPI_packet_filter_info_parseFromJSON() failed [flow_direction]");
         goto end;

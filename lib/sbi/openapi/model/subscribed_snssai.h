@@ -21,11 +21,13 @@ extern "C" {
 typedef struct OpenAPI_subscribed_snssai_s OpenAPI_subscribed_snssai_t;
 typedef struct OpenAPI_subscribed_snssai_s {
     struct OpenAPI_snssai_s *subscribed_snssai;
+    bool is_default_indication;
     int default_indication;
 } OpenAPI_subscribed_snssai_t;
 
 OpenAPI_subscribed_snssai_t *OpenAPI_subscribed_snssai_create(
     OpenAPI_snssai_t *subscribed_snssai,
+    bool is_default_indication,
     int default_indication
 );
 void OpenAPI_subscribed_snssai_free(OpenAPI_subscribed_snssai_t *subscribed_snssai);

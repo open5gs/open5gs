@@ -72,7 +72,6 @@ OpenAPI_modification_notification_t *OpenAPI_modification_notification_parseFrom
     }
 
     OpenAPI_list_t *notify_itemsList;
-    
     cJSON *notify_items_local_nonprimitive;
     if (!cJSON_IsArray(notify_items)){
         ogs_error("OpenAPI_modification_notification_parseFromJSON() failed [notify_items]");

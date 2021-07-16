@@ -89,7 +89,7 @@ OpenAPI_app_session_context_resp_data_t *OpenAPI_app_session_context_resp_data_p
     cJSON *serv_auth_info = cJSON_GetObjectItemCaseSensitive(app_session_context_resp_dataJSON, "servAuthInfo");
 
     OpenAPI_serv_auth_info_e serv_auth_infoVariable;
-    if (serv_auth_info) { 
+    if (serv_auth_info) {
     if (!cJSON_IsString(serv_auth_info)) {
         ogs_error("OpenAPI_app_session_context_resp_data_parseFromJSON() failed [serv_auth_info]");
         goto end;
@@ -100,7 +100,7 @@ OpenAPI_app_session_context_resp_data_t *OpenAPI_app_session_context_resp_data_p
     cJSON *ue_ids = cJSON_GetObjectItemCaseSensitive(app_session_context_resp_dataJSON, "ueIds");
 
     OpenAPI_list_t *ue_idsList;
-    if (ue_ids) { 
+    if (ue_ids) {
     cJSON *ue_ids_local_nonprimitive;
     if (!cJSON_IsArray(ue_ids)){
         ogs_error("OpenAPI_app_session_context_resp_data_parseFromJSON() failed [ue_ids]");
@@ -122,7 +122,7 @@ OpenAPI_app_session_context_resp_data_t *OpenAPI_app_session_context_resp_data_p
 
     cJSON *supp_feat = cJSON_GetObjectItemCaseSensitive(app_session_context_resp_dataJSON, "suppFeat");
 
-    if (supp_feat) { 
+    if (supp_feat) {
     if (!cJSON_IsString(supp_feat)) {
         ogs_error("OpenAPI_app_session_context_resp_data_parseFromJSON() failed [supp_feat]");
         goto end;

@@ -75,7 +75,6 @@ OpenAPI_confirmation_data_response_t *OpenAPI_confirmation_data_response_parseFr
     }
 
     OpenAPI_auth_result_e auth_resultVariable;
-    
     if (!cJSON_IsString(auth_result)) {
         ogs_error("OpenAPI_confirmation_data_response_parseFromJSON() failed [auth_result]");
         goto end;
@@ -84,7 +83,7 @@ OpenAPI_confirmation_data_response_t *OpenAPI_confirmation_data_response_parseFr
 
     cJSON *supi = cJSON_GetObjectItemCaseSensitive(confirmation_data_responseJSON, "supi");
 
-    if (supi) { 
+    if (supi) {
     if (!cJSON_IsString(supi)) {
         ogs_error("OpenAPI_confirmation_data_response_parseFromJSON() failed [supi]");
         goto end;
@@ -93,7 +92,7 @@ OpenAPI_confirmation_data_response_t *OpenAPI_confirmation_data_response_parseFr
 
     cJSON *kseaf = cJSON_GetObjectItemCaseSensitive(confirmation_data_responseJSON, "kseaf");
 
-    if (kseaf) { 
+    if (kseaf) {
     if (!cJSON_IsString(kseaf)) {
         ogs_error("OpenAPI_confirmation_data_response_parseFromJSON() failed [kseaf]");
         goto end;

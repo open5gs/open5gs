@@ -19,16 +19,24 @@ extern "C" {
 
 typedef struct OpenAPI_accumulated_usage_s OpenAPI_accumulated_usage_t;
 typedef struct OpenAPI_accumulated_usage_s {
+    bool is_duration;
     int duration;
+    bool is_total_volume;
     long total_volume;
+    bool is_downlink_volume;
     long downlink_volume;
+    bool is_uplink_volume;
     long uplink_volume;
 } OpenAPI_accumulated_usage_t;
 
 OpenAPI_accumulated_usage_t *OpenAPI_accumulated_usage_create(
+    bool is_duration,
     int duration,
+    bool is_total_volume,
     long total_volume,
+    bool is_downlink_volume,
     long downlink_volume,
+    bool is_uplink_volume,
     long uplink_volume
 );
 void OpenAPI_accumulated_usage_free(OpenAPI_accumulated_usage_t *accumulated_usage);

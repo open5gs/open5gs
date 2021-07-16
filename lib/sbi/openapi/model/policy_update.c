@@ -9,6 +9,7 @@ OpenAPI_policy_update_t *OpenAPI_policy_update_create(
     OpenAPI_list_t *triggers,
     OpenAPI_service_area_restriction_t *serv_area_res,
     OpenAPI_wireline_service_area_restriction_t *wl_serv_area_res,
+    bool is_rfsp,
     int rfsp,
     OpenAPI_smf_selection_data_t *smf_sel_info,
     OpenAPI_ambr_t *ue_ambr,
@@ -23,6 +24,7 @@ OpenAPI_policy_update_t *OpenAPI_policy_update_create(
     policy_update_local_var->triggers = triggers;
     policy_update_local_var->serv_area_res = serv_area_res;
     policy_update_local_var->wl_serv_area_res = wl_serv_area_res;
+    policy_update_local_var->is_rfsp = is_rfsp;
     policy_update_local_var->rfsp = rfsp;
     policy_update_local_var->smf_sel_info = smf_sel_info;
     policy_update_local_var->ue_ambr = ue_ambr;
@@ -108,7 +110,7 @@ cJSON *OpenAPI_policy_update_convertToJSON(OpenAPI_policy_update_t *policy_updat
     }
     }
 
-    if (policy_update->rfsp) {
+    if (policy_update->is_rfsp) {
     if (cJSON_AddNumberToObject(item, "rfsp", policy_update->rfsp) == NULL) {
         ogs_error("OpenAPI_policy_update_convertToJSON() failed [rfsp]");
         goto end;
@@ -175,7 +177,6 @@ OpenAPI_policy_update_t *OpenAPI_policy_update_parseFromJSON(cJSON *policy_updat
         goto end;
     }
 
-    
     if (!cJSON_IsString(resource_uri)) {
         ogs_error("OpenAPI_policy_update_parseFromJSON() failed [resource_uri]");
         goto end;
@@ -184,7 +185,7 @@ OpenAPI_policy_update_t *OpenAPI_policy_update_parseFromJSON(cJSON *policy_updat
     cJSON *triggers = cJSON_GetObjectItemCaseSensitive(policy_updateJSON, "triggers");
 
     OpenAPI_list_t *triggersList;
-    if (triggers) { 
+    if (triggers) {
     cJSON *triggers_local_nonprimitive;
     if (!cJSON_IsArray(triggers)) {
         ogs_error("OpenAPI_policy_update_parseFromJSON() failed [triggers]");
@@ -206,20 +207,20 @@ OpenAPI_policy_update_t *OpenAPI_policy_update_parseFromJSON(cJSON *policy_updat
     cJSON *serv_area_res = cJSON_GetObjectItemCaseSensitive(policy_updateJSON, "servAreaRes");
 
     OpenAPI_service_area_restriction_t *serv_area_res_local_nonprim = NULL;
-    if (serv_area_res) { 
+    if (serv_area_res) {
     serv_area_res_local_nonprim = OpenAPI_service_area_restriction_parseFromJSON(serv_area_res);
     }
 
     cJSON *wl_serv_area_res = cJSON_GetObjectItemCaseSensitive(policy_updateJSON, "wlServAreaRes");
 
     OpenAPI_wireline_service_area_restriction_t *wl_serv_area_res_local_nonprim = NULL;
-    if (wl_serv_area_res) { 
+    if (wl_serv_area_res) {
     wl_serv_area_res_local_nonprim = OpenAPI_wireline_service_area_restriction_parseFromJSON(wl_serv_area_res);
     }
 
     cJSON *rfsp = cJSON_GetObjectItemCaseSensitive(policy_updateJSON, "rfsp");
 
-    if (rfsp) { 
+    if (rfsp) {
     if (!cJSON_IsNumber(rfsp)) {
         ogs_error("OpenAPI_policy_update_parseFromJSON() failed [rfsp]");
         goto end;
@@ -229,21 +230,21 @@ OpenAPI_policy_update_t *OpenAPI_policy_update_parseFromJSON(cJSON *policy_updat
     cJSON *smf_sel_info = cJSON_GetObjectItemCaseSensitive(policy_updateJSON, "smfSelInfo");
 
     OpenAPI_smf_selection_data_t *smf_sel_info_local_nonprim = NULL;
-    if (smf_sel_info) { 
+    if (smf_sel_info) {
     smf_sel_info_local_nonprim = OpenAPI_smf_selection_data_parseFromJSON(smf_sel_info);
     }
 
     cJSON *ue_ambr = cJSON_GetObjectItemCaseSensitive(policy_updateJSON, "ueAmbr");
 
     OpenAPI_ambr_t *ue_ambr_local_nonprim = NULL;
-    if (ue_ambr) { 
+    if (ue_ambr) {
     ue_ambr_local_nonprim = OpenAPI_ambr_parseFromJSON(ue_ambr);
     }
 
     cJSON *pras = cJSON_GetObjectItemCaseSensitive(policy_updateJSON, "pras");
 
     OpenAPI_list_t *prasList;
-    if (pras) { 
+    if (pras) {
     cJSON *pras_local_map;
     if (!cJSON_IsObject(pras)) {
         ogs_error("OpenAPI_policy_update_parseFromJSON() failed [pras]");
@@ -268,6 +269,7 @@ OpenAPI_policy_update_t *OpenAPI_policy_update_parseFromJSON(cJSON *policy_updat
         triggers ? triggersList : NULL,
         serv_area_res ? serv_area_res_local_nonprim : NULL,
         wl_serv_area_res ? wl_serv_area_res_local_nonprim : NULL,
+        rfsp ? true : false,
         rfsp ? rfsp->valuedouble : 0,
         smf_sel_info ? smf_sel_info_local_nonprim : NULL,
         ue_ambr ? ue_ambr_local_nonprim : NULL,

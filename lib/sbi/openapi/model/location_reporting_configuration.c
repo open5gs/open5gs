@@ -6,6 +6,7 @@
 
 OpenAPI_location_reporting_configuration_t *OpenAPI_location_reporting_configuration_create(
     int current_location,
+    bool is_one_time,
     int one_time,
     OpenAPI_location_accuracy_t *accuracy,
     OpenAPI_location_accuracy_t *n3gpp_accuracy
@@ -16,6 +17,7 @@ OpenAPI_location_reporting_configuration_t *OpenAPI_location_reporting_configura
         return NULL;
     }
     location_reporting_configuration_local_var->current_location = current_location;
+    location_reporting_configuration_local_var->is_one_time = is_one_time;
     location_reporting_configuration_local_var->one_time = one_time;
     location_reporting_configuration_local_var->accuracy = accuracy;
     location_reporting_configuration_local_var->n3gpp_accuracy = n3gpp_accuracy;
@@ -49,7 +51,7 @@ cJSON *OpenAPI_location_reporting_configuration_convertToJSON(OpenAPI_location_r
         goto end;
     }
 
-    if (location_reporting_configuration->one_time) {
+    if (location_reporting_configuration->is_one_time) {
     if (cJSON_AddBoolToObject(item, "oneTime", location_reporting_configuration->one_time) == NULL) {
         ogs_error("OpenAPI_location_reporting_configuration_convertToJSON() failed [one_time]");
         goto end;
@@ -95,7 +97,6 @@ OpenAPI_location_reporting_configuration_t *OpenAPI_location_reporting_configura
         goto end;
     }
 
-    
     if (!cJSON_IsBool(current_location)) {
         ogs_error("OpenAPI_location_reporting_configuration_parseFromJSON() failed [current_location]");
         goto end;
@@ -103,7 +104,7 @@ OpenAPI_location_reporting_configuration_t *OpenAPI_location_reporting_configura
 
     cJSON *one_time = cJSON_GetObjectItemCaseSensitive(location_reporting_configurationJSON, "oneTime");
 
-    if (one_time) { 
+    if (one_time) {
     if (!cJSON_IsBool(one_time)) {
         ogs_error("OpenAPI_location_reporting_configuration_parseFromJSON() failed [one_time]");
         goto end;
@@ -113,19 +114,21 @@ OpenAPI_location_reporting_configuration_t *OpenAPI_location_reporting_configura
     cJSON *accuracy = cJSON_GetObjectItemCaseSensitive(location_reporting_configurationJSON, "accuracy");
 
     OpenAPI_location_accuracy_t *accuracy_local_nonprim = NULL;
-    if (accuracy) { 
+    if (accuracy) {
     accuracy_local_nonprim = OpenAPI_location_accuracy_parseFromJSON(accuracy);
     }
 
     cJSON *n3gpp_accuracy = cJSON_GetObjectItemCaseSensitive(location_reporting_configurationJSON, "n3gppAccuracy");
 
     OpenAPI_location_accuracy_t *n3gpp_accuracy_local_nonprim = NULL;
-    if (n3gpp_accuracy) { 
+    if (n3gpp_accuracy) {
     n3gpp_accuracy_local_nonprim = OpenAPI_location_accuracy_parseFromJSON(n3gpp_accuracy);
     }
 
     location_reporting_configuration_local_var = OpenAPI_location_reporting_configuration_create (
+        
         current_location->valueint,
+        one_time ? true : false,
         one_time ? one_time->valueint : 0,
         accuracy ? accuracy_local_nonprim : NULL,
         n3gpp_accuracy ? n3gpp_accuracy_local_nonprim : NULL

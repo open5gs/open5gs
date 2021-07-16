@@ -77,7 +77,6 @@ OpenAPI_volume_timed_report_t *OpenAPI_volume_timed_report_parseFromJSON(cJSON *
         goto end;
     }
 
-    
     if (!cJSON_IsString(start_time_stamp)) {
         ogs_error("OpenAPI_volume_timed_report_parseFromJSON() failed [start_time_stamp]");
         goto end;
@@ -89,7 +88,6 @@ OpenAPI_volume_timed_report_t *OpenAPI_volume_timed_report_parseFromJSON(cJSON *
         goto end;
     }
 
-    
     if (!cJSON_IsString(end_time_stamp)) {
         ogs_error("OpenAPI_volume_timed_report_parseFromJSON() failed [end_time_stamp]");
         goto end;
@@ -101,7 +99,6 @@ OpenAPI_volume_timed_report_t *OpenAPI_volume_timed_report_parseFromJSON(cJSON *
         goto end;
     }
 
-    
     if (!cJSON_IsNumber(downlink_volume)) {
         ogs_error("OpenAPI_volume_timed_report_parseFromJSON() failed [downlink_volume]");
         goto end;
@@ -113,7 +110,6 @@ OpenAPI_volume_timed_report_t *OpenAPI_volume_timed_report_parseFromJSON(cJSON *
         goto end;
     }
 
-    
     if (!cJSON_IsNumber(uplink_volume)) {
         ogs_error("OpenAPI_volume_timed_report_parseFromJSON() failed [uplink_volume]");
         goto end;
@@ -122,7 +118,9 @@ OpenAPI_volume_timed_report_t *OpenAPI_volume_timed_report_parseFromJSON(cJSON *
     volume_timed_report_local_var = OpenAPI_volume_timed_report_create (
         ogs_strdup_or_assert(start_time_stamp->valuestring),
         ogs_strdup_or_assert(end_time_stamp->valuestring),
+        
         downlink_volume->valuedouble,
+        
         uplink_volume->valuedouble
     );
 

@@ -73,7 +73,7 @@ OpenAPI_acs_info_rm_t *OpenAPI_acs_info_rm_parseFromJSON(cJSON *acs_info_rmJSON)
     OpenAPI_acs_info_rm_t *acs_info_rm_local_var = NULL;
     cJSON *acs_url = cJSON_GetObjectItemCaseSensitive(acs_info_rmJSON, "acsUrl");
 
-    if (acs_url) { 
+    if (acs_url) {
     if (!cJSON_IsString(acs_url)) {
         ogs_error("OpenAPI_acs_info_rm_parseFromJSON() failed [acs_url]");
         goto end;
@@ -82,7 +82,7 @@ OpenAPI_acs_info_rm_t *OpenAPI_acs_info_rm_parseFromJSON(cJSON *acs_info_rmJSON)
 
     cJSON *acs_ipv4_addr = cJSON_GetObjectItemCaseSensitive(acs_info_rmJSON, "acsIpv4Addr");
 
-    if (acs_ipv4_addr) { 
+    if (acs_ipv4_addr) {
     if (!cJSON_IsString(acs_ipv4_addr)) {
         ogs_error("OpenAPI_acs_info_rm_parseFromJSON() failed [acs_ipv4_addr]");
         goto end;
@@ -91,7 +91,7 @@ OpenAPI_acs_info_rm_t *OpenAPI_acs_info_rm_parseFromJSON(cJSON *acs_info_rmJSON)
 
     cJSON *acs_ipv6_addr = cJSON_GetObjectItemCaseSensitive(acs_info_rmJSON, "acsIpv6Addr");
 
-    if (acs_ipv6_addr) { 
+    if (acs_ipv6_addr) {
     if (!cJSON_IsString(acs_ipv6_addr)) {
         ogs_error("OpenAPI_acs_info_rm_parseFromJSON() failed [acs_ipv6_addr]");
         goto end;

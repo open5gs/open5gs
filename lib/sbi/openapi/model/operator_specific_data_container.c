@@ -83,7 +83,6 @@ OpenAPI_operator_specific_data_container_t *OpenAPI_operator_specific_data_conta
         goto end;
     }
 
-    
     if (!cJSON_IsString(data_type)) {
         ogs_error("OpenAPI_operator_specific_data_container_parseFromJSON() failed [data_type]");
         goto end;
@@ -91,7 +90,7 @@ OpenAPI_operator_specific_data_container_t *OpenAPI_operator_specific_data_conta
 
     cJSON *data_type_definition = cJSON_GetObjectItemCaseSensitive(operator_specific_data_containerJSON, "dataTypeDefinition");
 
-    if (data_type_definition) { 
+    if (data_type_definition) {
     if (!cJSON_IsString(data_type_definition)) {
         ogs_error("OpenAPI_operator_specific_data_container_parseFromJSON() failed [data_type_definition]");
         goto end;
@@ -104,7 +103,6 @@ OpenAPI_operator_specific_data_container_t *OpenAPI_operator_specific_data_conta
         goto end;
     }
 
-    
     if (!cJSON_IsString(value)) {
         ogs_error("OpenAPI_operator_specific_data_container_parseFromJSON() failed [value]");
         goto end;
@@ -112,7 +110,7 @@ OpenAPI_operator_specific_data_container_t *OpenAPI_operator_specific_data_conta
 
     cJSON *supported_features = cJSON_GetObjectItemCaseSensitive(operator_specific_data_containerJSON, "supportedFeatures");
 
-    if (supported_features) { 
+    if (supported_features) {
     if (!cJSON_IsString(supported_features)) {
         ogs_error("OpenAPI_operator_specific_data_container_parseFromJSON() failed [supported_features]");
         goto end;

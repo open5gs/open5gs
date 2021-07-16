@@ -72,7 +72,7 @@ OpenAPI_tnap_id_t *OpenAPI_tnap_id_parseFromJSON(cJSON *tnap_idJSON)
     OpenAPI_tnap_id_t *tnap_id_local_var = NULL;
     cJSON *ss_id = cJSON_GetObjectItemCaseSensitive(tnap_idJSON, "ssId");
 
-    if (ss_id) { 
+    if (ss_id) {
     if (!cJSON_IsString(ss_id)) {
         ogs_error("OpenAPI_tnap_id_parseFromJSON() failed [ss_id]");
         goto end;
@@ -81,7 +81,7 @@ OpenAPI_tnap_id_t *OpenAPI_tnap_id_parseFromJSON(cJSON *tnap_idJSON)
 
     cJSON *bss_id = cJSON_GetObjectItemCaseSensitive(tnap_idJSON, "bssId");
 
-    if (bss_id) { 
+    if (bss_id) {
     if (!cJSON_IsString(bss_id)) {
         ogs_error("OpenAPI_tnap_id_parseFromJSON() failed [bss_id]");
         goto end;
@@ -90,7 +90,7 @@ OpenAPI_tnap_id_t *OpenAPI_tnap_id_parseFromJSON(cJSON *tnap_idJSON)
 
     cJSON *civic_address = cJSON_GetObjectItemCaseSensitive(tnap_idJSON, "civicAddress");
 
-    if (civic_address) { 
+    if (civic_address) {
     if (!cJSON_IsNumber(civic_address)) {
         ogs_error("OpenAPI_tnap_id_parseFromJSON() failed [civic_address]");
         goto end;

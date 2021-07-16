@@ -10,6 +10,7 @@ OpenAPI_ue_context_created_data_t *OpenAPI_ue_context_created_data_create(
     OpenAPI_list_t *pdu_session_list,
     OpenAPI_list_t *failed_session_list,
     char *supported_features,
+    bool is_pcf_reselected_ind,
     int pcf_reselected_ind
 )
 {
@@ -22,6 +23,7 @@ OpenAPI_ue_context_created_data_t *OpenAPI_ue_context_created_data_create(
     ue_context_created_data_local_var->pdu_session_list = pdu_session_list;
     ue_context_created_data_local_var->failed_session_list = failed_session_list;
     ue_context_created_data_local_var->supported_features = supported_features;
+    ue_context_created_data_local_var->is_pcf_reselected_ind = is_pcf_reselected_ind;
     ue_context_created_data_local_var->pcf_reselected_ind = pcf_reselected_ind;
 
     return ue_context_created_data_local_var;
@@ -124,7 +126,7 @@ cJSON *OpenAPI_ue_context_created_data_convertToJSON(OpenAPI_ue_context_created_
     }
     }
 
-    if (ue_context_created_data->pcf_reselected_ind) {
+    if (ue_context_created_data->is_pcf_reselected_ind) {
     if (cJSON_AddBoolToObject(item, "pcfReselectedInd", ue_context_created_data->pcf_reselected_ind) == NULL) {
         ogs_error("OpenAPI_ue_context_created_data_convertToJSON() failed [pcf_reselected_ind]");
         goto end;
@@ -145,7 +147,6 @@ OpenAPI_ue_context_created_data_t *OpenAPI_ue_context_created_data_parseFromJSON
     }
 
     OpenAPI_ue_context_t *ue_context_local_nonprim = NULL;
-    
     ue_context_local_nonprim = OpenAPI_ue_context_parseFromJSON(ue_context);
 
     cJSON *target_to_source_data = cJSON_GetObjectItemCaseSensitive(ue_context_created_dataJSON, "targetToSourceData");
@@ -155,7 +156,6 @@ OpenAPI_ue_context_created_data_t *OpenAPI_ue_context_created_data_parseFromJSON
     }
 
     OpenAPI_n2_info_content_t *target_to_source_data_local_nonprim = NULL;
-    
     target_to_source_data_local_nonprim = OpenAPI_n2_info_content_parseFromJSON(target_to_source_data);
 
     cJSON *pdu_session_list = cJSON_GetObjectItemCaseSensitive(ue_context_created_dataJSON, "pduSessionList");
@@ -165,7 +165,6 @@ OpenAPI_ue_context_created_data_t *OpenAPI_ue_context_created_data_parseFromJSON
     }
 
     OpenAPI_list_t *pdu_session_listList;
-    
     cJSON *pdu_session_list_local_nonprimitive;
     if (!cJSON_IsArray(pdu_session_list)){
         ogs_error("OpenAPI_ue_context_created_data_parseFromJSON() failed [pdu_session_list]");
@@ -187,7 +186,7 @@ OpenAPI_ue_context_created_data_t *OpenAPI_ue_context_created_data_parseFromJSON
     cJSON *failed_session_list = cJSON_GetObjectItemCaseSensitive(ue_context_created_dataJSON, "failedSessionList");
 
     OpenAPI_list_t *failed_session_listList;
-    if (failed_session_list) { 
+    if (failed_session_list) {
     cJSON *failed_session_list_local_nonprimitive;
     if (!cJSON_IsArray(failed_session_list)){
         ogs_error("OpenAPI_ue_context_created_data_parseFromJSON() failed [failed_session_list]");
@@ -209,7 +208,7 @@ OpenAPI_ue_context_created_data_t *OpenAPI_ue_context_created_data_parseFromJSON
 
     cJSON *supported_features = cJSON_GetObjectItemCaseSensitive(ue_context_created_dataJSON, "supportedFeatures");
 
-    if (supported_features) { 
+    if (supported_features) {
     if (!cJSON_IsString(supported_features)) {
         ogs_error("OpenAPI_ue_context_created_data_parseFromJSON() failed [supported_features]");
         goto end;
@@ -218,7 +217,7 @@ OpenAPI_ue_context_created_data_t *OpenAPI_ue_context_created_data_parseFromJSON
 
     cJSON *pcf_reselected_ind = cJSON_GetObjectItemCaseSensitive(ue_context_created_dataJSON, "pcfReselectedInd");
 
-    if (pcf_reselected_ind) { 
+    if (pcf_reselected_ind) {
     if (!cJSON_IsBool(pcf_reselected_ind)) {
         ogs_error("OpenAPI_ue_context_created_data_parseFromJSON() failed [pcf_reselected_ind]");
         goto end;
@@ -231,6 +230,7 @@ OpenAPI_ue_context_created_data_t *OpenAPI_ue_context_created_data_parseFromJSON
         pdu_session_listList,
         failed_session_list ? failed_session_listList : NULL,
         supported_features ? ogs_strdup_or_assert(supported_features->valuestring) : NULL,
+        pcf_reselected_ind ? true : false,
         pcf_reselected_ind ? pcf_reselected_ind->valueint : 0
     );
 

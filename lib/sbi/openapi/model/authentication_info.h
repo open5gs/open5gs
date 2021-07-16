@@ -29,6 +29,7 @@ typedef struct OpenAPI_authentication_info_s {
     char *udm_group_id;
     char *routing_indicator;
     OpenAPI_list_t *cell_cag_info;
+    bool is_n5gc_ind;
     int n5gc_ind;
     char *supported_features;
 } OpenAPI_authentication_info_t;
@@ -42,6 +43,7 @@ OpenAPI_authentication_info_t *OpenAPI_authentication_info_create(
     char *udm_group_id,
     char *routing_indicator,
     OpenAPI_list_t *cell_cag_info,
+    bool is_n5gc_ind,
     int n5gc_ind,
     char *supported_features
 );

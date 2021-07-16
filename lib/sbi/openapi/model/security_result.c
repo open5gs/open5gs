@@ -62,7 +62,7 @@ OpenAPI_security_result_t *OpenAPI_security_result_parseFromJSON(cJSON *security
     cJSON *integrity_protection_result = cJSON_GetObjectItemCaseSensitive(security_resultJSON, "integrityProtectionResult");
 
     OpenAPI_protection_result_e integrity_protection_resultVariable;
-    if (integrity_protection_result) { 
+    if (integrity_protection_result) {
     if (!cJSON_IsString(integrity_protection_result)) {
         ogs_error("OpenAPI_security_result_parseFromJSON() failed [integrity_protection_result]");
         goto end;
@@ -73,7 +73,7 @@ OpenAPI_security_result_t *OpenAPI_security_result_parseFromJSON(cJSON *security
     cJSON *confidentiality_protection_result = cJSON_GetObjectItemCaseSensitive(security_resultJSON, "confidentialityProtectionResult");
 
     OpenAPI_protection_result_e confidentiality_protection_resultVariable;
-    if (confidentiality_protection_result) { 
+    if (confidentiality_protection_result) {
     if (!cJSON_IsString(confidentiality_protection_result)) {
         ogs_error("OpenAPI_security_result_parseFromJSON() failed [confidentiality_protection_result]");
         goto end;

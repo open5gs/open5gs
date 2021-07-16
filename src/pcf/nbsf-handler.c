@@ -195,7 +195,9 @@ bool pcf_nbsf_management_handle_register(
         AuthDefQos.arp = ogs_calloc(1, sizeof(OpenAPI_arp_t));
         ogs_assert(AuthDefQos.arp);
 
+        AuthDefQos.is__5qi = true;
         AuthDefQos._5qi = session->qos.index;
+        AuthDefQos.is_priority_level = true;
         AuthDefQos.priority_level = session->qos.arp.priority_level;
 
         if (session->qos.arp.pre_emption_capability ==
@@ -286,6 +288,7 @@ bool pcf_nbsf_management_handle_register(
 
         OpenAPI_list_add(PccRule->ref_qos_data, QosData->qos_id);
 
+        PccRule->is_precedence = true;
         PccRule->precedence = pcc_rule->precedence;
 
         FlowInformationList = OpenAPI_list_create();
@@ -325,7 +328,9 @@ bool pcf_nbsf_management_handle_register(
 
         OpenAPI_list_add(PccRuleList, PccRuleMap);
 
+        QosData->is__5qi = true;
         QosData->_5qi = pcc_rule->qos.index;
+        QosData->is_priority_level = true;
         QosData->priority_level = pcc_rule->qos.arp.priority_level;
 
         QosData->arp = ogs_calloc(1, sizeof(OpenAPI_arp_t));

@@ -72,7 +72,6 @@ OpenAPI_patch_result_t *OpenAPI_patch_result_parseFromJSON(cJSON *patch_resultJS
     }
 
     OpenAPI_list_t *reportList;
-    
     cJSON *report_local_nonprimitive;
     if (!cJSON_IsArray(report)){
         ogs_error("OpenAPI_patch_result_parseFromJSON() failed [report]");

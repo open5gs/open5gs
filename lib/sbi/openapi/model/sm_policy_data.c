@@ -143,7 +143,6 @@ OpenAPI_sm_policy_data_t *OpenAPI_sm_policy_data_parseFromJSON(cJSON *sm_policy_
     }
 
     OpenAPI_list_t *sm_policy_snssai_dataList;
-    
     cJSON *sm_policy_snssai_data_local_map;
     if (!cJSON_IsObject(sm_policy_snssai_data)) {
         ogs_error("OpenAPI_sm_policy_data_parseFromJSON() failed [sm_policy_snssai_data]");
@@ -165,7 +164,7 @@ OpenAPI_sm_policy_data_t *OpenAPI_sm_policy_data_parseFromJSON(cJSON *sm_policy_
     cJSON *um_data_limits = cJSON_GetObjectItemCaseSensitive(sm_policy_dataJSON, "umDataLimits");
 
     OpenAPI_list_t *um_data_limitsList;
-    if (um_data_limits) { 
+    if (um_data_limits) {
     cJSON *um_data_limits_local_map;
     if (!cJSON_IsObject(um_data_limits)) {
         ogs_error("OpenAPI_sm_policy_data_parseFromJSON() failed [um_data_limits]");
@@ -188,7 +187,7 @@ OpenAPI_sm_policy_data_t *OpenAPI_sm_policy_data_parseFromJSON(cJSON *sm_policy_
     cJSON *um_data = cJSON_GetObjectItemCaseSensitive(sm_policy_dataJSON, "umData");
 
     OpenAPI_list_t *um_dataList;
-    if (um_data) { 
+    if (um_data) {
     cJSON *um_data_local_map;
     if (!cJSON_IsObject(um_data)) {
         ogs_error("OpenAPI_sm_policy_data_parseFromJSON() failed [um_data]");
@@ -210,7 +209,7 @@ OpenAPI_sm_policy_data_t *OpenAPI_sm_policy_data_parseFromJSON(cJSON *sm_policy_
 
     cJSON *supp_feat = cJSON_GetObjectItemCaseSensitive(sm_policy_dataJSON, "suppFeat");
 
-    if (supp_feat) { 
+    if (supp_feat) {
     if (!cJSON_IsString(supp_feat)) {
         ogs_error("OpenAPI_sm_policy_data_parseFromJSON() failed [supp_feat]");
         goto end;

@@ -25,6 +25,7 @@ extern "C" {
 typedef struct OpenAPI_ue_differentiation_info_s OpenAPI_ue_differentiation_info_t;
 typedef struct OpenAPI_ue_differentiation_info_s {
     OpenAPI_periodic_communication_indicator_e periodic_com_ind;
+    bool is_periodic_time;
     int periodic_time;
     struct OpenAPI_scheduled_communication_time_s *scheduled_com_time;
     OpenAPI_stationary_indication_e stationary_ind;
@@ -35,6 +36,7 @@ typedef struct OpenAPI_ue_differentiation_info_s {
 
 OpenAPI_ue_differentiation_info_t *OpenAPI_ue_differentiation_info_create(
     OpenAPI_periodic_communication_indicator_e periodic_com_ind,
+    bool is_periodic_time,
     int periodic_time,
     OpenAPI_scheduled_communication_time_t *scheduled_com_time,
     OpenAPI_stationary_indication_e stationary_ind,

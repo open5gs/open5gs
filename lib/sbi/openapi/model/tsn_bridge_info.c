@@ -5,9 +5,12 @@
 #include "tsn_bridge_info.h"
 
 OpenAPI_tsn_bridge_info_t *OpenAPI_tsn_bridge_info_create(
+    bool is_bridge_id,
     int bridge_id,
     char *dstt_addr,
+    bool is_dstt_port_num,
     int dstt_port_num,
+    bool is_dstt_resid_time,
     int dstt_resid_time
 )
 {
@@ -15,9 +18,12 @@ OpenAPI_tsn_bridge_info_t *OpenAPI_tsn_bridge_info_create(
     if (!tsn_bridge_info_local_var) {
         return NULL;
     }
+    tsn_bridge_info_local_var->is_bridge_id = is_bridge_id;
     tsn_bridge_info_local_var->bridge_id = bridge_id;
     tsn_bridge_info_local_var->dstt_addr = dstt_addr;
+    tsn_bridge_info_local_var->is_dstt_port_num = is_dstt_port_num;
     tsn_bridge_info_local_var->dstt_port_num = dstt_port_num;
+    tsn_bridge_info_local_var->is_dstt_resid_time = is_dstt_resid_time;
     tsn_bridge_info_local_var->dstt_resid_time = dstt_resid_time;
 
     return tsn_bridge_info_local_var;
@@ -43,7 +49,7 @@ cJSON *OpenAPI_tsn_bridge_info_convertToJSON(OpenAPI_tsn_bridge_info_t *tsn_brid
     }
 
     item = cJSON_CreateObject();
-    if (tsn_bridge_info->bridge_id) {
+    if (tsn_bridge_info->is_bridge_id) {
     if (cJSON_AddNumberToObject(item, "bridgeId", tsn_bridge_info->bridge_id) == NULL) {
         ogs_error("OpenAPI_tsn_bridge_info_convertToJSON() failed [bridge_id]");
         goto end;
@@ -57,14 +63,14 @@ cJSON *OpenAPI_tsn_bridge_info_convertToJSON(OpenAPI_tsn_bridge_info_t *tsn_brid
     }
     }
 
-    if (tsn_bridge_info->dstt_port_num) {
+    if (tsn_bridge_info->is_dstt_port_num) {
     if (cJSON_AddNumberToObject(item, "dsttPortNum", tsn_bridge_info->dstt_port_num) == NULL) {
         ogs_error("OpenAPI_tsn_bridge_info_convertToJSON() failed [dstt_port_num]");
         goto end;
     }
     }
 
-    if (tsn_bridge_info->dstt_resid_time) {
+    if (tsn_bridge_info->is_dstt_resid_time) {
     if (cJSON_AddNumberToObject(item, "dsttResidTime", tsn_bridge_info->dstt_resid_time) == NULL) {
         ogs_error("OpenAPI_tsn_bridge_info_convertToJSON() failed [dstt_resid_time]");
         goto end;
@@ -80,7 +86,7 @@ OpenAPI_tsn_bridge_info_t *OpenAPI_tsn_bridge_info_parseFromJSON(cJSON *tsn_brid
     OpenAPI_tsn_bridge_info_t *tsn_bridge_info_local_var = NULL;
     cJSON *bridge_id = cJSON_GetObjectItemCaseSensitive(tsn_bridge_infoJSON, "bridgeId");
 
-    if (bridge_id) { 
+    if (bridge_id) {
     if (!cJSON_IsNumber(bridge_id)) {
         ogs_error("OpenAPI_tsn_bridge_info_parseFromJSON() failed [bridge_id]");
         goto end;
@@ -89,7 +95,7 @@ OpenAPI_tsn_bridge_info_t *OpenAPI_tsn_bridge_info_parseFromJSON(cJSON *tsn_brid
 
     cJSON *dstt_addr = cJSON_GetObjectItemCaseSensitive(tsn_bridge_infoJSON, "dsttAddr");
 
-    if (dstt_addr) { 
+    if (dstt_addr) {
     if (!cJSON_IsString(dstt_addr)) {
         ogs_error("OpenAPI_tsn_bridge_info_parseFromJSON() failed [dstt_addr]");
         goto end;
@@ -98,7 +104,7 @@ OpenAPI_tsn_bridge_info_t *OpenAPI_tsn_bridge_info_parseFromJSON(cJSON *tsn_brid
 
     cJSON *dstt_port_num = cJSON_GetObjectItemCaseSensitive(tsn_bridge_infoJSON, "dsttPortNum");
 
-    if (dstt_port_num) { 
+    if (dstt_port_num) {
     if (!cJSON_IsNumber(dstt_port_num)) {
         ogs_error("OpenAPI_tsn_bridge_info_parseFromJSON() failed [dstt_port_num]");
         goto end;
@@ -107,7 +113,7 @@ OpenAPI_tsn_bridge_info_t *OpenAPI_tsn_bridge_info_parseFromJSON(cJSON *tsn_brid
 
     cJSON *dstt_resid_time = cJSON_GetObjectItemCaseSensitive(tsn_bridge_infoJSON, "dsttResidTime");
 
-    if (dstt_resid_time) { 
+    if (dstt_resid_time) {
     if (!cJSON_IsNumber(dstt_resid_time)) {
         ogs_error("OpenAPI_tsn_bridge_info_parseFromJSON() failed [dstt_resid_time]");
         goto end;
@@ -115,9 +121,12 @@ OpenAPI_tsn_bridge_info_t *OpenAPI_tsn_bridge_info_parseFromJSON(cJSON *tsn_brid
     }
 
     tsn_bridge_info_local_var = OpenAPI_tsn_bridge_info_create (
+        bridge_id ? true : false,
         bridge_id ? bridge_id->valuedouble : 0,
         dstt_addr ? ogs_strdup_or_assert(dstt_addr->valuestring) : NULL,
+        dstt_port_num ? true : false,
         dstt_port_num ? dstt_port_num->valuedouble : 0,
+        dstt_resid_time ? true : false,
         dstt_resid_time ? dstt_resid_time->valuedouble : 0
     );
 

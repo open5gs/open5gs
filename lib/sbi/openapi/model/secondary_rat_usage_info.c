@@ -107,7 +107,6 @@ OpenAPI_secondary_rat_usage_info_t *OpenAPI_secondary_rat_usage_info_parseFromJS
     }
 
     OpenAPI_rat_type_e secondary_rat_typeVariable;
-    
     if (!cJSON_IsString(secondary_rat_type)) {
         ogs_error("OpenAPI_secondary_rat_usage_info_parseFromJSON() failed [secondary_rat_type]");
         goto end;
@@ -117,7 +116,7 @@ OpenAPI_secondary_rat_usage_info_t *OpenAPI_secondary_rat_usage_info_parseFromJS
     cJSON *qos_flows_usage_data = cJSON_GetObjectItemCaseSensitive(secondary_rat_usage_infoJSON, "qosFlowsUsageData");
 
     OpenAPI_list_t *qos_flows_usage_dataList;
-    if (qos_flows_usage_data) { 
+    if (qos_flows_usage_data) {
     cJSON *qos_flows_usage_data_local_nonprimitive;
     if (!cJSON_IsArray(qos_flows_usage_data)){
         ogs_error("OpenAPI_secondary_rat_usage_info_parseFromJSON() failed [qos_flows_usage_data]");
@@ -140,7 +139,7 @@ OpenAPI_secondary_rat_usage_info_t *OpenAPI_secondary_rat_usage_info_parseFromJS
     cJSON *pdu_session_usage_data = cJSON_GetObjectItemCaseSensitive(secondary_rat_usage_infoJSON, "pduSessionUsageData");
 
     OpenAPI_list_t *pdu_session_usage_dataList;
-    if (pdu_session_usage_data) { 
+    if (pdu_session_usage_data) {
     cJSON *pdu_session_usage_data_local_nonprimitive;
     if (!cJSON_IsArray(pdu_session_usage_data)){
         ogs_error("OpenAPI_secondary_rat_usage_info_parseFromJSON() failed [pdu_session_usage_data]");

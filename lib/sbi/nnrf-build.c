@@ -28,6 +28,7 @@ OpenAPI_nf_profile_t *ogs_nnrf_nfm_build_nf_profile(
     OpenAPI_nf_profile_t *NFProfile = NULL;
     OpenAPI_list_t *Ipv4AddrList = NULL;
     OpenAPI_list_t *Ipv6AddrList = NULL;
+    OpenAPI_list_t *AllowedNfTypeList = NULL;
     OpenAPI_list_t *NFServiceList = NULL;
 
     int i = 0;
@@ -52,7 +53,11 @@ OpenAPI_nf_profile_t *ogs_nnrf_nfm_build_nf_profile(
                 OpenAPI_nf_status_ToString(nf_instance->nf_status),
                 nf_instance->num_of_ipv4, nf_instance->num_of_ipv6);
 
-    NFProfile->heart_beat_timer = nf_instance->time.heartbeat_interval;
+    if (nf_instance->time.heartbeat_interval) {
+        NFProfile->is_heart_beat_timer = true;
+        NFProfile->heart_beat_timer = nf_instance->time.heartbeat_interval;
+    }
+    NFProfile->is_nf_profile_changes_support_ind = true;
     NFProfile->nf_profile_changes_support_ind = true;
 
     if (strlen(nf_instance->fqdn)) {
@@ -64,6 +69,13 @@ OpenAPI_nf_profile_t *ogs_nnrf_nfm_build_nf_profile(
 
         ogs_trace("FQDN[%s]", nf_instance->fqdn);
     }
+
+    NFProfile->is_priority = true;
+    NFProfile->priority = nf_instance->priority;
+    NFProfile->is_capacity = true;
+    NFProfile->capacity = nf_instance->capacity;
+    NFProfile->is_load = true;
+    NFProfile->load = nf_instance->load;
 
     Ipv4AddrList = OpenAPI_list_create();
     ogs_assert(Ipv4AddrList);
@@ -103,6 +115,19 @@ OpenAPI_nf_profile_t *ogs_nnrf_nfm_build_nf_profile(
     else
         OpenAPI_list_free(Ipv6AddrList);
 
+    AllowedNfTypeList = OpenAPI_list_create();
+    ogs_assert(AllowedNfTypeList);
+
+    for (i = 0; i < nf_instance->num_of_allowed_nf_type; i++) {
+        OpenAPI_list_add(AllowedNfTypeList,
+                (void *)(uintptr_t)nf_instance->allowed_nf_types[i]);
+    }
+
+    if (AllowedNfTypeList->count)
+        NFProfile->allowed_nf_types = AllowedNfTypeList;
+    else
+        OpenAPI_list_free(AllowedNfTypeList);
+
     NFServiceList = OpenAPI_list_create();
     ogs_assert(NFServiceList);
 
@@ -110,6 +135,7 @@ OpenAPI_nf_profile_t *ogs_nnrf_nfm_build_nf_profile(
         OpenAPI_nf_service_t *NFService = NULL;
         OpenAPI_list_t *VersionList = NULL;
         OpenAPI_list_t *IpEndPointList = NULL;
+        OpenAPI_list_t *AllowedNfTypeList = NULL;
 
         NFService = ogs_calloc(1, sizeof(*NFService));
         ogs_expect_or_return_val(NFService, NULL);
@@ -185,6 +211,7 @@ OpenAPI_nf_profile_t *ogs_nnrf_nfm_build_nf_profile(
                     IpEndPoint->ipv6_address = ogs_ipstrdup(ipv6);
                     ogs_expect_or_return_val(IpEndPoint->ipv6_address, NULL);
                 }
+                IpEndPoint->is_port = true;
                 IpEndPoint->port = nf_service->addr[i].port;
                 OpenAPI_list_add(IpEndPointList, IpEndPoint);
             }
@@ -194,6 +221,26 @@ OpenAPI_nf_profile_t *ogs_nnrf_nfm_build_nf_profile(
             NFService->ip_end_points = IpEndPointList;
         else
             OpenAPI_list_free(IpEndPointList);
+
+        AllowedNfTypeList = OpenAPI_list_create();
+        ogs_assert(AllowedNfTypeList);
+
+        for (i = 0; i < nf_service->num_of_allowed_nf_type; i++) {
+            OpenAPI_list_add(AllowedNfTypeList,
+                    (void *)(uintptr_t)nf_service->allowed_nf_types[i]);
+        }
+
+        if (AllowedNfTypeList->count)
+            NFService->allowed_nf_types = AllowedNfTypeList;
+        else
+            OpenAPI_list_free(AllowedNfTypeList);
+
+        NFService->is_priority = true;
+        NFService->priority = nf_service->priority;
+        NFService->is_capacity = true;
+        NFService->capacity = nf_service->capacity;
+        NFService->is_load = true;
+        NFService->load = nf_service->load;
 
         OpenAPI_list_add(NFServiceList, NFService);
     }
@@ -218,6 +265,8 @@ void ogs_sbi_nnrf_free_nf_profile(OpenAPI_nf_profile_t *NFProfile)
     OpenAPI_list_for_each(NFProfile->ipv6_addresses, node)
         ogs_free(node->data);
     OpenAPI_list_free(NFProfile->ipv6_addresses);
+
+    OpenAPI_list_free(NFProfile->allowed_nf_types);
 
     OpenAPI_list_for_each(NFProfile->nf_services, node) {
         OpenAPI_lnode_t *node2;
@@ -248,6 +297,8 @@ void ogs_sbi_nnrf_free_nf_profile(OpenAPI_nf_profile_t *NFProfile)
             ogs_free(IpEndPoint);
         }
         OpenAPI_list_free(NFService->ip_end_points);
+
+        OpenAPI_list_free(NFService->allowed_nf_types);
 
         if (NFService->fqdn)
             ogs_free(NFService->fqdn);

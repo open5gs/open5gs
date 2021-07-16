@@ -98,7 +98,7 @@ OpenAPI_n2_interface_amf_info_t *OpenAPI_n2_interface_amf_info_parseFromJSON(cJS
     cJSON *ipv4_endpoint_address = cJSON_GetObjectItemCaseSensitive(n2_interface_amf_infoJSON, "ipv4EndpointAddress");
 
     OpenAPI_list_t *ipv4_endpoint_addressList;
-    if (ipv4_endpoint_address) { 
+    if (ipv4_endpoint_address) {
     cJSON *ipv4_endpoint_address_local;
     if (!cJSON_IsArray(ipv4_endpoint_address)) {
         ogs_error("OpenAPI_n2_interface_amf_info_parseFromJSON() failed [ipv4_endpoint_address]");
@@ -112,13 +112,13 @@ OpenAPI_n2_interface_amf_info_t *OpenAPI_n2_interface_amf_info_parseFromJSON(cJS
         goto end;
     }
     OpenAPI_list_add(ipv4_endpoint_addressList , ogs_strdup_or_assert(ipv4_endpoint_address_local->valuestring));
-                    }
+    }
     }
 
     cJSON *ipv6_endpoint_address = cJSON_GetObjectItemCaseSensitive(n2_interface_amf_infoJSON, "ipv6EndpointAddress");
 
     OpenAPI_list_t *ipv6_endpoint_addressList;
-    if (ipv6_endpoint_address) { 
+    if (ipv6_endpoint_address) {
     cJSON *ipv6_endpoint_address_local;
     if (!cJSON_IsArray(ipv6_endpoint_address)) {
         ogs_error("OpenAPI_n2_interface_amf_info_parseFromJSON() failed [ipv6_endpoint_address]");
@@ -132,12 +132,12 @@ OpenAPI_n2_interface_amf_info_t *OpenAPI_n2_interface_amf_info_parseFromJSON(cJS
         goto end;
     }
     OpenAPI_list_add(ipv6_endpoint_addressList , ogs_strdup_or_assert(ipv6_endpoint_address_local->valuestring));
-                    }
+    }
     }
 
     cJSON *amf_name = cJSON_GetObjectItemCaseSensitive(n2_interface_amf_infoJSON, "amfName");
 
-    if (amf_name) { 
+    if (amf_name) {
     if (!cJSON_IsString(amf_name)) {
         ogs_error("OpenAPI_n2_interface_amf_info_parseFromJSON() failed [amf_name]");
         goto end;

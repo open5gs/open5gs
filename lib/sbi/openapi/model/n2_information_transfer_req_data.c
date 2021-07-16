@@ -129,7 +129,7 @@ OpenAPI_n2_information_transfer_req_data_t *OpenAPI_n2_information_transfer_req_
     cJSON *tai_list = cJSON_GetObjectItemCaseSensitive(n2_information_transfer_req_dataJSON, "taiList");
 
     OpenAPI_list_t *tai_listList;
-    if (tai_list) { 
+    if (tai_list) {
     cJSON *tai_list_local_nonprimitive;
     if (!cJSON_IsArray(tai_list)){
         ogs_error("OpenAPI_n2_information_transfer_req_data_parseFromJSON() failed [tai_list]");
@@ -152,7 +152,7 @@ OpenAPI_n2_information_transfer_req_data_t *OpenAPI_n2_information_transfer_req_
     cJSON *rat_selector = cJSON_GetObjectItemCaseSensitive(n2_information_transfer_req_dataJSON, "ratSelector");
 
     OpenAPI_rat_selector_e rat_selectorVariable;
-    if (rat_selector) { 
+    if (rat_selector) {
     if (!cJSON_IsString(rat_selector)) {
         ogs_error("OpenAPI_n2_information_transfer_req_data_parseFromJSON() failed [rat_selector]");
         goto end;
@@ -163,7 +163,7 @@ OpenAPI_n2_information_transfer_req_data_t *OpenAPI_n2_information_transfer_req_
     cJSON *global_ran_node_list = cJSON_GetObjectItemCaseSensitive(n2_information_transfer_req_dataJSON, "globalRanNodeList");
 
     OpenAPI_list_t *global_ran_node_listList;
-    if (global_ran_node_list) { 
+    if (global_ran_node_list) {
     cJSON *global_ran_node_list_local_nonprimitive;
     if (!cJSON_IsArray(global_ran_node_list)){
         ogs_error("OpenAPI_n2_information_transfer_req_data_parseFromJSON() failed [global_ran_node_list]");
@@ -190,12 +190,11 @@ OpenAPI_n2_information_transfer_req_data_t *OpenAPI_n2_information_transfer_req_
     }
 
     OpenAPI_n2_info_container_t *n2_information_local_nonprim = NULL;
-    
     n2_information_local_nonprim = OpenAPI_n2_info_container_parseFromJSON(n2_information);
 
     cJSON *supported_features = cJSON_GetObjectItemCaseSensitive(n2_information_transfer_req_dataJSON, "supportedFeatures");
 
-    if (supported_features) { 
+    if (supported_features) {
     if (!cJSON_IsString(supported_features)) {
         ogs_error("OpenAPI_n2_information_transfer_req_data_parseFromJSON() failed [supported_features]");
         goto end;

@@ -68,7 +68,6 @@ OpenAPI_arp_t *OpenAPI_arp_parseFromJSON(cJSON *arpJSON)
         goto end;
     }
 
-    
     if (!cJSON_IsNumber(priority_level)) {
         ogs_error("OpenAPI_arp_parseFromJSON() failed [priority_level]");
         goto end;
@@ -81,7 +80,6 @@ OpenAPI_arp_t *OpenAPI_arp_parseFromJSON(cJSON *arpJSON)
     }
 
     OpenAPI_preemption_capability_e preempt_capVariable;
-    
     if (!cJSON_IsString(preempt_cap)) {
         ogs_error("OpenAPI_arp_parseFromJSON() failed [preempt_cap]");
         goto end;
@@ -95,7 +93,6 @@ OpenAPI_arp_t *OpenAPI_arp_parseFromJSON(cJSON *arpJSON)
     }
 
     OpenAPI_preemption_vulnerability_e preempt_vulnVariable;
-    
     if (!cJSON_IsString(preempt_vuln)) {
         ogs_error("OpenAPI_arp_parseFromJSON() failed [preempt_vuln]");
         goto end;
@@ -103,6 +100,7 @@ OpenAPI_arp_t *OpenAPI_arp_parseFromJSON(cJSON *arpJSON)
     preempt_vulnVariable = OpenAPI_preemption_vulnerability_FromString(preempt_vuln->valuestring);
 
     arp_local_var = OpenAPI_arp_create (
+        
         priority_level->valuedouble,
         preempt_capVariable,
         preempt_vulnVariable

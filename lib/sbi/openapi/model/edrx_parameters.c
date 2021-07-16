@@ -63,7 +63,6 @@ OpenAPI_edrx_parameters_t *OpenAPI_edrx_parameters_parseFromJSON(cJSON *edrx_par
     }
 
     OpenAPI_rat_type_e rat_typeVariable;
-    
     if (!cJSON_IsString(rat_type)) {
         ogs_error("OpenAPI_edrx_parameters_parseFromJSON() failed [rat_type]");
         goto end;
@@ -76,7 +75,6 @@ OpenAPI_edrx_parameters_t *OpenAPI_edrx_parameters_parseFromJSON(cJSON *edrx_par
         goto end;
     }
 
-    
     if (!cJSON_IsString(edrx_value)) {
         ogs_error("OpenAPI_edrx_parameters_parseFromJSON() failed [edrx_value]");
         goto end;

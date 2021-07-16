@@ -72,8 +72,10 @@ typedef struct OpenAPI_sm_policy_update_context_data_s {
     char *auth_prof_index;
     struct OpenAPI_subscribed_default_qos_s *subs_def_qos;
     struct OpenAPI_vplmn_qos_s *vplmn_qos;
+    bool is_num_of_pack_filter;
     int num_of_pack_filter;
     OpenAPI_list_t *accu_usage_reports;
+    bool is__3gpp_ps_data_off_status;
     int _3gpp_ps_data_off_status;
     OpenAPI_list_t *app_detection_infos;
     OpenAPI_list_t *rule_reports;
@@ -83,6 +85,7 @@ typedef struct OpenAPI_sm_policy_update_context_data_s {
     char *user_location_info_time;
     OpenAPI_list_t* rep_pra_infos;
     struct OpenAPI_ue_initiated_resource_request_s *ue_init_res_req;
+    bool is_ref_qos_indication;
     int ref_qos_indication;
     OpenAPI_qos_flow_usage_e qos_flow_usage;
     OpenAPI_credit_management_status_e credit_manage_status;
@@ -125,8 +128,10 @@ OpenAPI_sm_policy_update_context_data_t *OpenAPI_sm_policy_update_context_data_c
     char *auth_prof_index,
     OpenAPI_subscribed_default_qos_t *subs_def_qos,
     OpenAPI_vplmn_qos_t *vplmn_qos,
+    bool is_num_of_pack_filter,
     int num_of_pack_filter,
     OpenAPI_list_t *accu_usage_reports,
+    bool is__3gpp_ps_data_off_status,
     int _3gpp_ps_data_off_status,
     OpenAPI_list_t *app_detection_infos,
     OpenAPI_list_t *rule_reports,
@@ -136,6 +141,7 @@ OpenAPI_sm_policy_update_context_data_t *OpenAPI_sm_policy_update_context_data_c
     char *user_location_info_time,
     OpenAPI_list_t* rep_pra_infos,
     OpenAPI_ue_initiated_resource_request_t *ue_init_res_req,
+    bool is_ref_qos_indication,
     int ref_qos_indication,
     OpenAPI_qos_flow_usage_e qos_flow_usage,
     OpenAPI_credit_management_status_e credit_manage_status,

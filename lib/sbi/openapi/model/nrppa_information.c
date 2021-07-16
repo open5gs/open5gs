@@ -79,7 +79,6 @@ OpenAPI_nrppa_information_t *OpenAPI_nrppa_information_parseFromJSON(cJSON *nrpp
         goto end;
     }
 
-    
     if (!cJSON_IsString(nf_id)) {
         ogs_error("OpenAPI_nrppa_information_parseFromJSON() failed [nf_id]");
         goto end;
@@ -92,12 +91,11 @@ OpenAPI_nrppa_information_t *OpenAPI_nrppa_information_parseFromJSON(cJSON *nrpp
     }
 
     OpenAPI_n2_info_content_t *nrppa_pdu_local_nonprim = NULL;
-    
     nrppa_pdu_local_nonprim = OpenAPI_n2_info_content_parseFromJSON(nrppa_pdu);
 
     cJSON *service_instance_id = cJSON_GetObjectItemCaseSensitive(nrppa_informationJSON, "serviceInstanceId");
 
-    if (service_instance_id) { 
+    if (service_instance_id) {
     if (!cJSON_IsString(service_instance_id)) {
         ogs_error("OpenAPI_nrppa_information_parseFromJSON() failed [service_instance_id]");
         goto end;

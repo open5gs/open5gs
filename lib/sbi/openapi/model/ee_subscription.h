@@ -28,6 +28,7 @@ typedef struct OpenAPI_ee_subscription_s {
     char *supported_features;
     char *subscription_id;
     struct OpenAPI_context_info_s *context_info;
+    bool is_epc_applied_ind;
     int epc_applied_ind;
     char *scef_diam_host;
     char *scef_diam_realm;
@@ -41,6 +42,7 @@ OpenAPI_ee_subscription_t *OpenAPI_ee_subscription_create(
     char *supported_features,
     char *subscription_id,
     OpenAPI_context_info_t *context_info,
+    bool is_epc_applied_ind,
     int epc_applied_ind,
     char *scef_diam_host,
     char *scef_diam_realm,

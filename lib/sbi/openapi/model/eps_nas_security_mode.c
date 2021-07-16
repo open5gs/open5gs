@@ -62,7 +62,6 @@ OpenAPI_eps_nas_security_mode_t *OpenAPI_eps_nas_security_mode_parseFromJSON(cJS
     }
 
     OpenAPI_eps_nas_integrity_algorithm_e integrity_algorithmVariable;
-    
     if (!cJSON_IsString(integrity_algorithm)) {
         ogs_error("OpenAPI_eps_nas_security_mode_parseFromJSON() failed [integrity_algorithm]");
         goto end;
@@ -76,7 +75,6 @@ OpenAPI_eps_nas_security_mode_t *OpenAPI_eps_nas_security_mode_parseFromJSON(cJS
     }
 
     OpenAPI_eps_nas_ciphering_algorithm_e ciphering_algorithmVariable;
-    
     if (!cJSON_IsString(ciphering_algorithm)) {
         ogs_error("OpenAPI_eps_nas_security_mode_parseFromJSON() failed [ciphering_algorithm]");
         goto end;

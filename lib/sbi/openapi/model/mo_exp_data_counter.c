@@ -64,7 +64,6 @@ OpenAPI_mo_exp_data_counter_t *OpenAPI_mo_exp_data_counter_parseFromJSON(cJSON *
         goto end;
     }
 
-    
     if (!cJSON_IsNumber(counter)) {
         ogs_error("OpenAPI_mo_exp_data_counter_parseFromJSON() failed [counter]");
         goto end;
@@ -72,7 +71,7 @@ OpenAPI_mo_exp_data_counter_t *OpenAPI_mo_exp_data_counter_parseFromJSON(cJSON *
 
     cJSON *time_stamp = cJSON_GetObjectItemCaseSensitive(mo_exp_data_counterJSON, "timeStamp");
 
-    if (time_stamp) { 
+    if (time_stamp) {
     if (!cJSON_IsString(time_stamp)) {
         ogs_error("OpenAPI_mo_exp_data_counter_parseFromJSON() failed [time_stamp]");
         goto end;
@@ -80,6 +79,7 @@ OpenAPI_mo_exp_data_counter_t *OpenAPI_mo_exp_data_counter_parseFromJSON(cJSON *
     }
 
     mo_exp_data_counter_local_var = OpenAPI_mo_exp_data_counter_create (
+        
         counter->valuedouble,
         time_stamp ? ogs_strdup_or_assert(time_stamp->valuestring) : NULL
     );

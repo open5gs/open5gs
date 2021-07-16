@@ -55,7 +55,6 @@ OpenAPI_pdu_session_notify_item_t *OpenAPI_pdu_session_notify_item_parseFromJSON
     }
 
     OpenAPI_notification_cause_e notification_causeVariable;
-    
     if (!cJSON_IsString(notification_cause)) {
         ogs_error("OpenAPI_pdu_session_notify_item_parseFromJSON() failed [notification_cause]");
         goto end;

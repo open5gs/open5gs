@@ -23,6 +23,7 @@ typedef struct OpenAPI_pgw_info_1_s {
     char *dnn;
     char *pgw_fqdn;
     struct OpenAPI_plmn_id_1_s *plmn_id;
+    bool is_epdg_ind;
     int epdg_ind;
 } OpenAPI_pgw_info_1_t;
 
@@ -30,6 +31,7 @@ OpenAPI_pgw_info_1_t *OpenAPI_pgw_info_1_create(
     char *dnn,
     char *pgw_fqdn,
     OpenAPI_plmn_id_1_t *plmn_id,
+    bool is_epdg_ind,
     int epdg_ind
 );
 void OpenAPI_pgw_info_1_free(OpenAPI_pgw_info_1_t *pgw_info_1);

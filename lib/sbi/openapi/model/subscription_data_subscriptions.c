@@ -137,7 +137,7 @@ OpenAPI_subscription_data_subscriptions_t *OpenAPI_subscription_data_subscriptio
     OpenAPI_subscription_data_subscriptions_t *subscription_data_subscriptions_local_var = NULL;
     cJSON *ue_id = cJSON_GetObjectItemCaseSensitive(subscription_data_subscriptionsJSON, "ueId");
 
-    if (ue_id) { 
+    if (ue_id) {
     if (!cJSON_IsString(ue_id)) {
         ogs_error("OpenAPI_subscription_data_subscriptions_parseFromJSON() failed [ue_id]");
         goto end;
@@ -150,7 +150,6 @@ OpenAPI_subscription_data_subscriptions_t *OpenAPI_subscription_data_subscriptio
         goto end;
     }
 
-    
     if (!cJSON_IsString(callback_reference)) {
         ogs_error("OpenAPI_subscription_data_subscriptions_parseFromJSON() failed [callback_reference]");
         goto end;
@@ -158,7 +157,7 @@ OpenAPI_subscription_data_subscriptions_t *OpenAPI_subscription_data_subscriptio
 
     cJSON *original_callback_reference = cJSON_GetObjectItemCaseSensitive(subscription_data_subscriptionsJSON, "originalCallbackReference");
 
-    if (original_callback_reference) { 
+    if (original_callback_reference) {
     if (!cJSON_IsString(original_callback_reference)) {
         ogs_error("OpenAPI_subscription_data_subscriptions_parseFromJSON() failed [original_callback_reference]");
         goto end;
@@ -172,7 +171,6 @@ OpenAPI_subscription_data_subscriptions_t *OpenAPI_subscription_data_subscriptio
     }
 
     OpenAPI_list_t *monitored_resource_urisList;
-    
     cJSON *monitored_resource_uris_local;
     if (!cJSON_IsArray(monitored_resource_uris)) {
         ogs_error("OpenAPI_subscription_data_subscriptions_parseFromJSON() failed [monitored_resource_uris]");
@@ -186,11 +184,11 @@ OpenAPI_subscription_data_subscriptions_t *OpenAPI_subscription_data_subscriptio
         goto end;
     }
     OpenAPI_list_add(monitored_resource_urisList , ogs_strdup_or_assert(monitored_resource_uris_local->valuestring));
-                    }
+    }
 
     cJSON *expiry = cJSON_GetObjectItemCaseSensitive(subscription_data_subscriptionsJSON, "expiry");
 
-    if (expiry) { 
+    if (expiry) {
     if (!cJSON_IsString(expiry)) {
         ogs_error("OpenAPI_subscription_data_subscriptions_parseFromJSON() failed [expiry]");
         goto end;
@@ -200,13 +198,13 @@ OpenAPI_subscription_data_subscriptions_t *OpenAPI_subscription_data_subscriptio
     cJSON *sdm_subscription = cJSON_GetObjectItemCaseSensitive(subscription_data_subscriptionsJSON, "sdmSubscription");
 
     OpenAPI_sdm_subscription_1_t *sdm_subscription_local_nonprim = NULL;
-    if (sdm_subscription) { 
+    if (sdm_subscription) {
     sdm_subscription_local_nonprim = OpenAPI_sdm_subscription_1_parseFromJSON(sdm_subscription);
     }
 
     cJSON *subscription_id = cJSON_GetObjectItemCaseSensitive(subscription_data_subscriptionsJSON, "subscriptionId");
 
-    if (subscription_id) { 
+    if (subscription_id) {
     if (!cJSON_IsString(subscription_id)) {
         ogs_error("OpenAPI_subscription_data_subscriptions_parseFromJSON() failed [subscription_id]");
         goto end;
@@ -215,7 +213,7 @@ OpenAPI_subscription_data_subscriptions_t *OpenAPI_subscription_data_subscriptio
 
     cJSON *supported_features = cJSON_GetObjectItemCaseSensitive(subscription_data_subscriptionsJSON, "supported-features");
 
-    if (supported_features) { 
+    if (supported_features) {
     if (!cJSON_IsString(supported_features)) {
         ogs_error("OpenAPI_subscription_data_subscriptions_parseFromJSON() failed [supported_features]");
         goto end;

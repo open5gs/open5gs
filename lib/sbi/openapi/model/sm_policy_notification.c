@@ -69,7 +69,7 @@ OpenAPI_sm_policy_notification_t *OpenAPI_sm_policy_notification_parseFromJSON(c
     OpenAPI_sm_policy_notification_t *sm_policy_notification_local_var = NULL;
     cJSON *resource_uri = cJSON_GetObjectItemCaseSensitive(sm_policy_notificationJSON, "resourceUri");
 
-    if (resource_uri) { 
+    if (resource_uri) {
     if (!cJSON_IsString(resource_uri)) {
         ogs_error("OpenAPI_sm_policy_notification_parseFromJSON() failed [resource_uri]");
         goto end;
@@ -79,7 +79,7 @@ OpenAPI_sm_policy_notification_t *OpenAPI_sm_policy_notification_parseFromJSON(c
     cJSON *sm_policy_decision = cJSON_GetObjectItemCaseSensitive(sm_policy_notificationJSON, "smPolicyDecision");
 
     OpenAPI_sm_policy_decision_t *sm_policy_decision_local_nonprim = NULL;
-    if (sm_policy_decision) { 
+    if (sm_policy_decision) {
     sm_policy_decision_local_nonprim = OpenAPI_sm_policy_decision_parseFromJSON(sm_policy_decision);
     }
 

@@ -72,7 +72,6 @@ OpenAPI_dnf_unit_t *OpenAPI_dnf_unit_parseFromJSON(cJSON *dnf_unitJSON)
     }
 
     OpenAPI_list_t *dnf_unitList;
-    
     cJSON *dnf_unit_local_nonprimitive;
     if (!cJSON_IsArray(dnf_unit)){
         ogs_error("OpenAPI_dnf_unit_parseFromJSON() failed [dnf_unit]");

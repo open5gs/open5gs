@@ -80,7 +80,6 @@ OpenAPI_ecgi_1_t *OpenAPI_ecgi_1_parseFromJSON(cJSON *ecgi_1JSON)
     }
 
     OpenAPI_plmn_id_1_t *plmn_id_local_nonprim = NULL;
-    
     plmn_id_local_nonprim = OpenAPI_plmn_id_1_parseFromJSON(plmn_id);
 
     cJSON *eutra_cell_id = cJSON_GetObjectItemCaseSensitive(ecgi_1JSON, "eutraCellId");
@@ -89,7 +88,6 @@ OpenAPI_ecgi_1_t *OpenAPI_ecgi_1_parseFromJSON(cJSON *ecgi_1JSON)
         goto end;
     }
 
-    
     if (!cJSON_IsString(eutra_cell_id)) {
         ogs_error("OpenAPI_ecgi_1_parseFromJSON() failed [eutra_cell_id]");
         goto end;
@@ -97,7 +95,7 @@ OpenAPI_ecgi_1_t *OpenAPI_ecgi_1_parseFromJSON(cJSON *ecgi_1JSON)
 
     cJSON *nid = cJSON_GetObjectItemCaseSensitive(ecgi_1JSON, "nid");
 
-    if (nid) { 
+    if (nid) {
     if (!cJSON_IsString(nid)) {
         ogs_error("OpenAPI_ecgi_1_parseFromJSON() failed [nid]");
         goto end;

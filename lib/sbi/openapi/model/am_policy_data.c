@@ -95,7 +95,7 @@ OpenAPI_am_policy_data_t *OpenAPI_am_policy_data_parseFromJSON(cJSON *am_policy_
     cJSON *pra_infos = cJSON_GetObjectItemCaseSensitive(am_policy_dataJSON, "praInfos");
 
     OpenAPI_list_t *pra_infosList;
-    if (pra_infos) { 
+    if (pra_infos) {
     cJSON *pra_infos_local_map;
     if (!cJSON_IsObject(pra_infos)) {
         ogs_error("OpenAPI_am_policy_data_parseFromJSON() failed [pra_infos]");
@@ -118,7 +118,7 @@ OpenAPI_am_policy_data_t *OpenAPI_am_policy_data_parseFromJSON(cJSON *am_policy_
     cJSON *subsc_cats = cJSON_GetObjectItemCaseSensitive(am_policy_dataJSON, "subscCats");
 
     OpenAPI_list_t *subsc_catsList;
-    if (subsc_cats) { 
+    if (subsc_cats) {
     cJSON *subsc_cats_local;
     if (!cJSON_IsArray(subsc_cats)) {
         ogs_error("OpenAPI_am_policy_data_parseFromJSON() failed [subsc_cats]");
@@ -132,7 +132,7 @@ OpenAPI_am_policy_data_t *OpenAPI_am_policy_data_parseFromJSON(cJSON *am_policy_
         goto end;
     }
     OpenAPI_list_add(subsc_catsList , ogs_strdup_or_assert(subsc_cats_local->valuestring));
-                    }
+    }
     }
 
     am_policy_data_local_var = OpenAPI_am_policy_data_create (

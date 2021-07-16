@@ -67,7 +67,7 @@ OpenAPI_hss_authentication_info_result_t *OpenAPI_hss_authentication_info_result
     OpenAPI_hss_authentication_info_result_t *hss_authentication_info_result_local_var = NULL;
     cJSON *supported_features = cJSON_GetObjectItemCaseSensitive(hss_authentication_info_resultJSON, "supportedFeatures");
 
-    if (supported_features) { 
+    if (supported_features) {
     if (!cJSON_IsString(supported_features)) {
         ogs_error("OpenAPI_hss_authentication_info_result_parseFromJSON() failed [supported_features]");
         goto end;
@@ -81,7 +81,6 @@ OpenAPI_hss_authentication_info_result_t *OpenAPI_hss_authentication_info_result
     }
 
     OpenAPI_hss_authentication_vectors_t *hss_authentication_vectors_local_nonprim = NULL;
-    
     hss_authentication_vectors_local_nonprim = OpenAPI_hss_authentication_vectors_parseFromJSON(hss_authentication_vectors);
 
     hss_authentication_info_result_local_var = OpenAPI_hss_authentication_info_result_create (

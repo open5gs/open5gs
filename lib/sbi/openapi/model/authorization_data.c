@@ -82,7 +82,6 @@ OpenAPI_authorization_data_t *OpenAPI_authorization_data_parseFromJSON(cJSON *au
     }
 
     OpenAPI_list_t *authorization_dataList;
-    
     cJSON *authorization_data_local_nonprimitive;
     if (!cJSON_IsArray(authorization_data)){
         ogs_error("OpenAPI_authorization_data_parseFromJSON() failed [authorization_data]");
@@ -103,7 +102,7 @@ OpenAPI_authorization_data_t *OpenAPI_authorization_data_parseFromJSON(cJSON *au
 
     cJSON *validity_time = cJSON_GetObjectItemCaseSensitive(authorization_dataJSON, "validityTime");
 
-    if (validity_time) { 
+    if (validity_time) {
     if (!cJSON_IsString(validity_time)) {
         ogs_error("OpenAPI_authorization_data_parseFromJSON() failed [validity_time]");
         goto end;

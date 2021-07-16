@@ -63,7 +63,6 @@ OpenAPI_ptw_parameters_1_t *OpenAPI_ptw_parameters_1_parseFromJSON(cJSON *ptw_pa
     }
 
     OpenAPI_operation_mode_e operation_modeVariable;
-    
     if (!cJSON_IsString(operation_mode)) {
         ogs_error("OpenAPI_ptw_parameters_1_parseFromJSON() failed [operation_mode]");
         goto end;
@@ -76,7 +75,6 @@ OpenAPI_ptw_parameters_1_t *OpenAPI_ptw_parameters_1_parseFromJSON(cJSON *ptw_pa
         goto end;
     }
 
-    
     if (!cJSON_IsString(ptw_value)) {
         ogs_error("OpenAPI_ptw_parameters_1_parseFromJSON() failed [ptw_value]");
         goto end;

@@ -82,7 +82,6 @@ OpenAPI_qos_flow_tunnel_t *OpenAPI_qos_flow_tunnel_parseFromJSON(cJSON *qos_flow
     }
 
     OpenAPI_list_t *qfi_listList;
-    
     cJSON *qfi_list_local;
     if (!cJSON_IsArray(qfi_list)) {
         ogs_error("OpenAPI_qos_flow_tunnel_parseFromJSON() failed [qfi_list]");
@@ -96,7 +95,7 @@ OpenAPI_qos_flow_tunnel_t *OpenAPI_qos_flow_tunnel_parseFromJSON(cJSON *qos_flow
         goto end;
     }
     OpenAPI_list_add(qfi_listList , &qfi_list_local->valuedouble);
-                    }
+    }
 
     cJSON *tunnel_info = cJSON_GetObjectItemCaseSensitive(qos_flow_tunnelJSON, "tunnelInfo");
     if (!tunnel_info) {
@@ -105,7 +104,6 @@ OpenAPI_qos_flow_tunnel_t *OpenAPI_qos_flow_tunnel_parseFromJSON(cJSON *qos_flow
     }
 
     OpenAPI_tunnel_info_t *tunnel_info_local_nonprim = NULL;
-    
     tunnel_info_local_nonprim = OpenAPI_tunnel_info_parseFromJSON(tunnel_info);
 
     qos_flow_tunnel_local_var = OpenAPI_qos_flow_tunnel_create (

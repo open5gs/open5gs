@@ -148,7 +148,7 @@ OpenAPI_network_area_info_1_t *OpenAPI_network_area_info_1_parseFromJSON(cJSON *
     cJSON *ecgis = cJSON_GetObjectItemCaseSensitive(network_area_info_1JSON, "ecgis");
 
     OpenAPI_list_t *ecgisList;
-    if (ecgis) { 
+    if (ecgis) {
     cJSON *ecgis_local_nonprimitive;
     if (!cJSON_IsArray(ecgis)){
         ogs_error("OpenAPI_network_area_info_1_parseFromJSON() failed [ecgis]");
@@ -171,7 +171,7 @@ OpenAPI_network_area_info_1_t *OpenAPI_network_area_info_1_parseFromJSON(cJSON *
     cJSON *ncgis = cJSON_GetObjectItemCaseSensitive(network_area_info_1JSON, "ncgis");
 
     OpenAPI_list_t *ncgisList;
-    if (ncgis) { 
+    if (ncgis) {
     cJSON *ncgis_local_nonprimitive;
     if (!cJSON_IsArray(ncgis)){
         ogs_error("OpenAPI_network_area_info_1_parseFromJSON() failed [ncgis]");
@@ -194,7 +194,7 @@ OpenAPI_network_area_info_1_t *OpenAPI_network_area_info_1_parseFromJSON(cJSON *
     cJSON *g_ran_node_ids = cJSON_GetObjectItemCaseSensitive(network_area_info_1JSON, "gRanNodeIds");
 
     OpenAPI_list_t *g_ran_node_idsList;
-    if (g_ran_node_ids) { 
+    if (g_ran_node_ids) {
     cJSON *g_ran_node_ids_local_nonprimitive;
     if (!cJSON_IsArray(g_ran_node_ids)){
         ogs_error("OpenAPI_network_area_info_1_parseFromJSON() failed [g_ran_node_ids]");
@@ -217,7 +217,7 @@ OpenAPI_network_area_info_1_t *OpenAPI_network_area_info_1_parseFromJSON(cJSON *
     cJSON *tais = cJSON_GetObjectItemCaseSensitive(network_area_info_1JSON, "tais");
 
     OpenAPI_list_t *taisList;
-    if (tais) { 
+    if (tais) {
     cJSON *tais_local_nonprimitive;
     if (!cJSON_IsArray(tais)){
         ogs_error("OpenAPI_network_area_info_1_parseFromJSON() failed [tais]");

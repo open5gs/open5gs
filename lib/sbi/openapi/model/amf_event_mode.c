@@ -6,9 +6,12 @@
 
 OpenAPI_amf_event_mode_t *OpenAPI_amf_event_mode_create(
     OpenAPI_amf_event_trigger_t *trigger,
+    bool is_max_reports,
     int max_reports,
     char *expiry,
+    bool is_rep_period,
     int rep_period,
+    bool is_samp_ratio,
     int samp_ratio
 )
 {
@@ -17,9 +20,12 @@ OpenAPI_amf_event_mode_t *OpenAPI_amf_event_mode_create(
         return NULL;
     }
     amf_event_mode_local_var->trigger = trigger;
+    amf_event_mode_local_var->is_max_reports = is_max_reports;
     amf_event_mode_local_var->max_reports = max_reports;
     amf_event_mode_local_var->expiry = expiry;
+    amf_event_mode_local_var->is_rep_period = is_rep_period;
     amf_event_mode_local_var->rep_period = rep_period;
+    amf_event_mode_local_var->is_samp_ratio = is_samp_ratio;
     amf_event_mode_local_var->samp_ratio = samp_ratio;
 
     return amf_event_mode_local_var;
@@ -57,7 +63,7 @@ cJSON *OpenAPI_amf_event_mode_convertToJSON(OpenAPI_amf_event_mode_t *amf_event_
         goto end;
     }
 
-    if (amf_event_mode->max_reports) {
+    if (amf_event_mode->is_max_reports) {
     if (cJSON_AddNumberToObject(item, "maxReports", amf_event_mode->max_reports) == NULL) {
         ogs_error("OpenAPI_amf_event_mode_convertToJSON() failed [max_reports]");
         goto end;
@@ -71,14 +77,14 @@ cJSON *OpenAPI_amf_event_mode_convertToJSON(OpenAPI_amf_event_mode_t *amf_event_
     }
     }
 
-    if (amf_event_mode->rep_period) {
+    if (amf_event_mode->is_rep_period) {
     if (cJSON_AddNumberToObject(item, "repPeriod", amf_event_mode->rep_period) == NULL) {
         ogs_error("OpenAPI_amf_event_mode_convertToJSON() failed [rep_period]");
         goto end;
     }
     }
 
-    if (amf_event_mode->samp_ratio) {
+    if (amf_event_mode->is_samp_ratio) {
     if (cJSON_AddNumberToObject(item, "sampRatio", amf_event_mode->samp_ratio) == NULL) {
         ogs_error("OpenAPI_amf_event_mode_convertToJSON() failed [samp_ratio]");
         goto end;
@@ -99,12 +105,11 @@ OpenAPI_amf_event_mode_t *OpenAPI_amf_event_mode_parseFromJSON(cJSON *amf_event_
     }
 
     OpenAPI_amf_event_trigger_t *trigger_local_nonprim = NULL;
-    
     trigger_local_nonprim = OpenAPI_amf_event_trigger_parseFromJSON(trigger);
 
     cJSON *max_reports = cJSON_GetObjectItemCaseSensitive(amf_event_modeJSON, "maxReports");
 
-    if (max_reports) { 
+    if (max_reports) {
     if (!cJSON_IsNumber(max_reports)) {
         ogs_error("OpenAPI_amf_event_mode_parseFromJSON() failed [max_reports]");
         goto end;
@@ -113,7 +118,7 @@ OpenAPI_amf_event_mode_t *OpenAPI_amf_event_mode_parseFromJSON(cJSON *amf_event_
 
     cJSON *expiry = cJSON_GetObjectItemCaseSensitive(amf_event_modeJSON, "expiry");
 
-    if (expiry) { 
+    if (expiry) {
     if (!cJSON_IsString(expiry)) {
         ogs_error("OpenAPI_amf_event_mode_parseFromJSON() failed [expiry]");
         goto end;
@@ -122,7 +127,7 @@ OpenAPI_amf_event_mode_t *OpenAPI_amf_event_mode_parseFromJSON(cJSON *amf_event_
 
     cJSON *rep_period = cJSON_GetObjectItemCaseSensitive(amf_event_modeJSON, "repPeriod");
 
-    if (rep_period) { 
+    if (rep_period) {
     if (!cJSON_IsNumber(rep_period)) {
         ogs_error("OpenAPI_amf_event_mode_parseFromJSON() failed [rep_period]");
         goto end;
@@ -131,7 +136,7 @@ OpenAPI_amf_event_mode_t *OpenAPI_amf_event_mode_parseFromJSON(cJSON *amf_event_
 
     cJSON *samp_ratio = cJSON_GetObjectItemCaseSensitive(amf_event_modeJSON, "sampRatio");
 
-    if (samp_ratio) { 
+    if (samp_ratio) {
     if (!cJSON_IsNumber(samp_ratio)) {
         ogs_error("OpenAPI_amf_event_mode_parseFromJSON() failed [samp_ratio]");
         goto end;
@@ -140,9 +145,12 @@ OpenAPI_amf_event_mode_t *OpenAPI_amf_event_mode_parseFromJSON(cJSON *amf_event_
 
     amf_event_mode_local_var = OpenAPI_amf_event_mode_create (
         trigger_local_nonprim,
+        max_reports ? true : false,
         max_reports ? max_reports->valuedouble : 0,
         expiry ? ogs_strdup_or_assert(expiry->valuestring) : NULL,
+        rep_period ? true : false,
         rep_period ? rep_period->valuedouble : 0,
+        samp_ratio ? true : false,
         samp_ratio ? samp_ratio->valuedouble : 0
     );
 

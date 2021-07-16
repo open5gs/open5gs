@@ -21,6 +21,7 @@ extern "C" {
 
 typedef struct OpenAPI_vplmn_qos_s OpenAPI_vplmn_qos_t;
 typedef struct OpenAPI_vplmn_qos_s {
+    bool is__5qi;
     int _5qi;
     struct OpenAPI_arp_s *arp;
     struct OpenAPI_ambr_s *session_ambr;
@@ -31,6 +32,7 @@ typedef struct OpenAPI_vplmn_qos_s {
 } OpenAPI_vplmn_qos_t;
 
 OpenAPI_vplmn_qos_t *OpenAPI_vplmn_qos_create(
+    bool is__5qi,
     int _5qi,
     OpenAPI_arp_t *arp,
     OpenAPI_ambr_t *session_ambr,

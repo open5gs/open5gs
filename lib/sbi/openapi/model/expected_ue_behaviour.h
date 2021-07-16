@@ -28,8 +28,10 @@ typedef struct OpenAPI_expected_ue_behaviour_s {
     char *af_instance_id;
     int reference_id;
     struct OpenAPI_stationary_indication_rm_s *stationary_indication;
+    bool is_communication_duration_time;
     int communication_duration_time;
     struct OpenAPI_scheduled_communication_type_rm_s *scheduled_communication_type;
+    bool is_periodic_time;
     int periodic_time;
     struct OpenAPI_scheduled_communication_time_rm_s *scheduled_communication_time;
     OpenAPI_list_t *expected_umts;
@@ -43,8 +45,10 @@ OpenAPI_expected_ue_behaviour_t *OpenAPI_expected_ue_behaviour_create(
     char *af_instance_id,
     int reference_id,
     OpenAPI_stationary_indication_rm_t *stationary_indication,
+    bool is_communication_duration_time,
     int communication_duration_time,
     OpenAPI_scheduled_communication_type_rm_t *scheduled_communication_type,
+    bool is_periodic_time,
     int periodic_time,
     OpenAPI_scheduled_communication_time_rm_t *scheduled_communication_time,
     OpenAPI_list_t *expected_umts,

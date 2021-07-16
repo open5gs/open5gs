@@ -23,9 +23,12 @@ extern "C" {
 typedef struct OpenAPI_eutra_location_s OpenAPI_eutra_location_t;
 typedef struct OpenAPI_eutra_location_s {
     struct OpenAPI_tai_s *tai;
+    bool is_ignore_tai;
     int ignore_tai;
     struct OpenAPI_ecgi_s *ecgi;
+    bool is_ignore_ecgi;
     int ignore_ecgi;
+    bool is_age_of_location_information;
     int age_of_location_information;
     char *ue_location_timestamp;
     char *geographical_information;
@@ -36,9 +39,12 @@ typedef struct OpenAPI_eutra_location_s {
 
 OpenAPI_eutra_location_t *OpenAPI_eutra_location_create(
     OpenAPI_tai_t *tai,
+    bool is_ignore_tai,
     int ignore_tai,
     OpenAPI_ecgi_t *ecgi,
+    bool is_ignore_ecgi,
     int ignore_ecgi,
+    bool is_age_of_location_information,
     int age_of_location_information,
     char *ue_location_timestamp,
     char *geographical_information,

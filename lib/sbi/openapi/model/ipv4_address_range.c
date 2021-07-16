@@ -63,7 +63,7 @@ OpenAPI_ipv4_address_range_t *OpenAPI_ipv4_address_range_parseFromJSON(cJSON *ip
     OpenAPI_ipv4_address_range_t *ipv4_address_range_local_var = NULL;
     cJSON *start = cJSON_GetObjectItemCaseSensitive(ipv4_address_rangeJSON, "start");
 
-    if (start) { 
+    if (start) {
     if (!cJSON_IsString(start)) {
         ogs_error("OpenAPI_ipv4_address_range_parseFromJSON() failed [start]");
         goto end;
@@ -72,7 +72,7 @@ OpenAPI_ipv4_address_range_t *OpenAPI_ipv4_address_range_parseFromJSON(cJSON *ip
 
     cJSON *end = cJSON_GetObjectItemCaseSensitive(ipv4_address_rangeJSON, "end");
 
-    if (end) { 
+    if (end) {
     if (!cJSON_IsString(end)) {
         ogs_error("OpenAPI_ipv4_address_range_parseFromJSON() failed [end]");
         goto end;

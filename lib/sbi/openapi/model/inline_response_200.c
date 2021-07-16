@@ -73,7 +73,7 @@ OpenAPI_inline_response_200_t *OpenAPI_inline_response_200_parseFromJSON(cJSON *
     cJSON *_links = cJSON_GetObjectItemCaseSensitive(inline_response_200JSON, "_links");
 
     OpenAPI_list_t *_linksList;
-    if (_links) { 
+    if (_links) {
     cJSON *_links_local_map;
     if (!cJSON_IsObject(_links)) {
         ogs_error("OpenAPI_inline_response_200_parseFromJSON() failed [_links]");

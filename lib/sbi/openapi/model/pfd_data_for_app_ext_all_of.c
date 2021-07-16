@@ -53,7 +53,7 @@ OpenAPI_pfd_data_for_app_ext_all_of_t *OpenAPI_pfd_data_for_app_ext_all_of_parse
     OpenAPI_pfd_data_for_app_ext_all_of_t *pfd_data_for_app_ext_all_of_local_var = NULL;
     cJSON *supp_feat = cJSON_GetObjectItemCaseSensitive(pfd_data_for_app_ext_all_ofJSON, "suppFeat");
 
-    if (supp_feat) { 
+    if (supp_feat) {
     if (!cJSON_IsString(supp_feat)) {
         ogs_error("OpenAPI_pfd_data_for_app_ext_all_of_parseFromJSON() failed [supp_feat]");
         goto end;

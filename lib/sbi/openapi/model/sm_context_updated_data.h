@@ -35,10 +35,12 @@ typedef struct OpenAPI_sm_context_updated_data_s {
     struct OpenAPI_ref_to_binary_data_s *n2_sm_info;
     OpenAPI_n2_sm_info_type_e n2_sm_info_type;
     OpenAPI_list_t *eps_bearer_setup;
+    bool is_data_forwarding;
     int data_forwarding;
     OpenAPI_list_t *n3_dl_forwarding_tnl_list;
     OpenAPI_list_t *n3_ul_forwarding_tnl_list;
     OpenAPI_cause_e cause;
+    bool is_ma_accepted_ind;
     int ma_accepted_ind;
     char *supported_features;
     char forwarding_f_teid;
@@ -57,10 +59,12 @@ OpenAPI_sm_context_updated_data_t *OpenAPI_sm_context_updated_data_create(
     OpenAPI_ref_to_binary_data_t *n2_sm_info,
     OpenAPI_n2_sm_info_type_e n2_sm_info_type,
     OpenAPI_list_t *eps_bearer_setup,
+    bool is_data_forwarding,
     int data_forwarding,
     OpenAPI_list_t *n3_dl_forwarding_tnl_list,
     OpenAPI_list_t *n3_ul_forwarding_tnl_list,
     OpenAPI_cause_e cause,
+    bool is_ma_accepted_ind,
     int ma_accepted_ind,
     char *supported_features,
     char forwarding_f_teid,

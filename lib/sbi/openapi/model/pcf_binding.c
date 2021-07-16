@@ -370,7 +370,7 @@ OpenAPI_pcf_binding_t *OpenAPI_pcf_binding_parseFromJSON(cJSON *pcf_bindingJSON)
     OpenAPI_pcf_binding_t *pcf_binding_local_var = NULL;
     cJSON *supi = cJSON_GetObjectItemCaseSensitive(pcf_bindingJSON, "supi");
 
-    if (supi) { 
+    if (supi) {
     if (!cJSON_IsString(supi)) {
         ogs_error("OpenAPI_pcf_binding_parseFromJSON() failed [supi]");
         goto end;
@@ -379,7 +379,7 @@ OpenAPI_pcf_binding_t *OpenAPI_pcf_binding_parseFromJSON(cJSON *pcf_bindingJSON)
 
     cJSON *gpsi = cJSON_GetObjectItemCaseSensitive(pcf_bindingJSON, "gpsi");
 
-    if (gpsi) { 
+    if (gpsi) {
     if (!cJSON_IsString(gpsi)) {
         ogs_error("OpenAPI_pcf_binding_parseFromJSON() failed [gpsi]");
         goto end;
@@ -388,7 +388,7 @@ OpenAPI_pcf_binding_t *OpenAPI_pcf_binding_parseFromJSON(cJSON *pcf_bindingJSON)
 
     cJSON *ipv4_addr = cJSON_GetObjectItemCaseSensitive(pcf_bindingJSON, "ipv4Addr");
 
-    if (ipv4_addr) { 
+    if (ipv4_addr) {
     if (!cJSON_IsString(ipv4_addr)) {
         ogs_error("OpenAPI_pcf_binding_parseFromJSON() failed [ipv4_addr]");
         goto end;
@@ -397,7 +397,7 @@ OpenAPI_pcf_binding_t *OpenAPI_pcf_binding_parseFromJSON(cJSON *pcf_bindingJSON)
 
     cJSON *ipv6_prefix = cJSON_GetObjectItemCaseSensitive(pcf_bindingJSON, "ipv6Prefix");
 
-    if (ipv6_prefix) { 
+    if (ipv6_prefix) {
     if (!cJSON_IsString(ipv6_prefix)) {
         ogs_error("OpenAPI_pcf_binding_parseFromJSON() failed [ipv6_prefix]");
         goto end;
@@ -407,7 +407,7 @@ OpenAPI_pcf_binding_t *OpenAPI_pcf_binding_parseFromJSON(cJSON *pcf_bindingJSON)
     cJSON *add_ipv6_prefixes = cJSON_GetObjectItemCaseSensitive(pcf_bindingJSON, "addIpv6Prefixes");
 
     OpenAPI_list_t *add_ipv6_prefixesList;
-    if (add_ipv6_prefixes) { 
+    if (add_ipv6_prefixes) {
     cJSON *add_ipv6_prefixes_local;
     if (!cJSON_IsArray(add_ipv6_prefixes)) {
         ogs_error("OpenAPI_pcf_binding_parseFromJSON() failed [add_ipv6_prefixes]");
@@ -421,12 +421,12 @@ OpenAPI_pcf_binding_t *OpenAPI_pcf_binding_parseFromJSON(cJSON *pcf_bindingJSON)
         goto end;
     }
     OpenAPI_list_add(add_ipv6_prefixesList , ogs_strdup_or_assert(add_ipv6_prefixes_local->valuestring));
-                    }
+    }
     }
 
     cJSON *ip_domain = cJSON_GetObjectItemCaseSensitive(pcf_bindingJSON, "ipDomain");
 
-    if (ip_domain) { 
+    if (ip_domain) {
     if (!cJSON_IsString(ip_domain)) {
         ogs_error("OpenAPI_pcf_binding_parseFromJSON() failed [ip_domain]");
         goto end;
@@ -435,7 +435,7 @@ OpenAPI_pcf_binding_t *OpenAPI_pcf_binding_parseFromJSON(cJSON *pcf_bindingJSON)
 
     cJSON *mac_addr48 = cJSON_GetObjectItemCaseSensitive(pcf_bindingJSON, "macAddr48");
 
-    if (mac_addr48) { 
+    if (mac_addr48) {
     if (!cJSON_IsString(mac_addr48)) {
         ogs_error("OpenAPI_pcf_binding_parseFromJSON() failed [mac_addr48]");
         goto end;
@@ -445,7 +445,7 @@ OpenAPI_pcf_binding_t *OpenAPI_pcf_binding_parseFromJSON(cJSON *pcf_bindingJSON)
     cJSON *add_mac_addrs = cJSON_GetObjectItemCaseSensitive(pcf_bindingJSON, "addMacAddrs");
 
     OpenAPI_list_t *add_mac_addrsList;
-    if (add_mac_addrs) { 
+    if (add_mac_addrs) {
     cJSON *add_mac_addrs_local;
     if (!cJSON_IsArray(add_mac_addrs)) {
         ogs_error("OpenAPI_pcf_binding_parseFromJSON() failed [add_mac_addrs]");
@@ -459,7 +459,7 @@ OpenAPI_pcf_binding_t *OpenAPI_pcf_binding_parseFromJSON(cJSON *pcf_bindingJSON)
         goto end;
     }
     OpenAPI_list_add(add_mac_addrsList , ogs_strdup_or_assert(add_mac_addrs_local->valuestring));
-                    }
+    }
     }
 
     cJSON *dnn = cJSON_GetObjectItemCaseSensitive(pcf_bindingJSON, "dnn");
@@ -468,7 +468,6 @@ OpenAPI_pcf_binding_t *OpenAPI_pcf_binding_parseFromJSON(cJSON *pcf_bindingJSON)
         goto end;
     }
 
-    
     if (!cJSON_IsString(dnn)) {
         ogs_error("OpenAPI_pcf_binding_parseFromJSON() failed [dnn]");
         goto end;
@@ -476,7 +475,7 @@ OpenAPI_pcf_binding_t *OpenAPI_pcf_binding_parseFromJSON(cJSON *pcf_bindingJSON)
 
     cJSON *pcf_fqdn = cJSON_GetObjectItemCaseSensitive(pcf_bindingJSON, "pcfFqdn");
 
-    if (pcf_fqdn) { 
+    if (pcf_fqdn) {
     if (!cJSON_IsString(pcf_fqdn)) {
         ogs_error("OpenAPI_pcf_binding_parseFromJSON() failed [pcf_fqdn]");
         goto end;
@@ -486,7 +485,7 @@ OpenAPI_pcf_binding_t *OpenAPI_pcf_binding_parseFromJSON(cJSON *pcf_bindingJSON)
     cJSON *pcf_ip_end_points = cJSON_GetObjectItemCaseSensitive(pcf_bindingJSON, "pcfIpEndPoints");
 
     OpenAPI_list_t *pcf_ip_end_pointsList;
-    if (pcf_ip_end_points) { 
+    if (pcf_ip_end_points) {
     cJSON *pcf_ip_end_points_local_nonprimitive;
     if (!cJSON_IsArray(pcf_ip_end_points)){
         ogs_error("OpenAPI_pcf_binding_parseFromJSON() failed [pcf_ip_end_points]");
@@ -508,7 +507,7 @@ OpenAPI_pcf_binding_t *OpenAPI_pcf_binding_parseFromJSON(cJSON *pcf_bindingJSON)
 
     cJSON *pcf_diam_host = cJSON_GetObjectItemCaseSensitive(pcf_bindingJSON, "pcfDiamHost");
 
-    if (pcf_diam_host) { 
+    if (pcf_diam_host) {
     if (!cJSON_IsString(pcf_diam_host)) {
         ogs_error("OpenAPI_pcf_binding_parseFromJSON() failed [pcf_diam_host]");
         goto end;
@@ -517,7 +516,7 @@ OpenAPI_pcf_binding_t *OpenAPI_pcf_binding_parseFromJSON(cJSON *pcf_bindingJSON)
 
     cJSON *pcf_diam_realm = cJSON_GetObjectItemCaseSensitive(pcf_bindingJSON, "pcfDiamRealm");
 
-    if (pcf_diam_realm) { 
+    if (pcf_diam_realm) {
     if (!cJSON_IsString(pcf_diam_realm)) {
         ogs_error("OpenAPI_pcf_binding_parseFromJSON() failed [pcf_diam_realm]");
         goto end;
@@ -526,7 +525,7 @@ OpenAPI_pcf_binding_t *OpenAPI_pcf_binding_parseFromJSON(cJSON *pcf_bindingJSON)
 
     cJSON *pcf_sm_fqdn = cJSON_GetObjectItemCaseSensitive(pcf_bindingJSON, "pcfSmFqdn");
 
-    if (pcf_sm_fqdn) { 
+    if (pcf_sm_fqdn) {
     if (!cJSON_IsString(pcf_sm_fqdn)) {
         ogs_error("OpenAPI_pcf_binding_parseFromJSON() failed [pcf_sm_fqdn]");
         goto end;
@@ -536,7 +535,7 @@ OpenAPI_pcf_binding_t *OpenAPI_pcf_binding_parseFromJSON(cJSON *pcf_bindingJSON)
     cJSON *pcf_sm_ip_end_points = cJSON_GetObjectItemCaseSensitive(pcf_bindingJSON, "pcfSmIpEndPoints");
 
     OpenAPI_list_t *pcf_sm_ip_end_pointsList;
-    if (pcf_sm_ip_end_points) { 
+    if (pcf_sm_ip_end_points) {
     cJSON *pcf_sm_ip_end_points_local_nonprimitive;
     if (!cJSON_IsArray(pcf_sm_ip_end_points)){
         ogs_error("OpenAPI_pcf_binding_parseFromJSON() failed [pcf_sm_ip_end_points]");
@@ -563,12 +562,11 @@ OpenAPI_pcf_binding_t *OpenAPI_pcf_binding_parseFromJSON(cJSON *pcf_bindingJSON)
     }
 
     OpenAPI_snssai_t *snssai_local_nonprim = NULL;
-    
     snssai_local_nonprim = OpenAPI_snssai_parseFromJSON(snssai);
 
     cJSON *supp_feat = cJSON_GetObjectItemCaseSensitive(pcf_bindingJSON, "suppFeat");
 
-    if (supp_feat) { 
+    if (supp_feat) {
     if (!cJSON_IsString(supp_feat)) {
         ogs_error("OpenAPI_pcf_binding_parseFromJSON() failed [supp_feat]");
         goto end;
@@ -577,7 +575,7 @@ OpenAPI_pcf_binding_t *OpenAPI_pcf_binding_parseFromJSON(cJSON *pcf_bindingJSON)
 
     cJSON *pcf_id = cJSON_GetObjectItemCaseSensitive(pcf_bindingJSON, "pcfId");
 
-    if (pcf_id) { 
+    if (pcf_id) {
     if (!cJSON_IsString(pcf_id)) {
         ogs_error("OpenAPI_pcf_binding_parseFromJSON() failed [pcf_id]");
         goto end;
@@ -586,7 +584,7 @@ OpenAPI_pcf_binding_t *OpenAPI_pcf_binding_parseFromJSON(cJSON *pcf_bindingJSON)
 
     cJSON *pcf_set_id = cJSON_GetObjectItemCaseSensitive(pcf_bindingJSON, "pcfSetId");
 
-    if (pcf_set_id) { 
+    if (pcf_set_id) {
     if (!cJSON_IsString(pcf_set_id)) {
         ogs_error("OpenAPI_pcf_binding_parseFromJSON() failed [pcf_set_id]");
         goto end;
@@ -595,7 +593,7 @@ OpenAPI_pcf_binding_t *OpenAPI_pcf_binding_parseFromJSON(cJSON *pcf_bindingJSON)
 
     cJSON *recovery_time = cJSON_GetObjectItemCaseSensitive(pcf_bindingJSON, "recoveryTime");
 
-    if (recovery_time) { 
+    if (recovery_time) {
     if (!cJSON_IsString(recovery_time)) {
         ogs_error("OpenAPI_pcf_binding_parseFromJSON() failed [recovery_time]");
         goto end;
@@ -605,14 +603,14 @@ OpenAPI_pcf_binding_t *OpenAPI_pcf_binding_parseFromJSON(cJSON *pcf_bindingJSON)
     cJSON *para_com = cJSON_GetObjectItemCaseSensitive(pcf_bindingJSON, "paraCom");
 
     OpenAPI_parameter_combination_t *para_com_local_nonprim = NULL;
-    if (para_com) { 
+    if (para_com) {
     para_com_local_nonprim = OpenAPI_parameter_combination_parseFromJSON(para_com);
     }
 
     cJSON *bind_level = cJSON_GetObjectItemCaseSensitive(pcf_bindingJSON, "bindLevel");
 
     OpenAPI_binding_level_e bind_levelVariable;
-    if (bind_level) { 
+    if (bind_level) {
     if (!cJSON_IsString(bind_level)) {
         ogs_error("OpenAPI_pcf_binding_parseFromJSON() failed [bind_level]");
         goto end;
@@ -623,7 +621,7 @@ OpenAPI_pcf_binding_t *OpenAPI_pcf_binding_parseFromJSON(cJSON *pcf_bindingJSON)
     cJSON *ipv4_frame_route_list = cJSON_GetObjectItemCaseSensitive(pcf_bindingJSON, "ipv4FrameRouteList");
 
     OpenAPI_list_t *ipv4_frame_route_listList;
-    if (ipv4_frame_route_list) { 
+    if (ipv4_frame_route_list) {
     cJSON *ipv4_frame_route_list_local;
     if (!cJSON_IsArray(ipv4_frame_route_list)) {
         ogs_error("OpenAPI_pcf_binding_parseFromJSON() failed [ipv4_frame_route_list]");
@@ -637,13 +635,13 @@ OpenAPI_pcf_binding_t *OpenAPI_pcf_binding_parseFromJSON(cJSON *pcf_bindingJSON)
         goto end;
     }
     OpenAPI_list_add(ipv4_frame_route_listList , ogs_strdup_or_assert(ipv4_frame_route_list_local->valuestring));
-                    }
+    }
     }
 
     cJSON *ipv6_frame_route_list = cJSON_GetObjectItemCaseSensitive(pcf_bindingJSON, "ipv6FrameRouteList");
 
     OpenAPI_list_t *ipv6_frame_route_listList;
-    if (ipv6_frame_route_list) { 
+    if (ipv6_frame_route_list) {
     cJSON *ipv6_frame_route_list_local;
     if (!cJSON_IsArray(ipv6_frame_route_list)) {
         ogs_error("OpenAPI_pcf_binding_parseFromJSON() failed [ipv6_frame_route_list]");
@@ -657,7 +655,7 @@ OpenAPI_pcf_binding_t *OpenAPI_pcf_binding_parseFromJSON(cJSON *pcf_bindingJSON)
         goto end;
     }
     OpenAPI_list_add(ipv6_frame_route_listList , ogs_strdup_or_assert(ipv6_frame_route_list_local->valuestring));
-                    }
+    }
     }
 
     pcf_binding_local_var = OpenAPI_pcf_binding_create (

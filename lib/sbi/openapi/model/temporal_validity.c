@@ -63,7 +63,7 @@ OpenAPI_temporal_validity_t *OpenAPI_temporal_validity_parseFromJSON(cJSON *temp
     OpenAPI_temporal_validity_t *temporal_validity_local_var = NULL;
     cJSON *start_time = cJSON_GetObjectItemCaseSensitive(temporal_validityJSON, "startTime");
 
-    if (start_time) { 
+    if (start_time) {
     if (!cJSON_IsString(start_time)) {
         ogs_error("OpenAPI_temporal_validity_parseFromJSON() failed [start_time]");
         goto end;
@@ -72,7 +72,7 @@ OpenAPI_temporal_validity_t *OpenAPI_temporal_validity_parseFromJSON(cJSON *temp
 
     cJSON *stop_time = cJSON_GetObjectItemCaseSensitive(temporal_validityJSON, "stopTime");
 
-    if (stop_time) { 
+    if (stop_time) {
     if (!cJSON_IsString(stop_time)) {
         ogs_error("OpenAPI_temporal_validity_parseFromJSON() failed [stop_time]");
         goto end;

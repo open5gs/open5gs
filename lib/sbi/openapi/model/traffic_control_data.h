@@ -30,10 +30,12 @@ typedef struct OpenAPI_traffic_control_data_s {
     OpenAPI_flow_status_e flow_status;
     struct OpenAPI_redirect_information_s *redirect_info;
     OpenAPI_list_t *add_redirect_info;
+    bool is_mute_notif;
     int mute_notif;
     char *traffic_steering_pol_id_dl;
     char *traffic_steering_pol_id_ul;
     OpenAPI_list_t *route_to_locs;
+    bool is_traff_corre_ind;
     int traff_corre_ind;
     struct OpenAPI_up_path_chg_event_s *up_path_chg_event;
     OpenAPI_steering_functionality_e steer_fun;
@@ -47,10 +49,12 @@ OpenAPI_traffic_control_data_t *OpenAPI_traffic_control_data_create(
     OpenAPI_flow_status_e flow_status,
     OpenAPI_redirect_information_t *redirect_info,
     OpenAPI_list_t *add_redirect_info,
+    bool is_mute_notif,
     int mute_notif,
     char *traffic_steering_pol_id_dl,
     char *traffic_steering_pol_id_ul,
     OpenAPI_list_t *route_to_locs,
+    bool is_traff_corre_ind,
     int traff_corre_ind,
     OpenAPI_up_path_chg_event_t *up_path_chg_event,
     OpenAPI_steering_functionality_e steer_fun,

@@ -25,6 +25,7 @@ typedef struct OpenAPI_steering_mode_s {
     OpenAPI_steer_mode_value_e steer_mode_value;
     OpenAPI_access_type_e active;
     struct OpenAPI_access_type_rm_s *standby;
+    bool is__3g_load;
     int _3g_load;
     OpenAPI_access_type_e prio_acc;
 } OpenAPI_steering_mode_t;
@@ -33,6 +34,7 @@ OpenAPI_steering_mode_t *OpenAPI_steering_mode_create(
     OpenAPI_steer_mode_value_e steer_mode_value,
     OpenAPI_access_type_e active,
     OpenAPI_access_type_rm_t *standby,
+    bool is__3g_load,
     int _3g_load,
     OpenAPI_access_type_e prio_acc
 );

@@ -55,7 +55,6 @@ OpenAPI_trigger_request_t *OpenAPI_trigger_request_parseFromJSON(cJSON *trigger_
         goto end;
     }
 
-    
     if (!cJSON_IsString(supi)) {
         ogs_error("OpenAPI_trigger_request_parseFromJSON() failed [supi]");
         goto end;

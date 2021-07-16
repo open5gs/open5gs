@@ -88,13 +88,12 @@ OpenAPI_steering_info_t *OpenAPI_steering_info_parseFromJSON(cJSON *steering_inf
     }
 
     OpenAPI_plmn_id_1_t *plmn_id_local_nonprim = NULL;
-    
     plmn_id_local_nonprim = OpenAPI_plmn_id_1_parseFromJSON(plmn_id);
 
     cJSON *access_tech_list = cJSON_GetObjectItemCaseSensitive(steering_infoJSON, "accessTechList");
 
     OpenAPI_list_t *access_tech_listList;
-    if (access_tech_list) { 
+    if (access_tech_list) {
     cJSON *access_tech_list_local_nonprimitive;
     if (!cJSON_IsArray(access_tech_list)){
         ogs_error("OpenAPI_steering_info_parseFromJSON() failed [access_tech_list]");

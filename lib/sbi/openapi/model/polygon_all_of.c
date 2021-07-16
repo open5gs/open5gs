@@ -72,7 +72,6 @@ OpenAPI_polygon_all_of_t *OpenAPI_polygon_all_of_parseFromJSON(cJSON *polygon_al
     }
 
     OpenAPI_list_t *point_listList;
-    
     cJSON *point_list_local_nonprimitive;
     if (!cJSON_IsArray(point_list)){
         ogs_error("OpenAPI_polygon_all_of_parseFromJSON() failed [point_list]");

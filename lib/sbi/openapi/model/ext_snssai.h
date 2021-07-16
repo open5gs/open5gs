@@ -25,6 +25,7 @@ typedef struct OpenAPI_ext_snssai_s {
     int sst;
     char *sd;
     OpenAPI_list_t *sd_ranges;
+    bool is_wildcard_sd;
     int wildcard_sd;
 } OpenAPI_ext_snssai_t;
 
@@ -32,6 +33,7 @@ OpenAPI_ext_snssai_t *OpenAPI_ext_snssai_create(
     int sst,
     char *sd,
     OpenAPI_list_t *sd_ranges,
+    bool is_wildcard_sd,
     int wildcard_sd
 );
 void OpenAPI_ext_snssai_free(OpenAPI_ext_snssai_t *ext_snssai);

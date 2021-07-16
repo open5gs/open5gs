@@ -135,7 +135,6 @@ OpenAPI_n2_info_container_t *OpenAPI_n2_info_container_parseFromJSON(cJSON *n2_i
     }
 
     OpenAPI_n2_information_class_e n2_information_classVariable;
-    
     if (!cJSON_IsString(n2_information_class)) {
         ogs_error("OpenAPI_n2_info_container_parseFromJSON() failed [n2_information_class]");
         goto end;
@@ -145,35 +144,35 @@ OpenAPI_n2_info_container_t *OpenAPI_n2_info_container_parseFromJSON(cJSON *n2_i
     cJSON *sm_info = cJSON_GetObjectItemCaseSensitive(n2_info_containerJSON, "smInfo");
 
     OpenAPI_n2_sm_information_t *sm_info_local_nonprim = NULL;
-    if (sm_info) { 
+    if (sm_info) {
     sm_info_local_nonprim = OpenAPI_n2_sm_information_parseFromJSON(sm_info);
     }
 
     cJSON *ran_info = cJSON_GetObjectItemCaseSensitive(n2_info_containerJSON, "ranInfo");
 
     OpenAPI_n2_ran_information_t *ran_info_local_nonprim = NULL;
-    if (ran_info) { 
+    if (ran_info) {
     ran_info_local_nonprim = OpenAPI_n2_ran_information_parseFromJSON(ran_info);
     }
 
     cJSON *nrppa_info = cJSON_GetObjectItemCaseSensitive(n2_info_containerJSON, "nrppaInfo");
 
     OpenAPI_nrppa_information_t *nrppa_info_local_nonprim = NULL;
-    if (nrppa_info) { 
+    if (nrppa_info) {
     nrppa_info_local_nonprim = OpenAPI_nrppa_information_parseFromJSON(nrppa_info);
     }
 
     cJSON *pws_info = cJSON_GetObjectItemCaseSensitive(n2_info_containerJSON, "pwsInfo");
 
     OpenAPI_pws_information_t *pws_info_local_nonprim = NULL;
-    if (pws_info) { 
+    if (pws_info) {
     pws_info_local_nonprim = OpenAPI_pws_information_parseFromJSON(pws_info);
     }
 
     cJSON *v2x_info = cJSON_GetObjectItemCaseSensitive(n2_info_containerJSON, "v2xInfo");
 
     OpenAPI_v2x_information_t *v2x_info_local_nonprim = NULL;
-    if (v2x_info) { 
+    if (v2x_info) {
     v2x_info_local_nonprim = OpenAPI_v2x_information_parseFromJSON(v2x_info);
     }
 

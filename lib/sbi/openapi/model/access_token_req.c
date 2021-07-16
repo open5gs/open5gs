@@ -310,7 +310,6 @@ OpenAPI_access_token_req_t *OpenAPI_access_token_req_parseFromJSON(cJSON *access
     }
 
     OpenAPI_access_token_req_grant_type_e grant_typeVariable;
-                
     if (!cJSON_IsString(grant_type)) {
         ogs_error("OpenAPI_access_token_req_parseFromJSON() failed [grant_type]");
         goto end;
@@ -323,7 +322,6 @@ OpenAPI_access_token_req_t *OpenAPI_access_token_req_parseFromJSON(cJSON *access
         goto end;
     }
 
-    
     if (!cJSON_IsString(nf_instance_id)) {
         ogs_error("OpenAPI_access_token_req_parseFromJSON() failed [nf_instance_id]");
         goto end;
@@ -332,7 +330,7 @@ OpenAPI_access_token_req_t *OpenAPI_access_token_req_parseFromJSON(cJSON *access
     cJSON *nf_type = cJSON_GetObjectItemCaseSensitive(access_token_reqJSON, "nfType");
 
     OpenAPI_nf_type_e nf_typeVariable;
-    if (nf_type) { 
+    if (nf_type) {
     if (!cJSON_IsString(nf_type)) {
         ogs_error("OpenAPI_access_token_req_parseFromJSON() failed [nf_type]");
         goto end;
@@ -343,7 +341,7 @@ OpenAPI_access_token_req_t *OpenAPI_access_token_req_parseFromJSON(cJSON *access
     cJSON *target_nf_type = cJSON_GetObjectItemCaseSensitive(access_token_reqJSON, "targetNfType");
 
     OpenAPI_nf_type_e target_nf_typeVariable;
-    if (target_nf_type) { 
+    if (target_nf_type) {
     if (!cJSON_IsString(target_nf_type)) {
         ogs_error("OpenAPI_access_token_req_parseFromJSON() failed [target_nf_type]");
         goto end;
@@ -357,7 +355,6 @@ OpenAPI_access_token_req_t *OpenAPI_access_token_req_parseFromJSON(cJSON *access
         goto end;
     }
 
-    
     if (!cJSON_IsString(scope)) {
         ogs_error("OpenAPI_access_token_req_parseFromJSON() failed [scope]");
         goto end;
@@ -365,7 +362,7 @@ OpenAPI_access_token_req_t *OpenAPI_access_token_req_parseFromJSON(cJSON *access
 
     cJSON *target_nf_instance_id = cJSON_GetObjectItemCaseSensitive(access_token_reqJSON, "targetNfInstanceId");
 
-    if (target_nf_instance_id) { 
+    if (target_nf_instance_id) {
     if (!cJSON_IsString(target_nf_instance_id)) {
         ogs_error("OpenAPI_access_token_req_parseFromJSON() failed [target_nf_instance_id]");
         goto end;
@@ -375,14 +372,14 @@ OpenAPI_access_token_req_t *OpenAPI_access_token_req_parseFromJSON(cJSON *access
     cJSON *requester_plmn = cJSON_GetObjectItemCaseSensitive(access_token_reqJSON, "requesterPlmn");
 
     OpenAPI_plmn_id_t *requester_plmn_local_nonprim = NULL;
-    if (requester_plmn) { 
+    if (requester_plmn) {
     requester_plmn_local_nonprim = OpenAPI_plmn_id_parseFromJSON(requester_plmn);
     }
 
     cJSON *requester_plmn_list = cJSON_GetObjectItemCaseSensitive(access_token_reqJSON, "requesterPlmnList");
 
     OpenAPI_list_t *requester_plmn_listList;
-    if (requester_plmn_list) { 
+    if (requester_plmn_list) {
     cJSON *requester_plmn_list_local_nonprimitive;
     if (!cJSON_IsArray(requester_plmn_list)){
         ogs_error("OpenAPI_access_token_req_parseFromJSON() failed [requester_plmn_list]");
@@ -405,7 +402,7 @@ OpenAPI_access_token_req_t *OpenAPI_access_token_req_parseFromJSON(cJSON *access
     cJSON *requester_snssai_list = cJSON_GetObjectItemCaseSensitive(access_token_reqJSON, "requesterSnssaiList");
 
     OpenAPI_list_t *requester_snssai_listList;
-    if (requester_snssai_list) { 
+    if (requester_snssai_list) {
     cJSON *requester_snssai_list_local_nonprimitive;
     if (!cJSON_IsArray(requester_snssai_list)){
         ogs_error("OpenAPI_access_token_req_parseFromJSON() failed [requester_snssai_list]");
@@ -427,7 +424,7 @@ OpenAPI_access_token_req_t *OpenAPI_access_token_req_parseFromJSON(cJSON *access
 
     cJSON *requester_fqdn = cJSON_GetObjectItemCaseSensitive(access_token_reqJSON, "requesterFqdn");
 
-    if (requester_fqdn) { 
+    if (requester_fqdn) {
     if (!cJSON_IsString(requester_fqdn)) {
         ogs_error("OpenAPI_access_token_req_parseFromJSON() failed [requester_fqdn]");
         goto end;
@@ -437,7 +434,7 @@ OpenAPI_access_token_req_t *OpenAPI_access_token_req_parseFromJSON(cJSON *access
     cJSON *requester_snpn_list = cJSON_GetObjectItemCaseSensitive(access_token_reqJSON, "requesterSnpnList");
 
     OpenAPI_list_t *requester_snpn_listList;
-    if (requester_snpn_list) { 
+    if (requester_snpn_list) {
     cJSON *requester_snpn_list_local_nonprimitive;
     if (!cJSON_IsArray(requester_snpn_list)){
         ogs_error("OpenAPI_access_token_req_parseFromJSON() failed [requester_snpn_list]");
@@ -460,14 +457,14 @@ OpenAPI_access_token_req_t *OpenAPI_access_token_req_parseFromJSON(cJSON *access
     cJSON *target_plmn = cJSON_GetObjectItemCaseSensitive(access_token_reqJSON, "targetPlmn");
 
     OpenAPI_plmn_id_t *target_plmn_local_nonprim = NULL;
-    if (target_plmn) { 
+    if (target_plmn) {
     target_plmn_local_nonprim = OpenAPI_plmn_id_parseFromJSON(target_plmn);
     }
 
     cJSON *target_snssai_list = cJSON_GetObjectItemCaseSensitive(access_token_reqJSON, "targetSnssaiList");
 
     OpenAPI_list_t *target_snssai_listList;
-    if (target_snssai_list) { 
+    if (target_snssai_list) {
     cJSON *target_snssai_list_local_nonprimitive;
     if (!cJSON_IsArray(target_snssai_list)){
         ogs_error("OpenAPI_access_token_req_parseFromJSON() failed [target_snssai_list]");
@@ -490,7 +487,7 @@ OpenAPI_access_token_req_t *OpenAPI_access_token_req_parseFromJSON(cJSON *access
     cJSON *target_nsi_list = cJSON_GetObjectItemCaseSensitive(access_token_reqJSON, "targetNsiList");
 
     OpenAPI_list_t *target_nsi_listList;
-    if (target_nsi_list) { 
+    if (target_nsi_list) {
     cJSON *target_nsi_list_local;
     if (!cJSON_IsArray(target_nsi_list)) {
         ogs_error("OpenAPI_access_token_req_parseFromJSON() failed [target_nsi_list]");
@@ -504,12 +501,12 @@ OpenAPI_access_token_req_t *OpenAPI_access_token_req_parseFromJSON(cJSON *access
         goto end;
     }
     OpenAPI_list_add(target_nsi_listList , ogs_strdup_or_assert(target_nsi_list_local->valuestring));
-                    }
+    }
     }
 
     cJSON *target_nf_set_id = cJSON_GetObjectItemCaseSensitive(access_token_reqJSON, "targetNfSetId");
 
-    if (target_nf_set_id) { 
+    if (target_nf_set_id) {
     if (!cJSON_IsString(target_nf_set_id)) {
         ogs_error("OpenAPI_access_token_req_parseFromJSON() failed [target_nf_set_id]");
         goto end;
@@ -518,7 +515,7 @@ OpenAPI_access_token_req_t *OpenAPI_access_token_req_parseFromJSON(cJSON *access
 
     cJSON *target_nf_service_set_id = cJSON_GetObjectItemCaseSensitive(access_token_reqJSON, "targetNfServiceSetId");
 
-    if (target_nf_service_set_id) { 
+    if (target_nf_service_set_id) {
     if (!cJSON_IsString(target_nf_service_set_id)) {
         ogs_error("OpenAPI_access_token_req_parseFromJSON() failed [target_nf_service_set_id]");
         goto end;

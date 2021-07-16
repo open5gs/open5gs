@@ -157,7 +157,7 @@ OpenAPI_hss_info_t *OpenAPI_hss_info_parseFromJSON(cJSON *hss_infoJSON)
     OpenAPI_hss_info_t *hss_info_local_var = NULL;
     cJSON *group_id = cJSON_GetObjectItemCaseSensitive(hss_infoJSON, "groupId");
 
-    if (group_id) { 
+    if (group_id) {
     if (!cJSON_IsString(group_id)) {
         ogs_error("OpenAPI_hss_info_parseFromJSON() failed [group_id]");
         goto end;
@@ -167,7 +167,7 @@ OpenAPI_hss_info_t *OpenAPI_hss_info_parseFromJSON(cJSON *hss_infoJSON)
     cJSON *imsi_ranges = cJSON_GetObjectItemCaseSensitive(hss_infoJSON, "imsiRanges");
 
     OpenAPI_list_t *imsi_rangesList;
-    if (imsi_ranges) { 
+    if (imsi_ranges) {
     cJSON *imsi_ranges_local_nonprimitive;
     if (!cJSON_IsArray(imsi_ranges)){
         ogs_error("OpenAPI_hss_info_parseFromJSON() failed [imsi_ranges]");
@@ -190,7 +190,7 @@ OpenAPI_hss_info_t *OpenAPI_hss_info_parseFromJSON(cJSON *hss_infoJSON)
     cJSON *ims_private_identity_ranges = cJSON_GetObjectItemCaseSensitive(hss_infoJSON, "imsPrivateIdentityRanges");
 
     OpenAPI_list_t *ims_private_identity_rangesList;
-    if (ims_private_identity_ranges) { 
+    if (ims_private_identity_ranges) {
     cJSON *ims_private_identity_ranges_local_nonprimitive;
     if (!cJSON_IsArray(ims_private_identity_ranges)){
         ogs_error("OpenAPI_hss_info_parseFromJSON() failed [ims_private_identity_ranges]");
@@ -213,7 +213,7 @@ OpenAPI_hss_info_t *OpenAPI_hss_info_parseFromJSON(cJSON *hss_infoJSON)
     cJSON *ims_public_identity_ranges = cJSON_GetObjectItemCaseSensitive(hss_infoJSON, "imsPublicIdentityRanges");
 
     OpenAPI_list_t *ims_public_identity_rangesList;
-    if (ims_public_identity_ranges) { 
+    if (ims_public_identity_ranges) {
     cJSON *ims_public_identity_ranges_local_nonprimitive;
     if (!cJSON_IsArray(ims_public_identity_ranges)){
         ogs_error("OpenAPI_hss_info_parseFromJSON() failed [ims_public_identity_ranges]");
@@ -236,7 +236,7 @@ OpenAPI_hss_info_t *OpenAPI_hss_info_parseFromJSON(cJSON *hss_infoJSON)
     cJSON *msisdn_ranges = cJSON_GetObjectItemCaseSensitive(hss_infoJSON, "msisdnRanges");
 
     OpenAPI_list_t *msisdn_rangesList;
-    if (msisdn_ranges) { 
+    if (msisdn_ranges) {
     cJSON *msisdn_ranges_local_nonprimitive;
     if (!cJSON_IsArray(msisdn_ranges)){
         ogs_error("OpenAPI_hss_info_parseFromJSON() failed [msisdn_ranges]");

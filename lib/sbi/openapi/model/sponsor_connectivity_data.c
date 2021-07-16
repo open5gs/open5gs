@@ -68,7 +68,6 @@ OpenAPI_sponsor_connectivity_data_t *OpenAPI_sponsor_connectivity_data_parseFrom
     }
 
     OpenAPI_list_t *asp_idsList;
-    
     cJSON *asp_ids_local;
     if (!cJSON_IsArray(asp_ids)) {
         ogs_error("OpenAPI_sponsor_connectivity_data_parseFromJSON() failed [asp_ids]");
@@ -82,7 +81,7 @@ OpenAPI_sponsor_connectivity_data_t *OpenAPI_sponsor_connectivity_data_parseFrom
         goto end;
     }
     OpenAPI_list_add(asp_idsList , ogs_strdup_or_assert(asp_ids_local->valuestring));
-                    }
+    }
 
     sponsor_connectivity_data_local_var = OpenAPI_sponsor_connectivity_data_create (
         asp_idsList

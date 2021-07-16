@@ -63,7 +63,7 @@ OpenAPI_acc_net_charging_address_t *OpenAPI_acc_net_charging_address_parseFromJS
     OpenAPI_acc_net_charging_address_t *acc_net_charging_address_local_var = NULL;
     cJSON *an_charg_ipv4_addr = cJSON_GetObjectItemCaseSensitive(acc_net_charging_addressJSON, "anChargIpv4Addr");
 
-    if (an_charg_ipv4_addr) { 
+    if (an_charg_ipv4_addr) {
     if (!cJSON_IsString(an_charg_ipv4_addr)) {
         ogs_error("OpenAPI_acc_net_charging_address_parseFromJSON() failed [an_charg_ipv4_addr]");
         goto end;
@@ -72,7 +72,7 @@ OpenAPI_acc_net_charging_address_t *OpenAPI_acc_net_charging_address_parseFromJS
 
     cJSON *an_charg_ipv6_addr = cJSON_GetObjectItemCaseSensitive(acc_net_charging_addressJSON, "anChargIpv6Addr");
 
-    if (an_charg_ipv6_addr) { 
+    if (an_charg_ipv6_addr) {
     if (!cJSON_IsString(an_charg_ipv6_addr)) {
         ogs_error("OpenAPI_acc_net_charging_address_parseFromJSON() failed [an_charg_ipv6_addr]");
         goto end;

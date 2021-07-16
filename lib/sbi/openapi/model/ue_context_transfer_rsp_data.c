@@ -104,26 +104,25 @@ OpenAPI_ue_context_transfer_rsp_data_t *OpenAPI_ue_context_transfer_rsp_data_par
     }
 
     OpenAPI_ue_context_t *ue_context_local_nonprim = NULL;
-    
     ue_context_local_nonprim = OpenAPI_ue_context_parseFromJSON(ue_context);
 
     cJSON *ue_radio_capability = cJSON_GetObjectItemCaseSensitive(ue_context_transfer_rsp_dataJSON, "ueRadioCapability");
 
     OpenAPI_n2_info_content_t *ue_radio_capability_local_nonprim = NULL;
-    if (ue_radio_capability) { 
+    if (ue_radio_capability) {
     ue_radio_capability_local_nonprim = OpenAPI_n2_info_content_parseFromJSON(ue_radio_capability);
     }
 
     cJSON *ue_nbiot_radio_capability = cJSON_GetObjectItemCaseSensitive(ue_context_transfer_rsp_dataJSON, "ueNbiotRadioCapability");
 
     OpenAPI_n2_info_content_t *ue_nbiot_radio_capability_local_nonprim = NULL;
-    if (ue_nbiot_radio_capability) { 
+    if (ue_nbiot_radio_capability) {
     ue_nbiot_radio_capability_local_nonprim = OpenAPI_n2_info_content_parseFromJSON(ue_nbiot_radio_capability);
     }
 
     cJSON *supported_features = cJSON_GetObjectItemCaseSensitive(ue_context_transfer_rsp_dataJSON, "supportedFeatures");
 
-    if (supported_features) { 
+    if (supported_features) {
     if (!cJSON_IsString(supported_features)) {
         ogs_error("OpenAPI_ue_context_transfer_rsp_data_parseFromJSON() failed [supported_features]");
         goto end;

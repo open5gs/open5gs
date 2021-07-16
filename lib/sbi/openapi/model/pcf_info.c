@@ -11,6 +11,7 @@ OpenAPI_pcf_info_t *OpenAPI_pcf_info_create(
     OpenAPI_list_t *gpsi_ranges,
     char *rx_diam_host,
     char *rx_diam_realm,
+    bool is_v2x_support_ind,
     int v2x_support_ind
 )
 {
@@ -24,6 +25,7 @@ OpenAPI_pcf_info_t *OpenAPI_pcf_info_create(
     pcf_info_local_var->gpsi_ranges = gpsi_ranges;
     pcf_info_local_var->rx_diam_host = rx_diam_host;
     pcf_info_local_var->rx_diam_realm = rx_diam_realm;
+    pcf_info_local_var->is_v2x_support_ind = is_v2x_support_ind;
     pcf_info_local_var->v2x_support_ind = v2x_support_ind;
 
     return pcf_info_local_var;
@@ -140,7 +142,7 @@ cJSON *OpenAPI_pcf_info_convertToJSON(OpenAPI_pcf_info_t *pcf_info)
     }
     }
 
-    if (pcf_info->v2x_support_ind) {
+    if (pcf_info->is_v2x_support_ind) {
     if (cJSON_AddBoolToObject(item, "v2xSupportInd", pcf_info->v2x_support_ind) == NULL) {
         ogs_error("OpenAPI_pcf_info_convertToJSON() failed [v2x_support_ind]");
         goto end;
@@ -156,7 +158,7 @@ OpenAPI_pcf_info_t *OpenAPI_pcf_info_parseFromJSON(cJSON *pcf_infoJSON)
     OpenAPI_pcf_info_t *pcf_info_local_var = NULL;
     cJSON *group_id = cJSON_GetObjectItemCaseSensitive(pcf_infoJSON, "groupId");
 
-    if (group_id) { 
+    if (group_id) {
     if (!cJSON_IsString(group_id)) {
         ogs_error("OpenAPI_pcf_info_parseFromJSON() failed [group_id]");
         goto end;
@@ -166,7 +168,7 @@ OpenAPI_pcf_info_t *OpenAPI_pcf_info_parseFromJSON(cJSON *pcf_infoJSON)
     cJSON *dnn_list = cJSON_GetObjectItemCaseSensitive(pcf_infoJSON, "dnnList");
 
     OpenAPI_list_t *dnn_listList;
-    if (dnn_list) { 
+    if (dnn_list) {
     cJSON *dnn_list_local;
     if (!cJSON_IsArray(dnn_list)) {
         ogs_error("OpenAPI_pcf_info_parseFromJSON() failed [dnn_list]");
@@ -180,13 +182,13 @@ OpenAPI_pcf_info_t *OpenAPI_pcf_info_parseFromJSON(cJSON *pcf_infoJSON)
         goto end;
     }
     OpenAPI_list_add(dnn_listList , ogs_strdup_or_assert(dnn_list_local->valuestring));
-                    }
+    }
     }
 
     cJSON *supi_ranges = cJSON_GetObjectItemCaseSensitive(pcf_infoJSON, "supiRanges");
 
     OpenAPI_list_t *supi_rangesList;
-    if (supi_ranges) { 
+    if (supi_ranges) {
     cJSON *supi_ranges_local_nonprimitive;
     if (!cJSON_IsArray(supi_ranges)){
         ogs_error("OpenAPI_pcf_info_parseFromJSON() failed [supi_ranges]");
@@ -209,7 +211,7 @@ OpenAPI_pcf_info_t *OpenAPI_pcf_info_parseFromJSON(cJSON *pcf_infoJSON)
     cJSON *gpsi_ranges = cJSON_GetObjectItemCaseSensitive(pcf_infoJSON, "gpsiRanges");
 
     OpenAPI_list_t *gpsi_rangesList;
-    if (gpsi_ranges) { 
+    if (gpsi_ranges) {
     cJSON *gpsi_ranges_local_nonprimitive;
     if (!cJSON_IsArray(gpsi_ranges)){
         ogs_error("OpenAPI_pcf_info_parseFromJSON() failed [gpsi_ranges]");
@@ -231,7 +233,7 @@ OpenAPI_pcf_info_t *OpenAPI_pcf_info_parseFromJSON(cJSON *pcf_infoJSON)
 
     cJSON *rx_diam_host = cJSON_GetObjectItemCaseSensitive(pcf_infoJSON, "rxDiamHost");
 
-    if (rx_diam_host) { 
+    if (rx_diam_host) {
     if (!cJSON_IsString(rx_diam_host)) {
         ogs_error("OpenAPI_pcf_info_parseFromJSON() failed [rx_diam_host]");
         goto end;
@@ -240,7 +242,7 @@ OpenAPI_pcf_info_t *OpenAPI_pcf_info_parseFromJSON(cJSON *pcf_infoJSON)
 
     cJSON *rx_diam_realm = cJSON_GetObjectItemCaseSensitive(pcf_infoJSON, "rxDiamRealm");
 
-    if (rx_diam_realm) { 
+    if (rx_diam_realm) {
     if (!cJSON_IsString(rx_diam_realm)) {
         ogs_error("OpenAPI_pcf_info_parseFromJSON() failed [rx_diam_realm]");
         goto end;
@@ -249,7 +251,7 @@ OpenAPI_pcf_info_t *OpenAPI_pcf_info_parseFromJSON(cJSON *pcf_infoJSON)
 
     cJSON *v2x_support_ind = cJSON_GetObjectItemCaseSensitive(pcf_infoJSON, "v2xSupportInd");
 
-    if (v2x_support_ind) { 
+    if (v2x_support_ind) {
     if (!cJSON_IsBool(v2x_support_ind)) {
         ogs_error("OpenAPI_pcf_info_parseFromJSON() failed [v2x_support_ind]");
         goto end;
@@ -263,6 +265,7 @@ OpenAPI_pcf_info_t *OpenAPI_pcf_info_parseFromJSON(cJSON *pcf_infoJSON)
         gpsi_ranges ? gpsi_rangesList : NULL,
         rx_diam_host ? ogs_strdup_or_assert(rx_diam_host->valuestring) : NULL,
         rx_diam_realm ? ogs_strdup_or_assert(rx_diam_realm->valuestring) : NULL,
+        v2x_support_ind ? true : false,
         v2x_support_ind ? v2x_support_ind->valueint : 0
     );
 

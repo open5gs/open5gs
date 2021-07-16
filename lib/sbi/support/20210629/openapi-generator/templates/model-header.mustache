@@ -74,9 +74,15 @@ typedef struct OpenAPI_{{classname}}_s {
             {{/isEnum}}
             {{^isEnum}}
                 {{#isNumeric}}
+                    {{^required}}
+    bool is_{{name}};
+                    {{/required}}
     {{datatype}} {{name}};
                 {{/isNumeric}}
                 {{#isBoolean}}
+                    {{^required}}
+    bool is_{{name}};
+                    {{/required}}
     {{datatype}} {{name}};
                 {{/isBoolean}}
                 {{#isString}}
@@ -136,9 +142,15 @@ OpenAPI_{{classname}}_t *OpenAPI_{{classname}}_create(
             {{/isEnum}}
             {{^isEnum}}
                 {{#isNumeric}}
+                    {{^required}}
+    bool is_{{name}},
+                    {{/required}}
     {{datatype}} {{name}}{{^-last}},{{/-last}}
                 {{/isNumeric}}
                 {{#isBoolean}}
+                    {{^required}}
+    bool is_{{name}},
+                    {{/required}}
     {{datatype}} {{name}}{{^-last}},{{/-last}}
                 {{/isBoolean}}
                 {{#isString}}

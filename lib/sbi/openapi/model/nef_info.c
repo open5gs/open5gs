@@ -159,7 +159,7 @@ OpenAPI_nef_info_t *OpenAPI_nef_info_parseFromJSON(cJSON *nef_infoJSON)
     OpenAPI_nef_info_t *nef_info_local_var = NULL;
     cJSON *nef_id = cJSON_GetObjectItemCaseSensitive(nef_infoJSON, "nefId");
 
-    if (nef_id) { 
+    if (nef_id) {
     if (!cJSON_IsString(nef_id)) {
         ogs_error("OpenAPI_nef_info_parseFromJSON() failed [nef_id]");
         goto end;
@@ -169,21 +169,21 @@ OpenAPI_nef_info_t *OpenAPI_nef_info_parseFromJSON(cJSON *nef_infoJSON)
     cJSON *pfd_data = cJSON_GetObjectItemCaseSensitive(nef_infoJSON, "pfdData");
 
     OpenAPI_pfd_data_t *pfd_data_local_nonprim = NULL;
-    if (pfd_data) { 
+    if (pfd_data) {
     pfd_data_local_nonprim = OpenAPI_pfd_data_parseFromJSON(pfd_data);
     }
 
     cJSON *af_ee_data = cJSON_GetObjectItemCaseSensitive(nef_infoJSON, "afEeData");
 
     OpenAPI_af_event_exposure_data_t *af_ee_data_local_nonprim = NULL;
-    if (af_ee_data) { 
+    if (af_ee_data) {
     af_ee_data_local_nonprim = OpenAPI_af_event_exposure_data_parseFromJSON(af_ee_data);
     }
 
     cJSON *gpsi_ranges = cJSON_GetObjectItemCaseSensitive(nef_infoJSON, "gpsiRanges");
 
     OpenAPI_list_t *gpsi_rangesList;
-    if (gpsi_ranges) { 
+    if (gpsi_ranges) {
     cJSON *gpsi_ranges_local_nonprimitive;
     if (!cJSON_IsArray(gpsi_ranges)){
         ogs_error("OpenAPI_nef_info_parseFromJSON() failed [gpsi_ranges]");
@@ -206,7 +206,7 @@ OpenAPI_nef_info_t *OpenAPI_nef_info_parseFromJSON(cJSON *nef_infoJSON)
     cJSON *external_group_identifiers_ranges = cJSON_GetObjectItemCaseSensitive(nef_infoJSON, "externalGroupIdentifiersRanges");
 
     OpenAPI_list_t *external_group_identifiers_rangesList;
-    if (external_group_identifiers_ranges) { 
+    if (external_group_identifiers_ranges) {
     cJSON *external_group_identifiers_ranges_local_nonprimitive;
     if (!cJSON_IsArray(external_group_identifiers_ranges)){
         ogs_error("OpenAPI_nef_info_parseFromJSON() failed [external_group_identifiers_ranges]");
@@ -229,7 +229,7 @@ OpenAPI_nef_info_t *OpenAPI_nef_info_parseFromJSON(cJSON *nef_infoJSON)
     cJSON *served_fqdn_list = cJSON_GetObjectItemCaseSensitive(nef_infoJSON, "servedFqdnList");
 
     OpenAPI_list_t *served_fqdn_listList;
-    if (served_fqdn_list) { 
+    if (served_fqdn_list) {
     cJSON *served_fqdn_list_local;
     if (!cJSON_IsArray(served_fqdn_list)) {
         ogs_error("OpenAPI_nef_info_parseFromJSON() failed [served_fqdn_list]");
@@ -243,7 +243,7 @@ OpenAPI_nef_info_t *OpenAPI_nef_info_parseFromJSON(cJSON *nef_infoJSON)
         goto end;
     }
     OpenAPI_list_add(served_fqdn_listList , ogs_strdup_or_assert(served_fqdn_list_local->valuestring));
-                    }
+    }
     }
 
     nef_info_local_var = OpenAPI_nef_info_create (

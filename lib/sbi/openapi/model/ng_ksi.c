@@ -62,7 +62,6 @@ OpenAPI_ng_ksi_t *OpenAPI_ng_ksi_parseFromJSON(cJSON *ng_ksiJSON)
     }
 
     OpenAPI_sc_type_e tscVariable;
-    
     if (!cJSON_IsString(tsc)) {
         ogs_error("OpenAPI_ng_ksi_parseFromJSON() failed [tsc]");
         goto end;
@@ -75,7 +74,6 @@ OpenAPI_ng_ksi_t *OpenAPI_ng_ksi_parseFromJSON(cJSON *ng_ksiJSON)
         goto end;
     }
 
-    
     if (!cJSON_IsNumber(ksi)) {
         ogs_error("OpenAPI_ng_ksi_parseFromJSON() failed [ksi]");
         goto end;
@@ -83,6 +81,7 @@ OpenAPI_ng_ksi_t *OpenAPI_ng_ksi_parseFromJSON(cJSON *ng_ksiJSON)
 
     ng_ksi_local_var = OpenAPI_ng_ksi_create (
         tscVariable,
+        
         ksi->valuedouble
     );
 

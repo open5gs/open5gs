@@ -190,7 +190,7 @@ OpenAPI_pcscf_info_t *OpenAPI_pcscf_info_parseFromJSON(cJSON *pcscf_infoJSON)
     cJSON *access_type = cJSON_GetObjectItemCaseSensitive(pcscf_infoJSON, "accessType");
 
     OpenAPI_list_t *access_typeList;
-    if (access_type) { 
+    if (access_type) {
     cJSON *access_type_local_nonprimitive;
     if (!cJSON_IsArray(access_type)) {
         ogs_error("OpenAPI_pcscf_info_parseFromJSON() failed [access_type]");
@@ -212,7 +212,7 @@ OpenAPI_pcscf_info_t *OpenAPI_pcscf_info_parseFromJSON(cJSON *pcscf_infoJSON)
     cJSON *dnn_list = cJSON_GetObjectItemCaseSensitive(pcscf_infoJSON, "dnnList");
 
     OpenAPI_list_t *dnn_listList;
-    if (dnn_list) { 
+    if (dnn_list) {
     cJSON *dnn_list_local;
     if (!cJSON_IsArray(dnn_list)) {
         ogs_error("OpenAPI_pcscf_info_parseFromJSON() failed [dnn_list]");
@@ -226,12 +226,12 @@ OpenAPI_pcscf_info_t *OpenAPI_pcscf_info_parseFromJSON(cJSON *pcscf_infoJSON)
         goto end;
     }
     OpenAPI_list_add(dnn_listList , ogs_strdup_or_assert(dnn_list_local->valuestring));
-                    }
+    }
     }
 
     cJSON *gm_fqdn = cJSON_GetObjectItemCaseSensitive(pcscf_infoJSON, "gmFqdn");
 
-    if (gm_fqdn) { 
+    if (gm_fqdn) {
     if (!cJSON_IsString(gm_fqdn)) {
         ogs_error("OpenAPI_pcscf_info_parseFromJSON() failed [gm_fqdn]");
         goto end;
@@ -241,7 +241,7 @@ OpenAPI_pcscf_info_t *OpenAPI_pcscf_info_parseFromJSON(cJSON *pcscf_infoJSON)
     cJSON *gm_ipv4_addresses = cJSON_GetObjectItemCaseSensitive(pcscf_infoJSON, "gmIpv4Addresses");
 
     OpenAPI_list_t *gm_ipv4_addressesList;
-    if (gm_ipv4_addresses) { 
+    if (gm_ipv4_addresses) {
     cJSON *gm_ipv4_addresses_local;
     if (!cJSON_IsArray(gm_ipv4_addresses)) {
         ogs_error("OpenAPI_pcscf_info_parseFromJSON() failed [gm_ipv4_addresses]");
@@ -255,13 +255,13 @@ OpenAPI_pcscf_info_t *OpenAPI_pcscf_info_parseFromJSON(cJSON *pcscf_infoJSON)
         goto end;
     }
     OpenAPI_list_add(gm_ipv4_addressesList , ogs_strdup_or_assert(gm_ipv4_addresses_local->valuestring));
-                    }
+    }
     }
 
     cJSON *gm_ipv6_addresses = cJSON_GetObjectItemCaseSensitive(pcscf_infoJSON, "gmIpv6Addresses");
 
     OpenAPI_list_t *gm_ipv6_addressesList;
-    if (gm_ipv6_addresses) { 
+    if (gm_ipv6_addresses) {
     cJSON *gm_ipv6_addresses_local;
     if (!cJSON_IsArray(gm_ipv6_addresses)) {
         ogs_error("OpenAPI_pcscf_info_parseFromJSON() failed [gm_ipv6_addresses]");
@@ -275,13 +275,13 @@ OpenAPI_pcscf_info_t *OpenAPI_pcscf_info_parseFromJSON(cJSON *pcscf_infoJSON)
         goto end;
     }
     OpenAPI_list_add(gm_ipv6_addressesList , ogs_strdup_or_assert(gm_ipv6_addresses_local->valuestring));
-                    }
+    }
     }
 
     cJSON *served_ipv4_address_ranges = cJSON_GetObjectItemCaseSensitive(pcscf_infoJSON, "servedIpv4AddressRanges");
 
     OpenAPI_list_t *served_ipv4_address_rangesList;
-    if (served_ipv4_address_ranges) { 
+    if (served_ipv4_address_ranges) {
     cJSON *served_ipv4_address_ranges_local_nonprimitive;
     if (!cJSON_IsArray(served_ipv4_address_ranges)){
         ogs_error("OpenAPI_pcscf_info_parseFromJSON() failed [served_ipv4_address_ranges]");
@@ -304,7 +304,7 @@ OpenAPI_pcscf_info_t *OpenAPI_pcscf_info_parseFromJSON(cJSON *pcscf_infoJSON)
     cJSON *served_ipv6_prefix_ranges = cJSON_GetObjectItemCaseSensitive(pcscf_infoJSON, "servedIpv6PrefixRanges");
 
     OpenAPI_list_t *served_ipv6_prefix_rangesList;
-    if (served_ipv6_prefix_ranges) { 
+    if (served_ipv6_prefix_ranges) {
     cJSON *served_ipv6_prefix_ranges_local_nonprimitive;
     if (!cJSON_IsArray(served_ipv6_prefix_ranges)){
         ogs_error("OpenAPI_pcscf_info_parseFromJSON() failed [served_ipv6_prefix_ranges]");

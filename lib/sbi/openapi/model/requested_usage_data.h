@@ -20,11 +20,13 @@ extern "C" {
 typedef struct OpenAPI_requested_usage_data_s OpenAPI_requested_usage_data_t;
 typedef struct OpenAPI_requested_usage_data_s {
     OpenAPI_list_t *ref_um_ids;
+    bool is_all_um_ids;
     int all_um_ids;
 } OpenAPI_requested_usage_data_t;
 
 OpenAPI_requested_usage_data_t *OpenAPI_requested_usage_data_create(
     OpenAPI_list_t *ref_um_ids,
+    bool is_all_um_ids,
     int all_um_ids
 );
 void OpenAPI_requested_usage_data_free(OpenAPI_requested_usage_data_t *requested_usage_data);

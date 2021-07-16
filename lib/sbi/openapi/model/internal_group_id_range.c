@@ -73,7 +73,7 @@ OpenAPI_internal_group_id_range_t *OpenAPI_internal_group_id_range_parseFromJSON
     OpenAPI_internal_group_id_range_t *internal_group_id_range_local_var = NULL;
     cJSON *start = cJSON_GetObjectItemCaseSensitive(internal_group_id_rangeJSON, "start");
 
-    if (start) { 
+    if (start) {
     if (!cJSON_IsString(start)) {
         ogs_error("OpenAPI_internal_group_id_range_parseFromJSON() failed [start]");
         goto end;
@@ -82,7 +82,7 @@ OpenAPI_internal_group_id_range_t *OpenAPI_internal_group_id_range_parseFromJSON
 
     cJSON *end = cJSON_GetObjectItemCaseSensitive(internal_group_id_rangeJSON, "end");
 
-    if (end) { 
+    if (end) {
     if (!cJSON_IsString(end)) {
         ogs_error("OpenAPI_internal_group_id_range_parseFromJSON() failed [end]");
         goto end;
@@ -91,7 +91,7 @@ OpenAPI_internal_group_id_range_t *OpenAPI_internal_group_id_range_parseFromJSON
 
     cJSON *pattern = cJSON_GetObjectItemCaseSensitive(internal_group_id_rangeJSON, "pattern");
 
-    if (pattern) { 
+    if (pattern) {
     if (!cJSON_IsString(pattern)) {
         ogs_error("OpenAPI_internal_group_id_range_parseFromJSON() failed [pattern]");
         goto end;

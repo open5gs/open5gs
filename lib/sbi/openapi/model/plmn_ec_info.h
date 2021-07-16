@@ -23,12 +23,14 @@ typedef struct OpenAPI_plmn_ec_info_s OpenAPI_plmn_ec_info_t;
 typedef struct OpenAPI_plmn_ec_info_s {
     struct OpenAPI_plmn_id_s *plmn_id;
     struct OpenAPI_ec_restriction_data_wb_s *ec_restriction_data_wb;
+    bool is_ec_restriction_data_nb;
     int ec_restriction_data_nb;
 } OpenAPI_plmn_ec_info_t;
 
 OpenAPI_plmn_ec_info_t *OpenAPI_plmn_ec_info_create(
     OpenAPI_plmn_id_t *plmn_id,
     OpenAPI_ec_restriction_data_wb_t *ec_restriction_data_wb,
+    bool is_ec_restriction_data_nb,
     int ec_restriction_data_nb
 );
 void OpenAPI_plmn_ec_info_free(OpenAPI_plmn_ec_info_t *plmn_ec_info);

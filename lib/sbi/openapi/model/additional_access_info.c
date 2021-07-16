@@ -64,7 +64,6 @@ OpenAPI_additional_access_info_t *OpenAPI_additional_access_info_parseFromJSON(c
     }
 
     OpenAPI_access_type_e access_typeVariable;
-    
     if (!cJSON_IsString(access_type)) {
         ogs_error("OpenAPI_additional_access_info_parseFromJSON() failed [access_type]");
         goto end;
@@ -74,7 +73,7 @@ OpenAPI_additional_access_info_t *OpenAPI_additional_access_info_parseFromJSON(c
     cJSON *rat_type = cJSON_GetObjectItemCaseSensitive(additional_access_infoJSON, "ratType");
 
     OpenAPI_rat_type_e rat_typeVariable;
-    if (rat_type) { 
+    if (rat_type) {
     if (!cJSON_IsString(rat_type)) {
         ogs_error("OpenAPI_additional_access_info_parseFromJSON() failed [rat_type]");
         goto end;

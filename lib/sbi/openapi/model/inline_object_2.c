@@ -72,14 +72,14 @@ OpenAPI_inline_object_2_t *OpenAPI_inline_object_2_parseFromJSON(cJSON *inline_o
     cJSON *json_data = cJSON_GetObjectItemCaseSensitive(inline_object_2JSON, "jsonData");
 
     OpenAPI_ue_context_cancel_relocate_data_t *json_data_local_nonprim = NULL;
-    if (json_data) { 
+    if (json_data) {
     json_data_local_nonprim = OpenAPI_ue_context_cancel_relocate_data_parseFromJSON(json_data);
     }
 
     cJSON *binary_data_gtpc_message = cJSON_GetObjectItemCaseSensitive(inline_object_2JSON, "binaryDataGtpcMessage");
 
     OpenAPI_binary_t* decoded_str_binary_data_gtpc_message = OpenAPI_malloc(sizeof(OpenAPI_binary_t));
-    if (binary_data_gtpc_message) { 
+    if (binary_data_gtpc_message) {
     if (!cJSON_IsString(binary_data_gtpc_message)) {
         ogs_error("OpenAPI_inline_object_2_parseFromJSON() failed [binary_data_gtpc_message]");
         goto end;

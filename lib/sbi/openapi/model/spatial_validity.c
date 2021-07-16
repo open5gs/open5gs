@@ -75,7 +75,6 @@ OpenAPI_spatial_validity_t *OpenAPI_spatial_validity_parseFromJSON(cJSON *spatia
     }
 
     OpenAPI_list_t *presence_info_listList;
-    
     cJSON *presence_info_list_local_map;
     if (!cJSON_IsObject(presence_info_list)) {
         ogs_error("OpenAPI_spatial_validity_parseFromJSON() failed [presence_info_list]");

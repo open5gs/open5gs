@@ -38,12 +38,8 @@ void bsf_nnrf_handle_nf_register(
     }
 
     /* TIME : Update heartbeat from NRF */
-    if (NFProfile->nf_profile_changes_ind == true) {
-        if (NFProfile->heart_beat_timer)
-            nf_instance->time.heartbeat_interval = NFProfile->heart_beat_timer;
-    } else {
+    if (NFProfile->is_heart_beat_timer == true)
         nf_instance->time.heartbeat_interval = NFProfile->heart_beat_timer;
-    }
 }
 
 void bsf_nnrf_handle_nf_status_subscribe(
@@ -318,7 +314,8 @@ void bsf_nnrf_handle_nf_discover(
             bsf_sess_select_nf(sess, nf_instance->nf_type);
 
             /* TIME : Update validity from NRF */
-            if (SearchResult->validity_period) {
+            if (SearchResult->is_validity_period &&
+                SearchResult->validity_period) {
                 nf_instance->time.validity_duration =
                         SearchResult->validity_period;
 

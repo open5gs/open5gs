@@ -26,6 +26,7 @@ typedef struct OpenAPI_sm_context_retrieved_data_s {
     struct OpenAPI_sm_context_s *sm_context;
     struct OpenAPI_small_data_rate_status_s *small_data_rate_status;
     struct OpenAPI_apn_rate_status_s *apn_rate_status;
+    bool is_dl_data_waiting_ind;
     int dl_data_waiting_ind;
 } OpenAPI_sm_context_retrieved_data_t;
 
@@ -34,6 +35,7 @@ OpenAPI_sm_context_retrieved_data_t *OpenAPI_sm_context_retrieved_data_create(
     OpenAPI_sm_context_t *sm_context,
     OpenAPI_small_data_rate_status_t *small_data_rate_status,
     OpenAPI_apn_rate_status_t *apn_rate_status,
+    bool is_dl_data_waiting_ind,
     int dl_data_waiting_ind
 );
 void OpenAPI_sm_context_retrieved_data_free(OpenAPI_sm_context_retrieved_data_t *sm_context_retrieved_data);

@@ -34,6 +34,7 @@ typedef struct OpenAPI_ext_amf_event_subscription_s {
     char *group_id;
     char *gpsi;
     char *pei;
+    bool is_any_ue;
     int any_ue;
     struct OpenAPI_amf_event_mode_s *options;
     OpenAPI_nf_type_e source_nf_type;
@@ -52,6 +53,7 @@ OpenAPI_ext_amf_event_subscription_t *OpenAPI_ext_amf_event_subscription_create(
     char *group_id,
     char *gpsi,
     char *pei,
+    bool is_any_ue,
     int any_ue,
     OpenAPI_amf_event_mode_t *options,
     OpenAPI_nf_type_e source_nf_type,

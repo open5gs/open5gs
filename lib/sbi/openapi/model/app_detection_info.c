@@ -91,7 +91,6 @@ OpenAPI_app_detection_info_t *OpenAPI_app_detection_info_parseFromJSON(cJSON *ap
         goto end;
     }
 
-    
     if (!cJSON_IsString(app_id)) {
         ogs_error("OpenAPI_app_detection_info_parseFromJSON() failed [app_id]");
         goto end;
@@ -99,7 +98,7 @@ OpenAPI_app_detection_info_t *OpenAPI_app_detection_info_parseFromJSON(cJSON *ap
 
     cJSON *instance_id = cJSON_GetObjectItemCaseSensitive(app_detection_infoJSON, "instanceId");
 
-    if (instance_id) { 
+    if (instance_id) {
     if (!cJSON_IsString(instance_id)) {
         ogs_error("OpenAPI_app_detection_info_parseFromJSON() failed [instance_id]");
         goto end;
@@ -109,7 +108,7 @@ OpenAPI_app_detection_info_t *OpenAPI_app_detection_info_parseFromJSON(cJSON *ap
     cJSON *sdf_descriptions = cJSON_GetObjectItemCaseSensitive(app_detection_infoJSON, "sdfDescriptions");
 
     OpenAPI_list_t *sdf_descriptionsList;
-    if (sdf_descriptions) { 
+    if (sdf_descriptions) {
     cJSON *sdf_descriptions_local_nonprimitive;
     if (!cJSON_IsArray(sdf_descriptions)){
         ogs_error("OpenAPI_app_detection_info_parseFromJSON() failed [sdf_descriptions]");

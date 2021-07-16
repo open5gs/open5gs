@@ -24,6 +24,7 @@ typedef struct OpenAPI_problem_details_s OpenAPI_problem_details_t;
 typedef struct OpenAPI_problem_details_s {
     char *type;
     char *title;
+    bool is_status;
     int status;
     char *detail;
     char *instance;
@@ -38,6 +39,7 @@ typedef struct OpenAPI_problem_details_s {
 OpenAPI_problem_details_t *OpenAPI_problem_details_create(
     char *type,
     char *title,
+    bool is_status,
     int status,
     char *detail,
     char *instance,

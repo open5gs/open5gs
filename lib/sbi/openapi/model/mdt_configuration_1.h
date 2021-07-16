@@ -51,9 +51,13 @@ typedef struct OpenAPI_mdt_configuration_1_s {
     OpenAPI_report_interval_mdt_e report_interval;
     OpenAPI_report_interval_nr_mdt_e report_interval_nr;
     OpenAPI_report_amount_mdt_e report_amount;
+    bool is_event_threshold_rsrp;
     int event_threshold_rsrp;
+    bool is_event_threshold_rsrp_nr;
     int event_threshold_rsrp_nr;
+    bool is_event_threshold_rsrq;
     int event_threshold_rsrq;
+    bool is_event_threshold_rsrq_nr;
     int event_threshold_rsrq_nr;
     OpenAPI_list_t *event_list;
     OpenAPI_logging_interval_mdt_e logging_interval;
@@ -81,9 +85,13 @@ OpenAPI_mdt_configuration_1_t *OpenAPI_mdt_configuration_1_create(
     OpenAPI_report_interval_mdt_e report_interval,
     OpenAPI_report_interval_nr_mdt_e report_interval_nr,
     OpenAPI_report_amount_mdt_e report_amount,
+    bool is_event_threshold_rsrp,
     int event_threshold_rsrp,
+    bool is_event_threshold_rsrp_nr,
     int event_threshold_rsrp_nr,
+    bool is_event_threshold_rsrq,
     int event_threshold_rsrq,
+    bool is_event_threshold_rsrq_nr,
     int event_threshold_rsrq_nr,
     OpenAPI_list_t *event_list,
     OpenAPI_logging_interval_mdt_e logging_interval,

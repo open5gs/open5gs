@@ -101,7 +101,7 @@ OpenAPI_ausf_info_t *OpenAPI_ausf_info_parseFromJSON(cJSON *ausf_infoJSON)
     OpenAPI_ausf_info_t *ausf_info_local_var = NULL;
     cJSON *group_id = cJSON_GetObjectItemCaseSensitive(ausf_infoJSON, "groupId");
 
-    if (group_id) { 
+    if (group_id) {
     if (!cJSON_IsString(group_id)) {
         ogs_error("OpenAPI_ausf_info_parseFromJSON() failed [group_id]");
         goto end;
@@ -111,7 +111,7 @@ OpenAPI_ausf_info_t *OpenAPI_ausf_info_parseFromJSON(cJSON *ausf_infoJSON)
     cJSON *supi_ranges = cJSON_GetObjectItemCaseSensitive(ausf_infoJSON, "supiRanges");
 
     OpenAPI_list_t *supi_rangesList;
-    if (supi_ranges) { 
+    if (supi_ranges) {
     cJSON *supi_ranges_local_nonprimitive;
     if (!cJSON_IsArray(supi_ranges)){
         ogs_error("OpenAPI_ausf_info_parseFromJSON() failed [supi_ranges]");
@@ -134,7 +134,7 @@ OpenAPI_ausf_info_t *OpenAPI_ausf_info_parseFromJSON(cJSON *ausf_infoJSON)
     cJSON *routing_indicators = cJSON_GetObjectItemCaseSensitive(ausf_infoJSON, "routingIndicators");
 
     OpenAPI_list_t *routing_indicatorsList;
-    if (routing_indicators) { 
+    if (routing_indicators) {
     cJSON *routing_indicators_local;
     if (!cJSON_IsArray(routing_indicators)) {
         ogs_error("OpenAPI_ausf_info_parseFromJSON() failed [routing_indicators]");
@@ -148,7 +148,7 @@ OpenAPI_ausf_info_t *OpenAPI_ausf_info_parseFromJSON(cJSON *ausf_infoJSON)
         goto end;
     }
     OpenAPI_list_add(routing_indicatorsList , ogs_strdup_or_assert(routing_indicators_local->valuestring));
-                    }
+    }
     }
 
     ausf_info_local_var = OpenAPI_ausf_info_create (

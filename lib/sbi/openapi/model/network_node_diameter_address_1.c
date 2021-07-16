@@ -63,7 +63,6 @@ OpenAPI_network_node_diameter_address_1_t *OpenAPI_network_node_diameter_address
         goto end;
     }
 
-    
     if (!cJSON_IsString(name)) {
         ogs_error("OpenAPI_network_node_diameter_address_1_parseFromJSON() failed [name]");
         goto end;
@@ -75,7 +74,6 @@ OpenAPI_network_node_diameter_address_1_t *OpenAPI_network_node_diameter_address
         goto end;
     }
 
-    
     if (!cJSON_IsString(realm)) {
         ogs_error("OpenAPI_network_node_diameter_address_1_parseFromJSON() failed [realm]");
         goto end;

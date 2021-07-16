@@ -140,7 +140,7 @@ OpenAPI_bsf_info_t *OpenAPI_bsf_info_parseFromJSON(cJSON *bsf_infoJSON)
     cJSON *dnn_list = cJSON_GetObjectItemCaseSensitive(bsf_infoJSON, "dnnList");
 
     OpenAPI_list_t *dnn_listList;
-    if (dnn_list) { 
+    if (dnn_list) {
     cJSON *dnn_list_local;
     if (!cJSON_IsArray(dnn_list)) {
         ogs_error("OpenAPI_bsf_info_parseFromJSON() failed [dnn_list]");
@@ -154,13 +154,13 @@ OpenAPI_bsf_info_t *OpenAPI_bsf_info_parseFromJSON(cJSON *bsf_infoJSON)
         goto end;
     }
     OpenAPI_list_add(dnn_listList , ogs_strdup_or_assert(dnn_list_local->valuestring));
-                    }
+    }
     }
 
     cJSON *ip_domain_list = cJSON_GetObjectItemCaseSensitive(bsf_infoJSON, "ipDomainList");
 
     OpenAPI_list_t *ip_domain_listList;
-    if (ip_domain_list) { 
+    if (ip_domain_list) {
     cJSON *ip_domain_list_local;
     if (!cJSON_IsArray(ip_domain_list)) {
         ogs_error("OpenAPI_bsf_info_parseFromJSON() failed [ip_domain_list]");
@@ -174,13 +174,13 @@ OpenAPI_bsf_info_t *OpenAPI_bsf_info_parseFromJSON(cJSON *bsf_infoJSON)
         goto end;
     }
     OpenAPI_list_add(ip_domain_listList , ogs_strdup_or_assert(ip_domain_list_local->valuestring));
-                    }
+    }
     }
 
     cJSON *ipv4_address_ranges = cJSON_GetObjectItemCaseSensitive(bsf_infoJSON, "ipv4AddressRanges");
 
     OpenAPI_list_t *ipv4_address_rangesList;
-    if (ipv4_address_ranges) { 
+    if (ipv4_address_ranges) {
     cJSON *ipv4_address_ranges_local_nonprimitive;
     if (!cJSON_IsArray(ipv4_address_ranges)){
         ogs_error("OpenAPI_bsf_info_parseFromJSON() failed [ipv4_address_ranges]");
@@ -203,7 +203,7 @@ OpenAPI_bsf_info_t *OpenAPI_bsf_info_parseFromJSON(cJSON *bsf_infoJSON)
     cJSON *ipv6_prefix_ranges = cJSON_GetObjectItemCaseSensitive(bsf_infoJSON, "ipv6PrefixRanges");
 
     OpenAPI_list_t *ipv6_prefix_rangesList;
-    if (ipv6_prefix_ranges) { 
+    if (ipv6_prefix_ranges) {
     cJSON *ipv6_prefix_ranges_local_nonprimitive;
     if (!cJSON_IsArray(ipv6_prefix_ranges)){
         ogs_error("OpenAPI_bsf_info_parseFromJSON() failed [ipv6_prefix_ranges]");

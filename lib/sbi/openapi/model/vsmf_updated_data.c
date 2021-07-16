@@ -396,7 +396,7 @@ OpenAPI_vsmf_updated_data_t *OpenAPI_vsmf_updated_data_parseFromJSON(cJSON *vsmf
     cJSON *qos_flows_add_mod_list = cJSON_GetObjectItemCaseSensitive(vsmf_updated_dataJSON, "qosFlowsAddModList");
 
     OpenAPI_list_t *qos_flows_add_mod_listList;
-    if (qos_flows_add_mod_list) { 
+    if (qos_flows_add_mod_list) {
     cJSON *qos_flows_add_mod_list_local_nonprimitive;
     if (!cJSON_IsArray(qos_flows_add_mod_list)){
         ogs_error("OpenAPI_vsmf_updated_data_parseFromJSON() failed [qos_flows_add_mod_list]");
@@ -419,7 +419,7 @@ OpenAPI_vsmf_updated_data_t *OpenAPI_vsmf_updated_data_parseFromJSON(cJSON *vsmf
     cJSON *qos_flows_rel_list = cJSON_GetObjectItemCaseSensitive(vsmf_updated_dataJSON, "qosFlowsRelList");
 
     OpenAPI_list_t *qos_flows_rel_listList;
-    if (qos_flows_rel_list) { 
+    if (qos_flows_rel_list) {
     cJSON *qos_flows_rel_list_local_nonprimitive;
     if (!cJSON_IsArray(qos_flows_rel_list)){
         ogs_error("OpenAPI_vsmf_updated_data_parseFromJSON() failed [qos_flows_rel_list]");
@@ -442,7 +442,7 @@ OpenAPI_vsmf_updated_data_t *OpenAPI_vsmf_updated_data_parseFromJSON(cJSON *vsmf
     cJSON *qos_flows_failedto_add_mod_list = cJSON_GetObjectItemCaseSensitive(vsmf_updated_dataJSON, "qosFlowsFailedtoAddModList");
 
     OpenAPI_list_t *qos_flows_failedto_add_mod_listList;
-    if (qos_flows_failedto_add_mod_list) { 
+    if (qos_flows_failedto_add_mod_list) {
     cJSON *qos_flows_failedto_add_mod_list_local_nonprimitive;
     if (!cJSON_IsArray(qos_flows_failedto_add_mod_list)){
         ogs_error("OpenAPI_vsmf_updated_data_parseFromJSON() failed [qos_flows_failedto_add_mod_list]");
@@ -465,7 +465,7 @@ OpenAPI_vsmf_updated_data_t *OpenAPI_vsmf_updated_data_parseFromJSON(cJSON *vsmf
     cJSON *qos_flows_failedto_rel_list = cJSON_GetObjectItemCaseSensitive(vsmf_updated_dataJSON, "qosFlowsFailedtoRelList");
 
     OpenAPI_list_t *qos_flows_failedto_rel_listList;
-    if (qos_flows_failedto_rel_list) { 
+    if (qos_flows_failedto_rel_list) {
     cJSON *qos_flows_failedto_rel_list_local_nonprimitive;
     if (!cJSON_IsArray(qos_flows_failedto_rel_list)){
         ogs_error("OpenAPI_vsmf_updated_data_parseFromJSON() failed [qos_flows_failedto_rel_list]");
@@ -488,27 +488,27 @@ OpenAPI_vsmf_updated_data_t *OpenAPI_vsmf_updated_data_parseFromJSON(cJSON *vsmf
     cJSON *n1_sm_info_from_ue = cJSON_GetObjectItemCaseSensitive(vsmf_updated_dataJSON, "n1SmInfoFromUe");
 
     OpenAPI_ref_to_binary_data_t *n1_sm_info_from_ue_local_nonprim = NULL;
-    if (n1_sm_info_from_ue) { 
+    if (n1_sm_info_from_ue) {
     n1_sm_info_from_ue_local_nonprim = OpenAPI_ref_to_binary_data_parseFromJSON(n1_sm_info_from_ue);
     }
 
     cJSON *unknown_n1_sm_info = cJSON_GetObjectItemCaseSensitive(vsmf_updated_dataJSON, "unknownN1SmInfo");
 
     OpenAPI_ref_to_binary_data_t *unknown_n1_sm_info_local_nonprim = NULL;
-    if (unknown_n1_sm_info) { 
+    if (unknown_n1_sm_info) {
     unknown_n1_sm_info_local_nonprim = OpenAPI_ref_to_binary_data_parseFromJSON(unknown_n1_sm_info);
     }
 
     cJSON *ue_location = cJSON_GetObjectItemCaseSensitive(vsmf_updated_dataJSON, "ueLocation");
 
     OpenAPI_user_location_t *ue_location_local_nonprim = NULL;
-    if (ue_location) { 
+    if (ue_location) {
     ue_location_local_nonprim = OpenAPI_user_location_parseFromJSON(ue_location);
     }
 
     cJSON *ue_time_zone = cJSON_GetObjectItemCaseSensitive(vsmf_updated_dataJSON, "ueTimeZone");
 
-    if (ue_time_zone) { 
+    if (ue_time_zone) {
     if (!cJSON_IsString(ue_time_zone)) {
         ogs_error("OpenAPI_vsmf_updated_data_parseFromJSON() failed [ue_time_zone]");
         goto end;
@@ -518,14 +518,14 @@ OpenAPI_vsmf_updated_data_t *OpenAPI_vsmf_updated_data_parseFromJSON(cJSON *vsmf
     cJSON *add_ue_location = cJSON_GetObjectItemCaseSensitive(vsmf_updated_dataJSON, "addUeLocation");
 
     OpenAPI_user_location_t *add_ue_location_local_nonprim = NULL;
-    if (add_ue_location) { 
+    if (add_ue_location) {
     add_ue_location_local_nonprim = OpenAPI_user_location_parseFromJSON(add_ue_location);
     }
 
     cJSON *assigned_ebi_list = cJSON_GetObjectItemCaseSensitive(vsmf_updated_dataJSON, "assignedEbiList");
 
     OpenAPI_list_t *assigned_ebi_listList;
-    if (assigned_ebi_list) { 
+    if (assigned_ebi_list) {
     cJSON *assigned_ebi_list_local_nonprimitive;
     if (!cJSON_IsArray(assigned_ebi_list)){
         ogs_error("OpenAPI_vsmf_updated_data_parseFromJSON() failed [assigned_ebi_list]");
@@ -548,7 +548,7 @@ OpenAPI_vsmf_updated_data_t *OpenAPI_vsmf_updated_data_parseFromJSON(cJSON *vsmf
     cJSON *failed_to_assign_ebi_list = cJSON_GetObjectItemCaseSensitive(vsmf_updated_dataJSON, "failedToAssignEbiList");
 
     OpenAPI_list_t *failed_to_assign_ebi_listList;
-    if (failed_to_assign_ebi_list) { 
+    if (failed_to_assign_ebi_list) {
     cJSON *failed_to_assign_ebi_list_local_nonprimitive;
     if (!cJSON_IsArray(failed_to_assign_ebi_list)){
         ogs_error("OpenAPI_vsmf_updated_data_parseFromJSON() failed [failed_to_assign_ebi_list]");
@@ -571,7 +571,7 @@ OpenAPI_vsmf_updated_data_t *OpenAPI_vsmf_updated_data_parseFromJSON(cJSON *vsmf
     cJSON *released_ebi_list = cJSON_GetObjectItemCaseSensitive(vsmf_updated_dataJSON, "releasedEbiList");
 
     OpenAPI_list_t *released_ebi_listList;
-    if (released_ebi_list) { 
+    if (released_ebi_list) {
     cJSON *released_ebi_list_local;
     if (!cJSON_IsArray(released_ebi_list)) {
         ogs_error("OpenAPI_vsmf_updated_data_parseFromJSON() failed [released_ebi_list]");
@@ -585,13 +585,13 @@ OpenAPI_vsmf_updated_data_t *OpenAPI_vsmf_updated_data_parseFromJSON(cJSON *vsmf
         goto end;
     }
     OpenAPI_list_add(released_ebi_listList , &released_ebi_list_local->valuedouble);
-                    }
+    }
     }
 
     cJSON *secondary_rat_usage_report = cJSON_GetObjectItemCaseSensitive(vsmf_updated_dataJSON, "secondaryRatUsageReport");
 
     OpenAPI_list_t *secondary_rat_usage_reportList;
-    if (secondary_rat_usage_report) { 
+    if (secondary_rat_usage_report) {
     cJSON *secondary_rat_usage_report_local_nonprimitive;
     if (!cJSON_IsArray(secondary_rat_usage_report)){
         ogs_error("OpenAPI_vsmf_updated_data_parseFromJSON() failed [secondary_rat_usage_report]");
@@ -614,7 +614,7 @@ OpenAPI_vsmf_updated_data_t *OpenAPI_vsmf_updated_data_parseFromJSON(cJSON *vsmf
     cJSON *secondary_rat_usage_info = cJSON_GetObjectItemCaseSensitive(vsmf_updated_dataJSON, "secondaryRatUsageInfo");
 
     OpenAPI_list_t *secondary_rat_usage_infoList;
-    if (secondary_rat_usage_info) { 
+    if (secondary_rat_usage_info) {
     cJSON *secondary_rat_usage_info_local_nonprimitive;
     if (!cJSON_IsArray(secondary_rat_usage_info)){
         ogs_error("OpenAPI_vsmf_updated_data_parseFromJSON() failed [secondary_rat_usage_info]");
@@ -637,21 +637,21 @@ OpenAPI_vsmf_updated_data_t *OpenAPI_vsmf_updated_data_parseFromJSON(cJSON *vsmf
     cJSON *n4_info = cJSON_GetObjectItemCaseSensitive(vsmf_updated_dataJSON, "n4Info");
 
     OpenAPI_n4_information_t *n4_info_local_nonprim = NULL;
-    if (n4_info) { 
+    if (n4_info) {
     n4_info_local_nonprim = OpenAPI_n4_information_parseFromJSON(n4_info);
     }
 
     cJSON *n4_info_ext1 = cJSON_GetObjectItemCaseSensitive(vsmf_updated_dataJSON, "n4InfoExt1");
 
     OpenAPI_n4_information_t *n4_info_ext1_local_nonprim = NULL;
-    if (n4_info_ext1) { 
+    if (n4_info_ext1) {
     n4_info_ext1_local_nonprim = OpenAPI_n4_information_parseFromJSON(n4_info_ext1);
     }
 
     cJSON *n4_info_ext2 = cJSON_GetObjectItemCaseSensitive(vsmf_updated_dataJSON, "n4InfoExt2");
 
     OpenAPI_n4_information_t *n4_info_ext2_local_nonprim = NULL;
-    if (n4_info_ext2) { 
+    if (n4_info_ext2) {
     n4_info_ext2_local_nonprim = OpenAPI_n4_information_parseFromJSON(n4_info_ext2);
     }
 

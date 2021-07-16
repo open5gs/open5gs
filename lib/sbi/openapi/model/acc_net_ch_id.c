@@ -7,6 +7,7 @@
 OpenAPI_acc_net_ch_id_t *OpenAPI_acc_net_ch_id_create(
     int acc_net_cha_id_value,
     OpenAPI_list_t *ref_pcc_rule_ids,
+    bool is_session_ch_scope,
     int session_ch_scope
 )
 {
@@ -16,6 +17,7 @@ OpenAPI_acc_net_ch_id_t *OpenAPI_acc_net_ch_id_create(
     }
     acc_net_ch_id_local_var->acc_net_cha_id_value = acc_net_cha_id_value;
     acc_net_ch_id_local_var->ref_pcc_rule_ids = ref_pcc_rule_ids;
+    acc_net_ch_id_local_var->is_session_ch_scope = is_session_ch_scope;
     acc_net_ch_id_local_var->session_ch_scope = session_ch_scope;
 
     return acc_net_ch_id_local_var;
@@ -65,7 +67,7 @@ cJSON *OpenAPI_acc_net_ch_id_convertToJSON(OpenAPI_acc_net_ch_id_t *acc_net_ch_i
                     }
     }
 
-    if (acc_net_ch_id->session_ch_scope) {
+    if (acc_net_ch_id->is_session_ch_scope) {
     if (cJSON_AddBoolToObject(item, "sessionChScope", acc_net_ch_id->session_ch_scope) == NULL) {
         ogs_error("OpenAPI_acc_net_ch_id_convertToJSON() failed [session_ch_scope]");
         goto end;
@@ -85,7 +87,6 @@ OpenAPI_acc_net_ch_id_t *OpenAPI_acc_net_ch_id_parseFromJSON(cJSON *acc_net_ch_i
         goto end;
     }
 
-    
     if (!cJSON_IsNumber(acc_net_cha_id_value)) {
         ogs_error("OpenAPI_acc_net_ch_id_parseFromJSON() failed [acc_net_cha_id_value]");
         goto end;
@@ -94,7 +95,7 @@ OpenAPI_acc_net_ch_id_t *OpenAPI_acc_net_ch_id_parseFromJSON(cJSON *acc_net_ch_i
     cJSON *ref_pcc_rule_ids = cJSON_GetObjectItemCaseSensitive(acc_net_ch_idJSON, "refPccRuleIds");
 
     OpenAPI_list_t *ref_pcc_rule_idsList;
-    if (ref_pcc_rule_ids) { 
+    if (ref_pcc_rule_ids) {
     cJSON *ref_pcc_rule_ids_local;
     if (!cJSON_IsArray(ref_pcc_rule_ids)) {
         ogs_error("OpenAPI_acc_net_ch_id_parseFromJSON() failed [ref_pcc_rule_ids]");
@@ -108,12 +109,12 @@ OpenAPI_acc_net_ch_id_t *OpenAPI_acc_net_ch_id_parseFromJSON(cJSON *acc_net_ch_i
         goto end;
     }
     OpenAPI_list_add(ref_pcc_rule_idsList , ogs_strdup_or_assert(ref_pcc_rule_ids_local->valuestring));
-                    }
+    }
     }
 
     cJSON *session_ch_scope = cJSON_GetObjectItemCaseSensitive(acc_net_ch_idJSON, "sessionChScope");
 
-    if (session_ch_scope) { 
+    if (session_ch_scope) {
     if (!cJSON_IsBool(session_ch_scope)) {
         ogs_error("OpenAPI_acc_net_ch_id_parseFromJSON() failed [session_ch_scope]");
         goto end;
@@ -121,8 +122,10 @@ OpenAPI_acc_net_ch_id_t *OpenAPI_acc_net_ch_id_parseFromJSON(cJSON *acc_net_ch_i
     }
 
     acc_net_ch_id_local_var = OpenAPI_acc_net_ch_id_create (
+        
         acc_net_cha_id_value->valuedouble,
         ref_pcc_rule_ids ? ref_pcc_rule_idsList : NULL,
+        session_ch_scope ? true : false,
         session_ch_scope ? session_ch_scope->valueint : 0
     );
 

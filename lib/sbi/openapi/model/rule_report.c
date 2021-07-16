@@ -148,7 +148,6 @@ OpenAPI_rule_report_t *OpenAPI_rule_report_parseFromJSON(cJSON *rule_reportJSON)
     }
 
     OpenAPI_list_t *pcc_rule_idsList;
-    
     cJSON *pcc_rule_ids_local;
     if (!cJSON_IsArray(pcc_rule_ids)) {
         ogs_error("OpenAPI_rule_report_parseFromJSON() failed [pcc_rule_ids]");
@@ -162,7 +161,7 @@ OpenAPI_rule_report_t *OpenAPI_rule_report_parseFromJSON(cJSON *rule_reportJSON)
         goto end;
     }
     OpenAPI_list_add(pcc_rule_idsList , ogs_strdup_or_assert(pcc_rule_ids_local->valuestring));
-                    }
+    }
 
     cJSON *rule_status = cJSON_GetObjectItemCaseSensitive(rule_reportJSON, "ruleStatus");
     if (!rule_status) {
@@ -171,7 +170,6 @@ OpenAPI_rule_report_t *OpenAPI_rule_report_parseFromJSON(cJSON *rule_reportJSON)
     }
 
     OpenAPI_rule_status_e rule_statusVariable;
-    
     if (!cJSON_IsString(rule_status)) {
         ogs_error("OpenAPI_rule_report_parseFromJSON() failed [rule_status]");
         goto end;
@@ -181,7 +179,7 @@ OpenAPI_rule_report_t *OpenAPI_rule_report_parseFromJSON(cJSON *rule_reportJSON)
     cJSON *cont_vers = cJSON_GetObjectItemCaseSensitive(rule_reportJSON, "contVers");
 
     OpenAPI_list_t *cont_versList;
-    if (cont_vers) { 
+    if (cont_vers) {
     cJSON *cont_vers_local;
     if (!cJSON_IsArray(cont_vers)) {
         ogs_error("OpenAPI_rule_report_parseFromJSON() failed [cont_vers]");
@@ -195,13 +193,13 @@ OpenAPI_rule_report_t *OpenAPI_rule_report_parseFromJSON(cJSON *rule_reportJSON)
         goto end;
     }
     OpenAPI_list_add(cont_versList , &cont_vers_local->valuedouble);
-                    }
+    }
     }
 
     cJSON *failure_code = cJSON_GetObjectItemCaseSensitive(rule_reportJSON, "failureCode");
 
     OpenAPI_failure_code_e failure_codeVariable;
-    if (failure_code) { 
+    if (failure_code) {
     if (!cJSON_IsString(failure_code)) {
         ogs_error("OpenAPI_rule_report_parseFromJSON() failed [failure_code]");
         goto end;
@@ -212,14 +210,14 @@ OpenAPI_rule_report_t *OpenAPI_rule_report_parseFromJSON(cJSON *rule_reportJSON)
     cJSON *fin_unit_act = cJSON_GetObjectItemCaseSensitive(rule_reportJSON, "finUnitAct");
 
     OpenAPI_final_unit_action_t *fin_unit_act_local_nonprim = NULL;
-    if (fin_unit_act) { 
+    if (fin_unit_act) {
     fin_unit_act_local_nonprim = OpenAPI_final_unit_action_parseFromJSON(fin_unit_act);
     }
 
     cJSON *ran_nas_rel_causes = cJSON_GetObjectItemCaseSensitive(rule_reportJSON, "ranNasRelCauses");
 
     OpenAPI_list_t *ran_nas_rel_causesList;
-    if (ran_nas_rel_causes) { 
+    if (ran_nas_rel_causes) {
     cJSON *ran_nas_rel_causes_local_nonprimitive;
     if (!cJSON_IsArray(ran_nas_rel_causes)){
         ogs_error("OpenAPI_rule_report_parseFromJSON() failed [ran_nas_rel_causes]");

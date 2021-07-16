@@ -64,6 +64,7 @@ static void sbi_message_test1(abts_case *tc, void *data)
     OpenAPI_list_add(nf_profile1->nsi_list, "aaa");
     OpenAPI_list_add(nf_profile1->nsi_list, "bbbbb");
 
+    nf_profile1->is_priority = true;
     nf_profile1->priority = 30;
 
     udr_info1 = nf_profile1->udr_info = ogs_calloc(1, sizeof(*udr_info1));
@@ -139,6 +140,7 @@ static void sbi_message_test1(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, nsi);
     ABTS_STR_EQUAL(tc, "bbbbb", nsi);
 
+    ABTS_TRUE(tc, nf_profile2->is_priority);
     ABTS_INT_EQUAL(tc, 30, nf_profile2->priority);
 
     udr_info2 = nf_profile2->udr_info;

@@ -24,11 +24,17 @@ typedef struct OpenAPI_dynamic5_qi_s {
     int priority_level;
     int packet_delay_budget;
     char *packet_err_rate;
+    bool is_aver_window;
     int aver_window;
+    bool is_max_data_burst_vol;
     int max_data_burst_vol;
+    bool is_ext_max_data_burst_vol;
     int ext_max_data_burst_vol;
+    bool is_ext_packet_del_budget;
     int ext_packet_del_budget;
+    bool is_cn_packet_delay_budget_dl;
     int cn_packet_delay_budget_dl;
+    bool is_cn_packet_delay_budget_ul;
     int cn_packet_delay_budget_ul;
 } OpenAPI_dynamic5_qi_t;
 
@@ -37,11 +43,17 @@ OpenAPI_dynamic5_qi_t *OpenAPI_dynamic5_qi_create(
     int priority_level,
     int packet_delay_budget,
     char *packet_err_rate,
+    bool is_aver_window,
     int aver_window,
+    bool is_max_data_burst_vol,
     int max_data_burst_vol,
+    bool is_ext_max_data_burst_vol,
     int ext_max_data_burst_vol,
+    bool is_ext_packet_del_budget,
     int ext_packet_del_budget,
+    bool is_cn_packet_delay_budget_dl,
     int cn_packet_delay_budget_dl,
+    bool is_cn_packet_delay_budget_ul,
     int cn_packet_delay_budget_ul
 );
 void OpenAPI_dynamic5_qi_free(OpenAPI_dynamic5_qi_t *dynamic5_qi);

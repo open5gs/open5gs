@@ -19,10 +19,12 @@ extern "C" {
 
 typedef struct OpenAPI_loss_connectivity_cfg_s OpenAPI_loss_connectivity_cfg_t;
 typedef struct OpenAPI_loss_connectivity_cfg_s {
+    bool is_max_detection_time;
     int max_detection_time;
 } OpenAPI_loss_connectivity_cfg_t;
 
 OpenAPI_loss_connectivity_cfg_t *OpenAPI_loss_connectivity_cfg_create(
+    bool is_max_detection_time,
     int max_detection_time
 );
 void OpenAPI_loss_connectivity_cfg_free(OpenAPI_loss_connectivity_cfg_t *loss_connectivity_cfg);

@@ -117,6 +117,7 @@ ogs_sbi_request_t *smf_npcf_smpolicycontrol_build_create(
     memset(&SubsDefQos, 0, sizeof(SubsDefQos));
     SubsDefQos.arp = &Arp;
     SubsDefQos._5qi = sess->session.qos.index;
+    SubsDefQos.is_priority_level = true;
     SubsDefQos.priority_level = sess->session.qos.arp.priority_level;
 
     SmPolicyContextData.subs_def_qos = &SubsDefQos;
@@ -214,7 +215,9 @@ ogs_sbi_request_t *smf_npcf_smpolicycontrol_build_delete(
                 ngApCause->value = param->ran_nas_release.ngap_cause.value;
             }
 
+            ranNasRelCause->is__5g_mm_cause = true;
             ranNasRelCause->_5g_mm_cause = param->ran_nas_release.gmm_cause;
+            ranNasRelCause->is__5g_sm_cause = true;
             ranNasRelCause->_5g_sm_cause = param->ran_nas_release.gsm_cause;
 
             OpenAPI_list_add(ranNasRelCauseList, ranNasRelCause);

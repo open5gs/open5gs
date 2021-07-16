@@ -146,7 +146,6 @@ OpenAPI_usage_mon_data_limit_t *OpenAPI_usage_mon_data_limit_parseFromJSON(cJSON
         goto end;
     }
 
-    
     if (!cJSON_IsString(limit_id)) {
         ogs_error("OpenAPI_usage_mon_data_limit_parseFromJSON() failed [limit_id]");
         goto end;
@@ -155,7 +154,7 @@ OpenAPI_usage_mon_data_limit_t *OpenAPI_usage_mon_data_limit_parseFromJSON(cJSON
     cJSON *scopes = cJSON_GetObjectItemCaseSensitive(usage_mon_data_limitJSON, "scopes");
 
     OpenAPI_list_t *scopesList;
-    if (scopes) { 
+    if (scopes) {
     cJSON *scopes_local_map;
     if (!cJSON_IsObject(scopes)) {
         ogs_error("OpenAPI_usage_mon_data_limit_parseFromJSON() failed [scopes]");
@@ -178,13 +177,13 @@ OpenAPI_usage_mon_data_limit_t *OpenAPI_usage_mon_data_limit_parseFromJSON(cJSON
     cJSON *um_level = cJSON_GetObjectItemCaseSensitive(usage_mon_data_limitJSON, "umLevel");
 
     OpenAPI_usage_mon_level_t *um_level_local_nonprim = NULL;
-    if (um_level) { 
+    if (um_level) {
     um_level_local_nonprim = OpenAPI_usage_mon_level_parseFromJSON(um_level);
     }
 
     cJSON *start_date = cJSON_GetObjectItemCaseSensitive(usage_mon_data_limitJSON, "startDate");
 
-    if (start_date) { 
+    if (start_date) {
     if (!cJSON_IsString(start_date)) {
         ogs_error("OpenAPI_usage_mon_data_limit_parseFromJSON() failed [start_date]");
         goto end;
@@ -193,7 +192,7 @@ OpenAPI_usage_mon_data_limit_t *OpenAPI_usage_mon_data_limit_parseFromJSON(cJSON
 
     cJSON *end_date = cJSON_GetObjectItemCaseSensitive(usage_mon_data_limitJSON, "endDate");
 
-    if (end_date) { 
+    if (end_date) {
     if (!cJSON_IsString(end_date)) {
         ogs_error("OpenAPI_usage_mon_data_limit_parseFromJSON() failed [end_date]");
         goto end;
@@ -203,13 +202,13 @@ OpenAPI_usage_mon_data_limit_t *OpenAPI_usage_mon_data_limit_parseFromJSON(cJSON
     cJSON *usage_limit = cJSON_GetObjectItemCaseSensitive(usage_mon_data_limitJSON, "usageLimit");
 
     OpenAPI_usage_threshold_t *usage_limit_local_nonprim = NULL;
-    if (usage_limit) { 
+    if (usage_limit) {
     usage_limit_local_nonprim = OpenAPI_usage_threshold_parseFromJSON(usage_limit);
     }
 
     cJSON *reset_period = cJSON_GetObjectItemCaseSensitive(usage_mon_data_limitJSON, "resetPeriod");
 
-    if (reset_period) { 
+    if (reset_period) {
     if (!cJSON_IsString(reset_period)) {
         ogs_error("OpenAPI_usage_mon_data_limit_parseFromJSON() failed [reset_period]");
         goto end;

@@ -53,7 +53,7 @@ OpenAPI_link_t *OpenAPI_link_parseFromJSON(cJSON *linkJSON)
     OpenAPI_link_t *link_local_var = NULL;
     cJSON *href = cJSON_GetObjectItemCaseSensitive(linkJSON, "href");
 
-    if (href) { 
+    if (href) {
     if (!cJSON_IsString(href)) {
         ogs_error("OpenAPI_link_parseFromJSON() failed [href]");
         goto end;

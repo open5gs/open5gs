@@ -69,7 +69,6 @@ OpenAPI_nssaa_status_t *OpenAPI_nssaa_status_parseFromJSON(cJSON *nssaa_statusJS
     }
 
     OpenAPI_snssai_t *snssai_local_nonprim = NULL;
-    
     snssai_local_nonprim = OpenAPI_snssai_parseFromJSON(snssai);
 
     cJSON *status = cJSON_GetObjectItemCaseSensitive(nssaa_statusJSON, "status");
@@ -79,7 +78,6 @@ OpenAPI_nssaa_status_t *OpenAPI_nssaa_status_parseFromJSON(cJSON *nssaa_statusJS
     }
 
     OpenAPI_auth_status_e statusVariable;
-    
     if (!cJSON_IsString(status)) {
         ogs_error("OpenAPI_nssaa_status_parseFromJSON() failed [status]");
         goto end;

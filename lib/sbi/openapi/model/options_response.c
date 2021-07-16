@@ -53,7 +53,7 @@ OpenAPI_options_response_t *OpenAPI_options_response_parseFromJSON(cJSON *option
     OpenAPI_options_response_t *options_response_local_var = NULL;
     cJSON *supported_features = cJSON_GetObjectItemCaseSensitive(options_responseJSON, "supportedFeatures");
 
-    if (supported_features) { 
+    if (supported_features) {
     if (!cJSON_IsString(supported_features)) {
         ogs_error("OpenAPI_options_response_parseFromJSON() failed [supported_features]");
         goto end;

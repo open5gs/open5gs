@@ -12,6 +12,7 @@ OpenAPI_policy_association_update_request_t *OpenAPI_policy_association_update_r
     OpenAPI_list_t *triggers,
     OpenAPI_service_area_restriction_t *serv_area_res,
     OpenAPI_wireline_service_area_restriction_t *wl_serv_area_res,
+    bool is_rfsp,
     int rfsp,
     OpenAPI_smf_selection_data_t *smf_sel_info,
     OpenAPI_ambr_t *ue_ambr,
@@ -37,6 +38,7 @@ OpenAPI_policy_association_update_request_t *OpenAPI_policy_association_update_r
     policy_association_update_request_local_var->triggers = triggers;
     policy_association_update_request_local_var->serv_area_res = serv_area_res;
     policy_association_update_request_local_var->wl_serv_area_res = wl_serv_area_res;
+    policy_association_update_request_local_var->is_rfsp = is_rfsp;
     policy_association_update_request_local_var->rfsp = rfsp;
     policy_association_update_request_local_var->smf_sel_info = smf_sel_info;
     policy_association_update_request_local_var->ue_ambr = ue_ambr;
@@ -209,7 +211,7 @@ cJSON *OpenAPI_policy_association_update_request_convertToJSON(OpenAPI_policy_as
     }
     }
 
-    if (policy_association_update_request->rfsp) {
+    if (policy_association_update_request->is_rfsp) {
     if (cJSON_AddNumberToObject(item, "rfsp", policy_association_update_request->rfsp) == NULL) {
         ogs_error("OpenAPI_policy_association_update_request_convertToJSON() failed [rfsp]");
         goto end;
@@ -401,7 +403,7 @@ OpenAPI_policy_association_update_request_t *OpenAPI_policy_association_update_r
     OpenAPI_policy_association_update_request_t *policy_association_update_request_local_var = NULL;
     cJSON *notification_uri = cJSON_GetObjectItemCaseSensitive(policy_association_update_requestJSON, "notificationUri");
 
-    if (notification_uri) { 
+    if (notification_uri) {
     if (!cJSON_IsString(notification_uri)) {
         ogs_error("OpenAPI_policy_association_update_request_parseFromJSON() failed [notification_uri]");
         goto end;
@@ -411,7 +413,7 @@ OpenAPI_policy_association_update_request_t *OpenAPI_policy_association_update_r
     cJSON *alt_notif_ipv4_addrs = cJSON_GetObjectItemCaseSensitive(policy_association_update_requestJSON, "altNotifIpv4Addrs");
 
     OpenAPI_list_t *alt_notif_ipv4_addrsList;
-    if (alt_notif_ipv4_addrs) { 
+    if (alt_notif_ipv4_addrs) {
     cJSON *alt_notif_ipv4_addrs_local;
     if (!cJSON_IsArray(alt_notif_ipv4_addrs)) {
         ogs_error("OpenAPI_policy_association_update_request_parseFromJSON() failed [alt_notif_ipv4_addrs]");
@@ -425,13 +427,13 @@ OpenAPI_policy_association_update_request_t *OpenAPI_policy_association_update_r
         goto end;
     }
     OpenAPI_list_add(alt_notif_ipv4_addrsList , ogs_strdup_or_assert(alt_notif_ipv4_addrs_local->valuestring));
-                    }
+    }
     }
 
     cJSON *alt_notif_ipv6_addrs = cJSON_GetObjectItemCaseSensitive(policy_association_update_requestJSON, "altNotifIpv6Addrs");
 
     OpenAPI_list_t *alt_notif_ipv6_addrsList;
-    if (alt_notif_ipv6_addrs) { 
+    if (alt_notif_ipv6_addrs) {
     cJSON *alt_notif_ipv6_addrs_local;
     if (!cJSON_IsArray(alt_notif_ipv6_addrs)) {
         ogs_error("OpenAPI_policy_association_update_request_parseFromJSON() failed [alt_notif_ipv6_addrs]");
@@ -445,13 +447,13 @@ OpenAPI_policy_association_update_request_t *OpenAPI_policy_association_update_r
         goto end;
     }
     OpenAPI_list_add(alt_notif_ipv6_addrsList , ogs_strdup_or_assert(alt_notif_ipv6_addrs_local->valuestring));
-                    }
+    }
     }
 
     cJSON *alt_notif_fqdns = cJSON_GetObjectItemCaseSensitive(policy_association_update_requestJSON, "altNotifFqdns");
 
     OpenAPI_list_t *alt_notif_fqdnsList;
-    if (alt_notif_fqdns) { 
+    if (alt_notif_fqdns) {
     cJSON *alt_notif_fqdns_local;
     if (!cJSON_IsArray(alt_notif_fqdns)) {
         ogs_error("OpenAPI_policy_association_update_request_parseFromJSON() failed [alt_notif_fqdns]");
@@ -465,13 +467,13 @@ OpenAPI_policy_association_update_request_t *OpenAPI_policy_association_update_r
         goto end;
     }
     OpenAPI_list_add(alt_notif_fqdnsList , ogs_strdup_or_assert(alt_notif_fqdns_local->valuestring));
-                    }
+    }
     }
 
     cJSON *triggers = cJSON_GetObjectItemCaseSensitive(policy_association_update_requestJSON, "triggers");
 
     OpenAPI_list_t *triggersList;
-    if (triggers) { 
+    if (triggers) {
     cJSON *triggers_local_nonprimitive;
     if (!cJSON_IsArray(triggers)) {
         ogs_error("OpenAPI_policy_association_update_request_parseFromJSON() failed [triggers]");
@@ -493,20 +495,20 @@ OpenAPI_policy_association_update_request_t *OpenAPI_policy_association_update_r
     cJSON *serv_area_res = cJSON_GetObjectItemCaseSensitive(policy_association_update_requestJSON, "servAreaRes");
 
     OpenAPI_service_area_restriction_t *serv_area_res_local_nonprim = NULL;
-    if (serv_area_res) { 
+    if (serv_area_res) {
     serv_area_res_local_nonprim = OpenAPI_service_area_restriction_parseFromJSON(serv_area_res);
     }
 
     cJSON *wl_serv_area_res = cJSON_GetObjectItemCaseSensitive(policy_association_update_requestJSON, "wlServAreaRes");
 
     OpenAPI_wireline_service_area_restriction_t *wl_serv_area_res_local_nonprim = NULL;
-    if (wl_serv_area_res) { 
+    if (wl_serv_area_res) {
     wl_serv_area_res_local_nonprim = OpenAPI_wireline_service_area_restriction_parseFromJSON(wl_serv_area_res);
     }
 
     cJSON *rfsp = cJSON_GetObjectItemCaseSensitive(policy_association_update_requestJSON, "rfsp");
 
-    if (rfsp) { 
+    if (rfsp) {
     if (!cJSON_IsNumber(rfsp)) {
         ogs_error("OpenAPI_policy_association_update_request_parseFromJSON() failed [rfsp]");
         goto end;
@@ -516,21 +518,21 @@ OpenAPI_policy_association_update_request_t *OpenAPI_policy_association_update_r
     cJSON *smf_sel_info = cJSON_GetObjectItemCaseSensitive(policy_association_update_requestJSON, "smfSelInfo");
 
     OpenAPI_smf_selection_data_t *smf_sel_info_local_nonprim = NULL;
-    if (smf_sel_info) { 
+    if (smf_sel_info) {
     smf_sel_info_local_nonprim = OpenAPI_smf_selection_data_parseFromJSON(smf_sel_info);
     }
 
     cJSON *ue_ambr = cJSON_GetObjectItemCaseSensitive(policy_association_update_requestJSON, "ueAmbr");
 
     OpenAPI_ambr_t *ue_ambr_local_nonprim = NULL;
-    if (ue_ambr) { 
+    if (ue_ambr) {
     ue_ambr_local_nonprim = OpenAPI_ambr_parseFromJSON(ue_ambr);
     }
 
     cJSON *pra_statuses = cJSON_GetObjectItemCaseSensitive(policy_association_update_requestJSON, "praStatuses");
 
     OpenAPI_list_t *pra_statusesList;
-    if (pra_statuses) { 
+    if (pra_statuses) {
     cJSON *pra_statuses_local_map;
     if (!cJSON_IsObject(pra_statuses)) {
         ogs_error("OpenAPI_policy_association_update_request_parseFromJSON() failed [pra_statuses]");
@@ -553,14 +555,14 @@ OpenAPI_policy_association_update_request_t *OpenAPI_policy_association_update_r
     cJSON *user_loc = cJSON_GetObjectItemCaseSensitive(policy_association_update_requestJSON, "userLoc");
 
     OpenAPI_user_location_t *user_loc_local_nonprim = NULL;
-    if (user_loc) { 
+    if (user_loc) {
     user_loc_local_nonprim = OpenAPI_user_location_parseFromJSON(user_loc);
     }
 
     cJSON *allowed_snssais = cJSON_GetObjectItemCaseSensitive(policy_association_update_requestJSON, "allowedSnssais");
 
     OpenAPI_list_t *allowed_snssaisList;
-    if (allowed_snssais) { 
+    if (allowed_snssais) {
     cJSON *allowed_snssais_local_nonprimitive;
     if (!cJSON_IsArray(allowed_snssais)){
         ogs_error("OpenAPI_policy_association_update_request_parseFromJSON() failed [allowed_snssais]");
@@ -583,7 +585,7 @@ OpenAPI_policy_association_update_request_t *OpenAPI_policy_association_update_r
     cJSON *mapping_snssais = cJSON_GetObjectItemCaseSensitive(policy_association_update_requestJSON, "mappingSnssais");
 
     OpenAPI_list_t *mapping_snssaisList;
-    if (mapping_snssais) { 
+    if (mapping_snssais) {
     cJSON *mapping_snssais_local_nonprimitive;
     if (!cJSON_IsArray(mapping_snssais)){
         ogs_error("OpenAPI_policy_association_update_request_parseFromJSON() failed [mapping_snssais]");
@@ -606,7 +608,7 @@ OpenAPI_policy_association_update_request_t *OpenAPI_policy_association_update_r
     cJSON *access_types = cJSON_GetObjectItemCaseSensitive(policy_association_update_requestJSON, "accessTypes");
 
     OpenAPI_list_t *access_typesList;
-    if (access_types) { 
+    if (access_types) {
     cJSON *access_types_local_nonprimitive;
     if (!cJSON_IsArray(access_types)) {
         ogs_error("OpenAPI_policy_association_update_request_parseFromJSON() failed [access_types]");
@@ -628,7 +630,7 @@ OpenAPI_policy_association_update_request_t *OpenAPI_policy_association_update_r
     cJSON *rat_types = cJSON_GetObjectItemCaseSensitive(policy_association_update_requestJSON, "ratTypes");
 
     OpenAPI_list_t *rat_typesList;
-    if (rat_types) { 
+    if (rat_types) {
     cJSON *rat_types_local_nonprimitive;
     if (!cJSON_IsArray(rat_types)) {
         ogs_error("OpenAPI_policy_association_update_request_parseFromJSON() failed [rat_types]");
@@ -650,7 +652,7 @@ OpenAPI_policy_association_update_request_t *OpenAPI_policy_association_update_r
     cJSON *n3g_allowed_snssais = cJSON_GetObjectItemCaseSensitive(policy_association_update_requestJSON, "n3gAllowedSnssais");
 
     OpenAPI_list_t *n3g_allowed_snssaisList;
-    if (n3g_allowed_snssais) { 
+    if (n3g_allowed_snssais) {
     cJSON *n3g_allowed_snssais_local_nonprimitive;
     if (!cJSON_IsArray(n3g_allowed_snssais)){
         ogs_error("OpenAPI_policy_association_update_request_parseFromJSON() failed [n3g_allowed_snssais]");
@@ -673,14 +675,14 @@ OpenAPI_policy_association_update_request_t *OpenAPI_policy_association_update_r
     cJSON *trace_req = cJSON_GetObjectItemCaseSensitive(policy_association_update_requestJSON, "traceReq");
 
     OpenAPI_trace_data_t *trace_req_local_nonprim = NULL;
-    if (trace_req) { 
+    if (trace_req) {
     trace_req_local_nonprim = OpenAPI_trace_data_parseFromJSON(trace_req);
     }
 
     cJSON *guami = cJSON_GetObjectItemCaseSensitive(policy_association_update_requestJSON, "guami");
 
     OpenAPI_guami_t *guami_local_nonprim = NULL;
-    if (guami) { 
+    if (guami) {
     guami_local_nonprim = OpenAPI_guami_parseFromJSON(guami);
     }
 
@@ -692,6 +694,7 @@ OpenAPI_policy_association_update_request_t *OpenAPI_policy_association_update_r
         triggers ? triggersList : NULL,
         serv_area_res ? serv_area_res_local_nonprim : NULL,
         wl_serv_area_res ? wl_serv_area_res_local_nonprim : NULL,
+        rfsp ? true : false,
         rfsp ? rfsp->valuedouble : 0,
         smf_sel_info ? smf_sel_info_local_nonprim : NULL,
         ue_ambr ? ue_ambr_local_nonprim : NULL,

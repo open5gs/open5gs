@@ -53,7 +53,7 @@ OpenAPI_links_value_schema_t *OpenAPI_links_value_schema_parseFromJSON(cJSON *li
     OpenAPI_links_value_schema_t *links_value_schema_local_var = NULL;
     cJSON *href = cJSON_GetObjectItemCaseSensitive(links_value_schemaJSON, "href");
 
-    if (href) { 
+    if (href) {
     if (!cJSON_IsString(href)) {
         ogs_error("OpenAPI_links_value_schema_parseFromJSON() failed [href]");
         goto end;

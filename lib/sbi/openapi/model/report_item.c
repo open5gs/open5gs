@@ -55,7 +55,6 @@ OpenAPI_report_item_t *OpenAPI_report_item_parseFromJSON(cJSON *report_itemJSON)
         goto end;
     }
 
-    
     if (!cJSON_IsString(path)) {
         ogs_error("OpenAPI_report_item_parseFromJSON() failed [path]");
         goto end;

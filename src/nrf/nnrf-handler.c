@@ -59,7 +59,7 @@ bool nrf_nnrf_handle_nf_register(ogs_sbi_nf_instance_t *nf_instance,
         ogs_assert_if_reached();
 
     /* NRF uses pre-configured heartbeat if NFs did not send it */
-    if (!NFProfile->heart_beat_timer)
+    if (NFProfile->is_heart_beat_timer == false)
         nf_instance->time.heartbeat_interval =
             ogs_app()->time.nf_instance.heartbeat_interval;
 
@@ -68,7 +68,8 @@ bool nrf_nnrf_handle_nf_register(ogs_sbi_nf_instance_t *nf_instance,
      * Annex B (normative):NF Profile changes in NFRegister and NFUpdate
      * (NF Profile Complete Replacement) responses
      */
-    if (NFProfile->nf_profile_changes_support_ind == true) {
+    if (NFProfile->is_nf_profile_changes_support_ind == true &&
+        NFProfile->nf_profile_changes_support_ind == true) {
 
         OpenAPI_nf_profile_t NFProfileChanges;
         ogs_sbi_message_t sendmsg;
@@ -77,9 +78,14 @@ bool nrf_nnrf_handle_nf_register(ogs_sbi_nf_instance_t *nf_instance,
         NFProfileChanges.nf_instance_id = NFProfile->nf_instance_id;
         NFProfileChanges.nf_type = NFProfile->nf_type;
         NFProfileChanges.nf_status = NFProfile->nf_status;
-        if (!NFProfile->heart_beat_timer)
-            NFProfileChanges.heart_beat_timer =
-                nf_instance->time.heartbeat_interval;
+        if (NFProfile->is_heart_beat_timer == false) {
+            if (nf_instance->time.heartbeat_interval) {
+                NFProfileChanges.is_heart_beat_timer = true;
+                NFProfileChanges.heart_beat_timer =
+                    nf_instance->time.heartbeat_interval;
+            }
+        }
+        NFProfileChanges.is_nf_profile_changes_ind = true;
         NFProfileChanges.nf_profile_changes_ind = true;
 
         memset(&sendmsg, 0, sizeof(sendmsg));
@@ -90,9 +96,13 @@ bool nrf_nnrf_handle_nf_register(ogs_sbi_nf_instance_t *nf_instance,
 
     } else {
 
-        if (!NFProfile->heart_beat_timer)
-            NFProfile->heart_beat_timer =
-                nf_instance->time.heartbeat_interval;
+        if (NFProfile->is_heart_beat_timer == false) {
+            if (nf_instance->time.heartbeat_interval) {
+                NFProfile->is_heart_beat_timer = true;
+                NFProfile->heart_beat_timer =
+                    nf_instance->time.heartbeat_interval;
+            }
+        }
 
         response = ogs_sbi_build_response(recvmsg, status);
 
@@ -419,6 +429,7 @@ bool nrf_nnrf_handle_nf_discover(
     SearchResult = ogs_calloc(1, sizeof(*SearchResult));
     ogs_assert(SearchResult);
 
+    SearchResult->is_validity_period = true;
     SearchResult->validity_period =
         ogs_app()->time.nf_instance.validity_duration;
     ogs_assert(SearchResult->validity_period);

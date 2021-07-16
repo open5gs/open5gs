@@ -81,7 +81,6 @@ OpenAPI_n2_information_transfer_rsp_data_t *OpenAPI_n2_information_transfer_rsp_
     }
 
     OpenAPI_n2_information_transfer_result_e resultVariable;
-    
     if (!cJSON_IsString(result)) {
         ogs_error("OpenAPI_n2_information_transfer_rsp_data_parseFromJSON() failed [result]");
         goto end;
@@ -91,13 +90,13 @@ OpenAPI_n2_information_transfer_rsp_data_t *OpenAPI_n2_information_transfer_rsp_
     cJSON *pws_rsp_data = cJSON_GetObjectItemCaseSensitive(n2_information_transfer_rsp_dataJSON, "pwsRspData");
 
     OpenAPI_pws_response_data_t *pws_rsp_data_local_nonprim = NULL;
-    if (pws_rsp_data) { 
+    if (pws_rsp_data) {
     pws_rsp_data_local_nonprim = OpenAPI_pws_response_data_parseFromJSON(pws_rsp_data);
     }
 
     cJSON *supported_features = cJSON_GetObjectItemCaseSensitive(n2_information_transfer_rsp_dataJSON, "supportedFeatures");
 
-    if (supported_features) { 
+    if (supported_features) {
     if (!cJSON_IsString(supported_features)) {
         ogs_error("OpenAPI_n2_information_transfer_rsp_data_parseFromJSON() failed [supported_features]");
         goto end;

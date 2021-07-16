@@ -88,13 +88,12 @@ OpenAPI_plmn_route_selection_descriptor_t *OpenAPI_plmn_route_selection_descript
     }
 
     OpenAPI_plmn_id_1_t *serving_plmn_local_nonprim = NULL;
-    
     serving_plmn_local_nonprim = OpenAPI_plmn_id_1_parseFromJSON(serving_plmn);
 
     cJSON *snssai_route_sel_descs = cJSON_GetObjectItemCaseSensitive(plmn_route_selection_descriptorJSON, "snssaiRouteSelDescs");
 
     OpenAPI_list_t *snssai_route_sel_descsList;
-    if (snssai_route_sel_descs) { 
+    if (snssai_route_sel_descs) {
     cJSON *snssai_route_sel_descs_local_nonprimitive;
     if (!cJSON_IsArray(snssai_route_sel_descs)){
         ogs_error("OpenAPI_plmn_route_selection_descriptor_parseFromJSON() failed [snssai_route_sel_descs]");

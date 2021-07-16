@@ -7,6 +7,7 @@
 OpenAPI_extended_problem_details_t *OpenAPI_extended_problem_details_create(
     char *type,
     char *title,
+    bool is_status,
     int status,
     char *detail,
     char *instance,
@@ -25,6 +26,7 @@ OpenAPI_extended_problem_details_t *OpenAPI_extended_problem_details_create(
     }
     extended_problem_details_local_var->type = type;
     extended_problem_details_local_var->title = title;
+    extended_problem_details_local_var->is_status = is_status;
     extended_problem_details_local_var->status = status;
     extended_problem_details_local_var->detail = detail;
     extended_problem_details_local_var->instance = instance;
@@ -86,7 +88,7 @@ cJSON *OpenAPI_extended_problem_details_convertToJSON(OpenAPI_extended_problem_d
     }
     }
 
-    if (extended_problem_details->status) {
+    if (extended_problem_details->is_status) {
     if (cJSON_AddNumberToObject(item, "status", extended_problem_details->status) == NULL) {
         ogs_error("OpenAPI_extended_problem_details_convertToJSON() failed [status]");
         goto end;
@@ -196,7 +198,7 @@ OpenAPI_extended_problem_details_t *OpenAPI_extended_problem_details_parseFromJS
     OpenAPI_extended_problem_details_t *extended_problem_details_local_var = NULL;
     cJSON *type = cJSON_GetObjectItemCaseSensitive(extended_problem_detailsJSON, "type");
 
-    if (type) { 
+    if (type) {
     if (!cJSON_IsString(type)) {
         ogs_error("OpenAPI_extended_problem_details_parseFromJSON() failed [type]");
         goto end;
@@ -205,7 +207,7 @@ OpenAPI_extended_problem_details_t *OpenAPI_extended_problem_details_parseFromJS
 
     cJSON *title = cJSON_GetObjectItemCaseSensitive(extended_problem_detailsJSON, "title");
 
-    if (title) { 
+    if (title) {
     if (!cJSON_IsString(title)) {
         ogs_error("OpenAPI_extended_problem_details_parseFromJSON() failed [title]");
         goto end;
@@ -214,7 +216,7 @@ OpenAPI_extended_problem_details_t *OpenAPI_extended_problem_details_parseFromJS
 
     cJSON *status = cJSON_GetObjectItemCaseSensitive(extended_problem_detailsJSON, "status");
 
-    if (status) { 
+    if (status) {
     if (!cJSON_IsNumber(status)) {
         ogs_error("OpenAPI_extended_problem_details_parseFromJSON() failed [status]");
         goto end;
@@ -223,7 +225,7 @@ OpenAPI_extended_problem_details_t *OpenAPI_extended_problem_details_parseFromJS
 
     cJSON *detail = cJSON_GetObjectItemCaseSensitive(extended_problem_detailsJSON, "detail");
 
-    if (detail) { 
+    if (detail) {
     if (!cJSON_IsString(detail)) {
         ogs_error("OpenAPI_extended_problem_details_parseFromJSON() failed [detail]");
         goto end;
@@ -232,7 +234,7 @@ OpenAPI_extended_problem_details_t *OpenAPI_extended_problem_details_parseFromJS
 
     cJSON *instance = cJSON_GetObjectItemCaseSensitive(extended_problem_detailsJSON, "instance");
 
-    if (instance) { 
+    if (instance) {
     if (!cJSON_IsString(instance)) {
         ogs_error("OpenAPI_extended_problem_details_parseFromJSON() failed [instance]");
         goto end;
@@ -241,7 +243,7 @@ OpenAPI_extended_problem_details_t *OpenAPI_extended_problem_details_parseFromJS
 
     cJSON *cause = cJSON_GetObjectItemCaseSensitive(extended_problem_detailsJSON, "cause");
 
-    if (cause) { 
+    if (cause) {
     if (!cJSON_IsString(cause)) {
         ogs_error("OpenAPI_extended_problem_details_parseFromJSON() failed [cause]");
         goto end;
@@ -251,7 +253,7 @@ OpenAPI_extended_problem_details_t *OpenAPI_extended_problem_details_parseFromJS
     cJSON *invalid_params = cJSON_GetObjectItemCaseSensitive(extended_problem_detailsJSON, "invalidParams");
 
     OpenAPI_list_t *invalid_paramsList;
-    if (invalid_params) { 
+    if (invalid_params) {
     cJSON *invalid_params_local_nonprimitive;
     if (!cJSON_IsArray(invalid_params)){
         ogs_error("OpenAPI_extended_problem_details_parseFromJSON() failed [invalid_params]");
@@ -273,7 +275,7 @@ OpenAPI_extended_problem_details_t *OpenAPI_extended_problem_details_parseFromJS
 
     cJSON *supported_features = cJSON_GetObjectItemCaseSensitive(extended_problem_detailsJSON, "supportedFeatures");
 
-    if (supported_features) { 
+    if (supported_features) {
     if (!cJSON_IsString(supported_features)) {
         ogs_error("OpenAPI_extended_problem_details_parseFromJSON() failed [supported_features]");
         goto end;
@@ -283,20 +285,20 @@ OpenAPI_extended_problem_details_t *OpenAPI_extended_problem_details_parseFromJS
     cJSON *access_token_error = cJSON_GetObjectItemCaseSensitive(extended_problem_detailsJSON, "accessTokenError");
 
     OpenAPI_access_token_err_t *access_token_error_local_nonprim = NULL;
-    if (access_token_error) { 
+    if (access_token_error) {
     access_token_error_local_nonprim = OpenAPI_access_token_err_parseFromJSON(access_token_error);
     }
 
     cJSON *access_token_request = cJSON_GetObjectItemCaseSensitive(extended_problem_detailsJSON, "accessTokenRequest");
 
     OpenAPI_access_token_req_t *access_token_request_local_nonprim = NULL;
-    if (access_token_request) { 
+    if (access_token_request) {
     access_token_request_local_nonprim = OpenAPI_access_token_req_parseFromJSON(access_token_request);
     }
 
     cJSON *nrf_id = cJSON_GetObjectItemCaseSensitive(extended_problem_detailsJSON, "nrfId");
 
-    if (nrf_id) { 
+    if (nrf_id) {
     if (!cJSON_IsString(nrf_id)) {
         ogs_error("OpenAPI_extended_problem_details_parseFromJSON() failed [nrf_id]");
         goto end;
@@ -306,13 +308,14 @@ OpenAPI_extended_problem_details_t *OpenAPI_extended_problem_details_parseFromJS
     cJSON *acceptable_serv_info = cJSON_GetObjectItemCaseSensitive(extended_problem_detailsJSON, "acceptableServInfo");
 
     OpenAPI_acceptable_service_info_t *acceptable_serv_info_local_nonprim = NULL;
-    if (acceptable_serv_info) { 
+    if (acceptable_serv_info) {
     acceptable_serv_info_local_nonprim = OpenAPI_acceptable_service_info_parseFromJSON(acceptable_serv_info);
     }
 
     extended_problem_details_local_var = OpenAPI_extended_problem_details_create (
         type ? ogs_strdup_or_assert(type->valuestring) : NULL,
         title ? ogs_strdup_or_assert(title->valuestring) : NULL,
+        status ? true : false,
         status ? status->valuedouble : 0,
         detail ? ogs_strdup_or_assert(detail->valuestring) : NULL,
         instance ? ogs_strdup_or_assert(instance->valuestring) : NULL,

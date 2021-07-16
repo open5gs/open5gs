@@ -76,7 +76,7 @@ OpenAPI_area_t *OpenAPI_area_parseFromJSON(cJSON *areaJSON)
     cJSON *tacs = cJSON_GetObjectItemCaseSensitive(areaJSON, "tacs");
 
     OpenAPI_list_t *tacsList;
-    if (tacs) { 
+    if (tacs) {
     cJSON *tacs_local;
     if (!cJSON_IsArray(tacs)) {
         ogs_error("OpenAPI_area_parseFromJSON() failed [tacs]");
@@ -90,12 +90,12 @@ OpenAPI_area_t *OpenAPI_area_parseFromJSON(cJSON *areaJSON)
         goto end;
     }
     OpenAPI_list_add(tacsList , ogs_strdup_or_assert(tacs_local->valuestring));
-                    }
+    }
     }
 
     cJSON *area_code = cJSON_GetObjectItemCaseSensitive(areaJSON, "areaCode");
 
-    if (area_code) { 
+    if (area_code) {
     if (!cJSON_IsString(area_code)) {
         ogs_error("OpenAPI_area_parseFromJSON() failed [area_code]");
         goto end;

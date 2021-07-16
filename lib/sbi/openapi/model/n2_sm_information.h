@@ -26,6 +26,7 @@ typedef struct OpenAPI_n2_sm_information_s {
     struct OpenAPI_snssai_s *s_nssai;
     struct OpenAPI_snssai_s *home_plmn_snssai;
     struct OpenAPI_snssai_s *iwk_snssai;
+    bool is_subject_to_ho;
     int subject_to_ho;
 } OpenAPI_n2_sm_information_t;
 
@@ -35,6 +36,7 @@ OpenAPI_n2_sm_information_t *OpenAPI_n2_sm_information_create(
     OpenAPI_snssai_t *s_nssai,
     OpenAPI_snssai_t *home_plmn_snssai,
     OpenAPI_snssai_t *iwk_snssai,
+    bool is_subject_to_ho,
     int subject_to_ho
 );
 void OpenAPI_n2_sm_information_free(OpenAPI_n2_sm_information_t *n2_sm_information);

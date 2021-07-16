@@ -74,7 +74,6 @@ OpenAPI_requested_qos_t *OpenAPI_requested_qos_parseFromJSON(cJSON *requested_qo
         goto end;
     }
 
-    
     if (!cJSON_IsNumber(_5qi)) {
         ogs_error("OpenAPI_requested_qos_parseFromJSON() failed [_5qi]");
         goto end;
@@ -82,7 +81,7 @@ OpenAPI_requested_qos_t *OpenAPI_requested_qos_parseFromJSON(cJSON *requested_qo
 
     cJSON *gbr_ul = cJSON_GetObjectItemCaseSensitive(requested_qosJSON, "gbrUl");
 
-    if (gbr_ul) { 
+    if (gbr_ul) {
     if (!cJSON_IsString(gbr_ul)) {
         ogs_error("OpenAPI_requested_qos_parseFromJSON() failed [gbr_ul]");
         goto end;
@@ -91,7 +90,7 @@ OpenAPI_requested_qos_t *OpenAPI_requested_qos_parseFromJSON(cJSON *requested_qo
 
     cJSON *gbr_dl = cJSON_GetObjectItemCaseSensitive(requested_qosJSON, "gbrDl");
 
-    if (gbr_dl) { 
+    if (gbr_dl) {
     if (!cJSON_IsString(gbr_dl)) {
         ogs_error("OpenAPI_requested_qos_parseFromJSON() failed [gbr_dl]");
         goto end;
@@ -99,6 +98,7 @@ OpenAPI_requested_qos_t *OpenAPI_requested_qos_parseFromJSON(cJSON *requested_qo
     }
 
     requested_qos_local_var = OpenAPI_requested_qos_create (
+        
         _5qi->valuedouble,
         gbr_ul ? ogs_strdup_or_assert(gbr_ul->valuestring) : NULL,
         gbr_dl ? ogs_strdup_or_assert(gbr_dl->valuestring) : NULL

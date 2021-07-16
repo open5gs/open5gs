@@ -89,7 +89,6 @@ OpenAPI_status_info_t *OpenAPI_status_info_parseFromJSON(cJSON *status_infoJSON)
     }
 
     OpenAPI_resource_status_e resource_statusVariable;
-    
     if (!cJSON_IsString(resource_status)) {
         ogs_error("OpenAPI_status_info_parseFromJSON() failed [resource_status]");
         goto end;
@@ -99,7 +98,7 @@ OpenAPI_status_info_t *OpenAPI_status_info_parseFromJSON(cJSON *status_infoJSON)
     cJSON *cause = cJSON_GetObjectItemCaseSensitive(status_infoJSON, "cause");
 
     OpenAPI_cause_e causeVariable;
-    if (cause) { 
+    if (cause) {
     if (!cJSON_IsString(cause)) {
         ogs_error("OpenAPI_status_info_parseFromJSON() failed [cause]");
         goto end;
@@ -110,14 +109,14 @@ OpenAPI_status_info_t *OpenAPI_status_info_parseFromJSON(cJSON *status_infoJSON)
     cJSON *cn_assisted_ran_para = cJSON_GetObjectItemCaseSensitive(status_infoJSON, "cnAssistedRanPara");
 
     OpenAPI_cn_assisted_ran_para_t *cn_assisted_ran_para_local_nonprim = NULL;
-    if (cn_assisted_ran_para) { 
+    if (cn_assisted_ran_para) {
     cn_assisted_ran_para_local_nonprim = OpenAPI_cn_assisted_ran_para_parseFromJSON(cn_assisted_ran_para);
     }
 
     cJSON *an_type = cJSON_GetObjectItemCaseSensitive(status_infoJSON, "anType");
 
     OpenAPI_access_type_e an_typeVariable;
-    if (an_type) { 
+    if (an_type) {
     if (!cJSON_IsString(an_type)) {
         ogs_error("OpenAPI_status_info_parseFromJSON() failed [an_type]");
         goto end;

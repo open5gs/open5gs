@@ -306,7 +306,6 @@ OpenAPI_subscription_data_t *OpenAPI_subscription_data_parseFromJSON(cJSON *subs
         goto end;
     }
 
-    
     if (!cJSON_IsString(nf_status_notification_uri)) {
         ogs_error("OpenAPI_subscription_data_parseFromJSON() failed [nf_status_notification_uri]");
         goto end;
@@ -314,7 +313,7 @@ OpenAPI_subscription_data_t *OpenAPI_subscription_data_parseFromJSON(cJSON *subs
 
     cJSON *req_nf_instance_id = cJSON_GetObjectItemCaseSensitive(subscription_dataJSON, "reqNfInstanceId");
 
-    if (req_nf_instance_id) { 
+    if (req_nf_instance_id) {
     if (!cJSON_IsString(req_nf_instance_id)) {
         ogs_error("OpenAPI_subscription_data_parseFromJSON() failed [req_nf_instance_id]");
         goto end;
@@ -324,13 +323,13 @@ OpenAPI_subscription_data_t *OpenAPI_subscription_data_parseFromJSON(cJSON *subs
     cJSON *subscr_cond = cJSON_GetObjectItemCaseSensitive(subscription_dataJSON, "subscrCond");
 
     OpenAPI_subscription_data_subscr_cond_t *subscr_cond_local_nonprim = NULL;
-    if (subscr_cond) { 
+    if (subscr_cond) {
     subscr_cond_local_nonprim = OpenAPI_subscription_data_subscr_cond_parseFromJSON(subscr_cond);
     }
 
     cJSON *subscription_id = cJSON_GetObjectItemCaseSensitive(subscription_dataJSON, "subscriptionId");
 
-    if (subscription_id) { 
+    if (subscription_id) {
     if (!cJSON_IsString(subscription_id)) {
         ogs_error("OpenAPI_subscription_data_parseFromJSON() failed [subscription_id]");
         goto end;
@@ -339,7 +338,7 @@ OpenAPI_subscription_data_t *OpenAPI_subscription_data_parseFromJSON(cJSON *subs
 
     cJSON *validity_time = cJSON_GetObjectItemCaseSensitive(subscription_dataJSON, "validityTime");
 
-    if (validity_time) { 
+    if (validity_time) {
     if (!cJSON_IsString(validity_time)) {
         ogs_error("OpenAPI_subscription_data_parseFromJSON() failed [validity_time]");
         goto end;
@@ -349,7 +348,7 @@ OpenAPI_subscription_data_t *OpenAPI_subscription_data_parseFromJSON(cJSON *subs
     cJSON *req_notif_events = cJSON_GetObjectItemCaseSensitive(subscription_dataJSON, "reqNotifEvents");
 
     OpenAPI_list_t *req_notif_eventsList;
-    if (req_notif_events) { 
+    if (req_notif_events) {
     cJSON *req_notif_events_local_nonprimitive;
     if (!cJSON_IsArray(req_notif_events)) {
         ogs_error("OpenAPI_subscription_data_parseFromJSON() failed [req_notif_events]");
@@ -371,13 +370,13 @@ OpenAPI_subscription_data_t *OpenAPI_subscription_data_parseFromJSON(cJSON *subs
     cJSON *plmn_id = cJSON_GetObjectItemCaseSensitive(subscription_dataJSON, "plmnId");
 
     OpenAPI_plmn_id_t *plmn_id_local_nonprim = NULL;
-    if (plmn_id) { 
+    if (plmn_id) {
     plmn_id_local_nonprim = OpenAPI_plmn_id_parseFromJSON(plmn_id);
     }
 
     cJSON *nid = cJSON_GetObjectItemCaseSensitive(subscription_dataJSON, "nid");
 
-    if (nid) { 
+    if (nid) {
     if (!cJSON_IsString(nid)) {
         ogs_error("OpenAPI_subscription_data_parseFromJSON() failed [nid]");
         goto end;
@@ -387,14 +386,14 @@ OpenAPI_subscription_data_t *OpenAPI_subscription_data_parseFromJSON(cJSON *subs
     cJSON *notif_condition = cJSON_GetObjectItemCaseSensitive(subscription_dataJSON, "notifCondition");
 
     OpenAPI_notif_condition_t *notif_condition_local_nonprim = NULL;
-    if (notif_condition) { 
+    if (notif_condition) {
     notif_condition_local_nonprim = OpenAPI_notif_condition_parseFromJSON(notif_condition);
     }
 
     cJSON *req_nf_type = cJSON_GetObjectItemCaseSensitive(subscription_dataJSON, "reqNfType");
 
     OpenAPI_nf_type_e req_nf_typeVariable;
-    if (req_nf_type) { 
+    if (req_nf_type) {
     if (!cJSON_IsString(req_nf_type)) {
         ogs_error("OpenAPI_subscription_data_parseFromJSON() failed [req_nf_type]");
         goto end;
@@ -404,7 +403,7 @@ OpenAPI_subscription_data_t *OpenAPI_subscription_data_parseFromJSON(cJSON *subs
 
     cJSON *req_nf_fqdn = cJSON_GetObjectItemCaseSensitive(subscription_dataJSON, "reqNfFqdn");
 
-    if (req_nf_fqdn) { 
+    if (req_nf_fqdn) {
     if (!cJSON_IsString(req_nf_fqdn)) {
         ogs_error("OpenAPI_subscription_data_parseFromJSON() failed [req_nf_fqdn]");
         goto end;
@@ -414,7 +413,7 @@ OpenAPI_subscription_data_t *OpenAPI_subscription_data_parseFromJSON(cJSON *subs
     cJSON *req_snssais = cJSON_GetObjectItemCaseSensitive(subscription_dataJSON, "reqSnssais");
 
     OpenAPI_list_t *req_snssaisList;
-    if (req_snssais) { 
+    if (req_snssais) {
     cJSON *req_snssais_local_nonprimitive;
     if (!cJSON_IsArray(req_snssais)){
         ogs_error("OpenAPI_subscription_data_parseFromJSON() failed [req_snssais]");
@@ -437,7 +436,7 @@ OpenAPI_subscription_data_t *OpenAPI_subscription_data_parseFromJSON(cJSON *subs
     cJSON *req_per_plmn_snssais = cJSON_GetObjectItemCaseSensitive(subscription_dataJSON, "reqPerPlmnSnssais");
 
     OpenAPI_list_t *req_per_plmn_snssaisList;
-    if (req_per_plmn_snssais) { 
+    if (req_per_plmn_snssais) {
     cJSON *req_per_plmn_snssais_local_nonprimitive;
     if (!cJSON_IsArray(req_per_plmn_snssais)){
         ogs_error("OpenAPI_subscription_data_parseFromJSON() failed [req_per_plmn_snssais]");
@@ -460,7 +459,7 @@ OpenAPI_subscription_data_t *OpenAPI_subscription_data_parseFromJSON(cJSON *subs
     cJSON *req_plmn_list = cJSON_GetObjectItemCaseSensitive(subscription_dataJSON, "reqPlmnList");
 
     OpenAPI_list_t *req_plmn_listList;
-    if (req_plmn_list) { 
+    if (req_plmn_list) {
     cJSON *req_plmn_list_local_nonprimitive;
     if (!cJSON_IsArray(req_plmn_list)){
         ogs_error("OpenAPI_subscription_data_parseFromJSON() failed [req_plmn_list]");
@@ -483,7 +482,7 @@ OpenAPI_subscription_data_t *OpenAPI_subscription_data_parseFromJSON(cJSON *subs
     cJSON *req_snpn_list = cJSON_GetObjectItemCaseSensitive(subscription_dataJSON, "reqSnpnList");
 
     OpenAPI_list_t *req_snpn_listList;
-    if (req_snpn_list) { 
+    if (req_snpn_list) {
     cJSON *req_snpn_list_local_nonprimitive;
     if (!cJSON_IsArray(req_snpn_list)){
         ogs_error("OpenAPI_subscription_data_parseFromJSON() failed [req_snpn_list]");
@@ -506,7 +505,7 @@ OpenAPI_subscription_data_t *OpenAPI_subscription_data_parseFromJSON(cJSON *subs
     cJSON *serving_scope = cJSON_GetObjectItemCaseSensitive(subscription_dataJSON, "servingScope");
 
     OpenAPI_list_t *serving_scopeList;
-    if (serving_scope) { 
+    if (serving_scope) {
     cJSON *serving_scope_local;
     if (!cJSON_IsArray(serving_scope)) {
         ogs_error("OpenAPI_subscription_data_parseFromJSON() failed [serving_scope]");
@@ -520,7 +519,7 @@ OpenAPI_subscription_data_t *OpenAPI_subscription_data_parseFromJSON(cJSON *subs
         goto end;
     }
     OpenAPI_list_add(serving_scopeList , ogs_strdup_or_assert(serving_scope_local->valuestring));
-                    }
+    }
     }
 
     subscription_data_local_var = OpenAPI_subscription_data_create (

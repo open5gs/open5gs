@@ -63,7 +63,6 @@ OpenAPI_ambr_t *OpenAPI_ambr_parseFromJSON(cJSON *ambrJSON)
         goto end;
     }
 
-    
     if (!cJSON_IsString(uplink)) {
         ogs_error("OpenAPI_ambr_parseFromJSON() failed [uplink]");
         goto end;
@@ -75,7 +74,6 @@ OpenAPI_ambr_t *OpenAPI_ambr_parseFromJSON(cJSON *ambrJSON)
         goto end;
     }
 
-    
     if (!cJSON_IsString(downlink)) {
         ogs_error("OpenAPI_ambr_parseFromJSON() failed [downlink]");
         goto end;

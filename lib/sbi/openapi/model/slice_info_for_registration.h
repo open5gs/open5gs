@@ -28,8 +28,10 @@ typedef struct OpenAPI_slice_info_for_registration_s {
     struct OpenAPI_allowed_nssai_s *allowed_nssai_other_access;
     OpenAPI_list_t *s_nssai_for_mapping;
     OpenAPI_list_t *requested_nssai;
+    bool is_default_configured_snssai_ind;
     int default_configured_snssai_ind;
     OpenAPI_list_t *mapping_of_nssai;
+    bool is_request_mapping;
     int request_mapping;
 } OpenAPI_slice_info_for_registration_t;
 
@@ -39,8 +41,10 @@ OpenAPI_slice_info_for_registration_t *OpenAPI_slice_info_for_registration_creat
     OpenAPI_allowed_nssai_t *allowed_nssai_other_access,
     OpenAPI_list_t *s_nssai_for_mapping,
     OpenAPI_list_t *requested_nssai,
+    bool is_default_configured_snssai_ind,
     int default_configured_snssai_ind,
     OpenAPI_list_t *mapping_of_nssai,
+    bool is_request_mapping,
     int request_mapping
 );
 void OpenAPI_slice_info_for_registration_free(OpenAPI_slice_info_for_registration_t *slice_info_for_registration);

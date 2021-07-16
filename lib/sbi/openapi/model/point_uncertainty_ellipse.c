@@ -97,7 +97,6 @@ OpenAPI_point_uncertainty_ellipse_t *OpenAPI_point_uncertainty_ellipse_parseFrom
     }
 
     OpenAPI_supported_gad_shapes_t *shape_local_nonprim = NULL;
-    
     shape_local_nonprim = OpenAPI_supported_gad_shapes_parseFromJSON(shape);
 
     cJSON *point = cJSON_GetObjectItemCaseSensitive(point_uncertainty_ellipseJSON, "point");
@@ -107,7 +106,6 @@ OpenAPI_point_uncertainty_ellipse_t *OpenAPI_point_uncertainty_ellipse_parseFrom
     }
 
     OpenAPI_geographical_coordinates_t *point_local_nonprim = NULL;
-    
     point_local_nonprim = OpenAPI_geographical_coordinates_parseFromJSON(point);
 
     cJSON *uncertainty_ellipse = cJSON_GetObjectItemCaseSensitive(point_uncertainty_ellipseJSON, "uncertaintyEllipse");
@@ -117,7 +115,6 @@ OpenAPI_point_uncertainty_ellipse_t *OpenAPI_point_uncertainty_ellipse_parseFrom
     }
 
     OpenAPI_uncertainty_ellipse_t *uncertainty_ellipse_local_nonprim = NULL;
-    
     uncertainty_ellipse_local_nonprim = OpenAPI_uncertainty_ellipse_parseFromJSON(uncertainty_ellipse);
 
     cJSON *confidence = cJSON_GetObjectItemCaseSensitive(point_uncertainty_ellipseJSON, "confidence");
@@ -126,7 +123,6 @@ OpenAPI_point_uncertainty_ellipse_t *OpenAPI_point_uncertainty_ellipse_parseFrom
         goto end;
     }
 
-    
     if (!cJSON_IsNumber(confidence)) {
         ogs_error("OpenAPI_point_uncertainty_ellipse_parseFromJSON() failed [confidence]");
         goto end;
@@ -136,6 +132,7 @@ OpenAPI_point_uncertainty_ellipse_t *OpenAPI_point_uncertainty_ellipse_parseFrom
         shape_local_nonprim,
         point_local_nonprim,
         uncertainty_ellipse_local_nonprim,
+        
         confidence->valuedouble
     );
 

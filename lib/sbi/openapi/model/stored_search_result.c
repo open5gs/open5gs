@@ -72,7 +72,6 @@ OpenAPI_stored_search_result_t *OpenAPI_stored_search_result_parseFromJSON(cJSON
     }
 
     OpenAPI_list_t *nf_instancesList;
-    
     cJSON *nf_instances_local_nonprimitive;
     if (!cJSON_IsArray(nf_instances)){
         ogs_error("OpenAPI_stored_search_result_parseFromJSON() failed [nf_instances]");

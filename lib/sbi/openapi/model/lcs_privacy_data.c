@@ -102,21 +102,21 @@ OpenAPI_lcs_privacy_data_t *OpenAPI_lcs_privacy_data_parseFromJSON(cJSON *lcs_pr
     cJSON *lpi = cJSON_GetObjectItemCaseSensitive(lcs_privacy_dataJSON, "lpi");
 
     OpenAPI_lpi_t *lpi_local_nonprim = NULL;
-    if (lpi) { 
+    if (lpi) {
     lpi_local_nonprim = OpenAPI_lpi_parseFromJSON(lpi);
     }
 
     cJSON *unrelated_class = cJSON_GetObjectItemCaseSensitive(lcs_privacy_dataJSON, "unrelatedClass");
 
     OpenAPI_unrelated_class_t *unrelated_class_local_nonprim = NULL;
-    if (unrelated_class) { 
+    if (unrelated_class) {
     unrelated_class_local_nonprim = OpenAPI_unrelated_class_parseFromJSON(unrelated_class);
     }
 
     cJSON *plmn_operator_classes = cJSON_GetObjectItemCaseSensitive(lcs_privacy_dataJSON, "plmnOperatorClasses");
 
     OpenAPI_list_t *plmn_operator_classesList;
-    if (plmn_operator_classes) { 
+    if (plmn_operator_classes) {
     cJSON *plmn_operator_classes_local_nonprimitive;
     if (!cJSON_IsArray(plmn_operator_classes)){
         ogs_error("OpenAPI_lcs_privacy_data_parseFromJSON() failed [plmn_operator_classes]");

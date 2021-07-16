@@ -80,7 +80,6 @@ OpenAPI_ncgi_t *OpenAPI_ncgi_parseFromJSON(cJSON *ncgiJSON)
     }
 
     OpenAPI_plmn_id_t *plmn_id_local_nonprim = NULL;
-    
     plmn_id_local_nonprim = OpenAPI_plmn_id_parseFromJSON(plmn_id);
 
     cJSON *nr_cell_id = cJSON_GetObjectItemCaseSensitive(ncgiJSON, "nrCellId");
@@ -89,7 +88,6 @@ OpenAPI_ncgi_t *OpenAPI_ncgi_parseFromJSON(cJSON *ncgiJSON)
         goto end;
     }
 
-    
     if (!cJSON_IsString(nr_cell_id)) {
         ogs_error("OpenAPI_ncgi_parseFromJSON() failed [nr_cell_id]");
         goto end;
@@ -97,7 +95,7 @@ OpenAPI_ncgi_t *OpenAPI_ncgi_parseFromJSON(cJSON *ncgiJSON)
 
     cJSON *nid = cJSON_GetObjectItemCaseSensitive(ncgiJSON, "nid");
 
-    if (nid) { 
+    if (nid) {
     if (!cJSON_IsString(nid)) {
         ogs_error("OpenAPI_ncgi_parseFromJSON() failed [nid]");
         goto end;

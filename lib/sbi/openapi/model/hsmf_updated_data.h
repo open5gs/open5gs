@@ -38,11 +38,13 @@ typedef struct OpenAPI_hsmf_updated_data_s {
     struct OpenAPI_up_security_s *up_security;
     OpenAPI_max_integrity_protected_data_rate_e max_integrity_protected_data_rate_ul;
     OpenAPI_max_integrity_protected_data_rate_e max_integrity_protected_data_rate_dl;
+    bool is_ipv6_multi_homing_ind;
     int ipv6_multi_homing_ind;
     OpenAPI_list_t *qos_flows_setup_list;
     struct OpenAPI_ambr_s *session_ambr;
     struct OpenAPI_eps_pdn_cnx_info_s *eps_pdn_cnx_info;
     OpenAPI_list_t *eps_bearer_info;
+    bool is_pti;
     int pti;
 } OpenAPI_hsmf_updated_data_t;
 
@@ -57,11 +59,13 @@ OpenAPI_hsmf_updated_data_t *OpenAPI_hsmf_updated_data_create(
     OpenAPI_up_security_t *up_security,
     OpenAPI_max_integrity_protected_data_rate_e max_integrity_protected_data_rate_ul,
     OpenAPI_max_integrity_protected_data_rate_e max_integrity_protected_data_rate_dl,
+    bool is_ipv6_multi_homing_ind,
     int ipv6_multi_homing_ind,
     OpenAPI_list_t *qos_flows_setup_list,
     OpenAPI_ambr_t *session_ambr,
     OpenAPI_eps_pdn_cnx_info_t *eps_pdn_cnx_info,
     OpenAPI_list_t *eps_bearer_info,
+    bool is_pti,
     int pti
 );
 void OpenAPI_hsmf_updated_data_free(OpenAPI_hsmf_updated_data_t *hsmf_updated_data);

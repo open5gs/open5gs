@@ -101,7 +101,6 @@ OpenAPI_av_eap_aka_prime_t *OpenAPI_av_eap_aka_prime_parseFromJSON(cJSON *av_eap
     }
 
     OpenAPI_av_type_e av_typeVariable;
-    
     if (!cJSON_IsString(av_type)) {
         ogs_error("OpenAPI_av_eap_aka_prime_parseFromJSON() failed [av_type]");
         goto end;
@@ -114,7 +113,6 @@ OpenAPI_av_eap_aka_prime_t *OpenAPI_av_eap_aka_prime_parseFromJSON(cJSON *av_eap
         goto end;
     }
 
-    
     if (!cJSON_IsString(rand)) {
         ogs_error("OpenAPI_av_eap_aka_prime_parseFromJSON() failed [rand]");
         goto end;
@@ -122,7 +120,7 @@ OpenAPI_av_eap_aka_prime_t *OpenAPI_av_eap_aka_prime_parseFromJSON(cJSON *av_eap
 
     cJSON *xres = cJSON_GetObjectItemCaseSensitive(av_eap_aka_primeJSON, "xres");
 
-    if (xres) { 
+    if (xres) {
     if (!cJSON_IsString(xres)) {
         ogs_error("OpenAPI_av_eap_aka_prime_parseFromJSON() failed [xres]");
         goto end;
@@ -135,7 +133,6 @@ OpenAPI_av_eap_aka_prime_t *OpenAPI_av_eap_aka_prime_parseFromJSON(cJSON *av_eap
         goto end;
     }
 
-    
     if (!cJSON_IsString(autn)) {
         ogs_error("OpenAPI_av_eap_aka_prime_parseFromJSON() failed [autn]");
         goto end;
@@ -143,7 +140,7 @@ OpenAPI_av_eap_aka_prime_t *OpenAPI_av_eap_aka_prime_parseFromJSON(cJSON *av_eap
 
     cJSON *ck_prime = cJSON_GetObjectItemCaseSensitive(av_eap_aka_primeJSON, "ckPrime");
 
-    if (ck_prime) { 
+    if (ck_prime) {
     if (!cJSON_IsString(ck_prime)) {
         ogs_error("OpenAPI_av_eap_aka_prime_parseFromJSON() failed [ck_prime]");
         goto end;
@@ -152,7 +149,7 @@ OpenAPI_av_eap_aka_prime_t *OpenAPI_av_eap_aka_prime_parseFromJSON(cJSON *av_eap
 
     cJSON *ik_prime = cJSON_GetObjectItemCaseSensitive(av_eap_aka_primeJSON, "ikPrime");
 
-    if (ik_prime) { 
+    if (ik_prime) {
     if (!cJSON_IsString(ik_prime)) {
         ogs_error("OpenAPI_av_eap_aka_prime_parseFromJSON() failed [ik_prime]");
         goto end;

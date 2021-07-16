@@ -119,7 +119,6 @@ OpenAPI_interface_upf_info_item_t *OpenAPI_interface_upf_info_item_parseFromJSON
     }
 
     OpenAPI_up_interface_type_e interface_typeVariable;
-    
     if (!cJSON_IsString(interface_type)) {
         ogs_error("OpenAPI_interface_upf_info_item_parseFromJSON() failed [interface_type]");
         goto end;
@@ -129,7 +128,7 @@ OpenAPI_interface_upf_info_item_t *OpenAPI_interface_upf_info_item_parseFromJSON
     cJSON *ipv4_endpoint_addresses = cJSON_GetObjectItemCaseSensitive(interface_upf_info_itemJSON, "ipv4EndpointAddresses");
 
     OpenAPI_list_t *ipv4_endpoint_addressesList;
-    if (ipv4_endpoint_addresses) { 
+    if (ipv4_endpoint_addresses) {
     cJSON *ipv4_endpoint_addresses_local;
     if (!cJSON_IsArray(ipv4_endpoint_addresses)) {
         ogs_error("OpenAPI_interface_upf_info_item_parseFromJSON() failed [ipv4_endpoint_addresses]");
@@ -143,13 +142,13 @@ OpenAPI_interface_upf_info_item_t *OpenAPI_interface_upf_info_item_parseFromJSON
         goto end;
     }
     OpenAPI_list_add(ipv4_endpoint_addressesList , ogs_strdup_or_assert(ipv4_endpoint_addresses_local->valuestring));
-                    }
+    }
     }
 
     cJSON *ipv6_endpoint_addresses = cJSON_GetObjectItemCaseSensitive(interface_upf_info_itemJSON, "ipv6EndpointAddresses");
 
     OpenAPI_list_t *ipv6_endpoint_addressesList;
-    if (ipv6_endpoint_addresses) { 
+    if (ipv6_endpoint_addresses) {
     cJSON *ipv6_endpoint_addresses_local;
     if (!cJSON_IsArray(ipv6_endpoint_addresses)) {
         ogs_error("OpenAPI_interface_upf_info_item_parseFromJSON() failed [ipv6_endpoint_addresses]");
@@ -163,12 +162,12 @@ OpenAPI_interface_upf_info_item_t *OpenAPI_interface_upf_info_item_parseFromJSON
         goto end;
     }
     OpenAPI_list_add(ipv6_endpoint_addressesList , ogs_strdup_or_assert(ipv6_endpoint_addresses_local->valuestring));
-                    }
+    }
     }
 
     cJSON *endpoint_fqdn = cJSON_GetObjectItemCaseSensitive(interface_upf_info_itemJSON, "endpointFqdn");
 
-    if (endpoint_fqdn) { 
+    if (endpoint_fqdn) {
     if (!cJSON_IsString(endpoint_fqdn)) {
         ogs_error("OpenAPI_interface_upf_info_item_parseFromJSON() failed [endpoint_fqdn]");
         goto end;
@@ -177,7 +176,7 @@ OpenAPI_interface_upf_info_item_t *OpenAPI_interface_upf_info_item_parseFromJSON
 
     cJSON *network_instance = cJSON_GetObjectItemCaseSensitive(interface_upf_info_itemJSON, "networkInstance");
 
-    if (network_instance) { 
+    if (network_instance) {
     if (!cJSON_IsString(network_instance)) {
         ogs_error("OpenAPI_interface_upf_info_item_parseFromJSON() failed [network_instance]");
         goto end;

@@ -8,6 +8,7 @@ OpenAPI_sm_context_status_notification_t *OpenAPI_sm_context_status_notification
     OpenAPI_status_info_t *status_info,
     OpenAPI_small_data_rate_status_t *small_data_rate_status,
     OpenAPI_apn_rate_status_t *apn_rate_status,
+    bool is_ddn_failure_status,
     int ddn_failure_status,
     OpenAPI_list_t *notify_correlation_ids_forddn_failure,
     char *new_smf_id,
@@ -25,6 +26,7 @@ OpenAPI_sm_context_status_notification_t *OpenAPI_sm_context_status_notification
     sm_context_status_notification_local_var->status_info = status_info;
     sm_context_status_notification_local_var->small_data_rate_status = small_data_rate_status;
     sm_context_status_notification_local_var->apn_rate_status = apn_rate_status;
+    sm_context_status_notification_local_var->is_ddn_failure_status = is_ddn_failure_status;
     sm_context_status_notification_local_var->ddn_failure_status = ddn_failure_status;
     sm_context_status_notification_local_var->notify_correlation_ids_forddn_failure = notify_correlation_ids_forddn_failure;
     sm_context_status_notification_local_var->new_smf_id = new_smf_id;
@@ -106,7 +108,7 @@ cJSON *OpenAPI_sm_context_status_notification_convertToJSON(OpenAPI_sm_context_s
     }
     }
 
-    if (sm_context_status_notification->ddn_failure_status) {
+    if (sm_context_status_notification->is_ddn_failure_status) {
     if (cJSON_AddBoolToObject(item, "ddnFailureStatus", sm_context_status_notification->ddn_failure_status) == NULL) {
         ogs_error("OpenAPI_sm_context_status_notification_convertToJSON() failed [ddn_failure_status]");
         goto end;
@@ -185,26 +187,25 @@ OpenAPI_sm_context_status_notification_t *OpenAPI_sm_context_status_notification
     }
 
     OpenAPI_status_info_t *status_info_local_nonprim = NULL;
-    
     status_info_local_nonprim = OpenAPI_status_info_parseFromJSON(status_info);
 
     cJSON *small_data_rate_status = cJSON_GetObjectItemCaseSensitive(sm_context_status_notificationJSON, "smallDataRateStatus");
 
     OpenAPI_small_data_rate_status_t *small_data_rate_status_local_nonprim = NULL;
-    if (small_data_rate_status) { 
+    if (small_data_rate_status) {
     small_data_rate_status_local_nonprim = OpenAPI_small_data_rate_status_parseFromJSON(small_data_rate_status);
     }
 
     cJSON *apn_rate_status = cJSON_GetObjectItemCaseSensitive(sm_context_status_notificationJSON, "apnRateStatus");
 
     OpenAPI_apn_rate_status_t *apn_rate_status_local_nonprim = NULL;
-    if (apn_rate_status) { 
+    if (apn_rate_status) {
     apn_rate_status_local_nonprim = OpenAPI_apn_rate_status_parseFromJSON(apn_rate_status);
     }
 
     cJSON *ddn_failure_status = cJSON_GetObjectItemCaseSensitive(sm_context_status_notificationJSON, "ddnFailureStatus");
 
-    if (ddn_failure_status) { 
+    if (ddn_failure_status) {
     if (!cJSON_IsBool(ddn_failure_status)) {
         ogs_error("OpenAPI_sm_context_status_notification_parseFromJSON() failed [ddn_failure_status]");
         goto end;
@@ -214,7 +215,7 @@ OpenAPI_sm_context_status_notification_t *OpenAPI_sm_context_status_notification
     cJSON *notify_correlation_ids_forddn_failure = cJSON_GetObjectItemCaseSensitive(sm_context_status_notificationJSON, "notifyCorrelationIdsForddnFailure");
 
     OpenAPI_list_t *notify_correlation_ids_forddn_failureList;
-    if (notify_correlation_ids_forddn_failure) { 
+    if (notify_correlation_ids_forddn_failure) {
     cJSON *notify_correlation_ids_forddn_failure_local;
     if (!cJSON_IsArray(notify_correlation_ids_forddn_failure)) {
         ogs_error("OpenAPI_sm_context_status_notification_parseFromJSON() failed [notify_correlation_ids_forddn_failure]");
@@ -228,12 +229,12 @@ OpenAPI_sm_context_status_notification_t *OpenAPI_sm_context_status_notification
         goto end;
     }
     OpenAPI_list_add(notify_correlation_ids_forddn_failureList , ogs_strdup_or_assert(notify_correlation_ids_forddn_failure_local->valuestring));
-                    }
+    }
     }
 
     cJSON *new_smf_id = cJSON_GetObjectItemCaseSensitive(sm_context_status_notificationJSON, "newSmfId");
 
-    if (new_smf_id) { 
+    if (new_smf_id) {
     if (!cJSON_IsString(new_smf_id)) {
         ogs_error("OpenAPI_sm_context_status_notification_parseFromJSON() failed [new_smf_id]");
         goto end;
@@ -242,7 +243,7 @@ OpenAPI_sm_context_status_notification_t *OpenAPI_sm_context_status_notification
 
     cJSON *new_smf_set_id = cJSON_GetObjectItemCaseSensitive(sm_context_status_notificationJSON, "newSmfSetId");
 
-    if (new_smf_set_id) { 
+    if (new_smf_set_id) {
     if (!cJSON_IsString(new_smf_set_id)) {
         ogs_error("OpenAPI_sm_context_status_notification_parseFromJSON() failed [new_smf_set_id]");
         goto end;
@@ -251,7 +252,7 @@ OpenAPI_sm_context_status_notification_t *OpenAPI_sm_context_status_notification
 
     cJSON *old_smf_id = cJSON_GetObjectItemCaseSensitive(sm_context_status_notificationJSON, "oldSmfId");
 
-    if (old_smf_id) { 
+    if (old_smf_id) {
     if (!cJSON_IsString(old_smf_id)) {
         ogs_error("OpenAPI_sm_context_status_notification_parseFromJSON() failed [old_smf_id]");
         goto end;
@@ -260,7 +261,7 @@ OpenAPI_sm_context_status_notification_t *OpenAPI_sm_context_status_notification
 
     cJSON *old_sm_context_ref = cJSON_GetObjectItemCaseSensitive(sm_context_status_notificationJSON, "oldSmContextRef");
 
-    if (old_sm_context_ref) { 
+    if (old_sm_context_ref) {
     if (!cJSON_IsString(old_sm_context_ref)) {
         ogs_error("OpenAPI_sm_context_status_notification_parseFromJSON() failed [old_sm_context_ref]");
         goto end;
@@ -269,7 +270,7 @@ OpenAPI_sm_context_status_notification_t *OpenAPI_sm_context_status_notification
 
     cJSON *alt_anchor_smf_uri = cJSON_GetObjectItemCaseSensitive(sm_context_status_notificationJSON, "altAnchorSmfUri");
 
-    if (alt_anchor_smf_uri) { 
+    if (alt_anchor_smf_uri) {
     if (!cJSON_IsString(alt_anchor_smf_uri)) {
         ogs_error("OpenAPI_sm_context_status_notification_parseFromJSON() failed [alt_anchor_smf_uri]");
         goto end;
@@ -278,7 +279,7 @@ OpenAPI_sm_context_status_notification_t *OpenAPI_sm_context_status_notification
 
     cJSON *alt_anchor_smf_id = cJSON_GetObjectItemCaseSensitive(sm_context_status_notificationJSON, "altAnchorSmfId");
 
-    if (alt_anchor_smf_id) { 
+    if (alt_anchor_smf_id) {
     if (!cJSON_IsString(alt_anchor_smf_id)) {
         ogs_error("OpenAPI_sm_context_status_notification_parseFromJSON() failed [alt_anchor_smf_id]");
         goto end;
@@ -289,6 +290,7 @@ OpenAPI_sm_context_status_notification_t *OpenAPI_sm_context_status_notification
         status_info_local_nonprim,
         small_data_rate_status ? small_data_rate_status_local_nonprim : NULL,
         apn_rate_status ? apn_rate_status_local_nonprim : NULL,
+        ddn_failure_status ? true : false,
         ddn_failure_status ? ddn_failure_status->valueint : 0,
         notify_correlation_ids_forddn_failure ? notify_correlation_ids_forddn_failureList : NULL,
         new_smf_id ? ogs_strdup_or_assert(new_smf_id->valuestring) : NULL,

@@ -19,14 +19,20 @@ extern "C" {
 
 typedef struct OpenAPI_battery_indication_s OpenAPI_battery_indication_t;
 typedef struct OpenAPI_battery_indication_s {
+    bool is_battery_ind;
     int battery_ind;
+    bool is_replaceable_ind;
     int replaceable_ind;
+    bool is_rechargeable_ind;
     int rechargeable_ind;
 } OpenAPI_battery_indication_t;
 
 OpenAPI_battery_indication_t *OpenAPI_battery_indication_create(
+    bool is_battery_ind,
     int battery_ind,
+    bool is_replaceable_ind,
     int replaceable_ind,
+    bool is_rechargeable_ind,
     int rechargeable_ind
 );
 void OpenAPI_battery_indication_free(OpenAPI_battery_indication_t *battery_indication);

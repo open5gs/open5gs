@@ -206,7 +206,6 @@ OpenAPI_shared_data_t *OpenAPI_shared_data_parseFromJSON(cJSON *shared_dataJSON)
         goto end;
     }
 
-    
     if (!cJSON_IsString(shared_data_id)) {
         ogs_error("OpenAPI_shared_data_parseFromJSON() failed [shared_data_id]");
         goto end;
@@ -215,28 +214,28 @@ OpenAPI_shared_data_t *OpenAPI_shared_data_parseFromJSON(cJSON *shared_dataJSON)
     cJSON *shared_am_data = cJSON_GetObjectItemCaseSensitive(shared_dataJSON, "sharedAmData");
 
     OpenAPI_access_and_mobility_subscription_data_1_t *shared_am_data_local_nonprim = NULL;
-    if (shared_am_data) { 
+    if (shared_am_data) {
     shared_am_data_local_nonprim = OpenAPI_access_and_mobility_subscription_data_1_parseFromJSON(shared_am_data);
     }
 
     cJSON *shared_sms_subs_data = cJSON_GetObjectItemCaseSensitive(shared_dataJSON, "sharedSmsSubsData");
 
     OpenAPI_sms_subscription_data_1_t *shared_sms_subs_data_local_nonprim = NULL;
-    if (shared_sms_subs_data) { 
+    if (shared_sms_subs_data) {
     shared_sms_subs_data_local_nonprim = OpenAPI_sms_subscription_data_1_parseFromJSON(shared_sms_subs_data);
     }
 
     cJSON *shared_sms_mng_subs_data = cJSON_GetObjectItemCaseSensitive(shared_dataJSON, "sharedSmsMngSubsData");
 
     OpenAPI_sms_management_subscription_data_1_t *shared_sms_mng_subs_data_local_nonprim = NULL;
-    if (shared_sms_mng_subs_data) { 
+    if (shared_sms_mng_subs_data) {
     shared_sms_mng_subs_data_local_nonprim = OpenAPI_sms_management_subscription_data_1_parseFromJSON(shared_sms_mng_subs_data);
     }
 
     cJSON *shared_dnn_configurations = cJSON_GetObjectItemCaseSensitive(shared_dataJSON, "sharedDnnConfigurations");
 
     OpenAPI_list_t *shared_dnn_configurationsList;
-    if (shared_dnn_configurations) { 
+    if (shared_dnn_configurations) {
     cJSON *shared_dnn_configurations_local_map;
     if (!cJSON_IsObject(shared_dnn_configurations)) {
         ogs_error("OpenAPI_shared_data_parseFromJSON() failed [shared_dnn_configurations]");
@@ -259,14 +258,14 @@ OpenAPI_shared_data_t *OpenAPI_shared_data_parseFromJSON(cJSON *shared_dataJSON)
     cJSON *shared_trace_data = cJSON_GetObjectItemCaseSensitive(shared_dataJSON, "sharedTraceData");
 
     OpenAPI_trace_data_t *shared_trace_data_local_nonprim = NULL;
-    if (shared_trace_data) { 
+    if (shared_trace_data) {
     shared_trace_data_local_nonprim = OpenAPI_trace_data_parseFromJSON(shared_trace_data);
     }
 
     cJSON *shared_snssai_infos = cJSON_GetObjectItemCaseSensitive(shared_dataJSON, "sharedSnssaiInfos");
 
     OpenAPI_list_t *shared_snssai_infosList;
-    if (shared_snssai_infos) { 
+    if (shared_snssai_infos) {
     cJSON *shared_snssai_infos_local_map;
     if (!cJSON_IsObject(shared_snssai_infos)) {
         ogs_error("OpenAPI_shared_data_parseFromJSON() failed [shared_snssai_infos]");
@@ -289,7 +288,7 @@ OpenAPI_shared_data_t *OpenAPI_shared_data_parseFromJSON(cJSON *shared_dataJSON)
     cJSON *shared_vn_group_datas = cJSON_GetObjectItemCaseSensitive(shared_dataJSON, "sharedVnGroupDatas");
 
     OpenAPI_list_t *shared_vn_group_datasList;
-    if (shared_vn_group_datas) { 
+    if (shared_vn_group_datas) {
     cJSON *shared_vn_group_datas_local_map;
     if (!cJSON_IsObject(shared_vn_group_datas)) {
         ogs_error("OpenAPI_shared_data_parseFromJSON() failed [shared_vn_group_datas]");

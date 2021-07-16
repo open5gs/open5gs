@@ -79,7 +79,6 @@ OpenAPI_secondary_rat_usage_report_t *OpenAPI_secondary_rat_usage_report_parseFr
     }
 
     OpenAPI_rat_type_e secondary_rat_typeVariable;
-    
     if (!cJSON_IsString(secondary_rat_type)) {
         ogs_error("OpenAPI_secondary_rat_usage_report_parseFromJSON() failed [secondary_rat_type]");
         goto end;
@@ -93,7 +92,6 @@ OpenAPI_secondary_rat_usage_report_t *OpenAPI_secondary_rat_usage_report_parseFr
     }
 
     OpenAPI_list_t *qos_flows_usage_dataList;
-    
     cJSON *qos_flows_usage_data_local_nonprimitive;
     if (!cJSON_IsArray(qos_flows_usage_data)){
         ogs_error("OpenAPI_secondary_rat_usage_report_parseFromJSON() failed [qos_flows_usage_data]");

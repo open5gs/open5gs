@@ -24,6 +24,7 @@ extern "C" {
 typedef struct OpenAPI_sdm_subscription_s OpenAPI_sdm_subscription_t;
 typedef struct OpenAPI_sdm_subscription_s {
     char *nf_instance_id;
+    bool is_implicit_unsubscribe;
     int implicit_unsubscribe;
     char *expires;
     char *callback_reference;
@@ -33,6 +34,7 @@ typedef struct OpenAPI_sdm_subscription_s {
     char *dnn;
     char *subscription_id;
     struct OpenAPI_plmn_id_s *plmn_id;
+    bool is_immediate_report;
     int immediate_report;
     struct OpenAPI_subscription_data_sets_s *report;
     char *supported_features;
@@ -41,6 +43,7 @@ typedef struct OpenAPI_sdm_subscription_s {
 
 OpenAPI_sdm_subscription_t *OpenAPI_sdm_subscription_create(
     char *nf_instance_id,
+    bool is_implicit_unsubscribe,
     int implicit_unsubscribe,
     char *expires,
     char *callback_reference,
@@ -50,6 +53,7 @@ OpenAPI_sdm_subscription_t *OpenAPI_sdm_subscription_create(
     char *dnn,
     char *subscription_id,
     OpenAPI_plmn_id_t *plmn_id,
+    bool is_immediate_report,
     int immediate_report,
     OpenAPI_subscription_data_sets_t *report,
     char *supported_features,

@@ -19,10 +19,12 @@ extern "C" {
 
 typedef struct OpenAPI_qos_monitoring_info_s OpenAPI_qos_monitoring_info_t;
 typedef struct OpenAPI_qos_monitoring_info_s {
+    bool is_qos_monitoring_ind;
     int qos_monitoring_ind;
 } OpenAPI_qos_monitoring_info_t;
 
 OpenAPI_qos_monitoring_info_t *OpenAPI_qos_monitoring_info_create(
+    bool is_qos_monitoring_ind,
     int qos_monitoring_ind
 );
 void OpenAPI_qos_monitoring_info_free(OpenAPI_qos_monitoring_info_t *qos_monitoring_info);

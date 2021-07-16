@@ -28,6 +28,7 @@ extern "C" {
 typedef struct OpenAPI_traffic_influ_data_s OpenAPI_traffic_influ_data_t;
 typedef struct OpenAPI_traffic_influ_data_s {
     char *up_path_chg_notif_corre_id;
+    bool is_app_relo_ind;
     int app_relo_ind;
     char *af_app_id;
     char *dnn;
@@ -37,6 +38,7 @@ typedef struct OpenAPI_traffic_influ_data_s {
     char *supi;
     OpenAPI_list_t *traffic_filters;
     OpenAPI_list_t *traffic_routes;
+    bool is_traff_corre_ind;
     int traff_corre_ind;
     char *valid_start_time;
     char *valid_end_time;
@@ -46,7 +48,9 @@ typedef struct OpenAPI_traffic_influ_data_s {
     OpenAPI_list_t *headers;
     OpenAPI_list_t *subscribed_events;
     OpenAPI_dnai_change_type_e dnai_chg_type;
+    bool is_af_ack_ind;
     int af_ack_ind;
+    bool is_addr_preser_ind;
     int addr_preser_ind;
     char *supported_features;
     char *res_uri;
@@ -54,6 +58,7 @@ typedef struct OpenAPI_traffic_influ_data_s {
 
 OpenAPI_traffic_influ_data_t *OpenAPI_traffic_influ_data_create(
     char *up_path_chg_notif_corre_id,
+    bool is_app_relo_ind,
     int app_relo_ind,
     char *af_app_id,
     char *dnn,
@@ -63,6 +68,7 @@ OpenAPI_traffic_influ_data_t *OpenAPI_traffic_influ_data_create(
     char *supi,
     OpenAPI_list_t *traffic_filters,
     OpenAPI_list_t *traffic_routes,
+    bool is_traff_corre_ind,
     int traff_corre_ind,
     char *valid_start_time,
     char *valid_end_time,
@@ -72,7 +78,9 @@ OpenAPI_traffic_influ_data_t *OpenAPI_traffic_influ_data_create(
     OpenAPI_list_t *headers,
     OpenAPI_list_t *subscribed_events,
     OpenAPI_dnai_change_type_e dnai_chg_type,
+    bool is_af_ack_ind,
     int af_ack_ind,
+    bool is_addr_preser_ind,
     int addr_preser_ind,
     char *supported_features,
     char *res_uri

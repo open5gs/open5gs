@@ -94,7 +94,6 @@ OpenAPI_network_slice_cond_t *OpenAPI_network_slice_cond_parseFromJSON(cJSON *ne
     }
 
     OpenAPI_list_t *snssai_listList;
-    
     cJSON *snssai_list_local_nonprimitive;
     if (!cJSON_IsArray(snssai_list)){
         ogs_error("OpenAPI_network_slice_cond_parseFromJSON() failed [snssai_list]");
@@ -116,7 +115,7 @@ OpenAPI_network_slice_cond_t *OpenAPI_network_slice_cond_parseFromJSON(cJSON *ne
     cJSON *nsi_list = cJSON_GetObjectItemCaseSensitive(network_slice_condJSON, "nsiList");
 
     OpenAPI_list_t *nsi_listList;
-    if (nsi_list) { 
+    if (nsi_list) {
     cJSON *nsi_list_local;
     if (!cJSON_IsArray(nsi_list)) {
         ogs_error("OpenAPI_network_slice_cond_parseFromJSON() failed [nsi_list]");
@@ -130,7 +129,7 @@ OpenAPI_network_slice_cond_t *OpenAPI_network_slice_cond_parseFromJSON(cJSON *ne
         goto end;
     }
     OpenAPI_list_add(nsi_listList , ogs_strdup_or_assert(nsi_list_local->valuestring));
-                    }
+    }
     }
 
     network_slice_cond_local_var = OpenAPI_network_slice_cond_create (

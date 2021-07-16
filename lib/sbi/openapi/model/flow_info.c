@@ -76,7 +76,6 @@ OpenAPI_flow_info_t *OpenAPI_flow_info_parseFromJSON(cJSON *flow_infoJSON)
         goto end;
     }
 
-    
     if (!cJSON_IsNumber(flow_id)) {
         ogs_error("OpenAPI_flow_info_parseFromJSON() failed [flow_id]");
         goto end;
@@ -85,7 +84,7 @@ OpenAPI_flow_info_t *OpenAPI_flow_info_parseFromJSON(cJSON *flow_infoJSON)
     cJSON *flow_descriptions = cJSON_GetObjectItemCaseSensitive(flow_infoJSON, "flowDescriptions");
 
     OpenAPI_list_t *flow_descriptionsList;
-    if (flow_descriptions) { 
+    if (flow_descriptions) {
     cJSON *flow_descriptions_local;
     if (!cJSON_IsArray(flow_descriptions)) {
         ogs_error("OpenAPI_flow_info_parseFromJSON() failed [flow_descriptions]");
@@ -99,10 +98,11 @@ OpenAPI_flow_info_t *OpenAPI_flow_info_parseFromJSON(cJSON *flow_infoJSON)
         goto end;
     }
     OpenAPI_list_add(flow_descriptionsList , ogs_strdup_or_assert(flow_descriptions_local->valuestring));
-                    }
+    }
     }
 
     flow_info_local_var = OpenAPI_flow_info_create (
+        
         flow_id->valuedouble,
         flow_descriptions ? flow_descriptionsList : NULL
     );

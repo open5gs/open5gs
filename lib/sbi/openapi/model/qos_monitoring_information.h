@@ -19,14 +19,20 @@ extern "C" {
 
 typedef struct OpenAPI_qos_monitoring_information_s OpenAPI_qos_monitoring_information_t;
 typedef struct OpenAPI_qos_monitoring_information_s {
+    bool is_rep_thresh_dl;
     int rep_thresh_dl;
+    bool is_rep_thresh_ul;
     int rep_thresh_ul;
+    bool is_rep_thresh_rp;
     int rep_thresh_rp;
 } OpenAPI_qos_monitoring_information_t;
 
 OpenAPI_qos_monitoring_information_t *OpenAPI_qos_monitoring_information_create(
+    bool is_rep_thresh_dl,
     int rep_thresh_dl,
+    bool is_rep_thresh_ul,
     int rep_thresh_ul,
+    bool is_rep_thresh_rp,
     int rep_thresh_rp
 );
 void OpenAPI_qos_monitoring_information_free(OpenAPI_qos_monitoring_information_t *qos_monitoring_information);

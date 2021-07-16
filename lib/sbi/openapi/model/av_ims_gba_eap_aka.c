@@ -95,7 +95,6 @@ OpenAPI_av_ims_gba_eap_aka_t *OpenAPI_av_ims_gba_eap_aka_parseFromJSON(cJSON *av
     }
 
     OpenAPI_hss_av_type_e av_typeVariable;
-    
     if (!cJSON_IsString(av_type)) {
         ogs_error("OpenAPI_av_ims_gba_eap_aka_parseFromJSON() failed [av_type]");
         goto end;
@@ -108,7 +107,6 @@ OpenAPI_av_ims_gba_eap_aka_t *OpenAPI_av_ims_gba_eap_aka_parseFromJSON(cJSON *av
         goto end;
     }
 
-    
     if (!cJSON_IsString(rand)) {
         ogs_error("OpenAPI_av_ims_gba_eap_aka_parseFromJSON() failed [rand]");
         goto end;
@@ -120,7 +118,6 @@ OpenAPI_av_ims_gba_eap_aka_t *OpenAPI_av_ims_gba_eap_aka_parseFromJSON(cJSON *av
         goto end;
     }
 
-    
     if (!cJSON_IsString(xres)) {
         ogs_error("OpenAPI_av_ims_gba_eap_aka_parseFromJSON() failed [xres]");
         goto end;
@@ -132,7 +129,6 @@ OpenAPI_av_ims_gba_eap_aka_t *OpenAPI_av_ims_gba_eap_aka_parseFromJSON(cJSON *av
         goto end;
     }
 
-    
     if (!cJSON_IsString(autn)) {
         ogs_error("OpenAPI_av_ims_gba_eap_aka_parseFromJSON() failed [autn]");
         goto end;
@@ -144,7 +140,6 @@ OpenAPI_av_ims_gba_eap_aka_t *OpenAPI_av_ims_gba_eap_aka_parseFromJSON(cJSON *av
         goto end;
     }
 
-    
     if (!cJSON_IsString(ck)) {
         ogs_error("OpenAPI_av_ims_gba_eap_aka_parseFromJSON() failed [ck]");
         goto end;
@@ -156,7 +151,6 @@ OpenAPI_av_ims_gba_eap_aka_t *OpenAPI_av_ims_gba_eap_aka_parseFromJSON(cJSON *av
         goto end;
     }
 
-    
     if (!cJSON_IsString(ik)) {
         ogs_error("OpenAPI_av_ims_gba_eap_aka_parseFromJSON() failed [ik]");
         goto end;

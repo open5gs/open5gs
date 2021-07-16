@@ -102,7 +102,7 @@ OpenAPI_sm_policy_data_patch_t *OpenAPI_sm_policy_data_patch_parseFromJSON(cJSON
     cJSON *um_data = cJSON_GetObjectItemCaseSensitive(sm_policy_data_patchJSON, "umData");
 
     OpenAPI_list_t *um_dataList;
-    if (um_data) { 
+    if (um_data) {
     cJSON *um_data_local_map;
     if (!cJSON_IsObject(um_data)) {
         ogs_error("OpenAPI_sm_policy_data_patch_parseFromJSON() failed [um_data]");
@@ -125,7 +125,7 @@ OpenAPI_sm_policy_data_patch_t *OpenAPI_sm_policy_data_patch_parseFromJSON(cJSON
     cJSON *sm_policy_snssai_data = cJSON_GetObjectItemCaseSensitive(sm_policy_data_patchJSON, "smPolicySnssaiData");
 
     OpenAPI_list_t *sm_policy_snssai_dataList;
-    if (sm_policy_snssai_data) { 
+    if (sm_policy_snssai_data) {
     cJSON *sm_policy_snssai_data_local_map;
     if (!cJSON_IsObject(sm_policy_snssai_data)) {
         ogs_error("OpenAPI_sm_policy_data_patch_parseFromJSON() failed [sm_policy_snssai_data]");

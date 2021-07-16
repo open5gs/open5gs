@@ -5,6 +5,7 @@
 #include "additional_snssai_data.h"
 
 OpenAPI_additional_snssai_data_t *OpenAPI_additional_snssai_data_create(
+    bool is_required_authn_authz,
     int required_authn_authz
 )
 {
@@ -12,6 +13,7 @@ OpenAPI_additional_snssai_data_t *OpenAPI_additional_snssai_data_create(
     if (!additional_snssai_data_local_var) {
         return NULL;
     }
+    additional_snssai_data_local_var->is_required_authn_authz = is_required_authn_authz;
     additional_snssai_data_local_var->required_authn_authz = required_authn_authz;
 
     return additional_snssai_data_local_var;
@@ -36,7 +38,7 @@ cJSON *OpenAPI_additional_snssai_data_convertToJSON(OpenAPI_additional_snssai_da
     }
 
     item = cJSON_CreateObject();
-    if (additional_snssai_data->required_authn_authz) {
+    if (additional_snssai_data->is_required_authn_authz) {
     if (cJSON_AddBoolToObject(item, "requiredAuthnAuthz", additional_snssai_data->required_authn_authz) == NULL) {
         ogs_error("OpenAPI_additional_snssai_data_convertToJSON() failed [required_authn_authz]");
         goto end;
@@ -52,7 +54,7 @@ OpenAPI_additional_snssai_data_t *OpenAPI_additional_snssai_data_parseFromJSON(c
     OpenAPI_additional_snssai_data_t *additional_snssai_data_local_var = NULL;
     cJSON *required_authn_authz = cJSON_GetObjectItemCaseSensitive(additional_snssai_dataJSON, "requiredAuthnAuthz");
 
-    if (required_authn_authz) { 
+    if (required_authn_authz) {
     if (!cJSON_IsBool(required_authn_authz)) {
         ogs_error("OpenAPI_additional_snssai_data_parseFromJSON() failed [required_authn_authz]");
         goto end;
@@ -60,6 +62,7 @@ OpenAPI_additional_snssai_data_t *OpenAPI_additional_snssai_data_parseFromJSON(c
     }
 
     additional_snssai_data_local_var = OpenAPI_additional_snssai_data_create (
+        required_authn_authz ? true : false,
         required_authn_authz ? required_authn_authz->valueint : 0
     );
 

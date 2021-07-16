@@ -69,7 +69,6 @@ OpenAPI_smsf_info_1_t *OpenAPI_smsf_info_1_parseFromJSON(cJSON *smsf_info_1JSON)
         goto end;
     }
 
-    
     if (!cJSON_IsString(smsf_instance_id)) {
         ogs_error("OpenAPI_smsf_info_1_parseFromJSON() failed [smsf_instance_id]");
         goto end;
@@ -82,7 +81,6 @@ OpenAPI_smsf_info_1_t *OpenAPI_smsf_info_1_parseFromJSON(cJSON *smsf_info_1JSON)
     }
 
     OpenAPI_plmn_id_1_t *plmn_id_local_nonprim = NULL;
-    
     plmn_id_local_nonprim = OpenAPI_plmn_id_1_parseFromJSON(plmn_id);
 
     smsf_info_1_local_var = OpenAPI_smsf_info_1_create (

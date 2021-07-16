@@ -7,10 +7,15 @@
 OpenAPI_trigger_t *OpenAPI_trigger_create(
     OpenAPI_trigger_type_t *trigger_type,
     OpenAPI_trigger_category_t *trigger_category,
+    bool is_time_limit,
     int time_limit,
+    bool is_volume_limit,
     int volume_limit,
+    bool is_volume_limit64,
     int volume_limit64,
+    bool is_event_limit,
     int event_limit,
+    bool is_max_number_ofccc,
     int max_number_ofccc,
     char *tariff_time_change
 )
@@ -21,10 +26,15 @@ OpenAPI_trigger_t *OpenAPI_trigger_create(
     }
     trigger_local_var->trigger_type = trigger_type;
     trigger_local_var->trigger_category = trigger_category;
+    trigger_local_var->is_time_limit = is_time_limit;
     trigger_local_var->time_limit = time_limit;
+    trigger_local_var->is_volume_limit = is_volume_limit;
     trigger_local_var->volume_limit = volume_limit;
+    trigger_local_var->is_volume_limit64 = is_volume_limit64;
     trigger_local_var->volume_limit64 = volume_limit64;
+    trigger_local_var->is_event_limit = is_event_limit;
     trigger_local_var->event_limit = event_limit;
+    trigger_local_var->is_max_number_ofccc = is_max_number_ofccc;
     trigger_local_var->max_number_ofccc = max_number_ofccc;
     trigger_local_var->tariff_time_change = tariff_time_change;
 
@@ -75,35 +85,35 @@ cJSON *OpenAPI_trigger_convertToJSON(OpenAPI_trigger_t *trigger)
         goto end;
     }
 
-    if (trigger->time_limit) {
+    if (trigger->is_time_limit) {
     if (cJSON_AddNumberToObject(item, "timeLimit", trigger->time_limit) == NULL) {
         ogs_error("OpenAPI_trigger_convertToJSON() failed [time_limit]");
         goto end;
     }
     }
 
-    if (trigger->volume_limit) {
+    if (trigger->is_volume_limit) {
     if (cJSON_AddNumberToObject(item, "volumeLimit", trigger->volume_limit) == NULL) {
         ogs_error("OpenAPI_trigger_convertToJSON() failed [volume_limit]");
         goto end;
     }
     }
 
-    if (trigger->volume_limit64) {
+    if (trigger->is_volume_limit64) {
     if (cJSON_AddNumberToObject(item, "volumeLimit64", trigger->volume_limit64) == NULL) {
         ogs_error("OpenAPI_trigger_convertToJSON() failed [volume_limit64]");
         goto end;
     }
     }
 
-    if (trigger->event_limit) {
+    if (trigger->is_event_limit) {
     if (cJSON_AddNumberToObject(item, "eventLimit", trigger->event_limit) == NULL) {
         ogs_error("OpenAPI_trigger_convertToJSON() failed [event_limit]");
         goto end;
     }
     }
 
-    if (trigger->max_number_ofccc) {
+    if (trigger->is_max_number_ofccc) {
     if (cJSON_AddNumberToObject(item, "maxNumberOfccc", trigger->max_number_ofccc) == NULL) {
         ogs_error("OpenAPI_trigger_convertToJSON() failed [max_number_ofccc]");
         goto end;
@@ -131,7 +141,6 @@ OpenAPI_trigger_t *OpenAPI_trigger_parseFromJSON(cJSON *triggerJSON)
     }
 
     OpenAPI_trigger_type_t *trigger_type_local_nonprim = NULL;
-    
     trigger_type_local_nonprim = OpenAPI_trigger_type_parseFromJSON(trigger_type);
 
     cJSON *trigger_category = cJSON_GetObjectItemCaseSensitive(triggerJSON, "triggerCategory");
@@ -141,12 +150,11 @@ OpenAPI_trigger_t *OpenAPI_trigger_parseFromJSON(cJSON *triggerJSON)
     }
 
     OpenAPI_trigger_category_t *trigger_category_local_nonprim = NULL;
-    
     trigger_category_local_nonprim = OpenAPI_trigger_category_parseFromJSON(trigger_category);
 
     cJSON *time_limit = cJSON_GetObjectItemCaseSensitive(triggerJSON, "timeLimit");
 
-    if (time_limit) { 
+    if (time_limit) {
     if (!cJSON_IsNumber(time_limit)) {
         ogs_error("OpenAPI_trigger_parseFromJSON() failed [time_limit]");
         goto end;
@@ -155,7 +163,7 @@ OpenAPI_trigger_t *OpenAPI_trigger_parseFromJSON(cJSON *triggerJSON)
 
     cJSON *volume_limit = cJSON_GetObjectItemCaseSensitive(triggerJSON, "volumeLimit");
 
-    if (volume_limit) { 
+    if (volume_limit) {
     if (!cJSON_IsNumber(volume_limit)) {
         ogs_error("OpenAPI_trigger_parseFromJSON() failed [volume_limit]");
         goto end;
@@ -164,7 +172,7 @@ OpenAPI_trigger_t *OpenAPI_trigger_parseFromJSON(cJSON *triggerJSON)
 
     cJSON *volume_limit64 = cJSON_GetObjectItemCaseSensitive(triggerJSON, "volumeLimit64");
 
-    if (volume_limit64) { 
+    if (volume_limit64) {
     if (!cJSON_IsNumber(volume_limit64)) {
         ogs_error("OpenAPI_trigger_parseFromJSON() failed [volume_limit64]");
         goto end;
@@ -173,7 +181,7 @@ OpenAPI_trigger_t *OpenAPI_trigger_parseFromJSON(cJSON *triggerJSON)
 
     cJSON *event_limit = cJSON_GetObjectItemCaseSensitive(triggerJSON, "eventLimit");
 
-    if (event_limit) { 
+    if (event_limit) {
     if (!cJSON_IsNumber(event_limit)) {
         ogs_error("OpenAPI_trigger_parseFromJSON() failed [event_limit]");
         goto end;
@@ -182,7 +190,7 @@ OpenAPI_trigger_t *OpenAPI_trigger_parseFromJSON(cJSON *triggerJSON)
 
     cJSON *max_number_ofccc = cJSON_GetObjectItemCaseSensitive(triggerJSON, "maxNumberOfccc");
 
-    if (max_number_ofccc) { 
+    if (max_number_ofccc) {
     if (!cJSON_IsNumber(max_number_ofccc)) {
         ogs_error("OpenAPI_trigger_parseFromJSON() failed [max_number_ofccc]");
         goto end;
@@ -191,7 +199,7 @@ OpenAPI_trigger_t *OpenAPI_trigger_parseFromJSON(cJSON *triggerJSON)
 
     cJSON *tariff_time_change = cJSON_GetObjectItemCaseSensitive(triggerJSON, "tariffTimeChange");
 
-    if (tariff_time_change) { 
+    if (tariff_time_change) {
     if (!cJSON_IsString(tariff_time_change)) {
         ogs_error("OpenAPI_trigger_parseFromJSON() failed [tariff_time_change]");
         goto end;
@@ -201,10 +209,15 @@ OpenAPI_trigger_t *OpenAPI_trigger_parseFromJSON(cJSON *triggerJSON)
     trigger_local_var = OpenAPI_trigger_create (
         trigger_type_local_nonprim,
         trigger_category_local_nonprim,
+        time_limit ? true : false,
         time_limit ? time_limit->valuedouble : 0,
+        volume_limit ? true : false,
         volume_limit ? volume_limit->valuedouble : 0,
+        volume_limit64 ? true : false,
         volume_limit64 ? volume_limit64->valuedouble : 0,
+        event_limit ? true : false,
         event_limit ? event_limit->valuedouble : 0,
+        max_number_ofccc ? true : false,
         max_number_ofccc ? max_number_ofccc->valuedouble : 0,
         tariff_time_change ? ogs_strdup_or_assert(tariff_time_change->valuestring) : NULL
     );

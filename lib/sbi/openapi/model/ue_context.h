@@ -38,6 +38,7 @@ extern "C" {
 typedef struct OpenAPI_ue_context_s OpenAPI_ue_context_t;
 typedef struct OpenAPI_ue_context_s {
     char *supi;
+    bool is_supi_unauth_ind;
     int supi_unauth_ind;
     OpenAPI_list_t *gpsi_list;
     char *pei;
@@ -47,7 +48,9 @@ typedef struct OpenAPI_ue_context_s {
     char *routing_indicator;
     OpenAPI_list_t *group_list;
     char drx_parameter;
+    bool is_sub_rfsp;
     int sub_rfsp;
+    bool is_used_rfsp;
     int used_rfsp;
     struct OpenAPI_ambr_s *sub_ue_ambr;
     char *smsf_id;
@@ -81,18 +84,23 @@ typedef struct OpenAPI_ue_context_s {
     OpenAPI_list_t *restricted_primary_rat_list;
     OpenAPI_list_t *restricted_secondary_rat_list;
     struct OpenAPI_v2x_context_s *v2x_context;
+    bool is_lte_cat_m_ind;
     int lte_cat_m_ind;
     struct OpenAPI_mo_exp_data_counter_s *mo_exp_data_counter;
     struct OpenAPI_cag_data_s *cag_data;
+    bool is_management_mdt_ind;
     int management_mdt_ind;
     struct OpenAPI_immediate_mdt_conf_s *immediate_mdt_conf;
     struct OpenAPI_ec_restriction_data_wb_s *ec_restriction_data_wb;
+    bool is_ec_restriction_data_nb;
     int ec_restriction_data_nb;
+    bool is_iab_operation_allowed;
     int iab_operation_allowed;
 } OpenAPI_ue_context_t;
 
 OpenAPI_ue_context_t *OpenAPI_ue_context_create(
     char *supi,
+    bool is_supi_unauth_ind,
     int supi_unauth_ind,
     OpenAPI_list_t *gpsi_list,
     char *pei,
@@ -102,7 +110,9 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_create(
     char *routing_indicator,
     OpenAPI_list_t *group_list,
     char drx_parameter,
+    bool is_sub_rfsp,
     int sub_rfsp,
+    bool is_used_rfsp,
     int used_rfsp,
     OpenAPI_ambr_t *sub_ue_ambr,
     char *smsf_id,
@@ -136,13 +146,17 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_create(
     OpenAPI_list_t *restricted_primary_rat_list,
     OpenAPI_list_t *restricted_secondary_rat_list,
     OpenAPI_v2x_context_t *v2x_context,
+    bool is_lte_cat_m_ind,
     int lte_cat_m_ind,
     OpenAPI_mo_exp_data_counter_t *mo_exp_data_counter,
     OpenAPI_cag_data_t *cag_data,
+    bool is_management_mdt_ind,
     int management_mdt_ind,
     OpenAPI_immediate_mdt_conf_t *immediate_mdt_conf,
     OpenAPI_ec_restriction_data_wb_t *ec_restriction_data_wb,
+    bool is_ec_restriction_data_nb,
     int ec_restriction_data_nb,
+    bool is_iab_operation_allowed,
     int iab_operation_allowed
 );
 void OpenAPI_ue_context_free(OpenAPI_ue_context_t *ue_context);

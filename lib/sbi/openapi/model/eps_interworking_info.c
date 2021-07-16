@@ -73,7 +73,7 @@ OpenAPI_eps_interworking_info_t *OpenAPI_eps_interworking_info_parseFromJSON(cJS
     cJSON *eps_iwk_pgws = cJSON_GetObjectItemCaseSensitive(eps_interworking_infoJSON, "epsIwkPgws");
 
     OpenAPI_list_t *eps_iwk_pgwsList;
-    if (eps_iwk_pgws) { 
+    if (eps_iwk_pgws) {
     cJSON *eps_iwk_pgws_local_map;
     if (!cJSON_IsObject(eps_iwk_pgws)) {
         ogs_error("OpenAPI_eps_interworking_info_parseFromJSON() failed [eps_iwk_pgws]");

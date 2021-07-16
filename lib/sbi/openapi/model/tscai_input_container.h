@@ -19,11 +19,13 @@ extern "C" {
 
 typedef struct OpenAPI_tscai_input_container_s OpenAPI_tscai_input_container_t;
 typedef struct OpenAPI_tscai_input_container_s {
+    bool is_periodicity;
     int periodicity;
     char *burst_arrival_time;
 } OpenAPI_tscai_input_container_t;
 
 OpenAPI_tscai_input_container_t *OpenAPI_tscai_input_container_create(
+    bool is_periodicity,
     int periodicity,
     char *burst_arrival_time
 );

@@ -62,7 +62,6 @@ OpenAPI_cag_ack_data_t *OpenAPI_cag_ack_data_parseFromJSON(cJSON *cag_ack_dataJS
         goto end;
     }
 
-    
     if (!cJSON_IsString(provisioning_time)) {
         ogs_error("OpenAPI_cag_ack_data_parseFromJSON() failed [provisioning_time]");
         goto end;
@@ -75,7 +74,6 @@ OpenAPI_cag_ack_data_t *OpenAPI_cag_ack_data_parseFromJSON(cJSON *cag_ack_dataJS
     }
 
     OpenAPI_ue_update_status_e ue_update_statusVariable;
-    
     if (!cJSON_IsString(ue_update_status)) {
         ogs_error("OpenAPI_cag_ack_data_parseFromJSON() failed [ue_update_status]");
         goto end;

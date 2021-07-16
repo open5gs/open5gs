@@ -53,7 +53,7 @@ OpenAPI_pdu_session_status_cfg_t *OpenAPI_pdu_session_status_cfg_parseFromJSON(c
     OpenAPI_pdu_session_status_cfg_t *pdu_session_status_cfg_local_var = NULL;
     cJSON *dnn = cJSON_GetObjectItemCaseSensitive(pdu_session_status_cfgJSON, "dnn");
 
-    if (dnn) { 
+    if (dnn) {
     if (!cJSON_IsString(dnn)) {
         ogs_error("OpenAPI_pdu_session_status_cfg_parseFromJSON() failed [dnn]");
         goto end;

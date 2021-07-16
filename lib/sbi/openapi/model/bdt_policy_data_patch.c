@@ -55,7 +55,6 @@ OpenAPI_bdt_policy_data_patch_t *OpenAPI_bdt_policy_data_patch_parseFromJSON(cJS
         goto end;
     }
 
-    
     if (!cJSON_IsString(bdt_ref_id)) {
         ogs_error("OpenAPI_bdt_policy_data_patch_parseFromJSON() failed [bdt_ref_id]");
         goto end;

@@ -19,11 +19,13 @@ extern "C" {
 
 typedef struct OpenAPI_ec_restriction_data_wb_s OpenAPI_ec_restriction_data_wb_t;
 typedef struct OpenAPI_ec_restriction_data_wb_s {
+    bool is_ec_mode_a_restricted;
     int ec_mode_a_restricted;
     int ec_mode_b_restricted;
 } OpenAPI_ec_restriction_data_wb_t;
 
 OpenAPI_ec_restriction_data_wb_t *OpenAPI_ec_restriction_data_wb_create(
+    bool is_ec_mode_a_restricted,
     int ec_mode_a_restricted,
     int ec_mode_b_restricted
 );

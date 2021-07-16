@@ -170,7 +170,6 @@ OpenAPI_dnn_upf_info_item_t *OpenAPI_dnn_upf_info_item_parseFromJSON(cJSON *dnn_
         goto end;
     }
 
-    
     if (!cJSON_IsString(dnn)) {
         ogs_error("OpenAPI_dnn_upf_info_item_parseFromJSON() failed [dnn]");
         goto end;
@@ -179,7 +178,7 @@ OpenAPI_dnn_upf_info_item_t *OpenAPI_dnn_upf_info_item_parseFromJSON(cJSON *dnn_
     cJSON *dnai_list = cJSON_GetObjectItemCaseSensitive(dnn_upf_info_itemJSON, "dnaiList");
 
     OpenAPI_list_t *dnai_listList;
-    if (dnai_list) { 
+    if (dnai_list) {
     cJSON *dnai_list_local;
     if (!cJSON_IsArray(dnai_list)) {
         ogs_error("OpenAPI_dnn_upf_info_item_parseFromJSON() failed [dnai_list]");
@@ -193,13 +192,13 @@ OpenAPI_dnn_upf_info_item_t *OpenAPI_dnn_upf_info_item_parseFromJSON(cJSON *dnn_
         goto end;
     }
     OpenAPI_list_add(dnai_listList , ogs_strdup_or_assert(dnai_list_local->valuestring));
-                    }
+    }
     }
 
     cJSON *pdu_session_types = cJSON_GetObjectItemCaseSensitive(dnn_upf_info_itemJSON, "pduSessionTypes");
 
     OpenAPI_list_t *pdu_session_typesList;
-    if (pdu_session_types) { 
+    if (pdu_session_types) {
     cJSON *pdu_session_types_local_nonprimitive;
     if (!cJSON_IsArray(pdu_session_types)) {
         ogs_error("OpenAPI_dnn_upf_info_item_parseFromJSON() failed [pdu_session_types]");
@@ -221,7 +220,7 @@ OpenAPI_dnn_upf_info_item_t *OpenAPI_dnn_upf_info_item_parseFromJSON(cJSON *dnn_
     cJSON *ipv4_address_ranges = cJSON_GetObjectItemCaseSensitive(dnn_upf_info_itemJSON, "ipv4AddressRanges");
 
     OpenAPI_list_t *ipv4_address_rangesList;
-    if (ipv4_address_ranges) { 
+    if (ipv4_address_ranges) {
     cJSON *ipv4_address_ranges_local_nonprimitive;
     if (!cJSON_IsArray(ipv4_address_ranges)){
         ogs_error("OpenAPI_dnn_upf_info_item_parseFromJSON() failed [ipv4_address_ranges]");
@@ -244,7 +243,7 @@ OpenAPI_dnn_upf_info_item_t *OpenAPI_dnn_upf_info_item_parseFromJSON(cJSON *dnn_
     cJSON *ipv6_prefix_ranges = cJSON_GetObjectItemCaseSensitive(dnn_upf_info_itemJSON, "ipv6PrefixRanges");
 
     OpenAPI_list_t *ipv6_prefix_rangesList;
-    if (ipv6_prefix_ranges) { 
+    if (ipv6_prefix_ranges) {
     cJSON *ipv6_prefix_ranges_local_nonprimitive;
     if (!cJSON_IsArray(ipv6_prefix_ranges)){
         ogs_error("OpenAPI_dnn_upf_info_item_parseFromJSON() failed [ipv6_prefix_ranges]");
@@ -267,7 +266,7 @@ OpenAPI_dnn_upf_info_item_t *OpenAPI_dnn_upf_info_item_parseFromJSON(cJSON *dnn_
     cJSON *dnai_nw_instance_list = cJSON_GetObjectItemCaseSensitive(dnn_upf_info_itemJSON, "dnaiNwInstanceList");
 
     OpenAPI_list_t *dnai_nw_instance_listList;
-    if (dnai_nw_instance_list) { 
+    if (dnai_nw_instance_list) {
     cJSON *dnai_nw_instance_list_local_map;
     if (!cJSON_IsObject(dnai_nw_instance_list)) {
         ogs_error("OpenAPI_dnn_upf_info_item_parseFromJSON() failed [dnai_nw_instance_list]");

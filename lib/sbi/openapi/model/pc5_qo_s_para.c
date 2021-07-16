@@ -82,7 +82,6 @@ OpenAPI_pc5_qo_s_para_t *OpenAPI_pc5_qo_s_para_parseFromJSON(cJSON *pc5_qo_s_par
     }
 
     OpenAPI_list_t *pc5_qos_flow_listList;
-    
     cJSON *pc5_qos_flow_list_local_nonprimitive;
     if (!cJSON_IsArray(pc5_qos_flow_list)){
         ogs_error("OpenAPI_pc5_qo_s_para_parseFromJSON() failed [pc5_qos_flow_list]");
@@ -103,7 +102,7 @@ OpenAPI_pc5_qo_s_para_t *OpenAPI_pc5_qo_s_para_parseFromJSON(cJSON *pc5_qo_s_par
 
     cJSON *pc5_link_ambr = cJSON_GetObjectItemCaseSensitive(pc5_qo_s_paraJSON, "pc5LinkAmbr");
 
-    if (pc5_link_ambr) { 
+    if (pc5_link_ambr) {
     if (!cJSON_IsString(pc5_link_ambr)) {
         ogs_error("OpenAPI_pc5_qo_s_para_parseFromJSON() failed [pc5_link_ambr]");
         goto end;

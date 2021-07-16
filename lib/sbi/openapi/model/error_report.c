@@ -140,14 +140,14 @@ OpenAPI_error_report_t *OpenAPI_error_report_parseFromJSON(cJSON *error_reportJS
     cJSON *error = cJSON_GetObjectItemCaseSensitive(error_reportJSON, "error");
 
     OpenAPI_problem_details_t *error_local_nonprim = NULL;
-    if (error) { 
+    if (error) {
     error_local_nonprim = OpenAPI_problem_details_parseFromJSON(error);
     }
 
     cJSON *rule_reports = cJSON_GetObjectItemCaseSensitive(error_reportJSON, "ruleReports");
 
     OpenAPI_list_t *rule_reportsList;
-    if (rule_reports) { 
+    if (rule_reports) {
     cJSON *rule_reports_local_nonprimitive;
     if (!cJSON_IsArray(rule_reports)){
         ogs_error("OpenAPI_error_report_parseFromJSON() failed [rule_reports]");
@@ -170,7 +170,7 @@ OpenAPI_error_report_t *OpenAPI_error_report_parseFromJSON(cJSON *error_reportJS
     cJSON *sess_rule_reports = cJSON_GetObjectItemCaseSensitive(error_reportJSON, "sessRuleReports");
 
     OpenAPI_list_t *sess_rule_reportsList;
-    if (sess_rule_reports) { 
+    if (sess_rule_reports) {
     cJSON *sess_rule_reports_local_nonprimitive;
     if (!cJSON_IsArray(sess_rule_reports)){
         ogs_error("OpenAPI_error_report_parseFromJSON() failed [sess_rule_reports]");
@@ -193,7 +193,7 @@ OpenAPI_error_report_t *OpenAPI_error_report_parseFromJSON(cJSON *error_reportJS
     cJSON *pol_dec_failure_reports = cJSON_GetObjectItemCaseSensitive(error_reportJSON, "polDecFailureReports");
 
     OpenAPI_list_t *pol_dec_failure_reportsList;
-    if (pol_dec_failure_reports) { 
+    if (pol_dec_failure_reports) {
     cJSON *pol_dec_failure_reports_local_nonprimitive;
     if (!cJSON_IsArray(pol_dec_failure_reports)) {
         ogs_error("OpenAPI_error_report_parseFromJSON() failed [pol_dec_failure_reports]");
@@ -214,7 +214,7 @@ OpenAPI_error_report_t *OpenAPI_error_report_parseFromJSON(cJSON *error_reportJS
 
     cJSON *alt_qos_param_id = cJSON_GetObjectItemCaseSensitive(error_reportJSON, "altQosParamId");
 
-    if (alt_qos_param_id) { 
+    if (alt_qos_param_id) {
     if (!cJSON_IsString(alt_qos_param_id)) {
         ogs_error("OpenAPI_error_report_parseFromJSON() failed [alt_qos_param_id]");
         goto end;

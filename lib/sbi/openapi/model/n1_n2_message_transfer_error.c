@@ -78,13 +78,12 @@ OpenAPI_n1_n2_message_transfer_error_t *OpenAPI_n1_n2_message_transfer_error_par
     }
 
     OpenAPI_problem_details_t *error_local_nonprim = NULL;
-    
     error_local_nonprim = OpenAPI_problem_details_parseFromJSON(error);
 
     cJSON *err_info = cJSON_GetObjectItemCaseSensitive(n1_n2_message_transfer_errorJSON, "errInfo");
 
     OpenAPI_n1_n2_msg_txfr_err_detail_t *err_info_local_nonprim = NULL;
-    if (err_info) { 
+    if (err_info) {
     err_info_local_nonprim = OpenAPI_n1_n2_msg_txfr_err_detail_parseFromJSON(err_info);
     }
 

@@ -86,7 +86,6 @@ OpenAPI_polygon_t *OpenAPI_polygon_parseFromJSON(cJSON *polygonJSON)
     }
 
     OpenAPI_supported_gad_shapes_t *shape_local_nonprim = NULL;
-    
     shape_local_nonprim = OpenAPI_supported_gad_shapes_parseFromJSON(shape);
 
     cJSON *point_list = cJSON_GetObjectItemCaseSensitive(polygonJSON, "pointList");
@@ -96,7 +95,6 @@ OpenAPI_polygon_t *OpenAPI_polygon_parseFromJSON(cJSON *polygonJSON)
     }
 
     OpenAPI_list_t *point_listList;
-    
     cJSON *point_list_local_nonprimitive;
     if (!cJSON_IsArray(point_list)){
         ogs_error("OpenAPI_polygon_parseFromJSON() failed [point_list]");

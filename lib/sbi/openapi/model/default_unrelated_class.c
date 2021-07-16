@@ -126,7 +126,7 @@ OpenAPI_default_unrelated_class_t *OpenAPI_default_unrelated_class_parseFromJSON
     cJSON *allowed_geographic_area = cJSON_GetObjectItemCaseSensitive(default_unrelated_classJSON, "allowedGeographicArea");
 
     OpenAPI_list_t *allowed_geographic_areaList;
-    if (allowed_geographic_area) { 
+    if (allowed_geographic_area) {
     cJSON *allowed_geographic_area_local_nonprimitive;
     if (!cJSON_IsArray(allowed_geographic_area)){
         ogs_error("OpenAPI_default_unrelated_class_parseFromJSON() failed [allowed_geographic_area]");
@@ -149,7 +149,7 @@ OpenAPI_default_unrelated_class_t *OpenAPI_default_unrelated_class_parseFromJSON
     cJSON *privacy_check_related_action = cJSON_GetObjectItemCaseSensitive(default_unrelated_classJSON, "privacyCheckRelatedAction");
 
     OpenAPI_privacy_check_related_action_e privacy_check_related_actionVariable;
-    if (privacy_check_related_action) { 
+    if (privacy_check_related_action) {
     if (!cJSON_IsString(privacy_check_related_action)) {
         ogs_error("OpenAPI_default_unrelated_class_parseFromJSON() failed [privacy_check_related_action]");
         goto end;
@@ -160,7 +160,7 @@ OpenAPI_default_unrelated_class_t *OpenAPI_default_unrelated_class_parseFromJSON
     cJSON *code_word_ind = cJSON_GetObjectItemCaseSensitive(default_unrelated_classJSON, "codeWordInd");
 
     OpenAPI_code_word_ind_e code_word_indVariable;
-    if (code_word_ind) { 
+    if (code_word_ind) {
     if (!cJSON_IsString(code_word_ind)) {
         ogs_error("OpenAPI_default_unrelated_class_parseFromJSON() failed [code_word_ind]");
         goto end;
@@ -171,14 +171,14 @@ OpenAPI_default_unrelated_class_t *OpenAPI_default_unrelated_class_parseFromJSON
     cJSON *valid_time_period = cJSON_GetObjectItemCaseSensitive(default_unrelated_classJSON, "validTimePeriod");
 
     OpenAPI_valid_time_period_t *valid_time_period_local_nonprim = NULL;
-    if (valid_time_period) { 
+    if (valid_time_period) {
     valid_time_period_local_nonprim = OpenAPI_valid_time_period_parseFromJSON(valid_time_period);
     }
 
     cJSON *code_word_list = cJSON_GetObjectItemCaseSensitive(default_unrelated_classJSON, "codeWordList");
 
     OpenAPI_list_t *code_word_listList;
-    if (code_word_list) { 
+    if (code_word_list) {
     cJSON *code_word_list_local;
     if (!cJSON_IsArray(code_word_list)) {
         ogs_error("OpenAPI_default_unrelated_class_parseFromJSON() failed [code_word_list]");
@@ -192,7 +192,7 @@ OpenAPI_default_unrelated_class_t *OpenAPI_default_unrelated_class_parseFromJSON
         goto end;
     }
     OpenAPI_list_add(code_word_listList , ogs_strdup_or_assert(code_word_list_local->valuestring));
-                    }
+    }
     }
 
     default_unrelated_class_local_var = OpenAPI_default_unrelated_class_create (

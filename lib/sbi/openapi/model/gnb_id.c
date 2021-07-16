@@ -62,7 +62,6 @@ OpenAPI_gnb_id_t *OpenAPI_gnb_id_parseFromJSON(cJSON *gnb_idJSON)
         goto end;
     }
 
-    
     if (!cJSON_IsNumber(bit_length)) {
         ogs_error("OpenAPI_gnb_id_parseFromJSON() failed [bit_length]");
         goto end;
@@ -74,13 +73,13 @@ OpenAPI_gnb_id_t *OpenAPI_gnb_id_parseFromJSON(cJSON *gnb_idJSON)
         goto end;
     }
 
-    
     if (!cJSON_IsString(g_nb_value)) {
         ogs_error("OpenAPI_gnb_id_parseFromJSON() failed [g_nb_value]");
         goto end;
     }
 
     gnb_id_local_var = OpenAPI_gnb_id_create (
+        
         bit_length->valuedouble,
         ogs_strdup_or_assert(g_nb_value->valuestring)
     );

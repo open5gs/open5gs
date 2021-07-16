@@ -63,7 +63,7 @@ OpenAPI_amf_cond_t *OpenAPI_amf_cond_parseFromJSON(cJSON *amf_condJSON)
     OpenAPI_amf_cond_t *amf_cond_local_var = NULL;
     cJSON *amf_set_id = cJSON_GetObjectItemCaseSensitive(amf_condJSON, "amfSetId");
 
-    if (amf_set_id) { 
+    if (amf_set_id) {
     if (!cJSON_IsString(amf_set_id)) {
         ogs_error("OpenAPI_amf_cond_parseFromJSON() failed [amf_set_id]");
         goto end;
@@ -72,7 +72,7 @@ OpenAPI_amf_cond_t *OpenAPI_amf_cond_parseFromJSON(cJSON *amf_condJSON)
 
     cJSON *amf_region_id = cJSON_GetObjectItemCaseSensitive(amf_condJSON, "amfRegionId");
 
-    if (amf_region_id) { 
+    if (amf_region_id) {
     if (!cJSON_IsString(amf_region_id)) {
         ogs_error("OpenAPI_amf_cond_parseFromJSON() failed [amf_region_id]");
         goto end;

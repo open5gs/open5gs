@@ -72,7 +72,6 @@ OpenAPI_guami_list_cond_t *OpenAPI_guami_list_cond_parseFromJSON(cJSON *guami_li
     }
 
     OpenAPI_list_t *guami_listList;
-    
     cJSON *guami_list_local_nonprimitive;
     if (!cJSON_IsArray(guami_list)){
         ogs_error("OpenAPI_guami_list_cond_parseFromJSON() failed [guami_list]");

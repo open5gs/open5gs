@@ -55,7 +55,6 @@ OpenAPI_pei_update_info_t *OpenAPI_pei_update_info_parseFromJSON(cJSON *pei_upda
         goto end;
     }
 
-    
     if (!cJSON_IsString(pei)) {
         ogs_error("OpenAPI_pei_update_info_parseFromJSON() failed [pei]");
         goto end;

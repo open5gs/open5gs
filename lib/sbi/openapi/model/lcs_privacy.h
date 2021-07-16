@@ -21,6 +21,7 @@ extern "C" {
 typedef struct OpenAPI_lcs_privacy_s OpenAPI_lcs_privacy_t;
 typedef struct OpenAPI_lcs_privacy_s {
     char *af_instance_id;
+    bool is_reference_id;
     int reference_id;
     struct OpenAPI_lpi_s *lpi;
     char *mtc_provider_information;
@@ -28,6 +29,7 @@ typedef struct OpenAPI_lcs_privacy_s {
 
 OpenAPI_lcs_privacy_t *OpenAPI_lcs_privacy_create(
     char *af_instance_id,
+    bool is_reference_id,
     int reference_id,
     OpenAPI_lpi_t *lpi,
     char *mtc_provider_information

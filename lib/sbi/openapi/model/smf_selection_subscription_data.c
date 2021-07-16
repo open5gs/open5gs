@@ -92,7 +92,7 @@ OpenAPI_smf_selection_subscription_data_t *OpenAPI_smf_selection_subscription_da
     OpenAPI_smf_selection_subscription_data_t *smf_selection_subscription_data_local_var = NULL;
     cJSON *supported_features = cJSON_GetObjectItemCaseSensitive(smf_selection_subscription_dataJSON, "supportedFeatures");
 
-    if (supported_features) { 
+    if (supported_features) {
     if (!cJSON_IsString(supported_features)) {
         ogs_error("OpenAPI_smf_selection_subscription_data_parseFromJSON() failed [supported_features]");
         goto end;
@@ -102,7 +102,7 @@ OpenAPI_smf_selection_subscription_data_t *OpenAPI_smf_selection_subscription_da
     cJSON *subscribed_snssai_infos = cJSON_GetObjectItemCaseSensitive(smf_selection_subscription_dataJSON, "subscribedSnssaiInfos");
 
     OpenAPI_list_t *subscribed_snssai_infosList;
-    if (subscribed_snssai_infos) { 
+    if (subscribed_snssai_infos) {
     cJSON *subscribed_snssai_infos_local_map;
     if (!cJSON_IsObject(subscribed_snssai_infos)) {
         ogs_error("OpenAPI_smf_selection_subscription_data_parseFromJSON() failed [subscribed_snssai_infos]");
@@ -124,7 +124,7 @@ OpenAPI_smf_selection_subscription_data_t *OpenAPI_smf_selection_subscription_da
 
     cJSON *shared_snssai_infos_id = cJSON_GetObjectItemCaseSensitive(smf_selection_subscription_dataJSON, "sharedSnssaiInfosId");
 
-    if (shared_snssai_infos_id) { 
+    if (shared_snssai_infos_id) {
     if (!cJSON_IsString(shared_snssai_infos_id)) {
         ogs_error("OpenAPI_smf_selection_subscription_data_parseFromJSON() failed [shared_snssai_infos_id]");
         goto end;

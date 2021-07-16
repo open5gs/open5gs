@@ -102,7 +102,6 @@ OpenAPI_session_rule_report_t *OpenAPI_session_rule_report_parseFromJSON(cJSON *
     }
 
     OpenAPI_list_t *rule_idsList;
-    
     cJSON *rule_ids_local;
     if (!cJSON_IsArray(rule_ids)) {
         ogs_error("OpenAPI_session_rule_report_parseFromJSON() failed [rule_ids]");
@@ -116,7 +115,7 @@ OpenAPI_session_rule_report_t *OpenAPI_session_rule_report_parseFromJSON(cJSON *
         goto end;
     }
     OpenAPI_list_add(rule_idsList , ogs_strdup_or_assert(rule_ids_local->valuestring));
-                    }
+    }
 
     cJSON *rule_status = cJSON_GetObjectItemCaseSensitive(session_rule_reportJSON, "ruleStatus");
     if (!rule_status) {
@@ -125,7 +124,6 @@ OpenAPI_session_rule_report_t *OpenAPI_session_rule_report_parseFromJSON(cJSON *
     }
 
     OpenAPI_rule_status_e rule_statusVariable;
-    
     if (!cJSON_IsString(rule_status)) {
         ogs_error("OpenAPI_session_rule_report_parseFromJSON() failed [rule_status]");
         goto end;
@@ -135,7 +133,7 @@ OpenAPI_session_rule_report_t *OpenAPI_session_rule_report_parseFromJSON(cJSON *
     cJSON *sess_rule_failure_code = cJSON_GetObjectItemCaseSensitive(session_rule_reportJSON, "sessRuleFailureCode");
 
     OpenAPI_session_rule_failure_code_e sess_rule_failure_codeVariable;
-    if (sess_rule_failure_code) { 
+    if (sess_rule_failure_code) {
     if (!cJSON_IsString(sess_rule_failure_code)) {
         ogs_error("OpenAPI_session_rule_report_parseFromJSON() failed [sess_rule_failure_code]");
         goto end;
@@ -146,7 +144,7 @@ OpenAPI_session_rule_report_t *OpenAPI_session_rule_report_parseFromJSON(cJSON *
     cJSON *policy_dec_failure_reports = cJSON_GetObjectItemCaseSensitive(session_rule_reportJSON, "policyDecFailureReports");
 
     OpenAPI_list_t *policy_dec_failure_reportsList;
-    if (policy_dec_failure_reports) { 
+    if (policy_dec_failure_reports) {
     cJSON *policy_dec_failure_reports_local_nonprimitive;
     if (!cJSON_IsArray(policy_dec_failure_reports)) {
         ogs_error("OpenAPI_session_rule_report_parseFromJSON() failed [policy_dec_failure_reports]");

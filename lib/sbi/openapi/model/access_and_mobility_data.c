@@ -18,6 +18,7 @@ OpenAPI_access_and_mobility_data_t *OpenAPI_access_and_mobility_data_create(
     char *reachability_status_ts,
     OpenAPI_sms_support_e sms_over_nas_status,
     char *sms_over_nas_status_ts,
+    bool is_roaming_status,
     int roaming_status,
     char *roaming_status_ts,
     OpenAPI_plmn_id_1_t *current_plmn,
@@ -44,6 +45,7 @@ OpenAPI_access_and_mobility_data_t *OpenAPI_access_and_mobility_data_create(
     access_and_mobility_data_local_var->reachability_status_ts = reachability_status_ts;
     access_and_mobility_data_local_var->sms_over_nas_status = sms_over_nas_status;
     access_and_mobility_data_local_var->sms_over_nas_status_ts = sms_over_nas_status_ts;
+    access_and_mobility_data_local_var->is_roaming_status = is_roaming_status;
     access_and_mobility_data_local_var->roaming_status = roaming_status;
     access_and_mobility_data_local_var->roaming_status_ts = roaming_status_ts;
     access_and_mobility_data_local_var->current_plmn = current_plmn;
@@ -226,7 +228,7 @@ cJSON *OpenAPI_access_and_mobility_data_convertToJSON(OpenAPI_access_and_mobilit
     }
     }
 
-    if (access_and_mobility_data->roaming_status) {
+    if (access_and_mobility_data->is_roaming_status) {
     if (cJSON_AddBoolToObject(item, "roamingStatus", access_and_mobility_data->roaming_status) == NULL) {
         ogs_error("OpenAPI_access_and_mobility_data_convertToJSON() failed [roaming_status]");
         goto end;
@@ -299,13 +301,13 @@ OpenAPI_access_and_mobility_data_t *OpenAPI_access_and_mobility_data_parseFromJS
     cJSON *location = cJSON_GetObjectItemCaseSensitive(access_and_mobility_dataJSON, "location");
 
     OpenAPI_user_location_t *location_local_nonprim = NULL;
-    if (location) { 
+    if (location) {
     location_local_nonprim = OpenAPI_user_location_parseFromJSON(location);
     }
 
     cJSON *location_ts = cJSON_GetObjectItemCaseSensitive(access_and_mobility_dataJSON, "locationTs");
 
-    if (location_ts) { 
+    if (location_ts) {
     if (!cJSON_IsString(location_ts)) {
         ogs_error("OpenAPI_access_and_mobility_data_parseFromJSON() failed [location_ts]");
         goto end;
@@ -314,7 +316,7 @@ OpenAPI_access_and_mobility_data_t *OpenAPI_access_and_mobility_data_parseFromJS
 
     cJSON *time_zone = cJSON_GetObjectItemCaseSensitive(access_and_mobility_dataJSON, "timeZone");
 
-    if (time_zone) { 
+    if (time_zone) {
     if (!cJSON_IsString(time_zone)) {
         ogs_error("OpenAPI_access_and_mobility_data_parseFromJSON() failed [time_zone]");
         goto end;
@@ -323,7 +325,7 @@ OpenAPI_access_and_mobility_data_t *OpenAPI_access_and_mobility_data_parseFromJS
 
     cJSON *time_zone_ts = cJSON_GetObjectItemCaseSensitive(access_and_mobility_dataJSON, "timeZoneTs");
 
-    if (time_zone_ts) { 
+    if (time_zone_ts) {
     if (!cJSON_IsString(time_zone_ts)) {
         ogs_error("OpenAPI_access_and_mobility_data_parseFromJSON() failed [time_zone_ts]");
         goto end;
@@ -333,7 +335,7 @@ OpenAPI_access_and_mobility_data_t *OpenAPI_access_and_mobility_data_parseFromJS
     cJSON *access_type = cJSON_GetObjectItemCaseSensitive(access_and_mobility_dataJSON, "accessType");
 
     OpenAPI_access_type_e access_typeVariable;
-    if (access_type) { 
+    if (access_type) {
     if (!cJSON_IsString(access_type)) {
         ogs_error("OpenAPI_access_and_mobility_data_parseFromJSON() failed [access_type]");
         goto end;
@@ -344,7 +346,7 @@ OpenAPI_access_and_mobility_data_t *OpenAPI_access_and_mobility_data_parseFromJS
     cJSON *reg_states = cJSON_GetObjectItemCaseSensitive(access_and_mobility_dataJSON, "regStates");
 
     OpenAPI_list_t *reg_statesList;
-    if (reg_states) { 
+    if (reg_states) {
     cJSON *reg_states_local_nonprimitive;
     if (!cJSON_IsArray(reg_states)){
         ogs_error("OpenAPI_access_and_mobility_data_parseFromJSON() failed [reg_states]");
@@ -366,7 +368,7 @@ OpenAPI_access_and_mobility_data_t *OpenAPI_access_and_mobility_data_parseFromJS
 
     cJSON *reg_states_ts = cJSON_GetObjectItemCaseSensitive(access_and_mobility_dataJSON, "regStatesTs");
 
-    if (reg_states_ts) { 
+    if (reg_states_ts) {
     if (!cJSON_IsString(reg_states_ts)) {
         ogs_error("OpenAPI_access_and_mobility_data_parseFromJSON() failed [reg_states_ts]");
         goto end;
@@ -376,7 +378,7 @@ OpenAPI_access_and_mobility_data_t *OpenAPI_access_and_mobility_data_parseFromJS
     cJSON *conn_states = cJSON_GetObjectItemCaseSensitive(access_and_mobility_dataJSON, "connStates");
 
     OpenAPI_list_t *conn_statesList;
-    if (conn_states) { 
+    if (conn_states) {
     cJSON *conn_states_local_nonprimitive;
     if (!cJSON_IsArray(conn_states)){
         ogs_error("OpenAPI_access_and_mobility_data_parseFromJSON() failed [conn_states]");
@@ -398,7 +400,7 @@ OpenAPI_access_and_mobility_data_t *OpenAPI_access_and_mobility_data_parseFromJS
 
     cJSON *conn_states_ts = cJSON_GetObjectItemCaseSensitive(access_and_mobility_dataJSON, "connStatesTs");
 
-    if (conn_states_ts) { 
+    if (conn_states_ts) {
     if (!cJSON_IsString(conn_states_ts)) {
         ogs_error("OpenAPI_access_and_mobility_data_parseFromJSON() failed [conn_states_ts]");
         goto end;
@@ -408,13 +410,13 @@ OpenAPI_access_and_mobility_data_t *OpenAPI_access_and_mobility_data_parseFromJS
     cJSON *reachability_status = cJSON_GetObjectItemCaseSensitive(access_and_mobility_dataJSON, "reachabilityStatus");
 
     OpenAPI_ue_reachability_t *reachability_status_local_nonprim = NULL;
-    if (reachability_status) { 
+    if (reachability_status) {
     reachability_status_local_nonprim = OpenAPI_ue_reachability_parseFromJSON(reachability_status);
     }
 
     cJSON *reachability_status_ts = cJSON_GetObjectItemCaseSensitive(access_and_mobility_dataJSON, "reachabilityStatusTs");
 
-    if (reachability_status_ts) { 
+    if (reachability_status_ts) {
     if (!cJSON_IsString(reachability_status_ts)) {
         ogs_error("OpenAPI_access_and_mobility_data_parseFromJSON() failed [reachability_status_ts]");
         goto end;
@@ -424,7 +426,7 @@ OpenAPI_access_and_mobility_data_t *OpenAPI_access_and_mobility_data_parseFromJS
     cJSON *sms_over_nas_status = cJSON_GetObjectItemCaseSensitive(access_and_mobility_dataJSON, "smsOverNasStatus");
 
     OpenAPI_sms_support_e sms_over_nas_statusVariable;
-    if (sms_over_nas_status) { 
+    if (sms_over_nas_status) {
     if (!cJSON_IsString(sms_over_nas_status)) {
         ogs_error("OpenAPI_access_and_mobility_data_parseFromJSON() failed [sms_over_nas_status]");
         goto end;
@@ -434,7 +436,7 @@ OpenAPI_access_and_mobility_data_t *OpenAPI_access_and_mobility_data_parseFromJS
 
     cJSON *sms_over_nas_status_ts = cJSON_GetObjectItemCaseSensitive(access_and_mobility_dataJSON, "smsOverNasStatusTs");
 
-    if (sms_over_nas_status_ts) { 
+    if (sms_over_nas_status_ts) {
     if (!cJSON_IsString(sms_over_nas_status_ts)) {
         ogs_error("OpenAPI_access_and_mobility_data_parseFromJSON() failed [sms_over_nas_status_ts]");
         goto end;
@@ -443,7 +445,7 @@ OpenAPI_access_and_mobility_data_t *OpenAPI_access_and_mobility_data_parseFromJS
 
     cJSON *roaming_status = cJSON_GetObjectItemCaseSensitive(access_and_mobility_dataJSON, "roamingStatus");
 
-    if (roaming_status) { 
+    if (roaming_status) {
     if (!cJSON_IsBool(roaming_status)) {
         ogs_error("OpenAPI_access_and_mobility_data_parseFromJSON() failed [roaming_status]");
         goto end;
@@ -452,7 +454,7 @@ OpenAPI_access_and_mobility_data_t *OpenAPI_access_and_mobility_data_parseFromJS
 
     cJSON *roaming_status_ts = cJSON_GetObjectItemCaseSensitive(access_and_mobility_dataJSON, "roamingStatusTs");
 
-    if (roaming_status_ts) { 
+    if (roaming_status_ts) {
     if (!cJSON_IsString(roaming_status_ts)) {
         ogs_error("OpenAPI_access_and_mobility_data_parseFromJSON() failed [roaming_status_ts]");
         goto end;
@@ -462,13 +464,13 @@ OpenAPI_access_and_mobility_data_t *OpenAPI_access_and_mobility_data_parseFromJS
     cJSON *current_plmn = cJSON_GetObjectItemCaseSensitive(access_and_mobility_dataJSON, "currentPlmn");
 
     OpenAPI_plmn_id_1_t *current_plmn_local_nonprim = NULL;
-    if (current_plmn) { 
+    if (current_plmn) {
     current_plmn_local_nonprim = OpenAPI_plmn_id_1_parseFromJSON(current_plmn);
     }
 
     cJSON *current_plmn_ts = cJSON_GetObjectItemCaseSensitive(access_and_mobility_dataJSON, "currentPlmnTs");
 
-    if (current_plmn_ts) { 
+    if (current_plmn_ts) {
     if (!cJSON_IsString(current_plmn_ts)) {
         ogs_error("OpenAPI_access_and_mobility_data_parseFromJSON() failed [current_plmn_ts]");
         goto end;
@@ -478,7 +480,7 @@ OpenAPI_access_and_mobility_data_t *OpenAPI_access_and_mobility_data_parseFromJS
     cJSON *rat_type = cJSON_GetObjectItemCaseSensitive(access_and_mobility_dataJSON, "ratType");
 
     OpenAPI_list_t *rat_typeList;
-    if (rat_type) { 
+    if (rat_type) {
     cJSON *rat_type_local_nonprimitive;
     if (!cJSON_IsArray(rat_type)) {
         ogs_error("OpenAPI_access_and_mobility_data_parseFromJSON() failed [rat_type]");
@@ -499,7 +501,7 @@ OpenAPI_access_and_mobility_data_t *OpenAPI_access_and_mobility_data_parseFromJS
 
     cJSON *rat_types_ts = cJSON_GetObjectItemCaseSensitive(access_and_mobility_dataJSON, "ratTypesTs");
 
-    if (rat_types_ts) { 
+    if (rat_types_ts) {
     if (!cJSON_IsString(rat_types_ts)) {
         ogs_error("OpenAPI_access_and_mobility_data_parseFromJSON() failed [rat_types_ts]");
         goto end;
@@ -508,7 +510,7 @@ OpenAPI_access_and_mobility_data_t *OpenAPI_access_and_mobility_data_parseFromJS
 
     cJSON *supp_feat = cJSON_GetObjectItemCaseSensitive(access_and_mobility_dataJSON, "suppFeat");
 
-    if (supp_feat) { 
+    if (supp_feat) {
     if (!cJSON_IsString(supp_feat)) {
         ogs_error("OpenAPI_access_and_mobility_data_parseFromJSON() failed [supp_feat]");
         goto end;
@@ -529,6 +531,7 @@ OpenAPI_access_and_mobility_data_t *OpenAPI_access_and_mobility_data_parseFromJS
         reachability_status_ts ? ogs_strdup_or_assert(reachability_status_ts->valuestring) : NULL,
         sms_over_nas_status ? sms_over_nas_statusVariable : 0,
         sms_over_nas_status_ts ? ogs_strdup_or_assert(sms_over_nas_status_ts->valuestring) : NULL,
+        roaming_status ? true : false,
         roaming_status ? roaming_status->valueint : 0,
         roaming_status_ts ? ogs_strdup_or_assert(roaming_status_ts->valuestring) : NULL,
         current_plmn ? current_plmn_local_nonprim : NULL,

@@ -74,7 +74,6 @@ OpenAPI_twap_id_t *OpenAPI_twap_id_parseFromJSON(cJSON *twap_idJSON)
         goto end;
     }
 
-    
     if (!cJSON_IsString(ss_id)) {
         ogs_error("OpenAPI_twap_id_parseFromJSON() failed [ss_id]");
         goto end;
@@ -82,7 +81,7 @@ OpenAPI_twap_id_t *OpenAPI_twap_id_parseFromJSON(cJSON *twap_idJSON)
 
     cJSON *bss_id = cJSON_GetObjectItemCaseSensitive(twap_idJSON, "bssId");
 
-    if (bss_id) { 
+    if (bss_id) {
     if (!cJSON_IsString(bss_id)) {
         ogs_error("OpenAPI_twap_id_parseFromJSON() failed [bss_id]");
         goto end;
@@ -91,7 +90,7 @@ OpenAPI_twap_id_t *OpenAPI_twap_id_parseFromJSON(cJSON *twap_idJSON)
 
     cJSON *civic_address = cJSON_GetObjectItemCaseSensitive(twap_idJSON, "civicAddress");
 
-    if (civic_address) { 
+    if (civic_address) {
     if (!cJSON_IsNumber(civic_address)) {
         ogs_error("OpenAPI_twap_id_parseFromJSON() failed [civic_address]");
         goto end;

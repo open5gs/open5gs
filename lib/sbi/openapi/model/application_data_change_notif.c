@@ -116,21 +116,21 @@ OpenAPI_application_data_change_notif_t *OpenAPI_application_data_change_notif_p
     cJSON *iptv_config_data = cJSON_GetObjectItemCaseSensitive(application_data_change_notifJSON, "iptvConfigData");
 
     OpenAPI_iptv_config_data_t *iptv_config_data_local_nonprim = NULL;
-    if (iptv_config_data) { 
+    if (iptv_config_data) {
     iptv_config_data_local_nonprim = OpenAPI_iptv_config_data_parseFromJSON(iptv_config_data);
     }
 
     cJSON *pfd_data = cJSON_GetObjectItemCaseSensitive(application_data_change_notifJSON, "pfdData");
 
     OpenAPI_pfd_change_notification_t *pfd_data_local_nonprim = NULL;
-    if (pfd_data) { 
+    if (pfd_data) {
     pfd_data_local_nonprim = OpenAPI_pfd_change_notification_parseFromJSON(pfd_data);
     }
 
     cJSON *bdt_policy_data = cJSON_GetObjectItemCaseSensitive(application_data_change_notifJSON, "bdtPolicyData");
 
     OpenAPI_bdt_policy_data_t *bdt_policy_data_local_nonprim = NULL;
-    if (bdt_policy_data) { 
+    if (bdt_policy_data) {
     bdt_policy_data_local_nonprim = OpenAPI_bdt_policy_data_parseFromJSON(bdt_policy_data);
     }
 
@@ -140,7 +140,6 @@ OpenAPI_application_data_change_notif_t *OpenAPI_application_data_change_notif_p
         goto end;
     }
 
-    
     if (!cJSON_IsString(res_uri)) {
         ogs_error("OpenAPI_application_data_change_notif_parseFromJSON() failed [res_uri]");
         goto end;
@@ -149,7 +148,7 @@ OpenAPI_application_data_change_notif_t *OpenAPI_application_data_change_notif_p
     cJSON *ser_param_data = cJSON_GetObjectItemCaseSensitive(application_data_change_notifJSON, "serParamData");
 
     OpenAPI_service_parameter_data_t *ser_param_data_local_nonprim = NULL;
-    if (ser_param_data) { 
+    if (ser_param_data) {
     ser_param_data_local_nonprim = OpenAPI_service_parameter_data_parseFromJSON(ser_param_data);
     }
 

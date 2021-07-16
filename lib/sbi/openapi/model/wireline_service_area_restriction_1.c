@@ -79,7 +79,7 @@ OpenAPI_wireline_service_area_restriction_1_t *OpenAPI_wireline_service_area_res
     cJSON *restriction_type = cJSON_GetObjectItemCaseSensitive(wireline_service_area_restriction_1JSON, "restrictionType");
 
     OpenAPI_restriction_type_e restriction_typeVariable;
-    if (restriction_type) { 
+    if (restriction_type) {
     if (!cJSON_IsString(restriction_type)) {
         ogs_error("OpenAPI_wireline_service_area_restriction_1_parseFromJSON() failed [restriction_type]");
         goto end;
@@ -90,7 +90,7 @@ OpenAPI_wireline_service_area_restriction_1_t *OpenAPI_wireline_service_area_res
     cJSON *areas = cJSON_GetObjectItemCaseSensitive(wireline_service_area_restriction_1JSON, "areas");
 
     OpenAPI_list_t *areasList;
-    if (areas) { 
+    if (areas) {
     cJSON *areas_local_nonprimitive;
     if (!cJSON_IsArray(areas)){
         ogs_error("OpenAPI_wireline_service_area_restriction_1_parseFromJSON() failed [areas]");

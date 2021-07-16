@@ -5,10 +5,14 @@
 #include "apn_rate_status.h"
 
 OpenAPI_apn_rate_status_t *OpenAPI_apn_rate_status_create(
+    bool is_remain_packets_ul,
     int remain_packets_ul,
+    bool is_remain_packets_dl,
     int remain_packets_dl,
     char *validity_time,
+    bool is_remain_ex_reports_ul,
     int remain_ex_reports_ul,
+    bool is_remain_ex_reports_dl,
     int remain_ex_reports_dl
 )
 {
@@ -16,10 +20,14 @@ OpenAPI_apn_rate_status_t *OpenAPI_apn_rate_status_create(
     if (!apn_rate_status_local_var) {
         return NULL;
     }
+    apn_rate_status_local_var->is_remain_packets_ul = is_remain_packets_ul;
     apn_rate_status_local_var->remain_packets_ul = remain_packets_ul;
+    apn_rate_status_local_var->is_remain_packets_dl = is_remain_packets_dl;
     apn_rate_status_local_var->remain_packets_dl = remain_packets_dl;
     apn_rate_status_local_var->validity_time = validity_time;
+    apn_rate_status_local_var->is_remain_ex_reports_ul = is_remain_ex_reports_ul;
     apn_rate_status_local_var->remain_ex_reports_ul = remain_ex_reports_ul;
+    apn_rate_status_local_var->is_remain_ex_reports_dl = is_remain_ex_reports_dl;
     apn_rate_status_local_var->remain_ex_reports_dl = remain_ex_reports_dl;
 
     return apn_rate_status_local_var;
@@ -45,14 +53,14 @@ cJSON *OpenAPI_apn_rate_status_convertToJSON(OpenAPI_apn_rate_status_t *apn_rate
     }
 
     item = cJSON_CreateObject();
-    if (apn_rate_status->remain_packets_ul) {
+    if (apn_rate_status->is_remain_packets_ul) {
     if (cJSON_AddNumberToObject(item, "remainPacketsUl", apn_rate_status->remain_packets_ul) == NULL) {
         ogs_error("OpenAPI_apn_rate_status_convertToJSON() failed [remain_packets_ul]");
         goto end;
     }
     }
 
-    if (apn_rate_status->remain_packets_dl) {
+    if (apn_rate_status->is_remain_packets_dl) {
     if (cJSON_AddNumberToObject(item, "remainPacketsDl", apn_rate_status->remain_packets_dl) == NULL) {
         ogs_error("OpenAPI_apn_rate_status_convertToJSON() failed [remain_packets_dl]");
         goto end;
@@ -66,14 +74,14 @@ cJSON *OpenAPI_apn_rate_status_convertToJSON(OpenAPI_apn_rate_status_t *apn_rate
     }
     }
 
-    if (apn_rate_status->remain_ex_reports_ul) {
+    if (apn_rate_status->is_remain_ex_reports_ul) {
     if (cJSON_AddNumberToObject(item, "remainExReportsUl", apn_rate_status->remain_ex_reports_ul) == NULL) {
         ogs_error("OpenAPI_apn_rate_status_convertToJSON() failed [remain_ex_reports_ul]");
         goto end;
     }
     }
 
-    if (apn_rate_status->remain_ex_reports_dl) {
+    if (apn_rate_status->is_remain_ex_reports_dl) {
     if (cJSON_AddNumberToObject(item, "remainExReportsDl", apn_rate_status->remain_ex_reports_dl) == NULL) {
         ogs_error("OpenAPI_apn_rate_status_convertToJSON() failed [remain_ex_reports_dl]");
         goto end;
@@ -89,7 +97,7 @@ OpenAPI_apn_rate_status_t *OpenAPI_apn_rate_status_parseFromJSON(cJSON *apn_rate
     OpenAPI_apn_rate_status_t *apn_rate_status_local_var = NULL;
     cJSON *remain_packets_ul = cJSON_GetObjectItemCaseSensitive(apn_rate_statusJSON, "remainPacketsUl");
 
-    if (remain_packets_ul) { 
+    if (remain_packets_ul) {
     if (!cJSON_IsNumber(remain_packets_ul)) {
         ogs_error("OpenAPI_apn_rate_status_parseFromJSON() failed [remain_packets_ul]");
         goto end;
@@ -98,7 +106,7 @@ OpenAPI_apn_rate_status_t *OpenAPI_apn_rate_status_parseFromJSON(cJSON *apn_rate
 
     cJSON *remain_packets_dl = cJSON_GetObjectItemCaseSensitive(apn_rate_statusJSON, "remainPacketsDl");
 
-    if (remain_packets_dl) { 
+    if (remain_packets_dl) {
     if (!cJSON_IsNumber(remain_packets_dl)) {
         ogs_error("OpenAPI_apn_rate_status_parseFromJSON() failed [remain_packets_dl]");
         goto end;
@@ -107,7 +115,7 @@ OpenAPI_apn_rate_status_t *OpenAPI_apn_rate_status_parseFromJSON(cJSON *apn_rate
 
     cJSON *validity_time = cJSON_GetObjectItemCaseSensitive(apn_rate_statusJSON, "validityTime");
 
-    if (validity_time) { 
+    if (validity_time) {
     if (!cJSON_IsString(validity_time)) {
         ogs_error("OpenAPI_apn_rate_status_parseFromJSON() failed [validity_time]");
         goto end;
@@ -116,7 +124,7 @@ OpenAPI_apn_rate_status_t *OpenAPI_apn_rate_status_parseFromJSON(cJSON *apn_rate
 
     cJSON *remain_ex_reports_ul = cJSON_GetObjectItemCaseSensitive(apn_rate_statusJSON, "remainExReportsUl");
 
-    if (remain_ex_reports_ul) { 
+    if (remain_ex_reports_ul) {
     if (!cJSON_IsNumber(remain_ex_reports_ul)) {
         ogs_error("OpenAPI_apn_rate_status_parseFromJSON() failed [remain_ex_reports_ul]");
         goto end;
@@ -125,7 +133,7 @@ OpenAPI_apn_rate_status_t *OpenAPI_apn_rate_status_parseFromJSON(cJSON *apn_rate
 
     cJSON *remain_ex_reports_dl = cJSON_GetObjectItemCaseSensitive(apn_rate_statusJSON, "remainExReportsDl");
 
-    if (remain_ex_reports_dl) { 
+    if (remain_ex_reports_dl) {
     if (!cJSON_IsNumber(remain_ex_reports_dl)) {
         ogs_error("OpenAPI_apn_rate_status_parseFromJSON() failed [remain_ex_reports_dl]");
         goto end;
@@ -133,10 +141,14 @@ OpenAPI_apn_rate_status_t *OpenAPI_apn_rate_status_parseFromJSON(cJSON *apn_rate
     }
 
     apn_rate_status_local_var = OpenAPI_apn_rate_status_create (
+        remain_packets_ul ? true : false,
         remain_packets_ul ? remain_packets_ul->valuedouble : 0,
+        remain_packets_dl ? true : false,
         remain_packets_dl ? remain_packets_dl->valuedouble : 0,
         validity_time ? ogs_strdup_or_assert(validity_time->valuestring) : NULL,
+        remain_ex_reports_ul ? true : false,
         remain_ex_reports_ul ? remain_ex_reports_ul->valuedouble : 0,
+        remain_ex_reports_dl ? true : false,
         remain_ex_reports_dl ? remain_ex_reports_dl->valuedouble : 0
     );
 

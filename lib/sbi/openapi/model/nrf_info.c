@@ -784,7 +784,7 @@ OpenAPI_nrf_info_t *OpenAPI_nrf_info_parseFromJSON(cJSON *nrf_infoJSON)
     cJSON *served_udr_info = cJSON_GetObjectItemCaseSensitive(nrf_infoJSON, "servedUdrInfo");
 
     OpenAPI_list_t *served_udr_infoList;
-    if (served_udr_info) { 
+    if (served_udr_info) {
     cJSON *served_udr_info_local_map;
     if (!cJSON_IsObject(served_udr_info)) {
         ogs_error("OpenAPI_nrf_info_parseFromJSON() failed [served_udr_info]");
@@ -807,7 +807,7 @@ OpenAPI_nrf_info_t *OpenAPI_nrf_info_parseFromJSON(cJSON *nrf_infoJSON)
     cJSON *served_udr_info_list = cJSON_GetObjectItemCaseSensitive(nrf_infoJSON, "servedUdrInfoList");
 
     OpenAPI_list_t *served_udr_info_listList;
-    if (served_udr_info_list) { 
+    if (served_udr_info_list) {
     cJSON *served_udr_info_list_local_map;
     if (!cJSON_IsObject(served_udr_info_list)) {
         ogs_error("OpenAPI_nrf_info_parseFromJSON() failed [served_udr_info_list]");
@@ -824,7 +824,7 @@ OpenAPI_nrf_info_t *OpenAPI_nrf_info_parseFromJSON(cJSON *nrf_infoJSON)
     cJSON *served_udm_info = cJSON_GetObjectItemCaseSensitive(nrf_infoJSON, "servedUdmInfo");
 
     OpenAPI_list_t *served_udm_infoList;
-    if (served_udm_info) { 
+    if (served_udm_info) {
     cJSON *served_udm_info_local_map;
     if (!cJSON_IsObject(served_udm_info)) {
         ogs_error("OpenAPI_nrf_info_parseFromJSON() failed [served_udm_info]");
@@ -847,7 +847,7 @@ OpenAPI_nrf_info_t *OpenAPI_nrf_info_parseFromJSON(cJSON *nrf_infoJSON)
     cJSON *served_udm_info_list = cJSON_GetObjectItemCaseSensitive(nrf_infoJSON, "servedUdmInfoList");
 
     OpenAPI_list_t *served_udm_info_listList;
-    if (served_udm_info_list) { 
+    if (served_udm_info_list) {
     cJSON *served_udm_info_list_local_map;
     if (!cJSON_IsObject(served_udm_info_list)) {
         ogs_error("OpenAPI_nrf_info_parseFromJSON() failed [served_udm_info_list]");
@@ -864,7 +864,7 @@ OpenAPI_nrf_info_t *OpenAPI_nrf_info_parseFromJSON(cJSON *nrf_infoJSON)
     cJSON *served_ausf_info = cJSON_GetObjectItemCaseSensitive(nrf_infoJSON, "servedAusfInfo");
 
     OpenAPI_list_t *served_ausf_infoList;
-    if (served_ausf_info) { 
+    if (served_ausf_info) {
     cJSON *served_ausf_info_local_map;
     if (!cJSON_IsObject(served_ausf_info)) {
         ogs_error("OpenAPI_nrf_info_parseFromJSON() failed [served_ausf_info]");
@@ -887,7 +887,7 @@ OpenAPI_nrf_info_t *OpenAPI_nrf_info_parseFromJSON(cJSON *nrf_infoJSON)
     cJSON *served_ausf_info_list = cJSON_GetObjectItemCaseSensitive(nrf_infoJSON, "servedAusfInfoList");
 
     OpenAPI_list_t *served_ausf_info_listList;
-    if (served_ausf_info_list) { 
+    if (served_ausf_info_list) {
     cJSON *served_ausf_info_list_local_map;
     if (!cJSON_IsObject(served_ausf_info_list)) {
         ogs_error("OpenAPI_nrf_info_parseFromJSON() failed [served_ausf_info_list]");
@@ -904,7 +904,7 @@ OpenAPI_nrf_info_t *OpenAPI_nrf_info_parseFromJSON(cJSON *nrf_infoJSON)
     cJSON *served_amf_info = cJSON_GetObjectItemCaseSensitive(nrf_infoJSON, "servedAmfInfo");
 
     OpenAPI_list_t *served_amf_infoList;
-    if (served_amf_info) { 
+    if (served_amf_info) {
     cJSON *served_amf_info_local_map;
     if (!cJSON_IsObject(served_amf_info)) {
         ogs_error("OpenAPI_nrf_info_parseFromJSON() failed [served_amf_info]");
@@ -927,7 +927,7 @@ OpenAPI_nrf_info_t *OpenAPI_nrf_info_parseFromJSON(cJSON *nrf_infoJSON)
     cJSON *served_amf_info_list = cJSON_GetObjectItemCaseSensitive(nrf_infoJSON, "servedAmfInfoList");
 
     OpenAPI_list_t *served_amf_info_listList;
-    if (served_amf_info_list) { 
+    if (served_amf_info_list) {
     cJSON *served_amf_info_list_local_map;
     if (!cJSON_IsObject(served_amf_info_list)) {
         ogs_error("OpenAPI_nrf_info_parseFromJSON() failed [served_amf_info_list]");
@@ -944,7 +944,7 @@ OpenAPI_nrf_info_t *OpenAPI_nrf_info_parseFromJSON(cJSON *nrf_infoJSON)
     cJSON *served_smf_info = cJSON_GetObjectItemCaseSensitive(nrf_infoJSON, "servedSmfInfo");
 
     OpenAPI_list_t *served_smf_infoList;
-    if (served_smf_info) { 
+    if (served_smf_info) {
     cJSON *served_smf_info_local_map;
     if (!cJSON_IsObject(served_smf_info)) {
         ogs_error("OpenAPI_nrf_info_parseFromJSON() failed [served_smf_info]");
@@ -967,7 +967,7 @@ OpenAPI_nrf_info_t *OpenAPI_nrf_info_parseFromJSON(cJSON *nrf_infoJSON)
     cJSON *served_smf_info_list = cJSON_GetObjectItemCaseSensitive(nrf_infoJSON, "servedSmfInfoList");
 
     OpenAPI_list_t *served_smf_info_listList;
-    if (served_smf_info_list) { 
+    if (served_smf_info_list) {
     cJSON *served_smf_info_list_local_map;
     if (!cJSON_IsObject(served_smf_info_list)) {
         ogs_error("OpenAPI_nrf_info_parseFromJSON() failed [served_smf_info_list]");
@@ -984,7 +984,7 @@ OpenAPI_nrf_info_t *OpenAPI_nrf_info_parseFromJSON(cJSON *nrf_infoJSON)
     cJSON *served_upf_info = cJSON_GetObjectItemCaseSensitive(nrf_infoJSON, "servedUpfInfo");
 
     OpenAPI_list_t *served_upf_infoList;
-    if (served_upf_info) { 
+    if (served_upf_info) {
     cJSON *served_upf_info_local_map;
     if (!cJSON_IsObject(served_upf_info)) {
         ogs_error("OpenAPI_nrf_info_parseFromJSON() failed [served_upf_info]");
@@ -1007,7 +1007,7 @@ OpenAPI_nrf_info_t *OpenAPI_nrf_info_parseFromJSON(cJSON *nrf_infoJSON)
     cJSON *served_upf_info_list = cJSON_GetObjectItemCaseSensitive(nrf_infoJSON, "servedUpfInfoList");
 
     OpenAPI_list_t *served_upf_info_listList;
-    if (served_upf_info_list) { 
+    if (served_upf_info_list) {
     cJSON *served_upf_info_list_local_map;
     if (!cJSON_IsObject(served_upf_info_list)) {
         ogs_error("OpenAPI_nrf_info_parseFromJSON() failed [served_upf_info_list]");
@@ -1024,7 +1024,7 @@ OpenAPI_nrf_info_t *OpenAPI_nrf_info_parseFromJSON(cJSON *nrf_infoJSON)
     cJSON *served_pcf_info = cJSON_GetObjectItemCaseSensitive(nrf_infoJSON, "servedPcfInfo");
 
     OpenAPI_list_t *served_pcf_infoList;
-    if (served_pcf_info) { 
+    if (served_pcf_info) {
     cJSON *served_pcf_info_local_map;
     if (!cJSON_IsObject(served_pcf_info)) {
         ogs_error("OpenAPI_nrf_info_parseFromJSON() failed [served_pcf_info]");
@@ -1047,7 +1047,7 @@ OpenAPI_nrf_info_t *OpenAPI_nrf_info_parseFromJSON(cJSON *nrf_infoJSON)
     cJSON *served_pcf_info_list = cJSON_GetObjectItemCaseSensitive(nrf_infoJSON, "servedPcfInfoList");
 
     OpenAPI_list_t *served_pcf_info_listList;
-    if (served_pcf_info_list) { 
+    if (served_pcf_info_list) {
     cJSON *served_pcf_info_list_local_map;
     if (!cJSON_IsObject(served_pcf_info_list)) {
         ogs_error("OpenAPI_nrf_info_parseFromJSON() failed [served_pcf_info_list]");
@@ -1064,7 +1064,7 @@ OpenAPI_nrf_info_t *OpenAPI_nrf_info_parseFromJSON(cJSON *nrf_infoJSON)
     cJSON *served_bsf_info = cJSON_GetObjectItemCaseSensitive(nrf_infoJSON, "servedBsfInfo");
 
     OpenAPI_list_t *served_bsf_infoList;
-    if (served_bsf_info) { 
+    if (served_bsf_info) {
     cJSON *served_bsf_info_local_map;
     if (!cJSON_IsObject(served_bsf_info)) {
         ogs_error("OpenAPI_nrf_info_parseFromJSON() failed [served_bsf_info]");
@@ -1087,7 +1087,7 @@ OpenAPI_nrf_info_t *OpenAPI_nrf_info_parseFromJSON(cJSON *nrf_infoJSON)
     cJSON *served_bsf_info_list = cJSON_GetObjectItemCaseSensitive(nrf_infoJSON, "servedBsfInfoList");
 
     OpenAPI_list_t *served_bsf_info_listList;
-    if (served_bsf_info_list) { 
+    if (served_bsf_info_list) {
     cJSON *served_bsf_info_list_local_map;
     if (!cJSON_IsObject(served_bsf_info_list)) {
         ogs_error("OpenAPI_nrf_info_parseFromJSON() failed [served_bsf_info_list]");
@@ -1104,7 +1104,7 @@ OpenAPI_nrf_info_t *OpenAPI_nrf_info_parseFromJSON(cJSON *nrf_infoJSON)
     cJSON *served_chf_info = cJSON_GetObjectItemCaseSensitive(nrf_infoJSON, "servedChfInfo");
 
     OpenAPI_list_t *served_chf_infoList;
-    if (served_chf_info) { 
+    if (served_chf_info) {
     cJSON *served_chf_info_local_map;
     if (!cJSON_IsObject(served_chf_info)) {
         ogs_error("OpenAPI_nrf_info_parseFromJSON() failed [served_chf_info]");
@@ -1127,7 +1127,7 @@ OpenAPI_nrf_info_t *OpenAPI_nrf_info_parseFromJSON(cJSON *nrf_infoJSON)
     cJSON *served_chf_info_list = cJSON_GetObjectItemCaseSensitive(nrf_infoJSON, "servedChfInfoList");
 
     OpenAPI_list_t *served_chf_info_listList;
-    if (served_chf_info_list) { 
+    if (served_chf_info_list) {
     cJSON *served_chf_info_list_local_map;
     if (!cJSON_IsObject(served_chf_info_list)) {
         ogs_error("OpenAPI_nrf_info_parseFromJSON() failed [served_chf_info_list]");
@@ -1144,7 +1144,7 @@ OpenAPI_nrf_info_t *OpenAPI_nrf_info_parseFromJSON(cJSON *nrf_infoJSON)
     cJSON *served_nef_info = cJSON_GetObjectItemCaseSensitive(nrf_infoJSON, "servedNefInfo");
 
     OpenAPI_list_t *served_nef_infoList;
-    if (served_nef_info) { 
+    if (served_nef_info) {
     cJSON *served_nef_info_local_map;
     if (!cJSON_IsObject(served_nef_info)) {
         ogs_error("OpenAPI_nrf_info_parseFromJSON() failed [served_nef_info]");
@@ -1167,7 +1167,7 @@ OpenAPI_nrf_info_t *OpenAPI_nrf_info_parseFromJSON(cJSON *nrf_infoJSON)
     cJSON *served_nwdaf_info = cJSON_GetObjectItemCaseSensitive(nrf_infoJSON, "servedNwdafInfo");
 
     OpenAPI_list_t *served_nwdaf_infoList;
-    if (served_nwdaf_info) { 
+    if (served_nwdaf_info) {
     cJSON *served_nwdaf_info_local_map;
     if (!cJSON_IsObject(served_nwdaf_info)) {
         ogs_error("OpenAPI_nrf_info_parseFromJSON() failed [served_nwdaf_info]");
@@ -1190,7 +1190,7 @@ OpenAPI_nrf_info_t *OpenAPI_nrf_info_parseFromJSON(cJSON *nrf_infoJSON)
     cJSON *served_pcscf_info_list = cJSON_GetObjectItemCaseSensitive(nrf_infoJSON, "servedPcscfInfoList");
 
     OpenAPI_list_t *served_pcscf_info_listList;
-    if (served_pcscf_info_list) { 
+    if (served_pcscf_info_list) {
     cJSON *served_pcscf_info_list_local_map;
     if (!cJSON_IsObject(served_pcscf_info_list)) {
         ogs_error("OpenAPI_nrf_info_parseFromJSON() failed [served_pcscf_info_list]");
@@ -1207,7 +1207,7 @@ OpenAPI_nrf_info_t *OpenAPI_nrf_info_parseFromJSON(cJSON *nrf_infoJSON)
     cJSON *served_gmlc_info = cJSON_GetObjectItemCaseSensitive(nrf_infoJSON, "servedGmlcInfo");
 
     OpenAPI_list_t *served_gmlc_infoList;
-    if (served_gmlc_info) { 
+    if (served_gmlc_info) {
     cJSON *served_gmlc_info_local_map;
     if (!cJSON_IsObject(served_gmlc_info)) {
         ogs_error("OpenAPI_nrf_info_parseFromJSON() failed [served_gmlc_info]");
@@ -1230,7 +1230,7 @@ OpenAPI_nrf_info_t *OpenAPI_nrf_info_parseFromJSON(cJSON *nrf_infoJSON)
     cJSON *served_lmf_info = cJSON_GetObjectItemCaseSensitive(nrf_infoJSON, "servedLmfInfo");
 
     OpenAPI_list_t *served_lmf_infoList;
-    if (served_lmf_info) { 
+    if (served_lmf_info) {
     cJSON *served_lmf_info_local_map;
     if (!cJSON_IsObject(served_lmf_info)) {
         ogs_error("OpenAPI_nrf_info_parseFromJSON() failed [served_lmf_info]");
@@ -1253,7 +1253,7 @@ OpenAPI_nrf_info_t *OpenAPI_nrf_info_parseFromJSON(cJSON *nrf_infoJSON)
     cJSON *served_nf_info = cJSON_GetObjectItemCaseSensitive(nrf_infoJSON, "servedNfInfo");
 
     OpenAPI_list_t *served_nf_infoList;
-    if (served_nf_info) { 
+    if (served_nf_info) {
     cJSON *served_nf_info_local_map;
     if (!cJSON_IsObject(served_nf_info)) {
         ogs_error("OpenAPI_nrf_info_parseFromJSON() failed [served_nf_info]");
@@ -1276,7 +1276,7 @@ OpenAPI_nrf_info_t *OpenAPI_nrf_info_parseFromJSON(cJSON *nrf_infoJSON)
     cJSON *served_hss_info_list = cJSON_GetObjectItemCaseSensitive(nrf_infoJSON, "servedHssInfoList");
 
     OpenAPI_list_t *served_hss_info_listList;
-    if (served_hss_info_list) { 
+    if (served_hss_info_list) {
     cJSON *served_hss_info_list_local_map;
     if (!cJSON_IsObject(served_hss_info_list)) {
         ogs_error("OpenAPI_nrf_info_parseFromJSON() failed [served_hss_info_list]");
@@ -1293,7 +1293,7 @@ OpenAPI_nrf_info_t *OpenAPI_nrf_info_parseFromJSON(cJSON *nrf_infoJSON)
     cJSON *served_udsf_info = cJSON_GetObjectItemCaseSensitive(nrf_infoJSON, "servedUdsfInfo");
 
     OpenAPI_list_t *served_udsf_infoList;
-    if (served_udsf_info) { 
+    if (served_udsf_info) {
     cJSON *served_udsf_info_local_map;
     if (!cJSON_IsObject(served_udsf_info)) {
         ogs_error("OpenAPI_nrf_info_parseFromJSON() failed [served_udsf_info]");
@@ -1316,7 +1316,7 @@ OpenAPI_nrf_info_t *OpenAPI_nrf_info_parseFromJSON(cJSON *nrf_infoJSON)
     cJSON *served_udsf_info_list = cJSON_GetObjectItemCaseSensitive(nrf_infoJSON, "servedUdsfInfoList");
 
     OpenAPI_list_t *served_udsf_info_listList;
-    if (served_udsf_info_list) { 
+    if (served_udsf_info_list) {
     cJSON *served_udsf_info_list_local_map;
     if (!cJSON_IsObject(served_udsf_info_list)) {
         ogs_error("OpenAPI_nrf_info_parseFromJSON() failed [served_udsf_info_list]");
@@ -1333,7 +1333,7 @@ OpenAPI_nrf_info_t *OpenAPI_nrf_info_parseFromJSON(cJSON *nrf_infoJSON)
     cJSON *served_scp_info_list = cJSON_GetObjectItemCaseSensitive(nrf_infoJSON, "servedScpInfoList");
 
     OpenAPI_list_t *served_scp_info_listList;
-    if (served_scp_info_list) { 
+    if (served_scp_info_list) {
     cJSON *served_scp_info_list_local_map;
     if (!cJSON_IsObject(served_scp_info_list)) {
         ogs_error("OpenAPI_nrf_info_parseFromJSON() failed [served_scp_info_list]");

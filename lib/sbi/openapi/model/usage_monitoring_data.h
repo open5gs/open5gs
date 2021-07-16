@@ -20,30 +20,48 @@ extern "C" {
 typedef struct OpenAPI_usage_monitoring_data_s OpenAPI_usage_monitoring_data_t;
 typedef struct OpenAPI_usage_monitoring_data_s {
     char *um_id;
+    bool is_volume_threshold;
     long volume_threshold;
+    bool is_volume_threshold_uplink;
     long volume_threshold_uplink;
+    bool is_volume_threshold_downlink;
     long volume_threshold_downlink;
+    bool is_time_threshold;
     int time_threshold;
     char *monitoring_time;
+    bool is_next_vol_threshold;
     long next_vol_threshold;
+    bool is_next_vol_threshold_uplink;
     long next_vol_threshold_uplink;
+    bool is_next_vol_threshold_downlink;
     long next_vol_threshold_downlink;
+    bool is_next_time_threshold;
     int next_time_threshold;
+    bool is_inactivity_time;
     int inactivity_time;
     OpenAPI_list_t *ex_usage_pcc_rule_ids;
 } OpenAPI_usage_monitoring_data_t;
 
 OpenAPI_usage_monitoring_data_t *OpenAPI_usage_monitoring_data_create(
     char *um_id,
+    bool is_volume_threshold,
     long volume_threshold,
+    bool is_volume_threshold_uplink,
     long volume_threshold_uplink,
+    bool is_volume_threshold_downlink,
     long volume_threshold_downlink,
+    bool is_time_threshold,
     int time_threshold,
     char *monitoring_time,
+    bool is_next_vol_threshold,
     long next_vol_threshold,
+    bool is_next_vol_threshold_uplink,
     long next_vol_threshold_uplink,
+    bool is_next_vol_threshold_downlink,
     long next_vol_threshold_downlink,
+    bool is_next_time_threshold,
     int next_time_threshold,
+    bool is_inactivity_time,
     int inactivity_time,
     OpenAPI_list_t *ex_usage_pcc_rule_ids
 );

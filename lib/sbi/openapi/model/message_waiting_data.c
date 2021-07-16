@@ -70,7 +70,7 @@ OpenAPI_message_waiting_data_t *OpenAPI_message_waiting_data_parseFromJSON(cJSON
     cJSON *mwd_list = cJSON_GetObjectItemCaseSensitive(message_waiting_dataJSON, "mwdList");
 
     OpenAPI_list_t *mwd_listList;
-    if (mwd_list) { 
+    if (mwd_list) {
     cJSON *mwd_list_local_nonprimitive;
     if (!cJSON_IsArray(mwd_list)){
         ogs_error("OpenAPI_message_waiting_data_parseFromJSON() failed [mwd_list]");

@@ -84,13 +84,12 @@ OpenAPI_candidate_for_replacement_t *OpenAPI_candidate_for_replacement_parseFrom
     }
 
     OpenAPI_snssai_t *snssai_local_nonprim = NULL;
-    
     snssai_local_nonprim = OpenAPI_snssai_parseFromJSON(snssai);
 
     cJSON *dnns = cJSON_GetObjectItemCaseSensitive(candidate_for_replacementJSON, "dnns");
 
     OpenAPI_list_t *dnnsList;
-    if (dnns) { 
+    if (dnns) {
     cJSON *dnns_local;
     if (!cJSON_IsArray(dnns)) {
         ogs_error("OpenAPI_candidate_for_replacement_parseFromJSON() failed [dnns]");
@@ -104,7 +103,7 @@ OpenAPI_candidate_for_replacement_t *OpenAPI_candidate_for_replacement_parseFrom
         goto end;
     }
     OpenAPI_list_add(dnnsList , ogs_strdup_or_assert(dnns_local->valuestring));
-                    }
+    }
     }
 
     candidate_for_replacement_local_var = OpenAPI_candidate_for_replacement_create (

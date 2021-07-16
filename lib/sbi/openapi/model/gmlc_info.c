@@ -70,7 +70,7 @@ OpenAPI_gmlc_info_t *OpenAPI_gmlc_info_parseFromJSON(cJSON *gmlc_infoJSON)
     cJSON *serving_client_types = cJSON_GetObjectItemCaseSensitive(gmlc_infoJSON, "servingClientTypes");
 
     OpenAPI_list_t *serving_client_typesList;
-    if (serving_client_types) { 
+    if (serving_client_types) {
     cJSON *serving_client_types_local_nonprimitive;
     if (!cJSON_IsArray(serving_client_types)){
         ogs_error("OpenAPI_gmlc_info_parseFromJSON() failed [serving_client_types]");

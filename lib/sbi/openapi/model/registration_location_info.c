@@ -103,7 +103,6 @@ OpenAPI_registration_location_info_t *OpenAPI_registration_location_info_parseFr
         goto end;
     }
 
-    
     if (!cJSON_IsString(amf_instance_id)) {
         ogs_error("OpenAPI_registration_location_info_parseFromJSON() failed [amf_instance_id]");
         goto end;
@@ -112,14 +111,14 @@ OpenAPI_registration_location_info_t *OpenAPI_registration_location_info_parseFr
     cJSON *plmn_id = cJSON_GetObjectItemCaseSensitive(registration_location_infoJSON, "plmnId");
 
     OpenAPI_plmn_id_t *plmn_id_local_nonprim = NULL;
-    if (plmn_id) { 
+    if (plmn_id) {
     plmn_id_local_nonprim = OpenAPI_plmn_id_parseFromJSON(plmn_id);
     }
 
     cJSON *vgmlc_address = cJSON_GetObjectItemCaseSensitive(registration_location_infoJSON, "vgmlcAddress");
 
     OpenAPI_vgmlc_address_t *vgmlc_address_local_nonprim = NULL;
-    if (vgmlc_address) { 
+    if (vgmlc_address) {
     vgmlc_address_local_nonprim = OpenAPI_vgmlc_address_parseFromJSON(vgmlc_address);
     }
 
@@ -130,7 +129,6 @@ OpenAPI_registration_location_info_t *OpenAPI_registration_location_info_parseFr
     }
 
     OpenAPI_list_t *access_type_listList;
-    
     cJSON *access_type_list_local_nonprimitive;
     if (!cJSON_IsArray(access_type_list)) {
         ogs_error("OpenAPI_registration_location_info_parseFromJSON() failed [access_type_list]");

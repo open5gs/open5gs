@@ -23,6 +23,7 @@ typedef struct OpenAPI_emergency_info_1_s {
     char *pgw_fqdn;
     struct OpenAPI_ip_address_1_s *pgw_ip_address;
     char *smf_instance_id;
+    bool is_epdg_ind;
     int epdg_ind;
 } OpenAPI_emergency_info_1_t;
 
@@ -30,6 +31,7 @@ OpenAPI_emergency_info_1_t *OpenAPI_emergency_info_1_create(
     char *pgw_fqdn,
     OpenAPI_ip_address_1_t *pgw_ip_address,
     char *smf_instance_id,
+    bool is_epdg_ind,
     int epdg_ind
 );
 void OpenAPI_emergency_info_1_free(OpenAPI_emergency_info_1_t *emergency_info_1);

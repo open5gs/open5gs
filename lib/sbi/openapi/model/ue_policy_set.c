@@ -10,6 +10,7 @@ OpenAPI_ue_policy_set_t *OpenAPI_ue_policy_set_create(
     OpenAPI_list_t* ue_policy_sections,
     OpenAPI_list_t *upsis,
     OpenAPI_list_t* allowed_route_sel_descs,
+    bool is_andsp_ind,
     int andsp_ind,
     char *pei,
     OpenAPI_list_t *os_ids,
@@ -25,6 +26,7 @@ OpenAPI_ue_policy_set_t *OpenAPI_ue_policy_set_create(
     ue_policy_set_local_var->ue_policy_sections = ue_policy_sections;
     ue_policy_set_local_var->upsis = upsis;
     ue_policy_set_local_var->allowed_route_sel_descs = allowed_route_sel_descs;
+    ue_policy_set_local_var->is_andsp_ind = is_andsp_ind;
     ue_policy_set_local_var->andsp_ind = andsp_ind;
     ue_policy_set_local_var->pei = pei;
     ue_policy_set_local_var->os_ids = os_ids;
@@ -179,7 +181,7 @@ cJSON *OpenAPI_ue_policy_set_convertToJSON(OpenAPI_ue_policy_set_t *ue_policy_se
         }
     }
 
-    if (ue_policy_set->andsp_ind) {
+    if (ue_policy_set->is_andsp_ind) {
     if (cJSON_AddBoolToObject(item, "andspInd", ue_policy_set->andsp_ind) == NULL) {
         ogs_error("OpenAPI_ue_policy_set_convertToJSON() failed [andsp_ind]");
         goto end;
@@ -226,7 +228,7 @@ OpenAPI_ue_policy_set_t *OpenAPI_ue_policy_set_parseFromJSON(cJSON *ue_policy_se
     cJSON *pra_infos = cJSON_GetObjectItemCaseSensitive(ue_policy_setJSON, "praInfos");
 
     OpenAPI_list_t *pra_infosList;
-    if (pra_infos) { 
+    if (pra_infos) {
     cJSON *pra_infos_local_map;
     if (!cJSON_IsObject(pra_infos)) {
         ogs_error("OpenAPI_ue_policy_set_parseFromJSON() failed [pra_infos]");
@@ -249,7 +251,7 @@ OpenAPI_ue_policy_set_t *OpenAPI_ue_policy_set_parseFromJSON(cJSON *ue_policy_se
     cJSON *subsc_cats = cJSON_GetObjectItemCaseSensitive(ue_policy_setJSON, "subscCats");
 
     OpenAPI_list_t *subsc_catsList;
-    if (subsc_cats) { 
+    if (subsc_cats) {
     cJSON *subsc_cats_local;
     if (!cJSON_IsArray(subsc_cats)) {
         ogs_error("OpenAPI_ue_policy_set_parseFromJSON() failed [subsc_cats]");
@@ -263,13 +265,13 @@ OpenAPI_ue_policy_set_t *OpenAPI_ue_policy_set_parseFromJSON(cJSON *ue_policy_se
         goto end;
     }
     OpenAPI_list_add(subsc_catsList , ogs_strdup_or_assert(subsc_cats_local->valuestring));
-                    }
+    }
     }
 
     cJSON *ue_policy_sections = cJSON_GetObjectItemCaseSensitive(ue_policy_setJSON, "uePolicySections");
 
     OpenAPI_list_t *ue_policy_sectionsList;
-    if (ue_policy_sections) { 
+    if (ue_policy_sections) {
     cJSON *ue_policy_sections_local_map;
     if (!cJSON_IsObject(ue_policy_sections)) {
         ogs_error("OpenAPI_ue_policy_set_parseFromJSON() failed [ue_policy_sections]");
@@ -292,7 +294,7 @@ OpenAPI_ue_policy_set_t *OpenAPI_ue_policy_set_parseFromJSON(cJSON *ue_policy_se
     cJSON *upsis = cJSON_GetObjectItemCaseSensitive(ue_policy_setJSON, "upsis");
 
     OpenAPI_list_t *upsisList;
-    if (upsis) { 
+    if (upsis) {
     cJSON *upsis_local;
     if (!cJSON_IsArray(upsis)) {
         ogs_error("OpenAPI_ue_policy_set_parseFromJSON() failed [upsis]");
@@ -306,13 +308,13 @@ OpenAPI_ue_policy_set_t *OpenAPI_ue_policy_set_parseFromJSON(cJSON *ue_policy_se
         goto end;
     }
     OpenAPI_list_add(upsisList , ogs_strdup_or_assert(upsis_local->valuestring));
-                    }
+    }
     }
 
     cJSON *allowed_route_sel_descs = cJSON_GetObjectItemCaseSensitive(ue_policy_setJSON, "allowedRouteSelDescs");
 
     OpenAPI_list_t *allowed_route_sel_descsList;
-    if (allowed_route_sel_descs) { 
+    if (allowed_route_sel_descs) {
     cJSON *allowed_route_sel_descs_local_map;
     if (!cJSON_IsObject(allowed_route_sel_descs)) {
         ogs_error("OpenAPI_ue_policy_set_parseFromJSON() failed [allowed_route_sel_descs]");
@@ -334,7 +336,7 @@ OpenAPI_ue_policy_set_t *OpenAPI_ue_policy_set_parseFromJSON(cJSON *ue_policy_se
 
     cJSON *andsp_ind = cJSON_GetObjectItemCaseSensitive(ue_policy_setJSON, "andspInd");
 
-    if (andsp_ind) { 
+    if (andsp_ind) {
     if (!cJSON_IsBool(andsp_ind)) {
         ogs_error("OpenAPI_ue_policy_set_parseFromJSON() failed [andsp_ind]");
         goto end;
@@ -343,7 +345,7 @@ OpenAPI_ue_policy_set_t *OpenAPI_ue_policy_set_parseFromJSON(cJSON *ue_policy_se
 
     cJSON *pei = cJSON_GetObjectItemCaseSensitive(ue_policy_setJSON, "pei");
 
-    if (pei) { 
+    if (pei) {
     if (!cJSON_IsString(pei)) {
         ogs_error("OpenAPI_ue_policy_set_parseFromJSON() failed [pei]");
         goto end;
@@ -353,7 +355,7 @@ OpenAPI_ue_policy_set_t *OpenAPI_ue_policy_set_parseFromJSON(cJSON *ue_policy_se
     cJSON *os_ids = cJSON_GetObjectItemCaseSensitive(ue_policy_setJSON, "osIds");
 
     OpenAPI_list_t *os_idsList;
-    if (os_ids) { 
+    if (os_ids) {
     cJSON *os_ids_local;
     if (!cJSON_IsArray(os_ids)) {
         ogs_error("OpenAPI_ue_policy_set_parseFromJSON() failed [os_ids]");
@@ -367,12 +369,12 @@ OpenAPI_ue_policy_set_t *OpenAPI_ue_policy_set_parseFromJSON(cJSON *ue_policy_se
         goto end;
     }
     OpenAPI_list_add(os_idsList , ogs_strdup_or_assert(os_ids_local->valuestring));
-                    }
+    }
     }
 
     cJSON *supp_feat = cJSON_GetObjectItemCaseSensitive(ue_policy_setJSON, "suppFeat");
 
-    if (supp_feat) { 
+    if (supp_feat) {
     if (!cJSON_IsString(supp_feat)) {
         ogs_error("OpenAPI_ue_policy_set_parseFromJSON() failed [supp_feat]");
         goto end;
@@ -385,6 +387,7 @@ OpenAPI_ue_policy_set_t *OpenAPI_ue_policy_set_parseFromJSON(cJSON *ue_policy_se
         ue_policy_sections ? ue_policy_sectionsList : NULL,
         upsis ? upsisList : NULL,
         allowed_route_sel_descs ? allowed_route_sel_descsList : NULL,
+        andsp_ind ? true : false,
         andsp_ind ? andsp_ind->valueint : 0,
         pei ? ogs_strdup_or_assert(pei->valuestring) : NULL,
         os_ids ? os_idsList : NULL,

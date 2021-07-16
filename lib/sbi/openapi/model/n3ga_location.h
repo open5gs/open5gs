@@ -28,6 +28,7 @@ typedef struct OpenAPI_n3ga_location_s {
     char *n3_iwf_id;
     char *ue_ipv4_addr;
     char *ue_ipv6_addr;
+    bool is_port_number;
     int port_number;
     struct OpenAPI_tnap_id_s *tnap_id;
     struct OpenAPI_twap_id_s *twap_id;
@@ -42,6 +43,7 @@ OpenAPI_n3ga_location_t *OpenAPI_n3ga_location_create(
     char *n3_iwf_id,
     char *ue_ipv4_addr,
     char *ue_ipv6_addr,
+    bool is_port_number,
     int port_number,
     OpenAPI_tnap_id_t *tnap_id,
     OpenAPI_twap_id_t *twap_id,

@@ -24,6 +24,7 @@ typedef struct OpenAPI_dnn_route_selection_descriptor_s {
     char *dnn;
     OpenAPI_list_t *ssc_modes;
     OpenAPI_list_t *pdu_sess_types;
+    bool is_atsss_info;
     int atsss_info;
 } OpenAPI_dnn_route_selection_descriptor_t;
 
@@ -31,6 +32,7 @@ OpenAPI_dnn_route_selection_descriptor_t *OpenAPI_dnn_route_selection_descriptor
     char *dnn,
     OpenAPI_list_t *ssc_modes,
     OpenAPI_list_t *pdu_sess_types,
+    bool is_atsss_info,
     int atsss_info
 );
 void OpenAPI_dnn_route_selection_descriptor_free(OpenAPI_dnn_route_selection_descriptor_t *dnn_route_selection_descriptor);

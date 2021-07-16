@@ -6,6 +6,7 @@
 
 OpenAPI_snssai_extension_t *OpenAPI_snssai_extension_create(
     OpenAPI_list_t *sd_ranges,
+    bool is_wildcard_sd,
     int wildcard_sd
 )
 {
@@ -14,6 +15,7 @@ OpenAPI_snssai_extension_t *OpenAPI_snssai_extension_create(
         return NULL;
     }
     snssai_extension_local_var->sd_ranges = sd_ranges;
+    snssai_extension_local_var->is_wildcard_sd = is_wildcard_sd;
     snssai_extension_local_var->wildcard_sd = wildcard_sd;
 
     return snssai_extension_local_var;
@@ -62,7 +64,7 @@ cJSON *OpenAPI_snssai_extension_convertToJSON(OpenAPI_snssai_extension_t *snssai
     }
     }
 
-    if (snssai_extension->wildcard_sd) {
+    if (snssai_extension->is_wildcard_sd) {
     if (cJSON_AddBoolToObject(item, "wildcardSd", snssai_extension->wildcard_sd) == NULL) {
         ogs_error("OpenAPI_snssai_extension_convertToJSON() failed [wildcard_sd]");
         goto end;
@@ -79,7 +81,7 @@ OpenAPI_snssai_extension_t *OpenAPI_snssai_extension_parseFromJSON(cJSON *snssai
     cJSON *sd_ranges = cJSON_GetObjectItemCaseSensitive(snssai_extensionJSON, "sdRanges");
 
     OpenAPI_list_t *sd_rangesList;
-    if (sd_ranges) { 
+    if (sd_ranges) {
     cJSON *sd_ranges_local_nonprimitive;
     if (!cJSON_IsArray(sd_ranges)){
         ogs_error("OpenAPI_snssai_extension_parseFromJSON() failed [sd_ranges]");
@@ -101,7 +103,7 @@ OpenAPI_snssai_extension_t *OpenAPI_snssai_extension_parseFromJSON(cJSON *snssai
 
     cJSON *wildcard_sd = cJSON_GetObjectItemCaseSensitive(snssai_extensionJSON, "wildcardSd");
 
-    if (wildcard_sd) { 
+    if (wildcard_sd) {
     if (!cJSON_IsBool(wildcard_sd)) {
         ogs_error("OpenAPI_snssai_extension_parseFromJSON() failed [wildcard_sd]");
         goto end;
@@ -110,6 +112,7 @@ OpenAPI_snssai_extension_t *OpenAPI_snssai_extension_parseFromJSON(cJSON *snssai
 
     snssai_extension_local_var = OpenAPI_snssai_extension_create (
         sd_ranges ? sd_rangesList : NULL,
+        wildcard_sd ? true : false,
         wildcard_sd ? wildcard_sd->valueint : 0
     );
 

@@ -53,7 +53,7 @@ OpenAPI_ulcl_bp_information_t *OpenAPI_ulcl_bp_information_parseFromJSON(cJSON *
     OpenAPI_ulcl_bp_information_t *ulcl_bp_information_local_var = NULL;
     cJSON *ulcl_bp_upf_id = cJSON_GetObjectItemCaseSensitive(ulcl_bp_informationJSON, "ulclBpUpfId");
 
-    if (ulcl_bp_upf_id) { 
+    if (ulcl_bp_upf_id) {
     if (!cJSON_IsString(ulcl_bp_upf_id)) {
         ogs_error("OpenAPI_ulcl_bp_information_parseFromJSON() failed [ulcl_bp_upf_id]");
         goto end;

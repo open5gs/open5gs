@@ -73,7 +73,7 @@ OpenAPI_iptv_config_data_patch_t *OpenAPI_iptv_config_data_patch_parseFromJSON(c
     cJSON *multi_acc_ctrls = cJSON_GetObjectItemCaseSensitive(iptv_config_data_patchJSON, "multiAccCtrls");
 
     OpenAPI_list_t *multi_acc_ctrlsList;
-    if (multi_acc_ctrls) { 
+    if (multi_acc_ctrls) {
     cJSON *multi_acc_ctrls_local_map;
     if (!cJSON_IsObject(multi_acc_ctrls)) {
         ogs_error("OpenAPI_iptv_config_data_patch_parseFromJSON() failed [multi_acc_ctrls]");

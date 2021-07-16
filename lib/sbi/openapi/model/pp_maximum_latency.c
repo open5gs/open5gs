@@ -89,7 +89,6 @@ OpenAPI_pp_maximum_latency_t *OpenAPI_pp_maximum_latency_parseFromJSON(cJSON *pp
         goto end;
     }
 
-    
     if (!cJSON_IsNumber(maximum_latency)) {
         ogs_error("OpenAPI_pp_maximum_latency_parseFromJSON() failed [maximum_latency]");
         goto end;
@@ -101,7 +100,6 @@ OpenAPI_pp_maximum_latency_t *OpenAPI_pp_maximum_latency_parseFromJSON(cJSON *pp
         goto end;
     }
 
-    
     if (!cJSON_IsString(af_instance_id)) {
         ogs_error("OpenAPI_pp_maximum_latency_parseFromJSON() failed [af_instance_id]");
         goto end;
@@ -113,7 +111,6 @@ OpenAPI_pp_maximum_latency_t *OpenAPI_pp_maximum_latency_parseFromJSON(cJSON *pp
         goto end;
     }
 
-    
     if (!cJSON_IsNumber(reference_id)) {
         ogs_error("OpenAPI_pp_maximum_latency_parseFromJSON() failed [reference_id]");
         goto end;
@@ -121,7 +118,7 @@ OpenAPI_pp_maximum_latency_t *OpenAPI_pp_maximum_latency_parseFromJSON(cJSON *pp
 
     cJSON *validity_time = cJSON_GetObjectItemCaseSensitive(pp_maximum_latencyJSON, "validityTime");
 
-    if (validity_time) { 
+    if (validity_time) {
     if (!cJSON_IsString(validity_time)) {
         ogs_error("OpenAPI_pp_maximum_latency_parseFromJSON() failed [validity_time]");
         goto end;
@@ -130,7 +127,7 @@ OpenAPI_pp_maximum_latency_t *OpenAPI_pp_maximum_latency_parseFromJSON(cJSON *pp
 
     cJSON *mtc_provider_information = cJSON_GetObjectItemCaseSensitive(pp_maximum_latencyJSON, "mtcProviderInformation");
 
-    if (mtc_provider_information) { 
+    if (mtc_provider_information) {
     if (!cJSON_IsString(mtc_provider_information)) {
         ogs_error("OpenAPI_pp_maximum_latency_parseFromJSON() failed [mtc_provider_information]");
         goto end;
@@ -138,8 +135,10 @@ OpenAPI_pp_maximum_latency_t *OpenAPI_pp_maximum_latency_parseFromJSON(cJSON *pp
     }
 
     pp_maximum_latency_local_var = OpenAPI_pp_maximum_latency_create (
+        
         maximum_latency->valuedouble,
         ogs_strdup_or_assert(af_instance_id->valuestring),
+        
         reference_id->valuedouble,
         validity_time ? ogs_strdup_or_assert(validity_time->valuestring) : NULL,
         mtc_provider_information ? ogs_strdup_or_assert(mtc_provider_information->valuestring) : NULL

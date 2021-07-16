@@ -72,7 +72,6 @@ OpenAPI_cnf_t *OpenAPI_cnf_parseFromJSON(cJSON *cnfJSON)
     }
 
     OpenAPI_list_t *cnf_unitsList;
-    
     cJSON *cnf_units_local_nonprimitive;
     if (!cJSON_IsArray(cnf_units)){
         ogs_error("OpenAPI_cnf_parseFromJSON() failed [cnf_units]");

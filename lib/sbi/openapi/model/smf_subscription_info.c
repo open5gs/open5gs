@@ -72,7 +72,6 @@ OpenAPI_smf_subscription_info_t *OpenAPI_smf_subscription_info_parseFromJSON(cJS
     }
 
     OpenAPI_list_t *smf_subscription_listList;
-    
     cJSON *smf_subscription_list_local_nonprimitive;
     if (!cJSON_IsArray(smf_subscription_list)){
         ogs_error("OpenAPI_smf_subscription_info_parseFromJSON() failed [smf_subscription_list]");

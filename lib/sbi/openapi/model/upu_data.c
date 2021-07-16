@@ -82,7 +82,6 @@ OpenAPI_upu_data_t *OpenAPI_upu_data_parseFromJSON(cJSON *upu_dataJSON)
         goto end;
     }
 
-    
     if (!cJSON_IsString(provisioning_time)) {
         ogs_error("OpenAPI_upu_data_parseFromJSON() failed [provisioning_time]");
         goto end;
@@ -95,7 +94,6 @@ OpenAPI_upu_data_t *OpenAPI_upu_data_parseFromJSON(cJSON *upu_dataJSON)
     }
 
     OpenAPI_ue_update_status_e ue_update_statusVariable;
-    
     if (!cJSON_IsString(ue_update_status)) {
         ogs_error("OpenAPI_upu_data_parseFromJSON() failed [ue_update_status]");
         goto end;
@@ -104,7 +102,7 @@ OpenAPI_upu_data_t *OpenAPI_upu_data_parseFromJSON(cJSON *upu_dataJSON)
 
     cJSON *upu_xmac_iue = cJSON_GetObjectItemCaseSensitive(upu_dataJSON, "upuXmacIue");
 
-    if (upu_xmac_iue) { 
+    if (upu_xmac_iue) {
     if (!cJSON_IsString(upu_xmac_iue)) {
         ogs_error("OpenAPI_upu_data_parseFromJSON() failed [upu_xmac_iue]");
         goto end;
@@ -113,7 +111,7 @@ OpenAPI_upu_data_t *OpenAPI_upu_data_parseFromJSON(cJSON *upu_dataJSON)
 
     cJSON *upu_mac_iue = cJSON_GetObjectItemCaseSensitive(upu_dataJSON, "upuMacIue");
 
-    if (upu_mac_iue) { 
+    if (upu_mac_iue) {
     if (!cJSON_IsString(upu_mac_iue)) {
         ogs_error("OpenAPI_upu_data_parseFromJSON() failed [upu_mac_iue]");
         goto end;

@@ -81,7 +81,6 @@ OpenAPI_ddn_failure_sub_info_t *OpenAPI_ddn_failure_sub_info_parseFromJSON(cJSON
         goto end;
     }
 
-    
     if (!cJSON_IsString(notify_correlation_id)) {
         ogs_error("OpenAPI_ddn_failure_sub_info_parseFromJSON() failed [notify_correlation_id]");
         goto end;
@@ -90,7 +89,7 @@ OpenAPI_ddn_failure_sub_info_t *OpenAPI_ddn_failure_sub_info_parseFromJSON(cJSON
     cJSON *ddd_traffic_descriptor_list = cJSON_GetObjectItemCaseSensitive(ddn_failure_sub_infoJSON, "dddTrafficDescriptorList");
 
     OpenAPI_list_t *ddd_traffic_descriptor_listList;
-    if (ddd_traffic_descriptor_list) { 
+    if (ddd_traffic_descriptor_list) {
     cJSON *ddd_traffic_descriptor_list_local_nonprimitive;
     if (!cJSON_IsArray(ddd_traffic_descriptor_list)){
         ogs_error("OpenAPI_ddn_failure_sub_info_parseFromJSON() failed [ddd_traffic_descriptor_list]");

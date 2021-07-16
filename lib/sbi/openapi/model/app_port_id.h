@@ -19,12 +19,16 @@ extern "C" {
 
 typedef struct OpenAPI_app_port_id_s OpenAPI_app_port_id_t;
 typedef struct OpenAPI_app_port_id_s {
+    bool is_destination_port;
     int destination_port;
+    bool is_originator_port;
     int originator_port;
 } OpenAPI_app_port_id_t;
 
 OpenAPI_app_port_id_t *OpenAPI_app_port_id_create(
+    bool is_destination_port,
     int destination_port,
+    bool is_originator_port,
     int originator_port
 );
 void OpenAPI_app_port_id_free(OpenAPI_app_port_id_t *app_port_id);

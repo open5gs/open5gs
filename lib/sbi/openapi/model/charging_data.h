@@ -23,14 +23,20 @@ typedef struct OpenAPI_charging_data_s OpenAPI_charging_data_t;
 typedef struct OpenAPI_charging_data_s {
     char *chg_id;
     OpenAPI_metering_method_e metering_method;
+    bool is_offline;
     int offline;
+    bool is_online;
     int online;
+    bool is_sdf_handl;
     int sdf_handl;
+    bool is_rating_group;
     int rating_group;
     OpenAPI_reporting_level_e reporting_level;
+    bool is_service_id;
     int service_id;
     char *sponsor_id;
     char *app_svc_prov_id;
+    bool is_af_charging_identifier;
     int af_charging_identifier;
     char *af_charg_id;
 } OpenAPI_charging_data_t;
@@ -38,14 +44,20 @@ typedef struct OpenAPI_charging_data_s {
 OpenAPI_charging_data_t *OpenAPI_charging_data_create(
     char *chg_id,
     OpenAPI_metering_method_e metering_method,
+    bool is_offline,
     int offline,
+    bool is_online,
     int online,
+    bool is_sdf_handl,
     int sdf_handl,
+    bool is_rating_group,
     int rating_group,
     OpenAPI_reporting_level_e reporting_level,
+    bool is_service_id,
     int service_id,
     char *sponsor_id,
     char *app_svc_prov_id,
+    bool is_af_charging_identifier,
     int af_charging_identifier,
     char *af_charg_id
 );

@@ -122,7 +122,7 @@ OpenAPI_external_unrelated_class_t *OpenAPI_external_unrelated_class_parseFromJS
     cJSON *lcs_client_externals = cJSON_GetObjectItemCaseSensitive(external_unrelated_classJSON, "lcsClientExternals");
 
     OpenAPI_list_t *lcs_client_externalsList;
-    if (lcs_client_externals) { 
+    if (lcs_client_externals) {
     cJSON *lcs_client_externals_local_nonprimitive;
     if (!cJSON_IsArray(lcs_client_externals)){
         ogs_error("OpenAPI_external_unrelated_class_parseFromJSON() failed [lcs_client_externals]");
@@ -145,7 +145,7 @@ OpenAPI_external_unrelated_class_t *OpenAPI_external_unrelated_class_parseFromJS
     cJSON *af_externals = cJSON_GetObjectItemCaseSensitive(external_unrelated_classJSON, "afExternals");
 
     OpenAPI_list_t *af_externalsList;
-    if (af_externals) { 
+    if (af_externals) {
     cJSON *af_externals_local_nonprimitive;
     if (!cJSON_IsArray(af_externals)){
         ogs_error("OpenAPI_external_unrelated_class_parseFromJSON() failed [af_externals]");
@@ -168,7 +168,7 @@ OpenAPI_external_unrelated_class_t *OpenAPI_external_unrelated_class_parseFromJS
     cJSON *lcs_client_group_externals = cJSON_GetObjectItemCaseSensitive(external_unrelated_classJSON, "lcsClientGroupExternals");
 
     OpenAPI_list_t *lcs_client_group_externalsList;
-    if (lcs_client_group_externals) { 
+    if (lcs_client_group_externals) {
     cJSON *lcs_client_group_externals_local_nonprimitive;
     if (!cJSON_IsArray(lcs_client_group_externals)){
         ogs_error("OpenAPI_external_unrelated_class_parseFromJSON() failed [lcs_client_group_externals]");

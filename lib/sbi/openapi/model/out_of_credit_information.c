@@ -88,13 +88,12 @@ OpenAPI_out_of_credit_information_t *OpenAPI_out_of_credit_information_parseFrom
     }
 
     OpenAPI_final_unit_action_t *fin_unit_act_local_nonprim = NULL;
-    
     fin_unit_act_local_nonprim = OpenAPI_final_unit_action_parseFromJSON(fin_unit_act);
 
     cJSON *flows = cJSON_GetObjectItemCaseSensitive(out_of_credit_informationJSON, "flows");
 
     OpenAPI_list_t *flowsList;
-    if (flows) { 
+    if (flows) {
     cJSON *flows_local_nonprimitive;
     if (!cJSON_IsArray(flows)){
         ogs_error("OpenAPI_out_of_credit_information_parseFromJSON() failed [flows]");

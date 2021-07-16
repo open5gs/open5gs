@@ -63,7 +63,7 @@ OpenAPI_redirect_response_t *OpenAPI_redirect_response_parseFromJSON(cJSON *redi
     OpenAPI_redirect_response_t *redirect_response_local_var = NULL;
     cJSON *cause = cJSON_GetObjectItemCaseSensitive(redirect_responseJSON, "cause");
 
-    if (cause) { 
+    if (cause) {
     if (!cJSON_IsString(cause)) {
         ogs_error("OpenAPI_redirect_response_parseFromJSON() failed [cause]");
         goto end;
@@ -72,7 +72,7 @@ OpenAPI_redirect_response_t *OpenAPI_redirect_response_parseFromJSON(cJSON *redi
 
     cJSON *target_scp = cJSON_GetObjectItemCaseSensitive(redirect_responseJSON, "targetScp");
 
-    if (target_scp) { 
+    if (target_scp) {
     if (!cJSON_IsString(target_scp)) {
         ogs_error("OpenAPI_redirect_response_parseFromJSON() failed [target_scp]");
         goto end;

@@ -39,8 +39,10 @@ extern "C" {
 typedef struct OpenAPI_pdu_session_create_data_s OpenAPI_pdu_session_create_data_t;
 typedef struct OpenAPI_pdu_session_create_data_s {
     char *supi;
+    bool is_unauthenticated_supi;
     int unauthenticated_supi;
     char *pei;
+    bool is_pdu_session_id;
     int pdu_session_id;
     char *dnn;
     char *selected_dnn;
@@ -71,8 +73,10 @@ typedef struct OpenAPI_pdu_session_create_data_s {
     char *pcf_id;
     char *pcf_group_id;
     char *pcf_set_id;
+    bool is_ho_preparation_indication;
     int ho_preparation_indication;
     OpenAPI_dnn_selection_mode_e sel_mode;
+    bool is_always_on_requested;
     int always_on_requested;
     char *udm_group_id;
     char *routing_indicator;
@@ -82,22 +86,29 @@ typedef struct OpenAPI_pdu_session_create_data_s {
     char *recovery_time;
     struct OpenAPI_roaming_charging_profile_s *roaming_charging_profile;
     char *charging_id;
+    bool is_old_pdu_session_id;
     int old_pdu_session_id;
     char *eps_bearer_ctx_status;
     char *amf_nf_id;
     struct OpenAPI_guami_s *guami;
     OpenAPI_max_integrity_protected_data_rate_e max_integrity_protected_data_rate_ul;
     OpenAPI_max_integrity_protected_data_rate_e max_integrity_protected_data_rate_dl;
+    bool is_cp_ciot_enabled;
     int cp_ciot_enabled;
+    bool is_cp_only_ind;
     int cp_only_ind;
+    bool is_invoke_nef;
     int invoke_nef;
+    bool is_ma_request_ind;
     int ma_request_ind;
+    bool is_ma_nw_upgrade_ind;
     int ma_nw_upgrade_ind;
     OpenAPI_list_t *dnai_list;
     OpenAPI_presence_state_e presence_in_ladn;
     OpenAPI_list_t *secondary_rat_usage_info;
     struct OpenAPI_small_data_rate_status_s *small_data_rate_status;
     struct OpenAPI_apn_rate_status_s *apn_rate_status;
+    bool is_dl_serving_plmn_rate_ctl;
     int dl_serving_plmn_rate_ctl;
     struct OpenAPI_up_security_info_s *up_security_info;
     struct OpenAPI_vplmn_qos_s *vplmn_qos;
@@ -105,8 +116,10 @@ typedef struct OpenAPI_pdu_session_create_data_s {
 
 OpenAPI_pdu_session_create_data_t *OpenAPI_pdu_session_create_data_create(
     char *supi,
+    bool is_unauthenticated_supi,
     int unauthenticated_supi,
     char *pei,
+    bool is_pdu_session_id,
     int pdu_session_id,
     char *dnn,
     char *selected_dnn,
@@ -137,8 +150,10 @@ OpenAPI_pdu_session_create_data_t *OpenAPI_pdu_session_create_data_create(
     char *pcf_id,
     char *pcf_group_id,
     char *pcf_set_id,
+    bool is_ho_preparation_indication,
     int ho_preparation_indication,
     OpenAPI_dnn_selection_mode_e sel_mode,
+    bool is_always_on_requested,
     int always_on_requested,
     char *udm_group_id,
     char *routing_indicator,
@@ -148,22 +163,29 @@ OpenAPI_pdu_session_create_data_t *OpenAPI_pdu_session_create_data_create(
     char *recovery_time,
     OpenAPI_roaming_charging_profile_t *roaming_charging_profile,
     char *charging_id,
+    bool is_old_pdu_session_id,
     int old_pdu_session_id,
     char *eps_bearer_ctx_status,
     char *amf_nf_id,
     OpenAPI_guami_t *guami,
     OpenAPI_max_integrity_protected_data_rate_e max_integrity_protected_data_rate_ul,
     OpenAPI_max_integrity_protected_data_rate_e max_integrity_protected_data_rate_dl,
+    bool is_cp_ciot_enabled,
     int cp_ciot_enabled,
+    bool is_cp_only_ind,
     int cp_only_ind,
+    bool is_invoke_nef,
     int invoke_nef,
+    bool is_ma_request_ind,
     int ma_request_ind,
+    bool is_ma_nw_upgrade_ind,
     int ma_nw_upgrade_ind,
     OpenAPI_list_t *dnai_list,
     OpenAPI_presence_state_e presence_in_ladn,
     OpenAPI_list_t *secondary_rat_usage_info,
     OpenAPI_small_data_rate_status_t *small_data_rate_status,
     OpenAPI_apn_rate_status_t *apn_rate_status,
+    bool is_dl_serving_plmn_rate_ctl,
     int dl_serving_plmn_rate_ctl,
     OpenAPI_up_security_info_t *up_security_info,
     OpenAPI_vplmn_qos_t *vplmn_qos

@@ -60,7 +60,7 @@ OpenAPI_ue_context_in_amf_data_1_t *OpenAPI_ue_context_in_amf_data_1_parseFromJS
     cJSON *eps_interworking_info = cJSON_GetObjectItemCaseSensitive(ue_context_in_amf_data_1JSON, "epsInterworkingInfo");
 
     OpenAPI_eps_interworking_info_t *eps_interworking_info_local_nonprim = NULL;
-    if (eps_interworking_info) { 
+    if (eps_interworking_info) {
     eps_interworking_info_local_nonprim = OpenAPI_eps_interworking_info_parseFromJSON(eps_interworking_info);
     }
 

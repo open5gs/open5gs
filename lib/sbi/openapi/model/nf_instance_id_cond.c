@@ -55,7 +55,6 @@ OpenAPI_nf_instance_id_cond_t *OpenAPI_nf_instance_id_cond_parseFromJSON(cJSON *
         goto end;
     }
 
-    
     if (!cJSON_IsString(nf_instance_id)) {
         ogs_error("OpenAPI_nf_instance_id_cond_parseFromJSON() failed [nf_instance_id]");
         goto end;

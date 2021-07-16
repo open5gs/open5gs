@@ -249,13 +249,12 @@ OpenAPI_session_management_subscription_data_1_t *OpenAPI_session_management_sub
     }
 
     OpenAPI_snssai_t *single_nssai_local_nonprim = NULL;
-    
     single_nssai_local_nonprim = OpenAPI_snssai_parseFromJSON(single_nssai);
 
     cJSON *dnn_configurations = cJSON_GetObjectItemCaseSensitive(session_management_subscription_data_1JSON, "dnnConfigurations");
 
     OpenAPI_list_t *dnn_configurationsList;
-    if (dnn_configurations) { 
+    if (dnn_configurations) {
     cJSON *dnn_configurations_local_map;
     if (!cJSON_IsObject(dnn_configurations)) {
         ogs_error("OpenAPI_session_management_subscription_data_1_parseFromJSON() failed [dnn_configurations]");
@@ -278,7 +277,7 @@ OpenAPI_session_management_subscription_data_1_t *OpenAPI_session_management_sub
     cJSON *internal_group_ids = cJSON_GetObjectItemCaseSensitive(session_management_subscription_data_1JSON, "internalGroupIds");
 
     OpenAPI_list_t *internal_group_idsList;
-    if (internal_group_ids) { 
+    if (internal_group_ids) {
     cJSON *internal_group_ids_local;
     if (!cJSON_IsArray(internal_group_ids)) {
         ogs_error("OpenAPI_session_management_subscription_data_1_parseFromJSON() failed [internal_group_ids]");
@@ -292,13 +291,13 @@ OpenAPI_session_management_subscription_data_1_t *OpenAPI_session_management_sub
         goto end;
     }
     OpenAPI_list_add(internal_group_idsList , ogs_strdup_or_assert(internal_group_ids_local->valuestring));
-                    }
+    }
     }
 
     cJSON *shared_vn_group_data_ids = cJSON_GetObjectItemCaseSensitive(session_management_subscription_data_1JSON, "sharedVnGroupDataIds");
 
     OpenAPI_list_t *shared_vn_group_data_idsList;
-    if (shared_vn_group_data_ids) { 
+    if (shared_vn_group_data_ids) {
     cJSON *shared_vn_group_data_ids_local_map;
     if (!cJSON_IsObject(shared_vn_group_data_ids)) {
         ogs_error("OpenAPI_session_management_subscription_data_1_parseFromJSON() failed [shared_vn_group_data_ids]");
@@ -314,7 +313,7 @@ OpenAPI_session_management_subscription_data_1_t *OpenAPI_session_management_sub
 
     cJSON *shared_dnn_configurations_id = cJSON_GetObjectItemCaseSensitive(session_management_subscription_data_1JSON, "sharedDnnConfigurationsId");
 
-    if (shared_dnn_configurations_id) { 
+    if (shared_dnn_configurations_id) {
     if (!cJSON_IsString(shared_dnn_configurations_id)) {
         ogs_error("OpenAPI_session_management_subscription_data_1_parseFromJSON() failed [shared_dnn_configurations_id]");
         goto end;
@@ -324,7 +323,7 @@ OpenAPI_session_management_subscription_data_1_t *OpenAPI_session_management_sub
     cJSON *odb_packet_services = cJSON_GetObjectItemCaseSensitive(session_management_subscription_data_1JSON, "odbPacketServices");
 
     OpenAPI_odb_packet_services_e odb_packet_servicesVariable;
-    if (odb_packet_services) { 
+    if (odb_packet_services) {
     if (!cJSON_IsString(odb_packet_services)) {
         ogs_error("OpenAPI_session_management_subscription_data_1_parseFromJSON() failed [odb_packet_services]");
         goto end;
@@ -335,13 +334,13 @@ OpenAPI_session_management_subscription_data_1_t *OpenAPI_session_management_sub
     cJSON *trace_data = cJSON_GetObjectItemCaseSensitive(session_management_subscription_data_1JSON, "traceData");
 
     OpenAPI_trace_data_t *trace_data_local_nonprim = NULL;
-    if (trace_data) { 
+    if (trace_data) {
     trace_data_local_nonprim = OpenAPI_trace_data_parseFromJSON(trace_data);
     }
 
     cJSON *shared_trace_data_id = cJSON_GetObjectItemCaseSensitive(session_management_subscription_data_1JSON, "sharedTraceDataId");
 
-    if (shared_trace_data_id) { 
+    if (shared_trace_data_id) {
     if (!cJSON_IsString(shared_trace_data_id)) {
         ogs_error("OpenAPI_session_management_subscription_data_1_parseFromJSON() failed [shared_trace_data_id]");
         goto end;
@@ -351,7 +350,7 @@ OpenAPI_session_management_subscription_data_1_t *OpenAPI_session_management_sub
     cJSON *expected_ue_behaviours_list = cJSON_GetObjectItemCaseSensitive(session_management_subscription_data_1JSON, "expectedUeBehavioursList");
 
     OpenAPI_list_t *expected_ue_behaviours_listList;
-    if (expected_ue_behaviours_list) { 
+    if (expected_ue_behaviours_list) {
     cJSON *expected_ue_behaviours_list_local_map;
     if (!cJSON_IsObject(expected_ue_behaviours_list)) {
         ogs_error("OpenAPI_session_management_subscription_data_1_parseFromJSON() failed [expected_ue_behaviours_list]");
@@ -374,7 +373,7 @@ OpenAPI_session_management_subscription_data_1_t *OpenAPI_session_management_sub
     cJSON *suggested_packet_num_dl_list = cJSON_GetObjectItemCaseSensitive(session_management_subscription_data_1JSON, "suggestedPacketNumDlList");
 
     OpenAPI_list_t *suggested_packet_num_dl_listList;
-    if (suggested_packet_num_dl_list) { 
+    if (suggested_packet_num_dl_list) {
     cJSON *suggested_packet_num_dl_list_local_map;
     if (!cJSON_IsObject(suggested_packet_num_dl_list)) {
         ogs_error("OpenAPI_session_management_subscription_data_1_parseFromJSON() failed [suggested_packet_num_dl_list]");
@@ -396,7 +395,7 @@ OpenAPI_session_management_subscription_data_1_t *OpenAPI_session_management_sub
 
     cJSON *_3gpp_charging_characteristics = cJSON_GetObjectItemCaseSensitive(session_management_subscription_data_1JSON, "3gppChargingCharacteristics");
 
-    if (_3gpp_charging_characteristics) { 
+    if (_3gpp_charging_characteristics) {
     if (!cJSON_IsString(_3gpp_charging_characteristics)) {
         ogs_error("OpenAPI_session_management_subscription_data_1_parseFromJSON() failed [_3gpp_charging_characteristics]");
         goto end;

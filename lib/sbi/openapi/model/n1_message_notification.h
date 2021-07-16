@@ -30,6 +30,7 @@ typedef struct OpenAPI_n1_message_notification_s {
     struct OpenAPI_registration_context_container_s *registration_ctxt_container;
     char *new_lmf_identification;
     struct OpenAPI_guami_s *guami;
+    bool is_c_io_t5_gs_optimisation;
     int c_io_t5_gs_optimisation;
     struct OpenAPI_ecgi_s *ecgi;
     struct OpenAPI_ncgi_s *ncgi;
@@ -42,6 +43,7 @@ OpenAPI_n1_message_notification_t *OpenAPI_n1_message_notification_create(
     OpenAPI_registration_context_container_t *registration_ctxt_container,
     char *new_lmf_identification,
     OpenAPI_guami_t *guami,
+    bool is_c_io_t5_gs_optimisation,
     int c_io_t5_gs_optimisation,
     OpenAPI_ecgi_t *ecgi,
     OpenAPI_ncgi_t *ncgi

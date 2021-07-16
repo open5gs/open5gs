@@ -8,8 +8,10 @@ OpenAPI_expected_ue_behaviour_t *OpenAPI_expected_ue_behaviour_create(
     char *af_instance_id,
     int reference_id,
     OpenAPI_stationary_indication_rm_t *stationary_indication,
+    bool is_communication_duration_time,
     int communication_duration_time,
     OpenAPI_scheduled_communication_type_rm_t *scheduled_communication_type,
+    bool is_periodic_time,
     int periodic_time,
     OpenAPI_scheduled_communication_time_rm_t *scheduled_communication_time,
     OpenAPI_list_t *expected_umts,
@@ -26,8 +28,10 @@ OpenAPI_expected_ue_behaviour_t *OpenAPI_expected_ue_behaviour_create(
     expected_ue_behaviour_local_var->af_instance_id = af_instance_id;
     expected_ue_behaviour_local_var->reference_id = reference_id;
     expected_ue_behaviour_local_var->stationary_indication = stationary_indication;
+    expected_ue_behaviour_local_var->is_communication_duration_time = is_communication_duration_time;
     expected_ue_behaviour_local_var->communication_duration_time = communication_duration_time;
     expected_ue_behaviour_local_var->scheduled_communication_type = scheduled_communication_type;
+    expected_ue_behaviour_local_var->is_periodic_time = is_periodic_time;
     expected_ue_behaviour_local_var->periodic_time = periodic_time;
     expected_ue_behaviour_local_var->scheduled_communication_time = scheduled_communication_time;
     expected_ue_behaviour_local_var->expected_umts = expected_umts;
@@ -93,7 +97,7 @@ cJSON *OpenAPI_expected_ue_behaviour_convertToJSON(OpenAPI_expected_ue_behaviour
     }
     }
 
-    if (expected_ue_behaviour->communication_duration_time) {
+    if (expected_ue_behaviour->is_communication_duration_time) {
     if (cJSON_AddNumberToObject(item, "communicationDurationTime", expected_ue_behaviour->communication_duration_time) == NULL) {
         ogs_error("OpenAPI_expected_ue_behaviour_convertToJSON() failed [communication_duration_time]");
         goto end;
@@ -113,7 +117,7 @@ cJSON *OpenAPI_expected_ue_behaviour_convertToJSON(OpenAPI_expected_ue_behaviour
     }
     }
 
-    if (expected_ue_behaviour->periodic_time) {
+    if (expected_ue_behaviour->is_periodic_time) {
     if (cJSON_AddNumberToObject(item, "periodicTime", expected_ue_behaviour->periodic_time) == NULL) {
         ogs_error("OpenAPI_expected_ue_behaviour_convertToJSON() failed [periodic_time]");
         goto end;
@@ -206,7 +210,6 @@ OpenAPI_expected_ue_behaviour_t *OpenAPI_expected_ue_behaviour_parseFromJSON(cJS
         goto end;
     }
 
-    
     if (!cJSON_IsString(af_instance_id)) {
         ogs_error("OpenAPI_expected_ue_behaviour_parseFromJSON() failed [af_instance_id]");
         goto end;
@@ -218,7 +221,6 @@ OpenAPI_expected_ue_behaviour_t *OpenAPI_expected_ue_behaviour_parseFromJSON(cJS
         goto end;
     }
 
-    
     if (!cJSON_IsNumber(reference_id)) {
         ogs_error("OpenAPI_expected_ue_behaviour_parseFromJSON() failed [reference_id]");
         goto end;
@@ -227,13 +229,13 @@ OpenAPI_expected_ue_behaviour_t *OpenAPI_expected_ue_behaviour_parseFromJSON(cJS
     cJSON *stationary_indication = cJSON_GetObjectItemCaseSensitive(expected_ue_behaviourJSON, "stationaryIndication");
 
     OpenAPI_stationary_indication_rm_t *stationary_indication_local_nonprim = NULL;
-    if (stationary_indication) { 
+    if (stationary_indication) {
     stationary_indication_local_nonprim = OpenAPI_stationary_indication_rm_parseFromJSON(stationary_indication);
     }
 
     cJSON *communication_duration_time = cJSON_GetObjectItemCaseSensitive(expected_ue_behaviourJSON, "communicationDurationTime");
 
-    if (communication_duration_time) { 
+    if (communication_duration_time) {
     if (!cJSON_IsNumber(communication_duration_time)) {
         ogs_error("OpenAPI_expected_ue_behaviour_parseFromJSON() failed [communication_duration_time]");
         goto end;
@@ -243,13 +245,13 @@ OpenAPI_expected_ue_behaviour_t *OpenAPI_expected_ue_behaviour_parseFromJSON(cJS
     cJSON *scheduled_communication_type = cJSON_GetObjectItemCaseSensitive(expected_ue_behaviourJSON, "scheduledCommunicationType");
 
     OpenAPI_scheduled_communication_type_rm_t *scheduled_communication_type_local_nonprim = NULL;
-    if (scheduled_communication_type) { 
+    if (scheduled_communication_type) {
     scheduled_communication_type_local_nonprim = OpenAPI_scheduled_communication_type_rm_parseFromJSON(scheduled_communication_type);
     }
 
     cJSON *periodic_time = cJSON_GetObjectItemCaseSensitive(expected_ue_behaviourJSON, "periodicTime");
 
-    if (periodic_time) { 
+    if (periodic_time) {
     if (!cJSON_IsNumber(periodic_time)) {
         ogs_error("OpenAPI_expected_ue_behaviour_parseFromJSON() failed [periodic_time]");
         goto end;
@@ -259,14 +261,14 @@ OpenAPI_expected_ue_behaviour_t *OpenAPI_expected_ue_behaviour_parseFromJSON(cJS
     cJSON *scheduled_communication_time = cJSON_GetObjectItemCaseSensitive(expected_ue_behaviourJSON, "scheduledCommunicationTime");
 
     OpenAPI_scheduled_communication_time_rm_t *scheduled_communication_time_local_nonprim = NULL;
-    if (scheduled_communication_time) { 
+    if (scheduled_communication_time) {
     scheduled_communication_time_local_nonprim = OpenAPI_scheduled_communication_time_rm_parseFromJSON(scheduled_communication_time);
     }
 
     cJSON *expected_umts = cJSON_GetObjectItemCaseSensitive(expected_ue_behaviourJSON, "expectedUmts");
 
     OpenAPI_list_t *expected_umtsList;
-    if (expected_umts) { 
+    if (expected_umts) {
     cJSON *expected_umts_local_nonprimitive;
     if (!cJSON_IsArray(expected_umts)){
         ogs_error("OpenAPI_expected_ue_behaviour_parseFromJSON() failed [expected_umts]");
@@ -289,20 +291,20 @@ OpenAPI_expected_ue_behaviour_t *OpenAPI_expected_ue_behaviour_parseFromJSON(cJS
     cJSON *traffic_profile = cJSON_GetObjectItemCaseSensitive(expected_ue_behaviourJSON, "trafficProfile");
 
     OpenAPI_traffic_profile_rm_t *traffic_profile_local_nonprim = NULL;
-    if (traffic_profile) { 
+    if (traffic_profile) {
     traffic_profile_local_nonprim = OpenAPI_traffic_profile_rm_parseFromJSON(traffic_profile);
     }
 
     cJSON *battery_indication = cJSON_GetObjectItemCaseSensitive(expected_ue_behaviourJSON, "batteryIndication");
 
     OpenAPI_battery_indication_rm_t *battery_indication_local_nonprim = NULL;
-    if (battery_indication) { 
+    if (battery_indication) {
     battery_indication_local_nonprim = OpenAPI_battery_indication_rm_parseFromJSON(battery_indication);
     }
 
     cJSON *validity_time = cJSON_GetObjectItemCaseSensitive(expected_ue_behaviourJSON, "validityTime");
 
-    if (validity_time) { 
+    if (validity_time) {
     if (!cJSON_IsString(validity_time)) {
         ogs_error("OpenAPI_expected_ue_behaviour_parseFromJSON() failed [validity_time]");
         goto end;
@@ -311,7 +313,7 @@ OpenAPI_expected_ue_behaviour_t *OpenAPI_expected_ue_behaviour_parseFromJSON(cJS
 
     cJSON *mtc_provider_information = cJSON_GetObjectItemCaseSensitive(expected_ue_behaviourJSON, "mtcProviderInformation");
 
-    if (mtc_provider_information) { 
+    if (mtc_provider_information) {
     if (!cJSON_IsString(mtc_provider_information)) {
         ogs_error("OpenAPI_expected_ue_behaviour_parseFromJSON() failed [mtc_provider_information]");
         goto end;
@@ -320,10 +322,13 @@ OpenAPI_expected_ue_behaviour_t *OpenAPI_expected_ue_behaviour_parseFromJSON(cJS
 
     expected_ue_behaviour_local_var = OpenAPI_expected_ue_behaviour_create (
         ogs_strdup_or_assert(af_instance_id->valuestring),
+        
         reference_id->valuedouble,
         stationary_indication ? stationary_indication_local_nonprim : NULL,
+        communication_duration_time ? true : false,
         communication_duration_time ? communication_duration_time->valuedouble : 0,
         scheduled_communication_type ? scheduled_communication_type_local_nonprim : NULL,
+        periodic_time ? true : false,
         periodic_time ? periodic_time->valuedouble : 0,
         scheduled_communication_time ? scheduled_communication_time_local_nonprim : NULL,
         expected_umts ? expected_umtsList : NULL,

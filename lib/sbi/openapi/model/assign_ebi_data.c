@@ -118,7 +118,6 @@ OpenAPI_assign_ebi_data_t *OpenAPI_assign_ebi_data_parseFromJSON(cJSON *assign_e
         goto end;
     }
 
-    
     if (!cJSON_IsNumber(pdu_session_id)) {
         ogs_error("OpenAPI_assign_ebi_data_parseFromJSON() failed [pdu_session_id]");
         goto end;
@@ -127,7 +126,7 @@ OpenAPI_assign_ebi_data_t *OpenAPI_assign_ebi_data_parseFromJSON(cJSON *assign_e
     cJSON *arp_list = cJSON_GetObjectItemCaseSensitive(assign_ebi_dataJSON, "arpList");
 
     OpenAPI_list_t *arp_listList;
-    if (arp_list) { 
+    if (arp_list) {
     cJSON *arp_list_local_nonprimitive;
     if (!cJSON_IsArray(arp_list)){
         ogs_error("OpenAPI_assign_ebi_data_parseFromJSON() failed [arp_list]");
@@ -150,7 +149,7 @@ OpenAPI_assign_ebi_data_t *OpenAPI_assign_ebi_data_parseFromJSON(cJSON *assign_e
     cJSON *released_ebi_list = cJSON_GetObjectItemCaseSensitive(assign_ebi_dataJSON, "releasedEbiList");
 
     OpenAPI_list_t *released_ebi_listList;
-    if (released_ebi_list) { 
+    if (released_ebi_list) {
     cJSON *released_ebi_list_local;
     if (!cJSON_IsArray(released_ebi_list)) {
         ogs_error("OpenAPI_assign_ebi_data_parseFromJSON() failed [released_ebi_list]");
@@ -164,17 +163,18 @@ OpenAPI_assign_ebi_data_t *OpenAPI_assign_ebi_data_parseFromJSON(cJSON *assign_e
         goto end;
     }
     OpenAPI_list_add(released_ebi_listList , &released_ebi_list_local->valuedouble);
-                    }
+    }
     }
 
     cJSON *old_guami = cJSON_GetObjectItemCaseSensitive(assign_ebi_dataJSON, "oldGuami");
 
     OpenAPI_guami_t *old_guami_local_nonprim = NULL;
-    if (old_guami) { 
+    if (old_guami) {
     old_guami_local_nonprim = OpenAPI_guami_parseFromJSON(old_guami);
     }
 
     assign_ebi_data_local_var = OpenAPI_assign_ebi_data_create (
+        
         pdu_session_id->valuedouble,
         arp_list ? arp_listList : NULL,
         released_ebi_list ? released_ebi_listList : NULL,

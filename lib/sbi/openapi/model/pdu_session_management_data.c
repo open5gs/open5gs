@@ -17,6 +17,7 @@ OpenAPI_pdu_session_management_data_t *OpenAPI_pdu_session_management_data_creat
     OpenAPI_pdu_session_type_e pdu_sess_type,
     char *ip_addr_ts,
     char *dnn,
+    bool is_pdu_session_id,
     int pdu_session_id,
     char *supp_feat
 )
@@ -37,6 +38,7 @@ OpenAPI_pdu_session_management_data_t *OpenAPI_pdu_session_management_data_creat
     pdu_session_management_data_local_var->pdu_sess_type = pdu_sess_type;
     pdu_session_management_data_local_var->ip_addr_ts = ip_addr_ts;
     pdu_session_management_data_local_var->dnn = dnn;
+    pdu_session_management_data_local_var->is_pdu_session_id = is_pdu_session_id;
     pdu_session_management_data_local_var->pdu_session_id = pdu_session_id;
     pdu_session_management_data_local_var->supp_feat = supp_feat;
 
@@ -204,7 +206,7 @@ cJSON *OpenAPI_pdu_session_management_data_convertToJSON(OpenAPI_pdu_session_man
     }
     }
 
-    if (pdu_session_management_data->pdu_session_id) {
+    if (pdu_session_management_data->is_pdu_session_id) {
     if (cJSON_AddNumberToObject(item, "pduSessionId", pdu_session_management_data->pdu_session_id) == NULL) {
         ogs_error("OpenAPI_pdu_session_management_data_convertToJSON() failed [pdu_session_id]");
         goto end;
@@ -228,13 +230,13 @@ OpenAPI_pdu_session_management_data_t *OpenAPI_pdu_session_management_data_parse
     cJSON *pdu_session_status = cJSON_GetObjectItemCaseSensitive(pdu_session_management_dataJSON, "pduSessionStatus");
 
     OpenAPI_pdu_session_status_t *pdu_session_status_local_nonprim = NULL;
-    if (pdu_session_status) { 
+    if (pdu_session_status) {
     pdu_session_status_local_nonprim = OpenAPI_pdu_session_status_parseFromJSON(pdu_session_status);
     }
 
     cJSON *pdu_session_status_ts = cJSON_GetObjectItemCaseSensitive(pdu_session_management_dataJSON, "pduSessionStatusTs");
 
-    if (pdu_session_status_ts) { 
+    if (pdu_session_status_ts) {
     if (!cJSON_IsString(pdu_session_status_ts)) {
         ogs_error("OpenAPI_pdu_session_management_data_parseFromJSON() failed [pdu_session_status_ts]");
         goto end;
@@ -243,7 +245,7 @@ OpenAPI_pdu_session_management_data_t *OpenAPI_pdu_session_management_data_parse
 
     cJSON *dnai = cJSON_GetObjectItemCaseSensitive(pdu_session_management_dataJSON, "dnai");
 
-    if (dnai) { 
+    if (dnai) {
     if (!cJSON_IsString(dnai)) {
         ogs_error("OpenAPI_pdu_session_management_data_parseFromJSON() failed [dnai]");
         goto end;
@@ -252,7 +254,7 @@ OpenAPI_pdu_session_management_data_t *OpenAPI_pdu_session_management_data_parse
 
     cJSON *dnai_ts = cJSON_GetObjectItemCaseSensitive(pdu_session_management_dataJSON, "dnaiTs");
 
-    if (dnai_ts) { 
+    if (dnai_ts) {
     if (!cJSON_IsString(dnai_ts)) {
         ogs_error("OpenAPI_pdu_session_management_data_parseFromJSON() failed [dnai_ts]");
         goto end;
@@ -262,7 +264,7 @@ OpenAPI_pdu_session_management_data_t *OpenAPI_pdu_session_management_data_parse
     cJSON *n6_traffic_routing_info = cJSON_GetObjectItemCaseSensitive(pdu_session_management_dataJSON, "n6TrafficRoutingInfo");
 
     OpenAPI_list_t *n6_traffic_routing_infoList;
-    if (n6_traffic_routing_info) { 
+    if (n6_traffic_routing_info) {
     cJSON *n6_traffic_routing_info_local_nonprimitive;
     if (!cJSON_IsArray(n6_traffic_routing_info)){
         ogs_error("OpenAPI_pdu_session_management_data_parseFromJSON() failed [n6_traffic_routing_info]");
@@ -284,7 +286,7 @@ OpenAPI_pdu_session_management_data_t *OpenAPI_pdu_session_management_data_parse
 
     cJSON *n6_traffic_routing_info_ts = cJSON_GetObjectItemCaseSensitive(pdu_session_management_dataJSON, "n6TrafficRoutingInfoTs");
 
-    if (n6_traffic_routing_info_ts) { 
+    if (n6_traffic_routing_info_ts) {
     if (!cJSON_IsString(n6_traffic_routing_info_ts)) {
         ogs_error("OpenAPI_pdu_session_management_data_parseFromJSON() failed [n6_traffic_routing_info_ts]");
         goto end;
@@ -293,7 +295,7 @@ OpenAPI_pdu_session_management_data_t *OpenAPI_pdu_session_management_data_parse
 
     cJSON *ipv4_addr = cJSON_GetObjectItemCaseSensitive(pdu_session_management_dataJSON, "ipv4Addr");
 
-    if (ipv4_addr) { 
+    if (ipv4_addr) {
     if (!cJSON_IsString(ipv4_addr)) {
         ogs_error("OpenAPI_pdu_session_management_data_parseFromJSON() failed [ipv4_addr]");
         goto end;
@@ -303,7 +305,7 @@ OpenAPI_pdu_session_management_data_t *OpenAPI_pdu_session_management_data_parse
     cJSON *ipv6_prefix = cJSON_GetObjectItemCaseSensitive(pdu_session_management_dataJSON, "ipv6Prefix");
 
     OpenAPI_list_t *ipv6_prefixList;
-    if (ipv6_prefix) { 
+    if (ipv6_prefix) {
     cJSON *ipv6_prefix_local;
     if (!cJSON_IsArray(ipv6_prefix)) {
         ogs_error("OpenAPI_pdu_session_management_data_parseFromJSON() failed [ipv6_prefix]");
@@ -317,13 +319,13 @@ OpenAPI_pdu_session_management_data_t *OpenAPI_pdu_session_management_data_parse
         goto end;
     }
     OpenAPI_list_add(ipv6_prefixList , ogs_strdup_or_assert(ipv6_prefix_local->valuestring));
-                    }
+    }
     }
 
     cJSON *ipv6_addrs = cJSON_GetObjectItemCaseSensitive(pdu_session_management_dataJSON, "ipv6Addrs");
 
     OpenAPI_list_t *ipv6_addrsList;
-    if (ipv6_addrs) { 
+    if (ipv6_addrs) {
     cJSON *ipv6_addrs_local;
     if (!cJSON_IsArray(ipv6_addrs)) {
         ogs_error("OpenAPI_pdu_session_management_data_parseFromJSON() failed [ipv6_addrs]");
@@ -337,13 +339,13 @@ OpenAPI_pdu_session_management_data_t *OpenAPI_pdu_session_management_data_parse
         goto end;
     }
     OpenAPI_list_add(ipv6_addrsList , ogs_strdup_or_assert(ipv6_addrs_local->valuestring));
-                    }
+    }
     }
 
     cJSON *pdu_sess_type = cJSON_GetObjectItemCaseSensitive(pdu_session_management_dataJSON, "pduSessType");
 
     OpenAPI_pdu_session_type_e pdu_sess_typeVariable;
-    if (pdu_sess_type) { 
+    if (pdu_sess_type) {
     if (!cJSON_IsString(pdu_sess_type)) {
         ogs_error("OpenAPI_pdu_session_management_data_parseFromJSON() failed [pdu_sess_type]");
         goto end;
@@ -353,7 +355,7 @@ OpenAPI_pdu_session_management_data_t *OpenAPI_pdu_session_management_data_parse
 
     cJSON *ip_addr_ts = cJSON_GetObjectItemCaseSensitive(pdu_session_management_dataJSON, "ipAddrTs");
 
-    if (ip_addr_ts) { 
+    if (ip_addr_ts) {
     if (!cJSON_IsString(ip_addr_ts)) {
         ogs_error("OpenAPI_pdu_session_management_data_parseFromJSON() failed [ip_addr_ts]");
         goto end;
@@ -362,7 +364,7 @@ OpenAPI_pdu_session_management_data_t *OpenAPI_pdu_session_management_data_parse
 
     cJSON *dnn = cJSON_GetObjectItemCaseSensitive(pdu_session_management_dataJSON, "dnn");
 
-    if (dnn) { 
+    if (dnn) {
     if (!cJSON_IsString(dnn)) {
         ogs_error("OpenAPI_pdu_session_management_data_parseFromJSON() failed [dnn]");
         goto end;
@@ -371,7 +373,7 @@ OpenAPI_pdu_session_management_data_t *OpenAPI_pdu_session_management_data_parse
 
     cJSON *pdu_session_id = cJSON_GetObjectItemCaseSensitive(pdu_session_management_dataJSON, "pduSessionId");
 
-    if (pdu_session_id) { 
+    if (pdu_session_id) {
     if (!cJSON_IsNumber(pdu_session_id)) {
         ogs_error("OpenAPI_pdu_session_management_data_parseFromJSON() failed [pdu_session_id]");
         goto end;
@@ -380,7 +382,7 @@ OpenAPI_pdu_session_management_data_t *OpenAPI_pdu_session_management_data_parse
 
     cJSON *supp_feat = cJSON_GetObjectItemCaseSensitive(pdu_session_management_dataJSON, "suppFeat");
 
-    if (supp_feat) { 
+    if (supp_feat) {
     if (!cJSON_IsString(supp_feat)) {
         ogs_error("OpenAPI_pdu_session_management_data_parseFromJSON() failed [supp_feat]");
         goto end;
@@ -400,6 +402,7 @@ OpenAPI_pdu_session_management_data_t *OpenAPI_pdu_session_management_data_parse
         pdu_sess_type ? pdu_sess_typeVariable : 0,
         ip_addr_ts ? ogs_strdup_or_assert(ip_addr_ts->valuestring) : NULL,
         dnn ? ogs_strdup_or_assert(dnn->valuestring) : NULL,
+        pdu_session_id ? true : false,
         pdu_session_id ? pdu_session_id->valuedouble : 0,
         supp_feat ? ogs_strdup_or_assert(supp_feat->valuestring) : NULL
     );

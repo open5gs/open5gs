@@ -5,8 +5,11 @@
 #include "qos_monitoring_information.h"
 
 OpenAPI_qos_monitoring_information_t *OpenAPI_qos_monitoring_information_create(
+    bool is_rep_thresh_dl,
     int rep_thresh_dl,
+    bool is_rep_thresh_ul,
     int rep_thresh_ul,
+    bool is_rep_thresh_rp,
     int rep_thresh_rp
 )
 {
@@ -14,8 +17,11 @@ OpenAPI_qos_monitoring_information_t *OpenAPI_qos_monitoring_information_create(
     if (!qos_monitoring_information_local_var) {
         return NULL;
     }
+    qos_monitoring_information_local_var->is_rep_thresh_dl = is_rep_thresh_dl;
     qos_monitoring_information_local_var->rep_thresh_dl = rep_thresh_dl;
+    qos_monitoring_information_local_var->is_rep_thresh_ul = is_rep_thresh_ul;
     qos_monitoring_information_local_var->rep_thresh_ul = rep_thresh_ul;
+    qos_monitoring_information_local_var->is_rep_thresh_rp = is_rep_thresh_rp;
     qos_monitoring_information_local_var->rep_thresh_rp = rep_thresh_rp;
 
     return qos_monitoring_information_local_var;
@@ -40,21 +46,21 @@ cJSON *OpenAPI_qos_monitoring_information_convertToJSON(OpenAPI_qos_monitoring_i
     }
 
     item = cJSON_CreateObject();
-    if (qos_monitoring_information->rep_thresh_dl) {
+    if (qos_monitoring_information->is_rep_thresh_dl) {
     if (cJSON_AddNumberToObject(item, "repThreshDl", qos_monitoring_information->rep_thresh_dl) == NULL) {
         ogs_error("OpenAPI_qos_monitoring_information_convertToJSON() failed [rep_thresh_dl]");
         goto end;
     }
     }
 
-    if (qos_monitoring_information->rep_thresh_ul) {
+    if (qos_monitoring_information->is_rep_thresh_ul) {
     if (cJSON_AddNumberToObject(item, "repThreshUl", qos_monitoring_information->rep_thresh_ul) == NULL) {
         ogs_error("OpenAPI_qos_monitoring_information_convertToJSON() failed [rep_thresh_ul]");
         goto end;
     }
     }
 
-    if (qos_monitoring_information->rep_thresh_rp) {
+    if (qos_monitoring_information->is_rep_thresh_rp) {
     if (cJSON_AddNumberToObject(item, "repThreshRp", qos_monitoring_information->rep_thresh_rp) == NULL) {
         ogs_error("OpenAPI_qos_monitoring_information_convertToJSON() failed [rep_thresh_rp]");
         goto end;
@@ -70,7 +76,7 @@ OpenAPI_qos_monitoring_information_t *OpenAPI_qos_monitoring_information_parseFr
     OpenAPI_qos_monitoring_information_t *qos_monitoring_information_local_var = NULL;
     cJSON *rep_thresh_dl = cJSON_GetObjectItemCaseSensitive(qos_monitoring_informationJSON, "repThreshDl");
 
-    if (rep_thresh_dl) { 
+    if (rep_thresh_dl) {
     if (!cJSON_IsNumber(rep_thresh_dl)) {
         ogs_error("OpenAPI_qos_monitoring_information_parseFromJSON() failed [rep_thresh_dl]");
         goto end;
@@ -79,7 +85,7 @@ OpenAPI_qos_monitoring_information_t *OpenAPI_qos_monitoring_information_parseFr
 
     cJSON *rep_thresh_ul = cJSON_GetObjectItemCaseSensitive(qos_monitoring_informationJSON, "repThreshUl");
 
-    if (rep_thresh_ul) { 
+    if (rep_thresh_ul) {
     if (!cJSON_IsNumber(rep_thresh_ul)) {
         ogs_error("OpenAPI_qos_monitoring_information_parseFromJSON() failed [rep_thresh_ul]");
         goto end;
@@ -88,7 +94,7 @@ OpenAPI_qos_monitoring_information_t *OpenAPI_qos_monitoring_information_parseFr
 
     cJSON *rep_thresh_rp = cJSON_GetObjectItemCaseSensitive(qos_monitoring_informationJSON, "repThreshRp");
 
-    if (rep_thresh_rp) { 
+    if (rep_thresh_rp) {
     if (!cJSON_IsNumber(rep_thresh_rp)) {
         ogs_error("OpenAPI_qos_monitoring_information_parseFromJSON() failed [rep_thresh_rp]");
         goto end;
@@ -96,8 +102,11 @@ OpenAPI_qos_monitoring_information_t *OpenAPI_qos_monitoring_information_parseFr
     }
 
     qos_monitoring_information_local_var = OpenAPI_qos_monitoring_information_create (
+        rep_thresh_dl ? true : false,
         rep_thresh_dl ? rep_thresh_dl->valuedouble : 0,
+        rep_thresh_ul ? true : false,
         rep_thresh_ul ? rep_thresh_ul->valuedouble : 0,
+        rep_thresh_rp ? true : false,
         rep_thresh_rp ? rep_thresh_rp->valuedouble : 0
     );
 

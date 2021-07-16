@@ -63,7 +63,7 @@ OpenAPI_frame_route_info_1_t *OpenAPI_frame_route_info_1_parseFromJSON(cJSON *fr
     OpenAPI_frame_route_info_1_t *frame_route_info_1_local_var = NULL;
     cJSON *ipv4_mask = cJSON_GetObjectItemCaseSensitive(frame_route_info_1JSON, "ipv4Mask");
 
-    if (ipv4_mask) { 
+    if (ipv4_mask) {
     if (!cJSON_IsString(ipv4_mask)) {
         ogs_error("OpenAPI_frame_route_info_1_parseFromJSON() failed [ipv4_mask]");
         goto end;
@@ -72,7 +72,7 @@ OpenAPI_frame_route_info_1_t *OpenAPI_frame_route_info_1_parseFromJSON(cJSON *fr
 
     cJSON *ipv6_prefix = cJSON_GetObjectItemCaseSensitive(frame_route_info_1JSON, "ipv6Prefix");
 
-    if (ipv6_prefix) { 
+    if (ipv6_prefix) {
     if (!cJSON_IsString(ipv6_prefix)) {
         ogs_error("OpenAPI_frame_route_info_1_parseFromJSON() failed [ipv6_prefix]");
         goto end;

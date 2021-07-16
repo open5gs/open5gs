@@ -97,7 +97,7 @@ OpenAPI_multicast_access_control_t *OpenAPI_multicast_access_control_parseFromJS
     OpenAPI_multicast_access_control_t *multicast_access_control_local_var = NULL;
     cJSON *src_ipv4_addr = cJSON_GetObjectItemCaseSensitive(multicast_access_controlJSON, "srcIpv4Addr");
 
-    if (src_ipv4_addr) { 
+    if (src_ipv4_addr) {
     if (!cJSON_IsString(src_ipv4_addr)) {
         ogs_error("OpenAPI_multicast_access_control_parseFromJSON() failed [src_ipv4_addr]");
         goto end;
@@ -106,7 +106,7 @@ OpenAPI_multicast_access_control_t *OpenAPI_multicast_access_control_parseFromJS
 
     cJSON *src_ipv6_addr = cJSON_GetObjectItemCaseSensitive(multicast_access_controlJSON, "srcIpv6Addr");
 
-    if (src_ipv6_addr) { 
+    if (src_ipv6_addr) {
     if (!cJSON_IsString(src_ipv6_addr)) {
         ogs_error("OpenAPI_multicast_access_control_parseFromJSON() failed [src_ipv6_addr]");
         goto end;
@@ -115,7 +115,7 @@ OpenAPI_multicast_access_control_t *OpenAPI_multicast_access_control_parseFromJS
 
     cJSON *multicast_v4_addr = cJSON_GetObjectItemCaseSensitive(multicast_access_controlJSON, "multicastV4Addr");
 
-    if (multicast_v4_addr) { 
+    if (multicast_v4_addr) {
     if (!cJSON_IsString(multicast_v4_addr)) {
         ogs_error("OpenAPI_multicast_access_control_parseFromJSON() failed [multicast_v4_addr]");
         goto end;
@@ -124,7 +124,7 @@ OpenAPI_multicast_access_control_t *OpenAPI_multicast_access_control_parseFromJS
 
     cJSON *multicast_v6_addr = cJSON_GetObjectItemCaseSensitive(multicast_access_controlJSON, "multicastV6Addr");
 
-    if (multicast_v6_addr) { 
+    if (multicast_v6_addr) {
     if (!cJSON_IsString(multicast_v6_addr)) {
         ogs_error("OpenAPI_multicast_access_control_parseFromJSON() failed [multicast_v6_addr]");
         goto end;
@@ -138,7 +138,6 @@ OpenAPI_multicast_access_control_t *OpenAPI_multicast_access_control_parseFromJS
     }
 
     OpenAPI_access_right_status_t *acc_status_local_nonprim = NULL;
-    
     acc_status_local_nonprim = OpenAPI_access_right_status_parseFromJSON(acc_status);
 
     multicast_access_control_local_var = OpenAPI_multicast_access_control_create (

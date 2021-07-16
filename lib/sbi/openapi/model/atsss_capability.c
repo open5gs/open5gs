@@ -5,8 +5,11 @@
 #include "atsss_capability.h"
 
 OpenAPI_atsss_capability_t *OpenAPI_atsss_capability_create(
+    bool is_atsss_ll,
     int atsss_ll,
+    bool is_mptcp,
     int mptcp,
+    bool is_rtt_without_pmf,
     int rtt_without_pmf
 )
 {
@@ -14,8 +17,11 @@ OpenAPI_atsss_capability_t *OpenAPI_atsss_capability_create(
     if (!atsss_capability_local_var) {
         return NULL;
     }
+    atsss_capability_local_var->is_atsss_ll = is_atsss_ll;
     atsss_capability_local_var->atsss_ll = atsss_ll;
+    atsss_capability_local_var->is_mptcp = is_mptcp;
     atsss_capability_local_var->mptcp = mptcp;
+    atsss_capability_local_var->is_rtt_without_pmf = is_rtt_without_pmf;
     atsss_capability_local_var->rtt_without_pmf = rtt_without_pmf;
 
     return atsss_capability_local_var;
@@ -40,21 +46,21 @@ cJSON *OpenAPI_atsss_capability_convertToJSON(OpenAPI_atsss_capability_t *atsss_
     }
 
     item = cJSON_CreateObject();
-    if (atsss_capability->atsss_ll) {
+    if (atsss_capability->is_atsss_ll) {
     if (cJSON_AddBoolToObject(item, "atsssLL", atsss_capability->atsss_ll) == NULL) {
         ogs_error("OpenAPI_atsss_capability_convertToJSON() failed [atsss_ll]");
         goto end;
     }
     }
 
-    if (atsss_capability->mptcp) {
+    if (atsss_capability->is_mptcp) {
     if (cJSON_AddBoolToObject(item, "mptcp", atsss_capability->mptcp) == NULL) {
         ogs_error("OpenAPI_atsss_capability_convertToJSON() failed [mptcp]");
         goto end;
     }
     }
 
-    if (atsss_capability->rtt_without_pmf) {
+    if (atsss_capability->is_rtt_without_pmf) {
     if (cJSON_AddBoolToObject(item, "rttWithoutPmf", atsss_capability->rtt_without_pmf) == NULL) {
         ogs_error("OpenAPI_atsss_capability_convertToJSON() failed [rtt_without_pmf]");
         goto end;
@@ -70,7 +76,7 @@ OpenAPI_atsss_capability_t *OpenAPI_atsss_capability_parseFromJSON(cJSON *atsss_
     OpenAPI_atsss_capability_t *atsss_capability_local_var = NULL;
     cJSON *atsss_ll = cJSON_GetObjectItemCaseSensitive(atsss_capabilityJSON, "atsssLL");
 
-    if (atsss_ll) { 
+    if (atsss_ll) {
     if (!cJSON_IsBool(atsss_ll)) {
         ogs_error("OpenAPI_atsss_capability_parseFromJSON() failed [atsss_ll]");
         goto end;
@@ -79,7 +85,7 @@ OpenAPI_atsss_capability_t *OpenAPI_atsss_capability_parseFromJSON(cJSON *atsss_
 
     cJSON *mptcp = cJSON_GetObjectItemCaseSensitive(atsss_capabilityJSON, "mptcp");
 
-    if (mptcp) { 
+    if (mptcp) {
     if (!cJSON_IsBool(mptcp)) {
         ogs_error("OpenAPI_atsss_capability_parseFromJSON() failed [mptcp]");
         goto end;
@@ -88,7 +94,7 @@ OpenAPI_atsss_capability_t *OpenAPI_atsss_capability_parseFromJSON(cJSON *atsss_
 
     cJSON *rtt_without_pmf = cJSON_GetObjectItemCaseSensitive(atsss_capabilityJSON, "rttWithoutPmf");
 
-    if (rtt_without_pmf) { 
+    if (rtt_without_pmf) {
     if (!cJSON_IsBool(rtt_without_pmf)) {
         ogs_error("OpenAPI_atsss_capability_parseFromJSON() failed [rtt_without_pmf]");
         goto end;
@@ -96,8 +102,11 @@ OpenAPI_atsss_capability_t *OpenAPI_atsss_capability_parseFromJSON(cJSON *atsss_
     }
 
     atsss_capability_local_var = OpenAPI_atsss_capability_create (
+        atsss_ll ? true : false,
         atsss_ll ? atsss_ll->valueint : 0,
+        mptcp ? true : false,
         mptcp ? mptcp->valueint : 0,
+        rtt_without_pmf ? true : false,
         rtt_without_pmf ? rtt_without_pmf->valueint : 0
     );
 

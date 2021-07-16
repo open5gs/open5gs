@@ -160,7 +160,6 @@ OpenAPI_events_subsc_req_data_rm_t *OpenAPI_events_subsc_req_data_rm_parseFromJS
     }
 
     OpenAPI_list_t *eventsList;
-    
     cJSON *events_local_nonprimitive;
     if (!cJSON_IsArray(events)){
         ogs_error("OpenAPI_events_subsc_req_data_rm_parseFromJSON() failed [events]");
@@ -181,7 +180,7 @@ OpenAPI_events_subsc_req_data_rm_t *OpenAPI_events_subsc_req_data_rm_parseFromJS
 
     cJSON *notif_uri = cJSON_GetObjectItemCaseSensitive(events_subsc_req_data_rmJSON, "notifUri");
 
-    if (notif_uri) { 
+    if (notif_uri) {
     if (!cJSON_IsString(notif_uri)) {
         ogs_error("OpenAPI_events_subsc_req_data_rm_parseFromJSON() failed [notif_uri]");
         goto end;
@@ -191,7 +190,7 @@ OpenAPI_events_subsc_req_data_rm_t *OpenAPI_events_subsc_req_data_rm_parseFromJS
     cJSON *req_qos_mon_params = cJSON_GetObjectItemCaseSensitive(events_subsc_req_data_rmJSON, "reqQosMonParams");
 
     OpenAPI_list_t *req_qos_mon_paramsList;
-    if (req_qos_mon_params) { 
+    if (req_qos_mon_params) {
     cJSON *req_qos_mon_params_local_nonprimitive;
     if (!cJSON_IsArray(req_qos_mon_params)) {
         ogs_error("OpenAPI_events_subsc_req_data_rm_parseFromJSON() failed [req_qos_mon_params]");
@@ -213,14 +212,14 @@ OpenAPI_events_subsc_req_data_rm_t *OpenAPI_events_subsc_req_data_rm_parseFromJS
     cJSON *qos_mon = cJSON_GetObjectItemCaseSensitive(events_subsc_req_data_rmJSON, "qosMon");
 
     OpenAPI_qos_monitoring_information_rm_t *qos_mon_local_nonprim = NULL;
-    if (qos_mon) { 
+    if (qos_mon) {
     qos_mon_local_nonprim = OpenAPI_qos_monitoring_information_rm_parseFromJSON(qos_mon);
     }
 
     cJSON *req_anis = cJSON_GetObjectItemCaseSensitive(events_subsc_req_data_rmJSON, "reqAnis");
 
     OpenAPI_list_t *req_anisList;
-    if (req_anis) { 
+    if (req_anis) {
     cJSON *req_anis_local_nonprimitive;
     if (!cJSON_IsArray(req_anis)) {
         ogs_error("OpenAPI_events_subsc_req_data_rm_parseFromJSON() failed [req_anis]");
@@ -242,13 +241,13 @@ OpenAPI_events_subsc_req_data_rm_t *OpenAPI_events_subsc_req_data_rm_parseFromJS
     cJSON *usg_thres = cJSON_GetObjectItemCaseSensitive(events_subsc_req_data_rmJSON, "usgThres");
 
     OpenAPI_usage_threshold_rm_t *usg_thres_local_nonprim = NULL;
-    if (usg_thres) { 
+    if (usg_thres) {
     usg_thres_local_nonprim = OpenAPI_usage_threshold_rm_parseFromJSON(usg_thres);
     }
 
     cJSON *notif_corre_id = cJSON_GetObjectItemCaseSensitive(events_subsc_req_data_rmJSON, "notifCorreId");
 
-    if (notif_corre_id) { 
+    if (notif_corre_id) {
     if (!cJSON_IsString(notif_corre_id)) {
         ogs_error("OpenAPI_events_subsc_req_data_rm_parseFromJSON() failed [notif_corre_id]");
         goto end;

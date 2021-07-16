@@ -275,7 +275,7 @@ OpenAPI_scp_info_t *OpenAPI_scp_info_parseFromJSON(cJSON *scp_infoJSON)
     cJSON *scp_domain_info_list = cJSON_GetObjectItemCaseSensitive(scp_infoJSON, "scpDomainInfoList");
 
     OpenAPI_list_t *scp_domain_info_listList;
-    if (scp_domain_info_list) { 
+    if (scp_domain_info_list) {
     cJSON *scp_domain_info_list_local_map;
     if (!cJSON_IsObject(scp_domain_info_list)) {
         ogs_error("OpenAPI_scp_info_parseFromJSON() failed [scp_domain_info_list]");
@@ -291,7 +291,7 @@ OpenAPI_scp_info_t *OpenAPI_scp_info_parseFromJSON(cJSON *scp_infoJSON)
 
     cJSON *scp_prefix = cJSON_GetObjectItemCaseSensitive(scp_infoJSON, "scpPrefix");
 
-    if (scp_prefix) { 
+    if (scp_prefix) {
     if (!cJSON_IsString(scp_prefix)) {
         ogs_error("OpenAPI_scp_info_parseFromJSON() failed [scp_prefix]");
         goto end;
@@ -301,7 +301,7 @@ OpenAPI_scp_info_t *OpenAPI_scp_info_parseFromJSON(cJSON *scp_infoJSON)
     cJSON *scp_ports = cJSON_GetObjectItemCaseSensitive(scp_infoJSON, "scpPorts");
 
     OpenAPI_list_t *scp_portsList;
-    if (scp_ports) { 
+    if (scp_ports) {
     cJSON *scp_ports_local_map;
     if (!cJSON_IsObject(scp_ports)) {
         ogs_error("OpenAPI_scp_info_parseFromJSON() failed [scp_ports]");
@@ -318,7 +318,7 @@ OpenAPI_scp_info_t *OpenAPI_scp_info_parseFromJSON(cJSON *scp_infoJSON)
     cJSON *address_domains = cJSON_GetObjectItemCaseSensitive(scp_infoJSON, "addressDomains");
 
     OpenAPI_list_t *address_domainsList;
-    if (address_domains) { 
+    if (address_domains) {
     cJSON *address_domains_local;
     if (!cJSON_IsArray(address_domains)) {
         ogs_error("OpenAPI_scp_info_parseFromJSON() failed [address_domains]");
@@ -332,13 +332,13 @@ OpenAPI_scp_info_t *OpenAPI_scp_info_parseFromJSON(cJSON *scp_infoJSON)
         goto end;
     }
     OpenAPI_list_add(address_domainsList , ogs_strdup_or_assert(address_domains_local->valuestring));
-                    }
+    }
     }
 
     cJSON *ipv4_addresses = cJSON_GetObjectItemCaseSensitive(scp_infoJSON, "ipv4Addresses");
 
     OpenAPI_list_t *ipv4_addressesList;
-    if (ipv4_addresses) { 
+    if (ipv4_addresses) {
     cJSON *ipv4_addresses_local;
     if (!cJSON_IsArray(ipv4_addresses)) {
         ogs_error("OpenAPI_scp_info_parseFromJSON() failed [ipv4_addresses]");
@@ -352,13 +352,13 @@ OpenAPI_scp_info_t *OpenAPI_scp_info_parseFromJSON(cJSON *scp_infoJSON)
         goto end;
     }
     OpenAPI_list_add(ipv4_addressesList , ogs_strdup_or_assert(ipv4_addresses_local->valuestring));
-                    }
+    }
     }
 
     cJSON *ipv6_prefixes = cJSON_GetObjectItemCaseSensitive(scp_infoJSON, "ipv6Prefixes");
 
     OpenAPI_list_t *ipv6_prefixesList;
-    if (ipv6_prefixes) { 
+    if (ipv6_prefixes) {
     cJSON *ipv6_prefixes_local;
     if (!cJSON_IsArray(ipv6_prefixes)) {
         ogs_error("OpenAPI_scp_info_parseFromJSON() failed [ipv6_prefixes]");
@@ -372,13 +372,13 @@ OpenAPI_scp_info_t *OpenAPI_scp_info_parseFromJSON(cJSON *scp_infoJSON)
         goto end;
     }
     OpenAPI_list_add(ipv6_prefixesList , ogs_strdup_or_assert(ipv6_prefixes_local->valuestring));
-                    }
+    }
     }
 
     cJSON *ipv4_addr_ranges = cJSON_GetObjectItemCaseSensitive(scp_infoJSON, "ipv4AddrRanges");
 
     OpenAPI_list_t *ipv4_addr_rangesList;
-    if (ipv4_addr_ranges) { 
+    if (ipv4_addr_ranges) {
     cJSON *ipv4_addr_ranges_local_nonprimitive;
     if (!cJSON_IsArray(ipv4_addr_ranges)){
         ogs_error("OpenAPI_scp_info_parseFromJSON() failed [ipv4_addr_ranges]");
@@ -401,7 +401,7 @@ OpenAPI_scp_info_t *OpenAPI_scp_info_parseFromJSON(cJSON *scp_infoJSON)
     cJSON *ipv6_prefix_ranges = cJSON_GetObjectItemCaseSensitive(scp_infoJSON, "ipv6PrefixRanges");
 
     OpenAPI_list_t *ipv6_prefix_rangesList;
-    if (ipv6_prefix_ranges) { 
+    if (ipv6_prefix_ranges) {
     cJSON *ipv6_prefix_ranges_local_nonprimitive;
     if (!cJSON_IsArray(ipv6_prefix_ranges)){
         ogs_error("OpenAPI_scp_info_parseFromJSON() failed [ipv6_prefix_ranges]");
@@ -424,7 +424,7 @@ OpenAPI_scp_info_t *OpenAPI_scp_info_parseFromJSON(cJSON *scp_infoJSON)
     cJSON *served_nf_set_id_list = cJSON_GetObjectItemCaseSensitive(scp_infoJSON, "servedNfSetIdList");
 
     OpenAPI_list_t *served_nf_set_id_listList;
-    if (served_nf_set_id_list) { 
+    if (served_nf_set_id_list) {
     cJSON *served_nf_set_id_list_local;
     if (!cJSON_IsArray(served_nf_set_id_list)) {
         ogs_error("OpenAPI_scp_info_parseFromJSON() failed [served_nf_set_id_list]");
@@ -438,13 +438,13 @@ OpenAPI_scp_info_t *OpenAPI_scp_info_parseFromJSON(cJSON *scp_infoJSON)
         goto end;
     }
     OpenAPI_list_add(served_nf_set_id_listList , ogs_strdup_or_assert(served_nf_set_id_list_local->valuestring));
-                    }
+    }
     }
 
     cJSON *remote_plmn_list = cJSON_GetObjectItemCaseSensitive(scp_infoJSON, "remotePlmnList");
 
     OpenAPI_list_t *remote_plmn_listList;
-    if (remote_plmn_list) { 
+    if (remote_plmn_list) {
     cJSON *remote_plmn_list_local_nonprimitive;
     if (!cJSON_IsArray(remote_plmn_list)){
         ogs_error("OpenAPI_scp_info_parseFromJSON() failed [remote_plmn_list]");
@@ -467,7 +467,7 @@ OpenAPI_scp_info_t *OpenAPI_scp_info_parseFromJSON(cJSON *scp_infoJSON)
     cJSON *ip_reachability = cJSON_GetObjectItemCaseSensitive(scp_infoJSON, "ipReachability");
 
     OpenAPI_ip_reachability_e ip_reachabilityVariable;
-    if (ip_reachability) { 
+    if (ip_reachability) {
     if (!cJSON_IsString(ip_reachability)) {
         ogs_error("OpenAPI_scp_info_parseFromJSON() failed [ip_reachability]");
         goto end;

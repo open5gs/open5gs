@@ -77,7 +77,7 @@ OpenAPI_pp_profile_data_t *OpenAPI_pp_profile_data_parseFromJSON(cJSON *pp_profi
     cJSON *allowed_mtc_providers = cJSON_GetObjectItemCaseSensitive(pp_profile_dataJSON, "allowedMtcProviders");
 
     OpenAPI_list_t *allowed_mtc_providersList;
-    if (allowed_mtc_providers) { 
+    if (allowed_mtc_providers) {
     cJSON *allowed_mtc_providers_local_map;
     if (!cJSON_IsObject(allowed_mtc_providers)) {
         ogs_error("OpenAPI_pp_profile_data_parseFromJSON() failed [allowed_mtc_providers]");
@@ -93,7 +93,7 @@ OpenAPI_pp_profile_data_t *OpenAPI_pp_profile_data_parseFromJSON(cJSON *pp_profi
 
     cJSON *supported_features = cJSON_GetObjectItemCaseSensitive(pp_profile_dataJSON, "supportedFeatures");
 
-    if (supported_features) { 
+    if (supported_features) {
     if (!cJSON_IsString(supported_features)) {
         ogs_error("OpenAPI_pp_profile_data_parseFromJSON() failed [supported_features]");
         goto end;

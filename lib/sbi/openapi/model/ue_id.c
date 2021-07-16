@@ -77,7 +77,6 @@ OpenAPI_ue_id_t *OpenAPI_ue_id_parseFromJSON(cJSON *ue_idJSON)
         goto end;
     }
 
-    
     if (!cJSON_IsString(supi)) {
         ogs_error("OpenAPI_ue_id_parseFromJSON() failed [supi]");
         goto end;
@@ -86,7 +85,7 @@ OpenAPI_ue_id_t *OpenAPI_ue_id_parseFromJSON(cJSON *ue_idJSON)
     cJSON *gpsi_list = cJSON_GetObjectItemCaseSensitive(ue_idJSON, "gpsiList");
 
     OpenAPI_list_t *gpsi_listList;
-    if (gpsi_list) { 
+    if (gpsi_list) {
     cJSON *gpsi_list_local;
     if (!cJSON_IsArray(gpsi_list)) {
         ogs_error("OpenAPI_ue_id_parseFromJSON() failed [gpsi_list]");
@@ -100,7 +99,7 @@ OpenAPI_ue_id_t *OpenAPI_ue_id_parseFromJSON(cJSON *ue_idJSON)
         goto end;
     }
     OpenAPI_list_add(gpsi_listList , ogs_strdup_or_assert(gpsi_list_local->valuestring));
-                    }
+    }
     }
 
     ue_id_local_var = OpenAPI_ue_id_create (

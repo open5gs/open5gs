@@ -80,7 +80,7 @@ OpenAPI_tunnel_info_t *OpenAPI_tunnel_info_parseFromJSON(cJSON *tunnel_infoJSON)
     OpenAPI_tunnel_info_t *tunnel_info_local_var = NULL;
     cJSON *ipv4_addr = cJSON_GetObjectItemCaseSensitive(tunnel_infoJSON, "ipv4Addr");
 
-    if (ipv4_addr) { 
+    if (ipv4_addr) {
     if (!cJSON_IsString(ipv4_addr)) {
         ogs_error("OpenAPI_tunnel_info_parseFromJSON() failed [ipv4_addr]");
         goto end;
@@ -89,7 +89,7 @@ OpenAPI_tunnel_info_t *OpenAPI_tunnel_info_parseFromJSON(cJSON *tunnel_infoJSON)
 
     cJSON *ipv6_addr = cJSON_GetObjectItemCaseSensitive(tunnel_infoJSON, "ipv6Addr");
 
-    if (ipv6_addr) { 
+    if (ipv6_addr) {
     if (!cJSON_IsString(ipv6_addr)) {
         ogs_error("OpenAPI_tunnel_info_parseFromJSON() failed [ipv6_addr]");
         goto end;
@@ -102,7 +102,6 @@ OpenAPI_tunnel_info_t *OpenAPI_tunnel_info_parseFromJSON(cJSON *tunnel_infoJSON)
         goto end;
     }
 
-    
     if (!cJSON_IsString(gtp_teid)) {
         ogs_error("OpenAPI_tunnel_info_parseFromJSON() failed [gtp_teid]");
         goto end;
@@ -111,7 +110,7 @@ OpenAPI_tunnel_info_t *OpenAPI_tunnel_info_parseFromJSON(cJSON *tunnel_infoJSON)
     cJSON *an_type = cJSON_GetObjectItemCaseSensitive(tunnel_infoJSON, "anType");
 
     OpenAPI_access_type_e an_typeVariable;
-    if (an_type) { 
+    if (an_type) {
     if (!cJSON_IsString(an_type)) {
         ogs_error("OpenAPI_tunnel_info_parseFromJSON() failed [an_type]");
         goto end;

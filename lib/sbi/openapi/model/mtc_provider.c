@@ -63,7 +63,7 @@ OpenAPI_mtc_provider_t *OpenAPI_mtc_provider_parseFromJSON(cJSON *mtc_providerJS
     OpenAPI_mtc_provider_t *mtc_provider_local_var = NULL;
     cJSON *mtc_provider_information = cJSON_GetObjectItemCaseSensitive(mtc_providerJSON, "mtcProviderInformation");
 
-    if (mtc_provider_information) { 
+    if (mtc_provider_information) {
     if (!cJSON_IsString(mtc_provider_information)) {
         ogs_error("OpenAPI_mtc_provider_parseFromJSON() failed [mtc_provider_information]");
         goto end;
@@ -72,7 +72,7 @@ OpenAPI_mtc_provider_t *OpenAPI_mtc_provider_parseFromJSON(cJSON *mtc_providerJS
 
     cJSON *af_id = cJSON_GetObjectItemCaseSensitive(mtc_providerJSON, "afId");
 
-    if (af_id) { 
+    if (af_id) {
     if (!cJSON_IsString(af_id)) {
         ogs_error("OpenAPI_mtc_provider_parseFromJSON() failed [af_id]");
         goto end;

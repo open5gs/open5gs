@@ -21,6 +21,7 @@ typedef struct OpenAPI_ddd_traffic_descriptor_s OpenAPI_ddd_traffic_descriptor_t
 typedef struct OpenAPI_ddd_traffic_descriptor_s {
     char *ipv4_addr;
     char *ipv6_addr;
+    bool is_port_number;
     int port_number;
     char *mac_addr;
 } OpenAPI_ddd_traffic_descriptor_t;
@@ -28,6 +29,7 @@ typedef struct OpenAPI_ddd_traffic_descriptor_s {
 OpenAPI_ddd_traffic_descriptor_t *OpenAPI_ddd_traffic_descriptor_create(
     char *ipv4_addr,
     char *ipv6_addr,
+    bool is_port_number,
     int port_number,
     char *mac_addr
 );

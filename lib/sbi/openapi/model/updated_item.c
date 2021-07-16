@@ -63,7 +63,6 @@ OpenAPI_updated_item_t *OpenAPI_updated_item_parseFromJSON(cJSON *updated_itemJS
         goto end;
     }
 
-    
     if (!cJSON_IsString(item)) {
         ogs_error("OpenAPI_updated_item_parseFromJSON() failed [item]");
         goto end;
@@ -75,7 +74,6 @@ OpenAPI_updated_item_t *OpenAPI_updated_item_parseFromJSON(cJSON *updated_itemJS
         goto end;
     }
 
-    
     if (!cJSON_IsString(value)) {
         ogs_error("OpenAPI_updated_item_parseFromJSON() failed [value]");
         goto end;

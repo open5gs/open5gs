@@ -95,7 +95,7 @@ OpenAPI_sor_info_1_t *OpenAPI_sor_info_1_parseFromJSON(cJSON *sor_info_1JSON)
     cJSON *steering_container = cJSON_GetObjectItemCaseSensitive(sor_info_1JSON, "steeringContainer");
 
     OpenAPI_steering_container_t *steering_container_local_nonprim = NULL;
-    if (steering_container) { 
+    if (steering_container) {
     steering_container_local_nonprim = OpenAPI_steering_container_parseFromJSON(steering_container);
     }
 
@@ -105,7 +105,6 @@ OpenAPI_sor_info_1_t *OpenAPI_sor_info_1_parseFromJSON(cJSON *sor_info_1JSON)
         goto end;
     }
 
-    
     if (!cJSON_IsBool(ack_ind)) {
         ogs_error("OpenAPI_sor_info_1_parseFromJSON() failed [ack_ind]");
         goto end;
@@ -113,7 +112,7 @@ OpenAPI_sor_info_1_t *OpenAPI_sor_info_1_parseFromJSON(cJSON *sor_info_1JSON)
 
     cJSON *sor_mac_iausf = cJSON_GetObjectItemCaseSensitive(sor_info_1JSON, "sorMacIausf");
 
-    if (sor_mac_iausf) { 
+    if (sor_mac_iausf) {
     if (!cJSON_IsString(sor_mac_iausf)) {
         ogs_error("OpenAPI_sor_info_1_parseFromJSON() failed [sor_mac_iausf]");
         goto end;
@@ -122,7 +121,7 @@ OpenAPI_sor_info_1_t *OpenAPI_sor_info_1_parseFromJSON(cJSON *sor_info_1JSON)
 
     cJSON *countersor = cJSON_GetObjectItemCaseSensitive(sor_info_1JSON, "countersor");
 
-    if (countersor) { 
+    if (countersor) {
     if (!cJSON_IsString(countersor)) {
         ogs_error("OpenAPI_sor_info_1_parseFromJSON() failed [countersor]");
         goto end;
@@ -135,7 +134,6 @@ OpenAPI_sor_info_1_t *OpenAPI_sor_info_1_parseFromJSON(cJSON *sor_info_1JSON)
         goto end;
     }
 
-    
     if (!cJSON_IsString(provisioning_time)) {
         ogs_error("OpenAPI_sor_info_1_parseFromJSON() failed [provisioning_time]");
         goto end;
@@ -143,6 +141,7 @@ OpenAPI_sor_info_1_t *OpenAPI_sor_info_1_parseFromJSON(cJSON *sor_info_1JSON)
 
     sor_info_1_local_var = OpenAPI_sor_info_1_create (
         steering_container ? steering_container_local_nonprim : NULL,
+        
         ack_ind->valueint,
         sor_mac_iausf ? ogs_strdup_or_assert(sor_mac_iausf->valuestring) : NULL,
         countersor ? ogs_strdup_or_assert(countersor->valuestring) : NULL,

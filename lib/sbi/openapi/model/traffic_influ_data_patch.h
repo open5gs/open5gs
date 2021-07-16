@@ -26,6 +26,7 @@ extern "C" {
 typedef struct OpenAPI_traffic_influ_data_patch_s OpenAPI_traffic_influ_data_patch_t;
 typedef struct OpenAPI_traffic_influ_data_patch_s {
     char *up_path_chg_notif_corre_id;
+    bool is_app_relo_ind;
     int app_relo_ind;
     char *dnn;
     OpenAPI_list_t *eth_traffic_filters;
@@ -34,6 +35,7 @@ typedef struct OpenAPI_traffic_influ_data_patch_s {
     char *supi;
     OpenAPI_list_t *traffic_filters;
     OpenAPI_list_t *traffic_routes;
+    bool is_traff_corre_ind;
     int traff_corre_ind;
     char *valid_start_time;
     char *valid_end_time;
@@ -41,12 +43,15 @@ typedef struct OpenAPI_traffic_influ_data_patch_s {
     struct OpenAPI_network_area_info_1_s *nw_area_info;
     char *up_path_chg_notif_uri;
     OpenAPI_list_t *headers;
+    bool is_af_ack_ind;
     int af_ack_ind;
+    bool is_addr_preser_ind;
     int addr_preser_ind;
 } OpenAPI_traffic_influ_data_patch_t;
 
 OpenAPI_traffic_influ_data_patch_t *OpenAPI_traffic_influ_data_patch_create(
     char *up_path_chg_notif_corre_id,
+    bool is_app_relo_ind,
     int app_relo_ind,
     char *dnn,
     OpenAPI_list_t *eth_traffic_filters,
@@ -55,6 +60,7 @@ OpenAPI_traffic_influ_data_patch_t *OpenAPI_traffic_influ_data_patch_create(
     char *supi,
     OpenAPI_list_t *traffic_filters,
     OpenAPI_list_t *traffic_routes,
+    bool is_traff_corre_ind,
     int traff_corre_ind,
     char *valid_start_time,
     char *valid_end_time,
@@ -62,7 +68,9 @@ OpenAPI_traffic_influ_data_patch_t *OpenAPI_traffic_influ_data_patch_create(
     OpenAPI_network_area_info_1_t *nw_area_info,
     char *up_path_chg_notif_uri,
     OpenAPI_list_t *headers,
+    bool is_af_ack_ind,
     int af_ack_ind,
+    bool is_addr_preser_ind,
     int addr_preser_ind
 );
 void OpenAPI_traffic_influ_data_patch_free(OpenAPI_traffic_influ_data_patch_t *traffic_influ_data_patch);

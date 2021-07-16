@@ -63,7 +63,6 @@ OpenAPI_vendor_specific_feature_t *OpenAPI_vendor_specific_feature_parseFromJSON
         goto end;
     }
 
-    
     if (!cJSON_IsString(feature_name)) {
         ogs_error("OpenAPI_vendor_specific_feature_parseFromJSON() failed [feature_name]");
         goto end;
@@ -75,7 +74,6 @@ OpenAPI_vendor_specific_feature_t *OpenAPI_vendor_specific_feature_parseFromJSON
         goto end;
     }
 
-    
     if (!cJSON_IsString(feature_version)) {
         ogs_error("OpenAPI_vendor_specific_feature_parseFromJSON() failed [feature_version]");
         goto end;

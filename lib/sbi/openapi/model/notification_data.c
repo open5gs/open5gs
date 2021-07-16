@@ -114,7 +114,6 @@ OpenAPI_notification_data_t *OpenAPI_notification_data_parseFromJSON(cJSON *noti
     }
 
     OpenAPI_notification_event_type_e eventVariable;
-    
     if (!cJSON_IsString(event)) {
         ogs_error("OpenAPI_notification_data_parseFromJSON() failed [event]");
         goto end;
@@ -127,7 +126,6 @@ OpenAPI_notification_data_t *OpenAPI_notification_data_parseFromJSON(cJSON *noti
         goto end;
     }
 
-    
     if (!cJSON_IsString(nf_instance_uri)) {
         ogs_error("OpenAPI_notification_data_parseFromJSON() failed [nf_instance_uri]");
         goto end;
@@ -136,14 +134,14 @@ OpenAPI_notification_data_t *OpenAPI_notification_data_parseFromJSON(cJSON *noti
     cJSON *nf_profile = cJSON_GetObjectItemCaseSensitive(notification_dataJSON, "nfProfile");
 
     OpenAPI_nf_profile_t *nf_profile_local_nonprim = NULL;
-    if (nf_profile) { 
+    if (nf_profile) {
     nf_profile_local_nonprim = OpenAPI_nf_profile_parseFromJSON(nf_profile);
     }
 
     cJSON *profile_changes = cJSON_GetObjectItemCaseSensitive(notification_dataJSON, "profileChanges");
 
     OpenAPI_list_t *profile_changesList;
-    if (profile_changes) { 
+    if (profile_changes) {
     cJSON *profile_changes_local_nonprimitive;
     if (!cJSON_IsArray(profile_changes)){
         ogs_error("OpenAPI_notification_data_parseFromJSON() failed [profile_changes]");
@@ -166,7 +164,7 @@ OpenAPI_notification_data_t *OpenAPI_notification_data_parseFromJSON(cJSON *noti
     cJSON *condition_event = cJSON_GetObjectItemCaseSensitive(notification_dataJSON, "conditionEvent");
 
     OpenAPI_condition_event_type_e condition_eventVariable;
-    if (condition_event) { 
+    if (condition_event) {
     if (!cJSON_IsString(condition_event)) {
         ogs_error("OpenAPI_notification_data_parseFromJSON() failed [condition_event]");
         goto end;

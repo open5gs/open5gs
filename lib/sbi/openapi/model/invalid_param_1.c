@@ -65,7 +65,6 @@ OpenAPI_invalid_param_1_t *OpenAPI_invalid_param_1_parseFromJSON(cJSON *invalid_
         goto end;
     }
 
-    
     if (!cJSON_IsString(param)) {
         ogs_error("OpenAPI_invalid_param_1_parseFromJSON() failed [param]");
         goto end;
@@ -73,7 +72,7 @@ OpenAPI_invalid_param_1_t *OpenAPI_invalid_param_1_parseFromJSON(cJSON *invalid_
 
     cJSON *reason = cJSON_GetObjectItemCaseSensitive(invalid_param_1JSON, "reason");
 
-    if (reason) { 
+    if (reason) {
     if (!cJSON_IsString(reason)) {
         ogs_error("OpenAPI_invalid_param_1_parseFromJSON() failed [reason]");
         goto end;

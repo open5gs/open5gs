@@ -551,7 +551,8 @@ bool smf_nsmf_handle_update_sm_context(
 
             return false;
         }
-    } else if (SmContextUpdateData->release) {
+    } else if (SmContextUpdateData->is_release == true &&
+                SmContextUpdateData->release == true) {
         smf_npcf_smpolicycontrol_param_t param;
 
         memset(&param, 0, sizeof(param));

@@ -89,7 +89,7 @@ OpenAPI_resources_allocation_info_t *OpenAPI_resources_allocation_info_parseFrom
     cJSON *mc_resourc_status = cJSON_GetObjectItemCaseSensitive(resources_allocation_infoJSON, "mcResourcStatus");
 
     OpenAPI_media_component_resources_status_e mc_resourc_statusVariable;
-    if (mc_resourc_status) { 
+    if (mc_resourc_status) {
     if (!cJSON_IsString(mc_resourc_status)) {
         ogs_error("OpenAPI_resources_allocation_info_parseFromJSON() failed [mc_resourc_status]");
         goto end;
@@ -100,7 +100,7 @@ OpenAPI_resources_allocation_info_t *OpenAPI_resources_allocation_info_parseFrom
     cJSON *flows = cJSON_GetObjectItemCaseSensitive(resources_allocation_infoJSON, "flows");
 
     OpenAPI_list_t *flowsList;
-    if (flows) { 
+    if (flows) {
     cJSON *flows_local_nonprimitive;
     if (!cJSON_IsArray(flows)){
         ogs_error("OpenAPI_resources_allocation_info_parseFromJSON() failed [flows]");
@@ -122,7 +122,7 @@ OpenAPI_resources_allocation_info_t *OpenAPI_resources_allocation_info_parseFrom
 
     cJSON *alt_ser_req = cJSON_GetObjectItemCaseSensitive(resources_allocation_infoJSON, "altSerReq");
 
-    if (alt_ser_req) { 
+    if (alt_ser_req) {
     if (!cJSON_IsString(alt_ser_req)) {
         ogs_error("OpenAPI_resources_allocation_info_parseFromJSON() failed [alt_ser_req]");
         goto end;

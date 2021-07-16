@@ -5,8 +5,11 @@
 #include "tsn_qos_container.h"
 
 OpenAPI_tsn_qos_container_t *OpenAPI_tsn_qos_container_create(
+    bool is_max_tsc_burst_size,
     int max_tsc_burst_size,
+    bool is_tsc_pack_delay,
     int tsc_pack_delay,
+    bool is_tsc_prio_level,
     int tsc_prio_level
 )
 {
@@ -14,8 +17,11 @@ OpenAPI_tsn_qos_container_t *OpenAPI_tsn_qos_container_create(
     if (!tsn_qos_container_local_var) {
         return NULL;
     }
+    tsn_qos_container_local_var->is_max_tsc_burst_size = is_max_tsc_burst_size;
     tsn_qos_container_local_var->max_tsc_burst_size = max_tsc_burst_size;
+    tsn_qos_container_local_var->is_tsc_pack_delay = is_tsc_pack_delay;
     tsn_qos_container_local_var->tsc_pack_delay = tsc_pack_delay;
+    tsn_qos_container_local_var->is_tsc_prio_level = is_tsc_prio_level;
     tsn_qos_container_local_var->tsc_prio_level = tsc_prio_level;
 
     return tsn_qos_container_local_var;
@@ -40,21 +46,21 @@ cJSON *OpenAPI_tsn_qos_container_convertToJSON(OpenAPI_tsn_qos_container_t *tsn_
     }
 
     item = cJSON_CreateObject();
-    if (tsn_qos_container->max_tsc_burst_size) {
+    if (tsn_qos_container->is_max_tsc_burst_size) {
     if (cJSON_AddNumberToObject(item, "maxTscBurstSize", tsn_qos_container->max_tsc_burst_size) == NULL) {
         ogs_error("OpenAPI_tsn_qos_container_convertToJSON() failed [max_tsc_burst_size]");
         goto end;
     }
     }
 
-    if (tsn_qos_container->tsc_pack_delay) {
+    if (tsn_qos_container->is_tsc_pack_delay) {
     if (cJSON_AddNumberToObject(item, "tscPackDelay", tsn_qos_container->tsc_pack_delay) == NULL) {
         ogs_error("OpenAPI_tsn_qos_container_convertToJSON() failed [tsc_pack_delay]");
         goto end;
     }
     }
 
-    if (tsn_qos_container->tsc_prio_level) {
+    if (tsn_qos_container->is_tsc_prio_level) {
     if (cJSON_AddNumberToObject(item, "tscPrioLevel", tsn_qos_container->tsc_prio_level) == NULL) {
         ogs_error("OpenAPI_tsn_qos_container_convertToJSON() failed [tsc_prio_level]");
         goto end;
@@ -70,7 +76,7 @@ OpenAPI_tsn_qos_container_t *OpenAPI_tsn_qos_container_parseFromJSON(cJSON *tsn_
     OpenAPI_tsn_qos_container_t *tsn_qos_container_local_var = NULL;
     cJSON *max_tsc_burst_size = cJSON_GetObjectItemCaseSensitive(tsn_qos_containerJSON, "maxTscBurstSize");
 
-    if (max_tsc_burst_size) { 
+    if (max_tsc_burst_size) {
     if (!cJSON_IsNumber(max_tsc_burst_size)) {
         ogs_error("OpenAPI_tsn_qos_container_parseFromJSON() failed [max_tsc_burst_size]");
         goto end;
@@ -79,7 +85,7 @@ OpenAPI_tsn_qos_container_t *OpenAPI_tsn_qos_container_parseFromJSON(cJSON *tsn_
 
     cJSON *tsc_pack_delay = cJSON_GetObjectItemCaseSensitive(tsn_qos_containerJSON, "tscPackDelay");
 
-    if (tsc_pack_delay) { 
+    if (tsc_pack_delay) {
     if (!cJSON_IsNumber(tsc_pack_delay)) {
         ogs_error("OpenAPI_tsn_qos_container_parseFromJSON() failed [tsc_pack_delay]");
         goto end;
@@ -88,7 +94,7 @@ OpenAPI_tsn_qos_container_t *OpenAPI_tsn_qos_container_parseFromJSON(cJSON *tsn_
 
     cJSON *tsc_prio_level = cJSON_GetObjectItemCaseSensitive(tsn_qos_containerJSON, "tscPrioLevel");
 
-    if (tsc_prio_level) { 
+    if (tsc_prio_level) {
     if (!cJSON_IsNumber(tsc_prio_level)) {
         ogs_error("OpenAPI_tsn_qos_container_parseFromJSON() failed [tsc_prio_level]");
         goto end;
@@ -96,8 +102,11 @@ OpenAPI_tsn_qos_container_t *OpenAPI_tsn_qos_container_parseFromJSON(cJSON *tsn_
     }
 
     tsn_qos_container_local_var = OpenAPI_tsn_qos_container_create (
+        max_tsc_burst_size ? true : false,
         max_tsc_burst_size ? max_tsc_burst_size->valuedouble : 0,
+        tsc_pack_delay ? true : false,
         tsc_pack_delay ? tsc_pack_delay->valuedouble : 0,
+        tsc_prio_level ? true : false,
         tsc_prio_level ? tsc_prio_level->valuedouble : 0
     );
 

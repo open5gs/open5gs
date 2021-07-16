@@ -134,7 +134,7 @@ OpenAPI_lmf_info_t *OpenAPI_lmf_info_parseFromJSON(cJSON *lmf_infoJSON)
     cJSON *serving_client_types = cJSON_GetObjectItemCaseSensitive(lmf_infoJSON, "servingClientTypes");
 
     OpenAPI_list_t *serving_client_typesList;
-    if (serving_client_types) { 
+    if (serving_client_types) {
     cJSON *serving_client_types_local_nonprimitive;
     if (!cJSON_IsArray(serving_client_types)){
         ogs_error("OpenAPI_lmf_info_parseFromJSON() failed [serving_client_types]");
@@ -156,7 +156,7 @@ OpenAPI_lmf_info_t *OpenAPI_lmf_info_parseFromJSON(cJSON *lmf_infoJSON)
 
     cJSON *lmf_id = cJSON_GetObjectItemCaseSensitive(lmf_infoJSON, "lmfId");
 
-    if (lmf_id) { 
+    if (lmf_id) {
     if (!cJSON_IsString(lmf_id)) {
         ogs_error("OpenAPI_lmf_info_parseFromJSON() failed [lmf_id]");
         goto end;
@@ -166,7 +166,7 @@ OpenAPI_lmf_info_t *OpenAPI_lmf_info_parseFromJSON(cJSON *lmf_infoJSON)
     cJSON *serving_access_types = cJSON_GetObjectItemCaseSensitive(lmf_infoJSON, "servingAccessTypes");
 
     OpenAPI_list_t *serving_access_typesList;
-    if (serving_access_types) { 
+    if (serving_access_types) {
     cJSON *serving_access_types_local_nonprimitive;
     if (!cJSON_IsArray(serving_access_types)) {
         ogs_error("OpenAPI_lmf_info_parseFromJSON() failed [serving_access_types]");
@@ -188,7 +188,7 @@ OpenAPI_lmf_info_t *OpenAPI_lmf_info_parseFromJSON(cJSON *lmf_infoJSON)
     cJSON *serving_an_node_types = cJSON_GetObjectItemCaseSensitive(lmf_infoJSON, "servingAnNodeTypes");
 
     OpenAPI_list_t *serving_an_node_typesList;
-    if (serving_an_node_types) { 
+    if (serving_an_node_types) {
     cJSON *serving_an_node_types_local_nonprimitive;
     if (!cJSON_IsArray(serving_an_node_types)) {
         ogs_error("OpenAPI_lmf_info_parseFromJSON() failed [serving_an_node_types]");
@@ -210,7 +210,7 @@ OpenAPI_lmf_info_t *OpenAPI_lmf_info_parseFromJSON(cJSON *lmf_infoJSON)
     cJSON *serving_rat_types = cJSON_GetObjectItemCaseSensitive(lmf_infoJSON, "servingRatTypes");
 
     OpenAPI_list_t *serving_rat_typesList;
-    if (serving_rat_types) { 
+    if (serving_rat_types) {
     cJSON *serving_rat_types_local_nonprimitive;
     if (!cJSON_IsArray(serving_rat_types)) {
         ogs_error("OpenAPI_lmf_info_parseFromJSON() failed [serving_rat_types]");

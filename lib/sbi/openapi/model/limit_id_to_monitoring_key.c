@@ -77,7 +77,6 @@ OpenAPI_limit_id_to_monitoring_key_t *OpenAPI_limit_id_to_monitoring_key_parseFr
         goto end;
     }
 
-    
     if (!cJSON_IsString(limit_id)) {
         ogs_error("OpenAPI_limit_id_to_monitoring_key_parseFromJSON() failed [limit_id]");
         goto end;
@@ -86,7 +85,7 @@ OpenAPI_limit_id_to_monitoring_key_t *OpenAPI_limit_id_to_monitoring_key_parseFr
     cJSON *monkey = cJSON_GetObjectItemCaseSensitive(limit_id_to_monitoring_keyJSON, "monkey");
 
     OpenAPI_list_t *monkeyList;
-    if (monkey) { 
+    if (monkey) {
     cJSON *monkey_local;
     if (!cJSON_IsArray(monkey)) {
         ogs_error("OpenAPI_limit_id_to_monitoring_key_parseFromJSON() failed [monkey]");
@@ -100,7 +99,7 @@ OpenAPI_limit_id_to_monitoring_key_t *OpenAPI_limit_id_to_monitoring_key_parseFr
         goto end;
     }
     OpenAPI_list_add(monkeyList , ogs_strdup_or_assert(monkey_local->valuestring));
-                    }
+    }
     }
 
     limit_id_to_monitoring_key_local_var = OpenAPI_limit_id_to_monitoring_key_create (

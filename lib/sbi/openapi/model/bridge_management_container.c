@@ -54,7 +54,6 @@ OpenAPI_bridge_management_container_t *OpenAPI_bridge_management_container_parse
         goto end;
     }
 
-    
     if (!cJSON_IsNumber(bridge_man_cont)) {
         ogs_error("OpenAPI_bridge_management_container_parseFromJSON() failed [bridge_man_cont]");
         goto end;

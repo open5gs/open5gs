@@ -9,10 +9,12 @@ OpenAPI_traffic_control_data_t *OpenAPI_traffic_control_data_create(
     OpenAPI_flow_status_e flow_status,
     OpenAPI_redirect_information_t *redirect_info,
     OpenAPI_list_t *add_redirect_info,
+    bool is_mute_notif,
     int mute_notif,
     char *traffic_steering_pol_id_dl,
     char *traffic_steering_pol_id_ul,
     OpenAPI_list_t *route_to_locs,
+    bool is_traff_corre_ind,
     int traff_corre_ind,
     OpenAPI_up_path_chg_event_t *up_path_chg_event,
     OpenAPI_steering_functionality_e steer_fun,
@@ -29,10 +31,12 @@ OpenAPI_traffic_control_data_t *OpenAPI_traffic_control_data_create(
     traffic_control_data_local_var->flow_status = flow_status;
     traffic_control_data_local_var->redirect_info = redirect_info;
     traffic_control_data_local_var->add_redirect_info = add_redirect_info;
+    traffic_control_data_local_var->is_mute_notif = is_mute_notif;
     traffic_control_data_local_var->mute_notif = mute_notif;
     traffic_control_data_local_var->traffic_steering_pol_id_dl = traffic_steering_pol_id_dl;
     traffic_control_data_local_var->traffic_steering_pol_id_ul = traffic_steering_pol_id_ul;
     traffic_control_data_local_var->route_to_locs = route_to_locs;
+    traffic_control_data_local_var->is_traff_corre_ind = is_traff_corre_ind;
     traffic_control_data_local_var->traff_corre_ind = traff_corre_ind;
     traffic_control_data_local_var->up_path_chg_event = up_path_chg_event;
     traffic_control_data_local_var->steer_fun = steer_fun;
@@ -123,7 +127,7 @@ cJSON *OpenAPI_traffic_control_data_convertToJSON(OpenAPI_traffic_control_data_t
     }
     }
 
-    if (traffic_control_data->mute_notif) {
+    if (traffic_control_data->is_mute_notif) {
     if (cJSON_AddBoolToObject(item, "muteNotif", traffic_control_data->mute_notif) == NULL) {
         ogs_error("OpenAPI_traffic_control_data_convertToJSON() failed [mute_notif]");
         goto end;
@@ -164,7 +168,7 @@ cJSON *OpenAPI_traffic_control_data_convertToJSON(OpenAPI_traffic_control_data_t
     }
     }
 
-    if (traffic_control_data->traff_corre_ind) {
+    if (traffic_control_data->is_traff_corre_ind) {
     if (cJSON_AddBoolToObject(item, "traffCorreInd", traffic_control_data->traff_corre_ind) == NULL) {
         ogs_error("OpenAPI_traffic_control_data_convertToJSON() failed [traff_corre_ind]");
         goto end;
@@ -243,7 +247,6 @@ OpenAPI_traffic_control_data_t *OpenAPI_traffic_control_data_parseFromJSON(cJSON
         goto end;
     }
 
-    
     if (!cJSON_IsString(tc_id)) {
         ogs_error("OpenAPI_traffic_control_data_parseFromJSON() failed [tc_id]");
         goto end;
@@ -252,7 +255,7 @@ OpenAPI_traffic_control_data_t *OpenAPI_traffic_control_data_parseFromJSON(cJSON
     cJSON *flow_status = cJSON_GetObjectItemCaseSensitive(traffic_control_dataJSON, "flowStatus");
 
     OpenAPI_flow_status_e flow_statusVariable;
-    if (flow_status) { 
+    if (flow_status) {
     if (!cJSON_IsString(flow_status)) {
         ogs_error("OpenAPI_traffic_control_data_parseFromJSON() failed [flow_status]");
         goto end;
@@ -263,14 +266,14 @@ OpenAPI_traffic_control_data_t *OpenAPI_traffic_control_data_parseFromJSON(cJSON
     cJSON *redirect_info = cJSON_GetObjectItemCaseSensitive(traffic_control_dataJSON, "redirectInfo");
 
     OpenAPI_redirect_information_t *redirect_info_local_nonprim = NULL;
-    if (redirect_info) { 
+    if (redirect_info) {
     redirect_info_local_nonprim = OpenAPI_redirect_information_parseFromJSON(redirect_info);
     }
 
     cJSON *add_redirect_info = cJSON_GetObjectItemCaseSensitive(traffic_control_dataJSON, "addRedirectInfo");
 
     OpenAPI_list_t *add_redirect_infoList;
-    if (add_redirect_info) { 
+    if (add_redirect_info) {
     cJSON *add_redirect_info_local_nonprimitive;
     if (!cJSON_IsArray(add_redirect_info)){
         ogs_error("OpenAPI_traffic_control_data_parseFromJSON() failed [add_redirect_info]");
@@ -292,7 +295,7 @@ OpenAPI_traffic_control_data_t *OpenAPI_traffic_control_data_parseFromJSON(cJSON
 
     cJSON *mute_notif = cJSON_GetObjectItemCaseSensitive(traffic_control_dataJSON, "muteNotif");
 
-    if (mute_notif) { 
+    if (mute_notif) {
     if (!cJSON_IsBool(mute_notif)) {
         ogs_error("OpenAPI_traffic_control_data_parseFromJSON() failed [mute_notif]");
         goto end;
@@ -301,7 +304,7 @@ OpenAPI_traffic_control_data_t *OpenAPI_traffic_control_data_parseFromJSON(cJSON
 
     cJSON *traffic_steering_pol_id_dl = cJSON_GetObjectItemCaseSensitive(traffic_control_dataJSON, "trafficSteeringPolIdDl");
 
-    if (traffic_steering_pol_id_dl) { 
+    if (traffic_steering_pol_id_dl) {
     if (!cJSON_IsString(traffic_steering_pol_id_dl)) {
         ogs_error("OpenAPI_traffic_control_data_parseFromJSON() failed [traffic_steering_pol_id_dl]");
         goto end;
@@ -310,7 +313,7 @@ OpenAPI_traffic_control_data_t *OpenAPI_traffic_control_data_parseFromJSON(cJSON
 
     cJSON *traffic_steering_pol_id_ul = cJSON_GetObjectItemCaseSensitive(traffic_control_dataJSON, "trafficSteeringPolIdUl");
 
-    if (traffic_steering_pol_id_ul) { 
+    if (traffic_steering_pol_id_ul) {
     if (!cJSON_IsString(traffic_steering_pol_id_ul)) {
         ogs_error("OpenAPI_traffic_control_data_parseFromJSON() failed [traffic_steering_pol_id_ul]");
         goto end;
@@ -320,7 +323,7 @@ OpenAPI_traffic_control_data_t *OpenAPI_traffic_control_data_parseFromJSON(cJSON
     cJSON *route_to_locs = cJSON_GetObjectItemCaseSensitive(traffic_control_dataJSON, "routeToLocs");
 
     OpenAPI_list_t *route_to_locsList;
-    if (route_to_locs) { 
+    if (route_to_locs) {
     cJSON *route_to_locs_local_nonprimitive;
     if (!cJSON_IsArray(route_to_locs)){
         ogs_error("OpenAPI_traffic_control_data_parseFromJSON() failed [route_to_locs]");
@@ -342,7 +345,7 @@ OpenAPI_traffic_control_data_t *OpenAPI_traffic_control_data_parseFromJSON(cJSON
 
     cJSON *traff_corre_ind = cJSON_GetObjectItemCaseSensitive(traffic_control_dataJSON, "traffCorreInd");
 
-    if (traff_corre_ind) { 
+    if (traff_corre_ind) {
     if (!cJSON_IsBool(traff_corre_ind)) {
         ogs_error("OpenAPI_traffic_control_data_parseFromJSON() failed [traff_corre_ind]");
         goto end;
@@ -352,14 +355,14 @@ OpenAPI_traffic_control_data_t *OpenAPI_traffic_control_data_parseFromJSON(cJSON
     cJSON *up_path_chg_event = cJSON_GetObjectItemCaseSensitive(traffic_control_dataJSON, "upPathChgEvent");
 
     OpenAPI_up_path_chg_event_t *up_path_chg_event_local_nonprim = NULL;
-    if (up_path_chg_event) { 
+    if (up_path_chg_event) {
     up_path_chg_event_local_nonprim = OpenAPI_up_path_chg_event_parseFromJSON(up_path_chg_event);
     }
 
     cJSON *steer_fun = cJSON_GetObjectItemCaseSensitive(traffic_control_dataJSON, "steerFun");
 
     OpenAPI_steering_functionality_e steer_funVariable;
-    if (steer_fun) { 
+    if (steer_fun) {
     if (!cJSON_IsString(steer_fun)) {
         ogs_error("OpenAPI_traffic_control_data_parseFromJSON() failed [steer_fun]");
         goto end;
@@ -370,21 +373,21 @@ OpenAPI_traffic_control_data_t *OpenAPI_traffic_control_data_parseFromJSON(cJSON
     cJSON *steer_mode_dl = cJSON_GetObjectItemCaseSensitive(traffic_control_dataJSON, "steerModeDl");
 
     OpenAPI_steering_mode_t *steer_mode_dl_local_nonprim = NULL;
-    if (steer_mode_dl) { 
+    if (steer_mode_dl) {
     steer_mode_dl_local_nonprim = OpenAPI_steering_mode_parseFromJSON(steer_mode_dl);
     }
 
     cJSON *steer_mode_ul = cJSON_GetObjectItemCaseSensitive(traffic_control_dataJSON, "steerModeUl");
 
     OpenAPI_steering_mode_t *steer_mode_ul_local_nonprim = NULL;
-    if (steer_mode_ul) { 
+    if (steer_mode_ul) {
     steer_mode_ul_local_nonprim = OpenAPI_steering_mode_parseFromJSON(steer_mode_ul);
     }
 
     cJSON *mul_acc_ctrl = cJSON_GetObjectItemCaseSensitive(traffic_control_dataJSON, "mulAccCtrl");
 
     OpenAPI_multicast_access_control_t *mul_acc_ctrl_local_nonprim = NULL;
-    if (mul_acc_ctrl) { 
+    if (mul_acc_ctrl) {
     mul_acc_ctrl_local_nonprim = OpenAPI_multicast_access_control_parseFromJSON(mul_acc_ctrl);
     }
 
@@ -393,10 +396,12 @@ OpenAPI_traffic_control_data_t *OpenAPI_traffic_control_data_parseFromJSON(cJSON
         flow_status ? flow_statusVariable : 0,
         redirect_info ? redirect_info_local_nonprim : NULL,
         add_redirect_info ? add_redirect_infoList : NULL,
+        mute_notif ? true : false,
         mute_notif ? mute_notif->valueint : 0,
         traffic_steering_pol_id_dl ? ogs_strdup_or_assert(traffic_steering_pol_id_dl->valuestring) : NULL,
         traffic_steering_pol_id_ul ? ogs_strdup_or_assert(traffic_steering_pol_id_ul->valuestring) : NULL,
         route_to_locs ? route_to_locsList : NULL,
+        traff_corre_ind ? true : false,
         traff_corre_ind ? traff_corre_ind->valueint : 0,
         up_path_chg_event ? up_path_chg_event_local_nonprim : NULL,
         steer_fun ? steer_funVariable : 0,

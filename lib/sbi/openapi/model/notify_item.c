@@ -79,7 +79,6 @@ OpenAPI_notify_item_t *OpenAPI_notify_item_parseFromJSON(cJSON *notify_itemJSON)
         goto end;
     }
 
-    
     if (!cJSON_IsString(resource_id)) {
         ogs_error("OpenAPI_notify_item_parseFromJSON() failed [resource_id]");
         goto end;
@@ -92,7 +91,6 @@ OpenAPI_notify_item_t *OpenAPI_notify_item_parseFromJSON(cJSON *notify_itemJSON)
     }
 
     OpenAPI_list_t *changesList;
-    
     cJSON *changes_local_nonprimitive;
     if (!cJSON_IsArray(changes)){
         ogs_error("OpenAPI_notify_item_parseFromJSON() failed [changes]");

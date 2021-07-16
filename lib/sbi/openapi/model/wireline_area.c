@@ -108,7 +108,7 @@ OpenAPI_wireline_area_t *OpenAPI_wireline_area_parseFromJSON(cJSON *wireline_are
     cJSON *global_line_ids = cJSON_GetObjectItemCaseSensitive(wireline_areaJSON, "globalLineIds");
 
     OpenAPI_list_t *global_line_idsList;
-    if (global_line_ids) { 
+    if (global_line_ids) {
     cJSON *global_line_ids_local;
     if (!cJSON_IsArray(global_line_ids)) {
         ogs_error("OpenAPI_wireline_area_parseFromJSON() failed [global_line_ids]");
@@ -122,13 +122,13 @@ OpenAPI_wireline_area_t *OpenAPI_wireline_area_parseFromJSON(cJSON *wireline_are
         goto end;
     }
     OpenAPI_list_add(global_line_idsList , ogs_strdup_or_assert(global_line_ids_local->valuestring));
-                    }
+    }
     }
 
     cJSON *hfc_n_ids = cJSON_GetObjectItemCaseSensitive(wireline_areaJSON, "hfcNIds");
 
     OpenAPI_list_t *hfc_n_idsList;
-    if (hfc_n_ids) { 
+    if (hfc_n_ids) {
     cJSON *hfc_n_ids_local;
     if (!cJSON_IsArray(hfc_n_ids)) {
         ogs_error("OpenAPI_wireline_area_parseFromJSON() failed [hfc_n_ids]");
@@ -142,12 +142,12 @@ OpenAPI_wireline_area_t *OpenAPI_wireline_area_parseFromJSON(cJSON *wireline_are
         goto end;
     }
     OpenAPI_list_add(hfc_n_idsList , ogs_strdup_or_assert(hfc_n_ids_local->valuestring));
-                    }
+    }
     }
 
     cJSON *area_code_b = cJSON_GetObjectItemCaseSensitive(wireline_areaJSON, "areaCodeB");
 
-    if (area_code_b) { 
+    if (area_code_b) {
     if (!cJSON_IsString(area_code_b)) {
         ogs_error("OpenAPI_wireline_area_parseFromJSON() failed [area_code_b]");
         goto end;
@@ -156,7 +156,7 @@ OpenAPI_wireline_area_t *OpenAPI_wireline_area_parseFromJSON(cJSON *wireline_are
 
     cJSON *area_code_c = cJSON_GetObjectItemCaseSensitive(wireline_areaJSON, "areaCodeC");
 
-    if (area_code_c) { 
+    if (area_code_c) {
     if (!cJSON_IsString(area_code_c)) {
         ogs_error("OpenAPI_wireline_area_parseFromJSON() failed [area_code_c]");
         goto end;

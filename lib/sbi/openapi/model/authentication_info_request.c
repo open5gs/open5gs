@@ -10,6 +10,7 @@ OpenAPI_authentication_info_request_t *OpenAPI_authentication_info_request_creat
     OpenAPI_resynchronization_info_t *resynchronization_info,
     char *ausf_instance_id,
     OpenAPI_list_t *cell_cag_info,
+    bool is_n5gc_ind,
     int n5gc_ind
 )
 {
@@ -22,6 +23,7 @@ OpenAPI_authentication_info_request_t *OpenAPI_authentication_info_request_creat
     authentication_info_request_local_var->resynchronization_info = resynchronization_info;
     authentication_info_request_local_var->ausf_instance_id = ausf_instance_id;
     authentication_info_request_local_var->cell_cag_info = cell_cag_info;
+    authentication_info_request_local_var->is_n5gc_ind = is_n5gc_ind;
     authentication_info_request_local_var->n5gc_ind = n5gc_ind;
 
     return authentication_info_request_local_var;
@@ -100,7 +102,7 @@ cJSON *OpenAPI_authentication_info_request_convertToJSON(OpenAPI_authentication_
                     }
     }
 
-    if (authentication_info_request->n5gc_ind) {
+    if (authentication_info_request->is_n5gc_ind) {
     if (cJSON_AddBoolToObject(item, "n5gcInd", authentication_info_request->n5gc_ind) == NULL) {
         ogs_error("OpenAPI_authentication_info_request_convertToJSON() failed [n5gc_ind]");
         goto end;
@@ -116,7 +118,7 @@ OpenAPI_authentication_info_request_t *OpenAPI_authentication_info_request_parse
     OpenAPI_authentication_info_request_t *authentication_info_request_local_var = NULL;
     cJSON *supported_features = cJSON_GetObjectItemCaseSensitive(authentication_info_requestJSON, "supportedFeatures");
 
-    if (supported_features) { 
+    if (supported_features) {
     if (!cJSON_IsString(supported_features)) {
         ogs_error("OpenAPI_authentication_info_request_parseFromJSON() failed [supported_features]");
         goto end;
@@ -129,7 +131,6 @@ OpenAPI_authentication_info_request_t *OpenAPI_authentication_info_request_parse
         goto end;
     }
 
-    
     if (!cJSON_IsString(serving_network_name)) {
         ogs_error("OpenAPI_authentication_info_request_parseFromJSON() failed [serving_network_name]");
         goto end;
@@ -138,7 +139,7 @@ OpenAPI_authentication_info_request_t *OpenAPI_authentication_info_request_parse
     cJSON *resynchronization_info = cJSON_GetObjectItemCaseSensitive(authentication_info_requestJSON, "resynchronizationInfo");
 
     OpenAPI_resynchronization_info_t *resynchronization_info_local_nonprim = NULL;
-    if (resynchronization_info) { 
+    if (resynchronization_info) {
     resynchronization_info_local_nonprim = OpenAPI_resynchronization_info_parseFromJSON(resynchronization_info);
     }
 
@@ -148,7 +149,6 @@ OpenAPI_authentication_info_request_t *OpenAPI_authentication_info_request_parse
         goto end;
     }
 
-    
     if (!cJSON_IsString(ausf_instance_id)) {
         ogs_error("OpenAPI_authentication_info_request_parseFromJSON() failed [ausf_instance_id]");
         goto end;
@@ -157,7 +157,7 @@ OpenAPI_authentication_info_request_t *OpenAPI_authentication_info_request_parse
     cJSON *cell_cag_info = cJSON_GetObjectItemCaseSensitive(authentication_info_requestJSON, "cellCagInfo");
 
     OpenAPI_list_t *cell_cag_infoList;
-    if (cell_cag_info) { 
+    if (cell_cag_info) {
     cJSON *cell_cag_info_local;
     if (!cJSON_IsArray(cell_cag_info)) {
         ogs_error("OpenAPI_authentication_info_request_parseFromJSON() failed [cell_cag_info]");
@@ -171,12 +171,12 @@ OpenAPI_authentication_info_request_t *OpenAPI_authentication_info_request_parse
         goto end;
     }
     OpenAPI_list_add(cell_cag_infoList , ogs_strdup_or_assert(cell_cag_info_local->valuestring));
-                    }
+    }
     }
 
     cJSON *n5gc_ind = cJSON_GetObjectItemCaseSensitive(authentication_info_requestJSON, "n5gcInd");
 
-    if (n5gc_ind) { 
+    if (n5gc_ind) {
     if (!cJSON_IsBool(n5gc_ind)) {
         ogs_error("OpenAPI_authentication_info_request_parseFromJSON() failed [n5gc_ind]");
         goto end;
@@ -189,6 +189,7 @@ OpenAPI_authentication_info_request_t *OpenAPI_authentication_info_request_parse
         resynchronization_info ? resynchronization_info_local_nonprim : NULL,
         ogs_strdup_or_assert(ausf_instance_id->valuestring),
         cell_cag_info ? cell_cag_infoList : NULL,
+        n5gc_ind ? true : false,
         n5gc_ind ? n5gc_ind->valueint : 0
     );
 

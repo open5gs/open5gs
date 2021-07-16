@@ -96,7 +96,6 @@ OpenAPI_plmn_snssai_t *OpenAPI_plmn_snssai_parseFromJSON(cJSON *plmn_snssaiJSON)
     }
 
     OpenAPI_plmn_id_t *plmn_id_local_nonprim = NULL;
-    
     plmn_id_local_nonprim = OpenAPI_plmn_id_parseFromJSON(plmn_id);
 
     cJSON *s_nssai_list = cJSON_GetObjectItemCaseSensitive(plmn_snssaiJSON, "sNssaiList");
@@ -106,7 +105,6 @@ OpenAPI_plmn_snssai_t *OpenAPI_plmn_snssai_parseFromJSON(cJSON *plmn_snssaiJSON)
     }
 
     OpenAPI_list_t *s_nssai_listList;
-    
     cJSON *s_nssai_list_local_nonprimitive;
     if (!cJSON_IsArray(s_nssai_list)){
         ogs_error("OpenAPI_plmn_snssai_parseFromJSON() failed [s_nssai_list]");
@@ -127,7 +125,7 @@ OpenAPI_plmn_snssai_t *OpenAPI_plmn_snssai_parseFromJSON(cJSON *plmn_snssaiJSON)
 
     cJSON *nid = cJSON_GetObjectItemCaseSensitive(plmn_snssaiJSON, "nid");
 
-    if (nid) { 
+    if (nid) {
     if (!cJSON_IsString(nid)) {
         ogs_error("OpenAPI_plmn_snssai_parseFromJSON() failed [nid]");
         goto end;

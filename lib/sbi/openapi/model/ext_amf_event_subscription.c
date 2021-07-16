@@ -15,6 +15,7 @@ OpenAPI_ext_amf_event_subscription_t *OpenAPI_ext_amf_event_subscription_create(
     char *group_id,
     char *gpsi,
     char *pei,
+    bool is_any_ue,
     int any_ue,
     OpenAPI_amf_event_mode_t *options,
     OpenAPI_nf_type_e source_nf_type,
@@ -36,6 +37,7 @@ OpenAPI_ext_amf_event_subscription_t *OpenAPI_ext_amf_event_subscription_create(
     ext_amf_event_subscription_local_var->group_id = group_id;
     ext_amf_event_subscription_local_var->gpsi = gpsi;
     ext_amf_event_subscription_local_var->pei = pei;
+    ext_amf_event_subscription_local_var->is_any_ue = is_any_ue;
     ext_amf_event_subscription_local_var->any_ue = any_ue;
     ext_amf_event_subscription_local_var->options = options;
     ext_amf_event_subscription_local_var->source_nf_type = source_nf_type;
@@ -157,7 +159,7 @@ cJSON *OpenAPI_ext_amf_event_subscription_convertToJSON(OpenAPI_ext_amf_event_su
     }
     }
 
-    if (ext_amf_event_subscription->any_ue) {
+    if (ext_amf_event_subscription->is_any_ue) {
     if (cJSON_AddBoolToObject(item, "anyUE", ext_amf_event_subscription->any_ue) == NULL) {
         ogs_error("OpenAPI_ext_amf_event_subscription_convertToJSON() failed [any_ue]");
         goto end;
@@ -221,7 +223,6 @@ OpenAPI_ext_amf_event_subscription_t *OpenAPI_ext_amf_event_subscription_parseFr
     }
 
     OpenAPI_list_t *event_listList;
-    
     cJSON *event_list_local_nonprimitive;
     if (!cJSON_IsArray(event_list)){
         ogs_error("OpenAPI_ext_amf_event_subscription_parseFromJSON() failed [event_list]");
@@ -246,7 +247,6 @@ OpenAPI_ext_amf_event_subscription_t *OpenAPI_ext_amf_event_subscription_parseFr
         goto end;
     }
 
-    
     if (!cJSON_IsString(event_notify_uri)) {
         ogs_error("OpenAPI_ext_amf_event_subscription_parseFromJSON() failed [event_notify_uri]");
         goto end;
@@ -258,7 +258,6 @@ OpenAPI_ext_amf_event_subscription_t *OpenAPI_ext_amf_event_subscription_parseFr
         goto end;
     }
 
-    
     if (!cJSON_IsString(notify_correlation_id)) {
         ogs_error("OpenAPI_ext_amf_event_subscription_parseFromJSON() failed [notify_correlation_id]");
         goto end;
@@ -270,7 +269,6 @@ OpenAPI_ext_amf_event_subscription_t *OpenAPI_ext_amf_event_subscription_parseFr
         goto end;
     }
 
-    
     if (!cJSON_IsString(nf_id)) {
         ogs_error("OpenAPI_ext_amf_event_subscription_parseFromJSON() failed [nf_id]");
         goto end;
@@ -278,7 +276,7 @@ OpenAPI_ext_amf_event_subscription_t *OpenAPI_ext_amf_event_subscription_parseFr
 
     cJSON *subs_change_notify_uri = cJSON_GetObjectItemCaseSensitive(ext_amf_event_subscriptionJSON, "subsChangeNotifyUri");
 
-    if (subs_change_notify_uri) { 
+    if (subs_change_notify_uri) {
     if (!cJSON_IsString(subs_change_notify_uri)) {
         ogs_error("OpenAPI_ext_amf_event_subscription_parseFromJSON() failed [subs_change_notify_uri]");
         goto end;
@@ -287,7 +285,7 @@ OpenAPI_ext_amf_event_subscription_t *OpenAPI_ext_amf_event_subscription_parseFr
 
     cJSON *subs_change_notify_correlation_id = cJSON_GetObjectItemCaseSensitive(ext_amf_event_subscriptionJSON, "subsChangeNotifyCorrelationId");
 
-    if (subs_change_notify_correlation_id) { 
+    if (subs_change_notify_correlation_id) {
     if (!cJSON_IsString(subs_change_notify_correlation_id)) {
         ogs_error("OpenAPI_ext_amf_event_subscription_parseFromJSON() failed [subs_change_notify_correlation_id]");
         goto end;
@@ -296,7 +294,7 @@ OpenAPI_ext_amf_event_subscription_t *OpenAPI_ext_amf_event_subscription_parseFr
 
     cJSON *supi = cJSON_GetObjectItemCaseSensitive(ext_amf_event_subscriptionJSON, "supi");
 
-    if (supi) { 
+    if (supi) {
     if (!cJSON_IsString(supi)) {
         ogs_error("OpenAPI_ext_amf_event_subscription_parseFromJSON() failed [supi]");
         goto end;
@@ -305,7 +303,7 @@ OpenAPI_ext_amf_event_subscription_t *OpenAPI_ext_amf_event_subscription_parseFr
 
     cJSON *group_id = cJSON_GetObjectItemCaseSensitive(ext_amf_event_subscriptionJSON, "groupId");
 
-    if (group_id) { 
+    if (group_id) {
     if (!cJSON_IsString(group_id)) {
         ogs_error("OpenAPI_ext_amf_event_subscription_parseFromJSON() failed [group_id]");
         goto end;
@@ -314,7 +312,7 @@ OpenAPI_ext_amf_event_subscription_t *OpenAPI_ext_amf_event_subscription_parseFr
 
     cJSON *gpsi = cJSON_GetObjectItemCaseSensitive(ext_amf_event_subscriptionJSON, "gpsi");
 
-    if (gpsi) { 
+    if (gpsi) {
     if (!cJSON_IsString(gpsi)) {
         ogs_error("OpenAPI_ext_amf_event_subscription_parseFromJSON() failed [gpsi]");
         goto end;
@@ -323,7 +321,7 @@ OpenAPI_ext_amf_event_subscription_t *OpenAPI_ext_amf_event_subscription_parseFr
 
     cJSON *pei = cJSON_GetObjectItemCaseSensitive(ext_amf_event_subscriptionJSON, "pei");
 
-    if (pei) { 
+    if (pei) {
     if (!cJSON_IsString(pei)) {
         ogs_error("OpenAPI_ext_amf_event_subscription_parseFromJSON() failed [pei]");
         goto end;
@@ -332,7 +330,7 @@ OpenAPI_ext_amf_event_subscription_t *OpenAPI_ext_amf_event_subscription_parseFr
 
     cJSON *any_ue = cJSON_GetObjectItemCaseSensitive(ext_amf_event_subscriptionJSON, "anyUE");
 
-    if (any_ue) { 
+    if (any_ue) {
     if (!cJSON_IsBool(any_ue)) {
         ogs_error("OpenAPI_ext_amf_event_subscription_parseFromJSON() failed [any_ue]");
         goto end;
@@ -342,14 +340,14 @@ OpenAPI_ext_amf_event_subscription_t *OpenAPI_ext_amf_event_subscription_parseFr
     cJSON *options = cJSON_GetObjectItemCaseSensitive(ext_amf_event_subscriptionJSON, "options");
 
     OpenAPI_amf_event_mode_t *options_local_nonprim = NULL;
-    if (options) { 
+    if (options) {
     options_local_nonprim = OpenAPI_amf_event_mode_parseFromJSON(options);
     }
 
     cJSON *source_nf_type = cJSON_GetObjectItemCaseSensitive(ext_amf_event_subscriptionJSON, "sourceNfType");
 
     OpenAPI_nf_type_e source_nf_typeVariable;
-    if (source_nf_type) { 
+    if (source_nf_type) {
     if (!cJSON_IsString(source_nf_type)) {
         ogs_error("OpenAPI_ext_amf_event_subscription_parseFromJSON() failed [source_nf_type]");
         goto end;
@@ -360,7 +358,7 @@ OpenAPI_ext_amf_event_subscription_t *OpenAPI_ext_amf_event_subscription_parseFr
     cJSON *binding_info = cJSON_GetObjectItemCaseSensitive(ext_amf_event_subscriptionJSON, "bindingInfo");
 
     OpenAPI_list_t *binding_infoList;
-    if (binding_info) { 
+    if (binding_info) {
     cJSON *binding_info_local;
     if (!cJSON_IsArray(binding_info)) {
         ogs_error("OpenAPI_ext_amf_event_subscription_parseFromJSON() failed [binding_info]");
@@ -374,13 +372,13 @@ OpenAPI_ext_amf_event_subscription_t *OpenAPI_ext_amf_event_subscription_parseFr
         goto end;
     }
     OpenAPI_list_add(binding_infoList , ogs_strdup_or_assert(binding_info_local->valuestring));
-                    }
+    }
     }
 
     cJSON *subscribing_nf_type = cJSON_GetObjectItemCaseSensitive(ext_amf_event_subscriptionJSON, "subscribingNfType");
 
     OpenAPI_nf_type_e subscribing_nf_typeVariable;
-    if (subscribing_nf_type) { 
+    if (subscribing_nf_type) {
     if (!cJSON_IsString(subscribing_nf_type)) {
         ogs_error("OpenAPI_ext_amf_event_subscription_parseFromJSON() failed [subscribing_nf_type]");
         goto end;
@@ -399,6 +397,7 @@ OpenAPI_ext_amf_event_subscription_t *OpenAPI_ext_amf_event_subscription_parseFr
         group_id ? ogs_strdup_or_assert(group_id->valuestring) : NULL,
         gpsi ? ogs_strdup_or_assert(gpsi->valuestring) : NULL,
         pei ? ogs_strdup_or_assert(pei->valuestring) : NULL,
+        any_ue ? true : false,
         any_ue ? any_ue->valueint : 0,
         options ? options_local_nonprim : NULL,
         source_nf_type ? source_nf_typeVariable : 0,

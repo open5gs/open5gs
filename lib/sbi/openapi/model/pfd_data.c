@@ -88,7 +88,7 @@ OpenAPI_pfd_data_t *OpenAPI_pfd_data_parseFromJSON(cJSON *pfd_dataJSON)
     cJSON *app_ids = cJSON_GetObjectItemCaseSensitive(pfd_dataJSON, "appIds");
 
     OpenAPI_list_t *app_idsList;
-    if (app_ids) { 
+    if (app_ids) {
     cJSON *app_ids_local;
     if (!cJSON_IsArray(app_ids)) {
         ogs_error("OpenAPI_pfd_data_parseFromJSON() failed [app_ids]");
@@ -102,13 +102,13 @@ OpenAPI_pfd_data_t *OpenAPI_pfd_data_parseFromJSON(cJSON *pfd_dataJSON)
         goto end;
     }
     OpenAPI_list_add(app_idsList , ogs_strdup_or_assert(app_ids_local->valuestring));
-                    }
+    }
     }
 
     cJSON *af_ids = cJSON_GetObjectItemCaseSensitive(pfd_dataJSON, "afIds");
 
     OpenAPI_list_t *af_idsList;
-    if (af_ids) { 
+    if (af_ids) {
     cJSON *af_ids_local;
     if (!cJSON_IsArray(af_ids)) {
         ogs_error("OpenAPI_pfd_data_parseFromJSON() failed [af_ids]");
@@ -122,7 +122,7 @@ OpenAPI_pfd_data_t *OpenAPI_pfd_data_parseFromJSON(cJSON *pfd_dataJSON)
         goto end;
     }
     OpenAPI_list_add(af_idsList , ogs_strdup_or_assert(af_ids_local->valuestring));
-                    }
+    }
     }
 
     pfd_data_local_var = OpenAPI_pfd_data_create (

@@ -75,7 +75,6 @@ OpenAPI_resource_item_t *OpenAPI_resource_item_parseFromJSON(cJSON *resource_ite
         goto end;
     }
 
-    
     if (!cJSON_IsString(mon_resource_uri)) {
         ogs_error("OpenAPI_resource_item_parseFromJSON() failed [mon_resource_uri]");
         goto end;
@@ -88,7 +87,6 @@ OpenAPI_resource_item_t *OpenAPI_resource_item_parseFromJSON(cJSON *resource_ite
     }
 
     OpenAPI_list_t *itemsList;
-    
     cJSON *items_local;
     if (!cJSON_IsArray(items)) {
         ogs_error("OpenAPI_resource_item_parseFromJSON() failed [items]");
@@ -102,7 +100,7 @@ OpenAPI_resource_item_t *OpenAPI_resource_item_parseFromJSON(cJSON *resource_ite
         goto end;
     }
     OpenAPI_list_add(itemsList , ogs_strdup_or_assert(items_local->valuestring));
-                    }
+    }
 
     resource_item_local_var = OpenAPI_resource_item_create (
         ogs_strdup_or_assert(mon_resource_uri->valuestring),

@@ -91,7 +91,6 @@ OpenAPI_av5_ghe_aka_t *OpenAPI_av5_ghe_aka_parseFromJSON(cJSON *av5_ghe_akaJSON)
     }
 
     OpenAPI_av_type_e av_typeVariable;
-    
     if (!cJSON_IsString(av_type)) {
         ogs_error("OpenAPI_av5_ghe_aka_parseFromJSON() failed [av_type]");
         goto end;
@@ -104,7 +103,6 @@ OpenAPI_av5_ghe_aka_t *OpenAPI_av5_ghe_aka_parseFromJSON(cJSON *av5_ghe_akaJSON)
         goto end;
     }
 
-    
     if (!cJSON_IsString(rand)) {
         ogs_error("OpenAPI_av5_ghe_aka_parseFromJSON() failed [rand]");
         goto end;
@@ -112,7 +110,7 @@ OpenAPI_av5_ghe_aka_t *OpenAPI_av5_ghe_aka_parseFromJSON(cJSON *av5_ghe_akaJSON)
 
     cJSON *xres_star = cJSON_GetObjectItemCaseSensitive(av5_ghe_akaJSON, "xresStar");
 
-    if (xres_star) { 
+    if (xres_star) {
     if (!cJSON_IsString(xres_star)) {
         ogs_error("OpenAPI_av5_ghe_aka_parseFromJSON() failed [xres_star]");
         goto end;
@@ -125,7 +123,6 @@ OpenAPI_av5_ghe_aka_t *OpenAPI_av5_ghe_aka_parseFromJSON(cJSON *av5_ghe_akaJSON)
         goto end;
     }
 
-    
     if (!cJSON_IsString(autn)) {
         ogs_error("OpenAPI_av5_ghe_aka_parseFromJSON() failed [autn]");
         goto end;
@@ -133,7 +130,7 @@ OpenAPI_av5_ghe_aka_t *OpenAPI_av5_ghe_aka_parseFromJSON(cJSON *av5_ghe_akaJSON)
 
     cJSON *kausf = cJSON_GetObjectItemCaseSensitive(av5_ghe_akaJSON, "kausf");
 
-    if (kausf) { 
+    if (kausf) {
     if (!cJSON_IsString(kausf)) {
         ogs_error("OpenAPI_av5_ghe_aka_parseFromJSON() failed [kausf]");
         goto end;

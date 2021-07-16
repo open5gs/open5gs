@@ -531,8 +531,10 @@ bool udr_nudr_dr_handle_subscription_provisioned(
                 DnnInfo->dnn = session->name;
 
                 /* 0-index DNN becomes the default DNN */
-                if (j == 0)
-                    DnnInfo->default_dnn_indicator = 1;
+                if (j == 0) {
+                    DnnInfo->is_default_dnn_indicator = true;
+                    DnnInfo->default_dnn_indicator = true;
+                }
 
                 OpenAPI_list_add(DnnInfoList, DnnInfo);
             }
@@ -710,6 +712,7 @@ bool udr_nudr_dr_handle_subscription_provisioned(
             _5gQoSProfile = ogs_calloc(1, sizeof(*_5gQoSProfile));
             ogs_assert(_5gQoSProfile);
             _5gQoSProfile->_5qi = session->qos.index;
+            _5gQoSProfile->is_priority_level = true;
             _5gQoSProfile->priority_level = session->qos.arp.priority_level;
             _5gQoSProfile->arp = ogs_calloc(1, sizeof(OpenAPI_arp_t));
             ogs_assert(_5gQoSProfile->arp);

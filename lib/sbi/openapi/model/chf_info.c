@@ -152,7 +152,7 @@ OpenAPI_chf_info_t *OpenAPI_chf_info_parseFromJSON(cJSON *chf_infoJSON)
     cJSON *supi_range_list = cJSON_GetObjectItemCaseSensitive(chf_infoJSON, "supiRangeList");
 
     OpenAPI_list_t *supi_range_listList;
-    if (supi_range_list) { 
+    if (supi_range_list) {
     cJSON *supi_range_list_local_nonprimitive;
     if (!cJSON_IsArray(supi_range_list)){
         ogs_error("OpenAPI_chf_info_parseFromJSON() failed [supi_range_list]");
@@ -175,7 +175,7 @@ OpenAPI_chf_info_t *OpenAPI_chf_info_parseFromJSON(cJSON *chf_infoJSON)
     cJSON *gpsi_range_list = cJSON_GetObjectItemCaseSensitive(chf_infoJSON, "gpsiRangeList");
 
     OpenAPI_list_t *gpsi_range_listList;
-    if (gpsi_range_list) { 
+    if (gpsi_range_list) {
     cJSON *gpsi_range_list_local_nonprimitive;
     if (!cJSON_IsArray(gpsi_range_list)){
         ogs_error("OpenAPI_chf_info_parseFromJSON() failed [gpsi_range_list]");
@@ -198,7 +198,7 @@ OpenAPI_chf_info_t *OpenAPI_chf_info_parseFromJSON(cJSON *chf_infoJSON)
     cJSON *plmn_range_list = cJSON_GetObjectItemCaseSensitive(chf_infoJSON, "plmnRangeList");
 
     OpenAPI_list_t *plmn_range_listList;
-    if (plmn_range_list) { 
+    if (plmn_range_list) {
     cJSON *plmn_range_list_local_nonprimitive;
     if (!cJSON_IsArray(plmn_range_list)){
         ogs_error("OpenAPI_chf_info_parseFromJSON() failed [plmn_range_list]");
@@ -220,7 +220,7 @@ OpenAPI_chf_info_t *OpenAPI_chf_info_parseFromJSON(cJSON *chf_infoJSON)
 
     cJSON *group_id = cJSON_GetObjectItemCaseSensitive(chf_infoJSON, "groupId");
 
-    if (group_id) { 
+    if (group_id) {
     if (!cJSON_IsString(group_id)) {
         ogs_error("OpenAPI_chf_info_parseFromJSON() failed [group_id]");
         goto end;
@@ -229,7 +229,7 @@ OpenAPI_chf_info_t *OpenAPI_chf_info_parseFromJSON(cJSON *chf_infoJSON)
 
     cJSON *primary_chf_instance = cJSON_GetObjectItemCaseSensitive(chf_infoJSON, "primaryChfInstance");
 
-    if (primary_chf_instance) { 
+    if (primary_chf_instance) {
     if (!cJSON_IsString(primary_chf_instance)) {
         ogs_error("OpenAPI_chf_info_parseFromJSON() failed [primary_chf_instance]");
         goto end;
@@ -238,7 +238,7 @@ OpenAPI_chf_info_t *OpenAPI_chf_info_parseFromJSON(cJSON *chf_infoJSON)
 
     cJSON *secondary_chf_instance = cJSON_GetObjectItemCaseSensitive(chf_infoJSON, "secondaryChfInstance");
 
-    if (secondary_chf_instance) { 
+    if (secondary_chf_instance) {
     if (!cJSON_IsString(secondary_chf_instance)) {
         ogs_error("OpenAPI_chf_info_parseFromJSON() failed [secondary_chf_instance]");
         goto end;

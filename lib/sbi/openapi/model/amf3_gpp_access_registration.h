@@ -28,6 +28,7 @@ typedef struct OpenAPI_amf3_gpp_access_registration_s OpenAPI_amf3_gpp_access_re
 typedef struct OpenAPI_amf3_gpp_access_registration_s {
     char *amf_instance_id;
     char *supported_features;
+    bool is_purge_flag;
     int purge_flag;
     char *pei;
     OpenAPI_ims_vo_ps_e ims_vo_ps;
@@ -35,18 +36,23 @@ typedef struct OpenAPI_amf3_gpp_access_registration_s {
     char *amf_service_name_dereg;
     char *pcscf_restoration_callback_uri;
     char *amf_service_name_pcscf_rest;
+    bool is_initial_registration_ind;
     int initial_registration_ind;
     struct OpenAPI_guami_s *guami;
     OpenAPI_list_t *backup_amf_info;
+    bool is_dr_flag;
     int dr_flag;
     OpenAPI_rat_type_e rat_type;
+    bool is_urrp_indicator;
     int urrp_indicator;
     char *amf_ee_subscription_id;
     struct OpenAPI_eps_interworking_info_s *eps_interworking_info;
+    bool is_ue_srvcc_capability;
     int ue_srvcc_capability;
     char *registration_time;
     struct OpenAPI_vgmlc_address_s *vgmlc_address;
     struct OpenAPI_context_info_s *context_info;
+    bool is_no_ee_subscription_ind;
     int no_ee_subscription_ind;
     char *supi;
 } OpenAPI_amf3_gpp_access_registration_t;
@@ -54,6 +60,7 @@ typedef struct OpenAPI_amf3_gpp_access_registration_s {
 OpenAPI_amf3_gpp_access_registration_t *OpenAPI_amf3_gpp_access_registration_create(
     char *amf_instance_id,
     char *supported_features,
+    bool is_purge_flag,
     int purge_flag,
     char *pei,
     OpenAPI_ims_vo_ps_e ims_vo_ps,
@@ -61,18 +68,23 @@ OpenAPI_amf3_gpp_access_registration_t *OpenAPI_amf3_gpp_access_registration_cre
     char *amf_service_name_dereg,
     char *pcscf_restoration_callback_uri,
     char *amf_service_name_pcscf_rest,
+    bool is_initial_registration_ind,
     int initial_registration_ind,
     OpenAPI_guami_t *guami,
     OpenAPI_list_t *backup_amf_info,
+    bool is_dr_flag,
     int dr_flag,
     OpenAPI_rat_type_e rat_type,
+    bool is_urrp_indicator,
     int urrp_indicator,
     char *amf_ee_subscription_id,
     OpenAPI_eps_interworking_info_t *eps_interworking_info,
+    bool is_ue_srvcc_capability,
     int ue_srvcc_capability,
     char *registration_time,
     OpenAPI_vgmlc_address_t *vgmlc_address,
     OpenAPI_context_info_t *context_info,
+    bool is_no_ee_subscription_ind,
     int no_ee_subscription_ind,
     char *supi
 );

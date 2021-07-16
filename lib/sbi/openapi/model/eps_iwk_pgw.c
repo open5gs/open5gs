@@ -63,7 +63,6 @@ OpenAPI_eps_iwk_pgw_t *OpenAPI_eps_iwk_pgw_parseFromJSON(cJSON *eps_iwk_pgwJSON)
         goto end;
     }
 
-    
     if (!cJSON_IsString(pgw_fqdn)) {
         ogs_error("OpenAPI_eps_iwk_pgw_parseFromJSON() failed [pgw_fqdn]");
         goto end;
@@ -75,7 +74,6 @@ OpenAPI_eps_iwk_pgw_t *OpenAPI_eps_iwk_pgw_parseFromJSON(cJSON *eps_iwk_pgwJSON)
         goto end;
     }
 
-    
     if (!cJSON_IsString(smf_instance_id)) {
         ogs_error("OpenAPI_eps_iwk_pgw_parseFromJSON() failed [smf_instance_id]");
         goto end;

@@ -124,35 +124,35 @@ OpenAPI_registration_data_sets_t *OpenAPI_registration_data_sets_parseFromJSON(c
     cJSON *amf3_gpp = cJSON_GetObjectItemCaseSensitive(registration_data_setsJSON, "amf3Gpp");
 
     OpenAPI_amf3_gpp_access_registration_t *amf3_gpp_local_nonprim = NULL;
-    if (amf3_gpp) { 
+    if (amf3_gpp) {
     amf3_gpp_local_nonprim = OpenAPI_amf3_gpp_access_registration_parseFromJSON(amf3_gpp);
     }
 
     cJSON *amf_non3_gpp = cJSON_GetObjectItemCaseSensitive(registration_data_setsJSON, "amfNon3Gpp");
 
     OpenAPI_amf_non3_gpp_access_registration_t *amf_non3_gpp_local_nonprim = NULL;
-    if (amf_non3_gpp) { 
+    if (amf_non3_gpp) {
     amf_non3_gpp_local_nonprim = OpenAPI_amf_non3_gpp_access_registration_parseFromJSON(amf_non3_gpp);
     }
 
     cJSON *smf_registration = cJSON_GetObjectItemCaseSensitive(registration_data_setsJSON, "smfRegistration");
 
     OpenAPI_smf_registration_info_t *smf_registration_local_nonprim = NULL;
-    if (smf_registration) { 
+    if (smf_registration) {
     smf_registration_local_nonprim = OpenAPI_smf_registration_info_parseFromJSON(smf_registration);
     }
 
     cJSON *smsf3_gpp = cJSON_GetObjectItemCaseSensitive(registration_data_setsJSON, "smsf3Gpp");
 
     OpenAPI_smsf_registration_t *smsf3_gpp_local_nonprim = NULL;
-    if (smsf3_gpp) { 
+    if (smsf3_gpp) {
     smsf3_gpp_local_nonprim = OpenAPI_smsf_registration_parseFromJSON(smsf3_gpp);
     }
 
     cJSON *smsf_non3_gpp = cJSON_GetObjectItemCaseSensitive(registration_data_setsJSON, "smsfNon3Gpp");
 
     OpenAPI_smsf_registration_t *smsf_non3_gpp_local_nonprim = NULL;
-    if (smsf_non3_gpp) { 
+    if (smsf_non3_gpp) {
     smsf_non3_gpp_local_nonprim = OpenAPI_smsf_registration_parseFromJSON(smsf_non3_gpp);
     }
 

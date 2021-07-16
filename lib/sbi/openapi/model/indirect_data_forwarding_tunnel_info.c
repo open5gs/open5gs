@@ -8,7 +8,9 @@ OpenAPI_indirect_data_forwarding_tunnel_info_t *OpenAPI_indirect_data_forwarding
     char *ipv4_addr,
     char *ipv6_addr,
     char *gtp_teid,
+    bool is_drb_id,
     int drb_id,
+    bool is_additional_tnl_nb,
     int additional_tnl_nb
 )
 {
@@ -19,7 +21,9 @@ OpenAPI_indirect_data_forwarding_tunnel_info_t *OpenAPI_indirect_data_forwarding
     indirect_data_forwarding_tunnel_info_local_var->ipv4_addr = ipv4_addr;
     indirect_data_forwarding_tunnel_info_local_var->ipv6_addr = ipv6_addr;
     indirect_data_forwarding_tunnel_info_local_var->gtp_teid = gtp_teid;
+    indirect_data_forwarding_tunnel_info_local_var->is_drb_id = is_drb_id;
     indirect_data_forwarding_tunnel_info_local_var->drb_id = drb_id;
+    indirect_data_forwarding_tunnel_info_local_var->is_additional_tnl_nb = is_additional_tnl_nb;
     indirect_data_forwarding_tunnel_info_local_var->additional_tnl_nb = additional_tnl_nb;
 
     return indirect_data_forwarding_tunnel_info_local_var;
@@ -66,14 +70,14 @@ cJSON *OpenAPI_indirect_data_forwarding_tunnel_info_convertToJSON(OpenAPI_indire
         goto end;
     }
 
-    if (indirect_data_forwarding_tunnel_info->drb_id) {
+    if (indirect_data_forwarding_tunnel_info->is_drb_id) {
     if (cJSON_AddNumberToObject(item, "drbId", indirect_data_forwarding_tunnel_info->drb_id) == NULL) {
         ogs_error("OpenAPI_indirect_data_forwarding_tunnel_info_convertToJSON() failed [drb_id]");
         goto end;
     }
     }
 
-    if (indirect_data_forwarding_tunnel_info->additional_tnl_nb) {
+    if (indirect_data_forwarding_tunnel_info->is_additional_tnl_nb) {
     if (cJSON_AddNumberToObject(item, "additionalTnlNb", indirect_data_forwarding_tunnel_info->additional_tnl_nb) == NULL) {
         ogs_error("OpenAPI_indirect_data_forwarding_tunnel_info_convertToJSON() failed [additional_tnl_nb]");
         goto end;
@@ -89,7 +93,7 @@ OpenAPI_indirect_data_forwarding_tunnel_info_t *OpenAPI_indirect_data_forwarding
     OpenAPI_indirect_data_forwarding_tunnel_info_t *indirect_data_forwarding_tunnel_info_local_var = NULL;
     cJSON *ipv4_addr = cJSON_GetObjectItemCaseSensitive(indirect_data_forwarding_tunnel_infoJSON, "ipv4Addr");
 
-    if (ipv4_addr) { 
+    if (ipv4_addr) {
     if (!cJSON_IsString(ipv4_addr)) {
         ogs_error("OpenAPI_indirect_data_forwarding_tunnel_info_parseFromJSON() failed [ipv4_addr]");
         goto end;
@@ -98,7 +102,7 @@ OpenAPI_indirect_data_forwarding_tunnel_info_t *OpenAPI_indirect_data_forwarding
 
     cJSON *ipv6_addr = cJSON_GetObjectItemCaseSensitive(indirect_data_forwarding_tunnel_infoJSON, "ipv6Addr");
 
-    if (ipv6_addr) { 
+    if (ipv6_addr) {
     if (!cJSON_IsString(ipv6_addr)) {
         ogs_error("OpenAPI_indirect_data_forwarding_tunnel_info_parseFromJSON() failed [ipv6_addr]");
         goto end;
@@ -111,7 +115,6 @@ OpenAPI_indirect_data_forwarding_tunnel_info_t *OpenAPI_indirect_data_forwarding
         goto end;
     }
 
-    
     if (!cJSON_IsString(gtp_teid)) {
         ogs_error("OpenAPI_indirect_data_forwarding_tunnel_info_parseFromJSON() failed [gtp_teid]");
         goto end;
@@ -119,7 +122,7 @@ OpenAPI_indirect_data_forwarding_tunnel_info_t *OpenAPI_indirect_data_forwarding
 
     cJSON *drb_id = cJSON_GetObjectItemCaseSensitive(indirect_data_forwarding_tunnel_infoJSON, "drbId");
 
-    if (drb_id) { 
+    if (drb_id) {
     if (!cJSON_IsNumber(drb_id)) {
         ogs_error("OpenAPI_indirect_data_forwarding_tunnel_info_parseFromJSON() failed [drb_id]");
         goto end;
@@ -128,7 +131,7 @@ OpenAPI_indirect_data_forwarding_tunnel_info_t *OpenAPI_indirect_data_forwarding
 
     cJSON *additional_tnl_nb = cJSON_GetObjectItemCaseSensitive(indirect_data_forwarding_tunnel_infoJSON, "additionalTnlNb");
 
-    if (additional_tnl_nb) { 
+    if (additional_tnl_nb) {
     if (!cJSON_IsNumber(additional_tnl_nb)) {
         ogs_error("OpenAPI_indirect_data_forwarding_tunnel_info_parseFromJSON() failed [additional_tnl_nb]");
         goto end;
@@ -139,7 +142,9 @@ OpenAPI_indirect_data_forwarding_tunnel_info_t *OpenAPI_indirect_data_forwarding
         ipv4_addr ? ogs_strdup_or_assert(ipv4_addr->valuestring) : NULL,
         ipv6_addr ? ogs_strdup_or_assert(ipv6_addr->valuestring) : NULL,
         ogs_strdup_or_assert(gtp_teid->valuestring),
+        drb_id ? true : false,
         drb_id ? drb_id->valuedouble : 0,
+        additional_tnl_nb ? true : false,
         additional_tnl_nb ? additional_tnl_nb->valuedouble : 0
     );
 

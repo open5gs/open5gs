@@ -63,7 +63,7 @@ OpenAPI_valid_time_period_1_t *OpenAPI_valid_time_period_1_parseFromJSON(cJSON *
     OpenAPI_valid_time_period_1_t *valid_time_period_1_local_var = NULL;
     cJSON *start_time = cJSON_GetObjectItemCaseSensitive(valid_time_period_1JSON, "startTime");
 
-    if (start_time) { 
+    if (start_time) {
     if (!cJSON_IsString(start_time)) {
         ogs_error("OpenAPI_valid_time_period_1_parseFromJSON() failed [start_time]");
         goto end;
@@ -72,7 +72,7 @@ OpenAPI_valid_time_period_1_t *OpenAPI_valid_time_period_1_parseFromJSON(cJSON *
 
     cJSON *end_time = cJSON_GetObjectItemCaseSensitive(valid_time_period_1JSON, "endTime");
 
-    if (end_time) { 
+    if (end_time) {
     if (!cJSON_IsString(end_time)) {
         ogs_error("OpenAPI_valid_time_period_1_parseFromJSON() failed [end_time]");
         goto end;

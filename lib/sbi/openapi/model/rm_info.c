@@ -69,7 +69,6 @@ OpenAPI_rm_info_t *OpenAPI_rm_info_parseFromJSON(cJSON *rm_infoJSON)
     }
 
     OpenAPI_rm_state_t *rm_state_local_nonprim = NULL;
-    
     rm_state_local_nonprim = OpenAPI_rm_state_parseFromJSON(rm_state);
 
     cJSON *access_type = cJSON_GetObjectItemCaseSensitive(rm_infoJSON, "accessType");
@@ -79,7 +78,6 @@ OpenAPI_rm_info_t *OpenAPI_rm_info_parseFromJSON(cJSON *rm_infoJSON)
     }
 
     OpenAPI_access_type_e access_typeVariable;
-    
     if (!cJSON_IsString(access_type)) {
         ogs_error("OpenAPI_rm_info_parseFromJSON() failed [access_type]");
         goto end;

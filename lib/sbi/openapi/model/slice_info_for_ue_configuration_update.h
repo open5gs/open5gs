@@ -26,6 +26,7 @@ typedef struct OpenAPI_slice_info_for_ue_configuration_update_s {
     OpenAPI_list_t *subscribed_nssai;
     struct OpenAPI_allowed_nssai_s *allowed_nssai_current_access;
     struct OpenAPI_allowed_nssai_s *allowed_nssai_other_access;
+    bool is_default_configured_snssai_ind;
     int default_configured_snssai_ind;
     OpenAPI_list_t *requested_nssai;
     OpenAPI_list_t *mapping_of_nssai;
@@ -35,6 +36,7 @@ OpenAPI_slice_info_for_ue_configuration_update_t *OpenAPI_slice_info_for_ue_conf
     OpenAPI_list_t *subscribed_nssai,
     OpenAPI_allowed_nssai_t *allowed_nssai_current_access,
     OpenAPI_allowed_nssai_t *allowed_nssai_other_access,
+    bool is_default_configured_snssai_ind,
     int default_configured_snssai_ind,
     OpenAPI_list_t *requested_nssai,
     OpenAPI_list_t *mapping_of_nssai
