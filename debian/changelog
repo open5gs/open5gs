@@ -1,3 +1,27 @@
+open5gs (2.3.2) unstable; urgency=medium
+
+  * Bug Fixed
+
+ -- Sukchan Lee <acetcom@gmail.com>  Sun, 18 Jul 2021 20:24:08 +0900
+
+open5gs (2.3.2~hirsute) hirsute; urgency=medium
+
+  * Bug Fixed
+
+ -- Sukchan Lee <acetcom@gmail.com>  Sun, 18 Jul 2021 20:23:04 +0900
+
+open5gs (2.3.2~bionic) bionic; urgency=medium
+
+  * Bug Fixed
+
+ -- Sukchan Lee <acetcom@gmail.com>  Sun, 18 Jul 2021 20:21:54 +0900
+
+open5gs (2.3.2~focal) focal; urgency=medium
+
+  * Bug Fixed
+
+ -- Sukchan Lee <acetcom@gmail.com>  Sun, 18 Jul 2021 20:20:38 +0900
+
 open5gs (2.3.1) unstable; urgency=medium
 
   * Support ePDG Interface
