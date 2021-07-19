@@ -42,6 +42,7 @@ If you have tested radio hardware from a vendor not listed with Open5GS, please 
 
  * [Amarisoft](https://www.amarisoft.com/) + LimeSDR, USRP, Amarisoft PCI Express Card
  * [srsLTE / srsENB](https://github.com/srsLTE/srsLTE) + LimeSDR, USRP, BladeRF x40 (BladeRF Not stable)
+ * Open Air Interface 5G ([NR_SA_F1AP_5GRECORDS branch](https://gitlab.eurecom.fr/oai/openairinterface5g/-/tree/NR_SA_F1AP_5GRECORDS)) + USRP B210
 
 ### Misc Radio Hardware
 ---
