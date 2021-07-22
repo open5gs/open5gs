@@ -1175,9 +1175,11 @@ out:
     }
 
     /* Store this value in the session */
-    ret = fd_sess_state_store(smf_gx_reg, session, &sess_data);
-    ogs_assert(ret == 0);
-    ogs_assert(sess_data == NULL);
+    if (sess_data) {
+        ret = fd_sess_state_store(smf_gx_reg, session, &sess_data);
+        ogs_assert(ret == 0);
+        ogs_assert(sess_data == NULL);
+    }
 
 	ret = fd_msg_send(msg, NULL, NULL);
     ogs_assert(ret == 0);
