@@ -631,6 +631,7 @@ static void smf_gx_cca_cb(void *data, struct msg **msg)
     ogs_diam_gx_message_t *gx_message = NULL;
     uint16_t gxbuf_len = 0;
     uint32_t cc_request_number = 0;
+    smf_bearer_t *bearer = NULL;
 
     ogs_debug("[Credit-Control-Answer]");
     
@@ -887,6 +888,15 @@ static void smf_gx_cca_cb(void *data, struct msg **msg)
 
                     pcc_rule->type = OGS_PCC_RULE_TYPE_INSTALL;
                     gx_message->session_data.num_of_pcc_rule++;
+
+                    /* Check for maximum number of flow rules per bearer */
+                    bearer = smf_bearer_find_by_pcc_rule_name(
+                            sess_data->sess, pcc_rule->name);
+                    if (bearer &&
+                        (ogs_list_count(&bearer->pf_list) + pcc_rule->num_of_flow >
+                        OGS_MAX_NUM_OF_PF)) {
+                        error++;
+                    }
                     break;
                 default:
                     ogs_error("Not supported(%d)", hdr->avp_code);
@@ -1009,6 +1019,7 @@ static int smf_gx_rar_cb( struct msg **msg, struct avp *avp,
     smf_sess_t *sess = NULL;
     ogs_diam_gx_message_t *gx_message = NULL;
     ogs_pcc_rule_t *pcc_rule = NULL;
+    smf_bearer_t *bearer = NULL;
 
     uint32_t result_code = OGS_DIAM_UNKNOWN_SESSION_ID;
 	
@@ -1078,6 +1089,16 @@ static int smf_gx_rar_cb( struct msg **msg, struct avp *avp,
 
                     pcc_rule->type = OGS_PCC_RULE_TYPE_INSTALL;
                     gx_message->session_data.num_of_pcc_rule++;
+
+                    /* Check for maximum number of flow rules per bearer */
+                    bearer = smf_bearer_find_by_pcc_rule_name(
+                            sess_data->sess, pcc_rule->name);
+                    if (bearer &&
+                        (ogs_list_count(&bearer->pf_list) + pcc_rule->num_of_flow >
+                        OGS_MAX_NUM_OF_PF)) {
+                        result_code = ER_DIAMETER_UNABLE_TO_COMPLY;
+                        goto out;
+                    }
                     break;
                 default:
                     ogs_error("Not supported(%d)", hdr->avp_code);
