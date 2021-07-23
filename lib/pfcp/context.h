@@ -173,7 +173,7 @@ typedef struct ogs_pfcp_pdr_s {
     ogs_pfcp_qer_t          *qer;
 
     int                     num_of_flow;
-    char                    *flow_description[OGS_MAX_NUM_OF_RULE];
+    char                    *flow_description[OGS_MAX_NUM_OF_PF];
 
     ogs_list_t              rule_list;      /* Rule List */
 
