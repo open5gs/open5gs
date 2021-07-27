@@ -177,6 +177,8 @@ typedef struct smf_bearer_s {
 
     OGS_POOL(pf_identifier_pool, uint8_t);
 
+#define MAX_NUM_OF_PF 16            /* Num of PacketFilter per Bearer */
+
     /* Packet Filter List */
     ogs_list_t      pf_list;
     ogs_list_t      pf_to_add_list;

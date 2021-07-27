@@ -20,7 +20,7 @@
 /*******************************************************************************
  * This file had been created by pfcp-tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2021-06-15 10:58:38.379862 by acetcom
+ * Created on: 2021-07-27 20:23:21.038999 by acetcom
  * from 29244-g10.docx
  ******************************************************************************/
 
@@ -626,7 +626,7 @@ typedef struct ogs_pfcp_tlv_ethernet_packet_filter_s {
     ogs_pfcp_tlv_ethertype_t ethertype;
     ogs_pfcp_tlv_c_tag_t c_tag;
     ogs_pfcp_tlv_s_tag_t s_tag;
-    ogs_pfcp_tlv_sdf_filter_t sdf_filter[OGS_MAX_NUM_OF_PF];
+    ogs_pfcp_tlv_sdf_filter_t sdf_filter[8];
 } ogs_pfcp_tlv_ethernet_packet_filter_t;
 
 typedef struct ogs_pfcp_tlv_pdi_s {
@@ -636,7 +636,7 @@ typedef struct ogs_pfcp_tlv_pdi_s {
     ogs_pfcp_tlv_network_instance_t network_instance;
     ogs_pfcp_tlv_ue_ip_address_t ue_ip_address;
     ogs_pfcp_tlv_traffic_endpoint_id_t traffic_endpoint_id;
-    ogs_pfcp_tlv_sdf_filter_t sdf_filter[OGS_MAX_NUM_OF_PF];
+    ogs_pfcp_tlv_sdf_filter_t sdf_filter[8];
     ogs_pfcp_tlv_application_id_t application_id;
     ogs_pfcp_tlv_ethernet_pdu_session_information_t ethernet_pdu_session_information;
     ogs_pfcp_tlv_ethernet_packet_filter_t ethernet_packet_filter;

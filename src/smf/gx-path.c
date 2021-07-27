@@ -893,8 +893,8 @@ static void smf_gx_cca_cb(void *data, struct msg **msg)
                     bearer = smf_bearer_find_by_pcc_rule_name(
                             sess_data->sess, pcc_rule->name);
                     if (bearer &&
-                        (ogs_list_count(&bearer->pf_list) + pcc_rule->num_of_flow >
-                        OGS_MAX_NUM_OF_PF)) {
+                            ((ogs_list_count(&bearer->pf_list) +
+                                pcc_rule->num_of_flow) > MAX_NUM_OF_PF)) {
                         error++;
                     }
                     break;
@@ -1094,8 +1094,8 @@ static int smf_gx_rar_cb( struct msg **msg, struct avp *avp,
                     bearer = smf_bearer_find_by_pcc_rule_name(
                             sess_data->sess, pcc_rule->name);
                     if (bearer &&
-                        (ogs_list_count(&bearer->pf_list) + pcc_rule->num_of_flow >
-                        OGS_MAX_NUM_OF_PF)) {
+                            ((ogs_list_count(&bearer->pf_list) +
+                                pcc_rule->num_of_flow) > MAX_NUM_OF_PF)) {
                         result_code = ER_DIAMETER_UNABLE_TO_COMPLY;
                         goto out;
                     }

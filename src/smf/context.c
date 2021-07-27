@@ -59,7 +59,7 @@ void smf_context_init(void)
     ogs_pool_init(&smf_sess_pool, ogs_app()->pool.sess);
     ogs_pool_init(&smf_bearer_pool, ogs_app()->pool.bearer);
 
-    ogs_pool_init(&smf_pf_pool, ogs_app()->pool.bearer * OGS_MAX_NUM_OF_PF);
+    ogs_pool_init(&smf_pf_pool, ogs_app()->pool.bearer * MAX_NUM_OF_PF);
 
     self.supi_hash = ogs_hash_make();
     ogs_assert(self.supi_hash);
@@ -2143,14 +2143,14 @@ smf_pf_t *smf_pf_add(smf_bearer_t *bearer)
     ogs_assert(pf->identifier_node);
 
     pf->identifier = *(pf->identifier_node);
-    ogs_assert(pf->identifier > 0 && pf->identifier <= OGS_MAX_NUM_OF_PF);
+    ogs_assert(pf->identifier > 0 && pf->identifier <= MAX_NUM_OF_PF);
 
     ogs_pool_alloc(&sess->pf_precedence_pool, &pf->precedence_node);
     ogs_assert(pf->precedence_node);
 
     pf->precedence = *(pf->precedence_node);
     ogs_assert(pf->precedence > 0 && pf->precedence <=
-            (OGS_MAX_NUM_OF_BEARER * OGS_MAX_NUM_OF_PF));
+            (OGS_MAX_NUM_OF_BEARER * MAX_NUM_OF_PF));
 
     pf->bearer = bearer;
 
@@ -2427,9 +2427,9 @@ void smf_pf_identifier_pool_init(smf_bearer_t *bearer)
 
     ogs_assert(bearer);
 
-    ogs_index_init(&bearer->pf_identifier_pool, OGS_MAX_NUM_OF_PF);
+    ogs_index_init(&bearer->pf_identifier_pool, MAX_NUM_OF_PF);
 
-    for (i = 1; i <= OGS_MAX_NUM_OF_PF; i++) {
+    for (i = 1; i <= MAX_NUM_OF_PF; i++) {
         bearer->pf_identifier_pool.array[i-1] = i;
     }
 }
@@ -2448,9 +2448,9 @@ void smf_pf_precedence_pool_init(smf_sess_t *sess)
     ogs_assert(sess);
 
     ogs_index_init(&sess->pf_precedence_pool,
-            OGS_MAX_NUM_OF_BEARER * OGS_MAX_NUM_OF_PF);
+            OGS_MAX_NUM_OF_BEARER * MAX_NUM_OF_PF);
 
-    for (i = 1; i <= OGS_MAX_NUM_OF_BEARER * OGS_MAX_NUM_OF_PF; i++) {
+    for (i = 1; i <= OGS_MAX_NUM_OF_BEARER * MAX_NUM_OF_PF; i++) {
         sess->pf_precedence_pool.array[i-1] = i;
     }
 }
