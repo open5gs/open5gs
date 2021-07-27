@@ -313,7 +313,7 @@ ogs_pfcp_pdr_t *ogs_pfcp_handle_create_pdr(ogs_pfcp_sess_t *sess,
 
     ogs_pfcp_rule_remove_all(pdr);
 
-    for (i = 0; i < OGS_MAX_NUM_OF_RULE; i++) {
+    for (i = 0; i < OGS_PFCP_MAX_NUM_OF_RULE; i++) {
         ogs_pfcp_sdf_filter_t sdf_filter;
         ogs_pfcp_rule_t *rule = NULL;
         ogs_pfcp_rule_t *oppsite_direction_rule = NULL;
@@ -558,7 +558,7 @@ ogs_pfcp_pdr_t *ogs_pfcp_handle_update_pdr(ogs_pfcp_sess_t *sess,
 
         ogs_pfcp_rule_remove_all(pdr);
 
-        for (i = 0; i < OGS_MAX_NUM_OF_RULE; i++) {
+        for (i = 0; i < OGS_PFCP_MAX_NUM_OF_RULE; i++) {
             ogs_pfcp_sdf_filter_t sdf_filter;
             ogs_pfcp_rule_t *rule = NULL;
             ogs_pfcp_rule_t *oppsite_direction_rule = NULL;

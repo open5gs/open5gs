@@ -238,7 +238,7 @@ ogs_pkbuf_t *ogs_pfcp_up_build_association_setup_response(uint8_t type,
 static struct {
     ogs_pfcp_f_teid_t f_teid;
     char dnn[OGS_MAX_DNN_LEN];
-    char *sdf_filter[OGS_MAX_NUM_OF_RULE];
+    char *sdf_filter[OGS_PFCP_MAX_NUM_OF_RULE];
 } pdrbuf[OGS_MAX_NUM_OF_PDR];
 
 void ogs_pfcp_pdrbuf_init(void)
@@ -250,7 +250,7 @@ void ogs_pfcp_pdrbuf_clear(void)
 {
     int i, j;
     for (i = 0; i < OGS_MAX_NUM_OF_PDR; i++) {
-        for (j = 0; j < OGS_MAX_NUM_OF_RULE; j++) {
+        for (j = 0; j < OGS_PFCP_MAX_NUM_OF_RULE; j++) {
             if (pdrbuf[i].sdf_filter[j])
                 ogs_free(pdrbuf[i].sdf_filter[j]);
         }
@@ -261,7 +261,7 @@ void ogs_pfcp_build_create_pdr(
     ogs_pfcp_tlv_create_pdr_t *message, int i, ogs_pfcp_pdr_t *pdr)
 {
     ogs_pfcp_far_t *far = NULL;
-    ogs_pfcp_sdf_filter_t pfcp_sdf_filter[OGS_MAX_NUM_OF_RULE];
+    ogs_pfcp_sdf_filter_t pfcp_sdf_filter[OGS_PFCP_MAX_NUM_OF_RULE];
     int j = 0;
     int len = 0;
 
@@ -376,7 +376,7 @@ void ogs_pfcp_build_created_pdr(
 void ogs_pfcp_build_update_pdr(
     ogs_pfcp_tlv_update_pdr_t *message, int i, ogs_pfcp_pdr_t *pdr)
 {
-    ogs_pfcp_sdf_filter_t pfcp_sdf_filter[OGS_MAX_NUM_OF_RULE];
+    ogs_pfcp_sdf_filter_t pfcp_sdf_filter[OGS_PFCP_MAX_NUM_OF_RULE];
     int j = 0;
     int len = 0;
 

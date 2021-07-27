@@ -79,7 +79,7 @@ void ogs_pfcp_context_init(void)
             ogs_app()->pool.sess * OGS_MAX_NUM_OF_BAR);
 
     ogs_pool_init(&ogs_pfcp_rule_pool,
-            ogs_app()->pool.sess * OGS_MAX_NUM_OF_RULE);
+            ogs_app()->pool.sess * OGS_PFCP_MAX_NUM_OF_RULE);
 
     ogs_pool_init(&ogs_pfcp_dev_pool, OGS_MAX_NUM_OF_DEV);
     ogs_pool_init(&ogs_pfcp_subnet_pool, OGS_MAX_NUM_OF_SUBNET);
