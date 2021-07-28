@@ -880,21 +880,19 @@ static void smf_gx_cca_cb(void *data, struct msg **msg)
                 ogs_assert(ret == 0);
                 switch (hdr->avp_code) {
                 case OGS_DIAM_GX_AVP_CODE_CHARGING_RULE_DEFINITION:
-                    pcc_rule = &gx_message->session_data.pcc_rule
-                            [gx_message->session_data.num_of_pcc_rule];
+                    if (gx_message->session_data.num_of_pcc_rule <
+                            OGS_MAX_NUM_OF_PCC_RULE) {
+                        pcc_rule = &gx_message->session_data.pcc_rule
+                                [gx_message->session_data.num_of_pcc_rule];
 
-                    rv = decode_pcc_rule_definition(pcc_rule, avpch1, &error);
-                    ogs_assert(rv == OGS_OK);
+                        rv = decode_pcc_rule_definition(
+                                pcc_rule, avpch1, &error);
+                        ogs_assert(rv == OGS_OK);
 
-                    pcc_rule->type = OGS_PCC_RULE_TYPE_INSTALL;
-                    gx_message->session_data.num_of_pcc_rule++;
-
-                    /* Check for maximum number of flow rules per bearer */
-                    bearer = smf_bearer_find_by_pcc_rule_name(
-                            sess_data->sess, pcc_rule->name);
-                    if (bearer &&
-                            ((ogs_list_count(&bearer->pf_list) +
-                                pcc_rule->num_of_flow) > MAX_NUM_OF_PF)) {
+                        pcc_rule->type = OGS_PCC_RULE_TYPE_INSTALL;
+                        gx_message->session_data.num_of_pcc_rule++;
+                    } else {
+                        ogs_error("Overflow: Number of PCCRule");
                         error++;
                     }
                     break;
@@ -1081,23 +1079,18 @@ static int smf_gx_rar_cb( struct msg **msg, struct avp *avp,
                 ogs_assert(ret == 0);
                 switch(hdr->avp_code) {
                 case OGS_DIAM_GX_AVP_CODE_CHARGING_RULE_DEFINITION:
-                    pcc_rule = &gx_message->session_data.pcc_rule
-                            [gx_message->session_data.num_of_pcc_rule];
+                    if (gx_message->session_data.num_of_pcc_rule <
+                            OGS_MAX_NUM_OF_PCC_RULE) {
+                        pcc_rule = &gx_message->session_data.pcc_rule
+                                [gx_message->session_data.num_of_pcc_rule];
 
-                    rv = decode_pcc_rule_definition(pcc_rule, avpch1, NULL);
-                    ogs_assert(rv == OGS_OK);
+                        rv = decode_pcc_rule_definition(pcc_rule, avpch1, NULL);
+                        ogs_assert(rv == OGS_OK);
 
-                    pcc_rule->type = OGS_PCC_RULE_TYPE_INSTALL;
-                    gx_message->session_data.num_of_pcc_rule++;
-
-                    /* Check for maximum number of flow rules per bearer */
-                    bearer = smf_bearer_find_by_pcc_rule_name(
-                            sess_data->sess, pcc_rule->name);
-                    if (bearer &&
-                            ((ogs_list_count(&bearer->pf_list) +
-                                pcc_rule->num_of_flow) > MAX_NUM_OF_PF)) {
-                        result_code = ER_DIAMETER_UNABLE_TO_COMPLY;
-                        goto out;
+                        pcc_rule->type = OGS_PCC_RULE_TYPE_INSTALL;
+                        gx_message->session_data.num_of_pcc_rule++;
+                    } else {
+                        ogs_error("Overflow: Number of PCCRule");
                     }
                     break;
                 default:
@@ -1115,14 +1108,20 @@ static int smf_gx_rar_cb( struct msg **msg, struct avp *avp,
                 ogs_assert(ret == 0);
                 switch (hdr->avp_code) {
                 case OGS_DIAM_GX_AVP_CODE_CHARGING_RULE_NAME:
-                    pcc_rule = &gx_message->session_data.pcc_rule
-                            [gx_message->session_data.num_of_pcc_rule];
+                    if (gx_message->session_data.num_of_pcc_rule <
+                            OGS_MAX_NUM_OF_PCC_RULE) {
+                        pcc_rule = &gx_message->session_data.pcc_rule
+                                [gx_message->session_data.num_of_pcc_rule];
 
-                    pcc_rule->name = ogs_strdup((char*)hdr->avp_value->os.data);
-                    ogs_assert(pcc_rule->name);
+                        pcc_rule->name = ogs_strdup(
+                                (char*)hdr->avp_value->os.data);
+                        ogs_assert(pcc_rule->name);
 
-                    pcc_rule->type = OGS_PCC_RULE_TYPE_REMOVE;
-                    gx_message->session_data.num_of_pcc_rule++;
+                        pcc_rule->type = OGS_PCC_RULE_TYPE_REMOVE;
+                        gx_message->session_data.num_of_pcc_rule++;
+                    } else {
+                        ogs_error("Overflow: Number of PCCRule");
+                    }
                     break;
                 default:
                     ogs_error("Not supported(%d)", hdr->avp_code);
@@ -1286,31 +1285,36 @@ static int decode_pcc_rule_definition(
             ogs_assert(pcc_rule->name);
             break;
         case OGS_DIAM_GX_AVP_CODE_FLOW_INFORMATION:
-            flow = &pcc_rule->flow[pcc_rule->num_of_flow];
+            if (pcc_rule->num_of_flow < OGS_MAX_NUM_OF_FLOW) {
+                flow = &pcc_rule->flow[pcc_rule->num_of_flow];
 
-            ret = fd_avp_search_avp(
-                    avpch2, ogs_diam_gx_flow_direction, &avpch3);
-            ogs_assert(ret == 0);
-            if (avpch3) {
-                ret = fd_msg_avp_hdr( avpch3, &hdr);
+                ret = fd_avp_search_avp(
+                        avpch2, ogs_diam_gx_flow_direction, &avpch3);
                 ogs_assert(ret == 0);
-                flow->direction = hdr->avp_value->i32;
-            }
+                if (avpch3) {
+                    ret = fd_msg_avp_hdr( avpch3, &hdr);
+                    ogs_assert(ret == 0);
+                    flow->direction = hdr->avp_value->i32;
+                }
 
-            ret = fd_avp_search_avp(
-                    avpch2, ogs_diam_gx_flow_description, &avpch3);
-            ogs_assert(ret == 0);
-            if (avpch3) {
-                ret = fd_msg_avp_hdr(avpch3, &hdr);
+                ret = fd_avp_search_avp(
+                        avpch2, ogs_diam_gx_flow_description, &avpch3);
                 ogs_assert(ret == 0);
-                flow->description = ogs_malloc(hdr->avp_value->os.len+1);
-                ogs_assert(flow->description);
-                ogs_cpystrn(flow->description,
-                    (char*)hdr->avp_value->os.data,
-                    hdr->avp_value->os.len+1);
-            }
+                if (avpch3) {
+                    ret = fd_msg_avp_hdr(avpch3, &hdr);
+                    ogs_assert(ret == 0);
+                    flow->description = ogs_malloc(hdr->avp_value->os.len+1);
+                    ogs_assert(flow->description);
+                    ogs_cpystrn(flow->description,
+                        (char*)hdr->avp_value->os.data,
+                        hdr->avp_value->os.len+1);
+                }
 
-            pcc_rule->num_of_flow++;
+                pcc_rule->num_of_flow++;
+            } else {
+                ogs_error("Overflow: Num of Flow");
+                error++;
+            }
             break;
         case OGS_DIAM_GX_AVP_CODE_FLOW_STATUS:
             pcc_rule->flow_status = hdr->avp_value->i32;

@@ -32,6 +32,9 @@ extern "C" {
 #define OGS_MAX_NUM_OF_BEARER           4   /* Num of Bearer per Session */
 #define OGS_MAX_NUM_OF_PACKET_BUFFER    64  /* Num of PacketBuffer per UE */
 
+/* Num of Flow per Bearer or PCC Rule or PDR */
+#define OGS_MAX_NUM_OF_FLOW             8
+
 /* Num of PacketFilter per Bearer(GTP) or QoS(NAS-5GS) */
 #define OGS_MAX_NUM_OF_PACKET_FILTER    16
 
@@ -336,8 +339,6 @@ typedef struct ogs_pcc_rule_s {
     char *id;   /* 5GC */
     char *name; /* EPC */
 
-/* Num of Flow per PCC Rule */
-#define OGS_MAX_NUM_OF_FLOW                     8
     ogs_flow_t flow[OGS_MAX_NUM_OF_FLOW];
     int num_of_flow;
 

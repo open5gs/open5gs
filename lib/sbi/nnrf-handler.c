@@ -374,7 +374,7 @@ bool ogs_sbi_nnrf_handle_nf_profile(ogs_sbi_nf_instance_t *nf_instance,
         }
 
         OpenAPI_list_for_each(AllowedNfTypeList, node2) {
-            OpenAPI_nf_type_e AllowedNfType = (OpenAPI_nf_type_e)node2->data;
+            OpenAPI_nf_type_e AllowedNfType = (uintptr_t)node2->data;
 
             if (!AllowedNfType) continue;
 
