@@ -631,7 +631,6 @@ static void smf_gx_cca_cb(void *data, struct msg **msg)
     ogs_diam_gx_message_t *gx_message = NULL;
     uint16_t gxbuf_len = 0;
     uint32_t cc_request_number = 0;
-    smf_bearer_t *bearer = NULL;
 
     ogs_debug("[Credit-Control-Answer]");
     
@@ -1017,9 +1016,9 @@ static int smf_gx_rar_cb( struct msg **msg, struct avp *avp,
     smf_sess_t *sess = NULL;
     ogs_diam_gx_message_t *gx_message = NULL;
     ogs_pcc_rule_t *pcc_rule = NULL;
-    smf_bearer_t *bearer = NULL;
 
     uint32_t result_code = OGS_DIAM_UNKNOWN_SESSION_ID;
+    int error = 0;
 	
     ogs_assert(msg);
 
@@ -1084,8 +1083,15 @@ static int smf_gx_rar_cb( struct msg **msg, struct avp *avp,
                         pcc_rule = &gx_message->session_data.pcc_rule
                                 [gx_message->session_data.num_of_pcc_rule];
 
-                        rv = decode_pcc_rule_definition(pcc_rule, avpch1, NULL);
+                        rv = decode_pcc_rule_definition(
+                                pcc_rule, avpch1, &error);
                         ogs_assert(rv == OGS_OK);
+
+                        if (error) {
+                            ogs_error("decode_pcc_rule_definition() failed");
+                            result_code = OGS_DIAM_GX_DIAMETER_PCC_RULE_EVENT;
+                            goto out;
+                        }
 
                         pcc_rule->type = OGS_PCC_RULE_TYPE_INSTALL;
                         gx_message->session_data.num_of_pcc_rule++;
@@ -1303,16 +1309,14 @@ static int decode_pcc_rule_definition(
                 if (avpch3) {
                     ret = fd_msg_avp_hdr(avpch3, &hdr);
                     ogs_assert(ret == 0);
-                    flow->description = ogs_malloc(hdr->avp_value->os.len+1);
+                    flow->description = ogs_strndup(
+                        (char*)hdr->avp_value->os.data, hdr->avp_value->os.len);
                     ogs_assert(flow->description);
-                    ogs_cpystrn(flow->description,
-                        (char*)hdr->avp_value->os.data,
-                        hdr->avp_value->os.len+1);
                 }
 
                 pcc_rule->num_of_flow++;
             } else {
-                ogs_error("Overflow: Num of Flow");
+                ogs_error("Overflow: Num of Flow [%d]", pcc_rule->num_of_flow);
                 error++;
             }
             break;

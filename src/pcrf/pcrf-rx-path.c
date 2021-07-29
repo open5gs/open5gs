@@ -385,13 +385,10 @@ static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
                                         strlen(to_str));
                                 }
                             } else {
-                                flow->description = ogs_malloc(
-                                    hdr->avp_value->os.len+1);
-                                ogs_assert(flow->description);
-                                ogs_cpystrn(
-                                    flow->description,
+                                flow->description = ogs_strndup(
                                     (char*)hdr->avp_value->os.data,
-                                    hdr->avp_value->os.len+1);
+                                    hdr->avp_value->os.len);
+                                ogs_assert(flow->description);
                             }
 
                             sub->num_of_flow++;

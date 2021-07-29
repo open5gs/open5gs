@@ -1485,16 +1485,24 @@ static int install_flow(ogs_pcc_rule_t *pcc_rule,
 
         /* Copy Flow to PCC Rule */
         for (j = 0; j < sub->num_of_flow; j++) {
-            ogs_flow_t *rx_flow = &sub->flow[j];
-            ogs_flow_t *gx_flow = &pcc_rule->flow[pcc_rule->num_of_flow];
+            ogs_flow_t *rx_flow = NULL;
+            ogs_flow_t *gx_flow = NULL;
 
-            rv = flow_rx_to_gx(rx_flow, gx_flow);
-            if (rv != OGS_OK) {
-                ogs_error("flow reformatting error");
+            if (pcc_rule->num_of_flow < OGS_MAX_NUM_OF_FLOW) {
+                rx_flow = &sub->flow[j];
+                gx_flow = &pcc_rule->flow[pcc_rule->num_of_flow];
+
+                rv = flow_rx_to_gx(rx_flow, gx_flow);
+                if (rv != OGS_OK) {
+                    ogs_error("flow reformatting error");
+                    return OGS_ERROR;
+                }
+
+                pcc_rule->num_of_flow++;
+            } else {
+                ogs_error("Overflow: Number of Flow");
                 return OGS_ERROR;
             }
-
-            pcc_rule->num_of_flow++;
         }
     }
 
