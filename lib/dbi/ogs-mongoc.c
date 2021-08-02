@@ -26,7 +26,7 @@ int __ogs_dbi_domain;
 static ogs_mongoc_t self;
 
 /*
- * We've added it 
+ * We've added it
  * Because the following function is deprecated in the mongo-c-driver
  */
 static bool
@@ -82,6 +82,9 @@ int ogs_mongoc_init(const char *db_uri)
     bson_t reply;
     bson_error_t error;
     bson_iter_t iter;
+    bool server_ok;
+    int i;
+    int sleep_time;
 
     const mongoc_uri_t *uri;
 
@@ -114,12 +117,33 @@ int ogs_mongoc_init(const char *db_uri)
     self.name = mongoc_uri_get_database(uri);
     ogs_assert(self.name);
 
-    self.database = mongoc_client_get_database(self.client, self.name);
+    sleep_time = 1;
+    for (i = 0; i < MONGO_INIT_RETRIES; ++i) {
+        self.database = mongoc_client_get_database(self.client, self.name);
+        if (self.database) {
+            break;
+        }
+        ogs_warn("failed to connect to [%s], will retry", self.masked_db_uri);
+        sleep(sleep_time);
+        sleep_time *= 2;
+    }
     ogs_assert(self.database);
 
-    if (!ogs_mongoc_mongoc_client_get_server_status(
+    sleep_time = 1;
+    server_ok = false;
+    for (i = 0; i < MONGO_INIT_RETRIES; ++i) {
+        if (ogs_mongoc_mongoc_client_get_server_status(
                 self.client, NULL, &reply, &error)) {
-        ogs_warn("Failed to connect to server [%s]", self.masked_db_uri);
+            server_ok = true;
+            break;
+        }
+        ogs_warn("Failed to get server status from [%s], will retry", self.masked_db_uri);
+        sleep(sleep_time);
+        sleep_time *= 2;
+    }
+
+    if (!server_ok) {
+        ogs_error("Failed to get server status from [%s]", self.masked_db_uri);
         return OGS_RETRY;
     }
 
