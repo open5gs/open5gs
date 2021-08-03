@@ -40,7 +40,7 @@ extern int __ogs_dbi_domain;
 
 #undef OGS_LOG_DOMAIN
 #define OGS_LOG_DOMAIN __ogs_dbi_domain
-#define MONGO_INIT_RETRIES    4
+#define MONGO_INIT_RETRIES    5
 
 #ifdef __cplusplus
 }
