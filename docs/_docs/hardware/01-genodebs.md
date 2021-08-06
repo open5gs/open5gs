@@ -12,6 +12,7 @@ If you have tested radio hardware from a vendor not listed with Open5GS, please 
  * Airspan 5G OpenRange vCU + Airspan 5G OpenRange vDU + Airspan 5G OpenRANGE06 AirVelocity 2700 RU
  * NOKIA AEQE (SW: 5G20A)
  * NOKIA AEQD (SW: 5G20A)
+ * NOKIA AEQP (SW: 5G21A)
  * Huawei BTS5900
 
 ### Commercial 4G
