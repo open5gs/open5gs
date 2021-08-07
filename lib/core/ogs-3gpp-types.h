@@ -32,11 +32,21 @@ extern "C" {
 #define OGS_MAX_NUM_OF_BEARER           4   /* Num of Bearer per Session */
 #define OGS_MAX_NUM_OF_PACKET_BUFFER    64  /* Num of PacketBuffer per UE */
 
-/* Num of Flow per Bearer or PCC Rule or PDR */
-#define OGS_MAX_NUM_OF_FLOW             8
-
-/* Num of PacketFilter per Bearer(GTP) or QoS(NAS-5GS) */
-#define OGS_MAX_NUM_OF_PACKET_FILTER    16
+/*
+ * The array of TLV messages is limited to 8.
+ * So, Flow(PDI.SDF_Filter) in PDR is limited to 8.
+ *
+ * However, the number of flow in bearer context seems to need more than 16.
+ *
+ * Therefore, the maximum number of flows of messages is defined as 8,
+ * and the maximum number of flows stored by the context is 16.
+ */
+#define OGS_MAX_NUM_OF_FLOW_IN_PDR      8
+#define OGS_MAX_NUM_OF_FLOW_IN_GTP      OGS_MAX_NUM_OF_FLOW_IN_PDR
+#define OGS_MAX_NUM_OF_FLOW_IN_NAS      OGS_MAX_NUM_OF_FLOW_IN_PDR
+#define OGS_MAX_NUM_OF_FLOW_IN_PCC_RULE OGS_MAX_NUM_OF_FLOW_IN_PDR
+#define OGS_MAX_NUM_OF_FLOW_IN_MEDIA_SUB_COMPONENT OGS_MAX_NUM_OF_FLOW_IN_PDR
+#define OGS_MAX_NUM_OF_FLOW_IN_BEARER   16
 
 #define OGS_MAX_NUM_OF_GTPU_RESOURCE    4
 
@@ -339,7 +349,7 @@ typedef struct ogs_pcc_rule_s {
     char *id;   /* 5GC */
     char *name; /* EPC */
 
-    ogs_flow_t flow[OGS_MAX_NUM_OF_FLOW];
+    ogs_flow_t flow[OGS_MAX_NUM_OF_FLOW_IN_PCC_RULE];
     int num_of_flow;
 
     int flow_status;
@@ -627,7 +637,7 @@ void ogs_session_data_free(ogs_session_data_t *session_data);
 typedef struct ogs_media_sub_component_s {
     uint32_t            flow_number;
     uint32_t            flow_usage;
-    ogs_flow_t          flow[OGS_MAX_NUM_OF_FLOW];
+    ogs_flow_t          flow[OGS_MAX_NUM_OF_FLOW_IN_MEDIA_SUB_COMPONENT];
     int                 num_of_flow;
 } ogs_media_sub_component_t;
 

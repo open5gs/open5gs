@@ -455,7 +455,11 @@ bool pcf_npcf_policyauthorization_handle_create(pcf_sess_t *sess,
 
                             fDescList = SubComponent->f_descs;
                             OpenAPI_list_for_each(fDescList, node3) {
-                                ogs_flow_t *flow = &sub->flow[sub->num_of_flow];
+                                ogs_flow_t *flow = NULL;
+
+                                ogs_assert(sub->num_of_flow <
+                                    OGS_MAX_NUM_OF_FLOW_IN_MEDIA_SUB_COMPONENT);
+                                flow = &sub->flow[sub->num_of_flow];
                                 if (node3->data) {
                                     flow->description = ogs_strdup(node3->data);
                                     ogs_assert(flow->description);

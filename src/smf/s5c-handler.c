@@ -999,7 +999,8 @@ void smf_s5c_handle_bearer_resource_command(
         tft_delete = 1;
     } else if (tft.code ==
             OGS_GTP_TFT_CODE_REPLACE_PACKET_FILTERS_IN_EXISTING) {
-        for (i = 0; i < tft.num_of_packet_filter; i++) {
+        for (i = 0; i < tft.num_of_packet_filter &&
+                    i < OGS_MAX_NUM_OF_FLOW_IN_GTP; i++) {
             pf = smf_pf_find_by_id(bearer, tft.pf[i].identifier+1);
             if (pf) {
                 if (reconfigure_packet_filter(pf, &tft, i) < 0) {
@@ -1064,7 +1065,8 @@ void smf_s5c_handle_bearer_resource_command(
         if (tft.code == OGS_GTP_TFT_CODE_CREATE_NEW_TFT)
             smf_pf_remove_all(bearer);
 
-        for (i = 0; i < tft.num_of_packet_filter; i++) {
+        for (i = 0; i < tft.num_of_packet_filter &&
+                    i < OGS_MAX_NUM_OF_FLOW_IN_GTP; i++) {
             pf = smf_pf_find_by_id(bearer, tft.pf[i].identifier+1);
             if (!pf)
                 pf = smf_pf_add(bearer);
@@ -1128,7 +1130,8 @@ void smf_s5c_handle_bearer_resource_command(
         }
     } else if (tft.code ==
             OGS_GTP_TFT_CODE_DELETE_PACKET_FILTERS_FROM_EXISTING) {
-        for (i = 0; i < tft.num_of_packet_filter; i++) {
+        for (i = 0; i < tft.num_of_packet_filter &&
+                    i <= OGS_MAX_NUM_OF_FLOW_IN_GTP; i++) {
             pf = smf_pf_find_by_id(bearer, tft.pf[i].identifier+1);
             if (pf)
                 smf_pf_remove(pf);

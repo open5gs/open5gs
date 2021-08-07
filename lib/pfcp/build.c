@@ -238,7 +238,7 @@ ogs_pkbuf_t *ogs_pfcp_up_build_association_setup_response(uint8_t type,
 static struct {
     ogs_pfcp_f_teid_t f_teid;
     char dnn[OGS_MAX_DNN_LEN];
-    char *sdf_filter[OGS_MAX_NUM_OF_FLOW];
+    char *sdf_filter[OGS_MAX_NUM_OF_FLOW_IN_PDR];
 } pdrbuf[OGS_MAX_NUM_OF_PDR];
 
 void ogs_pfcp_pdrbuf_init(void)
@@ -250,7 +250,7 @@ void ogs_pfcp_pdrbuf_clear(void)
 {
     int i, j;
     for (i = 0; i < OGS_MAX_NUM_OF_PDR; i++) {
-        for (j = 0; j < OGS_MAX_NUM_OF_FLOW; j++) {
+        for (j = 0; j < OGS_MAX_NUM_OF_FLOW_IN_PDR; j++) {
             if (pdrbuf[i].sdf_filter[j])
                 ogs_free(pdrbuf[i].sdf_filter[j]);
         }
@@ -261,7 +261,7 @@ void ogs_pfcp_build_create_pdr(
     ogs_pfcp_tlv_create_pdr_t *message, int i, ogs_pfcp_pdr_t *pdr)
 {
     ogs_pfcp_far_t *far = NULL;
-    ogs_pfcp_sdf_filter_t pfcp_sdf_filter[OGS_MAX_NUM_OF_FLOW];
+    ogs_pfcp_sdf_filter_t pfcp_sdf_filter[OGS_MAX_NUM_OF_FLOW_IN_PDR];
     int j = 0;
     int len = 0;
 
@@ -293,8 +293,7 @@ void ogs_pfcp_build_create_pdr(
     }
 
     memset(pfcp_sdf_filter, 0, sizeof(pfcp_sdf_filter));
-    ogs_assert(pdr->num_of_flow <= OGS_MAX_NUM_OF_FLOW);
-    for (j = 0; j < pdr->num_of_flow; j++) {
+    for (j = 0; j < pdr->num_of_flow && j < OGS_MAX_NUM_OF_FLOW_IN_PDR; j++) {
         pfcp_sdf_filter[j].fd = 1;
         pfcp_sdf_filter[j].flow_description_len =
                 strlen(pdr->flow_description[j]);
@@ -377,7 +376,7 @@ void ogs_pfcp_build_created_pdr(
 void ogs_pfcp_build_update_pdr(
     ogs_pfcp_tlv_update_pdr_t *message, int i, ogs_pfcp_pdr_t *pdr)
 {
-    ogs_pfcp_sdf_filter_t pfcp_sdf_filter[OGS_MAX_NUM_OF_FLOW];
+    ogs_pfcp_sdf_filter_t pfcp_sdf_filter[OGS_MAX_NUM_OF_FLOW_IN_PDR];
     int j = 0;
     int len = 0;
 
@@ -400,8 +399,7 @@ void ogs_pfcp_build_update_pdr(
     }
 
     memset(pfcp_sdf_filter, 0, sizeof(pfcp_sdf_filter));
-    ogs_assert(pdr->num_of_flow <= OGS_MAX_NUM_OF_FLOW);
-    for (j = 0; j < pdr->num_of_flow; j++) {
+    for (j = 0; j < pdr->num_of_flow && j < OGS_MAX_NUM_OF_FLOW_IN_PDR; j++) {
         pfcp_sdf_filter[j].fd = 1;
         pfcp_sdf_filter[j].flow_description_len =
                 strlen(pdr->flow_description[j]);

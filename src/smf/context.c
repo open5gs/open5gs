@@ -59,7 +59,8 @@ void smf_context_init(void)
     ogs_pool_init(&smf_sess_pool, ogs_app()->pool.sess);
     ogs_pool_init(&smf_bearer_pool, ogs_app()->pool.bearer);
 
-    ogs_pool_init(&smf_pf_pool, ogs_app()->pool.bearer * OGS_MAX_NUM_OF_FLOW);
+    ogs_pool_init(&smf_pf_pool,
+            ogs_app()->pool.bearer * OGS_MAX_NUM_OF_FLOW_IN_BEARER);
 
     self.supi_hash = ogs_hash_make();
     ogs_assert(self.supi_hash);
@@ -2140,17 +2141,27 @@ smf_pf_t *smf_pf_add(smf_bearer_t *bearer)
     memset(pf, 0, sizeof *pf);
 
     ogs_pool_alloc(&bearer->pf_identifier_pool, &pf->identifier_node);
-    ogs_assert(pf->identifier_node);
+    if (!pf->identifier_node) {
+        ogs_error("smf_pf_add: Expectation `pf->identifier_node' failed");
+        ogs_pool_free(&smf_pf_pool, pf);
+        return NULL;
+    }
 
     pf->identifier = *(pf->identifier_node);
-    ogs_assert(pf->identifier > 0 && pf->identifier <= OGS_MAX_NUM_OF_FLOW);
+    ogs_assert(pf->identifier > 0 && pf->identifier <=
+            OGS_MAX_NUM_OF_FLOW_IN_BEARER);
 
     ogs_pool_alloc(&sess->pf_precedence_pool, &pf->precedence_node);
-    ogs_assert(pf->precedence_node);
+    if (!pf->precedence_node) {
+        ogs_error("smf_pf_add: Expectation `pf->precedence_node' failed");
+        ogs_pool_free(&bearer->pf_identifier_pool, pf->identifier_node);
+        ogs_pool_free(&smf_pf_pool, pf);
+        return NULL;
+    }
 
     pf->precedence = *(pf->precedence_node);
     ogs_assert(pf->precedence > 0 && pf->precedence <=
-            (OGS_MAX_NUM_OF_BEARER * OGS_MAX_NUM_OF_FLOW));
+            (OGS_MAX_NUM_OF_BEARER * OGS_MAX_NUM_OF_FLOW_IN_BEARER));
 
     pf->bearer = bearer;
 
@@ -2427,9 +2438,9 @@ void smf_pf_identifier_pool_init(smf_bearer_t *bearer)
 
     ogs_assert(bearer);
 
-    ogs_index_init(&bearer->pf_identifier_pool, OGS_MAX_NUM_OF_FLOW);
+    ogs_index_init(&bearer->pf_identifier_pool, OGS_MAX_NUM_OF_FLOW_IN_BEARER);
 
-    for (i = 1; i <= OGS_MAX_NUM_OF_FLOW; i++) {
+    for (i = 1; i <= OGS_MAX_NUM_OF_FLOW_IN_BEARER; i++) {
         bearer->pf_identifier_pool.array[i-1] = i;
     }
 }
@@ -2448,9 +2459,10 @@ void smf_pf_precedence_pool_init(smf_sess_t *sess)
     ogs_assert(sess);
 
     ogs_index_init(&sess->pf_precedence_pool,
-            OGS_MAX_NUM_OF_BEARER * OGS_MAX_NUM_OF_FLOW);
+            OGS_MAX_NUM_OF_BEARER * OGS_MAX_NUM_OF_FLOW_IN_BEARER);
 
-    for (i = 1; i <= OGS_MAX_NUM_OF_BEARER * OGS_MAX_NUM_OF_FLOW; i++) {
+    for (i = 1; i <=
+            OGS_MAX_NUM_OF_BEARER * OGS_MAX_NUM_OF_FLOW_IN_BEARER; i++) {
         sess->pf_precedence_pool.array[i-1] = i;
     }
 }

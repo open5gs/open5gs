@@ -87,6 +87,7 @@ static void encode_traffic_flow_template(
     if (tft_operation_code != OGS_GTP_TFT_CODE_DELETE_EXISTING_TFT &&
         tft_operation_code != OGS_GTP_TFT_CODE_NO_TFT_OPERATION) {
         ogs_list_for_each_entry(&bearer->pf_to_add_list, pf, to_add_node) {
+            ogs_assert(i < OGS_MAX_NUM_OF_FLOW_IN_GTP);
             tft->pf[i].identifier = pf->identifier - 1;
 
             /* Deletion of packet filters
@@ -270,6 +271,10 @@ void smf_bearer_binding(smf_sess_t *sess)
                 }
 
                 pf = smf_pf_add(bearer);
+                if (!pf) {
+                    ogs_error("Overflow: PacketFilter in Bearer");
+                    break;
+                }
                 ogs_assert(pf);
 
                 pf->direction = flow->direction;
@@ -336,10 +341,15 @@ void smf_bearer_binding(smf_sess_t *sess)
                 ogs_gtp_tft_t tft;
 
                 memset(&tft, 0, sizeof tft);
-                if (pcc_rule->num_of_flow)
+                if (pcc_rule->num_of_flow) {
+                    if (ogs_list_count(&bearer->pf_to_add_list) == 0) {
+                        ogs_error("No need to send 'Update Bearer Request'");
+                        continue;
+                    }
                     encode_traffic_flow_template(
                         &tft, bearer,
                         OGS_GTP_TFT_CODE_ADD_PACKET_FILTERS_TO_EXISTING_TFT);
+                }
 
                 memset(&h, 0, sizeof(ogs_gtp_header_t));
                 h.type = OGS_GTP_UPDATE_BEARER_REQUEST_TYPE;

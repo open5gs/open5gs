@@ -302,7 +302,7 @@ ED3(uint8_t code:3;,
         };
         uint8_t precedence;
         ogs_pf_content_t content;
-    } pf[OGS_MAX_NUM_OF_PACKET_FILTER];
+    } pf[OGS_MAX_NUM_OF_FLOW_IN_GTP];
 } ogs_gtp_tft_t;
 
 int16_t ogs_gtp_parse_tft(ogs_gtp_tft_t *tft, ogs_tlv_octet_t *octet);

@@ -626,7 +626,6 @@ static void smf_gx_cca_cb(void *data, struct msg **msg)
     smf_event_t *e = NULL;
     ogs_gtp_xact_t *xact = NULL;
     smf_sess_t *sess = NULL;
-    ogs_pcc_rule_t *pcc_rule = NULL;
     ogs_pkbuf_t *gxbuf = NULL;
     ogs_diam_gx_message_t *gx_message = NULL;
     uint16_t gxbuf_len = 0;
@@ -881,6 +880,10 @@ static void smf_gx_cca_cb(void *data, struct msg **msg)
                 case OGS_DIAM_GX_AVP_CODE_CHARGING_RULE_DEFINITION:
                     if (gx_message->session_data.num_of_pcc_rule <
                             OGS_MAX_NUM_OF_PCC_RULE) {
+                        ogs_pcc_rule_t *pcc_rule = NULL;
+                        smf_bearer_t *bearer = NULL;
+                        int num_of_flow = 0;
+
                         pcc_rule = &gx_message->session_data.pcc_rule
                                 [gx_message->session_data.num_of_pcc_rule];
 
@@ -888,8 +891,21 @@ static void smf_gx_cca_cb(void *data, struct msg **msg)
                                 pcc_rule, avpch1, &error);
                         ogs_assert(rv == OGS_OK);
 
-                        pcc_rule->type = OGS_PCC_RULE_TYPE_INSTALL;
-                        gx_message->session_data.num_of_pcc_rule++;
+                        num_of_flow = pcc_rule->num_of_flow;
+
+                        bearer = smf_bearer_find_by_pcc_rule_name(
+                                sess, pcc_rule->name);
+                        if (bearer)
+                            num_of_flow += ogs_list_count(&bearer->pf_list);
+
+                        if (num_of_flow < OGS_MAX_NUM_OF_FLOW_IN_BEARER) {
+                            pcc_rule->type = OGS_PCC_RULE_TYPE_INSTALL;
+                            gx_message->session_data.num_of_pcc_rule++;
+                        } else {
+                            ogs_error("Overflow : Num Of Flow %d", num_of_flow);
+                            OGS_PCC_RULE_FREE(pcc_rule);
+                            error++;
+                        }
                     } else {
                         ogs_error("Overflow: Number of PCCRule");
                         error++;
@@ -1015,7 +1031,6 @@ static int smf_gx_rar_cb( struct msg **msg, struct avp *avp,
     ogs_pkbuf_t *gxbuf = NULL;
     smf_sess_t *sess = NULL;
     ogs_diam_gx_message_t *gx_message = NULL;
-    ogs_pcc_rule_t *pcc_rule = NULL;
 
     uint32_t result_code = OGS_DIAM_UNKNOWN_SESSION_ID;
     int error = 0;
@@ -1080,6 +1095,10 @@ static int smf_gx_rar_cb( struct msg **msg, struct avp *avp,
                 case OGS_DIAM_GX_AVP_CODE_CHARGING_RULE_DEFINITION:
                     if (gx_message->session_data.num_of_pcc_rule <
                             OGS_MAX_NUM_OF_PCC_RULE) {
+                        ogs_pcc_rule_t *pcc_rule = NULL;
+                        smf_bearer_t *bearer = NULL;
+                        int num_of_flow = 0;
+
                         pcc_rule = &gx_message->session_data.pcc_rule
                                 [gx_message->session_data.num_of_pcc_rule];
 
@@ -1089,12 +1108,27 @@ static int smf_gx_rar_cb( struct msg **msg, struct avp *avp,
 
                         if (error) {
                             ogs_error("decode_pcc_rule_definition() failed");
+                            OGS_PCC_RULE_FREE(pcc_rule);
                             result_code = OGS_DIAM_GX_DIAMETER_PCC_RULE_EVENT;
                             goto out;
                         }
 
-                        pcc_rule->type = OGS_PCC_RULE_TYPE_INSTALL;
-                        gx_message->session_data.num_of_pcc_rule++;
+                        num_of_flow = pcc_rule->num_of_flow;
+
+                        bearer = smf_bearer_find_by_pcc_rule_name(
+                                sess, pcc_rule->name);
+                        if (bearer)
+                            num_of_flow += ogs_list_count(&bearer->pf_list);
+
+                        if (num_of_flow < OGS_MAX_NUM_OF_FLOW_IN_BEARER) {
+                            pcc_rule->type = OGS_PCC_RULE_TYPE_INSTALL;
+                            gx_message->session_data.num_of_pcc_rule++;
+                        } else {
+                            ogs_error("Overflow : Num Of Flow %d", num_of_flow);
+                            OGS_PCC_RULE_FREE(pcc_rule);
+                            result_code = OGS_DIAM_GX_DIAMETER_PCC_RULE_EVENT;
+                            goto out;
+                        }
                     } else {
                         ogs_error("Overflow: Number of PCCRule");
                     }
@@ -1116,7 +1150,8 @@ static int smf_gx_rar_cb( struct msg **msg, struct avp *avp,
                 case OGS_DIAM_GX_AVP_CODE_CHARGING_RULE_NAME:
                     if (gx_message->session_data.num_of_pcc_rule <
                             OGS_MAX_NUM_OF_PCC_RULE) {
-                        pcc_rule = &gx_message->session_data.pcc_rule
+                        ogs_pcc_rule_t *pcc_rule =
+                            &gx_message->session_data.pcc_rule
                                 [gx_message->session_data.num_of_pcc_rule];
 
                         pcc_rule->name = ogs_strdup(
@@ -1291,7 +1326,7 @@ static int decode_pcc_rule_definition(
             ogs_assert(pcc_rule->name);
             break;
         case OGS_DIAM_GX_AVP_CODE_FLOW_INFORMATION:
-            if (pcc_rule->num_of_flow < OGS_MAX_NUM_OF_FLOW) {
+            if (pcc_rule->num_of_flow < OGS_MAX_NUM_OF_FLOW_IN_PCC_RULE) {
                 flow = &pcc_rule->flow[pcc_rule->num_of_flow];
 
                 ret = fd_avp_search_avp(

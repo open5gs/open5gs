@@ -837,7 +837,7 @@ typedef struct ogs_nas_qos_rule_s {
             uint8_t flags;
         };
         ogs_pf_content_t content;
-    } pf[OGS_MAX_NUM_OF_PACKET_FILTER];
+    } pf[OGS_MAX_NUM_OF_FLOW_IN_NAS];
 
     uint8_t precedence;
     union {

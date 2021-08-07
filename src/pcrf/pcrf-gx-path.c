@@ -1435,7 +1435,8 @@ static int matched_flow(ogs_pcc_rule_t *pcc_rule,
             continue;
         }
 
-        for (j = 0; j < sub->num_of_flow; j++) {
+        for (j = 0; j < sub->num_of_flow &&
+                    j < OGS_MAX_NUM_OF_FLOW_IN_MEDIA_SUB_COMPONENT; j++) {
             ogs_flow_t gx_flow;
             ogs_flow_t *rx_flow = &sub->flow[j];
 
@@ -1484,11 +1485,12 @@ static int install_flow(ogs_pcc_rule_t *pcc_rule,
         }
 
         /* Copy Flow to PCC Rule */
-        for (j = 0; j < sub->num_of_flow; j++) {
+        for (j = 0; j < sub->num_of_flow &&
+                    j < OGS_MAX_NUM_OF_FLOW_IN_MEDIA_SUB_COMPONENT; j++) {
             ogs_flow_t *rx_flow = NULL;
             ogs_flow_t *gx_flow = NULL;
 
-            if (pcc_rule->num_of_flow < OGS_MAX_NUM_OF_FLOW) {
+            if (pcc_rule->num_of_flow < OGS_MAX_NUM_OF_FLOW_IN_PCC_RULE) {
                 rx_flow = &sub->flow[j];
                 gx_flow = &pcc_rule->flow[pcc_rule->num_of_flow];
 
@@ -1530,7 +1532,8 @@ static int update_qos(ogs_pcc_rule_t *pcc_rule,
             continue;
         }
 
-        for (j = 0; j < sub->num_of_flow; j++) {
+        for (j = 0; j < sub->num_of_flow &&
+                    j < OGS_MAX_NUM_OF_FLOW_IN_MEDIA_SUB_COMPONENT; j++) {
             ogs_flow_t gx_flow;
             ogs_flow_t *rx_flow = &sub->flow[j];
 

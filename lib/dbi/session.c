@@ -436,7 +436,8 @@ done:
                         while (bson_iter_next(&child7_iter)) {
                             ogs_flow_t *flow = NULL;
 
-                            ogs_assert(flow_index < OGS_MAX_NUM_OF_FLOW);
+                            ogs_assert(
+                                flow_index < OGS_MAX_NUM_OF_FLOW_IN_PCC_RULE);
                             flow = &pcc_rule->flow[flow_index];
 
                             bson_iter_recurse(&child7_iter, &child8_iter);

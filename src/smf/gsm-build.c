@@ -265,6 +265,7 @@ static void encode_qos_rule_packet_filter(
 
     i = 0;
     ogs_list_for_each(&qos_flow->pf_list, pf) {
+        ogs_assert(i < OGS_MAX_NUM_OF_FLOW_IN_NAS);
         qos_rule->pf[i].direction = pf->direction;
         qos_rule->pf[i].identifier = pf->identifier;
 

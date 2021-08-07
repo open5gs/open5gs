@@ -484,7 +484,8 @@ int ogs_nas_build_qos_rules(ogs_nas_qos_rules_t *rules,
         memcpy(buffer + length, &target.flags, sizeof(target.flags));
         length += sizeof(target.flags);
 
-        for (j = 0; j < target.num_of_packet_filter; j++) {
+        for (j = 0; j < target.num_of_packet_filter &&
+                    j < OGS_MAX_NUM_OF_FLOW_IN_NAS; j++) {
             ogs_assert(length + sizeof(target.pf[j].flags) <=
                     OGS_NAS_MAX_QOS_RULES_LEN);
             memcpy(buffer + length, &target.pf[j].flags,

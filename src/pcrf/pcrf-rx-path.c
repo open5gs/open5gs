@@ -281,6 +281,8 @@ static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
                                 hdr->avp_value->i32;
                             break;
                         case OGS_DIAM_RX_AVP_CODE_FLOW_DESCRIPTION:
+                            ogs_assert(sub->num_of_flow <
+                                    OGS_MAX_NUM_OF_FLOW_IN_MEDIA_SUB_COMPONENT);
                             flow = &sub->flow[sub->num_of_flow];
 
                             /* IE (IPV4-local-addr field ) is not supported on

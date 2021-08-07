@@ -302,7 +302,8 @@ int16_t ogs_gtp_parse_tft(ogs_gtp_tft_t *tft, ogs_tlv_octet_t *octet)
         tft->code == OGS_GTP_TFT_CODE_DELETE_EXISTING_TFT)
         return size;
 
-    for (i = 0; i < tft->num_of_packet_filter; i++) {
+    for (i = 0; i < tft->num_of_packet_filter &&
+                i < OGS_MAX_NUM_OF_FLOW_IN_GTP ; i++) {
         ogs_assert(size+sizeof(tft->pf[i].flags) <= octet->len);
         memcpy(&tft->pf[i].flags, (unsigned char *)octet->data+size,
                 sizeof(tft->pf[i].flags));
@@ -468,7 +469,8 @@ int16_t ogs_gtp_build_tft(
         tft->code == OGS_GTP_TFT_CODE_DELETE_EXISTING_TFT)
         return size;
 
-    for (i = 0; i < target.num_of_packet_filter; i++) {
+    for (i = 0; i < target.num_of_packet_filter &&
+                i < OGS_MAX_NUM_OF_FLOW_IN_GTP; i++) {
         ogs_assert(size + sizeof(target.pf[i].flags) <= data_len);
         memcpy((unsigned char *)octet->data + size, &target.pf[i].flags,
                 sizeof(target.pf[i].flags));
