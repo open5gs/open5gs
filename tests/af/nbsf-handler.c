@@ -71,8 +71,7 @@ void af_nbsf_management_handle_pcf_binding(
         if (!IpEndPoint) continue;
 
         if (sess->pcf.num_of_ip < OGS_SBI_MAX_NUM_OF_IP_ADDRESS) {
-            port = IpEndPoint->port;
-            if (!port) {
+            if (!IpEndPoint->is_port) {
                 if (ogs_sbi_default_uri_scheme() ==
                         OpenAPI_uri_scheme_http)
                     port = OGS_SBI_HTTP_PORT;
@@ -84,6 +83,8 @@ void af_nbsf_management_handle_pcf_binding(
                         ogs_sbi_default_uri_scheme());
                     ogs_assert_if_reached();
                 }
+            } else {
+                port = IpEndPoint->port;
             }
 
             if (IpEndPoint->ipv4_address) {

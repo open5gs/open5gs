@@ -297,6 +297,9 @@ static void test1_func(abts_case *tc, void *data)
     af_sess = af_sess_add_by_ue_address(&sess->ue_ip);
     ogs_assert(af_sess);
 
+    af_sess->dnn = ogs_strdup(sess->dnn);
+    ogs_assert(af_sess->dnn);
+
 #if 0
     af_local_discover_and_send(OpenAPI_nf_type_BSF, af_sess, NULL,
             af_nbsf_management_build_discover);

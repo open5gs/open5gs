@@ -154,6 +154,8 @@ af_sess_t *af_sess_add_by_ue_address(ogs_ip_t *ue_address)
     }
 
     OGS_SBI_FEATURES_SET(sess->policyauthorization_features,
+            OGS_SBI_NPCF_POLICYAUTHORIZATION_SPONSORED_CONNECTIVITY);
+    OGS_SBI_FEATURES_SET(sess->policyauthorization_features,
             OGS_SBI_NPCF_POLICYAUTHORIZATION_IMS_SBI);
 
     ogs_list_add(&self.sess_list, sess);

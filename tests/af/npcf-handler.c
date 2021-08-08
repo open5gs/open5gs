@@ -28,6 +28,11 @@ void af_npcf_policyauthorization_handle_create(
     ogs_sbi_message_t message;
     ogs_sbi_header_t header;
 
+    OpenAPI_app_session_context_t *AppSessionContext = NULL;
+    OpenAPI_app_session_context_req_data_t *AscReqData = NULL;
+
+    uint64_t supported_features = 0;
+
     if (!recvmsg->http.location) {
         ogs_error("[%s:%s] No http.location",
                 sess->ipv4addr ? sess->ipv4addr : "Unknown",
@@ -52,12 +57,37 @@ void af_npcf_policyauthorization_handle_create(
                 sess->ipv4addr ? sess->ipv4addr : "Unknown",
                 sess->ipv6addr ? sess->ipv6addr : "Unknown",
                 recvmsg->http.location);
-
-        ogs_sbi_header_free(&header);
-        return;
+        goto cleanup;
     }
+
+    AppSessionContext = recvmsg->AppSessionContext;
+    if (!AppSessionContext) {
+        ogs_error("[%s:%s] No AppSessionContext",
+                sess->ipv4addr ? sess->ipv4addr : "Unknown",
+                sess->ipv6addr ? sess->ipv6addr : "Unknown");
+        goto cleanup;
+    }
+
+    AscReqData = AppSessionContext->asc_req_data;
+    if (!AscReqData) {
+        ogs_error("[%s:%s] No AscReqData",
+                sess->ipv4addr ? sess->ipv4addr : "Unknown",
+                sess->ipv6addr ? sess->ipv6addr : "Unknown");
+        goto cleanup;
+    }
+
+    if (!AscReqData->supp_feat) {
+        ogs_error("[%s:%s] No AscReqData->suppFeat",
+                sess->ipv4addr ? sess->ipv4addr : "Unknown",
+                sess->ipv6addr ? sess->ipv6addr : "Unknown");
+        goto cleanup;
+    }
+
+    supported_features = ogs_uint64_from_string(AscReqData->supp_feat);
+    sess->policyauthorization_features &= supported_features;
 
     af_sess_set_pcf_app_session_id(sess, message.h.resource.component[1]);
 
+cleanup:
     ogs_sbi_header_free(&header);
 }

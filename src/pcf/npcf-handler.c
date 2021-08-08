@@ -415,6 +415,13 @@ bool pcf_npcf_policyauthorization_handle_create(pcf_sess_t *sess,
     supported_features = ogs_uint64_from_string(AscReqData->supp_feat);
     sess->policyauthorization_features &= supported_features;
 
+    if (sess->policyauthorization_features != supported_features) {
+        ogs_free(AscReqData->supp_feat);
+        AscReqData->supp_feat =
+            ogs_uint64_to_string(sess->policyauthorization_features);
+        ogs_assert(AscReqData->supp_feat);
+    }
+
     memset(&ims_data, 0, sizeof(ims_data));
     media_component = &ims_data.
         media_component[ims_data.num_of_media_component];

@@ -29,6 +29,11 @@ ogs_sbi_request_t *af_npcf_policyauthorization_build_create(
 
     OpenAPI_app_session_context_t AppSessionContext;
     OpenAPI_app_session_context_req_data_t AscReqData;
+
+    OpenAPI_events_subsc_req_data_t evSubsc;
+    OpenAPI_list_t *EventList = NULL;
+    OpenAPI_af_event_subscription_t *Event = NULL;
+
     OpenAPI_snssai_t sNssai;
 
     OpenAPI_list_t *MediaComponentList = NULL;
@@ -84,12 +89,33 @@ ogs_sbi_request_t *af_npcf_policyauthorization_build_create(
 
     AscReqData.dnn = sess->dnn;
 
+    memset(&evSubsc, 0, sizeof(evSubsc));
+
+    EventList = OpenAPI_list_create();
+    ogs_assert(EventList);
+
+    Event = ogs_calloc(1, sizeof(*Event));
+    ogs_expect_or_return_val(Event, NULL);
+    Event->event = OpenAPI_af_event_CHARGING_CORRELATION;
+    OpenAPI_list_add(EventList, Event);
+
+    Event = ogs_calloc(1, sizeof(*Event));
+    ogs_expect_or_return_val(Event, NULL);
+    Event->event = OpenAPI_af_event_ANI_REPORT;
+    Event->notif_method = OpenAPI_af_notif_method_ONE_TIME;
+    OpenAPI_list_add(EventList, Event);
+
+    evSubsc.events = EventList;
+    AscReqData.ev_subsc = &evSubsc;
+
     memset(&sNssai, 0, sizeof(sNssai));
     if (sess->s_nssai.sst) {
         sNssai.sst = sess->s_nssai.sst;
         sNssai.sd = ogs_s_nssai_sd_to_string(sess->s_nssai.sd);
         AscReqData.slice_info = &sNssai;
     }
+
+    AscReqData.spon_status = OpenAPI_sponsoring_status_SPONSOR_DISABLED;
 
     AscReqData.supi = sess->supi;
     AscReqData.gpsi = sess->gpsi;
@@ -106,7 +132,7 @@ ogs_sbi_request_t *af_npcf_policyauthorization_build_create(
     MediaComponent = ogs_calloc(1, sizeof(*MediaComponent));
     ogs_expect_or_return_val(MediaComponent, NULL);
 
-    MediaComponent->med_comp_n = (++i);
+    MediaComponent->med_comp_n = (i++);
     MediaComponent->f_status = OpenAPI_flow_status_ENABLED;
     MediaComponent->mar_bw_dl = ogs_sbi_bitrate_to_string(
                                     41000, OGS_SBI_BITRATE_KBPS);
@@ -153,7 +179,7 @@ ogs_sbi_request_t *af_npcf_policyauthorization_build_create(
     SubComponent = ogs_calloc(1, sizeof(*SubComponent));
     ogs_expect_or_return_val(SubComponent, NULL);
 
-    SubComponent->f_num = (++j);
+    SubComponent->f_num = (j++);
     SubComponent->flow_usage = OpenAPI_flow_usage_NO_INFO;
 
     SubComponentMap = OpenAPI_map_create(
@@ -177,7 +203,7 @@ ogs_sbi_request_t *af_npcf_policyauthorization_build_create(
     SubComponent = ogs_calloc(1, sizeof(*SubComponent));
     ogs_expect_or_return_val(SubComponent, NULL);
 
-    SubComponent->f_num = (++j);
+    SubComponent->f_num = (j++);
     SubComponent->flow_usage = OpenAPI_flow_usage_NO_INFO;
 
     SubComponentMap = OpenAPI_map_create(
@@ -206,6 +232,14 @@ ogs_sbi_request_t *af_npcf_policyauthorization_build_create(
     ogs_free(AscReqData.notif_uri);
 
     ogs_free(AscReqData.supp_feat);
+
+    EventList = evSubsc.events;
+    OpenAPI_list_for_each(EventList, node) {
+        Event = node->data;
+        if (Event)
+            ogs_free(Event);
+    }
+    OpenAPI_list_free(EventList);
 
     if (sNssai.sd)
         ogs_free(sNssai.sd);

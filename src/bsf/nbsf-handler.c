@@ -36,7 +36,6 @@ bool bsf_nbsf_management_handle_pcf_binding(
     OpenAPI_snssai_t Snssai;
     char fqdn[OGS_MAX_FQDN_LEN+1];
     int fqdn_len;
-    uint64_t supported_features = 0;
 
     ogs_assert(stream);
     ogs_assert(recvmsg);
@@ -183,9 +182,16 @@ bool bsf_nbsf_management_handle_pcf_binding(
             header.resource.component[1] = sess->binding_id;
 
             if (RecvPcfBinding->supp_feat) {
-                supported_features =
+                uint64_t supported_features =
                     ogs_uint64_from_string(RecvPcfBinding->supp_feat);
                 sess->management_features &= supported_features;
+
+                if (sess->management_features != supported_features) {
+                    ogs_free(RecvPcfBinding->supp_feat);
+                    RecvPcfBinding->supp_feat =
+                        ogs_uint64_to_string(sess->management_features);
+                    ogs_assert(RecvPcfBinding->supp_feat);
+                }
             } else {
                 sess->management_features = 0;
             }
@@ -233,6 +239,8 @@ bool bsf_nbsf_management_handle_pcf_binding(
                     ogs_expect_or_return_val(PcfIpEndPoint, NULL);
                     PcfIpEndPoint->ipv4_address = sess->pcf_ip[i].addr;
                     PcfIpEndPoint->ipv6_address = sess->pcf_ip[i].addr6;
+
+                    PcfIpEndPoint->is_port = true;
                     PcfIpEndPoint->port = sess->pcf_ip[i].port;
 
                     OpenAPI_list_add(PcfIpEndPointList, PcfIpEndPoint);

@@ -39,6 +39,8 @@ bool pcf_nbsf_management_handle_register(
 
     ogs_session_t *session = NULL;
 
+    OpenAPI_pcf_binding_t *PcfBinding = NULL;
+
     OpenAPI_sm_policy_decision_t SmPolicyDecision;
 
     OpenAPI_lnode_t *node = NULL, *node2 = NULL;
@@ -87,6 +89,13 @@ bool pcf_nbsf_management_handle_register(
                 pcf_ue->supi, sess->psi);
         status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
         goto cleanup;
+    }
+
+    PcfBinding = recvmsg->PcfBinding;
+    if (PcfBinding->supp_feat) {
+        uint64_t supported_features =
+            ogs_uint64_from_string(PcfBinding->supp_feat);
+        sess->management_features &= supported_features;
     }
 
     memset(&header, 0, sizeof(header));
