@@ -296,15 +296,15 @@ int emm_handle_attach_complete(
     network_daylight_saving_time->length = 1;
 
     emmbuf = nas_eps_security_encode(mme_ue, &message);
-    if (emmbuf)  {
-        rv = nas_eps_send_to_downlink_nas_transport(mme_ue, emmbuf);
-        ogs_expect(rv == OGS_OK);
-    }
+    ogs_expect_or_return_val(emmbuf, OGS_ERROR);
+
+    rv = nas_eps_send_to_downlink_nas_transport(mme_ue, emmbuf);
+    ogs_expect_or_return_val(rv == OGS_OK, rv);
 
     ogs_debug("EMM information");
     ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
 
-    return OGS_OK;
+    return rv;
 }
 
 int emm_handle_identity_response(

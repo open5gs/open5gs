@@ -84,8 +84,7 @@ int esm_handle_pdn_connectivity_request(mme_bearer_t *bearer,
 
     if (security_protected_required) {
         CLEAR_BEARER_TIMER(bearer->t3489);
-        ogs_assert(OGS_OK ==
-            nas_eps_send_esm_information_request(bearer));
+        ogs_assert(OGS_OK == nas_eps_send_esm_information_request(bearer));
 
         return OGS_OK;
     }

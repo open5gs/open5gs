@@ -466,6 +466,12 @@ ogs_pkbuf_t *s1ap_build_initial_context_setup_request(
         }
     }
 
+    if (emmbuf && emmbuf->len) {
+        ogs_error("NAS message without session/bearer");
+        ogs_pkbuf_free(emmbuf);
+        emmbuf = NULL;
+    }
+
     ogs_assert(E_RABToBeSetupListCtxtSUReq->list.count);
 
     ie = CALLOC(1, sizeof(S1AP_InitialContextSetupRequestIEs_t));

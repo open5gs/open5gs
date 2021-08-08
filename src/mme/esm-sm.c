@@ -223,17 +223,20 @@ void esm_state_inactive(ogs_fsm_t *s, mme_event_t *e)
             if (bearer->t3489.retry_count >=
                     mme_timer_cfg(MME_TIMER_T3489)->max_count) {
                 ogs_warn("Retransmission of IMSI[%s] failed. "
-                        "Stop retransmission",
-                        mme_ue->imsi_bcd);
+                        "Stop retransmission", mme_ue->imsi_bcd);
                 OGS_FSM_TRAN(&bearer->sm, &esm_state_exception);
 
                 ogs_assert(OGS_OK ==
                     nas_eps_send_pdn_connectivity_reject(sess,
                         ESM_CAUSE_ESM_INFORMATION_NOT_RECEIVED));
             } else {
-                bearer->t3489.retry_count++;
-                ogs_assert(OGS_OK ==
-                    nas_eps_send_esm_information_request(bearer));
+                rv = nas_eps_send_esm_information_request(bearer);
+                if (rv == OGS_OK) {
+                    bearer->t3489.retry_count++;
+                } else {
+                    ogs_error("nas_eps_send_esm_information_request() failed");
+                    OGS_FSM_TRAN(&bearer->sm, &esm_state_exception);
+                }
             }
             break;
         default:

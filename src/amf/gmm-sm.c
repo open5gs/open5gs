@@ -591,9 +591,13 @@ void gmm_state_authentication(ogs_fsm_t *s, amf_event_t *e)
                     nas_5gs_send_authentication_reject(amf_ue));
                 OGS_FSM_TRAN(&amf_ue->sm, &gmm_state_exception);
             } else {
-                amf_ue->t3560.retry_count++;
-                ogs_assert(OGS_OK ==
-                    nas_5gs_send_authentication_request(amf_ue));
+                rv = nas_5gs_send_authentication_request(amf_ue);
+                if (rv == OGS_OK) {
+                    amf_ue->t3560.retry_count++;
+                } else {
+                    ogs_error("nas_5gs_send_authentication_request() failed");
+                    OGS_FSM_TRAN(&amf_ue->sm, &gmm_state_exception);
+                }
             }
             break;
         default:
@@ -832,9 +836,13 @@ void gmm_state_security_mode(ogs_fsm_t *s, amf_event_t *e)
                         OGS_5GMM_CAUSE_SECURITY_MODE_REJECTED_UNSPECIFIED));
                 OGS_FSM_TRAN(&amf_ue->sm, &gmm_state_exception);
             } else {
-                amf_ue->t3560.retry_count++;
-                ogs_assert(OGS_OK ==
-                    nas_5gs_send_security_mode_command(amf_ue));
+                rv = nas_5gs_send_security_mode_command(amf_ue);
+                if (rv == OGS_OK) {
+                    amf_ue->t3560.retry_count++;
+                } else {
+                    ogs_error("nas_5gs_send_security_mode_command() failed");
+                    OGS_FSM_TRAN(&amf_ue->sm, &gmm_state_exception);
+                }
             }
             break;
         default:
@@ -1126,9 +1134,13 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
                         amf_ue->suci);
                 OGS_FSM_TRAN(&amf_ue->sm, &gmm_state_exception);
             } else {
-                amf_ue->t3550.retry_count++;
-                ogs_assert(OGS_OK ==
-                    nas_5gs_send_registration_accept(amf_ue));
+                rv = nas_5gs_send_registration_accept(amf_ue);
+                if (rv == OGS_OK) {
+                    amf_ue->t3550.retry_count++;
+                } else {
+                    ogs_error("nas_5gs_send_registration_accept() failed");
+                    OGS_FSM_TRAN(&amf_ue->sm, &gmm_state_exception);
+                }
             }
             break;
         default:

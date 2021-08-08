@@ -617,9 +617,13 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
                         "Stop retransmission");
                 OGS_FSM_TRAN(&mme_ue->sm, &emm_state_exception);
             } else {
-                mme_ue->t3470.retry_count++;
-                ogs_assert(OGS_OK ==
-                    nas_eps_send_identity_request(mme_ue));
+                rv = nas_eps_send_identity_request(mme_ue);
+                if (rv == OGS_OK) {
+                    mme_ue->t3470.retry_count++;
+                } else {
+                    ogs_error("nas_eps_send_identity_request() failed");
+                    OGS_FSM_TRAN(&mme_ue->sm, &emm_state_exception);
+                }
             }
             break;
 
@@ -777,12 +781,16 @@ void emm_state_authentication(ogs_fsm_t *s, mme_event_t *e)
                         "Stop retransmission", mme_ue->imsi_bcd);
                 OGS_FSM_TRAN(&mme_ue->sm, &emm_state_exception);
 
-                ogs_assert(OGS_OK ==
+                ogs_expect(OGS_OK ==
                     nas_eps_send_authentication_reject(mme_ue));
             } else {
-                mme_ue->t3460.retry_count++;
-                ogs_assert(OGS_OK ==
-                    nas_eps_send_authentication_request(mme_ue));
+                rv = nas_eps_send_authentication_request(mme_ue);
+                if (rv == OGS_OK) {
+                    mme_ue->t3460.retry_count++;
+                } else {
+                    ogs_error("nas_eps_send_authentication_request() failed");
+                    OGS_FSM_TRAN(&mme_ue->sm, &emm_state_exception);
+                }
             }
             break;
         default:
@@ -945,14 +953,18 @@ void emm_state_security_mode(ogs_fsm_t *s, mme_event_t *e)
                         "Stop retransmission", mme_ue->imsi_bcd);
                 OGS_FSM_TRAN(&mme_ue->sm, &emm_state_exception);
 
-                ogs_assert(OGS_OK ==
+                ogs_expect(OGS_OK ==
                     nas_eps_send_attach_reject(mme_ue,
                         EMM_CAUSE_SECURITY_MODE_REJECTED_UNSPECIFIED,
                         ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED));
             } else {
-                mme_ue->t3460.retry_count++;
-                ogs_assert(OGS_OK ==
-                    nas_eps_send_security_mode_command(mme_ue));
+                rv = nas_eps_send_security_mode_command(mme_ue);
+                if (rv == OGS_OK) {
+                    mme_ue->t3460.retry_count++;
+                } else {
+                    ogs_error("nas_eps_send_security_mode_command() failed");
+                    OGS_FSM_TRAN(&mme_ue->sm, &emm_state_exception);
+                }
             }
             break;
         default:
@@ -1141,14 +1153,18 @@ void emm_state_initial_context_setup(ogs_fsm_t *s, mme_event_t *e)
                 emmbuf = mme_ue->t3450.pkbuf;
                 ogs_expect_or_return(emmbuf);
 
-                mme_ue->t3450.pkbuf = ogs_pkbuf_copy(emmbuf);
-                ogs_assert(mme_ue->t3450.pkbuf);
-
-                ogs_timer_start(mme_ue->t3450.timer,
-                        mme_timer_cfg(MME_TIMER_T3450)->duration);
-
                 rv = nas_eps_send_to_downlink_nas_transport(mme_ue, emmbuf);
-                ogs_expect(rv == OGS_OK);
+                if (rv == OGS_OK) {
+                    mme_ue->t3450.pkbuf = ogs_pkbuf_copy(emmbuf);
+                    ogs_assert(mme_ue->t3450.pkbuf);
+
+                    ogs_timer_start(mme_ue->t3450.timer,
+                            mme_timer_cfg(MME_TIMER_T3450)->duration);
+                } else {
+                    ogs_error("nas_eps_send_to_downlink_nas_transport() "
+                            "failed");
+                    OGS_FSM_TRAN(&mme_ue->sm, &emm_state_exception);
+                }
             }
             break;
         default:
