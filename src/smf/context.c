@@ -1184,10 +1184,12 @@ smf_sess_t *smf_sess_add_by_sbi_message(ogs_sbi_message_t *message)
     return sess;
 }
 
-void smf_sess_set_ue_ip(smf_sess_t *sess)
+uint8_t smf_sess_set_ue_ip(smf_sess_t *sess)
 {
     ogs_pfcp_subnet_t *subnet6 = NULL;
     smf_ue_t *smf_ue = NULL;
+
+    uint8_t cause_value = OGS_PFCP_CAUSE_REQUEST_ACCEPTED;
 
     ogs_assert(sess);
     smf_ue = sess->smf_ue;
@@ -1235,16 +1237,24 @@ void smf_sess_set_ue_ip(smf_sess_t *sess)
     }
 
     if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV4) {
-        sess->ipv4 = ogs_pfcp_ue_ip_alloc(AF_INET,
+        sess->ipv4 = ogs_pfcp_ue_ip_alloc(&cause_value, AF_INET,
                 sess->session.name, (uint8_t *)&sess->session.ue_ip.addr);
-        ogs_assert(sess->ipv4);
+        if (!sess->ipv4) {
+            ogs_error("ogs_pfcp_ue_ip_alloc() failed[%d]", cause_value);
+            ogs_assert(cause_value != OGS_PFCP_CAUSE_REQUEST_ACCEPTED);
+            return cause_value;
+        }
         sess->session.paa.addr = sess->ipv4->addr[0];
         ogs_hash_set(smf_self()->ipv4_hash,
                 sess->ipv4->addr, OGS_IPV4_LEN, sess);
     } else if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV6) {
-        sess->ipv6 = ogs_pfcp_ue_ip_alloc(
-                AF_INET6, sess->session.name, sess->session.ue_ip.addr6);
-        ogs_assert(sess->ipv6);
+        sess->ipv6 = ogs_pfcp_ue_ip_alloc(&cause_value, AF_INET6,
+                sess->session.name, sess->session.ue_ip.addr6);
+        if (!sess->ipv6) {
+            ogs_error("ogs_pfcp_ue_ip_alloc() failed[%d]", cause_value);
+            ogs_assert(cause_value != OGS_PFCP_CAUSE_REQUEST_ACCEPTED);
+            return cause_value;
+        }
 
         subnet6 = sess->ipv6->subnet;
         ogs_assert(subnet6);
@@ -1254,12 +1264,26 @@ void smf_sess_set_ue_ip(smf_sess_t *sess)
         ogs_hash_set(smf_self()->ipv6_hash,
                 sess->ipv6->addr, OGS_IPV6_DEFAULT_PREFIX_LEN >> 3, sess);
     } else if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV4V6) {
-        sess->ipv4 = ogs_pfcp_ue_ip_alloc(AF_INET,
+        sess->ipv4 = ogs_pfcp_ue_ip_alloc(&cause_value, AF_INET,
                 sess->session.name, (uint8_t *)&sess->session.ue_ip.addr);
-        ogs_assert(sess->ipv4);
-        sess->ipv6 = ogs_pfcp_ue_ip_alloc(
-                AF_INET6, sess->session.name, sess->session.ue_ip.addr6);
-        ogs_assert(sess->ipv6);
+        if (!sess->ipv4) {
+            ogs_error("ogs_pfcp_ue_ip_alloc() failed[%d]", cause_value);
+            ogs_assert(cause_value != OGS_PFCP_CAUSE_REQUEST_ACCEPTED);
+            return cause_value;
+        }
+        sess->ipv6 = ogs_pfcp_ue_ip_alloc(&cause_value, AF_INET6,
+                sess->session.name, sess->session.ue_ip.addr6);
+        if (!sess->ipv6) {
+            ogs_error("ogs_pfcp_ue_ip_alloc() failed[%d]", cause_value);
+            ogs_assert(cause_value != OGS_PFCP_CAUSE_REQUEST_ACCEPTED);
+            if (sess->ipv4) {
+                ogs_hash_set(smf_self()->ipv4_hash,
+                        sess->ipv4->addr, OGS_IPV4_LEN, NULL);
+                ogs_pfcp_ue_ip_free(sess->ipv4);
+                sess->ipv4 = NULL;
+            }
+            return cause_value;
+        }
 
         subnet6 = sess->ipv6->subnet;
         ogs_assert(subnet6);
@@ -1276,6 +1300,8 @@ void smf_sess_set_ue_ip(smf_sess_t *sess)
                 sess->session.session_type);
         ogs_assert_if_reached();
     }
+
+    return cause_value;
 }
 
 void smf_sess_set_paging_n1n2message_location(

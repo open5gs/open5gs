@@ -122,6 +122,7 @@ logger:
 #
 #
 #  o Specific DNN/APN(e.g 'ims') uses 10.46.0.1/16, 2001:230:babe::1/48
+#    ; If the UE has unknown DNN/APN(not internet/ims), SMF/UPF will crash.
 #
 #    subnet:
 #      - addr: 10.45.0.1/16
@@ -132,6 +133,16 @@ logger:
 #        dnn: ims
 #      - addr: 2001:230:babe::1/48
 #        dnn: ims
+#
+#  o Specific DNN/APN with the FALLBACK SUBNET(10.47.0.1/16)
+#    ; Note that put the FALLBACK SUBNET last to avoid SMF/UPF crash.
+#
+#    subnet:
+#      - addr: 10.45.0.1/16
+#        dnn: internet
+#      - addr: 10.46.0.1/16
+#        dnn: ims
+#      - addr: 10.50.0.1/16 ## FALLBACK SUBNET
 #
 #  o Pool Range Sample
 #    subnet:

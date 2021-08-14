@@ -58,6 +58,8 @@ static uint8_t gtp_cause_from_pfcp(uint8_t pfcp_cause)
         return OGS_GTP_CAUSE_SERVICE_NOT_SUPPORTED;
     case OGS_PFCP_CAUSE_SYSTEM_FAILURE:
         return OGS_GTP_CAUSE_SYSTEM_FAILURE;
+    case OGS_PFCP_CAUSE_ALL_DYNAMIC_ADDRESS_ARE_OCCUPIED:
+        return OGS_GTP_CAUSE_ALL_DYNAMIC_ADDRESSES_ARE_OCCUPIED;
     default:
         return OGS_GTP_CAUSE_SYSTEM_FAILURE;
     }

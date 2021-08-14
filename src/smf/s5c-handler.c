@@ -216,7 +216,7 @@ void smf_s5c_handle_create_session_request(
     rv = ogs_gtp_paa_to_ip(paa, &sess->session.ue_ip);
     ogs_assert(rv == OGS_OK);
 
-    smf_sess_set_ue_ip(sess);
+    ogs_assert(OGS_PFCP_CAUSE_REQUEST_ACCEPTED == smf_sess_set_ue_ip(sess));
 
     ogs_info("UE IMSI[%s] APN[%s] IPv4[%s] IPv6[%s]",
 	    smf_ue->imsi_bcd,

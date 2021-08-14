@@ -166,7 +166,7 @@ void mme_s11_handle_create_session_response(
     }
 
     if (cause_value != OGS_GTP_CAUSE_REQUEST_ACCEPTED) {
-        if (sess && SESSION_CONTEXT_IN_ATTACH(sess)) {
+        if (mme_ue && UE_CONTEXT_IN_ATTACH(mme_ue)) {
             ogs_error("[%s] Attach reject", mme_ue->imsi_bcd);
             ogs_assert(OGS_OK ==
                 nas_eps_send_attach_reject(mme_ue,

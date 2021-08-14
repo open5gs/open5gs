@@ -778,7 +778,9 @@ mme_sess_t *mme_sess_first(mme_ue_t *mme_ue);
 mme_sess_t *mme_sess_next(mme_sess_t *sess);
 unsigned int mme_sess_count(mme_ue_t *mme_ue);
 
+#define UE_CONTEXT_IN_ATTACH(__mME) mme_ue_in_attach(__mME)
 #define SESSION_CONTEXT_IN_ATTACH(__sESS) mme_sess_in_attach(__sESS)
+bool mme_ue_in_attach(mme_ue_t *mme_ue);
 bool mme_sess_in_attach(mme_sess_t *sess);
 
 mme_bearer_t *mme_bearer_add(mme_sess_t *sess);

@@ -37,6 +37,7 @@ typedef uint32_t ogs_pfcp_qer_id_t;
 typedef uint8_t  ogs_pfcp_bar_id_t;
 
 #define OGS_PFCP_CAUSE_REQUEST_ACCEPTED                     1
+#define OGS_PFCP_CAUSE_MORE_USAGE_REPORT_TO_SEND            2
 #define OGS_PFCP_CAUSE_REQUEST_REJECTED                     64
 #define OGS_PFCP_CAUSE_SESSION_CONTEXT_NOT_FOUND            65
 #define OGS_PFCP_CAUSE_MANDATORY_IE_MISSING                 66
@@ -51,6 +52,8 @@ typedef uint8_t  ogs_pfcp_bar_id_t;
 #define OGS_PFCP_CAUSE_NO_RESOURCES_AVAILABLE               75
 #define OGS_PFCP_CAUSE_SERVICE_NOT_SUPPORTED                76
 #define OGS_PFCP_CAUSE_SYSTEM_FAILURE                       77
+#define OGS_PFCP_CAUSE_REDIRECTION_REQUESTED                78
+#define OGS_PFCP_CAUSE_ALL_DYNAMIC_ADDRESS_ARE_OCCUPIED     79
 
 const char *ogs_pfcp_cause_get_name(uint8_t cause);
 

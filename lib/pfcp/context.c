@@ -1572,7 +1572,7 @@ int ogs_pfcp_ue_pool_generate(void)
 }
 
 ogs_pfcp_ue_ip_t *ogs_pfcp_ue_ip_alloc(
-        int family, const char *dnn, uint8_t *addr)
+        uint8_t *cause_value, int family, const char *dnn, uint8_t *addr)
 {
     ogs_pfcp_subnet_t *subnet = NULL;
     ogs_pfcp_ue_ip_t *ue_ip = NULL;
@@ -1587,6 +1587,7 @@ ogs_pfcp_ue_ip_t *ogs_pfcp_ue_ip_alloc(
         maxbytes = 16;
     } else {
         ogs_error("Invalid family[%d]", family);
+        ogs_assert_if_reached();
         return NULL;
     }
 
@@ -1598,27 +1599,36 @@ ogs_pfcp_ue_ip_t *ogs_pfcp_ue_ip_alloc(
     if (subnet == NULL) {
         ogs_error("CHECK CONFIGURATION: Cannot find subnet [family:%d, dnn:%s]",
                     family, dnn ? dnn : "No DNN");
-        ogs_error("smf");
+        ogs_error("Please add FALLBACK subnet as below.");
         ogs_error("    subnet:");
         if (family == AF_INET)
-            ogs_error("     - addr: 10.45.0.1/16");
+            ogs_error("     - addr: 10.50.0.1/16");
         else if (family == AF_INET6)
-            ogs_error("     - addr: 2001:230:cafe::1/48");
+            ogs_error("     - addr: 2001:230:abcd::1/48");
 
+        *cause_value = OGS_PFCP_CAUSE_SYSTEM_FAILURE;
         return NULL;
     }
 
     /* if assigning a static IP, do so. If not, assign dynamically! */
     if (memcmp(addr, zero, maxbytes) != 0) {
         ue_ip = ogs_calloc(1, sizeof(ogs_pfcp_ue_ip_t));
-        ogs_expect_or_return_val(ue_ip, NULL);
+        if (!ue_ip) {
+            ogs_error("All dynamic addresses are occupied");
+            *cause_value = OGS_PFCP_CAUSE_ALL_DYNAMIC_ADDRESS_ARE_OCCUPIED;
+            return NULL;
+        }
 
         ue_ip->subnet = subnet;
         ue_ip->static_ip = true;
         memcpy(ue_ip->addr, addr, maxbytes);
     } else {
         ogs_pool_alloc(&subnet->pool, &ue_ip);
-        ogs_expect(ue_ip);
+        if (!ue_ip) {
+            ogs_error("No resources avaiable");
+            *cause_value = OGS_PFCP_CAUSE_NO_RESOURCES_AVAILABLE;
+            return NULL;
+        }
     }
 
     return ue_ip;
