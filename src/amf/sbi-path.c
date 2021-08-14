@@ -187,9 +187,8 @@ bool amf_sess_sbi_discover_and_send(OpenAPI_nf_type_e target_nf_type,
             amf_timer_sbi_client_wait_expire);
     if (!xact) {
         ogs_error("amf_sess_sbi_discover_and_send() failed");
-        ogs_assert(OGS_OK ==
-            nas_5gs_send_back_5gsm_message_from_sbi(
-                sess, OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT));
+        ogs_assert(OGS_OK == nas_5gs_send_back_gsm_message(sess,
+            OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED, AMF_NAS_BACKOFF_TIME));
         return false;
     }
 
@@ -199,9 +198,8 @@ bool amf_sess_sbi_discover_and_send(OpenAPI_nf_type_e target_nf_type,
             (ogs_fsm_handler_t)amf_nf_state_registered, client_cb) != true) {
         ogs_error("amf_sess_sbi_discover_and_send() failed");
         ogs_sbi_xact_remove(xact);
-        ogs_assert(OGS_OK ==
-            nas_5gs_send_back_5gsm_message_from_sbi(
-                sess, OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT));
+        ogs_assert(OGS_OK == nas_5gs_send_back_gsm_message(sess,
+            OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED, AMF_NAS_BACKOFF_TIME));
         return false;
     }
 
@@ -221,27 +219,24 @@ static int client_discover_cb(ogs_sbi_response_t *response, void *data)
     rv = ogs_sbi_parse_response(&message, response);
     if (rv != OGS_OK) {
         ogs_error("cannot parse HTTP response");
-        ogs_assert(OGS_OK ==
-            nas_5gs_send_back_5gsm_message_from_sbi(
-                sess, OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT));
+        ogs_assert(OGS_OK == nas_5gs_send_back_gsm_message(sess,
+            OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED, AMF_NAS_BACKOFF_TIME));
 
         goto cleanup;
     }
 
     if (message.res_status != OGS_SBI_HTTP_STATUS_OK) {
         ogs_error("NF-Discover failed [%d]", message.res_status);
-        ogs_assert(OGS_OK ==
-            nas_5gs_send_back_5gsm_message_from_sbi(
-                sess, OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT));
+        ogs_assert(OGS_OK == nas_5gs_send_back_gsm_message(sess,
+            OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED, AMF_NAS_BACKOFF_TIME));
 
         goto cleanup;
     }
 
     if (!message.SearchResult) {
         ogs_error("No SearchResult");
-        ogs_assert(OGS_OK ==
-            nas_5gs_send_back_5gsm_message_from_sbi(
-                sess, OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT));
+        ogs_assert(OGS_OK == nas_5gs_send_back_gsm_message(sess,
+            OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED, AMF_NAS_BACKOFF_TIME));
 
         goto cleanup;
     }
@@ -253,8 +248,9 @@ static int client_discover_cb(ogs_sbi_response_t *response, void *data)
         ogs_error("Cannot discover [%s]",
                     OpenAPI_nf_type_ToString(OpenAPI_nf_type_SMF));
         ogs_assert(OGS_OK ==
-            nas_5gs_send_back_5gsm_message_from_sbi(
-                sess, OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT));
+            nas_5gs_send_back_gsm_message(sess,
+                OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED,
+                AMF_NAS_BACKOFF_TIME));
 
         goto cleanup;
     }

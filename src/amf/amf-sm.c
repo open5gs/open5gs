@@ -573,8 +573,9 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
                         sess->psi, sess->pti);
                 if (sess->payload_container_type) {
                     ogs_assert(OGS_OK ==
-                        nas_5gs_send_back_5gsm_message_from_sbi(sess,
-                            OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT));
+                        nas_5gs_send_back_gsm_message(sess,
+                            OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED,
+                            AMF_NAS_BACKOFF_TIME));
                 } else {
                     ogs_assert(OGS_OK ==
                         ngap_send_error_indication2(amf_ue,

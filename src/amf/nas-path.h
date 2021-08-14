@@ -61,15 +61,14 @@ int nas_5gs_send_gmm_reject(
         amf_ue_t *amf_ue, ogs_nas_5gmm_cause_t gmm_cause);
 int nas_5gs_send_gmm_reject_from_sbi(amf_ue_t *amf_ue, int status);
 
-int nas_5gs_send_gsm_reject(amf_sess_t *sess,
+int nas_5gs_send_dl_nas_transport(amf_sess_t *sess,
         uint8_t payload_container_type, ogs_pkbuf_t *payload_container,
         ogs_nas_5gmm_cause_t cause, uint8_t backoff_time);
-int nas_5gs_send_gsm_reject_from_sbi(amf_sess_t *sess,
-        uint8_t payload_container_type, ogs_pkbuf_t *payload_container,
-        int status);
-int nas_5gs_send_back_5gsm_message(
-        amf_sess_t *sess, ogs_nas_5gmm_cause_t gmm_cause);
-int nas_5gs_send_back_5gsm_message_from_sbi(amf_sess_t *sess, int status);
+
+int nas_5gs_send_gsm_reject(amf_sess_t *sess,
+        uint8_t payload_container_type, ogs_pkbuf_t *payload_container);
+int nas_5gs_send_back_gsm_message(
+        amf_sess_t *sess, ogs_nas_5gmm_cause_t cause, uint8_t backoff_time);
 
 #ifdef __cplusplus
 }

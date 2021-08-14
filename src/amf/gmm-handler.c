@@ -1082,8 +1082,8 @@ int gmm_handle_ul_nas_transport(amf_ue_t *amf_ue,
                 ogs_error("[%s:%d] Session Context is not in SMF [%d]",
                     amf_ue->supi, sess->psi, gsm_header->message_type);
                 ogs_assert(OGS_OK ==
-                    nas_5gs_send_back_5gsm_message(sess,
-                        OGS_5GSM_CAUSE_PDU_SESSION_DOES_NOT_EXIST));
+                    nas_5gs_send_back_gsm_message(sess,
+                        OGS_5GMM_CAUSE_DNN_NOT_SUPPORTED_OR_NOT_SUBSCRIBED_IN_THE_SLICE, 0));
                 return OGS_ERROR;
             }
 

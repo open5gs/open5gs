@@ -39,8 +39,9 @@ int amf_nsmf_pdusession_handle_create_sm_context(
         if (!recvmsg->http.location) {
             ogs_error("[%d:%d] No http.location", sess->psi, sess->pti);
             ogs_assert(OGS_OK ==
-                nas_5gs_send_back_5gsm_message_from_sbi(sess,
-                    OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR));
+                nas_5gs_send_back_gsm_message(sess,
+                    OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED,
+                    AMF_NAS_BACKOFF_TIME));
             return OGS_ERROR;
         }
 
@@ -52,8 +53,9 @@ int amf_nsmf_pdusession_handle_create_sm_context(
             ogs_error("[%d:%d] Cannot parse http.location [%s]",
                     sess->psi, sess->pti, recvmsg->http.location);
             ogs_assert(OGS_OK ==
-                nas_5gs_send_back_5gsm_message_from_sbi(sess,
-                    OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR));
+                nas_5gs_send_back_gsm_message(sess,
+                    OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED,
+                    AMF_NAS_BACKOFF_TIME));
             return OGS_ERROR;
         }
 
@@ -63,8 +65,9 @@ int amf_nsmf_pdusession_handle_create_sm_context(
 
             ogs_sbi_header_free(&header);
             ogs_assert(OGS_OK ==
-                nas_5gs_send_back_5gsm_message_from_sbi(sess,
-                    OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR));
+                nas_5gs_send_back_gsm_message(sess,
+                    OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED,
+                    AMF_NAS_BACKOFF_TIME));
             return OGS_ERROR;
         }
 
@@ -91,8 +94,9 @@ int amf_nsmf_pdusession_handle_create_sm_context(
 
                 ogs_sbi_header_free(&header);
                 ogs_assert(OGS_OK ==
-                    nas_5gs_send_back_5gsm_message_from_sbi(sess,
-                        OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR));
+                    nas_5gs_send_back_gsm_message(sess,
+                        OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED,
+                        AMF_NAS_BACKOFF_TIME));
                 return OGS_ERROR;
             }
         }
@@ -113,15 +117,17 @@ int amf_nsmf_pdusession_handle_create_sm_context(
         if (!SmContextCreateError) {
             ogs_error("[%d:%d] No SmContextCreateError", sess->psi, sess->pti);
             ogs_assert(OGS_OK ==
-                nas_5gs_send_back_5gsm_message_from_sbi(
-                    sess, recvmsg->res_status));
+                nas_5gs_send_back_gsm_message(sess,
+                    OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED,
+                    AMF_NAS_BACKOFF_TIME));
             return OGS_ERROR;
         }
         if (!SmContextCreateError->error) {
             ogs_error("[%d:%d] No Error", sess->psi, sess->pti);
             ogs_assert(OGS_OK ==
-                nas_5gs_send_back_5gsm_message_from_sbi(
-                    sess, recvmsg->res_status));
+                nas_5gs_send_back_gsm_message(sess,
+                    OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED,
+                    AMF_NAS_BACKOFF_TIME));
             return OGS_ERROR;
         }
 
@@ -137,16 +143,16 @@ int amf_nsmf_pdusession_handle_create_sm_context(
                 n1smbuf = ogs_pkbuf_copy(n1smbuf);
                 ogs_assert(n1smbuf);
                 ogs_assert(OGS_OK ==
-                    nas_5gs_send_gsm_reject_from_sbi(sess,
-                        OGS_NAS_PAYLOAD_CONTAINER_N1_SM_INFORMATION,
-                        n1smbuf, recvmsg->res_status));
+                    nas_5gs_send_gsm_reject(sess,
+                        OGS_NAS_PAYLOAD_CONTAINER_N1_SM_INFORMATION, n1smbuf));
                 return OGS_ERROR;
             }
         }
 
         ogs_assert(OGS_OK ==
-            nas_5gs_send_back_5gsm_message_from_sbi(
-                sess, recvmsg->res_status));
+            nas_5gs_send_back_gsm_message(sess,
+                OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED,
+                AMF_NAS_BACKOFF_TIME));
         return OGS_ERROR;
     }
 
@@ -254,8 +260,9 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                     ogs_error("[%s:%d] No N1 SM Content [%s]",
                             amf_ue->supi, sess->psi, n1SmMsg->content_id);
                     ogs_assert(OGS_OK ==
-                        nas_5gs_send_back_5gsm_message(sess,
-                            OGS_5GMM_CAUSE_SEMANTICALLY_INCORRECT_MESSAGE));
+                        nas_5gs_send_back_gsm_message(sess,
+                            OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED,
+                            AMF_NAS_BACKOFF_TIME));
                     return OGS_ERROR;
                 }
 
@@ -263,8 +270,9 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                     ogs_error("[%s:%d] No N2 SM Content",
                             amf_ue->supi, sess->psi);
                     ogs_assert(OGS_OK ==
-                        nas_5gs_send_back_5gsm_message(sess,
-                            OGS_5GMM_CAUSE_SEMANTICALLY_INCORRECT_MESSAGE));
+                        nas_5gs_send_back_gsm_message(sess,
+                            OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED,
+                            AMF_NAS_BACKOFF_TIME));
                     return OGS_ERROR;
                 }
 
@@ -607,9 +615,8 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                 n1smbuf = ogs_pkbuf_copy(n1smbuf);
                 ogs_assert(n1smbuf);
                 ogs_assert(OGS_OK ==
-                    nas_5gs_send_gsm_reject_from_sbi(sess,
-                        OGS_NAS_PAYLOAD_CONTAINER_N1_SM_INFORMATION,
-                        n1smbuf, recvmsg->res_status));
+                    nas_5gs_send_gsm_reject(sess,
+                        OGS_NAS_PAYLOAD_CONTAINER_N1_SM_INFORMATION, n1smbuf));
                 return OGS_ERROR;
             }
         }

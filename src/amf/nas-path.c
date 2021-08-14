@@ -523,7 +523,7 @@ int nas_5gs_send_gmm_reject_from_sbi(amf_ue_t *amf_ue, int status)
     return rv;
 }
 
-int nas_5gs_send_gsm_reject(amf_sess_t *sess,
+int nas_5gs_send_dl_nas_transport(amf_sess_t *sess,
         uint8_t payload_container_type, ogs_pkbuf_t *payload_container,
         ogs_nas_5gmm_cause_t cause, uint8_t backoff_time)
 {
@@ -539,7 +539,7 @@ int nas_5gs_send_gsm_reject(amf_sess_t *sess,
     ogs_assert(payload_container_type);
     ogs_assert(payload_container);
 
-    ogs_warn("[%s] 5GSM reject", amf_ue->suci);
+    ogs_warn("[%s] DL NAS transport", amf_ue->suci);
 
     gmmbuf = gmm_build_dl_nas_transport(sess,
             payload_container_type, payload_container, cause, backoff_time);
@@ -550,9 +550,21 @@ int nas_5gs_send_gsm_reject(amf_sess_t *sess,
     return rv;
 }
 
-int nas_5gs_send_gsm_reject_from_sbi(amf_sess_t *sess,
-        uint8_t payload_container_type, ogs_pkbuf_t *payload_container,
-        int status)
+/*
+ * TS24.501
+ * 8.2.11 DL NAS transport
+ * 8.2.11.4 5GMM cause
+ *
+ * The AMF shall include this IE when the Payload container IE
+ * contains an uplink payload which was not forwarded and
+ * the Payload container type IE is not set to "Multiple payloads".
+ *
+ * -0-
+ * As such, this function 'nas_5gs_send_gsm_reject()' must be used
+ * only when an N1 SM message has been forwarded to the SMF.
+ */
+int nas_5gs_send_gsm_reject(amf_sess_t *sess,
+        uint8_t payload_container_type, ogs_pkbuf_t *payload_container)
 {
     int rv;
 
@@ -560,15 +572,15 @@ int nas_5gs_send_gsm_reject_from_sbi(amf_sess_t *sess,
     ogs_assert(payload_container_type);
     ogs_assert(payload_container);
 
-    rv = nas_5gs_send_gsm_reject(sess, payload_container_type, payload_container,
-            gmm_cause_from_sbi(status), AMF_NAS_BACKOFF_TIME);
+    rv = nas_5gs_send_dl_nas_transport(
+            sess, payload_container_type, payload_container, 0, 0);
     ogs_expect(rv == OGS_OK);
 
     return rv;
 }
 
-int nas_5gs_send_back_5gsm_message(
-        amf_sess_t *sess, ogs_nas_5gmm_cause_t cause)
+int nas_5gs_send_back_gsm_message(
+        amf_sess_t *sess, ogs_nas_5gmm_cause_t cause, uint8_t backoff_time)
 {
     int rv;
     ogs_pkbuf_t *pbuf = NULL;
@@ -580,20 +592,8 @@ int nas_5gs_send_back_5gsm_message(
     pbuf = ogs_pkbuf_copy(sess->payload_container);
     ogs_expect_or_return_val(pbuf, OGS_ERROR);
 
-    rv = nas_5gs_send_gsm_reject(sess, sess->payload_container_type, pbuf,
-            cause, AMF_NAS_BACKOFF_TIME);
-    ogs_expect(rv == OGS_OK);
-
-    return rv;
-}
-
-int nas_5gs_send_back_5gsm_message_from_sbi(amf_sess_t *sess, int status)
-{
-    int rv;
-
-    ogs_assert(sess);
-
-    rv = nas_5gs_send_back_5gsm_message(sess, gmm_cause_from_sbi(status));
+    rv = nas_5gs_send_dl_nas_transport(sess, sess->payload_container_type, pbuf,
+            cause, backoff_time);
     ogs_expect(rv == OGS_OK);
 
     return rv;
