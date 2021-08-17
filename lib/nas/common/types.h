@@ -80,22 +80,6 @@ typedef struct ogs_nas_security_header_type_s {
     };
 } __attribute__ ((packed)) ogs_nas_security_header_type_t;
 
-/*************************
- * NAS PLMN_ID Structure */
-typedef struct ogs_nas_plmn_id_s {
-ED2(uint8_t mcc2:4;,
-    uint8_t mcc1:4;)
-ED2(uint8_t mnc3:4;,
-    uint8_t mcc3:4;)
-ED2(uint8_t mnc2:4;,
-    uint8_t mnc1:4;)
-} __attribute__ ((packed)) ogs_nas_plmn_id_t;
-
-void *ogs_nas_from_plmn_id(
-        ogs_nas_plmn_id_t *ogs_nas_plmn_id, ogs_plmn_id_t *plmn_id);
-void *ogs_nas_to_plmn_id(
-        ogs_plmn_id_t *plmn_id, ogs_nas_plmn_id_t *ogs_nas_plmn_id);
-
 /* 9.9.2.0 Additional information
  * O TLV 3-n */
 #define NAX_MAX_ADDITIONAL_INFORMATION_LEN 255

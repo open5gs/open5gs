@@ -64,6 +64,29 @@ void *ogs_plmn_id_build(ogs_plmn_id_t *plmn_id,
     return plmn_id;
 }
 
+void *ogs_nas_from_plmn_id(
+        ogs_nas_plmn_id_t *ogs_nas_plmn_id, ogs_plmn_id_t *plmn_id)
+{
+    memcpy(ogs_nas_plmn_id, plmn_id, OGS_PLMN_ID_LEN);
+    if (plmn_id->mnc1 != 0xf) {
+        ogs_nas_plmn_id->mnc1 = plmn_id->mnc1;
+        ogs_nas_plmn_id->mnc2 = plmn_id->mnc2;
+        ogs_nas_plmn_id->mnc3 = plmn_id->mnc3;
+    }
+    return ogs_nas_plmn_id;
+}
+void *ogs_nas_to_plmn_id(
+        ogs_plmn_id_t *plmn_id, ogs_nas_plmn_id_t *ogs_nas_plmn_id)
+{
+    memcpy(plmn_id, ogs_nas_plmn_id, OGS_PLMN_ID_LEN);
+    if (plmn_id->mnc1 != 0xf) {
+        plmn_id->mnc1 = ogs_nas_plmn_id->mnc1;
+        plmn_id->mnc2 = ogs_nas_plmn_id->mnc2;
+        plmn_id->mnc3 = ogs_nas_plmn_id->mnc3;
+    }
+    return plmn_id;
+}
+
 char *ogs_serving_network_name_from_plmn_id(ogs_plmn_id_t *plmn_id)
 {
     ogs_assert(plmn_id);

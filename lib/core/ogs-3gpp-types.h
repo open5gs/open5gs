@@ -131,6 +131,22 @@ char *ogs_plmn_id_mnc_string(ogs_plmn_id_t *plmn_id);
 #define OGS_PLMNIDSTRLEN    (sizeof(ogs_plmn_id_t)*2+1)
 char *ogs_plmn_id_to_string(ogs_plmn_id_t *plmn_id, char *buf);
 
+/*************************
+ * NAS PLMN_ID Structure */
+typedef struct ogs_nas_plmn_id_s {
+ED2(uint8_t mcc2:4;,
+    uint8_t mcc1:4;)
+ED2(uint8_t mnc3:4;,
+    uint8_t mcc3:4;)
+ED2(uint8_t mnc2:4;,
+    uint8_t mnc1:4;)
+} __attribute__ ((packed)) ogs_nas_plmn_id_t;
+
+void *ogs_nas_from_plmn_id(
+        ogs_nas_plmn_id_t *ogs_nas_plmn_id, ogs_plmn_id_t *plmn_id);
+void *ogs_nas_to_plmn_id(
+        ogs_plmn_id_t *plmn_id, ogs_nas_plmn_id_t *ogs_nas_plmn_id);
+
 /************************************
  * AMF_ID Structure                 */
 typedef struct ogs_amf_id_s {
