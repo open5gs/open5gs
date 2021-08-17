@@ -40,6 +40,6 @@ head_inline: "<style> ul { padding-bottom: 1em; } </style>"
   - [Static IPs for UEs](http://nickvsnetworking.com/open5gs-epc-static-ip-addresses-for-ues-apns-subscribers/)
 
 - @s5uishida
-  - [EPC Advanced Example with OpenAirInterface UE/RAN](https://github.com/s5uishida/open5gs_epc_oai_sample_config)
-  - [5GC Advanced Example with UERANSIM](https://github.com/s5uishida/open5gs_5gc_ueransim_sample_config)
-
+  - [Open5GS EPC & OpenAirInterface UE/RAN Sample configuration](https://github.com/s5uishida/open5gs_epc_oai_sample_config)
+  - [Open5GS 5GC & UERANSIM UE/RAN Sample Configuration](https://github.com/s5uishida/open5gs_5gc_ueransim_sample_config)
+  - [Open5GS & UERANSIM - Select nearby UPF according to the connected gNodeB](https://github.com/s5uishida/open5gs_5gc_ueransim_nearby_upf_sample_config)
