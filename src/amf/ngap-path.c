@@ -376,7 +376,7 @@ int ngap_send_paging(amf_ue_t *amf_ue)
                     amf_ue->t3513.pkbuf = ogs_pkbuf_copy(ngapbuf);
                     ogs_expect_or_return_val(amf_ue->t3513.pkbuf, OGS_ERROR);
 
-                    rv = ngap_send_to_gnb(gnb, ngapbuf, amf_ue->gnb_ostream_id);
+                    rv = ngap_send_to_gnb(gnb, ngapbuf, NGAP_NON_UE_SIGNALLING);
                     ogs_expect_or_return_val(rv == OGS_OK, rv);
                 }
             }
