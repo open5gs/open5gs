@@ -1,4 +1,4 @@
-<h2 align="center">Supporting Open5GS</h2>
+<h1 align="center">Open5GS</h1>
 
 If you find Open5GS useful for work, please consider supporting this Open Source project by [Becoming a sponsor](https://github.com/sponsors/acetcom). To manage the funding transactions transparently, you can donate through [OpenCollective](https://opencollective.com/open5gs).
 
