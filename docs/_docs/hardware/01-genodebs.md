@@ -10,6 +10,7 @@ If you have tested radio hardware from a vendor not listed with Open5GS, please 
 ### Commercial 5G
 ---
  * Airspan 5G OpenRange vCU + Airspan 5G OpenRange vDU + Airspan 5G OpenRANGE06 AirVelocity 2700 RU
+ * LIONS RANathon O-CU and O-DU + RANathon RS8601 Indoor O-RU + RANathon XG8600 Fronthaul Gateway
  * NOKIA AEQE (SW: 5G20A)
  * NOKIA AEQD (SW: 5G20A)
  * NOKIA AEQP (SW: 5G21A)
