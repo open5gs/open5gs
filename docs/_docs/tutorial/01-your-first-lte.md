@@ -8,12 +8,12 @@ This post is the perfect starting point for learning to build your own LTE netwo
 ### Prerequisites
 ---
 
-First, you have to prepare USRP B200/B210 to run srsENB. However, please keep in mind that you would still need a fairly high-end PC (at least dual-core i5, better quad-core i7) with USB 3.0 to attach the USRP B200/B210. 
+First, you have to prepare USRP B200/B210 to run srsRAN. However, please keep in mind that you would still need a fairly high-end PC (at least dual-core i5, better quad-core i7) with USB 3.0 to attach the USRP B200/B210. 
 
 For USRP B200/B210, you can use a GPS antenna for clock synchronization. Of course, it can work without a GPS antenna, but if you have that antenna, it's a good to have a window near your desk where you can put the small GPS patch antenna. In my case, a 1 to 2 meters antenna cable is used between desk/computer and the window.
 
 This document will be described with the following equipment.
- - i5-8500 PC with Ubuntu 18.04(bionic)
+ - i5-8500 PC with Ubuntu 20.04(focal)
  - USRP B200/B210 with USB 3.0
  - iPhone XS
  - sysmoUSIM-SJS1
@@ -112,7 +112,7 @@ Done !
 ### Installation
 ---
 
-We will use *Ubuntu 18.04(Bionic)* installed PC.
+We will use *Ubuntu 20.04(focal)* installed PC.
 {: .blue .bold}
 
 #### 1. USRP Hardware Driver
@@ -131,9 +131,9 @@ After installing, you need to download the FPGA images packages by running _uhd 
 $ sudo /usr/lib/uhd/utils/uhd_images_downloader.py
 ```
 
-#### 2. srsENB
+#### 2. srsRAN
 
-On *Ubuntu 18.04(Bionic)*, one can install the required libraries with:
+On *Ubuntu 20.04(focal)*, one can install the required libraries with:
 
 ```bash
 $ sudo apt install cmake libfftw3-dev libmbedtls-dev libboost-program-options-dev libconfig++-dev libsctp-dev
@@ -142,11 +142,11 @@ $ sudo apt install cmake libfftw3-dev libmbedtls-dev libboost-program-options-de
 Download and build srsLTE:
 
 ```bash
-$ git clone https://github.com/srsLTE/srsLTE.git
-$ cd srsLTE
-$ git checkout release_19_12
+$ git clone https://github.com/srsRAN/srsRAN.git
+$ cd srsRAN
+$ git checkout release_21_04
 $ git rev-parse HEAD
-d045213fb9cbf98c83c06d7c17197a9dcbfddacf
+1c6dd8c4adc8419d4a431f382283539f1719582a
 $ mkdir build
 $ cd build
 $ cmake ../
@@ -161,11 +161,11 @@ The Open5GS package is available on the recent versions of *Ubuntu*.
 ```bash
 # Getting the authentication key
 $ sudo apt install wget
-$ wget https://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/xUbuntu_18.04/Release.key
+$ wget https://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/xUbuntu_20.04/Release.key
 $ sudo apt-key add Release.key
 
 # Installing Open5GS
-$ sudo sh -c "echo 'deb https://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/xUbuntu_18.04/ ./' > /etc/apt/sources.list.d/open5gs.list"
+$ sudo sh -c "echo 'deb https://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/xUbuntu_20.04/ ./' > /etc/apt/sources.list.d/open5gs.list"
 $ sudo apt update
 $ sudo apt install open5gs
 ```
@@ -320,46 +320,62 @@ $ sudo ip6tables -t nat -A POSTROUTING -s 2001:230:cafe::/48 ! -o ogstun -j MASQ
 **Note:** For the first time, it is a good condition if you do not have any rules in the IP/NAT tables. If a program such as docker has already set up a rule, you will need to add a rule differently.
 {: .notice--danger}
 
-#### 2. srsENB
-Change back to the srsENB source directory and copy the main config example as well as all additional config files for RR, SIB and DRB.
+#### 2. srsRAN
+Change back to the srsRAN source directory and copy the main config example as well as all additional config files for RR, SIB and DRB.
 
 ```bash
 $ cp srsenb/enb.conf.example srsenb/enb.conf
 $ cp srsenb/rr.conf.example srsenb/rr.conf
-$ cp srsenb/sib.conf.example srsenb/sib.conf
 $ cp srsenb/drb.conf.example srsenb/drb.conf
+$ cp srsenb/sib.conf.example srsenb/sib.conf
+$ cp srsenb/sib.conf.mbsfn.example srsenb/sib.conf.mbsfn
 ```
 
 You should check your phone frequency. If your phone does not support Band-3, you should use a different DL EARFCN value.
 
 ```diff
---- enb.conf.example	2018-11-19 18:16:06.953631893 +0900
-+++ enb.conf	2019-04-08 11:15:18.051261318 +0900
-@@ -23,8 +23,8 @@
- cell_id = 0x01
- phy_cell_id = 1
- tac = 0x0007
+$ diff -u enb.conf.example enb.conf
+--- enb.conf.example	2021-08-23 12:00:03.975297244 +0900
++++ enb.conf	2021-08-23 14:34:01.794290668 +0900
+@@ -19,8 +19,10 @@
+ #####################################################################
+ [enb]
+ enb_id = 0x19B
 -mcc = 001
 -mnc = 01
-+mcc = 310
-+mnc = 789
++#mcc = 001
++#mnc = 01
++mcc = 901
++mnc = 70
  mme_addr = 127.0.1.100
  gtp_bind_addr = 127.0.1.1
  s1c_bind_addr = 127.0.1.1
-@@ -66,12 +66,13 @@
- #                     Default "auto". B210 USRP: 400 us, bladeRF: 0 us.
- #####################################################################
- [rf]
--dl_earfcn = 3400
-+dl_earfcn = 1600
+@@ -65,7 +67,7 @@
  tx_gain = 80
  rx_gain = 40
 
- #device_name = auto
- #device_args = auto
-+device_args="clock=external"
- #time_adv_nsamples = auto
- #burst_preamble_us = auto
+-#device_name = auto
++device_name = auto
+
+ # For best performance in 2x2 MIMO and >= 15 MHz use the following device_args settings:
+ #     USRP B210: num_recv_frames=64,num_send_frames=64
+@@ -80,6 +82,7 @@
+ # Example for ZMQ-based operation with TCP transport for I/Q samples
+ #device_name = zmq
+ #device_args = fail_on_disconnect=true,tx_port=tcp://*:2000,rx_port=tcp://localhost:2001,id=enb,base_srate=23.04e6
++device_args = clock=external
+
+ #####################################################################
+```
+
+```diff
+$ diff -u rr.conf.example rr.conf
+diff rr.conf.example rr.conf
+61c61,62
+<     dl_earfcn = 3350;
+---
+>     // dl_earfcn = 3350;
+>     dl_earfcn = 1600;
 ```
 
 PLMN ID, DL EARFCN, and Device Argument are updated as belows.
@@ -372,14 +388,20 @@ Device Argument : Clock source from external GPS-DO
 
 If you do not use the GPS-DO, you should use:
 ```diff
- #device_name = auto
--#device_args = auto
-+device_args = auto
- #time_adv_nsamples = auto
- #burst_preamble_us = auto
+$ diff -u enb.conf.example enb.conf
+--- enb.conf.example	2021-08-23 14:32:35.585438813 +0900
++++ enb.conf	2021-08-23 14:32:08.350450409 +0900
+@@ -82,7 +82,6 @@
+ # Example for ZMQ-based operation with TCP transport for I/Q samples
+ #device_name = zmq
+ #device_args = fail_on_disconnect=true,tx_port=tcp://*:2000,rx_port=tcp://localhost:2001,id=enb,base_srate=23.04e6
+-device_args = clock=external
+
+ #####################################################################
+ # Packet capture configuration
 ```
 
-Now, run the srsENB as follows:
+Now, run the srsRAN as follows:
 
 ```bash
 $ cd srsenb/
