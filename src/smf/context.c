@@ -878,13 +878,15 @@ static bool compare_ue_info(ogs_pfcp_node_t *node, smf_sess_t *sess)
         if (ogs_strcasecmp(node->dnn[i], sess->session.name) == 0) return true;
 
     for (i = 0; i < node->num_of_e_cell_id; i++)
-        if (node->e_cell_id[i] == sess->e_cgi.cell_id) return true;
+        if (sess->gtp_rat_type == OGS_GTP_RAT_TYPE_EUTRAN &&
+                node->e_cell_id[i] == sess->e_cgi.cell_id) return true;
 
     for (i = 0; i < node->num_of_nr_cell_id; i++)
         if (node->nr_cell_id[i] == sess->nr_cgi.cell_id) return true;
 
     for (i = 0; i < node->num_of_tac; i++)
-        if ((node->tac[i] == sess->e_tai.tac) ||
+        if ((sess->gtp_rat_type == OGS_GTP_RAT_TYPE_EUTRAN &&
+                node->tac[i] == sess->e_tai.tac) ||
             (node->tac[i] == sess->nr_tai.tac.v)) return true;
 
     return false;

@@ -97,10 +97,6 @@ void smf_s5c_handle_create_session_request(
         ogs_error("No PAA");
         cause_value = OGS_GTP_CAUSE_MANDATORY_IE_MISSING;
     }
-    if (req->user_location_information.presence == 0) {
-        ogs_error("No UE Location Information");
-        cause_value = OGS_GTP_CAUSE_MANDATORY_IE_MISSING;
-    }
     if (req->serving_network.presence == 0) {
         ogs_error("No Serving Network");
         cause_value = OGS_GTP_CAUSE_MANDATORY_IE_MISSING;
@@ -122,6 +118,10 @@ void smf_s5c_handle_create_session_request(
             ogs_error("No S5/S8 SGW GTP-U TEID");
             cause_value = OGS_GTP_CAUSE_MANDATORY_IE_MISSING;
         }
+        if (req->user_location_information.presence == 0) {
+            ogs_error("No UE Location Information");
+            cause_value = OGS_GTP_CAUSE_MANDATORY_IE_MISSING;
+        }
         break;
     case OGS_GTP_RAT_TYPE_WLAN:
         if (req->bearer_contexts_to_be_created.
@@ -140,13 +140,13 @@ void smf_s5c_handle_create_session_request(
         cause_value = OGS_GTP_CAUSE_CONTEXT_NOT_FOUND;
     } else {
         if (!ogs_diam_app_connected(OGS_DIAM_GX_APPLICATION_ID)) {
-            ogs_warn("No Gx Diameter Peer");
+            ogs_error("No Gx Diameter Peer");
             cause_value = OGS_GTP_CAUSE_REMOTE_PEER_NOT_RESPONDING;
         }
 
         if (sess->gtp_rat_type == OGS_GTP_RAT_TYPE_WLAN) {
             if (!ogs_diam_app_connected(OGS_DIAM_S6B_APPLICATION_ID)) {
-                ogs_warn("No S6b Diameter Peer");
+                ogs_error("No S6b Diameter Peer");
                 cause_value = OGS_GTP_CAUSE_REMOTE_PEER_NOT_RESPONDING;
             }
         }
@@ -162,9 +162,16 @@ void smf_s5c_handle_create_session_request(
     smf_ue = sess->smf_ue;
     ogs_assert(smf_ue);
 
-    /* Even after handover to WLAN,
-     * there must be at least one EUTRAN session */
-    if (sess->gtp_rat_type == OGS_GTP_RAT_TYPE_WLAN) {
+    if (sess->gtp_rat_type == OGS_GTP_RAT_TYPE_EUTRAN) {
+        /* User Location Inforation is mandatory only for E-UTRAN */
+        ogs_assert(req->user_location_information.presence);
+        ogs_gtp_parse_uli(&uli, &req->user_location_information);
+        memcpy(&sess->e_tai, &uli.tai, sizeof(sess->e_tai));
+        memcpy(&sess->e_cgi, &uli.e_cgi, sizeof(sess->e_cgi));
+
+    } else if (sess->gtp_rat_type == OGS_GTP_RAT_TYPE_WLAN) {
+        /* Even after handover to WLAN,
+         * there must be at least one EUTRAN session */
         smf_sess_t *eutran_sess = smf_sess_find_by_apn(
                 smf_ue, sess->session.name, OGS_GTP_RAT_TYPE_EUTRAN);
         if (eutran_sess) {
@@ -188,11 +195,6 @@ void smf_s5c_handle_create_session_request(
             }
         }
     }
-
-    /* UE Location Inforamtion */
-    ogs_gtp_parse_uli(&uli, &req->user_location_information);
-    memcpy(&sess->e_tai, &uli.tai, sizeof(sess->e_tai));
-    memcpy(&sess->e_cgi, &uli.e_cgi, sizeof(sess->e_cgi));
 
     /* Serving Network */
     ogs_nas_to_plmn_id(&sess->plmn_id, req->serving_network.data);
@@ -252,6 +254,7 @@ void smf_s5c_handle_create_session_request(
         bearer->sgw_s5u_teid = be32toh(sgw_s5u_teid->teid);
         rv = ogs_gtp_f_teid_to_ip(sgw_s5u_teid, &bearer->sgw_s5u_ip);
         ogs_assert(rv == OGS_OK);
+
         break;
     case OGS_GTP_RAT_TYPE_WLAN:
         sgw_s5u_teid = req->bearer_contexts_to_be_created.
@@ -344,13 +347,13 @@ void smf_s5c_handle_delete_session_request(
         cause_value = OGS_GTP_CAUSE_CONTEXT_NOT_FOUND;
     } else {
         if (!ogs_diam_app_connected(OGS_DIAM_GX_APPLICATION_ID)) {
-            ogs_warn("No Gx Diameter Peer");
+            ogs_error("No Gx Diameter Peer");
             cause_value = OGS_GTP_CAUSE_REMOTE_PEER_NOT_RESPONDING;
         }
 
         if (sess->gtp_rat_type == OGS_GTP_RAT_TYPE_WLAN) {
             if (!ogs_diam_app_connected(OGS_DIAM_S6B_APPLICATION_ID)) {
-                ogs_warn("No S6b Diameter Peer");
+                ogs_error("No S6b Diameter Peer");
                 cause_value = OGS_GTP_CAUSE_REMOTE_PEER_NOT_RESPONDING;
             }
         }
