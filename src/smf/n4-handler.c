@@ -476,8 +476,8 @@ void smf_5gc_n4_handle_session_deletion_response(
     if (status != OGS_SBI_HTTP_STATUS_OK) {
         char *strerror = ogs_msprintf(
                 "PFCP Cause [%d] : Not Accepted", rsp->cause.u8);
-        ogs_assert(true ==
-            ogs_sbi_server_send_error(stream, status, NULL, NULL, NULL));
+        smf_sbi_send_sm_context_update_error(
+                stream, status, strerror, NULL, NULL, NULL);
         ogs_free(strerror);
         return;
     }

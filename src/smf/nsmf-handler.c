@@ -553,17 +553,24 @@ bool smf_nsmf_handle_update_sm_context(
         }
     } else if (SmContextUpdateData->is_release == true &&
                 SmContextUpdateData->release == true) {
-        smf_npcf_smpolicycontrol_param_t param;
+        if (sess->policy_association_id) {
+            smf_npcf_smpolicycontrol_param_t param;
 
-        memset(&param, 0, sizeof(param));
+            memset(&param, 0, sizeof(param));
 
-        param.ue_location = true;
-        param.ue_timezone = true;
+            param.ue_location = true;
+            param.ue_timezone = true;
 
-        ogs_assert(true ==
-            smf_sbi_discover_and_send(OpenAPI_nf_type_PCF, sess, stream,
-                OGS_PFCP_DELETE_TRIGGER_AMF_UPDATE_SM_CONTEXT, &param,
-                smf_npcf_smpolicycontrol_build_delete));
+            ogs_assert(true ==
+                smf_sbi_discover_and_send(OpenAPI_nf_type_PCF, sess, stream,
+                    OGS_PFCP_DELETE_TRIGGER_AMF_UPDATE_SM_CONTEXT, &param,
+                    smf_npcf_smpolicycontrol_build_delete));
+        } else {
+            ogs_error("No PolicyAssociationId");
+            smf_sbi_send_sm_context_update_error(
+                    stream, OGS_SBI_HTTP_STATUS_NOT_FOUND,
+                    "No PolicyAssociationId", NULL, NULL, NULL);
+        }
     } else {
         ogs_error("[%s:%d] No UpdateData", smf_ue->supi, sess->psi);
         smf_sbi_send_sm_context_update_error(stream,
@@ -627,10 +634,18 @@ bool smf_nsmf_handle_release_sm_context(
             SmContextReleaseData->_5g_mm_cause_value;
     }
 
-    ogs_assert(true ==
-        smf_sbi_discover_and_send(OpenAPI_nf_type_PCF, sess, stream,
-            OGS_PFCP_DELETE_TRIGGER_AMF_RELEASE_SM_CONTEXT, &param,
-            smf_npcf_smpolicycontrol_build_delete));
+    if (sess->policy_association_id) {
+        ogs_assert(true ==
+            smf_sbi_discover_and_send(OpenAPI_nf_type_PCF, sess, stream,
+                OGS_PFCP_DELETE_TRIGGER_AMF_RELEASE_SM_CONTEXT, &param,
+                smf_npcf_smpolicycontrol_build_delete));
+    } else {
+        ogs_error("No PolicyAssociationId");
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(
+                stream, OGS_SBI_HTTP_STATUS_NOT_FOUND,
+                NULL, "No PolicyAssociationId", NULL));
+    }
 
     return true;
 }
