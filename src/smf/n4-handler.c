@@ -320,6 +320,7 @@ void smf_5gc_n4_handle_session_modification_response(
         if (stream)
             smf_sbi_send_sm_context_update_error(
                     stream, status, strerror, NULL, NULL, NULL);
+        ogs_error("%s", strerror);
         ogs_free(strerror);
         return;
     }
@@ -478,6 +479,7 @@ void smf_5gc_n4_handle_session_deletion_response(
                 "PFCP Cause [%d] : Not Accepted", rsp->cause.u8);
         smf_sbi_send_sm_context_update_error(
                 stream, status, strerror, NULL, NULL, NULL);
+        ogs_error("%s", strerror);
         ogs_free(strerror);
         return;
     }
@@ -499,7 +501,6 @@ void smf_5gc_n4_handle_session_deletion_response(
         smf_sbi_send_sm_context_updated_data_n1_n2_message(sess, stream,
                 n1smbuf, OpenAPI_n2_sm_info_type_PDU_RES_REL_CMD, n2smbuf);
     } else {
-
         memset(&sendmsg, 0, sizeof(sendmsg));
 
         response = ogs_sbi_build_response(

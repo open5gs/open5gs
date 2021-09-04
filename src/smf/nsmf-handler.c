@@ -350,19 +350,29 @@ bool smf_nsmf_handle_update_sm_context(
         /*********************************************************
          * Handle DEACTIVATED
          ********************************************************/
-            if (ogs_list_count(&sess->bearer_list) == 0) {
-                /* If there is no Qos-Flow,
-                 * we assume that there is no PFCP context in the UPF.
+            if (sess->ngap_state.pdu_session_resource_release ==
+                    SMF_NGAP_STATE_DELETE_TRIGGER_UE_REQUESTED) {
+                /*
+                 * 1. UE->SMF: PDU session release request
+                 * 2. PFCP Session Deletion Request/Response
+                 * 3. AMF/SMF->UE : PDUSessionResourceReleaseCommand +
+                 *                  PDU session release command
+                 *    sess->ngap_state.pdu_session_resource_release is set
+                 *      to SMF_NGAP_STATE_DELETE_TRIGGER_UE_REQUESTED
+                 * 4. UE->AMF/SMF : PDUSessionResourceReleaseResponse
                  *
-                 * PFCP deactivation is skipped. */
+                 * If UE sends UEContextReleaseRequest to the AMF/SMF,
+                 * there is no PFCP context in the SMF/UPF.
+                 *
+                 * So, PFCP deactivation is skipped.
+                 */
                 smf_sbi_send_sm_context_updated_data_up_cnx_state(
                         sess, stream, OpenAPI_up_cnx_state_DEACTIVATED);
             } else {
                 ogs_assert(OGS_OK ==
                     smf_5gc_pfcp_send_session_modification_request(
                         sess, stream,
-                        OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_DEACTIVATE,
-                        0));
+                        OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_DEACTIVATE, 0));
             }
 
         } else if (SmContextUpdateData->up_cnx_state ==
@@ -554,17 +564,30 @@ bool smf_nsmf_handle_update_sm_context(
     } else if (SmContextUpdateData->is_release == true &&
                 SmContextUpdateData->release == true) {
         if (sess->policy_association_id) {
-            smf_npcf_smpolicycontrol_param_t param;
+            if (sess->ngap_state.pdu_session_resource_release ==
+                    SMF_NGAP_STATE_DELETE_TRIGGER_UE_REQUESTED) {
 
-            memset(&param, 0, sizeof(param));
+                /* PCF session context has already been removed */
+                memset(&sendmsg, 0, sizeof(sendmsg));
 
-            param.ue_location = true;
-            param.ue_timezone = true;
+                response = ogs_sbi_build_response(
+                    &sendmsg, OGS_SBI_HTTP_STATUS_NO_CONTENT);
+                ogs_assert(response);
+                ogs_assert(true ==
+                        ogs_sbi_server_send_response(stream, response));
+            } else {
+                smf_npcf_smpolicycontrol_param_t param;
 
-            ogs_assert(true ==
-                smf_sbi_discover_and_send(OpenAPI_nf_type_PCF, sess, stream,
-                    OGS_PFCP_DELETE_TRIGGER_AMF_UPDATE_SM_CONTEXT, &param,
-                    smf_npcf_smpolicycontrol_build_delete));
+                memset(&param, 0, sizeof(param));
+
+                param.ue_location = true;
+                param.ue_timezone = true;
+
+                ogs_assert(true ==
+                    smf_sbi_discover_and_send(OpenAPI_nf_type_PCF, sess, stream,
+                        OGS_PFCP_DELETE_TRIGGER_AMF_UPDATE_SM_CONTEXT, &param,
+                        smf_npcf_smpolicycontrol_build_delete));
+            }
         } else {
             ogs_error("No PolicyAssociationId");
             smf_sbi_send_sm_context_update_error(

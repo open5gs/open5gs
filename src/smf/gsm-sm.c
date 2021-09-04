@@ -375,9 +375,6 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
         case OpenAPI_n2_sm_info_type_PDU_RES_REL_RSP:
             ngap_state = sess->ngap_state.pdu_session_resource_release;
 
-            /* Clear NGAP State */
-            sess->ngap_state.pdu_session_resource_release = SMF_NGAP_STATE_NONE;
-
             if (ngap_state == SMF_NGAP_STATE_DELETE_TRIGGER_UE_REQUESTED) {
                 ogs_assert(true == ogs_sbi_send_http_status_no_content(stream));
             } else if (ngap_state ==
