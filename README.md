@@ -40,9 +40,16 @@ If you find Open5GS useful for work, please consider supporting this Open Source
           <img src="https://open5gs.org/assets/img/SkylarkWireless-420x78-Web2-R.png">
         </a>
       </td>
+    </tr>
+    <tr>
       <td align="center" valign="middle" width="222px">
         <a href="https://sysmocom.de/" target="_blank">
           <img src="https://open5gs.org/assets/img/sysmocom-logo-only.png">
+        </a>
+      </td>
+      <td align="center" valign="middle" width="222px">
+        <a href="https://www.p1sec.com/" target="_blank">
+          <img src="https://open5gs.org/assets/img/2021-logo-P1.svg">
         </a>
       </td>
     </tr>
