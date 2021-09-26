@@ -278,12 +278,7 @@ void sgwc_s5c_handle_delete_session_response(
     }
 
     if (cause_value != OGS_GTP_CAUSE_REQUEST_ACCEPTED) {
-        ogs_assert(OGS_OK ==
-            sgwc_pfcp_send_session_deletion_request(sess, NULL, NULL));
-        ogs_gtp_send_error_message(
-                s11_xact, sgwc_ue ? sgwc_ue->mme_s11_teid : 0,
-                OGS_GTP_DELETE_SESSION_RESPONSE_TYPE, cause_value);
-        return;
+        ogs_warn("GTP Failed [CAUSE:%d]", cause_value);
     }
 
     /* Remove a pgw session */
