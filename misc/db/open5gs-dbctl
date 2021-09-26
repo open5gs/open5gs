@@ -4,6 +4,7 @@ version=0.9.1
 
 display_help() {
     echo "open5gs-dbctl: Open5GS Database Configuration Tool ($version)"
+	echo "FLAGS: --db_uri=mongodb://localhost"
     echo "COMMANDS:" >&2
     echo "   add {imsi key opc}: adds a user to the database with default values"
 	echo "   add {imsi ip key opc}: adds a user to the database with default values and a IPv4 address for the UE"
@@ -18,6 +19,19 @@ display_help() {
     echo "   default values are as follows: APN \"internet\", dl_bw/ul_bw 1 Gbps, PGW address is 127.0.0.3, IPv4 only"
 }
 
+while test $# -gt 0; do
+  case "$1" in
+    --db_uri*)
+      DB_URI=`echo $1 | sed -e 's/^[^=]*=//g'`
+      shift
+      ;;
+    *)
+      break
+      ;;
+  esac
+done
+
+DB_URI="${DB_URI:-mongodb://localhost/open5gs}"
 
 if [ "$#" -lt 1 ]; then
 	display_help
@@ -86,8 +100,8 @@ if [ "$1" = "add" ]; then
 					\"__v\" : 0
 				},  
 			},
-			upsert=true);" open5gs
-		exit 0
+			upsert=true);"$DB_URI
+		exit $?
 	fi
 
 	if [ "$#" -eq 5 ]; then
@@ -151,8 +165,8 @@ if [ "$1" = "add" ]; then
 					\"__v\" : 0
 				},  
 			},
-			upsert=true);" open5gs
-		exit 0
+			upsert=true);"$DB_URI
+		exit $?
 	fi
 
 	echo "open5gs-dbctl: incorrect number of args, format is \"open5gs-dbctl add imsi key opc\""
@@ -256,8 +270,8 @@ if [ "$1" = "addT1" ]; then
 					\"__v\" : 0
 				},  
 			},
-			upsert=true);" open5gs
-		exit 0
+			upsert=true);"$DB_URI
+		exit $?
 	fi
 
 	if [ "$#" -eq 5 ]; then
@@ -369,8 +383,8 @@ if [ "$1" = "addT1" ]; then
 					\"__v\" : 0
 				},  
 			},
-			upsert=true);" open5gs
-		exit 0
+			upsert=true);"$DB_URI
+		exit $?
 	fi
 
 	echo "open5gs-dbctl: incorrect number of args, format is \"open5gs-dbctl add imsi key opc\""
@@ -384,8 +398,8 @@ if [ "$1" = "remove" ]; then
 	fi
 
 	IMSI=$2 
-	mongo --eval "db.subscribers.remove({\"imsi\": \"$IMSI\"});" open5gs
-	exit 0
+	mongo --eval "db.subscribers.remove({\"imsi\": \"$IMSI\"});"$DB_URI
+	exit $?
 fi
 
 if [ "$1" = "reset" ]; then
@@ -394,8 +408,8 @@ if [ "$1" = "reset" ]; then
 		exit 1
 	fi
 
-	mongo --eval "db.subscribers.remove({});" open5gs
-	exit 0
+	mongo --eval "db.subscribers.remove({});"$DB_URI
+	exit $?
 fi
 
 if [ "$1" = "static_ip" ]; then
@@ -406,8 +420,8 @@ if [ "$1" = "static_ip" ]; then
 	IMSI=$2 
 	IP=$3
 
-	mongo --eval "db.subscribers.update({\"imsi\": \"$IMSI\"},{\$set: { \"slice.0.session.0.ue.addr\": \"$IP\" }});" open5gs
-	exit 0
+	mongo --eval "db.subscribers.update({\"imsi\": \"$IMSI\"},{\$set: { \"slice.0.session.0.ue.addr\": \"$IP\" }});"$DB_URI
+	exit $?
 fi
 
 if [ "$1" = "static_ip6" ]; then
@@ -418,8 +432,8 @@ if [ "$1" = "static_ip6" ]; then
 	IMSI=$2 
 	IP=$3
 
-	mongo --eval "db.subscribers.update({\"imsi\": \"$IMSI\"},{\$set: { \"slice.0.session.0.ue.addr6\": \"$IP\" }});" open5gs
-	exit 0
+	mongo --eval "db.subscribers.update({\"imsi\": \"$IMSI\"},{\$set: { \"slice.0.session.0.ue.addr6\": \"$IP\" }});"$DB_URI
+	exit $?
 fi
 
 if [ "$1" = "type" ]; then
@@ -430,8 +444,8 @@ if [ "$1" = "type" ]; then
 	IMSI=$2 
 	TYPE=$3
 
-	mongo --eval "db.subscribers.update({\"imsi\": \"$IMSI\"},{\$set: { \"slice.0.session.0.type\": NumberInt($TYPE) }});" open5gs
-	exit 0
+	mongo --eval "db.subscribers.update({\"imsi\": \"$IMSI\"},{\$set: { \"slice.0.session.0.type\": NumberInt($TYPE) }});"$DB_URI
+	exit $?
 fi
 
 display_help
