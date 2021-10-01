@@ -248,8 +248,9 @@ bool ogs_sbi_nnrf_handle_nf_profile(ogs_sbi_nf_instance_t *nf_instance,
         nf_instance->time.heartbeat_interval = NFProfile->heart_beat_timer;
 
     if (NFProfile->fqdn)
-        ogs_fqdn_parse(nf_instance->fqdn,
-                NFProfile->fqdn, strlen(NFProfile->fqdn));
+        ogs_assert(0 < ogs_fqdn_parse(
+                nf_instance->fqdn, NFProfile->fqdn,
+                ogs_min(strlen(NFProfile->fqdn), OGS_MAX_FQDN_LEN+1)));
 
     if (NFProfile->is_priority == true)
         nf_instance->priority = NFProfile->priority;
@@ -328,8 +329,9 @@ bool ogs_sbi_nnrf_handle_nf_profile(ogs_sbi_nf_instance_t *nf_instance,
         }
 
         if (NFService->fqdn)
-            ogs_fqdn_parse(nf_service->fqdn,
-                    NFService->fqdn, strlen(NFService->fqdn));
+            ogs_assert(0 < ogs_fqdn_parse(
+                nf_service->fqdn, NFService->fqdn,
+                ogs_min(strlen(NFService->fqdn), OGS_MAX_FQDN_LEN+1)));
 
         OpenAPI_list_for_each(IpEndPointList, node2) {
             OpenAPI_ip_end_point_t *IpEndPoint = node2->data;

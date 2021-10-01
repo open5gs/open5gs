@@ -44,9 +44,8 @@ void af_nbsf_management_handle_pcf_binding(
     }
 
     if (PcfBinding->pcf_fqdn) {
-        ogs_fqdn_parse(fqdn,
-                PcfBinding->pcf_fqdn,
-                strlen(PcfBinding->pcf_fqdn));
+        ogs_assert(0 < ogs_fqdn_parse(fqdn, PcfBinding->pcf_fqdn,
+                ogs_min(strlen(PcfBinding->pcf_fqdn), OGS_MAX_FQDN_LEN+1)));
         if (sess->pcf.fqdn)
             ogs_free(sess->pcf.fqdn);
         sess->pcf.fqdn = ogs_strdup(fqdn);

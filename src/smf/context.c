@@ -1036,8 +1036,8 @@ smf_sess_t *smf_sess_add_by_gtp_message(ogs_gtp_message_t *message)
         return NULL;
     }
 
-    ogs_fqdn_parse(apn,
-            req->access_point_name.data, req->access_point_name.len);
+    ogs_assert(0 < ogs_fqdn_parse(apn, req->access_point_name.data,
+            ogs_min(req->access_point_name.len, OGS_MAX_APN_LEN+1)));
 
     ogs_trace("smf_sess_add_by_message() [APN:%s]", apn);
 

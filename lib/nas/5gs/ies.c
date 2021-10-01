@@ -28,7 +28,7 @@
 /*******************************************************************************
  * This file had been created by nas-message.py script v0.2.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2021-06-21 14:15:53.780969 by acetcom
+ * Created on: 2021-10-01 22:38:42.717226 by acetcom
  * from 24501-g41.docx
  ******************************************************************************/
 
@@ -136,7 +136,8 @@ int ogs_nas_5gs_decode_dnn(ogs_nas_dnn_t *dnn, ogs_pkbuf_t *pkbuf)
 
     {
         char data_network_name[OGS_MAX_DNN_LEN];
-        dnn->length = ogs_fqdn_parse(data_network_name, dnn->value, dnn->length);
+        dnn->length = ogs_fqdn_parse(data_network_name, dnn->value, ogs_min(dnn->length, OGS_MAX_DNN_LEN+1));
+        ogs_assert(dnn->length > 0);
         ogs_cpystrn(dnn->value, data_network_name, ogs_min(dnn->length, OGS_MAX_DNN_LEN) + 1);
     }
 

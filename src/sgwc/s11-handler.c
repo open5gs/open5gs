@@ -189,8 +189,9 @@ void sgwc_s11_handle_create_session_request(
     }
 
     /* Add Session */
-    ogs_fqdn_parse(apn,
-            req->access_point_name.data, req->access_point_name.len);
+    ogs_assert(0 < ogs_fqdn_parse(apn,
+            req->access_point_name.data,
+            ogs_min(req->access_point_name.len, OGS_MAX_APN_LEN+1)));
     sess = sgwc_sess_find_by_ebi(sgwc_ue,
             req->bearer_contexts_to_be_created.eps_bearer_id.u8);
     if (sess) {

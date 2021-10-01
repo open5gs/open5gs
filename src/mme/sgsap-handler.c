@@ -286,7 +286,9 @@ void sgsap_handle_paging_request(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
             nas_mobile_identity_imsi_len = iter->length;
             break;
         case SGSAP_IE_VLR_NAME_TYPE:
-            ogs_fqdn_parse(vlr_name, iter->value, iter->length);
+            ogs_assert(0 < ogs_fqdn_parse(
+                    vlr_name, iter->value,
+                    ogs_min(iter->length, SGSAP_IE_VLR_NAME_LEN+1)));
             break;
         case SGSAP_IE_LAI_TYPE:
             lai = iter->value;

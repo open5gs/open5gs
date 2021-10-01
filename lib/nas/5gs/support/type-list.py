@@ -29,7 +29,8 @@ type_list["Header compression configuration"]["encode"] = \
 type_list["DNN"]["decode"] = \
 "    {\n" \
 "        char data_network_name[OGS_MAX_DNN_LEN];\n" \
-"        dnn->length = ogs_fqdn_parse(data_network_name, dnn->value, dnn->length);\n" \
+"        dnn->length = ogs_fqdn_parse(data_network_name, dnn->value, ogs_min(dnn->length, OGS_MAX_DNN_LEN+1));\n" \
+"        ogs_assert(dnn->length > 0);\n" \
 "        ogs_cpystrn(dnn->value, data_network_name, ogs_min(dnn->length, OGS_MAX_DNN_LEN) + 1);\n" \
 "    }\n\n"
 

@@ -418,9 +418,9 @@ ogs_pfcp_pdr_t *ogs_pfcp_handle_create_pdr(ogs_pfcp_sess_t *sess,
     if (message->pdi.network_instance.presence) {
         char dnn[OGS_MAX_DNN_LEN];
 
-        ogs_fqdn_parse(dnn,
+        ogs_assert(0 < ogs_fqdn_parse(dnn,
             message->pdi.network_instance.data,
-            message->pdi.network_instance.len);
+            ogs_min(message->pdi.network_instance.len, OGS_MAX_DNN_LEN+1)));
 
         pdr->dnn = ogs_strdup(dnn);
         ogs_assert(pdr->dnn);
@@ -658,9 +658,9 @@ ogs_pfcp_pdr_t *ogs_pfcp_handle_update_pdr(ogs_pfcp_sess_t *sess,
         if (message->pdi.network_instance.presence) {
             char dnn[OGS_MAX_DNN_LEN];
 
-            ogs_fqdn_parse(dnn,
+            ogs_assert(0 < ogs_fqdn_parse(dnn,
                 message->pdi.network_instance.data,
-                message->pdi.network_instance.len);
+                ogs_min(message->pdi.network_instance.len, OGS_MAX_DNN_LEN+1)));
 
             if (pdr->dnn)
                 ogs_free(pdr->dnn);
