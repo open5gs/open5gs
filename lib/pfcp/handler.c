@@ -271,6 +271,7 @@ ogs_pfcp_pdr_t *ogs_pfcp_handle_create_pdr(ogs_pfcp_sess_t *sess,
     ogs_pfcp_pdr_t *pdr = NULL;
     ogs_pfcp_far_t *far = NULL;
     ogs_pfcp_qer_t *qer = NULL;
+    ogs_pfcp_urr_t *urr = NULL;
     int i, len;
     int rv;
 
@@ -476,6 +477,14 @@ ogs_pfcp_pdr_t *ogs_pfcp_handle_create_pdr(ogs_pfcp_sess_t *sess,
         qer = ogs_pfcp_qer_find_or_add(sess, message->qer_id.u32);
         ogs_assert(qer);
         ogs_pfcp_pdr_associate_qer(pdr, qer);
+    }
+
+    pdr->urr = NULL;
+
+    if(message->urr_id.presence) {
+        urr = ogs_pfcp_urr_find_or_add(sess, message->urr_id.u32);
+        ogs_assert(urr);
+        ogs_pfcp_pdr_associate_urr(pdr,urr);
     }
 
     return pdr;
@@ -1071,4 +1080,243 @@ bool ogs_pfcp_handle_remove_bar(ogs_pfcp_sess_t *sess,
     ogs_error("[%p] Unknown BAR-ID[%d]", sess->bar, message->bar_id.u8);
     *cause_value = OGS_PFCP_CAUSE_SESSION_CONTEXT_NOT_FOUND;
     return false;
+}
+
+ogs_pfcp_urr_t *ogs_pfcp_handle_create_urr(ogs_pfcp_sess_t *sess,
+        ogs_pfcp_tlv_create_urr_t *message,
+        uint8_t *cause_value, uint8_t *offending_ie_value)
+{
+    ogs_pfcp_urr_t *urr = NULL;
+    
+    ogs_assert(message);
+    ogs_assert(sess);
+
+    if (message->presence == 0)
+        return NULL;
+
+    if (message->urr_id.presence == 0) {
+        ogs_error("No URR-ID");
+        *cause_value = OGS_PFCP_CAUSE_MANDATORY_IE_MISSING;
+        *offending_ie_value = OGS_PFCP_URR_ID_TYPE;
+        return NULL;
+    }
+
+    urr = ogs_pfcp_urr_find(sess, message->urr_id.u32);
+    if (!urr) {
+        ogs_error("Cannot find URR-ID[%d] in PDR", message->urr_id.u32);
+        *cause_value = OGS_PFCP_CAUSE_MANDATORY_IE_INCORRECT;
+        *offending_ie_value = OGS_PFCP_URR_ID_TYPE;
+        return NULL;
+    }
+
+    if (message->measurement_method.presence == 0) {
+        ogs_error("No Measurement Method");
+        *cause_value = OGS_PFCP_CAUSE_MANDATORY_IE_MISSING;
+        *offending_ie_value = OGS_PFCP_MEASUREMENT_METHOD_TYPE;
+        return NULL;
+    }
+
+    if (message->reporting_triggers.presence == 0) {
+        ogs_error("No Reporting Triggers");
+        *cause_value = OGS_PFCP_CAUSE_MANDATORY_IE_MISSING;
+        *offending_ie_value = OGS_PFCP_REPORTING_TRIGGERS_TYPE;
+        return NULL;
+    }
+
+    urr->meas_method.desc = message->measurement_method.u8;
+    urr->rep_triggers.reptri_5 = message->reporting_triggers.u24 & 0xFF;
+    urr->rep_triggers.reptri_6 = (message->reporting_triggers.u24 >> 8) & 0xFF;
+    urr->rep_triggers.reptri_7 = (message->reporting_triggers.u24 >> 16) & 0xFF;
+
+    if(message->measurement_period.presence) {
+        urr->meas_period = message->measurement_period.u32;
+        urr->meas_period_len = sizeof(uint32_t);
+    }
+
+    if(message->volume_threshold.presence &&
+        (urr->meas_method.desc & OGS_PFCP_MEASUREMENT_METHOD_VOLUM)) {
+        urr->vol_threshold_len = message->volume_threshold.len;
+        memcpy(&urr->vol_threshold, message->volume_threshold.data,
+                urr->vol_threshold_len);
+    }
+
+    if(message->volume_quota.presence &&
+        (urr->meas_method.desc & OGS_PFCP_MEASUREMENT_METHOD_VOLUM)) {
+        urr->vol_quota_len = message->volume_quota.len;
+        memcpy(&urr->vol_quota, message->volume_quota.data,
+                urr->vol_quota_len);
+    }
+
+    if(message->event_threshold.presence &&
+        (urr->meas_method.desc & OGS_PFCP_MEASUREMENT_METHOD_EVENT)) {
+        urr->event_threshold_len = message->event_threshold.len;
+        memcpy(&urr->event_threshold, message->event_threshold.data,
+                urr->event_threshold_len);
+    }
+
+    if(message->event_quota.presence &&
+        (urr->meas_method.desc & OGS_PFCP_MEASUREMENT_METHOD_EVENT)) {
+        urr->event_quota_len = message->event_quota.len;
+        memcpy(&urr->event_quota, message->event_quota.data,
+                urr->event_quota_len);
+    }
+
+    if(message->time_threshold.presence &&
+        (urr->meas_method.desc & OGS_PFCP_MEASUREMENT_METHOD_DURAT)) {
+        urr->time_threshold_len = message->time_threshold.len;
+        memcpy(&urr->time_threshold, message->time_threshold.data,
+                urr->time_threshold_len);
+    }
+
+    if(message->time_quota.presence &&
+        (urr->meas_method.desc & OGS_PFCP_MEASUREMENT_METHOD_DURAT)) {
+        urr->time_quota_len = message->time_quota.len;
+        memcpy(&urr->time_quota, message->time_quota.data,
+                urr->time_quota_len);
+    }
+
+    if(message->quota_holding_time.presence) {
+        urr->quota_holding_time = message->quota_holding_time.u32;
+        urr->quota_holding_time_len = sizeof(uint32_t);
+    }
+
+    if(message->dropped_dl_traffic_threshold.presence) {
+        urr->dropped_dl_traffic_threshold_len = message->dropped_dl_traffic_threshold.len;
+        memcpy(&urr->dropped_dl_traffic_threshold, message->dropped_dl_traffic_threshold.data,
+                urr->dropped_dl_traffic_threshold_len);
+    }
+
+    if(message->quota_validity_time.presence) {
+        urr->quota_validity_time = message->quota_validity_time.u32;
+        urr->quota_validity_time_len = sizeof(uint32_t);
+    }
+
+    return urr;
+}
+
+ogs_pfcp_urr_t *ogs_pfcp_handle_update_urr(ogs_pfcp_sess_t *sess,
+        ogs_pfcp_tlv_update_urr_t *message,
+        uint8_t *cause_value, uint8_t *offending_ie_value)
+{
+    ogs_pfcp_urr_t *urr = NULL;
+    
+    ogs_assert(message);
+    ogs_assert(sess);
+
+    if (message->presence == 0)
+        return NULL;
+
+    if (message->urr_id.presence == 0) {
+        ogs_error("No URR-ID");
+        *cause_value = OGS_PFCP_CAUSE_MANDATORY_IE_MISSING;
+        *offending_ie_value = OGS_PFCP_URR_ID_TYPE;
+        return NULL;
+    }
+
+    urr = ogs_pfcp_urr_find(sess, message->urr_id.u32);
+    if (!urr) {
+        ogs_error("Cannot find URR-ID[%d] in PDR", message->urr_id.u32);
+        *cause_value = OGS_PFCP_CAUSE_MANDATORY_IE_INCORRECT;
+        *offending_ie_value = OGS_PFCP_URR_ID_TYPE;
+        return NULL;
+    }
+
+    if (message->measurement_method.presence == 0) {
+        ogs_error("No Measurement Method");
+        *cause_value = OGS_PFCP_CAUSE_MANDATORY_IE_MISSING;
+        *offending_ie_value = OGS_PFCP_MEASUREMENT_METHOD_TYPE;
+        return NULL;
+    }
+
+    if (message->reporting_triggers.presence == 0) {
+        ogs_error("No Reporting Triggers");
+        *cause_value = OGS_PFCP_CAUSE_MANDATORY_IE_MISSING;
+        *offending_ie_value = OGS_PFCP_REPORTING_TRIGGERS_TYPE;
+        return NULL;
+    }
+
+    urr->meas_method.desc = message->measurement_method.u8;
+    urr->rep_triggers.reptri_5 = message->reporting_triggers.u24 & 0xFF;
+    urr->rep_triggers.reptri_6 = (message->reporting_triggers.u24 >> 8) & 0xFF;
+    urr->rep_triggers.reptri_7 = (message->reporting_triggers.u24 >> 16) & 0xFF;
+
+    if(message->measurement_period.presence) {
+        urr->meas_period = message->measurement_period.u32;
+        urr->meas_period_len = sizeof(uint32_t);
+    }
+
+    if(message->volume_threshold.presence &&
+        (urr->meas_method.desc & OGS_PFCP_MEASUREMENT_METHOD_VOLUM)) {
+        urr->vol_threshold_len = message->volume_threshold.len;
+        memcpy(&urr->vol_threshold, message->volume_threshold.data,
+                urr->vol_threshold_len);
+    }
+
+    if(message->volume_quota.presence &&
+        (urr->meas_method.desc & OGS_PFCP_MEASUREMENT_METHOD_VOLUM)) {
+        urr->vol_quota_len = message->volume_quota.len;
+        memcpy(&urr->vol_quota, message->volume_quota.data,
+                urr->vol_quota_len);
+    }
+
+    if(message->event_threshold.presence &&
+        (urr->meas_method.desc & OGS_PFCP_MEASUREMENT_METHOD_EVENT)) {
+        urr->event_threshold_len = message->event_threshold.len;
+        memcpy(&urr->event_threshold, message->event_threshold.data,
+                urr->event_threshold_len);
+    }
+
+    if(message->event_quota.presence &&
+        (urr->meas_method.desc & OGS_PFCP_MEASUREMENT_METHOD_EVENT)) {
+        urr->event_quota_len = message->event_quota.len;
+        memcpy(&urr->event_quota, message->event_quota.data,
+                urr->event_quota_len);
+    }
+
+    if(message->time_threshold.presence &&
+        (urr->meas_method.desc & OGS_PFCP_MEASUREMENT_METHOD_DURAT)) {
+        urr->time_threshold_len = message->time_threshold.len;
+        memcpy(&urr->time_threshold, message->time_threshold.data,
+                urr->time_threshold_len);
+    }
+
+    if(message->time_quota.presence &&
+        (urr->meas_method.desc & OGS_PFCP_MEASUREMENT_METHOD_DURAT)) {
+        urr->time_quota_len = message->time_quota.len;
+        memcpy(&urr->time_quota, message->time_quota.data,
+                urr->time_quota_len);
+    }
+
+    return urr;
+}
+
+bool ogs_pfcp_handle_remove_urr(ogs_pfcp_sess_t *sess,
+        ogs_pfcp_tlv_remove_urr_t *message,
+        uint8_t *cause_value, uint8_t *offending_ie_value)
+{
+    ogs_pfcp_urr_t *urr = NULL;
+
+    ogs_assert(sess);
+    ogs_assert(message);
+
+    if (message->presence == 0)
+        return false;
+
+    if (message->urr_id.presence == 0) {
+        ogs_error("No URR-ID");
+        *cause_value = OGS_PFCP_CAUSE_MANDATORY_IE_MISSING;
+        *offending_ie_value = OGS_PFCP_URR_ID_TYPE;
+        return false;
+    }
+
+    urr = ogs_pfcp_urr_find(sess, message->urr_id.u32);
+    if (!urr) {
+        ogs_error("Unknown URR-ID[%d]", message->urr_id.u32);
+        *cause_value = OGS_PFCP_CAUSE_SESSION_CONTEXT_NOT_FOUND;
+        return false;
+    }
+
+    ogs_pfcp_urr_remove(urr);
+
+    return true;
 }
