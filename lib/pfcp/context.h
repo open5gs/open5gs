@@ -233,21 +233,34 @@ typedef struct ogs_pfcp_urr_s {
     ogs_pfcp_reporting_triggers_t rep_triggers;
 
     ogs_pfcp_measurement_period_t meas_period;
+    int meas_period_len;
 
     ogs_pfcp_volume_threshold_t vol_threshold;
+    int vol_threshold_len;
+
     ogs_pfcp_volume_quota_t vol_quota;
+    int vol_quota_len;
 
     ogs_pfcp_event_threshold_t event_threshold;
+    int event_threshold_len;
+
     ogs_pfcp_event_quota_t event_quota;
+    int event_quota_len;
 
     ogs_pfcp_time_threshold_t time_threshold;
+    int time_threshold_len;
+
     ogs_pfcp_time_quota_t time_quota;
+    int time_quota_len;
 
     ogs_pfcp_quota_holding_time_t quota_holding_time;
+    int quota_holding_time_len;
 
     ogs_pfcp_dropped_dl_traffic_threshold_t dropped_dl_traffic_threshold;
+    int dropped_dl_traffic_threshold_len;
 
     ogs_pfcp_quota_validity_time_t quota_validity_time;
+    int quota_validity_time_len;
 
     ogs_pfcp_sess_t         *sess;
 } ogs_pfcp_urr_t;

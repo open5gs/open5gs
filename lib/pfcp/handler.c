@@ -270,8 +270,8 @@ ogs_pfcp_pdr_t *ogs_pfcp_handle_create_pdr(ogs_pfcp_sess_t *sess,
 {
     ogs_pfcp_pdr_t *pdr = NULL;
     ogs_pfcp_far_t *far = NULL;
-    ogs_pfcp_urr_t *urr = NULL;
     ogs_pfcp_qer_t *qer = NULL;
+    ogs_pfcp_urr_t *urr = NULL;
     int i, len;
     int rv;
 
@@ -419,9 +419,9 @@ ogs_pfcp_pdr_t *ogs_pfcp_handle_create_pdr(ogs_pfcp_sess_t *sess,
     if (message->pdi.network_instance.presence) {
         char dnn[OGS_MAX_DNN_LEN];
 
-        ogs_assert(0 < ogs_fqdn_parse(dnn,
+        ogs_fqdn_parse(dnn,
             message->pdi.network_instance.data,
-            ogs_min(message->pdi.network_instance.len, OGS_MAX_DNN_LEN+1)));
+            message->pdi.network_instance.len);
 
         pdr->dnn = ogs_strdup(dnn);
         ogs_assert(pdr->dnn);
@@ -471,20 +471,20 @@ ogs_pfcp_pdr_t *ogs_pfcp_handle_create_pdr(ogs_pfcp_sess_t *sess,
         ogs_pfcp_pdr_associate_far(pdr, far);
     }
 
-    pdr->urr = NULL;
-
-    if (message->urr_id.presence) {
-        urr = ogs_pfcp_urr_find_or_add(sess, message->urr_id.u32);
-        ogs_assert(urr);
-        ogs_pfcp_pdr_associate_urr(pdr,urr);
-    }
-
     pdr->qer = NULL;
 
     if (message->qer_id.presence) {
         qer = ogs_pfcp_qer_find_or_add(sess, message->qer_id.u32);
         ogs_assert(qer);
         ogs_pfcp_pdr_associate_qer(pdr, qer);
+    }
+
+    pdr->urr = NULL;
+
+    if(message->urr_id.presence) {
+        urr = ogs_pfcp_urr_find_or_add(sess, message->urr_id.u32);
+        ogs_assert(urr);
+        ogs_pfcp_pdr_associate_urr(pdr,urr);
     }
 
     return pdr;
@@ -667,9 +667,9 @@ ogs_pfcp_pdr_t *ogs_pfcp_handle_update_pdr(ogs_pfcp_sess_t *sess,
         if (message->pdi.network_instance.presence) {
             char dnn[OGS_MAX_DNN_LEN];
 
-            ogs_assert(0 < ogs_fqdn_parse(dnn,
+            ogs_fqdn_parse(dnn,
                 message->pdi.network_instance.data,
-                ogs_min(message->pdi.network_instance.len, OGS_MAX_DNN_LEN+1)));
+                message->pdi.network_instance.len);
 
             if (pdr->dnn)
                 ogs_free(pdr->dnn);
@@ -1123,57 +1123,72 @@ ogs_pfcp_urr_t *ogs_pfcp_handle_create_urr(ogs_pfcp_sess_t *sess,
         return NULL;
     }
 
-    urr->meas_method = message->measurement_method.u8;
-    urr->rep_triggers.reptri_5 = (message->reporting_triggers.u24 >> 16) & 0xFF;
+    urr->meas_method.desc = message->measurement_method.u8;
+    urr->rep_triggers.reptri_5 = message->reporting_triggers.u24 & 0xFF;
     urr->rep_triggers.reptri_6 = (message->reporting_triggers.u24 >> 8) & 0xFF;
-    urr->rep_triggers.reptri_7 = message->reporting_triggers.u24 & 0xFF;
+    urr->rep_triggers.reptri_7 = (message->reporting_triggers.u24 >> 16) & 0xFF;
 
-    if (message->measurement_period.presence) {
-        urr->meas_period = be32toh(message->measurement_period.u32);
+    if(message->measurement_period.presence) {
+        urr->meas_period = message->measurement_period.u32;
+        urr->meas_period_len = sizeof(uint32_t);
     }
 
-    if (message->volume_threshold.presence &&
-        (urr->meas_method & OGS_PFCP_MEASUREMENT_METHOD_VOLUME)) {
-        ogs_pfcp_parse_volume(&urr->vol_threshold, &message->volume_threshold);
+    if(message->volume_threshold.presence &&
+        (urr->meas_method.desc & OGS_PFCP_MEASUREMENT_METHOD_VOLUM)) {
+        urr->vol_threshold_len = message->volume_threshold.len;
+        memcpy(&urr->vol_threshold, message->volume_threshold.data,
+                urr->vol_threshold_len);
     }
 
-    if (message->volume_quota.presence &&
-        (urr->meas_method & OGS_PFCP_MEASUREMENT_METHOD_VOLUME)) {
-        ogs_pfcp_parse_volume(&urr->vol_quota, &message->volume_quota);
+    if(message->volume_quota.presence &&
+        (urr->meas_method.desc & OGS_PFCP_MEASUREMENT_METHOD_VOLUM)) {
+        urr->vol_quota_len = message->volume_quota.len;
+        memcpy(&urr->vol_quota, message->volume_quota.data,
+                urr->vol_quota_len);
     }
 
-    if (message->event_threshold.presence &&
-        (urr->meas_method & OGS_PFCP_MEASUREMENT_METHOD_EVENT)) {
-        urr->event_threshold = be32toh(message->event_threshold.u32);
+    if(message->event_threshold.presence &&
+        (urr->meas_method.desc & OGS_PFCP_MEASUREMENT_METHOD_EVENT)) {
+        urr->event_threshold_len = message->event_threshold.len;
+        memcpy(&urr->event_threshold, message->event_threshold.data,
+                urr->event_threshold_len);
     }
 
-    if (message->event_quota.presence &&
-        (urr->meas_method & OGS_PFCP_MEASUREMENT_METHOD_EVENT)) {
-        urr->event_quota = be32toh(message->event_quota.u32);
+    if(message->event_quota.presence &&
+        (urr->meas_method.desc & OGS_PFCP_MEASUREMENT_METHOD_EVENT)) {
+        urr->event_quota_len = message->event_quota.len;
+        memcpy(&urr->event_quota, message->event_quota.data,
+                urr->event_quota_len);
     }
 
-    if (message->time_threshold.presence &&
-        (urr->meas_method & OGS_PFCP_MEASUREMENT_METHOD_DURATION)) {
-        urr->time_threshold = be32toh(message->time_threshold.u32);
+    if(message->time_threshold.presence &&
+        (urr->meas_method.desc & OGS_PFCP_MEASUREMENT_METHOD_DURAT)) {
+        urr->time_threshold_len = message->time_threshold.len;
+        memcpy(&urr->time_threshold, message->time_threshold.data,
+                urr->time_threshold_len);
     }
 
-    if (message->time_quota.presence &&
-        (urr->meas_method & OGS_PFCP_MEASUREMENT_METHOD_DURATION)) {
-        urr->time_quota = be32toh(message->time_quota.u32);
+    if(message->time_quota.presence &&
+        (urr->meas_method.desc & OGS_PFCP_MEASUREMENT_METHOD_DURAT)) {
+        urr->time_quota_len = message->time_quota.len;
+        memcpy(&urr->time_quota, message->time_quota.data,
+                urr->time_quota_len);
     }
 
-    if (message->quota_holding_time.presence) {
-        urr->quota_holding_time = be32toh(message->quota_holding_time.u32);
+    if(message->quota_holding_time.presence) {
+        urr->quota_holding_time = message->quota_holding_time.u32;
+        urr->quota_holding_time_len = sizeof(uint32_t);
     }
 
-    if (message->dropped_dl_traffic_threshold.presence) {
-        ogs_pfcp_parse_dropped_dl_traffic_threshold(
-                &urr->dropped_dl_traffic_threshold,
-                &message->dropped_dl_traffic_threshold);
+    if(message->dropped_dl_traffic_threshold.presence) {
+        urr->dropped_dl_traffic_threshold_len = message->dropped_dl_traffic_threshold.len;
+        memcpy(&urr->dropped_dl_traffic_threshold, message->dropped_dl_traffic_threshold.data,
+                urr->dropped_dl_traffic_threshold_len);
     }
 
-    if (message->quota_validity_time.presence) {
-        urr->quota_validity_time = be32toh(message->quota_validity_time.u32);
+    if(message->quota_validity_time.presence) {
+        urr->quota_validity_time = message->quota_validity_time.u32;
+        urr->quota_validity_time_len = sizeof(uint32_t);
     }
 
     return urr;
@@ -1220,57 +1235,56 @@ ogs_pfcp_urr_t *ogs_pfcp_handle_update_urr(ogs_pfcp_sess_t *sess,
         return NULL;
     }
 
-    urr->meas_method = message->measurement_method.u8;
+    urr->meas_method.desc = message->measurement_method.u8;
     urr->rep_triggers.reptri_5 = message->reporting_triggers.u24 & 0xFF;
     urr->rep_triggers.reptri_6 = (message->reporting_triggers.u24 >> 8) & 0xFF;
     urr->rep_triggers.reptri_7 = (message->reporting_triggers.u24 >> 16) & 0xFF;
 
-    if (message->measurement_period.presence) {
-        urr->meas_period = be32toh(message->measurement_period.u32);
+    if(message->measurement_period.presence) {
+        urr->meas_period = message->measurement_period.u32;
+        urr->meas_period_len = sizeof(uint32_t);
     }
 
-    if (message->volume_threshold.presence &&
-        (urr->meas_method & OGS_PFCP_MEASUREMENT_METHOD_VOLUME)) {
-        ogs_pfcp_parse_volume(&urr->vol_threshold, &message->volume_threshold);
+    if(message->volume_threshold.presence &&
+        (urr->meas_method.desc & OGS_PFCP_MEASUREMENT_METHOD_VOLUM)) {
+        urr->vol_threshold_len = message->volume_threshold.len;
+        memcpy(&urr->vol_threshold, message->volume_threshold.data,
+                urr->vol_threshold_len);
     }
 
-    if (message->volume_quota.presence &&
-        (urr->meas_method & OGS_PFCP_MEASUREMENT_METHOD_VOLUME)) {
-        ogs_pfcp_parse_volume(&urr->vol_quota, &message->volume_quota);
+    if(message->volume_quota.presence &&
+        (urr->meas_method.desc & OGS_PFCP_MEASUREMENT_METHOD_VOLUM)) {
+        urr->vol_quota_len = message->volume_quota.len;
+        memcpy(&urr->vol_quota, message->volume_quota.data,
+                urr->vol_quota_len);
     }
 
-    if (message->event_threshold.presence &&
-        (urr->meas_method & OGS_PFCP_MEASUREMENT_METHOD_EVENT)) {
-        urr->event_threshold = be32toh(message->event_threshold.u32);
+    if(message->event_threshold.presence &&
+        (urr->meas_method.desc & OGS_PFCP_MEASUREMENT_METHOD_EVENT)) {
+        urr->event_threshold_len = message->event_threshold.len;
+        memcpy(&urr->event_threshold, message->event_threshold.data,
+                urr->event_threshold_len);
     }
 
-    if (message->event_quota.presence &&
-        (urr->meas_method & OGS_PFCP_MEASUREMENT_METHOD_EVENT)) {
-        urr->event_quota = be32toh(message->event_quota.u32);
+    if(message->event_quota.presence &&
+        (urr->meas_method.desc & OGS_PFCP_MEASUREMENT_METHOD_EVENT)) {
+        urr->event_quota_len = message->event_quota.len;
+        memcpy(&urr->event_quota, message->event_quota.data,
+                urr->event_quota_len);
     }
 
-    if (message->time_threshold.presence &&
-        (urr->meas_method & OGS_PFCP_MEASUREMENT_METHOD_DURATION)) {
-        urr->time_threshold = be32toh(message->time_threshold.u32);
+    if(message->time_threshold.presence &&
+        (urr->meas_method.desc & OGS_PFCP_MEASUREMENT_METHOD_DURAT)) {
+        urr->time_threshold_len = message->time_threshold.len;
+        memcpy(&urr->time_threshold, message->time_threshold.data,
+                urr->time_threshold_len);
     }
 
-    if (message->time_quota.presence &&
-        (urr->meas_method & OGS_PFCP_MEASUREMENT_METHOD_DURATION)) {
-        urr->time_quota = be32toh(message->time_quota.u32);
-    }
-
-    if (message->quota_holding_time.presence) {
-        urr->quota_holding_time = be32toh(message->quota_holding_time.u32);
-    }
-
-    if (message->dropped_dl_traffic_threshold.presence) {
-        ogs_pfcp_parse_dropped_dl_traffic_threshold(
-                &urr->dropped_dl_traffic_threshold,
-                &message->dropped_dl_traffic_threshold);
-    }
-
-    if (message->quota_validity_time.presence) {
-        urr->quota_validity_time = be32toh(message->quota_validity_time.u32);
+    if(message->time_quota.presence &&
+        (urr->meas_method.desc & OGS_PFCP_MEASUREMENT_METHOD_DURAT)) {
+        urr->time_quota_len = message->time_quota.len;
+        memcpy(&urr->time_quota, message->time_quota.data,
+                urr->time_quota_len);
     }
 
     return urr;
