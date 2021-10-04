@@ -1592,6 +1592,7 @@ smf_bearer_t *smf_qos_flow_add(smf_sess_t *sess)
     ogs_pfcp_pdr_t *ul_pdr = NULL;
     ogs_pfcp_far_t *dl_far = NULL;
     ogs_pfcp_far_t *ul_far = NULL;
+    ogs_pfcp_urr_t *urr = NULL;
     ogs_pfcp_qer_t *qer = NULL;
 
     ogs_assert(sess);
@@ -1608,6 +1609,7 @@ smf_bearer_t *smf_qos_flow_add(smf_sess_t *sess)
 
     ogs_list_init(&qos_flow->pf_list);
 
+    /* PDR */
     dl_pdr = ogs_pfcp_pdr_add(&sess->pfcp);
     ogs_assert(dl_pdr);
     qos_flow->dl_pdr = dl_pdr;
@@ -1645,6 +1647,7 @@ smf_bearer_t *smf_qos_flow_add(smf_sess_t *sess)
     ul_pdr->outer_header_removal.gtpu_extheader_deletion =
         OGS_PFCP_PDU_SESSION_CONTAINER_TO_BE_DELETED;
 
+    /* FAR */
     dl_far = ogs_pfcp_far_add(&sess->pfcp);
     ogs_assert(dl_far);
     qos_flow->dl_far = dl_far;
@@ -1665,6 +1668,19 @@ smf_bearer_t *smf_qos_flow_add(smf_sess_t *sess)
 
     ul_far->apply_action = OGS_PFCP_APPLY_ACTION_FORW;
 
+    /* URR */
+    urr = ogs_pfcp_urr_add(&sess->pfcp);
+    ogs_assert(urr);
+    qos_flow->urr = urr;
+
+    urr->meas_method = OGS_PFCP_MEASUREMENT_METHOD_VOLUME;
+    urr->rep_triggers.volume_threshold = 1;
+    urr->vol_threshold.tovol = 1;
+    urr->vol_threshold.total_volume = 1024*1024*100;
+
+    ogs_pfcp_pdr_associate_urr(dl_pdr, urr);
+
+    /* QER */
     qer = ogs_pfcp_qer_add(&sess->pfcp);
     ogs_assert(qer);
     qos_flow->qer = qer;
@@ -1943,6 +1959,7 @@ smf_bearer_t *smf_bearer_add(smf_sess_t *sess)
 
     ogs_list_init(&bearer->pf_list);
 
+    /* PDR */
     dl_pdr = ogs_pfcp_pdr_add(&sess->pfcp);
     ogs_assert(dl_pdr);
     bearer->dl_pdr = dl_pdr;
@@ -1976,6 +1993,7 @@ smf_bearer_t *smf_bearer_add(smf_sess_t *sess)
     } else
         ogs_assert_if_reached();
 
+    /* FAR */
     dl_far = ogs_pfcp_far_add(&sess->pfcp);
     ogs_assert(dl_far);
     bearer->dl_far = dl_far;
@@ -2018,6 +2036,8 @@ int smf_bearer_remove(smf_bearer_t *bearer)
     ogs_pfcp_far_remove(bearer->dl_far);
     ogs_assert(bearer->ul_far);
     ogs_pfcp_far_remove(bearer->ul_far);
+    if (bearer->urr)
+        ogs_pfcp_urr_remove(bearer->urr);
     if (bearer->qer)
         ogs_pfcp_qer_remove(bearer->qer);
 

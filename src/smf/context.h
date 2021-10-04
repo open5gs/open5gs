@@ -156,6 +156,7 @@ typedef struct smf_bearer_s {
     ogs_pfcp_pdr_t  *ul_pdr;
     ogs_pfcp_far_t  *dl_far;
     ogs_pfcp_far_t  *ul_far;
+    ogs_pfcp_urr_t  *urr;
     ogs_pfcp_qer_t  *qer;
 
     uint8_t         *qfi_node;      /* Pool-Node for 5GC-QFI */

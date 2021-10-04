@@ -67,6 +67,14 @@ void upf_n4_handle_session_establishment_request(
     if (cause_value != OGS_PFCP_CAUSE_REQUEST_ACCEPTED)
         goto cleanup;
 
+    for (i = 0; i < OGS_MAX_NUM_OF_URR; i++) {
+        if (ogs_pfcp_handle_create_urr(&sess->pfcp, &req->create_urr[i],
+                    &cause_value, &offending_ie_value) == NULL)
+            break;
+    }
+    if (cause_value != OGS_PFCP_CAUSE_REQUEST_ACCEPTED)
+        goto cleanup;
+
     for (i = 0; i < OGS_MAX_NUM_OF_QER; i++) {
         if (ogs_pfcp_handle_create_qer(&sess->pfcp, &req->create_qer[i],
                     &cause_value, &offending_ie_value) == NULL)
@@ -258,6 +266,30 @@ void upf_n4_handle_session_modification_request(
 
     for (i = 0; i < OGS_MAX_NUM_OF_FAR; i++) {
         if (ogs_pfcp_handle_remove_far(&sess->pfcp, &req->remove_far[i],
+                &cause_value, &offending_ie_value) == false)
+            break;
+    }
+    if (cause_value != OGS_PFCP_CAUSE_REQUEST_ACCEPTED)
+        goto cleanup;
+
+    for (i = 0; i < OGS_MAX_NUM_OF_URR; i++) {
+        if (ogs_pfcp_handle_create_urr(&sess->pfcp, &req->create_urr[i],
+                    &cause_value, &offending_ie_value) == NULL)
+            break;
+    }
+    if (cause_value != OGS_PFCP_CAUSE_REQUEST_ACCEPTED)
+        goto cleanup;
+
+    for (i = 0; i < OGS_MAX_NUM_OF_URR; i++) {
+        if (ogs_pfcp_handle_update_urr(&sess->pfcp, &req->update_urr[i],
+                    &cause_value, &offending_ie_value) == NULL)
+            break;
+    }
+    if (cause_value != OGS_PFCP_CAUSE_REQUEST_ACCEPTED)
+        goto cleanup;
+
+    for (i = 0; i < OGS_MAX_NUM_OF_URR; i++) {
+        if (ogs_pfcp_handle_remove_urr(&sess->pfcp, &req->remove_urr[i],
                 &cause_value, &offending_ie_value) == false)
             break;
     }

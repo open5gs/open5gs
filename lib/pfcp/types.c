@@ -405,3 +405,159 @@ int16_t ogs_pfcp_parse_bitrate(
 
     return size;
 }
+
+int16_t ogs_pfcp_build_volume(ogs_tlv_octet_t *octet,
+        ogs_pfcp_volume_threshold_t *volume, void *data, int data_len)
+{
+    ogs_pfcp_volume_threshold_t target;
+    int16_t size = 0;
+
+    ogs_assert(volume);
+    ogs_assert(octet);
+    ogs_assert(data);
+    ogs_assert(data_len >= sizeof(ogs_pfcp_volume_threshold_t));
+
+    ogs_assert(volume->flags);
+
+    octet->data = data;
+    memcpy(&target, volume, sizeof(ogs_pfcp_volume_threshold_t));
+
+    ((unsigned char *)octet->data)[size] = target.flags;
+    size += sizeof(target.flags);
+
+    if (target.tovol) {
+        target.total_volume = htobe64(target.total_volume);
+        memcpy((unsigned char *)octet->data + size,
+                &target.total_volume, sizeof(target.total_volume));
+        size += sizeof(target.total_volume);
+    }
+    if (target.ulvol) {
+        target.uplink_volume = htobe64(target.uplink_volume);
+        memcpy((unsigned char *)octet->data + size,
+                &target.uplink_volume, sizeof(target.uplink_volume));
+        size += sizeof(target.uplink_volume);
+    }
+    if (target.dlvol) {
+        target.downlink_volume = htobe64(target.downlink_volume);
+        memcpy((unsigned char *)octet->data + size,
+                &target.downlink_volume, sizeof(target.downlink_volume));
+        size += sizeof(target.downlink_volume);
+    }
+
+    octet->len = size;
+
+    return octet->len;
+}
+
+int16_t ogs_pfcp_parse_volume(
+        ogs_pfcp_volume_threshold_t *volume, ogs_tlv_octet_t *octet)
+{
+    int16_t size = 0;
+
+    ogs_assert(volume);
+    ogs_assert(octet);
+
+    memset(volume, 0, sizeof(ogs_pfcp_volume_threshold_t));
+
+    volume->flags = ((unsigned char *)octet->data)[size];
+    size += sizeof(volume->flags);
+
+    if (volume->tovol) {
+        memcpy(&volume->total_volume, (unsigned char *)octet->data + size,
+                sizeof(volume->total_volume));
+        volume->total_volume = be64toh(volume->total_volume);
+        size += sizeof(volume->total_volume);
+    }
+    if (volume->ulvol) {
+        memcpy(&volume->uplink_volume, (unsigned char *)octet->data + size,
+                sizeof(volume->uplink_volume));
+        volume->uplink_volume = be64toh(volume->uplink_volume);
+        size += sizeof(volume->uplink_volume);
+    }
+    if (volume->dlvol) {
+        memcpy(&volume->downlink_volume, (unsigned char *)octet->data + size,
+                sizeof(volume->downlink_volume));
+        volume->downlink_volume = be64toh(volume->downlink_volume);
+        size += sizeof(volume->downlink_volume);
+    }
+
+    ogs_assert(size == octet->len);
+
+    return size;
+}
+
+int16_t ogs_pfcp_build_dropped_dl_traffic_threshold(
+        ogs_tlv_octet_t *octet,
+        ogs_pfcp_dropped_dl_traffic_threshold_t *threshold,
+        void *data, int data_len)
+{
+    ogs_pfcp_dropped_dl_traffic_threshold_t target;
+    int16_t size = 0;
+
+    ogs_assert(threshold);
+    ogs_assert(octet);
+    ogs_assert(data);
+    ogs_assert(data_len >= sizeof(ogs_pfcp_dropped_dl_traffic_threshold_t));
+
+    ogs_assert(threshold->flags);
+
+    octet->data = data;
+    memcpy(&target, threshold, sizeof(ogs_pfcp_dropped_dl_traffic_threshold_t));
+
+    ((unsigned char *)octet->data)[size] = target.flags;
+    size += sizeof(target.flags);
+
+    if (target.dlpa) {
+        target.downlink_packets = htobe64(target.downlink_packets);
+        memcpy((unsigned char *)octet->data + size,
+                &target.downlink_packets, sizeof(target.downlink_packets));
+        size += sizeof(target.downlink_packets);
+    }
+
+    if (target.dlby) {
+        target.number_of_bytes_of_downlink_data =
+            htobe64(target.number_of_bytes_of_downlink_data);
+        memcpy((unsigned char *)octet->data + size,
+                &target.number_of_bytes_of_downlink_data,
+                sizeof(target.number_of_bytes_of_downlink_data));
+        size += sizeof(target.number_of_bytes_of_downlink_data);
+    }
+
+    octet->len = size;
+
+    return octet->len;
+}
+int16_t ogs_pfcp_parse_dropped_dl_traffic_threshold(
+        ogs_pfcp_dropped_dl_traffic_threshold_t *threshold,
+        ogs_tlv_octet_t *octet)
+{
+    int16_t size = 0;
+
+    ogs_assert(threshold);
+    ogs_assert(octet);
+
+    memset(threshold, 0, sizeof(ogs_pfcp_dropped_dl_traffic_threshold_t));
+
+    threshold->flags = ((unsigned char *)octet->data)[size];
+    size += sizeof(threshold->flags);
+
+    if (threshold->dlpa) {
+        memcpy(&threshold->downlink_packets,
+                (unsigned char *)octet->data + size,
+                sizeof(threshold->downlink_packets));
+        threshold->downlink_packets = be64toh(threshold->downlink_packets);
+        size += sizeof(threshold->downlink_packets);
+    }
+    if (threshold->dlby) {
+        memcpy(&threshold->number_of_bytes_of_downlink_data,
+                (unsigned char *)octet->data + size,
+                sizeof(threshold->number_of_bytes_of_downlink_data));
+        threshold->number_of_bytes_of_downlink_data =
+            be64toh(threshold->number_of_bytes_of_downlink_data);
+        size += sizeof(threshold->number_of_bytes_of_downlink_data);
+    }
+
+    ogs_assert(size == octet->len);
+
+    return size;
+}

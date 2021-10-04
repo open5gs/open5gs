@@ -20,7 +20,7 @@
 /*******************************************************************************
  * This file had been created by pfcp-tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2021-07-27 20:23:21.038999 by acetcom
+ * Created on: 2021-10-04 22:09:12.899719 by acetcom
  * from 29244-g10.docx
  ******************************************************************************/
 
@@ -494,12 +494,12 @@ typedef ogs_tlv_uint32_t ogs_pfcp_tlv_qer_correlation_id_t;
 typedef ogs_tlv_uint32_t ogs_pfcp_tlv_precedence_t;
 typedef ogs_tlv_octet_t ogs_pfcp_tlv_transport_level_marking_t;
 typedef ogs_tlv_octet_t ogs_pfcp_tlv_volume_threshold_t;
-typedef ogs_tlv_octet_t ogs_pfcp_tlv_time_threshold_t;
+typedef ogs_tlv_uint32_t ogs_pfcp_tlv_time_threshold_t;
 typedef ogs_tlv_octet_t ogs_pfcp_tlv_monitoring_time_t;
 typedef ogs_tlv_octet_t ogs_pfcp_tlv_subsequent_volume_threshold_t;
 typedef ogs_tlv_octet_t ogs_pfcp_tlv_subsequent_time_threshold_t;
 typedef ogs_tlv_octet_t ogs_pfcp_tlv_inactivity_detection_time_t;
-typedef ogs_tlv_uint8_t ogs_pfcp_tlv_reporting_triggers_t;
+typedef ogs_tlv_uint24_t ogs_pfcp_tlv_reporting_triggers_t;
 typedef ogs_tlv_octet_t ogs_pfcp_tlv_redirect_information_t;
 typedef ogs_tlv_uint8_t ogs_pfcp_tlv_report_type_t;
 typedef ogs_tlv_uint16_t ogs_pfcp_tlv_offending_ie_t;
@@ -522,16 +522,16 @@ typedef ogs_tlv_octet_t ogs_pfcp_tlv_node_id_t;
 typedef ogs_tlv_octet_t ogs_pfcp_tlv_pfd_contents_t;
 typedef ogs_tlv_uint8_t ogs_pfcp_tlv_measurement_method_t;
 typedef ogs_tlv_octet_t ogs_pfcp_tlv_usage_report_trigger_t;
-typedef ogs_tlv_octet_t ogs_pfcp_tlv_measurement_period_t;
+typedef ogs_tlv_uint32_t ogs_pfcp_tlv_measurement_period_t;
 typedef ogs_tlv_octet_t ogs_pfcp_tlv_fq_csid_t;
 typedef ogs_tlv_octet_t ogs_pfcp_tlv_volume_measurement_t;
 typedef ogs_tlv_octet_t ogs_pfcp_tlv_duration_measurement_t;
 typedef ogs_tlv_octet_t ogs_pfcp_tlv_time_of_first_packet_t;
 typedef ogs_tlv_octet_t ogs_pfcp_tlv_time_of_last_packet_t;
-typedef ogs_tlv_octet_t ogs_pfcp_tlv_quota_holding_time_t;
+typedef ogs_tlv_uint32_t ogs_pfcp_tlv_quota_holding_time_t;
 typedef ogs_tlv_octet_t ogs_pfcp_tlv_dropped_dl_traffic_threshold_t;
 typedef ogs_tlv_octet_t ogs_pfcp_tlv_volume_quota_t;
-typedef ogs_tlv_octet_t ogs_pfcp_tlv_time_quota_t;
+typedef ogs_tlv_uint32_t ogs_pfcp_tlv_time_quota_t;
 typedef ogs_tlv_octet_t ogs_pfcp_tlv_start_time_t;
 typedef ogs_tlv_octet_t ogs_pfcp_tlv_end_time_t;
 typedef ogs_tlv_uint32_t ogs_pfcp_tlv_urr_id_t;
@@ -589,8 +589,8 @@ typedef ogs_tlv_octet_t ogs_pfcp_tlv_mac_addresses_detected_t;
 typedef ogs_tlv_octet_t ogs_pfcp_tlv_mac_addresses_removed_t;
 typedef ogs_tlv_octet_t ogs_pfcp_tlv_ethernet_inactivity_timer_t;
 typedef ogs_tlv_octet_t ogs_pfcp_tlv_additional_monitoring_time_t;
-typedef ogs_tlv_octet_t ogs_pfcp_tlv_event_quota_t;
-typedef ogs_tlv_octet_t ogs_pfcp_tlv_event_threshold_t;
+typedef ogs_tlv_uint32_t ogs_pfcp_tlv_event_quota_t;
+typedef ogs_tlv_uint32_t ogs_pfcp_tlv_event_threshold_t;
 typedef ogs_tlv_octet_t ogs_pfcp_tlv_subsequent_event_quota_t;
 typedef ogs_tlv_octet_t ogs_pfcp_tlv_subsequent_event_threshold_t;
 typedef ogs_tlv_octet_t ogs_pfcp_tlv_trace_information_t;
@@ -615,7 +615,7 @@ typedef ogs_tlv_octet_t ogs_pfcp_tlv_ue_ip_address_pool_identity_t;
 typedef ogs_tlv_octet_t ogs_pfcp_tlv_alternative_smf_ip_address_t;
 typedef ogs_tlv_octet_t ogs_pfcp_tlv_packet_replication_and_detection_carry_on_information_t;
 typedef ogs_tlv_octet_t ogs_pfcp_tlv_smf_set_id_t;
-typedef ogs_tlv_octet_t ogs_pfcp_tlv_quota_validity_time_t;
+typedef ogs_tlv_uint32_t ogs_pfcp_tlv_quota_validity_time_t;
 
 /* Structure for Group Infomration Element */
 typedef struct ogs_pfcp_tlv_ethernet_packet_filter_s {

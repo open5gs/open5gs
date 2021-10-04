@@ -20,7 +20,7 @@
 /*******************************************************************************
  * This file had been created by pfcp-tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2021-07-27 20:23:21.045510 by acetcom
+ * Created on: 2021-10-04 22:09:12.905975 by acetcom
  * from 29244-g10.docx
  ******************************************************************************/
 
@@ -171,10 +171,10 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_volume_threshold =
 
 ogs_tlv_desc_t ogs_pfcp_tlv_desc_time_threshold =
 {
-    OGS_TLV_VAR_STR,
+    OGS_TLV_UINT32,
     "Time Threshold",
     OGS_PFCP_TIME_THRESHOLD_TYPE,
-    0,
+    4,
     0,
     sizeof(ogs_pfcp_tlv_time_threshold_t),
     { NULL }
@@ -226,10 +226,10 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_inactivity_detection_time =
 
 ogs_tlv_desc_t ogs_pfcp_tlv_desc_reporting_triggers =
 {
-    OGS_TLV_UINT8,
+    OGS_TLV_UINT24,
     "Reporting Triggers",
     OGS_PFCP_REPORTING_TRIGGERS_TYPE,
-    1,
+    3,
     0,
     sizeof(ogs_pfcp_tlv_reporting_triggers_t),
     { NULL }
@@ -479,10 +479,10 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_usage_report_trigger =
 
 ogs_tlv_desc_t ogs_pfcp_tlv_desc_measurement_period =
 {
-    OGS_TLV_VAR_STR,
+    OGS_TLV_UINT32,
     "Measurement Period",
     OGS_PFCP_MEASUREMENT_PERIOD_TYPE,
-    0,
+    4,
     0,
     sizeof(ogs_pfcp_tlv_measurement_period_t),
     { NULL }
@@ -545,10 +545,10 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_time_of_last_packet =
 
 ogs_tlv_desc_t ogs_pfcp_tlv_desc_quota_holding_time =
 {
-    OGS_TLV_VAR_STR,
+    OGS_TLV_UINT32,
     "Quota Holding Time",
     OGS_PFCP_QUOTA_HOLDING_TIME_TYPE,
-    0,
+    4,
     0,
     sizeof(ogs_pfcp_tlv_quota_holding_time_t),
     { NULL }
@@ -578,10 +578,10 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_volume_quota =
 
 ogs_tlv_desc_t ogs_pfcp_tlv_desc_time_quota =
 {
-    OGS_TLV_VAR_STR,
+    OGS_TLV_UINT32,
     "Time Quota",
     OGS_PFCP_TIME_QUOTA_TYPE,
-    0,
+    4,
     0,
     sizeof(ogs_pfcp_tlv_time_quota_t),
     { NULL }
@@ -1216,10 +1216,10 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_additional_monitoring_time =
 
 ogs_tlv_desc_t ogs_pfcp_tlv_desc_event_quota =
 {
-    OGS_TLV_VAR_STR,
+    OGS_TLV_UINT32,
     "Event Quota",
     OGS_PFCP_EVENT_QUOTA_TYPE,
-    0,
+    4,
     0,
     sizeof(ogs_pfcp_tlv_event_quota_t),
     { NULL }
@@ -1227,10 +1227,10 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_event_quota =
 
 ogs_tlv_desc_t ogs_pfcp_tlv_desc_event_threshold =
 {
-    OGS_TLV_VAR_STR,
+    OGS_TLV_UINT32,
     "Event Threshold",
     OGS_PFCP_EVENT_THRESHOLD_TYPE,
-    0,
+    4,
     0,
     sizeof(ogs_pfcp_tlv_event_threshold_t),
     { NULL }
@@ -1502,10 +1502,10 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_smf_set_id =
 
 ogs_tlv_desc_t ogs_pfcp_tlv_desc_quota_validity_time =
 {
-    OGS_TLV_VAR_STR,
+    OGS_TLV_UINT32,
     "Quota Validity Time",
     OGS_PFCP_QUOTA_VALIDITY_TIME_TYPE,
-    0,
+    4,
     0,
     sizeof(ogs_pfcp_tlv_quota_validity_time_t),
     { NULL }

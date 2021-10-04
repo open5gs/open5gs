@@ -32,7 +32,7 @@
 
 #define OGS_MAX_NUM_OF_PDR              16
 #define OGS_MAX_NUM_OF_FAR              16
-#define OGS_MAX_NUM_OF_URR              2
+#define OGS_MAX_NUM_OF_URR              16
 #define OGS_MAX_NUM_OF_QER              4
 #define OGS_MAX_NUM_OF_BAR              1
 

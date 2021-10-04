@@ -229,6 +229,26 @@ typedef struct ogs_pfcp_urr_s {
     uint8_t                 *id_node;      /* Pool-Node for ID */
     ogs_pfcp_urr_id_t       id;
 
+    ogs_pfcp_measurement_method_t meas_method;
+    ogs_pfcp_reporting_triggers_t rep_triggers;
+
+    ogs_pfcp_measurement_period_t meas_period;
+
+    ogs_pfcp_volume_threshold_t vol_threshold;
+    ogs_pfcp_volume_quota_t vol_quota;
+
+    ogs_pfcp_event_threshold_t event_threshold;
+    ogs_pfcp_event_quota_t event_quota;
+
+    ogs_pfcp_time_threshold_t time_threshold;
+    ogs_pfcp_time_quota_t time_quota;
+
+    ogs_pfcp_quota_holding_time_t quota_holding_time;
+
+    ogs_pfcp_dropped_dl_traffic_threshold_t dropped_dl_traffic_threshold;
+
+    ogs_pfcp_quota_validity_time_t quota_validity_time;
+
     ogs_pfcp_sess_t         *sess;
 } ogs_pfcp_urr_t;
 
