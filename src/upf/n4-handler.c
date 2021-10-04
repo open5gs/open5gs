@@ -80,6 +80,14 @@ void upf_n4_handle_session_establishment_request(
     if (cause_value != OGS_PFCP_CAUSE_REQUEST_ACCEPTED)
         goto cleanup;
 
+    for (i = 0; i < OGS_MAX_NUM_OF_URR; i++) {
+        if (ogs_pfcp_handle_create_urr(&sess->pfcp, &req->create_urr[i],
+                    &cause_value, &offending_ie_value) == NULL)
+            break;
+    }
+    if (cause_value != OGS_PFCP_CAUSE_REQUEST_ACCEPTED)
+        goto cleanup;
+
     /* Setup GTP Node */
     ogs_list_for_each(&sess->pfcp.far_list, far) {
         ogs_assert(OGS_ERROR != ogs_pfcp_setup_far_gtpu_node(far));
@@ -297,6 +305,30 @@ void upf_n4_handle_session_modification_request(
             &cause_value, &offending_ie_value);
     if (cause_value != OGS_PFCP_CAUSE_REQUEST_ACCEPTED)
         goto cleanup;
+
+    for (i = 0; i < OGS_MAX_NUM_OF_URR; i++) {
+        if (ogs_pfcp_handle_create_urr(&sess->pfcp, &req->create_urr[i],
+                    &cause_value, &offending_ie_value) == NULL)
+            break;
+    }
+    if (cause_value != OGS_PFCP_CAUSE_REQUEST_ACCEPTED)
+        goto cleanup;
+
+    for (i = 0; i < OGS_MAX_NUM_OF_URR; i++) {
+        if (ogs_pfcp_handle_update_urr(&sess->pfcp, &req->update_urr[i],
+                    &cause_value, &offending_ie_value) == NULL)
+            break;
+    }
+    if (cause_value != OGS_PFCP_CAUSE_REQUEST_ACCEPTED)
+        goto cleanup;
+
+    for (i = 0; i < OGS_MAX_NUM_OF_URR; i++) {
+        if (ogs_pfcp_handle_remove_urr(&sess->pfcp, &req->remove_urr[i],
+                &cause_value, &offending_ie_value) == false)
+            break;
+    }
+    if (cause_value != OGS_PFCP_CAUSE_REQUEST_ACCEPTED)
+        goto cleanup;    
 
     /* Setup GTP Node */
     ogs_list_for_each(&sess->pfcp.far_list, far) {

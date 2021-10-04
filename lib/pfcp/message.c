@@ -226,10 +226,10 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_inactivity_detection_time =
 
 ogs_tlv_desc_t ogs_pfcp_tlv_desc_reporting_triggers =
 {
-    OGS_TLV_UINT8,
+    OGS_TLV_UINT24,
     "Reporting Triggers",
     OGS_PFCP_REPORTING_TRIGGERS_TYPE,
-    1,
+    3,
     0,
     sizeof(ogs_pfcp_tlv_reporting_triggers_t),
     { NULL }
@@ -545,10 +545,10 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_time_of_last_packet =
 
 ogs_tlv_desc_t ogs_pfcp_tlv_desc_quota_holding_time =
 {
-    OGS_TLV_VAR_STR,
+    OGS_TLV_UINT32,
     "Quota Holding Time",
     OGS_PFCP_QUOTA_HOLDING_TIME_TYPE,
-    0,
+    4,
     0,
     sizeof(ogs_pfcp_tlv_quota_holding_time_t),
     { NULL }
@@ -1502,10 +1502,10 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_smf_set_id =
 
 ogs_tlv_desc_t ogs_pfcp_tlv_desc_quota_validity_time =
 {
-    OGS_TLV_VAR_STR,
+    OGS_TLV_UINT32,
     "Quota Validity Time",
     OGS_PFCP_QUOTA_VALIDITY_TIME_TYPE,
-    0,
+    4,
     0,
     sizeof(ogs_pfcp_tlv_quota_validity_time_t),
     { NULL }

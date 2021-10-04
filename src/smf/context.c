@@ -1593,6 +1593,7 @@ smf_bearer_t *smf_qos_flow_add(smf_sess_t *sess)
     ogs_pfcp_far_t *dl_far = NULL;
     ogs_pfcp_far_t *ul_far = NULL;
     ogs_pfcp_qer_t *qer = NULL;
+    ogs_pfcp_urr_t *urr = NULL;
 
     ogs_assert(sess);
 
@@ -1671,6 +1672,16 @@ smf_bearer_t *smf_qos_flow_add(smf_sess_t *sess)
 
     ogs_pfcp_pdr_associate_qer(dl_pdr, qer);
     ogs_pfcp_pdr_associate_qer(ul_pdr, qer);
+
+    urr = ogs_pfcp_urr_add(&sess->pfcp);
+    ogs_assert(urr);
+    urr->meas_method.desc = OGS_PFCP_MEASUREMENT_METHOD_VOLUM;
+    urr->rep_triggers.volth = 1;
+    urr->vol_threshold.tovol = 1;
+    urr->vol_threshold.tot_vol = 104857600; // 100mb
+    urr->vol_threshold_len = sizeof(uint8_t) +
+                                sizeof(urr->vol_threshold.tot_vol);
+    ogs_pfcp_pdr_associate_urr(dl_pdr, urr);
 
     /* Allocate QFI */
     ogs_pool_alloc(&sess->qfi_pool, &qos_flow->qfi_node);

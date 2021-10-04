@@ -933,6 +933,83 @@ typedef struct ogs_pfcp_user_plane_report_s {
     } error_indication;
 } ogs_pfcp_user_plane_report_t;
 
+typedef struct ogs_pfcp_measurement_method_s {
+#define OGS_PFCP_MEASUREMENT_METHOD_DURAT       1
+#define OGS_PFCP_MEASUREMENT_METHOD_VOLUM       2
+#define OGS_PFCP_MEASUREMENT_METHOD_EVENT       4
+    uint8_t desc;
+} ogs_pfcp_measurement_method_t;
+
+
+typedef struct ogs_pfcp_reporting_triggers_s {
+union {
+    struct {
+        ED8(uint8_t liusa:1;,
+            uint8_t droth:1;,
+            uint8_t stopt:1;,
+            uint8_t start:1;,
+            uint8_t quhti:1;,
+            uint8_t timth:1;,
+            uint8_t volth:1;,
+            uint8_t perio:1;)
+    };
+    uint8_t reptri_5;
+};
+union {
+    struct {
+        ED8(uint8_t quvti:1;,
+            uint8_t ipmjl:1;,
+            uint8_t evequ:1;,
+            uint8_t eveth:1;,
+            uint8_t macar:1;,
+            uint8_t envcl:1;,
+            uint8_t timqu:1;,
+            uint8_t volqu:1;)
+    };
+    uint8_t reptri_6;
+};
+union {
+   uint8_t reemr;
+   uint8_t reptri_7; 
+};
+} __attribute__ ((packed)) ogs_pfcp_reporting_triggers_t;
+
+typedef uint32_t ogs_pfcp_measurement_period_t;
+
+typedef struct ogs_pfcp_volume_threshold_s {
+ED3(uint8_t dlvol:1;,
+    uint8_t ulvol:1;,
+    uint8_t tovol:1;)
+    uint64_t tot_vol;
+    uint64_t up_vol;
+    uint64_t down_vol;
+} __attribute__ ((packed)) ogs_pfcp_volume_threshold_t;
+
+typedef struct ogs_pfcp_volume_quota_s {
+ED3(uint8_t dlvol:1;,
+    uint8_t ulvol:1;,
+    uint8_t tovol:1;)
+    uint64_t tot_vol;
+    uint64_t up_vol;
+    uint64_t down_vol;
+} __attribute__ ((packed)) ogs_pfcp_volume_quota_t;
+
+typedef uint32_t ogs_pfcp_event_threshold_t;
+typedef uint32_t ogs_pfcp_event_quota_t;
+typedef uint32_t ogs_pfcp_time_threshold_t;
+typedef uint32_t ogs_pfcp_time_quota_t;
+typedef uint32_t ogs_pfcp_quota_holding_time_t;
+typedef uint32_t ogs_pfcp_quota_validity_time_t;
+
+typedef struct ogs_pfcp_dropped_dl_traffic_threshold_s {
+ED2(uint8_t dlpa:1;,
+    uint8_t dlby:1;)
+    uint64_t dl_pkts;
+    uint64_t nb_dl_data;
+} __attribute__ ((packed)) ogs_pfcp_dropped_dl_traffic_threshold_t;
+
+
+
 #ifdef __cplusplus
 }
 #endif
