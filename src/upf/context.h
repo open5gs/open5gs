@@ -27,7 +27,6 @@
 #endif
 
 #include "ogs-gtp.h"
-#include "ogs-diameter-gx.h"
 #include "ogs-pfcp.h"
 #include "ogs-app.h"
 
