@@ -1008,8 +1008,6 @@ ED2(uint8_t dlpa:1;,
     uint64_t nb_dl_data;
 } __attribute__ ((packed)) ogs_pfcp_dropped_dl_traffic_threshold_t;
 
-
-
 #ifdef __cplusplus
 }
 #endif
