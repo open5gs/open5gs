@@ -35,6 +35,8 @@ head_inline: "<style> ul { padding-bottom: 1em; } </style>"
 
 - @nickvsnetworking
   - [My first 5G Core : Open5GS and UERANSIM](http://nickvsnetworking.com/my-first-5g-core-open5gs-and-ueransim/)
+  - [Backing up and restoring Open5GS](https://nickvsnetworking.com/backing-up-and-restoring-open5gs/)
+  - [Open5Gs Without NAT](https://nickvsnetworking.com/open5gs-without-nat/)
   - [Sending SMS in Open5GS LTE Networks using the SGs Interface and OsmoMSC](https://nickvsnetworking.com/sending-sms-in-open5gs-lte-networks-using-the-sgs-interface-and-osmomsc-with-smsos/)
   - [OsmoMSC and Open5GS MME – SGs Interface for CSCF / InterRAT Handover](https://nickvsnetworking.com/osmomsc-and-open5gs-mme-sgs-interface-for-cscf-interran-handover/)
   - [Static IPs for UEs](http://nickvsnetworking.com/open5gs-epc-static-ip-addresses-for-ues-apns-subscribers/)
