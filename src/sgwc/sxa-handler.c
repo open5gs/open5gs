@@ -902,7 +902,7 @@ void sgwc_sxa_handle_session_modification_response(
                 indication = gtp_req->indication_flags.data;
             }
 
-            if (indication && indication->hi) {
+            if (indication && indication->handover_indication) {
                 recv_message->h.type = OGS_GTP_MODIFY_BEARER_REQUEST_TYPE;
                 recv_message->h.teid = sess->pgw_s5c_teid;
 

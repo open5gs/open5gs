@@ -375,6 +375,7 @@ for key in msg_list.keys():
 type_list["Recovery"]["size"] = 1                       # Type : 3
 type_list["EBI"]["size"] = 1                            # Type : 73
 type_list["RAT Type"]["size"] = 1                       # Type : 82
+type_list["Delay Value"]["size"] = 1                    # Type : 92
 type_list["Charging ID"]["size"] = 4                    # Type : 94
 type_list["PDN Type"]["size"] = 1                       # Type : 99
 type_list["PTI"]["size"] = 1                            # Type : 100

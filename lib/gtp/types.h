@@ -164,41 +164,86 @@ typedef struct ogs_gtp_ambr_s {
 
 /* 8.12 Indication */
 typedef struct ogs_gtp_indication_s {
-ED8(uint8_t daf:1;,
-    uint8_t dtf:1;,
-    uint8_t hi:1;,
-    uint8_t dfi:1;,
-    uint8_t oi:1;,
-    uint8_t isrsi:1;,
-    uint8_t israi:1;,
-    uint8_t sgwci:1;)
+ED8(uint8_t dual_address_bearer_flag:1;,
+    uint8_t direct_tunnel_flag:1;,
+    uint8_t handover_indication:1;,
+    uint8_t direct_forwarding_indication:1;,
+    uint8_t operation_indication:1;,
+    uint8_t idle_mode_signalling_reduction_supported_indication:1;,
+    uint8_t idle_mode_signalling_reduction_activation_indication:1;,
+    uint8_t sgw_change_indication:1;)
 
-ED8(uint8_t sqci:1;,
-    uint8_t uimsi:1;,
-    uint8_t cfsi:1;,
-    uint8_t crsi:1;,
-    uint8_t p:1;,
-    uint8_t pt:1;,
-    uint8_t si:1;,
-    uint8_t msv:1;)
+ED8(uint8_t subscribed_qos_change_indication:1;,
+    uint8_t unauthenticated_imsi:1;,
+    uint8_t change_f_teid_support_indication:1;,
+    uint8_t change_reporting_support_indication:1;,
+    uint8_t piggybacking_supported:1;,
+    uint8_t s5_s8_protocol_type:1;,
+    uint8_t scope_indication:1;,
+    uint8_t ms_validated:1;)
 
-ED8(uint8_t retloc:1;,
-    uint8_t pbic:1;,
-    uint8_t srni:1;,
-    uint8_t s6af:1;,
-    uint8_t s4af:1;,
-    uint8_t mbmdt:1;,
-    uint8_t israu:1;,
-    uint8_t ccrsi:1;)
+ED8(uint8_t retrieve_location_indication_flag:1;,
+    uint8_t propagate_bbai_information_change:1;,
+    uint8_t sgw_restoration_needed_indication:1;,
+    uint8_t static_ipv6_address_flag:1;,
+    uint8_t static_ipv4_address_flag:1;,
+    uint8_t management_based_mdt_allowed_flag:1;,
+    uint8_t isr_is_activated_for_the_ue:1;,
+    uint8_t csg_change_reporting_support_indication:1;)
+
+ED8(uint8_t change_of_presence_reporting_area_information_indication:1;,
+    uint8_t abnormal_release_of_radio_link:1;,
+    uint8_t pdn_pause_off_indication:1;,
+    uint8_t pdn_pause_on_indication:1;,
+    uint8_t pdn_pause_support_indication:1;,
+    uint8_t csfb_indication:1;,
+    uint8_t change_of_location_information_indication:1;,
+    uint8_t cs_to_ps_srvcc_indication:1;)
+
+ED8(uint8_t nbifom_support_indication:1;,
+    uint8_t ue_available_for_signalling_indication:1;,
+    uint8_t delay_tolerant_connection_indication:1;,
+    uint8_t buffered_dl_data_waiting_indication:1;,
+    uint8_t pending_subscription_change_indication:1;,
+    uint8_t p_cscf_restoration_indication:1;,
+    uint8_t associate_oci_with_sgw_node_s_identity:1;,
+    uint8_t associate_oci_with_pgw_node_s_identity:1;)
+
+ED8(uint8_t release_over_any_access_indication:1;,
+    uint8_t extended_pco_support_indication:1;,
+    uint8_t control_plane_only:1;,
+    uint8_t pending_mt_short_message_indication:1;,
+    uint8_t s11_u_tunnel_flag:1;,
+    uint8_t pending_network_initiated_pdn_connection_signalling_indication:1;,
+    uint8_t ue_not_authorised_cause_code_support_indication:1;,
+    uint8_t wlcp_pdn_connection_modification_support_indication:1;)
+
+ED8(uint8_t _5gs_interworking_without_n26_indication:1;,
+    uint8_t return_preferred_indication:1;,
+    uint8_t _5gs_interworking_indication:1;,
+    uint8_t extended_ebi_value_range_support_indication:1;,
+    uint8_t lte_m_ue_indication:1;,
+    uint8_t lte_m_rat_type_reporting_to_pgw_indication:1;,
+    uint8_t enb_change_reporting_support_indication:1;,
+    uint8_t triggering_sgsn_initiated_pdp_context_creation_modification_indication:1;)
+
+ED8(uint8_t create_session_request_message_forwarded_indication:1;,
+    uint8_t mt_edt_not_applicable:1;,
+    uint8_t mt_edt_applicable:1;,
+    uint8_t no_5gs_n26_mobility_indication:1;,
+    uint8_t _5gc_not_restricted_support:1;,
+    uint8_t _5gc_not_restricted_indication:1;,
+    uint8_t _5g_srvcc_ho_indication:1;,
+    uint8_t ethernet_pdn_support_indication:1;)
 
 ED8(uint8_t spare1:1;,
     uint8_t spare2:1;,
     uint8_t spare3:1;,
     uint8_t spare4:1;,
-    uint8_t spare5:1;,
-    uint8_t csfbi:1;,
-    uint8_t clii:1;,
-    uint8_t cpsr:1;)
+    uint8_t same_iwk_scef_selected_for_monitoring_event_indication:1;,
+    uint8_t notify_source_enodeb_indication:1;,
+    uint8_t indirect_data_forwarding_with_upf_indication:1;,
+    uint8_t emergency_pdu_session_indication:1;)
 } __attribute__ ((packed)) ogs_gtp_indication_t;
 
 /* 8.13 Protocol Configuration Options (PCO) 

@@ -194,18 +194,20 @@ ogs_pkbuf_t *mme_s11_build_create_session_request(
     }
 
     memset(&indication, 0, sizeof(ogs_gtp_indication_t));
+    req->indication_flags.presence = 1;
+    req->indication_flags.data = &indication;
+    req->indication_flags.len = sizeof(ogs_gtp_indication_t);
+
+    indication.change_reporting_support_indication = 1;
+    indication.enb_change_reporting_support_indication = 1;
+
     if (req->pdn_type.u8 == OGS_PDU_SESSION_TYPE_IPV4V6) {
-	    indication.daf = 1;
+	    indication.dual_address_bearer_flag = 1;
     }
 
     if (sess->request_type.value == OGS_NAS_EPS_REQUEST_TYPE_HANDOVER) {
-	    indication.hi = 1;
-    }
-
-    if (indication.daf || indication.hi) {
+	    indication.handover_indication = 1;
 	    req->indication_flags.presence = 1;
-	    req->indication_flags.data = &indication;
-	    req->indication_flags.len = sizeof(ogs_gtp_indication_t);
     }
 
     session->paa.session_type = req->pdn_type.u8;
@@ -318,7 +320,7 @@ ogs_pkbuf_t *mme_s11_build_modify_bearer_request(
 
     if (sess->request_type.value == OGS_NAS_EPS_REQUEST_TYPE_HANDOVER) {
 	    memset(&indication, 0, sizeof(ogs_gtp_indication_t));
-	    indication.hi = 1;
+	    indication.handover_indication = 1;
 	    req->indication_flags.presence = 1;
 	    req->indication_flags.data = &indication;
 	    req->indication_flags.len = sizeof(ogs_gtp_indication_t);
@@ -351,6 +353,25 @@ ogs_pkbuf_t *mme_s11_build_modify_bearer_request(
         req->user_location_information.presence = 1;
         ogs_gtp_build_uli(&req->user_location_information, &uli, 
                 uli_buf, OGS_GTP_MAX_ULI_LEN);
+    }
+
+    /*
+     * 7.2.7 Modify Bearer Request
+     *
+     * Table 7.2.7-1: Information Elements in a Modify Bearer Request
+     *
+     * Delay Downlink Packet Nofication Request : Delay Value
+     *
+     * This IE shall be sent on the S11 interface for a UE triggered
+     * Packet Notification Service Request and UE initiated Connection
+     * Resume Request procedures. It shall contain the delay the SGW
+     * shall apply between receiving downlink data and sending Downlink
+     * Data Notification for all UEs served by that MME
+     * (see clause 5.3.4.2 of 3GPP TS 23.401 [3]).
+     */
+    if (mme_ue->nas_eps.type == MME_EPS_TYPE_SERVICE_REQUEST) {
+        req->delay_downlink_packet_notification_request.presence = 1;
+        req->delay_downlink_packet_notification_request.u8 = 0;
     }
 
     gtp_message.h.type = type;
@@ -398,7 +419,7 @@ ogs_pkbuf_t *mme_s11_build_delete_session_request(
             uli_buf, OGS_GTP_MAX_ULI_LEN);
 
     memset(&indication, 0, sizeof(ogs_gtp_indication_t));
-    indication.oi = 1;
+    indication.operation_indication = 1;
     req->indication_flags.presence = 1;
     req->indication_flags.data = &indication;
     req->indication_flags.len = sizeof(ogs_gtp_indication_t);
@@ -725,6 +746,9 @@ ogs_pkbuf_t *mme_s11_build_downlink_data_notification_ack(
     ack->cause.presence = 1;
     ack->cause.data = &cause;
     ack->cause.len = sizeof(cause);
+
+    ack->data_notification_delay.presence = 1;
+    ack->data_notification_delay.u8 = 0;
 
     gtp_message.h.type = type;
     return ogs_gtp_build_msg(&gtp_message);

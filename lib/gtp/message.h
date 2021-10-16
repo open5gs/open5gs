@@ -20,7 +20,7 @@
 /*******************************************************************************
  * This file had been created by gtp-tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2021-06-15 11:28:13.527903 by acetcom
+ * Created on: 2021-10-16 16:32:20.650061 by acetcom
  * from 29274-g30.docx
  ******************************************************************************/
 
@@ -524,7 +524,7 @@ typedef ogs_tlv_octet_t ogs_gtp_tlv_tmsi_t;
 typedef ogs_tlv_octet_t ogs_gtp_tlv_global_cn_id_t;
 typedef ogs_tlv_octet_t ogs_gtp_tlv_s103pdf_t;
 typedef ogs_tlv_octet_t ogs_gtp_tlv_s1udf_t;
-typedef ogs_tlv_octet_t ogs_gtp_tlv_delay_value_t;
+typedef ogs_tlv_uint8_t ogs_gtp_tlv_delay_value_t;
 typedef ogs_tlv_uint32_t ogs_gtp_tlv_charging_id_t;
 typedef ogs_tlv_octet_t ogs_gtp_tlv_charging_characteristics_t;
 typedef ogs_tlv_octet_t ogs_gtp_tlv_trace_information_t;

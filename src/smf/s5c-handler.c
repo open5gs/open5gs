@@ -440,7 +440,7 @@ void smf_s5c_handle_modify_bearer_request(
         indication = req->indication_flags.data;
     }
 
-    if (indication && indication->hi) {
+    if (indication && indication->handover_indication) {
         ogs_assert(sess->session.name);
         wlan_sess = smf_sess_find_by_apn(
                 smf_ue, sess->session.name, OGS_GTP_RAT_TYPE_WLAN);

@@ -20,7 +20,7 @@
 /*******************************************************************************
  * This file had been created by gtp-tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2021-06-15 11:28:13.532535 by acetcom
+ * Created on: 2021-10-16 16:32:20.655097 by acetcom
  * from 29274-g30.docx
  ******************************************************************************/
 
@@ -479,10 +479,10 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_s1udf_0 =
 
 ogs_tlv_desc_t ogs_gtp_tlv_desc_delay_value_0 =
 {
-    OGS_TLV_VAR_STR,
+    OGS_TLV_UINT8,
     "Delay Value",
     OGS_GTP_DELAY_VALUE_TYPE,
-    0,
+    1,
     0,
     sizeof(ogs_gtp_tlv_delay_value_t),
     { NULL }
