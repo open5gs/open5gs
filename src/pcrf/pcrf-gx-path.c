@@ -544,6 +544,14 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
         ret = fd_msg_avp_new(ogs_diam_gx_supported_features, 0, &avp);
         ogs_assert(ret == 0);
 
+        ret = fd_msg_avp_new(ogs_diam_vendor_id, 0, &avpch1);
+        ogs_assert(ret == 0);
+        val.i32 = OGS_3GPP_VENDOR_ID;
+        ret = fd_msg_avp_setvalue (avpch1, &val);
+        ogs_assert(ret == 0);
+        ret = fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1);
+        ogs_assert(ret == 0);
+
         ret = fd_msg_avp_new(ogs_diam_gx_feature_list_id, 0, &avpch1);
         ogs_assert(ret == 0);
         val.i32 = 1;
