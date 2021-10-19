@@ -56,9 +56,10 @@ char *ogs_nas_5gs_suci_from_mobile_identity(
 {
     ogs_nas_5gs_mobile_identity_suci_t *mobile_identity_suci = NULL;
     ogs_plmn_id_t plmn_id;
-    char tmp[OGS_MAX_IMSI_BCD_LEN+1];
+    char tmp[OGS_NAS_MAX_SCHEME_OUTPUT_LEN*2+1];
     char routing_indicator[5];
     char *suci = NULL;
+    int scheme_output_len = 0;
 
     ogs_assert(mobile_identity);
 
@@ -102,9 +103,12 @@ char *ogs_nas_5gs_suci_from_mobile_identity(
         }
     }
 
-    ogs_expect_or_return_val(mobile_identity->length > 8, NULL);
+    scheme_output_len = mobile_identity->length - 8;
+    ogs_expect_or_return_val(scheme_output_len > 0, NULL);
+    ogs_expect_or_return_val(
+            scheme_output_len <= OGS_NAS_MAX_SCHEME_OUTPUT_LEN, NULL);
     ogs_buffer_to_bcd(mobile_identity_suci->scheme_output,
-            mobile_identity->length - 8, tmp);
+            scheme_output_len, tmp);
 
     suci = ogs_mstrcatf(suci, "%s-%d-%d-%s",
             routing_indicator,
