@@ -155,7 +155,7 @@ for o, a in opts:
         if outdir.rfind('/') != len(outdir):
             outdir += '/'
     if o in ("-c", "--cache"):
-        cache = a
+        cachedir = a
         if cachedir.rfind('/') != len(cachedir):
             cachedir += '/'
     if o in ("-h", "--help"):
@@ -457,7 +457,7 @@ for (k, v) in sorted_type_list:
     f.write("#define OGS_GTP_" + v_upper(k) + "_TYPE " + v + "\n")
 f.write("\n")
 
-f.write("/* Infomration Element TLV Descriptor */\n")
+f.write("/* Information Element TLV Descriptor */\n")
 for (k, v) in sorted_type_list:
     if k in group_list.keys():
         continue
@@ -475,7 +475,7 @@ for k, v in group_list.items():
 tmp = [(k, v["index"]) for k, v in group_list.items()]
 sorted_group_list = sorted(tmp, key=lambda tup: int(tup[1]))
 
-f.write("/* Group Infomration Element TLV Descriptor */\n")
+f.write("/* Group Information Element TLV Descriptor */\n")
 for (k, v) in sorted_group_list:
     for instance in range(0, int(type_list[k]["max_instance"])+1):
         f.write("extern ogs_tlv_desc_t ogs_gtp_tlv_desc_" + v_lower(k))
@@ -487,7 +487,7 @@ for (k, v) in sorted_msg_list:
     f.write("extern ogs_tlv_desc_t ogs_gtp_tlv_desc_" + v_lower(k) + ";\n")
 f.write("\n")
 
-f.write("/* Structure for Infomration Element */\n")
+f.write("/* Structure for Information Element */\n")
 for (k, v) in sorted_type_list:
     if k in group_list.keys():
         continue
@@ -506,7 +506,7 @@ for (k, v) in sorted_type_list:
         f.write("typedef ogs_tlv_octet_t ogs_gtp_tlv_" + v_lower(k) + "_t;\n")
 f.write("\n")
 
-f.write("/* Structure for Group Infomration Element */\n")
+f.write("/* Structure for Group Information Element */\n")
 for (k, v) in sorted_group_list:
     f.write("typedef struct ogs_gtp_tlv_" + v_lower(k) + "_s {\n")
     f.write("    ogs_tlv_presence_t presence;\n")
