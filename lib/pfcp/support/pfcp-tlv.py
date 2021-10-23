@@ -185,7 +185,7 @@ for o, a in opts:
         if outdir.rfind('/') != len(outdir):
             outdir += '/'
     if o in ("-c", "--cache"):
-        cache = a
+        cachedir = a
         if cachedir.rfind('/') != len(cachedir):
             cachedir += '/'
     if o in ("-h", "--help"):
