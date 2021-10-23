@@ -174,7 +174,7 @@ typedef struct smf_bearer_s {
         char        *name;          /* EPC: PCC Rule Name */
         char        *id;            /* 5GC: PCC Rule Id */
     } pcc_rule;
-    ogs_qos_t       qos;            /* QoS Infomration */
+    ogs_qos_t       qos;            /* QoS Information */
 
     OGS_POOL(pf_identifier_pool, uint8_t);
 
