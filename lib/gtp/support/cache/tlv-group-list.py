@@ -1,3 +1,4 @@
+# [Table 7.2.1-2: Bearer Context to be created within Create Session Request] Index = 11
 ies = []
 ies.append({ "ie_type" : "EBI", "ie_value" : "EPS Bearer ID", "presence" : "M", "instance" : "0", "comment" : ""})
 ies.append({ "ie_type" : "Bearer TFT", "ie_value" : "TFT", "presence" : "O", "instance" : "0", "comment" : "This IE may be included on the S4/S11 interfaces."})
@@ -18,37 +19,48 @@ ies.append({ "ie_type" : "Bearer QoS", "ie_value" : "Bearer Level QoS", "presenc
 type_list["F-TEID"]["max_instance"] = "7"
 ies.append({ "ie_type" : "F-TEID", "ie_value" : "S11-U MME F-TEID", "presence" : "CO", "instance" : "7", "comment" : "This IE shall be sent on the S11 interface, if S11-U is being used, during the E-UTRAN Initial Attach and UE requested PDN connectivity procedures. This IE may also be sent on the S11 interface, if S11-U is being used, during a Tracking Area Update procedure with Serving GW change, if the MME needs to establish the S11-U tunnel. See NOTE 2."})
 group_list["Bearer Context"] = { "index" : "193", "type" : "93", "ies" : ies }
+# [Table 7.2.1-3: Bearer Context to be removed within Create Session Request] Index = 12
 added_ies = group_list["Bearer Context"]["ies"]
+# [Table 7.2.1-4: Overload Control Information within Create Session Request] Index = 13
 ies = []
 ies.append({ "ie_type" : "Sequence Number", "ie_value" : "Overload Control Sequence Number", "presence" : "M", "instance" : "0", "comment" : "See clause 12.3.5.1.2.1 for the description and use of this parameter."})
 ies.append({ "ie_type" : "Metric", "ie_value" : "Overload Reduction Metric", "presence" : "M", "instance" : "0", "comment" : "See clause 12.3.5.1.2.3 for the description and use of this parameter."})
 ies.append({ "ie_type" : "EPC Timer", "ie_value" : "Period of Validity", "presence" : "M", "instance" : "0", "comment" : "See clause 12.3.5.1.2.2 for the description and use of this parameter.This IE should be set to 0 if the Overload Reduction Metric is null. This IE shall be ignored by the receiver if the Overload Reduction Metric is null."})
 group_list["Overload Control Information"] = { "index" : "280", "type" : "180", "ies" : ies }
+# [Table 7.2.1-5: Remote UE Context Connected within Create Session Request] Index = 14
 ies = []
 ies.append({ "ie_type" : "Remote User ID", "ie_value" : "Remote User ID", "presence" : "M", "instance" : "0", "comment" : "See clause 8.123 for the description and use of this parameter"})
 ies.append({ "ie_type" : "Remote UE IP Information", "ie_value" : "Remote UE IP Information", "presence" : "M", "instance" : "0", "comment" : "See clause 8.124 for the description and use of this parameter"})
 group_list["Remote UE Context"] = { "index" : "291", "type" : "191", "ies" : ies }
+# [Table 7.2.2-2: Bearer Context Created within Create Session Response] Index = 16
 added_ies = group_list["Bearer Context"]["ies"]
 added_ies.append({ "ie_type" : "Cause", "ie_value" : "Cause", "presence" : "M", "instance" : "0", "comment" : "This IE shall indicate if the bearer handling was successful, and if not, it gives information on the reason. (NOTE 1, NOTE 2, NOTE 3)"})
 added_ies.append({ "ie_type" : "Charging ID", "ie_value" : "Charging Id", "presence" : "C", "instance" : "0", "comment" : "This IE shall be included on the S5/S8 interface for an E-UTRAN initial attach, a Handover from Trusted or Untrusted Non-3GPP IP Access to E-UTRAN, a PDP Context Activation, a Handover from Trusted or Untrusted Non-3GPP IP Access to UTRAN/GERAN and a UE requested PDN connectivity."})
 added_ies.append({ "ie_type" : "Bearer Flags", "ie_value" : "Bearer Flags", "presence" : "O", "instance" : "0", "comment" : "Applicable flags are:PPC (Prohibit Payload Compression) : this flag may be set on the S5/S8 and S4 interfaces."})
 group_list["Bearer Context"] = { "index" : "193", "type" : "93", "ies" : added_ies }
+# [Table 7.2.2-3: Bearer Context marked for removal within a Create Session Response] Index = 17
 added_ies = group_list["Bearer Context"]["ies"]
+# [Table 7.2.2-4: Load Control Information within Create Session Response] Index = 18
 ies = []
 ies.append({ "ie_type" : "Sequence Number", "ie_value" : "Load Control Sequence Number", "presence" : "M", "instance" : "0", "comment" : "See clause 12.2.5.1.2.1 for the description and use of this parameter."})
 ies.append({ "ie_type" : "Metric", "ie_value" : "Load Metric", "presence" : "M", "instance" : "0", "comment" : "See clauses 12.2.5.1.2.2 and 12.2.5.1.2.3 for the description and use of this parameter."})
 ies.append({ "ie_type" : "APN and Relative Capacity", "ie_value" : "List of APN and Relative Capacity", "presence" : "CO", "instance" : "0", "comment" : "The IE shall (only) be present in the PGWs APN level Load Control Information IE.For indicating the APN level load, the PGW shall include one or more instances of this IE, up to maximum of 10, with the same type and instance value, representing a list of APN(s) & its respective Relative Capacity (sharing the same Load Metric).See clause 12.2.5.1.2.3 for the description and use of this parameter.See NOTE 1."})
 group_list["Load Control Information"] = { "index" : "281", "type" : "181", "ies" : ies }
+# [Table 7.2.2-5: Overload Control Information within Create Session Response] Index = 19
 added_ies = group_list["Overload Control Information"]["ies"]
 added_ies.append({ "ie_type" : "APN", "ie_value" : "List of Access Point Name", "presence" : "CO", "instance" : "0", "comment" : "The IE may (only) be present in the PGWs Overload Control Information IE.For indicating the APN level overload, the PGW shall include one or more instances of this IE, up to maximum of 10, with the same type and instance value, representing a list of APN(s) (sharing the same Overload Reduction Metric and Period of Validity). See NOTE 1."})
 group_list["Overload Control Information"] = { "index" : "280", "type" : "180", "ies" : added_ies }
+# [Table 7.2.3-2: Bearer Context within Create Bearer Request] Index = 21
 added_ies = group_list["Bearer Context"]["ies"]
 added_ies.append({ "ie_type" : "PCO", "ie_value" : "Protocol Configuration Options", "presence" : "O", "instance" : "0", "comment" : "This IE may be sent on the S5/S8 and S4/S11 interfaces if ePCO is not supported by the UE or the network. This bearer level IE takes precedence over the PCO IE in the message body if they both exist."})
 added_ies.append({ "ie_type" : "ePCO", "ie_value" : "Extended Protocol Configuration Options", "presence" : "O", "instance" : "0", "comment" : "This IE may be sent on the S5/S8 and S11 interfaces if the UE and the network support ePCO. "})
 added_ies.append({ "ie_type" : "Maximum Packet Loss Rate", "ie_value" : "Maximum Packet Loss Rate", "presence" : "O", "instance" : "0", "comment" : "This IE may be included on the S5/S8 interfaces if the PGW needs to send Maximum Packet Loss Rate as specified in clause 5.4.1 of 3GPP TS 23.401 [3]. This IE is only applicable for QCI 1. "})
 group_list["Bearer Context"] = { "index" : "193", "type" : "93", "ies" : added_ies }
+# [Table 7.2.3-3: Load Control Information within Create Bearer Request] Index = 22
 added_ies = group_list["Load Control Information"]["ies"]
+# [Table 7.2.3-4: Overload Control Information within Create Bearer Request] Index = 23
 added_ies = group_list["Overload Control Information"]["ies"]
+# [Table 7.2.4-2: Bearer Context within Create Bearer Response] Index = 25
 added_ies = group_list["Bearer Context"]["ies"]
 type_list["F-TEID"]["max_instance"] = "8"
 added_ies.append({ "ie_type" : "F-TEID", "ie_value" : "S2b-U ePDG F-TEID", "presence" : "C", "instance" : "8", "comment" : "This IE shall be sent on the S2b interface."})
@@ -60,52 +72,97 @@ type_list["F-TEID"]["max_instance"] = "11"
 added_ies.append({ "ie_type" : "F-TEID", "ie_value" : "S2a-U PGW F-TEID", "presence" : "C", "instance" : "11", "comment" : "This IE shall be sent on the S2a interface. It shall be used to correlate the bearers with those in the Create Bearer Request."})
 added_ies.append({ "ie_type" : "RAN/NAS Cause", "ie_value" : "RAN/NAS Cause", "presence" : "CO", "instance" : "0", "comment" : "If the bearer creation failed, the MME shall include this IE on the S11 interface to indicate the RAN cause and/or the NAS cause of the bearer creation failure, if available and if this information is permitted to be sent to the PGW operator according to MME operators policy. If both a RAN cause and a NAS cause are generated, then several IEs with the same type and instance value shall be included to represent a list of causes.The SGW shall include this IE on the S5/S8 interface if it receives it from the MME."})
 group_list["Bearer Context"] = { "index" : "193", "type" : "93", "ies" : added_ies }
+# [Table 7.2.4-3: Overload Control Information within Create Bearer Response] Index = 26
 added_ies = group_list["Overload Control Information"]["ies"]
+# [Table 7.2.5-2: Overload Control Information within Bearer Resource Command] Index = 28
 added_ies = group_list["Overload Control Information"]["ies"]
+# [Table 7.2.6-2: Overload Control Information within Bearer Resource Failure Indication] Index = 30
 added_ies = group_list["Overload Control Information"]["ies"]
+# [Table 7.2.7-2: Bearer Context to be modified within Modify Bearer Request] Index = 32
 added_ies = group_list["Bearer Context"]["ies"]
+# [Table 7.2.7-3: Bearer Context to be removed within Modify Bearer Request] Index = 33
 added_ies = group_list["Bearer Context"]["ies"]
+# [Table 7.2.7-4: Overload Control Information within Modify Bearer Request] Index = 34
 added_ies = group_list["Overload Control Information"]["ies"]
+# [Table 7.2.8-2: Bearer Context modified within Modify Bearer Response] Index = 36
 added_ies = group_list["Bearer Context"]["ies"]
+# [Table 7.2.8-3: Bearer Context marked for removal within Modify Bearer Response] Index = 37
 added_ies = group_list["Bearer Context"]["ies"]
+# [Table 7.2.8-4: Load Control Information within Modify Bearer Response] Index = 38
 added_ies = group_list["Load Control Information"]["ies"]
+# [Table 7.2.8-5: Overload Control Information within Modify Bearer Response] Index = 39
 added_ies = group_list["Overload Control Information"]["ies"]
+# [Table 7.2.9.1-2: Overload Control Information within Delete Session Request] Index = 41
 added_ies = group_list["Overload Control Information"]["ies"]
+# [Table 7.2.9.2-2: Bearer Context within Delete Bearer Request] Index = 43
 added_ies = group_list["Bearer Context"]["ies"]
+# [Table 7.2.9-3: Load Control Information within Delete Bearer Request] Index = 44
 added_ies = group_list["Load Control Information"]["ies"]
+# [Table 7.2.9-4: Overload Control Information within Delete Bearer Request] Index = 45
 added_ies = group_list["Overload Control Information"]["ies"]
+# [Table 7.2.10.1-2: Load Control Information within Delete Session Response] Index = 47
 added_ies = group_list["Load Control Information"]["ies"]
+# [Table 7.2.10.1-3: Overload Control Information within Delete Session Response] Index = 48
 added_ies = group_list["Overload Control Information"]["ies"]
+# [Table 7.2.10.2-2: Bearer Context within Delete Bearer Response] Index = 50
 added_ies = group_list["Bearer Context"]["ies"]
+# [Table 7.2.10.2-3: Overload Control Information within Delete Bearer Response] Index = 51
 added_ies = group_list["Overload Control Information"]["ies"]
+# [Table 7.2.11.1-2: Load Control Information within Downlink Data Notification] Index = 53
 added_ies = group_list["Load Control Information"]["ies"]
+# [Table 7.2.11.1-3: Overload Control Information within Downlink Data Notification] Index = 54
 added_ies = group_list["Overload Control Information"]["ies"]
+# [Table 7.2.14.1-2: Bearer Context within Modify Bearer Command] Index = 60
 added_ies = group_list["Bearer Context"]["ies"]
+# [Table 7.2.14-3: Overload Control Information within Modify Bearer Command] Index = 61
 added_ies = group_list["Overload Control Information"]["ies"]
+# [Table 7.2.14-2: Overload Control Information within Modify Bearer Failure Indication] Index = 63
 added_ies = group_list["Overload Control Information"]["ies"]
+# [Table 7.2.15-2: Bearer Context within Update Bearer Request] Index = 65
 added_ies = group_list["Bearer Context"]["ies"]
 added_ies.append({ "ie_type" : "APCO", "ie_value" : "Additional Protocol Configuration Options", "presence" : "CO", "instance" : "0", "comment" : "The PGW shall include the Additional Prococol Configuration Options (APCO) IE on the S2b interface, including the list of available P-CSCF addresses, as part of the P-CSCF restoration extension procedure for the untrusted WLAN access, as specified in 3GPP TS 23.380 [61]."})
 group_list["Bearer Context"] = { "index" : "193", "type" : "93", "ies" : added_ies }
+# [Table 7.2.15-3: Load Control Information within Update Bearer Request] Index = 66
 added_ies = group_list["Load Control Information"]["ies"]
+# [Table 7.2.15-4: Overload Control Information within Update Bearer Request] Index = 67
 added_ies = group_list["Overload Control Information"]["ies"]
+# [Table 7.2.16-2: Bearer Context within Update Bearer Response] Index = 69
 added_ies = group_list["Bearer Context"]["ies"]
+# [Table 7.2.16-3: Overload Control Information within Update Bearer Response] Index = 70
 added_ies = group_list["Overload Control Information"]["ies"]
+# [Table 7.2.17.1-2: Bearer Context within Delete Bearer Command] Index = 72
 added_ies = group_list["Bearer Context"]["ies"]
+# [Table 7.2.17.1-3: Overload Control Information within Delete Bearer Command] Index = 73
 added_ies = group_list["Overload Control Information"]["ies"]
+# [Table 7.2.17.2-2: Bearer Context within Delete Bearer Failure Indication] Index = 75
 added_ies = group_list["Bearer Context"]["ies"]
+# [Table 7.2.17-3: Overload Control Information within Delete Bearer Failure Indication] Index = 76
 added_ies = group_list["Overload Control Information"]["ies"]
+# [Table 7.2.18-2: Bearer Context within Create Indirect Data Forwarding Tunnel Request] Index = 78
 added_ies = group_list["Bearer Context"]["ies"]
+# [Table 7.2.19-2: Bearer Context within Create Indirect Data Forwarding Tunnel Response] Index = 80
 added_ies = group_list["Bearer Context"]["ies"]
+# [Table 7.2.22-2: Load Control Information within Release Access Bearers Response] Index = 83
 added_ies = group_list["Load Control Information"]["ies"]
+# [Table 7.2.22-3: Overload Control Information within Release Access Bearers Response] Index = 84
 added_ies = group_list["Overload Control Information"]["ies"]
+# [Table 7.2.24-2: Bearer Context to be modified within Modify Access Bearers Request] Index = 87
 added_ies = group_list["Bearer Context"]["ies"]
+# [Table 7.2.24-3: Bearer Context to be removed within Modify Access Bearers Request] Index = 88
 added_ies = group_list["Bearer Context"]["ies"]
+# [Table 7.2.25-2: Bearer Context modified within Modify Access Bearers Response] Index = 90
 added_ies = group_list["Bearer Context"]["ies"]
+# [Table 7.2.25-3: Bearer Context marked for removal within Modify Access Bearers Response] Index = 91
 added_ies = group_list["Bearer Context"]["ies"]
+# [Table 7.2.25-4: Load Control Information within Modify Access Bearers Response] Index = 92
 added_ies = group_list["Load Control Information"]["ies"]
+# [Table 7.2.25-5: Overload Control Information within Modify Access Bearers Response] Index = 93
 added_ies = group_list["Overload Control Information"]["ies"]
+# [Table 7.2.26-2: Remote UE Context Connected within Remote UE Report Notification] Index = 95
 added_ies = group_list["Remote UE Context"]["ies"]
+# [Table 7.2.26-3: Remote UE Context Disconnected with Remote UE Report Notification ] Index = 96
 added_ies = group_list["Remote UE Context"]["ies"]
+# [Table 7.3.1-2: MME/SGSN/AMF UE EPS PDN Connections within Forward Relocation Request] Index = 99
 ies = []
 ies.append({ "ie_type" : "APN", "ie_value" : "APN", "presence" : "M", "instance" : "0", "comment" : ""})
 ies.append({ "ie_type" : "APN Restriction", "ie_value" : "APN Restriction", "presence" : "C", "instance" : "0", "comment" : "This IE denotes the restriction on the combination of types of APN for the APN associated with this EPS bearer Context. The target MME or SGSN determines the Maximum APN Restriction using the APN Restriction. If available, the source MME/S4SGSN shall include this IE."})
@@ -133,16 +190,20 @@ ies.append({ "ie_type" : "Remote UE Context", "ie_value" : "Remote UE Context Co
 ies.append({ "ie_type" : "PDN Type", "ie_value" : "PDN Type", "presence" : "CO", "instance" : "0", "comment" : "The source MME/SGSN/AMF shall include this IE on the S10/S3/S16/N26 interface, for a Non-IP PDN Connection, during an inter MME/SGSN/AMF mobility procedure, if the target MME/SGSN/AMF supports SGi Non-IP or Ethernet PDN connections."})
 ies.append({ "ie_type" : "Header Compression Configuration", "ie_value" : "Header Compression Configuration", "presence" : "CO", "instance" : "0", "comment" : "This IE shall be sent over the S10 interface if the use of IP Header Compression for Control Plane CIoT EPS optimisations has been negotiated with the UE and the target MME is known to support CIoT EPS optimisations."})
 group_list["PDN Connection"] = { "index" : "209", "type" : "109", "ies" : ies }
+# [Table 7.3.1-3: Bearer Context within MME/SGSN/AMF UE EPS PDN Connections within Forward Relocation Request] Index = 100
 added_ies = group_list["Bearer Context"]["ies"]
 added_ies.append({ "ie_type" : "F-Container", "ie_value" : "BSS Container", "presence" : "CO", "instance" : "0", "comment" : "The MME/S4 SGSN shall include the Packet Flow ID, Radio Priority, SAPI, PS Handover XID parameters in the TAU/RAU/Handover procedure, if available. See Figure 8.48-2. The Container Type shall be set to 2."})
 added_ies.append({ "ie_type" : "TI", "ie_value" : "Transaction Identifier", "presence" : "C", "instance" : "0", "comment" : "This IE shall be sent over S3/S10/S16 if the UE supports A/Gb and/or Iu mode."})
 group_list["Bearer Context"] = { "index" : "193", "type" : "93", "ies" : added_ies }
+# [Table 7.3.1-4: Remote UE Context Connected within MME/SGSN UE EPS PDN Connections within Forward Relocation Request] Index = 101
 added_ies = group_list["Remote UE Context"]["ies"]
+# [Table 7.3.1-5: MME UE SCEF PDN Connections within Forward Relocation Request] Index = 102
 ies = []
 ies.append({ "ie_type" : "APN", "ie_value" : "APN", "presence" : "M", "instance" : "0", "comment" : ""})
 ies.append({ "ie_type" : "EBI", "ie_value" : "Default EPS Bearer ID", "presence" : "M", "instance" : "0", "comment" : "This IE shall identify the default bearer of the SCEF PDN Connection."})
 ies.append({ "ie_type" : "Node Identifier", "ie_value" : "SCEF ID", "presence" : "M", "instance" : "0", "comment" : "This IE shall include the SCEF Identifier and the SCEF Realm for the APN."})
 group_list["SCEF PDN Connection"] = { "index" : "295", "type" : "195", "ies" : ies }
+# [Table 7.3.1-6: Subscribed V2X Information within Forward Relocation Request] Index = 103
 ies = []
 ies.append({ "ie_type" : "Services Authorized", "ie_value" : "LTE V2X Services Authorized", "presence" : "C", "instance" : "0", "comment" : "This IE shall be included to indicate the authorization status of the UE to use the LTE sidelink for V2X services."})
 type_list["Services Authorized"]["max_instance"] = "1"
@@ -152,22 +213,36 @@ type_list["Bit Rate"]["max_instance"] = "1"
 ies.append({ "ie_type" : "Bit Rate", "ie_value" : "NR UE Sidelink Aggregate Maximum Bit Rate", "presence" : "C", "instance" : "1", "comment" : "This IE shall be included if the UE is authorized for NR V2X services."})
 ies.append({ "ie_type" : "PC5 QoS Parameters", "ie_value" : "PC5 QoS Parameters", "presence" : "C", "instance" : "0", "comment" : "This IE shall be included if the UE is authorized for NR V2X services."})
 group_list["V2X Context"] = { "index" : "102", "type" : "2", "ies" : ies }
+# [Table 7.3.1-7: PC5 QoS Parameters within Forward Relocation Request] Index = 104
 ies = []
 ies.append({ "ie_type" : "PC5 QoS Flow", "ie_value" : "PC5 QoS Flows", "presence" : "M", "instance" : "0", "comment" : "Several IEs with this type and same instance value may be included as necessary to represent a list of PC5 QoS Flows."})
 ies.append({ "ie_type" : "Bit Rate", "ie_value" : "PC5 Link Aggregated Bit Rates", "presence" : "O", "instance" : "0", "comment" : "This IE may be included for the non-GBR PC5 QoS Flows."})
 group_list["PC5 QoS Parameters"] = { "index" : "105", "type" : "5", "ies" : ies }
+# [Table 7.3.2-2: Bearer Context ] Index = 106
 added_ies = group_list["Bearer Context"]["ies"]
 added_ies.append({ "ie_type" : "Packet Flow ID", "ie_value" : "Packet Flow ID", "presence" : "C", "instance" : "0", "comment" : "This IE shall be included if the message is used for PS handover and Inter RAT handover to/from A/Gb mode procedures."})
 group_list["Bearer Context"] = { "index" : "193", "type" : "93", "ies" : added_ies }
+# [Table 7.3.6-2: MME/SGSN/AMF UE EPS PDN Connections within Context Response] Index = 111
 added_ies = group_list["PDN Connection"]["ies"]
+# [Table 7.3.6-3: Bearer Context within MME/SGSN/AMF UE EPS PDN Connections within Context Response] Index = 112
 added_ies = group_list["Bearer Context"]["ies"]
+# [Table 7.3.6-4: Remote UE Context Connected within MME/SGSN UE EPS PDN Connections within Context Response] Index = 113
 added_ies = group_list["Remote UE Context"]["ies"]
+# [Table 7.3.7-2: Bearer Context within Context Acknowledge] Index = 116
 added_ies = group_list["Bearer Context"]["ies"]
+# [Table 8.28-1: Bearer Context Grouped Type] Index = 198
 added_ies = group_list["Bearer Context"]["ies"]
+# [Table 8.39-1: PDN Connection Grouped Type] Index = 221
 added_ies = group_list["PDN Connection"]["ies"]
+# [Table 8.111-1: Overload Control Information Grouped Type] Index = 326
 added_ies = group_list["Overload Control Information"]["ies"]
+# [Table 8.112-1: Load Control Information Grouped Type] Index = 327
 added_ies = group_list["Load Control Information"]["ies"]
+# [Table 8.122-1: Remote UE Context Grouped Type] Index = 337
 added_ies = group_list["Bearer Context"]["ies"]
+# [Table 8.126-1: PDN Connection Grouped Type] Index = 341
 added_ies = group_list["PDN Connection"]["ies"]
+# [Table 8.138-1: V2X Context Grouped Type] Index = 356
 added_ies = group_list["V2X Context"]["ies"]
+# [Table 8.140-1: PC5 QoS Parameters Grouped Type] Index = 357
 added_ies = group_list["PC5 QoS Parameters"]["ies"]
