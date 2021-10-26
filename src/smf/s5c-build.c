@@ -322,9 +322,9 @@ ogs_pkbuf_t *smf_s5c_build_create_bearer_request(
     rv = ogs_gtp_sockaddr_to_f_teid(
         bearer->pgw_s5u_addr, bearer->pgw_s5u_addr6, &pgw_s5u_teid, &len);
     ogs_expect_or_return_val(rv == OGS_OK, NULL);
-    req->bearer_contexts.s5_s8_u_sgw_f_teid.presence = 1;
-    req->bearer_contexts.s5_s8_u_sgw_f_teid.data = &pgw_s5u_teid;
-    req->bearer_contexts.s5_s8_u_sgw_f_teid.len = len;
+    req->bearer_contexts.s4_u_sgsn_f_teid.presence = 1;
+    req->bearer_contexts.s4_u_sgsn_f_teid.data = &pgw_s5u_teid;
+    req->bearer_contexts.s4_u_sgsn_f_teid.len = len;
 
     /* Bearer QoS */
     memset(&bearer_qos, 0, sizeof(bearer_qos));
