@@ -16,6 +16,12 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from docx import Document
+from docx.document import Document as _Document
+from docx.oxml.text.paragraph import CT_P
+from docx.oxml.table import CT_Tbl
+from docx.table import _Cell, Table
+from docx.text.paragraph import Paragraph
+
 import re, os, sys, string
 import datetime
 import getopt
@@ -138,6 +144,45 @@ def write_cells_to_file(name, cells):
         "\", \"instance\" : \"" + cells["instance"] + \
         "\", \"comment\" : \"" + cells["comment"] + "\"})\n")
 
+def document_paragraph_tables(document):
+
+    tables = []
+    # iterate .docx objects
+    def iter_block_items(parent):
+
+      if isinstance(parent, _Document):
+          parent_elm = parent.element.body
+      elif isinstance(parent, _Cell):
+          parent_elm = parent._tc
+      elif isinstance(parent, _Row):
+          parent_elm = parent._tr
+      else:
+          raise ValueError("Document format error.")
+
+      for child in parent_elm.iterchildren():
+          if isinstance(child, CT_P):
+              yield Paragraph(child, parent)
+          elif isinstance(child, CT_Tbl):
+              yield Table(child, parent)
+
+    idx = -1
+    paragraph = ''
+    for block in iter_block_items(document):
+        table=[]
+        # memoize the paragraph
+        if isinstance(block, Paragraph):
+          paragraph = block.text
+          continue
+        # fetch the table
+        if isinstance(block, Table):
+            idx += 1
+            table = block
+        # store table having a paragraph name
+        tables.append([idx, paragraph, table])
+
+    return tables
+
+
 try:
     opts, args = getopt.getopt(sys.argv[1:], "df:ho:c:", ["debug", "file", "help", "output", "cache"])
 except getopt.GetoptError as err:
@@ -177,11 +222,12 @@ else:
     f = open(cachefile, 'w') 
 
     msg_table = ""
-    for i, table in enumerate(document.tables):
+    for i, paragraph, table in document_paragraph_tables(document):
         cell = table.rows[0].cells[0]
         if cell.text.find('Message Type value') != -1:
             msg_table = table
-            d_print("Table Index = %d\n" % i)
+            d_print("Table Index = %d Name = [%s]\n" % (i, paragraph))
+            write_file(f, "# [%s] Index = %d\n" % (paragraph, i))
 
     for row in msg_table.rows[2:-4]:
         key = row.cells[1].text
@@ -209,11 +255,12 @@ else:
     f = open(cachefile, 'w') 
 
     ie_table = ""
-    for i, table in enumerate(document.tables):
+    for i, paragraph, table in document_paragraph_tables(document):
         cell = table.rows[0].cells[0]
         if cell.text.find('IE Type value') != -1:
             ie_table = table
-            d_print("Table Index = %d\n" % i)
+            d_print("Table Index = %d Name = [%s]\n" % (i, paragraph))
+            write_file(f, "# [%s] Index = %d\n" % (paragraph, i))
 
     for row in ie_table.rows[1:-5]:
         key = row.cells[1].text
@@ -253,7 +300,7 @@ else:
     document = Document(filename)
     f = open(cachefile, 'w') 
 
-    for i, table in enumerate(document.tables):
+    for i, paragraph, table in document_paragraph_tables(document):
         if table.rows[0].cells[0].text.find('Octet') != -1 and \
             table.rows[0].cells[2].text.find('IE Type') != -1:
             d_print("Table Index = %d\n" % i)
@@ -264,6 +311,8 @@ else:
                 continue;
             ie_type = re.findall('\d+', row.cells[2].text)[0]
             ie_name = re.sub('\s*IE Type.*', '', row.cells[2].text)
+
+            write_file(f, "# [%s] Index = %d\n" % (paragraph, i))
 
             if ie_name not in group_list.keys():
                 ies = []
