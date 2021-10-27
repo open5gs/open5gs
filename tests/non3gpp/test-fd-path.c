@@ -54,7 +54,8 @@ static void test_diam_config(void)
         FD_EXT_DIR OGS_DIR_SEPARATOR_S "dict_dcca.fdx";
     diam_config.num_of_ext++;
     diam_config.ext[diam_config.num_of_ext].module =
-        FD_EXT_DIR OGS_DIR_SEPARATOR_S "dict_dcca_3gpp.fdx";
+        FD_EXT_DIR OGS_DIR_SEPARATOR_S "dict_dcca_3gpp" \
+        OGS_DIR_SEPARATOR_S "dict_dcca_3gpp.fdx";
     diam_config.num_of_ext++;
 
     diam_config.conn[diam_config.num_of_conn].identity = TEST_HSS_IDENTITY;
