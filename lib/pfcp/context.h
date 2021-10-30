@@ -307,7 +307,6 @@ typedef struct ogs_pfcp_dev_s {
     char            ifname[OGS_MAX_IFNAME_LEN];
     ogs_socket_t    fd;
 
-    ogs_sockaddr_t  *link_local_addr;
     ogs_poll_t      *poll;
     bool            is_tap;
     uint8_t         mac_addr[6];

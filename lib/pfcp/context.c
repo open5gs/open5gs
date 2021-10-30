@@ -1672,10 +1672,6 @@ void ogs_pfcp_dev_remove(ogs_pfcp_dev_t *dev)
     ogs_assert(dev);
 
     ogs_list_remove(&self.dev_list, dev);
-
-    if (dev->link_local_addr)
-        ogs_freeaddrinfo(dev->link_local_addr);
-
     ogs_pool_free(&ogs_pfcp_dev_pool, dev);
 }
 
