@@ -20,8 +20,8 @@
 /*******************************************************************************
  * This file had been created by gtp-tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2021-10-16 16:32:20.650061 by acetcom
- * from 29274-g30.docx
+ * Created on: 2021-10-31 11:36:49.171023 by cbalint
+ * from ./lib/gtp/support/29274-g30.docx
  ******************************************************************************/
 
 #if !defined(OGS_GTP_INSIDE) && !defined(OGS_GTP_COMPILATION)
@@ -429,19 +429,169 @@ extern ogs_tlv_desc_t ogs_gtp_tlv_desc_bit_rate_1;
 extern ogs_tlv_desc_t ogs_gtp_tlv_desc_pc5_qos_flow_0;
 
 /* Group Information Element TLV Descriptor */
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_pc5_qos_parameters__forward_relocation_request__0;
 extern ogs_tlv_desc_t ogs_gtp_tlv_desc_pc5_qos_parameters_0;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_remote_ue_context__create_session_request__0;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_remote_ue_context__remote_ue_report_notification__0;
 extern ogs_tlv_desc_t ogs_gtp_tlv_desc_remote_ue_context_0;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_remote_ue_context__forward_relocation_request__0;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_remote_ue_context__context_response__0;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_v2x_context__forward_relocation_request__0;
 extern ogs_tlv_desc_t ogs_gtp_tlv_desc_v2x_context_0;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__create_session_request__created__0;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__create_session_request__created__1;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__create_session_request__removed__0;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__create_session_request__removed__1;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__create_session_response__created__0;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__create_session_response__created__1;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__create_session_response__removal__0;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__create_session_response__removal__1;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__create_bearer_request__0;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__create_bearer_request__1;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__create_bearer_response__0;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__create_bearer_response__1;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__modify_bearer_request__modified__0;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__modify_bearer_request__modified__1;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__modify_bearer_request__removed__0;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__modify_bearer_request__removed__1;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__modify_bearer_response__modified__0;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__modify_bearer_response__modified__1;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__modify_bearer_response__removal__0;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__modify_bearer_response__removal__1;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__delete_bearer_request__0;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__delete_bearer_request__1;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__delete_bearer_response__0;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__delete_bearer_response__1;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__modify_bearer_command__0;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__modify_bearer_command__1;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__update_bearer_request__0;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__update_bearer_request__1;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__update_bearer_response__0;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__update_bearer_response__1;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__delete_bearer_command__0;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__delete_bearer_command__1;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__delete_bearer_failure_indication__0;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__delete_bearer_failure_indication__1;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__create_indirect_data_forwarding_tunnel_request__0;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__create_indirect_data_forwarding_tunnel_request__1;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__create_indirect_data_forwarding_tunnel_response__0;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__create_indirect_data_forwarding_tunnel_response__1;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__modify_access_bearers_request__modified__0;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__modify_access_bearers_request__modified__1;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__modify_access_bearers_request__removed__0;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__modify_access_bearers_request__removed__1;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__modify_access_bearers_response__modified__0;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__modify_access_bearers_response__modified__1;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__modify_access_bearers_response__removal__0;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__modify_access_bearers_response__removal__1;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__forward_relocation_request__0;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__forward_relocation_request__1;
 extern ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context_0;
 extern ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context_1;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__context_response__0;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__context_response__1;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__context_acknowledge__0;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__context_acknowledge__1;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_pdn_connection__forward_relocation_request__0;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_pdn_connection__context_response__0;
 extern ogs_tlv_desc_t ogs_gtp_tlv_desc_pdn_connection_0;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__create_session_request__0;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__create_session_request__1;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__create_session_request__2;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__create_session_response__0;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__create_session_response__1;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__create_session_response__2;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__create_bearer_response__0;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__create_bearer_response__1;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__create_bearer_response__2;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__bearer_resource_command__0;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__bearer_resource_command__1;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__bearer_resource_command__2;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__bearer_resource_failure_indication__0;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__bearer_resource_failure_indication__1;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__bearer_resource_failure_indication__2;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__modify_bearer_request__0;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__modify_bearer_request__1;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__modify_bearer_request__2;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__modify_bearer_response__0;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__modify_bearer_response__1;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__modify_bearer_response__2;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__delete_session_request__0;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__delete_session_request__1;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__delete_session_request__2;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__delete_bearer_request__0;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__delete_bearer_request__1;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__delete_bearer_request__2;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__delete_session_response__0;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__delete_session_response__1;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__delete_session_response__2;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__delete_bearer_response__0;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__delete_bearer_response__1;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__delete_bearer_response__2;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__downlink_data_notification__0;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__downlink_data_notification__1;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__downlink_data_notification__2;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__modify_bearer_failure_indication__0;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__modify_bearer_failure_indication__1;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__modify_bearer_failure_indication__2;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__update_bearer_request__0;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__update_bearer_request__1;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__update_bearer_request__2;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__update_bearer_response__0;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__update_bearer_response__1;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__update_bearer_response__2;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__delete_bearer_command__0;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__delete_bearer_command__1;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__delete_bearer_command__2;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__delete_bearer_failure_indication__0;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__delete_bearer_failure_indication__1;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__delete_bearer_failure_indication__2;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__release_access_bearers_response__0;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__release_access_bearers_response__1;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__release_access_bearers_response__2;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__modify_access_bearers_response__0;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__modify_access_bearers_response__1;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__modify_access_bearers_response__2;
 extern ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information_0;
 extern ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information_1;
 extern ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information_2;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_load_control_information__create_session_response__0;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_load_control_information__create_session_response__1;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_load_control_information__create_session_response__2;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_load_control_information__create_bearer_request__0;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_load_control_information__create_bearer_request__1;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_load_control_information__create_bearer_request__2;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__create_bearer_request__0;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__create_bearer_request__1;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__create_bearer_request__2;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_load_control_information__modify_bearer_response__0;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_load_control_information__modify_bearer_response__1;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_load_control_information__modify_bearer_response__2;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_load_control_information__delete_bearer_request__0;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_load_control_information__delete_bearer_request__1;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_load_control_information__delete_bearer_request__2;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_load_control_information__delete_session_response__0;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_load_control_information__delete_session_response__1;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_load_control_information__delete_session_response__2;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_load_control_information__downlink_data_notification__0;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_load_control_information__downlink_data_notification__1;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_load_control_information__downlink_data_notification__2;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__modify_bearer_command__0;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__modify_bearer_command__1;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__modify_bearer_command__2;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_load_control_information__update_bearer_request__0;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_load_control_information__update_bearer_request__1;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_load_control_information__update_bearer_request__2;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_load_control_information__release_access_bearers_response__0;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_load_control_information__release_access_bearers_response__1;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_load_control_information__release_access_bearers_response__2;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_load_control_information__modify_access_bearers_response__0;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_load_control_information__modify_access_bearers_response__1;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_load_control_information__modify_access_bearers_response__2;
 extern ogs_tlv_desc_t ogs_gtp_tlv_desc_load_control_information_0;
 extern ogs_tlv_desc_t ogs_gtp_tlv_desc_load_control_information_1;
 extern ogs_tlv_desc_t ogs_gtp_tlv_desc_load_control_information_2;
-extern ogs_tlv_desc_t ogs_gtp_tlv_desc_scef_pdn_connection_0;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_scef_pdn_connection__forward_relocation_request__0;
 
 /* Message Descriptor */
 extern ogs_tlv_desc_t ogs_gtp_tlv_desc_echo_request;
@@ -628,58 +778,472 @@ typedef ogs_tlv_octet_t ogs_gtp_tlv_bit_rate_t;
 typedef ogs_tlv_octet_t ogs_gtp_tlv_pc5_qos_flow_t;
 
 /* Structure for Group Information Element */
-typedef struct ogs_gtp_tlv_pc5_qos_parameters_s {
+//  Name: [PC5 QoS Parameters]
+//  Context: [Forward Relocation Request]
+//  Action: []
+//  Table 7.3.1-7: PC5 QoS Parameters within Forward Relocation Request
+typedef struct ogs_gtp_tlv_pc5_qos_parameters__forward_relocation_request__s {
     ogs_tlv_presence_t presence;
     ogs_gtp_tlv_pc5_qos_flow_t pc5_qos_flows;
     ogs_gtp_tlv_bit_rate_t pc5_link_aggregated_bit_rates;
+} ogs_gtp_tlv_pc5_qos_parameters__forward_relocation_request__t;
+
+//  Name: [PC5 QoS Parameters]
+//  Context: []
+//  Action: []
+//  Table 8.140-1: PC5 QoS Parameters Grouped Type
+typedef struct ogs_gtp_tlv_pc5_qos_parameters_s {
+    ogs_tlv_presence_t presence;
 } ogs_gtp_tlv_pc5_qos_parameters_t;
 
-typedef struct ogs_gtp_tlv_remote_ue_context_s {
+//  Name: [Remote UE Context]
+//  Context: [Create Session Request]
+//  Action: []
+//  Table 7.2.1-5: Remote UE Context Connected within Create Session Request
+typedef struct ogs_gtp_tlv_remote_ue_context__create_session_request__s {
     ogs_tlv_presence_t presence;
     ogs_gtp_tlv_remote_user_id_t remote_user_id;
     ogs_gtp_tlv_remote_ue_ip_information_t remote_ue_ip_information;
+} ogs_gtp_tlv_remote_ue_context__create_session_request__t;
+
+//  Name: [Remote UE Context]
+//  Context: [Remote UE Report Notification]
+//  Action: []
+//  Table 7.2.26-2: Remote UE Context Connected within Remote UE Report Notification
+typedef struct ogs_gtp_tlv_remote_ue_context__remote_ue_report_notification__s {
+    ogs_tlv_presence_t presence;
+    ogs_gtp_tlv_remote_user_id_t remote_user_id;
+    ogs_gtp_tlv_remote_ue_ip_information_t remote_ue_ip_information;
+} ogs_gtp_tlv_remote_ue_context__remote_ue_report_notification__t;
+
+//  Name: [Remote UE Context]
+//  Context: []
+//  Action: []
+//  Table 7.2.26-3: Remote UE Context Disconnected with Remote UE Report Notification 
+typedef struct ogs_gtp_tlv_remote_ue_context_s {
+    ogs_tlv_presence_t presence;
+    ogs_gtp_tlv_remote_user_id_t remote_user_id;
 } ogs_gtp_tlv_remote_ue_context_t;
 
-typedef struct ogs_gtp_tlv_v2x_context_s {
+//  Name: [Remote UE Context]
+//  Context: [Forward Relocation Request]
+//  Action: []
+//  Table 7.3.1-4: Remote UE Context Connected within MME/SGSN UE EPS PDN Connections within Forward Relocation Request
+typedef struct ogs_gtp_tlv_remote_ue_context__forward_relocation_request__s {
+    ogs_tlv_presence_t presence;
+    ogs_gtp_tlv_remote_user_id_t remote_user_id;
+    ogs_gtp_tlv_remote_ue_ip_information_t remote_ue_ip_information;
+} ogs_gtp_tlv_remote_ue_context__forward_relocation_request__t;
+
+//  Name: [Remote UE Context]
+//  Context: [Context Response]
+//  Action: []
+//  Table 7.3.6-4: Remote UE Context Connected within MME/SGSN UE EPS PDN Connections within Context Response
+typedef struct ogs_gtp_tlv_remote_ue_context__context_response__s {
+    ogs_tlv_presence_t presence;
+    ogs_gtp_tlv_remote_user_id_t remote_user_id;
+    ogs_gtp_tlv_remote_ue_ip_information_t remote_ue_ip_information;
+} ogs_gtp_tlv_remote_ue_context__context_response__t;
+
+//  Name: [V2X Context]
+//  Context: [Forward Relocation Request]
+//  Action: []
+//  Table 7.3.1-6: Subscribed V2X Information within Forward Relocation Request
+typedef struct ogs_gtp_tlv_v2x_context__forward_relocation_request__s {
     ogs_tlv_presence_t presence;
     ogs_gtp_tlv_services_authorized_t lte_v2x_services_authorized;
     ogs_gtp_tlv_services_authorized_t nr_v2x_services_authorized;
     ogs_gtp_tlv_bit_rate_t lte_ue_sidelink_aggregate_maximum_bit_rate;
     ogs_gtp_tlv_bit_rate_t nr_ue_sidelink_aggregate_maximum_bit_rate;
-    ogs_gtp_tlv_pc5_qos_parameters_t pc5_qos_parameters;
+    ogs_gtp_tlv_pc5_qos_parameters__forward_relocation_request__t pc5_qos_parameters;
+} ogs_gtp_tlv_v2x_context__forward_relocation_request__t;
+
+//  Name: [V2X Context]
+//  Context: []
+//  Action: []
+//  Table 8.138-1: V2X Context Grouped Type
+typedef struct ogs_gtp_tlv_v2x_context_s {
+    ogs_tlv_presence_t presence;
 } ogs_gtp_tlv_v2x_context_t;
 
-typedef struct ogs_gtp_tlv_bearer_context_s {
+//  Name: [Bearer Context]
+//  Context: [Create Session Request]
+//  Action: [created]
+//  Table 7.2.1-2: Bearer Context to be created within Create Session Request
+typedef struct ogs_gtp_tlv_bearer_context__create_session_request__created__s {
     ogs_tlv_presence_t presence;
     ogs_gtp_tlv_ebi_t eps_bearer_id;
     ogs_gtp_tlv_bearer_tft_t tft;
-    ogs_gtp_tlv_f_teid_t s1_u_enodeb_f_teid; /* Instance : 0 */
-    ogs_gtp_tlv_f_teid_t s4_u_sgsn_f_teid; /* Instance : 1 */
-    ogs_gtp_tlv_f_teid_t s5_s8_u_sgw_f_teid; /* Instance : 2 */
-    ogs_gtp_tlv_f_teid_t s5_s8_u_pgw_f_teid; /* Instance : 3 */
-    ogs_gtp_tlv_f_teid_t s12_rnc_f_teid; /* Instance : 4 */
-    ogs_gtp_tlv_f_teid_t s2b_u_epdg_f_teid_5; /* Instance : 5 */
-    ogs_gtp_tlv_f_teid_t s2a_u_twan_f_teid_6; /* Instance : 6 */
+    ogs_gtp_tlv_f_teid_t gtpv2_s1_u_enodeb_f_teid; /* Instance : 0 */
+    ogs_gtp_tlv_f_teid_t gtpv2_s4_u_sgsn_f_teid; /* Instance : 1 */
+    ogs_gtp_tlv_f_teid_t gtpv2_s5_s8_u_sgw_f_teid; /* Instance : 2 */
+    ogs_gtp_tlv_f_teid_t gtpv2_s5_s8_u_pgw_f_teid; /* Instance : 3 */
+    ogs_gtp_tlv_f_teid_t gtpv2_s12_rnc_f_teid; /* Instance : 4 */
+    ogs_gtp_tlv_f_teid_t gtpv2_s2b_u_epdg_f_teid_5; /* Instance : 5 */
+    ogs_gtp_tlv_f_teid_t gtpv2_s2a_u_twan_f_teid_6; /* Instance : 6 */
     ogs_gtp_tlv_bearer_qos_t bearer_level_qos;
-    ogs_gtp_tlv_f_teid_t s11_u_mme_f_teid; /* Instance : 7 */
+    ogs_gtp_tlv_f_teid_t gtpv2_s11_u_mme_f_teid; /* Instance : 7 */
+} ogs_gtp_tlv_bearer_context__create_session_request__created__t;
+
+//  Name: [Bearer Context]
+//  Context: [Create Session Request]
+//  Action: [removed]
+//  Table 7.2.1-3: Bearer Context to be removed within Create Session Request
+typedef struct ogs_gtp_tlv_bearer_context__create_session_request__removed__s {
+    ogs_tlv_presence_t presence;
+    ogs_gtp_tlv_ebi_t eps_bearer_id;
+    ogs_gtp_tlv_f_teid_t gtpv2_s4_u_sgsn_f_teid; /* Instance : 0 */
+} ogs_gtp_tlv_bearer_context__create_session_request__removed__t;
+
+//  Name: [Bearer Context]
+//  Context: [Create Session Response]
+//  Action: [created]
+//  Table 7.2.2-2: Bearer Context Created within Create Session Response
+typedef struct ogs_gtp_tlv_bearer_context__create_session_response__created__s {
+    ogs_tlv_presence_t presence;
+    ogs_gtp_tlv_ebi_t eps_bearer_id;
     ogs_gtp_tlv_cause_t cause;
+    ogs_gtp_tlv_f_teid_t gtpv2_s1_u_sgw_f_teid; /* Instance : 0 */
+    ogs_gtp_tlv_f_teid_t gtpv2_s4_u_sgw_f_teid; /* Instance : 1 */
+    ogs_gtp_tlv_f_teid_t gtpv2_s5_s8_u_pgw_f_teid; /* Instance : 2 */
+    ogs_gtp_tlv_f_teid_t gtpv2_s12_sgw_f_teid; /* Instance : 3 */
+    ogs_gtp_tlv_f_teid_t gtpv2_s2b_u_pgw_f_teid; /* Instance : 4 */
+    ogs_gtp_tlv_f_teid_t gtpv2_s2a_u_pgw_f_teid; /* Instance : 5 */
+    ogs_gtp_tlv_bearer_qos_t bearer_level_qos;
+    ogs_gtp_tlv_charging_id_t charging_id;
+    ogs_gtp_tlv_bearer_flags_t bearer_flags;
+    ogs_gtp_tlv_f_teid_t gtpv2_s11_u_sgw_f_teid; /* Instance : 6 */
+} ogs_gtp_tlv_bearer_context__create_session_response__created__t;
+
+//  Name: [Bearer Context]
+//  Context: [Create Session Response]
+//  Action: [removal]
+//  Table 7.2.2-3: Bearer Context marked for removal within a Create Session Response
+typedef struct ogs_gtp_tlv_bearer_context__create_session_response__removal__s {
+    ogs_tlv_presence_t presence;
+    ogs_gtp_tlv_ebi_t eps_bearer_id;
+    ogs_gtp_tlv_cause_t cause;
+} ogs_gtp_tlv_bearer_context__create_session_response__removal__t;
+
+//  Name: [Bearer Context]
+//  Context: [Create Bearer Request]
+//  Action: []
+//  Table 7.2.3-2: Bearer Context within Create Bearer Request
+typedef struct ogs_gtp_tlv_bearer_context__create_bearer_request__s {
+    ogs_tlv_presence_t presence;
+    ogs_gtp_tlv_ebi_t eps_bearer_id;
+    ogs_gtp_tlv_bearer_tft_t tft;
+    ogs_gtp_tlv_f_teid_t gtpv2_s1_u_sgw_f_teid; /* Instance : 0 */
+    ogs_gtp_tlv_f_teid_t gtpv2_s5_8_u_pgw_f_teid; /* Instance : 1 */
+    ogs_gtp_tlv_f_teid_t gtpv2_s12_sgw_f_teid; /* Instance : 2 */
+    ogs_gtp_tlv_f_teid_t gtpv2_s4_u_sgw_f_teid; /* Instance : 3 */
+    ogs_gtp_tlv_f_teid_t gtpv2_s2b_u_pgw_f_teid; /* Instance : 4 */
+    ogs_gtp_tlv_f_teid_t gtpv2_s2a_u_pgw_f_teid; /* Instance : 5 */
+    ogs_gtp_tlv_bearer_qos_t bearer_level_qos;
     ogs_gtp_tlv_charging_id_t charging_id;
     ogs_gtp_tlv_bearer_flags_t bearer_flags;
     ogs_gtp_tlv_pco_t protocol_configuration_options;
     ogs_gtp_tlv_epco_t extended_protocol_configuration_options;
     ogs_gtp_tlv_maximum_packet_loss_rate_t maximum_packet_loss_rate;
-    ogs_gtp_tlv_f_teid_t s2b_u_epdg_f_teid_8; /* Instance : 8 */
-    ogs_gtp_tlv_f_teid_t s2b_u_pgw_f_teid; /* Instance : 9 */
-    ogs_gtp_tlv_f_teid_t s2a_u_twan_f_teid_10; /* Instance : 10 */
-    ogs_gtp_tlv_f_teid_t s2a_u_pgw_f_teid; /* Instance : 11 */
+} ogs_gtp_tlv_bearer_context__create_bearer_request__t;
+
+//  Name: [Bearer Context]
+//  Context: [Create Bearer Response]
+//  Action: []
+//  Table 7.2.4-2: Bearer Context within Create Bearer Response
+typedef struct ogs_gtp_tlv_bearer_context__create_bearer_response__s {
+    ogs_tlv_presence_t presence;
+    ogs_gtp_tlv_ebi_t eps_bearer_id;
+    ogs_gtp_tlv_cause_t cause;
+    ogs_gtp_tlv_f_teid_t gtpv2_s1_u_enodeb_f_teid; /* Instance : 0 */
+    ogs_gtp_tlv_f_teid_t gtpv2_s1_u_sgw_f_teid; /* Instance : 1 */
+    ogs_gtp_tlv_f_teid_t gtpv2_s5_8_u_sgw_f_teid; /* Instance : 2 */
+    ogs_gtp_tlv_f_teid_t gtpv2_s5_8_u_pgw_f_teid; /* Instance : 3 */
+    ogs_gtp_tlv_f_teid_t gtpv2_s12_rnc_f_teid; /* Instance : 4 */
+    ogs_gtp_tlv_f_teid_t gtpv2_s12_sgw_f_teid; /* Instance : 5 */
+    ogs_gtp_tlv_f_teid_t gtpv2_s4_u_sgsn_f_teid; /* Instance : 6 */
+    ogs_gtp_tlv_f_teid_t gtpv2_s4_u_sgw_f_teid; /* Instance : 7 */
+    ogs_gtp_tlv_f_teid_t gtpv2_s2b_u_epdg_f_teid_8; /* Instance : 8 */
+    ogs_gtp_tlv_f_teid_t gtpv2_s2b_u_pgw_f_teid; /* Instance : 9 */
+    ogs_gtp_tlv_f_teid_t gtpv2_s2a_u_twan_f_teid_10; /* Instance : 10 */
+    ogs_gtp_tlv_f_teid_t gtpv2_s2a_u_pgw_f_teid; /* Instance : 11 */
+    ogs_gtp_tlv_pco_t protocol_configuration_options;
     ogs_gtp_tlv_ran_nas_cause_t ran_nas_cause;
+    ogs_gtp_tlv_epco_t extended_protocol_configuration_options;
+} ogs_gtp_tlv_bearer_context__create_bearer_response__t;
+
+//  Name: [Bearer Context]
+//  Context: [Modify Bearer Request]
+//  Action: [modified]
+//  Table 7.2.7-2: Bearer Context to be modified within Modify Bearer Request
+typedef struct ogs_gtp_tlv_bearer_context__modify_bearer_request__modified__s {
+    ogs_tlv_presence_t presence;
+    ogs_gtp_tlv_ebi_t eps_bearer_id;
+    ogs_gtp_tlv_f_teid_t gtpv2_s1_enodeb_f_teid; /* Instance : 0 */
+    ogs_gtp_tlv_f_teid_t gtpv2_s5_8_u_sgw_f_teid; /* Instance : 1 */
+    ogs_gtp_tlv_f_teid_t gtpv2_s12_rnc_f_teid; /* Instance : 2 */
+    ogs_gtp_tlv_f_teid_t gtpv2_s4_u_sgsn_f_teid; /* Instance : 3 */
+    ogs_gtp_tlv_f_teid_t gtpv2_s11_u_mme_f_teid; /* Instance : 4 */
+} ogs_gtp_tlv_bearer_context__modify_bearer_request__modified__t;
+
+//  Name: [Bearer Context]
+//  Context: [Modify Bearer Request]
+//  Action: [removed]
+//  Table 7.2.7-3: Bearer Context to be removed within Modify Bearer Request
+typedef struct ogs_gtp_tlv_bearer_context__modify_bearer_request__removed__s {
+    ogs_tlv_presence_t presence;
+    ogs_gtp_tlv_ebi_t eps_bearer_id;
+} ogs_gtp_tlv_bearer_context__modify_bearer_request__removed__t;
+
+//  Name: [Bearer Context]
+//  Context: [Modify Bearer Response]
+//  Action: [modified]
+//  Table 7.2.8-2: Bearer Context modified within Modify Bearer Response
+typedef struct ogs_gtp_tlv_bearer_context__modify_bearer_response__modified__s {
+    ogs_tlv_presence_t presence;
+    ogs_gtp_tlv_ebi_t eps_bearer_id;
+    ogs_gtp_tlv_cause_t cause;
+    ogs_gtp_tlv_f_teid_t gtpv2_s1_u_sgw_f_teid; /* Instance : 0 */
+    ogs_gtp_tlv_f_teid_t gtpv2_s12_sgw_f_teid; /* Instance : 1 */
+    ogs_gtp_tlv_f_teid_t gtpv2_s4_u_sgw_f_teid; /* Instance : 2 */
+    ogs_gtp_tlv_charging_id_t charging_id;
+    ogs_gtp_tlv_bearer_flags_t bearer_flags;
+    ogs_gtp_tlv_f_teid_t gtpv2_s11_u_sgw_f_teid; /* Instance : 3 */
+} ogs_gtp_tlv_bearer_context__modify_bearer_response__modified__t;
+
+//  Name: [Bearer Context]
+//  Context: [Modify Bearer Response]
+//  Action: [removal]
+//  Table 7.2.8-3: Bearer Context marked for removal within Modify Bearer Response
+typedef struct ogs_gtp_tlv_bearer_context__modify_bearer_response__removal__s {
+    ogs_tlv_presence_t presence;
+    ogs_gtp_tlv_ebi_t eps_bearer_id;
+    ogs_gtp_tlv_cause_t cause;
+} ogs_gtp_tlv_bearer_context__modify_bearer_response__removal__t;
+
+//  Name: [Bearer Context]
+//  Context: [Delete Bearer Request]
+//  Action: []
+//  Table 7.2.9.2-2: Bearer Context within Delete Bearer Request
+typedef struct ogs_gtp_tlv_bearer_context__delete_bearer_request__s {
+    ogs_tlv_presence_t presence;
+    ogs_gtp_tlv_ebi_t eps_bearer_id;
+    ogs_gtp_tlv_cause_t cause;
+} ogs_gtp_tlv_bearer_context__delete_bearer_request__t;
+
+//  Name: [Bearer Context]
+//  Context: [Delete Bearer Response]
+//  Action: []
+//  Table 7.2.10.2-2: Bearer Context within Delete Bearer Response
+typedef struct ogs_gtp_tlv_bearer_context__delete_bearer_response__s {
+    ogs_tlv_presence_t presence;
+    ogs_gtp_tlv_ebi_t eps_bearer_id;
+    ogs_gtp_tlv_cause_t cause;
+    ogs_gtp_tlv_pco_t protocol_configuration_options;
+    ogs_gtp_tlv_ran_nas_cause_t ran_nas_cause;
+    ogs_gtp_tlv_epco_t extended_protocol_configuration_options;
+} ogs_gtp_tlv_bearer_context__delete_bearer_response__t;
+
+//  Name: [Bearer Context]
+//  Context: [Modify Bearer Command]
+//  Action: []
+//  Table 7.2.14.1-2: Bearer Context within Modify Bearer Command
+typedef struct ogs_gtp_tlv_bearer_context__modify_bearer_command__s {
+    ogs_tlv_presence_t presence;
+    ogs_gtp_tlv_ebi_t eps_bearer_id;
+    ogs_gtp_tlv_bearer_qos_t bearer_level_qos;
+} ogs_gtp_tlv_bearer_context__modify_bearer_command__t;
+
+//  Name: [Bearer Context]
+//  Context: [Update Bearer Request]
+//  Action: []
+//  Table 7.2.15-2: Bearer Context within Update Bearer Request
+typedef struct ogs_gtp_tlv_bearer_context__update_bearer_request__s {
+    ogs_tlv_presence_t presence;
+    ogs_gtp_tlv_ebi_t eps_bearer_id;
+    ogs_gtp_tlv_bearer_tft_t tft;
+    ogs_gtp_tlv_bearer_qos_t bearer_level_qos;
+    ogs_gtp_tlv_bearer_flags_t bearer_flags;
+    ogs_gtp_tlv_pco_t protocol_configuration_options;
     ogs_gtp_tlv_apco_t additional_protocol_configuration_options;
+    ogs_gtp_tlv_epco_t extended_protocol_configuration_options;
+    ogs_gtp_tlv_maximum_packet_loss_rate_t maximum_packet_loss_rate;
+} ogs_gtp_tlv_bearer_context__update_bearer_request__t;
+
+//  Name: [Bearer Context]
+//  Context: [Update Bearer Response]
+//  Action: []
+//  Table 7.2.16-2: Bearer Context within Update Bearer Response
+typedef struct ogs_gtp_tlv_bearer_context__update_bearer_response__s {
+    ogs_tlv_presence_t presence;
+    ogs_gtp_tlv_ebi_t eps_bearer_id;
+    ogs_gtp_tlv_cause_t cause;
+    ogs_gtp_tlv_f_teid_t gtpv2_s4_u_sgsn_f_teid; /* Instance : 0 */
+    ogs_gtp_tlv_f_teid_t gtpv2_s12_rnc_f_teid; /* Instance : 1 */
+    ogs_gtp_tlv_pco_t protocol_configuration_options;
+    ogs_gtp_tlv_ran_nas_cause_t ran_nas_cause;
+    ogs_gtp_tlv_epco_t extended_protocol_configuration_options;
+} ogs_gtp_tlv_bearer_context__update_bearer_response__t;
+
+//  Name: [Bearer Context]
+//  Context: [Delete Bearer Command]
+//  Action: []
+//  Table 7.2.17.1-2: Bearer Context within Delete Bearer Command
+typedef struct ogs_gtp_tlv_bearer_context__delete_bearer_command__s {
+    ogs_tlv_presence_t presence;
+    ogs_gtp_tlv_ebi_t eps_bearer_id;
+    ogs_gtp_tlv_bearer_flags_t bearer_flags;
+    ogs_gtp_tlv_ran_nas_cause_t ran_nas_release_cause;
+} ogs_gtp_tlv_bearer_context__delete_bearer_command__t;
+
+//  Name: [Bearer Context]
+//  Context: [Delete Bearer Failure Indication]
+//  Action: []
+//  Table 7.2.17.2-2: Bearer Context within Delete Bearer Failure Indication
+typedef struct ogs_gtp_tlv_bearer_context__delete_bearer_failure_indication__s {
+    ogs_tlv_presence_t presence;
+    ogs_gtp_tlv_ebi_t eps_bearer_id;
+    ogs_gtp_tlv_cause_t cause;
+} ogs_gtp_tlv_bearer_context__delete_bearer_failure_indication__t;
+
+//  Name: [Bearer Context]
+//  Context: [Create Indirect Data Forwarding Tunnel Request]
+//  Action: []
+//  Table 7.2.18-2: Bearer Context within Create Indirect Data Forwarding Tunnel Request
+typedef struct ogs_gtp_tlv_bearer_context__create_indirect_data_forwarding_tunnel_request__s {
+    ogs_tlv_presence_t presence;
+    ogs_gtp_tlv_ebi_t eps_bearer_id;
+    ogs_gtp_tlv_f_teid_t gtpv2_enodeb_f_teid_for_dl_data_forwarding; /* Instance : 0 */
+    ogs_gtp_tlv_f_teid_t gtpv2_sgw_upf_f_teid_for_dl_data_forwarding; /* Instance : 1 */
+    ogs_gtp_tlv_f_teid_t gtpv2_sgsn_f_teid_for_dl_data_forwarding; /* Instance : 2 */
+    ogs_gtp_tlv_f_teid_t gtpv2_rnc_f_teid_for_dl_data_forwarding; /* Instance : 3 */
+    ogs_gtp_tlv_f_teid_t gtpv2_enodeb_f_teid_for_ul_data_forwarding; /* Instance : 4 */
+    ogs_gtp_tlv_f_teid_t gtpv2_sgw_f_teid_for_ul_data_forwarding; /* Instance : 5 */
+    ogs_gtp_tlv_f_teid_t gtpv2_mme_f_teid_for_dl_data_forwarding; /* Instance : 6 */
+} ogs_gtp_tlv_bearer_context__create_indirect_data_forwarding_tunnel_request__t;
+
+//  Name: [Bearer Context]
+//  Context: [Create Indirect Data Forwarding Tunnel Response]
+//  Action: []
+//  Table 7.2.19-2: Bearer Context within Create Indirect Data Forwarding Tunnel Response
+typedef struct ogs_gtp_tlv_bearer_context__create_indirect_data_forwarding_tunnel_response__s {
+    ogs_tlv_presence_t presence;
+    ogs_gtp_tlv_ebi_t eps_bearer_id;
+    ogs_gtp_tlv_cause_t cause;
+    ogs_gtp_tlv_f_teid_t gtpv2_s1_u_sgw_f_teid_for_dl_data_forwarding; /* Instance : 0 */
+    ogs_gtp_tlv_f_teid_t gtpv2_s12_sgw_f_teid_for_dl_data_forwarding; /* Instance : 1 */
+    ogs_gtp_tlv_f_teid_t gtpv2_s4_u_sgw_f_teid_for_dl_data_forwarding; /* Instance : 2 */
+    ogs_gtp_tlv_f_teid_t gtpv2_sgw_f_teid_for_dl_data_forwarding; /* Instance : 3 */
+    ogs_gtp_tlv_f_teid_t gtpv2_s1_u_sgw_f_teid_for_ul_data_forwarding; /* Instance : 4 */
+    ogs_gtp_tlv_f_teid_t gtpv2_sgw_f_teid_for_ul_data_forwarding; /* Instance : 5 */
+} ogs_gtp_tlv_bearer_context__create_indirect_data_forwarding_tunnel_response__t;
+
+//  Name: [Bearer Context]
+//  Context: [Modify Access Bearers Request]
+//  Action: [modified]
+//  Table 7.2.24-2: Bearer Context to be modified within Modify Access Bearers Request
+typedef struct ogs_gtp_tlv_bearer_context__modify_access_bearers_request__modified__s {
+    ogs_tlv_presence_t presence;
+    ogs_gtp_tlv_ebi_t eps_bearer_id;
+    ogs_gtp_tlv_f_teid_t gtpv2_s1_u_enodeb_f_teid; /* Instance : 0 */
+    ogs_gtp_tlv_f_teid_t gtpv2_s11_u_mme_f_teid; /* Instance : 1 */
+} ogs_gtp_tlv_bearer_context__modify_access_bearers_request__modified__t;
+
+//  Name: [Bearer Context]
+//  Context: [Modify Access Bearers Request]
+//  Action: [removed]
+//  Table 7.2.24-3: Bearer Context to be removed within Modify Access Bearers Request
+typedef struct ogs_gtp_tlv_bearer_context__modify_access_bearers_request__removed__s {
+    ogs_tlv_presence_t presence;
+    ogs_gtp_tlv_ebi_t eps_bearer_id;
+} ogs_gtp_tlv_bearer_context__modify_access_bearers_request__removed__t;
+
+//  Name: [Bearer Context]
+//  Context: [Modify Access Bearers Response]
+//  Action: [modified]
+//  Table 7.2.25-2: Bearer Context modified within Modify Access Bearers Response
+typedef struct ogs_gtp_tlv_bearer_context__modify_access_bearers_response__modified__s {
+    ogs_tlv_presence_t presence;
+    ogs_gtp_tlv_ebi_t eps_bearer_id;
+    ogs_gtp_tlv_cause_t cause;
+    ogs_gtp_tlv_f_teid_t gtpv2_s1_u_sgw_f_teid; /* Instance : 0 */
+    ogs_gtp_tlv_f_teid_t gtpv2_s11_u_sgw_f_teid; /* Instance : 1 */
+} ogs_gtp_tlv_bearer_context__modify_access_bearers_response__modified__t;
+
+//  Name: [Bearer Context]
+//  Context: [Modify Access Bearers Response]
+//  Action: [removal]
+//  Table 7.2.25-3: Bearer Context marked for removal within Modify Access Bearers Response
+typedef struct ogs_gtp_tlv_bearer_context__modify_access_bearers_response__removal__s {
+    ogs_tlv_presence_t presence;
+    ogs_gtp_tlv_ebi_t eps_bearer_id;
+    ogs_gtp_tlv_cause_t cause;
+} ogs_gtp_tlv_bearer_context__modify_access_bearers_response__removal__t;
+
+//  Name: [Bearer Context]
+//  Context: [Forward Relocation Request]
+//  Action: []
+//  Table 7.3.1-3: Bearer Context within MME/SGSN/AMF UE EPS PDN Connections within Forward Relocation Request
+typedef struct ogs_gtp_tlv_bearer_context__forward_relocation_request__s {
+    ogs_tlv_presence_t presence;
+    ogs_gtp_tlv_ebi_t eps_bearer_id;
+    ogs_gtp_tlv_bearer_tft_t tft;
+    ogs_gtp_tlv_f_teid_t gtpv2_sgw_s1_s4_s12_ip_address_and_teid_for_user_plane; /* Instance : 0 */
+    ogs_gtp_tlv_f_teid_t gtpv2_pgw_s5_s8_ip_address_and_teid_for_user_plane; /* Instance : 1 */
+    ogs_gtp_tlv_bearer_qos_t bearer_level_qos;
     ogs_gtp_tlv_f_container_t bss_container;
     ogs_gtp_tlv_ti_t transaction_identifier;
+    ogs_gtp_tlv_bearer_flags_t bearer_flags;
+    ogs_gtp_tlv_f_teid_t gtpv2_sgw_s11_ip_address_and_teid_for_user_plane; /* Instance : 2 */
+} ogs_gtp_tlv_bearer_context__forward_relocation_request__t;
+
+//  Name: [Bearer Context]
+//  Context: []
+//  Action: []
+//  Table 7.3.2-2: Bearer Context 
+typedef struct ogs_gtp_tlv_bearer_context_s {
+    ogs_tlv_presence_t presence;
+    ogs_gtp_tlv_ebi_t eps_bearer_id;
     ogs_gtp_tlv_packet_flow_id_t packet_flow_id;
+    ogs_gtp_tlv_f_teid_t gtpv2_enodeb_f_teid_for_dl_data_forwarding; /* Instance : 0 */
+    ogs_gtp_tlv_f_teid_t gtpv2_enodeb_f_teid_for_ul_data_forwarding; /* Instance : 1 */
+    ogs_gtp_tlv_f_teid_t gtpv2_sgw_upf_f_teid_for_dl_data_forwarding; /* Instance : 2 */
+    ogs_gtp_tlv_f_teid_t gtpv2_rnc_f_teid_for_dl_data_forwarding; /* Instance : 3 */
+    ogs_gtp_tlv_f_teid_t gtpv2_sgsn_f_teid_for_dl_data_forwarding; /* Instance : 4 */
+    ogs_gtp_tlv_f_teid_t gtpv2_sgw_f_teid_for_ul_data_forwarding; /* Instance : 5 */
 } ogs_gtp_tlv_bearer_context_t;
 
-typedef struct ogs_gtp_tlv_pdn_connection_s {
+//  Name: [Bearer Context]
+//  Context: [Context Response]
+//  Action: []
+//  Table 7.3.6-3: Bearer Context within MME/SGSN/AMF UE EPS PDN Connections within Context Response
+typedef struct ogs_gtp_tlv_bearer_context__context_response__s {
+    ogs_tlv_presence_t presence;
+    ogs_gtp_tlv_ebi_t eps_bearer_id;
+    ogs_gtp_tlv_bearer_tft_t tft;
+    ogs_gtp_tlv_f_teid_t gtpv2_sgw_s1_s4_s12_s11_ip_address_and_teid_for_user_plane; /* Instance : 0 */
+    ogs_gtp_tlv_f_teid_t gtpv2_pgw_s5_s8_ip_address_and_teid_for_user_plane; /* Instance : 1 */
+    ogs_gtp_tlv_bearer_qos_t bearer_level_qos;
+    ogs_gtp_tlv_f_container_t bss_container;
+    ogs_gtp_tlv_ti_t transaction_identifier;
+    ogs_gtp_tlv_f_teid_t gtpv2_sgw_s11_ip_address_and_teid_for_user_plane; /* Instance : 2 */
+} ogs_gtp_tlv_bearer_context__context_response__t;
+
+//  Name: [Bearer Context]
+//  Context: [Context Acknowledge]
+//  Action: []
+//  Table 7.3.7-2: Bearer Context within Context Acknowledge
+typedef struct ogs_gtp_tlv_bearer_context__context_acknowledge__s {
+    ogs_tlv_presence_t presence;
+    ogs_gtp_tlv_ebi_t eps_bearer_id;
+    ogs_gtp_tlv_f_teid_t gtpv2_forwarding_f_teid; /* Instance : 0 */
+} ogs_gtp_tlv_bearer_context__context_acknowledge__t;
+
+//  Name: [PDN Connection]
+//  Context: [Forward Relocation Request]
+//  Action: []
+//  Table 7.3.1-2: MME/SGSN/AMF UE EPS PDN Connections within Forward Relocation Request
+typedef struct ogs_gtp_tlv_pdn_connection__forward_relocation_request__s {
     ogs_tlv_presence_t presence;
     ogs_gtp_tlv_apn_t apn;
     ogs_gtp_tlv_apn_restriction_t apn_restriction;
@@ -687,9 +1251,9 @@ typedef struct ogs_gtp_tlv_pdn_connection_s {
     ogs_gtp_tlv_ip_address_t ipv4_address;
     ogs_gtp_tlv_ip_address_t ipv6_address;
     ogs_gtp_tlv_ebi_t linked_eps_bearer_id;
-    ogs_gtp_tlv_f_teid_t pgw_s5_s8_ip_address_for_control_plane_or_pmip; /* Instance : 0 */
+    ogs_gtp_tlv_f_teid_t gtpv2_pgw_s5_s8_ip_address_for_control_plane_or_pmip; /* Instance : 0 */
     ogs_gtp_tlv_fqdn_t pgw_node_name;
-    ogs_gtp_tlv_bearer_context_t bearer_contexts_;
+    ogs_gtp_tlv_bearer_context__forward_relocation_request__t bearer_contexts_;
     ogs_gtp_tlv_ambr_t aggregate_maximum_bit_rate;
     ogs_gtp_tlv_charging_characteristics_t charging_characteristics;
     ogs_gtp_tlv_change_reporting_action_t change_reporting_action;
@@ -701,32 +1265,412 @@ typedef struct ogs_gtp_tlv_pdn_connection_s {
     ogs_gtp_tlv_fqdn_t local_home_network_id;
     ogs_gtp_tlv_presence_reporting_area_action_t presence_reporting_area_action;
     ogs_gtp_tlv_wlan_offloadability_indication_t wlan_offloadability_indication;
-    ogs_gtp_tlv_remote_ue_context_t remote_ue_context_connected;
+    ogs_gtp_tlv_remote_ue_context__forward_relocation_request__t remote_ue_context_connected;
     ogs_gtp_tlv_pdn_type_t pdn_type;
     ogs_gtp_tlv_header_compression_configuration_t header_compression_configuration;
+} ogs_gtp_tlv_pdn_connection__forward_relocation_request__t;
+
+//  Name: [PDN Connection]
+//  Context: [Context Response]
+//  Action: []
+//  Table 7.3.6-2: MME/SGSN/AMF UE EPS PDN Connections within Context Response
+typedef struct ogs_gtp_tlv_pdn_connection__context_response__s {
+    ogs_tlv_presence_t presence;
+    ogs_gtp_tlv_apn_t apn;
+    ogs_gtp_tlv_apn_restriction_t apn_restriction;
+    ogs_gtp_tlv_selection_mode_t selection_mode;
+    ogs_gtp_tlv_ip_address_t ipv4_address;
+    ogs_gtp_tlv_ip_address_t ipv6_address;
+    ogs_gtp_tlv_ebi_t linked_eps_bearer_id;
+    ogs_gtp_tlv_f_teid_t gtpv2_pgw_s5_s8_ip_address_for_control_plane_or_pmip; /* Instance : 0 */
+    ogs_gtp_tlv_fqdn_t pgw_node_name;
+    ogs_gtp_tlv_bearer_context__context_response__t bearer_contexts_;
+    ogs_gtp_tlv_ambr_t aggregate_maximum_bit_rate;
+    ogs_gtp_tlv_charging_characteristics_t charging_characteristics;
+    ogs_gtp_tlv_change_reporting_action_t change_reporting_action;
+    ogs_gtp_tlv_csg_information_reporting_action_t csg_information_reporting_action;
+    ogs_gtp_tlv_enb_information_reporting_t hnb_information_reporting_;
+    ogs_gtp_tlv_indication_t indication_flags;
+    ogs_gtp_tlv_signalling_priority_indication_t signalling_priority_indication__;
+    ogs_gtp_tlv_change_to_report_flags_t change_to_report_flags;
+    ogs_gtp_tlv_fqdn_t local_home_network_id;
+    ogs_gtp_tlv_presence_reporting_area_action_t presence_reporting_area_action;
+    ogs_gtp_tlv_wlan_offloadability_indication_t wlan_offloadability_indication;
+    ogs_gtp_tlv_remote_ue_context__context_response__t remote_ue_context_connected;
+    ogs_gtp_tlv_pdn_type_t pdn_type;
+    ogs_gtp_tlv_header_compression_configuration_t header_compression_configuration;
+} ogs_gtp_tlv_pdn_connection__context_response__t;
+
+//  Name: [PDN Connection]
+//  Context: []
+//  Action: []
+//  Table 8.39-1: PDN Connection Grouped Type
+typedef struct ogs_gtp_tlv_pdn_connection_s {
+    ogs_tlv_presence_t presence;
 } ogs_gtp_tlv_pdn_connection_t;
 
-typedef struct ogs_gtp_tlv_overload_control_information_s {
+//  Name: [Overload Control Information]
+//  Context: [Create Session Request]
+//  Action: []
+//  Table 7.2.1-4: Overload Control Information within Create Session Request
+typedef struct ogs_gtp_tlv_overload_control_information__create_session_request__s {
+    ogs_tlv_presence_t presence;
+    ogs_gtp_tlv_sequence_number_t overload_control_sequence_number;
+    ogs_gtp_tlv_metric_t overload_reduction_metric;
+    ogs_gtp_tlv_epc_timer_t period_of_validity;
+} ogs_gtp_tlv_overload_control_information__create_session_request__t;
+
+//  Name: [Overload Control Information]
+//  Context: [Create Session Response]
+//  Action: []
+//  Table 7.2.2-5: Overload Control Information within Create Session Response
+typedef struct ogs_gtp_tlv_overload_control_information__create_session_response__s {
     ogs_tlv_presence_t presence;
     ogs_gtp_tlv_sequence_number_t overload_control_sequence_number;
     ogs_gtp_tlv_metric_t overload_reduction_metric;
     ogs_gtp_tlv_epc_timer_t period_of_validity;
     ogs_gtp_tlv_apn_t list_of_access_point_name;
+} ogs_gtp_tlv_overload_control_information__create_session_response__t;
+
+//  Name: [Overload Control Information]
+//  Context: [Create Bearer Response]
+//  Action: []
+//  Table 7.2.4-3: Overload Control Information within Create Bearer Response
+typedef struct ogs_gtp_tlv_overload_control_information__create_bearer_response__s {
+    ogs_tlv_presence_t presence;
+    ogs_gtp_tlv_sequence_number_t overload_control_sequence_number;
+    ogs_gtp_tlv_metric_t overload_reduction_metric;
+    ogs_gtp_tlv_epc_timer_t period_of_validity;
+} ogs_gtp_tlv_overload_control_information__create_bearer_response__t;
+
+//  Name: [Overload Control Information]
+//  Context: [Bearer Resource Command]
+//  Action: []
+//  Table 7.2.5-2: Overload Control Information within Bearer Resource Command
+typedef struct ogs_gtp_tlv_overload_control_information__bearer_resource_command__s {
+    ogs_tlv_presence_t presence;
+    ogs_gtp_tlv_sequence_number_t overload_control_sequence_number;
+    ogs_gtp_tlv_metric_t overload_reduction_metric;
+    ogs_gtp_tlv_epc_timer_t period_of_validity;
+} ogs_gtp_tlv_overload_control_information__bearer_resource_command__t;
+
+//  Name: [Overload Control Information]
+//  Context: [Bearer Resource Failure Indication]
+//  Action: []
+//  Table 7.2.6-2: Overload Control Information within Bearer Resource Failure Indication
+typedef struct ogs_gtp_tlv_overload_control_information__bearer_resource_failure_indication__s {
+    ogs_tlv_presence_t presence;
+    ogs_gtp_tlv_sequence_number_t overload_control_sequence_number;
+    ogs_gtp_tlv_metric_t overload_reduction_metric;
+    ogs_gtp_tlv_epc_timer_t period_of_validity;
+    ogs_gtp_tlv_apn_t list_of_access_point_name;
+} ogs_gtp_tlv_overload_control_information__bearer_resource_failure_indication__t;
+
+//  Name: [Overload Control Information]
+//  Context: [Modify Bearer Request]
+//  Action: []
+//  Table 7.2.7-4: Overload Control Information within Modify Bearer Request
+typedef struct ogs_gtp_tlv_overload_control_information__modify_bearer_request__s {
+    ogs_tlv_presence_t presence;
+    ogs_gtp_tlv_sequence_number_t overload_control_sequence_number;
+    ogs_gtp_tlv_metric_t overload_reduction_metric;
+    ogs_gtp_tlv_epc_timer_t period_of_validity;
+} ogs_gtp_tlv_overload_control_information__modify_bearer_request__t;
+
+//  Name: [Overload Control Information]
+//  Context: [Modify Bearer Response]
+//  Action: []
+//  Table 7.2.8-5: Overload Control Information within Modify Bearer Response
+typedef struct ogs_gtp_tlv_overload_control_information__modify_bearer_response__s {
+    ogs_tlv_presence_t presence;
+    ogs_gtp_tlv_sequence_number_t overload_control_sequence_number;
+    ogs_gtp_tlv_metric_t overload_reduction_metric;
+    ogs_gtp_tlv_epc_timer_t period_of_validity;
+    ogs_gtp_tlv_apn_t list_of_access_point_name;
+} ogs_gtp_tlv_overload_control_information__modify_bearer_response__t;
+
+//  Name: [Overload Control Information]
+//  Context: [Delete Session Request]
+//  Action: []
+//  Table 7.2.9.1-2: Overload Control Information within Delete Session Request
+typedef struct ogs_gtp_tlv_overload_control_information__delete_session_request__s {
+    ogs_tlv_presence_t presence;
+    ogs_gtp_tlv_sequence_number_t overload_control_sequence_number;
+    ogs_gtp_tlv_metric_t overload_reduction_metric;
+    ogs_gtp_tlv_epc_timer_t period_of_validity;
+} ogs_gtp_tlv_overload_control_information__delete_session_request__t;
+
+//  Name: [Overload Control Information]
+//  Context: [Delete Bearer Request]
+//  Action: []
+//  Table 7.2.9-4: Overload Control Information within Delete Bearer Request
+typedef struct ogs_gtp_tlv_overload_control_information__delete_bearer_request__s {
+    ogs_tlv_presence_t presence;
+    ogs_gtp_tlv_sequence_number_t overload_control_sequence_number;
+    ogs_gtp_tlv_metric_t overload_reduction_metric;
+    ogs_gtp_tlv_epc_timer_t period_of_validity;
+    ogs_gtp_tlv_apn_t list_of_access_point_name;
+} ogs_gtp_tlv_overload_control_information__delete_bearer_request__t;
+
+//  Name: [Overload Control Information]
+//  Context: [Delete Session Response]
+//  Action: []
+//  Table 7.2.10.1-3: Overload Control Information within Delete Session Response
+typedef struct ogs_gtp_tlv_overload_control_information__delete_session_response__s {
+    ogs_tlv_presence_t presence;
+    ogs_gtp_tlv_sequence_number_t overload_control_sequence_number;
+    ogs_gtp_tlv_metric_t overload_reduction_metric;
+    ogs_gtp_tlv_epc_timer_t period_of_validity;
+    ogs_gtp_tlv_apn_t list_of_access_point_name;
+} ogs_gtp_tlv_overload_control_information__delete_session_response__t;
+
+//  Name: [Overload Control Information]
+//  Context: [Delete Bearer Response]
+//  Action: []
+//  Table 7.2.10.2-3: Overload Control Information within Delete Bearer Response
+typedef struct ogs_gtp_tlv_overload_control_information__delete_bearer_response__s {
+    ogs_tlv_presence_t presence;
+    ogs_gtp_tlv_sequence_number_t overload_control_sequence_number;
+    ogs_gtp_tlv_metric_t overload_reduction_metric;
+    ogs_gtp_tlv_epc_timer_t period_of_validity;
+} ogs_gtp_tlv_overload_control_information__delete_bearer_response__t;
+
+//  Name: [Overload Control Information]
+//  Context: [Downlink Data Notification]
+//  Action: []
+//  Table 7.2.11.1-3: Overload Control Information within Downlink Data Notification
+typedef struct ogs_gtp_tlv_overload_control_information__downlink_data_notification__s {
+    ogs_tlv_presence_t presence;
+    ogs_gtp_tlv_sequence_number_t overload_control_sequence_number;
+    ogs_gtp_tlv_metric_t overload_reduction_metric;
+    ogs_gtp_tlv_epc_timer_t period_of_validity;
+} ogs_gtp_tlv_overload_control_information__downlink_data_notification__t;
+
+//  Name: [Overload Control Information]
+//  Context: [Modify Bearer Failure Indication]
+//  Action: []
+//  Table 7.2.14-2: Overload Control Information within Modify Bearer Failure Indication
+typedef struct ogs_gtp_tlv_overload_control_information__modify_bearer_failure_indication__s {
+    ogs_tlv_presence_t presence;
+    ogs_gtp_tlv_sequence_number_t overload_control_sequence_number;
+    ogs_gtp_tlv_metric_t overload_reduction_metric;
+    ogs_gtp_tlv_epc_timer_t period_of_validity;
+    ogs_gtp_tlv_apn_t list_of_access_point_name;
+} ogs_gtp_tlv_overload_control_information__modify_bearer_failure_indication__t;
+
+//  Name: [Overload Control Information]
+//  Context: [Update Bearer Request]
+//  Action: []
+//  Table 7.2.15-4: Overload Control Information within Update Bearer Request
+typedef struct ogs_gtp_tlv_overload_control_information__update_bearer_request__s {
+    ogs_tlv_presence_t presence;
+    ogs_gtp_tlv_sequence_number_t overload_control_sequence_number;
+    ogs_gtp_tlv_metric_t overload_reduction_metric;
+    ogs_gtp_tlv_epc_timer_t period_of_validity;
+    ogs_gtp_tlv_apn_t list_of_access_point_name;
+} ogs_gtp_tlv_overload_control_information__update_bearer_request__t;
+
+//  Name: [Overload Control Information]
+//  Context: [Update Bearer Response]
+//  Action: []
+//  Table 7.2.16-3: Overload Control Information within Update Bearer Response
+typedef struct ogs_gtp_tlv_overload_control_information__update_bearer_response__s {
+    ogs_tlv_presence_t presence;
+    ogs_gtp_tlv_sequence_number_t overload_control_sequence_number;
+    ogs_gtp_tlv_metric_t overload_reduction_metric;
+    ogs_gtp_tlv_epc_timer_t period_of_validity;
+} ogs_gtp_tlv_overload_control_information__update_bearer_response__t;
+
+//  Name: [Overload Control Information]
+//  Context: [Delete Bearer Command]
+//  Action: []
+//  Table 7.2.17.1-3: Overload Control Information within Delete Bearer Command
+typedef struct ogs_gtp_tlv_overload_control_information__delete_bearer_command__s {
+    ogs_tlv_presence_t presence;
+    ogs_gtp_tlv_sequence_number_t overload_control_sequence_number;
+    ogs_gtp_tlv_metric_t overload_reduction_metric;
+    ogs_gtp_tlv_epc_timer_t period_of_validity;
+} ogs_gtp_tlv_overload_control_information__delete_bearer_command__t;
+
+//  Name: [Overload Control Information]
+//  Context: [Delete Bearer Failure Indication]
+//  Action: []
+//  Table 7.2.17-3: Overload Control Information within Delete Bearer Failure Indication
+typedef struct ogs_gtp_tlv_overload_control_information__delete_bearer_failure_indication__s {
+    ogs_tlv_presence_t presence;
+    ogs_gtp_tlv_sequence_number_t overload_control_sequence_number;
+    ogs_gtp_tlv_metric_t overload_reduction_metric;
+    ogs_gtp_tlv_epc_timer_t period_of_validity;
+    ogs_gtp_tlv_apn_t list_of_access_point_name;
+} ogs_gtp_tlv_overload_control_information__delete_bearer_failure_indication__t;
+
+//  Name: [Overload Control Information]
+//  Context: [Release Access Bearers Response]
+//  Action: []
+//  Table 7.2.22-3: Overload Control Information within Release Access Bearers Response
+typedef struct ogs_gtp_tlv_overload_control_information__release_access_bearers_response__s {
+    ogs_tlv_presence_t presence;
+    ogs_gtp_tlv_sequence_number_t overload_control_sequence_number;
+    ogs_gtp_tlv_metric_t overload_reduction_metric;
+    ogs_gtp_tlv_epc_timer_t period_of_validity;
+} ogs_gtp_tlv_overload_control_information__release_access_bearers_response__t;
+
+//  Name: [Overload Control Information]
+//  Context: [Modify Access Bearers Response]
+//  Action: []
+//  Table 7.2.25-5: Overload Control Information within Modify Access Bearers Response
+typedef struct ogs_gtp_tlv_overload_control_information__modify_access_bearers_response__s {
+    ogs_tlv_presence_t presence;
+    ogs_gtp_tlv_sequence_number_t overload_control_sequence_number;
+    ogs_gtp_tlv_metric_t overload_reduction_metric;
+    ogs_gtp_tlv_epc_timer_t period_of_validity;
+} ogs_gtp_tlv_overload_control_information__modify_access_bearers_response__t;
+
+//  Name: [Overload Control Information]
+//  Context: []
+//  Action: []
+//  Table 8.111-1: Overload Control Information Grouped Type
+typedef struct ogs_gtp_tlv_overload_control_information_s {
+    ogs_tlv_presence_t presence;
 } ogs_gtp_tlv_overload_control_information_t;
 
-typedef struct ogs_gtp_tlv_load_control_information_s {
+//  Name: [Load Control Information]
+//  Context: [Create Session Response]
+//  Action: []
+//  Table 7.2.2-4: Load Control Information within Create Session Response
+typedef struct ogs_gtp_tlv_load_control_information__create_session_response__s {
     ogs_tlv_presence_t presence;
     ogs_gtp_tlv_sequence_number_t load_control_sequence_number;
     ogs_gtp_tlv_metric_t load_metric;
     ogs_gtp_tlv_apn_and_relative_capacity_t list_of_apn_and_relative_capacity;
+} ogs_gtp_tlv_load_control_information__create_session_response__t;
+
+//  Name: [Load Control Information]
+//  Context: [Create Bearer Request]
+//  Action: []
+//  Table 7.2.3-3: Load Control Information within Create Bearer Request
+typedef struct ogs_gtp_tlv_load_control_information__create_bearer_request__s {
+    ogs_tlv_presence_t presence;
+    ogs_gtp_tlv_sequence_number_t load_control_sequence_number;
+    ogs_gtp_tlv_metric_t load_metric;
+    ogs_gtp_tlv_apn_and_relative_capacity_t list_of_apn_and_relative_capacity;
+} ogs_gtp_tlv_load_control_information__create_bearer_request__t;
+
+//  Name: [Overload Control Information]
+//  Context: [Create Bearer Request]
+//  Action: []
+//  Table 7.2.3-4: Overload Control Information within Create Bearer Request
+typedef struct ogs_gtp_tlv_overload_control_information__create_bearer_request__s {
+    ogs_tlv_presence_t presence;
+    ogs_gtp_tlv_sequence_number_t overload_control_sequence_number;
+    ogs_gtp_tlv_metric_t overload_reduction_metric;
+    ogs_gtp_tlv_epc_timer_t period_of_validity;
+    ogs_gtp_tlv_apn_t list_of_access_point_name;
+} ogs_gtp_tlv_overload_control_information__create_bearer_request__t;
+
+//  Name: [Load Control Information]
+//  Context: [Modify Bearer Response]
+//  Action: []
+//  Table 7.2.8-4: Load Control Information within Modify Bearer Response
+typedef struct ogs_gtp_tlv_load_control_information__modify_bearer_response__s {
+    ogs_tlv_presence_t presence;
+    ogs_gtp_tlv_sequence_number_t load_control_sequence_number;
+    ogs_gtp_tlv_metric_t load_metric;
+    ogs_gtp_tlv_apn_and_relative_capacity_t list_of_apn_and_relative_capacity;
+} ogs_gtp_tlv_load_control_information__modify_bearer_response__t;
+
+//  Name: [Load Control Information]
+//  Context: [Delete Bearer Request]
+//  Action: []
+//  Table 7.2.9-3: Load Control Information within Delete Bearer Request
+typedef struct ogs_gtp_tlv_load_control_information__delete_bearer_request__s {
+    ogs_tlv_presence_t presence;
+    ogs_gtp_tlv_sequence_number_t load_control_sequence_number;
+    ogs_gtp_tlv_metric_t load_metric;
+    ogs_gtp_tlv_apn_and_relative_capacity_t list_of_apn_and_relative_capacity;
+} ogs_gtp_tlv_load_control_information__delete_bearer_request__t;
+
+//  Name: [Load Control Information]
+//  Context: [Delete Session Response]
+//  Action: []
+//  Table 7.2.10.1-2: Load Control Information within Delete Session Response
+typedef struct ogs_gtp_tlv_load_control_information__delete_session_response__s {
+    ogs_tlv_presence_t presence;
+    ogs_gtp_tlv_sequence_number_t load_control_sequence_number;
+    ogs_gtp_tlv_metric_t load_metric;
+    ogs_gtp_tlv_apn_and_relative_capacity_t list_of_apn_and_relative_capacity;
+} ogs_gtp_tlv_load_control_information__delete_session_response__t;
+
+//  Name: [Load Control Information]
+//  Context: [Downlink Data Notification]
+//  Action: []
+//  Table 7.2.11.1-2: Load Control Information within Downlink Data Notification
+typedef struct ogs_gtp_tlv_load_control_information__downlink_data_notification__s {
+    ogs_tlv_presence_t presence;
+    ogs_gtp_tlv_sequence_number_t load_control_sequence_number;
+    ogs_gtp_tlv_metric_t load_metric;
+} ogs_gtp_tlv_load_control_information__downlink_data_notification__t;
+
+//  Name: [Overload Control Information]
+//  Context: [Modify Bearer Command]
+//  Action: []
+//  Table 7.2.14-3: Overload Control Information within Modify Bearer Command
+typedef struct ogs_gtp_tlv_overload_control_information__modify_bearer_command__s {
+    ogs_tlv_presence_t presence;
+    ogs_gtp_tlv_sequence_number_t overload_control_sequence_number;
+    ogs_gtp_tlv_metric_t overload_reduction_metric;
+    ogs_gtp_tlv_epc_timer_t period_of_validity;
+} ogs_gtp_tlv_overload_control_information__modify_bearer_command__t;
+
+//  Name: [Load Control Information]
+//  Context: [Update Bearer Request]
+//  Action: []
+//  Table 7.2.15-3: Load Control Information within Update Bearer Request
+typedef struct ogs_gtp_tlv_load_control_information__update_bearer_request__s {
+    ogs_tlv_presence_t presence;
+    ogs_gtp_tlv_sequence_number_t load_control_sequence_number;
+    ogs_gtp_tlv_metric_t load_metric;
+    ogs_gtp_tlv_apn_and_relative_capacity_t list_of_apn_and_relative_capacity;
+} ogs_gtp_tlv_load_control_information__update_bearer_request__t;
+
+//  Name: [Load Control Information]
+//  Context: [Release Access Bearers Response]
+//  Action: []
+//  Table 7.2.22-2: Load Control Information within Release Access Bearers Response
+typedef struct ogs_gtp_tlv_load_control_information__release_access_bearers_response__s {
+    ogs_tlv_presence_t presence;
+    ogs_gtp_tlv_sequence_number_t load_control_sequence_number;
+    ogs_gtp_tlv_metric_t load_metric;
+} ogs_gtp_tlv_load_control_information__release_access_bearers_response__t;
+
+//  Name: [Load Control Information]
+//  Context: [Modify Access Bearers Response]
+//  Action: []
+//  Table 7.2.25-4: Load Control Information within Modify Access Bearers Response
+typedef struct ogs_gtp_tlv_load_control_information__modify_access_bearers_response__s {
+    ogs_tlv_presence_t presence;
+    ogs_gtp_tlv_sequence_number_t load_control_sequence_number;
+    ogs_gtp_tlv_metric_t load_metric;
+} ogs_gtp_tlv_load_control_information__modify_access_bearers_response__t;
+
+//  Name: [Load Control Information]
+//  Context: []
+//  Action: []
+//  Table 8.112-1: Load Control Information Grouped Type
+typedef struct ogs_gtp_tlv_load_control_information_s {
+    ogs_tlv_presence_t presence;
 } ogs_gtp_tlv_load_control_information_t;
 
-typedef struct ogs_gtp_tlv_scef_pdn_connection_s {
+//  Name: [SCEF PDN Connection]
+//  Context: [Forward Relocation Request]
+//  Action: []
+//  Table 7.3.1-5: MME UE SCEF PDN Connections within Forward Relocation Request
+typedef struct ogs_gtp_tlv_scef_pdn_connection__forward_relocation_request__s {
     ogs_tlv_presence_t presence;
     ogs_gtp_tlv_apn_t apn;
     ogs_gtp_tlv_ebi_t default_eps_bearer_id;
     ogs_gtp_tlv_node_identifier_t scef_id;
-} ogs_gtp_tlv_scef_pdn_connection_t;
+} ogs_gtp_tlv_scef_pdn_connection__forward_relocation_request__t;
 
 /* Structure for Message */
 typedef struct ogs_gtp_echo_request_s {
@@ -758,8 +1702,8 @@ typedef struct ogs_gtp_create_session_request_s {
     ogs_gtp_tlv_ebi_t linked_eps_bearer_id;
     ogs_gtp_tlv_twmi_t trusted_wlan_mode_indication;
     ogs_gtp_tlv_pco_t protocol_configuration_options;
-    ogs_gtp_tlv_bearer_context_t bearer_contexts_to_be_created;
-    ogs_gtp_tlv_bearer_context_t bearer_contexts_to_be_removed;
+    ogs_gtp_tlv_bearer_context__create_session_request__created__t bearer_contexts_to_be_created;
+    ogs_gtp_tlv_bearer_context__create_session_request__removed__t bearer_contexts_to_be_removed;
     ogs_gtp_tlv_trace_information_t trace_information;
     ogs_gtp_tlv_recovery_t recovery;
     ogs_gtp_tlv_fq_csid_t mme_fq_csid;
@@ -784,15 +1728,15 @@ typedef struct ogs_gtp_create_session_request_s {
     ogs_gtp_tlv_ip_address_t epdg_ip_address;
     ogs_gtp_tlv_cn_operator_selection_entity_t cn_operator_selection_entity;
     ogs_gtp_tlv_presence_reporting_area_information_t presence_reporting_area_information;
-    ogs_gtp_tlv_overload_control_information_t mme_s4_sgsn_s_overload_control_information;
-    ogs_gtp_tlv_overload_control_information_t sgw_s_overload_control_information;
-    ogs_gtp_tlv_overload_control_information_t twan_epdg_s_overload_control_information;
+    ogs_gtp_tlv_overload_control_information__create_session_request__t mme_s4_sgsn_s_overload_control_information;
+    ogs_gtp_tlv_overload_control_information__create_session_request__t sgw_s_overload_control_information;
+    ogs_gtp_tlv_overload_control_information__create_session_request__t twan_epdg_s_overload_control_information;
     ogs_gtp_tlv_millisecond_time_stamp_t origination_time_stamp;
     ogs_gtp_tlv_integer_number_t maximum_wait_time;
     ogs_gtp_tlv_twan_identifier_t wlan_location_information;
     ogs_gtp_tlv_twan_identifier_timestamp_t wlan_location_timestamp;
     ogs_gtp_tlv_f_container_t nbifom_container;
-    ogs_gtp_tlv_remote_ue_context_t remote_ue_context_connected;
+    ogs_gtp_tlv_remote_ue_context__create_session_request__t remote_ue_context_connected;
     ogs_gtp_tlv_node_identifier_t _aaa_server_identifier;
     ogs_gtp_tlv_epco_t extended_protocol_configuration_options;
     ogs_gtp_tlv_serving_plmn_rate_control_t serving_plmn_rate_control;
@@ -818,8 +1762,8 @@ typedef struct ogs_gtp_create_session_response_s {
     ogs_gtp_tlv_ambr_t aggregate_maximum_bit_rate;
     ogs_gtp_tlv_ebi_t linked_eps_bearer_id;
     ogs_gtp_tlv_pco_t protocol_configuration_options;
-    ogs_gtp_tlv_bearer_context_t bearer_contexts_created;
-    ogs_gtp_tlv_bearer_context_t bearer_contexts_marked_for_removal;
+    ogs_gtp_tlv_bearer_context__create_session_response__created__t bearer_contexts_created;
+    ogs_gtp_tlv_bearer_context__create_session_response__removal__t bearer_contexts_marked_for_removal;
     ogs_gtp_tlv_recovery_t recovery;
     ogs_gtp_tlv_fqdn_t charging_gateway_name;
     ogs_gtp_tlv_ip_address_t charging_gateway_address;
@@ -832,11 +1776,11 @@ typedef struct ogs_gtp_create_session_response_s {
     ogs_gtp_tlv_ip4cp_t trusted_wlan_ipv4_parameters_;
     ogs_gtp_tlv_indication_t indication_flags;
     ogs_gtp_tlv_presence_reporting_area_action_t presence_reporting_area_action;
-    ogs_gtp_tlv_load_control_information_t pgw_s_node_level_load_control_information;
-    ogs_gtp_tlv_load_control_information_t pgw_s_apn_level_load_control_information;
-    ogs_gtp_tlv_load_control_information_t sgw_s_node_level_load_control_information;
-    ogs_gtp_tlv_overload_control_information_t pgw_s_overload_control_information;
-    ogs_gtp_tlv_overload_control_information_t sgw_s_overload_control_information;
+    ogs_gtp_tlv_load_control_information__create_session_response__t pgw_s_node_level_load_control_information;
+    ogs_gtp_tlv_load_control_information__create_session_response__t pgw_s_apn_level_load_control_information;
+    ogs_gtp_tlv_load_control_information__create_session_response__t sgw_s_node_level_load_control_information;
+    ogs_gtp_tlv_overload_control_information__create_session_response__t pgw_s_overload_control_information;
+    ogs_gtp_tlv_overload_control_information__create_session_response__t sgw_s_overload_control_information;
     ogs_gtp_tlv_f_container_t nbifom_container;
     ogs_gtp_tlv_charging_id_t pdn_connection_charging_id;
     ogs_gtp_tlv_epco_t extended_protocol_configuration_options;
@@ -851,8 +1795,8 @@ typedef struct ogs_gtp_modify_bearer_request_s {
     ogs_gtp_tlv_f_teid_t sender_f_teid_for_control_plane;
     ogs_gtp_tlv_ambr_t aggregate_maximum_bit_rate;
     ogs_gtp_tlv_delay_value_t delay_downlink_packet_notification_request;
-    ogs_gtp_tlv_bearer_context_t bearer_contexts_to_be_modified;
-    ogs_gtp_tlv_bearer_context_t bearer_contexts_to_be_removed;
+    ogs_gtp_tlv_bearer_context__modify_bearer_request__modified__t bearer_contexts_to_be_modified;
+    ogs_gtp_tlv_bearer_context__modify_bearer_request__removed__t bearer_contexts_to_be_removed;
     ogs_gtp_tlv_recovery_t recovery;
     ogs_gtp_tlv_ue_time_zone_t ue_time_zone;
     ogs_gtp_tlv_fq_csid_t mme_fq_csid;
@@ -866,9 +1810,9 @@ typedef struct ogs_gtp_modify_bearer_request_s {
     ogs_gtp_tlv_ip_address_t mme_s4_sgsn_identifier;
     ogs_gtp_tlv_cn_operator_selection_entity_t cn_operator_selection_entity;
     ogs_gtp_tlv_presence_reporting_area_information_t presence_reporting_area_information;
-    ogs_gtp_tlv_overload_control_information_t mme_s4_sgsn_s_overload_control_information;
-    ogs_gtp_tlv_overload_control_information_t sgw_s_overload_control_information;
-    ogs_gtp_tlv_overload_control_information_t epdg_s_overload_control_information;
+    ogs_gtp_tlv_overload_control_information__modify_bearer_request__t mme_s4_sgsn_s_overload_control_information;
+    ogs_gtp_tlv_overload_control_information__modify_bearer_request__t sgw_s_overload_control_information;
+    ogs_gtp_tlv_overload_control_information__modify_bearer_request__t epdg_s_overload_control_information;
     ogs_gtp_tlv_serving_plmn_rate_control_t serving_plmn_rate_control;
     ogs_gtp_tlv_counter_t mo_exception_data_counter;
     ogs_gtp_tlv_imsi_t imsi;
@@ -884,8 +1828,8 @@ typedef struct ogs_gtp_modify_bearer_response_s {
     ogs_gtp_tlv_ebi_t linked_eps_bearer_id;
     ogs_gtp_tlv_apn_restriction_t apn_restriction;
     ogs_gtp_tlv_pco_t protocol_configuration_options;
-    ogs_gtp_tlv_bearer_context_t bearer_contexts_modified;
-    ogs_gtp_tlv_bearer_context_t bearer_contexts_marked_for_removal;
+    ogs_gtp_tlv_bearer_context__modify_bearer_response__modified__t bearer_contexts_modified;
+    ogs_gtp_tlv_bearer_context__modify_bearer_response__removal__t bearer_contexts_marked_for_removal;
     ogs_gtp_tlv_change_reporting_action_t change_reporting_action;
     ogs_gtp_tlv_csg_information_reporting_action_t csg_information_reporting_action;
     ogs_gtp_tlv_enb_information_reporting_t hnb_information_reporting_;
@@ -898,11 +1842,11 @@ typedef struct ogs_gtp_modify_bearer_response_s {
     ogs_gtp_tlv_ldn_t pgw_ldn;
     ogs_gtp_tlv_indication_t indication_flags;
     ogs_gtp_tlv_presence_reporting_area_action_t presence_reporting_area_action;
-    ogs_gtp_tlv_load_control_information_t pgw_s_node_level_load_control_information;
-    ogs_gtp_tlv_load_control_information_t pgw_s_apn_level_load_control_information;
-    ogs_gtp_tlv_load_control_information_t sgw_s_node_level_load_control_information;
-    ogs_gtp_tlv_overload_control_information_t pgw_s_overload_control_information;
-    ogs_gtp_tlv_overload_control_information_t sgw_s_overload_control_information;
+    ogs_gtp_tlv_load_control_information__modify_bearer_response__t pgw_s_node_level_load_control_information;
+    ogs_gtp_tlv_load_control_information__modify_bearer_response__t pgw_s_apn_level_load_control_information;
+    ogs_gtp_tlv_load_control_information__modify_bearer_response__t sgw_s_node_level_load_control_information;
+    ogs_gtp_tlv_overload_control_information__modify_bearer_response__t pgw_s_overload_control_information;
+    ogs_gtp_tlv_overload_control_information__modify_bearer_response__t sgw_s_overload_control_information;
     ogs_gtp_tlv_charging_id_t pdn_connection_charging_id;
 } ogs_gtp_modify_bearer_response_t;
 
@@ -919,9 +1863,9 @@ typedef struct ogs_gtp_delete_session_request_s {
     ogs_gtp_tlv_ran_nas_cause_t ran_nas_release_cause;
     ogs_gtp_tlv_twan_identifier_t twan_identifier;
     ogs_gtp_tlv_twan_identifier_timestamp_t twan_identifier_timestamp;
-    ogs_gtp_tlv_overload_control_information_t mme_s4_sgsn_s_overload_control_information;
-    ogs_gtp_tlv_overload_control_information_t sgw_s_overload_control_information;
-    ogs_gtp_tlv_overload_control_information_t twan_epdg_s_overload_control_information;
+    ogs_gtp_tlv_overload_control_information__delete_session_request__t mme_s4_sgsn_s_overload_control_information;
+    ogs_gtp_tlv_overload_control_information__delete_session_request__t sgw_s_overload_control_information;
+    ogs_gtp_tlv_overload_control_information__delete_session_request__t twan_epdg_s_overload_control_information;
     ogs_gtp_tlv_twan_identifier_t wlan_location_information;
     ogs_gtp_tlv_twan_identifier_timestamp_t wlan_location_timestamp;
     ogs_gtp_tlv_ip_address_t ue_local_ip_address;
@@ -936,21 +1880,21 @@ typedef struct ogs_gtp_delete_session_response_s {
     ogs_gtp_tlv_recovery_t recovery;
     ogs_gtp_tlv_pco_t protocol_configuration_options;
     ogs_gtp_tlv_indication_t indication_flags;
-    ogs_gtp_tlv_load_control_information_t pgw_s_node_level_load_control_information;
-    ogs_gtp_tlv_load_control_information_t pgw_s_apn_level_load_control_information;
-    ogs_gtp_tlv_load_control_information_t sgw_s_node_level_load_control_information;
-    ogs_gtp_tlv_overload_control_information_t pgw_s_overload_control_information;
-    ogs_gtp_tlv_overload_control_information_t sgw_s_overload_control_information;
+    ogs_gtp_tlv_load_control_information__delete_session_response__t pgw_s_node_level_load_control_information;
+    ogs_gtp_tlv_load_control_information__delete_session_response__t pgw_s_apn_level_load_control_information;
+    ogs_gtp_tlv_load_control_information__delete_session_response__t sgw_s_node_level_load_control_information;
+    ogs_gtp_tlv_overload_control_information__delete_session_response__t pgw_s_overload_control_information;
+    ogs_gtp_tlv_overload_control_information__delete_session_response__t sgw_s_overload_control_information;
     ogs_gtp_tlv_epco_t extended_protocol_configuration_options;
     ogs_gtp_tlv_apn_rate_control_status_t apn_rate_control_status;
 } ogs_gtp_delete_session_response_t;
 
 typedef struct ogs_gtp_modify_bearer_command_s {
     ogs_gtp_tlv_ambr_t apn_aggregate_maximum_bit_rate;
-    ogs_gtp_tlv_bearer_context_t bearer_context;
-    ogs_gtp_tlv_overload_control_information_t mme_s4_sgsn_s_overload_control_information;
-    ogs_gtp_tlv_overload_control_information_t sgw_s_overload_control_information;
-    ogs_gtp_tlv_overload_control_information_t twan_epdg_s_overload_control_information;
+    ogs_gtp_tlv_bearer_context__modify_bearer_command__t bearer_context;
+    ogs_gtp_tlv_overload_control_information__modify_bearer_command__t mme_s4_sgsn_s_overload_control_information;
+    ogs_gtp_tlv_overload_control_information__modify_bearer_command__t sgw_s_overload_control_information;
+    ogs_gtp_tlv_overload_control_information__modify_bearer_command__t twan_epdg_s_overload_control_information;
     ogs_gtp_tlv_f_teid_t sender_f_teid_for_control_plane;
 } ogs_gtp_modify_bearer_command_t;
 
@@ -958,28 +1902,28 @@ typedef struct ogs_gtp_modify_bearer_failure_indication_s {
     ogs_gtp_tlv_cause_t cause;
     ogs_gtp_tlv_recovery_t recovery;
     ogs_gtp_tlv_indication_t indication_flags;
-    ogs_gtp_tlv_overload_control_information_t pgw_s_overload_control_information;
-    ogs_gtp_tlv_overload_control_information_t sgw_s_overload_control_information;
+    ogs_gtp_tlv_overload_control_information__modify_bearer_failure_indication__t pgw_s_overload_control_information;
+    ogs_gtp_tlv_overload_control_information__modify_bearer_failure_indication__t sgw_s_overload_control_information;
 } ogs_gtp_modify_bearer_failure_indication_t;
 
 typedef struct ogs_gtp_delete_bearer_command_s {
-    ogs_gtp_tlv_bearer_context_t bearer_contexts;
+    ogs_gtp_tlv_bearer_context__delete_bearer_command__t bearer_contexts;
     ogs_gtp_tlv_uli_t user_location_information;
     ogs_gtp_tlv_uli_timestamp_t uli_timestamp;
     ogs_gtp_tlv_ue_time_zone_t ue_time_zone;
-    ogs_gtp_tlv_overload_control_information_t mme_s4_sgsn_s_overload_control_information;
-    ogs_gtp_tlv_overload_control_information_t sgw_s_overload_control_information;
+    ogs_gtp_tlv_overload_control_information__delete_bearer_command__t mme_s4_sgsn_s_overload_control_information;
+    ogs_gtp_tlv_overload_control_information__delete_bearer_command__t sgw_s_overload_control_information;
     ogs_gtp_tlv_f_teid_t sender_f_teid_for_control_plane;
     ogs_gtp_tlv_secondary_rat_usage_data_report_t secondary_rat_usage_data_report;
 } ogs_gtp_delete_bearer_command_t;
 
 typedef struct ogs_gtp_delete_bearer_failure_indication_s {
     ogs_gtp_tlv_cause_t cause;
-    ogs_gtp_tlv_bearer_context_t bearer_context;
+    ogs_gtp_tlv_bearer_context__delete_bearer_failure_indication__t bearer_context;
     ogs_gtp_tlv_recovery_t recovery;
     ogs_gtp_tlv_indication_t indication_flags;
-    ogs_gtp_tlv_overload_control_information_t pgw_s_overload_control_information;
-    ogs_gtp_tlv_overload_control_information_t sgw_s_overload_control_information;
+    ogs_gtp_tlv_overload_control_information__delete_bearer_failure_indication__t pgw_s_overload_control_information;
+    ogs_gtp_tlv_overload_control_information__delete_bearer_failure_indication__t sgw_s_overload_control_information;
 } ogs_gtp_delete_bearer_failure_indication_t;
 
 typedef struct ogs_gtp_bearer_resource_command_s {
@@ -996,8 +1940,8 @@ typedef struct ogs_gtp_bearer_resource_command_s {
     ogs_gtp_tlv_f_teid_t s12_rnc_f_teid;
     ogs_gtp_tlv_pco_t protocol_configuration_options;
     ogs_gtp_tlv_signalling_priority_indication_t signalling_priority_indication__;
-    ogs_gtp_tlv_overload_control_information_t mme_s4_sgsn_s_overload_control_information;
-    ogs_gtp_tlv_overload_control_information_t sgw_s_overload_control_information;
+    ogs_gtp_tlv_overload_control_information__bearer_resource_command__t mme_s4_sgsn_s_overload_control_information;
+    ogs_gtp_tlv_overload_control_information__bearer_resource_command__t sgw_s_overload_control_information;
     ogs_gtp_tlv_f_container_t nbifom_container;
     ogs_gtp_tlv_epco_t extended_protocol_configuration_options;
     ogs_gtp_tlv_f_teid_t sender_f_teid_for_control_plane;
@@ -1008,8 +1952,8 @@ typedef struct ogs_gtp_bearer_resource_failure_indication_s {
     ogs_gtp_tlv_ebi_t linked_eps_bearer_id;
     ogs_gtp_tlv_pti_t procedure_transaction_id;
     ogs_gtp_tlv_indication_t indication_flags;
-    ogs_gtp_tlv_overload_control_information_t pgw_s_overload_control_information;
-    ogs_gtp_tlv_overload_control_information_t sgw_s_overload_control_information;
+    ogs_gtp_tlv_overload_control_information__bearer_resource_failure_indication__t pgw_s_overload_control_information;
+    ogs_gtp_tlv_overload_control_information__bearer_resource_failure_indication__t sgw_s_overload_control_information;
     ogs_gtp_tlv_recovery_t recovery;
     ogs_gtp_tlv_f_container_t nbifom_container;
 } ogs_gtp_bearer_resource_failure_indication_t;
@@ -1024,7 +1968,7 @@ typedef struct ogs_gtp_create_bearer_request_s {
     ogs_gtp_tlv_pti_t procedure_transaction_id;
     ogs_gtp_tlv_ebi_t linked_eps_bearer_id;
     ogs_gtp_tlv_pco_t protocol_configuration_options;
-    ogs_gtp_tlv_bearer_context_t bearer_contexts;
+    ogs_gtp_tlv_bearer_context__create_bearer_request__t bearer_contexts;
     ogs_gtp_tlv_fq_csid_t pgw_fq_csid;
     ogs_gtp_tlv_fq_csid_t sgw_fq_csid;
     ogs_gtp_tlv_change_reporting_action_t change_reporting_action;
@@ -1032,17 +1976,17 @@ typedef struct ogs_gtp_create_bearer_request_s {
     ogs_gtp_tlv_enb_information_reporting_t hnb_information_reporting;
     ogs_gtp_tlv_presence_reporting_area_action_t presence_reporting_area_action;
     ogs_gtp_tlv_indication_t indication_flags;
-    ogs_gtp_tlv_load_control_information_t pgw_s_node_level_load_control_information;
-    ogs_gtp_tlv_load_control_information_t pgw_s_apn_level_load_control_information;
-    ogs_gtp_tlv_load_control_information_t sgw_s_node_level_load_control_information;
-    ogs_gtp_tlv_overload_control_information_t pgw_s_overload_control_information;
-    ogs_gtp_tlv_overload_control_information_t sgw_s_overload_control_information;
+    ogs_gtp_tlv_load_control_information__create_bearer_request__t pgw_s_node_level_load_control_information;
+    ogs_gtp_tlv_load_control_information__create_bearer_request__t pgw_s_apn_level_load_control_information;
+    ogs_gtp_tlv_load_control_information__create_bearer_request__t sgw_s_node_level_load_control_information;
+    ogs_gtp_tlv_overload_control_information__create_bearer_request__t pgw_s_overload_control_information;
+    ogs_gtp_tlv_overload_control_information__create_bearer_request__t sgw_s_overload_control_information;
     ogs_gtp_tlv_f_container_t nbifom_container;
 } ogs_gtp_create_bearer_request_t;
 
 typedef struct ogs_gtp_create_bearer_response_s {
     ogs_gtp_tlv_cause_t cause;
-    ogs_gtp_tlv_bearer_context_t bearer_contexts;
+    ogs_gtp_tlv_bearer_context__create_bearer_response__t bearer_contexts;
     ogs_gtp_tlv_recovery_t recovery;
     ogs_gtp_tlv_fq_csid_t mme_fq_csid;
     ogs_gtp_tlv_fq_csid_t epdg_fq_csid;
@@ -1051,11 +1995,11 @@ typedef struct ogs_gtp_create_bearer_response_s {
     ogs_gtp_tlv_ue_time_zone_t ue_time_zone;
     ogs_gtp_tlv_uli_t user_location_information;
     ogs_gtp_tlv_twan_identifier_t twan_identifier;
-    ogs_gtp_tlv_overload_control_information_t mme_s4_sgsn_s_overload_control_information;
-    ogs_gtp_tlv_overload_control_information_t sgw_s_overload_control_information;
+    ogs_gtp_tlv_overload_control_information__create_bearer_response__t mme_s4_sgsn_s_overload_control_information;
+    ogs_gtp_tlv_overload_control_information__create_bearer_response__t sgw_s_overload_control_information;
     ogs_gtp_tlv_presence_reporting_area_information_t presence_reporting_area_information;
     ogs_gtp_tlv_ip_address_t mme_s4_sgsn_identifier;
-    ogs_gtp_tlv_overload_control_information_t twan_epdg_s_overload_control_information;
+    ogs_gtp_tlv_overload_control_information__create_bearer_response__t twan_epdg_s_overload_control_information;
     ogs_gtp_tlv_twan_identifier_t wlan_location_information;
     ogs_gtp_tlv_twan_identifier_timestamp_t wlan_location_timestamp;
     ogs_gtp_tlv_port_number_t ue_udp_port;
@@ -1064,7 +2008,7 @@ typedef struct ogs_gtp_create_bearer_response_s {
 } ogs_gtp_create_bearer_response_t;
 
 typedef struct ogs_gtp_update_bearer_request_s {
-    ogs_gtp_tlv_bearer_context_t bearer_contexts;
+    ogs_gtp_tlv_bearer_context__update_bearer_request__t bearer_contexts;
     ogs_gtp_tlv_pti_t procedure_transaction_id;
     ogs_gtp_tlv_pco_t protocol_configuration_options;
     ogs_gtp_tlv_ambr_t aggregate_maximum_bit_rate;
@@ -1075,17 +2019,17 @@ typedef struct ogs_gtp_update_bearer_request_s {
     ogs_gtp_tlv_fq_csid_t pgw_fq_csid;
     ogs_gtp_tlv_fq_csid_t sgw_fq_csid;
     ogs_gtp_tlv_presence_reporting_area_action_t presence_reporting_area_action;
-    ogs_gtp_tlv_load_control_information_t pgw_s_node_level_load_control_information;
-    ogs_gtp_tlv_load_control_information_t pgw_s_apn_level_load_control_information;
-    ogs_gtp_tlv_load_control_information_t sgw_s_node_level_load_control_information;
-    ogs_gtp_tlv_overload_control_information_t pgw_s_overload_control_information;
-    ogs_gtp_tlv_overload_control_information_t sgw_s_overload_control_information;
+    ogs_gtp_tlv_load_control_information__update_bearer_request__t pgw_s_node_level_load_control_information;
+    ogs_gtp_tlv_load_control_information__update_bearer_request__t pgw_s_apn_level_load_control_information;
+    ogs_gtp_tlv_load_control_information__update_bearer_request__t sgw_s_node_level_load_control_information;
+    ogs_gtp_tlv_overload_control_information__update_bearer_request__t pgw_s_overload_control_information;
+    ogs_gtp_tlv_overload_control_information__update_bearer_request__t sgw_s_overload_control_information;
     ogs_gtp_tlv_f_container_t nbifom_container;
 } ogs_gtp_update_bearer_request_t;
 
 typedef struct ogs_gtp_update_bearer_response_s {
     ogs_gtp_tlv_cause_t cause;
-    ogs_gtp_tlv_bearer_context_t bearer_contexts;
+    ogs_gtp_tlv_bearer_context__update_bearer_response__t bearer_contexts;
     ogs_gtp_tlv_pco_t protocol_configuration_options;
     ogs_gtp_tlv_recovery_t recovery;
     ogs_gtp_tlv_fq_csid_t mme_fq_csid;
@@ -1096,11 +2040,11 @@ typedef struct ogs_gtp_update_bearer_response_s {
     ogs_gtp_tlv_ue_time_zone_t ue_time_zone;
     ogs_gtp_tlv_uli_t user_location_information;
     ogs_gtp_tlv_twan_identifier_t twan_identifier;
-    ogs_gtp_tlv_overload_control_information_t mme_s4_sgsn_s_overload_control_information;
-    ogs_gtp_tlv_overload_control_information_t sgw_s_overload_control_information;
+    ogs_gtp_tlv_overload_control_information__update_bearer_response__t mme_s4_sgsn_s_overload_control_information;
+    ogs_gtp_tlv_overload_control_information__update_bearer_response__t sgw_s_overload_control_information;
     ogs_gtp_tlv_presence_reporting_area_information_t presence_reporting_area_information;
     ogs_gtp_tlv_ip_address_t mme_s4_sgsn_identifier;
-    ogs_gtp_tlv_overload_control_information_t twan_epdg_s_overload_control_information;
+    ogs_gtp_tlv_overload_control_information__update_bearer_response__t twan_epdg_s_overload_control_information;
     ogs_gtp_tlv_twan_identifier_t wlan_location_information;
     ogs_gtp_tlv_twan_identifier_timestamp_t wlan_location_timestamp;
     ogs_gtp_tlv_port_number_t ue_udp_port;
@@ -1111,18 +2055,18 @@ typedef struct ogs_gtp_update_bearer_response_s {
 typedef struct ogs_gtp_delete_bearer_request_s {
     ogs_gtp_tlv_ebi_t linked_eps_bearer_id;
     ogs_gtp_tlv_ebi_t eps_bearer_ids;
-    ogs_gtp_tlv_bearer_context_t failed_bearer_contexts;
+    ogs_gtp_tlv_bearer_context__delete_bearer_request__t failed_bearer_contexts;
     ogs_gtp_tlv_pti_t procedure_transaction_id;
     ogs_gtp_tlv_pco_t protocol_configuration_options;
     ogs_gtp_tlv_fq_csid_t pgw_fq_csid;
     ogs_gtp_tlv_fq_csid_t sgw_fq_csid;
     ogs_gtp_tlv_cause_t cause;
     ogs_gtp_tlv_indication_t indication_flags;
-    ogs_gtp_tlv_load_control_information_t pgw_s_node_level_load_control_information;
-    ogs_gtp_tlv_load_control_information_t pgw_s_apn_level_load_control_information;
-    ogs_gtp_tlv_load_control_information_t sgw_s_node_level_load_control_information;
-    ogs_gtp_tlv_overload_control_information_t pgw_s_overload_control_information;
-    ogs_gtp_tlv_overload_control_information_t sgw_s_overload_control_information;
+    ogs_gtp_tlv_load_control_information__delete_bearer_request__t pgw_s_node_level_load_control_information;
+    ogs_gtp_tlv_load_control_information__delete_bearer_request__t pgw_s_apn_level_load_control_information;
+    ogs_gtp_tlv_load_control_information__delete_bearer_request__t sgw_s_node_level_load_control_information;
+    ogs_gtp_tlv_overload_control_information__delete_bearer_request__t pgw_s_overload_control_information;
+    ogs_gtp_tlv_overload_control_information__delete_bearer_request__t sgw_s_overload_control_information;
     ogs_gtp_tlv_f_container_t nbifom_container;
     ogs_gtp_tlv_apn_rate_control_status_t apn_rate_control_status;
     ogs_gtp_tlv_epco_t extended_protocol_configuration_options;
@@ -1131,7 +2075,7 @@ typedef struct ogs_gtp_delete_bearer_request_s {
 typedef struct ogs_gtp_delete_bearer_response_s {
     ogs_gtp_tlv_cause_t cause;
     ogs_gtp_tlv_ebi_t linked_eps_bearer_id;
-    ogs_gtp_tlv_bearer_context_t bearer_contexts;
+    ogs_gtp_tlv_bearer_context__delete_bearer_response__t bearer_contexts;
     ogs_gtp_tlv_recovery_t recovery;
     ogs_gtp_tlv_fq_csid_t mme_fq_csid;
     ogs_gtp_tlv_fq_csid_t sgw_fq_csid;
@@ -1143,10 +2087,10 @@ typedef struct ogs_gtp_delete_bearer_response_s {
     ogs_gtp_tlv_uli_timestamp_t uli_timestamp;
     ogs_gtp_tlv_twan_identifier_t twan_identifier;
     ogs_gtp_tlv_twan_identifier_timestamp_t twan_identifier_timestamp;
-    ogs_gtp_tlv_overload_control_information_t mme_s4_sgsn_s_overload_control_information;
-    ogs_gtp_tlv_overload_control_information_t sgw_s_overload_control_information;
+    ogs_gtp_tlv_overload_control_information__delete_bearer_response__t mme_s4_sgsn_s_overload_control_information;
+    ogs_gtp_tlv_overload_control_information__delete_bearer_response__t sgw_s_overload_control_information;
     ogs_gtp_tlv_ip_address_t mme_s4_sgsn_identifier;
-    ogs_gtp_tlv_overload_control_information_t twan_epdg_s_overload_control_information;
+    ogs_gtp_tlv_overload_control_information__delete_bearer_response__t twan_epdg_s_overload_control_information;
     ogs_gtp_tlv_twan_identifier_t wlan_location_information;
     ogs_gtp_tlv_twan_identifier_timestamp_t wlan_location_timestamp;
     ogs_gtp_tlv_port_number_t ue_udp_port;
@@ -1160,14 +2104,14 @@ typedef struct ogs_gtp_create_indirect_data_forwarding_tunnel_request_s {
     ogs_gtp_tlv_mei_t me_identity;
     ogs_gtp_tlv_indication_t indication_flags;
     ogs_gtp_tlv_f_teid_t sender_f_teid_for_control_plane;
-    ogs_gtp_tlv_bearer_context_t bearer_contexts[8];
+    ogs_gtp_tlv_bearer_context__create_indirect_data_forwarding_tunnel_request__t bearer_contexts[8];
     ogs_gtp_tlv_recovery_t recovery;
 } ogs_gtp_create_indirect_data_forwarding_tunnel_request_t;
 
 typedef struct ogs_gtp_create_indirect_data_forwarding_tunnel_response_s {
     ogs_gtp_tlv_cause_t cause;
     ogs_gtp_tlv_f_teid_t sender_f_teid_for_control_plane;
-    ogs_gtp_tlv_bearer_context_t bearer_contexts[8];
+    ogs_gtp_tlv_bearer_context__create_indirect_data_forwarding_tunnel_response__t bearer_contexts[8];
     ogs_gtp_tlv_recovery_t recovery;
 } ogs_gtp_create_indirect_data_forwarding_tunnel_response_t;
 
@@ -1190,8 +2134,8 @@ typedef struct ogs_gtp_release_access_bearers_response_s {
     ogs_gtp_tlv_cause_t cause;
     ogs_gtp_tlv_recovery_t recovery;
     ogs_gtp_tlv_indication_t indication_flags;
-    ogs_gtp_tlv_load_control_information_t sgw_s_node_level_load_control_information;
-    ogs_gtp_tlv_overload_control_information_t sgw_s_overload_control_information;
+    ogs_gtp_tlv_load_control_information__release_access_bearers_response__t sgw_s_node_level_load_control_information;
+    ogs_gtp_tlv_overload_control_information__release_access_bearers_response__t sgw_s_overload_control_information;
 } ogs_gtp_release_access_bearers_response_t;
 
 typedef struct ogs_gtp_downlink_data_notification_s {
@@ -1201,8 +2145,8 @@ typedef struct ogs_gtp_downlink_data_notification_s {
     ogs_gtp_tlv_imsi_t imsi;
     ogs_gtp_tlv_f_teid_t sender_f_teid_for_control_plane;
     ogs_gtp_tlv_indication_t indication_flags;
-    ogs_gtp_tlv_load_control_information_t sgw_s_node_level_load_control_information;
-    ogs_gtp_tlv_overload_control_information_t sgw_s_overload_control_information;
+    ogs_gtp_tlv_load_control_information__downlink_data_notification__t sgw_s_node_level_load_control_information;
+    ogs_gtp_tlv_overload_control_information__downlink_data_notification__t sgw_s_overload_control_information;
     ogs_gtp_tlv_paging_and_service_information_t paging_and_service_information;
     ogs_gtp_tlv_integer_number_t dl_data_packets_size;
 } ogs_gtp_downlink_data_notification_t;
@@ -1221,20 +2165,20 @@ typedef struct ogs_gtp_modify_access_bearers_request_s {
     ogs_gtp_tlv_indication_t indication_flags;
     ogs_gtp_tlv_f_teid_t sender_f_teid_for_control_plane;
     ogs_gtp_tlv_delay_value_t delay_downlink_packet_notification_request;
-    ogs_gtp_tlv_bearer_context_t bearer_contexts_to_be_modified;
-    ogs_gtp_tlv_bearer_context_t bearer_contexts_to_be_removed;
+    ogs_gtp_tlv_bearer_context__modify_access_bearers_request__modified__t bearer_contexts_to_be_modified;
+    ogs_gtp_tlv_bearer_context__modify_access_bearers_request__removed__t bearer_contexts_to_be_removed;
     ogs_gtp_tlv_recovery_t recovery;
     ogs_gtp_tlv_secondary_rat_usage_data_report_t secondary_rat_usage_data_report;
 } ogs_gtp_modify_access_bearers_request_t;
 
 typedef struct ogs_gtp_modify_access_bearers_response_s {
     ogs_gtp_tlv_cause_t cause;
-    ogs_gtp_tlv_bearer_context_t bearer_contexts_modified;
-    ogs_gtp_tlv_bearer_context_t bearer_contexts_marked_for_removal;
+    ogs_gtp_tlv_bearer_context__modify_access_bearers_response__modified__t bearer_contexts_modified;
+    ogs_gtp_tlv_bearer_context__modify_access_bearers_response__removal__t bearer_contexts_marked_for_removal;
     ogs_gtp_tlv_recovery_t recovery;
     ogs_gtp_tlv_indication_t indication_flags;
-    ogs_gtp_tlv_load_control_information_t sgw_s_node_level_load_control_information;
-    ogs_gtp_tlv_overload_control_information_t sgw_s_overload_control_information;
+    ogs_gtp_tlv_load_control_information__modify_access_bearers_response__t sgw_s_node_level_load_control_information;
+    ogs_gtp_tlv_overload_control_information__modify_access_bearers_response__t sgw_s_overload_control_information;
 } ogs_gtp_modify_access_bearers_response_t;
 
 typedef struct ogs_gtp_message_s {

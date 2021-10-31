@@ -192,7 +192,7 @@ except getopt.GetoptError as err:
 
 for o, a in opts:
     if o in ("-d", "--debug"):
-        verbosity = 1
+        verbosity += 1
     if o in ("-f", "--file"):
         filename = a
     if o in ("-o", "--output"):
@@ -298,12 +298,12 @@ if os.path.isfile(cachefile) and os.access(cachefile, os.R_OK):
     print("Read from " + cachefile)
 else:
     document = Document(filename)
-    f = open(cachefile, 'w') 
+    f = open(cachefile, 'w')
 
     for i, paragraph, table in document_paragraph_tables(document):
         if table.rows[0].cells[0].text.find('Octet') != -1 and \
             table.rows[0].cells[2].text.find('IE Type') != -1:
-            d_print("Table Index = %d\n" % i)
+            d_print("Table Index = %d Name = [%s]\n" % (i, paragraph))
 
             row = table.rows[0];
 
@@ -311,12 +311,25 @@ else:
                 continue;
             ie_type = re.findall('\d+', row.cells[2].text)[0]
             ie_name = re.sub('\s*IE Type.*', '', row.cells[2].text)
+            ie_name_context = ''
+            # extract the context
+            if "within" in paragraph:
+                label = paragraph.replace("within a", "within")
+                ie_name_context = re.sub('.*within ', '', label)
+            ie_name_action = ''
+            # extract the action verb
+            if ("to be" in paragraph) or ("marked for" in paragraph) \
+                or ("Created" in paragraph) or ("modified" in paragraph):
+                label = paragraph.replace("to be", "")
+                label = label.replace("marked for", "")
+                ie_name_action = re.search(r'%s(.*?)within' % ie_name, label).group(1).replace(' ','').lower()
 
             write_file(f, "# [%s] Index = %d\n" % (paragraph, i))
 
-            if ie_name not in group_list.keys():
+            if (ie_name, ie_name_context, ie_name_action) not in group_list.keys():
                 ies = []
                 write_file(f, "ies = []\n")
+                write_file(f, "paragraph = \"%s\"\n" % paragraph)
                 for row in table.rows[4:]:
                     cells = get_cells(row.cells)
                     if cells is None:
@@ -331,19 +344,20 @@ else:
                         write_cells_to_file("ies", cells)
 
                 ie_idx = str(int(ie_type)+100)
-                group_list[ie_name] = { "index" : ie_idx, "type" : ie_type, "ies" : ies }
-                write_file(f, "group_list[\"" + ie_name + "\"] = { \"index\" : \"" + ie_idx + "\", \"type\" : \"" + ie_type + "\", \"ies\" : ies }\n")
+                group_list[(ie_name, ie_name_context, ie_name_action)] = { "index" : ie_idx, "type" : ie_type, "context" : ie_name_context, "action": ie_name_action, "paragraph": paragraph, "ies" : ies }
+                write_file(f, "group_list[(\"" + ie_name + "\", \"" + ie_name_context + "\", \"" + ie_name_action + "\")] = { \"index\" : \"" + ie_idx + "\", \"type\" : \"" + ie_type \
+                    + "\", \"context\" : \"" + ie_name_context + "\", \"action\" : \"" + ie_name_action + "\", \"paragraph\" : paragraph, \"ies\" : ies }\n")
             else:
                 group_list_is_added = False
-                added_ies = group_list[ie_name]["ies"]
-                write_file(f, "added_ies = group_list[\"" + ie_name + "\"][\"ies\"]\n")
+                added_ies = group_list[(ie_name, ie_name_context, ie_name_action)]["ies"]
+                write_file(f, "added_ies = group_list[(\"" + ie_name + "\", \"" + ie_name_context + "\", \"" + ie_name_action + "\")][\"ies\"]\n")
                 for row in table.rows[4:]:
                     cells = get_cells(row.cells)
                     if cells is None:
                         continue
 
                     ies_is_added = True
-                    for ie in group_list[ie_name]["ies"]:
+                    for ie in group_list[(ie_name, ie_name_context, ie_name_action)]["ies"]:
                         if (cells["ie_type"], cells["instance"]) == (ie["ie_type"], ie["instance"]):
                             ies_is_added = False
                     for ie in ies:
@@ -355,8 +369,9 @@ else:
                         group_list_is_added = True
                 if group_list_is_added is True:
                     ie_idx = str(int(ie_type)+100)
-                    group_list[ie_name] = { "index" : ie_idx, "type" : ie_type, "ies" : added_ies }
-                    write_file(f, "group_list[\"" + ie_name + "\"] = { \"index\" : \"" + ie_idx + "\", \"type\" : \"" + ie_type + "\", \"ies\" : added_ies }\n")
+                    group_list[(ie_name, ie_name_context, ie_name_action)] = { "index" : ie_idx, "type" : ie_type, "context" : ie_name_context, "action": ie_name_action, "paragraph": paragraph, "ies" : added_ies }
+                    write_file(f, "group_list[(\"" + ie_name + "\", \"" + ie_name_context + "\", \"" + ie_name_action + "\")] = { \"index\" : \"" + ie_idx + "\", \"type\" : \"" + ie_type \
+                        + "\", \"context\" : \"" + ie_name_context + "\", \"action\" : \"" + ie_name_action + "\", \"paragraph\" : paragraph, \"ies\" : added_ies }\n")
     f.close()
 
 msg_list["Echo Request"]["table"] = 8
@@ -400,7 +415,7 @@ for key in msg_list.keys():
             print("Read from " + cachefile)
         else:
             document = Document(filename)
-            f = open(cachefile, 'w') 
+            f = open(cachefile, 'w')
 
             ies = []
             write_file(f, "ies = []\n")
@@ -508,26 +523,33 @@ f.write("\n")
 
 f.write("/* Information Element TLV Descriptor */\n")
 for (k, v) in sorted_type_list:
-    if k in group_list.keys():
+    if k in [_k for (_k, _c, _a) in group_list.keys()]:
         continue
     for instance in range(0, int(type_list[k]["max_instance"])+1):
         f.write("extern ogs_tlv_desc_t ogs_gtp_tlv_desc_" + v_lower(k))
         f.write("_" + str(instance) + ";\n")
 f.write("\n")
 
-for k, v in group_list.items():
+for (k, c, a), v in group_list.items():
     if v_lower(k) == "pc5_qos_parameters":
         v["index"] = "1"
     if v_lower(k) == "remote_ue_context":
         v["index"] = "2"
 
-tmp = [(k, v["index"]) for k, v in group_list.items()]
+tmp = [((k, c, a), v["index"]) for (k, c, a), v in group_list.items()]
 sorted_group_list = sorted(tmp, key=lambda tup: int(tup[1]))
 
 f.write("/* Group Information Element TLV Descriptor */\n")
-for (k, v) in sorted_group_list:
+for ((k, c, a), v) in sorted_group_list:
     for instance in range(0, int(type_list[k]["max_instance"])+1):
-        f.write("extern ogs_tlv_desc_t ogs_gtp_tlv_desc_" + v_lower(k))
+        label = v_lower(k)
+        # add context and action labels
+        if (c != ""): label += "__%s" % v_lower(c)
+        if (a != ""): label += "__%s" % v_lower(a)
+        # extra pad in case of changes
+        if label != v_lower(k): label += "_"
+
+        f.write("extern ogs_tlv_desc_t ogs_gtp_tlv_desc_" + label)
         f.write("_" + str(instance) + ";\n")
 f.write("\n")
 
@@ -538,7 +560,7 @@ f.write("\n")
 
 f.write("/* Structure for Information Element */\n")
 for (k, v) in sorted_type_list:
-    if k in group_list.keys():
+    if k in [_k for (_k, _c, _a) in group_list.keys()]:
         continue
     if "size" in type_list[k]:
         if type_list[k]["size"] == 1:
@@ -556,13 +578,49 @@ for (k, v) in sorted_type_list:
 f.write("\n")
 
 f.write("/* Structure for Group Information Element */\n")
-for (k, v) in sorted_group_list:
-    f.write("typedef struct ogs_gtp_tlv_" + v_lower(k) + "_s {\n")
+for ((k, c, a), v) in sorted_group_list:
+
+    label = v_lower(k)
+    # add context & action labels
+    if (c != ""): label += "__%s" % v_lower(c)
+    if (a != ""): label += "__%s" % v_lower(a)
+    if label != v_lower(k): label += "_"
+
+    # add 3GPP table reference
+    f.write("//  Name: [%s]\n" % k)
+    f.write("//  Context: [%s]\n" % group_list[(k,c,a)]['context'])
+    f.write("//  Action: [%s]\n" % group_list[(k,c,a)]['action'])
+    f.write("//  %s\n" % group_list[(k,c,a)]['paragraph'])
+
+    f.write("typedef struct ogs_gtp_tlv_" + label + "_s {\n")
     f.write("    ogs_tlv_presence_t presence;\n")
-    for ies in group_list[k]["ies"]:
-        f.write("    ogs_gtp_tlv_" + v_lower(ies["ie_type"]) + "_t " + \
-                v_lower(ies["ie_value"]))
+    for ies in group_list[(k, c, a)]["ies"]:
+        # if structure group-type element
+        # is context and action dependent
+        # then choose the proper one here
+        name = v_lower(ies["ie_type"])
+        for ((_k, _c, _a), _) in sorted_group_list:
+            # ie_type to be matched from group_list lookup
+            if v_lower(ies["ie_type"]) == v_lower(_k):
+                # check context
+                if v_lower(_c) == v_lower(c):
+                    # map to context (if not already)
+                    if v_lower(_c) not in name: name += "__%s" % v_lower(_c)
+                    # map to action if needed
+                    if (_a != "") and (_a == a):
+                        label += "__%s" % _a
+                        # no more match possible
+                        break
+
+        if (verbosity > 1) and (name != v_lower(ies["ie_type"])):
+            d_print(" /*Str_for_GroupInfoElement*/ struct change: struct:[%s] field ie_type: [%s] ie_name_context: [%s]-> new:[%s]\n" % (label, v_lower(ies["ie_type"]), v_lower(_c), name))
+
+        if name != v_lower(ies["ie_type"]): name += "_"
         if ies["ie_type"] == "F-TEID":
+
+            f.write("    ogs_gtp_tlv_" + name + "_t gtpv2_" + \
+                v_lower(ies["ie_value"]))
+
             if ies["ie_value"] == "S2b-U ePDG F-TEID":
                 f.write("_" + ies["instance"] + ";")
             elif ies["ie_value"] == "S2a-U TWAN F-TEID":
@@ -571,8 +629,12 @@ for (k, v) in sorted_group_list:
                 f.write(";")
             f.write(" /* Instance : " + ies["instance"] + " */\n")
         else:
+
+            f.write("    ogs_gtp_tlv_" + name + "_t " + \
+                v_lower(ies["ie_value"]))
+
             f.write(";\n")
-    f.write("} ogs_gtp_tlv_" + v_lower(k) + "_t;\n")
+    f.write("} ogs_gtp_tlv_" + label + "_t;\n")
     f.write("\n")
 
 f.write("/* Structure for Message */\n")
@@ -580,11 +642,36 @@ for (k, v) in sorted_msg_list:
     if "ies" in msg_list[k]:
         f.write("typedef struct ogs_gtp_" + v_lower(k) + "_s {\n")
         for ies in msg_list[k]["ies"]:
-            if (k == 'Create Indirect Data Forwarding Tunnel Request' or k == 'Create Indirect Data Forwarding Tunnel Response') and ies["ie_value"] == 'Bearer Contexts':
-                f.write("    ogs_gtp_tlv_" + v_lower(ies["ie_type"]) + "_t " + \
+            # if structure group-type element
+            # is context and action dependent
+            # then choose the proper one here
+            label = v_lower(ies["ie_type"])
+            for ((n, c, a), _) in sorted_group_list:
+                # ie_type to be matched from group_list lookup
+                if v_lower(ies["ie_type"]) == v_lower(n):
+                    # check context
+                    if v_lower(k) == v_lower(c):
+                        # map to context (if not already)
+                        if v_lower(c) not in label: label += "__%s" % v_lower(c)
+                        # map to action if explicitly needed
+                        if (a != "") and (a in v_lower(ies["ie_value"])):
+                            label += "__%s" % a
+                            # no more match possible
+                            break
+
+            if (verbosity > 1) and (label != v_lower(ies["ie_type"])):
+                d_print(" /*Str_for_Msg*/ message change: [%s] struct:[%s] a_was:[%s]-> new_struct:[%s]\n" % (v_upper(k), v_lower(ies["ie_type"]), a, label))
+
+            # if changed then extra pad on label end
+            if label != v_lower(ies["ie_type"]): label += "_"
+
+            if (k == 'Create Indirect Data Forwarding Tunnel Request' \
+             or k == 'Create Indirect Data Forwarding Tunnel Response') \
+                and ies["ie_value"] == 'Bearer Contexts':
+                f.write("    ogs_gtp_tlv_" + label + "_t " + \
                         v_lower(ies["ie_value"]) + "[8];\n")
             else:
-                f.write("    ogs_gtp_tlv_" + v_lower(ies["ie_type"]) + "_t " + \
+                f.write("    ogs_gtp_tlv_" + label + "_t " + \
                         v_lower(ies["ie_value"]) + ";\n")
         f.write("} ogs_gtp_" + v_lower(k) + "_t;\n")
         f.write("\n")
@@ -616,7 +703,7 @@ f.write("""#include "ogs-gtp.h"
 """)
 
 for (k, v) in sorted_type_list:
-    if k in group_list.keys():
+    if k in [_k for (_k, _c, _a) in group_list.keys()]:
         continue
     for instance in range(0, int(type_list[k]["max_instance"])+1):
         f.write("ogs_tlv_desc_t ogs_gtp_tlv_desc_%s_%d =\n" % (v_lower(k), instance))
@@ -645,23 +732,37 @@ for (k, v) in sorted_type_list:
         f.write("    { NULL }\n")
         f.write("};\n\n")
 
-for (k, v) in sorted_group_list:
+for ((k, c, a), v) in sorted_group_list:
+    #if len(group_list[(k, c, a)]["ies"]) == 0: continue
     for instance in range(0, int(type_list[k]["max_instance"])+1):
-        f.write("ogs_tlv_desc_t ogs_gtp_tlv_desc_%s_%d =\n" % (v_lower(k), instance))
+
+        label = v_lower(k)
+        # add context & action labels
+        if (c != ""): label += "__%s" % v_lower(c)
+        if (a != ""): label += "__%s" % v_lower(a)
+        if label != v_lower(k): label += "_"
+        # add 3GPP table reference
+        f.write("//  Name: [%s]\n" % k)
+        f.write("//  Context: [%s]\n" % group_list[(k, c, a)]['context'])
+        f.write("//  Action: [%s]\n" % group_list[(k, c, a)]['action'])
+        f.write("//  %s\n" % group_list[(k, c, a)]['paragraph'])
+
+        f.write("ogs_tlv_desc_t ogs_gtp_tlv_desc_%s_%d =\n" % (label, instance))
         f.write("{\n")
         f.write("    OGS_TLV_COMPOUND,\n")
         f.write("    \"%s\",\n" % k)
         f.write("    OGS_GTP_%s_TYPE,\n" % v_upper(k))
         f.write("    0,\n")
         f.write("    %d,\n" % instance)
-        f.write("    sizeof(ogs_gtp_tlv_%s_t),\n" % v_lower(k))
+        f.write("    sizeof(ogs_gtp_tlv_%s_t),\n" % label)
         f.write("    {\n")
-        for ies in group_list[k]["ies"]:
+        for ies in group_list[(k, c, a)]["ies"]:
                 f.write("        &ogs_gtp_tlv_desc_%s_%s,\n" % (v_lower(ies["ie_type"]), v_lower(ies["instance"])))
         f.write("        NULL,\n")
         f.write("    }\n")
         f.write("};\n\n")
 
+f.write("/* Descriptor Structure for Messages */\n\n")
 for (k, v) in sorted_msg_list:
     if "ies" in msg_list[k]:
         f.write("ogs_tlv_desc_t ogs_gtp_tlv_desc_%s =\n" % v_lower(k))
@@ -670,7 +771,29 @@ for (k, v) in sorted_msg_list:
         f.write("    \"%s\",\n" % k)
         f.write("    0, 0, 0, 0, {\n")
         for ies in msg_list[k]["ies"]:
-            f.write("        &ogs_gtp_tlv_desc_%s_%s,\n" % (v_lower(ies["ie_type"]), v_lower(ies["instance"])))
+            # if descriptor element
+            # is context dependent then
+            # choose the proper one here
+            label = v_lower(ies["ie_type"])
+            for ((n, c, a), _) in sorted_group_list:
+                # ie_type to be matched from group_list lookup
+                if v_lower(ies["ie_type"]) == v_lower(n):
+                    # match the context if any
+                    if v_lower(k) == v_lower(c):
+                        # append context if not already
+                        if (v_lower(c) not in label): label += "__%s" % v_lower(c)
+                        # match the action if any
+                        if (a != "") and (a in v_lower(ies["ie_value"])):
+                            label += "__%s" % a
+                            # no more match possible
+                            break
+
+            if (verbosity > 1) and (label != v_lower(ies["ie_type"])):
+                d_print(" /*Desc_Strct_for_Msg*/ message desc elem change: [%s] desc:[%s] a_was:[%s] -> new_desc:[%s]\n" % (v_upper(k), v_lower(ies["ie_type"]), a ,label))
+
+            # if changes add extra pad
+            if label != v_lower(ies["ie_type"]): label += "_"
+            f.write("        &ogs_gtp_tlv_desc_%s_%s,\n" % (label, v_lower(ies["instance"])))
             if (k == 'Create Indirect Data Forwarding Tunnel Request' or k == 'Create Indirect Data Forwarding Tunnel Response') and ies["ie_value"] == 'Bearer Contexts':
                 f.write("        &ogs_tlv_desc_more8,\n")
         f.write("    NULL,\n")
@@ -689,7 +812,7 @@ f.write("""int ogs_gtp_parse_msg(ogs_gtp_message_t *gtp_message, ogs_pkbuf_t *pk
 
     h = (ogs_gtp_header_t *)pkbuf->data;
     ogs_assert(h);
-    
+
     memset(gtp_message, 0, sizeof(ogs_gtp_message_t));
 
     if (h->teid_presence)

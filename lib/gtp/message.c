@@ -20,8 +20,8 @@
 /*******************************************************************************
  * This file had been created by gtp-tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2021-10-16 16:32:20.655097 by acetcom
- * from 29274-g30.docx
+ * Created on: 2021-10-31 11:36:49.519203 by cbalint
+ * from ./lib/gtp/support/29274-g30.docx
  ******************************************************************************/
 
 #include "ogs-gtp.h"
@@ -1742,6 +1742,29 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_pc5_qos_flow_0 =
     { NULL }
 };
 
+//  Name: [PC5 QoS Parameters]
+//  Context: [Forward Relocation Request]
+//  Action: []
+//  Table 7.3.1-7: PC5 QoS Parameters within Forward Relocation Request
+ogs_tlv_desc_t ogs_gtp_tlv_desc_pc5_qos_parameters__forward_relocation_request__0 =
+{
+    OGS_TLV_COMPOUND,
+    "PC5 QoS Parameters",
+    OGS_GTP_PC5_QOS_PARAMETERS_TYPE,
+    0,
+    0,
+    sizeof(ogs_gtp_tlv_pc5_qos_parameters__forward_relocation_request__t),
+    {
+        &ogs_gtp_tlv_desc_pc5_qos_flow_0,
+        &ogs_gtp_tlv_desc_bit_rate_0,
+        NULL,
+    }
+};
+
+//  Name: [PC5 QoS Parameters]
+//  Context: []
+//  Action: []
+//  Table 8.140-1: PC5 QoS Parameters Grouped Type
 ogs_tlv_desc_t ogs_gtp_tlv_desc_pc5_qos_parameters_0 =
 {
     OGS_TLV_COMPOUND,
@@ -1751,12 +1774,52 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_pc5_qos_parameters_0 =
     0,
     sizeof(ogs_gtp_tlv_pc5_qos_parameters_t),
     {
-        &ogs_gtp_tlv_desc_pc5_qos_flow_0,
-        &ogs_gtp_tlv_desc_bit_rate_0,
         NULL,
     }
 };
 
+//  Name: [Remote UE Context]
+//  Context: [Create Session Request]
+//  Action: []
+//  Table 7.2.1-5: Remote UE Context Connected within Create Session Request
+ogs_tlv_desc_t ogs_gtp_tlv_desc_remote_ue_context__create_session_request__0 =
+{
+    OGS_TLV_COMPOUND,
+    "Remote UE Context",
+    OGS_GTP_REMOTE_UE_CONTEXT_TYPE,
+    0,
+    0,
+    sizeof(ogs_gtp_tlv_remote_ue_context__create_session_request__t),
+    {
+        &ogs_gtp_tlv_desc_remote_user_id_0,
+        &ogs_gtp_tlv_desc_remote_ue_ip_information_0,
+        NULL,
+    }
+};
+
+//  Name: [Remote UE Context]
+//  Context: [Remote UE Report Notification]
+//  Action: []
+//  Table 7.2.26-2: Remote UE Context Connected within Remote UE Report Notification
+ogs_tlv_desc_t ogs_gtp_tlv_desc_remote_ue_context__remote_ue_report_notification__0 =
+{
+    OGS_TLV_COMPOUND,
+    "Remote UE Context",
+    OGS_GTP_REMOTE_UE_CONTEXT_TYPE,
+    0,
+    0,
+    sizeof(ogs_gtp_tlv_remote_ue_context__remote_ue_report_notification__t),
+    {
+        &ogs_gtp_tlv_desc_remote_user_id_0,
+        &ogs_gtp_tlv_desc_remote_ue_ip_information_0,
+        NULL,
+    }
+};
+
+//  Name: [Remote UE Context]
+//  Context: []
+//  Action: []
+//  Table 7.2.26-3: Remote UE Context Disconnected with Remote UE Report Notification 
 ogs_tlv_desc_t ogs_gtp_tlv_desc_remote_ue_context_0 =
 {
     OGS_TLV_COMPOUND,
@@ -1767,19 +1830,60 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_remote_ue_context_0 =
     sizeof(ogs_gtp_tlv_remote_ue_context_t),
     {
         &ogs_gtp_tlv_desc_remote_user_id_0,
+        NULL,
+    }
+};
+
+//  Name: [Remote UE Context]
+//  Context: [Forward Relocation Request]
+//  Action: []
+//  Table 7.3.1-4: Remote UE Context Connected within MME/SGSN UE EPS PDN Connections within Forward Relocation Request
+ogs_tlv_desc_t ogs_gtp_tlv_desc_remote_ue_context__forward_relocation_request__0 =
+{
+    OGS_TLV_COMPOUND,
+    "Remote UE Context",
+    OGS_GTP_REMOTE_UE_CONTEXT_TYPE,
+    0,
+    0,
+    sizeof(ogs_gtp_tlv_remote_ue_context__forward_relocation_request__t),
+    {
+        &ogs_gtp_tlv_desc_remote_user_id_0,
         &ogs_gtp_tlv_desc_remote_ue_ip_information_0,
         NULL,
     }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_v2x_context_0 =
+//  Name: [Remote UE Context]
+//  Context: [Context Response]
+//  Action: []
+//  Table 7.3.6-4: Remote UE Context Connected within MME/SGSN UE EPS PDN Connections within Context Response
+ogs_tlv_desc_t ogs_gtp_tlv_desc_remote_ue_context__context_response__0 =
+{
+    OGS_TLV_COMPOUND,
+    "Remote UE Context",
+    OGS_GTP_REMOTE_UE_CONTEXT_TYPE,
+    0,
+    0,
+    sizeof(ogs_gtp_tlv_remote_ue_context__context_response__t),
+    {
+        &ogs_gtp_tlv_desc_remote_user_id_0,
+        &ogs_gtp_tlv_desc_remote_ue_ip_information_0,
+        NULL,
+    }
+};
+
+//  Name: [V2X Context]
+//  Context: [Forward Relocation Request]
+//  Action: []
+//  Table 7.3.1-6: Subscribed V2X Information within Forward Relocation Request
+ogs_tlv_desc_t ogs_gtp_tlv_desc_v2x_context__forward_relocation_request__0 =
 {
     OGS_TLV_COMPOUND,
     "V2X Context",
     OGS_GTP_V2X_CONTEXT_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_v2x_context_t),
+    sizeof(ogs_gtp_tlv_v2x_context__forward_relocation_request__t),
     {
         &ogs_gtp_tlv_desc_services_authorized_0,
         &ogs_gtp_tlv_desc_services_authorized_1,
@@ -1790,6 +1894,1121 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_v2x_context_0 =
     }
 };
 
+//  Name: [V2X Context]
+//  Context: []
+//  Action: []
+//  Table 8.138-1: V2X Context Grouped Type
+ogs_tlv_desc_t ogs_gtp_tlv_desc_v2x_context_0 =
+{
+    OGS_TLV_COMPOUND,
+    "V2X Context",
+    OGS_GTP_V2X_CONTEXT_TYPE,
+    0,
+    0,
+    sizeof(ogs_gtp_tlv_v2x_context_t),
+    {
+        NULL,
+    }
+};
+
+//  Name: [Bearer Context]
+//  Context: [Create Session Request]
+//  Action: [created]
+//  Table 7.2.1-2: Bearer Context to be created within Create Session Request
+ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__create_session_request__created__0 =
+{
+    OGS_TLV_COMPOUND,
+    "Bearer Context",
+    OGS_GTP_BEARER_CONTEXT_TYPE,
+    0,
+    0,
+    sizeof(ogs_gtp_tlv_bearer_context__create_session_request__created__t),
+    {
+        &ogs_gtp_tlv_desc_ebi_0,
+        &ogs_gtp_tlv_desc_bearer_tft_0,
+        &ogs_gtp_tlv_desc_f_teid_0,
+        &ogs_gtp_tlv_desc_f_teid_1,
+        &ogs_gtp_tlv_desc_f_teid_2,
+        &ogs_gtp_tlv_desc_f_teid_3,
+        &ogs_gtp_tlv_desc_f_teid_4,
+        &ogs_gtp_tlv_desc_f_teid_5,
+        &ogs_gtp_tlv_desc_f_teid_6,
+        &ogs_gtp_tlv_desc_bearer_qos_0,
+        &ogs_gtp_tlv_desc_f_teid_7,
+        NULL,
+    }
+};
+
+//  Name: [Bearer Context]
+//  Context: [Create Session Request]
+//  Action: [created]
+//  Table 7.2.1-2: Bearer Context to be created within Create Session Request
+ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__create_session_request__created__1 =
+{
+    OGS_TLV_COMPOUND,
+    "Bearer Context",
+    OGS_GTP_BEARER_CONTEXT_TYPE,
+    0,
+    1,
+    sizeof(ogs_gtp_tlv_bearer_context__create_session_request__created__t),
+    {
+        &ogs_gtp_tlv_desc_ebi_0,
+        &ogs_gtp_tlv_desc_bearer_tft_0,
+        &ogs_gtp_tlv_desc_f_teid_0,
+        &ogs_gtp_tlv_desc_f_teid_1,
+        &ogs_gtp_tlv_desc_f_teid_2,
+        &ogs_gtp_tlv_desc_f_teid_3,
+        &ogs_gtp_tlv_desc_f_teid_4,
+        &ogs_gtp_tlv_desc_f_teid_5,
+        &ogs_gtp_tlv_desc_f_teid_6,
+        &ogs_gtp_tlv_desc_bearer_qos_0,
+        &ogs_gtp_tlv_desc_f_teid_7,
+        NULL,
+    }
+};
+
+//  Name: [Bearer Context]
+//  Context: [Create Session Request]
+//  Action: [removed]
+//  Table 7.2.1-3: Bearer Context to be removed within Create Session Request
+ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__create_session_request__removed__0 =
+{
+    OGS_TLV_COMPOUND,
+    "Bearer Context",
+    OGS_GTP_BEARER_CONTEXT_TYPE,
+    0,
+    0,
+    sizeof(ogs_gtp_tlv_bearer_context__create_session_request__removed__t),
+    {
+        &ogs_gtp_tlv_desc_ebi_0,
+        &ogs_gtp_tlv_desc_f_teid_0,
+        NULL,
+    }
+};
+
+//  Name: [Bearer Context]
+//  Context: [Create Session Request]
+//  Action: [removed]
+//  Table 7.2.1-3: Bearer Context to be removed within Create Session Request
+ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__create_session_request__removed__1 =
+{
+    OGS_TLV_COMPOUND,
+    "Bearer Context",
+    OGS_GTP_BEARER_CONTEXT_TYPE,
+    0,
+    1,
+    sizeof(ogs_gtp_tlv_bearer_context__create_session_request__removed__t),
+    {
+        &ogs_gtp_tlv_desc_ebi_0,
+        &ogs_gtp_tlv_desc_f_teid_0,
+        NULL,
+    }
+};
+
+//  Name: [Bearer Context]
+//  Context: [Create Session Response]
+//  Action: [created]
+//  Table 7.2.2-2: Bearer Context Created within Create Session Response
+ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__create_session_response__created__0 =
+{
+    OGS_TLV_COMPOUND,
+    "Bearer Context",
+    OGS_GTP_BEARER_CONTEXT_TYPE,
+    0,
+    0,
+    sizeof(ogs_gtp_tlv_bearer_context__create_session_response__created__t),
+    {
+        &ogs_gtp_tlv_desc_ebi_0,
+        &ogs_gtp_tlv_desc_cause_0,
+        &ogs_gtp_tlv_desc_f_teid_0,
+        &ogs_gtp_tlv_desc_f_teid_1,
+        &ogs_gtp_tlv_desc_f_teid_2,
+        &ogs_gtp_tlv_desc_f_teid_3,
+        &ogs_gtp_tlv_desc_f_teid_4,
+        &ogs_gtp_tlv_desc_f_teid_5,
+        &ogs_gtp_tlv_desc_bearer_qos_0,
+        &ogs_gtp_tlv_desc_charging_id_0,
+        &ogs_gtp_tlv_desc_bearer_flags_0,
+        &ogs_gtp_tlv_desc_f_teid_6,
+        NULL,
+    }
+};
+
+//  Name: [Bearer Context]
+//  Context: [Create Session Response]
+//  Action: [created]
+//  Table 7.2.2-2: Bearer Context Created within Create Session Response
+ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__create_session_response__created__1 =
+{
+    OGS_TLV_COMPOUND,
+    "Bearer Context",
+    OGS_GTP_BEARER_CONTEXT_TYPE,
+    0,
+    1,
+    sizeof(ogs_gtp_tlv_bearer_context__create_session_response__created__t),
+    {
+        &ogs_gtp_tlv_desc_ebi_0,
+        &ogs_gtp_tlv_desc_cause_0,
+        &ogs_gtp_tlv_desc_f_teid_0,
+        &ogs_gtp_tlv_desc_f_teid_1,
+        &ogs_gtp_tlv_desc_f_teid_2,
+        &ogs_gtp_tlv_desc_f_teid_3,
+        &ogs_gtp_tlv_desc_f_teid_4,
+        &ogs_gtp_tlv_desc_f_teid_5,
+        &ogs_gtp_tlv_desc_bearer_qos_0,
+        &ogs_gtp_tlv_desc_charging_id_0,
+        &ogs_gtp_tlv_desc_bearer_flags_0,
+        &ogs_gtp_tlv_desc_f_teid_6,
+        NULL,
+    }
+};
+
+//  Name: [Bearer Context]
+//  Context: [Create Session Response]
+//  Action: [removal]
+//  Table 7.2.2-3: Bearer Context marked for removal within a Create Session Response
+ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__create_session_response__removal__0 =
+{
+    OGS_TLV_COMPOUND,
+    "Bearer Context",
+    OGS_GTP_BEARER_CONTEXT_TYPE,
+    0,
+    0,
+    sizeof(ogs_gtp_tlv_bearer_context__create_session_response__removal__t),
+    {
+        &ogs_gtp_tlv_desc_ebi_0,
+        &ogs_gtp_tlv_desc_cause_0,
+        NULL,
+    }
+};
+
+//  Name: [Bearer Context]
+//  Context: [Create Session Response]
+//  Action: [removal]
+//  Table 7.2.2-3: Bearer Context marked for removal within a Create Session Response
+ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__create_session_response__removal__1 =
+{
+    OGS_TLV_COMPOUND,
+    "Bearer Context",
+    OGS_GTP_BEARER_CONTEXT_TYPE,
+    0,
+    1,
+    sizeof(ogs_gtp_tlv_bearer_context__create_session_response__removal__t),
+    {
+        &ogs_gtp_tlv_desc_ebi_0,
+        &ogs_gtp_tlv_desc_cause_0,
+        NULL,
+    }
+};
+
+//  Name: [Bearer Context]
+//  Context: [Create Bearer Request]
+//  Action: []
+//  Table 7.2.3-2: Bearer Context within Create Bearer Request
+ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__create_bearer_request__0 =
+{
+    OGS_TLV_COMPOUND,
+    "Bearer Context",
+    OGS_GTP_BEARER_CONTEXT_TYPE,
+    0,
+    0,
+    sizeof(ogs_gtp_tlv_bearer_context__create_bearer_request__t),
+    {
+        &ogs_gtp_tlv_desc_ebi_0,
+        &ogs_gtp_tlv_desc_bearer_tft_0,
+        &ogs_gtp_tlv_desc_f_teid_0,
+        &ogs_gtp_tlv_desc_f_teid_1,
+        &ogs_gtp_tlv_desc_f_teid_2,
+        &ogs_gtp_tlv_desc_f_teid_3,
+        &ogs_gtp_tlv_desc_f_teid_4,
+        &ogs_gtp_tlv_desc_f_teid_5,
+        &ogs_gtp_tlv_desc_bearer_qos_0,
+        &ogs_gtp_tlv_desc_charging_id_0,
+        &ogs_gtp_tlv_desc_bearer_flags_0,
+        &ogs_gtp_tlv_desc_pco_0,
+        &ogs_gtp_tlv_desc_epco_0,
+        &ogs_gtp_tlv_desc_maximum_packet_loss_rate_0,
+        NULL,
+    }
+};
+
+//  Name: [Bearer Context]
+//  Context: [Create Bearer Request]
+//  Action: []
+//  Table 7.2.3-2: Bearer Context within Create Bearer Request
+ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__create_bearer_request__1 =
+{
+    OGS_TLV_COMPOUND,
+    "Bearer Context",
+    OGS_GTP_BEARER_CONTEXT_TYPE,
+    0,
+    1,
+    sizeof(ogs_gtp_tlv_bearer_context__create_bearer_request__t),
+    {
+        &ogs_gtp_tlv_desc_ebi_0,
+        &ogs_gtp_tlv_desc_bearer_tft_0,
+        &ogs_gtp_tlv_desc_f_teid_0,
+        &ogs_gtp_tlv_desc_f_teid_1,
+        &ogs_gtp_tlv_desc_f_teid_2,
+        &ogs_gtp_tlv_desc_f_teid_3,
+        &ogs_gtp_tlv_desc_f_teid_4,
+        &ogs_gtp_tlv_desc_f_teid_5,
+        &ogs_gtp_tlv_desc_bearer_qos_0,
+        &ogs_gtp_tlv_desc_charging_id_0,
+        &ogs_gtp_tlv_desc_bearer_flags_0,
+        &ogs_gtp_tlv_desc_pco_0,
+        &ogs_gtp_tlv_desc_epco_0,
+        &ogs_gtp_tlv_desc_maximum_packet_loss_rate_0,
+        NULL,
+    }
+};
+
+//  Name: [Bearer Context]
+//  Context: [Create Bearer Response]
+//  Action: []
+//  Table 7.2.4-2: Bearer Context within Create Bearer Response
+ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__create_bearer_response__0 =
+{
+    OGS_TLV_COMPOUND,
+    "Bearer Context",
+    OGS_GTP_BEARER_CONTEXT_TYPE,
+    0,
+    0,
+    sizeof(ogs_gtp_tlv_bearer_context__create_bearer_response__t),
+    {
+        &ogs_gtp_tlv_desc_ebi_0,
+        &ogs_gtp_tlv_desc_cause_0,
+        &ogs_gtp_tlv_desc_f_teid_0,
+        &ogs_gtp_tlv_desc_f_teid_1,
+        &ogs_gtp_tlv_desc_f_teid_2,
+        &ogs_gtp_tlv_desc_f_teid_3,
+        &ogs_gtp_tlv_desc_f_teid_4,
+        &ogs_gtp_tlv_desc_f_teid_5,
+        &ogs_gtp_tlv_desc_f_teid_6,
+        &ogs_gtp_tlv_desc_f_teid_7,
+        &ogs_gtp_tlv_desc_f_teid_8,
+        &ogs_gtp_tlv_desc_f_teid_9,
+        &ogs_gtp_tlv_desc_f_teid_10,
+        &ogs_gtp_tlv_desc_f_teid_11,
+        &ogs_gtp_tlv_desc_pco_0,
+        &ogs_gtp_tlv_desc_ran_nas_cause_0,
+        &ogs_gtp_tlv_desc_epco_0,
+        NULL,
+    }
+};
+
+//  Name: [Bearer Context]
+//  Context: [Create Bearer Response]
+//  Action: []
+//  Table 7.2.4-2: Bearer Context within Create Bearer Response
+ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__create_bearer_response__1 =
+{
+    OGS_TLV_COMPOUND,
+    "Bearer Context",
+    OGS_GTP_BEARER_CONTEXT_TYPE,
+    0,
+    1,
+    sizeof(ogs_gtp_tlv_bearer_context__create_bearer_response__t),
+    {
+        &ogs_gtp_tlv_desc_ebi_0,
+        &ogs_gtp_tlv_desc_cause_0,
+        &ogs_gtp_tlv_desc_f_teid_0,
+        &ogs_gtp_tlv_desc_f_teid_1,
+        &ogs_gtp_tlv_desc_f_teid_2,
+        &ogs_gtp_tlv_desc_f_teid_3,
+        &ogs_gtp_tlv_desc_f_teid_4,
+        &ogs_gtp_tlv_desc_f_teid_5,
+        &ogs_gtp_tlv_desc_f_teid_6,
+        &ogs_gtp_tlv_desc_f_teid_7,
+        &ogs_gtp_tlv_desc_f_teid_8,
+        &ogs_gtp_tlv_desc_f_teid_9,
+        &ogs_gtp_tlv_desc_f_teid_10,
+        &ogs_gtp_tlv_desc_f_teid_11,
+        &ogs_gtp_tlv_desc_pco_0,
+        &ogs_gtp_tlv_desc_ran_nas_cause_0,
+        &ogs_gtp_tlv_desc_epco_0,
+        NULL,
+    }
+};
+
+//  Name: [Bearer Context]
+//  Context: [Modify Bearer Request]
+//  Action: [modified]
+//  Table 7.2.7-2: Bearer Context to be modified within Modify Bearer Request
+ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__modify_bearer_request__modified__0 =
+{
+    OGS_TLV_COMPOUND,
+    "Bearer Context",
+    OGS_GTP_BEARER_CONTEXT_TYPE,
+    0,
+    0,
+    sizeof(ogs_gtp_tlv_bearer_context__modify_bearer_request__modified__t),
+    {
+        &ogs_gtp_tlv_desc_ebi_0,
+        &ogs_gtp_tlv_desc_f_teid_0,
+        &ogs_gtp_tlv_desc_f_teid_1,
+        &ogs_gtp_tlv_desc_f_teid_2,
+        &ogs_gtp_tlv_desc_f_teid_3,
+        &ogs_gtp_tlv_desc_f_teid_4,
+        NULL,
+    }
+};
+
+//  Name: [Bearer Context]
+//  Context: [Modify Bearer Request]
+//  Action: [modified]
+//  Table 7.2.7-2: Bearer Context to be modified within Modify Bearer Request
+ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__modify_bearer_request__modified__1 =
+{
+    OGS_TLV_COMPOUND,
+    "Bearer Context",
+    OGS_GTP_BEARER_CONTEXT_TYPE,
+    0,
+    1,
+    sizeof(ogs_gtp_tlv_bearer_context__modify_bearer_request__modified__t),
+    {
+        &ogs_gtp_tlv_desc_ebi_0,
+        &ogs_gtp_tlv_desc_f_teid_0,
+        &ogs_gtp_tlv_desc_f_teid_1,
+        &ogs_gtp_tlv_desc_f_teid_2,
+        &ogs_gtp_tlv_desc_f_teid_3,
+        &ogs_gtp_tlv_desc_f_teid_4,
+        NULL,
+    }
+};
+
+//  Name: [Bearer Context]
+//  Context: [Modify Bearer Request]
+//  Action: [removed]
+//  Table 7.2.7-3: Bearer Context to be removed within Modify Bearer Request
+ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__modify_bearer_request__removed__0 =
+{
+    OGS_TLV_COMPOUND,
+    "Bearer Context",
+    OGS_GTP_BEARER_CONTEXT_TYPE,
+    0,
+    0,
+    sizeof(ogs_gtp_tlv_bearer_context__modify_bearer_request__removed__t),
+    {
+        &ogs_gtp_tlv_desc_ebi_0,
+        NULL,
+    }
+};
+
+//  Name: [Bearer Context]
+//  Context: [Modify Bearer Request]
+//  Action: [removed]
+//  Table 7.2.7-3: Bearer Context to be removed within Modify Bearer Request
+ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__modify_bearer_request__removed__1 =
+{
+    OGS_TLV_COMPOUND,
+    "Bearer Context",
+    OGS_GTP_BEARER_CONTEXT_TYPE,
+    0,
+    1,
+    sizeof(ogs_gtp_tlv_bearer_context__modify_bearer_request__removed__t),
+    {
+        &ogs_gtp_tlv_desc_ebi_0,
+        NULL,
+    }
+};
+
+//  Name: [Bearer Context]
+//  Context: [Modify Bearer Response]
+//  Action: [modified]
+//  Table 7.2.8-2: Bearer Context modified within Modify Bearer Response
+ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__modify_bearer_response__modified__0 =
+{
+    OGS_TLV_COMPOUND,
+    "Bearer Context",
+    OGS_GTP_BEARER_CONTEXT_TYPE,
+    0,
+    0,
+    sizeof(ogs_gtp_tlv_bearer_context__modify_bearer_response__modified__t),
+    {
+        &ogs_gtp_tlv_desc_ebi_0,
+        &ogs_gtp_tlv_desc_cause_0,
+        &ogs_gtp_tlv_desc_f_teid_0,
+        &ogs_gtp_tlv_desc_f_teid_1,
+        &ogs_gtp_tlv_desc_f_teid_2,
+        &ogs_gtp_tlv_desc_charging_id_0,
+        &ogs_gtp_tlv_desc_bearer_flags_0,
+        &ogs_gtp_tlv_desc_f_teid_3,
+        NULL,
+    }
+};
+
+//  Name: [Bearer Context]
+//  Context: [Modify Bearer Response]
+//  Action: [modified]
+//  Table 7.2.8-2: Bearer Context modified within Modify Bearer Response
+ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__modify_bearer_response__modified__1 =
+{
+    OGS_TLV_COMPOUND,
+    "Bearer Context",
+    OGS_GTP_BEARER_CONTEXT_TYPE,
+    0,
+    1,
+    sizeof(ogs_gtp_tlv_bearer_context__modify_bearer_response__modified__t),
+    {
+        &ogs_gtp_tlv_desc_ebi_0,
+        &ogs_gtp_tlv_desc_cause_0,
+        &ogs_gtp_tlv_desc_f_teid_0,
+        &ogs_gtp_tlv_desc_f_teid_1,
+        &ogs_gtp_tlv_desc_f_teid_2,
+        &ogs_gtp_tlv_desc_charging_id_0,
+        &ogs_gtp_tlv_desc_bearer_flags_0,
+        &ogs_gtp_tlv_desc_f_teid_3,
+        NULL,
+    }
+};
+
+//  Name: [Bearer Context]
+//  Context: [Modify Bearer Response]
+//  Action: [removal]
+//  Table 7.2.8-3: Bearer Context marked for removal within Modify Bearer Response
+ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__modify_bearer_response__removal__0 =
+{
+    OGS_TLV_COMPOUND,
+    "Bearer Context",
+    OGS_GTP_BEARER_CONTEXT_TYPE,
+    0,
+    0,
+    sizeof(ogs_gtp_tlv_bearer_context__modify_bearer_response__removal__t),
+    {
+        &ogs_gtp_tlv_desc_ebi_0,
+        &ogs_gtp_tlv_desc_cause_0,
+        NULL,
+    }
+};
+
+//  Name: [Bearer Context]
+//  Context: [Modify Bearer Response]
+//  Action: [removal]
+//  Table 7.2.8-3: Bearer Context marked for removal within Modify Bearer Response
+ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__modify_bearer_response__removal__1 =
+{
+    OGS_TLV_COMPOUND,
+    "Bearer Context",
+    OGS_GTP_BEARER_CONTEXT_TYPE,
+    0,
+    1,
+    sizeof(ogs_gtp_tlv_bearer_context__modify_bearer_response__removal__t),
+    {
+        &ogs_gtp_tlv_desc_ebi_0,
+        &ogs_gtp_tlv_desc_cause_0,
+        NULL,
+    }
+};
+
+//  Name: [Bearer Context]
+//  Context: [Delete Bearer Request]
+//  Action: []
+//  Table 7.2.9.2-2: Bearer Context within Delete Bearer Request
+ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__delete_bearer_request__0 =
+{
+    OGS_TLV_COMPOUND,
+    "Bearer Context",
+    OGS_GTP_BEARER_CONTEXT_TYPE,
+    0,
+    0,
+    sizeof(ogs_gtp_tlv_bearer_context__delete_bearer_request__t),
+    {
+        &ogs_gtp_tlv_desc_ebi_0,
+        &ogs_gtp_tlv_desc_cause_0,
+        NULL,
+    }
+};
+
+//  Name: [Bearer Context]
+//  Context: [Delete Bearer Request]
+//  Action: []
+//  Table 7.2.9.2-2: Bearer Context within Delete Bearer Request
+ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__delete_bearer_request__1 =
+{
+    OGS_TLV_COMPOUND,
+    "Bearer Context",
+    OGS_GTP_BEARER_CONTEXT_TYPE,
+    0,
+    1,
+    sizeof(ogs_gtp_tlv_bearer_context__delete_bearer_request__t),
+    {
+        &ogs_gtp_tlv_desc_ebi_0,
+        &ogs_gtp_tlv_desc_cause_0,
+        NULL,
+    }
+};
+
+//  Name: [Bearer Context]
+//  Context: [Delete Bearer Response]
+//  Action: []
+//  Table 7.2.10.2-2: Bearer Context within Delete Bearer Response
+ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__delete_bearer_response__0 =
+{
+    OGS_TLV_COMPOUND,
+    "Bearer Context",
+    OGS_GTP_BEARER_CONTEXT_TYPE,
+    0,
+    0,
+    sizeof(ogs_gtp_tlv_bearer_context__delete_bearer_response__t),
+    {
+        &ogs_gtp_tlv_desc_ebi_0,
+        &ogs_gtp_tlv_desc_cause_0,
+        &ogs_gtp_tlv_desc_pco_0,
+        &ogs_gtp_tlv_desc_ran_nas_cause_0,
+        &ogs_gtp_tlv_desc_epco_0,
+        NULL,
+    }
+};
+
+//  Name: [Bearer Context]
+//  Context: [Delete Bearer Response]
+//  Action: []
+//  Table 7.2.10.2-2: Bearer Context within Delete Bearer Response
+ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__delete_bearer_response__1 =
+{
+    OGS_TLV_COMPOUND,
+    "Bearer Context",
+    OGS_GTP_BEARER_CONTEXT_TYPE,
+    0,
+    1,
+    sizeof(ogs_gtp_tlv_bearer_context__delete_bearer_response__t),
+    {
+        &ogs_gtp_tlv_desc_ebi_0,
+        &ogs_gtp_tlv_desc_cause_0,
+        &ogs_gtp_tlv_desc_pco_0,
+        &ogs_gtp_tlv_desc_ran_nas_cause_0,
+        &ogs_gtp_tlv_desc_epco_0,
+        NULL,
+    }
+};
+
+//  Name: [Bearer Context]
+//  Context: [Modify Bearer Command]
+//  Action: []
+//  Table 7.2.14.1-2: Bearer Context within Modify Bearer Command
+ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__modify_bearer_command__0 =
+{
+    OGS_TLV_COMPOUND,
+    "Bearer Context",
+    OGS_GTP_BEARER_CONTEXT_TYPE,
+    0,
+    0,
+    sizeof(ogs_gtp_tlv_bearer_context__modify_bearer_command__t),
+    {
+        &ogs_gtp_tlv_desc_ebi_0,
+        &ogs_gtp_tlv_desc_bearer_qos_0,
+        NULL,
+    }
+};
+
+//  Name: [Bearer Context]
+//  Context: [Modify Bearer Command]
+//  Action: []
+//  Table 7.2.14.1-2: Bearer Context within Modify Bearer Command
+ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__modify_bearer_command__1 =
+{
+    OGS_TLV_COMPOUND,
+    "Bearer Context",
+    OGS_GTP_BEARER_CONTEXT_TYPE,
+    0,
+    1,
+    sizeof(ogs_gtp_tlv_bearer_context__modify_bearer_command__t),
+    {
+        &ogs_gtp_tlv_desc_ebi_0,
+        &ogs_gtp_tlv_desc_bearer_qos_0,
+        NULL,
+    }
+};
+
+//  Name: [Bearer Context]
+//  Context: [Update Bearer Request]
+//  Action: []
+//  Table 7.2.15-2: Bearer Context within Update Bearer Request
+ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__update_bearer_request__0 =
+{
+    OGS_TLV_COMPOUND,
+    "Bearer Context",
+    OGS_GTP_BEARER_CONTEXT_TYPE,
+    0,
+    0,
+    sizeof(ogs_gtp_tlv_bearer_context__update_bearer_request__t),
+    {
+        &ogs_gtp_tlv_desc_ebi_0,
+        &ogs_gtp_tlv_desc_bearer_tft_0,
+        &ogs_gtp_tlv_desc_bearer_qos_0,
+        &ogs_gtp_tlv_desc_bearer_flags_0,
+        &ogs_gtp_tlv_desc_pco_0,
+        &ogs_gtp_tlv_desc_apco_0,
+        &ogs_gtp_tlv_desc_epco_0,
+        &ogs_gtp_tlv_desc_maximum_packet_loss_rate_0,
+        NULL,
+    }
+};
+
+//  Name: [Bearer Context]
+//  Context: [Update Bearer Request]
+//  Action: []
+//  Table 7.2.15-2: Bearer Context within Update Bearer Request
+ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__update_bearer_request__1 =
+{
+    OGS_TLV_COMPOUND,
+    "Bearer Context",
+    OGS_GTP_BEARER_CONTEXT_TYPE,
+    0,
+    1,
+    sizeof(ogs_gtp_tlv_bearer_context__update_bearer_request__t),
+    {
+        &ogs_gtp_tlv_desc_ebi_0,
+        &ogs_gtp_tlv_desc_bearer_tft_0,
+        &ogs_gtp_tlv_desc_bearer_qos_0,
+        &ogs_gtp_tlv_desc_bearer_flags_0,
+        &ogs_gtp_tlv_desc_pco_0,
+        &ogs_gtp_tlv_desc_apco_0,
+        &ogs_gtp_tlv_desc_epco_0,
+        &ogs_gtp_tlv_desc_maximum_packet_loss_rate_0,
+        NULL,
+    }
+};
+
+//  Name: [Bearer Context]
+//  Context: [Update Bearer Response]
+//  Action: []
+//  Table 7.2.16-2: Bearer Context within Update Bearer Response
+ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__update_bearer_response__0 =
+{
+    OGS_TLV_COMPOUND,
+    "Bearer Context",
+    OGS_GTP_BEARER_CONTEXT_TYPE,
+    0,
+    0,
+    sizeof(ogs_gtp_tlv_bearer_context__update_bearer_response__t),
+    {
+        &ogs_gtp_tlv_desc_ebi_0,
+        &ogs_gtp_tlv_desc_cause_0,
+        &ogs_gtp_tlv_desc_f_teid_0,
+        &ogs_gtp_tlv_desc_f_teid_1,
+        &ogs_gtp_tlv_desc_pco_0,
+        &ogs_gtp_tlv_desc_ran_nas_cause_0,
+        &ogs_gtp_tlv_desc_epco_0,
+        NULL,
+    }
+};
+
+//  Name: [Bearer Context]
+//  Context: [Update Bearer Response]
+//  Action: []
+//  Table 7.2.16-2: Bearer Context within Update Bearer Response
+ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__update_bearer_response__1 =
+{
+    OGS_TLV_COMPOUND,
+    "Bearer Context",
+    OGS_GTP_BEARER_CONTEXT_TYPE,
+    0,
+    1,
+    sizeof(ogs_gtp_tlv_bearer_context__update_bearer_response__t),
+    {
+        &ogs_gtp_tlv_desc_ebi_0,
+        &ogs_gtp_tlv_desc_cause_0,
+        &ogs_gtp_tlv_desc_f_teid_0,
+        &ogs_gtp_tlv_desc_f_teid_1,
+        &ogs_gtp_tlv_desc_pco_0,
+        &ogs_gtp_tlv_desc_ran_nas_cause_0,
+        &ogs_gtp_tlv_desc_epco_0,
+        NULL,
+    }
+};
+
+//  Name: [Bearer Context]
+//  Context: [Delete Bearer Command]
+//  Action: []
+//  Table 7.2.17.1-2: Bearer Context within Delete Bearer Command
+ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__delete_bearer_command__0 =
+{
+    OGS_TLV_COMPOUND,
+    "Bearer Context",
+    OGS_GTP_BEARER_CONTEXT_TYPE,
+    0,
+    0,
+    sizeof(ogs_gtp_tlv_bearer_context__delete_bearer_command__t),
+    {
+        &ogs_gtp_tlv_desc_ebi_0,
+        &ogs_gtp_tlv_desc_bearer_flags_0,
+        &ogs_gtp_tlv_desc_ran_nas_cause_0,
+        NULL,
+    }
+};
+
+//  Name: [Bearer Context]
+//  Context: [Delete Bearer Command]
+//  Action: []
+//  Table 7.2.17.1-2: Bearer Context within Delete Bearer Command
+ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__delete_bearer_command__1 =
+{
+    OGS_TLV_COMPOUND,
+    "Bearer Context",
+    OGS_GTP_BEARER_CONTEXT_TYPE,
+    0,
+    1,
+    sizeof(ogs_gtp_tlv_bearer_context__delete_bearer_command__t),
+    {
+        &ogs_gtp_tlv_desc_ebi_0,
+        &ogs_gtp_tlv_desc_bearer_flags_0,
+        &ogs_gtp_tlv_desc_ran_nas_cause_0,
+        NULL,
+    }
+};
+
+//  Name: [Bearer Context]
+//  Context: [Delete Bearer Failure Indication]
+//  Action: []
+//  Table 7.2.17.2-2: Bearer Context within Delete Bearer Failure Indication
+ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__delete_bearer_failure_indication__0 =
+{
+    OGS_TLV_COMPOUND,
+    "Bearer Context",
+    OGS_GTP_BEARER_CONTEXT_TYPE,
+    0,
+    0,
+    sizeof(ogs_gtp_tlv_bearer_context__delete_bearer_failure_indication__t),
+    {
+        &ogs_gtp_tlv_desc_ebi_0,
+        &ogs_gtp_tlv_desc_cause_0,
+        NULL,
+    }
+};
+
+//  Name: [Bearer Context]
+//  Context: [Delete Bearer Failure Indication]
+//  Action: []
+//  Table 7.2.17.2-2: Bearer Context within Delete Bearer Failure Indication
+ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__delete_bearer_failure_indication__1 =
+{
+    OGS_TLV_COMPOUND,
+    "Bearer Context",
+    OGS_GTP_BEARER_CONTEXT_TYPE,
+    0,
+    1,
+    sizeof(ogs_gtp_tlv_bearer_context__delete_bearer_failure_indication__t),
+    {
+        &ogs_gtp_tlv_desc_ebi_0,
+        &ogs_gtp_tlv_desc_cause_0,
+        NULL,
+    }
+};
+
+//  Name: [Bearer Context]
+//  Context: [Create Indirect Data Forwarding Tunnel Request]
+//  Action: []
+//  Table 7.2.18-2: Bearer Context within Create Indirect Data Forwarding Tunnel Request
+ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__create_indirect_data_forwarding_tunnel_request__0 =
+{
+    OGS_TLV_COMPOUND,
+    "Bearer Context",
+    OGS_GTP_BEARER_CONTEXT_TYPE,
+    0,
+    0,
+    sizeof(ogs_gtp_tlv_bearer_context__create_indirect_data_forwarding_tunnel_request__t),
+    {
+        &ogs_gtp_tlv_desc_ebi_0,
+        &ogs_gtp_tlv_desc_f_teid_0,
+        &ogs_gtp_tlv_desc_f_teid_1,
+        &ogs_gtp_tlv_desc_f_teid_2,
+        &ogs_gtp_tlv_desc_f_teid_3,
+        &ogs_gtp_tlv_desc_f_teid_4,
+        &ogs_gtp_tlv_desc_f_teid_5,
+        &ogs_gtp_tlv_desc_f_teid_6,
+        NULL,
+    }
+};
+
+//  Name: [Bearer Context]
+//  Context: [Create Indirect Data Forwarding Tunnel Request]
+//  Action: []
+//  Table 7.2.18-2: Bearer Context within Create Indirect Data Forwarding Tunnel Request
+ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__create_indirect_data_forwarding_tunnel_request__1 =
+{
+    OGS_TLV_COMPOUND,
+    "Bearer Context",
+    OGS_GTP_BEARER_CONTEXT_TYPE,
+    0,
+    1,
+    sizeof(ogs_gtp_tlv_bearer_context__create_indirect_data_forwarding_tunnel_request__t),
+    {
+        &ogs_gtp_tlv_desc_ebi_0,
+        &ogs_gtp_tlv_desc_f_teid_0,
+        &ogs_gtp_tlv_desc_f_teid_1,
+        &ogs_gtp_tlv_desc_f_teid_2,
+        &ogs_gtp_tlv_desc_f_teid_3,
+        &ogs_gtp_tlv_desc_f_teid_4,
+        &ogs_gtp_tlv_desc_f_teid_5,
+        &ogs_gtp_tlv_desc_f_teid_6,
+        NULL,
+    }
+};
+
+//  Name: [Bearer Context]
+//  Context: [Create Indirect Data Forwarding Tunnel Response]
+//  Action: []
+//  Table 7.2.19-2: Bearer Context within Create Indirect Data Forwarding Tunnel Response
+ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__create_indirect_data_forwarding_tunnel_response__0 =
+{
+    OGS_TLV_COMPOUND,
+    "Bearer Context",
+    OGS_GTP_BEARER_CONTEXT_TYPE,
+    0,
+    0,
+    sizeof(ogs_gtp_tlv_bearer_context__create_indirect_data_forwarding_tunnel_response__t),
+    {
+        &ogs_gtp_tlv_desc_ebi_0,
+        &ogs_gtp_tlv_desc_cause_0,
+        &ogs_gtp_tlv_desc_f_teid_0,
+        &ogs_gtp_tlv_desc_f_teid_1,
+        &ogs_gtp_tlv_desc_f_teid_2,
+        &ogs_gtp_tlv_desc_f_teid_3,
+        &ogs_gtp_tlv_desc_f_teid_4,
+        &ogs_gtp_tlv_desc_f_teid_5,
+        NULL,
+    }
+};
+
+//  Name: [Bearer Context]
+//  Context: [Create Indirect Data Forwarding Tunnel Response]
+//  Action: []
+//  Table 7.2.19-2: Bearer Context within Create Indirect Data Forwarding Tunnel Response
+ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__create_indirect_data_forwarding_tunnel_response__1 =
+{
+    OGS_TLV_COMPOUND,
+    "Bearer Context",
+    OGS_GTP_BEARER_CONTEXT_TYPE,
+    0,
+    1,
+    sizeof(ogs_gtp_tlv_bearer_context__create_indirect_data_forwarding_tunnel_response__t),
+    {
+        &ogs_gtp_tlv_desc_ebi_0,
+        &ogs_gtp_tlv_desc_cause_0,
+        &ogs_gtp_tlv_desc_f_teid_0,
+        &ogs_gtp_tlv_desc_f_teid_1,
+        &ogs_gtp_tlv_desc_f_teid_2,
+        &ogs_gtp_tlv_desc_f_teid_3,
+        &ogs_gtp_tlv_desc_f_teid_4,
+        &ogs_gtp_tlv_desc_f_teid_5,
+        NULL,
+    }
+};
+
+//  Name: [Bearer Context]
+//  Context: [Modify Access Bearers Request]
+//  Action: [modified]
+//  Table 7.2.24-2: Bearer Context to be modified within Modify Access Bearers Request
+ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__modify_access_bearers_request__modified__0 =
+{
+    OGS_TLV_COMPOUND,
+    "Bearer Context",
+    OGS_GTP_BEARER_CONTEXT_TYPE,
+    0,
+    0,
+    sizeof(ogs_gtp_tlv_bearer_context__modify_access_bearers_request__modified__t),
+    {
+        &ogs_gtp_tlv_desc_ebi_0,
+        &ogs_gtp_tlv_desc_f_teid_0,
+        &ogs_gtp_tlv_desc_f_teid_1,
+        NULL,
+    }
+};
+
+//  Name: [Bearer Context]
+//  Context: [Modify Access Bearers Request]
+//  Action: [modified]
+//  Table 7.2.24-2: Bearer Context to be modified within Modify Access Bearers Request
+ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__modify_access_bearers_request__modified__1 =
+{
+    OGS_TLV_COMPOUND,
+    "Bearer Context",
+    OGS_GTP_BEARER_CONTEXT_TYPE,
+    0,
+    1,
+    sizeof(ogs_gtp_tlv_bearer_context__modify_access_bearers_request__modified__t),
+    {
+        &ogs_gtp_tlv_desc_ebi_0,
+        &ogs_gtp_tlv_desc_f_teid_0,
+        &ogs_gtp_tlv_desc_f_teid_1,
+        NULL,
+    }
+};
+
+//  Name: [Bearer Context]
+//  Context: [Modify Access Bearers Request]
+//  Action: [removed]
+//  Table 7.2.24-3: Bearer Context to be removed within Modify Access Bearers Request
+ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__modify_access_bearers_request__removed__0 =
+{
+    OGS_TLV_COMPOUND,
+    "Bearer Context",
+    OGS_GTP_BEARER_CONTEXT_TYPE,
+    0,
+    0,
+    sizeof(ogs_gtp_tlv_bearer_context__modify_access_bearers_request__removed__t),
+    {
+        &ogs_gtp_tlv_desc_ebi_0,
+        NULL,
+    }
+};
+
+//  Name: [Bearer Context]
+//  Context: [Modify Access Bearers Request]
+//  Action: [removed]
+//  Table 7.2.24-3: Bearer Context to be removed within Modify Access Bearers Request
+ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__modify_access_bearers_request__removed__1 =
+{
+    OGS_TLV_COMPOUND,
+    "Bearer Context",
+    OGS_GTP_BEARER_CONTEXT_TYPE,
+    0,
+    1,
+    sizeof(ogs_gtp_tlv_bearer_context__modify_access_bearers_request__removed__t),
+    {
+        &ogs_gtp_tlv_desc_ebi_0,
+        NULL,
+    }
+};
+
+//  Name: [Bearer Context]
+//  Context: [Modify Access Bearers Response]
+//  Action: [modified]
+//  Table 7.2.25-2: Bearer Context modified within Modify Access Bearers Response
+ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__modify_access_bearers_response__modified__0 =
+{
+    OGS_TLV_COMPOUND,
+    "Bearer Context",
+    OGS_GTP_BEARER_CONTEXT_TYPE,
+    0,
+    0,
+    sizeof(ogs_gtp_tlv_bearer_context__modify_access_bearers_response__modified__t),
+    {
+        &ogs_gtp_tlv_desc_ebi_0,
+        &ogs_gtp_tlv_desc_cause_0,
+        &ogs_gtp_tlv_desc_f_teid_0,
+        &ogs_gtp_tlv_desc_f_teid_1,
+        NULL,
+    }
+};
+
+//  Name: [Bearer Context]
+//  Context: [Modify Access Bearers Response]
+//  Action: [modified]
+//  Table 7.2.25-2: Bearer Context modified within Modify Access Bearers Response
+ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__modify_access_bearers_response__modified__1 =
+{
+    OGS_TLV_COMPOUND,
+    "Bearer Context",
+    OGS_GTP_BEARER_CONTEXT_TYPE,
+    0,
+    1,
+    sizeof(ogs_gtp_tlv_bearer_context__modify_access_bearers_response__modified__t),
+    {
+        &ogs_gtp_tlv_desc_ebi_0,
+        &ogs_gtp_tlv_desc_cause_0,
+        &ogs_gtp_tlv_desc_f_teid_0,
+        &ogs_gtp_tlv_desc_f_teid_1,
+        NULL,
+    }
+};
+
+//  Name: [Bearer Context]
+//  Context: [Modify Access Bearers Response]
+//  Action: [removal]
+//  Table 7.2.25-3: Bearer Context marked for removal within Modify Access Bearers Response
+ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__modify_access_bearers_response__removal__0 =
+{
+    OGS_TLV_COMPOUND,
+    "Bearer Context",
+    OGS_GTP_BEARER_CONTEXT_TYPE,
+    0,
+    0,
+    sizeof(ogs_gtp_tlv_bearer_context__modify_access_bearers_response__removal__t),
+    {
+        &ogs_gtp_tlv_desc_ebi_0,
+        &ogs_gtp_tlv_desc_cause_0,
+        NULL,
+    }
+};
+
+//  Name: [Bearer Context]
+//  Context: [Modify Access Bearers Response]
+//  Action: [removal]
+//  Table 7.2.25-3: Bearer Context marked for removal within Modify Access Bearers Response
+ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__modify_access_bearers_response__removal__1 =
+{
+    OGS_TLV_COMPOUND,
+    "Bearer Context",
+    OGS_GTP_BEARER_CONTEXT_TYPE,
+    0,
+    1,
+    sizeof(ogs_gtp_tlv_bearer_context__modify_access_bearers_response__removal__t),
+    {
+        &ogs_gtp_tlv_desc_ebi_0,
+        &ogs_gtp_tlv_desc_cause_0,
+        NULL,
+    }
+};
+
+//  Name: [Bearer Context]
+//  Context: [Forward Relocation Request]
+//  Action: []
+//  Table 7.3.1-3: Bearer Context within MME/SGSN/AMF UE EPS PDN Connections within Forward Relocation Request
+ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__forward_relocation_request__0 =
+{
+    OGS_TLV_COMPOUND,
+    "Bearer Context",
+    OGS_GTP_BEARER_CONTEXT_TYPE,
+    0,
+    0,
+    sizeof(ogs_gtp_tlv_bearer_context__forward_relocation_request__t),
+    {
+        &ogs_gtp_tlv_desc_ebi_0,
+        &ogs_gtp_tlv_desc_bearer_tft_0,
+        &ogs_gtp_tlv_desc_f_teid_0,
+        &ogs_gtp_tlv_desc_f_teid_1,
+        &ogs_gtp_tlv_desc_bearer_qos_0,
+        &ogs_gtp_tlv_desc_f_container_0,
+        &ogs_gtp_tlv_desc_ti_0,
+        &ogs_gtp_tlv_desc_bearer_flags_0,
+        &ogs_gtp_tlv_desc_f_teid_2,
+        NULL,
+    }
+};
+
+//  Name: [Bearer Context]
+//  Context: [Forward Relocation Request]
+//  Action: []
+//  Table 7.3.1-3: Bearer Context within MME/SGSN/AMF UE EPS PDN Connections within Forward Relocation Request
+ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__forward_relocation_request__1 =
+{
+    OGS_TLV_COMPOUND,
+    "Bearer Context",
+    OGS_GTP_BEARER_CONTEXT_TYPE,
+    0,
+    1,
+    sizeof(ogs_gtp_tlv_bearer_context__forward_relocation_request__t),
+    {
+        &ogs_gtp_tlv_desc_ebi_0,
+        &ogs_gtp_tlv_desc_bearer_tft_0,
+        &ogs_gtp_tlv_desc_f_teid_0,
+        &ogs_gtp_tlv_desc_f_teid_1,
+        &ogs_gtp_tlv_desc_bearer_qos_0,
+        &ogs_gtp_tlv_desc_f_container_0,
+        &ogs_gtp_tlv_desc_ti_0,
+        &ogs_gtp_tlv_desc_bearer_flags_0,
+        &ogs_gtp_tlv_desc_f_teid_2,
+        NULL,
+    }
+};
+
+//  Name: [Bearer Context]
+//  Context: []
+//  Action: []
+//  Table 7.3.2-2: Bearer Context 
 ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context_0 =
 {
     OGS_TLV_COMPOUND,
@@ -1800,35 +3019,21 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context_0 =
     sizeof(ogs_gtp_tlv_bearer_context_t),
     {
         &ogs_gtp_tlv_desc_ebi_0,
-        &ogs_gtp_tlv_desc_bearer_tft_0,
+        &ogs_gtp_tlv_desc_packet_flow_id_0,
         &ogs_gtp_tlv_desc_f_teid_0,
         &ogs_gtp_tlv_desc_f_teid_1,
         &ogs_gtp_tlv_desc_f_teid_2,
         &ogs_gtp_tlv_desc_f_teid_3,
         &ogs_gtp_tlv_desc_f_teid_4,
         &ogs_gtp_tlv_desc_f_teid_5,
-        &ogs_gtp_tlv_desc_f_teid_6,
-        &ogs_gtp_tlv_desc_bearer_qos_0,
-        &ogs_gtp_tlv_desc_f_teid_7,
-        &ogs_gtp_tlv_desc_cause_0,
-        &ogs_gtp_tlv_desc_charging_id_0,
-        &ogs_gtp_tlv_desc_bearer_flags_0,
-        &ogs_gtp_tlv_desc_pco_0,
-        &ogs_gtp_tlv_desc_epco_0,
-        &ogs_gtp_tlv_desc_maximum_packet_loss_rate_0,
-        &ogs_gtp_tlv_desc_f_teid_8,
-        &ogs_gtp_tlv_desc_f_teid_9,
-        &ogs_gtp_tlv_desc_f_teid_10,
-        &ogs_gtp_tlv_desc_f_teid_11,
-        &ogs_gtp_tlv_desc_ran_nas_cause_0,
-        &ogs_gtp_tlv_desc_apco_0,
-        &ogs_gtp_tlv_desc_f_container_0,
-        &ogs_gtp_tlv_desc_ti_0,
-        &ogs_gtp_tlv_desc_packet_flow_id_0,
         NULL,
     }
 };
 
+//  Name: [Bearer Context]
+//  Context: []
+//  Action: []
+//  Table 7.3.2-2: Bearer Context 
 ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context_1 =
 {
     OGS_TLV_COMPOUND,
@@ -1839,43 +3044,117 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context_1 =
     sizeof(ogs_gtp_tlv_bearer_context_t),
     {
         &ogs_gtp_tlv_desc_ebi_0,
-        &ogs_gtp_tlv_desc_bearer_tft_0,
+        &ogs_gtp_tlv_desc_packet_flow_id_0,
         &ogs_gtp_tlv_desc_f_teid_0,
         &ogs_gtp_tlv_desc_f_teid_1,
         &ogs_gtp_tlv_desc_f_teid_2,
         &ogs_gtp_tlv_desc_f_teid_3,
         &ogs_gtp_tlv_desc_f_teid_4,
         &ogs_gtp_tlv_desc_f_teid_5,
-        &ogs_gtp_tlv_desc_f_teid_6,
-        &ogs_gtp_tlv_desc_bearer_qos_0,
-        &ogs_gtp_tlv_desc_f_teid_7,
-        &ogs_gtp_tlv_desc_cause_0,
-        &ogs_gtp_tlv_desc_charging_id_0,
-        &ogs_gtp_tlv_desc_bearer_flags_0,
-        &ogs_gtp_tlv_desc_pco_0,
-        &ogs_gtp_tlv_desc_epco_0,
-        &ogs_gtp_tlv_desc_maximum_packet_loss_rate_0,
-        &ogs_gtp_tlv_desc_f_teid_8,
-        &ogs_gtp_tlv_desc_f_teid_9,
-        &ogs_gtp_tlv_desc_f_teid_10,
-        &ogs_gtp_tlv_desc_f_teid_11,
-        &ogs_gtp_tlv_desc_ran_nas_cause_0,
-        &ogs_gtp_tlv_desc_apco_0,
-        &ogs_gtp_tlv_desc_f_container_0,
-        &ogs_gtp_tlv_desc_ti_0,
-        &ogs_gtp_tlv_desc_packet_flow_id_0,
         NULL,
     }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_pdn_connection_0 =
+//  Name: [Bearer Context]
+//  Context: [Context Response]
+//  Action: []
+//  Table 7.3.6-3: Bearer Context within MME/SGSN/AMF UE EPS PDN Connections within Context Response
+ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__context_response__0 =
+{
+    OGS_TLV_COMPOUND,
+    "Bearer Context",
+    OGS_GTP_BEARER_CONTEXT_TYPE,
+    0,
+    0,
+    sizeof(ogs_gtp_tlv_bearer_context__context_response__t),
+    {
+        &ogs_gtp_tlv_desc_ebi_0,
+        &ogs_gtp_tlv_desc_bearer_tft_0,
+        &ogs_gtp_tlv_desc_f_teid_0,
+        &ogs_gtp_tlv_desc_f_teid_1,
+        &ogs_gtp_tlv_desc_bearer_qos_0,
+        &ogs_gtp_tlv_desc_f_container_0,
+        &ogs_gtp_tlv_desc_ti_0,
+        &ogs_gtp_tlv_desc_f_teid_2,
+        NULL,
+    }
+};
+
+//  Name: [Bearer Context]
+//  Context: [Context Response]
+//  Action: []
+//  Table 7.3.6-3: Bearer Context within MME/SGSN/AMF UE EPS PDN Connections within Context Response
+ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__context_response__1 =
+{
+    OGS_TLV_COMPOUND,
+    "Bearer Context",
+    OGS_GTP_BEARER_CONTEXT_TYPE,
+    0,
+    1,
+    sizeof(ogs_gtp_tlv_bearer_context__context_response__t),
+    {
+        &ogs_gtp_tlv_desc_ebi_0,
+        &ogs_gtp_tlv_desc_bearer_tft_0,
+        &ogs_gtp_tlv_desc_f_teid_0,
+        &ogs_gtp_tlv_desc_f_teid_1,
+        &ogs_gtp_tlv_desc_bearer_qos_0,
+        &ogs_gtp_tlv_desc_f_container_0,
+        &ogs_gtp_tlv_desc_ti_0,
+        &ogs_gtp_tlv_desc_f_teid_2,
+        NULL,
+    }
+};
+
+//  Name: [Bearer Context]
+//  Context: [Context Acknowledge]
+//  Action: []
+//  Table 7.3.7-2: Bearer Context within Context Acknowledge
+ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__context_acknowledge__0 =
+{
+    OGS_TLV_COMPOUND,
+    "Bearer Context",
+    OGS_GTP_BEARER_CONTEXT_TYPE,
+    0,
+    0,
+    sizeof(ogs_gtp_tlv_bearer_context__context_acknowledge__t),
+    {
+        &ogs_gtp_tlv_desc_ebi_0,
+        &ogs_gtp_tlv_desc_f_teid_0,
+        NULL,
+    }
+};
+
+//  Name: [Bearer Context]
+//  Context: [Context Acknowledge]
+//  Action: []
+//  Table 7.3.7-2: Bearer Context within Context Acknowledge
+ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context__context_acknowledge__1 =
+{
+    OGS_TLV_COMPOUND,
+    "Bearer Context",
+    OGS_GTP_BEARER_CONTEXT_TYPE,
+    0,
+    1,
+    sizeof(ogs_gtp_tlv_bearer_context__context_acknowledge__t),
+    {
+        &ogs_gtp_tlv_desc_ebi_0,
+        &ogs_gtp_tlv_desc_f_teid_0,
+        NULL,
+    }
+};
+
+//  Name: [PDN Connection]
+//  Context: [Forward Relocation Request]
+//  Action: []
+//  Table 7.3.1-2: MME/SGSN/AMF UE EPS PDN Connections within Forward Relocation Request
+ogs_tlv_desc_t ogs_gtp_tlv_desc_pdn_connection__forward_relocation_request__0 =
 {
     OGS_TLV_COMPOUND,
     "PDN Connection",
     OGS_GTP_PDN_CONNECTION_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_pdn_connection_t),
+    sizeof(ogs_gtp_tlv_pdn_connection__forward_relocation_request__t),
     {
         &ogs_gtp_tlv_desc_apn_0,
         &ogs_gtp_tlv_desc_apn_restriction_0,
@@ -1904,6 +3183,1231 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_pdn_connection_0 =
     }
 };
 
+//  Name: [PDN Connection]
+//  Context: [Context Response]
+//  Action: []
+//  Table 7.3.6-2: MME/SGSN/AMF UE EPS PDN Connections within Context Response
+ogs_tlv_desc_t ogs_gtp_tlv_desc_pdn_connection__context_response__0 =
+{
+    OGS_TLV_COMPOUND,
+    "PDN Connection",
+    OGS_GTP_PDN_CONNECTION_TYPE,
+    0,
+    0,
+    sizeof(ogs_gtp_tlv_pdn_connection__context_response__t),
+    {
+        &ogs_gtp_tlv_desc_apn_0,
+        &ogs_gtp_tlv_desc_apn_restriction_0,
+        &ogs_gtp_tlv_desc_selection_mode_0,
+        &ogs_gtp_tlv_desc_ip_address_0,
+        &ogs_gtp_tlv_desc_ip_address_1,
+        &ogs_gtp_tlv_desc_ebi_0,
+        &ogs_gtp_tlv_desc_f_teid_0,
+        &ogs_gtp_tlv_desc_fqdn_0,
+        &ogs_gtp_tlv_desc_bearer_context_0,
+        &ogs_gtp_tlv_desc_ambr_0,
+        &ogs_gtp_tlv_desc_charging_characteristics_0,
+        &ogs_gtp_tlv_desc_change_reporting_action_0,
+        &ogs_gtp_tlv_desc_csg_information_reporting_action_0,
+        &ogs_gtp_tlv_desc_enb_information_reporting_0,
+        &ogs_gtp_tlv_desc_indication_0,
+        &ogs_gtp_tlv_desc_signalling_priority_indication_0,
+        &ogs_gtp_tlv_desc_change_to_report_flags_0,
+        &ogs_gtp_tlv_desc_fqdn_1,
+        &ogs_gtp_tlv_desc_presence_reporting_area_action_0,
+        &ogs_gtp_tlv_desc_wlan_offloadability_indication_0,
+        &ogs_gtp_tlv_desc_remote_ue_context_0,
+        &ogs_gtp_tlv_desc_pdn_type_0,
+        &ogs_gtp_tlv_desc_header_compression_configuration_0,
+        NULL,
+    }
+};
+
+//  Name: [PDN Connection]
+//  Context: []
+//  Action: []
+//  Table 8.39-1: PDN Connection Grouped Type
+ogs_tlv_desc_t ogs_gtp_tlv_desc_pdn_connection_0 =
+{
+    OGS_TLV_COMPOUND,
+    "PDN Connection",
+    OGS_GTP_PDN_CONNECTION_TYPE,
+    0,
+    0,
+    sizeof(ogs_gtp_tlv_pdn_connection_t),
+    {
+        NULL,
+    }
+};
+
+//  Name: [Overload Control Information]
+//  Context: [Create Session Request]
+//  Action: []
+//  Table 7.2.1-4: Overload Control Information within Create Session Request
+ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__create_session_request__0 =
+{
+    OGS_TLV_COMPOUND,
+    "Overload Control Information",
+    OGS_GTP_OVERLOAD_CONTROL_INFORMATION_TYPE,
+    0,
+    0,
+    sizeof(ogs_gtp_tlv_overload_control_information__create_session_request__t),
+    {
+        &ogs_gtp_tlv_desc_sequence_number_0,
+        &ogs_gtp_tlv_desc_metric_0,
+        &ogs_gtp_tlv_desc_epc_timer_0,
+        NULL,
+    }
+};
+
+//  Name: [Overload Control Information]
+//  Context: [Create Session Request]
+//  Action: []
+//  Table 7.2.1-4: Overload Control Information within Create Session Request
+ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__create_session_request__1 =
+{
+    OGS_TLV_COMPOUND,
+    "Overload Control Information",
+    OGS_GTP_OVERLOAD_CONTROL_INFORMATION_TYPE,
+    0,
+    1,
+    sizeof(ogs_gtp_tlv_overload_control_information__create_session_request__t),
+    {
+        &ogs_gtp_tlv_desc_sequence_number_0,
+        &ogs_gtp_tlv_desc_metric_0,
+        &ogs_gtp_tlv_desc_epc_timer_0,
+        NULL,
+    }
+};
+
+//  Name: [Overload Control Information]
+//  Context: [Create Session Request]
+//  Action: []
+//  Table 7.2.1-4: Overload Control Information within Create Session Request
+ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__create_session_request__2 =
+{
+    OGS_TLV_COMPOUND,
+    "Overload Control Information",
+    OGS_GTP_OVERLOAD_CONTROL_INFORMATION_TYPE,
+    0,
+    2,
+    sizeof(ogs_gtp_tlv_overload_control_information__create_session_request__t),
+    {
+        &ogs_gtp_tlv_desc_sequence_number_0,
+        &ogs_gtp_tlv_desc_metric_0,
+        &ogs_gtp_tlv_desc_epc_timer_0,
+        NULL,
+    }
+};
+
+//  Name: [Overload Control Information]
+//  Context: [Create Session Response]
+//  Action: []
+//  Table 7.2.2-5: Overload Control Information within Create Session Response
+ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__create_session_response__0 =
+{
+    OGS_TLV_COMPOUND,
+    "Overload Control Information",
+    OGS_GTP_OVERLOAD_CONTROL_INFORMATION_TYPE,
+    0,
+    0,
+    sizeof(ogs_gtp_tlv_overload_control_information__create_session_response__t),
+    {
+        &ogs_gtp_tlv_desc_sequence_number_0,
+        &ogs_gtp_tlv_desc_metric_0,
+        &ogs_gtp_tlv_desc_epc_timer_0,
+        &ogs_gtp_tlv_desc_apn_0,
+        NULL,
+    }
+};
+
+//  Name: [Overload Control Information]
+//  Context: [Create Session Response]
+//  Action: []
+//  Table 7.2.2-5: Overload Control Information within Create Session Response
+ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__create_session_response__1 =
+{
+    OGS_TLV_COMPOUND,
+    "Overload Control Information",
+    OGS_GTP_OVERLOAD_CONTROL_INFORMATION_TYPE,
+    0,
+    1,
+    sizeof(ogs_gtp_tlv_overload_control_information__create_session_response__t),
+    {
+        &ogs_gtp_tlv_desc_sequence_number_0,
+        &ogs_gtp_tlv_desc_metric_0,
+        &ogs_gtp_tlv_desc_epc_timer_0,
+        &ogs_gtp_tlv_desc_apn_0,
+        NULL,
+    }
+};
+
+//  Name: [Overload Control Information]
+//  Context: [Create Session Response]
+//  Action: []
+//  Table 7.2.2-5: Overload Control Information within Create Session Response
+ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__create_session_response__2 =
+{
+    OGS_TLV_COMPOUND,
+    "Overload Control Information",
+    OGS_GTP_OVERLOAD_CONTROL_INFORMATION_TYPE,
+    0,
+    2,
+    sizeof(ogs_gtp_tlv_overload_control_information__create_session_response__t),
+    {
+        &ogs_gtp_tlv_desc_sequence_number_0,
+        &ogs_gtp_tlv_desc_metric_0,
+        &ogs_gtp_tlv_desc_epc_timer_0,
+        &ogs_gtp_tlv_desc_apn_0,
+        NULL,
+    }
+};
+
+//  Name: [Overload Control Information]
+//  Context: [Create Bearer Response]
+//  Action: []
+//  Table 7.2.4-3: Overload Control Information within Create Bearer Response
+ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__create_bearer_response__0 =
+{
+    OGS_TLV_COMPOUND,
+    "Overload Control Information",
+    OGS_GTP_OVERLOAD_CONTROL_INFORMATION_TYPE,
+    0,
+    0,
+    sizeof(ogs_gtp_tlv_overload_control_information__create_bearer_response__t),
+    {
+        &ogs_gtp_tlv_desc_sequence_number_0,
+        &ogs_gtp_tlv_desc_metric_0,
+        &ogs_gtp_tlv_desc_epc_timer_0,
+        NULL,
+    }
+};
+
+//  Name: [Overload Control Information]
+//  Context: [Create Bearer Response]
+//  Action: []
+//  Table 7.2.4-3: Overload Control Information within Create Bearer Response
+ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__create_bearer_response__1 =
+{
+    OGS_TLV_COMPOUND,
+    "Overload Control Information",
+    OGS_GTP_OVERLOAD_CONTROL_INFORMATION_TYPE,
+    0,
+    1,
+    sizeof(ogs_gtp_tlv_overload_control_information__create_bearer_response__t),
+    {
+        &ogs_gtp_tlv_desc_sequence_number_0,
+        &ogs_gtp_tlv_desc_metric_0,
+        &ogs_gtp_tlv_desc_epc_timer_0,
+        NULL,
+    }
+};
+
+//  Name: [Overload Control Information]
+//  Context: [Create Bearer Response]
+//  Action: []
+//  Table 7.2.4-3: Overload Control Information within Create Bearer Response
+ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__create_bearer_response__2 =
+{
+    OGS_TLV_COMPOUND,
+    "Overload Control Information",
+    OGS_GTP_OVERLOAD_CONTROL_INFORMATION_TYPE,
+    0,
+    2,
+    sizeof(ogs_gtp_tlv_overload_control_information__create_bearer_response__t),
+    {
+        &ogs_gtp_tlv_desc_sequence_number_0,
+        &ogs_gtp_tlv_desc_metric_0,
+        &ogs_gtp_tlv_desc_epc_timer_0,
+        NULL,
+    }
+};
+
+//  Name: [Overload Control Information]
+//  Context: [Bearer Resource Command]
+//  Action: []
+//  Table 7.2.5-2: Overload Control Information within Bearer Resource Command
+ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__bearer_resource_command__0 =
+{
+    OGS_TLV_COMPOUND,
+    "Overload Control Information",
+    OGS_GTP_OVERLOAD_CONTROL_INFORMATION_TYPE,
+    0,
+    0,
+    sizeof(ogs_gtp_tlv_overload_control_information__bearer_resource_command__t),
+    {
+        &ogs_gtp_tlv_desc_sequence_number_0,
+        &ogs_gtp_tlv_desc_metric_0,
+        &ogs_gtp_tlv_desc_epc_timer_0,
+        NULL,
+    }
+};
+
+//  Name: [Overload Control Information]
+//  Context: [Bearer Resource Command]
+//  Action: []
+//  Table 7.2.5-2: Overload Control Information within Bearer Resource Command
+ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__bearer_resource_command__1 =
+{
+    OGS_TLV_COMPOUND,
+    "Overload Control Information",
+    OGS_GTP_OVERLOAD_CONTROL_INFORMATION_TYPE,
+    0,
+    1,
+    sizeof(ogs_gtp_tlv_overload_control_information__bearer_resource_command__t),
+    {
+        &ogs_gtp_tlv_desc_sequence_number_0,
+        &ogs_gtp_tlv_desc_metric_0,
+        &ogs_gtp_tlv_desc_epc_timer_0,
+        NULL,
+    }
+};
+
+//  Name: [Overload Control Information]
+//  Context: [Bearer Resource Command]
+//  Action: []
+//  Table 7.2.5-2: Overload Control Information within Bearer Resource Command
+ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__bearer_resource_command__2 =
+{
+    OGS_TLV_COMPOUND,
+    "Overload Control Information",
+    OGS_GTP_OVERLOAD_CONTROL_INFORMATION_TYPE,
+    0,
+    2,
+    sizeof(ogs_gtp_tlv_overload_control_information__bearer_resource_command__t),
+    {
+        &ogs_gtp_tlv_desc_sequence_number_0,
+        &ogs_gtp_tlv_desc_metric_0,
+        &ogs_gtp_tlv_desc_epc_timer_0,
+        NULL,
+    }
+};
+
+//  Name: [Overload Control Information]
+//  Context: [Bearer Resource Failure Indication]
+//  Action: []
+//  Table 7.2.6-2: Overload Control Information within Bearer Resource Failure Indication
+ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__bearer_resource_failure_indication__0 =
+{
+    OGS_TLV_COMPOUND,
+    "Overload Control Information",
+    OGS_GTP_OVERLOAD_CONTROL_INFORMATION_TYPE,
+    0,
+    0,
+    sizeof(ogs_gtp_tlv_overload_control_information__bearer_resource_failure_indication__t),
+    {
+        &ogs_gtp_tlv_desc_sequence_number_0,
+        &ogs_gtp_tlv_desc_metric_0,
+        &ogs_gtp_tlv_desc_epc_timer_0,
+        &ogs_gtp_tlv_desc_apn_0,
+        NULL,
+    }
+};
+
+//  Name: [Overload Control Information]
+//  Context: [Bearer Resource Failure Indication]
+//  Action: []
+//  Table 7.2.6-2: Overload Control Information within Bearer Resource Failure Indication
+ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__bearer_resource_failure_indication__1 =
+{
+    OGS_TLV_COMPOUND,
+    "Overload Control Information",
+    OGS_GTP_OVERLOAD_CONTROL_INFORMATION_TYPE,
+    0,
+    1,
+    sizeof(ogs_gtp_tlv_overload_control_information__bearer_resource_failure_indication__t),
+    {
+        &ogs_gtp_tlv_desc_sequence_number_0,
+        &ogs_gtp_tlv_desc_metric_0,
+        &ogs_gtp_tlv_desc_epc_timer_0,
+        &ogs_gtp_tlv_desc_apn_0,
+        NULL,
+    }
+};
+
+//  Name: [Overload Control Information]
+//  Context: [Bearer Resource Failure Indication]
+//  Action: []
+//  Table 7.2.6-2: Overload Control Information within Bearer Resource Failure Indication
+ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__bearer_resource_failure_indication__2 =
+{
+    OGS_TLV_COMPOUND,
+    "Overload Control Information",
+    OGS_GTP_OVERLOAD_CONTROL_INFORMATION_TYPE,
+    0,
+    2,
+    sizeof(ogs_gtp_tlv_overload_control_information__bearer_resource_failure_indication__t),
+    {
+        &ogs_gtp_tlv_desc_sequence_number_0,
+        &ogs_gtp_tlv_desc_metric_0,
+        &ogs_gtp_tlv_desc_epc_timer_0,
+        &ogs_gtp_tlv_desc_apn_0,
+        NULL,
+    }
+};
+
+//  Name: [Overload Control Information]
+//  Context: [Modify Bearer Request]
+//  Action: []
+//  Table 7.2.7-4: Overload Control Information within Modify Bearer Request
+ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__modify_bearer_request__0 =
+{
+    OGS_TLV_COMPOUND,
+    "Overload Control Information",
+    OGS_GTP_OVERLOAD_CONTROL_INFORMATION_TYPE,
+    0,
+    0,
+    sizeof(ogs_gtp_tlv_overload_control_information__modify_bearer_request__t),
+    {
+        &ogs_gtp_tlv_desc_sequence_number_0,
+        &ogs_gtp_tlv_desc_metric_0,
+        &ogs_gtp_tlv_desc_epc_timer_0,
+        NULL,
+    }
+};
+
+//  Name: [Overload Control Information]
+//  Context: [Modify Bearer Request]
+//  Action: []
+//  Table 7.2.7-4: Overload Control Information within Modify Bearer Request
+ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__modify_bearer_request__1 =
+{
+    OGS_TLV_COMPOUND,
+    "Overload Control Information",
+    OGS_GTP_OVERLOAD_CONTROL_INFORMATION_TYPE,
+    0,
+    1,
+    sizeof(ogs_gtp_tlv_overload_control_information__modify_bearer_request__t),
+    {
+        &ogs_gtp_tlv_desc_sequence_number_0,
+        &ogs_gtp_tlv_desc_metric_0,
+        &ogs_gtp_tlv_desc_epc_timer_0,
+        NULL,
+    }
+};
+
+//  Name: [Overload Control Information]
+//  Context: [Modify Bearer Request]
+//  Action: []
+//  Table 7.2.7-4: Overload Control Information within Modify Bearer Request
+ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__modify_bearer_request__2 =
+{
+    OGS_TLV_COMPOUND,
+    "Overload Control Information",
+    OGS_GTP_OVERLOAD_CONTROL_INFORMATION_TYPE,
+    0,
+    2,
+    sizeof(ogs_gtp_tlv_overload_control_information__modify_bearer_request__t),
+    {
+        &ogs_gtp_tlv_desc_sequence_number_0,
+        &ogs_gtp_tlv_desc_metric_0,
+        &ogs_gtp_tlv_desc_epc_timer_0,
+        NULL,
+    }
+};
+
+//  Name: [Overload Control Information]
+//  Context: [Modify Bearer Response]
+//  Action: []
+//  Table 7.2.8-5: Overload Control Information within Modify Bearer Response
+ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__modify_bearer_response__0 =
+{
+    OGS_TLV_COMPOUND,
+    "Overload Control Information",
+    OGS_GTP_OVERLOAD_CONTROL_INFORMATION_TYPE,
+    0,
+    0,
+    sizeof(ogs_gtp_tlv_overload_control_information__modify_bearer_response__t),
+    {
+        &ogs_gtp_tlv_desc_sequence_number_0,
+        &ogs_gtp_tlv_desc_metric_0,
+        &ogs_gtp_tlv_desc_epc_timer_0,
+        &ogs_gtp_tlv_desc_apn_0,
+        NULL,
+    }
+};
+
+//  Name: [Overload Control Information]
+//  Context: [Modify Bearer Response]
+//  Action: []
+//  Table 7.2.8-5: Overload Control Information within Modify Bearer Response
+ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__modify_bearer_response__1 =
+{
+    OGS_TLV_COMPOUND,
+    "Overload Control Information",
+    OGS_GTP_OVERLOAD_CONTROL_INFORMATION_TYPE,
+    0,
+    1,
+    sizeof(ogs_gtp_tlv_overload_control_information__modify_bearer_response__t),
+    {
+        &ogs_gtp_tlv_desc_sequence_number_0,
+        &ogs_gtp_tlv_desc_metric_0,
+        &ogs_gtp_tlv_desc_epc_timer_0,
+        &ogs_gtp_tlv_desc_apn_0,
+        NULL,
+    }
+};
+
+//  Name: [Overload Control Information]
+//  Context: [Modify Bearer Response]
+//  Action: []
+//  Table 7.2.8-5: Overload Control Information within Modify Bearer Response
+ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__modify_bearer_response__2 =
+{
+    OGS_TLV_COMPOUND,
+    "Overload Control Information",
+    OGS_GTP_OVERLOAD_CONTROL_INFORMATION_TYPE,
+    0,
+    2,
+    sizeof(ogs_gtp_tlv_overload_control_information__modify_bearer_response__t),
+    {
+        &ogs_gtp_tlv_desc_sequence_number_0,
+        &ogs_gtp_tlv_desc_metric_0,
+        &ogs_gtp_tlv_desc_epc_timer_0,
+        &ogs_gtp_tlv_desc_apn_0,
+        NULL,
+    }
+};
+
+//  Name: [Overload Control Information]
+//  Context: [Delete Session Request]
+//  Action: []
+//  Table 7.2.9.1-2: Overload Control Information within Delete Session Request
+ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__delete_session_request__0 =
+{
+    OGS_TLV_COMPOUND,
+    "Overload Control Information",
+    OGS_GTP_OVERLOAD_CONTROL_INFORMATION_TYPE,
+    0,
+    0,
+    sizeof(ogs_gtp_tlv_overload_control_information__delete_session_request__t),
+    {
+        &ogs_gtp_tlv_desc_sequence_number_0,
+        &ogs_gtp_tlv_desc_metric_0,
+        &ogs_gtp_tlv_desc_epc_timer_0,
+        NULL,
+    }
+};
+
+//  Name: [Overload Control Information]
+//  Context: [Delete Session Request]
+//  Action: []
+//  Table 7.2.9.1-2: Overload Control Information within Delete Session Request
+ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__delete_session_request__1 =
+{
+    OGS_TLV_COMPOUND,
+    "Overload Control Information",
+    OGS_GTP_OVERLOAD_CONTROL_INFORMATION_TYPE,
+    0,
+    1,
+    sizeof(ogs_gtp_tlv_overload_control_information__delete_session_request__t),
+    {
+        &ogs_gtp_tlv_desc_sequence_number_0,
+        &ogs_gtp_tlv_desc_metric_0,
+        &ogs_gtp_tlv_desc_epc_timer_0,
+        NULL,
+    }
+};
+
+//  Name: [Overload Control Information]
+//  Context: [Delete Session Request]
+//  Action: []
+//  Table 7.2.9.1-2: Overload Control Information within Delete Session Request
+ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__delete_session_request__2 =
+{
+    OGS_TLV_COMPOUND,
+    "Overload Control Information",
+    OGS_GTP_OVERLOAD_CONTROL_INFORMATION_TYPE,
+    0,
+    2,
+    sizeof(ogs_gtp_tlv_overload_control_information__delete_session_request__t),
+    {
+        &ogs_gtp_tlv_desc_sequence_number_0,
+        &ogs_gtp_tlv_desc_metric_0,
+        &ogs_gtp_tlv_desc_epc_timer_0,
+        NULL,
+    }
+};
+
+//  Name: [Overload Control Information]
+//  Context: [Delete Bearer Request]
+//  Action: []
+//  Table 7.2.9-4: Overload Control Information within Delete Bearer Request
+ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__delete_bearer_request__0 =
+{
+    OGS_TLV_COMPOUND,
+    "Overload Control Information",
+    OGS_GTP_OVERLOAD_CONTROL_INFORMATION_TYPE,
+    0,
+    0,
+    sizeof(ogs_gtp_tlv_overload_control_information__delete_bearer_request__t),
+    {
+        &ogs_gtp_tlv_desc_sequence_number_0,
+        &ogs_gtp_tlv_desc_metric_0,
+        &ogs_gtp_tlv_desc_epc_timer_0,
+        &ogs_gtp_tlv_desc_apn_0,
+        NULL,
+    }
+};
+
+//  Name: [Overload Control Information]
+//  Context: [Delete Bearer Request]
+//  Action: []
+//  Table 7.2.9-4: Overload Control Information within Delete Bearer Request
+ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__delete_bearer_request__1 =
+{
+    OGS_TLV_COMPOUND,
+    "Overload Control Information",
+    OGS_GTP_OVERLOAD_CONTROL_INFORMATION_TYPE,
+    0,
+    1,
+    sizeof(ogs_gtp_tlv_overload_control_information__delete_bearer_request__t),
+    {
+        &ogs_gtp_tlv_desc_sequence_number_0,
+        &ogs_gtp_tlv_desc_metric_0,
+        &ogs_gtp_tlv_desc_epc_timer_0,
+        &ogs_gtp_tlv_desc_apn_0,
+        NULL,
+    }
+};
+
+//  Name: [Overload Control Information]
+//  Context: [Delete Bearer Request]
+//  Action: []
+//  Table 7.2.9-4: Overload Control Information within Delete Bearer Request
+ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__delete_bearer_request__2 =
+{
+    OGS_TLV_COMPOUND,
+    "Overload Control Information",
+    OGS_GTP_OVERLOAD_CONTROL_INFORMATION_TYPE,
+    0,
+    2,
+    sizeof(ogs_gtp_tlv_overload_control_information__delete_bearer_request__t),
+    {
+        &ogs_gtp_tlv_desc_sequence_number_0,
+        &ogs_gtp_tlv_desc_metric_0,
+        &ogs_gtp_tlv_desc_epc_timer_0,
+        &ogs_gtp_tlv_desc_apn_0,
+        NULL,
+    }
+};
+
+//  Name: [Overload Control Information]
+//  Context: [Delete Session Response]
+//  Action: []
+//  Table 7.2.10.1-3: Overload Control Information within Delete Session Response
+ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__delete_session_response__0 =
+{
+    OGS_TLV_COMPOUND,
+    "Overload Control Information",
+    OGS_GTP_OVERLOAD_CONTROL_INFORMATION_TYPE,
+    0,
+    0,
+    sizeof(ogs_gtp_tlv_overload_control_information__delete_session_response__t),
+    {
+        &ogs_gtp_tlv_desc_sequence_number_0,
+        &ogs_gtp_tlv_desc_metric_0,
+        &ogs_gtp_tlv_desc_epc_timer_0,
+        &ogs_gtp_tlv_desc_apn_0,
+        NULL,
+    }
+};
+
+//  Name: [Overload Control Information]
+//  Context: [Delete Session Response]
+//  Action: []
+//  Table 7.2.10.1-3: Overload Control Information within Delete Session Response
+ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__delete_session_response__1 =
+{
+    OGS_TLV_COMPOUND,
+    "Overload Control Information",
+    OGS_GTP_OVERLOAD_CONTROL_INFORMATION_TYPE,
+    0,
+    1,
+    sizeof(ogs_gtp_tlv_overload_control_information__delete_session_response__t),
+    {
+        &ogs_gtp_tlv_desc_sequence_number_0,
+        &ogs_gtp_tlv_desc_metric_0,
+        &ogs_gtp_tlv_desc_epc_timer_0,
+        &ogs_gtp_tlv_desc_apn_0,
+        NULL,
+    }
+};
+
+//  Name: [Overload Control Information]
+//  Context: [Delete Session Response]
+//  Action: []
+//  Table 7.2.10.1-3: Overload Control Information within Delete Session Response
+ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__delete_session_response__2 =
+{
+    OGS_TLV_COMPOUND,
+    "Overload Control Information",
+    OGS_GTP_OVERLOAD_CONTROL_INFORMATION_TYPE,
+    0,
+    2,
+    sizeof(ogs_gtp_tlv_overload_control_information__delete_session_response__t),
+    {
+        &ogs_gtp_tlv_desc_sequence_number_0,
+        &ogs_gtp_tlv_desc_metric_0,
+        &ogs_gtp_tlv_desc_epc_timer_0,
+        &ogs_gtp_tlv_desc_apn_0,
+        NULL,
+    }
+};
+
+//  Name: [Overload Control Information]
+//  Context: [Delete Bearer Response]
+//  Action: []
+//  Table 7.2.10.2-3: Overload Control Information within Delete Bearer Response
+ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__delete_bearer_response__0 =
+{
+    OGS_TLV_COMPOUND,
+    "Overload Control Information",
+    OGS_GTP_OVERLOAD_CONTROL_INFORMATION_TYPE,
+    0,
+    0,
+    sizeof(ogs_gtp_tlv_overload_control_information__delete_bearer_response__t),
+    {
+        &ogs_gtp_tlv_desc_sequence_number_0,
+        &ogs_gtp_tlv_desc_metric_0,
+        &ogs_gtp_tlv_desc_epc_timer_0,
+        NULL,
+    }
+};
+
+//  Name: [Overload Control Information]
+//  Context: [Delete Bearer Response]
+//  Action: []
+//  Table 7.2.10.2-3: Overload Control Information within Delete Bearer Response
+ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__delete_bearer_response__1 =
+{
+    OGS_TLV_COMPOUND,
+    "Overload Control Information",
+    OGS_GTP_OVERLOAD_CONTROL_INFORMATION_TYPE,
+    0,
+    1,
+    sizeof(ogs_gtp_tlv_overload_control_information__delete_bearer_response__t),
+    {
+        &ogs_gtp_tlv_desc_sequence_number_0,
+        &ogs_gtp_tlv_desc_metric_0,
+        &ogs_gtp_tlv_desc_epc_timer_0,
+        NULL,
+    }
+};
+
+//  Name: [Overload Control Information]
+//  Context: [Delete Bearer Response]
+//  Action: []
+//  Table 7.2.10.2-3: Overload Control Information within Delete Bearer Response
+ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__delete_bearer_response__2 =
+{
+    OGS_TLV_COMPOUND,
+    "Overload Control Information",
+    OGS_GTP_OVERLOAD_CONTROL_INFORMATION_TYPE,
+    0,
+    2,
+    sizeof(ogs_gtp_tlv_overload_control_information__delete_bearer_response__t),
+    {
+        &ogs_gtp_tlv_desc_sequence_number_0,
+        &ogs_gtp_tlv_desc_metric_0,
+        &ogs_gtp_tlv_desc_epc_timer_0,
+        NULL,
+    }
+};
+
+//  Name: [Overload Control Information]
+//  Context: [Downlink Data Notification]
+//  Action: []
+//  Table 7.2.11.1-3: Overload Control Information within Downlink Data Notification
+ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__downlink_data_notification__0 =
+{
+    OGS_TLV_COMPOUND,
+    "Overload Control Information",
+    OGS_GTP_OVERLOAD_CONTROL_INFORMATION_TYPE,
+    0,
+    0,
+    sizeof(ogs_gtp_tlv_overload_control_information__downlink_data_notification__t),
+    {
+        &ogs_gtp_tlv_desc_sequence_number_0,
+        &ogs_gtp_tlv_desc_metric_0,
+        &ogs_gtp_tlv_desc_epc_timer_0,
+        NULL,
+    }
+};
+
+//  Name: [Overload Control Information]
+//  Context: [Downlink Data Notification]
+//  Action: []
+//  Table 7.2.11.1-3: Overload Control Information within Downlink Data Notification
+ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__downlink_data_notification__1 =
+{
+    OGS_TLV_COMPOUND,
+    "Overload Control Information",
+    OGS_GTP_OVERLOAD_CONTROL_INFORMATION_TYPE,
+    0,
+    1,
+    sizeof(ogs_gtp_tlv_overload_control_information__downlink_data_notification__t),
+    {
+        &ogs_gtp_tlv_desc_sequence_number_0,
+        &ogs_gtp_tlv_desc_metric_0,
+        &ogs_gtp_tlv_desc_epc_timer_0,
+        NULL,
+    }
+};
+
+//  Name: [Overload Control Information]
+//  Context: [Downlink Data Notification]
+//  Action: []
+//  Table 7.2.11.1-3: Overload Control Information within Downlink Data Notification
+ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__downlink_data_notification__2 =
+{
+    OGS_TLV_COMPOUND,
+    "Overload Control Information",
+    OGS_GTP_OVERLOAD_CONTROL_INFORMATION_TYPE,
+    0,
+    2,
+    sizeof(ogs_gtp_tlv_overload_control_information__downlink_data_notification__t),
+    {
+        &ogs_gtp_tlv_desc_sequence_number_0,
+        &ogs_gtp_tlv_desc_metric_0,
+        &ogs_gtp_tlv_desc_epc_timer_0,
+        NULL,
+    }
+};
+
+//  Name: [Overload Control Information]
+//  Context: [Modify Bearer Failure Indication]
+//  Action: []
+//  Table 7.2.14-2: Overload Control Information within Modify Bearer Failure Indication
+ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__modify_bearer_failure_indication__0 =
+{
+    OGS_TLV_COMPOUND,
+    "Overload Control Information",
+    OGS_GTP_OVERLOAD_CONTROL_INFORMATION_TYPE,
+    0,
+    0,
+    sizeof(ogs_gtp_tlv_overload_control_information__modify_bearer_failure_indication__t),
+    {
+        &ogs_gtp_tlv_desc_sequence_number_0,
+        &ogs_gtp_tlv_desc_metric_0,
+        &ogs_gtp_tlv_desc_epc_timer_0,
+        &ogs_gtp_tlv_desc_apn_0,
+        NULL,
+    }
+};
+
+//  Name: [Overload Control Information]
+//  Context: [Modify Bearer Failure Indication]
+//  Action: []
+//  Table 7.2.14-2: Overload Control Information within Modify Bearer Failure Indication
+ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__modify_bearer_failure_indication__1 =
+{
+    OGS_TLV_COMPOUND,
+    "Overload Control Information",
+    OGS_GTP_OVERLOAD_CONTROL_INFORMATION_TYPE,
+    0,
+    1,
+    sizeof(ogs_gtp_tlv_overload_control_information__modify_bearer_failure_indication__t),
+    {
+        &ogs_gtp_tlv_desc_sequence_number_0,
+        &ogs_gtp_tlv_desc_metric_0,
+        &ogs_gtp_tlv_desc_epc_timer_0,
+        &ogs_gtp_tlv_desc_apn_0,
+        NULL,
+    }
+};
+
+//  Name: [Overload Control Information]
+//  Context: [Modify Bearer Failure Indication]
+//  Action: []
+//  Table 7.2.14-2: Overload Control Information within Modify Bearer Failure Indication
+ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__modify_bearer_failure_indication__2 =
+{
+    OGS_TLV_COMPOUND,
+    "Overload Control Information",
+    OGS_GTP_OVERLOAD_CONTROL_INFORMATION_TYPE,
+    0,
+    2,
+    sizeof(ogs_gtp_tlv_overload_control_information__modify_bearer_failure_indication__t),
+    {
+        &ogs_gtp_tlv_desc_sequence_number_0,
+        &ogs_gtp_tlv_desc_metric_0,
+        &ogs_gtp_tlv_desc_epc_timer_0,
+        &ogs_gtp_tlv_desc_apn_0,
+        NULL,
+    }
+};
+
+//  Name: [Overload Control Information]
+//  Context: [Update Bearer Request]
+//  Action: []
+//  Table 7.2.15-4: Overload Control Information within Update Bearer Request
+ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__update_bearer_request__0 =
+{
+    OGS_TLV_COMPOUND,
+    "Overload Control Information",
+    OGS_GTP_OVERLOAD_CONTROL_INFORMATION_TYPE,
+    0,
+    0,
+    sizeof(ogs_gtp_tlv_overload_control_information__update_bearer_request__t),
+    {
+        &ogs_gtp_tlv_desc_sequence_number_0,
+        &ogs_gtp_tlv_desc_metric_0,
+        &ogs_gtp_tlv_desc_epc_timer_0,
+        &ogs_gtp_tlv_desc_apn_0,
+        NULL,
+    }
+};
+
+//  Name: [Overload Control Information]
+//  Context: [Update Bearer Request]
+//  Action: []
+//  Table 7.2.15-4: Overload Control Information within Update Bearer Request
+ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__update_bearer_request__1 =
+{
+    OGS_TLV_COMPOUND,
+    "Overload Control Information",
+    OGS_GTP_OVERLOAD_CONTROL_INFORMATION_TYPE,
+    0,
+    1,
+    sizeof(ogs_gtp_tlv_overload_control_information__update_bearer_request__t),
+    {
+        &ogs_gtp_tlv_desc_sequence_number_0,
+        &ogs_gtp_tlv_desc_metric_0,
+        &ogs_gtp_tlv_desc_epc_timer_0,
+        &ogs_gtp_tlv_desc_apn_0,
+        NULL,
+    }
+};
+
+//  Name: [Overload Control Information]
+//  Context: [Update Bearer Request]
+//  Action: []
+//  Table 7.2.15-4: Overload Control Information within Update Bearer Request
+ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__update_bearer_request__2 =
+{
+    OGS_TLV_COMPOUND,
+    "Overload Control Information",
+    OGS_GTP_OVERLOAD_CONTROL_INFORMATION_TYPE,
+    0,
+    2,
+    sizeof(ogs_gtp_tlv_overload_control_information__update_bearer_request__t),
+    {
+        &ogs_gtp_tlv_desc_sequence_number_0,
+        &ogs_gtp_tlv_desc_metric_0,
+        &ogs_gtp_tlv_desc_epc_timer_0,
+        &ogs_gtp_tlv_desc_apn_0,
+        NULL,
+    }
+};
+
+//  Name: [Overload Control Information]
+//  Context: [Update Bearer Response]
+//  Action: []
+//  Table 7.2.16-3: Overload Control Information within Update Bearer Response
+ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__update_bearer_response__0 =
+{
+    OGS_TLV_COMPOUND,
+    "Overload Control Information",
+    OGS_GTP_OVERLOAD_CONTROL_INFORMATION_TYPE,
+    0,
+    0,
+    sizeof(ogs_gtp_tlv_overload_control_information__update_bearer_response__t),
+    {
+        &ogs_gtp_tlv_desc_sequence_number_0,
+        &ogs_gtp_tlv_desc_metric_0,
+        &ogs_gtp_tlv_desc_epc_timer_0,
+        NULL,
+    }
+};
+
+//  Name: [Overload Control Information]
+//  Context: [Update Bearer Response]
+//  Action: []
+//  Table 7.2.16-3: Overload Control Information within Update Bearer Response
+ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__update_bearer_response__1 =
+{
+    OGS_TLV_COMPOUND,
+    "Overload Control Information",
+    OGS_GTP_OVERLOAD_CONTROL_INFORMATION_TYPE,
+    0,
+    1,
+    sizeof(ogs_gtp_tlv_overload_control_information__update_bearer_response__t),
+    {
+        &ogs_gtp_tlv_desc_sequence_number_0,
+        &ogs_gtp_tlv_desc_metric_0,
+        &ogs_gtp_tlv_desc_epc_timer_0,
+        NULL,
+    }
+};
+
+//  Name: [Overload Control Information]
+//  Context: [Update Bearer Response]
+//  Action: []
+//  Table 7.2.16-3: Overload Control Information within Update Bearer Response
+ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__update_bearer_response__2 =
+{
+    OGS_TLV_COMPOUND,
+    "Overload Control Information",
+    OGS_GTP_OVERLOAD_CONTROL_INFORMATION_TYPE,
+    0,
+    2,
+    sizeof(ogs_gtp_tlv_overload_control_information__update_bearer_response__t),
+    {
+        &ogs_gtp_tlv_desc_sequence_number_0,
+        &ogs_gtp_tlv_desc_metric_0,
+        &ogs_gtp_tlv_desc_epc_timer_0,
+        NULL,
+    }
+};
+
+//  Name: [Overload Control Information]
+//  Context: [Delete Bearer Command]
+//  Action: []
+//  Table 7.2.17.1-3: Overload Control Information within Delete Bearer Command
+ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__delete_bearer_command__0 =
+{
+    OGS_TLV_COMPOUND,
+    "Overload Control Information",
+    OGS_GTP_OVERLOAD_CONTROL_INFORMATION_TYPE,
+    0,
+    0,
+    sizeof(ogs_gtp_tlv_overload_control_information__delete_bearer_command__t),
+    {
+        &ogs_gtp_tlv_desc_sequence_number_0,
+        &ogs_gtp_tlv_desc_metric_0,
+        &ogs_gtp_tlv_desc_epc_timer_0,
+        NULL,
+    }
+};
+
+//  Name: [Overload Control Information]
+//  Context: [Delete Bearer Command]
+//  Action: []
+//  Table 7.2.17.1-3: Overload Control Information within Delete Bearer Command
+ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__delete_bearer_command__1 =
+{
+    OGS_TLV_COMPOUND,
+    "Overload Control Information",
+    OGS_GTP_OVERLOAD_CONTROL_INFORMATION_TYPE,
+    0,
+    1,
+    sizeof(ogs_gtp_tlv_overload_control_information__delete_bearer_command__t),
+    {
+        &ogs_gtp_tlv_desc_sequence_number_0,
+        &ogs_gtp_tlv_desc_metric_0,
+        &ogs_gtp_tlv_desc_epc_timer_0,
+        NULL,
+    }
+};
+
+//  Name: [Overload Control Information]
+//  Context: [Delete Bearer Command]
+//  Action: []
+//  Table 7.2.17.1-3: Overload Control Information within Delete Bearer Command
+ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__delete_bearer_command__2 =
+{
+    OGS_TLV_COMPOUND,
+    "Overload Control Information",
+    OGS_GTP_OVERLOAD_CONTROL_INFORMATION_TYPE,
+    0,
+    2,
+    sizeof(ogs_gtp_tlv_overload_control_information__delete_bearer_command__t),
+    {
+        &ogs_gtp_tlv_desc_sequence_number_0,
+        &ogs_gtp_tlv_desc_metric_0,
+        &ogs_gtp_tlv_desc_epc_timer_0,
+        NULL,
+    }
+};
+
+//  Name: [Overload Control Information]
+//  Context: [Delete Bearer Failure Indication]
+//  Action: []
+//  Table 7.2.17-3: Overload Control Information within Delete Bearer Failure Indication
+ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__delete_bearer_failure_indication__0 =
+{
+    OGS_TLV_COMPOUND,
+    "Overload Control Information",
+    OGS_GTP_OVERLOAD_CONTROL_INFORMATION_TYPE,
+    0,
+    0,
+    sizeof(ogs_gtp_tlv_overload_control_information__delete_bearer_failure_indication__t),
+    {
+        &ogs_gtp_tlv_desc_sequence_number_0,
+        &ogs_gtp_tlv_desc_metric_0,
+        &ogs_gtp_tlv_desc_epc_timer_0,
+        &ogs_gtp_tlv_desc_apn_0,
+        NULL,
+    }
+};
+
+//  Name: [Overload Control Information]
+//  Context: [Delete Bearer Failure Indication]
+//  Action: []
+//  Table 7.2.17-3: Overload Control Information within Delete Bearer Failure Indication
+ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__delete_bearer_failure_indication__1 =
+{
+    OGS_TLV_COMPOUND,
+    "Overload Control Information",
+    OGS_GTP_OVERLOAD_CONTROL_INFORMATION_TYPE,
+    0,
+    1,
+    sizeof(ogs_gtp_tlv_overload_control_information__delete_bearer_failure_indication__t),
+    {
+        &ogs_gtp_tlv_desc_sequence_number_0,
+        &ogs_gtp_tlv_desc_metric_0,
+        &ogs_gtp_tlv_desc_epc_timer_0,
+        &ogs_gtp_tlv_desc_apn_0,
+        NULL,
+    }
+};
+
+//  Name: [Overload Control Information]
+//  Context: [Delete Bearer Failure Indication]
+//  Action: []
+//  Table 7.2.17-3: Overload Control Information within Delete Bearer Failure Indication
+ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__delete_bearer_failure_indication__2 =
+{
+    OGS_TLV_COMPOUND,
+    "Overload Control Information",
+    OGS_GTP_OVERLOAD_CONTROL_INFORMATION_TYPE,
+    0,
+    2,
+    sizeof(ogs_gtp_tlv_overload_control_information__delete_bearer_failure_indication__t),
+    {
+        &ogs_gtp_tlv_desc_sequence_number_0,
+        &ogs_gtp_tlv_desc_metric_0,
+        &ogs_gtp_tlv_desc_epc_timer_0,
+        &ogs_gtp_tlv_desc_apn_0,
+        NULL,
+    }
+};
+
+//  Name: [Overload Control Information]
+//  Context: [Release Access Bearers Response]
+//  Action: []
+//  Table 7.2.22-3: Overload Control Information within Release Access Bearers Response
+ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__release_access_bearers_response__0 =
+{
+    OGS_TLV_COMPOUND,
+    "Overload Control Information",
+    OGS_GTP_OVERLOAD_CONTROL_INFORMATION_TYPE,
+    0,
+    0,
+    sizeof(ogs_gtp_tlv_overload_control_information__release_access_bearers_response__t),
+    {
+        &ogs_gtp_tlv_desc_sequence_number_0,
+        &ogs_gtp_tlv_desc_metric_0,
+        &ogs_gtp_tlv_desc_epc_timer_0,
+        NULL,
+    }
+};
+
+//  Name: [Overload Control Information]
+//  Context: [Release Access Bearers Response]
+//  Action: []
+//  Table 7.2.22-3: Overload Control Information within Release Access Bearers Response
+ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__release_access_bearers_response__1 =
+{
+    OGS_TLV_COMPOUND,
+    "Overload Control Information",
+    OGS_GTP_OVERLOAD_CONTROL_INFORMATION_TYPE,
+    0,
+    1,
+    sizeof(ogs_gtp_tlv_overload_control_information__release_access_bearers_response__t),
+    {
+        &ogs_gtp_tlv_desc_sequence_number_0,
+        &ogs_gtp_tlv_desc_metric_0,
+        &ogs_gtp_tlv_desc_epc_timer_0,
+        NULL,
+    }
+};
+
+//  Name: [Overload Control Information]
+//  Context: [Release Access Bearers Response]
+//  Action: []
+//  Table 7.2.22-3: Overload Control Information within Release Access Bearers Response
+ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__release_access_bearers_response__2 =
+{
+    OGS_TLV_COMPOUND,
+    "Overload Control Information",
+    OGS_GTP_OVERLOAD_CONTROL_INFORMATION_TYPE,
+    0,
+    2,
+    sizeof(ogs_gtp_tlv_overload_control_information__release_access_bearers_response__t),
+    {
+        &ogs_gtp_tlv_desc_sequence_number_0,
+        &ogs_gtp_tlv_desc_metric_0,
+        &ogs_gtp_tlv_desc_epc_timer_0,
+        NULL,
+    }
+};
+
+//  Name: [Overload Control Information]
+//  Context: [Modify Access Bearers Response]
+//  Action: []
+//  Table 7.2.25-5: Overload Control Information within Modify Access Bearers Response
+ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__modify_access_bearers_response__0 =
+{
+    OGS_TLV_COMPOUND,
+    "Overload Control Information",
+    OGS_GTP_OVERLOAD_CONTROL_INFORMATION_TYPE,
+    0,
+    0,
+    sizeof(ogs_gtp_tlv_overload_control_information__modify_access_bearers_response__t),
+    {
+        &ogs_gtp_tlv_desc_sequence_number_0,
+        &ogs_gtp_tlv_desc_metric_0,
+        &ogs_gtp_tlv_desc_epc_timer_0,
+        NULL,
+    }
+};
+
+//  Name: [Overload Control Information]
+//  Context: [Modify Access Bearers Response]
+//  Action: []
+//  Table 7.2.25-5: Overload Control Information within Modify Access Bearers Response
+ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__modify_access_bearers_response__1 =
+{
+    OGS_TLV_COMPOUND,
+    "Overload Control Information",
+    OGS_GTP_OVERLOAD_CONTROL_INFORMATION_TYPE,
+    0,
+    1,
+    sizeof(ogs_gtp_tlv_overload_control_information__modify_access_bearers_response__t),
+    {
+        &ogs_gtp_tlv_desc_sequence_number_0,
+        &ogs_gtp_tlv_desc_metric_0,
+        &ogs_gtp_tlv_desc_epc_timer_0,
+        NULL,
+    }
+};
+
+//  Name: [Overload Control Information]
+//  Context: [Modify Access Bearers Response]
+//  Action: []
+//  Table 7.2.25-5: Overload Control Information within Modify Access Bearers Response
+ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__modify_access_bearers_response__2 =
+{
+    OGS_TLV_COMPOUND,
+    "Overload Control Information",
+    OGS_GTP_OVERLOAD_CONTROL_INFORMATION_TYPE,
+    0,
+    2,
+    sizeof(ogs_gtp_tlv_overload_control_information__modify_access_bearers_response__t),
+    {
+        &ogs_gtp_tlv_desc_sequence_number_0,
+        &ogs_gtp_tlv_desc_metric_0,
+        &ogs_gtp_tlv_desc_epc_timer_0,
+        NULL,
+    }
+};
+
+//  Name: [Overload Control Information]
+//  Context: []
+//  Action: []
+//  Table 8.111-1: Overload Control Information Grouped Type
 ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information_0 =
 {
     OGS_TLV_COMPOUND,
@@ -1913,14 +4417,14 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information_0 =
     0,
     sizeof(ogs_gtp_tlv_overload_control_information_t),
     {
-        &ogs_gtp_tlv_desc_sequence_number_0,
-        &ogs_gtp_tlv_desc_metric_0,
-        &ogs_gtp_tlv_desc_epc_timer_0,
-        &ogs_gtp_tlv_desc_apn_0,
         NULL,
     }
 };
 
+//  Name: [Overload Control Information]
+//  Context: []
+//  Action: []
+//  Table 8.111-1: Overload Control Information Grouped Type
 ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information_1 =
 {
     OGS_TLV_COMPOUND,
@@ -1930,14 +4434,14 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information_1 =
     1,
     sizeof(ogs_gtp_tlv_overload_control_information_t),
     {
-        &ogs_gtp_tlv_desc_sequence_number_0,
-        &ogs_gtp_tlv_desc_metric_0,
-        &ogs_gtp_tlv_desc_epc_timer_0,
-        &ogs_gtp_tlv_desc_apn_0,
         NULL,
     }
 };
 
+//  Name: [Overload Control Information]
+//  Context: []
+//  Action: []
+//  Table 8.111-1: Overload Control Information Grouped Type
 ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information_2 =
 {
     OGS_TLV_COMPOUND,
@@ -1947,6 +4451,143 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information_2 =
     2,
     sizeof(ogs_gtp_tlv_overload_control_information_t),
     {
+        NULL,
+    }
+};
+
+//  Name: [Load Control Information]
+//  Context: [Create Session Response]
+//  Action: []
+//  Table 7.2.2-4: Load Control Information within Create Session Response
+ogs_tlv_desc_t ogs_gtp_tlv_desc_load_control_information__create_session_response__0 =
+{
+    OGS_TLV_COMPOUND,
+    "Load Control Information",
+    OGS_GTP_LOAD_CONTROL_INFORMATION_TYPE,
+    0,
+    0,
+    sizeof(ogs_gtp_tlv_load_control_information__create_session_response__t),
+    {
+        &ogs_gtp_tlv_desc_sequence_number_0,
+        &ogs_gtp_tlv_desc_metric_0,
+        &ogs_gtp_tlv_desc_apn_and_relative_capacity_0,
+        NULL,
+    }
+};
+
+//  Name: [Load Control Information]
+//  Context: [Create Session Response]
+//  Action: []
+//  Table 7.2.2-4: Load Control Information within Create Session Response
+ogs_tlv_desc_t ogs_gtp_tlv_desc_load_control_information__create_session_response__1 =
+{
+    OGS_TLV_COMPOUND,
+    "Load Control Information",
+    OGS_GTP_LOAD_CONTROL_INFORMATION_TYPE,
+    0,
+    1,
+    sizeof(ogs_gtp_tlv_load_control_information__create_session_response__t),
+    {
+        &ogs_gtp_tlv_desc_sequence_number_0,
+        &ogs_gtp_tlv_desc_metric_0,
+        &ogs_gtp_tlv_desc_apn_and_relative_capacity_0,
+        NULL,
+    }
+};
+
+//  Name: [Load Control Information]
+//  Context: [Create Session Response]
+//  Action: []
+//  Table 7.2.2-4: Load Control Information within Create Session Response
+ogs_tlv_desc_t ogs_gtp_tlv_desc_load_control_information__create_session_response__2 =
+{
+    OGS_TLV_COMPOUND,
+    "Load Control Information",
+    OGS_GTP_LOAD_CONTROL_INFORMATION_TYPE,
+    0,
+    2,
+    sizeof(ogs_gtp_tlv_load_control_information__create_session_response__t),
+    {
+        &ogs_gtp_tlv_desc_sequence_number_0,
+        &ogs_gtp_tlv_desc_metric_0,
+        &ogs_gtp_tlv_desc_apn_and_relative_capacity_0,
+        NULL,
+    }
+};
+
+//  Name: [Load Control Information]
+//  Context: [Create Bearer Request]
+//  Action: []
+//  Table 7.2.3-3: Load Control Information within Create Bearer Request
+ogs_tlv_desc_t ogs_gtp_tlv_desc_load_control_information__create_bearer_request__0 =
+{
+    OGS_TLV_COMPOUND,
+    "Load Control Information",
+    OGS_GTP_LOAD_CONTROL_INFORMATION_TYPE,
+    0,
+    0,
+    sizeof(ogs_gtp_tlv_load_control_information__create_bearer_request__t),
+    {
+        &ogs_gtp_tlv_desc_sequence_number_0,
+        &ogs_gtp_tlv_desc_metric_0,
+        &ogs_gtp_tlv_desc_apn_and_relative_capacity_0,
+        NULL,
+    }
+};
+
+//  Name: [Load Control Information]
+//  Context: [Create Bearer Request]
+//  Action: []
+//  Table 7.2.3-3: Load Control Information within Create Bearer Request
+ogs_tlv_desc_t ogs_gtp_tlv_desc_load_control_information__create_bearer_request__1 =
+{
+    OGS_TLV_COMPOUND,
+    "Load Control Information",
+    OGS_GTP_LOAD_CONTROL_INFORMATION_TYPE,
+    0,
+    1,
+    sizeof(ogs_gtp_tlv_load_control_information__create_bearer_request__t),
+    {
+        &ogs_gtp_tlv_desc_sequence_number_0,
+        &ogs_gtp_tlv_desc_metric_0,
+        &ogs_gtp_tlv_desc_apn_and_relative_capacity_0,
+        NULL,
+    }
+};
+
+//  Name: [Load Control Information]
+//  Context: [Create Bearer Request]
+//  Action: []
+//  Table 7.2.3-3: Load Control Information within Create Bearer Request
+ogs_tlv_desc_t ogs_gtp_tlv_desc_load_control_information__create_bearer_request__2 =
+{
+    OGS_TLV_COMPOUND,
+    "Load Control Information",
+    OGS_GTP_LOAD_CONTROL_INFORMATION_TYPE,
+    0,
+    2,
+    sizeof(ogs_gtp_tlv_load_control_information__create_bearer_request__t),
+    {
+        &ogs_gtp_tlv_desc_sequence_number_0,
+        &ogs_gtp_tlv_desc_metric_0,
+        &ogs_gtp_tlv_desc_apn_and_relative_capacity_0,
+        NULL,
+    }
+};
+
+//  Name: [Overload Control Information]
+//  Context: [Create Bearer Request]
+//  Action: []
+//  Table 7.2.3-4: Overload Control Information within Create Bearer Request
+ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__create_bearer_request__0 =
+{
+    OGS_TLV_COMPOUND,
+    "Overload Control Information",
+    OGS_GTP_OVERLOAD_CONTROL_INFORMATION_TYPE,
+    0,
+    0,
+    sizeof(ogs_gtp_tlv_overload_control_information__create_bearer_request__t),
+    {
         &ogs_gtp_tlv_desc_sequence_number_0,
         &ogs_gtp_tlv_desc_metric_0,
         &ogs_gtp_tlv_desc_epc_timer_0,
@@ -1955,6 +4596,523 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information_2 =
     }
 };
 
+//  Name: [Overload Control Information]
+//  Context: [Create Bearer Request]
+//  Action: []
+//  Table 7.2.3-4: Overload Control Information within Create Bearer Request
+ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__create_bearer_request__1 =
+{
+    OGS_TLV_COMPOUND,
+    "Overload Control Information",
+    OGS_GTP_OVERLOAD_CONTROL_INFORMATION_TYPE,
+    0,
+    1,
+    sizeof(ogs_gtp_tlv_overload_control_information__create_bearer_request__t),
+    {
+        &ogs_gtp_tlv_desc_sequence_number_0,
+        &ogs_gtp_tlv_desc_metric_0,
+        &ogs_gtp_tlv_desc_epc_timer_0,
+        &ogs_gtp_tlv_desc_apn_0,
+        NULL,
+    }
+};
+
+//  Name: [Overload Control Information]
+//  Context: [Create Bearer Request]
+//  Action: []
+//  Table 7.2.3-4: Overload Control Information within Create Bearer Request
+ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__create_bearer_request__2 =
+{
+    OGS_TLV_COMPOUND,
+    "Overload Control Information",
+    OGS_GTP_OVERLOAD_CONTROL_INFORMATION_TYPE,
+    0,
+    2,
+    sizeof(ogs_gtp_tlv_overload_control_information__create_bearer_request__t),
+    {
+        &ogs_gtp_tlv_desc_sequence_number_0,
+        &ogs_gtp_tlv_desc_metric_0,
+        &ogs_gtp_tlv_desc_epc_timer_0,
+        &ogs_gtp_tlv_desc_apn_0,
+        NULL,
+    }
+};
+
+//  Name: [Load Control Information]
+//  Context: [Modify Bearer Response]
+//  Action: []
+//  Table 7.2.8-4: Load Control Information within Modify Bearer Response
+ogs_tlv_desc_t ogs_gtp_tlv_desc_load_control_information__modify_bearer_response__0 =
+{
+    OGS_TLV_COMPOUND,
+    "Load Control Information",
+    OGS_GTP_LOAD_CONTROL_INFORMATION_TYPE,
+    0,
+    0,
+    sizeof(ogs_gtp_tlv_load_control_information__modify_bearer_response__t),
+    {
+        &ogs_gtp_tlv_desc_sequence_number_0,
+        &ogs_gtp_tlv_desc_metric_0,
+        &ogs_gtp_tlv_desc_apn_and_relative_capacity_0,
+        NULL,
+    }
+};
+
+//  Name: [Load Control Information]
+//  Context: [Modify Bearer Response]
+//  Action: []
+//  Table 7.2.8-4: Load Control Information within Modify Bearer Response
+ogs_tlv_desc_t ogs_gtp_tlv_desc_load_control_information__modify_bearer_response__1 =
+{
+    OGS_TLV_COMPOUND,
+    "Load Control Information",
+    OGS_GTP_LOAD_CONTROL_INFORMATION_TYPE,
+    0,
+    1,
+    sizeof(ogs_gtp_tlv_load_control_information__modify_bearer_response__t),
+    {
+        &ogs_gtp_tlv_desc_sequence_number_0,
+        &ogs_gtp_tlv_desc_metric_0,
+        &ogs_gtp_tlv_desc_apn_and_relative_capacity_0,
+        NULL,
+    }
+};
+
+//  Name: [Load Control Information]
+//  Context: [Modify Bearer Response]
+//  Action: []
+//  Table 7.2.8-4: Load Control Information within Modify Bearer Response
+ogs_tlv_desc_t ogs_gtp_tlv_desc_load_control_information__modify_bearer_response__2 =
+{
+    OGS_TLV_COMPOUND,
+    "Load Control Information",
+    OGS_GTP_LOAD_CONTROL_INFORMATION_TYPE,
+    0,
+    2,
+    sizeof(ogs_gtp_tlv_load_control_information__modify_bearer_response__t),
+    {
+        &ogs_gtp_tlv_desc_sequence_number_0,
+        &ogs_gtp_tlv_desc_metric_0,
+        &ogs_gtp_tlv_desc_apn_and_relative_capacity_0,
+        NULL,
+    }
+};
+
+//  Name: [Load Control Information]
+//  Context: [Delete Bearer Request]
+//  Action: []
+//  Table 7.2.9-3: Load Control Information within Delete Bearer Request
+ogs_tlv_desc_t ogs_gtp_tlv_desc_load_control_information__delete_bearer_request__0 =
+{
+    OGS_TLV_COMPOUND,
+    "Load Control Information",
+    OGS_GTP_LOAD_CONTROL_INFORMATION_TYPE,
+    0,
+    0,
+    sizeof(ogs_gtp_tlv_load_control_information__delete_bearer_request__t),
+    {
+        &ogs_gtp_tlv_desc_sequence_number_0,
+        &ogs_gtp_tlv_desc_metric_0,
+        &ogs_gtp_tlv_desc_apn_and_relative_capacity_0,
+        NULL,
+    }
+};
+
+//  Name: [Load Control Information]
+//  Context: [Delete Bearer Request]
+//  Action: []
+//  Table 7.2.9-3: Load Control Information within Delete Bearer Request
+ogs_tlv_desc_t ogs_gtp_tlv_desc_load_control_information__delete_bearer_request__1 =
+{
+    OGS_TLV_COMPOUND,
+    "Load Control Information",
+    OGS_GTP_LOAD_CONTROL_INFORMATION_TYPE,
+    0,
+    1,
+    sizeof(ogs_gtp_tlv_load_control_information__delete_bearer_request__t),
+    {
+        &ogs_gtp_tlv_desc_sequence_number_0,
+        &ogs_gtp_tlv_desc_metric_0,
+        &ogs_gtp_tlv_desc_apn_and_relative_capacity_0,
+        NULL,
+    }
+};
+
+//  Name: [Load Control Information]
+//  Context: [Delete Bearer Request]
+//  Action: []
+//  Table 7.2.9-3: Load Control Information within Delete Bearer Request
+ogs_tlv_desc_t ogs_gtp_tlv_desc_load_control_information__delete_bearer_request__2 =
+{
+    OGS_TLV_COMPOUND,
+    "Load Control Information",
+    OGS_GTP_LOAD_CONTROL_INFORMATION_TYPE,
+    0,
+    2,
+    sizeof(ogs_gtp_tlv_load_control_information__delete_bearer_request__t),
+    {
+        &ogs_gtp_tlv_desc_sequence_number_0,
+        &ogs_gtp_tlv_desc_metric_0,
+        &ogs_gtp_tlv_desc_apn_and_relative_capacity_0,
+        NULL,
+    }
+};
+
+//  Name: [Load Control Information]
+//  Context: [Delete Session Response]
+//  Action: []
+//  Table 7.2.10.1-2: Load Control Information within Delete Session Response
+ogs_tlv_desc_t ogs_gtp_tlv_desc_load_control_information__delete_session_response__0 =
+{
+    OGS_TLV_COMPOUND,
+    "Load Control Information",
+    OGS_GTP_LOAD_CONTROL_INFORMATION_TYPE,
+    0,
+    0,
+    sizeof(ogs_gtp_tlv_load_control_information__delete_session_response__t),
+    {
+        &ogs_gtp_tlv_desc_sequence_number_0,
+        &ogs_gtp_tlv_desc_metric_0,
+        &ogs_gtp_tlv_desc_apn_and_relative_capacity_0,
+        NULL,
+    }
+};
+
+//  Name: [Load Control Information]
+//  Context: [Delete Session Response]
+//  Action: []
+//  Table 7.2.10.1-2: Load Control Information within Delete Session Response
+ogs_tlv_desc_t ogs_gtp_tlv_desc_load_control_information__delete_session_response__1 =
+{
+    OGS_TLV_COMPOUND,
+    "Load Control Information",
+    OGS_GTP_LOAD_CONTROL_INFORMATION_TYPE,
+    0,
+    1,
+    sizeof(ogs_gtp_tlv_load_control_information__delete_session_response__t),
+    {
+        &ogs_gtp_tlv_desc_sequence_number_0,
+        &ogs_gtp_tlv_desc_metric_0,
+        &ogs_gtp_tlv_desc_apn_and_relative_capacity_0,
+        NULL,
+    }
+};
+
+//  Name: [Load Control Information]
+//  Context: [Delete Session Response]
+//  Action: []
+//  Table 7.2.10.1-2: Load Control Information within Delete Session Response
+ogs_tlv_desc_t ogs_gtp_tlv_desc_load_control_information__delete_session_response__2 =
+{
+    OGS_TLV_COMPOUND,
+    "Load Control Information",
+    OGS_GTP_LOAD_CONTROL_INFORMATION_TYPE,
+    0,
+    2,
+    sizeof(ogs_gtp_tlv_load_control_information__delete_session_response__t),
+    {
+        &ogs_gtp_tlv_desc_sequence_number_0,
+        &ogs_gtp_tlv_desc_metric_0,
+        &ogs_gtp_tlv_desc_apn_and_relative_capacity_0,
+        NULL,
+    }
+};
+
+//  Name: [Load Control Information]
+//  Context: [Downlink Data Notification]
+//  Action: []
+//  Table 7.2.11.1-2: Load Control Information within Downlink Data Notification
+ogs_tlv_desc_t ogs_gtp_tlv_desc_load_control_information__downlink_data_notification__0 =
+{
+    OGS_TLV_COMPOUND,
+    "Load Control Information",
+    OGS_GTP_LOAD_CONTROL_INFORMATION_TYPE,
+    0,
+    0,
+    sizeof(ogs_gtp_tlv_load_control_information__downlink_data_notification__t),
+    {
+        &ogs_gtp_tlv_desc_sequence_number_0,
+        &ogs_gtp_tlv_desc_metric_0,
+        NULL,
+    }
+};
+
+//  Name: [Load Control Information]
+//  Context: [Downlink Data Notification]
+//  Action: []
+//  Table 7.2.11.1-2: Load Control Information within Downlink Data Notification
+ogs_tlv_desc_t ogs_gtp_tlv_desc_load_control_information__downlink_data_notification__1 =
+{
+    OGS_TLV_COMPOUND,
+    "Load Control Information",
+    OGS_GTP_LOAD_CONTROL_INFORMATION_TYPE,
+    0,
+    1,
+    sizeof(ogs_gtp_tlv_load_control_information__downlink_data_notification__t),
+    {
+        &ogs_gtp_tlv_desc_sequence_number_0,
+        &ogs_gtp_tlv_desc_metric_0,
+        NULL,
+    }
+};
+
+//  Name: [Load Control Information]
+//  Context: [Downlink Data Notification]
+//  Action: []
+//  Table 7.2.11.1-2: Load Control Information within Downlink Data Notification
+ogs_tlv_desc_t ogs_gtp_tlv_desc_load_control_information__downlink_data_notification__2 =
+{
+    OGS_TLV_COMPOUND,
+    "Load Control Information",
+    OGS_GTP_LOAD_CONTROL_INFORMATION_TYPE,
+    0,
+    2,
+    sizeof(ogs_gtp_tlv_load_control_information__downlink_data_notification__t),
+    {
+        &ogs_gtp_tlv_desc_sequence_number_0,
+        &ogs_gtp_tlv_desc_metric_0,
+        NULL,
+    }
+};
+
+//  Name: [Overload Control Information]
+//  Context: [Modify Bearer Command]
+//  Action: []
+//  Table 7.2.14-3: Overload Control Information within Modify Bearer Command
+ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__modify_bearer_command__0 =
+{
+    OGS_TLV_COMPOUND,
+    "Overload Control Information",
+    OGS_GTP_OVERLOAD_CONTROL_INFORMATION_TYPE,
+    0,
+    0,
+    sizeof(ogs_gtp_tlv_overload_control_information__modify_bearer_command__t),
+    {
+        &ogs_gtp_tlv_desc_sequence_number_0,
+        &ogs_gtp_tlv_desc_metric_0,
+        &ogs_gtp_tlv_desc_epc_timer_0,
+        NULL,
+    }
+};
+
+//  Name: [Overload Control Information]
+//  Context: [Modify Bearer Command]
+//  Action: []
+//  Table 7.2.14-3: Overload Control Information within Modify Bearer Command
+ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__modify_bearer_command__1 =
+{
+    OGS_TLV_COMPOUND,
+    "Overload Control Information",
+    OGS_GTP_OVERLOAD_CONTROL_INFORMATION_TYPE,
+    0,
+    1,
+    sizeof(ogs_gtp_tlv_overload_control_information__modify_bearer_command__t),
+    {
+        &ogs_gtp_tlv_desc_sequence_number_0,
+        &ogs_gtp_tlv_desc_metric_0,
+        &ogs_gtp_tlv_desc_epc_timer_0,
+        NULL,
+    }
+};
+
+//  Name: [Overload Control Information]
+//  Context: [Modify Bearer Command]
+//  Action: []
+//  Table 7.2.14-3: Overload Control Information within Modify Bearer Command
+ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information__modify_bearer_command__2 =
+{
+    OGS_TLV_COMPOUND,
+    "Overload Control Information",
+    OGS_GTP_OVERLOAD_CONTROL_INFORMATION_TYPE,
+    0,
+    2,
+    sizeof(ogs_gtp_tlv_overload_control_information__modify_bearer_command__t),
+    {
+        &ogs_gtp_tlv_desc_sequence_number_0,
+        &ogs_gtp_tlv_desc_metric_0,
+        &ogs_gtp_tlv_desc_epc_timer_0,
+        NULL,
+    }
+};
+
+//  Name: [Load Control Information]
+//  Context: [Update Bearer Request]
+//  Action: []
+//  Table 7.2.15-3: Load Control Information within Update Bearer Request
+ogs_tlv_desc_t ogs_gtp_tlv_desc_load_control_information__update_bearer_request__0 =
+{
+    OGS_TLV_COMPOUND,
+    "Load Control Information",
+    OGS_GTP_LOAD_CONTROL_INFORMATION_TYPE,
+    0,
+    0,
+    sizeof(ogs_gtp_tlv_load_control_information__update_bearer_request__t),
+    {
+        &ogs_gtp_tlv_desc_sequence_number_0,
+        &ogs_gtp_tlv_desc_metric_0,
+        &ogs_gtp_tlv_desc_apn_and_relative_capacity_0,
+        NULL,
+    }
+};
+
+//  Name: [Load Control Information]
+//  Context: [Update Bearer Request]
+//  Action: []
+//  Table 7.2.15-3: Load Control Information within Update Bearer Request
+ogs_tlv_desc_t ogs_gtp_tlv_desc_load_control_information__update_bearer_request__1 =
+{
+    OGS_TLV_COMPOUND,
+    "Load Control Information",
+    OGS_GTP_LOAD_CONTROL_INFORMATION_TYPE,
+    0,
+    1,
+    sizeof(ogs_gtp_tlv_load_control_information__update_bearer_request__t),
+    {
+        &ogs_gtp_tlv_desc_sequence_number_0,
+        &ogs_gtp_tlv_desc_metric_0,
+        &ogs_gtp_tlv_desc_apn_and_relative_capacity_0,
+        NULL,
+    }
+};
+
+//  Name: [Load Control Information]
+//  Context: [Update Bearer Request]
+//  Action: []
+//  Table 7.2.15-3: Load Control Information within Update Bearer Request
+ogs_tlv_desc_t ogs_gtp_tlv_desc_load_control_information__update_bearer_request__2 =
+{
+    OGS_TLV_COMPOUND,
+    "Load Control Information",
+    OGS_GTP_LOAD_CONTROL_INFORMATION_TYPE,
+    0,
+    2,
+    sizeof(ogs_gtp_tlv_load_control_information__update_bearer_request__t),
+    {
+        &ogs_gtp_tlv_desc_sequence_number_0,
+        &ogs_gtp_tlv_desc_metric_0,
+        &ogs_gtp_tlv_desc_apn_and_relative_capacity_0,
+        NULL,
+    }
+};
+
+//  Name: [Load Control Information]
+//  Context: [Release Access Bearers Response]
+//  Action: []
+//  Table 7.2.22-2: Load Control Information within Release Access Bearers Response
+ogs_tlv_desc_t ogs_gtp_tlv_desc_load_control_information__release_access_bearers_response__0 =
+{
+    OGS_TLV_COMPOUND,
+    "Load Control Information",
+    OGS_GTP_LOAD_CONTROL_INFORMATION_TYPE,
+    0,
+    0,
+    sizeof(ogs_gtp_tlv_load_control_information__release_access_bearers_response__t),
+    {
+        &ogs_gtp_tlv_desc_sequence_number_0,
+        &ogs_gtp_tlv_desc_metric_0,
+        NULL,
+    }
+};
+
+//  Name: [Load Control Information]
+//  Context: [Release Access Bearers Response]
+//  Action: []
+//  Table 7.2.22-2: Load Control Information within Release Access Bearers Response
+ogs_tlv_desc_t ogs_gtp_tlv_desc_load_control_information__release_access_bearers_response__1 =
+{
+    OGS_TLV_COMPOUND,
+    "Load Control Information",
+    OGS_GTP_LOAD_CONTROL_INFORMATION_TYPE,
+    0,
+    1,
+    sizeof(ogs_gtp_tlv_load_control_information__release_access_bearers_response__t),
+    {
+        &ogs_gtp_tlv_desc_sequence_number_0,
+        &ogs_gtp_tlv_desc_metric_0,
+        NULL,
+    }
+};
+
+//  Name: [Load Control Information]
+//  Context: [Release Access Bearers Response]
+//  Action: []
+//  Table 7.2.22-2: Load Control Information within Release Access Bearers Response
+ogs_tlv_desc_t ogs_gtp_tlv_desc_load_control_information__release_access_bearers_response__2 =
+{
+    OGS_TLV_COMPOUND,
+    "Load Control Information",
+    OGS_GTP_LOAD_CONTROL_INFORMATION_TYPE,
+    0,
+    2,
+    sizeof(ogs_gtp_tlv_load_control_information__release_access_bearers_response__t),
+    {
+        &ogs_gtp_tlv_desc_sequence_number_0,
+        &ogs_gtp_tlv_desc_metric_0,
+        NULL,
+    }
+};
+
+//  Name: [Load Control Information]
+//  Context: [Modify Access Bearers Response]
+//  Action: []
+//  Table 7.2.25-4: Load Control Information within Modify Access Bearers Response
+ogs_tlv_desc_t ogs_gtp_tlv_desc_load_control_information__modify_access_bearers_response__0 =
+{
+    OGS_TLV_COMPOUND,
+    "Load Control Information",
+    OGS_GTP_LOAD_CONTROL_INFORMATION_TYPE,
+    0,
+    0,
+    sizeof(ogs_gtp_tlv_load_control_information__modify_access_bearers_response__t),
+    {
+        &ogs_gtp_tlv_desc_sequence_number_0,
+        &ogs_gtp_tlv_desc_metric_0,
+        NULL,
+    }
+};
+
+//  Name: [Load Control Information]
+//  Context: [Modify Access Bearers Response]
+//  Action: []
+//  Table 7.2.25-4: Load Control Information within Modify Access Bearers Response
+ogs_tlv_desc_t ogs_gtp_tlv_desc_load_control_information__modify_access_bearers_response__1 =
+{
+    OGS_TLV_COMPOUND,
+    "Load Control Information",
+    OGS_GTP_LOAD_CONTROL_INFORMATION_TYPE,
+    0,
+    1,
+    sizeof(ogs_gtp_tlv_load_control_information__modify_access_bearers_response__t),
+    {
+        &ogs_gtp_tlv_desc_sequence_number_0,
+        &ogs_gtp_tlv_desc_metric_0,
+        NULL,
+    }
+};
+
+//  Name: [Load Control Information]
+//  Context: [Modify Access Bearers Response]
+//  Action: []
+//  Table 7.2.25-4: Load Control Information within Modify Access Bearers Response
+ogs_tlv_desc_t ogs_gtp_tlv_desc_load_control_information__modify_access_bearers_response__2 =
+{
+    OGS_TLV_COMPOUND,
+    "Load Control Information",
+    OGS_GTP_LOAD_CONTROL_INFORMATION_TYPE,
+    0,
+    2,
+    sizeof(ogs_gtp_tlv_load_control_information__modify_access_bearers_response__t),
+    {
+        &ogs_gtp_tlv_desc_sequence_number_0,
+        &ogs_gtp_tlv_desc_metric_0,
+        NULL,
+    }
+};
+
+//  Name: [Load Control Information]
+//  Context: []
+//  Action: []
+//  Table 8.112-1: Load Control Information Grouped Type
 ogs_tlv_desc_t ogs_gtp_tlv_desc_load_control_information_0 =
 {
     OGS_TLV_COMPOUND,
@@ -1964,13 +5122,14 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_load_control_information_0 =
     0,
     sizeof(ogs_gtp_tlv_load_control_information_t),
     {
-        &ogs_gtp_tlv_desc_sequence_number_0,
-        &ogs_gtp_tlv_desc_metric_0,
-        &ogs_gtp_tlv_desc_apn_and_relative_capacity_0,
         NULL,
     }
 };
 
+//  Name: [Load Control Information]
+//  Context: []
+//  Action: []
+//  Table 8.112-1: Load Control Information Grouped Type
 ogs_tlv_desc_t ogs_gtp_tlv_desc_load_control_information_1 =
 {
     OGS_TLV_COMPOUND,
@@ -1980,13 +5139,14 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_load_control_information_1 =
     1,
     sizeof(ogs_gtp_tlv_load_control_information_t),
     {
-        &ogs_gtp_tlv_desc_sequence_number_0,
-        &ogs_gtp_tlv_desc_metric_0,
-        &ogs_gtp_tlv_desc_apn_and_relative_capacity_0,
         NULL,
     }
 };
 
+//  Name: [Load Control Information]
+//  Context: []
+//  Action: []
+//  Table 8.112-1: Load Control Information Grouped Type
 ogs_tlv_desc_t ogs_gtp_tlv_desc_load_control_information_2 =
 {
     OGS_TLV_COMPOUND,
@@ -1996,21 +5156,22 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_load_control_information_2 =
     2,
     sizeof(ogs_gtp_tlv_load_control_information_t),
     {
-        &ogs_gtp_tlv_desc_sequence_number_0,
-        &ogs_gtp_tlv_desc_metric_0,
-        &ogs_gtp_tlv_desc_apn_and_relative_capacity_0,
         NULL,
     }
 };
 
-ogs_tlv_desc_t ogs_gtp_tlv_desc_scef_pdn_connection_0 =
+//  Name: [SCEF PDN Connection]
+//  Context: [Forward Relocation Request]
+//  Action: []
+//  Table 7.3.1-5: MME UE SCEF PDN Connections within Forward Relocation Request
+ogs_tlv_desc_t ogs_gtp_tlv_desc_scef_pdn_connection__forward_relocation_request__0 =
 {
     OGS_TLV_COMPOUND,
     "SCEF PDN Connection",
     OGS_GTP_SCEF_PDN_CONNECTION_TYPE,
     0,
     0,
-    sizeof(ogs_gtp_tlv_scef_pdn_connection_t),
+    sizeof(ogs_gtp_tlv_scef_pdn_connection__forward_relocation_request__t),
     {
         &ogs_gtp_tlv_desc_apn_0,
         &ogs_gtp_tlv_desc_ebi_0,
@@ -2018,6 +5179,8 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_scef_pdn_connection_0 =
         NULL,
     }
 };
+
+/* Descriptor Structure for Messages */
 
 ogs_tlv_desc_t ogs_gtp_tlv_desc_echo_request =
 {
@@ -2062,8 +5225,8 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_create_session_request =
         &ogs_gtp_tlv_desc_ebi_0,
         &ogs_gtp_tlv_desc_twmi_0,
         &ogs_gtp_tlv_desc_pco_0,
-        &ogs_gtp_tlv_desc_bearer_context_0,
-        &ogs_gtp_tlv_desc_bearer_context_1,
+        &ogs_gtp_tlv_desc_bearer_context__create_session_request__created__0,
+        &ogs_gtp_tlv_desc_bearer_context__create_session_request__removed__1,
         &ogs_gtp_tlv_desc_trace_information_0,
         &ogs_gtp_tlv_desc_recovery_0,
         &ogs_gtp_tlv_desc_fq_csid_0,
@@ -2088,15 +5251,15 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_create_session_request =
         &ogs_gtp_tlv_desc_ip_address_3,
         &ogs_gtp_tlv_desc_cn_operator_selection_entity_0,
         &ogs_gtp_tlv_desc_presence_reporting_area_information_0,
-        &ogs_gtp_tlv_desc_overload_control_information_0,
-        &ogs_gtp_tlv_desc_overload_control_information_1,
-        &ogs_gtp_tlv_desc_overload_control_information_2,
+        &ogs_gtp_tlv_desc_overload_control_information__create_session_request__0,
+        &ogs_gtp_tlv_desc_overload_control_information__create_session_request__1,
+        &ogs_gtp_tlv_desc_overload_control_information__create_session_request__2,
         &ogs_gtp_tlv_desc_millisecond_time_stamp_0,
         &ogs_gtp_tlv_desc_integer_number_0,
         &ogs_gtp_tlv_desc_twan_identifier_1,
         &ogs_gtp_tlv_desc_twan_identifier_timestamp_0,
         &ogs_gtp_tlv_desc_f_container_0,
-        &ogs_gtp_tlv_desc_remote_ue_context_0,
+        &ogs_gtp_tlv_desc_remote_ue_context__create_session_request__0,
         &ogs_gtp_tlv_desc_node_identifier_0,
         &ogs_gtp_tlv_desc_epco_0,
         &ogs_gtp_tlv_desc_serving_plmn_rate_control_0,
@@ -2127,8 +5290,8 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_create_session_response =
         &ogs_gtp_tlv_desc_ambr_0,
         &ogs_gtp_tlv_desc_ebi_0,
         &ogs_gtp_tlv_desc_pco_0,
-        &ogs_gtp_tlv_desc_bearer_context_0,
-        &ogs_gtp_tlv_desc_bearer_context_1,
+        &ogs_gtp_tlv_desc_bearer_context__create_session_response__created__0,
+        &ogs_gtp_tlv_desc_bearer_context__create_session_response__removal__1,
         &ogs_gtp_tlv_desc_recovery_0,
         &ogs_gtp_tlv_desc_fqdn_0,
         &ogs_gtp_tlv_desc_ip_address_0,
@@ -2141,11 +5304,11 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_create_session_response =
         &ogs_gtp_tlv_desc_ip4cp_0,
         &ogs_gtp_tlv_desc_indication_0,
         &ogs_gtp_tlv_desc_presence_reporting_area_action_0,
-        &ogs_gtp_tlv_desc_load_control_information_0,
-        &ogs_gtp_tlv_desc_load_control_information_1,
-        &ogs_gtp_tlv_desc_load_control_information_2,
-        &ogs_gtp_tlv_desc_overload_control_information_0,
-        &ogs_gtp_tlv_desc_overload_control_information_1,
+        &ogs_gtp_tlv_desc_load_control_information__create_session_response__0,
+        &ogs_gtp_tlv_desc_load_control_information__create_session_response__1,
+        &ogs_gtp_tlv_desc_load_control_information__create_session_response__2,
+        &ogs_gtp_tlv_desc_overload_control_information__create_session_response__0,
+        &ogs_gtp_tlv_desc_overload_control_information__create_session_response__1,
         &ogs_gtp_tlv_desc_f_container_0,
         &ogs_gtp_tlv_desc_charging_id_0,
         &ogs_gtp_tlv_desc_epco_0,
@@ -2165,8 +5328,8 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_modify_bearer_request =
         &ogs_gtp_tlv_desc_f_teid_0,
         &ogs_gtp_tlv_desc_ambr_0,
         &ogs_gtp_tlv_desc_delay_value_0,
-        &ogs_gtp_tlv_desc_bearer_context_0,
-        &ogs_gtp_tlv_desc_bearer_context_1,
+        &ogs_gtp_tlv_desc_bearer_context__modify_bearer_request__modified__0,
+        &ogs_gtp_tlv_desc_bearer_context__modify_bearer_request__removed__1,
         &ogs_gtp_tlv_desc_recovery_0,
         &ogs_gtp_tlv_desc_ue_time_zone_0,
         &ogs_gtp_tlv_desc_fq_csid_0,
@@ -2180,9 +5343,9 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_modify_bearer_request =
         &ogs_gtp_tlv_desc_ip_address_2,
         &ogs_gtp_tlv_desc_cn_operator_selection_entity_0,
         &ogs_gtp_tlv_desc_presence_reporting_area_information_0,
-        &ogs_gtp_tlv_desc_overload_control_information_0,
-        &ogs_gtp_tlv_desc_overload_control_information_1,
-        &ogs_gtp_tlv_desc_overload_control_information_2,
+        &ogs_gtp_tlv_desc_overload_control_information__modify_bearer_request__0,
+        &ogs_gtp_tlv_desc_overload_control_information__modify_bearer_request__1,
+        &ogs_gtp_tlv_desc_overload_control_information__modify_bearer_request__2,
         &ogs_gtp_tlv_desc_serving_plmn_rate_control_0,
         &ogs_gtp_tlv_desc_counter_0,
         &ogs_gtp_tlv_desc_imsi_0,
@@ -2203,8 +5366,8 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_modify_bearer_response =
         &ogs_gtp_tlv_desc_ebi_0,
         &ogs_gtp_tlv_desc_apn_restriction_0,
         &ogs_gtp_tlv_desc_pco_0,
-        &ogs_gtp_tlv_desc_bearer_context_0,
-        &ogs_gtp_tlv_desc_bearer_context_1,
+        &ogs_gtp_tlv_desc_bearer_context__modify_bearer_response__modified__0,
+        &ogs_gtp_tlv_desc_bearer_context__modify_bearer_response__removal__1,
         &ogs_gtp_tlv_desc_change_reporting_action_0,
         &ogs_gtp_tlv_desc_csg_information_reporting_action_0,
         &ogs_gtp_tlv_desc_enb_information_reporting_0,
@@ -2217,11 +5380,11 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_modify_bearer_response =
         &ogs_gtp_tlv_desc_ldn_1,
         &ogs_gtp_tlv_desc_indication_0,
         &ogs_gtp_tlv_desc_presence_reporting_area_action_0,
-        &ogs_gtp_tlv_desc_load_control_information_0,
-        &ogs_gtp_tlv_desc_load_control_information_1,
-        &ogs_gtp_tlv_desc_load_control_information_2,
-        &ogs_gtp_tlv_desc_overload_control_information_0,
-        &ogs_gtp_tlv_desc_overload_control_information_1,
+        &ogs_gtp_tlv_desc_load_control_information__modify_bearer_response__0,
+        &ogs_gtp_tlv_desc_load_control_information__modify_bearer_response__1,
+        &ogs_gtp_tlv_desc_load_control_information__modify_bearer_response__2,
+        &ogs_gtp_tlv_desc_overload_control_information__modify_bearer_response__0,
+        &ogs_gtp_tlv_desc_overload_control_information__modify_bearer_response__1,
         &ogs_gtp_tlv_desc_charging_id_0,
     NULL,
 }};
@@ -2243,9 +5406,9 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_delete_session_request =
         &ogs_gtp_tlv_desc_ran_nas_cause_0,
         &ogs_gtp_tlv_desc_twan_identifier_0,
         &ogs_gtp_tlv_desc_twan_identifier_timestamp_0,
-        &ogs_gtp_tlv_desc_overload_control_information_0,
-        &ogs_gtp_tlv_desc_overload_control_information_1,
-        &ogs_gtp_tlv_desc_overload_control_information_2,
+        &ogs_gtp_tlv_desc_overload_control_information__delete_session_request__0,
+        &ogs_gtp_tlv_desc_overload_control_information__delete_session_request__1,
+        &ogs_gtp_tlv_desc_overload_control_information__delete_session_request__2,
         &ogs_gtp_tlv_desc_twan_identifier_1,
         &ogs_gtp_tlv_desc_twan_identifier_timestamp_1,
         &ogs_gtp_tlv_desc_ip_address_0,
@@ -2265,11 +5428,11 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_delete_session_response =
         &ogs_gtp_tlv_desc_recovery_0,
         &ogs_gtp_tlv_desc_pco_0,
         &ogs_gtp_tlv_desc_indication_0,
-        &ogs_gtp_tlv_desc_load_control_information_0,
-        &ogs_gtp_tlv_desc_load_control_information_1,
-        &ogs_gtp_tlv_desc_load_control_information_2,
-        &ogs_gtp_tlv_desc_overload_control_information_0,
-        &ogs_gtp_tlv_desc_overload_control_information_1,
+        &ogs_gtp_tlv_desc_load_control_information__delete_session_response__0,
+        &ogs_gtp_tlv_desc_load_control_information__delete_session_response__1,
+        &ogs_gtp_tlv_desc_load_control_information__delete_session_response__2,
+        &ogs_gtp_tlv_desc_overload_control_information__delete_session_response__0,
+        &ogs_gtp_tlv_desc_overload_control_information__delete_session_response__1,
         &ogs_gtp_tlv_desc_epco_0,
         &ogs_gtp_tlv_desc_apn_rate_control_status_0,
     NULL,
@@ -2281,10 +5444,10 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_modify_bearer_command =
     "Modify Bearer Command",
     0, 0, 0, 0, {
         &ogs_gtp_tlv_desc_ambr_0,
-        &ogs_gtp_tlv_desc_bearer_context_0,
-        &ogs_gtp_tlv_desc_overload_control_information_0,
-        &ogs_gtp_tlv_desc_overload_control_information_1,
-        &ogs_gtp_tlv_desc_overload_control_information_2,
+        &ogs_gtp_tlv_desc_bearer_context__modify_bearer_command__0,
+        &ogs_gtp_tlv_desc_overload_control_information__modify_bearer_command__0,
+        &ogs_gtp_tlv_desc_overload_control_information__modify_bearer_command__1,
+        &ogs_gtp_tlv_desc_overload_control_information__modify_bearer_command__2,
         &ogs_gtp_tlv_desc_f_teid_0,
     NULL,
 }};
@@ -2297,8 +5460,8 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_modify_bearer_failure_indication =
         &ogs_gtp_tlv_desc_cause_0,
         &ogs_gtp_tlv_desc_recovery_0,
         &ogs_gtp_tlv_desc_indication_0,
-        &ogs_gtp_tlv_desc_overload_control_information_0,
-        &ogs_gtp_tlv_desc_overload_control_information_1,
+        &ogs_gtp_tlv_desc_overload_control_information__modify_bearer_failure_indication__0,
+        &ogs_gtp_tlv_desc_overload_control_information__modify_bearer_failure_indication__1,
     NULL,
 }};
 
@@ -2307,12 +5470,12 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_delete_bearer_command =
     OGS_TLV_MESSAGE,
     "Delete Bearer Command",
     0, 0, 0, 0, {
-        &ogs_gtp_tlv_desc_bearer_context_0,
+        &ogs_gtp_tlv_desc_bearer_context__delete_bearer_command__0,
         &ogs_gtp_tlv_desc_uli_0,
         &ogs_gtp_tlv_desc_uli_timestamp_0,
         &ogs_gtp_tlv_desc_ue_time_zone_0,
-        &ogs_gtp_tlv_desc_overload_control_information_0,
-        &ogs_gtp_tlv_desc_overload_control_information_1,
+        &ogs_gtp_tlv_desc_overload_control_information__delete_bearer_command__0,
+        &ogs_gtp_tlv_desc_overload_control_information__delete_bearer_command__1,
         &ogs_gtp_tlv_desc_f_teid_0,
         &ogs_gtp_tlv_desc_secondary_rat_usage_data_report_0,
     NULL,
@@ -2324,11 +5487,11 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_delete_bearer_failure_indication =
     "Delete Bearer Failure Indication",
     0, 0, 0, 0, {
         &ogs_gtp_tlv_desc_cause_0,
-        &ogs_gtp_tlv_desc_bearer_context_0,
+        &ogs_gtp_tlv_desc_bearer_context__delete_bearer_failure_indication__0,
         &ogs_gtp_tlv_desc_recovery_0,
         &ogs_gtp_tlv_desc_indication_0,
-        &ogs_gtp_tlv_desc_overload_control_information_0,
-        &ogs_gtp_tlv_desc_overload_control_information_1,
+        &ogs_gtp_tlv_desc_overload_control_information__delete_bearer_failure_indication__0,
+        &ogs_gtp_tlv_desc_overload_control_information__delete_bearer_failure_indication__1,
     NULL,
 }};
 
@@ -2350,8 +5513,8 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_resource_command =
         &ogs_gtp_tlv_desc_f_teid_1,
         &ogs_gtp_tlv_desc_pco_0,
         &ogs_gtp_tlv_desc_signalling_priority_indication_0,
-        &ogs_gtp_tlv_desc_overload_control_information_0,
-        &ogs_gtp_tlv_desc_overload_control_information_1,
+        &ogs_gtp_tlv_desc_overload_control_information__bearer_resource_command__0,
+        &ogs_gtp_tlv_desc_overload_control_information__bearer_resource_command__1,
         &ogs_gtp_tlv_desc_f_container_0,
         &ogs_gtp_tlv_desc_epco_0,
         &ogs_gtp_tlv_desc_f_teid_2,
@@ -2367,8 +5530,8 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_resource_failure_indication =
         &ogs_gtp_tlv_desc_ebi_0,
         &ogs_gtp_tlv_desc_pti_0,
         &ogs_gtp_tlv_desc_indication_0,
-        &ogs_gtp_tlv_desc_overload_control_information_0,
-        &ogs_gtp_tlv_desc_overload_control_information_1,
+        &ogs_gtp_tlv_desc_overload_control_information__bearer_resource_failure_indication__0,
+        &ogs_gtp_tlv_desc_overload_control_information__bearer_resource_failure_indication__1,
         &ogs_gtp_tlv_desc_recovery_0,
         &ogs_gtp_tlv_desc_f_container_0,
     NULL,
@@ -2393,7 +5556,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_create_bearer_request =
         &ogs_gtp_tlv_desc_pti_0,
         &ogs_gtp_tlv_desc_ebi_0,
         &ogs_gtp_tlv_desc_pco_0,
-        &ogs_gtp_tlv_desc_bearer_context_0,
+        &ogs_gtp_tlv_desc_bearer_context__create_bearer_request__0,
         &ogs_gtp_tlv_desc_fq_csid_0,
         &ogs_gtp_tlv_desc_fq_csid_1,
         &ogs_gtp_tlv_desc_change_reporting_action_0,
@@ -2401,11 +5564,11 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_create_bearer_request =
         &ogs_gtp_tlv_desc_enb_information_reporting_0,
         &ogs_gtp_tlv_desc_presence_reporting_area_action_0,
         &ogs_gtp_tlv_desc_indication_0,
-        &ogs_gtp_tlv_desc_load_control_information_0,
-        &ogs_gtp_tlv_desc_load_control_information_1,
-        &ogs_gtp_tlv_desc_load_control_information_2,
-        &ogs_gtp_tlv_desc_overload_control_information_0,
-        &ogs_gtp_tlv_desc_overload_control_information_1,
+        &ogs_gtp_tlv_desc_load_control_information__create_bearer_request__0,
+        &ogs_gtp_tlv_desc_load_control_information__create_bearer_request__1,
+        &ogs_gtp_tlv_desc_load_control_information__create_bearer_request__2,
+        &ogs_gtp_tlv_desc_overload_control_information__create_bearer_request__0,
+        &ogs_gtp_tlv_desc_overload_control_information__create_bearer_request__1,
         &ogs_gtp_tlv_desc_f_container_0,
     NULL,
 }};
@@ -2416,7 +5579,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_create_bearer_response =
     "Create Bearer Response",
     0, 0, 0, 0, {
         &ogs_gtp_tlv_desc_cause_0,
-        &ogs_gtp_tlv_desc_bearer_context_0,
+        &ogs_gtp_tlv_desc_bearer_context__create_bearer_response__0,
         &ogs_gtp_tlv_desc_recovery_0,
         &ogs_gtp_tlv_desc_fq_csid_0,
         &ogs_gtp_tlv_desc_fq_csid_2,
@@ -2425,11 +5588,11 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_create_bearer_response =
         &ogs_gtp_tlv_desc_ue_time_zone_0,
         &ogs_gtp_tlv_desc_uli_0,
         &ogs_gtp_tlv_desc_twan_identifier_0,
-        &ogs_gtp_tlv_desc_overload_control_information_0,
-        &ogs_gtp_tlv_desc_overload_control_information_1,
+        &ogs_gtp_tlv_desc_overload_control_information__create_bearer_response__0,
+        &ogs_gtp_tlv_desc_overload_control_information__create_bearer_response__1,
         &ogs_gtp_tlv_desc_presence_reporting_area_information_0,
         &ogs_gtp_tlv_desc_ip_address_0,
-        &ogs_gtp_tlv_desc_overload_control_information_2,
+        &ogs_gtp_tlv_desc_overload_control_information__create_bearer_response__2,
         &ogs_gtp_tlv_desc_twan_identifier_1,
         &ogs_gtp_tlv_desc_twan_identifier_timestamp_1,
         &ogs_gtp_tlv_desc_port_number_0,
@@ -2443,7 +5606,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_update_bearer_request =
     OGS_TLV_MESSAGE,
     "Update Bearer Request",
     0, 0, 0, 0, {
-        &ogs_gtp_tlv_desc_bearer_context_0,
+        &ogs_gtp_tlv_desc_bearer_context__update_bearer_request__0,
         &ogs_gtp_tlv_desc_pti_0,
         &ogs_gtp_tlv_desc_pco_0,
         &ogs_gtp_tlv_desc_ambr_0,
@@ -2454,11 +5617,11 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_update_bearer_request =
         &ogs_gtp_tlv_desc_fq_csid_0,
         &ogs_gtp_tlv_desc_fq_csid_1,
         &ogs_gtp_tlv_desc_presence_reporting_area_action_0,
-        &ogs_gtp_tlv_desc_load_control_information_0,
-        &ogs_gtp_tlv_desc_load_control_information_1,
-        &ogs_gtp_tlv_desc_load_control_information_2,
-        &ogs_gtp_tlv_desc_overload_control_information_0,
-        &ogs_gtp_tlv_desc_overload_control_information_1,
+        &ogs_gtp_tlv_desc_load_control_information__update_bearer_request__0,
+        &ogs_gtp_tlv_desc_load_control_information__update_bearer_request__1,
+        &ogs_gtp_tlv_desc_load_control_information__update_bearer_request__2,
+        &ogs_gtp_tlv_desc_overload_control_information__update_bearer_request__0,
+        &ogs_gtp_tlv_desc_overload_control_information__update_bearer_request__1,
         &ogs_gtp_tlv_desc_f_container_0,
     NULL,
 }};
@@ -2469,7 +5632,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_update_bearer_response =
     "Update Bearer Response",
     0, 0, 0, 0, {
         &ogs_gtp_tlv_desc_cause_0,
-        &ogs_gtp_tlv_desc_bearer_context_0,
+        &ogs_gtp_tlv_desc_bearer_context__update_bearer_response__0,
         &ogs_gtp_tlv_desc_pco_0,
         &ogs_gtp_tlv_desc_recovery_0,
         &ogs_gtp_tlv_desc_fq_csid_0,
@@ -2480,11 +5643,11 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_update_bearer_response =
         &ogs_gtp_tlv_desc_ue_time_zone_0,
         &ogs_gtp_tlv_desc_uli_0,
         &ogs_gtp_tlv_desc_twan_identifier_0,
-        &ogs_gtp_tlv_desc_overload_control_information_0,
-        &ogs_gtp_tlv_desc_overload_control_information_1,
+        &ogs_gtp_tlv_desc_overload_control_information__update_bearer_response__0,
+        &ogs_gtp_tlv_desc_overload_control_information__update_bearer_response__1,
         &ogs_gtp_tlv_desc_presence_reporting_area_information_0,
         &ogs_gtp_tlv_desc_ip_address_0,
-        &ogs_gtp_tlv_desc_overload_control_information_2,
+        &ogs_gtp_tlv_desc_overload_control_information__update_bearer_response__2,
         &ogs_gtp_tlv_desc_twan_identifier_1,
         &ogs_gtp_tlv_desc_twan_identifier_timestamp_1,
         &ogs_gtp_tlv_desc_port_number_0,
@@ -2500,18 +5663,18 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_delete_bearer_request =
     0, 0, 0, 0, {
         &ogs_gtp_tlv_desc_ebi_0,
         &ogs_gtp_tlv_desc_ebi_1,
-        &ogs_gtp_tlv_desc_bearer_context_0,
+        &ogs_gtp_tlv_desc_bearer_context__delete_bearer_request__0,
         &ogs_gtp_tlv_desc_pti_0,
         &ogs_gtp_tlv_desc_pco_0,
         &ogs_gtp_tlv_desc_fq_csid_0,
         &ogs_gtp_tlv_desc_fq_csid_1,
         &ogs_gtp_tlv_desc_cause_0,
         &ogs_gtp_tlv_desc_indication_0,
-        &ogs_gtp_tlv_desc_load_control_information_0,
-        &ogs_gtp_tlv_desc_load_control_information_1,
-        &ogs_gtp_tlv_desc_load_control_information_2,
-        &ogs_gtp_tlv_desc_overload_control_information_0,
-        &ogs_gtp_tlv_desc_overload_control_information_1,
+        &ogs_gtp_tlv_desc_load_control_information__delete_bearer_request__0,
+        &ogs_gtp_tlv_desc_load_control_information__delete_bearer_request__1,
+        &ogs_gtp_tlv_desc_load_control_information__delete_bearer_request__2,
+        &ogs_gtp_tlv_desc_overload_control_information__delete_bearer_request__0,
+        &ogs_gtp_tlv_desc_overload_control_information__delete_bearer_request__1,
         &ogs_gtp_tlv_desc_f_container_0,
         &ogs_gtp_tlv_desc_apn_rate_control_status_0,
         &ogs_gtp_tlv_desc_epco_0,
@@ -2525,7 +5688,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_delete_bearer_response =
     0, 0, 0, 0, {
         &ogs_gtp_tlv_desc_cause_0,
         &ogs_gtp_tlv_desc_ebi_0,
-        &ogs_gtp_tlv_desc_bearer_context_0,
+        &ogs_gtp_tlv_desc_bearer_context__delete_bearer_response__0,
         &ogs_gtp_tlv_desc_recovery_0,
         &ogs_gtp_tlv_desc_fq_csid_0,
         &ogs_gtp_tlv_desc_fq_csid_1,
@@ -2537,10 +5700,10 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_delete_bearer_response =
         &ogs_gtp_tlv_desc_uli_timestamp_0,
         &ogs_gtp_tlv_desc_twan_identifier_0,
         &ogs_gtp_tlv_desc_twan_identifier_timestamp_0,
-        &ogs_gtp_tlv_desc_overload_control_information_0,
-        &ogs_gtp_tlv_desc_overload_control_information_1,
+        &ogs_gtp_tlv_desc_overload_control_information__delete_bearer_response__0,
+        &ogs_gtp_tlv_desc_overload_control_information__delete_bearer_response__1,
         &ogs_gtp_tlv_desc_ip_address_0,
-        &ogs_gtp_tlv_desc_overload_control_information_2,
+        &ogs_gtp_tlv_desc_overload_control_information__delete_bearer_response__2,
         &ogs_gtp_tlv_desc_twan_identifier_1,
         &ogs_gtp_tlv_desc_twan_identifier_timestamp_1,
         &ogs_gtp_tlv_desc_port_number_0,
@@ -2559,7 +5722,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_create_indirect_data_forwarding_tunnel_request =
         &ogs_gtp_tlv_desc_mei_0,
         &ogs_gtp_tlv_desc_indication_0,
         &ogs_gtp_tlv_desc_f_teid_0,
-        &ogs_gtp_tlv_desc_bearer_context_0,
+        &ogs_gtp_tlv_desc_bearer_context__create_indirect_data_forwarding_tunnel_request__0,
         &ogs_tlv_desc_more8,
         &ogs_gtp_tlv_desc_recovery_0,
     NULL,
@@ -2572,7 +5735,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_create_indirect_data_forwarding_tunnel_response 
     0, 0, 0, 0, {
         &ogs_gtp_tlv_desc_cause_0,
         &ogs_gtp_tlv_desc_f_teid_0,
-        &ogs_gtp_tlv_desc_bearer_context_0,
+        &ogs_gtp_tlv_desc_bearer_context__create_indirect_data_forwarding_tunnel_response__0,
         &ogs_tlv_desc_more8,
         &ogs_gtp_tlv_desc_recovery_0,
     NULL,
@@ -2616,8 +5779,8 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_release_access_bearers_response =
         &ogs_gtp_tlv_desc_cause_0,
         &ogs_gtp_tlv_desc_recovery_0,
         &ogs_gtp_tlv_desc_indication_0,
-        &ogs_gtp_tlv_desc_load_control_information_0,
-        &ogs_gtp_tlv_desc_overload_control_information_0,
+        &ogs_gtp_tlv_desc_load_control_information__release_access_bearers_response__0,
+        &ogs_gtp_tlv_desc_overload_control_information__release_access_bearers_response__0,
     NULL,
 }};
 
@@ -2632,8 +5795,8 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_downlink_data_notification =
         &ogs_gtp_tlv_desc_imsi_0,
         &ogs_gtp_tlv_desc_f_teid_0,
         &ogs_gtp_tlv_desc_indication_0,
-        &ogs_gtp_tlv_desc_load_control_information_0,
-        &ogs_gtp_tlv_desc_overload_control_information_0,
+        &ogs_gtp_tlv_desc_load_control_information__downlink_data_notification__0,
+        &ogs_gtp_tlv_desc_overload_control_information__downlink_data_notification__0,
         &ogs_gtp_tlv_desc_paging_and_service_information_0,
         &ogs_gtp_tlv_desc_integer_number_0,
     NULL,
@@ -2662,8 +5825,8 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_modify_access_bearers_request =
         &ogs_gtp_tlv_desc_indication_0,
         &ogs_gtp_tlv_desc_f_teid_0,
         &ogs_gtp_tlv_desc_delay_value_0,
-        &ogs_gtp_tlv_desc_bearer_context_0,
-        &ogs_gtp_tlv_desc_bearer_context_1,
+        &ogs_gtp_tlv_desc_bearer_context__modify_access_bearers_request__modified__0,
+        &ogs_gtp_tlv_desc_bearer_context__modify_access_bearers_request__removed__1,
         &ogs_gtp_tlv_desc_recovery_0,
         &ogs_gtp_tlv_desc_secondary_rat_usage_data_report_0,
     NULL,
@@ -2675,12 +5838,12 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_modify_access_bearers_response =
     "Modify Access Bearers Response",
     0, 0, 0, 0, {
         &ogs_gtp_tlv_desc_cause_0,
-        &ogs_gtp_tlv_desc_bearer_context_0,
-        &ogs_gtp_tlv_desc_bearer_context_1,
+        &ogs_gtp_tlv_desc_bearer_context__modify_access_bearers_response__modified__0,
+        &ogs_gtp_tlv_desc_bearer_context__modify_access_bearers_response__removal__1,
         &ogs_gtp_tlv_desc_recovery_0,
         &ogs_gtp_tlv_desc_indication_0,
-        &ogs_gtp_tlv_desc_load_control_information_0,
-        &ogs_gtp_tlv_desc_overload_control_information_0,
+        &ogs_gtp_tlv_desc_load_control_information__modify_access_bearers_response__0,
+        &ogs_gtp_tlv_desc_overload_control_information__modify_access_bearers_response__0,
     NULL,
 }};
 
@@ -2697,7 +5860,7 @@ int ogs_gtp_parse_msg(ogs_gtp_message_t *gtp_message, ogs_pkbuf_t *pkbuf)
 
     h = (ogs_gtp_header_t *)pkbuf->data;
     ogs_assert(h);
-    
+
     memset(gtp_message, 0, sizeof(ogs_gtp_message_t));
 
     if (h->teid_presence)
