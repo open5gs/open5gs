@@ -28,6 +28,7 @@ If you have tested radio hardware from a vendor not listed with Open5GS, please 
  * Baicells Neutrino
  * Baicells Nova 243
  * Baicells Nova 246
+ * Baicells Nova 249
  * Baicells Nova 436Q
  * Baicells Nova 227 (EBS & CBRS)
  * Baicells Nova 233
