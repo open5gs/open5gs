@@ -2,25 +2,6 @@
 
 If you find Open5GS useful for work, please consider supporting this Open Source project by [Becoming a sponsor](https://github.com/sponsors/acetcom). To manage the funding transactions transparently, you can donate through [OpenCollective](https://opencollective.com/open5gs).
 
-<h3 align="center">Special Sponsor</h3>
-<table>
-  <tbody>
-    <tr>
-      <td align="center" valign="middle">
-  <a href="https://nextepc.com/" target="_blank">
-    <img width="260px" src="https://open5gs.org/assets/img/nextepc_logo.jpg">
-  </a>
-      </td>
-      <td width="20px"></td>
-      <td align="center" valign="middle">
-  <a href="https://sdr.eee.strath.ac.uk/" target="_blank">
-    <img width="260px" src="https://open5gs.org/assets/img/strath.png">
-  </a>
-      </td>
-    </tr>
-  </tbody>
-</table>
-
 <h3 align="center">Sponsors</h3>
 <table>
   <tbody>
@@ -31,8 +12,20 @@ If you find Open5GS useful for work, please consider supporting this Open Source
         </a>
       </td>
       <td align="center" valign="middle" width="222px">
+        <a href="https://nextepc.com/" target="_blank">
+          <img src="https://open5gs.org/assets/img/nextepc_logo.jpg">
+        </a>
+      </td>
+      <td align="center" valign="middle" width="222px">
         <a href="https://www.wearetriple.com/" target="_blank">
           <img src="https://open5gs.org/assets/img/triple_logo.png">
+        </a>
+      </td>
+    </tr>
+    <tr>
+      <td align="center" valign="middle" width="222px">
+        <a href="https://sdr.eee.strath.ac.uk/" target="_blank">
+          <img src="https://open5gs.org/assets/img/strath.png">
         </a>
       </td>
       <td align="center" valign="middle" width="222px">
@@ -40,13 +33,13 @@ If you find Open5GS useful for work, please consider supporting this Open Source
           <img src="https://open5gs.org/assets/img/SkylarkWireless-420x78-Web2-R.png">
         </a>
       </td>
-    </tr>
-    <tr>
       <td align="center" valign="middle" width="222px">
         <a href="https://sysmocom.de/" target="_blank">
           <img src="https://open5gs.org/assets/img/sysmocom-logo-only.png">
         </a>
       </td>
+    </tr>
+    <tr>
       <td align="center" valign="middle" width="222px">
         <a href="https://www.p1sec.com/" target="_blank">
           <img src="https://open5gs.org/assets/img/2021-logo-P1.svg">
@@ -55,6 +48,11 @@ If you find Open5GS useful for work, please consider supporting this Open Source
       <td align="center" valign="middle" width="222px">
         <a href="https://www.ng-voice.com/" target="_blank">
           <img src="https://open5gs.org/assets/img/ng-voice-logo_color.png">
+        </a>
+      </td>
+      <td align="center" valign="middle" width="222px">
+        <a href="https://www.peratonlabs.com/" target="_blank">
+          <img src="https://open5gs.org/assets/img/peraton-labs-logo-full-color.png">
         </a>
       </td>
     </tr>
