@@ -435,9 +435,17 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
         s6a_message = (ogs_diam_s6a_message_t *)s6abuf->data;
         ogs_assert(s6a_message);
 
-        if (s6a_message->result_code != ER_DIAMETER_SUCCESS) {
-            enb_ue_t *enb_ue = NULL;
+        enb_ue = enb_ue_cycle(mme_ue->enb_ue);
+        if (!enb_ue) {
+            ogs_error("S1 context has already been removed");
 
+            ogs_subscription_data_free(
+                    &s6a_message->ula_message.subscription_data);
+            ogs_pkbuf_free(s6abuf);
+            break;
+        }
+
+        if (s6a_message->result_code != ER_DIAMETER_SUCCESS) {
             /* Unfortunately fd doesn't distinguish
              * between result-code and experimental-result-code.
              *
@@ -451,9 +459,6 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
             ogs_assert(OGS_OK ==
                 nas_eps_send_attach_reject(mme_ue,
                     emm_cause, ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED));
-
-            enb_ue = enb_ue_cycle(mme_ue->enb_ue);
-            ogs_assert(enb_ue);
 
             ogs_assert(OGS_OK ==
                 s1ap_send_ue_context_release_command(enb_ue,
