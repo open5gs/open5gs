@@ -30,7 +30,10 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_setup_request_transfer(
         smf_sess_t *sess);
 
 ogs_pkbuf_t *ngap_build_qos_flow_resource_modify_request_transfer(
-        smf_bearer_t *qos_flow);
+        smf_bearer_t *qos_flow, bool qos_presence);
+
+ogs_pkbuf_t *ngap_build_qos_flow_resource_release_request_transfer(
+        smf_bearer_t *qos_flow, NGAP_Cause_PR group, long cause);
 
 ogs_pkbuf_t *ngap_build_pdu_session_resource_release_command_transfer(
         smf_sess_t *sess, int state, NGAP_Cause_PR group, long cause);

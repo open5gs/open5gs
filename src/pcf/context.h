@@ -122,8 +122,6 @@ struct pcf_sess_s {
         uint8_t addr6[OGS_IPV6_LEN];
     } ipv6prefix;
 
-    char *app_session_id;
-
     ogs_s_nssai_t s_nssai;
 
     /* SBI Features */
@@ -134,9 +132,27 @@ struct pcf_sess_s {
     OpenAPI_ambr_t *subscribed_sess_ambr;
     OpenAPI_subscribed_default_qos_t *subscribed_default_qos;
 
+    ogs_list_t app_list;
+
     /* Related Context */
     pcf_ue_t *pcf_ue;
 };
+
+typedef struct pcf_app_s {
+    ogs_lnode_t lnode;
+
+    char *app_session_id;
+
+    char *notif_uri;
+    struct {
+        ogs_sbi_client_t *client;
+    } naf;
+
+    ogs_pcc_rule_t pcc_rule[OGS_MAX_NUM_OF_PCC_RULE];
+    int num_of_pcc_rule;
+
+    pcf_sess_t *sess;
+} pcf_app_t;
 
 void pcf_context_init(void);
 void pcf_context_final(void);
@@ -159,7 +175,6 @@ bool pcf_sess_set_ipv6prefix(pcf_sess_t *sess, char *ipv6prefix);
 
 pcf_sess_t *pcf_sess_find(uint32_t index);
 pcf_sess_t *pcf_sess_find_by_sm_policy_id(char *sm_policy_id);
-pcf_sess_t *pcf_sess_find_by_app_session_id(char *app_session_id);
 pcf_sess_t *pcf_sess_find_by_psi(pcf_ue_t *pcf_ue, uint8_t psi);
 pcf_sess_t *pcf_sess_find_by_dnn(pcf_ue_t *pcf_ue, char *dnn);
 pcf_sess_t *pcf_sess_find_by_ipv4addr(char *ipv4addr_string);
@@ -171,6 +186,12 @@ pcf_sess_t *pcf_sess_cycle(pcf_sess_t *sess);
 
 void pcf_ue_select_nf(pcf_ue_t *pcf_ue, OpenAPI_nf_type_e nf_type);
 void pcf_sess_select_nf(pcf_sess_t *sess, OpenAPI_nf_type_e nf_type);
+
+pcf_app_t *pcf_app_add(pcf_sess_t *sess);
+int pcf_app_remove(pcf_app_t *app);
+void pcf_app_remove_all(pcf_sess_t *sess);
+pcf_app_t *pcf_app_find(uint32_t index);
+pcf_app_t *pcf_app_find_by_app_session_id(char *app_session_id);
 
 #ifdef __cplusplus
 }

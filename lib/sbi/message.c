@@ -161,6 +161,12 @@ void ogs_sbi_message_free(ogs_sbi_message_t *message)
         OpenAPI_pcf_binding_free(message->PcfBinding);
     if (message->AppSessionContext)
         OpenAPI_app_session_context_free(message->AppSessionContext);
+    if (message->AppSessionContextUpdateDataPatch)
+        OpenAPI_app_session_context_update_data_patch_free(message->AppSessionContextUpdateDataPatch);
+    if (message->SmPolicyNotification)
+        OpenAPI_sm_policy_notification_free(message->SmPolicyNotification);
+    if (message->TerminationNotification)
+        OpenAPI_termination_notification_free(message->TerminationNotification);
 
     for (i = 0; i < message->num_of_part; i++) {
         if (message->part[i].pkbuf)
@@ -874,6 +880,18 @@ static char *build_json(ogs_sbi_message_t *message)
     } else if (message->AppSessionContext) {
         item = OpenAPI_app_session_context_convertToJSON(
                 message->AppSessionContext);
+        ogs_assert(item);
+    } else if (message->AppSessionContextUpdateDataPatch) {
+        item = OpenAPI_app_session_context_update_data_patch_convertToJSON(
+                message->AppSessionContextUpdateDataPatch);
+        ogs_assert(item);
+    } else if (message->SmPolicyNotification) {
+        item = OpenAPI_sm_policy_notification_convertToJSON(
+                message->SmPolicyNotification);
+        ogs_assert(item);
+    } else if (message->TerminationNotification) {
+        item = OpenAPI_termination_notification_convertToJSON(
+                message->TerminationNotification);
         ogs_assert(item);
     }
 
@@ -1608,14 +1626,30 @@ static int parse_json(ogs_sbi_message_t *message,
             SWITCH(message->h.resource.component[0])
             CASE(OGS_SBI_RESOURCE_NAME_APP_SESSIONS)
                 if (message->h.resource.component[1]) {
-                    SWITCH(message->h.method)
-                    CASE(OGS_SBI_HTTP_METHOD_DELETE)
-                        break;
-                    DEFAULT
-                        rv = OGS_ERROR;
-                        ogs_error("Unknown method [%s]", message->h.method);
-                    END
-                    break;
+                    if (message->h.resource.component[2]) {
+                        SWITCH(message->h.resource.component[2])
+                        CASE(OGS_SBI_RESOURCE_NAME_DELETE)
+                            /* Nothing */
+                            break;
+                        DEFAULT
+                            rv = OGS_ERROR;
+                            ogs_error("JSON parse error");
+                        END
+                    } else {
+                        SWITCH(message->h.method)
+                        CASE(OGS_SBI_HTTP_METHOD_PATCH)
+                            message->AppSessionContextUpdateDataPatch =
+                                OpenAPI_app_session_context_update_data_patch_parseFromJSON(item);
+                            if (!message->AppSessionContextUpdateDataPatch) {
+                                rv = OGS_ERROR;
+                                ogs_error("JSON parse error");
+                            }
+                            break;
+                        DEFAULT
+                            rv = OGS_ERROR;
+                            ogs_error("JSON parse error");
+                        END
+                    }
                 } else {
                     SWITCH(message->h.method)
                     CASE(OGS_SBI_HTTP_METHOD_POST)
@@ -1630,14 +1664,12 @@ static int parse_json(ogs_sbi_message_t *message,
                             }
                         }
                         break;
-
                     DEFAULT
                         rv = OGS_ERROR;
                         ogs_error("Unknown method [%s]", message->h.method);
                     END
-                    break;
                 }
-
+                break;
             DEFAULT
                 rv = OGS_ERROR;
                 ogs_error("Unknown resource name [%s]",
@@ -1675,10 +1707,36 @@ static int parse_json(ogs_sbi_message_t *message,
                 }
                 break;
 
+            CASE(OGS_SBI_RESOURCE_NAME_SM_POLICY_NOTIFY)
+                SWITCH(message->h.resource.component[2])
+                CASE(OGS_SBI_RESOURCE_NAME_UPDATE)
+                    message->SmPolicyNotification =
+                        OpenAPI_sm_policy_notification_parseFromJSON(item);
+                    if (!message->SmPolicyNotification) {
+                        rv = OGS_ERROR;
+                        ogs_error("JSON parse error");
+                    }
+                    break;
+                CASE(OGS_SBI_RESOURCE_NAME_TERMINATE)
+                    message->TerminationNotification =
+                        OpenAPI_termination_notification_parseFromJSON(item);
+                    if (!message->TerminationNotification) {
+                        rv = OGS_ERROR;
+                        ogs_error("JSON parse error");
+                    }
+                    break;
+
+                DEFAULT
+                    rv = OGS_ERROR;
+                    ogs_error("Unknown resource name [%s]",
+                            message->h.resource.component[2]);
+                END
+                break;
+
             DEFAULT
                 rv = OGS_ERROR;
                 ogs_error("Unknown resource name [%s]",
-                        message->h.resource.component[1]);
+                        message->h.resource.component[0]);
             END
             break;
 

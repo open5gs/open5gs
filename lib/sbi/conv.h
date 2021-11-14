@@ -76,6 +76,12 @@ bool ogs_sbi_parse_nr_location(ogs_5gs_tai_t *tai, ogs_nr_cgi_t *nr_cgi,
         OpenAPI_nr_location_t *NrLocation);
 void ogs_sbi_free_nr_location(OpenAPI_nr_location_t *NrLocation);
 
+OpenAPI_pcc_rule_t *ogs_sbi_build_pcc_rule(
+        ogs_pcc_rule_t *pcc_rule, int flow_presence);
+void ogs_sbi_free_pcc_rule(OpenAPI_pcc_rule_t *PccRule);
+OpenAPI_qos_data_t *ogs_sbi_build_qos_data(ogs_pcc_rule_t *pcc_rule);
+void ogs_sbi_free_qos_data(OpenAPI_qos_data_t *QosData);
+
 #ifdef __cplusplus
 }
 #endif

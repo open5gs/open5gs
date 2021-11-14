@@ -62,12 +62,6 @@ static void pcrf_gx_raa_cb(void *data, struct msg **msg);
 
 static int encode_pcc_rule_definition(
         struct avp *avp, ogs_pcc_rule_t *pcc_rule, int flow_presence);
-static int matched_flow(ogs_pcc_rule_t *pcc_rule,
-        ogs_media_component_t *media_component);
-static int install_flow(ogs_pcc_rule_t *pcc_rule,
-        ogs_media_component_t *media_component);
-static int update_qos(ogs_pcc_rule_t *pcc_rule,
-        ogs_media_component_t *media_component);
 
 static __inline__ struct sess_state *new_state(os0_t sid)
 {
@@ -654,7 +648,6 @@ int pcrf_gx_send_rar(
 {
     int rv;
     int ret = 0, i, j;
-    int count = 0;
 
     struct msg *req = NULL;
     struct avp *avp, *avpch1;
@@ -749,10 +742,6 @@ int pcrf_gx_send_rar(
             ogs_media_component_t *media_component =
                 &rx_message->ims_data.media_component[i];
 
-            if (media_component->media_component_number == 0) {
-                continue;
-            }
-
             switch(media_component->media_type) {
             case OGS_DIAM_RX_MEDIA_TYPE_AUDIO:
                 qos_index = OGS_QOS_INDEX_1;
@@ -832,7 +821,8 @@ int pcrf_gx_send_rar(
 
                 /* Install Flow */
                 flow_presence = 1;
-                rv = install_flow(pcc_rule, media_component);
+                rv = ogs_pcc_rule_install_flow_from_media(
+                        pcc_rule, media_component);
                 if (rv != OGS_OK) {
                     rx_message->result_code =
                         OGS_DIAM_RX_DIAMETER_FILTER_RESTRICTIONS;
@@ -842,8 +832,11 @@ int pcrf_gx_send_rar(
 
                 rx_sess_data->num_of_pcc_rule++;
             } else {
+                int count = 0;
+
                 /* Check Flow */
-                count = matched_flow(pcc_rule, media_component);
+                count = ogs_pcc_rule_num_of_flow_equal_to_media(
+                        pcc_rule, media_component);
                 if (count == -1) {
                     rx_message->result_code =
                         OGS_DIAM_RX_DIAMETER_FILTER_RESTRICTIONS;
@@ -854,7 +847,8 @@ int pcrf_gx_send_rar(
                 if (pcc_rule->num_of_flow != count) {
                     /* Re-install Flow */
                     flow_presence = 1;
-                    rv = install_flow(pcc_rule, media_component);
+                    rv = ogs_pcc_rule_install_flow_from_media(
+                            pcc_rule, media_component);
                     if (rv != OGS_OK) {
                         rx_message->result_code = 
                             OGS_DIAM_RX_DIAMETER_FILTER_RESTRICTIONS;
@@ -865,7 +859,7 @@ int pcrf_gx_send_rar(
             }
 
             /* Update QoS */
-            rv = update_qos(pcc_rule, media_component);
+            rv = ogs_pcc_rule_update_qos_from_media(pcc_rule, media_component);
             if (rv != OGS_OK) {
                 rx_message->result_code =
                     OGS_DIAM_RX_DIAMETER_REQUESTED_SERVICE_NOT_AUTHORIZED;
@@ -1359,297 +1353,5 @@ static int encode_pcc_rule_definition(
     ret = fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD, avpch1);
     ogs_assert(ret == 0);
     
-    return OGS_OK;
-}
-
-static int flow_rx_to_gx(ogs_flow_t *rx_flow, ogs_flow_t *gx_flow)
-{
-    int len;
-    char *from_str, *to_str;
-
-    ogs_assert(rx_flow);
-    ogs_assert(gx_flow);
-
-    if (!strncmp(rx_flow->description,
-                "permit out", strlen("permit out"))) {
-        gx_flow->direction = OGS_FLOW_DOWNLINK_ONLY;
-        gx_flow->description = ogs_strdup(rx_flow->description);
-        ogs_assert(gx_flow->description);
-
-    } else if (!strncmp(rx_flow->description,
-                "permit in", strlen("permit in"))) {
-        gx_flow->direction = OGS_FLOW_UPLINK_ONLY;
-
-        /* 'permit in' should be changed
-         * 'permit out' in Gx Diameter */
-        len = strlen(rx_flow->description)+2;
-        gx_flow->description = ogs_malloc(len);
-        ogs_assert(gx_flow->description);
-        strcpy(gx_flow->description, "permit out");
-        from_str = strstr(&rx_flow->description[strlen("permit in")], "from");
-        ogs_assert(from_str);
-        to_str = strstr(&rx_flow->description[strlen("permit in")], "to");
-        ogs_assert(to_str);
-        strncat(gx_flow->description,
-            &rx_flow->description[strlen("permit in")],
-            strlen(rx_flow->description) -
-                strlen("permit in") - strlen(from_str));
-        strcat(gx_flow->description, "from");
-        strcat(gx_flow->description, &to_str[strlen("to")]);
-        strcat(gx_flow->description, " to");
-        strncat(gx_flow->description, &from_str[strlen("from")],
-                strlen(from_str) - strlen(to_str) - strlen("from") - 1);
-        ogs_assert(len == strlen(gx_flow->description)+1);
-    } else {
-        ogs_error("Invalid Flow Descripton : [%s]", rx_flow->description);
-        return OGS_ERROR;
-    }
-
-    return OGS_OK;
-}
-
-static int matched_flow(ogs_pcc_rule_t *pcc_rule,
-        ogs_media_component_t *media_component)
-{
-    int rv;
-    int i, j, k;
-    int matched = 0;
-    int new = 0;
-
-    ogs_assert(pcc_rule);
-    ogs_assert(media_component);
-
-    for (i = 0; i < media_component->num_of_sub; i++) {
-        ogs_media_sub_component_t *sub = &media_component->sub[i];
-
-        if (sub->flow_number == 0) {
-            continue;
-        }
-
-        for (j = 0; j < sub->num_of_flow; j++) {
-            new++;
-        }
-    }
-
-    if (new == 0) {
-        /* No new flow in Media-Component */
-        return pcc_rule->num_of_flow;
-    }
-
-    for (i = 0; i < media_component->num_of_sub; i++) {
-        ogs_media_sub_component_t *sub = &media_component->sub[i];
-
-        if (sub->flow_number == 0) {
-            continue;
-        }
-
-        for (j = 0; j < sub->num_of_flow &&
-                    j < OGS_MAX_NUM_OF_FLOW_IN_MEDIA_SUB_COMPONENT; j++) {
-            ogs_flow_t gx_flow;
-            ogs_flow_t *rx_flow = &sub->flow[j];
-
-            rv = flow_rx_to_gx(rx_flow, &gx_flow);
-            if (rv != OGS_OK) {
-                ogs_error("flow reformatting error");
-                return OGS_ERROR;
-            }
-
-            for (k = 0; k < pcc_rule->num_of_flow; k++) {
-                if (gx_flow.direction == pcc_rule->flow[k].direction &&
-                    !strcmp(gx_flow.description,
-                        pcc_rule->flow[k].description)) {
-                    matched++;
-                    break;
-                }
-            }
-
-            OGS_FLOW_FREE(&gx_flow);
-        }
-    }
-
-    return matched;
-}
-
-static int install_flow(ogs_pcc_rule_t *pcc_rule,
-        ogs_media_component_t *media_component)
-{
-    int rv;
-    int i, j;
-
-    ogs_assert(pcc_rule);
-    ogs_assert(media_component);
-
-    /* Remove Flow from PCC Rule */
-    for (i = 0; i < pcc_rule->num_of_flow; i++) {
-        OGS_FLOW_FREE(&pcc_rule->flow[i]);
-    }
-    pcc_rule->num_of_flow = 0;
-
-    for (i = 0; i < media_component->num_of_sub; i++) {
-        ogs_media_sub_component_t *sub = &media_component->sub[i];
-
-        if (sub->flow_number == 0) {
-            continue;
-        }
-
-        /* Copy Flow to PCC Rule */
-        for (j = 0; j < sub->num_of_flow &&
-                    j < OGS_MAX_NUM_OF_FLOW_IN_MEDIA_SUB_COMPONENT; j++) {
-            ogs_flow_t *rx_flow = NULL;
-            ogs_flow_t *gx_flow = NULL;
-
-            if (pcc_rule->num_of_flow < OGS_MAX_NUM_OF_FLOW_IN_PCC_RULE) {
-                rx_flow = &sub->flow[j];
-                gx_flow = &pcc_rule->flow[pcc_rule->num_of_flow];
-
-                rv = flow_rx_to_gx(rx_flow, gx_flow);
-                if (rv != OGS_OK) {
-                    ogs_error("flow reformatting error");
-                    return OGS_ERROR;
-                }
-
-                pcc_rule->num_of_flow++;
-            } else {
-                ogs_error("Overflow: Number of Flow");
-                return OGS_ERROR;
-            }
-        }
-    }
-
-    return OGS_OK;
-}
-
-static int update_qos(ogs_pcc_rule_t *pcc_rule,
-        ogs_media_component_t *media_component)
-{
-    int rv;
-    int i, j;
-
-    ogs_assert(pcc_rule);
-    ogs_assert(media_component);
-
-    pcc_rule->qos.mbr.downlink = 0;
-    pcc_rule->qos.mbr.uplink = 0;
-    pcc_rule->qos.gbr.downlink = 0;
-    pcc_rule->qos.gbr.uplink = 0;
-
-    for (i = 0; i < media_component->num_of_sub; i++) {
-        ogs_media_sub_component_t *sub = &media_component->sub[i];
-
-        if (sub->flow_number == 0) {
-            continue;
-        }
-
-        for (j = 0; j < sub->num_of_flow &&
-                    j < OGS_MAX_NUM_OF_FLOW_IN_MEDIA_SUB_COMPONENT; j++) {
-            ogs_flow_t gx_flow;
-            ogs_flow_t *rx_flow = &sub->flow[j];
-
-            rv = flow_rx_to_gx(rx_flow, &gx_flow);
-            if (rv != OGS_OK) {
-                ogs_error("flow reformatting error");
-                return OGS_ERROR;
-            }
-
-            if (gx_flow.direction == OGS_FLOW_DOWNLINK_ONLY) {
-                if (sub->flow_usage == OGS_DIAM_RX_FLOW_USAGE_RTCP) {
-                    if (media_component->rr_bandwidth && 
-                        media_component->rs_bandwidth) {
-                        pcc_rule->qos.mbr.downlink +=
-                            (media_component->rr_bandwidth +
-                            media_component->rs_bandwidth);
-                    } else if (media_component->max_requested_bandwidth_dl) {
-                        if (media_component->rr_bandwidth && 
-                            !media_component->rs_bandwidth) {
-                            pcc_rule->qos.mbr.downlink +=
-                                ogs_max(0.05 *
-                                    media_component->max_requested_bandwidth_dl,
-                                    media_component->rr_bandwidth);
-                        }
-                        if (!media_component->rr_bandwidth && 
-                            media_component->rs_bandwidth) {
-                            pcc_rule->qos.mbr.downlink +=
-                                ogs_max(0.05 *
-                                    media_component->max_requested_bandwidth_dl,
-                                    media_component->rs_bandwidth);
-                        }
-                        if (!media_component->rr_bandwidth && 
-                            !media_component->rs_bandwidth) {
-                            pcc_rule->qos.mbr.downlink +=
-                                0.05 *
-                                    media_component->max_requested_bandwidth_dl;
-                        }
-                    }
-                } else {
-                    if (gx_flow.description) {
-                        pcc_rule->qos.mbr.downlink +=
-                            media_component->max_requested_bandwidth_dl;
-                        pcc_rule->qos.gbr.downlink +=
-                            media_component->min_requested_bandwidth_dl;
-                    }
-                }
-            } else if (gx_flow.direction == OGS_FLOW_UPLINK_ONLY) {
-                if (sub->flow_usage == OGS_DIAM_RX_FLOW_USAGE_RTCP) {
-                    if (media_component->rr_bandwidth && 
-                        media_component->rs_bandwidth) {
-                        pcc_rule->qos.mbr.uplink +=
-                            (media_component->rr_bandwidth +
-                            media_component->rs_bandwidth);
-                    } else if (media_component->max_requested_bandwidth_ul) {
-                        if (media_component->rr_bandwidth && 
-                            !media_component->rs_bandwidth) {
-                            pcc_rule->qos.mbr.uplink +=
-                                ogs_max(0.05 *
-                                    media_component->max_requested_bandwidth_ul,
-                                    media_component->rr_bandwidth);
-                        }
-                        if (!media_component->rr_bandwidth && 
-                            media_component->rs_bandwidth) {
-                            pcc_rule->qos.mbr.uplink +=
-                                ogs_max(0.05 *
-                                    media_component->max_requested_bandwidth_ul,
-                                    media_component->rs_bandwidth);
-                        }
-                        if (!media_component->rr_bandwidth && 
-                            !media_component->rs_bandwidth) {
-                            pcc_rule->qos.mbr.uplink +=
-                                0.05 *
-                                    media_component->max_requested_bandwidth_ul;
-                        }
-                    }
-                } else {
-                    if (gx_flow.description) {
-                        pcc_rule->qos.mbr.uplink +=
-                            media_component->max_requested_bandwidth_ul;
-                        pcc_rule->qos.gbr.uplink +=
-                            media_component->min_requested_bandwidth_ul;
-                    }
-                }
-            } else
-                ogs_assert_if_reached();
-
-            OGS_FLOW_FREE(&gx_flow);
-        }
-    }
-
-    if (pcc_rule->qos.mbr.downlink == 0) {
-        pcc_rule->qos.mbr.downlink +=
-            media_component->max_requested_bandwidth_dl;
-        pcc_rule->qos.mbr.downlink +=
-            (media_component->rr_bandwidth + media_component->rs_bandwidth);
-    }
-
-    if (pcc_rule->qos.mbr.uplink == 0) {
-        pcc_rule->qos.mbr.uplink +=
-            media_component->max_requested_bandwidth_ul;
-        pcc_rule->qos.mbr.uplink +=
-            (media_component->rr_bandwidth + media_component->rs_bandwidth);
-    }
-
-    if (pcc_rule->qos.gbr.downlink == 0)
-        pcc_rule->qos.gbr.downlink = pcc_rule->qos.mbr.downlink;
-    if (pcc_rule->qos.gbr.uplink == 0)
-        pcc_rule->qos.gbr.uplink = pcc_rule->qos.mbr.uplink;
-
     return OGS_OK;
 }

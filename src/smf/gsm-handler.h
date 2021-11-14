@@ -31,6 +31,11 @@ int gsm_handle_pdu_session_establishment_request(
         ogs_nas_5gs_pdu_session_establishment_request_t *
             pdu_session_establishment_request);
 
+int gsm_handle_pdu_session_modification_request(
+        smf_sess_t *sess, ogs_sbi_stream_t *stream,
+        ogs_nas_5gs_pdu_session_modification_request_t *
+            pdu_session_modification_request);
+
 #ifdef __cplusplus
 }
 #endif

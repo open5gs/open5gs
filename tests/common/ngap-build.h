@@ -49,7 +49,9 @@ ogs_pkbuf_t *testngap_ue_build_pdu_session_resource_setup_response(
         test_ue_t *test_ue);
 ogs_pkbuf_t *testngap_sess_build_pdu_session_resource_setup_response(
         test_sess_t *sess);
-ogs_pkbuf_t *testngap_build_pdu_session_resource_modify_response(
+ogs_pkbuf_t *testngap_build_qos_flow_resource_modify_response(
+        test_bearer_t *qos_flow);
+ogs_pkbuf_t *testngap_build_qos_flow_resource_release_response(
         test_bearer_t *qos_flow);
 ogs_pkbuf_t *testngap_build_pdu_session_resource_release_response(
         test_sess_t *sess);

@@ -26,6 +26,9 @@ extern "C" {
 
 ogs_pkbuf_t *testgsm_build_pdu_session_establishment_request(
         test_sess_t *test_sess);
+ogs_pkbuf_t *testgsm_build_pdu_session_modification_request(
+        test_bearer_t *bearer, uint8_t gsm_cause,
+        uint8_t qos_rule_code, uint8_t qos_flow_description_code);
 ogs_pkbuf_t *testgsm_build_pdu_session_modification_complete(
         test_sess_t *test_sess);
 ogs_pkbuf_t *testgsm_build_pdu_session_release_request(test_sess_t *test_sess);

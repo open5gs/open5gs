@@ -1423,9 +1423,9 @@ void smf_sess_remove(smf_sess_t *sess)
 
     OGS_NAS_CLEAR_DATA(&sess->nas.ue_pco);
 
-    for (i = 0; i < sess->num_of_pcc_rule; i++)
-        OGS_PCC_RULE_FREE(&sess->pcc_rule[i]);
-    sess->num_of_pcc_rule = 0;
+    for (i = 0; i < sess->policy.num_of_pcc_rule; i++)
+        OGS_PCC_RULE_FREE(&sess->policy.pcc_rule[i]);
+    sess->policy.num_of_pcc_rule = 0;
 
     if (sess->ipv4) {
         ogs_hash_set(self.ipv4_hash, sess->ipv4->addr, OGS_IPV4_LEN, NULL);
@@ -1582,6 +1582,23 @@ smf_sess_t *smf_sess_find_by_paging_n1n2message_location(
     ogs_assert(n1n2message_location);
     return (smf_sess_t *)ogs_hash_get(self.n1n2message_hash,
             n1n2message_location, strlen(n1n2message_location));
+}
+
+ogs_pcc_rule_t *smf_pcc_rule_find_by_id(smf_sess_t *sess, char *pcc_rule_id)
+{
+    int i;
+
+    ogs_assert(sess);
+    ogs_assert(pcc_rule_id);
+
+    for (i = 0; i < sess->policy.num_of_pcc_rule; i++) {
+        ogs_pcc_rule_t *pcc_rule = &sess->policy.pcc_rule[i];
+        if (pcc_rule->id && strcmp(pcc_rule->id, pcc_rule_id) == 0) {
+            return pcc_rule;
+        }
+    }
+
+    return NULL;
 }
 
 smf_bearer_t *smf_qos_flow_add(smf_sess_t *sess)
@@ -2138,6 +2155,69 @@ smf_bearer_t *smf_bearer_find_by_pdr_id(
     }
 
     return NULL;
+}
+
+void smf_bearer_tft_update(smf_bearer_t *bearer)
+{
+    smf_pf_t *pf = NULL;
+    ogs_pfcp_pdr_t *dl_pdr = NULL, *ul_pdr = NULL;
+
+    ogs_assert(bearer);
+
+    dl_pdr = bearer->dl_pdr;
+    ogs_assert(dl_pdr);
+    ul_pdr = bearer->ul_pdr;
+    ogs_assert(ul_pdr);
+
+    dl_pdr->num_of_flow = 0;
+    ul_pdr->num_of_flow = 0;
+
+    ogs_list_for_each(&bearer->pf_list, pf) {
+        if (pf->direction == OGS_FLOW_DOWNLINK_ONLY) {
+            dl_pdr->flow_description[dl_pdr->num_of_flow++] =
+                pf->flow_description;
+
+        } else if (pf->direction == OGS_FLOW_UPLINK_ONLY) {
+            ul_pdr->flow_description[ul_pdr->num_of_flow++] =
+                pf->flow_description;
+        } else {
+            ogs_assert_if_reached();
+            ogs_fatal("Flow Bidirectional is not supported[%d]",
+                    pf->direction);
+        }
+    }
+}
+
+void smf_bearer_qos_update(smf_bearer_t *bearer)
+{
+    smf_sess_t *sess = NULL;
+
+    ogs_pfcp_pdr_t *dl_pdr = NULL, *ul_pdr = NULL;
+    ogs_pfcp_qer_t *qer = NULL;
+
+    ogs_assert(bearer);
+    sess = bearer->sess;
+    ogs_assert(sess);
+
+    dl_pdr = bearer->dl_pdr;
+    ogs_assert(dl_pdr);
+    ul_pdr = bearer->ul_pdr;
+    ogs_assert(ul_pdr);
+
+    qer = bearer->qer;
+    if (!qer) {
+        qer = ogs_pfcp_qer_add(&sess->pfcp);
+        ogs_assert(qer);
+        bearer->qer = qer;
+    }
+
+    ogs_pfcp_pdr_associate_qer(dl_pdr, qer);
+    ogs_pfcp_pdr_associate_qer(ul_pdr, qer);
+
+    qer->mbr.uplink = bearer->qos.mbr.uplink;
+    qer->mbr.downlink = bearer->qos.mbr.downlink;
+    qer->gbr.uplink = bearer->qos.gbr.uplink;
+    qer->gbr.downlink = bearer->qos.gbr.downlink;
 }
 
 smf_bearer_t *smf_default_bearer_in_sess(smf_sess_t *sess)

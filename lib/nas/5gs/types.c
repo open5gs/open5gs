@@ -444,6 +444,77 @@ int ogs_nas_build_qos_flow_descriptions(
     return OGS_OK;
 }
 
+int ogs_nas_parse_qos_flow_descriptions(
+        ogs_nas_qos_flow_description_t *description,
+        ogs_nas_qos_flow_descriptions_t *descriptions)
+{
+    ogs_nas_qos_flow_description_t *first = description;
+
+    char *buffer;
+    uint16_t length, size = 0;
+    int i;
+
+    ogs_assert(description);
+    ogs_assert(descriptions);
+    ogs_assert(descriptions->length);
+    length = descriptions->length;
+    ogs_assert(descriptions->buffer);
+    buffer = descriptions->buffer;
+
+    size = 0;
+    while (size < length) {
+        memset(description, 0, sizeof(*description));
+
+        ogs_assert(size+3 <= length);
+        memcpy(description, buffer+size, 3);
+        size += 3;
+
+        for (i = 0; i < description->num_of_parameter &&
+                    i < OGS_NAS_MAX_NUM_OF_QOS_FLOW_PARAMETER; i++) {
+            ogs_assert(size+sizeof(description->param[i].identifier) <= length);
+            memcpy(&description->param[i].identifier, buffer+size,
+                    sizeof(description->param[i].identifier));
+            size += sizeof(description->param[i].identifier);
+
+            ogs_assert(size+sizeof(description->param[i].len) <= length);
+            memcpy(&description->param[i].len, buffer+size,
+                    sizeof(description->param[i].len));
+            size += sizeof(description->param[i].len);
+
+            switch(description->param[i].identifier) {
+            case OGS_NAX_QOS_FLOW_PARAMETER_ID_5QI:
+                ogs_assert(description->param[i].len == 1);
+                ogs_assert(size+description->param[i].len <= length);
+                memcpy(&description->param[i].qos_index,
+                        buffer+size, description->param[i].len);
+                size += description->param[i].len;
+                break;
+
+            case OGS_NAX_QOS_FLOW_PARAMETER_ID_GFBR_UPLINK:
+            case OGS_NAX_QOS_FLOW_PARAMETER_ID_GFBR_DOWNLINK:
+            case OGS_NAX_QOS_FLOW_PARAMETER_ID_MFBR_UPLINK:
+            case OGS_NAX_QOS_FLOW_PARAMETER_ID_MFBR_DOWNLINK:
+                ogs_assert(description->param[i].len == 3);
+                ogs_assert(size+description->param[i].len <= length);
+                memcpy(&description->param[i].br,
+                        buffer+size, description->param[i].len);
+                description->param[i].br.value =
+                    be16toh(description->param[i].br.value);
+                size += description->param[i].len;
+                break;
+            default:
+                ogs_fatal("Unknown qos_flow parameter identifier [%d]",
+                        description->param[i].identifier);
+                ogs_assert_if_reached();
+            }
+        }
+
+        description++;
+    }
+
+    return (int)(description-first);
+}
+
 int ogs_nas_build_qos_rules(ogs_nas_qos_rules_t *rules,
         ogs_nas_qos_rule_t *rule, int num_of_rule)
 {
@@ -471,7 +542,6 @@ int ogs_nas_build_qos_rules(ogs_nas_qos_rules_t *rules,
         memcpy(buffer + length, &target.identifier, sizeof(target.identifier));
         length += sizeof(target.identifier);
 
-
         ogs_assert(length + sizeof(target.length) <=
                 OGS_NAS_MAX_QOS_RULES_LEN);
 
@@ -484,6 +554,16 @@ int ogs_nas_build_qos_rules(ogs_nas_qos_rules_t *rules,
         memcpy(buffer + length, &target.flags, sizeof(target.flags));
         length += sizeof(target.flags);
 
+        if (rule->code == OGS_NAS_QOS_CODE_DELETE_EXISTING_QOS_RULE ||
+            rule->code == OGS_NAS_QOS_CODE_MODIFY_EXISTING_QOS_RULE_WITHOUT_MODIFYING_PACKET_FILTERS) {
+            if (target.num_of_packet_filter != 0) {
+                ogs_fatal("Invalue QoS rule code[%d] "
+                        "and number of packet filter[%d]",
+                        rule->code, target.num_of_packet_filter);
+                ogs_assert_if_reached();
+            }
+        }
+
         for (j = 0; j < target.num_of_packet_filter &&
                     j < OGS_MAX_NUM_OF_FLOW_IN_NAS; j++) {
             ogs_assert(length + sizeof(target.pf[j].flags) <=
@@ -491,6 +571,10 @@ int ogs_nas_build_qos_rules(ogs_nas_qos_rules_t *rules,
             memcpy(buffer + length, &target.pf[j].flags,
                     sizeof(target.pf[j].flags));
             length += sizeof(target.pf[j].flags);
+
+            if (rule->code ==
+                OGS_NAS_QOS_CODE_MODIFY_EXISTING_QOS_RULE_AND_DELETE_PACKET_FILTERS)
+                continue;
 
             ogs_assert(length + sizeof(target.pf[j].content.length) <=
                     OGS_NAS_MAX_QOS_RULES_LEN);
@@ -625,14 +709,20 @@ int ogs_nas_build_qos_rules(ogs_nas_qos_rules_t *rules,
             }
         }
 
-        ogs_assert(length + sizeof(target.precedence) <=
-                OGS_NAS_MAX_QOS_RULES_LEN);
-        memcpy(buffer + length, &target.precedence, sizeof(target.precedence));
-        length += sizeof(target.precedence);
-        ogs_assert(length + sizeof(target.flow.flags) <=
-                OGS_NAS_MAX_QOS_RULES_LEN);
-        memcpy(buffer + length, &target.flow.flags, sizeof(target.precedence));
-        length += sizeof(target.flow.flags);
+        if (rule->code != OGS_NAS_QOS_CODE_DELETE_EXISTING_QOS_RULE &&
+            rule->code != OGS_NAS_QOS_CODE_MODIFY_EXISTING_QOS_RULE_AND_DELETE_PACKET_FILTERS &&
+            rule->code != OGS_NAS_QOS_CODE_MODIFY_EXISTING_QOS_RULE_WITHOUT_MODIFYING_PACKET_FILTERS) {
+            ogs_assert(length + sizeof(target.precedence) <=
+                    OGS_NAS_MAX_QOS_RULES_LEN);
+            memcpy(buffer + length, &target.precedence,
+                    sizeof(target.precedence));
+            length += sizeof(target.precedence);
+            ogs_assert(length + sizeof(target.flow.flags) <=
+                    OGS_NAS_MAX_QOS_RULES_LEN);
+            memcpy(buffer + length, &target.flow.flags,
+                    sizeof(target.flow.flags));
+            length += sizeof(target.flow.flags);
+        }
 
         /* Update QoS Rule Length */
         target.length = htobe16(
@@ -644,4 +734,207 @@ int ogs_nas_build_qos_rules(ogs_nas_qos_rules_t *rules,
     rules->length = length;
 
     return OGS_OK;
+}
+
+int ogs_nas_parse_qos_rules(
+        ogs_nas_qos_rule_t *rule, ogs_nas_qos_rules_t *rules)
+{
+    ogs_nas_qos_rule_t *first = rule;
+
+    char *buffer;
+    uint16_t length, size = 0;
+    int i, j, len = 0;
+
+    ogs_assert(rule);
+    ogs_assert(rules);
+    ogs_assert(rules->length);
+    length = rules->length;
+    ogs_assert(rules->buffer);
+    buffer = rules->buffer;
+
+    size = 0;
+    while (size < length) {
+        memset(rule, 0, sizeof(*rule));
+
+        ogs_assert(size+sizeof(rule->identifier) <= length);
+        memcpy(&rule->identifier, buffer+size, sizeof(rule->identifier));
+        size += sizeof(rule->identifier);
+
+        ogs_assert(size+sizeof(rule->length) <= length);
+        memcpy(&rule->length, buffer+size, sizeof(rule->length));
+        rule->length = be16toh(rule->length);
+        size += sizeof(rule->length);
+
+        ogs_assert(size+sizeof(rule->flags) <= length);
+        memcpy(&rule->flags, buffer+size, sizeof(rule->flags));
+        size += sizeof(rule->flags);
+
+        if (rule->code == OGS_NAS_QOS_CODE_DELETE_EXISTING_QOS_RULE ||
+            rule->code == OGS_NAS_QOS_CODE_MODIFY_EXISTING_QOS_RULE_WITHOUT_MODIFYING_PACKET_FILTERS) {
+            if (rule->num_of_packet_filter != 0) {
+                ogs_error("Invalue QoS rule code[%d] "
+                        "and number of packet filter[%d]",
+                        rule->code, rule->num_of_packet_filter);
+                rule->num_of_packet_filter = 0;
+            }
+        }
+
+        for (i = 0; i < rule->num_of_packet_filter &&
+                    i < OGS_MAX_NUM_OF_FLOW_IN_GTP; i++) {
+            ogs_assert(size+sizeof(rule->pf[i].flags) <= length);
+            memcpy(&rule->pf[i].flags, buffer+size, sizeof(rule->pf[i].flags));
+            size += sizeof(rule->pf[i].flags);
+
+            if (rule->code ==
+                OGS_NAS_QOS_CODE_MODIFY_EXISTING_QOS_RULE_AND_DELETE_PACKET_FILTERS)
+                continue;
+
+            ogs_assert(size+sizeof(rule->pf[i].content.length) <= length);
+            memcpy(&rule->pf[i].content.length, buffer+size,
+                    sizeof(rule->pf[i].content.length));
+            size += sizeof(rule->pf[i].content.length);
+
+            j = 0; len = 0;
+            while(len < rule->pf[i].content.length) {
+                ogs_assert(size+len+
+                    sizeof(rule->pf[i].content.component[j].type) <= length);
+                memcpy(&rule->pf[i].content.component[j].type,
+                        buffer+size+len,
+                        sizeof(rule->pf[i].content.component[j].type));
+                len += sizeof(rule->pf[i].content.component[j].type);
+                switch(rule->pf[i].content.component[j].type) {
+                case OGS_PACKET_FILTER_PROTOCOL_IDENTIFIER_NEXT_HEADER_TYPE:
+                    ogs_assert(size+len+
+                        sizeof(rule->pf[i].content.component[j].proto) <=
+                        length);
+                    memcpy(&rule->pf[i].content.component[j].proto,
+                        buffer+size+len,
+                        sizeof(rule->pf[i].content.component[j].proto));
+                    len += sizeof(rule->pf[i].content.component[j].proto);
+                    break;
+                case OGS_PACKET_FILTER_IPV4_REMOTE_ADDRESS_TYPE:
+                case OGS_PACKET_FILTER_IPV4_LOCAL_ADDRESS_TYPE:
+                    ogs_assert(size+len+
+                        sizeof(rule->pf[i].content.component[j].ipv4.addr) <=
+                        length);
+                    memcpy(&rule->pf[i].content.component[j].ipv4.addr,
+                        buffer+size+len,
+                        sizeof(rule->pf[i].content.component[j].ipv4.addr));
+                    len += sizeof(rule->pf[i].content.component[j].ipv4.addr);
+
+                    ogs_assert(size+len+
+                        sizeof(rule->pf[i].content.component[j].ipv4.mask) <=
+                        length);
+                    memcpy(&rule->pf[i].content.component[j].ipv4.mask,
+                        buffer+size+len,
+                        sizeof(rule->pf[i].content.component[j].ipv4.mask));
+                    len += sizeof(rule->pf[i].content.component[j].ipv4.mask);
+                    break;
+                case OGS_PACKET_FILTER_IPV6_LOCAL_ADDRESS_PREFIX_LENGTH_TYPE:
+                case OGS_PACKET_FILTER_IPV6_REMOTE_ADDRESS_PREFIX_LENGTH_TYPE:
+                    ogs_assert(size+len+
+                        sizeof(rule->pf[i].content.component[j].ipv6.addr) <=
+                        length);
+                    memcpy(&rule->pf[i].content.component[j].ipv6.addr,
+                        buffer+size+len,
+                        sizeof(rule->pf[i].content.component[j].ipv6.addr));
+                    len += sizeof(rule->pf[i].content.component[j].ipv6.addr);
+
+                    ogs_assert(size+len+
+                        sizeof(
+                            rule->pf[i].content.component[j].ipv6.prefixlen) <=
+                        length);
+                    memcpy(&rule->pf[i].content.component[j].ipv6.prefixlen,
+                        buffer+size+len,
+                        sizeof(
+                            rule->pf[i].content.component[j].ipv6.prefixlen));
+                    len += sizeof(
+                            rule->pf[i].content.component[j].ipv6.prefixlen);
+                    break;
+                case OGS_PACKET_FILTER_IPV6_LOCAL_ADDRESS_TYPE:
+                case OGS_PACKET_FILTER_IPV6_REMOTE_ADDRESS_TYPE:
+                    ogs_assert(size+len+
+                        sizeof(
+                            rule->pf[i].content.component[j].ipv6_mask.addr) <=
+                            length);
+                    memcpy(&rule->pf[i].content.component[j].ipv6_mask.addr,
+                        buffer+size+len,
+                        sizeof(
+                            rule->pf[i].content.component[j].ipv6_mask.addr));
+                    len += sizeof(
+                            rule->pf[i].content.component[j].ipv6_mask.addr);
+
+                    ogs_assert(size+len+
+                        sizeof(
+                            rule->pf[i].content.component[j].ipv6_mask.mask) <=
+                            length);
+                    memcpy(&rule->pf[i].content.component[j].ipv6_mask.mask,
+                        buffer+size+len,
+                        sizeof(
+                            rule->pf[i].content.component[j].ipv6_mask.mask));
+                    len += sizeof(
+                            rule->pf[i].content.component[j].ipv6_mask.mask);
+                    break;
+                case OGS_PACKET_FILTER_SINGLE_LOCAL_PORT_TYPE:
+                case OGS_PACKET_FILTER_SINGLE_REMOTE_PORT_TYPE:
+                    ogs_assert(size+len+
+                        sizeof(rule->pf[i].content.component[j].port.low) <=
+                            length);
+                    memcpy(&rule->pf[i].content.component[j].port.low,
+                        buffer+size+len,
+                        sizeof(rule->pf[i].content.component[j].port.low));
+                    rule->pf[i].content.component[j].port.low =
+                        be16toh(rule->pf[i].content.component[j].port.low);
+                    len += sizeof(rule->pf[i].content.component[j].port.low);
+                    break;
+                case OGS_PACKET_FILTER_LOCAL_PORT_RANGE_TYPE:
+                case OGS_PACKET_FILTER_REMOTE_PORT_RANGE_TYPE:
+                    ogs_assert(size+len+
+                        sizeof(rule->pf[i].content.component[j].port.low) <=
+                            length);
+                    memcpy(&rule->pf[i].content.component[j].port.low,
+                        buffer+size+len,
+                        sizeof(rule->pf[i].content.component[j].port.low));
+                    rule->pf[i].content.component[j].port.low =
+                        be16toh(rule->pf[i].content.component[j].port.low);
+                    len += sizeof(rule->pf[i].content.component[j].port.low);
+
+                    ogs_assert(size+len+
+                        sizeof(rule->pf[i].content.component[j].port.high) <=
+                            length);
+                    memcpy(&rule->pf[i].content.component[j].port.high,
+                        buffer+size+len,
+                        sizeof(rule->pf[i].content.component[j].port.high));
+                    rule->pf[i].content.component[j].port.high =
+                        be16toh(rule->pf[i].content.component[j].port.high);
+                    len += sizeof(rule->pf[i].content.component[j].port.high);
+                    break;
+                default:
+                    ogs_error("Unknown Packet Filter Type(%d)",
+                            rule->pf[i].content.component[j].type);
+                    return -1;
+                }
+                j++;
+            }
+            rule->pf[i].content.num_of_component = j;
+            size += len;
+        }
+
+        if (rule->code != OGS_NAS_QOS_CODE_DELETE_EXISTING_QOS_RULE &&
+            rule->code != OGS_NAS_QOS_CODE_MODIFY_EXISTING_QOS_RULE_AND_DELETE_PACKET_FILTERS &&
+            rule->code != OGS_NAS_QOS_CODE_MODIFY_EXISTING_QOS_RULE_WITHOUT_MODIFYING_PACKET_FILTERS) {
+
+            ogs_assert(size+sizeof(rule->precedence) <= length);
+            memcpy(&rule->precedence, buffer+size, sizeof(rule->precedence));
+            size += sizeof(rule->precedence);
+
+            ogs_assert(size+sizeof(rule->flow.flags) <= length);
+            memcpy(&rule->flow.flags, buffer+size, sizeof(rule->flow.flags));
+            size += sizeof(rule->flow.flags);
+        }
+
+        rule++;
+    }
+
+    return (int)(rule-first);
 }

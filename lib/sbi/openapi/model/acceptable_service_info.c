@@ -59,7 +59,9 @@ cJSON *OpenAPI_acceptable_service_info_convertToJSON(OpenAPI_acceptable_service_
     if (acceptable_service_info->acc_bw_med_comps) {
         OpenAPI_list_for_each(acceptable_service_info->acc_bw_med_comps, acc_bw_med_comps_node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)acc_bw_med_comps_node->data;
-        cJSON *itemLocal = OpenAPI_media_component_convertToJSON(localKeyValue->value);
+        cJSON *itemLocal = localKeyValue->value ?
+            OpenAPI_media_component_convertToJSON(localKeyValue->value) :
+            cJSON_CreateNull();
         if (itemLocal == NULL) {
             ogs_error("OpenAPI_acceptable_service_info_convertToJSON() failed [acc_bw_med_comps]");
             goto end;
@@ -103,12 +105,15 @@ OpenAPI_acceptable_service_info_t *OpenAPI_acceptable_service_info_parseFromJSON
     OpenAPI_map_t *localMapKeyPair = NULL;
     cJSON_ArrayForEach(acc_bw_med_comps_local_map, acc_bw_med_comps) {
         cJSON *localMapObject = acc_bw_med_comps_local_map;
-        if (!cJSON_IsObject(acc_bw_med_comps_local_map)) {
+        if (cJSON_IsObject(acc_bw_med_comps_local_map)) {
+            localMapKeyPair = OpenAPI_map_create(
+                localMapObject->string, OpenAPI_media_component_parseFromJSON(localMapObject));
+        } else if (cJSON_IsNull(acc_bw_med_comps_local_map)) {
+            localMapKeyPair = OpenAPI_map_create(localMapObject->string, NULL);
+        } else {
             ogs_error("OpenAPI_acceptable_service_info_parseFromJSON() failed [acc_bw_med_comps]");
             goto end;
         }
-        localMapKeyPair = OpenAPI_map_create(
-            localMapObject->string, OpenAPI_media_component_parseFromJSON(localMapObject));
         OpenAPI_list_add(acc_bw_med_compsList , localMapKeyPair);
     }
     }

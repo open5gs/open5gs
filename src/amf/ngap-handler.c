@@ -759,8 +759,6 @@ void ngap_handle_initial_context_setup_response(
     uint64_t amf_ue_ngap_id;
     amf_nsmf_pdusession_sm_context_param_t param;
 
-    bool paging_ongoing = false;
-
     NGAP_SuccessfulOutcome_t *successfulOutcome = NULL;
     NGAP_InitialContextSetupResponse_t *InitialContextSetupResponse = NULL;
 
@@ -913,14 +911,60 @@ void ngap_handle_initial_context_setup_response(
         ogs_pkbuf_free(param.n2smbuf);
     }
 
-    ogs_list_for_each(&amf_ue->sess_list, sess) {
-        if (sess->paging.ongoing == true) {
-            paging_ongoing = true;
-            break;
-        }
-    }
+    /*
+     * TS24.501
+     * 5.4.4 Generic UE configuration update procedure
+     * 5.4.4.1 General
+     *
+     * This procedure shall be initiated by the network to assign
+     * a new 5G-GUTI to the UE after a successful service request
+     * procedure invoked as a response to a paging request
+     * from the network and before the release of the N1 NAS signalling
+     * connection.
+     */
+    if (DOWNLINK_SIGNALLING_PENDING(amf_ue) == true) {
+        /*
+         * TS24.501
+         * 5.4.4 Generic UE configuration update procedure
+         * 5.4.4.1 General
+         *
+         * If the service request procedure was triggered
+         * due to 5GSM downlink signalling pending, the procedure
+         * for assigning a new 5G-GUTI can be initiated by the network
+         * after the transport of the 5GSM downlink signalling.
+         */
+        ogs_list_for_each(&amf_ue->sess_list, sess) {
+            ogs_pkbuf_t *ngapbuf = NULL;
+            ogs_pkbuf_t *gmmbuf = NULL;
 
-    if (paging_ongoing == true) {
+            /* There is no Downlink Signalling Pending in this sesssion */
+            if (sess->gsm_message.type == 0) continue;
+
+            switch (sess->gsm_message.type) {
+            case OGS_NAS_5GS_PDU_SESSION_MODIFICATION_COMMAND:
+                gmmbuf = gmm_build_dl_nas_transport(sess,
+                        OGS_NAS_PAYLOAD_CONTAINER_N1_SM_INFORMATION,
+                        sess->gsm_message.n1buf, 0, 0);
+                ogs_assert(gmmbuf);
+
+                ngapbuf = ngap_build_pdu_session_resource_modify_request(
+                        sess, gmmbuf, sess->gsm_message.n2buf);
+                ogs_assert(ngapbuf);
+
+                if (nas_5gs_send_to_gnb(amf_ue, ngapbuf) != OGS_OK) {
+                    ogs_error("nas_5gs_send_to_gnb() failed");
+                }
+
+                AMF_SESS_CLEAR_5GSM_MESSAGE(sess);
+
+                break;
+            default:
+                ogs_fatal("Unknown GSM Message Type[%d]",
+                        sess->gsm_message.type);
+                ogs_assert_if_reached();
+            }
+        }
+    } else if (PAGING_ONGOING(amf_ue) == true) {
         gmm_configuration_update_command_param_t param;
 
         /*
@@ -951,9 +995,9 @@ void ngap_handle_initial_context_setup_response(
         param.guti = 1;
         ogs_assert(OGS_OK ==
             nas_5gs_send_configuration_update_command(amf_ue, &param));
-    }
 
-    AMF_UE_CLEAR_PAGING_INFO(amf_ue);
+        AMF_UE_CLEAR_PAGING_INFO(amf_ue);
+    }
 }
 
 void ngap_handle_initial_context_setup_failure(

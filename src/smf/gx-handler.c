@@ -75,9 +75,9 @@ void smf_gx_handle_cca_initial_request(
         return;
     }
 
-    sess->num_of_pcc_rule = gx_message->session_data.num_of_pcc_rule;
+    sess->policy.num_of_pcc_rule = gx_message->session_data.num_of_pcc_rule;
     for (i = 0; i < gx_message->session_data.num_of_pcc_rule; i++)
-        OGS_STORE_PCC_RULE(&sess->pcc_rule[i],
+        OGS_STORE_PCC_RULE(&sess->policy.pcc_rule[i],
                 &gx_message->session_data.pcc_rule[i]);
 
     /* APN-AMBR
@@ -298,9 +298,9 @@ void smf_gx_handle_re_auth_request(
 {
     int i;
 
-    sess->num_of_pcc_rule = gx_message->session_data.num_of_pcc_rule;
+    sess->policy.num_of_pcc_rule = gx_message->session_data.num_of_pcc_rule;
     for (i = 0; i < gx_message->session_data.num_of_pcc_rule; i++)
-        OGS_STORE_PCC_RULE(&sess->pcc_rule[i],
+        OGS_STORE_PCC_RULE(&sess->policy.pcc_rule[i],
                 &gx_message->session_data.pcc_rule[i]);
 
     smf_bearer_binding(sess);

@@ -34,6 +34,7 @@ libpcf_sources = files('''
 
     namf-build.c
     nsmf-build.c
+    naf-build.c
 
     am-sm.c
     sm-sm.c

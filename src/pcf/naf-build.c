@@ -17,22 +17,26 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef PCF_NSMF_BUILD_H
-#define PCF_NSMF_BUILD_H
+#include "naf-build.h"
 
-#include "context.h"
+ogs_sbi_request_t *pcf_naf_callback_build_policyauthorization_terminate(
+        pcf_app_t *app_session, void *data)
+{
+    ogs_sbi_message_t message;
+    ogs_sbi_request_t *request = NULL;
+    
+    ogs_assert(app_session);
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+    memset(&message, 0, sizeof(message));
+    message.h.method = (char *)OGS_SBI_HTTP_METHOD_POST;
+    message.h.uri = ogs_mstrcatf(
+            app_session->notif_uri, "/%s", OGS_SBI_RESOURCE_NAME_TERMINATE);
+    ogs_assert(message.h.uri);
 
-ogs_sbi_request_t *pcf_nsmf_callback_build_smpolicycontrol_update(
-        pcf_sess_t *sess, void *data);
-ogs_sbi_request_t *pcf_nsmf_callback_build_smpolicycontrol_terminate(
-        pcf_sess_t *sess, void *data);
+    request = ogs_sbi_build_request(&message);
+    ogs_assert(request);
 
-#ifdef __cplusplus
+    ogs_free(message.h.uri);
+
+    return request;
 }
-#endif
-
-#endif /* PCF_NSMF_BUILD_H */

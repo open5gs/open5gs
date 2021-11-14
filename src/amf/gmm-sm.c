@@ -66,6 +66,7 @@ void gmm_state_de_registered(ogs_fsm_t *s, amf_event_t *e)
     case OGS_FSM_ENTRY_SIG:
         AMF_UE_CLEAR_PAGING_INFO(amf_ue);
         AMF_UE_CLEAR_N2_TRANSFER(amf_ue, pdu_session_resource_setup_request);
+        AMF_UE_CLEAR_5GSM_MESSAGE(amf_ue);
         CLEAR_AMF_UE_ALL_TIMERS(amf_ue);
         break;
     case OGS_FSM_EXIT_SIG:
@@ -367,7 +368,8 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e)
                 ogs_warn("[%s] Paging failed. Stop", amf_ue->supi);
 
                 ogs_list_for_each(&amf_ue->sess_list, sess) {
-                    if (sess->paging.ongoing == true) {
+                    if (sess->paging.ongoing == true &&
+                        sess->paging.n1n2_failure_txf_notif_uri != NULL) {
                         ogs_assert(true ==
                             amf_sbi_send_n1_n2_failure_notify(
                                 sess,
@@ -381,6 +383,9 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e)
                 /* Clear N2 Transfer */
                 AMF_UE_CLEAR_N2_TRANSFER(
                         amf_ue, pdu_session_resource_setup_request);
+
+                /* Clear 5GSM Message */
+                AMF_UE_CLEAR_5GSM_MESSAGE(amf_ue);
 
                 /* Clear t3513 Timers */
                 CLEAR_AMF_UE_TIMER(amf_ue->t3513);
@@ -1181,6 +1186,7 @@ void gmm_state_exception(ogs_fsm_t *s, amf_event_t *e)
     case OGS_FSM_ENTRY_SIG:
         AMF_UE_CLEAR_PAGING_INFO(amf_ue);
         AMF_UE_CLEAR_N2_TRANSFER(amf_ue, pdu_session_resource_setup_request);
+        AMF_UE_CLEAR_5GSM_MESSAGE(amf_ue);
         CLEAR_AMF_UE_ALL_TIMERS(amf_ue);
 
         amf_sbi_send_release_all_sessions(

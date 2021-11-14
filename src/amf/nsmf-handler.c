@@ -255,6 +255,43 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                 }
                 break;
 
+            case OpenAPI_n2_sm_info_type_PDU_RES_MOD_REQ:
+                if (!n1smbuf) {
+                    ogs_error("[%s:%d] No N1 SM Content [%s]",
+                            amf_ue->supi, sess->psi, n1SmMsg->content_id);
+                    ogs_assert(OGS_OK ==
+                        nas_5gs_send_back_gsm_message(sess,
+                            OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED,
+                            AMF_NAS_BACKOFF_TIME));
+                    return OGS_ERROR;
+                }
+
+                if (!n2smbuf) {
+                    ogs_error("[%s:%d] No N2 SM Content",
+                            amf_ue->supi, sess->psi);
+                    ogs_assert(OGS_OK ==
+                        nas_5gs_send_back_gsm_message(sess,
+                            OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED,
+                            AMF_NAS_BACKOFF_TIME));
+                    return OGS_ERROR;
+                }
+
+                /*
+                 * NOTE : The pkbuf created in the SBI message will be removed
+                 *        from ogs_sbi_message_free(), so it must be copied.
+                 */
+                n1smbuf = ogs_pkbuf_copy(n1smbuf);
+                ogs_assert(n1smbuf);
+
+                n2smbuf = ogs_pkbuf_copy(n2smbuf);
+                ogs_assert(n2smbuf);
+
+                ogs_assert(OGS_OK ==
+                    nas_send_pdu_session_modification_command(
+                        sess, n1smbuf, n2smbuf));
+                break;
+
+
             case OpenAPI_n2_sm_info_type_PDU_RES_REL_CMD:
                 if (!n1smbuf) {
                     ogs_error("[%s:%d] No N1 SM Content [%s]",

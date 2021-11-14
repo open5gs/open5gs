@@ -151,7 +151,6 @@ bool smf_sbi_discover_and_send(OpenAPI_nf_type_e target_nf_type,
     smf_ue = sess->smf_ue;
     ogs_assert(smf_ue);
 
-    ogs_assert(stream);
     ogs_assert(build);
 
     xact = ogs_sbi_xact_add(target_nf_type, &sess->sbi,
@@ -173,10 +172,12 @@ bool smf_sbi_discover_and_send(OpenAPI_nf_type_e target_nf_type,
             (ogs_fsm_handler_t)smf_nf_state_registered, client_cb) != true) {
         ogs_error("smf_sbi_discover_and_send() failed");
         ogs_sbi_xact_remove(xact);
-        ogs_assert(true ==
-            ogs_sbi_server_send_error(stream,
-                OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT, NULL,
-                "Cannot discover", smf_ue->supi));
+
+        if (stream)
+            ogs_assert(true ==
+                ogs_sbi_server_send_error(stream,
+                    OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT, NULL,
+                    "Cannot discover", smf_ue->supi));
         return false;
     }
 

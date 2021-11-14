@@ -1206,6 +1206,9 @@ void amf_ue_remove(amf_ue_t *amf_ue)
     /* Clear N2 Transfer */
     AMF_UE_CLEAR_N2_TRANSFER(amf_ue, pdu_session_resource_setup_request);
 
+    /* Clear 5GSM Message */
+    AMF_UE_CLEAR_5GSM_MESSAGE(amf_ue);
+
     /* Remove all session context */
     amf_sess_remove_all(amf_ue);
 
@@ -1677,6 +1680,7 @@ void amf_sess_remove(amf_sess_t *sess)
         ogs_pkbuf_free(sess->pdu_session_establishment_accept);
 
     AMF_SESS_CLEAR_N2_TRANSFER(sess, pdu_session_resource_setup_request);
+    AMF_SESS_CLEAR_N2_TRANSFER(sess, pdu_session_resource_modification_command);
     AMF_SESS_CLEAR_N2_TRANSFER(sess, path_switch_request_ack);
     AMF_SESS_CLEAR_N2_TRANSFER(sess, handover_request);
     AMF_SESS_CLEAR_N2_TRANSFER(sess, handover_command);
@@ -1822,6 +1826,33 @@ bool amf_handover_request_transfer_needed(amf_ue_t *amf_ue)
 
     ogs_list_for_each(&amf_ue->sess_list, sess)
         if (sess->transfer.handover_request)
+            return true;
+
+    return false;
+}
+
+bool amf_paging_ongoing(amf_ue_t *amf_ue)
+{
+    amf_sess_t *sess = NULL;
+
+    ogs_assert(amf_ue);
+
+    ogs_list_for_each(&amf_ue->sess_list, sess) {
+        if (sess->paging.ongoing == true)
+            return true;
+    }
+
+    return false;
+}
+
+bool amf_downlink_signalling_pending(amf_ue_t *amf_ue)
+{
+    amf_sess_t *sess = NULL;
+
+    ogs_assert(amf_ue);
+
+    ogs_list_for_each(&amf_ue->sess_list, sess)
+        if (sess->gsm_message.type)
             return true;
 
     return false;

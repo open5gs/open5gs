@@ -323,7 +323,10 @@ ogs_pkbuf_t *smf_n4_build_qos_flow_modification_request(
                 i++;
             }
         }
-        if (modify_flags & OGS_PFCP_MODIFY_TFT_UPDATE) {
+        if (modify_flags &
+                (OGS_PFCP_MODIFY_TFT_NEW|OGS_PFCP_MODIFY_TFT_ADD|
+                 OGS_PFCP_MODIFY_TFT_REPLACE|OGS_PFCP_MODIFY_TFT_DELETE|
+                 OGS_PFCP_MODIFY_EPC_TFT_UPDATE)) {
             ogs_pfcp_pdrbuf_init();
 
             /* Update PDR */
@@ -368,7 +371,9 @@ ogs_pkbuf_t *smf_n4_build_qos_flow_modification_request(
                 i++;
             }
         }
-        if (modify_flags & OGS_PFCP_MODIFY_QOS_UPDATE) {
+        if (modify_flags &
+                (OGS_PFCP_MODIFY_QOS_MODIFY|
+                 OGS_PFCP_MODIFY_EPC_QOS_UPDATE)) {
             /* Update QER */
             i = 0;
             if (qos_flow->qer) {
@@ -382,7 +387,11 @@ ogs_pkbuf_t *smf_n4_build_qos_flow_modification_request(
     pfcp_message.h.type = type;
     pkbuf = ogs_pfcp_build_msg(&pfcp_message);
 
-    if (modify_flags & (OGS_PFCP_MODIFY_CREATE|OGS_PFCP_MODIFY_TFT_UPDATE)) {
+    if (modify_flags &
+            (OGS_PFCP_MODIFY_CREATE|
+             OGS_PFCP_MODIFY_TFT_NEW|OGS_PFCP_MODIFY_TFT_ADD|
+             OGS_PFCP_MODIFY_TFT_REPLACE|OGS_PFCP_MODIFY_TFT_DELETE|
+             OGS_PFCP_MODIFY_EPC_TFT_UPDATE)) {
         ogs_pfcp_pdrbuf_clear();
     }
 

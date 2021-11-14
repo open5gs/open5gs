@@ -400,7 +400,6 @@ int smf_5gc_pfcp_send_session_deletion_request(
     ogs_pfcp_xact_t *xact = NULL;
 
     ogs_assert(sess);
-    ogs_assert(stream);
     ogs_assert(trigger);
 
     memset(&h, 0, sizeof(ogs_pfcp_header_t));

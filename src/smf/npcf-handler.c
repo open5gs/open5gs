@@ -17,190 +17,88 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "npcf-handler.h"
-
 #include "sbi-path.h"
 #include "pfcp-path.h"
 #include "nas-path.h"
+#include "binding.h"
 
-bool smf_npcf_smpolicycontrol_handle_create(
-        smf_sess_t *sess, ogs_sbi_stream_t *stream, int state,
-        ogs_sbi_message_t *recvmsg)
+#include "npcf-handler.h"
+
+static void update_authorized_pcc_rule_and_qos(
+        smf_sess_t *sess, OpenAPI_sm_policy_decision_t *SmPolicyDecision)
 {
-    int rv;
-    char buf1[OGS_ADDRSTRLEN];
-    char buf2[OGS_ADDRSTRLEN];
-
-    uint64_t supported_features;
-
-    char *strerror = NULL;
-    smf_ue_t *smf_ue = NULL;
-
-    smf_bearer_t *qos_flow = NULL;
-    ogs_pfcp_pdr_t *dl_pdr = NULL;
-    ogs_pfcp_pdr_t *ul_pdr = NULL;
-    ogs_pfcp_pdr_t *cp2up_pdr = NULL;
-    ogs_pfcp_pdr_t *up2cp_pdr = NULL;
-    ogs_pfcp_far_t *up2cp_far = NULL;
-    ogs_pfcp_qer_t *qer = NULL;
-
-    OpenAPI_sm_policy_decision_t *SmPolicyDecision = NULL;
     OpenAPI_lnode_t *node = NULL, *node2 = NULL;
 
-#define MAX_TRIGGER_ID 128
-    bool trigger_results[MAX_TRIGGER_ID];
-
-    ogs_sbi_message_t message;
-    ogs_sbi_header_t header;
-
     ogs_assert(sess);
-    ogs_assert(stream);
-    smf_ue = sess->smf_ue;
-    ogs_assert(smf_ue);
+    ogs_assert(SmPolicyDecision);
 
-    ogs_assert(recvmsg);
+    /*
+     * TS29.512
+     * 4.2.6 Provisioning and Enforcement of Policy Decisions
+     *
+     *
+     * If no other rules are defined for specific data types
+     * within the SmPolicyDecision data structure, the encoding of changes
+     * of the policies decisions in the SmPolicyDecision data structure
+     * shall follow the following principles:
+     *
+     * 1) To modify an attribute with a value of type map
+     * (e.g. the "sessRules" attribute, the "pccRules" attribute,
+     * the "qosDecs" attribute, the "traffContDecs" attribute,
+     * the "umDecs" attribute, and the "conds" attribute) the attribute
+     * shall be provided with a value containing a map with entries
+     * according to the following principles:
+     *
+     * - A new entry shall be added by supplying a new identifier
+     *   (e.g. rule / decision identifier) as key and the corresponding
+     *   structured data type instance (e.g. PCC rule) with complete contents
+     *   as value as an entry within the map.
+     * - An existing entry shall be modified by supplying the existing
+     *   identifier as key and the corresponding structured data type instance
+     *   with the same existing identifier (e.g. set the "qosId"
+     *   to the same existing QoS data decision identifier),
+     *   which shall describe the modifications following bullets 1 to 6,
+     *   as value as an entry within the map.
+     * - An existing entry shall be deleted by supplying the existing
+     *   identifier as key and "NULL" as value as an entry within the map.
+     * - For an unmodified entry, no entry needs to be provided within the map.
+     *
+     * 2) To modify an attribute with a structured data type instance as value,
+     * the attribute shall be provided with a value containing a structured data
+     * type instance with entries according to bullets 1 to 6.
+     *
+     * 3) To modify an attribute with another type than map or structured data
+     * type as value, the attribute shall be provided with a complete
+     * representation of its value that shall replace the previous value.
+     *
+     * 4) To create an attribute of any type, the attribute shall be provided
+     * with a complete representation of its value.
+     *
+     * 5) To delete an attribute of any type, the attribute shall be provided
+     * with NULL as value.
+     * NOTE 1: Attributes that are allowed to be deleted need to be marked as
+     * "nullable" within the OpenAPI file in Annex A.
+     *
+     * 6) Attributes that are not added, modified, or deleted do not need to be
+     * provided.
+     * NOTE 2: In related data structures no attrib
+     */
 
-    if (!recvmsg->http.location) {
-        strerror = ogs_msprintf("[%s:%d] No http.location",
-                smf_ue->supi, sess->psi);
-        goto cleanup;
-    }
-
-    SmPolicyDecision = recvmsg->SmPolicyDecision;
-    if (!SmPolicyDecision) {
-        strerror = ogs_msprintf("[%s:%d] No SmPolicyDecision",
-                smf_ue->supi, sess->psi);
-        goto cleanup;
-    }
-
-    memset(&header, 0, sizeof(header));
-    header.uri = recvmsg->http.location;
-
-    rv = ogs_sbi_parse_header(&message, &header);
-    if (rv != OGS_OK) {
-        strerror = ogs_msprintf("[%s:%d] Cannot parse http.location [%s]",
-                smf_ue->supi, sess->psi, recvmsg->http.location);
-        goto cleanup;
-    }
-
-    if (!message.h.resource.component[1]) {
-        strerror = ogs_msprintf("[%s:%d] No Assocication ID [%s]",
-                smf_ue->supi, sess->psi, recvmsg->http.location);
-
-        ogs_sbi_header_free(&header);
-        goto cleanup;
-    }
-
-    if (sess->policy_association_id)
-        ogs_free(sess->policy_association_id);
-    sess->policy_association_id = ogs_strdup(message.h.resource.component[1]);
-    ogs_assert(sess->policy_association_id);
-
-    ogs_sbi_header_free(&header);
-
-    /* SBI Features */
-    if (SmPolicyDecision->supp_feat) {
-        supported_features =
-            ogs_uint64_from_string(SmPolicyDecision->supp_feat);
-        sess->smpolicycontrol_features &= supported_features;
-    } else {
-        sess->smpolicycontrol_features = 0;
-    }
-
-    /*********************************************************************
-     * Handle Policy Control Request Triggers
-     *********************************************************************/
-
-    /* Get policy control request triggers */
-    memset(&trigger_results, 0, sizeof(trigger_results));
-    OpenAPI_list_for_each(SmPolicyDecision->policy_ctrl_req_triggers, node) {
-        if (node->data) {
-            OpenAPI_policy_control_request_trigger_e trigger_id =
-                (intptr_t)node->data;
-
-            ogs_assert(trigger_id < MAX_TRIGGER_ID);
-            trigger_results[trigger_id] = true;
-        }
-    }
-
-    /* Update authorized session-AMBR */
-    if (SmPolicyDecision->sess_rules) {
-        OpenAPI_map_t *SessRuleMap = NULL;
-        OpenAPI_session_rule_t *SessionRule = NULL;
-
-        OpenAPI_ambr_t *AuthSessAmbr = NULL;
-        OpenAPI_authorized_default_qos_t *AuthDefQos = NULL;
-
-        OpenAPI_list_for_each(SmPolicyDecision->sess_rules, node) {
-            SessRuleMap = node->data;
-            if (!SessRuleMap) {
-                ogs_error("No SessRuleMap");
-                continue;
-            }
-
-            SessionRule = SessRuleMap->value;
-            if (!SessionRule) {
-                ogs_error("No SessionRule");
-                continue;
-            }
-
-
-            AuthSessAmbr = SessionRule->auth_sess_ambr;
-            if (AuthSessAmbr && trigger_results[
-                OpenAPI_policy_control_request_trigger_SE_AMBR_CH] == true) {
-                if (AuthSessAmbr->uplink)
-                    sess->session.ambr.uplink =
-                        ogs_sbi_bitrate_from_string(AuthSessAmbr->uplink);
-                if (AuthSessAmbr->downlink)
-                    sess->session.ambr.downlink =
-                        ogs_sbi_bitrate_from_string(AuthSessAmbr->downlink);
-            }
-
-            AuthDefQos = SessionRule->auth_def_qos;
-            if (AuthDefQos && trigger_results[
-                OpenAPI_policy_control_request_trigger_DEF_QOS_CH] == true) {
-                sess->session.qos.index = AuthDefQos->_5qi;
-                sess->session.qos.arp.priority_level =
-                    AuthDefQos->priority_level;
-                if (AuthDefQos->arp) {
-                    sess->session.qos.arp.priority_level =
-                            AuthDefQos->arp->priority_level;
-                    if (AuthDefQos->arp->preempt_cap ==
-                        OpenAPI_preemption_capability_NOT_PREEMPT)
-                        sess->session.qos.arp.pre_emption_capability =
-                            OGS_5GC_PRE_EMPTION_DISABLED;
-                    else if (AuthDefQos->arp->preempt_cap ==
-                        OpenAPI_preemption_capability_MAY_PREEMPT)
-                        sess->session.qos.arp.pre_emption_capability =
-                            OGS_5GC_PRE_EMPTION_ENABLED;
-                    ogs_assert(sess->session.qos.arp.pre_emption_capability);
-
-                    if (AuthDefQos->arp->preempt_vuln ==
-                        OpenAPI_preemption_vulnerability_NOT_PREEMPTABLE)
-                        sess->session.qos.arp.pre_emption_vulnerability =
-                            OGS_5GC_PRE_EMPTION_DISABLED;
-                    else if (AuthDefQos->arp->preempt_vuln ==
-                        OpenAPI_preemption_vulnerability_PREEMPTABLE)
-                        sess->session.qos.arp.pre_emption_vulnerability =
-                            OGS_5GC_PRE_EMPTION_ENABLED;
-                    ogs_assert(sess->session.qos.arp.pre_emption_vulnerability);
-                }
-            }
-        }
-    }
-
-    /* Update authorized PCC rule & QoS */
     if (SmPolicyDecision->pcc_rules) {
         OpenAPI_map_t *PccRuleMap = NULL;
         OpenAPI_pcc_rule_t *PccRule = NULL;
         OpenAPI_flow_information_t *FlowInformation = NULL;
         OpenAPI_qos_data_t *QosData = NULL;
         char *QosId = NULL;
+        int i;
 
-        ogs_assert(sess->num_of_pcc_rule == 0);
+        for (i = 0; i < sess->policy.num_of_pcc_rule; i++)
+            OGS_PCC_RULE_FREE(&sess->policy.pcc_rule[i]);
+        sess->policy.num_of_pcc_rule = 0;
+
         OpenAPI_list_for_each(SmPolicyDecision->pcc_rules, node) {
-            ogs_pcc_rule_t *pcc_rule = &sess->pcc_rule[sess->num_of_pcc_rule];
-
+            ogs_pcc_rule_t *pcc_rule =
+                &sess->policy.pcc_rule[sess->policy.num_of_pcc_rule];
             ogs_assert(pcc_rule);
 
             PccRuleMap = node->data;
@@ -209,9 +107,18 @@ bool smf_npcf_smpolicycontrol_handle_create(
                 continue;
             }
 
+            if (!PccRuleMap->key) {
+                ogs_error("No PccRule->id");
+                continue;
+            }
+
             PccRule = PccRuleMap->value;
             if (!PccRule) {
-                ogs_error("No PccRule");
+                pcc_rule->type = OGS_PCC_RULE_TYPE_REMOVE;
+                pcc_rule->id = ogs_strdup(PccRuleMap->key);
+                ogs_assert(pcc_rule->id);
+
+                sess->policy.num_of_pcc_rule++;
                 continue;
             }
 
@@ -356,9 +263,179 @@ bool smf_npcf_smpolicycontrol_handle_create(
                     pcc_rule->qos.gbr.uplink = MAX_BIT_RATE;
             }
 
-            sess->num_of_pcc_rule++;
+            sess->policy.num_of_pcc_rule++;
         }
     }
+}
+
+bool smf_npcf_smpolicycontrol_handle_create(
+        smf_sess_t *sess, ogs_sbi_stream_t *stream, int state,
+        ogs_sbi_message_t *recvmsg)
+{
+    int rv;
+    char buf1[OGS_ADDRSTRLEN];
+    char buf2[OGS_ADDRSTRLEN];
+
+    uint64_t supported_features;
+
+    char *strerror = NULL;
+    smf_ue_t *smf_ue = NULL;
+
+    smf_bearer_t *qos_flow = NULL;
+    ogs_pfcp_pdr_t *dl_pdr = NULL;
+    ogs_pfcp_pdr_t *ul_pdr = NULL;
+    ogs_pfcp_pdr_t *cp2up_pdr = NULL;
+    ogs_pfcp_pdr_t *up2cp_pdr = NULL;
+    ogs_pfcp_far_t *up2cp_far = NULL;
+    ogs_pfcp_qer_t *qer = NULL;
+
+    OpenAPI_sm_policy_decision_t *SmPolicyDecision = NULL;
+    OpenAPI_lnode_t *node = NULL;
+
+#define MAX_TRIGGER_ID 128
+    bool trigger_results[MAX_TRIGGER_ID];
+
+    ogs_sbi_message_t message;
+    ogs_sbi_header_t header;
+
+    ogs_assert(sess);
+    ogs_assert(stream);
+    smf_ue = sess->smf_ue;
+    ogs_assert(smf_ue);
+
+    ogs_assert(recvmsg);
+
+    if (!recvmsg->http.location) {
+        strerror = ogs_msprintf("[%s:%d] No http.location",
+                smf_ue->supi, sess->psi);
+        goto cleanup;
+    }
+
+    SmPolicyDecision = recvmsg->SmPolicyDecision;
+    if (!SmPolicyDecision) {
+        strerror = ogs_msprintf("[%s:%d] No SmPolicyDecision",
+                smf_ue->supi, sess->psi);
+        goto cleanup;
+    }
+
+    memset(&header, 0, sizeof(header));
+    header.uri = recvmsg->http.location;
+
+    rv = ogs_sbi_parse_header(&message, &header);
+    if (rv != OGS_OK) {
+        strerror = ogs_msprintf("[%s:%d] Cannot parse http.location [%s]",
+                smf_ue->supi, sess->psi, recvmsg->http.location);
+        goto cleanup;
+    }
+
+    if (!message.h.resource.component[1]) {
+        strerror = ogs_msprintf("[%s:%d] No Assocication ID [%s]",
+                smf_ue->supi, sess->psi, recvmsg->http.location);
+
+        ogs_sbi_header_free(&header);
+        goto cleanup;
+    }
+
+    if (sess->policy_association_id)
+        ogs_free(sess->policy_association_id);
+    sess->policy_association_id = ogs_strdup(message.h.resource.component[1]);
+    ogs_assert(sess->policy_association_id);
+
+    ogs_sbi_header_free(&header);
+
+    /* SBI Features */
+    if (SmPolicyDecision->supp_feat) {
+        supported_features =
+            ogs_uint64_from_string(SmPolicyDecision->supp_feat);
+        sess->smpolicycontrol_features &= supported_features;
+    } else {
+        sess->smpolicycontrol_features = 0;
+    }
+
+    /*********************************************************************
+     * Handle Policy Control Request Triggers
+     *********************************************************************/
+
+    /* Get policy control request triggers */
+    memset(&trigger_results, 0, sizeof(trigger_results));
+    OpenAPI_list_for_each(SmPolicyDecision->policy_ctrl_req_triggers, node) {
+        if (node->data) {
+            OpenAPI_policy_control_request_trigger_e trigger_id =
+                (intptr_t)node->data;
+
+            ogs_assert(trigger_id < MAX_TRIGGER_ID);
+            trigger_results[trigger_id] = true;
+        }
+    }
+
+    /* Update authorized session-AMBR */
+    if (SmPolicyDecision->sess_rules) {
+        OpenAPI_map_t *SessRuleMap = NULL;
+        OpenAPI_session_rule_t *SessionRule = NULL;
+
+        OpenAPI_ambr_t *AuthSessAmbr = NULL;
+        OpenAPI_authorized_default_qos_t *AuthDefQos = NULL;
+
+        OpenAPI_list_for_each(SmPolicyDecision->sess_rules, node) {
+            SessRuleMap = node->data;
+            if (!SessRuleMap) {
+                ogs_error("No SessRuleMap");
+                continue;
+            }
+
+            SessionRule = SessRuleMap->value;
+            if (!SessionRule) {
+                ogs_error("No SessionRule");
+                continue;
+            }
+
+
+            AuthSessAmbr = SessionRule->auth_sess_ambr;
+            if (AuthSessAmbr && trigger_results[
+                OpenAPI_policy_control_request_trigger_SE_AMBR_CH] == true) {
+                if (AuthSessAmbr->uplink)
+                    sess->session.ambr.uplink =
+                        ogs_sbi_bitrate_from_string(AuthSessAmbr->uplink);
+                if (AuthSessAmbr->downlink)
+                    sess->session.ambr.downlink =
+                        ogs_sbi_bitrate_from_string(AuthSessAmbr->downlink);
+            }
+
+            AuthDefQos = SessionRule->auth_def_qos;
+            if (AuthDefQos && trigger_results[
+                OpenAPI_policy_control_request_trigger_DEF_QOS_CH] == true) {
+                sess->session.qos.index = AuthDefQos->_5qi;
+                sess->session.qos.arp.priority_level =
+                    AuthDefQos->priority_level;
+                if (AuthDefQos->arp) {
+                    sess->session.qos.arp.priority_level =
+                            AuthDefQos->arp->priority_level;
+                    if (AuthDefQos->arp->preempt_cap ==
+                        OpenAPI_preemption_capability_NOT_PREEMPT)
+                        sess->session.qos.arp.pre_emption_capability =
+                            OGS_5GC_PRE_EMPTION_DISABLED;
+                    else if (AuthDefQos->arp->preempt_cap ==
+                        OpenAPI_preemption_capability_MAY_PREEMPT)
+                        sess->session.qos.arp.pre_emption_capability =
+                            OGS_5GC_PRE_EMPTION_ENABLED;
+                    ogs_assert(sess->session.qos.arp.pre_emption_capability);
+
+                    if (AuthDefQos->arp->preempt_vuln ==
+                        OpenAPI_preemption_vulnerability_NOT_PREEMPTABLE)
+                        sess->session.qos.arp.pre_emption_vulnerability =
+                            OGS_5GC_PRE_EMPTION_DISABLED;
+                    else if (AuthDefQos->arp->preempt_vuln ==
+                        OpenAPI_preemption_vulnerability_PREEMPTABLE)
+                        sess->session.qos.arp.pre_emption_vulnerability =
+                            OGS_5GC_PRE_EMPTION_ENABLED;
+                    ogs_assert(sess->session.qos.arp.pre_emption_vulnerability);
+                }
+            }
+        }
+    }
+
+    /* Update authorized PCC rule & QoS */
+    update_authorized_pcc_rule_and_qos(sess, SmPolicyDecision);
 
     /*********************************************************************
      * Send PFCP Session Establiashment Request to the UPF
@@ -530,6 +607,81 @@ bool smf_npcf_smpolicycontrol_handle_delete(
 
     ogs_assert(OGS_OK ==
         smf_5gc_pfcp_send_session_deletion_request(sess, stream, trigger));
+
+    return true;
+}
+
+bool smf_npcf_smpolicycontrol_handle_update_notify(
+        smf_sess_t *sess, ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg)
+{
+    char *strerror = NULL;
+    smf_ue_t *smf_ue = NULL;
+
+    OpenAPI_sm_policy_notification_t *SmPolicyNotification = NULL;
+    OpenAPI_sm_policy_decision_t *SmPolicyDecision = NULL;
+
+    ogs_assert(sess);
+    ogs_assert(stream);
+    smf_ue = sess->smf_ue;
+    ogs_assert(smf_ue);
+
+    ogs_assert(recvmsg);
+
+    SmPolicyNotification = recvmsg->SmPolicyNotification;
+    if (!SmPolicyNotification) {
+        strerror = ogs_msprintf("[%s:%d] No SmPolicyNotification",
+                smf_ue->supi, sess->psi);
+        goto cleanup;
+    }
+
+    SmPolicyDecision = SmPolicyNotification->sm_policy_decision;
+    if (!SmPolicyDecision) {
+        strerror = ogs_msprintf("[%s:%d] No SmPolicyDecision",
+                smf_ue->supi, sess->psi);
+        goto cleanup;
+    }
+
+    /* Update authorized PCC rule & QoS */
+    update_authorized_pcc_rule_and_qos(sess, SmPolicyDecision);
+
+    ogs_assert(true == ogs_sbi_send_http_status_no_content(stream));
+
+    smf_qos_flow_binding(sess);
+
+    return true;
+
+cleanup:
+    ogs_assert(strerror);
+
+    ogs_error("%s", strerror);
+    ogs_assert(true ==
+        ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+            recvmsg, strerror, NULL));
+    ogs_free(strerror);
+
+    return false;
+}
+
+bool smf_npcf_smpolicycontrol_handle_terminate_notify(
+        smf_sess_t *sess, ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg)
+{
+    smf_ue_t *smf_ue = NULL;
+    smf_npcf_smpolicycontrol_param_t param;
+
+    ogs_assert(sess);
+    ogs_assert(stream);
+    smf_ue = sess->smf_ue;
+    ogs_assert(smf_ue);
+
+    ogs_assert(recvmsg);
+
+    ogs_assert(true == ogs_sbi_send_http_status_no_content(stream));
+
+    memset(&param, 0, sizeof(param));
+    ogs_assert(true ==
+        smf_sbi_discover_and_send(OpenAPI_nf_type_PCF, sess, NULL,
+            OGS_PFCP_DELETE_TRIGGER_PCF_INITIATED, &param,
+            smf_npcf_smpolicycontrol_build_delete));
 
     return true;
 }

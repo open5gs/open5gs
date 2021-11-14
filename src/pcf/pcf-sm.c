@@ -53,6 +53,7 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
 
     pcf_ue_t *pcf_ue = NULL;
     pcf_sess_t *sess = NULL;
+    pcf_app_t *app_session = NULL;
 
     pcf_sm_debug(e);
 
@@ -231,8 +232,10 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
                                     AppSessionContext->asc_req_data->ue_ipv6);
                     }
                 } else {
-                    sess = pcf_sess_find_by_app_session_id(
+                    app_session = pcf_app_find_by_app_session_id(
                             message.h.resource.component[1]);
+                    if (app_session)
+                        sess = app_session->sess;
                 }
                 break;
 
@@ -251,6 +254,7 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
             ogs_assert(OGS_FSM_STATE(&sess->sm));
 
             e->sess = sess;
+            e->app = app_session;
             e->sbi.message = &message;
             ogs_fsm_dispatch(&sess->sm, e);
             if (OGS_FSM_CHECK(&sess->sm, pcf_sm_state_exception)) {

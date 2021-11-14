@@ -192,6 +192,15 @@ int ngap_handle_pdu_session_resource_modify_response_transfer(
     rv = OGS_ERROR;
 
     qosFlowAddOrModifyResponseList = message.qosFlowAddOrModifyResponseList;
+    if (!qosFlowAddOrModifyResponseList) {
+        /* QosFlow Release */
+        rv = OGS_OK;
+
+        ogs_assert(true == ogs_sbi_send_http_status_no_content(stream));
+
+        goto cleanup;
+    }
+
     if (qosFlowAddOrModifyResponseList) {
         for (i = 0; i < qosFlowAddOrModifyResponseList->list.count; i++) {
             NGAP_QosFlowAddOrModifyResponseItem_t

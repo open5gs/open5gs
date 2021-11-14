@@ -663,48 +663,13 @@ void smf_s5c_handle_update_bearer_response(
             sess->sgw_s5c_teid, sess->smf_n4_teid);
 
     if (gtp_flags & OGS_GTP_MODIFY_TFT_UPDATE) {
-        smf_pf_t *pf = NULL;
-        ogs_pfcp_pdr_t *dl_pdr = NULL, *ul_pdr = NULL;
-
-        dl_pdr = bearer->dl_pdr;
-        ogs_assert(dl_pdr);
-        ul_pdr = bearer->ul_pdr;
-        ogs_assert(ul_pdr);
-
-        dl_pdr->num_of_flow = 0;
-        ul_pdr->num_of_flow = 0;
-
-        ogs_list_for_each(&bearer->pf_list, pf) {
-            if (pf->direction == OGS_FLOW_DOWNLINK_ONLY) {
-                dl_pdr->flow_description[dl_pdr->num_of_flow++] =
-                    pf->flow_description;
-
-            } else if (pf->direction == OGS_FLOW_UPLINK_ONLY) {
-                ul_pdr->flow_description[ul_pdr->num_of_flow++] =
-                    pf->flow_description;
-            } else {
-                ogs_error("Flow Bidirectional is not supported[%d]",
-                        pf->direction);
-            }
-        }
-
-        pfcp_flags |= OGS_PFCP_MODIFY_TFT_UPDATE;
+        pfcp_flags |= OGS_PFCP_MODIFY_EPC_TFT_UPDATE;
+        smf_bearer_tft_update(bearer);
     }
 
     if (gtp_flags & OGS_GTP_MODIFY_QOS_UPDATE) {
-        ogs_pfcp_qer_t *qer = NULL;
-
-        /* Only 1 QER is used per bearer */
-        qer = bearer->qer;
-        if (qer) {
-            qer->mbr.uplink = bearer->qos.mbr.uplink;
-            qer->mbr.downlink = bearer->qos.mbr.downlink;
-            qer->gbr.uplink = bearer->qos.gbr.uplink;
-            qer->gbr.downlink = bearer->qos.gbr.downlink;
-
-        }
-
-        pfcp_flags |= OGS_PFCP_MODIFY_QOS_UPDATE;
+        pfcp_flags |= OGS_PFCP_MODIFY_EPC_QOS_UPDATE;
+        smf_bearer_qos_update(bearer);
     }
 
     if (pfcp_flags)
@@ -1058,9 +1023,9 @@ void smf_s5c_handle_bearer_resource_command(
                         ogs_ipfw_encode_flow_description(&pf->ipfw_rule);
                     ogs_assert(pf->flow_description);
                 }
-            }
 
-            tft_update = 1;
+                tft_update = 1;
+            }
         }
     } else if (tft.code ==
                 OGS_GTP_TFT_CODE_ADD_PACKET_FILTERS_TO_EXISTING_TFT ||
@@ -1138,12 +1103,12 @@ void smf_s5c_handle_bearer_resource_command(
             pf = smf_pf_find_by_id(bearer, tft.pf[i].identifier+1);
             if (pf)
                 smf_pf_remove(pf);
-
-            if (ogs_list_count(&bearer->pf_list))
-                tft_update = 1;
-            else
-                tft_delete = 1;
         }
+
+        if (ogs_list_count(&bearer->pf_list))
+            tft_update = 1;
+        else
+            tft_delete = 1;
     }
 
     if (cmd->flow_quality_of_service.presence) {

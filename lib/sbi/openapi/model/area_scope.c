@@ -119,7 +119,9 @@ cJSON *OpenAPI_area_scope_convertToJSON(OpenAPI_area_scope_t *area_scope)
     if (area_scope->tac_info_per_plmn) {
         OpenAPI_list_for_each(area_scope->tac_info_per_plmn, tac_info_per_plmn_node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)tac_info_per_plmn_node->data;
-        cJSON *itemLocal = OpenAPI_tac_info_convertToJSON(localKeyValue->value);
+        cJSON *itemLocal = localKeyValue->value ?
+            OpenAPI_tac_info_convertToJSON(localKeyValue->value) :
+            cJSON_CreateNull();
         if (itemLocal == NULL) {
             ogs_error("OpenAPI_area_scope_convertToJSON() failed [tac_info_per_plmn]");
             goto end;
@@ -209,12 +211,15 @@ OpenAPI_area_scope_t *OpenAPI_area_scope_parseFromJSON(cJSON *area_scopeJSON)
     OpenAPI_map_t *localMapKeyPair = NULL;
     cJSON_ArrayForEach(tac_info_per_plmn_local_map, tac_info_per_plmn) {
         cJSON *localMapObject = tac_info_per_plmn_local_map;
-        if (!cJSON_IsObject(tac_info_per_plmn_local_map)) {
+        if (cJSON_IsObject(tac_info_per_plmn_local_map)) {
+            localMapKeyPair = OpenAPI_map_create(
+                localMapObject->string, OpenAPI_tac_info_parseFromJSON(localMapObject));
+        } else if (cJSON_IsNull(tac_info_per_plmn_local_map)) {
+            localMapKeyPair = OpenAPI_map_create(localMapObject->string, NULL);
+        } else {
             ogs_error("OpenAPI_area_scope_parseFromJSON() failed [tac_info_per_plmn]");
             goto end;
         }
-        localMapKeyPair = OpenAPI_map_create(
-            localMapObject->string, OpenAPI_tac_info_parseFromJSON(localMapObject));
         OpenAPI_list_add(tac_info_per_plmnList , localMapKeyPair);
     }
     }

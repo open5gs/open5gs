@@ -25,6 +25,7 @@ int __pcf_log_domain;
 
 static OGS_POOL(pcf_ue_pool, pcf_ue_t);
 static OGS_POOL(pcf_sess_pool, pcf_sess_t);
+static OGS_POOL(pcf_app_pool, pcf_app_t);
 
 static int context_initialized = 0;
 
@@ -43,6 +44,7 @@ void pcf_context_init(void)
 
     ogs_pool_init(&pcf_ue_pool, ogs_app()->max.ue);
     ogs_pool_init(&pcf_sess_pool, ogs_app()->pool.sess);
+    ogs_pool_init(&pcf_app_pool, ogs_app()->pool.sess);
 
     ogs_list_init(&self.pcf_ue_list);
 
@@ -69,6 +71,7 @@ void pcf_context_final(void)
     ogs_assert(self.ipv6prefix_hash);
     ogs_hash_destroy(self.ipv6prefix_hash);
 
+    ogs_pool_final(&pcf_app_pool);
     ogs_pool_final(&pcf_sess_pool);
     ogs_pool_final(&pcf_ue_pool);
 
@@ -238,6 +241,8 @@ pcf_sess_t *pcf_sess_add(pcf_ue_t *pcf_ue, uint8_t psi)
     ogs_assert(sess);
     memset(sess, 0, sizeof *sess);
 
+    ogs_list_init(&sess->app_list);
+
     /* SBI Type */
     sess->sbi.type = OGS_SBI_OBJ_SESS_TYPE;
 
@@ -256,10 +261,6 @@ pcf_sess_t *pcf_sess_add(pcf_ue_t *pcf_ue, uint8_t psi)
     sess->sm_policy_id = ogs_msprintf("%d",
             (int)ogs_pool_index(&pcf_sess_pool, sess));
     ogs_assert(sess->sm_policy_id);
-
-    sess->app_session_id = ogs_msprintf("%d",
-            (int)ogs_pool_index(&pcf_sess_pool, sess));
-    ogs_assert(sess->app_session_id);
 
     sess->pcf_ue = pcf_ue;
     sess->psi = psi;
@@ -294,11 +295,10 @@ void pcf_sess_remove(pcf_sess_t *sess)
     /* Free SBI object memory */
     ogs_sbi_object_free(&sess->sbi);
 
+    pcf_app_remove_all(sess);
+
     ogs_assert(sess->sm_policy_id);
     ogs_free(sess->sm_policy_id);
-
-    ogs_assert(sess->app_session_id);
-    ogs_free(sess->app_session_id);
 
     if (sess->binding_id)
         ogs_free(sess->binding_id);
@@ -410,12 +410,6 @@ pcf_sess_t *pcf_sess_find_by_sm_policy_id(char *sm_policy_id)
     return pcf_sess_find(atoll(sm_policy_id));
 }
 
-pcf_sess_t *pcf_sess_find_by_app_session_id(char *app_session_id)
-{
-    ogs_assert(app_session_id);
-    return pcf_sess_find(atoll(app_session_id));
-}
-
 pcf_sess_t *pcf_sess_find_by_psi(pcf_ue_t *pcf_ue, uint8_t psi)
 {
     pcf_sess_t *sess = NULL;
@@ -510,4 +504,71 @@ void pcf_sess_select_nf(pcf_sess_t *sess, OpenAPI_nf_type_e nf_type)
         ogs_sbi_select_nrf(&sess->sbi, pcf_nf_state_registered);
     else
         ogs_sbi_select_first_nf(&sess->sbi, nf_type, pcf_nf_state_registered);
+}
+
+pcf_app_t *pcf_app_add(pcf_sess_t *sess)
+{
+    pcf_app_t *app = NULL;
+
+    ogs_assert(sess);
+
+    ogs_pool_alloc(&pcf_app_pool, &app);
+    ogs_assert(app);
+    memset(app, 0, sizeof *app);
+
+    app->app_session_id = ogs_msprintf("%d",
+            (int)ogs_pool_index(&pcf_app_pool, app));
+    ogs_assert(app->app_session_id);
+
+    app->sess = sess;
+
+    ogs_list_add(&sess->app_list, app);
+
+    return app;
+}
+
+int pcf_app_remove(pcf_app_t *app)
+{
+    int i;
+
+    ogs_assert(app);
+    ogs_assert(app->sess);
+
+    ogs_list_remove(&app->sess->app_list, app);
+
+    for (i = 0; i < app->num_of_pcc_rule; i++) {
+        OGS_PCC_RULE_FREE(&app->pcc_rule[i]);
+    }
+
+    if (app->notif_uri)
+        ogs_free(app->notif_uri);
+    if (app->naf.client)
+        ogs_sbi_client_remove(app->naf.client);
+
+    ogs_assert(app->app_session_id);
+    ogs_free(app->app_session_id);
+
+    ogs_pool_free(&pcf_app_pool, app);
+
+    return OGS_OK;
+}
+
+void pcf_app_remove_all(pcf_sess_t *sess)
+{
+    pcf_app_t *app = NULL, *next_app = NULL;
+
+    ogs_assert(sess);
+    ogs_list_for_each_safe(&sess->app_list, next_app, app)
+        pcf_app_remove(app);
+}
+
+pcf_app_t *pcf_app_find(uint32_t index)
+{
+    return ogs_pool_find(&pcf_app_pool, index);
+}
+
+pcf_app_t *pcf_app_find_by_app_session_id(char *app_session_id)
+{
+    ogs_assert(app_session_id);
+    return pcf_app_find(atoll(app_session_id));
 }

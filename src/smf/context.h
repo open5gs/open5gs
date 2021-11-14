@@ -137,7 +137,6 @@ ED3(uint8_t spare:2;,
     uint8_t identifier:4;)
 
     uint8_t precedence;             /* Only used in EPC */
-    uint8_t epc_precedence;         /* Only used in EPC */
 
     uint8_t *identifier_node;       /* Pool-Node for Identifier */
     uint8_t *precedence_node;       /* Pool-Node for Precedence */
@@ -150,6 +149,10 @@ ED3(uint8_t spare:2;,
 
 typedef struct smf_bearer_s {
     ogs_lnode_t     lnode;          /**< A node of list_t */
+
+    ogs_lnode_t     to_update_node;
+    ogs_lnode_t     to_delete_node;
+
     uint32_t        index;
 
     ogs_pfcp_pdr_t  *dl_pdr;
@@ -181,6 +184,9 @@ typedef struct smf_bearer_s {
     /* Packet Filter List */
     ogs_list_t      pf_list;
     ogs_list_t      pf_to_add_list;
+
+    uint8_t num_of_pf_to_delete;
+    uint8_t pf_to_delete[OGS_MAX_NUM_OF_FLOW_IN_NAS];
 
     smf_sess_t      *sess;
 } smf_bearer_t;
@@ -285,8 +291,10 @@ typedef struct smf_sess_s {
         ogs_nas_extended_protocol_configuration_options_t ue_pco;
     } nas; /* Saved from NAS-5GS */
 
-    ogs_pcc_rule_t  pcc_rule[OGS_MAX_NUM_OF_PCC_RULE]; /* Saved from Gx */
-    int             num_of_pcc_rule;
+    struct {
+        ogs_pcc_rule_t  pcc_rule[OGS_MAX_NUM_OF_PCC_RULE];
+        int             num_of_pcc_rule;
+    } policy; /* Saved from N7 or Gx */
 
     /* Paging */
     struct {
@@ -300,7 +308,8 @@ typedef struct smf_sess_s {
     /* State */
 #define SMF_NGAP_STATE_NONE                                     0
 #define SMF_NGAP_STATE_DELETE_TRIGGER_UE_REQUESTED              1
-#define SMF_NGAP_STATE_ERROR_INDICATION_RECEIVED_FROM_5G_AN     2
+#define SMF_NGAP_STATE_DELETE_TRIGGER_PCF_INITIATED             2
+#define SMF_NGAP_STATE_ERROR_INDICATION_RECEIVED_FROM_5G_AN     3
     struct {
         int pdu_session_resource_release;
     } ngap_state;
@@ -391,6 +400,8 @@ void smf_sess_delete_indirect_data_forwarding(smf_sess_t *sess);
 void smf_sess_create_cp_up_data_forwarding(smf_sess_t *sess);
 void smf_sess_delete_cp_up_data_forwarding(smf_sess_t *sess);
 
+ogs_pcc_rule_t *smf_pcc_rule_find_by_id(smf_sess_t *sess, char *pcc_rule_id);
+
 smf_bearer_t *smf_qos_flow_add(smf_sess_t *sess);
 smf_bearer_t *smf_qos_flow_find_by_qfi(smf_sess_t *sess, uint8_t qfi);
 smf_bearer_t *smf_qos_flow_find_by_pcc_rule_id(
@@ -407,6 +418,9 @@ smf_bearer_t *smf_bearer_find_by_pcc_rule_name(
 smf_bearer_t *smf_bearer_find_by_pdr_id(
         smf_sess_t *sess, ogs_pfcp_pdr_id_t pdr_id);
 smf_bearer_t *smf_default_bearer_in_sess(smf_sess_t *sess);
+
+void smf_bearer_tft_update(smf_bearer_t *bearer);
+void smf_bearer_qos_update(smf_bearer_t *bearer);
 
 smf_ue_t *smf_ue_cycle(smf_ue_t *smf_ue);
 smf_sess_t *smf_sess_cycle(smf_sess_t *sess);

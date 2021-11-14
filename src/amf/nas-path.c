@@ -416,6 +416,37 @@ int nas_5gs_send_configuration_update_command(
     return rv;
 }
 
+int nas_send_pdu_session_modification_command(amf_sess_t *sess,
+        ogs_pkbuf_t *n1smbuf, ogs_pkbuf_t *n2smbuf)
+{
+    int rv;
+
+    amf_ue_t *amf_ue = NULL;
+
+    ogs_pkbuf_t *gmmbuf = NULL;
+    ogs_pkbuf_t *ngapbuf = NULL;
+
+    ogs_assert(sess);
+    amf_ue = sess->amf_ue;
+    ogs_assert(amf_ue);
+    ogs_assert(n1smbuf);
+    ogs_assert(n2smbuf);
+
+    gmmbuf = gmm_build_dl_nas_transport(sess,
+            OGS_NAS_PAYLOAD_CONTAINER_N1_SM_INFORMATION, n1smbuf, 0, 0);
+    ogs_expect_or_return_val(gmmbuf, OGS_ERROR);
+
+    ngapbuf = ngap_build_pdu_session_resource_modify_request(
+            sess, gmmbuf, n2smbuf);
+    ogs_expect_or_return_val(ngapbuf, OGS_ERROR);
+
+    rv = nas_5gs_send_to_gnb(amf_ue, ngapbuf);
+    ogs_expect(rv == OGS_OK);
+
+    return rv;
+}
+
+
 int nas_send_pdu_session_release_command(amf_sess_t *sess,
         ogs_pkbuf_t *n1smbuf, ogs_pkbuf_t *n2smbuf)
 {

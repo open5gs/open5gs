@@ -73,7 +73,9 @@ cJSON *OpenAPI_smf_selection_data_convertToJSON(OpenAPI_smf_selection_data_t *sm
     if (smf_selection_data->candidates) {
         OpenAPI_list_for_each(smf_selection_data->candidates, candidates_node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)candidates_node->data;
-        cJSON *itemLocal = OpenAPI_candidate_for_replacement_convertToJSON(localKeyValue->value);
+        cJSON *itemLocal = localKeyValue->value ?
+            OpenAPI_candidate_for_replacement_convertToJSON(localKeyValue->value) :
+            cJSON_CreateNull();
         if (itemLocal == NULL) {
             ogs_error("OpenAPI_smf_selection_data_convertToJSON() failed [candidates]");
             goto end;
@@ -145,12 +147,15 @@ OpenAPI_smf_selection_data_t *OpenAPI_smf_selection_data_parseFromJSON(cJSON *sm
     OpenAPI_map_t *localMapKeyPair = NULL;
     cJSON_ArrayForEach(candidates_local_map, candidates) {
         cJSON *localMapObject = candidates_local_map;
-        if (!cJSON_IsObject(candidates_local_map)) {
+        if (cJSON_IsObject(candidates_local_map)) {
+            localMapKeyPair = OpenAPI_map_create(
+                localMapObject->string, OpenAPI_candidate_for_replacement_parseFromJSON(localMapObject));
+        } else if (cJSON_IsNull(candidates_local_map)) {
+            localMapKeyPair = OpenAPI_map_create(localMapObject->string, NULL);
+        } else {
             ogs_error("OpenAPI_smf_selection_data_parseFromJSON() failed [candidates]");
             goto end;
         }
-        localMapKeyPair = OpenAPI_map_create(
-            localMapObject->string, OpenAPI_candidate_for_replacement_parseFromJSON(localMapObject));
         OpenAPI_list_add(candidatesList , localMapKeyPair);
     }
     }

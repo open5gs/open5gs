@@ -686,7 +686,9 @@ cJSON *OpenAPI_nf_profile_convertToJSON(OpenAPI_nf_profile_t *nf_profile)
     if (nf_profile->udr_info_list) {
         OpenAPI_list_for_each(nf_profile->udr_info_list, udr_info_list_node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)udr_info_list_node->data;
-        cJSON *itemLocal = OpenAPI_udr_info_convertToJSON(localKeyValue->value);
+        cJSON *itemLocal = localKeyValue->value ?
+            OpenAPI_udr_info_convertToJSON(localKeyValue->value) :
+            cJSON_CreateNull();
         if (itemLocal == NULL) {
             ogs_error("OpenAPI_nf_profile_convertToJSON() failed [udr_info_list]");
             goto end;
@@ -720,7 +722,9 @@ cJSON *OpenAPI_nf_profile_convertToJSON(OpenAPI_nf_profile_t *nf_profile)
     if (nf_profile->udm_info_list) {
         OpenAPI_list_for_each(nf_profile->udm_info_list, udm_info_list_node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)udm_info_list_node->data;
-        cJSON *itemLocal = OpenAPI_udm_info_convertToJSON(localKeyValue->value);
+        cJSON *itemLocal = localKeyValue->value ?
+            OpenAPI_udm_info_convertToJSON(localKeyValue->value) :
+            cJSON_CreateNull();
         if (itemLocal == NULL) {
             ogs_error("OpenAPI_nf_profile_convertToJSON() failed [udm_info_list]");
             goto end;
@@ -754,7 +758,9 @@ cJSON *OpenAPI_nf_profile_convertToJSON(OpenAPI_nf_profile_t *nf_profile)
     if (nf_profile->ausf_info_list) {
         OpenAPI_list_for_each(nf_profile->ausf_info_list, ausf_info_list_node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)ausf_info_list_node->data;
-        cJSON *itemLocal = OpenAPI_ausf_info_convertToJSON(localKeyValue->value);
+        cJSON *itemLocal = localKeyValue->value ?
+            OpenAPI_ausf_info_convertToJSON(localKeyValue->value) :
+            cJSON_CreateNull();
         if (itemLocal == NULL) {
             ogs_error("OpenAPI_nf_profile_convertToJSON() failed [ausf_info_list]");
             goto end;
@@ -788,7 +794,9 @@ cJSON *OpenAPI_nf_profile_convertToJSON(OpenAPI_nf_profile_t *nf_profile)
     if (nf_profile->amf_info_list) {
         OpenAPI_list_for_each(nf_profile->amf_info_list, amf_info_list_node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)amf_info_list_node->data;
-        cJSON *itemLocal = OpenAPI_amf_info_convertToJSON(localKeyValue->value);
+        cJSON *itemLocal = localKeyValue->value ?
+            OpenAPI_amf_info_convertToJSON(localKeyValue->value) :
+            cJSON_CreateNull();
         if (itemLocal == NULL) {
             ogs_error("OpenAPI_nf_profile_convertToJSON() failed [amf_info_list]");
             goto end;
@@ -822,7 +830,9 @@ cJSON *OpenAPI_nf_profile_convertToJSON(OpenAPI_nf_profile_t *nf_profile)
     if (nf_profile->smf_info_list) {
         OpenAPI_list_for_each(nf_profile->smf_info_list, smf_info_list_node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)smf_info_list_node->data;
-        cJSON *itemLocal = OpenAPI_smf_info_convertToJSON(localKeyValue->value);
+        cJSON *itemLocal = localKeyValue->value ?
+            OpenAPI_smf_info_convertToJSON(localKeyValue->value) :
+            cJSON_CreateNull();
         if (itemLocal == NULL) {
             ogs_error("OpenAPI_nf_profile_convertToJSON() failed [smf_info_list]");
             goto end;
@@ -856,7 +866,9 @@ cJSON *OpenAPI_nf_profile_convertToJSON(OpenAPI_nf_profile_t *nf_profile)
     if (nf_profile->upf_info_list) {
         OpenAPI_list_for_each(nf_profile->upf_info_list, upf_info_list_node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)upf_info_list_node->data;
-        cJSON *itemLocal = OpenAPI_upf_info_convertToJSON(localKeyValue->value);
+        cJSON *itemLocal = localKeyValue->value ?
+            OpenAPI_upf_info_convertToJSON(localKeyValue->value) :
+            cJSON_CreateNull();
         if (itemLocal == NULL) {
             ogs_error("OpenAPI_nf_profile_convertToJSON() failed [upf_info_list]");
             goto end;
@@ -890,7 +902,9 @@ cJSON *OpenAPI_nf_profile_convertToJSON(OpenAPI_nf_profile_t *nf_profile)
     if (nf_profile->pcf_info_list) {
         OpenAPI_list_for_each(nf_profile->pcf_info_list, pcf_info_list_node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)pcf_info_list_node->data;
-        cJSON *itemLocal = OpenAPI_pcf_info_convertToJSON(localKeyValue->value);
+        cJSON *itemLocal = localKeyValue->value ?
+            OpenAPI_pcf_info_convertToJSON(localKeyValue->value) :
+            cJSON_CreateNull();
         if (itemLocal == NULL) {
             ogs_error("OpenAPI_nf_profile_convertToJSON() failed [pcf_info_list]");
             goto end;
@@ -924,7 +938,9 @@ cJSON *OpenAPI_nf_profile_convertToJSON(OpenAPI_nf_profile_t *nf_profile)
     if (nf_profile->bsf_info_list) {
         OpenAPI_list_for_each(nf_profile->bsf_info_list, bsf_info_list_node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)bsf_info_list_node->data;
-        cJSON *itemLocal = OpenAPI_bsf_info_convertToJSON(localKeyValue->value);
+        cJSON *itemLocal = localKeyValue->value ?
+            OpenAPI_bsf_info_convertToJSON(localKeyValue->value) :
+            cJSON_CreateNull();
         if (itemLocal == NULL) {
             ogs_error("OpenAPI_nf_profile_convertToJSON() failed [bsf_info_list]");
             goto end;
@@ -958,7 +974,9 @@ cJSON *OpenAPI_nf_profile_convertToJSON(OpenAPI_nf_profile_t *nf_profile)
     if (nf_profile->chf_info_list) {
         OpenAPI_list_for_each(nf_profile->chf_info_list, chf_info_list_node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)chf_info_list_node->data;
-        cJSON *itemLocal = OpenAPI_chf_info_convertToJSON(localKeyValue->value);
+        cJSON *itemLocal = localKeyValue->value ?
+            OpenAPI_chf_info_convertToJSON(localKeyValue->value) :
+            cJSON_CreateNull();
         if (itemLocal == NULL) {
             ogs_error("OpenAPI_nf_profile_convertToJSON() failed [chf_info_list]");
             goto end;
@@ -1018,7 +1036,9 @@ cJSON *OpenAPI_nf_profile_convertToJSON(OpenAPI_nf_profile_t *nf_profile)
     if (nf_profile->udsf_info_list) {
         OpenAPI_list_for_each(nf_profile->udsf_info_list, udsf_info_list_node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)udsf_info_list_node->data;
-        cJSON *itemLocal = OpenAPI_udsf_info_convertToJSON(localKeyValue->value);
+        cJSON *itemLocal = localKeyValue->value ?
+            OpenAPI_udsf_info_convertToJSON(localKeyValue->value) :
+            cJSON_CreateNull();
         if (itemLocal == NULL) {
             ogs_error("OpenAPI_nf_profile_convertToJSON() failed [udsf_info_list]");
             goto end;
@@ -1052,7 +1072,9 @@ cJSON *OpenAPI_nf_profile_convertToJSON(OpenAPI_nf_profile_t *nf_profile)
     if (nf_profile->pcscf_info_list) {
         OpenAPI_list_for_each(nf_profile->pcscf_info_list, pcscf_info_list_node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)pcscf_info_list_node->data;
-        cJSON *itemLocal = OpenAPI_pcscf_info_convertToJSON(localKeyValue->value);
+        cJSON *itemLocal = localKeyValue->value ?
+            OpenAPI_pcscf_info_convertToJSON(localKeyValue->value) :
+            cJSON_CreateNull();
         if (itemLocal == NULL) {
             ogs_error("OpenAPI_nf_profile_convertToJSON() failed [pcscf_info_list]");
             goto end;
@@ -1073,7 +1095,9 @@ cJSON *OpenAPI_nf_profile_convertToJSON(OpenAPI_nf_profile_t *nf_profile)
     if (nf_profile->hss_info_list) {
         OpenAPI_list_for_each(nf_profile->hss_info_list, hss_info_list_node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)hss_info_list_node->data;
-        cJSON *itemLocal = OpenAPI_hss_info_convertToJSON(localKeyValue->value);
+        cJSON *itemLocal = localKeyValue->value ?
+            OpenAPI_hss_info_convertToJSON(localKeyValue->value) :
+            cJSON_CreateNull();
         if (itemLocal == NULL) {
             ogs_error("OpenAPI_nf_profile_convertToJSON() failed [hss_info_list]");
             goto end;
@@ -1141,7 +1165,9 @@ cJSON *OpenAPI_nf_profile_convertToJSON(OpenAPI_nf_profile_t *nf_profile)
     if (nf_profile->nf_service_list) {
         OpenAPI_list_for_each(nf_profile->nf_service_list, nf_service_list_node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)nf_service_list_node->data;
-        cJSON *itemLocal = OpenAPI_nf_service_convertToJSON(localKeyValue->value);
+        cJSON *itemLocal = localKeyValue->value ?
+            OpenAPI_nf_service_convertToJSON(localKeyValue->value) :
+            cJSON_CreateNull();
         if (itemLocal == NULL) {
             ogs_error("OpenAPI_nf_profile_convertToJSON() failed [nf_service_list]");
             goto end;
@@ -1724,12 +1750,15 @@ OpenAPI_nf_profile_t *OpenAPI_nf_profile_parseFromJSON(cJSON *nf_profileJSON)
     OpenAPI_map_t *localMapKeyPair = NULL;
     cJSON_ArrayForEach(udr_info_list_local_map, udr_info_list) {
         cJSON *localMapObject = udr_info_list_local_map;
-        if (!cJSON_IsObject(udr_info_list_local_map)) {
+        if (cJSON_IsObject(udr_info_list_local_map)) {
+            localMapKeyPair = OpenAPI_map_create(
+                localMapObject->string, OpenAPI_udr_info_parseFromJSON(localMapObject));
+        } else if (cJSON_IsNull(udr_info_list_local_map)) {
+            localMapKeyPair = OpenAPI_map_create(localMapObject->string, NULL);
+        } else {
             ogs_error("OpenAPI_nf_profile_parseFromJSON() failed [udr_info_list]");
             goto end;
         }
-        localMapKeyPair = OpenAPI_map_create(
-            localMapObject->string, OpenAPI_udr_info_parseFromJSON(localMapObject));
         OpenAPI_list_add(udr_info_listList , localMapKeyPair);
     }
     }
@@ -1754,12 +1783,15 @@ OpenAPI_nf_profile_t *OpenAPI_nf_profile_parseFromJSON(cJSON *nf_profileJSON)
     OpenAPI_map_t *localMapKeyPair = NULL;
     cJSON_ArrayForEach(udm_info_list_local_map, udm_info_list) {
         cJSON *localMapObject = udm_info_list_local_map;
-        if (!cJSON_IsObject(udm_info_list_local_map)) {
+        if (cJSON_IsObject(udm_info_list_local_map)) {
+            localMapKeyPair = OpenAPI_map_create(
+                localMapObject->string, OpenAPI_udm_info_parseFromJSON(localMapObject));
+        } else if (cJSON_IsNull(udm_info_list_local_map)) {
+            localMapKeyPair = OpenAPI_map_create(localMapObject->string, NULL);
+        } else {
             ogs_error("OpenAPI_nf_profile_parseFromJSON() failed [udm_info_list]");
             goto end;
         }
-        localMapKeyPair = OpenAPI_map_create(
-            localMapObject->string, OpenAPI_udm_info_parseFromJSON(localMapObject));
         OpenAPI_list_add(udm_info_listList , localMapKeyPair);
     }
     }
@@ -1784,12 +1816,15 @@ OpenAPI_nf_profile_t *OpenAPI_nf_profile_parseFromJSON(cJSON *nf_profileJSON)
     OpenAPI_map_t *localMapKeyPair = NULL;
     cJSON_ArrayForEach(ausf_info_list_local_map, ausf_info_list) {
         cJSON *localMapObject = ausf_info_list_local_map;
-        if (!cJSON_IsObject(ausf_info_list_local_map)) {
+        if (cJSON_IsObject(ausf_info_list_local_map)) {
+            localMapKeyPair = OpenAPI_map_create(
+                localMapObject->string, OpenAPI_ausf_info_parseFromJSON(localMapObject));
+        } else if (cJSON_IsNull(ausf_info_list_local_map)) {
+            localMapKeyPair = OpenAPI_map_create(localMapObject->string, NULL);
+        } else {
             ogs_error("OpenAPI_nf_profile_parseFromJSON() failed [ausf_info_list]");
             goto end;
         }
-        localMapKeyPair = OpenAPI_map_create(
-            localMapObject->string, OpenAPI_ausf_info_parseFromJSON(localMapObject));
         OpenAPI_list_add(ausf_info_listList , localMapKeyPair);
     }
     }
@@ -1814,12 +1849,15 @@ OpenAPI_nf_profile_t *OpenAPI_nf_profile_parseFromJSON(cJSON *nf_profileJSON)
     OpenAPI_map_t *localMapKeyPair = NULL;
     cJSON_ArrayForEach(amf_info_list_local_map, amf_info_list) {
         cJSON *localMapObject = amf_info_list_local_map;
-        if (!cJSON_IsObject(amf_info_list_local_map)) {
+        if (cJSON_IsObject(amf_info_list_local_map)) {
+            localMapKeyPair = OpenAPI_map_create(
+                localMapObject->string, OpenAPI_amf_info_parseFromJSON(localMapObject));
+        } else if (cJSON_IsNull(amf_info_list_local_map)) {
+            localMapKeyPair = OpenAPI_map_create(localMapObject->string, NULL);
+        } else {
             ogs_error("OpenAPI_nf_profile_parseFromJSON() failed [amf_info_list]");
             goto end;
         }
-        localMapKeyPair = OpenAPI_map_create(
-            localMapObject->string, OpenAPI_amf_info_parseFromJSON(localMapObject));
         OpenAPI_list_add(amf_info_listList , localMapKeyPair);
     }
     }
@@ -1844,12 +1882,15 @@ OpenAPI_nf_profile_t *OpenAPI_nf_profile_parseFromJSON(cJSON *nf_profileJSON)
     OpenAPI_map_t *localMapKeyPair = NULL;
     cJSON_ArrayForEach(smf_info_list_local_map, smf_info_list) {
         cJSON *localMapObject = smf_info_list_local_map;
-        if (!cJSON_IsObject(smf_info_list_local_map)) {
+        if (cJSON_IsObject(smf_info_list_local_map)) {
+            localMapKeyPair = OpenAPI_map_create(
+                localMapObject->string, OpenAPI_smf_info_parseFromJSON(localMapObject));
+        } else if (cJSON_IsNull(smf_info_list_local_map)) {
+            localMapKeyPair = OpenAPI_map_create(localMapObject->string, NULL);
+        } else {
             ogs_error("OpenAPI_nf_profile_parseFromJSON() failed [smf_info_list]");
             goto end;
         }
-        localMapKeyPair = OpenAPI_map_create(
-            localMapObject->string, OpenAPI_smf_info_parseFromJSON(localMapObject));
         OpenAPI_list_add(smf_info_listList , localMapKeyPair);
     }
     }
@@ -1874,12 +1915,15 @@ OpenAPI_nf_profile_t *OpenAPI_nf_profile_parseFromJSON(cJSON *nf_profileJSON)
     OpenAPI_map_t *localMapKeyPair = NULL;
     cJSON_ArrayForEach(upf_info_list_local_map, upf_info_list) {
         cJSON *localMapObject = upf_info_list_local_map;
-        if (!cJSON_IsObject(upf_info_list_local_map)) {
+        if (cJSON_IsObject(upf_info_list_local_map)) {
+            localMapKeyPair = OpenAPI_map_create(
+                localMapObject->string, OpenAPI_upf_info_parseFromJSON(localMapObject));
+        } else if (cJSON_IsNull(upf_info_list_local_map)) {
+            localMapKeyPair = OpenAPI_map_create(localMapObject->string, NULL);
+        } else {
             ogs_error("OpenAPI_nf_profile_parseFromJSON() failed [upf_info_list]");
             goto end;
         }
-        localMapKeyPair = OpenAPI_map_create(
-            localMapObject->string, OpenAPI_upf_info_parseFromJSON(localMapObject));
         OpenAPI_list_add(upf_info_listList , localMapKeyPair);
     }
     }
@@ -1904,12 +1948,15 @@ OpenAPI_nf_profile_t *OpenAPI_nf_profile_parseFromJSON(cJSON *nf_profileJSON)
     OpenAPI_map_t *localMapKeyPair = NULL;
     cJSON_ArrayForEach(pcf_info_list_local_map, pcf_info_list) {
         cJSON *localMapObject = pcf_info_list_local_map;
-        if (!cJSON_IsObject(pcf_info_list_local_map)) {
+        if (cJSON_IsObject(pcf_info_list_local_map)) {
+            localMapKeyPair = OpenAPI_map_create(
+                localMapObject->string, OpenAPI_pcf_info_parseFromJSON(localMapObject));
+        } else if (cJSON_IsNull(pcf_info_list_local_map)) {
+            localMapKeyPair = OpenAPI_map_create(localMapObject->string, NULL);
+        } else {
             ogs_error("OpenAPI_nf_profile_parseFromJSON() failed [pcf_info_list]");
             goto end;
         }
-        localMapKeyPair = OpenAPI_map_create(
-            localMapObject->string, OpenAPI_pcf_info_parseFromJSON(localMapObject));
         OpenAPI_list_add(pcf_info_listList , localMapKeyPair);
     }
     }
@@ -1934,12 +1981,15 @@ OpenAPI_nf_profile_t *OpenAPI_nf_profile_parseFromJSON(cJSON *nf_profileJSON)
     OpenAPI_map_t *localMapKeyPair = NULL;
     cJSON_ArrayForEach(bsf_info_list_local_map, bsf_info_list) {
         cJSON *localMapObject = bsf_info_list_local_map;
-        if (!cJSON_IsObject(bsf_info_list_local_map)) {
+        if (cJSON_IsObject(bsf_info_list_local_map)) {
+            localMapKeyPair = OpenAPI_map_create(
+                localMapObject->string, OpenAPI_bsf_info_parseFromJSON(localMapObject));
+        } else if (cJSON_IsNull(bsf_info_list_local_map)) {
+            localMapKeyPair = OpenAPI_map_create(localMapObject->string, NULL);
+        } else {
             ogs_error("OpenAPI_nf_profile_parseFromJSON() failed [bsf_info_list]");
             goto end;
         }
-        localMapKeyPair = OpenAPI_map_create(
-            localMapObject->string, OpenAPI_bsf_info_parseFromJSON(localMapObject));
         OpenAPI_list_add(bsf_info_listList , localMapKeyPair);
     }
     }
@@ -1964,12 +2014,15 @@ OpenAPI_nf_profile_t *OpenAPI_nf_profile_parseFromJSON(cJSON *nf_profileJSON)
     OpenAPI_map_t *localMapKeyPair = NULL;
     cJSON_ArrayForEach(chf_info_list_local_map, chf_info_list) {
         cJSON *localMapObject = chf_info_list_local_map;
-        if (!cJSON_IsObject(chf_info_list_local_map)) {
+        if (cJSON_IsObject(chf_info_list_local_map)) {
+            localMapKeyPair = OpenAPI_map_create(
+                localMapObject->string, OpenAPI_chf_info_parseFromJSON(localMapObject));
+        } else if (cJSON_IsNull(chf_info_list_local_map)) {
+            localMapKeyPair = OpenAPI_map_create(localMapObject->string, NULL);
+        } else {
             ogs_error("OpenAPI_nf_profile_parseFromJSON() failed [chf_info_list]");
             goto end;
         }
-        localMapKeyPair = OpenAPI_map_create(
-            localMapObject->string, OpenAPI_chf_info_parseFromJSON(localMapObject));
         OpenAPI_list_add(chf_info_listList , localMapKeyPair);
     }
     }
@@ -2008,12 +2061,15 @@ OpenAPI_nf_profile_t *OpenAPI_nf_profile_parseFromJSON(cJSON *nf_profileJSON)
     OpenAPI_map_t *localMapKeyPair = NULL;
     cJSON_ArrayForEach(udsf_info_list_local_map, udsf_info_list) {
         cJSON *localMapObject = udsf_info_list_local_map;
-        if (!cJSON_IsObject(udsf_info_list_local_map)) {
+        if (cJSON_IsObject(udsf_info_list_local_map)) {
+            localMapKeyPair = OpenAPI_map_create(
+                localMapObject->string, OpenAPI_udsf_info_parseFromJSON(localMapObject));
+        } else if (cJSON_IsNull(udsf_info_list_local_map)) {
+            localMapKeyPair = OpenAPI_map_create(localMapObject->string, NULL);
+        } else {
             ogs_error("OpenAPI_nf_profile_parseFromJSON() failed [udsf_info_list]");
             goto end;
         }
-        localMapKeyPair = OpenAPI_map_create(
-            localMapObject->string, OpenAPI_udsf_info_parseFromJSON(localMapObject));
         OpenAPI_list_add(udsf_info_listList , localMapKeyPair);
     }
     }
@@ -2038,12 +2094,15 @@ OpenAPI_nf_profile_t *OpenAPI_nf_profile_parseFromJSON(cJSON *nf_profileJSON)
     OpenAPI_map_t *localMapKeyPair = NULL;
     cJSON_ArrayForEach(pcscf_info_list_local_map, pcscf_info_list) {
         cJSON *localMapObject = pcscf_info_list_local_map;
-        if (!cJSON_IsObject(pcscf_info_list_local_map)) {
+        if (cJSON_IsObject(pcscf_info_list_local_map)) {
+            localMapKeyPair = OpenAPI_map_create(
+                localMapObject->string, OpenAPI_pcscf_info_parseFromJSON(localMapObject));
+        } else if (cJSON_IsNull(pcscf_info_list_local_map)) {
+            localMapKeyPair = OpenAPI_map_create(localMapObject->string, NULL);
+        } else {
             ogs_error("OpenAPI_nf_profile_parseFromJSON() failed [pcscf_info_list]");
             goto end;
         }
-        localMapKeyPair = OpenAPI_map_create(
-            localMapObject->string, OpenAPI_pcscf_info_parseFromJSON(localMapObject));
         OpenAPI_list_add(pcscf_info_listList , localMapKeyPair);
     }
     }
@@ -2061,12 +2120,15 @@ OpenAPI_nf_profile_t *OpenAPI_nf_profile_parseFromJSON(cJSON *nf_profileJSON)
     OpenAPI_map_t *localMapKeyPair = NULL;
     cJSON_ArrayForEach(hss_info_list_local_map, hss_info_list) {
         cJSON *localMapObject = hss_info_list_local_map;
-        if (!cJSON_IsObject(hss_info_list_local_map)) {
+        if (cJSON_IsObject(hss_info_list_local_map)) {
+            localMapKeyPair = OpenAPI_map_create(
+                localMapObject->string, OpenAPI_hss_info_parseFromJSON(localMapObject));
+        } else if (cJSON_IsNull(hss_info_list_local_map)) {
+            localMapKeyPair = OpenAPI_map_create(localMapObject->string, NULL);
+        } else {
             ogs_error("OpenAPI_nf_profile_parseFromJSON() failed [hss_info_list]");
             goto end;
         }
-        localMapKeyPair = OpenAPI_map_create(
-            localMapObject->string, OpenAPI_hss_info_parseFromJSON(localMapObject));
         OpenAPI_list_add(hss_info_listList , localMapKeyPair);
     }
     }
@@ -2132,12 +2194,15 @@ OpenAPI_nf_profile_t *OpenAPI_nf_profile_parseFromJSON(cJSON *nf_profileJSON)
     OpenAPI_map_t *localMapKeyPair = NULL;
     cJSON_ArrayForEach(nf_service_list_local_map, nf_service_list) {
         cJSON *localMapObject = nf_service_list_local_map;
-        if (!cJSON_IsObject(nf_service_list_local_map)) {
+        if (cJSON_IsObject(nf_service_list_local_map)) {
+            localMapKeyPair = OpenAPI_map_create(
+                localMapObject->string, OpenAPI_nf_service_parseFromJSON(localMapObject));
+        } else if (cJSON_IsNull(nf_service_list_local_map)) {
+            localMapKeyPair = OpenAPI_map_create(localMapObject->string, NULL);
+        } else {
             ogs_error("OpenAPI_nf_profile_parseFromJSON() failed [nf_service_list]");
             goto end;
         }
-        localMapKeyPair = OpenAPI_map_create(
-            localMapObject->string, OpenAPI_nf_service_parseFromJSON(localMapObject));
         OpenAPI_list_add(nf_service_listList , localMapKeyPair);
     }
     }

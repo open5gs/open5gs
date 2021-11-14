@@ -240,6 +240,18 @@ static int client_notify_cb(ogs_sbi_response_t *response, void *data)
     return OGS_OK;
 }
 
+static int client_delete_notify_cb(ogs_sbi_response_t *response, void *data)
+{
+    pcf_app_t *app_session = data;
+
+    ogs_assert(app_session);
+    client_notify_cb(response, data);
+
+    pcf_app_remove(app_session);
+
+    return OGS_OK;
+}
+
 bool pcf_sbi_send_am_policy_control_notify(pcf_ue_t *pcf_ue)
 {
     ogs_sbi_request_t *request = NULL;
@@ -254,7 +266,8 @@ bool pcf_sbi_send_am_policy_control_notify(pcf_ue_t *pcf_ue)
     return ogs_sbi_client_send_request(client, client_notify_cb, request, NULL);
 }
 
-bool pcf_sbi_send_smpolicycontrol_notify(pcf_sess_t *sess)
+bool pcf_sbi_send_smpolicycontrol_update_notify(
+        pcf_sess_t *sess, OpenAPI_sm_policy_decision_t *SmPolicyDecision)
 {
     ogs_sbi_request_t *request = NULL;
     ogs_sbi_client_t *client = NULL;
@@ -263,7 +276,54 @@ bool pcf_sbi_send_smpolicycontrol_notify(pcf_sess_t *sess)
     client = sess->nsmf.client;
     ogs_assert(client);
 
-    request = pcf_nsmf_callback_build_smpolicycontrol(sess, NULL);
+    request = pcf_nsmf_callback_build_smpolicycontrol_update(
+                sess, SmPolicyDecision);
+    ogs_expect_or_return_val(request, false);
+    return ogs_sbi_client_send_request(client, client_notify_cb, request, NULL);
+}
+
+bool pcf_sbi_send_smpolicycontrol_delete_notify(
+        pcf_sess_t *sess, pcf_app_t *app_session,
+        OpenAPI_sm_policy_decision_t *SmPolicyDecision)
+{
+    ogs_sbi_request_t *request = NULL;
+    ogs_sbi_client_t *client = NULL;
+
+    ogs_assert(sess);
+    client = sess->nsmf.client;
+    ogs_assert(client);
+
+    request = pcf_nsmf_callback_build_smpolicycontrol_update(
+                sess, SmPolicyDecision);
+    ogs_expect_or_return_val(request, false);
+    return ogs_sbi_client_send_request(
+            client, client_delete_notify_cb, request, app_session);
+}
+
+bool pcf_sbi_send_smpolicycontrol_terminate_notify(pcf_sess_t *sess)
+{
+    ogs_sbi_request_t *request = NULL;
+    ogs_sbi_client_t *client = NULL;
+
+    ogs_assert(sess);
+    client = sess->nsmf.client;
+    ogs_assert(client);
+
+    request = pcf_nsmf_callback_build_smpolicycontrol_terminate(sess, NULL);
+    ogs_expect_or_return_val(request, false);
+    return ogs_sbi_client_send_request(client, client_notify_cb, request, NULL);
+}
+
+bool pcf_sbi_send_policyauthorization_terminate_notify(pcf_app_t *app)
+{
+    ogs_sbi_request_t *request = NULL;
+    ogs_sbi_client_t *client = NULL;
+
+    ogs_assert(app);
+    client = app->naf.client;
+    ogs_assert(client);
+
+    request = pcf_naf_callback_build_policyauthorization_terminate(app, NULL);
     ogs_expect_or_return_val(request, false);
     return ogs_sbi_client_send_request(client, client_notify_cb, request, NULL);
 }

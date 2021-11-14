@@ -477,7 +477,7 @@ done:
                     ogs_error("PCC Rule Id has already been defined");
                     ogs_free(pcc_rule->id);
                 }
-                pcc_rule->id = ogs_msprintf("%d", pcc_rule_index+1);
+                pcc_rule->id = ogs_msprintf("%s-n%d", dnn, pcc_rule_index+1);
                 ogs_assert(pcc_rule->id);
 
                 pcc_rule->precedence = pcc_rule_index+1;

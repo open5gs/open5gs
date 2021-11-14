@@ -293,7 +293,7 @@ static void test1_func(abts_case *tc, void *data)
     qos_flow = test_qos_flow_find_by_qfi(sess, 2);
     ogs_assert(qos_flow);
 
-    sendbuf = testngap_build_pdu_session_resource_modify_response(qos_flow);
+    sendbuf = testngap_build_qos_flow_resource_modify_response(qos_flow);
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
@@ -771,7 +771,7 @@ static void test2_func(abts_case *tc, void *data)
     qos_flow = test_qos_flow_find_by_qfi(sess, 2);
     ogs_assert(qos_flow);
 
-    sendbuf = testngap_build_pdu_session_resource_modify_response(qos_flow);
+    sendbuf = testngap_build_qos_flow_resource_modify_response(qos_flow);
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
@@ -1205,7 +1205,7 @@ static void test3_func(abts_case *tc, void *data)
     qos_flow = test_qos_flow_find_by_qfi(sess, 2);
     ogs_assert(qos_flow);
 
-    sendbuf = testngap_build_pdu_session_resource_modify_response(qos_flow);
+    sendbuf = testngap_build_qos_flow_resource_modify_response(qos_flow);
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
@@ -1628,7 +1628,7 @@ static void test4_func(abts_case *tc, void *data)
     qos_flow2 = test_qos_flow_find_by_qfi(sess6, 2);
     ogs_assert(qos_flow2);
 
-    sendbuf = testngap_build_pdu_session_resource_modify_response(qos_flow2);
+    sendbuf = testngap_build_qos_flow_resource_modify_response(qos_flow2);
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);

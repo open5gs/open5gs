@@ -652,6 +652,25 @@ void ogs_session_data_free(ogs_session_data_t *session_data);
 
 typedef struct ogs_media_sub_component_s {
     uint32_t            flow_number;
+/*
+ * TS29.214
+ * 5.3.12 Flow-Usage AVP
+ *   NO_INFORMATION(0)
+ *   RTCP(1)
+ *   AF_SIGNALLING(2)
+ *
+ * TS29.514
+ * 5.6.3.14 Enumeration: FlowUsage
+ *   NO_INFO : 1
+ *   RTCP : 2
+ *   AF_SIGNALLING : 3
+ *
+ * EPC and 5GC have different values for FlowUsage
+ * At this point, we will use the 5GC value.
+ */
+#define OGS_FLOW_USAGE_NO_INFO          1
+#define OGS_FLOW_USAGE_RTCP             2
+#define OGS_FLOW_USAGE_AF_SIGNALLING    3
     uint32_t            flow_usage;
     ogs_flow_t          flow[OGS_MAX_NUM_OF_FLOW_IN_MEDIA_SUB_COMPONENT];
     int                 num_of_flow;
@@ -689,6 +708,13 @@ typedef struct ogs_ims_data_s {
 } ogs_ims_data_t;
 
 void ogs_ims_data_free(ogs_ims_data_t *ims_data);
+
+int ogs_pcc_rule_num_of_flow_equal_to_media(
+        ogs_pcc_rule_t *pcc_rule, ogs_media_component_t *media_component);
+int ogs_pcc_rule_install_flow_from_media(
+        ogs_pcc_rule_t *pcc_rule, ogs_media_component_t *media_component);
+int ogs_pcc_rule_update_qos_from_media(
+        ogs_pcc_rule_t *pcc_rule, ogs_media_component_t *media_component);
 
 #ifdef __cplusplus
 }

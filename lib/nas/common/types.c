@@ -443,3 +443,64 @@ void ogs_nas_bitrate_from_uint64(ogs_nas_bitrate_t *nas, uint64_t bitrate)
     }
     nas->value = bitrate;
 }
+
+uint64_t ogs_nas_bitrate_to_uint64(ogs_nas_bitrate_t *nas_bitrate)
+{
+    ogs_assert(nas_bitrate);
+
+    if (nas_bitrate->unit == OGS_NAS_BR_UNIT_1K)
+        return nas_bitrate->value * 1024;
+    if (nas_bitrate->unit == OGS_NAS_BR_UNIT_4K)
+        return nas_bitrate->value * 4 * 1024;
+    if (nas_bitrate->unit == OGS_NAS_BR_UNIT_16K)
+        return nas_bitrate->value * 16 * 1024;
+    if (nas_bitrate->unit == OGS_NAS_BR_UNIT_64K)
+        return nas_bitrate->value * 64 * 1024;
+    if (nas_bitrate->unit == OGS_NAS_BR_UNIT_256K)
+        return nas_bitrate->value * 256 * 1024;
+    if (nas_bitrate->unit == OGS_NAS_BR_UNIT_1M)
+        return nas_bitrate->value * 1024 * 1024;
+    if (nas_bitrate->unit == OGS_NAS_BR_UNIT_4M)
+        return nas_bitrate->value * 4 * 1024 * 1024;
+    if (nas_bitrate->unit == OGS_NAS_BR_UNIT_16M)
+        return nas_bitrate->value * 16 * 1024 * 1024;
+    if (nas_bitrate->unit == OGS_NAS_BR_UNIT_64M)
+        return nas_bitrate->value * 64 * 1024 * 1024;
+    if (nas_bitrate->unit == OGS_NAS_BR_UNIT_256M)
+        return nas_bitrate->value * 256 * 1024 * 1024;
+    if (nas_bitrate->unit == OGS_NAS_BR_UNIT_1G)
+        return nas_bitrate->value * 1024 * 1024 * 1024;
+    if (nas_bitrate->unit == OGS_NAS_BR_UNIT_4G)
+        return nas_bitrate->value * 4 * 1024 * 1024 * 1024;
+    if (nas_bitrate->unit == OGS_NAS_BR_UNIT_16G)
+        return nas_bitrate->value * 16 * 1024 * 1024 * 1024;
+    if (nas_bitrate->unit == OGS_NAS_BR_UNIT_64G)
+        return nas_bitrate->value * 64 * 1024 * 1024 * 1024;
+    if (nas_bitrate->unit == OGS_NAS_BR_UNIT_256G)
+        return nas_bitrate->value * 256 * 1024 * 1024 * 1024;
+    if (nas_bitrate->unit == OGS_NAS_BR_UNIT_1T)
+        return nas_bitrate->value * 1024 * 1024 * 1024 * 1024;
+    if (nas_bitrate->unit == OGS_NAS_BR_UNIT_4T)
+        return nas_bitrate->value * 4 * 1024 * 1024 * 1024 * 1024;
+    if (nas_bitrate->unit == OGS_NAS_BR_UNIT_16T)
+        return nas_bitrate->value * 16 * 1024 * 1024 * 1024 * 1024;
+    if (nas_bitrate->unit == OGS_NAS_BR_UNIT_64T)
+        return nas_bitrate->value * 64 * 1024 * 1024 * 1024 * 1024;
+    if (nas_bitrate->unit == OGS_NAS_BR_UNIT_256T)
+        return nas_bitrate->value * 256 * 1024 * 1024 * 1024 * 1024;
+    if (nas_bitrate->unit == OGS_NAS_BR_UNIT_1P)
+        return nas_bitrate->value * 1024 * 1024 * 1024 * 1024 * 1024;
+    if (nas_bitrate->unit == OGS_NAS_BR_UNIT_4P)
+        return nas_bitrate->value * 4 * 1024 * 1024 * 1024 * 1024 * 1024;
+    if (nas_bitrate->unit == OGS_NAS_BR_UNIT_16P)
+        return nas_bitrate->value * 16 * 1024 * 1024 * 1024 * 1024 * 1024;
+    if (nas_bitrate->unit == OGS_NAS_BR_UNIT_64P)
+        return nas_bitrate->value * 64 * 1024 * 1024 * 1024 * 1024 * 1024;
+    if (nas_bitrate->unit == OGS_NAS_BR_UNIT_256P)
+        return nas_bitrate->value * 256 * 1024 * 1024 * 1024 * 1024 * 1024;
+
+    ogs_fatal("Unknown unit [%d]", nas_bitrate->unit);
+    ogs_assert_if_reached();
+
+    return 0;
+}

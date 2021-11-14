@@ -148,6 +148,9 @@ extern "C" {
                                                     "npcf-policyauthorization"
 #define OGS_SBI_RESOURCE_NAME_APP_SESSIONS          "app-sessions"
 #define OGS_SBI_RESOURCE_NAME_NOTIFY                "notify"
+#define OGS_SBI_SERVICE_NAME_NPCF_CALLBACK          "npcf-callback"
+#define OGS_SBI_RESOURCE_NAME_UPDATE                "update"
+#define OGS_SBI_RESOURCE_NAME_TERMINATE             "terminate"
 
 #define OGS_SBI_SERVICE_NAME_NNSSF_NSSELECTION      "nnssf-nsselection"
 #define OGS_SBI_RESOURCE_NAME_NETWORK_SLICE_INFORMATION \
@@ -397,10 +400,13 @@ typedef struct ogs_sbi_message_s {
     OpenAPI_sm_policy_decision_t *SmPolicyDecision;
     OpenAPI_sm_policy_data_t *SmPolicyData;
     OpenAPI_sm_policy_delete_data_t *SmPolicyDeleteData;
-    OpenAPI_sm_policy_notification_t *SmPolicyNotification;
     OpenAPI_authorized_network_slice_info_t *AuthorizedNetworkSliceInfo;
     OpenAPI_pcf_binding_t *PcfBinding;
     OpenAPI_app_session_context_t *AppSessionContext;
+    OpenAPI_app_session_context_update_data_patch_t
+        *AppSessionContextUpdateDataPatch;
+    OpenAPI_sm_policy_notification_t *SmPolicyNotification;
+    OpenAPI_termination_notification_t *TerminationNotification;
 
     ogs_sbi_links_t *links;
 

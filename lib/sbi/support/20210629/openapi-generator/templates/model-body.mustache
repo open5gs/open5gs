@@ -505,7 +505,9 @@ cJSON *OpenAPI_{{classname}}_convertToJSON(OpenAPI_{{classname}}_t *{{classname}
                 {{/isBoolean}}
             {{/isPrimitiveType}}
             {{^isPrimitiveType}}
-        cJSON *itemLocal = OpenAPI_{{complexType}}_convertToJSON(localKeyValue->value);
+        cJSON *itemLocal = localKeyValue->value ?
+            OpenAPI_{{complexType}}_convertToJSON(localKeyValue->value) :
+            cJSON_CreateNull();
         if (itemLocal == NULL) {
             ogs_error("OpenAPI_{{classname}}_convertToJSON() failed [{{{name}}}]");
             goto end;
@@ -798,12 +800,15 @@ OpenAPI_{{classname}}_t *OpenAPI_{{classname}}_parseFromJSON(cJSON *{{classname}
                     {{/isNumeric}}
                 {{/isPrimitiveType}}
                 {{^isPrimitiveType}}
-        if (!cJSON_IsObject({{{name}}}_local_map)) {
+        if (cJSON_IsObject({{{name}}}_local_map)) {
+            localMapKeyPair = OpenAPI_map_create(
+                localMapObject->string, OpenAPI_{{complexType}}_parseFromJSON(localMapObject));
+        } else if (cJSON_IsNull({{{name}}}_local_map)) {
+            localMapKeyPair = OpenAPI_map_create(localMapObject->string, NULL);
+        } else {
             ogs_error("OpenAPI_{{classname}}_parseFromJSON() failed [{{{name}}}]");
             goto end;
         }
-        localMapKeyPair = OpenAPI_map_create(
-            localMapObject->string, OpenAPI_{{complexType}}_parseFromJSON(localMapObject));
                 {{/isPrimitiveType}}
         OpenAPI_list_add({{{name}}}List , localMapKeyPair);
     }

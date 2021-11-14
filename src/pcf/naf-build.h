@@ -17,8 +17,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef PCF_NSMF_BUILD_H
-#define PCF_NSMF_BUILD_H
+#ifndef PCF_NAF_BUILD_H
+#define PCF_NAF_BUILD_H
 
 #include "context.h"
 
@@ -26,13 +26,11 @@
 extern "C" {
 #endif
 
-ogs_sbi_request_t *pcf_nsmf_callback_build_smpolicycontrol_update(
-        pcf_sess_t *sess, void *data);
-ogs_sbi_request_t *pcf_nsmf_callback_build_smpolicycontrol_terminate(
-        pcf_sess_t *sess, void *data);
+ogs_sbi_request_t *pcf_naf_callback_build_policyauthorization_terminate(
+        pcf_app_t *app_session, void *data);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* PCF_NSMF_BUILD_H */
+#endif /* PCF_NAF_BUILD_H */

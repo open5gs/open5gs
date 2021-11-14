@@ -247,7 +247,9 @@ cJSON *OpenAPI_sm_policy_dnn_data_convertToJSON(OpenAPI_sm_policy_dnn_data_t *sm
     if (sm_policy_dnn_data->ref_um_data_limit_ids) {
         OpenAPI_list_for_each(sm_policy_dnn_data->ref_um_data_limit_ids, ref_um_data_limit_ids_node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)ref_um_data_limit_ids_node->data;
-        cJSON *itemLocal = OpenAPI_limit_id_to_monitoring_key_convertToJSON(localKeyValue->value);
+        cJSON *itemLocal = localKeyValue->value ?
+            OpenAPI_limit_id_to_monitoring_key_convertToJSON(localKeyValue->value) :
+            cJSON_CreateNull();
         if (itemLocal == NULL) {
             ogs_error("OpenAPI_sm_policy_dnn_data_convertToJSON() failed [ref_um_data_limit_ids]");
             goto end;
@@ -303,7 +305,9 @@ cJSON *OpenAPI_sm_policy_dnn_data_convertToJSON(OpenAPI_sm_policy_dnn_data_t *sm
     if (sm_policy_dnn_data->pra_infos) {
         OpenAPI_list_for_each(sm_policy_dnn_data->pra_infos, pra_infos_node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)pra_infos_node->data;
-        cJSON *itemLocal = OpenAPI_presence_info_convertToJSON(localKeyValue->value);
+        cJSON *itemLocal = localKeyValue->value ?
+            OpenAPI_presence_info_convertToJSON(localKeyValue->value) :
+            cJSON_CreateNull();
         if (itemLocal == NULL) {
             ogs_error("OpenAPI_sm_policy_dnn_data_convertToJSON() failed [pra_infos]");
             goto end;
@@ -485,12 +489,15 @@ OpenAPI_sm_policy_dnn_data_t *OpenAPI_sm_policy_dnn_data_parseFromJSON(cJSON *sm
     OpenAPI_map_t *localMapKeyPair = NULL;
     cJSON_ArrayForEach(ref_um_data_limit_ids_local_map, ref_um_data_limit_ids) {
         cJSON *localMapObject = ref_um_data_limit_ids_local_map;
-        if (!cJSON_IsObject(ref_um_data_limit_ids_local_map)) {
+        if (cJSON_IsObject(ref_um_data_limit_ids_local_map)) {
+            localMapKeyPair = OpenAPI_map_create(
+                localMapObject->string, OpenAPI_limit_id_to_monitoring_key_parseFromJSON(localMapObject));
+        } else if (cJSON_IsNull(ref_um_data_limit_ids_local_map)) {
+            localMapKeyPair = OpenAPI_map_create(localMapObject->string, NULL);
+        } else {
             ogs_error("OpenAPI_sm_policy_dnn_data_parseFromJSON() failed [ref_um_data_limit_ids]");
             goto end;
         }
-        localMapKeyPair = OpenAPI_map_create(
-            localMapObject->string, OpenAPI_limit_id_to_monitoring_key_parseFromJSON(localMapObject));
         OpenAPI_list_add(ref_um_data_limit_idsList , localMapKeyPair);
     }
     }
@@ -553,12 +560,15 @@ OpenAPI_sm_policy_dnn_data_t *OpenAPI_sm_policy_dnn_data_parseFromJSON(cJSON *sm
     OpenAPI_map_t *localMapKeyPair = NULL;
     cJSON_ArrayForEach(pra_infos_local_map, pra_infos) {
         cJSON *localMapObject = pra_infos_local_map;
-        if (!cJSON_IsObject(pra_infos_local_map)) {
+        if (cJSON_IsObject(pra_infos_local_map)) {
+            localMapKeyPair = OpenAPI_map_create(
+                localMapObject->string, OpenAPI_presence_info_parseFromJSON(localMapObject));
+        } else if (cJSON_IsNull(pra_infos_local_map)) {
+            localMapKeyPair = OpenAPI_map_create(localMapObject->string, NULL);
+        } else {
             ogs_error("OpenAPI_sm_policy_dnn_data_parseFromJSON() failed [pra_infos]");
             goto end;
         }
-        localMapKeyPair = OpenAPI_map_create(
-            localMapObject->string, OpenAPI_presence_info_parseFromJSON(localMapObject));
         OpenAPI_list_add(pra_infosList , localMapKeyPair);
     }
     }

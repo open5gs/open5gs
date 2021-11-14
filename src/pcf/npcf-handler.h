@@ -29,12 +29,18 @@ extern "C" {
 bool pcf_npcf_am_policy_contrtol_handle_create(pcf_ue_t *pcf_ue,
         ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg);
 
-bool pcf_npcf_smpolicycontrtol_handle_create(pcf_sess_t *sess,
+bool pcf_npcf_smpolicycontrol_handle_create(pcf_sess_t *sess,
         ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg);
-bool pcf_npcf_smpolicycontrtol_handle_delete(pcf_sess_t *sess,
+bool pcf_npcf_smpolicycontrol_handle_delete(pcf_sess_t *sess,
         ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg);
 
 bool pcf_npcf_policyauthorization_handle_create(pcf_sess_t *sess,
+        ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg);
+bool pcf_npcf_policyauthorization_handle_update(
+        pcf_sess_t *sess, pcf_app_t *app,
+        ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg);
+bool pcf_npcf_policyauthorization_handle_delete(
+        pcf_sess_t *sess, pcf_app_t *app,
         ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg);
 
 #ifdef __cplusplus

@@ -133,7 +133,7 @@ bool pcf_npcf_am_policy_contrtol_handle_create(pcf_ue_t *pcf_ue,
     return true;
 }
 
-bool pcf_npcf_smpolicycontrtol_handle_create(pcf_sess_t *sess,
+bool pcf_npcf_smpolicycontrol_handle_create(pcf_sess_t *sess,
         ogs_sbi_stream_t *stream, ogs_sbi_message_t *message)
 {
     int status = 0;
@@ -293,12 +293,13 @@ cleanup:
     return false;
 }
 
-bool pcf_npcf_smpolicycontrtol_handle_delete(pcf_sess_t *sess,
+bool pcf_npcf_smpolicycontrol_handle_delete(pcf_sess_t *sess,
         ogs_sbi_stream_t *stream, ogs_sbi_message_t *message)
 {
     int status = 0;
     char *strerror = NULL;
     pcf_ue_t *pcf_ue = NULL;
+    pcf_app_t *app_session = NULL;
 
     OpenAPI_sm_policy_delete_data_t *SmPolicyDeleteData = NULL;
 
@@ -313,6 +314,10 @@ bool pcf_npcf_smpolicycontrtol_handle_delete(pcf_sess_t *sess,
                 pcf_ue->supi, sess->psi);
         status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
         goto cleanup;
+    }
+
+    ogs_list_for_each(&sess->app_list, app_session) {
+        pcf_sbi_send_policyauthorization_terminate_notify(app_session);
     }
 
     ogs_assert(true ==
@@ -335,9 +340,13 @@ cleanup:
 bool pcf_npcf_policyauthorization_handle_create(pcf_sess_t *sess,
         ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg)
 {
-    int status = 0;
+    int i, j, rv, status = 0;
     char *strerror = NULL;
     pcf_ue_t *pcf_ue = NULL;
+    pcf_app_t *app_session = NULL;
+
+    ogs_sbi_client_t *client = NULL;
+    ogs_sockaddr_t *addr = NULL;
 
     OpenAPI_app_session_context_t *AppSessionContext = NULL;
     OpenAPI_app_session_context_req_data_t *AscReqData = NULL;
@@ -348,6 +357,8 @@ bool pcf_npcf_policyauthorization_handle_create(pcf_sess_t *sess,
     ogs_sbi_header_t header;
     ogs_sbi_message_t sendmsg;
     ogs_sbi_response_t *response = NULL;
+
+    ogs_session_data_t session_data;
 
     ogs_ims_data_t ims_data;
     ogs_media_component_t *media_component = NULL;
@@ -363,14 +374,22 @@ bool pcf_npcf_policyauthorization_handle_create(pcf_sess_t *sess,
 
     OpenAPI_list_t *fDescList = NULL;
 
+    OpenAPI_sm_policy_decision_t SmPolicyDecision;
+
+    OpenAPI_list_t *PccRuleList = NULL;
+    OpenAPI_map_t *PccRuleMap = NULL;
+    OpenAPI_pcc_rule_t *PccRule = NULL;
+
+    OpenAPI_list_t *QosDecisionList = NULL;
+    OpenAPI_map_t *QosDecisionMap = NULL;
+    OpenAPI_qos_data_t *QosData = NULL;
+
     OpenAPI_lnode_t *node = NULL, *node2 = NULL, *node3 = NULL;
 
     ogs_assert(sess);
     pcf_ue = sess->pcf_ue;
     ogs_assert(stream);
     ogs_assert(recvmsg);
-
-    ogs_assert(sess->app_session_id);
 
     server = ogs_sbi_server_from_stream(stream);
     ogs_assert(server);
@@ -412,6 +431,14 @@ bool pcf_npcf_policyauthorization_handle_create(pcf_sess_t *sess,
         goto cleanup;
     }
 
+    addr = ogs_sbi_getaddr_from_uri(AscReqData->notif_uri);
+    if (!addr) {
+        strerror = ogs_msprintf("[%s:%d] Invalid URI [%s]",
+                pcf_ue->supi, sess->psi, AscReqData->notif_uri);
+        status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
+        goto cleanup;
+    }
+
     supported_features = ogs_uint64_from_string(AscReqData->supp_feat);
     sess->policyauthorization_features &= supported_features;
 
@@ -423,8 +450,6 @@ bool pcf_npcf_policyauthorization_handle_create(pcf_sess_t *sess,
     }
 
     memset(&ims_data, 0, sizeof(ims_data));
-    media_component = &ims_data.
-        media_component[ims_data.num_of_media_component];
 
     MediaComponentList = AscReqData->med_components;
     OpenAPI_list_for_each(MediaComponentList, node) {
@@ -432,6 +457,8 @@ bool pcf_npcf_policyauthorization_handle_create(pcf_sess_t *sess,
         if (MediaComponentMap) {
             MediaComponent = MediaComponentMap->value;
             if (MediaComponent) {
+                media_component = &ims_data.
+                    media_component[ims_data.num_of_media_component];
                 media_component->media_component_number =
                     MediaComponent->med_comp_n;
                 media_component->media_type = MediaComponent->med_type;
@@ -447,12 +474,18 @@ bool pcf_npcf_policyauthorization_handle_create(pcf_sess_t *sess,
                 if (MediaComponent->mir_bw_ul)
                     media_component->min_requested_bandwidth_ul =
                         ogs_sbi_bitrate_from_string(MediaComponent->mir_bw_ul);
+                if (MediaComponent->rr_bw)
+                    media_component->rr_bandwidth =
+                        ogs_sbi_bitrate_from_string(MediaComponent->rr_bw);
+                if (MediaComponent->rs_bw)
+                    media_component->rs_bandwidth =
+                        ogs_sbi_bitrate_from_string(MediaComponent->rs_bw);
                 media_component->flow_status = MediaComponent->f_status;
-
-                sub = &media_component->sub[media_component->num_of_sub];
 
                 SubComponentList = MediaComponent->med_sub_comps;
                 OpenAPI_list_for_each(SubComponentList, node2) {
+                    sub = &media_component->sub[media_component->num_of_sub];
+
                     SubComponentMap = node2->data;
                     if (SubComponentMap) {
                         SubComponent = SubComponentMap->value;
@@ -474,14 +507,217 @@ bool pcf_npcf_policyauthorization_handle_create(pcf_sess_t *sess,
                                     sub->num_of_flow++;
                                 }
                             }
+                            media_component->num_of_sub++;
                         }
                     }
-                    media_component->num_of_sub++;
+                }
+                ims_data.num_of_media_component++;
+            }
+        }
+    }
+
+    app_session = pcf_app_add(sess);
+    ogs_assert(app_session);
+
+    if (app_session->notif_uri)
+        ogs_free(app_session->notif_uri);
+    app_session->notif_uri = ogs_strdup(AscReqData->notif_uri);
+    ogs_assert(app_session->notif_uri);
+
+    client = ogs_sbi_client_find(addr);
+    if (!client) {
+        client = ogs_sbi_client_add(addr);
+        ogs_assert(client);
+    }
+    OGS_SETUP_SBI_CLIENT(&app_session->naf, client);
+
+    ogs_freeaddrinfo(addr);
+
+    memset(&session_data, 0, sizeof(ogs_session_data_t));
+    rv = ogs_dbi_session_data(
+            pcf_ue->supi, &sess->s_nssai, sess->dnn, &session_data);
+    if (rv != OGS_OK) {
+        strerror = ogs_msprintf("[%s:%d] Cannot find SUPI in DB",
+                pcf_ue->supi, sess->psi);
+        status = OGS_SBI_HTTP_STATUS_NOT_FOUND;
+        goto cleanup;
+    }
+
+    memset(&SmPolicyDecision, 0, sizeof(SmPolicyDecision));
+
+    PccRuleList = OpenAPI_list_create();
+    ogs_assert(PccRuleList);
+
+    QosDecisionList = OpenAPI_list_create();
+    ogs_assert(QosDecisionList);
+
+    for (i = 0; i < ims_data.num_of_media_component; i++) {
+        int flow_presence = 0;
+
+        ogs_pcc_rule_t *pcc_rule = NULL;
+        ogs_pcc_rule_t *db_pcc_rule = NULL;
+        uint8_t qos_index = 0;
+        ogs_media_component_t *media_component = &ims_data.media_component[i];
+
+        switch(media_component->media_type) {
+        case OpenAPI_media_type_AUDIO:
+            qos_index = OGS_QOS_INDEX_1;
+            break;
+        case OpenAPI_media_type_VIDEO:
+            qos_index = OGS_QOS_INDEX_2;
+            break;
+        case OpenAPI_media_type_CONTROL:
+            qos_index = OGS_QOS_INDEX_5;
+            break;
+        default:
+            strerror = ogs_msprintf("[%s:%d] Not implemented : [Media-Type:%d]",
+                    pcf_ue->supi, sess->psi, media_component->media_type);
+            status = OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR;
+            goto cleanup;
+        }
+
+        for (j = 0; j < session_data.num_of_pcc_rule; j++) {
+            if (session_data.pcc_rule[j].qos.index == qos_index) {
+                db_pcc_rule = &session_data.pcc_rule[j];
+                break;
+            }
+        }
+
+        if (!db_pcc_rule &&
+            (media_component->media_type == OpenAPI_media_type_CONTROL)) {
+            /*
+             * Check for default bearer for IMS signalling
+             * QCI 5 and ARP 1
+             */
+            if (session_data.session.qos.index != OGS_QOS_INDEX_5 ||
+                session_data.session.qos.arp.priority_level != 1) {
+                strerror = ogs_msprintf("[%s:%d] CHECK WEBUI : "
+                    "Even the Default Bearer(QCI:%d,ARP:%d) "
+                    "cannot support IMS signalling.",
+                    pcf_ue->supi, sess->psi,
+                    session_data.session.qos.index,
+                    session_data.session.qos.arp.priority_level);
+                status = OGS_SBI_HTTP_STATUS_FORBIDDEN;
+                goto cleanup;
+            } else {
+                continue;
+            }
+        }
+
+        if (!db_pcc_rule) {
+            strerror = ogs_msprintf("[%s:%d] CHECK WEBUI : "
+                "No PCC Rule in DB [QoS Index:%d] - "
+                "Please add PCC Rule using WEBUI",
+                pcf_ue->supi, sess->psi, qos_index);
+            status = OGS_SBI_HTTP_STATUS_FORBIDDEN;
+            goto cleanup;
+        }
+
+        for (j = 0; j < app_session->num_of_pcc_rule; j++) {
+            if (app_session->pcc_rule[j].qos.index == qos_index) {
+                pcc_rule = &app_session->pcc_rule[j];
+                break;
+            }
+        }
+
+        if (!pcc_rule) {
+            pcc_rule = &app_session->pcc_rule[app_session->num_of_pcc_rule];
+            ogs_assert(pcc_rule);
+
+            pcc_rule->id = ogs_msprintf("%s-a%s",
+                            db_pcc_rule->id, app_session->app_session_id);
+            ogs_assert(pcc_rule->id);
+
+            memcpy(&pcc_rule->qos, &db_pcc_rule->qos, sizeof(ogs_qos_t));
+
+            pcc_rule->flow_status = db_pcc_rule->flow_status;
+            pcc_rule->precedence = db_pcc_rule->precedence;
+
+            /* Install Flow */
+            flow_presence = 1;
+            rv = ogs_pcc_rule_install_flow_from_media(
+                    pcc_rule, media_component);
+            if (rv != OGS_OK) {
+                strerror = ogs_msprintf("[%s:%d] install_flow() failed",
+                    pcf_ue->supi, sess->psi);
+                status = OGS_SBI_HTTP_STATUS_FORBIDDEN;
+                goto cleanup;
+            }
+
+            app_session->num_of_pcc_rule++;
+
+        } else {
+            int count = 0;
+
+            /* Check Flow */
+            count = ogs_pcc_rule_num_of_flow_equal_to_media(
+                    pcc_rule, media_component);
+            if (count == -1) {
+                strerror = ogs_msprintf("[%s:%d] matched_flow() failed",
+                    pcf_ue->supi, sess->psi);
+                status = OGS_SBI_HTTP_STATUS_FORBIDDEN;
+                goto cleanup;
+            }
+
+            if (pcc_rule->num_of_flow != count) {
+                /* Re-install Flow */
+                flow_presence = 1;
+                rv = ogs_pcc_rule_install_flow_from_media(
+                        pcc_rule, media_component);
+                if (rv != OGS_OK) {
+                    strerror = ogs_msprintf("[%s:%d] re-install_flow() failed",
+                        pcf_ue->supi, sess->psi);
+                    status = OGS_SBI_HTTP_STATUS_FORBIDDEN;
+                    goto cleanup;
                 }
             }
         }
-        ims_data.num_of_media_component++;
+
+        /* Update QoS */
+        rv = ogs_pcc_rule_update_qos_from_media(pcc_rule, media_component);
+        if (rv != OGS_OK) {
+            strerror = ogs_msprintf("[%s:%d] update_qos() failed",
+                pcf_ue->supi, sess->psi);
+            status = OGS_SBI_HTTP_STATUS_FORBIDDEN;
+            goto cleanup;
+        }
+
+        /* if we failed to get QoS from IMS, apply WEBUI QoS */
+        if (pcc_rule->qos.mbr.downlink == 0)
+            pcc_rule->qos.mbr.downlink = db_pcc_rule->qos.mbr.downlink;
+        if (pcc_rule->qos.mbr.uplink == 0)
+            pcc_rule->qos.mbr.uplink = db_pcc_rule->qos.mbr.uplink;
+        if (pcc_rule->qos.gbr.downlink == 0)
+            pcc_rule->qos.gbr.downlink = db_pcc_rule->qos.gbr.downlink;
+        if (pcc_rule->qos.gbr.uplink == 0)
+            pcc_rule->qos.gbr.uplink = db_pcc_rule->qos.gbr.uplink;
+
+        /**************************************************************
+         * Build PCC Rule & QoS Decision
+         *************************************************************/
+        PccRule = ogs_sbi_build_pcc_rule(pcc_rule, flow_presence);
+        ogs_assert(PccRule->pcc_rule_id);
+
+        PccRuleMap = OpenAPI_map_create(PccRule->pcc_rule_id, PccRule);
+        ogs_assert(PccRuleMap);
+
+        OpenAPI_list_add(PccRuleList, PccRuleMap);
+
+        QosData = ogs_sbi_build_qos_data(pcc_rule);
+        ogs_assert(QosData);
+        ogs_assert(QosData->qos_id);
+
+        QosDecisionMap = OpenAPI_map_create(QosData->qos_id, QosData);
+        ogs_assert(QosDecisionMap);
+
+        OpenAPI_list_add(QosDecisionList, QosDecisionMap);
     }
+
+    if (PccRuleList->count)
+        SmPolicyDecision.pcc_rules = PccRuleList;
+
+    if (QosDecisionList->count)
+        SmPolicyDecision.qos_decs = QosDecisionList;
 
     memset(&sendmsg, 0, sizeof(sendmsg));
 
@@ -489,7 +725,7 @@ bool pcf_npcf_policyauthorization_handle_create(pcf_sess_t *sess,
     header.service.name = (char *)OGS_SBI_SERVICE_NAME_NPCF_POLICYAUTHORIZATION;
     header.api.version = (char *)OGS_SBI_API_V1;
     header.resource.component[0] = (char *)OGS_SBI_RESOURCE_NAME_APP_SESSIONS;
-    header.resource.component[1] = (char *)sess->app_session_id;
+    header.resource.component[1] = (char *)app_session->app_session_id;
     sendmsg.http.location = ogs_sbi_server_uri(server, &header);
     ogs_assert(sendmsg.http.location);
 
@@ -501,12 +737,35 @@ bool pcf_npcf_policyauthorization_handle_create(pcf_sess_t *sess,
 
     ogs_free(sendmsg.http.location);
 
-#if 0
-    ogs_assert(true == pcf_sbi_send_smpolicycontrol_notify(sess));
-    ogs_assert(true == pcf_sbi_send_am_policy_control_notify(pcf_ue));
-#endif
+    if (PccRuleList->count || QosDecisionList->count) {
+        ogs_assert(true == pcf_sbi_send_smpolicycontrol_update_notify(
+                                sess, &SmPolicyDecision));
+    }
+
+    OpenAPI_list_for_each(PccRuleList, node) {
+        PccRuleMap = node->data;
+        if (PccRuleMap) {
+            PccRule = PccRuleMap->value;
+            if (PccRule)
+                ogs_sbi_free_pcc_rule(PccRule);
+            ogs_free(PccRuleMap);
+        }
+    }
+    OpenAPI_list_free(PccRuleList);
+
+    OpenAPI_list_for_each(QosDecisionList, node) {
+        QosDecisionMap = node->data;
+        if (QosDecisionMap) {
+            QosData = QosDecisionMap->value;
+            if (QosData)
+                ogs_sbi_free_qos_data(QosData);
+            ogs_free(QosDecisionMap);
+        }
+    }
+    OpenAPI_list_free(QosDecisionList);
 
     ogs_ims_data_free(&ims_data);
+    ogs_session_data_free(&session_data);
 
     return true;
 
@@ -518,7 +777,509 @@ cleanup:
         ogs_sbi_server_send_error(stream, status, recvmsg, strerror, NULL));
     ogs_free(strerror);
 
+    OpenAPI_list_for_each(PccRuleList, node) {
+        PccRuleMap = node->data;
+        if (PccRuleMap) {
+            PccRule = PccRuleMap->value;
+            if (PccRule)
+                ogs_sbi_free_pcc_rule(PccRule);
+            ogs_free(PccRuleMap);
+        }
+    }
+    OpenAPI_list_free(PccRuleList);
+
+    OpenAPI_list_for_each(QosDecisionList, node) {
+        QosDecisionMap = node->data;
+        if (QosDecisionMap) {
+            QosData = QosDecisionMap->value;
+            if (QosData)
+                ogs_sbi_free_qos_data(QosData);
+            ogs_free(QosDecisionMap);
+        }
+    }
+    OpenAPI_list_free(QosDecisionList);
+
     ogs_ims_data_free(&ims_data);
+    ogs_session_data_free(&session_data);
 
     return false;
+}
+
+bool pcf_npcf_policyauthorization_handle_update(
+        pcf_sess_t *sess, pcf_app_t *app_session,
+        ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg)
+{
+    int i, j, rv, status = 0;
+    char *strerror = NULL;
+    pcf_ue_t *pcf_ue = NULL;
+
+    OpenAPI_app_session_context_update_data_patch_t
+        *AppSessionContextUpdateDataPatch = NULL;
+    OpenAPI_app_session_context_update_data_t *AscUpdateData = NULL;
+
+    ogs_sbi_message_t sendmsg;
+    ogs_sbi_response_t *response = NULL;
+
+    ogs_session_data_t session_data;
+
+    ogs_ims_data_t ims_data;
+    ogs_media_component_t *media_component = NULL;
+    ogs_media_sub_component_t *sub = NULL;
+
+    OpenAPI_list_t *MediaComponentList = NULL;
+    OpenAPI_map_t *MediaComponentMap = NULL;
+    OpenAPI_media_component_rm_t *MediaComponent = NULL;
+
+    OpenAPI_list_t *SubComponentList = NULL;
+    OpenAPI_map_t *SubComponentMap = NULL;
+    OpenAPI_media_sub_component_t *SubComponent = NULL;
+
+    OpenAPI_list_t *fDescList = NULL;
+
+    OpenAPI_sm_policy_decision_t SmPolicyDecision;
+
+    OpenAPI_list_t *PccRuleList = NULL;
+    OpenAPI_map_t *PccRuleMap = NULL;
+    OpenAPI_pcc_rule_t *PccRule = NULL;
+
+    OpenAPI_list_t *QosDecisionList = NULL;
+    OpenAPI_map_t *QosDecisionMap = NULL;
+    OpenAPI_qos_data_t *QosData = NULL;
+
+    OpenAPI_lnode_t *node = NULL, *node2 = NULL, *node3 = NULL;
+
+    ogs_assert(sess);
+    pcf_ue = sess->pcf_ue;
+    ogs_assert(app_session);
+    ogs_assert(stream);
+    ogs_assert(recvmsg);
+
+    AppSessionContextUpdateDataPatch =
+        recvmsg->AppSessionContextUpdateDataPatch;
+    if (!AppSessionContextUpdateDataPatch) {
+        strerror = ogs_msprintf("[%s:%d] No AppSessionContextUpdateDataPatch",
+                pcf_ue->supi, sess->psi);
+        status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
+        goto cleanup;
+    }
+
+    AscUpdateData = AppSessionContextUpdateDataPatch->asc_req_data;
+    if (!AscUpdateData) {
+        strerror = ogs_msprintf("[%s:%d] No AscUpdateData",
+                pcf_ue->supi, sess->psi);
+        status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
+        goto cleanup;
+    }
+
+    if (!AscUpdateData->med_components) {
+        strerror = ogs_msprintf("[%s:%d] No AscUpdateData->MediaCompoenent",
+                pcf_ue->supi, sess->psi);
+        status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
+        goto cleanup;
+    }
+
+    memset(&ims_data, 0, sizeof(ims_data));
+
+    MediaComponentList = AscUpdateData->med_components;
+    OpenAPI_list_for_each(MediaComponentList, node) {
+        MediaComponentMap = node->data;
+        if (MediaComponentMap) {
+            MediaComponent = MediaComponentMap->value;
+            if (MediaComponent) {
+                media_component = &ims_data.
+                    media_component[ims_data.num_of_media_component];
+
+                media_component->media_component_number =
+                    MediaComponent->med_comp_n;
+                media_component->media_type = MediaComponent->med_type;
+                if (MediaComponent->mar_bw_dl)
+                    media_component->max_requested_bandwidth_dl =
+                        ogs_sbi_bitrate_from_string(MediaComponent->mar_bw_dl);
+                if (MediaComponent->mar_bw_ul)
+                    media_component->max_requested_bandwidth_ul =
+                        ogs_sbi_bitrate_from_string(MediaComponent->mar_bw_ul);
+                if (MediaComponent->mir_bw_dl)
+                    media_component->min_requested_bandwidth_dl =
+                        ogs_sbi_bitrate_from_string(MediaComponent->mir_bw_dl);
+                if (MediaComponent->mir_bw_ul)
+                    media_component->min_requested_bandwidth_ul =
+                        ogs_sbi_bitrate_from_string(MediaComponent->mir_bw_ul);
+                if (MediaComponent->rr_bw)
+                    media_component->rr_bandwidth =
+                        ogs_sbi_bitrate_from_string(MediaComponent->rr_bw);
+                if (MediaComponent->rs_bw)
+                    media_component->rs_bandwidth =
+                        ogs_sbi_bitrate_from_string(MediaComponent->rs_bw);
+                media_component->flow_status = MediaComponent->f_status;
+
+                SubComponentList = MediaComponent->med_sub_comps;
+                OpenAPI_list_for_each(SubComponentList, node2) {
+                    sub = &media_component->sub[media_component->num_of_sub];
+
+                    SubComponentMap = node2->data;
+                    if (SubComponentMap) {
+                        SubComponent = SubComponentMap->value;
+                        if (SubComponent) {
+                            sub->flow_number = SubComponent->f_num;
+                            sub->flow_usage = SubComponent->flow_usage;
+
+                            fDescList = SubComponent->f_descs;
+                            OpenAPI_list_for_each(fDescList, node3) {
+                                ogs_flow_t *flow = NULL;
+
+                                ogs_assert(sub->num_of_flow <
+                                    OGS_MAX_NUM_OF_FLOW_IN_MEDIA_SUB_COMPONENT);
+                                flow = &sub->flow[sub->num_of_flow];
+                                if (node3->data) {
+                                    flow->description = ogs_strdup(node3->data);
+                                    ogs_assert(flow->description);
+
+                                    sub->num_of_flow++;
+                                }
+                            }
+                            media_component->num_of_sub++;
+                        }
+                    }
+                }
+                ims_data.num_of_media_component++;
+            }
+        }
+    }
+
+    memset(&session_data, 0, sizeof(ogs_session_data_t));
+    rv = ogs_dbi_session_data(
+            pcf_ue->supi, &sess->s_nssai, sess->dnn, &session_data);
+    if (rv != OGS_OK) {
+        strerror = ogs_msprintf("[%s:%d] Cannot find SUPI in DB",
+                pcf_ue->supi, sess->psi);
+        status = OGS_SBI_HTTP_STATUS_NOT_FOUND;
+        goto cleanup;
+    }
+
+    memset(&SmPolicyDecision, 0, sizeof(SmPolicyDecision));
+
+    PccRuleList = OpenAPI_list_create();
+    ogs_assert(PccRuleList);
+
+    QosDecisionList = OpenAPI_list_create();
+    ogs_assert(QosDecisionList);
+
+    for (i = 0; i < ims_data.num_of_media_component; i++) {
+        int flow_presence = 0;
+
+        ogs_pcc_rule_t *pcc_rule = NULL;
+        ogs_pcc_rule_t *db_pcc_rule = NULL;
+        uint8_t qos_index = 0;
+        ogs_media_component_t *media_component = &ims_data.media_component[i];
+
+        switch(media_component->media_type) {
+        case OpenAPI_media_type_AUDIO:
+            qos_index = OGS_QOS_INDEX_1;
+            break;
+        case OpenAPI_media_type_VIDEO:
+            qos_index = OGS_QOS_INDEX_2;
+            break;
+        case OpenAPI_media_type_CONTROL:
+            qos_index = OGS_QOS_INDEX_5;
+            break;
+        default:
+            strerror = ogs_msprintf("[%s:%d] Not implemented : [Media-Type:%d]",
+                    pcf_ue->supi, sess->psi, media_component->media_type);
+            status = OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR;
+            goto cleanup;
+        }
+
+        for (j = 0; j < session_data.num_of_pcc_rule; j++) {
+            if (session_data.pcc_rule[j].qos.index == qos_index) {
+                db_pcc_rule = &session_data.pcc_rule[j];
+                break;
+            }
+        }
+
+        if (!db_pcc_rule &&
+            (media_component->media_type == OpenAPI_media_type_CONTROL)) {
+            /*
+             * Check for default bearer for IMS signalling
+             * QCI 5 and ARP 1
+             */
+            if (session_data.session.qos.index != OGS_QOS_INDEX_5 ||
+                session_data.session.qos.arp.priority_level != 1) {
+                strerror = ogs_msprintf("[%s:%d] CHECK WEBUI : "
+                    "Even the Default Bearer(QCI:%d,ARP:%d) "
+                    "cannot support IMS signalling.",
+                    pcf_ue->supi, sess->psi,
+                    session_data.session.qos.index,
+                    session_data.session.qos.arp.priority_level);
+                status = OGS_SBI_HTTP_STATUS_FORBIDDEN;
+                goto cleanup;
+            } else {
+                continue;
+            }
+        }
+
+        if (!db_pcc_rule) {
+            strerror = ogs_msprintf("[%s:%d] CHECK WEBUI : "
+                "No PCC Rule in DB [QoS Index:%d] - "
+                "Please add PCC Rule using WEBUI",
+                pcf_ue->supi, sess->psi, qos_index);
+            status = OGS_SBI_HTTP_STATUS_FORBIDDEN;
+            goto cleanup;
+        }
+
+        for (j = 0; j < app_session->num_of_pcc_rule; j++) {
+            if (app_session->pcc_rule[j].qos.index == qos_index) {
+                pcc_rule = &app_session->pcc_rule[j];
+                break;
+            }
+        }
+
+        if (!pcc_rule) {
+            pcc_rule = &app_session->pcc_rule[app_session->num_of_pcc_rule];
+            ogs_assert(pcc_rule);
+
+            pcc_rule->id = ogs_strdup(app_session->app_session_id);
+            ogs_assert(pcc_rule->id);
+
+            memcpy(&pcc_rule->qos, &db_pcc_rule->qos, sizeof(ogs_qos_t));
+
+            pcc_rule->flow_status = db_pcc_rule->flow_status;
+            pcc_rule->precedence = db_pcc_rule->precedence;
+
+            /* Install Flow */
+            flow_presence = 1;
+            rv = ogs_pcc_rule_install_flow_from_media(
+                    pcc_rule, media_component);
+            if (rv != OGS_OK) {
+                strerror = ogs_msprintf("[%s:%d] install_flow() failed",
+                    pcf_ue->supi, sess->psi);
+                status = OGS_SBI_HTTP_STATUS_FORBIDDEN;
+                goto cleanup;
+            }
+
+            app_session->num_of_pcc_rule++;
+
+        } else {
+            int count = 0;
+
+            /* Check Flow */
+            count = ogs_pcc_rule_num_of_flow_equal_to_media(
+                    pcc_rule, media_component);
+            if (count == -1) {
+                strerror = ogs_msprintf("[%s:%d] matched_flow() failed",
+                    pcf_ue->supi, sess->psi);
+                status = OGS_SBI_HTTP_STATUS_FORBIDDEN;
+                goto cleanup;
+            }
+
+            if (pcc_rule->num_of_flow != count) {
+                /* Re-install Flow */
+                flow_presence = 1;
+                rv = ogs_pcc_rule_install_flow_from_media(
+                        pcc_rule, media_component);
+                if (rv != OGS_OK) {
+                    strerror = ogs_msprintf("[%s:%d] re-install_flow() failed",
+                        pcf_ue->supi, sess->psi);
+                    status = OGS_SBI_HTTP_STATUS_FORBIDDEN;
+                    goto cleanup;
+                }
+            }
+        }
+
+        /* Update QoS */
+        rv = ogs_pcc_rule_update_qos_from_media(pcc_rule, media_component);
+        if (rv != OGS_OK) {
+            strerror = ogs_msprintf("[%s:%d] update_qos() failed",
+                pcf_ue->supi, sess->psi);
+            status = OGS_SBI_HTTP_STATUS_FORBIDDEN;
+            goto cleanup;
+        }
+
+        /* if we failed to get QoS from IMS, apply WEBUI QoS */
+        if (pcc_rule->qos.mbr.downlink == 0)
+            pcc_rule->qos.mbr.downlink = db_pcc_rule->qos.mbr.downlink;
+        if (pcc_rule->qos.mbr.uplink == 0)
+            pcc_rule->qos.mbr.uplink = db_pcc_rule->qos.mbr.uplink;
+        if (pcc_rule->qos.gbr.downlink == 0)
+            pcc_rule->qos.gbr.downlink = db_pcc_rule->qos.gbr.downlink;
+        if (pcc_rule->qos.gbr.uplink == 0)
+            pcc_rule->qos.gbr.uplink = db_pcc_rule->qos.gbr.uplink;
+
+        /**************************************************************
+         * Build PCC Rule & QoS Decision
+         *************************************************************/
+        PccRule = ogs_sbi_build_pcc_rule(pcc_rule, flow_presence);
+        ogs_assert(PccRule->pcc_rule_id);
+
+        PccRuleMap = OpenAPI_map_create(PccRule->pcc_rule_id, PccRule);
+        ogs_assert(PccRuleMap);
+
+        OpenAPI_list_add(PccRuleList, PccRuleMap);
+
+        QosData = ogs_sbi_build_qos_data(pcc_rule);
+        ogs_assert(QosData);
+        ogs_assert(QosData->qos_id);
+
+        QosDecisionMap = OpenAPI_map_create(QosData->qos_id, QosData);
+        ogs_assert(QosDecisionMap);
+
+        OpenAPI_list_add(QosDecisionList, QosDecisionMap);
+    }
+
+    if (PccRuleList->count)
+        SmPolicyDecision.pcc_rules = PccRuleList;
+
+    if (QosDecisionList->count)
+        SmPolicyDecision.qos_decs = QosDecisionList;
+
+    memset(&sendmsg, 0, sizeof(sendmsg));
+
+    sendmsg.AppSessionContextUpdateDataPatch =
+        recvmsg->AppSessionContextUpdateDataPatch;
+
+    response = ogs_sbi_build_response(&sendmsg, OGS_SBI_HTTP_STATUS_OK);
+    ogs_assert(response);
+    ogs_assert(true == ogs_sbi_server_send_response(stream, response));
+
+    if (PccRuleList->count || QosDecisionList->count) {
+        ogs_assert(true == pcf_sbi_send_smpolicycontrol_update_notify(
+                            sess, &SmPolicyDecision));
+    }
+
+    OpenAPI_list_for_each(PccRuleList, node) {
+        PccRuleMap = node->data;
+        if (PccRuleMap) {
+            PccRule = PccRuleMap->value;
+            if (PccRule)
+                ogs_sbi_free_pcc_rule(PccRule);
+            ogs_free(PccRuleMap);
+        }
+    }
+    OpenAPI_list_free(PccRuleList);
+
+    OpenAPI_list_for_each(QosDecisionList, node) {
+        QosDecisionMap = node->data;
+        if (QosDecisionMap) {
+            QosData = QosDecisionMap->value;
+            if (QosData)
+                ogs_sbi_free_qos_data(QosData);
+            ogs_free(QosDecisionMap);
+        }
+    }
+    OpenAPI_list_free(QosDecisionList);
+
+    ogs_ims_data_free(&ims_data);
+    ogs_session_data_free(&session_data);
+
+    return true;
+
+cleanup:
+    ogs_assert(status);
+    ogs_assert(strerror);
+    ogs_error("%s", strerror);
+    ogs_assert(true ==
+        ogs_sbi_server_send_error(stream, status, recvmsg, strerror, NULL));
+    ogs_free(strerror);
+
+    OpenAPI_list_for_each(PccRuleList, node) {
+        PccRuleMap = node->data;
+        if (PccRuleMap) {
+            PccRule = PccRuleMap->value;
+            if (PccRule)
+                ogs_sbi_free_pcc_rule(PccRule);
+            ogs_free(PccRuleMap);
+        }
+    }
+    OpenAPI_list_free(PccRuleList);
+
+    OpenAPI_list_for_each(QosDecisionList, node) {
+        QosDecisionMap = node->data;
+        if (QosDecisionMap) {
+            QosData = QosDecisionMap->value;
+            if (QosData)
+                ogs_sbi_free_qos_data(QosData);
+            ogs_free(QosDecisionMap);
+        }
+    }
+    OpenAPI_list_free(QosDecisionList);
+
+    ogs_ims_data_free(&ims_data);
+    ogs_session_data_free(&session_data);
+
+    return false;
+}
+
+bool pcf_npcf_policyauthorization_handle_delete(
+        pcf_sess_t *sess, pcf_app_t *app_session,
+        ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg)
+{
+    int i;
+
+    OpenAPI_sm_policy_decision_t SmPolicyDecision;
+
+    OpenAPI_list_t *PccRuleList = NULL;
+    OpenAPI_map_t *PccRuleMap = NULL;
+
+    OpenAPI_list_t *QosDecisionList = NULL;
+    OpenAPI_map_t *QosDecisionMap = NULL;
+
+    OpenAPI_lnode_t *node = NULL;
+
+    ogs_assert(true == ogs_sbi_send_http_status_no_content(stream));
+
+    ogs_assert(app_session);
+
+    memset(&SmPolicyDecision, 0, sizeof(SmPolicyDecision));
+
+    PccRuleList = OpenAPI_list_create();
+    ogs_assert(PccRuleList);
+
+    QosDecisionList = OpenAPI_list_create();
+    ogs_assert(QosDecisionList);
+
+    for (i = 0; i < app_session->num_of_pcc_rule; i++) {
+        ogs_pcc_rule_t *pcc_rule = &app_session->pcc_rule[i];
+
+        ogs_assert(pcc_rule);
+
+        PccRuleMap = OpenAPI_map_create(pcc_rule->id, NULL);
+        ogs_assert(PccRuleMap);
+
+        OpenAPI_list_add(PccRuleList, PccRuleMap);
+
+        QosDecisionMap = OpenAPI_map_create(pcc_rule->id, NULL);
+        ogs_assert(QosDecisionMap);
+
+        OpenAPI_list_add(QosDecisionList, QosDecisionMap);
+    }
+
+    if (PccRuleList->count)
+        SmPolicyDecision.pcc_rules = PccRuleList;
+
+    if (QosDecisionList->count)
+        SmPolicyDecision.qos_decs = QosDecisionList;
+
+    if (PccRuleList->count || QosDecisionList->count) {
+        ogs_assert(true == pcf_sbi_send_smpolicycontrol_delete_notify(
+                            sess, app_session, &SmPolicyDecision));
+    } else {
+        pcf_app_remove(app_session);
+    }
+
+    OpenAPI_list_for_each(PccRuleList, node) {
+        PccRuleMap = node->data;
+        if (PccRuleMap) {
+            ogs_free(PccRuleMap);
+        }
+    }
+    OpenAPI_list_free(PccRuleList);
+
+    OpenAPI_list_for_each(QosDecisionList, node) {
+        QosDecisionMap = node->data;
+        if (QosDecisionMap) {
+            ogs_free(QosDecisionMap);
+        }
+    }
+    OpenAPI_list_free(QosDecisionList);
+
+    return true;
 }

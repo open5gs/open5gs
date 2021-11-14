@@ -356,7 +356,7 @@ ogs_pkbuf_t *smf_s5c_build_create_bearer_request(
 
 ogs_pkbuf_t *smf_s5c_build_update_bearer_request(
         uint8_t type, smf_bearer_t *bearer, uint8_t pti,
-        ogs_gtp_tft_t *tft, int qos_presence)
+        ogs_gtp_tft_t *tft, bool qos_presence)
 {
     smf_sess_t *sess = NULL;
 
@@ -406,7 +406,7 @@ ogs_pkbuf_t *smf_s5c_build_update_bearer_request(
     }
 
     /* Bearer QoS */
-    if (qos_presence == 1) {
+    if (qos_presence == true) {
         memset(&bearer_qos, 0, sizeof(bearer_qos));
         bearer_qos.qci = bearer->qos.index;
         bearer_qos.priority_level = bearer->qos.arp.priority_level;

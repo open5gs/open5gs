@@ -200,7 +200,7 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_setup_request_transfer(
 }
 
 ogs_pkbuf_t *ngap_build_qos_flow_resource_modify_request_transfer(
-        smf_bearer_t *qos_flow)
+        smf_bearer_t *qos_flow, bool qos_presence)
 {
     NGAP_PDUSessionResourceModifyRequestTransfer_t message;
 
@@ -262,8 +262,9 @@ ogs_pkbuf_t *ngap_build_qos_flow_resource_modify_request_transfer(
         allocationAndRetentionPriority->pre_emptionVulnerability =
             NGAP_Pre_emptionVulnerability_pre_emptable;
 
-    if (qos_flow->qos.mbr.downlink || qos_flow->qos.mbr.uplink ||
-        qos_flow->qos.gbr.downlink || qos_flow->qos.gbr.uplink) {
+    if (qos_presence == true &&
+        (qos_flow->qos.mbr.downlink || qos_flow->qos.mbr.uplink ||
+         qos_flow->qos.gbr.downlink || qos_flow->qos.gbr.uplink)) {
         ogs_assert(qos_flow->qos.mbr.downlink);
         ogs_assert(qos_flow->qos.mbr.uplink);
         ogs_assert(qos_flow->qos.gbr.downlink);
@@ -281,6 +282,47 @@ ogs_pkbuf_t *ngap_build_qos_flow_resource_modify_request_transfer(
         asn_uint642INTEGER(&gBR_QosInformation->
                 guaranteedFlowBitRateUL, qos_flow->qos.gbr.uplink);
     }
+
+    return ogs_asn_encode(
+            &asn_DEF_NGAP_PDUSessionResourceModifyRequestTransfer, &message);
+}
+
+ogs_pkbuf_t *ngap_build_qos_flow_resource_release_request_transfer(
+        smf_bearer_t *qos_flow, NGAP_Cause_PR group, long cause)
+{
+    NGAP_PDUSessionResourceModifyRequestTransfer_t message;
+
+    NGAP_PDUSessionResourceModifyRequestTransferIEs_t *ie = NULL;
+
+    NGAP_QosFlowListWithCause_t *QosFlowListWithCause = NULL;
+    NGAP_QosFlowWithCauseItem_t *QosFlowWithCauseItem = NULL;
+    NGAP_QosFlowIdentifier_t *qosFlowIdentifier = NULL;
+    NGAP_Cause_t *Cause = NULL;
+
+    ogs_assert(qos_flow);
+
+    ogs_debug("PDUSessionResourceModifyRequestTransfer");
+    memset(&message, 0, sizeof(NGAP_PDUSessionResourceModifyRequestTransfer_t));
+
+    ie = CALLOC(1, sizeof(NGAP_PDUSessionResourceModifyRequestTransferIEs_t));
+    ASN_SEQUENCE_ADD(&message.protocolIEs, ie);
+
+    ie->id = NGAP_ProtocolIE_ID_id_QosFlowToReleaseList;
+    ie->criticality = NGAP_Criticality_reject;
+    ie->value.present = NGAP_PDUSessionResourceModifyRequestTransferIEs__value_PR_QosFlowListWithCause;
+
+    QosFlowListWithCause = &ie->value.choice.QosFlowListWithCause;
+
+    QosFlowWithCauseItem = CALLOC(1, sizeof(*QosFlowWithCauseItem));
+    ASN_SEQUENCE_ADD(&QosFlowListWithCause->list, QosFlowWithCauseItem);
+
+    qosFlowIdentifier = &QosFlowWithCauseItem->qosFlowIdentifier;
+
+    *qosFlowIdentifier = qos_flow->qfi;
+
+    Cause = &QosFlowWithCauseItem->cause;
+    Cause->present = group;
+    Cause->choice.radioNetwork = cause;
 
     return ogs_asn_encode(
             &asn_DEF_NGAP_PDUSessionResourceModifyRequestTransfer, &message);
