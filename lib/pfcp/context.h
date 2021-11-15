@@ -96,7 +96,7 @@ typedef struct ogs_pfcp_node_s {
 
     uint16_t        tac[OGS_MAX_NUM_OF_TAI];
     uint8_t         num_of_tac;
-    const char*     dnn[OGS_MAX_DNN_LEN];
+    const char*     dnn[OGS_MAX_DNN_LEN+1];
     uint8_t         num_of_dnn;
     uint32_t        e_cell_id[OGS_MAX_NUM_OF_CELL_ID];
     uint8_t         num_of_e_cell_id;
@@ -317,7 +317,7 @@ typedef struct ogs_pfcp_subnet_s {
 
     ogs_ipsubnet_t  sub;                    /* Subnet : 2001:230:cafe::0/48 */
     ogs_ipsubnet_t  gw;                     /* Gateway : 2001:230:cafe::1 */
-    char            dnn[OGS_MAX_DNN_LEN];   /* DNN : "internet", "volte", .. */
+    char            dnn[OGS_MAX_DNN_LEN+1]; /* DNN : "internet", "volte", .. */
 
 #define OGS_MAX_NUM_OF_SUBNET_RANGE 16
     struct {

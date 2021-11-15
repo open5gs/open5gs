@@ -41,7 +41,7 @@ ogs_pkbuf_t *test_s2b_build_create_session_request(
     ogs_gtp_ambr_t ambr;
     ogs_gtp_bearer_qos_t bearer_qos;
     char bearer_qos_buf[GTP_BEARER_QOS_LEN];
-    char apn[OGS_MAX_APN_LEN];
+    char apn[OGS_MAX_APN_LEN+1];
 
     ogs_gtp_indication_t indication;
 

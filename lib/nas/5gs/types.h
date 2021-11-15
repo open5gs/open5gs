@@ -40,7 +40,7 @@ typedef struct ogs_nas_5gs_guti_s {
  * O TLV 3-102 */
 typedef struct ogs_nas_dnn_s {
     uint8_t length;
-    char value[OGS_MAX_DNN_LEN];
+    char value[OGS_MAX_DNN_LEN+1];
 } ogs_nas_dnn_t;
 
 /* 9.11.2.2 EAP message

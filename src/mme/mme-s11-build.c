@@ -41,7 +41,7 @@ ogs_pkbuf_t *mme_s11_build_create_session_request(
     ogs_gtp_ue_timezone_t ue_timezone;
     struct timeval now;
     struct tm time_exp;
-    char apn[OGS_MAX_APN_LEN];
+    char apn[OGS_MAX_APN_LEN+1];
 	
     ogs_gtp_indication_t indication;
 

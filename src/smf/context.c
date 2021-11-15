@@ -1019,7 +1019,7 @@ smf_sess_t *smf_sess_add_by_gtp_message(ogs_gtp_message_t *message)
 {
     smf_ue_t *smf_ue = NULL;
     smf_sess_t *sess = NULL;
-    char apn[OGS_MAX_APN_LEN];
+    char apn[OGS_MAX_APN_LEN+1];
 
     ogs_gtp_create_session_request_t *req = &message->create_session_request;
 

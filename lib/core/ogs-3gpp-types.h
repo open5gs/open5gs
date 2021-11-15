@@ -555,7 +555,7 @@ int ogs_pco_build(unsigned char *data, int data_len, ogs_pco_t *pco);
 
 /* Flags(1) + TEID Range(1) + IPV4(4) + IPV6(16) + Source Interface(1) = 23 */
 #define OGS_MAX_USER_PLANE_IP_RESOURCE_INFO_LEN \
-    (23 + OGS_MAX_APN_LEN)
+    (23 + (OGS_MAX_APN_LEN+1))
 typedef struct ogs_user_plane_ip_resource_info_s {
     union {
         struct {
@@ -580,7 +580,7 @@ ED6(uint8_t     spare:1;,
     uint8_t     teid_range;
     uint32_t    addr;
     uint8_t     addr6[OGS_IPV6_LEN];
-    char        network_instance[OGS_MAX_APN_LEN];
+    char        network_instance[OGS_MAX_APN_LEN+1];
     uint8_t     source_interface;
 } __attribute__ ((packed)) ogs_user_plane_ip_resource_info_t;
 
