@@ -1105,6 +1105,12 @@ void ngap_handle_initial_context_setup_failure(
      */
     amf_ue = ran_ue->amf_ue;
     if (amf_ue) {
+        /*
+         * if T3550 is running, Registration complete will be sent.
+         * So, we need to clear all the timer at this point.
+         */
+        CLEAR_AMF_UE_ALL_TIMERS(amf_ue);
+
         old_xact_count = amf_sess_xact_count(amf_ue);
 
         amf_ue->deactivation.group = NGAP_Cause_PR_nas;

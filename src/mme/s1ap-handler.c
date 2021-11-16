@@ -851,8 +851,14 @@ void s1ap_handle_initial_context_setup_failure(
 
     mme_ue = enb_ue->mme_ue;
 
-    if (mme_ue)
+    if (mme_ue) {
+        /*
+         * if T3450 is running, Attach complete will be sent.
+         * So, we need to clear all the timer at this point.
+         */
         CLEAR_SERVICE_INDICATOR(mme_ue);
+        CLEAR_MME_UE_ALL_TIMERS(mme_ue);
+    }
 
     /*
      * 19.2.2.3 in Spec 36.300
