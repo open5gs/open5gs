@@ -53,6 +53,8 @@ int amf_namf_comm_handle_n1_n2_message_transfer(
     OpenAPI_n2_info_content_t *n2InfoContent = NULL;
     OpenAPI_ref_to_binary_data_t *ngapData = NULL;
 
+    OpenAPI_ngap_ie_type_e ngapIeType = OpenAPI_ngap_ie_type_NULL;
+
     ogs_assert(stream);
     ogs_assert(recvmsg);
 
@@ -117,11 +119,14 @@ int amf_namf_comm_handle_n1_n2_message_transfer(
             ogs_error("No smInfo");
             return OGS_ERROR;
         }
+
         n2InfoContent = smInfo->n2_info_content;
         if (!n2InfoContent) {
             ogs_error("No n2InfoContent");
             return OGS_ERROR;
         }
+
+        ngapIeType = n2InfoContent->ngap_ie_type;
 
         ngapData = n2InfoContent->ngap_data;
         if (!ngapData || !ngapData->content_id) {
@@ -153,7 +158,7 @@ int amf_namf_comm_handle_n1_n2_message_transfer(
 
     sendmsg.N1N2MessageTransferRspData = &N1N2MessageTransferRspData;
 
-    switch (n2InfoContent->ngap_ie_type) {
+    switch (ngapIeType) {
     case OpenAPI_ngap_ie_type_PDU_RES_SETUP_REQ:
         if (!n2buf) {
             ogs_error("[%s] No N2 SM Content", amf_ue->supi);
@@ -390,8 +395,7 @@ int amf_namf_comm_handle_n1_n2_message_transfer(
         break;
 
     default:
-        ogs_error("Not implemented ngap_ie_type[%d]",
-                n2InfoContent->ngap_ie_type);
+        ogs_error("Not implemented ngapIeType[%d]", ngapIeType);
         ogs_assert_if_reached();
     }
 

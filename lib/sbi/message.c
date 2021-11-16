@@ -924,7 +924,7 @@ static int parse_json(ogs_sbi_message_t *message,
     ogs_log_print(OGS_LOG_TRACE, "%s", json);
     item = cJSON_Parse(json);
     if (!item) {
-        ogs_error("JSON parse error");
+        ogs_error("JSON parse error [%s]", json);
         return OGS_ERROR;
     }
 
@@ -1833,18 +1833,16 @@ static int on_header_value(
     data = multipart_parser_get_data(parser);
     ogs_assert(data);
 
-    if (at && length) {
+    if (data->num_of_part < OGS_SBI_MAX_NUM_OF_PART && at && length) {
         SWITCH(data->header_field)
         CASE(OGS_SBI_CONTENT_TYPE)
-            if (data->part[data->num_of_part].content_type)
-                ogs_free(data->part[data->num_of_part].content_type);
+            ogs_assert(data->part[data->num_of_part].content_type == NULL);
             data->part[data->num_of_part].content_type =
                 ogs_strndup(at, length);
             ogs_assert(data->part[data->num_of_part].content_type);
             break;
         CASE(OGS_SBI_CONTENT_ID)
-            if (data->part[data->num_of_part].content_id)
-                ogs_free(data->part[data->num_of_part].content_id);
+            ogs_assert(data->part[data->num_of_part].content_id == NULL);
             data->part[data->num_of_part].content_id =
                 ogs_strndup(at, length);
             ogs_assert(data->part[data->num_of_part].content_id);
@@ -1867,7 +1865,7 @@ static int on_part_data(
     data = multipart_parser_get_data(parser);
     ogs_assert(data);
 
-    if (at && length) {
+    if (data->num_of_part < OGS_SBI_MAX_NUM_OF_PART && at && length) {
         SWITCH(data->part[data->num_of_part].content_type)
         CASE(OGS_SBI_CONTENT_JSON_TYPE)
         CASE(OGS_SBI_CONTENT_5GNAS_TYPE)
@@ -1901,9 +1899,9 @@ static int on_part_data(
             break;
 
         DEFAULT
-            ogs_log_hexdump(OGS_LOG_FATAL, (unsigned char *)at, length);
             ogs_error("Unknown content_type [%s]",
                     data->part[data->num_of_part].content_type);
+            ogs_log_hexdump(OGS_LOG_ERROR, (unsigned char *)at, length);
         END
     }
     return 0;
@@ -1917,7 +1915,9 @@ static int on_part_data_end(multipart_parser *parser)
     data = multipart_parser_get_data(parser);
     ogs_assert(data);
 
-    data->num_of_part++;
+    if (data->num_of_part < OGS_SBI_MAX_NUM_OF_PART) {
+        data->num_of_part++;
+    }
 
     return 0;
 }
@@ -1967,6 +1967,11 @@ static int parse_multipart(
     multipart_parser_free(parser);
     ogs_free(boundary);
 
+    if (data.num_of_part > OGS_SBI_MAX_NUM_OF_PART) {
+        /* Overflow Issues #1247 */
+        ogs_fatal("Overflow num_of_part[%d]", data.num_of_part);
+        ogs_assert_if_reached();
+    }
     for (i = 0; i < data.num_of_part; i++) {
         SWITCH(data.part[i].content_type)
         CASE(OGS_SBI_CONTENT_JSON_TYPE)
@@ -2013,13 +2018,13 @@ static int parse_multipart(
 
         DEFAULT
             ogs_error("Unknown content-type[%s]", data.part[i].content_type);
+
+            if (data.part[i].content_id)
+                ogs_free(data.part[i].content_id);
+            if (data.part[i].content_type)
+                ogs_free(data.part[i].content_type);
         END
     }
-
-    if (data.part[i].content_id)
-        ogs_free(data.part[i].content_id);
-    if (data.part[i].content_type)
-        ogs_free(data.part[i].content_type);
 
     if (data.header_field)
         ogs_free(data.header_field);
