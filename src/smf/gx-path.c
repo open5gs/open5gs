@@ -296,6 +296,7 @@ void smf_gx_send_ccr(smf_sess_t *sess, ogs_gtp_xact_t *xact,
         if (sess->ipv6) {
             ret = fd_msg_avp_new(ogs_diam_gx_framed_ipv6_prefix, 0, &avp);
             ogs_assert(ret == 0);
+            memset(&paa, 0, sizeof(paa));
             memcpy(&paa, &sess->session.paa, OGS_PAA_IPV6_LEN);
 #define FRAMED_IPV6_PREFIX_LENGTH 128  /* from spec document */
             paa.len = FRAMED_IPV6_PREFIX_LENGTH; 
