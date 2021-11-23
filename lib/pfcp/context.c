@@ -841,17 +841,24 @@ ogs_pfcp_pdr_t *ogs_pfcp_pdr_add(ogs_pfcp_sess_t *sess)
     ogs_assert(sess);
 
     ogs_pool_alloc(&ogs_pfcp_pdr_pool, &pdr);
-    ogs_assert(pdr);
+    if (pdr == NULL) {
+        ogs_error("pdr_pool() failed");
+        return NULL;
+    }
     memset(pdr, 0, sizeof *pdr);
+
+    ogs_pool_alloc(&sess->pdr_id_pool, &pdr->id_node);
+    if (pdr->id_node == NULL) {
+        ogs_error("pdr_id_pool() failed");
+        ogs_pool_free(&ogs_pfcp_pdr_pool, pdr);
+        return NULL;
+    }
 
     pdr->obj.type = OGS_PFCP_OBJ_PDR_TYPE;
 
     pdr->index = ogs_pool_index(&ogs_pfcp_pdr_pool, pdr);
     ogs_assert(pdr->index > 0 &&
             pdr->index <= ogs_app()->pool.sess * OGS_MAX_NUM_OF_PDR);
-
-    ogs_pool_alloc(&sess->pdr_id_pool, &pdr->id_node);
-    ogs_assert(pdr->id_node);
 
     pdr->id = *(pdr->id_node);
     ogs_assert(pdr->id > 0 && pdr->id <= OGS_MAX_NUM_OF_PDR);
@@ -1018,11 +1025,18 @@ ogs_pfcp_far_t *ogs_pfcp_far_add(ogs_pfcp_sess_t *sess)
     ogs_assert(sess);
 
     ogs_pool_alloc(&ogs_pfcp_far_pool, &far);
-    ogs_assert(far);
+    if (far == NULL) {
+        ogs_error("far_pool() failed");
+        return NULL;
+    }
     memset(far, 0, sizeof *far);
 
     ogs_pool_alloc(&sess->far_id_pool, &far->id_node);
-    ogs_assert(far->id_node);
+    if (far->id_node == NULL) {
+        ogs_error("far_id_pool() failed");
+        ogs_pool_free(&ogs_pfcp_far_pool, far);
+        return NULL;
+    }
 
     far->id = *(far->id_node);
     ogs_assert(far->id > 0 && far->id <= OGS_MAX_NUM_OF_FAR);
@@ -1229,11 +1243,18 @@ ogs_pfcp_urr_t *ogs_pfcp_urr_add(ogs_pfcp_sess_t *sess)
     ogs_assert(sess);
 
     ogs_pool_alloc(&ogs_pfcp_urr_pool, &urr);
-    ogs_assert(urr);
+    if (urr == NULL) {
+        ogs_error("urr_pool() failed");
+        return NULL;
+    }
     memset(urr, 0, sizeof *urr);
 
     ogs_pool_alloc(&sess->urr_id_pool, &urr->id_node);
-    ogs_assert(urr->id_node);
+    if (urr->id_node == NULL) {
+        ogs_error("urr_id_pool() failed");
+        ogs_pool_free(&ogs_pfcp_urr_pool, urr);
+        return NULL;
+    }
 
     urr->id = *(urr->id_node);
     ogs_assert(urr->id > 0 && urr->id <= OGS_MAX_NUM_OF_URR);
@@ -1307,11 +1328,18 @@ ogs_pfcp_qer_t *ogs_pfcp_qer_add(ogs_pfcp_sess_t *sess)
     ogs_assert(sess);
 
     ogs_pool_alloc(&ogs_pfcp_qer_pool, &qer);
-    ogs_assert(qer);
+    if (qer == NULL) {
+        ogs_error("qer_pool() failed");
+        return NULL;
+    }
     memset(qer, 0, sizeof *qer);
 
     ogs_pool_alloc(&sess->qer_id_pool, &qer->id_node);
-    ogs_assert(qer->id_node);
+    if (qer->id_node == NULL) {
+        ogs_error("qer_id_pool() failed");
+        ogs_pool_free(&ogs_pfcp_qer_pool, qer);
+        return NULL;
+    }
 
     qer->id = *(qer->id_node);
     ogs_assert(qer->id > 0 && qer->id <= OGS_MAX_NUM_OF_QER);

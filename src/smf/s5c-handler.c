@@ -448,8 +448,9 @@ void smf_s5c_handle_modify_bearer_request(
         ogs_expect_or_return(ogs_list_first(&wlan_sess->bearer_list));
 
         ogs_assert(OGS_OK ==
-            smf_gtp_send_delete_bearer_request(
-                ogs_list_first(&wlan_sess->bearer_list),
+            smf_epc_pfcp_send_session_modification_request(
+                wlan_sess, NULL,
+                OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_DEACTIVATE,
                 OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED,
                 OGS_GTP_CAUSE_ACCESS_CHANGED_FROM_NON_3GPP_TO_3GPP));
     }
@@ -467,6 +468,9 @@ void smf_s5c_handle_create_bearer_response(
 
     ogs_assert(xact);
     ogs_assert(rsp);
+
+    bearer = xact->data;
+    ogs_assert(bearer);
 
     ogs_debug("Create Bearer Response");
 
@@ -509,9 +513,6 @@ void smf_s5c_handle_create_bearer_response(
         cause_value = OGS_GTP_CAUSE_MANDATORY_IE_MISSING;
     }
 
-    bearer = xact->data;
-    ogs_assert(bearer);
-
     if (!sess) {
         ogs_warn("No Context in TEID");
 
@@ -547,7 +548,9 @@ void smf_s5c_handle_create_bearer_response(
     if (cause_value != OGS_GTP_CAUSE_REQUEST_ACCEPTED) {
         ogs_assert(OGS_OK ==
             smf_epc_pfcp_send_bearer_modification_request(
-                bearer, OGS_PFCP_MODIFY_REMOVE));
+                bearer, NULL, OGS_PFCP_MODIFY_REMOVE,
+                OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED,
+                OGS_GTP_CAUSE_UNDEFINED_VALUE));
         return;
     }
 
@@ -583,7 +586,9 @@ void smf_s5c_handle_create_bearer_response(
 
     ogs_assert(OGS_OK ==
         smf_epc_pfcp_send_bearer_modification_request(
-            bearer, OGS_PFCP_MODIFY_ACTIVATE));
+            bearer, NULL, OGS_PFCP_MODIFY_ACTIVATE,
+            OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED,
+            OGS_GTP_CAUSE_UNDEFINED_VALUE));
 }
 
 void smf_s5c_handle_update_bearer_response(
@@ -601,6 +606,9 @@ void smf_s5c_handle_update_bearer_response(
     gtp_flags = xact->update_flags;
     ogs_assert(gtp_flags);
 
+    bearer = xact->data;
+    ogs_assert(bearer);
+
     ogs_debug("Update Bearer Response");
 
     cause_value = OGS_GTP_CAUSE_REQUEST_ACCEPTED;
@@ -616,9 +624,6 @@ void smf_s5c_handle_update_bearer_response(
         ogs_error("No EPS Bearer ID");
         cause_value = OGS_GTP_CAUSE_MANDATORY_IE_MISSING;
     }
-
-    bearer = xact->data;
-    ogs_assert(bearer);
 
     if (!sess) {
         ogs_warn("No Context in TEID");
@@ -674,7 +679,10 @@ void smf_s5c_handle_update_bearer_response(
 
     if (pfcp_flags)
         ogs_assert(OGS_OK ==
-            smf_epc_pfcp_send_bearer_modification_request(bearer, pfcp_flags));
+            smf_epc_pfcp_send_bearer_modification_request(
+                bearer, NULL, pfcp_flags,
+                OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED,
+                OGS_GTP_CAUSE_UNDEFINED_VALUE));
 }
 
 void smf_s5c_handle_delete_bearer_response(
@@ -786,7 +794,9 @@ void smf_s5c_handle_delete_bearer_response(
 
         ogs_assert(OGS_OK ==
             smf_epc_pfcp_send_bearer_modification_request(
-                bearer, OGS_PFCP_MODIFY_REMOVE));
+                bearer, NULL, OGS_PFCP_MODIFY_REMOVE,
+                OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED,
+                OGS_GTP_CAUSE_UNDEFINED_VALUE));
     }
 }
 
@@ -1134,21 +1144,28 @@ void smf_s5c_handle_bearer_resource_command(
         return;
     }
 
-    memset(&h, 0, sizeof(ogs_gtp_header_t));
-    h.teid = sess->sgw_s5c_teid;
-
     if (tft_delete) {
-        h.type = OGS_GTP_DELETE_BEARER_REQUEST_TYPE;
-        pkbuf = smf_s5c_build_delete_bearer_request(
-                h.type, bearer, cmd->procedure_transaction_id.u8,
-                OGS_GTP_CAUSE_UNDEFINED_VALUE);
-        ogs_expect_or_return(pkbuf);
-
-        rv = ogs_gtp_xact_update_tx(xact, &h, pkbuf);
-        ogs_expect_or_return(rv == OGS_OK);
+        /*
+         * TS23.214
+         * 6.3.1.7 Procedures with modification of bearer
+         * p50
+         * 2.  ...
+         * For "PGW/MME initiated bearer deactivation procedure",
+         * PGW-C shall indicate PGW-U to stop counting and stop
+         * forwarding downlink packets for the affected bearer(s).
+         */
+        ogs_assert(OGS_OK ==
+            smf_epc_pfcp_send_bearer_modification_request(
+                bearer, xact,
+                OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_DEACTIVATE,
+                cmd->procedure_transaction_id.u8,
+                OGS_GTP_CAUSE_UNDEFINED_VALUE));
 
     } else {
+        memset(&h, 0, sizeof(ogs_gtp_header_t));
+        h.teid = sess->sgw_s5c_teid;
         h.type = OGS_GTP_UPDATE_BEARER_REQUEST_TYPE;
+
         pkbuf = smf_s5c_build_update_bearer_request(
                 h.type, bearer, cmd->procedure_transaction_id.u8,
                 tft_update ? &tft : NULL, qos_update);
@@ -1161,26 +1178,26 @@ void smf_s5c_handle_bearer_resource_command(
             xact->update_flags |= OGS_GTP_MODIFY_TFT_UPDATE;
         if (qos_update)
             xact->update_flags |= OGS_GTP_MODIFY_QOS_UPDATE;
+
+        /* IMPORTANT:
+         *
+         * When initiaited by Bearer Resource Command, there must be bearer context
+         * in the Transaction. Otherwise, the bearer context cannot be found
+         * in GTP response message.
+         *
+         * For example,
+         * 1. MME sends Bearer Resource Command to SGW-C, SMF.
+         * 2. SMF sends Update/Delete Bearer Request to the SGW-C, MME.
+         * 3. MME sends Update/Delete Bearer Response to thw SGW-C, SMF.
+         *
+         * On number 3 step, if MME sends Response without Bearer Context,
+         * we need a way to find Bearer context.
+         *
+         * To do this, I saved Bearer Context in Transaction Context.
+         */
+        xact->data = bearer;
+
+        rv = ogs_gtp_xact_commit(xact);
+        ogs_expect(rv == OGS_OK);
     }
-
-    /* IMPORTANT:
-     *
-     * When initiaited by Bearer Resource Command, there must be bearer context
-     * in the Transaction. Otherwise, the beare context cannot be found
-     * in GTP response message.
-     *
-     * For example,
-     * 1. MME sends Bearer Resource Command to SGW-C, SMF.
-     * 2. SMF sends Update/Delete Bearer Request to the SGW-C, MME.
-     * 3. MME sends Update/Delete Bearer Response to thw SGW-C, SMF.
-     *
-     * On number 3 step, if MME sends Response without Bearer Context,
-     * we need a way to find Bearer context.
-     *
-     * To do this, I saved Bearer Context in Transaction Context.
-     */
-    xact->data = bearer;
-
-    rv = ogs_gtp_xact_commit(xact);
-    ogs_expect(rv == OGS_OK);
 }

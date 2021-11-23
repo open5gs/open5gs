@@ -231,7 +231,7 @@ typedef struct smf_sess_s {
 
     char            *sm_context_ref; /* smContextRef */
     uint8_t         psi; /* PDU session identity */
-    uint8_t         pti; /* Procedure transaction identity */
+    uint8_t         pti; /* 5GS-NAS : Procedure transaction identity */
 
     char            *sm_context_status_uri; /* SmContextStatusNotification */
     struct {

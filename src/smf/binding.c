@@ -48,7 +48,9 @@ static void bearer_timeout(ogs_gtp_xact_t *xact, void *data)
         }
         ogs_assert(OGS_OK ==
             smf_epc_pfcp_send_bearer_modification_request(
-                bearer, OGS_PFCP_MODIFY_REMOVE));
+                bearer, NULL, OGS_PFCP_MODIFY_REMOVE,
+                OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED,
+                OGS_GTP_CAUSE_UNDEFINED_VALUE));
         break;
     case OGS_GTP_UPDATE_BEARER_REQUEST_TYPE:
         ogs_error("[%s] No Update Bearer Response", smf_ue->imsi_bcd);
@@ -140,6 +142,13 @@ void smf_bearer_binding(smf_sess_t *sess)
                     /* TFT is mandatory in
                      * activate dedicated EPS bearer context request */
                     ogs_error("No flow in PCC Rule");
+                    continue;
+                }
+
+                if (ogs_list_count(&sess->bearer_list) >=
+                        OGS_MAX_NUM_OF_BEARER) {
+                    ogs_error("Bearer Overflow[%d]",
+                            ogs_list_count(&sess->bearer_list));
                     continue;
                 }
 
@@ -323,7 +332,9 @@ void smf_bearer_binding(smf_sess_t *sess)
 
                 ogs_assert(OGS_OK ==
                     smf_epc_pfcp_send_bearer_modification_request(
-                        bearer, OGS_PFCP_MODIFY_CREATE));
+                        bearer, NULL, OGS_PFCP_MODIFY_CREATE,
+                        OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED,
+                        OGS_GTP_CAUSE_UNDEFINED_VALUE));
             } else {
                 ogs_gtp_tft_t tft;
 
@@ -368,9 +379,20 @@ void smf_bearer_binding(smf_sess_t *sess)
                 continue;
             }
 
+            /*
+             * TS23.214
+             * 6.3.1.7 Procedures with modification of bearer
+             * p50
+             * 2.  ...
+             * For "PGW/MME initiated bearer deactivation procedure",
+             * PGW-C shall indicate PGW-U to stop counting and stop
+             * forwarding downlink packets for the affected bearer(s).
+             */
             ogs_assert(OGS_OK ==
-                smf_gtp_send_delete_bearer_request(
-                    bearer, OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED,
+                smf_epc_pfcp_send_bearer_modification_request(
+                    bearer, NULL,
+                    OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_DEACTIVATE,
+                    OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED,
                     OGS_GTP_CAUSE_UNDEFINED_VALUE));
         } else {
             ogs_error("Invalid Type[%d]", pcc_rule->type);
@@ -442,6 +464,13 @@ void smf_qos_flow_binding(smf_sess_t *sess)
                     /* TFT is mandatory in
                      * activate dedicated EPS bearer context request */
                     ogs_error("No flow in PCC Rule");
+                    continue;
+                }
+
+                if (ogs_list_count(&sess->bearer_list) >=
+                        OGS_MAX_NUM_OF_BEARER) {
+                    ogs_error("QosFlow Overflow[%d]",
+                            ogs_list_count(&sess->bearer_list));
                     continue;
                 }
 
