@@ -33,6 +33,7 @@ If you have tested radio hardware from a vendor not listed with Open5GS, please 
  * Baicells Nova 227 (EBS & CBRS)
  * Baicells Nova 233
  * Ericsson BaseBand 6630 (21Q1 Software)
+ * Ericsson RBS 6601 + DUL 20 01 + RUS 01 B8 
  * Gemtek WLTGFC-101 (S/W version 2.1.1746.1116)
  * Huawei BTS3900 (S/W version V100R011C10SPC230)
  * Huawei BBU5900 with RRU5304W Band 7 FDD 2600Mhz 40W Version V100R016C10
