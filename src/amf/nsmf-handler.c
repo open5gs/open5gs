@@ -398,6 +398,61 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                  * 3. PFCP Session Modifcation Request (Apply: FORWARD)
                  * 4. PFCP Session Modifcation Response
                  */
+            } else if (state == AMF_UPDATE_SM_CONTEXT_SETUP_FAIL) {
+                /*
+                 * TS23.502
+                 * 4.2.3 Service Request procedures
+                 * 4.2.3.2 UE Triggered Service Request
+                 *
+                 * 15. ...
+                 * If a PDU Session is rejected by the serving NG-RAN
+                 * with an indication that the PDU Session was rejected
+                 * because User Plane Security Enforcement is not supported
+                 * in the serving NG-RAN and the User Plane Enforcement Policy
+                 * indicates "Required" as described in clause 5.10.3
+                 * of TS 23.501 [2], the SMF shall trigger the release
+                 * of this PDU Session.
+                 *
+                 * In all other cases of PDU Session rejection,
+                 * the SMF can decide whether to release the PDU Session
+                 * or to deactivate the UP connection of this PDU Session.
+                 *
+                 *
+                 * TS29.502
+                 *
+                 * 5.2.2.3.2
+                 * Activation and Deactivation of the User Plane connection
+                 * of a PDU session
+                 * 5.2.2.3.2.2
+                 * Activation of User Plane connectivity of a PDU session
+                 *
+                 * 3. ...
+                 * N2 SM information received from the 5G-AN
+                 * (see PDU Session Resource Setup Unsuccessful Transfer IE
+                 * in clause 9.3.4.16 of 3GPP TS 38.413 [9]),
+                 * including the Cause of the failure, if resources failed
+                 * to be established for the PDU session.
+                 *
+                 * Upon receipt of this request, the SMF shall:
+                 * - consider that the activation of the User Plane connection
+                 *   has failed and set the upCnxState attribute to DEACTIVATED"
+                 *   otherwise.
+                 *
+                 * 1. PDUSessionResourceSetupResponse(Unsuccessful)
+                 * 2. /nsmf-pdusession/v1/sm-contexts/{smContextRef}/modify
+                 * 3. PFCP Session Modifcation Request (Apply:Buff & NOCP)
+                 * 4. PFCP Session Modifcation Response
+                 * 5. UEContextReleaseCommand
+                 * 6. UEContextReleaseComplete
+                 */
+                ogs_warn("PDUSessionResourceSetupResponse(Unsuccessful)");
+                ogs_assert(amf_ue->deactivation.group);
+
+                ogs_assert(OGS_OK ==
+                    ngap_send_amf_ue_context_release_command(amf_ue,
+                        amf_ue->deactivation.group,
+                        amf_ue->deactivation.cause,
+                        NGAP_UE_CTX_REL_NG_REMOVE_AND_UNLINK, 0));
 
             } else if (state == AMF_UPDATE_SM_CONTEXT_MODIFIED) {
                 /*

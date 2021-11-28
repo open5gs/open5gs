@@ -373,6 +373,16 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
             }
             break;
 
+        case OpenAPI_n2_sm_info_type_PDU_RES_SETUP_FAIL:
+            rv = ngap_handle_pdu_session_resource_setup_unsuccessful_transfer(
+                    sess, stream, pkbuf);
+            if (rv != OGS_OK) {
+                ogs_error("[%s:%d] Cannot handle NGAP message",
+                        smf_ue->supi, sess->psi);
+                OGS_FSM_TRAN(s, smf_gsm_state_exception);
+            }
+            break;
+
         case OpenAPI_n2_sm_info_type_PDU_RES_MOD_RSP:
             rv = ngap_handle_pdu_session_resource_modify_response_transfer(
                     sess, stream, pkbuf);

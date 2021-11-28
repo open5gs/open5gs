@@ -21,6 +21,8 @@
 
 static ogs_pkbuf_t *testngap_build_pdu_session_resource_setup_response_trasfer(
         test_sess_t *sess);
+static ogs_pkbuf_t *testngap_build_pdu_session_resource_setup_unsuccessful_trasfer(
+        test_sess_t *sess, NGAP_Cause_PR group, long cause);
 static ogs_pkbuf_t *testngap_build_qos_flow_resource_modify_response_trasfer(
         test_bearer_t *qos_flow);
 static ogs_pkbuf_t *testngap_build_qos_flow_resource_release_response_trasfer(
@@ -1060,6 +1062,100 @@ ogs_pkbuf_t *testngap_sess_build_pdu_session_resource_setup_response(
             sess);
     ogs_assert(n2smbuf);
     transfer = &PDUSessionItem->pDUSessionResourceSetupResponseTransfer;
+
+    transfer->size = n2smbuf->len;
+    transfer->buf = CALLOC(transfer->size, sizeof(uint8_t));
+    memcpy(transfer->buf, n2smbuf->data, transfer->size);
+    ogs_pkbuf_free(n2smbuf);
+
+    return ogs_ngap_encode(&pdu);
+}
+
+ogs_pkbuf_t *testngap_sess_build_pdu_session_resource_failed_to_setup(
+        test_sess_t *sess, NGAP_Cause_PR group, long cause)
+{
+    int rv;
+
+    test_ue_t *test_ue = NULL;
+
+    ogs_pkbuf_t *n2smbuf = NULL;
+    ogs_pkbuf_t *ngapbuf = NULL;
+
+    NGAP_NGAP_PDU_t pdu;
+    NGAP_SuccessfulOutcome_t *successfulOutcome = NULL;
+    NGAP_PDUSessionResourceSetupResponse_t *PDUSessionResourceSetupResponse;
+
+    NGAP_PDUSessionResourceSetupResponseIEs_t *ie = NULL;
+    NGAP_AMF_UE_NGAP_ID_t *AMF_UE_NGAP_ID = NULL;
+    NGAP_RAN_UE_NGAP_ID_t *RAN_UE_NGAP_ID = NULL;
+    NGAP_PDUSessionResourceFailedToSetupListSURes_t
+        *PDUSessionFailedList = NULL;
+    NGAP_PDUSessionResourceFailedToSetupItemSURes_t
+        *PDUSessionFailedItem = NULL;
+    OCTET_STRING_t *transfer = NULL;
+
+    ogs_assert(sess);
+    test_ue = sess->test_ue;
+    ogs_assert(test_ue);
+
+    memset(&pdu, 0, sizeof (NGAP_NGAP_PDU_t));
+    pdu.present = NGAP_NGAP_PDU_PR_successfulOutcome;
+    pdu.choice.successfulOutcome = CALLOC(1, sizeof(NGAP_SuccessfulOutcome_t));
+
+    successfulOutcome = pdu.choice.successfulOutcome;
+    successfulOutcome->procedureCode =
+        NGAP_ProcedureCode_id_PDUSessionResourceSetup;
+    successfulOutcome->criticality = NGAP_Criticality_reject;
+    successfulOutcome->value.present =
+        NGAP_SuccessfulOutcome__value_PR_PDUSessionResourceSetupResponse;
+
+    PDUSessionResourceSetupResponse =
+        &successfulOutcome->value.choice.PDUSessionResourceSetupResponse;
+
+    ie = CALLOC(1, sizeof(NGAP_PDUSessionResourceSetupResponseIEs_t));
+    ASN_SEQUENCE_ADD(&PDUSessionResourceSetupResponse->protocolIEs, ie);
+
+    ie->id = NGAP_ProtocolIE_ID_id_AMF_UE_NGAP_ID;
+    ie->criticality = NGAP_Criticality_ignore;
+    ie->value.present =
+        NGAP_PDUSessionResourceSetupResponseIEs__value_PR_AMF_UE_NGAP_ID;
+
+    AMF_UE_NGAP_ID = &ie->value.choice.AMF_UE_NGAP_ID;
+
+    ie = CALLOC(1, sizeof(NGAP_PDUSessionResourceSetupResponseIEs_t));
+    ASN_SEQUENCE_ADD(&PDUSessionResourceSetupResponse->protocolIEs, ie);
+
+    ie->id = NGAP_ProtocolIE_ID_id_RAN_UE_NGAP_ID;
+    ie->criticality = NGAP_Criticality_ignore;
+    ie->value.present =
+        NGAP_PDUSessionResourceSetupResponseIEs__value_PR_RAN_UE_NGAP_ID;
+
+    RAN_UE_NGAP_ID = &ie->value.choice.RAN_UE_NGAP_ID;
+
+    ie = CALLOC(1, sizeof(NGAP_PDUSessionResourceSetupResponseIEs_t));
+    ASN_SEQUENCE_ADD(&PDUSessionResourceSetupResponse->protocolIEs, ie);
+
+    ie->id = NGAP_ProtocolIE_ID_id_PDUSessionResourceFailedToSetupListSURes;
+    ie->criticality = NGAP_Criticality_reject;
+    ie->value.present = NGAP_PDUSessionResourceSetupResponseIEs__value_PR_PDUSessionResourceFailedToSetupListSURes;
+
+    PDUSessionFailedList =
+        &ie->value.choice.PDUSessionResourceFailedToSetupListSURes;
+
+    asn_uint642INTEGER(AMF_UE_NGAP_ID, test_ue->amf_ue_ngap_id);
+    *RAN_UE_NGAP_ID = test_ue->ran_ue_ngap_id;
+
+    PDUSessionFailedItem =
+        CALLOC(1, sizeof(struct NGAP_PDUSessionResourceFailedToSetupItemSURes));
+    ASN_SEQUENCE_ADD(&PDUSessionFailedList->list, PDUSessionFailedItem);
+
+    PDUSessionFailedItem->pDUSessionID = sess->psi;
+
+    n2smbuf = testngap_build_pdu_session_resource_setup_unsuccessful_trasfer(
+            sess, group, cause);
+    ogs_assert(n2smbuf);
+    transfer =
+        &PDUSessionFailedItem->pDUSessionResourceSetupUnsuccessfulTransfer;
 
     transfer->size = n2smbuf->len;
     transfer->buf = CALLOC(transfer->size, sizeof(uint8_t));
@@ -2258,6 +2354,27 @@ static ogs_pkbuf_t *testngap_build_pdu_session_resource_setup_response_trasfer(
 
     return ogs_asn_encode(
             &asn_DEF_NGAP_PDUSessionResourceSetupResponseTransfer, &message);
+}
+
+static ogs_pkbuf_t *testngap_build_pdu_session_resource_setup_unsuccessful_trasfer(
+        test_sess_t *sess, NGAP_Cause_PR group, long cause)
+{
+    int rv;
+
+    ogs_assert(sess);
+
+    NGAP_PDUSessionResourceSetupUnsuccessfulTransfer_t message;
+    NGAP_Cause_t *Cause = NULL;
+
+    memset(&message, 0, sizeof(message));
+
+    Cause = &message.cause;
+
+    Cause->present = group;
+    Cause->choice.radioNetwork = cause;
+
+    return ogs_asn_encode(
+        &asn_DEF_NGAP_PDUSessionResourceSetupUnsuccessfulTransfer, &message);
 }
 
 static ogs_pkbuf_t *testngap_build_qos_flow_resource_modify_response_trasfer(
