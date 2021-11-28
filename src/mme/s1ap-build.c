@@ -451,7 +451,7 @@ ogs_pkbuf_t *s1ap_build_initial_context_setup_request(
             ogs_asn_uint32_to_OCTET_STRING(
                     bearer->sgw_s1u_teid, &e_rab->gTP_TEID);
 
-            ogs_debug("    EMM[%p] LEN[%d]", emmbuf, emmbuf->len);
+            ogs_debug("    EMM[%p] LEN[%d]", emmbuf, emmbuf ? emmbuf->len : 0);
 
             if (emmbuf && emmbuf->len) {
                 nasPdu = (S1AP_NAS_PDU_t *)CALLOC(1, sizeof(S1AP_NAS_PDU_t));
