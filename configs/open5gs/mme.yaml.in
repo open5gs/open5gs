@@ -113,7 +113,7 @@ logger:
 #            lac: 43692
 #      - addr
 #         - 127.0.0.4
-#         - fe80::2%@loopback_devname@
+#         - fd69:f21d:873c:fa::2
 #        map:
 #          tai:
 #            plmn_id:
@@ -237,25 +237,25 @@ mme:
 #  o Specify SGW addresses the GTP-C must connect to
 #
 #  o One SGW is defined.
-#    If prefer_ipv4 is not true, [fe80::2%@loopback_devname@] is selected.
+#    If prefer_ipv4 is not true, [fd69:f21d:873c:fa::2] is selected.
 #    gtpc:
 #      addr:
 #        - 127.0.0.3
-#        - fe80::2%@loopback_devname@
+#        - fd69:f21d:873c:fa::2
 #
 #  o Two SGW are defined. MME selects SGW with round-robin manner per UE
 #    gtpc:
 #      - addr: 127.0.0.3
-#      - addr: fe80::2%@loopback_devname@
+#      - addr: fd69:f21d:873c:fa::2
 #
 #  o Three SGW are defined. MME selects SGW with round-robin manner per UE
 #    gtpc:
 #      - addr
 #        - 127.0.0.3
-#        - fe80::2%@loopback_devname@
+#        - fd69:f21d:873c:fa::2
 #      - addr
 #        - 127.0.0.22
-#        - fe80::12%@loopback_devname@
+#        - fd69:f21d:873c:fa::12
 #      - name: sgw3.open5gs.org
 #
 # <SGW Selection Mode>
@@ -300,17 +300,17 @@ sgwc:
 #      you can use a specific SMF node for each UE.
 #
 #  o Two SMF are defined. 127.0.0.4:2123 is used.
-#    [fe80::3%@loopback_devname@]:2123 is ignored.
+#    [fd69:f21d:873c:fa::3]:2123 is ignored.
 #    gtpc:
 #      - addr: 127.0.0.4
-#      - addr: fe80::3%@loopback_devname@
+#      - addr: fd69:f21d:873c:fa::3
 #
 #  o One SMF is defined. if prefer_ipv4 is not true,
-#    [fe80::3%@loopback_devname@] is selected.
+#    [fd69:f21d:873c:fa::3] is selected.
 #    gtpc:
 #      - addr:
 #        - 127.0.0.4
-#        - fe80::3%@loopback_devname@
+#        - fd69:f21d:873c:fa::3
 #
 #  o Two SMF are defined with a different APN.
 #    - Note that if SMF IP for UE is configured in HSS,

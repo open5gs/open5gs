@@ -27,12 +27,6 @@ freediameter_extensions_builddir = join_paths(
 conf_data.set('freediameter_extensions_builddir',
         freediameter_extensions_builddir)
 
-if host_system == 'linux'
-    conf_data.set('loopback_devname', 'lo')
-else
-    conf_data.set('loopback_devname', 'lo0')
-endif
-
 example_conf = '''
     sample.yaml
     310014.yaml

@@ -26,17 +26,17 @@ logger:
 #
 #  <GTP-C Server>
 #
-#  o GTP-C Server(127.0.0.3:2123, [fe80::2%@loopback_devname@]:2123)
+#  o GTP-C Server(127.0.0.3:2123, [fd69:f21d:873c:fa::2]:2123)
 #    gtpc:
 #      addr:
 #        - 127.0.0.3
-#        - fe80::2%@loopback_devname@
+#        - fd69:f21d:873c:fa::2
 #
 #  o On SGW, Same Configuration(127.0.0.3:2123,
-#  [fe80::2%@loopback_devname@]:2123) as below.
+#  [fd69:f21d:873c:fa::2]:2123) as below.
 #    gtpc:
 #      - addr: 127.0.0.3
-#      - addr: fe80::2%@loopback_devname@
+#      - addr: fd69:f21d:873c:fa::2
 #
 #  <PFCP Server>
 #

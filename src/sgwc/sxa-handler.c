@@ -1059,7 +1059,6 @@ void sgwc_sxa_handle_session_deletion_response(
 
     ogs_assert(pfcp_xact);
     ogs_assert(pfcp_rsp);
-    ogs_assert(gtp_message);
 
     cause_value = OGS_GTP_CAUSE_REQUEST_ACCEPTED;
 
@@ -1081,6 +1080,11 @@ void sgwc_sxa_handle_session_deletion_response(
     gtp_xact = pfcp_xact->assoc_xact;
 
     ogs_pfcp_xact_commit(pfcp_xact);
+
+    if (!gtp_message) {
+        ogs_error("No GTP Message");
+        goto cleanup;
+    }
 
     switch (gtp_message->h.type) {
     case OGS_GTP_DELETE_SESSION_RESPONSE_TYPE:
@@ -1144,6 +1148,7 @@ void sgwc_sxa_handle_session_deletion_response(
         ogs_expect(rv == OGS_OK);
     }
 
+cleanup:
     sgwc_sess_remove(sess);
 }
 

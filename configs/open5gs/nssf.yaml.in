@@ -138,13 +138,13 @@ nssf:
 #          pem: nrf.pem
 #      - name: nrf.open5gs.org
 #
-#  o SBI Client(http://[fe80::1%@loopback_devname@]:80)
+#  o SBI Client(http://[fd69:f21d:873c:fa::1]:80)
 #    If prefer_ipv4 is true, http://127.0.0.10:80 is selected.
 #
 #    sbi:
 #      addr:
 #        - 127.0.0.10
-#        - fe80::1%@loopback_devname@
+#        - fd69:f21d:873c:fa::1
 #
 nrf:
     sbi:
