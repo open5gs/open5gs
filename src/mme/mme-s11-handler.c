@@ -887,6 +887,7 @@ void mme_s11_handle_release_access_bearers_response(
             /* All ENB_UE context
              * where PartOfS1_interface was requested
              * REMOVED */
+            ogs_assert(enb->s1_reset_ack);
             s1ap_send_to_enb(enb, enb->s1_reset_ack, S1AP_NON_UE_SIGNALLING);
 
             /* Clear S1-Reset Ack Buffer */

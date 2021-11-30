@@ -3921,6 +3921,13 @@ void ngap_handle_ng_reset(
 
         partOfNG_Interface = ResetType->choice.partOfNG_Interface;
         ogs_assert(partOfNG_Interface);
+
+        if (gnb->ng_reset_ack)
+            ogs_pkbuf_free(gnb->ng_reset_ack);
+
+        gnb->ng_reset_ack = ogs_ngap_build_ng_reset_ack(partOfNG_Interface);
+        ogs_expect_or_return(gnb->ng_reset_ack);
+
         for (i = 0; i < partOfNG_Interface->list.count; i++) {
             NGAP_UE_associatedLogicalNG_connectionItem_t *item = NULL;
             uint64_t amf_ue_ngap_id;
@@ -3932,24 +3939,14 @@ void ngap_handle_ng_reset(
                         partOfNG_Interface->list.array[i];
             if (!item) {
                 ogs_error("No ResetType");
-                ogs_assert(OGS_OK ==
-                    ngap_send_error_indication(
-                        gnb, NULL, NULL,
-                        NGAP_Cause_PR_protocol,
-                        NGAP_CauseProtocol_semantic_error));
-                return;
+                continue;
             }
 
             if (item->aMF_UE_NGAP_ID) {
                 if (asn_INTEGER2ulong(item->aMF_UE_NGAP_ID,
                             (unsigned long *)&amf_ue_ngap_id) != 0) {
                     ogs_error("Invalid AMF_UE_NGAP_ID");
-                    ogs_assert(OGS_OK ==
-                        ngap_send_error_indication(
-                            gnb, NULL, NULL,
-                            NGAP_Cause_PR_protocol,
-                            NGAP_CauseProtocol_semantic_error));
-                    return;
+                    continue;
                 }
 
                 ran_ue = ran_ue_find_by_amf_ue_ngap_id(amf_ue_ngap_id);
@@ -3957,12 +3954,7 @@ void ngap_handle_ng_reset(
                 if (!ran_ue) {
                     ogs_error("No RAN UE Context : AMF_UE_NGAP_ID[%lld]",
                             (long long)amf_ue_ngap_id);
-                    ogs_assert(OGS_OK ==
-                        ngap_send_error_indication(
-                            gnb, NULL, &amf_ue_ngap_id,
-                            NGAP_Cause_PR_radioNetwork,
-                            NGAP_CauseRadioNetwork_unknown_local_UE_NGAP_ID));
-                    return;
+                    continue;
                 }
 
             } else if (item->rAN_UE_NGAP_ID) {
@@ -3973,21 +3965,11 @@ void ngap_handle_ng_reset(
                 if (!ran_ue) {
                     ogs_error("No RAN UE Context : RAN_UE_NGAP_ID[%d]",
                             (int)*item->rAN_UE_NGAP_ID);
-                    ogs_assert(OGS_OK ==
-                        ngap_send_error_indication(
-                            gnb, NULL, NULL,
-                            NGAP_Cause_PR_radioNetwork,
-                            NGAP_CauseRadioNetwork_unknown_local_UE_NGAP_ID));
-                    return;
+                    continue;
                 }
             } else {
                 ogs_error("No UE NGAP ID");
-                ogs_assert(OGS_OK ==
-                    ngap_send_error_indication(
-                        gnb, NULL, NULL,
-                        NGAP_Cause_PR_protocol,
-                        NGAP_CauseProtocol_semantic_error));
-                return;
+                continue;
             }
 
             ogs_assert(ran_ue);
@@ -4004,12 +3986,6 @@ void ngap_handle_ng_reset(
                 NGAP_CauseRadioNetwork_failure_in_radio_interface_procedure);
         }
 
-        if (gnb->ng_reset_ack)
-            ogs_pkbuf_free(gnb->ng_reset_ack);
-
-        gnb->ng_reset_ack = ogs_ngap_build_ng_reset_ack(partOfNG_Interface);
-        ogs_expect_or_return(gnb->ng_reset_ack);
-
         ogs_list_for_each(&gnb->ran_ue_list, iter) {
             if (iter->part_of_ng_reset_requested == true) {
                 /* The GNB_UE context
@@ -4022,6 +3998,7 @@ void ngap_handle_ng_reset(
         /* All GNB_UE context
          * where PartOfNG_interface was requested
          * REMOVED */
+        ogs_assert(gnb->ng_reset_ack);
         ngap_send_to_gnb(gnb, gnb->ng_reset_ack, NGAP_NON_UE_SIGNALLING);
 
         /* Clear NG-Reset Ack Buffer */

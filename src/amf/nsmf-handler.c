@@ -631,6 +631,7 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                         /* All GNB_UE context
                          * where PartOfNG_interface was requested
                          * REMOVED */
+                        ogs_assert(gnb->ng_reset_ack);
                         ngap_send_to_gnb(
                                 gnb, gnb->ng_reset_ack, NGAP_NON_UE_SIGNALLING);
 
