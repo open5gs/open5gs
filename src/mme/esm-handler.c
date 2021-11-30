@@ -68,7 +68,7 @@ int esm_handle_pdn_connectivity_request(mme_bearer_t *bearer,
             ogs_assert(OGS_OK ==
                 nas_eps_send_pdn_connectivity_reject(
                     sess, ESM_CAUSE_MISSING_OR_UNKNOWN_APN));
-            ogs_warn("Invalid APN");
+            ogs_error("Invalid APN[%s]", req->access_point_name.apn);
             return OGS_ERROR;
         }
     }
@@ -174,7 +174,10 @@ int esm_handle_information_response(mme_sess_t *sess,
                 mme_gtp_send_create_session_request(sess));
         }
     } else {
-        ogs_error("No APN");
+        if(rsp->access_point_name.apn)
+            ogs_error("Invalid APN[%s]", rsp->access_point_name.apn);
+        else
+            ogs_error("No APN");
         ogs_assert(OGS_OK ==
             nas_eps_send_pdn_connectivity_reject(
                 sess, ESM_CAUSE_MISSING_OR_UNKNOWN_APN));
