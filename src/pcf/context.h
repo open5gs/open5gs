@@ -180,6 +180,7 @@ pcf_sess_t *pcf_sess_find_by_dnn(pcf_ue_t *pcf_ue, char *dnn);
 pcf_sess_t *pcf_sess_find_by_ipv4addr(char *ipv4addr_string);
 pcf_sess_t *pcf_sess_find_by_ipv6addr(char *ipv6addr_string);
 pcf_sess_t *pcf_sess_find_by_ipv6prefix(char *ipv6prefix_string);
+int pcf_sessions_number_by_snssai_and_dnn(pcf_ue_t *pcf_ue, ogs_s_nssai_t *s_nssai, char *dnn);
 
 pcf_ue_t *pcf_ue_cycle(pcf_ue_t *pcf_ue);
 pcf_sess_t *pcf_sess_cycle(pcf_sess_t *sess);

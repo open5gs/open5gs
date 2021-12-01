@@ -320,9 +320,18 @@ bool pcf_npcf_smpolicycontrol_handle_delete(pcf_sess_t *sess,
         pcf_sbi_send_policyauthorization_terminate_notify(app_session);
     }
 
-    ogs_assert(true ==
-        pcf_sess_sbi_discover_and_send(OpenAPI_nf_type_BSF, sess, stream, NULL,
-            pcf_nbsf_management_build_de_register));
+    if(pcf_sessions_number_by_snssai_and_dnn(pcf_ue, &sess->s_nssai, sess->dnn) > 1){
+        ogs_sbi_message_t sendmsg;
+        memset(&sendmsg, 0, sizeof(sendmsg));
+
+        ogs_sbi_response_t *response = ogs_sbi_build_response(&sendmsg, OGS_SBI_HTTP_STATUS_NO_CONTENT);
+        ogs_assert(response);
+        ogs_assert(true == ogs_sbi_server_send_response(stream, response));
+    } else {
+        ogs_assert(true ==
+                   pcf_sess_sbi_discover_and_send(OpenAPI_nf_type_BSF, sess, stream, NULL,
+                                                  pcf_nbsf_management_build_de_register));
+    }
 
     return true;
 
