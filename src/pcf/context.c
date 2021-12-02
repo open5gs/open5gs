@@ -433,7 +433,9 @@ pcf_sess_t *pcf_sess_find_by_ipv4addr(char *ipv4addr_string)
     return ogs_hash_get(self.ipv4addr_hash, &ipv4addr, sizeof(ipv4addr));
 }
 
-int pcf_sessions_number_by_snssai_and_dnn(pcf_ue_t *pcf_ue, ogs_s_nssai_t *s_nssai, char *dnn) {
+int pcf_sessions_number_by_snssai_and_dnn(
+        pcf_ue_t *pcf_ue, ogs_s_nssai_t *s_nssai, char *dnn)
+{
     int number_of_sessions = 0;
     pcf_sess_t *sess = NULL;
 
