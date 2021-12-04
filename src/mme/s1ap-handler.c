@@ -1385,6 +1385,15 @@ void s1ap_handle_ue_context_release_action(enb_ue_t *enb_ue)
             enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
     if (mme_ue) {
         ogs_info("    IMSI[%s]", mme_ue->imsi_bcd);
+
+        /*
+         * An assert occurs when a NAS message retransmission occurs.
+         *
+         * Because there is no `enb_ue` context.
+         * 
+         * Therefore, before removing enb_ue, all Timers must be stopped
+         * to prevent retransmission of NAS messages.
+         */
         CLEAR_MME_UE_ALL_TIMERS(mme_ue);
     }
 

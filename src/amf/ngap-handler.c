@@ -1400,6 +1400,15 @@ void ngap_handle_ue_context_release_action(ran_ue_t *ran_ue)
             ran_ue->ran_ue_ngap_id, (long long)ran_ue->amf_ue_ngap_id);
     if (amf_ue) {
         ogs_info("    SUCI[%s]", amf_ue->suci ? amf_ue->suci : "Unknown");
+
+        /*
+         * An assert occurs when a NAS message retransmission occurs.
+         *
+         * Because there is no `ran_ue` context.
+         * 
+         * Therefore, before removing `ran_ue`, all Timers must be stopped
+         * to prevent retransmission of NAS messages.
+         */
         CLEAR_AMF_UE_ALL_TIMERS(amf_ue);
     }
 
