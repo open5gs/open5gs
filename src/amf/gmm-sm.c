@@ -98,6 +98,9 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e)
     ogs_nas_5gs_message_t *nas_message = NULL;
     ogs_nas_security_header_type_t h;
 
+    ogs_sbi_response_t *sbi_response = NULL;
+    ogs_sbi_message_t *sbi_message = NULL;
+
     ogs_assert(e);
         
     if (e->sess) {
@@ -157,39 +160,19 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e)
 
                 if (amf_sess_xact_count(amf_ue) == xact_count) {
 
-                    amf_update_allowed_nssai(amf_ue);
-
-                    if (!amf_ue->allowed_nssai.num_of_s_nssai) {
-                        int i;
-
+                    if (amf_update_allowed_nssai(amf_ue) == false) {
                         ogs_error("No Allowed-NSSAI");
-                        ogs_error("    Number of Subscribed S-NSSAI [%d]",
-                                amf_ue->num_of_slice);
-                        for (i = 0; i < amf_ue->num_of_slice; i++) {
-                            ogs_slice_data_t *slice = &amf_ue->slice[i];
-                            if (slice->default_indicator == true) {
-                                ogs_error(
-                                    "        Default S_NSSAI[SST:%d SD:0x%x]",
-                                    slice->s_nssai.sst, slice->s_nssai.sd.v);
-                            } else {
-                                ogs_error(
-                                    "        S_NSSAI[SST:%d SD:0x%x]",
-                                    slice->s_nssai.sst, slice->s_nssai.sd.v);
-                            }
-                        }
-                        ogs_error("    Number of Requested NSSAI [%d]",
-                                amf_ue->requested_nssai.num_of_s_nssai);
-                        for (i = 0; i < amf_ue->requested_nssai.
-                                num_of_s_nssai; i++) {
-                            ogs_error("        PLMN_ID[MCC:%d MNC:%d]",
-                                    ogs_plmn_id_mcc(&amf_ue->nr_tai.plmn_id),
-                                    ogs_plmn_id_mnc(&amf_ue->nr_tai.plmn_id));
-                            ogs_error("        S_NSSAI[SST:%d SD:0x%x]",
-                                    amf_ue->requested_nssai.s_nssai[i].sst,
-                                    amf_ue->requested_nssai.s_nssai[i].sd.v);
-                        }
 
                         OGS_FSM_TRAN(s, gmm_state_exception);
+                        break;
+                    }
+
+                    if (!PCF_AM_POLICY_ASSOCIATED(amf_ue)) {
+                        ogs_assert(true ==
+                            amf_ue_sbi_discover_and_send(
+                                OpenAPI_nf_type_PCF, amf_ue, NULL,
+                                amf_npcf_am_policy_control_build_create));
+                        OGS_FSM_TRAN(s, &gmm_state_initial_context_setup);
                         break;
                     }
 
@@ -436,6 +419,43 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e)
                     amf_timer_get_name(e->timer_id), e->timer_id);
         }
         break;
+
+    case AMF_EVT_SBI_CLIENT:
+        sbi_response = e->sbi.response;
+        ogs_assert(sbi_response);
+        sbi_message = e->sbi.message;
+        ogs_assert(sbi_message);
+
+        SWITCH(sbi_message->h.service.name)
+        CASE(OGS_SBI_SERVICE_NAME_NPCF_AM_POLICY_CONTROL)
+            SWITCH(sbi_message->h.resource.component[0])
+            CASE(OGS_SBI_RESOURCE_NAME_POLICIES)
+                SWITCH(sbi_message->h.method)
+                CASE(OGS_SBI_HTTP_METHOD_DELETE)
+                    ogs_assert(OGS_OK ==
+                        nas_5gs_send_de_registration_accept(amf_ue));
+
+                    PCF_AM_POLICY_CLEAR(amf_ue);
+                    break;
+                DEFAULT
+                    ogs_error("Unknown method [%s]", sbi_message->h.method);
+                    ogs_assert_if_reached();
+                END
+                break;
+
+            DEFAULT
+                ogs_error("Invalid resource name [%s]",
+                        sbi_message->h.resource.component[0]);
+                ogs_assert_if_reached();
+            END
+            break;
+
+        DEFAULT
+            ogs_error("Invalid service name [%s]", sbi_message->h.service.name);
+            ogs_assert_if_reached();
+        END
+        break;
+
     default:
         ogs_error("Unknown event[%s]", amf_event_get_name(e));
     }
@@ -978,22 +998,45 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
         CASE(OGS_SBI_SERVICE_NAME_NPCF_AM_POLICY_CONTROL)
             SWITCH(sbi_message->h.resource.component[0])
             CASE(OGS_SBI_RESOURCE_NAME_POLICIES)
-                rv = amf_npcf_am_policy_control_handle_create(
-                        amf_ue, sbi_message);
-                if (rv != OGS_OK) {
-                    ogs_error("[%s] amf_npcf_am_policy_control_handle_create() "
-                            "failed", amf_ue->supi);
-                    OGS_FSM_TRAN(&amf_ue->sm, &gmm_state_exception);
+                SWITCH(sbi_message->h.method)
+                CASE(OGS_SBI_HTTP_METHOD_POST)
+                    rv = amf_npcf_am_policy_control_handle_create(
+                            amf_ue, sbi_message);
+                    if (rv != OGS_OK) {
+                        ogs_error("[%s] amf_npcf_am_policy_control"
+                                "_handle_create() failed", amf_ue->supi);
+                        OGS_FSM_TRAN(&amf_ue->sm, &gmm_state_exception);
+                        break;
+                    }
+
+                    ogs_assert(amf_ue->nas.message_type ==
+                            OGS_NAS_5GS_REGISTRATION_REQUEST);
+                    CLEAR_AMF_UE_TIMER(amf_ue->t3550);
+                    ogs_assert(OGS_OK ==
+                            nas_5gs_send_registration_accept(amf_ue));
+
+                    /* In nsmf-handler.c
+                     *
+                     * 1. AMF_SESS_STORE_N2_TRANSFER
+                     * 2. if PCF_AM_POLICY is NOT associated
+                     * 3. AMF sends npcf-am-policy-control/create to PCF
+                     *
+                     * In gmm-sm.c
+                     * 4. Send Registration Accept
+                     * 5. We should clear N2 transfer
+                     *    (PDUSessionResourceSetupRequest)
+                     */
+                    AMF_UE_CLEAR_N2_TRANSFER(
+                            amf_ue, pdu_session_resource_setup_request);
+
+                    if (!amf_ue->next.m_tmsi)
+                        OGS_FSM_TRAN(s, &gmm_state_registered);
                     break;
-                }
 
-                ogs_assert(amf_ue->nas.message_type ==
-                        OGS_NAS_5GS_REGISTRATION_REQUEST);
-                CLEAR_AMF_UE_TIMER(amf_ue->t3550);
-                ogs_assert(OGS_OK == nas_5gs_send_registration_accept(amf_ue));
-
-                if (!amf_ue->next.m_tmsi)
-                    OGS_FSM_TRAN(s, &gmm_state_registered);
+                DEFAULT
+                    ogs_error("Unknown method [%s]", sbi_message->h.method);
+                    ogs_assert_if_reached();
+                END
                 break;
 
             DEFAULT
@@ -1245,39 +1288,17 @@ void gmm_state_exception(ogs_fsm_t *s, amf_event_t *e)
 
                 if (amf_sess_xact_count(amf_ue) == xact_count) {
 
-                    amf_update_allowed_nssai(amf_ue);
-
-                    if (!amf_ue->allowed_nssai.num_of_s_nssai) {
-                        int i;
-
+                    if (amf_update_allowed_nssai(amf_ue) == false) {
                         ogs_error("No Allowed-NSSAI");
-                        ogs_error("    Number of Subscribed S-NSSAI [%d]",
-                                amf_ue->num_of_slice);
-                        for (i = 0; i < amf_ue->num_of_slice; i++) {
-                            ogs_slice_data_t *slice = &amf_ue->slice[i];
-                            if (slice->default_indicator == true) {
-                                ogs_error(
-                                    "        Default S_NSSAI[SST:%d SD:0x%x]",
-                                    slice->s_nssai.sst, slice->s_nssai.sd.v);
-                            } else {
-                                ogs_error(
-                                    "        S_NSSAI[SST:%d SD:0x%x]",
-                                    slice->s_nssai.sst, slice->s_nssai.sd.v);
-                            }
-                        }
-                        ogs_error("    Number of Requested NSSAI [%d]",
-                                amf_ue->requested_nssai.num_of_s_nssai);
-                        for (i = 0; i < amf_ue->requested_nssai.
-                                num_of_s_nssai; i++) {
-                            ogs_error("        PLMN_ID[MCC:%d MNC:%d]",
-                                    ogs_plmn_id_mcc(&amf_ue->nr_tai.plmn_id),
-                                    ogs_plmn_id_mnc(&amf_ue->nr_tai.plmn_id));
-                            ogs_error("        S_NSSAI[SST:%d SD:0x%x]",
-                                    amf_ue->requested_nssai.s_nssai[i].sst,
-                                    amf_ue->requested_nssai.s_nssai[i].sd.v);
-                        }
+                        break;
+                    }
 
-                        OGS_FSM_TRAN(s, gmm_state_exception);
+                    if (!PCF_AM_POLICY_ASSOCIATED(amf_ue)) {
+                        ogs_assert(true ==
+                            amf_ue_sbi_discover_and_send(
+                                OpenAPI_nf_type_PCF, amf_ue, NULL,
+                                amf_npcf_am_policy_control_build_create));
+                        OGS_FSM_TRAN(s, &gmm_state_initial_context_setup);
                         break;
                     }
 

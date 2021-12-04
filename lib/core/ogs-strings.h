@@ -75,6 +75,13 @@ char *ogs_vslprintf(char *str, char *last, const char *format, va_list ap)
 char *ogs_slprintf(char *str, char *last, const char *format, ...)
     OGS_GNUC_PRINTF(3, 4);
 
+#define OGS_STRING_DUP(__dST, __sRC) \
+    do { \
+        OGS_MEM_CLEAR(__dST); \
+        __dST = ogs_strdup(__sRC); \
+        ogs_assert(__dST); \
+    } while(0)
+
 #define ogs_strdup(s) ogs_strdup_debug(s, OGS_FILE_LINE, false)
 #define ogs_strdup_or_assert(s) ogs_strdup_debug(s, OGS_FILE_LINE, true)
 char *ogs_strdup_debug(const char *s, const char *file_line, bool abort);

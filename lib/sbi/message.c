@@ -1466,24 +1466,34 @@ static int parse_json(ogs_sbi_message_t *message,
         CASE(OGS_SBI_SERVICE_NAME_NPCF_AM_POLICY_CONTROL)
             SWITCH(message->h.resource.component[0])
             CASE(OGS_SBI_RESOURCE_NAME_POLICIES)
-                if (message->res_status == 0) {
-                    message->PolicyAssociationRequest =
-                        OpenAPI_policy_association_request_parseFromJSON(
-                                item);
-                    if (!message->PolicyAssociationRequest) {
-                        rv = OGS_ERROR;
-                        ogs_error("JSON parse error");
+                SWITCH(message->h.method)
+                CASE(OGS_SBI_HTTP_METHOD_POST)
+                    if (message->res_status == 0) {
+                        message->PolicyAssociationRequest =
+                            OpenAPI_policy_association_request_parseFromJSON(
+                                    item);
+                        if (!message->PolicyAssociationRequest) {
+                            rv = OGS_ERROR;
+                            ogs_error("JSON parse error");
+                        }
+                    } else if (message->res_status ==
+                            OGS_SBI_HTTP_STATUS_CREATED) {
+                        message->PolicyAssociation =
+                            OpenAPI_policy_association_parseFromJSON(item);
+                        if (!message->PolicyAssociation) {
+                            rv = OGS_ERROR;
+                            ogs_error("JSON parse error");
+                        }
                     }
-                } else if (message->res_status == OGS_SBI_HTTP_STATUS_CREATED) {
-                    message->PolicyAssociation =
-                        OpenAPI_policy_association_parseFromJSON(item);
-                    if (!message->PolicyAssociation) {
-                        rv = OGS_ERROR;
-                        ogs_error("JSON parse error");
-                    }
-                }
+                    break;
+                CASE(OGS_SBI_HTTP_METHOD_DELETE)
+                    /* Nothing */
+                    break;
+                DEFAULT
+                    rv = OGS_ERROR;
+                    ogs_error("Unknown method [%s]", message->h.method);
+                END
                 break;
-
             DEFAULT
                 rv = OGS_ERROR;
                 ogs_error("Unknown resource name [%s]",
@@ -1529,7 +1539,6 @@ static int parse_json(ogs_sbi_message_t *message,
                         ogs_error("Unknown resource name [%s]",
                                 message->h.resource.component[2]);
                     END
-                    break;
                 }
                 break;
 

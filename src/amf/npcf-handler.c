@@ -96,10 +96,7 @@ int amf_npcf_am_policy_control_handle_create(
     supported_features = ogs_uint64_from_string(PolicyAssociation->supp_feat);
     amf_ue->am_policy_control_features &= supported_features;
 
-    if (amf_ue->policy_association_id)
-        ogs_free(amf_ue->policy_association_id);
-    amf_ue->policy_association_id = ogs_strdup(message.h.resource.component[1]);
-    ogs_assert(amf_ue->policy_association_id);
+    PCF_AM_POLICY_STORE(amf_ue, message.h.resource.component[1]);
 
     OpenAPI_list_for_each(PolicyAssociation->triggers, node) {
         if (node->data) {

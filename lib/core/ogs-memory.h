@@ -35,14 +35,6 @@ extern "C" {
             (__dATA) = NULL; \
         } \
     } while(0)
-#define OGS_MEM_STORE(__dST, __sRC) \
-    do { \
-        ogs_assert((__sRC)); \
-        OGS_MEM_CLEAR(__dST); \
-        (__dST) = ogs_calloc(sizeof(*(__sRC)), sizeof(uint8_t)); \
-        ogs_assert((__dST)); \
-        memcpy((__dST), (__sRC), sizeof(*(__sRC))*sizeof(uint8_t)); \
-    } while(0)
 
 #define ogs_malloc(size) ogs_malloc_debug(size, OGS_FILE_LINE, false)
 #define ogs_malloc_or_assert(size) \

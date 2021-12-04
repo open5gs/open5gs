@@ -28,6 +28,8 @@ extern "C" {
 
 ogs_sbi_request_t *amf_npcf_am_policy_control_build_create(
         amf_ue_t *amf_ue, void *data);
+ogs_sbi_request_t *amf_npcf_am_policy_control_build_delete(
+        amf_ue_t *amf_ue, void *data);
 
 #ifdef __cplusplus
 }

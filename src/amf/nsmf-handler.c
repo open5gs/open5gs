@@ -216,12 +216,19 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                         SESSION_SYNC_DONE(amf_ue,
                             AMF_UPDATE_SM_CONTEXT_REGISTRATION_REQUEST)) {
 
-                        CLEAR_AMF_UE_TIMER(amf_ue->t3550);
-                        ogs_assert(OGS_OK ==
-                            nas_5gs_send_registration_accept(amf_ue));
+                        if (!PCF_AM_POLICY_ASSOCIATED(amf_ue)) {
+                            ogs_assert(true ==
+                                amf_ue_sbi_discover_and_send(
+                                    OpenAPI_nf_type_PCF, amf_ue, NULL,
+                                    amf_npcf_am_policy_control_build_create));
+                        } else {
+                            CLEAR_AMF_UE_TIMER(amf_ue->t3550);
+                            ogs_assert(OGS_OK ==
+                                nas_5gs_send_registration_accept(amf_ue));
 
-                        AMF_UE_CLEAR_N2_TRANSFER(
-                                amf_ue, pdu_session_resource_setup_request);
+                            AMF_UE_CLEAR_N2_TRANSFER(
+                                    amf_ue, pdu_session_resource_setup_request);
+                        }
                     }
                 } else if (state == AMF_UPDATE_SM_CONTEXT_SERVICE_REQUEST) {
                     AMF_SESS_STORE_N2_TRANSFER(
@@ -767,11 +774,19 @@ int amf_nsmf_pdusession_handle_release_sm_context(amf_sess_t *sess, int state)
         if (SESSION_SYNC_DONE(
                 amf_ue, AMF_RELEASE_SM_CONTEXT_REGISTRATION_ACCEPT) &&
             SESSION_SYNC_DONE(
-                amf_ue, AMF_UPDATE_SM_CONTEXT_REGISTRATION_REQUEST))
+                amf_ue, AMF_UPDATE_SM_CONTEXT_REGISTRATION_REQUEST)) {
 
-            CLEAR_AMF_UE_TIMER(amf_ue->t3550);
-            ogs_assert(OGS_OK ==
-                nas_5gs_send_registration_accept(amf_ue));
+            if (!PCF_AM_POLICY_ASSOCIATED(amf_ue)) {
+                ogs_assert(true ==
+                    amf_ue_sbi_discover_and_send(
+                        OpenAPI_nf_type_PCF, amf_ue, NULL,
+                        amf_npcf_am_policy_control_build_create));
+            } else {
+                CLEAR_AMF_UE_TIMER(amf_ue->t3550);
+                ogs_assert(OGS_OK ==
+                    nas_5gs_send_registration_accept(amf_ue));
+            }
+        }
 
     } else if (state == AMF_RELEASE_SM_CONTEXT_SERVICE_ACCEPT) {
         /*
@@ -833,8 +848,10 @@ int amf_nsmf_pdusession_handle_release_sm_context(amf_sess_t *sess, int state)
                      * 7. UEContextReleaseComplete
                      */
 
-                    ogs_assert(OGS_OK ==
-                        nas_5gs_send_de_registration_accept(amf_ue));
+                    ogs_assert(true ==
+                        amf_ue_sbi_discover_and_send(
+                            OpenAPI_nf_type_PCF, amf_ue,
+                            NULL, amf_npcf_am_policy_control_build_delete));
 
                 } else if (OGS_FSM_CHECK(&amf_ue->sm, gmm_state_registered)) {
                     /*

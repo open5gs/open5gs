@@ -282,6 +282,13 @@ struct amf_ue_s {
 
     /* PCF sends the RESPONSE
      * of [POST] /npcf-am-polocy-control/v1/policies */
+#define PCF_AM_POLICY_ASSOCIATED(__aMF) \
+    ((__aMF) && ((__aMF)->policy_association_id))
+
+#define PCF_AM_POLICY_CLEAR(__aMF) \
+    OGS_MEM_CLEAR((__aMF)->policy_association_id);
+#define PCF_AM_POLICY_STORE(__aMF, __iD) \
+    OGS_STRING_DUP((__aMF)->policy_association_id, __iD);
     char *policy_association_id;
 
     /* 5GMM Capability */
@@ -760,7 +767,7 @@ uint8_t amf_selected_enc_algorithm(amf_ue_t *amf_ue);
 
 void amf_clear_subscribed_info(amf_ue_t *amf_ue);
 
-void amf_update_allowed_nssai(amf_ue_t *amf_ue);
+bool amf_update_allowed_nssai(amf_ue_t *amf_ue);
 
 #ifdef __cplusplus
 }
