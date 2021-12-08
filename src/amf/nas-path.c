@@ -524,7 +524,7 @@ static ogs_nas_5gmm_cause_t gmm_cause_from_sbi(int status)
 
     switch(status) {
     case OGS_SBI_HTTP_STATUS_NOT_FOUND:
-        gmm_cause = OGS_5GMM_CAUSE_5GS_SERVICES_NOT_ALLOWED;
+        gmm_cause = OGS_5GMM_CAUSE_PLMN_NOT_ALLOWED;
         break;
     case OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT:
         gmm_cause = OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED;
