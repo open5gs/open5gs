@@ -210,7 +210,7 @@ int esm_handle_information_response(mme_sess_t *sess,
                 mme_gtp_send_create_session_request(sess));
         }
     } else {
-        if (rsp->access_point_name.apn)
+        if (rsp->access_point_name.length)
             ogs_error("Invalid APN[%s]", rsp->access_point_name.apn);
         else
             ogs_error("No APN");
