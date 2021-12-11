@@ -614,6 +614,9 @@ static void test1_func(abts_case *tc, void *data)
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
+    /* Waiting for modifying dedicated QoS flow */
+    ogs_msleep(100);
+
     /* Send AF-Session : DELETE */
     af_local_send_to_pcf(af_sess, NULL,
             af_npcf_policyauthorization_build_delete);
