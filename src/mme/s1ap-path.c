@@ -245,7 +245,7 @@ int s1ap_send_s1_setup_response(mme_enb_t *enb)
     int rv;
     ogs_pkbuf_t *s1ap_buffer;
 
-    ogs_debug("[MME] S1-Setup response");
+    ogs_debug("S1-Setup response");
     s1ap_buffer = s1ap_build_setup_rsp();
     ogs_expect_or_return_val(s1ap_buffer, OGS_ERROR);
 
@@ -261,7 +261,7 @@ int s1ap_send_s1_setup_failure(
     int rv;
     ogs_pkbuf_t *s1ap_buffer;
 
-    ogs_debug("[MME] S1-Setup failure");
+    ogs_debug("S1-Setup failure");
     s1ap_buffer = s1ap_build_setup_failure(group, cause, S1AP_TimeToWait_v10s);
     ogs_expect_or_return_val(s1ap_buffer, OGS_ERROR);
 
@@ -278,6 +278,7 @@ int s1ap_send_initial_context_setup_request(mme_ue_t *mme_ue)
 
     ogs_assert(mme_ue);
 
+    ogs_debug("InitialContextSetupRequest");
     s1apbuf = s1ap_build_initial_context_setup_request(mme_ue, NULL);
     ogs_expect_or_return_val(s1apbuf, OGS_ERROR);
 
@@ -294,6 +295,7 @@ int s1ap_send_ue_context_modification_request(mme_ue_t *mme_ue)
 
     ogs_assert(mme_ue);
 
+    ogs_debug("UEContextModificationRequest");
     s1apbuf = s1ap_build_ue_context_modification_request(mme_ue);
     ogs_expect_or_return_val(s1apbuf, OGS_ERROR);
 
@@ -312,7 +314,7 @@ int s1ap_send_ue_context_release_command(
 
     ogs_assert(enb_ue);
 
-    ogs_debug("[MME] UE Context release command");
+    ogs_debug("UEContextReleaseCommand");
     ogs_debug("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
             enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
 
@@ -381,6 +383,7 @@ int s1ap_send_mme_configuration_transfer(
     ogs_assert(target_enb);
     ogs_assert(SONConfigurationTransfer);
 
+    ogs_debug("MMEConfigurationTransfer");
     s1apbuf = s1ap_build_mme_configuration_transfer(SONConfigurationTransfer);
     ogs_expect_or_return_val(s1apbuf, OGS_ERROR);
 
@@ -397,6 +400,7 @@ int s1ap_send_e_rab_modification_confirm(mme_ue_t *mme_ue)
 
     ogs_assert(mme_ue);
 
+    ogs_debug("E-RABModificationConfirm");
     s1apbuf = s1ap_build_e_rab_modification_confirm(mme_ue);
     ogs_expect_or_return_val(s1apbuf, OGS_ERROR);
 
@@ -413,6 +417,7 @@ int s1ap_send_path_switch_ack(mme_ue_t *mme_ue)
 
     ogs_assert(mme_ue);
 
+    ogs_debug("PathSwitchAcknowledge");
     s1apbuf = s1ap_build_path_switch_ack(mme_ue);
     ogs_expect_or_return_val(s1apbuf, OGS_ERROR);
 
@@ -429,6 +434,7 @@ int s1ap_send_handover_command(enb_ue_t *source_ue)
 
     ogs_assert(source_ue);
 
+    ogs_debug("HandoverCommand");
     s1apbuf = s1ap_build_handover_command(source_ue);
     ogs_expect_or_return_val(s1apbuf, OGS_ERROR);
 
@@ -447,6 +453,7 @@ int s1ap_send_handover_preparation_failure(
     ogs_assert(source_ue);
     ogs_assert(group);
 
+    ogs_debug("HandoverPreparationFailure");
     s1apbuf = s1ap_build_handover_preparation_failure(source_ue, group, cause);
     ogs_expect_or_return_val(s1apbuf, OGS_ERROR);
 
@@ -463,6 +470,7 @@ int s1ap_send_handover_cancel_ack(enb_ue_t *source_ue)
 
     ogs_assert(source_ue);
 
+    ogs_debug("HandoverCancelAcknowledge");
     s1apbuf = s1ap_build_handover_cancel_ack(source_ue);
     ogs_expect_or_return_val(s1apbuf, OGS_ERROR);
 
@@ -484,8 +492,7 @@ int s1ap_send_handover_request(
 
     enb_ue_t *target_ue = NULL;
 
-    ogs_info("Handover request");
-    
+    ogs_info("HandoverRequest");
     ogs_assert(source_ue);
     ogs_assert(source_ue->target_ue == NULL);
     ogs_assert(target_enb);
@@ -521,6 +528,7 @@ int s1ap_send_mme_status_transfer(
 
     ogs_assert(target_ue);
 
+    ogs_info("MMEStatusTransfer");
     s1apbuf = s1ap_build_mme_status_transfer(target_ue,
             enb_statustransfer_transparentContainer);
     ogs_expect_or_return_val(s1apbuf, OGS_ERROR);
@@ -542,6 +550,7 @@ int s1ap_send_error_indication(
 
     ogs_assert(enb);
 
+    ogs_info("ErrorIndication");
     s1apbuf = ogs_s1ap_build_error_indication(
             mme_ue_s1ap_id, enb_ue_s1ap_id, group, cause);
     ogs_expect_or_return_val(s1apbuf, OGS_ERROR);
@@ -587,6 +596,7 @@ int s1ap_send_s1_reset_ack(
 
     ogs_assert(enb);
 
+    ogs_info("S1-Reset Acknowledge");
     s1apbuf = ogs_s1ap_build_s1_reset_ack(partOfS1_Interface);
     ogs_expect_or_return_val(s1apbuf, OGS_ERROR);
 
