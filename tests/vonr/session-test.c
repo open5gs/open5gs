@@ -1905,6 +1905,8 @@ static void test5_func(abts_case *tc, void *data)
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
+    ogs_msleep(100);
+
     /* Send PDU session establishment request */
     sess6 = test_sess_add_by_dnn_and_psi(test_ue, "ims", 6);
     ogs_assert(sess6);
