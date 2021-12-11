@@ -1,3 +1,27 @@
+open5gs (2.4.0) unstable; urgency=medium
+
+  * VoNR Added
+
+ -- Sukchan Lee <acetcom@gmail.com>  Sat, 11 Dec 2021 22:21:31 +0900
+
+open5gs (2.4.0~bionic) bionic; urgency=medium
+
+  * VoNR added
+
+ -- Sukchan Lee <acetcom@gmail.com>  Sat, 11 Dec 2021 22:19:42 +0900
+
+open5gs (2.4.0~focal) focal; urgency=medium
+
+  * VoNR added
+
+ -- Sukchan Lee <acetcom@gmail.com>  Sat, 11 Dec 2021 22:18:26 +0900
+
+open5gs (2.4.0~hirsute) hirsute; urgency=medium
+
+  * VoNR added
+
+ -- Sukchan Lee <acetcom@gmail.com>  Sat, 11 Dec 2021 21:22:12 +0900
+
 open5gs (2.3.6) unstable; urgency=medium
 
   * Bug Fixed
