@@ -26,7 +26,7 @@ typedef struct hss_imsi_s {
     ogs_lnode_t lnode;
 
     char *id;
-    ogs_plmn_id_t visited_plmn_id;
+    char *visited_network_identifier;
 } hss_imsi_t;
 
 typedef struct hss_impi_s {
@@ -480,6 +480,9 @@ static void imsi_remove(hss_imsi_t *imsi)
     ogs_hash_set(self.imsi_hash, imsi->id, strlen(imsi->id), NULL);
     ogs_free(imsi->id);
 
+    ogs_assert(imsi->visited_network_identifier);
+    ogs_free(imsi->visited_network_identifier);
+
     ogs_pool_free(&imsi_pool, imsi);
 }
 
@@ -631,26 +634,6 @@ static hss_impu_t *impu_find_by_impi_and_id(hss_impi_t *impi, char *id)
     return NULL;
 }
 
-void hss_s6a_set_visited_plmn_id(char *imsi_bcd, ogs_plmn_id_t *visited_plmn_id)
-{
-    hss_imsi_t *imsi = NULL;
-
-    ogs_assert(imsi_bcd);
-    ogs_assert(visited_plmn_id);
-
-    ogs_thread_mutex_lock(&self.cx_lock);
-
-    imsi = imsi_find_by_id(imsi_bcd);
-    if (!imsi) {
-        imsi = imsi_add(imsi_bcd);
-        ogs_assert(imsi);
-    }
-
-    memcpy(&imsi->visited_plmn_id, visited_plmn_id, OGS_PLMN_ID_LEN);
-
-    ogs_thread_mutex_unlock(&self.cx_lock);
-}
-
 void hss_cx_associate_identity(char *user_name, char *public_identity)
 {
     hss_impi_t *impi = NULL;
@@ -698,7 +681,8 @@ bool hss_cx_identity_is_associated(char *user_name, char *public_identity)
     return match_result;
 }
 
-void hss_cx_set_imsi_bcd(char *user_name, char *imsi_bcd)
+void hss_cx_set_imsi_bcd(char *user_name,
+        char *imsi_bcd, char *visited_network_identifier)
 {
     hss_imsi_t *imsi = NULL;
     hss_impi_t *impi = NULL;
@@ -712,9 +696,17 @@ void hss_cx_set_imsi_bcd(char *user_name, char *imsi_bcd)
     ogs_assert(impi);
 
     imsi = imsi_find_by_id(imsi_bcd);
-    ogs_assert(imsi);
+    if (!imsi) {
+        imsi = imsi_add(imsi_bcd);
+        ogs_assert(imsi);
+    }
 
     impi->imsi = imsi;
+
+    if (imsi->visited_network_identifier)
+        ogs_free(imsi->visited_network_identifier);
+    imsi->visited_network_identifier = ogs_strdup(visited_network_identifier);
+    ogs_assert(imsi->visited_network_identifier);
 
     ogs_thread_mutex_unlock(&self.cx_lock);
 }
@@ -742,12 +734,12 @@ char *hss_cx_get_imsi_bcd(char *public_identity)
     return imsi_bcd;
 }
 
-ogs_plmn_id_t *hss_cx_get_visited_plmn_id(char *public_identity)
+char *hss_cx_get_visited_network_identifier(char *public_identity)
 {
     hss_impi_t *impi = NULL;
     hss_impu_t *impu = NULL;
 
-    ogs_plmn_id_t *visited_plmn_id = NULL;
+    char *visited_network_identifier = NULL;
 
     ogs_thread_mutex_lock(&self.cx_lock);
 
@@ -757,12 +749,12 @@ ogs_plmn_id_t *hss_cx_get_visited_plmn_id(char *public_identity)
         ogs_assert(impi);
 
         if (impi->imsi)
-            visited_plmn_id = &impi->imsi->visited_plmn_id;
+            visited_network_identifier = impi->imsi->visited_network_identifier;
     }
 
     ogs_thread_mutex_unlock(&self.cx_lock);
 
-    return visited_plmn_id;
+    return visited_network_identifier;
 }
 
 char *hss_cx_get_user_name(char *public_identity)
@@ -844,7 +836,8 @@ void hss_cx_set_server_name(
 }
 
 char *hss_cx_download_user_data(
-        char *user_name, ogs_plmn_id_t *plmn_id, ogs_ims_data_t *ims_data)
+        char *user_name, char *visited_network_identifier,
+        ogs_ims_data_t *ims_data)
 {
     char *user_data = NULL;
 
@@ -855,17 +848,15 @@ char *hss_cx_download_user_data(
     int i;
 
     ogs_assert(user_name);
-    ogs_assert(plmn_id);
+    ogs_assert(visited_network_identifier);
     ogs_assert(ims_data);
 
     /* Download User-Data */
     for (i = 0; i < ims_data->num_of_msisdn; i++) {
         char *public_identity = NULL;
 
-        public_identity = ogs_msprintf(
-                "sip:%s@ims.mnc%03d.mcc%03d.3gppnetwork.org",
-                ims_data->msisdn[i].bcd,
-                ogs_plmn_id_mnc(plmn_id), ogs_plmn_id_mcc(plmn_id));
+        public_identity = ogs_msprintf("sip:%s@%s",
+                ims_data->msisdn[i].bcd, visited_network_identifier);
         ogs_assert(public_identity);
         hss_cx_associate_identity(user_name, public_identity);
         ogs_free(public_identity);

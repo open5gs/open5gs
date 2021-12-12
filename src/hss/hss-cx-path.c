@@ -57,6 +57,7 @@ static int hss_ogs_diam_cx_uar_cb( struct msg **msg, struct avp *avp,
 
     char *user_name = NULL;
     char *public_identity = NULL;
+    char *visited_network_identifier = NULL;
     char *server_name = NULL;
 
     char imsi_or_msisdn_bcd[OGS_MAX_IMSI_BCD_LEN+1];
@@ -95,6 +96,16 @@ static int hss_ogs_diam_cx_uar_cb( struct msg **msg, struct avp *avp,
         (char*)hdr->avp_value->os.data, hdr->avp_value->os.len);
     ogs_assert(public_identity);
 
+    /* Get Visited-Network-Identifier AVP (Mandatory) */
+    ret = fd_msg_search_avp(qry, ogs_diam_visited_network_identifier, &avp);
+    ogs_assert(ret == 0);
+    ret = fd_msg_avp_hdr(avp, &hdr);
+    ogs_assert(ret == 0);
+
+    visited_network_identifier = ogs_strndup(
+        (char*)hdr->avp_value->os.data, hdr->avp_value->os.len);
+    ogs_assert(visited_network_identifier);
+
     memset(&msisdn_data, 0, sizeof(ogs_msisdn_data_t));
     rv = hss_db_msisdn_data(imsi_or_msisdn_bcd, &msisdn_data);
     if (rv != OGS_OK) {
@@ -113,7 +124,8 @@ static int hss_ogs_diam_cx_uar_cb( struct msg **msg, struct avp *avp,
     hss_cx_associate_identity(user_name, public_identity);
 
     /* Set IMSI for IMPI(User-Name) */
-    hss_cx_set_imsi_bcd(user_name, msisdn_data.imsi.bcd);
+    hss_cx_set_imsi_bcd(user_name,
+            msisdn_data.imsi.bcd, visited_network_identifier);
 
     /* Get Server-Name by IMPU(Public-Identity) */
     server_name = hss_cx_get_server_name(public_identity);
@@ -160,6 +172,7 @@ static int hss_ogs_diam_cx_uar_cb( struct msg **msg, struct avp *avp,
 
     ogs_free(user_name);
     ogs_free(public_identity);
+    ogs_free(visited_network_identifier);
 
 	return 0;
 
@@ -187,6 +200,7 @@ out:
 
     ogs_free(user_name);
     ogs_free(public_identity);
+    ogs_free(visited_network_identifier);
 
     return 0;
 }
@@ -607,7 +621,7 @@ static int hss_ogs_diam_cx_sar_cb( struct msg **msg, struct avp *avp,
     char *user_data = NULL;
 
     char *imsi_bcd = NULL;
-    ogs_plmn_id_t *visited_plmn_id = NULL;
+    char *visited_network_identifier = NULL;
 
     ogs_ims_data_t ims_data;
 
@@ -682,10 +696,12 @@ static int hss_ogs_diam_cx_sar_cb( struct msg **msg, struct avp *avp,
         goto out;
     }
 
-    /* Check if Visited-PLMN-ID from S6A */
-    visited_plmn_id = hss_cx_get_visited_plmn_id(public_identity);
-    if (!visited_plmn_id) {
-        ogs_error("Cannot find PLMN-ID for User-Name[%s] Public-Identity[%s]",
+    /* Check if Visited-Network-Identifier */
+    visited_network_identifier =
+        hss_cx_get_visited_network_identifier(public_identity);
+    if (!visited_network_identifier) {
+        ogs_error("Cannot find Visted-Network-Identifier "
+                    "for User-Name[%s] Public-Identity[%s]",
                     user_name, public_identity);
         result_code = OGS_DIAM_CX_ERROR_IDENTITY_NOT_REGISTERED;
         goto out;
@@ -754,7 +770,7 @@ static int hss_ogs_diam_cx_sar_cb( struct msg **msg, struct avp *avp,
         } else {
             /* Set the User-Data AVP */
             user_data = hss_cx_download_user_data(
-                    user_name, visited_plmn_id, &ims_data);
+                    user_name, visited_network_identifier, &ims_data);
             ogs_assert(user_data);
 
             ret = fd_msg_avp_new(ogs_diam_cx_user_data, 0, &avp);
