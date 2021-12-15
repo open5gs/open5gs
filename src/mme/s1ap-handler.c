@@ -1065,7 +1065,9 @@ void s1ap_handle_e_rab_setup_response(
     S1AP_MME_UE_S1AP_ID_t *MME_UE_S1AP_ID = NULL;
     S1AP_ENB_UE_S1AP_ID_t *ENB_UE_S1AP_ID = NULL;
     S1AP_E_RABSetupListBearerSURes_t *E_RABSetupListBearerSURes = NULL;
-
+    S1AP_E_RABList_t *E_RABFailedToSetupListBearerSURes = NULL;
+    S1AP_CriticalityDiagnostics_t *CriticalityDiagnostics = NULL;
+	
     enb_ue_t *enb_ue = NULL;
     mme_ue_t *mme_ue = NULL;
 
@@ -1093,6 +1095,14 @@ void s1ap_handle_e_rab_setup_response(
             E_RABSetupListBearerSURes =
                 &ie->value.choice.E_RABSetupListBearerSURes;
             break;
+        case S1AP_ProtocolIE_ID_id_E_RABFailedToSetupListBearerSURes:
+            E_RABFailedToSetupListBearerSURes =
+                &ie->value.choice.E_RABList;
+            break;
+        case S1AP_ProtocolIE_ID_id_CriticalityDiagnostics:
+            CriticalityDiagnostics =
+                &ie->value.choice.CriticalityDiagnostics;
+            break;			
         default:
             break;
         }
@@ -1131,7 +1141,7 @@ void s1ap_handle_e_rab_setup_response(
     ogs_debug("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
             enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
 
-    if (!E_RABSetupListBearerSURes) {
+    if (E_RABSetupListBearerSURes) {
         ogs_error("No E_RABSetupListBearerSURes");
         ogs_assert(OGS_OK ==
             s1ap_send_error_indication(enb, MME_UE_S1AP_ID, ENB_UE_S1AP_ID,
@@ -1142,64 +1152,78 @@ void s1ap_handle_e_rab_setup_response(
     mme_ue = enb_ue->mme_ue;
     ogs_expect_or_return(mme_ue);
 
-    for (i = 0; i < E_RABSetupListBearerSURes->list.count; i++) {
-        S1AP_E_RABSetupItemBearerSUResIEs_t *item = NULL;
-        S1AP_E_RABSetupItemBearerSURes_t *e_rab = NULL;
+    if (E_RABSetupListBearerSURes) {
+	    for (i = 0; i < E_RABSetupListBearerSURes->list.count; i++) {
+		S1AP_E_RABSetupItemBearerSUResIEs_t *item = NULL;
+		S1AP_E_RABSetupItemBearerSURes_t *e_rab = NULL;
 
-        mme_bearer_t *bearer = NULL;
+		mme_bearer_t *bearer = NULL;
 
-        item = (S1AP_E_RABSetupItemBearerSUResIEs_t *)
-            E_RABSetupListBearerSURes->list.array[i];
-        if (!item) {
-            ogs_error("No S1AP_E_RABSetupItemBearerSUResIEs_t");
-            ogs_assert(OGS_OK ==
-                s1ap_send_error_indication2(mme_ue,
-                S1AP_Cause_PR_protocol, S1AP_CauseProtocol_semantic_error));
-            return;
+		item = (S1AP_E_RABSetupItemBearerSUResIEs_t *)
+		    E_RABSetupListBearerSURes->list.array[i];
+		if (!item) {
+		    ogs_error("No S1AP_E_RABSetupItemBearerSUResIEs_t");
+		    ogs_assert(OGS_OK ==
+			s1ap_send_error_indication2(mme_ue,
+			S1AP_Cause_PR_protocol, S1AP_CauseProtocol_semantic_error));
+		    return;
+		}
+
+		e_rab = &item->value.choice.E_RABSetupItemBearerSURes;
+		if (!e_rab) {
+		    ogs_error("No E_RABSetupItemBearerSURes");
+		    ogs_assert(OGS_OK ==
+			s1ap_send_error_indication2(mme_ue,
+			S1AP_Cause_PR_protocol, S1AP_CauseProtocol_semantic_error));
+		    return;
+		}
+
+		bearer = mme_bearer_find_by_ue_ebi(mme_ue, e_rab->e_RAB_ID);
+		if (!bearer) {
+		    ogs_error("No Bearer [%d]", (int)e_rab->e_RAB_ID);
+		    ogs_assert(OGS_OK ==
+			s1ap_send_error_indication2(mme_ue,
+			    S1AP_Cause_PR_radioNetwork,
+			    S1AP_CauseRadioNetwork_unknown_E_RAB_ID));
+		    return;
+		}
+
+		memcpy(&bearer->enb_s1u_teid, e_rab->gTP_TEID.buf,
+			sizeof(bearer->enb_s1u_teid));
+		bearer->enb_s1u_teid = be32toh(bearer->enb_s1u_teid);
+		rv = ogs_asn_BIT_STRING_to_ip(
+			&e_rab->transportLayerAddress, &bearer->enb_s1u_ip);
+		ogs_assert(rv == OGS_OK);
+
+		ogs_debug("    EBI[%d]", bearer->ebi);
+
+		if (OGS_FSM_CHECK(&bearer->sm, esm_state_active)) {
+		    mme_bearer_t *linked_bearer = mme_linked_bearer(bearer);
+		    ogs_assert(linked_bearer);
+		    ogs_debug("    Linked-EBI[%d]", linked_bearer->ebi);
+
+		    if (bearer->ebi == linked_bearer->ebi) {
+			ogs_assert(OGS_OK ==
+			    mme_gtp_send_modify_bearer_request(bearer, 0));
+		    } else {
+			ogs_assert(OGS_OK ==
+			    mme_gtp_send_create_bearer_response(
+				bearer, OGS_GTP_CAUSE_REQUEST_ACCEPTED));
+		    }
+		}
+	    }
+    }
+    if (E_RABFailedToSetupListBearerSURes) {
+        for (i = 0; i < E_RABFailedToSetupListBearerSURes->list.count; i++)
+        {
+            //S1AP_E_RABItemIEs_t *item = E_RABFailedToSetupListBearerSURes->list.array[i];
+            S1AP_E_RABItem_t *item = E_RABFailedToSetupListBearerSURes;
+            //ogs_debug("ID: %d", item->id);
         }
+    }
 
-        e_rab = &item->value.choice.E_RABSetupItemBearerSURes;
-        if (!e_rab) {
-            ogs_error("No E_RABSetupItemBearerSURes");
-            ogs_assert(OGS_OK ==
-                s1ap_send_error_indication2(mme_ue,
-                S1AP_Cause_PR_protocol, S1AP_CauseProtocol_semantic_error));
-            return;
-        }
+    if (CriticalityDiagnostics) {
 
-        bearer = mme_bearer_find_by_ue_ebi(mme_ue, e_rab->e_RAB_ID);
-        if (!bearer) {
-            ogs_error("No Bearer [%d]", (int)e_rab->e_RAB_ID);
-            ogs_assert(OGS_OK ==
-                s1ap_send_error_indication2(mme_ue,
-                    S1AP_Cause_PR_radioNetwork,
-                    S1AP_CauseRadioNetwork_unknown_E_RAB_ID));
-            return;
-        }
-
-        memcpy(&bearer->enb_s1u_teid, e_rab->gTP_TEID.buf,
-                sizeof(bearer->enb_s1u_teid));
-        bearer->enb_s1u_teid = be32toh(bearer->enb_s1u_teid);
-        rv = ogs_asn_BIT_STRING_to_ip(
-                &e_rab->transportLayerAddress, &bearer->enb_s1u_ip);
-        ogs_assert(rv == OGS_OK);
-
-        ogs_debug("    EBI[%d]", bearer->ebi);
-
-        if (OGS_FSM_CHECK(&bearer->sm, esm_state_active)) {
-            mme_bearer_t *linked_bearer = mme_linked_bearer(bearer);
-            ogs_assert(linked_bearer);
-            ogs_debug("    Linked-EBI[%d]", linked_bearer->ebi);
-
-            if (bearer->ebi == linked_bearer->ebi) {
-                ogs_assert(OGS_OK ==
-                    mme_gtp_send_modify_bearer_request(bearer, 0));
-            } else {
-                ogs_assert(OGS_OK ==
-                    mme_gtp_send_create_bearer_response(
-                        bearer, OGS_GTP_CAUSE_REQUEST_ACCEPTED));
-            }
-        }
     }
 }
 
