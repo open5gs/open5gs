@@ -1050,7 +1050,16 @@ void s1ap_handle_ue_context_modification_failure(
     CLEAR_SERVICE_INDICATOR(mme_ue);
 }
 
-
+/*
+E-RABSetupResponseIEs S1AP-PROTOCOL-IES ::= {
+	{ ID id-MME-UE-S1AP-ID			CRITICALITY ignore	TYPE MME-UE-S1AP-ID				PRESENCE mandatory	}|
+	{ ID id-eNB-UE-S1AP-ID			CRITICALITY ignore	TYPE ENB-UE-S1AP-ID				PRESENCE mandatory	}|
+	{ ID id-E-RABSetupListBearerSURes	CRITICALITY ignore	TYPE E-RABSetupListBearerSURes			PRESENCE optional	}|
+	{ ID id-E-RABFailedToSetupListBearerSURes	CRITICALITY ignore	TYPE E-RABList				PRESENCE optional	}|
+	{ ID id-CriticalityDiagnostics			CRITICALITY ignore	TYPE CriticalityDiagnostics		PRESENCE optional	},
+	...
+}
+*/
 void s1ap_handle_e_rab_setup_response(
         mme_enb_t *enb, ogs_s1ap_message_t *message)
 {
