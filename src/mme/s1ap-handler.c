@@ -1050,16 +1050,7 @@ void s1ap_handle_ue_context_modification_failure(
     CLEAR_SERVICE_INDICATOR(mme_ue);
 }
 
-/*
-E-RABSetupResponseIEs S1AP-PROTOCOL-IES ::= {
-	{ ID id-MME-UE-S1AP-ID			CRITICALITY ignore	TYPE MME-UE-S1AP-ID				PRESENCE mandatory	}|
-	{ ID id-eNB-UE-S1AP-ID			CRITICALITY ignore	TYPE ENB-UE-S1AP-ID				PRESENCE mandatory	}|
-	{ ID id-E-RABSetupListBearerSURes	CRITICALITY ignore	TYPE E-RABSetupListBearerSURes			PRESENCE optional	}|
-	{ ID id-E-RABFailedToSetupListBearerSURes	CRITICALITY ignore	TYPE E-RABList				PRESENCE optional	}|
-	{ ID id-CriticalityDiagnostics			CRITICALITY ignore	TYPE CriticalityDiagnostics		PRESENCE optional	},
-	...
-}
-*/
+
 void s1ap_handle_e_rab_setup_response(
         mme_enb_t *enb, ogs_s1ap_message_t *message)
 {
@@ -1124,7 +1115,7 @@ void s1ap_handle_e_rab_setup_response(
         ogs_error("No MME_UE_S1AP_ID");
         ogs_assert(OGS_OK ==
             s1ap_send_error_indication(enb, NULL, ENB_UE_S1AP_ID,
-                S1AP_Cause_PR_protocol, S1AP_CauseProtocol_semantic_error));
+            S1AP_Cause_PR_protocol, S1AP_CauseProtocol_semantic_error));
         return;
     }
 
@@ -1134,8 +1125,8 @@ void s1ap_handle_e_rab_setup_response(
                 (long long)*MME_UE_S1AP_ID);
         ogs_assert(OGS_OK ==
             s1ap_send_error_indication(enb, MME_UE_S1AP_ID, NULL,
-                S1AP_Cause_PR_radioNetwork,
-                S1AP_CauseRadioNetwork_unknown_mme_ue_s1ap_id));
+            S1AP_Cause_PR_radioNetwork,
+            S1AP_CauseRadioNetwork_unknown_mme_ue_s1ap_id));
         return;
     }
 
@@ -1143,7 +1134,7 @@ void s1ap_handle_e_rab_setup_response(
         ogs_error("No ENB_UE_S1AP_ID");
         ogs_assert(OGS_OK ==
             s1ap_send_error_indication(enb, MME_UE_S1AP_ID, ENB_UE_S1AP_ID,
-                S1AP_Cause_PR_protocol, S1AP_CauseProtocol_semantic_error));
+            S1AP_Cause_PR_protocol, S1AP_CauseProtocol_semantic_error));
         return;
     }
 
@@ -1165,8 +1156,8 @@ void s1ap_handle_e_rab_setup_response(
             if (!item) {
                 ogs_error("No S1AP_E_RABSetupItemBearerSUResIEs_t");
                 ogs_assert(OGS_OK ==
-                s1ap_send_error_indication2(mme_ue,
-                S1AP_Cause_PR_protocol, S1AP_CauseProtocol_semantic_error));
+                	s1ap_send_error_indication2(mme_ue,
+                	S1AP_Cause_PR_protocol, S1AP_CauseProtocol_semantic_error));
                 return;
             }
 
@@ -1174,8 +1165,8 @@ void s1ap_handle_e_rab_setup_response(
             if (!e_rab) {
                 ogs_error("No E_RABSetupItemBearerSURes");
                 ogs_assert(OGS_OK ==
-                s1ap_send_error_indication2(mme_ue,
-                S1AP_Cause_PR_protocol, S1AP_CauseProtocol_semantic_error));
+                	s1ap_send_error_indication2(mme_ue,
+                	S1AP_Cause_PR_protocol, S1AP_CauseProtocol_semantic_error));
                 return;
             }
 
@@ -1183,9 +1174,9 @@ void s1ap_handle_e_rab_setup_response(
             if (!bearer) {
                 ogs_error("No Bearer [%d]", (int)e_rab->e_RAB_ID);
                 ogs_assert(OGS_OK ==
-                s1ap_send_error_indication2(mme_ue,
-                    S1AP_Cause_PR_radioNetwork,
-                    S1AP_CauseRadioNetwork_unknown_E_RAB_ID));
+                	s1ap_send_error_indication2(mme_ue,
+                    	S1AP_Cause_PR_radioNetwork,
+                    	S1AP_CauseRadioNetwork_unknown_E_RAB_ID));
                 return;
             }
 
@@ -1247,7 +1238,6 @@ void s1ap_handle_e_rab_setup_response(
         if (procedureCriticality) {
             ogs_debug("procedureCriticality: %ld", (long)procedureCriticality);
         }
-        ogs_debug("    CriticalityDiagnostics");
     }
 }
 
