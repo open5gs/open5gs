@@ -606,10 +606,6 @@ int upf_gtp_open(void)
         }
     }
 
-    /* Link-Local Address for UPF_TUN */
-    ogs_list_for_each(&ogs_pfcp_self()->dev_list, dev)
-        dev->link_local_addr = ogs_link_local_addr_by_dev(dev->ifname);
-
     return OGS_OK;
 }
 

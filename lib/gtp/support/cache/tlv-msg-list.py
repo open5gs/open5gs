@@ -1,3 +1,4 @@
+# [Table 6.1-1: Message types for GTPv2] Index = 7
 msg_list["Echo Request"] = { "type" : "1" }
 msg_list["Echo Response"] = { "type" : "2" }
 msg_list["Version Not Supported Indication"] = { "type" : "3" }

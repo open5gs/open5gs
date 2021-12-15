@@ -255,7 +255,9 @@ cJSON *OpenAPI_policy_association_update_request_convertToJSON(OpenAPI_policy_as
     if (policy_association_update_request->pra_statuses) {
         OpenAPI_list_for_each(policy_association_update_request->pra_statuses, pra_statuses_node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)pra_statuses_node->data;
-        cJSON *itemLocal = OpenAPI_presence_info_convertToJSON(localKeyValue->value);
+        cJSON *itemLocal = localKeyValue->value ?
+            OpenAPI_presence_info_convertToJSON(localKeyValue->value) :
+            cJSON_CreateNull();
         if (itemLocal == NULL) {
             ogs_error("OpenAPI_policy_association_update_request_convertToJSON() failed [pra_statuses]");
             goto end;
@@ -542,12 +544,15 @@ OpenAPI_policy_association_update_request_t *OpenAPI_policy_association_update_r
     OpenAPI_map_t *localMapKeyPair = NULL;
     cJSON_ArrayForEach(pra_statuses_local_map, pra_statuses) {
         cJSON *localMapObject = pra_statuses_local_map;
-        if (!cJSON_IsObject(pra_statuses_local_map)) {
+        if (cJSON_IsObject(pra_statuses_local_map)) {
+            localMapKeyPair = OpenAPI_map_create(
+                localMapObject->string, OpenAPI_presence_info_parseFromJSON(localMapObject));
+        } else if (cJSON_IsNull(pra_statuses_local_map)) {
+            localMapKeyPair = OpenAPI_map_create(localMapObject->string, NULL);
+        } else {
             ogs_error("OpenAPI_policy_association_update_request_parseFromJSON() failed [pra_statuses]");
             goto end;
         }
-        localMapKeyPair = OpenAPI_map_create(
-            localMapObject->string, OpenAPI_presence_info_parseFromJSON(localMapObject));
         OpenAPI_list_add(pra_statusesList , localMapKeyPair);
     }
     }

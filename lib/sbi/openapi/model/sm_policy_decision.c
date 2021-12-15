@@ -190,7 +190,9 @@ cJSON *OpenAPI_sm_policy_decision_convertToJSON(OpenAPI_sm_policy_decision_t *sm
     if (sm_policy_decision->sess_rules) {
         OpenAPI_list_for_each(sm_policy_decision->sess_rules, sess_rules_node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)sess_rules_node->data;
-        cJSON *itemLocal = OpenAPI_session_rule_convertToJSON(localKeyValue->value);
+        cJSON *itemLocal = localKeyValue->value ?
+            OpenAPI_session_rule_convertToJSON(localKeyValue->value) :
+            cJSON_CreateNull();
         if (itemLocal == NULL) {
             ogs_error("OpenAPI_sm_policy_decision_convertToJSON() failed [sess_rules]");
             goto end;
@@ -211,7 +213,9 @@ cJSON *OpenAPI_sm_policy_decision_convertToJSON(OpenAPI_sm_policy_decision_t *sm
     if (sm_policy_decision->pcc_rules) {
         OpenAPI_list_for_each(sm_policy_decision->pcc_rules, pcc_rules_node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)pcc_rules_node->data;
-        cJSON *itemLocal = OpenAPI_pcc_rule_convertToJSON(localKeyValue->value);
+        cJSON *itemLocal = localKeyValue->value ?
+            OpenAPI_pcc_rule_convertToJSON(localKeyValue->value) :
+            cJSON_CreateNull();
         if (itemLocal == NULL) {
             ogs_error("OpenAPI_sm_policy_decision_convertToJSON() failed [pcc_rules]");
             goto end;
@@ -239,7 +243,9 @@ cJSON *OpenAPI_sm_policy_decision_convertToJSON(OpenAPI_sm_policy_decision_t *sm
     if (sm_policy_decision->qos_decs) {
         OpenAPI_list_for_each(sm_policy_decision->qos_decs, qos_decs_node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)qos_decs_node->data;
-        cJSON *itemLocal = OpenAPI_qos_data_convertToJSON(localKeyValue->value);
+        cJSON *itemLocal = localKeyValue->value ?
+            OpenAPI_qos_data_convertToJSON(localKeyValue->value) :
+            cJSON_CreateNull();
         if (itemLocal == NULL) {
             ogs_error("OpenAPI_sm_policy_decision_convertToJSON() failed [qos_decs]");
             goto end;
@@ -260,7 +266,9 @@ cJSON *OpenAPI_sm_policy_decision_convertToJSON(OpenAPI_sm_policy_decision_t *sm
     if (sm_policy_decision->chg_decs) {
         OpenAPI_list_for_each(sm_policy_decision->chg_decs, chg_decs_node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)chg_decs_node->data;
-        cJSON *itemLocal = OpenAPI_charging_data_convertToJSON(localKeyValue->value);
+        cJSON *itemLocal = localKeyValue->value ?
+            OpenAPI_charging_data_convertToJSON(localKeyValue->value) :
+            cJSON_CreateNull();
         if (itemLocal == NULL) {
             ogs_error("OpenAPI_sm_policy_decision_convertToJSON() failed [chg_decs]");
             goto end;
@@ -294,7 +302,9 @@ cJSON *OpenAPI_sm_policy_decision_convertToJSON(OpenAPI_sm_policy_decision_t *sm
     if (sm_policy_decision->traff_cont_decs) {
         OpenAPI_list_for_each(sm_policy_decision->traff_cont_decs, traff_cont_decs_node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)traff_cont_decs_node->data;
-        cJSON *itemLocal = OpenAPI_traffic_control_data_convertToJSON(localKeyValue->value);
+        cJSON *itemLocal = localKeyValue->value ?
+            OpenAPI_traffic_control_data_convertToJSON(localKeyValue->value) :
+            cJSON_CreateNull();
         if (itemLocal == NULL) {
             ogs_error("OpenAPI_sm_policy_decision_convertToJSON() failed [traff_cont_decs]");
             goto end;
@@ -315,7 +325,9 @@ cJSON *OpenAPI_sm_policy_decision_convertToJSON(OpenAPI_sm_policy_decision_t *sm
     if (sm_policy_decision->um_decs) {
         OpenAPI_list_for_each(sm_policy_decision->um_decs, um_decs_node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)um_decs_node->data;
-        cJSON *itemLocal = OpenAPI_usage_monitoring_data_convertToJSON(localKeyValue->value);
+        cJSON *itemLocal = localKeyValue->value ?
+            OpenAPI_usage_monitoring_data_convertToJSON(localKeyValue->value) :
+            cJSON_CreateNull();
         if (itemLocal == NULL) {
             ogs_error("OpenAPI_sm_policy_decision_convertToJSON() failed [um_decs]");
             goto end;
@@ -336,7 +348,9 @@ cJSON *OpenAPI_sm_policy_decision_convertToJSON(OpenAPI_sm_policy_decision_t *sm
     if (sm_policy_decision->qos_chars) {
         OpenAPI_list_for_each(sm_policy_decision->qos_chars, qos_chars_node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)qos_chars_node->data;
-        cJSON *itemLocal = OpenAPI_qos_characteristics_convertToJSON(localKeyValue->value);
+        cJSON *itemLocal = localKeyValue->value ?
+            OpenAPI_qos_characteristics_convertToJSON(localKeyValue->value) :
+            cJSON_CreateNull();
         if (itemLocal == NULL) {
             ogs_error("OpenAPI_sm_policy_decision_convertToJSON() failed [qos_chars]");
             goto end;
@@ -357,7 +371,9 @@ cJSON *OpenAPI_sm_policy_decision_convertToJSON(OpenAPI_sm_policy_decision_t *sm
     if (sm_policy_decision->qos_mon_decs) {
         OpenAPI_list_for_each(sm_policy_decision->qos_mon_decs, qos_mon_decs_node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)qos_mon_decs_node->data;
-        cJSON *itemLocal = OpenAPI_qos_monitoring_data_convertToJSON(localKeyValue->value);
+        cJSON *itemLocal = localKeyValue->value ?
+            OpenAPI_qos_monitoring_data_convertToJSON(localKeyValue->value) :
+            cJSON_CreateNull();
         if (itemLocal == NULL) {
             ogs_error("OpenAPI_sm_policy_decision_convertToJSON() failed [qos_mon_decs]");
             goto end;
@@ -385,7 +401,9 @@ cJSON *OpenAPI_sm_policy_decision_convertToJSON(OpenAPI_sm_policy_decision_t *sm
     if (sm_policy_decision->conds) {
         OpenAPI_list_for_each(sm_policy_decision->conds, conds_node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)conds_node->data;
-        cJSON *itemLocal = OpenAPI_condition_data_convertToJSON(localKeyValue->value);
+        cJSON *itemLocal = localKeyValue->value ?
+            OpenAPI_condition_data_convertToJSON(localKeyValue->value) :
+            cJSON_CreateNull();
         if (itemLocal == NULL) {
             ogs_error("OpenAPI_sm_policy_decision_convertToJSON() failed [conds]");
             goto end;
@@ -475,7 +493,9 @@ cJSON *OpenAPI_sm_policy_decision_convertToJSON(OpenAPI_sm_policy_decision_t *sm
     if (sm_policy_decision->pra_infos) {
         OpenAPI_list_for_each(sm_policy_decision->pra_infos, pra_infos_node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)pra_infos_node->data;
-        cJSON *itemLocal = OpenAPI_presence_info_rm_convertToJSON(localKeyValue->value);
+        cJSON *itemLocal = localKeyValue->value ?
+            OpenAPI_presence_info_rm_convertToJSON(localKeyValue->value) :
+            cJSON_CreateNull();
         if (itemLocal == NULL) {
             ogs_error("OpenAPI_sm_policy_decision_convertToJSON() failed [pra_infos]");
             goto end;
@@ -593,12 +613,15 @@ OpenAPI_sm_policy_decision_t *OpenAPI_sm_policy_decision_parseFromJSON(cJSON *sm
     OpenAPI_map_t *localMapKeyPair = NULL;
     cJSON_ArrayForEach(sess_rules_local_map, sess_rules) {
         cJSON *localMapObject = sess_rules_local_map;
-        if (!cJSON_IsObject(sess_rules_local_map)) {
+        if (cJSON_IsObject(sess_rules_local_map)) {
+            localMapKeyPair = OpenAPI_map_create(
+                localMapObject->string, OpenAPI_session_rule_parseFromJSON(localMapObject));
+        } else if (cJSON_IsNull(sess_rules_local_map)) {
+            localMapKeyPair = OpenAPI_map_create(localMapObject->string, NULL);
+        } else {
             ogs_error("OpenAPI_sm_policy_decision_parseFromJSON() failed [sess_rules]");
             goto end;
         }
-        localMapKeyPair = OpenAPI_map_create(
-            localMapObject->string, OpenAPI_session_rule_parseFromJSON(localMapObject));
         OpenAPI_list_add(sess_rulesList , localMapKeyPair);
     }
     }
@@ -616,12 +639,15 @@ OpenAPI_sm_policy_decision_t *OpenAPI_sm_policy_decision_parseFromJSON(cJSON *sm
     OpenAPI_map_t *localMapKeyPair = NULL;
     cJSON_ArrayForEach(pcc_rules_local_map, pcc_rules) {
         cJSON *localMapObject = pcc_rules_local_map;
-        if (!cJSON_IsObject(pcc_rules_local_map)) {
+        if (cJSON_IsObject(pcc_rules_local_map)) {
+            localMapKeyPair = OpenAPI_map_create(
+                localMapObject->string, OpenAPI_pcc_rule_parseFromJSON(localMapObject));
+        } else if (cJSON_IsNull(pcc_rules_local_map)) {
+            localMapKeyPair = OpenAPI_map_create(localMapObject->string, NULL);
+        } else {
             ogs_error("OpenAPI_sm_policy_decision_parseFromJSON() failed [pcc_rules]");
             goto end;
         }
-        localMapKeyPair = OpenAPI_map_create(
-            localMapObject->string, OpenAPI_pcc_rule_parseFromJSON(localMapObject));
         OpenAPI_list_add(pcc_rulesList , localMapKeyPair);
     }
     }
@@ -648,12 +674,15 @@ OpenAPI_sm_policy_decision_t *OpenAPI_sm_policy_decision_parseFromJSON(cJSON *sm
     OpenAPI_map_t *localMapKeyPair = NULL;
     cJSON_ArrayForEach(qos_decs_local_map, qos_decs) {
         cJSON *localMapObject = qos_decs_local_map;
-        if (!cJSON_IsObject(qos_decs_local_map)) {
+        if (cJSON_IsObject(qos_decs_local_map)) {
+            localMapKeyPair = OpenAPI_map_create(
+                localMapObject->string, OpenAPI_qos_data_parseFromJSON(localMapObject));
+        } else if (cJSON_IsNull(qos_decs_local_map)) {
+            localMapKeyPair = OpenAPI_map_create(localMapObject->string, NULL);
+        } else {
             ogs_error("OpenAPI_sm_policy_decision_parseFromJSON() failed [qos_decs]");
             goto end;
         }
-        localMapKeyPair = OpenAPI_map_create(
-            localMapObject->string, OpenAPI_qos_data_parseFromJSON(localMapObject));
         OpenAPI_list_add(qos_decsList , localMapKeyPair);
     }
     }
@@ -671,12 +700,15 @@ OpenAPI_sm_policy_decision_t *OpenAPI_sm_policy_decision_parseFromJSON(cJSON *sm
     OpenAPI_map_t *localMapKeyPair = NULL;
     cJSON_ArrayForEach(chg_decs_local_map, chg_decs) {
         cJSON *localMapObject = chg_decs_local_map;
-        if (!cJSON_IsObject(chg_decs_local_map)) {
+        if (cJSON_IsObject(chg_decs_local_map)) {
+            localMapKeyPair = OpenAPI_map_create(
+                localMapObject->string, OpenAPI_charging_data_parseFromJSON(localMapObject));
+        } else if (cJSON_IsNull(chg_decs_local_map)) {
+            localMapKeyPair = OpenAPI_map_create(localMapObject->string, NULL);
+        } else {
             ogs_error("OpenAPI_sm_policy_decision_parseFromJSON() failed [chg_decs]");
             goto end;
         }
-        localMapKeyPair = OpenAPI_map_create(
-            localMapObject->string, OpenAPI_charging_data_parseFromJSON(localMapObject));
         OpenAPI_list_add(chg_decsList , localMapKeyPair);
     }
     }
@@ -701,12 +733,15 @@ OpenAPI_sm_policy_decision_t *OpenAPI_sm_policy_decision_parseFromJSON(cJSON *sm
     OpenAPI_map_t *localMapKeyPair = NULL;
     cJSON_ArrayForEach(traff_cont_decs_local_map, traff_cont_decs) {
         cJSON *localMapObject = traff_cont_decs_local_map;
-        if (!cJSON_IsObject(traff_cont_decs_local_map)) {
+        if (cJSON_IsObject(traff_cont_decs_local_map)) {
+            localMapKeyPair = OpenAPI_map_create(
+                localMapObject->string, OpenAPI_traffic_control_data_parseFromJSON(localMapObject));
+        } else if (cJSON_IsNull(traff_cont_decs_local_map)) {
+            localMapKeyPair = OpenAPI_map_create(localMapObject->string, NULL);
+        } else {
             ogs_error("OpenAPI_sm_policy_decision_parseFromJSON() failed [traff_cont_decs]");
             goto end;
         }
-        localMapKeyPair = OpenAPI_map_create(
-            localMapObject->string, OpenAPI_traffic_control_data_parseFromJSON(localMapObject));
         OpenAPI_list_add(traff_cont_decsList , localMapKeyPair);
     }
     }
@@ -724,12 +759,15 @@ OpenAPI_sm_policy_decision_t *OpenAPI_sm_policy_decision_parseFromJSON(cJSON *sm
     OpenAPI_map_t *localMapKeyPair = NULL;
     cJSON_ArrayForEach(um_decs_local_map, um_decs) {
         cJSON *localMapObject = um_decs_local_map;
-        if (!cJSON_IsObject(um_decs_local_map)) {
+        if (cJSON_IsObject(um_decs_local_map)) {
+            localMapKeyPair = OpenAPI_map_create(
+                localMapObject->string, OpenAPI_usage_monitoring_data_parseFromJSON(localMapObject));
+        } else if (cJSON_IsNull(um_decs_local_map)) {
+            localMapKeyPair = OpenAPI_map_create(localMapObject->string, NULL);
+        } else {
             ogs_error("OpenAPI_sm_policy_decision_parseFromJSON() failed [um_decs]");
             goto end;
         }
-        localMapKeyPair = OpenAPI_map_create(
-            localMapObject->string, OpenAPI_usage_monitoring_data_parseFromJSON(localMapObject));
         OpenAPI_list_add(um_decsList , localMapKeyPair);
     }
     }
@@ -747,12 +785,15 @@ OpenAPI_sm_policy_decision_t *OpenAPI_sm_policy_decision_parseFromJSON(cJSON *sm
     OpenAPI_map_t *localMapKeyPair = NULL;
     cJSON_ArrayForEach(qos_chars_local_map, qos_chars) {
         cJSON *localMapObject = qos_chars_local_map;
-        if (!cJSON_IsObject(qos_chars_local_map)) {
+        if (cJSON_IsObject(qos_chars_local_map)) {
+            localMapKeyPair = OpenAPI_map_create(
+                localMapObject->string, OpenAPI_qos_characteristics_parseFromJSON(localMapObject));
+        } else if (cJSON_IsNull(qos_chars_local_map)) {
+            localMapKeyPair = OpenAPI_map_create(localMapObject->string, NULL);
+        } else {
             ogs_error("OpenAPI_sm_policy_decision_parseFromJSON() failed [qos_chars]");
             goto end;
         }
-        localMapKeyPair = OpenAPI_map_create(
-            localMapObject->string, OpenAPI_qos_characteristics_parseFromJSON(localMapObject));
         OpenAPI_list_add(qos_charsList , localMapKeyPair);
     }
     }
@@ -770,12 +811,15 @@ OpenAPI_sm_policy_decision_t *OpenAPI_sm_policy_decision_parseFromJSON(cJSON *sm
     OpenAPI_map_t *localMapKeyPair = NULL;
     cJSON_ArrayForEach(qos_mon_decs_local_map, qos_mon_decs) {
         cJSON *localMapObject = qos_mon_decs_local_map;
-        if (!cJSON_IsObject(qos_mon_decs_local_map)) {
+        if (cJSON_IsObject(qos_mon_decs_local_map)) {
+            localMapKeyPair = OpenAPI_map_create(
+                localMapObject->string, OpenAPI_qos_monitoring_data_parseFromJSON(localMapObject));
+        } else if (cJSON_IsNull(qos_mon_decs_local_map)) {
+            localMapKeyPair = OpenAPI_map_create(localMapObject->string, NULL);
+        } else {
             ogs_error("OpenAPI_sm_policy_decision_parseFromJSON() failed [qos_mon_decs]");
             goto end;
         }
-        localMapKeyPair = OpenAPI_map_create(
-            localMapObject->string, OpenAPI_qos_monitoring_data_parseFromJSON(localMapObject));
         OpenAPI_list_add(qos_mon_decsList , localMapKeyPair);
     }
     }
@@ -802,12 +846,15 @@ OpenAPI_sm_policy_decision_t *OpenAPI_sm_policy_decision_parseFromJSON(cJSON *sm
     OpenAPI_map_t *localMapKeyPair = NULL;
     cJSON_ArrayForEach(conds_local_map, conds) {
         cJSON *localMapObject = conds_local_map;
-        if (!cJSON_IsObject(conds_local_map)) {
+        if (cJSON_IsObject(conds_local_map)) {
+            localMapKeyPair = OpenAPI_map_create(
+                localMapObject->string, OpenAPI_condition_data_parseFromJSON(localMapObject));
+        } else if (cJSON_IsNull(conds_local_map)) {
+            localMapKeyPair = OpenAPI_map_create(localMapObject->string, NULL);
+        } else {
             ogs_error("OpenAPI_sm_policy_decision_parseFromJSON() failed [conds]");
             goto end;
         }
-        localMapKeyPair = OpenAPI_map_create(
-            localMapObject->string, OpenAPI_condition_data_parseFromJSON(localMapObject));
         OpenAPI_list_add(condsList , localMapKeyPair);
     }
     }
@@ -904,12 +951,15 @@ OpenAPI_sm_policy_decision_t *OpenAPI_sm_policy_decision_parseFromJSON(cJSON *sm
     OpenAPI_map_t *localMapKeyPair = NULL;
     cJSON_ArrayForEach(pra_infos_local_map, pra_infos) {
         cJSON *localMapObject = pra_infos_local_map;
-        if (!cJSON_IsObject(pra_infos_local_map)) {
+        if (cJSON_IsObject(pra_infos_local_map)) {
+            localMapKeyPair = OpenAPI_map_create(
+                localMapObject->string, OpenAPI_presence_info_rm_parseFromJSON(localMapObject));
+        } else if (cJSON_IsNull(pra_infos_local_map)) {
+            localMapKeyPair = OpenAPI_map_create(localMapObject->string, NULL);
+        } else {
             ogs_error("OpenAPI_sm_policy_decision_parseFromJSON() failed [pra_infos]");
             goto end;
         }
-        localMapKeyPair = OpenAPI_map_create(
-            localMapObject->string, OpenAPI_presence_info_rm_parseFromJSON(localMapObject));
         OpenAPI_list_add(pra_infosList , localMapKeyPair);
     }
     }

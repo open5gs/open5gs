@@ -68,8 +68,10 @@
 #include "model/authorized_network_slice_info.h"
 #include "model/pcf_binding.h"
 #include "model/app_session_context.h"
+#include "model/app_session_context_update_data_patch.h"
 #include "model/policy_update.h"
 #include "model/sm_policy_notification.h"
+#include "model/termination_notification.h"
 
 #include "custom/links.h"
 #include "custom/ue_authentication_ctx.h"

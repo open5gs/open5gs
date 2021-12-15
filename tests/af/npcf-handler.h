@@ -28,6 +28,8 @@ extern "C" {
 
 void af_npcf_policyauthorization_handle_create(
         af_sess_t *sess, ogs_sbi_message_t *recvmsg);
+void af_npcf_policyauthorization_handle_update(
+        af_sess_t *sess, ogs_sbi_message_t *recvmsg);
 
 #ifdef __cplusplus
 }

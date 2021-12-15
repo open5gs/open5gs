@@ -40,7 +40,7 @@ typedef struct ogs_nas_5gs_guti_s {
  * O TLV 3-102 */
 typedef struct ogs_nas_dnn_s {
     uint8_t length;
-    char value[OGS_MAX_DNN_LEN];
+    char value[OGS_MAX_DNN_LEN+1];
 } ogs_nas_dnn_t;
 
 /* 9.11.2.2 EAP message
@@ -803,6 +803,10 @@ int ogs_nas_build_qos_flow_descriptions(
     ogs_nas_qos_flow_description_t *flow_description,
     int num_of_flow_description);
 
+int ogs_nas_parse_qos_flow_descriptions(
+        ogs_nas_qos_flow_description_t *description,
+        ogs_nas_qos_flow_descriptions_t *descriptions);
+
 /* 9.11.4.13 QoS rules
  * M LV-E 6-65535 */
 #define OGS_NAS_MAX_NUM_OF_QOS_RULE 8
@@ -858,6 +862,8 @@ typedef struct ogs_nas_qos_rules_s {
 
 int ogs_nas_build_qos_rules(ogs_nas_qos_rules_t *rules,
         ogs_nas_qos_rule_t *rule, int num_of_rule);
+int ogs_nas_parse_qos_rules(
+        ogs_nas_qos_rule_t *rule, ogs_nas_qos_rules_t *rules);
 
 /* 9.11.4.15 SM PDU DN request container
  * O TLV 3-255 */

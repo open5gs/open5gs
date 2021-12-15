@@ -134,32 +134,8 @@ int amf_nudm_sdm_handle_provisioned(
             }
         }
 
-        amf_update_allowed_nssai(amf_ue);
-
-        if (!amf_ue->allowed_nssai.num_of_s_nssai) {
+        if (amf_update_allowed_nssai(amf_ue) == false) {
             ogs_error("No Allowed-NSSAI");
-            ogs_error("    Number of Subscribed S-NSSAI [%d]",
-                    amf_ue->num_of_slice);
-            for (i = 0; i < amf_ue->num_of_slice; i++) {
-                ogs_slice_data_t *slice = &amf_ue->slice[i];
-                if (slice->default_indicator == true) {
-                    ogs_error("        Default S_NSSAI[SST:%d SD:0x%x]",
-                            slice->s_nssai.sst, slice->s_nssai.sd.v);
-                } else {
-                    ogs_error("        S_NSSAI[SST:%d SD:0x%x]",
-                            slice->s_nssai.sst, slice->s_nssai.sd.v);
-                }
-            }
-            ogs_error("    Number of Requested NSSAI [%d]",
-                    amf_ue->requested_nssai.num_of_s_nssai);
-            for (i = 0; i < amf_ue->requested_nssai.num_of_s_nssai; i++) {
-                ogs_error("        PLMN_ID[MCC:%d MNC:%d]",
-                        ogs_plmn_id_mcc(&amf_ue->nr_tai.plmn_id),
-                        ogs_plmn_id_mnc(&amf_ue->nr_tai.plmn_id));
-                ogs_error("        S_NSSAI[SST:%d SD:0x%x]",
-                        amf_ue->requested_nssai.s_nssai[i].sst,
-                        amf_ue->requested_nssai.s_nssai[i].sd.v);
-            }
             return OGS_ERROR;
         }
 

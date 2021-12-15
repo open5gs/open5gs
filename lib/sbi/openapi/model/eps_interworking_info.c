@@ -53,7 +53,9 @@ cJSON *OpenAPI_eps_interworking_info_convertToJSON(OpenAPI_eps_interworking_info
     if (eps_interworking_info->eps_iwk_pgws) {
         OpenAPI_list_for_each(eps_interworking_info->eps_iwk_pgws, eps_iwk_pgws_node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)eps_iwk_pgws_node->data;
-        cJSON *itemLocal = OpenAPI_eps_iwk_pgw_convertToJSON(localKeyValue->value);
+        cJSON *itemLocal = localKeyValue->value ?
+            OpenAPI_eps_iwk_pgw_convertToJSON(localKeyValue->value) :
+            cJSON_CreateNull();
         if (itemLocal == NULL) {
             ogs_error("OpenAPI_eps_interworking_info_convertToJSON() failed [eps_iwk_pgws]");
             goto end;
@@ -83,12 +85,15 @@ OpenAPI_eps_interworking_info_t *OpenAPI_eps_interworking_info_parseFromJSON(cJS
     OpenAPI_map_t *localMapKeyPair = NULL;
     cJSON_ArrayForEach(eps_iwk_pgws_local_map, eps_iwk_pgws) {
         cJSON *localMapObject = eps_iwk_pgws_local_map;
-        if (!cJSON_IsObject(eps_iwk_pgws_local_map)) {
+        if (cJSON_IsObject(eps_iwk_pgws_local_map)) {
+            localMapKeyPair = OpenAPI_map_create(
+                localMapObject->string, OpenAPI_eps_iwk_pgw_parseFromJSON(localMapObject));
+        } else if (cJSON_IsNull(eps_iwk_pgws_local_map)) {
+            localMapKeyPair = OpenAPI_map_create(localMapObject->string, NULL);
+        } else {
             ogs_error("OpenAPI_eps_interworking_info_parseFromJSON() failed [eps_iwk_pgws]");
             goto end;
         }
-        localMapKeyPair = OpenAPI_map_create(
-            localMapObject->string, OpenAPI_eps_iwk_pgw_parseFromJSON(localMapObject));
         OpenAPI_list_add(eps_iwk_pgwsList , localMapKeyPair);
     }
     }

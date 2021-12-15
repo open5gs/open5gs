@@ -273,12 +273,23 @@ static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
                         ogs_assert(ret == 0);
                         switch (hdr->avp_code) {
                         case OGS_DIAM_RX_AVP_CODE_FLOW_NUMBER:
-                            sub->flow_number =
-                                hdr->avp_value->i32;
+                            sub->flow_number = hdr->avp_value->i32;
                             break;
                         case OGS_DIAM_RX_AVP_CODE_FLOW_USAGE:
-                            sub->flow_usage =
-                                hdr->avp_value->i32;
+                            switch (hdr->avp_value->i32) {
+                            case OGS_DIAM_RX_FLOW_USAGE_NO_INFORMATION:
+                                sub->flow_usage = OGS_FLOW_USAGE_NO_INFO;
+                                break;
+                            case OGS_DIAM_RX_FLOW_USAGE_RTCP:
+                                sub->flow_usage = OGS_FLOW_USAGE_RTCP;
+                                break;
+                            case OGS_DIAM_RX_FLOW_USAGE_AF_SIGNALLING:
+                                sub->flow_usage = OGS_FLOW_USAGE_AF_SIGNALLING;
+                                break;
+                            default:
+                                ogs_error("Invalid flow usage = %d",
+                                    hdr->avp_value->i32);
+                            }
                             break;
                         case OGS_DIAM_RX_AVP_CODE_FLOW_DESCRIPTION:
                             ogs_assert(sub->num_of_flow <

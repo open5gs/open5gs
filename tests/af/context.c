@@ -241,7 +241,7 @@ bool af_sess_set_pcf_app_session_id(af_sess_t *sess, char *pcf_app_session_id)
     ogs_expect_or_return_val(sess->pcf_app_session_id, false);
 
     ogs_hash_set(self.pcf_app_session_id_hash,
-            &sess->pcf_app_session_id, sizeof(sess->pcf_app_session_id), sess);
+            &sess->pcf_app_session_id, strlen(sess->pcf_app_session_id), sess);
 
     return true;
 }
@@ -255,6 +255,13 @@ af_sess_t *af_sess_find_by_af_app_session_id(char *af_app_session_id)
 {
     ogs_assert(af_app_session_id);
     return af_sess_find(atoll(af_app_session_id));
+}
+
+af_sess_t *af_sess_find_by_pcf_app_session_id(char *pcf_app_session_id)
+{
+    ogs_assert(pcf_app_session_id);
+    return (af_sess_t *)ogs_hash_get(self.pcf_app_session_id_hash,
+                        pcf_app_session_id, strlen(pcf_app_session_id));
 }
 
 void af_sess_select_nf(af_sess_t *sess, OpenAPI_nf_type_e nf_type)

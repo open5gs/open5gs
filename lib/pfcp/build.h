@@ -68,6 +68,7 @@ ogs_pkbuf_t *ogs_pfcp_build_session_report_request(
 ogs_pkbuf_t *ogs_pfcp_build_session_report_response(
         uint8_t type, uint8_t cause);
 
+
 #ifdef __cplusplus
 }
 #endif

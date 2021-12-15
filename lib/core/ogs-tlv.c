@@ -227,7 +227,7 @@ static uint8_t *tlv_get_element(ogs_tlv_t *tlv, uint8_t *blk, uint8_t mode)
         tlv->type = *(pos++);
         tlv->length = *(pos++) << 8;
         tlv->length += *(pos++);
-        tlv->instance = *(pos++);
+        tlv->instance = *(pos++) & 0b00001111;
         break;
     case OGS_TLV_MODE_T2_L2:
         tlv->type = *(pos++) << 8;

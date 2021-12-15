@@ -304,7 +304,7 @@ static void failure_func(abts_case *tc, void *data)
     qos_flow = test_qos_flow_find_by_qfi(sess, 2);
     ogs_assert(qos_flow);
 
-    sendbuf = testngap_build_pdu_session_resource_modify_response(qos_flow);
+    sendbuf = testngap_build_qos_flow_resource_modify_response(qos_flow);
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testgnb_ngap_send(ngap1, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
@@ -706,7 +706,7 @@ static void direct_complete_func(abts_case *tc, void *data)
     qos_flow = test_qos_flow_find_by_qfi(sess, 2);
     ogs_assert(qos_flow);
 
-    sendbuf = testngap_build_pdu_session_resource_modify_response(qos_flow);
+    sendbuf = testngap_build_qos_flow_resource_modify_response(qos_flow);
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testgnb_ngap_send(ngap1, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
@@ -1324,7 +1324,7 @@ static void direct_cancel_func(abts_case *tc, void *data)
     qos_flow = test_qos_flow_find_by_qfi(sess, 2);
     ogs_assert(qos_flow);
 
-    sendbuf = testngap_build_pdu_session_resource_modify_response(qos_flow);
+    sendbuf = testngap_build_qos_flow_resource_modify_response(qos_flow);
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testgnb_ngap_send(ngap1, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
@@ -1742,7 +1742,7 @@ static void indirect_complete_func(abts_case *tc, void *data)
     qos_flow = test_qos_flow_find_by_qfi(sess, 2);
     ogs_assert(qos_flow);
 
-    sendbuf = testngap_build_pdu_session_resource_modify_response(qos_flow);
+    sendbuf = testngap_build_qos_flow_resource_modify_response(qos_flow);
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testgnb_ngap_send(ngap1, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
@@ -2396,7 +2396,7 @@ static void indirect_cancel_func(abts_case *tc, void *data)
     qos_flow = test_qos_flow_find_by_qfi(sess, 2);
     ogs_assert(qos_flow);
 
-    sendbuf = testngap_build_pdu_session_resource_modify_response(qos_flow);
+    sendbuf = testngap_build_qos_flow_resource_modify_response(qos_flow);
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testgnb_ngap_send(ngap1, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);

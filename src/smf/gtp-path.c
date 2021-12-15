@@ -510,7 +510,9 @@ static void bearer_timeout(ogs_gtp_xact_t *xact, void *data)
 
         ogs_assert(OGS_OK ==
             smf_epc_pfcp_send_bearer_modification_request(
-                bearer, OGS_PFCP_MODIFY_REMOVE));
+                bearer, NULL, OGS_PFCP_MODIFY_REMOVE,
+                OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED,
+                OGS_GTP_CAUSE_UNDEFINED_VALUE));
         break;
     default:
         ogs_error("GTP Timeout : IMSI[%s] Message-Type[%d]",

@@ -403,7 +403,7 @@ int16_t ogs_gtp_parse_tft(ogs_gtp_tft_t *tft, ogs_tlv_octet_t *octet)
                     (unsigned char *)octet->data+size+len,
                     sizeof(tft->pf[i].content.component[j].port.low));
                 tft->pf[i].content.component[j].port.low =
-                    htobe16(tft->pf[i].content.component[j].port.low);
+                    be16toh(tft->pf[i].content.component[j].port.low);
                 len += sizeof(tft->pf[i].content.component[j].port.low);
                 break;
             case OGS_PACKET_FILTER_LOCAL_PORT_RANGE_TYPE:
@@ -415,7 +415,7 @@ int16_t ogs_gtp_parse_tft(ogs_gtp_tft_t *tft, ogs_tlv_octet_t *octet)
                     (unsigned char *)octet->data+size+len,
                     sizeof(tft->pf[i].content.component[j].port.low));
                 tft->pf[i].content.component[j].port.low =
-                    htobe16(tft->pf[i].content.component[j].port.low);
+                    be16toh(tft->pf[i].content.component[j].port.low);
                 len += sizeof(tft->pf[i].content.component[j].port.low);
 
                 ogs_assert(size+len+
@@ -425,7 +425,7 @@ int16_t ogs_gtp_parse_tft(ogs_gtp_tft_t *tft, ogs_tlv_octet_t *octet)
                     (unsigned char *)octet->data+size+len,
                     sizeof(tft->pf[i].content.component[j].port.high));
                 tft->pf[i].content.component[j].port.high =
-                    htobe16(tft->pf[i].content.component[j].port.high);
+                    be16toh(tft->pf[i].content.component[j].port.high);
                 len += sizeof(tft->pf[i].content.component[j].port.high);
                 break;
             default:

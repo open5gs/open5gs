@@ -53,14 +53,6 @@ int gmm_handle_security_mode_complete(amf_ue_t *amf_ue,
 int gmm_handle_ul_nas_transport(amf_ue_t *amf_ue,
         ogs_nas_5gs_ul_nas_transport_t *ul_nas_transport);
 
-#if 0
-int gmm_handle_tau_request(amf_ue_t *amf_ue,
-        ogs_nas_5gs_tracking_area_update_request_t *tau_request);
-
-int gmm_handle_extended_service_request(amf_ue_t *amf_ue,
-        ogs_nas_5gs_extended_service_request_t *extended_service_request);
-#endif
-
 #ifdef __cplusplus
 }
 #endif

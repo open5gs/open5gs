@@ -22,10 +22,4 @@ conf_data.set('sysconfdir', sysconfdir)
 conf_data.set('libdir', libdir)
 conf_data.set('localstatedir', localstatedir)
 
-if host_system == 'linux'
-    conf_data.set('loopback_devname', 'lo')
-else
-    conf_data.set('loopback_devname', 'lo0')
-endif
-
 subdir('db')

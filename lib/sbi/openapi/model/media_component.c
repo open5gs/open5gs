@@ -310,7 +310,9 @@ cJSON *OpenAPI_media_component_convertToJSON(OpenAPI_media_component_t *media_co
     if (media_component->med_sub_comps) {
         OpenAPI_list_for_each(media_component->med_sub_comps, med_sub_comps_node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)med_sub_comps_node->data;
-        cJSON *itemLocal = OpenAPI_media_sub_component_convertToJSON(localKeyValue->value);
+        cJSON *itemLocal = localKeyValue->value ?
+            OpenAPI_media_sub_component_convertToJSON(localKeyValue->value) :
+            cJSON_CreateNull();
         if (itemLocal == NULL) {
             ogs_error("OpenAPI_media_component_convertToJSON() failed [med_sub_comps]");
             goto end;
@@ -656,12 +658,15 @@ OpenAPI_media_component_t *OpenAPI_media_component_parseFromJSON(cJSON *media_co
     OpenAPI_map_t *localMapKeyPair = NULL;
     cJSON_ArrayForEach(med_sub_comps_local_map, med_sub_comps) {
         cJSON *localMapObject = med_sub_comps_local_map;
-        if (!cJSON_IsObject(med_sub_comps_local_map)) {
+        if (cJSON_IsObject(med_sub_comps_local_map)) {
+            localMapKeyPair = OpenAPI_map_create(
+                localMapObject->string, OpenAPI_media_sub_component_parseFromJSON(localMapObject));
+        } else if (cJSON_IsNull(med_sub_comps_local_map)) {
+            localMapKeyPair = OpenAPI_map_create(localMapObject->string, NULL);
+        } else {
             ogs_error("OpenAPI_media_component_parseFromJSON() failed [med_sub_comps]");
             goto end;
         }
-        localMapKeyPair = OpenAPI_map_create(
-            localMapObject->string, OpenAPI_media_sub_component_parseFromJSON(localMapObject));
         OpenAPI_list_add(med_sub_compsList , localMapKeyPair);
     }
     }

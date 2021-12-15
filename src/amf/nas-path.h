@@ -52,6 +52,9 @@ int nas_5gs_send_security_mode_command(amf_ue_t *amf_ue);
 int nas_5gs_send_configuration_update_command(
         amf_ue_t *amf_ue, gmm_configuration_update_command_param_t *param);
 
+int nas_send_pdu_session_modification_command(amf_sess_t *sess,
+        ogs_pkbuf_t *n1smbuf, ogs_pkbuf_t *n2smbuf);
+
 int nas_send_pdu_session_release_command(amf_sess_t *sess,
         ogs_pkbuf_t *n1smbuf, ogs_pkbuf_t *n2smbuf);
 

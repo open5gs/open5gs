@@ -201,6 +201,7 @@ int gmm_handle_registration_request(amf_ue_t *amf_ue,
      */
     AMF_UE_CLEAR_PAGING_INFO(amf_ue);
     AMF_UE_CLEAR_N2_TRANSFER(amf_ue, pdu_session_resource_setup_request);
+    AMF_UE_CLEAR_5GSM_MESSAGE(amf_ue);
     CLEAR_AMF_UE_ALL_TIMERS(amf_ue);
 
     if (SECURITY_CONTEXT_IS_VALID(amf_ue)) {
@@ -1101,10 +1102,46 @@ int gmm_handle_ul_nas_transport(amf_ue_t *amf_ue,
                     sess, AMF_UPDATE_SM_CONTEXT_N1_RELEASED, &param,
                     amf_nsmf_pdusession_build_update_sm_context));
 
-            if (gsm_header->message_type ==
-                    OGS_NAS_5GS_PDU_SESSION_RELEASE_COMPLETE) {
+            switch (gsm_header->message_type) {
+            case OGS_NAS_5GS_PDU_SESSION_MODIFICATION_COMPLETE:
+            case OGS_NAS_5GS_PDU_SESSION_MODIFICATION_COMMAND_REJECT:
+                if (PAGING_ONGOING(amf_ue) == true) {
+
+                    gmm_configuration_update_command_param_t param;
+                /*
+                 * TS24.501
+                 * 5.4.4 Generic UE configuration update procedure
+                 * 5.4.4.1 General
+                 *
+                 * This procedure shall be initiated by the network to assign
+                 * a new 5G-GUTI to the UE after a successful service request
+                 * procedure invoked as a response to a paging request
+                 * from the network and before the release
+                 * of the N1 NAS signalling connection.
+                 *
+                 * If the service request procedure was triggered
+                 * due to 5GSM downlink signalling pending, the procedure
+                 * for assigning a new 5G-GUTI can be initiated by the network
+                 * after the transport of the 5GSM downlink signalling.
+                 */
+                    amf_ue_new_guti(amf_ue);
+
+                    memset(&param, 0, sizeof(param));
+                    param.acknowledgement_requested = 1;
+                    param.guti = 1;
+                    ogs_assert(OGS_OK ==
+                        nas_5gs_send_configuration_update_command(
+                            amf_ue, &param));
+
+                    AMF_UE_CLEAR_PAGING_INFO(amf_ue);
+                }
+                break;
+            case OGS_NAS_5GS_PDU_SESSION_RELEASE_COMPLETE:
                 /* Prevent to invoke SMF for this session */
                 CLEAR_SM_CONTEXT_REF(sess);
+                break;
+            default:
+                break;
             }
         }
         break;

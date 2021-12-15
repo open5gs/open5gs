@@ -45,7 +45,7 @@ static uint8_t emm_cause_from_diameter(
         switch (*dia_exp_err) {
         case OGS_DIAM_S6A_ERROR_USER_UNKNOWN:                   /* 5001 */
             ogs_info("[%s] User Unknown in HSS DB", mme_ue->imsi_bcd);
-            return EMM_CAUSE_EPS_SERVICES_AND_NON_EPS_SERVICES_NOT_ALLOWED;
+            return EMM_CAUSE_PLMN_NOT_ALLOWED;
         case OGS_DIAM_S6A_ERROR_UNKNOWN_EPS_SUBSCRIPTION:       /* 5420 */
             /* FIXME: Error diagnostic? */
             return EMM_CAUSE_NO_SUITABLE_CELLS_IN_TRACKING_AREA;
@@ -435,9 +435,17 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
         s6a_message = (ogs_diam_s6a_message_t *)s6abuf->data;
         ogs_assert(s6a_message);
 
-        if (s6a_message->result_code != ER_DIAMETER_SUCCESS) {
-            enb_ue_t *enb_ue = NULL;
+        enb_ue = enb_ue_cycle(mme_ue->enb_ue);
+        if (!enb_ue) {
+            ogs_error("S1 context has already been removed");
 
+            ogs_subscription_data_free(
+                    &s6a_message->ula_message.subscription_data);
+            ogs_pkbuf_free(s6abuf);
+            break;
+        }
+
+        if (s6a_message->result_code != ER_DIAMETER_SUCCESS) {
             /* Unfortunately fd doesn't distinguish
              * between result-code and experimental-result-code.
              *
@@ -451,9 +459,6 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
             ogs_assert(OGS_OK ==
                 nas_eps_send_attach_reject(mme_ue,
                     emm_cause, ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED));
-
-            enb_ue = enb_ue_cycle(mme_ue->enb_ue);
-            ogs_assert(enb_ue);
 
             ogs_assert(OGS_OK ==
                 s1ap_send_ue_context_release_command(enb_ue,

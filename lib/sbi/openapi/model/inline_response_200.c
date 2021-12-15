@@ -53,7 +53,9 @@ cJSON *OpenAPI_inline_response_200_convertToJSON(OpenAPI_inline_response_200_t *
     if (inline_response_200->_links) {
         OpenAPI_list_for_each(inline_response_200->_links, _links_node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)_links_node->data;
-        cJSON *itemLocal = OpenAPI_links_value_schema_convertToJSON(localKeyValue->value);
+        cJSON *itemLocal = localKeyValue->value ?
+            OpenAPI_links_value_schema_convertToJSON(localKeyValue->value) :
+            cJSON_CreateNull();
         if (itemLocal == NULL) {
             ogs_error("OpenAPI_inline_response_200_convertToJSON() failed [_links]");
             goto end;
@@ -83,12 +85,15 @@ OpenAPI_inline_response_200_t *OpenAPI_inline_response_200_parseFromJSON(cJSON *
     OpenAPI_map_t *localMapKeyPair = NULL;
     cJSON_ArrayForEach(_links_local_map, _links) {
         cJSON *localMapObject = _links_local_map;
-        if (!cJSON_IsObject(_links_local_map)) {
+        if (cJSON_IsObject(_links_local_map)) {
+            localMapKeyPair = OpenAPI_map_create(
+                localMapObject->string, OpenAPI_links_value_schema_parseFromJSON(localMapObject));
+        } else if (cJSON_IsNull(_links_local_map)) {
+            localMapKeyPair = OpenAPI_map_create(localMapObject->string, NULL);
+        } else {
             ogs_error("OpenAPI_inline_response_200_parseFromJSON() failed [_links]");
             goto end;
         }
-        localMapKeyPair = OpenAPI_map_create(
-            localMapObject->string, OpenAPI_links_value_schema_parseFromJSON(localMapObject));
         OpenAPI_list_add(_linksList , localMapKeyPair);
     }
     }

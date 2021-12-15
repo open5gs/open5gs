@@ -851,8 +851,14 @@ void s1ap_handle_initial_context_setup_failure(
 
     mme_ue = enb_ue->mme_ue;
 
-    if (mme_ue)
+    if (mme_ue) {
+        /*
+         * if T3450 is running, Attach complete will be sent.
+         * So, we need to clear all the timer at this point.
+         */
         CLEAR_SERVICE_INDICATOR(mme_ue);
+        CLEAR_MME_UE_ALL_TIMERS(mme_ue);
+    }
 
     /*
      * 19.2.2.3 in Spec 36.300
@@ -1379,6 +1385,15 @@ void s1ap_handle_ue_context_release_action(enb_ue_t *enb_ue)
             enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
     if (mme_ue) {
         ogs_info("    IMSI[%s]", mme_ue->imsi_bcd);
+
+        /*
+         * An assert occurs when a NAS message retransmission occurs.
+         *
+         * Because there is no `enb_ue` context.
+         * 
+         * Therefore, before removing enb_ue, all Timers must be stopped
+         * to prevent retransmission of NAS messages.
+         */
         CLEAR_MME_UE_ALL_TIMERS(mme_ue);
     }
 
@@ -2900,6 +2915,13 @@ void s1ap_handle_s1_reset(
 
         partOfS1_Interface = ResetType->choice.partOfS1_Interface;
         ogs_assert(partOfS1_Interface);
+
+        if (enb->s1_reset_ack)
+            ogs_pkbuf_free(enb->s1_reset_ack);
+
+        enb->s1_reset_ack = ogs_s1ap_build_s1_reset_ack(partOfS1_Interface);
+        ogs_expect_or_return(enb->s1_reset_ack);
+
         for (i = 0; i < partOfS1_Interface->list.count; i++) {
             S1AP_UE_associatedLogicalS1_ConnectionItemRes_t *ie2 = NULL;
             S1AP_UE_associatedLogicalS1_ConnectionItem_t *item = NULL;
@@ -2911,19 +2933,13 @@ void s1ap_handle_s1_reset(
                 partOfS1_Interface->list.array[i];
             if (!ie2) {
                 ogs_error("No S1AP_UE_associatedLogicalS1_ConnectionItemRes_t");
-                ogs_assert(OGS_OK ==
-                    s1ap_send_error_indication(enb, NULL, NULL,
-                    S1AP_Cause_PR_protocol, S1AP_CauseProtocol_semantic_error));
-                return;
+                continue;
             }
 
             item = &ie2->value.choice.UE_associatedLogicalS1_ConnectionItem;
             if (!item) {
                 ogs_error("No UE_associatedLogicalS1_ConnectionItem");
-                ogs_assert(OGS_OK ==
-                    s1ap_send_error_indication(enb, NULL, NULL,
-                    S1AP_Cause_PR_protocol, S1AP_CauseProtocol_semantic_error));
-                return;
+                continue;
             }
 
             ogs_warn("    MME_UE_S1AP_ID[%d] ENB_UE_S1AP_ID[%d]",
@@ -2970,12 +2986,6 @@ void s1ap_handle_s1_reset(
          * for new UE-associated logical S1-connections over the S1 interface,
          * the MME shall respond with the RESET ACKNOWLEDGE message.
          */
-        if (enb->s1_reset_ack)
-            ogs_pkbuf_free(enb->s1_reset_ack);
-
-        enb->s1_reset_ack = ogs_s1ap_build_s1_reset_ack(partOfS1_Interface);
-        ogs_expect_or_return(enb->s1_reset_ack);
-
         ogs_list_for_each(&enb->enb_ue_list, iter) {
             if (iter->part_of_s1_reset_requested == true) {
                 /* The ENB_UE context
@@ -2988,6 +2998,7 @@ void s1ap_handle_s1_reset(
         /* All ENB_UE context
          * where PartOfS1_interface was requested
          * REMOVED */
+        ogs_assert(enb->s1_reset_ack);
         s1ap_send_to_enb(enb, enb->s1_reset_ack, S1AP_NON_UE_SIGNALLING);
 
         /* Clear S1-Reset Ack Buffer */

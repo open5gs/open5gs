@@ -1206,6 +1206,9 @@ void amf_ue_remove(amf_ue_t *amf_ue)
     /* Clear N2 Transfer */
     AMF_UE_CLEAR_N2_TRANSFER(amf_ue, pdu_session_resource_setup_request);
 
+    /* Clear 5GSM Message */
+    AMF_UE_CLEAR_5GSM_MESSAGE(amf_ue);
+
     /* Remove all session context */
     amf_sess_remove_all(amf_ue);
 
@@ -1677,6 +1680,7 @@ void amf_sess_remove(amf_sess_t *sess)
         ogs_pkbuf_free(sess->pdu_session_establishment_accept);
 
     AMF_SESS_CLEAR_N2_TRANSFER(sess, pdu_session_resource_setup_request);
+    AMF_SESS_CLEAR_N2_TRANSFER(sess, pdu_session_resource_modification_command);
     AMF_SESS_CLEAR_N2_TRANSFER(sess, path_switch_request_ack);
     AMF_SESS_CLEAR_N2_TRANSFER(sess, handover_request);
     AMF_SESS_CLEAR_N2_TRANSFER(sess, handover_command);
@@ -1822,6 +1826,33 @@ bool amf_handover_request_transfer_needed(amf_ue_t *amf_ue)
 
     ogs_list_for_each(&amf_ue->sess_list, sess)
         if (sess->transfer.handover_request)
+            return true;
+
+    return false;
+}
+
+bool amf_paging_ongoing(amf_ue_t *amf_ue)
+{
+    amf_sess_t *sess = NULL;
+
+    ogs_assert(amf_ue);
+
+    ogs_list_for_each(&amf_ue->sess_list, sess) {
+        if (sess->paging.ongoing == true)
+            return true;
+    }
+
+    return false;
+}
+
+bool amf_downlink_signalling_pending(amf_ue_t *amf_ue)
+{
+    amf_sess_t *sess = NULL;
+
+    ogs_assert(amf_ue);
+
+    ogs_list_for_each(&amf_ue->sess_list, sess)
+        if (sess->gsm_message.type)
             return true;
 
     return false;
@@ -2113,7 +2144,7 @@ static bool check_smf_info_nr_tai(
     return false;
 }
 
-void amf_update_allowed_nssai(amf_ue_t *amf_ue)
+bool amf_update_allowed_nssai(amf_ue_t *amf_ue)
 {
     int i;
     ogs_assert(amf_ue);
@@ -2254,4 +2285,37 @@ void amf_update_allowed_nssai(amf_ue_t *amf_ue)
             }
         }
     }
+
+    if (!amf_ue->allowed_nssai.num_of_s_nssai) {
+        ogs_error("No Allowed-NSSAI");
+        ogs_error("    Number of Subscribed S-NSSAI [%d]",
+                amf_ue->num_of_slice);
+        for (i = 0; i < amf_ue->num_of_slice; i++) {
+            ogs_slice_data_t *slice = &amf_ue->slice[i];
+            if (slice->default_indicator == true) {
+                ogs_error(
+                    "        Default S_NSSAI[SST:%d SD:0x%x]",
+                    slice->s_nssai.sst, slice->s_nssai.sd.v);
+            } else {
+                ogs_error(
+                    "        S_NSSAI[SST:%d SD:0x%x]",
+                    slice->s_nssai.sst, slice->s_nssai.sd.v);
+            }
+        }
+        ogs_error("    Number of Requested NSSAI [%d]",
+                amf_ue->requested_nssai.num_of_s_nssai);
+        for (i = 0; i < amf_ue->requested_nssai.
+                num_of_s_nssai; i++) {
+            ogs_error("        PLMN_ID[MCC:%d MNC:%d]",
+                    ogs_plmn_id_mcc(&amf_ue->nr_tai.plmn_id),
+                    ogs_plmn_id_mnc(&amf_ue->nr_tai.plmn_id));
+            ogs_error("        S_NSSAI[SST:%d SD:0x%x]",
+                    amf_ue->requested_nssai.s_nssai[i].sst,
+                    amf_ue->requested_nssai.s_nssai[i].sd.v);
+        }
+
+        return false;
+    }
+
+    return true;
 }

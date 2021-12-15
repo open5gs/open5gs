@@ -402,7 +402,7 @@ void sgwc_s5c_handle_create_bearer_request(
         ogs_error("No EPS Bearer ID");
         cause_value = OGS_GTP_CAUSE_MANDATORY_IE_MISSING;
     }
-    if (req->bearer_contexts.s5_s8_u_sgw_f_teid.presence == 0) {
+    if (req->bearer_contexts.s4_u_sgsn_f_teid.presence == 0) {
         ogs_error("No GTP TEID");
         cause_value = OGS_GTP_CAUSE_MANDATORY_IE_MISSING;
     }
@@ -427,7 +427,7 @@ void sgwc_s5c_handle_create_bearer_request(
     ogs_assert(ul_tunnel);
 
     /* Receive Data Plane(UL) : PGW-S5U */
-    pgw_s5u_teid = req->bearer_contexts.s5_s8_u_sgw_f_teid.data;
+    pgw_s5u_teid = req->bearer_contexts.s4_u_sgsn_f_teid.data;
     ogs_assert(pgw_s5u_teid);
     ul_tunnel->remote_teid = be32toh(pgw_s5u_teid->teid);
 

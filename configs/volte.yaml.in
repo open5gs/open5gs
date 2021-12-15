@@ -33,7 +33,7 @@ mme:
         - module: @freediameter_extensions_builddir@/dict_nasreq.fdx
         - module: @freediameter_extensions_builddir@/dict_nas_mipv6.fdx
         - module: @freediameter_extensions_builddir@/dict_dcca.fdx
-        - module: @freediameter_extensions_builddir@/dict_dcca_3gpp.fdx
+        - module: @freediameter_extensions_builddir@/dict_dcca_3gpp/dict_dcca_3gpp.fdx
       connect:
         - identity: hss.localdomain
           addr: 127.0.0.8
@@ -103,7 +103,7 @@ smf:
         - module: @freediameter_extensions_builddir@/dict_nasreq.fdx
         - module: @freediameter_extensions_builddir@/dict_nas_mipv6.fdx
         - module: @freediameter_extensions_builddir@/dict_dcca.fdx
-        - module: @freediameter_extensions_builddir@/dict_dcca_3gpp.fdx
+        - module: @freediameter_extensions_builddir@/dict_dcca_3gpp/dict_dcca_3gpp.fdx
       connect:
         - identity: pcrf.localdomain
           addr: 127.0.0.9
@@ -167,7 +167,7 @@ hss:
         - module: @freediameter_extensions_builddir@/dict_nasreq.fdx
         - module: @freediameter_extensions_builddir@/dict_nas_mipv6.fdx
         - module: @freediameter_extensions_builddir@/dict_dcca.fdx
-        - module: @freediameter_extensions_builddir@/dict_dcca_3gpp.fdx
+        - module: @freediameter_extensions_builddir@/dict_dcca_3gpp/dict_dcca_3gpp.fdx
       connect:
         - identity: mme.localdomain
           addr: 127.0.0.2
@@ -187,7 +187,7 @@ pcrf:
         - module: @freediameter_extensions_builddir@/dict_nasreq.fdx
         - module: @freediameter_extensions_builddir@/dict_nas_mipv6.fdx
         - module: @freediameter_extensions_builddir@/dict_dcca.fdx
-        - module: @freediameter_extensions_builddir@/dict_dcca_3gpp.fdx
+        - module: @freediameter_extensions_builddir@/dict_dcca_3gpp/dict_dcca_3gpp.fdx
       connect:
         - identity: smf.localdomain
           addr: 127.0.0.4

@@ -22,7 +22,7 @@
 #include "binding.h"
 #include "namf-handler.h"
 
-bool smf_namf_comm_handler_n1_n2_message_transfer(
+bool smf_namf_comm_handle_n1_n2_message_transfer(
         smf_sess_t *sess, int state, ogs_sbi_message_t *recvmsg)
 {
     smf_ue_t *smf_ue = NULL;
@@ -37,16 +37,7 @@ bool smf_namf_comm_handler_n1_n2_message_transfer(
     switch (state) {
     case SMF_UE_REQUESTED_PDU_SESSION_ESTABLISHMENT:
         if (recvmsg->res_status == OGS_SBI_HTTP_STATUS_OK) {
-            smf_qos_flow_binding(sess, NULL);
-        } else {
-            ogs_error("[%s:%d] HTTP response error [%d]",
-                smf_ue->supi, sess->psi, recvmsg->res_status);
-        }
-        break;
-
-    case SMF_NETWORK_REQUESTED_QOS_FLOW_MODIFICATION:
-        if (recvmsg->res_status == OGS_SBI_HTTP_STATUS_OK) {
-            /* Nothing */
+            smf_qos_flow_binding(sess);
         } else {
             ogs_error("[%s:%d] HTTP response error [%d]",
                 smf_ue->supi, sess->psi, recvmsg->res_status);
@@ -54,6 +45,7 @@ bool smf_namf_comm_handler_n1_n2_message_transfer(
         break;
 
     case SMF_NETWORK_TRIGGERED_SERVICE_REQUEST:
+    case SMF_NETWORK_REQUESTED_QOS_FLOW_MODIFICATION:
         N1N2MessageTransferRspData = recvmsg->N1N2MessageTransferRspData;
         if (!N1N2MessageTransferRspData) {
             ogs_error("No N1N2MessageTransferRspData [status:%d]",
@@ -112,6 +104,7 @@ bool smf_namf_comm_handler_n1_n2_message_transfer(
         }
         break;
 
+    case SMF_NETWORK_REQUESTED_PDU_SESSION_RELEASE:
     case SMF_ERROR_INDICATON_RECEIVED_FROM_5G_AN:
         N1N2MessageTransferRspData = recvmsg->N1N2MessageTransferRspData;
         if (!N1N2MessageTransferRspData) {
@@ -158,7 +151,7 @@ bool smf_namf_comm_handler_n1_n2_message_transfer(
     return true;
 }
 
-bool smf_namf_comm_handler_n1_n2_message_transfer_failure_notify(
+bool smf_namf_comm_handle_n1_n2_message_transfer_failure_notify(
         ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg)
 {
     OpenAPI_n1_n2_msg_txfr_failure_notification_t

@@ -270,7 +270,7 @@ typedef struct ogs_pfcp_header_s {
 #define OGS_PFCP_SMF_SET_ID_TYPE 180
 #define OGS_PFCP_QUOTA_VALIDITY_TIME_TYPE 181
 
-/* Infomration Element TLV Descriptor */
+/* Information Element TLV Descriptor */
 extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_cause;
 extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_source_interface;
 extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_f_teid;
@@ -407,7 +407,7 @@ extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_packet_replication_and_detection_carry_o
 extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_smf_set_id;
 extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_quota_validity_time;
 
-/* Group Infomration Element TLV Descriptor */
+/* Group Information Element TLV Descriptor */
 extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_ethernet_packet_filter;
 extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_pdi;
 extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_create_pdr;
@@ -480,7 +480,7 @@ extern ogs_tlv_desc_t ogs_pfcp_msg_desc_pfcp_session_deletion_response;
 extern ogs_tlv_desc_t ogs_pfcp_msg_desc_pfcp_session_report_request;
 extern ogs_tlv_desc_t ogs_pfcp_msg_desc_pfcp_session_report_response;
 
-/* Structure for Infomration Element */
+/* Structure for Information Element */
 typedef ogs_tlv_uint8_t ogs_pfcp_tlv_cause_t;
 typedef ogs_tlv_uint8_t ogs_pfcp_tlv_source_interface_t;
 typedef ogs_tlv_octet_t ogs_pfcp_tlv_f_teid_t;
@@ -617,7 +617,7 @@ typedef ogs_tlv_octet_t ogs_pfcp_tlv_packet_replication_and_detection_carry_on_i
 typedef ogs_tlv_octet_t ogs_pfcp_tlv_smf_set_id_t;
 typedef ogs_tlv_uint32_t ogs_pfcp_tlv_quota_validity_time_t;
 
-/* Structure for Group Infomration Element */
+/* Structure for Group Information Element */
 typedef struct ogs_pfcp_tlv_ethernet_packet_filter_s {
     ogs_tlv_presence_t presence;
     ogs_pfcp_tlv_ethernet_filter_id_t ethernet_filter_id;

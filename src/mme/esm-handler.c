@@ -68,8 +68,26 @@ int esm_handle_pdn_connectivity_request(mme_bearer_t *bearer,
             ogs_assert(OGS_OK ==
                 nas_eps_send_pdn_connectivity_reject(
                     sess, ESM_CAUSE_MISSING_OR_UNKNOWN_APN));
-            ogs_warn("Invalid APN");
+            ogs_warn("Invalid APN[%s]", req->access_point_name.apn);
             return OGS_ERROR;
+        }
+
+        if (sess->session->session_type == OGS_PDU_SESSION_TYPE_IPV4 ||
+            sess->session->session_type == OGS_PDU_SESSION_TYPE_IPV6 ||
+            sess->session->session_type == OGS_PDU_SESSION_TYPE_IPV4V6) {
+            uint8_t derived_pdn_type =
+                (sess->session->session_type & sess->request_type.type);
+            if (derived_pdn_type == 0) {
+                ogs_error("Cannot derived PDN Type [UE:%d,HSS:%d]",
+                    sess->request_type.type, sess->session->session_type);
+                ogs_assert(OGS_OK ==
+                    nas_eps_send_pdn_connectivity_reject(
+                        sess, ESM_CAUSE_UNKNOWN_PDN_TYPE));
+                return OGS_ERROR;
+            }
+        } else {
+            ogs_fatal("Invalid PDN_TYPE[%d]", sess->session->session_type);
+            ogs_assert_if_reached();
         }
     }
 
@@ -157,6 +175,24 @@ int esm_handle_information_response(mme_sess_t *sess,
         ogs_assert(sess->session->name);
         ogs_debug("    APN[%s]", sess->session->name);
 
+        if (sess->session->session_type == OGS_PDU_SESSION_TYPE_IPV4 ||
+            sess->session->session_type == OGS_PDU_SESSION_TYPE_IPV6 ||
+            sess->session->session_type == OGS_PDU_SESSION_TYPE_IPV4V6) {
+            uint8_t derived_pdn_type =
+                (sess->session->session_type & sess->request_type.type);
+            if (derived_pdn_type == 0) {
+                ogs_error("Cannot derived PDN Type [UE:%d,HSS:%d]",
+                    sess->request_type.type, sess->session->session_type);
+                ogs_assert(OGS_OK ==
+                    nas_eps_send_pdn_connectivity_reject(
+                        sess, ESM_CAUSE_UNKNOWN_PDN_TYPE));
+                return OGS_ERROR;
+            }
+        } else {
+            ogs_fatal("Invalid PDN_TYPE[%d]", sess->session->session_type);
+            ogs_assert_if_reached();
+        }
+
         if (SESSION_CONTEXT_IS_AVAILABLE(mme_ue) &&
             OGS_PDU_SESSION_TYPE_IS_VALID(sess->session->paa.session_type)) {
             mme_csmap_t *csmap = mme_csmap_find_by_tai(&mme_ue->tai);
@@ -174,7 +210,11 @@ int esm_handle_information_response(mme_sess_t *sess,
                 mme_gtp_send_create_session_request(sess));
         }
     } else {
-        ogs_error("No APN");
+        if (rsp->access_point_name.length)
+            ogs_error("Invalid APN[%s]", rsp->access_point_name.apn);
+        else
+            ogs_error("No APN");
+
         ogs_assert(OGS_OK ==
             nas_eps_send_pdn_connectivity_reject(
                 sess, ESM_CAUSE_MISSING_OR_UNKNOWN_APN));

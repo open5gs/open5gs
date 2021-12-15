@@ -211,7 +211,9 @@ cJSON *OpenAPI_policy_data_change_notification_convertToJSON(OpenAPI_policy_data
     if (policy_data_change_notification->op_spec_data_map) {
         OpenAPI_list_for_each(policy_data_change_notification->op_spec_data_map, op_spec_data_map_node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)op_spec_data_map_node->data;
-        cJSON *itemLocal = OpenAPI_operator_specific_data_container_convertToJSON(localKeyValue->value);
+        cJSON *itemLocal = localKeyValue->value ?
+            OpenAPI_operator_specific_data_container_convertToJSON(localKeyValue->value) :
+            cJSON_CreateNull();
         if (itemLocal == NULL) {
             ogs_error("OpenAPI_policy_data_change_notification_convertToJSON() failed [op_spec_data_map]");
             goto end;
@@ -381,12 +383,15 @@ OpenAPI_policy_data_change_notification_t *OpenAPI_policy_data_change_notificati
     OpenAPI_map_t *localMapKeyPair = NULL;
     cJSON_ArrayForEach(op_spec_data_map_local_map, op_spec_data_map) {
         cJSON *localMapObject = op_spec_data_map_local_map;
-        if (!cJSON_IsObject(op_spec_data_map_local_map)) {
+        if (cJSON_IsObject(op_spec_data_map_local_map)) {
+            localMapKeyPair = OpenAPI_map_create(
+                localMapObject->string, OpenAPI_operator_specific_data_container_parseFromJSON(localMapObject));
+        } else if (cJSON_IsNull(op_spec_data_map_local_map)) {
+            localMapKeyPair = OpenAPI_map_create(localMapObject->string, NULL);
+        } else {
             ogs_error("OpenAPI_policy_data_change_notification_parseFromJSON() failed [op_spec_data_map]");
             goto end;
         }
-        localMapKeyPair = OpenAPI_map_create(
-            localMapObject->string, OpenAPI_operator_specific_data_container_parseFromJSON(localMapObject));
         OpenAPI_list_add(op_spec_data_mapList , localMapKeyPair);
     }
     }

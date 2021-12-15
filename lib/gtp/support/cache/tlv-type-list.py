@@ -1,3 +1,4 @@
+# [Table 8.1-1: Information Element types for GTPv2 ] Index = 159
 type_list["IMSI"] = { "type" : "1", "max_instance" : "0" }
 type_list["Cause"] = { "type" : "2", "max_instance" : "0" }
 type_list["Recovery"] = { "type" : "3", "max_instance" : "0" }

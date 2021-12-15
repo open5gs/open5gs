@@ -422,11 +422,20 @@ struct mme_ue_s {
 
 #define CLEAR_MME_UE_ALL_TIMERS(__mME) \
     do { \
+        mme_sess_t *sess = NULL; \
+        mme_bearer_t *bearer = NULL; \
+        \
         CLEAR_MME_UE_TIMER((__mME)->t3413); \
         CLEAR_MME_UE_TIMER((__mME)->t3422); \
         CLEAR_MME_UE_TIMER((__mME)->t3450); \
         CLEAR_MME_UE_TIMER((__mME)->t3460); \
         CLEAR_MME_UE_TIMER((__mME)->t3470); \
+        \
+        ogs_list_for_each(&mme_ue->sess_list, sess) { \
+            ogs_list_for_each(&sess->bearer_list, bearer) { \
+                CLEAR_BEARER_ALL_TIMERS(bearer); \
+            } \
+        } \
     } while(0);
 #define CLEAR_MME_UE_TIMER(__mME_UE_TIMER) \
     do { \

@@ -66,7 +66,9 @@ cJSON *OpenAPI_smf_selection_subscription_data_1_convertToJSON(OpenAPI_smf_selec
     if (smf_selection_subscription_data_1->subscribed_snssai_infos) {
         OpenAPI_list_for_each(smf_selection_subscription_data_1->subscribed_snssai_infos, subscribed_snssai_infos_node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)subscribed_snssai_infos_node->data;
-        cJSON *itemLocal = OpenAPI_snssai_info_convertToJSON(localKeyValue->value);
+        cJSON *itemLocal = localKeyValue->value ?
+            OpenAPI_snssai_info_convertToJSON(localKeyValue->value) :
+            cJSON_CreateNull();
         if (itemLocal == NULL) {
             ogs_error("OpenAPI_smf_selection_subscription_data_1_convertToJSON() failed [subscribed_snssai_infos]");
             goto end;
@@ -112,12 +114,15 @@ OpenAPI_smf_selection_subscription_data_1_t *OpenAPI_smf_selection_subscription_
     OpenAPI_map_t *localMapKeyPair = NULL;
     cJSON_ArrayForEach(subscribed_snssai_infos_local_map, subscribed_snssai_infos) {
         cJSON *localMapObject = subscribed_snssai_infos_local_map;
-        if (!cJSON_IsObject(subscribed_snssai_infos_local_map)) {
+        if (cJSON_IsObject(subscribed_snssai_infos_local_map)) {
+            localMapKeyPair = OpenAPI_map_create(
+                localMapObject->string, OpenAPI_snssai_info_parseFromJSON(localMapObject));
+        } else if (cJSON_IsNull(subscribed_snssai_infos_local_map)) {
+            localMapKeyPair = OpenAPI_map_create(localMapObject->string, NULL);
+        } else {
             ogs_error("OpenAPI_smf_selection_subscription_data_1_parseFromJSON() failed [subscribed_snssai_infos]");
             goto end;
         }
-        localMapKeyPair = OpenAPI_map_create(
-            localMapObject->string, OpenAPI_snssai_info_parseFromJSON(localMapObject));
         OpenAPI_list_add(subscribed_snssai_infosList , localMapKeyPair);
     }
     }

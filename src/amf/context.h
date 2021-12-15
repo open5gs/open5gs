@@ -282,6 +282,13 @@ struct amf_ue_s {
 
     /* PCF sends the RESPONSE
      * of [POST] /npcf-am-polocy-control/v1/policies */
+#define PCF_AM_POLICY_ASSOCIATED(__aMF) \
+    ((__aMF) && ((__aMF)->policy_association_id))
+
+#define PCF_AM_POLICY_CLEAR(__aMF) \
+    OGS_MEM_CLEAR((__aMF)->policy_association_id);
+#define PCF_AM_POLICY_STORE(__aMF, __iD) \
+    OGS_STRING_DUP((__aMF)->policy_association_id, __iD);
     char *policy_association_id;
 
     /* 5GMM Capability */
@@ -459,6 +466,7 @@ typedef struct amf_sess_s {
 
     struct {
         ogs_pkbuf_t *pdu_session_resource_setup_request;
+        ogs_pkbuf_t *pdu_session_resource_modification_command;
         ogs_pkbuf_t *path_switch_request_ack;
         ogs_pkbuf_t *handover_request;
         ogs_pkbuf_t *handover_command;
@@ -467,13 +475,13 @@ typedef struct amf_sess_s {
     do { \
         ogs_assert(__sESS); \
         ogs_assert((__sESS)->amf_ue); \
-        if (sess->transfer.__n2Type) { \
+        if ((__sESS)->transfer.__n2Type) { \
             ogs_warn("[%s:%d] N2 transfer message duplicated. Overwritten", \
-                    ((__sESS)->amf_ue)->supi, sess->psi); \
-            ogs_pkbuf_free(sess->transfer.__n2Type); \
+                    ((__sESS)->amf_ue)->supi, (__sESS)->psi); \
+            ogs_pkbuf_free((__sESS)->transfer.__n2Type); \
         } \
-        sess->transfer.__n2Type = __n2Buf; \
-        ogs_assert(sess->transfer.__n2Type); \
+        (__sESS)->transfer.__n2Type = __n2Buf; \
+        ogs_assert((__sESS)->transfer.__n2Type); \
     } while(0);
 
 #define AMF_SESS_CLEAR_N2_TRANSFER(__sESS, __n2Type) \
@@ -505,13 +513,14 @@ typedef struct amf_sess_s {
     do { \
         ogs_assert(__sESS); \
         ogs_assert(__lOCATION); \
-        ogs_assert(__uRI); \
         AMF_SESS_CLEAR_PAGING_INFO(__sESS) \
         (__sESS)->paging.ongoing = true; \
         ((__sESS)->paging.location) = ogs_strdup(__lOCATION); \
         ogs_assert((__sESS)->paging.location); \
-        ((__sESS)->paging.n1n2_failure_txf_notif_uri) = ogs_strdup(__uRI); \
-        ogs_assert((__sESS)->paging.n1n2_failure_txf_notif_uri); \
+        if (__uRI) { \
+            ((__sESS)->paging.n1n2_failure_txf_notif_uri) = ogs_strdup(__uRI); \
+            ogs_assert((__sESS)->paging.n1n2_failure_txf_notif_uri); \
+        } \
     } while(0);
 #define AMF_SESS_CLEAR_PAGING_INFO(__sESS) \
     do { \
@@ -519,9 +528,10 @@ typedef struct amf_sess_s {
             ogs_assert((__sESS)->paging.location); \
             ogs_free((__sESS)->paging.location); \
             ((__sESS)->paging.location) = NULL; \
-            ogs_assert((__sESS)->paging.n1n2_failure_txf_notif_uri); \
-            ogs_free((__sESS)->paging.n1n2_failure_txf_notif_uri); \
-            ((__sESS)->paging.n1n2_failure_txf_notif_uri) = NULL; \
+            if ((__sESS)->paging.n1n2_failure_txf_notif_uri) { \
+                ogs_free((__sESS)->paging.n1n2_failure_txf_notif_uri); \
+                ((__sESS)->paging.n1n2_failure_txf_notif_uri) = NULL; \
+            } \
             ((__sESS)->paging.ongoing) = false; \
         } \
     } while(0);
@@ -530,6 +540,52 @@ typedef struct amf_sess_s {
         amf_sess_t *sess = NULL; \
         ogs_list_for_each(&((__aMF)->sess_list), sess) { \
             AMF_SESS_CLEAR_PAGING_INFO(sess); \
+        } \
+    } while(0);
+
+    struct {
+        uint8_t type;
+        ogs_pkbuf_t *n1buf;
+        ogs_pkbuf_t *n2buf;
+    } gsm_message;
+
+#define AMF_SESS_STORE_5GSM_MESSAGE(__sESS, __tYPE, __n1Buf, __n2Buf) \
+    do { \
+        ogs_assert(__sESS); \
+        ogs_assert((__sESS)->amf_ue); \
+        if ((__sESS)->gsm_message.n1buf) { \
+            ogs_warn("[%s:%d] N1 message duplicated. Overwritten", \
+                    ((__sESS)->amf_ue)->supi, (__sESS)->psi); \
+            ogs_pkbuf_free((__sESS)->gsm_message.n1buf); \
+        } \
+        (__sESS)->gsm_message.n1buf = __n1Buf; \
+        ogs_assert((__sESS)->gsm_message.n1buf); \
+        if ((__sESS)->gsm_message.n2buf) { \
+            ogs_warn("[%s:%d] N2 message duplicated. Overwritten", \
+                    ((__sESS)->amf_ue)->supi, (__sESS)->psi); \
+            ogs_pkbuf_free((__sESS)->gsm_message.n2buf); \
+        } \
+        (__sESS)->gsm_message.n2buf = __n2Buf; \
+        ogs_assert((__sESS)->gsm_message.n2buf); \
+        (__sESS)->gsm_message.type = __tYPE; \
+    } while(0);
+
+#define AMF_SESS_CLEAR_5GSM_MESSAGE(__sESS) \
+    do { \
+        if ((__sESS)->gsm_message.n1buf) \
+            ogs_pkbuf_free((__sESS)->gsm_message.n1buf); \
+        (__sESS)->gsm_message.n1buf = NULL; \
+        if ((__sESS)->gsm_message.n2buf) \
+            ogs_pkbuf_free((__sESS)->gsm_message.n2buf); \
+        (__sESS)->gsm_message.n2buf = NULL; \
+        (__sESS)->gsm_message.type = 0; \
+    } while(0);
+
+#define AMF_UE_CLEAR_5GSM_MESSAGE(__aMF) \
+    do { \
+        amf_sess_t *sess = NULL; \
+        ogs_list_for_each(&((__aMF)->sess_list), sess) { \
+            AMF_SESS_CLEAR_5GSM_MESSAGE(sess) \
         } \
     } while(0);
 
@@ -666,6 +722,25 @@ void source_ue_associate_target_ue(ran_ue_t *source_ue, ran_ue_t *target_ue);
 void source_ue_deassociate_target_ue(ran_ue_t *ran_ue);
 
 amf_sess_t *amf_sess_add(amf_ue_t *amf_ue, uint8_t psi);
+
+/*
+ * If there is SBI transaction,
+ * we will not remove session context at this point.
+ */
+#define AMF_SESS_CLEAR(__sESS) \
+    do { \
+        ogs_sbi_object_t *sbi_object = NULL; \
+        ogs_assert(__sESS); \
+        sbi_object = &sess->sbi; \
+        ogs_assert(sbi_object); \
+        \
+        if (ogs_list_count(&sbi_object->xact_list)) { \
+            ogs_error("SBI running [%d]", \
+                    ogs_list_count(&sbi_object->xact_list)); \
+        } else { \
+            amf_sess_remove(__sESS); \
+        } \
+    } while(0)
 void amf_sess_remove(amf_sess_t *sess);
 void amf_sess_remove_all(amf_ue_t *amf_ue);
 amf_sess_t *amf_sess_find_by_psi(amf_ue_t *amf_ue, uint8_t psi);
@@ -691,6 +766,13 @@ bool amf_pdu_res_setup_req_transfer_needed(amf_ue_t *amf_ue);
     (amf_handover_request_transfer_needed(__aMF) == true)
 bool amf_handover_request_transfer_needed(amf_ue_t *amf_ue);
 
+#define PAGING_ONGOING(__aMF) \
+    (amf_paging_ongoing(__aMF) == true)
+bool amf_paging_ongoing(amf_ue_t *amf_ue);
+#define DOWNLINK_SIGNALLING_PENDING(__aMF) \
+    (amf_downlink_signalling_pending(__aMF) == true)
+bool amf_downlink_signalling_pending(amf_ue_t *amf_ue);
+
 int amf_find_served_tai(ogs_5gs_tai_t *nr_tai);
 ogs_s_nssai_t *amf_find_s_nssai(
         ogs_plmn_id_t *served_plmn_id, ogs_s_nssai_t *s_nssai);
@@ -704,7 +786,7 @@ uint8_t amf_selected_enc_algorithm(amf_ue_t *amf_ue);
 
 void amf_clear_subscribed_info(amf_ue_t *amf_ue);
 
-void amf_update_allowed_nssai(amf_ue_t *amf_ue);
+bool amf_update_allowed_nssai(amf_ue_t *amf_ue);
 
 #ifdef __cplusplus
 }

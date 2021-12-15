@@ -121,6 +121,62 @@ void af_state_operational(ogs_fsm_t *s, af_event_t *e)
             END
             break;
 
+        CASE(OGS_SBI_SERVICE_NAME_NPCF_POLICYAUTHORIZATION)
+            SWITCH(message.h.resource.component[0])
+            CASE(OGS_SBI_RESOURCE_NAME_APP_SESSIONS)
+                af_sess_t *app_session = NULL;
+
+                if (!message.h.resource.component[1]) {
+                    ogs_error("[%s] Unknown app session id",
+                            message.h.resource.component[1]);
+                    ogs_assert(true ==
+                        ogs_sbi_server_send_error(stream,
+                            OGS_SBI_HTTP_STATUS_NOT_FOUND,
+                            &message, "Not found",
+                            message.h.resource.component[1]));
+                    break;
+                }
+
+                app_session = af_sess_find_by_af_app_session_id(
+                            message.h.resource.component[1]);
+                if (!app_session) {
+                    ogs_error("[%s] Unknown app session id",
+                            message.h.resource.component[1]);
+                    ogs_assert(true ==
+                        ogs_sbi_server_send_error(stream,
+                            OGS_SBI_HTTP_STATUS_NOT_FOUND,
+                            &message, "Not found",
+                            message.h.resource.component[1]));
+                    break;
+                }
+
+                SWITCH(message.h.resource.component[2])
+                CASE(OGS_SBI_RESOURCE_NAME_TERMINATE)
+                    ogs_assert(true ==
+                            ogs_sbi_send_http_status_no_content(stream));
+                    af_sess_remove(app_session);
+                    break;
+                DEFAULT
+                    ogs_error("Invalid resource name [%s]",
+                            message.h.resource.component[2]);
+                    ogs_assert(true ==
+                        ogs_sbi_server_send_error(stream,
+                            OGS_SBI_HTTP_STATUS_BAD_REQUEST, &message,
+                            "Invalid resource name",
+                            message.h.resource.component[2]));
+                END
+                break;
+            DEFAULT
+                ogs_error("Invalid resource name [%s]",
+                        message.h.resource.component[0]);
+                ogs_assert(true ==
+                    ogs_sbi_server_send_error(stream,
+                        OGS_SBI_HTTP_STATUS_BAD_REQUEST, &message,
+                        "Invalid resource name",
+                        message.h.resource.component[0]));
+            END
+            break;
+
         DEFAULT
             ogs_error("Invalid API name [%s]", message.h.service.name);
             ogs_assert(true ==
@@ -270,10 +326,48 @@ void af_state_operational(ogs_fsm_t *s, af_event_t *e)
                 sess = e->sbi.data;
                 ogs_assert(sess);
 
-                if (message.res_status == OGS_SBI_HTTP_STATUS_CREATED)
-                    af_npcf_policyauthorization_handle_create(sess, &message);
-                else
-                    ogs_error("HTTP response error [%d]", message.res_status);
+                if (message.h.resource.component[1]) {
+                    if (message.h.resource.component[2]) {
+                        SWITCH(message.h.resource.component[2])
+                        CASE(OGS_SBI_RESOURCE_NAME_DELETE)
+                            af_sess_remove(sess);
+                            break;
+                        DEFAULT
+                            ogs_error("Invalid resource name [%s]",
+                                    message.h.resource.component[2]);
+                            ogs_assert_if_reached();
+                        END
+                    } else {
+                        SWITCH(message.h.method)
+                        CASE(OGS_SBI_HTTP_METHOD_PATCH)
+                            if (message.res_status == OGS_SBI_HTTP_STATUS_OK)
+                                af_npcf_policyauthorization_handle_update(
+                                        sess, &message);
+                            else
+                                ogs_error("HTTP response error [%d]",
+                                        message.res_status);
+                            break;
+                        DEFAULT
+                            ogs_error("Invalid HTTP method [%s]",
+                                    message.h.method);
+                            ogs_assert_if_reached();
+                        END
+                    }
+                } else {
+                    SWITCH(message.h.method)
+                    CASE(OGS_SBI_HTTP_METHOD_POST)
+                        if (message.res_status == OGS_SBI_HTTP_STATUS_CREATED)
+                            af_npcf_policyauthorization_handle_create(
+                                    sess, &message);
+                        else
+                            ogs_error("HTTP response error [%d]",
+                                    message.res_status);
+                        break;
+                    DEFAULT
+                        ogs_error("Invalid HTTP method [%s]", message.h.method);
+                        ogs_assert_if_reached();
+                    END
+                }
                 break;
             DEFAULT
                 ogs_error("Invalid resource name [%s]",

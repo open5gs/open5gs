@@ -127,7 +127,7 @@ void sgwc_s11_handle_create_session_request(
     ogs_gtp_f_teid_t *mme_s11_teid = NULL;
     ogs_gtp_uli_t uli;
     ogs_gtp_bearer_qos_t bearer_qos;
-    char apn[OGS_MAX_APN_LEN];
+    char apn[OGS_MAX_APN_LEN+1];
 
     ogs_assert(s11_xact);
     ogs_assert(gtpbuf);

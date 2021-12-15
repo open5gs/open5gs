@@ -19,6 +19,7 @@
 
 #include "context.h"
 #include "timer.h"
+#include "s5c-build.h"
 #include "pfcp-path.h"
 #include "gtp-path.h"
 #include "n4-handler.h"
@@ -230,8 +231,14 @@ void smf_5gc_n4_handle_session_modification_response(
     /* 'stream' could be NULL in smf_qos_flow_binding() */
     stream = xact->assoc_stream;
 
-    /* If smf_5gc_pfcp_send_qos_flow_modification_request() is called */
-    qos_flow = xact->data;
+    if (flags & OGS_PFCP_MODIFY_SESSION) {
+        /* If smf_5gc_pfcp_send_session_modification_request() is called */
+
+    } else {
+        /* If smf_5gc_pfcp_send_qos_flow_modification_request() is called */
+        qos_flow = xact->data;
+        ogs_assert(qos_flow);
+    }
 
     ogs_pfcp_xact_commit(xact);
 
@@ -408,6 +415,52 @@ void smf_5gc_n4_handle_session_modification_response(
                 smf_sbi_send_sm_context_updated_data_ho_state(
                         sess, stream, OpenAPI_ho_state_CANCELLED);
             }
+        } else if (flags & OGS_PFCP_MODIFY_NETWORK_REQUESTED) {
+            smf_n1_n2_message_transfer_param_t param;
+
+            ogs_assert(qos_flow);
+
+            memset(&param, 0, sizeof(param));
+            param.state = SMF_NETWORK_REQUESTED_QOS_FLOW_MODIFICATION;
+            param.n1smbuf = gsm_build_qos_flow_modification_command(
+                    qos_flow,
+                    OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED,
+                    OGS_NAS_QOS_CODE_DELETE_EXISTING_QOS_RULE,
+                    OGS_NAS_DELETE_NEW_QOS_FLOW_DESCRIPTION);
+            ogs_assert(param.n1smbuf);
+            param.n2smbuf =
+                ngap_build_qos_flow_resource_release_request_transfer(
+                        qos_flow,
+                        NGAP_Cause_PR_nas, NGAP_CauseNas_normal_release);
+            ogs_assert(param.n2smbuf);
+
+            smf_namf_comm_send_n1_n2_message_transfer(sess, &param);
+
+            smf_bearer_remove(qos_flow);
+        } else if (flags & OGS_PFCP_MODIFY_UE_REQUESTED) {
+            ogs_pkbuf_t *n1smbuf = NULL, *n2smbuf = NULL;
+
+            ogs_assert(stream);
+            ogs_assert(qos_flow);
+
+            n1smbuf = gsm_build_qos_flow_modification_command(
+                    qos_flow, sess->pti,
+                    OGS_NAS_QOS_CODE_DELETE_EXISTING_QOS_RULE,
+                    OGS_NAS_DELETE_NEW_QOS_FLOW_DESCRIPTION);
+            ogs_assert(n1smbuf);
+
+            n2smbuf = ngap_build_qos_flow_resource_release_request_transfer(
+                        qos_flow,
+                        NGAP_Cause_PR_nas, NGAP_CauseNas_normal_release);
+            ogs_assert(n2smbuf);
+
+            smf_sbi_send_sm_context_updated_data_n1_n2_message(sess, stream,
+                    n1smbuf, OpenAPI_n2_sm_info_type_PDU_RES_MOD_REQ, n2smbuf);
+
+            smf_bearer_remove(qos_flow);
+        } else {
+            ogs_fatal("Unknown flags [0x%llx]", (long long)flags);
+            ogs_assert_if_reached();
         }
     } else if (flags & OGS_PFCP_MODIFY_CREATE) {
         if (flags & OGS_PFCP_MODIFY_INDIRECT) {
@@ -418,19 +471,94 @@ void smf_5gc_n4_handle_session_modification_response(
                 sess, stream, 0, OpenAPI_ho_state_PREPARED,
                 NULL, OpenAPI_n2_sm_info_type_HANDOVER_CMD, n2smbuf);
 
-        } else {
+        } else if (flags & OGS_PFCP_MODIFY_NETWORK_REQUESTED) {
             smf_n1_n2_message_transfer_param_t param;
+
+            ogs_assert(qos_flow);
 
             memset(&param, 0, sizeof(param));
             param.state = SMF_NETWORK_REQUESTED_QOS_FLOW_MODIFICATION;
-            param.n1smbuf = gsm_build_qos_flow_modification_command(qos_flow,
-                    OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED);
+            param.n1smbuf = gsm_build_qos_flow_modification_command(
+                    qos_flow,
+                    OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED,
+                    OGS_NAS_QOS_CODE_CREATE_NEW_QOS_RULE,
+                    OGS_NAS_CREATE_NEW_QOS_FLOW_DESCRIPTION);
             ogs_assert(param.n1smbuf);
             param.n2smbuf =
-                ngap_build_qos_flow_resource_modify_request_transfer(qos_flow);
+                ngap_build_qos_flow_resource_modify_request_transfer(
+                        qos_flow, true);
             ogs_assert(param.n2smbuf);
 
             smf_namf_comm_send_n1_n2_message_transfer(sess, &param);
+        } else {
+            ogs_fatal("Unknown flags [0x%llx]", (long long)flags);
+            ogs_assert_if_reached();
+        }
+    } else if (flags &
+                (OGS_PFCP_MODIFY_TFT_NEW|OGS_PFCP_MODIFY_TFT_ADD|
+                OGS_PFCP_MODIFY_TFT_REPLACE|OGS_PFCP_MODIFY_TFT_DELETE|
+                OGS_PFCP_MODIFY_QOS_MODIFY)) {
+        smf_n1_n2_message_transfer_param_t param;
+
+        uint8_t qos_rule_code = 0;
+        uint8_t qos_flow_description_code = 0;
+
+        if (flags & OGS_PFCP_MODIFY_TFT_NEW) {
+            qos_rule_code = OGS_NAS_QOS_CODE_CREATE_NEW_QOS_RULE;
+        } else if (flags & OGS_PFCP_MODIFY_TFT_ADD) {
+            qos_rule_code = OGS_NAS_QOS_CODE_MODIFY_EXISTING_QOS_RULE_AND_ADD_PACKET_FILTERS;
+        } else if (flags & OGS_PFCP_MODIFY_TFT_REPLACE) {
+            qos_rule_code = OGS_NAS_QOS_CODE_MODIFY_EXISTING_QOS_RULE_AND_REPLACE_PACKET_FILTERS;
+        } else if (flags & OGS_PFCP_MODIFY_TFT_DELETE) {
+            qos_rule_code = OGS_NAS_QOS_CODE_MODIFY_EXISTING_QOS_RULE_AND_DELETE_PACKET_FILTERS;
+        }
+
+        if (flags & OGS_PFCP_MODIFY_QOS_CREATE) {
+            ogs_assert_if_reached();
+        } else if (flags & OGS_PFCP_MODIFY_QOS_MODIFY) {
+            qos_flow_description_code = OGS_NAS_MODIFY_NEW_QOS_FLOW_DESCRIPTION;
+        } else if (flags & OGS_PFCP_MODIFY_QOS_DELETE) {
+            ogs_assert_if_reached();
+        }
+
+        if (flags & OGS_PFCP_MODIFY_NETWORK_REQUESTED) {
+            ogs_assert(qos_flow);
+
+            memset(&param, 0, sizeof(param));
+            param.state = SMF_NETWORK_REQUESTED_QOS_FLOW_MODIFICATION;
+            param.n1smbuf = gsm_build_qos_flow_modification_command(
+                    qos_flow,
+                    OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED,
+                    qos_rule_code, qos_flow_description_code);
+            ogs_assert(param.n1smbuf);
+            param.n2smbuf =
+                ngap_build_qos_flow_resource_modify_request_transfer(
+                        qos_flow,
+                        (flags & OGS_PFCP_MODIFY_QOS_MODIFY) ? true : false);
+            ogs_assert(param.n2smbuf);
+
+            smf_namf_comm_send_n1_n2_message_transfer(sess, &param);
+        } else if (flags & OGS_PFCP_MODIFY_UE_REQUESTED) {
+            ogs_pkbuf_t *n1smbuf = NULL, *n2smbuf = NULL;
+
+            ogs_assert(stream);
+            ogs_assert(qos_flow);
+
+            n1smbuf = gsm_build_qos_flow_modification_command(
+                    qos_flow, sess->pti,
+                    qos_rule_code, qos_flow_description_code);
+            ogs_assert(n1smbuf);
+
+            n2smbuf = ngap_build_qos_flow_resource_modify_request_transfer(
+                    qos_flow,
+                    (flags & OGS_PFCP_MODIFY_QOS_MODIFY) ? true : false);
+            ogs_assert(n2smbuf);
+
+            smf_sbi_send_sm_context_updated_data_n1_n2_message(sess, stream,
+                    n1smbuf, OpenAPI_n2_sm_info_type_PDU_RES_MOD_REQ, n2smbuf);
+        } else {
+            ogs_fatal("Unknown flags [0x%llx]", (long long)flags);
+            ogs_assert_if_reached();
         }
     }
 }
@@ -451,7 +579,6 @@ void smf_5gc_n4_handle_session_deletion_response(
     ogs_assert(rsp);
 
     stream = xact->assoc_stream;
-    ogs_assert(stream);
     trigger = xact->delete_trigger;
     ogs_assert(trigger);
 
@@ -477,8 +604,24 @@ void smf_5gc_n4_handle_session_deletion_response(
     if (status != OGS_SBI_HTTP_STATUS_OK) {
         char *strerror = ogs_msprintf(
                 "PFCP Cause [%d] : Not Accepted", rsp->cause.u8);
-        smf_sbi_send_sm_context_update_error(
+
+        if (trigger == OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED ||
+            trigger == OGS_PFCP_DELETE_TRIGGER_AMF_UPDATE_SM_CONTEXT) {
+            ogs_assert(stream);
+            smf_sbi_send_sm_context_update_error(
                 stream, status, strerror, NULL, NULL, NULL);
+        } else if (trigger == OGS_PFCP_DELETE_TRIGGER_AMF_RELEASE_SM_CONTEXT) {
+            ogs_assert(stream);
+            ogs_assert(true ==
+                ogs_sbi_server_send_error(
+                    stream, status, NULL, strerror, NULL));
+        } else if (trigger == OGS_PFCP_DELETE_TRIGGER_PCF_INITIATED) {
+            /* No stream - Nothing */
+        } else {
+            ogs_fatal("Unknown trigger [%d]", trigger);
+            ogs_assert_if_reached();
+        }
+
         ogs_error("%s", strerror);
         ogs_free(strerror);
         return;
@@ -498,17 +641,38 @@ void smf_5gc_n4_handle_session_deletion_response(
                 NGAP_Cause_PR_nas, NGAP_CauseNas_normal_release);
         ogs_assert(n2smbuf);
 
+        ogs_assert(stream);
         smf_sbi_send_sm_context_updated_data_n1_n2_message(sess, stream,
                 n1smbuf, OpenAPI_n2_sm_info_type_PDU_RES_REL_CMD, n2smbuf);
-    } else {
+    } else if (trigger == OGS_PFCP_DELETE_TRIGGER_AMF_UPDATE_SM_CONTEXT ||
+                trigger == OGS_PFCP_DELETE_TRIGGER_AMF_RELEASE_SM_CONTEXT) {
         memset(&sendmsg, 0, sizeof(sendmsg));
 
         response = ogs_sbi_build_response(
                 &sendmsg, OGS_SBI_HTTP_STATUS_NO_CONTENT);
         ogs_assert(response);
+
+        ogs_assert(stream);
         ogs_assert(true == ogs_sbi_server_send_response(stream, response));
 
         SMF_SESS_CLEAR(sess);
+    } else if (trigger == OGS_PFCP_DELETE_TRIGGER_PCF_INITIATED) {
+        smf_n1_n2_message_transfer_param_t param;
+
+        memset(&param, 0, sizeof(param));
+        param.state = SMF_NETWORK_REQUESTED_PDU_SESSION_RELEASE;
+        param.n2smbuf =
+            ngap_build_pdu_session_resource_release_command_transfer(
+                sess, SMF_NGAP_STATE_DELETE_TRIGGER_PCF_INITIATED,
+                NGAP_Cause_PR_nas, NGAP_CauseNas_normal_release);
+        ogs_assert(param.n2smbuf);
+
+        param.skip_ind = true;
+
+        smf_namf_comm_send_n1_n2_message_transfer(sess, &param);
+    } else {
+        ogs_fatal("Unknown trigger [%d]", trigger);
+        ogs_assert_if_reached();
     }
 }
 
@@ -580,24 +744,27 @@ void smf_epc_n4_handle_session_establishment_response(
             ogs_assert(far);
 
             if (pdr->src_if == OGS_PFCP_INTERFACE_ACCESS) {
+                smf_bearer_t *pdr_bearer = NULL;
+
                 if (far->dst_if == OGS_PFCP_INTERFACE_CP_FUNCTION)
                     ogs_pfcp_far_teid_hash_set(far);
 
-                bearer = smf_bearer_find_by_pdr_id(sess, pdr->id);
-                if (bearer) {
+                pdr_bearer = smf_bearer_find_by_pdr_id(sess, pdr->id);
+                if (pdr_bearer) {
                     ogs_assert(sess->pfcp_node);
                     if (sess->pfcp_node->up_function_features.ftup &&
                         pdr->f_teid_len) {
-                        if (bearer->pgw_s5u_addr)
-                            ogs_freeaddrinfo(bearer->pgw_s5u_addr);
-                        if (bearer->pgw_s5u_addr)
-                            ogs_freeaddrinfo(bearer->pgw_s5u_addr6);
+                        if (pdr_bearer->pgw_s5u_addr)
+                            ogs_freeaddrinfo(pdr_bearer->pgw_s5u_addr);
+                        if (pdr_bearer->pgw_s5u_addr)
+                            ogs_freeaddrinfo(pdr_bearer->pgw_s5u_addr6);
 
                         ogs_assert(OGS_OK ==
                             ogs_pfcp_f_teid_to_sockaddr(
                                 &pdr->f_teid, pdr->f_teid_len,
-                                &bearer->pgw_s5u_addr, &bearer->pgw_s5u_addr6));
-                        bearer->pgw_s5u_teid = pdr->f_teid.teid;
+                                &pdr_bearer->pgw_s5u_addr,
+                                &pdr_bearer->pgw_s5u_addr6));
+                        pdr_bearer->pgw_s5u_teid = pdr->f_teid.teid;
                     }
                 }
             } else if (pdr->src_if == OGS_PFCP_INTERFACE_CP_FUNCTION) {
@@ -634,23 +801,28 @@ void smf_epc_n4_handle_session_establishment_response(
     ogs_assert(OGS_OK == smf_gtp_send_create_session_response(sess, gtp_xact));
 
     if (sess->gtp_rat_type == OGS_GTP_RAT_TYPE_WLAN) {
+        /*
+         * TS23.214
+         * 6.3.1.7 Procedures with modification of bearer
+         * p50
+         * 2.  ...
+         * For "PGW/MME initiated bearer deactivation procedure",
+         * PGW-C shall indicate PGW-U to stop counting and stop
+         * forwarding downlink packets for the affected bearer(s).
+         */
         smf_ue_t *smf_ue = NULL;
         smf_sess_t *eutran_sess = NULL;
 
         smf_ue = sess->smf_ue;
         ogs_assert(smf_ue);
 
-        ogs_assert(sess->session.name);
         eutran_sess = smf_sess_find_by_apn(
-                smf_ue, sess->session.name, OGS_GTP_RAT_TYPE_EUTRAN);
+            smf_ue, sess->session.name, OGS_GTP_RAT_TYPE_EUTRAN);
         if (eutran_sess) {
-            smf_bearer_t *eutran_linked_bearer =
-                ogs_list_first(&eutran_sess->bearer_list);
-            ogs_assert(eutran_linked_bearer);
-
             ogs_assert(OGS_OK ==
-                smf_gtp_send_delete_bearer_request(
-                    eutran_linked_bearer,
+                smf_epc_pfcp_send_session_modification_request(
+                    eutran_sess, NULL,
+                    OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_DEACTIVATE,
                     OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED,
                     OGS_GTP_CAUSE_RAT_CHANGED_FROM_3GPP_TO_NON_3GPP));
         }
@@ -666,6 +838,9 @@ void smf_epc_n4_handle_session_modification_response(
     int i;
 
     smf_bearer_t *bearer = NULL;
+    ogs_gtp_xact_t *gtp_xact = NULL;
+    uint8_t gtp_pti = OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED;
+    uint8_t gtp_cause = OGS_GTP_CAUSE_UNDEFINED_VALUE;
     uint64_t flags = 0;
 
     uint8_t pfcp_cause_value = OGS_PFCP_CAUSE_REQUEST_ACCEPTED;
@@ -674,10 +849,20 @@ void smf_epc_n4_handle_session_modification_response(
     ogs_assert(xact);
     ogs_assert(rsp);
 
-    bearer = xact->data;
-    ogs_assert(bearer);
+    if (flags & OGS_PFCP_MODIFY_SESSION) {
+        /* If smf_epc_pfcp_send_session_modification_request() is called */
+
+    } else {
+        /* If smf_epc_pfcp_send_bearer_modification_request() is called */
+        bearer = xact->data;
+        ogs_assert(bearer);
+    }
     flags = xact->modify_flags;
     ogs_assert(flags);
+
+    gtp_xact = xact->assoc_xact;
+    gtp_pti = xact->gtp_pti;
+    gtp_cause = xact->gtp_cause;
 
     ogs_pfcp_xact_commit(xact);
 
@@ -714,22 +899,28 @@ void smf_epc_n4_handle_session_modification_response(
         ogs_assert(far);
 
         if (pdr->src_if == OGS_PFCP_INTERFACE_ACCESS) {
+            smf_bearer_t *pdr_bearer = NULL;
+
             if (far->dst_if == OGS_PFCP_INTERFACE_CP_FUNCTION)
                 ogs_pfcp_far_teid_hash_set(far);
 
-            ogs_assert(sess->pfcp_node);
-            if (sess->pfcp_node->up_function_features.ftup &&
-                pdr->f_teid_len) {
-                if (bearer->pgw_s5u_addr)
-                    ogs_freeaddrinfo(bearer->pgw_s5u_addr);
-                if (bearer->pgw_s5u_addr)
-                    ogs_freeaddrinfo(bearer->pgw_s5u_addr6);
+            pdr_bearer = smf_bearer_find_by_pdr_id(sess, pdr->id);
+            if (pdr_bearer) {
+                ogs_assert(sess->pfcp_node);
+                if (sess->pfcp_node->up_function_features.ftup &&
+                    pdr->f_teid_len) {
+                    if (pdr_bearer->pgw_s5u_addr)
+                        ogs_freeaddrinfo(pdr_bearer->pgw_s5u_addr);
+                    if (pdr_bearer->pgw_s5u_addr)
+                        ogs_freeaddrinfo(pdr_bearer->pgw_s5u_addr6);
 
-                ogs_assert(OGS_OK ==
-                    ogs_pfcp_f_teid_to_sockaddr(
-                        &pdr->f_teid, pdr->f_teid_len,
-                        &bearer->pgw_s5u_addr, &bearer->pgw_s5u_addr6));
-                bearer->pgw_s5u_teid = pdr->f_teid.teid;
+                    ogs_assert(OGS_OK ==
+                        ogs_pfcp_f_teid_to_sockaddr(
+                            &pdr->f_teid, pdr->f_teid_len,
+                            &pdr_bearer->pgw_s5u_addr,
+                            &pdr_bearer->pgw_s5u_addr6));
+                    pdr_bearer->pgw_s5u_teid = pdr->f_teid.teid;
+                }
             }
         } else if (pdr->src_if == OGS_PFCP_INTERFACE_CP_FUNCTION) {
             ogs_assert(OGS_ERROR != ogs_pfcp_setup_pdr_gtpu_node(pdr));
@@ -742,10 +933,100 @@ void smf_epc_n4_handle_session_modification_response(
     }
 
     if (flags & OGS_PFCP_MODIFY_REMOVE) {
+        ogs_assert(bearer);
         smf_bearer_remove(bearer);
 
     } else if (flags & OGS_PFCP_MODIFY_CREATE) {
+        ogs_assert(bearer);
         ogs_assert(OGS_OK == smf_gtp_send_create_bearer_request(bearer));
+
+    } else if (flags & OGS_PFCP_MODIFY_DEACTIVATE) {
+        /*
+         * TS23.214
+         * 6.3.1.7 Procedures with modification of bearer
+         * p50
+         * 2.  ...
+         * For "PGW/MME initiated bearer deactivation procedure",
+         * PGW-C shall indicate PGW-U to stop counting and stop
+         * forwarding downlink packets for the affected bearer(s).
+         */
+        if (gtp_xact) {
+        /*
+         * 1. MME sends Bearer Resource Command to SGW/SMF.
+         * 2. SMF sends Delete Bearer Request(DEDICATED BEARER) to SGW/MME
+         * 3. MME sends Delete Bearer Response(DEDICATED BEARER) to SGW/SMF
+         */
+            ogs_gtp_header_t h;
+            ogs_pkbuf_t *pkbuf = NULL;
+            int rv;
+
+            ogs_assert(bearer);
+
+            memset(&h, 0, sizeof(ogs_gtp_header_t));
+            h.teid = sess->sgw_s5c_teid;
+            h.type = OGS_GTP_DELETE_BEARER_REQUEST_TYPE;
+
+            pkbuf = smf_s5c_build_delete_bearer_request(
+                    h.type, bearer, gtp_pti, gtp_cause);
+            ogs_expect_or_return(pkbuf);
+
+            rv = ogs_gtp_xact_update_tx(gtp_xact, &h, pkbuf);
+            ogs_expect_or_return(rv == OGS_OK);
+
+        /* IMPORTANT:
+         *
+         * When initiaited by Bearer Resource Command,
+         * there must be bearer context in the Transaction.
+         * Otherwise, the bearer context cannot be found
+         * in GTP response message.
+         *
+         * For example,
+         * 1. MME sends Bearer Resource Command to SGW-C, SMF.
+         * 2. SMF sends Update/Delete Bearer Request to the SGW-C, MME.
+         * 3. MME sends Update/Delete Bearer Response to thw SGW-C, SMF.
+         *
+         * On number 3 step, if MME sends Response without Bearer Context,
+         * we need a way to find Bearer context.
+         *
+         * To do this, I saved Bearer Context in Transaction Context.
+         */
+            gtp_xact->data = bearer;
+
+            rv = ogs_gtp_xact_commit(gtp_xact);
+            ogs_expect(rv == OGS_OK);
+
+        } else {
+            if (flags & OGS_PFCP_MODIFY_SESSION) {
+        /*
+         * 1. SMF sends Delete Bearer Request(DEFAULT BEARER) to SGW/MME.
+         * 2. MME sends Delete Bearer Response to SGW/SMF.
+         *
+         * OR
+         *
+         * 1. SMF sends Delete Bearer Request(DEFAULT BEARER) to ePDG.
+         * 2. ePDG sends Delete Bearer Response(DEFAULT BEARER) to SMF.
+         */
+                smf_bearer_t *linked_bearer =
+                    ogs_list_first(&sess->bearer_list);
+                ogs_assert(linked_bearer);
+
+                ogs_assert(OGS_OK ==
+                    smf_gtp_send_delete_bearer_request(
+                        linked_bearer, gtp_pti, gtp_cause));
+            } else {
+        /*
+         * 1. SMF sends Delete Bearer Request(DEDICATED BEARER) to SGW/MME.
+         * 2. MME sends Delete Bearer Response(DEDICATED BEARER) to SGW/SMF.
+         */
+                ogs_assert(bearer);
+
+                ogs_assert(OGS_OK ==
+                    smf_gtp_send_delete_bearer_request(
+                        bearer,
+                        OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED,
+                        gtp_cause));
+            }
+        }
 
     } else if (flags & OGS_PFCP_MODIFY_ACTIVATE) {
         /* Nothing */

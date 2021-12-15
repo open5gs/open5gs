@@ -265,6 +265,9 @@ static void sess_epc_timeout(ogs_pfcp_xact_t *xact, void *data)
     case OGS_PFCP_SESSION_ESTABLISHMENT_REQUEST_TYPE:
         ogs_warn("No PFCP session establishment response");
         break;
+    case OGS_PFCP_SESSION_MODIFICATION_REQUEST_TYPE:
+        ogs_error("No PFCP session modification response");
+        break;
     case OGS_PFCP_SESSION_DELETION_REQUEST_TYPE:
         ogs_error("No PFCP session deletion response");
         break;
@@ -400,7 +403,6 @@ int smf_5gc_pfcp_send_session_deletion_request(
     ogs_pfcp_xact_t *xact = NULL;
 
     ogs_assert(sess);
-    ogs_assert(stream);
     ogs_assert(trigger);
 
     memset(&h, 0, sizeof(ogs_pfcp_header_t));
@@ -452,8 +454,44 @@ int smf_epc_pfcp_send_session_establishment_request(
     return rv;
 }
 
+int smf_epc_pfcp_send_session_modification_request(
+        smf_sess_t *sess, void *gtp_xact,
+        uint64_t flags, uint8_t gtp_pti, uint8_t gtp_cause)
+{
+    int rv;
+    ogs_pkbuf_t *n4buf = NULL;
+    ogs_pfcp_header_t h;
+    ogs_pfcp_xact_t *xact = NULL;
+
+    ogs_assert(sess);
+
+    memset(&h, 0, sizeof(ogs_pfcp_header_t));
+    h.type = OGS_PFCP_SESSION_MODIFICATION_REQUEST_TYPE;
+    h.seid = sess->upf_n4_seid;
+
+    n4buf = smf_n4_build_session_modification_request(h.type, sess, flags);
+    ogs_expect_or_return_val(n4buf, OGS_ERROR);
+
+    xact = ogs_pfcp_xact_local_create(
+            sess->pfcp_node, &h, n4buf, sess_epc_timeout, sess);
+    ogs_expect_or_return_val(xact, OGS_ERROR);
+
+    xact->epc = true; /* EPC PFCP transaction */
+    xact->assoc_xact = gtp_xact;
+    xact->modify_flags = flags | OGS_PFCP_MODIFY_SESSION;
+
+    xact->gtp_pti = gtp_pti;
+    xact->gtp_cause = gtp_cause;
+
+    rv = ogs_pfcp_xact_commit(xact);
+    ogs_expect(rv == OGS_OK);
+
+    return rv;
+}
+
 int smf_epc_pfcp_send_bearer_modification_request(
-        smf_bearer_t *bearer, uint64_t flags)
+        smf_bearer_t *bearer, void *gtp_xact,
+        uint64_t flags, uint8_t gtp_pti, uint8_t gtp_cause)
 {
     int rv;
     ogs_pkbuf_t *n4buf = NULL;
@@ -477,7 +515,11 @@ int smf_epc_pfcp_send_bearer_modification_request(
     ogs_expect_or_return_val(xact, OGS_ERROR);
 
     xact->epc = true; /* EPC PFCP transaction */
+    xact->assoc_xact = gtp_xact;
     xact->modify_flags = flags;
+
+    xact->gtp_pti = gtp_pti;
+    xact->gtp_cause = gtp_cause;
 
     rv = ogs_pfcp_xact_commit(xact);
     ogs_expect(rv == OGS_OK);

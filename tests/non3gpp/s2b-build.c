@@ -41,7 +41,7 @@ ogs_pkbuf_t *test_s2b_build_create_session_request(
     ogs_gtp_ambr_t ambr;
     ogs_gtp_bearer_qos_t bearer_qos;
     char bearer_qos_buf[GTP_BEARER_QOS_LEN];
-    char apn[OGS_MAX_APN_LEN];
+    char apn[OGS_MAX_APN_LEN+1];
 
     ogs_gtp_indication_t indication;
 
@@ -59,7 +59,7 @@ ogs_pkbuf_t *test_s2b_build_create_session_request(
 
     if (handover_ind == true) {
 	    memset(&indication, 0, sizeof(ogs_gtp_indication_t));
-	    indication.hi = 1;
+	    indication.handover_indication = 1;
 	    req->indication_flags.presence = 1;
 	    req->indication_flags.data = &indication;
 	    req->indication_flags.len = sizeof(ogs_gtp_indication_t);

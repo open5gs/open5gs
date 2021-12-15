@@ -26,6 +26,7 @@
 #include "gx-handler.h"
 #include "nnrf-handler.h"
 #include "namf-handler.h"
+#include "npcf-handler.h"
 
 void smf_state_initial(ogs_fsm_t *s, smf_event_t *e)
 {
@@ -319,11 +320,11 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
                     CASE(OGS_SBI_RESOURCE_NAME_RELEASE)
                         if (!sbi_message.h.resource.component[1]) {
                             ogs_error("No smContextRef [%s]",
-                                    sbi_message.h.resource.component[2]);
+                                    sbi_message.h.resource.component[1]);
                             smf_sbi_send_sm_context_update_error(stream,
                                     OGS_SBI_HTTP_STATUS_BAD_REQUEST,
                                     "No smContextRef",
-                                    sbi_message.h.resource.component[2],
+                                    sbi_message.h.resource.component[1],
                                     NULL, NULL);
                             break;
                         }
@@ -383,11 +384,52 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
         CASE(OGS_SBI_SERVICE_NAME_NSMF_CALLBACK)
             SWITCH(sbi_message.h.resource.component[0])
             CASE(OGS_SBI_RESOURCE_NAME_N1_N2_FAILURE_NOTIFY)
-                smf_namf_comm_handler_n1_n2_message_transfer_failure_notify(
+                smf_namf_comm_handle_n1_n2_message_transfer_failure_notify(
                         stream, &sbi_message);
                 break;
             CASE(OGS_SBI_RESOURCE_NAME_SM_POLICY_NOTIFY)
-                ogs_assert(true == ogs_sbi_send_http_status_no_content(stream));
+                if (!sbi_message.h.resource.component[1]) {
+                    ogs_error("No smContextRef [%s]",
+                            sbi_message.h.resource.component[1]);
+                    ogs_assert(true ==
+                        ogs_sbi_server_send_error(stream,
+                            OGS_SBI_HTTP_STATUS_BAD_REQUEST, &sbi_message,
+                            "No smContextRef",
+                            sbi_message.h.resource.component[1]));
+                    break;
+                }
+
+                sess = smf_sess_find_by_sm_context_ref(
+                        sbi_message.h.resource.component[1]);
+
+                if (!sess) {
+                    ogs_warn("Not found [%s]", sbi_message.h.uri);
+                    ogs_assert(true ==
+                        ogs_sbi_server_send_error(stream,
+                            OGS_SBI_HTTP_STATUS_NOT_FOUND, &sbi_message,
+                            "Not found",
+                            sbi_message.h.resource.component[1]));
+                    break;
+                }
+
+                SWITCH(sbi_message.h.resource.component[2])
+                CASE(OGS_SBI_RESOURCE_NAME_UPDATE)
+                    smf_npcf_smpolicycontrol_handle_update_notify(
+                            sess, stream, &sbi_message);
+                    break;
+                CASE(OGS_SBI_RESOURCE_NAME_TERMINATE)
+                    smf_npcf_smpolicycontrol_handle_terminate_notify(
+                            sess, stream, &sbi_message);
+                    break;
+                DEFAULT
+                    ogs_error("Invalid resource name [%s]",
+                            sbi_message.h.resource.component[0]);
+                    ogs_assert(true ==
+                        ogs_sbi_server_send_error(stream,
+                            OGS_SBI_HTTP_STATUS_BAD_REQUEST, &sbi_message,
+                            "Invalid resource name",
+                            sbi_message.h.resource.component[0]));
+                END
                 break;
             DEFAULT
                 ogs_error("Invalid resource name [%s]",

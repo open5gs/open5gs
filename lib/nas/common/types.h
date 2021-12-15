@@ -941,6 +941,7 @@ typedef struct ogs_nas_bitrate_s {
 
 void ogs_nas_bitrate_from_uint64(
         ogs_nas_bitrate_t *nas_bitrate, uint64_t bitrate);
+uint64_t ogs_nas_bitrate_to_uint64(ogs_nas_bitrate_t *nas_bitrate);
 
 typedef struct ogs_nas_session_ambr_s {
     uint8_t length;

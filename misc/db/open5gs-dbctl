@@ -100,7 +100,7 @@ if [ "$1" = "add" ]; then
 					\"__v\" : 0
 				},  
 			},
-			upsert=true);"$DB_URI
+			upsert=true);" $DB_URI
 		exit $?
 	fi
 
@@ -165,7 +165,7 @@ if [ "$1" = "add" ]; then
 					\"__v\" : 0
 				},  
 			},
-			upsert=true);"$DB_URI
+			upsert=true);" $DB_URI
 		exit $?
 	fi
 
@@ -270,7 +270,7 @@ if [ "$1" = "addT1" ]; then
 					\"__v\" : 0
 				},  
 			},
-			upsert=true);"$DB_URI
+			upsert=true);" $DB_URI
 		exit $?
 	fi
 
@@ -383,7 +383,7 @@ if [ "$1" = "addT1" ]; then
 					\"__v\" : 0
 				},  
 			},
-			upsert=true);"$DB_URI
+			upsert=true);" $DB_URI
 		exit $?
 	fi
 
@@ -398,7 +398,7 @@ if [ "$1" = "remove" ]; then
 	fi
 
 	IMSI=$2 
-	mongo --eval "db.subscribers.remove({\"imsi\": \"$IMSI\"});"$DB_URI
+	mongo --eval "db.subscribers.remove({\"imsi\": \"$IMSI\"});" $DB_URI
 	exit $?
 fi
 
@@ -408,7 +408,7 @@ if [ "$1" = "reset" ]; then
 		exit 1
 	fi
 
-	mongo --eval "db.subscribers.remove({});"$DB_URI
+	mongo --eval "db.subscribers.remove({});" $DB_URI
 	exit $?
 fi
 
@@ -420,7 +420,7 @@ if [ "$1" = "static_ip" ]; then
 	IMSI=$2 
 	IP=$3
 
-	mongo --eval "db.subscribers.update({\"imsi\": \"$IMSI\"},{\$set: { \"slice.0.session.0.ue.addr\": \"$IP\" }});"$DB_URI
+	mongo --eval "db.subscribers.update({\"imsi\": \"$IMSI\"},{\$set: { \"slice.0.session.0.ue.addr\": \"$IP\" }});" $DB_URI
 	exit $?
 fi
 
@@ -432,7 +432,7 @@ if [ "$1" = "static_ip6" ]; then
 	IMSI=$2 
 	IP=$3
 
-	mongo --eval "db.subscribers.update({\"imsi\": \"$IMSI\"},{\$set: { \"slice.0.session.0.ue.addr6\": \"$IP\" }});"$DB_URI
+	mongo --eval "db.subscribers.update({\"imsi\": \"$IMSI\"},{\$set: { \"slice.0.session.0.ue.addr6\": \"$IP\" }});" $DB_URI
 	exit $?
 fi
 
@@ -444,7 +444,7 @@ if [ "$1" = "type" ]; then
 	IMSI=$2 
 	TYPE=$3
 
-	mongo --eval "db.subscribers.update({\"imsi\": \"$IMSI\"},{\$set: { \"slice.0.session.0.type\": NumberInt($TYPE) }});"$DB_URI
+	mongo --eval "db.subscribers.update({\"imsi\": \"$IMSI\"},{\$set: { \"slice.0.session.0.type\": NumberInt($TYPE) }});" $DB_URI
 	exit $?
 fi
 

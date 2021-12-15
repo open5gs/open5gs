@@ -26,10 +26,10 @@ extern "C" {
 
 #include "context.h"
 
-bool smf_namf_comm_handler_n1_n2_message_transfer(
+bool smf_namf_comm_handle_n1_n2_message_transfer(
         smf_sess_t *sess, int state, ogs_sbi_message_t *recvmsg);
 
-bool smf_namf_comm_handler_n1_n2_message_transfer_failure_notify(
+bool smf_namf_comm_handle_n1_n2_message_transfer_failure_notify(
         ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg);
 
 #ifdef __cplusplus

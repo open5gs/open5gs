@@ -62,7 +62,9 @@ cJSON *OpenAPI_ue_context_in_smf_data_convertToJSON(OpenAPI_ue_context_in_smf_da
     if (ue_context_in_smf_data->pdu_sessions) {
         OpenAPI_list_for_each(ue_context_in_smf_data->pdu_sessions, pdu_sessions_node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)pdu_sessions_node->data;
-        cJSON *itemLocal = OpenAPI_pdu_session_convertToJSON(localKeyValue->value);
+        cJSON *itemLocal = localKeyValue->value ?
+            OpenAPI_pdu_session_convertToJSON(localKeyValue->value) :
+            cJSON_CreateNull();
         if (itemLocal == NULL) {
             ogs_error("OpenAPI_ue_context_in_smf_data_convertToJSON() failed [pdu_sessions]");
             goto end;
@@ -125,12 +127,15 @@ OpenAPI_ue_context_in_smf_data_t *OpenAPI_ue_context_in_smf_data_parseFromJSON(c
     OpenAPI_map_t *localMapKeyPair = NULL;
     cJSON_ArrayForEach(pdu_sessions_local_map, pdu_sessions) {
         cJSON *localMapObject = pdu_sessions_local_map;
-        if (!cJSON_IsObject(pdu_sessions_local_map)) {
+        if (cJSON_IsObject(pdu_sessions_local_map)) {
+            localMapKeyPair = OpenAPI_map_create(
+                localMapObject->string, OpenAPI_pdu_session_parseFromJSON(localMapObject));
+        } else if (cJSON_IsNull(pdu_sessions_local_map)) {
+            localMapKeyPair = OpenAPI_map_create(localMapObject->string, NULL);
+        } else {
             ogs_error("OpenAPI_ue_context_in_smf_data_parseFromJSON() failed [pdu_sessions]");
             goto end;
         }
-        localMapKeyPair = OpenAPI_map_create(
-            localMapObject->string, OpenAPI_pdu_session_parseFromJSON(localMapObject));
         OpenAPI_list_add(pdu_sessionsList , localMapKeyPair);
     }
     }

@@ -66,6 +66,9 @@ typedef struct ogs_pfcp_xact_s {
     void            *assoc_xact;    /**< Associated GTP transaction */
     ogs_pkbuf_t     *gtpbuf;        /**< GTP packet buffer */
 
+    uint8_t         gtp_pti;        /**< GTP Procedure transaction identity */
+    uint8_t         gtp_cause;      /**< GTP Cause Value */
+
     void            *assoc_stream;  /**< Associated SBI session */
 
     bool            epc;            /**< EPC or 5GC */
@@ -74,17 +77,27 @@ typedef struct ogs_pfcp_xact_s {
 #define OGS_PFCP_MODIFY_DL_ONLY ((uint64_t)1<<1)
 #define OGS_PFCP_MODIFY_UL_ONLY ((uint64_t)1<<2)
 #define OGS_PFCP_MODIFY_INDIRECT ((uint64_t)1<<3)
-#define OGS_PFCP_MODIFY_CREATE ((uint64_t)1<<4)
-#define OGS_PFCP_MODIFY_REMOVE ((uint64_t)1<<5)
-#define OGS_PFCP_MODIFY_TFT_UPDATE ((uint64_t)1<<6)
-#define OGS_PFCP_MODIFY_QOS_UPDATE ((uint64_t)1<<7)
-#define OGS_PFCP_MODIFY_ACTIVATE ((uint64_t)1<<8)
-#define OGS_PFCP_MODIFY_DEACTIVATE ((uint64_t)1<<9)
-#define OGS_PFCP_MODIFY_END_MARKER ((uint64_t)1<<10)
-#define OGS_PFCP_MODIFY_ERROR_INDICATION ((uint64_t)1<<11)
-#define OGS_PFCP_MODIFY_XN_HANDOVER ((uint64_t)1<<12)
-#define OGS_PFCP_MODIFY_N2_HANDOVER ((uint64_t)1<<13)
-#define OGS_PFCP_MODIFY_HANDOVER_CANCEL ((uint64_t)1<<14)
+#define OGS_PFCP_MODIFY_UE_REQUESTED ((uint64_t)1<<4)
+#define OGS_PFCP_MODIFY_NETWORK_REQUESTED ((uint64_t)1<<5)
+#define OGS_PFCP_MODIFY_CREATE ((uint64_t)1<<6)
+#define OGS_PFCP_MODIFY_REMOVE ((uint64_t)1<<7)
+#define OGS_PFCP_MODIFY_EPC_TFT_UPDATE ((uint64_t)1<<8)
+#define OGS_PFCP_MODIFY_EPC_QOS_UPDATE ((uint64_t)1<<9)
+#define OGS_PFCP_MODIFY_TFT_NEW ((uint64_t)1<<10)
+#define OGS_PFCP_MODIFY_TFT_ADD ((uint64_t)1<<11)
+#define OGS_PFCP_MODIFY_TFT_REPLACE ((uint64_t)1<<12)
+#define OGS_PFCP_MODIFY_TFT_DELETE ((uint64_t)1<<13)
+#define OGS_PFCP_MODIFY_QOS_CREATE ((uint64_t)1<<14)
+#define OGS_PFCP_MODIFY_QOS_MODIFY ((uint64_t)1<<15)
+#define OGS_PFCP_MODIFY_QOS_DELETE ((uint64_t)1<<16)
+#define OGS_PFCP_MODIFY_ACTIVATE ((uint64_t)1<<17)
+#define OGS_PFCP_MODIFY_DEACTIVATE ((uint64_t)1<<18)
+#define OGS_PFCP_MODIFY_END_MARKER ((uint64_t)1<<19)
+#define OGS_PFCP_MODIFY_ERROR_INDICATION ((uint64_t)1<<20)
+#define OGS_PFCP_MODIFY_XN_HANDOVER ((uint64_t)1<<21)
+#define OGS_PFCP_MODIFY_N2_HANDOVER ((uint64_t)1<<22)
+#define OGS_PFCP_MODIFY_HANDOVER_CANCEL ((uint64_t)1<<23)
+
     uint64_t        modify_flags;
 
 #define OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED 1

@@ -26,7 +26,20 @@
 extern "C" {
 #endif
 
+typedef struct af_npcf_policyauthorization_param_s {
+    OpenAPI_media_type_e med_type;
+    int flow_type;
+    int qos_type;
+} af_npcf_policyauthorization_param_t;
+
 ogs_sbi_request_t *af_npcf_policyauthorization_build_create(
+        af_sess_t *sess, void *data);
+ogs_sbi_request_t *af_npcf_policyauthorization_build_update(
+        af_sess_t *sess, void *data);
+ogs_sbi_request_t *af_npcf_policyauthorization_build_delete(
+        af_sess_t *sess, void *data);
+
+ogs_sbi_request_t *af_npcf_policyauthorization_build_create_video(
         af_sess_t *sess, void *data);
 
 #ifdef __cplusplus

@@ -91,3 +91,39 @@ void af_npcf_policyauthorization_handle_create(
 cleanup:
     ogs_sbi_header_free(&header);
 }
+
+void af_npcf_policyauthorization_handle_update(
+        af_sess_t *sess, ogs_sbi_message_t *recvmsg)
+{
+    OpenAPI_app_session_context_update_data_patch_t
+        *AppSessionContextUpdateDataPatch = NULL;
+    OpenAPI_app_session_context_update_data_t *AscUpdateData = NULL;
+
+    ogs_assert(sess);
+    ogs_assert(recvmsg);
+
+    if (!recvmsg->h.resource.component[1]) {
+        ogs_error("[%s:%s] No AppSessionId[%s]",
+                sess->ipv4addr ? sess->ipv4addr : "Unknown",
+                sess->ipv6addr ? sess->ipv6addr : "Unknown",
+                recvmsg->http.location);
+        return;
+    }
+
+    AppSessionContextUpdateDataPatch =
+        recvmsg->AppSessionContextUpdateDataPatch;
+    if (!AppSessionContextUpdateDataPatch) {
+        ogs_error("[%s:%s] No AppSessionContextUpdateDataPatch",
+                sess->ipv4addr ? sess->ipv4addr : "Unknown",
+                sess->ipv6addr ? sess->ipv6addr : "Unknown");
+        return;
+    }
+
+    AscUpdateData = AppSessionContextUpdateDataPatch->asc_req_data;
+    if (!AscUpdateData) {
+        ogs_error("[%s:%s] No AscUpdateData",
+                sess->ipv4addr ? sess->ipv4addr : "Unknown",
+                sess->ipv6addr ? sess->ipv6addr : "Unknown");
+        return;
+    }
+}

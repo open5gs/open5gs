@@ -555,7 +555,7 @@ int ogs_pco_build(unsigned char *data, int data_len, ogs_pco_t *pco);
 
 /* Flags(1) + TEID Range(1) + IPV4(4) + IPV6(16) + Source Interface(1) = 23 */
 #define OGS_MAX_USER_PLANE_IP_RESOURCE_INFO_LEN \
-    (23 + OGS_MAX_APN_LEN)
+    (23 + (OGS_MAX_APN_LEN+1))
 typedef struct ogs_user_plane_ip_resource_info_s {
     union {
         struct {
@@ -580,7 +580,7 @@ ED6(uint8_t     spare:1;,
     uint8_t     teid_range;
     uint32_t    addr;
     uint8_t     addr6[OGS_IPV6_LEN];
-    char        network_instance[OGS_MAX_APN_LEN];
+    char        network_instance[OGS_MAX_APN_LEN+1];
     uint8_t     source_interface;
 } __attribute__ ((packed)) ogs_user_plane_ip_resource_info_t;
 
@@ -652,6 +652,25 @@ void ogs_session_data_free(ogs_session_data_t *session_data);
 
 typedef struct ogs_media_sub_component_s {
     uint32_t            flow_number;
+/*
+ * TS29.214
+ * 5.3.12 Flow-Usage AVP
+ *   NO_INFORMATION(0)
+ *   RTCP(1)
+ *   AF_SIGNALLING(2)
+ *
+ * TS29.514
+ * 5.6.3.14 Enumeration: FlowUsage
+ *   NO_INFO : 1
+ *   RTCP : 2
+ *   AF_SIGNALLING : 3
+ *
+ * EPC and 5GC have different values for FlowUsage
+ * At this point, we will use the 5GC value.
+ */
+#define OGS_FLOW_USAGE_NO_INFO          1
+#define OGS_FLOW_USAGE_RTCP             2
+#define OGS_FLOW_USAGE_AF_SIGNALLING    3
     uint32_t            flow_usage;
     ogs_flow_t          flow[OGS_MAX_NUM_OF_FLOW_IN_MEDIA_SUB_COMPONENT];
     int                 num_of_flow;
@@ -689,6 +708,13 @@ typedef struct ogs_ims_data_s {
 } ogs_ims_data_t;
 
 void ogs_ims_data_free(ogs_ims_data_t *ims_data);
+
+int ogs_pcc_rule_num_of_flow_equal_to_media(
+        ogs_pcc_rule_t *pcc_rule, ogs_media_component_t *media_component);
+int ogs_pcc_rule_install_flow_from_media(
+        ogs_pcc_rule_t *pcc_rule, ogs_media_component_t *media_component);
+int ogs_pcc_rule_update_qos_from_media(
+        ogs_pcc_rule_t *pcc_rule, ogs_media_component_t *media_component);
 
 #ifdef __cplusplus
 }

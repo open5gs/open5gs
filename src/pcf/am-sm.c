@@ -73,6 +73,11 @@ void pcf_am_state_operational(ogs_fsm_t *s, pcf_event_t *e)
             }
             break;
 
+        CASE(OGS_SBI_HTTP_METHOD_DELETE)
+            ogs_assert(true == ogs_sbi_send_http_status_no_content(stream));
+            OGS_FSM_TRAN(s, pcf_am_state_deleted);
+            break;
+
         DEFAULT
             ogs_error("[%s] Invalid HTTP method [%s]",
                     pcf_ue->supi, message->h.method);
@@ -137,6 +142,30 @@ void pcf_am_state_operational(ogs_fsm_t *s, pcf_event_t *e)
                     OGS_SBI_HTTP_STATUS_BAD_REQUEST, message,
                     "Invalid API name", message->h.resource.component[0]));
         END
+        break;
+
+    default:
+        ogs_error("[%s] Unknown event %s", pcf_ue->supi, pcf_event_get_name(e));
+        break;
+    }
+}
+
+void pcf_am_state_deleted(ogs_fsm_t *s, pcf_event_t *e)
+{
+    pcf_ue_t *pcf_ue = NULL;
+    ogs_assert(s);
+    ogs_assert(e);
+
+    pcf_sm_debug(e);
+
+    pcf_ue = e->pcf_ue;
+    ogs_assert(pcf_ue);
+
+    switch (e->id) {
+    case OGS_FSM_ENTRY_SIG:
+        break;
+
+    case OGS_FSM_EXIT_SIG:
         break;
 
     default:

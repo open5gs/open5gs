@@ -20,7 +20,7 @@
 /*******************************************************************************
  * This file had been created by gtp-tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2021-06-15 11:28:13.527903 by acetcom
+ * Created on: 2021-10-16 16:32:20.650061 by acetcom
  * from 29274-g30.docx
  ******************************************************************************/
 
@@ -270,7 +270,7 @@ typedef struct ogs_gtp_header_s {
 #define OGS_GTP_BIT_RATE_TYPE 211
 #define OGS_GTP_PC5_QOS_FLOW_TYPE 212
 
-/* Infomration Element TLV Descriptor */
+/* Information Element TLV Descriptor */
 extern ogs_tlv_desc_t ogs_gtp_tlv_desc_imsi_0;
 extern ogs_tlv_desc_t ogs_gtp_tlv_desc_cause_0;
 extern ogs_tlv_desc_t ogs_gtp_tlv_desc_recovery_0;
@@ -428,7 +428,7 @@ extern ogs_tlv_desc_t ogs_gtp_tlv_desc_bit_rate_0;
 extern ogs_tlv_desc_t ogs_gtp_tlv_desc_bit_rate_1;
 extern ogs_tlv_desc_t ogs_gtp_tlv_desc_pc5_qos_flow_0;
 
-/* Group Infomration Element TLV Descriptor */
+/* Group Information Element TLV Descriptor */
 extern ogs_tlv_desc_t ogs_gtp_tlv_desc_pc5_qos_parameters_0;
 extern ogs_tlv_desc_t ogs_gtp_tlv_desc_remote_ue_context_0;
 extern ogs_tlv_desc_t ogs_gtp_tlv_desc_v2x_context_0;
@@ -498,7 +498,7 @@ extern ogs_tlv_desc_t ogs_gtp_tlv_desc_update_pdn_connection_set_response;
 extern ogs_tlv_desc_t ogs_gtp_tlv_desc_modify_access_bearers_request;
 extern ogs_tlv_desc_t ogs_gtp_tlv_desc_modify_access_bearers_response;
 
-/* Structure for Infomration Element */
+/* Structure for Information Element */
 typedef ogs_tlv_octet_t ogs_gtp_tlv_imsi_t;
 typedef ogs_tlv_octet_t ogs_gtp_tlv_cause_t;
 typedef ogs_tlv_uint8_t ogs_gtp_tlv_recovery_t;
@@ -524,7 +524,7 @@ typedef ogs_tlv_octet_t ogs_gtp_tlv_tmsi_t;
 typedef ogs_tlv_octet_t ogs_gtp_tlv_global_cn_id_t;
 typedef ogs_tlv_octet_t ogs_gtp_tlv_s103pdf_t;
 typedef ogs_tlv_octet_t ogs_gtp_tlv_s1udf_t;
-typedef ogs_tlv_octet_t ogs_gtp_tlv_delay_value_t;
+typedef ogs_tlv_uint8_t ogs_gtp_tlv_delay_value_t;
 typedef ogs_tlv_uint32_t ogs_gtp_tlv_charging_id_t;
 typedef ogs_tlv_octet_t ogs_gtp_tlv_charging_characteristics_t;
 typedef ogs_tlv_octet_t ogs_gtp_tlv_trace_information_t;
@@ -627,7 +627,7 @@ typedef ogs_tlv_octet_t ogs_gtp_tlv_services_authorized_t;
 typedef ogs_tlv_octet_t ogs_gtp_tlv_bit_rate_t;
 typedef ogs_tlv_octet_t ogs_gtp_tlv_pc5_qos_flow_t;
 
-/* Structure for Group Infomration Element */
+/* Structure for Group Information Element */
 typedef struct ogs_gtp_tlv_pc5_qos_parameters_s {
     ogs_tlv_presence_t presence;
     ogs_gtp_tlv_pc5_qos_flow_t pc5_qos_flows;

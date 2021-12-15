@@ -622,7 +622,7 @@ void sgwc_sxa_handle_session_modification_response(
             ogs_assert(gtp_req);
 
             /* Remove S5U-F-TEID */
-            gtp_req->bearer_contexts.s5_s8_u_sgw_f_teid.presence = 0;
+            gtp_req->bearer_contexts.s4_u_sgsn_f_teid.presence = 0;
 
             /* Send Data Plane(UL) : SGW-S1U */
             memset(&sgw_s1u_teid, 0, sizeof(ogs_gtp_f_teid_t));
@@ -902,7 +902,7 @@ void sgwc_sxa_handle_session_modification_response(
                 indication = gtp_req->indication_flags.data;
             }
 
-            if (indication && indication->hi) {
+            if (indication && indication->handover_indication) {
                 recv_message->h.type = OGS_GTP_MODIFY_BEARER_REQUEST_TYPE;
                 recv_message->h.teid = sess->pgw_s5c_teid;
 
@@ -1059,7 +1059,6 @@ void sgwc_sxa_handle_session_deletion_response(
 
     ogs_assert(pfcp_xact);
     ogs_assert(pfcp_rsp);
-    ogs_assert(gtp_message);
 
     cause_value = OGS_GTP_CAUSE_REQUEST_ACCEPTED;
 
@@ -1081,6 +1080,11 @@ void sgwc_sxa_handle_session_deletion_response(
     gtp_xact = pfcp_xact->assoc_xact;
 
     ogs_pfcp_xact_commit(pfcp_xact);
+
+    if (!gtp_message) {
+        ogs_error("No GTP Message");
+        goto cleanup;
+    }
 
     switch (gtp_message->h.type) {
     case OGS_GTP_DELETE_SESSION_RESPONSE_TYPE:
@@ -1144,6 +1148,7 @@ void sgwc_sxa_handle_session_deletion_response(
         ogs_expect(rv == OGS_OK);
     }
 
+cleanup:
     sgwc_sess_remove(sess);
 }
 

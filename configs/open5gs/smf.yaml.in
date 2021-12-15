@@ -86,17 +86,17 @@ logger:
 #
 #  <GTP-C Server>
 #
-#  o GTP-C Server(127.0.0.4:2123, [fe80::3%@loopback_devname@]:2123)
+#  o GTP-C Server(127.0.0.4:2123, [fd69:f21d:873c:fa::3]:2123)
 #    gtpc:
 #      addr:
 #        - 127.0.0.4
-#        - fe80::3%@loopback_devname@
+#        - fd69:f21d:873c:fa::3
 #
 #  o On SMF, Same configuration
-#    (127.0.0.4:2123, [fe80::3%@loopback_devname@]:2123).
+#    (127.0.0.4:2123, [fd69:f21d:873c:fa::3]:2123).
 #    gtpc:
 #      - addr: 127.0.0.4
-#      - addr: fe80::3%@loopback_devname@
+#      - addr: fd69:f21d:873c:fa::3
 #
 #  <GTP-U Server>>
 #
@@ -369,13 +369,13 @@ smf:
 #          pem: nrf.pem
 #      - name: nrf.open5gs.org
 #
-#  o SBI Client(http://[fe80::1%@loopback_devname@]:80)
+#  o SBI Client(http://[fd69:f21d:873c:fa::1]:80)
 #    If prefer_ipv4 is true, http://127.0.0.10:80 is selected.
 #
 #    sbi:
 #      addr:
 #        - 127.0.0.10
-#        - fe80::1%@loopback_devname@
+#        - fd69:f21d:873c:fa::1
 #
 nrf:
     sbi:

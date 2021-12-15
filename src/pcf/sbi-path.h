@@ -25,6 +25,7 @@
 #include "nbsf-build.h"
 #include "namf-build.h"
 #include "nsmf-build.h"
+#include "naf-build.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -44,7 +45,14 @@ bool pcf_sess_sbi_discover_and_send(OpenAPI_nf_type_e target_nf_type,
         ogs_sbi_request_t *(*build)(pcf_sess_t *sess, void *data));
 
 bool pcf_sbi_send_am_policy_control_notify(pcf_ue_t *pcf_ue);
-bool pcf_sbi_send_smpolicycontrol_notify(pcf_sess_t *sess);
+bool pcf_sbi_send_smpolicycontrol_update_notify(
+        pcf_sess_t *sess, OpenAPI_sm_policy_decision_t *SmPolicyDecision);
+bool pcf_sbi_send_smpolicycontrol_delete_notify(
+        pcf_sess_t *sess, pcf_app_t *app_session,
+        OpenAPI_sm_policy_decision_t *SmPolicyDecision);
+bool pcf_sbi_send_smpolicycontrol_terminate_notify(pcf_sess_t *sess);
+
+bool pcf_sbi_send_policyauthorization_terminate_notify(pcf_app_t *app);
 
 #ifdef __cplusplus
 }

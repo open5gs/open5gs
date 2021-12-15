@@ -126,7 +126,9 @@ void mme_s11_handle_create_session_response(
 
     if (!mme_ue) {
         ogs_warn("No Context in TEID");
-        mme_ue = xact->data;
+        sess = xact->data;
+        ogs_assert(sess);
+        mme_ue = sess->mme_ue;
         ogs_assert(mme_ue);
     }
 
@@ -260,6 +262,9 @@ void mme_s11_handle_modify_bearer_response(
     int rv;
     uint8_t cause_value = 0;
 
+    mme_sess_t *sess = NULL;
+    mme_bearer_t *bearer = NULL;
+
     ogs_assert(xact);
     ogs_assert(rsp);
 
@@ -272,7 +277,11 @@ void mme_s11_handle_modify_bearer_response(
 
     if (!mme_ue) {
         ogs_warn("No Context in TEID");
-        mme_ue = xact->data;
+        bearer = xact->data;
+        ogs_assert(bearer);
+        sess = bearer->sess;
+        ogs_assert(sess);
+        mme_ue = sess->mme_ue;
         ogs_assert(mme_ue);
     }
 
@@ -878,6 +887,7 @@ void mme_s11_handle_release_access_bearers_response(
             /* All ENB_UE context
              * where PartOfS1_interface was requested
              * REMOVED */
+            ogs_assert(enb->s1_reset_ack);
             s1ap_send_to_enb(enb, enb->s1_reset_ack, S1AP_NON_UE_SIGNALLING);
 
             /* Clear S1-Reset Ack Buffer */

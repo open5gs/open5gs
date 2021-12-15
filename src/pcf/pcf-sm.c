@@ -53,6 +53,7 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
 
     pcf_ue_t *pcf_ue = NULL;
     pcf_sess_t *sess = NULL;
+    pcf_app_t *app_session = NULL;
 
     pcf_sm_debug(e);
 
@@ -136,7 +137,14 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
                     }
                 }
                 break;
-
+            CASE(OGS_SBI_HTTP_METHOD_DELETE)
+                if (message.h.resource.component[1]) {
+                    pcf_ue = pcf_ue_find_by_association_id(
+                                message.h.resource.component[1]);
+                } else {
+                    ogs_error("No Policy Association Id");
+                }
+                break;
             DEFAULT
             END
 
@@ -156,6 +164,9 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
             ogs_fsm_dispatch(&pcf_ue->sm, e);
             if (OGS_FSM_CHECK(&pcf_ue->sm, pcf_am_state_exception)) {
                 ogs_error("[%s] State machine exception", pcf_ue->supi);
+                pcf_ue_remove(pcf_ue);
+            } else if (OGS_FSM_CHECK(&pcf_ue->sm, pcf_am_state_deleted)) {
+                ogs_debug("[%s] PCF-AM removed", pcf_ue->supi);
                 pcf_ue_remove(pcf_ue);
             }
             break;
@@ -231,8 +242,10 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
                                     AppSessionContext->asc_req_data->ue_ipv6);
                     }
                 } else {
-                    sess = pcf_sess_find_by_app_session_id(
+                    app_session = pcf_app_find_by_app_session_id(
                             message.h.resource.component[1]);
+                    if (app_session)
+                        sess = app_session->sess;
                 }
                 break;
 
@@ -251,6 +264,7 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
             ogs_assert(OGS_FSM_STATE(&sess->sm));
 
             e->sess = sess;
+            e->app = app_session;
             e->sbi.message = &message;
             ogs_fsm_dispatch(&sess->sm, e);
             if (OGS_FSM_CHECK(&sess->sm, pcf_sm_state_exception)) {

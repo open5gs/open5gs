@@ -70,16 +70,14 @@ int hss_db_msisdn_data(
 
 int hss_db_ims_data(char *imsi_bcd, ogs_ims_data_t *ims_data);
 
-void hss_s6a_set_visited_plmn_id(
-        char *imsi_bcd, ogs_plmn_id_t *visited_plmn_id);
-
 void hss_cx_associate_identity(char *user_name, char *public_identity);
 bool hss_cx_identity_is_associated(char *user_name, char *public_identity);
 
-void hss_cx_set_imsi_bcd(char *user_name, char *imsi_bcd);
+void hss_cx_set_imsi_bcd(char *user_name,
+        char *imsi_bcd, char *visited_network_identifier);
 
 char *hss_cx_get_imsi_bcd(char *public_identity);
-ogs_plmn_id_t *hss_cx_get_visited_plmn_id(char *public_identity);
+char *hss_cx_get_visited_network_identifier(char *public_identity);
 char *hss_cx_get_user_name(char *public_identity);
 
 char *hss_cx_get_server_name(char *public_identity);
@@ -87,7 +85,8 @@ void hss_cx_set_server_name(
         char *public_identity, char *server_name, bool overwrite);
 
 char *hss_cx_download_user_data(
-        char *user_name, ogs_plmn_id_t *plmn_id, ogs_ims_data_t *ims_data);
+        char *user_name, char *visited_network_identifier,
+        ogs_ims_data_t *ims_data);
 
 
 #ifdef __cplusplus

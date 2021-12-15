@@ -172,7 +172,7 @@ void test_s2b_handle_create_bearer_request(
         ogs_error("No EPS Bearer ID");
         return;
     }
-    if (req->bearer_contexts.s5_s8_u_sgw_f_teid.presence == 0) {
+    if (req->bearer_contexts.s4_u_sgsn_f_teid.presence == 0) {
         ogs_error("No GTP TEID");
         return;
     }
@@ -195,7 +195,7 @@ void test_s2b_handle_create_bearer_request(
     ogs_assert(bearer);
 
     /* Receive Data Plane(UL) : SMF-S2B-U */
-    smf_s2b_u_teid = req->bearer_contexts.s5_s8_u_sgw_f_teid.data;
+    smf_s2b_u_teid = req->bearer_contexts.s4_u_sgsn_f_teid.data;
     ogs_assert(smf_s2b_u_teid);
     bearer->sgw_s1u_teid = be32toh(smf_s2b_u_teid->teid);
     rv = ogs_gtp_f_teid_to_ip(smf_s2b_u_teid, &bearer->sgw_s1u_ip);

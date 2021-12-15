@@ -16,6 +16,12 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from docx import Document
+from docx.document import Document as _Document
+from docx.oxml.text.paragraph import CT_P
+from docx.oxml.table import CT_Tbl
+from docx.table import _Cell, Table
+from docx.text.paragraph import Paragraph
+
 import re, os, sys, string
 import datetime
 import getopt
@@ -138,6 +144,45 @@ def write_cells_to_file(name, cells):
         "\", \"instance\" : \"" + cells["instance"] + \
         "\", \"comment\" : \"" + cells["comment"] + "\"})\n")
 
+def document_paragraph_tables(document):
+
+    tables = []
+    # iterate .docx objects
+    def iter_block_items(parent):
+
+      if isinstance(parent, _Document):
+          parent_elm = parent.element.body
+      elif isinstance(parent, _Cell):
+          parent_elm = parent._tc
+      elif isinstance(parent, _Row):
+          parent_elm = parent._tr
+      else:
+          raise ValueError("Document format error.")
+
+      for child in parent_elm.iterchildren():
+          if isinstance(child, CT_P):
+              yield Paragraph(child, parent)
+          elif isinstance(child, CT_Tbl):
+              yield Table(child, parent)
+
+    idx = -1
+    paragraph = ''
+    for block in iter_block_items(document):
+        table=[]
+        # memoize the paragraph
+        if isinstance(block, Paragraph):
+          paragraph = block.text
+          continue
+        # fetch the table
+        if isinstance(block, Table):
+            idx += 1
+            table = block
+        # store table having a paragraph name
+        tables.append([idx, paragraph, table])
+
+    return tables
+
+
 try:
     opts, args = getopt.getopt(sys.argv[1:], "df:ho:c:", ["debug", "file", "help", "output", "cache"])
 except getopt.GetoptError as err:
@@ -155,7 +200,7 @@ for o, a in opts:
         if outdir.rfind('/') != len(outdir):
             outdir += '/'
     if o in ("-c", "--cache"):
-        cache = a
+        cachedir = a
         if cachedir.rfind('/') != len(cachedir):
             cachedir += '/'
     if o in ("-h", "--help"):
@@ -177,11 +222,12 @@ else:
     f = open(cachefile, 'w') 
 
     msg_table = ""
-    for i, table in enumerate(document.tables):
+    for i, paragraph, table in document_paragraph_tables(document):
         cell = table.rows[0].cells[0]
         if cell.text.find('Message Type value') != -1:
             msg_table = table
-            d_print("Table Index = %d\n" % i)
+            d_print("Table Index = %d Name = [%s]\n" % (i, paragraph))
+            write_file(f, "# [%s] Index = %d\n" % (paragraph, i))
 
     for row in msg_table.rows[2:-4]:
         key = row.cells[1].text
@@ -209,11 +255,12 @@ else:
     f = open(cachefile, 'w') 
 
     ie_table = ""
-    for i, table in enumerate(document.tables):
+    for i, paragraph, table in document_paragraph_tables(document):
         cell = table.rows[0].cells[0]
         if cell.text.find('IE Type value') != -1:
             ie_table = table
-            d_print("Table Index = %d\n" % i)
+            d_print("Table Index = %d Name = [%s]\n" % (i, paragraph))
+            write_file(f, "# [%s] Index = %d\n" % (paragraph, i))
 
     for row in ie_table.rows[1:-5]:
         key = row.cells[1].text
@@ -253,7 +300,7 @@ else:
     document = Document(filename)
     f = open(cachefile, 'w') 
 
-    for i, table in enumerate(document.tables):
+    for i, paragraph, table in document_paragraph_tables(document):
         if table.rows[0].cells[0].text.find('Octet') != -1 and \
             table.rows[0].cells[2].text.find('IE Type') != -1:
             d_print("Table Index = %d\n" % i)
@@ -264,6 +311,8 @@ else:
                 continue;
             ie_type = re.findall('\d+', row.cells[2].text)[0]
             ie_name = re.sub('\s*IE Type.*', '', row.cells[2].text)
+
+            write_file(f, "# [%s] Index = %d\n" % (paragraph, i))
 
             if ie_name not in group_list.keys():
                 ies = []
@@ -375,6 +424,7 @@ for key in msg_list.keys():
 type_list["Recovery"]["size"] = 1                       # Type : 3
 type_list["EBI"]["size"] = 1                            # Type : 73
 type_list["RAT Type"]["size"] = 1                       # Type : 82
+type_list["Delay Value"]["size"] = 1                    # Type : 92
 type_list["Charging ID"]["size"] = 4                    # Type : 94
 type_list["PDN Type"]["size"] = 1                       # Type : 99
 type_list["PTI"]["size"] = 1                            # Type : 100
@@ -456,7 +506,7 @@ for (k, v) in sorted_type_list:
     f.write("#define OGS_GTP_" + v_upper(k) + "_TYPE " + v + "\n")
 f.write("\n")
 
-f.write("/* Infomration Element TLV Descriptor */\n")
+f.write("/* Information Element TLV Descriptor */\n")
 for (k, v) in sorted_type_list:
     if k in group_list.keys():
         continue
@@ -474,7 +524,7 @@ for k, v in group_list.items():
 tmp = [(k, v["index"]) for k, v in group_list.items()]
 sorted_group_list = sorted(tmp, key=lambda tup: int(tup[1]))
 
-f.write("/* Group Infomration Element TLV Descriptor */\n")
+f.write("/* Group Information Element TLV Descriptor */\n")
 for (k, v) in sorted_group_list:
     for instance in range(0, int(type_list[k]["max_instance"])+1):
         f.write("extern ogs_tlv_desc_t ogs_gtp_tlv_desc_" + v_lower(k))
@@ -486,7 +536,7 @@ for (k, v) in sorted_msg_list:
     f.write("extern ogs_tlv_desc_t ogs_gtp_tlv_desc_" + v_lower(k) + ";\n")
 f.write("\n")
 
-f.write("/* Structure for Infomration Element */\n")
+f.write("/* Structure for Information Element */\n")
 for (k, v) in sorted_type_list:
     if k in group_list.keys():
         continue
@@ -505,7 +555,7 @@ for (k, v) in sorted_type_list:
         f.write("typedef ogs_tlv_octet_t ogs_gtp_tlv_" + v_lower(k) + "_t;\n")
 f.write("\n")
 
-f.write("/* Structure for Group Infomration Element */\n")
+f.write("/* Structure for Group Information Element */\n")
 for (k, v) in sorted_group_list:
     f.write("typedef struct ogs_gtp_tlv_" + v_lower(k) + "_s {\n")
     f.write("    ogs_tlv_presence_t presence;\n")

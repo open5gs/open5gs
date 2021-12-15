@@ -663,3 +663,161 @@ void ogs_sbi_free_nr_location(OpenAPI_nr_location_t *NrLocation)
 
     ogs_free(NrLocation);
 }
+
+OpenAPI_pcc_rule_t *ogs_sbi_build_pcc_rule(
+        ogs_pcc_rule_t *pcc_rule, int flow_presence)
+{
+    OpenAPI_pcc_rule_t *PccRule = NULL;
+    OpenAPI_list_t *FlowInformationList = NULL;
+    OpenAPI_flow_information_t *FlowInformation = NULL;
+
+    int i;
+
+    ogs_assert(pcc_rule);
+
+    PccRule = ogs_calloc(1, sizeof(*PccRule));
+    ogs_assert(PccRule);
+
+    /*
+     * At this point, only 1 QosData is used for PccRule.
+     * Therefore, QoS ID uses the same value as PCC Rule ID.
+     */
+    PccRule->pcc_rule_id = pcc_rule->id;
+
+    PccRule->ref_qos_data = OpenAPI_list_create();
+    ogs_assert(PccRule->ref_qos_data);
+
+    OpenAPI_list_add(PccRule->ref_qos_data, PccRule->pcc_rule_id);
+
+    PccRule->is_precedence = true;
+    PccRule->precedence = pcc_rule->precedence;
+
+    if (flow_presence == 1) {
+        FlowInformationList = OpenAPI_list_create();
+        ogs_assert(FlowInformationList);
+
+        for (i = 0; i < pcc_rule->num_of_flow; i++) {
+            ogs_flow_t *flow = &pcc_rule->flow[i];
+            ogs_assert(flow);
+
+            FlowInformation = ogs_calloc(1, sizeof(*FlowInformation));
+            ogs_assert(FlowInformation);
+
+            if (flow->direction == OGS_FLOW_UPLINK_ONLY)
+                FlowInformation->flow_direction =
+                    OpenAPI_flow_direction_UPLINK;
+            else if (flow->direction == OGS_FLOW_DOWNLINK_ONLY)
+                FlowInformation->flow_direction =
+                    OpenAPI_flow_direction_DOWNLINK;
+            else {
+                ogs_fatal("Unsupported direction [%d]", flow->direction);
+                ogs_assert_if_reached();
+            }
+
+            ogs_assert(flow->description);
+            FlowInformation->flow_description = flow->description;
+
+            OpenAPI_list_add(FlowInformationList, FlowInformation);
+        }
+
+        if (FlowInformationList->count)
+            PccRule->flow_infos = FlowInformationList;
+        else
+            OpenAPI_list_free(FlowInformationList);
+    }
+
+    return PccRule;
+}
+
+void ogs_sbi_free_pcc_rule(OpenAPI_pcc_rule_t *PccRule)
+{
+    OpenAPI_flow_information_t *FlowInformation = NULL;
+    OpenAPI_lnode_t *node = NULL;
+
+    ogs_assert(PccRule);
+
+    if (PccRule->ref_qos_data)
+        OpenAPI_list_free(PccRule->ref_qos_data);
+    if (PccRule->flow_infos) {
+        OpenAPI_list_for_each(PccRule->flow_infos, node) {
+            FlowInformation = node->data;
+            if (FlowInformation) ogs_free(FlowInformation);
+        }
+        OpenAPI_list_free(PccRule->flow_infos);
+    }
+    ogs_free(PccRule);
+}
+
+OpenAPI_qos_data_t *ogs_sbi_build_qos_data(ogs_pcc_rule_t *pcc_rule)
+{
+    OpenAPI_qos_data_t *QosData = NULL;
+
+    ogs_assert(pcc_rule);
+
+    QosData = ogs_calloc(1, sizeof(*QosData));
+    ogs_assert(QosData);
+
+    /*
+     * At this point, only 1 QosData is used for PccRule.
+     * Therefore, QoS ID uses the same value as PCC Rule ID.
+     */
+    QosData->qos_id = pcc_rule->id;
+
+    QosData->is__5qi = true;
+    QosData->_5qi = pcc_rule->qos.index;
+    QosData->is_priority_level = true;
+    QosData->priority_level = pcc_rule->qos.arp.priority_level;
+
+    QosData->arp = ogs_calloc(1, sizeof(OpenAPI_arp_t));
+    ogs_assert(QosData->arp);
+
+    if (pcc_rule->qos.arp.pre_emption_capability ==
+            OGS_5GC_PRE_EMPTION_ENABLED)
+        QosData->arp->preempt_cap =
+            OpenAPI_preemption_capability_MAY_PREEMPT;
+    else if (pcc_rule->qos.arp.pre_emption_capability ==
+            OGS_5GC_PRE_EMPTION_DISABLED)
+        QosData->arp->preempt_cap =
+            OpenAPI_preemption_capability_NOT_PREEMPT;
+    ogs_assert(pcc_rule->qos.arp.pre_emption_capability);
+
+    if (pcc_rule->qos.arp.pre_emption_vulnerability ==
+            OGS_5GC_PRE_EMPTION_ENABLED)
+        QosData->arp->preempt_vuln =
+            OpenAPI_preemption_vulnerability_PREEMPTABLE;
+    else if (pcc_rule->qos.arp.pre_emption_vulnerability ==
+            OGS_5GC_PRE_EMPTION_DISABLED)
+        QosData->arp->preempt_vuln =
+            OpenAPI_preemption_vulnerability_NOT_PREEMPTABLE;
+    ogs_assert(pcc_rule->qos.arp.pre_emption_vulnerability);
+    QosData->arp->priority_level = pcc_rule->qos.arp.priority_level;
+
+    if (pcc_rule->qos.mbr.uplink)
+        QosData->maxbr_ul = ogs_sbi_bitrate_to_string(
+                pcc_rule->qos.mbr.uplink, OGS_SBI_BITRATE_BPS);
+    if (pcc_rule->qos.mbr.downlink)
+        QosData->maxbr_dl = ogs_sbi_bitrate_to_string(
+                pcc_rule->qos.mbr.downlink, OGS_SBI_BITRATE_BPS);
+
+    if (pcc_rule->qos.gbr.uplink)
+        QosData->gbr_ul = ogs_sbi_bitrate_to_string(
+                pcc_rule->qos.gbr.uplink, OGS_SBI_BITRATE_BPS);
+    if (pcc_rule->qos.gbr.downlink)
+        QosData->gbr_dl = ogs_sbi_bitrate_to_string(
+                pcc_rule->qos.gbr.downlink, OGS_SBI_BITRATE_BPS);
+
+    return QosData;
+}
+
+void ogs_sbi_free_qos_data(OpenAPI_qos_data_t *QosData)
+{
+    ogs_assert(QosData);
+
+    if (QosData->arp) ogs_free(QosData->arp);
+    if (QosData->maxbr_ul) ogs_free(QosData->maxbr_ul);
+    if (QosData->maxbr_dl) ogs_free(QosData->maxbr_dl);
+    if (QosData->gbr_ul) ogs_free(QosData->gbr_ul);
+    if (QosData->gbr_dl) ogs_free(QosData->gbr_dl);
+
+    ogs_free(QosData);
+}
