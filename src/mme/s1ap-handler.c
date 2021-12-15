@@ -1148,91 +1148,106 @@ void s1ap_handle_e_rab_setup_response(
     }
 
     ogs_debug("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
-            enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
-
-    if (E_RABSetupListBearerSURes) {
-        ogs_error("No E_RABSetupListBearerSURes");
-        ogs_assert(OGS_OK ==
-            s1ap_send_error_indication(enb, MME_UE_S1AP_ID, ENB_UE_S1AP_ID,
-                S1AP_Cause_PR_protocol, S1AP_CauseProtocol_semantic_error));
-        return;
-    }
+        enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
 
     mme_ue = enb_ue->mme_ue;
     ogs_expect_or_return(mme_ue);
 
     if (E_RABSetupListBearerSURes) {
 	    for (i = 0; i < E_RABSetupListBearerSURes->list.count; i++) {
-		S1AP_E_RABSetupItemBearerSUResIEs_t *item = NULL;
-		S1AP_E_RABSetupItemBearerSURes_t *e_rab = NULL;
+            S1AP_E_RABSetupItemBearerSUResIEs_t *item = NULL;
+            S1AP_E_RABSetupItemBearerSURes_t *e_rab = NULL;
 
-		mme_bearer_t *bearer = NULL;
+            mme_bearer_t *bearer = NULL;
 
-		item = (S1AP_E_RABSetupItemBearerSUResIEs_t *)
-		    E_RABSetupListBearerSURes->list.array[i];
-		if (!item) {
-		    ogs_error("No S1AP_E_RABSetupItemBearerSUResIEs_t");
-		    ogs_assert(OGS_OK ==
-			s1ap_send_error_indication2(mme_ue,
-			S1AP_Cause_PR_protocol, S1AP_CauseProtocol_semantic_error));
-		    return;
-		}
+            item = (S1AP_E_RABSetupItemBearerSUResIEs_t *)
+                E_RABSetupListBearerSURes->list.array[i];
+            if (!item) {
+                ogs_error("No S1AP_E_RABSetupItemBearerSUResIEs_t");
+                ogs_assert(OGS_OK ==
+                s1ap_send_error_indication2(mme_ue,
+                S1AP_Cause_PR_protocol, S1AP_CauseProtocol_semantic_error));
+                return;
+            }
 
-		e_rab = &item->value.choice.E_RABSetupItemBearerSURes;
-		if (!e_rab) {
-		    ogs_error("No E_RABSetupItemBearerSURes");
-		    ogs_assert(OGS_OK ==
-			s1ap_send_error_indication2(mme_ue,
-			S1AP_Cause_PR_protocol, S1AP_CauseProtocol_semantic_error));
-		    return;
-		}
+            e_rab = &item->value.choice.E_RABSetupItemBearerSURes;
+            if (!e_rab) {
+                ogs_error("No E_RABSetupItemBearerSURes");
+                ogs_assert(OGS_OK ==
+                s1ap_send_error_indication2(mme_ue,
+                S1AP_Cause_PR_protocol, S1AP_CauseProtocol_semantic_error));
+                return;
+            }
 
-		bearer = mme_bearer_find_by_ue_ebi(mme_ue, e_rab->e_RAB_ID);
-		if (!bearer) {
-		    ogs_error("No Bearer [%d]", (int)e_rab->e_RAB_ID);
-		    ogs_assert(OGS_OK ==
-			s1ap_send_error_indication2(mme_ue,
-			    S1AP_Cause_PR_radioNetwork,
-			    S1AP_CauseRadioNetwork_unknown_E_RAB_ID));
-		    return;
-		}
+            bearer = mme_bearer_find_by_ue_ebi(mme_ue, e_rab->e_RAB_ID);
+            if (!bearer) {
+                ogs_error("No Bearer [%d]", (int)e_rab->e_RAB_ID);
+                ogs_assert(OGS_OK ==
+                s1ap_send_error_indication2(mme_ue,
+                    S1AP_Cause_PR_radioNetwork,
+                    S1AP_CauseRadioNetwork_unknown_E_RAB_ID));
+                return;
+            }
 
-		memcpy(&bearer->enb_s1u_teid, e_rab->gTP_TEID.buf,
-			sizeof(bearer->enb_s1u_teid));
-		bearer->enb_s1u_teid = be32toh(bearer->enb_s1u_teid);
-		rv = ogs_asn_BIT_STRING_to_ip(
-			&e_rab->transportLayerAddress, &bearer->enb_s1u_ip);
-		ogs_assert(rv == OGS_OK);
+            memcpy(&bearer->enb_s1u_teid, e_rab->gTP_TEID.buf,
+                sizeof(bearer->enb_s1u_teid));
+            bearer->enb_s1u_teid = be32toh(bearer->enb_s1u_teid);
+            rv = ogs_asn_BIT_STRING_to_ip(
+                &e_rab->transportLayerAddress, &bearer->enb_s1u_ip);
+            ogs_assert(rv == OGS_OK);
 
-		ogs_debug("    EBI[%d]", bearer->ebi);
+            ogs_debug("    EBI[%d]", bearer->ebi);
 
-		if (OGS_FSM_CHECK(&bearer->sm, esm_state_active)) {
-		    mme_bearer_t *linked_bearer = mme_linked_bearer(bearer);
-		    ogs_assert(linked_bearer);
-		    ogs_debug("    Linked-EBI[%d]", linked_bearer->ebi);
+            if (OGS_FSM_CHECK(&bearer->sm, esm_state_active)) {
+                mme_bearer_t *linked_bearer = mme_linked_bearer(bearer);
+                ogs_assert(linked_bearer);
+                ogs_debug("    Linked-EBI[%d]", linked_bearer->ebi);
 
-		    if (bearer->ebi == linked_bearer->ebi) {
-			ogs_assert(OGS_OK ==
-			    mme_gtp_send_modify_bearer_request(bearer, 0));
-		    } else {
-			ogs_assert(OGS_OK ==
-			    mme_gtp_send_create_bearer_response(
-				bearer, OGS_GTP_CAUSE_REQUEST_ACCEPTED));
-		    }
-		}
+                if (bearer->ebi == linked_bearer->ebi) {
+                ogs_assert(OGS_OK ==
+                    mme_gtp_send_modify_bearer_request(bearer, 0));
+                } else {
+                ogs_assert(OGS_OK ==
+                    mme_gtp_send_create_bearer_response(
+                    bearer, OGS_GTP_CAUSE_REQUEST_ACCEPTED));
+                }
+            }
 	    }
     }
+
     if (E_RABFailedToSetupListBearerSURes) {
-        for (i = 0; i < E_RABFailedToSetupListBearerSURes->list.count; i++)
-        {
-            //S1AP_E_RABItemIEs_t *item = E_RABFailedToSetupListBearerSURes->list.array[i];
-            S1AP_E_RABItem_t *item = E_RABFailedToSetupListBearerSURes;
-            //ogs_debug("ID: %d", item->id);
+        for (i = 0; i < E_RABFailedToSetupListBearerSURes->list.count; i++) {
+            S1AP_E_RABItem_t *item = (S1AP_E_RABItem_t *)E_RABFailedToSetupListBearerSURes->list.array[i];
+
+            if (!item) {
+                ogs_error("No S1AP_E_RABItem_t");
+                ogs_assert(OGS_OK ==
+                    s1ap_send_error_indication2(mme_ue,
+                    S1AP_Cause_PR_protocol, S1AP_CauseProtocol_semantic_error));
+                return;
+            }
+
+            ogs_debug("RAB_ID: %d", (int)item->e_RAB_ID);
+            ogs_debug("    Cause[Group:%d Cause:%d]", 
+                (int)item->cause.present, (int)item->cause.choice.radioNetwork);
         }
     }
 
     if (CriticalityDiagnostics) {
-
+        ogs_debug("CriticalityDiagnostics");
+        S1AP_ProcedureCode_t	    *procedureCode = CriticalityDiagnostics->procedureCode;
+        S1AP_TriggeringMessage_t	*triggeringMessage = CriticalityDiagnostics->triggeringMessage;
+	    S1AP_Criticality_t	        *procedureCriticality = CriticalityDiagnostics->procedureCriticality;
+        if (procedureCode) {
+            ogs_debug("procedureCode: %ld", (long)procedureCode);
+        }
+        if (triggeringMessage) {
+            ogs_debug("triggeringMessage: %ld", (long)triggeringMessage);
+        }
+        if (procedureCriticality) {
+            ogs_debug("procedureCriticality: %ld", (long)procedureCriticality);
+        }
+        ogs_debug("    CriticalityDiagnostics");
     }
 }
 
