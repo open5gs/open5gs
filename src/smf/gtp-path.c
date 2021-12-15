@@ -388,11 +388,15 @@ static bool check_if_router_solicit(ogs_pkbuf_t *pkbuf)
 
 static void send_router_advertisement(smf_sess_t *sess, uint8_t *ip6_dst)
 {
+    int rv;
+
     ogs_pkbuf_t *pkbuf = NULL;
 
     ogs_pfcp_pdr_t *pdr = NULL;
     ogs_pfcp_ue_ip_t *ue_ip = NULL;
     ogs_pfcp_subnet_t *subnet = NULL;
+    ogs_sockaddr_t *link_local_addr = NULL;
+    char ipstr[OGS_ADDRSTRLEN];
 
     ogs_ipsubnet_t src_ipsub;
     uint16_t plen = 0;
@@ -408,6 +412,15 @@ static void send_router_advertisement(smf_sess_t *sess, uint8_t *ip6_dst)
     subnet = ue_ip->subnet;
     ogs_assert(subnet);
 
+    /* Fetch link-local address for router advertisement */
+    ogs_expect_or_return(ogs_gtp_self()->gtpu_addr6);
+    link_local_addr = ogs_link_local_addr_by_addr(ogs_gtp_self()->gtpu_addr6);
+    ogs_expect_or_return(link_local_addr);
+    OGS_ADDR(link_local_addr, ipstr);
+    ogs_freeaddrinfo(link_local_addr);
+    rv = ogs_ipsubnet(&src_ipsub, ipstr, NULL);
+    ogs_expect_or_return(rv == OGS_OK);
+
     ogs_debug("      Build Router Advertisement");
 
     pkbuf = ogs_pkbuf_alloc(NULL, OGS_GTPV1U_5GC_HEADER_LEN+200);
@@ -422,10 +435,6 @@ static void send_router_advertisement(smf_sess_t *sess, uint8_t *ip6_dst)
     advert_h = (struct nd_router_advert *)((uint8_t *)ip6_h + sizeof *ip6_h);
     prefix = (struct nd_opt_prefix_info *)
         ((uint8_t*)advert_h + sizeof *advert_h);
-
-    memcpy(src_ipsub.sub, subnet->gw.sub, sizeof(src_ipsub.sub));
-    src_ipsub.sub[0] =
-        htobe32((be32toh(src_ipsub.sub[0]) & 0x0000ffff) | 0xfe800000);
 
     advert_h->nd_ra_type = ND_ROUTER_ADVERT;
     advert_h->nd_ra_code = 0;

@@ -297,6 +297,43 @@ ogs_sockaddr_t *ogs_link_local_addr_by_dev(const char *dev)
     return NULL;
 }
 
+ogs_sockaddr_t *ogs_link_local_addr_by_addr(const ogs_sockaddr_t *sa)
+{
+#if defined(HAVE_GETIFADDRS)
+    struct ifaddrs *iflist, *cur;
+    int rc;
+    ogs_sockaddr_t *ifaddr;
+
+    ogs_assert(sa);
+
+    rc = getifaddrs(&iflist);
+    if (rc != 0) {
+        ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno, "getifaddrs failed");
+        return NULL;
+    }
+
+    for (cur = iflist; cur != NULL; cur = cur->ifa_next) {
+        ifaddr = (ogs_sockaddr_t *)cur->ifa_addr;
+
+        if (cur->ifa_addr == NULL) /* may happen with ppp interfaces */
+            continue;
+
+        if (cur->ifa_addr->sa_family == AF_INET)
+            continue;
+
+        if (memcmp(&sa->sin6.sin6_addr,
+                &ifaddr->sin6.sin6_addr, sizeof(struct in6_addr)) == 0) {
+            freeifaddrs(iflist);
+            return ogs_link_local_addr_by_dev(cur->ifa_name);
+        }
+    }
+
+    freeifaddrs(iflist);
+#endif
+    ogs_error("ogs_link_local_addr_by_addr() failed");
+    return NULL;
+}
+
 int ogs_filter_ip_version(ogs_sockaddr_t **addr, 
         int no_ipv4, int no_ipv6, int prefer_ipv4)
 {
