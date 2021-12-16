@@ -468,10 +468,10 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_measurement_method =
 
 ogs_tlv_desc_t ogs_pfcp_tlv_desc_usage_report_trigger =
 {
-    OGS_TLV_VAR_STR,
+    OGS_TLV_UINT24,
     "Usage Report Trigger",
     OGS_PFCP_USAGE_REPORT_TRIGGER_TYPE,
-    0,
+    3,
     0,
     sizeof(ogs_pfcp_tlv_usage_report_trigger_t),
     { NULL }
@@ -512,10 +512,10 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_volume_measurement =
 
 ogs_tlv_desc_t ogs_pfcp_tlv_desc_duration_measurement =
 {
-    OGS_TLV_VAR_STR,
+    OGS_TLV_UINT32,
     "Duration Measurement",
     OGS_PFCP_DURATION_MEASUREMENT_TYPE,
-    0,
+    4,
     0,
     sizeof(ogs_pfcp_tlv_duration_measurement_t),
     { NULL }
@@ -523,10 +523,10 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_duration_measurement =
 
 ogs_tlv_desc_t ogs_pfcp_tlv_desc_time_of_first_packet =
 {
-    OGS_TLV_VAR_STR,
+    OGS_TLV_UINT32,
     "Time of First Packet",
     OGS_PFCP_TIME_OF_FIRST_PACKET_TYPE,
-    0,
+    4,
     0,
     sizeof(ogs_pfcp_tlv_time_of_first_packet_t),
     { NULL }
@@ -534,10 +534,10 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_time_of_first_packet =
 
 ogs_tlv_desc_t ogs_pfcp_tlv_desc_time_of_last_packet =
 {
-    OGS_TLV_VAR_STR,
+    OGS_TLV_UINT32,
     "Time of Last Packet",
     OGS_PFCP_TIME_OF_LAST_PACKET_TYPE,
-    0,
+    4,
     0,
     sizeof(ogs_pfcp_tlv_time_of_last_packet_t),
     { NULL }
@@ -589,10 +589,10 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_time_quota =
 
 ogs_tlv_desc_t ogs_pfcp_tlv_desc_start_time =
 {
-    OGS_TLV_VAR_STR,
+    OGS_TLV_UINT32,
     "Start Time",
     OGS_PFCP_START_TIME_TYPE,
-    0,
+    4,
     0,
     sizeof(ogs_pfcp_tlv_start_time_t),
     { NULL }
@@ -600,10 +600,10 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_start_time =
 
 ogs_tlv_desc_t ogs_pfcp_tlv_desc_end_time =
 {
-    OGS_TLV_VAR_STR,
+    OGS_TLV_UINT32,
     "End Time",
     OGS_PFCP_END_TIME_TYPE,
-    0,
+    4,
     0,
     sizeof(ogs_pfcp_tlv_end_time_t),
     { NULL }
@@ -798,10 +798,10 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_remote_gtp_u_peer =
 
 ogs_tlv_desc_t ogs_pfcp_tlv_desc_ur_seqn =
 {
-    OGS_TLV_VAR_STR,
+    OGS_TLV_UINT32,
     "UR-SEQN",
     OGS_PFCP_UR_SEQN_TYPE,
-    0,
+    4,
     0,
     sizeof(ogs_pfcp_tlv_ur_seqn_t),
     { NULL }
