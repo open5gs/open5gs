@@ -551,6 +551,86 @@ void ogs_pfcp_build_update_far_activate(
 }
 
 static struct {
+    ogs_pfcp_volume_threshold_t vol_threshold;
+    ogs_pfcp_volume_quota_t vol_quota;
+    ogs_pfcp_dropped_dl_traffic_threshold_t dropped_dl_traffic_threshold;
+} urrbuf[OGS_MAX_NUM_OF_URR];
+
+void ogs_pfcp_build_create_urr(
+    ogs_pfcp_tlv_create_urr_t *message, int i, ogs_pfcp_urr_t *urr)
+{
+    ogs_assert(message);
+    ogs_assert(urr);
+
+    message->presence = 1;
+    message->urr_id.presence = 1;
+    message->urr_id.u32 = urr->id;
+    message->measurement_method.presence = 1;
+    message->measurement_method.u8 = urr->meas_method;
+    message->reporting_triggers.presence = 1;
+    message->reporting_triggers.u24 = (urr->rep_triggers.reptri_5 << 16) 
+                                    | (urr->rep_triggers.reptri_6 << 8)
+                                    | (urr->rep_triggers.reptri_7);
+    if (urr->meas_period) {
+        message->measurement_period.presence = 1;
+        message->measurement_period.u32 = htobe32(urr->meas_period);
+    }
+
+    if (urr->vol_threshold.flags) {
+        message->volume_threshold.presence = 1;
+        ogs_pfcp_build_volume(
+                &message->volume_threshold, &urr->vol_threshold,
+                &urrbuf[i].vol_threshold, sizeof(urrbuf[i].vol_threshold));
+    }
+
+    if (urr->vol_quota.flags) {
+        message->volume_quota.presence = 1;
+        ogs_pfcp_build_volume(
+                &message->volume_quota, &urr->vol_quota,
+                &urrbuf[i].vol_quota, sizeof(urrbuf[i].vol_quota));
+    }
+
+    if (urr->event_threshold) {
+        message->event_threshold.presence = 1;
+        message->event_threshold.u32 = htobe32(urr->event_threshold);
+    }
+    
+    if (urr->event_quota) {
+        message->event_quota.presence = 1;
+        message->event_quota.u32 = htobe32(urr->event_quota);
+    }
+
+    if (urr->time_threshold) {
+        message->time_threshold.presence = 1;
+        message->time_threshold.u32 = htobe32(urr->time_threshold);
+    }
+    
+    if (urr->time_quota) {
+        message->time_quota.presence = 1;
+        message->time_quota.u32 = htobe32(urr->time_quota);
+    }
+
+    if (urr->quota_holding_time) {
+        message->quota_holding_time.presence = 1;
+        message->quota_holding_time.u32 = htobe32(urr->quota_holding_time);
+    }
+
+    if (urr->dropped_dl_traffic_threshold.flags) {
+        message->dropped_dl_traffic_threshold.presence = 1;
+        ogs_pfcp_build_dropped_dl_traffic_threshold(
+                &message->dropped_dl_traffic_threshold,
+                &urr->dropped_dl_traffic_threshold,
+                &urrbuf[i].dropped_dl_traffic_threshold,
+                sizeof(urrbuf[i].dropped_dl_traffic_threshold));
+    }
+
+    if (urr->quota_validity_time) {
+        message->quota_validity_time.presence = 1;
+        message->quota_validity_time.u32 = htobe32(urr->quota_validity_time);
+    }
+}
+
+static struct {
     char mbr[OGS_PFCP_BITRATE_LEN];
     char gbr[OGS_PFCP_BITRATE_LEN];
 } create_qer_buf[OGS_MAX_NUM_OF_QER], update_qer_buf[OGS_MAX_NUM_OF_QER];
@@ -608,112 +688,6 @@ void ogs_pfcp_build_update_qer(
         ogs_pfcp_build_bitrate(
                 &message->guaranteed_bitrate,
                 &qer->gbr, update_qer_buf[i].gbr, OGS_PFCP_BITRATE_LEN);
-    }
-}
-
-static struct {
-    ogs_pfcp_volume_threshold_t vol_threshold;
-    ogs_pfcp_volume_quota_t vol_quota;
-    ogs_pfcp_event_threshold_t event_threshold;
-    ogs_pfcp_event_quota_t event_quota;
-    ogs_pfcp_time_threshold_t time_threshold;
-    ogs_pfcp_time_quota_t time_quota;
-    ogs_pfcp_quota_holding_time_t quota_holding_time;
-    ogs_pfcp_dropped_dl_traffic_threshold_t dropped_dl_traffic_threshold;
-    ogs_pfcp_quota_validity_time_t quota_validity_time;
-} urrbuf[OGS_MAX_NUM_OF_URR];
-
-void ogs_pfcp_build_create_urr(
-    ogs_pfcp_tlv_create_urr_t *message, int i, ogs_pfcp_urr_t *urr)
-{
-    ogs_assert(message);
-    ogs_assert(urr);
-
-    message->presence = 1;
-    message->urr_id.presence = 1;
-    message->urr_id.u32 = urr->id;
-    message->measurement_method.presence = 1;
-    message->measurement_method.u8 = urr->meas_method.desc;
-    message->reporting_triggers.presence = 1;
-    message->reporting_triggers.u24 = (urr->rep_triggers.reptri_5 << 16) 
-                                    | (urr->rep_triggers.reptri_6 << 8)
-                                    | (urr->rep_triggers.reptri_7);
-    if(urr->meas_period_len) {
-        message->measurement_period.presence = 1;
-        message->measurement_period.u32 = urr->meas_period;
-    }
-
-    if(urr->vol_threshold_len) {
-        memcpy(&urrbuf[i].vol_threshold, 
-                &urr->vol_threshold, urr->vol_threshold_len);
-        
-        message->volume_threshold.presence = 1;
-        message->volume_threshold.data = &urrbuf[i].vol_threshold;
-        message->volume_threshold.len = urr->vol_threshold_len;
-    }
-
-    if(urr->vol_quota_len) {
-        memcpy(&urrbuf[i].vol_quota, 
-                &urr->vol_quota, urr->vol_quota_len);
-        
-        message->volume_quota.presence = 1;
-        message->volume_quota.data = &urrbuf[i].vol_quota;
-        message->volume_quota.len = urr->vol_quota_len;
-    }
-
-    if(urr->event_threshold_len) {
-        memcpy(&urrbuf[i].event_threshold, 
-                &urr->event_threshold, urr->event_threshold_len);
-        
-        message->event_threshold.presence = 1;
-        message->event_threshold.data = &urrbuf[i].event_threshold;
-        message->event_threshold.len = urr->event_threshold_len;
-    }
-    
-    if(urr->event_quota_len) {
-        memcpy(&urrbuf[i].event_quota, 
-                &urr->event_quota, urr->event_quota_len);
-        
-        message->event_quota.presence = 1;
-        message->event_quota.data = &urrbuf[i].event_quota;
-        message->event_quota.len = urr->event_quota_len;
-    }
-
-    if(urr->time_threshold_len) {
-        memcpy(&urrbuf[i].time_threshold, 
-                &urr->time_threshold, urr->time_threshold_len);
-        
-        message->time_threshold.presence = 1;
-        message->time_threshold.data = &urrbuf[i].time_threshold;
-        message->time_threshold.len = urr->time_threshold_len;
-    }
-    
-    if(urr->time_quota_len) {
-        memcpy(&urrbuf[i].time_quota, 
-                &urr->time_quota, urr->time_quota_len);
-        
-        message->time_quota.presence = 1;
-        message->time_quota.data = &urrbuf[i].time_quota;
-        message->time_quota.len = urr->time_quota_len;
-    }
-
-    if(urr->quota_holding_time_len) {        
-        message->quota_holding_time.presence = 1;
-        message->quota_holding_time.u32 = urrbuf[i].quota_holding_time;
-    }
-
-    if(urr->dropped_dl_traffic_threshold_len) {
-        memcpy(&urrbuf[i].dropped_dl_traffic_threshold, 
-                &urr->dropped_dl_traffic_threshold, urr->dropped_dl_traffic_threshold_len);
-        
-        message->dropped_dl_traffic_threshold.presence = 1;
-        message->dropped_dl_traffic_threshold.data = &urrbuf[i].dropped_dl_traffic_threshold;
-        message->dropped_dl_traffic_threshold.len = urr->dropped_dl_traffic_threshold_len;
-    }
-
-    if(urr->quota_validity_time_len) {        
-        message->quota_validity_time.presence = 1;
-        message->quota_validity_time.u32 = urrbuf[i].quota_validity_time;
     }
 }
 
