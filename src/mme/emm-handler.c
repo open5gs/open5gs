@@ -90,12 +90,12 @@ int emm_handle_attach_request(mme_ue_t *mme_ue,
 
     ogs_debug("    OLD TAI[PLMN_ID:%06x,TAC:%d]",
             ogs_plmn_id_hexdump(&mme_ue->tai.plmn_id), mme_ue->tai.tac);
-    ogs_debug("    OLD E_CGI[PLMN_ID:%06x,CELL_ID:%d]",
+    ogs_debug("    OLD E_CGI[PLMN_ID:%06x,CELL_ID:0x%x]",
             ogs_plmn_id_hexdump(&mme_ue->e_cgi.plmn_id), mme_ue->e_cgi.cell_id);
     ogs_debug("    TAI[PLMN_ID:%06x,TAC:%d]",
             ogs_plmn_id_hexdump(&enb_ue->saved.tai.plmn_id),
             enb_ue->saved.tai.tac);
-    ogs_debug("    E_CGI[PLMN_ID:%06x,CELL_ID:%d]",
+    ogs_debug("    E_CGI[PLMN_ID:%06x,CELL_ID:0x%x]",
             ogs_plmn_id_hexdump(&enb_ue->saved.e_cgi.plmn_id),
             enb_ue->saved.e_cgi.cell_id);
 
@@ -483,12 +483,12 @@ int emm_handle_tau_request(mme_ue_t *mme_ue,
 
     ogs_debug("    OLD TAI[PLMN_ID:%06x,TAC:%d]",
             ogs_plmn_id_hexdump(&mme_ue->tai.plmn_id), mme_ue->tai.tac);
-    ogs_debug("    OLD E_CGI[PLMN_ID:%06x,CELL_ID:%d]",
+    ogs_debug("    OLD E_CGI[PLMN_ID:%06x,CELL_ID:0x%x]",
             ogs_plmn_id_hexdump(&mme_ue->e_cgi.plmn_id), mme_ue->e_cgi.cell_id);
     ogs_debug("    TAI[PLMN_ID:%06x,TAC:%d]",
             ogs_plmn_id_hexdump(&enb_ue->saved.tai.plmn_id),
             enb_ue->saved.tai.tac);
-    ogs_debug("    E_CGI[PLMN_ID:%06x,CELL_ID:%d]",
+    ogs_debug("    E_CGI[PLMN_ID:%06x,CELL_ID:0x%x]",
             ogs_plmn_id_hexdump(&enb_ue->saved.e_cgi.plmn_id),
             enb_ue->saved.e_cgi.cell_id);
 
@@ -601,12 +601,12 @@ int emm_handle_extended_service_request(mme_ue_t *mme_ue,
 
     ogs_debug("    OLD TAI[PLMN_ID:%06x,TAC:%d]",
             ogs_plmn_id_hexdump(&mme_ue->tai.plmn_id), mme_ue->tai.tac);
-    ogs_debug("    OLD E_CGI[PLMN_ID:%06x,CELL_ID:%d]",
+    ogs_debug("    OLD E_CGI[PLMN_ID:%06x,CELL_ID:0x%x]",
             ogs_plmn_id_hexdump(&mme_ue->e_cgi.plmn_id), mme_ue->e_cgi.cell_id);
     ogs_debug("    TAI[PLMN_ID:%06x,TAC:%d]",
             ogs_plmn_id_hexdump(&enb_ue->saved.tai.plmn_id),
             enb_ue->saved.tai.tac);
-    ogs_debug("    E_CGI[PLMN_ID:%06x,CELL_ID:%d]",
+    ogs_debug("    E_CGI[PLMN_ID:%06x,CELL_ID:0x%x]",
             ogs_plmn_id_hexdump(&enb_ue->saved.e_cgi.plmn_id),
             enb_ue->saved.e_cgi.cell_id);
 
