@@ -568,7 +568,7 @@ void ogs_pfcp_build_create_urr(
     message->measurement_method.presence = 1;
     message->measurement_method.u8 = urr->meas_method;
     message->reporting_triggers.presence = 1;
-    message->reporting_triggers.u24 = (urr->rep_triggers.reptri_5 << 16) 
+    message->reporting_triggers.u24 = (urr->rep_triggers.reptri_5 << 16)
                                     | (urr->rep_triggers.reptri_6 << 8)
                                     | (urr->rep_triggers.reptri_7);
     if (urr->meas_period) {
@@ -702,6 +702,10 @@ void ogs_pfcp_build_create_bar(
     message->bar_id.u8 = bar->id;
 }
 
+static struct {
+    ogs_pfcp_volume_measurement_t vol_meas;
+} usage_report_buf;
+
 ogs_pkbuf_t *ogs_pfcp_build_session_report_request(
         uint8_t type, ogs_pfcp_user_plane_report_t *report)
 {
@@ -762,6 +766,57 @@ ogs_pkbuf_t *ogs_pfcp_build_session_report_request(
             req->downlink_data_report.
                 downlink_data_service_information.len = info_len;
         }
+    }
+
+    if (report->type.usage_report) {
+        req->usage_report.presence = 1;
+        req->usage_report.urr_id.presence = 1;
+        req->usage_report.urr_id.u32 = report->usage_report.id;
+        req->usage_report.ur_seqn.presence = 1;
+        req->usage_report.ur_seqn.u32 = report->usage_report.seqn;
+        req->usage_report.usage_report_trigger.presence = 1;
+        req->usage_report.usage_report_trigger.u24 =
+            (report->usage_report.rep_triggers.reptri_5 << 16)
+            | (report->usage_report.rep_triggers.reptri_6 << 8)
+            | (report->usage_report.rep_triggers.reptri_7);
+        
+        if (report->usage_report.start_time) {
+            req->usage_report.start_time.presence = 1;
+            req->usage_report.start_time.u32 = report->usage_report.start_time;
+        }
+
+        if (report->usage_report.end_time) {
+            req->usage_report.end_time.presence = 1;
+            req->usage_report.end_time.u32 = report->usage_report.end_time;
+        }
+
+        if (report->usage_report.vol_measurement.flags) {
+            req->usage_report.volume_measurement.presence = 1;
+            ogs_pfcp_build_volume_measurement(
+                    &req->usage_report.volume_measurement,
+                    &report->usage_report.vol_measurement,
+                    &usage_report_buf.vol_meas,
+                    sizeof(usage_report_buf.vol_meas));
+        }
+
+        if (report->usage_report.dur_measurement) {
+            req->usage_report.duration_measurement.presence = 1;
+            req->usage_report.duration_measurement.u32 =
+                report->usage_report.dur_measurement;
+        }
+        
+        if (report->usage_report.time_of_first_packet) {
+            req->usage_report.time_of_first_packet.presence = 1;
+            req->usage_report.time_of_first_packet.u32 =
+                report->usage_report.time_of_first_packet;
+        }
+
+        if (report->usage_report.time_of_last_packet) {
+            req->usage_report.time_of_last_packet.presence = 1;
+            req->usage_report.time_of_last_packet.u32 =
+                report->usage_report.time_of_last_packet;
+        }
+
     }
 
     if (report->error_indication.remote_f_teid_len) {
