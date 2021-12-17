@@ -269,11 +269,9 @@ int smf_gtp_open(void)
     /* Fetch link-local address for router advertisement */
     if (ogs_gtp_self()->link_local_addr)
         ogs_freeaddrinfo(ogs_gtp_self()->link_local_addr);
-    ogs_gtp_self()->link_local_addr = ogs_link_local_addr(NULL, NULL);
-    if (!ogs_gtp_self()->link_local_addr) {
-        ogs_error("No link-local address for router advertisement");
-        return OGS_ERROR;
-    }
+    if (ogs_gtp_self()->gtpu_addr6)
+        ogs_gtp_self()->link_local_addr =
+            ogs_link_local_addr(NULL, ogs_gtp_self()->gtpu_addr6);
 
     return OGS_OK;
 }
@@ -424,9 +422,18 @@ static void send_router_advertisement(smf_sess_t *sess, uint8_t *ip6_dst)
     ogs_assert(subnet);
 
     /* Fetch link-local address for router advertisement */
-    OGS_ADDR(ogs_gtp_self()->link_local_addr, ipstr);
-    rv = ogs_ipsubnet(&src_ipsub, ipstr, NULL);
-    ogs_expect_or_return(rv == OGS_OK);
+    if (ogs_gtp_self()->link_local_addr) {
+        OGS_ADDR(ogs_gtp_self()->link_local_addr, ipstr);
+        rv = ogs_ipsubnet(&src_ipsub, ipstr, NULL);
+        ogs_expect_or_return(rv == OGS_OK);
+    } else {
+        /* For the case of loopback used for GTPU link-local address is not
+         * available, hence set the source IP to fe80::1
+        */
+        memset(src_ipsub.sub, 0, sizeof(src_ipsub.sub));
+        src_ipsub.sub[0] = htobe32(0xfe800000);
+        src_ipsub.sub[3] = htobe32(0x00000001);
+    }
 
     ogs_debug("      Build Router Advertisement");
 
