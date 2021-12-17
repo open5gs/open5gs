@@ -43,7 +43,6 @@ int ogs_dbi_session_data(char *supi, ogs_s_nssai_t *s_nssai, char *dnn,
     ogs_session_data_t zero_data;
 
     ogs_assert(supi);
-    ogs_assert(s_nssai);
     ogs_assert(dnn);
     ogs_assert(session_data);
 
@@ -122,9 +121,10 @@ int ogs_dbi_session_data(char *supi, ogs_s_nssai_t *s_nssai, char *dnn,
                     continue;
                 }
 
-                if (s_nssai->sst != sst) continue;
+                if (s_nssai && s_nssai->sst != sst) continue;
 
-                if (s_nssai->sd.v != OGS_S_NSSAI_NO_SD_VALUE &&
+                if (s_nssai &&
+                    s_nssai->sd.v != OGS_S_NSSAI_NO_SD_VALUE &&
                     sd.v != OGS_S_NSSAI_NO_SD_VALUE) {
                     if (s_nssai->sd.v != sd.v) continue;
                 }
@@ -150,7 +150,10 @@ int ogs_dbi_session_data(char *supi, ogs_s_nssai_t *s_nssai, char *dnn,
 done:
     if (found == false) {
         ogs_error("Cannot find SUPI[%s] S_NSSAI[SST:%d SD:0x%x] DNN[%s] in DB",
-                supi_id, s_nssai->sst, s_nssai->sd.v, dnn);
+                supi_id,
+                s_nssai ? s_nssai->sst : 0,
+                s_nssai ? s_nssai->sd.v : 0,
+                dnn);
 
         rv = OGS_ERROR;
         goto out;

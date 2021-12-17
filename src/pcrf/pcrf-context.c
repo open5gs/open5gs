@@ -271,7 +271,6 @@ int pcrf_db_qos_data(
 {
     int rv, i;
     char *supi = NULL;
-    ogs_s_nssai_t s_nssai;
 
     ogs_assert(imsi_bcd);
     ogs_assert(apn);
@@ -281,11 +280,8 @@ int pcrf_db_qos_data(
     supi = ogs_msprintf("%s-%s", OGS_ID_SUPI_TYPE_IMSI, imsi_bcd);
     ogs_assert(supi);
 
-    /* For EPC, we'll use SST:1 */
-    s_nssai.sst = 1;
-    s_nssai.sd.v = OGS_S_NSSAI_NO_SD_VALUE;
-
-    rv = ogs_dbi_session_data(supi, &s_nssai, apn, session_data);
+    /* For EPC, we'll use [S_NSSAI = NULL] */
+    rv = ogs_dbi_session_data(supi, NULL, apn, session_data);
 
     /* For EPC, we need to inialize Flow-Status in Pcc-Rule */
     for (i = 0; i < session_data->num_of_pcc_rule; i++) {
