@@ -297,7 +297,6 @@ ogs_sockaddr_t *ogs_link_local_addr(const char *dev, const ogs_sockaddr_t *sa)
 
 	freeifaddrs(iflist);
 #endif
-    ogs_error("ogs_link_local_addr_by_dev() failed");
     return NULL;
 }
 

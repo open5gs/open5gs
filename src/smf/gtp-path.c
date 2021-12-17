@@ -271,7 +271,7 @@ int smf_gtp_open(void)
         ogs_freeaddrinfo(ogs_gtp_self()->link_local_addr);
     if (ogs_gtp_self()->gtpu_addr6)
         ogs_gtp_self()->link_local_addr =
-            ogs_link_local_addr(NULL, ogs_gtp_self()->gtpu_addr6);
+            ogs_link_local_addr_by_sa(ogs_gtp_self()->gtpu_addr6);
 
     return OGS_OK;
 }
