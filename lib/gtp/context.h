@@ -49,6 +49,8 @@ typedef struct ogs_gtp_context_s {
 
     ogs_list_t      gtpu_peer_list; /* GTPU Node List */
     ogs_list_t      gtpu_resource_list; /* UP IP Resource List */
+
+    ogs_sockaddr_t *link_local_addr;
 } ogs_gtp_context_t;
 
 #define OGS_SETUP_GTP_NODE(__cTX, __gNODE) \

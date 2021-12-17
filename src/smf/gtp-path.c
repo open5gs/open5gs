@@ -266,11 +266,23 @@ int smf_gtp_open(void)
 
     OGS_SETUP_GTPU_SERVER;
 
+    /* Fetch link-local address for router advertisement */
+    if (ogs_gtp_self()->link_local_addr)
+        ogs_freeaddrinfo(ogs_gtp_self()->link_local_addr);
+    ogs_gtp_self()->link_local_addr = ogs_link_local_addr(NULL, NULL);
+    if (!ogs_gtp_self()->link_local_addr) {
+        ogs_error("No link-local address for router advertisement");
+        return OGS_ERROR;
+    }
+
     return OGS_OK;
 }
 
 void smf_gtp_close(void)
 {
+    if (ogs_gtp_self()->link_local_addr)
+        ogs_freeaddrinfo(ogs_gtp_self()->link_local_addr);
+
     ogs_socknode_remove_all(&ogs_gtp_self()->gtpc_list);
     ogs_socknode_remove_all(&ogs_gtp_self()->gtpc_list6);
 
@@ -395,7 +407,6 @@ static void send_router_advertisement(smf_sess_t *sess, uint8_t *ip6_dst)
     ogs_pfcp_pdr_t *pdr = NULL;
     ogs_pfcp_ue_ip_t *ue_ip = NULL;
     ogs_pfcp_subnet_t *subnet = NULL;
-    ogs_sockaddr_t *link_local_addr = NULL;
     char ipstr[OGS_ADDRSTRLEN];
 
     ogs_ipsubnet_t src_ipsub;
@@ -413,11 +424,7 @@ static void send_router_advertisement(smf_sess_t *sess, uint8_t *ip6_dst)
     ogs_assert(subnet);
 
     /* Fetch link-local address for router advertisement */
-    ogs_expect_or_return(ogs_gtp_self()->gtpu_addr6);
-    link_local_addr = ogs_link_local_addr_by_addr(ogs_gtp_self()->gtpu_addr6);
-    ogs_expect_or_return(link_local_addr);
-    OGS_ADDR(link_local_addr, ipstr);
-    ogs_freeaddrinfo(link_local_addr);
+    OGS_ADDR(ogs_gtp_self()->link_local_addr, ipstr);
     rv = ogs_ipsubnet(&src_ipsub, ipstr, NULL);
     ogs_expect_or_return(rv == OGS_OK);
 
