@@ -205,9 +205,9 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, ogs_s1ap_message_t *message)
     S1AP_EUTRAN_CGI_t *EUTRAN_CGI = NULL;
     S1AP_S_TMSI_t *S_TMSI = NULL;
 
-	S1AP_PLMNidentity_t	*pLMNidentity = NULL;
-	S1AP_TAC_t *tAC = NULL;
-	S1AP_CellIdentity_t *cell_ID = NULL;
+    S1AP_PLMNidentity_t *pLMNidentity = NULL;
+    S1AP_TAC_t *tAC = NULL;
+    S1AP_CellIdentity_t *cell_ID = NULL;
 
     enb_ue_t *enb_ue = NULL;
 
@@ -384,9 +384,9 @@ void s1ap_handle_uplink_nas_transport(
     S1AP_EUTRAN_CGI_t *EUTRAN_CGI = NULL;
     S1AP_TAI_t *TAI = NULL;
 
-	S1AP_PLMNidentity_t	*pLMNidentity = NULL;
-	S1AP_TAC_t *tAC = NULL;
-	S1AP_CellIdentity_t *cell_ID = NULL;
+    S1AP_PLMNidentity_t *pLMNidentity = NULL;
+    S1AP_TAC_t *tAC = NULL;
+    S1AP_CellIdentity_t *cell_ID = NULL;
 
     enb_ue_t *enb_ue = NULL;
 
@@ -1067,7 +1067,7 @@ void s1ap_handle_e_rab_setup_response(
     S1AP_E_RABSetupListBearerSURes_t *E_RABSetupListBearerSURes = NULL;
     S1AP_E_RABList_t *E_RABFailedToSetupListBearerSURes = NULL;
     S1AP_CriticalityDiagnostics_t *CriticalityDiagnostics = NULL;
-	
+
     enb_ue_t *enb_ue = NULL;
     mme_ue_t *mme_ue = NULL;
 
@@ -1102,7 +1102,7 @@ void s1ap_handle_e_rab_setup_response(
         case S1AP_ProtocolIE_ID_id_CriticalityDiagnostics:
             CriticalityDiagnostics =
                 &ie->value.choice.CriticalityDiagnostics;
-            break;			
+            break;
         default:
             break;
         }
@@ -1115,7 +1115,7 @@ void s1ap_handle_e_rab_setup_response(
         ogs_error("No MME_UE_S1AP_ID");
         ogs_assert(OGS_OK ==
             s1ap_send_error_indication(enb, NULL, ENB_UE_S1AP_ID,
-            	S1AP_Cause_PR_protocol, S1AP_CauseProtocol_semantic_error));
+                S1AP_Cause_PR_protocol, S1AP_CauseProtocol_semantic_error));
         return;
     }
 
@@ -1125,8 +1125,8 @@ void s1ap_handle_e_rab_setup_response(
                 (long long)*MME_UE_S1AP_ID);
         ogs_assert(OGS_OK ==
             s1ap_send_error_indication(enb, MME_UE_S1AP_ID, NULL,
-            	S1AP_Cause_PR_radioNetwork,
-            	S1AP_CauseRadioNetwork_unknown_mme_ue_s1ap_id));
+                S1AP_Cause_PR_radioNetwork,
+                S1AP_CauseRadioNetwork_unknown_mme_ue_s1ap_id));
         return;
     }
 
@@ -1134,7 +1134,7 @@ void s1ap_handle_e_rab_setup_response(
         ogs_error("No ENB_UE_S1AP_ID");
         ogs_assert(OGS_OK ==
             s1ap_send_error_indication(enb, MME_UE_S1AP_ID, ENB_UE_S1AP_ID,
-            	S1AP_Cause_PR_protocol, S1AP_CauseProtocol_semantic_error));
+                S1AP_Cause_PR_protocol, S1AP_CauseProtocol_semantic_error));
         return;
     }
 
@@ -1145,7 +1145,7 @@ void s1ap_handle_e_rab_setup_response(
     ogs_expect_or_return(mme_ue);
 
     if (E_RABSetupListBearerSURes) {
-	    for (i = 0; i < E_RABSetupListBearerSURes->list.count; i++) {
+        for (i = 0; i < E_RABSetupListBearerSURes->list.count; i++) {
             S1AP_E_RABSetupItemBearerSUResIEs_t *item = NULL;
             S1AP_E_RABSetupItemBearerSURes_t *e_rab = NULL;
 
@@ -1156,8 +1156,9 @@ void s1ap_handle_e_rab_setup_response(
             if (!item) {
                 ogs_error("No S1AP_E_RABSetupItemBearerSUResIEs_t");
                 ogs_assert(OGS_OK ==
-                	s1ap_send_error_indication2(mme_ue,
-                		S1AP_Cause_PR_protocol, S1AP_CauseProtocol_semantic_error));
+                    s1ap_send_error_indication2(mme_ue,
+                        S1AP_Cause_PR_protocol,
+                        S1AP_CauseProtocol_semantic_error));
                 return;
             }
 
@@ -1165,8 +1166,9 @@ void s1ap_handle_e_rab_setup_response(
             if (!e_rab) {
                 ogs_error("No E_RABSetupItemBearerSURes");
                 ogs_assert(OGS_OK ==
-                	s1ap_send_error_indication2(mme_ue,
-                		S1AP_Cause_PR_protocol, S1AP_CauseProtocol_semantic_error));
+                    s1ap_send_error_indication2(mme_ue,
+                        S1AP_Cause_PR_protocol,
+                        S1AP_CauseProtocol_semantic_error));
                 return;
             }
 
@@ -1174,9 +1176,9 @@ void s1ap_handle_e_rab_setup_response(
             if (!bearer) {
                 ogs_error("No Bearer [%d]", (int)e_rab->e_RAB_ID);
                 ogs_assert(OGS_OK ==
-                	s1ap_send_error_indication2(mme_ue,
-                    	S1AP_Cause_PR_radioNetwork,
-                    	S1AP_CauseRadioNetwork_unknown_E_RAB_ID));
+                    s1ap_send_error_indication2(mme_ue,
+                        S1AP_Cause_PR_radioNetwork,
+                        S1AP_CauseRadioNetwork_unknown_E_RAB_ID));
                 return;
             }
 
@@ -1200,22 +1202,24 @@ void s1ap_handle_e_rab_setup_response(
                 } else {
                 ogs_assert(OGS_OK ==
                     mme_gtp_send_create_bearer_response(
-                    	bearer, OGS_GTP_CAUSE_REQUEST_ACCEPTED));
+                        bearer, OGS_GTP_CAUSE_REQUEST_ACCEPTED));
                 }
             }
-	    }
+        }
     }
 
     if (E_RABFailedToSetupListBearerSURes) {
-		ogs_debug("E_RABFailedToSetupListBearerSURes");
+        ogs_debug("E_RABFailedToSetupListBearerSURes");
         for (i = 0; i < E_RABFailedToSetupListBearerSURes->list.count; i++) {
-            S1AP_E_RABItem_t *item = (S1AP_E_RABItem_t *)E_RABFailedToSetupListBearerSURes->list.array[i];
+            S1AP_E_RABItem_t *item = (S1AP_E_RABItem_t *)
+                E_RABFailedToSetupListBearerSURes->list.array[i];
 
             if (!item) {
                 ogs_error("No S1AP_E_RABItem_t");
                 ogs_assert(OGS_OK ==
                     s1ap_send_error_indication2(mme_ue,
-                    	S1AP_Cause_PR_protocol, S1AP_CauseProtocol_semantic_error));
+                        S1AP_Cause_PR_protocol,
+                        S1AP_CauseProtocol_semantic_error));
                 return;
             }
 
@@ -1227,17 +1231,23 @@ void s1ap_handle_e_rab_setup_response(
 
     if (CriticalityDiagnostics) {
         ogs_debug("CriticalityDiagnostics");
-        S1AP_ProcedureCode_t	    *procedureCode = CriticalityDiagnostics->procedureCode;
-        S1AP_TriggeringMessage_t	*triggeringMessage = CriticalityDiagnostics->triggeringMessage;
-	    S1AP_Criticality_t	        *procedureCriticality = CriticalityDiagnostics->procedureCriticality;
+        S1AP_ProcedureCode_t *procedureCode =
+            CriticalityDiagnostics->procedureCode;
+        S1AP_TriggeringMessage_t *triggeringMessage =
+            CriticalityDiagnostics->triggeringMessage;
+        S1AP_Criticality_t *procedureCriticality =
+            CriticalityDiagnostics->procedureCriticality;
         if (procedureCode) {
-            ogs_debug("procedureCode: %ld", (long)procedureCode);
+            ogs_debug("procedureCode: %lld",
+                    (long long)procedureCode);
         }
         if (triggeringMessage) {
-            ogs_debug("triggeringMessage: %ld", (long)triggeringMessage);
+            ogs_debug("triggeringMessage: %lld",
+                    (long long)triggeringMessage);
         }
         if (procedureCriticality) {
-            ogs_debug("procedureCriticality: %ld", (long)procedureCriticality);
+            ogs_debug("procedureCriticality: %lld",
+                    (long long)procedureCriticality);
         }
     }
 }
@@ -1679,11 +1689,11 @@ void s1ap_handle_path_switch_request(
     S1AP_TAI_t *TAI = NULL;
     S1AP_UESecurityCapabilities_t *UESecurityCapabilities = NULL;
 
-	S1AP_PLMNidentity_t *pLMNidentity = NULL;
-	S1AP_CellIdentity_t	*cell_ID = NULL;
-	S1AP_TAC_t *tAC = NULL;
-	S1AP_EncryptionAlgorithms_t	*encryptionAlgorithms = NULL;
-	S1AP_IntegrityProtectionAlgorithms_t *integrityProtectionAlgorithms = NULL;
+    S1AP_PLMNidentity_t *pLMNidentity = NULL;
+    S1AP_CellIdentity_t *cell_ID = NULL;
+    S1AP_TAC_t *tAC = NULL;
+    S1AP_EncryptionAlgorithms_t    *encryptionAlgorithms = NULL;
+    S1AP_IntegrityProtectionAlgorithms_t *integrityProtectionAlgorithms = NULL;
     uint16_t eea = 0, eia = 0;
     uint8_t eea0 = 0, eia0 = 0;
 
@@ -2696,9 +2706,9 @@ void s1ap_handle_handover_notification(
     S1AP_EUTRAN_CGI_t *EUTRAN_CGI = NULL;
     S1AP_TAI_t *TAI = NULL;
 
-	S1AP_PLMNidentity_t *pLMNidentity = NULL;
-	S1AP_CellIdentity_t	*cell_ID = NULL;
-	S1AP_TAC_t *tAC = NULL;
+    S1AP_PLMNidentity_t *pLMNidentity = NULL;
+    S1AP_CellIdentity_t *cell_ID = NULL;
+    S1AP_TAC_t *tAC = NULL;
 
     enb_ue_t *source_ue = NULL;
     enb_ue_t *target_ue = NULL;
