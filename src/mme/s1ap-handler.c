@@ -1207,6 +1207,7 @@ void s1ap_handle_e_rab_setup_response(
     }
 
     if (E_RABFailedToSetupListBearerSURes) {
+		ogs_debug("E_RABFailedToSetupListBearerSURes");
         for (i = 0; i < E_RABFailedToSetupListBearerSURes->list.count; i++) {
             S1AP_E_RABItem_t *item = (S1AP_E_RABItem_t *)E_RABFailedToSetupListBearerSURes->list.array[i];
 
