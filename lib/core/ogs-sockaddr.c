@@ -252,13 +252,11 @@ int ogs_sortaddrinfo(ogs_sockaddr_t **sa_list, int family)
     return OGS_OK;
 }
 
-ogs_sockaddr_t *ogs_link_local_addr_by_dev(const char *dev)
+ogs_sockaddr_t *ogs_link_local_addr(const char *dev, const ogs_sockaddr_t *sa)
 {
 #if defined(HAVE_GETIFADDRS)
 	struct ifaddrs *iflist, *cur;
     int rc;
-
-    ogs_assert(dev);
 
 	rc = getifaddrs(&iflist);
     if (rc != 0) {
@@ -267,19 +265,25 @@ ogs_sockaddr_t *ogs_link_local_addr_by_dev(const char *dev)
     }
 
 	for (cur = iflist; cur != NULL; cur = cur->ifa_next) {
+        ogs_sockaddr_t *ifa_addr = NULL;
         ogs_sockaddr_t *addr = NULL;
 
-		if (cur->ifa_addr == NULL) /* may happen with ppp interfaces */
+        ifa_addr = (ogs_sockaddr_t *)cur->ifa_addr;
+
+		if (ifa_addr == NULL) /* may happen with ppp interfaces */
 			continue;
 
-        if (strcmp(dev, cur->ifa_name) != 0)
+        if (ifa_addr->ogs_sa_family == AF_INET)
             continue;
 
-        if (cur->ifa_addr->sa_family == AF_INET)
+        if (!IN6_IS_ADDR_LINKLOCAL(&ifa_addr->sin6.sin6_addr))
             continue;
 
-        addr = (ogs_sockaddr_t *)cur->ifa_addr;
-        if (!IN6_IS_ADDR_LINKLOCAL(&addr->sin6.sin6_addr)) 
+        if (dev && strcmp(dev, cur->ifa_name) != 0)
+            continue;
+
+        if (sa && memcmp(&sa->sin6.sin6_addr,
+                &ifa_addr->sin6.sin6_addr, sizeof(struct in6_addr)) != 0)
             continue;
 
         addr = ogs_calloc(1, sizeof(ogs_sockaddr_t));
@@ -293,8 +297,19 @@ ogs_sockaddr_t *ogs_link_local_addr_by_dev(const char *dev)
 
 	freeifaddrs(iflist);
 #endif
-    ogs_error("ogs_link_local_addr_by_dev() failed");
     return NULL;
+}
+
+ogs_sockaddr_t *ogs_link_local_addr_by_dev(const char *dev)
+{
+    ogs_assert(dev);
+    return ogs_link_local_addr(dev, NULL);
+}
+
+ogs_sockaddr_t *ogs_link_local_addr_by_sa(const ogs_sockaddr_t *sa)
+{
+    ogs_assert(sa);
+    return ogs_link_local_addr(NULL, sa);
 }
 
 int ogs_filter_ip_version(ogs_sockaddr_t **addr, 

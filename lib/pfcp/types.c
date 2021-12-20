@@ -561,3 +561,119 @@ int16_t ogs_pfcp_parse_dropped_dl_traffic_threshold(
 
     return size;
 }
+
+int16_t ogs_pfcp_build_volume_measurement(ogs_tlv_octet_t *octet,
+        ogs_pfcp_volume_measurement_t *volume, void *data, int data_len)
+{
+    ogs_pfcp_volume_measurement_t target;
+    int16_t size = 0;
+
+    ogs_assert(volume);
+    ogs_assert(octet);
+    ogs_assert(data);
+    ogs_assert(data_len >= sizeof(ogs_pfcp_volume_measurement_t));
+
+    ogs_assert(volume->flags);
+
+    octet->data = data;
+    memcpy(&target, volume, sizeof(ogs_pfcp_volume_measurement_t));
+
+    ((unsigned char *)octet->data)[size] = target.flags;
+    size += sizeof(target.flags);
+
+    if (target.tovol) {
+        target.total_volume = htobe64(target.total_volume);
+        memcpy((unsigned char *)octet->data + size,
+                &target.total_volume, sizeof(target.total_volume));
+        size += sizeof(target.total_volume);
+    }
+    if (target.ulvol) {
+        target.uplink_volume = htobe64(target.uplink_volume);
+        memcpy((unsigned char *)octet->data + size,
+                &target.uplink_volume, sizeof(target.uplink_volume));
+        size += sizeof(target.uplink_volume);
+    }
+    if (target.dlvol) {
+        target.downlink_volume = htobe64(target.downlink_volume);
+        memcpy((unsigned char *)octet->data + size,
+                &target.downlink_volume, sizeof(target.downlink_volume));
+        size += sizeof(target.downlink_volume);
+    }
+    if (target.tonop) {
+        target.total_n_packets = htobe64(target.total_n_packets);
+        memcpy((unsigned char *)octet->data + size,
+                &target.total_n_packets, sizeof(target.total_n_packets));
+        size += sizeof(target.total_n_packets);
+    }
+    if (target.ulnop) {
+        target.uplink_n_packets = htobe64(target.uplink_n_packets);
+        memcpy((unsigned char *)octet->data + size,
+                &target.uplink_n_packets, sizeof(target.uplink_n_packets));
+        size += sizeof(target.uplink_n_packets);
+    }
+    if (target.dlnop) {
+        target.downlink_n_packets = htobe64(target.downlink_n_packets);
+        memcpy((unsigned char *)octet->data + size,
+                &target.downlink_n_packets, sizeof(target.downlink_n_packets));
+        size += sizeof(target.downlink_n_packets);
+    }
+
+    octet->len = size;
+
+    return octet->len;
+}
+
+int16_t ogs_pfcp_parse_volume_measurement(
+        ogs_pfcp_volume_measurement_t *volume, ogs_tlv_octet_t *octet)
+{
+    int16_t size = 0;
+
+    ogs_assert(volume);
+    ogs_assert(octet);
+
+    memset(volume, 0, sizeof(ogs_pfcp_volume_measurement_t));
+
+    volume->flags = ((unsigned char *)octet->data)[size];
+    size += sizeof(volume->flags);
+
+    if (volume->tovol) {
+        memcpy(&volume->total_volume, (unsigned char *)octet->data + size,
+                sizeof(volume->total_volume));
+        volume->total_volume = be64toh(volume->total_volume);
+        size += sizeof(volume->total_volume);
+    }
+    if (volume->ulvol) {
+        memcpy(&volume->uplink_volume, (unsigned char *)octet->data + size,
+                sizeof(volume->uplink_volume));
+        volume->uplink_volume = be64toh(volume->uplink_volume);
+        size += sizeof(volume->uplink_volume);
+    }
+    if (volume->dlvol) {
+        memcpy(&volume->downlink_volume, (unsigned char *)octet->data + size,
+                sizeof(volume->downlink_volume));
+        volume->downlink_volume = be64toh(volume->downlink_volume);
+        size += sizeof(volume->downlink_volume);
+    }
+    if (volume->tonop) {
+        memcpy(&volume->total_n_packets, (unsigned char *)octet->data + size,
+                sizeof(volume->total_n_packets));
+        volume->total_n_packets = be64toh(volume->total_n_packets);
+        size += sizeof(volume->total_n_packets);
+    }
+    if (volume->ulnop) {
+        memcpy(&volume->uplink_n_packets, (unsigned char *)octet->data + size,
+                sizeof(volume->uplink_n_packets));
+        volume->uplink_n_packets = be64toh(volume->uplink_n_packets);
+        size += sizeof(volume->uplink_n_packets);
+    }
+    if (volume->dlnop) {
+        memcpy(&volume->downlink_n_packets, (unsigned char *)octet->data + size,
+                sizeof(volume->downlink_n_packets));
+        volume->downlink_n_packets = be64toh(volume->downlink_n_packets);
+        size += sizeof(volume->downlink_n_packets);
+    }
+
+    ogs_assert(size == octet->len);
+
+    return size;
+}

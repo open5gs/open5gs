@@ -88,7 +88,9 @@ int ogs_copyaddrinfo(
 int ogs_filteraddrinfo(ogs_sockaddr_t **sa_list, int family);
 int ogs_sortaddrinfo(ogs_sockaddr_t **sa_list, int family);
 
+ogs_sockaddr_t *ogs_link_local_addr(const char *dev, const ogs_sockaddr_t *sa);
 ogs_sockaddr_t *ogs_link_local_addr_by_dev(const char *dev);
+ogs_sockaddr_t *ogs_link_local_addr_by_sa(const ogs_sockaddr_t *sa);
 int ogs_filter_ip_version(ogs_sockaddr_t **addr, 
         int no_ipv4, int no_ipv6, int prefer_ipv4);
 

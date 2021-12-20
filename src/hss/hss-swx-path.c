@@ -388,7 +388,6 @@ static int hss_ogs_diam_swx_sar_cb( struct msg **msg, struct avp *avp,
     union avp_value val;
 
     char *user_name = NULL;
-    ogs_s_nssai_t s_nssai;
 
     char imsi_bcd[OGS_MAX_IMSI_BCD_LEN+1];
 
@@ -557,13 +556,10 @@ static int hss_ogs_diam_swx_sar_cb( struct msg **msg, struct avp *avp,
         ret = fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD, avp_ambr);
         ogs_assert(ret == 0);
 
-        /* For EPC, we'll use SST:1 */
-        s_nssai.sst = 1;
-        s_nssai.sd.v = OGS_S_NSSAI_NO_SD_VALUE;
+        /* For EPC, we'll use first Slice in Subscription */
+        if (subscription_data.num_of_slice)
+            slice_data = &subscription_data.slice[0];
 
-        slice_data = ogs_slice_find_by_s_nssai(
-                subscription_data.slice, subscription_data.num_of_slice,
-                &s_nssai);
         if (!slice_data) {
             ogs_error("[%s] Cannot find S-NSSAI", imsi_bcd);
             result_code = OGS_DIAM_S6A_ERROR_UNKNOWN_EPS_SUBSCRIPTION;

@@ -920,19 +920,6 @@ ED4(uint8_t     spare:5;,
     };
 } __attribute__ ((packed)) ogs_pfcp_smreq_flags_t;
 
-typedef struct ogs_pfcp_user_plane_report_s {
-    ogs_pfcp_report_type_t type;
-    struct {
-        uint8_t pdr_id;
-        uint8_t paging_policy_indication_value;
-        uint8_t qfi;
-    } downlink_data;
-    struct {
-        ogs_pfcp_f_teid_t remote_f_teid;
-        int remote_f_teid_len;
-    } error_indication;
-} ogs_pfcp_user_plane_report_t;
-
 /*
  * 8.2.40 Measurement Method
  *
@@ -1137,6 +1124,166 @@ int16_t ogs_pfcp_build_dropped_dl_traffic_threshold(
 int16_t ogs_pfcp_parse_dropped_dl_traffic_threshold(
         ogs_pfcp_dropped_dl_traffic_threshold_t *threshold,
         ogs_tlv_octet_t *octet);
+
+/** 8.2.71 UR-SEQN 
+ * 
+ * The UR-SEQN (Usage Report Sequence Number) IE identifies the order
+ * in which a usage report is generated for a
+ * given URR. It shall be encoded as shown in Figure 8.2.71-1. 
+ * 
+ * The UR-SEQN value shall be encoded as an Unsigned32 binary integer value.
+*/
+typedef uint32_t ogs_pfcp_urr_ur_seqn_t;
+
+/** 8.2.52 Start Time
+ * 
+ * The Start Time IE indicates the time at which the UP function started
+ * to collect the charging information. It shall be encoded as shown
+ * in Figure 8.2.52-1.
+ * 
+ * The Start Time field shall contain a UTC time. Octets 5 to 8 shall
+ * be encoded in the same format as the first four octets
+ * of the 64-bit timestamp format as defined in clause 6 of IETF RFC 5905 [12].
+ * 
+ * NOTE: The encoding is defined as the time in seconds relative to 00:00:00
+ * on 1 January 1900.
+ */
+typedef uint32_t ogs_pfcp_start_time_t;
+
+/** 8.2.53 End Time 
+ * The End Time IE indicates the time at which the UP function ended
+ * to collect the charging information. It shall be encoded as shown
+ * in Figure 8.2.53-1.
+ * 
+ * The End Time field shall contain a UTC time. Octets 5 to 8 shall be
+ * encoded in the same format as the first four octets of the 64-bit timestamp
+ * format as defined in clause 6 of IETF RFC 5905 [12].
+ * 
+ * NOTE: The encoding is defined as the time in seconds relative to 00:00:00
+ * on 1 January 1900.
+*/
+typedef uint32_t ogs_pfcp_end_time_t;
+
+/** 8.2.45 Duration Measurement 
+ * 
+ * The Duration Measurement IE type shall be encoded as shown
+ * in Figure 8.2.45-1. It contains the used time in seconds
+ * 
+ * The Duration value shall be encoded as an Unsigned32 binary integer value. 
+*/
+typedef uint32_t ogs_pfcp_duration_measurement_t;
+
+/** 8.2.46 Time of First Packet 
+ * 
+ * The Time of First Packet IE indicates the time stamp for the first
+ * IP packet transmitted for a given usage report. It shall be encoded
+ * as shown in Figure 8.2.46-1.
+ * 
+ * The End Time field shall contain a UTC time. Octets 5 to 8 shall
+ * be encoded in the same format as the first four octets
+ * of the 64-bit timestamp format as defined in clause 6 of IETF RFC 5905 [12]. 
+ * 
+ * NOTE: The encoding is defined as the time in seconds relative to 00:00:00
+ * on 1 January 1900.
+*/
+typedef uint32_t ogs_pfcp_time_of_first_packet_t;
+
+/** 8.2.47 Time of Last Packet 
+ * 
+ * The Time of Last Packet IE indicates the time stamp for the last
+ * IP packet transmitted for a given usage report. It shall be encoded
+ * as shown in Figure 8.2.47-1.
+ * 
+ * The End Time field shall contain a UTC time. Octets 5 to 8 shall
+ * be encoded in the same format as the first four octets
+ * of the 64-bit timestamp format as defined in clause 6 of IETF RFC 5905 [12]. 
+ * 
+ * NOTE: The encoding is defined as the time in seconds relative to 00:00:00
+ * on 1 January 1900.
+*/
+typedef uint32_t ogs_pfcp_time_of_last_packet_t;
+
+/** 8.2.44 Volume Measurement 
+ * 
+ * The Volume Measurement IE contains the measured traffic volumes.
+ * It shall be encoded as shown in Figure 8.2.44-1.
+ * 
+ * The following flags are coded within Octet 5:
+ * 
+ * - Bit 1 – TOVOL: If this bit is set to "1", then the Total Volume field
+ *   shall be present, otherwise the Total Volume field shall not be present.
+ * - Bit 2 – ULVOL: If this bit is set to "1", then the Uplink Volume field
+ *   shall be present, otherwise the Uplink Volume field shall not be present.
+ * - Bit 3 – DLVOL: If this bit is set to "1", then the Downlink Volume field
+ *   shall be present, otherwise the Downlink Volume field shall not be present.
+ * - Bit 4 – TONOP: If this bit is set to "1", then the Total Number of Packets
+ *   field shall be present, otherwise the Total Number of Packets field
+ *   shall not be present.
+ * - Bit 5 – ULNOP: If this bit is set to "1", then the Uplink Number
+ *   of Packets field shall be present, otherwise the Uplink Number
+ *   of Packets field shall not be present.
+ * - Bit 6 – DLNOP: If this bit is set to "1", then the Downlink Number
+ *   of Packets field shall be present, otherwise the Downlink Number
+ *   of Packets field shall not be present.
+ * - Bit 7 to bit 8: Spare, for future use and set to "0".
+ * 
+ * At least one bit shall be set to "1". Several bits may be set to "1".
+ * 
+ * The Total Volume, Uplink Volume and Downlink Volume fields shall be encoded
+ * as an Unsigned64 binary integer value. They shall contain the total,
+ * uplink or downlink number of octets respectively
+*/
+typedef struct ogs_pfcp_volume_measurement_s {
+    union {
+        struct {
+ED7(uint8_t spare:2;,
+    uint8_t dlnop:1;,
+    uint8_t ulnop:1;,
+    uint8_t tonop:1;,
+    uint8_t dlvol:1;,
+    uint8_t ulvol:1;,
+    uint8_t tovol:1;)
+        };
+    uint8_t flags;
+    };
+
+    uint64_t total_volume;
+    uint64_t uplink_volume;
+    uint64_t downlink_volume;
+    uint64_t total_n_packets;
+    uint64_t uplink_n_packets;
+    uint64_t downlink_n_packets;
+} __attribute__ ((packed)) ogs_pfcp_volume_measurement_t;
+
+typedef struct ogs_pfcp_user_plane_report_s {
+    ogs_pfcp_report_type_t type;
+    struct {
+        uint8_t pdr_id;
+        uint8_t paging_policy_indication_value;
+        uint8_t qfi;
+    } downlink_data;
+    struct {
+        ogs_pfcp_urr_id_t id;
+        ogs_pfcp_urr_ur_seqn_t seqn;
+        ogs_pfcp_reporting_triggers_t rep_triggers;
+        ogs_pfcp_start_time_t start_time;
+        ogs_pfcp_end_time_t end_time;
+        ogs_pfcp_volume_measurement_t vol_measurement;
+        ogs_pfcp_duration_measurement_t dur_measurement;
+        ogs_pfcp_time_of_first_packet_t time_of_first_packet;
+        ogs_pfcp_time_of_last_packet_t time_of_last_packet;
+    } usage_report;
+    struct {
+        ogs_pfcp_f_teid_t remote_f_teid;
+        int remote_f_teid_len;
+    } error_indication;
+} ogs_pfcp_user_plane_report_t;
+
+int16_t ogs_pfcp_build_volume_measurement(ogs_tlv_octet_t *octet,
+        ogs_pfcp_volume_measurement_t *volume, void *data, int data_len);
+int16_t ogs_pfcp_parse_volume_measurement(
+        ogs_pfcp_volume_measurement_t *volume, ogs_tlv_octet_t *octet);
+
 
 #ifdef __cplusplus
 }

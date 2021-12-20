@@ -61,7 +61,7 @@ ogs_pkbuf_t *emm_build_attach_accept(
     ogs_debug("    TAI[PLMN_ID:%06x,TAC:%d]",
             ogs_plmn_id_hexdump(&mme_ue->tai.plmn_id),
             mme_ue->tai.tac);
-    ogs_debug("    E_CGI[PLMN_ID:%06x,CELL_ID:%d]",
+    ogs_debug("    E_CGI[PLMN_ID:%06x,CELL_ID:0x%x]",
             ogs_plmn_id_hexdump(&mme_ue->e_cgi.plmn_id),
             mme_ue->e_cgi.cell_id);
     served_tai_index = mme_find_served_tai(&mme_ue->tai);
@@ -430,7 +430,7 @@ ogs_pkbuf_t *emm_build_tau_accept(mme_ue_t *mme_ue)
     ogs_debug("    TAI[PLMN_ID:%06x,TAC:%d]",
             ogs_plmn_id_hexdump(&mme_ue->tai.plmn_id),
             mme_ue->tai.tac);
-    ogs_debug("    E_CGI[PLMN_ID:%06x,CELL_ID:%d]",
+    ogs_debug("    E_CGI[PLMN_ID:%06x,CELL_ID:0x%x]",
             ogs_plmn_id_hexdump(&mme_ue->e_cgi.plmn_id),
             mme_ue->e_cgi.cell_id);
     served_tai_index = mme_find_served_tai(&mme_ue->tai);
