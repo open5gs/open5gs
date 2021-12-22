@@ -186,6 +186,12 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
         ogs_log_hexdump(OGS_LOG_ERROR, pkbuf->data, pkbuf->len);
         goto cleanup;
     }
+    if (gtp_h->type != OGS_GTPU_MSGTYPE_END_MARKER &&
+        pkbuf->len <= len) {
+        ogs_error("[DROP] Small GTPU packet(type:%d len:%d)", gtp_h->type, len);
+        ogs_log_hexdump(OGS_LOG_ERROR, pkbuf->data, pkbuf->len);
+        goto cleanup;
+    }
     ogs_assert(ogs_pkbuf_pull(pkbuf, len));
 
     if (gtp_h->type == OGS_GTPU_MSGTYPE_GPDU) {
