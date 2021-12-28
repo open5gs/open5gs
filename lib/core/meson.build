@@ -304,15 +304,17 @@ endif
 
 libcore_inc = include_directories('.')
 
+libtalloc_dep = dependency('talloc')
+
 libcore = library('ogscore',
     sources : libcore_sources,
     version : libogslib_version,
     c_args : '-DOGS_CORE_COMPILATION',
     include_directories : [libcore_inc, libinc],
-    dependencies : [threads, librt, libexecinfo, libsocket],
+    dependencies : [threads, librt, libexecinfo, libsocket, libtalloc_dep],
     install : true)
 
 libcore_dep = declare_dependency(
     link_with : libcore,
     include_directories : [libcore_inc, libinc],
-    dependencies : [threads, librt, libexecinfo, libsocket])
+    dependencies : [threads, librt, libexecinfo, libsocket, libtalloc_dep])

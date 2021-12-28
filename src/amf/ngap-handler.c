@@ -305,7 +305,7 @@ void ngap_handle_ng_setup_request(amf_gnb_t *gnb, ogs_ngap_message_t *message)
         ogs_warn("NG-Setup failure:");
         ogs_warn("    Cannot find Served TAI. Check 'amf.tai' configuration");
         group = NGAP_Cause_PR_misc;
-        cause = NGAP_CauseMisc_unknown_PLMN;
+        cause = NGAP_CauseMisc_unknown_PLMN_or_SNPN;
 
         ogs_assert(OGS_OK ==
             ngap_send_ng_setup_failure(gnb, group, cause));
@@ -3793,7 +3793,7 @@ void ngap_handle_ran_configuration_update(
             ogs_warn("    Cannot find Served TAI. "
                         "Check 'amf.tai' configuration");
             group = NGAP_Cause_PR_misc;
-            cause = NGAP_CauseMisc_unknown_PLMN;
+            cause = NGAP_CauseMisc_unknown_PLMN_or_SNPN;
 
             ogs_assert(OGS_OK ==
                 ngap_send_ran_configuration_update_failure(gnb, group, cause));

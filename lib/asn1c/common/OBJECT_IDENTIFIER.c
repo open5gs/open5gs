@@ -8,6 +8,7 @@
 #include <asn_codecs_prim.h>
 #include <limits.h>	/* for CHAR_BIT */
 #include <errno.h>
+#include <inttypes.h>
 
 /*
  * OBJECT IDENTIFIER basic type description.

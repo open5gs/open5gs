@@ -284,8 +284,15 @@ static ogs_hash_entry_t **find_entry(ogs_hash_t *ht,
     /* add a new entry for non-NULL values */
     if ((he = ht->free) != NULL)
         ht->free = he->next;
-    else
+    else {
+#if OGS_USE_TALLOC
+        he = ogs_talloc_size(__ogs_talloc_core,
+                sizeof(*he), file_line);
+        ogs_assert(he);
+#else
         he = ogs_malloc_debug(sizeof(*he), file_line, true);
+#endif
+    }
     he->next = NULL;
     he->hash = hash;
     he->key  = key;

@@ -23,6 +23,7 @@ RUN dnf -y install \
         libmicrohttpd-devel \
         libcurl-devel \
         libnghttp2-devel \
+        libtalloc-devel \
         iproute
 
 RUN dnf -y install meson

@@ -130,6 +130,7 @@ char *ogs_strdup_debug(const char *s, const char *file_line, bool abort)
 
     len = strlen(s) + 1;
     res = ogs_memdup_debug(s, len, file_line, abort);
+    if (abort == true) ogs_assert(res);
     ogs_expect_or_return_val(res, res);
     return res;
 }
@@ -146,7 +147,11 @@ char *ogs_strndup_debug(
     end = memchr(s, '\0', n);
     if (end != NULL)
         n = end - s;
+#if OGS_USE_TALLOC
+    res = ogs_talloc_size(__ogs_talloc_core, n + 1, file_line);
+#else
     res = ogs_malloc_debug(n + 1, file_line, abort);
+#endif
     ogs_expect_or_return_val(res, res);
     memcpy(res, s, n);
     res[n] = '\0';
@@ -161,7 +166,11 @@ void *ogs_memdup_debug(
     if (m == NULL)
         return NULL;
 
+#if OGS_USE_TALLOC
+    res = ogs_talloc_size(__ogs_talloc_core, n, file_line);
+#else
     res = ogs_malloc_debug(n, file_line, abort);
+#endif
     ogs_expect_or_return_val(res, res);
     memcpy(res, m, n);
     return res;
@@ -212,7 +221,12 @@ char *ogs_msprintf_debug(
                                     in some architectures,
                                     vsnprintf can modify argp */
         out_len = vsnprintf(NULL, 0, message, argp);
+#if OGS_USE_TALLOC
+        out = ogs_talloc_size(__ogs_talloc_core,
+                out_len + sizeof(char), file_line);
+#else
         out = ogs_malloc_debug(out_len + sizeof(char), file_line, abort);
+#endif
         if (out == NULL) {
             va_end(argp);
             va_end(argp_cpy);
@@ -257,7 +271,12 @@ char *ogs_mstrcatf_debug(
                                         in some architectures,
                                         vsnprintf can modify argp */
             out_len = vsnprintf(NULL, 0, message, argp);
+#if OGS_USE_TALLOC
+            out = ogs_talloc_size(__ogs_talloc_core,
+                    out_len + sizeof(char), file_line);
+#else
             out = ogs_malloc_debug(out_len+sizeof(char), file_line, abort);
+#endif
             if (out != NULL) {
                 vsnprintf(out, (out_len+sizeof(char)), message, argp_cpy);
             }

@@ -29,6 +29,7 @@ RUN apt-get update && \
         libcurl4-gnutls-dev \
         libnghttp2-dev \
         libtins-dev \
+        libtalloc-dev \
         iproute2 \
         ca-certificates \
         netbase \

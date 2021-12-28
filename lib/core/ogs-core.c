@@ -40,6 +40,7 @@ void ogs_core_initialize(void)
 {
     ogs_log_init();
     ogs_pkbuf_init();
+    ogs_mem_init();
     ogs_socket_init();
     ogs_tlv_init();
 
@@ -55,6 +56,7 @@ void ogs_core_terminate(void)
 {
     ogs_tlv_final();
     ogs_socket_final();
+    ogs_mem_final();
     ogs_pkbuf_final();
     ogs_log_final();
 }

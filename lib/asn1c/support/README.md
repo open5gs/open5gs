@@ -9,7 +9,7 @@ Date:   Sun Nov 1 08:58:12 2020 -0500
 user@host ~/Documents/git/my$ \
     git clone https://github.com/mouse07410/asn1c.git
 user@host ~/Documents/git/my$ \
-    git checkout dcf963c0e43196057a97feac16421fe79dc7d943
+    git checkout 8282f80bc89cc773f9432cde56398a36f2683511
 
 OR
 
@@ -30,15 +30,15 @@ user@host ~/documents/git/open5gs/lib/asn1c/s1ap$ \
     ASN1C_PREFIX=S1AP_ ../../../../my/asn1c/asn1c/asn1c -pdu=all \
     -fcompound-names -findirect-choice -fno-include-deps \
     -no-gen-BER -no-gen-XER -no-gen-OER -no-gen-UPER \
-    ../support/s1ap-r16.4.0/36413-g40.asn
+    ../support/s1ap-r16.7.0/36413-g70.asn
 
 user@host ~/Documents/git/open5gs/lib/asn1c/ngap$ \
     ASN1C_PREFIX=NGAP_ ../../../../my/asn1c/asn1c/asn1c -pdu=all \
     -fcompound-names -findirect-choice -fno-include-deps \
     -no-gen-BER -no-gen-XER -no-gen-OER -no-gen-UPER \
-    ../support/ngap-r16.4.0/38413-g40.asn
+    ../support/ngap-r16.7.0/38413-g70.asn
 
-Fix aper_support.c
+Fix aper_support.c (Issues #773 - NGReset Decode Problem)
 ===========================================
 diff --git a/lib/asn1c/common/aper_support.c b/lib/asn1c/common/aper_support.c
 index 67ad9db5..1adbdde6 100644
@@ -116,7 +116,7 @@ index 67ad9db5..1adbdde6 100644
                 return per_put_few_bits(po, length-1, 7) ? -1 : 0;
         } else {
 
-Fix NGAP_RANNodeNameUTF8String.c/NGAP_AMFNameUTF8String.c
+Fix NGAP_RANNodeNameUTF8String.c/NGAP_AMFNameUTF8String.c (Issues #994 - APC_EXTENSIBLE)
 ===========================================
 diff --git a/lib/asn1c/ngap/NGAP_RANNodeNameUTF8String.c b/lib/asn1c/ngap/NGAP_RANNodeNameUTF8String.c
 index 9e469f7f..79ebd028 100644

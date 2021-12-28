@@ -1117,6 +1117,16 @@ libasn1c_ngap_sources = files('''
     NGAP_WLANName.h
     NGAP_WUS-Assistance-Information.c
     NGAP_WUS-Assistance-Information.h
+    NGAP_ExtendedUEIdentityIndexValue.c
+	NGAP_ExtendedUEIdentityIndexValue.h
+	NGAP_MicoAllPLMN.c
+	NGAP_MicoAllPLMN.h
+	NGAP_QosFlowFeedbackItem.c
+	NGAP_QosFlowFeedbackItem.h
+	NGAP_QosFlowFeedbackList.c
+	NGAP_QosFlowFeedbackList.h
+	NGAP_UpdateFeedback.c
+	NGAP_UpdateFeedback.h
 '''.split())
 
 libasn1c_ngap_inc = include_directories('.')

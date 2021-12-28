@@ -629,6 +629,12 @@
 #include "NGAP_XnTLAs.h"
 #include "NGAP_XnTNLConfigurationInfo.h"
 #include "NGAP_EXTERNAL.h"
+#include "NGAP_ExtendedUEIdentityIndexValue.h"
+#include "NGAP_MicoAllPLMN.h"
+#include "NGAP_QosFlowFeedbackItem.h"
+#include "NGAP_QosFlowFeedbackList.h"
+#include "NGAP_UpdateFeedback.h"
+
 
 #include "asn1c/util/conv.h"
 #include "asn1c/util/message.h"

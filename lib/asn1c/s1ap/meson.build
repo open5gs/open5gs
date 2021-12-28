@@ -1293,6 +1293,8 @@ libasn1c_s1ap_sources = files('''
 	S1AP_URI-Address.h
 	S1AP_WUS-Assistance-Information.c
 	S1AP_WUS-Assistance-Information.h
+    S1AP_EmergencyIndicator.c
+	S1AP_EmergencyIndicator.h
 '''.split())
 
 libasn1c_s1ap_inc = include_directories('.')

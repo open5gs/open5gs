@@ -23,4 +23,5 @@ RUN apk update && \
         libmicrohttpd-dev \
         curl-dev \
         nghttp2-dev \
+        talloc-dev \
         iproute2

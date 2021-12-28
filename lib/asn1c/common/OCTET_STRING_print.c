@@ -26,7 +26,7 @@ OCTET_STRING_print(const asn_TYPE_descriptor_t *td, const void *sptr,
      * Dump the contents of the buffer in hexadecimal.
      */
     buf = st->buf;
-    end = buf + st->size;
+    end = (buf == NULL)? NULL : buf + st->size;
     for(i = 0; buf < end; buf++, i++) {
         if(!(i % 16) && (i || st->size > 16)) {
             if(cb(scratch, p - scratch, app_key) < 0)

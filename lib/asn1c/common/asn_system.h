@@ -27,12 +27,15 @@
 #include <limits.h>	/* For LONG_MAX */
 #include <stdarg.h>	/* For va_start */
 #include <stddef.h>	/* for offsetof and ptrdiff_t */
+#include <inttypes.h>	/* for PRIdMAX */
 
 #ifdef	_WIN32
 
 #include <malloc.h>
+#ifndef __MINGW32__
 #define	 snprintf	_snprintf
 #define	 vsnprintf	_vsnprintf
+#endif
 
 /* To avoid linking with ws2_32.lib, here's the definition of ntohl() */
 #define sys_ntohl(l)	((((l) << 24)  & 0xff000000)	\

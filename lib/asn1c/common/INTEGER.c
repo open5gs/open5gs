@@ -6,6 +6,7 @@
 #include <asn_internal.h>
 #include <INTEGER.h>
 #include <errno.h>
+#include <inttypes.h>
 
 /*
  * INTEGER basic type description.
