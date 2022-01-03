@@ -32,10 +32,9 @@ OpenAPI_nf_group_cond_t *OpenAPI_nf_group_cond_create(
     char *nf_group_id
 )
 {
-    OpenAPI_nf_group_cond_t *nf_group_cond_local_var = OpenAPI_malloc(sizeof(OpenAPI_nf_group_cond_t));
-    if (!nf_group_cond_local_var) {
-        return NULL;
-    }
+    OpenAPI_nf_group_cond_t *nf_group_cond_local_var = ogs_malloc(sizeof(OpenAPI_nf_group_cond_t));
+    ogs_assert(nf_group_cond_local_var);
+
     nf_group_cond_local_var->nf_type = nf_type;
     nf_group_cond_local_var->nf_group_id = nf_group_id;
 
@@ -105,7 +104,7 @@ OpenAPI_nf_group_cond_t *OpenAPI_nf_group_cond_parseFromJSON(cJSON *nf_group_con
 
     nf_group_cond_local_var = OpenAPI_nf_group_cond_create (
         nf_typeVariable,
-        ogs_strdup_or_assert(nf_group_id->valuestring)
+        ogs_strdup(nf_group_id->valuestring)
     );
 
     return nf_group_cond_local_var;

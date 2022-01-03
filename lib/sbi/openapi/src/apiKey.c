@@ -4,10 +4,15 @@
 
 OpenAPI_map_t *OpenAPI_map_create(char *key, void *value)
 {
-    OpenAPI_map_t *OpenAPI_map = ogs_malloc(sizeof(OpenAPI_map_t));
+    OpenAPI_map_t *OpenAPI_map = NULL;
+
+    ogs_assert(key);
+
+    OpenAPI_map = ogs_malloc(sizeof(OpenAPI_map_t));
     ogs_assert(OpenAPI_map);
     OpenAPI_map->key = key;
     OpenAPI_map->value = value;
+
     return OpenAPI_map;
 }
 

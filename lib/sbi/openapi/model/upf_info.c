@@ -28,10 +28,9 @@ OpenAPI_upf_info_t *OpenAPI_upf_info_create(
     int data_forwarding
 )
 {
-    OpenAPI_upf_info_t *upf_info_local_var = OpenAPI_malloc(sizeof(OpenAPI_upf_info_t));
-    if (!upf_info_local_var) {
-        return NULL;
-    }
+    OpenAPI_upf_info_t *upf_info_local_var = ogs_malloc(sizeof(OpenAPI_upf_info_t));
+    ogs_assert(upf_info_local_var);
+
     upf_info_local_var->s_nssai_upf_info_list = s_nssai_upf_info_list;
     upf_info_local_var->smf_serving_area = smf_serving_area;
     upf_info_local_var->interface_upf_info_list = interface_upf_info_list;
@@ -328,7 +327,7 @@ OpenAPI_upf_info_t *OpenAPI_upf_info_parseFromJSON(cJSON *upf_infoJSON)
         ogs_error("OpenAPI_upf_info_parseFromJSON() failed [smf_serving_area]");
         goto end;
     }
-    OpenAPI_list_add(smf_serving_areaList , ogs_strdup_or_assert(smf_serving_area_local->valuestring));
+    OpenAPI_list_add(smf_serving_areaList , ogs_strdup(smf_serving_area_local->valuestring));
     }
     }
 

@@ -41,6 +41,7 @@ static void test2_func(abts_case *tc, void *data)
 
 static void test3_func(abts_case *tc, void *data)
 {
+#if OGS_USE_TALLOC != 1
     char *ptr = ogs_realloc(0, 10);
     ABTS_PTR_NOTNULL(tc, ptr);
     ogs_free(ptr);
@@ -48,10 +49,12 @@ static void test3_func(abts_case *tc, void *data)
     ptr = ogs_malloc(20);
     ABTS_PTR_NOTNULL(tc, ptr);
     ptr = ogs_realloc(ptr, 0);
+#endif
 }
 
 static void test4_func(abts_case *tc, void *data)
 {
+#if OGS_USE_TALLOC != 1
     char *p, *q;
 
     p = ogs_malloc(10);
@@ -68,6 +71,7 @@ static void test4_func(abts_case *tc, void *data)
     ABTS_TRUE(tc, p != q);
     ABTS_TRUE(tc, memcmp(p, q, 10) == 0);
     ogs_free(q);
+#endif
 }
 
 abts_suite *test_memory(abts_suite *suite)

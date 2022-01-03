@@ -8,10 +8,9 @@ OpenAPI_npn_access_info_t *OpenAPI_npn_access_info_create(
     OpenAPI_list_t *cell_cag_info
 )
 {
-    OpenAPI_npn_access_info_t *npn_access_info_local_var = OpenAPI_malloc(sizeof(OpenAPI_npn_access_info_t));
-    if (!npn_access_info_local_var) {
-        return NULL;
-    }
+    OpenAPI_npn_access_info_t *npn_access_info_local_var = ogs_malloc(sizeof(OpenAPI_npn_access_info_t));
+    ogs_assert(npn_access_info_local_var);
+
     npn_access_info_local_var->cell_cag_info = cell_cag_info;
 
     return npn_access_info_local_var;
@@ -79,7 +78,7 @@ OpenAPI_npn_access_info_t *OpenAPI_npn_access_info_parseFromJSON(cJSON *npn_acce
         ogs_error("OpenAPI_npn_access_info_parseFromJSON() failed [cell_cag_info]");
         goto end;
     }
-    OpenAPI_list_add(cell_cag_infoList , ogs_strdup_or_assert(cell_cag_info_local->valuestring));
+    OpenAPI_list_add(cell_cag_infoList , ogs_strdup(cell_cag_info_local->valuestring));
     }
     }
 

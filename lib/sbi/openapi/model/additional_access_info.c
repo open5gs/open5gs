@@ -9,10 +9,9 @@ OpenAPI_additional_access_info_t *OpenAPI_additional_access_info_create(
     OpenAPI_rat_type_e rat_type
 )
 {
-    OpenAPI_additional_access_info_t *additional_access_info_local_var = OpenAPI_malloc(sizeof(OpenAPI_additional_access_info_t));
-    if (!additional_access_info_local_var) {
-        return NULL;
-    }
+    OpenAPI_additional_access_info_t *additional_access_info_local_var = ogs_malloc(sizeof(OpenAPI_additional_access_info_t));
+    ogs_assert(additional_access_info_local_var);
+
     additional_access_info_local_var->access_type = access_type;
     additional_access_info_local_var->rat_type = rat_type;
 

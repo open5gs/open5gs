@@ -9,10 +9,9 @@ OpenAPI_expected_ue_behavior_t *OpenAPI_expected_ue_behavior_create(
     char *validity_time
 )
 {
-    OpenAPI_expected_ue_behavior_t *expected_ue_behavior_local_var = OpenAPI_malloc(sizeof(OpenAPI_expected_ue_behavior_t));
-    if (!expected_ue_behavior_local_var) {
-        return NULL;
-    }
+    OpenAPI_expected_ue_behavior_t *expected_ue_behavior_local_var = ogs_malloc(sizeof(OpenAPI_expected_ue_behavior_t));
+    ogs_assert(expected_ue_behavior_local_var);
+
     expected_ue_behavior_local_var->exp_move_trajectory = exp_move_trajectory;
     expected_ue_behavior_local_var->validity_time = validity_time;
 
@@ -111,7 +110,7 @@ OpenAPI_expected_ue_behavior_t *OpenAPI_expected_ue_behavior_parseFromJSON(cJSON
 
     expected_ue_behavior_local_var = OpenAPI_expected_ue_behavior_create (
         exp_move_trajectoryList,
-        ogs_strdup_or_assert(validity_time->valuestring)
+        ogs_strdup(validity_time->valuestring)
     );
 
     return expected_ue_behavior_local_var;

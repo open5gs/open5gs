@@ -9,10 +9,9 @@ OpenAPI_key_amf_t *OpenAPI_key_amf_create(
     char *key_val
 )
 {
-    OpenAPI_key_amf_t *key_amf_local_var = OpenAPI_malloc(sizeof(OpenAPI_key_amf_t));
-    if (!key_amf_local_var) {
-        return NULL;
-    }
+    OpenAPI_key_amf_t *key_amf_local_var = ogs_malloc(sizeof(OpenAPI_key_amf_t));
+    ogs_assert(key_amf_local_var);
+
     key_amf_local_var->key_type = key_type;
     key_amf_local_var->key_val = key_val;
 
@@ -82,7 +81,7 @@ OpenAPI_key_amf_t *OpenAPI_key_amf_parseFromJSON(cJSON *key_amfJSON)
 
     key_amf_local_var = OpenAPI_key_amf_create (
         key_typeVariable,
-        ogs_strdup_or_assert(key_val->valuestring)
+        ogs_strdup(key_val->valuestring)
     );
 
     return key_amf_local_var;

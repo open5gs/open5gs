@@ -8,10 +8,9 @@ OpenAPI_guami_list_cond_t *OpenAPI_guami_list_cond_create(
     OpenAPI_list_t *guami_list
 )
 {
-    OpenAPI_guami_list_cond_t *guami_list_cond_local_var = OpenAPI_malloc(sizeof(OpenAPI_guami_list_cond_t));
-    if (!guami_list_cond_local_var) {
-        return NULL;
-    }
+    OpenAPI_guami_list_cond_t *guami_list_cond_local_var = ogs_malloc(sizeof(OpenAPI_guami_list_cond_t));
+    ogs_assert(guami_list_cond_local_var);
+
     guami_list_cond_local_var->guami_list = guami_list;
 
     return guami_list_cond_local_var;

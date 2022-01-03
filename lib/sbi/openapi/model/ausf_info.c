@@ -10,10 +10,9 @@ OpenAPI_ausf_info_t *OpenAPI_ausf_info_create(
     OpenAPI_list_t *routing_indicators
 )
 {
-    OpenAPI_ausf_info_t *ausf_info_local_var = OpenAPI_malloc(sizeof(OpenAPI_ausf_info_t));
-    if (!ausf_info_local_var) {
-        return NULL;
-    }
+    OpenAPI_ausf_info_t *ausf_info_local_var = ogs_malloc(sizeof(OpenAPI_ausf_info_t));
+    ogs_assert(ausf_info_local_var);
+
     ausf_info_local_var->group_id = group_id;
     ausf_info_local_var->supi_ranges = supi_ranges;
     ausf_info_local_var->routing_indicators = routing_indicators;
@@ -147,12 +146,12 @@ OpenAPI_ausf_info_t *OpenAPI_ausf_info_parseFromJSON(cJSON *ausf_infoJSON)
         ogs_error("OpenAPI_ausf_info_parseFromJSON() failed [routing_indicators]");
         goto end;
     }
-    OpenAPI_list_add(routing_indicatorsList , ogs_strdup_or_assert(routing_indicators_local->valuestring));
+    OpenAPI_list_add(routing_indicatorsList , ogs_strdup(routing_indicators_local->valuestring));
     }
     }
 
     ausf_info_local_var = OpenAPI_ausf_info_create (
-        group_id ? ogs_strdup_or_assert(group_id->valuestring) : NULL,
+        group_id ? ogs_strdup(group_id->valuestring) : NULL,
         supi_ranges ? supi_rangesList : NULL,
         routing_indicators ? routing_indicatorsList : NULL
     );

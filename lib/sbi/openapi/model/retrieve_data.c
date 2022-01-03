@@ -9,10 +9,9 @@ OpenAPI_retrieve_data_t *OpenAPI_retrieve_data_create(
     int small_data_rate_status_req
 )
 {
-    OpenAPI_retrieve_data_t *retrieve_data_local_var = OpenAPI_malloc(sizeof(OpenAPI_retrieve_data_t));
-    if (!retrieve_data_local_var) {
-        return NULL;
-    }
+    OpenAPI_retrieve_data_t *retrieve_data_local_var = ogs_malloc(sizeof(OpenAPI_retrieve_data_t));
+    ogs_assert(retrieve_data_local_var);
+
     retrieve_data_local_var->is_small_data_rate_status_req = is_small_data_rate_status_req;
     retrieve_data_local_var->small_data_rate_status_req = small_data_rate_status_req;
 

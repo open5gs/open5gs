@@ -12,10 +12,9 @@ OpenAPI_ue_authentication_ctx_t *OpenAPI_ue_authentication_ctx_create(
     char *serving_network_name
 )
 {
-    OpenAPI_ue_authentication_ctx_t *ue_authentication_ctx_local_var = OpenAPI_malloc(sizeof(OpenAPI_ue_authentication_ctx_t));
-    if (!ue_authentication_ctx_local_var) {
-        return NULL;
-    }
+    OpenAPI_ue_authentication_ctx_t *ue_authentication_ctx_local_var = ogs_malloc(sizeof(OpenAPI_ue_authentication_ctx_t));
+    ogs_assert(ue_authentication_ctx_local_var);
+
     ue_authentication_ctx_local_var->auth_type = auth_type;
     ue_authentication_ctx_local_var->_5g_auth_data = _5g_auth_data;
     ue_authentication_ctx_local_var->eap_payload = eap_payload;
@@ -42,6 +41,7 @@ void OpenAPI_ue_authentication_ctx_free(OpenAPI_ue_authentication_ctx_t *ue_auth
     if (ue_authentication_ctx->_links) {
         OpenAPI_list_for_each(ue_authentication_ctx->_links, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            ogs_free(localKeyValue->key);
             OpenAPI_links_value_schema_free(localKeyValue->value);
             ogs_free(localKeyValue);
         }
@@ -174,7 +174,7 @@ OpenAPI_ue_authentication_ctx_t *OpenAPI_ue_authentication_ctx_parseFromJSON(cJS
             goto end;
         }
         localMapKeyPair = OpenAPI_map_create(
-            localMapObject->string, OpenAPI_links_value_schema_parseFromJSON(localMapObject));
+            ogs_strdup(localMapObject->string), OpenAPI_links_value_schema_parseFromJSON(localMapObject));
         OpenAPI_list_add(_linksList , localMapKeyPair);
     }
 
@@ -190,9 +190,9 @@ OpenAPI_ue_authentication_ctx_t *OpenAPI_ue_authentication_ctx_parseFromJSON(cJS
     ue_authentication_ctx_local_var = OpenAPI_ue_authentication_ctx_create (
         auth_typeVariable,
         _5g_auth_data ? _5g_auth_data_local_nonprim : NULL,
-        eap_payload ? ogs_strdup_or_assert(eap_payload->valuestring) : NULL,
+        eap_payload ? ogs_strdup(eap_payload->valuestring) : NULL,
         _linksList,
-        serving_network_name ? ogs_strdup_or_assert(serving_network_name->valuestring) : NULL
+        serving_network_name ? ogs_strdup(serving_network_name->valuestring) : NULL
     );
 
     return ue_authentication_ctx_local_var;

@@ -10,10 +10,9 @@ OpenAPI_location_area_t *OpenAPI_location_area_create(
     OpenAPI_network_area_info_t *nw_area_info
 )
 {
-    OpenAPI_location_area_t *location_area_local_var = OpenAPI_malloc(sizeof(OpenAPI_location_area_t));
-    if (!location_area_local_var) {
-        return NULL;
-    }
+    OpenAPI_location_area_t *location_area_local_var = ogs_malloc(sizeof(OpenAPI_location_area_t));
+    ogs_assert(location_area_local_var);
+
     location_area_local_var->geographic_areas = geographic_areas;
     location_area_local_var->civic_addresses = civic_addresses;
     location_area_local_var->nw_area_info = nw_area_info;

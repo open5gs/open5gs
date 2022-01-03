@@ -10,10 +10,9 @@ OpenAPI_ue_context_create_error_t *OpenAPI_ue_context_create_error_create(
     OpenAPI_n2_info_content_t *target_to_source_failure_data
 )
 {
-    OpenAPI_ue_context_create_error_t *ue_context_create_error_local_var = OpenAPI_malloc(sizeof(OpenAPI_ue_context_create_error_t));
-    if (!ue_context_create_error_local_var) {
-        return NULL;
-    }
+    OpenAPI_ue_context_create_error_t *ue_context_create_error_local_var = ogs_malloc(sizeof(OpenAPI_ue_context_create_error_t));
+    ogs_assert(ue_context_create_error_local_var);
+
     ue_context_create_error_local_var->error = error;
     ue_context_create_error_local_var->ngap_cause = ngap_cause;
     ue_context_create_error_local_var->target_to_source_failure_data = target_to_source_failure_data;

@@ -2113,6 +2113,7 @@ static void http_message_free(ogs_sbi_http_message_t *http)
         for (hi = ogs_hash_first(http->params); hi; hi = ogs_hash_next(hi)) {
             char *key = (char *)ogs_hash_this_key(hi);
             char *val = ogs_hash_this_val(hi);
+            ogs_hash_set(http->params, key, strlen(key), NULL);
             ogs_free(key);
             ogs_free(val);
         }
@@ -2124,6 +2125,7 @@ static void http_message_free(ogs_sbi_http_message_t *http)
         for (hi = ogs_hash_first(http->headers); hi; hi = ogs_hash_next(hi)) {
             char *key = (char *)ogs_hash_this_key(hi);
             char *val = ogs_hash_this_val(hi);
+            ogs_hash_set(http->headers, key, strlen(key), NULL);
             ogs_free(key);
             ogs_free(val);
         }

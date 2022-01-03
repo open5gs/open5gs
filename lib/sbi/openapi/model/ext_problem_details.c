@@ -21,10 +21,9 @@ OpenAPI_ext_problem_details_t *OpenAPI_ext_problem_details_create(
     int remote_error
 )
 {
-    OpenAPI_ext_problem_details_t *ext_problem_details_local_var = OpenAPI_malloc(sizeof(OpenAPI_ext_problem_details_t));
-    if (!ext_problem_details_local_var) {
-        return NULL;
-    }
+    OpenAPI_ext_problem_details_t *ext_problem_details_local_var = ogs_malloc(sizeof(OpenAPI_ext_problem_details_t));
+    ogs_assert(ext_problem_details_local_var);
+
     ext_problem_details_local_var->type = type;
     ext_problem_details_local_var->title = title;
     ext_problem_details_local_var->is_status = is_status;
@@ -310,18 +309,18 @@ OpenAPI_ext_problem_details_t *OpenAPI_ext_problem_details_parseFromJSON(cJSON *
     }
 
     ext_problem_details_local_var = OpenAPI_ext_problem_details_create (
-        type ? ogs_strdup_or_assert(type->valuestring) : NULL,
-        title ? ogs_strdup_or_assert(title->valuestring) : NULL,
+        type ? ogs_strdup(type->valuestring) : NULL,
+        title ? ogs_strdup(title->valuestring) : NULL,
         status ? true : false,
         status ? status->valuedouble : 0,
-        detail ? ogs_strdup_or_assert(detail->valuestring) : NULL,
-        instance ? ogs_strdup_or_assert(instance->valuestring) : NULL,
-        cause ? ogs_strdup_or_assert(cause->valuestring) : NULL,
+        detail ? ogs_strdup(detail->valuestring) : NULL,
+        instance ? ogs_strdup(instance->valuestring) : NULL,
+        cause ? ogs_strdup(cause->valuestring) : NULL,
         invalid_params ? invalid_paramsList : NULL,
-        supported_features ? ogs_strdup_or_assert(supported_features->valuestring) : NULL,
+        supported_features ? ogs_strdup(supported_features->valuestring) : NULL,
         access_token_error ? access_token_error_local_nonprim : NULL,
         access_token_request ? access_token_request_local_nonprim : NULL,
-        nrf_id ? ogs_strdup_or_assert(nrf_id->valuestring) : NULL,
+        nrf_id ? ogs_strdup(nrf_id->valuestring) : NULL,
         remote_error ? true : false,
         remote_error ? remote_error->valueint : 0
     );

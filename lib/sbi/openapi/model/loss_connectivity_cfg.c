@@ -9,10 +9,9 @@ OpenAPI_loss_connectivity_cfg_t *OpenAPI_loss_connectivity_cfg_create(
     int max_detection_time
 )
 {
-    OpenAPI_loss_connectivity_cfg_t *loss_connectivity_cfg_local_var = OpenAPI_malloc(sizeof(OpenAPI_loss_connectivity_cfg_t));
-    if (!loss_connectivity_cfg_local_var) {
-        return NULL;
-    }
+    OpenAPI_loss_connectivity_cfg_t *loss_connectivity_cfg_local_var = ogs_malloc(sizeof(OpenAPI_loss_connectivity_cfg_t));
+    ogs_assert(loss_connectivity_cfg_local_var);
+
     loss_connectivity_cfg_local_var->is_max_detection_time = is_max_detection_time;
     loss_connectivity_cfg_local_var->max_detection_time = max_detection_time;
 

@@ -9,10 +9,9 @@ OpenAPI_plmn_id_1_t *OpenAPI_plmn_id_1_create(
     char *mnc
 )
 {
-    OpenAPI_plmn_id_1_t *plmn_id_1_local_var = OpenAPI_malloc(sizeof(OpenAPI_plmn_id_1_t));
-    if (!plmn_id_1_local_var) {
-        return NULL;
-    }
+    OpenAPI_plmn_id_1_t *plmn_id_1_local_var = ogs_malloc(sizeof(OpenAPI_plmn_id_1_t));
+    ogs_assert(plmn_id_1_local_var);
+
     plmn_id_1_local_var->mcc = mcc;
     plmn_id_1_local_var->mnc = mnc;
 
@@ -80,8 +79,8 @@ OpenAPI_plmn_id_1_t *OpenAPI_plmn_id_1_parseFromJSON(cJSON *plmn_id_1JSON)
     }
 
     plmn_id_1_local_var = OpenAPI_plmn_id_1_create (
-        ogs_strdup_or_assert(mcc->valuestring),
-        ogs_strdup_or_assert(mnc->valuestring)
+        ogs_strdup(mcc->valuestring),
+        ogs_strdup(mnc->valuestring)
     );
 
     return plmn_id_1_local_var;

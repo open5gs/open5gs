@@ -128,10 +128,9 @@ OpenAPI_{{classname}}_t *OpenAPI_{{classname}}_create(
     {{/isContainer}}
 {{/vars}})
 {
-    OpenAPI_{{classname}}_t *{{classname}}_local_var = OpenAPI_malloc(sizeof(OpenAPI_{{classname}}_t));
-    if (!{{classname}}_local_var) {
-        return NULL;
-    }
+    OpenAPI_{{classname}}_t *{{classname}}_local_var = ogs_malloc(sizeof(OpenAPI_{{classname}}_t));
+    ogs_assert({{classname}}_local_var);
+
 {{#vars}}
     {{^isContainer}}
         {{#isPrimitiveType}}
@@ -219,6 +218,7 @@ void OpenAPI_{{classname}}_free(OpenAPI_{{classname}}_t *{{classname}})
             {{#isPrimitiveType}}
     OpenAPI_list_for_each({{classname}}->{{name}}, node) {
         OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+        ogs_free(localKeyValue->key);
         ogs_free(localKeyValue->value);
         ogs_free(localKeyValue);
     }
@@ -227,6 +227,7 @@ void OpenAPI_{{classname}}_free(OpenAPI_{{classname}}_t *{{classname}})
             {{^isPrimitiveType}}
     OpenAPI_list_for_each({{classname}}->{{name}}, node) {
         OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+        ogs_free(localKeyValue->key);
         OpenAPI_{{complexType}}_free(localKeyValue->value);
         ogs_free(localKeyValue);
     }
@@ -591,7 +592,8 @@ OpenAPI_{{classname}}_t *OpenAPI_{{classname}}_parseFromJSON(cJSON *{{classname}
     }
             {{/isByteArray}}
             {{#isBinary}}
-    OpenAPI_binary_t* decoded_str_{{{name}}} = OpenAPI_malloc(sizeof(OpenAPI_binary_t));
+    OpenAPI_binary_t* decoded_str_{{{name}}} = ogs_malloc(sizeof(OpenAPI_binary_t));
+    ogs_assert(decoded_str_{{{name}}});
                 {{^required}}
     if ({{{name}}}) {
                 {{/required}}
@@ -694,7 +696,7 @@ OpenAPI_{{classname}}_t *OpenAPI_{{classname}}_parseFromJSON(cJSON *{{classname}
         ogs_error("OpenAPI_{{classname}}_parseFromJSON() failed [{{{name}}}]");
         goto end;
     }
-    OpenAPI_list_add({{{name}}}List , ogs_strdup_or_assert({{{name}}}_local->valuestring));
+    OpenAPI_list_add({{{name}}}List , ogs_strdup({{{name}}}_local->valuestring));
                         {{/isString}}
                         {{#isNumeric}}
     if (!cJSON_IsNumber({{{name}}}_local)) {
@@ -782,29 +784,29 @@ OpenAPI_{{classname}}_t *OpenAPI_{{classname}}_parseFromJSON(cJSON *{{classname}
             ogs_error("OpenAPI_{{classname}}_parseFromJSON() failed [{{{name}}}]");
             goto end;
         }
-        localMapKeyPair = OpenAPI_map_create(ogs_strdup_or_assert(localMapObject->string),ogs_strdup_or_assert(localMapObject->valuestring));
+        localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string),ogs_strdup(localMapObject->valuestring));
                     {{/isString}}
                     {{#isBoolean}}
         if (!cJSON_IsBool(localMapObject)) {
             ogs_error("OpenAPI_{{classname}}_parseFromJSON() failed [{{{name}}}]");
             goto end;
         }
-        localMapKeyPair = OpenAPI_map_create(ogs_strdup_or_assert(localMapObject->string), &localMapObject->valueint);
+        localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), &localMapObject->valueint);
                     {{/isBoolean}}
                     {{#isNumeric}}
         if (!cJSON_IsNumber(localMapObject)) {
             ogs_error("OpenAPI_{{classname}}_parseFromJSON() failed [{{{name}}}]");
             goto end;
         }
-        localMapKeyPair = OpenAPI_map_create(ogs_strdup_or_assert(localMapObject->string),&localMapObject->valuedouble );
+        localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string),&localMapObject->valuedouble );
                     {{/isNumeric}}
                 {{/isPrimitiveType}}
                 {{^isPrimitiveType}}
         if (cJSON_IsObject({{{name}}}_local_map)) {
             localMapKeyPair = OpenAPI_map_create(
-                localMapObject->string, OpenAPI_{{complexType}}_parseFromJSON(localMapObject));
+                ogs_strdup(localMapObject->string), OpenAPI_{{complexType}}_parseFromJSON(localMapObject));
         } else if (cJSON_IsNull({{{name}}}_local_map)) {
-            localMapKeyPair = OpenAPI_map_create(localMapObject->string, NULL);
+            localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
         } else {
             ogs_error("OpenAPI_{{classname}}_parseFromJSON() failed [{{{name}}}]");
             goto end;
@@ -831,10 +833,10 @@ OpenAPI_{{classname}}_t *OpenAPI_{{classname}}_parseFromJSON(cJSON *{{classname}
         {{^required}}{{{name}}} ? {{/required}}{{{name}}}_local_nonprim{{^required}} : NULL{{/required}}{{^-last}},{{/-last}}
                 {{/isModel}}
                 {{#isUuid}}
-        {{^required}}{{{name}}} ? {{/required}}ogs_strdup_or_assert({{{name}}}->valuestring){{^required}} : NULL{{/required}}{{^-last}},{{/-last}}
+        {{^required}}{{{name}}} ? {{/required}}ogs_strdup({{{name}}}->valuestring){{^required}} : NULL{{/required}}{{^-last}},{{/-last}}
                 {{/isUuid}}
                 {{#isEmail}}
-        {{^required}}{{{name}}} ? {{/required}}ogs_strdup_or_assert({{{name}}}->valuestring){{^required}} : NULL{{/required}}{{^-last}},{{/-last}}
+        {{^required}}{{{name}}} ? {{/required}}ogs_strdup({{{name}}}->valuestring){{^required}} : NULL{{/required}}{{^-last}},{{/-last}}
                 {{/isEmail}}
                 {{#isFreeFormObject}}
         {{^required}}{{{name}}} ? {{/required}}{{{name}}}_local_object{{^required}} : NULL{{/required}}{{^-last}},{{/-last}}
@@ -855,7 +857,7 @@ OpenAPI_{{classname}}_t *OpenAPI_{{classname}}_parseFromJSON(cJSON *{{classname}
         {{^required}}{{{name}}} ? {{/required}}{{{name}}}->valueint{{^required}} : 0{{/required}}{{^-last}},{{/-last}}
                 {{/isBoolean}}
                 {{#isString}}
-        {{^required}}{{{name}}} ? {{/required}}ogs_strdup_or_assert({{{name}}}->valuestring){{^required}} : NULL{{/required}}{{^-last}},{{/-last}}
+        {{^required}}{{{name}}} ? {{/required}}ogs_strdup({{{name}}}->valuestring){{^required}} : NULL{{/required}}{{^-last}},{{/-last}}
                 {{/isString}}
             {{/isEnum}}
             {{#isByteArray}}
@@ -865,10 +867,10 @@ OpenAPI_{{classname}}_t *OpenAPI_{{classname}}_parseFromJSON(cJSON *{{classname}
         {{^required}}{{{name}}} ? {{/required}}decoded_str_{{{name}}}{{^required}} : NULL{{/required}}{{^-last}},{{/-last}}
             {{/isBinary}}
             {{#isDate}}
-        {{^required}}{{{name}}} ? {{/required}}ogs_strdup_or_assert({{{name}}}->valuestring){{^required}} : NULL{{/required}}{{^-last}},{{/-last}}
+        {{^required}}{{{name}}} ? {{/required}}ogs_strdup({{{name}}}->valuestring){{^required}} : NULL{{/required}}{{^-last}},{{/-last}}
             {{/isDate}}
             {{#isDateTime}}
-        {{^required}}{{{name}}} ? {{/required}}ogs_strdup_or_assert({{{name}}}->valuestring){{^required}} : NULL{{/required}}{{^-last}},{{/-last}}
+        {{^required}}{{{name}}} ? {{/required}}ogs_strdup({{{name}}}->valuestring){{^required}} : NULL{{/required}}{{^-last}},{{/-last}}
             {{/isDateTime}}
         {{/isPrimitiveType}}
     {{/isContainer}}

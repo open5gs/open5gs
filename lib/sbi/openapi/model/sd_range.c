@@ -9,10 +9,9 @@ OpenAPI_sd_range_t *OpenAPI_sd_range_create(
     char *end
 )
 {
-    OpenAPI_sd_range_t *sd_range_local_var = OpenAPI_malloc(sizeof(OpenAPI_sd_range_t));
-    if (!sd_range_local_var) {
-        return NULL;
-    }
+    OpenAPI_sd_range_t *sd_range_local_var = ogs_malloc(sizeof(OpenAPI_sd_range_t));
+    ogs_assert(sd_range_local_var);
+
     sd_range_local_var->start = start;
     sd_range_local_var->end = end;
 
@@ -80,8 +79,8 @@ OpenAPI_sd_range_t *OpenAPI_sd_range_parseFromJSON(cJSON *sd_rangeJSON)
     }
 
     sd_range_local_var = OpenAPI_sd_range_create (
-        start ? ogs_strdup_or_assert(start->valuestring) : NULL,
-        end ? ogs_strdup_or_assert(end->valuestring) : NULL
+        start ? ogs_strdup(start->valuestring) : NULL,
+        end ? ogs_strdup(end->valuestring) : NULL
     );
 
     return sd_range_local_var;

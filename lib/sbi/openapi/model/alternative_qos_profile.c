@@ -13,10 +13,9 @@ OpenAPI_alternative_qos_profile_t *OpenAPI_alternative_qos_profile_create(
     char *packet_err_rate
 )
 {
-    OpenAPI_alternative_qos_profile_t *alternative_qos_profile_local_var = OpenAPI_malloc(sizeof(OpenAPI_alternative_qos_profile_t));
-    if (!alternative_qos_profile_local_var) {
-        return NULL;
-    }
+    OpenAPI_alternative_qos_profile_t *alternative_qos_profile_local_var = ogs_malloc(sizeof(OpenAPI_alternative_qos_profile_t));
+    ogs_assert(alternative_qos_profile_local_var);
+
     alternative_qos_profile_local_var->index = index;
     alternative_qos_profile_local_var->gua_fbr_dl = gua_fbr_dl;
     alternative_qos_profile_local_var->gua_fbr_ul = gua_fbr_ul;
@@ -139,11 +138,11 @@ OpenAPI_alternative_qos_profile_t *OpenAPI_alternative_qos_profile_parseFromJSON
     alternative_qos_profile_local_var = OpenAPI_alternative_qos_profile_create (
         
         index->valuedouble,
-        gua_fbr_dl ? ogs_strdup_or_assert(gua_fbr_dl->valuestring) : NULL,
-        gua_fbr_ul ? ogs_strdup_or_assert(gua_fbr_ul->valuestring) : NULL,
+        gua_fbr_dl ? ogs_strdup(gua_fbr_dl->valuestring) : NULL,
+        gua_fbr_ul ? ogs_strdup(gua_fbr_ul->valuestring) : NULL,
         packet_delay_budget ? true : false,
         packet_delay_budget ? packet_delay_budget->valuedouble : 0,
-        packet_err_rate ? ogs_strdup_or_assert(packet_err_rate->valuestring) : NULL
+        packet_err_rate ? ogs_strdup(packet_err_rate->valuestring) : NULL
     );
 
     return alternative_qos_profile_local_var;

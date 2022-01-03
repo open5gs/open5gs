@@ -40,10 +40,9 @@ OpenAPI_nf_service_t *OpenAPI_nf_service_create(
     int oauth2_required
 )
 {
-    OpenAPI_nf_service_t *nf_service_local_var = OpenAPI_malloc(sizeof(OpenAPI_nf_service_t));
-    if (!nf_service_local_var) {
-        return NULL;
-    }
+    OpenAPI_nf_service_t *nf_service_local_var = ogs_malloc(sizeof(OpenAPI_nf_service_t));
+    ogs_assert(nf_service_local_var);
+
     nf_service_local_var->service_instance_id = service_instance_id;
     nf_service_local_var->service_name = service_name;
     nf_service_local_var->versions = versions;
@@ -123,12 +122,14 @@ void OpenAPI_nf_service_free(OpenAPI_nf_service_t *nf_service)
     OpenAPI_list_free(nf_service->allowed_nssais);
     OpenAPI_list_for_each(nf_service->allowed_operations_per_nf_type, node) {
         OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+        ogs_free(localKeyValue->key);
         ogs_free(localKeyValue->value);
         ogs_free(localKeyValue);
     }
     OpenAPI_list_free(nf_service->allowed_operations_per_nf_type);
     OpenAPI_list_for_each(nf_service->allowed_operations_per_nf_instance, node) {
         OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+        ogs_free(localKeyValue->key);
         ogs_free(localKeyValue->value);
         ogs_free(localKeyValue);
     }
@@ -151,6 +152,7 @@ void OpenAPI_nf_service_free(OpenAPI_nf_service_t *nf_service)
     ogs_free(nf_service->vendor_id);
     OpenAPI_list_for_each(nf_service->supported_vendor_specific_features, node) {
         OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+        ogs_free(localKeyValue->key);
         ogs_free(localKeyValue->value);
         ogs_free(localKeyValue);
     }
@@ -752,7 +754,7 @@ OpenAPI_nf_service_t *OpenAPI_nf_service_parseFromJSON(cJSON *nf_serviceJSON)
         ogs_error("OpenAPI_nf_service_parseFromJSON() failed [allowed_nf_domains]");
         goto end;
     }
-    OpenAPI_list_add(allowed_nf_domainsList , ogs_strdup_or_assert(allowed_nf_domains_local->valuestring));
+    OpenAPI_list_add(allowed_nf_domainsList , ogs_strdup(allowed_nf_domains_local->valuestring));
     }
     }
 
@@ -883,7 +885,7 @@ OpenAPI_nf_service_t *OpenAPI_nf_service_parseFromJSON(cJSON *nf_serviceJSON)
         ogs_error("OpenAPI_nf_service_parseFromJSON() failed [nf_service_set_id_list]");
         goto end;
     }
-    OpenAPI_list_add(nf_service_set_id_listList , ogs_strdup_or_assert(nf_service_set_id_list_local->valuestring));
+    OpenAPI_list_add(nf_service_set_id_listList , ogs_strdup(nf_service_set_id_list_local->valuestring));
     }
     }
 
@@ -969,15 +971,15 @@ OpenAPI_nf_service_t *OpenAPI_nf_service_parseFromJSON(cJSON *nf_serviceJSON)
     }
 
     nf_service_local_var = OpenAPI_nf_service_create (
-        ogs_strdup_or_assert(service_instance_id->valuestring),
-        ogs_strdup_or_assert(service_name->valuestring),
+        ogs_strdup(service_instance_id->valuestring),
+        ogs_strdup(service_name->valuestring),
         versionsList,
         schemeVariable,
         nf_service_statusVariable,
-        fqdn ? ogs_strdup_or_assert(fqdn->valuestring) : NULL,
-        inter_plmn_fqdn ? ogs_strdup_or_assert(inter_plmn_fqdn->valuestring) : NULL,
+        fqdn ? ogs_strdup(fqdn->valuestring) : NULL,
+        inter_plmn_fqdn ? ogs_strdup(inter_plmn_fqdn->valuestring) : NULL,
         ip_end_points ? ip_end_pointsList : NULL,
-        api_prefix ? ogs_strdup_or_assert(api_prefix->valuestring) : NULL,
+        api_prefix ? ogs_strdup(api_prefix->valuestring) : NULL,
         default_notification_subscriptions ? default_notification_subscriptionsList : NULL,
         allowed_plmns ? allowed_plmnsList : NULL,
         allowed_snpns ? allowed_snpnsList : NULL,
@@ -992,13 +994,13 @@ OpenAPI_nf_service_t *OpenAPI_nf_service_parseFromJSON(cJSON *nf_serviceJSON)
         capacity ? capacity->valuedouble : 0,
         load ? true : false,
         load ? load->valuedouble : 0,
-        load_time_stamp ? ogs_strdup_or_assert(load_time_stamp->valuestring) : NULL,
-        recovery_time ? ogs_strdup_or_assert(recovery_time->valuestring) : NULL,
-        supported_features ? ogs_strdup_or_assert(supported_features->valuestring) : NULL,
+        load_time_stamp ? ogs_strdup(load_time_stamp->valuestring) : NULL,
+        recovery_time ? ogs_strdup(recovery_time->valuestring) : NULL,
+        supported_features ? ogs_strdup(supported_features->valuestring) : NULL,
         nf_service_set_id_list ? nf_service_set_id_listList : NULL,
         s_nssais ? s_nssaisList : NULL,
         per_plmn_snssai_list ? per_plmn_snssai_listList : NULL,
-        vendor_id ? ogs_strdup_or_assert(vendor_id->valuestring) : NULL,
+        vendor_id ? ogs_strdup(vendor_id->valuestring) : NULL,
         supported_vendor_specific_features ? supported_vendor_specific_featuresList : NULL,
         oauth2_required ? true : false,
         oauth2_required ? oauth2_required->valueint : 0

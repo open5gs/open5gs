@@ -9,10 +9,9 @@ OpenAPI_guami_t *OpenAPI_guami_create(
     char *amf_id
 )
 {
-    OpenAPI_guami_t *guami_local_var = OpenAPI_malloc(sizeof(OpenAPI_guami_t));
-    if (!guami_local_var) {
-        return NULL;
-    }
+    OpenAPI_guami_t *guami_local_var = ogs_malloc(sizeof(OpenAPI_guami_t));
+    ogs_assert(guami_local_var);
+
     guami_local_var->plmn_id = plmn_id;
     guami_local_var->amf_id = amf_id;
 
@@ -85,7 +84,7 @@ OpenAPI_guami_t *OpenAPI_guami_parseFromJSON(cJSON *guamiJSON)
 
     guami_local_var = OpenAPI_guami_create (
         plmn_id_local_nonprim,
-        ogs_strdup_or_assert(amf_id->valuestring)
+        ogs_strdup(amf_id->valuestring)
     );
 
     return guami_local_var;

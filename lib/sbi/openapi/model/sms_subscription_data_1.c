@@ -10,10 +10,9 @@ OpenAPI_sms_subscription_data_1_t *OpenAPI_sms_subscription_data_1_create(
     char *shared_sms_subs_data_id
 )
 {
-    OpenAPI_sms_subscription_data_1_t *sms_subscription_data_1_local_var = OpenAPI_malloc(sizeof(OpenAPI_sms_subscription_data_1_t));
-    if (!sms_subscription_data_1_local_var) {
-        return NULL;
-    }
+    OpenAPI_sms_subscription_data_1_t *sms_subscription_data_1_local_var = ogs_malloc(sizeof(OpenAPI_sms_subscription_data_1_t));
+    ogs_assert(sms_subscription_data_1_local_var);
+
     sms_subscription_data_1_local_var->is_sms_subscribed = is_sms_subscribed;
     sms_subscription_data_1_local_var->sms_subscribed = sms_subscribed;
     sms_subscription_data_1_local_var->shared_sms_subs_data_id = shared_sms_subs_data_id;
@@ -83,7 +82,7 @@ OpenAPI_sms_subscription_data_1_t *OpenAPI_sms_subscription_data_1_parseFromJSON
     sms_subscription_data_1_local_var = OpenAPI_sms_subscription_data_1_create (
         sms_subscribed ? true : false,
         sms_subscribed ? sms_subscribed->valueint : 0,
-        shared_sms_subs_data_id ? ogs_strdup_or_assert(shared_sms_subs_data_id->valuestring) : NULL
+        shared_sms_subs_data_id ? ogs_strdup(shared_sms_subs_data_id->valuestring) : NULL
     );
 
     return sms_subscription_data_1_local_var;

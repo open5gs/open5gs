@@ -35,10 +35,9 @@ OpenAPI_nwdaf_cond_t *OpenAPI_nwdaf_cond_create(
     OpenAPI_list_t *tai_range_list
 )
 {
-    OpenAPI_nwdaf_cond_t *nwdaf_cond_local_var = OpenAPI_malloc(sizeof(OpenAPI_nwdaf_cond_t));
-    if (!nwdaf_cond_local_var) {
-        return NULL;
-    }
+    OpenAPI_nwdaf_cond_t *nwdaf_cond_local_var = ogs_malloc(sizeof(OpenAPI_nwdaf_cond_t));
+    ogs_assert(nwdaf_cond_local_var);
+
     nwdaf_cond_local_var->condition_type = condition_type;
     nwdaf_cond_local_var->analytics_ids = analytics_ids;
     nwdaf_cond_local_var->snssai_list = snssai_list;
@@ -200,7 +199,7 @@ OpenAPI_nwdaf_cond_t *OpenAPI_nwdaf_cond_parseFromJSON(cJSON *nwdaf_condJSON)
         ogs_error("OpenAPI_nwdaf_cond_parseFromJSON() failed [analytics_ids]");
         goto end;
     }
-    OpenAPI_list_add(analytics_idsList , ogs_strdup_or_assert(analytics_ids_local->valuestring));
+    OpenAPI_list_add(analytics_idsList , ogs_strdup(analytics_ids_local->valuestring));
     }
     }
 

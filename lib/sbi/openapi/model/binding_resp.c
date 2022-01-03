@@ -9,10 +9,9 @@ OpenAPI_binding_resp_t *OpenAPI_binding_resp_create(
     OpenAPI_list_t *pcf_sm_ip_end_points
 )
 {
-    OpenAPI_binding_resp_t *binding_resp_local_var = OpenAPI_malloc(sizeof(OpenAPI_binding_resp_t));
-    if (!binding_resp_local_var) {
-        return NULL;
-    }
+    OpenAPI_binding_resp_t *binding_resp_local_var = ogs_malloc(sizeof(OpenAPI_binding_resp_t));
+    ogs_assert(binding_resp_local_var);
+
     binding_resp_local_var->pcf_sm_fqdn = pcf_sm_fqdn;
     binding_resp_local_var->pcf_sm_ip_end_points = pcf_sm_ip_end_points;
 
@@ -110,7 +109,7 @@ OpenAPI_binding_resp_t *OpenAPI_binding_resp_parseFromJSON(cJSON *binding_respJS
     }
 
     binding_resp_local_var = OpenAPI_binding_resp_create (
-        pcf_sm_fqdn ? ogs_strdup_or_assert(pcf_sm_fqdn->valuestring) : NULL,
+        pcf_sm_fqdn ? ogs_strdup(pcf_sm_fqdn->valuestring) : NULL,
         pcf_sm_ip_end_points ? pcf_sm_ip_end_pointsList : NULL
     );
 

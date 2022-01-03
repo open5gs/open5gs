@@ -8,10 +8,9 @@ OpenAPI_lte_m_ind_t *OpenAPI_lte_m_ind_create(
     int lte_cat_m_ind
 )
 {
-    OpenAPI_lte_m_ind_t *lte_m_ind_local_var = OpenAPI_malloc(sizeof(OpenAPI_lte_m_ind_t));
-    if (!lte_m_ind_local_var) {
-        return NULL;
-    }
+    OpenAPI_lte_m_ind_t *lte_m_ind_local_var = ogs_malloc(sizeof(OpenAPI_lte_m_ind_t));
+    ogs_assert(lte_m_ind_local_var);
+
     lte_m_ind_local_var->lte_cat_m_ind = lte_cat_m_ind;
 
     return lte_m_ind_local_var;

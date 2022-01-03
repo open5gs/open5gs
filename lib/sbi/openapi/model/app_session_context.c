@@ -10,10 +10,9 @@ OpenAPI_app_session_context_t *OpenAPI_app_session_context_create(
     OpenAPI_events_notification_t *evs_notif
 )
 {
-    OpenAPI_app_session_context_t *app_session_context_local_var = OpenAPI_malloc(sizeof(OpenAPI_app_session_context_t));
-    if (!app_session_context_local_var) {
-        return NULL;
-    }
+    OpenAPI_app_session_context_t *app_session_context_local_var = ogs_malloc(sizeof(OpenAPI_app_session_context_t));
+    ogs_assert(app_session_context_local_var);
+
     app_session_context_local_var->asc_req_data = asc_req_data;
     app_session_context_local_var->asc_resp_data = asc_resp_data;
     app_session_context_local_var->evs_notif = evs_notif;

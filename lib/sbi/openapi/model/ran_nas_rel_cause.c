@@ -13,10 +13,9 @@ OpenAPI_ran_nas_rel_cause_t *OpenAPI_ran_nas_rel_cause_create(
     char *eps_cause
 )
 {
-    OpenAPI_ran_nas_rel_cause_t *ran_nas_rel_cause_local_var = OpenAPI_malloc(sizeof(OpenAPI_ran_nas_rel_cause_t));
-    if (!ran_nas_rel_cause_local_var) {
-        return NULL;
-    }
+    OpenAPI_ran_nas_rel_cause_t *ran_nas_rel_cause_local_var = ogs_malloc(sizeof(OpenAPI_ran_nas_rel_cause_t));
+    ogs_assert(ran_nas_rel_cause_local_var);
+
     ran_nas_rel_cause_local_var->ng_ap_cause = ng_ap_cause;
     ran_nas_rel_cause_local_var->is__5g_mm_cause = is__5g_mm_cause;
     ran_nas_rel_cause_local_var->_5g_mm_cause = _5g_mm_cause;
@@ -129,7 +128,7 @@ OpenAPI_ran_nas_rel_cause_t *OpenAPI_ran_nas_rel_cause_parseFromJSON(cJSON *ran_
         _5g_mm_cause ? _5g_mm_cause->valuedouble : 0,
         _5g_sm_cause ? true : false,
         _5g_sm_cause ? _5g_sm_cause->valuedouble : 0,
-        eps_cause ? ogs_strdup_or_assert(eps_cause->valuestring) : NULL
+        eps_cause ? ogs_strdup(eps_cause->valuestring) : NULL
     );
 
     return ran_nas_rel_cause_local_var;

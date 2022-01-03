@@ -8,10 +8,9 @@ OpenAPI_trigger_request_t *OpenAPI_trigger_request_create(
     char *supi
 )
 {
-    OpenAPI_trigger_request_t *trigger_request_local_var = OpenAPI_malloc(sizeof(OpenAPI_trigger_request_t));
-    if (!trigger_request_local_var) {
-        return NULL;
-    }
+    OpenAPI_trigger_request_t *trigger_request_local_var = ogs_malloc(sizeof(OpenAPI_trigger_request_t));
+    ogs_assert(trigger_request_local_var);
+
     trigger_request_local_var->supi = supi;
 
     return trigger_request_local_var;
@@ -61,7 +60,7 @@ OpenAPI_trigger_request_t *OpenAPI_trigger_request_parseFromJSON(cJSON *trigger_
     }
 
     trigger_request_local_var = OpenAPI_trigger_request_create (
-        ogs_strdup_or_assert(supi->valuestring)
+        ogs_strdup(supi->valuestring)
     );
 
     return trigger_request_local_var;

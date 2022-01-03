@@ -10,10 +10,9 @@ OpenAPI_app_session_context_resp_data_t *OpenAPI_app_session_context_resp_data_c
     char *supp_feat
 )
 {
-    OpenAPI_app_session_context_resp_data_t *app_session_context_resp_data_local_var = OpenAPI_malloc(sizeof(OpenAPI_app_session_context_resp_data_t));
-    if (!app_session_context_resp_data_local_var) {
-        return NULL;
-    }
+    OpenAPI_app_session_context_resp_data_t *app_session_context_resp_data_local_var = ogs_malloc(sizeof(OpenAPI_app_session_context_resp_data_t));
+    ogs_assert(app_session_context_resp_data_local_var);
+
     app_session_context_resp_data_local_var->serv_auth_info = serv_auth_info;
     app_session_context_resp_data_local_var->ue_ids = ue_ids;
     app_session_context_resp_data_local_var->supp_feat = supp_feat;
@@ -132,7 +131,7 @@ OpenAPI_app_session_context_resp_data_t *OpenAPI_app_session_context_resp_data_p
     app_session_context_resp_data_local_var = OpenAPI_app_session_context_resp_data_create (
         serv_auth_info ? serv_auth_infoVariable : 0,
         ue_ids ? ue_idsList : NULL,
-        supp_feat ? ogs_strdup_or_assert(supp_feat->valuestring) : NULL
+        supp_feat ? ogs_strdup(supp_feat->valuestring) : NULL
     );
 
     return app_session_context_resp_data_local_var;

@@ -41,20 +41,45 @@ int get_asn1c_environment_version(void);	/* Run-time version */
 #define	FREEMEM(ptr)		free(ptr)
 #else
 #include "ogs-core.h"
-#if 1
-#define	CALLOC(nmemb, size)	\
-    ogs_talloc_zero_size(__ogs_talloc_asn1c, (nmemb) * (size), __location__)
-#define	MALLOC(size) \
-    ogs_talloc_size(__ogs_talloc_asn1c, size, __location__)
-#define	REALLOC(oldptr, size) \
-    ogs_talloc_realloc_size(__ogs_talloc_asn1c, oldptr, size, __location__)
-#define	FREEMEM(ptr) ogs_talloc_free(ptr, __location__)
-#else
-#define        CALLOC(nmemb, size)     ogs_calloc_or_assert(nmemb, size)
-#define        MALLOC(size)            ogs_malloc_or_assert(size)
-#define        REALLOC(oldptr, size)   ogs_realloc_or_assert(oldptr, size)
-#define        FREEMEM(ptr)            ogs_free_debug(ptr)
-#endif
+
+static ogs_inline void *ogs_asn_malloc(size_t size, const char *file_line)
+{
+    void *ptr = ogs_malloc(size);
+    if (!ptr) {
+        ogs_fatal("asn_malloc() failed in `%s`", file_line);
+        ogs_assert_if_reached();
+    }
+
+    return ptr;
+}
+static ogs_inline void *ogs_asn_calloc(
+        size_t nmemb, size_t size, const char *file_line)
+{
+    void *ptr = ogs_calloc(nmemb, size);
+    if (!ptr) {
+        ogs_fatal("asn_calloc() failed in `%s`", file_line);
+        ogs_assert_if_reached();
+    }
+
+    return ptr;
+}
+static ogs_inline void *ogs_asn_realloc(
+        void *oldptr, size_t size, const char *file_line)
+{
+    void *ptr = ogs_realloc(oldptr, size);
+    if (!ptr) {
+        ogs_fatal("asn_realloc() failed in `%s`", file_line);
+        ogs_assert_if_reached();
+    }
+
+    return ptr;
+}
+
+#define CALLOC(nmemb, size) ogs_asn_calloc(nmemb, size, OGS_FILE_LINE)
+#define MALLOC(size) ogs_asn_malloc(size, OGS_FILE_LINE)
+#define REALLOC(oldptr, size) ogs_asn_realloc(oldptr, size, OGS_FILE_LINE)
+#define FREEMEM(ptr) ogs_free(ptr)
+
 #endif
 
 #define	asn_debug_indent	0

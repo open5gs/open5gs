@@ -14,10 +14,9 @@ OpenAPI_communication_characteristics_t *OpenAPI_communication_characteristics_c
     OpenAPI_pp_maximum_latency_t *pp_maximum_latency
 )
 {
-    OpenAPI_communication_characteristics_t *communication_characteristics_local_var = OpenAPI_malloc(sizeof(OpenAPI_communication_characteristics_t));
-    if (!communication_characteristics_local_var) {
-        return NULL;
-    }
+    OpenAPI_communication_characteristics_t *communication_characteristics_local_var = ogs_malloc(sizeof(OpenAPI_communication_characteristics_t));
+    ogs_assert(communication_characteristics_local_var);
+
     communication_characteristics_local_var->pp_subs_reg_timer = pp_subs_reg_timer;
     communication_characteristics_local_var->pp_active_time = pp_active_time;
     communication_characteristics_local_var->is_pp_dl_packet_count = is_pp_dl_packet_count;

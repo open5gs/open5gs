@@ -41,6 +41,8 @@ typedef struct connection_s {
     char **headers;
     struct curl_slist *header_list;
 
+    char *content;
+
     char *memory;
     size_t size;
 
@@ -298,8 +300,11 @@ static connection_t *connection_add(
         curl_easy_setopt(conn->easy,
                 CURLOPT_CUSTOMREQUEST, request->h.method);
         if (request->http.content) {
+            conn->content = ogs_memdup(
+                    request->http.content, request->http.content_length);
+            ogs_assert(conn->content);
             curl_easy_setopt(conn->easy,
-                    CURLOPT_POSTFIELDS, request->http.content);
+                    CURLOPT_POSTFIELDS, conn->content);
             curl_easy_setopt(conn->easy,
                 CURLOPT_POSTFIELDSIZE, request->http.content_length);
 #if 1 /* Disable HTTP/1.1 100 Continue : Use "Expect:" in libcurl */
@@ -364,6 +369,9 @@ static void connection_remove(connection_t *conn)
 
     ogs_assert(conn->method);
     ogs_free(conn->method);
+
+    if (conn->content)
+        ogs_free(conn->content);
 
     if (conn->location)
         ogs_free(conn->location);
@@ -516,9 +524,10 @@ static size_t write_cb(void *contents, size_t size, size_t nmemb, void *data)
     ogs_assert(conn);
 
     realsize = size * nmemb;
-    ptr = ogs_realloc_or_assert(conn->memory, conn->size + realsize + 1);
+    ptr = ogs_realloc(conn->memory, conn->size + realsize + 1);
     if(!ptr) {
         ogs_fatal("not enough memory (realloc returned NULL)");
+        ogs_assert_if_reached();
         return 0;
     }
 

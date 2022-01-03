@@ -15,10 +15,9 @@ OpenAPI_global_ran_node_id_t *OpenAPI_global_ran_node_id_create(
     char *e_nb_id
 )
 {
-    OpenAPI_global_ran_node_id_t *global_ran_node_id_local_var = OpenAPI_malloc(sizeof(OpenAPI_global_ran_node_id_t));
-    if (!global_ran_node_id_local_var) {
-        return NULL;
-    }
+    OpenAPI_global_ran_node_id_t *global_ran_node_id_local_var = ogs_malloc(sizeof(OpenAPI_global_ran_node_id_t));
+    ogs_assert(global_ran_node_id_local_var);
+
     global_ran_node_id_local_var->plmn_id = plmn_id;
     global_ran_node_id_local_var->n3_iwf_id = n3_iwf_id;
     global_ran_node_id_local_var->g_nb_id = g_nb_id;
@@ -203,13 +202,13 @@ OpenAPI_global_ran_node_id_t *OpenAPI_global_ran_node_id_parseFromJSON(cJSON *gl
 
     global_ran_node_id_local_var = OpenAPI_global_ran_node_id_create (
         plmn_id_local_nonprim,
-        n3_iwf_id ? ogs_strdup_or_assert(n3_iwf_id->valuestring) : NULL,
+        n3_iwf_id ? ogs_strdup(n3_iwf_id->valuestring) : NULL,
         g_nb_id ? g_nb_id_local_nonprim : NULL,
-        nge_nb_id ? ogs_strdup_or_assert(nge_nb_id->valuestring) : NULL,
-        wagf_id ? ogs_strdup_or_assert(wagf_id->valuestring) : NULL,
-        tngf_id ? ogs_strdup_or_assert(tngf_id->valuestring) : NULL,
-        nid ? ogs_strdup_or_assert(nid->valuestring) : NULL,
-        e_nb_id ? ogs_strdup_or_assert(e_nb_id->valuestring) : NULL
+        nge_nb_id ? ogs_strdup(nge_nb_id->valuestring) : NULL,
+        wagf_id ? ogs_strdup(wagf_id->valuestring) : NULL,
+        tngf_id ? ogs_strdup(tngf_id->valuestring) : NULL,
+        nid ? ogs_strdup(nid->valuestring) : NULL,
+        e_nb_id ? ogs_strdup(e_nb_id->valuestring) : NULL
     );
 
     return global_ran_node_id_local_var;

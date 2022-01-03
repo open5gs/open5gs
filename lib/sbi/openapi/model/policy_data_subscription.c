@@ -13,10 +13,9 @@ OpenAPI_policy_data_subscription_t *OpenAPI_policy_data_subscription_create(
     char *supported_features
 )
 {
-    OpenAPI_policy_data_subscription_t *policy_data_subscription_local_var = OpenAPI_malloc(sizeof(OpenAPI_policy_data_subscription_t));
-    if (!policy_data_subscription_local_var) {
-        return NULL;
-    }
+    OpenAPI_policy_data_subscription_t *policy_data_subscription_local_var = ogs_malloc(sizeof(OpenAPI_policy_data_subscription_t));
+    ogs_assert(policy_data_subscription_local_var);
+
     policy_data_subscription_local_var->notification_uri = notification_uri;
     policy_data_subscription_local_var->notif_id = notif_id;
     policy_data_subscription_local_var->monitored_resource_uris = monitored_resource_uris;
@@ -164,7 +163,7 @@ OpenAPI_policy_data_subscription_t *OpenAPI_policy_data_subscription_parseFromJS
         ogs_error("OpenAPI_policy_data_subscription_parseFromJSON() failed [monitored_resource_uris]");
         goto end;
     }
-    OpenAPI_list_add(monitored_resource_urisList , ogs_strdup_or_assert(monitored_resource_uris_local->valuestring));
+    OpenAPI_list_add(monitored_resource_urisList , ogs_strdup(monitored_resource_uris_local->valuestring));
     }
 
     cJSON *mon_res_items = cJSON_GetObjectItemCaseSensitive(policy_data_subscriptionJSON, "monResItems");
@@ -209,12 +208,12 @@ OpenAPI_policy_data_subscription_t *OpenAPI_policy_data_subscription_parseFromJS
     }
 
     policy_data_subscription_local_var = OpenAPI_policy_data_subscription_create (
-        ogs_strdup_or_assert(notification_uri->valuestring),
-        notif_id ? ogs_strdup_or_assert(notif_id->valuestring) : NULL,
+        ogs_strdup(notification_uri->valuestring),
+        notif_id ? ogs_strdup(notif_id->valuestring) : NULL,
         monitored_resource_urisList,
         mon_res_items ? mon_res_itemsList : NULL,
-        expiry ? ogs_strdup_or_assert(expiry->valuestring) : NULL,
-        supported_features ? ogs_strdup_or_assert(supported_features->valuestring) : NULL
+        expiry ? ogs_strdup(expiry->valuestring) : NULL,
+        supported_features ? ogs_strdup(supported_features->valuestring) : NULL
     );
 
     return policy_data_subscription_local_var;

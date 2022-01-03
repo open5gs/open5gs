@@ -66,10 +66,9 @@ OpenAPI_access_and_mobility_subscription_data_1_t *OpenAPI_access_and_mobility_s
     OpenAPI_wireline_service_area_restriction_1_t *wireline_service_area_restriction
 )
 {
-    OpenAPI_access_and_mobility_subscription_data_1_t *access_and_mobility_subscription_data_1_local_var = OpenAPI_malloc(sizeof(OpenAPI_access_and_mobility_subscription_data_1_t));
-    if (!access_and_mobility_subscription_data_1_local_var) {
-        return NULL;
-    }
+    OpenAPI_access_and_mobility_subscription_data_1_t *access_and_mobility_subscription_data_1_local_var = ogs_malloc(sizeof(OpenAPI_access_and_mobility_subscription_data_1_t));
+    ogs_assert(access_and_mobility_subscription_data_1_local_var);
+
     access_and_mobility_subscription_data_1_local_var->supported_features = supported_features;
     access_and_mobility_subscription_data_1_local_var->gpsis = gpsis;
     access_and_mobility_subscription_data_1_local_var->internal_group_ids = internal_group_ids;
@@ -150,6 +149,7 @@ void OpenAPI_access_and_mobility_subscription_data_1_free(OpenAPI_access_and_mob
     OpenAPI_list_free(access_and_mobility_subscription_data_1->internal_group_ids);
     OpenAPI_list_for_each(access_and_mobility_subscription_data_1->shared_vn_group_data_ids, node) {
         OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+        ogs_free(localKeyValue->key);
         ogs_free(localKeyValue->value);
         ogs_free(localKeyValue);
     }
@@ -759,7 +759,7 @@ OpenAPI_access_and_mobility_subscription_data_1_t *OpenAPI_access_and_mobility_s
         ogs_error("OpenAPI_access_and_mobility_subscription_data_1_parseFromJSON() failed [gpsis]");
         goto end;
     }
-    OpenAPI_list_add(gpsisList , ogs_strdup_or_assert(gpsis_local->valuestring));
+    OpenAPI_list_add(gpsisList , ogs_strdup(gpsis_local->valuestring));
     }
     }
 
@@ -779,7 +779,7 @@ OpenAPI_access_and_mobility_subscription_data_1_t *OpenAPI_access_and_mobility_s
         ogs_error("OpenAPI_access_and_mobility_subscription_data_1_parseFromJSON() failed [internal_group_ids]");
         goto end;
     }
-    OpenAPI_list_add(internal_group_idsList , ogs_strdup_or_assert(internal_group_ids_local->valuestring));
+    OpenAPI_list_add(internal_group_idsList , ogs_strdup(internal_group_ids_local->valuestring));
     }
     }
 
@@ -1021,7 +1021,7 @@ OpenAPI_access_and_mobility_subscription_data_1_t *OpenAPI_access_and_mobility_s
         ogs_error("OpenAPI_access_and_mobility_subscription_data_1_parseFromJSON() failed [shared_am_data_ids]");
         goto end;
     }
-    OpenAPI_list_add(shared_am_data_idsList , ogs_strdup_or_assert(shared_am_data_ids_local->valuestring));
+    OpenAPI_list_add(shared_am_data_idsList , ogs_strdup(shared_am_data_ids_local->valuestring));
     }
     }
 
@@ -1052,7 +1052,7 @@ OpenAPI_access_and_mobility_subscription_data_1_t *OpenAPI_access_and_mobility_s
         ogs_error("OpenAPI_access_and_mobility_subscription_data_1_parseFromJSON() failed [subscribed_dnn_list]");
         goto end;
     }
-    OpenAPI_list_add(subscribed_dnn_listList , ogs_strdup_or_assert(subscribed_dnn_list_local->valuestring));
+    OpenAPI_list_add(subscribed_dnn_listList , ogs_strdup(subscribed_dnn_list_local->valuestring));
     }
     }
 
@@ -1295,7 +1295,7 @@ OpenAPI_access_and_mobility_subscription_data_1_t *OpenAPI_access_and_mobility_s
     }
 
     access_and_mobility_subscription_data_1_local_var = OpenAPI_access_and_mobility_subscription_data_1_create (
-        supported_features ? ogs_strdup_or_assert(supported_features->valuestring) : NULL,
+        supported_features ? ogs_strdup(supported_features->valuestring) : NULL,
         gpsis ? gpsisList : NULL,
         internal_group_ids ? internal_group_idsList : NULL,
         shared_vn_group_data_ids ? shared_vn_group_data_idsList : NULL,
@@ -1335,13 +1335,13 @@ OpenAPI_access_and_mobility_subscription_data_1_t *OpenAPI_access_and_mobility_s
         mdt_configuration ? mdt_configuration_local_nonprim : NULL,
         trace_data ? trace_data_local_nonprim : NULL,
         cag_data ? cag_data_local_nonprim : NULL,
-        stn_sr ? ogs_strdup_or_assert(stn_sr->valuestring) : NULL,
-        c_msisdn ? ogs_strdup_or_assert(c_msisdn->valuestring) : NULL,
+        stn_sr ? ogs_strdup(stn_sr->valuestring) : NULL,
+        c_msisdn ? ogs_strdup(c_msisdn->valuestring) : NULL,
         nb_io_tue_priority ? true : false,
         nb_io_tue_priority ? nb_io_tue_priority->valuedouble : 0,
         nssai_inclusion_allowed ? true : false,
         nssai_inclusion_allowed ? nssai_inclusion_allowed->valueint : 0,
-        rg_wireline_characteristics ? ogs_strdup_or_assert(rg_wireline_characteristics->valuestring) : NULL,
+        rg_wireline_characteristics ? ogs_strdup(rg_wireline_characteristics->valuestring) : NULL,
         ec_restriction_data_wb ? ec_restriction_data_wb_local_nonprim : NULL,
         ec_restriction_data_nb ? true : false,
         ec_restriction_data_nb ? ec_restriction_data_nb->valueint : 0,

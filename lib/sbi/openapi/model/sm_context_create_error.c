@@ -12,10 +12,9 @@ OpenAPI_sm_context_create_error_t *OpenAPI_sm_context_create_error_create(
     char *recovery_time
 )
 {
-    OpenAPI_sm_context_create_error_t *sm_context_create_error_local_var = OpenAPI_malloc(sizeof(OpenAPI_sm_context_create_error_t));
-    if (!sm_context_create_error_local_var) {
-        return NULL;
-    }
+    OpenAPI_sm_context_create_error_t *sm_context_create_error_local_var = ogs_malloc(sizeof(OpenAPI_sm_context_create_error_t));
+    ogs_assert(sm_context_create_error_local_var);
+
     sm_context_create_error_local_var->error = error;
     sm_context_create_error_local_var->n1_sm_msg = n1_sm_msg;
     sm_context_create_error_local_var->n2_sm_info = n2_sm_info;
@@ -154,7 +153,7 @@ OpenAPI_sm_context_create_error_t *OpenAPI_sm_context_create_error_parseFromJSON
         n1_sm_msg ? n1_sm_msg_local_nonprim : NULL,
         n2_sm_info ? n2_sm_info_local_nonprim : NULL,
         n2_sm_info_type ? n2_sm_info_typeVariable : 0,
-        recovery_time ? ogs_strdup_or_assert(recovery_time->valuestring) : NULL
+        recovery_time ? ogs_strdup(recovery_time->valuestring) : NULL
     );
 
     return sm_context_create_error_local_var;

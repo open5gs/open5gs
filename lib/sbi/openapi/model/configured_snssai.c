@@ -9,10 +9,9 @@ OpenAPI_configured_snssai_t *OpenAPI_configured_snssai_create(
     OpenAPI_snssai_t *mapped_home_snssai
 )
 {
-    OpenAPI_configured_snssai_t *configured_snssai_local_var = OpenAPI_malloc(sizeof(OpenAPI_configured_snssai_t));
-    if (!configured_snssai_local_var) {
-        return NULL;
-    }
+    OpenAPI_configured_snssai_t *configured_snssai_local_var = ogs_malloc(sizeof(OpenAPI_configured_snssai_t));
+    ogs_assert(configured_snssai_local_var);
+
     configured_snssai_local_var->configured_snssai = configured_snssai;
     configured_snssai_local_var->mapped_home_snssai = mapped_home_snssai;
 

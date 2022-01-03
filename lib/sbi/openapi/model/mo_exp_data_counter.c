@@ -9,10 +9,9 @@ OpenAPI_mo_exp_data_counter_t *OpenAPI_mo_exp_data_counter_create(
     char *time_stamp
 )
 {
-    OpenAPI_mo_exp_data_counter_t *mo_exp_data_counter_local_var = OpenAPI_malloc(sizeof(OpenAPI_mo_exp_data_counter_t));
-    if (!mo_exp_data_counter_local_var) {
-        return NULL;
-    }
+    OpenAPI_mo_exp_data_counter_t *mo_exp_data_counter_local_var = ogs_malloc(sizeof(OpenAPI_mo_exp_data_counter_t));
+    ogs_assert(mo_exp_data_counter_local_var);
+
     mo_exp_data_counter_local_var->counter = counter;
     mo_exp_data_counter_local_var->time_stamp = time_stamp;
 
@@ -81,7 +80,7 @@ OpenAPI_mo_exp_data_counter_t *OpenAPI_mo_exp_data_counter_parseFromJSON(cJSON *
     mo_exp_data_counter_local_var = OpenAPI_mo_exp_data_counter_create (
         
         counter->valuedouble,
-        time_stamp ? ogs_strdup_or_assert(time_stamp->valuestring) : NULL
+        time_stamp ? ogs_strdup(time_stamp->valuestring) : NULL
     );
 
     return mo_exp_data_counter_local_var;

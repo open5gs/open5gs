@@ -9,10 +9,9 @@ OpenAPI_n2_information_transfer_error_t *OpenAPI_n2_information_transfer_error_c
     OpenAPI_pws_error_data_t *pws_error_info
 )
 {
-    OpenAPI_n2_information_transfer_error_t *n2_information_transfer_error_local_var = OpenAPI_malloc(sizeof(OpenAPI_n2_information_transfer_error_t));
-    if (!n2_information_transfer_error_local_var) {
-        return NULL;
-    }
+    OpenAPI_n2_information_transfer_error_t *n2_information_transfer_error_local_var = ogs_malloc(sizeof(OpenAPI_n2_information_transfer_error_t));
+    ogs_assert(n2_information_transfer_error_local_var);
+
     n2_information_transfer_error_local_var->error = error;
     n2_information_transfer_error_local_var->pws_error_info = pws_error_info;
 

@@ -11,10 +11,9 @@ OpenAPI_n2_info_content_t *OpenAPI_n2_info_content_create(
     OpenAPI_ref_to_binary_data_t *ngap_data
 )
 {
-    OpenAPI_n2_info_content_t *n2_info_content_local_var = OpenAPI_malloc(sizeof(OpenAPI_n2_info_content_t));
-    if (!n2_info_content_local_var) {
-        return NULL;
-    }
+    OpenAPI_n2_info_content_t *n2_info_content_local_var = ogs_malloc(sizeof(OpenAPI_n2_info_content_t));
+    ogs_assert(n2_info_content_local_var);
+
     n2_info_content_local_var->is_ngap_message_type = is_ngap_message_type;
     n2_info_content_local_var->ngap_message_type = ngap_message_type;
     n2_info_content_local_var->ngap_ie_type = ngap_ie_type;

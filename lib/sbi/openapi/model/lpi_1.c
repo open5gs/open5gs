@@ -9,10 +9,9 @@ OpenAPI_lpi_1_t *OpenAPI_lpi_1_create(
     OpenAPI_valid_time_period_1_t *valid_time_period
 )
 {
-    OpenAPI_lpi_1_t *lpi_1_local_var = OpenAPI_malloc(sizeof(OpenAPI_lpi_1_t));
-    if (!lpi_1_local_var) {
-        return NULL;
-    }
+    OpenAPI_lpi_1_t *lpi_1_local_var = ogs_malloc(sizeof(OpenAPI_lpi_1_t));
+    ogs_assert(lpi_1_local_var);
+
     lpi_1_local_var->location_privacy_ind = location_privacy_ind;
     lpi_1_local_var->valid_time_period = valid_time_period;
 

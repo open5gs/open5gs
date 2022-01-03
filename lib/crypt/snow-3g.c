@@ -413,7 +413,8 @@ void snow_3g_f8(u8 *key, u32 count, u32 bearer, u32 dir, u8 *data, u32 length)
 	
 	/* Run SNOW 3G algorithm to generate sequence of key stream bits KS*/
 	snow_3g_initialize(K,IV);
-	KS = (u32 *)ogs_malloc_or_assert(4*n);
+	KS = (u32 *)ogs_malloc(4*n);
+    ogs_assert(KS);
 	snow_3g_generate_key_stream(n,(u32*)KS);
 	
 	/* Exclusive-OR the input data with keystream to generate the output bit

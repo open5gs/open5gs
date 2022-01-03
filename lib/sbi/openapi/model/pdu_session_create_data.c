@@ -81,10 +81,9 @@ OpenAPI_pdu_session_create_data_t *OpenAPI_pdu_session_create_data_create(
     OpenAPI_vplmn_qos_t *vplmn_qos
 )
 {
-    OpenAPI_pdu_session_create_data_t *pdu_session_create_data_local_var = OpenAPI_malloc(sizeof(OpenAPI_pdu_session_create_data_t));
-    if (!pdu_session_create_data_local_var) {
-        return NULL;
-    }
+    OpenAPI_pdu_session_create_data_t *pdu_session_create_data_local_var = ogs_malloc(sizeof(OpenAPI_pdu_session_create_data_t));
+    ogs_assert(pdu_session_create_data_local_var);
+
     pdu_session_create_data_local_var->supi = supi;
     pdu_session_create_data_local_var->is_unauthenticated_supi = is_unauthenticated_supi;
     pdu_session_create_data_local_var->unauthenticated_supi = unauthenticated_supi;
@@ -1322,7 +1321,7 @@ OpenAPI_pdu_session_create_data_t *OpenAPI_pdu_session_create_data_parseFromJSON
         ogs_error("OpenAPI_pdu_session_create_data_parseFromJSON() failed [dnai_list]");
         goto end;
     }
-    OpenAPI_list_add(dnai_listList , ogs_strdup_or_assert(dnai_list_local->valuestring));
+    OpenAPI_list_add(dnai_listList , ogs_strdup(dnai_list_local->valuestring));
     }
     }
 
@@ -1398,23 +1397,23 @@ OpenAPI_pdu_session_create_data_t *OpenAPI_pdu_session_create_data_parseFromJSON
     }
 
     pdu_session_create_data_local_var = OpenAPI_pdu_session_create_data_create (
-        supi ? ogs_strdup_or_assert(supi->valuestring) : NULL,
+        supi ? ogs_strdup(supi->valuestring) : NULL,
         unauthenticated_supi ? true : false,
         unauthenticated_supi ? unauthenticated_supi->valueint : 0,
-        pei ? ogs_strdup_or_assert(pei->valuestring) : NULL,
+        pei ? ogs_strdup(pei->valuestring) : NULL,
         pdu_session_id ? true : false,
         pdu_session_id ? pdu_session_id->valuedouble : 0,
-        ogs_strdup_or_assert(dnn->valuestring),
-        selected_dnn ? ogs_strdup_or_assert(selected_dnn->valuestring) : NULL,
+        ogs_strdup(dnn->valuestring),
+        selected_dnn ? ogs_strdup(selected_dnn->valuestring) : NULL,
         s_nssai ? s_nssai_local_nonprim : NULL,
-        vsmf_id ? ogs_strdup_or_assert(vsmf_id->valuestring) : NULL,
-        ismf_id ? ogs_strdup_or_assert(ismf_id->valuestring) : NULL,
+        vsmf_id ? ogs_strdup(vsmf_id->valuestring) : NULL,
+        ismf_id ? ogs_strdup(ismf_id->valuestring) : NULL,
         serving_network_local_nonprim,
         request_type ? request_typeVariable : 0,
         eps_bearer_id ? eps_bearer_idList : NULL,
         pgw_s8c_fteid ? pgw_s8c_fteid->valueint : 0,
-        vsmf_pdu_session_uri ? ogs_strdup_or_assert(vsmf_pdu_session_uri->valuestring) : NULL,
-        ismf_pdu_session_uri ? ogs_strdup_or_assert(ismf_pdu_session_uri->valuestring) : NULL,
+        vsmf_pdu_session_uri ? ogs_strdup(vsmf_pdu_session_uri->valuestring) : NULL,
+        ismf_pdu_session_uri ? ogs_strdup(ismf_pdu_session_uri->valuestring) : NULL,
         vcn_tunnel_info ? vcn_tunnel_info_local_nonprim : NULL,
         icn_tunnel_info ? icn_tunnel_info_local_nonprim : NULL,
         n9_forwarding_tunnel_info ? n9_forwarding_tunnel_info_local_nonprim : NULL,
@@ -1423,33 +1422,33 @@ OpenAPI_pdu_session_create_data_t *OpenAPI_pdu_session_create_data_parseFromJSON
         additional_an_type ? additional_an_typeVariable : 0,
         rat_type ? rat_typeVariable : 0,
         ue_location ? ue_location_local_nonprim : NULL,
-        ue_time_zone ? ogs_strdup_or_assert(ue_time_zone->valuestring) : NULL,
+        ue_time_zone ? ogs_strdup(ue_time_zone->valuestring) : NULL,
         add_ue_location ? add_ue_location_local_nonprim : NULL,
-        gpsi ? ogs_strdup_or_assert(gpsi->valuestring) : NULL,
+        gpsi ? ogs_strdup(gpsi->valuestring) : NULL,
         n1_sm_info_from_ue ? n1_sm_info_from_ue_local_nonprim : NULL,
         unknown_n1_sm_info ? unknown_n1_sm_info_local_nonprim : NULL,
-        supported_features ? ogs_strdup_or_assert(supported_features->valuestring) : NULL,
-        h_pcf_id ? ogs_strdup_or_assert(h_pcf_id->valuestring) : NULL,
-        pcf_id ? ogs_strdup_or_assert(pcf_id->valuestring) : NULL,
-        pcf_group_id ? ogs_strdup_or_assert(pcf_group_id->valuestring) : NULL,
-        pcf_set_id ? ogs_strdup_or_assert(pcf_set_id->valuestring) : NULL,
+        supported_features ? ogs_strdup(supported_features->valuestring) : NULL,
+        h_pcf_id ? ogs_strdup(h_pcf_id->valuestring) : NULL,
+        pcf_id ? ogs_strdup(pcf_id->valuestring) : NULL,
+        pcf_group_id ? ogs_strdup(pcf_group_id->valuestring) : NULL,
+        pcf_set_id ? ogs_strdup(pcf_set_id->valuestring) : NULL,
         ho_preparation_indication ? true : false,
         ho_preparation_indication ? ho_preparation_indication->valueint : 0,
         sel_mode ? sel_modeVariable : 0,
         always_on_requested ? true : false,
         always_on_requested ? always_on_requested->valueint : 0,
-        udm_group_id ? ogs_strdup_or_assert(udm_group_id->valuestring) : NULL,
-        routing_indicator ? ogs_strdup_or_assert(routing_indicator->valuestring) : NULL,
+        udm_group_id ? ogs_strdup(udm_group_id->valuestring) : NULL,
+        routing_indicator ? ogs_strdup(routing_indicator->valuestring) : NULL,
         eps_interworking_ind ? eps_interworking_indVariable : 0,
-        v_smf_service_instance_id ? ogs_strdup_or_assert(v_smf_service_instance_id->valuestring) : NULL,
-        i_smf_service_instance_id ? ogs_strdup_or_assert(i_smf_service_instance_id->valuestring) : NULL,
-        recovery_time ? ogs_strdup_or_assert(recovery_time->valuestring) : NULL,
+        v_smf_service_instance_id ? ogs_strdup(v_smf_service_instance_id->valuestring) : NULL,
+        i_smf_service_instance_id ? ogs_strdup(i_smf_service_instance_id->valuestring) : NULL,
+        recovery_time ? ogs_strdup(recovery_time->valuestring) : NULL,
         roaming_charging_profile ? roaming_charging_profile_local_nonprim : NULL,
-        charging_id ? ogs_strdup_or_assert(charging_id->valuestring) : NULL,
+        charging_id ? ogs_strdup(charging_id->valuestring) : NULL,
         old_pdu_session_id ? true : false,
         old_pdu_session_id ? old_pdu_session_id->valuedouble : 0,
-        eps_bearer_ctx_status ? ogs_strdup_or_assert(eps_bearer_ctx_status->valuestring) : NULL,
-        amf_nf_id ? ogs_strdup_or_assert(amf_nf_id->valuestring) : NULL,
+        eps_bearer_ctx_status ? ogs_strdup(eps_bearer_ctx_status->valuestring) : NULL,
+        amf_nf_id ? ogs_strdup(amf_nf_id->valuestring) : NULL,
         guami ? guami_local_nonprim : NULL,
         max_integrity_protected_data_rate_ul ? max_integrity_protected_data_rate_ulVariable : 0,
         max_integrity_protected_data_rate_dl ? max_integrity_protected_data_rate_dlVariable : 0,

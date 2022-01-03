@@ -11,10 +11,9 @@ OpenAPI_ec_restriction_t *OpenAPI_ec_restriction_create(
     char *mtc_provider_information
 )
 {
-    OpenAPI_ec_restriction_t *ec_restriction_local_var = OpenAPI_malloc(sizeof(OpenAPI_ec_restriction_t));
-    if (!ec_restriction_local_var) {
-        return NULL;
-    }
+    OpenAPI_ec_restriction_t *ec_restriction_local_var = ogs_malloc(sizeof(OpenAPI_ec_restriction_t));
+    ogs_assert(ec_restriction_local_var);
+
     ec_restriction_local_var->af_instance_id = af_instance_id;
     ec_restriction_local_var->reference_id = reference_id;
     ec_restriction_local_var->plmn_ec_infos = plmn_ec_infos;
@@ -147,11 +146,11 @@ OpenAPI_ec_restriction_t *OpenAPI_ec_restriction_parseFromJSON(cJSON *ec_restric
     }
 
     ec_restriction_local_var = OpenAPI_ec_restriction_create (
-        ogs_strdup_or_assert(af_instance_id->valuestring),
+        ogs_strdup(af_instance_id->valuestring),
         
         reference_id->valuedouble,
         plmn_ec_infos ? plmn_ec_infosList : NULL,
-        mtc_provider_information ? ogs_strdup_or_assert(mtc_provider_information->valuestring) : NULL
+        mtc_provider_information ? ogs_strdup(mtc_provider_information->valuestring) : NULL
     );
 
     return ec_restriction_local_var;

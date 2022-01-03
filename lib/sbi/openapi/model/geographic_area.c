@@ -19,10 +19,9 @@ OpenAPI_geographic_area_t *OpenAPI_geographic_area_create(
     int included_angle
 )
 {
-    OpenAPI_geographic_area_t *geographic_area_local_var = OpenAPI_malloc(sizeof(OpenAPI_geographic_area_t));
-    if (!geographic_area_local_var) {
-        return NULL;
-    }
+    OpenAPI_geographic_area_t *geographic_area_local_var = ogs_malloc(sizeof(OpenAPI_geographic_area_t));
+    ogs_assert(geographic_area_local_var);
+
     geographic_area_local_var->shape = shape;
     geographic_area_local_var->point = point;
     geographic_area_local_var->uncertainty = uncertainty;

@@ -13,10 +13,9 @@ OpenAPI_rule_report_t *OpenAPI_rule_report_create(
     OpenAPI_list_t *ran_nas_rel_causes
 )
 {
-    OpenAPI_rule_report_t *rule_report_local_var = OpenAPI_malloc(sizeof(OpenAPI_rule_report_t));
-    if (!rule_report_local_var) {
-        return NULL;
-    }
+    OpenAPI_rule_report_t *rule_report_local_var = ogs_malloc(sizeof(OpenAPI_rule_report_t));
+    ogs_assert(rule_report_local_var);
+
     rule_report_local_var->pcc_rule_ids = pcc_rule_ids;
     rule_report_local_var->rule_status = rule_status;
     rule_report_local_var->cont_vers = cont_vers;
@@ -160,7 +159,7 @@ OpenAPI_rule_report_t *OpenAPI_rule_report_parseFromJSON(cJSON *rule_reportJSON)
         ogs_error("OpenAPI_rule_report_parseFromJSON() failed [pcc_rule_ids]");
         goto end;
     }
-    OpenAPI_list_add(pcc_rule_idsList , ogs_strdup_or_assert(pcc_rule_ids_local->valuestring));
+    OpenAPI_list_add(pcc_rule_idsList , ogs_strdup(pcc_rule_ids_local->valuestring));
     }
 
     cJSON *rule_status = cJSON_GetObjectItemCaseSensitive(rule_reportJSON, "ruleStatus");

@@ -10,10 +10,9 @@ OpenAPI_arp_1_t *OpenAPI_arp_1_create(
     OpenAPI_preemption_vulnerability_e preempt_vuln
 )
 {
-    OpenAPI_arp_1_t *arp_1_local_var = OpenAPI_malloc(sizeof(OpenAPI_arp_1_t));
-    if (!arp_1_local_var) {
-        return NULL;
-    }
+    OpenAPI_arp_1_t *arp_1_local_var = ogs_malloc(sizeof(OpenAPI_arp_1_t));
+    ogs_assert(arp_1_local_var);
+
     arp_1_local_var->priority_level = priority_level;
     arp_1_local_var->preempt_cap = preempt_cap;
     arp_1_local_var->preempt_vuln = preempt_vuln;

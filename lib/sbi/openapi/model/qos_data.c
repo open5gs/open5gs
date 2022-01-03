@@ -38,10 +38,9 @@ OpenAPI_qos_data_t *OpenAPI_qos_data_create(
     char *packet_error_rate
 )
 {
-    OpenAPI_qos_data_t *qos_data_local_var = OpenAPI_malloc(sizeof(OpenAPI_qos_data_t));
-    if (!qos_data_local_var) {
-        return NULL;
-    }
+    OpenAPI_qos_data_t *qos_data_local_var = ogs_malloc(sizeof(OpenAPI_qos_data_t));
+    ogs_assert(qos_data_local_var);
+
     qos_data_local_var->qos_id = qos_id;
     qos_data_local_var->is__5qi = is__5qi;
     qos_data_local_var->_5qi = _5qi;
@@ -437,13 +436,13 @@ OpenAPI_qos_data_t *OpenAPI_qos_data_parseFromJSON(cJSON *qos_dataJSON)
     }
 
     qos_data_local_var = OpenAPI_qos_data_create (
-        ogs_strdup_or_assert(qos_id->valuestring),
+        ogs_strdup(qos_id->valuestring),
         _5qi ? true : false,
         _5qi ? _5qi->valuedouble : 0,
-        maxbr_ul ? ogs_strdup_or_assert(maxbr_ul->valuestring) : NULL,
-        maxbr_dl ? ogs_strdup_or_assert(maxbr_dl->valuestring) : NULL,
-        gbr_ul ? ogs_strdup_or_assert(gbr_ul->valuestring) : NULL,
-        gbr_dl ? ogs_strdup_or_assert(gbr_dl->valuestring) : NULL,
+        maxbr_ul ? ogs_strdup(maxbr_ul->valuestring) : NULL,
+        maxbr_dl ? ogs_strdup(maxbr_dl->valuestring) : NULL,
+        gbr_ul ? ogs_strdup(gbr_ul->valuestring) : NULL,
+        gbr_dl ? ogs_strdup(gbr_dl->valuestring) : NULL,
         arp ? arp_local_nonprim : NULL,
         qnc ? true : false,
         qnc ? qnc->valueint : 0,
@@ -455,8 +454,8 @@ OpenAPI_qos_data_t *OpenAPI_qos_data_parseFromJSON(cJSON *qos_dataJSON)
         max_data_burst_vol ? max_data_burst_vol->valuedouble : 0,
         reflective_qos ? true : false,
         reflective_qos ? reflective_qos->valueint : 0,
-        sharing_key_dl ? ogs_strdup_or_assert(sharing_key_dl->valuestring) : NULL,
-        sharing_key_ul ? ogs_strdup_or_assert(sharing_key_ul->valuestring) : NULL,
+        sharing_key_dl ? ogs_strdup(sharing_key_dl->valuestring) : NULL,
+        sharing_key_ul ? ogs_strdup(sharing_key_ul->valuestring) : NULL,
         max_packet_loss_rate_dl ? true : false,
         max_packet_loss_rate_dl ? max_packet_loss_rate_dl->valuedouble : 0,
         max_packet_loss_rate_ul ? true : false,
@@ -467,7 +466,7 @@ OpenAPI_qos_data_t *OpenAPI_qos_data_parseFromJSON(cJSON *qos_dataJSON)
         ext_max_data_burst_vol ? ext_max_data_burst_vol->valuedouble : 0,
         packet_delay_budget ? true : false,
         packet_delay_budget ? packet_delay_budget->valuedouble : 0,
-        packet_error_rate ? ogs_strdup_or_assert(packet_error_rate->valuestring) : NULL
+        packet_error_rate ? ogs_strdup(packet_error_rate->valuestring) : NULL
     );
 
     return qos_data_local_var;

@@ -10,10 +10,9 @@ OpenAPI_inline_object_4_t *OpenAPI_inline_object_4_create(
     OpenAPI_binary_t* binary_data_n2_information
 )
 {
-    OpenAPI_inline_object_4_t *inline_object_4_local_var = OpenAPI_malloc(sizeof(OpenAPI_inline_object_4_t));
-    if (!inline_object_4_local_var) {
-        return NULL;
-    }
+    OpenAPI_inline_object_4_t *inline_object_4_local_var = ogs_malloc(sizeof(OpenAPI_inline_object_4_t));
+    ogs_assert(inline_object_4_local_var);
+
     inline_object_4_local_var->json_data = json_data;
     inline_object_4_local_var->binary_data_n1_message = binary_data_n1_message;
     inline_object_4_local_var->binary_data_n2_information = binary_data_n2_information;
@@ -90,7 +89,8 @@ OpenAPI_inline_object_4_t *OpenAPI_inline_object_4_parseFromJSON(cJSON *inline_o
 
     cJSON *binary_data_n1_message = cJSON_GetObjectItemCaseSensitive(inline_object_4JSON, "binaryDataN1Message");
 
-    OpenAPI_binary_t* decoded_str_binary_data_n1_message = OpenAPI_malloc(sizeof(OpenAPI_binary_t));
+    OpenAPI_binary_t* decoded_str_binary_data_n1_message = ogs_malloc(sizeof(OpenAPI_binary_t));
+    ogs_assert(decoded_str_binary_data_n1_message);
     if (binary_data_n1_message) {
     if (!cJSON_IsString(binary_data_n1_message)) {
         ogs_error("OpenAPI_inline_object_4_parseFromJSON() failed [binary_data_n1_message]");
@@ -105,7 +105,8 @@ OpenAPI_inline_object_4_t *OpenAPI_inline_object_4_parseFromJSON(cJSON *inline_o
 
     cJSON *binary_data_n2_information = cJSON_GetObjectItemCaseSensitive(inline_object_4JSON, "binaryDataN2Information");
 
-    OpenAPI_binary_t* decoded_str_binary_data_n2_information = OpenAPI_malloc(sizeof(OpenAPI_binary_t));
+    OpenAPI_binary_t* decoded_str_binary_data_n2_information = ogs_malloc(sizeof(OpenAPI_binary_t));
+    ogs_assert(decoded_str_binary_data_n2_information);
     if (binary_data_n2_information) {
     if (!cJSON_IsString(binary_data_n2_information)) {
         ogs_error("OpenAPI_inline_object_4_parseFromJSON() failed [binary_data_n2_information]");

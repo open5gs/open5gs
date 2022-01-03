@@ -15,10 +15,9 @@ OpenAPI_accumulated_usage_t *OpenAPI_accumulated_usage_create(
     long uplink_volume
 )
 {
-    OpenAPI_accumulated_usage_t *accumulated_usage_local_var = OpenAPI_malloc(sizeof(OpenAPI_accumulated_usage_t));
-    if (!accumulated_usage_local_var) {
-        return NULL;
-    }
+    OpenAPI_accumulated_usage_t *accumulated_usage_local_var = ogs_malloc(sizeof(OpenAPI_accumulated_usage_t));
+    ogs_assert(accumulated_usage_local_var);
+
     accumulated_usage_local_var->is_duration = is_duration;
     accumulated_usage_local_var->duration = duration;
     accumulated_usage_local_var->is_total_volume = is_total_volume;

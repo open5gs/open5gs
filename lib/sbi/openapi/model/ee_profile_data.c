@@ -10,10 +10,9 @@ OpenAPI_ee_profile_data_t *OpenAPI_ee_profile_data_create(
     OpenAPI_list_t* allowed_mtc_provider
 )
 {
-    OpenAPI_ee_profile_data_t *ee_profile_data_local_var = OpenAPI_malloc(sizeof(OpenAPI_ee_profile_data_t));
-    if (!ee_profile_data_local_var) {
-        return NULL;
-    }
+    OpenAPI_ee_profile_data_t *ee_profile_data_local_var = ogs_malloc(sizeof(OpenAPI_ee_profile_data_t));
+    ogs_assert(ee_profile_data_local_var);
+
     ee_profile_data_local_var->restricted_event_types = restricted_event_types;
     ee_profile_data_local_var->supported_features = supported_features;
     ee_profile_data_local_var->allowed_mtc_provider = allowed_mtc_provider;
@@ -34,6 +33,7 @@ void OpenAPI_ee_profile_data_free(OpenAPI_ee_profile_data_t *ee_profile_data)
     ogs_free(ee_profile_data->supported_features);
     OpenAPI_list_for_each(ee_profile_data->allowed_mtc_provider, node) {
         OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+        ogs_free(localKeyValue->key);
         ogs_free(localKeyValue->value);
         ogs_free(localKeyValue);
     }
@@ -151,7 +151,7 @@ OpenAPI_ee_profile_data_t *OpenAPI_ee_profile_data_parseFromJSON(cJSON *ee_profi
 
     ee_profile_data_local_var = OpenAPI_ee_profile_data_create (
         restricted_event_types ? restricted_event_typesList : NULL,
-        supported_features ? ogs_strdup_or_assert(supported_features->valuestring) : NULL,
+        supported_features ? ogs_strdup(supported_features->valuestring) : NULL,
         allowed_mtc_provider ? allowed_mtc_providerList : NULL
     );
 

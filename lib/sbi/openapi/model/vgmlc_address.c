@@ -10,10 +10,9 @@ OpenAPI_vgmlc_address_t *OpenAPI_vgmlc_address_create(
     char *vgmlc_fqdn
 )
 {
-    OpenAPI_vgmlc_address_t *vgmlc_address_local_var = OpenAPI_malloc(sizeof(OpenAPI_vgmlc_address_t));
-    if (!vgmlc_address_local_var) {
-        return NULL;
-    }
+    OpenAPI_vgmlc_address_t *vgmlc_address_local_var = ogs_malloc(sizeof(OpenAPI_vgmlc_address_t));
+    ogs_assert(vgmlc_address_local_var);
+
     vgmlc_address_local_var->vgmlc_address_ipv4 = vgmlc_address_ipv4;
     vgmlc_address_local_var->vgmlc_address_ipv6 = vgmlc_address_ipv6;
     vgmlc_address_local_var->vgmlc_fqdn = vgmlc_fqdn;
@@ -99,9 +98,9 @@ OpenAPI_vgmlc_address_t *OpenAPI_vgmlc_address_parseFromJSON(cJSON *vgmlc_addres
     }
 
     vgmlc_address_local_var = OpenAPI_vgmlc_address_create (
-        vgmlc_address_ipv4 ? ogs_strdup_or_assert(vgmlc_address_ipv4->valuestring) : NULL,
-        vgmlc_address_ipv6 ? ogs_strdup_or_assert(vgmlc_address_ipv6->valuestring) : NULL,
-        vgmlc_fqdn ? ogs_strdup_or_assert(vgmlc_fqdn->valuestring) : NULL
+        vgmlc_address_ipv4 ? ogs_strdup(vgmlc_address_ipv4->valuestring) : NULL,
+        vgmlc_address_ipv6 ? ogs_strdup(vgmlc_address_ipv6->valuestring) : NULL,
+        vgmlc_fqdn ? ogs_strdup(vgmlc_fqdn->valuestring) : NULL
     );
 
     return vgmlc_address_local_var;

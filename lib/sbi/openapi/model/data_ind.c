@@ -7,10 +7,9 @@
 OpenAPI_data_ind_t *OpenAPI_data_ind_create(
 )
 {
-    OpenAPI_data_ind_t *data_ind_local_var = OpenAPI_malloc(sizeof(OpenAPI_data_ind_t));
-    if (!data_ind_local_var) {
-        return NULL;
-    }
+    OpenAPI_data_ind_t *data_ind_local_var = ogs_malloc(sizeof(OpenAPI_data_ind_t));
+    ogs_assert(data_ind_local_var);
+
 
     return data_ind_local_var;
 }

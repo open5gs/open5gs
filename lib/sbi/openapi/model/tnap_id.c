@@ -10,10 +10,9 @@ OpenAPI_tnap_id_t *OpenAPI_tnap_id_create(
     char civic_address
 )
 {
-    OpenAPI_tnap_id_t *tnap_id_local_var = OpenAPI_malloc(sizeof(OpenAPI_tnap_id_t));
-    if (!tnap_id_local_var) {
-        return NULL;
-    }
+    OpenAPI_tnap_id_t *tnap_id_local_var = ogs_malloc(sizeof(OpenAPI_tnap_id_t));
+    ogs_assert(tnap_id_local_var);
+
     tnap_id_local_var->ss_id = ss_id;
     tnap_id_local_var->bss_id = bss_id;
     tnap_id_local_var->civic_address = civic_address;
@@ -98,8 +97,8 @@ OpenAPI_tnap_id_t *OpenAPI_tnap_id_parseFromJSON(cJSON *tnap_idJSON)
     }
 
     tnap_id_local_var = OpenAPI_tnap_id_create (
-        ss_id ? ogs_strdup_or_assert(ss_id->valuestring) : NULL,
-        bss_id ? ogs_strdup_or_assert(bss_id->valuestring) : NULL,
+        ss_id ? ogs_strdup(ss_id->valuestring) : NULL,
+        bss_id ? ogs_strdup(bss_id->valuestring) : NULL,
         civic_address ? civic_address->valueint : 0
     );
 

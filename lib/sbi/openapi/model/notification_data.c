@@ -12,10 +12,9 @@ OpenAPI_notification_data_t *OpenAPI_notification_data_create(
     OpenAPI_condition_event_type_e condition_event
 )
 {
-    OpenAPI_notification_data_t *notification_data_local_var = OpenAPI_malloc(sizeof(OpenAPI_notification_data_t));
-    if (!notification_data_local_var) {
-        return NULL;
-    }
+    OpenAPI_notification_data_t *notification_data_local_var = ogs_malloc(sizeof(OpenAPI_notification_data_t));
+    ogs_assert(notification_data_local_var);
+
     notification_data_local_var->event = event;
     notification_data_local_var->nf_instance_uri = nf_instance_uri;
     notification_data_local_var->nf_profile = nf_profile;
@@ -174,7 +173,7 @@ OpenAPI_notification_data_t *OpenAPI_notification_data_parseFromJSON(cJSON *noti
 
     notification_data_local_var = OpenAPI_notification_data_create (
         eventVariable,
-        ogs_strdup_or_assert(nf_instance_uri->valuestring),
+        ogs_strdup(nf_instance_uri->valuestring),
         nf_profile ? nf_profile_local_nonprim : NULL,
         profile_changes ? profile_changesList : NULL,
         condition_event ? condition_eventVariable : 0

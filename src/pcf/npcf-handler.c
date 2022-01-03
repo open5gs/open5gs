@@ -98,9 +98,11 @@ bool pcf_npcf_am_policy_contrtol_handle_create(pcf_ue_t *pcf_ue,
         ogs_uint64_from_string(PolicyAssociationRequest->supp_feat);
     pcf_ue->am_policy_control_features &= supported_features;
 
-    if (pcf_ue->gpsi)
-        ogs_free(pcf_ue->gpsi);
-    pcf_ue->gpsi = ogs_strdup(PolicyAssociationRequest->gpsi);
+    if (PolicyAssociationRequest->gpsi) {
+        if (pcf_ue->gpsi)
+            ogs_free(pcf_ue->gpsi);
+        pcf_ue->gpsi = ogs_strdup(PolicyAssociationRequest->gpsi);
+    }
 
     pcf_ue->access_type = PolicyAssociationRequest->access_type;
 

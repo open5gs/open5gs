@@ -13,10 +13,9 @@ OpenAPI_service_area_restriction_1_t *OpenAPI_service_area_restriction_1_create(
     int max_num_of_tas_for_not_allowed_areas
 )
 {
-    OpenAPI_service_area_restriction_1_t *service_area_restriction_1_local_var = OpenAPI_malloc(sizeof(OpenAPI_service_area_restriction_1_t));
-    if (!service_area_restriction_1_local_var) {
-        return NULL;
-    }
+    OpenAPI_service_area_restriction_1_t *service_area_restriction_1_local_var = ogs_malloc(sizeof(OpenAPI_service_area_restriction_1_t));
+    ogs_assert(service_area_restriction_1_local_var);
+
     service_area_restriction_1_local_var->restriction_type = restriction_type;
     service_area_restriction_1_local_var->areas = areas;
     service_area_restriction_1_local_var->is_max_num_of_tas = is_max_num_of_tas;

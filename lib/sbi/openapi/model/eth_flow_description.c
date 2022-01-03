@@ -15,10 +15,9 @@ OpenAPI_eth_flow_description_t *OpenAPI_eth_flow_description_create(
     char *dest_mac_addr_end
 )
 {
-    OpenAPI_eth_flow_description_t *eth_flow_description_local_var = OpenAPI_malloc(sizeof(OpenAPI_eth_flow_description_t));
-    if (!eth_flow_description_local_var) {
-        return NULL;
-    }
+    OpenAPI_eth_flow_description_t *eth_flow_description_local_var = ogs_malloc(sizeof(OpenAPI_eth_flow_description_t));
+    ogs_assert(eth_flow_description_local_var);
+
     eth_flow_description_local_var->dest_mac_addr = dest_mac_addr;
     eth_flow_description_local_var->eth_type = eth_type;
     eth_flow_description_local_var->f_desc = f_desc;
@@ -195,7 +194,7 @@ OpenAPI_eth_flow_description_t *OpenAPI_eth_flow_description_parseFromJSON(cJSON
         ogs_error("OpenAPI_eth_flow_description_parseFromJSON() failed [vlan_tags]");
         goto end;
     }
-    OpenAPI_list_add(vlan_tagsList , ogs_strdup_or_assert(vlan_tags_local->valuestring));
+    OpenAPI_list_add(vlan_tagsList , ogs_strdup(vlan_tags_local->valuestring));
     }
     }
 
@@ -218,14 +217,14 @@ OpenAPI_eth_flow_description_t *OpenAPI_eth_flow_description_parseFromJSON(cJSON
     }
 
     eth_flow_description_local_var = OpenAPI_eth_flow_description_create (
-        dest_mac_addr ? ogs_strdup_or_assert(dest_mac_addr->valuestring) : NULL,
-        ogs_strdup_or_assert(eth_type->valuestring),
-        f_desc ? ogs_strdup_or_assert(f_desc->valuestring) : NULL,
+        dest_mac_addr ? ogs_strdup(dest_mac_addr->valuestring) : NULL,
+        ogs_strdup(eth_type->valuestring),
+        f_desc ? ogs_strdup(f_desc->valuestring) : NULL,
         f_dir ? f_dirVariable : 0,
-        source_mac_addr ? ogs_strdup_or_assert(source_mac_addr->valuestring) : NULL,
+        source_mac_addr ? ogs_strdup(source_mac_addr->valuestring) : NULL,
         vlan_tags ? vlan_tagsList : NULL,
-        src_mac_addr_end ? ogs_strdup_or_assert(src_mac_addr_end->valuestring) : NULL,
-        dest_mac_addr_end ? ogs_strdup_or_assert(dest_mac_addr_end->valuestring) : NULL
+        src_mac_addr_end ? ogs_strdup(src_mac_addr_end->valuestring) : NULL,
+        dest_mac_addr_end ? ogs_strdup(dest_mac_addr_end->valuestring) : NULL
     );
 
     return eth_flow_description_local_var;

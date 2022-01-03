@@ -7,10 +7,9 @@
 OpenAPI_traffic_profile_rm_t *OpenAPI_traffic_profile_rm_create(
 )
 {
-    OpenAPI_traffic_profile_rm_t *traffic_profile_rm_local_var = OpenAPI_malloc(sizeof(OpenAPI_traffic_profile_rm_t));
-    if (!traffic_profile_rm_local_var) {
-        return NULL;
-    }
+    OpenAPI_traffic_profile_rm_t *traffic_profile_rm_local_var = ogs_malloc(sizeof(OpenAPI_traffic_profile_rm_t));
+    ogs_assert(traffic_profile_rm_local_var);
+
 
     return traffic_profile_rm_local_var;
 }

@@ -8,10 +8,9 @@ OpenAPI_redundant_pdu_session_information_t *OpenAPI_redundant_pdu_session_infor
     OpenAPI_rsn_e rsn
 )
 {
-    OpenAPI_redundant_pdu_session_information_t *redundant_pdu_session_information_local_var = OpenAPI_malloc(sizeof(OpenAPI_redundant_pdu_session_information_t));
-    if (!redundant_pdu_session_information_local_var) {
-        return NULL;
-    }
+    OpenAPI_redundant_pdu_session_information_t *redundant_pdu_session_information_local_var = ogs_malloc(sizeof(OpenAPI_redundant_pdu_session_information_t));
+    ogs_assert(redundant_pdu_session_information_local_var);
+
     redundant_pdu_session_information_local_var->rsn = rsn;
 
     return redundant_pdu_session_information_local_var;

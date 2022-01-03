@@ -18,10 +18,9 @@ OpenAPI_session_management_subscription_data_1_t *OpenAPI_session_management_sub
     char *_3gpp_charging_characteristics
 )
 {
-    OpenAPI_session_management_subscription_data_1_t *session_management_subscription_data_1_local_var = OpenAPI_malloc(sizeof(OpenAPI_session_management_subscription_data_1_t));
-    if (!session_management_subscription_data_1_local_var) {
-        return NULL;
-    }
+    OpenAPI_session_management_subscription_data_1_t *session_management_subscription_data_1_local_var = ogs_malloc(sizeof(OpenAPI_session_management_subscription_data_1_t));
+    ogs_assert(session_management_subscription_data_1_local_var);
+
     session_management_subscription_data_1_local_var->single_nssai = single_nssai;
     session_management_subscription_data_1_local_var->dnn_configurations = dnn_configurations;
     session_management_subscription_data_1_local_var->internal_group_ids = internal_group_ids;
@@ -46,6 +45,7 @@ void OpenAPI_session_management_subscription_data_1_free(OpenAPI_session_managem
     OpenAPI_snssai_free(session_management_subscription_data_1->single_nssai);
     OpenAPI_list_for_each(session_management_subscription_data_1->dnn_configurations, node) {
         OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+        ogs_free(localKeyValue->key);
         OpenAPI_dnn_configuration_1_free(localKeyValue->value);
         ogs_free(localKeyValue);
     }
@@ -56,6 +56,7 @@ void OpenAPI_session_management_subscription_data_1_free(OpenAPI_session_managem
     OpenAPI_list_free(session_management_subscription_data_1->internal_group_ids);
     OpenAPI_list_for_each(session_management_subscription_data_1->shared_vn_group_data_ids, node) {
         OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+        ogs_free(localKeyValue->key);
         ogs_free(localKeyValue->value);
         ogs_free(localKeyValue);
     }
@@ -65,12 +66,14 @@ void OpenAPI_session_management_subscription_data_1_free(OpenAPI_session_managem
     ogs_free(session_management_subscription_data_1->shared_trace_data_id);
     OpenAPI_list_for_each(session_management_subscription_data_1->expected_ue_behaviours_list, node) {
         OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+        ogs_free(localKeyValue->key);
         OpenAPI_expected_ue_behaviour_data_1_free(localKeyValue->value);
         ogs_free(localKeyValue);
     }
     OpenAPI_list_free(session_management_subscription_data_1->expected_ue_behaviours_list);
     OpenAPI_list_for_each(session_management_subscription_data_1->suggested_packet_num_dl_list, node) {
         OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+        ogs_free(localKeyValue->key);
         OpenAPI_suggested_packet_num_dl_1_free(localKeyValue->value);
         ogs_free(localKeyValue);
     }
@@ -272,9 +275,9 @@ OpenAPI_session_management_subscription_data_1_t *OpenAPI_session_management_sub
         cJSON *localMapObject = dnn_configurations_local_map;
         if (cJSON_IsObject(dnn_configurations_local_map)) {
             localMapKeyPair = OpenAPI_map_create(
-                localMapObject->string, OpenAPI_dnn_configuration_1_parseFromJSON(localMapObject));
+                ogs_strdup(localMapObject->string), OpenAPI_dnn_configuration_1_parseFromJSON(localMapObject));
         } else if (cJSON_IsNull(dnn_configurations_local_map)) {
-            localMapKeyPair = OpenAPI_map_create(localMapObject->string, NULL);
+            localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
         } else {
             ogs_error("OpenAPI_session_management_subscription_data_1_parseFromJSON() failed [dnn_configurations]");
             goto end;
@@ -299,7 +302,7 @@ OpenAPI_session_management_subscription_data_1_t *OpenAPI_session_management_sub
         ogs_error("OpenAPI_session_management_subscription_data_1_parseFromJSON() failed [internal_group_ids]");
         goto end;
     }
-    OpenAPI_list_add(internal_group_idsList , ogs_strdup_or_assert(internal_group_ids_local->valuestring));
+    OpenAPI_list_add(internal_group_idsList , ogs_strdup(internal_group_ids_local->valuestring));
     }
     }
 
@@ -371,9 +374,9 @@ OpenAPI_session_management_subscription_data_1_t *OpenAPI_session_management_sub
         cJSON *localMapObject = expected_ue_behaviours_list_local_map;
         if (cJSON_IsObject(expected_ue_behaviours_list_local_map)) {
             localMapKeyPair = OpenAPI_map_create(
-                localMapObject->string, OpenAPI_expected_ue_behaviour_data_1_parseFromJSON(localMapObject));
+                ogs_strdup(localMapObject->string), OpenAPI_expected_ue_behaviour_data_1_parseFromJSON(localMapObject));
         } else if (cJSON_IsNull(expected_ue_behaviours_list_local_map)) {
-            localMapKeyPair = OpenAPI_map_create(localMapObject->string, NULL);
+            localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
         } else {
             ogs_error("OpenAPI_session_management_subscription_data_1_parseFromJSON() failed [expected_ue_behaviours_list]");
             goto end;
@@ -397,9 +400,9 @@ OpenAPI_session_management_subscription_data_1_t *OpenAPI_session_management_sub
         cJSON *localMapObject = suggested_packet_num_dl_list_local_map;
         if (cJSON_IsObject(suggested_packet_num_dl_list_local_map)) {
             localMapKeyPair = OpenAPI_map_create(
-                localMapObject->string, OpenAPI_suggested_packet_num_dl_1_parseFromJSON(localMapObject));
+                ogs_strdup(localMapObject->string), OpenAPI_suggested_packet_num_dl_1_parseFromJSON(localMapObject));
         } else if (cJSON_IsNull(suggested_packet_num_dl_list_local_map)) {
-            localMapKeyPair = OpenAPI_map_create(localMapObject->string, NULL);
+            localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
         } else {
             ogs_error("OpenAPI_session_management_subscription_data_1_parseFromJSON() failed [suggested_packet_num_dl_list]");
             goto end;
@@ -422,13 +425,13 @@ OpenAPI_session_management_subscription_data_1_t *OpenAPI_session_management_sub
         dnn_configurations ? dnn_configurationsList : NULL,
         internal_group_ids ? internal_group_idsList : NULL,
         shared_vn_group_data_ids ? shared_vn_group_data_idsList : NULL,
-        shared_dnn_configurations_id ? ogs_strdup_or_assert(shared_dnn_configurations_id->valuestring) : NULL,
+        shared_dnn_configurations_id ? ogs_strdup(shared_dnn_configurations_id->valuestring) : NULL,
         odb_packet_services ? odb_packet_servicesVariable : 0,
         trace_data ? trace_data_local_nonprim : NULL,
-        shared_trace_data_id ? ogs_strdup_or_assert(shared_trace_data_id->valuestring) : NULL,
+        shared_trace_data_id ? ogs_strdup(shared_trace_data_id->valuestring) : NULL,
         expected_ue_behaviours_list ? expected_ue_behaviours_listList : NULL,
         suggested_packet_num_dl_list ? suggested_packet_num_dl_listList : NULL,
-        _3gpp_charging_characteristics ? ogs_strdup_or_assert(_3gpp_charging_characteristics->valuestring) : NULL
+        _3gpp_charging_characteristics ? ogs_strdup(_3gpp_charging_characteristics->valuestring) : NULL
     );
 
     return session_management_subscription_data_1_local_var;

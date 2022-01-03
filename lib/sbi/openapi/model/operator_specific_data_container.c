@@ -11,10 +11,9 @@ OpenAPI_operator_specific_data_container_t *OpenAPI_operator_specific_data_conta
     char *supported_features
 )
 {
-    OpenAPI_operator_specific_data_container_t *operator_specific_data_container_local_var = OpenAPI_malloc(sizeof(OpenAPI_operator_specific_data_container_t));
-    if (!operator_specific_data_container_local_var) {
-        return NULL;
-    }
+    OpenAPI_operator_specific_data_container_t *operator_specific_data_container_local_var = ogs_malloc(sizeof(OpenAPI_operator_specific_data_container_t));
+    ogs_assert(operator_specific_data_container_local_var);
+
     operator_specific_data_container_local_var->data_type = data_type;
     operator_specific_data_container_local_var->data_type_definition = data_type_definition;
     operator_specific_data_container_local_var->value = value;
@@ -118,10 +117,10 @@ OpenAPI_operator_specific_data_container_t *OpenAPI_operator_specific_data_conta
     }
 
     operator_specific_data_container_local_var = OpenAPI_operator_specific_data_container_create (
-        ogs_strdup_or_assert(data_type->valuestring),
-        data_type_definition ? ogs_strdup_or_assert(data_type_definition->valuestring) : NULL,
-        ogs_strdup_or_assert(value->valuestring),
-        supported_features ? ogs_strdup_or_assert(supported_features->valuestring) : NULL
+        ogs_strdup(data_type->valuestring),
+        data_type_definition ? ogs_strdup(data_type_definition->valuestring) : NULL,
+        ogs_strdup(value->valuestring),
+        supported_features ? ogs_strdup(supported_features->valuestring) : NULL
     );
 
     return operator_specific_data_container_local_var;

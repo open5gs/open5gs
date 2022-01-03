@@ -9,10 +9,9 @@ OpenAPI_redirect_response_t *OpenAPI_redirect_response_create(
     char *target_scp
 )
 {
-    OpenAPI_redirect_response_t *redirect_response_local_var = OpenAPI_malloc(sizeof(OpenAPI_redirect_response_t));
-    if (!redirect_response_local_var) {
-        return NULL;
-    }
+    OpenAPI_redirect_response_t *redirect_response_local_var = ogs_malloc(sizeof(OpenAPI_redirect_response_t));
+    ogs_assert(redirect_response_local_var);
+
     redirect_response_local_var->cause = cause;
     redirect_response_local_var->target_scp = target_scp;
 
@@ -80,8 +79,8 @@ OpenAPI_redirect_response_t *OpenAPI_redirect_response_parseFromJSON(cJSON *redi
     }
 
     redirect_response_local_var = OpenAPI_redirect_response_create (
-        cause ? ogs_strdup_or_assert(cause->valuestring) : NULL,
-        target_scp ? ogs_strdup_or_assert(target_scp->valuestring) : NULL
+        cause ? ogs_strdup(cause->valuestring) : NULL,
+        target_scp ? ogs_strdup(target_scp->valuestring) : NULL
     );
 
     return redirect_response_local_var;

@@ -13,10 +13,9 @@ OpenAPI_pcscf_restoration_request_data_t *OpenAPI_pcscf_restoration_request_data
     char *ue_ipv6
 )
 {
-    OpenAPI_pcscf_restoration_request_data_t *pcscf_restoration_request_data_local_var = OpenAPI_malloc(sizeof(OpenAPI_pcscf_restoration_request_data_t));
-    if (!pcscf_restoration_request_data_local_var) {
-        return NULL;
-    }
+    OpenAPI_pcscf_restoration_request_data_t *pcscf_restoration_request_data_local_var = ogs_malloc(sizeof(OpenAPI_pcscf_restoration_request_data_t));
+    ogs_assert(pcscf_restoration_request_data_local_var);
+
     pcscf_restoration_request_data_local_var->dnn = dnn;
     pcscf_restoration_request_data_local_var->ip_domain = ip_domain;
     pcscf_restoration_request_data_local_var->slice_info = slice_info;
@@ -160,12 +159,12 @@ OpenAPI_pcscf_restoration_request_data_t *OpenAPI_pcscf_restoration_request_data
     }
 
     pcscf_restoration_request_data_local_var = OpenAPI_pcscf_restoration_request_data_create (
-        dnn ? ogs_strdup_or_assert(dnn->valuestring) : NULL,
-        ip_domain ? ogs_strdup_or_assert(ip_domain->valuestring) : NULL,
+        dnn ? ogs_strdup(dnn->valuestring) : NULL,
+        ip_domain ? ogs_strdup(ip_domain->valuestring) : NULL,
         slice_info ? slice_info_local_nonprim : NULL,
-        supi ? ogs_strdup_or_assert(supi->valuestring) : NULL,
-        ue_ipv4 ? ogs_strdup_or_assert(ue_ipv4->valuestring) : NULL,
-        ue_ipv6 ? ogs_strdup_or_assert(ue_ipv6->valuestring) : NULL
+        supi ? ogs_strdup(supi->valuestring) : NULL,
+        ue_ipv4 ? ogs_strdup(ue_ipv4->valuestring) : NULL,
+        ue_ipv6 ? ogs_strdup(ue_ipv6->valuestring) : NULL
     );
 
     return pcscf_restoration_request_data_local_var;

@@ -8,10 +8,9 @@ OpenAPI_bdt_policy_data_patch_t *OpenAPI_bdt_policy_data_patch_create(
     char *bdt_ref_id
 )
 {
-    OpenAPI_bdt_policy_data_patch_t *bdt_policy_data_patch_local_var = OpenAPI_malloc(sizeof(OpenAPI_bdt_policy_data_patch_t));
-    if (!bdt_policy_data_patch_local_var) {
-        return NULL;
-    }
+    OpenAPI_bdt_policy_data_patch_t *bdt_policy_data_patch_local_var = ogs_malloc(sizeof(OpenAPI_bdt_policy_data_patch_t));
+    ogs_assert(bdt_policy_data_patch_local_var);
+
     bdt_policy_data_patch_local_var->bdt_ref_id = bdt_ref_id;
 
     return bdt_policy_data_patch_local_var;
@@ -61,7 +60,7 @@ OpenAPI_bdt_policy_data_patch_t *OpenAPI_bdt_policy_data_patch_parseFromJSON(cJS
     }
 
     bdt_policy_data_patch_local_var = OpenAPI_bdt_policy_data_patch_create (
-        ogs_strdup_or_assert(bdt_ref_id->valuestring)
+        ogs_strdup(bdt_ref_id->valuestring)
     );
 
     return bdt_policy_data_patch_local_var;

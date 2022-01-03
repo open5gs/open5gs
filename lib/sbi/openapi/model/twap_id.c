@@ -10,10 +10,9 @@ OpenAPI_twap_id_t *OpenAPI_twap_id_create(
     char civic_address
 )
 {
-    OpenAPI_twap_id_t *twap_id_local_var = OpenAPI_malloc(sizeof(OpenAPI_twap_id_t));
-    if (!twap_id_local_var) {
-        return NULL;
-    }
+    OpenAPI_twap_id_t *twap_id_local_var = ogs_malloc(sizeof(OpenAPI_twap_id_t));
+    ogs_assert(twap_id_local_var);
+
     twap_id_local_var->ss_id = ss_id;
     twap_id_local_var->bss_id = bss_id;
     twap_id_local_var->civic_address = civic_address;
@@ -98,8 +97,8 @@ OpenAPI_twap_id_t *OpenAPI_twap_id_parseFromJSON(cJSON *twap_idJSON)
     }
 
     twap_id_local_var = OpenAPI_twap_id_create (
-        ogs_strdup_or_assert(ss_id->valuestring),
-        bss_id ? ogs_strdup_or_assert(bss_id->valuestring) : NULL,
+        ogs_strdup(ss_id->valuestring),
+        bss_id ? ogs_strdup(bss_id->valuestring) : NULL,
         civic_address ? civic_address->valueint : 0
     );
 

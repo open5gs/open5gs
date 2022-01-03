@@ -9,10 +9,9 @@ OpenAPI_vendor_specific_feature_t *OpenAPI_vendor_specific_feature_create(
     char *feature_version
 )
 {
-    OpenAPI_vendor_specific_feature_t *vendor_specific_feature_local_var = OpenAPI_malloc(sizeof(OpenAPI_vendor_specific_feature_t));
-    if (!vendor_specific_feature_local_var) {
-        return NULL;
-    }
+    OpenAPI_vendor_specific_feature_t *vendor_specific_feature_local_var = ogs_malloc(sizeof(OpenAPI_vendor_specific_feature_t));
+    ogs_assert(vendor_specific_feature_local_var);
+
     vendor_specific_feature_local_var->feature_name = feature_name;
     vendor_specific_feature_local_var->feature_version = feature_version;
 
@@ -80,8 +79,8 @@ OpenAPI_vendor_specific_feature_t *OpenAPI_vendor_specific_feature_parseFromJSON
     }
 
     vendor_specific_feature_local_var = OpenAPI_vendor_specific_feature_create (
-        ogs_strdup_or_assert(feature_name->valuestring),
-        ogs_strdup_or_assert(feature_version->valuestring)
+        ogs_strdup(feature_name->valuestring),
+        ogs_strdup(feature_version->valuestring)
     );
 
     return vendor_specific_feature_local_var;

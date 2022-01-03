@@ -22,10 +22,9 @@ OpenAPI_amf_event_t *OpenAPI_amf_event_create(
     int max_response_time
 )
 {
-    OpenAPI_amf_event_t *amf_event_local_var = OpenAPI_malloc(sizeof(OpenAPI_amf_event_t));
-    if (!amf_event_local_var) {
-        return NULL;
-    }
+    OpenAPI_amf_event_t *amf_event_local_var = ogs_malloc(sizeof(OpenAPI_amf_event_t));
+    ogs_assert(amf_event_local_var);
+
     amf_event_local_var->type = type;
     amf_event_local_var->is_immediate_flag = is_immediate_flag;
     amf_event_local_var->immediate_flag = immediate_flag;

@@ -12,10 +12,9 @@ OpenAPI_transfer_policy_t *OpenAPI_transfer_policy_create(
     int trans_policy_id
 )
 {
-    OpenAPI_transfer_policy_t *transfer_policy_local_var = OpenAPI_malloc(sizeof(OpenAPI_transfer_policy_t));
-    if (!transfer_policy_local_var) {
-        return NULL;
-    }
+    OpenAPI_transfer_policy_t *transfer_policy_local_var = ogs_malloc(sizeof(OpenAPI_transfer_policy_t));
+    ogs_assert(transfer_policy_local_var);
+
     transfer_policy_local_var->max_bit_rate_dl = max_bit_rate_dl;
     transfer_policy_local_var->max_bit_rate_ul = max_bit_rate_ul;
     transfer_policy_local_var->rating_group = rating_group;
@@ -139,8 +138,8 @@ OpenAPI_transfer_policy_t *OpenAPI_transfer_policy_parseFromJSON(cJSON *transfer
     }
 
     transfer_policy_local_var = OpenAPI_transfer_policy_create (
-        max_bit_rate_dl ? ogs_strdup_or_assert(max_bit_rate_dl->valuestring) : NULL,
-        max_bit_rate_ul ? ogs_strdup_or_assert(max_bit_rate_ul->valuestring) : NULL,
+        max_bit_rate_dl ? ogs_strdup(max_bit_rate_dl->valuestring) : NULL,
+        max_bit_rate_ul ? ogs_strdup(max_bit_rate_ul->valuestring) : NULL,
         
         rating_group->valuedouble,
         rec_time_int_local_nonprim,

@@ -17,10 +17,9 @@ OpenAPI_ue_policy_set_t *OpenAPI_ue_policy_set_create(
     char *supp_feat
 )
 {
-    OpenAPI_ue_policy_set_t *ue_policy_set_local_var = OpenAPI_malloc(sizeof(OpenAPI_ue_policy_set_t));
-    if (!ue_policy_set_local_var) {
-        return NULL;
-    }
+    OpenAPI_ue_policy_set_t *ue_policy_set_local_var = ogs_malloc(sizeof(OpenAPI_ue_policy_set_t));
+    ogs_assert(ue_policy_set_local_var);
+
     ue_policy_set_local_var->pra_infos = pra_infos;
     ue_policy_set_local_var->subsc_cats = subsc_cats;
     ue_policy_set_local_var->ue_policy_sections = ue_policy_sections;
@@ -43,6 +42,7 @@ void OpenAPI_ue_policy_set_free(OpenAPI_ue_policy_set_t *ue_policy_set)
     OpenAPI_lnode_t *node;
     OpenAPI_list_for_each(ue_policy_set->pra_infos, node) {
         OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+        ogs_free(localKeyValue->key);
         OpenAPI_presence_info_free(localKeyValue->value);
         ogs_free(localKeyValue);
     }
@@ -53,6 +53,7 @@ void OpenAPI_ue_policy_set_free(OpenAPI_ue_policy_set_t *ue_policy_set)
     OpenAPI_list_free(ue_policy_set->subsc_cats);
     OpenAPI_list_for_each(ue_policy_set->ue_policy_sections, node) {
         OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+        ogs_free(localKeyValue->key);
         OpenAPI_ue_policy_section_free(localKeyValue->value);
         ogs_free(localKeyValue);
     }
@@ -63,6 +64,7 @@ void OpenAPI_ue_policy_set_free(OpenAPI_ue_policy_set_t *ue_policy_set)
     OpenAPI_list_free(ue_policy_set->upsis);
     OpenAPI_list_for_each(ue_policy_set->allowed_route_sel_descs, node) {
         OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+        ogs_free(localKeyValue->key);
         OpenAPI_plmn_route_selection_descriptor_free(localKeyValue->value);
         ogs_free(localKeyValue);
     }
@@ -246,9 +248,9 @@ OpenAPI_ue_policy_set_t *OpenAPI_ue_policy_set_parseFromJSON(cJSON *ue_policy_se
         cJSON *localMapObject = pra_infos_local_map;
         if (cJSON_IsObject(pra_infos_local_map)) {
             localMapKeyPair = OpenAPI_map_create(
-                localMapObject->string, OpenAPI_presence_info_parseFromJSON(localMapObject));
+                ogs_strdup(localMapObject->string), OpenAPI_presence_info_parseFromJSON(localMapObject));
         } else if (cJSON_IsNull(pra_infos_local_map)) {
-            localMapKeyPair = OpenAPI_map_create(localMapObject->string, NULL);
+            localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
         } else {
             ogs_error("OpenAPI_ue_policy_set_parseFromJSON() failed [pra_infos]");
             goto end;
@@ -273,7 +275,7 @@ OpenAPI_ue_policy_set_t *OpenAPI_ue_policy_set_parseFromJSON(cJSON *ue_policy_se
         ogs_error("OpenAPI_ue_policy_set_parseFromJSON() failed [subsc_cats]");
         goto end;
     }
-    OpenAPI_list_add(subsc_catsList , ogs_strdup_or_assert(subsc_cats_local->valuestring));
+    OpenAPI_list_add(subsc_catsList , ogs_strdup(subsc_cats_local->valuestring));
     }
     }
 
@@ -292,9 +294,9 @@ OpenAPI_ue_policy_set_t *OpenAPI_ue_policy_set_parseFromJSON(cJSON *ue_policy_se
         cJSON *localMapObject = ue_policy_sections_local_map;
         if (cJSON_IsObject(ue_policy_sections_local_map)) {
             localMapKeyPair = OpenAPI_map_create(
-                localMapObject->string, OpenAPI_ue_policy_section_parseFromJSON(localMapObject));
+                ogs_strdup(localMapObject->string), OpenAPI_ue_policy_section_parseFromJSON(localMapObject));
         } else if (cJSON_IsNull(ue_policy_sections_local_map)) {
-            localMapKeyPair = OpenAPI_map_create(localMapObject->string, NULL);
+            localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
         } else {
             ogs_error("OpenAPI_ue_policy_set_parseFromJSON() failed [ue_policy_sections]");
             goto end;
@@ -319,7 +321,7 @@ OpenAPI_ue_policy_set_t *OpenAPI_ue_policy_set_parseFromJSON(cJSON *ue_policy_se
         ogs_error("OpenAPI_ue_policy_set_parseFromJSON() failed [upsis]");
         goto end;
     }
-    OpenAPI_list_add(upsisList , ogs_strdup_or_assert(upsis_local->valuestring));
+    OpenAPI_list_add(upsisList , ogs_strdup(upsis_local->valuestring));
     }
     }
 
@@ -338,9 +340,9 @@ OpenAPI_ue_policy_set_t *OpenAPI_ue_policy_set_parseFromJSON(cJSON *ue_policy_se
         cJSON *localMapObject = allowed_route_sel_descs_local_map;
         if (cJSON_IsObject(allowed_route_sel_descs_local_map)) {
             localMapKeyPair = OpenAPI_map_create(
-                localMapObject->string, OpenAPI_plmn_route_selection_descriptor_parseFromJSON(localMapObject));
+                ogs_strdup(localMapObject->string), OpenAPI_plmn_route_selection_descriptor_parseFromJSON(localMapObject));
         } else if (cJSON_IsNull(allowed_route_sel_descs_local_map)) {
-            localMapKeyPair = OpenAPI_map_create(localMapObject->string, NULL);
+            localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
         } else {
             ogs_error("OpenAPI_ue_policy_set_parseFromJSON() failed [allowed_route_sel_descs]");
             goto end;
@@ -383,7 +385,7 @@ OpenAPI_ue_policy_set_t *OpenAPI_ue_policy_set_parseFromJSON(cJSON *ue_policy_se
         ogs_error("OpenAPI_ue_policy_set_parseFromJSON() failed [os_ids]");
         goto end;
     }
-    OpenAPI_list_add(os_idsList , ogs_strdup_or_assert(os_ids_local->valuestring));
+    OpenAPI_list_add(os_idsList , ogs_strdup(os_ids_local->valuestring));
     }
     }
 
@@ -404,9 +406,9 @@ OpenAPI_ue_policy_set_t *OpenAPI_ue_policy_set_parseFromJSON(cJSON *ue_policy_se
         allowed_route_sel_descs ? allowed_route_sel_descsList : NULL,
         andsp_ind ? true : false,
         andsp_ind ? andsp_ind->valueint : 0,
-        pei ? ogs_strdup_or_assert(pei->valuestring) : NULL,
+        pei ? ogs_strdup(pei->valuestring) : NULL,
         os_ids ? os_idsList : NULL,
-        supp_feat ? ogs_strdup_or_assert(supp_feat->valuestring) : NULL
+        supp_feat ? ogs_strdup(supp_feat->valuestring) : NULL
     );
 
     return ue_policy_set_local_var;

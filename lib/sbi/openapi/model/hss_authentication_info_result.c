@@ -9,10 +9,9 @@ OpenAPI_hss_authentication_info_result_t *OpenAPI_hss_authentication_info_result
     OpenAPI_hss_authentication_vectors_t *hss_authentication_vectors
 )
 {
-    OpenAPI_hss_authentication_info_result_t *hss_authentication_info_result_local_var = OpenAPI_malloc(sizeof(OpenAPI_hss_authentication_info_result_t));
-    if (!hss_authentication_info_result_local_var) {
-        return NULL;
-    }
+    OpenAPI_hss_authentication_info_result_t *hss_authentication_info_result_local_var = ogs_malloc(sizeof(OpenAPI_hss_authentication_info_result_t));
+    ogs_assert(hss_authentication_info_result_local_var);
+
     hss_authentication_info_result_local_var->supported_features = supported_features;
     hss_authentication_info_result_local_var->hss_authentication_vectors = hss_authentication_vectors;
 
@@ -84,7 +83,7 @@ OpenAPI_hss_authentication_info_result_t *OpenAPI_hss_authentication_info_result
     hss_authentication_vectors_local_nonprim = OpenAPI_hss_authentication_vectors_parseFromJSON(hss_authentication_vectors);
 
     hss_authentication_info_result_local_var = OpenAPI_hss_authentication_info_result_create (
-        supported_features ? ogs_strdup_or_assert(supported_features->valuestring) : NULL,
+        supported_features ? ogs_strdup(supported_features->valuestring) : NULL,
         hss_authentication_vectors_local_nonprim
     );
 

@@ -9,10 +9,9 @@ OpenAPI_network_node_diameter_address_1_t *OpenAPI_network_node_diameter_address
     char *realm
 )
 {
-    OpenAPI_network_node_diameter_address_1_t *network_node_diameter_address_1_local_var = OpenAPI_malloc(sizeof(OpenAPI_network_node_diameter_address_1_t));
-    if (!network_node_diameter_address_1_local_var) {
-        return NULL;
-    }
+    OpenAPI_network_node_diameter_address_1_t *network_node_diameter_address_1_local_var = ogs_malloc(sizeof(OpenAPI_network_node_diameter_address_1_t));
+    ogs_assert(network_node_diameter_address_1_local_var);
+
     network_node_diameter_address_1_local_var->name = name;
     network_node_diameter_address_1_local_var->realm = realm;
 
@@ -80,8 +79,8 @@ OpenAPI_network_node_diameter_address_1_t *OpenAPI_network_node_diameter_address
     }
 
     network_node_diameter_address_1_local_var = OpenAPI_network_node_diameter_address_1_create (
-        ogs_strdup_or_assert(name->valuestring),
-        ogs_strdup_or_assert(realm->valuestring)
+        ogs_strdup(name->valuestring),
+        ogs_strdup(realm->valuestring)
     );
 
     return network_node_diameter_address_1_local_var;

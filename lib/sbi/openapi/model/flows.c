@@ -10,10 +10,9 @@ OpenAPI_flows_t *OpenAPI_flows_create(
     int med_comp_n
 )
 {
-    OpenAPI_flows_t *flows_local_var = OpenAPI_malloc(sizeof(OpenAPI_flows_t));
-    if (!flows_local_var) {
-        return NULL;
-    }
+    OpenAPI_flows_t *flows_local_var = ogs_malloc(sizeof(OpenAPI_flows_t));
+    ogs_assert(flows_local_var);
+
     flows_local_var->cont_vers = cont_vers;
     flows_local_var->f_nums = f_nums;
     flows_local_var->med_comp_n = med_comp_n;

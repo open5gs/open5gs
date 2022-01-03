@@ -12,10 +12,9 @@ OpenAPI_pgw_info_1_t *OpenAPI_pgw_info_1_create(
     int epdg_ind
 )
 {
-    OpenAPI_pgw_info_1_t *pgw_info_1_local_var = OpenAPI_malloc(sizeof(OpenAPI_pgw_info_1_t));
-    if (!pgw_info_1_local_var) {
-        return NULL;
-    }
+    OpenAPI_pgw_info_1_t *pgw_info_1_local_var = ogs_malloc(sizeof(OpenAPI_pgw_info_1_t));
+    ogs_assert(pgw_info_1_local_var);
+
     pgw_info_1_local_var->dnn = dnn;
     pgw_info_1_local_var->pgw_fqdn = pgw_fqdn;
     pgw_info_1_local_var->plmn_id = plmn_id;
@@ -123,8 +122,8 @@ OpenAPI_pgw_info_1_t *OpenAPI_pgw_info_1_parseFromJSON(cJSON *pgw_info_1JSON)
     }
 
     pgw_info_1_local_var = OpenAPI_pgw_info_1_create (
-        ogs_strdup_or_assert(dnn->valuestring),
-        ogs_strdup_or_assert(pgw_fqdn->valuestring),
+        ogs_strdup(dnn->valuestring),
+        ogs_strdup(pgw_fqdn->valuestring),
         plmn_id ? plmn_id_local_nonprim : NULL,
         epdg_ind ? true : false,
         epdg_ind ? epdg_ind->valueint : 0

@@ -9,10 +9,9 @@ OpenAPI_inline_object_2_t *OpenAPI_inline_object_2_create(
     OpenAPI_binary_t* binary_data_gtpc_message
 )
 {
-    OpenAPI_inline_object_2_t *inline_object_2_local_var = OpenAPI_malloc(sizeof(OpenAPI_inline_object_2_t));
-    if (!inline_object_2_local_var) {
-        return NULL;
-    }
+    OpenAPI_inline_object_2_t *inline_object_2_local_var = ogs_malloc(sizeof(OpenAPI_inline_object_2_t));
+    ogs_assert(inline_object_2_local_var);
+
     inline_object_2_local_var->json_data = json_data;
     inline_object_2_local_var->binary_data_gtpc_message = binary_data_gtpc_message;
 
@@ -78,7 +77,8 @@ OpenAPI_inline_object_2_t *OpenAPI_inline_object_2_parseFromJSON(cJSON *inline_o
 
     cJSON *binary_data_gtpc_message = cJSON_GetObjectItemCaseSensitive(inline_object_2JSON, "binaryDataGtpcMessage");
 
-    OpenAPI_binary_t* decoded_str_binary_data_gtpc_message = OpenAPI_malloc(sizeof(OpenAPI_binary_t));
+    OpenAPI_binary_t* decoded_str_binary_data_gtpc_message = ogs_malloc(sizeof(OpenAPI_binary_t));
+    ogs_assert(decoded_str_binary_data_gtpc_message);
     if (binary_data_gtpc_message) {
     if (!cJSON_IsString(binary_data_gtpc_message)) {
         ogs_error("OpenAPI_inline_object_2_parseFromJSON() failed [binary_data_gtpc_message]");

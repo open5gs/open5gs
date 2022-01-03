@@ -13,10 +13,9 @@ OpenAPI_tsn_qos_container_rm_t *OpenAPI_tsn_qos_container_rm_create(
     int tsc_prio_level
 )
 {
-    OpenAPI_tsn_qos_container_rm_t *tsn_qos_container_rm_local_var = OpenAPI_malloc(sizeof(OpenAPI_tsn_qos_container_rm_t));
-    if (!tsn_qos_container_rm_local_var) {
-        return NULL;
-    }
+    OpenAPI_tsn_qos_container_rm_t *tsn_qos_container_rm_local_var = ogs_malloc(sizeof(OpenAPI_tsn_qos_container_rm_t));
+    ogs_assert(tsn_qos_container_rm_local_var);
+
     tsn_qos_container_rm_local_var->is_max_tsc_burst_size = is_max_tsc_burst_size;
     tsn_qos_container_rm_local_var->max_tsc_burst_size = max_tsc_burst_size;
     tsn_qos_container_rm_local_var->is_tsc_pack_delay = is_tsc_pack_delay;

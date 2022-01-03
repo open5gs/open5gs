@@ -9,10 +9,9 @@ OpenAPI_time_window_t *OpenAPI_time_window_create(
     char *stop_time
 )
 {
-    OpenAPI_time_window_t *time_window_local_var = OpenAPI_malloc(sizeof(OpenAPI_time_window_t));
-    if (!time_window_local_var) {
-        return NULL;
-    }
+    OpenAPI_time_window_t *time_window_local_var = ogs_malloc(sizeof(OpenAPI_time_window_t));
+    ogs_assert(time_window_local_var);
+
     time_window_local_var->start_time = start_time;
     time_window_local_var->stop_time = stop_time;
 
@@ -80,8 +79,8 @@ OpenAPI_time_window_t *OpenAPI_time_window_parseFromJSON(cJSON *time_windowJSON)
     }
 
     time_window_local_var = OpenAPI_time_window_create (
-        ogs_strdup_or_assert(start_time->valuestring),
-        ogs_strdup_or_assert(stop_time->valuestring)
+        ogs_strdup(start_time->valuestring),
+        ogs_strdup(stop_time->valuestring)
     );
 
     return time_window_local_var;

@@ -9,10 +9,9 @@ OpenAPI_geographical_coordinates_t *OpenAPI_geographical_coordinates_create(
     double lat
 )
 {
-    OpenAPI_geographical_coordinates_t *geographical_coordinates_local_var = OpenAPI_malloc(sizeof(OpenAPI_geographical_coordinates_t));
-    if (!geographical_coordinates_local_var) {
-        return NULL;
-    }
+    OpenAPI_geographical_coordinates_t *geographical_coordinates_local_var = ogs_malloc(sizeof(OpenAPI_geographical_coordinates_t));
+    ogs_assert(geographical_coordinates_local_var);
+
     geographical_coordinates_local_var->lon = lon;
     geographical_coordinates_local_var->lat = lat;
 

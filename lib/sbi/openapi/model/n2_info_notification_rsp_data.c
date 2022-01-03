@@ -8,10 +8,9 @@ OpenAPI_n2_info_notification_rsp_data_t *OpenAPI_n2_info_notification_rsp_data_c
     OpenAPI_n2_info_content_t *n2_info_content
 )
 {
-    OpenAPI_n2_info_notification_rsp_data_t *n2_info_notification_rsp_data_local_var = OpenAPI_malloc(sizeof(OpenAPI_n2_info_notification_rsp_data_t));
-    if (!n2_info_notification_rsp_data_local_var) {
-        return NULL;
-    }
+    OpenAPI_n2_info_notification_rsp_data_t *n2_info_notification_rsp_data_local_var = ogs_malloc(sizeof(OpenAPI_n2_info_notification_rsp_data_t));
+    ogs_assert(n2_info_notification_rsp_data_local_var);
+
     n2_info_notification_rsp_data_local_var->n2_info_content = n2_info_content;
 
     return n2_info_notification_rsp_data_local_var;

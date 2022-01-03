@@ -18,10 +18,9 @@ OpenAPI_authentication_info_t *OpenAPI_authentication_info_create(
     char *supported_features
 )
 {
-    OpenAPI_authentication_info_t *authentication_info_local_var = OpenAPI_malloc(sizeof(OpenAPI_authentication_info_t));
-    if (!authentication_info_local_var) {
-        return NULL;
-    }
+    OpenAPI_authentication_info_t *authentication_info_local_var = ogs_malloc(sizeof(OpenAPI_authentication_info_t));
+    ogs_assert(authentication_info_local_var);
+
     authentication_info_local_var->supi_or_suci = supi_or_suci;
     authentication_info_local_var->serving_network_name = serving_network_name;
     authentication_info_local_var->resynchronization_info = resynchronization_info;
@@ -241,7 +240,7 @@ OpenAPI_authentication_info_t *OpenAPI_authentication_info_parseFromJSON(cJSON *
         ogs_error("OpenAPI_authentication_info_parseFromJSON() failed [cell_cag_info]");
         goto end;
     }
-    OpenAPI_list_add(cell_cag_infoList , ogs_strdup_or_assert(cell_cag_info_local->valuestring));
+    OpenAPI_list_add(cell_cag_infoList , ogs_strdup(cell_cag_info_local->valuestring));
     }
     }
 
@@ -264,17 +263,17 @@ OpenAPI_authentication_info_t *OpenAPI_authentication_info_parseFromJSON(cJSON *
     }
 
     authentication_info_local_var = OpenAPI_authentication_info_create (
-        ogs_strdup_or_assert(supi_or_suci->valuestring),
-        ogs_strdup_or_assert(serving_network_name->valuestring),
+        ogs_strdup(supi_or_suci->valuestring),
+        ogs_strdup(serving_network_name->valuestring),
         resynchronization_info ? resynchronization_info_local_nonprim : NULL,
-        pei ? ogs_strdup_or_assert(pei->valuestring) : NULL,
+        pei ? ogs_strdup(pei->valuestring) : NULL,
         trace_data ? trace_data_local_nonprim : NULL,
-        udm_group_id ? ogs_strdup_or_assert(udm_group_id->valuestring) : NULL,
-        routing_indicator ? ogs_strdup_or_assert(routing_indicator->valuestring) : NULL,
+        udm_group_id ? ogs_strdup(udm_group_id->valuestring) : NULL,
+        routing_indicator ? ogs_strdup(routing_indicator->valuestring) : NULL,
         cell_cag_info ? cell_cag_infoList : NULL,
         n5gc_ind ? true : false,
         n5gc_ind ? n5gc_ind->valueint : 0,
-        supported_features ? ogs_strdup_or_assert(supported_features->valuestring) : NULL
+        supported_features ? ogs_strdup(supported_features->valuestring) : NULL
     );
 
     return authentication_info_local_var;

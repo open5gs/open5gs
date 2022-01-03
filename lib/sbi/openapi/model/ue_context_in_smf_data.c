@@ -10,10 +10,9 @@ OpenAPI_ue_context_in_smf_data_t *OpenAPI_ue_context_in_smf_data_create(
     OpenAPI_emergency_info_t *emergency_info
 )
 {
-    OpenAPI_ue_context_in_smf_data_t *ue_context_in_smf_data_local_var = OpenAPI_malloc(sizeof(OpenAPI_ue_context_in_smf_data_t));
-    if (!ue_context_in_smf_data_local_var) {
-        return NULL;
-    }
+    OpenAPI_ue_context_in_smf_data_t *ue_context_in_smf_data_local_var = ogs_malloc(sizeof(OpenAPI_ue_context_in_smf_data_t));
+    ogs_assert(ue_context_in_smf_data_local_var);
+
     ue_context_in_smf_data_local_var->pdu_sessions = pdu_sessions;
     ue_context_in_smf_data_local_var->pgw_info = pgw_info;
     ue_context_in_smf_data_local_var->emergency_info = emergency_info;
@@ -29,6 +28,7 @@ void OpenAPI_ue_context_in_smf_data_free(OpenAPI_ue_context_in_smf_data_t *ue_co
     OpenAPI_lnode_t *node;
     OpenAPI_list_for_each(ue_context_in_smf_data->pdu_sessions, node) {
         OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+        ogs_free(localKeyValue->key);
         OpenAPI_pdu_session_free(localKeyValue->value);
         ogs_free(localKeyValue);
     }
@@ -129,9 +129,9 @@ OpenAPI_ue_context_in_smf_data_t *OpenAPI_ue_context_in_smf_data_parseFromJSON(c
         cJSON *localMapObject = pdu_sessions_local_map;
         if (cJSON_IsObject(pdu_sessions_local_map)) {
             localMapKeyPair = OpenAPI_map_create(
-                localMapObject->string, OpenAPI_pdu_session_parseFromJSON(localMapObject));
+                ogs_strdup(localMapObject->string), OpenAPI_pdu_session_parseFromJSON(localMapObject));
         } else if (cJSON_IsNull(pdu_sessions_local_map)) {
-            localMapKeyPair = OpenAPI_map_create(localMapObject->string, NULL);
+            localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
         } else {
             ogs_error("OpenAPI_ue_context_in_smf_data_parseFromJSON() failed [pdu_sessions]");
             goto end;

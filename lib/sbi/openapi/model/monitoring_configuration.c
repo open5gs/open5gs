@@ -24,10 +24,9 @@ OpenAPI_monitoring_configuration_t *OpenAPI_monitoring_configuration_create(
     char *af_id
 )
 {
-    OpenAPI_monitoring_configuration_t *monitoring_configuration_local_var = OpenAPI_malloc(sizeof(OpenAPI_monitoring_configuration_t));
-    if (!monitoring_configuration_local_var) {
-        return NULL;
-    }
+    OpenAPI_monitoring_configuration_t *monitoring_configuration_local_var = ogs_malloc(sizeof(OpenAPI_monitoring_configuration_t));
+    ogs_assert(monitoring_configuration_local_var);
+
     monitoring_configuration_local_var->event_type = event_type;
     monitoring_configuration_local_var->is_immediate_flag = is_immediate_flag;
     monitoring_configuration_local_var->immediate_flag = immediate_flag;
@@ -336,8 +335,8 @@ OpenAPI_monitoring_configuration_t *OpenAPI_monitoring_configuration_parseFromJS
         suggested_packet_num_dl ? suggested_packet_num_dl->valuedouble : 0,
         pdu_session_status_cfg ? pdu_session_status_cfg_local_nonprim : NULL,
         reachability_for_sms_cfg ? reachability_for_sms_cfg_local_nonprim : NULL,
-        mtc_provider_information ? ogs_strdup_or_assert(mtc_provider_information->valuestring) : NULL,
-        af_id ? ogs_strdup_or_assert(af_id->valuestring) : NULL
+        mtc_provider_information ? ogs_strdup(mtc_provider_information->valuestring) : NULL,
+        af_id ? ogs_strdup(af_id->valuestring) : NULL
     );
 
     return monitoring_configuration_local_var;

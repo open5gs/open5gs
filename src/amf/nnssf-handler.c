@@ -102,13 +102,6 @@ int amf_nnssf_nsselection_handle_get(
 
     ogs_freeaddrinfo(addr);
 
-    if (NsiInformation->nsi_id) {
-        if (sess->nssf.nsi_id)
-            ogs_free(sess->nssf.nsi_id);
-        sess->nssf.nsi_id = ogs_strdup(NsiInformation->nsi_id);
-        ogs_assert(sess->nssf.nsi_id);
-    }
-
     ogs_assert(true == amf_sess_sbi_discover_by_nsi(OpenAPI_nf_type_SMF, sess));
 
     return OGS_OK;

@@ -9,10 +9,9 @@ OpenAPI_requested_rule_data_t *OpenAPI_requested_rule_data_create(
     OpenAPI_list_t *req_data
 )
 {
-    OpenAPI_requested_rule_data_t *requested_rule_data_local_var = OpenAPI_malloc(sizeof(OpenAPI_requested_rule_data_t));
-    if (!requested_rule_data_local_var) {
-        return NULL;
-    }
+    OpenAPI_requested_rule_data_t *requested_rule_data_local_var = ogs_malloc(sizeof(OpenAPI_requested_rule_data_t));
+    ogs_assert(requested_rule_data_local_var);
+
     requested_rule_data_local_var->ref_pcc_rule_ids = ref_pcc_rule_ids;
     requested_rule_data_local_var->req_data = req_data;
 
@@ -96,7 +95,7 @@ OpenAPI_requested_rule_data_t *OpenAPI_requested_rule_data_parseFromJSON(cJSON *
         ogs_error("OpenAPI_requested_rule_data_parseFromJSON() failed [ref_pcc_rule_ids]");
         goto end;
     }
-    OpenAPI_list_add(ref_pcc_rule_idsList , ogs_strdup_or_assert(ref_pcc_rule_ids_local->valuestring));
+    OpenAPI_list_add(ref_pcc_rule_idsList , ogs_strdup(ref_pcc_rule_ids_local->valuestring));
     }
 
     cJSON *req_data = cJSON_GetObjectItemCaseSensitive(requested_rule_dataJSON, "reqData");

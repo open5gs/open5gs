@@ -7,10 +7,9 @@
 OpenAPI_nwdaf_event_t *OpenAPI_nwdaf_event_create(
 )
 {
-    OpenAPI_nwdaf_event_t *nwdaf_event_local_var = OpenAPI_malloc(sizeof(OpenAPI_nwdaf_event_t));
-    if (!nwdaf_event_local_var) {
-        return NULL;
-    }
+    OpenAPI_nwdaf_event_t *nwdaf_event_local_var = ogs_malloc(sizeof(OpenAPI_nwdaf_event_t));
+    ogs_assert(nwdaf_event_local_var);
+
 
     return nwdaf_event_local_var;
 }

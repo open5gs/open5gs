@@ -11,10 +11,9 @@ OpenAPI_exposure_data_change_notification_t *OpenAPI_exposure_data_change_notifi
     OpenAPI_list_t *del_resources
 )
 {
-    OpenAPI_exposure_data_change_notification_t *exposure_data_change_notification_local_var = OpenAPI_malloc(sizeof(OpenAPI_exposure_data_change_notification_t));
-    if (!exposure_data_change_notification_local_var) {
-        return NULL;
-    }
+    OpenAPI_exposure_data_change_notification_t *exposure_data_change_notification_local_var = ogs_malloc(sizeof(OpenAPI_exposure_data_change_notification_t));
+    ogs_assert(exposure_data_change_notification_local_var);
+
     exposure_data_change_notification_local_var->ue_id = ue_id;
     exposure_data_change_notification_local_var->access_and_mobility_data = access_and_mobility_data;
     exposure_data_change_notification_local_var->pdu_session_management_data = pdu_session_management_data;
@@ -170,12 +169,12 @@ OpenAPI_exposure_data_change_notification_t *OpenAPI_exposure_data_change_notifi
         ogs_error("OpenAPI_exposure_data_change_notification_parseFromJSON() failed [del_resources]");
         goto end;
     }
-    OpenAPI_list_add(del_resourcesList , ogs_strdup_or_assert(del_resources_local->valuestring));
+    OpenAPI_list_add(del_resourcesList , ogs_strdup(del_resources_local->valuestring));
     }
     }
 
     exposure_data_change_notification_local_var = OpenAPI_exposure_data_change_notification_create (
-        ue_id ? ogs_strdup_or_assert(ue_id->valuestring) : NULL,
+        ue_id ? ogs_strdup(ue_id->valuestring) : NULL,
         access_and_mobility_data ? access_and_mobility_data_local_nonprim : NULL,
         pdu_session_management_data ? pdu_session_management_dataList : NULL,
         del_resources ? del_resourcesList : NULL

@@ -17,10 +17,9 @@ OpenAPI_policy_association_t *OpenAPI_policy_association_create(
     char *supp_feat
 )
 {
-    OpenAPI_policy_association_t *policy_association_local_var = OpenAPI_malloc(sizeof(OpenAPI_policy_association_t));
-    if (!policy_association_local_var) {
-        return NULL;
-    }
+    OpenAPI_policy_association_t *policy_association_local_var = ogs_malloc(sizeof(OpenAPI_policy_association_t));
+    ogs_assert(policy_association_local_var);
+
     policy_association_local_var->request = request;
     policy_association_local_var->triggers = triggers;
     policy_association_local_var->serv_area_res = serv_area_res;
@@ -49,6 +48,7 @@ void OpenAPI_policy_association_free(OpenAPI_policy_association_t *policy_associ
     OpenAPI_ambr_free(policy_association->ue_ambr);
     OpenAPI_list_for_each(policy_association->pras, node) {
         OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+        ogs_free(localKeyValue->key);
         OpenAPI_presence_info_free(localKeyValue->value);
         ogs_free(localKeyValue);
     }
@@ -270,9 +270,9 @@ OpenAPI_policy_association_t *OpenAPI_policy_association_parseFromJSON(cJSON *po
         cJSON *localMapObject = pras_local_map;
         if (cJSON_IsObject(pras_local_map)) {
             localMapKeyPair = OpenAPI_map_create(
-                localMapObject->string, OpenAPI_presence_info_parseFromJSON(localMapObject));
+                ogs_strdup(localMapObject->string), OpenAPI_presence_info_parseFromJSON(localMapObject));
         } else if (cJSON_IsNull(pras_local_map)) {
-            localMapKeyPair = OpenAPI_map_create(localMapObject->string, NULL);
+            localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
         } else {
             ogs_error("OpenAPI_policy_association_parseFromJSON() failed [pras]");
             goto end;
@@ -302,7 +302,7 @@ OpenAPI_policy_association_t *OpenAPI_policy_association_parseFromJSON(cJSON *po
         smf_sel_info ? smf_sel_info_local_nonprim : NULL,
         ue_ambr ? ue_ambr_local_nonprim : NULL,
         pras ? prasList : NULL,
-        ogs_strdup_or_assert(supp_feat->valuestring)
+        ogs_strdup(supp_feat->valuestring)
     );
 
     return policy_association_local_var;

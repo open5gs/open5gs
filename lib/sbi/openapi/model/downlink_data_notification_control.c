@@ -9,10 +9,9 @@ OpenAPI_downlink_data_notification_control_t *OpenAPI_downlink_data_notification
     OpenAPI_list_t *types_of_notif
 )
 {
-    OpenAPI_downlink_data_notification_control_t *downlink_data_notification_control_local_var = OpenAPI_malloc(sizeof(OpenAPI_downlink_data_notification_control_t));
-    if (!downlink_data_notification_control_local_var) {
-        return NULL;
-    }
+    OpenAPI_downlink_data_notification_control_t *downlink_data_notification_control_local_var = ogs_malloc(sizeof(OpenAPI_downlink_data_notification_control_t));
+    ogs_assert(downlink_data_notification_control_local_var);
+
     downlink_data_notification_control_local_var->notif_ctrl_inds = notif_ctrl_inds;
     downlink_data_notification_control_local_var->types_of_notif = types_of_notif;
 

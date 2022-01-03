@@ -22,10 +22,9 @@ OpenAPI_qos_monitoring_data_t *OpenAPI_qos_monitoring_data_create(
     char *notify_corre_id
 )
 {
-    OpenAPI_qos_monitoring_data_t *qos_monitoring_data_local_var = OpenAPI_malloc(sizeof(OpenAPI_qos_monitoring_data_t));
-    if (!qos_monitoring_data_local_var) {
-        return NULL;
-    }
+    OpenAPI_qos_monitoring_data_t *qos_monitoring_data_local_var = ogs_malloc(sizeof(OpenAPI_qos_monitoring_data_t));
+    ogs_assert(qos_monitoring_data_local_var);
+
     qos_monitoring_data_local_var->qm_id = qm_id;
     qos_monitoring_data_local_var->req_qos_mon_params = req_qos_mon_params;
     qos_monitoring_data_local_var->rep_freqs = rep_freqs;
@@ -279,7 +278,7 @@ OpenAPI_qos_monitoring_data_t *OpenAPI_qos_monitoring_data_parseFromJSON(cJSON *
     }
 
     qos_monitoring_data_local_var = OpenAPI_qos_monitoring_data_create (
-        ogs_strdup_or_assert(qm_id->valuestring),
+        ogs_strdup(qm_id->valuestring),
         req_qos_mon_paramsList,
         rep_freqsList,
         rep_thresh_dl ? true : false,
@@ -292,8 +291,8 @@ OpenAPI_qos_monitoring_data_t *OpenAPI_qos_monitoring_data_parseFromJSON(cJSON *
         wait_time ? wait_time->valuedouble : 0,
         rep_period ? true : false,
         rep_period ? rep_period->valuedouble : 0,
-        notify_uri ? ogs_strdup_or_assert(notify_uri->valuestring) : NULL,
-        notify_corre_id ? ogs_strdup_or_assert(notify_corre_id->valuestring) : NULL
+        notify_uri ? ogs_strdup(notify_uri->valuestring) : NULL,
+        notify_corre_id ? ogs_strdup(notify_corre_id->valuestring) : NULL
     );
 
     return qos_monitoring_data_local_var;

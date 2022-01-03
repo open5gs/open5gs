@@ -28,10 +28,9 @@ OpenAPI_usage_monitoring_data_t *OpenAPI_usage_monitoring_data_create(
     OpenAPI_list_t *ex_usage_pcc_rule_ids
 )
 {
-    OpenAPI_usage_monitoring_data_t *usage_monitoring_data_local_var = OpenAPI_malloc(sizeof(OpenAPI_usage_monitoring_data_t));
-    if (!usage_monitoring_data_local_var) {
-        return NULL;
-    }
+    OpenAPI_usage_monitoring_data_t *usage_monitoring_data_local_var = ogs_malloc(sizeof(OpenAPI_usage_monitoring_data_t));
+    ogs_assert(usage_monitoring_data_local_var);
+
     usage_monitoring_data_local_var->um_id = um_id;
     usage_monitoring_data_local_var->is_volume_threshold = is_volume_threshold;
     usage_monitoring_data_local_var->volume_threshold = volume_threshold;
@@ -297,12 +296,12 @@ OpenAPI_usage_monitoring_data_t *OpenAPI_usage_monitoring_data_parseFromJSON(cJS
         ogs_error("OpenAPI_usage_monitoring_data_parseFromJSON() failed [ex_usage_pcc_rule_ids]");
         goto end;
     }
-    OpenAPI_list_add(ex_usage_pcc_rule_idsList , ogs_strdup_or_assert(ex_usage_pcc_rule_ids_local->valuestring));
+    OpenAPI_list_add(ex_usage_pcc_rule_idsList , ogs_strdup(ex_usage_pcc_rule_ids_local->valuestring));
     }
     }
 
     usage_monitoring_data_local_var = OpenAPI_usage_monitoring_data_create (
-        ogs_strdup_or_assert(um_id->valuestring),
+        ogs_strdup(um_id->valuestring),
         volume_threshold ? true : false,
         volume_threshold ? volume_threshold->valuedouble : 0,
         volume_threshold_uplink ? true : false,
@@ -311,7 +310,7 @@ OpenAPI_usage_monitoring_data_t *OpenAPI_usage_monitoring_data_parseFromJSON(cJS
         volume_threshold_downlink ? volume_threshold_downlink->valuedouble : 0,
         time_threshold ? true : false,
         time_threshold ? time_threshold->valuedouble : 0,
-        monitoring_time ? ogs_strdup_or_assert(monitoring_time->valuestring) : NULL,
+        monitoring_time ? ogs_strdup(monitoring_time->valuestring) : NULL,
         next_vol_threshold ? true : false,
         next_vol_threshold ? next_vol_threshold->valuedouble : 0,
         next_vol_threshold_uplink ? true : false,

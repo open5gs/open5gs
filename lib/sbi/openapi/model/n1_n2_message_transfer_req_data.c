@@ -33,10 +33,9 @@ OpenAPI_n1_n2_message_transfer_req_data_t *OpenAPI_n1_n2_message_transfer_req_da
     OpenAPI_access_type_e target_access
 )
 {
-    OpenAPI_n1_n2_message_transfer_req_data_t *n1_n2_message_transfer_req_data_local_var = OpenAPI_malloc(sizeof(OpenAPI_n1_n2_message_transfer_req_data_t));
-    if (!n1_n2_message_transfer_req_data_local_var) {
-        return NULL;
-    }
+    OpenAPI_n1_n2_message_transfer_req_data_t *n1_n2_message_transfer_req_data_local_var = ogs_malloc(sizeof(OpenAPI_n1_n2_message_transfer_req_data_t));
+    ogs_assert(n1_n2_message_transfer_req_data_local_var);
+
     n1_n2_message_transfer_req_data_local_var->n1_message_container = n1_message_container;
     n1_n2_message_transfer_req_data_local_var->n2_info_container = n2_info_container;
     n1_n2_message_transfer_req_data_local_var->mt_data = mt_data;
@@ -426,17 +425,17 @@ OpenAPI_n1_n2_message_transfer_req_data_t *OpenAPI_n1_n2_message_transfer_req_da
         last_msg_indication ? last_msg_indication->valueint : 0,
         pdu_session_id ? true : false,
         pdu_session_id ? pdu_session_id->valuedouble : 0,
-        lcs_correlation_id ? ogs_strdup_or_assert(lcs_correlation_id->valuestring) : NULL,
+        lcs_correlation_id ? ogs_strdup(lcs_correlation_id->valuestring) : NULL,
         ppi ? true : false,
         ppi ? ppi->valuedouble : 0,
         arp ? arp_local_nonprim : NULL,
         _5qi ? true : false,
         _5qi ? _5qi->valuedouble : 0,
-        n1n2_failure_txf_notif_uri ? ogs_strdup_or_assert(n1n2_failure_txf_notif_uri->valuestring) : NULL,
+        n1n2_failure_txf_notif_uri ? ogs_strdup(n1n2_failure_txf_notif_uri->valuestring) : NULL,
         smf_reallocation_ind ? true : false,
         smf_reallocation_ind ? smf_reallocation_ind->valueint : 0,
         area_of_validity ? area_of_validity_local_nonprim : NULL,
-        supported_features ? ogs_strdup_or_assert(supported_features->valuestring) : NULL,
+        supported_features ? ogs_strdup(supported_features->valuestring) : NULL,
         old_guami ? old_guami_local_nonprim : NULL,
         ma_accepted_ind ? true : false,
         ma_accepted_ind ? ma_accepted_ind->valueint : 0,

@@ -34,10 +34,9 @@ OpenAPI_traffic_influ_data_t *OpenAPI_traffic_influ_data_create(
     char *res_uri
 )
 {
-    OpenAPI_traffic_influ_data_t *traffic_influ_data_local_var = OpenAPI_malloc(sizeof(OpenAPI_traffic_influ_data_t));
-    if (!traffic_influ_data_local_var) {
-        return NULL;
-    }
+    OpenAPI_traffic_influ_data_t *traffic_influ_data_local_var = ogs_malloc(sizeof(OpenAPI_traffic_influ_data_t));
+    ogs_assert(traffic_influ_data_local_var);
+
     traffic_influ_data_local_var->up_path_chg_notif_corre_id = up_path_chg_notif_corre_id;
     traffic_influ_data_local_var->is_app_relo_ind = is_app_relo_ind;
     traffic_influ_data_local_var->app_relo_ind = app_relo_ind;
@@ -590,7 +589,7 @@ OpenAPI_traffic_influ_data_t *OpenAPI_traffic_influ_data_parseFromJSON(cJSON *tr
         ogs_error("OpenAPI_traffic_influ_data_parseFromJSON() failed [headers]");
         goto end;
     }
-    OpenAPI_list_add(headersList , ogs_strdup_or_assert(headers_local->valuestring));
+    OpenAPI_list_add(headersList , ogs_strdup(headers_local->valuestring));
     }
     }
 
@@ -665,24 +664,24 @@ OpenAPI_traffic_influ_data_t *OpenAPI_traffic_influ_data_parseFromJSON(cJSON *tr
     }
 
     traffic_influ_data_local_var = OpenAPI_traffic_influ_data_create (
-        up_path_chg_notif_corre_id ? ogs_strdup_or_assert(up_path_chg_notif_corre_id->valuestring) : NULL,
+        up_path_chg_notif_corre_id ? ogs_strdup(up_path_chg_notif_corre_id->valuestring) : NULL,
         app_relo_ind ? true : false,
         app_relo_ind ? app_relo_ind->valueint : 0,
-        af_app_id ? ogs_strdup_or_assert(af_app_id->valuestring) : NULL,
-        dnn ? ogs_strdup_or_assert(dnn->valuestring) : NULL,
+        af_app_id ? ogs_strdup(af_app_id->valuestring) : NULL,
+        dnn ? ogs_strdup(dnn->valuestring) : NULL,
         eth_traffic_filters ? eth_traffic_filtersList : NULL,
         snssai ? snssai_local_nonprim : NULL,
-        inter_group_id ? ogs_strdup_or_assert(inter_group_id->valuestring) : NULL,
-        supi ? ogs_strdup_or_assert(supi->valuestring) : NULL,
+        inter_group_id ? ogs_strdup(inter_group_id->valuestring) : NULL,
+        supi ? ogs_strdup(supi->valuestring) : NULL,
         traffic_filters ? traffic_filtersList : NULL,
         traffic_routes ? traffic_routesList : NULL,
         traff_corre_ind ? true : false,
         traff_corre_ind ? traff_corre_ind->valueint : 0,
-        valid_start_time ? ogs_strdup_or_assert(valid_start_time->valuestring) : NULL,
-        valid_end_time ? ogs_strdup_or_assert(valid_end_time->valuestring) : NULL,
+        valid_start_time ? ogs_strdup(valid_start_time->valuestring) : NULL,
+        valid_end_time ? ogs_strdup(valid_end_time->valuestring) : NULL,
         temp_validities ? temp_validitiesList : NULL,
         nw_area_info ? nw_area_info_local_nonprim : NULL,
-        up_path_chg_notif_uri ? ogs_strdup_or_assert(up_path_chg_notif_uri->valuestring) : NULL,
+        up_path_chg_notif_uri ? ogs_strdup(up_path_chg_notif_uri->valuestring) : NULL,
         headers ? headersList : NULL,
         subscribed_events ? subscribed_eventsList : NULL,
         dnai_chg_type ? dnai_chg_typeVariable : 0,
@@ -690,8 +689,8 @@ OpenAPI_traffic_influ_data_t *OpenAPI_traffic_influ_data_parseFromJSON(cJSON *tr
         af_ack_ind ? af_ack_ind->valueint : 0,
         addr_preser_ind ? true : false,
         addr_preser_ind ? addr_preser_ind->valueint : 0,
-        supported_features ? ogs_strdup_or_assert(supported_features->valuestring) : NULL,
-        res_uri ? ogs_strdup_or_assert(res_uri->valuestring) : NULL
+        supported_features ? ogs_strdup(supported_features->valuestring) : NULL,
+        res_uri ? ogs_strdup(res_uri->valuestring) : NULL
     );
 
     return traffic_influ_data_local_var;

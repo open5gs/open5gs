@@ -21,10 +21,9 @@ OpenAPI_service_parameter_data_t *OpenAPI_service_parameter_data_create(
     char *res_uri
 )
 {
-    OpenAPI_service_parameter_data_t *service_parameter_data_local_var = OpenAPI_malloc(sizeof(OpenAPI_service_parameter_data_t));
-    if (!service_parameter_data_local_var) {
-        return NULL;
-    }
+    OpenAPI_service_parameter_data_t *service_parameter_data_local_var = ogs_malloc(sizeof(OpenAPI_service_parameter_data_t));
+    ogs_assert(service_parameter_data_local_var);
+
     service_parameter_data_local_var->app_id = app_id;
     service_parameter_data_local_var->dnn = dnn;
     service_parameter_data_local_var->snssai = snssai;
@@ -294,20 +293,20 @@ OpenAPI_service_parameter_data_t *OpenAPI_service_parameter_data_parseFromJSON(c
     }
 
     service_parameter_data_local_var = OpenAPI_service_parameter_data_create (
-        app_id ? ogs_strdup_or_assert(app_id->valuestring) : NULL,
-        dnn ? ogs_strdup_or_assert(dnn->valuestring) : NULL,
+        app_id ? ogs_strdup(app_id->valuestring) : NULL,
+        dnn ? ogs_strdup(dnn->valuestring) : NULL,
         snssai ? snssai_local_nonprim : NULL,
-        inter_group_id ? ogs_strdup_or_assert(inter_group_id->valuestring) : NULL,
-        supi ? ogs_strdup_or_assert(supi->valuestring) : NULL,
-        ue_ipv4 ? ogs_strdup_or_assert(ue_ipv4->valuestring) : NULL,
-        ue_ipv6 ? ogs_strdup_or_assert(ue_ipv6->valuestring) : NULL,
-        ue_mac ? ogs_strdup_or_assert(ue_mac->valuestring) : NULL,
+        inter_group_id ? ogs_strdup(inter_group_id->valuestring) : NULL,
+        supi ? ogs_strdup(supi->valuestring) : NULL,
+        ue_ipv4 ? ogs_strdup(ue_ipv4->valuestring) : NULL,
+        ue_ipv6 ? ogs_strdup(ue_ipv6->valuestring) : NULL,
+        ue_mac ? ogs_strdup(ue_mac->valuestring) : NULL,
         any_ue_ind ? true : false,
         any_ue_ind ? any_ue_ind->valueint : 0,
-        param_over_pc5 ? ogs_strdup_or_assert(param_over_pc5->valuestring) : NULL,
-        param_over_uu ? ogs_strdup_or_assert(param_over_uu->valuestring) : NULL,
-        supp_feat ? ogs_strdup_or_assert(supp_feat->valuestring) : NULL,
-        res_uri ? ogs_strdup_or_assert(res_uri->valuestring) : NULL
+        param_over_pc5 ? ogs_strdup(param_over_pc5->valuestring) : NULL,
+        param_over_uu ? ogs_strdup(param_over_uu->valuestring) : NULL,
+        supp_feat ? ogs_strdup(supp_feat->valuestring) : NULL,
+        res_uri ? ogs_strdup(res_uri->valuestring) : NULL
     );
 
     return service_parameter_data_local_var;

@@ -9,10 +9,9 @@ OpenAPI_authorization_data_t *OpenAPI_authorization_data_create(
     char *validity_time
 )
 {
-    OpenAPI_authorization_data_t *authorization_data_local_var = OpenAPI_malloc(sizeof(OpenAPI_authorization_data_t));
-    if (!authorization_data_local_var) {
-        return NULL;
-    }
+    OpenAPI_authorization_data_t *authorization_data_local_var = ogs_malloc(sizeof(OpenAPI_authorization_data_t));
+    ogs_assert(authorization_data_local_var);
+
     authorization_data_local_var->authorization_data = authorization_data;
     authorization_data_local_var->validity_time = validity_time;
 
@@ -111,7 +110,7 @@ OpenAPI_authorization_data_t *OpenAPI_authorization_data_parseFromJSON(cJSON *au
 
     authorization_data_local_var = OpenAPI_authorization_data_create (
         authorization_dataList,
-        validity_time ? ogs_strdup_or_assert(validity_time->valuestring) : NULL
+        validity_time ? ogs_strdup(validity_time->valuestring) : NULL
     );
 
     return authorization_data_local_var;

@@ -10,10 +10,9 @@ OpenAPI_point_uncertainty_circle_t *OpenAPI_point_uncertainty_circle_create(
     float uncertainty
 )
 {
-    OpenAPI_point_uncertainty_circle_t *point_uncertainty_circle_local_var = OpenAPI_malloc(sizeof(OpenAPI_point_uncertainty_circle_t));
-    if (!point_uncertainty_circle_local_var) {
-        return NULL;
-    }
+    OpenAPI_point_uncertainty_circle_t *point_uncertainty_circle_local_var = ogs_malloc(sizeof(OpenAPI_point_uncertainty_circle_t));
+    ogs_assert(point_uncertainty_circle_local_var);
+
     point_uncertainty_circle_local_var->shape = shape;
     point_uncertainty_circle_local_var->point = point;
     point_uncertainty_circle_local_var->uncertainty = uncertainty;

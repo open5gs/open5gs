@@ -8,10 +8,9 @@ OpenAPI_n2_ran_information_t *OpenAPI_n2_ran_information_create(
     OpenAPI_n2_info_content_t *n2_info_content
 )
 {
-    OpenAPI_n2_ran_information_t *n2_ran_information_local_var = OpenAPI_malloc(sizeof(OpenAPI_n2_ran_information_t));
-    if (!n2_ran_information_local_var) {
-        return NULL;
-    }
+    OpenAPI_n2_ran_information_t *n2_ran_information_local_var = ogs_malloc(sizeof(OpenAPI_n2_ran_information_t));
+    ogs_assert(n2_ran_information_local_var);
+
     n2_ran_information_local_var->n2_info_content = n2_info_content;
 
     return n2_ran_information_local_var;

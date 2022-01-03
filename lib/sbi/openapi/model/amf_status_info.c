@@ -11,10 +11,9 @@ OpenAPI_amf_status_info_t *OpenAPI_amf_status_info_create(
     char *target_amf_failure
 )
 {
-    OpenAPI_amf_status_info_t *amf_status_info_local_var = OpenAPI_malloc(sizeof(OpenAPI_amf_status_info_t));
-    if (!amf_status_info_local_var) {
-        return NULL;
-    }
+    OpenAPI_amf_status_info_t *amf_status_info_local_var = ogs_malloc(sizeof(OpenAPI_amf_status_info_t));
+    ogs_assert(amf_status_info_local_var);
+
     amf_status_info_local_var->guami_list = guami_list;
     amf_status_info_local_var->status_change = status_change;
     amf_status_info_local_var->target_amf_removal = target_amf_removal;
@@ -151,8 +150,8 @@ OpenAPI_amf_status_info_t *OpenAPI_amf_status_info_parseFromJSON(cJSON *amf_stat
     amf_status_info_local_var = OpenAPI_amf_status_info_create (
         guami_listList,
         status_changeVariable,
-        target_amf_removal ? ogs_strdup_or_assert(target_amf_removal->valuestring) : NULL,
-        target_amf_failure ? ogs_strdup_or_assert(target_amf_failure->valuestring) : NULL
+        target_amf_removal ? ogs_strdup(target_amf_removal->valuestring) : NULL,
+        target_amf_failure ? ogs_strdup(target_amf_failure->valuestring) : NULL
     );
 
     return amf_status_info_local_var;

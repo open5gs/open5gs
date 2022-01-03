@@ -10,10 +10,9 @@ OpenAPI_udsf_info_t *OpenAPI_udsf_info_create(
     OpenAPI_list_t* storage_id_ranges
 )
 {
-    OpenAPI_udsf_info_t *udsf_info_local_var = OpenAPI_malloc(sizeof(OpenAPI_udsf_info_t));
-    if (!udsf_info_local_var) {
-        return NULL;
-    }
+    OpenAPI_udsf_info_t *udsf_info_local_var = ogs_malloc(sizeof(OpenAPI_udsf_info_t));
+    ogs_assert(udsf_info_local_var);
+
     udsf_info_local_var->group_id = group_id;
     udsf_info_local_var->supi_ranges = supi_ranges;
     udsf_info_local_var->storage_id_ranges = storage_id_ranges;
@@ -34,6 +33,7 @@ void OpenAPI_udsf_info_free(OpenAPI_udsf_info_t *udsf_info)
     OpenAPI_list_free(udsf_info->supi_ranges);
     OpenAPI_list_for_each(udsf_info->storage_id_ranges, node) {
         OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+        ogs_free(localKeyValue->key);
         ogs_free(localKeyValue->value);
         ogs_free(localKeyValue);
     }
@@ -150,7 +150,7 @@ OpenAPI_udsf_info_t *OpenAPI_udsf_info_parseFromJSON(cJSON *udsf_infoJSON)
     }
 
     udsf_info_local_var = OpenAPI_udsf_info_create (
-        group_id ? ogs_strdup_or_assert(group_id->valuestring) : NULL,
+        group_id ? ogs_strdup(group_id->valuestring) : NULL,
         supi_ranges ? supi_rangesList : NULL,
         storage_id_ranges ? storage_id_rangesList : NULL
     );

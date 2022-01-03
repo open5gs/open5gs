@@ -13,10 +13,9 @@ OpenAPI_bdt_policy_data_t *OpenAPI_bdt_policy_data_create(
     char *res_uri
 )
 {
-    OpenAPI_bdt_policy_data_t *bdt_policy_data_local_var = OpenAPI_malloc(sizeof(OpenAPI_bdt_policy_data_t));
-    if (!bdt_policy_data_local_var) {
-        return NULL;
-    }
+    OpenAPI_bdt_policy_data_t *bdt_policy_data_local_var = ogs_malloc(sizeof(OpenAPI_bdt_policy_data_t));
+    ogs_assert(bdt_policy_data_local_var);
+
     bdt_policy_data_local_var->inter_group_id = inter_group_id;
     bdt_policy_data_local_var->supi = supi;
     bdt_policy_data_local_var->bdt_ref_id = bdt_ref_id;
@@ -160,12 +159,12 @@ OpenAPI_bdt_policy_data_t *OpenAPI_bdt_policy_data_parseFromJSON(cJSON *bdt_poli
     }
 
     bdt_policy_data_local_var = OpenAPI_bdt_policy_data_create (
-        inter_group_id ? ogs_strdup_or_assert(inter_group_id->valuestring) : NULL,
-        supi ? ogs_strdup_or_assert(supi->valuestring) : NULL,
-        ogs_strdup_or_assert(bdt_ref_id->valuestring),
-        dnn ? ogs_strdup_or_assert(dnn->valuestring) : NULL,
+        inter_group_id ? ogs_strdup(inter_group_id->valuestring) : NULL,
+        supi ? ogs_strdup(supi->valuestring) : NULL,
+        ogs_strdup(bdt_ref_id->valuestring),
+        dnn ? ogs_strdup(dnn->valuestring) : NULL,
         snssai ? snssai_local_nonprim : NULL,
-        res_uri ? ogs_strdup_or_assert(res_uri->valuestring) : NULL
+        res_uri ? ogs_strdup(res_uri->valuestring) : NULL
     );
 
     return bdt_policy_data_local_var;

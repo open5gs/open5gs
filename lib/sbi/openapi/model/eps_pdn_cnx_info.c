@@ -11,10 +11,9 @@ OpenAPI_eps_pdn_cnx_info_t *OpenAPI_eps_pdn_cnx_info_create(
     int linked_bearer_id
 )
 {
-    OpenAPI_eps_pdn_cnx_info_t *eps_pdn_cnx_info_local_var = OpenAPI_malloc(sizeof(OpenAPI_eps_pdn_cnx_info_t));
-    if (!eps_pdn_cnx_info_local_var) {
-        return NULL;
-    }
+    OpenAPI_eps_pdn_cnx_info_t *eps_pdn_cnx_info_local_var = ogs_malloc(sizeof(OpenAPI_eps_pdn_cnx_info_t));
+    ogs_assert(eps_pdn_cnx_info_local_var);
+
     eps_pdn_cnx_info_local_var->pgw_s8c_fteid = pgw_s8c_fteid;
     eps_pdn_cnx_info_local_var->pgw_node_name = pgw_node_name;
     eps_pdn_cnx_info_local_var->is_linked_bearer_id = is_linked_bearer_id;

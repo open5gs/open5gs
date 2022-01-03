@@ -9,10 +9,9 @@ OpenAPI_pp_profile_data_t *OpenAPI_pp_profile_data_create(
     char *supported_features
 )
 {
-    OpenAPI_pp_profile_data_t *pp_profile_data_local_var = OpenAPI_malloc(sizeof(OpenAPI_pp_profile_data_t));
-    if (!pp_profile_data_local_var) {
-        return NULL;
-    }
+    OpenAPI_pp_profile_data_t *pp_profile_data_local_var = ogs_malloc(sizeof(OpenAPI_pp_profile_data_t));
+    ogs_assert(pp_profile_data_local_var);
+
     pp_profile_data_local_var->allowed_mtc_providers = allowed_mtc_providers;
     pp_profile_data_local_var->supported_features = supported_features;
 
@@ -27,6 +26,7 @@ void OpenAPI_pp_profile_data_free(OpenAPI_pp_profile_data_t *pp_profile_data)
     OpenAPI_lnode_t *node;
     OpenAPI_list_for_each(pp_profile_data->allowed_mtc_providers, node) {
         OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+        ogs_free(localKeyValue->key);
         ogs_free(localKeyValue->value);
         ogs_free(localKeyValue);
     }
@@ -102,7 +102,7 @@ OpenAPI_pp_profile_data_t *OpenAPI_pp_profile_data_parseFromJSON(cJSON *pp_profi
 
     pp_profile_data_local_var = OpenAPI_pp_profile_data_create (
         allowed_mtc_providers ? allowed_mtc_providersList : NULL,
-        supported_features ? ogs_strdup_or_assert(supported_features->valuestring) : NULL
+        supported_features ? ogs_strdup(supported_features->valuestring) : NULL
     );
 
     return pp_profile_data_local_var;

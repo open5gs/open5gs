@@ -11,10 +11,9 @@ OpenAPI_af_external_t *OpenAPI_af_external_create(
     OpenAPI_valid_time_period_t *valid_time_period
 )
 {
-    OpenAPI_af_external_t *af_external_local_var = OpenAPI_malloc(sizeof(OpenAPI_af_external_t));
-    if (!af_external_local_var) {
-        return NULL;
-    }
+    OpenAPI_af_external_t *af_external_local_var = ogs_malloc(sizeof(OpenAPI_af_external_t));
+    ogs_assert(af_external_local_var);
+
     af_external_local_var->af_id = af_id;
     af_external_local_var->allowed_geographic_area = allowed_geographic_area;
     af_external_local_var->privacy_check_related_action = privacy_check_related_action;
@@ -153,7 +152,7 @@ OpenAPI_af_external_t *OpenAPI_af_external_parseFromJSON(cJSON *af_externalJSON)
     }
 
     af_external_local_var = OpenAPI_af_external_create (
-        af_id ? ogs_strdup_or_assert(af_id->valuestring) : NULL,
+        af_id ? ogs_strdup(af_id->valuestring) : NULL,
         allowed_geographic_area ? allowed_geographic_areaList : NULL,
         privacy_check_related_action ? privacy_check_related_actionVariable : 0,
         valid_time_period ? valid_time_period_local_nonprim : NULL

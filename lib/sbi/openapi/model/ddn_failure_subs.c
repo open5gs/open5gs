@@ -10,10 +10,9 @@ OpenAPI_ddn_failure_subs_t *OpenAPI_ddn_failure_subs_create(
     OpenAPI_list_t *ddn_failure_subs_info_list
 )
 {
-    OpenAPI_ddn_failure_subs_t *ddn_failure_subs_local_var = OpenAPI_malloc(sizeof(OpenAPI_ddn_failure_subs_t));
-    if (!ddn_failure_subs_local_var) {
-        return NULL;
-    }
+    OpenAPI_ddn_failure_subs_t *ddn_failure_subs_local_var = ogs_malloc(sizeof(OpenAPI_ddn_failure_subs_t));
+    ogs_assert(ddn_failure_subs_local_var);
+
     ddn_failure_subs_local_var->is_ddn_failure_subs_ind = is_ddn_failure_subs_ind;
     ddn_failure_subs_local_var->ddn_failure_subs_ind = ddn_failure_subs_ind;
     ddn_failure_subs_local_var->ddn_failure_subs_info_list = ddn_failure_subs_info_list;

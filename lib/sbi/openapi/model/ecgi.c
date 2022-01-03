@@ -10,10 +10,9 @@ OpenAPI_ecgi_t *OpenAPI_ecgi_create(
     char *nid
 )
 {
-    OpenAPI_ecgi_t *ecgi_local_var = OpenAPI_malloc(sizeof(OpenAPI_ecgi_t));
-    if (!ecgi_local_var) {
-        return NULL;
-    }
+    OpenAPI_ecgi_t *ecgi_local_var = ogs_malloc(sizeof(OpenAPI_ecgi_t));
+    ogs_assert(ecgi_local_var);
+
     ecgi_local_var->plmn_id = plmn_id;
     ecgi_local_var->eutra_cell_id = eutra_cell_id;
     ecgi_local_var->nid = nid;
@@ -104,8 +103,8 @@ OpenAPI_ecgi_t *OpenAPI_ecgi_parseFromJSON(cJSON *ecgiJSON)
 
     ecgi_local_var = OpenAPI_ecgi_create (
         plmn_id_local_nonprim,
-        ogs_strdup_or_assert(eutra_cell_id->valuestring),
-        nid ? ogs_strdup_or_assert(nid->valuestring) : NULL
+        ogs_strdup(eutra_cell_id->valuestring),
+        nid ? ogs_strdup(nid->valuestring) : NULL
     );
 
     return ecgi_local_var;

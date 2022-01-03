@@ -9,10 +9,9 @@ OpenAPI_ng_ap_cause_t *OpenAPI_ng_ap_cause_create(
     int value
 )
 {
-    OpenAPI_ng_ap_cause_t *ng_ap_cause_local_var = OpenAPI_malloc(sizeof(OpenAPI_ng_ap_cause_t));
-    if (!ng_ap_cause_local_var) {
-        return NULL;
-    }
+    OpenAPI_ng_ap_cause_t *ng_ap_cause_local_var = ogs_malloc(sizeof(OpenAPI_ng_ap_cause_t));
+    ogs_assert(ng_ap_cause_local_var);
+
     ng_ap_cause_local_var->group = group;
     ng_ap_cause_local_var->value = value;
 

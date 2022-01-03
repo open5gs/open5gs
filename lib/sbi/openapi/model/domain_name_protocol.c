@@ -7,10 +7,9 @@
 OpenAPI_domain_name_protocol_t *OpenAPI_domain_name_protocol_create(
 )
 {
-    OpenAPI_domain_name_protocol_t *domain_name_protocol_local_var = OpenAPI_malloc(sizeof(OpenAPI_domain_name_protocol_t));
-    if (!domain_name_protocol_local_var) {
-        return NULL;
-    }
+    OpenAPI_domain_name_protocol_t *domain_name_protocol_local_var = ogs_malloc(sizeof(OpenAPI_domain_name_protocol_t));
+    ogs_assert(domain_name_protocol_local_var);
+
 
     return domain_name_protocol_local_var;
 }

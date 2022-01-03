@@ -9,10 +9,9 @@ OpenAPI_trace_data_response_t *OpenAPI_trace_data_response_create(
     char *shared_trace_data_id
 )
 {
-    OpenAPI_trace_data_response_t *trace_data_response_local_var = OpenAPI_malloc(sizeof(OpenAPI_trace_data_response_t));
-    if (!trace_data_response_local_var) {
-        return NULL;
-    }
+    OpenAPI_trace_data_response_t *trace_data_response_local_var = ogs_malloc(sizeof(OpenAPI_trace_data_response_t));
+    ogs_assert(trace_data_response_local_var);
+
     trace_data_response_local_var->trace_data = trace_data;
     trace_data_response_local_var->shared_trace_data_id = shared_trace_data_id;
 
@@ -85,7 +84,7 @@ OpenAPI_trace_data_response_t *OpenAPI_trace_data_response_parseFromJSON(cJSON *
 
     trace_data_response_local_var = OpenAPI_trace_data_response_create (
         trace_data ? trace_data_local_nonprim : NULL,
-        shared_trace_data_id ? ogs_strdup_or_assert(shared_trace_data_id->valuestring) : NULL
+        shared_trace_data_id ? ogs_strdup(shared_trace_data_id->valuestring) : NULL
     );
 
     return trace_data_response_local_var;

@@ -8,10 +8,9 @@ OpenAPI_cnf_t *OpenAPI_cnf_create(
     OpenAPI_list_t *cnf_units
 )
 {
-    OpenAPI_cnf_t *cnf_local_var = OpenAPI_malloc(sizeof(OpenAPI_cnf_t));
-    if (!cnf_local_var) {
-        return NULL;
-    }
+    OpenAPI_cnf_t *cnf_local_var = ogs_malloc(sizeof(OpenAPI_cnf_t));
+    ogs_assert(cnf_local_var);
+
     cnf_local_var->cnf_units = cnf_units;
 
     return cnf_local_var;

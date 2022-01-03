@@ -9,10 +9,9 @@ OpenAPI_inter_freq_target_info_1_t *OpenAPI_inter_freq_target_info_1_create(
     OpenAPI_list_t *cell_id_list
 )
 {
-    OpenAPI_inter_freq_target_info_1_t *inter_freq_target_info_1_local_var = OpenAPI_malloc(sizeof(OpenAPI_inter_freq_target_info_1_t));
-    if (!inter_freq_target_info_1_local_var) {
-        return NULL;
-    }
+    OpenAPI_inter_freq_target_info_1_t *inter_freq_target_info_1_local_var = ogs_malloc(sizeof(OpenAPI_inter_freq_target_info_1_t));
+    ogs_assert(inter_freq_target_info_1_local_var);
+
     inter_freq_target_info_1_local_var->dl_carrier_freq = dl_carrier_freq;
     inter_freq_target_info_1_local_var->cell_id_list = cell_id_list;
 

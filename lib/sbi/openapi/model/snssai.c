@@ -9,10 +9,9 @@ OpenAPI_snssai_t *OpenAPI_snssai_create(
     char *sd
 )
 {
-    OpenAPI_snssai_t *snssai_local_var = OpenAPI_malloc(sizeof(OpenAPI_snssai_t));
-    if (!snssai_local_var) {
-        return NULL;
-    }
+    OpenAPI_snssai_t *snssai_local_var = ogs_malloc(sizeof(OpenAPI_snssai_t));
+    ogs_assert(snssai_local_var);
+
     snssai_local_var->sst = sst;
     snssai_local_var->sd = sd;
 
@@ -81,7 +80,7 @@ OpenAPI_snssai_t *OpenAPI_snssai_parseFromJSON(cJSON *snssaiJSON)
     snssai_local_var = OpenAPI_snssai_create (
         
         sst->valuedouble,
-        sd ? ogs_strdup_or_assert(sd->valuestring) : NULL
+        sd ? ogs_strdup(sd->valuestring) : NULL
     );
 
     return snssai_local_var;

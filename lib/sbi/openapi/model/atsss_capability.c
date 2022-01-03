@@ -13,10 +13,9 @@ OpenAPI_atsss_capability_t *OpenAPI_atsss_capability_create(
     int rtt_without_pmf
 )
 {
-    OpenAPI_atsss_capability_t *atsss_capability_local_var = OpenAPI_malloc(sizeof(OpenAPI_atsss_capability_t));
-    if (!atsss_capability_local_var) {
-        return NULL;
-    }
+    OpenAPI_atsss_capability_t *atsss_capability_local_var = ogs_malloc(sizeof(OpenAPI_atsss_capability_t));
+    ogs_assert(atsss_capability_local_var);
+
     atsss_capability_local_var->is_atsss_ll = is_atsss_ll;
     atsss_capability_local_var->atsss_ll = atsss_ll;
     atsss_capability_local_var->is_mptcp = is_mptcp;

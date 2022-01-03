@@ -9,10 +9,9 @@ OpenAPI_cag_data_1_t *OpenAPI_cag_data_1_create(
     char *provisioning_time
 )
 {
-    OpenAPI_cag_data_1_t *cag_data_1_local_var = OpenAPI_malloc(sizeof(OpenAPI_cag_data_1_t));
-    if (!cag_data_1_local_var) {
-        return NULL;
-    }
+    OpenAPI_cag_data_1_t *cag_data_1_local_var = ogs_malloc(sizeof(OpenAPI_cag_data_1_t));
+    ogs_assert(cag_data_1_local_var);
+
     cag_data_1_local_var->cag_infos = cag_infos;
     cag_data_1_local_var->provisioning_time = provisioning_time;
 
@@ -27,6 +26,7 @@ void OpenAPI_cag_data_1_free(OpenAPI_cag_data_1_t *cag_data_1)
     OpenAPI_lnode_t *node;
     OpenAPI_list_for_each(cag_data_1->cag_infos, node) {
         OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+        ogs_free(localKeyValue->key);
         OpenAPI_cag_info_1_free(localKeyValue->value);
         ogs_free(localKeyValue);
     }
@@ -98,9 +98,9 @@ OpenAPI_cag_data_1_t *OpenAPI_cag_data_1_parseFromJSON(cJSON *cag_data_1JSON)
         cJSON *localMapObject = cag_infos_local_map;
         if (cJSON_IsObject(cag_infos_local_map)) {
             localMapKeyPair = OpenAPI_map_create(
-                localMapObject->string, OpenAPI_cag_info_1_parseFromJSON(localMapObject));
+                ogs_strdup(localMapObject->string), OpenAPI_cag_info_1_parseFromJSON(localMapObject));
         } else if (cJSON_IsNull(cag_infos_local_map)) {
-            localMapKeyPair = OpenAPI_map_create(localMapObject->string, NULL);
+            localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
         } else {
             ogs_error("OpenAPI_cag_data_1_parseFromJSON() failed [cag_infos]");
             goto end;
@@ -119,7 +119,7 @@ OpenAPI_cag_data_1_t *OpenAPI_cag_data_1_parseFromJSON(cJSON *cag_data_1JSON)
 
     cag_data_1_local_var = OpenAPI_cag_data_1_create (
         cag_infosList,
-        provisioning_time ? ogs_strdup_or_assert(provisioning_time->valuestring) : NULL
+        provisioning_time ? ogs_strdup(provisioning_time->valuestring) : NULL
     );
 
     return cag_data_1_local_var;

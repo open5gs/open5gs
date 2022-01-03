@@ -7,10 +7,9 @@
 OpenAPI_stationary_indication_rm_t *OpenAPI_stationary_indication_rm_create(
 )
 {
-    OpenAPI_stationary_indication_rm_t *stationary_indication_rm_local_var = OpenAPI_malloc(sizeof(OpenAPI_stationary_indication_rm_t));
-    if (!stationary_indication_rm_local_var) {
-        return NULL;
-    }
+    OpenAPI_stationary_indication_rm_t *stationary_indication_rm_local_var = ogs_malloc(sizeof(OpenAPI_stationary_indication_rm_t));
+    ogs_assert(stationary_indication_rm_local_var);
+
 
     return stationary_indication_rm_local_var;
 }

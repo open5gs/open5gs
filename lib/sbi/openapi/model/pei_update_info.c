@@ -8,10 +8,9 @@ OpenAPI_pei_update_info_t *OpenAPI_pei_update_info_create(
     char *pei
 )
 {
-    OpenAPI_pei_update_info_t *pei_update_info_local_var = OpenAPI_malloc(sizeof(OpenAPI_pei_update_info_t));
-    if (!pei_update_info_local_var) {
-        return NULL;
-    }
+    OpenAPI_pei_update_info_t *pei_update_info_local_var = ogs_malloc(sizeof(OpenAPI_pei_update_info_t));
+    ogs_assert(pei_update_info_local_var);
+
     pei_update_info_local_var->pei = pei;
 
     return pei_update_info_local_var;
@@ -61,7 +60,7 @@ OpenAPI_pei_update_info_t *OpenAPI_pei_update_info_parseFromJSON(cJSON *pei_upda
     }
 
     pei_update_info_local_var = OpenAPI_pei_update_info_create (
-        ogs_strdup_or_assert(pei->valuestring)
+        ogs_strdup(pei->valuestring)
     );
 
     return pei_update_info_local_var;

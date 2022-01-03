@@ -9,10 +9,9 @@ OpenAPI_amf_cond_t *OpenAPI_amf_cond_create(
     char *amf_region_id
 )
 {
-    OpenAPI_amf_cond_t *amf_cond_local_var = OpenAPI_malloc(sizeof(OpenAPI_amf_cond_t));
-    if (!amf_cond_local_var) {
-        return NULL;
-    }
+    OpenAPI_amf_cond_t *amf_cond_local_var = ogs_malloc(sizeof(OpenAPI_amf_cond_t));
+    ogs_assert(amf_cond_local_var);
+
     amf_cond_local_var->amf_set_id = amf_set_id;
     amf_cond_local_var->amf_region_id = amf_region_id;
 
@@ -80,8 +79,8 @@ OpenAPI_amf_cond_t *OpenAPI_amf_cond_parseFromJSON(cJSON *amf_condJSON)
     }
 
     amf_cond_local_var = OpenAPI_amf_cond_create (
-        amf_set_id ? ogs_strdup_or_assert(amf_set_id->valuestring) : NULL,
-        amf_region_id ? ogs_strdup_or_assert(amf_region_id->valuestring) : NULL
+        amf_set_id ? ogs_strdup(amf_set_id->valuestring) : NULL,
+        amf_region_id ? ogs_strdup(amf_region_id->valuestring) : NULL
     );
 
     return amf_cond_local_var;

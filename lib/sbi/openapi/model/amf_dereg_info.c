@@ -8,10 +8,9 @@ OpenAPI_amf_dereg_info_t *OpenAPI_amf_dereg_info_create(
     OpenAPI_deregistration_reason_e dereg_reason
 )
 {
-    OpenAPI_amf_dereg_info_t *amf_dereg_info_local_var = OpenAPI_malloc(sizeof(OpenAPI_amf_dereg_info_t));
-    if (!amf_dereg_info_local_var) {
-        return NULL;
-    }
+    OpenAPI_amf_dereg_info_t *amf_dereg_info_local_var = ogs_malloc(sizeof(OpenAPI_amf_dereg_info_t));
+    ogs_assert(amf_dereg_info_local_var);
+
     amf_dereg_info_local_var->dereg_reason = dereg_reason;
 
     return amf_dereg_info_local_var;

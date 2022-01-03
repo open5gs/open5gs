@@ -10,10 +10,9 @@ OpenAPI_uncertainty_ellipse_t *OpenAPI_uncertainty_ellipse_create(
     int orientation_major
 )
 {
-    OpenAPI_uncertainty_ellipse_t *uncertainty_ellipse_local_var = OpenAPI_malloc(sizeof(OpenAPI_uncertainty_ellipse_t));
-    if (!uncertainty_ellipse_local_var) {
-        return NULL;
-    }
+    OpenAPI_uncertainty_ellipse_t *uncertainty_ellipse_local_var = ogs_malloc(sizeof(OpenAPI_uncertainty_ellipse_t));
+    ogs_assert(uncertainty_ellipse_local_var);
+
     uncertainty_ellipse_local_var->semi_major = semi_major;
     uncertainty_ellipse_local_var->semi_minor = semi_minor;
     uncertainty_ellipse_local_var->orientation_major = orientation_major;

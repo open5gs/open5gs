@@ -12,10 +12,9 @@ OpenAPI_n1_n2_msg_txfr_err_detail_t *OpenAPI_n1_n2_msg_txfr_err_detail_create(
     int max_waiting_time
 )
 {
-    OpenAPI_n1_n2_msg_txfr_err_detail_t *n1_n2_msg_txfr_err_detail_local_var = OpenAPI_malloc(sizeof(OpenAPI_n1_n2_msg_txfr_err_detail_t));
-    if (!n1_n2_msg_txfr_err_detail_local_var) {
-        return NULL;
-    }
+    OpenAPI_n1_n2_msg_txfr_err_detail_t *n1_n2_msg_txfr_err_detail_local_var = ogs_malloc(sizeof(OpenAPI_n1_n2_msg_txfr_err_detail_t));
+    ogs_assert(n1_n2_msg_txfr_err_detail_local_var);
+
     n1_n2_msg_txfr_err_detail_local_var->is_retry_after = is_retry_after;
     n1_n2_msg_txfr_err_detail_local_var->retry_after = retry_after;
     n1_n2_msg_txfr_err_detail_local_var->highest_prio_arp = highest_prio_arp;

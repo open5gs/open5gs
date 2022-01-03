@@ -14,10 +14,9 @@ OpenAPI_ue_context_created_data_t *OpenAPI_ue_context_created_data_create(
     int pcf_reselected_ind
 )
 {
-    OpenAPI_ue_context_created_data_t *ue_context_created_data_local_var = OpenAPI_malloc(sizeof(OpenAPI_ue_context_created_data_t));
-    if (!ue_context_created_data_local_var) {
-        return NULL;
-    }
+    OpenAPI_ue_context_created_data_t *ue_context_created_data_local_var = ogs_malloc(sizeof(OpenAPI_ue_context_created_data_t));
+    ogs_assert(ue_context_created_data_local_var);
+
     ue_context_created_data_local_var->ue_context = ue_context;
     ue_context_created_data_local_var->target_to_source_data = target_to_source_data;
     ue_context_created_data_local_var->pdu_session_list = pdu_session_list;
@@ -229,7 +228,7 @@ OpenAPI_ue_context_created_data_t *OpenAPI_ue_context_created_data_parseFromJSON
         target_to_source_data_local_nonprim,
         pdu_session_listList,
         failed_session_list ? failed_session_listList : NULL,
-        supported_features ? ogs_strdup_or_assert(supported_features->valuestring) : NULL,
+        supported_features ? ogs_strdup(supported_features->valuestring) : NULL,
         pcf_reselected_ind ? true : false,
         pcf_reselected_ind ? pcf_reselected_ind->valueint : 0
     );

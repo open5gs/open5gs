@@ -10,10 +10,9 @@ OpenAPI_tai_1_t *OpenAPI_tai_1_create(
     char *nid
 )
 {
-    OpenAPI_tai_1_t *tai_1_local_var = OpenAPI_malloc(sizeof(OpenAPI_tai_1_t));
-    if (!tai_1_local_var) {
-        return NULL;
-    }
+    OpenAPI_tai_1_t *tai_1_local_var = ogs_malloc(sizeof(OpenAPI_tai_1_t));
+    ogs_assert(tai_1_local_var);
+
     tai_1_local_var->plmn_id = plmn_id;
     tai_1_local_var->tac = tac;
     tai_1_local_var->nid = nid;
@@ -104,8 +103,8 @@ OpenAPI_tai_1_t *OpenAPI_tai_1_parseFromJSON(cJSON *tai_1JSON)
 
     tai_1_local_var = OpenAPI_tai_1_create (
         plmn_id_local_nonprim,
-        ogs_strdup_or_assert(tac->valuestring),
-        nid ? ogs_strdup_or_assert(nid->valuestring) : NULL
+        ogs_strdup(tac->valuestring),
+        nid ? ogs_strdup(nid->valuestring) : NULL
     );
 
     return tai_1_local_var;

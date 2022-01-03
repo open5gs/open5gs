@@ -13,10 +13,9 @@ OpenAPI_pfd_change_notification_t *OpenAPI_pfd_change_notification_create(
     OpenAPI_list_t *pfds
 )
 {
-    OpenAPI_pfd_change_notification_t *pfd_change_notification_local_var = OpenAPI_malloc(sizeof(OpenAPI_pfd_change_notification_t));
-    if (!pfd_change_notification_local_var) {
-        return NULL;
-    }
+    OpenAPI_pfd_change_notification_t *pfd_change_notification_local_var = ogs_malloc(sizeof(OpenAPI_pfd_change_notification_t));
+    ogs_assert(pfd_change_notification_local_var);
+
     pfd_change_notification_local_var->application_id = application_id;
     pfd_change_notification_local_var->is_removal_flag = is_removal_flag;
     pfd_change_notification_local_var->removal_flag = removal_flag;
@@ -150,7 +149,7 @@ OpenAPI_pfd_change_notification_t *OpenAPI_pfd_change_notification_parseFromJSON
     }
 
     pfd_change_notification_local_var = OpenAPI_pfd_change_notification_create (
-        ogs_strdup_or_assert(application_id->valuestring),
+        ogs_strdup(application_id->valuestring),
         removal_flag ? true : false,
         removal_flag ? removal_flag->valueint : 0,
         partial_flag ? true : false,

@@ -9,10 +9,9 @@ OpenAPI_assign_ebi_error_t *OpenAPI_assign_ebi_error_create(
     OpenAPI_assign_ebi_failed_t *failure_details
 )
 {
-    OpenAPI_assign_ebi_error_t *assign_ebi_error_local_var = OpenAPI_malloc(sizeof(OpenAPI_assign_ebi_error_t));
-    if (!assign_ebi_error_local_var) {
-        return NULL;
-    }
+    OpenAPI_assign_ebi_error_t *assign_ebi_error_local_var = ogs_malloc(sizeof(OpenAPI_assign_ebi_error_t));
+    ogs_assert(assign_ebi_error_local_var);
+
     assign_ebi_error_local_var->error = error;
     assign_ebi_error_local_var->failure_details = failure_details;
 

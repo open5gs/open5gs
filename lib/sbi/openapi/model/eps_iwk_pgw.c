@@ -9,10 +9,9 @@ OpenAPI_eps_iwk_pgw_t *OpenAPI_eps_iwk_pgw_create(
     char *smf_instance_id
 )
 {
-    OpenAPI_eps_iwk_pgw_t *eps_iwk_pgw_local_var = OpenAPI_malloc(sizeof(OpenAPI_eps_iwk_pgw_t));
-    if (!eps_iwk_pgw_local_var) {
-        return NULL;
-    }
+    OpenAPI_eps_iwk_pgw_t *eps_iwk_pgw_local_var = ogs_malloc(sizeof(OpenAPI_eps_iwk_pgw_t));
+    ogs_assert(eps_iwk_pgw_local_var);
+
     eps_iwk_pgw_local_var->pgw_fqdn = pgw_fqdn;
     eps_iwk_pgw_local_var->smf_instance_id = smf_instance_id;
 
@@ -80,8 +79,8 @@ OpenAPI_eps_iwk_pgw_t *OpenAPI_eps_iwk_pgw_parseFromJSON(cJSON *eps_iwk_pgwJSON)
     }
 
     eps_iwk_pgw_local_var = OpenAPI_eps_iwk_pgw_create (
-        ogs_strdup_or_assert(pgw_fqdn->valuestring),
-        ogs_strdup_or_assert(smf_instance_id->valuestring)
+        ogs_strdup(pgw_fqdn->valuestring),
+        ogs_strdup(smf_instance_id->valuestring)
     );
 
     return eps_iwk_pgw_local_var;

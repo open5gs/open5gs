@@ -13,10 +13,9 @@ OpenAPI_sequence_number_t *OpenAPI_sequence_number_create(
     OpenAPI_sign_e dif_sign
 )
 {
-    OpenAPI_sequence_number_t *sequence_number_local_var = OpenAPI_malloc(sizeof(OpenAPI_sequence_number_t));
-    if (!sequence_number_local_var) {
-        return NULL;
-    }
+    OpenAPI_sequence_number_t *sequence_number_local_var = ogs_malloc(sizeof(OpenAPI_sequence_number_t));
+    ogs_assert(sequence_number_local_var);
+
     sequence_number_local_var->sqn_scheme = sqn_scheme;
     sequence_number_local_var->sqn = sqn;
     sequence_number_local_var->last_indexes = last_indexes;
@@ -36,6 +35,7 @@ void OpenAPI_sequence_number_free(OpenAPI_sequence_number_t *sequence_number)
     ogs_free(sequence_number->sqn);
     OpenAPI_list_for_each(sequence_number->last_indexes, node) {
         OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+        ogs_free(localKeyValue->key);
         ogs_free(localKeyValue->value);
         ogs_free(localKeyValue);
     }
@@ -162,7 +162,7 @@ OpenAPI_sequence_number_t *OpenAPI_sequence_number_parseFromJSON(cJSON *sequence
 
     sequence_number_local_var = OpenAPI_sequence_number_create (
         sqn_scheme ? sqn_schemeVariable : 0,
-        sqn ? ogs_strdup_or_assert(sqn->valuestring) : NULL,
+        sqn ? ogs_strdup(sqn->valuestring) : NULL,
         last_indexes ? last_indexesList : NULL,
         ind_length ? true : false,
         ind_length ? ind_length->valuedouble : 0,

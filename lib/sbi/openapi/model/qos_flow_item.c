@@ -13,10 +13,9 @@ OpenAPI_qos_flow_item_t *OpenAPI_qos_flow_item_create(
     int null_qo_s_profile_index
 )
 {
-    OpenAPI_qos_flow_item_t *qos_flow_item_local_var = OpenAPI_malloc(sizeof(OpenAPI_qos_flow_item_t));
-    if (!qos_flow_item_local_var) {
-        return NULL;
-    }
+    OpenAPI_qos_flow_item_t *qos_flow_item_local_var = ogs_malloc(sizeof(OpenAPI_qos_flow_item_t));
+    ogs_assert(qos_flow_item_local_var);
+
     qos_flow_item_local_var->qfi = qfi;
     qos_flow_item_local_var->cause = cause;
     qos_flow_item_local_var->is_current_qos_profile_index = is_current_qos_profile_index;

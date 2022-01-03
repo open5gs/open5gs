@@ -12,10 +12,9 @@ OpenAPI_multicast_access_control_t *OpenAPI_multicast_access_control_create(
     OpenAPI_access_right_status_t *acc_status
 )
 {
-    OpenAPI_multicast_access_control_t *multicast_access_control_local_var = OpenAPI_malloc(sizeof(OpenAPI_multicast_access_control_t));
-    if (!multicast_access_control_local_var) {
-        return NULL;
-    }
+    OpenAPI_multicast_access_control_t *multicast_access_control_local_var = ogs_malloc(sizeof(OpenAPI_multicast_access_control_t));
+    ogs_assert(multicast_access_control_local_var);
+
     multicast_access_control_local_var->src_ipv4_addr = src_ipv4_addr;
     multicast_access_control_local_var->src_ipv6_addr = src_ipv6_addr;
     multicast_access_control_local_var->multicast_v4_addr = multicast_v4_addr;
@@ -141,10 +140,10 @@ OpenAPI_multicast_access_control_t *OpenAPI_multicast_access_control_parseFromJS
     acc_status_local_nonprim = OpenAPI_access_right_status_parseFromJSON(acc_status);
 
     multicast_access_control_local_var = OpenAPI_multicast_access_control_create (
-        src_ipv4_addr ? ogs_strdup_or_assert(src_ipv4_addr->valuestring) : NULL,
-        src_ipv6_addr ? ogs_strdup_or_assert(src_ipv6_addr->valuestring) : NULL,
-        multicast_v4_addr ? ogs_strdup_or_assert(multicast_v4_addr->valuestring) : NULL,
-        multicast_v6_addr ? ogs_strdup_or_assert(multicast_v6_addr->valuestring) : NULL,
+        src_ipv4_addr ? ogs_strdup(src_ipv4_addr->valuestring) : NULL,
+        src_ipv6_addr ? ogs_strdup(src_ipv6_addr->valuestring) : NULL,
+        multicast_v4_addr ? ogs_strdup(multicast_v4_addr->valuestring) : NULL,
+        multicast_v6_addr ? ogs_strdup(multicast_v6_addr->valuestring) : NULL,
         acc_status_local_nonprim
     );
 

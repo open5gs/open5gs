@@ -9,10 +9,9 @@ OpenAPI_assign_ebi_failed_t *OpenAPI_assign_ebi_failed_create(
     OpenAPI_list_t *failed_arp_list
 )
 {
-    OpenAPI_assign_ebi_failed_t *assign_ebi_failed_local_var = OpenAPI_malloc(sizeof(OpenAPI_assign_ebi_failed_t));
-    if (!assign_ebi_failed_local_var) {
-        return NULL;
-    }
+    OpenAPI_assign_ebi_failed_t *assign_ebi_failed_local_var = ogs_malloc(sizeof(OpenAPI_assign_ebi_failed_t));
+    ogs_assert(assign_ebi_failed_local_var);
+
     assign_ebi_failed_local_var->pdu_session_id = pdu_session_id;
     assign_ebi_failed_local_var->failed_arp_list = failed_arp_list;
 

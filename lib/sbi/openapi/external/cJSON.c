@@ -148,7 +148,9 @@ static void *internal_realloc(void *pointer, size_t size)
 #include "ogs-core.h"
 static void *internal_malloc(size_t size)
 {
-    return ogs_malloc_or_assert(size);
+    void *ptr = ogs_malloc(size);
+    ogs_assert(ptr);
+    return ptr;
 }
 static void internal_free(void *pointer)
 {
@@ -156,7 +158,9 @@ static void internal_free(void *pointer)
 }
 static void *internal_realloc(void *pointer, size_t size)
 {
-    return ogs_realloc_or_assert(pointer, size);
+    void *ptr = ogs_realloc(pointer, size);
+    ogs_assert(ptr);
+    return ptr;
 }
 #endif
 

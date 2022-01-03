@@ -12,10 +12,9 @@ OpenAPI_point_altitude_uncertainty_all_of_t *OpenAPI_point_altitude_uncertainty_
     int confidence
 )
 {
-    OpenAPI_point_altitude_uncertainty_all_of_t *point_altitude_uncertainty_all_of_local_var = OpenAPI_malloc(sizeof(OpenAPI_point_altitude_uncertainty_all_of_t));
-    if (!point_altitude_uncertainty_all_of_local_var) {
-        return NULL;
-    }
+    OpenAPI_point_altitude_uncertainty_all_of_t *point_altitude_uncertainty_all_of_local_var = ogs_malloc(sizeof(OpenAPI_point_altitude_uncertainty_all_of_t));
+    ogs_assert(point_altitude_uncertainty_all_of_local_var);
+
     point_altitude_uncertainty_all_of_local_var->point = point;
     point_altitude_uncertainty_all_of_local_var->altitude = altitude;
     point_altitude_uncertainty_all_of_local_var->uncertainty_ellipse = uncertainty_ellipse;

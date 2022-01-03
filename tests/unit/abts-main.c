@@ -26,6 +26,9 @@ extern int __ogs_nas_domain;
 extern int __ogs_gtp_domain;
 extern int __ogs_sbi_domain;
 
+void ogs_sbi_message_init(int num_of_request_pool, int num_of_response_pool);
+void ogs_sbi_message_final(void);
+
 abts_suite *test_s1ap_message(abts_suite *suite);
 abts_suite *test_nas_message(abts_suite *suite);
 abts_suite *test_gtp_message(abts_suite *suite);
@@ -49,6 +52,8 @@ const struct testlist {
 
 static void terminate(void)
 {
+    ogs_sbi_message_final();
+
     ogs_pkbuf_default_destroy();
 
     ogs_core_terminate();
@@ -92,6 +97,8 @@ int main(int argc, const char *const argv[])
 
     ogs_pkbuf_default_init(&config);
     ogs_pkbuf_default_create(&config);
+
+    ogs_sbi_message_init(32, 32);
 
     ogs_log_install_domain(&__ogs_s1ap_domain, "s1ap", OGS_LOG_ERROR);
     ogs_log_install_domain(&__ogs_ngap_domain, "ngap", OGS_LOG_ERROR);

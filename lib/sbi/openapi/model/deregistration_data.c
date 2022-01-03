@@ -12,10 +12,9 @@ OpenAPI_deregistration_data_t *OpenAPI_deregistration_data_create(
     char *new_smf_instance_id
 )
 {
-    OpenAPI_deregistration_data_t *deregistration_data_local_var = OpenAPI_malloc(sizeof(OpenAPI_deregistration_data_t));
-    if (!deregistration_data_local_var) {
-        return NULL;
-    }
+    OpenAPI_deregistration_data_t *deregistration_data_local_var = ogs_malloc(sizeof(OpenAPI_deregistration_data_t));
+    ogs_assert(deregistration_data_local_var);
+
     deregistration_data_local_var->dereg_reason = dereg_reason;
     deregistration_data_local_var->access_type = access_type;
     deregistration_data_local_var->is_pdu_session_id = is_pdu_session_id;
@@ -125,7 +124,7 @@ OpenAPI_deregistration_data_t *OpenAPI_deregistration_data_parseFromJSON(cJSON *
         access_type ? access_typeVariable : 0,
         pdu_session_id ? true : false,
         pdu_session_id ? pdu_session_id->valuedouble : 0,
-        new_smf_instance_id ? ogs_strdup_or_assert(new_smf_instance_id->valuestring) : NULL
+        new_smf_instance_id ? ogs_strdup(new_smf_instance_id->valuestring) : NULL
     );
 
     return deregistration_data_local_var;

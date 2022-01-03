@@ -11,10 +11,9 @@ OpenAPI_point_uncertainty_ellipse_t *OpenAPI_point_uncertainty_ellipse_create(
     int confidence
 )
 {
-    OpenAPI_point_uncertainty_ellipse_t *point_uncertainty_ellipse_local_var = OpenAPI_malloc(sizeof(OpenAPI_point_uncertainty_ellipse_t));
-    if (!point_uncertainty_ellipse_local_var) {
-        return NULL;
-    }
+    OpenAPI_point_uncertainty_ellipse_t *point_uncertainty_ellipse_local_var = ogs_malloc(sizeof(OpenAPI_point_uncertainty_ellipse_t));
+    ogs_assert(point_uncertainty_ellipse_local_var);
+
     point_uncertainty_ellipse_local_var->shape = shape;
     point_uncertainty_ellipse_local_var->point = point;
     point_uncertainty_ellipse_local_var->uncertainty_ellipse = uncertainty_ellipse;

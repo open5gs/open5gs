@@ -8,10 +8,9 @@ OpenAPI_lcs_mo_data_t *OpenAPI_lcs_mo_data_create(
     OpenAPI_list_t *allowed_service_classes
 )
 {
-    OpenAPI_lcs_mo_data_t *lcs_mo_data_local_var = OpenAPI_malloc(sizeof(OpenAPI_lcs_mo_data_t));
-    if (!lcs_mo_data_local_var) {
-        return NULL;
-    }
+    OpenAPI_lcs_mo_data_t *lcs_mo_data_local_var = ogs_malloc(sizeof(OpenAPI_lcs_mo_data_t));
+    ogs_assert(lcs_mo_data_local_var);
+
     lcs_mo_data_local_var->allowed_service_classes = allowed_service_classes;
 
     return lcs_mo_data_local_var;

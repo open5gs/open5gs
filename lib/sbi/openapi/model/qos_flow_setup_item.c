@@ -14,10 +14,9 @@ OpenAPI_qos_flow_setup_item_t *OpenAPI_qos_flow_setup_item_create(
     OpenAPI_qos_flow_access_type_e associated_an_type
 )
 {
-    OpenAPI_qos_flow_setup_item_t *qos_flow_setup_item_local_var = OpenAPI_malloc(sizeof(OpenAPI_qos_flow_setup_item_t));
-    if (!qos_flow_setup_item_local_var) {
-        return NULL;
-    }
+    OpenAPI_qos_flow_setup_item_t *qos_flow_setup_item_local_var = ogs_malloc(sizeof(OpenAPI_qos_flow_setup_item_t));
+    ogs_assert(qos_flow_setup_item_local_var);
+
     qos_flow_setup_item_local_var->qfi = qfi;
     qos_flow_setup_item_local_var->qos_rules = qos_rules;
     qos_flow_setup_item_local_var->is_ebi = is_ebi;

@@ -16,10 +16,9 @@ OpenAPI_cn_assisted_ran_para_t *OpenAPI_cn_assisted_ran_para_create(
     OpenAPI_battery_indication_t *battery_indication
 )
 {
-    OpenAPI_cn_assisted_ran_para_t *cn_assisted_ran_para_local_var = OpenAPI_malloc(sizeof(OpenAPI_cn_assisted_ran_para_t));
-    if (!cn_assisted_ran_para_local_var) {
-        return NULL;
-    }
+    OpenAPI_cn_assisted_ran_para_t *cn_assisted_ran_para_local_var = ogs_malloc(sizeof(OpenAPI_cn_assisted_ran_para_t));
+    ogs_assert(cn_assisted_ran_para_local_var);
+
     cn_assisted_ran_para_local_var->stationary_indication = stationary_indication;
     cn_assisted_ran_para_local_var->is_communication_duration_time = is_communication_duration_time;
     cn_assisted_ran_para_local_var->communication_duration_time = communication_duration_time;

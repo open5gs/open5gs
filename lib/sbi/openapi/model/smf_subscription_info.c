@@ -8,10 +8,9 @@ OpenAPI_smf_subscription_info_t *OpenAPI_smf_subscription_info_create(
     OpenAPI_list_t *smf_subscription_list
 )
 {
-    OpenAPI_smf_subscription_info_t *smf_subscription_info_local_var = OpenAPI_malloc(sizeof(OpenAPI_smf_subscription_info_t));
-    if (!smf_subscription_info_local_var) {
-        return NULL;
-    }
+    OpenAPI_smf_subscription_info_t *smf_subscription_info_local_var = ogs_malloc(sizeof(OpenAPI_smf_subscription_info_t));
+    ogs_assert(smf_subscription_info_local_var);
+
     smf_subscription_info_local_var->smf_subscription_list = smf_subscription_list;
 
     return smf_subscription_info_local_var;

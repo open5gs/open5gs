@@ -12,10 +12,9 @@ OpenAPI_change_item_t *OpenAPI_change_item_create(
     char *new_value
 )
 {
-    OpenAPI_change_item_t *change_item_local_var = OpenAPI_malloc(sizeof(OpenAPI_change_item_t));
-    if (!change_item_local_var) {
-        return NULL;
-    }
+    OpenAPI_change_item_t *change_item_local_var = ogs_malloc(sizeof(OpenAPI_change_item_t));
+    ogs_assert(change_item_local_var);
+
     change_item_local_var->op = op;
     change_item_local_var->path = path;
     change_item_local_var->from = from;
@@ -139,10 +138,10 @@ OpenAPI_change_item_t *OpenAPI_change_item_parseFromJSON(cJSON *change_itemJSON)
 
     change_item_local_var = OpenAPI_change_item_create (
         opVariable,
-        ogs_strdup_or_assert(path->valuestring),
-        from ? ogs_strdup_or_assert(from->valuestring) : NULL,
-        orig_value ? ogs_strdup_or_assert(orig_value->valuestring) : NULL,
-        new_value ? ogs_strdup_or_assert(new_value->valuestring) : NULL
+        ogs_strdup(path->valuestring),
+        from ? ogs_strdup(from->valuestring) : NULL,
+        orig_value ? ogs_strdup(orig_value->valuestring) : NULL,
+        new_value ? ogs_strdup(new_value->valuestring) : NULL
     );
 
     return change_item_local_var;

@@ -9,10 +9,9 @@ OpenAPI_ue_n1_n2_info_subscription_created_data_t *OpenAPI_ue_n1_n2_info_subscri
     char *supported_features
 )
 {
-    OpenAPI_ue_n1_n2_info_subscription_created_data_t *ue_n1_n2_info_subscription_created_data_local_var = OpenAPI_malloc(sizeof(OpenAPI_ue_n1_n2_info_subscription_created_data_t));
-    if (!ue_n1_n2_info_subscription_created_data_local_var) {
-        return NULL;
-    }
+    OpenAPI_ue_n1_n2_info_subscription_created_data_t *ue_n1_n2_info_subscription_created_data_local_var = ogs_malloc(sizeof(OpenAPI_ue_n1_n2_info_subscription_created_data_t));
+    ogs_assert(ue_n1_n2_info_subscription_created_data_local_var);
+
     ue_n1_n2_info_subscription_created_data_local_var->n1n2_notify_subscription_id = n1n2_notify_subscription_id;
     ue_n1_n2_info_subscription_created_data_local_var->supported_features = supported_features;
 
@@ -80,8 +79,8 @@ OpenAPI_ue_n1_n2_info_subscription_created_data_t *OpenAPI_ue_n1_n2_info_subscri
     }
 
     ue_n1_n2_info_subscription_created_data_local_var = OpenAPI_ue_n1_n2_info_subscription_created_data_create (
-        ogs_strdup_or_assert(n1n2_notify_subscription_id->valuestring),
-        supported_features ? ogs_strdup_or_assert(supported_features->valuestring) : NULL
+        ogs_strdup(n1n2_notify_subscription_id->valuestring),
+        supported_features ? ogs_strdup(supported_features->valuestring) : NULL
     );
 
     return ue_n1_n2_info_subscription_created_data_local_var;

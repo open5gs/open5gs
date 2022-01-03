@@ -9,10 +9,9 @@ OpenAPI_limit_id_to_monitoring_key_t *OpenAPI_limit_id_to_monitoring_key_create(
     OpenAPI_list_t *monkey
 )
 {
-    OpenAPI_limit_id_to_monitoring_key_t *limit_id_to_monitoring_key_local_var = OpenAPI_malloc(sizeof(OpenAPI_limit_id_to_monitoring_key_t));
-    if (!limit_id_to_monitoring_key_local_var) {
-        return NULL;
-    }
+    OpenAPI_limit_id_to_monitoring_key_t *limit_id_to_monitoring_key_local_var = ogs_malloc(sizeof(OpenAPI_limit_id_to_monitoring_key_t));
+    ogs_assert(limit_id_to_monitoring_key_local_var);
+
     limit_id_to_monitoring_key_local_var->limit_id = limit_id;
     limit_id_to_monitoring_key_local_var->monkey = monkey;
 
@@ -98,12 +97,12 @@ OpenAPI_limit_id_to_monitoring_key_t *OpenAPI_limit_id_to_monitoring_key_parseFr
         ogs_error("OpenAPI_limit_id_to_monitoring_key_parseFromJSON() failed [monkey]");
         goto end;
     }
-    OpenAPI_list_add(monkeyList , ogs_strdup_or_assert(monkey_local->valuestring));
+    OpenAPI_list_add(monkeyList , ogs_strdup(monkey_local->valuestring));
     }
     }
 
     limit_id_to_monitoring_key_local_var = OpenAPI_limit_id_to_monitoring_key_create (
-        ogs_strdup_or_assert(limit_id->valuestring),
+        ogs_strdup(limit_id->valuestring),
         monkey ? monkeyList : NULL
     );
 

@@ -10,10 +10,9 @@ OpenAPI_app_detection_info_t *OpenAPI_app_detection_info_create(
     OpenAPI_list_t *sdf_descriptions
 )
 {
-    OpenAPI_app_detection_info_t *app_detection_info_local_var = OpenAPI_malloc(sizeof(OpenAPI_app_detection_info_t));
-    if (!app_detection_info_local_var) {
-        return NULL;
-    }
+    OpenAPI_app_detection_info_t *app_detection_info_local_var = ogs_malloc(sizeof(OpenAPI_app_detection_info_t));
+    ogs_assert(app_detection_info_local_var);
+
     app_detection_info_local_var->app_id = app_id;
     app_detection_info_local_var->instance_id = instance_id;
     app_detection_info_local_var->sdf_descriptions = sdf_descriptions;
@@ -129,8 +128,8 @@ OpenAPI_app_detection_info_t *OpenAPI_app_detection_info_parseFromJSON(cJSON *ap
     }
 
     app_detection_info_local_var = OpenAPI_app_detection_info_create (
-        ogs_strdup_or_assert(app_id->valuestring),
-        instance_id ? ogs_strdup_or_assert(instance_id->valuestring) : NULL,
+        ogs_strdup(app_id->valuestring),
+        instance_id ? ogs_strdup(instance_id->valuestring) : NULL,
         sdf_descriptions ? sdf_descriptionsList : NULL
     );
 

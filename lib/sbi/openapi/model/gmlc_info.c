@@ -8,10 +8,9 @@ OpenAPI_gmlc_info_t *OpenAPI_gmlc_info_create(
     OpenAPI_list_t *serving_client_types
 )
 {
-    OpenAPI_gmlc_info_t *gmlc_info_local_var = OpenAPI_malloc(sizeof(OpenAPI_gmlc_info_t));
-    if (!gmlc_info_local_var) {
-        return NULL;
-    }
+    OpenAPI_gmlc_info_t *gmlc_info_local_var = ogs_malloc(sizeof(OpenAPI_gmlc_info_t));
+    ogs_assert(gmlc_info_local_var);
+
     gmlc_info_local_var->serving_client_types = serving_client_types;
 
     return gmlc_info_local_var;

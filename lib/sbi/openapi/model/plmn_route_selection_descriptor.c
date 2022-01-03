@@ -9,10 +9,9 @@ OpenAPI_plmn_route_selection_descriptor_t *OpenAPI_plmn_route_selection_descript
     OpenAPI_list_t *snssai_route_sel_descs
 )
 {
-    OpenAPI_plmn_route_selection_descriptor_t *plmn_route_selection_descriptor_local_var = OpenAPI_malloc(sizeof(OpenAPI_plmn_route_selection_descriptor_t));
-    if (!plmn_route_selection_descriptor_local_var) {
-        return NULL;
-    }
+    OpenAPI_plmn_route_selection_descriptor_t *plmn_route_selection_descriptor_local_var = ogs_malloc(sizeof(OpenAPI_plmn_route_selection_descriptor_t));
+    ogs_assert(plmn_route_selection_descriptor_local_var);
+
     plmn_route_selection_descriptor_local_var->serving_plmn = serving_plmn;
     plmn_route_selection_descriptor_local_var->snssai_route_sel_descs = snssai_route_sel_descs;
 

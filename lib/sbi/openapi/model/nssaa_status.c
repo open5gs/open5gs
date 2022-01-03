@@ -9,10 +9,9 @@ OpenAPI_nssaa_status_t *OpenAPI_nssaa_status_create(
     OpenAPI_auth_status_e status
 )
 {
-    OpenAPI_nssaa_status_t *nssaa_status_local_var = OpenAPI_malloc(sizeof(OpenAPI_nssaa_status_t));
-    if (!nssaa_status_local_var) {
-        return NULL;
-    }
+    OpenAPI_nssaa_status_t *nssaa_status_local_var = ogs_malloc(sizeof(OpenAPI_nssaa_status_t));
+    ogs_assert(nssaa_status_local_var);
+
     nssaa_status_local_var->snssai = snssai;
     nssaa_status_local_var->status = status;
 

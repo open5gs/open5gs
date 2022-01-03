@@ -9,10 +9,9 @@ OpenAPI_invalid_param_t *OpenAPI_invalid_param_create(
     char *reason
 )
 {
-    OpenAPI_invalid_param_t *invalid_param_local_var = OpenAPI_malloc(sizeof(OpenAPI_invalid_param_t));
-    if (!invalid_param_local_var) {
-        return NULL;
-    }
+    OpenAPI_invalid_param_t *invalid_param_local_var = ogs_malloc(sizeof(OpenAPI_invalid_param_t));
+    ogs_assert(invalid_param_local_var);
+
     invalid_param_local_var->param = param;
     invalid_param_local_var->reason = reason;
 
@@ -80,8 +79,8 @@ OpenAPI_invalid_param_t *OpenAPI_invalid_param_parseFromJSON(cJSON *invalid_para
     }
 
     invalid_param_local_var = OpenAPI_invalid_param_create (
-        ogs_strdup_or_assert(param->valuestring),
-        reason ? ogs_strdup_or_assert(reason->valuestring) : NULL
+        ogs_strdup(param->valuestring),
+        reason ? ogs_strdup(reason->valuestring) : NULL
     );
 
     return invalid_param_local_var;

@@ -10,10 +10,9 @@ OpenAPI_subscribed_snssai_t *OpenAPI_subscribed_snssai_create(
     int default_indication
 )
 {
-    OpenAPI_subscribed_snssai_t *subscribed_snssai_local_var = OpenAPI_malloc(sizeof(OpenAPI_subscribed_snssai_t));
-    if (!subscribed_snssai_local_var) {
-        return NULL;
-    }
+    OpenAPI_subscribed_snssai_t *subscribed_snssai_local_var = ogs_malloc(sizeof(OpenAPI_subscribed_snssai_t));
+    ogs_assert(subscribed_snssai_local_var);
+
     subscribed_snssai_local_var->subscribed_snssai = subscribed_snssai;
     subscribed_snssai_local_var->is_default_indication = is_default_indication;
     subscribed_snssai_local_var->default_indication = default_indication;

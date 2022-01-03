@@ -11,10 +11,9 @@ OpenAPI_pc5_qos_flow_item_t *OpenAPI_pc5_qos_flow_item_create(
     int range
 )
 {
-    OpenAPI_pc5_qos_flow_item_t *pc5_qos_flow_item_local_var = OpenAPI_malloc(sizeof(OpenAPI_pc5_qos_flow_item_t));
-    if (!pc5_qos_flow_item_local_var) {
-        return NULL;
-    }
+    OpenAPI_pc5_qos_flow_item_t *pc5_qos_flow_item_local_var = ogs_malloc(sizeof(OpenAPI_pc5_qos_flow_item_t));
+    ogs_assert(pc5_qos_flow_item_local_var);
+
     pc5_qos_flow_item_local_var->pqi = pqi;
     pc5_qos_flow_item_local_var->pc5_flow_bit_rates = pc5_flow_bit_rates;
     pc5_qos_flow_item_local_var->is_range = is_range;

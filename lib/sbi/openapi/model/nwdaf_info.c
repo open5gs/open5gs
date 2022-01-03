@@ -11,10 +11,9 @@ OpenAPI_nwdaf_info_t *OpenAPI_nwdaf_info_create(
     OpenAPI_list_t *tai_range_list
 )
 {
-    OpenAPI_nwdaf_info_t *nwdaf_info_local_var = OpenAPI_malloc(sizeof(OpenAPI_nwdaf_info_t));
-    if (!nwdaf_info_local_var) {
-        return NULL;
-    }
+    OpenAPI_nwdaf_info_t *nwdaf_info_local_var = ogs_malloc(sizeof(OpenAPI_nwdaf_info_t));
+    ogs_assert(nwdaf_info_local_var);
+
     nwdaf_info_local_var->event_ids = event_ids;
     nwdaf_info_local_var->nwdaf_events = nwdaf_events;
     nwdaf_info_local_var->tai_list = tai_list;

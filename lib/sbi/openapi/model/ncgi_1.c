@@ -10,10 +10,9 @@ OpenAPI_ncgi_1_t *OpenAPI_ncgi_1_create(
     char *nid
 )
 {
-    OpenAPI_ncgi_1_t *ncgi_1_local_var = OpenAPI_malloc(sizeof(OpenAPI_ncgi_1_t));
-    if (!ncgi_1_local_var) {
-        return NULL;
-    }
+    OpenAPI_ncgi_1_t *ncgi_1_local_var = ogs_malloc(sizeof(OpenAPI_ncgi_1_t));
+    ogs_assert(ncgi_1_local_var);
+
     ncgi_1_local_var->plmn_id = plmn_id;
     ncgi_1_local_var->nr_cell_id = nr_cell_id;
     ncgi_1_local_var->nid = nid;
@@ -104,8 +103,8 @@ OpenAPI_ncgi_1_t *OpenAPI_ncgi_1_parseFromJSON(cJSON *ncgi_1JSON)
 
     ncgi_1_local_var = OpenAPI_ncgi_1_create (
         plmn_id_local_nonprim,
-        ogs_strdup_or_assert(nr_cell_id->valuestring),
-        nid ? ogs_strdup_or_assert(nid->valuestring) : NULL
+        ogs_strdup(nr_cell_id->valuestring),
+        nid ? ogs_strdup(nid->valuestring) : NULL
     );
 
     return ncgi_1_local_var;

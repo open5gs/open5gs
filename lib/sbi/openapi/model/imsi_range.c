@@ -10,10 +10,9 @@ OpenAPI_imsi_range_t *OpenAPI_imsi_range_create(
     char *pattern
 )
 {
-    OpenAPI_imsi_range_t *imsi_range_local_var = OpenAPI_malloc(sizeof(OpenAPI_imsi_range_t));
-    if (!imsi_range_local_var) {
-        return NULL;
-    }
+    OpenAPI_imsi_range_t *imsi_range_local_var = ogs_malloc(sizeof(OpenAPI_imsi_range_t));
+    ogs_assert(imsi_range_local_var);
+
     imsi_range_local_var->start = start;
     imsi_range_local_var->end = end;
     imsi_range_local_var->pattern = pattern;
@@ -99,9 +98,9 @@ OpenAPI_imsi_range_t *OpenAPI_imsi_range_parseFromJSON(cJSON *imsi_rangeJSON)
     }
 
     imsi_range_local_var = OpenAPI_imsi_range_create (
-        start ? ogs_strdup_or_assert(start->valuestring) : NULL,
-        end ? ogs_strdup_or_assert(end->valuestring) : NULL,
-        pattern ? ogs_strdup_or_assert(pattern->valuestring) : NULL
+        start ? ogs_strdup(start->valuestring) : NULL,
+        end ? ogs_strdup(end->valuestring) : NULL,
+        pattern ? ogs_strdup(pattern->valuestring) : NULL
     );
 
     return imsi_range_local_var;

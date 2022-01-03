@@ -5,11 +5,15 @@
 #include "../include/list.h"
 static OpenAPI_lnode_t *listEntry_create(void *data)
 {
-    OpenAPI_lnode_t *created = ogs_malloc(sizeof(OpenAPI_lnode_t));
+    OpenAPI_lnode_t *created = NULL;
+
+    ogs_assert(data);
+
+    created = ogs_malloc(sizeof(OpenAPI_lnode_t));
     ogs_assert(created);
 
     if (created == NULL) {
-        // TODO Malloc Failure
+        ogs_assert_if_reached();
         return NULL;
     }
     created->data = data;
@@ -33,7 +37,7 @@ OpenAPI_list_t *OpenAPI_list_create(void)
     ogs_assert(createdList);
 
     if (createdList == NULL) {
-        // TODO Malloc Failure
+        ogs_assert_if_reached();
         return NULL;
     }
     createdList->first = NULL;
@@ -101,7 +105,7 @@ void OpenAPI_list_add(OpenAPI_list_t *list, void *dataToAddInList)
 {
     OpenAPI_lnode_t *newListEntry = listEntry_create(dataToAddInList);
     if (newListEntry == NULL) {
-        // TODO Malloc Failure
+        ogs_assert_if_reached();
         return;
     }
     if (list->first == NULL) {

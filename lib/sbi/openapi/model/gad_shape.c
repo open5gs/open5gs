@@ -8,10 +8,9 @@ OpenAPI_gad_shape_t *OpenAPI_gad_shape_create(
     OpenAPI_supported_gad_shapes_t *shape
 )
 {
-    OpenAPI_gad_shape_t *gad_shape_local_var = OpenAPI_malloc(sizeof(OpenAPI_gad_shape_t));
-    if (!gad_shape_local_var) {
-        return NULL;
-    }
+    OpenAPI_gad_shape_t *gad_shape_local_var = ogs_malloc(sizeof(OpenAPI_gad_shape_t));
+    ogs_assert(gad_shape_local_var);
+
     gad_shape_local_var->shape = shape;
 
     return gad_shape_local_var;

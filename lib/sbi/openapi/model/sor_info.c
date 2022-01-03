@@ -12,10 +12,9 @@ OpenAPI_sor_info_t *OpenAPI_sor_info_create(
     char *provisioning_time
 )
 {
-    OpenAPI_sor_info_t *sor_info_local_var = OpenAPI_malloc(sizeof(OpenAPI_sor_info_t));
-    if (!sor_info_local_var) {
-        return NULL;
-    }
+    OpenAPI_sor_info_t *sor_info_local_var = ogs_malloc(sizeof(OpenAPI_sor_info_t));
+    ogs_assert(sor_info_local_var);
+
     sor_info_local_var->steering_container = steering_container;
     sor_info_local_var->ack_ind = ack_ind;
     sor_info_local_var->sor_mac_iausf = sor_mac_iausf;
@@ -143,9 +142,9 @@ OpenAPI_sor_info_t *OpenAPI_sor_info_parseFromJSON(cJSON *sor_infoJSON)
         steering_container ? steering_container_local_nonprim : NULL,
         
         ack_ind->valueint,
-        sor_mac_iausf ? ogs_strdup_or_assert(sor_mac_iausf->valuestring) : NULL,
-        countersor ? ogs_strdup_or_assert(countersor->valuestring) : NULL,
-        ogs_strdup_or_assert(provisioning_time->valuestring)
+        sor_mac_iausf ? ogs_strdup(sor_mac_iausf->valuestring) : NULL,
+        countersor ? ogs_strdup(countersor->valuestring) : NULL,
+        ogs_strdup(provisioning_time->valuestring)
     );
 
     return sor_info_local_var;

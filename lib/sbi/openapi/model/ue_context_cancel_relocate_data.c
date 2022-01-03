@@ -9,10 +9,9 @@ OpenAPI_ue_context_cancel_relocate_data_t *OpenAPI_ue_context_cancel_relocate_da
     OpenAPI_ref_to_binary_data_t *relocation_cancel_request
 )
 {
-    OpenAPI_ue_context_cancel_relocate_data_t *ue_context_cancel_relocate_data_local_var = OpenAPI_malloc(sizeof(OpenAPI_ue_context_cancel_relocate_data_t));
-    if (!ue_context_cancel_relocate_data_local_var) {
-        return NULL;
-    }
+    OpenAPI_ue_context_cancel_relocate_data_t *ue_context_cancel_relocate_data_local_var = ogs_malloc(sizeof(OpenAPI_ue_context_cancel_relocate_data_t));
+    ogs_assert(ue_context_cancel_relocate_data_local_var);
+
     ue_context_cancel_relocate_data_local_var->supi = supi;
     ue_context_cancel_relocate_data_local_var->relocation_cancel_request = relocation_cancel_request;
 
@@ -84,7 +83,7 @@ OpenAPI_ue_context_cancel_relocate_data_t *OpenAPI_ue_context_cancel_relocate_da
     relocation_cancel_request_local_nonprim = OpenAPI_ref_to_binary_data_parseFromJSON(relocation_cancel_request);
 
     ue_context_cancel_relocate_data_local_var = OpenAPI_ue_context_cancel_relocate_data_create (
-        supi ? ogs_strdup_or_assert(supi->valuestring) : NULL,
+        supi ? ogs_strdup(supi->valuestring) : NULL,
         relocation_cancel_request_local_nonprim
     );
 

@@ -15,10 +15,9 @@ OpenAPI_smsf_registration_t *OpenAPI_smsf_registration_create(
     OpenAPI_context_info_t *context_info
 )
 {
-    OpenAPI_smsf_registration_t *smsf_registration_local_var = OpenAPI_malloc(sizeof(OpenAPI_smsf_registration_t));
-    if (!smsf_registration_local_var) {
-        return NULL;
-    }
+    OpenAPI_smsf_registration_t *smsf_registration_local_var = ogs_malloc(sizeof(OpenAPI_smsf_registration_t));
+    ogs_assert(smsf_registration_local_var);
+
     smsf_registration_local_var->smsf_instance_id = smsf_instance_id;
     smsf_registration_local_var->smsf_set_id = smsf_set_id;
     smsf_registration_local_var->supported_features = supported_features;
@@ -206,13 +205,13 @@ OpenAPI_smsf_registration_t *OpenAPI_smsf_registration_parseFromJSON(cJSON *smsf
     }
 
     smsf_registration_local_var = OpenAPI_smsf_registration_create (
-        ogs_strdup_or_assert(smsf_instance_id->valuestring),
-        smsf_set_id ? ogs_strdup_or_assert(smsf_set_id->valuestring) : NULL,
-        supported_features ? ogs_strdup_or_assert(supported_features->valuestring) : NULL,
+        ogs_strdup(smsf_instance_id->valuestring),
+        smsf_set_id ? ogs_strdup(smsf_set_id->valuestring) : NULL,
+        supported_features ? ogs_strdup(supported_features->valuestring) : NULL,
         plmn_id_local_nonprim,
-        smsf_map_address ? ogs_strdup_or_assert(smsf_map_address->valuestring) : NULL,
+        smsf_map_address ? ogs_strdup(smsf_map_address->valuestring) : NULL,
         smsf_diameter_address ? smsf_diameter_address_local_nonprim : NULL,
-        registration_time ? ogs_strdup_or_assert(registration_time->valuestring) : NULL,
+        registration_time ? ogs_strdup(registration_time->valuestring) : NULL,
         context_info ? context_info_local_nonprim : NULL
     );
 

@@ -8,10 +8,9 @@ OpenAPI_app_session_context_update_data_patch_t *OpenAPI_app_session_context_upd
     OpenAPI_app_session_context_update_data_t *asc_req_data
 )
 {
-    OpenAPI_app_session_context_update_data_patch_t *app_session_context_update_data_patch_local_var = OpenAPI_malloc(sizeof(OpenAPI_app_session_context_update_data_patch_t));
-    if (!app_session_context_update_data_patch_local_var) {
-        return NULL;
-    }
+    OpenAPI_app_session_context_update_data_patch_t *app_session_context_update_data_patch_local_var = ogs_malloc(sizeof(OpenAPI_app_session_context_update_data_patch_t));
+    ogs_assert(app_session_context_update_data_patch_local_var);
+
     app_session_context_update_data_patch_local_var->asc_req_data = asc_req_data;
 
     return app_session_context_update_data_patch_local_var;

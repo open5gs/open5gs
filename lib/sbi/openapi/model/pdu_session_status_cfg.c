@@ -8,10 +8,9 @@ OpenAPI_pdu_session_status_cfg_t *OpenAPI_pdu_session_status_cfg_create(
     char *dnn
 )
 {
-    OpenAPI_pdu_session_status_cfg_t *pdu_session_status_cfg_local_var = OpenAPI_malloc(sizeof(OpenAPI_pdu_session_status_cfg_t));
-    if (!pdu_session_status_cfg_local_var) {
-        return NULL;
-    }
+    OpenAPI_pdu_session_status_cfg_t *pdu_session_status_cfg_local_var = ogs_malloc(sizeof(OpenAPI_pdu_session_status_cfg_t));
+    ogs_assert(pdu_session_status_cfg_local_var);
+
     pdu_session_status_cfg_local_var->dnn = dnn;
 
     return pdu_session_status_cfg_local_var;
@@ -61,7 +60,7 @@ OpenAPI_pdu_session_status_cfg_t *OpenAPI_pdu_session_status_cfg_parseFromJSON(c
     }
 
     pdu_session_status_cfg_local_var = OpenAPI_pdu_session_status_cfg_create (
-        dnn ? ogs_strdup_or_assert(dnn->valuestring) : NULL
+        dnn ? ogs_strdup(dnn->valuestring) : NULL
     );
 
     return pdu_session_status_cfg_local_var;

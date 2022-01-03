@@ -11,10 +11,9 @@ OpenAPI_volume_timed_report_t *OpenAPI_volume_timed_report_create(
     long uplink_volume
 )
 {
-    OpenAPI_volume_timed_report_t *volume_timed_report_local_var = OpenAPI_malloc(sizeof(OpenAPI_volume_timed_report_t));
-    if (!volume_timed_report_local_var) {
-        return NULL;
-    }
+    OpenAPI_volume_timed_report_t *volume_timed_report_local_var = ogs_malloc(sizeof(OpenAPI_volume_timed_report_t));
+    ogs_assert(volume_timed_report_local_var);
+
     volume_timed_report_local_var->start_time_stamp = start_time_stamp;
     volume_timed_report_local_var->end_time_stamp = end_time_stamp;
     volume_timed_report_local_var->downlink_volume = downlink_volume;
@@ -116,8 +115,8 @@ OpenAPI_volume_timed_report_t *OpenAPI_volume_timed_report_parseFromJSON(cJSON *
     }
 
     volume_timed_report_local_var = OpenAPI_volume_timed_report_create (
-        ogs_strdup_or_assert(start_time_stamp->valuestring),
-        ogs_strdup_or_assert(end_time_stamp->valuestring),
+        ogs_strdup(start_time_stamp->valuestring),
+        ogs_strdup(end_time_stamp->valuestring),
         
         downlink_volume->valuedouble,
         

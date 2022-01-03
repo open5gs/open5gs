@@ -7,10 +7,9 @@
 OpenAPI_subscribed_event_t *OpenAPI_subscribed_event_create(
 )
 {
-    OpenAPI_subscribed_event_t *subscribed_event_local_var = OpenAPI_malloc(sizeof(OpenAPI_subscribed_event_t));
-    if (!subscribed_event_local_var) {
-        return NULL;
-    }
+    OpenAPI_subscribed_event_t *subscribed_event_local_var = ogs_malloc(sizeof(OpenAPI_subscribed_event_t));
+    ogs_assert(subscribed_event_local_var);
+
 
     return subscribed_event_local_var;
 }

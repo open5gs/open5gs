@@ -9,10 +9,9 @@ OpenAPI_smf_change_info_t *OpenAPI_smf_change_info_create(
     OpenAPI_smf_change_indication_e smf_change_ind
 )
 {
-    OpenAPI_smf_change_info_t *smf_change_info_local_var = OpenAPI_malloc(sizeof(OpenAPI_smf_change_info_t));
-    if (!smf_change_info_local_var) {
-        return NULL;
-    }
+    OpenAPI_smf_change_info_t *smf_change_info_local_var = ogs_malloc(sizeof(OpenAPI_smf_change_info_t));
+    ogs_assert(smf_change_info_local_var);
+
     smf_change_info_local_var->pdu_session_id_list = pdu_session_id_list;
     smf_change_info_local_var->smf_change_ind = smf_change_ind;
 

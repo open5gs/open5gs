@@ -315,14 +315,15 @@ static void sbi_message_test3(abts_case *tc, void *data)
     OpenAPI_map_free(served_pcf_info2);
     ogs_free(pcf_info1);
     ogs_free(pcf_info2);
-    OpenAPI_list_free(nrf_info1->served_pcf_info);
-    ogs_free(nrf_info1);
 
 	nrf_info2 = OpenAPI_nrf_info_parseFromJSON(item);
     ABTS_PTR_NOTNULL(tc, nrf_info2);
 
     ABTS_INT_EQUAL(tc, nrf_info1->served_pcf_info->count,
                         nrf_info2->served_pcf_info->count);
+
+    OpenAPI_list_free(nrf_info1->served_pcf_info);
+    ogs_free(nrf_info1);
 
     entry = nrf_info2->served_pcf_info->first;
     ABTS_PTR_NOTNULL(tc, entry);
@@ -498,6 +499,126 @@ static void sbi_message_test5(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, 6, len);
 }
 
+static void sbi_message_test6(abts_case *tc, void *data)
+{
+    cJSON *item = NULL, *item2 = NULL;
+    char *content = NULL;
+    OpenAPI_smf_selection_subscription_data_t SmfSelectionSubscriptionData;
+    OpenAPI_smf_selection_subscription_data_t *r1, *s1 = NULL;
+
+    ogs_s_nssai_t s_nssai;
+
+    OpenAPI_list_t *SubscribedSnssaiInfoList = NULL;
+    OpenAPI_map_t *SubscribedSnssaiInfoMap = NULL;
+    OpenAPI_snssai_info_t *SubscribedSnssaiInfo = NULL;
+
+    OpenAPI_list_t *DnnInfoList = NULL;
+    OpenAPI_dnn_info_t *DnnInfo = NULL;
+
+    OpenAPI_lnode_t *node = NULL, *node2 = NULL;
+
+    memset(&SmfSelectionSubscriptionData, 0,
+            sizeof(SmfSelectionSubscriptionData));
+
+    SubscribedSnssaiInfoList = OpenAPI_list_create();
+    ogs_assert(SubscribedSnssaiInfoList);
+
+    {
+        DnnInfoList = OpenAPI_list_create();
+        ogs_assert(DnnInfoList);
+
+        {
+            DnnInfo = ogs_calloc(1, sizeof(*DnnInfo));
+            ogs_assert(DnnInfo);
+
+            DnnInfo->dnn = "internet";
+
+            DnnInfo->is_default_dnn_indicator = true;
+            DnnInfo->default_dnn_indicator = true;
+
+            OpenAPI_list_add(DnnInfoList, DnnInfo);
+        }
+
+        SubscribedSnssaiInfo = ogs_calloc(1, sizeof(*SubscribedSnssaiInfo));
+        ogs_assert(SubscribedSnssaiInfo);
+
+        if (DnnInfoList->count)
+            SubscribedSnssaiInfo->dnn_infos = DnnInfoList;
+        else
+            OpenAPI_list_free(DnnInfoList);
+
+        memset(&s_nssai, 0, sizeof(s_nssai));
+        s_nssai.sst = 1;
+        s_nssai.sd.v = OGS_S_NSSAI_NO_SD_VALUE;
+
+        SubscribedSnssaiInfoMap = OpenAPI_map_create(
+                ogs_sbi_s_nssai_to_string(&s_nssai),
+                SubscribedSnssaiInfo);
+        ogs_assert(SubscribedSnssaiInfoMap);
+        ogs_assert(SubscribedSnssaiInfoMap->key);
+
+        OpenAPI_list_add(SubscribedSnssaiInfoList, SubscribedSnssaiInfoMap);
+    }
+
+    if (SubscribedSnssaiInfoList->count)
+        SmfSelectionSubscriptionData.subscribed_snssai_infos =
+            SubscribedSnssaiInfoList;
+    else
+        OpenAPI_list_free(SubscribedSnssaiInfoList);
+
+    item = OpenAPI_smf_selection_subscription_data_convertToJSON(
+                &SmfSelectionSubscriptionData);
+
+    SubscribedSnssaiInfoList =
+        SmfSelectionSubscriptionData.subscribed_snssai_infos;
+    OpenAPI_list_for_each(SubscribedSnssaiInfoList, node) {
+        SubscribedSnssaiInfoMap = node->data;
+        if (SubscribedSnssaiInfoMap) {
+            SubscribedSnssaiInfo = SubscribedSnssaiInfoMap->value;
+            if (SubscribedSnssaiInfo) {
+                DnnInfoList = SubscribedSnssaiInfo->dnn_infos;
+                if (DnnInfoList) {
+                    OpenAPI_list_for_each(DnnInfoList, node2) {
+                        DnnInfo = node2->data;
+                        if (DnnInfo) {
+                            ogs_free(DnnInfo);
+                        }
+                    }
+                    OpenAPI_list_free(DnnInfoList);
+                }
+                ogs_free(SubscribedSnssaiInfo);
+            }
+            if (SubscribedSnssaiInfoMap->key)
+                ogs_free(SubscribedSnssaiInfoMap->key);
+            ogs_free(SubscribedSnssaiInfoMap);
+        }
+    }
+    OpenAPI_list_free(SubscribedSnssaiInfoList);
+
+    r1 = OpenAPI_smf_selection_subscription_data_parseFromJSON(item);
+    cJSON_Delete(item);
+
+    item = OpenAPI_smf_selection_subscription_data_convertToJSON(r1);
+    OpenAPI_smf_selection_subscription_data_free(r1);
+
+    SubscribedSnssaiInfoList = r1->subscribed_snssai_infos;
+    OpenAPI_list_for_each(SubscribedSnssaiInfoList, node) {
+        SubscribedSnssaiInfoMap = node->data;
+        if (SubscribedSnssaiInfoMap) {
+            memset(&s_nssai, 0, sizeof(s_nssai));
+            ogs_sbi_s_nssai_from_string(&s_nssai, SubscribedSnssaiInfoMap->key);
+            ABTS_INT_EQUAL(tc, 1, s_nssai.sst);
+            ABTS_INT_EQUAL(tc, OGS_S_NSSAI_NO_SD_VALUE, s_nssai.sd.v);
+        }
+    }
+
+    content = cJSON_Print(item);
+    cJSON_Delete(item);
+    ogs_assert(content);
+    ABTS_INT_EQUAL(tc, 148, (int)strlen(content));
+    ogs_free(content);
+}
+
 abts_suite *test_sbi_message(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
@@ -507,6 +628,7 @@ abts_suite *test_sbi_message(abts_suite *suite)
     abts_run_test(suite, sbi_message_test3, NULL);
     abts_run_test(suite, sbi_message_test4, NULL);
     abts_run_test(suite, sbi_message_test5, NULL);
+    abts_run_test(suite, sbi_message_test6, NULL);
 
     return suite;
 }

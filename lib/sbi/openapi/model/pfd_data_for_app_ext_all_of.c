@@ -8,10 +8,9 @@ OpenAPI_pfd_data_for_app_ext_all_of_t *OpenAPI_pfd_data_for_app_ext_all_of_creat
     char *supp_feat
 )
 {
-    OpenAPI_pfd_data_for_app_ext_all_of_t *pfd_data_for_app_ext_all_of_local_var = OpenAPI_malloc(sizeof(OpenAPI_pfd_data_for_app_ext_all_of_t));
-    if (!pfd_data_for_app_ext_all_of_local_var) {
-        return NULL;
-    }
+    OpenAPI_pfd_data_for_app_ext_all_of_t *pfd_data_for_app_ext_all_of_local_var = ogs_malloc(sizeof(OpenAPI_pfd_data_for_app_ext_all_of_t));
+    ogs_assert(pfd_data_for_app_ext_all_of_local_var);
+
     pfd_data_for_app_ext_all_of_local_var->supp_feat = supp_feat;
 
     return pfd_data_for_app_ext_all_of_local_var;
@@ -61,7 +60,7 @@ OpenAPI_pfd_data_for_app_ext_all_of_t *OpenAPI_pfd_data_for_app_ext_all_of_parse
     }
 
     pfd_data_for_app_ext_all_of_local_var = OpenAPI_pfd_data_for_app_ext_all_of_create (
-        supp_feat ? ogs_strdup_or_assert(supp_feat->valuestring) : NULL
+        supp_feat ? ogs_strdup(supp_feat->valuestring) : NULL
     );
 
     return pfd_data_for_app_ext_all_of_local_var;

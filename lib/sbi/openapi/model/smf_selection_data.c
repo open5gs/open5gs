@@ -13,10 +13,9 @@ OpenAPI_smf_selection_data_t *OpenAPI_smf_selection_data_create(
     char *dnn
 )
 {
-    OpenAPI_smf_selection_data_t *smf_selection_data_local_var = OpenAPI_malloc(sizeof(OpenAPI_smf_selection_data_t));
-    if (!smf_selection_data_local_var) {
-        return NULL;
-    }
+    OpenAPI_smf_selection_data_t *smf_selection_data_local_var = ogs_malloc(sizeof(OpenAPI_smf_selection_data_t));
+    ogs_assert(smf_selection_data_local_var);
+
     smf_selection_data_local_var->is_unsupp_dnn = is_unsupp_dnn;
     smf_selection_data_local_var->unsupp_dnn = unsupp_dnn;
     smf_selection_data_local_var->candidates = candidates;
@@ -35,6 +34,7 @@ void OpenAPI_smf_selection_data_free(OpenAPI_smf_selection_data_t *smf_selection
     OpenAPI_lnode_t *node;
     OpenAPI_list_for_each(smf_selection_data->candidates, node) {
         OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+        ogs_free(localKeyValue->key);
         OpenAPI_candidate_for_replacement_free(localKeyValue->value);
         ogs_free(localKeyValue);
     }
@@ -149,9 +149,9 @@ OpenAPI_smf_selection_data_t *OpenAPI_smf_selection_data_parseFromJSON(cJSON *sm
         cJSON *localMapObject = candidates_local_map;
         if (cJSON_IsObject(candidates_local_map)) {
             localMapKeyPair = OpenAPI_map_create(
-                localMapObject->string, OpenAPI_candidate_for_replacement_parseFromJSON(localMapObject));
+                ogs_strdup(localMapObject->string), OpenAPI_candidate_for_replacement_parseFromJSON(localMapObject));
         } else if (cJSON_IsNull(candidates_local_map)) {
-            localMapKeyPair = OpenAPI_map_create(localMapObject->string, NULL);
+            localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
         } else {
             ogs_error("OpenAPI_smf_selection_data_parseFromJSON() failed [candidates]");
             goto end;
@@ -189,7 +189,7 @@ OpenAPI_smf_selection_data_t *OpenAPI_smf_selection_data_parseFromJSON(cJSON *sm
         candidates ? candidatesList : NULL,
         snssai ? snssai_local_nonprim : NULL,
         mapping_snssai ? mapping_snssai_local_nonprim : NULL,
-        dnn ? ogs_strdup_or_assert(dnn->valuestring) : NULL
+        dnn ? ogs_strdup(dnn->valuestring) : NULL
     );
 
     return smf_selection_data_local_var;

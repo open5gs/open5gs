@@ -29,10 +29,9 @@ OpenAPI_traffic_influ_data_patch_t *OpenAPI_traffic_influ_data_patch_create(
     int addr_preser_ind
 )
 {
-    OpenAPI_traffic_influ_data_patch_t *traffic_influ_data_patch_local_var = OpenAPI_malloc(sizeof(OpenAPI_traffic_influ_data_patch_t));
-    if (!traffic_influ_data_patch_local_var) {
-        return NULL;
-    }
+    OpenAPI_traffic_influ_data_patch_t *traffic_influ_data_patch_local_var = ogs_malloc(sizeof(OpenAPI_traffic_influ_data_patch_t));
+    ogs_assert(traffic_influ_data_patch_local_var);
+
     traffic_influ_data_patch_local_var->up_path_chg_notif_corre_id = up_path_chg_notif_corre_id;
     traffic_influ_data_patch_local_var->is_app_relo_ind = is_app_relo_ind;
     traffic_influ_data_patch_local_var->app_relo_ind = app_relo_ind;
@@ -516,7 +515,7 @@ OpenAPI_traffic_influ_data_patch_t *OpenAPI_traffic_influ_data_patch_parseFromJS
         ogs_error("OpenAPI_traffic_influ_data_patch_parseFromJSON() failed [headers]");
         goto end;
     }
-    OpenAPI_list_add(headersList , ogs_strdup_or_assert(headers_local->valuestring));
+    OpenAPI_list_add(headersList , ogs_strdup(headers_local->valuestring));
     }
     }
 
@@ -539,23 +538,23 @@ OpenAPI_traffic_influ_data_patch_t *OpenAPI_traffic_influ_data_patch_parseFromJS
     }
 
     traffic_influ_data_patch_local_var = OpenAPI_traffic_influ_data_patch_create (
-        up_path_chg_notif_corre_id ? ogs_strdup_or_assert(up_path_chg_notif_corre_id->valuestring) : NULL,
+        up_path_chg_notif_corre_id ? ogs_strdup(up_path_chg_notif_corre_id->valuestring) : NULL,
         app_relo_ind ? true : false,
         app_relo_ind ? app_relo_ind->valueint : 0,
-        dnn ? ogs_strdup_or_assert(dnn->valuestring) : NULL,
+        dnn ? ogs_strdup(dnn->valuestring) : NULL,
         eth_traffic_filters ? eth_traffic_filtersList : NULL,
         snssai ? snssai_local_nonprim : NULL,
-        internal_group_id ? ogs_strdup_or_assert(internal_group_id->valuestring) : NULL,
-        supi ? ogs_strdup_or_assert(supi->valuestring) : NULL,
+        internal_group_id ? ogs_strdup(internal_group_id->valuestring) : NULL,
+        supi ? ogs_strdup(supi->valuestring) : NULL,
         traffic_filters ? traffic_filtersList : NULL,
         traffic_routes ? traffic_routesList : NULL,
         traff_corre_ind ? true : false,
         traff_corre_ind ? traff_corre_ind->valueint : 0,
-        valid_start_time ? ogs_strdup_or_assert(valid_start_time->valuestring) : NULL,
-        valid_end_time ? ogs_strdup_or_assert(valid_end_time->valuestring) : NULL,
+        valid_start_time ? ogs_strdup(valid_start_time->valuestring) : NULL,
+        valid_end_time ? ogs_strdup(valid_end_time->valuestring) : NULL,
         temp_validities ? temp_validitiesList : NULL,
         nw_area_info ? nw_area_info_local_nonprim : NULL,
-        up_path_chg_notif_uri ? ogs_strdup_or_assert(up_path_chg_notif_uri->valuestring) : NULL,
+        up_path_chg_notif_uri ? ogs_strdup(up_path_chg_notif_uri->valuestring) : NULL,
         headers ? headersList : NULL,
         af_ack_ind ? true : false,
         af_ack_ind ? af_ack_ind->valueint : 0,

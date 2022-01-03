@@ -9,10 +9,9 @@ OpenAPI_termination_notification_t *OpenAPI_termination_notification_create(
     OpenAPI_sm_policy_association_release_cause_e cause
 )
 {
-    OpenAPI_termination_notification_t *termination_notification_local_var = OpenAPI_malloc(sizeof(OpenAPI_termination_notification_t));
-    if (!termination_notification_local_var) {
-        return NULL;
-    }
+    OpenAPI_termination_notification_t *termination_notification_local_var = ogs_malloc(sizeof(OpenAPI_termination_notification_t));
+    ogs_assert(termination_notification_local_var);
+
     termination_notification_local_var->resource_uri = resource_uri;
     termination_notification_local_var->cause = cause;
 
@@ -81,7 +80,7 @@ OpenAPI_termination_notification_t *OpenAPI_termination_notification_parseFromJS
     causeVariable = OpenAPI_sm_policy_association_release_cause_FromString(cause->valuestring);
 
     termination_notification_local_var = OpenAPI_termination_notification_create (
-        ogs_strdup_or_assert(resource_uri->valuestring),
+        ogs_strdup(resource_uri->valuestring),
         causeVariable
     );
 

@@ -8,10 +8,9 @@ OpenAPI_nf_type_cond_t *OpenAPI_nf_type_cond_create(
     OpenAPI_nf_type_e nf_type
 )
 {
-    OpenAPI_nf_type_cond_t *nf_type_cond_local_var = OpenAPI_malloc(sizeof(OpenAPI_nf_type_cond_t));
-    if (!nf_type_cond_local_var) {
-        return NULL;
-    }
+    OpenAPI_nf_type_cond_t *nf_type_cond_local_var = ogs_malloc(sizeof(OpenAPI_nf_type_cond_t));
+    ogs_assert(nf_type_cond_local_var);
+
     nf_type_cond_local_var->nf_type = nf_type;
 
     return nf_type_cond_local_var;

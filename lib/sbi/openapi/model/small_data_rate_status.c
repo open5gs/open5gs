@@ -16,10 +16,9 @@ OpenAPI_small_data_rate_status_t *OpenAPI_small_data_rate_status_create(
     int remain_ex_reports_dl
 )
 {
-    OpenAPI_small_data_rate_status_t *small_data_rate_status_local_var = OpenAPI_malloc(sizeof(OpenAPI_small_data_rate_status_t));
-    if (!small_data_rate_status_local_var) {
-        return NULL;
-    }
+    OpenAPI_small_data_rate_status_t *small_data_rate_status_local_var = ogs_malloc(sizeof(OpenAPI_small_data_rate_status_t));
+    ogs_assert(small_data_rate_status_local_var);
+
     small_data_rate_status_local_var->is_remain_packets_ul = is_remain_packets_ul;
     small_data_rate_status_local_var->remain_packets_ul = remain_packets_ul;
     small_data_rate_status_local_var->is_remain_packets_dl = is_remain_packets_dl;
@@ -145,7 +144,7 @@ OpenAPI_small_data_rate_status_t *OpenAPI_small_data_rate_status_parseFromJSON(c
         remain_packets_ul ? remain_packets_ul->valuedouble : 0,
         remain_packets_dl ? true : false,
         remain_packets_dl ? remain_packets_dl->valuedouble : 0,
-        validity_time ? ogs_strdup_or_assert(validity_time->valuestring) : NULL,
+        validity_time ? ogs_strdup(validity_time->valuestring) : NULL,
         remain_ex_reports_ul ? true : false,
         remain_ex_reports_ul ? remain_ex_reports_ul->valuedouble : 0,
         remain_ex_reports_dl ? true : false,

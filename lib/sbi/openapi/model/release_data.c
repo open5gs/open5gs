@@ -19,10 +19,9 @@ OpenAPI_release_data_t *OpenAPI_release_data_create(
     OpenAPI_n4_information_t *n4_info_ext2
 )
 {
-    OpenAPI_release_data_t *release_data_local_var = OpenAPI_malloc(sizeof(OpenAPI_release_data_t));
-    if (!release_data_local_var) {
-        return NULL;
-    }
+    OpenAPI_release_data_t *release_data_local_var = ogs_malloc(sizeof(OpenAPI_release_data_t));
+    ogs_assert(release_data_local_var);
+
     release_data_local_var->cause = cause;
     release_data_local_var->ng_ap_cause = ng_ap_cause;
     release_data_local_var->is__5g_mm_cause_value = is__5g_mm_cause_value;
@@ -342,7 +341,7 @@ OpenAPI_release_data_t *OpenAPI_release_data_parseFromJSON(cJSON *release_dataJS
         _5g_mm_cause_value ? true : false,
         _5g_mm_cause_value ? _5g_mm_cause_value->valuedouble : 0,
         ue_location ? ue_location_local_nonprim : NULL,
-        ue_time_zone ? ogs_strdup_or_assert(ue_time_zone->valuestring) : NULL,
+        ue_time_zone ? ogs_strdup(ue_time_zone->valuestring) : NULL,
         add_ue_location ? add_ue_location_local_nonprim : NULL,
         secondary_rat_usage_report ? secondary_rat_usage_reportList : NULL,
         secondary_rat_usage_info ? secondary_rat_usage_infoList : NULL,

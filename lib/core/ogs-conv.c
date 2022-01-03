@@ -187,7 +187,7 @@ char *ogs_uint64_to_0string(uint64_t x)
 
 char *ogs_uint64_to_string(uint64_t x)
 {
-    char *str, *p;
+    char *str, *p, *dup;
 
     str = ogs_uint64_to_0string(x);
     ogs_expect_or_return_val(str, NULL);
@@ -195,8 +195,10 @@ char *ogs_uint64_to_string(uint64_t x)
     p = ogs_left_trimcharacter(str, '0');
     ogs_expect_or_return_val(p, NULL);
 
+    dup = ogs_strdup(p);
     ogs_free(str);
-    return ogs_strdup(p);
+
+    return dup;
 }
 
 ogs_uint24_t ogs_uint24_from_string(char *str)

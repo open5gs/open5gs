@@ -19,10 +19,9 @@ OpenAPI_authorized_network_slice_info_t *OpenAPI_authorized_network_slice_info_c
     char *target_amf_service_set
 )
 {
-    OpenAPI_authorized_network_slice_info_t *authorized_network_slice_info_local_var = OpenAPI_malloc(sizeof(OpenAPI_authorized_network_slice_info_t));
-    if (!authorized_network_slice_info_local_var) {
-        return NULL;
-    }
+    OpenAPI_authorized_network_slice_info_t *authorized_network_slice_info_local_var = ogs_malloc(sizeof(OpenAPI_authorized_network_slice_info_t));
+    ogs_assert(authorized_network_slice_info_local_var);
+
     authorized_network_slice_info_local_var->allowed_nssai_list = allowed_nssai_list;
     authorized_network_slice_info_local_var->configured_nssai = configured_nssai;
     authorized_network_slice_info_local_var->target_amf_set = target_amf_set;
@@ -314,7 +313,7 @@ OpenAPI_authorized_network_slice_info_t *OpenAPI_authorized_network_slice_info_p
         ogs_error("OpenAPI_authorized_network_slice_info_parseFromJSON() failed [candidate_amf_list]");
         goto end;
     }
-    OpenAPI_list_add(candidate_amf_listList , ogs_strdup_or_assert(candidate_amf_list_local->valuestring));
+    OpenAPI_list_add(candidate_amf_listList , ogs_strdup(candidate_amf_list_local->valuestring));
     }
     }
 
@@ -419,16 +418,16 @@ OpenAPI_authorized_network_slice_info_t *OpenAPI_authorized_network_slice_info_p
     authorized_network_slice_info_local_var = OpenAPI_authorized_network_slice_info_create (
         allowed_nssai_list ? allowed_nssai_listList : NULL,
         configured_nssai ? configured_nssaiList : NULL,
-        target_amf_set ? ogs_strdup_or_assert(target_amf_set->valuestring) : NULL,
+        target_amf_set ? ogs_strdup(target_amf_set->valuestring) : NULL,
         candidate_amf_list ? candidate_amf_listList : NULL,
         rejected_nssai_in_plmn ? rejected_nssai_in_plmnList : NULL,
         rejected_nssai_in_ta ? rejected_nssai_in_taList : NULL,
         nsi_information ? nsi_information_local_nonprim : NULL,
-        supported_features ? ogs_strdup_or_assert(supported_features->valuestring) : NULL,
-        nrf_amf_set ? ogs_strdup_or_assert(nrf_amf_set->valuestring) : NULL,
-        nrf_amf_set_nf_mgt_uri ? ogs_strdup_or_assert(nrf_amf_set_nf_mgt_uri->valuestring) : NULL,
-        nrf_amf_set_access_token_uri ? ogs_strdup_or_assert(nrf_amf_set_access_token_uri->valuestring) : NULL,
-        target_amf_service_set ? ogs_strdup_or_assert(target_amf_service_set->valuestring) : NULL
+        supported_features ? ogs_strdup(supported_features->valuestring) : NULL,
+        nrf_amf_set ? ogs_strdup(nrf_amf_set->valuestring) : NULL,
+        nrf_amf_set_nf_mgt_uri ? ogs_strdup(nrf_amf_set_nf_mgt_uri->valuestring) : NULL,
+        nrf_amf_set_access_token_uri ? ogs_strdup(nrf_amf_set_access_token_uri->valuestring) : NULL,
+        target_amf_service_set ? ogs_strdup(target_amf_service_set->valuestring) : NULL
     );
 
     return authorized_network_slice_info_local_var;

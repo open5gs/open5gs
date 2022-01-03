@@ -10,10 +10,9 @@ OpenAPI_acs_info_rm_t *OpenAPI_acs_info_rm_create(
     char *acs_ipv6_addr
 )
 {
-    OpenAPI_acs_info_rm_t *acs_info_rm_local_var = OpenAPI_malloc(sizeof(OpenAPI_acs_info_rm_t));
-    if (!acs_info_rm_local_var) {
-        return NULL;
-    }
+    OpenAPI_acs_info_rm_t *acs_info_rm_local_var = ogs_malloc(sizeof(OpenAPI_acs_info_rm_t));
+    ogs_assert(acs_info_rm_local_var);
+
     acs_info_rm_local_var->acs_url = acs_url;
     acs_info_rm_local_var->acs_ipv4_addr = acs_ipv4_addr;
     acs_info_rm_local_var->acs_ipv6_addr = acs_ipv6_addr;
@@ -99,9 +98,9 @@ OpenAPI_acs_info_rm_t *OpenAPI_acs_info_rm_parseFromJSON(cJSON *acs_info_rmJSON)
     }
 
     acs_info_rm_local_var = OpenAPI_acs_info_rm_create (
-        acs_url ? ogs_strdup_or_assert(acs_url->valuestring) : NULL,
-        acs_ipv4_addr ? ogs_strdup_or_assert(acs_ipv4_addr->valuestring) : NULL,
-        acs_ipv6_addr ? ogs_strdup_or_assert(acs_ipv6_addr->valuestring) : NULL
+        acs_url ? ogs_strdup(acs_url->valuestring) : NULL,
+        acs_ipv4_addr ? ogs_strdup(acs_ipv4_addr->valuestring) : NULL,
+        acs_ipv6_addr ? ogs_strdup(acs_ipv6_addr->valuestring) : NULL
     );
 
     return acs_info_rm_local_var;

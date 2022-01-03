@@ -10,10 +10,9 @@ OpenAPI_requested_usage_data_t *OpenAPI_requested_usage_data_create(
     int all_um_ids
 )
 {
-    OpenAPI_requested_usage_data_t *requested_usage_data_local_var = OpenAPI_malloc(sizeof(OpenAPI_requested_usage_data_t));
-    if (!requested_usage_data_local_var) {
-        return NULL;
-    }
+    OpenAPI_requested_usage_data_t *requested_usage_data_local_var = ogs_malloc(sizeof(OpenAPI_requested_usage_data_t));
+    ogs_assert(requested_usage_data_local_var);
+
     requested_usage_data_local_var->ref_um_ids = ref_um_ids;
     requested_usage_data_local_var->is_all_um_ids = is_all_um_ids;
     requested_usage_data_local_var->all_um_ids = all_um_ids;
@@ -90,7 +89,7 @@ OpenAPI_requested_usage_data_t *OpenAPI_requested_usage_data_parseFromJSON(cJSON
         ogs_error("OpenAPI_requested_usage_data_parseFromJSON() failed [ref_um_ids]");
         goto end;
     }
-    OpenAPI_list_add(ref_um_idsList , ogs_strdup_or_assert(ref_um_ids_local->valuestring));
+    OpenAPI_list_add(ref_um_idsList , ogs_strdup(ref_um_ids_local->valuestring));
     }
     }
 

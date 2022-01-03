@@ -8,10 +8,9 @@ OpenAPI_tac_info_t *OpenAPI_tac_info_create(
     OpenAPI_list_t *tac_list
 )
 {
-    OpenAPI_tac_info_t *tac_info_local_var = OpenAPI_malloc(sizeof(OpenAPI_tac_info_t));
-    if (!tac_info_local_var) {
-        return NULL;
-    }
+    OpenAPI_tac_info_t *tac_info_local_var = ogs_malloc(sizeof(OpenAPI_tac_info_t));
+    ogs_assert(tac_info_local_var);
+
     tac_info_local_var->tac_list = tac_list;
 
     return tac_info_local_var;
@@ -80,7 +79,7 @@ OpenAPI_tac_info_t *OpenAPI_tac_info_parseFromJSON(cJSON *tac_infoJSON)
         ogs_error("OpenAPI_tac_info_parseFromJSON() failed [tac_list]");
         goto end;
     }
-    OpenAPI_list_add(tac_listList , ogs_strdup_or_assert(tac_list_local->valuestring));
+    OpenAPI_list_add(tac_listList , ogs_strdup(tac_list_local->valuestring));
     }
 
     tac_info_local_var = OpenAPI_tac_info_create (

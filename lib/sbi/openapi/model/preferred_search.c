@@ -19,10 +19,9 @@ OpenAPI_preferred_search_t *OpenAPI_preferred_search_create(
     int other_locality_ind
 )
 {
-    OpenAPI_preferred_search_t *preferred_search_local_var = OpenAPI_malloc(sizeof(OpenAPI_preferred_search_t));
-    if (!preferred_search_local_var) {
-        return NULL;
-    }
+    OpenAPI_preferred_search_t *preferred_search_local_var = ogs_malloc(sizeof(OpenAPI_preferred_search_t));
+    ogs_assert(preferred_search_local_var);
+
     preferred_search_local_var->is_preferred_tai_match_ind = is_preferred_tai_match_ind;
     preferred_search_local_var->preferred_tai_match_ind = preferred_tai_match_ind;
     preferred_search_local_var->is_preferred_full_plmn_match_ind = is_preferred_full_plmn_match_ind;

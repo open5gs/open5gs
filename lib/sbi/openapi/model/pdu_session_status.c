@@ -7,10 +7,9 @@
 OpenAPI_pdu_session_status_t *OpenAPI_pdu_session_status_create(
 )
 {
-    OpenAPI_pdu_session_status_t *pdu_session_status_local_var = OpenAPI_malloc(sizeof(OpenAPI_pdu_session_status_t));
-    if (!pdu_session_status_local_var) {
-        return NULL;
-    }
+    OpenAPI_pdu_session_status_t *pdu_session_status_local_var = ogs_malloc(sizeof(OpenAPI_pdu_session_status_t));
+    ogs_assert(pdu_session_status_local_var);
+
 
     return pdu_session_status_local_var;
 }

@@ -28,10 +28,9 @@ OpenAPI_access_and_mobility_data_t *OpenAPI_access_and_mobility_data_create(
     char *supp_feat
 )
 {
-    OpenAPI_access_and_mobility_data_t *access_and_mobility_data_local_var = OpenAPI_malloc(sizeof(OpenAPI_access_and_mobility_data_t));
-    if (!access_and_mobility_data_local_var) {
-        return NULL;
-    }
+    OpenAPI_access_and_mobility_data_t *access_and_mobility_data_local_var = ogs_malloc(sizeof(OpenAPI_access_and_mobility_data_t));
+    ogs_assert(access_and_mobility_data_local_var);
+
     access_and_mobility_data_local_var->location = location;
     access_and_mobility_data_local_var->location_ts = location_ts;
     access_and_mobility_data_local_var->time_zone = time_zone;
@@ -519,26 +518,26 @@ OpenAPI_access_and_mobility_data_t *OpenAPI_access_and_mobility_data_parseFromJS
 
     access_and_mobility_data_local_var = OpenAPI_access_and_mobility_data_create (
         location ? location_local_nonprim : NULL,
-        location_ts ? ogs_strdup_or_assert(location_ts->valuestring) : NULL,
-        time_zone ? ogs_strdup_or_assert(time_zone->valuestring) : NULL,
-        time_zone_ts ? ogs_strdup_or_assert(time_zone_ts->valuestring) : NULL,
+        location_ts ? ogs_strdup(location_ts->valuestring) : NULL,
+        time_zone ? ogs_strdup(time_zone->valuestring) : NULL,
+        time_zone_ts ? ogs_strdup(time_zone_ts->valuestring) : NULL,
         access_type ? access_typeVariable : 0,
         reg_states ? reg_statesList : NULL,
-        reg_states_ts ? ogs_strdup_or_assert(reg_states_ts->valuestring) : NULL,
+        reg_states_ts ? ogs_strdup(reg_states_ts->valuestring) : NULL,
         conn_states ? conn_statesList : NULL,
-        conn_states_ts ? ogs_strdup_or_assert(conn_states_ts->valuestring) : NULL,
+        conn_states_ts ? ogs_strdup(conn_states_ts->valuestring) : NULL,
         reachability_status ? reachability_status_local_nonprim : NULL,
-        reachability_status_ts ? ogs_strdup_or_assert(reachability_status_ts->valuestring) : NULL,
+        reachability_status_ts ? ogs_strdup(reachability_status_ts->valuestring) : NULL,
         sms_over_nas_status ? sms_over_nas_statusVariable : 0,
-        sms_over_nas_status_ts ? ogs_strdup_or_assert(sms_over_nas_status_ts->valuestring) : NULL,
+        sms_over_nas_status_ts ? ogs_strdup(sms_over_nas_status_ts->valuestring) : NULL,
         roaming_status ? true : false,
         roaming_status ? roaming_status->valueint : 0,
-        roaming_status_ts ? ogs_strdup_or_assert(roaming_status_ts->valuestring) : NULL,
+        roaming_status_ts ? ogs_strdup(roaming_status_ts->valuestring) : NULL,
         current_plmn ? current_plmn_local_nonprim : NULL,
-        current_plmn_ts ? ogs_strdup_or_assert(current_plmn_ts->valuestring) : NULL,
+        current_plmn_ts ? ogs_strdup(current_plmn_ts->valuestring) : NULL,
         rat_type ? rat_typeList : NULL,
-        rat_types_ts ? ogs_strdup_or_assert(rat_types_ts->valuestring) : NULL,
-        supp_feat ? ogs_strdup_or_assert(supp_feat->valuestring) : NULL
+        rat_types_ts ? ogs_strdup(rat_types_ts->valuestring) : NULL,
+        supp_feat ? ogs_strdup(supp_feat->valuestring) : NULL
     );
 
     return access_and_mobility_data_local_var;

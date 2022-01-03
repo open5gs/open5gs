@@ -10,10 +10,9 @@ OpenAPI_eps_bearer_info_t *OpenAPI_eps_bearer_info_create(
     char bearer_level_qo_s
 )
 {
-    OpenAPI_eps_bearer_info_t *eps_bearer_info_local_var = OpenAPI_malloc(sizeof(OpenAPI_eps_bearer_info_t));
-    if (!eps_bearer_info_local_var) {
-        return NULL;
-    }
+    OpenAPI_eps_bearer_info_t *eps_bearer_info_local_var = ogs_malloc(sizeof(OpenAPI_eps_bearer_info_t));
+    ogs_assert(eps_bearer_info_local_var);
+
     eps_bearer_info_local_var->ebi = ebi;
     eps_bearer_info_local_var->pgw_s8u_fteid = pgw_s8u_fteid;
     eps_bearer_info_local_var->bearer_level_qo_s = bearer_level_qo_s;

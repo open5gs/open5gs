@@ -37,10 +37,9 @@ OpenAPI_nef_cond_t *OpenAPI_nef_cond_create(
     OpenAPI_list_t *served_fqdn_list
 )
 {
-    OpenAPI_nef_cond_t *nef_cond_local_var = OpenAPI_malloc(sizeof(OpenAPI_nef_cond_t));
-    if (!nef_cond_local_var) {
-        return NULL;
-    }
+    OpenAPI_nef_cond_t *nef_cond_local_var = ogs_malloc(sizeof(OpenAPI_nef_cond_t));
+    ogs_assert(nef_cond_local_var);
+
     nef_cond_local_var->condition_type = condition_type;
     nef_cond_local_var->af_events = af_events;
     nef_cond_local_var->snssai_list = snssai_list;
@@ -332,7 +331,7 @@ OpenAPI_nef_cond_t *OpenAPI_nef_cond_parseFromJSON(cJSON *nef_condJSON)
         ogs_error("OpenAPI_nef_cond_parseFromJSON() failed [served_fqdn_list]");
         goto end;
     }
-    OpenAPI_list_add(served_fqdn_listList , ogs_strdup_or_assert(served_fqdn_list_local->valuestring));
+    OpenAPI_list_add(served_fqdn_listList , ogs_strdup(served_fqdn_list_local->valuestring));
     }
     }
 

@@ -55,10 +55,9 @@ OpenAPI_sm_policy_context_data_t *OpenAPI_sm_policy_context_data_create(
     OpenAPI_list_t *ipv6_frame_route_list
 )
 {
-    OpenAPI_sm_policy_context_data_t *sm_policy_context_data_local_var = OpenAPI_malloc(sizeof(OpenAPI_sm_policy_context_data_t));
-    if (!sm_policy_context_data_local_var) {
-        return NULL;
-    }
+    OpenAPI_sm_policy_context_data_t *sm_policy_context_data_local_var = ogs_malloc(sizeof(OpenAPI_sm_policy_context_data_t));
+    ogs_assert(sm_policy_context_data_local_var);
+
     sm_policy_context_data_local_var->acc_net_ch_id = acc_net_ch_id;
     sm_policy_context_data_local_var->charg_entity_addr = charg_entity_addr;
     sm_policy_context_data_local_var->gpsi = gpsi;
@@ -615,7 +614,7 @@ OpenAPI_sm_policy_context_data_t *OpenAPI_sm_policy_context_data_parseFromJSON(c
         ogs_error("OpenAPI_sm_policy_context_data_parseFromJSON() failed [inter_grp_ids]");
         goto end;
     }
-    OpenAPI_list_add(inter_grp_idsList , ogs_strdup_or_assert(inter_grp_ids_local->valuestring));
+    OpenAPI_list_add(inter_grp_idsList , ogs_strdup(inter_grp_ids_local->valuestring));
     }
     }
 
@@ -943,7 +942,7 @@ OpenAPI_sm_policy_context_data_t *OpenAPI_sm_policy_context_data_parseFromJSON(c
         ogs_error("OpenAPI_sm_policy_context_data_parseFromJSON() failed [ipv4_frame_route_list]");
         goto end;
     }
-    OpenAPI_list_add(ipv4_frame_route_listList , ogs_strdup_or_assert(ipv4_frame_route_list_local->valuestring));
+    OpenAPI_list_add(ipv4_frame_route_listList , ogs_strdup(ipv4_frame_route_list_local->valuestring));
     }
     }
 
@@ -963,37 +962,37 @@ OpenAPI_sm_policy_context_data_t *OpenAPI_sm_policy_context_data_parseFromJSON(c
         ogs_error("OpenAPI_sm_policy_context_data_parseFromJSON() failed [ipv6_frame_route_list]");
         goto end;
     }
-    OpenAPI_list_add(ipv6_frame_route_listList , ogs_strdup_or_assert(ipv6_frame_route_list_local->valuestring));
+    OpenAPI_list_add(ipv6_frame_route_listList , ogs_strdup(ipv6_frame_route_list_local->valuestring));
     }
     }
 
     sm_policy_context_data_local_var = OpenAPI_sm_policy_context_data_create (
         acc_net_ch_id ? acc_net_ch_id_local_nonprim : NULL,
         charg_entity_addr ? charg_entity_addr_local_nonprim : NULL,
-        gpsi ? ogs_strdup_or_assert(gpsi->valuestring) : NULL,
-        ogs_strdup_or_assert(supi->valuestring),
+        gpsi ? ogs_strdup(gpsi->valuestring) : NULL,
+        ogs_strdup(supi->valuestring),
         invalid_supi ? true : false,
         invalid_supi ? invalid_supi->valueint : 0,
         inter_grp_ids ? inter_grp_idsList : NULL,
         
         pdu_session_id->valuedouble,
         pdu_session_typeVariable,
-        chargingcharacteristics ? ogs_strdup_or_assert(chargingcharacteristics->valuestring) : NULL,
-        ogs_strdup_or_assert(dnn->valuestring),
+        chargingcharacteristics ? ogs_strdup(chargingcharacteristics->valuestring) : NULL,
+        ogs_strdup(dnn->valuestring),
         dnn_sel_mode ? dnn_sel_modeVariable : 0,
-        ogs_strdup_or_assert(notification_uri->valuestring),
+        ogs_strdup(notification_uri->valuestring),
         access_type ? access_typeVariable : 0,
         rat_type ? rat_typeVariable : 0,
         add_access_info ? add_access_info_local_nonprim : NULL,
         serving_network ? serving_network_local_nonprim : NULL,
         user_location_info ? user_location_info_local_nonprim : NULL,
-        ue_time_zone ? ogs_strdup_or_assert(ue_time_zone->valuestring) : NULL,
-        pei ? ogs_strdup_or_assert(pei->valuestring) : NULL,
-        ipv4_address ? ogs_strdup_or_assert(ipv4_address->valuestring) : NULL,
-        ipv6_address_prefix ? ogs_strdup_or_assert(ipv6_address_prefix->valuestring) : NULL,
-        ip_domain ? ogs_strdup_or_assert(ip_domain->valuestring) : NULL,
+        ue_time_zone ? ogs_strdup(ue_time_zone->valuestring) : NULL,
+        pei ? ogs_strdup(pei->valuestring) : NULL,
+        ipv4_address ? ogs_strdup(ipv4_address->valuestring) : NULL,
+        ipv6_address_prefix ? ogs_strdup(ipv6_address_prefix->valuestring) : NULL,
+        ip_domain ? ogs_strdup(ip_domain->valuestring) : NULL,
         subs_sess_ambr ? subs_sess_ambr_local_nonprim : NULL,
-        auth_prof_index ? ogs_strdup_or_assert(auth_prof_index->valuestring) : NULL,
+        auth_prof_index ? ogs_strdup(auth_prof_index->valuestring) : NULL,
         subs_def_qos ? subs_def_qos_local_nonprim : NULL,
         vplmn_qos ? vplmn_qos_local_nonprim : NULL,
         num_of_pack_filter ? true : false,
@@ -1010,9 +1009,9 @@ OpenAPI_sm_policy_context_data_t *OpenAPI_sm_policy_context_data_parseFromJSON(c
         slice_info_local_nonprim,
         qos_flow_usage ? qos_flow_usageVariable : 0,
         serv_nf_id ? serv_nf_id_local_nonprim : NULL,
-        supp_feat ? ogs_strdup_or_assert(supp_feat->valuestring) : NULL,
-        smf_id ? ogs_strdup_or_assert(smf_id->valuestring) : NULL,
-        recovery_time ? ogs_strdup_or_assert(recovery_time->valuestring) : NULL,
+        supp_feat ? ogs_strdup(supp_feat->valuestring) : NULL,
+        smf_id ? ogs_strdup(smf_id->valuestring) : NULL,
+        recovery_time ? ogs_strdup(recovery_time->valuestring) : NULL,
         ma_pdu_ind ? ma_pdu_indVariable : 0,
         atsss_capab ? atsss_capab_local_nonprim : NULL,
         ipv4_frame_route_list ? ipv4_frame_route_listList : NULL,

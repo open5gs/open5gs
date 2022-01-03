@@ -43,7 +43,6 @@ int amf_nsmf_pdusession_handle_create_sm_context(
                     OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED,
                     AMF_NAS_BACKOFF_TIME));
 
-            AMF_SESS_CLEAR(sess);
             return OGS_ERROR;
         }
 
@@ -59,7 +58,6 @@ int amf_nsmf_pdusession_handle_create_sm_context(
                     OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED,
                     AMF_NAS_BACKOFF_TIME));
 
-            AMF_SESS_CLEAR(sess);
             return OGS_ERROR;
         }
 
@@ -73,7 +71,6 @@ int amf_nsmf_pdusession_handle_create_sm_context(
                     OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED,
                     AMF_NAS_BACKOFF_TIME));
 
-            AMF_SESS_CLEAR(sess);
             return OGS_ERROR;
         }
 
@@ -104,7 +101,6 @@ int amf_nsmf_pdusession_handle_create_sm_context(
                         OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED,
                         AMF_NAS_BACKOFF_TIME));
 
-                AMF_SESS_CLEAR(sess);
                 return OGS_ERROR;
             }
         }
@@ -129,7 +125,6 @@ int amf_nsmf_pdusession_handle_create_sm_context(
                     OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED,
                     AMF_NAS_BACKOFF_TIME));
 
-            AMF_SESS_CLEAR(sess);
             return OGS_ERROR;
         }
         if (!SmContextCreateError->error) {
@@ -139,7 +134,6 @@ int amf_nsmf_pdusession_handle_create_sm_context(
                     OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED,
                     AMF_NAS_BACKOFF_TIME));
 
-            AMF_SESS_CLEAR(sess);
             return OGS_ERROR;
         }
 
@@ -152,23 +146,24 @@ int amf_nsmf_pdusession_handle_create_sm_context(
                  * NOTE : The pkbuf created in the SBI message will be removed
                  *        from ogs_sbi_message_free(), so it must be copied.
                  */
+                ogs_warn("[%d:%d] PDU session establishment reject",
+                        sess->psi, sess->pti);
                 n1smbuf = ogs_pkbuf_copy(n1smbuf);
                 ogs_assert(n1smbuf);
                 ogs_assert(OGS_OK ==
                     nas_5gs_send_gsm_reject(sess,
                         OGS_NAS_PAYLOAD_CONTAINER_N1_SM_INFORMATION, n1smbuf));
 
-                AMF_SESS_CLEAR(sess);
                 return OGS_ERROR;
             }
         }
 
+        ogs_error("[%d:%d] 5GMM was not forwarded", sess->psi, sess->pti);
         ogs_assert(OGS_OK ==
             nas_5gs_send_back_gsm_message(sess,
                 OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED,
                 AMF_NAS_BACKOFF_TIME));
 
-        AMF_SESS_CLEAR(sess);
         return OGS_ERROR;
     }
 
@@ -220,7 +215,6 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                     nas_5gs_send_gmm_reject(amf_ue,
                             OGS_5GMM_CAUSE_5GS_SERVICES_NOT_ALLOWED);
 
-                    AMF_SESS_CLEAR(sess);
                     return OGS_ERROR;
                 }
 
@@ -289,7 +283,6 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                             OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED,
                             AMF_NAS_BACKOFF_TIME));
 
-                    AMF_SESS_CLEAR(sess);
                     return OGS_ERROR;
                 }
 
@@ -301,7 +294,6 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                             OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED,
                             AMF_NAS_BACKOFF_TIME));
 
-                    AMF_SESS_CLEAR(sess);
                     return OGS_ERROR;
                 }
 
@@ -330,7 +322,6 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                             OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED,
                             AMF_NAS_BACKOFF_TIME));
 
-                    AMF_SESS_CLEAR(sess);
                     return OGS_ERROR;
                 }
 
@@ -342,7 +333,6 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                             OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED,
                             AMF_NAS_BACKOFF_TIME));
 
-                    AMF_SESS_CLEAR(sess);
                     return OGS_ERROR;
                 }
 
@@ -370,7 +360,6 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                             NGAP_Cause_PR_protocol,
                             NGAP_CauseProtocol_semantic_error));
 
-                    AMF_SESS_CLEAR(sess);
                     return OGS_ERROR;
                 }
 
@@ -395,7 +384,6 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                             NGAP_Cause_PR_protocol,
                             NGAP_CauseProtocol_semantic_error));
 
-                    AMF_SESS_CLEAR(sess);
                     return OGS_ERROR;
                 }
 
@@ -723,7 +711,6 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                 ngap_send_error_indication2(amf_ue,
                     NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error));
 
-            AMF_SESS_CLEAR(sess);
             return OGS_ERROR;
         }
         if (!SmContextUpdateError->error) {
@@ -733,7 +720,6 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                 ngap_send_error_indication2(amf_ue,
                     NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error));
 
-            AMF_SESS_CLEAR(sess);
             return OGS_ERROR;
         }
 
@@ -746,13 +732,15 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                  * NOTE : The pkbuf created in the SBI message will be removed
                  *        from ogs_sbi_message_free(), so it must be copied.
                  */
+                ogs_error("[%d:%d] PDU session establishment reject",
+                        sess->psi, sess->pti);
+
                 n1smbuf = ogs_pkbuf_copy(n1smbuf);
                 ogs_assert(n1smbuf);
                 ogs_assert(OGS_OK ==
                     nas_5gs_send_gsm_reject(sess,
                         OGS_NAS_PAYLOAD_CONTAINER_N1_SM_INFORMATION, n1smbuf));
 
-                AMF_SESS_CLEAR(sess);
                 return OGS_ERROR;
             }
         }
@@ -765,7 +753,6 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                 ngap_send_error_indication2(amf_ue,
                     NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error));
 
-            AMF_SESS_CLEAR(sess);
             return OGS_ERROR;
         }
 
@@ -778,16 +765,16 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                 ngap_send_error_indication2(amf_ue,
                     NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error));
 
-            AMF_SESS_CLEAR(sess);
             return OGS_ERROR;
         }
 #endif
+
+        ogs_error("[%d:%d] Error Indication", sess->psi, sess->pti);
 
         ogs_assert(OGS_OK ==
             ngap_send_error_indication2(amf_ue,
                 NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error));
 
-        AMF_SESS_CLEAR(sess);
         return OGS_ERROR;
     }
 

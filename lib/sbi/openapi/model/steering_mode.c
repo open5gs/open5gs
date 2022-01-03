@@ -13,10 +13,9 @@ OpenAPI_steering_mode_t *OpenAPI_steering_mode_create(
     OpenAPI_access_type_e prio_acc
 )
 {
-    OpenAPI_steering_mode_t *steering_mode_local_var = OpenAPI_malloc(sizeof(OpenAPI_steering_mode_t));
-    if (!steering_mode_local_var) {
-        return NULL;
-    }
+    OpenAPI_steering_mode_t *steering_mode_local_var = ogs_malloc(sizeof(OpenAPI_steering_mode_t));
+    ogs_assert(steering_mode_local_var);
+
     steering_mode_local_var->steer_mode_value = steer_mode_value;
     steering_mode_local_var->active = active;
     steering_mode_local_var->standby = standby;

@@ -15,10 +15,9 @@ OpenAPI_nr_location_t *OpenAPI_nr_location_create(
     OpenAPI_global_ran_node_id_t *global_gnb_id
 )
 {
-    OpenAPI_nr_location_t *nr_location_local_var = OpenAPI_malloc(sizeof(OpenAPI_nr_location_t));
-    if (!nr_location_local_var) {
-        return NULL;
-    }
+    OpenAPI_nr_location_t *nr_location_local_var = ogs_malloc(sizeof(OpenAPI_nr_location_t));
+    ogs_assert(nr_location_local_var);
+
     nr_location_local_var->tai = tai;
     nr_location_local_var->ncgi = ncgi;
     nr_location_local_var->is_age_of_location_information = is_age_of_location_information;
@@ -192,9 +191,9 @@ OpenAPI_nr_location_t *OpenAPI_nr_location_parseFromJSON(cJSON *nr_locationJSON)
         ncgi_local_nonprim,
         age_of_location_information ? true : false,
         age_of_location_information ? age_of_location_information->valuedouble : 0,
-        ue_location_timestamp ? ogs_strdup_or_assert(ue_location_timestamp->valuestring) : NULL,
-        geographical_information ? ogs_strdup_or_assert(geographical_information->valuestring) : NULL,
-        geodetic_information ? ogs_strdup_or_assert(geodetic_information->valuestring) : NULL,
+        ue_location_timestamp ? ogs_strdup(ue_location_timestamp->valuestring) : NULL,
+        geographical_information ? ogs_strdup(geographical_information->valuestring) : NULL,
+        geodetic_information ? ogs_strdup(geodetic_information->valuestring) : NULL,
         global_gnb_id ? global_gnb_id_local_nonprim : NULL
     );
 

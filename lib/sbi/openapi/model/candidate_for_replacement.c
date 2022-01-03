@@ -9,10 +9,9 @@ OpenAPI_candidate_for_replacement_t *OpenAPI_candidate_for_replacement_create(
     OpenAPI_list_t *dnns
 )
 {
-    OpenAPI_candidate_for_replacement_t *candidate_for_replacement_local_var = OpenAPI_malloc(sizeof(OpenAPI_candidate_for_replacement_t));
-    if (!candidate_for_replacement_local_var) {
-        return NULL;
-    }
+    OpenAPI_candidate_for_replacement_t *candidate_for_replacement_local_var = ogs_malloc(sizeof(OpenAPI_candidate_for_replacement_t));
+    ogs_assert(candidate_for_replacement_local_var);
+
     candidate_for_replacement_local_var->snssai = snssai;
     candidate_for_replacement_local_var->dnns = dnns;
 
@@ -102,7 +101,7 @@ OpenAPI_candidate_for_replacement_t *OpenAPI_candidate_for_replacement_parseFrom
         ogs_error("OpenAPI_candidate_for_replacement_parseFromJSON() failed [dnns]");
         goto end;
     }
-    OpenAPI_list_add(dnnsList , ogs_strdup_or_assert(dnns_local->valuestring));
+    OpenAPI_list_add(dnnsList , ogs_strdup(dnns_local->valuestring));
     }
     }
 

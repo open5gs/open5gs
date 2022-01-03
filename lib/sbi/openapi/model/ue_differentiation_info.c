@@ -15,10 +15,9 @@ OpenAPI_ue_differentiation_info_t *OpenAPI_ue_differentiation_info_create(
     char *validity_time
 )
 {
-    OpenAPI_ue_differentiation_info_t *ue_differentiation_info_local_var = OpenAPI_malloc(sizeof(OpenAPI_ue_differentiation_info_t));
-    if (!ue_differentiation_info_local_var) {
-        return NULL;
-    }
+    OpenAPI_ue_differentiation_info_t *ue_differentiation_info_local_var = ogs_malloc(sizeof(OpenAPI_ue_differentiation_info_t));
+    ogs_assert(ue_differentiation_info_local_var);
+
     ue_differentiation_info_local_var->periodic_com_ind = periodic_com_ind;
     ue_differentiation_info_local_var->is_periodic_time = is_periodic_time;
     ue_differentiation_info_local_var->periodic_time = periodic_time;
@@ -194,7 +193,7 @@ OpenAPI_ue_differentiation_info_t *OpenAPI_ue_differentiation_info_parseFromJSON
         stationary_ind ? stationary_indVariable : 0,
         traffic_profile ? traffic_profileVariable : 0,
         battery_ind ? battery_ind_local_nonprim : NULL,
-        validity_time ? ogs_strdup_or_assert(validity_time->valuestring) : NULL
+        validity_time ? ogs_strdup(validity_time->valuestring) : NULL
     );
 
     return ue_differentiation_info_local_var;

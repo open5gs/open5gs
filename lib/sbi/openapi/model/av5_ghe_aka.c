@@ -12,10 +12,9 @@ OpenAPI_av5_ghe_aka_t *OpenAPI_av5_ghe_aka_create(
     char *kausf
 )
 {
-    OpenAPI_av5_ghe_aka_t *av5_ghe_aka_local_var = OpenAPI_malloc(sizeof(OpenAPI_av5_ghe_aka_t));
-    if (!av5_ghe_aka_local_var) {
-        return NULL;
-    }
+    OpenAPI_av5_ghe_aka_t *av5_ghe_aka_local_var = ogs_malloc(sizeof(OpenAPI_av5_ghe_aka_t));
+    ogs_assert(av5_ghe_aka_local_var);
+
     av5_ghe_aka_local_var->av_type = av_type;
     av5_ghe_aka_local_var->rand = rand;
     av5_ghe_aka_local_var->xres_star = xres_star;
@@ -139,10 +138,10 @@ OpenAPI_av5_ghe_aka_t *OpenAPI_av5_ghe_aka_parseFromJSON(cJSON *av5_ghe_akaJSON)
 
     av5_ghe_aka_local_var = OpenAPI_av5_ghe_aka_create (
         av_typeVariable,
-        ogs_strdup_or_assert(rand->valuestring),
-        xres_star ? ogs_strdup_or_assert(xres_star->valuestring) : NULL,
-        ogs_strdup_or_assert(autn->valuestring),
-        kausf ? ogs_strdup_or_assert(kausf->valuestring) : NULL
+        ogs_strdup(rand->valuestring),
+        xres_star ? ogs_strdup(xres_star->valuestring) : NULL,
+        ogs_strdup(autn->valuestring),
+        kausf ? ogs_strdup(kausf->valuestring) : NULL
     );
 
     return av5_ghe_aka_local_var;

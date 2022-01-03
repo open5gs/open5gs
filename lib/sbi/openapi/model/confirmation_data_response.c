@@ -10,10 +10,9 @@ OpenAPI_confirmation_data_response_t *OpenAPI_confirmation_data_response_create(
     char *kseaf
 )
 {
-    OpenAPI_confirmation_data_response_t *confirmation_data_response_local_var = OpenAPI_malloc(sizeof(OpenAPI_confirmation_data_response_t));
-    if (!confirmation_data_response_local_var) {
-        return NULL;
-    }
+    OpenAPI_confirmation_data_response_t *confirmation_data_response_local_var = ogs_malloc(sizeof(OpenAPI_confirmation_data_response_t));
+    ogs_assert(confirmation_data_response_local_var);
+
     confirmation_data_response_local_var->auth_result = auth_result;
     confirmation_data_response_local_var->supi = supi;
     confirmation_data_response_local_var->kseaf = kseaf;
@@ -101,8 +100,8 @@ OpenAPI_confirmation_data_response_t *OpenAPI_confirmation_data_response_parseFr
 
     confirmation_data_response_local_var = OpenAPI_confirmation_data_response_create (
         auth_resultVariable,
-        supi ? ogs_strdup_or_assert(supi->valuestring) : NULL,
-        kseaf ? ogs_strdup_or_assert(kseaf->valuestring) : NULL
+        supi ? ogs_strdup(supi->valuestring) : NULL,
+        kseaf ? ogs_strdup(kseaf->valuestring) : NULL
     );
 
     return confirmation_data_response_local_var;

@@ -10,10 +10,9 @@ OpenAPI_plmn_range_t *OpenAPI_plmn_range_create(
     char *pattern
 )
 {
-    OpenAPI_plmn_range_t *plmn_range_local_var = OpenAPI_malloc(sizeof(OpenAPI_plmn_range_t));
-    if (!plmn_range_local_var) {
-        return NULL;
-    }
+    OpenAPI_plmn_range_t *plmn_range_local_var = ogs_malloc(sizeof(OpenAPI_plmn_range_t));
+    ogs_assert(plmn_range_local_var);
+
     plmn_range_local_var->start = start;
     plmn_range_local_var->end = end;
     plmn_range_local_var->pattern = pattern;
@@ -99,9 +98,9 @@ OpenAPI_plmn_range_t *OpenAPI_plmn_range_parseFromJSON(cJSON *plmn_rangeJSON)
     }
 
     plmn_range_local_var = OpenAPI_plmn_range_create (
-        start ? ogs_strdup_or_assert(start->valuestring) : NULL,
-        end ? ogs_strdup_or_assert(end->valuestring) : NULL,
-        pattern ? ogs_strdup_or_assert(pattern->valuestring) : NULL
+        start ? ogs_strdup(start->valuestring) : NULL,
+        end ? ogs_strdup(end->valuestring) : NULL,
+        pattern ? ogs_strdup(pattern->valuestring) : NULL
     );
 
     return plmn_range_local_var;

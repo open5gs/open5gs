@@ -8,10 +8,9 @@ OpenAPI_odb_data_t *OpenAPI_odb_data_create(
     OpenAPI_roaming_odb_e roaming_odb
 )
 {
-    OpenAPI_odb_data_t *odb_data_local_var = OpenAPI_malloc(sizeof(OpenAPI_odb_data_t));
-    if (!odb_data_local_var) {
-        return NULL;
-    }
+    OpenAPI_odb_data_t *odb_data_local_var = ogs_malloc(sizeof(OpenAPI_odb_data_t));
+    ogs_assert(odb_data_local_var);
+
     odb_data_local_var->roaming_odb = roaming_odb;
 
     return odb_data_local_var;

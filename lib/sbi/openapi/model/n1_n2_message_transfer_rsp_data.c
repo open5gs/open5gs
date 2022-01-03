@@ -9,10 +9,9 @@ OpenAPI_n1_n2_message_transfer_rsp_data_t *OpenAPI_n1_n2_message_transfer_rsp_da
     char *supported_features
 )
 {
-    OpenAPI_n1_n2_message_transfer_rsp_data_t *n1_n2_message_transfer_rsp_data_local_var = OpenAPI_malloc(sizeof(OpenAPI_n1_n2_message_transfer_rsp_data_t));
-    if (!n1_n2_message_transfer_rsp_data_local_var) {
-        return NULL;
-    }
+    OpenAPI_n1_n2_message_transfer_rsp_data_t *n1_n2_message_transfer_rsp_data_local_var = ogs_malloc(sizeof(OpenAPI_n1_n2_message_transfer_rsp_data_t));
+    ogs_assert(n1_n2_message_transfer_rsp_data_local_var);
+
     n1_n2_message_transfer_rsp_data_local_var->cause = cause;
     n1_n2_message_transfer_rsp_data_local_var->supported_features = supported_features;
 
@@ -82,7 +81,7 @@ OpenAPI_n1_n2_message_transfer_rsp_data_t *OpenAPI_n1_n2_message_transfer_rsp_da
 
     n1_n2_message_transfer_rsp_data_local_var = OpenAPI_n1_n2_message_transfer_rsp_data_create (
         causeVariable,
-        supported_features ? ogs_strdup_or_assert(supported_features->valuestring) : NULL
+        supported_features ? ogs_strdup(supported_features->valuestring) : NULL
     );
 
     return n1_n2_message_transfer_rsp_data_local_var;

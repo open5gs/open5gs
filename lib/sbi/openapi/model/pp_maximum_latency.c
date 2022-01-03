@@ -12,10 +12,9 @@ OpenAPI_pp_maximum_latency_t *OpenAPI_pp_maximum_latency_create(
     char *mtc_provider_information
 )
 {
-    OpenAPI_pp_maximum_latency_t *pp_maximum_latency_local_var = OpenAPI_malloc(sizeof(OpenAPI_pp_maximum_latency_t));
-    if (!pp_maximum_latency_local_var) {
-        return NULL;
-    }
+    OpenAPI_pp_maximum_latency_t *pp_maximum_latency_local_var = ogs_malloc(sizeof(OpenAPI_pp_maximum_latency_t));
+    ogs_assert(pp_maximum_latency_local_var);
+
     pp_maximum_latency_local_var->maximum_latency = maximum_latency;
     pp_maximum_latency_local_var->af_instance_id = af_instance_id;
     pp_maximum_latency_local_var->reference_id = reference_id;
@@ -137,11 +136,11 @@ OpenAPI_pp_maximum_latency_t *OpenAPI_pp_maximum_latency_parseFromJSON(cJSON *pp
     pp_maximum_latency_local_var = OpenAPI_pp_maximum_latency_create (
         
         maximum_latency->valuedouble,
-        ogs_strdup_or_assert(af_instance_id->valuestring),
+        ogs_strdup(af_instance_id->valuestring),
         
         reference_id->valuedouble,
-        validity_time ? ogs_strdup_or_assert(validity_time->valuestring) : NULL,
-        mtc_provider_information ? ogs_strdup_or_assert(mtc_provider_information->valuestring) : NULL
+        validity_time ? ogs_strdup(validity_time->valuestring) : NULL,
+        mtc_provider_information ? ogs_strdup(mtc_provider_information->valuestring) : NULL
     );
 
     return pp_maximum_latency_local_var;

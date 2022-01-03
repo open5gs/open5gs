@@ -11,10 +11,9 @@ OpenAPI_up_security_info_t *OpenAPI_up_security_info_create(
     OpenAPI_security_result_t *security_result
 )
 {
-    OpenAPI_up_security_info_t *up_security_info_local_var = OpenAPI_malloc(sizeof(OpenAPI_up_security_info_t));
-    if (!up_security_info_local_var) {
-        return NULL;
-    }
+    OpenAPI_up_security_info_t *up_security_info_local_var = ogs_malloc(sizeof(OpenAPI_up_security_info_t));
+    ogs_assert(up_security_info_local_var);
+
     up_security_info_local_var->up_security = up_security;
     up_security_info_local_var->max_integrity_protected_data_rate_ul = max_integrity_protected_data_rate_ul;
     up_security_info_local_var->max_integrity_protected_data_rate_dl = max_integrity_protected_data_rate_dl;

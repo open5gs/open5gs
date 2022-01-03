@@ -10,10 +10,9 @@ OpenAPI_smf_selection_subscription_data_1_t *OpenAPI_smf_selection_subscription_
     char *shared_snssai_infos_id
 )
 {
-    OpenAPI_smf_selection_subscription_data_1_t *smf_selection_subscription_data_1_local_var = OpenAPI_malloc(sizeof(OpenAPI_smf_selection_subscription_data_1_t));
-    if (!smf_selection_subscription_data_1_local_var) {
-        return NULL;
-    }
+    OpenAPI_smf_selection_subscription_data_1_t *smf_selection_subscription_data_1_local_var = ogs_malloc(sizeof(OpenAPI_smf_selection_subscription_data_1_t));
+    ogs_assert(smf_selection_subscription_data_1_local_var);
+
     smf_selection_subscription_data_1_local_var->supported_features = supported_features;
     smf_selection_subscription_data_1_local_var->subscribed_snssai_infos = subscribed_snssai_infos;
     smf_selection_subscription_data_1_local_var->shared_snssai_infos_id = shared_snssai_infos_id;
@@ -30,6 +29,7 @@ void OpenAPI_smf_selection_subscription_data_1_free(OpenAPI_smf_selection_subscr
     ogs_free(smf_selection_subscription_data_1->supported_features);
     OpenAPI_list_for_each(smf_selection_subscription_data_1->subscribed_snssai_infos, node) {
         OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+        ogs_free(localKeyValue->key);
         OpenAPI_snssai_info_free(localKeyValue->value);
         ogs_free(localKeyValue);
     }
@@ -116,9 +116,9 @@ OpenAPI_smf_selection_subscription_data_1_t *OpenAPI_smf_selection_subscription_
         cJSON *localMapObject = subscribed_snssai_infos_local_map;
         if (cJSON_IsObject(subscribed_snssai_infos_local_map)) {
             localMapKeyPair = OpenAPI_map_create(
-                localMapObject->string, OpenAPI_snssai_info_parseFromJSON(localMapObject));
+                ogs_strdup(localMapObject->string), OpenAPI_snssai_info_parseFromJSON(localMapObject));
         } else if (cJSON_IsNull(subscribed_snssai_infos_local_map)) {
-            localMapKeyPair = OpenAPI_map_create(localMapObject->string, NULL);
+            localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
         } else {
             ogs_error("OpenAPI_smf_selection_subscription_data_1_parseFromJSON() failed [subscribed_snssai_infos]");
             goto end;
@@ -137,9 +137,9 @@ OpenAPI_smf_selection_subscription_data_1_t *OpenAPI_smf_selection_subscription_
     }
 
     smf_selection_subscription_data_1_local_var = OpenAPI_smf_selection_subscription_data_1_create (
-        supported_features ? ogs_strdup_or_assert(supported_features->valuestring) : NULL,
+        supported_features ? ogs_strdup(supported_features->valuestring) : NULL,
         subscribed_snssai_infos ? subscribed_snssai_infosList : NULL,
-        shared_snssai_infos_id ? ogs_strdup_or_assert(shared_snssai_infos_id->valuestring) : NULL
+        shared_snssai_infos_id ? ogs_strdup(shared_snssai_infos_id->valuestring) : NULL
     );
 
     return smf_selection_subscription_data_1_local_var;

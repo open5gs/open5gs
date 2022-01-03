@@ -7,10 +7,9 @@
 OpenAPI_preemption_control_information_rm_t *OpenAPI_preemption_control_information_rm_create(
 )
 {
-    OpenAPI_preemption_control_information_rm_t *preemption_control_information_rm_local_var = OpenAPI_malloc(sizeof(OpenAPI_preemption_control_information_rm_t));
-    if (!preemption_control_information_rm_local_var) {
-        return NULL;
-    }
+    OpenAPI_preemption_control_information_rm_t *preemption_control_information_rm_local_var = ogs_malloc(sizeof(OpenAPI_preemption_control_information_rm_t));
+    ogs_assert(preemption_control_information_rm_local_var);
+
 
     return preemption_control_information_rm_local_var;
 }

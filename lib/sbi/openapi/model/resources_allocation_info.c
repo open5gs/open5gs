@@ -10,10 +10,9 @@ OpenAPI_resources_allocation_info_t *OpenAPI_resources_allocation_info_create(
     char *alt_ser_req
 )
 {
-    OpenAPI_resources_allocation_info_t *resources_allocation_info_local_var = OpenAPI_malloc(sizeof(OpenAPI_resources_allocation_info_t));
-    if (!resources_allocation_info_local_var) {
-        return NULL;
-    }
+    OpenAPI_resources_allocation_info_t *resources_allocation_info_local_var = ogs_malloc(sizeof(OpenAPI_resources_allocation_info_t));
+    ogs_assert(resources_allocation_info_local_var);
+
     resources_allocation_info_local_var->mc_resourc_status = mc_resourc_status;
     resources_allocation_info_local_var->flows = flows;
     resources_allocation_info_local_var->alt_ser_req = alt_ser_req;
@@ -132,7 +131,7 @@ OpenAPI_resources_allocation_info_t *OpenAPI_resources_allocation_info_parseFrom
     resources_allocation_info_local_var = OpenAPI_resources_allocation_info_create (
         mc_resourc_status ? mc_resourc_statusVariable : 0,
         flows ? flowsList : NULL,
-        alt_ser_req ? ogs_strdup_or_assert(alt_ser_req->valuestring) : NULL
+        alt_ser_req ? ogs_strdup(alt_ser_req->valuestring) : NULL
     );
 
     return resources_allocation_info_local_var;

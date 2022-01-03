@@ -12,10 +12,9 @@ OpenAPI_partial_success_report_t *OpenAPI_partial_success_report_create(
     OpenAPI_list_t *policy_dec_failure_reports
 )
 {
-    OpenAPI_partial_success_report_t *partial_success_report_local_var = OpenAPI_malloc(sizeof(OpenAPI_partial_success_report_t));
-    if (!partial_success_report_local_var) {
-        return NULL;
-    }
+    OpenAPI_partial_success_report_t *partial_success_report_local_var = ogs_malloc(sizeof(OpenAPI_partial_success_report_t));
+    ogs_assert(partial_success_report_local_var);
+
     partial_success_report_local_var->failure_cause = failure_cause;
     partial_success_report_local_var->rule_reports = rule_reports;
     partial_success_report_local_var->sess_rule_reports = sess_rule_reports;

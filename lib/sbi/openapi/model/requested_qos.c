@@ -10,10 +10,9 @@ OpenAPI_requested_qos_t *OpenAPI_requested_qos_create(
     char *gbr_dl
 )
 {
-    OpenAPI_requested_qos_t *requested_qos_local_var = OpenAPI_malloc(sizeof(OpenAPI_requested_qos_t));
-    if (!requested_qos_local_var) {
-        return NULL;
-    }
+    OpenAPI_requested_qos_t *requested_qos_local_var = ogs_malloc(sizeof(OpenAPI_requested_qos_t));
+    ogs_assert(requested_qos_local_var);
+
     requested_qos_local_var->_5qi = _5qi;
     requested_qos_local_var->gbr_ul = gbr_ul;
     requested_qos_local_var->gbr_dl = gbr_dl;
@@ -100,8 +99,8 @@ OpenAPI_requested_qos_t *OpenAPI_requested_qos_parseFromJSON(cJSON *requested_qo
     requested_qos_local_var = OpenAPI_requested_qos_create (
         
         _5qi->valuedouble,
-        gbr_ul ? ogs_strdup_or_assert(gbr_ul->valuestring) : NULL,
-        gbr_dl ? ogs_strdup_or_assert(gbr_dl->valuestring) : NULL
+        gbr_ul ? ogs_strdup(gbr_ul->valuestring) : NULL,
+        gbr_dl ? ogs_strdup(gbr_dl->valuestring) : NULL
     );
 
     return requested_qos_local_var;

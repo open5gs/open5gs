@@ -11,10 +11,9 @@ OpenAPI_pdu_session_t *OpenAPI_pdu_session_create(
     OpenAPI_snssai_t *single_nssai
 )
 {
-    OpenAPI_pdu_session_t *pdu_session_local_var = OpenAPI_malloc(sizeof(OpenAPI_pdu_session_t));
-    if (!pdu_session_local_var) {
-        return NULL;
-    }
+    OpenAPI_pdu_session_t *pdu_session_local_var = ogs_malloc(sizeof(OpenAPI_pdu_session_t));
+    ogs_assert(pdu_session_local_var);
+
     pdu_session_local_var->dnn = dnn;
     pdu_session_local_var->smf_instance_id = smf_instance_id;
     pdu_session_local_var->plmn_id = plmn_id;
@@ -126,8 +125,8 @@ OpenAPI_pdu_session_t *OpenAPI_pdu_session_parseFromJSON(cJSON *pdu_sessionJSON)
     }
 
     pdu_session_local_var = OpenAPI_pdu_session_create (
-        ogs_strdup_or_assert(dnn->valuestring),
-        ogs_strdup_or_assert(smf_instance_id->valuestring),
+        ogs_strdup(dnn->valuestring),
+        ogs_strdup(smf_instance_id->valuestring),
         plmn_id_local_nonprim,
         single_nssai ? single_nssai_local_nonprim : NULL
     );

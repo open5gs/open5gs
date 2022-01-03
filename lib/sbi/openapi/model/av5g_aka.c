@@ -10,10 +10,9 @@ OpenAPI_av5g_aka_t *OpenAPI_av5g_aka_create(
     char *autn
 )
 {
-    OpenAPI_av5g_aka_t *av5g_aka_local_var = OpenAPI_malloc(sizeof(OpenAPI_av5g_aka_t));
-    if (!av5g_aka_local_var) {
-        return NULL;
-    }
+    OpenAPI_av5g_aka_t *av5g_aka_local_var = ogs_malloc(sizeof(OpenAPI_av5g_aka_t));
+    ogs_assert(av5g_aka_local_var);
+
     av5g_aka_local_var->rand = rand;
     av5g_aka_local_var->hxres_star = hxres_star;
     av5g_aka_local_var->autn = autn;
@@ -99,9 +98,9 @@ OpenAPI_av5g_aka_t *OpenAPI_av5g_aka_parseFromJSON(cJSON *av5g_akaJSON)
     }
 
     av5g_aka_local_var = OpenAPI_av5g_aka_create (
-        ogs_strdup_or_assert(rand->valuestring),
-        ogs_strdup_or_assert(hxres_star->valuestring),
-        ogs_strdup_or_assert(autn->valuestring)
+        ogs_strdup(rand->valuestring),
+        ogs_strdup(hxres_star->valuestring),
+        ogs_strdup(autn->valuestring)
     );
 
     return av5g_aka_local_var;

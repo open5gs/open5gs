@@ -13,10 +13,9 @@ OpenAPI_exemption_ind_t *OpenAPI_exemption_ind_create(
     int snssai_dnn_congestion
 )
 {
-    OpenAPI_exemption_ind_t *exemption_ind_local_var = OpenAPI_malloc(sizeof(OpenAPI_exemption_ind_t));
-    if (!exemption_ind_local_var) {
-        return NULL;
-    }
+    OpenAPI_exemption_ind_t *exemption_ind_local_var = ogs_malloc(sizeof(OpenAPI_exemption_ind_t));
+    ogs_assert(exemption_ind_local_var);
+
     exemption_ind_local_var->is_dnn_congestion = is_dnn_congestion;
     exemption_ind_local_var->dnn_congestion = dnn_congestion;
     exemption_ind_local_var->is_snssai_only_congestion = is_snssai_only_congestion;

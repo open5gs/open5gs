@@ -8,10 +8,9 @@ OpenAPI_area_of_validity_t *OpenAPI_area_of_validity_create(
     OpenAPI_list_t *tai_list
 )
 {
-    OpenAPI_area_of_validity_t *area_of_validity_local_var = OpenAPI_malloc(sizeof(OpenAPI_area_of_validity_t));
-    if (!area_of_validity_local_var) {
-        return NULL;
-    }
+    OpenAPI_area_of_validity_t *area_of_validity_local_var = ogs_malloc(sizeof(OpenAPI_area_of_validity_t));
+    ogs_assert(area_of_validity_local_var);
+
     area_of_validity_local_var->tai_list = tai_list;
 
     return area_of_validity_local_var;

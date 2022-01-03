@@ -26,7 +26,8 @@ ogs_sbi_request_t *udm_nudr_dr_build_authentication_subscription(
     ogs_sbi_request_t *request = NULL;
 
     OpenAPI_list_t *PatchItemList = NULL;
-    OpenAPI_patch_item_t item;
+    OpenAPI_patch_item_t item, *pitem = NULL;
+    OpenAPI_lnode_t *node = NULL;
     uint8_t *sqn = data;
     char sqn_string[OGS_KEYSTRLEN(OGS_SQN_LEN)];
 
@@ -64,14 +65,19 @@ ogs_sbi_request_t *udm_nudr_dr_build_authentication_subscription(
         OpenAPI_list_add(PatchItemList, &item);
 
         message.PatchItemList = PatchItemList;
-        OpenAPI_any_type_free(item.value);
     }
 
     request = ogs_sbi_build_request(&message);
     ogs_assert(request);
 
-    if (PatchItemList)
+    if (PatchItemList) {
+        OpenAPI_list_for_each(PatchItemList, node) {
+            pitem = node->data;
+            if (pitem)
+                OpenAPI_any_type_free(pitem->value);
+        }
         OpenAPI_list_free(PatchItemList);
+    }
 
     return request;
 }

@@ -7,10 +7,9 @@
 OpenAPI_usage_mon_level_t *OpenAPI_usage_mon_level_create(
 )
 {
-    OpenAPI_usage_mon_level_t *usage_mon_level_local_var = OpenAPI_malloc(sizeof(OpenAPI_usage_mon_level_t));
-    if (!usage_mon_level_local_var) {
-        return NULL;
-    }
+    OpenAPI_usage_mon_level_t *usage_mon_level_local_var = ogs_malloc(sizeof(OpenAPI_usage_mon_level_t));
+    ogs_assert(usage_mon_level_local_var);
+
 
     return usage_mon_level_local_var;
 }

@@ -12,10 +12,9 @@ OpenAPI_released_data_t *OpenAPI_released_data_create(
     OpenAPI_n4_information_t *n4_info_ext2
 )
 {
-    OpenAPI_released_data_t *released_data_local_var = OpenAPI_malloc(sizeof(OpenAPI_released_data_t));
-    if (!released_data_local_var) {
-        return NULL;
-    }
+    OpenAPI_released_data_t *released_data_local_var = ogs_malloc(sizeof(OpenAPI_released_data_t));
+    ogs_assert(released_data_local_var);
+
     released_data_local_var->small_data_rate_status = small_data_rate_status;
     released_data_local_var->apn_rate_status = apn_rate_status;
     released_data_local_var->n4_info = n4_info;

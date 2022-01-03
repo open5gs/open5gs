@@ -12,10 +12,9 @@ OpenAPI_ue_reg_status_update_req_data_t *OpenAPI_ue_reg_status_update_req_data_c
     OpenAPI_list_t *smf_change_info_list
 )
 {
-    OpenAPI_ue_reg_status_update_req_data_t *ue_reg_status_update_req_data_local_var = OpenAPI_malloc(sizeof(OpenAPI_ue_reg_status_update_req_data_t));
-    if (!ue_reg_status_update_req_data_local_var) {
-        return NULL;
-    }
+    OpenAPI_ue_reg_status_update_req_data_t *ue_reg_status_update_req_data_local_var = ogs_malloc(sizeof(OpenAPI_ue_reg_status_update_req_data_t));
+    ogs_assert(ue_reg_status_update_req_data_local_var);
+
     ue_reg_status_update_req_data_local_var->transfer_status = transfer_status;
     ue_reg_status_update_req_data_local_var->to_release_session_list = to_release_session_list;
     ue_reg_status_update_req_data_local_var->is_pcf_reselected_ind = is_pcf_reselected_ind;

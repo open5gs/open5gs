@@ -9,10 +9,9 @@ OpenAPI_ssc_modes_t *OpenAPI_ssc_modes_create(
     OpenAPI_list_t *allowed_ssc_modes
 )
 {
-    OpenAPI_ssc_modes_t *ssc_modes_local_var = OpenAPI_malloc(sizeof(OpenAPI_ssc_modes_t));
-    if (!ssc_modes_local_var) {
-        return NULL;
-    }
+    OpenAPI_ssc_modes_t *ssc_modes_local_var = ogs_malloc(sizeof(OpenAPI_ssc_modes_t));
+    ogs_assert(ssc_modes_local_var);
+
     ssc_modes_local_var->default_ssc_mode = default_ssc_mode;
     ssc_modes_local_var->allowed_ssc_modes = allowed_ssc_modes;
 

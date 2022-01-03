@@ -7,10 +7,9 @@
 OpenAPI_association_type_t *OpenAPI_association_type_create(
 )
 {
-    OpenAPI_association_type_t *association_type_local_var = OpenAPI_malloc(sizeof(OpenAPI_association_type_t));
-    if (!association_type_local_var) {
-        return NULL;
-    }
+    OpenAPI_association_type_t *association_type_local_var = ogs_malloc(sizeof(OpenAPI_association_type_t));
+    ogs_assert(association_type_local_var);
+
 
     return association_type_local_var;
 }

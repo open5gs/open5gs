@@ -13,10 +13,9 @@ OpenAPI_session_rule_t *OpenAPI_session_rule_create(
     char *ref_cond_data
 )
 {
-    OpenAPI_session_rule_t *session_rule_local_var = OpenAPI_malloc(sizeof(OpenAPI_session_rule_t));
-    if (!session_rule_local_var) {
-        return NULL;
-    }
+    OpenAPI_session_rule_t *session_rule_local_var = ogs_malloc(sizeof(OpenAPI_session_rule_t));
+    ogs_assert(session_rule_local_var);
+
     session_rule_local_var->auth_sess_ambr = auth_sess_ambr;
     session_rule_local_var->auth_def_qos = auth_def_qos;
     session_rule_local_var->sess_rule_id = sess_rule_id;
@@ -166,10 +165,10 @@ OpenAPI_session_rule_t *OpenAPI_session_rule_parseFromJSON(cJSON *session_ruleJS
     session_rule_local_var = OpenAPI_session_rule_create (
         auth_sess_ambr ? auth_sess_ambr_local_nonprim : NULL,
         auth_def_qos ? auth_def_qos_local_nonprim : NULL,
-        ogs_strdup_or_assert(sess_rule_id->valuestring),
-        ref_um_data ? ogs_strdup_or_assert(ref_um_data->valuestring) : NULL,
-        ref_um_n3g_data ? ogs_strdup_or_assert(ref_um_n3g_data->valuestring) : NULL,
-        ref_cond_data ? ogs_strdup_or_assert(ref_cond_data->valuestring) : NULL
+        ogs_strdup(sess_rule_id->valuestring),
+        ref_um_data ? ogs_strdup(ref_um_data->valuestring) : NULL,
+        ref_um_n3g_data ? ogs_strdup(ref_um_n3g_data->valuestring) : NULL,
+        ref_cond_data ? ogs_strdup(ref_cond_data->valuestring) : NULL
     );
 
     return session_rule_local_var;

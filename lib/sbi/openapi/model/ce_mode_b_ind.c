@@ -8,10 +8,9 @@ OpenAPI_ce_mode_b_ind_t *OpenAPI_ce_mode_b_ind_create(
     int ce_mode_b_support_ind
 )
 {
-    OpenAPI_ce_mode_b_ind_t *ce_mode_b_ind_local_var = OpenAPI_malloc(sizeof(OpenAPI_ce_mode_b_ind_t));
-    if (!ce_mode_b_ind_local_var) {
-        return NULL;
-    }
+    OpenAPI_ce_mode_b_ind_t *ce_mode_b_ind_local_var = ogs_malloc(sizeof(OpenAPI_ce_mode_b_ind_t));
+    ogs_assert(ce_mode_b_ind_local_var);
+
     ce_mode_b_ind_local_var->ce_mode_b_support_ind = ce_mode_b_support_ind;
 
     return ce_mode_b_ind_local_var;

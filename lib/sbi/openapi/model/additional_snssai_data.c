@@ -9,10 +9,9 @@ OpenAPI_additional_snssai_data_t *OpenAPI_additional_snssai_data_create(
     int required_authn_authz
 )
 {
-    OpenAPI_additional_snssai_data_t *additional_snssai_data_local_var = OpenAPI_malloc(sizeof(OpenAPI_additional_snssai_data_t));
-    if (!additional_snssai_data_local_var) {
-        return NULL;
-    }
+    OpenAPI_additional_snssai_data_t *additional_snssai_data_local_var = ogs_malloc(sizeof(OpenAPI_additional_snssai_data_t));
+    ogs_assert(additional_snssai_data_local_var);
+
     additional_snssai_data_local_var->is_required_authn_authz = is_required_authn_authz;
     additional_snssai_data_local_var->required_authn_authz = required_authn_authz;
 

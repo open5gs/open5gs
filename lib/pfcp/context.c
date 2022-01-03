@@ -662,9 +662,6 @@ void ogs_pfcp_node_free(ogs_pfcp_node_t *node)
 
     ogs_gtpu_resource_remove_all(&node->gtpu_resource_list);
 
-    if (node->sock)
-        ogs_sock_destroy(node->sock);
-
     ogs_pfcp_xact_delete_all(node);
 
     ogs_freeaddrinfo(node->sa_list);

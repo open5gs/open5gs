@@ -12,10 +12,9 @@ OpenAPI_registration_data_sets_t *OpenAPI_registration_data_sets_create(
     OpenAPI_smsf_registration_t *smsf_non3_gpp
 )
 {
-    OpenAPI_registration_data_sets_t *registration_data_sets_local_var = OpenAPI_malloc(sizeof(OpenAPI_registration_data_sets_t));
-    if (!registration_data_sets_local_var) {
-        return NULL;
-    }
+    OpenAPI_registration_data_sets_t *registration_data_sets_local_var = ogs_malloc(sizeof(OpenAPI_registration_data_sets_t));
+    ogs_assert(registration_data_sets_local_var);
+
     registration_data_sets_local_var->amf3_gpp = amf3_gpp;
     registration_data_sets_local_var->amf_non3_gpp = amf_non3_gpp;
     registration_data_sets_local_var->smf_registration = smf_registration;

@@ -24,10 +24,9 @@ OpenAPI_policy_data_change_notification_t *OpenAPI_policy_data_change_notificati
     OpenAPI_list_t *reported_fragments
 )
 {
-    OpenAPI_policy_data_change_notification_t *policy_data_change_notification_local_var = OpenAPI_malloc(sizeof(OpenAPI_policy_data_change_notification_t));
-    if (!policy_data_change_notification_local_var) {
-        return NULL;
-    }
+    OpenAPI_policy_data_change_notification_t *policy_data_change_notification_local_var = ogs_malloc(sizeof(OpenAPI_policy_data_change_notification_t));
+    ogs_assert(policy_data_change_notification_local_var);
+
     policy_data_change_notification_local_var->am_policy_data = am_policy_data;
     policy_data_change_notification_local_var->ue_policy_set = ue_policy_set;
     policy_data_change_notification_local_var->plmn_ue_policy_set = plmn_ue_policy_set;
@@ -65,6 +64,7 @@ void OpenAPI_policy_data_change_notification_free(OpenAPI_policy_data_change_not
     OpenAPI_operator_specific_data_container_free(policy_data_change_notification->op_spec_data);
     OpenAPI_list_for_each(policy_data_change_notification->op_spec_data_map, node) {
         OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+        ogs_free(localKeyValue->key);
         OpenAPI_operator_specific_data_container_free(localKeyValue->value);
         ogs_free(localKeyValue);
     }
@@ -385,9 +385,9 @@ OpenAPI_policy_data_change_notification_t *OpenAPI_policy_data_change_notificati
         cJSON *localMapObject = op_spec_data_map_local_map;
         if (cJSON_IsObject(op_spec_data_map_local_map)) {
             localMapKeyPair = OpenAPI_map_create(
-                localMapObject->string, OpenAPI_operator_specific_data_container_parseFromJSON(localMapObject));
+                ogs_strdup(localMapObject->string), OpenAPI_operator_specific_data_container_parseFromJSON(localMapObject));
         } else if (cJSON_IsNull(op_spec_data_map_local_map)) {
-            localMapKeyPair = OpenAPI_map_create(localMapObject->string, NULL);
+            localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
         } else {
             ogs_error("OpenAPI_policy_data_change_notification_parseFromJSON() failed [op_spec_data_map]");
             goto end;
@@ -455,7 +455,7 @@ OpenAPI_policy_data_change_notification_t *OpenAPI_policy_data_change_notificati
         ogs_error("OpenAPI_policy_data_change_notification_parseFromJSON() failed [del_resources]");
         goto end;
     }
-    OpenAPI_list_add(del_resourcesList , ogs_strdup_or_assert(del_resources_local->valuestring));
+    OpenAPI_list_add(del_resourcesList , ogs_strdup(del_resources_local->valuestring));
     }
     }
 
@@ -501,13 +501,13 @@ OpenAPI_policy_data_change_notification_t *OpenAPI_policy_data_change_notificati
         bdt_data ? bdt_data_local_nonprim : NULL,
         op_spec_data ? op_spec_data_local_nonprim : NULL,
         op_spec_data_map ? op_spec_data_mapList : NULL,
-        ue_id ? ogs_strdup_or_assert(ue_id->valuestring) : NULL,
-        sponsor_id ? ogs_strdup_or_assert(sponsor_id->valuestring) : NULL,
-        bdt_ref_id ? ogs_strdup_or_assert(bdt_ref_id->valuestring) : NULL,
-        usage_mon_id ? ogs_strdup_or_assert(usage_mon_id->valuestring) : NULL,
+        ue_id ? ogs_strdup(ue_id->valuestring) : NULL,
+        sponsor_id ? ogs_strdup(sponsor_id->valuestring) : NULL,
+        bdt_ref_id ? ogs_strdup(bdt_ref_id->valuestring) : NULL,
+        usage_mon_id ? ogs_strdup(usage_mon_id->valuestring) : NULL,
         plmn_id ? plmn_id_local_nonprim : NULL,
         del_resources ? del_resourcesList : NULL,
-        notif_id ? ogs_strdup_or_assert(notif_id->valuestring) : NULL,
+        notif_id ? ogs_strdup(notif_id->valuestring) : NULL,
         reported_fragments ? reported_fragmentsList : NULL
     );
 

@@ -13,10 +13,9 @@ OpenAPI_udm_info_t *OpenAPI_udm_info_create(
     OpenAPI_list_t *internal_group_identifiers_ranges
 )
 {
-    OpenAPI_udm_info_t *udm_info_local_var = OpenAPI_malloc(sizeof(OpenAPI_udm_info_t));
-    if (!udm_info_local_var) {
-        return NULL;
-    }
+    OpenAPI_udm_info_t *udm_info_local_var = ogs_malloc(sizeof(OpenAPI_udm_info_t));
+    ogs_assert(udm_info_local_var);
+
     udm_info_local_var->group_id = group_id;
     udm_info_local_var->supi_ranges = supi_ranges;
     udm_info_local_var->gpsi_ranges = gpsi_ranges;
@@ -271,7 +270,7 @@ OpenAPI_udm_info_t *OpenAPI_udm_info_parseFromJSON(cJSON *udm_infoJSON)
         ogs_error("OpenAPI_udm_info_parseFromJSON() failed [routing_indicators]");
         goto end;
     }
-    OpenAPI_list_add(routing_indicatorsList , ogs_strdup_or_assert(routing_indicators_local->valuestring));
+    OpenAPI_list_add(routing_indicatorsList , ogs_strdup(routing_indicators_local->valuestring));
     }
     }
 
@@ -299,7 +298,7 @@ OpenAPI_udm_info_t *OpenAPI_udm_info_parseFromJSON(cJSON *udm_infoJSON)
     }
 
     udm_info_local_var = OpenAPI_udm_info_create (
-        group_id ? ogs_strdup_or_assert(group_id->valuestring) : NULL,
+        group_id ? ogs_strdup(group_id->valuestring) : NULL,
         supi_ranges ? supi_rangesList : NULL,
         gpsi_ranges ? gpsi_rangesList : NULL,
         external_group_identifiers_ranges ? external_group_identifiers_rangesList : NULL,

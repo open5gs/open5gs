@@ -10,10 +10,9 @@ OpenAPI_acceptable_service_info_t *OpenAPI_acceptable_service_info_create(
     char *mar_bw_dl
 )
 {
-    OpenAPI_acceptable_service_info_t *acceptable_service_info_local_var = OpenAPI_malloc(sizeof(OpenAPI_acceptable_service_info_t));
-    if (!acceptable_service_info_local_var) {
-        return NULL;
-    }
+    OpenAPI_acceptable_service_info_t *acceptable_service_info_local_var = ogs_malloc(sizeof(OpenAPI_acceptable_service_info_t));
+    ogs_assert(acceptable_service_info_local_var);
+
     acceptable_service_info_local_var->acc_bw_med_comps = acc_bw_med_comps;
     acceptable_service_info_local_var->mar_bw_ul = mar_bw_ul;
     acceptable_service_info_local_var->mar_bw_dl = mar_bw_dl;
@@ -29,6 +28,7 @@ void OpenAPI_acceptable_service_info_free(OpenAPI_acceptable_service_info_t *acc
     OpenAPI_lnode_t *node;
     OpenAPI_list_for_each(acceptable_service_info->acc_bw_med_comps, node) {
         OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+        ogs_free(localKeyValue->key);
         OpenAPI_media_component_free(localKeyValue->value);
         ogs_free(localKeyValue);
     }
@@ -107,9 +107,9 @@ OpenAPI_acceptable_service_info_t *OpenAPI_acceptable_service_info_parseFromJSON
         cJSON *localMapObject = acc_bw_med_comps_local_map;
         if (cJSON_IsObject(acc_bw_med_comps_local_map)) {
             localMapKeyPair = OpenAPI_map_create(
-                localMapObject->string, OpenAPI_media_component_parseFromJSON(localMapObject));
+                ogs_strdup(localMapObject->string), OpenAPI_media_component_parseFromJSON(localMapObject));
         } else if (cJSON_IsNull(acc_bw_med_comps_local_map)) {
-            localMapKeyPair = OpenAPI_map_create(localMapObject->string, NULL);
+            localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
         } else {
             ogs_error("OpenAPI_acceptable_service_info_parseFromJSON() failed [acc_bw_med_comps]");
             goto end;
@@ -138,8 +138,8 @@ OpenAPI_acceptable_service_info_t *OpenAPI_acceptable_service_info_parseFromJSON
 
     acceptable_service_info_local_var = OpenAPI_acceptable_service_info_create (
         acc_bw_med_comps ? acc_bw_med_compsList : NULL,
-        mar_bw_ul ? ogs_strdup_or_assert(mar_bw_ul->valuestring) : NULL,
-        mar_bw_dl ? ogs_strdup_or_assert(mar_bw_dl->valuestring) : NULL
+        mar_bw_ul ? ogs_strdup(mar_bw_ul->valuestring) : NULL,
+        mar_bw_dl ? ogs_strdup(mar_bw_dl->valuestring) : NULL
     );
 
     return acceptable_service_info_local_var;

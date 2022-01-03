@@ -9,10 +9,9 @@ OpenAPI_ue_id_t *OpenAPI_ue_id_create(
     OpenAPI_list_t *gpsi_list
 )
 {
-    OpenAPI_ue_id_t *ue_id_local_var = OpenAPI_malloc(sizeof(OpenAPI_ue_id_t));
-    if (!ue_id_local_var) {
-        return NULL;
-    }
+    OpenAPI_ue_id_t *ue_id_local_var = ogs_malloc(sizeof(OpenAPI_ue_id_t));
+    ogs_assert(ue_id_local_var);
+
     ue_id_local_var->supi = supi;
     ue_id_local_var->gpsi_list = gpsi_list;
 
@@ -98,12 +97,12 @@ OpenAPI_ue_id_t *OpenAPI_ue_id_parseFromJSON(cJSON *ue_idJSON)
         ogs_error("OpenAPI_ue_id_parseFromJSON() failed [gpsi_list]");
         goto end;
     }
-    OpenAPI_list_add(gpsi_listList , ogs_strdup_or_assert(gpsi_list_local->valuestring));
+    OpenAPI_list_add(gpsi_listList , ogs_strdup(gpsi_list_local->valuestring));
     }
     }
 
     ue_id_local_var = OpenAPI_ue_id_create (
-        ogs_strdup_or_assert(supi->valuestring),
+        ogs_strdup(supi->valuestring),
         gpsi_list ? gpsi_listList : NULL
     );
 

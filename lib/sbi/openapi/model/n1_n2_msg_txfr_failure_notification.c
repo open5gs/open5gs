@@ -9,10 +9,9 @@ OpenAPI_n1_n2_msg_txfr_failure_notification_t *OpenAPI_n1_n2_msg_txfr_failure_no
     char *n1n2_msg_data_uri
 )
 {
-    OpenAPI_n1_n2_msg_txfr_failure_notification_t *n1_n2_msg_txfr_failure_notification_local_var = OpenAPI_malloc(sizeof(OpenAPI_n1_n2_msg_txfr_failure_notification_t));
-    if (!n1_n2_msg_txfr_failure_notification_local_var) {
-        return NULL;
-    }
+    OpenAPI_n1_n2_msg_txfr_failure_notification_t *n1_n2_msg_txfr_failure_notification_local_var = ogs_malloc(sizeof(OpenAPI_n1_n2_msg_txfr_failure_notification_t));
+    ogs_assert(n1_n2_msg_txfr_failure_notification_local_var);
+
     n1_n2_msg_txfr_failure_notification_local_var->cause = cause;
     n1_n2_msg_txfr_failure_notification_local_var->n1n2_msg_data_uri = n1n2_msg_data_uri;
 
@@ -82,7 +81,7 @@ OpenAPI_n1_n2_msg_txfr_failure_notification_t *OpenAPI_n1_n2_msg_txfr_failure_no
 
     n1_n2_msg_txfr_failure_notification_local_var = OpenAPI_n1_n2_msg_txfr_failure_notification_create (
         causeVariable,
-        ogs_strdup_or_assert(n1n2_msg_data_uri->valuestring)
+        ogs_strdup(n1n2_msg_data_uri->valuestring)
     );
 
     return n1_n2_msg_txfr_failure_notification_local_var;

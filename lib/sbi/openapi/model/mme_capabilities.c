@@ -11,10 +11,9 @@ OpenAPI_mme_capabilities_t *OpenAPI_mme_capabilities_create(
     int ethernet_supported
 )
 {
-    OpenAPI_mme_capabilities_t *mme_capabilities_local_var = OpenAPI_malloc(sizeof(OpenAPI_mme_capabilities_t));
-    if (!mme_capabilities_local_var) {
-        return NULL;
-    }
+    OpenAPI_mme_capabilities_t *mme_capabilities_local_var = ogs_malloc(sizeof(OpenAPI_mme_capabilities_t));
+    ogs_assert(mme_capabilities_local_var);
+
     mme_capabilities_local_var->is_non_ip_supported = is_non_ip_supported;
     mme_capabilities_local_var->non_ip_supported = non_ip_supported;
     mme_capabilities_local_var->is_ethernet_supported = is_ethernet_supported;

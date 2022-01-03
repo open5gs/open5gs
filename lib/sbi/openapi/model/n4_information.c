@@ -10,10 +10,9 @@ OpenAPI_n4_information_t *OpenAPI_n4_information_create(
     OpenAPI_dnai_information_t *n4_dnai_info
 )
 {
-    OpenAPI_n4_information_t *n4_information_local_var = OpenAPI_malloc(sizeof(OpenAPI_n4_information_t));
-    if (!n4_information_local_var) {
-        return NULL;
-    }
+    OpenAPI_n4_information_t *n4_information_local_var = ogs_malloc(sizeof(OpenAPI_n4_information_t));
+    ogs_assert(n4_information_local_var);
+
     n4_information_local_var->n4_message_type = n4_message_type;
     n4_information_local_var->n4_message_payload = n4_message_payload;
     n4_information_local_var->n4_dnai_info = n4_dnai_info;

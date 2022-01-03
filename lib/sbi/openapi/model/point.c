@@ -9,10 +9,9 @@ OpenAPI_point_t *OpenAPI_point_create(
     OpenAPI_geographical_coordinates_t *point
 )
 {
-    OpenAPI_point_t *point_local_var = OpenAPI_malloc(sizeof(OpenAPI_point_t));
-    if (!point_local_var) {
-        return NULL;
-    }
+    OpenAPI_point_t *point_local_var = ogs_malloc(sizeof(OpenAPI_point_t));
+    ogs_assert(point_local_var);
+
     point_local_var->shape = shape;
     point_local_var->point = point;
 

@@ -9,10 +9,9 @@ OpenAPI_nr_v2x_auth_1_t *OpenAPI_nr_v2x_auth_1_create(
     OpenAPI_ue_auth_e pedestrian_ue_auth
 )
 {
-    OpenAPI_nr_v2x_auth_1_t *nr_v2x_auth_1_local_var = OpenAPI_malloc(sizeof(OpenAPI_nr_v2x_auth_1_t));
-    if (!nr_v2x_auth_1_local_var) {
-        return NULL;
-    }
+    OpenAPI_nr_v2x_auth_1_t *nr_v2x_auth_1_local_var = ogs_malloc(sizeof(OpenAPI_nr_v2x_auth_1_t));
+    ogs_assert(nr_v2x_auth_1_local_var);
+
     nr_v2x_auth_1_local_var->vehicle_ue_auth = vehicle_ue_auth;
     nr_v2x_auth_1_local_var->pedestrian_ue_auth = pedestrian_ue_auth;
 

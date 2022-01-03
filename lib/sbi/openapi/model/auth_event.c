@@ -14,10 +14,9 @@ OpenAPI_auth_event_t *OpenAPI_auth_event_create(
     int auth_removal_ind
 )
 {
-    OpenAPI_auth_event_t *auth_event_local_var = OpenAPI_malloc(sizeof(OpenAPI_auth_event_t));
-    if (!auth_event_local_var) {
-        return NULL;
-    }
+    OpenAPI_auth_event_t *auth_event_local_var = ogs_malloc(sizeof(OpenAPI_auth_event_t));
+    ogs_assert(auth_event_local_var);
+
     auth_event_local_var->nf_instance_id = nf_instance_id;
     auth_event_local_var->success = success;
     auth_event_local_var->time_stamp = time_stamp;
@@ -157,12 +156,12 @@ OpenAPI_auth_event_t *OpenAPI_auth_event_parseFromJSON(cJSON *auth_eventJSON)
     }
 
     auth_event_local_var = OpenAPI_auth_event_create (
-        ogs_strdup_or_assert(nf_instance_id->valuestring),
+        ogs_strdup(nf_instance_id->valuestring),
         
         success->valueint,
-        ogs_strdup_or_assert(time_stamp->valuestring),
+        ogs_strdup(time_stamp->valuestring),
         auth_typeVariable,
-        ogs_strdup_or_assert(serving_network_name->valuestring),
+        ogs_strdup(serving_network_name->valuestring),
         auth_removal_ind ? true : false,
         auth_removal_ind ? auth_removal_ind->valueint : 0
     );

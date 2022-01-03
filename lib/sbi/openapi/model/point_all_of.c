@@ -8,10 +8,9 @@ OpenAPI_point_all_of_t *OpenAPI_point_all_of_create(
     OpenAPI_geographical_coordinates_t *point
 )
 {
-    OpenAPI_point_all_of_t *point_all_of_local_var = OpenAPI_malloc(sizeof(OpenAPI_point_all_of_t));
-    if (!point_all_of_local_var) {
-        return NULL;
-    }
+    OpenAPI_point_all_of_t *point_all_of_local_var = ogs_malloc(sizeof(OpenAPI_point_all_of_t));
+    ogs_assert(point_all_of_local_var);
+
     point_all_of_local_var->point = point;
 
     return point_all_of_local_var;

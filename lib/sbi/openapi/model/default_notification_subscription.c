@@ -13,10 +13,9 @@ OpenAPI_default_notification_subscription_t *OpenAPI_default_notification_subscr
     char *binding
 )
 {
-    OpenAPI_default_notification_subscription_t *default_notification_subscription_local_var = OpenAPI_malloc(sizeof(OpenAPI_default_notification_subscription_t));
-    if (!default_notification_subscription_local_var) {
-        return NULL;
-    }
+    OpenAPI_default_notification_subscription_t *default_notification_subscription_local_var = ogs_malloc(sizeof(OpenAPI_default_notification_subscription_t));
+    ogs_assert(default_notification_subscription_local_var);
+
     default_notification_subscription_local_var->notification_type = notification_type;
     default_notification_subscription_local_var->callback_uri = callback_uri;
     default_notification_subscription_local_var->n1_message_class = n1_message_class;
@@ -168,7 +167,7 @@ OpenAPI_default_notification_subscription_t *OpenAPI_default_notification_subscr
         ogs_error("OpenAPI_default_notification_subscription_parseFromJSON() failed [versions]");
         goto end;
     }
-    OpenAPI_list_add(versionsList , ogs_strdup_or_assert(versions_local->valuestring));
+    OpenAPI_list_add(versionsList , ogs_strdup(versions_local->valuestring));
     }
     }
 
@@ -183,11 +182,11 @@ OpenAPI_default_notification_subscription_t *OpenAPI_default_notification_subscr
 
     default_notification_subscription_local_var = OpenAPI_default_notification_subscription_create (
         notification_typeVariable,
-        ogs_strdup_or_assert(callback_uri->valuestring),
+        ogs_strdup(callback_uri->valuestring),
         n1_message_class ? n1_message_classVariable : 0,
         n2_information_class ? n2_information_classVariable : 0,
         versions ? versionsList : NULL,
-        binding ? ogs_strdup_or_assert(binding->valuestring) : NULL
+        binding ? ogs_strdup(binding->valuestring) : NULL
     );
 
     return default_notification_subscription_local_var;

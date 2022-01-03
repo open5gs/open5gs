@@ -12,10 +12,9 @@ OpenAPI_dnn_route_selection_descriptor_t *OpenAPI_dnn_route_selection_descriptor
     int atsss_info
 )
 {
-    OpenAPI_dnn_route_selection_descriptor_t *dnn_route_selection_descriptor_local_var = OpenAPI_malloc(sizeof(OpenAPI_dnn_route_selection_descriptor_t));
-    if (!dnn_route_selection_descriptor_local_var) {
-        return NULL;
-    }
+    OpenAPI_dnn_route_selection_descriptor_t *dnn_route_selection_descriptor_local_var = ogs_malloc(sizeof(OpenAPI_dnn_route_selection_descriptor_t));
+    ogs_assert(dnn_route_selection_descriptor_local_var);
+
     dnn_route_selection_descriptor_local_var->dnn = dnn;
     dnn_route_selection_descriptor_local_var->ssc_modes = ssc_modes;
     dnn_route_selection_descriptor_local_var->pdu_sess_types = pdu_sess_types;
@@ -161,7 +160,7 @@ OpenAPI_dnn_route_selection_descriptor_t *OpenAPI_dnn_route_selection_descriptor
     }
 
     dnn_route_selection_descriptor_local_var = OpenAPI_dnn_route_selection_descriptor_create (
-        ogs_strdup_or_assert(dnn->valuestring),
+        ogs_strdup(dnn->valuestring),
         ssc_modes ? ssc_modesList : NULL,
         pdu_sess_types ? pdu_sess_typesList : NULL,
         atsss_info ? true : false,

@@ -8,10 +8,9 @@ OpenAPI_pws_error_data_t *OpenAPI_pws_error_data_create(
     int namf_cause
 )
 {
-    OpenAPI_pws_error_data_t *pws_error_data_local_var = OpenAPI_malloc(sizeof(OpenAPI_pws_error_data_t));
-    if (!pws_error_data_local_var) {
-        return NULL;
-    }
+    OpenAPI_pws_error_data_t *pws_error_data_local_var = ogs_malloc(sizeof(OpenAPI_pws_error_data_t));
+    ogs_assert(pws_error_data_local_var);
+
     pws_error_data_local_var->namf_cause = namf_cause;
 
     return pws_error_data_local_var;

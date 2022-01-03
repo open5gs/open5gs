@@ -9,10 +9,9 @@ OpenAPI_port_management_container_t *OpenAPI_port_management_container_create(
     int port_num
 )
 {
-    OpenAPI_port_management_container_t *port_management_container_local_var = OpenAPI_malloc(sizeof(OpenAPI_port_management_container_t));
-    if (!port_management_container_local_var) {
-        return NULL;
-    }
+    OpenAPI_port_management_container_t *port_management_container_local_var = ogs_malloc(sizeof(OpenAPI_port_management_container_t));
+    ogs_assert(port_management_container_local_var);
+
     port_management_container_local_var->port_man_cont = port_man_cont;
     port_management_container_local_var->port_num = port_num;
 

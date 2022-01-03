@@ -23,10 +23,9 @@ OpenAPI_sdm_subscription_t *OpenAPI_sdm_subscription_create(
     OpenAPI_context_info_t *context_info
 )
 {
-    OpenAPI_sdm_subscription_t *sdm_subscription_local_var = OpenAPI_malloc(sizeof(OpenAPI_sdm_subscription_t));
-    if (!sdm_subscription_local_var) {
-        return NULL;
-    }
+    OpenAPI_sdm_subscription_t *sdm_subscription_local_var = ogs_malloc(sizeof(OpenAPI_sdm_subscription_t));
+    ogs_assert(sdm_subscription_local_var);
+
     sdm_subscription_local_var->nf_instance_id = nf_instance_id;
     sdm_subscription_local_var->is_implicit_unsubscribe = is_implicit_unsubscribe;
     sdm_subscription_local_var->implicit_unsubscribe = implicit_unsubscribe;
@@ -281,7 +280,7 @@ OpenAPI_sdm_subscription_t *OpenAPI_sdm_subscription_parseFromJSON(cJSON *sdm_su
         ogs_error("OpenAPI_sdm_subscription_parseFromJSON() failed [monitored_resource_uris]");
         goto end;
     }
-    OpenAPI_list_add(monitored_resource_urisList , ogs_strdup_or_assert(monitored_resource_uris_local->valuestring));
+    OpenAPI_list_add(monitored_resource_urisList , ogs_strdup(monitored_resource_uris_local->valuestring));
     }
 
     cJSON *single_nssai = cJSON_GetObjectItemCaseSensitive(sdm_subscriptionJSON, "singleNssai");
@@ -349,21 +348,21 @@ OpenAPI_sdm_subscription_t *OpenAPI_sdm_subscription_parseFromJSON(cJSON *sdm_su
     }
 
     sdm_subscription_local_var = OpenAPI_sdm_subscription_create (
-        ogs_strdup_or_assert(nf_instance_id->valuestring),
+        ogs_strdup(nf_instance_id->valuestring),
         implicit_unsubscribe ? true : false,
         implicit_unsubscribe ? implicit_unsubscribe->valueint : 0,
-        expires ? ogs_strdup_or_assert(expires->valuestring) : NULL,
-        ogs_strdup_or_assert(callback_reference->valuestring),
-        amf_service_name ? ogs_strdup_or_assert(amf_service_name->valuestring) : NULL,
+        expires ? ogs_strdup(expires->valuestring) : NULL,
+        ogs_strdup(callback_reference->valuestring),
+        amf_service_name ? ogs_strdup(amf_service_name->valuestring) : NULL,
         monitored_resource_urisList,
         single_nssai ? single_nssai_local_nonprim : NULL,
-        dnn ? ogs_strdup_or_assert(dnn->valuestring) : NULL,
-        subscription_id ? ogs_strdup_or_assert(subscription_id->valuestring) : NULL,
+        dnn ? ogs_strdup(dnn->valuestring) : NULL,
+        subscription_id ? ogs_strdup(subscription_id->valuestring) : NULL,
         plmn_id ? plmn_id_local_nonprim : NULL,
         immediate_report ? true : false,
         immediate_report ? immediate_report->valueint : 0,
         report ? report_local_nonprim : NULL,
-        supported_features ? ogs_strdup_or_assert(supported_features->valuestring) : NULL,
+        supported_features ? ogs_strdup(supported_features->valuestring) : NULL,
         context_info ? context_info_local_nonprim : NULL
     );
 

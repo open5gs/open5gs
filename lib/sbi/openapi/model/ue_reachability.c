@@ -7,10 +7,9 @@
 OpenAPI_ue_reachability_t *OpenAPI_ue_reachability_create(
 )
 {
-    OpenAPI_ue_reachability_t *ue_reachability_local_var = OpenAPI_malloc(sizeof(OpenAPI_ue_reachability_t));
-    if (!ue_reachability_local_var) {
-        return NULL;
-    }
+    OpenAPI_ue_reachability_t *ue_reachability_local_var = ogs_malloc(sizeof(OpenAPI_ue_reachability_t));
+    ogs_assert(ue_reachability_local_var);
+
 
     return ue_reachability_local_var;
 }

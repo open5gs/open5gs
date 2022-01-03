@@ -8,10 +8,9 @@ OpenAPI_bridge_management_container_t *OpenAPI_bridge_management_container_creat
     char bridge_man_cont
 )
 {
-    OpenAPI_bridge_management_container_t *bridge_management_container_local_var = OpenAPI_malloc(sizeof(OpenAPI_bridge_management_container_t));
-    if (!bridge_management_container_local_var) {
-        return NULL;
-    }
+    OpenAPI_bridge_management_container_t *bridge_management_container_local_var = ogs_malloc(sizeof(OpenAPI_bridge_management_container_t));
+    ogs_assert(bridge_management_container_local_var);
+
     bridge_management_container_local_var->bridge_man_cont = bridge_man_cont;
 
     return bridge_management_container_local_var;

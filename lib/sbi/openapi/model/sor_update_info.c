@@ -8,10 +8,9 @@ OpenAPI_sor_update_info_t *OpenAPI_sor_update_info_create(
     OpenAPI_plmn_id_t *vplmn_id
 )
 {
-    OpenAPI_sor_update_info_t *sor_update_info_local_var = OpenAPI_malloc(sizeof(OpenAPI_sor_update_info_t));
-    if (!sor_update_info_local_var) {
-        return NULL;
-    }
+    OpenAPI_sor_update_info_t *sor_update_info_local_var = ogs_malloc(sizeof(OpenAPI_sor_update_info_t));
+    ogs_assert(sor_update_info_local_var);
+
     sor_update_info_local_var->vplmn_id = vplmn_id;
 
     return sor_update_info_local_var;

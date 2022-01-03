@@ -9,10 +9,9 @@ OpenAPI_amf_event_subscription_add_info_t *OpenAPI_amf_event_subscription_add_in
     OpenAPI_nf_type_e subscribing_nf_type
 )
 {
-    OpenAPI_amf_event_subscription_add_info_t *amf_event_subscription_add_info_local_var = OpenAPI_malloc(sizeof(OpenAPI_amf_event_subscription_add_info_t));
-    if (!amf_event_subscription_add_info_local_var) {
-        return NULL;
-    }
+    OpenAPI_amf_event_subscription_add_info_t *amf_event_subscription_add_info_local_var = ogs_malloc(sizeof(OpenAPI_amf_event_subscription_add_info_t));
+    ogs_assert(amf_event_subscription_add_info_local_var);
+
     amf_event_subscription_add_info_local_var->binding_info = binding_info;
     amf_event_subscription_add_info_local_var->subscribing_nf_type = subscribing_nf_type;
 
@@ -88,7 +87,7 @@ OpenAPI_amf_event_subscription_add_info_t *OpenAPI_amf_event_subscription_add_in
         ogs_error("OpenAPI_amf_event_subscription_add_info_parseFromJSON() failed [binding_info]");
         goto end;
     }
-    OpenAPI_list_add(binding_infoList , ogs_strdup_or_assert(binding_info_local->valuestring));
+    OpenAPI_list_add(binding_infoList , ogs_strdup(binding_info_local->valuestring));
     }
     }
 

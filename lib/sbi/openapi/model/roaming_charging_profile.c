@@ -9,10 +9,9 @@ OpenAPI_roaming_charging_profile_t *OpenAPI_roaming_charging_profile_create(
     OpenAPI_partial_record_method_t *partial_record_method
 )
 {
-    OpenAPI_roaming_charging_profile_t *roaming_charging_profile_local_var = OpenAPI_malloc(sizeof(OpenAPI_roaming_charging_profile_t));
-    if (!roaming_charging_profile_local_var) {
-        return NULL;
-    }
+    OpenAPI_roaming_charging_profile_t *roaming_charging_profile_local_var = ogs_malloc(sizeof(OpenAPI_roaming_charging_profile_t));
+    ogs_assert(roaming_charging_profile_local_var);
+
     roaming_charging_profile_local_var->triggers = triggers;
     roaming_charging_profile_local_var->partial_record_method = partial_record_method;
 

@@ -8,10 +8,9 @@ OpenAPI_pcscf_restoration_notification_t *OpenAPI_pcscf_restoration_notification
     char *supi
 )
 {
-    OpenAPI_pcscf_restoration_notification_t *pcscf_restoration_notification_local_var = OpenAPI_malloc(sizeof(OpenAPI_pcscf_restoration_notification_t));
-    if (!pcscf_restoration_notification_local_var) {
-        return NULL;
-    }
+    OpenAPI_pcscf_restoration_notification_t *pcscf_restoration_notification_local_var = ogs_malloc(sizeof(OpenAPI_pcscf_restoration_notification_t));
+    ogs_assert(pcscf_restoration_notification_local_var);
+
     pcscf_restoration_notification_local_var->supi = supi;
 
     return pcscf_restoration_notification_local_var;
@@ -61,7 +60,7 @@ OpenAPI_pcscf_restoration_notification_t *OpenAPI_pcscf_restoration_notification
     }
 
     pcscf_restoration_notification_local_var = OpenAPI_pcscf_restoration_notification_create (
-        ogs_strdup_or_assert(supi->valuestring)
+        ogs_strdup(supi->valuestring)
     );
 
     return pcscf_restoration_notification_local_var;

@@ -9,10 +9,9 @@ OpenAPI_qos_monitoring_info_t *OpenAPI_qos_monitoring_info_create(
     int qos_monitoring_ind
 )
 {
-    OpenAPI_qos_monitoring_info_t *qos_monitoring_info_local_var = OpenAPI_malloc(sizeof(OpenAPI_qos_monitoring_info_t));
-    if (!qos_monitoring_info_local_var) {
-        return NULL;
-    }
+    OpenAPI_qos_monitoring_info_t *qos_monitoring_info_local_var = ogs_malloc(sizeof(OpenAPI_qos_monitoring_info_t));
+    ogs_assert(qos_monitoring_info_local_var);
+
     qos_monitoring_info_local_var->is_qos_monitoring_ind = is_qos_monitoring_ind;
     qos_monitoring_info_local_var->qos_monitoring_ind = qos_monitoring_ind;
 

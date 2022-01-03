@@ -10,10 +10,9 @@ OpenAPI_user_location_t *OpenAPI_user_location_create(
     OpenAPI_n3ga_location_t *n3ga_location
 )
 {
-    OpenAPI_user_location_t *user_location_local_var = OpenAPI_malloc(sizeof(OpenAPI_user_location_t));
-    if (!user_location_local_var) {
-        return NULL;
-    }
+    OpenAPI_user_location_t *user_location_local_var = ogs_malloc(sizeof(OpenAPI_user_location_t));
+    ogs_assert(user_location_local_var);
+
     user_location_local_var->eutra_location = eutra_location;
     user_location_local_var->nr_location = nr_location;
     user_location_local_var->n3ga_location = n3ga_location;

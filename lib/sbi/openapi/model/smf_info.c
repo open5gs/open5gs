@@ -16,10 +16,9 @@ OpenAPI_smf_info_t *OpenAPI_smf_info_create(
     int vsmf_support_ind
 )
 {
-    OpenAPI_smf_info_t *smf_info_local_var = OpenAPI_malloc(sizeof(OpenAPI_smf_info_t));
-    if (!smf_info_local_var) {
-        return NULL;
-    }
+    OpenAPI_smf_info_t *smf_info_local_var = ogs_malloc(sizeof(OpenAPI_smf_info_t));
+    ogs_assert(smf_info_local_var);
+
     smf_info_local_var->s_nssai_smf_info_list = s_nssai_smf_info_list;
     smf_info_local_var->tai_list = tai_list;
     smf_info_local_var->tai_range_list = tai_range_list;
@@ -291,7 +290,7 @@ OpenAPI_smf_info_t *OpenAPI_smf_info_parseFromJSON(cJSON *smf_infoJSON)
         s_nssai_smf_info_listList,
         tai_list ? tai_listList : NULL,
         tai_range_list ? tai_range_listList : NULL,
-        pgw_fqdn ? ogs_strdup_or_assert(pgw_fqdn->valuestring) : NULL,
+        pgw_fqdn ? ogs_strdup(pgw_fqdn->valuestring) : NULL,
         access_type ? access_typeList : NULL,
         priority ? true : false,
         priority ? priority->valuedouble : 0,

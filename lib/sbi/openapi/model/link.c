@@ -8,10 +8,9 @@ OpenAPI_link_t *OpenAPI_link_create(
     char *href
 )
 {
-    OpenAPI_link_t *link_local_var = OpenAPI_malloc(sizeof(OpenAPI_link_t));
-    if (!link_local_var) {
-        return NULL;
-    }
+    OpenAPI_link_t *link_local_var = ogs_malloc(sizeof(OpenAPI_link_t));
+    ogs_assert(link_local_var);
+
     link_local_var->href = href;
 
     return link_local_var;
@@ -61,7 +60,7 @@ OpenAPI_link_t *OpenAPI_link_parseFromJSON(cJSON *linkJSON)
     }
 
     link_local_var = OpenAPI_link_create (
-        href ? ogs_strdup_or_assert(href->valuestring) : NULL
+        href ? ogs_strdup(href->valuestring) : NULL
     );
 
     return link_local_var;

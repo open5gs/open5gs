@@ -11,10 +11,9 @@ OpenAPI_status_info_t *OpenAPI_status_info_create(
     OpenAPI_access_type_e an_type
 )
 {
-    OpenAPI_status_info_t *status_info_local_var = OpenAPI_malloc(sizeof(OpenAPI_status_info_t));
-    if (!status_info_local_var) {
-        return NULL;
-    }
+    OpenAPI_status_info_t *status_info_local_var = ogs_malloc(sizeof(OpenAPI_status_info_t));
+    ogs_assert(status_info_local_var);
+
     status_info_local_var->resource_status = resource_status;
     status_info_local_var->cause = cause;
     status_info_local_var->cn_assisted_ran_para = cn_assisted_ran_para;

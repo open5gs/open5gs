@@ -7,10 +7,9 @@
 OpenAPI_access_right_status_t *OpenAPI_access_right_status_create(
 )
 {
-    OpenAPI_access_right_status_t *access_right_status_local_var = OpenAPI_malloc(sizeof(OpenAPI_access_right_status_t));
-    if (!access_right_status_local_var) {
-        return NULL;
-    }
+    OpenAPI_access_right_status_t *access_right_status_local_var = ogs_malloc(sizeof(OpenAPI_access_right_status_t));
+    ogs_assert(access_right_status_local_var);
+
 
     return access_right_status_local_var;
 }

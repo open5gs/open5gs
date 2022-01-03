@@ -9,10 +9,9 @@ OpenAPI_transfer_mt_data_add_info_t *OpenAPI_transfer_mt_data_add_info_create(
     int max_waiting_time
 )
 {
-    OpenAPI_transfer_mt_data_add_info_t *transfer_mt_data_add_info_local_var = OpenAPI_malloc(sizeof(OpenAPI_transfer_mt_data_add_info_t));
-    if (!transfer_mt_data_add_info_local_var) {
-        return NULL;
-    }
+    OpenAPI_transfer_mt_data_add_info_t *transfer_mt_data_add_info_local_var = ogs_malloc(sizeof(OpenAPI_transfer_mt_data_add_info_t));
+    ogs_assert(transfer_mt_data_add_info_local_var);
+
     transfer_mt_data_add_info_local_var->is_max_waiting_time = is_max_waiting_time;
     transfer_mt_data_add_info_local_var->max_waiting_time = max_waiting_time;
 

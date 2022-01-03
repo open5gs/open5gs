@@ -8,10 +8,9 @@ OpenAPI_inline_response_200_t *OpenAPI_inline_response_200_create(
     OpenAPI_list_t* _links
 )
 {
-    OpenAPI_inline_response_200_t *inline_response_200_local_var = OpenAPI_malloc(sizeof(OpenAPI_inline_response_200_t));
-    if (!inline_response_200_local_var) {
-        return NULL;
-    }
+    OpenAPI_inline_response_200_t *inline_response_200_local_var = ogs_malloc(sizeof(OpenAPI_inline_response_200_t));
+    ogs_assert(inline_response_200_local_var);
+
     inline_response_200_local_var->_links = _links;
 
     return inline_response_200_local_var;
@@ -25,6 +24,7 @@ void OpenAPI_inline_response_200_free(OpenAPI_inline_response_200_t *inline_resp
     OpenAPI_lnode_t *node;
     OpenAPI_list_for_each(inline_response_200->_links, node) {
         OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+        ogs_free(localKeyValue->key);
         OpenAPI_links_value_schema_free(localKeyValue->value);
         ogs_free(localKeyValue);
     }
@@ -87,9 +87,9 @@ OpenAPI_inline_response_200_t *OpenAPI_inline_response_200_parseFromJSON(cJSON *
         cJSON *localMapObject = _links_local_map;
         if (cJSON_IsObject(_links_local_map)) {
             localMapKeyPair = OpenAPI_map_create(
-                localMapObject->string, OpenAPI_links_value_schema_parseFromJSON(localMapObject));
+                ogs_strdup(localMapObject->string), OpenAPI_links_value_schema_parseFromJSON(localMapObject));
         } else if (cJSON_IsNull(_links_local_map)) {
-            localMapKeyPair = OpenAPI_map_create(localMapObject->string, NULL);
+            localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
         } else {
             ogs_error("OpenAPI_inline_response_200_parseFromJSON() failed [_links]");
             goto end;

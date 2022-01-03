@@ -7,10 +7,9 @@
 OpenAPI_steering_container_t *OpenAPI_steering_container_create(
 )
 {
-    OpenAPI_steering_container_t *steering_container_local_var = OpenAPI_malloc(sizeof(OpenAPI_steering_container_t));
-    if (!steering_container_local_var) {
-        return NULL;
-    }
+    OpenAPI_steering_container_t *steering_container_local_var = ogs_malloc(sizeof(OpenAPI_steering_container_t));
+    ogs_assert(steering_container_local_var);
+
 
     return steering_container_local_var;
 }

@@ -7,10 +7,9 @@
 OpenAPI_partial_record_method_t *OpenAPI_partial_record_method_create(
 )
 {
-    OpenAPI_partial_record_method_t *partial_record_method_local_var = OpenAPI_malloc(sizeof(OpenAPI_partial_record_method_t));
-    if (!partial_record_method_local_var) {
-        return NULL;
-    }
+    OpenAPI_partial_record_method_t *partial_record_method_local_var = ogs_malloc(sizeof(OpenAPI_partial_record_method_t));
+    ogs_assert(partial_record_method_local_var);
+
 
     return partial_record_method_local_var;
 }

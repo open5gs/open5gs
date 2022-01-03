@@ -7,10 +7,9 @@
 OpenAPI_trigger_type_t *OpenAPI_trigger_type_create(
 )
 {
-    OpenAPI_trigger_type_t *trigger_type_local_var = OpenAPI_malloc(sizeof(OpenAPI_trigger_type_t));
-    if (!trigger_type_local_var) {
-        return NULL;
-    }
+    OpenAPI_trigger_type_t *trigger_type_local_var = ogs_malloc(sizeof(OpenAPI_trigger_type_t));
+    ogs_assert(trigger_type_local_var);
+
 
     return trigger_type_local_var;
 }

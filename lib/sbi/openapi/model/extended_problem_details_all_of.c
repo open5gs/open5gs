@@ -8,10 +8,9 @@ OpenAPI_extended_problem_details_all_of_t *OpenAPI_extended_problem_details_all_
     OpenAPI_acceptable_service_info_t *acceptable_serv_info
 )
 {
-    OpenAPI_extended_problem_details_all_of_t *extended_problem_details_all_of_local_var = OpenAPI_malloc(sizeof(OpenAPI_extended_problem_details_all_of_t));
-    if (!extended_problem_details_all_of_local_var) {
-        return NULL;
-    }
+    OpenAPI_extended_problem_details_all_of_t *extended_problem_details_all_of_local_var = ogs_malloc(sizeof(OpenAPI_extended_problem_details_all_of_t));
+    ogs_assert(extended_problem_details_all_of_local_var);
+
     extended_problem_details_all_of_local_var->acceptable_serv_info = acceptable_serv_info;
 
     return extended_problem_details_all_of_local_var;

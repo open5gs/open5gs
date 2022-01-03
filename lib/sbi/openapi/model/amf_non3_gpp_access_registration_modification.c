@@ -13,10 +13,9 @@ OpenAPI_amf_non3_gpp_access_registration_modification_t *OpenAPI_amf_non3_gpp_ac
     OpenAPI_list_t *backup_amf_info
 )
 {
-    OpenAPI_amf_non3_gpp_access_registration_modification_t *amf_non3_gpp_access_registration_modification_local_var = OpenAPI_malloc(sizeof(OpenAPI_amf_non3_gpp_access_registration_modification_t));
-    if (!amf_non3_gpp_access_registration_modification_local_var) {
-        return NULL;
-    }
+    OpenAPI_amf_non3_gpp_access_registration_modification_t *amf_non3_gpp_access_registration_modification_local_var = ogs_malloc(sizeof(OpenAPI_amf_non3_gpp_access_registration_modification_t));
+    ogs_assert(amf_non3_gpp_access_registration_modification_local_var);
+
     amf_non3_gpp_access_registration_modification_local_var->guami = guami;
     amf_non3_gpp_access_registration_modification_local_var->is_purge_flag = is_purge_flag;
     amf_non3_gpp_access_registration_modification_local_var->purge_flag = purge_flag;
@@ -176,7 +175,7 @@ OpenAPI_amf_non3_gpp_access_registration_modification_t *OpenAPI_amf_non3_gpp_ac
         guami_local_nonprim,
         purge_flag ? true : false,
         purge_flag ? purge_flag->valueint : 0,
-        pei ? ogs_strdup_or_assert(pei->valuestring) : NULL,
+        pei ? ogs_strdup(pei->valuestring) : NULL,
         ims_vo_ps ? ims_vo_psVariable : 0,
         backup_amf_info ? backup_amf_infoList : NULL
     );

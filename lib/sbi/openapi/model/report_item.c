@@ -8,10 +8,9 @@ OpenAPI_report_item_t *OpenAPI_report_item_create(
     char *path
 )
 {
-    OpenAPI_report_item_t *report_item_local_var = OpenAPI_malloc(sizeof(OpenAPI_report_item_t));
-    if (!report_item_local_var) {
-        return NULL;
-    }
+    OpenAPI_report_item_t *report_item_local_var = ogs_malloc(sizeof(OpenAPI_report_item_t));
+    ogs_assert(report_item_local_var);
+
     report_item_local_var->path = path;
 
     return report_item_local_var;
@@ -61,7 +60,7 @@ OpenAPI_report_item_t *OpenAPI_report_item_parseFromJSON(cJSON *report_itemJSON)
     }
 
     report_item_local_var = OpenAPI_report_item_create (
-        ogs_strdup_or_assert(path->valuestring)
+        ogs_strdup(path->valuestring)
     );
 
     return report_item_local_var;

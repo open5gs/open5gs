@@ -9,10 +9,9 @@ OpenAPI_termination_info_t *OpenAPI_termination_info_create(
     char *res_uri
 )
 {
-    OpenAPI_termination_info_t *termination_info_local_var = OpenAPI_malloc(sizeof(OpenAPI_termination_info_t));
-    if (!termination_info_local_var) {
-        return NULL;
-    }
+    OpenAPI_termination_info_t *termination_info_local_var = ogs_malloc(sizeof(OpenAPI_termination_info_t));
+    ogs_assert(termination_info_local_var);
+
     termination_info_local_var->term_cause = term_cause;
     termination_info_local_var->res_uri = res_uri;
 
@@ -82,7 +81,7 @@ OpenAPI_termination_info_t *OpenAPI_termination_info_parseFromJSON(cJSON *termin
 
     termination_info_local_var = OpenAPI_termination_info_create (
         term_causeVariable,
-        ogs_strdup_or_assert(res_uri->valuestring)
+        ogs_strdup(res_uri->valuestring)
     );
 
     return termination_info_local_var;

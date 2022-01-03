@@ -10,10 +10,9 @@ OpenAPI_small_data_rate_status_info_t *OpenAPI_small_data_rate_status_info_creat
     OpenAPI_small_data_rate_status_t *small_data_rate_status
 )
 {
-    OpenAPI_small_data_rate_status_info_t *small_data_rate_status_info_local_var = OpenAPI_malloc(sizeof(OpenAPI_small_data_rate_status_info_t));
-    if (!small_data_rate_status_info_local_var) {
-        return NULL;
-    }
+    OpenAPI_small_data_rate_status_info_t *small_data_rate_status_info_local_var = ogs_malloc(sizeof(OpenAPI_small_data_rate_status_info_t));
+    ogs_assert(small_data_rate_status_info_local_var);
+
     small_data_rate_status_info_local_var->snssai = snssai;
     small_data_rate_status_info_local_var->dnn = dnn;
     small_data_rate_status_info_local_var->small_data_rate_status = small_data_rate_status;
@@ -108,7 +107,7 @@ OpenAPI_small_data_rate_status_info_t *OpenAPI_small_data_rate_status_info_parse
 
     small_data_rate_status_info_local_var = OpenAPI_small_data_rate_status_info_create (
         snssai_local_nonprim,
-        ogs_strdup_or_assert(dnn->valuestring),
+        ogs_strdup(dnn->valuestring),
         small_data_rate_status_local_nonprim
     );
 

@@ -9,10 +9,9 @@ OpenAPI_ebi_arp_mapping_t *OpenAPI_ebi_arp_mapping_create(
     OpenAPI_arp_t *arp
 )
 {
-    OpenAPI_ebi_arp_mapping_t *ebi_arp_mapping_local_var = OpenAPI_malloc(sizeof(OpenAPI_ebi_arp_mapping_t));
-    if (!ebi_arp_mapping_local_var) {
-        return NULL;
-    }
+    OpenAPI_ebi_arp_mapping_t *ebi_arp_mapping_local_var = ogs_malloc(sizeof(OpenAPI_ebi_arp_mapping_t));
+    ogs_assert(ebi_arp_mapping_local_var);
+
     ebi_arp_mapping_local_var->eps_bearer_id = eps_bearer_id;
     ebi_arp_mapping_local_var->arp = arp;
 

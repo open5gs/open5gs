@@ -11,10 +11,9 @@ OpenAPI_ue_context_transfer_rsp_data_t *OpenAPI_ue_context_transfer_rsp_data_cre
     char *supported_features
 )
 {
-    OpenAPI_ue_context_transfer_rsp_data_t *ue_context_transfer_rsp_data_local_var = OpenAPI_malloc(sizeof(OpenAPI_ue_context_transfer_rsp_data_t));
-    if (!ue_context_transfer_rsp_data_local_var) {
-        return NULL;
-    }
+    OpenAPI_ue_context_transfer_rsp_data_t *ue_context_transfer_rsp_data_local_var = ogs_malloc(sizeof(OpenAPI_ue_context_transfer_rsp_data_t));
+    ogs_assert(ue_context_transfer_rsp_data_local_var);
+
     ue_context_transfer_rsp_data_local_var->ue_context = ue_context;
     ue_context_transfer_rsp_data_local_var->ue_radio_capability = ue_radio_capability;
     ue_context_transfer_rsp_data_local_var->ue_nbiot_radio_capability = ue_nbiot_radio_capability;
@@ -133,7 +132,7 @@ OpenAPI_ue_context_transfer_rsp_data_t *OpenAPI_ue_context_transfer_rsp_data_par
         ue_context_local_nonprim,
         ue_radio_capability ? ue_radio_capability_local_nonprim : NULL,
         ue_nbiot_radio_capability ? ue_nbiot_radio_capability_local_nonprim : NULL,
-        supported_features ? ogs_strdup_or_assert(supported_features->valuestring) : NULL
+        supported_features ? ogs_strdup(supported_features->valuestring) : NULL
     );
 
     return ue_context_transfer_rsp_data_local_var;

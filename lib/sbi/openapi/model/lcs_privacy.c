@@ -12,10 +12,9 @@ OpenAPI_lcs_privacy_t *OpenAPI_lcs_privacy_create(
     char *mtc_provider_information
 )
 {
-    OpenAPI_lcs_privacy_t *lcs_privacy_local_var = OpenAPI_malloc(sizeof(OpenAPI_lcs_privacy_t));
-    if (!lcs_privacy_local_var) {
-        return NULL;
-    }
+    OpenAPI_lcs_privacy_t *lcs_privacy_local_var = ogs_malloc(sizeof(OpenAPI_lcs_privacy_t));
+    ogs_assert(lcs_privacy_local_var);
+
     lcs_privacy_local_var->af_instance_id = af_instance_id;
     lcs_privacy_local_var->is_reference_id = is_reference_id;
     lcs_privacy_local_var->reference_id = reference_id;
@@ -123,11 +122,11 @@ OpenAPI_lcs_privacy_t *OpenAPI_lcs_privacy_parseFromJSON(cJSON *lcs_privacyJSON)
     }
 
     lcs_privacy_local_var = OpenAPI_lcs_privacy_create (
-        af_instance_id ? ogs_strdup_or_assert(af_instance_id->valuestring) : NULL,
+        af_instance_id ? ogs_strdup(af_instance_id->valuestring) : NULL,
         reference_id ? true : false,
         reference_id ? reference_id->valuedouble : 0,
         lpi ? lpi_local_nonprim : NULL,
-        mtc_provider_information ? ogs_strdup_or_assert(mtc_provider_information->valuestring) : NULL
+        mtc_provider_information ? ogs_strdup(mtc_provider_information->valuestring) : NULL
     );
 
     return lcs_privacy_local_var;

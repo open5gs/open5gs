@@ -10,10 +10,9 @@ OpenAPI_tscai_input_container_t *OpenAPI_tscai_input_container_create(
     char *burst_arrival_time
 )
 {
-    OpenAPI_tscai_input_container_t *tscai_input_container_local_var = OpenAPI_malloc(sizeof(OpenAPI_tscai_input_container_t));
-    if (!tscai_input_container_local_var) {
-        return NULL;
-    }
+    OpenAPI_tscai_input_container_t *tscai_input_container_local_var = ogs_malloc(sizeof(OpenAPI_tscai_input_container_t));
+    ogs_assert(tscai_input_container_local_var);
+
     tscai_input_container_local_var->is_periodicity = is_periodicity;
     tscai_input_container_local_var->periodicity = periodicity;
     tscai_input_container_local_var->burst_arrival_time = burst_arrival_time;
@@ -83,7 +82,7 @@ OpenAPI_tscai_input_container_t *OpenAPI_tscai_input_container_parseFromJSON(cJS
     tscai_input_container_local_var = OpenAPI_tscai_input_container_create (
         periodicity ? true : false,
         periodicity ? periodicity->valuedouble : 0,
-        burst_arrival_time ? ogs_strdup_or_assert(burst_arrival_time->valuestring) : NULL
+        burst_arrival_time ? ogs_strdup(burst_arrival_time->valuestring) : NULL
     );
 
     return tscai_input_container_local_var;

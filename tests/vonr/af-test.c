@@ -1575,6 +1575,24 @@ static void test3_func(abts_case *tc, void *data)
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
+    /* In ./tests/vonr/af-test/test3_func()
+     *
+     * 1. Send PDU session establishment request
+     * 2. Receive PDU session establishment accept
+     * 3. Send PDUSessionResourceSetupResponse
+     * 4. Send De-registration request
+     * 5. SMF->AMF : RESPONSE /nsmf-pdusession/v1/sm-contexts/3/release
+     * 6. SMF->AMF : RESPONSE /nsmf-pdusession/v1/sm-contexts/1/modify
+     *
+     * 01/01 23:28:53.736: [sbi] ERROR: SBI running [1]
+     * (../lib/sbi/context.c:1161)
+     * 01/01 23:28:53.736: [amf] ERROR: Session has already been removed
+     * (../src/amf/amf-sm.c:424)
+     *
+     * We need the following sleep to avoid the above situation.
+     */
+    ogs_msleep(100);
+
     /* Send De-registration request */
     gmmbuf = testgmm_build_de_registration_request(test_ue, 1);
     ABTS_PTR_NOTNULL(tc, gmmbuf);

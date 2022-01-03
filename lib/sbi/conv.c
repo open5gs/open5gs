@@ -118,8 +118,9 @@ static char *url_decode(const char *str)
 {
     if (str != NULL) {
         char *pstr = (char*)str;
-        char *buf = ogs_malloc_or_assert(strlen(str) + 1);
+        char *buf = ogs_malloc(strlen(str) + 1);
         char *pbuf = buf;
+        ogs_assert(buf);
         while (*pstr) {
             if (*pstr == '%') {
                 if (pstr[1] && pstr[2]) {

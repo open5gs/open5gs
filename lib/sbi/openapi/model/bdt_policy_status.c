@@ -7,10 +7,9 @@
 OpenAPI_bdt_policy_status_t *OpenAPI_bdt_policy_status_create(
 )
 {
-    OpenAPI_bdt_policy_status_t *bdt_policy_status_local_var = OpenAPI_malloc(sizeof(OpenAPI_bdt_policy_status_t));
-    if (!bdt_policy_status_local_var) {
-        return NULL;
-    }
+    OpenAPI_bdt_policy_status_t *bdt_policy_status_local_var = ogs_malloc(sizeof(OpenAPI_bdt_policy_status_t));
+    ogs_assert(bdt_policy_status_local_var);
+
 
     return bdt_policy_status_local_var;
 }

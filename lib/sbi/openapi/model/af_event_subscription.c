@@ -13,10 +13,9 @@ OpenAPI_af_event_subscription_t *OpenAPI_af_event_subscription_create(
     int wait_time
 )
 {
-    OpenAPI_af_event_subscription_t *af_event_subscription_local_var = OpenAPI_malloc(sizeof(OpenAPI_af_event_subscription_t));
-    if (!af_event_subscription_local_var) {
-        return NULL;
-    }
+    OpenAPI_af_event_subscription_t *af_event_subscription_local_var = ogs_malloc(sizeof(OpenAPI_af_event_subscription_t));
+    ogs_assert(af_event_subscription_local_var);
+
     af_event_subscription_local_var->event = event;
     af_event_subscription_local_var->notif_method = notif_method;
     af_event_subscription_local_var->is_rep_period = is_rep_period;

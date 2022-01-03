@@ -9,10 +9,9 @@ OpenAPI_sm_policy_data_patch_t *OpenAPI_sm_policy_data_patch_create(
     OpenAPI_list_t* sm_policy_snssai_data
 )
 {
-    OpenAPI_sm_policy_data_patch_t *sm_policy_data_patch_local_var = OpenAPI_malloc(sizeof(OpenAPI_sm_policy_data_patch_t));
-    if (!sm_policy_data_patch_local_var) {
-        return NULL;
-    }
+    OpenAPI_sm_policy_data_patch_t *sm_policy_data_patch_local_var = ogs_malloc(sizeof(OpenAPI_sm_policy_data_patch_t));
+    ogs_assert(sm_policy_data_patch_local_var);
+
     sm_policy_data_patch_local_var->um_data = um_data;
     sm_policy_data_patch_local_var->sm_policy_snssai_data = sm_policy_snssai_data;
 
@@ -27,12 +26,14 @@ void OpenAPI_sm_policy_data_patch_free(OpenAPI_sm_policy_data_patch_t *sm_policy
     OpenAPI_lnode_t *node;
     OpenAPI_list_for_each(sm_policy_data_patch->um_data, node) {
         OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+        ogs_free(localKeyValue->key);
         OpenAPI_usage_mon_data_free(localKeyValue->value);
         ogs_free(localKeyValue);
     }
     OpenAPI_list_free(sm_policy_data_patch->um_data);
     OpenAPI_list_for_each(sm_policy_data_patch->sm_policy_snssai_data, node) {
         OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+        ogs_free(localKeyValue->key);
         OpenAPI_sm_policy_snssai_data_patch_free(localKeyValue->value);
         ogs_free(localKeyValue);
     }
@@ -118,9 +119,9 @@ OpenAPI_sm_policy_data_patch_t *OpenAPI_sm_policy_data_patch_parseFromJSON(cJSON
         cJSON *localMapObject = um_data_local_map;
         if (cJSON_IsObject(um_data_local_map)) {
             localMapKeyPair = OpenAPI_map_create(
-                localMapObject->string, OpenAPI_usage_mon_data_parseFromJSON(localMapObject));
+                ogs_strdup(localMapObject->string), OpenAPI_usage_mon_data_parseFromJSON(localMapObject));
         } else if (cJSON_IsNull(um_data_local_map)) {
-            localMapKeyPair = OpenAPI_map_create(localMapObject->string, NULL);
+            localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
         } else {
             ogs_error("OpenAPI_sm_policy_data_patch_parseFromJSON() failed [um_data]");
             goto end;
@@ -144,9 +145,9 @@ OpenAPI_sm_policy_data_patch_t *OpenAPI_sm_policy_data_patch_parseFromJSON(cJSON
         cJSON *localMapObject = sm_policy_snssai_data_local_map;
         if (cJSON_IsObject(sm_policy_snssai_data_local_map)) {
             localMapKeyPair = OpenAPI_map_create(
-                localMapObject->string, OpenAPI_sm_policy_snssai_data_patch_parseFromJSON(localMapObject));
+                ogs_strdup(localMapObject->string), OpenAPI_sm_policy_snssai_data_patch_parseFromJSON(localMapObject));
         } else if (cJSON_IsNull(sm_policy_snssai_data_local_map)) {
-            localMapKeyPair = OpenAPI_map_create(localMapObject->string, NULL);
+            localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
         } else {
             ogs_error("OpenAPI_sm_policy_data_patch_parseFromJSON() failed [sm_policy_snssai_data]");
             goto end;

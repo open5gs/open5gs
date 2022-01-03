@@ -10,10 +10,9 @@ OpenAPI_tai_range_t *OpenAPI_tai_range_create(
     char *nid
 )
 {
-    OpenAPI_tai_range_t *tai_range_local_var = OpenAPI_malloc(sizeof(OpenAPI_tai_range_t));
-    if (!tai_range_local_var) {
-        return NULL;
-    }
+    OpenAPI_tai_range_t *tai_range_local_var = ogs_malloc(sizeof(OpenAPI_tai_range_t));
+    ogs_assert(tai_range_local_var);
+
     tai_range_local_var->plmn_id = plmn_id;
     tai_range_local_var->tac_range_list = tac_range_list;
     tai_range_local_var->nid = nid;
@@ -135,7 +134,7 @@ OpenAPI_tai_range_t *OpenAPI_tai_range_parseFromJSON(cJSON *tai_rangeJSON)
     tai_range_local_var = OpenAPI_tai_range_create (
         plmn_id_local_nonprim,
         tac_range_listList,
-        nid ? ogs_strdup_or_assert(nid->valuestring) : NULL
+        nid ? ogs_strdup(nid->valuestring) : NULL
     );
 
     return tai_range_local_var;

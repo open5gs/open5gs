@@ -21,10 +21,9 @@ OpenAPI_expected_ue_behaviour_t *OpenAPI_expected_ue_behaviour_create(
     char *mtc_provider_information
 )
 {
-    OpenAPI_expected_ue_behaviour_t *expected_ue_behaviour_local_var = OpenAPI_malloc(sizeof(OpenAPI_expected_ue_behaviour_t));
-    if (!expected_ue_behaviour_local_var) {
-        return NULL;
-    }
+    OpenAPI_expected_ue_behaviour_t *expected_ue_behaviour_local_var = ogs_malloc(sizeof(OpenAPI_expected_ue_behaviour_t));
+    ogs_assert(expected_ue_behaviour_local_var);
+
     expected_ue_behaviour_local_var->af_instance_id = af_instance_id;
     expected_ue_behaviour_local_var->reference_id = reference_id;
     expected_ue_behaviour_local_var->stationary_indication = stationary_indication;
@@ -321,7 +320,7 @@ OpenAPI_expected_ue_behaviour_t *OpenAPI_expected_ue_behaviour_parseFromJSON(cJS
     }
 
     expected_ue_behaviour_local_var = OpenAPI_expected_ue_behaviour_create (
-        ogs_strdup_or_assert(af_instance_id->valuestring),
+        ogs_strdup(af_instance_id->valuestring),
         
         reference_id->valuedouble,
         stationary_indication ? stationary_indication_local_nonprim : NULL,
@@ -334,8 +333,8 @@ OpenAPI_expected_ue_behaviour_t *OpenAPI_expected_ue_behaviour_parseFromJSON(cJS
         expected_umts ? expected_umtsList : NULL,
         traffic_profile ? traffic_profile_local_nonprim : NULL,
         battery_indication ? battery_indication_local_nonprim : NULL,
-        validity_time ? ogs_strdup_or_assert(validity_time->valuestring) : NULL,
-        mtc_provider_information ? ogs_strdup_or_assert(mtc_provider_information->valuestring) : NULL
+        validity_time ? ogs_strdup(validity_time->valuestring) : NULL,
+        mtc_provider_information ? ogs_strdup(mtc_provider_information->valuestring) : NULL
     );
 
     return expected_ue_behaviour_local_var;

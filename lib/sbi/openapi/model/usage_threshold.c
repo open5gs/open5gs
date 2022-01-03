@@ -15,10 +15,9 @@ OpenAPI_usage_threshold_t *OpenAPI_usage_threshold_create(
     long uplink_volume
 )
 {
-    OpenAPI_usage_threshold_t *usage_threshold_local_var = OpenAPI_malloc(sizeof(OpenAPI_usage_threshold_t));
-    if (!usage_threshold_local_var) {
-        return NULL;
-    }
+    OpenAPI_usage_threshold_t *usage_threshold_local_var = ogs_malloc(sizeof(OpenAPI_usage_threshold_t));
+    ogs_assert(usage_threshold_local_var);
+
     usage_threshold_local_var->is_duration = is_duration;
     usage_threshold_local_var->duration = duration;
     usage_threshold_local_var->is_total_volume = is_total_volume;

@@ -8,10 +8,9 @@ OpenAPI_stored_search_result_t *OpenAPI_stored_search_result_create(
     OpenAPI_list_t *nf_instances
 )
 {
-    OpenAPI_stored_search_result_t *stored_search_result_local_var = OpenAPI_malloc(sizeof(OpenAPI_stored_search_result_t));
-    if (!stored_search_result_local_var) {
-        return NULL;
-    }
+    OpenAPI_stored_search_result_t *stored_search_result_local_var = ogs_malloc(sizeof(OpenAPI_stored_search_result_t));
+    ogs_assert(stored_search_result_local_var);
+
     stored_search_result_local_var->nf_instances = nf_instances;
 
     return stored_search_result_local_var;

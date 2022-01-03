@@ -9,10 +9,9 @@ OpenAPI_nssai_ack_data_t *OpenAPI_nssai_ack_data_create(
     OpenAPI_ue_update_status_e ue_update_status
 )
 {
-    OpenAPI_nssai_ack_data_t *nssai_ack_data_local_var = OpenAPI_malloc(sizeof(OpenAPI_nssai_ack_data_t));
-    if (!nssai_ack_data_local_var) {
-        return NULL;
-    }
+    OpenAPI_nssai_ack_data_t *nssai_ack_data_local_var = ogs_malloc(sizeof(OpenAPI_nssai_ack_data_t));
+    ogs_assert(nssai_ack_data_local_var);
+
     nssai_ack_data_local_var->provisioning_time = provisioning_time;
     nssai_ack_data_local_var->ue_update_status = ue_update_status;
 
@@ -81,7 +80,7 @@ OpenAPI_nssai_ack_data_t *OpenAPI_nssai_ack_data_parseFromJSON(cJSON *nssai_ack_
     ue_update_statusVariable = OpenAPI_ue_update_status_FromString(ue_update_status->valuestring);
 
     nssai_ack_data_local_var = OpenAPI_nssai_ack_data_create (
-        ogs_strdup_or_assert(provisioning_time->valuestring),
+        ogs_strdup(provisioning_time->valuestring),
         ue_update_statusVariable
     );
 

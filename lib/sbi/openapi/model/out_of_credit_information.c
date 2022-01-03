@@ -9,10 +9,9 @@ OpenAPI_out_of_credit_information_t *OpenAPI_out_of_credit_information_create(
     OpenAPI_list_t *flows
 )
 {
-    OpenAPI_out_of_credit_information_t *out_of_credit_information_local_var = OpenAPI_malloc(sizeof(OpenAPI_out_of_credit_information_t));
-    if (!out_of_credit_information_local_var) {
-        return NULL;
-    }
+    OpenAPI_out_of_credit_information_t *out_of_credit_information_local_var = ogs_malloc(sizeof(OpenAPI_out_of_credit_information_t));
+    ogs_assert(out_of_credit_information_local_var);
+
     out_of_credit_information_local_var->fin_unit_act = fin_unit_act;
     out_of_credit_information_local_var->flows = flows;
 

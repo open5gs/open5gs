@@ -30,10 +30,9 @@ OpenAPI_immediate_mdt_conf_t *OpenAPI_immediate_mdt_conf_create(
     OpenAPI_list_t *sensor_measurement_list
 )
 {
-    OpenAPI_immediate_mdt_conf_t *immediate_mdt_conf_local_var = OpenAPI_malloc(sizeof(OpenAPI_immediate_mdt_conf_t));
-    if (!immediate_mdt_conf_local_var) {
-        return NULL;
-    }
+    OpenAPI_immediate_mdt_conf_t *immediate_mdt_conf_local_var = ogs_malloc(sizeof(OpenAPI_immediate_mdt_conf_t));
+    ogs_assert(immediate_mdt_conf_local_var);
+
     immediate_mdt_conf_local_var->job_type = job_type;
     immediate_mdt_conf_local_var->measurement_lte_list = measurement_lte_list;
     immediate_mdt_conf_local_var->measurement_nr_list = measurement_nr_list;

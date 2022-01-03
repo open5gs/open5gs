@@ -7,10 +7,9 @@
 OpenAPI_external_client_type_t *OpenAPI_external_client_type_create(
 )
 {
-    OpenAPI_external_client_type_t *external_client_type_local_var = OpenAPI_malloc(sizeof(OpenAPI_external_client_type_t));
-    if (!external_client_type_local_var) {
-        return NULL;
-    }
+    OpenAPI_external_client_type_t *external_client_type_local_var = ogs_malloc(sizeof(OpenAPI_external_client_type_t));
+    ogs_assert(external_client_type_local_var);
+
 
     return external_client_type_local_var;
 }

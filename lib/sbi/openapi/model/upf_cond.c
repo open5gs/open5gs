@@ -33,10 +33,9 @@ OpenAPI_upf_cond_t *OpenAPI_upf_cond_create(
     OpenAPI_list_t *tai_list
 )
 {
-    OpenAPI_upf_cond_t *upf_cond_local_var = OpenAPI_malloc(sizeof(OpenAPI_upf_cond_t));
-    if (!upf_cond_local_var) {
-        return NULL;
-    }
+    OpenAPI_upf_cond_t *upf_cond_local_var = ogs_malloc(sizeof(OpenAPI_upf_cond_t));
+    ogs_assert(upf_cond_local_var);
+
     upf_cond_local_var->condition_type = condition_type;
     upf_cond_local_var->smf_serving_area = smf_serving_area;
     upf_cond_local_var->tai_list = tai_list;
@@ -148,7 +147,7 @@ OpenAPI_upf_cond_t *OpenAPI_upf_cond_parseFromJSON(cJSON *upf_condJSON)
         ogs_error("OpenAPI_upf_cond_parseFromJSON() failed [smf_serving_area]");
         goto end;
     }
-    OpenAPI_list_add(smf_serving_areaList , ogs_strdup_or_assert(smf_serving_area_local->valuestring));
+    OpenAPI_list_add(smf_serving_areaList , ogs_strdup(smf_serving_area_local->valuestring));
     }
     }
 

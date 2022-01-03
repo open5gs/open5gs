@@ -9,10 +9,9 @@ OpenAPI_security_result_t *OpenAPI_security_result_create(
     OpenAPI_protection_result_e confidentiality_protection_result
 )
 {
-    OpenAPI_security_result_t *security_result_local_var = OpenAPI_malloc(sizeof(OpenAPI_security_result_t));
-    if (!security_result_local_var) {
-        return NULL;
-    }
+    OpenAPI_security_result_t *security_result_local_var = ogs_malloc(sizeof(OpenAPI_security_result_t));
+    ogs_assert(security_result_local_var);
+
     security_result_local_var->integrity_protection_result = integrity_protection_result;
     security_result_local_var->confidentiality_protection_result = confidentiality_protection_result;
 

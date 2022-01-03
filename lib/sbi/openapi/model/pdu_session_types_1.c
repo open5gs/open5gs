@@ -9,10 +9,9 @@ OpenAPI_pdu_session_types_1_t *OpenAPI_pdu_session_types_1_create(
     OpenAPI_list_t *allowed_session_types
 )
 {
-    OpenAPI_pdu_session_types_1_t *pdu_session_types_1_local_var = OpenAPI_malloc(sizeof(OpenAPI_pdu_session_types_1_t));
-    if (!pdu_session_types_1_local_var) {
-        return NULL;
-    }
+    OpenAPI_pdu_session_types_1_t *pdu_session_types_1_local_var = ogs_malloc(sizeof(OpenAPI_pdu_session_types_1_t));
+    ogs_assert(pdu_session_types_1_local_var);
+
     pdu_session_types_1_local_var->default_session_type = default_session_type;
     pdu_session_types_1_local_var->allowed_session_types = allowed_session_types;
 

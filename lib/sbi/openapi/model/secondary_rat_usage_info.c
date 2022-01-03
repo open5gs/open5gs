@@ -10,10 +10,9 @@ OpenAPI_secondary_rat_usage_info_t *OpenAPI_secondary_rat_usage_info_create(
     OpenAPI_list_t *pdu_session_usage_data
 )
 {
-    OpenAPI_secondary_rat_usage_info_t *secondary_rat_usage_info_local_var = OpenAPI_malloc(sizeof(OpenAPI_secondary_rat_usage_info_t));
-    if (!secondary_rat_usage_info_local_var) {
-        return NULL;
-    }
+    OpenAPI_secondary_rat_usage_info_t *secondary_rat_usage_info_local_var = ogs_malloc(sizeof(OpenAPI_secondary_rat_usage_info_t));
+    ogs_assert(secondary_rat_usage_info_local_var);
+
     secondary_rat_usage_info_local_var->secondary_rat_type = secondary_rat_type;
     secondary_rat_usage_info_local_var->qos_flows_usage_data = qos_flows_usage_data;
     secondary_rat_usage_info_local_var->pdu_session_usage_data = pdu_session_usage_data;

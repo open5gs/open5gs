@@ -13,10 +13,9 @@ OpenAPI_chf_info_t *OpenAPI_chf_info_create(
     char *secondary_chf_instance
 )
 {
-    OpenAPI_chf_info_t *chf_info_local_var = OpenAPI_malloc(sizeof(OpenAPI_chf_info_t));
-    if (!chf_info_local_var) {
-        return NULL;
-    }
+    OpenAPI_chf_info_t *chf_info_local_var = ogs_malloc(sizeof(OpenAPI_chf_info_t));
+    ogs_assert(chf_info_local_var);
+
     chf_info_local_var->supi_range_list = supi_range_list;
     chf_info_local_var->gpsi_range_list = gpsi_range_list;
     chf_info_local_var->plmn_range_list = plmn_range_list;
@@ -249,9 +248,9 @@ OpenAPI_chf_info_t *OpenAPI_chf_info_parseFromJSON(cJSON *chf_infoJSON)
         supi_range_list ? supi_range_listList : NULL,
         gpsi_range_list ? gpsi_range_listList : NULL,
         plmn_range_list ? plmn_range_listList : NULL,
-        group_id ? ogs_strdup_or_assert(group_id->valuestring) : NULL,
-        primary_chf_instance ? ogs_strdup_or_assert(primary_chf_instance->valuestring) : NULL,
-        secondary_chf_instance ? ogs_strdup_or_assert(secondary_chf_instance->valuestring) : NULL
+        group_id ? ogs_strdup(group_id->valuestring) : NULL,
+        primary_chf_instance ? ogs_strdup(primary_chf_instance->valuestring) : NULL,
+        secondary_chf_instance ? ogs_strdup(secondary_chf_instance->valuestring) : NULL
     );
 
     return chf_info_local_var;

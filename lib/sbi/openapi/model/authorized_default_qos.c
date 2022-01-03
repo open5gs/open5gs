@@ -22,10 +22,9 @@ OpenAPI_authorized_default_qos_t *OpenAPI_authorized_default_qos_create(
     int ext_max_data_burst_vol
 )
 {
-    OpenAPI_authorized_default_qos_t *authorized_default_qos_local_var = OpenAPI_malloc(sizeof(OpenAPI_authorized_default_qos_t));
-    if (!authorized_default_qos_local_var) {
-        return NULL;
-    }
+    OpenAPI_authorized_default_qos_t *authorized_default_qos_local_var = ogs_malloc(sizeof(OpenAPI_authorized_default_qos_t));
+    ogs_assert(authorized_default_qos_local_var);
+
     authorized_default_qos_local_var->is__5qi = is__5qi;
     authorized_default_qos_local_var->_5qi = _5qi;
     authorized_default_qos_local_var->arp = arp;
@@ -250,10 +249,10 @@ OpenAPI_authorized_default_qos_t *OpenAPI_authorized_default_qos_parseFromJSON(c
         aver_window ? aver_window->valuedouble : 0,
         max_data_burst_vol ? true : false,
         max_data_burst_vol ? max_data_burst_vol->valuedouble : 0,
-        maxbr_ul ? ogs_strdup_or_assert(maxbr_ul->valuestring) : NULL,
-        maxbr_dl ? ogs_strdup_or_assert(maxbr_dl->valuestring) : NULL,
-        gbr_ul ? ogs_strdup_or_assert(gbr_ul->valuestring) : NULL,
-        gbr_dl ? ogs_strdup_or_assert(gbr_dl->valuestring) : NULL,
+        maxbr_ul ? ogs_strdup(maxbr_ul->valuestring) : NULL,
+        maxbr_dl ? ogs_strdup(maxbr_dl->valuestring) : NULL,
+        gbr_ul ? ogs_strdup(gbr_ul->valuestring) : NULL,
+        gbr_dl ? ogs_strdup(gbr_dl->valuestring) : NULL,
         ext_max_data_burst_vol ? true : false,
         ext_max_data_burst_vol ? ext_max_data_burst_vol->valuedouble : 0
     );

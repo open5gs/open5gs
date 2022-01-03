@@ -9,10 +9,9 @@ OpenAPI_sm_policy_dnn_data_patch_t *OpenAPI_sm_policy_dnn_data_patch_create(
     OpenAPI_list_t* bdt_ref_ids
 )
 {
-    OpenAPI_sm_policy_dnn_data_patch_t *sm_policy_dnn_data_patch_local_var = OpenAPI_malloc(sizeof(OpenAPI_sm_policy_dnn_data_patch_t));
-    if (!sm_policy_dnn_data_patch_local_var) {
-        return NULL;
-    }
+    OpenAPI_sm_policy_dnn_data_patch_t *sm_policy_dnn_data_patch_local_var = ogs_malloc(sizeof(OpenAPI_sm_policy_dnn_data_patch_t));
+    ogs_assert(sm_policy_dnn_data_patch_local_var);
+
     sm_policy_dnn_data_patch_local_var->dnn = dnn;
     sm_policy_dnn_data_patch_local_var->bdt_ref_ids = bdt_ref_ids;
 
@@ -28,6 +27,7 @@ void OpenAPI_sm_policy_dnn_data_patch_free(OpenAPI_sm_policy_dnn_data_patch_t *s
     ogs_free(sm_policy_dnn_data_patch->dnn);
     OpenAPI_list_for_each(sm_policy_dnn_data_patch->bdt_ref_ids, node) {
         OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+        ogs_free(localKeyValue->key);
         ogs_free(localKeyValue->value);
         ogs_free(localKeyValue);
     }
@@ -101,7 +101,7 @@ OpenAPI_sm_policy_dnn_data_patch_t *OpenAPI_sm_policy_dnn_data_patch_parseFromJS
     }
 
     sm_policy_dnn_data_patch_local_var = OpenAPI_sm_policy_dnn_data_patch_create (
-        ogs_strdup_or_assert(dnn->valuestring),
+        ogs_strdup(dnn->valuestring),
         bdt_ref_ids ? bdt_ref_idsList : NULL
     );
 

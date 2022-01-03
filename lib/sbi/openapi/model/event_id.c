@@ -7,10 +7,9 @@
 OpenAPI_event_id_t *OpenAPI_event_id_create(
 )
 {
-    OpenAPI_event_id_t *event_id_local_var = OpenAPI_malloc(sizeof(OpenAPI_event_id_t));
-    if (!event_id_local_var) {
-        return NULL;
-    }
+    OpenAPI_event_id_t *event_id_local_var = ogs_malloc(sizeof(OpenAPI_event_id_t));
+    ogs_assert(event_id_local_var);
+
 
     return event_id_local_var;
 }

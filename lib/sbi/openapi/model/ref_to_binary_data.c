@@ -8,10 +8,9 @@ OpenAPI_ref_to_binary_data_t *OpenAPI_ref_to_binary_data_create(
     char *content_id
 )
 {
-    OpenAPI_ref_to_binary_data_t *ref_to_binary_data_local_var = OpenAPI_malloc(sizeof(OpenAPI_ref_to_binary_data_t));
-    if (!ref_to_binary_data_local_var) {
-        return NULL;
-    }
+    OpenAPI_ref_to_binary_data_t *ref_to_binary_data_local_var = ogs_malloc(sizeof(OpenAPI_ref_to_binary_data_t));
+    ogs_assert(ref_to_binary_data_local_var);
+
     ref_to_binary_data_local_var->content_id = content_id;
 
     return ref_to_binary_data_local_var;
@@ -61,7 +60,7 @@ OpenAPI_ref_to_binary_data_t *OpenAPI_ref_to_binary_data_parseFromJSON(cJSON *re
     }
 
     ref_to_binary_data_local_var = OpenAPI_ref_to_binary_data_create (
-        ogs_strdup_or_assert(content_id->valuestring)
+        ogs_strdup(content_id->valuestring)
     );
 
     return ref_to_binary_data_local_var;

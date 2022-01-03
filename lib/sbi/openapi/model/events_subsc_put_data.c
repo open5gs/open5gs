@@ -37,10 +37,9 @@ OpenAPI_events_subsc_put_data_t *OpenAPI_events_subsc_put_data_create(
     OpenAPI_list_t *tsn_port_man_cont_nwtts
 )
 {
-    OpenAPI_events_subsc_put_data_t *events_subsc_put_data_local_var = OpenAPI_malloc(sizeof(OpenAPI_events_subsc_put_data_t));
-    if (!events_subsc_put_data_local_var) {
-        return NULL;
-    }
+    OpenAPI_events_subsc_put_data_t *events_subsc_put_data_local_var = ogs_malloc(sizeof(OpenAPI_events_subsc_put_data_t));
+    ogs_assert(events_subsc_put_data_local_var);
+
     events_subsc_put_data_local_var->events = events;
     events_subsc_put_data_local_var->notif_uri = notif_uri;
     events_subsc_put_data_local_var->req_qos_mon_params = req_qos_mon_params;
@@ -1002,19 +1001,19 @@ OpenAPI_events_subsc_put_data_t *OpenAPI_events_subsc_put_data_parseFromJSON(cJS
 
     events_subsc_put_data_local_var = OpenAPI_events_subsc_put_data_create (
         eventsList,
-        notif_uri ? ogs_strdup_or_assert(notif_uri->valuestring) : NULL,
+        notif_uri ? ogs_strdup(notif_uri->valuestring) : NULL,
         req_qos_mon_params ? req_qos_mon_paramsList : NULL,
         qos_mon ? qos_mon_local_nonprim : NULL,
         req_anis ? req_anisList : NULL,
         usg_thres ? usg_thres_local_nonprim : NULL,
-        notif_corre_id ? ogs_strdup_or_assert(notif_corre_id->valuestring) : NULL,
+        notif_corre_id ? ogs_strdup(notif_corre_id->valuestring) : NULL,
         access_type ? access_typeVariable : 0,
         add_access_info ? add_access_info_local_nonprim : NULL,
         rel_access_info ? rel_access_info_local_nonprim : NULL,
         an_charg_addr ? an_charg_addr_local_nonprim : NULL,
         an_charg_ids ? an_charg_idsList : NULL,
         an_gw_addr ? an_gw_addr_local_nonprim : NULL,
-        ogs_strdup_or_assert(ev_subs_uri->valuestring),
+        ogs_strdup(ev_subs_uri->valuestring),
         ev_notifsList,
         failed_resourc_alloc_reports ? failed_resourc_alloc_reportsList : NULL,
         succ_resourc_alloc_reports ? succ_resourc_alloc_reportsList : NULL,
@@ -1026,7 +1025,7 @@ OpenAPI_events_subsc_put_data_t *OpenAPI_events_subsc_put_data_parseFromJSON(cJS
         ran_nas_rel_causes ? ran_nas_rel_causesList : NULL,
         rat_type ? rat_typeVariable : 0,
         ue_loc ? ue_loc_local_nonprim : NULL,
-        ue_time_zone ? ogs_strdup_or_assert(ue_time_zone->valuestring) : NULL,
+        ue_time_zone ? ogs_strdup(ue_time_zone->valuestring) : NULL,
         usg_rep ? usg_rep_local_nonprim : NULL,
         tsn_bridge_man_cont ? tsn_bridge_man_cont_local_nonprim : NULL,
         tsn_port_man_cont_dstt ? tsn_port_man_cont_dstt_local_nonprim : NULL,

@@ -9,10 +9,9 @@ OpenAPI_usage_mon_data_scope_t *OpenAPI_usage_mon_data_scope_create(
     OpenAPI_list_t *dnn
 )
 {
-    OpenAPI_usage_mon_data_scope_t *usage_mon_data_scope_local_var = OpenAPI_malloc(sizeof(OpenAPI_usage_mon_data_scope_t));
-    if (!usage_mon_data_scope_local_var) {
-        return NULL;
-    }
+    OpenAPI_usage_mon_data_scope_t *usage_mon_data_scope_local_var = ogs_malloc(sizeof(OpenAPI_usage_mon_data_scope_t));
+    ogs_assert(usage_mon_data_scope_local_var);
+
     usage_mon_data_scope_local_var->snssai = snssai;
     usage_mon_data_scope_local_var->dnn = dnn;
 
@@ -102,7 +101,7 @@ OpenAPI_usage_mon_data_scope_t *OpenAPI_usage_mon_data_scope_parseFromJSON(cJSON
         ogs_error("OpenAPI_usage_mon_data_scope_parseFromJSON() failed [dnn]");
         goto end;
     }
-    OpenAPI_list_add(dnnList , ogs_strdup_or_assert(dnn_local->valuestring));
+    OpenAPI_list_add(dnnList , ogs_strdup(dnn_local->valuestring));
     }
     }
 

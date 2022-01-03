@@ -13,10 +13,9 @@ OpenAPI_ellipsoid_arc_all_of_t *OpenAPI_ellipsoid_arc_all_of_create(
     int confidence
 )
 {
-    OpenAPI_ellipsoid_arc_all_of_t *ellipsoid_arc_all_of_local_var = OpenAPI_malloc(sizeof(OpenAPI_ellipsoid_arc_all_of_t));
-    if (!ellipsoid_arc_all_of_local_var) {
-        return NULL;
-    }
+    OpenAPI_ellipsoid_arc_all_of_t *ellipsoid_arc_all_of_local_var = ogs_malloc(sizeof(OpenAPI_ellipsoid_arc_all_of_t));
+    ogs_assert(ellipsoid_arc_all_of_local_var);
+
     ellipsoid_arc_all_of_local_var->point = point;
     ellipsoid_arc_all_of_local_var->inner_radius = inner_radius;
     ellipsoid_arc_all_of_local_var->uncertainty_radius = uncertainty_radius;

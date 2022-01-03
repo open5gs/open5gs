@@ -9,10 +9,9 @@ OpenAPI_cm_info_t *OpenAPI_cm_info_create(
     OpenAPI_access_type_e access_type
 )
 {
-    OpenAPI_cm_info_t *cm_info_local_var = OpenAPI_malloc(sizeof(OpenAPI_cm_info_t));
-    if (!cm_info_local_var) {
-        return NULL;
-    }
+    OpenAPI_cm_info_t *cm_info_local_var = ogs_malloc(sizeof(OpenAPI_cm_info_t));
+    ogs_assert(cm_info_local_var);
+
     cm_info_local_var->cm_state = cm_state;
     cm_info_local_var->access_type = access_type;
 

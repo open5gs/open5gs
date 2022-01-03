@@ -11,10 +11,9 @@ OpenAPI_network_area_info_t *OpenAPI_network_area_info_create(
     OpenAPI_list_t *tais
 )
 {
-    OpenAPI_network_area_info_t *network_area_info_local_var = OpenAPI_malloc(sizeof(OpenAPI_network_area_info_t));
-    if (!network_area_info_local_var) {
-        return NULL;
-    }
+    OpenAPI_network_area_info_t *network_area_info_local_var = ogs_malloc(sizeof(OpenAPI_network_area_info_t));
+    ogs_assert(network_area_info_local_var);
+
     network_area_info_local_var->ecgis = ecgis;
     network_area_info_local_var->ncgis = ncgis;
     network_area_info_local_var->g_ran_node_ids = g_ran_node_ids;

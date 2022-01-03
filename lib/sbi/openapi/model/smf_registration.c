@@ -24,10 +24,9 @@ OpenAPI_smf_registration_t *OpenAPI_smf_registration_create(
     OpenAPI_context_info_t *context_info
 )
 {
-    OpenAPI_smf_registration_t *smf_registration_local_var = OpenAPI_malloc(sizeof(OpenAPI_smf_registration_t));
-    if (!smf_registration_local_var) {
-        return NULL;
-    }
+    OpenAPI_smf_registration_t *smf_registration_local_var = ogs_malloc(sizeof(OpenAPI_smf_registration_t));
+    ogs_assert(smf_registration_local_var);
+
     smf_registration_local_var->smf_instance_id = smf_instance_id;
     smf_registration_local_var->smf_set_id = smf_set_id;
     smf_registration_local_var->supported_features = supported_features;
@@ -341,23 +340,23 @@ OpenAPI_smf_registration_t *OpenAPI_smf_registration_parseFromJSON(cJSON *smf_re
     }
 
     smf_registration_local_var = OpenAPI_smf_registration_create (
-        ogs_strdup_or_assert(smf_instance_id->valuestring),
-        smf_set_id ? ogs_strdup_or_assert(smf_set_id->valuestring) : NULL,
-        supported_features ? ogs_strdup_or_assert(supported_features->valuestring) : NULL,
+        ogs_strdup(smf_instance_id->valuestring),
+        smf_set_id ? ogs_strdup(smf_set_id->valuestring) : NULL,
+        supported_features ? ogs_strdup(supported_features->valuestring) : NULL,
         
         pdu_session_id->valuedouble,
         single_nssai_local_nonprim,
-        dnn ? ogs_strdup_or_assert(dnn->valuestring) : NULL,
+        dnn ? ogs_strdup(dnn->valuestring) : NULL,
         emergency_services ? true : false,
         emergency_services ? emergency_services->valueint : 0,
-        pcscf_restoration_callback_uri ? ogs_strdup_or_assert(pcscf_restoration_callback_uri->valuestring) : NULL,
+        pcscf_restoration_callback_uri ? ogs_strdup(pcscf_restoration_callback_uri->valuestring) : NULL,
         plmn_id_local_nonprim,
-        pgw_fqdn ? ogs_strdup_or_assert(pgw_fqdn->valuestring) : NULL,
+        pgw_fqdn ? ogs_strdup(pgw_fqdn->valuestring) : NULL,
         epdg_ind ? true : false,
         epdg_ind ? epdg_ind->valueint : 0,
-        dereg_callback_uri ? ogs_strdup_or_assert(dereg_callback_uri->valuestring) : NULL,
+        dereg_callback_uri ? ogs_strdup(dereg_callback_uri->valuestring) : NULL,
         registration_reason ? registration_reasonVariable : 0,
-        registration_time ? ogs_strdup_or_assert(registration_time->valuestring) : NULL,
+        registration_time ? ogs_strdup(registration_time->valuestring) : NULL,
         context_info ? context_info_local_nonprim : NULL
     );
 

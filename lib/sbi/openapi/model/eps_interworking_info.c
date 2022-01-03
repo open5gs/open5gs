@@ -8,10 +8,9 @@ OpenAPI_eps_interworking_info_t *OpenAPI_eps_interworking_info_create(
     OpenAPI_list_t* eps_iwk_pgws
 )
 {
-    OpenAPI_eps_interworking_info_t *eps_interworking_info_local_var = OpenAPI_malloc(sizeof(OpenAPI_eps_interworking_info_t));
-    if (!eps_interworking_info_local_var) {
-        return NULL;
-    }
+    OpenAPI_eps_interworking_info_t *eps_interworking_info_local_var = ogs_malloc(sizeof(OpenAPI_eps_interworking_info_t));
+    ogs_assert(eps_interworking_info_local_var);
+
     eps_interworking_info_local_var->eps_iwk_pgws = eps_iwk_pgws;
 
     return eps_interworking_info_local_var;
@@ -25,6 +24,7 @@ void OpenAPI_eps_interworking_info_free(OpenAPI_eps_interworking_info_t *eps_int
     OpenAPI_lnode_t *node;
     OpenAPI_list_for_each(eps_interworking_info->eps_iwk_pgws, node) {
         OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+        ogs_free(localKeyValue->key);
         OpenAPI_eps_iwk_pgw_free(localKeyValue->value);
         ogs_free(localKeyValue);
     }
@@ -87,9 +87,9 @@ OpenAPI_eps_interworking_info_t *OpenAPI_eps_interworking_info_parseFromJSON(cJS
         cJSON *localMapObject = eps_iwk_pgws_local_map;
         if (cJSON_IsObject(eps_iwk_pgws_local_map)) {
             localMapKeyPair = OpenAPI_map_create(
-                localMapObject->string, OpenAPI_eps_iwk_pgw_parseFromJSON(localMapObject));
+                ogs_strdup(localMapObject->string), OpenAPI_eps_iwk_pgw_parseFromJSON(localMapObject));
         } else if (cJSON_IsNull(eps_iwk_pgws_local_map)) {
-            localMapKeyPair = OpenAPI_map_create(localMapObject->string, NULL);
+            localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
         } else {
             ogs_error("OpenAPI_eps_interworking_info_parseFromJSON() failed [eps_iwk_pgws]");
             goto end;

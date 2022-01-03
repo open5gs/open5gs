@@ -10,10 +10,9 @@ OpenAPI_cag_info_t *OpenAPI_cag_info_create(
     int cag_only_indicator
 )
 {
-    OpenAPI_cag_info_t *cag_info_local_var = OpenAPI_malloc(sizeof(OpenAPI_cag_info_t));
-    if (!cag_info_local_var) {
-        return NULL;
-    }
+    OpenAPI_cag_info_t *cag_info_local_var = ogs_malloc(sizeof(OpenAPI_cag_info_t));
+    ogs_assert(cag_info_local_var);
+
     cag_info_local_var->allowed_cag_list = allowed_cag_list;
     cag_info_local_var->is_cag_only_indicator = is_cag_only_indicator;
     cag_info_local_var->cag_only_indicator = cag_only_indicator;
@@ -91,7 +90,7 @@ OpenAPI_cag_info_t *OpenAPI_cag_info_parseFromJSON(cJSON *cag_infoJSON)
         ogs_error("OpenAPI_cag_info_parseFromJSON() failed [allowed_cag_list]");
         goto end;
     }
-    OpenAPI_list_add(allowed_cag_listList , ogs_strdup_or_assert(allowed_cag_list_local->valuestring));
+    OpenAPI_list_add(allowed_cag_listList , ogs_strdup(allowed_cag_list_local->valuestring));
     }
 
     cJSON *cag_only_indicator = cJSON_GetObjectItemCaseSensitive(cag_infoJSON, "cagOnlyIndicator");

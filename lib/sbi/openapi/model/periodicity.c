@@ -7,10 +7,9 @@
 OpenAPI_periodicity_t *OpenAPI_periodicity_create(
 )
 {
-    OpenAPI_periodicity_t *periodicity_local_var = OpenAPI_malloc(sizeof(OpenAPI_periodicity_t));
-    if (!periodicity_local_var) {
-        return NULL;
-    }
+    OpenAPI_periodicity_t *periodicity_local_var = ogs_malloc(sizeof(OpenAPI_periodicity_t));
+    ogs_assert(periodicity_local_var);
+
 
     return periodicity_local_var;
 }

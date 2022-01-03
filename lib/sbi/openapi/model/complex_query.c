@@ -9,10 +9,9 @@ OpenAPI_complex_query_t *OpenAPI_complex_query_create(
     OpenAPI_list_t *dnf_units
 )
 {
-    OpenAPI_complex_query_t *complex_query_local_var = OpenAPI_malloc(sizeof(OpenAPI_complex_query_t));
-    if (!complex_query_local_var) {
-        return NULL;
-    }
+    OpenAPI_complex_query_t *complex_query_local_var = ogs_malloc(sizeof(OpenAPI_complex_query_t));
+    ogs_assert(complex_query_local_var);
+
     complex_query_local_var->cnf_units = cnf_units;
     complex_query_local_var->dnf_units = dnf_units;
 

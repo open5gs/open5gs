@@ -14,10 +14,9 @@ OpenAPI_usage_mon_data_limit_t *OpenAPI_usage_mon_data_limit_create(
     char *reset_period
 )
 {
-    OpenAPI_usage_mon_data_limit_t *usage_mon_data_limit_local_var = OpenAPI_malloc(sizeof(OpenAPI_usage_mon_data_limit_t));
-    if (!usage_mon_data_limit_local_var) {
-        return NULL;
-    }
+    OpenAPI_usage_mon_data_limit_t *usage_mon_data_limit_local_var = ogs_malloc(sizeof(OpenAPI_usage_mon_data_limit_t));
+    ogs_assert(usage_mon_data_limit_local_var);
+
     usage_mon_data_limit_local_var->limit_id = limit_id;
     usage_mon_data_limit_local_var->scopes = scopes;
     usage_mon_data_limit_local_var->um_level = um_level;
@@ -38,6 +37,7 @@ void OpenAPI_usage_mon_data_limit_free(OpenAPI_usage_mon_data_limit_t *usage_mon
     ogs_free(usage_mon_data_limit->limit_id);
     OpenAPI_list_for_each(usage_mon_data_limit->scopes, node) {
         OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+        ogs_free(localKeyValue->key);
         OpenAPI_usage_mon_data_scope_free(localKeyValue->value);
         ogs_free(localKeyValue);
     }
@@ -168,9 +168,9 @@ OpenAPI_usage_mon_data_limit_t *OpenAPI_usage_mon_data_limit_parseFromJSON(cJSON
         cJSON *localMapObject = scopes_local_map;
         if (cJSON_IsObject(scopes_local_map)) {
             localMapKeyPair = OpenAPI_map_create(
-                localMapObject->string, OpenAPI_usage_mon_data_scope_parseFromJSON(localMapObject));
+                ogs_strdup(localMapObject->string), OpenAPI_usage_mon_data_scope_parseFromJSON(localMapObject));
         } else if (cJSON_IsNull(scopes_local_map)) {
-            localMapKeyPair = OpenAPI_map_create(localMapObject->string, NULL);
+            localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
         } else {
             ogs_error("OpenAPI_usage_mon_data_limit_parseFromJSON() failed [scopes]");
             goto end;
@@ -221,13 +221,13 @@ OpenAPI_usage_mon_data_limit_t *OpenAPI_usage_mon_data_limit_parseFromJSON(cJSON
     }
 
     usage_mon_data_limit_local_var = OpenAPI_usage_mon_data_limit_create (
-        ogs_strdup_or_assert(limit_id->valuestring),
+        ogs_strdup(limit_id->valuestring),
         scopes ? scopesList : NULL,
         um_level ? um_level_local_nonprim : NULL,
-        start_date ? ogs_strdup_or_assert(start_date->valuestring) : NULL,
-        end_date ? ogs_strdup_or_assert(end_date->valuestring) : NULL,
+        start_date ? ogs_strdup(start_date->valuestring) : NULL,
+        end_date ? ogs_strdup(end_date->valuestring) : NULL,
         usage_limit ? usage_limit_local_nonprim : NULL,
-        reset_period ? ogs_strdup_or_assert(reset_period->valuestring) : NULL
+        reset_period ? ogs_strdup(reset_period->valuestring) : NULL
     );
 
     return usage_mon_data_limit_local_var;

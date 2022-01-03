@@ -517,9 +517,6 @@ void ogs_gtp_node_free(ogs_gtp_node_t *node)
 {
     ogs_assert(node);
 
-    if (node->sock)
-        ogs_sock_destroy(node->sock);
-
     ogs_gtp_xact_delete_all(node);
 
     ogs_freeaddrinfo(node->sa_list);

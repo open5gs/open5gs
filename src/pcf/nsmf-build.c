@@ -56,8 +56,8 @@ ogs_sbi_request_t *pcf_nsmf_callback_build_smpolicycontrol_update(
 
     memset(&message, 0, sizeof(message));
     message.h.method = (char *)OGS_SBI_HTTP_METHOD_POST;
-    message.h.uri = ogs_mstrcatf(
-            sess->notification_uri, "/%s", OGS_SBI_RESOURCE_NAME_UPDATE);
+    message.h.uri = ogs_msprintf("%s/%s",
+            sess->notification_uri, OGS_SBI_RESOURCE_NAME_UPDATE);
     ogs_assert(message.h.uri);
 
     message.SmPolicyNotification = &SmPolicyNotification;
@@ -91,8 +91,8 @@ ogs_sbi_request_t *pcf_nsmf_callback_build_smpolicycontrol_terminate(
 
     memset(&message, 0, sizeof(message));
     message.h.method = (char *)OGS_SBI_HTTP_METHOD_POST;
-    message.h.uri = ogs_mstrcatf(
-            sess->notification_uri, "/%s", OGS_SBI_RESOURCE_NAME_TERMINATE);
+    message.h.uri = ogs_msprintf("%s/%s",
+            sess->notification_uri, OGS_SBI_RESOURCE_NAME_TERMINATE);
     ogs_assert(message.h.uri);
 
     request = ogs_sbi_build_request(&message);

@@ -24,10 +24,9 @@ OpenAPI_accu_usage_report_t *OpenAPI_accu_usage_report_create(
     int next_time_usage
 )
 {
-    OpenAPI_accu_usage_report_t *accu_usage_report_local_var = OpenAPI_malloc(sizeof(OpenAPI_accu_usage_report_t));
-    if (!accu_usage_report_local_var) {
-        return NULL;
-    }
+    OpenAPI_accu_usage_report_t *accu_usage_report_local_var = ogs_malloc(sizeof(OpenAPI_accu_usage_report_t));
+    ogs_assert(accu_usage_report_local_var);
+
     accu_usage_report_local_var->ref_um_ids = ref_um_ids;
     accu_usage_report_local_var->is_vol_usage = is_vol_usage;
     accu_usage_report_local_var->vol_usage = vol_usage;
@@ -221,7 +220,7 @@ OpenAPI_accu_usage_report_t *OpenAPI_accu_usage_report_parseFromJSON(cJSON *accu
     }
 
     accu_usage_report_local_var = OpenAPI_accu_usage_report_create (
-        ogs_strdup_or_assert(ref_um_ids->valuestring),
+        ogs_strdup(ref_um_ids->valuestring),
         vol_usage ? true : false,
         vol_usage ? vol_usage->valuedouble : 0,
         vol_usage_uplink ? true : false,

@@ -23,10 +23,9 @@ OpenAPI_sm_context_created_data_t *OpenAPI_sm_context_created_data_create(
     char *selected_old_smf_id
 )
 {
-    OpenAPI_sm_context_created_data_t *sm_context_created_data_local_var = OpenAPI_malloc(sizeof(OpenAPI_sm_context_created_data_t));
-    if (!sm_context_created_data_local_var) {
-        return NULL;
-    }
+    OpenAPI_sm_context_created_data_t *sm_context_created_data_local_var = ogs_malloc(sizeof(OpenAPI_sm_context_created_data_t));
+    ogs_assert(sm_context_created_data_local_var);
+
     sm_context_created_data_local_var->h_smf_uri = h_smf_uri;
     sm_context_created_data_local_var->smf_uri = smf_uri;
     sm_context_created_data_local_var->is_pdu_session_id = is_pdu_session_id;
@@ -369,8 +368,8 @@ OpenAPI_sm_context_created_data_t *OpenAPI_sm_context_created_data_parseFromJSON
     }
 
     sm_context_created_data_local_var = OpenAPI_sm_context_created_data_create (
-        h_smf_uri ? ogs_strdup_or_assert(h_smf_uri->valuestring) : NULL,
-        smf_uri ? ogs_strdup_or_assert(smf_uri->valuestring) : NULL,
+        h_smf_uri ? ogs_strdup(h_smf_uri->valuestring) : NULL,
+        smf_uri ? ogs_strdup(smf_uri->valuestring) : NULL,
         pdu_session_id ? true : false,
         pdu_session_id ? pdu_session_id->valuedouble : 0,
         s_nssai ? s_nssai_local_nonprim : NULL,
@@ -379,12 +378,12 @@ OpenAPI_sm_context_created_data_t *OpenAPI_sm_context_created_data_parseFromJSON
         n2_sm_info_type ? n2_sm_info_typeVariable : 0,
         allocated_ebi_list ? allocated_ebi_listList : NULL,
         ho_state ? ho_stateVariable : 0,
-        gpsi ? ogs_strdup_or_assert(gpsi->valuestring) : NULL,
-        smf_service_instance_id ? ogs_strdup_or_assert(smf_service_instance_id->valuestring) : NULL,
-        recovery_time ? ogs_strdup_or_assert(recovery_time->valuestring) : NULL,
-        supported_features ? ogs_strdup_or_assert(supported_features->valuestring) : NULL,
-        selected_smf_id ? ogs_strdup_or_assert(selected_smf_id->valuestring) : NULL,
-        selected_old_smf_id ? ogs_strdup_or_assert(selected_old_smf_id->valuestring) : NULL
+        gpsi ? ogs_strdup(gpsi->valuestring) : NULL,
+        smf_service_instance_id ? ogs_strdup(smf_service_instance_id->valuestring) : NULL,
+        recovery_time ? ogs_strdup(recovery_time->valuestring) : NULL,
+        supported_features ? ogs_strdup(supported_features->valuestring) : NULL,
+        selected_smf_id ? ogs_strdup(selected_smf_id->valuestring) : NULL,
+        selected_old_smf_id ? ogs_strdup(selected_old_smf_id->valuestring) : NULL
     );
 
     return sm_context_created_data_local_var;

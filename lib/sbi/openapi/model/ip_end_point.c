@@ -12,10 +12,9 @@ OpenAPI_ip_end_point_t *OpenAPI_ip_end_point_create(
     int port
 )
 {
-    OpenAPI_ip_end_point_t *ip_end_point_local_var = OpenAPI_malloc(sizeof(OpenAPI_ip_end_point_t));
-    if (!ip_end_point_local_var) {
-        return NULL;
-    }
+    OpenAPI_ip_end_point_t *ip_end_point_local_var = ogs_malloc(sizeof(OpenAPI_ip_end_point_t));
+    ogs_assert(ip_end_point_local_var);
+
     ip_end_point_local_var->ipv4_address = ipv4_address;
     ip_end_point_local_var->ipv6_address = ipv6_address;
     ip_end_point_local_var->transport = transport;
@@ -120,8 +119,8 @@ OpenAPI_ip_end_point_t *OpenAPI_ip_end_point_parseFromJSON(cJSON *ip_end_pointJS
     }
 
     ip_end_point_local_var = OpenAPI_ip_end_point_create (
-        ipv4_address ? ogs_strdup_or_assert(ipv4_address->valuestring) : NULL,
-        ipv6_address ? ogs_strdup_or_assert(ipv6_address->valuestring) : NULL,
+        ipv4_address ? ogs_strdup(ipv4_address->valuestring) : NULL,
+        ipv6_address ? ogs_strdup(ipv6_address->valuestring) : NULL,
         transport ? transportVariable : 0,
         port ? true : false,
         port ? port->valuedouble : 0

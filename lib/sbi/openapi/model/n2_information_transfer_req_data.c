@@ -12,10 +12,9 @@ OpenAPI_n2_information_transfer_req_data_t *OpenAPI_n2_information_transfer_req_
     char *supported_features
 )
 {
-    OpenAPI_n2_information_transfer_req_data_t *n2_information_transfer_req_data_local_var = OpenAPI_malloc(sizeof(OpenAPI_n2_information_transfer_req_data_t));
-    if (!n2_information_transfer_req_data_local_var) {
-        return NULL;
-    }
+    OpenAPI_n2_information_transfer_req_data_t *n2_information_transfer_req_data_local_var = ogs_malloc(sizeof(OpenAPI_n2_information_transfer_req_data_t));
+    ogs_assert(n2_information_transfer_req_data_local_var);
+
     n2_information_transfer_req_data_local_var->tai_list = tai_list;
     n2_information_transfer_req_data_local_var->rat_selector = rat_selector;
     n2_information_transfer_req_data_local_var->global_ran_node_list = global_ran_node_list;
@@ -206,7 +205,7 @@ OpenAPI_n2_information_transfer_req_data_t *OpenAPI_n2_information_transfer_req_
         rat_selector ? rat_selectorVariable : 0,
         global_ran_node_list ? global_ran_node_listList : NULL,
         n2_information_local_nonprim,
-        supported_features ? ogs_strdup_or_assert(supported_features->valuestring) : NULL
+        supported_features ? ogs_strdup(supported_features->valuestring) : NULL
     );
 
     return n2_information_transfer_req_data_local_var;

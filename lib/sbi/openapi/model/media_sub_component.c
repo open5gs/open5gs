@@ -16,10 +16,9 @@ OpenAPI_media_sub_component_t *OpenAPI_media_sub_component_create(
     OpenAPI_flow_usage_e flow_usage
 )
 {
-    OpenAPI_media_sub_component_t *media_sub_component_local_var = OpenAPI_malloc(sizeof(OpenAPI_media_sub_component_t));
-    if (!media_sub_component_local_var) {
-        return NULL;
-    }
+    OpenAPI_media_sub_component_t *media_sub_component_local_var = ogs_malloc(sizeof(OpenAPI_media_sub_component_t));
+    ogs_assert(media_sub_component_local_var);
+
     media_sub_component_local_var->af_sig_protocol = af_sig_protocol;
     media_sub_component_local_var->ethf_descs = ethf_descs;
     media_sub_component_local_var->f_num = f_num;
@@ -214,7 +213,7 @@ OpenAPI_media_sub_component_t *OpenAPI_media_sub_component_parseFromJSON(cJSON *
         ogs_error("OpenAPI_media_sub_component_parseFromJSON() failed [f_descs]");
         goto end;
     }
-    OpenAPI_list_add(f_descsList , ogs_strdup_or_assert(f_descs_local->valuestring));
+    OpenAPI_list_add(f_descsList , ogs_strdup(f_descs_local->valuestring));
     }
     }
 
@@ -274,9 +273,9 @@ OpenAPI_media_sub_component_t *OpenAPI_media_sub_component_parseFromJSON(cJSON *
         f_num->valuedouble,
         f_descs ? f_descsList : NULL,
         f_status ? f_statusVariable : 0,
-        mar_bw_dl ? ogs_strdup_or_assert(mar_bw_dl->valuestring) : NULL,
-        mar_bw_ul ? ogs_strdup_or_assert(mar_bw_ul->valuestring) : NULL,
-        tos_tr_cl ? ogs_strdup_or_assert(tos_tr_cl->valuestring) : NULL,
+        mar_bw_dl ? ogs_strdup(mar_bw_dl->valuestring) : NULL,
+        mar_bw_ul ? ogs_strdup(mar_bw_ul->valuestring) : NULL,
+        tos_tr_cl ? ogs_strdup(tos_tr_cl->valuestring) : NULL,
         flow_usage ? flow_usageVariable : 0
     );
 

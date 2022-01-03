@@ -8,10 +8,9 @@ OpenAPI_hfc_node_id_t *OpenAPI_hfc_node_id_create(
     char *hfc_nid
 )
 {
-    OpenAPI_hfc_node_id_t *hfc_node_id_local_var = OpenAPI_malloc(sizeof(OpenAPI_hfc_node_id_t));
-    if (!hfc_node_id_local_var) {
-        return NULL;
-    }
+    OpenAPI_hfc_node_id_t *hfc_node_id_local_var = ogs_malloc(sizeof(OpenAPI_hfc_node_id_t));
+    ogs_assert(hfc_node_id_local_var);
+
     hfc_node_id_local_var->hfc_nid = hfc_nid;
 
     return hfc_node_id_local_var;
@@ -61,7 +60,7 @@ OpenAPI_hfc_node_id_t *OpenAPI_hfc_node_id_parseFromJSON(cJSON *hfc_node_idJSON)
     }
 
     hfc_node_id_local_var = OpenAPI_hfc_node_id_create (
-        ogs_strdup_or_assert(hfc_nid->valuestring)
+        ogs_strdup(hfc_nid->valuestring)
     );
 
     return hfc_node_id_local_var;

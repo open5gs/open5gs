@@ -8,10 +8,9 @@ OpenAPI_smf_registration_info_t *OpenAPI_smf_registration_info_create(
     OpenAPI_list_t *smf_registration_list
 )
 {
-    OpenAPI_smf_registration_info_t *smf_registration_info_local_var = OpenAPI_malloc(sizeof(OpenAPI_smf_registration_info_t));
-    if (!smf_registration_info_local_var) {
-        return NULL;
-    }
+    OpenAPI_smf_registration_info_t *smf_registration_info_local_var = ogs_malloc(sizeof(OpenAPI_smf_registration_info_t));
+    ogs_assert(smf_registration_info_local_var);
+
     smf_registration_info_local_var->smf_registration_list = smf_registration_list;
 
     return smf_registration_info_local_var;

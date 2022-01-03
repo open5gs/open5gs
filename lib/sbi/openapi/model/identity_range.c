@@ -10,10 +10,9 @@ OpenAPI_identity_range_t *OpenAPI_identity_range_create(
     char *pattern
 )
 {
-    OpenAPI_identity_range_t *identity_range_local_var = OpenAPI_malloc(sizeof(OpenAPI_identity_range_t));
-    if (!identity_range_local_var) {
-        return NULL;
-    }
+    OpenAPI_identity_range_t *identity_range_local_var = ogs_malloc(sizeof(OpenAPI_identity_range_t));
+    ogs_assert(identity_range_local_var);
+
     identity_range_local_var->start = start;
     identity_range_local_var->end = end;
     identity_range_local_var->pattern = pattern;
@@ -99,9 +98,9 @@ OpenAPI_identity_range_t *OpenAPI_identity_range_parseFromJSON(cJSON *identity_r
     }
 
     identity_range_local_var = OpenAPI_identity_range_create (
-        start ? ogs_strdup_or_assert(start->valuestring) : NULL,
-        end ? ogs_strdup_or_assert(end->valuestring) : NULL,
-        pattern ? ogs_strdup_or_assert(pattern->valuestring) : NULL
+        start ? ogs_strdup(start->valuestring) : NULL,
+        end ? ogs_strdup(end->valuestring) : NULL,
+        pattern ? ogs_strdup(pattern->valuestring) : NULL
     );
 
     return identity_range_local_var;

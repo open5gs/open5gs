@@ -40,10 +40,9 @@ OpenAPI_sm_policy_dnn_data_t *OpenAPI_sm_policy_dnn_data_create(
     int loc_rout_not_allowed
 )
 {
-    OpenAPI_sm_policy_dnn_data_t *sm_policy_dnn_data_local_var = OpenAPI_malloc(sizeof(OpenAPI_sm_policy_dnn_data_t));
-    if (!sm_policy_dnn_data_local_var) {
-        return NULL;
-    }
+    OpenAPI_sm_policy_dnn_data_t *sm_policy_dnn_data_local_var = ogs_malloc(sizeof(OpenAPI_sm_policy_dnn_data_t));
+    ogs_assert(sm_policy_dnn_data_local_var);
+
     sm_policy_dnn_data_local_var->dnn = dnn;
     sm_policy_dnn_data_local_var->allowed_services = allowed_services;
     sm_policy_dnn_data_local_var->subsc_cats = subsc_cats;
@@ -101,18 +100,21 @@ void OpenAPI_sm_policy_dnn_data_free(OpenAPI_sm_policy_dnn_data_t *sm_policy_dnn
     OpenAPI_charging_information_free(sm_policy_dnn_data->chf_info);
     OpenAPI_list_for_each(sm_policy_dnn_data->ref_um_data_limit_ids, node) {
         OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+        ogs_free(localKeyValue->key);
         OpenAPI_limit_id_to_monitoring_key_free(localKeyValue->value);
         ogs_free(localKeyValue);
     }
     OpenAPI_list_free(sm_policy_dnn_data->ref_um_data_limit_ids);
     OpenAPI_list_for_each(sm_policy_dnn_data->pra_infos, node) {
         OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+        ogs_free(localKeyValue->key);
         OpenAPI_presence_info_free(localKeyValue->value);
         ogs_free(localKeyValue);
     }
     OpenAPI_list_free(sm_policy_dnn_data->pra_infos);
     OpenAPI_list_for_each(sm_policy_dnn_data->bdt_ref_ids, node) {
         OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+        ogs_free(localKeyValue->key);
         ogs_free(localKeyValue->value);
         ogs_free(localKeyValue);
     }
@@ -373,7 +375,7 @@ OpenAPI_sm_policy_dnn_data_t *OpenAPI_sm_policy_dnn_data_parseFromJSON(cJSON *sm
         ogs_error("OpenAPI_sm_policy_dnn_data_parseFromJSON() failed [allowed_services]");
         goto end;
     }
-    OpenAPI_list_add(allowed_servicesList , ogs_strdup_or_assert(allowed_services_local->valuestring));
+    OpenAPI_list_add(allowed_servicesList , ogs_strdup(allowed_services_local->valuestring));
     }
     }
 
@@ -393,7 +395,7 @@ OpenAPI_sm_policy_dnn_data_t *OpenAPI_sm_policy_dnn_data_parseFromJSON(cJSON *sm
         ogs_error("OpenAPI_sm_policy_dnn_data_parseFromJSON() failed [subsc_cats]");
         goto end;
     }
-    OpenAPI_list_add(subsc_catsList , ogs_strdup_or_assert(subsc_cats_local->valuestring));
+    OpenAPI_list_add(subsc_catsList , ogs_strdup(subsc_cats_local->valuestring));
     }
     }
 
@@ -491,9 +493,9 @@ OpenAPI_sm_policy_dnn_data_t *OpenAPI_sm_policy_dnn_data_parseFromJSON(cJSON *sm
         cJSON *localMapObject = ref_um_data_limit_ids_local_map;
         if (cJSON_IsObject(ref_um_data_limit_ids_local_map)) {
             localMapKeyPair = OpenAPI_map_create(
-                localMapObject->string, OpenAPI_limit_id_to_monitoring_key_parseFromJSON(localMapObject));
+                ogs_strdup(localMapObject->string), OpenAPI_limit_id_to_monitoring_key_parseFromJSON(localMapObject));
         } else if (cJSON_IsNull(ref_um_data_limit_ids_local_map)) {
-            localMapKeyPair = OpenAPI_map_create(localMapObject->string, NULL);
+            localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
         } else {
             ogs_error("OpenAPI_sm_policy_dnn_data_parseFromJSON() failed [ref_um_data_limit_ids]");
             goto end;
@@ -562,9 +564,9 @@ OpenAPI_sm_policy_dnn_data_t *OpenAPI_sm_policy_dnn_data_parseFromJSON(cJSON *sm
         cJSON *localMapObject = pra_infos_local_map;
         if (cJSON_IsObject(pra_infos_local_map)) {
             localMapKeyPair = OpenAPI_map_create(
-                localMapObject->string, OpenAPI_presence_info_parseFromJSON(localMapObject));
+                ogs_strdup(localMapObject->string), OpenAPI_presence_info_parseFromJSON(localMapObject));
         } else if (cJSON_IsNull(pra_infos_local_map)) {
-            localMapKeyPair = OpenAPI_map_create(localMapObject->string, NULL);
+            localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
         } else {
             ogs_error("OpenAPI_sm_policy_dnn_data_parseFromJSON() failed [pra_infos]");
             goto end;
@@ -600,11 +602,11 @@ OpenAPI_sm_policy_dnn_data_t *OpenAPI_sm_policy_dnn_data_parseFromJSON(cJSON *sm
     }
 
     sm_policy_dnn_data_local_var = OpenAPI_sm_policy_dnn_data_create (
-        ogs_strdup_or_assert(dnn->valuestring),
+        ogs_strdup(dnn->valuestring),
         allowed_services ? allowed_servicesList : NULL,
         subsc_cats ? subsc_catsList : NULL,
-        gbr_ul ? ogs_strdup_or_assert(gbr_ul->valuestring) : NULL,
-        gbr_dl ? ogs_strdup_or_assert(gbr_dl->valuestring) : NULL,
+        gbr_ul ? ogs_strdup(gbr_ul->valuestring) : NULL,
+        gbr_dl ? ogs_strdup(gbr_dl->valuestring) : NULL,
         adc_support ? true : false,
         adc_support ? adc_support->valueint : 0,
         subsc_spending_limits ? true : false,

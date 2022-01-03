@@ -7,10 +7,9 @@
 OpenAPI_hss_authentication_vectors_t *OpenAPI_hss_authentication_vectors_create(
 )
 {
-    OpenAPI_hss_authentication_vectors_t *hss_authentication_vectors_local_var = OpenAPI_malloc(sizeof(OpenAPI_hss_authentication_vectors_t));
-    if (!hss_authentication_vectors_local_var) {
-        return NULL;
-    }
+    OpenAPI_hss_authentication_vectors_t *hss_authentication_vectors_local_var = ogs_malloc(sizeof(OpenAPI_hss_authentication_vectors_t));
+    ogs_assert(hss_authentication_vectors_local_var);
+
 
     return hss_authentication_vectors_local_var;
 }

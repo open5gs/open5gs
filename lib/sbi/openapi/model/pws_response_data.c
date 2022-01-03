@@ -11,10 +11,9 @@ OpenAPI_pws_response_data_t *OpenAPI_pws_response_data_create(
     OpenAPI_list_t *unknown_tai_list
 )
 {
-    OpenAPI_pws_response_data_t *pws_response_data_local_var = OpenAPI_malloc(sizeof(OpenAPI_pws_response_data_t));
-    if (!pws_response_data_local_var) {
-        return NULL;
-    }
+    OpenAPI_pws_response_data_t *pws_response_data_local_var = ogs_malloc(sizeof(OpenAPI_pws_response_data_t));
+    ogs_assert(pws_response_data_local_var);
+
     pws_response_data_local_var->ngap_message_type = ngap_message_type;
     pws_response_data_local_var->serial_number = serial_number;
     pws_response_data_local_var->message_identifier = message_identifier;

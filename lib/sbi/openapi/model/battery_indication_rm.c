@@ -13,10 +13,9 @@ OpenAPI_battery_indication_rm_t *OpenAPI_battery_indication_rm_create(
     int rechargeable_ind
 )
 {
-    OpenAPI_battery_indication_rm_t *battery_indication_rm_local_var = OpenAPI_malloc(sizeof(OpenAPI_battery_indication_rm_t));
-    if (!battery_indication_rm_local_var) {
-        return NULL;
-    }
+    OpenAPI_battery_indication_rm_t *battery_indication_rm_local_var = ogs_malloc(sizeof(OpenAPI_battery_indication_rm_t));
+    ogs_assert(battery_indication_rm_local_var);
+
     battery_indication_rm_local_var->is_battery_ind = is_battery_ind;
     battery_indication_rm_local_var->battery_ind = battery_ind;
     battery_indication_rm_local_var->is_replaceable_ind = is_replaceable_ind;

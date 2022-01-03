@@ -23,10 +23,9 @@ OpenAPI_ext_amf_event_subscription_t *OpenAPI_ext_amf_event_subscription_create(
     OpenAPI_nf_type_e subscribing_nf_type
 )
 {
-    OpenAPI_ext_amf_event_subscription_t *ext_amf_event_subscription_local_var = OpenAPI_malloc(sizeof(OpenAPI_ext_amf_event_subscription_t));
-    if (!ext_amf_event_subscription_local_var) {
-        return NULL;
-    }
+    OpenAPI_ext_amf_event_subscription_t *ext_amf_event_subscription_local_var = ogs_malloc(sizeof(OpenAPI_ext_amf_event_subscription_t));
+    ogs_assert(ext_amf_event_subscription_local_var);
+
     ext_amf_event_subscription_local_var->event_list = event_list;
     ext_amf_event_subscription_local_var->event_notify_uri = event_notify_uri;
     ext_amf_event_subscription_local_var->notify_correlation_id = notify_correlation_id;
@@ -371,7 +370,7 @@ OpenAPI_ext_amf_event_subscription_t *OpenAPI_ext_amf_event_subscription_parseFr
         ogs_error("OpenAPI_ext_amf_event_subscription_parseFromJSON() failed [binding_info]");
         goto end;
     }
-    OpenAPI_list_add(binding_infoList , ogs_strdup_or_assert(binding_info_local->valuestring));
+    OpenAPI_list_add(binding_infoList , ogs_strdup(binding_info_local->valuestring));
     }
     }
 
@@ -388,15 +387,15 @@ OpenAPI_ext_amf_event_subscription_t *OpenAPI_ext_amf_event_subscription_parseFr
 
     ext_amf_event_subscription_local_var = OpenAPI_ext_amf_event_subscription_create (
         event_listList,
-        ogs_strdup_or_assert(event_notify_uri->valuestring),
-        ogs_strdup_or_assert(notify_correlation_id->valuestring),
-        ogs_strdup_or_assert(nf_id->valuestring),
-        subs_change_notify_uri ? ogs_strdup_or_assert(subs_change_notify_uri->valuestring) : NULL,
-        subs_change_notify_correlation_id ? ogs_strdup_or_assert(subs_change_notify_correlation_id->valuestring) : NULL,
-        supi ? ogs_strdup_or_assert(supi->valuestring) : NULL,
-        group_id ? ogs_strdup_or_assert(group_id->valuestring) : NULL,
-        gpsi ? ogs_strdup_or_assert(gpsi->valuestring) : NULL,
-        pei ? ogs_strdup_or_assert(pei->valuestring) : NULL,
+        ogs_strdup(event_notify_uri->valuestring),
+        ogs_strdup(notify_correlation_id->valuestring),
+        ogs_strdup(nf_id->valuestring),
+        subs_change_notify_uri ? ogs_strdup(subs_change_notify_uri->valuestring) : NULL,
+        subs_change_notify_correlation_id ? ogs_strdup(subs_change_notify_correlation_id->valuestring) : NULL,
+        supi ? ogs_strdup(supi->valuestring) : NULL,
+        group_id ? ogs_strdup(group_id->valuestring) : NULL,
+        gpsi ? ogs_strdup(gpsi->valuestring) : NULL,
+        pei ? ogs_strdup(pei->valuestring) : NULL,
         any_ue ? true : false,
         any_ue ? any_ue->valueint : 0,
         options ? options_local_nonprim : NULL,

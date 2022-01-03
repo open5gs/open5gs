@@ -17,10 +17,9 @@ OpenAPI_provisioned_data_sets_t *OpenAPI_provisioned_data_sets_create(
     OpenAPI_v2x_subscription_data_t *v2x_data
 )
 {
-    OpenAPI_provisioned_data_sets_t *provisioned_data_sets_local_var = OpenAPI_malloc(sizeof(OpenAPI_provisioned_data_sets_t));
-    if (!provisioned_data_sets_local_var) {
-        return NULL;
-    }
+    OpenAPI_provisioned_data_sets_t *provisioned_data_sets_local_var = ogs_malloc(sizeof(OpenAPI_provisioned_data_sets_t));
+    ogs_assert(provisioned_data_sets_local_var);
+
     provisioned_data_sets_local_var->am_data = am_data;
     provisioned_data_sets_local_var->smf_sel_data = smf_sel_data;
     provisioned_data_sets_local_var->sms_subs_data = sms_subs_data;

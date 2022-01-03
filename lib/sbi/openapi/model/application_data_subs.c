@@ -11,10 +11,9 @@ OpenAPI_application_data_subs_t *OpenAPI_application_data_subs_create(
     char *supported_features
 )
 {
-    OpenAPI_application_data_subs_t *application_data_subs_local_var = OpenAPI_malloc(sizeof(OpenAPI_application_data_subs_t));
-    if (!application_data_subs_local_var) {
-        return NULL;
-    }
+    OpenAPI_application_data_subs_t *application_data_subs_local_var = ogs_malloc(sizeof(OpenAPI_application_data_subs_t));
+    ogs_assert(application_data_subs_local_var);
+
     application_data_subs_local_var->notification_uri = notification_uri;
     application_data_subs_local_var->data_filters = data_filters;
     application_data_subs_local_var->expiry = expiry;
@@ -148,10 +147,10 @@ OpenAPI_application_data_subs_t *OpenAPI_application_data_subs_parseFromJSON(cJS
     }
 
     application_data_subs_local_var = OpenAPI_application_data_subs_create (
-        ogs_strdup_or_assert(notification_uri->valuestring),
+        ogs_strdup(notification_uri->valuestring),
         data_filters ? data_filtersList : NULL,
-        expiry ? ogs_strdup_or_assert(expiry->valuestring) : NULL,
-        supported_features ? ogs_strdup_or_assert(supported_features->valuestring) : NULL
+        expiry ? ogs_strdup(expiry->valuestring) : NULL,
+        supported_features ? ogs_strdup(supported_features->valuestring) : NULL
     );
 
     return application_data_subs_local_var;

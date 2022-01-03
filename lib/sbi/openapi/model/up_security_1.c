@@ -9,10 +9,9 @@ OpenAPI_up_security_1_t *OpenAPI_up_security_1_create(
     OpenAPI_up_confidentiality_e up_confid
 )
 {
-    OpenAPI_up_security_1_t *up_security_1_local_var = OpenAPI_malloc(sizeof(OpenAPI_up_security_1_t));
-    if (!up_security_1_local_var) {
-        return NULL;
-    }
+    OpenAPI_up_security_1_t *up_security_1_local_var = ogs_malloc(sizeof(OpenAPI_up_security_1_t));
+    ogs_assert(up_security_1_local_var);
+
     up_security_1_local_var->up_integr = up_integr;
     up_security_1_local_var->up_confid = up_confid;
 

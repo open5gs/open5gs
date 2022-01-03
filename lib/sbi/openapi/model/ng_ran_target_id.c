@@ -9,10 +9,9 @@ OpenAPI_ng_ran_target_id_t *OpenAPI_ng_ran_target_id_create(
     OpenAPI_tai_t *tai
 )
 {
-    OpenAPI_ng_ran_target_id_t *ng_ran_target_id_local_var = OpenAPI_malloc(sizeof(OpenAPI_ng_ran_target_id_t));
-    if (!ng_ran_target_id_local_var) {
-        return NULL;
-    }
+    OpenAPI_ng_ran_target_id_t *ng_ran_target_id_local_var = ogs_malloc(sizeof(OpenAPI_ng_ran_target_id_t));
+    ogs_assert(ng_ran_target_id_local_var);
+
     ng_ran_target_id_local_var->ran_node_id = ran_node_id;
     ng_ran_target_id_local_var->tai = tai;
 

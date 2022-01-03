@@ -34,10 +34,9 @@ OpenAPI_policy_association_request_t *OpenAPI_policy_association_request_create(
     char *supp_feat
 )
 {
-    OpenAPI_policy_association_request_t *policy_association_request_local_var = OpenAPI_malloc(sizeof(OpenAPI_policy_association_request_t));
-    if (!policy_association_request_local_var) {
-        return NULL;
-    }
+    OpenAPI_policy_association_request_t *policy_association_request_local_var = ogs_malloc(sizeof(OpenAPI_policy_association_request_t));
+    ogs_assert(policy_association_request_local_var);
+
     policy_association_request_local_var->notification_uri = notification_uri;
     policy_association_request_local_var->alt_notif_ipv4_addrs = alt_notif_ipv4_addrs;
     policy_association_request_local_var->alt_notif_ipv6_addrs = alt_notif_ipv6_addrs;
@@ -475,7 +474,7 @@ OpenAPI_policy_association_request_t *OpenAPI_policy_association_request_parseFr
         ogs_error("OpenAPI_policy_association_request_parseFromJSON() failed [alt_notif_ipv4_addrs]");
         goto end;
     }
-    OpenAPI_list_add(alt_notif_ipv4_addrsList , ogs_strdup_or_assert(alt_notif_ipv4_addrs_local->valuestring));
+    OpenAPI_list_add(alt_notif_ipv4_addrsList , ogs_strdup(alt_notif_ipv4_addrs_local->valuestring));
     }
     }
 
@@ -495,7 +494,7 @@ OpenAPI_policy_association_request_t *OpenAPI_policy_association_request_parseFr
         ogs_error("OpenAPI_policy_association_request_parseFromJSON() failed [alt_notif_ipv6_addrs]");
         goto end;
     }
-    OpenAPI_list_add(alt_notif_ipv6_addrsList , ogs_strdup_or_assert(alt_notif_ipv6_addrs_local->valuestring));
+    OpenAPI_list_add(alt_notif_ipv6_addrsList , ogs_strdup(alt_notif_ipv6_addrs_local->valuestring));
     }
     }
 
@@ -515,7 +514,7 @@ OpenAPI_policy_association_request_t *OpenAPI_policy_association_request_parseFr
         ogs_error("OpenAPI_policy_association_request_parseFromJSON() failed [alt_notif_fqdns]");
         goto end;
     }
-    OpenAPI_list_add(alt_notif_fqdnsList , ogs_strdup_or_assert(alt_notif_fqdns_local->valuestring));
+    OpenAPI_list_add(alt_notif_fqdnsList , ogs_strdup(alt_notif_fqdns_local->valuestring));
     }
     }
 
@@ -653,7 +652,7 @@ OpenAPI_policy_association_request_t *OpenAPI_policy_association_request_parseFr
         ogs_error("OpenAPI_policy_association_request_parseFromJSON() failed [group_ids]");
         goto end;
     }
-    OpenAPI_list_add(group_idsList , ogs_strdup_or_assert(group_ids_local->valuestring));
+    OpenAPI_list_add(group_idsList , ogs_strdup(group_ids_local->valuestring));
     }
     }
 
@@ -791,17 +790,17 @@ OpenAPI_policy_association_request_t *OpenAPI_policy_association_request_parseFr
     }
 
     policy_association_request_local_var = OpenAPI_policy_association_request_create (
-        ogs_strdup_or_assert(notification_uri->valuestring),
+        ogs_strdup(notification_uri->valuestring),
         alt_notif_ipv4_addrs ? alt_notif_ipv4_addrsList : NULL,
         alt_notif_ipv6_addrs ? alt_notif_ipv6_addrsList : NULL,
         alt_notif_fqdns ? alt_notif_fqdnsList : NULL,
-        ogs_strdup_or_assert(supi->valuestring),
-        gpsi ? ogs_strdup_or_assert(gpsi->valuestring) : NULL,
+        ogs_strdup(supi->valuestring),
+        gpsi ? ogs_strdup(gpsi->valuestring) : NULL,
         access_type ? access_typeVariable : 0,
         access_types ? access_typesList : NULL,
-        pei ? ogs_strdup_or_assert(pei->valuestring) : NULL,
+        pei ? ogs_strdup(pei->valuestring) : NULL,
         user_loc ? user_loc_local_nonprim : NULL,
-        time_zone ? ogs_strdup_or_assert(time_zone->valuestring) : NULL,
+        time_zone ? ogs_strdup(time_zone->valuestring) : NULL,
         serving_plmn ? serving_plmn_local_nonprim : NULL,
         rat_type ? rat_typeVariable : 0,
         rat_types ? rat_typesList : NULL,
@@ -815,9 +814,9 @@ OpenAPI_policy_association_request_t *OpenAPI_policy_association_request_parseFr
         mapping_snssais ? mapping_snssaisList : NULL,
         n3g_allowed_snssais ? n3g_allowed_snssaisList : NULL,
         guami ? guami_local_nonprim : NULL,
-        service_name ? ogs_strdup_or_assert(service_name->valuestring) : NULL,
+        service_name ? ogs_strdup(service_name->valuestring) : NULL,
         trace_req ? trace_req_local_nonprim : NULL,
-        ogs_strdup_or_assert(supp_feat->valuestring)
+        ogs_strdup(supp_feat->valuestring)
     );
 
     return policy_association_request_local_var;

@@ -13,10 +13,9 @@ OpenAPI_point_altitude_uncertainty_t *OpenAPI_point_altitude_uncertainty_create(
     int confidence
 )
 {
-    OpenAPI_point_altitude_uncertainty_t *point_altitude_uncertainty_local_var = OpenAPI_malloc(sizeof(OpenAPI_point_altitude_uncertainty_t));
-    if (!point_altitude_uncertainty_local_var) {
-        return NULL;
-    }
+    OpenAPI_point_altitude_uncertainty_t *point_altitude_uncertainty_local_var = ogs_malloc(sizeof(OpenAPI_point_altitude_uncertainty_t));
+    ogs_assert(point_altitude_uncertainty_local_var);
+
     point_altitude_uncertainty_local_var->shape = shape;
     point_altitude_uncertainty_local_var->point = point;
     point_altitude_uncertainty_local_var->altitude = altitude;

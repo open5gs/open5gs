@@ -12,10 +12,9 @@ OpenAPI_pp_subs_reg_timer_t *OpenAPI_pp_subs_reg_timer_create(
     char *mtc_provider_information
 )
 {
-    OpenAPI_pp_subs_reg_timer_t *pp_subs_reg_timer_local_var = OpenAPI_malloc(sizeof(OpenAPI_pp_subs_reg_timer_t));
-    if (!pp_subs_reg_timer_local_var) {
-        return NULL;
-    }
+    OpenAPI_pp_subs_reg_timer_t *pp_subs_reg_timer_local_var = ogs_malloc(sizeof(OpenAPI_pp_subs_reg_timer_t));
+    ogs_assert(pp_subs_reg_timer_local_var);
+
     pp_subs_reg_timer_local_var->subs_reg_timer = subs_reg_timer;
     pp_subs_reg_timer_local_var->af_instance_id = af_instance_id;
     pp_subs_reg_timer_local_var->reference_id = reference_id;
@@ -137,11 +136,11 @@ OpenAPI_pp_subs_reg_timer_t *OpenAPI_pp_subs_reg_timer_parseFromJSON(cJSON *pp_s
     pp_subs_reg_timer_local_var = OpenAPI_pp_subs_reg_timer_create (
         
         subs_reg_timer->valuedouble,
-        ogs_strdup_or_assert(af_instance_id->valuestring),
+        ogs_strdup(af_instance_id->valuestring),
         
         reference_id->valuedouble,
-        validity_time ? ogs_strdup_or_assert(validity_time->valuestring) : NULL,
-        mtc_provider_information ? ogs_strdup_or_assert(mtc_provider_information->valuestring) : NULL
+        validity_time ? ogs_strdup(validity_time->valuestring) : NULL,
+        mtc_provider_information ? ogs_strdup(mtc_provider_information->valuestring) : NULL
     );
 
     return pp_subs_reg_timer_local_var;

@@ -11,10 +11,9 @@ OpenAPI_mbsfn_area_t *OpenAPI_mbsfn_area_create(
     int carrier_frequency
 )
 {
-    OpenAPI_mbsfn_area_t *mbsfn_area_local_var = OpenAPI_malloc(sizeof(OpenAPI_mbsfn_area_t));
-    if (!mbsfn_area_local_var) {
-        return NULL;
-    }
+    OpenAPI_mbsfn_area_t *mbsfn_area_local_var = ogs_malloc(sizeof(OpenAPI_mbsfn_area_t));
+    ogs_assert(mbsfn_area_local_var);
+
     mbsfn_area_local_var->is_mbsfn_area_id = is_mbsfn_area_id;
     mbsfn_area_local_var->mbsfn_area_id = mbsfn_area_id;
     mbsfn_area_local_var->is_carrier_frequency = is_carrier_frequency;

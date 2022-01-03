@@ -8,10 +8,9 @@ OpenAPI_enhanced_coverage_restriction_data_t *OpenAPI_enhanced_coverage_restrict
     OpenAPI_list_t *plmn_ec_info_list
 )
 {
-    OpenAPI_enhanced_coverage_restriction_data_t *enhanced_coverage_restriction_data_local_var = OpenAPI_malloc(sizeof(OpenAPI_enhanced_coverage_restriction_data_t));
-    if (!enhanced_coverage_restriction_data_local_var) {
-        return NULL;
-    }
+    OpenAPI_enhanced_coverage_restriction_data_t *enhanced_coverage_restriction_data_local_var = ogs_malloc(sizeof(OpenAPI_enhanced_coverage_restriction_data_t));
+    ogs_assert(enhanced_coverage_restriction_data_local_var);
+
     enhanced_coverage_restriction_data_local_var->plmn_ec_info_list = plmn_ec_info_list;
 
     return enhanced_coverage_restriction_data_local_var;

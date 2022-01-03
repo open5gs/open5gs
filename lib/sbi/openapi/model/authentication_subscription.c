@@ -21,10 +21,9 @@ OpenAPI_authentication_subscription_t *OpenAPI_authentication_subscription_creat
     char *supi
 )
 {
-    OpenAPI_authentication_subscription_t *authentication_subscription_local_var = OpenAPI_malloc(sizeof(OpenAPI_authentication_subscription_t));
-    if (!authentication_subscription_local_var) {
-        return NULL;
-    }
+    OpenAPI_authentication_subscription_t *authentication_subscription_local_var = ogs_malloc(sizeof(OpenAPI_authentication_subscription_t));
+    ogs_assert(authentication_subscription_local_var);
+
     authentication_subscription_local_var->authentication_method = authentication_method;
     authentication_subscription_local_var->enc_permanent_key = enc_permanent_key;
     authentication_subscription_local_var->protection_parameter_id = protection_parameter_id;
@@ -279,19 +278,19 @@ OpenAPI_authentication_subscription_t *OpenAPI_authentication_subscription_parse
 
     authentication_subscription_local_var = OpenAPI_authentication_subscription_create (
         authentication_methodVariable,
-        enc_permanent_key ? ogs_strdup_or_assert(enc_permanent_key->valuestring) : NULL,
-        protection_parameter_id ? ogs_strdup_or_assert(protection_parameter_id->valuestring) : NULL,
+        enc_permanent_key ? ogs_strdup(enc_permanent_key->valuestring) : NULL,
+        protection_parameter_id ? ogs_strdup(protection_parameter_id->valuestring) : NULL,
         sequence_number ? sequence_number_local_nonprim : NULL,
-        authentication_management_field ? ogs_strdup_or_assert(authentication_management_field->valuestring) : NULL,
-        algorithm_id ? ogs_strdup_or_assert(algorithm_id->valuestring) : NULL,
-        enc_opc_key ? ogs_strdup_or_assert(enc_opc_key->valuestring) : NULL,
-        enc_topc_key ? ogs_strdup_or_assert(enc_topc_key->valuestring) : NULL,
+        authentication_management_field ? ogs_strdup(authentication_management_field->valuestring) : NULL,
+        algorithm_id ? ogs_strdup(algorithm_id->valuestring) : NULL,
+        enc_opc_key ? ogs_strdup(enc_opc_key->valuestring) : NULL,
+        enc_topc_key ? ogs_strdup(enc_topc_key->valuestring) : NULL,
         vector_generation_in_hss ? true : false,
         vector_generation_in_hss ? vector_generation_in_hss->valueint : 0,
         n5gc_auth_method ? n5gc_auth_methodVariable : 0,
         rg_authentication_ind ? true : false,
         rg_authentication_ind ? rg_authentication_ind->valueint : 0,
-        supi ? ogs_strdup_or_assert(supi->valuestring) : NULL
+        supi ? ogs_strdup(supi->valuestring) : NULL
     );
 
     return authentication_subscription_local_var;

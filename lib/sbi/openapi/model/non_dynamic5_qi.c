@@ -19,10 +19,9 @@ OpenAPI_non_dynamic5_qi_t *OpenAPI_non_dynamic5_qi_create(
     int cn_packet_delay_budget_ul
 )
 {
-    OpenAPI_non_dynamic5_qi_t *non_dynamic5_qi_local_var = OpenAPI_malloc(sizeof(OpenAPI_non_dynamic5_qi_t));
-    if (!non_dynamic5_qi_local_var) {
-        return NULL;
-    }
+    OpenAPI_non_dynamic5_qi_t *non_dynamic5_qi_local_var = ogs_malloc(sizeof(OpenAPI_non_dynamic5_qi_t));
+    ogs_assert(non_dynamic5_qi_local_var);
+
     non_dynamic5_qi_local_var->is_priority_level = is_priority_level;
     non_dynamic5_qi_local_var->priority_level = priority_level;
     non_dynamic5_qi_local_var->is_aver_window = is_aver_window;

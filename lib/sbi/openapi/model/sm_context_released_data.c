@@ -9,10 +9,9 @@ OpenAPI_sm_context_released_data_t *OpenAPI_sm_context_released_data_create(
     OpenAPI_apn_rate_status_t *apn_rate_status
 )
 {
-    OpenAPI_sm_context_released_data_t *sm_context_released_data_local_var = OpenAPI_malloc(sizeof(OpenAPI_sm_context_released_data_t));
-    if (!sm_context_released_data_local_var) {
-        return NULL;
-    }
+    OpenAPI_sm_context_released_data_t *sm_context_released_data_local_var = ogs_malloc(sizeof(OpenAPI_sm_context_released_data_t));
+    ogs_assert(sm_context_released_data_local_var);
+
     sm_context_released_data_local_var->small_data_rate_status = small_data_rate_status;
     sm_context_released_data_local_var->apn_rate_status = apn_rate_status;
 

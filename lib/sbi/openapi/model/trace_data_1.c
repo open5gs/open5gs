@@ -14,10 +14,9 @@ OpenAPI_trace_data_1_t *OpenAPI_trace_data_1_create(
     char *interface_list
 )
 {
-    OpenAPI_trace_data_1_t *trace_data_1_local_var = OpenAPI_malloc(sizeof(OpenAPI_trace_data_1_t));
-    if (!trace_data_1_local_var) {
-        return NULL;
-    }
+    OpenAPI_trace_data_1_t *trace_data_1_local_var = ogs_malloc(sizeof(OpenAPI_trace_data_1_t));
+    ogs_assert(trace_data_1_local_var);
+
     trace_data_1_local_var->trace_ref = trace_ref;
     trace_data_1_local_var->trace_depth = trace_depth;
     trace_data_1_local_var->ne_type_list = ne_type_list;
@@ -176,13 +175,13 @@ OpenAPI_trace_data_1_t *OpenAPI_trace_data_1_parseFromJSON(cJSON *trace_data_1JS
     }
 
     trace_data_1_local_var = OpenAPI_trace_data_1_create (
-        ogs_strdup_or_assert(trace_ref->valuestring),
+        ogs_strdup(trace_ref->valuestring),
         trace_depthVariable,
-        ogs_strdup_or_assert(ne_type_list->valuestring),
-        ogs_strdup_or_assert(event_list->valuestring),
-        collection_entity_ipv4_addr ? ogs_strdup_or_assert(collection_entity_ipv4_addr->valuestring) : NULL,
-        collection_entity_ipv6_addr ? ogs_strdup_or_assert(collection_entity_ipv6_addr->valuestring) : NULL,
-        interface_list ? ogs_strdup_or_assert(interface_list->valuestring) : NULL
+        ogs_strdup(ne_type_list->valuestring),
+        ogs_strdup(event_list->valuestring),
+        collection_entity_ipv4_addr ? ogs_strdup(collection_entity_ipv4_addr->valuestring) : NULL,
+        collection_entity_ipv6_addr ? ogs_strdup(collection_entity_ipv6_addr->valuestring) : NULL,
+        interface_list ? ogs_strdup(interface_list->valuestring) : NULL
     );
 
     return trace_data_1_local_var;

@@ -10,10 +10,9 @@ OpenAPI_lcs_privacy_data_1_t *OpenAPI_lcs_privacy_data_1_create(
     OpenAPI_list_t *plmn_operator_classes
 )
 {
-    OpenAPI_lcs_privacy_data_1_t *lcs_privacy_data_1_local_var = OpenAPI_malloc(sizeof(OpenAPI_lcs_privacy_data_1_t));
-    if (!lcs_privacy_data_1_local_var) {
-        return NULL;
-    }
+    OpenAPI_lcs_privacy_data_1_t *lcs_privacy_data_1_local_var = ogs_malloc(sizeof(OpenAPI_lcs_privacy_data_1_t));
+    ogs_assert(lcs_privacy_data_1_local_var);
+
     lcs_privacy_data_1_local_var->lpi = lpi;
     lcs_privacy_data_1_local_var->unrelated_class = unrelated_class;
     lcs_privacy_data_1_local_var->plmn_operator_classes = plmn_operator_classes;

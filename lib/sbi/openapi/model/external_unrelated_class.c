@@ -10,10 +10,9 @@ OpenAPI_external_unrelated_class_t *OpenAPI_external_unrelated_class_create(
     OpenAPI_list_t *lcs_client_group_externals
 )
 {
-    OpenAPI_external_unrelated_class_t *external_unrelated_class_local_var = OpenAPI_malloc(sizeof(OpenAPI_external_unrelated_class_t));
-    if (!external_unrelated_class_local_var) {
-        return NULL;
-    }
+    OpenAPI_external_unrelated_class_t *external_unrelated_class_local_var = ogs_malloc(sizeof(OpenAPI_external_unrelated_class_t));
+    ogs_assert(external_unrelated_class_local_var);
+
     external_unrelated_class_local_var->lcs_client_externals = lcs_client_externals;
     external_unrelated_class_local_var->af_externals = af_externals;
     external_unrelated_class_local_var->lcs_client_group_externals = lcs_client_group_externals;

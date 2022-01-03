@@ -13,10 +13,9 @@ OpenAPI_nef_info_t *OpenAPI_nef_info_create(
     OpenAPI_list_t *served_fqdn_list
 )
 {
-    OpenAPI_nef_info_t *nef_info_local_var = OpenAPI_malloc(sizeof(OpenAPI_nef_info_t));
-    if (!nef_info_local_var) {
-        return NULL;
-    }
+    OpenAPI_nef_info_t *nef_info_local_var = ogs_malloc(sizeof(OpenAPI_nef_info_t));
+    ogs_assert(nef_info_local_var);
+
     nef_info_local_var->nef_id = nef_id;
     nef_info_local_var->pfd_data = pfd_data;
     nef_info_local_var->af_ee_data = af_ee_data;
@@ -242,12 +241,12 @@ OpenAPI_nef_info_t *OpenAPI_nef_info_parseFromJSON(cJSON *nef_infoJSON)
         ogs_error("OpenAPI_nef_info_parseFromJSON() failed [served_fqdn_list]");
         goto end;
     }
-    OpenAPI_list_add(served_fqdn_listList , ogs_strdup_or_assert(served_fqdn_list_local->valuestring));
+    OpenAPI_list_add(served_fqdn_listList , ogs_strdup(served_fqdn_list_local->valuestring));
     }
     }
 
     nef_info_local_var = OpenAPI_nef_info_create (
-        nef_id ? ogs_strdup_or_assert(nef_id->valuestring) : NULL,
+        nef_id ? ogs_strdup(nef_id->valuestring) : NULL,
         pfd_data ? pfd_data_local_nonprim : NULL,
         af_ee_data ? af_ee_data_local_nonprim : NULL,
         gpsi_ranges ? gpsi_rangesList : NULL,

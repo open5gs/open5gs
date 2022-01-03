@@ -9,10 +9,9 @@ OpenAPI_qos_flow_tunnel_t *OpenAPI_qos_flow_tunnel_create(
     OpenAPI_tunnel_info_t *tunnel_info
 )
 {
-    OpenAPI_qos_flow_tunnel_t *qos_flow_tunnel_local_var = OpenAPI_malloc(sizeof(OpenAPI_qos_flow_tunnel_t));
-    if (!qos_flow_tunnel_local_var) {
-        return NULL;
-    }
+    OpenAPI_qos_flow_tunnel_t *qos_flow_tunnel_local_var = ogs_malloc(sizeof(OpenAPI_qos_flow_tunnel_t));
+    ogs_assert(qos_flow_tunnel_local_var);
+
     qos_flow_tunnel_local_var->qfi_list = qfi_list;
     qos_flow_tunnel_local_var->tunnel_info = tunnel_info;
 

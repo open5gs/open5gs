@@ -11,10 +11,9 @@ OpenAPI_pdu_session_tsn_bridge_t *OpenAPI_pdu_session_tsn_bridge_create(
     OpenAPI_list_t *tsn_port_man_cont_nwtts
 )
 {
-    OpenAPI_pdu_session_tsn_bridge_t *pdu_session_tsn_bridge_local_var = OpenAPI_malloc(sizeof(OpenAPI_pdu_session_tsn_bridge_t));
-    if (!pdu_session_tsn_bridge_local_var) {
-        return NULL;
-    }
+    OpenAPI_pdu_session_tsn_bridge_t *pdu_session_tsn_bridge_local_var = ogs_malloc(sizeof(OpenAPI_pdu_session_tsn_bridge_t));
+    ogs_assert(pdu_session_tsn_bridge_local_var);
+
     pdu_session_tsn_bridge_local_var->tsn_bridge_info = tsn_bridge_info;
     pdu_session_tsn_bridge_local_var->tsn_bridge_man_cont = tsn_bridge_man_cont;
     pdu_session_tsn_bridge_local_var->tsn_port_man_cont_dstt = tsn_port_man_cont_dstt;

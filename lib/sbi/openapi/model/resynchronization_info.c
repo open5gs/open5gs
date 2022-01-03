@@ -9,10 +9,9 @@ OpenAPI_resynchronization_info_t *OpenAPI_resynchronization_info_create(
     char *auts
 )
 {
-    OpenAPI_resynchronization_info_t *resynchronization_info_local_var = OpenAPI_malloc(sizeof(OpenAPI_resynchronization_info_t));
-    if (!resynchronization_info_local_var) {
-        return NULL;
-    }
+    OpenAPI_resynchronization_info_t *resynchronization_info_local_var = ogs_malloc(sizeof(OpenAPI_resynchronization_info_t));
+    ogs_assert(resynchronization_info_local_var);
+
     resynchronization_info_local_var->rand = rand;
     resynchronization_info_local_var->auts = auts;
 
@@ -80,8 +79,8 @@ OpenAPI_resynchronization_info_t *OpenAPI_resynchronization_info_parseFromJSON(c
     }
 
     resynchronization_info_local_var = OpenAPI_resynchronization_info_create (
-        ogs_strdup_or_assert(rand->valuestring),
-        ogs_strdup_or_assert(auts->valuestring)
+        ogs_strdup(rand->valuestring),
+        ogs_strdup(auts->valuestring)
     );
 
     return resynchronization_info_local_var;

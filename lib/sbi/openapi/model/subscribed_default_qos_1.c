@@ -11,10 +11,9 @@ OpenAPI_subscribed_default_qos_1_t *OpenAPI_subscribed_default_qos_1_create(
     int priority_level
 )
 {
-    OpenAPI_subscribed_default_qos_1_t *subscribed_default_qos_1_local_var = OpenAPI_malloc(sizeof(OpenAPI_subscribed_default_qos_1_t));
-    if (!subscribed_default_qos_1_local_var) {
-        return NULL;
-    }
+    OpenAPI_subscribed_default_qos_1_t *subscribed_default_qos_1_local_var = ogs_malloc(sizeof(OpenAPI_subscribed_default_qos_1_t));
+    ogs_assert(subscribed_default_qos_1_local_var);
+
     subscribed_default_qos_1_local_var->_5qi = _5qi;
     subscribed_default_qos_1_local_var->arp = arp;
     subscribed_default_qos_1_local_var->is_priority_level = is_priority_level;

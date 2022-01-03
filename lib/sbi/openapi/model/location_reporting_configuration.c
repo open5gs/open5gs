@@ -12,10 +12,9 @@ OpenAPI_location_reporting_configuration_t *OpenAPI_location_reporting_configura
     OpenAPI_location_accuracy_t *n3gpp_accuracy
 )
 {
-    OpenAPI_location_reporting_configuration_t *location_reporting_configuration_local_var = OpenAPI_malloc(sizeof(OpenAPI_location_reporting_configuration_t));
-    if (!location_reporting_configuration_local_var) {
-        return NULL;
-    }
+    OpenAPI_location_reporting_configuration_t *location_reporting_configuration_local_var = ogs_malloc(sizeof(OpenAPI_location_reporting_configuration_t));
+    ogs_assert(location_reporting_configuration_local_var);
+
     location_reporting_configuration_local_var->current_location = current_location;
     location_reporting_configuration_local_var->is_one_time = is_one_time;
     location_reporting_configuration_local_var->one_time = one_time;

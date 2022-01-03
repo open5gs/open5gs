@@ -31,10 +31,9 @@ OpenAPI_pcf_binding_t *OpenAPI_pcf_binding_create(
     OpenAPI_list_t *ipv6_frame_route_list
 )
 {
-    OpenAPI_pcf_binding_t *pcf_binding_local_var = OpenAPI_malloc(sizeof(OpenAPI_pcf_binding_t));
-    if (!pcf_binding_local_var) {
-        return NULL;
-    }
+    OpenAPI_pcf_binding_t *pcf_binding_local_var = ogs_malloc(sizeof(OpenAPI_pcf_binding_t));
+    ogs_assert(pcf_binding_local_var);
+
     pcf_binding_local_var->supi = supi;
     pcf_binding_local_var->gpsi = gpsi;
     pcf_binding_local_var->ipv4_addr = ipv4_addr;
@@ -420,7 +419,7 @@ OpenAPI_pcf_binding_t *OpenAPI_pcf_binding_parseFromJSON(cJSON *pcf_bindingJSON)
         ogs_error("OpenAPI_pcf_binding_parseFromJSON() failed [add_ipv6_prefixes]");
         goto end;
     }
-    OpenAPI_list_add(add_ipv6_prefixesList , ogs_strdup_or_assert(add_ipv6_prefixes_local->valuestring));
+    OpenAPI_list_add(add_ipv6_prefixesList , ogs_strdup(add_ipv6_prefixes_local->valuestring));
     }
     }
 
@@ -458,7 +457,7 @@ OpenAPI_pcf_binding_t *OpenAPI_pcf_binding_parseFromJSON(cJSON *pcf_bindingJSON)
         ogs_error("OpenAPI_pcf_binding_parseFromJSON() failed [add_mac_addrs]");
         goto end;
     }
-    OpenAPI_list_add(add_mac_addrsList , ogs_strdup_or_assert(add_mac_addrs_local->valuestring));
+    OpenAPI_list_add(add_mac_addrsList , ogs_strdup(add_mac_addrs_local->valuestring));
     }
     }
 
@@ -634,7 +633,7 @@ OpenAPI_pcf_binding_t *OpenAPI_pcf_binding_parseFromJSON(cJSON *pcf_bindingJSON)
         ogs_error("OpenAPI_pcf_binding_parseFromJSON() failed [ipv4_frame_route_list]");
         goto end;
     }
-    OpenAPI_list_add(ipv4_frame_route_listList , ogs_strdup_or_assert(ipv4_frame_route_list_local->valuestring));
+    OpenAPI_list_add(ipv4_frame_route_listList , ogs_strdup(ipv4_frame_route_list_local->valuestring));
     }
     }
 
@@ -654,31 +653,31 @@ OpenAPI_pcf_binding_t *OpenAPI_pcf_binding_parseFromJSON(cJSON *pcf_bindingJSON)
         ogs_error("OpenAPI_pcf_binding_parseFromJSON() failed [ipv6_frame_route_list]");
         goto end;
     }
-    OpenAPI_list_add(ipv6_frame_route_listList , ogs_strdup_or_assert(ipv6_frame_route_list_local->valuestring));
+    OpenAPI_list_add(ipv6_frame_route_listList , ogs_strdup(ipv6_frame_route_list_local->valuestring));
     }
     }
 
     pcf_binding_local_var = OpenAPI_pcf_binding_create (
-        supi ? ogs_strdup_or_assert(supi->valuestring) : NULL,
-        gpsi ? ogs_strdup_or_assert(gpsi->valuestring) : NULL,
-        ipv4_addr ? ogs_strdup_or_assert(ipv4_addr->valuestring) : NULL,
-        ipv6_prefix ? ogs_strdup_or_assert(ipv6_prefix->valuestring) : NULL,
+        supi ? ogs_strdup(supi->valuestring) : NULL,
+        gpsi ? ogs_strdup(gpsi->valuestring) : NULL,
+        ipv4_addr ? ogs_strdup(ipv4_addr->valuestring) : NULL,
+        ipv6_prefix ? ogs_strdup(ipv6_prefix->valuestring) : NULL,
         add_ipv6_prefixes ? add_ipv6_prefixesList : NULL,
-        ip_domain ? ogs_strdup_or_assert(ip_domain->valuestring) : NULL,
-        mac_addr48 ? ogs_strdup_or_assert(mac_addr48->valuestring) : NULL,
+        ip_domain ? ogs_strdup(ip_domain->valuestring) : NULL,
+        mac_addr48 ? ogs_strdup(mac_addr48->valuestring) : NULL,
         add_mac_addrs ? add_mac_addrsList : NULL,
-        ogs_strdup_or_assert(dnn->valuestring),
-        pcf_fqdn ? ogs_strdup_or_assert(pcf_fqdn->valuestring) : NULL,
+        ogs_strdup(dnn->valuestring),
+        pcf_fqdn ? ogs_strdup(pcf_fqdn->valuestring) : NULL,
         pcf_ip_end_points ? pcf_ip_end_pointsList : NULL,
-        pcf_diam_host ? ogs_strdup_or_assert(pcf_diam_host->valuestring) : NULL,
-        pcf_diam_realm ? ogs_strdup_or_assert(pcf_diam_realm->valuestring) : NULL,
-        pcf_sm_fqdn ? ogs_strdup_or_assert(pcf_sm_fqdn->valuestring) : NULL,
+        pcf_diam_host ? ogs_strdup(pcf_diam_host->valuestring) : NULL,
+        pcf_diam_realm ? ogs_strdup(pcf_diam_realm->valuestring) : NULL,
+        pcf_sm_fqdn ? ogs_strdup(pcf_sm_fqdn->valuestring) : NULL,
         pcf_sm_ip_end_points ? pcf_sm_ip_end_pointsList : NULL,
         snssai_local_nonprim,
-        supp_feat ? ogs_strdup_or_assert(supp_feat->valuestring) : NULL,
-        pcf_id ? ogs_strdup_or_assert(pcf_id->valuestring) : NULL,
-        pcf_set_id ? ogs_strdup_or_assert(pcf_set_id->valuestring) : NULL,
-        recovery_time ? ogs_strdup_or_assert(recovery_time->valuestring) : NULL,
+        supp_feat ? ogs_strdup(supp_feat->valuestring) : NULL,
+        pcf_id ? ogs_strdup(pcf_id->valuestring) : NULL,
+        pcf_set_id ? ogs_strdup(pcf_set_id->valuestring) : NULL,
+        recovery_time ? ogs_strdup(recovery_time->valuestring) : NULL,
         para_com ? para_com_local_nonprim : NULL,
         bind_level ? bind_levelVariable : 0,
         ipv4_frame_route_list ? ipv4_frame_route_listList : NULL,

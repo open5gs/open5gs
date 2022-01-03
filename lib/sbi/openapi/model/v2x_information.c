@@ -8,10 +8,9 @@ OpenAPI_v2x_information_t *OpenAPI_v2x_information_create(
     OpenAPI_n2_info_content_t *n2_pc5_pol
 )
 {
-    OpenAPI_v2x_information_t *v2x_information_local_var = OpenAPI_malloc(sizeof(OpenAPI_v2x_information_t));
-    if (!v2x_information_local_var) {
-        return NULL;
-    }
+    OpenAPI_v2x_information_t *v2x_information_local_var = ogs_malloc(sizeof(OpenAPI_v2x_information_t));
+    ogs_assert(v2x_information_local_var);
+
     v2x_information_local_var->n2_pc5_pol = n2_pc5_pol;
 
     return v2x_information_local_var;

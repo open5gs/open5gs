@@ -7,10 +7,9 @@
 OpenAPI_cm_state_t *OpenAPI_cm_state_create(
 )
 {
-    OpenAPI_cm_state_t *cm_state_local_var = OpenAPI_malloc(sizeof(OpenAPI_cm_state_t));
-    if (!cm_state_local_var) {
-        return NULL;
-    }
+    OpenAPI_cm_state_t *cm_state_local_var = ogs_malloc(sizeof(OpenAPI_cm_state_t));
+    ogs_assert(cm_state_local_var);
+
 
     return cm_state_local_var;
 }

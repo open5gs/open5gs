@@ -10,10 +10,9 @@ OpenAPI_nf_service_version_t *OpenAPI_nf_service_version_create(
     char *expiry
 )
 {
-    OpenAPI_nf_service_version_t *nf_service_version_local_var = OpenAPI_malloc(sizeof(OpenAPI_nf_service_version_t));
-    if (!nf_service_version_local_var) {
-        return NULL;
-    }
+    OpenAPI_nf_service_version_t *nf_service_version_local_var = ogs_malloc(sizeof(OpenAPI_nf_service_version_t));
+    ogs_assert(nf_service_version_local_var);
+
     nf_service_version_local_var->api_version_in_uri = api_version_in_uri;
     nf_service_version_local_var->api_full_version = api_full_version;
     nf_service_version_local_var->expiry = expiry;
@@ -99,9 +98,9 @@ OpenAPI_nf_service_version_t *OpenAPI_nf_service_version_parseFromJSON(cJSON *nf
     }
 
     nf_service_version_local_var = OpenAPI_nf_service_version_create (
-        ogs_strdup_or_assert(api_version_in_uri->valuestring),
-        ogs_strdup_or_assert(api_full_version->valuestring),
-        expiry ? ogs_strdup_or_assert(expiry->valuestring) : NULL
+        ogs_strdup(api_version_in_uri->valuestring),
+        ogs_strdup(api_full_version->valuestring),
+        expiry ? ogs_strdup(expiry->valuestring) : NULL
     );
 
     return nf_service_version_local_var;

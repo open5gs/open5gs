@@ -20,10 +20,9 @@ OpenAPI_subscription_data_sets_1_t *OpenAPI_subscription_data_sets_1_create(
     OpenAPI_lcs_broadcast_assistance_types_data_1_t *lcs_broadcast_assistance_types_data
 )
 {
-    OpenAPI_subscription_data_sets_1_t *subscription_data_sets_1_local_var = OpenAPI_malloc(sizeof(OpenAPI_subscription_data_sets_1_t));
-    if (!subscription_data_sets_1_local_var) {
-        return NULL;
-    }
+    OpenAPI_subscription_data_sets_1_t *subscription_data_sets_1_local_var = ogs_malloc(sizeof(OpenAPI_subscription_data_sets_1_t));
+    ogs_assert(subscription_data_sets_1_local_var);
+
     subscription_data_sets_1_local_var->am_data = am_data;
     subscription_data_sets_1_local_var->smf_sel_data = smf_sel_data;
     subscription_data_sets_1_local_var->uec_amf_data = uec_amf_data;

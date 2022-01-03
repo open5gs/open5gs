@@ -9,10 +9,9 @@ OpenAPI_af_event_notification_t *OpenAPI_af_event_notification_create(
     OpenAPI_list_t *flows
 )
 {
-    OpenAPI_af_event_notification_t *af_event_notification_local_var = OpenAPI_malloc(sizeof(OpenAPI_af_event_notification_t));
-    if (!af_event_notification_local_var) {
-        return NULL;
-    }
+    OpenAPI_af_event_notification_t *af_event_notification_local_var = ogs_malloc(sizeof(OpenAPI_af_event_notification_t));
+    ogs_assert(af_event_notification_local_var);
+
     af_event_notification_local_var->event = event;
     af_event_notification_local_var->flows = flows;
 

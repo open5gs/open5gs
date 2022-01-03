@@ -9,10 +9,9 @@ OpenAPI_suggested_packet_num_dl_t *OpenAPI_suggested_packet_num_dl_create(
     char *validity_time
 )
 {
-    OpenAPI_suggested_packet_num_dl_t *suggested_packet_num_dl_local_var = OpenAPI_malloc(sizeof(OpenAPI_suggested_packet_num_dl_t));
-    if (!suggested_packet_num_dl_local_var) {
-        return NULL;
-    }
+    OpenAPI_suggested_packet_num_dl_t *suggested_packet_num_dl_local_var = ogs_malloc(sizeof(OpenAPI_suggested_packet_num_dl_t));
+    ogs_assert(suggested_packet_num_dl_local_var);
+
     suggested_packet_num_dl_local_var->suggested_packet_num_dl = suggested_packet_num_dl;
     suggested_packet_num_dl_local_var->validity_time = validity_time;
 
@@ -81,7 +80,7 @@ OpenAPI_suggested_packet_num_dl_t *OpenAPI_suggested_packet_num_dl_parseFromJSON
     suggested_packet_num_dl_local_var = OpenAPI_suggested_packet_num_dl_create (
         
         suggested_packet_num_dl->valuedouble,
-        validity_time ? ogs_strdup_or_assert(validity_time->valuestring) : NULL
+        validity_time ? ogs_strdup(validity_time->valuestring) : NULL
     );
 
     return suggested_packet_num_dl_local_var;

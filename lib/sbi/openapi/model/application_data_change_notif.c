@@ -12,10 +12,9 @@ OpenAPI_application_data_change_notif_t *OpenAPI_application_data_change_notif_c
     OpenAPI_service_parameter_data_t *ser_param_data
 )
 {
-    OpenAPI_application_data_change_notif_t *application_data_change_notif_local_var = OpenAPI_malloc(sizeof(OpenAPI_application_data_change_notif_t));
-    if (!application_data_change_notif_local_var) {
-        return NULL;
-    }
+    OpenAPI_application_data_change_notif_t *application_data_change_notif_local_var = ogs_malloc(sizeof(OpenAPI_application_data_change_notif_t));
+    ogs_assert(application_data_change_notif_local_var);
+
     application_data_change_notif_local_var->iptv_config_data = iptv_config_data;
     application_data_change_notif_local_var->pfd_data = pfd_data;
     application_data_change_notif_local_var->bdt_policy_data = bdt_policy_data;
@@ -156,7 +155,7 @@ OpenAPI_application_data_change_notif_t *OpenAPI_application_data_change_notif_p
         iptv_config_data ? iptv_config_data_local_nonprim : NULL,
         pfd_data ? pfd_data_local_nonprim : NULL,
         bdt_policy_data ? bdt_policy_data_local_nonprim : NULL,
-        ogs_strdup_or_assert(res_uri->valuestring),
+        ogs_strdup(res_uri->valuestring),
         ser_param_data ? ser_param_data_local_nonprim : NULL
     );
 

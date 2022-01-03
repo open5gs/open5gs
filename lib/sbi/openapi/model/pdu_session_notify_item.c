@@ -8,10 +8,9 @@ OpenAPI_pdu_session_notify_item_t *OpenAPI_pdu_session_notify_item_create(
     OpenAPI_notification_cause_e notification_cause
 )
 {
-    OpenAPI_pdu_session_notify_item_t *pdu_session_notify_item_local_var = OpenAPI_malloc(sizeof(OpenAPI_pdu_session_notify_item_t));
-    if (!pdu_session_notify_item_local_var) {
-        return NULL;
-    }
+    OpenAPI_pdu_session_notify_item_t *pdu_session_notify_item_local_var = ogs_malloc(sizeof(OpenAPI_pdu_session_notify_item_t));
+    ogs_assert(pdu_session_notify_item_local_var);
+
     pdu_session_notify_item_local_var->notification_cause = notification_cause;
 
     return pdu_session_notify_item_local_var;

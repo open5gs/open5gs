@@ -9,10 +9,9 @@ OpenAPI_sm_policy_notification_t *OpenAPI_sm_policy_notification_create(
     OpenAPI_sm_policy_decision_t *sm_policy_decision
 )
 {
-    OpenAPI_sm_policy_notification_t *sm_policy_notification_local_var = OpenAPI_malloc(sizeof(OpenAPI_sm_policy_notification_t));
-    if (!sm_policy_notification_local_var) {
-        return NULL;
-    }
+    OpenAPI_sm_policy_notification_t *sm_policy_notification_local_var = ogs_malloc(sizeof(OpenAPI_sm_policy_notification_t));
+    ogs_assert(sm_policy_notification_local_var);
+
     sm_policy_notification_local_var->resource_uri = resource_uri;
     sm_policy_notification_local_var->sm_policy_decision = sm_policy_decision;
 
@@ -84,7 +83,7 @@ OpenAPI_sm_policy_notification_t *OpenAPI_sm_policy_notification_parseFromJSON(c
     }
 
     sm_policy_notification_local_var = OpenAPI_sm_policy_notification_create (
-        resource_uri ? ogs_strdup_or_assert(resource_uri->valuestring) : NULL,
+        resource_uri ? ogs_strdup(resource_uri->valuestring) : NULL,
         sm_policy_decision ? sm_policy_decision_local_nonprim : NULL
     );
 

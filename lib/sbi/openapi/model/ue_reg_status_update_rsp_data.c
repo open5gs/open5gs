@@ -8,10 +8,9 @@ OpenAPI_ue_reg_status_update_rsp_data_t *OpenAPI_ue_reg_status_update_rsp_data_c
     int reg_status_transfer_complete
 )
 {
-    OpenAPI_ue_reg_status_update_rsp_data_t *ue_reg_status_update_rsp_data_local_var = OpenAPI_malloc(sizeof(OpenAPI_ue_reg_status_update_rsp_data_t));
-    if (!ue_reg_status_update_rsp_data_local_var) {
-        return NULL;
-    }
+    OpenAPI_ue_reg_status_update_rsp_data_t *ue_reg_status_update_rsp_data_local_var = ogs_malloc(sizeof(OpenAPI_ue_reg_status_update_rsp_data_t));
+    ogs_assert(ue_reg_status_update_rsp_data_local_var);
+
     ue_reg_status_update_rsp_data_local_var->reg_status_transfer_complete = reg_status_transfer_complete;
 
     return ue_reg_status_update_rsp_data_local_var;

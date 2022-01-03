@@ -10,10 +10,9 @@ OpenAPI_scheduled_communication_time_1_t *OpenAPI_scheduled_communication_time_1
     char *time_of_day_end
 )
 {
-    OpenAPI_scheduled_communication_time_1_t *scheduled_communication_time_1_local_var = OpenAPI_malloc(sizeof(OpenAPI_scheduled_communication_time_1_t));
-    if (!scheduled_communication_time_1_local_var) {
-        return NULL;
-    }
+    OpenAPI_scheduled_communication_time_1_t *scheduled_communication_time_1_local_var = ogs_malloc(sizeof(OpenAPI_scheduled_communication_time_1_t));
+    ogs_assert(scheduled_communication_time_1_local_var);
+
     scheduled_communication_time_1_local_var->days_of_week = days_of_week;
     scheduled_communication_time_1_local_var->time_of_day_start = time_of_day_start;
     scheduled_communication_time_1_local_var->time_of_day_end = time_of_day_end;
@@ -123,8 +122,8 @@ OpenAPI_scheduled_communication_time_1_t *OpenAPI_scheduled_communication_time_1
 
     scheduled_communication_time_1_local_var = OpenAPI_scheduled_communication_time_1_create (
         days_of_week ? days_of_weekList : NULL,
-        time_of_day_start ? ogs_strdup_or_assert(time_of_day_start->valuestring) : NULL,
-        time_of_day_end ? ogs_strdup_or_assert(time_of_day_end->valuestring) : NULL
+        time_of_day_start ? ogs_strdup(time_of_day_start->valuestring) : NULL,
+        time_of_day_end ? ogs_strdup(time_of_day_end->valuestring) : NULL
     );
 
     return scheduled_communication_time_1_local_var;

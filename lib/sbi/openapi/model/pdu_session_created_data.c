@@ -52,10 +52,9 @@ OpenAPI_pdu_session_created_data_t *OpenAPI_pdu_session_created_data_create(
     OpenAPI_redundant_pdu_session_information_t *redundant_pdu_session_info
 )
 {
-    OpenAPI_pdu_session_created_data_t *pdu_session_created_data_local_var = OpenAPI_malloc(sizeof(OpenAPI_pdu_session_created_data_t));
-    if (!pdu_session_created_data_local_var) {
-        return NULL;
-    }
+    OpenAPI_pdu_session_created_data_t *pdu_session_created_data_local_var = ogs_malloc(sizeof(OpenAPI_pdu_session_created_data_t));
+    ogs_assert(pdu_session_created_data_local_var);
+
     pdu_session_created_data_local_var->pdu_session_type = pdu_session_type;
     pdu_session_created_data_local_var->ssc_mode = ssc_mode;
     pdu_session_created_data_local_var->hcn_tunnel_info = hcn_tunnel_info;
@@ -801,7 +800,7 @@ OpenAPI_pdu_session_created_data_t *OpenAPI_pdu_session_created_data_parseFromJS
         ogs_error("OpenAPI_pdu_session_created_data_parseFromJSON() failed [dnai_list]");
         goto end;
     }
-    OpenAPI_list_add(dnai_listList , ogs_strdup_or_assert(dnai_list_local->valuestring));
+    OpenAPI_list_add(dnai_listList , ogs_strdup(dnai_list_local->valuestring));
     }
     }
 
@@ -884,46 +883,46 @@ OpenAPI_pdu_session_created_data_t *OpenAPI_pdu_session_created_data_parseFromJS
 
     pdu_session_created_data_local_var = OpenAPI_pdu_session_created_data_create (
         pdu_session_typeVariable,
-        ogs_strdup_or_assert(ssc_mode->valuestring),
+        ogs_strdup(ssc_mode->valuestring),
         hcn_tunnel_info ? hcn_tunnel_info_local_nonprim : NULL,
         cn_tunnel_info ? cn_tunnel_info_local_nonprim : NULL,
         additional_cn_tunnel_info ? additional_cn_tunnel_info_local_nonprim : NULL,
         session_ambr ? session_ambr_local_nonprim : NULL,
         qos_flows_setup_list ? qos_flows_setup_listList : NULL,
-        h_smf_instance_id ? ogs_strdup_or_assert(h_smf_instance_id->valuestring) : NULL,
-        smf_instance_id ? ogs_strdup_or_assert(smf_instance_id->valuestring) : NULL,
+        h_smf_instance_id ? ogs_strdup(h_smf_instance_id->valuestring) : NULL,
+        smf_instance_id ? ogs_strdup(smf_instance_id->valuestring) : NULL,
         pdu_session_id ? true : false,
         pdu_session_id ? pdu_session_id->valuedouble : 0,
         s_nssai ? s_nssai_local_nonprim : NULL,
         enable_pause_charging ? true : false,
         enable_pause_charging ? enable_pause_charging->valueint : 0,
-        ue_ipv4_address ? ogs_strdup_or_assert(ue_ipv4_address->valuestring) : NULL,
-        ue_ipv6_prefix ? ogs_strdup_or_assert(ue_ipv6_prefix->valuestring) : NULL,
+        ue_ipv4_address ? ogs_strdup(ue_ipv4_address->valuestring) : NULL,
+        ue_ipv6_prefix ? ogs_strdup(ue_ipv6_prefix->valuestring) : NULL,
         n1_sm_info_to_ue ? n1_sm_info_to_ue_local_nonprim : NULL,
         eps_pdn_cnx_info ? eps_pdn_cnx_info_local_nonprim : NULL,
         eps_bearer_info ? eps_bearer_infoList : NULL,
-        supported_features ? ogs_strdup_or_assert(supported_features->valuestring) : NULL,
+        supported_features ? ogs_strdup(supported_features->valuestring) : NULL,
         max_integrity_protected_data_rate ? max_integrity_protected_data_rateVariable : 0,
         max_integrity_protected_data_rate_dl ? max_integrity_protected_data_rate_dlVariable : 0,
         always_on_granted ? true : false,
         always_on_granted ? always_on_granted->valueint : 0,
-        gpsi ? ogs_strdup_or_assert(gpsi->valuestring) : NULL,
+        gpsi ? ogs_strdup(gpsi->valuestring) : NULL,
         up_security ? up_security_local_nonprim : NULL,
         roaming_charging_profile ? roaming_charging_profile_local_nonprim : NULL,
-        h_smf_service_instance_id ? ogs_strdup_or_assert(h_smf_service_instance_id->valuestring) : NULL,
-        smf_service_instance_id ? ogs_strdup_or_assert(smf_service_instance_id->valuestring) : NULL,
-        recovery_time ? ogs_strdup_or_assert(recovery_time->valuestring) : NULL,
+        h_smf_service_instance_id ? ogs_strdup(h_smf_service_instance_id->valuestring) : NULL,
+        smf_service_instance_id ? ogs_strdup(smf_service_instance_id->valuestring) : NULL,
+        recovery_time ? ogs_strdup(recovery_time->valuestring) : NULL,
         dnai_list ? dnai_listList : NULL,
         ipv6_multi_homing_ind ? true : false,
         ipv6_multi_homing_ind ? ipv6_multi_homing_ind->valueint : 0,
         ma_accepted_ind ? true : false,
         ma_accepted_ind ? ma_accepted_ind->valueint : 0,
-        home_provided_charging_id ? ogs_strdup_or_assert(home_provided_charging_id->valuestring) : NULL,
+        home_provided_charging_id ? ogs_strdup(home_provided_charging_id->valuestring) : NULL,
         nef_ext_buf_support_ind ? true : false,
         nef_ext_buf_support_ind ? nef_ext_buf_support_ind->valueint : 0,
         small_data_rate_control_enabled ? true : false,
         small_data_rate_control_enabled ? small_data_rate_control_enabled->valueint : 0,
-        ue_ipv6_interface_id ? ogs_strdup_or_assert(ue_ipv6_interface_id->valuestring) : NULL,
+        ue_ipv6_interface_id ? ogs_strdup(ue_ipv6_interface_id->valuestring) : NULL,
         ipv6_index ? true : false,
         ipv6_index ? ipv6_index->valuedouble : 0,
         dn_aaa_address ? dn_aaa_address_local_nonprim : NULL,

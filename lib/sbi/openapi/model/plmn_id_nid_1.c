@@ -10,10 +10,9 @@ OpenAPI_plmn_id_nid_1_t *OpenAPI_plmn_id_nid_1_create(
     char *nid
 )
 {
-    OpenAPI_plmn_id_nid_1_t *plmn_id_nid_1_local_var = OpenAPI_malloc(sizeof(OpenAPI_plmn_id_nid_1_t));
-    if (!plmn_id_nid_1_local_var) {
-        return NULL;
-    }
+    OpenAPI_plmn_id_nid_1_t *plmn_id_nid_1_local_var = ogs_malloc(sizeof(OpenAPI_plmn_id_nid_1_t));
+    ogs_assert(plmn_id_nid_1_local_var);
+
     plmn_id_nid_1_local_var->mcc = mcc;
     plmn_id_nid_1_local_var->mnc = mnc;
     plmn_id_nid_1_local_var->nid = nid;
@@ -99,9 +98,9 @@ OpenAPI_plmn_id_nid_1_t *OpenAPI_plmn_id_nid_1_parseFromJSON(cJSON *plmn_id_nid_
     }
 
     plmn_id_nid_1_local_var = OpenAPI_plmn_id_nid_1_create (
-        ogs_strdup_or_assert(mcc->valuestring),
-        ogs_strdup_or_assert(mnc->valuestring),
-        nid ? ogs_strdup_or_assert(nid->valuestring) : NULL
+        ogs_strdup(mcc->valuestring),
+        ogs_strdup(mnc->valuestring),
+        nid ? ogs_strdup(nid->valuestring) : NULL
     );
 
     return plmn_id_nid_1_local_var;

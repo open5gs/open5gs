@@ -18,10 +18,9 @@ OpenAPI_ee_subscription_t *OpenAPI_ee_subscription_create(
     char *notify_correlation_id
 )
 {
-    OpenAPI_ee_subscription_t *ee_subscription_local_var = OpenAPI_malloc(sizeof(OpenAPI_ee_subscription_t));
-    if (!ee_subscription_local_var) {
-        return NULL;
-    }
+    OpenAPI_ee_subscription_t *ee_subscription_local_var = ogs_malloc(sizeof(OpenAPI_ee_subscription_t));
+    ogs_assert(ee_subscription_local_var);
+
     ee_subscription_local_var->callback_reference = callback_reference;
     ee_subscription_local_var->monitoring_configurations = monitoring_configurations;
     ee_subscription_local_var->reporting_options = reporting_options;
@@ -46,6 +45,7 @@ void OpenAPI_ee_subscription_free(OpenAPI_ee_subscription_t *ee_subscription)
     ogs_free(ee_subscription->callback_reference);
     OpenAPI_list_for_each(ee_subscription->monitoring_configurations, node) {
         OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+        ogs_free(localKeyValue->key);
         OpenAPI_monitoring_configuration_free(localKeyValue->value);
         ogs_free(localKeyValue);
     }
@@ -200,9 +200,9 @@ OpenAPI_ee_subscription_t *OpenAPI_ee_subscription_parseFromJSON(cJSON *ee_subsc
         cJSON *localMapObject = monitoring_configurations_local_map;
         if (cJSON_IsObject(monitoring_configurations_local_map)) {
             localMapKeyPair = OpenAPI_map_create(
-                localMapObject->string, OpenAPI_monitoring_configuration_parseFromJSON(localMapObject));
+                ogs_strdup(localMapObject->string), OpenAPI_monitoring_configuration_parseFromJSON(localMapObject));
         } else if (cJSON_IsNull(monitoring_configurations_local_map)) {
-            localMapKeyPair = OpenAPI_map_create(localMapObject->string, NULL);
+            localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
         } else {
             ogs_error("OpenAPI_ee_subscription_parseFromJSON() failed [monitoring_configurations]");
             goto end;
@@ -279,17 +279,17 @@ OpenAPI_ee_subscription_t *OpenAPI_ee_subscription_parseFromJSON(cJSON *ee_subsc
     }
 
     ee_subscription_local_var = OpenAPI_ee_subscription_create (
-        ogs_strdup_or_assert(callback_reference->valuestring),
+        ogs_strdup(callback_reference->valuestring),
         monitoring_configurationsList,
         reporting_options ? reporting_options_local_nonprim : NULL,
-        supported_features ? ogs_strdup_or_assert(supported_features->valuestring) : NULL,
-        subscription_id ? ogs_strdup_or_assert(subscription_id->valuestring) : NULL,
+        supported_features ? ogs_strdup(supported_features->valuestring) : NULL,
+        subscription_id ? ogs_strdup(subscription_id->valuestring) : NULL,
         context_info ? context_info_local_nonprim : NULL,
         epc_applied_ind ? true : false,
         epc_applied_ind ? epc_applied_ind->valueint : 0,
-        scef_diam_host ? ogs_strdup_or_assert(scef_diam_host->valuestring) : NULL,
-        scef_diam_realm ? ogs_strdup_or_assert(scef_diam_realm->valuestring) : NULL,
-        notify_correlation_id ? ogs_strdup_or_assert(notify_correlation_id->valuestring) : NULL
+        scef_diam_host ? ogs_strdup(scef_diam_host->valuestring) : NULL,
+        scef_diam_realm ? ogs_strdup(scef_diam_realm->valuestring) : NULL,
+        notify_correlation_id ? ogs_strdup(notify_correlation_id->valuestring) : NULL
     );
 
     return ee_subscription_local_var;

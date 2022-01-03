@@ -18,10 +18,9 @@ OpenAPI_pcf_binding_patch_t *OpenAPI_pcf_binding_patch_create(
     char *pcf_diam_realm
 )
 {
-    OpenAPI_pcf_binding_patch_t *pcf_binding_patch_local_var = OpenAPI_malloc(sizeof(OpenAPI_pcf_binding_patch_t));
-    if (!pcf_binding_patch_local_var) {
-        return NULL;
-    }
+    OpenAPI_pcf_binding_patch_t *pcf_binding_patch_local_var = ogs_malloc(sizeof(OpenAPI_pcf_binding_patch_t));
+    ogs_assert(pcf_binding_patch_local_var);
+
     pcf_binding_patch_local_var->ipv4_addr = ipv4_addr;
     pcf_binding_patch_local_var->ip_domain = ip_domain;
     pcf_binding_patch_local_var->ipv6_prefix = ipv6_prefix;
@@ -234,7 +233,7 @@ OpenAPI_pcf_binding_patch_t *OpenAPI_pcf_binding_patch_parseFromJSON(cJSON *pcf_
         ogs_error("OpenAPI_pcf_binding_patch_parseFromJSON() failed [add_ipv6_prefixes]");
         goto end;
     }
-    OpenAPI_list_add(add_ipv6_prefixesList , ogs_strdup_or_assert(add_ipv6_prefixes_local->valuestring));
+    OpenAPI_list_add(add_ipv6_prefixesList , ogs_strdup(add_ipv6_prefixes_local->valuestring));
     }
     }
 
@@ -263,7 +262,7 @@ OpenAPI_pcf_binding_patch_t *OpenAPI_pcf_binding_patch_parseFromJSON(cJSON *pcf_
         ogs_error("OpenAPI_pcf_binding_patch_parseFromJSON() failed [add_mac_addrs]");
         goto end;
     }
-    OpenAPI_list_add(add_mac_addrsList , ogs_strdup_or_assert(add_mac_addrs_local->valuestring));
+    OpenAPI_list_add(add_mac_addrsList , ogs_strdup(add_mac_addrs_local->valuestring));
     }
     }
 
@@ -327,17 +326,17 @@ OpenAPI_pcf_binding_patch_t *OpenAPI_pcf_binding_patch_parseFromJSON(cJSON *pcf_
     }
 
     pcf_binding_patch_local_var = OpenAPI_pcf_binding_patch_create (
-        ipv4_addr ? ogs_strdup_or_assert(ipv4_addr->valuestring) : NULL,
-        ip_domain ? ogs_strdup_or_assert(ip_domain->valuestring) : NULL,
-        ipv6_prefix ? ogs_strdup_or_assert(ipv6_prefix->valuestring) : NULL,
+        ipv4_addr ? ogs_strdup(ipv4_addr->valuestring) : NULL,
+        ip_domain ? ogs_strdup(ip_domain->valuestring) : NULL,
+        ipv6_prefix ? ogs_strdup(ipv6_prefix->valuestring) : NULL,
         add_ipv6_prefixes ? add_ipv6_prefixesList : NULL,
-        mac_addr48 ? ogs_strdup_or_assert(mac_addr48->valuestring) : NULL,
+        mac_addr48 ? ogs_strdup(mac_addr48->valuestring) : NULL,
         add_mac_addrs ? add_mac_addrsList : NULL,
-        pcf_id ? ogs_strdup_or_assert(pcf_id->valuestring) : NULL,
-        pcf_fqdn ? ogs_strdup_or_assert(pcf_fqdn->valuestring) : NULL,
+        pcf_id ? ogs_strdup(pcf_id->valuestring) : NULL,
+        pcf_fqdn ? ogs_strdup(pcf_fqdn->valuestring) : NULL,
         pcf_ip_end_points ? pcf_ip_end_pointsList : NULL,
-        pcf_diam_host ? ogs_strdup_or_assert(pcf_diam_host->valuestring) : NULL,
-        pcf_diam_realm ? ogs_strdup_or_assert(pcf_diam_realm->valuestring) : NULL
+        pcf_diam_host ? ogs_strdup(pcf_diam_host->valuestring) : NULL,
+        pcf_diam_realm ? ogs_strdup(pcf_diam_realm->valuestring) : NULL
     );
 
     return pcf_binding_patch_local_var;

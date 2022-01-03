@@ -41,10 +41,9 @@ OpenAPI_civic_address_t *OpenAPI_civic_address_create(
     char *provided_by
 )
 {
-    OpenAPI_civic_address_t *civic_address_local_var = OpenAPI_malloc(sizeof(OpenAPI_civic_address_t));
-    if (!civic_address_local_var) {
-        return NULL;
-    }
+    OpenAPI_civic_address_t *civic_address_local_var = ogs_malloc(sizeof(OpenAPI_civic_address_t));
+    ogs_assert(civic_address_local_var);
+
     civic_address_local_var->country = country;
     civic_address_local_var->a1 = a1;
     civic_address_local_var->a2 = a2;
@@ -688,40 +687,40 @@ OpenAPI_civic_address_t *OpenAPI_civic_address_parseFromJSON(cJSON *civic_addres
     }
 
     civic_address_local_var = OpenAPI_civic_address_create (
-        country ? ogs_strdup_or_assert(country->valuestring) : NULL,
-        a1 ? ogs_strdup_or_assert(a1->valuestring) : NULL,
-        a2 ? ogs_strdup_or_assert(a2->valuestring) : NULL,
-        a3 ? ogs_strdup_or_assert(a3->valuestring) : NULL,
-        a4 ? ogs_strdup_or_assert(a4->valuestring) : NULL,
-        a5 ? ogs_strdup_or_assert(a5->valuestring) : NULL,
-        a6 ? ogs_strdup_or_assert(a6->valuestring) : NULL,
-        prd ? ogs_strdup_or_assert(prd->valuestring) : NULL,
-        pod ? ogs_strdup_or_assert(pod->valuestring) : NULL,
-        sts ? ogs_strdup_or_assert(sts->valuestring) : NULL,
-        hno ? ogs_strdup_or_assert(hno->valuestring) : NULL,
-        hns ? ogs_strdup_or_assert(hns->valuestring) : NULL,
-        lmk ? ogs_strdup_or_assert(lmk->valuestring) : NULL,
-        loc ? ogs_strdup_or_assert(loc->valuestring) : NULL,
-        nam ? ogs_strdup_or_assert(nam->valuestring) : NULL,
-        pc ? ogs_strdup_or_assert(pc->valuestring) : NULL,
-        bld ? ogs_strdup_or_assert(bld->valuestring) : NULL,
-        unit ? ogs_strdup_or_assert(unit->valuestring) : NULL,
-        flr ? ogs_strdup_or_assert(flr->valuestring) : NULL,
-        room ? ogs_strdup_or_assert(room->valuestring) : NULL,
-        plc ? ogs_strdup_or_assert(plc->valuestring) : NULL,
-        pcn ? ogs_strdup_or_assert(pcn->valuestring) : NULL,
-        pobox ? ogs_strdup_or_assert(pobox->valuestring) : NULL,
-        addcode ? ogs_strdup_or_assert(addcode->valuestring) : NULL,
-        seat ? ogs_strdup_or_assert(seat->valuestring) : NULL,
-        rd ? ogs_strdup_or_assert(rd->valuestring) : NULL,
-        rdsec ? ogs_strdup_or_assert(rdsec->valuestring) : NULL,
-        rdbr ? ogs_strdup_or_assert(rdbr->valuestring) : NULL,
-        rdsubbr ? ogs_strdup_or_assert(rdsubbr->valuestring) : NULL,
-        prm ? ogs_strdup_or_assert(prm->valuestring) : NULL,
-        pom ? ogs_strdup_or_assert(pom->valuestring) : NULL,
-        usage_rules ? ogs_strdup_or_assert(usage_rules->valuestring) : NULL,
-        method ? ogs_strdup_or_assert(method->valuestring) : NULL,
-        provided_by ? ogs_strdup_or_assert(provided_by->valuestring) : NULL
+        country ? ogs_strdup(country->valuestring) : NULL,
+        a1 ? ogs_strdup(a1->valuestring) : NULL,
+        a2 ? ogs_strdup(a2->valuestring) : NULL,
+        a3 ? ogs_strdup(a3->valuestring) : NULL,
+        a4 ? ogs_strdup(a4->valuestring) : NULL,
+        a5 ? ogs_strdup(a5->valuestring) : NULL,
+        a6 ? ogs_strdup(a6->valuestring) : NULL,
+        prd ? ogs_strdup(prd->valuestring) : NULL,
+        pod ? ogs_strdup(pod->valuestring) : NULL,
+        sts ? ogs_strdup(sts->valuestring) : NULL,
+        hno ? ogs_strdup(hno->valuestring) : NULL,
+        hns ? ogs_strdup(hns->valuestring) : NULL,
+        lmk ? ogs_strdup(lmk->valuestring) : NULL,
+        loc ? ogs_strdup(loc->valuestring) : NULL,
+        nam ? ogs_strdup(nam->valuestring) : NULL,
+        pc ? ogs_strdup(pc->valuestring) : NULL,
+        bld ? ogs_strdup(bld->valuestring) : NULL,
+        unit ? ogs_strdup(unit->valuestring) : NULL,
+        flr ? ogs_strdup(flr->valuestring) : NULL,
+        room ? ogs_strdup(room->valuestring) : NULL,
+        plc ? ogs_strdup(plc->valuestring) : NULL,
+        pcn ? ogs_strdup(pcn->valuestring) : NULL,
+        pobox ? ogs_strdup(pobox->valuestring) : NULL,
+        addcode ? ogs_strdup(addcode->valuestring) : NULL,
+        seat ? ogs_strdup(seat->valuestring) : NULL,
+        rd ? ogs_strdup(rd->valuestring) : NULL,
+        rdsec ? ogs_strdup(rdsec->valuestring) : NULL,
+        rdbr ? ogs_strdup(rdbr->valuestring) : NULL,
+        rdsubbr ? ogs_strdup(rdsubbr->valuestring) : NULL,
+        prm ? ogs_strdup(prm->valuestring) : NULL,
+        pom ? ogs_strdup(pom->valuestring) : NULL,
+        usage_rules ? ogs_strdup(usage_rules->valuestring) : NULL,
+        method ? ogs_strdup(method->valuestring) : NULL,
+        provided_by ? ogs_strdup(provided_by->valuestring) : NULL
     );
 
     return civic_address_local_var;

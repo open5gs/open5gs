@@ -9,10 +9,9 @@ OpenAPI_notify_item_t *OpenAPI_notify_item_create(
     OpenAPI_list_t *changes
 )
 {
-    OpenAPI_notify_item_t *notify_item_local_var = OpenAPI_malloc(sizeof(OpenAPI_notify_item_t));
-    if (!notify_item_local_var) {
-        return NULL;
-    }
+    OpenAPI_notify_item_t *notify_item_local_var = ogs_malloc(sizeof(OpenAPI_notify_item_t));
+    ogs_assert(notify_item_local_var);
+
     notify_item_local_var->resource_id = resource_id;
     notify_item_local_var->changes = changes;
 
@@ -110,7 +109,7 @@ OpenAPI_notify_item_t *OpenAPI_notify_item_parseFromJSON(cJSON *notify_itemJSON)
     }
 
     notify_item_local_var = OpenAPI_notify_item_create (
-        ogs_strdup_or_assert(resource_id->valuestring),
+        ogs_strdup(resource_id->valuestring),
         changesList
     );
 

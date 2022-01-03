@@ -7,10 +7,9 @@
 OpenAPI_location_accuracy_t *OpenAPI_location_accuracy_create(
 )
 {
-    OpenAPI_location_accuracy_t *location_accuracy_local_var = OpenAPI_malloc(sizeof(OpenAPI_location_accuracy_t));
-    if (!location_accuracy_local_var) {
-        return NULL;
-    }
+    OpenAPI_location_accuracy_t *location_accuracy_local_var = ogs_malloc(sizeof(OpenAPI_location_accuracy_t));
+    ogs_assert(location_accuracy_local_var);
+
 
     return location_accuracy_local_var;
 }

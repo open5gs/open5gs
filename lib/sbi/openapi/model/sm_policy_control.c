@@ -9,10 +9,9 @@ OpenAPI_sm_policy_control_t *OpenAPI_sm_policy_control_create(
     OpenAPI_sm_policy_decision_t *policy
 )
 {
-    OpenAPI_sm_policy_control_t *sm_policy_control_local_var = OpenAPI_malloc(sizeof(OpenAPI_sm_policy_control_t));
-    if (!sm_policy_control_local_var) {
-        return NULL;
-    }
+    OpenAPI_sm_policy_control_t *sm_policy_control_local_var = ogs_malloc(sizeof(OpenAPI_sm_policy_control_t));
+    ogs_assert(sm_policy_control_local_var);
+
     sm_policy_control_local_var->context = context;
     sm_policy_control_local_var->policy = policy;
 

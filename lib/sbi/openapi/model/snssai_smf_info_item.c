@@ -9,10 +9,9 @@ OpenAPI_snssai_smf_info_item_t *OpenAPI_snssai_smf_info_item_create(
     OpenAPI_list_t *dnn_smf_info_list
 )
 {
-    OpenAPI_snssai_smf_info_item_t *snssai_smf_info_item_local_var = OpenAPI_malloc(sizeof(OpenAPI_snssai_smf_info_item_t));
-    if (!snssai_smf_info_item_local_var) {
-        return NULL;
-    }
+    OpenAPI_snssai_smf_info_item_t *snssai_smf_info_item_local_var = ogs_malloc(sizeof(OpenAPI_snssai_smf_info_item_t));
+    ogs_assert(snssai_smf_info_item_local_var);
+
     snssai_smf_info_item_local_var->s_nssai = s_nssai;
     snssai_smf_info_item_local_var->dnn_smf_info_list = dnn_smf_info_list;
 

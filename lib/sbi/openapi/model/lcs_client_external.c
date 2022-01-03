@@ -10,10 +10,9 @@ OpenAPI_lcs_client_external_t *OpenAPI_lcs_client_external_create(
     OpenAPI_valid_time_period_t *valid_time_period
 )
 {
-    OpenAPI_lcs_client_external_t *lcs_client_external_local_var = OpenAPI_malloc(sizeof(OpenAPI_lcs_client_external_t));
-    if (!lcs_client_external_local_var) {
-        return NULL;
-    }
+    OpenAPI_lcs_client_external_t *lcs_client_external_local_var = ogs_malloc(sizeof(OpenAPI_lcs_client_external_t));
+    ogs_assert(lcs_client_external_local_var);
+
     lcs_client_external_local_var->allowed_geographic_area = allowed_geographic_area;
     lcs_client_external_local_var->privacy_check_related_action = privacy_check_related_action;
     lcs_client_external_local_var->valid_time_period = valid_time_period;

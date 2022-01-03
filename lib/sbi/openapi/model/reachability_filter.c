@@ -7,10 +7,9 @@
 OpenAPI_reachability_filter_t *OpenAPI_reachability_filter_create(
 )
 {
-    OpenAPI_reachability_filter_t *reachability_filter_local_var = OpenAPI_malloc(sizeof(OpenAPI_reachability_filter_t));
-    if (!reachability_filter_local_var) {
-        return NULL;
-    }
+    OpenAPI_reachability_filter_t *reachability_filter_local_var = ogs_malloc(sizeof(OpenAPI_reachability_filter_t));
+    ogs_assert(reachability_filter_local_var);
+
 
     return reachability_filter_local_var;
 }

@@ -20,10 +20,9 @@ OpenAPI_n2_information_notification_t *OpenAPI_n2_information_notification_creat
     int notify_source_ng_ran
 )
 {
-    OpenAPI_n2_information_notification_t *n2_information_notification_local_var = OpenAPI_malloc(sizeof(OpenAPI_n2_information_notification_t));
-    if (!n2_information_notification_local_var) {
-        return NULL;
-    }
+    OpenAPI_n2_information_notification_t *n2_information_notification_local_var = ogs_malloc(sizeof(OpenAPI_n2_information_notification_t));
+    ogs_assert(n2_information_notification_local_var);
+
     n2_information_notification_local_var->n2_notify_subscription_id = n2_notify_subscription_id;
     n2_information_notification_local_var->n2_info_container = n2_info_container;
     n2_information_notification_local_var->to_release_session_list = to_release_session_list;
@@ -337,16 +336,16 @@ OpenAPI_n2_information_notification_t *OpenAPI_n2_information_notification_parse
     }
 
     n2_information_notification_local_var = OpenAPI_n2_information_notification_create (
-        ogs_strdup_or_assert(n2_notify_subscription_id->valuestring),
+        ogs_strdup(n2_notify_subscription_id->valuestring),
         n2_info_container ? n2_info_container_local_nonprim : NULL,
         to_release_session_list ? to_release_session_listList : NULL,
-        lcs_correlation_id ? ogs_strdup_or_assert(lcs_correlation_id->valuestring) : NULL,
+        lcs_correlation_id ? ogs_strdup(lcs_correlation_id->valuestring) : NULL,
         notify_reason ? notify_reasonVariable : 0,
         smf_change_info_list ? smf_change_info_listList : NULL,
         ran_node_id ? ran_node_id_local_nonprim : NULL,
-        initial_amf_name ? ogs_strdup_or_assert(initial_amf_name->valuestring) : NULL,
-        an_n2_ipv4_addr ? ogs_strdup_or_assert(an_n2_ipv4_addr->valuestring) : NULL,
-        an_n2_ipv6_addr ? ogs_strdup_or_assert(an_n2_ipv6_addr->valuestring) : NULL,
+        initial_amf_name ? ogs_strdup(initial_amf_name->valuestring) : NULL,
+        an_n2_ipv4_addr ? ogs_strdup(an_n2_ipv4_addr->valuestring) : NULL,
+        an_n2_ipv6_addr ? ogs_strdup(an_n2_ipv6_addr->valuestring) : NULL,
         guami ? guami_local_nonprim : NULL,
         notify_source_ng_ran ? true : false,
         notify_source_ng_ran ? notify_source_ng_ran->valueint : 0

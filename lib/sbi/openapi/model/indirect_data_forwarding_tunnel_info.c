@@ -14,10 +14,9 @@ OpenAPI_indirect_data_forwarding_tunnel_info_t *OpenAPI_indirect_data_forwarding
     int additional_tnl_nb
 )
 {
-    OpenAPI_indirect_data_forwarding_tunnel_info_t *indirect_data_forwarding_tunnel_info_local_var = OpenAPI_malloc(sizeof(OpenAPI_indirect_data_forwarding_tunnel_info_t));
-    if (!indirect_data_forwarding_tunnel_info_local_var) {
-        return NULL;
-    }
+    OpenAPI_indirect_data_forwarding_tunnel_info_t *indirect_data_forwarding_tunnel_info_local_var = ogs_malloc(sizeof(OpenAPI_indirect_data_forwarding_tunnel_info_t));
+    ogs_assert(indirect_data_forwarding_tunnel_info_local_var);
+
     indirect_data_forwarding_tunnel_info_local_var->ipv4_addr = ipv4_addr;
     indirect_data_forwarding_tunnel_info_local_var->ipv6_addr = ipv6_addr;
     indirect_data_forwarding_tunnel_info_local_var->gtp_teid = gtp_teid;
@@ -139,9 +138,9 @@ OpenAPI_indirect_data_forwarding_tunnel_info_t *OpenAPI_indirect_data_forwarding
     }
 
     indirect_data_forwarding_tunnel_info_local_var = OpenAPI_indirect_data_forwarding_tunnel_info_create (
-        ipv4_addr ? ogs_strdup_or_assert(ipv4_addr->valuestring) : NULL,
-        ipv6_addr ? ogs_strdup_or_assert(ipv6_addr->valuestring) : NULL,
-        ogs_strdup_or_assert(gtp_teid->valuestring),
+        ipv4_addr ? ogs_strdup(ipv4_addr->valuestring) : NULL,
+        ipv6_addr ? ogs_strdup(ipv6_addr->valuestring) : NULL,
+        ogs_strdup(gtp_teid->valuestring),
         drb_id ? true : false,
         drb_id ? drb_id->valuedouble : 0,
         additional_tnl_nb ? true : false,

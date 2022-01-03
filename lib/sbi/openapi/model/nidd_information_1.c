@@ -10,10 +10,9 @@ OpenAPI_nidd_information_1_t *OpenAPI_nidd_information_1_create(
     char *ext_group_id
 )
 {
-    OpenAPI_nidd_information_1_t *nidd_information_1_local_var = OpenAPI_malloc(sizeof(OpenAPI_nidd_information_1_t));
-    if (!nidd_information_1_local_var) {
-        return NULL;
-    }
+    OpenAPI_nidd_information_1_t *nidd_information_1_local_var = ogs_malloc(sizeof(OpenAPI_nidd_information_1_t));
+    ogs_assert(nidd_information_1_local_var);
+
     nidd_information_1_local_var->af_id = af_id;
     nidd_information_1_local_var->gpsi = gpsi;
     nidd_information_1_local_var->ext_group_id = ext_group_id;
@@ -99,9 +98,9 @@ OpenAPI_nidd_information_1_t *OpenAPI_nidd_information_1_parseFromJSON(cJSON *ni
     }
 
     nidd_information_1_local_var = OpenAPI_nidd_information_1_create (
-        ogs_strdup_or_assert(af_id->valuestring),
-        gpsi ? ogs_strdup_or_assert(gpsi->valuestring) : NULL,
-        ext_group_id ? ogs_strdup_or_assert(ext_group_id->valuestring) : NULL
+        ogs_strdup(af_id->valuestring),
+        gpsi ? ogs_strdup(gpsi->valuestring) : NULL,
+        ext_group_id ? ogs_strdup(ext_group_id->valuestring) : NULL
     );
 
     return nidd_information_1_local_var;

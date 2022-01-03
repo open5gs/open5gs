@@ -13,10 +13,9 @@ OpenAPI_non_ue_n2_info_subscription_create_data_t *OpenAPI_non_ue_n2_info_subscr
     char *supported_features
 )
 {
-    OpenAPI_non_ue_n2_info_subscription_create_data_t *non_ue_n2_info_subscription_create_data_local_var = OpenAPI_malloc(sizeof(OpenAPI_non_ue_n2_info_subscription_create_data_t));
-    if (!non_ue_n2_info_subscription_create_data_local_var) {
-        return NULL;
-    }
+    OpenAPI_non_ue_n2_info_subscription_create_data_t *non_ue_n2_info_subscription_create_data_local_var = ogs_malloc(sizeof(OpenAPI_non_ue_n2_info_subscription_create_data_t));
+    ogs_assert(non_ue_n2_info_subscription_create_data_local_var);
+
     non_ue_n2_info_subscription_create_data_local_var->global_ran_node_list = global_ran_node_list;
     non_ue_n2_info_subscription_create_data_local_var->an_type_list = an_type_list;
     non_ue_n2_info_subscription_create_data_local_var->n2_information_class = n2_information_class;
@@ -211,9 +210,9 @@ OpenAPI_non_ue_n2_info_subscription_create_data_t *OpenAPI_non_ue_n2_info_subscr
         global_ran_node_list ? global_ran_node_listList : NULL,
         an_type_list ? an_type_listList : NULL,
         n2_information_classVariable,
-        ogs_strdup_or_assert(n2_notify_callback_uri->valuestring),
-        nf_id ? ogs_strdup_or_assert(nf_id->valuestring) : NULL,
-        supported_features ? ogs_strdup_or_assert(supported_features->valuestring) : NULL
+        ogs_strdup(n2_notify_callback_uri->valuestring),
+        nf_id ? ogs_strdup(nf_id->valuestring) : NULL,
+        supported_features ? ogs_strdup(supported_features->valuestring) : NULL
     );
 
     return non_ue_n2_info_subscription_create_data_local_var;

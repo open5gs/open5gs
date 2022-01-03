@@ -11,10 +11,9 @@ OpenAPI_qos_monitoring_report_t *OpenAPI_qos_monitoring_report_create(
     OpenAPI_list_t *rt_delays
 )
 {
-    OpenAPI_qos_monitoring_report_t *qos_monitoring_report_local_var = OpenAPI_malloc(sizeof(OpenAPI_qos_monitoring_report_t));
-    if (!qos_monitoring_report_local_var) {
-        return NULL;
-    }
+    OpenAPI_qos_monitoring_report_t *qos_monitoring_report_local_var = ogs_malloc(sizeof(OpenAPI_qos_monitoring_report_t));
+    ogs_assert(qos_monitoring_report_local_var);
+
     qos_monitoring_report_local_var->flows = flows;
     qos_monitoring_report_local_var->ul_delays = ul_delays;
     qos_monitoring_report_local_var->dl_delays = dl_delays;

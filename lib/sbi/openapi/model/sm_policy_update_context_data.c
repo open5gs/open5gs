@@ -60,10 +60,9 @@ OpenAPI_sm_policy_update_context_data_t *OpenAPI_sm_policy_update_context_data_c
     OpenAPI_list_t *types_of_notif
 )
 {
-    OpenAPI_sm_policy_update_context_data_t *sm_policy_update_context_data_local_var = OpenAPI_malloc(sizeof(OpenAPI_sm_policy_update_context_data_t));
-    if (!sm_policy_update_context_data_local_var) {
-        return NULL;
-    }
+    OpenAPI_sm_policy_update_context_data_t *sm_policy_update_context_data_local_var = ogs_malloc(sizeof(OpenAPI_sm_policy_update_context_data_t));
+    ogs_assert(sm_policy_update_context_data_local_var);
+
     sm_policy_update_context_data_local_var->rep_policy_ctrl_req_triggers = rep_policy_ctrl_req_triggers;
     sm_policy_update_context_data_local_var->acc_net_ch_ids = acc_net_ch_ids;
     sm_policy_update_context_data_local_var->access_type = access_type;
@@ -177,6 +176,7 @@ void OpenAPI_sm_policy_update_context_data_free(OpenAPI_sm_policy_update_context
     ogs_free(sm_policy_update_context_data->user_location_info_time);
     OpenAPI_list_for_each(sm_policy_update_context_data->rep_pra_infos, node) {
         OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+        ogs_free(localKeyValue->key);
         OpenAPI_presence_info_free(localKeyValue->value);
         ogs_free(localKeyValue);
     }
@@ -1235,9 +1235,9 @@ OpenAPI_sm_policy_update_context_data_t *OpenAPI_sm_policy_update_context_data_p
         cJSON *localMapObject = rep_pra_infos_local_map;
         if (cJSON_IsObject(rep_pra_infos_local_map)) {
             localMapKeyPair = OpenAPI_map_create(
-                localMapObject->string, OpenAPI_presence_info_parseFromJSON(localMapObject));
+                ogs_strdup(localMapObject->string), OpenAPI_presence_info_parseFromJSON(localMapObject));
         } else if (cJSON_IsNull(rep_pra_infos_local_map)) {
-            localMapKeyPair = OpenAPI_map_create(localMapObject->string, NULL);
+            localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
         } else {
             ogs_error("OpenAPI_sm_policy_update_context_data_parseFromJSON() failed [rep_pra_infos]");
             goto end;
@@ -1453,7 +1453,7 @@ OpenAPI_sm_policy_update_context_data_t *OpenAPI_sm_policy_update_context_data_p
         ogs_error("OpenAPI_sm_policy_update_context_data_parseFromJSON() failed [inter_grp_ids]");
         goto end;
     }
-    OpenAPI_list_add(inter_grp_idsList , ogs_strdup_or_assert(inter_grp_ids_local->valuestring));
+    OpenAPI_list_add(inter_grp_idsList , ogs_strdup(inter_grp_ids_local->valuestring));
     }
     }
 
@@ -1488,18 +1488,18 @@ OpenAPI_sm_policy_update_context_data_t *OpenAPI_sm_policy_update_context_data_p
         rel_access_info ? rel_access_info_local_nonprim : NULL,
         serving_network ? serving_network_local_nonprim : NULL,
         user_location_info ? user_location_info_local_nonprim : NULL,
-        ue_time_zone ? ogs_strdup_or_assert(ue_time_zone->valuestring) : NULL,
-        rel_ipv4_address ? ogs_strdup_or_assert(rel_ipv4_address->valuestring) : NULL,
-        ipv4_address ? ogs_strdup_or_assert(ipv4_address->valuestring) : NULL,
-        ip_domain ? ogs_strdup_or_assert(ip_domain->valuestring) : NULL,
-        ipv6_address_prefix ? ogs_strdup_or_assert(ipv6_address_prefix->valuestring) : NULL,
-        rel_ipv6_address_prefix ? ogs_strdup_or_assert(rel_ipv6_address_prefix->valuestring) : NULL,
-        add_ipv6_addr_prefixes ? ogs_strdup_or_assert(add_ipv6_addr_prefixes->valuestring) : NULL,
-        add_rel_ipv6_addr_prefixes ? ogs_strdup_or_assert(add_rel_ipv6_addr_prefixes->valuestring) : NULL,
-        rel_ue_mac ? ogs_strdup_or_assert(rel_ue_mac->valuestring) : NULL,
-        ue_mac ? ogs_strdup_or_assert(ue_mac->valuestring) : NULL,
+        ue_time_zone ? ogs_strdup(ue_time_zone->valuestring) : NULL,
+        rel_ipv4_address ? ogs_strdup(rel_ipv4_address->valuestring) : NULL,
+        ipv4_address ? ogs_strdup(ipv4_address->valuestring) : NULL,
+        ip_domain ? ogs_strdup(ip_domain->valuestring) : NULL,
+        ipv6_address_prefix ? ogs_strdup(ipv6_address_prefix->valuestring) : NULL,
+        rel_ipv6_address_prefix ? ogs_strdup(rel_ipv6_address_prefix->valuestring) : NULL,
+        add_ipv6_addr_prefixes ? ogs_strdup(add_ipv6_addr_prefixes->valuestring) : NULL,
+        add_rel_ipv6_addr_prefixes ? ogs_strdup(add_rel_ipv6_addr_prefixes->valuestring) : NULL,
+        rel_ue_mac ? ogs_strdup(rel_ue_mac->valuestring) : NULL,
+        ue_mac ? ogs_strdup(ue_mac->valuestring) : NULL,
         subs_sess_ambr ? subs_sess_ambr_local_nonprim : NULL,
-        auth_prof_index ? ogs_strdup_or_assert(auth_prof_index->valuestring) : NULL,
+        auth_prof_index ? ogs_strdup(auth_prof_index->valuestring) : NULL,
         subs_def_qos ? subs_def_qos_local_nonprim : NULL,
         vplmn_qos ? vplmn_qos_local_nonprim : NULL,
         num_of_pack_filter ? true : false,
@@ -1512,7 +1512,7 @@ OpenAPI_sm_policy_update_context_data_t *OpenAPI_sm_policy_update_context_data_p
         sess_rule_reports ? sess_rule_reportsList : NULL,
         qnc_reports ? qnc_reportsList : NULL,
         qos_mon_reports ? qos_mon_reportsList : NULL,
-        user_location_info_time ? ogs_strdup_or_assert(user_location_info_time->valuestring) : NULL,
+        user_location_info_time ? ogs_strdup(user_location_info_time->valuestring) : NULL,
         rep_pra_infos ? rep_pra_infosList : NULL,
         ue_init_res_req ? ue_init_res_req_local_nonprim : NULL,
         ref_qos_indication ? true : false,
@@ -1530,7 +1530,7 @@ OpenAPI_sm_policy_update_context_data_t *OpenAPI_sm_policy_update_context_data_p
         mul_addr_infos ? mul_addr_infosList : NULL,
         policy_dec_failure_reports ? policy_dec_failure_reportsList : NULL,
         traffic_descriptors ? traffic_descriptorsList : NULL,
-        pcc_rule_id ? ogs_strdup_or_assert(pcc_rule_id->valuestring) : NULL,
+        pcc_rule_id ? ogs_strdup(pcc_rule_id->valuestring) : NULL,
         inter_grp_ids ? inter_grp_idsList : NULL,
         types_of_notif ? types_of_notifList : NULL
     );

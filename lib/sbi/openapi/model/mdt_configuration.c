@@ -38,10 +38,9 @@ OpenAPI_mdt_configuration_t *OpenAPI_mdt_configuration_create(
     OpenAPI_list_t *inter_freq_target_list
 )
 {
-    OpenAPI_mdt_configuration_t *mdt_configuration_local_var = OpenAPI_malloc(sizeof(OpenAPI_mdt_configuration_t));
-    if (!mdt_configuration_local_var) {
-        return NULL;
-    }
+    OpenAPI_mdt_configuration_t *mdt_configuration_local_var = ogs_malloc(sizeof(OpenAPI_mdt_configuration_t));
+    ogs_assert(mdt_configuration_local_var);
+
     mdt_configuration_local_var->job_type = job_type;
     mdt_configuration_local_var->report_type = report_type;
     mdt_configuration_local_var->area_scope = area_scope;

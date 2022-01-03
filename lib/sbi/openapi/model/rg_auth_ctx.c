@@ -11,10 +11,9 @@ OpenAPI_rg_auth_ctx_t *OpenAPI_rg_auth_ctx_create(
     int auth_ind
 )
 {
-    OpenAPI_rg_auth_ctx_t *rg_auth_ctx_local_var = OpenAPI_malloc(sizeof(OpenAPI_rg_auth_ctx_t));
-    if (!rg_auth_ctx_local_var) {
-        return NULL;
-    }
+    OpenAPI_rg_auth_ctx_t *rg_auth_ctx_local_var = ogs_malloc(sizeof(OpenAPI_rg_auth_ctx_t));
+    ogs_assert(rg_auth_ctx_local_var);
+
     rg_auth_ctx_local_var->auth_result = auth_result;
     rg_auth_ctx_local_var->supi = supi;
     rg_auth_ctx_local_var->is_auth_ind = is_auth_ind;
@@ -102,7 +101,7 @@ OpenAPI_rg_auth_ctx_t *OpenAPI_rg_auth_ctx_parseFromJSON(cJSON *rg_auth_ctxJSON)
 
     rg_auth_ctx_local_var = OpenAPI_rg_auth_ctx_create (
         auth_resultVariable,
-        supi ? ogs_strdup_or_assert(supi->valuestring) : NULL,
+        supi ? ogs_strdup(supi->valuestring) : NULL,
         auth_ind ? true : false,
         auth_ind ? auth_ind->valueint : 0
     );

@@ -9,10 +9,9 @@ OpenAPI_allowed_nssai_t *OpenAPI_allowed_nssai_create(
     OpenAPI_access_type_e access_type
 )
 {
-    OpenAPI_allowed_nssai_t *allowed_nssai_local_var = OpenAPI_malloc(sizeof(OpenAPI_allowed_nssai_t));
-    if (!allowed_nssai_local_var) {
-        return NULL;
-    }
+    OpenAPI_allowed_nssai_t *allowed_nssai_local_var = ogs_malloc(sizeof(OpenAPI_allowed_nssai_t));
+    ogs_assert(allowed_nssai_local_var);
+
     allowed_nssai_local_var->allowed_snssai_list = allowed_snssai_list;
     allowed_nssai_local_var->access_type = access_type;
 

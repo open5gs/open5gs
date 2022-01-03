@@ -19,10 +19,9 @@ OpenAPI_bdt_data_t *OpenAPI_bdt_data_create(
     char *supp_feat
 )
 {
-    OpenAPI_bdt_data_t *bdt_data_local_var = OpenAPI_malloc(sizeof(OpenAPI_bdt_data_t));
-    if (!bdt_data_local_var) {
-        return NULL;
-    }
+    OpenAPI_bdt_data_t *bdt_data_local_var = ogs_malloc(sizeof(OpenAPI_bdt_data_t));
+    ogs_assert(bdt_data_local_var);
+
     bdt_data_local_var->asp_id = asp_id;
     bdt_data_local_var->trans_policy = trans_policy;
     bdt_data_local_var->bdt_ref_id = bdt_ref_id;
@@ -272,18 +271,18 @@ OpenAPI_bdt_data_t *OpenAPI_bdt_data_parseFromJSON(cJSON *bdt_dataJSON)
     }
 
     bdt_data_local_var = OpenAPI_bdt_data_create (
-        ogs_strdup_or_assert(asp_id->valuestring),
+        ogs_strdup(asp_id->valuestring),
         trans_policy_local_nonprim,
-        bdt_ref_id ? ogs_strdup_or_assert(bdt_ref_id->valuestring) : NULL,
+        bdt_ref_id ? ogs_strdup(bdt_ref_id->valuestring) : NULL,
         nw_area_info ? nw_area_info_local_nonprim : NULL,
         num_of_ues ? true : false,
         num_of_ues ? num_of_ues->valuedouble : 0,
         vol_per_ue ? vol_per_ue_local_nonprim : NULL,
-        dnn ? ogs_strdup_or_assert(dnn->valuestring) : NULL,
+        dnn ? ogs_strdup(dnn->valuestring) : NULL,
         snssai ? snssai_local_nonprim : NULL,
-        traffic_des ? ogs_strdup_or_assert(traffic_des->valuestring) : NULL,
+        traffic_des ? ogs_strdup(traffic_des->valuestring) : NULL,
         bdtp_status ? bdtp_status_local_nonprim : NULL,
-        supp_feat ? ogs_strdup_or_assert(supp_feat->valuestring) : NULL
+        supp_feat ? ogs_strdup(supp_feat->valuestring) : NULL
     );
 
     return bdt_data_local_var;

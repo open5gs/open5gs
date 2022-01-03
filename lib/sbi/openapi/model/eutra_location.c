@@ -20,10 +20,9 @@ OpenAPI_eutra_location_t *OpenAPI_eutra_location_create(
     OpenAPI_global_ran_node_id_t *global_enb_id
 )
 {
-    OpenAPI_eutra_location_t *eutra_location_local_var = OpenAPI_malloc(sizeof(OpenAPI_eutra_location_t));
-    if (!eutra_location_local_var) {
-        return NULL;
-    }
+    OpenAPI_eutra_location_t *eutra_location_local_var = ogs_malloc(sizeof(OpenAPI_eutra_location_t));
+    ogs_assert(eutra_location_local_var);
+
     eutra_location_local_var->tai = tai;
     eutra_location_local_var->is_ignore_tai = is_ignore_tai;
     eutra_location_local_var->ignore_tai = ignore_tai;
@@ -259,9 +258,9 @@ OpenAPI_eutra_location_t *OpenAPI_eutra_location_parseFromJSON(cJSON *eutra_loca
         ignore_ecgi ? ignore_ecgi->valueint : 0,
         age_of_location_information ? true : false,
         age_of_location_information ? age_of_location_information->valuedouble : 0,
-        ue_location_timestamp ? ogs_strdup_or_assert(ue_location_timestamp->valuestring) : NULL,
-        geographical_information ? ogs_strdup_or_assert(geographical_information->valuestring) : NULL,
-        geodetic_information ? ogs_strdup_or_assert(geodetic_information->valuestring) : NULL,
+        ue_location_timestamp ? ogs_strdup(ue_location_timestamp->valuestring) : NULL,
+        geographical_information ? ogs_strdup(geographical_information->valuestring) : NULL,
+        geodetic_information ? ogs_strdup(geodetic_information->valuestring) : NULL,
         global_ngenb_id ? global_ngenb_id_local_nonprim : NULL,
         global_enb_id ? global_enb_id_local_nonprim : NULL
     );

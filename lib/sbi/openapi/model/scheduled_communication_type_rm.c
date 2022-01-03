@@ -7,10 +7,9 @@
 OpenAPI_scheduled_communication_type_rm_t *OpenAPI_scheduled_communication_type_rm_create(
 )
 {
-    OpenAPI_scheduled_communication_type_rm_t *scheduled_communication_type_rm_local_var = OpenAPI_malloc(sizeof(OpenAPI_scheduled_communication_type_rm_t));
-    if (!scheduled_communication_type_rm_local_var) {
-        return NULL;
-    }
+    OpenAPI_scheduled_communication_type_rm_t *scheduled_communication_type_rm_local_var = ogs_malloc(sizeof(OpenAPI_scheduled_communication_type_rm_t));
+    ogs_assert(scheduled_communication_type_rm_local_var);
+
 
     return scheduled_communication_type_rm_local_var;
 }

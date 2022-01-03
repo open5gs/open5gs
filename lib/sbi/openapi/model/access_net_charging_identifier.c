@@ -9,10 +9,9 @@ OpenAPI_access_net_charging_identifier_t *OpenAPI_access_net_charging_identifier
     OpenAPI_list_t *flows
 )
 {
-    OpenAPI_access_net_charging_identifier_t *access_net_charging_identifier_local_var = OpenAPI_malloc(sizeof(OpenAPI_access_net_charging_identifier_t));
-    if (!access_net_charging_identifier_local_var) {
-        return NULL;
-    }
+    OpenAPI_access_net_charging_identifier_t *access_net_charging_identifier_local_var = ogs_malloc(sizeof(OpenAPI_access_net_charging_identifier_t));
+    ogs_assert(access_net_charging_identifier_local_var);
+
     access_net_charging_identifier_local_var->acc_net_cha_id_value = acc_net_cha_id_value;
     access_net_charging_identifier_local_var->flows = flows;
 

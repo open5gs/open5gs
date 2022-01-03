@@ -9,10 +9,9 @@ OpenAPI_service_parameter_data_patch_t *OpenAPI_service_parameter_data_patch_cre
     char *param_over_uu
 )
 {
-    OpenAPI_service_parameter_data_patch_t *service_parameter_data_patch_local_var = OpenAPI_malloc(sizeof(OpenAPI_service_parameter_data_patch_t));
-    if (!service_parameter_data_patch_local_var) {
-        return NULL;
-    }
+    OpenAPI_service_parameter_data_patch_t *service_parameter_data_patch_local_var = ogs_malloc(sizeof(OpenAPI_service_parameter_data_patch_t));
+    ogs_assert(service_parameter_data_patch_local_var);
+
     service_parameter_data_patch_local_var->param_over_pc5 = param_over_pc5;
     service_parameter_data_patch_local_var->param_over_uu = param_over_uu;
 
@@ -80,8 +79,8 @@ OpenAPI_service_parameter_data_patch_t *OpenAPI_service_parameter_data_patch_par
     }
 
     service_parameter_data_patch_local_var = OpenAPI_service_parameter_data_patch_create (
-        param_over_pc5 ? ogs_strdup_or_assert(param_over_pc5->valuestring) : NULL,
-        param_over_uu ? ogs_strdup_or_assert(param_over_uu->valuestring) : NULL
+        param_over_pc5 ? ogs_strdup(param_over_pc5->valuestring) : NULL,
+        param_over_uu ? ogs_strdup(param_over_uu->valuestring) : NULL
     );
 
     return service_parameter_data_patch_local_var;

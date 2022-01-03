@@ -17,10 +17,9 @@ OpenAPI_gbr_qos_flow_information_t *OpenAPI_gbr_qos_flow_information_create(
     OpenAPI_list_t *alternative_qos_profile_list
 )
 {
-    OpenAPI_gbr_qos_flow_information_t *gbr_qos_flow_information_local_var = OpenAPI_malloc(sizeof(OpenAPI_gbr_qos_flow_information_t));
-    if (!gbr_qos_flow_information_local_var) {
-        return NULL;
-    }
+    OpenAPI_gbr_qos_flow_information_t *gbr_qos_flow_information_local_var = ogs_malloc(sizeof(OpenAPI_gbr_qos_flow_information_t));
+    ogs_assert(gbr_qos_flow_information_local_var);
+
     gbr_qos_flow_information_local_var->max_fbr_dl = max_fbr_dl;
     gbr_qos_flow_information_local_var->max_fbr_ul = max_fbr_ul;
     gbr_qos_flow_information_local_var->gua_fbr_dl = gua_fbr_dl;
@@ -227,10 +226,10 @@ OpenAPI_gbr_qos_flow_information_t *OpenAPI_gbr_qos_flow_information_parseFromJS
     }
 
     gbr_qos_flow_information_local_var = OpenAPI_gbr_qos_flow_information_create (
-        ogs_strdup_or_assert(max_fbr_dl->valuestring),
-        ogs_strdup_or_assert(max_fbr_ul->valuestring),
-        ogs_strdup_or_assert(gua_fbr_dl->valuestring),
-        ogs_strdup_or_assert(gua_fbr_ul->valuestring),
+        ogs_strdup(max_fbr_dl->valuestring),
+        ogs_strdup(max_fbr_ul->valuestring),
+        ogs_strdup(gua_fbr_dl->valuestring),
+        ogs_strdup(gua_fbr_ul->valuestring),
         notif_control ? notif_controlVariable : 0,
         max_packet_loss_rate_dl ? true : false,
         max_packet_loss_rate_dl ? max_packet_loss_rate_dl->valuedouble : 0,

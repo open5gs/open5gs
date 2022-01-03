@@ -13,10 +13,9 @@ OpenAPI_sm_context_retrieve_data_t *OpenAPI_sm_context_retrieve_data_create(
     int ran_unchanged_ind
 )
 {
-    OpenAPI_sm_context_retrieve_data_t *sm_context_retrieve_data_local_var = OpenAPI_malloc(sizeof(OpenAPI_sm_context_retrieve_data_t));
-    if (!sm_context_retrieve_data_local_var) {
-        return NULL;
-    }
+    OpenAPI_sm_context_retrieve_data_t *sm_context_retrieve_data_local_var = ogs_malloc(sizeof(OpenAPI_sm_context_retrieve_data_t));
+    ogs_assert(sm_context_retrieve_data_local_var);
+
     sm_context_retrieve_data_local_var->target_mme_cap = target_mme_cap;
     sm_context_retrieve_data_local_var->sm_context_type = sm_context_type;
     sm_context_retrieve_data_local_var->serving_network = serving_network;

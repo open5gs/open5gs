@@ -29,8 +29,8 @@ ogs_sbi_request_t *pcf_naf_callback_build_policyauthorization_terminate(
 
     memset(&message, 0, sizeof(message));
     message.h.method = (char *)OGS_SBI_HTTP_METHOD_POST;
-    message.h.uri = ogs_mstrcatf(
-            app_session->notif_uri, "/%s", OGS_SBI_RESOURCE_NAME_TERMINATE);
+    message.h.uri = ogs_msprintf("%s/%s",
+                app_session->notif_uri, OGS_SBI_RESOURCE_NAME_TERMINATE);
     ogs_assert(message.h.uri);
 
     request = ogs_sbi_build_request(&message);

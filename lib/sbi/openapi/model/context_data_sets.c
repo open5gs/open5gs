@@ -16,10 +16,9 @@ OpenAPI_context_data_sets_t *OpenAPI_context_data_sets_create(
     OpenAPI_ip_sm_gw_registration_t *ip_sm_gw
 )
 {
-    OpenAPI_context_data_sets_t *context_data_sets_local_var = OpenAPI_malloc(sizeof(OpenAPI_context_data_sets_t));
-    if (!context_data_sets_local_var) {
-        return NULL;
-    }
+    OpenAPI_context_data_sets_t *context_data_sets_local_var = ogs_malloc(sizeof(OpenAPI_context_data_sets_t));
+    ogs_assert(context_data_sets_local_var);
+
     context_data_sets_local_var->amf3_gpp = amf3_gpp;
     context_data_sets_local_var->amf_non3_gpp = amf_non3_gpp;
     context_data_sets_local_var->sdm_subscriptions = sdm_subscriptions;

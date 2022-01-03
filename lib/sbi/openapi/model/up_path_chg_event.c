@@ -12,10 +12,9 @@ OpenAPI_up_path_chg_event_t *OpenAPI_up_path_chg_event_create(
     int af_ack_ind
 )
 {
-    OpenAPI_up_path_chg_event_t *up_path_chg_event_local_var = OpenAPI_malloc(sizeof(OpenAPI_up_path_chg_event_t));
-    if (!up_path_chg_event_local_var) {
-        return NULL;
-    }
+    OpenAPI_up_path_chg_event_t *up_path_chg_event_local_var = ogs_malloc(sizeof(OpenAPI_up_path_chg_event_t));
+    ogs_assert(up_path_chg_event_local_var);
+
     up_path_chg_event_local_var->notification_uri = notification_uri;
     up_path_chg_event_local_var->notif_corre_id = notif_corre_id;
     up_path_chg_event_local_var->dnai_chg_type = dnai_chg_type;
@@ -120,8 +119,8 @@ OpenAPI_up_path_chg_event_t *OpenAPI_up_path_chg_event_parseFromJSON(cJSON *up_p
     }
 
     up_path_chg_event_local_var = OpenAPI_up_path_chg_event_create (
-        ogs_strdup_or_assert(notification_uri->valuestring),
-        ogs_strdup_or_assert(notif_corre_id->valuestring),
+        ogs_strdup(notification_uri->valuestring),
+        ogs_strdup(notif_corre_id->valuestring),
         dnai_chg_typeVariable,
         af_ack_ind ? true : false,
         af_ack_ind ? af_ack_ind->valueint : 0

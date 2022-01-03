@@ -9,10 +9,9 @@ OpenAPI_ue_context_in_smsf_data_1_t *OpenAPI_ue_context_in_smsf_data_1_create(
     OpenAPI_smsf_info_1_t *smsf_info_non3_gpp_access
 )
 {
-    OpenAPI_ue_context_in_smsf_data_1_t *ue_context_in_smsf_data_1_local_var = OpenAPI_malloc(sizeof(OpenAPI_ue_context_in_smsf_data_1_t));
-    if (!ue_context_in_smsf_data_1_local_var) {
-        return NULL;
-    }
+    OpenAPI_ue_context_in_smsf_data_1_t *ue_context_in_smsf_data_1_local_var = ogs_malloc(sizeof(OpenAPI_ue_context_in_smsf_data_1_t));
+    ogs_assert(ue_context_in_smsf_data_1_local_var);
+
     ue_context_in_smsf_data_1_local_var->smsf_info3_gpp_access = smsf_info3_gpp_access;
     ue_context_in_smsf_data_1_local_var->smsf_info_non3_gpp_access = smsf_info_non3_gpp_access;
 

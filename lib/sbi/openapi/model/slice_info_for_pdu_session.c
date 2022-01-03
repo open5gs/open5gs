@@ -10,10 +10,9 @@ OpenAPI_slice_info_for_pdu_session_t *OpenAPI_slice_info_for_pdu_session_create(
     OpenAPI_snssai_t *home_snssai
 )
 {
-    OpenAPI_slice_info_for_pdu_session_t *slice_info_for_pdu_session_local_var = OpenAPI_malloc(sizeof(OpenAPI_slice_info_for_pdu_session_t));
-    if (!slice_info_for_pdu_session_local_var) {
-        return NULL;
-    }
+    OpenAPI_slice_info_for_pdu_session_t *slice_info_for_pdu_session_local_var = ogs_malloc(sizeof(OpenAPI_slice_info_for_pdu_session_t));
+    ogs_assert(slice_info_for_pdu_session_local_var);
+
     slice_info_for_pdu_session_local_var->s_nssai = s_nssai;
     slice_info_for_pdu_session_local_var->roaming_indication = roaming_indication;
     slice_info_for_pdu_session_local_var->home_snssai = home_snssai;

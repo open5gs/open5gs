@@ -13,10 +13,9 @@ OpenAPI_acknowledge_info_t *OpenAPI_acknowledge_info_create(
     int ue_not_reachable
 )
 {
-    OpenAPI_acknowledge_info_t *acknowledge_info_local_var = OpenAPI_malloc(sizeof(OpenAPI_acknowledge_info_t));
-    if (!acknowledge_info_local_var) {
-        return NULL;
-    }
+    OpenAPI_acknowledge_info_t *acknowledge_info_local_var = ogs_malloc(sizeof(OpenAPI_acknowledge_info_t));
+    ogs_assert(acknowledge_info_local_var);
+
     acknowledge_info_local_var->sor_mac_iue = sor_mac_iue;
     acknowledge_info_local_var->upu_mac_iue = upu_mac_iue;
     acknowledge_info_local_var->secured_packet = secured_packet;
@@ -138,10 +137,10 @@ OpenAPI_acknowledge_info_t *OpenAPI_acknowledge_info_parseFromJSON(cJSON *acknow
     }
 
     acknowledge_info_local_var = OpenAPI_acknowledge_info_create (
-        sor_mac_iue ? ogs_strdup_or_assert(sor_mac_iue->valuestring) : NULL,
-        upu_mac_iue ? ogs_strdup_or_assert(upu_mac_iue->valuestring) : NULL,
-        secured_packet ? ogs_strdup_or_assert(secured_packet->valuestring) : NULL,
-        ogs_strdup_or_assert(provisioning_time->valuestring),
+        sor_mac_iue ? ogs_strdup(sor_mac_iue->valuestring) : NULL,
+        upu_mac_iue ? ogs_strdup(upu_mac_iue->valuestring) : NULL,
+        secured_packet ? ogs_strdup(secured_packet->valuestring) : NULL,
+        ogs_strdup(provisioning_time->valuestring),
         ue_not_reachable ? true : false,
         ue_not_reachable ? ue_not_reachable->valueint : 0
     );

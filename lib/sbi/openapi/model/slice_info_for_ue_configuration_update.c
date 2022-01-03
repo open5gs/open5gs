@@ -14,10 +14,9 @@ OpenAPI_slice_info_for_ue_configuration_update_t *OpenAPI_slice_info_for_ue_conf
     OpenAPI_list_t *mapping_of_nssai
 )
 {
-    OpenAPI_slice_info_for_ue_configuration_update_t *slice_info_for_ue_configuration_update_local_var = OpenAPI_malloc(sizeof(OpenAPI_slice_info_for_ue_configuration_update_t));
-    if (!slice_info_for_ue_configuration_update_local_var) {
-        return NULL;
-    }
+    OpenAPI_slice_info_for_ue_configuration_update_t *slice_info_for_ue_configuration_update_local_var = ogs_malloc(sizeof(OpenAPI_slice_info_for_ue_configuration_update_t));
+    ogs_assert(slice_info_for_ue_configuration_update_local_var);
+
     slice_info_for_ue_configuration_update_local_var->subscribed_nssai = subscribed_nssai;
     slice_info_for_ue_configuration_update_local_var->allowed_nssai_current_access = allowed_nssai_current_access;
     slice_info_for_ue_configuration_update_local_var->allowed_nssai_other_access = allowed_nssai_other_access;

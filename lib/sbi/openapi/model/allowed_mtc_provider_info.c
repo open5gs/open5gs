@@ -9,10 +9,9 @@ OpenAPI_allowed_mtc_provider_info_t *OpenAPI_allowed_mtc_provider_info_create(
     char *af_id
 )
 {
-    OpenAPI_allowed_mtc_provider_info_t *allowed_mtc_provider_info_local_var = OpenAPI_malloc(sizeof(OpenAPI_allowed_mtc_provider_info_t));
-    if (!allowed_mtc_provider_info_local_var) {
-        return NULL;
-    }
+    OpenAPI_allowed_mtc_provider_info_t *allowed_mtc_provider_info_local_var = ogs_malloc(sizeof(OpenAPI_allowed_mtc_provider_info_t));
+    ogs_assert(allowed_mtc_provider_info_local_var);
+
     allowed_mtc_provider_info_local_var->mtc_provider_information = mtc_provider_information;
     allowed_mtc_provider_info_local_var->af_id = af_id;
 
@@ -80,8 +79,8 @@ OpenAPI_allowed_mtc_provider_info_t *OpenAPI_allowed_mtc_provider_info_parseFrom
     }
 
     allowed_mtc_provider_info_local_var = OpenAPI_allowed_mtc_provider_info_create (
-        mtc_provider_information ? ogs_strdup_or_assert(mtc_provider_information->valuestring) : NULL,
-        af_id ? ogs_strdup_or_assert(af_id->valuestring) : NULL
+        mtc_provider_information ? ogs_strdup(mtc_provider_information->valuestring) : NULL,
+        af_id ? ogs_strdup(af_id->valuestring) : NULL
     );
 
     return allowed_mtc_provider_info_local_var;

@@ -11,10 +11,9 @@ OpenAPI_session_rule_report_t *OpenAPI_session_rule_report_create(
     OpenAPI_list_t *policy_dec_failure_reports
 )
 {
-    OpenAPI_session_rule_report_t *session_rule_report_local_var = OpenAPI_malloc(sizeof(OpenAPI_session_rule_report_t));
-    if (!session_rule_report_local_var) {
-        return NULL;
-    }
+    OpenAPI_session_rule_report_t *session_rule_report_local_var = ogs_malloc(sizeof(OpenAPI_session_rule_report_t));
+    ogs_assert(session_rule_report_local_var);
+
     session_rule_report_local_var->rule_ids = rule_ids;
     session_rule_report_local_var->rule_status = rule_status;
     session_rule_report_local_var->sess_rule_failure_code = sess_rule_failure_code;
@@ -114,7 +113,7 @@ OpenAPI_session_rule_report_t *OpenAPI_session_rule_report_parseFromJSON(cJSON *
         ogs_error("OpenAPI_session_rule_report_parseFromJSON() failed [rule_ids]");
         goto end;
     }
-    OpenAPI_list_add(rule_idsList , ogs_strdup_or_assert(rule_ids_local->valuestring));
+    OpenAPI_list_add(rule_idsList , ogs_strdup(rule_ids_local->valuestring));
     }
 
     cJSON *rule_status = cJSON_GetObjectItemCaseSensitive(session_rule_reportJSON, "ruleStatus");

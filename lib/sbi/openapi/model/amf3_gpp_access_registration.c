@@ -36,10 +36,9 @@ OpenAPI_amf3_gpp_access_registration_t *OpenAPI_amf3_gpp_access_registration_cre
     char *supi
 )
 {
-    OpenAPI_amf3_gpp_access_registration_t *amf3_gpp_access_registration_local_var = OpenAPI_malloc(sizeof(OpenAPI_amf3_gpp_access_registration_t));
-    if (!amf3_gpp_access_registration_local_var) {
-        return NULL;
-    }
+    OpenAPI_amf3_gpp_access_registration_t *amf3_gpp_access_registration_local_var = ogs_malloc(sizeof(OpenAPI_amf3_gpp_access_registration_t));
+    ogs_assert(amf3_gpp_access_registration_local_var);
+
     amf3_gpp_access_registration_local_var->amf_instance_id = amf_instance_id;
     amf3_gpp_access_registration_local_var->supported_features = supported_features;
     amf3_gpp_access_registration_local_var->is_purge_flag = is_purge_flag;
@@ -533,16 +532,16 @@ OpenAPI_amf3_gpp_access_registration_t *OpenAPI_amf3_gpp_access_registration_par
     }
 
     amf3_gpp_access_registration_local_var = OpenAPI_amf3_gpp_access_registration_create (
-        ogs_strdup_or_assert(amf_instance_id->valuestring),
-        supported_features ? ogs_strdup_or_assert(supported_features->valuestring) : NULL,
+        ogs_strdup(amf_instance_id->valuestring),
+        supported_features ? ogs_strdup(supported_features->valuestring) : NULL,
         purge_flag ? true : false,
         purge_flag ? purge_flag->valueint : 0,
-        pei ? ogs_strdup_or_assert(pei->valuestring) : NULL,
+        pei ? ogs_strdup(pei->valuestring) : NULL,
         ims_vo_ps ? ims_vo_psVariable : 0,
-        ogs_strdup_or_assert(dereg_callback_uri->valuestring),
-        amf_service_name_dereg ? ogs_strdup_or_assert(amf_service_name_dereg->valuestring) : NULL,
-        pcscf_restoration_callback_uri ? ogs_strdup_or_assert(pcscf_restoration_callback_uri->valuestring) : NULL,
-        amf_service_name_pcscf_rest ? ogs_strdup_or_assert(amf_service_name_pcscf_rest->valuestring) : NULL,
+        ogs_strdup(dereg_callback_uri->valuestring),
+        amf_service_name_dereg ? ogs_strdup(amf_service_name_dereg->valuestring) : NULL,
+        pcscf_restoration_callback_uri ? ogs_strdup(pcscf_restoration_callback_uri->valuestring) : NULL,
+        amf_service_name_pcscf_rest ? ogs_strdup(amf_service_name_pcscf_rest->valuestring) : NULL,
         initial_registration_ind ? true : false,
         initial_registration_ind ? initial_registration_ind->valueint : 0,
         guami_local_nonprim,
@@ -552,16 +551,16 @@ OpenAPI_amf3_gpp_access_registration_t *OpenAPI_amf3_gpp_access_registration_par
         rat_typeVariable,
         urrp_indicator ? true : false,
         urrp_indicator ? urrp_indicator->valueint : 0,
-        amf_ee_subscription_id ? ogs_strdup_or_assert(amf_ee_subscription_id->valuestring) : NULL,
+        amf_ee_subscription_id ? ogs_strdup(amf_ee_subscription_id->valuestring) : NULL,
         eps_interworking_info ? eps_interworking_info_local_nonprim : NULL,
         ue_srvcc_capability ? true : false,
         ue_srvcc_capability ? ue_srvcc_capability->valueint : 0,
-        registration_time ? ogs_strdup_or_assert(registration_time->valuestring) : NULL,
+        registration_time ? ogs_strdup(registration_time->valuestring) : NULL,
         vgmlc_address ? vgmlc_address_local_nonprim : NULL,
         context_info ? context_info_local_nonprim : NULL,
         no_ee_subscription_ind ? true : false,
         no_ee_subscription_ind ? no_ee_subscription_ind->valueint : 0,
-        supi ? ogs_strdup_or_assert(supi->valuestring) : NULL
+        supi ? ogs_strdup(supi->valuestring) : NULL
     );
 
     return amf3_gpp_access_registration_local_var;

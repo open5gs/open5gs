@@ -10,10 +10,9 @@ OpenAPI_qos_notification_control_info_t *OpenAPI_qos_notification_control_info_c
     char *alt_ser_req
 )
 {
-    OpenAPI_qos_notification_control_info_t *qos_notification_control_info_local_var = OpenAPI_malloc(sizeof(OpenAPI_qos_notification_control_info_t));
-    if (!qos_notification_control_info_local_var) {
-        return NULL;
-    }
+    OpenAPI_qos_notification_control_info_t *qos_notification_control_info_local_var = ogs_malloc(sizeof(OpenAPI_qos_notification_control_info_t));
+    ogs_assert(qos_notification_control_info_local_var);
+
     qos_notification_control_info_local_var->notif_type = notif_type;
     qos_notification_control_info_local_var->flows = flows;
     qos_notification_control_info_local_var->alt_ser_req = alt_ser_req;
@@ -132,7 +131,7 @@ OpenAPI_qos_notification_control_info_t *OpenAPI_qos_notification_control_info_p
     qos_notification_control_info_local_var = OpenAPI_qos_notification_control_info_create (
         notif_typeVariable,
         flows ? flowsList : NULL,
-        alt_ser_req ? ogs_strdup_or_assert(alt_ser_req->valuestring) : NULL
+        alt_ser_req ? ogs_strdup(alt_ser_req->valuestring) : NULL
     );
 
     return qos_notification_control_info_local_var;

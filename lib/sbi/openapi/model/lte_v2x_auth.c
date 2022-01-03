@@ -9,10 +9,9 @@ OpenAPI_lte_v2x_auth_t *OpenAPI_lte_v2x_auth_create(
     OpenAPI_ue_auth_e pedestrian_ue_auth
 )
 {
-    OpenAPI_lte_v2x_auth_t *lte_v2x_auth_local_var = OpenAPI_malloc(sizeof(OpenAPI_lte_v2x_auth_t));
-    if (!lte_v2x_auth_local_var) {
-        return NULL;
-    }
+    OpenAPI_lte_v2x_auth_t *lte_v2x_auth_local_var = ogs_malloc(sizeof(OpenAPI_lte_v2x_auth_t));
+    ogs_assert(lte_v2x_auth_local_var);
+
     lte_v2x_auth_local_var->vehicle_ue_auth = vehicle_ue_auth;
     lte_v2x_auth_local_var->pedestrian_ue_auth = pedestrian_ue_auth;
 

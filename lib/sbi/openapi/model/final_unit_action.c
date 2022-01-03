@@ -7,10 +7,9 @@
 OpenAPI_final_unit_action_t *OpenAPI_final_unit_action_create(
 )
 {
-    OpenAPI_final_unit_action_t *final_unit_action_local_var = OpenAPI_malloc(sizeof(OpenAPI_final_unit_action_t));
-    if (!final_unit_action_local_var) {
-        return NULL;
-    }
+    OpenAPI_final_unit_action_t *final_unit_action_local_var = ogs_malloc(sizeof(OpenAPI_final_unit_action_t));
+    ogs_assert(final_unit_action_local_var);
+
 
     return final_unit_action_local_var;
 }

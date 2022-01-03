@@ -8,10 +8,9 @@ OpenAPI_lcs_broadcast_assistance_types_data_t *OpenAPI_lcs_broadcast_assistance_
     OpenAPI_list_t *location_assistance_type
 )
 {
-    OpenAPI_lcs_broadcast_assistance_types_data_t *lcs_broadcast_assistance_types_data_local_var = OpenAPI_malloc(sizeof(OpenAPI_lcs_broadcast_assistance_types_data_t));
-    if (!lcs_broadcast_assistance_types_data_local_var) {
-        return NULL;
-    }
+    OpenAPI_lcs_broadcast_assistance_types_data_t *lcs_broadcast_assistance_types_data_local_var = ogs_malloc(sizeof(OpenAPI_lcs_broadcast_assistance_types_data_t));
+    ogs_assert(lcs_broadcast_assistance_types_data_local_var);
+
     lcs_broadcast_assistance_types_data_local_var->location_assistance_type = location_assistance_type;
 
     return lcs_broadcast_assistance_types_data_local_var;

@@ -8,10 +8,9 @@ OpenAPI_patch_result_t *OpenAPI_patch_result_create(
     OpenAPI_list_t *report
 )
 {
-    OpenAPI_patch_result_t *patch_result_local_var = OpenAPI_malloc(sizeof(OpenAPI_patch_result_t));
-    if (!patch_result_local_var) {
-        return NULL;
-    }
+    OpenAPI_patch_result_t *patch_result_local_var = ogs_malloc(sizeof(OpenAPI_patch_result_t));
+    ogs_assert(patch_result_local_var);
+
     patch_result_local_var->report = report;
 
     return patch_result_local_var;

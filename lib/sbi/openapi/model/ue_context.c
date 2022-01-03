@@ -66,10 +66,9 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_create(
     int iab_operation_allowed
 )
 {
-    OpenAPI_ue_context_t *ue_context_local_var = OpenAPI_malloc(sizeof(OpenAPI_ue_context_t));
-    if (!ue_context_local_var) {
-        return NULL;
-    }
+    OpenAPI_ue_context_t *ue_context_local_var = ogs_malloc(sizeof(OpenAPI_ue_context_t));
+    ogs_assert(ue_context_local_var);
+
     ue_context_local_var->supi = supi;
     ue_context_local_var->is_supi_unauth_ind = is_supi_unauth_ind;
     ue_context_local_var->supi_unauth_ind = supi_unauth_ind;
@@ -812,7 +811,7 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
         ogs_error("OpenAPI_ue_context_parseFromJSON() failed [gpsi_list]");
         goto end;
     }
-    OpenAPI_list_add(gpsi_listList , ogs_strdup_or_assert(gpsi_list_local->valuestring));
+    OpenAPI_list_add(gpsi_listList , ogs_strdup(gpsi_list_local->valuestring));
     }
     }
 
@@ -877,7 +876,7 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
         ogs_error("OpenAPI_ue_context_parseFromJSON() failed [group_list]");
         goto end;
     }
-    OpenAPI_list_add(group_listList , ogs_strdup_or_assert(group_list_local->valuestring));
+    OpenAPI_list_add(group_listList , ogs_strdup(group_list_local->valuestring));
     }
     }
 
@@ -1407,15 +1406,15 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
     }
 
     ue_context_local_var = OpenAPI_ue_context_create (
-        supi ? ogs_strdup_or_assert(supi->valuestring) : NULL,
+        supi ? ogs_strdup(supi->valuestring) : NULL,
         supi_unauth_ind ? true : false,
         supi_unauth_ind ? supi_unauth_ind->valueint : 0,
         gpsi_list ? gpsi_listList : NULL,
-        pei ? ogs_strdup_or_assert(pei->valuestring) : NULL,
-        udm_group_id ? ogs_strdup_or_assert(udm_group_id->valuestring) : NULL,
-        ausf_group_id ? ogs_strdup_or_assert(ausf_group_id->valuestring) : NULL,
-        pcf_group_id ? ogs_strdup_or_assert(pcf_group_id->valuestring) : NULL,
-        routing_indicator ? ogs_strdup_or_assert(routing_indicator->valuestring) : NULL,
+        pei ? ogs_strdup(pei->valuestring) : NULL,
+        udm_group_id ? ogs_strdup(udm_group_id->valuestring) : NULL,
+        ausf_group_id ? ogs_strdup(ausf_group_id->valuestring) : NULL,
+        pcf_group_id ? ogs_strdup(pcf_group_id->valuestring) : NULL,
+        routing_indicator ? ogs_strdup(routing_indicator->valuestring) : NULL,
         group_list ? group_listList : NULL,
         drx_parameter ? drx_parameter->valueint : 0,
         sub_rfsp ? true : false,
@@ -1423,20 +1422,20 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
         used_rfsp ? true : false,
         used_rfsp ? used_rfsp->valuedouble : 0,
         sub_ue_ambr ? sub_ue_ambr_local_nonprim : NULL,
-        smsf_id ? ogs_strdup_or_assert(smsf_id->valuestring) : NULL,
+        smsf_id ? ogs_strdup(smsf_id->valuestring) : NULL,
         seaf_data ? seaf_data_local_nonprim : NULL,
         _5g_mm_capability ? _5g_mm_capability->valueint : 0,
-        pcf_id ? ogs_strdup_or_assert(pcf_id->valuestring) : NULL,
-        pcf_set_id ? ogs_strdup_or_assert(pcf_set_id->valuestring) : NULL,
-        pcf_amp_service_set_id ? ogs_strdup_or_assert(pcf_amp_service_set_id->valuestring) : NULL,
-        pcf_uep_service_set_id ? ogs_strdup_or_assert(pcf_uep_service_set_id->valuestring) : NULL,
+        pcf_id ? ogs_strdup(pcf_id->valuestring) : NULL,
+        pcf_set_id ? ogs_strdup(pcf_set_id->valuestring) : NULL,
+        pcf_amp_service_set_id ? ogs_strdup(pcf_amp_service_set_id->valuestring) : NULL,
+        pcf_uep_service_set_id ? ogs_strdup(pcf_uep_service_set_id->valuestring) : NULL,
         pcf_binding ? pcf_bindingVariable : 0,
-        pcf_am_policy_uri ? ogs_strdup_or_assert(pcf_am_policy_uri->valuestring) : NULL,
+        pcf_am_policy_uri ? ogs_strdup(pcf_am_policy_uri->valuestring) : NULL,
         am_policy_req_trigger_list ? am_policy_req_trigger_listList : NULL,
-        pcf_ue_policy_uri ? ogs_strdup_or_assert(pcf_ue_policy_uri->valuestring) : NULL,
+        pcf_ue_policy_uri ? ogs_strdup(pcf_ue_policy_uri->valuestring) : NULL,
         ue_policy_req_trigger_list ? ue_policy_req_trigger_listList : NULL,
-        hpcf_id ? ogs_strdup_or_assert(hpcf_id->valuestring) : NULL,
-        hpcf_set_id ? ogs_strdup_or_assert(hpcf_set_id->valuestring) : NULL,
+        hpcf_id ? ogs_strdup(hpcf_id->valuestring) : NULL,
+        hpcf_set_id ? ogs_strdup(hpcf_set_id->valuestring) : NULL,
         restricted_rat_list ? restricted_rat_listList : NULL,
         forbidden_area_list ? forbidden_area_listList : NULL,
         service_area_restriction ? service_area_restriction_local_nonprim : NULL,
@@ -1445,9 +1444,9 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
         mm_context_list ? mm_context_listList : NULL,
         session_context_list ? session_context_listList : NULL,
         trace_data ? trace_data_local_nonprim : NULL,
-        service_gap_expiry_time ? ogs_strdup_or_assert(service_gap_expiry_time->valuestring) : NULL,
-        stn_sr ? ogs_strdup_or_assert(stn_sr->valuestring) : NULL,
-        c_msisdn ? ogs_strdup_or_assert(c_msisdn->valuestring) : NULL,
+        service_gap_expiry_time ? ogs_strdup(service_gap_expiry_time->valuestring) : NULL,
+        stn_sr ? ogs_strdup(stn_sr->valuestring) : NULL,
+        c_msisdn ? ogs_strdup(c_msisdn->valuestring) : NULL,
         ms_classmark2 ? ms_classmark2->valueint : 0,
         supported_codec_list ? supported_codec_listList : NULL,
         small_data_rate_status_infos ? small_data_rate_status_infosList : NULL,

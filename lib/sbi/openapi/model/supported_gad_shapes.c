@@ -7,10 +7,9 @@
 OpenAPI_supported_gad_shapes_t *OpenAPI_supported_gad_shapes_create(
 )
 {
-    OpenAPI_supported_gad_shapes_t *supported_gad_shapes_local_var = OpenAPI_malloc(sizeof(OpenAPI_supported_gad_shapes_t));
-    if (!supported_gad_shapes_local_var) {
-        return NULL;
-    }
+    OpenAPI_supported_gad_shapes_t *supported_gad_shapes_local_var = ogs_malloc(sizeof(OpenAPI_supported_gad_shapes_t));
+    ogs_assert(supported_gad_shapes_local_var);
+
 
     return supported_gad_shapes_local_var;
 }

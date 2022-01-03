@@ -16,10 +16,9 @@ OpenAPI_flow_information_t *OpenAPI_flow_information_create(
     OpenAPI_flow_direction_e flow_direction
 )
 {
-    OpenAPI_flow_information_t *flow_information_local_var = OpenAPI_malloc(sizeof(OpenAPI_flow_information_t));
-    if (!flow_information_local_var) {
-        return NULL;
-    }
+    OpenAPI_flow_information_t *flow_information_local_var = ogs_malloc(sizeof(OpenAPI_flow_information_t));
+    ogs_assert(flow_information_local_var);
+
     flow_information_local_var->flow_description = flow_description;
     flow_information_local_var->eth_flow_description = eth_flow_description;
     flow_information_local_var->pack_filt_id = pack_filt_id;
@@ -200,14 +199,14 @@ OpenAPI_flow_information_t *OpenAPI_flow_information_parseFromJSON(cJSON *flow_i
     }
 
     flow_information_local_var = OpenAPI_flow_information_create (
-        flow_description ? ogs_strdup_or_assert(flow_description->valuestring) : NULL,
+        flow_description ? ogs_strdup(flow_description->valuestring) : NULL,
         eth_flow_description ? eth_flow_description_local_nonprim : NULL,
-        pack_filt_id ? ogs_strdup_or_assert(pack_filt_id->valuestring) : NULL,
+        pack_filt_id ? ogs_strdup(pack_filt_id->valuestring) : NULL,
         packet_filter_usage ? true : false,
         packet_filter_usage ? packet_filter_usage->valueint : 0,
-        tos_traffic_class ? ogs_strdup_or_assert(tos_traffic_class->valuestring) : NULL,
-        spi ? ogs_strdup_or_assert(spi->valuestring) : NULL,
-        flow_label ? ogs_strdup_or_assert(flow_label->valuestring) : NULL,
+        tos_traffic_class ? ogs_strdup(tos_traffic_class->valuestring) : NULL,
+        spi ? ogs_strdup(spi->valuestring) : NULL,
+        flow_label ? ogs_strdup(flow_label->valuestring) : NULL,
         flow_direction ? flow_directionVariable : 0
     );
 

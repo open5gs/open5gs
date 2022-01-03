@@ -17,10 +17,9 @@ OpenAPI_qos_flow_profile_t *OpenAPI_qos_flow_profile_create(
     int qos_rep_period
 )
 {
-    OpenAPI_qos_flow_profile_t *qos_flow_profile_local_var = OpenAPI_malloc(sizeof(OpenAPI_qos_flow_profile_t));
-    if (!qos_flow_profile_local_var) {
-        return NULL;
-    }
+    OpenAPI_qos_flow_profile_t *qos_flow_profile_local_var = ogs_malloc(sizeof(OpenAPI_qos_flow_profile_t));
+    ogs_assert(qos_flow_profile_local_var);
+
     qos_flow_profile_local_var->_5qi = _5qi;
     qos_flow_profile_local_var->non_dynamic5_qi = non_dynamic5_qi;
     qos_flow_profile_local_var->dynamic5_qi = dynamic5_qi;

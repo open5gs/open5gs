@@ -15,10 +15,9 @@ OpenAPI_amf_info_t *OpenAPI_amf_info_create(
     OpenAPI_n2_interface_amf_info_t *n2_interface_amf_info
 )
 {
-    OpenAPI_amf_info_t *amf_info_local_var = OpenAPI_malloc(sizeof(OpenAPI_amf_info_t));
-    if (!amf_info_local_var) {
-        return NULL;
-    }
+    OpenAPI_amf_info_t *amf_info_local_var = ogs_malloc(sizeof(OpenAPI_amf_info_t));
+    ogs_assert(amf_info_local_var);
+
     amf_info_local_var->amf_set_id = amf_set_id;
     amf_info_local_var->amf_region_id = amf_region_id;
     amf_info_local_var->guami_list = guami_list;
@@ -348,8 +347,8 @@ OpenAPI_amf_info_t *OpenAPI_amf_info_parseFromJSON(cJSON *amf_infoJSON)
     }
 
     amf_info_local_var = OpenAPI_amf_info_create (
-        ogs_strdup_or_assert(amf_set_id->valuestring),
-        ogs_strdup_or_assert(amf_region_id->valuestring),
+        ogs_strdup(amf_set_id->valuestring),
+        ogs_strdup(amf_region_id->valuestring),
         guami_listList,
         tai_list ? tai_listList : NULL,
         tai_range_list ? tai_range_listList : NULL,

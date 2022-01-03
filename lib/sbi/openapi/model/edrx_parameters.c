@@ -9,10 +9,9 @@ OpenAPI_edrx_parameters_t *OpenAPI_edrx_parameters_create(
     char *edrx_value
 )
 {
-    OpenAPI_edrx_parameters_t *edrx_parameters_local_var = OpenAPI_malloc(sizeof(OpenAPI_edrx_parameters_t));
-    if (!edrx_parameters_local_var) {
-        return NULL;
-    }
+    OpenAPI_edrx_parameters_t *edrx_parameters_local_var = ogs_malloc(sizeof(OpenAPI_edrx_parameters_t));
+    ogs_assert(edrx_parameters_local_var);
+
     edrx_parameters_local_var->rat_type = rat_type;
     edrx_parameters_local_var->edrx_value = edrx_value;
 
@@ -82,7 +81,7 @@ OpenAPI_edrx_parameters_t *OpenAPI_edrx_parameters_parseFromJSON(cJSON *edrx_par
 
     edrx_parameters_local_var = OpenAPI_edrx_parameters_create (
         rat_typeVariable,
-        ogs_strdup_or_assert(edrx_value->valuestring)
+        ogs_strdup(edrx_value->valuestring)
     );
 
     return edrx_parameters_local_var;

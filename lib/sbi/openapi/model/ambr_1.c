@@ -9,10 +9,9 @@ OpenAPI_ambr_1_t *OpenAPI_ambr_1_create(
     char *downlink
 )
 {
-    OpenAPI_ambr_1_t *ambr_1_local_var = OpenAPI_malloc(sizeof(OpenAPI_ambr_1_t));
-    if (!ambr_1_local_var) {
-        return NULL;
-    }
+    OpenAPI_ambr_1_t *ambr_1_local_var = ogs_malloc(sizeof(OpenAPI_ambr_1_t));
+    ogs_assert(ambr_1_local_var);
+
     ambr_1_local_var->uplink = uplink;
     ambr_1_local_var->downlink = downlink;
 
@@ -80,8 +79,8 @@ OpenAPI_ambr_1_t *OpenAPI_ambr_1_parseFromJSON(cJSON *ambr_1JSON)
     }
 
     ambr_1_local_var = OpenAPI_ambr_1_create (
-        ogs_strdup_or_assert(uplink->valuestring),
-        ogs_strdup_or_assert(downlink->valuestring)
+        ogs_strdup(uplink->valuestring),
+        ogs_strdup(downlink->valuestring)
     );
 
     return ambr_1_local_var;

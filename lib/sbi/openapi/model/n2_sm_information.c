@@ -14,10 +14,9 @@ OpenAPI_n2_sm_information_t *OpenAPI_n2_sm_information_create(
     int subject_to_ho
 )
 {
-    OpenAPI_n2_sm_information_t *n2_sm_information_local_var = OpenAPI_malloc(sizeof(OpenAPI_n2_sm_information_t));
-    if (!n2_sm_information_local_var) {
-        return NULL;
-    }
+    OpenAPI_n2_sm_information_t *n2_sm_information_local_var = ogs_malloc(sizeof(OpenAPI_n2_sm_information_t));
+    ogs_assert(n2_sm_information_local_var);
+
     n2_sm_information_local_var->pdu_session_id = pdu_session_id;
     n2_sm_information_local_var->n2_info_content = n2_info_content;
     n2_sm_information_local_var->s_nssai = s_nssai;

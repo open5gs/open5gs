@@ -18,10 +18,9 @@ OpenAPI_qos_characteristics_t *OpenAPI_qos_characteristics_create(
     int ext_max_data_burst_vol
 )
 {
-    OpenAPI_qos_characteristics_t *qos_characteristics_local_var = OpenAPI_malloc(sizeof(OpenAPI_qos_characteristics_t));
-    if (!qos_characteristics_local_var) {
-        return NULL;
-    }
+    OpenAPI_qos_characteristics_t *qos_characteristics_local_var = ogs_malloc(sizeof(OpenAPI_qos_characteristics_t));
+    ogs_assert(qos_characteristics_local_var);
+
     qos_characteristics_local_var->_5qi = _5qi;
     qos_characteristics_local_var->resource_type = resource_type;
     qos_characteristics_local_var->priority_level = priority_level;
@@ -202,7 +201,7 @@ OpenAPI_qos_characteristics_t *OpenAPI_qos_characteristics_parseFromJSON(cJSON *
         priority_level->valuedouble,
         
         packet_delay_budget->valuedouble,
-        ogs_strdup_or_assert(packet_error_rate->valuestring),
+        ogs_strdup(packet_error_rate->valuestring),
         averaging_window ? true : false,
         averaging_window ? averaging_window->valuedouble : 0,
         max_data_burst_vol ? true : false,

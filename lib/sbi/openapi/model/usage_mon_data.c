@@ -13,10 +13,9 @@ OpenAPI_usage_mon_data_t *OpenAPI_usage_mon_data_create(
     char *supp_feat
 )
 {
-    OpenAPI_usage_mon_data_t *usage_mon_data_local_var = OpenAPI_malloc(sizeof(OpenAPI_usage_mon_data_t));
-    if (!usage_mon_data_local_var) {
-        return NULL;
-    }
+    OpenAPI_usage_mon_data_t *usage_mon_data_local_var = ogs_malloc(sizeof(OpenAPI_usage_mon_data_t));
+    ogs_assert(usage_mon_data_local_var);
+
     usage_mon_data_local_var->limit_id = limit_id;
     usage_mon_data_local_var->scopes = scopes;
     usage_mon_data_local_var->um_level = um_level;
@@ -36,6 +35,7 @@ void OpenAPI_usage_mon_data_free(OpenAPI_usage_mon_data_t *usage_mon_data)
     ogs_free(usage_mon_data->limit_id);
     OpenAPI_list_for_each(usage_mon_data->scopes, node) {
         OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+        ogs_free(localKeyValue->key);
         OpenAPI_usage_mon_data_scope_free(localKeyValue->value);
         ogs_free(localKeyValue);
     }
@@ -164,9 +164,9 @@ OpenAPI_usage_mon_data_t *OpenAPI_usage_mon_data_parseFromJSON(cJSON *usage_mon_
         cJSON *localMapObject = scopes_local_map;
         if (cJSON_IsObject(scopes_local_map)) {
             localMapKeyPair = OpenAPI_map_create(
-                localMapObject->string, OpenAPI_usage_mon_data_scope_parseFromJSON(localMapObject));
+                ogs_strdup(localMapObject->string), OpenAPI_usage_mon_data_scope_parseFromJSON(localMapObject));
         } else if (cJSON_IsNull(scopes_local_map)) {
-            localMapKeyPair = OpenAPI_map_create(localMapObject->string, NULL);
+            localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
         } else {
             ogs_error("OpenAPI_usage_mon_data_parseFromJSON() failed [scopes]");
             goto end;
@@ -206,12 +206,12 @@ OpenAPI_usage_mon_data_t *OpenAPI_usage_mon_data_parseFromJSON(cJSON *usage_mon_
     }
 
     usage_mon_data_local_var = OpenAPI_usage_mon_data_create (
-        ogs_strdup_or_assert(limit_id->valuestring),
+        ogs_strdup(limit_id->valuestring),
         scopes ? scopesList : NULL,
         um_level ? um_level_local_nonprim : NULL,
         allowed_usage ? allowed_usage_local_nonprim : NULL,
         reset_time ? reset_time_local_nonprim : NULL,
-        supp_feat ? ogs_strdup_or_assert(supp_feat->valuestring) : NULL
+        supp_feat ? ogs_strdup(supp_feat->valuestring) : NULL
     );
 
     return usage_mon_data_local_var;

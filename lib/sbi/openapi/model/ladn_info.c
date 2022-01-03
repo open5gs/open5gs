@@ -9,10 +9,9 @@ OpenAPI_ladn_info_t *OpenAPI_ladn_info_create(
     OpenAPI_presence_state_e presence
 )
 {
-    OpenAPI_ladn_info_t *ladn_info_local_var = OpenAPI_malloc(sizeof(OpenAPI_ladn_info_t));
-    if (!ladn_info_local_var) {
-        return NULL;
-    }
+    OpenAPI_ladn_info_t *ladn_info_local_var = ogs_malloc(sizeof(OpenAPI_ladn_info_t));
+    ogs_assert(ladn_info_local_var);
+
     ladn_info_local_var->ladn = ladn;
     ladn_info_local_var->presence = presence;
 
@@ -81,7 +80,7 @@ OpenAPI_ladn_info_t *OpenAPI_ladn_info_parseFromJSON(cJSON *ladn_infoJSON)
     }
 
     ladn_info_local_var = OpenAPI_ladn_info_create (
-        ogs_strdup_or_assert(ladn->valuestring),
+        ogs_strdup(ladn->valuestring),
         presence ? presenceVariable : 0
     );
 

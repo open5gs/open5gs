@@ -22,10 +22,9 @@ OpenAPI_sms_management_subscription_data_t *OpenAPI_sms_management_subscription_
     OpenAPI_trace_data_1_t *trace_data
 )
 {
-    OpenAPI_sms_management_subscription_data_t *sms_management_subscription_data_local_var = OpenAPI_malloc(sizeof(OpenAPI_sms_management_subscription_data_t));
-    if (!sms_management_subscription_data_local_var) {
-        return NULL;
-    }
+    OpenAPI_sms_management_subscription_data_t *sms_management_subscription_data_local_var = ogs_malloc(sizeof(OpenAPI_sms_management_subscription_data_t));
+    ogs_assert(sms_management_subscription_data_local_var);
+
     sms_management_subscription_data_local_var->supported_features = supported_features;
     sms_management_subscription_data_local_var->is_mt_sms_subscribed = is_mt_sms_subscribed;
     sms_management_subscription_data_local_var->mt_sms_subscribed = mt_sms_subscribed;
@@ -234,7 +233,7 @@ OpenAPI_sms_management_subscription_data_t *OpenAPI_sms_management_subscription_
         ogs_error("OpenAPI_sms_management_subscription_data_parseFromJSON() failed [shared_sms_mng_data_ids]");
         goto end;
     }
-    OpenAPI_list_add(shared_sms_mng_data_idsList , ogs_strdup_or_assert(shared_sms_mng_data_ids_local->valuestring));
+    OpenAPI_list_add(shared_sms_mng_data_idsList , ogs_strdup(shared_sms_mng_data_ids_local->valuestring));
     }
     }
 
@@ -246,7 +245,7 @@ OpenAPI_sms_management_subscription_data_t *OpenAPI_sms_management_subscription_
     }
 
     sms_management_subscription_data_local_var = OpenAPI_sms_management_subscription_data_create (
-        supported_features ? ogs_strdup_or_assert(supported_features->valuestring) : NULL,
+        supported_features ? ogs_strdup(supported_features->valuestring) : NULL,
         mt_sms_subscribed ? true : false,
         mt_sms_subscribed ? mt_sms_subscribed->valueint : 0,
         mt_sms_barring_all ? true : false,

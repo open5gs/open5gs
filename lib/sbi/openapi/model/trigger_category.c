@@ -7,10 +7,9 @@
 OpenAPI_trigger_category_t *OpenAPI_trigger_category_create(
 )
 {
-    OpenAPI_trigger_category_t *trigger_category_local_var = OpenAPI_malloc(sizeof(OpenAPI_trigger_category_t));
-    if (!trigger_category_local_var) {
-        return NULL;
-    }
+    OpenAPI_trigger_category_t *trigger_category_local_var = ogs_malloc(sizeof(OpenAPI_trigger_category_t));
+    ogs_assert(trigger_category_local_var);
+
 
     return trigger_category_local_var;
 }

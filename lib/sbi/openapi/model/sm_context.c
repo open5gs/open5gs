@@ -59,10 +59,9 @@ OpenAPI_sm_context_t *OpenAPI_sm_context_create(
     OpenAPI_list_t *add_red_ran_tunnel_info
 )
 {
-    OpenAPI_sm_context_t *sm_context_local_var = OpenAPI_malloc(sizeof(OpenAPI_sm_context_t));
-    if (!sm_context_local_var) {
-        return NULL;
-    }
+    OpenAPI_sm_context_t *sm_context_local_var = ogs_malloc(sizeof(OpenAPI_sm_context_t));
+    ogs_assert(sm_context_local_var);
+
     sm_context_local_var->pdu_session_id = pdu_session_id;
     sm_context_local_var->dnn = dnn;
     sm_context_local_var->selected_dnn = selected_dnn;
@@ -1113,45 +1112,45 @@ OpenAPI_sm_context_t *OpenAPI_sm_context_parseFromJSON(cJSON *sm_contextJSON)
     sm_context_local_var = OpenAPI_sm_context_create (
         
         pdu_session_id->valuedouble,
-        ogs_strdup_or_assert(dnn->valuestring),
-        selected_dnn ? ogs_strdup_or_assert(selected_dnn->valuestring) : NULL,
+        ogs_strdup(dnn->valuestring),
+        selected_dnn ? ogs_strdup(selected_dnn->valuestring) : NULL,
         s_nssai_local_nonprim,
         hplmn_snssai ? hplmn_snssai_local_nonprim : NULL,
         pdu_session_typeVariable,
-        gpsi ? ogs_strdup_or_assert(gpsi->valuestring) : NULL,
-        h_smf_uri ? ogs_strdup_or_assert(h_smf_uri->valuestring) : NULL,
-        smf_uri ? ogs_strdup_or_assert(smf_uri->valuestring) : NULL,
-        pdu_session_ref ? ogs_strdup_or_assert(pdu_session_ref->valuestring) : NULL,
-        pcf_id ? ogs_strdup_or_assert(pcf_id->valuestring) : NULL,
-        pcf_group_id ? ogs_strdup_or_assert(pcf_group_id->valuestring) : NULL,
-        pcf_set_id ? ogs_strdup_or_assert(pcf_set_id->valuestring) : NULL,
+        gpsi ? ogs_strdup(gpsi->valuestring) : NULL,
+        h_smf_uri ? ogs_strdup(h_smf_uri->valuestring) : NULL,
+        smf_uri ? ogs_strdup(smf_uri->valuestring) : NULL,
+        pdu_session_ref ? ogs_strdup(pdu_session_ref->valuestring) : NULL,
+        pcf_id ? ogs_strdup(pcf_id->valuestring) : NULL,
+        pcf_group_id ? ogs_strdup(pcf_group_id->valuestring) : NULL,
+        pcf_set_id ? ogs_strdup(pcf_set_id->valuestring) : NULL,
         sel_mode ? sel_modeVariable : 0,
-        udm_group_id ? ogs_strdup_or_assert(udm_group_id->valuestring) : NULL,
-        routing_indicator ? ogs_strdup_or_assert(routing_indicator->valuestring) : NULL,
+        udm_group_id ? ogs_strdup(udm_group_id->valuestring) : NULL,
+        routing_indicator ? ogs_strdup(routing_indicator->valuestring) : NULL,
         session_ambr_local_nonprim,
         qos_flows_listList,
-        h_smf_instance_id ? ogs_strdup_or_assert(h_smf_instance_id->valuestring) : NULL,
-        smf_instance_id ? ogs_strdup_or_assert(smf_instance_id->valuestring) : NULL,
-        pdu_session_smf_set_id ? ogs_strdup_or_assert(pdu_session_smf_set_id->valuestring) : NULL,
-        pdu_session_smf_service_set_id ? ogs_strdup_or_assert(pdu_session_smf_service_set_id->valuestring) : NULL,
+        h_smf_instance_id ? ogs_strdup(h_smf_instance_id->valuestring) : NULL,
+        smf_instance_id ? ogs_strdup(smf_instance_id->valuestring) : NULL,
+        pdu_session_smf_set_id ? ogs_strdup(pdu_session_smf_set_id->valuestring) : NULL,
+        pdu_session_smf_service_set_id ? ogs_strdup(pdu_session_smf_service_set_id->valuestring) : NULL,
         pdu_session_smf_binding ? pdu_session_smf_bindingVariable : 0,
         enable_pause_charging ? true : false,
         enable_pause_charging ? enable_pause_charging->valueint : 0,
-        ue_ipv4_address ? ogs_strdup_or_assert(ue_ipv4_address->valuestring) : NULL,
-        ue_ipv6_prefix ? ogs_strdup_or_assert(ue_ipv6_prefix->valuestring) : NULL,
+        ue_ipv4_address ? ogs_strdup(ue_ipv4_address->valuestring) : NULL,
+        ue_ipv6_prefix ? ogs_strdup(ue_ipv6_prefix->valuestring) : NULL,
         eps_pdn_cnx_info ? eps_pdn_cnx_info_local_nonprim : NULL,
         eps_bearer_info ? eps_bearer_infoList : NULL,
         max_integrity_protected_data_rate ? max_integrity_protected_data_rateVariable : 0,
         always_on_granted ? true : false,
         always_on_granted ? always_on_granted->valueint : 0,
         up_security ? up_security_local_nonprim : NULL,
-        h_smf_service_instance_id ? ogs_strdup_or_assert(h_smf_service_instance_id->valuestring) : NULL,
-        smf_service_instance_id ? ogs_strdup_or_assert(smf_service_instance_id->valuestring) : NULL,
-        recovery_time ? ogs_strdup_or_assert(recovery_time->valuestring) : NULL,
+        h_smf_service_instance_id ? ogs_strdup(h_smf_service_instance_id->valuestring) : NULL,
+        smf_service_instance_id ? ogs_strdup(smf_service_instance_id->valuestring) : NULL,
+        recovery_time ? ogs_strdup(recovery_time->valuestring) : NULL,
         forwarding_ind ? true : false,
         forwarding_ind ? forwarding_ind->valueint : 0,
         psa_tunnel_info ? psa_tunnel_info_local_nonprim : NULL,
-        charging_id ? ogs_strdup_or_assert(charging_id->valuestring) : NULL,
+        charging_id ? ogs_strdup(charging_id->valuestring) : NULL,
         charging_info ? charging_info_local_nonprim : NULL,
         roaming_charging_profile ? roaming_charging_profile_local_nonprim : NULL,
         nef_ext_buf_support_ind ? true : false,

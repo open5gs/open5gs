@@ -9,10 +9,9 @@ OpenAPI_rm_info_t *OpenAPI_rm_info_create(
     OpenAPI_access_type_e access_type
 )
 {
-    OpenAPI_rm_info_t *rm_info_local_var = OpenAPI_malloc(sizeof(OpenAPI_rm_info_t));
-    if (!rm_info_local_var) {
-        return NULL;
-    }
+    OpenAPI_rm_info_t *rm_info_local_var = ogs_malloc(sizeof(OpenAPI_rm_info_t));
+    ogs_assert(rm_info_local_var);
+
     rm_info_local_var->rm_state = rm_state;
     rm_info_local_var->access_type = access_type;
 

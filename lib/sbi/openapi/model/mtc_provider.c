@@ -9,10 +9,9 @@ OpenAPI_mtc_provider_t *OpenAPI_mtc_provider_create(
     char *af_id
 )
 {
-    OpenAPI_mtc_provider_t *mtc_provider_local_var = OpenAPI_malloc(sizeof(OpenAPI_mtc_provider_t));
-    if (!mtc_provider_local_var) {
-        return NULL;
-    }
+    OpenAPI_mtc_provider_t *mtc_provider_local_var = ogs_malloc(sizeof(OpenAPI_mtc_provider_t));
+    ogs_assert(mtc_provider_local_var);
+
     mtc_provider_local_var->mtc_provider_information = mtc_provider_information;
     mtc_provider_local_var->af_id = af_id;
 
@@ -80,8 +79,8 @@ OpenAPI_mtc_provider_t *OpenAPI_mtc_provider_parseFromJSON(cJSON *mtc_providerJS
     }
 
     mtc_provider_local_var = OpenAPI_mtc_provider_create (
-        mtc_provider_information ? ogs_strdup_or_assert(mtc_provider_information->valuestring) : NULL,
-        af_id ? ogs_strdup_or_assert(af_id->valuestring) : NULL
+        mtc_provider_information ? ogs_strdup(mtc_provider_information->valuestring) : NULL,
+        af_id ? ogs_strdup(af_id->valuestring) : NULL
     );
 
     return mtc_provider_local_var;

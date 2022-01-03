@@ -9,10 +9,9 @@ OpenAPI_smsf_info_1_t *OpenAPI_smsf_info_1_create(
     OpenAPI_plmn_id_1_t *plmn_id
 )
 {
-    OpenAPI_smsf_info_1_t *smsf_info_1_local_var = OpenAPI_malloc(sizeof(OpenAPI_smsf_info_1_t));
-    if (!smsf_info_1_local_var) {
-        return NULL;
-    }
+    OpenAPI_smsf_info_1_t *smsf_info_1_local_var = ogs_malloc(sizeof(OpenAPI_smsf_info_1_t));
+    ogs_assert(smsf_info_1_local_var);
+
     smsf_info_1_local_var->smsf_instance_id = smsf_instance_id;
     smsf_info_1_local_var->plmn_id = plmn_id;
 
@@ -84,7 +83,7 @@ OpenAPI_smsf_info_1_t *OpenAPI_smsf_info_1_parseFromJSON(cJSON *smsf_info_1JSON)
     plmn_id_local_nonprim = OpenAPI_plmn_id_1_parseFromJSON(plmn_id);
 
     smsf_info_1_local_var = OpenAPI_smsf_info_1_create (
-        ogs_strdup_or_assert(smsf_instance_id->valuestring),
+        ogs_strdup(smsf_instance_id->valuestring),
         plmn_id_local_nonprim
     );
 

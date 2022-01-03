@@ -16,10 +16,9 @@ OpenAPI_apn_rate_status_t *OpenAPI_apn_rate_status_create(
     int remain_ex_reports_dl
 )
 {
-    OpenAPI_apn_rate_status_t *apn_rate_status_local_var = OpenAPI_malloc(sizeof(OpenAPI_apn_rate_status_t));
-    if (!apn_rate_status_local_var) {
-        return NULL;
-    }
+    OpenAPI_apn_rate_status_t *apn_rate_status_local_var = ogs_malloc(sizeof(OpenAPI_apn_rate_status_t));
+    ogs_assert(apn_rate_status_local_var);
+
     apn_rate_status_local_var->is_remain_packets_ul = is_remain_packets_ul;
     apn_rate_status_local_var->remain_packets_ul = remain_packets_ul;
     apn_rate_status_local_var->is_remain_packets_dl = is_remain_packets_dl;
@@ -145,7 +144,7 @@ OpenAPI_apn_rate_status_t *OpenAPI_apn_rate_status_parseFromJSON(cJSON *apn_rate
         remain_packets_ul ? remain_packets_ul->valuedouble : 0,
         remain_packets_dl ? true : false,
         remain_packets_dl ? remain_packets_dl->valuedouble : 0,
-        validity_time ? ogs_strdup_or_assert(validity_time->valuestring) : NULL,
+        validity_time ? ogs_strdup(validity_time->valuestring) : NULL,
         remain_ex_reports_ul ? true : false,
         remain_ex_reports_ul ? remain_ex_reports_ul->valuedouble : 0,
         remain_ex_reports_dl ? true : false,

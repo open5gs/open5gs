@@ -13,10 +13,9 @@ OpenAPI_qos_monitoring_information_rm_t *OpenAPI_qos_monitoring_information_rm_c
     int rep_thresh_rp
 )
 {
-    OpenAPI_qos_monitoring_information_rm_t *qos_monitoring_information_rm_local_var = OpenAPI_malloc(sizeof(OpenAPI_qos_monitoring_information_rm_t));
-    if (!qos_monitoring_information_rm_local_var) {
-        return NULL;
-    }
+    OpenAPI_qos_monitoring_information_rm_t *qos_monitoring_information_rm_local_var = ogs_malloc(sizeof(OpenAPI_qos_monitoring_information_rm_t));
+    ogs_assert(qos_monitoring_information_rm_local_var);
+
     qos_monitoring_information_rm_local_var->is_rep_thresh_dl = is_rep_thresh_dl;
     qos_monitoring_information_rm_local_var->rep_thresh_dl = rep_thresh_dl;
     qos_monitoring_information_rm_local_var->is_rep_thresh_ul = is_rep_thresh_ul;

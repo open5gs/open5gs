@@ -11,10 +11,9 @@ OpenAPI_acc_net_ch_id_t *OpenAPI_acc_net_ch_id_create(
     int session_ch_scope
 )
 {
-    OpenAPI_acc_net_ch_id_t *acc_net_ch_id_local_var = OpenAPI_malloc(sizeof(OpenAPI_acc_net_ch_id_t));
-    if (!acc_net_ch_id_local_var) {
-        return NULL;
-    }
+    OpenAPI_acc_net_ch_id_t *acc_net_ch_id_local_var = ogs_malloc(sizeof(OpenAPI_acc_net_ch_id_t));
+    ogs_assert(acc_net_ch_id_local_var);
+
     acc_net_ch_id_local_var->acc_net_cha_id_value = acc_net_cha_id_value;
     acc_net_ch_id_local_var->ref_pcc_rule_ids = ref_pcc_rule_ids;
     acc_net_ch_id_local_var->is_session_ch_scope = is_session_ch_scope;
@@ -108,7 +107,7 @@ OpenAPI_acc_net_ch_id_t *OpenAPI_acc_net_ch_id_parseFromJSON(cJSON *acc_net_ch_i
         ogs_error("OpenAPI_acc_net_ch_id_parseFromJSON() failed [ref_pcc_rule_ids]");
         goto end;
     }
-    OpenAPI_list_add(ref_pcc_rule_idsList , ogs_strdup_or_assert(ref_pcc_rule_ids_local->valuestring));
+    OpenAPI_list_add(ref_pcc_rule_idsList , ogs_strdup(ref_pcc_rule_ids_local->valuestring));
     }
     }
 

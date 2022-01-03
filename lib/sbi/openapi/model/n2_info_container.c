@@ -13,10 +13,9 @@ OpenAPI_n2_info_container_t *OpenAPI_n2_info_container_create(
     OpenAPI_v2x_information_t *v2x_info
 )
 {
-    OpenAPI_n2_info_container_t *n2_info_container_local_var = OpenAPI_malloc(sizeof(OpenAPI_n2_info_container_t));
-    if (!n2_info_container_local_var) {
-        return NULL;
-    }
+    OpenAPI_n2_info_container_t *n2_info_container_local_var = ogs_malloc(sizeof(OpenAPI_n2_info_container_t));
+    ogs_assert(n2_info_container_local_var);
+
     n2_info_container_local_var->n2_information_class = n2_information_class;
     n2_info_container_local_var->sm_info = sm_info;
     n2_info_container_local_var->ran_info = ran_info;

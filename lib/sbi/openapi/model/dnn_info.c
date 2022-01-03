@@ -21,10 +21,9 @@ OpenAPI_dnn_info_t *OpenAPI_dnn_info_create(
     int same_smf_ind
 )
 {
-    OpenAPI_dnn_info_t *dnn_info_local_var = OpenAPI_malloc(sizeof(OpenAPI_dnn_info_t));
-    if (!dnn_info_local_var) {
-        return NULL;
-    }
+    OpenAPI_dnn_info_t *dnn_info_local_var = ogs_malloc(sizeof(OpenAPI_dnn_info_t));
+    ogs_assert(dnn_info_local_var);
+
     dnn_info_local_var->dnn = dnn;
     dnn_info_local_var->is_default_dnn_indicator = is_default_dnn_indicator;
     dnn_info_local_var->default_dnn_indicator = default_dnn_indicator;
@@ -209,7 +208,7 @@ OpenAPI_dnn_info_t *OpenAPI_dnn_info_parseFromJSON(cJSON *dnn_infoJSON)
         ogs_error("OpenAPI_dnn_info_parseFromJSON() failed [smf_list]");
         goto end;
     }
-    OpenAPI_list_add(smf_listList , ogs_strdup_or_assert(smf_list_local->valuestring));
+    OpenAPI_list_add(smf_listList , ogs_strdup(smf_list_local->valuestring));
     }
     }
 
@@ -223,7 +222,7 @@ OpenAPI_dnn_info_t *OpenAPI_dnn_info_parseFromJSON(cJSON *dnn_infoJSON)
     }
 
     dnn_info_local_var = OpenAPI_dnn_info_create (
-        ogs_strdup_or_assert(dnn->valuestring),
+        ogs_strdup(dnn->valuestring),
         default_dnn_indicator ? true : false,
         default_dnn_indicator ? default_dnn_indicator->valueint : 0,
         lbo_roaming_allowed ? true : false,

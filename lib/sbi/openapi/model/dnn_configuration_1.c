@@ -32,10 +32,9 @@ OpenAPI_dnn_configuration_1_t *OpenAPI_dnn_configuration_1_create(
     char *iptv_acc_ctrl_info
 )
 {
-    OpenAPI_dnn_configuration_1_t *dnn_configuration_1_local_var = OpenAPI_malloc(sizeof(OpenAPI_dnn_configuration_1_t));
-    if (!dnn_configuration_1_local_var) {
-        return NULL;
-    }
+    OpenAPI_dnn_configuration_1_t *dnn_configuration_1_local_var = ogs_malloc(sizeof(OpenAPI_dnn_configuration_1_t));
+    ogs_assert(dnn_configuration_1_local_var);
+
     dnn_configuration_1_local_var->pdu_session_types = pdu_session_types;
     dnn_configuration_1_local_var->ssc_modes = ssc_modes;
     dnn_configuration_1_local_var->is_iwk_eps_ind = is_iwk_eps_ind;
@@ -556,11 +555,11 @@ OpenAPI_dnn_configuration_1_t *OpenAPI_dnn_configuration_1_parseFromJSON(cJSON *
         iwk_eps_ind ? iwk_eps_ind->valueint : 0,
         _5g_qos_profile ? _5g_qos_profile_local_nonprim : NULL,
         session_ambr ? session_ambr_local_nonprim : NULL,
-        _3gpp_charging_characteristics ? ogs_strdup_or_assert(_3gpp_charging_characteristics->valuestring) : NULL,
+        _3gpp_charging_characteristics ? ogs_strdup(_3gpp_charging_characteristics->valuestring) : NULL,
         static_ip_address ? static_ip_addressList : NULL,
         up_security ? up_security_local_nonprim : NULL,
         pdu_session_continuity_ind ? pdu_session_continuity_indVariable : 0,
-        nidd_nef_id ? ogs_strdup_or_assert(nidd_nef_id->valuestring) : NULL,
+        nidd_nef_id ? ogs_strdup(nidd_nef_id->valuestring) : NULL,
         nidd_info ? nidd_info_local_nonprim : NULL,
         redundant_session_allowed ? true : false,
         redundant_session_allowed ? redundant_session_allowed->valueint : 0,
@@ -574,7 +573,7 @@ OpenAPI_dnn_configuration_1_t *OpenAPI_dnn_configuration_1_parseFromJSON(cJSON *
         dn_aaa_ip_address_allocation ? true : false,
         dn_aaa_ip_address_allocation ? dn_aaa_ip_address_allocation->valueint : 0,
         dn_aaa_address ? dn_aaa_address_local_nonprim : NULL,
-        iptv_acc_ctrl_info ? ogs_strdup_or_assert(iptv_acc_ctrl_info->valuestring) : NULL
+        iptv_acc_ctrl_info ? ogs_strdup(iptv_acc_ctrl_info->valuestring) : NULL
     );
 
     return dnn_configuration_1_local_var;

@@ -10,10 +10,9 @@ OpenAPI_time_period_t *OpenAPI_time_period_create(
     int max_num_period
 )
 {
-    OpenAPI_time_period_t *time_period_local_var = OpenAPI_malloc(sizeof(OpenAPI_time_period_t));
-    if (!time_period_local_var) {
-        return NULL;
-    }
+    OpenAPI_time_period_t *time_period_local_var = ogs_malloc(sizeof(OpenAPI_time_period_t));
+    ogs_assert(time_period_local_var);
+
     time_period_local_var->period = period;
     time_period_local_var->is_max_num_period = is_max_num_period;
     time_period_local_var->max_num_period = max_num_period;

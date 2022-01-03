@@ -12,10 +12,9 @@ OpenAPI_ext_snssai_t *OpenAPI_ext_snssai_create(
     int wildcard_sd
 )
 {
-    OpenAPI_ext_snssai_t *ext_snssai_local_var = OpenAPI_malloc(sizeof(OpenAPI_ext_snssai_t));
-    if (!ext_snssai_local_var) {
-        return NULL;
-    }
+    OpenAPI_ext_snssai_t *ext_snssai_local_var = ogs_malloc(sizeof(OpenAPI_ext_snssai_t));
+    ogs_assert(ext_snssai_local_var);
+
     ext_snssai_local_var->sst = sst;
     ext_snssai_local_var->sd = sd;
     ext_snssai_local_var->sd_ranges = sd_ranges;
@@ -150,7 +149,7 @@ OpenAPI_ext_snssai_t *OpenAPI_ext_snssai_parseFromJSON(cJSON *ext_snssaiJSON)
     ext_snssai_local_var = OpenAPI_ext_snssai_create (
         
         sst->valuedouble,
-        sd ? ogs_strdup_or_assert(sd->valuestring) : NULL,
+        sd ? ogs_strdup(sd->valuestring) : NULL,
         sd_ranges ? sd_rangesList : NULL,
         wildcard_sd ? true : false,
         wildcard_sd ? wildcard_sd->valueint : 0

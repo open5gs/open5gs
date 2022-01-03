@@ -13,10 +13,9 @@ OpenAPI_packet_filter_info_t *OpenAPI_packet_filter_info_create(
     OpenAPI_flow_direction_e flow_direction
 )
 {
-    OpenAPI_packet_filter_info_t *packet_filter_info_local_var = OpenAPI_malloc(sizeof(OpenAPI_packet_filter_info_t));
-    if (!packet_filter_info_local_var) {
-        return NULL;
-    }
+    OpenAPI_packet_filter_info_t *packet_filter_info_local_var = ogs_malloc(sizeof(OpenAPI_packet_filter_info_t));
+    ogs_assert(packet_filter_info_local_var);
+
     packet_filter_info_local_var->pack_filt_id = pack_filt_id;
     packet_filter_info_local_var->pack_filt_cont = pack_filt_cont;
     packet_filter_info_local_var->tos_traffic_class = tos_traffic_class;
@@ -157,11 +156,11 @@ OpenAPI_packet_filter_info_t *OpenAPI_packet_filter_info_parseFromJSON(cJSON *pa
     }
 
     packet_filter_info_local_var = OpenAPI_packet_filter_info_create (
-        pack_filt_id ? ogs_strdup_or_assert(pack_filt_id->valuestring) : NULL,
-        pack_filt_cont ? ogs_strdup_or_assert(pack_filt_cont->valuestring) : NULL,
-        tos_traffic_class ? ogs_strdup_or_assert(tos_traffic_class->valuestring) : NULL,
-        spi ? ogs_strdup_or_assert(spi->valuestring) : NULL,
-        flow_label ? ogs_strdup_or_assert(flow_label->valuestring) : NULL,
+        pack_filt_id ? ogs_strdup(pack_filt_id->valuestring) : NULL,
+        pack_filt_cont ? ogs_strdup(pack_filt_cont->valuestring) : NULL,
+        tos_traffic_class ? ogs_strdup(tos_traffic_class->valuestring) : NULL,
+        spi ? ogs_strdup(spi->valuestring) : NULL,
+        flow_label ? ogs_strdup(flow_label->valuestring) : NULL,
         flow_direction ? flow_directionVariable : 0
     );
 

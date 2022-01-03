@@ -11,10 +11,9 @@ OpenAPI_app_port_id_t *OpenAPI_app_port_id_create(
     int originator_port
 )
 {
-    OpenAPI_app_port_id_t *app_port_id_local_var = OpenAPI_malloc(sizeof(OpenAPI_app_port_id_t));
-    if (!app_port_id_local_var) {
-        return NULL;
-    }
+    OpenAPI_app_port_id_t *app_port_id_local_var = ogs_malloc(sizeof(OpenAPI_app_port_id_t));
+    ogs_assert(app_port_id_local_var);
+
     app_port_id_local_var->is_destination_port = is_destination_port;
     app_port_id_local_var->destination_port = destination_port;
     app_port_id_local_var->is_originator_port = is_originator_port;

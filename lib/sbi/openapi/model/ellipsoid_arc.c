@@ -14,10 +14,9 @@ OpenAPI_ellipsoid_arc_t *OpenAPI_ellipsoid_arc_create(
     int confidence
 )
 {
-    OpenAPI_ellipsoid_arc_t *ellipsoid_arc_local_var = OpenAPI_malloc(sizeof(OpenAPI_ellipsoid_arc_t));
-    if (!ellipsoid_arc_local_var) {
-        return NULL;
-    }
+    OpenAPI_ellipsoid_arc_t *ellipsoid_arc_local_var = ogs_malloc(sizeof(OpenAPI_ellipsoid_arc_t));
+    ogs_assert(ellipsoid_arc_local_var);
+
     ellipsoid_arc_local_var->shape = shape;
     ellipsoid_arc_local_var->point = point;
     ellipsoid_arc_local_var->inner_radius = inner_radius;

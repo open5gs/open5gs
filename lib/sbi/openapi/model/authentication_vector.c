@@ -15,10 +15,9 @@ OpenAPI_authentication_vector_t *OpenAPI_authentication_vector_create(
     char *kausf
 )
 {
-    OpenAPI_authentication_vector_t *authentication_vector_local_var = OpenAPI_malloc(sizeof(OpenAPI_authentication_vector_t));
-    if (!authentication_vector_local_var) {
-        return NULL;
-    }
+    OpenAPI_authentication_vector_t *authentication_vector_local_var = ogs_malloc(sizeof(OpenAPI_authentication_vector_t));
+    ogs_assert(authentication_vector_local_var);
+
     authentication_vector_local_var->av_type = av_type;
     authentication_vector_local_var->rand = rand;
     authentication_vector_local_var->xres = xres;
@@ -196,13 +195,13 @@ OpenAPI_authentication_vector_t *OpenAPI_authentication_vector_parseFromJSON(cJS
 
     authentication_vector_local_var = OpenAPI_authentication_vector_create (
         av_typeVariable,
-        ogs_strdup_or_assert(rand->valuestring),
-        xres ? ogs_strdup_or_assert(xres->valuestring) : NULL,
-        ogs_strdup_or_assert(autn->valuestring),
-        ck_prime ? ogs_strdup_or_assert(ck_prime->valuestring) : NULL,
-        ik_prime ? ogs_strdup_or_assert(ik_prime->valuestring) : NULL,
-        xres_star ? ogs_strdup_or_assert(xres_star->valuestring) : NULL,
-        kausf ? ogs_strdup_or_assert(kausf->valuestring) : NULL
+        ogs_strdup(rand->valuestring),
+        xres ? ogs_strdup(xres->valuestring) : NULL,
+        ogs_strdup(autn->valuestring),
+        ck_prime ? ogs_strdup(ck_prime->valuestring) : NULL,
+        ik_prime ? ogs_strdup(ik_prime->valuestring) : NULL,
+        xres_star ? ogs_strdup(xres_star->valuestring) : NULL,
+        kausf ? ogs_strdup(kausf->valuestring) : NULL
     );
 
     return authentication_vector_local_var;

@@ -19,10 +19,9 @@ OpenAPI_sm_context_status_notification_t *OpenAPI_sm_context_status_notification
     char *alt_anchor_smf_id
 )
 {
-    OpenAPI_sm_context_status_notification_t *sm_context_status_notification_local_var = OpenAPI_malloc(sizeof(OpenAPI_sm_context_status_notification_t));
-    if (!sm_context_status_notification_local_var) {
-        return NULL;
-    }
+    OpenAPI_sm_context_status_notification_t *sm_context_status_notification_local_var = ogs_malloc(sizeof(OpenAPI_sm_context_status_notification_t));
+    ogs_assert(sm_context_status_notification_local_var);
+
     sm_context_status_notification_local_var->status_info = status_info;
     sm_context_status_notification_local_var->small_data_rate_status = small_data_rate_status;
     sm_context_status_notification_local_var->apn_rate_status = apn_rate_status;
@@ -228,7 +227,7 @@ OpenAPI_sm_context_status_notification_t *OpenAPI_sm_context_status_notification
         ogs_error("OpenAPI_sm_context_status_notification_parseFromJSON() failed [notify_correlation_ids_forddn_failure]");
         goto end;
     }
-    OpenAPI_list_add(notify_correlation_ids_forddn_failureList , ogs_strdup_or_assert(notify_correlation_ids_forddn_failure_local->valuestring));
+    OpenAPI_list_add(notify_correlation_ids_forddn_failureList , ogs_strdup(notify_correlation_ids_forddn_failure_local->valuestring));
     }
     }
 
@@ -293,12 +292,12 @@ OpenAPI_sm_context_status_notification_t *OpenAPI_sm_context_status_notification
         ddn_failure_status ? true : false,
         ddn_failure_status ? ddn_failure_status->valueint : 0,
         notify_correlation_ids_forddn_failure ? notify_correlation_ids_forddn_failureList : NULL,
-        new_smf_id ? ogs_strdup_or_assert(new_smf_id->valuestring) : NULL,
-        new_smf_set_id ? ogs_strdup_or_assert(new_smf_set_id->valuestring) : NULL,
-        old_smf_id ? ogs_strdup_or_assert(old_smf_id->valuestring) : NULL,
-        old_sm_context_ref ? ogs_strdup_or_assert(old_sm_context_ref->valuestring) : NULL,
-        alt_anchor_smf_uri ? ogs_strdup_or_assert(alt_anchor_smf_uri->valuestring) : NULL,
-        alt_anchor_smf_id ? ogs_strdup_or_assert(alt_anchor_smf_id->valuestring) : NULL
+        new_smf_id ? ogs_strdup(new_smf_id->valuestring) : NULL,
+        new_smf_set_id ? ogs_strdup(new_smf_set_id->valuestring) : NULL,
+        old_smf_id ? ogs_strdup(old_smf_id->valuestring) : NULL,
+        old_sm_context_ref ? ogs_strdup(old_sm_context_ref->valuestring) : NULL,
+        alt_anchor_smf_uri ? ogs_strdup(alt_anchor_smf_uri->valuestring) : NULL,
+        alt_anchor_smf_id ? ogs_strdup(alt_anchor_smf_id->valuestring) : NULL
     );
 
     return sm_context_status_notification_local_var;

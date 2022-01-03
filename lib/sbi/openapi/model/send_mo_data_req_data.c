@@ -10,10 +10,9 @@ OpenAPI_send_mo_data_req_data_t *OpenAPI_send_mo_data_req_data_create(
     OpenAPI_user_location_t *ue_location
 )
 {
-    OpenAPI_send_mo_data_req_data_t *send_mo_data_req_data_local_var = OpenAPI_malloc(sizeof(OpenAPI_send_mo_data_req_data_t));
-    if (!send_mo_data_req_data_local_var) {
-        return NULL;
-    }
+    OpenAPI_send_mo_data_req_data_t *send_mo_data_req_data_local_var = ogs_malloc(sizeof(OpenAPI_send_mo_data_req_data_t));
+    ogs_assert(send_mo_data_req_data_local_var);
+
     send_mo_data_req_data_local_var->mo_data = mo_data;
     send_mo_data_req_data_local_var->mo_exp_data_counter = mo_exp_data_counter;
     send_mo_data_req_data_local_var->ue_location = ue_location;

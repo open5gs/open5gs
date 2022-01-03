@@ -11,10 +11,9 @@ OpenAPI_location_info_t *OpenAPI_location_info_create(
     char *supported_features
 )
 {
-    OpenAPI_location_info_t *location_info_local_var = OpenAPI_malloc(sizeof(OpenAPI_location_info_t));
-    if (!location_info_local_var) {
-        return NULL;
-    }
+    OpenAPI_location_info_t *location_info_local_var = ogs_malloc(sizeof(OpenAPI_location_info_t));
+    ogs_assert(location_info_local_var);
+
     location_info_local_var->supi = supi;
     location_info_local_var->gpsi = gpsi;
     location_info_local_var->registration_location_info_list = registration_location_info_list;
@@ -148,10 +147,10 @@ OpenAPI_location_info_t *OpenAPI_location_info_parseFromJSON(cJSON *location_inf
     }
 
     location_info_local_var = OpenAPI_location_info_create (
-        supi ? ogs_strdup_or_assert(supi->valuestring) : NULL,
-        gpsi ? ogs_strdup_or_assert(gpsi->valuestring) : NULL,
+        supi ? ogs_strdup(supi->valuestring) : NULL,
+        gpsi ? ogs_strdup(gpsi->valuestring) : NULL,
         registration_location_info_listList,
-        supported_features ? ogs_strdup_or_assert(supported_features->valuestring) : NULL
+        supported_features ? ogs_strdup(supported_features->valuestring) : NULL
     );
 
     return location_info_local_var;

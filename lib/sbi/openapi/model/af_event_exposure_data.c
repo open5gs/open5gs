@@ -10,10 +10,9 @@ OpenAPI_af_event_exposure_data_t *OpenAPI_af_event_exposure_data_create(
     OpenAPI_list_t *app_ids
 )
 {
-    OpenAPI_af_event_exposure_data_t *af_event_exposure_data_local_var = OpenAPI_malloc(sizeof(OpenAPI_af_event_exposure_data_t));
-    if (!af_event_exposure_data_local_var) {
-        return NULL;
-    }
+    OpenAPI_af_event_exposure_data_t *af_event_exposure_data_local_var = ogs_malloc(sizeof(OpenAPI_af_event_exposure_data_t));
+    ogs_assert(af_event_exposure_data_local_var);
+
     af_event_exposure_data_local_var->af_events = af_events;
     af_event_exposure_data_local_var->af_ids = af_ids;
     af_event_exposure_data_local_var->app_ids = app_ids;
@@ -141,7 +140,7 @@ OpenAPI_af_event_exposure_data_t *OpenAPI_af_event_exposure_data_parseFromJSON(c
         ogs_error("OpenAPI_af_event_exposure_data_parseFromJSON() failed [af_ids]");
         goto end;
     }
-    OpenAPI_list_add(af_idsList , ogs_strdup_or_assert(af_ids_local->valuestring));
+    OpenAPI_list_add(af_idsList , ogs_strdup(af_ids_local->valuestring));
     }
     }
 
@@ -161,7 +160,7 @@ OpenAPI_af_event_exposure_data_t *OpenAPI_af_event_exposure_data_parseFromJSON(c
         ogs_error("OpenAPI_af_event_exposure_data_parseFromJSON() failed [app_ids]");
         goto end;
     }
-    OpenAPI_list_add(app_idsList , ogs_strdup_or_assert(app_ids_local->valuestring));
+    OpenAPI_list_add(app_idsList , ogs_strdup(app_ids_local->valuestring));
     }
     }
 

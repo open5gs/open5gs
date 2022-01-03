@@ -9,10 +9,9 @@ OpenAPI_nssai_mapping_t *OpenAPI_nssai_mapping_create(
     OpenAPI_snssai_t *h_snssai
 )
 {
-    OpenAPI_nssai_mapping_t *nssai_mapping_local_var = OpenAPI_malloc(sizeof(OpenAPI_nssai_mapping_t));
-    if (!nssai_mapping_local_var) {
-        return NULL;
-    }
+    OpenAPI_nssai_mapping_t *nssai_mapping_local_var = ogs_malloc(sizeof(OpenAPI_nssai_mapping_t));
+    ogs_assert(nssai_mapping_local_var);
+
     nssai_mapping_local_var->mapped_snssai = mapped_snssai;
     nssai_mapping_local_var->h_snssai = h_snssai;
 

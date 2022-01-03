@@ -8,10 +8,9 @@ OpenAPI_dnf_t *OpenAPI_dnf_create(
     OpenAPI_list_t *dnf_units
 )
 {
-    OpenAPI_dnf_t *dnf_local_var = OpenAPI_malloc(sizeof(OpenAPI_dnf_t));
-    if (!dnf_local_var) {
-        return NULL;
-    }
+    OpenAPI_dnf_t *dnf_local_var = ogs_malloc(sizeof(OpenAPI_dnf_t));
+    ogs_assert(dnf_local_var);
+
     dnf_local_var->dnf_units = dnf_units;
 
     return dnf_local_var;

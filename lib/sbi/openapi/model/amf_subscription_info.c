@@ -10,10 +10,9 @@ OpenAPI_amf_subscription_info_t *OpenAPI_amf_subscription_info_create(
     char *subs_change_notify_correlation_id
 )
 {
-    OpenAPI_amf_subscription_info_t *amf_subscription_info_local_var = OpenAPI_malloc(sizeof(OpenAPI_amf_subscription_info_t));
-    if (!amf_subscription_info_local_var) {
-        return NULL;
-    }
+    OpenAPI_amf_subscription_info_t *amf_subscription_info_local_var = ogs_malloc(sizeof(OpenAPI_amf_subscription_info_t));
+    ogs_assert(amf_subscription_info_local_var);
+
     amf_subscription_info_local_var->amf_instance_id = amf_instance_id;
     amf_subscription_info_local_var->subscription_id = subscription_id;
     amf_subscription_info_local_var->subs_change_notify_correlation_id = subs_change_notify_correlation_id;
@@ -99,9 +98,9 @@ OpenAPI_amf_subscription_info_t *OpenAPI_amf_subscription_info_parseFromJSON(cJS
     }
 
     amf_subscription_info_local_var = OpenAPI_amf_subscription_info_create (
-        ogs_strdup_or_assert(amf_instance_id->valuestring),
-        ogs_strdup_or_assert(subscription_id->valuestring),
-        subs_change_notify_correlation_id ? ogs_strdup_or_assert(subs_change_notify_correlation_id->valuestring) : NULL
+        ogs_strdup(amf_instance_id->valuestring),
+        ogs_strdup(subscription_id->valuestring),
+        subs_change_notify_correlation_id ? ogs_strdup(subs_change_notify_correlation_id->valuestring) : NULL
     );
 
     return amf_subscription_info_local_var;

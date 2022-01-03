@@ -32,10 +32,9 @@ OpenAPI_pdu_session_context_t *OpenAPI_pdu_session_context_create(
     OpenAPI_cn_assisted_ran_para_t *cn_assisted_ran_para
 )
 {
-    OpenAPI_pdu_session_context_t *pdu_session_context_local_var = OpenAPI_malloc(sizeof(OpenAPI_pdu_session_context_t));
-    if (!pdu_session_context_local_var) {
-        return NULL;
-    }
+    OpenAPI_pdu_session_context_t *pdu_session_context_local_var = ogs_malloc(sizeof(OpenAPI_pdu_session_context_t));
+    ogs_assert(pdu_session_context_local_var);
+
     pdu_session_context_local_var->pdu_session_id = pdu_session_id;
     pdu_session_context_local_var->sm_context_ref = sm_context_ref;
     pdu_session_context_local_var->s_nssai = s_nssai;
@@ -543,27 +542,27 @@ OpenAPI_pdu_session_context_t *OpenAPI_pdu_session_context_parseFromJSON(cJSON *
     pdu_session_context_local_var = OpenAPI_pdu_session_context_create (
         
         pdu_session_id->valuedouble,
-        ogs_strdup_or_assert(sm_context_ref->valuestring),
+        ogs_strdup(sm_context_ref->valuestring),
         s_nssai_local_nonprim,
-        ogs_strdup_or_assert(dnn->valuestring),
-        selected_dnn ? ogs_strdup_or_assert(selected_dnn->valuestring) : NULL,
+        ogs_strdup(dnn->valuestring),
+        selected_dnn ? ogs_strdup(selected_dnn->valuestring) : NULL,
         access_typeVariable,
         additional_access_type ? additional_access_typeVariable : 0,
         allocated_ebi_list ? allocated_ebi_listList : NULL,
-        hsmf_id ? ogs_strdup_or_assert(hsmf_id->valuestring) : NULL,
-        hsmf_set_id ? ogs_strdup_or_assert(hsmf_set_id->valuestring) : NULL,
-        hsmf_service_set_id ? ogs_strdup_or_assert(hsmf_service_set_id->valuestring) : NULL,
+        hsmf_id ? ogs_strdup(hsmf_id->valuestring) : NULL,
+        hsmf_set_id ? ogs_strdup(hsmf_set_id->valuestring) : NULL,
+        hsmf_service_set_id ? ogs_strdup(hsmf_service_set_id->valuestring) : NULL,
         smf_binding ? smf_bindingVariable : 0,
-        vsmf_id ? ogs_strdup_or_assert(vsmf_id->valuestring) : NULL,
-        vsmf_set_id ? ogs_strdup_or_assert(vsmf_set_id->valuestring) : NULL,
-        vsmf_service_set_id ? ogs_strdup_or_assert(vsmf_service_set_id->valuestring) : NULL,
+        vsmf_id ? ogs_strdup(vsmf_id->valuestring) : NULL,
+        vsmf_set_id ? ogs_strdup(vsmf_set_id->valuestring) : NULL,
+        vsmf_service_set_id ? ogs_strdup(vsmf_service_set_id->valuestring) : NULL,
         vsmf_binding ? vsmf_bindingVariable : 0,
-        ismf_id ? ogs_strdup_or_assert(ismf_id->valuestring) : NULL,
-        ismf_set_id ? ogs_strdup_or_assert(ismf_set_id->valuestring) : NULL,
-        ismf_service_set_id ? ogs_strdup_or_assert(ismf_service_set_id->valuestring) : NULL,
+        ismf_id ? ogs_strdup(ismf_id->valuestring) : NULL,
+        ismf_set_id ? ogs_strdup(ismf_set_id->valuestring) : NULL,
+        ismf_service_set_id ? ogs_strdup(ismf_service_set_id->valuestring) : NULL,
         ismf_binding ? ismf_bindingVariable : 0,
-        ns_instance ? ogs_strdup_or_assert(ns_instance->valuestring) : NULL,
-        smf_service_instance_id ? ogs_strdup_or_assert(smf_service_instance_id->valuestring) : NULL,
+        ns_instance ? ogs_strdup(ns_instance->valuestring) : NULL,
+        smf_service_instance_id ? ogs_strdup(smf_service_instance_id->valuestring) : NULL,
         ma_pdu_session ? true : false,
         ma_pdu_session ? ma_pdu_session->valueint : 0,
         cn_assisted_ran_para ? cn_assisted_ran_para_local_nonprim : NULL

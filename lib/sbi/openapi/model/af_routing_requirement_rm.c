@@ -15,10 +15,9 @@ OpenAPI_af_routing_requirement_rm_t *OpenAPI_af_routing_requirement_rm_create(
     int addr_preser_ind
 )
 {
-    OpenAPI_af_routing_requirement_rm_t *af_routing_requirement_rm_local_var = OpenAPI_malloc(sizeof(OpenAPI_af_routing_requirement_rm_t));
-    if (!af_routing_requirement_rm_local_var) {
-        return NULL;
-    }
+    OpenAPI_af_routing_requirement_rm_t *af_routing_requirement_rm_local_var = ogs_malloc(sizeof(OpenAPI_af_routing_requirement_rm_t));
+    ogs_assert(af_routing_requirement_rm_local_var);
+
     af_routing_requirement_rm_local_var->is_app_reloc = is_app_reloc;
     af_routing_requirement_rm_local_var->app_reloc = app_reloc;
     af_routing_requirement_rm_local_var->route_to_locs = route_to_locs;

@@ -11,10 +11,9 @@ OpenAPI_assign_ebi_data_t *OpenAPI_assign_ebi_data_create(
     OpenAPI_guami_t *old_guami
 )
 {
-    OpenAPI_assign_ebi_data_t *assign_ebi_data_local_var = OpenAPI_malloc(sizeof(OpenAPI_assign_ebi_data_t));
-    if (!assign_ebi_data_local_var) {
-        return NULL;
-    }
+    OpenAPI_assign_ebi_data_t *assign_ebi_data_local_var = ogs_malloc(sizeof(OpenAPI_assign_ebi_data_t));
+    ogs_assert(assign_ebi_data_local_var);
+
     assign_ebi_data_local_var->pdu_session_id = pdu_session_id;
     assign_ebi_data_local_var->arp_list = arp_list;
     assign_ebi_data_local_var->released_ebi_list = released_ebi_list;

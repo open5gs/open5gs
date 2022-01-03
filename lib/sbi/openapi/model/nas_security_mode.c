@@ -9,10 +9,9 @@ OpenAPI_nas_security_mode_t *OpenAPI_nas_security_mode_create(
     OpenAPI_ciphering_algorithm_e ciphering_algorithm
 )
 {
-    OpenAPI_nas_security_mode_t *nas_security_mode_local_var = OpenAPI_malloc(sizeof(OpenAPI_nas_security_mode_t));
-    if (!nas_security_mode_local_var) {
-        return NULL;
-    }
+    OpenAPI_nas_security_mode_t *nas_security_mode_local_var = ogs_malloc(sizeof(OpenAPI_nas_security_mode_t));
+    ogs_assert(nas_security_mode_local_var);
+
     nas_security_mode_local_var->integrity_algorithm = integrity_algorithm;
     nas_security_mode_local_var->ciphering_algorithm = ciphering_algorithm;
 

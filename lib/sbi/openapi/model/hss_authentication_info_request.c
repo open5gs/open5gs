@@ -14,10 +14,9 @@ OpenAPI_hss_authentication_info_request_t *OpenAPI_hss_authentication_info_reque
     OpenAPI_access_network_id_e an_id
 )
 {
-    OpenAPI_hss_authentication_info_request_t *hss_authentication_info_request_local_var = OpenAPI_malloc(sizeof(OpenAPI_hss_authentication_info_request_t));
-    if (!hss_authentication_info_request_local_var) {
-        return NULL;
-    }
+    OpenAPI_hss_authentication_info_request_t *hss_authentication_info_request_local_var = ogs_malloc(sizeof(OpenAPI_hss_authentication_info_request_t));
+    ogs_assert(hss_authentication_info_request_local_var);
+
     hss_authentication_info_request_local_var->supported_features = supported_features;
     hss_authentication_info_request_local_var->hss_auth_type = hss_auth_type;
     hss_authentication_info_request_local_var->num_of_requested_vectors = num_of_requested_vectors;
@@ -185,7 +184,7 @@ OpenAPI_hss_authentication_info_request_t *OpenAPI_hss_authentication_info_reque
     }
 
     hss_authentication_info_request_local_var = OpenAPI_hss_authentication_info_request_create (
-        supported_features ? ogs_strdup_or_assert(supported_features->valuestring) : NULL,
+        supported_features ? ogs_strdup(supported_features->valuestring) : NULL,
         hss_auth_typeVariable,
         
         num_of_requested_vectors->valuedouble,

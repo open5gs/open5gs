@@ -9,10 +9,9 @@ OpenAPI_resource_item_t *OpenAPI_resource_item_create(
     OpenAPI_list_t *items
 )
 {
-    OpenAPI_resource_item_t *resource_item_local_var = OpenAPI_malloc(sizeof(OpenAPI_resource_item_t));
-    if (!resource_item_local_var) {
-        return NULL;
-    }
+    OpenAPI_resource_item_t *resource_item_local_var = ogs_malloc(sizeof(OpenAPI_resource_item_t));
+    ogs_assert(resource_item_local_var);
+
     resource_item_local_var->mon_resource_uri = mon_resource_uri;
     resource_item_local_var->items = items;
 
@@ -99,11 +98,11 @@ OpenAPI_resource_item_t *OpenAPI_resource_item_parseFromJSON(cJSON *resource_ite
         ogs_error("OpenAPI_resource_item_parseFromJSON() failed [items]");
         goto end;
     }
-    OpenAPI_list_add(itemsList , ogs_strdup_or_assert(items_local->valuestring));
+    OpenAPI_list_add(itemsList , ogs_strdup(items_local->valuestring));
     }
 
     resource_item_local_var = OpenAPI_resource_item_create (
-        ogs_strdup_or_assert(mon_resource_uri->valuestring),
+        ogs_strdup(mon_resource_uri->valuestring),
         itemsList
     );
 

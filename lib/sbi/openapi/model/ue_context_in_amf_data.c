@@ -8,10 +8,9 @@ OpenAPI_ue_context_in_amf_data_t *OpenAPI_ue_context_in_amf_data_create(
     OpenAPI_eps_interworking_info_t *eps_interworking_info
 )
 {
-    OpenAPI_ue_context_in_amf_data_t *ue_context_in_amf_data_local_var = OpenAPI_malloc(sizeof(OpenAPI_ue_context_in_amf_data_t));
-    if (!ue_context_in_amf_data_local_var) {
-        return NULL;
-    }
+    OpenAPI_ue_context_in_amf_data_t *ue_context_in_amf_data_local_var = ogs_malloc(sizeof(OpenAPI_ue_context_in_amf_data_t));
+    ogs_assert(ue_context_in_amf_data_local_var);
+
     ue_context_in_amf_data_local_var->eps_interworking_info = eps_interworking_info;
 
     return ue_context_in_amf_data_local_var;

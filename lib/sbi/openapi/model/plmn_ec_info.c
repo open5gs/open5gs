@@ -11,10 +11,9 @@ OpenAPI_plmn_ec_info_t *OpenAPI_plmn_ec_info_create(
     int ec_restriction_data_nb
 )
 {
-    OpenAPI_plmn_ec_info_t *plmn_ec_info_local_var = OpenAPI_malloc(sizeof(OpenAPI_plmn_ec_info_t));
-    if (!plmn_ec_info_local_var) {
-        return NULL;
-    }
+    OpenAPI_plmn_ec_info_t *plmn_ec_info_local_var = ogs_malloc(sizeof(OpenAPI_plmn_ec_info_t));
+    ogs_assert(plmn_ec_info_local_var);
+
     plmn_ec_info_local_var->plmn_id = plmn_id;
     plmn_ec_info_local_var->ec_restriction_data_wb = ec_restriction_data_wb;
     plmn_ec_info_local_var->is_ec_restriction_data_nb = is_ec_restriction_data_nb;

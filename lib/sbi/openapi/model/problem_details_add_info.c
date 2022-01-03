@@ -9,10 +9,9 @@ OpenAPI_problem_details_add_info_t *OpenAPI_problem_details_add_info_create(
     int remote_error
 )
 {
-    OpenAPI_problem_details_add_info_t *problem_details_add_info_local_var = OpenAPI_malloc(sizeof(OpenAPI_problem_details_add_info_t));
-    if (!problem_details_add_info_local_var) {
-        return NULL;
-    }
+    OpenAPI_problem_details_add_info_t *problem_details_add_info_local_var = ogs_malloc(sizeof(OpenAPI_problem_details_add_info_t));
+    ogs_assert(problem_details_add_info_local_var);
+
     problem_details_add_info_local_var->is_remote_error = is_remote_error;
     problem_details_add_info_local_var->remote_error = remote_error;
 

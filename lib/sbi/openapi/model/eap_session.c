@@ -13,10 +13,9 @@ OpenAPI_eap_session_t *OpenAPI_eap_session_create(
     char *supported_features
 )
 {
-    OpenAPI_eap_session_t *eap_session_local_var = OpenAPI_malloc(sizeof(OpenAPI_eap_session_t));
-    if (!eap_session_local_var) {
-        return NULL;
-    }
+    OpenAPI_eap_session_t *eap_session_local_var = ogs_malloc(sizeof(OpenAPI_eap_session_t));
+    ogs_assert(eap_session_local_var);
+
     eap_session_local_var->eap_payload = eap_payload;
     eap_session_local_var->k_seaf = k_seaf;
     eap_session_local_var->_links = _links;
@@ -37,6 +36,7 @@ void OpenAPI_eap_session_free(OpenAPI_eap_session_t *eap_session)
     ogs_free(eap_session->k_seaf);
     OpenAPI_list_for_each(eap_session->_links, node) {
         OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+        ogs_free(localKeyValue->key);
         OpenAPI_links_value_schema_free(localKeyValue->value);
         ogs_free(localKeyValue);
     }
@@ -154,9 +154,9 @@ OpenAPI_eap_session_t *OpenAPI_eap_session_parseFromJSON(cJSON *eap_sessionJSON)
         cJSON *localMapObject = _links_local_map;
         if (cJSON_IsObject(_links_local_map)) {
             localMapKeyPair = OpenAPI_map_create(
-                localMapObject->string, OpenAPI_links_value_schema_parseFromJSON(localMapObject));
+                ogs_strdup(localMapObject->string), OpenAPI_links_value_schema_parseFromJSON(localMapObject));
         } else if (cJSON_IsNull(_links_local_map)) {
-            localMapKeyPair = OpenAPI_map_create(localMapObject->string, NULL);
+            localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
         } else {
             ogs_error("OpenAPI_eap_session_parseFromJSON() failed [_links]");
             goto end;
@@ -195,12 +195,12 @@ OpenAPI_eap_session_t *OpenAPI_eap_session_parseFromJSON(cJSON *eap_sessionJSON)
     }
 
     eap_session_local_var = OpenAPI_eap_session_create (
-        ogs_strdup_or_assert(eap_payload->valuestring),
-        k_seaf ? ogs_strdup_or_assert(k_seaf->valuestring) : NULL,
+        ogs_strdup(eap_payload->valuestring),
+        k_seaf ? ogs_strdup(k_seaf->valuestring) : NULL,
         _links ? _linksList : NULL,
         auth_result ? auth_resultVariable : 0,
-        supi ? ogs_strdup_or_assert(supi->valuestring) : NULL,
-        supported_features ? ogs_strdup_or_assert(supported_features->valuestring) : NULL
+        supi ? ogs_strdup(supi->valuestring) : NULL,
+        supported_features ? ogs_strdup(supported_features->valuestring) : NULL
     );
 
     return eap_session_local_var;

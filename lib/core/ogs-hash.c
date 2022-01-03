@@ -61,7 +61,9 @@ struct ogs_hash_t {
 
 static ogs_hash_entry_t **alloc_array(ogs_hash_t *ht, unsigned int max)
 {
-   return ogs_calloc_or_assert(1, sizeof(*ht->array) * (max + 1));
+    ogs_hash_entry_t **ptr = ogs_calloc(1, sizeof(*ht->array) * (max + 1));
+    ogs_assert(ptr);
+    return ptr;
 }
 
 ogs_hash_t *ogs_hash_make()
@@ -285,13 +287,8 @@ static ogs_hash_entry_t **find_entry(ogs_hash_t *ht,
     if ((he = ht->free) != NULL)
         ht->free = he->next;
     else {
-#if OGS_USE_TALLOC
-        he = ogs_talloc_size(__ogs_talloc_core,
-                sizeof(*he), file_line);
+        he = ogs_malloc(sizeof(*he));
         ogs_assert(he);
-#else
-        he = ogs_malloc_debug(sizeof(*he), file_line, true);
-#endif
     }
     he->next = NULL;
     he->hash = hash;

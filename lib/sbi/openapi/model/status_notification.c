@@ -10,10 +10,9 @@ OpenAPI_status_notification_t *OpenAPI_status_notification_create(
     OpenAPI_apn_rate_status_t *apn_rate_status
 )
 {
-    OpenAPI_status_notification_t *status_notification_local_var = OpenAPI_malloc(sizeof(OpenAPI_status_notification_t));
-    if (!status_notification_local_var) {
-        return NULL;
-    }
+    OpenAPI_status_notification_t *status_notification_local_var = ogs_malloc(sizeof(OpenAPI_status_notification_t));
+    ogs_assert(status_notification_local_var);
+
     status_notification_local_var->status_info = status_info;
     status_notification_local_var->small_data_rate_status = small_data_rate_status;
     status_notification_local_var->apn_rate_status = apn_rate_status;

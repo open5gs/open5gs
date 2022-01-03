@@ -25,10 +25,9 @@ OpenAPI_charging_data_t *OpenAPI_charging_data_create(
     char *af_charg_id
 )
 {
-    OpenAPI_charging_data_t *charging_data_local_var = OpenAPI_malloc(sizeof(OpenAPI_charging_data_t));
-    if (!charging_data_local_var) {
-        return NULL;
-    }
+    OpenAPI_charging_data_t *charging_data_local_var = ogs_malloc(sizeof(OpenAPI_charging_data_t));
+    ogs_assert(charging_data_local_var);
+
     charging_data_local_var->chg_id = chg_id;
     charging_data_local_var->metering_method = metering_method;
     charging_data_local_var->is_offline = is_offline;
@@ -278,7 +277,7 @@ OpenAPI_charging_data_t *OpenAPI_charging_data_parseFromJSON(cJSON *charging_dat
     }
 
     charging_data_local_var = OpenAPI_charging_data_create (
-        ogs_strdup_or_assert(chg_id->valuestring),
+        ogs_strdup(chg_id->valuestring),
         metering_method ? metering_methodVariable : 0,
         offline ? true : false,
         offline ? offline->valueint : 0,
@@ -291,11 +290,11 @@ OpenAPI_charging_data_t *OpenAPI_charging_data_parseFromJSON(cJSON *charging_dat
         reporting_level ? reporting_levelVariable : 0,
         service_id ? true : false,
         service_id ? service_id->valuedouble : 0,
-        sponsor_id ? ogs_strdup_or_assert(sponsor_id->valuestring) : NULL,
-        app_svc_prov_id ? ogs_strdup_or_assert(app_svc_prov_id->valuestring) : NULL,
+        sponsor_id ? ogs_strdup(sponsor_id->valuestring) : NULL,
+        app_svc_prov_id ? ogs_strdup(app_svc_prov_id->valuestring) : NULL,
         af_charging_identifier ? true : false,
         af_charging_identifier ? af_charging_identifier->valuedouble : 0,
-        af_charg_id ? ogs_strdup_or_assert(af_charg_id->valuestring) : NULL
+        af_charg_id ? ogs_strdup(af_charg_id->valuestring) : NULL
     );
 
     return charging_data_local_var;

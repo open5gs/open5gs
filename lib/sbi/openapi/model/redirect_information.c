@@ -11,10 +11,9 @@ OpenAPI_redirect_information_t *OpenAPI_redirect_information_create(
     char *redirect_server_address
 )
 {
-    OpenAPI_redirect_information_t *redirect_information_local_var = OpenAPI_malloc(sizeof(OpenAPI_redirect_information_t));
-    if (!redirect_information_local_var) {
-        return NULL;
-    }
+    OpenAPI_redirect_information_t *redirect_information_local_var = ogs_malloc(sizeof(OpenAPI_redirect_information_t));
+    ogs_assert(redirect_information_local_var);
+
     redirect_information_local_var->is_redirect_enabled = is_redirect_enabled;
     redirect_information_local_var->redirect_enabled = redirect_enabled;
     redirect_information_local_var->redirect_address_type = redirect_address_type;
@@ -104,7 +103,7 @@ OpenAPI_redirect_information_t *OpenAPI_redirect_information_parseFromJSON(cJSON
         redirect_enabled ? true : false,
         redirect_enabled ? redirect_enabled->valueint : 0,
         redirect_address_type ? redirect_address_typeVariable : 0,
-        redirect_server_address ? ogs_strdup_or_assert(redirect_server_address->valuestring) : NULL
+        redirect_server_address ? ogs_strdup(redirect_server_address->valuestring) : NULL
     );
 
     return redirect_information_local_var;

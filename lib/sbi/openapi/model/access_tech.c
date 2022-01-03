@@ -7,10 +7,9 @@
 OpenAPI_access_tech_t *OpenAPI_access_tech_create(
 )
 {
-    OpenAPI_access_tech_t *access_tech_local_var = OpenAPI_malloc(sizeof(OpenAPI_access_tech_t));
-    if (!access_tech_local_var) {
-        return NULL;
-    }
+    OpenAPI_access_tech_t *access_tech_local_var = ogs_malloc(sizeof(OpenAPI_access_tech_t));
+    ogs_assert(access_tech_local_var);
+
 
     return access_tech_local_var;
 }

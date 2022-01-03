@@ -10,10 +10,9 @@ OpenAPI_ec_restriction_data_wb_t *OpenAPI_ec_restriction_data_wb_create(
     int ec_mode_b_restricted
 )
 {
-    OpenAPI_ec_restriction_data_wb_t *ec_restriction_data_wb_local_var = OpenAPI_malloc(sizeof(OpenAPI_ec_restriction_data_wb_t));
-    if (!ec_restriction_data_wb_local_var) {
-        return NULL;
-    }
+    OpenAPI_ec_restriction_data_wb_t *ec_restriction_data_wb_local_var = ogs_malloc(sizeof(OpenAPI_ec_restriction_data_wb_t));
+    ogs_assert(ec_restriction_data_wb_local_var);
+
     ec_restriction_data_wb_local_var->is_ec_mode_a_restricted = is_ec_mode_a_restricted;
     ec_restriction_data_wb_local_var->ec_mode_a_restricted = ec_mode_a_restricted;
     ec_restriction_data_wb_local_var->ec_mode_b_restricted = ec_mode_b_restricted;

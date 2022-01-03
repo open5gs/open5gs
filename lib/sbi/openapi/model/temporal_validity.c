@@ -9,10 +9,9 @@ OpenAPI_temporal_validity_t *OpenAPI_temporal_validity_create(
     char *stop_time
 )
 {
-    OpenAPI_temporal_validity_t *temporal_validity_local_var = OpenAPI_malloc(sizeof(OpenAPI_temporal_validity_t));
-    if (!temporal_validity_local_var) {
-        return NULL;
-    }
+    OpenAPI_temporal_validity_t *temporal_validity_local_var = ogs_malloc(sizeof(OpenAPI_temporal_validity_t));
+    ogs_assert(temporal_validity_local_var);
+
     temporal_validity_local_var->start_time = start_time;
     temporal_validity_local_var->stop_time = stop_time;
 
@@ -80,8 +79,8 @@ OpenAPI_temporal_validity_t *OpenAPI_temporal_validity_parseFromJSON(cJSON *temp
     }
 
     temporal_validity_local_var = OpenAPI_temporal_validity_create (
-        start_time ? ogs_strdup_or_assert(start_time->valuestring) : NULL,
-        stop_time ? ogs_strdup_or_assert(stop_time->valuestring) : NULL
+        start_time ? ogs_strdup(start_time->valuestring) : NULL,
+        stop_time ? ogs_strdup(stop_time->valuestring) : NULL
     );
 
     return temporal_validity_local_var;

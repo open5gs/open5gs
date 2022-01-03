@@ -9,10 +9,9 @@ OpenAPI_ng_ksi_t *OpenAPI_ng_ksi_create(
     int ksi
 )
 {
-    OpenAPI_ng_ksi_t *ng_ksi_local_var = OpenAPI_malloc(sizeof(OpenAPI_ng_ksi_t));
-    if (!ng_ksi_local_var) {
-        return NULL;
-    }
+    OpenAPI_ng_ksi_t *ng_ksi_local_var = ogs_malloc(sizeof(OpenAPI_ng_ksi_t));
+    ogs_assert(ng_ksi_local_var);
+
     ng_ksi_local_var->tsc = tsc;
     ng_ksi_local_var->ksi = ksi;
 

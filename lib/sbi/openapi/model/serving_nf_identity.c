@@ -10,10 +10,9 @@ OpenAPI_serving_nf_identity_t *OpenAPI_serving_nf_identity_create(
     OpenAPI_an_gw_address_t *an_gw_addr
 )
 {
-    OpenAPI_serving_nf_identity_t *serving_nf_identity_local_var = OpenAPI_malloc(sizeof(OpenAPI_serving_nf_identity_t));
-    if (!serving_nf_identity_local_var) {
-        return NULL;
-    }
+    OpenAPI_serving_nf_identity_t *serving_nf_identity_local_var = ogs_malloc(sizeof(OpenAPI_serving_nf_identity_t));
+    ogs_assert(serving_nf_identity_local_var);
+
     serving_nf_identity_local_var->serv_nf_inst_id = serv_nf_inst_id;
     serving_nf_identity_local_var->guami = guami;
     serving_nf_identity_local_var->an_gw_addr = an_gw_addr;
@@ -107,7 +106,7 @@ OpenAPI_serving_nf_identity_t *OpenAPI_serving_nf_identity_parseFromJSON(cJSON *
     }
 
     serving_nf_identity_local_var = OpenAPI_serving_nf_identity_create (
-        serv_nf_inst_id ? ogs_strdup_or_assert(serv_nf_inst_id->valuestring) : NULL,
+        serv_nf_inst_id ? ogs_strdup(serv_nf_inst_id->valuestring) : NULL,
         guami ? guami_local_nonprim : NULL,
         an_gw_addr ? an_gw_addr_local_nonprim : NULL
     );

@@ -15,10 +15,9 @@ OpenAPI_pcf_info_t *OpenAPI_pcf_info_create(
     int v2x_support_ind
 )
 {
-    OpenAPI_pcf_info_t *pcf_info_local_var = OpenAPI_malloc(sizeof(OpenAPI_pcf_info_t));
-    if (!pcf_info_local_var) {
-        return NULL;
-    }
+    OpenAPI_pcf_info_t *pcf_info_local_var = ogs_malloc(sizeof(OpenAPI_pcf_info_t));
+    ogs_assert(pcf_info_local_var);
+
     pcf_info_local_var->group_id = group_id;
     pcf_info_local_var->dnn_list = dnn_list;
     pcf_info_local_var->supi_ranges = supi_ranges;
@@ -181,7 +180,7 @@ OpenAPI_pcf_info_t *OpenAPI_pcf_info_parseFromJSON(cJSON *pcf_infoJSON)
         ogs_error("OpenAPI_pcf_info_parseFromJSON() failed [dnn_list]");
         goto end;
     }
-    OpenAPI_list_add(dnn_listList , ogs_strdup_or_assert(dnn_list_local->valuestring));
+    OpenAPI_list_add(dnn_listList , ogs_strdup(dnn_list_local->valuestring));
     }
     }
 
@@ -259,12 +258,12 @@ OpenAPI_pcf_info_t *OpenAPI_pcf_info_parseFromJSON(cJSON *pcf_infoJSON)
     }
 
     pcf_info_local_var = OpenAPI_pcf_info_create (
-        group_id ? ogs_strdup_or_assert(group_id->valuestring) : NULL,
+        group_id ? ogs_strdup(group_id->valuestring) : NULL,
         dnn_list ? dnn_listList : NULL,
         supi_ranges ? supi_rangesList : NULL,
         gpsi_ranges ? gpsi_rangesList : NULL,
-        rx_diam_host ? ogs_strdup_or_assert(rx_diam_host->valuestring) : NULL,
-        rx_diam_realm ? ogs_strdup_or_assert(rx_diam_realm->valuestring) : NULL,
+        rx_diam_host ? ogs_strdup(rx_diam_host->valuestring) : NULL,
+        rx_diam_realm ? ogs_strdup(rx_diam_realm->valuestring) : NULL,
         v2x_support_ind ? true : false,
         v2x_support_ind ? v2x_support_ind->valueint : 0
     );

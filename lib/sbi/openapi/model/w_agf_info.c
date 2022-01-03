@@ -10,10 +10,9 @@ OpenAPI_w_agf_info_t *OpenAPI_w_agf_info_create(
     char *endpoint_fqdn
 )
 {
-    OpenAPI_w_agf_info_t *w_agf_info_local_var = OpenAPI_malloc(sizeof(OpenAPI_w_agf_info_t));
-    if (!w_agf_info_local_var) {
-        return NULL;
-    }
+    OpenAPI_w_agf_info_t *w_agf_info_local_var = ogs_malloc(sizeof(OpenAPI_w_agf_info_t));
+    ogs_assert(w_agf_info_local_var);
+
     w_agf_info_local_var->ipv4_endpoint_addresses = ipv4_endpoint_addresses;
     w_agf_info_local_var->ipv6_endpoint_addresses = ipv6_endpoint_addresses;
     w_agf_info_local_var->endpoint_fqdn = endpoint_fqdn;
@@ -111,7 +110,7 @@ OpenAPI_w_agf_info_t *OpenAPI_w_agf_info_parseFromJSON(cJSON *w_agf_infoJSON)
         ogs_error("OpenAPI_w_agf_info_parseFromJSON() failed [ipv4_endpoint_addresses]");
         goto end;
     }
-    OpenAPI_list_add(ipv4_endpoint_addressesList , ogs_strdup_or_assert(ipv4_endpoint_addresses_local->valuestring));
+    OpenAPI_list_add(ipv4_endpoint_addressesList , ogs_strdup(ipv4_endpoint_addresses_local->valuestring));
     }
     }
 
@@ -131,7 +130,7 @@ OpenAPI_w_agf_info_t *OpenAPI_w_agf_info_parseFromJSON(cJSON *w_agf_infoJSON)
         ogs_error("OpenAPI_w_agf_info_parseFromJSON() failed [ipv6_endpoint_addresses]");
         goto end;
     }
-    OpenAPI_list_add(ipv6_endpoint_addressesList , ogs_strdup_or_assert(ipv6_endpoint_addresses_local->valuestring));
+    OpenAPI_list_add(ipv6_endpoint_addressesList , ogs_strdup(ipv6_endpoint_addresses_local->valuestring));
     }
     }
 
@@ -147,7 +146,7 @@ OpenAPI_w_agf_info_t *OpenAPI_w_agf_info_parseFromJSON(cJSON *w_agf_infoJSON)
     w_agf_info_local_var = OpenAPI_w_agf_info_create (
         ipv4_endpoint_addresses ? ipv4_endpoint_addressesList : NULL,
         ipv6_endpoint_addresses ? ipv6_endpoint_addressesList : NULL,
-        endpoint_fqdn ? ogs_strdup_or_assert(endpoint_fqdn->valuestring) : NULL
+        endpoint_fqdn ? ogs_strdup(endpoint_fqdn->valuestring) : NULL
     );
 
     return w_agf_info_local_var;

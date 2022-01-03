@@ -9,10 +9,9 @@ OpenAPI_n1_n2_message_transfer_error_t *OpenAPI_n1_n2_message_transfer_error_cre
     OpenAPI_n1_n2_msg_txfr_err_detail_t *err_info
 )
 {
-    OpenAPI_n1_n2_message_transfer_error_t *n1_n2_message_transfer_error_local_var = OpenAPI_malloc(sizeof(OpenAPI_n1_n2_message_transfer_error_t));
-    if (!n1_n2_message_transfer_error_local_var) {
-        return NULL;
-    }
+    OpenAPI_n1_n2_message_transfer_error_t *n1_n2_message_transfer_error_local_var = ogs_malloc(sizeof(OpenAPI_n1_n2_message_transfer_error_t));
+    ogs_assert(n1_n2_message_transfer_error_local_var);
+
     n1_n2_message_transfer_error_local_var->error = error;
     n1_n2_message_transfer_error_local_var->err_info = err_info;
 
