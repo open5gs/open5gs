@@ -31,6 +31,7 @@ head_inline: "<style> ul { padding-bottom: 1em; } </style>"
   - [eNodeBs/gNodeBs tested on Open5GS](hardware/01-genodebs)
   
 - @infinitydon
+  - [Open5GS on Amazon Elastic Kubernetes Service](https://aws.amazon.com/blogs/opensource/open-source-mobile-core-network-implementation-on-amazon-elastic-kubernetes-service/)
   - [Kubernetes Open5GS Deployment](https://dev.to/infinitydon/virtual-4g-simulation-using-kubernetes-and-gns3-3b7k?fbclid=IwAR1p99h13a-mCfejanbBQe0H0-jp5grXkn5mWf1WrTHf47UtegB2-UHGGZQ)
 
 - @nickvsnetworking

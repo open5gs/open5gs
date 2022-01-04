@@ -223,7 +223,7 @@ to support IPv6.  This is done by setting the `diable_ipv6` option for
 $ sysctl -n net.ipv6.conf.ogstun.disable_ipv6
 1
 
-$ sudo -w net.ipv6.conf.ogstun.disable_ipv6=0
+$ sudo sysctl -w net.ipv6.conf.ogstun.disable_ipv6=0
 
 $ sysctl -n net.ipv6.conf.ogstun.disable_ipv6
 0

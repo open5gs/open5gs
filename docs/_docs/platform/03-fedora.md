@@ -39,7 +39,7 @@ Then, to support IPv6-enabled UEs, you must configure your TUN device to support
 $ sysctl -n net.ipv6.conf.ogstun.disable_ipv6
 1
 
-$ sudo -w net.ipv6.conf.ogstun.disable_ipv6=0
+$ sudo -w sysctl net.ipv6.conf.ogstun.disable_ipv6=0
 
 $ sysctl -n net.ipv6.conf.ogstun.disable_ipv6
 0

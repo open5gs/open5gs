@@ -193,8 +193,6 @@ static void sbi_message_test2(abts_case *tc, void *data)
 	item = OpenAPI_nf_group_cond_convertToJSON(nf_group_cond1);
     ABTS_PTR_NOTNULL(tc, item);
 
-    ogs_free(nf_group_cond1);
-
 #if 0
     {
         char *str = cJSON_Print(item);
@@ -208,7 +206,10 @@ static void sbi_message_test2(abts_case *tc, void *data)
 
     ABTS_STR_EQUAL(tc,
             nf_group_cond1->nf_group_id, nf_group_cond2->nf_group_id);
-    ABTS_INT_EQUAL(tc, OpenAPI_nf_group_cond_NFTYPE_UDR, nf_group_cond2->nf_type);
+    ogs_free(nf_group_cond1);
+
+    ABTS_INT_EQUAL(tc,
+            OpenAPI_nf_group_cond_NFTYPE_UDR, nf_group_cond2->nf_type);
 
     cJSON_Delete(item);
 
@@ -599,7 +600,6 @@ static void sbi_message_test6(abts_case *tc, void *data)
     cJSON_Delete(item);
 
     item = OpenAPI_smf_selection_subscription_data_convertToJSON(r1);
-    OpenAPI_smf_selection_subscription_data_free(r1);
 
     SubscribedSnssaiInfoList = r1->subscribed_snssai_infos;
     OpenAPI_list_for_each(SubscribedSnssaiInfoList, node) {
@@ -611,6 +611,8 @@ static void sbi_message_test6(abts_case *tc, void *data)
             ABTS_INT_EQUAL(tc, OGS_S_NSSAI_NO_SD_VALUE, s_nssai.sd.v);
         }
     }
+
+    OpenAPI_smf_selection_subscription_data_free(r1);
 
     content = cJSON_Print(item);
     cJSON_Delete(item);
