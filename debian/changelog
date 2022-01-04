@@ -1,3 +1,27 @@
+open5gs (2.4.1) unstable; urgency=medium
+
+  * Use talloc & S1AP/NGAP r16.7.0
+
+ -- Sukchan Lee <acetcom@gmail.com>  Tue, 04 Jan 2022 17:34:08 +0900
+
+open5gs (2.4.1~bionic) bionic; urgency=medium
+
+  * Use talloc & S1AP/NGAP r16.7.0
+
+ -- Sukchan Lee <acetcom@gmail.com>  Tue, 04 Jan 2022 17:33:09 +0900
+
+open5gs (2.4.1~focal) focal; urgency=medium
+
+  * Use talloc & S1AP/NGAP r16.7.0
+
+ -- Sukchan Lee <acetcom@gmail.com>  Tue, 04 Jan 2022 17:31:56 +0900
+
+open5gs (2.4.1~hirsute) hirsute; urgency=medium
+
+  * Use talloc & S1AP/NGAP r16.7.0
+
+ -- Sukchan Lee <acetcom@gmail.com>  Tue, 04 Jan 2022 17:27:54 +0900
+
 open5gs (2.4.0) unstable; urgency=medium
 
   * VoNR Added
