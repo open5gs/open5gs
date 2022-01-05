@@ -28,7 +28,8 @@
 #undef OGS_LOG_DOMAIN
 #define OGS_LOG_DOMAIN __gmm_log_domain
 
-static int gmm_handle_nas_message_container(amf_ue_t *amf_ue,
+static int gmm_handle_nas_message_container(
+        amf_ue_t *amf_ue, uint8_t message_type,
         ogs_nas_message_container_t *nas_message_container);
 
 int gmm_handle_registration_request(amf_ue_t *amf_ue,
@@ -316,7 +317,8 @@ int gmm_handle_registration_update(amf_ue_t *amf_ue,
         OGS_NAS_5GS_REGISTRATION_REQUEST_NAS_MESSAGE_CONTAINER_PRESENT) {
 
         return gmm_handle_nas_message_container(
-                amf_ue, &registration_request->nas_message_container);
+                amf_ue, OGS_NAS_5GS_REGISTRATION_REQUEST,
+                &registration_request->nas_message_container);
     }
 
     if (registration_request->presencemask &
@@ -585,7 +587,8 @@ int gmm_handle_service_update(amf_ue_t *amf_ue,
         OGS_NAS_5GS_SERVICE_REQUEST_NAS_MESSAGE_CONTAINER_PRESENT) {
 
         return gmm_handle_nas_message_container(
-                amf_ue, &service_request->nas_message_container);
+                amf_ue, OGS_NAS_5GS_SERVICE_REQUEST,
+                &service_request->nas_message_container);
     }
 
     xact_count = amf_sess_xact_count(amf_ue);
@@ -873,7 +876,8 @@ int gmm_handle_security_mode_complete(amf_ue_t *amf_ue,
         OGS_NAS_5GS_SECURITY_MODE_COMPLETE_NAS_MESSAGE_CONTAINER_PRESENT) {
 
         return gmm_handle_nas_message_container(
-                amf_ue, &security_mode_complete->nas_message_container);
+                amf_ue, OGS_NAS_5GS_SECURITY_MODE_COMPLETE,
+                &security_mode_complete->nas_message_container);
     }
 
     return OGS_OK;
@@ -1158,7 +1162,8 @@ int gmm_handle_ul_nas_transport(amf_ue_t *amf_ue,
     return OGS_OK;
 }
 
-static int gmm_handle_nas_message_container(amf_ue_t *amf_ue,
+static int gmm_handle_nas_message_container(
+        amf_ue_t *amf_ue, uint8_t message_type,
         ogs_nas_message_container_t *nas_message_container)
 {
     int rv = OGS_ERROR;
@@ -1179,6 +1184,37 @@ static int gmm_handle_nas_message_container(amf_ue_t *amf_ue,
     ogs_assert(nasbuf);
     ogs_pkbuf_put_data(nasbuf,
             nas_message_container->buffer, nas_message_container->length);
+
+    /*
+     * 3GPP TS 24.501 version 16.6.0 Release 16
+     * 4.4 NAS security
+     * 4.4.6 Protection of initial NAS signalling messages
+     *
+     * 1) the UE needs to send non-cleartext IEs in a REGISTRATION REQUEST
+     * or SERVICE REQUEST message, the UE includes the entire REGISTRATION
+     * REQUEST or SERVICE REQUEST message (i.e. containing both cleartext IEs
+     * and non-cleartext IEs) in the NAS message container IE and shall cipher
+     * the value part of the NAS message container IE. The UE shall then send
+     * a REGISTRATION REQUEST or SERVICE REQUEST message containing
+     * the cleartext IEs and the NAS message container IE;
+     */
+    switch (message_type) {
+    case OGS_NAS_5GS_REGISTRATION_REQUEST:
+    case OGS_NAS_5GS_SERVICE_REQUEST:
+        switch (amf_ue->selected_enc_algorithm) {
+        case OGS_NAS_SECURITY_ALGORITHMS_128_NEA1:
+        case OGS_NAS_SECURITY_ALGORITHMS_128_NEA2:
+        case OGS_NAS_SECURITY_ALGORITHMS_128_NEA3:
+            ogs_nas_encrypt(amf_ue->selected_enc_algorithm,
+                amf_ue->knas_enc, amf_ue->ul_count.i32,
+                amf_ue->nas.access_type,
+                OGS_NAS_SECURITY_UPLINK_DIRECTION, nasbuf);
+        default:
+            break;
+        }
+    default:
+        break;
+    }
 
     if (ogs_nas_5gmm_decode(&nas_message, nasbuf) != OGS_OK) {
         ogs_error("ogs_nas_5gmm_decode() failed");

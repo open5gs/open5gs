@@ -197,6 +197,20 @@ ogs_pkbuf_t *testgmm_build_registration_request(
     if (nasbuf) {
         registration_request->presencemask |=
             OGS_NAS_5GS_REGISTRATION_REQUEST_NAS_MESSAGE_CONTAINER_PRESENT;
+
+        switch (test_ue->selected_enc_algorithm) {
+        case OGS_NAS_SECURITY_ALGORITHMS_128_NEA1:
+        case OGS_NAS_SECURITY_ALGORITHMS_128_NEA2:
+        case OGS_NAS_SECURITY_ALGORITHMS_128_NEA3:
+            ogs_nas_encrypt(test_ue->selected_enc_algorithm,
+                test_ue->knas_enc, test_ue->ul_count,
+                test_ue->nas.access_type,
+                OGS_NAS_SECURITY_UPLINK_DIRECTION, nasbuf);
+            break;
+        default:
+            break;
+        }
+
         nas_message_container->length = nasbuf->len;
         nas_message_container->buffer = nasbuf->data;
         ogs_pkbuf_free(nasbuf);
@@ -301,6 +315,20 @@ ogs_pkbuf_t *testgmm_build_service_request(
     if (nasbuf) {
         service_request->presencemask |=
             OGS_NAS_5GS_SERVICE_REQUEST_NAS_MESSAGE_CONTAINER_PRESENT;
+
+        switch (test_ue->selected_enc_algorithm) {
+        case OGS_NAS_SECURITY_ALGORITHMS_128_NEA1:
+        case OGS_NAS_SECURITY_ALGORITHMS_128_NEA2:
+        case OGS_NAS_SECURITY_ALGORITHMS_128_NEA3:
+            ogs_nas_encrypt(test_ue->selected_enc_algorithm,
+                test_ue->knas_enc, test_ue->ul_count,
+                test_ue->nas.access_type,
+                OGS_NAS_SECURITY_UPLINK_DIRECTION, nasbuf);
+            break;
+        default:
+            break;
+        }
+
         nas_message_container->length = nasbuf->len;
         nas_message_container->buffer = nasbuf->data;
         ogs_pkbuf_free(nasbuf);

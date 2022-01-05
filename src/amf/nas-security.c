@@ -19,9 +19,6 @@
 
 #include "nas-security.h"
 
-#define NAS_SECURITY_DOWNLINK_DIRECTION 1
-#define NAS_SECURITY_UPLINK_DIRECTION 0
-
 #define NAS_SECURITY_MAC_SIZE 4
 
 ogs_pkbuf_t *nas_5gs_security_encode(
@@ -88,7 +85,7 @@ ogs_pkbuf_t *nas_5gs_security_encode(
         ogs_nas_encrypt(amf_ue->selected_enc_algorithm,
             amf_ue->knas_enc, amf_ue->dl_count,
             amf_ue->nas.access_type,
-            NAS_SECURITY_DOWNLINK_DIRECTION, new);
+            OGS_NAS_SECURITY_DOWNLINK_DIRECTION, new);
     }
 
     /* encode sequence number */
@@ -102,7 +99,7 @@ ogs_pkbuf_t *nas_5gs_security_encode(
         ogs_nas_mac_calculate(amf_ue->selected_int_algorithm,
             amf_ue->knas_int, amf_ue->dl_count,
             amf_ue->nas.access_type,
-            NAS_SECURITY_DOWNLINK_DIRECTION, new, mac);
+            OGS_NAS_SECURITY_DOWNLINK_DIRECTION, new, mac);
         memcpy(&h.message_authentication_code, mac, sizeof(mac));
     }
 
@@ -165,7 +162,7 @@ int nas_5gs_security_decode(amf_ue_t *amf_ue,
             ogs_nas_mac_calculate(amf_ue->selected_int_algorithm,
                 amf_ue->knas_int, amf_ue->ul_count.i32,
                 amf_ue->nas.access_type,
-                NAS_SECURITY_UPLINK_DIRECTION, pkbuf, mac);
+                OGS_NAS_SECURITY_UPLINK_DIRECTION, pkbuf, mac);
             h->message_authentication_code = original_mac;
 
             memcpy(&mac32, mac, NAS_SECURITY_MAC_SIZE);
@@ -184,7 +181,7 @@ int nas_5gs_security_decode(amf_ue_t *amf_ue,
             ogs_nas_encrypt(amf_ue->selected_enc_algorithm,
                 amf_ue->knas_enc, amf_ue->ul_count.i32,
                 amf_ue->nas.access_type,
-                NAS_SECURITY_UPLINK_DIRECTION, pkbuf);
+                OGS_NAS_SECURITY_UPLINK_DIRECTION, pkbuf);
         }
     }
 

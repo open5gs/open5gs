@@ -20,9 +20,6 @@
 #include "nas-security.h"
 
 #define NAS_SECURITY_BEARER 0
-#define NAS_SECURITY_DOWNLINK_DIRECTION 1
-#define NAS_SECURITY_UPLINK_DIRECTION 0
-
 #define NAS_SECURITY_MAC_SIZE 4
 
 ogs_pkbuf_t *nas_eps_security_encode(
@@ -87,7 +84,7 @@ ogs_pkbuf_t *nas_eps_security_encode(
         /* encrypt NAS message */
         ogs_nas_encrypt(mme_ue->selected_enc_algorithm,
             mme_ue->knas_enc, mme_ue->dl_count, NAS_SECURITY_BEARER,
-            NAS_SECURITY_DOWNLINK_DIRECTION, new);
+            OGS_NAS_SECURITY_DOWNLINK_DIRECTION, new);
     }
 
     /* encode sequence number */
@@ -100,7 +97,7 @@ ogs_pkbuf_t *nas_eps_security_encode(
         /* calculate NAS MAC(message authentication code) */
         ogs_nas_mac_calculate(mme_ue->selected_int_algorithm,
             mme_ue->knas_int, mme_ue->dl_count, NAS_SECURITY_BEARER, 
-            NAS_SECURITY_DOWNLINK_DIRECTION, new, mac);
+            OGS_NAS_SECURITY_DOWNLINK_DIRECTION, new, mac);
         memcpy(&h.message_authentication_code, mac, sizeof(mac));
     }
 
@@ -156,7 +153,7 @@ int nas_eps_security_decode(mme_ue_t *mme_ue,
         ogs_pkbuf_trim(pkbuf, 2);
         ogs_nas_mac_calculate(mme_ue->selected_int_algorithm,
             mme_ue->knas_int, mme_ue->ul_count.i32, NAS_SECURITY_BEARER,
-            NAS_SECURITY_UPLINK_DIRECTION, pkbuf, mac);
+            OGS_NAS_SECURITY_UPLINK_DIRECTION, pkbuf, mac);
 
         ogs_pkbuf_put_data(pkbuf, original_mac, SHORT_MAC_SIZE);
         if (memcmp(mac + 2, pkbuf->data + 2, 2) != 0) {
@@ -210,7 +207,7 @@ int nas_eps_security_decode(mme_ue_t *mme_ue,
             /* calculate NAS MAC(message authentication code) */
             ogs_nas_mac_calculate(mme_ue->selected_int_algorithm,
                 mme_ue->knas_int, mme_ue->ul_count.i32, NAS_SECURITY_BEARER, 
-                NAS_SECURITY_UPLINK_DIRECTION, pkbuf, mac);
+                OGS_NAS_SECURITY_UPLINK_DIRECTION, pkbuf, mac);
             h->message_authentication_code = original_mac;
 
             memcpy(&mac32, mac, NAS_SECURITY_MAC_SIZE);
@@ -228,7 +225,7 @@ int nas_eps_security_decode(mme_ue_t *mme_ue,
             /* decrypt NAS message */
             ogs_nas_encrypt(mme_ue->selected_enc_algorithm,
                 mme_ue->knas_enc, mme_ue->ul_count.i32, NAS_SECURITY_BEARER,
-                NAS_SECURITY_UPLINK_DIRECTION, pkbuf);
+                OGS_NAS_SECURITY_UPLINK_DIRECTION, pkbuf);
         }
     }
 
