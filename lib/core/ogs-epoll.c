@@ -240,8 +240,9 @@ static int epoll_process(ogs_pollset_t *pollset, ogs_time_t timeout)
 
         fd = context->event_list[i].data.fd;
         ogs_assert(fd != INVALID_SOCKET);
+
         map = ogs_hash_get(context->map_hash, &fd, sizeof(fd));
-        ogs_assert(map);
+        if (!map) continue;
 
         if (map->read && map->write && map->read == map->write) {
             map->read->handler(when, map->read->fd, map->read->data);
@@ -254,10 +255,10 @@ static int epoll_process(ogs_pollset_t *pollset, ogs_time_t timeout)
              * So, we need to check map instance
              */
             map = ogs_hash_get(context->map_hash, &fd, sizeof(fd));
-            if (map) {
-                if ((when & OGS_POLLOUT) && map->write)
-                    map->write->handler(when, map->write->fd, map->write->data);
-            }
+            if (!map) continue;
+
+            if ((when & OGS_POLLOUT) && map->write)
+                map->write->handler(when, map->write->fd, map->write->data);
         }
     }
     
